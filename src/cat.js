@@ -21,6 +21,38 @@ export const VARIANTS = [
   { name: 'röd och vit', coat: 0xc8742f, bib: 0xf4f0e8, paw: 0xf4f0e8, face: 0xf4f0e8, blaze: 0xf4f0e8, ear: 0xc8742f, tail: 0xc8742f, tip: 0xf4f0e8, eye: 0xc9b23a, pitch: 1.05 },
 ];
 
+// Breeds: shape + which coats they come in, with a weight (how common). Rare breeds count as
+// "ovanliga katter" in the statistics. Shape factors: size (whole cat), fluff (body width),
+// ears, muzzle (length), tail (thickness), head.
+const solid = (name, coat, eye, extra = {}) => ({
+  name, coat, bib: coat, paw: coat, face: coat, blaze: coat, ear: coat, tail: coat, tip: coat, eye, pitch: 1, ...extra,
+});
+const coat = (name) => VARIANTS.find((v) => v.name === name);
+export const BREEDS = [
+  { name: 'huskatt', weight: 70, coats: VARIANTS.filter((v) => v.name !== 'siames') },
+  { name: 'siames', weight: 8, coats: [coat('siames')], ears: 1.35, fluff: 0.88, pitch: 1.1 },
+  { name: 'brittiskt korthår', weight: 7, coats: [solid('blå', 0x7f8b97, 0xd98a2b)], fluff: 1.15, head: 1.12, ears: 0.8, muzzle: 1.1, pitch: 0.9 },
+  { name: 'maine coon', weight: 6, size: 1.3, fluff: 1.15, ears: 1.25, tail: 1.9, pitch: 0.8,
+    coats: [coat('rödrandig'), coat('grå'), solid('brunrandig', 0x6e5640, 0xc9a43a, { bib: 0xe8dcc8, paw: 0xe8dcc8 })] },
+  { name: 'norsk skogkatt', weight: 5, size: 1.2, fluff: 1.2, tail: 1.8, pitch: 0.85,
+    coats: [coat('svartvit'), coat('grå'), coat('vit')] },
+  { name: 'perser', weight: 3, rare: true, fluff: 1.3, head: 1.15, muzzle: 0.55, ears: 0.6, tail: 1.6, pitch: 1.2,
+    coats: [coat('vit'), solid('gräddvit', 0xe8d8b8, 0xd08a2a), coat('grå')] },
+  { name: 'sphynx', weight: 1, rare: true, fluff: 0.82, ears: 1.7, tail: 0.6, head: 0.95, pitch: 1.25,
+    coats: [solid('naken', 0xd8b0a4, 0x7fb3e6, { ear: 0xcf9f95, tip: 0xc99b90 })] },
+];
+
+/** Random breed (by weight) and one of its coats. */
+export function pickCat(rand = Math.random) {
+  const total = BREEDS.reduce((n, b) => n + b.weight, 0);
+  let r = rand() * total;
+  const breed = BREEDS.find((b) => (r -= b.weight) < 0) ?? BREEDS[0];
+  return { breed, coat: breed.coats[Math.floor(rand() * breed.coats.length)] };
+}
+
+/** Name for the statistics: "svartvit" for a huskatt, otherwise "maine coon (grå)". */
+export const catLabel = (breed, coat) => (breed.name === 'huskatt' ? coat.name : `${breed.name} (${coat.name})`);
+
 const fur = () => new THREE.MeshStandardMaterial({ roughness: 0.8 });
 const ROLE = { coat: fur(), bib: fur(), paw: fur(), face: fur(), blaze: fur(), ear: fur(), tail: fur(), tip: fur() };
 const pink = new THREE.MeshStandardMaterial({ color: 0xd99a9a, roughness: 0.6 });
@@ -55,12 +87,14 @@ function limb(material, r, len, x, y, z) {
 function buildCat() {
   const cat = new THREE.Group();
 
-  // body + haunches + bib
+  // body + haunches + bib (in a torso group the breed can widen)
+  const torso = new THREE.Group();
   const body = blob(ROLE.coat, 0.11, 0.17, 0.13, 0, 0.17, -0.01);
   body.rotation.x = -0.25;
-  cat.add(body);
-  cat.add(blob(ROLE.coat, 0.075, 0.075, 0.11, 0.07, 0.075, -0.03), blob(ROLE.coat, 0.075, 0.075, 0.11, -0.07, 0.075, -0.03));
-  cat.add(blob(ROLE.bib, 0.07, 0.12, 0.05, 0, 0.19, 0.085));
+  torso.add(body);
+  torso.add(blob(ROLE.coat, 0.075, 0.075, 0.11, 0.07, 0.075, -0.03), blob(ROLE.coat, 0.075, 0.075, 0.11, -0.07, 0.075, -0.03));
+  torso.add(blob(ROLE.bib, 0.07, 0.12, 0.05, 0, 0.19, 0.085));
+  cat.add(torso);
   // hind paws
   cat.add(blob(ROLE.paw, 0.035, 0.02, 0.055, 0.075, 0.015, 0.05), blob(ROLE.paw, 0.035, 0.02, 0.055, -0.075, 0.015, 0.05));
 
@@ -78,16 +112,18 @@ function buildCat() {
   const head = new THREE.Group();
   head.position.set(0, 0.325, 0.05);
   head.add(blob(ROLE.coat, 0.072, 0.064, 0.068, 0, 0, 0));
-  head.add(blob(ROLE.face, 0.042, 0.032, 0.035, 0, -0.022, 0.05));          // muzzle
+  const muzzle = blob(ROLE.face, 0.042, 0.032, 0.035, 0, -0.022, 0.05);
+  head.add(muzzle);
   head.add(blob(pink, 0.009, 0.007, 0.006, 0, -0.008, 0.083));           // nose
   head.add(blob(ROLE.blaze, 0.016, 0.03, 0.01, 0, 0.03, 0.058));              // blaze
-  const eyes = [];
+  const eyes = [], ears = [];
   for (const s of [-1, 1]) {
     const ear = new THREE.Mesh(new THREE.ConeGeometry(0.03, 0.055, 4), ROLE.ear);
     ear.position.set(s * 0.042, 0.063, -0.005);
     ear.rotation.set(-0.15, Math.PI / 4, s * -0.3);
     ear.castShadow = true;
     head.add(ear);
+    ears.push(ear);
     // eyes on a lid pivot so they can close (scale y → 0) while being petted
     const eye = new THREE.Group();
     eye.position.set(s * 0.028, 0.012, 0.06);
@@ -105,7 +141,8 @@ function buildCat() {
   const pts = [[0, 0.04, -0.13], [0.09, 0.025, -0.12], [0.14, 0.02, -0.02], [0.12, 0.02, 0.08], [0.06, 0.02, 0.13]]
     .map(([x, y, z]) => new THREE.Vector3(x, y, z));
   const tailGroup = new THREE.Group();
-  const tail = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 24, 0.017, 8), ROLE.tail);
+  const tailCurve = new THREE.CatmullRomCurve3(pts);
+  const tail = new THREE.Mesh(new THREE.TubeGeometry(tailCurve, 24, 0.017, 8), ROLE.tail);
   tail.castShadow = true;
   tailGroup.add(tail, blob(ROLE.tip, 0.02, 0.018, 0.03, 0.06, 0.02, 0.13));
   cat.add(tailGroup);
@@ -126,7 +163,22 @@ function buildCat() {
   hand.visible = false;
   cat.add(hand);
 
-  return { cat, head, shoulder, tailGroup, eyes, hand };
+  return { cat, head, shoulder, tailGroup, eyes, hand, torso, muzzle, ears, tail, tailCurve };
+}
+
+/** Shape the cat for a breed (see BREEDS). */
+function applyBreed(p, b) {
+  const size = b.size ?? 1, fluff = b.fluff ?? 1;
+  p.cat.scale.setScalar(size);
+  p.hand.scale.setScalar(1 / size); // the visitor's hand stays the same size
+  p.torso.scale.set(fluff, 1, fluff);
+  p.head.scale.setScalar(b.head ?? 1);
+  for (const e of p.ears) e.scale.setScalar(b.ears ?? 1);
+  p.muzzle.scale.set(0.042, 0.032, 0.035 * (b.muzzle ?? 1));
+  p.muzzle.position.z = 0.05 - 0.035 * (1 - (b.muzzle ?? 1)) * 0.6;
+  p.tail.geometry.dispose();
+  p.tail.geometry = new THREE.TubeGeometry(p.tailCurve, 24, 0.017 * (b.tail ?? 1), 8);
+  for (const m of Object.values(ROLE)) m.roughness = b.name === 'sphynx' ? 0.55 : 0.8;
 }
 
 const smooth = (a, b, t) => {
@@ -153,7 +205,8 @@ export class CatSpawner {
     this.world = world;
     this.rand = rand;
     this.chance = { appear: CHANCE_APPEAR, steal: CHANCE_STEAL, vanish: CHANCE_VANISH };
-    const { cat, head, shoulder, tailGroup, eyes, hand } = buildCat();
+    this.parts = buildCat();
+    const { cat, head, shoulder, tailGroup, eyes, hand } = this.parts;
     Object.assign(this, { object: cat, head, shoulder, tailGroup, eyes, hand });
     // look at the cat + E pets it (main.js treats this like a door target)
     this.interact = { name: 'katten', kind: 'cat', verb: 'klappa', pickable: cat };
@@ -164,8 +217,7 @@ export class CatSpawner {
     this.onFound = null;      // (variant) => {} when a new cat turns up
     this.onPet = null;        // () => {} when a pat starts
     cat.visible = false;
-    this.variant = VARIANTS[0];
-    applyVariant(this.variant);
+    this.setCat(BREEDS[0], VARIANTS[0]);
     this.nextMeow = 0;
     this.door = null;          // door the cat was found behind
     this.closedSince = false;  // that door has been closed since the cat appeared
@@ -173,6 +225,13 @@ export class CatSpawner {
   }
 
   get visible() { return this.object.visible; }
+
+  setCat(breed, coat) {
+    this.breed = breed;
+    this.variant = coat;
+    applyVariant(coat);
+    applyBreed(this.parts, breed);
+  }
 
   /** Call when the player opens `door` from `from` (player position). */
   onOpen(door, from) {
@@ -206,7 +265,7 @@ export class CatSpawner {
     if (!this.petting) {
       this.petPhase = 0;
       this.onPet?.();
-      sfx.purr({ x: p.x, y: p.y + 0.3, z: p.z }, PET_TIME, this.variant.pitch);
+      sfx.purr({ x: p.x, y: p.y + 0.3, z: p.z }, PET_TIME, this.variant.pitch * (this.breed.pitch ?? 1));
     }
     this.petT = PET_TIME;
     this.petFrom = { x: from.x, z: from.z };
@@ -224,9 +283,9 @@ export class CatSpawner {
     if (!spot) return;
     // a cat turning up from nowhere is a new cat; one that just moved keeps its coat
     if (!this.visible) {
-      this.variant = VARIANTS[Math.floor(this.rand() * VARIANTS.length)];
-      applyVariant(this.variant);
-      this.onFound?.(this.variant);
+      const { breed, coat } = pickCat(this.rand);
+      this.setCat(breed, coat);
+      this.onFound?.(catLabel(breed, coat), !!breed.rare);
     }
     this.stopPetting();
     this.nextMeow = 0.4 + this.rand() * 0.8;
@@ -287,7 +346,7 @@ export class CatSpawner {
     this.nextMeow -= dt;
     if (this.nextMeow <= 0) {
       const p = this.object.position;
-      sfx.meow({ x: p.x, y: p.y + 0.3, z: p.z }, this.variant.pitch * (0.92 + this.rand() * 0.16));
+      sfx.meow({ x: p.x, y: p.y + 0.3, z: p.z }, this.variant.pitch * (this.breed.pitch ?? 1) * (0.92 + this.rand() * 0.16));
       this.nextMeow = 8 + this.rand() * 14;
     }
     // washing cycle: lift paw, lick it a few times, wipe over the face, lower, pause

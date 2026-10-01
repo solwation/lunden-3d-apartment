@@ -4,7 +4,7 @@ import { buildWorld } from './world.js';
 import { Player } from './player.js';
 import { setupTouch } from './touch.js';
 import { watchForUpdates } from './version.js';
-import { CatSpawner, VARIANTS, applyVariant } from './cat.js';
+import { CatSpawner, VARIANTS, BREEDS } from './cat.js';
 import { initAudio, sfx, toggleMuted, isMuted, updateListener } from './audio.js';
 import { stairHeight } from './stairs.js';
 import { loadChangelog, renderChangelog, buildNote } from './changelog.js';
@@ -77,7 +77,7 @@ document.getElementById('note-close').addEventListener('click', () => showNote(f
 const player = new Player(world, camera);
 const cat = new CatSpawner(world);
 scene.add(cat.object);
-cat.onFound = (v) => catFound(v.name);
+cat.onFound = (label, rare) => catFound(label, rare);
 cat.onPet = () => bump('petted');
 
 /** Open/close a door (with sound); the cat may turn up (or leave) behind doors you open. */
@@ -135,7 +135,10 @@ if (params.has('cat')) {
   cat.object.position.set(x, y, z);
   cat.object.rotation.y = THREE.MathUtils.degToRad(yaw);
   cat.object.visible = true;
-  if (params.has('catv')) applyVariant(VARIANTS[Number(params.get('catv'))]);
+  // &catb=i breed, &catv=i coat (of that breed, or of all coats for a huskatt)
+  const breed = BREEDS[Number(params.get('catb') ?? 0)];
+  const coats = breed.name === 'huskatt' ? VARIANTS : breed.coats;
+  cat.setCat(breed, coats[Number(params.get('catv') ?? 0) % coats.length]);
   cat.t = Number(params.get('catt') ?? 1.5);
   cat.nextMeow = 1e9;
   cat.update(0);

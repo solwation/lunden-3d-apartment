@@ -3,7 +3,7 @@
 const KEY = 'lunden.stats';
 const SHOW_KEY = 'lunden.statsShown';
 
-const fresh = () => ({ cats: 0, byVariant: {}, petted: 0, doors: 0, lids: 0, steps: 0, metres: 0, stairs: 0, seconds: 0, visited: {} });
+const fresh = () => ({ cats: 0, rare: 0, byVariant: {}, petted: 0, doors: 0, lids: 0, steps: 0, metres: 0, stairs: 0, seconds: 0, visited: {} });
 
 function load() {
   try {
@@ -21,8 +21,9 @@ export function bump(key, n = 1) {
   dirty = true;
 }
 
-export function catFound(variantName) {
+export function catFound(variantName, rare = false) {
   stats.cats += 1;
+  if (rare) stats.rare += 1;
   stats.byVariant[variantName] = (stats.byVariant[variantName] ?? 0) + 1;
   dirty = true;
 }
@@ -69,6 +70,7 @@ export function statRows() {
     .map(([name, n]) => `${name} ${n}`).join(', ');
   return [
     ['🐈 Katter hittade', `${stats.cats}`, kinds],
+    ['✨ Ovanliga katter', `${stats.rare}`],
     ['✋ Klappade katter', `${stats.petted}`],
     ['🚪 Dörrar öppnade', `${stats.doors}`],
     ['🚽 Toalettlock', `${stats.lids}`],
