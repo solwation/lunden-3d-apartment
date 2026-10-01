@@ -71,6 +71,9 @@
     #stats b { font-variant-numeric: tabular-nums; }
     #stats small { flex-basis: 100%; opacity: .7; font-size: 11px; line-height: 1.2; margin: -2px 0 2px 20px; }
     body.touch #stats { top: 60px; }
+    #minimap { position: fixed; left: 16px; bottom: 56px; width: 92px; height: auto; image-rendering: pixelated; border-radius: 6px; background: rgba(20, 35, 45, 0.25); pointer-events: none; }
+    #minimap[hidden] { display: none; }
+    body.touch #minimap { left: auto; right: 16px; bottom: auto; top: 72px; }
     #stats-btn { position: fixed; right: 124px; top: 16px; width: 44px; height: 44px; border: 0; border-radius: 50%; background: var(--panel); font-size: 18px; }
     .linkish { border: 0; background: none; color: #6a7c84; font: 13px system-ui, sans-serif; text-decoration: underline; cursor: pointer; padding: 0; margin-top: 12px; }
     #update-close { background: transparent; color: #fff; padding: 8px 10px !important; font-size: 18px !important; }
@@ -95,7 +98,7 @@
         <span><kbd>←</kbd> <kbd>→</kbd></span><span>vrid (om pekplattan är spärrad medan du skriver)</span>
         <span><kbd>E</kbd></span><span>öppna/stäng dörren du tittar på, klappa katten</span>
         <span><kbd>M</kbd></span><span>ljud av/på</span>
-        <span><kbd>T</kbd></span><span>visa/dölj statistiken</span>
+        <span><kbd>T</kbd> <kbd>K</kbd></span><span>visa/dölj statistiken / kartan</span>
         <span><kbd>Esc</kbd></span><span>släpp musen</span>
       </div>
       <div class="keys touch-help">
@@ -132,6 +135,7 @@
     <div id="crosshair"></div>
     <div id="level"></div>
     <div id="stats" aria-live="off"></div>
+    <canvas id="minimap" aria-hidden="true"></canvas>
     <button id="stats-btn" class="touch-only" aria-label="Statistik">📊</button>
     <div id="prompt" hidden></div>
     <div id="stick" hidden><div class="knob"></div></div>

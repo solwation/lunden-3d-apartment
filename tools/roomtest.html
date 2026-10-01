@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Room detection test</title></head>
+<body>
+<pre id="out">running…</pre>
+<canvas id="c"></canvas>
+<script type="importmap">
+  { "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+  } }
+</script>
+<script type="module">
+// Room detection (src/rooms.js): known points must land in the right room; the canvas shows
+// the fill of both levels (one colour per room, walls/doors black) for eyeballing.
+//   google-chrome --headless=new --dump-dom http://localhost:8137/tools/roomtest.html
+import { buildWorld } from '../src/world.js';
+const out = document.getElementById('out');
+const plan = await fetch('../data/plan.json').then((r) => r.json());
+const world = buildWorld(plan);
+const expect = [
+  [0, 1.2, 1.2, 'Hall'], [0, 1.1, 4.1, 'Tvätt'], [0, 1.0, 6.0, 'Badrum'], [0, 4.0, 2.6, 'Kök / matplats'],
+  [0, 4.4, 6.3, 'Klk'], [0, 1.6, 2.6, 'Hall'], [0, 2.7, 5.5, 'Hall'], [0, 2.5, 4.4, 'Kök / matplats'], [0, 2.0, 10.0, 'Vardagsrum'], [0, 4.5, 11.0, 'Vardagsrum'],
+  [1, 0.8, 2.3, 'Sovrum 3'], [1, 3.5, 2.3, 'Sovrum 1'], [1, 4.4, 4.7, 'Klk'], [1, 2.3, 6.3, 'Hall'],
+  [1, 1.0, 9.6, 'Sovrum 4'], [1, 3.5, 9.6, 'Sovrum 2'], [1, 0.8, 6.6, 'WC/dusch'],
+  [0, 2.0, -1.0, null], [0, 2.5, 14.0, null],
+];
+let pass = true;
+const lines = expect.map(([l, x, z, name]) => {
+  const got = world.roomAt(l, x, z);
+  const ok = got === name;
+  pass &&= ok;
+  return `${ok ? 'PASS' : 'FAIL'} level ${l} (${x}, ${z}) → ${got} (want ${name})`;
+});
+out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
+const c = document.getElementById('c'), g = c.getContext('2d');
+const maps = world.roomMaps, s = 2;
+c.width = maps[0].nx * s * 2 + 20; c.height = maps[0].nz * s;
+maps.forEach((m, li) => {
+  for (let k = 0; k < m.nz; k++) for (let i = 0; i < m.nx; i++) {
+    const o = m.owner[k * m.nx + i];
+    g.fillStyle = m.blocked[k * m.nx + i] ? '#000' : o < 0 ? '#fff' : `hsl(${o * 67 % 360},60%,70%)`;
+    g.fillRect(li * (m.nx * s + 20) + i * s, k * s, s, s);
+  }
+});
+</script>
+</body>
+</html>

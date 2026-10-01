@@ -3,7 +3,7 @@
 const KEY = 'lunden.stats';
 const SHOW_KEY = 'lunden.statsShown';
 
-const fresh = () => ({ cats: 0, byVariant: {}, petted: 0, doors: 0, lids: 0, steps: 0, metres: 0, stairs: 0, seconds: 0 });
+const fresh = () => ({ cats: 0, byVariant: {}, petted: 0, doors: 0, lids: 0, steps: 0, metres: 0, stairs: 0, seconds: 0, visited: {} });
 
 function load() {
   try {
@@ -24,6 +24,16 @@ export function bump(key, n = 1) {
 export function catFound(variantName) {
   stats.cats += 1;
   stats.byVariant[variantName] = (stats.byVariant[variantName] ?? 0) + 1;
+  dirty = true;
+}
+
+let roomTotal = 0;
+export const setRoomTotal = (n) => { roomTotal = n; };
+
+/** The visitor is in `key` (e.g. "1:Sovrum 2"); counts each room once. */
+export function visitRoom(key) {
+  if (stats.visited[key]) return;
+  stats.visited[key] = true;
   dirty = true;
 }
 
@@ -64,6 +74,7 @@ export function statRows() {
     ['🚽 Toalettlock', `${stats.lids}`],
     ['👣 Steg', `${stats.steps}`, `${Math.round(stats.metres)} m`],
     ['🪜 Trappturer', `${stats.stairs}`],
+    ['🏠 Rum besökta', `${Object.keys(stats.visited).length}${roomTotal ? ` av ${roomTotal}` : ''}`],
     ['⏱ Tid i lägenheten', fmtTime(stats.seconds)],
   ];
 }

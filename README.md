@@ -16,7 +16,7 @@ Gå runt i lägenheten L1007 (Kv. Lunden, Peab) i webbläsaren som i ett FPS-spe
 | <kbd>←</kbd> <kbd>→</kbd> | vrid |
 | <kbd>E</kbd> | öppna/stäng dörren du tittar på, klappa katten, läsa lappen |
 | <kbd>M</kbd> | ljud av/på |
-| <kbd>T</kbd> | visa/dölj statistiken |
+| <kbd>T</kbd> / <kbd>K</kbd> | visa/dölj statistiken / minikartan |
 | <kbd>Esc</kbd> | släpp musen |
 
 **Touch (mobil, surfplatta, Surface):** välj *Touch* på startskärmen. Vänster tumme är en joystick

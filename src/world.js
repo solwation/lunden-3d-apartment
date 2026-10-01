@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import {
   LEVELS, SOFFITS, DOOR_HEIGHT, EXT_DOOR_HEAD, WINDOWS, CABINET_HEIGHT, BASE_CABINET, SHELF_HEIGHT, TOILET,
-  STAIR, COLORS, FENCE_HEIGHT, FINISH, OPTIONS, EXTRA_WALLS, ROOM_RENAMES,
+  STAIR, COLORS, FENCE_HEIGHT, FINISH, OPTIONS, EXTRA_WALLS, ROOM_RENAMES, EXTRA_ROOMS, ROOM_DIVIDERS,
 } from './config.js';
 import { buildStairs } from './stairs.js';
 import { SwingDoor, SlidingDoor, wardrobeDoors } from './doors.js';
@@ -9,6 +9,7 @@ import { buildExterior } from './exterior.js';
 import { buildFurniture } from './furniture.js';
 import { buildInterior } from './interior.js';
 import { Toilet } from './toilet.js';
+import { RoomMap } from './rooms.js';
 
 const mat = (color, extra = {}) => new THREE.MeshStandardMaterial({ color, roughness: 0.85, ...extra });
 
@@ -158,6 +159,8 @@ function polySegments(pts) {
   });
 }
 
+const gapRect = (g) => (g.axis === 'x' ? { x0: g.lo, x1: g.hi, z0: g.p0, z1: g.p1 } : { x0: g.p0, x1: g.p1, z0: g.lo, z1: g.hi });
+
 const insideRect = (f, r) => f.x0 >= r.x0 - 0.01 && f.x1 <= r.x1 + 0.01 && f.z0 >= r.z0 - 0.01 && f.z1 <= r.z1 + 0.01;
 
 /** Hollow wardrobe (carcass, hat shelf, rod) + two sliding doors on the open side. */
@@ -283,6 +286,7 @@ function buildLevel(floor, li, group) {
   // closed (several open leaves block the passage by the stair, e.g. Badrum and Klk).
   // Exterior doors are glazed-transom doors like the windows.
   const doors = [];
+  const barriers = [...wallBoxes, ...floor.windows]; // closed off for room detection (rooms.js)
   const lids = []; // toilet lids (E opens/closes them, see toilet.js)
   for (const d of floor.doors) {
     const [hx, hz] = d.hinge, [tx, tz] = d.tip, [wx, wz] = d.wall;
@@ -295,6 +299,7 @@ function buildLevel(floor, li, group) {
     const exterior = tz < 0 || tz > D;
     const head = y0 + (exterior ? EXT_DOOR_HEAD : DOOR_HEIGHT);
     if (gap) group.add(gapBox(gap, head, yC, M.wall));
+    if (gap) barriers.push(gapRect(gap));
     if (d.optional && !OPTIONS.allrumDoor) continue; // Peab tillval (dashed door), see OPTIONS
 
     // Stretch the leaf to the full gap (the plan's swing is the nominal leaf width).
@@ -328,6 +333,7 @@ function buildLevel(floor, li, group) {
     const gap = findGap(wallBoxes, axis, c, a + 0.02, b - 0.02);
     if (!gap) continue;
     group.add(gapBox(gap, y0 + DOOR_HEIGHT, yC, M.wall));
+    barriers.push(gapRect(gap));
     // Slide towards the side with enough wall to park the panel (the plan arrow alone sent
     // the Tvätt door through the 19 cm wall stub into the hall). Arrow decides only if both fit.
     const along = axis === 'x' ? ['x0', 'x1'] : ['z0', 'z1'];
@@ -440,7 +446,7 @@ function buildLevel(floor, li, group) {
     group.add(box(s.x0, s.x1, s.z0, s.z1, y0 + s.height, yC - 0.004, M.ceiling, { shadow: false }));
   }
 
-  return { segments, doors, lids, openings, ceiling: yC };
+  return { segments, doors, lids, openings, barriers, ceiling: yC };
 }
 
 export function buildWorld(plan) {
@@ -511,15 +517,22 @@ export function buildWorld(plan) {
   );
   l0.segments.push(...outdoor);
 
+  const rooms = plan.floors.map((f, li) => [...f.rooms, ...EXTRA_ROOMS.filter((r) => r.level === li)].map((r) => {
+    const re = ROOM_RENAMES.find((x) => x.level === li && x.from === r.name && OPTIONS[x.option]);
+    return re ? { ...r, name: re.to } : r;
+  }));
+  const roomMaps = [l0, l1].map((l, li) => new RoomMap({ x: W, z: D },
+    [...l.barriers, ...ROOM_DIVIDERS.filter((d) => d.level === li)], rooms[li]));
+
   return {
     object: scene,
     size: { x: W, z: D },
     levels: [l0, l1],
     doors: [...l0.doors, ...l1.doors],
     lids: [...l0.lids, ...l1.lids],
-    rooms: plan.floors.map((f, li) => f.rooms.map((r) => {
-      const re = ROOM_RENAMES.find((x) => x.level === li && x.from === r.name && OPTIONS[x.option]);
-      return re ? { ...r, name: re.to } : r;
-    })),
+    rooms,
+    roomMaps,
+    /** Room name at a plan point on a level (null outside the house). */
+    roomAt: (level, x, z) => roomMaps[level]?.at(x, z) ?? null,
   };
 }

@@ -50,6 +50,8 @@ src/interior.js        fitted kitchen, laundry, bathroom fittings, tiled floors/
 material/              screenshots of our choices in Peab's option portal (local, see below)
 src/audio.js           synthesised positional sound effects (Web Audio): doors, slides, meow, steps
 src/toilet.js          toilet (Ifö Spira 6260) with an animated lid
+src/rooms.js           room detection: walls + door gaps rasterised, BFS from the room labels
+src/minimap.js         plan view with the visitor's arrow, current room highlighted (K toggles)
 src/stats.js           visitor statistics (localStorage) + the translucent HUD panel (T toggles)
 src/changelog.js       changelog list (start screen) + the note on the freezer (E to read)
 data/plan.json         GENERATED — do not edit by hand
@@ -58,6 +60,7 @@ tools/extract_plan.py  PDF → data/plan.json (stdlib only)
 tools/walktest.html    headless movement test
 tools/touchtest.html   headless touch-input test (synthetic pointer events)
 tools/cattest.html     headless test of cat placement behind every door/wardrobe
+tools/roomtest.html    headless test of room detection at known points (+ a picture of the fill)
 tools/pettest.html     headless test of petting the cat (eyes, hand, stats counter)
 tools/notetest.html    headless test of the changelog note ("Nytt", read/close, no walking)
 tools/stamp.sh         build the published site with a version stamp (used by CI)
@@ -177,6 +180,8 @@ screenshots into the session scratchpad, not the repo.
 - Look at a visible cat + E pets it: purring (`sfx.purr`), eyes shut, head rubs the visitor's hand
   (`PET_TIME` in cat.js). Raycasts ignore visibility, so main.js only adds the cat as a target
   while it is visible. Tests must call `updateMatrixWorld` on objects they move (no render runs).
+- Room detection: labels come from the PDF plus `EXTRA_ROOMS` (WC/dusch upstairs, the passage by
+  the stair = Hall); `ROOM_DIVIDERS` split open-plan areas (hall | kitchen | passage | living room).
 - Statistics (`src/stats.js`): cats found per coat, cats petted, doors, toilet lids, steps/metres,
   stair trips, time inside; reset on the start screen.
 - Sounds are synthesised (no audio files) and positional; the AudioContext is started by the

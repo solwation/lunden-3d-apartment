@@ -34,6 +34,18 @@ export const EXTRA_WALLS = [
   { level: 1, option: 'allrumDoor', x0: 1.54, x1: 1.77, z0: 7.6, z1: 7.8 },
 ];
 export const ROOM_RENAMES = [{ level: 1, from: 'Allrum', to: 'Sovrum 4', option: 'allrumDoor' }];
+// Room labels the extractor doesn't find in the PDF (used for room detection / minimap).
+export const EXTRA_ROOMS = [
+  { level: 1, name: 'WC/dusch', x: 0.8, z: 6.4 },
+  { level: 0, name: 'Hall', x: 2.75, z: 6.2 }, // the passage by the stair (no label in the plan)
+];
+// Invisible dividers for room detection where rooms are open to each other (plan rectangles):
+// hall | kitchen in line with the hall wall, kitchen | passage, passage | living room.
+export const ROOM_DIVIDERS = [
+  { level: 0, x0: 2.06, x1: 2.15, z0: 1.76, z1: 3.05 },
+  { level: 0, x0: 2.15, x1: 3.45, z0: 4.86, z1: 4.9 },
+  { level: 0, x0: 2.15, x1: 3.25, z0: 7.6, z1: 7.8 },
+];
 
 export const DOOR_HEIGHT = 2.1;
 // Exterior doors have a glazed transom (överljus) above the leaf, like the windows

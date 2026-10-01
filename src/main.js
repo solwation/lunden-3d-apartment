@@ -8,7 +8,8 @@ import { CatSpawner, VARIANTS, applyVariant } from './cat.js';
 import { initAudio, sfx, toggleMuted, isMuted, updateListener } from './audio.js';
 import { stairHeight } from './stairs.js';
 import { loadChangelog, renderChangelog, buildNote } from './changelog.js';
-import { bump, catFound, renderStats, resetStats, statsShown, setStatsShown } from './stats.js';
+import { bump, catFound, renderStats, resetStats, statsShown, setStatsShown, visitRoom, setRoomTotal } from './stats.js';
+import { Minimap } from './minimap.js';
 
 const overlay = document.getElementById('overlay');
 const hud = document.getElementById('hud');
@@ -216,6 +217,7 @@ document.addEventListener('keydown', (e) => {
   if (e.code === 'KeyE' && focused) use(focused);
   if (e.code === 'KeyM') updateMute(toggleMuted());
   if (e.code === 'KeyT') toggleStats();
+  if (e.code === 'KeyK') toggleMap();
   if (e.code.startsWith('Arrow')) e.preventDefault();
 });
 document.addEventListener('keyup', (e) => player.keys.delete(e.code));
@@ -265,7 +267,15 @@ setInterval(() => { if (!statsEl.hidden) renderStats(statsEl); }, 250);
 
 // --- loop ----------------------------------------------------------------
 const clock = new THREE.Clock();
-let lastLevel = -1;
+let lastLevel = -1, lastRoom = null, mapTimer = 0;
+const mapEl = document.getElementById('minimap');
+const minimap = new Minimap(mapEl, world.roomMaps);
+setRoomTotal(world.roomMaps.reduce((n, m) => n + new Set(m.rooms.map((r) => r.name)).size, 0));
+function toggleMap(show = mapEl.hidden) {
+  mapEl.hidden = !show;
+  try { localStorage.setItem('lunden.mapShown', show ? '1' : '0'); } catch { /* ignore */ }
+}
+try { toggleMap(localStorage.getItem('lunden.mapShown') !== '0'); } catch { /* ignore */ }
 function step(dt) {
   for (const d of world.doors) d.update(dt);
   for (const l of world.lids) l.update(dt);
@@ -280,10 +290,20 @@ function step(dt) {
   }
   const outside = player.pos.x <= 0 || player.pos.x >= world.size.x || player.pos.z <= 0 || player.pos.z >= world.size.z;
   const lvl = outside ? -1 : player.level;
+  const room = lvl < 0 ? null : world.roomAt(lvl, player.pos.x, player.pos.z);
+  if (room && active()) visitRoom(`${lvl}:${room}`);
+  if (room !== lastRoom && room) lastRoom = room; // keep the last name while inside a doorway
+  mapTimer -= dt;
+  if (mapTimer <= 0 && !mapEl.hidden) {
+    mapTimer = 0.1;
+    minimap.draw(lvl, lastRoom, player.pos.x, player.pos.z, camera.rotation.y);
+  }
   if (active() && !outside) bump('seconds', dt);
   if (lvl !== lastLevel && lvl >= 0 && lastLevel >= 0) bump('stairs');
-  if (lvl !== lastLevel) {
-    levelEl.textContent = lvl < 0 ? 'Utomhus' : LEVELS[lvl].name;
+  if (lvl < 0) lastRoom = null;
+  const label = lvl < 0 ? 'Utomhus' : `${LEVELS[lvl].name}${lastRoom ? ` · ${lastRoom}` : ''}`;
+  if (lvl !== lastLevel || label !== levelEl.textContent) {
+    levelEl.textContent = label;
     lastLevel = lvl;
   }
 }
