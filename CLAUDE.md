@@ -41,6 +41,7 @@ src/touch.js           on-screen joystick (left) + drag-to-look (right), multi-t
 src/main.js            renderer, lights, input modes, door raycast prompt/button, loop (step)
 src/version.js         BUILD stamp + polling for a newer published version
 src/cat.js             the cat: random coat, washing animation, appears/moves/vanishes behind doors
+src/furniture.js       loose furniture from FURNITURE in config (IKEA LANDSKRONA sofa/armchair …)
 src/audio.js           synthesised positional sound effects (Web Audio): doors, slides, meow, steps
 data/plan.json         GENERATED — do not edit by hand
 tools/extract_plan.py  PDF → data/plan.json (stdlib only)
@@ -85,6 +86,12 @@ North = −z (the bedrooms Sovrum 1/3 face north).
 - Doors: Badrum and Klk on Entréplan swing into the passage by the stair, so all swing doors
   start closed. The dashed door to Allrum is an optional extra (tillval) and is not built.
   Wardrobes (G) are hollow with two sliding fronts on separate tracks (one open at a time).
+- Sliding doors run towards the side with enough wall to park the panel (the plan arrows
+  are not reliable — the Tvätt arrow pointed through a 19 cm wall stub into the hall).
+- Vardagsrum furniture (wanted by the user): IKEA LANDSKRONA 3-sits + schäslong, Gunnared
+  ljusgrön, back to the window, chaise in the SE corner; matching armchair + footstool in
+  the NW corner with a floor lamp and a side table with a small flower. Dimensions in
+  `LANDSKRONA` (config) — the chaise/armchair/footstool numbers are series estimates.
 - Toilets: the redrawn plan has them rotated; bofakta shows the tank against the wall, so
   `toiletAgainstWall` re-orients them. Fixture sizes are being reviewed (#14).
 - More info: https://peabbostad.se/projekt/skane/kv.-lunden/l1007/

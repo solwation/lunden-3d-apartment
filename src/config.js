@@ -112,3 +112,28 @@ export const COLORS = {
   street: 0x9b9a95,
   balcony: 0x8fa396, // pinnaräcke grågrön (brochure)
 };
+
+// Furniture (issue #8). IKEA LANDSKRONA, Gunnared ljusgrön, oak legs.
+// 3-sits: 204 × 89 × 78 cm, seat height 44, seat depth 61, armrest height 64 (ikea.com).
+// With schäslong 282 cm wide, chaise 158 cm deep; armchair 89 × 89; footstool ~92 × 53 × 44
+// (series dimensions, not on the product page — estimates).
+export const LANDSKRONA = {
+  fabric: 0xa7b39a, // Gunnared ljusgrön
+  oak: 0xc9a67a,
+  height: 0.78, seatHeight: 0.44, seatDepth: 0.61, armHeight: 0.64, armWidth: 0.12,
+  depth: 0.89, legHeight: 0.15,
+  sofaWidth: 2.82, chaiseWidth: 0.9, chaiseDepth: 1.58,
+  chairWidth: 0.89, stool: { w: 0.92, d: 0.53, h: 0.44 },
+};
+
+// Placement in plan metres. rot = direction the seat faces, degrees (0 = north/−z,
+// 90 = west, 180 = south, −90 = east), same convention as the ?at= camera yaw.
+export const FURNITURE = [
+  // Vardagsrum: sofa with its back to the window (south wall), chaise in the SE corner
+  { type: 'sofa', level: 0, x: 5.5 - 2.82 / 2, z: 12.15 - 0.89 / 2, rot: 0, chaise: 'right' }, // sitter's right = east
+  // armchair + footstool in the opposite (NW) corner, turned towards the room
+  { type: 'armchair', level: 0, x: 0.78, z: 8.38, rot: -135 },
+  { type: 'footstool', level: 0, x: 1.33, z: 8.93, rot: -135 },
+  { type: 'floorlamp', level: 0, x: 0.42, z: 8.02 },
+  { type: 'sidetable', level: 0, x: 1.52, z: 8.12, flower: true },
+];

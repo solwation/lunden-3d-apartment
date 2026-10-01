@@ -6,6 +6,7 @@ import {
 import { buildStairs } from './stairs.js';
 import { SwingDoor, SlidingDoor, wardrobeDoors } from './doors.js';
 import { buildExterior } from './exterior.js';
+import { buildFurniture } from './furniture.js';
 
 const mat = (color, extra = {}) => new THREE.MeshStandardMaterial({ color, roughness: 0.85, ...extra });
 
@@ -313,7 +314,30 @@ function buildLevel(floor, li, group) {
     const gap = findGap(wallBoxes, axis, c, a + 0.02, b - 0.02);
     if (!gap) continue;
     group.add(gapBox(gap, y0 + DOOR_HEIGHT, yC, M.wall));
-    const door = new SlidingDoor(gap, s.arrow, y0, M.door, false);
+    // Slide towards the side with enough wall to park the panel (the plan arrow alone sent
+    // the Tvätt door through the 19 cm wall stub into the hall). Arrow decides only if both fit.
+    const along = axis === 'x' ? ['x0', 'x1'] : ['z0', 'z1'];
+    const perp = axis === 'x' ? ['z0', 'z1'] : ['x0', 'x1'];
+    const onLine = wallBoxes.filter((w) => w[perp[0]] - 0.02 <= c && w[perp[1]] + 0.02 >= c);
+    const wallLen = (end, dir) => {
+      // contiguous wall from the gap end outwards
+      let pos = end, len = 0;
+      for (;;) {
+        const w = onLine.find((w) => (dir > 0 ? Math.abs(w[along[0]] - pos) < 0.03 : Math.abs(w[along[1]] - pos) < 0.03));
+        if (!w) return len;
+        len += w[along[1]] - w[along[0]];
+        pos = dir > 0 ? w[along[1]] : w[along[0]];
+        if (len > 5) return len;
+      }
+    };
+    const need = gap.hi - gap.lo;
+    const room = { [-1]: wallLen(gap.lo, -1), [1]: wallLen(gap.hi, 1) };
+    let dir = s.arrow ? Math.sign(axis === 'x' ? s.arrow.head[0] - s.arrow.tail[0] : s.arrow.head[1] - s.arrow.tail[1]) || 1 : 1;
+    if (room[dir] < need * 0.9 && room[-dir] > room[dir]) dir = -dir;
+    // don't run past the first wall piece (e.g. into the exterior wall)
+    const first = onLine.find((w) => (dir > 0 ? Math.abs(w[along[0]] - gap.hi) < 0.03 : Math.abs(w[along[1]] - gap.lo) < 0.03));
+    const travel = first ? first[along[1]] - first[along[0]] - 0.02 : undefined;
+    const door = new SlidingDoor(gap, s.arrow, y0, M.door, false, dir, travel);
     door.name = 'skjutdörren';
     group.add(door.object);
     doors.push(door);
@@ -436,6 +460,12 @@ export function buildWorld(plan) {
     }
   }
   l1.segments.push(...railSegs);
+
+  // Loose furniture (IKEA LANDSKRONA etc., see FURNITURE in config)
+  const furniture = buildFurniture();
+  scene.add(furniture.object);
+  l0.segments.push(...furniture.segments[0]);
+  l1.segments.push(...furniture.segments[1]);
 
   // Site: ground, patio, hedge, fences
   const site = lower.site;

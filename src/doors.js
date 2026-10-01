@@ -137,16 +137,16 @@ class Slider {
   }
 }
 
-/** Sliding door in a wall gap: runs on the face the plan arrow is drawn on, in its direction. */
+/** Sliding door in a wall gap: runs on the face the plan arrow is drawn on, sliding `slideDir`. */
 export class SlidingDoor extends Slider {
-  constructor(gap, arrow, y0, material, open) {
+  constructor(gap, arrow, y0, material, open, slideDir, maxTravel = Infinity) {
     const along = gap.axis === 'x';
     const len = gap.hi - gap.lo + 0.06;
     const c = (gap.p0 + gap.p1) / 2;
     const arrowPerp = arrow ? (along ? arrow.head[1] : arrow.head[0]) : c + 1;
-    const dir = arrow
+    const dir = slideDir ?? (arrow
       ? Math.sign(along ? arrow.head[0] - arrow.tail[0] : arrow.head[1] - arrow.tail[1]) || 1
-      : 1;
+      : 1);
     const mid = (gap.lo + gap.hi) / 2;
     super({
       along, len, material, open,
@@ -154,7 +154,7 @@ export class SlidingDoor extends Slider {
       y: y0 + DOOR_HEIGHT / 2,
       height: DOOR_HEIGHT - 0.02,
       closedPos: mid,
-      openPos: mid + dir * (len - 0.1),
+      openPos: mid + dir * Math.min(len - 0.1, maxTravel),
     });
     this.kind = 'sliding';
   }
