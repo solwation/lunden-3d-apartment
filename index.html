@@ -52,6 +52,19 @@
     #update small { display: block; opacity: .75; font-size: 12px; margin-top: 2px; }
     #update button { white-space: nowrap; flex: none; border: 0; border-radius: 6px; font: 600 14px system-ui, sans-serif; cursor: pointer; padding: 8px 14px; }
     #update-reload { background: #fff; color: var(--ink); }
+    .changes h2 { font-size: 14px; margin: 16px 0 6px; }
+    .changes ul, #note ul { list-style: none; padding: 0; margin: 0; font-size: 14px; line-height: 1.4; }
+    .changes li, #note li { margin: 0 0 6px; }
+    .changes time, #note time { color: #6a7c84; font-size: 12px; }
+    .changes .hint { font-size: 13px; color: #6a7c84; margin: 6px 0 0; }
+    .new { background: #d23a2a; color: #fff; font-size: 11px; font-weight: 700; padding: 1px 6px; border-radius: 8px; vertical-align: 1px; }
+    #note { position: fixed; inset: 0; z-index: 5; display: grid; place-items: center; background: rgba(20, 35, 45, 0.35); }
+    #note[hidden] { display: none; }
+    #note .paper { position: relative; width: min(460px, calc(100vw - 32px)); max-height: calc(100vh - 48px); overflow: auto; box-sizing: border-box; padding: 26px 28px 22px; background: repeating-linear-gradient(#fffbe9 0 25px, #dfe7f3 25px 26px); color: #23324a; box-shadow: 0 14px 40px rgba(0,0,0,.35); transform: rotate(-1.2deg); border-radius: 2px; font-family: 'Segoe Print', 'Comic Sans MS', 'Comic Neue', cursive, system-ui; }
+    #note h2 { margin: 0 0 12px; font-size: 26px; }
+    #note li { font-size: 15px; }
+    #note small { display: block; margin-top: 12px; color: #6a7c84; font: 13px system-ui, sans-serif; }
+    #note-close { position: absolute; right: 10px; top: 8px; border: 0; background: transparent; font-size: 24px; color: #23324a; cursor: pointer; }
     #update-close { background: transparent; color: #fff; padding: 8px 10px !important; font-size: 18px !important; }
   </style>
   <script type="importmap">
@@ -81,6 +94,11 @@
         <span>Höger tumme</span><span>dra för att titta</span>
         <span>Knapp</span><span>öppna/stäng dörren du tittar på</span>
       </div>
+      <div class="changes" id="changes-box" hidden>
+        <h2>Senaste ändringarna</h2>
+        <ul id="changes"></ul>
+        <p class="hint">Hela listan sitter på frysen i köket — gå fram och tryck <kbd>E</kbd>.</p>
+      </div>
       <div class="start">
         <button id="start-mouse" class="go">Mus &amp; tangentbord</button>
         <button id="start-touch" class="go alt">Touch</button>
@@ -91,6 +109,14 @@
     <div>Det finns en ny version av lägenheten.<small id="update-hint">Ladda om sidan för att se den.</small></div>
     <button id="update-reload">Ladda om</button>
     <button id="update-close" aria-label="Stäng">×</button>
+  </div>
+  <div id="note" hidden role="dialog" aria-label="Ändringar">
+    <div class="paper">
+      <button id="note-close" aria-label="Stäng">×</button>
+      <h2>Ändringar</h2>
+      <ul id="note-list"></ul>
+      <small>Tryck E (eller ×) för att lägga tillbaka lappen.</small>
+    </div>
   </div>
   <div id="hud" hidden>
     <div id="crosshair"></div>

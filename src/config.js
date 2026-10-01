@@ -176,6 +176,10 @@ export const KITCHEN = {
   hob: { w: 0.58, d: 0.52 }, // Induktionshäll EH60KB6BF
 };
 
+// Changelog note (src/changelog.js) on the freezer door: its front is the plan's F cabinet
+// z0 − 4 cm (the freestanding freezer sticks out, see interior.js). rotY π = facing north.
+export const CHANGELOG_NOTE = { x: 4.38, y: 1.42, z: 4.8844 - 0.04 - 0.002, rotY: Math.PI, w: 0.16, tilt: -0.05 };
+
 // Furniture (issue #8). IKEA LANDSKRONA, Gunnared ljusgrön, oak legs.
 // 3-sits: 204 × 89 × 78 cm, seat height 44, seat depth 61, armrest height 64 (ikea.com).
 // With schäslong 282 cm wide, chaise 158 cm deep; armchair 89 × 89; footstool ~92 × 53 × 44

@@ -14,4 +14,4 @@ printf '{"version":"%s","built":"%s"}\n' "$V" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" >
 # cache-bust modules and data so a reload really fetches the new version
 sed -i -E "s#(from '\./[^']+\.js)'#\1?v=$V'#g" "$OUT"/src/*.js
 sed -i -E "s#src=\"src/main\.js\"#src=\"src/main.js?v=$V\"#" "$OUT/index.html"
-sed -i "s#'data/plan.json'#'data/plan.json?v=$V'#" "$OUT/src/main.js"
+sed -i -E "s#'(data/[^']+\.json)'#'\1?v=$V'#g" "$OUT"/src/*.js

@@ -24,6 +24,9 @@ dyker upp för att öppna och stänga dörrar.
 
 Öppna dörrar och garderober — ibland sitter det en katt där och tvättar sig. 🐈
 
+Vad som är nytt står på startskärmen och på lappen på frysen i köket (gå fram och tryck
+<kbd>E</kbd>). Det som tillkommit sedan ditt senaste besök är markerat *Nytt*.
+
 ## Köra lokalt
 
 ```

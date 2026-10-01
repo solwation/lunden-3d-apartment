@@ -15,6 +15,9 @@ in Swedish. Code, comments and this file are in English; UI text is Swedish.
   (`--remove-label in-progress`). Closing via `Fixes #N` is enough when done.
 - Verify changes in a real browser before pushing (see *Testing*). Don't claim something
   works from reading the code alone.
+- **Every user-visible change gets an entry in `data/changelog.json`** (Swedish, newest first,
+  next `id`), in the same commit. It is shown on the start screen and on the note on the freezer;
+  entries newer than the visitor's last visit are marked "Nytt".
 - Keep this file and `README.md` up to date when behaviour, structure or known facts change.
 
 ## Architecture
@@ -46,11 +49,14 @@ src/interior.js        fitted kitchen, laundry, bathroom fittings, tiled floors/
                        TILED_ROOMS in config); merged into one mesh per material
 material/              screenshots of our choices in Peab's option portal (local, see below)
 src/audio.js           synthesised positional sound effects (Web Audio): doors, slides, meow, steps
+src/changelog.js       changelog list (start screen) + the note on the freezer (E to read)
 data/plan.json         GENERATED — do not edit by hand
+data/changelog.json    what changed, for visitors (see Workflow rules)
 tools/extract_plan.py  PDF → data/plan.json (stdlib only)
 tools/walktest.html    headless movement test
 tools/touchtest.html   headless touch-input test (synthetic pointer events)
 tools/cattest.html     headless test of cat placement behind every door/wardrobe
+tools/notetest.html    headless test of the changelog note ("Nytt", read/close, no walking)
 tools/stamp.sh         build the published site with a version stamp (used by CI)
 ```
 
@@ -127,6 +133,7 @@ URL parameters (debugging / screenshots):
 - `&shot` — hide the start overlay.
 - `&open` — open every door (screenshots of open doors / wardrobes).
 - `&cat=x,z[,yawDeg[,y]]` — show the cat there; `&catv=i` coat variant, `&catt=s` animation time.
+- `&note` — open the changelog note.
 - `&clip=y` — clip everything above height y (cut-away plan view, e.g.
   `?shot&at=2.87,6.35,0,-90,16&clip=2.5` for Entréplan from above, `clip=5.6` + feet 19 for Övre plan).
 

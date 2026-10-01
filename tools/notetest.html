@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Changelog note test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+// Changelog test: pretends the last visit saw entry 1 (so the rest are "Nytt"), walks up to
+// the note on the freezer in touch mode, reads it with the action button and puts it back.
+//   google-chrome --headless=new --dump-dom http://localhost:8137/tools/notetest.html
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+localStorage.setItem('lunden.changelogSeen', '1');
+const f = document.createElement('iframe');
+f.width = 900; f.height = 600;
+f.src = '../index.html';
+document.body.append(f);
+f.onload = async () => {
+  const w = f.contentWindow, d = f.contentDocument;
+  while (!w.__app) await wait(100);
+  const { player, camera, note, step } = w.__app;
+  const lines = [];
+  const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; };
+  const total = d.querySelectorAll('#note-list li').length;
+  const fresh = d.querySelectorAll('#note-list .new').length;
+  let pass = check(total > 1 && fresh === total - 1, `"Nytt" on ${fresh} of ${total} entries since seen=1`);
+  pass &= check(localStorage.getItem('lunden.changelogSeen') !== '1', 'last seen id updated');
+  d.getElementById('start-touch').click();
+  await wait(50);
+  // stand 1 m north of the note, facing south (yaw 180), eye level with it
+  const p = note.object.position;
+  player.spawn(p.x, p.z - 1.0, Math.PI);
+  camera.rotation.x = Math.atan2(p.y - player.eyeY, 1.0);
+  for (let i = 0; i < 5; i++) step(1 / 60);
+  const btn = d.getElementById('action');
+  pass &= check(!btn.hidden && /läsa lappen/i.test(btn.textContent), `action button "${btn.textContent}"`);
+  btn.click();
+  pass &= check(!d.getElementById('note').hidden, 'note opens');
+  const before = { x: player.pos.x, z: player.pos.z };
+  w.__app.touch.analog.y = 1;
+  for (let i = 0; i < 30; i++) step(1 / 60);
+  w.__app.touch.analog.y = 0;
+  pass &= check(Math.hypot(player.pos.x - before.x, player.pos.z - before.z) < 0.01, 'no walking while reading');
+  btn.click();
+  pass &= check(d.getElementById('note').hidden, 'note closes');
+  out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
+};
+</script>
+</body>
+</html>

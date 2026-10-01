@@ -167,6 +167,12 @@ export const sfx = {
     o.start(t); vib.start(t);
     o.stop(t + dur + 0.05); vib.stop(t + dur + 0.05);
   },
+  /** Paper rustle (taking the note off the freezer). */
+  paper(pos) {
+    if (!ready()) return;
+    const t = ctx.currentTime, d = out(pos, 0.7);
+    for (let i = 0; i < 4; i++) noise(t + i * 0.05 + Math.random() * 0.03, 0.07, d, { freq: 3000 + Math.random() * 2500, q: 0.8, gain: 0.12 });
+  },
   /** A soft footstep; `surface` 'wood' | 'stair' | 'outside'. */
   step(surface = 'wood') {
     if (!ready()) return;
