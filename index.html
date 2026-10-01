@@ -81,6 +81,11 @@
     #furniture-btn { position: fixed; right: 178px; top: 16px; width: 44px; height: 44px; border: 0; border-radius: 50%; background: var(--panel); font-size: 18px; }
     #stats-btn { position: fixed; right: 124px; top: 16px; width: 44px; height: 44px; border: 0; border-radius: 50%; background: var(--panel); font-size: 18px; }
     .linkish { border: 0; background: none; color: #6a7c84; font: 13px system-ui, sans-serif; text-decoration: underline; cursor: pointer; padding: 0; margin-top: 12px; }
+    #rotate { display: none; position: fixed; inset: 0; z-index: 20; background: var(--ink); color: #fff; place-items: center; text-align: center; font-size: 18px; padding: 24px; }
+    #rotate .ico { display: inline-block; font-size: 54px; animation: tilt 2s ease-in-out infinite; }
+    @keyframes tilt { 0%, 30% { transform: rotate(0); } 60%, 100% { transform: rotate(-90deg); } }
+    /* phones/tablets held upright: ask for landscape (the lock above only works on some browsers) */
+    @media (orientation: portrait) and (pointer: coarse) and (max-width: 1100px) { #rotate { display: grid; } }
     #update-close { background: transparent; color: #fff; padding: 8px 10px !important; font-size: 18px !important; }
   </style>
   <script type="importmap">
@@ -126,6 +131,7 @@
       <button id="stats-reset" class="linkish">Nollställ statistiken</button>
     </div>
   </div>
+  <div id="rotate" role="alert"><div><span class="ico">📱</span><p>Vänd telefonen eller plattan till liggande läge.</p></div></div>
   <div id="update" hidden role="status">
     <div>Det finns en ny version av lägenheten.<small id="update-hint">Ladda om sidan för att se den.</small></div>
     <button id="update-reload">Ladda om</button>

@@ -184,7 +184,10 @@ document.getElementById('start-mouse').addEventListener('click', () => { initAud
 document.getElementById('start-touch').addEventListener('click', () => {
   initAudio();
   touch.enabled = true;
-  document.documentElement.requestFullscreen?.().catch(() => {});
+  // fullscreen first: orientation.lock only works there (Android); iOS gets the rotate hint
+  document.documentElement.requestFullscreen?.()
+    .then(() => screen.orientation?.lock?.('landscape'))
+    .catch(() => {});
   showOverlay(false);
 });
 pauseBtn.addEventListener('click', () => {
