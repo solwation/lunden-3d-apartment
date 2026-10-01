@@ -28,6 +28,8 @@ dyker upp för att öppna och stänga dörrar.
 Öppna dörrar och garderober — ibland sitter det en katt där och tvättar sig. Gå fram och tryck
 <kbd>E</kbd> så får du klappa den. 🐈 Statistiken (katter, dörrar, steg …) sparas i webbläsaren.
 
+Ett dygn går på 12 minuter — tänd lamporna med knapparna vid dörrarna när det blir mörkt.
+
 Vad som är nytt står på startskärmen och på lappen på frysen i köket (gå fram och tryck
 <kbd>E</kbd>). Det som tillkommit sedan ditt senaste besök är markerat *Nytt*.
 

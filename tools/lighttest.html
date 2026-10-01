@@ -1,30 +1,31 @@
 <!doctype html>
 <html lang="sv">
-<head><meta charset="utf-8"><title>Water test</title></head>
+<head><meta charset="utf-8"><title>Light test</title></head>
 <body>
 <pre id="out">running…</pre>
 <script>
-// Running water test: every tap/shower can be aimed at and turned on/off with the action
-// button (touch mode); the stream shows while it runs.
-//   google-chrome --headless=new --dump-dom http://localhost:8137/tools/watertest.html
+// Light switch test: every switch and floor lamp can be aimed at and toggled with the action
+// button (touch mode); the room (and its pool light) turns on.
+//   google-chrome --headless=new --dump-dom http://localhost:8137/tools/lighttest.html
 const out = document.getElementById('out');
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 const f = document.createElement('iframe');
 f.width = 900; f.height = 600;
-f.src = '../index.html';
+f.src = '../index.html?time=12&freeze';
 document.body.append(f);
 f.onload = async () => {
   const w = f.contentWindow, d = f.contentDocument;
   while (!w.__app) await wait(100);
-  const { player, camera, taps, step } = w.__app;
+  const { player, camera, lights, step } = w.__app;
+  const taps = lights.targets;
   d.getElementById('start-touch').click();
   await wait(50);
   const btn = d.getElementById('action');
   const lines = [];
-  let pass = taps.length >= 6;
-  lines.push(`${pass ? 'PASS' : 'FAIL'} ${taps.length} taps/showers`);
+  let pass = taps.length >= 14;
+  lines.push(`${pass ? 'PASS' : 'FAIL'} ${taps.length} switches/lamps`);
   for (const t of taps) {
-    t.object.updateMatrixWorld(true);
+    (t.object ?? t.pickable).updateMatrixWorld(true);
     // stand 0.7 m from the pick target, on the side facing the room, and look at it
     const target = t.pickable.getWorldPosition(t.pickable.position.clone());
     const level = target.y > 3 ? 1 : 0;
@@ -44,23 +45,15 @@ f.onload = async () => {
     step(1 / 60);
     const label = btn.textContent;
     btn.click();
-    const on = t.isOpen && t.stream.visible;
     step(1 / 60);
+    const on = t.isOpen && lights.pool.some((l) => l.intensity > 0);
     btn.click();
-    const off = !t.isOpen && !t.stream.visible;
-    const ok = /sätta på/i.test(label) && on && off;
+    step(1 / 60);
+    const off = !t.isOpen;
+    const ok = /tända/i.test(label) && on && off;
     pass &&= ok;
-    lines.push(`${ok ? 'PASS' : 'FAIL'} ${t.name} @ (${target.x.toFixed(2)}, ${target.y.toFixed(2)}, ${target.z.toFixed(2)}) button "${label}" on=${on} off=${off}`);
+    lines.push(`${ok ? 'PASS' : 'FAIL'} ${t.name} @ (${target.x.toFixed(2)}, ${target.y.toFixed(2)}, ${target.z.toFixed(2)}) button "${label}" (${t.room.name ?? ''}) on=${on} off=${off}`);
   }
-  // cold shower: standing in the running ceiling shower is detected
-  const sh = taps.find((t) => t.name === 'takduschen');
-  sh.toggle();
-  const spot = sh.splash.getWorldPosition(sh.splash.position.clone());
-  const inside = sh.hits(spot.x, 0, spot.z), outside = sh.hits(spot.x + 1, 0, spot.z);
-  sh.toggle();
-  const okShower = inside && !outside;
-  pass &&= okShower;
-  lines.push(`${okShower ? 'PASS' : 'FAIL'} standing in the shower is detected (in=${inside} beside=${outside})`);
   out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
 };
 </script>

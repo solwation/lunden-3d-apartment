@@ -260,9 +260,11 @@ function buildLevel(floor, li, group) {
   const walls = [...floor.walls, ...EXTRA_WALLS.filter((w) => w.level === li && OPTIONS[w.option])
     .map((r) => ({ outer: [[r.x0, r.z0], [r.x1, r.z0], [r.x1, r.z1], [r.x0, r.z1]] }))];
   const wallBoxes = walls.map((w) => bboxOf(w.outer));
+  const wallSegments = []; // walls only: line of sight for E (main.js)
   for (const w of walls) {
     group.add(prism(w.outer, y0, yC, M.wall));
     segments.push(...polySegments(w.outer));
+    wallSegments.push(...polySegments(w.outer));
   }
 
   // Windows: sill/head infill, frame with mullion + optional transom, glass, inner sill board.
@@ -458,7 +460,7 @@ function buildLevel(floor, li, group) {
     group.add(box(s.x0, s.x1, s.z0, s.z1, y0 + s.height, yC - 0.004, M.ceiling, { shadow: false }));
   }
 
-  return { segments, doors, lids, taps, appliances, openings, barriers, ceiling: yC };
+  return { segments, wallSegments, doors, lids, taps, appliances, openings, barriers, ceiling: yC };
 }
 
 export function buildWorld(plan) {
@@ -519,7 +521,8 @@ export function buildWorld(plan) {
   const north = [...l0.openings.north, ...l1.openings.north];
   const south = [...l0.openings.south, ...l1.openings.south];
   scene.add(buildExterior({ W, D, roofTop: roofY + 0.35, north, south, frame: M.frame, wall: M.wall }));
-  scene.add(buildSurroundings());
+  const surroundings = buildSurroundings();
+  scene.add(surroundings);
   // keep the visitor near the house
   const bounds = { x0: 0.05, x1: W - 0.05, z0: -6, z1: site.patio ? site.patio.z1 : D + 4 };
   outdoor.push(
@@ -550,6 +553,8 @@ export function buildWorld(plan) {
   return {
     object: scene,
     setFurniture,
+    lamps: furniture.lights, // floor lamps (lights.js makes them switchable)
+    windowLights: surroundings.userData.windows, // neighbours' lit windows (daycycle)
     get furnitureOn() { return furniture.object.visible; },
     size: { x: W, z: D },
     levels,

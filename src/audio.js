@@ -263,6 +263,13 @@ export const sfx = {
     noise(t, opening ? 0.12 : 0.08, d, { type: 'lowpass', freq: opening ? 900 : 500, gain: 0.35 });
     tone(t, 0.1, d, { from: opening ? 140 : 90, to: 60, gain: 0.2 });
   },
+  /** Light switch click. */
+  click(pos) {
+    if (!ready()) return;
+    const t = ctx.currentTime, d = out(pos, 0.6);
+    noise(t, 0.02, d, { type: 'highpass', freq: 3000, gain: 0.4 });
+    tone(t, 0.03, d, { from: 2400, to: 1800, gain: 0.08 });
+  },
   /** Paper rustle (taking the note off the freezer). */
   paper(pos) {
     if (!ready()) return;

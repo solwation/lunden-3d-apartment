@@ -109,11 +109,8 @@ function floorlamp(item, lights) {
   const shade = new THREE.Mesh(new THREE.CylinderGeometry(0.17, 0.23, 0.3, 32, 1, true), shadeMat);
   shade.position.y = 1.5;
   [base, pole, shade].forEach((m) => { m.castShadow = true; g.add(m); });
-  // warm light under the shade (no shadows: cheap)
-  const light = new THREE.PointLight(0xffd59a, 1.4, 5, 2);
-  light.position.y = 1.45;
-  g.add(light);
-  lights.push(light);
+  // the light itself comes from lights.js (switchable with E on the lamp, shared light pool)
+  lights.push({ object: g, shade: shadeMat, height: 1.45, level: item.level });
   g.userData.footprint = [{ x0: -0.16, x1: 0.16, z0: -0.16, z1: 0.16 }];
   return g;
 }

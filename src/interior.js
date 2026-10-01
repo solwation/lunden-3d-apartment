@@ -93,6 +93,19 @@ const M = {
 
 for (const k of ['splash', 'wallTile', 'hallTile', 'wetTile']) M[k].userData.skin = true;
 
+/**
+ * Light-emitting parts (spots, globe, LED strips, mirror light) get one material per room so
+ * the room's switch can turn them on and off (lights.js). Key: "level:room name".
+ */
+export const lampMaterials = new Map();
+function lampMat(level, room) {
+  const key = `${level}:${room}`;
+  if (!lampMaterials.has(key)) {
+    lampMaterials.set(key, new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xfff2dc, emissiveIntensity: 1.2 }));
+  }
+  return lampMaterials.get(key);
+}
+
 // ---------- geometry batching ----------
 
 /** Planar UVs in metres from the dominant normal axis (relative to `origin`). */
@@ -322,6 +335,7 @@ function buildKitchen(B, group, floor, y0, yC, handled, taps, appliances) {
   // Wall cabinets along the east wall (from the tall unit to the corner) and along the
   // south wall over the corner unit; hood + gypsum boxing to the ceiling over the hob.
   const wd = K.wallDepth, yW = y0 + K.wallBottom, yHood = y0 + K.hoodBottom;
+  const kitchenLamp = lampMat(K.level, K.room); // LED Linear under the wall cabinets + hood light
   const wallX = eastWall - wd;
   const hob = hobCab ? [hobCab.z0, hobCab.z1] : null;
   const eastSpans = hob ? [[runZ0, hob[0]], [hob[1], southWall]] : [[runZ0, southWall]];
@@ -336,7 +350,7 @@ function buildKitchen(B, group, floor, y0, yC, handled, taps, appliances) {
     EW.box(hob[0], hob[1], -wd, -FT, yH, yTop, M.front);
     front(EW, hob[0], hob[1], yH, yTop, M.front, 'bottom');
     EW.box(hob[0] + 0.01, hob[1] - 0.01, -wd + 0.02, 0, yHood, yH, M.steel);
-    EW.box(hob[0] + 0.03, hob[1] - 0.03, -wd + 0.05, -0.03, yHood - 0.002, yHood, M.led);
+    EW.box(hob[0] + 0.03, hob[1] - 0.03, -wd + 0.05, -0.03, yHood - 0.002, yHood, kitchenLamp);
     EW.box(hob[0], hob[1], -wd, 0, yTop, yC, M.white); // Lokal gipsinklädnad ovan spiskåpa
   }
   const fridgeX1 = fridges.length ? Math.max(...fridges.map((c) => c.x1)) : retX0;
@@ -344,10 +358,10 @@ function buildKitchen(B, group, floor, y0, yC, handled, taps, appliances) {
     const RW = frame(B, { x0: fridgeX1, x1: wallX, z0: southWall - wd, z1: southWall }, 'n');
     RW.box(fridgeX1, wallX, -wd, -FT, yW, yTop, M.front);
     doorRow(RW, fridgeX1, wallX, yW, yTop, 0.5, { low: true });
-    RW.box(fridgeX1 + 0.02, wallX, -wd + 0.02, -wd + 0.04, yW - 0.008, yW, M.led);
+    RW.box(fridgeX1 + 0.02, wallX, -wd + 0.02, -wd + 0.04, yW - 0.008, yW, kitchenLamp);
   }
   // under-cabinet LED (Belysning LED Linear) and the splashback tiles (10×20 half bond)
-  for (const [a, b] of eastSpans) EW.box(a + 0.02, b - 0.02, -wd + 0.02, -wd + 0.04, yW - 0.008, yW, M.led);
+  for (const [a, b] of eastSpans) EW.box(a + 0.02, b - 0.02, -wd + 0.02, -wd + 0.04, yW - 0.008, yW, kitchenLamp);
   const o = [0, top, 0];
   B.box(eastWall - 0.006, eastWall, runZ0, southWall, top, yW, M.splash, o);
   if (hob) B.box(eastWall - 0.006, eastWall, hob[0], hob[1], yW, yHood, M.splash, o);
@@ -403,7 +417,7 @@ function buildLaundry(B, floor, room, y0, handled, taps) {
   cylinderY(B, cx, cz, 0.03, yc - 0.05, yc, M.white);
   const globe = new THREE.SphereGeometry(0.075, 16, 12);
   globe.translate(cx, yc - 0.12, cz);
-  B.add(globe, M.led);
+  B.add(globe, lampMat(0, room.name));
   return [run];
 }
 
@@ -424,7 +438,7 @@ function vanity(B, sinkF, wallX, y0, width, depth) {
 }
 
 /** Oval mirror (Slot 50) with LED backlight, on the wall at x = wallX. */
-function ovalMirror(B, wallX, cz, y0, w, h) {
+function ovalMirror(B, wallX, cz, y0, w, h, led) {
   const shape = (s) => {
     const r = (w * s) / 2, l = (h * s) / 2 - r;
     const p = new THREE.Shape();
@@ -432,7 +446,7 @@ function ovalMirror(B, wallX, cz, y0, w, h) {
     p.absarc(0, -l, r, Math.PI, 2 * Math.PI, false);
     return p;
   };
-  for (const [s, d, m] of [[1.04, 0.012, M.led], [1, 0.018, M.mirror]]) {
+  for (const [s, d, m] of [[1.04, 0.012, led], [1, 0.018, M.mirror]]) {
     const geo = new THREE.ShapeGeometry(shape(s), 24);
     geo.rotateY(Math.PI / 2);
     geo.translate(wallX + d, y0, cz);
@@ -514,11 +528,11 @@ function showerSet(B, wallX, z, y0, ceiling) {
   return outlets;
 }
 
-function spots(B, room, y, n) {
+function spots(B, room, y, n, material) {
   const [cx] = centre(room);
   for (let i = 0; i < n; i++) {
     const z = room.z0 + ((i + 0.5) * (room.z1 - room.z0)) / n;
-    cylinderY(B, cx, z, 0.04, y - 0.006, y, M.led, 16);
+    cylinderY(B, cx, z, 0.04, y - 0.006, y, material, 16);
   }
 }
 
@@ -540,7 +554,7 @@ function buildBathroom(B, floor, room, y0, handled, taps) {
       m.box(m.u0, m.u1, -0.15, 0, y0 + 1.2, y0 + 1.9, M.vanity);
       m.box(m.u0 + 0.01, m.u1 - 0.01, 0, 0.004, y0 + 1.21, y0 + 1.89, M.mirror);
     } else {
-      ovalMirror(B, room.x0, cz, y0 + 1.5, 0.5, 0.9);
+      ovalMirror(B, room.x0, cz, y0 + 1.5, 0.5, 0.9, lampMat(room.level, room.name));
     }
   }
   if (shower) {
@@ -557,7 +571,7 @@ function buildBathroom(B, floor, room, y0, handled, taps) {
     }
     taps.push(...showerSet(B, room.x0, (s.z0 + s.z1) / 2, y0, !upstairs));
   }
-  spots(B, room, yc - 0.004, 2);
+  spots(B, room, yc - 0.004, 2, lampMat(room.level, room.name));
   return segs;
 }
 

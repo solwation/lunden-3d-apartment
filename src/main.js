@@ -11,9 +11,11 @@ import { loadChangelog, renderChangelog, buildNote } from './changelog.js';
 import { bump, catFound, renderStats, resetStats, statsShown, setStatsShown, visitRoom, setRoomTotal } from './stats.js';
 import { Minimap } from './minimap.js';
 import { Measure } from './measure.js';
-import { skyTexture } from './surroundings.js';
+import { cloudTexture } from './surroundings.js';
+import { DayCycle } from './daycycle.js';
 import { Tap, animateWater } from './water.js';
 import { CatBoard, snapshot } from './catboard.js';
+import { Lights } from './lights.js';
 
 const overlay = document.getElementById('overlay');
 const hud = document.getElementById('hud');
@@ -32,19 +34,21 @@ renderer.toneMappingExposure = 1.0;
 document.body.prepend(renderer.domElement);
 
 const scene = new THREE.Scene();
-scene.background = skyTexture();
+scene.background = new THREE.Color(COLORS.sky); // replaced by the day-cycle sky
 scene.fog = new THREE.Fog(COLORS.sky, 45, 160);
 
 const camera = new THREE.PerspectiveCamera(72, window.innerWidth / window.innerHeight, 0.05, 400);
 camera.rotation.order = 'YXZ';
 
-scene.add(new THREE.HemisphereLight(0xeaf3ff, 0xd6d2ca, 2.0));
-scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+const hemi = new THREE.HemisphereLight(0xeaf3ff, 0xd6d2ca, 2.0);
+const ambient = new THREE.AmbientLight(0xffffff, 0.6);
+scene.add(hemi, ambient);
 // Shadowless fill from the north-east so wall orientations read differently indoors
 const fill = new THREE.DirectionalLight(0xf4f6ff, 0.9);
 fill.position.set(8, 6, -5);
 scene.add(fill);
 
+const params0 = new URLSearchParams(location.search);
 const plan = await fetch('data/plan.json').then((r) => r.json());
 const world = buildWorld(plan);
 scene.add(world.object);
@@ -87,6 +91,12 @@ function showNote(show) {
 }
 document.getElementById('note-close').addEventListener('click', () => showNote(false));
 
+const lights = new Lights(scene, world);
+// time of day: the visitor's clock, or ?time=HH (e.g. ?time=21.5)
+const now = new Date();
+const startHour = params0.has('time') ? Number(params0.get('time')) : now.getHours() + now.getMinutes() / 60;
+const day = new DayCycle({ scene, camera, lights: { sun, hemi, ambient, fill }, clouds: cloudTexture(), startHour });
+if (day.daylight < 0.3 || params0.has('lights')) lights.setAll(true); // arriving in the dark: lights on
 const taps = world.taps.map((spec) => new Tap(spec));
 let inShower = false, shriekAt = 0;
 for (const t of taps) scene.add(t.object);
@@ -221,6 +231,7 @@ pauseBtn.addEventListener('click', () => {
 function use(thing) {
   if (thing.kind === 'note') showNote(true);
   else if (thing.kind === 'board') showBoard(true);
+  else if (thing.kind === 'switch' || thing.kind === 'lamp') { thing.toggle(); if (thing.isOpen) bump('lights'); }
   else if (thing.kind === 'fridge') { thing.toggle(); if (thing.isOpen) bump('fridge'); }
   else if (thing.kind === 'lid') {
     thing.toggle();
@@ -276,16 +287,30 @@ window.addEventListener('resize', () => {
 // --- door interaction: look at a door within reach, press E ----------------
 const raycaster = new THREE.Raycaster();
 raycaster.far = 2.2;
-const pickables = [...world.doors.map((d) => d.pickable), ...world.lids.map((l) => l.pickable), ...taps.map((t) => t.pickable), note.pickable, board.pickable];
+const pickables = [...world.doors.map((d) => d.pickable), ...world.lids.map((l) => l.pickable), ...taps.map((t) => t.pickable), note.pickable, board.pickable, ...lights.targets.map((t) => t.pickable)];
 const center = new THREE.Vector2(0, 0);
 let focused = null;
+
+/** Is there a wall between the eye and `p` (plan view)? Pickables aren't occluded by walls in the
+ * raycast (it only tests pickables), so check the line against the level's wall outlines. */
+function behindWall(p) {
+  const segs = world.levels[Math.max(0, player.level)]?.wallSegments ?? [];
+  const ax = camera.position.x, az = camera.position.z, bx = p.x, bz = p.z;
+  return segs.some(([cx, cz, dx, dz]) => {
+    const d = (bx - ax) * (dz - cz) - (bz - az) * (dx - cx);
+    if (Math.abs(d) < 1e-9) return false;
+    const t = ((cx - ax) * (dz - cz) - (cz - az) * (dx - cx)) / d;
+    const u = ((cx - ax) * (bz - az) - (cz - az) * (bx - ax)) / d;
+    return t > 0 && t < 0.98 && u > 0 && u < 1;
+  });
+}
 
 function updateFocus() {
   camera.updateMatrixWorld(); // the player just moved it; render hasn't run yet
   raycaster.setFromCamera(center, camera);
   // (the raycaster ignores visibility, so the cat is only a target while it is there)
   const hit = raycaster.intersectObjects(cat.visible ? [...pickables, cat.object] : pickables, true)[0];
-  focused = hit ? hit.object.userData.door : null;
+  focused = hit && !behindWall(hit.point) ? hit.object.userData.door : null;
   const verb = !focused ? '' : focused.verb ?? (focused.isOpen ? 'stänga' : 'öppna');
   if (focused && touch.enabled) {
     actionBtn.textContent = `${verb[0].toUpperCase()}${verb.slice(1)} ${focused.name}`;
@@ -339,6 +364,9 @@ function step(dt) {
   if (wet && !inShower && performance.now() > shriekAt) { sfx.shriek(); shriekAt = performance.now() + 1500; }
   inShower = wet;
   animateWater(dt);
+  lights.update(Math.max(0, player.level), player.pos);
+  day.update(params0.has('freeze') ? 0 : dt);
+  world.windowLights.update(day.hour, 1 - day.daylight);
   cat.update(dt);
   measure.update(dt, window.innerWidth, window.innerHeight);
   if (active() && reading) updateFocus();
@@ -362,7 +390,7 @@ function step(dt) {
   if (active() && !outside) bump('seconds', dt);
   if (lvl !== lastLevel && lvl >= 0 && lastLevel >= 0) bump('stairs');
   if (lvl < 0) lastRoom = null;
-  const label = lvl < 0 ? 'Utomhus' : `${LEVELS[lvl].name}${lastRoom ? ` · ${lastRoom}` : ''}`;
+  const label = `${lvl < 0 ? 'Utomhus' : `${LEVELS[lvl].name}${lastRoom ? ` · ${lastRoom}` : ''}`} · ${day.clock}`;
   if (lvl !== lastLevel || label !== levelEl.textContent) {
     levelEl.textContent = label;
     lastLevel = lvl;
@@ -389,4 +417,4 @@ document.addEventListener('pointerlockchange', () => { if (!updateEl.hidden) sho
 watchForUpdates(showUpdate);
 
 // handle for tests/debugging (tools/touchtest.html)
-window.__app = { player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board };
+window.__app = { player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day };

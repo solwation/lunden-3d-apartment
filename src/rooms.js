@@ -45,6 +45,25 @@ export class RoomMap {
     return i < 0 || k < 0 || i >= this.nx || k >= this.nz ? -1 : k * this.nx + i;
   }
 
+  /** Room name exactly at (x, z) (no searching around), or null. */
+  exact(x, z) {
+    const c = this.cell(x, z);
+    return c >= 0 && this.owner[c] >= 0 ? this.rooms[this.owner[c]].name : null;
+  }
+
+  /** Centre of each labelled region: [{ name, x, z, area }] (area in m²). */
+  regions() {
+    const acc = this.rooms.map((r) => ({ name: r.name, x: 0, z: 0, n: 0 }));
+    for (let c = 0; c < this.owner.length; c++) {
+      const o = this.owner[c];
+      if (o < 0) continue;
+      acc[o].x += ((c % this.nx) + 0.5) * CELL;
+      acc[o].z += (Math.floor(c / this.nx) + 0.5) * CELL;
+      acc[o].n++;
+    }
+    return acc.filter((a) => a.n).map((a) => ({ name: a.name, x: a.x / a.n, z: a.z / a.n, area: a.n * CELL * CELL }));
+  }
+
   /** Room name at (x, z), or null (outside / inside a wall). Looks a little around a wall cell. */
   at(x, z) {
     for (const [dx, dz] of [[0, 0], [0.1, 0], [-0.1, 0], [0, 0.1], [0, -0.1]]) {

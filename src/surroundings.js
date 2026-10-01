@@ -136,6 +136,90 @@ export function skyTexture() {
   return tex;
 }
 
+/** Clouds only (alpha), equirectangular, for the day-cycle sky shader (row 0 = straight up). */
+export function cloudTexture() {
+  const c = document.createElement('canvas');
+  c.width = 1024; c.height = 512;
+  const g = c.getContext('2d');
+  const rand = rng(5);
+  for (let i = 0; i < 30; i++) {
+    const cx = rand() * 1024, cy = 110 + rand() * 130, r = 18 + rand() * 40;
+    for (let k = 0; k < 5; k++) {
+      const x = cx + (rand() - 0.5) * r * 2.5, y = cy + (rand() - 0.5) * r * 0.5, rr = r * (0.6 + rand() * 0.6);
+      for (const xx of [x, x - 1024, x + 1024]) { // wrap around
+        const rg = g.createRadialGradient(xx, y, 0, xx, y, rr);
+        rg.addColorStop(0, 'rgba(255,255,255,0.8)');
+        rg.addColorStop(1, 'rgba(255,255,255,0)');
+        g.fillStyle = rg;
+        g.fillRect(xx - rr, y - rr, rr * 2, rr * 2);
+      }
+    }
+  }
+  const tex = new THREE.CanvasTexture(c);
+  tex.flipY = false;
+  tex.wrapS = THREE.RepeatWrapping;
+  return tex;
+}
+
+/**
+ * Lit windows in the neighbouring blocks: one additive quad per window (instanced), each with
+ * its own evening routine, so windows light up and go dark one by one as the day passes.
+ */
+export function buildWindowLights() {
+  const spots = [];
+  for (const b of S.blocks) {
+    const faces = [
+      { along: 'x', c: b.z0 - 0.03, a0: b.x0, a1: b.x1, n: [0, -1] }, { along: 'x', c: b.z1 + 0.03, a0: b.x0, a1: b.x1, n: [0, 1] },
+      { along: 'z', c: b.x0 - 0.03, a0: b.z0, a1: b.z1, n: [-1, 0] }, { along: 'z', c: b.x1 + 0.03, a0: b.z0, a1: b.z1, n: [1, 0] },
+    ];
+    for (const f of faces) {
+      // window centres sit mid-bay in the façade texture (u = along / bay)
+      for (let k = Math.ceil(f.a0 / S.bay - 0.5); (k + 0.5) * S.bay < f.a1; k++) {
+        const a = (k + 0.5) * S.bay;
+        if (a - 0.7 < f.a0 || a + 0.7 > f.a1) continue;
+        for (let st = 0; st < b.storeys; st++) {
+          const y = st * S.storey + 1.55;
+          spots.push(f.along === 'x' ? { x: a, y, z: f.c, n: f.n } : { x: f.c, y, z: a, n: f.n });
+        }
+      }
+    }
+  }
+  const geo = new THREE.PlaneGeometry(1.25, 1.45);
+  const mat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false });
+  const mesh = new THREE.InstancedMesh(geo, mat, spots.length);
+  const m = new THREE.Matrix4(), q = new THREE.Quaternion(), one = new THREE.Vector3(1, 1, 1), up = new THREE.Vector3(0, 1, 0);
+  const rand = rng(17);
+  const habits = spots.map((p, i) => {
+    q.setFromAxisAngle(up, Math.atan2(p.n[0], p.n[1]));
+    mesh.setMatrixAt(i, m.compose(new THREE.Vector3(p.x, p.y, p.z), q, one));
+    mesh.setColorAt(i, new THREE.Color(0, 0, 0));
+    const home = rand() > 0.2; // some flats are empty tonight
+    return {
+      home,
+      on: 15.5 + rand() * 4, off: 21 + rand() * 3.5, // evening
+      early: rand() < 0.4, wake: 5.5 + rand() * 1.5, leave: 7 + rand() * 1.5, // morning
+      tint: rand(), // warm … cool (TV)
+    };
+  });
+  const col = new THREE.Color();
+  let last = -1;
+  return {
+    object: mesh,
+    /** hour 0–24, night 0 (day) … 1 (night): switch windows as their routines say. */
+    update(hour, night) {
+      if (Math.abs(hour - last) < 0.05 && last >= 0) return;
+      last = hour;
+      habits.forEach((h, i) => {
+        const lit = h.home && ((hour > h.on && hour < h.off) || (h.off > 24 && hour < h.off - 24) || (h.early && hour > h.wake && hour < h.leave));
+        const k = lit ? 0.25 + 0.75 * night : 0;
+        col.setRGB(1.0 * k, (0.78 + 0.12 * h.tint) * k, (0.5 + 0.45 * h.tint) * k);
+        mesh.setColorAt(i, col);
+      });
+      mesh.instanceColor.needsUpdate = true;
+    },
+  };
+}
+
 export function buildSurroundings() {
   const group = new THREE.Group();
   const walls = new THREE.Mesh(mergeGeometries(S.blocks.map(block)),
@@ -144,5 +228,7 @@ export function buildSurroundings() {
     new THREE.MeshStandardMaterial({ color: 0x51575c, roughness: 0.85, side: THREE.DoubleSide }));
   walls.receiveShadow = roofs.receiveShadow = true;
   group.add(walls, roofs, ...trees(rng(3)));
+  group.userData.windows = buildWindowLights();
+  group.add(group.userData.windows.object);
   return group;
 }

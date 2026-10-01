@@ -52,6 +52,9 @@ src/audio.js           synthesised positional sound effects (Web Audio): doors, 
 src/toilet.js          toilet (Ifö Spira 6260) with an animated lid
 src/ao.js              baked ambient occlusion: distance field → multiply overlay on floor/ceiling (AO)
 src/surroundings.js    neighbourhood: brick blocks with gable roofs, instanced trees, cloudy sky
+src/lights.js          room switches (E), ceiling lamps/pendant/spots/LED, floor lamp; a pool of 4
+                       point lights follows the nearest lit lamps on the visitor's level
+src/daycycle.js        12-minute day: sun → moon light, shader sky (glow, stars, clouds), fog colour
 src/rooms.js           room detection: walls + door gaps rasterised, BFS from the room labels
 src/minimap.js         plan view with the visitor's arrow, current room highlighted (K toggles)
 src/measure.js         tape measure (Q / 📏): two points on any surface, distance label
@@ -71,6 +74,7 @@ tools/cattest.html     headless test of cat placement behind every door/wardrobe
 tools/roomtest.html    headless test of room detection at known points (+ a picture of the fill)
 tools/measuretest.html headless test of the tape measure (wall to wall in the living room)
 tools/watertest.html   headless test: aim at every tap/shower, turn it on and off
+tools/lighttest.html   headless test: aim at every light switch / floor lamp, toggle it
 tools/pettest.html     headless test of petting the cat (eyes, hand, stats counter)
 tools/notetest.html    headless test of the changelog note ("Nytt", read/close, no walking)
 tools/stamp.sh         build the published site with a version stamp (used by CI)
@@ -163,6 +167,8 @@ URL parameters (debugging / screenshots):
 - `&shot` — hide the start overlay.
 - `&open` — open every door (screenshots of open doors / wardrobes).
 - `&cat=x,z[,yawDeg[,y]]` — show the cat there; `&catv=i` coat variant, `&catt=s` animation time.
+- `&time=HH[.h]` — start at that hour (default: the visitor's clock), `&freeze` stops the clock,
+  `&lights` turns every lamp on (they also start on when arriving in the dark).
 - `&water` — turn on every tap and shower.
 - `&note` — open the changelog note. `&pet` (with `&cat=`) — the cat is being petted.
 - `&clip=y` — clip everything above height y (cut-away plan view, e.g.
@@ -209,6 +215,14 @@ screenshots into the session scratchpad, not the repo.
   the stair = Hall); `ROOM_DIVIDERS` split open-plan areas (hall | kitchen | passage | living room).
 - Every new cat gets a name (`CAT_NAMES`); petting it puts a photo on the kitchen board 0.7 s in
   (`CAT_BOARD` in config: the hall/kitchen partition, kitchen face).
+- Interaction raycasts only test pickables, so `behindWall` in main.js rejects hits whose eye →
+  hit line crosses a wall outline (`levels[i].wallSegments`) — no switching lamps through walls.
+- Lights: switches are placed automatically by the latch side of each interior swing door (room
+  side) plus `LIGHTING.manual` for open rooms and the downstairs Klk (door spans the whole wall).
+  Lamp emissive parts use one material per room (`lampMaterials` in interior.js). Never add
+  per-lamp PointLights — reuse the pool (constant light count = no shader recompiles).
+- Day cycle: `DAY` in config; the neighbours' windows are one instanced additive mesh with a
+  random evening/morning routine per window (`buildWindowLights` in surroundings.js).
 - Statistics (`src/stats.js`): cats found per coat, cats petted, doors, toilet lids, steps/metres,
   stair trips, time inside; reset on the start screen.
 - Sounds are synthesised (no audio files) and positional; the AudioContext is started by the

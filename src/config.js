@@ -205,6 +205,7 @@ export const TILED_ROOMS = [
 // sink + hob, wall cabinets above, freestanding fridge + freezer with top cabinets.
 export const KITCHEN = {
   level: 0,
+  room: 'Kök / matplats', // room name (room detection) for its light switch
   area: { x0: 3.4, x1: 5.6, z0: 0.4, z1: 5.5 },
   plinth: 0.1,
   baseTop: 0.9,          // top of base carcass; worktop 30 mm on top (bänkhöjd 0,93)
@@ -234,6 +235,33 @@ export const AO = {
 // Cork board with photos of petted cats (src/catboard.js), on the short wall between the hall
 // and the kitchen (its kitchen face, x 2.15, z 0.46–1.76). rotY π/2 = facing east.
 export const CAT_BOARD = { x: 2.15, y: 1.5, z: 1.11, w: 1.1, h: 0.76, rotY: Math.PI / 2 };
+
+// Day cycle (src/daycycle.js): one day in `minutes` real minutes. Sun up 06–18, noon elevation
+// (Lund ~56° N in spring/autumn ≈ 34°, a bit more for a brighter look). Start = the visitor's
+// real clock unless ?time=HH[.h] is given.
+export const DAY = { minutes: 12, sunrise: 6, sunset: 18, noonElevation: 40, moonlight: 0.35, nightAmbient: 0.05 };
+
+// Room lights (src/lights.js). Intensities are candela-ish (three.js physical lights), tuned by
+// eye at night. `pool` = point lights shared by the nearest lit lamps (keep small: Iris 640).
+export const LIGHTING = {
+  pool: 4,
+  switchHeight: 1.05,                     // centre of the switch above the floor
+  ceiling: { intensity: 2.4, range: 6, color: 0xffe2b8 },
+  spots: { intensity: 2.0, range: 4, color: 0xfff0dc },
+  pendant: { intensity: 2.2, range: 5, color: 0xffd9a8 },
+  floorLamp: { intensity: 1.6, range: 5, color: 0xffd59a },
+  wetRooms: ['Badrum', 'WC/dusch'],       // spots in the soffit instead of a ceiling lamp
+  pendants: [{ level: 0, room: 'Kök / matplats', x: 3.5, z: 1.72, drop: 1.25 }], // over the dining table
+  // switches for rooms without a door of their own (normal = the way the wall faces)
+  manual: [
+    { level: 0, room: 'Hall', x: 1.95, z: 0.465, normal: [0, 1] },          // by the front door
+    { level: 0, room: 'Kök / matplats', x: 2.15, z: 1.65, normal: [1, 0] },  // beside the cat board
+    { level: 0, room: 'Vardagsrum', x: 3.4, z: 7.8, normal: [0, 1] },
+    { level: 1, room: 'Hall', x: 2.65, z: 5.13, normal: [0, 1] },           // between the bedroom doors
+    { level: 1, room: 'Klk', x: 4.85, z: 4.28, normal: [0, 1] },
+    { level: 0, room: 'Klk', x: 3.35, z: 5.55, normal: [-1, 0] },        // outside, by the door (it spans the whole Klk)
+  ],
+};
 
 // Furniture (issue #8). IKEA LANDSKRONA, Gunnared ljusgrön, oak legs.
 // 3-sits: 204 × 89 × 78 cm, seat height 44, seat depth 61, armrest height 64 (ikea.com).
