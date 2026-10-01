@@ -51,6 +51,7 @@ material/              screenshots of our choices in Peab's option portal (local
 src/audio.js           synthesised positional sound effects (Web Audio): doors, slides, meow, steps
 src/toilet.js          toilet (Ifö Spira 6260) with an animated lid
 src/ao.js              baked ambient occlusion: distance field → multiply overlay on floor/ceiling (AO)
+src/surroundings.js    neighbourhood: brick blocks with gable roofs, instanced trees, cloudy sky
 src/rooms.js           room detection: walls + door gaps rasterised, BFS from the room labels
 src/minimap.js         plan view with the visitor's arrow, current room highlighted (K toggles)
 src/measure.js         tape measure (Q / 📏): two points on any surface, distance label
@@ -97,6 +98,10 @@ North = −z (the bedrooms Sovrum 1/3 face north).
 - Façade: red brick (and some white render) per the brochure. The building is "staplade
   radhus": a two-storey unit sits on top of ours, entered from the loftgång (floor 3).
   Neighbours/upper units in `exterior.js` are simplified copies of our façade.
+- Peab's 3D plan of L1002–L1007 (peabbostad.se …/planlosningar-i-3d/l1002-…-l1007.jpg, a mirrored
+  sibling unit) confirms the stair: straight lower flight between the Klk wall and the living-room
+  wall, winders at the far end, white railing with balusters around the opening, oak treads with
+  white risers. The surroundings (`SURROUNDINGS`) are illustrative, after the drone photo.
 - Skärmvägg by the patio H 1.8 m, stair railing H 1.1 m (bofakta).
 - U-shaped stair with winders at the east end: flight A (Entréplan, going east), 180° winders,
   flight B (going west) arriving in the upstairs hall. Upstairs slab opening = stair outline on

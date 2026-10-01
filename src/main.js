@@ -11,6 +11,7 @@ import { loadChangelog, renderChangelog, buildNote } from './changelog.js';
 import { bump, catFound, renderStats, resetStats, statsShown, setStatsShown, visitRoom, setRoomTotal } from './stats.js';
 import { Minimap } from './minimap.js';
 import { Measure } from './measure.js';
+import { skyTexture } from './surroundings.js';
 
 const overlay = document.getElementById('overlay');
 const hud = document.getElementById('hud');
@@ -29,10 +30,10 @@ renderer.toneMappingExposure = 1.0;
 document.body.prepend(renderer.domElement);
 
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(COLORS.sky);
-scene.fog = new THREE.Fog(COLORS.sky, 30, 90);
+scene.background = skyTexture();
+scene.fog = new THREE.Fog(COLORS.sky, 45, 160);
 
-const camera = new THREE.PerspectiveCamera(72, window.innerWidth / window.innerHeight, 0.05, 200);
+const camera = new THREE.PerspectiveCamera(72, window.innerWidth / window.innerHeight, 0.05, 400);
 camera.rotation.order = 'YXZ';
 
 scene.add(new THREE.HemisphereLight(0xeaf3ff, 0xd6d2ca, 2.0));

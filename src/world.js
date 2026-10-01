@@ -11,6 +11,7 @@ import { buildInterior } from './interior.js';
 import { Toilet } from './toilet.js';
 import { RoomMap } from './rooms.js';
 import { buildAO } from './ao.js';
+import { buildSurroundings } from './surroundings.js';
 
 const mat = (color, extra = {}) => new THREE.MeshStandardMaterial({ color, roughness: 0.85, ...extra });
 
@@ -495,7 +496,7 @@ export function buildWorld(plan) {
 
   // Site: ground, patio, hedge, fences
   const site = lower.site;
-  const ground = plate(-30, W + 30, -25, D + 30, -0.01, M.grass);
+  const ground = plate(-120, W + 120, -120, D + 120, -0.01, M.grass);
   scene.add(ground);
   if (site.patio) scene.add(box(site.patio.x0, site.patio.x1, D, site.patio.z1, -0.01, 0.0, M.patio, { shadow: false }));
   const outdoor = [];
@@ -512,6 +513,7 @@ export function buildWorld(plan) {
   const north = [...l0.openings.north, ...l1.openings.north];
   const south = [...l0.openings.south, ...l1.openings.south];
   scene.add(buildExterior({ W, D, roofTop: roofY + 0.35, north, south, frame: M.frame, wall: M.wall }));
+  scene.add(buildSurroundings());
   // keep the visitor near the house
   const bounds = { x0: 0.05, x1: W - 0.05, z0: -6, z1: site.patio ? site.patio.z1 : D + 4 };
   outdoor.push(

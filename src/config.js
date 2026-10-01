@@ -66,6 +66,24 @@ export const WINDOWS = [
 
 // Building envelope around the apartment (from the brochure: "staplade radhus" — two-storey
 // units on top with entrances from access balconies on floor 3; red brick façades).
+// Neighbourhood around the row (St Lars, Lund): red-brick blocks with gable roofs and trees,
+// after Peab's drone photo and renders. Positions are illustrative, not surveyed (#2).
+export const SURROUNDINGS = {
+  bay: 3.0, storey: 3.0,  // façade texture: one window per 3 × 3 m
+  blocks: [
+    { x0: -26, x1: 32, z0: -32, z1: -21, storeys: 4 }, // across the street (north)
+    { x0: -22, x1: 28, z0: 36, z1: 47, storeys: 4 },   // across the courtyard (south)
+    { x0: 25, x1: 37, z0: -8, z1: 24, storeys: 3 },    // east
+    { x0: -31, x1: -19, z0: -8, z1: 24, storeys: 3 },  // west
+  ],
+  treeAreas: [
+    { x0: -20, x1: 26, z0: 20, z1: 33, n: 14 },     // courtyard beyond the patios
+    { x0: -24, x1: 30, z0: -19.5, z1: -15.5, n: 9 }, // verge across the street
+    { x0: 18.5, x1: 23, z0: -3, z1: 30, n: 5 },
+    { x0: -17, x1: -12.5, z0: -3, z1: 30, n: 5 },
+  ],
+};
+
 export const FENCE_HEIGHT = 1.8; // bofakta: Skärmvägg H = 1,8 m
 
 export const BUILDING = {
@@ -115,7 +133,7 @@ export const STAIR = {
 };
 
 export const COLORS = {
-  sky: 0xbfd8ea,
+  sky: 0xcfe0ec,   // horizon (fog); the sky above is a gradient, see surroundings.js
   wall: 0xf1f1ee,   // Väggfärg NCS S 0500-N (material choice)
   ceiling: 0xfbfbf9,
   floor: 0xc9a77c,
@@ -127,7 +145,7 @@ export const COLORS = {
   frame: 0xf5f5f5,
   glass: 0xa9cce3,
   door: 0xf1f1ee,   // Innerdörr Stable GW / skjutdörrar NCS S 0500-N
-  rail: 0x6b7378,
+  rail: 0xf4f4f1,   // stair railing: white balusters + handrail (Peab 3D plan of L1002–L1007)
   stair: 0xdccfba,  // Trappa vitlaserad ek/vit: white-lacquered oak treads …
   riser: 0xf4f4f1,  // … white risers and stringers
   grass: 0x7fa65c,
