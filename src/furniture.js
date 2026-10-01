@@ -176,7 +176,45 @@ function sidetable(item) {
   return g;
 }
 
-const BUILDERS = { sofa, armchair, footstool, floorlamp, sidetable };
+const linen = new THREE.MeshStandardMaterial({ color: 0xeeeeea, roughness: 0.95 });
+const duvet = new THREE.MeshStandardMaterial({ color: 0xd9dfe2, roughness: 0.95 });
+const bedFabric = new THREE.MeshStandardMaterial({ color: 0x8f969b, roughness: 0.95 });
+
+/** Bed: upholstered base on legs, mattress, duvet, pillows, headboard. Local −z = head end. */
+function bed(item) {
+  const g = new THREE.Group();
+  const w = item.w, l = item.l, z0 = -l / 2;
+  g.add(rbox(w + 0.04, 0.22, l + 0.04, 0, 0.1 + 0.11, 0, bedFabric, 0.02));
+  g.add(rbox(w, 0.2, l, 0, 0.32 + 0.1, 0, linen, 0.05));
+  g.add(rbox(w + 0.02, 0.06, l * 0.7, 0, 0.53, z0 + l * 0.65, duvet, 0.03));
+  for (const px of w > 1.2 ? [-w / 4, w / 4] : [0]) g.add(rbox(Math.min(0.6, w * 0.8), 0.12, 0.38, px, 0.58, z0 + 0.28, linen, 0.06));
+  g.add(rbox(w + 0.06, 0.6, 0.08, 0, 0.62, z0 - 0.04, bedFabric, 0.03));
+  for (const x of [-w / 2 + 0.06, w / 2 - 0.06]) for (const z of [z0 + 0.06, -z0 - 0.06]) g.add(leg(x, z, 0.1));
+  g.userData.footprint = [{ x0: -w / 2 - 0.03, x1: w / 2 + 0.03, z0: z0 - 0.08, z1: -z0 + 0.02 }];
+  return g;
+}
+
+/** Dining table, oak, top at 75 cm. Local x = width. */
+function table(item) {
+  const g = new THREE.Group();
+  const { w, d } = item;
+  g.add(rbox(w, 0.03, d, 0, 0.735, 0, oak, 0.01));
+  for (const x of [-w / 2 + 0.05, w / 2 - 0.05]) for (const z of [-d / 2 + 0.05, d / 2 - 0.05]) g.add(leg(x, z, 0.72));
+  g.userData.footprint = [{ x0: -w / 2, x1: w / 2, z0: -d / 2, z1: d / 2 }];
+  return g;
+}
+
+/** Simple oak chair, seat 45 cm, facing local +z. */
+function chair() {
+  const g = new THREE.Group();
+  g.add(rbox(0.42, 0.03, 0.42, 0, 0.45, 0, oak, 0.01));
+  g.add(rbox(0.42, 0.28, 0.03, 0, 0.66, -0.195, oak, 0.01));
+  for (const x of [-0.18, 0.18]) for (const z of [-0.18, 0.18]) g.add(leg(x, z, 0.44));
+  g.userData.footprint = [{ x0: -0.21, x1: 0.21, z0: -0.21, z1: 0.21 }];
+  return g;
+}
+
+const BUILDERS = { sofa, armchair, footstool, floorlamp, sidetable, bed, table, chair };
 
 /** Build all furniture; returns the scene group, collision segments per level and lamps. */
 export function buildFurniture() {

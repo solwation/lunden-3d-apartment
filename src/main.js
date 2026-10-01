@@ -225,6 +225,7 @@ document.addEventListener('keydown', (e) => {
   if (e.code === 'KeyT') toggleStats();
   if (e.code === 'KeyK') toggleMap();
   if (e.code === 'KeyQ') measure.press();
+  if (e.code === 'KeyF') toggleFurniture();
   if (e.code.startsWith('Arrow')) e.preventDefault();
 });
 document.addEventListener('keyup', (e) => player.keys.delete(e.code));
@@ -257,6 +258,14 @@ function updateFocus() {
   promptEl.hidden = !focused || touch.enabled || reading;
   actionBtn.hidden = !(focused || reading) || !touch.enabled;
 }
+
+// --- furniture on/off (F / 🛋) ---------------------------------------------
+function toggleFurniture(on = !world.furnitureOn) {
+  world.setFurniture(on);
+  try { localStorage.setItem('lunden.furniture', on ? '1' : '0'); } catch { /* ignore */ }
+}
+try { if (localStorage.getItem('lunden.furniture') === '0') toggleFurniture(false); } catch { /* ignore */ }
+document.getElementById('furniture-btn').addEventListener('click', () => toggleFurniture());
 
 // --- statistics panel (T / 📊 toggles, reset on the start screen) ---------------
 const statsEl = document.getElementById('stats');

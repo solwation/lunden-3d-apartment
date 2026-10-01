@@ -119,6 +119,10 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   bathroom are *example* layouts with our materials — the kitchen layout is
   `material/Köksritning.jpg` (tall oven unit, wall cabinets, top cabinets over fridge/freezer,
   gypsum boxing above the hood). Colours/sizes live in `FINISH` / `KITCHEN` in config.
+- Furniture besides the LANDSKRONA group (beds 160/90 × 200, dining table 120 × 80 + chairs) are
+  *examples* to get a feel for the space, not the user's choices. F toggles all furniture
+  (`world.setFurniture`, which also swaps the collision segments). Keep the Sovrum 1 bed clear
+  of the Klk sliding door — the cat test needs floor in front of it.
 - Toilets: the redrawn plan has them rotated; bofakta shows the tank against the wall, so
   `toiletAgainstWall` re-orients them. Modelled as Ifö Spira 6260 (`TOILET` in config,
   `src/toilet.js`); the lid opens/closes with E (`world.lids`, kept out of `world.doors` so the

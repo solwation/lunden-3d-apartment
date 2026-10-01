@@ -228,4 +228,16 @@ export const FURNITURE = [
   { type: 'footstool', level: 0, x: 1.33, z: 8.93, rot: -135 },
   { type: 'floorlamp', level: 0, x: 0.42, z: 8.02 },
   { type: 'sidetable', level: 0, x: 1.52, z: 8.12, flower: true },
+  // Example furniture to get a feel for the rooms (issue #8; not chosen by us — move freely).
+  // Beds: rot = direction from the head to the foot end; w × l = mattress size.
+  { type: 'bed', level: 1, x: 5.55 - 1.1, z: 2.3, rot: 90, w: 1.6, l: 2.0 },  // Sovrum 1, head east (clear of the Klk)
+  { type: 'bed', level: 1, x: 0.2 + 1.1, z: 2.6, rot: -90, w: 0.9, l: 2.0 },  // Sovrum 3, head west
+  { type: 'bed', level: 1, x: 5.55 - 1.1, z: 10.3, rot: 90, w: 1.6, l: 2.0 }, // Sovrum 2
+  { type: 'bed', level: 1, x: 0.2 + 1.1, z: 10.0, rot: -90, w: 0.9, l: 2.0 }, // Sovrum 4
+  // Matplats by the kitchen window: table 120 × 80, four chairs
+  { type: 'table', level: 0, x: 3.6, z: 1.6, w: 1.2, d: 0.8 },
+  { type: 'chair', level: 0, x: 3.3, z: 0.95, rot: 180 },
+  { type: 'chair', level: 0, x: 3.9, z: 0.95, rot: 180 },
+  { type: 'chair', level: 0, x: 3.3, z: 2.25, rot: 0 },
+  { type: 'chair', level: 0, x: 3.9, z: 2.25, rot: 0 },
 ];

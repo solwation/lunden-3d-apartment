@@ -492,8 +492,6 @@ export function buildWorld(plan) {
   // Loose furniture (IKEA LANDSKRONA etc., see FURNITURE in config)
   const furniture = buildFurniture();
   scene.add(furniture.object);
-  l0.segments.push(...furniture.segments[0]);
-  l1.segments.push(...furniture.segments[1]);
 
   // Site: ground, patio, hedge, fences
   const site = lower.site;
@@ -529,10 +527,21 @@ export function buildWorld(plan) {
   const roomMaps = [l0, l1].map((l, li) => new RoomMap({ x: W, z: D },
     [...l.barriers, ...ROOM_DIVIDERS.filter((d) => d.level === li)], rooms[li]));
 
+  // furniture can be switched off (F): keep its collision separate from the fixed segments
+  const fixed = [l0.segments, l1.segments];
+  const levels = [l0, l1];
+  const setFurniture = (on) => {
+    furniture.object.visible = on;
+    levels.forEach((l, i) => { l.segments = on ? [...fixed[i], ...furniture.segments[i]] : fixed[i]; });
+  };
+  setFurniture(true);
+
   return {
     object: scene,
+    setFurniture,
+    get furnitureOn() { return furniture.object.visible; },
     size: { x: W, z: D },
-    levels: [l0, l1],
+    levels,
     doors: [...l0.doors, ...l1.doors],
     lids: [...l0.lids, ...l1.lids],
     rooms,
