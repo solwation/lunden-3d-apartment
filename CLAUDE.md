@@ -130,9 +130,9 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   `material/Köksritning.jpg` (tall oven unit, wall cabinets, top cabinets over fridge/freezer,
   gypsum boxing above the hood). Colours/sizes live in `FINISH` / `KITCHEN` in config.
 - Who sleeps where (the user's plan; "left/right" as you arrive upstairs walking west):
-  Sovrum 1 (first right) Sarah & Ofluf, double bed · Sovrum 3 (second right) Livia & Tuva, bunk ·
-  Sovrum 2 (first left) Walter & Kian, bunk · Sovrum 4 (second left, ex Allrum) Tilly, IKEA HEMNES
-  daybed with pink cushions. Name signs: `DOOR_SIGNS` → `src/signs.js` (hall side of the door).
+  Sovrum 1 (first right) Sarah & Ofluf, double bed · Sovrum 3 (second right) Livia & Tuva, bunk (unicorn sheets) ·
+  Sovrum 2 (first left) Walter & Kian, bunk (Darth Vader sheets) · Sovrum 4 (second left, ex Allrum) Tilly, IKEA HEMNES
+  daybed with pink cushions. Bunks: long side to the side wall, head end to the façade. Name signs: `DOOR_SIGNS` → `src/signs.js` (hall side of the door).
 - Dining set (user's wish): table 180 × 90, short end to the kitchen window, 3 + 3 chairs, dark
   brown wood. F toggles all furniture (`world.setFurniture`, which also swaps the collision
   segments). Keep the Sovrum 1 bed clear of the Klk sliding door — the cat test needs floor there.

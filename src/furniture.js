@@ -222,6 +222,98 @@ const DUVETS = [0x8fb8d8, 0xf2c14e, 0x9bc49a, 0xe58f8f];
 let duvetIndex = 0;
 const duvetMat = () => new THREE.MeshStandardMaterial({ color: DUVETS[duvetIndex++ % DUVETS.length], roughness: 0.95 });
 
+/** Printed bedding: 'vader' (black, helmets, red light sabers, stars) or 'unicorn' (pink). */
+function sheetTexture(kind) {
+  const c = document.createElement('canvas');
+  c.width = 512; c.height = 512;
+  const g = c.getContext('2d');
+  let seed = kind === 'vader' ? 3 : 9;
+  const rand = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+  if (kind === 'vader') {
+    g.fillStyle = '#121418';
+    g.fillRect(0, 0, 512, 512);
+    g.fillStyle = '#e8e8f0';
+    for (let i = 0; i < 160; i++) g.fillRect(rand() * 512, rand() * 512, 1.5, 1.5);
+    const helmet = (x, y, s) => {
+      g.save();
+      g.translate(x, y);
+      g.scale(s, s);
+      g.fillStyle = '#3a3f47';
+      g.beginPath(); // dome + flared neck
+      g.moveTo(-40, 30); g.lineTo(-34, -10);
+      g.bezierCurveTo(-34, -48, 34, -48, 34, -10);
+      g.lineTo(40, 30); g.lineTo(18, 34); g.lineTo(0, 22); g.lineTo(-18, 34); g.closePath();
+      g.fill();
+      g.fillStyle = '#0b0c0e'; // eyes + mouth grille
+      g.beginPath(); g.ellipse(-12, -6, 10, 7, -0.3, 0, Math.PI * 2); g.ellipse(12, -6, 10, 7, 0.3, 0, Math.PI * 2); g.fill();
+      g.beginPath(); g.moveTo(-8, 6); g.lineTo(8, 6); g.lineTo(5, 24); g.lineTo(-5, 24); g.closePath(); g.fill();
+      g.fillStyle = '#8b939e';
+      for (let k = -3; k <= 3; k += 2) g.fillRect(k * 1.6 - 0.6, 10, 1.2, 11);
+      g.restore();
+    };
+    const saber = (x, y, a) => {
+      g.save();
+      g.translate(x, y); g.rotate(a);
+      g.shadowColor = '#ff2a2a'; g.shadowBlur = 14;
+      g.fillStyle = '#ff4a4a';
+      g.fillRect(-3, -70, 6, 70);
+      g.shadowBlur = 0;
+      g.fillStyle = '#9aa0a8';
+      g.fillRect(-4, 0, 8, 22);
+      g.restore();
+    };
+    for (const [x, y] of [[128, 128], [384, 128], [128, 384], [384, 384]]) helmet(x, y, 1.1);
+    for (const [x, y, a] of [[256, 250, 0.6], [0, 250, -0.6], [512, 250, -0.6], [256, 0, -0.6], [256, 512, -0.6]]) saber(x, y, a);
+  } else {
+    g.fillStyle = '#f7c9de';
+    g.fillRect(0, 0, 512, 512);
+    // rainbows, stars and white unicorns
+    const rainbow = (x, y, r) => {
+      for (const [i, col] of ['#ff8fa3', '#ffc36b', '#fff27a', '#9be39b', '#8fc8ff', '#c7a2ff'].entries()) {
+        g.strokeStyle = col; g.lineWidth = 5;
+        g.beginPath(); g.arc(x, y, r - i * 5, Math.PI, 0); g.stroke();
+      }
+    };
+    const star = (x, y, r, col) => {
+      g.fillStyle = col;
+      g.beginPath();
+      for (let k = 0; k < 10; k++) {
+        const a = (k * Math.PI) / 5 - Math.PI / 2, rr = k % 2 ? r * 0.45 : r;
+        g.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr);
+      }
+      g.fill();
+    };
+    const unicorn = (x, y, s, flip) => {
+      g.save();
+      g.translate(x, y); g.scale(flip ? -s : s, s);
+      g.fillStyle = '#ffffff';
+      g.beginPath(); g.ellipse(0, 0, 34, 20, 0, 0, Math.PI * 2); g.fill();          // body
+      g.beginPath(); g.ellipse(32, -24, 13, 10, -0.6, 0, Math.PI * 2); g.fill();    // head
+      g.fillRect(20, -24, 12, 22);                                                 // neck
+      for (const lx of [-22, -10, 12, 24]) g.fillRect(lx, 12, 6, 22);              // legs
+      g.fillStyle = '#ffd56b';
+      g.beginPath(); g.moveTo(36, -32); g.lineTo(46, -56); g.lineTo(41, -30); g.fill(); // horn
+      g.strokeStyle = '#c58bff'; g.lineWidth = 6;                                  // mane + tail
+      g.beginPath(); g.moveTo(26, -34); g.quadraticCurveTo(14, -24, 18, -8); g.stroke();
+      g.strokeStyle = '#ff8fc0';
+      g.beginPath(); g.moveTo(-34, -4); g.quadraticCurveTo(-52, 6, -46, 26); g.stroke();
+      g.fillStyle = '#5a3d6b';
+      g.beginPath(); g.arc(36, -25, 2, 0, Math.PI * 2); g.fill();                  // eye
+      g.restore();
+    };
+    rainbow(380, 150, 60); rainbow(120, 420, 50);
+    for (let i = 0; i < 26; i++) star(rand() * 512, rand() * 512, 6 + rand() * 6, rand() < 0.5 ? '#ffffff' : '#ffe27a');
+    unicorn(140, 150, 1.2, false); unicorn(380, 380, 1.1, true);
+  }
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  tex.anisotropy = 4;
+  return tex;
+}
+const sheetMats = {};
+const sheetMat = (kind) => (sheetMats[kind] ??= new THREE.MeshStandardMaterial({ map: sheetTexture(kind), roughness: 0.95 }));
+
 /** Bunk bed, white: four posts, two mattresses with duvets, guard rail and a ladder. −z = head. */
 function bunk(item) {
   const g = new THREE.Group();
@@ -234,8 +326,9 @@ function bunk(item) {
     for (const x of [-w / 2 - p / 2, w / 2 + p / 2]) g.add(rbox(p * 0.8, 0.12, l, x, y, 0, whiteWood, 0.01));
     for (const z of [-l / 2 - p / 2, l / 2 + p / 2]) g.add(rbox(w, 0.12, p * 0.8, 0, y, z, whiteWood, 0.01));
     g.add(rbox(w - 0.02, 0.14, l - 0.02, 0, y + 0.1, 0, linen, 0.04));
-    g.add(rbox(w, 0.05, l * 0.68, 0, y + 0.19, l * 0.15, duvetMat(), 0.025));
-    g.add(rbox(w * 0.7, 0.1, 0.34, 0, y + 0.22, -l / 2 + 0.24, linen, 0.05));
+    const duvet = item.sheets ? sheetMat(item.sheets) : duvetMat();
+    g.add(rbox(w, 0.05, l * 0.68, 0, y + 0.19, l * 0.15, duvet, 0.025));
+    g.add(rbox(w * 0.7, 0.1, 0.34, 0, y + 0.22, -l / 2 + 0.24, item.sheets ? duvet : linen, 0.05));
   }
   // guard rail on the top bunk (open by the ladder) and the head/foot boards above it
   g.add(rbox(p * 0.6, 0.06, l * 0.62, w / 2 + p / 2, 1.5, -l * 0.17, whiteWood, 0.01));

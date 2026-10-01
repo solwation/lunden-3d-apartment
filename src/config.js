@@ -256,8 +256,10 @@ export const FURNITURE = [
   { type: 'sidetable', level: 0, x: 1.52, z: 8.12, flower: true },
   // Upstairs bedrooms (the user's plan). Beds: rot = direction from the head to the foot end.
   { type: 'bed', level: 1, x: 5.55 - 1.1, z: 2.3, rot: 90, w: 1.6, l: 2.0 },  // Sovrum 1 (Sarah & Ofluf), head east, clear of the Klk
-  { type: 'bunk', level: 1, x: 0.2 + 0.5, z: 2.6, rot: 180, w: 0.9, l: 2.0 },  // Sovrum 3 (Livia & Tuva), along the west wall
-  { type: 'bunk', level: 1, x: 5.55 - 0.5, z: 10.1, rot: 180, w: 0.9, l: 2.0 }, // Sovrum 2 (Walter & Kian), along the east wall
+  // Bunks: long side against the side wall, head end against the façade (the user's wish);
+  // the ladder ends up on the room side at the foot end.
+  { type: 'bunk', level: 1, x: 0.2 + 0.5, z: 0.47 + 1.05, rot: 180, w: 0.9, l: 2.0, sheets: 'unicorn' }, // Sovrum 3 (Livia & Tuva)
+  { type: 'bunk', level: 1, x: 5.55 - 0.5, z: 12.23 - 1.05, rot: 0, w: 0.9, l: 2.0, sheets: 'vader' }, // Sovrum 2 (Walter & Kian)
   // Sovrum 4 (Tilly): IKEA HEMNES dagbädd m 3 lådor, vit, 207 × 89 × 83 cm (ikea.com), back to the
   // west wall, with pink cushions. rot = the way the seat faces.
   { type: 'daybed', level: 1, x: 0.2 + 0.46, z: 10.0, rot: -90 },
