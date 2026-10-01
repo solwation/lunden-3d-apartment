@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kv. Lunden L1007</title>
+  <meta name="description" content="Gå runt i lägenhet L1007, Kv. Lunden, i 3D.">
+  <style>
+    :root {
+      --ink: #24373f;
+      --accent: #126d91;
+      --panel: rgba(255, 255, 255, 0.92);
+    }
+    html, body { margin: 0; height: 100%; overflow: hidden; background: #bfd8ea; font-family: system-ui, sans-serif; color: var(--ink); }
+    canvas { display: block; }
+    #overlay {
+      position: fixed; inset: 0; display: grid; place-items: center; cursor: pointer;
+      background: rgba(20, 35, 45, 0.45);
+    }
+    #overlay[hidden] { display: none; }
+    .card { background: var(--panel); padding: 28px 32px; border-radius: 10px; max-width: 420px; box-shadow: 0 10px 40px rgba(0,0,0,.25); }
+    .card h1 { margin: 0 0 2px; font-size: 26px; }
+    .card .kicker { color: var(--accent); font-weight: 700; font-size: 13px; letter-spacing: .05em; }
+    .card p { margin: 12px 0; line-height: 1.45; }
+    .card .go { display: inline-block; margin-top: 6px; background: var(--accent); color: #fff; padding: 10px 18px; border-radius: 6px; font-weight: 600; }
+    kbd { background: #eef2f4; border: 1px solid #c5d4dc; border-bottom-width: 2px; border-radius: 4px; padding: 1px 6px; font-size: 13px; }
+    .keys { display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; font-size: 14px; margin: 14px 0; }
+    #hud[hidden] { display: none; }
+    #crosshair { position: fixed; left: 50%; top: 50%; width: 6px; height: 6px; margin: -3px 0 0 -3px; border-radius: 50%; background: rgba(255,255,255,.9); box-shadow: 0 0 0 1px rgba(0,0,0,.35); pointer-events: none; }
+    #level { position: fixed; left: 16px; bottom: 16px; background: var(--panel); padding: 6px 12px; border-radius: 6px; font-weight: 600; font-size: 14px; }
+    #prompt { position: fixed; left: 50%; top: calc(50% + 28px); transform: translateX(-50%); background: rgba(20,35,45,.8); color: #fff; padding: 6px 12px; border-radius: 6px; font-size: 14px; pointer-events: none; white-space: nowrap; }
+    #prompt[hidden] { display: none; }
+  </style>
+  <script type="importmap">
+    { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js" } }
+  </script>
+</head>
+<body>
+  <div id="overlay">
+    <div class="card">
+      <div class="kicker">KV. LUNDEN / L1007</div>
+      <h1>Gå runt i lägenheten</h1>
+      <p>Byggd direkt från den måttsatta planritningen: entréplan och övre plan, förbundna med trappan.</p>
+      <div class="keys">
+        <span><kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd></span><span>gå</span>
+        <span><kbd>Mus</kbd></span><span>titta</span>
+        <span><kbd>Shift</kbd></span><span>spring</span>
+        <span><kbd>E</kbd></span><span>öppna/stäng dörren du tittar på</span>
+        <span><kbd>Esc</kbd></span><span>släpp musen</span>
+      </div>
+      <span class="go">Klicka för att börja</span>
+    </div>
+  </div>
+  <div id="hud" hidden>
+    <div id="crosshair"></div>
+    <div id="level"></div>
+    <div id="prompt" hidden></div>
+  </div>
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>
