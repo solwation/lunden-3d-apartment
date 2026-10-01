@@ -60,6 +60,13 @@ export class Tap {
     this.sound = null;
   }
 
+  /** Is (x, feetY, z) standing in this shower's spray? */
+  hits(x, y, z) {
+    if (!this.isOpen || !this.spec.shower || Math.abs(y - this.spec.basin) > 0.5) return false;
+    const p = this.splash.getWorldPosition(this.splash.position.clone());
+    return Math.hypot(x - p.x, z - p.z) < 0.4;
+  }
+
   get verb() { return this.isOpen ? 'stänga av' : 'sätta på'; }
 
   toggle() {

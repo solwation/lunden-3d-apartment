@@ -78,6 +78,7 @@ function showNote(show) {
 document.getElementById('note-close').addEventListener('click', () => showNote(false));
 
 const taps = world.taps.map((spec) => new Tap(spec));
+let inShower = false, shriekAt = 0;
 for (const t of taps) scene.add(t.object);
 
 const player = new Player(world, camera);
@@ -310,6 +311,10 @@ function step(dt) {
   for (const d of world.doors) d.update(dt);
   for (const l of world.lids) l.update(dt);
   for (const t of taps) t.update(dt);
+  // stepping into a running (cold!) shower: "iiiih!" once per visit
+  const wet = taps.some((t) => t.hits(player.pos.x, player.pos.y, player.pos.z));
+  if (wet && !inShower && performance.now() > shriekAt) { sfx.shriek(); shriekAt = performance.now() + 1500; }
+  inShower = wet;
   animateWater(dt);
   cat.update(dt);
   measure.update(dt, window.innerWidth, window.innerHeight);

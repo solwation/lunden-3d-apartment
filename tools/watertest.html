@@ -51,6 +51,15 @@ f.onload = async () => {
     pass &&= ok;
     lines.push(`${ok ? 'PASS' : 'FAIL'} ${t.name} @ (${target.x.toFixed(2)}, ${target.y.toFixed(2)}, ${target.z.toFixed(2)}) button "${label}" on=${on} off=${off}`);
   }
+  // cold shower: standing in the running ceiling shower is detected
+  const sh = taps.find((t) => t.name === 'takduschen');
+  sh.toggle();
+  const spot = sh.splash.getWorldPosition(sh.splash.position.clone());
+  const inside = sh.hits(spot.x, 0, spot.z), outside = sh.hits(spot.x + 1, 0, spot.z);
+  sh.toggle();
+  const okShower = inside && !outside;
+  pass &&= okShower;
+  lines.push(`${okShower ? 'PASS' : 'FAIL'} standing in the shower is detected (in=${inside} beside=${outside})`);
   out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
 };
 </script>

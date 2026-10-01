@@ -498,7 +498,7 @@ function showerSet(B, wallX, z, y0, ceiling) {
     B.box(x - 0.02, x + 0.04, z - 0.02, z + 0.02, hy - 0.03, hy + 0.03, M.chrome);
     const handle = new THREE.CylinderGeometry(0.015, 0.012, 0.21, 10).rotateZ(-0.6).translate(x + 0.08, hy - 0.06, z);
     B.add(handle, M.chrome);
-    const head = [x + 0.15, hy + 0.04, z], dir = [0.62, -0.78, 0];
+    const head = [x + 0.15, hy + 0.04, z], dir = [0.3, -0.954, 0]; // lands ~0.95 m out, inside the shower
     showerHead(B, head, dir, 0.055, 0.02);
     outlets.push({ pos: [head[0] + 0.02, head[1] - 0.02, z], dir, r: 0.045, basin: y0, name: 'duschen', pick: [wallX + 0.07, y0 + 1.0, z], shower: true });
     hose(B, [[x + 0.02, hy - 0.15, z], [x + 0.1, y0 + 0.7, z + 0.08], [wallX + 0.09, y0 + 0.97, z + 0.05]], M.chrome);

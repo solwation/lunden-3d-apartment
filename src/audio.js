@@ -229,6 +229,33 @@ export const sfx = {
       },
     };
   },
+  /** "Iiiiih!" — a startled shriek (cold shower): voiced sawtooth through the formants of [i]. */
+  shriek() {
+    if (!ready()) return;
+    const t = ctx.currentTime, d = out(null, 0.9), dur = 1.1;
+    const o = ctx.createOscillator();
+    o.type = 'sawtooth';
+    o.frequency.setValueAtTime(380, t);
+    o.frequency.exponentialRampToValueAtTime(620, t + 0.18);
+    o.frequency.linearRampToValueAtTime(560, t + dur);
+    const vib = ctx.createOscillator(), vg = ctx.createGain();
+    vib.frequency.value = 7; vg.gain.value = 14;
+    vib.connect(vg).connect(o.frequency);
+    const env = ctx.createGain();
+    env.gain.setValueAtTime(0, t);
+    env.gain.linearRampToValueAtTime(0.4, t + 0.05);
+    env.gain.setValueAtTime(0.4, t + dur * 0.7);
+    env.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(env);
+    for (const [f, q, gain] of [[300, 5, 0.7], [2400, 9, 1], [3100, 10, 0.5]]) {
+      const bp = ctx.createBiquadFilter();
+      bp.type = 'bandpass'; bp.frequency.value = f; bp.Q.value = q;
+      const g = ctx.createGain(); g.gain.value = gain;
+      env.connect(bp).connect(g).connect(d);
+    }
+    o.start(t); vib.start(t);
+    o.stop(t + dur + 0.05); vib.stop(t + dur + 0.05);
+  },
   /** Paper rustle (taking the note off the freezer). */
   paper(pos) {
     if (!ready()) return;
