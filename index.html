@@ -65,6 +65,14 @@
     #note li { font-size: 15px; }
     #note small { display: block; margin-top: 12px; color: #6a7c84; font: 13px system-ui, sans-serif; }
     #note-close { position: absolute; right: 10px; top: 8px; border: 0; background: transparent; font-size: 24px; color: #23324a; cursor: pointer; }
+    #stats { position: fixed; left: 16px; top: 16px; min-width: 190px; background: rgba(20, 35, 45, 0.45); color: #fff; padding: 8px 12px; border-radius: 8px; font-size: 13px; line-height: 1.5; pointer-events: none; backdrop-filter: blur(2px); }
+    #stats[hidden] { display: none; }
+    #stats div { display: flex; flex-wrap: wrap; gap: 0 10px; justify-content: space-between; }
+    #stats b { font-variant-numeric: tabular-nums; }
+    #stats small { flex-basis: 100%; opacity: .7; font-size: 11px; line-height: 1.2; margin: -2px 0 2px 20px; }
+    body.touch #stats { top: 60px; }
+    #stats-btn { position: fixed; right: 124px; top: 16px; width: 44px; height: 44px; border: 0; border-radius: 50%; background: var(--panel); font-size: 18px; }
+    .linkish { border: 0; background: none; color: #6a7c84; font: 13px system-ui, sans-serif; text-decoration: underline; cursor: pointer; padding: 0; margin-top: 12px; }
     #update-close { background: transparent; color: #fff; padding: 8px 10px !important; font-size: 18px !important; }
   </style>
   <script type="importmap">
@@ -85,14 +93,15 @@
         <span><kbd>Mus</kbd></span><span>titta</span>
         <span><kbd>Shift</kbd></span><span>spring</span>
         <span><kbd>←</kbd> <kbd>→</kbd></span><span>vrid (om pekplattan är spärrad medan du skriver)</span>
-        <span><kbd>E</kbd></span><span>öppna/stäng dörren du tittar på</span>
+        <span><kbd>E</kbd></span><span>öppna/stäng dörren du tittar på, klappa katten</span>
         <span><kbd>M</kbd></span><span>ljud av/på</span>
+        <span><kbd>T</kbd></span><span>visa/dölj statistiken</span>
         <span><kbd>Esc</kbd></span><span>släpp musen</span>
       </div>
       <div class="keys touch-help">
         <span>Vänster tumme</span><span>joystick — gå (tryck ut helt för att springa)</span>
         <span>Höger tumme</span><span>dra för att titta</span>
-        <span>Knapp</span><span>öppna/stäng dörren du tittar på</span>
+        <span>Knapp</span><span>öppna/stäng dörren du tittar på, klappa katten</span>
       </div>
       <div class="changes" id="changes-box" hidden>
         <h2>Senaste ändringarna</h2>
@@ -103,6 +112,7 @@
         <button id="start-mouse" class="go">Mus &amp; tangentbord</button>
         <button id="start-touch" class="go alt">Touch</button>
       </div>
+      <button id="stats-reset" class="linkish">Nollställ statistiken</button>
     </div>
   </div>
   <div id="update" hidden role="status">
@@ -121,6 +131,8 @@
   <div id="hud" hidden>
     <div id="crosshair"></div>
     <div id="level"></div>
+    <div id="stats" aria-live="off"></div>
+    <button id="stats-btn" class="touch-only" aria-label="Statistik">📊</button>
     <div id="prompt" hidden></div>
     <div id="stick" hidden><div class="knob"></div></div>
     <button id="action" class="touch-only" hidden></button>

@@ -50,6 +50,7 @@ src/interior.js        fitted kitchen, laundry, bathroom fittings, tiled floors/
 material/              screenshots of our choices in Peab's option portal (local, see below)
 src/audio.js           synthesised positional sound effects (Web Audio): doors, slides, meow, steps
 src/toilet.js          toilet (Ifö Spira 6260) with an animated lid
+src/stats.js           visitor statistics (localStorage) + the translucent HUD panel (T toggles)
 src/changelog.js       changelog list (start screen) + the note on the freezer (E to read)
 data/plan.json         GENERATED — do not edit by hand
 data/changelog.json    what changed, for visitors (see Workflow rules)
@@ -57,6 +58,7 @@ tools/extract_plan.py  PDF → data/plan.json (stdlib only)
 tools/walktest.html    headless movement test
 tools/touchtest.html   headless touch-input test (synthetic pointer events)
 tools/cattest.html     headless test of cat placement behind every door/wardrobe
+tools/pettest.html     headless test of petting the cat (eyes, hand, stats counter)
 tools/notetest.html    headless test of the changelog note ("Nytt", read/close, no walking)
 tools/stamp.sh         build the published site with a version stamp (used by CI)
 ```
@@ -136,7 +138,7 @@ URL parameters (debugging / screenshots):
 - `&shot` — hide the start overlay.
 - `&open` — open every door (screenshots of open doors / wardrobes).
 - `&cat=x,z[,yawDeg[,y]]` — show the cat there; `&catv=i` coat variant, `&catt=s` animation time.
-- `&note` — open the changelog note.
+- `&note` — open the changelog note. `&pet` (with `&cat=`) — the cat is being petted.
 - `&clip=y` — clip everything above height y (cut-away plan view, e.g.
   `?shot&at=2.87,6.35,0,-90,16&clip=2.5` for Entréplan from above, `clip=5.6` + feet 19 for Övre plan).
 
@@ -172,6 +174,11 @@ screenshots into the session scratchpad, not the repo.
 - Opening an interior door/wardrobe: 30 % chance a cat appears on the far side (random free
   floor spot visible from the doorway, or inside the wardrobe). Close + reopen that door:
   50 % it's gone, else it moved. A cat appearing from nowhere gets a new random coat.
+- Look at a visible cat + E pets it: purring (`sfx.purr`), eyes shut, head rubs the visitor's hand
+  (`PET_TIME` in cat.js). Raycasts ignore visibility, so main.js only adds the cat as a target
+  while it is visible. Tests must call `updateMatrixWorld` on objects they move (no render runs).
+- Statistics (`src/stats.js`): cats found per coat, cats petted, doors, toilet lids, steps/metres,
+  stair trips, time inside; reset on the start screen.
 - Sounds are synthesised (no audio files) and positional; the AudioContext is started by the
   start-screen buttons (browser autoplay rules). M / the speaker button mutes.
 

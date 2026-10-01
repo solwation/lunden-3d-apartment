@@ -174,6 +174,35 @@ export const sfx = {
     noise(t, 0.04, d, { type: 'highpass', freq: 1800, gain: opening ? 0.2 : 0.35 });
     tone(t, 0.06, d, { from: 900, to: 600, gain: opening ? 0.08 : 0.14 });
   },
+  /** Purring for `dur` seconds: a ~26 Hz pulse train through a low formant, breathing in and out. */
+  purr(pos, dur = 4, pitch = 1) {
+    if (!ready()) return;
+    const t = ctx.currentTime, d = out(pos, 1.1);
+    const src = ctx.createBufferSource();
+    src.buffer = noiseBuf;
+    src.loop = true;
+    const lp = ctx.createBiquadFilter();
+    lp.type = 'lowpass'; lp.frequency.value = 260 * pitch;
+    const am = ctx.createGain();
+    am.gain.value = 0.5;
+    const lfo = ctx.createOscillator(), depth = ctx.createGain();
+    lfo.type = 'sawtooth'; lfo.frequency.value = 26 * pitch; depth.gain.value = 0.5;
+    lfo.connect(depth).connect(am.gain);
+    const env = ctx.createGain();
+    env.gain.setValueAtTime(0, t);
+    // inhale (quieter) / exhale (louder), ~1.6 s per breath
+    for (let b = 0; b * 1.6 < dur; b++) {
+      const t0 = t + b * 1.6;
+      env.gain.linearRampToValueAtTime(0.5, t0 + 0.15);
+      env.gain.linearRampToValueAtTime(0.25, t0 + 0.75);
+      env.gain.linearRampToValueAtTime(0.9, t0 + 0.95);
+      env.gain.linearRampToValueAtTime(0.35, t0 + 1.55);
+    }
+    env.gain.linearRampToValueAtTime(0, t + dur);
+    src.connect(lp).connect(am).connect(env).connect(d);
+    src.start(t); lfo.start(t);
+    src.stop(t + dur + 0.1); lfo.stop(t + dur + 0.1);
+  },
   /** Paper rustle (taking the note off the freezer). */
   paper(pos) {
     if (!ready()) return;

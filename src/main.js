@@ -8,6 +8,7 @@ import { CatSpawner, VARIANTS, applyVariant } from './cat.js';
 import { initAudio, sfx, toggleMuted, isMuted, updateListener } from './audio.js';
 import { stairHeight } from './stairs.js';
 import { loadChangelog, renderChangelog, buildNote } from './changelog.js';
+import { bump, catFound, renderStats, resetStats, statsShown, setStatsShown } from './stats.js';
 
 const overlay = document.getElementById('overlay');
 const hud = document.getElementById('hud');
@@ -75,11 +76,14 @@ document.getElementById('note-close').addEventListener('click', () => showNote(f
 const player = new Player(world, camera);
 const cat = new CatSpawner(world);
 scene.add(cat.object);
+cat.onFound = (v) => catFound(v.name);
+cat.onPet = () => bump('petted');
 
 /** Open/close a door (with sound); the cat may turn up (or leave) behind doors you open. */
 function useDoor(door) {
   const opening = !door.isOpen;
   door.toggle();
+  if (opening) bump('doors');
   const [x, z] = door.opening().center;
   const pos = { x, y: player.pos.y + 1.1, z };
   if (door.kind === 'swing') {
@@ -99,9 +103,11 @@ function footsteps() {
   const d = Math.hypot(player.pos.x - lastPos.x, player.pos.z - lastPos.z);
   lastPos.copy(player.pos);
   if (d > 0.5 || player.vy !== 0) return; // teleport / falling
+  bump('metres', d);
   stride += d;
   if (stride < 0.62) return;
   stride = 0;
+  bump('steps');
   const { x, z } = player.pos;
   const inside = x > 0 && x < world.size.x && z > 0 && z < world.size.z;
   sfx.step(stairHeight(x, z) !== null ? 'stair' : inside ? 'wood' : 'outside');
@@ -132,6 +138,8 @@ if (params.has('cat')) {
   cat.t = Number(params.get('catt') ?? 1.5);
   cat.nextMeow = 1e9;
   cat.update(0);
+  // &pet: the cat is being petted (screenshots)
+  if (params.has('pet')) { cat.pet(player.pos); cat.petT = 1e9; cat.update(1.1); }
 }
 // ?note opens the changelog note (screenshots)
 if (params.has('note')) showNote(true);
@@ -173,7 +181,11 @@ pauseBtn.addEventListener('click', () => {
 /** E / the action button on what you look at: doors toggle, the note opens. */
 function use(thing) {
   if (thing.kind === 'note') showNote(true);
-  else if (thing.kind === 'lid') { thing.toggle(); sfx.lid(thing.object.position, thing.isOpen); }
+  else if (thing.kind === 'lid') {
+    thing.toggle();
+    if (thing.isOpen) bump('lids');
+    sfx.lid(thing.object.position, thing.isOpen);
+  } else if (thing.kind === 'cat') cat.pet(player.pos);
   else useDoor(thing);
 }
 actionBtn.addEventListener('click', () => { if (reading) showNote(false); else if (focused) use(focused); });
@@ -203,6 +215,7 @@ document.addEventListener('keydown', (e) => {
   player.keys.add(e.code);
   if (e.code === 'KeyE' && focused) use(focused);
   if (e.code === 'KeyM') updateMute(toggleMuted());
+  if (e.code === 'KeyT') toggleStats();
   if (e.code.startsWith('Arrow')) e.preventDefault();
 });
 document.addEventListener('keyup', (e) => player.keys.delete(e.code));
@@ -220,8 +233,10 @@ const center = new THREE.Vector2(0, 0);
 let focused = null;
 
 function updateFocus() {
+  camera.updateMatrixWorld(); // the player just moved it; render hasn't run yet
   raycaster.setFromCamera(center, camera);
-  const hit = raycaster.intersectObjects(pickables, true)[0];
+  // (the raycaster ignores visibility, so the cat is only a target while it is there)
+  const hit = raycaster.intersectObjects(cat.visible ? [...pickables, cat.object] : pickables, true)[0];
   focused = hit ? hit.object.userData.door : null;
   const verb = !focused ? '' : focused.verb ?? (focused.isOpen ? 'stänga' : 'öppna');
   if (focused && touch.enabled) {
@@ -233,6 +248,20 @@ function updateFocus() {
   promptEl.hidden = !focused || touch.enabled || reading;
   actionBtn.hidden = !(focused || reading) || !touch.enabled;
 }
+
+// --- statistics panel (T / 📊 toggles, reset on the start screen) ---------------
+const statsEl = document.getElementById('stats');
+function toggleStats(show = statsEl.hidden) {
+  statsEl.hidden = !show;
+  setStatsShown(show);
+}
+toggleStats(statsShown());
+document.getElementById('stats-btn').addEventListener('click', () => toggleStats());
+document.getElementById('stats-reset').addEventListener('click', () => {
+  if (confirm('Nollställa statistiken?')) { resetStats(); renderStats(statsEl); }
+});
+renderStats(statsEl);
+setInterval(() => { if (!statsEl.hidden) renderStats(statsEl); }, 250);
 
 // --- loop ----------------------------------------------------------------
 const clock = new THREE.Clock();
@@ -251,6 +280,8 @@ function step(dt) {
   }
   const outside = player.pos.x <= 0 || player.pos.x >= world.size.x || player.pos.z <= 0 || player.pos.z >= world.size.z;
   const lvl = outside ? -1 : player.level;
+  if (active() && !outside) bump('seconds', dt);
+  if (lvl !== lastLevel && lvl >= 0 && lastLevel >= 0) bump('stairs');
   if (lvl !== lastLevel) {
     levelEl.textContent = lvl < 0 ? 'Utomhus' : LEVELS[lvl].name;
     lastLevel = lvl;

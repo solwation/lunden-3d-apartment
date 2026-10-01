@@ -30,6 +30,7 @@ f.onload = async () => {
   const p = note.object.position;
   player.spawn(p.x, p.z - 1.0, Math.PI);
   camera.rotation.x = Math.atan2(p.y - player.eyeY, 1.0);
+  note.object.parent.updateMatrixWorld(true); // normally done by the first render
   for (let i = 0; i < 5; i++) step(1 / 60);
   const btn = d.getElementById('action');
   pass &= check(!btn.hidden && /läsa lappen/i.test(btn.textContent), `action button "${btn.textContent}"`);

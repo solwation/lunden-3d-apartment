@@ -14,15 +14,17 @@ Gå runt i lägenheten L1007 (Kv. Lunden, Peab) i webbläsaren som i ett FPS-spe
 | Mus | titta |
 | <kbd>Shift</kbd> | spring |
 | <kbd>←</kbd> <kbd>→</kbd> | vrid |
-| <kbd>E</kbd> | öppna/stäng dörren du tittar på |
+| <kbd>E</kbd> | öppna/stäng dörren du tittar på, klappa katten, läsa lappen |
 | <kbd>M</kbd> | ljud av/på |
+| <kbd>T</kbd> | visa/dölj statistiken |
 | <kbd>Esc</kbd> | släpp musen |
 
 **Touch (mobil, surfplatta, Surface):** välj *Touch* på startskärmen. Vänster tumme är en joystick
 (tryck ut den helt för att springa), dra med höger tumme för att titta, och tryck på knappen som
 dyker upp för att öppna och stänga dörrar.
 
-Öppna dörrar och garderober — ibland sitter det en katt där och tvättar sig. 🐈
+Öppna dörrar och garderober — ibland sitter det en katt där och tvättar sig. Gå fram och tryck
+<kbd>E</kbd> så får du klappa den. 🐈 Statistiken (katter, dörrar, steg …) sparas i webbläsaren.
 
 Vad som är nytt står på startskärmen och på lappen på frysen i köket (gå fram och tryck
 <kbd>E</kbd>). Det som tillkommit sedan ditt senaste besök är markerat *Nytt*.

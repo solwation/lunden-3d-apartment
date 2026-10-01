@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Pet the cat test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+// Petting test: puts the cat in the living room in front of the visitor (touch mode), looks
+// at it, presses the action button and checks purring state, closed eyes, hand and stats.
+//   google-chrome --headless=new --dump-dom http://localhost:8137/tools/pettest.html
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+localStorage.removeItem('lunden.stats');
+const f = document.createElement('iframe');
+f.width = 900; f.height = 600;
+f.src = '../index.html';
+document.body.append(f);
+f.onload = async () => {
+  const w = f.contentWindow, d = f.contentDocument;
+  while (!w.__app) await wait(100);
+  const { player, camera, cat, step } = w.__app;
+  const lines = [];
+  const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; };
+  d.getElementById('start-touch').click();
+  await wait(50);
+  player.spawn(2.8, 9.0, Math.PI); // facing south
+  cat.object.position.set(2.8, 0, 9.8);
+  cat.object.rotation.y = Math.PI;
+  cat.object.visible = true;
+  cat.object.updateMatrixWorld(true); // normally done by the next render
+  camera.rotation.x = Math.atan2(0.3 - player.eyeY, 0.8);
+  for (let i = 0; i < 5; i++) step(1 / 60);
+  const btn = d.getElementById('action');
+  let pass = check(!btn.hidden && /klappa katten/i.test(btn.textContent), `action button "${btn.textContent}"`);
+  btn.click();
+  for (let i = 0; i < 40; i++) step(1 / 60);
+  pass &= check(cat.petting, 'cat is being petted');
+  pass &= check(cat.hand.visible, 'hand visible');
+  pass &= check(cat.eyes.every((e) => e.shut.visible && !e.eye.visible), 'eyes closed');
+  btn.click(); // petting again while it purrs counts once
+  for (let i = 0; i < 6 * 60; i++) step(1 / 60);
+  pass &= check(!cat.petting && !cat.hand.visible && cat.eyes.every((e) => e.eye.visible), 'stops after a while');
+  await wait(400); // panel refreshes 4×/s
+  const petted = Number(d.querySelector('#stats')?.textContent.match(/Klappade katter(\d+)/)?.[1]);
+  pass &= check(petted === 1, `stats panel: klappade katter = ${petted}`);
+  out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
+};
+</script>
+</body>
+</html>

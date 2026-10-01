@@ -26,6 +26,9 @@ const ROLE = { coat: fur(), bib: fur(), paw: fur(), face: fur(), blaze: fur(), e
 const pink = new THREE.MeshStandardMaterial({ color: 0xd99a9a, roughness: 0.6 });
 const eyeMat = new THREE.MeshStandardMaterial({ color: 0x9bbf3a, roughness: 0.3, emissiveIntensity: 0.25 });
 const pupilMat = new THREE.MeshStandardMaterial({ color: 0x050505, roughness: 0.2 });
+const skin = new THREE.MeshStandardMaterial({ color: 0xe8b996, roughness: 0.7 });
+
+const PET_TIME = 4.5; // seconds of purring per pat
 
 export function applyVariant(v) {
   for (const [role, m] of Object.entries(ROLE)) m.color.setHex(v[role]);
@@ -78,14 +81,23 @@ function buildCat() {
   head.add(blob(ROLE.face, 0.042, 0.032, 0.035, 0, -0.022, 0.05));          // muzzle
   head.add(blob(pink, 0.009, 0.007, 0.006, 0, -0.008, 0.083));           // nose
   head.add(blob(ROLE.blaze, 0.016, 0.03, 0.01, 0, 0.03, 0.058));              // blaze
+  const eyes = [];
   for (const s of [-1, 1]) {
     const ear = new THREE.Mesh(new THREE.ConeGeometry(0.03, 0.055, 4), ROLE.ear);
     ear.position.set(s * 0.042, 0.063, -0.005);
     ear.rotation.set(-0.15, Math.PI / 4, s * -0.3);
     ear.castShadow = true;
     head.add(ear);
-    head.add(blob(eyeMat, 0.014, 0.012, 0.008, s * 0.028, 0.012, 0.06));
-    head.add(blob(pupilMat, 0.004, 0.01, 0.004, s * 0.028, 0.012, 0.067));
+    // eyes on a lid pivot so they can close (scale y → 0) while being petted
+    const eye = new THREE.Group();
+    eye.position.set(s * 0.028, 0.012, 0.06);
+    eye.add(blob(eyeMat, 0.014, 0.012, 0.008, 0, 0, 0), blob(pupilMat, 0.004, 0.01, 0.004, 0, 0, 0.007));
+    head.add(eye);
+    // closed eye: a thin dark line, shown instead
+    const shut = blob(pupilMat, 0.013, 0.0018, 0.004, s * 0.028, 0.01, 0.066);
+    shut.visible = false;
+    head.add(shut);
+    eyes.push({ eye, shut });
   }
   cat.add(head);
 
@@ -98,7 +110,23 @@ function buildCat() {
   tailGroup.add(tail, blob(ROLE.tip, 0.02, 0.018, 0.03, 0.06, 0.02, 0.13));
   cat.add(tailGroup);
 
-  return { cat, head, shoulder, tailGroup };
+  // the visitor's hand, shown while petting (palm + four fingers + thumb, palm down)
+  const hand = new THREE.Group();
+  hand.add(blob(skin, 0.045, 0.016, 0.05, 0, 0, 0));
+  for (let i = 0; i < 4; i++) {
+    const f = new THREE.Mesh(new THREE.CapsuleGeometry(0.0085, 0.05 - Math.abs(i - 1.5) * 0.008, 4, 8), skin);
+    f.rotation.x = Math.PI / 2 + 0.25;
+    f.position.set((i - 1.5) * 0.019, -0.008, 0.075);
+    hand.add(f);
+  }
+  const thumb = new THREE.Mesh(new THREE.CapsuleGeometry(0.009, 0.035, 4, 8), skin);
+  thumb.rotation.set(Math.PI / 2, 0, 0.9);
+  thumb.position.set(0.05, -0.01, 0.02);
+  hand.add(thumb);
+  hand.visible = false;
+  cat.add(hand);
+
+  return { cat, head, shoulder, tailGroup, eyes, hand };
 }
 
 const smooth = (a, b, t) => {
@@ -125,8 +153,16 @@ export class CatSpawner {
     this.world = world;
     this.rand = rand;
     this.chance = { appear: CHANCE_APPEAR, steal: CHANCE_STEAL, vanish: CHANCE_VANISH };
-    const { cat, head, shoulder, tailGroup } = buildCat();
-    Object.assign(this, { object: cat, head, shoulder, tailGroup });
+    const { cat, head, shoulder, tailGroup, eyes, hand } = buildCat();
+    Object.assign(this, { object: cat, head, shoulder, tailGroup, eyes, hand });
+    // look at the cat + E pets it (main.js treats this like a door target)
+    this.interact = { name: 'katten', kind: 'cat', verb: 'klappa', pickable: cat };
+    cat.traverse((o) => { o.userData.door = this.interact; });
+    this.petT = 0;            // seconds of petting left
+    this.petPhase = 0;
+    this.petFrom = null;      // where the visitor stands
+    this.onFound = null;      // (variant) => {} when a new cat turns up
+    this.onPet = null;        // () => {} when a pat starts
     cat.visible = false;
     this.variant = VARIANTS[0];
     applyVariant(this.variant);
@@ -158,6 +194,29 @@ export class CatSpawner {
   hide() {
     this.object.visible = false;
     this.door = null;
+    this.stopPetting();
+  }
+
+  get petting() { return this.petT > 0; }
+
+  /** The visitor (standing at `from`) pets the cat: it purrs, shuts its eyes and rubs the hand. */
+  pet(from) {
+    if (!this.visible) return;
+    const p = this.object.position;
+    if (!this.petting) {
+      this.petPhase = 0;
+      this.onPet?.();
+      sfx.purr({ x: p.x, y: p.y + 0.3, z: p.z }, PET_TIME, this.variant.pitch);
+    }
+    this.petT = PET_TIME;
+    this.petFrom = { x: from.x, z: from.z };
+    this.nextMeow = Math.max(this.nextMeow, PET_TIME + 2);
+  }
+
+  stopPetting() {
+    this.petT = 0;
+    this.hand.visible = false;
+    for (const e of this.eyes) { e.eye.visible = true; e.shut.visible = false; }
   }
 
   placeBehind(door, from) {
@@ -167,7 +226,9 @@ export class CatSpawner {
     if (!this.visible) {
       this.variant = VARIANTS[Math.floor(this.rand() * VARIANTS.length)];
       applyVariant(this.variant);
+      this.onFound?.(this.variant);
     }
+    this.stopPetting();
     this.nextMeow = 0.4 + this.rand() * 0.8;
     this.object.position.set(spot.x, spot.y, spot.z);
     this.object.rotation.y = spot.yaw;
@@ -218,6 +279,10 @@ export class CatSpawner {
   update(dt) {
     if (!this.visible) return;
     this.t += dt;
+    if (this.petting) {
+      this.updatePetting(dt);
+      return;
+    }
     // meow when found, then now and then
     this.nextMeow -= dt;
     if (this.nextMeow <= 0) {
@@ -240,5 +305,27 @@ export class CatSpawner {
     const idle = 1 - up;
     this.head.rotation.y += idle * 0.35 * Math.sin(this.t * 0.7);
     this.tailGroup.rotation.y = 0.08 * Math.sin(this.t * 2.3) * idle;
+  }
+
+  updatePetting(dt) {
+    this.petT -= dt;
+    this.petPhase += dt;
+    const k = Math.min(1, this.petPhase / 0.4) * Math.min(1, this.petT / 0.4); // ease in/out
+    const closed = this.petPhase > 0.3 && this.petT > 0.2;
+    for (const e of this.eyes) { e.eye.visible = !closed; e.shut.visible = closed; }
+    // head turns towards the visitor, tips up into the hand and rubs side to side
+    const o = this.object, f = this.petFrom ?? { x: o.position.x, z: o.position.z + 1 };
+    let yaw = Math.atan2(f.x - o.position.x, f.z - o.position.z) - o.rotation.y;
+    yaw = Math.atan2(Math.sin(yaw), Math.cos(yaw));
+    const rub = Math.sin(this.petPhase * 2.6);
+    this.head.rotation.set(-0.3 * k, THREE.MathUtils.clamp(yaw, -0.9, 0.9) * 0.5 * k + 0.25 * rub * k, 0.35 * rub * k);
+    this.shoulder.rotation.set(0, 0, 0);
+    this.tailGroup.rotation.y = 0.15 * Math.sin(this.petPhase * 1.3);
+    // the hand strokes from the forehead back along the neck, following the rub
+    const s = (Math.sin(this.petPhase * 2.6 - Math.PI / 2) + 1) / 2; // 0 = head, 1 = back
+    this.hand.visible = this.petT > 0.15;
+    this.hand.position.set(0.02 * rub, 0.42 - 0.07 * s, 0.07 - 0.17 * s);
+    this.hand.rotation.set(0.25 - 0.35 * s, Math.PI, 0);
+    if (this.petT <= 0) this.stopPetting();
   }
 }
