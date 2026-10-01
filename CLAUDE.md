@@ -53,6 +53,7 @@ src/toilet.js          toilet (Ifö Spira 6260) with an animated lid
 src/ao.js              baked ambient occlusion: distance field → multiply overlay on floor/ceiling (AO)
 src/rooms.js           room detection: walls + door gaps rasterised, BFS from the room labels
 src/minimap.js         plan view with the visitor's arrow, current room highlighted (K toggles)
+src/measure.js         tape measure (Q / 📏): two points on any surface, distance label
 src/stats.js           visitor statistics (localStorage) + the translucent HUD panel (T toggles)
 src/changelog.js       changelog list (start screen) + the note on the freezer (E to read)
 data/plan.json         GENERATED — do not edit by hand
@@ -62,6 +63,7 @@ tools/walktest.html    headless movement test
 tools/touchtest.html   headless touch-input test (synthetic pointer events)
 tools/cattest.html     headless test of cat placement behind every door/wardrobe
 tools/roomtest.html    headless test of room detection at known points (+ a picture of the fill)
+tools/measuretest.html headless test of the tape measure (wall to wall in the living room)
 tools/pettest.html     headless test of petting the cat (eyes, hand, stats counter)
 tools/notetest.html    headless test of the changelog note ("Nytt", read/close, no walking)
 tools/stamp.sh         build the published site with a version stamp (used by CI)

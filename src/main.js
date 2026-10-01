@@ -10,6 +10,7 @@ import { stairHeight } from './stairs.js';
 import { loadChangelog, renderChangelog, buildNote } from './changelog.js';
 import { bump, catFound, renderStats, resetStats, statsShown, setStatsShown, visitRoom, setRoomTotal } from './stats.js';
 import { Minimap } from './minimap.js';
+import { Measure } from './measure.js';
 
 const overlay = document.getElementById('overlay');
 const hud = document.getElementById('hud');
@@ -75,6 +76,8 @@ function showNote(show) {
 document.getElementById('note-close').addEventListener('click', () => showNote(false));
 
 const player = new Player(world, camera);
+const measure = new Measure(scene, camera, [world.object], document.getElementById('measure'));
+document.getElementById('measure-btn').addEventListener('click', () => measure.press());
 const cat = new CatSpawner(world);
 scene.add(cat.object);
 cat.onFound = (label, rare) => catFound(label, rare);
@@ -221,6 +224,7 @@ document.addEventListener('keydown', (e) => {
   if (e.code === 'KeyM') updateMute(toggleMuted());
   if (e.code === 'KeyT') toggleStats();
   if (e.code === 'KeyK') toggleMap();
+  if (e.code === 'KeyQ') measure.press();
   if (e.code.startsWith('Arrow')) e.preventDefault();
 });
 document.addEventListener('keyup', (e) => player.keys.delete(e.code));
@@ -283,6 +287,7 @@ function step(dt) {
   for (const d of world.doors) d.update(dt);
   for (const l of world.lids) l.update(dt);
   cat.update(dt);
+  measure.update(dt, window.innerWidth, window.innerHeight);
   if (active() && reading) updateFocus();
   else if (active()) {
     player.analog.x = touch.analog.x;
@@ -331,4 +336,4 @@ document.addEventListener('pointerlockchange', () => { if (!updateEl.hidden) sho
 watchForUpdates(showUpdate);
 
 // handle for tests/debugging (tools/touchtest.html)
-window.__app = { player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote };
+window.__app = { player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure };

@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Measure test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+// Tape measure test: from the living room, measure floor → floor across a known distance by
+// turning the camera, and wall-to-wall across the room (5.75 − 2 × 0.2 m walls = 5.35 m).
+//   google-chrome --headless=new --dump-dom http://localhost:8137/tools/measuretest.html
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const f = document.createElement('iframe');
+f.width = 900; f.height = 600;
+f.src = '../index.html';
+document.body.append(f);
+f.onload = async () => {
+  const w = f.contentWindow, d = f.contentDocument;
+  while (!w.__app) await wait(100);
+  const { player, camera, measure, world, step } = w.__app;
+  world.object.updateMatrixWorld(true);
+  const lines = [];
+  const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; };
+  d.getElementById('start-touch').click();
+  await wait(50);
+  // stand in the living room at x 2.8, eye level, look west then east (level camera)
+  player.spawn(2.8, 10.0, Math.PI / 2);
+  camera.rotation.x = 0;
+  step(1 / 60);
+  d.getElementById('measure-btn').click();
+  camera.rotation.y = -Math.PI / 2;
+  step(1 / 60);
+  d.getElementById('measure-btn').click();
+  step(1 / 60);
+  const [a, b] = measure.points;
+  const dist = a && b ? a.distanceTo(b) : NaN;
+  const label = d.getElementById('measure');
+  let pass = check(Math.abs(dist - 5.35) < 0.03, `wall to wall ${dist.toFixed(3)} m (want 5.35)`);
+  pass &= check(!label.hidden && /5,3\d m/.test(label.textContent), `label "${label.textContent}"`);
+  d.getElementById('measure-btn').click();
+  pass &= check(measure.points.length === 0 && label.hidden, 'third press clears');
+  out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
+};
+</script>
+</body>
+</html>

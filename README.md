@@ -15,6 +15,7 @@ Gå runt i lägenheten L1007 (Kv. Lunden, Peab) i webbläsaren som i ett FPS-spe
 | <kbd>Shift</kbd> | spring |
 | <kbd>←</kbd> <kbd>→</kbd> | vrid |
 | <kbd>E</kbd> | öppna/stäng dörren du tittar på, klappa katten, läsa lappen |
+| <kbd>Q</kbd> | mät: punkt 1, punkt 2 (tredje trycket rensar) |
 | <kbd>M</kbd> | ljud av/på |
 | <kbd>T</kbd> / <kbd>K</kbd> | visa/dölj statistiken / minikartan |
 | <kbd>Esc</kbd> | släpp musen |

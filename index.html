@@ -74,6 +74,10 @@
     #minimap { position: fixed; left: 16px; bottom: 56px; width: 92px; height: auto; image-rendering: pixelated; border-radius: 6px; background: rgba(20, 35, 45, 0.25); pointer-events: none; }
     #minimap[hidden] { display: none; }
     body.touch #minimap { left: auto; right: 16px; bottom: auto; top: 72px; }
+    #measure { position: fixed; transform: translate(-50%, -140%); background: rgba(210, 58, 42, 0.92); color: #fff; padding: 4px 10px; border-radius: 6px; font-size: 15px; text-align: center; pointer-events: none; white-space: nowrap; }
+    #measure[hidden] { display: none; }
+    #measure small { display: block; font-size: 11px; opacity: .85; }
+    #measure-btn { position: fixed; right: 24px; bottom: 110px; width: 52px; height: 52px; border: 0; border-radius: 50%; background: var(--panel); font-size: 22px; box-shadow: 0 4px 14px rgba(0,0,0,.2); }
     #stats-btn { position: fixed; right: 124px; top: 16px; width: 44px; height: 44px; border: 0; border-radius: 50%; background: var(--panel); font-size: 18px; }
     .linkish { border: 0; background: none; color: #6a7c84; font: 13px system-ui, sans-serif; text-decoration: underline; cursor: pointer; padding: 0; margin-top: 12px; }
     #update-close { background: transparent; color: #fff; padding: 8px 10px !important; font-size: 18px !important; }
@@ -98,6 +102,7 @@
         <span><kbd>←</kbd> <kbd>→</kbd></span><span>vrid (om pekplattan är spärrad medan du skriver)</span>
         <span><kbd>E</kbd></span><span>öppna/stäng dörren du tittar på, klappa katten</span>
         <span><kbd>M</kbd></span><span>ljud av/på</span>
+        <span><kbd>Q</kbd></span><span>mät: sätt en punkt, sedan nästa (Q en tredje gång rensar)</span>
         <span><kbd>T</kbd> <kbd>K</kbd></span><span>visa/dölj statistiken / kartan</span>
         <span><kbd>Esc</kbd></span><span>släpp musen</span>
       </div>
@@ -105,6 +110,7 @@
         <span>Vänster tumme</span><span>joystick — gå (tryck ut helt för att springa)</span>
         <span>Höger tumme</span><span>dra för att titta</span>
         <span>Knapp</span><span>öppna/stäng dörren du tittar på, klappa katten</span>
+        <span>📏</span><span>mät: sätt en punkt där krysset pekar, sedan nästa</span>
       </div>
       <div class="changes" id="changes-box" hidden>
         <h2>Senaste ändringarna</h2>
@@ -136,6 +142,8 @@
     <div id="level"></div>
     <div id="stats" aria-live="off"></div>
     <canvas id="minimap" aria-hidden="true"></canvas>
+    <div id="measure" hidden></div>
+    <button id="measure-btn" class="touch-only" aria-label="Mät">📏</button>
     <button id="stats-btn" class="touch-only" aria-label="Statistik">📊</button>
     <div id="prompt" hidden></div>
     <div id="stick" hidden><div class="knob"></div></div>
