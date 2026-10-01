@@ -64,6 +64,12 @@
     #note h2 { margin: 0 0 12px; font-size: 26px; }
     #note li { font-size: 15px; }
     #note small { display: block; margin-top: 12px; color: #6a7c84; font: 13px system-ui, sans-serif; }
+    #board-view { position: fixed; inset: 0; z-index: 5; display: grid; place-items: center; background: rgba(20, 35, 45, 0.45); }
+    #board-view[hidden] { display: none; }
+    #board-view figure { position: relative; margin: 0; }
+    #board-view img { display: block; max-width: calc(100vw - 32px); max-height: calc(100vh - 80px); border: 10px solid #b98d5c; border-radius: 4px; box-shadow: 0 14px 40px rgba(0,0,0,.4); }
+    #board-view figcaption { color: #fff; text-align: center; font-size: 13px; margin-top: 8px; }
+    #board-close { position: absolute; right: 14px; top: 10px; border: 0; background: rgba(255,255,255,.85); border-radius: 50%; width: 34px; height: 34px; font-size: 20px; cursor: pointer; }
     #note-close { position: absolute; right: 10px; top: 8px; border: 0; background: transparent; font-size: 24px; color: #23324a; cursor: pointer; }
     #stats { position: fixed; left: 16px; top: 16px; min-width: 190px; background: rgba(20, 35, 45, 0.45); color: #fff; padding: 8px 12px; border-radius: 8px; font-size: 13px; line-height: 1.5; pointer-events: none; backdrop-filter: blur(2px); }
     #stats[hidden] { display: none; }
@@ -144,6 +150,13 @@
       <ul id="note-list"></ul>
       <small>Tryck E (eller ×) för att lägga tillbaka lappen.</small>
     </div>
+  </div>
+  <div id="board-view" hidden role="dialog" aria-label="Anslagstavlan">
+    <figure>
+      <img id="board-img" alt="Anslagstavlan med foton på klappade katter">
+      <button id="board-close" aria-label="Stäng">×</button>
+      <figcaption>Tryck E (eller ×) för att gå tillbaka.</figcaption>
+    </figure>
   </div>
   <div id="hud" hidden>
     <div id="crosshair"></div>

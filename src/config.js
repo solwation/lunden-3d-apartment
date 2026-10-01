@@ -231,6 +231,10 @@ export const AO = {
   ceiling: { strength: 0.3, radius: 0.3 },
 };
 
+// Cork board with photos of petted cats (src/catboard.js), on the short wall between the hall
+// and the kitchen (its kitchen face, x 2.15, z 0.46–1.76). rotY π/2 = facing east.
+export const CAT_BOARD = { x: 2.15, y: 1.5, z: 1.11, w: 1.1, h: 0.76, rotY: Math.PI / 2 };
+
 // Furniture (issue #8). IKEA LANDSKRONA, Gunnared ljusgrön, oak legs.
 // 3-sits: 204 × 89 × 78 cm, seat height 44, seat depth 61, armrest height 64 (ikea.com).
 // With schäslong 282 cm wide, chaise 158 cm deep; armchair 89 × 89; footstool ~92 × 53 × 44

@@ -13,6 +13,7 @@ import { Minimap } from './minimap.js';
 import { Measure } from './measure.js';
 import { skyTexture } from './surroundings.js';
 import { Tap, animateWater } from './water.js';
+import { CatBoard, snapshot } from './catboard.js';
 
 const overlay = document.getElementById('overlay');
 const hud = document.getElementById('hud');
@@ -68,8 +69,17 @@ const note = buildNote(changelog);
 scene.add(note.object);
 const noteEl = document.getElementById('note');
 renderChangelog(document.getElementById('note-list'), changelog);
+const boardEl = document.getElementById('board-view');
 let reading = false;
+function showBoard(show) {
+  reading = show;
+  boardEl.hidden = !show;
+  player.keys.clear();
+  if (show) document.getElementById('board-img').src = board.canvas.toDataURL('image/jpeg', 0.9);
+}
+document.getElementById('board-close').addEventListener('click', () => showBoard(false));
 function showNote(show) {
+  if (!show && !boardEl.hidden) { showBoard(false); return; }
   reading = show;
   noteEl.hidden = !show;
   player.keys.clear();
@@ -87,7 +97,18 @@ document.getElementById('measure-btn').addEventListener('click', () => measure.p
 const cat = new CatSpawner(world);
 scene.add(cat.object);
 cat.onFound = (label, rare) => catFound(label, rare);
-cat.onPet = () => bump('petted');
+// a photo of every cat you pet goes up on the board, once its eyes are shut and the hand is there
+const board = new CatBoard();
+scene.add(board.object);
+board.load();
+cat.onPet = () => {
+  bump('petted');
+  setTimeout(() => {
+    if (!cat.visible) return;
+    const head = cat.head.getWorldPosition(new THREE.Vector3());
+    board.add(cat.catName, snapshot(renderer, scene, camera, head));
+  }, 700);
+};
 
 /** Open/close a door (with sound); the cat may turn up (or leave) behind doors you open. */
 function useDoor(door) {
@@ -199,6 +220,7 @@ pauseBtn.addEventListener('click', () => {
 /** E / the action button on what you look at: doors toggle, the note opens. */
 function use(thing) {
   if (thing.kind === 'note') showNote(true);
+  else if (thing.kind === 'board') showBoard(true);
   else if (thing.kind === 'fridge') { thing.toggle(); if (thing.isOpen) bump('fridge'); }
   else if (thing.kind === 'lid') {
     thing.toggle();
@@ -254,7 +276,7 @@ window.addEventListener('resize', () => {
 // --- door interaction: look at a door within reach, press E ----------------
 const raycaster = new THREE.Raycaster();
 raycaster.far = 2.2;
-const pickables = [...world.doors.map((d) => d.pickable), ...world.lids.map((l) => l.pickable), ...taps.map((t) => t.pickable), note.pickable];
+const pickables = [...world.doors.map((d) => d.pickable), ...world.lids.map((l) => l.pickable), ...taps.map((t) => t.pickable), note.pickable, board.pickable];
 const center = new THREE.Vector2(0, 0);
 let focused = null;
 
@@ -367,4 +389,4 @@ document.addEventListener('pointerlockchange', () => { if (!updateEl.hidden) sho
 watchForUpdates(showUpdate);
 
 // handle for tests/debugging (tools/touchtest.html)
-window.__app = { player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps };
+window.__app = { player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board };

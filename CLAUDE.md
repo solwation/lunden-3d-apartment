@@ -56,6 +56,8 @@ src/rooms.js           room detection: walls + door gaps rasterised, BFS from th
 src/minimap.js         plan view with the visitor's arrow, current room highlighted (K toggles)
 src/measure.js         tape measure (Q / 📏): two points on any surface, distance label
 src/fridge.js          the fridge: hollow, lit, opens with E, smoking roast chicken (in world.lids)
+src/catboard.js        cork board in the kitchen: a photo (offscreen render) of every petted cat,
+                       newest 10 in IndexedDB 'lunden'/'catPhotos', captioned with name + time
 src/signs.js           hand-lettered name signs on the bedroom doors (DOOR_SIGNS)
 src/water.js           running water: E on a tap/shower (world.taps from interior.js) → stream + hiss
 src/stats.js           visitor statistics (localStorage) + the translucent HUD panel (T toggles)
@@ -205,6 +207,8 @@ screenshots into the session scratchpad, not the repo.
   while it is visible. Tests must call `updateMatrixWorld` on objects they move (no render runs).
 - Room detection: labels come from the PDF plus `EXTRA_ROOMS` (WC/dusch upstairs, the passage by
   the stair = Hall); `ROOM_DIVIDERS` split open-plan areas (hall | kitchen | passage | living room).
+- Every new cat gets a name (`CAT_NAMES`); petting it puts a photo on the kitchen board 0.7 s in
+  (`CAT_BOARD` in config: the hall/kitchen partition, kitchen face).
 - Statistics (`src/stats.js`): cats found per coat, cats petted, doors, toilet lids, steps/metres,
   stair trips, time inside; reset on the start screen.
 - Sounds are synthesised (no audio files) and positional; the AudioContext is started by the

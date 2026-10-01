@@ -42,6 +42,14 @@ export const BREEDS = [
     coats: [solid('naken', 0xd8b0a4, 0x7fb3e6, { ear: 0xcf9f95, tip: 0xc99b90 })] },
 ];
 
+// Names for the cats you meet (one is picked when a new cat turns up).
+export const CAT_NAMES = [
+  'Misse', 'Findus', 'Smulan', 'Doris', 'Majken', 'Sixten', 'Selma', 'Morris', 'Nala', 'Luna',
+  'Molly', 'Pricken', 'Sotis', 'Kurre', 'Ronja', 'Bamse', 'Muffin', 'Kanel', 'Saffran', 'Pepparkaka',
+  'Ludde', 'Tussan', 'Gizmo', 'Mysan', 'Frasse', 'Signe', 'Ebba', 'Totoro', 'Pelle Svanslös', 'Maja',
+  'Elvis', 'Kattis', 'Bellman', 'Greta', 'Dunder', 'Plutten', 'Mimmi', 'Nisse', 'Tiger', 'Lakrits',
+];
+
 /** Random breed (by weight) and one of its coats. */
 export function pickCat(rand = Math.random) {
   const total = BREEDS.reduce((n, b) => n + b.weight, 0);
@@ -218,6 +226,7 @@ export class CatSpawner {
     this.onPet = null;        // () => {} when a pat starts
     cat.visible = false;
     this.setCat(BREEDS[0], VARIANTS[0]);
+    this.catName = CAT_NAMES[0];
     this.nextMeow = 0;
     this.door = null;          // door the cat was found behind
     this.closedSince = false;  // that door has been closed since the cat appeared
@@ -285,6 +294,7 @@ export class CatSpawner {
     if (!this.visible) {
       const { breed, coat } = pickCat(this.rand);
       this.setCat(breed, coat);
+      this.catName = CAT_NAMES[Math.floor(this.rand() * CAT_NAMES.length)];
       this.onFound?.(catLabel(breed, coat), !!breed.rare);
     }
     this.stopPetting();
