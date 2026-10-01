@@ -195,6 +195,13 @@ export const KITCHEN = {
 // z0 − 4 cm (the freestanding freezer sticks out, see interior.js). rotY π = facing north.
 export const CHANGELOG_NOTE = { x: 4.38, y: 1.42, z: 4.8844 - 0.04 - 0.002, rotY: Math.PI, w: 0.16, tilt: -0.05 };
 
+// Baked ambient occlusion (src/ao.js): darkening at a wall = strength, falling off over
+// `radius` metres. Tuned by eye on screenshots.
+export const AO = {
+  floor: { strength: 0.4, radius: 0.2 },
+  ceiling: { strength: 0.3, radius: 0.3 },
+};
+
 // Furniture (issue #8). IKEA LANDSKRONA, Gunnared ljusgrön, oak legs.
 // 3-sits: 204 × 89 × 78 cm, seat height 44, seat depth 61, armrest height 64 (ikea.com).
 // With schäslong 282 cm wide, chaise 158 cm deep; armchair 89 × 89; footstool ~92 × 53 × 44

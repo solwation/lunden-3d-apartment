@@ -10,6 +10,7 @@ import { buildFurniture } from './furniture.js';
 import { buildInterior } from './interior.js';
 import { Toilet } from './toilet.js';
 import { RoomMap } from './rooms.js';
+import { buildAO } from './ao.js';
 
 const mat = (color, extra = {}) => new THREE.MeshStandardMaterial({ color, roughness: 0.85, ...extra });
 
@@ -441,6 +442,10 @@ function buildLevel(floor, li, group) {
   group.add(...plateAround(0, W, 0, D, li === 1 ? STAIR.hole : null, y0 + 0.002, M.floor));
   // Ceiling: underside of the slab / roof
   group.add(...plateAround(0, W, 0, D, li === 0 ? STAIR.hole : null, yC - 0.002, M.ceiling, true));
+
+  // contact shadows along walls and cabinets (floor) and in the ceiling corners
+  group.add(buildAO({ x: W, z: D }, y0, yC, [...wallBoxes, ...floor.windows, ...floor.cabinets], wallBoxes,
+    { floorHole: li === 1 ? STAIR.hole : null, ceilHole: li === 0 ? STAIR.hole : null }));
 
   for (const s of SOFFITS.filter((s) => s.level === li)) {
     group.add(box(s.x0, s.x1, s.z0, s.z1, y0 + s.height, yC - 0.004, M.ceiling, { shadow: false }));

@@ -50,6 +50,7 @@ src/interior.js        fitted kitchen, laundry, bathroom fittings, tiled floors/
 material/              screenshots of our choices in Peab's option portal (local, see below)
 src/audio.js           synthesised positional sound effects (Web Audio): doors, slides, meow, steps
 src/toilet.js          toilet (Ifö Spira 6260) with an animated lid
+src/ao.js              baked ambient occlusion: distance field → multiply overlay on floor/ceiling (AO)
 src/rooms.js           room detection: walls + door gaps rasterised, BFS from the room labels
 src/minimap.js         plan view with the visitor's arrow, current room highlighted (K toggles)
 src/stats.js           visitor statistics (localStorage) + the translucent HUD panel (T toggles)
