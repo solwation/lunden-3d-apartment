@@ -23,8 +23,10 @@ function rbox(w, h, d, x, y, z, material, r = 0.04) {
   return m;
 }
 
-function leg(x, z, h = L.legHeight) {
-  const m = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.016, h, 12), oak);
+const darkWood = new THREE.MeshStandardMaterial({ color: 0x4a3324, roughness: 0.5 }); // dark brown, dining set
+
+function leg(x, z, h = L.legHeight, material = oak) {
+  const m = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.016, h, 12), material);
   m.position.set(x, h / 2, z);
   m.castShadow = true;
   return m;
@@ -194,22 +196,23 @@ function bed(item) {
   return g;
 }
 
-/** Dining table, oak, top at 75 cm. Local x = width. */
+/** Dining table (oak or dark wood), top at 75 cm. Local x = w, z = d. */
 function table(item) {
   const g = new THREE.Group();
-  const { w, d } = item;
-  g.add(rbox(w, 0.03, d, 0, 0.735, 0, oak, 0.01));
-  for (const x of [-w / 2 + 0.05, w / 2 - 0.05]) for (const z of [-d / 2 + 0.05, d / 2 - 0.05]) g.add(leg(x, z, 0.72));
+  const { w, d } = item, wood = item.wood === 'dark' ? darkWood : oak;
+  g.add(rbox(w, 0.03, d, 0, 0.735, 0, wood, 0.01));
+  for (const x of [-w / 2 + 0.05, w / 2 - 0.05]) for (const z of [-d / 2 + 0.05, d / 2 - 0.05]) g.add(leg(x, z, 0.72, wood));
   g.userData.footprint = [{ x0: -w / 2, x1: w / 2, z0: -d / 2, z1: d / 2 }];
   return g;
 }
 
-/** Simple oak chair, seat 45 cm, facing local +z. */
-function chair() {
+/** Simple chair (oak or dark wood), seat 45 cm, facing local +z. */
+function chair(item) {
   const g = new THREE.Group();
-  g.add(rbox(0.42, 0.03, 0.42, 0, 0.45, 0, oak, 0.01));
-  g.add(rbox(0.42, 0.28, 0.03, 0, 0.66, -0.195, oak, 0.01));
-  for (const x of [-0.18, 0.18]) for (const z of [-0.18, 0.18]) g.add(leg(x, z, 0.44));
+  const wood = item.wood === 'dark' ? darkWood : oak;
+  g.add(rbox(0.42, 0.03, 0.42, 0, 0.45, 0, wood, 0.01));
+  g.add(rbox(0.42, 0.28, 0.03, 0, 0.66, -0.195, wood, 0.01));
+  for (const x of [-0.18, 0.18]) for (const z of [-0.18, 0.18]) g.add(leg(x, z, 0.44, wood));
   g.userData.footprint = [{ x0: -0.21, x1: 0.21, z0: -0.21, z1: 0.21 }];
   return g;
 }

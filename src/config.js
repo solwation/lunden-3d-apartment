@@ -252,10 +252,12 @@ export const FURNITURE = [
   { type: 'bed', level: 1, x: 0.2 + 1.1, z: 2.6, rot: -90, w: 0.9, l: 2.0 },  // Sovrum 3, head west
   { type: 'bed', level: 1, x: 5.55 - 1.1, z: 10.3, rot: 90, w: 1.6, l: 2.0 }, // Sovrum 2
   { type: 'bed', level: 1, x: 0.2 + 1.1, z: 10.0, rot: -90, w: 0.9, l: 2.0 }, // Sovrum 4
-  // Matplats by the kitchen window: table 120 × 80, four chairs
-  { type: 'table', level: 0, x: 3.6, z: 1.6, w: 1.2, d: 0.8 },
-  { type: 'chair', level: 0, x: 3.3, z: 0.95, rot: 180 },
-  { type: 'chair', level: 0, x: 3.9, z: 0.95, rot: 180 },
-  { type: 'chair', level: 0, x: 3.3, z: 2.25, rot: 0 },
-  { type: 'chair', level: 0, x: 3.9, z: 2.25, rot: 0 },
+  // Matplats: table 180 × 90 with the short end to the kitchen window, three chairs on each
+  // long side, dark brown wood (the user's wish). Kept a little west of the window centre so
+  // the east chairs clear the kitchen fronts (x 4.95).
+  { type: 'table', level: 0, x: 3.5, z: 1.72, w: 0.9, d: 1.8, wood: 'dark' },
+  ...[1.12, 1.72, 2.32].flatMap((z) => [
+    { type: 'chair', level: 0, x: 3.5 - 0.62, z, rot: -90, wood: 'dark' }, // west side, facing east
+    { type: 'chair', level: 0, x: 3.5 + 0.62, z, rot: 90, wood: 'dark' },  // east side, facing west
+  ]),
 ];

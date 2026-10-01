@@ -124,7 +124,8 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   bathroom are *example* layouts with our materials — the kitchen layout is
   `material/Köksritning.jpg` (tall oven unit, wall cabinets, top cabinets over fridge/freezer,
   gypsum boxing above the hood). Colours/sizes live in `FINISH` / `KITCHEN` in config.
-- Furniture besides the LANDSKRONA group (beds 160/90 × 200, dining table 120 × 80 + chairs) are
+- Dining set (user's wish): table 180 × 90, short end to the kitchen window, 3 + 3 chairs, dark
+  brown wood. Other furniture besides the LANDSKRONA group (beds 160/90 × 200) are
   *examples* to get a feel for the space, not the user's choices. F toggles all furniture
   (`world.setFurniture`, which also swaps the collision segments). Keep the Sovrum 1 bed clear
   of the Klk sliding door — the cat test needs floor in front of it.
