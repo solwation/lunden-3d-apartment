@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { DOOR_HEIGHT } from './config.js';
 
 const SPEED = 3.0; // open/close animation, fraction per second
+const handleMat = new THREE.MeshStandardMaterial({ color: 0xc9cdd0, metalness: 0.5, roughness: 0.28 });
 
 const ease = (t) => t * t * (3 - 2 * t);
 
@@ -43,8 +44,16 @@ export class SwingDoor {
     } else {
       part(0.04, H, L, 0, H / 2, L / 2, material);
     }
-    part(0.1, 0.02, 0.12, 0, 1.0, L - 0.1, // handle
-      new THREE.MeshStandardMaterial({ color: 0x9aa0a4, metalness: 0.8, roughness: 0.3 }));
+    // lever handle on both faces (Innerdörrshandtag Hoppe Stockholm, satin chrome): round rose,
+    // neck, lever pointing towards the hinge
+    const z = L - 0.065, y = 1.0;
+    for (const s of [-1, 1]) {
+      const rose = part(0.012, 0.052, 0.052, s * 0.026, y, z, handleMat);
+      rose.geometry.dispose();
+      rose.geometry = new THREE.CylinderGeometry(0.026, 0.026, 0.012, 20).rotateZ(Math.PI / 2);
+      part(0.04, 0.016, 0.016, s * 0.05, y, z, handleMat);
+      part(0.018, 0.018, 0.125, s * 0.07, y, z - 0.055, handleMat);
+    }
     this.pickable = this.object;
 
     this.t = open ? 1 : 0; // 0 = closed, 1 = open

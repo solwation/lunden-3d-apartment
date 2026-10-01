@@ -162,6 +162,9 @@ export const FINISH = {
   chrome: 0xd7dadc,       // Rt2 blandare, takdusch Tvm 7200, duschset Rt 105, Alnön beslag
 };
 
+// Golvsockel vitmålad NCS S 0500-N (Art 5002225): height × thickness (typical size — guess).
+export const SKIRTING = { h: 0.07, t: 0.012 };
+
 // Rooms with tiled floors / walls (plan rectangles, metres). Walls are tiled up to `wallTile`
 // (the lowered ceiling height) on every wall face inside the rectangle.
 export const TILED_ROOMS = [

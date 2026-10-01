@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { FINISH, TILED_ROOMS, KITCHEN as K } from './config.js';
+import { FINISH, TILED_ROOMS, KITCHEN as K, SKIRTING } from './config.js';
 
 // Fixed interior from our material choices: fitted kitchen, laundry, bathroom fittings,
 // tiled floors and walls. Everything is merged into one mesh per material (few draw calls),
@@ -74,6 +74,7 @@ const M = {
   glassDark: std(0x050606, { roughness: 0.08 }),
   led: new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xfff2dc, emissiveIntensity: 1.2 }),
   white: std(0xf1f1ee, { roughness: 0.85 }),
+  skirting: std(0xf4f4f1, { roughness: 0.45 }),
   laundry: std(T.laundryFront, { roughness: 0.45 }),
   appliance: std(0xf7f7f7, { roughness: 0.3 }),
   vanity: std(T.vanity, { roughness: 0.5 }),
@@ -519,6 +520,44 @@ function tileWalls(B, room, wallBoxes, y0, h, material) {
 }
 
 /**
+ * White skirting (golvsockel) on every wall face that faces into the house, except in the
+ * tiled rooms. `boxes` = wall boxes + window infills (the wall below the sill).
+ */
+function skirting(B, boxes, li, size, y0) {
+  const tiled = TILED_ROOMS.filter((r) => r.level === li);
+  const inTiled = (x, z) => tiled.some((r) => x > r.x0 - 0.02 && x < r.x1 + 0.02 && z > r.z0 - 0.02 && z < r.z1 + 0.02);
+  const solid = (x, z) => x <= 0.01 || z <= 0.01 || x >= size.x - 0.01 || z >= size.z - 0.01
+    || boxes.some((w) => x > w.x0 && x < w.x1 && z > w.z0 && z < w.z1);
+  const { h, t } = SKIRTING;
+  const y1 = y0 + h;
+  for (const w of boxes) {
+    // faces: [fixed coordinate, along-axis range, outward sign, axis of the face normal]
+    const faces = [[w.x0, w.z0, w.z1, -1, 'x'], [w.x1, w.z0, w.z1, 1, 'x'], [w.z0, w.x0, w.x1, -1, 'z'], [w.z1, w.x0, w.x1, 1, 'z']];
+    for (const [c, a0, a1, s, n] of faces) {
+      if (a1 - a0 < 0.04) continue;
+      // walk the face in 10 cm steps and emit runs where the room side is free floor
+      let run = null;
+      const flush = (end) => {
+        if (run && end - run > 0.03) {
+          if (n === 'x') B.box(s > 0 ? c : c - t, s > 0 ? c + t : c, run, end, y0, y1, M.skirting);
+          else B.box(run, end, s > 0 ? c : c - t, s > 0 ? c + t : c, y0, y1, M.skirting);
+        }
+        run = null;
+      };
+      const step = 0.05;
+      for (let a = a0; a < a1 + 1e-6; a += step) {
+        const m = Math.min(a + step / 2, a1);
+        const [x, z] = n === 'x' ? [c + s * 0.03, m] : [m, c + s * 0.03];
+        const ok = !solid(x, z) && !inTiled(x, z);
+        if (ok && run === null) run = a;
+        if (!ok) flush(a);
+      }
+      flush(a1);
+    }
+  }
+}
+
+/**
  * Build the fixed interior of one level into `group`. Cabinets and fixtures it builds are
  * added to `handled` so world.js skips them. Returns collision rectangles.
  */
@@ -534,6 +573,7 @@ export function buildInterior(group, floor, li, y0, yC, wallBoxes, handled) {
     }
     if (room.name === 'Tvätt') rects.push(...buildLaundry(B, floor, { ...room, ceiling: 2.5 }, y0, handled));
   }
+  skirting(B, [...wallBoxes, ...floor.windows], li, floor.size, y0);
   group.add(...B.meshes());
   return rects;
 }
