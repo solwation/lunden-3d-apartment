@@ -12,6 +12,7 @@ import { bump, catFound, renderStats, resetStats, statsShown, setStatsShown, vis
 import { Minimap } from './minimap.js';
 import { Measure } from './measure.js';
 import { skyTexture } from './surroundings.js';
+import { Tap, animateWater } from './water.js';
 
 const overlay = document.getElementById('overlay');
 const hud = document.getElementById('hud');
@@ -76,6 +77,9 @@ function showNote(show) {
 }
 document.getElementById('note-close').addEventListener('click', () => showNote(false));
 
+const taps = world.taps.map((spec) => new Tap(spec));
+for (const t of taps) scene.add(t.object);
+
 const player = new Player(world, camera);
 const measure = new Measure(scene, camera, [world.object], document.getElementById('measure'));
 document.getElementById('measure-btn').addEventListener('click', () => measure.press());
@@ -132,6 +136,8 @@ if (at) {
 const params = new URLSearchParams(location.search);
 if (params.has('shot')) overlay.hidden = true;
 // ?open opens every door (screenshots of open doors/wardrobes)
+// &water turns every tap on (screenshots)
+if (params.has('water')) for (const t of taps) t.toggle();
 if (params.has('open')) for (const d of [...world.doors, ...world.lids]) { d.toggle(); for (let i = 0; i < 30; i++) d.update(0.1); }
 // ?cat=x,z[,yaw[,feetY]] puts the cat somewhere (screenshots)
 if (params.has('cat')) {
@@ -194,6 +200,10 @@ function use(thing) {
     if (thing.isOpen) bump('lids');
     sfx.lid(thing.object.position, thing.isOpen);
   } else if (thing.kind === 'cat') cat.pet(player.pos);
+  else if (thing.kind === 'tap') {
+    thing.toggle();
+    if (thing.isOpen) bump('taps');
+  }
   else useDoor(thing);
 }
 actionBtn.addEventListener('click', () => { if (reading) showNote(false); else if (focused) use(focused); });
@@ -239,7 +249,7 @@ window.addEventListener('resize', () => {
 // --- door interaction: look at a door within reach, press E ----------------
 const raycaster = new THREE.Raycaster();
 raycaster.far = 2.2;
-const pickables = [...world.doors.map((d) => d.pickable), ...world.lids.map((l) => l.pickable), note.pickable];
+const pickables = [...world.doors.map((d) => d.pickable), ...world.lids.map((l) => l.pickable), ...taps.map((t) => t.pickable), note.pickable];
 const center = new THREE.Vector2(0, 0);
 let focused = null;
 
@@ -296,6 +306,8 @@ try { toggleMap(localStorage.getItem('lunden.mapShown') !== '0'); } catch { /* i
 function step(dt) {
   for (const d of world.doors) d.update(dt);
   for (const l of world.lids) l.update(dt);
+  for (const t of taps) t.update(dt);
+  animateWater(dt);
   cat.update(dt);
   measure.update(dt, window.innerWidth, window.innerHeight);
   if (active() && reading) updateFocus();
@@ -346,4 +358,4 @@ document.addEventListener('pointerlockchange', () => { if (!updateEl.hidden) sho
 watchForUpdates(showUpdate);
 
 // handle for tests/debugging (tools/touchtest.html)
-window.__app = { player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure };
+window.__app = { player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps };

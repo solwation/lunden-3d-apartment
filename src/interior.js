@@ -481,7 +481,7 @@ function showerSet(B, wallX, z, y0, ceiling) {
     B.add(arm, M.chrome);
     cylinderY(B, armX, z, 0.012, top - 0.06, top, M.chrome, 10);
     showerHead(B, [armX, top - 0.07, z], [0, -1, 0], 0.125, 0.012);
-    outlets.push({ pos: [armX, top - 0.08, z], dir: [0, -1, 0], r: 0.1, basin: y0, name: 'takduschen' });
+    outlets.push({ pos: [armX, top - 0.08, z], dir: [0, -1, 0], r: 0.1, basin: y0, name: 'takduschen', pick: [wallX + 0.07, y0 + 1.0, z], shower: true });
     // hand shower parked in a holder on the riser, hose down to the mixer
     const hy = y0 + 1.35;
     B.box(wallX + 0.07, wallX + 0.11, z - 0.02, z + 0.02, hy - 0.02, hy + 0.02, M.chrome);
@@ -500,7 +500,7 @@ function showerSet(B, wallX, z, y0, ceiling) {
     B.add(handle, M.chrome);
     const head = [x + 0.15, hy + 0.04, z], dir = [0.62, -0.78, 0];
     showerHead(B, head, dir, 0.055, 0.02);
-    outlets.push({ pos: [head[0] + 0.02, head[1] - 0.02, z], dir, r: 0.045, basin: y0, name: 'duschen' });
+    outlets.push({ pos: [head[0] + 0.02, head[1] - 0.02, z], dir, r: 0.045, basin: y0, name: 'duschen', pick: [wallX + 0.07, y0 + 1.0, z], shower: true });
     hose(B, [[x + 0.02, hy - 0.15, z], [x + 0.1, y0 + 0.7, z + 0.08], [wallX + 0.09, y0 + 0.97, z + 0.05]], M.chrome);
   }
   return outlets;

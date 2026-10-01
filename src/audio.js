@@ -203,6 +203,32 @@ export const sfx = {
     src.start(t); lfo.start(t);
     src.stop(t + dur + 0.1); lfo.stop(t + dur + 0.1);
   },
+  /** Running water until stop() is called: looping filtered noise (a hiss), louder for showers. */
+  water(pos, shower = false) {
+    if (!ready()) return null;
+    const t = ctx.currentTime, d = out(pos, shower ? 1.0 : 0.7);
+    const src = ctx.createBufferSource();
+    src.buffer = noiseBuf;
+    src.loop = true;
+    const bp = ctx.createBiquadFilter();
+    bp.type = 'bandpass'; bp.frequency.value = shower ? 1600 : 2600; bp.Q.value = shower ? 0.35 : 0.7;
+    const hp = ctx.createBiquadFilter();
+    hp.type = 'highpass'; hp.frequency.value = 350;
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(shower ? 0.5 : 0.32, t + 0.25);
+    src.connect(bp).connect(hp).connect(g).connect(d);
+    src.start(t, Math.random());
+    return {
+      stop() {
+        const t1 = ctx.currentTime;
+        g.gain.cancelScheduledValues(t1);
+        g.gain.setValueAtTime(g.gain.value, t1);
+        g.gain.linearRampToValueAtTime(0, t1 + 0.25);
+        src.stop(t1 + 0.3);
+      },
+    };
+  },
   /** Paper rustle (taking the note off the freezer). */
   paper(pos) {
     if (!ready()) return;

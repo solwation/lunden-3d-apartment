@@ -3,7 +3,7 @@
 const KEY = 'lunden.stats';
 const SHOW_KEY = 'lunden.statsShown';
 
-const fresh = () => ({ cats: 0, rare: 0, byVariant: {}, petted: 0, doors: 0, lids: 0, steps: 0, metres: 0, stairs: 0, seconds: 0, visited: {} });
+const fresh = () => ({ cats: 0, rare: 0, byVariant: {}, petted: 0, doors: 0, lids: 0, taps: 0, steps: 0, metres: 0, stairs: 0, seconds: 0, visited: {} });
 
 function load() {
   try {
@@ -74,6 +74,7 @@ export function statRows() {
     ['✋ Klappade katter', `${stats.petted}`],
     ['🚪 Dörrar öppnade', `${stats.doors}`],
     ['🚽 Toalettlock', `${stats.lids}`],
+    ['💧 Kranar påslagna', `${stats.taps}`],
     ['👣 Steg', `${stats.steps}`, `${Math.round(stats.metres)} m`],
     ['🪜 Trappturer', `${stats.stairs}`],
     ['🏠 Rum besökta', `${Object.keys(stats.visited).length}${roomTotal ? ` av ${roomTotal}` : ''}`],

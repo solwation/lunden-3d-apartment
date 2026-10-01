@@ -55,6 +55,7 @@ src/surroundings.js    neighbourhood: brick blocks with gable roofs, instanced t
 src/rooms.js           room detection: walls + door gaps rasterised, BFS from the room labels
 src/minimap.js         plan view with the visitor's arrow, current room highlighted (K toggles)
 src/measure.js         tape measure (Q / 📏): two points on any surface, distance label
+src/water.js           running water: E on a tap/shower (world.taps from interior.js) → stream + hiss
 src/stats.js           visitor statistics (localStorage) + the translucent HUD panel (T toggles)
 src/changelog.js       changelog list (start screen) + the note on the freezer (E to read)
 data/plan.json         GENERATED — do not edit by hand
@@ -65,6 +66,7 @@ tools/touchtest.html   headless touch-input test (synthetic pointer events)
 tools/cattest.html     headless test of cat placement behind every door/wardrobe
 tools/roomtest.html    headless test of room detection at known points (+ a picture of the fill)
 tools/measuretest.html headless test of the tape measure (wall to wall in the living room)
+tools/watertest.html   headless test: aim at every tap/shower, turn it on and off
 tools/pettest.html     headless test of petting the cat (eyes, hand, stats counter)
 tools/notetest.html    headless test of the changelog note ("Nytt", read/close, no walking)
 tools/stamp.sh         build the published site with a version stamp (used by CI)
@@ -155,6 +157,7 @@ URL parameters (debugging / screenshots):
 - `&shot` — hide the start overlay.
 - `&open` — open every door (screenshots of open doors / wardrobes).
 - `&cat=x,z[,yawDeg[,y]]` — show the cat there; `&catv=i` coat variant, `&catt=s` animation time.
+- `&water` — turn on every tap and shower.
 - `&note` — open the changelog note. `&pet` (with `&cat=`) — the cat is being petted.
 - `&clip=y` — clip everything above height y (cut-away plan view, e.g.
   `?shot&at=2.87,6.35,0,-90,16&clip=2.5` for Entréplan from above, `clip=5.6` + feet 19 for Övre plan).
