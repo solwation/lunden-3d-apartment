@@ -388,7 +388,8 @@ function buildLevel(floor, li, group) {
   // Kitchen, laundry, bathroom fittings and tiles from our material choices (interior.js)
   const handled = new Set();
   const taps = []; // tap/shower outlets for running water (main.js)
-  for (const r of buildInterior(group, floor, li, y0, yC, wallBoxes, handled, taps)) segments.push(...rectSegments(r));
+  const appliances = []; // things that open with E but aren't doors (the fridge)
+  for (const r of buildInterior(group, floor, li, y0, yC, wallBoxes, handled, taps, appliances)) segments.push(...rectSegments(r));
 
   // Other fixed cabinets
   for (const cab of floor.cabinets) {
@@ -457,7 +458,7 @@ function buildLevel(floor, li, group) {
     group.add(box(s.x0, s.x1, s.z0, s.z1, y0 + s.height, yC - 0.004, M.ceiling, { shadow: false }));
   }
 
-  return { segments, doors, lids, taps, openings, barriers, ceiling: yC };
+  return { segments, doors, lids, taps, appliances, openings, barriers, ceiling: yC };
 }
 
 export function buildWorld(plan) {
@@ -553,7 +554,7 @@ export function buildWorld(plan) {
     size: { x: W, z: D },
     levels,
     doors: [...l0.doors, ...l1.doors],
-    lids: [...l0.lids, ...l1.lids],
+    lids: [...l0.lids, ...l1.lids, ...l0.appliances, ...l1.appliances], // toggled with E, not doors
     taps: [...l0.taps, ...l1.taps],
     rooms,
     roomMaps,

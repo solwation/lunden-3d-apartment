@@ -256,6 +256,13 @@ export const sfx = {
     o.start(t); vib.start(t);
     o.stop(t + dur + 0.05); vib.stop(t + dur + 0.05);
   },
+  /** Fridge door: the seal letting go (opening) or a soft thud (closing). */
+  fridge(pos, opening) {
+    if (!ready()) return;
+    const t = ctx.currentTime + (opening ? 0 : 0.55), d = out(pos, 0.9);
+    noise(t, opening ? 0.12 : 0.08, d, { type: 'lowpass', freq: opening ? 900 : 500, gain: 0.35 });
+    tone(t, 0.1, d, { from: opening ? 140 : 90, to: 60, gain: 0.2 });
+  },
   /** Paper rustle (taking the note off the freezer). */
   paper(pos) {
     if (!ready()) return;

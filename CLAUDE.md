@@ -55,6 +55,7 @@ src/surroundings.js    neighbourhood: brick blocks with gable roofs, instanced t
 src/rooms.js           room detection: walls + door gaps rasterised, BFS from the room labels
 src/minimap.js         plan view with the visitor's arrow, current room highlighted (K toggles)
 src/measure.js         tape measure (Q / 📏): two points on any surface, distance label
+src/fridge.js          the fridge: hollow, lit, opens with E, smoking roast chicken (in world.lids)
 src/signs.js           hand-lettered name signs on the bedroom doors (DOOR_SIGNS)
 src/water.js           running water: E on a tap/shower (world.taps from interior.js) → stream + hiss
 src/stats.js           visitor statistics (localStorage) + the translucent HUD panel (T toggles)

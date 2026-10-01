@@ -199,6 +199,7 @@ pauseBtn.addEventListener('click', () => {
 /** E / the action button on what you look at: doors toggle, the note opens. */
 function use(thing) {
   if (thing.kind === 'note') showNote(true);
+  else if (thing.kind === 'fridge') { thing.toggle(); if (thing.isOpen) bump('fridge'); }
   else if (thing.kind === 'lid') {
     thing.toggle();
     if (thing.isOpen) bump('lids');

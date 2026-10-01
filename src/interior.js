@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { FINISH, TILED_ROOMS, KITCHEN as K, SKIRTING } from './config.js';
+import { Fridge } from './fridge.js';
 
 // Fixed interior from our material choices: fitted kitchen, laundry, bathroom fittings,
 // tiled floors and walls. Everything is merged into one mesh per material (few draw calls),
@@ -215,7 +216,7 @@ function mixer(B, x, z, y, [dx, dz], material, { h = 0.3, r = 0.09, tube = 0.011
 
 // ---------- kitchen ----------
 
-function buildKitchen(B, floor, y0, yC, handled, taps) {
+function buildKitchen(B, group, floor, y0, yC, handled, taps, appliances) {
   const cabs = floor.cabinets.filter((c) => inside(c, K.area));
   if (!cabs.length) return [];
   const fixtures = floor.fixtures.filter((f) => inside(f, K.area));
@@ -257,11 +258,18 @@ function buildKitchen(B, floor, y0, yC, handled, taps) {
     if (fridges.includes(c)) {
       // freestanding stainless fridge/freezer, a ventilation grille and top cabinets above
       const yF = y0 + K.fridgeHeight;
-      F.box(u0 + 0.003, u1 - 0.003, -F.depth + 0.03, 0.04, y0 + 0.01, yF, M.steel);
-      const other = fridges.find((o) => o !== c);
-      const hiSide = other && other.x0 > c.x0; // handle at the edge where the two meet
-      const a = hiSide ? u1 - 0.05 : u0 + 0.05;
-      F.box(a - 0.01, a + 0.01, 0.04, 0.07, y0 + 0.75, y0 + 1.7, M.steelDark);
+      if (c.label === 'K') {
+        // the fridge opens (fridge.js); hinged at the wall side, handle by the freezer
+        const fr = new Fridge({ x0: u0 + 0.003, x1: u1 - 0.003, zFront: c.z0 + 0.015, zBack: c.z1 - 0.03, y0: y0 + 0.01, h: K.fridgeHeight - 0.01 });
+        group.add(fr.object);
+        appliances.push(fr);
+      } else {
+        F.box(u0 + 0.003, u1 - 0.003, -F.depth + 0.03, 0.04, y0 + 0.01, yF, M.steel);
+        const other = fridges.find((o) => o !== c);
+        const hiSide = other && other.x0 > c.x0; // handle at the edge where the two meet
+        const a = hiSide ? u1 - 0.05 : u0 + 0.05;
+        F.box(a - 0.01, a + 0.01, 0.04, 0.07, y0 + 0.75, y0 + 1.7, M.steelDark);
+      }
       F.box(u0, u1, -F.depth, -FT, yF, yTop, M.front);
       F.box(u0 + 0.005, u1 - 0.005, -FT, 0, yF, yF + K.grille, M.steel);
       for (let y = yF + 0.012; y < yF + K.grille - 0.01; y += 0.012) F.box(u0 + 0.02, u1 - 0.02, 0, 0.002, y, y + 0.004, M.black);
@@ -616,10 +624,10 @@ function skirting(B, boxes, li, size, y0) {
  * Build the fixed interior of one level into `group`. Cabinets and fixtures it builds are
  * added to `handled` so world.js skips them. Returns collision rectangles.
  */
-export function buildInterior(group, floor, li, y0, yC, wallBoxes, handled, taps = []) {
+export function buildInterior(group, floor, li, y0, yC, wallBoxes, handled, taps = [], appliances = []) {
   const B = new Batch();
   const rects = [];
-  if (li === K.level) rects.push(...buildKitchen(B, floor, y0, yC, handled, taps));
+  if (li === K.level) rects.push(...buildKitchen(B, group, floor, y0, yC, handled, taps, appliances));
   for (const room of TILED_ROOMS.filter((r) => r.level === li)) {
     B.box(room.x0, room.x1, room.z0, room.z1, y0 + 0.001, y0 + 0.004, M[room.floor]);
     if (room.wallTile) {
