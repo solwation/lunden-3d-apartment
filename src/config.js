@@ -24,6 +24,17 @@ export const SOFFITS = [
   { level: 1, x0: 0.2, x1: 1.42, z0: 5.05, z1: 7.6, height: 2.5 },
 ];
 
+// Peab options (tillval) we have chosen, material/Generella_val_hall_och_entre.jpg:
+// "Tillval av dörr i enlighet med bofaktablad" = the dashed wall + door between the upstairs
+// hall and Allrum, which makes Allrum a fourth bedroom.
+export const OPTIONS = { allrumDoor: true };
+// Wall pieces that only exist with an option (plan rectangles). The door's own frame side is
+// the end of the Allrum/Sovrum 2 partition; this closes the rest towards WC/dusch.
+export const EXTRA_WALLS = [
+  { level: 1, option: 'allrumDoor', x0: 1.54, x1: 1.77, z0: 7.6, z1: 7.8 },
+];
+export const ROOM_RENAMES = [{ level: 1, from: 'Allrum', to: 'Sovrum 4', option: 'allrumDoor' }];
+
 export const DOOR_HEIGHT = 2.1;
 // Exterior doors have a glazed transom (överljus) above the leaf, like the windows
 // (Peab renders of L1004, same unit type). Head height is estimated from the render.
@@ -90,7 +101,7 @@ export const STAIR = {
 
 export const COLORS = {
   sky: 0xbfd8ea,
-  wall: 0xf3f1ec,
+  wall: 0xf1f1ee,   // Väggfärg NCS S 0500-N (material choice)
   ceiling: 0xfbfbf9,
   floor: 0xc9a77c,
   tile: 0xd6d9da,
@@ -100,9 +111,10 @@ export const COLORS = {
   porcelain: 0xffffff,
   frame: 0xf5f5f5,
   glass: 0xa9cce3,
-  door: 0xefeeea,
+  door: 0xf1f1ee,   // Innerdörr Stable GW / skjutdörrar NCS S 0500-N
   rail: 0x6b7378,
-  stair: 0xb89467,
+  stair: 0xdccfba,  // Trappa vitlaserad ek/vit: white-lacquered oak treads …
+  riser: 0xf4f4f1,  // … white risers and stringers
   grass: 0x7fa65c,
   patio: 0xbdb7ab,
   hedge: 0x46703a,
@@ -111,6 +123,57 @@ export const COLORS = {
   mortar: 0xcfc6b8,
   street: 0x9b9a95,
   balcony: 0x8fa396, // pinnaräcke grågrön (brochure)
+};
+
+// Fixed interior from our material choices in Peab's option portal (screenshots in
+// material/, 2026-10-01). Colours are picked from the product photos / Peab's render.
+export const FINISH = {
+  // Parkettgolv Ek Chalk: white-stained oak. Colour from the swatch (avg 177/159/145, lifted
+  // a little for the indoor lighting); 1-stav planks 18 × 200 cm (typical size — guess).
+  parquet: { base: [204, 186, 170], width: 0.18, length: 2.0 },
+  hallTile: { w: 0.6, h: 0.3, color: 0x7a7c7d },  // Granitkeramik City Amsterdam 30×60, rak
+  wetTile: { w: 0.15, h: 0.15, color: 0x737577 }, // Granitkeramik City Amsterdam 15×15
+  wallTile: { w: 0.4, h: 0.2, color: 0xf4f4f2 },  // Kakel vit matt 20×40, rak liggande
+  splash: { w: 0.2, h: 0.1, color: 0xf6f6f4, grout: 0xc9cdcc }, // Stänkskydd vit matt 10×20,
+  // halvt förband liggande, Kakelfog Sopro ljusgrå 16
+  grout: 0xb9bbbb,
+  kitchenFront: 0x8d9886, // Kökslucka Form Tall (grey-green shaker)
+  counter: 0xc2c1bb,      // Laminatbänkskiva Delaware stone (kitchen + Tvätt)
+  handle: 0x1a1b1c,       // Handtag Solo svart cc 128 / Köksblandare ARM184 mattsvart
+  steel: 0xc3c7ca,        // Kyl & frys rostfri, ventilationsgaller, diskho Intra
+  black: 0x141516,        // Ugn EOK8P2B0 Pure Black, mikro KMFE264TEX, häll EH60KB6BF
+  laundryFront: 0xf2f3f1, // Lucka Arkitekt plus Frost (Tvätt)
+  vanity: 0x4d4f51,       // Kommod Core Grip 60 / Core XS Grip 50, Carbon Grey
+  chrome: 0xd7dadc,       // Rt2 blandare, takdusch Tvm 7200, duschset Rt 105, Alnön beslag
+};
+
+// Rooms with tiled floors / walls (plan rectangles, metres). Walls are tiled up to `wallTile`
+// (the lowered ceiling height) on every wall face inside the rectangle.
+export const TILED_ROOMS = [
+  { level: 0, name: 'Hall', x0: 0.2, x1: 2.1, z0: 0.3, z1: 3.1, floor: 'hallTile' },
+  { level: 0, name: 'Tvätt', x0: 0.2, x1: 2.06, z0: 3.1, z1: 4.88, floor: 'wetTile' },
+  { level: 0, name: 'Badrum', x0: 0.2, x1: 2.06, z0: 4.88, z1: 7.6, floor: 'wetTile', wallTile: 2.5 },
+  { level: 1, name: 'WC/dusch', x0: 0.2, x1: 1.48, z0: 5.13, z1: 7.6, floor: 'wetTile', wallTile: 2.5 },
+];
+
+// Kitchen (Kök / matplats): the plan's cabinets inside `area` are built as a fitted kitchen
+// after material/Köksritning.jpg (our planning): tall oven/microwave unit, base run with
+// sink + hob, wall cabinets above, freestanding fridge + freezer with top cabinets.
+export const KITCHEN = {
+  level: 0,
+  area: { x0: 3.4, x1: 5.6, z0: 0.4, z1: 5.5 },
+  plinth: 0.1,
+  baseTop: 0.9,          // top of base carcass; worktop 30 mm on top (bänkhöjd 0,93)
+  worktop: 0.03,
+  top: 2.25,             // top line of tall units and wall cabinets (guess)
+  wallBottom: 1.45,      // underside of wall cabinets (guess, ~52 cm above the worktop)
+  wallDepth: 0.35,
+  hoodBottom: 1.6,       // underside of the hood (Spiskåpa Tango) under the hob cabinet
+  hoodHeight: 0.08,
+  fridgeHeight: 1.86,    // Electrolux LRT7ME39X / LUS7ME28X: 186 cm
+  grille: 0.06,          // ventilationsgaller rostfri (over fridge/freezer and microwave)
+  sink: { w: 0.5, d: 0.4 }, // Diskho Intra Linea 5040, underlimmad
+  hob: { w: 0.58, d: 0.52 }, // Induktionshäll EH60KB6BF
 };
 
 // Furniture (issue #8). IKEA LANDSKRONA, Gunnared ljusgrön, oak legs.

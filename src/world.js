@@ -1,35 +1,46 @@
 import * as THREE from 'three';
 import {
   LEVELS, SOFFITS, DOOR_HEIGHT, EXT_DOOR_HEAD, WINDOWS, CABINET_HEIGHT, BASE_CABINET, SHELF_HEIGHT,
-  STAIR, COLORS, FENCE_HEIGHT,
+  STAIR, COLORS, FENCE_HEIGHT, FINISH, OPTIONS, EXTRA_WALLS, ROOM_RENAMES,
 } from './config.js';
 import { buildStairs } from './stairs.js';
 import { SwingDoor, SlidingDoor, wardrobeDoors } from './doors.js';
 import { buildExterior } from './exterior.js';
 import { buildFurniture } from './furniture.js';
+import { buildInterior } from './interior.js';
 
 const mat = (color, extra = {}) => new THREE.MeshStandardMaterial({ color, roughness: 0.85, ...extra });
 
+/** Parquet (1-stav planks, FINISH.parquet): one texture repeat = `n` planks across. */
 function plankTexture() {
+  const { base: [r0, g0, b0], width, length } = FINISH.parquet;
+  const ppm = 300, n = 6;
+  const pw = Math.round(width * ppm), pl = Math.round(length * ppm);
   const c = document.createElement('canvas');
-  c.width = 256; c.height = 1024;
+  c.width = pw * n; c.height = pl * 2;
   const g = c.getContext('2d');
-  const plankW = 64, plankL = 512;
-  for (let col = 0; col < c.width / plankW; col++) {
-    const offset = (col * 197) % plankL;
-    for (let y = -offset; y < c.height; y += plankL) {
-      const shade = 200 + ((col * 37 + y) % 30);
-      g.fillStyle = `rgb(${shade},${shade * 0.83},${shade * 0.62})`;
-      g.fillRect(col * plankW, y, plankW, plankL);
-      g.strokeStyle = 'rgba(80,55,30,0.35)';
-      g.strokeRect(col * plankW + 0.5, y + 0.5, plankW - 1, plankL - 1);
+  let seed = 7;
+  const rand = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+  for (let col = 0; col < n; col++) {
+    const offset = Math.round(((col * 0.37) % 1) * pl); // staggered end joints
+    for (let y = -offset; y < c.height; y += pl) {
+      const k = 0.95 + rand() * 0.08;
+      g.fillStyle = `rgb(${r0 * k},${g0 * k},${b0 * k})`;
+      g.fillRect(col * pw, y, pw, pl);
+      // faint grain along the plank
+      for (let i = 0; i < 14; i++) {
+        g.fillStyle = `rgba(120,95,70,${0.04 + rand() * 0.05})`;
+        g.fillRect(col * pw + rand() * pw, y, 1 + rand() * 1.5, pl);
+      }
+      g.strokeStyle = 'rgba(90,70,50,0.3)';
+      g.strokeRect(col * pw + 0.5, y + 0.5, pw - 1, pl - 1);
     }
   }
   const tex = new THREE.CanvasTexture(c);
   tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
   tex.colorSpace = THREE.SRGBColorSpace;
-  tex.repeat.set(1 / 1.2, 1 / 4.8); // 256 px = 1.2 m (planks ~ 30 cm wide)
-  tex.anisotropy = 4;
+  tex.repeat.set(1 / (width * n), 1 / (length * 2));
+  tex.anisotropy = 8;
   return tex;
 }
 
@@ -48,7 +59,7 @@ const M = {
   }),
   door: mat(COLORS.door, { roughness: 0.6 }),
   rail: mat(COLORS.rail, { roughness: 0.4, metalness: 0.3 }),
-  stair: mat(COLORS.stair, { roughness: 0.6 }),
+  stair: [mat(COLORS.stair, { roughness: 0.45 }), mat(COLORS.riser, { roughness: 0.6 })], // treads, risers
   dark: mat(0x1d2023, { roughness: 0.3 }),
   grass: mat(COLORS.grass, { roughness: 1 }),
   patio: mat(COLORS.patio, { roughness: 0.95 }),
@@ -237,8 +248,10 @@ function buildLevel(floor, li, group) {
 
   // Walls (polygons extruded floor → ceiling). Holes in the plan polygons are tiny
   // niches; walls are rendered solid.
-  const wallBoxes = floor.walls.map((w) => bboxOf(w.outer));
-  for (const w of floor.walls) {
+  const walls = [...floor.walls, ...EXTRA_WALLS.filter((w) => w.level === li && OPTIONS[w.option])
+    .map((r) => ({ outer: [[r.x0, r.z0], [r.x1, r.z0], [r.x1, r.z1], [r.x0, r.z1]] }))];
+  const wallBoxes = walls.map((w) => bboxOf(w.outer));
+  for (const w of walls) {
     group.add(prism(w.outer, y0, yC, M.wall));
     segments.push(...polySegments(w.outer));
   }
@@ -281,7 +294,7 @@ function buildLevel(floor, li, group) {
     const exterior = tz < 0 || tz > D;
     const head = y0 + (exterior ? EXT_DOOR_HEAD : DOOR_HEIGHT);
     if (gap) group.add(gapBox(gap, head, yC, M.wall));
-    if (d.optional) continue; // Peab tillval — not built by default
+    if (d.optional && !OPTIONS.allrumDoor) continue; // Peab tillval (dashed door), see OPTIONS
 
     // Stretch the leaf to the full gap (the plan's swing is the nominal leaf width).
     let leaf = d;
@@ -359,10 +372,14 @@ function buildLevel(floor, li, group) {
     segments.push(...rectSegments(g));
   }
 
-  // Fixed cabinets
+  // Kitchen, laundry, bathroom fittings and tiles from our material choices (interior.js)
+  const handled = new Set();
+  for (const r of buildInterior(group, floor, li, y0, yC, wallBoxes, handled)) segments.push(...rectSegments(r));
+
+  // Other fixed cabinets
   for (const cab of floor.cabinets) {
     const label = cab.label;
-    if (label === 'G') continue;
+    if (label === 'G' || handled.has(cab)) continue;
     const h = label ? CABINET_HEIGHT[label] ?? BASE_CABINET
       : (cab.x1 - cab.x0 < 0.3 || cab.z1 - cab.z0 < 0.3) ? SHELF_HEIGHT : BASE_CABINET;
     const appliance = label === 'TT' || label === 'TM';
@@ -377,6 +394,7 @@ function buildLevel(floor, li, group) {
 
   // Sanitary fixtures, sinks, hob, shower floor
   for (const f of floor.fixtures) {
+    if (handled.has(f)) continue;
     const onCounter = floor.cabinets.some((c) => insideRect(f, c));
     const top = y0 + BASE_CABINET + 0.03;
     switch (f.kind) {
@@ -499,6 +517,9 @@ export function buildWorld(plan) {
     size: { x: W, z: D },
     levels: [l0, l1],
     doors: [...l0.doors, ...l1.doors],
-    rooms: plan.floors.map((f) => f.rooms),
+    rooms: plan.floors.map((f, li) => f.rooms.map((r) => {
+      const re = ROOM_RENAMES.find((x) => x.level === li && x.from === r.name && OPTIONS[x.option]);
+      return re ? { ...r, name: re.to } : r;
+    })),
   };
 }
