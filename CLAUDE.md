@@ -16,7 +16,9 @@ in Swedish. Code, comments and this file are in English; UI text is Swedish.
 
 ## Architecture
 
-Static site, no build step, no npm. Runs as-is on GitHub Pages (relative paths only).
+Static site, no build step, no npm. Published with GitHub Pages from `main` / root —
+every push to `main` deploys to https://solwation.github.io/lunden-3d-apartment/ (public repo).
+Use relative paths only.
 
 ```
 index.html             page shell, HUD, start overlay, import map (three from jsDelivr, pinned)

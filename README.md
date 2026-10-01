@@ -4,6 +4,8 @@ Gå runt i lägenheten L1007 (Kv. Lunden, Peab) i webbläsaren som i ett FPS-spe
 övre plan med trappan emellan, byggt direkt från den måttsatta planritningen
 (`L1007_mattsatt_planritning.pdf`).
 
+**▶ Öppna: https://solwation.github.io/lunden-3d-apartment/**
+
 ## Styrning
 
 | Tangent | |
