@@ -7,7 +7,7 @@ const ease = (t) => t * t * (3 - 2 * t);
 
 /** Hinged door. Open pose = the leaf as drawn on the plan, closed = across the gap. */
 export class SwingDoor {
-  constructor({ hinge, tip, wall }, y0, material, open) {
+  constructor({ hinge, tip, wall }, y0, material, open, { glazed = false, glass, frame } = {}) {
     this.kind = 'swing';
     this.hinge = hinge;
     this.len = Math.hypot(tip[0] - hinge[0], tip[1] - hinge[1]);
@@ -20,15 +20,31 @@ export class SwingDoor {
 
     this.object = new THREE.Group();
     this.object.position.set(hinge[0], y0, hinge[1]);
-    const leaf = new THREE.Mesh(new THREE.BoxGeometry(0.04, DOOR_HEIGHT - 0.02, this.len - 0.01), material);
-    leaf.position.set(0, DOOR_HEIGHT / 2, this.len / 2);
-    leaf.castShadow = leaf.receiveShadow = true;
-    const handle = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.02, 0.12),
+    const H = DOOR_HEIGHT - 0.02, L = this.len - 0.01;
+    // local frame: x = leaf thickness, y = up, z = from hinge along the leaf
+    const part = (sx, sy, sz, px, py, pz, m) => {
+      const mesh = new THREE.Mesh(new THREE.BoxGeometry(sx, sy, sz), m);
+      mesh.position.set(px, py, pz);
+      mesh.castShadow = m !== glass;
+      mesh.receiveShadow = true;
+      mesh.userData.door = this;
+      this.object.add(mesh);
+      return mesh;
+    };
+    if (glazed) {
+      // aluminium-clad glazed door: frame + one glass pane (like the patio door in Peab's render)
+      const f = 0.09;
+      part(0.05, H, f, 0, H / 2, f / 2, frame);
+      part(0.05, H, f, 0, H / 2, L - f / 2, frame);
+      part(0.05, f, L, 0, H - f / 2, L / 2, frame);
+      part(0.05, 0.16, L, 0, 0.08, L / 2, frame);
+      part(0.016, H - f - 0.16, L - 2 * f, 0, 0.16 + (H - f - 0.16) / 2, L / 2, glass);
+    } else {
+      part(0.04, H, L, 0, H / 2, L / 2, material);
+    }
+    part(0.1, 0.02, 0.12, 0, 1.0, L - 0.1, // handle
       new THREE.MeshStandardMaterial({ color: 0x9aa0a4, metalness: 0.8, roughness: 0.3 }));
-    handle.position.set(0, 1.0, this.len - 0.1);
-    this.object.add(leaf, handle);
-    this.pickable = leaf;
-    leaf.userData.door = this;
+    this.pickable = this.object;
 
     this.t = open ? 1 : 0; // 0 = closed, 1 = open
     this.target = this.t;

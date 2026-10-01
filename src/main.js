@@ -2,11 +2,14 @@ import * as THREE from 'three';
 import { COLORS, LEVELS } from './config.js';
 import { buildWorld } from './world.js';
 import { Player } from './player.js';
+import { setupTouch } from './touch.js';
 
 const overlay = document.getElementById('overlay');
 const hud = document.getElementById('hud');
 const levelEl = document.getElementById('level');
 const promptEl = document.getElementById('prompt');
+const actionBtn = document.getElementById('action');
+const pauseBtn = document.getElementById('pause');
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
@@ -66,25 +69,51 @@ if (params.has('shot')) overlay.hidden = true;
 if (params.has('clip')) renderer.clippingPlanes = [new THREE.Plane(new THREE.Vector3(0, -1, 0), Number(params.get('clip')))];
 
 // --- input ---------------------------------------------------------------
+// Mouse/keyboard uses pointer lock; touch (phone, tablet, Surface screen) uses an
+// on-screen joystick + drag to look. The start screen lets the visitor pick.
 const canvas = renderer.domElement;
 let locked = false;
-overlay.addEventListener('click', () => canvas.requestPointerLock());
+const touch = setupTouch({ onLook: (dx, dy) => look(dx * 0.005, dy * 0.005) });
+const active = () => locked || touch.enabled;
+
+function look(dyaw, dpitch) {
+  camera.rotation.y -= dyaw;
+  camera.rotation.x = THREE.MathUtils.clamp(camera.rotation.x - dpitch, -1.45, 1.45);
+}
+
+function showOverlay(show) {
+  overlay.hidden = !show;
+  hud.hidden = show;
+  document.body.classList.toggle('touch', touch.enabled);
+}
+
+// Explicit choice on the start screen — a Surface has both a touchscreen and a keyboard.
+document.getElementById('start-mouse').addEventListener('click', () => canvas.requestPointerLock());
+document.getElementById('start-touch').addEventListener('click', () => {
+  touch.enabled = true;
+  document.documentElement.requestFullscreen?.().catch(() => {});
+  showOverlay(false);
+});
+pauseBtn.addEventListener('click', () => {
+  touch.enabled = false;
+  player.analog.x = player.analog.y = 0;
+  showOverlay(true);
+});
+actionBtn.addEventListener('click', () => focused?.toggle());
 document.addEventListener('pointerlockchange', () => {
   locked = document.pointerLockElement === canvas;
-  overlay.hidden = locked;
-  hud.hidden = !locked;
+  if (locked) touch.enabled = false;
+  showOverlay(!locked);
   if (!locked) player.keys.clear();
 });
 document.addEventListener('mousemove', (e) => {
-  if (!locked) return;
-  const s = 0.0022;
-  camera.rotation.y -= e.movementX * s;
-  camera.rotation.x = THREE.MathUtils.clamp(camera.rotation.x - e.movementY * s, -1.45, 1.45);
+  if (locked) look(e.movementX * 0.0022, e.movementY * 0.0022);
 });
 document.addEventListener('keydown', (e) => {
   if (!locked) return;
   player.keys.add(e.code);
   if (e.code === 'KeyE' && focused) focused.toggle();
+  if (e.code.startsWith('Arrow')) e.preventDefault();
 });
 document.addEventListener('keyup', (e) => player.keys.delete(e.code));
 window.addEventListener('resize', () => {
@@ -102,23 +131,26 @@ let focused = null;
 
 function updateFocus() {
   raycaster.setFromCamera(center, camera);
-  const hit = raycaster.intersectObjects(pickables, false)[0];
+  const hit = raycaster.intersectObjects(pickables, true)[0];
   focused = hit ? hit.object.userData.door : null;
-  if (focused) {
-    promptEl.textContent = `Tryck E för att ${focused.isOpen ? 'stänga' : 'öppna'} ${focused.name}`;
-    promptEl.hidden = false;
-  } else {
-    promptEl.hidden = true;
+  const verb = focused ? (focused.isOpen ? 'stänga' : 'öppna') : '';
+  if (focused && touch.enabled) {
+    actionBtn.textContent = `${verb[0].toUpperCase()}${verb.slice(1)} ${focused.name}`;
+  } else if (focused) {
+    promptEl.textContent = `Tryck E för att ${verb} ${focused.name}`;
   }
+  promptEl.hidden = !focused || touch.enabled;
+  actionBtn.hidden = !focused || !touch.enabled;
 }
 
 // --- loop ----------------------------------------------------------------
 const clock = new THREE.Clock();
 let lastLevel = -1;
-renderer.setAnimationLoop(() => {
-  const dt = Math.min(clock.getDelta(), 0.05);
+function step(dt) {
   for (const d of world.doors) d.update(dt);
-  if (locked) {
+  if (active()) {
+    player.analog.x = touch.analog.x;
+    player.analog.y = touch.analog.y;
     player.update(dt);
     updateFocus();
   }
@@ -128,5 +160,11 @@ renderer.setAnimationLoop(() => {
     levelEl.textContent = lvl < 0 ? 'Utomhus' : LEVELS[lvl].name;
     lastLevel = lvl;
   }
+}
+renderer.setAnimationLoop(() => {
+  step(Math.min(clock.getDelta(), 0.05));
   renderer.render(scene, camera);
 });
+
+// handle for tests/debugging (tools/touchtest.html)
+window.__app = { player, world, camera, touch, step };

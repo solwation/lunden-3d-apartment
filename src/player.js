@@ -27,6 +27,7 @@ export class Player {
     this.vy = 0;
     this.eyeY = 0;
     this.keys = new Set();
+    this.analog = { x: 0, y: 0 }; // touch joystick, −1..1
   }
 
   spawn(x, z, yaw) {
@@ -72,9 +73,17 @@ export class Player {
 
   update(dt) {
     const k = this.keys;
-    const fwd = (k.has('KeyW') || k.has('ArrowUp') ? 1 : 0) - (k.has('KeyS') || k.has('ArrowDown') ? 1 : 0);
-    const side = (k.has('KeyD') || k.has('ArrowRight') ? 1 : 0) - (k.has('KeyA') || k.has('ArrowLeft') ? 1 : 0);
-    const speed = k.has('ShiftLeft') || k.has('ShiftRight') ? PLAYER.run : PLAYER.walk;
+    // ← → turn (useful when the touchpad is disabled while typing), ↑ ↓ walk
+    const turn = (k.has('ArrowLeft') ? 1 : 0) - (k.has('ArrowRight') ? 1 : 0);
+    if (turn) this.camera.rotation.y += turn * PLAYER.turnSpeed * dt;
+    const keyFwd = (k.has('KeyW') || k.has('ArrowUp') ? 1 : 0) - (k.has('KeyS') || k.has('ArrowDown') ? 1 : 0);
+    const keySide = (k.has('KeyD') ? 1 : 0) - (k.has('KeyA') ? 1 : 0);
+    const fwd = keyFwd || this.analog.y;
+    const side = keySide || this.analog.x;
+    // analog stick: speed follows how far it's pushed, almost full = run
+    const amount = keyFwd || keySide ? 1 : Math.min(1, Math.hypot(this.analog.x, this.analog.y));
+    const running = k.has('ShiftLeft') || k.has('ShiftRight') || (!keyFwd && !keySide && amount > 0.95);
+    const speed = (running ? PLAYER.run : PLAYER.walk) * (running ? 1 : amount);
 
     const yaw = this.camera.rotation.y;
     const fx = -Math.sin(yaw), fz = -Math.cos(yaw);

@@ -26,11 +26,14 @@ src/config.js          everything NOT in the PDF: heights, soffits, stair layout
 src/world.js           builds meshes + per-level collision segments from data/plan.json
 src/stairs.js          stair treads + walking height function (stairHeight)
 src/doors.js           SwingDoor / SlidingDoor (E to open/close, animated, dynamic collision)
-src/player.js          WASD movement, circle-vs-segment collision, step-up, gravity
-src/main.js            renderer, lights, pointer lock, door raycast prompt, loop
+src/exterior.js        brick façades, neighbouring units, stacked unit above, loftgång, street
+src/player.js          WASD/arrow/joystick movement, circle-vs-segment collision, step-up, gravity
+src/touch.js           on-screen joystick (left) + drag-to-look (right), multi-touch pointer events
+src/main.js            renderer, lights, input modes, door raycast prompt/button, loop (step)
 data/plan.json         GENERATED — do not edit by hand
 tools/extract_plan.py  PDF → data/plan.json (stdlib only)
 tools/walktest.html    headless movement test
+tools/touchtest.html   headless touch-input test (synthetic pointer events)
 ```
 
 ### Geometry pipeline
@@ -52,10 +55,16 @@ North = −z (the bedrooms Sovrum 1/3 face north).
 ### Known facts about the apartment (from the PDF + the user)
 
 - Two levels, 5.75 × 12.70 m outside, 63 m² boarea. Row house; side walls are party walls.
-- Ceiling height: **Entréplan ~3.0 m** (locally lower over Tvätt), **Övre plan ~2.8 m**.
-- **Sovrum 1 and Sovrum 3 (north) have a lowered ceiling, ~2.4 m by the windows**, because an
-  access balcony (*loftgång*) runs above. Modelled as a soffit in `SOFFITS`; its depth from the
-  façade is a guess.
+- Ceiling height: **Entréplan ~3.0 m**, **Övre plan ~2.8 m**. Peab's fact sheet ("bofakta",
+  linked from the project page) gives RH 2.5 m over Tvätt/Badrum and in WC/dusch.
+- **Sovrum 1 and Sovrum 3 (north) have a lowered ceiling, RH 2.4 m**, a boxed-in ceiling ~1.5 m
+  deep from the façade, because the access balcony (*loftgång*) for the units above runs there.
+- Window sill heights (BH) per window are from bofakta; head heights are estimated from Peab's
+  renders (see `WINDOWS`). Windows/exterior doors have a glazed transom; the patio door is glazed.
+- Façade: red brick (and some white render) per the brochure. The building is "staplade
+  radhus": a two-storey unit sits on top of ours, entered from the loftgång (floor 3).
+  Neighbours/upper units in `exterior.js` are simplified copies of our façade.
+- Skärmvägg by the patio H 1.8 m, stair railing H 1.1 m (bofakta).
 - U-shaped stair with winders at the east end: flight A (Entréplan, going east), 180° winders,
   flight B (going west) arriving in the upstairs hall. Upstairs slab opening = stair outline on
   Övre plan.
@@ -96,10 +105,23 @@ google-chrome --headless=new --use-angle=swiftshader --enable-unsafe-swiftshader
 # movement/collision/stair test — prints PASS/FAIL per route
 google-chrome --headless=new --use-angle=swiftshader --enable-unsafe-swiftshader \
   --virtual-time-budget=60000 --dump-dom http://localhost:8137/tools/walktest.html
+
+# touch input (joystick + look + start button) — prints PASS/FAIL
+google-chrome --headless=new --use-angle=swiftshader --enable-unsafe-swiftshader \
+  --virtual-time-budget=30000 --dump-dom http://localhost:8137/tools/touchtest.html
 ```
 
-Run the walk test after any change to walls, doors, stairs or player movement. Take
+Run the walk test after any change to walls, doors, stairs or player movement, and the touch
+test after input changes. Headless SwiftShader renders only a few frames per second, so tests
+drive `window.__app.step(dt)` / `Player.update` directly instead of waiting on frames. Take
 screenshots into the session scratchpad, not the repo.
+
+## Input notes
+
+- Start screen has two buttons: *Mus & tangentbord* (pointer lock) and *Touch* (joystick).
+  A Surface has both, so the visitor chooses.
+- GNOME's "disable touchpad while typing" (on by default) blocks touchpad look while a WASD key
+  is held — not a bug in the app. Arrow keys ← → turn as a keyboard-only fallback.
 
 ## Conventions
 

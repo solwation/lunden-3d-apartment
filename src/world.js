@@ -1,10 +1,11 @@
 import * as THREE from 'three';
 import {
-  LEVELS, SLAB, SOFFITS, DOOR_HEIGHT, WINDOW, CABINET_HEIGHT, BASE_CABINET, SHELF_HEIGHT,
-  STAIR, COLORS,
+  LEVELS, SOFFITS, DOOR_HEIGHT, EXT_DOOR_HEAD, WINDOWS, CABINET_HEIGHT, BASE_CABINET, SHELF_HEIGHT,
+  STAIR, COLORS, FENCE_HEIGHT,
 } from './config.js';
 import { buildStairs } from './stairs.js';
 import { SwingDoor, SlidingDoor } from './doors.js';
+import { buildExterior } from './exterior.js';
 
 const mat = (color, extra = {}) => new THREE.MeshStandardMaterial({ color, roughness: 0.85, ...extra });
 
@@ -52,7 +53,6 @@ const M = {
   patio: mat(COLORS.patio, { roughness: 0.95 }),
   hedge: mat(COLORS.hedge, { roughness: 1 }),
   fence: mat(COLORS.fence, { roughness: 0.9 }),
-  neighbour: mat(COLORS.neighbour, { roughness: 0.9 }),
 };
 
 /** Axis-aligned box from plan ranges (x, z) and height range y. */
@@ -147,6 +147,24 @@ function polySegments(pts) {
 
 const insideRect = (f, r) => f.x0 >= r.x0 - 0.01 && f.x1 <= r.x1 + 0.01 && f.z0 >= r.z0 - 0.01 && f.z1 <= r.z1 + 0.01;
 
+/** White window frame in the plane z = fz between x0..x1, y0..y1, with glass. */
+function addWindowFrame(group, x0, x1, fz, y0, y1, transom) {
+  const ft = 0.06, d = 0.05;
+  const z0 = fz - d, z1 = fz + d;
+  group.add(box(x0, x1, z0, z1, y0, y0 + ft, M.frame));
+  group.add(box(x0, x1, z0, z1, y1 - ft, y1, M.frame));
+  group.add(box(x0, x0 + ft, z0, z1, y0, y1, M.frame));
+  group.add(box(x1 - ft, x1, z0, z1, y0, y1, M.frame));
+  const ty = transom > 0 ? y1 - transom : y1;
+  if (transom > 0) group.add(box(x0, x1, z0, z1, ty - ft / 2, ty + ft / 2, M.frame));
+  // a mullion for anything wider than a single casement
+  if (x1 - x0 > 0.9 && y1 - y0 > 1.2) {
+    const mx = (x0 + x1) / 2;
+    group.add(box(mx - ft / 2, mx + ft / 2, z0, z1, y0, ty, M.frame));
+  }
+  group.add(box(x0, x1, fz - 0.008, fz + 0.008, y0, y1, M.glass, { shadow: false }));
+}
+
 function buildLevel(floor, li, group) {
   const L = LEVELS[li];
   const y0 = L.floor;
@@ -162,34 +180,32 @@ function buildLevel(floor, li, group) {
     segments.push(...polySegments(w.outer));
   }
 
-  // Windows: sill + head infill, frame, glass. Windows block movement.
-  const win = WINDOW[li];
+  // Windows: sill/head infill, frame with mullion + optional transom, glass, inner sill board.
+  // All windows are in the north/south façades (they run along x).
+  const openings = { north: [], south: [] };
   for (const r of floor.windows) {
-    group.add(box(r.x0, r.x1, r.z0, r.z1, y0, y0 + win.sill, M.wall));
-    group.add(box(r.x0, r.x1, r.z0, r.z1, y0 + win.head, yC, M.wall));
-    const along = r.x1 - r.x0 > r.z1 - r.z0;
-    const mid = along ? (r.z0 + r.z1) / 2 : (r.x0 + r.x1) / 2;
-    const t = 0.06;
-    const fx = along ? [r.x0, r.x1, mid - t, mid + t] : [mid - t, mid + t, r.z0, r.z1];
-    const ft = 0.05; // frame profile
-    group.add(box(fx[0], fx[1], fx[2], fx[3], y0 + win.sill, y0 + win.sill + ft, M.frame));
-    group.add(box(fx[0], fx[1], fx[2], fx[3], y0 + win.head - ft, y0 + win.head, M.frame));
-    if (along) {
-      for (const x of [r.x0, (r.x0 + r.x1) / 2 - ft / 2, r.x1 - ft]) {
-        group.add(box(x, x + ft, fx[2], fx[3], y0 + win.sill, y0 + win.head, M.frame));
-      }
-    } else {
-      for (const z of [r.z0, (r.z0 + r.z1) / 2 - ft / 2, r.z1 - ft]) {
-        group.add(box(fx[0], fx[1], z, z + ft, y0 + win.sill, y0 + win.head, M.frame));
-      }
-    }
-    const g = along ? [fx[0], fx[1], mid - 0.01, mid + 0.01] : [mid - 0.01, mid + 0.01, fx[2], fx[3]];
-    group.add(box(g[0], g[1], g[2], g[3], y0 + win.sill, y0 + win.head, M.glass, { shadow: false }));
+    const facade = r.z0 < D / 2 ? 'north' : 'south';
+    const cx = (r.x0 + r.x1) / 2;
+    const spec = WINDOWS.filter((w) => w.level === li && w.facade === facade)
+      .sort((a, b) => Math.abs(a.x - cx) - Math.abs(b.x - cx))[0];
+    const sill = y0 + spec.sill, head = y0 + spec.head;
+    group.add(box(r.x0, r.x1, r.z0, r.z1, y0, sill, M.wall));
+    group.add(box(r.x0, r.x1, r.z0, r.z1, head, yC, M.wall));
+    // frame sits towards the outside of the wall
+    const fz = facade === 'north' ? r.z0 + 0.1 : r.z1 - 0.1;
+    const inner = facade === 'north' ? r.z1 : r.z0;
+    addWindowFrame(group, r.x0, r.x1, fz, sill, head, spec.transom);
+    // inner window board (fönsterbänk)
+    const iz0 = Math.min(fz, inner + (facade === 'north' ? 0.03 : -0.03));
+    const iz1 = Math.max(fz, inner + (facade === 'north' ? 0.03 : -0.03));
+    group.add(box(r.x0 - 0.02, r.x1 + 0.02, iz0, iz1, sill - 0.03, sill, M.porcelain));
+    openings[facade].push({ x0: r.x0, x1: r.x1, y0: sill, y1: head });
     segments.push(...rectSegments(r));
   }
 
-  // Doors: lintel over the gap + an interactive leaf. All start closed (several open leaves
-  // block the passage by the stair, e.g. Badrum and Klk on Entréplan).
+  // Doors: lintel over the gap + an interactive leaf that fills the whole gap. All start
+  // closed (several open leaves block the passage by the stair, e.g. Badrum and Klk).
+  // Exterior doors are glazed-transom doors like the windows.
   const doors = [];
   for (const d of floor.doors) {
     const [hx, hz] = d.hinge, [tx, tz] = d.tip, [wx, wz] = d.wall;
@@ -199,13 +215,32 @@ function buildLevel(floor, li, group) {
     const c = (axis === 'x' ? hz : hx) - leafDir * 0.03;
     const [a, b] = axis === 'x' ? [Math.min(hx, wx), Math.max(hx, wx)] : [Math.min(hz, wz), Math.max(hz, wz)];
     const gap = findGap(wallBoxes, axis, c, a + 0.02, b - 0.02);
-    if (gap) group.add(gapBox(gap, y0 + DOOR_HEIGHT, yC, M.wall));
-    if (d.optional) continue; // Peab tillval — not built by default
     const exterior = tz < 0 || tz > D;
-    const door = new SwingDoor(d, y0, M.door, false);
+    const head = y0 + (exterior ? EXT_DOOR_HEAD : DOOR_HEIGHT);
+    if (gap) group.add(gapBox(gap, head, yC, M.wall));
+    if (d.optional) continue; // Peab tillval — not built by default
+
+    // Stretch the leaf to the full gap (the plan's swing is the nominal leaf width).
+    let leaf = d;
+    if (gap) {
+      const hAlong = axis === 'x' ? hx : hz, wAlong = axis === 'x' ? wx : wz;
+      const dir = Math.sign(wAlong - hAlong);
+      const h2 = dir > 0 ? gap.lo + 0.005 : gap.hi - 0.005;
+      const w2 = dir > 0 ? gap.hi - 0.005 : gap.lo + 0.005;
+      const len = Math.abs(w2 - h2);
+      leaf = axis === 'x'
+        ? { hinge: [h2, hz], wall: [w2, hz], tip: [h2, hz + leafDir * len] }
+        : { hinge: [hx, h2], wall: [hx, w2], tip: [hx + leafDir * len, h2] };
+    }
+    const door = new SwingDoor(leaf, y0, M.door, false, { glazed: exterior && tz > D, glass: M.glass, frame: M.frame });
     door.name = exterior ? 'ytterdörren' : 'dörren';
     group.add(door.object);
     doors.push(door);
+    if (exterior && gap) {
+      // transom above the leaf, in the plane of the closed leaf
+      addWindowFrame(group, gap.lo, gap.hi, leaf.hinge[1] + (tz < 0 ? 0.03 : -0.03), y0 + DOOR_HEIGHT, head, 0);
+      openings[tz < 0 ? 'north' : 'south'].push({ x0: gap.lo, x1: gap.hi, y0, y1: head });
+    }
   }
 
   for (const s of floor.sliding) {
@@ -282,7 +317,7 @@ function buildLevel(floor, li, group) {
     group.add(box(s.x0, s.x1, s.z0, s.z1, y0 + s.height, yC - 0.004, M.ceiling, { shadow: false }));
   }
 
-  return { segments, doors, ceiling: yC };
+  return { segments, doors, openings, ceiling: yC };
 }
 
 export function buildWorld(plan) {
@@ -320,7 +355,7 @@ export function buildWorld(plan) {
   }
   l1.segments.push(...railSegs);
 
-  // Site: ground, patio, hedge, fences, neighbouring row houses (placeholders)
+  // Site: ground, patio, hedge, fences
   const site = lower.site;
   const ground = plate(-30, W + 30, -25, D + 30, -0.01, M.grass);
   scene.add(ground);
@@ -332,10 +367,13 @@ export function buildWorld(plan) {
   }
   for (const f of site.fences ?? []) {
     const [ax, az] = f.a, [bx, bz] = f.b;
-    scene.add(box(ax - 0.02, bx + 0.02, Math.min(az, bz), Math.max(az, bz), 0, 1.1, M.fence));
+    scene.add(box(ax - 0.025, bx + 0.025, Math.min(az, bz), Math.max(az, bz), 0, FENCE_HEIGHT, M.fence));
     outdoor.push([ax, az, bx, bz]);
   }
-  for (const x of [-W, W]) scene.add(box(x + 0.001, x + W - 0.001, 0, D, 0, roofY + 0.35, M.neighbour));
+  // Brick façades, the stacked units above, the loftgång and the neighbouring units
+  const north = [...l0.openings.north, ...l1.openings.north];
+  const south = [...l0.openings.south, ...l1.openings.south];
+  scene.add(buildExterior({ W, D, roofTop: roofY + 0.35, north, south, frame: M.frame, wall: M.wall }));
   // keep the visitor near the house
   const bounds = { x0: 0.05, x1: W - 0.05, z0: -6, z1: site.patio ? site.patio.z1 : D + 4 };
   outdoor.push(

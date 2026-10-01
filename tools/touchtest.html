@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Touch test</title></head>
+<body>
+<pre id="out">running…</pre>
+<iframe id="f" src="../index.html" width="900" height="600"></iframe>
+<script>
+// Synthetic touch test: taps the start overlay with a "touch" pointer, pushes the joystick
+// forward with one finger while dragging to look with another, then reports what happened.
+//   google-chrome --headless=new --dump-dom http://localhost:8137/tools/touchtest.html
+const out = document.getElementById('out');
+const f = document.getElementById('f');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+f.onload = async () => {
+  const w = f.contentWindow, d = f.contentDocument;
+  while (!w.__app) await wait(100);
+  const { player, camera } = w.__app;
+  const ev = (type, id, x, y, target = d) => target.dispatchEvent(new w.PointerEvent(type,
+    { pointerId: id, pointerType: 'touch', clientX: x, clientY: y, bubbles: true, cancelable: true }));
+  d.getElementById('start-touch').click();
+  await wait(100);
+  const start = { x: player.pos.x, z: player.pos.z, yaw: camera.rotation.y };
+  ev('pointerdown', 2, 120, 450);          // joystick
+  ev('pointermove', 2, 120, 400);          // push forward (50 of 56 px)
+  ev('pointerdown', 3, 700, 300);          // look finger
+  ev('pointermove', 3, 640, 300);          // drag left → turn left
+  // headless software rendering gives few, irregular frames: step the app loop directly
+  for (let i = 0; i < 60; i++) w.__app.step(1 / 60);
+  const analogY = w.__app.touch.analog.y;
+  const moved = Math.hypot(player.pos.x - start.x, player.pos.z - start.z);
+  const turned = camera.rotation.y - start.yaw;
+  ev('pointerup', 2, 120, 400); ev('pointerup', 3, 640, 300);
+  const overlayHidden = d.getElementById('overlay').hidden;
+  const ok = overlayHidden && moved > 0.5 && turned > 0.2;
+  out.textContent = `${ok ? 'PASS' : 'FAIL'} touch: overlayHidden=${overlayHidden} moved=${moved.toFixed(2)}m turned=${turned.toFixed(2)}rad analogY=${analogY.toFixed(2)} pos=${player.pos.x.toFixed(2)},${player.pos.z.toFixed(2)}`;
+};
+</script>
+</body>
+</html>
