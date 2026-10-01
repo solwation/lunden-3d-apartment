@@ -109,7 +109,8 @@ North = −z (the bedrooms Sovrum 1/3 face north).
 - Doors: Badrum and Klk on Entréplan swing into the passage by the stair, so all swing doors
   start closed. The dashed door to Allrum is a tillval that **we have chosen** (`OPTIONS.allrumDoor`
   + a short extra wall in `EXTRA_WALLS`) → Allrum becomes **Sovrum 4** (four bedrooms upstairs).
-  Wardrobes (G) are hollow with two sliding fronts on separate tracks (one open at a time).
+  Wardrobes (G, and L in Sovrum 2 — `WARDROBE_LABELS`) are hollow with two sliding fronts on separate
+  tracks (one open at a time).
 - Sliding doors run towards the side with enough wall to park the panel (the plan arrows
   are not reliable — the Tvätt arrow pointed through a 19 cm wall stub into the hall).
 - Vardagsrum furniture (wanted by the user): IKEA LANDSKRONA 3-sits + schäslong, Gunnared

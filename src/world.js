@@ -161,6 +161,9 @@ function polySegments(pts) {
   });
 }
 
+// Cabinets built hollow with sliding fronts: G (garderob) and L (the wardrobe in Sovrum 2).
+const WARDROBE_LABELS = ['G', 'L'];
+
 const gapRect = (g) => (g.axis === 'x' ? { x0: g.lo, x1: g.hi, z0: g.p0, z1: g.p1 } : { x0: g.p0, x1: g.p1, z0: g.lo, z1: g.hi });
 
 const insideRect = (f, r) => f.x0 >= r.x0 - 0.01 && f.x1 <= r.x1 + 0.01 && f.z0 >= r.z0 - 0.01 && f.z1 <= r.z1 + 0.01;
@@ -366,7 +369,7 @@ function buildLevel(floor, li, group) {
   }
 
   // Wardrobes (G): adjacent units become one hollow wardrobe with sliding doors.
-  const wardrobeCabs = floor.cabinets.filter((c) => c.label === 'G');
+  const wardrobeCabs = floor.cabinets.filter((c) => WARDROBE_LABELS.includes(c.label));
   const groups = [];
   for (const c of wardrobeCabs) {
     const g = groups.find((g) => (Math.abs(g.x0 - c.x0) < 0.02 && Math.abs(g.x1 - c.x1) < 0.02
@@ -377,7 +380,7 @@ function buildLevel(floor, li, group) {
     else groups.push({ ...c });
   }
   for (const g of groups) {
-    buildWardrobe(group, g, y0, CABINET_HEIGHT.G, wallBoxes, doors);
+    buildWardrobe(group, g, y0, CABINET_HEIGHT[g.label] ?? CABINET_HEIGHT.G, wallBoxes, doors);
     segments.push(...rectSegments(g));
   }
 
@@ -388,7 +391,7 @@ function buildLevel(floor, li, group) {
   // Other fixed cabinets
   for (const cab of floor.cabinets) {
     const label = cab.label;
-    if (label === 'G' || handled.has(cab)) continue;
+    if (WARDROBE_LABELS.includes(label) || handled.has(cab)) continue;
     const h = label ? CABINET_HEIGHT[label] ?? BASE_CABINET
       : (cab.x1 - cab.x0 < 0.3 || cab.z1 - cab.z0 < 0.3) ? SHELF_HEIGHT : BASE_CABINET;
     const appliance = label === 'TT' || label === 'TM';
