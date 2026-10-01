@@ -55,6 +55,7 @@ src/surroundings.js    neighbourhood: brick blocks with gable roofs, instanced t
 src/rooms.js           room detection: walls + door gaps rasterised, BFS from the room labels
 src/minimap.js         plan view with the visitor's arrow, current room highlighted (K toggles)
 src/measure.js         tape measure (Q / 📏): two points on any surface, distance label
+src/signs.js           hand-lettered name signs on the bedroom doors (DOOR_SIGNS)
 src/water.js           running water: E on a tap/shower (world.taps from interior.js) → stream + hiss
 src/stats.js           visitor statistics (localStorage) + the translucent HUD panel (T toggles)
 src/changelog.js       changelog list (start screen) + the note on the freezer (E to read)
@@ -127,11 +128,13 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   bathroom are *example* layouts with our materials — the kitchen layout is
   `material/Köksritning.jpg` (tall oven unit, wall cabinets, top cabinets over fridge/freezer,
   gypsum boxing above the hood). Colours/sizes live in `FINISH` / `KITCHEN` in config.
+- Who sleeps where (the user's plan; "left/right" as you arrive upstairs walking west):
+  Sovrum 1 (first right) Sarah & Ofluf, double bed · Sovrum 3 (second right) Livia & Tuva, bunk ·
+  Sovrum 2 (first left) Walter & Kian, bunk · Sovrum 4 (second left, ex Allrum) Tilly, IKEA HEMNES
+  daybed with pink cushions. Name signs: `DOOR_SIGNS` → `src/signs.js` (hall side of the door).
 - Dining set (user's wish): table 180 × 90, short end to the kitchen window, 3 + 3 chairs, dark
-  brown wood. Other furniture besides the LANDSKRONA group (beds 160/90 × 200) are
-  *examples* to get a feel for the space, not the user's choices. F toggles all furniture
-  (`world.setFurniture`, which also swaps the collision segments). Keep the Sovrum 1 bed clear
-  of the Klk sliding door — the cat test needs floor in front of it.
+  brown wood. F toggles all furniture (`world.setFurniture`, which also swaps the collision
+  segments). Keep the Sovrum 1 bed clear of the Klk sliding door — the cat test needs floor there.
 - Toilets: the redrawn plan has them rotated; bofakta shows the tank against the wall, so
   `toiletAgainstWall` re-orients them. Modelled as Ifö Spira 6260 (`TOILET` in config,
   `src/toilet.js`); the lid opens/closes with E (`world.lids`, kept out of `world.doors` so the

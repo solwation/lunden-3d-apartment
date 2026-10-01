@@ -12,6 +12,7 @@ import { Toilet } from './toilet.js';
 import { RoomMap } from './rooms.js';
 import { buildAO } from './ao.js';
 import { buildSurroundings } from './surroundings.js';
+import { addDoorSigns } from './signs.js';
 
 const mat = (color, extra = {}) => new THREE.MeshStandardMaterial({ color, roughness: 0.85, ...extra });
 
@@ -532,6 +533,9 @@ export function buildWorld(plan) {
   }));
   const roomMaps = [l0, l1].map((l, li) => new RoomMap({ x: W, z: D },
     [...l.barriers, ...ROOM_DIVIDERS.filter((d) => d.level === li)], rooms[li]));
+
+  addDoorSigns([...l0.doors, ...l1.doors], (lv, x, z) => roomMaps[lv]?.at(x, z) ?? null,
+    (d) => (d.object.position.y > LEVELS[0].floor + 1.6 ? 1 : 0));
 
   // furniture can be switched off (F): keep its collision separate from the fixed segments
   const fixed = [l0.segments, l1.segments];

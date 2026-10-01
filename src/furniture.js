@@ -217,7 +217,83 @@ function chair(item) {
   return g;
 }
 
-const BUILDERS = { sofa, armchair, footstool, floorlamp, sidetable, bed, table, chair };
+const whiteWood = new THREE.MeshStandardMaterial({ color: 0xf3f2ee, roughness: 0.6 });
+const DUVETS = [0x8fb8d8, 0xf2c14e, 0x9bc49a, 0xe58f8f];
+let duvetIndex = 0;
+const duvetMat = () => new THREE.MeshStandardMaterial({ color: DUVETS[duvetIndex++ % DUVETS.length], roughness: 0.95 });
+
+/** Bunk bed, white: four posts, two mattresses with duvets, guard rail and a ladder. −z = head. */
+function bunk(item) {
+  const g = new THREE.Group();
+  const w = item.w, l = item.l, H = 1.6, p = 0.05;
+  for (const x of [-w / 2 - p / 2, w / 2 + p / 2]) for (const z of [-l / 2 - p / 2, l / 2 + p / 2]) {
+    g.add(rbox(p, H, p, x, H / 2, z, whiteWood, 0.01));
+  }
+  for (const y of [0.25, 1.15]) {
+    // frame, mattress, duvet, pillow
+    for (const x of [-w / 2 - p / 2, w / 2 + p / 2]) g.add(rbox(p * 0.8, 0.12, l, x, y, 0, whiteWood, 0.01));
+    for (const z of [-l / 2 - p / 2, l / 2 + p / 2]) g.add(rbox(w, 0.12, p * 0.8, 0, y, z, whiteWood, 0.01));
+    g.add(rbox(w - 0.02, 0.14, l - 0.02, 0, y + 0.1, 0, linen, 0.04));
+    g.add(rbox(w, 0.05, l * 0.68, 0, y + 0.19, l * 0.15, duvetMat(), 0.025));
+    g.add(rbox(w * 0.7, 0.1, 0.34, 0, y + 0.22, -l / 2 + 0.24, linen, 0.05));
+  }
+  // guard rail on the top bunk (open by the ladder) and the head/foot boards above it
+  g.add(rbox(p * 0.6, 0.06, l * 0.62, w / 2 + p / 2, 1.5, -l * 0.17, whiteWood, 0.01));
+  for (const z of [-l / 2 - p / 2, l / 2 + p / 2]) g.add(rbox(w, 0.06, p * 0.6, 0, 1.5, z, whiteWood, 0.01));
+  // ladder on the room side (+x) at the foot end
+  const lx = w / 2 + p + 0.02, lz0 = l / 2 - 0.42, lz1 = l / 2 - 0.02;
+  for (const z of [lz0, lz1]) g.add(rbox(0.035, 1.55, 0.035, lx, 0.775, z, whiteWood, 0.008));
+  for (let y = 0.3; y < 1.5; y += 0.27) g.add(rbox(0.03, 0.03, lz1 - lz0, lx, y, (lz0 + lz1) / 2, whiteWood, 0.008));
+  g.userData.footprint = [{ x0: -w / 2 - p, x1: lx + 0.03, z0: -l / 2 - p, z1: l / 2 + p }];
+  return g;
+}
+
+const pinks = [0xf6b8cf, 0xf29bbb, 0xfbd3e1, 0xe983a8].map((c) => new THREE.MeshStandardMaterial({ color: c, roughness: 0.95 }));
+
+/** IKEA HEMNES daybed with 3 drawers, white, 207 × 89 × 83 cm, seat facing +z, pink cushions. */
+function daybed() {
+  const g = new THREE.Group();
+  const W = 2.07, D = 0.89, H = 0.83, z0 = -D / 2, z1 = D / 2;
+  // base with three drawers on the front
+  g.add(rbox(W - 0.1, 0.3, D - 0.04, 0, 0.18, 0, whiteWood, 0.01));
+  for (let i = 0; i < 3; i++) {
+    const x = -W / 2 + 0.05 + (W - 0.1) * (i + 0.5) / 3;
+    g.add(rbox((W - 0.1) / 3 - 0.02, 0.24, 0.02, x, 0.18, z1 - 0.02, whiteWood, 0.006));
+    g.add(rbox(0.12, 0.02, 0.02, x, 0.26, z1, metal, 0.005)); // handle
+  }
+  // ends with spindles, back with spindles, top rails
+  for (const s of [-1, 1]) {
+    const x = s * (W / 2 - 0.03);
+    for (const z of [z0 + 0.03, z1 - 0.03]) g.add(rbox(0.06, H, 0.06, x, H / 2, z, whiteWood, 0.01));
+    g.add(rbox(0.05, 0.06, D - 0.06, x, H - 0.03, 0, whiteWood, 0.01));
+    for (let k = 1; k < 5; k++) g.add(rbox(0.025, H - 0.4, 0.025, x, 0.35 + (H - 0.4) / 2, z0 + (D * k) / 5, whiteWood, 0.005));
+  }
+  g.add(rbox(W - 0.06, 0.06, 0.05, 0, H - 0.03, z0 + 0.03, whiteWood, 0.01));
+  for (let k = 1; k < 14; k++) g.add(rbox(0.025, H - 0.4, 0.025, -W / 2 + (W * k) / 14, 0.35 + (H - 0.4) / 2, z0 + 0.03, whiteWood, 0.005));
+  // mattress (two ÅFJÄLL stacked when closed) and cushions
+  g.add(rbox(W - 0.14, 0.2, D - 0.1, 0, 0.43, 0.02, linen, 0.05));
+  const cushions = [[-0.6, 0.42, 0], [-0.15, 0.4, 1], [0.32, 0.44, 2], [0.75, 0.36, 3]];
+  for (const [x, size, i] of cushions) {
+    const c = rbox(size, size, 0.14, x, 0.53 + size / 2, z0 + 0.15, pinks[i], 0.06);
+    c.rotation.x = -0.18;
+    g.add(c);
+  }
+  // a small round cushion and a heart-ish one in front
+  const round = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 0.1, 24), pinks[2]);
+  round.rotation.x = Math.PI / 2 - 0.3;
+  round.position.set(0.05, 0.68, z0 + 0.3);
+  g.add(round);
+  for (const s of [-1, 1]) {
+    const lobe = rbox(0.12, 0.12, 0.08, s * 0.05 - 0.45, 0.62, z0 + 0.32, pinks[1], 0.05);
+    lobe.rotation.z = s * 0.6; // two tilted lobes = a little heart
+    g.add(lobe);
+  }
+  g.traverse((m) => { m.castShadow = m.receiveShadow = true; });
+  g.userData.footprint = [{ x0: -W / 2, x1: W / 2, z0, z1 }];
+  return g;
+}
+
+const BUILDERS = { sofa, armchair, footstool, floorlamp, sidetable, bed, table, chair, bunk, daybed };
 
 /** Build all furniture; returns the scene group, collision segments per level and lamps. */
 export function buildFurniture() {

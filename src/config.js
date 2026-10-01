@@ -47,6 +47,14 @@ export const ROOM_DIVIDERS = [
   { level: 0, x0: 2.15, x1: 3.25, z0: 7.6, z1: 7.8 },
 ];
 
+// Name signs on the hall side of the bedroom doors (src/signs.js). Matched to the nearest door.
+export const DOOR_SIGNS = [
+  { level: 1, room: 'Sovrum 1', text: 'Sarah & Ofluf', color: '#fde9d9' },
+  { level: 1, room: 'Sovrum 3', text: 'Livia & Tuva', color: '#e6f3e1' },
+  { level: 1, room: 'Sovrum 2', text: 'Walter & Kian', color: '#dfeefb' },
+  { level: 1, room: 'Sovrum 4', text: 'Tilly', color: '#fde2ee' },
+];
+
 export const DOOR_HEIGHT = 2.1;
 // Exterior doors have a glazed transom (överljus) above the leaf, like the windows
 // (Peab renders of L1004, same unit type). Head height is estimated from the render.
@@ -246,12 +254,13 @@ export const FURNITURE = [
   { type: 'footstool', level: 0, x: 1.33, z: 8.93, rot: -135 },
   { type: 'floorlamp', level: 0, x: 0.42, z: 8.02 },
   { type: 'sidetable', level: 0, x: 1.52, z: 8.12, flower: true },
-  // Example furniture to get a feel for the rooms (issue #8; not chosen by us — move freely).
-  // Beds: rot = direction from the head to the foot end; w × l = mattress size.
-  { type: 'bed', level: 1, x: 5.55 - 1.1, z: 2.3, rot: 90, w: 1.6, l: 2.0 },  // Sovrum 1, head east (clear of the Klk)
-  { type: 'bed', level: 1, x: 0.2 + 1.1, z: 2.6, rot: -90, w: 0.9, l: 2.0 },  // Sovrum 3, head west
-  { type: 'bed', level: 1, x: 5.55 - 1.1, z: 10.3, rot: 90, w: 1.6, l: 2.0 }, // Sovrum 2
-  { type: 'bed', level: 1, x: 0.2 + 1.1, z: 10.0, rot: -90, w: 0.9, l: 2.0 }, // Sovrum 4
+  // Upstairs bedrooms (the user's plan). Beds: rot = direction from the head to the foot end.
+  { type: 'bed', level: 1, x: 5.55 - 1.1, z: 2.3, rot: 90, w: 1.6, l: 2.0 },  // Sovrum 1 (Sarah & Ofluf), head east, clear of the Klk
+  { type: 'bunk', level: 1, x: 0.2 + 0.5, z: 2.6, rot: 180, w: 0.9, l: 2.0 },  // Sovrum 3 (Livia & Tuva), along the west wall
+  { type: 'bunk', level: 1, x: 5.55 - 0.5, z: 10.1, rot: 180, w: 0.9, l: 2.0 }, // Sovrum 2 (Walter & Kian), along the east wall
+  // Sovrum 4 (Tilly): IKEA HEMNES dagbädd m 3 lådor, vit, 207 × 89 × 83 cm (ikea.com), back to the
+  // west wall, with pink cushions. rot = the way the seat faces.
+  { type: 'daybed', level: 1, x: 0.2 + 0.46, z: 10.0, rot: -90 },
   // Matplats: table 180 × 90 with the short end to the kitchen window, three chairs on each
   // long side, dark brown wood (the user's wish). Kept a little west of the window centre so
   // the east chairs clear the kitchen fronts (x 4.95).

@@ -74,7 +74,7 @@ function roof(b) {
     geo.scale(-1, 1, 1); // shape x = +x for blocks along z
     geo.translate(0, h, b.z0 - 0.3);
   }
-  return geo.toNonIndexed();
+  return geo; // ExtrudeGeometry is already non-indexed
 }
 
 function trees(rand) {
