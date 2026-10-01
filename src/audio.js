@@ -167,6 +167,13 @@ export const sfx = {
     o.start(t); vib.start(t);
     o.stop(t + dur + 0.05); vib.stop(t + dur + 0.05);
   },
+  /** Toilet lid: a soft porcelain clack when it lands (on the seat, or nearly against the tank). */
+  lid(p, opening) {
+    if (!ready()) return;
+    const t = ctx.currentTime + 0.4, d = out({ x: p.x, y: p.y + 0.5, z: p.z }, 0.8);
+    noise(t, 0.04, d, { type: 'highpass', freq: 1800, gain: opening ? 0.2 : 0.35 });
+    tone(t, 0.06, d, { from: 900, to: 600, gain: opening ? 0.08 : 0.14 });
+  },
   /** Paper rustle (taking the note off the freezer). */
   paper(pos) {
     if (!ready()) return;

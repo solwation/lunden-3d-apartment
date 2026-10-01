@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import {
-  LEVELS, SOFFITS, DOOR_HEIGHT, EXT_DOOR_HEAD, WINDOWS, CABINET_HEIGHT, BASE_CABINET, SHELF_HEIGHT,
+  LEVELS, SOFFITS, DOOR_HEIGHT, EXT_DOOR_HEAD, WINDOWS, CABINET_HEIGHT, BASE_CABINET, SHELF_HEIGHT, TOILET,
   STAIR, COLORS, FENCE_HEIGHT, FINISH, OPTIONS, EXTRA_WALLS, ROOM_RENAMES,
 } from './config.js';
 import { buildStairs } from './stairs.js';
@@ -8,6 +8,7 @@ import { SwingDoor, SlidingDoor, wardrobeDoors } from './doors.js';
 import { buildExterior } from './exterior.js';
 import { buildFurniture } from './furniture.js';
 import { buildInterior } from './interior.js';
+import { Toilet } from './toilet.js';
 
 const mat = (color, extra = {}) => new THREE.MeshStandardMaterial({ color, roughness: 0.85, ...extra });
 
@@ -198,9 +199,8 @@ function toiletAgainstWall(tank, bowl, wallBoxes) {
     z0: Math.min(tank.z0, bowl.z0), z1: Math.max(tank.z1, bowl.z1),
   };
   const cx = (g.x0 + g.x1) / 2, cz = (g.z0 + g.z1) / 2;
-  const width = Math.min(tank.x1 - tank.x0, tank.z1 - tank.z0) > 0.25
-    ? Math.max(tank.x1 - tank.x0, tank.z1 - tank.z0) : 0.39;
-  const tankD = 0.18, bowlL = 0.55;
+  const width = TOILET.width;
+  const tankD = TOILET.tankDepth, bowlL = TOILET.depth - TOILET.tankDepth + 0.05;
   const near = (lo, hi, c) => lo - 0.05 <= c && hi + 0.05 >= c;
   let best = null;
   for (const w of wallBoxes) {
@@ -214,10 +214,10 @@ function toiletAgainstWall(tank, bowl, wallBoxes) {
   const [side, , face] = best ?? ['west', 0, g.x0];
   const h = width / 2;
   switch (side) {
-    case 'west': return { tank: { x0: face, x1: face + tankD, z0: cz - h, z1: cz + h }, bowl: { x0: face + tankD - 0.05, x1: face + tankD + bowlL, z0: cz - h, z1: cz + h } };
-    case 'east': return { tank: { x0: face - tankD, x1: face, z0: cz - h, z1: cz + h }, bowl: { x0: face - tankD - bowlL, x1: face - tankD + 0.05, z0: cz - h, z1: cz + h } };
-    case 'north': return { tank: { x0: cx - h, x1: cx + h, z0: face, z1: face + tankD }, bowl: { x0: cx - h, x1: cx + h, z0: face + tankD - 0.05, z1: face + tankD + bowlL } };
-    default: return { tank: { x0: cx - h, x1: cx + h, z0: face - tankD, z1: face }, bowl: { x0: cx - h, x1: cx + h, z0: face - tankD - bowlL, z1: face - tankD + 0.05 } };
+    case 'west': return { side, face, tank: { x0: face, x1: face + tankD, z0: cz - h, z1: cz + h }, bowl: { x0: face + tankD - 0.05, x1: face + tankD + bowlL, z0: cz - h, z1: cz + h } };
+    case 'east': return { side, face, tank: { x0: face - tankD, x1: face, z0: cz - h, z1: cz + h }, bowl: { x0: face - tankD - bowlL, x1: face - tankD + 0.05, z0: cz - h, z1: cz + h } };
+    case 'north': return { side, face, tank: { x0: cx - h, x1: cx + h, z0: face, z1: face + tankD }, bowl: { x0: cx - h, x1: cx + h, z0: face + tankD - 0.05, z1: face + tankD + bowlL } };
+    default: return { side, face, tank: { x0: cx - h, x1: cx + h, z0: face - tankD, z1: face }, bowl: { x0: cx - h, x1: cx + h, z0: face - tankD - bowlL, z1: face - tankD + 0.05 } };
   }
 }
 
@@ -283,6 +283,7 @@ function buildLevel(floor, li, group) {
   // closed (several open leaves block the passage by the stair, e.g. Badrum and Klk).
   // Exterior doors are glazed-transom doors like the windows.
   const doors = [];
+  const lids = []; // toilet lids (E opens/closes them, see toilet.js)
   for (const d of floor.doors) {
     const [hx, hz] = d.hinge, [tx, tz] = d.tip, [wx, wz] = d.wall;
     const axis = Math.abs(wx - hx) > Math.abs(wz - hz) ? 'x' : 'z';
@@ -416,13 +417,11 @@ function buildLevel(floor, li, group) {
           && Math.hypot((b.x0 + b.x1) / 2 - (f.x0 + f.x1) / 2, (b.z0 + b.z1) / 2 - (f.z0 + f.z1) / 2) < 0.6);
         if (!bowlF) break;
         const t = toiletAgainstWall(f, bowlF, wallBoxes);
-        group.add(box(t.tank.x0, t.tank.x1, t.tank.z0, t.tank.z1, y0, y0 + 0.82, M.porcelain));
-        const rx = (t.bowl.x1 - t.bowl.x0) / 2, rz = (t.bowl.z1 - t.bowl.z0) / 2;
-        const bowl = new THREE.Mesh(new THREE.CylinderGeometry(1, 0.8, 0.42, 24), M.porcelain);
-        bowl.scale.set(rx, 1, rz);
-        bowl.position.set((t.bowl.x0 + t.bowl.x1) / 2, y0 + 0.21, (t.bowl.z0 + t.bowl.z1) / 2);
-        bowl.castShadow = bowl.receiveShadow = true;
-        group.add(bowl);
+        const [tx, tz] = [(t.tank.x0 + t.tank.x1) / 2, (t.tank.z0 + t.tank.z1) / 2];
+        const ew = t.side === 'west' || t.side === 'east';
+        const toilet = new Toilet(t.side, ew ? t.face : tx, ew ? tz : t.face, y0);
+        group.add(toilet.object);
+        lids.push(toilet);
         segments.push(...rectSegments(t.tank), ...rectSegments(t.bowl));
         break;
       }
@@ -441,7 +440,7 @@ function buildLevel(floor, li, group) {
     group.add(box(s.x0, s.x1, s.z0, s.z1, y0 + s.height, yC - 0.004, M.ceiling, { shadow: false }));
   }
 
-  return { segments, doors, openings, ceiling: yC };
+  return { segments, doors, lids, openings, ceiling: yC };
 }
 
 export function buildWorld(plan) {
@@ -517,6 +516,7 @@ export function buildWorld(plan) {
     size: { x: W, z: D },
     levels: [l0, l1],
     doors: [...l0.doors, ...l1.doors],
+    lids: [...l0.lids, ...l1.lids],
     rooms: plan.floors.map((f, li) => f.rooms.map((r) => {
       const re = ROOM_RENAMES.find((x) => x.level === li && x.from === r.name && OPTIONS[x.option]);
       return re ? { ...r, name: re.to } : r;

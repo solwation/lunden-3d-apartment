@@ -49,6 +49,7 @@ src/interior.js        fitted kitchen, laundry, bathroom fittings, tiled floors/
                        TILED_ROOMS in config); merged into one mesh per material
 material/              screenshots of our choices in Peab's option portal (local, see below)
 src/audio.js           synthesised positional sound effects (Web Audio): doors, slides, meow, steps
+src/toilet.js          toilet (Ifö Spira 6260) with an animated lid
 src/changelog.js       changelog list (start screen) + the note on the freezer (E to read)
 data/plan.json         GENERATED — do not edit by hand
 data/changelog.json    what changed, for visitors (see Workflow rules)
@@ -111,7 +112,9 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   `material/Köksritning.jpg` (tall oven unit, wall cabinets, top cabinets over fridge/freezer,
   gypsum boxing above the hood). Colours/sizes live in `FINISH` / `KITCHEN` in config.
 - Toilets: the redrawn plan has them rotated; bofakta shows the tank against the wall, so
-  `toiletAgainstWall` re-orients them. Fixture sizes are being reviewed (#14).
+  `toiletAgainstWall` re-orients them. Modelled as Ifö Spira 6260 (`TOILET` in config,
+  `src/toilet.js`); the lid opens/closes with E (`world.lids`, kept out of `world.doors` so the
+  cat logic and door tests don't see them).
 - More info: https://peabbostad.se/projekt/skane/kv.-lunden/l1007/
 
 Values marked *guess* in `src/config.js` (slab thickness, window sill/head, soffit depth,

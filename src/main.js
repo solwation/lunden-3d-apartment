@@ -121,7 +121,7 @@ if (at) {
 const params = new URLSearchParams(location.search);
 if (params.has('shot')) overlay.hidden = true;
 // ?open opens every door (screenshots of open doors/wardrobes)
-if (params.has('open')) for (const d of world.doors) { d.toggle(); for (let i = 0; i < 30; i++) d.update(0.1); }
+if (params.has('open')) for (const d of [...world.doors, ...world.lids]) { d.toggle(); for (let i = 0; i < 30; i++) d.update(0.1); }
 // ?cat=x,z[,yaw[,feetY]] puts the cat somewhere (screenshots)
 if (params.has('cat')) {
   const [x, z, yaw = 0, y = 0] = params.get('cat').split(',').map(Number);
@@ -173,6 +173,7 @@ pauseBtn.addEventListener('click', () => {
 /** E / the action button on what you look at: doors toggle, the note opens. */
 function use(thing) {
   if (thing.kind === 'note') showNote(true);
+  else if (thing.kind === 'lid') { thing.toggle(); sfx.lid(thing.object.position, thing.isOpen); }
   else useDoor(thing);
 }
 actionBtn.addEventListener('click', () => { if (reading) showNote(false); else if (focused) use(focused); });
@@ -214,7 +215,7 @@ window.addEventListener('resize', () => {
 // --- door interaction: look at a door within reach, press E ----------------
 const raycaster = new THREE.Raycaster();
 raycaster.far = 2.2;
-const pickables = [...world.doors.map((d) => d.pickable), note.pickable];
+const pickables = [...world.doors.map((d) => d.pickable), ...world.lids.map((l) => l.pickable), note.pickable];
 const center = new THREE.Vector2(0, 0);
 let focused = null;
 
@@ -238,6 +239,7 @@ const clock = new THREE.Clock();
 let lastLevel = -1;
 function step(dt) {
   for (const d of world.doors) d.update(dt);
+  for (const l of world.lids) l.update(dt);
   cat.update(dt);
   if (active() && reading) updateFocus();
   else if (active()) {
