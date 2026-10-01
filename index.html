@@ -44,6 +44,8 @@
     body.touch #level { bottom: auto; top: 16px; }
     #action { position: fixed; right: 24px; bottom: 32px; padding: 16px 22px; border: 0; border-radius: 40px; background: var(--accent); color: #fff; font: 600 16px system-ui, sans-serif; box-shadow: 0 4px 14px rgba(0,0,0,.3); }
     #action[hidden] { display: none; }
+    #mute { position: fixed; right: 16px; bottom: 16px; width: 44px; height: 44px; border: 0; border-radius: 50%; background: var(--panel); font-size: 18px; }
+    body.touch #mute { bottom: auto; top: 16px; right: 70px; }
     #pause { position: fixed; right: 16px; top: 16px; width: 44px; height: 44px; border: 0; border-radius: 50%; background: var(--panel); color: var(--ink); font-size: 18px; }
     #update { position: fixed; top: 16px; left: 50%; transform: translateX(-50%); z-index: 10; width: max-content; display: flex; align-items: center; gap: 12px; max-width: calc(100vw - 32px); box-sizing: border-box; background: var(--ink); color: #fff; padding: 10px 10px 10px 16px; border-radius: 10px; box-shadow: 0 8px 30px rgba(0,0,0,.3); font-size: 15px; }
     #update[hidden] { display: none; }
@@ -71,6 +73,7 @@
         <span><kbd>Shift</kbd></span><span>spring</span>
         <span><kbd>←</kbd> <kbd>→</kbd></span><span>vrid (om pekplattan är spärrad medan du skriver)</span>
         <span><kbd>E</kbd></span><span>öppna/stäng dörren du tittar på</span>
+        <span><kbd>M</kbd></span><span>ljud av/på</span>
         <span><kbd>Esc</kbd></span><span>släpp musen</span>
       </div>
       <div class="keys touch-help">
@@ -96,6 +99,7 @@
     <div id="stick" hidden><div class="knob"></div></div>
     <button id="action" class="touch-only" hidden></button>
     <button id="pause" class="touch-only" aria-label="Paus">❚❚</button>
+    <button id="mute" aria-label="Stäng av ljud">🔊</button>
   </div>
   <script type="module" src="src/main.js"></script>
 </body>

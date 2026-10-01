@@ -170,7 +170,7 @@ function buildWardrobe(group, g, y0, h, wallBoxes, doors) {
   piece(a + t, b - t, back, front - outward * 0.05, y0 + 1.78, y0 + 1.8); // hat shelf
   const mid = (back + front) / 2;
   piece(a + t, b - t, mid - 0.012, mid + 0.012, y0 + 1.7, y0 + 1.724); // clothes rod
-  for (const d of wardrobeDoors({ along, front, outward, a, b, y0, height: h, material: M.door })) {
+  for (const d of wardrobeDoors({ along, front, back, outward, a, b, y0, height: h, material: M.door })) {
     group.add(d.object);
     doors.push(d);
   }

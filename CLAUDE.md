@@ -40,10 +40,13 @@ src/player.js          WASD/arrow/joystick movement, circle-vs-segment collision
 src/touch.js           on-screen joystick (left) + drag-to-look (right), multi-touch pointer events
 src/main.js            renderer, lights, input modes, door raycast prompt/button, loop (step)
 src/version.js         BUILD stamp + polling for a newer published version
+src/cat.js             the cat: random coat, washing animation, appears/moves/vanishes behind doors
+src/audio.js           synthesised positional sound effects (Web Audio): doors, slides, meow, steps
 data/plan.json         GENERATED — do not edit by hand
 tools/extract_plan.py  PDF → data/plan.json (stdlib only)
 tools/walktest.html    headless movement test
 tools/touchtest.html   headless touch-input test (synthetic pointer events)
+tools/cattest.html     headless test of cat placement behind every door/wardrobe
 tools/stamp.sh         build the published site with a version stamp (used by CI)
 ```
 
@@ -104,6 +107,7 @@ URL parameters (debugging / screenshots):
   180 = south, −90 = east. `feetY` = 3.25 for Övre plan.
 - `&shot` — hide the start overlay.
 - `&open` — open every door (screenshots of open doors / wardrobes).
+- `&cat=x,z[,yawDeg[,y]]` — show the cat there; `&catv=i` coat variant, `&catt=s` animation time.
 - `&clip=y` — clip everything above height y (cut-away plan view, e.g.
   `?shot&at=2.87,6.35,0,-90,16&clip=2.5` for Entréplan from above, `clip=5.6` + feet 19 for Övre plan).
 
@@ -133,6 +137,14 @@ Run the walk test after any change to walls, doors, stairs or player movement, a
 test after input changes. Headless SwiftShader renders only a few frames per second, so tests
 drive `window.__app.step(dt)` / `Player.update` directly instead of waiting on frames. Take
 screenshots into the session scratchpad, not the repo.
+
+## Cat and sound
+
+- Opening an interior door/wardrobe: 30 % chance a cat appears on the far side (random free
+  floor spot visible from the doorway, or inside the wardrobe). Close + reopen that door:
+  50 % it's gone, else it moved. A cat appearing from nowhere gets a new random coat.
+- Sounds are synthesised (no audio files) and positional; the AudioContext is started by the
+  start-screen buttons (browser autoplay rules). M / the speaker button mutes.
 
 ## Input notes
 

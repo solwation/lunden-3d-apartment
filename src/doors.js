@@ -68,10 +68,21 @@ export class SwingDoor {
     this.object.rotation.y = a;
   }
 
+  /** Centre of the doorway and its normal (plan x/z), from the closed pose. */
+  opening() {
+    const dx = Math.sin(this.closedAngle), dz = Math.cos(this.closedAngle);
+    return { center: [this.hinge[0] + dx * this.len / 2, this.hinge[1] + dz * this.len / 2], normal: [dz, -dx] };
+  }
+
   /** Collision segment of the leaf in its current pose. */
-  segment() {
+  segment() { return this.segAngle(this.angle); }
+
+  /** Segment at animation state t (0 = closed, 1 = open). */
+  segmentAt(t) { return this.segAngle(this.closedAngle + (this.openAngle - this.closedAngle) * t); }
+
+  segAngle(a) {
     const [hx, hz] = this.hinge;
-    return [hx, hz, hx + Math.sin(this.angle) * this.len, hz + Math.cos(this.angle) * this.len];
+    return [hx, hz, hx + Math.sin(a) * this.len, hz + Math.cos(a) * this.len];
   }
 }
 
@@ -108,11 +119,21 @@ class Slider {
     else this.panel.position.set(this.face, this.y, this.pos);
   }
 
-  segment() {
+  opening() {
+    return this.along
+      ? { center: [this.closedPos, this.face], normal: [0, 1] }
+      : { center: [this.face, this.closedPos], normal: [1, 0] };
+  }
+
+  segment() { return this.segAt(this.pos); }
+
+  segmentAt(t) { return this.segAt(this.closedPos + (this.openPos - this.closedPos) * t); }
+
+  segAt(pos) {
     const h = this.len / 2;
     return this.along
-      ? [this.pos - h, this.face, this.pos + h, this.face]
-      : [this.face, this.pos - h, this.face, this.pos + h];
+      ? [pos - h, this.face, pos + h, this.face]
+      : [this.face, pos - h, this.face, pos + h];
   }
 }
 
@@ -143,7 +164,7 @@ export class SlidingDoor extends Slider {
  * Wardrobe front with two sliding panels on separate tracks. Opening a panel slides it
  * over the other one, like a real skjutdörrsgarderob.
  */
-export function wardrobeDoors({ along, front, outward, a, b, y0, height, material }) {
+export function wardrobeDoors({ along, front, back, outward, a, b, y0, height, material }) {
   const half = (b - a) / 2;
   const len = half + 0.02;
   const mk = (track, closed, open) => {
@@ -155,6 +176,7 @@ export function wardrobeDoors({ along, front, outward, a, b, y0, height, materia
     });
     door.kind = 'wardrobe';
     door.name = 'garderobsdörren';
+    door.wardrobe = { along, outward, back, y0 };
     return door;
   };
   const m0 = a + half / 2, m1 = b - half / 2;

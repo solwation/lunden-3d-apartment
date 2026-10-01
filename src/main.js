@@ -4,6 +4,9 @@ import { buildWorld } from './world.js';
 import { Player } from './player.js';
 import { setupTouch } from './touch.js';
 import { watchForUpdates } from './version.js';
+import { CatSpawner, VARIANTS, applyVariant } from './cat.js';
+import { initAudio, sfx, toggleMuted, isMuted, updateListener } from './audio.js';
+import { stairHeight } from './stairs.js';
 
 const overlay = document.getElementById('overlay');
 const hud = document.getElementById('hud');
@@ -52,6 +55,39 @@ sun.shadow.normalBias = 0.02;
 scene.add(sun, sun.target);
 
 const player = new Player(world, camera);
+const cat = new CatSpawner(world);
+scene.add(cat.object);
+
+/** Open/close a door (with sound); the cat may turn up (or leave) behind doors you open. */
+function useDoor(door) {
+  const opening = !door.isOpen;
+  door.toggle();
+  const [x, z] = door.opening().center;
+  const pos = { x, y: player.pos.y + 1.1, z };
+  if (door.kind === 'swing') {
+    if (opening) sfx.doorOpen(pos);
+    else sfx.doorClose(pos, 0.5);
+  } else {
+    sfx.slide(pos, { dur: 0.45, wardrobe: door.kind === 'wardrobe' });
+  }
+  if (opening) cat.onOpen(door, player.pos);
+  else cat.onClose(door);
+}
+
+// footsteps every stride while walking on the ground
+let stride = 0;
+const lastPos = new THREE.Vector3();
+function footsteps() {
+  const d = Math.hypot(player.pos.x - lastPos.x, player.pos.z - lastPos.z);
+  lastPos.copy(player.pos);
+  if (d > 0.5 || player.vy !== 0) return; // teleport / falling
+  stride += d;
+  if (stride < 0.62) return;
+  stride = 0;
+  const { x, z } = player.pos;
+  const inside = x > 0 && x < world.size.x && z > 0 && z < world.size.z;
+  sfx.step(stairHeight(x, z) !== null ? 'stair' : inside ? 'wood' : 'outside');
+}
 const entrance = world.doors.find((d) => d.name === 'ytterdörren' && d.hinge[1] < 1);
 player.spawn(entrance ? entrance.hinge[0] + entrance.len / 2 : 1.2, -1.6, Math.PI);
 
@@ -68,6 +104,17 @@ const params = new URLSearchParams(location.search);
 if (params.has('shot')) overlay.hidden = true;
 // ?open opens every door (screenshots of open doors/wardrobes)
 if (params.has('open')) for (const d of world.doors) { d.toggle(); for (let i = 0; i < 30; i++) d.update(0.1); }
+// ?cat=x,z[,yaw[,feetY]] puts the cat somewhere (screenshots)
+if (params.has('cat')) {
+  const [x, z, yaw = 0, y = 0] = params.get('cat').split(',').map(Number);
+  cat.object.position.set(x, y, z);
+  cat.object.rotation.y = THREE.MathUtils.degToRad(yaw);
+  cat.object.visible = true;
+  if (params.has('catv')) applyVariant(VARIANTS[Number(params.get('catv'))]);
+  cat.t = Number(params.get('catt') ?? 1.5);
+  cat.nextMeow = 1e9;
+  cat.update(0);
+}
 // ?clip=y cuts away everything above height y (plan check from above)
 if (params.has('clip')) renderer.clippingPlanes = [new THREE.Plane(new THREE.Vector3(0, -1, 0), Number(params.get('clip')))];
 
@@ -91,8 +138,9 @@ function showOverlay(show) {
 }
 
 // Explicit choice on the start screen — a Surface has both a touchscreen and a keyboard.
-document.getElementById('start-mouse').addEventListener('click', () => canvas.requestPointerLock());
+document.getElementById('start-mouse').addEventListener('click', () => { initAudio(); canvas.requestPointerLock(); });
 document.getElementById('start-touch').addEventListener('click', () => {
+  initAudio();
   touch.enabled = true;
   document.documentElement.requestFullscreen?.().catch(() => {});
   showOverlay(false);
@@ -102,7 +150,14 @@ pauseBtn.addEventListener('click', () => {
   player.analog.x = player.analog.y = 0;
   showOverlay(true);
 });
-actionBtn.addEventListener('click', () => focused?.toggle());
+actionBtn.addEventListener('click', () => { if (focused) useDoor(focused); });
+const muteBtn = document.getElementById('mute');
+function updateMute(m = isMuted()) {
+  muteBtn.textContent = m ? '🔇' : '🔊';
+  muteBtn.setAttribute('aria-label', m ? 'Slå på ljud' : 'Stäng av ljud');
+}
+muteBtn.addEventListener('click', () => updateMute(toggleMuted()));
+updateMute();
 document.addEventListener('pointerlockchange', () => {
   locked = document.pointerLockElement === canvas;
   if (locked) touch.enabled = false;
@@ -115,7 +170,8 @@ document.addEventListener('mousemove', (e) => {
 document.addEventListener('keydown', (e) => {
   if (!locked) return;
   player.keys.add(e.code);
-  if (e.code === 'KeyE' && focused) focused.toggle();
+  if (e.code === 'KeyE' && focused) useDoor(focused);
+  if (e.code === 'KeyM') updateMute(toggleMuted());
   if (e.code.startsWith('Arrow')) e.preventDefault();
 });
 document.addEventListener('keyup', (e) => player.keys.delete(e.code));
@@ -151,10 +207,12 @@ const clock = new THREE.Clock();
 let lastLevel = -1;
 function step(dt) {
   for (const d of world.doors) d.update(dt);
+  cat.update(dt);
   if (active()) {
     player.analog.x = touch.analog.x;
     player.analog.y = touch.analog.y;
     player.update(dt);
+    footsteps();
     updateFocus();
   }
   const outside = player.pos.x <= 0 || player.pos.x >= world.size.x || player.pos.z <= 0 || player.pos.z >= world.size.z;
@@ -166,6 +224,7 @@ function step(dt) {
 }
 renderer.setAnimationLoop(() => {
   step(Math.min(clock.getDelta(), 0.05));
+  updateListener(camera);
   renderer.render(scene, camera);
 });
 
@@ -184,4 +243,4 @@ document.addEventListener('pointerlockchange', () => { if (!updateEl.hidden) sho
 watchForUpdates(showUpdate);
 
 // handle for tests/debugging (tools/touchtest.html)
-window.__app = { player, world, camera, touch, step, showUpdate };
+window.__app = { player, world, camera, touch, step, showUpdate, cat, useDoor };
