@@ -386,7 +386,8 @@ function buildLevel(floor, li, group) {
 
   // Kitchen, laundry, bathroom fittings and tiles from our material choices (interior.js)
   const handled = new Set();
-  for (const r of buildInterior(group, floor, li, y0, yC, wallBoxes, handled)) segments.push(...rectSegments(r));
+  const taps = []; // tap/shower outlets for running water (main.js)
+  for (const r of buildInterior(group, floor, li, y0, yC, wallBoxes, handled, taps)) segments.push(...rectSegments(r));
 
   // Other fixed cabinets
   for (const cab of floor.cabinets) {
@@ -455,7 +456,7 @@ function buildLevel(floor, li, group) {
     group.add(box(s.x0, s.x1, s.z0, s.z1, y0 + s.height, yC - 0.004, M.ceiling, { shadow: false }));
   }
 
-  return { segments, doors, lids, openings, barriers, ceiling: yC };
+  return { segments, doors, lids, taps, openings, barriers, ceiling: yC };
 }
 
 export function buildWorld(plan) {
@@ -549,6 +550,7 @@ export function buildWorld(plan) {
     levels,
     doors: [...l0.doors, ...l1.doors],
     lids: [...l0.lids, ...l1.lids],
+    taps: [...l0.taps, ...l1.taps],
     rooms,
     roomMaps,
     /** Room name at a plan point on a level (null outside the house). */

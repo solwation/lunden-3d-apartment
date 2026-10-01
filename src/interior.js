@@ -210,11 +210,12 @@ function mixer(B, x, z, y, [dx, dz], material, { h = 0.3, r = 0.09, tube = 0.011
   B.add(arc, material);
   cylinderY(B, x + dx * 2 * r, z + dz * 2 * r, tube * 1.3, y + h - 0.07, y + h, material, 10);
   B.box(x - 0.008, x + 0.008, z - 0.008, z + 0.008, y + 0.06, y + 0.15, material);
+  return { pos: [x + dx * 2 * r, y + h - 0.075, z + dz * 2 * r], dir: [0, -1, 0], r: tube, basin: y };
 }
 
 // ---------- kitchen ----------
 
-function buildKitchen(B, floor, y0, yC, handled) {
+function buildKitchen(B, floor, y0, yC, handled, taps) {
   const cabs = floor.cabinets.filter((c) => inside(c, K.area));
   if (!cabs.length) return [];
   const fixtures = floor.fixtures.filter((f) => inside(f, K.area));
@@ -299,7 +300,7 @@ function buildKitchen(B, floor, y0, yC, handled) {
     const cx = Math.min(sx, eastWall - K.sink.d / 2 - 0.08);
     B.box(cx - K.sink.d / 2, cx + K.sink.d / 2, sz - K.sink.w / 2, sz + K.sink.w / 2, top, top + 0.0012, M.steelDark);
     B.box(cx - K.sink.d / 2 + 0.02, cx + K.sink.d / 2 - 0.02, sz - K.sink.w / 2 + 0.02, sz + K.sink.w / 2 - 0.02, top + 0.0012, top + 0.002, M.steel);
-    mixer(B, eastWall - 0.06, sz, top, [-1, 0], M.handle);
+    taps.push({ ...mixer(B, eastWall - 0.06, sz, top, [-1, 0], M.handle), name: 'köksblandaren' });
   }
   // Induction hob, centred on its cabinet
   if (hobCab) {
@@ -349,7 +350,7 @@ function buildKitchen(B, floor, y0, yC, handled) {
 
 // ---------- laundry (Tvätt) ----------
 
-function buildLaundry(B, floor, room, y0, handled) {
+function buildLaundry(B, floor, room, y0, handled, taps) {
   const cabs = floor.cabinets.filter((c) => (c.label === 'TT' || c.label === 'TM') && inside(c, room));
   if (!cabs.length) return [];
   const sinkF = floor.fixtures.find((f) => f.kind === 'sink' && inside(f, room));
@@ -386,7 +387,7 @@ function buildLaundry(B, floor, room, y0, handled) {
     const [sx, sz] = centre(sinkF);
     B.box(sx - 0.2, sx + 0.2, sz - 0.13, sz + 0.13, yt + 0.03, yt + 0.0315, M.steelDark);
     B.box(sx - 0.18, sx + 0.18, sz - 0.11, sz + 0.11, yt + 0.0315, yt + 0.032, M.steel);
-    mixer(B, run.x0 + 0.06, sz, yt + 0.03, [1, 0], M.chrome, { h: 0.28, r: 0.08 });
+    taps.push({ ...mixer(B, run.x0 + 0.06, sz, yt + 0.03, [1, 0], M.chrome, { h: 0.28, r: 0.08 }), name: 'blandaren' });
   }
   // ceiling globe (Classic glob 150 vit klarglas)
   const [cx, cz] = centre(room);
@@ -410,6 +411,7 @@ function vanity(B, sinkF, wallX, y0, width, depth) {
   F.box(F.u0, F.u1, -depth, 0.01, y0 + 0.84, y0 + 0.87, M.porcelain);
   cylinderY(B, wallX + 0.08, cz, 0.018, y0 + 0.87, y0 + 1.0, M.chrome);
   B.box(wallX + 0.08, wallX + 0.2, cz - 0.012, cz + 0.012, y0 + 0.97, y0 + 0.99, M.chrome);
+  r.tap = { pos: [wallX + 0.19, y0 + 0.966, cz], dir: [0, -1, 0], r: 0.008, basin: y0 + 0.86, name: 'blandaren' };
   return r;
 }
 
@@ -440,16 +442,68 @@ function glassPanel(B, [ax, az], [bx, bz], y0) {
   return len;
 }
 
-function showerSet(B, wallX, z, y0, ceilingHead) {
-  // thermostat mixer + riser; a ceiling-type head (Tvm 7200) or a hand shower on the rail (Rt 105)
-  B.box(wallX, wallX + 0.06, z - 0.15, z + 0.15, y0 + 1.0, y0 + 1.06, M.chrome);
-  cylinderY(B, wallX + 0.04, z, 0.012, y0 + 1.06, y0 + (ceilingHead ? 2.05 : 1.9), M.chrome, 10);
-  if (ceilingHead) {
-    B.box(wallX + 0.04, wallX + 0.32, z - 0.01, z + 0.01, y0 + 2.04, y0 + 2.06, M.chrome);
-    cylinderY(B, wallX + 0.32, z, 0.12, y0 + 2.0, y0 + 2.015, M.chrome, 24);
+/** Hose as a tube along plan/height points [[x, y, z], …]. */
+function hose(B, pts, material, r = 0.008) {
+  const curve = new THREE.CatmullRomCurve3(pts.map(([x, y, z]) => new THREE.Vector3(x, y, z)));
+  B.add(new THREE.TubeGeometry(curve, 24, r, 6), material);
+}
+
+/** Round shower head: disc of radius r centred at (x, y, z) facing `normal` (unit vector). */
+function showerHead(B, [x, y, z], [nx, ny, nz], r, thick = 0.015) {
+  const q = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), new THREE.Vector3(-nx, -ny, -nz));
+  const body = new THREE.CylinderGeometry(r, r * 0.92, thick, 28).applyQuaternion(q).translate(x, y, z);
+  B.add(body, M.chrome);
+  const face = new THREE.CylinderGeometry(r * 0.85, r * 0.85, 0.002, 28).applyQuaternion(q)
+    .translate(x + nx * thick / 2, y + ny * thick / 2, z + nz * thick / 2);
+  B.add(face, M.steelDark);
+}
+
+/**
+ * Shower fittings on the wall at x = wallX (spraying into +x), centred at z. Returns the
+ * outlets (for running water): position + spray direction + radius.
+ *  - ceiling: Takduschpaket Tvm 7200-160 Lång (Badrum): thermostat, riser, long arm with a
+ *    25 cm head, and a hand shower in a holder on the riser
+ *  - else: Duschset Rt 105 + blandare Evm 168 (WC/dusch): thermostat, slide bar, hand shower
+ */
+function showerSet(B, wallX, z, y0, ceiling) {
+  const outlets = [];
+  // thermostat mixer: round body along the wall with two knobs
+  const mix = new THREE.CylinderGeometry(0.03, 0.03, 0.3, 16).rotateX(Math.PI / 2).translate(wallX + 0.07, y0 + 1.0, z);
+  B.add(mix, M.chrome);
+  for (const s of [-1, 1]) cylinderY(B, wallX + 0.07, z + s * 0.17, 0.032, y0 + 0.97, y0 + 1.03, M.chrome, 16);
+  for (const s of [-1, 1]) B.box(wallX, wallX + 0.05, z + s * 0.1 - 0.012, z + s * 0.1 + 0.012, y0 + 0.988, y0 + 1.012, M.chrome);
+  if (ceiling) {
+    const top = y0 + 2.1, armX = wallX + 0.42;
+    cylinderY(B, wallX + 0.07, z, 0.013, y0 + 1.03, top, M.chrome, 12);
+    B.box(wallX, wallX + 0.07, z - 0.02, z + 0.02, y0 + 1.75, y0 + 1.79, M.chrome); // wall bracket
+    const arm = new THREE.CylinderGeometry(0.011, 0.011, armX - wallX - 0.07, 10).rotateZ(Math.PI / 2)
+      .translate((wallX + 0.07 + armX) / 2, top, z);
+    B.add(arm, M.chrome);
+    cylinderY(B, armX, z, 0.012, top - 0.06, top, M.chrome, 10);
+    showerHead(B, [armX, top - 0.07, z], [0, -1, 0], 0.125, 0.012);
+    outlets.push({ pos: [armX, top - 0.08, z], dir: [0, -1, 0], r: 0.1, basin: y0, name: 'takduschen' });
+    // hand shower parked in a holder on the riser, hose down to the mixer
+    const hy = y0 + 1.35;
+    B.box(wallX + 0.07, wallX + 0.11, z - 0.02, z + 0.02, hy - 0.02, hy + 0.02, M.chrome);
+    const handle = new THREE.CylinderGeometry(0.014, 0.012, 0.2, 10).rotateZ(0.35).translate(wallX + 0.12, hy, z);
+    B.add(handle, M.chrome);
+    showerHead(B, [wallX + 0.16, hy + 0.12, z], [0.5, -0.86, 0], 0.045);
+    hose(B, [[wallX + 0.08, hy - 0.1, z], [wallX + 0.12, y0 + 0.75, z + 0.06], [wallX + 0.09, y0 + 0.97, z + 0.05]], M.chrome);
   } else {
-    cylinderY(B, wallX + 0.07, z, 0.045, y0 + 1.6, y0 + 1.63, M.chrome, 16);
+    // slide bar with two wall brackets, hand shower in the slider at ~1.75 m
+    const x = wallX + 0.05;
+    cylinderY(B, x, z, 0.011, y0 + 1.15, y0 + 1.95, M.chrome, 12);
+    for (const y of [1.15, 1.95]) B.box(wallX, x, z - 0.015, z + 0.015, y0 + y - 0.015, y0 + y + 0.015, M.chrome);
+    const hy = y0 + 1.75;
+    B.box(x - 0.02, x + 0.04, z - 0.02, z + 0.02, hy - 0.03, hy + 0.03, M.chrome);
+    const handle = new THREE.CylinderGeometry(0.015, 0.012, 0.21, 10).rotateZ(-0.6).translate(x + 0.08, hy - 0.06, z);
+    B.add(handle, M.chrome);
+    const head = [x + 0.15, hy + 0.04, z], dir = [0.62, -0.78, 0];
+    showerHead(B, head, dir, 0.055, 0.02);
+    outlets.push({ pos: [head[0] + 0.02, head[1] - 0.02, z], dir, r: 0.045, basin: y0, name: 'duschen' });
+    hose(B, [[x + 0.02, hy - 0.15, z], [x + 0.1, y0 + 0.7, z + 0.08], [wallX + 0.09, y0 + 0.97, z + 0.05]], M.chrome);
   }
+  return outlets;
 }
 
 function spots(B, room, y, n) {
@@ -460,7 +514,7 @@ function spots(B, room, y, n) {
   }
 }
 
-function buildBathroom(B, floor, room, y0, handled) {
+function buildBathroom(B, floor, room, y0, handled, taps) {
   const segs = [];
   const sinkF = floor.fixtures.find((f) => f.kind === 'sink' && inside(f, room));
   const shower = floor.fixtures.find((f) => f.kind === 'shower' && inside(f, room));
@@ -471,6 +525,7 @@ function buildBathroom(B, floor, room, y0, handled) {
     // Badrum: Core Grip 60 + Slot 50 oval mirror. WC/dusch: Core XS Grip 50 + mirror cabinet Stage 50.
     const r = vanity(B, sinkF, room.x0 + 0.005, y0, upstairs ? 0.5 : 0.6, upstairs ? 0.36 : 0.45);
     segs.push(r);
+    taps.push(r.tap);
     const [, cz] = centre(sinkF);
     if (upstairs) {
       const m = frame(B, { x0: room.x0, x1: room.x0 + 0.15, z0: cz - 0.25, z1: cz + 0.25 }, 'e');
@@ -492,7 +547,7 @@ function buildBathroom(B, floor, room, y0, handled) {
       glassPanel(B, [s.x0, zOpen], [s.x1, zOpen], y0);
       glassPanel(B, [s.x1, s.z0], [s.x1, s.z1], y0);
     }
-    showerSet(B, room.x0, (s.z0 + s.z1) / 2, y0, !upstairs);
+    taps.push(...showerSet(B, room.x0, (s.z0 + s.z1) / 2, y0, !upstairs));
   }
   spots(B, room, yc - 0.004, 2);
   return segs;
@@ -561,17 +616,17 @@ function skirting(B, boxes, li, size, y0) {
  * Build the fixed interior of one level into `group`. Cabinets and fixtures it builds are
  * added to `handled` so world.js skips them. Returns collision rectangles.
  */
-export function buildInterior(group, floor, li, y0, yC, wallBoxes, handled) {
+export function buildInterior(group, floor, li, y0, yC, wallBoxes, handled, taps = []) {
   const B = new Batch();
   const rects = [];
-  if (li === K.level) rects.push(...buildKitchen(B, floor, y0, yC, handled));
+  if (li === K.level) rects.push(...buildKitchen(B, floor, y0, yC, handled, taps));
   for (const room of TILED_ROOMS.filter((r) => r.level === li)) {
     B.box(room.x0, room.x1, room.z0, room.z1, y0 + 0.001, y0 + 0.004, M[room.floor]);
     if (room.wallTile) {
       tileWalls(B, room, wallBoxes, y0, room.wallTile, M.wallTile);
-      rects.push(...buildBathroom(B, floor, room, y0, handled));
+      rects.push(...buildBathroom(B, floor, room, y0, handled, taps));
     }
-    if (room.name === 'Tvätt') rects.push(...buildLaundry(B, floor, { ...room, ceiling: 2.5 }, y0, handled));
+    if (room.name === 'Tvätt') rects.push(...buildLaundry(B, floor, { ...room, ceiling: 2.5 }, y0, handled, taps));
   }
   skirting(B, [...wallBoxes, ...floor.windows], li, floor.size, y0);
   group.add(...B.meshes());
