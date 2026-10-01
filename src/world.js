@@ -4,7 +4,7 @@ import {
   STAIR, COLORS, FENCE_HEIGHT,
 } from './config.js';
 import { buildStairs } from './stairs.js';
-import { SwingDoor, SlidingDoor } from './doors.js';
+import { SwingDoor, SlidingDoor, wardrobeDoors } from './doors.js';
 import { buildExterior } from './exterior.js';
 
 const mat = (color, extra = {}) => new THREE.MeshStandardMaterial({ color, roughness: 0.85, ...extra });
@@ -43,7 +43,7 @@ const M = {
   porcelain: mat(COLORS.porcelain, { roughness: 0.15 }),
   frame: mat(COLORS.frame, { roughness: 0.5 }),
   glass: new THREE.MeshPhysicalMaterial({
-    color: COLORS.glass, transparent: true, opacity: 0.18, roughness: 0.05, metalness: 0, depthWrite: false,
+    color: COLORS.glass, transparent: true, opacity: 0.1, roughness: 0.02, metalness: 0, depthWrite: false,
   }),
   door: mat(COLORS.door, { roughness: 0.6 }),
   rail: mat(COLORS.rail, { roughness: 0.4, metalness: 0.3 }),
@@ -146,6 +146,68 @@ function polySegments(pts) {
 }
 
 const insideRect = (f, r) => f.x0 >= r.x0 - 0.01 && f.x1 <= r.x1 + 0.01 && f.z0 >= r.z0 - 0.01 && f.z1 <= r.z1 + 0.01;
+
+/** Hollow wardrobe (carcass, hat shelf, rod) + two sliding doors on the open side. */
+function buildWardrobe(group, g, y0, h, wallBoxes, doors) {
+  const along = g.x1 - g.x0 > g.z1 - g.z0; // doors run along x?
+  // the front is the long side that doesn't back onto a wall
+  const backed = (side) => wallBoxes.some((w) => (along
+    ? w.x1 > g.x0 + 0.05 && w.x0 < g.x1 - 0.05 && Math.abs((side < 0 ? w.z1 : w.z0) - (side < 0 ? g.z0 : g.z1)) < 0.05
+    : w.z1 > g.z0 + 0.05 && w.z0 < g.z1 - 0.05 && Math.abs((side < 0 ? w.x1 : w.x0) - (side < 0 ? g.x0 : g.x1)) < 0.05));
+  const outward = backed(+1) && !backed(-1) ? -1 : backed(-1) ? +1 : -1;
+  const t = 0.02, y1 = y0 + h;
+  const [a, b] = along ? [g.x0, g.x1] : [g.z0, g.z1];
+  const [p0, p1] = along ? [g.z0, g.z1] : [g.x0, g.x1];
+  const front = outward > 0 ? p1 : p0, back = outward > 0 ? p0 : p1;
+  const piece = (a0, a1, q0, q1, ya, yb) => group.add(along
+    ? box(a0, a1, Math.min(q0, q1), Math.max(q0, q1), ya, yb, M.cabinet)
+    : box(Math.min(q0, q1), Math.max(q0, q1), a0, a1, ya, yb, M.cabinet));
+  piece(a, b, back, back + outward * t, y0, y1);                // back
+  piece(a, a + t, back, front, y0, y1);                         // ends
+  piece(b - t, b, back, front, y0, y1);
+  piece(a, b, back, front, y1 - t, y1);                         // top
+  piece(a, b, back, front, y0, y0 + 0.08);                      // plinth
+  piece(a + t, b - t, back, front - outward * 0.05, y0 + 1.78, y0 + 1.8); // hat shelf
+  const mid = (back + front) / 2;
+  piece(a + t, b - t, mid - 0.012, mid + 0.012, y0 + 1.7, y0 + 1.724); // clothes rod
+  for (const d of wardrobeDoors({ along, front, outward, a, b, y0, height: h, material: M.door })) {
+    group.add(d.object);
+    doors.push(d);
+  }
+}
+
+/**
+ * Re-orient a toilet so the tank stands against the nearest wall and the bowl points
+ * into the room. Keeps the fixture centred where the plan has it along that wall.
+ */
+function toiletAgainstWall(tank, bowl, wallBoxes) {
+  const g = {
+    x0: Math.min(tank.x0, bowl.x0), x1: Math.max(tank.x1, bowl.x1),
+    z0: Math.min(tank.z0, bowl.z0), z1: Math.max(tank.z1, bowl.z1),
+  };
+  const cx = (g.x0 + g.x1) / 2, cz = (g.z0 + g.z1) / 2;
+  const width = Math.min(tank.x1 - tank.x0, tank.z1 - tank.z0) > 0.25
+    ? Math.max(tank.x1 - tank.x0, tank.z1 - tank.z0) : 0.39;
+  const tankD = 0.18, bowlL = 0.55;
+  const near = (lo, hi, c) => lo - 0.05 <= c && hi + 0.05 >= c;
+  let best = null;
+  for (const w of wallBoxes) {
+    const cands = [];
+    if (near(w.z0, w.z1, cz) && w.x1 <= g.x0 + 0.05) cands.push(['west', g.x0 - w.x1, w.x1]);
+    if (near(w.z0, w.z1, cz) && w.x0 >= g.x1 - 0.05) cands.push(['east', w.x0 - g.x1, w.x0]);
+    if (near(w.x0, w.x1, cx) && w.z1 <= g.z0 + 0.05) cands.push(['north', g.z0 - w.z1, w.z1]);
+    if (near(w.x0, w.x1, cx) && w.z0 >= g.z1 - 0.05) cands.push(['south', w.z0 - g.z1, w.z0]);
+    for (const c of cands) if (!best || c[1] < best[1]) best = c;
+  }
+  const [side, , face] = best ?? ['west', 0, g.x0];
+  const h = width / 2;
+  switch (side) {
+    case 'west': return { tank: { x0: face, x1: face + tankD, z0: cz - h, z1: cz + h }, bowl: { x0: face + tankD - 0.05, x1: face + tankD + bowlL, z0: cz - h, z1: cz + h } };
+    case 'east': return { tank: { x0: face - tankD, x1: face, z0: cz - h, z1: cz + h }, bowl: { x0: face - tankD - bowlL, x1: face - tankD + 0.05, z0: cz - h, z1: cz + h } };
+    case 'north': return { tank: { x0: cx - h, x1: cx + h, z0: face, z1: face + tankD }, bowl: { x0: cx - h, x1: cx + h, z0: face + tankD - 0.05, z1: face + tankD + bowlL } };
+    default: return { tank: { x0: cx - h, x1: cx + h, z0: face - tankD, z1: face }, bowl: { x0: cx - h, x1: cx + h, z0: face - tankD - bowlL, z1: face - tankD + 0.05 } };
+  }
+}
 
 /** White window frame in the plane z = fz between x0..x1, y0..y1, with glass. */
 function addWindowFrame(group, x0, x1, fz, y0, y1, transom) {
@@ -257,9 +319,26 @@ function buildLevel(floor, li, group) {
     doors.push(door);
   }
 
+  // Wardrobes (G): adjacent units become one hollow wardrobe with sliding doors.
+  const wardrobeCabs = floor.cabinets.filter((c) => c.label === 'G');
+  const groups = [];
+  for (const c of wardrobeCabs) {
+    const g = groups.find((g) => (Math.abs(g.x0 - c.x0) < 0.02 && Math.abs(g.x1 - c.x1) < 0.02
+      && (Math.abs(g.z1 - c.z0) < 0.02 || Math.abs(c.z1 - g.z0) < 0.02))
+      || (Math.abs(g.z0 - c.z0) < 0.02 && Math.abs(g.z1 - c.z1) < 0.02
+      && (Math.abs(g.x1 - c.x0) < 0.02 || Math.abs(c.x1 - g.x0) < 0.02)));
+    if (g) Object.assign(g, { x0: Math.min(g.x0, c.x0), x1: Math.max(g.x1, c.x1), z0: Math.min(g.z0, c.z0), z1: Math.max(g.z1, c.z1) });
+    else groups.push({ ...c });
+  }
+  for (const g of groups) {
+    buildWardrobe(group, g, y0, CABINET_HEIGHT.G, wallBoxes, doors);
+    segments.push(...rectSegments(g));
+  }
+
   // Fixed cabinets
   for (const cab of floor.cabinets) {
     const label = cab.label;
+    if (label === 'G') continue;
     const h = label ? CABINET_HEIGHT[label] ?? BASE_CABINET
       : (cab.x1 - cab.x0 < 0.3 || cab.z1 - cab.z0 < 0.3) ? SHELF_HEIGHT : BASE_CABINET;
     const appliance = label === 'TT' || label === 'TM';
@@ -288,18 +367,21 @@ function buildLevel(floor, li, group) {
       case 'hob':
         group.add(box(f.x0 - 0.05, f.x1 + 0.05, f.z0 - 0.05, f.z1 + 0.05, top, top + 0.006, M.dark));
         break;
-      case 'toilet_tank':
-        group.add(box(f.x0, f.x1, f.z0, f.z1, y0, y0 + 0.85, M.porcelain));
-        segments.push(...rectSegments(f));
-        break;
-      case 'toilet_bowl': {
-        const rx = (f.x1 - f.x0) / 2, rz = (f.z1 - f.z0) / 2;
+      case 'toilet_tank': {
+        // The redrawn plan shows tank + bowl schematically and sometimes rotated; Peab's
+        // bofakta has the tank against a wall. Put it against the nearest wall.
+        const bowlF = floor.fixtures.find((b) => b.kind === 'toilet_bowl'
+          && Math.hypot((b.x0 + b.x1) / 2 - (f.x0 + f.x1) / 2, (b.z0 + b.z1) / 2 - (f.z0 + f.z1) / 2) < 0.6);
+        if (!bowlF) break;
+        const t = toiletAgainstWall(f, bowlF, wallBoxes);
+        group.add(box(t.tank.x0, t.tank.x1, t.tank.z0, t.tank.z1, y0, y0 + 0.82, M.porcelain));
+        const rx = (t.bowl.x1 - t.bowl.x0) / 2, rz = (t.bowl.z1 - t.bowl.z0) / 2;
         const bowl = new THREE.Mesh(new THREE.CylinderGeometry(1, 0.8, 0.42, 24), M.porcelain);
         bowl.scale.set(rx, 1, rz);
-        bowl.position.set((f.x0 + f.x1) / 2, y0 + 0.21, (f.z0 + f.z1) / 2);
+        bowl.position.set((t.bowl.x0 + t.bowl.x1) / 2, y0 + 0.21, (t.bowl.z0 + t.bowl.z1) / 2);
         bowl.castShadow = bowl.receiveShadow = true;
         group.add(bowl);
-        segments.push(...rectSegments(f));
+        segments.push(...rectSegments(t.tank), ...rectSegments(t.bowl));
         break;
       }
       case 'shower':

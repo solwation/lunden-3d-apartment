@@ -3,6 +3,7 @@ import { COLORS, LEVELS } from './config.js';
 import { buildWorld } from './world.js';
 import { Player } from './player.js';
 import { setupTouch } from './touch.js';
+import { watchForUpdates } from './version.js';
 
 const overlay = document.getElementById('overlay');
 const hud = document.getElementById('hud');
@@ -65,6 +66,8 @@ if (at) {
 }
 const params = new URLSearchParams(location.search);
 if (params.has('shot')) overlay.hidden = true;
+// ?open opens every door (screenshots of open doors/wardrobes)
+if (params.has('open')) for (const d of world.doors) { d.toggle(); for (let i = 0; i < 30; i++) d.update(0.1); }
 // ?clip=y cuts away everything above height y (plan check from above)
 if (params.has('clip')) renderer.clippingPlanes = [new THREE.Plane(new THREE.Vector3(0, -1, 0), Number(params.get('clip')))];
 
@@ -166,5 +169,19 @@ renderer.setAnimationLoop(() => {
   renderer.render(scene, camera);
 });
 
+// --- "new version published" notice ------------------------------------
+const updateEl = document.getElementById('update');
+const updateHint = document.getElementById('update-hint');
+function showUpdate() {
+  updateHint.textContent = locked
+    ? 'Tryck Esc för att släppa musen och ladda sedan om sidan.'
+    : 'Ladda om sidan för att se den.';
+  updateEl.hidden = false;
+}
+document.getElementById('update-reload').addEventListener('click', () => location.reload());
+document.getElementById('update-close').addEventListener('click', () => { updateEl.hidden = true; });
+document.addEventListener('pointerlockchange', () => { if (!updateEl.hidden) showUpdate(); });
+watchForUpdates(showUpdate);
+
 // handle for tests/debugging (tools/touchtest.html)
-window.__app = { player, world, camera, touch, step };
+window.__app = { player, world, camera, touch, step, showUpdate };

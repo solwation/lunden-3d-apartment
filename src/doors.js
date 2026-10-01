@@ -33,12 +33,13 @@ export class SwingDoor {
     };
     if (glazed) {
       // aluminium-clad glazed door: frame + one glass pane (like the patio door in Peab's render)
-      const f = 0.09;
+      // slim aluminium frame, almost the whole leaf is clear glass
+      const f = 0.07, b = 0.1;
       part(0.05, H, f, 0, H / 2, f / 2, frame);
       part(0.05, H, f, 0, H / 2, L - f / 2, frame);
       part(0.05, f, L, 0, H - f / 2, L / 2, frame);
-      part(0.05, 0.16, L, 0, 0.08, L / 2, frame);
-      part(0.016, H - f - 0.16, L - 2 * f, 0, 0.16 + (H - f - 0.16) / 2, L / 2, glass);
+      part(0.05, b, L, 0, b / 2, L / 2, frame);
+      part(0.012, H - f - b, L - 2 * f, 0, b + (H - f - b) / 2, L / 2, glass);
     } else {
       part(0.04, H, L, 0, H / 2, L / 2, material);
     }
@@ -74,36 +75,18 @@ export class SwingDoor {
   }
 }
 
-/** Sliding door: a panel on one face of the wall that runs along it (direction from the plan arrow). */
-export class SlidingDoor {
-  constructor(gap, arrow, y0, material, open) {
-    this.kind = 'sliding';
-    const along = gap.axis === 'x';
-    const len = gap.hi - gap.lo + 0.06;
-    // which face: the side of the wall the plan arrow is drawn on
-    const c = (gap.p0 + gap.p1) / 2;
-    const arrowPerp = arrow ? (along ? arrow.head[1] : arrow.head[0]) : c + 1;
-    const face = arrowPerp > c ? gap.p1 + 0.03 : gap.p0 - 0.03;
-    const dir = arrow
-      ? Math.sign(along ? arrow.head[0] - arrow.tail[0] : arrow.head[1] - arrow.tail[1]) || 1
-      : 1;
-    const mid = (gap.lo + gap.hi) / 2;
-
+/** A panel that slides along x or z between two positions (doors, wardrobe fronts). */
+class Slider {
+  constructor({ along, face, y, height, len, thickness = 0.04, closedPos, openPos, material, open = false }) {
     const geo = along
-      ? new THREE.BoxGeometry(len, DOOR_HEIGHT - 0.02, 0.04)
-      : new THREE.BoxGeometry(0.04, DOOR_HEIGHT - 0.02, len);
+      ? new THREE.BoxGeometry(len, height, thickness)
+      : new THREE.BoxGeometry(thickness, height, len);
     this.panel = new THREE.Mesh(geo, material);
     this.panel.castShadow = this.panel.receiveShadow = true;
     this.object = this.panel;
     this.pickable = this.panel;
     this.panel.userData.door = this;
-    this.along = along;
-    this.face = face;
-    this.y = y0 + DOOR_HEIGHT / 2;
-    this.closedPos = mid;
-    this.openPos = mid + dir * (len - 0.1);
-    this.len = len;
-
+    Object.assign(this, { along, face, y, len, closedPos, openPos });
     this.t = open ? 1 : 0;
     this.target = this.t;
     this.apply();
@@ -131,4 +114,58 @@ export class SlidingDoor {
       ? [this.pos - h, this.face, this.pos + h, this.face]
       : [this.face, this.pos - h, this.face, this.pos + h];
   }
+}
+
+/** Sliding door in a wall gap: runs on the face the plan arrow is drawn on, in its direction. */
+export class SlidingDoor extends Slider {
+  constructor(gap, arrow, y0, material, open) {
+    const along = gap.axis === 'x';
+    const len = gap.hi - gap.lo + 0.06;
+    const c = (gap.p0 + gap.p1) / 2;
+    const arrowPerp = arrow ? (along ? arrow.head[1] : arrow.head[0]) : c + 1;
+    const dir = arrow
+      ? Math.sign(along ? arrow.head[0] - arrow.tail[0] : arrow.head[1] - arrow.tail[1]) || 1
+      : 1;
+    const mid = (gap.lo + gap.hi) / 2;
+    super({
+      along, len, material, open,
+      face: arrowPerp > c ? gap.p1 + 0.03 : gap.p0 - 0.03,
+      y: y0 + DOOR_HEIGHT / 2,
+      height: DOOR_HEIGHT - 0.02,
+      closedPos: mid,
+      openPos: mid + dir * (len - 0.1),
+    });
+    this.kind = 'sliding';
+  }
+}
+
+/**
+ * Wardrobe front with two sliding panels on separate tracks. Opening a panel slides it
+ * over the other one, like a real skjutdörrsgarderob.
+ */
+export function wardrobeDoors({ along, front, outward, a, b, y0, height, material }) {
+  const half = (b - a) / 2;
+  const len = half + 0.02;
+  const mk = (track, closed, open) => {
+    const door = new Slider({
+      along, len, material, thickness: 0.02,
+      face: front + outward * (0.015 + track * 0.025),
+      y: y0 + height / 2, height: height - 0.02,
+      closedPos: closed, openPos: open,
+    });
+    door.kind = 'wardrobe';
+    door.name = 'garderobsdörren';
+    return door;
+  };
+  const m0 = a + half / 2, m1 = b - half / 2;
+  const pair = [mk(1, m0, m1), mk(0, m1, m0)];
+  // only one side open at a time: opening one panel slides the other back
+  pair.forEach((d, i) => {
+    const other = pair[1 - i];
+    d.toggle = () => {
+      if (d.target === 0 && other.target === 1) other.target = 0;
+      d.target = d.target === 1 ? 0 : 1;
+    };
+  });
+  return pair;
 }

@@ -45,6 +45,12 @@
     #action { position: fixed; right: 24px; bottom: 32px; padding: 16px 22px; border: 0; border-radius: 40px; background: var(--accent); color: #fff; font: 600 16px system-ui, sans-serif; box-shadow: 0 4px 14px rgba(0,0,0,.3); }
     #action[hidden] { display: none; }
     #pause { position: fixed; right: 16px; top: 16px; width: 44px; height: 44px; border: 0; border-radius: 50%; background: var(--panel); color: var(--ink); font-size: 18px; }
+    #update { position: fixed; top: 16px; left: 50%; transform: translateX(-50%); z-index: 10; width: max-content; display: flex; align-items: center; gap: 12px; max-width: calc(100vw - 32px); box-sizing: border-box; background: var(--ink); color: #fff; padding: 10px 10px 10px 16px; border-radius: 10px; box-shadow: 0 8px 30px rgba(0,0,0,.3); font-size: 15px; }
+    #update[hidden] { display: none; }
+    #update small { display: block; opacity: .75; font-size: 12px; margin-top: 2px; }
+    #update button { white-space: nowrap; flex: none; border: 0; border-radius: 6px; font: 600 14px system-ui, sans-serif; cursor: pointer; padding: 8px 14px; }
+    #update-reload { background: #fff; color: var(--ink); }
+    #update-close { background: transparent; color: #fff; padding: 8px 10px !important; font-size: 18px !important; }
   </style>
   <script type="importmap">
     { "imports": {
@@ -77,6 +83,11 @@
         <button id="start-touch" class="go alt">Touch</button>
       </div>
     </div>
+  </div>
+  <div id="update" hidden role="status">
+    <div>Det finns en ny version av lägenheten.<small id="update-hint">Ladda om sidan för att se den.</small></div>
+    <button id="update-reload">Ladda om</button>
+    <button id="update-close" aria-label="Stäng">×</button>
   </div>
   <div id="hud" hidden>
     <div id="crosshair"></div>

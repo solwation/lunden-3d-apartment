@@ -10,14 +10,23 @@ in Swedish. Code, comments and this file are in English; UI text is Swedish.
 - **Basic function first.** Work that isn't needed right now goes into a GitHub issue
   (`gh issue create`) instead of being done on the side. Keep issues small and concrete;
   reference the issue number in the commit that resolves it (`Fixes #N`).
+- **Label issues `in-progress` when you start on them** (`gh issue edit N --add-label
+  in-progress`) and remove the label if you stop without finishing
+  (`--remove-label in-progress`). Closing via `Fixes #N` is enough when done.
 - Verify changes in a real browser before pushing (see *Testing*). Don't claim something
   works from reading the code alone.
 - Keep this file and `README.md` up to date when behaviour, structure or known facts change.
 
 ## Architecture
 
-Static site, no build step, no npm. Published with GitHub Pages from `main` / root —
-every push to `main` deploys to https://solwation.github.io/lunden-3d-apartment/ (public repo).
+Static site, no build step for development, no npm. Every push to `main` deploys to
+https://solwation.github.io/lunden-3d-apartment/ (public repo) via
+`.github/workflows/pages.yml`, which runs `tools/stamp.sh`: it copies the site to `_site`,
+writes the commit SHA into `src/version.js` (`BUILD`) and `version.json`, and appends
+`?v=SHA` to module imports / `data/plan.json` so a reload never mixes cached old modules.
+The page polls `version.json` every minute and shows a "new version" notice (top centre)
+when it differs from `BUILD`. Locally `BUILD = 'dev'` and no checks run. Keep imports
+between `src/` files in the form `from './x.js'` on one line so the stamp regex finds them.
 Use relative paths only.
 
 ```
@@ -30,10 +39,12 @@ src/exterior.js        brick façades, neighbouring units, stacked unit above, l
 src/player.js          WASD/arrow/joystick movement, circle-vs-segment collision, step-up, gravity
 src/touch.js           on-screen joystick (left) + drag-to-look (right), multi-touch pointer events
 src/main.js            renderer, lights, input modes, door raycast prompt/button, loop (step)
+src/version.js         BUILD stamp + polling for a newer published version
 data/plan.json         GENERATED — do not edit by hand
 tools/extract_plan.py  PDF → data/plan.json (stdlib only)
 tools/walktest.html    headless movement test
 tools/touchtest.html   headless touch-input test (synthetic pointer events)
+tools/stamp.sh         build the published site with a version stamp (used by CI)
 ```
 
 ### Geometry pipeline
@@ -70,6 +81,9 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   Övre plan.
 - Doors: Badrum and Klk on Entréplan swing into the passage by the stair, so all swing doors
   start closed. The dashed door to Allrum is an optional extra (tillval) and is not built.
+  Wardrobes (G) are hollow with two sliding fronts on separate tracks (one open at a time).
+- Toilets: the redrawn plan has them rotated; bofakta shows the tank against the wall, so
+  `toiletAgainstWall` re-orients them. Fixture sizes are being reviewed (#14).
 - More info: https://peabbostad.se/projekt/skane/kv.-lunden/l1007/
 
 Values marked *guess* in `src/config.js` (slab thickness, window sill/head, soffit depth,
@@ -89,6 +103,7 @@ URL parameters (debugging / screenshots):
 - `?at=x,z,yawDeg[,pitchDeg[,feetY]]` — place the camera. yaw 0 = north (−z), 90 = west,
   180 = south, −90 = east. `feetY` = 3.25 for Övre plan.
 - `&shot` — hide the start overlay.
+- `&open` — open every door (screenshots of open doors / wardrobes).
 - `&clip=y` — clip everything above height y (cut-away plan view, e.g.
   `?shot&at=2.87,6.35,0,-90,16&clip=2.5` for Entréplan from above, `clip=5.6` + feet 19 for Övre plan).
 
@@ -110,6 +125,9 @@ google-chrome --headless=new --use-angle=swiftshader --enable-unsafe-swiftshader
 google-chrome --headless=new --use-angle=swiftshader --enable-unsafe-swiftshader \
   --virtual-time-budget=30000 --dump-dom http://localhost:8137/tools/touchtest.html
 ```
+
+To test the update notice locally: `tools/stamp.sh /tmp/site abc1234`, edit
+`/tmp/site/version.json` to another version, serve `/tmp/site` and load it.
 
 Run the walk test after any change to walls, doors, stairs or player movement, and the touch
 test after input changes. Headless SwiftShader renders only a few frames per second, so tests
