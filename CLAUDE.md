@@ -205,10 +205,10 @@ North = −z (the bedrooms Sovrum 1/3 face north).
 - Hall (#49): the plan's "EL" cabinet is really the small EL/C (40 cm, `CABINET_FIXES`) plus the coat
   rack "KL" beside it, which the extractor merged; on that wall (right as you come in) a coat rack with
   jackets and a shoe rack (FURNITURE `coatrack`/`shoerack`). The mirror + key cabinet are on the left.
-- Dining set (user's choice, #62/#57): IKEA SKANSNÄS table and 4 chairs, brown beech (`SKANSNAS`, one
-  colour for both): the table round Ø 115 (its normal size; 170 extended is not modelled), close to the
-  kitchen window; 2 + 2 chairs on the west/east sides between the legs, pushed in under the top. The
-  user finds the kitchen cramped easily — keep it airy. F toggles all furniture (`world.setFurniture`, which also swaps the collision
+- Dining set (user's choice, #62/#57/#63): IKEA SKANSNÄS table and 4 chairs, brown beech (`SKANSNAS`, one
+  frame colour for both; light woven paper-cord seats): the table rectangular 150 × 90 (closed; 205
+  extended is not modelled), short end to the kitchen window; 2 + 2 chairs on the long sides, pushed
+  in under the top. The user finds the kitchen cramped easily — keep it airy. F toggles all furniture (`world.setFurniture`, which also swaps the collision
   segments). Keep the Sovrum 1 bed clear of the Klk sliding door — the cat test needs floor there.
 - Toilets: the redrawn plan has them rotated; bofakta shows the tank against the wall, so
   `toiletAgainstWall` re-orients them. Modelled as Ifö Spira 6260 (`TOILET` in config,

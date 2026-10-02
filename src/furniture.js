@@ -239,56 +239,80 @@ function bed(item) {
 }
 
 const beech = new THREE.MeshStandardMaterial({ color: SKANSNAS.color, roughness: 0.55 }); // brown beech, table + chairs
-const beechRail = new THREE.MeshStandardMaterial({ color: SKANSNAS.color, roughness: 0.55, side: THREE.DoubleSide }); // open curved rails
 
-/** IKEA SKANSNÄS extendable table, round Ø 115 (not extended). Legs on the local axes, apron at 45°. */
+/** Woven paper-cord seat texture (canvas): a basket weave in the light cord colour. */
+function cordTexture() {
+  const c = document.createElement('canvas');
+  c.width = c.height = 128;
+  const g = c.getContext('2d');
+  const base = new THREE.Color(SKANSNAS.seatColor);
+  g.fillStyle = base.clone().offsetHSL(0, 0, -0.12).getStyle();
+  g.fillRect(0, 0, 128, 128);
+  for (let i = 0; i < 8; i++) for (let j = 0; j < 8; j++) {
+    const horiz = (i + j) % 2 === 0;
+    g.fillStyle = base.clone().offsetHSL(0, 0, (horiz ? 0.02 : -0.03)).getStyle();
+    for (let k = 0; k < 3; k++) {
+      if (horiz) g.fillRect(i * 16 + 1, j * 16 + 1 + k * 5, 14, 4);
+      else g.fillRect(i * 16 + 1 + k * 5, j * 16 + 1, 4, 14);
+    }
+  }
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+const cord = new THREE.MeshStandardMaterial({ map: cordTexture(), roughness: 0.9 });
+
+/** IKEA SKANSNÄS extendable table, closed: rectangular top with rounded corners, a thin apron and
+ * four tapered legs. Local x = width, z = length (the plan's z: short end to the window). */
 function skansnasTable() {
-  const T = SKANSNAS.table, g = new THREE.Group(), R = T.d / 2;
-  const top = new THREE.Mesh(new THREE.CylinderGeometry(R, R, T.top, 56), beech);
-  top.position.y = T.h - T.top / 2;
+  const T = SKANSNAS.table, g = new THREE.Group();
+  const hw = T.w / 2, hl = T.l / 2, r = T.corner;
+  const shape = new THREE.Shape();
+  shape.moveTo(-hw + r, -hl);
+  shape.lineTo(hw - r, -hl); shape.quadraticCurveTo(hw, -hl, hw, -hl + r);
+  shape.lineTo(hw, hl - r); shape.quadraticCurveTo(hw, hl, hw - r, hl);
+  shape.lineTo(-hw + r, hl); shape.quadraticCurveTo(-hw, hl, -hw, hl - r);
+  shape.lineTo(-hw, -hl + r); shape.quadraticCurveTo(-hw, -hl, -hw + r, -hl);
+  const geo = new THREE.ExtrudeGeometry(shape, { depth: T.top, bevelEnabled: true, bevelThickness: 0.004, bevelSize: 0.004, bevelSegments: 2, curveSegments: 6 });
+  geo.rotateX(Math.PI / 2).translate(0, T.h, 0);
+  const top = new THREE.Mesh(geo, beech);
   top.castShadow = top.receiveShadow = true;
   g.add(top);
-  const apron = new THREE.Group();
-  const s = T.apron, y = T.h - T.top - T.apronH / 2;
-  for (const [x, z, w, d] of [[0, s / 2, s, 0.02], [0, -s / 2, s, 0.02], [s / 2, 0, 0.02, s], [-s / 2, 0, 0.02, s]]) {
-    apron.add(rbox(w, T.apronH, d, x, y, z, beech, 0.005));
-  }
-  apron.rotation.y = Math.PI / 4;
-  g.add(apron);
-  const lr = s / Math.SQRT2 - 0.01, lh = T.h - T.top;
-  for (const [x, z] of [[lr, 0], [-lr, 0], [0, lr], [0, -lr]]) {
-    const leg = new THREE.Mesh(new THREE.CylinderGeometry(T.leg / 2, T.leg * 0.34, lh, 14), beech);
+  const ay = T.h - T.top - T.apronH / 2, ix = hw - 0.07, iz = hl - 0.07;
+  g.add(rbox(2 * ix, T.apronH, 0.02, 0, ay, -iz, beech, 0.004), rbox(2 * ix, T.apronH, 0.02, 0, ay, iz, beech, 0.004),
+    rbox(0.02, T.apronH, 2 * iz, -ix, ay, 0, beech, 0.004), rbox(0.02, T.apronH, 2 * iz, ix, ay, 0, beech, 0.004));
+  const lh = T.h - T.top;
+  for (const x of [-ix, ix]) for (const z of [-iz, iz]) {
+    const leg = new THREE.Mesh(new THREE.CylinderGeometry(T.leg / 2, T.leg * 0.32, lh, 14), beech);
     leg.position.set(x, lh / 2, z);
     leg.castShadow = true;
     g.add(leg);
   }
-  const f = R * 0.72; // inscribed square: walk round the table, not through it
-  g.userData.footprint = [{ x0: -f, x1: f, z0: -f, z1: f }];
+  g.userData.footprint = [{ x0: -hw, x1: hw, z0: -hl, z1: hl }];
   return g;
 }
 
-/** IKEA SKANSNÄS chair, brown beech: seat, four legs, back posts with a curved top rail. Faces local +z. */
+/** IKEA SKANSNÄS chair: brown beech frame, light woven paper-cord seat, a straight, slightly
+ * reclined back board between the back posts. Faces local +z. */
 function skansnasChair() {
   const C = SKANSNAS.chair, g = new THREE.Group();
   const hw = C.w / 2 - 0.03, hd = C.d / 2 - 0.04;
-  g.add(rbox(C.w - 0.03, 0.035, C.d - 0.06, 0, C.seat - 0.018, 0.01, beech, 0.012));
+  const seat = rbox(C.w - 0.05, 0.03, C.d - 0.07, 0, C.seat - 0.015, 0.01, cord, 0.01);
+  g.add(seat);
+  // seat frame (rails round the woven seat)
+  g.add(rbox(C.w - 0.03, 0.035, 0.025, 0, C.seat - 0.03, hd + 0.02, beech, 0.006), rbox(C.w - 0.03, 0.035, 0.025, 0, C.seat - 0.03, -hd, beech, 0.006));
   for (const x of [-hw, hw]) {
+    g.add(rbox(0.025, 0.035, 2 * hd, x, C.seat - 0.03, 0.01, beech, 0.006));
     g.add(leg(x, hd, C.seat - 0.03, beech));
     const post = new THREE.Mesh(new THREE.CylinderGeometry(0.016, 0.02, C.h, 10), beech);
     post.position.set(x, C.h / 2, -hd);
-    post.rotation.x = -0.06; // a little lean back
+    post.rotation.x = -0.07; // reclined a little
     post.castShadow = true;
     g.add(post);
   }
-  // curved top rail and a middle rail between the back posts
-  for (const [y, h] of [[C.h - 0.05, 0.07], [C.seat + 0.17, 0.03]]) {
-    const span = 2 * hw + 0.03, rad = 0.45, ang = 2 * Math.asin(span / 2 / rad);
-    // an open arc of a cylinder: its middle (θ = π, local −z) just behind the posts, ends curving forward
-    const rail = new THREE.Mesh(new THREE.CylinderGeometry(rad, rad, h, 18, 1, true, Math.PI - ang / 2, ang), beechRail);
-    rail.position.set(0, y, -hd - 0.01 + rad);
-    rail.castShadow = true;
-    g.add(rail);
-  }
+  const back = rbox(2 * hw + 0.02, 0.13, 0.02, 0, C.h - 0.1, -hd - 0.04, beech, 0.008);
+  back.rotation.x = -0.07;
+  g.add(back);
   g.userData.footprint = [{ x0: -C.w / 2, x1: C.w / 2, z0: -C.d / 2, z1: C.d / 2 }];
   return g;
 }
