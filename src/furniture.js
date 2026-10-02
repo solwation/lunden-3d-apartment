@@ -175,6 +175,28 @@ function sidetable(item) {
   return g;
 }
 
+const oiledOak = new THREE.MeshStandardMaterial({ color: 0xc69c6d, roughness: 0.5 }); // oljebehandlad ek
+
+/** ILVA Woodstock coffee table: 1950s/60s style — veneered top with softened edges, tapered
+ * solid oak legs set in from the corners, a fixed shelf between them. Local x = w, z = d. */
+function coffeetable(item) {
+  const g = new THREE.Group();
+  const { w, d, h } = item, t = 0.025, legH = h - t;
+  g.add(rbox(w, t, d, 0, h - t / 2, 0, oiledOak, 0.008));
+  const lx = w / 2 - 0.09, lz = d / 2 - 0.07;
+  for (const x of [-lx, lx]) for (const z of [-lz, lz]) {
+    const l = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.013, legH, 12), oiledOak);
+    l.position.set(x, legH / 2, z);
+    g.add(l);
+  }
+  // shelf between the legs, ~15 cm above the floor; short rails under the top along the ends
+  g.add(rbox(2 * lx - 0.02, 0.018, 2 * lz + 0.02, 0, 0.15, 0, oiledOak, 0.005));
+  for (const x of [-lx, lx]) g.add(rbox(0.03, 0.05, 2 * lz, x, h - t - 0.025, 0, oiledOak, 0.005));
+  g.traverse((m) => { m.castShadow = m.receiveShadow = true; });
+  g.userData.footprint = [{ x0: -w / 2, x1: w / 2, z0: -d / 2, z1: d / 2 }];
+  return g;
+}
+
 const linen = new THREE.MeshStandardMaterial({ color: 0xeeeeea, roughness: 0.95 });
 const duvet = new THREE.MeshStandardMaterial({ color: 0xd9dfe2, roughness: 0.95 });
 const bedFabric = new THREE.MeshStandardMaterial({ color: 0x8f969b, roughness: 0.95 });
@@ -383,7 +405,7 @@ function daybed() {
   return g;
 }
 
-const BUILDERS = { sofa, armchair, footstool, floorlamp, sidetable, bed, table, chair, bunk, daybed };
+const BUILDERS = { sofa, armchair, footstool, floorlamp, sidetable, coffeetable, bed, table, chair, bunk, daybed };
 
 /** Build all furniture; returns the scene group, collision segments per level and lamps. */
 export function buildFurniture() {

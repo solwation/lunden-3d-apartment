@@ -296,6 +296,10 @@ export const FURNITURE = [
   { type: 'footstool', level: 0, x: 1.33, z: 8.93, rot: -135 },
   { type: 'floorlamp', level: 0, x: 0.42, z: 8.02 },
   { type: 'sidetable', level: 0, x: 1.52, z: 8.12, flower: true },
+  // Soffbord ILVA Woodstock, top i oljebehandlad ekfaner (art. 1055729): 120 × 60 × 47 cm, legs in
+  // oiled solid oak, a fixed shelf below (ilva.dk product page). Centred on the three seats
+  // (x 2.68–4.60), 40 cm in front of the sofa (front at z 11.26).
+  { type: 'coffeetable', level: 0, x: 3.64, z: 11.26 - 0.4 - 0.3, w: 1.2, d: 0.6, h: 0.47 },
   // Upstairs bedrooms (the user's plan). Beds: rot = direction from the head to the foot end.
   { type: 'bed', level: 1, x: 5.55 - 1.1, z: 2.3, rot: 90, w: 1.6, l: 2.0 },  // Sovrum 1 (Sarah & Ofluf), head east, clear of the Klk
   // Bunks: long side against the side wall, head end against the façade (the user's wish);

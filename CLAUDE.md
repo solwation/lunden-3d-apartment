@@ -133,7 +133,8 @@ North = −z (the bedrooms Sovrum 1/3 face north).
 - Vardagsrum furniture (wanted by the user): IKEA LANDSKRONA 3-sits + schäslong, Gunnared
   ljusgrön, back to the window, chaise in the SE corner; matching armchair + footstool in
   the NW corner with a floor lamp and a side table with a small flower. Dimensions in
-  `LANDSKRONA` (config) — the chaise/armchair/footstool numbers are series estimates.
+  `LANDSKRONA` (config) — the chaise/armchair/footstool numbers are series estimates. In front
+  of the sofa: coffee table ILVA Woodstock, oiled oak veneer top, 120 × 60 × 47 cm, with a shelf.
 - Material choices (Sarah's screenshots in `material/`): parquet Ek Chalk (white-stained oak),
   walls/doors NCS S 0500-N, stair white-lacquered oak/white, hall granitkeramik City Amsterdam
   30×60, wet rooms City Amsterdam 15×15 + white matt 20×40 wall tiles, kitchen fronts Form Tall
@@ -178,7 +179,7 @@ URL parameters (debugging / screenshots):
   `&clock` opens the wall clock's strip,
   `&lights` turns every lamp on (they also start on when arriving in the dark).
 - `&water` — turn on every tap and shower.
-- `&install` — show the iPhone install sheet. `&note` — open the changelog note. `&pet` (with `&cat=`) — the cat is being petted.
+- `&phone` — the short touch-only start screen. `&install` — show the iPhone install sheet. `&note` — open the changelog note. `&pet` (with `&cat=`) — the cat is being petted.
 - `&clip=y` — clip everything above height y (cut-away plan view, e.g.
   `?shot&at=2.87,6.35,0,-90,16&clip=2.5` for Entréplan from above, `clip=5.6` + feet 19 for Övre plan).
 
@@ -243,7 +244,10 @@ screenshots into the session scratchpad, not the repo.
 ## Input notes
 
 - Start screen has two buttons: *Mus & tangentbord* (pointer lock) and *Touch* (joystick).
-  A Surface has both, so the visitor chooses.
+  A Surface has both, so the visitor chooses. Touch-only devices (`(pointer: coarse) and
+  (hover: none)` → `body.phone`, set by an inline script in index.html) get a short start screen:
+  no key list, one *Börja* button (= Touch). `&phone` forces it for screenshots.
+- App name everywhere (title, manifest name/short_name, apple-mobile-web-app-title): "Kv. Lunden L1007".
 - iPhone (Safari/Chrome) can't go fullscreen, and the browser bars shifted the tap targets of the
   bottom-right buttons; `src/install.js` asks to add the page to the home screen first (skippable
   per session). The page uses `viewport-fit=cover` with `--sl/--sr/--st/--sb` safe-area insets on

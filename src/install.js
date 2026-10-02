@@ -20,7 +20,7 @@ function iosSteps(ua) {
   return [
     first,
     'Välj <b>Lägg till på hemskärmen</b> (scrolla ner i listan om den inte syns).',
-    'Öppna <b>Lunden</b> från hemskärmen.',
+    'Öppna <b>Kv. Lunden L1007</b> från hemskärmen.',
   ];
 }
 

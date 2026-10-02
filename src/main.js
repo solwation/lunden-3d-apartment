@@ -239,6 +239,7 @@ document.getElementById('start-touch').addEventListener('click', () => {
     .catch(() => {});
   showOverlay(false);
 });
+document.getElementById('start-go').addEventListener('click', () => document.getElementById('start-touch').click());
 pauseBtn.addEventListener('click', () => {
   touch.enabled = false;
   player.analog.x = player.analog.y = 0;

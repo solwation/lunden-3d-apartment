@@ -87,6 +87,9 @@ export class ClockPanel {
     Object.assign(this, { day, el, held: new Map() }); // what is spooling: key/button → ±1
     this.timeEl = el.querySelector('.time');
     this.infoEl = el.querySelector('.info');
+    this.dateEl = el.querySelector('.date');
+    this.prevBtn = el.querySelector('[data-act=prev]');
+    this.nextBtn = el.querySelector('[data-act=next]');
     this.playBtn = el.querySelector('[data-act=play]');
     for (const [act, dir] of [['back', -1], ['fwd', 1]]) {
       const b = el.querySelector(`[data-act=${act}]`);
@@ -97,8 +100,8 @@ export class ClockPanel {
       b.addEventListener('lostpointercapture', stop);
     }
     this.playBtn.addEventListener('click', () => this.togglePause());
-    el.querySelector('[data-act=prev]').addEventListener('click', () => this.month(-1));
-    el.querySelector('[data-act=next]').addEventListener('click', () => this.month(1));
+    this.prevBtn.addEventListener('click', () => this.month(-1));
+    this.nextBtn.addEventListener('click', () => this.month(1));
     this.render();
   }
 
@@ -137,7 +140,11 @@ export class ClockPanel {
     this.timeEl.textContent = formatHour(d.hour);
     const sun = sunTimes(d.doy);
     const state = d.spool < 0 ? '⏪ spolar bakåt' : d.spool > 0 ? '⏩ spolar framåt' : d.paused ? '⏸ pausad' : '';
-    this.infoEl.textContent = `15 ${MONTHS[d.month - 1]}${sun ? ` · sol upp ${formatHour(sun[0])}, ner ${formatHour(sun[1])}` : ''}${state ? ` · ${state}` : ''}`;
+    this.dateEl.textContent = `15 ${MONTHS[d.month - 1]}`;
+    // the neighbouring months by name ("‹ sep", "nov ›"), so nothing reads as "mån" = måndag
+    this.prevBtn.textContent = `‹ ${MONTHS[(d.month + 10) % 12].slice(0, 3)}`;
+    this.nextBtn.textContent = `${MONTHS[d.month % 12].slice(0, 3)} ›`;
+    this.infoEl.textContent = [sun && `sol upp ${formatHour(sun[0])}, ner ${formatHour(sun[1])}`, state].filter(Boolean).join(' · ');
     this.playBtn.textContent = d.paused ? '▶' : '⏸';
     this.playBtn.setAttribute('aria-label', d.paused ? 'Starta tiden' : 'Pausa tiden');
   }
