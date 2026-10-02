@@ -1796,7 +1796,7 @@ function besta(item) {
       update(dt) {
         const goal = this.isOpen ? 1 : 0;
         this.t += Math.sign(goal - this.t) * Math.min(Math.abs(goal - this.t), dt * 2.4);
-        pivot.rotation.y = -sideX * this.t * this.t * (3 - 2 * this.t) * THREE.MathUtils.degToRad(B.openDeg);
+        pivot.rotation.y = sideX * this.t * this.t * (3 - 2 * this.t) * THREE.MathUtils.degToRad(B.openDeg); // the free edge swings out into the room (#150)
       },
     };
     pivot.traverse((m) => { m.userData.door = target; });
