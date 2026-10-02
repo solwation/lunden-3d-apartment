@@ -1,5 +1,6 @@
 import * as THREE from 'three';
-import { COLORS, LEVELS, DAY, START, PLAYER } from './config.js';
+import { COLORS, LEVELS, DAY, START, PLAYER, DRAWING } from './config.js';
+const DRAWING_COLORS = DRAWING.colors;
 import { buildWorld } from './world.js';
 import { Player } from './player.js';
 import { setupTouch } from './touch.js';
@@ -22,6 +23,7 @@ import { Rest, chooseSpot } from './rest.js';
 import { Saber } from './saber.js';
 import { buildToys } from './toys.js';
 import { buildCups } from './cups.js';
+import { Drawing } from './drawing.js';
 import { heldItem } from './holdable.js';
 import { Tap, animateWater } from './water.js';
 import { CatBoard, snapshot } from './catboard.js';
@@ -161,6 +163,7 @@ const toys = buildToys(scene, camera); // Nerf blasters, magic wands, the flashl
 const holdables = [saber, ...toys.items]; // things you can take and hold, one at a time (holdable.js)
 const cups = buildCups(scene, camera, world, world.cupCabinet); // coffee cups in the wall cabinet (#90)
 let placeTarget = null; // while a cup is held: the table top it would go down on
+const drawing = new Drawing(scene, camera); // crayons on the paper on the desk in Sovrum 3 (#93)
 const measure = new Measure(scene, camera, [world.object], document.getElementById('measure'));
 document.getElementById('measure-btn').addEventListener('click', () => measure.press());
 const cat = new CatSpawner(world);
@@ -363,6 +366,50 @@ function usePc(spot) {
   pc.watch(spot.pc === 'film' ? spot.pos : null);
   if (!pc.isOpen) { pc.toggle(); sfx.tvClick(pc.pickable.getWorldPosition(new THREE.Vector3()), true); }
 }
+/** Drawing mode (#93): the view over the paper, the pointer free (mouse) / touch looking off, the palette. */
+const drawPanel = document.getElementById('draw-panel');
+const drawColors = drawPanel.querySelector('.colors');
+DRAWING_COLORS.forEach((c, i) => {
+  const b = document.createElement('button');
+  b.style.background = c;
+  b.title = `${i + 1}`;
+  b.addEventListener('click', () => pickColor(i));
+  drawColors.append(b);
+});
+function pickColor(i) {
+  drawing.color = DRAWING_COLORS[i];
+  [...drawColors.children].forEach((b, k) => b.classList.toggle('on', k === i));
+}
+pickColor(4);
+let drawTouch = false;
+function beginDraw() {
+  drawing.begin();
+  drawPanel.hidden = false;
+  promptEl.hidden = true;
+  actionBtn.hidden = true;
+  drawTouch = touch.enabled;
+  touch.enabled = false; // the finger draws now, it doesn't look around
+  if (locked) document.exitPointerLock();
+}
+function endDraw(byKey = 'E') {
+  drawing.end();
+  drawPanel.hidden = true;
+  if (drawTouch) touch.enabled = true;
+  else if (byKey === 'Escape') { overlay.hidden = true; armEl.hidden = false; } // Esc can't grab the mouse: click to go on
+  else canvas.requestPointerLock();
+}
+drawPanel.querySelector('[data-act=clear]').addEventListener('click', () => drawing.clear());
+drawPanel.querySelector('[data-act=done]').addEventListener('click', () => endDraw('button'));
+canvas.addEventListener('pointerdown', (e) => { if (drawing.active) { drawing.pointerDown(e.clientX, e.clientY, canvas); e.preventDefault(); } });
+canvas.addEventListener('pointermove', (e) => { if (drawing.active) drawing.pointerMove(e.clientX, e.clientY, canvas); });
+window.addEventListener('pointerup', () => { if (drawing.active) drawing.pointerUp(); });
+document.addEventListener('keydown', (e) => {
+  if (!drawing.active) return;
+  if (e.code === 'KeyE' || e.code === 'Escape') { e.preventDefault(); endDraw(e.code); }
+  else if (/^Digit[1-9]$/.test(e.code)) pickColor(Number(e.code.slice(5)) - 1);
+  e.stopImmediatePropagation();
+}, true);
+
 /** Stand up again where you stood before sitting / lying down. */
 function standUp() {
   const film = rest.spot?.pc === 'film';
@@ -390,6 +437,7 @@ function use(thing) {
   else if (thing.kind === 'rest') sitOrLie(thing);
   else if (thing.kind === 'saber' || thing.kind === 'holdable' || thing.kind === 'cup') thing.toggle();
   else if (thing.kind === 'cupPlace') thing.cup.placeAt(thing.point);
+  else if (thing.kind === 'paper') beginDraw();
   else if (thing.kind === 'pc') { const on = thing.toggle(); sfx.tvClick(thing.pickable.getWorldPosition(new THREE.Vector3()), on); }
   else if (thing.kind === 'tv') {
     const on = thing.toggle();
@@ -423,7 +471,7 @@ document.addEventListener('pointerlockchange', () => {
   if (!locked) unlockedAt = performance.now();
   armEl.hidden = true;
   if (locked) touch.enabled = false;
-  showOverlay(!locked);
+  if (!drawing.active) showOverlay(!locked); // drawing frees the mouse on purpose: no start screen
   if (!locked) { player.keys.clear(); holdStats(false); if (!touch.enabled) player.crouch = false; }
   if (!locked && reading) showNote(false);
 });
@@ -506,7 +554,7 @@ function updateFocus() {
   // (the raycaster ignores visibility, so the cat is only a target while it is there)
   // the car key only while its cabinet is open
   const extra = [...(cat.visible ? [cat.object] : []), ...(keyCabinet?.keyReachable ? [world.carKey.pickable] : []),
-    ...(world.furnitureOn ? [...patio.targets, ...world.furnitureTargets, ...holdables.map((h) => h.target)].map((t) => t.pickable) : [])]; // parasol, TV, seats, beds, toys — unless F hid the furniture
+    ...(world.furnitureOn ? [...patio.targets, ...world.furnitureTargets, ...holdables.map((h) => h.target), drawing.target].map((t) => t.pickable) : [])]; // parasol, TV, seats, beds, toys — unless F hid the furniture
   // the nearest hit on something actually shown (F hides the loose items, the raycaster doesn't care)
   const cupTargets = cups.cups.filter((c) => !c.held).map((c) => c.target.pickable);
   const hit = raycaster.intersectObjects([...pickables, ...extra, ...cupTargets], true).find((h) => shown(h.object));
@@ -545,7 +593,7 @@ function toggleFurniture(on = !world.furnitureOn) {
   try { localStorage.setItem('lunden.furniture', on ? '1' : '0'); } catch { /* ignore */ }
 }
 world.looseItems.push(board.object, ...holdables.flatMap((h) => [h.holder, h.model]), ...toys.deco);
-world.looseItems.push(...cups.cups.map((c) => c.model)); // the cups go with F too (the cabinet is fitted) // the cat board and the toys go with the furniture (F)
+world.looseItems.push(...cups.cups.map((c) => c.model), drawing.paper); // the cups and the paper go with F too // the cat board and the toys go with the furniture (F)
 try { if (localStorage.getItem('lunden.furniture') === '0') toggleFurniture(false); } catch { /* ignore */ }
 document.getElementById('furniture-btn').addEventListener('click', () => toggleFurniture());
 
@@ -604,6 +652,7 @@ function step(dt) {
   cat.update(dt);
   measure.update(dt, window.innerWidth, window.innerHeight);
   if (active() && reading) updateFocus();
+  if (drawing.active) drawing.update(dt); // drawing: the camera over the paper, nothing else moves you
   else if (active() && rest.active) { rest.update(dt); updateFocus(); } // sitting / lying: look, no walking
   else if (active()) {
     player.analog.x = touch.analog.x;
@@ -712,4 +761,4 @@ document.addEventListener('pointerlockchange', () => { if (!updateEl.hidden) sho
 watchForUpdates(showUpdate);
 
 // handle for tests/debugging (tools/touchtest.html)
-window.__app = { cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };
+window.__app = { drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };

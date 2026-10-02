@@ -140,6 +140,12 @@
     .share { display: inline-block; width: 14px; height: 16px; vertical-align: -2px; border: 2px solid var(--accent); border-top: 0; border-radius: 0 0 3px 3px; position: relative; margin: 0 2px; }
     .share::before { content: '↑'; position: absolute; left: 50%; top: -9px; transform: translateX(-50%); color: var(--accent); font-weight: 700; font-size: 14px; }
     /* wall clock controls: a strip at the bottom, so the light can be watched while spooling */
+    #draw-panel { position: fixed; left: 50%; bottom: calc(16px + var(--sb)); transform: translateX(-50%); z-index: 6; background: rgba(20, 35, 45, 0.82); color: #fff; padding: 10px 14px; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,.3); display: grid; gap: 8px; justify-items: center; }
+    #draw-panel[hidden] { display: none; }
+    #draw-panel .colors button { width: 30px; height: 30px; border-radius: 50%; border: 2px solid rgba(255,255,255,.5); margin: 0 3px; cursor: pointer; touch-action: manipulation; }
+    #draw-panel .colors button.on { border-color: #fff; box-shadow: 0 0 0 3px rgba(255,255,255,.5); }
+    #draw-panel .row button[data-act] { border: 0; border-radius: 8px; padding: 8px 14px; margin: 0 4px; font: 600 14px system-ui, sans-serif; cursor: pointer; background: rgba(255,255,255,.92); color: var(--ink); touch-action: manipulation; }
+    #draw-panel button.done { background: var(--accent); color: #fff; }
     #clock-panel { position: fixed; left: 50%; bottom: calc(16px + var(--sb)); transform: translateX(-50%); z-index: 5; width: max-content; max-width: calc(100vw - 32px - var(--sl) - var(--sr)); box-sizing: border-box; background: rgba(20, 35, 45, 0.82); color: #fff; padding: 10px 14px 8px; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,.3); text-align: center; }
     #clock-panel[hidden] { display: none; }
     #clock-panel .row { display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; }
@@ -237,6 +243,10 @@
       <button id="board-close" aria-label="Stäng">×</button>
       <figcaption>Tryck E (eller ×) för att gå tillbaka.</figcaption>
     </figure>
+  </div>
+  <div id="draw-panel" hidden role="dialog" aria-label="Rita">
+    <div class="row colors"></div>
+    <div class="row"><button data-act="clear">Sudda allt</button><button data-act="done" class="done">Klar (E)</button></div>
   </div>
   <div id="clock-panel" hidden role="dialog" aria-label="Klockan">
     <div class="row">

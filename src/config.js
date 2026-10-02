@@ -293,6 +293,13 @@ export const TOYS = {
 export const CUPS = { n: 3, r: 0.04, h: 0.09, color: 0xf3f1ec, coffee: 0x2a1408, pour: 0.25, counter: { x: 5.2, z: 1.68 },
   held: { x: 0.18, y: -0.2, z: -0.4 } };
 
+// Drawing with crayons (#93, src/drawing.js): an A3 sheet in the middle of the ALEX desk in Sovrum 3. E on it:
+// the view goes down over the paper, the mouse is freed and you draw with crayons (palette at the bottom,
+// keys 1–9, "Sudda allt"); E / Esc / "Klar" goes back. The drawing is kept in localStorage.
+export const DRAWING = { level: 1, x: 2.61 - 0.66 - 0.02, z: 0.465 + 0.31, w: 0.42, h: 0.297, px: 840, eye: 0.3,
+  colors: ['#d8312e', '#f08a24', '#f2cf2b', '#43a047', '#2f6fd6', '#7b4bc4', '#f27bb3', '#8a5a3c', '#222222'],
+  width: 9 };
+
 // Sitting and lying down (#71/#72, src/rest.js): eye height above the seat / mattress, how far you can
 // turn your head (yaw ± from the way the seat faces) and the pitch range, and the move time.
 export const REST = {

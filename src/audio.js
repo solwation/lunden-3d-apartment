@@ -452,6 +452,12 @@ export const sfx = {
     noise(t, 1.2, d, { type: 'bandpass', freq: 1300, q: 1.5, gain: 0.12, attack: 0.08 });
     tone(t, 1.2, d, { type: 'sine', from: 420, to: 900, gain: 0.03 });
   },
+    /** A crayon on paper: a short dry scratch, louder with the speed (0…1). */
+  crayon(pos, k = 0.5) {
+    if (!ready()) return;
+    const t = ctx.currentTime, d = out(pos, 0.6);
+    noise(t, 0.12, d, { type: 'bandpass', freq: 2800 + 1500 * k, q: 0.9, gain: 0.05 + 0.08 * k, attack: 0.01 });
+  },
     click(pos) {
     if (!ready()) return;
     const t = ctx.currentTime, d = out(pos, 0.6);
