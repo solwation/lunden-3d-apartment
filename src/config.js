@@ -631,6 +631,12 @@ export const LIGHTING = {
     // over the sitting group between the coffee table and the TV; 45 × 32 cm and the 55 cm cord are *guesses*
     // (shade bottom ~2.1 m up). It replaces the room's ceiling dome.
     { level: 0, room: 'Vardagsrum', x: 3.64, z: 10.2, drop: 0.55, style: 'paper', w: 0.45, h: 0.32, cord: 0xf2f2f0, replaces: true },
+    // Sovrum 1's black string ceiling lamp (#174, docs/taklampa-sovrum1-svart-snore.jpg): a short black cup under a
+    // white ceiling plate, a truncated cone of vertical black strings, a clear filament globe inside. All sizes are
+    // *guesses* from the photo (bottom Ø 55, top Ø 35, 28 high, cup 10 cm); in the middle of the room, south of the
+    // lowered ceiling by the façade. It replaces the room's ceiling dome.
+    { level: 1, room: 'Sovrum 1', x: 3.55, z: 2.9, style: 'string', drop: 0, bottom: 0.55, top: 0.35, h: 0.28, cup: 0.1,
+      cupTop: 0.09, cupBottom: 0.05, plate: 0.12, strings: 300, opacity: 0.86, bulb: 0.08, bulbDrop: 0.17, replaces: true },
   ],
   // switches for rooms without a door of their own (normal = the way the wall faces)
   manual: [

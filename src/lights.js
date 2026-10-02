@@ -19,6 +19,8 @@ function ceilingAt(level, x, z) {
 
 /** Emissive bits that show a lamp is on: on = warm glow, off = plain white plastic/glass. */
 function setGlow(material, on) {
+  const lit = material.userData.lit; // own colours when lit (e.g. the dark string shade, #174)
+  if (lit) { material.emissive.setHex(on ? lit.emissive : 0x000000); material.emissiveIntensity = on ? lit.intensity : 0; return; }
   if (material.userData.glow) { material.opacity = on ? material.userData.glow : 0; material.visible = on; return; }
   material.emissive.setHex(on ? 0xfff2dc : 0x000000);
   material.emissiveIntensity = on ? 1.2 : 0;
@@ -61,6 +63,18 @@ function pleatedShade(r, h, n = 20, rows = 7) {
   tex.colorSpace = THREE.SRGBColorSpace;
   g.userData.folds = tex;
   return g;
+}
+
+/** Colour map of `n` vertical black strings round a shade, a little uneven (the shade itself is see-through). */
+function stringTexture(n) {
+  const c = document.createElement('canvas'); c.width = 2048; c.height = 8;
+  const g = c.getContext('2d');
+  g.fillStyle = '#2c2a28'; g.fillRect(0, 0, c.width, c.height);
+  const w = c.width / n;
+  for (let i = 0; i < n; i++) { const k = 6 + ((i * 7919) % 11); g.fillStyle = `rgb(${k},${k},${k})`; g.fillRect(i * w, 0, w * 0.6, c.height); }
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4;
+  return t;
 }
 
 class Room {
@@ -219,6 +233,34 @@ export class Lights {
       R.mats.push(shade);
       const cord = new THREE.Mesh(new THREE.CylinderGeometry(0.004, 0.004, p.drop, 6), new THREE.MeshStandardMaterial({ color: p.cord ?? 0x222222 }));
       cord.position.set(p.x, y - p.drop / 2, p.z);
+      if (p.style === 'string') {
+        // black string shade on a short ceiling cup (#174): a truncated cone of vertical strings you see through,
+        // a clear filament globe inside; the strings glow faintly warm when it is lit
+        const black = new THREE.MeshStandardMaterial({ color: 0x151515, roughness: 0.5 });
+        const plate = new THREE.Mesh(new THREE.CylinderGeometry(p.plate / 2, p.plate / 2, 0.008, 24), new THREE.MeshStandardMaterial({ color: 0xf2f2f0, roughness: 0.6 }));
+        plate.position.set(p.x, y - 0.004, p.z);
+        const cup = new THREE.Mesh(new THREE.CylinderGeometry(p.cupTop / 2, p.cupBottom / 2, p.cup, 20), black);
+        cup.position.set(p.x, y - 0.008 - p.cup / 2, p.z);
+        const top = y - 0.008 - p.cup, mid = top - p.h / 2;
+        Object.assign(shade, { color: new THREE.Color(0xffffff), roughness: 0.9, map: stringTexture(p.strings), transparent: true, opacity: p.opacity, depthWrite: false });
+        shade.userData.lit = { emissive: 0x4a2c14, intensity: 0.5 };
+        const cone = new THREE.Mesh(new THREE.CylinderGeometry(p.top / 2, p.bottom / 2, p.h, 64, 1, true), shade);
+        cone.position.set(p.x, mid, p.z);
+        cone.castShadow = false;
+        const rims = [[p.top / 2, top], [p.bottom / 2, top - p.h]].map(([r, ry]) => {
+          const m = new THREE.Mesh(new THREE.TorusGeometry(r, 0.004, 4, 48), black); m.rotation.x = Math.PI / 2; m.position.set(p.x, ry, p.z); return m;
+        });
+        const bulbMat = new THREE.MeshStandardMaterial({ color: 0xd8d2c4, roughness: 0.15, metalness: 0.2 });
+        bulbMat.userData.lit = { emissive: 0xffb45a, intensity: 2.2 };
+        R.mats.push(bulbMat);
+        const bulb = new THREE.Mesh(new THREE.SphereGeometry(p.bulb / 2, 16, 12), bulbMat);
+        bulb.position.set(p.x, top - p.bulbDrop, p.z);
+        const holder = new THREE.Mesh(new THREE.CylinderGeometry(0.014, 0.014, p.bulbDrop - p.bulb / 2, 10), black);
+        holder.position.set(p.x, top - (p.bulbDrop - p.bulb / 2) / 2, p.z);
+        scene.add(plate, cup, cone, ...rims, bulb, holder);
+        R.lamps.push({ pos: new THREE.Vector3(p.x, top - p.bulbDrop, p.z), ...L.pendant, level: p.level });
+        continue;
+      }
       if (p.style === 'paper') {
         // folded white paper shade (#134): a barrel of staggered rings → diamond pleats, lit from inside
         shade.flatShading = true;

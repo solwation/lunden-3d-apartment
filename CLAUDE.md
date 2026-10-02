@@ -431,7 +431,9 @@ screenshots into the session scratchpad, not the repo.
 - Lights: switches are placed automatically by the latch side of each interior swing door (room
   side), snapped onto a wall outline segment that faces the room and covers the whole plate (`wallFace`,
   #76; lighttest checks every switch has a wall right behind it) plus `LIGHTING.manual` for open rooms and the downstairs Klk (door spans the whole wall).
-  Lamp emissive parts use one material per room (`lampMaterials` in interior.js). Never add
+  Lamp emissive parts use one material per room (`lampMaterials` in interior.js). Extra additive glows (the BESTÅ uplight, #188) register
+  with `addLampGlow` (switched by opacity); a material with `userData.lit` keeps its own lit colours (Sovrum 1's black
+  string shade, `style: 'string'` in `LIGHTING.pendants`, #174). Never add
   per-lamp PointLights — reuse the pool (constant light count = no shader recompiles).
 - Day cycle: `DAY` in config. Every visit starts at the browser's own time and date (#95; `&time` /
   `&month` / `&day` override, `&month` alone = the 15th); the date rolls over at midnight. The sun
