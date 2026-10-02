@@ -27,7 +27,7 @@ function carGeometry() {
 }
 
 /** One bike along +x: [frame, tyres]. */
-function bikeGeometry() {
+export function bikeGeometry() {
   const tube = (ax, ay, bx, by) => { const l = Math.hypot(bx - ax, by - ay); return new THREE.CylinderGeometry(0.015, 0.015, l, 5).rotateZ(Math.atan2(ax - bx, by - ay)).translate((ax + bx) / 2, (ay + by) / 2, 0); };
   const frame = merge([tube(-0.5, 0.34, -0.05, 0.36), tube(-0.05, 0.36, 0.42, 0.34), tube(-0.05, 0.36, -0.12, 0.72), tube(-0.12, 0.72, 0.36, 0.78), tube(0.36, 0.78, 0.42, 0.34),
     tube(-0.5, 0.34, -0.12, 0.72), tube(0.36, 0.78, 0.33, 0.98), box(0.04, 0.02, 0.48, 0.33, 0.98, 0), box(0.22, 0.04, 0.08, -0.14, 0.76, 0)]);

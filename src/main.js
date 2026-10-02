@@ -44,6 +44,7 @@ import { setupInstall } from './install.js';
 import { Marks } from './marks.js';
 import { Target } from './target.js';
 import { Car } from './car.js';
+import { People } from './people.js';
 import { Posters, HeldDrawing, paperOnly } from './posters.js';
 import { PaperBalls } from './paperball.js';
 
@@ -278,6 +279,8 @@ scene.add(cat.object);
 const target = new Target(); // the Nerf target on the lawn (#99)
 const car = new Car(); // our Renault, called by the key in the hall (#173)
 scene.add(car.object);
+const people = new People(); // walkers, cyclists, kids, neighbours (#114)
+scene.add(people.object);
 if (params0.has('car')) car.park(); // &car: parked out front (screenshots)
 { const moving = world.movingSegments; world.movingSegments = (lvl) => [...moving(lvl), ...(lvl === 0 ? car.segments() : [])]; } // parked: in the way
 scene.add(target.object); // up only while something that can hit it is in the hand (#144, #179, step)
@@ -918,6 +921,7 @@ function step(dt) {
   sonos.update(player.level, (p) => behindWall(p)); // music: schedule ahead, walls muffle (#187)
   world.windowLights.update(day.hour, 1 - day.daylight);
   car.update(dt, day.daylight < 0.35, player);
+  people.update(dt, day.daylight, day.month, player);
   cat.update(dt);
   measure.update(dt, window.innerWidth, window.innerHeight);
   if (active() && reading) updateFocus();

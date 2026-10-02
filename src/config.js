@@ -346,6 +346,30 @@ export const SHELF_HEIGHT = 2.0; // unlabelled shelving in the upstairs Klk
 export const START = { x: 2.875, z: -12, yawDeg: 180, pitchDeg: 8 };
 // Walkable area outside: in front of the north façade (x range, back to z0), our patio and, through
 // the gap in the hedge (SW corner), the lawn behind the row of patios up to z1 (#52).
+// People in the area (#114, src/people.js; Peab's renders docs/peab-innergard-ost.png, peab-radhusrad-innergard.png):
+// walkers going to and fro on the paths (x0, z0 → x1, z1 at speed m/s), cyclists on Sankt Lars väg, kids passing a
+// ball, people on the benches, someone lying on a blanket, neighbours on the loftgång. Daytime only (daylight above
+// `day`); the blanket only outside the snow months. Positions and colours are ours.
+export const PEOPLE = {
+  day: 0.3,
+  walkers: [
+    { a: [-80, -22.7], b: [18, -22.7], speed: 1.3, dog: true }, { a: [15, -22.9], b: [-60, -22.9], speed: 1.15 },
+    { a: [-46, -2.2], b: [15, -2.2], speed: 1.2 }, { a: [-48, 31], b: [10, 31], speed: 1.25 }, { a: [8, 30.8], b: [-40, 30.8], speed: 1.0, kid: true },
+    { a: [-44, 18.9], b: [10, 18.9], speed: 1.1 }, { a: [-48.7, 9], b: [-48.7, 49], speed: 1.3 },
+  ],
+  cyclists: [{ a: [-90, -26.4], b: [20, -26.4], speed: 4.5 }, { a: [20, -27.8], b: [-90, -27.8], speed: 5.2 }],
+  ball: [[-35.5, 20.6], [-30.5, 22.2]],          // two kids passing a ball (on the gravel by the sandbox)
+  sandbox: [[-25.2, 25.2], [-23.8, 26.4]],         // kids sitting in the sandbox
+  benches: [{ x: -6, z: 29.4, yaw: 0 }, { x: -32, z: 25, yaw: -90 }],
+  blanket: { x: -9.5, z: 28.3 },
+  loftgang: [[-30.5, 1.0], [-9.2, 1.1]],          // neighbours standing on the loftgång (våning 3)
+  bellNear: 12,                                    // m: a cyclist rings the bell passing this close
+  shirts: [0x2f5d8a, 0xc0392b, 0xe7d9b8, 0x3e7b4f, 0xf2f2f0, 0x7d4a8c, 0xe08a2a, 0x1f2a36, 0x9bb7d4, 0xd4577a],
+  pants: [0x23324a, 0x2b2b2b, 0x6b5844, 0x8a8f96, 0x384b6b, 0xc8bfa8],
+  skin: [0xf1c9a5, 0xe0ac86, 0xc68a62, 0x8d5a3b, 0xf6d8bf],
+  hair: [0x2a1d14, 0x5a3a22, 0xc89b52, 0x1a1a1a, 0x8a5a32, 0xd8c7a0],
+};
+
 export const OUTDOOR = { x0: -46, x1: 17.75, z0: -14, z1: 29.5 }; // behind Hus L: the patios and the Borggården (#80)
 
 // The lightsaber in Sovrum 2 (#78, src/saber.js): two hooks on the west wall (north of the gaming desk)

@@ -438,6 +438,12 @@ export const sfx = {
     tone(t + 0.15, 0.2, d, { type: 'triangle', from: 140, to: 95, gain: 0.04 });
   },
     /** PC fans: a soft steady whoosh until stop(). */
+  /** A bicycle bell (#114): two quick metallic dings. */
+  bell(pos) {
+    if (!ready()) return;
+    const t = ctx.currentTime, d = out(pos, 0.7);
+    for (const k of [0, 0.16]) { tone(t + k, 0.5, d, { from: 2350, gain: 0.12 }); tone(t + k, 0.35, d, { from: 3520, gain: 0.05 }); }
+  },
   /** An electric car going by (#173): a soft rising whine + tyre noise; move(pos, speed) each frame, stop(). */
   evHum(pos) {
     if (!ready()) return null;
