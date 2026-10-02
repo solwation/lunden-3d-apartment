@@ -3,7 +3,7 @@ import { sfx } from './audio.js';
 import { mergeStatic } from './merge.js';
 import { restTarget } from './rest.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
-import { FURNITURE, LANDSKRONA as L, LEVELS, SKANSNAS, IDANAS, OTTOMAN } from './config.js';
+import { FURNITURE, LANDSKRONA as L, LEVELS, SKANSNAS, IDANAS, OTTOMAN, SYMFONISK } from './config.js';
 import { loungesofa, loungetable, parasol, planter } from './patio.js';
 import { Screen } from './screens.js';
 import { lampMat, addLampGlow } from './interior.js';
@@ -1056,6 +1056,43 @@ function worklamp(item, lights) {
   return g;
 }
 
+/** IKEA SYMFONISK (#186): a bookshelf speaker (standing, or `lying`), or the table lamp speaker with a frosted glass
+ * shade. Faces local +z. The lamp's glass is its own lamp (lights.js FloorLamp: E toggles it, a pool light). */
+function symfonisk(item, lights) {
+  const g = new THREE.Group(), S = SYMFONISK, col = S.colors[item.color] ?? S.colors.white;
+  const fabric = new THREE.MeshStandardMaterial({ color: col, roughness: 0.95 });
+  const shell = new THREE.MeshStandardMaterial({ color: col, roughness: 0.5 });
+  const dark = item.color === 'black';
+  const btnMat = new THREE.MeshStandardMaterial({ color: dark ? 0x3a3b3e : 0xc9c9c4, roughness: 0.4 });
+  const add = (m, x, y, z) => { m.position.set(x, y, z); m.castShadow = true; g.add(m); return m; };
+  if (item.kind === 'lamp') {
+    const L = S.lamp;
+    add(new THREE.Mesh(new THREE.CylinderGeometry(L.baseR, L.baseR, L.baseH, 32), fabric), 0, L.baseH / 2, 0);
+    add(new THREE.Mesh(new THREE.CylinderGeometry(L.baseR - 0.004, L.baseR, 0.008, 32), shell), 0, L.baseH + 0.004, 0); // the top plate
+    for (const [i, dx] of [-0.018, 0, 0.018].entries()) add(new THREE.Mesh(new THREE.CylinderGeometry(i === 1 ? 0.007 : 0.005, i === 1 ? 0.007 : 0.005, 0.003, 12), btnMat), dx, L.baseH + 0.009, L.baseR - 0.025);
+    add(new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.014, L.stem, 12), shell), 0, L.baseH + 0.008 + L.stem / 2, 0);
+    const glass = new THREE.MeshStandardMaterial({ color: 0xf4f2ee, roughness: 0.55, emissive: 0xffe0b0, emissiveIntensity: 0.04 });
+    const R = L.shadeR, H = L.shadeH; // a soft dome, open below round the stem
+    const dome = new THREE.LatheGeometry([[0.02, 0], [R * 0.9, 0.012], [R, 0.04], [R * 0.95, H * 0.62], [R * 0.66, H * 0.9], [0, H]].map(([x, y]) => new THREE.Vector2(x, y)), 40);
+    const y0 = L.baseH + 0.008 + L.stem;
+    add(new THREE.Mesh(dome, glass), 0, y0, 0);
+    lights.push({ object: g, shade: glass, height: y0 + H * 0.5, level: item.level, name: 'lampan' });
+  } else {
+    const { w, d, h } = S.speaker;
+    const [W, Hh, D] = item.lying ? [h, w, d] : [w, h, d]; // lying on its side: 31 wide, 15 high, still 10 deep
+    add(rbox(W, Hh, D - 0.006, 0, 0, 0, shell, 0.008), 0, Hh / 2, -0.003);
+    add(rbox(W - 0.004, Hh - 0.004, 0.008, 0, 0, 0, fabric, 0.004), 0, Hh / 2, D / 2 - 0.004); // the fabric front
+    // play/pause and volume ± on top towards the back, a small white status light
+    const top = Hh + 0.0015, by = -D / 2 + 0.03;
+    [-0.022, 0, 0.022].forEach((dx, i) => add(new THREE.Mesh(new THREE.CylinderGeometry(i === 1 ? 0.007 : 0.005, i === 1 ? 0.007 : 0.005, 0.003, 12), btnMat), dx, top, by));
+    add(new THREE.Mesh(new THREE.SphereGeometry(0.0025, 8, 6), new THREE.MeshBasicMaterial({ color: 0xf6f6f2 })), 0.04, top, by);
+  }
+  g.position.y = item.y ?? 0;
+  g.userData.footprint = [];
+  g.userData.symfonisk = `${item.kind} ${item.color}`; // (tests find them by this)
+  return g;
+}
+
 const nearBlack = new THREE.MeshStandardMaterial({ color: 0x161719, roughness: 0.45 });
 const neon = 0x44ff66;
 
@@ -1962,7 +1999,7 @@ function besta(item) {
   return g;
 }
 
-const BUILDERS = { secretary, winerack, besta, painting, palm, sofa, armchair, ottoman, floorlamp, sidetable, coffeetable, loungesofa, loungetable, parasol, planter, bed, skansnasTable, skansnasChair, bunk, daybed, rug, ragrund, coatrack, shoerack, byas, tv, nordkisa, worklamp, gamingdesk, gamingchair, nordli, alex, kidchair };
+const BUILDERS = { secretary, winerack, besta, painting, palm, sofa, armchair, ottoman, floorlamp, sidetable, coffeetable, loungesofa, loungetable, parasol, planter, bed, skansnasTable, skansnasChair, bunk, daybed, rug, ragrund, coatrack, shoerack, byas, tv, nordkisa, worklamp, symfonisk, gamingdesk, gamingchair, nordli, alex, kidchair };
 
 /** An invisible thin box over a table top (raycast target for putting a cup down, #90). Local rect. */
 export function surfaceBox(r, list) {

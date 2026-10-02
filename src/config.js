@@ -89,6 +89,7 @@ export const WINDOWS = [
 export const SILL_PLANTS = {
   kinds: ['pelargon', 'orchid', 'violet', 'cactus', 'ivy', 'basil'],
   byWindow: [['basil', 'pelargon', 'basil'], ['orchid', 'ivy', 'pelargon'], ['violet', 'cactus'], ['orchid', 'pelargon', 'ivy'], ['violet', 'pelargon', 'cactus'], ['cactus', 'ivy']],
+  skip: [[1, 2]], // [sill, pot]: no pot there (the SYMFONISK lamp stands in its place on the window board behind the sofa, #186)
   colors: { pelargon: 0xd8283a, orchid: [0xf7f2f5, 0xe58fc4], cactus: 0xff6fa8, violet: 0x7b3fb5 },
 };
 
@@ -698,6 +699,16 @@ export const OTTOMAN = {
   color: 0x5c2c38, welt: 0x4a222c, legColor: 0x2a1f1a,
 };
 
+// IKEA SYMFONISK speakers (#186). Bookshelf speaker: ikea.com gives ~15 × 10 × 31 cm (w × d × h standing; lying it
+// is 31 × 15 × 10 with the fabric front still facing out — we use these, the exact numbers are guesses). The table
+// lamp speaker gen 2 with the glass shade: a fabric speaker base Ø 15 × 20 cm, a short stem, a frosted glass dome
+// Ø 20 cm, ~40 cm in all (guesses from ikea.com photos). Fabric colours by name.
+export const SYMFONISK = {
+  speaker: { w: 0.15, d: 0.1, h: 0.31 },
+  lamp: { baseR: 0.075, baseH: 0.2, stem: 0.04, shadeR: 0.1, shadeH: 0.16 },
+  colors: { white: 0xe8e8e4, black: 0x1f2022 },
+};
+
 export const LANDSKRONA = {
   fabric: 0xa7b39a, // Gunnared ljusgrön
   oak: 0xc9a67a,
@@ -801,6 +812,12 @@ export const FURNITURE = [
   // anthracite pedestal; depth, stand size and the ~78 cm total height are guesses. E switches it on: a
   // slowly moving colourful demo picture (canvas, ~12 fps) and an Ambilight glow on the wall behind.
   { type: 'tv', level: 0, x: 4.25, z: 7.8 + 0.2, y: 0.45, rot: 180, w: 1.23, h: 0.715, fps: 12 },
+  // IKEA SYMFONISK (Sonos) speakers (#186, SYMFONISK below): the black bookshelf speaker lies on the TV bench beside
+  // the TV's foot, the white one stands on the worktop at the south end of the kitchen run (clear of the Moccamaster,
+  // the cups and the hob), the lamp speaker (frosted glass shade) stands on the window board behind the sofa
+  { type: 'symfonisk', kind: 'speaker', color: 'black', lying: true, level: 0, x: 4.86, z: 8.0, y: 0.45, rot: 180 },
+  { type: 'symfonisk', kind: 'speaker', color: 'white', level: 0, x: 5.42, z: 4.62, y: 0.934, rot: 90 },
+  { type: 'symfonisk', kind: 'lamp', color: 'white', level: 0, x: 4.55, z: 12.3, y: 0.6, rot: 0 },
   // big rug under the sofa's front legs and the coffee table (#55): 300 × 200 × 1.2 cm (size and
   // colours are our pick), light oatmeal with a soft weave and a thin border; no collision
   // Sarah's rug (#171, docs/matta-vardagsrum-sarah.jpg): dark olive with off-white stripes (~2 cm white, 4 cm green)

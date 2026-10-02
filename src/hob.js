@@ -53,7 +53,7 @@ export class Hob {
     this.object.position.set(x0, y, z);
     const body = new THREE.Mesh(new THREE.BoxGeometry(d, H.t, w), new THREE.MeshStandardMaterial({ color: 0x111112, roughness: 0.3 }));
     body.position.set(d / 2, H.t / 2, 0);
-    const top = new THREE.Mesh(new THREE.PlaneGeometry(d, w), new THREE.MeshStandardMaterial({ map: glassTexture(H.zones), roughness: 0.12, metalness: 0.1 }));
+    const top = new THREE.Mesh(new THREE.PlaneGeometry(d, w), new THREE.MeshStandardMaterial({ map: glassTexture(H.zones), roughness: 0.25, metalness: 0.1 }));
     top.rotation.x = -Math.PI / 2; // u along +x (front → back), v along −z: canvas x = a, canvas y = b
     top.position.set(d / 2, H.t + 0.0004, 0);
     top.receiveShadow = true;

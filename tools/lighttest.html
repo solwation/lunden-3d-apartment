@@ -27,10 +27,13 @@ f.onload = async () => {
   for (const t of taps) {
     (t.object ?? t.pickable).updateMatrixWorld(true);
     // stand 0.7 m from the pick target, on the side facing the room, and look at it
-    const target = t.pickable.getWorldPosition(t.pickable.position.clone());
+    // the SYMFONISK lamp (#186): aim at its glass (its origin is at its foot on the window board)
+    const target = t.kind === 'lamp' && t.name === 'lampan' ? t.room.lamps[0].pos.clone() : t.pickable.getWorldPosition(t.pickable.position.clone());
     const level = target.y > 3 ? 1 : 0;
     const floorY = level ? 3.25 : 0;
-    const want = w.__app.world.roomMaps[level].at(target.x, target.z);
+    const ring = [...Array(16)].map((_, a) => [target.x + Math.sin((a / 16) * Math.PI * 2) * 0.7, target.z + Math.cos((a / 16) * Math.PI * 2) * 0.7]);
+    // on a window board the target is outside the room map: the room in front of it
+    const want = w.__app.world.roomMaps[level].at(target.x, target.z) ?? ring.map(([x, z]) => w.__app.world.roomMaps[level].exact(x, z)).find(Boolean);
     let best = null;
     for (let a = 0; a < 16; a++) {
       const ang = (a / 16) * Math.PI * 2, x = target.x + Math.sin(ang) * 0.7, z = target.z + Math.cos(ang) * 0.7;
@@ -54,6 +57,14 @@ f.onload = async () => {
     pass &&= ok;
     lines.push(`${ok ? 'PASS' : 'FAIL'} ${t.name} @ (${target.x.toFixed(2)}, ${target.y.toFixed(2)}, ${target.z.toFixed(2)}) button "${label}" (${t.room.name ?? ''}) on=${on} off=${off}`);
   }
+  // the three SYMFONISK speakers (#186): the white one in the kitchen, the black one on the TV bench, the lamp on
+  // the window board behind the sofa
+  const sym = {};
+  w.__app.scene.traverse((o) => { if (o.userData.symfonisk) sym[o.userData.symfonisk] = o.getWorldPosition(o.position.clone()); });
+  const roomOf = (p) => p && [[0, 0], [0, 0.4], [0, -0.4], [-0.4, 0]].map(([dx, dz]) => w.__app.world.roomMaps[0].at(p.x + dx, p.z + dz)).find(Boolean);
+  const symOk = roomOf(sym['speaker white']) === 'Kök / matplats' && roomOf(sym['speaker black']) === 'Vardagsrum' && sym['lamp white']?.z > 12.2;
+  pass &&= symOk;
+  lines.push(`${symOk ? 'PASS' : 'FAIL'} SYMFONISK: ${Object.entries(sym).map(([k, p]) => `${k} (${p.x.toFixed(2)}, ${p.z.toFixed(2)}) ${roomOf(p)}`).join(', ')}`);
   // no ceiling lamp hangs in the stair opening (#88): Entréplan lamps outside STAIR.hole
   {
     const { STAIR } = await import('../src/config.js');

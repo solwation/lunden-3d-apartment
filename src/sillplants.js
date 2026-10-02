@@ -75,6 +75,7 @@ export function buildSillPlants(sills) {
     for (let k = 0; k < n; k++) {
       const x = s.x0 + (L * (k + 0.5)) / n + (R() - 0.5) * 0.1, kind = kinds[(k + i) % kinds.length];
       const r = 0.05 + R() * 0.02, h = 0.09 + R() * 0.04, mat = (k + i) % 2 ? 'ceramic' : 'terracotta';
+      if (S.skip?.some(([si, sk]) => si === i && sk === k)) continue; // something else stands there (after the random draws: the others stay put)
       out[mat].push(strip(new THREE.CylinderGeometry(r, r * 0.78, h, 16).translate(x, s.y + h / 2, zc)));
       out[mat].push(strip(new THREE.TorusGeometry(r - 0.004, 0.006, 5, 16).rotateX(Math.PI / 2).translate(x, s.y + h, zc)));
       out.soil.push(strip(new THREE.CircleGeometry(r - 0.008, 12).rotateX(-Math.PI / 2).translate(x, s.y + h - 0.015, zc)));
