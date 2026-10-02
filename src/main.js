@@ -4,7 +4,7 @@ const DRAWING_COLORS = DRAWING.colors;
 import { buildWorld } from './world.js';
 import { Player } from './player.js';
 import { setupTouch } from './touch.js';
-import { watchForUpdates } from './version.js';
+import { watchForUpdates, BUILD } from './version.js';
 import { CatSpawner, VARIANTS, BREEDS } from './cat.js';
 import { initAudio, sfx, toggleMuted, isMuted, updateListener } from './audio.js';
 import { stairHeight } from './stairs.js';
@@ -18,7 +18,7 @@ import { WallClock, ClockPanel } from './wallclock.js';
 import { Patio, buildStringLights } from './patio.js';
 import { updateReflections, reflectors } from './reflections.js';
 import { applySeason } from './seasons.js';
-import { saveResume, takeResume } from './resume.js';
+import { saveResume, saveSession, takeResume } from './resume.js';
 import { Rest, chooseSpot } from './rest.js';
 import { Saber } from './saber.js';
 import { buildToys } from './toys.js';
@@ -483,7 +483,9 @@ function look(dyaw, dpitch) {
   rest.clampLook(camera); // sitting / lying: only so far
 }
 
+let played = false; // left the start screen at least once this visit (an F5 then carries on, #203)
 function showOverlay(show) {
+  if (!show) played = true;
   overlay.hidden = !show;
   hud.hidden = show;
   document.body.classList.toggle('touch', touch.enabled);
@@ -1044,10 +1046,17 @@ function onTap(el, fn) {
   el.addEventListener('click', () => { if (!done) fn(); done = false; });
 }
 // reload to a fresh URL, so neither the browser's nor GitHub Pages' cache hands back the old page
+/** Where the visitor is, for a reload: place, view, mute, mode (none = still on the first start screen), the build. */
+const placeNow = () => ({ x: player.pos.x, z: player.pos.z, feetY: player.pos.y, yaw: camera.rotation.y, pitch: camera.rotation.x,
+  hour: day.hour, month: day.month, muted: isMuted(), fullscreen: !!document.fullscreenElement, build: BUILD,
+  mode: locked ? 'mouse' : touch.enabled ? 'touch' : (!armEl.hidden || played) ? 'mouse' : undefined });
+// F5 carries on (#203): the place goes to this tab's sessionStorage every 2 s and when the page goes away
+const keepSession = () => { if (played) saveSession(placeNow()); };
+setInterval(keepSession, 2000);
+window.addEventListener('pagehide', keepSession);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') keepSession(); });
 onTap(document.getElementById('update-reload'), () => {
-  saveResume({ x: player.pos.x, z: player.pos.z, feetY: player.pos.y, yaw: camera.rotation.y, pitch: camera.rotation.x,
-    hour: day.hour, month: day.month, muted: isMuted(), fullscreen: !!document.fullscreenElement,
-    mode: locked ? 'mouse' : touch.enabled ? 'touch' : (!armEl.hidden ? 'mouse' : undefined) }); // no mode: on the start screen
+  saveResume({ ...placeNow(), build: null }); // a new version for sure
   const url = new URL(location.href);
   url.searchParams.set('v', latestVersion ?? Date.now());
   location.replace(url.href);
@@ -1058,10 +1067,12 @@ watchForUpdates(showUpdate);
 
 // After "Ladda om" mid-visit (#181): no start screen. Touch plays at once (sound and fullscreen wait for the
 // first touch: they need a gesture); mouse & keyboard gets the "Klicka för att fortsätta" cover (pointer lock
-// needs a click). A short "Omladdning klar" fades out at the top. F5 / a new visit find no record.
+// needs a click). A short "Ny version laddad" fades out at the top. F5 carries on the same way from the tab's running
+// record (#203), with the note only when the build changed; a new visit finds no record.
 const reloadedEl = document.getElementById('reloaded');
-const RELOAD_NOTE_S = 3; // seconds the "Omladdning klar" note stays before it fades
+const RELOAD_NOTE_S = 3; // seconds the "Ny version laddad" note stays before it fades
 function continueAfterReload(r) {
+  played = true;
   if (r.muted && !isMuted()) updateMute(toggleMuted());
   if (r.mode === 'touch') {
     touch.enabled = true;
@@ -1074,6 +1085,7 @@ function continueAfterReload(r) {
     overlay.hidden = true;
     armEl.hidden = false; // the next click takes the mouse (pointer lock needs a gesture)
   }
+  if (r.build === BUILD) return; // F5 on the same version: straight back in, no note (#203)
   reloadedEl.hidden = false;
   reloadedEl.classList.remove('gone');
   setTimeout(() => reloadedEl.classList.add('gone'), RELOAD_NOTE_S * 1000);

@@ -44,9 +44,11 @@ when it differs from `BUILD`. Its buttons react to a lifted touch as well as a c
 #41), and "Ladda om" navigates to `?v=<new SHA>` so no cache serves the old page
 (`tools/updatetest.html`). That button stores a one-time record (`src/resume.js`: position, level, view,
 clock, input mode, mute, fullscreen; sessionStorage + localStorage, < 2 min) which the next load reads, deletes and resumes from (the place only — the clock and the calendar always
-start at the real time and date, #143; not with `?at=`; a spot inside a wall falls back to START); F5 finds none and starts at START.
+start at the real time and date, #143; not with `?at=`; a spot inside a wall falls back to START); F5 uses the running record below (a new tab starts at START).
 A record made mid-visit skips the start screen (#181, `continueAfterReload`): touch plays at once (sound/fullscreen on the
-first touch), mouse & keyboard gets the see-through `#arm` (the next click takes the mouse, #190); "Omladdning klar" fades out at the top after 3 s.
+first touch), mouse & keyboard gets the see-through `#arm` (the next click takes the mouse, #190); "Ny version laddad" fades out at the top after 3 s.
+F5 (#203): while visiting, the place (+ view, mode, mute, `BUILD`) is written to this tab's sessionStorage every 2 s and on
+`pagehide` (`saveSession`), so an F5 carries on the same way — the note only if the build changed; a new tab starts as usual.
 A record made on the start screen (no mode) shows it with "Du fortsätter där du var" + "Börja från start". The start screen
 always offers "Gå till startplatsen" (both also set the clock and calendar back to now, `realNow`)
 (`tools/reloadtest.html`). Locally `BUILD = 'dev'` and no checks run. Keep imports
