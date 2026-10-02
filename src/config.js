@@ -577,7 +577,8 @@ export const FURNITURE = [
   // sage green with a dense chintz of coral and pink peonies, ochre, slate-blue leaves and grey-green
   // stems, white outlines (colours read off the photo); a pink cushion and a light grey throw to go with it
   { type: 'bed', level: 1, x: 5.55 - 1.1, z: 2.3, rot: 90, w: 1.6, l: 2.0,
-    bedding: { pattern: 'chintz', ground: '#adc2b1', repeat: 0.9, // blooms ~8–15 cm flowers: ['#d0696b', '#c9505a', '#e9b7bd', '#d4b45a'],
+    // repeat = metres per texture tile (blooms ~8–15 cm)
+    bedding: { pattern: 'chintz', ground: '#adc2b1', repeat: 0.9, flowers: ['#d0696b', '#c9505a', '#e9b7bd', '#d4b45a'],
       leaves: ['#6f7b86', '#8a96a0', '#7f9a83'], throw: 0xdcdcd8, cushion: 0xe2a3ab } },
   // Bunks: long side against the side wall, head end against the façade (the user's wish);
   // the ladder ends up on the room side at the foot end.
