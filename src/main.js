@@ -452,6 +452,7 @@ const resumeOk = !!resumed && !at && resumeAt(resumed); // the place only: the c
 // reloaded mid-visit (#181): no start screen, straight back in (see `continueAfterReload` below); a record made
 // on the start screen (no mode) shows it with "Du fortsätter där du var" as before
 if (resumeOk && !resumed.mode) resumeEl.hidden = false;
+if (!(resumeOk && resumed.mode)) document.documentElement.classList.remove('resuming'); // no (good) record after all: the start screen (#222)
 /** Back to the real time and date (#143): the wall clock and the cat calendar show now, not what was spooled or picked. */
 function realNow() {
   const n = new Date();
@@ -1217,6 +1218,7 @@ function continueAfterReload(r) {
   setTimeout(() => { reloadedEl.hidden = true; }, RELOAD_NOTE_S * 1000 + 700);
 }
 if (resumeOk && resumed.mode) continueAfterReload(resumed);
+document.documentElement.classList.remove('resuming'); // the page is ready: off with the "Laddar…" cover (#222)
 
 // handle for tests/debugging (tools/touchtest.html)
 window.__app = { hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };

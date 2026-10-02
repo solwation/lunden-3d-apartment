@@ -2,6 +2,16 @@
 <html lang="sv">
 <head>
   <meta charset="utf-8">
+  <script>
+    // Carrying on after a reload (#222: "Ladda om", the automatic reload, F5)? Decided before anything is drawn, so
+    // the start screen never flashes up: a valid record with an input mode sets html.resuming (the start screen is
+    // hidden, a dark "Laddar…" covers the page) until main.js has read it (resume.js) — or found it wanting.
+    try {
+      const ok = (raw, age) => { if (!raw) return false; const r = JSON.parse(raw); return !!r.mode && Date.now() - r.ts < age; };
+      const once = sessionStorage.getItem('lunden.resume') ?? localStorage.getItem('lunden.resume');
+      if (!/[?&]at=/.test(location.search) && (once ? ok(once, 120000) : ok(sessionStorage.getItem('lunden.session'), 43200000))) document.documentElement.classList.add('resuming');
+    } catch { /* storage blocked: the start screen as usual */ }
+  </script>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
   <title>Kv. Lunden L1007</title>
   <meta name="description" content="Gå runt i lägenhet L1007, Kv. Lunden, i 3D.">
@@ -63,6 +73,8 @@
     #start-go { display: none; }
     body.phone .keys, body.phone #start-mouse, body.phone #start-touch { display: none; }
     body.phone #start-go { display: block; }
+    html.resuming #overlay { display: none !important; }
+    html.resuming body::after { content: 'Laddar…'; position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; background: #14232d; color: rgba(255,255,255,.7); font: 500 14px system-ui, sans-serif; }
     .card .qr { display: flex; align-items: center; gap: 10px; margin: 12px 0 0; font-size: 12px; opacity: .85; }
     .card .qr img { width: 111px; height: 111px; border-radius: 4px; image-rendering: pixelated; }
     body.phone .card .qr { display: none; } /* already on a phone (#193) */

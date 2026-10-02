@@ -51,6 +51,8 @@ A record made mid-visit skips the start screen (#181, `continueAfterReload`): to
 first touch), mouse & keyboard gets the see-through `#arm` (the next click takes the mouse, #190); "Ny version laddad" fades out at the top after 3 s.
 F5 (#203): while visiting, the place (+ view, mode, mute, `BUILD`) is written to this tab's sessionStorage every 2 s and on
 `pagehide` (`saveSession`), so an F5 carries on the same way — the note only if the build changed; a new tab starts as usual.
+An inline script in index.html's <head> sees a valid record with a mode before anything is drawn and sets
+`html.resuming` (start screen hidden, a dark "Laddar…" cover) until main.js has resumed — or drops it on a bad record (#222).
 A record made on the start screen (no mode) shows it with "Du fortsätter där du var" + "Börja från start". The start screen
 always offers "Gå till startplatsen" (both also set the clock and calendar back to now, `realNow`)
 (`tools/reloadtest.html`). Locally `BUILD = 'dev'` and no checks run. Keep imports

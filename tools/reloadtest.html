@@ -93,6 +93,27 @@ const KEY = 'lunden.resume', SESSION = 'lunden.session';
   d = f.contentDocument;
   pass &= check(!d.getElementById('reloaded').hidden && /Ny version laddad/.test(d.getElementById('reloaded').textContent), `F5 onto a new version: "${d.getElementById('reloaded').textContent}"`);
   f.remove();
+  // (8) #222: with a record the start screen never shows, not even while the page loads; without, or with a bad
+  // record, it does
+  const early = async () => { // the start screen's visibility from the first moment the iframe has a body
+    const f2 = document.createElement('iframe'); f2.width = 900; f2.height = 600; f2.src = '../index.html'; document.body.append(f2);
+    let first = null;
+    for (let i = 0; i < 4000 && first === null; i++) { const d2 = f2.contentDocument, o = d2?.getElementById('overlay'); if (o && d2.location.href !== 'about:blank') first = getComputedStyle(o).display !== 'none' && !d2.documentElement.classList.contains('resuming'); else await wait(2); }
+    while (!f2.contentWindow.__app) await wait(50);
+    const after = !f2.contentDocument.getElementById('overlay').hidden && !f2.contentDocument.documentElement.classList.contains('resuming');
+    f2.remove();
+    return { first, after };
+  };
+  sessionStorage.removeItem(SESSION); localStorage.removeItem(KEY);
+  sessionStorage.setItem(KEY, JSON.stringify({ ...rec, mode: 'touch', ts: Date.now() }));
+  let e = await early();
+  pass &= check(e.first === false && e.after === false, `a reload record: no start screen from the first frame (first ${e.first}, after ${e.after})`);
+  sessionStorage.setItem(KEY, JSON.stringify({ ...rec, x: 2.65, z: 3.0, mode: 'touch', ts: Date.now() })); // inside a wall
+  e = await early();
+  pass &= check(e.after === true, `a bad record: the start screen after all (${e.after})`);
+  sessionStorage.removeItem(SESSION);
+  e = await early();
+  pass &= check(e.first === true && e.after === true, `no record: the start screen from the start (first ${e.first})`);
   sessionStorage.removeItem(SESSION);
   out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
 })();
