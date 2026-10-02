@@ -404,9 +404,9 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   Opposite the sofa (the wall with the stair behind it): IKEA BYÅS TV bench 160 × 42 × 45, high-gloss
   white (#67), east of the living-room door, with the TV on it (#68: Philips 55", E toggles; an animated
   canvas picture ~12 fps + an additive Ambilight glow; furniture E targets are `world.furnitureTargets`).
-  IKEA SYMFONISK speakers (#186, `SYMFONISK`, FURNITURE `symfonisk`): the black bookshelf speaker lies on the TV bench,
+  IKEA SYMFONISK speakers (#186, `SYMFONISK`, FURNITURE `symfonisk`): the black bookshelf speaker stands in Sovrum 1's window (#201; it lay on the TV bench),
   the white one stands at the south end of the kitchen worktop, the lamp speaker (frosted glass, its own lamp: E
-  toggles it) on the window board behind the sofa, where a sill pot is skipped (`SILL_PLANTS.skip`).
+  toggles it) on the window board behind the sofa, where a sill pot is skipped (`SILL_PLANTS.skip`, also for the black one).
 - Patio (user's wish): Plantagen Hörngrupp Oslo antracit (corner sofa 198 + 186 × 72 × 76, table
   120 × 60 × 40) with its back to the hedge and the east screen wall, a parasol (up Apr–Sep while
   the sun is up), two big planters (palm by the patio door, agave in the SE corner; the banana that blocked the

@@ -72,9 +72,10 @@ f.onload = async () => {
   await wait(400);
   pass &= check(!sonos.playing && sonos.gain === 0 && !sonos.ch, 'paused: the mix down, nothing composing');
   panel.querySelector('[data-act=play]').click();
-  // upstairs it is softer
+  // upstairs the ones downstairs are softer; the one in Sovrum 1 is up there
   player.spawn(2.9, 6.3, 0); player.pos.y = 3.25; player.eyeY = 3.25 + 1.62; for (let i = 0; i < 20; i++) step(0.1);
-  pass &= check(player.level === 1 && bus.outs.every((o) => o.k < 0.5), `upstairs: the speakers are muffled (${bus.outs.map((o) => o.k.toFixed(2))})`);
+  const up = (o) => o.level === 1; // the black one in Sovrum 1 (#201)
+  pass &= check(player.level === 1 && bus.outs.some(up) && bus.outs.every((o) => (up(o) ? o.k > 0.5 : o.k < 0.5)), `upstairs: the speakers below are muffled, the one in Sovrum 1 is not (${bus.outs.map((o) => `${o.level}:${o.k.toFixed(2)}`)})`);
   // F: music off, speakers hidden
   toggleFurniture();
   pass &= check(!sonos.playing && panel.hidden && !world.furnitureOn, 'F stops the music');

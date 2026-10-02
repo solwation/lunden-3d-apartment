@@ -57,12 +57,12 @@ f.onload = async () => {
     pass &&= ok;
     lines.push(`${ok ? 'PASS' : 'FAIL'} ${t.name} @ (${target.x.toFixed(2)}, ${target.y.toFixed(2)}, ${target.z.toFixed(2)}) button "${label}" (${t.room.name ?? ''}) on=${on} off=${off}`);
   }
-  // the three SYMFONISK speakers (#186): the white one in the kitchen, the black one on the TV bench, the lamp on
+  // the three SYMFONISK speakers (#186): the white one in the kitchen, the black one in Sovrum 1's window (#201), the lamp on
   // the window board behind the sofa
   const sym = {};
   w.__app.scene.traverse((o) => { if (o.userData.symfonisk) sym[o.userData.symfonisk] = o.getWorldPosition(o.position.clone()); });
   const roomOf = (p) => p && [[0, 0], [0, 0.4], [0, -0.4], [-0.4, 0]].map(([dx, dz]) => w.__app.world.roomMaps[0].at(p.x + dx, p.z + dz)).find(Boolean);
-  const symOk = roomOf(sym['speaker white']) === 'Kök / matplats' && roomOf(sym['speaker black']) === 'Vardagsrum' && sym['lamp white']?.z > 12.2;
+  const symOk = roomOf(sym['speaker white']) === 'Kök / matplats' && w.__app.world.roomMaps[1].at(sym['speaker black'].x, sym['speaker black'].z + 0.4) === 'Sovrum 1' && sym['lamp white']?.z > 12.2;
   pass &&= symOk;
   lines.push(`${symOk ? 'PASS' : 'FAIL'} SYMFONISK: ${Object.entries(sym).map(([k, p]) => `${k} (${p.x.toFixed(2)}, ${p.z.toFixed(2)}) ${roomOf(p)}`).join(', ')}`);
   // no ceiling lamp hangs in the stair opening (#88): Entréplan lamps outside STAIR.hole

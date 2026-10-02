@@ -89,7 +89,7 @@ export const WINDOWS = [
 export const SILL_PLANTS = {
   kinds: ['pelargon', 'orchid', 'violet', 'cactus', 'ivy', 'basil'],
   byWindow: [['basil', 'pelargon', 'basil'], ['orchid', 'ivy', 'pelargon'], ['violet', 'cactus'], ['orchid', 'pelargon', 'ivy'], ['violet', 'pelargon', 'cactus'], ['cactus', 'ivy']],
-  skip: [[1, 2]], // [sill, pot]: no pot there (the SYMFONISK lamp stands in its place on the window board behind the sofa, #186)
+  skip: [[1, 2], [3, 1]], // [sill, pot]: no pot there (the SYMFONISK lamp on the window board behind the sofa, #186; the black speaker in Sovrum 1's window, #201)
   colors: { pelargon: 0xd8283a, orchid: [0xf7f2f5, 0xe58fc4], cactus: 0xff6fa8, violet: 0x7b3fb5 },
 };
 
@@ -952,10 +952,11 @@ export const FURNITURE = [
   // anthracite pedestal; depth, stand size and the ~78 cm total height are guesses. E switches it on: a
   // slowly moving colourful demo picture (canvas, ~12 fps) and an Ambilight glow on the wall behind.
   { type: 'tv', level: 0, x: 4.25, z: 7.8 + 0.2, y: 0.45, rot: 180, w: 1.23, h: 0.715, fps: 12 },
-  // IKEA SYMFONISK (Sonos) speakers (#186, SYMFONISK below): the black bookshelf speaker lies on the TV bench beside
-  // the TV's foot, the white one stands on the worktop at the south end of the kitchen run (clear of the Moccamaster,
+  // IKEA SYMFONISK (Sonos) speakers (#186, SYMFONISK below): the black bookshelf speaker (once on the TV bench beside
+  // the TV's foot, now in Sovrum 1, #201), the white one stands on the worktop at the south end of the kitchen run (clear of the Moccamaster,
   // the cups and the hob), the lamp speaker (frosted glass shade) stands on the window board behind the sofa
-  { type: 'symfonisk', kind: 'speaker', color: 'black', lying: true, level: 0, x: 4.86, z: 8.0, y: 0.45, rot: 180 },
+  // the black one stands in Sovrum 1's window (#201, the user), in the middle pot's place on the window board (SILL_PLANTS.skip)
+  { type: 'symfonisk', kind: 'speaker', color: 'black', level: 1, x: 3.85, z: 0.32, y: 0.7, rot: 180 },
   { type: 'symfonisk', kind: 'speaker', color: 'white', level: 0, x: 5.42, z: 4.62, y: 0.934, rot: 90 },
   { type: 'symfonisk', kind: 'lamp', color: 'white', level: 0, x: 4.55, z: 12.3, y: 0.6, rot: 0 },
   // big rug under the sofa's front legs and the coffee table (#55): 300 × 200 × 1.2 cm (size and
