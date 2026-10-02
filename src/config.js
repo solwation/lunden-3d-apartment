@@ -55,14 +55,18 @@ export const DOOR_SIGNS = [
   { level: 1, room: 'Sovrum 4', text: 'Tilly', color: '#fde2ee' },
 ];
 
+// Interior doors: standard Swedish 21M leaf (2.1 m). Exterior doors have a glazed transom (överljus)
+// above the leaf, like the windows. Checked (#3) against Peab's render of L1004's living room, same
+// unit type (docs/peab/l1004-vardagsrum-render.jpg, scaled by RH 3.0 m): patio door head ≈ 2.65 m,
+// leaf incl. frame ≈ 2.2 m — within the estimate's error, so the values are kept.
 export const DOOR_HEIGHT = 2.1;
-// Exterior doors have a glazed transom (överljus) above the leaf, like the windows
-// (Peab renders of L1004, same unit type). Head height is estimated from the render.
 export const EXT_DOOR_HEAD = 2.6;
 
 // Windows, matched to the plan by level, façade and centre x (nearest wins).
-// sill = bofakta BH. head = estimated from Peab's renders (guess), kept below the
-// lowered ceiling in the north bedrooms. transom = height of the top light (överljus).
+// sill = bofakta BH. head/transom (height of the top light, överljus) measured (#3) on Peab's render
+// of L1004's living room (docs/peab/l1004-vardagsrum-render.jpg, RH 3.0 m as scale): sill ≈ 0.65,
+// transom bar ≈ 2.15, head ≈ 2.6 m — no floor-to-ceiling glazing towards the patio. Upstairs heads
+// are still estimates, kept below the lowered ceiling in the north bedrooms.
 export const WINDOWS = [
   { level: 0, facade: 'north', x: 3.85, sill: 0.8, head: 2.6, transom: 0.45 }, // Kök/matplats
   { level: 0, facade: 'south', x: 3.85, sill: 0.6, head: 2.6, transom: 0.45 }, // Vardagsrum

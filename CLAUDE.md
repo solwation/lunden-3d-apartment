@@ -188,7 +188,7 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   that are used go into `docs/peab/`.
 - More info: https://peabbostad.se/projekt/skane/kv.-lunden/l1007/
 
-Values marked *guess* in `src/config.js` (slab thickness, window sill/head, soffit depth,
+Values marked *guess* in `src/config.js` (slab thickness, upstairs window heads, soffit depth,
 cabinet heights) should be checked against Peab's material and corrected there — not by
 hard-coding numbers elsewhere.
 
