@@ -4,7 +4,7 @@
 // keep), so the damage is kept small here: CORS only for the site (+ localhost), JPEG/PNG only, size caps, a
 // cap on how many there are, and a per-IP write limit.
 //
-//   GET    /drawings              → [{ id, surface, level, pos, normal, rot, time, updated }]
+//   GET    /drawings              → [{ id, surface, level, pos, normal, rot, time, updated, up? }] (up: on a ceiling)
 //   GET    /drawings/:id          → the image (image/jpeg or image/png)
 //   PUT    /drawings/:id          ← { surface, level, pos, normal, rot, time, updated, image?: data URL }
 //   DELETE /drawings/:id
@@ -59,7 +59,8 @@ const vec = (v) => Array.isArray(v) && v.length === 3 && v.every((x) => num(x, -
 function drawingMeta(id, b) {
   if (!SURFACES.includes(b.surface) || !vec(b.pos) || !vec(b.normal) || !num(b.rot, -1, 1) || !num(b.level ?? 0, 0, 1)
     || !num(b.time, 1e12, 1e13) || !num(b.updated, 1e12, 1e13)) return null;
-  return { id, surface: b.surface, level: b.level ?? 0, pos: b.pos, normal: b.normal, rot: b.rot, time: b.time, updated: b.updated };
+  if (b.up !== undefined && !vec(b.up)) return null;
+  return { id, surface: b.surface, level: b.level ?? 0, pos: b.pos, normal: b.normal, rot: b.rot, time: b.time, updated: b.updated, ...(b.up ? { up: b.up } : {}) };
 }
 
 async function limited(request, env) {

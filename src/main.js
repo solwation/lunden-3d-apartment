@@ -830,7 +830,7 @@ function updateFocus() {
   // holding a drawing: a wall or the fridge/freezer door in front of you is where it can be taped up (#176)
   let posterSpot = null;
   if (item === heldDrawing) {
-    posterSpot = posters.spot(raycaster.ray, player.level, behindWall);
+    posterSpot = posters.spot(raycaster.ray, player.level, behindWall, reach, new THREE.Vector3(0, 1, 0).applyQuaternion(camera.quaternion)); // + under a top bunk, lying in the lower one (#199)
     if (posterSpot && hit && posterSpot.distance > hit.distance + 0.05 && hit.object.userData.door?.kind !== 'fridge' && hit.object.userData.door?.kind !== 'freezer') posterSpot = null;
     if (posterSpot) {
       posterSpot.level = Math.max(0, player.level);

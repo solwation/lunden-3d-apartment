@@ -184,7 +184,9 @@ src/drawing.js         crayon drawing on the paper on the Sovrum 3 desk (DRAWING
 src/posters.js         drawings taped up (#176): HeldDrawing (the sheet in the hand, shares setHeld) and Posters — E on a
                        wall (near a wall outline, or a material with userData.poster) / the fridge or
                        freezer door (child of the door, swings with it) tapes it up if the whole sheet lies flat on one
-                       mesh (9 probes); one plane + canvas texture with tape per poster; max DRAWING.maxPosted; IndexedDB
+                       mesh (9 probes); also the underside of a top bunk (material userData.posterCeiling, #199: facing
+                       down, the picture's top = the viewer's screen-up, rec.up; within REST.reach.lie when lying in the
+                       lower bunk); one plane + canvas texture with tape per poster; max DRAWING.maxPosted; IndexedDB
                        'lunden'/'drawings'
                        E on a poster (kind 'poster') opens #poster-panel (#177, reading mode): Släng (S) / Ta ner (T) /
                        Stäng (E, Esc, ×); Ta ner keeps its id, put back without taping = back up where it was
@@ -291,7 +293,8 @@ tools/cooktest.html    headless test: the induction hob on/off (glow), F switche
                        on → quiet, break a leg off and eat it, eat it all, F whole again (#194)
 tools/postertest.html  headless test: take the drawing (blank sheet stays), back on the desk, tape it up in the hall and on
                        the fridge door (swings with it), none on the kitchen window, reload → both back; look at one (panel, no walking,
-                       ×/E close), Släng → ball lands and vanishes, out of storage; Ta ner → taped up elsewhere (`?shots`, `?panel`)
+                       ×/E close), Släng → ball lands and vanishes, out of storage; Ta ner → taped up elsewhere; lying in each lower bunk:
+                       taped under the top bunk, facing down, can be looked at from there (`?shots`, `?panel`)
 tools/sonostest.html   headless test: music in all three speakers, songs, volume, panel, pause, upstairs, F; each channel
                        rendered offline (only outside --virtual-time-budget; there it says SKIP)
 tools/boardtest.html   headless test: keep / throw away cat photos, a full board, the panel (needs a big virtual-time budget)

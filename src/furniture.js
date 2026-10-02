@@ -687,6 +687,10 @@ const sheetMats = {};
 const sheetMat = (kind) => (sheetMats[kind] ??= new THREE.MeshStandardMaterial({ map: sheetTexture(kind), roughness: 0.95 }));
 
 /** Bunk bed, white: four posts, two mattresses with duvets, guard rail and a ladder. −z = head. */
+// the same white as the frame; its own material so posters.js knows the board under the top bunk (#199)
+const bunkBase = whiteWood.clone();
+bunkBase.userData = { posterCeiling: true };
+
 function bunk(item) {
   const g = new THREE.Group();
   const w = item.w, l = item.l, H = 1.6, p = 0.05;
@@ -702,6 +706,8 @@ function bunk(item) {
     g.add(rbox(w, 0.05, l * 0.68, 0, y + 0.19, l * 0.15, duvet, 0.025));
     g.add(rbox(w * 0.7, 0.1, 0.34, 0, y + 0.22, -l / 2 + 0.24, item.sheets ? duvet : linen, 0.05));
   }
+  // the top bunk's base board: its underside is the "ceiling" over the lower bunk, where drawings can be taped (#199)
+  g.add(rbox(w, 0.012, l, 0, 1.175, 0, bunkBase, 0.003));
   g.userData.rest = { kind: 'lie', name: 'våningssängen', verb: 'lägga dig i',
     spots: [0.25, 1.15].map((y) => ({ x: 0, y: y + 0.17, z: -l / 2 + 0.3, label: y > 1 ? 'överslafen' : 'underslafen' })) };
   // `watch`: a place to sit in the lower bunk, back to the wall (local −x), facing the room, hunched

@@ -25,9 +25,11 @@ const UP = new THREE.Vector3(0, 1, 0), Z = new THREE.Vector3(0, 0, 1);
 
 const uid = () => (crypto.randomUUID?.() ?? `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`);
 
-/** The poster quaternion (in the parent's frame) for a surface normal and a turn about it. */
-function posterQuat(normal, rot, out = new THREE.Quaternion()) {
-  const n = normal.clone().normalize(), right = new THREE.Vector3().crossVectors(UP, n).normalize(), up = new THREE.Vector3().crossVectors(n, right);
+/** The poster quaternion (in the parent's frame) for a surface normal and a turn about it. On a ceiling (#199) the
+ * picture's top points along `top` (the viewer's screen-up when it was taped), not world up. */
+function posterQuat(normal, rot, out = new THREE.Quaternion(), top = null) {
+  const n = normal.clone().normalize(), ref = top && Math.abs(n.y) > 0.5 ? top : UP;
+  const right = new THREE.Vector3().crossVectors(ref, n).normalize(), up = new THREE.Vector3().crossVectors(n, right);
   out.setFromRotationMatrix(new THREE.Matrix4().makeBasis(right, up, n));
   return out.multiply(new THREE.Quaternion().setFromAxisAngle(Z, rot));
 }
@@ -127,7 +129,7 @@ export class Posters {
     const mat = new THREE.MeshStandardMaterial({ map: tex, transparent: true, alphaTest: 0.04, roughness: 0.92, depthWrite: true });
     const mesh = new THREE.Mesh(posterGeo, mat);
     mesh.position.fromArray(rec.pos);
-    posterQuat(new THREE.Vector3().fromArray(rec.normal), rec.rot, mesh.quaternion);
+    posterQuat(new THREE.Vector3().fromArray(rec.normal), rec.rot, mesh.quaternion, rec.up ? new THREE.Vector3().fromArray(rec.up) : null);
     mesh.receiveShadow = true;
     const p = { rec, mesh, name: 'teckningen', kind: 'poster', verb: 'titta på', pickable: mesh };
     mesh.userData.door = p;
@@ -144,14 +146,15 @@ export class Posters {
   /**
    * Where a drawing would go for the look `ray` (world), or null: { surface, point, normal (world), distance,
    * full } — `full` when it is a valid spot but D.maxPosted are already up. `level`: the visitor's level,
-   * `behindWall(p)`: main.js's wall check.
+   * `behindWall(p)`: main.js's wall check, `reach`: how far (less while lying, #199), `screenUp`: the camera's up
+   * (world) — on a ceiling the picture's top goes that way.
    */
-  spot(ray, level, behindWall) {
-    const eye = ray.origin, to = eye.clone().addScaledVector(ray.direction, HOLD.reach);
+  spot(ray, level, behindWall, reach = HOLD.reach, screenUp = null) {
+    const eye = ray.origin, to = eye.clone().addScaledVector(ray.direction, reach);
     // a fridge / freezer door first (Marks.hit looks through things that move)
     let door = null;
     for (const [surface, d] of Object.entries(this.doors)) {
-      this.ray.set(eye, ray.direction); this.ray.far = HOLD.reach;
+      this.ray.set(eye, ray.direction); this.ray.far = reach;
       const h = this.ray.intersectObjects(d.meshes, false)[0];
       if (h && h.face && (!door || h.distance < door.h.distance)) door = { surface, d, h };
     }
@@ -165,15 +168,25 @@ export class Posters {
     } else if (wall && !wall.cat && wall.normal) {
       cand = { surface: 'wall', point: wall.point, normal: wall.normal.clone(), object: wall.object, meshes: null };
     }
-    if (!cand || Math.abs(cand.normal.y) > 0.08) return null;
-    cand.normal.y = 0; cand.normal.normalize();
+    if (!cand) return null;
+    // the underside of a top bunk (#199): facing straight down; else upright surfaces only
+    const ceiling = cand.surface === 'wall' && cand.normal.y < -0.9 && cand.object.material?.userData?.posterCeiling;
+    if (ceiling) {
+      cand.normal.set(0, -1, 0);
+      cand.top = (screenUp ?? new THREE.Vector3(0, 0, -1)).clone().setY(0);
+      if (cand.top.lengthSq() < 1e-6) cand.top.set(0, 0, -1);
+      cand.top.normalize();
+    } else {
+      if (Math.abs(cand.normal.y) > 0.08) return null;
+      cand.normal.y = 0; cand.normal.normalize();
+    }
     if (behindWall(cand.point)) return null;
     // cached: the same surface and nearly the same point → the same answer
     const c = this.cache;
     if (c && c.object === cand.object && c.point.distanceTo(cand.point) < 0.01 && c.count === this.list.length) return c.result;
-    let ok = cand.surface !== 'wall' || cand.object.material?.userData?.poster || this.onWall(cand.point, cand.normal, level);
-    ok = ok && this.flat(cand) && !this.overNote(cand.point, cand.normal);
-    const result = ok ? { surface: cand.surface, point: cand.point, normal: cand.normal, distance: cand.point.distanceTo(eye), full: this.full } : null;
+    let ok = ceiling || cand.surface !== 'wall' || cand.object.material?.userData?.poster || this.onWall(cand.point, cand.normal, level);
+    ok = ok && this.flat(cand) && (ceiling || !this.overNote(cand.point, cand.normal));
+    const result = ok ? { surface: cand.surface, point: cand.point, normal: cand.normal, top: cand.top ?? null, distance: cand.point.distanceTo(eye), full: this.full } : null;
     this.cache = { object: cand.object, point: cand.point.clone(), count: this.list.length, result };
     return result;
   }
@@ -191,8 +204,8 @@ export class Posters {
   }
 
   /** Does the whole sheet lie flat on the hit surface (9 probes meet the same mesh at the same depth)? */
-  flat({ point, normal, object, meshes }) {
-    const q = posterQuat(normal, 0), all = meshes ?? this.marks.meshes(), out = 0.03;
+  flat({ point, normal, object, meshes, top = null }) {
+    const q = posterQuat(normal, 0, undefined, top), all = meshes ?? this.marks.meshes(), out = 0.03;
     for (const u of [-1, 0, 1]) for (const v of [-1, 0, 1]) {
       const c = new THREE.Vector3(u * D.w * 0.52, v * D.h * 0.52, 0).applyQuaternion(q).add(point).addScaledVector(normal, out);
       const h = this.marks.segment(c, c.clone().addScaledVector(normal, -2 * out), all).find((x) => !x.object.material?.blending || x.object.material.blending === THREE.NormalBlending);
@@ -216,7 +229,7 @@ export class Posters {
     if (!this.ghost.visible) return;
     if (this.ghostMat.map !== tex) { this.ghostMat.map = tex; this.ghostMat.needsUpdate = true; }
     this.ghost.position.copy(s.point).addScaledVector(s.normal, D.lift + D.step * 10);
-    posterQuat(s.normal, 0, this.ghost.quaternion);
+    posterQuat(s.normal, 0, this.ghost.quaternion, s.top);
   }
 
   /** Tape `image` (data URL) up at spot `s` (from spot()); saved. Returns the poster. */
@@ -232,6 +245,7 @@ export class Posters {
       normal = normal.transformDirection(inv);
     }
     const rec = { id, image, surface: s.surface, level: s.level ?? 0, pos: pos.toArray(), normal: normal.toArray(), rot, time, updated: Date.now() };
+    if (s.top) rec.up = s.top.toArray(); // on a ceiling: which way the picture's top points (#199)
     const p = await this.build(rec);
     await this.save(rec);
     this.cache = null;

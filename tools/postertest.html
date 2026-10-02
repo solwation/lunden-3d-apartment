@@ -185,11 +185,34 @@ const deg = (d) => (d * Math.PI) / 180;
   if (ok) { b2.click(); await wait(300); }
   check(ok && app.posters.list.length === 1 && app.posters.list[0].rec.id === fid && app.posters.list[0].rec.surface === 'wall', 'taped up again on the wall, the same drawing');
 
+  // 8. under the top bunk (#199): lie in the lower bunk with a drawing, tape it up on the underside of the top one
+  const bunks = app.world.furnitureTargets.filter((t) => t.kind === 'rest' && t.name === 'våningssängen');
+  check(bunks.length === 2, `two bunks (${bunks.length})`);
+  for (const t of bunks) {
+    const sp = t.spots.find((x) => x.label === 'underslafen');
+    app.heldDrawing.take(app.heldDrawing.image ?? app.drawing.canvas.toDataURL('image/jpeg'));
+    app.rest.begin(t, sp, { x: app.player.pos.x, z: app.player.pos.z, y: app.player.pos.y, yaw: 0 });
+    for (let i = 0; i < 60; i++) app.step(1 / 60);
+    const okBtn = /tejpa upp/i.test(b2.textContent) && !b2.hidden;
+    check(okBtn, `lying in the lower bunk: "${b2.textContent}"`);
+    const n0 = app.posters.list.length;
+    if (okBtn) { b2.click(); await wait(300); }
+    const q = app.posters.list[app.posters.list.length - 1];
+    const bunkBottom = sp.pos.y - 0.22 - 0.17 - 0.25 + 1.169; // mattress spot → floor → board underside
+    check(app.posters.list.length === n0 + 1 && q.rec.normal[1] === -1 && Math.abs(q.rec.pos[1] - bunkBottom) < 0.01 && Array.isArray(q.rec.up),
+      `on the underside of the top bunk, facing down (y ${q?.rec.pos[1].toFixed(3)} vs ${bunkBottom.toFixed(3)})`);
+    // looking at it from the bunk: the panel opens (and it can be taken down from there)
+    app.step(1 / 60);
+    check(/titta på teckningen/i.test(b2.textContent), `it can be looked at from the bunk: "${b2.textContent}"`);
+    shot();
+    app.standUp(); app.step(1 / 60);
+  }
+
   if (location.search.includes('panel')) { view(app.posters.list[0]); b2.click(); app.step(1 / 60); out.textContent = pass ? 'ALL PASS' : 'SOME FAILED'; return; }
   // ?shots: pictures of both posters (data URLs in <img> tags, for a look by hand)
   if (location.search.includes('shots')) {
     await wait(1500);
-    for (const q of app.posters.list) {
+    for (const q of app.posters.list.filter((x) => x.rec.normal[1] === 0)) {
       const m = q.mesh, c = m.getWorldPosition(m.position.clone()), n = m.getWorldDirection(m.position.clone());
       app.camera.position.copy(c).addScaledVector(n, 1.1); app.camera.position.y = c.y; app.camera.lookAt(c);
       app.renderer.render(app.scene, app.camera);
