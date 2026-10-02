@@ -862,6 +862,25 @@ world.looseItems.push(...cups.cups.map((c) => c.model), drawing.paper, calendar.
 try { if (localStorage.getItem('lunden.furniture') === '0') toggleFurniture(false); } catch { /* ignore */ }
 document.getElementById('furniture-btn').addEventListener('click', () => toggleFurniture());
 
+// --- the building site as it is now (#131): the start screen button, remembered; `&bygge` / `&bygge=0` ---------
+const byggeBtn = document.getElementById('bygge-btn');
+function setConstruction(on) {
+  world.setConstruction(on);
+  byggeBtn.textContent = on ? 'Visa de färdiga husen' : 'Visa bygget som det ser ut nu';
+  shadowState.hold = 1.5; // redraw the shadows (scaffolding)
+}
+{
+  let on = false;
+  try { on = localStorage.getItem('lunden.bygge') === '1'; } catch { /* ignore */ }
+  if (params.has('bygge')) on = params.get('bygge') !== '0';
+  setConstruction(on);
+}
+byggeBtn.addEventListener('click', () => {
+  const on = !world.constructionOn;
+  setConstruction(on);
+  try { localStorage.setItem('lunden.bygge', on ? '1' : '0'); } catch { /* ignore */ }
+});
+
 // --- statistics panel: hidden; Tab held (like a scoreboard), T / 📊 toggle -------
 // Counted events pop up as small badges instead.
 const statsEl = document.getElementById('stats');
@@ -1061,4 +1080,4 @@ function continueAfterReload(r) {
 if (resumeOk && resumed.mode) continueAfterReload(resumed);
 
 // handle for tests/debugging (tools/touchtest.html)
-window.__app = { secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };
+window.__app = { setConstruction, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };

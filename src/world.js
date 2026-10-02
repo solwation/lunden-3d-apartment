@@ -17,6 +17,7 @@ import { buildSillPlants } from './sillplants.js';
 import { registerSnow } from './seasons.js';
 import { buildCourtyard } from './courtyard.js';
 import { buildStreetLife } from './streetlife.js';
+import { buildConstruction } from './construction.js';
 import { pavingTexture } from './patio.js';
 import { mirrorLamps, looseItems as interiorLoose, buildInterior, buildElCabinet, cupSurfaces, cupCabinet } from './interior.js';
 import { Toilet } from './toilet.js';
@@ -701,6 +702,11 @@ export function buildWorld(plan) {
   scene.userData.merged = merged;
   for (const d of [...l0.doors, ...l1.doors]) mergeStatic(d.object, d.keep ?? [], () => '', { tagged: true }); // leaf + handles (not the letter flap)
 
+  // the building site as it is now (#131): built hidden, after the merge (it toggles); its collision joins
+  // the fixed outdoor segments while it is shown
+  const construction = buildConstruction();
+  scene.add(construction.object);
+  const baseL0 = l0.segments;
   // furniture can be switched off (F): keep its collision separate from the fixed segments
   const fixed = [l0.segments, l1.segments];
   const levels = [l0, l1];
@@ -714,10 +720,19 @@ export function buildWorld(plan) {
     levels.forEach((l, i) => { l.segments = on ? [...fixed[i], ...furniture.segments[i]] : fixed[i]; });
   };
   setFurniture(true);
+  /** The building site as it is now (#131): scaffolding, netting, weatherboard, fencing, machines. */
+  const setConstruction = (on) => {
+    construction.object.visible = on;
+    fixed[0] = on ? [...baseL0, ...construction.segments] : baseL0;
+    setFurniture(furniture.object.visible);
+  };
 
   return {
     object: scene,
     setFurniture,
+    setConstruction,
+    construction,
+    get constructionOn() { return construction.object.visible; },
     looseItems, // hidden by F (main.js may add more)
     cupSurfaces: [...furniture.surfaces, ...kitchenSurfaces, ...sillSurfaces], // table tops a cup can be put on (#90), the window boards (#185)
     cupCabinet,

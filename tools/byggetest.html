@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Building site test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+// The building site as it is now (#131, #132): the start screen button switches it on and off (scaffolding,
+// fencing, machines shown, their collision added), and with it on the visitor still walks from START to the
+// front door, out on the patio and through the hedge onto the courtyard.
+//   google-chrome --headless=new --dump-dom http://localhost:8137/tools/byggetest.html
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+localStorage.removeItem('lunden.bygge');
+const f = document.createElement('iframe');
+f.width = 900; f.height = 600; f.src = '../index.html';
+document.body.append(f);
+f.onload = async () => {
+  const w = f.contentWindow, d = f.contentDocument;
+  while (!w.__app) await wait(100);
+  const { world, player, step } = w.__app;
+  const lines = [];
+  const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; };
+  const btn = d.getElementById('bygge-btn');
+  const n0 = world.levels[0].segments.length;
+  let pass = check(!world.constructionOn && !world.construction.object.visible, 'off by default');
+  btn.click();
+  pass &= check(world.constructionOn && world.construction.object.visible && localStorage.getItem('lunden.bygge') === '1', `the button: on ("${btn.textContent}")`);
+  pass &= check(world.levels[0].segments.length > n0, `collision added (${n0} → ${world.levels[0].segments.length})`);
+  const counts = world.construction.counts;
+  pass &= check(counts.tubes > 500 && counts.decks > 100, `scaffolding: ${counts.tubes} tubes, ${counts.decks} decks (instanced)`);
+  // walk: START → the front door, in, and from the patio through the hedge gap onto the lawn
+  const free = (a, b) => world.construction.segments.every(([cx, cz, dx, dz]) => {
+    const [ax, az] = a, [bx, bz] = b;
+    const den = (bx - ax) * (dz - cz) - (bz - az) * (dx - cx);
+    if (Math.abs(den) < 1e-9) return true;
+    const t = ((cx - ax) * (dz - cz) - (cz - az) * (dx - cx)) / den, u = ((cx - ax) * (bz - az) - (cz - az) * (bx - ax)) / den;
+    return !(t > 0 && t < 1 && u > 0 && u < 1);
+  });
+  pass &= check(free([2.875, -12], [2.875, -0.5]), 'START → the front door: nothing of the site in the way');
+  pass &= check(free([2.9, 15], [0.6, 17.3]) && free([0.6, 17.3], [3, 21]), 'patio → the hedge gap → the lawn: free');
+  // and really walk to the front door with the stick held forward
+  d.getElementById('start-touch').click();
+  await wait(50);
+  player.spawn(2.875, -12, Math.PI);
+  w.__app.touch.analog.y = 1;
+  for (let i = 0; i < 60 * 8 && player.pos.z < -0.8; i++) step(1 / 60);
+  w.__app.touch.analog.y = 0;
+  pass &= check(player.pos.z > -1.2, `walked to the front door (z ${player.pos.z.toFixed(2)})`);
+  btn.click();
+  pass &= check(!world.constructionOn && world.levels[0].segments.length === n0 && localStorage.getItem('lunden.bygge') === '0', 'off again, collision as before');
+  out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
+};
+</script>
+</body>
+</html>
