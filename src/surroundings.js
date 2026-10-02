@@ -289,17 +289,25 @@ function facadeTexture() {
       g.fillRect(x + 1, row * bh + 1, bw - 2, bh - 1.5);
     }
   }
-  // window: 1.3 × 1.5 m, sill 0.8 m above the storey floor (v = 0 is the bottom of the canvas)
+  // window: 1.3 × 1.5 m, sill 0.8 m above the storey floor (v = 0 is the bottom of the canvas); like Peab's
+  // renders (#109): a broad white surround, white sashes with a mullion and a transom, a light sill flashing
   const ww = 1.3 * m, wh = 1.5 * m, wx = (px - ww) / 2, wy = px - (0.8 * m + wh);
-  g.fillStyle = '#f2f2ef';
-  g.fillRect(wx - 4, wy - 4, ww + 8, wh + 8);
+  g.fillStyle = '#f4f4f1';
+  g.fillRect(wx - 0.09 * m, wy - 0.09 * m, ww + 0.18 * m, wh + 0.18 * m);
+  g.fillStyle = 'rgba(0,0,0,0.18)'; // the reveal's shadow inside the surround
+  g.fillRect(wx - 0.02 * m, wy - 0.02 * m, ww + 0.04 * m, 0.05 * m);
   const glass = g.createLinearGradient(0, wy, 0, wy + wh);
-  glass.addColorStop(0, '#5d7486');
+  glass.addColorStop(0, '#6b8293');
   glass.addColorStop(1, '#2c3a45');
   g.fillStyle = glass;
-  g.fillRect(wx, wy, ww, wh);
-  g.fillStyle = '#f2f2ef';
-  g.fillRect(wx + ww / 2 - 3, wy, 6, wh);
+  g.fillRect(wx + 0.03 * m, wy + 0.03 * m, ww - 0.06 * m, wh - 0.06 * m);
+  g.fillStyle = '#f4f4f1';
+  g.fillRect(wx + ww * 0.62 - 3, wy, 6, wh);                 // mullion (a wide and a narrow light)
+  g.fillRect(wx, wy + wh * 0.22, ww * 0.62, 5);              // transom over the wide light
+  g.fillStyle = '#c9cccd';
+  g.fillRect(wx - 0.13 * m, wy + wh + 0.06 * m, ww + 0.26 * m, 0.07 * m); // sill flashing
+  g.fillStyle = 'rgba(0,0,0,0.15)';
+  g.fillRect(wx - 0.13 * m, wy + wh + 0.13 * m, ww + 0.26 * m, 0.04 * m);
   const tex = new THREE.CanvasTexture(c);
   tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
   tex.colorSpace = THREE.SRGBColorSpace;
@@ -594,6 +602,19 @@ export function buildSurroundings({ grass }) {
   };
   mesh(modern.map(block), new THREE.MeshStandardMaterial({ map: facadeTexture(), roughness: 0.95 }));
   mesh(modern.map(roof), new THREE.MeshStandardMaterial({ color: 0x51575c, roughness: 0.85, side: THREE.DoubleSide }), SEASON.snow.roof);
+  // white details (#109): a light fascia band under the low roofs, grey downpipes at the corners and every ~12 m
+  mesh(modern.map((b) => {
+    const h = b.base + b.storeys * S.storey, o = 0.32;
+    return new THREE.BoxGeometry(b.x1 - b.x0 + 2 * o, 0.42, b.z1 - b.z0 + 2 * o).translate((b.x0 + b.x1) / 2, h + 0.1, (b.z0 + b.z1) / 2);
+  }), new THREE.MeshStandardMaterial({ color: 0xe9e9e6, roughness: 0.6 }));
+  const pipes = [];
+  for (const b of modern) {
+    const h = b.storeys * S.storey, y = b.base + h / 2;
+    for (const [x, z] of [[b.x0, b.z0], [b.x1, b.z0], [b.x1, b.z1], [b.x0, b.z1]]) pipes.push(new THREE.CylinderGeometry(0.05, 0.05, h, 6).translate(x + Math.sign((b.x0 + b.x1) / 2 - x) * 0.35, y, z + Math.sign((b.z0 + b.z1) / 2 - z) * -0.07));
+    for (const [z, sgn] of [[b.z0, -1], [b.z1, 1]]) for (let x = b.x0 + 12; x < b.x1 - 4; x += 12) pipes.push(new THREE.CylinderGeometry(0.05, 0.05, h, 6).translate(x, y, z + sgn * 0.07));
+    for (const [x, sgn] of [[b.x0, -1], [b.x1, 1]]) for (let z = b.z0 + 12; z < b.z1 - 4; z += 12) pipes.push(new THREE.CylinderGeometry(0.05, 0.05, h, 6).translate(x + sgn * 0.07, y, z));
+  }
+  mesh(pipes, new THREE.MeshStandardMaterial({ color: 0x8f9396, roughness: 0.5, metalness: 0.3 }));
   if (school.length) { // the school across the street, its wall and greenhouse (#126)
     const white = new THREE.MeshStandardMaterial({ color: 0xf1eee6, roughness: 0.8 });
     mesh(school.map(block), new THREE.MeshStandardMaterial({ map: schoolFacadeTexture(), roughness: 0.95 }));
