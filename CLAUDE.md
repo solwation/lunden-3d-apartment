@@ -97,7 +97,7 @@ src/cabinets.js        wall cabinets with side-hung doors that open with E (kind
 src/openables.js       Openable (#103): the shared helper for fronts that open with E — 'hinge' (with a `max` stop, never
                        through a neighbour), 'flap' (bottom- or top-hinged), 'drawer'; kind 'cabinet', in world.lids.
                        interior.js builds every kitchen front with it (`openFront`, hollow `shell` carcasses);
-                       furniture.js `addDrawer` for drawers in furniture (NORDKISA, NORDLI, ALEX, IDANÄS foot end)
+                       furniture.js `addDrawer` / `addDoor` for furniture (NORDKISA, NORDLI, ALEX, IDANÄS foot end, BYÅS)
 src/ovens.js           oven (drop-down door) + microwave (side door) in the tall unit, E opens (world.lids)
 src/coffee.js          Moccamaster on the worktop (MOCCAMASTER): E brews (red light, sound, the jug fills)
 src/mirror.js          the one mirror material (gradient + glints; hall and bathroom mirrors)

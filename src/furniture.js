@@ -52,6 +52,22 @@ function addDrawer(g, name, { x, y, zf, w, h, depth, front, inner = front, rot =
   return d;
 }
 
+/**
+ * A side-hung door that opens with E (#103): `build(p)` adds the leaf to the pivot p, whose origin is the
+ * hinge (front face at z 0, the leaf running towards −x if `side` is +1 = hinged on the right, towards +x if
+ * −1). It swings out of the piece's +z up to `max` degrees.
+ */
+function addDoor(g, name, { x, y, z, side, max = 100, build }) {
+  const p = new THREE.Group();
+  p.position.set(x, y, z);
+  build(p);
+  g.add(p);
+  const d = new Openable({ name, object: p, mode: 'hinge', sign: side, max });
+  (g.userData.targets ??= []).push(d);
+  (g.userData.keep ??= []).push(p);
+  return d;
+}
+
 function leg(x, z, h = L.legHeight, material = oak) {
   const m = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.016, h, 12), material);
   m.position.set(x, h / 2, z);
@@ -872,10 +888,13 @@ function byas(item) {
     g.add(rbox(t, h - plinth, d - 0.01, x, plinth + (h - plinth) / 2, 0, gloss, 0.003));
   }
   g.add(rbox(w - 2 * door - t, t, d - 0.04, 0, plinth + (h - plinth) * 0.5, -0.01, shelfWhite, 0.003)); // middle shelf
-  for (const s of [-1, 1]) { // the doors: gloss fronts, a thin shadow line as the grip at the top
-    const cx = s * (w / 2 - door / 2);
-    g.add(rbox(door - 0.006, h - plinth - 0.03, 0.018, cx, plinth + (h - plinth - 0.03) / 2 + 0.003, d / 2 - 0.009, gloss, 0.003));
-    g.add(rbox(door - 0.08, 0.008, 0.004, cx, h - 0.03, d / 2 + 0.001, new THREE.MeshStandardMaterial({ color: 0x9a9a96, roughness: 0.6 }), 0.001));
+  const groove = new THREE.MeshStandardMaterial({ color: 0x9a9a96, roughness: 0.6 });
+  for (const s of [-1, 1]) { // the doors (#103): gloss fronts hinged at the ends, a thin shadow line as the grip at the top
+    const dw = door - 0.006;
+    addDoor(g, 'luckan', { x: s * (w / 2 - 0.003), y: 0, z: d / 2, side: s, build: (p) => {
+      p.add(rbox(dw, h - plinth - 0.03, 0.018, -s * dw / 2, plinth + (h - plinth - 0.03) / 2 + 0.003, -0.009, gloss, 0.003));
+      p.add(rbox(dw - 0.074, 0.008, 0.004, -s * dw / 2, h - 0.03, 0.001, groove, 0.001));
+    } });
   }
   g.traverse((m) => { if (m.isMesh) m.castShadow = m.receiveShadow = true; });
   g.userData.surfaces = [{ x0: -w / 2 + 0.03, x1: w / 2 - 0.03, z0: -d / 2 + 0.03, z1: d / 2 - 0.03, y: h }];
