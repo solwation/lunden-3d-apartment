@@ -192,6 +192,16 @@ src/posters.js         drawings taped up (#176): HeldDrawing (the sheet in the h
 src/paperball.js       a drawing thrown away (#177): crumpled in front of the camera, thrown, bounces on the floor (walls:
                        the level's collision segments), shrinks away after DRAWING.ballSeconds; not saved
 src/idb.js             the shared IndexedDB 'lunden' (version 2: catPhotos + drawings) — every module opens it here
+src/cloud.js           the shared world (#178, #119): inert unless CLOUD_URL (config) is set on the published site, or the
+                       page has &cloud=<url>. Taped-up drawings (posters.onPut/onDelete), the desk sheet (drawing.onSaved)
+                       and new cat photos (board.onAdded) go into a queue (localStorage 'lunden.cloud.queue', kept offline)
+                       sent in order; a pull at start (`cloud.ready`), every minute and on tab focus merges the server in
+                       (newer `updated` wins; synced drawings missing on the server come down; one foreign cat photo per
+                       pull if the board has room). Silent; &sync=debug logs
+cloudflare/            the Worker (NOT published on Pages): worker.js (API, limits, CORS, admin emergency brake), wrangler.toml,
+                       setup.sh (the user's one-command setup: login, KV, deploy, ADMIN_TOKEN, CLOUD_URL into config),
+                       dev.mjs (the same Worker on Node with an in-memory KV, for tests), README.md (Swedish, for the user);
+                       .github/workflows/cloud.yml redeploys on cloudflare/** changes when the repo has Cloudflare secrets
 src/calendar.js        the cat calendar (CALENDAR): a cat per month, the days, the chosen date; #cal-panel picks it
 src/fridge.js          the fridge: hollow, lit, opens with E (in world.lids); `shelfSpot` = the chicken's place; the freezer is
                        the same class (`freezer: true`, #161): drawers + shelves, the changelog note rides on its door
@@ -288,6 +298,9 @@ tools/planttest.html   headless test: lift pot plants (window board → table, s
 tools/clocktest.html   headless test of the wall clock (?time=7, spool, pause, sun height by month)
 tools/calendartest.html headless test: today's date at the start, pick a date on the calendar, the sun follows
 tools/byggetest.html   headless test: the building site on/off (button, collision), START → front door still free
+tools/cloudtest.html   headless test of the shared world against `node cloudflare/dev.mjs 8144` (start it first): PUT on
+                       taping, someone else's drawing appears, DELETE on throwing, thrown elsewhere → gone here, offline
+                       queue, desk sheet, cat photos both ways, a fresh visitor gets them, off without &cloud
 tools/stamp.sh         build the published site with a version stamp (used by CI)
 ```
 

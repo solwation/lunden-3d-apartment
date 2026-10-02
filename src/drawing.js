@@ -38,7 +38,7 @@ export class Drawing {
     const g = this.ctx;
     g.fillStyle = '#fbfaf5'; g.fillRect(0, 0, this.canvas.width, this.canvas.height);
     g.strokeStyle = 'rgba(0,0,0,0.05)'; g.lineWidth = 2; g.strokeRect(1, 1, this.canvas.width - 2, this.canvas.height - 2);
-    if (this.tex) this.tex.needsUpdate = true;
+    if (this.tex) { this.tex.needsUpdate = true; this.dirty = true; }
     this.blank = true;
     if (save) this.save();
   }
@@ -57,15 +57,25 @@ export class Drawing {
     return url;
   }
 
-  /** Put a drawing (data URL) back on the desk. */
-  restore(url) {
+  /** Put a drawing (data URL) back on the desk; `quiet`: it came from the server (cloud.js), don't send it back. */
+  restore(url, quiet = false) {
     const img = new Image();
-    img.onload = () => { this.ctx.drawImage(img, 0, 0, this.canvas.width, this.canvas.height); this.tex.needsUpdate = true; this.save(); };
+    img.onload = () => {
+      this.ctx.drawImage(img, 0, 0, this.canvas.width, this.canvas.height);
+      this.tex.needsUpdate = true;
+      this.blank = this.isBlank();
+      this.dirty = !quiet;
+      this.save();
+    };
     img.src = url;
     this.blank = false;
   }
 
-  save() { try { localStorage.setItem(KEY, this.canvas.toDataURL('image/png')); } catch { /* full or blocked */ } }
+  /** Keep it (localStorage); if it changed, tell the shared world (onSaved, cloud.js #119). */
+  save() {
+    try { localStorage.setItem(KEY, this.canvas.toDataURL('image/png')); } catch { /* full or blocked */ }
+    if (this.dirty) { this.dirty = false; this.onSaved?.(); }
+  }
 
   begin() {
     const cam = this.camera;
@@ -122,6 +132,7 @@ export class Drawing {
     g.globalAlpha = 1;
     this.tex.needsUpdate = true;
     this.blank = false;
+    this.dirty = true;
     if (this.sound <= 0 && len > 1) { sfx.crayon(this.paper.position, Math.min(1, len / 30)); this.sound = 0.12; }
   }
 

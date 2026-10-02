@@ -11,6 +11,8 @@ import { badge } from './stats.js';
 const STORE = 'catPhotos', MAX = B.max;
 const withStore = (mode, fn) => withDb(STORE, mode, fn); // the shared 'lunden' database (idb.js)
 
+const uid = () => (crypto.randomUUID?.() ?? `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`);
+
 const loadImage = (src) => new Promise((resolve) => {
   const img = new Image();
   img.onload = () => resolve(img);
@@ -87,11 +89,27 @@ export class CatBoard {
       if (!old) { badge('📌 Tavlan är full med sparade bilder, släng en först', false); return false; }
       await this.discard(old.id ?? old.time, false);
     }
-    const photo = { time: Date.now(), name, data, kept: false };
+    const photo = { time: Date.now(), name, data, kept: false, uid: uid() };
     try {
       photo.id = await withStore('readwrite', (s) => s.add(photo));
     } catch { photo.id = photo.time; } // no IndexedDB (private mode): keep it for this visit
     this.photos = [...this.photos, photo];
+    await this.loadImages();
+    this.draw();
+    this.onChange?.();
+    this.onAdded?.(photo); // the shared world (cloud.js, #119)
+    return true;
+  }
+
+  /** Room for one more without pushing a photo off? */
+  get hasRoom() { return this.photos.length < MAX; }
+
+  /** Someone else's photo from the shared world (cloud.js, #119): up it goes in its place by time, if there is room. */
+  async addRemote({ uid: u, name, time, data }) {
+    if (!this.hasRoom || this.photos.some((p) => p.uid === u)) return false;
+    const photo = { time, name, data, kept: false, uid: u };
+    try { photo.id = await withStore('readwrite', (s) => s.add(photo)); } catch { photo.id = time; }
+    this.photos = [...this.photos, photo].sort((a, b) => a.time - b.time);
     await this.loadImages();
     this.draw();
     this.onChange?.();

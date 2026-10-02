@@ -236,26 +236,54 @@ export class Posters {
     await this.save(rec);
     this.cache = null;
     sfx.tape?.(s.point);
+    this.onPut?.(rec); // the shared world (cloud.js, #178)
     return p;
   }
 
   /** Hang a record up again just as it was (a poster taken down and not taped up elsewhere, #177). */
   async rehang(rec) {
+    rec.updated = Date.now();
+    delete rec.synced;
     await this.build(rec);
     await this.save(rec);
     this.cache = null;
+    this.onPut?.(rec);
   }
+
+  byId(id) { return this.list.find((p) => p.rec.id === id) ?? null; }
+
+  /** The server has it now (cloud.js): a drawing gone from the server later was thrown away elsewhere. */
+  async markSynced(id) {
+    const p = this.byId(id);
+    if (!p) return;
+    p.rec.synced = Date.now(); // when: a list fetched before then may not have it yet (cloud.js)
+    await this.save(p.rec);
+  }
+
+  /** A drawing from the server (someone else's, or moved elsewhere): up it goes, saved, not sent back. */
+  async addRemote(rec) {
+    if (this.byId(rec.id)) return null;
+    const p = await this.build(rec);
+    if (p) await this.save(rec);
+    this.cache = null;
+    return p;
+  }
+
+  /** Down without telling the server (it told us). */
+  async drop(p) { return this.remove(p, false, true); }
 
   async save(rec) { try { await withStore(STORE, 'readwrite', (st) => st.put(rec)); } catch { /* no IndexedDB: this visit only */ } }
 
   /** Take a poster down (#177): gone from the wall and from storage. `keepTexture`: its map lives on (the ball). */
-  async remove(p, keepTexture = false) {
+  async remove(p, keepTexture = false, quiet = false) {
+    if (!this.list.includes(p)) return;
     p.mesh.removeFromParent();
     if (!keepTexture) p.mesh.material.map.dispose();
     p.mesh.material.dispose();
     this.list.splice(this.list.indexOf(p), 1);
     this.cache = null;
     try { await withStore(STORE, 'readwrite', (st) => st.delete(p.rec.id)); } catch { /* ignore */ }
+    if (!quiet) this.onDelete?.(p.rec.id);
   }
 }
 

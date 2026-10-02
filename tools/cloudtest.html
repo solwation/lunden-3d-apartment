@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Cloud test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+// The shared world (#178, #119) against the real Worker code run locally (cloudflare/dev.mjs, in-memory KV):
+//   node cloudflare/dev.mjs 8144 &        (then)
+//   google-chrome --headless=new --dump-dom http://localhost:8137/tools/cloudtest.html   (?worker=<url> for another one)
+// A taped-up drawing is PUT, a drawing that appears on the server goes up on the wall, a thrown one is DELETEd, a
+// drawing thrown away elsewhere comes down here, changes made offline wait in the queue and go when it is back,
+// the desk sheet and a cat photo go up, someone else's cat photo turns up on the board, and without &cloud
+// (locally) the cloud is off.
+const out = document.getElementById('out');
+const W = new URLSearchParams(location.search).get('worker') ?? 'http://localhost:8144';
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const lines = [];
+let pass = true;
+const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); pass &&= !!ok; return ok; };
+const until = async (fn, ms = 6000) => { for (let t = 0; t < ms; t += 100) { if (await fn()) return true; await wait(100); } return false; };
+const api = (path, opts) => fetch(W + path, opts).then((r) => r.json());
+const f = document.createElement('iframe');
+f.width = 900; f.height = 600;
+document.body.append(f);
+const load = (q) => new Promise((res) => { f.onload = async () => { while (!f.contentWindow.__app) await wait(100); res(f.contentWindow); }; f.src = `../index.html?v=${Math.random()}${q}`; });
+const sheet = (color) => { const c = document.createElement('canvas'); c.width = 420; c.height = 297; const g = c.getContext('2d'); g.fillStyle = '#fbfaf5'; g.fillRect(0, 0, 420, 297); g.fillStyle = color; g.fillRect(100, 80, 200, 120); return c.toDataURL('image/jpeg', 0.9); };
+
+(async () => {
+  try { await fetch(W + '/drawings'); } catch { out.textContent = `SOME FAILED\nFAIL no Worker at ${W} (node cloudflare/dev.mjs 8144)`; return; }
+  await fetch(W + '/admin/all', { method: 'DELETE', headers: { Authorization: 'Bearer testtoken' } });
+  await new Promise((res) => { const r = indexedDB.deleteDatabase('lunden'); r.onsuccess = r.onerror = r.onblocked = res; });
+  localStorage.clear();
+  let w = await load(`&cloud=${encodeURIComponent(W)}`), d = f.contentDocument, app = w.__app;
+  await app.cloud.ready;
+  check(app.cloud.on && app.cloud.url === W, 'the cloud is on with &cloud=');
+  d.getElementById('start-touch').click(); await wait(50);
+  const btn = d.getElementById('action');
+  const tapeInHall = () => {
+    for (let yaw = 0; yaw < 360; yaw += 15) {
+      app.player.spawn(1.17, 1.6, yaw * Math.PI / 180); app.player.pos.y = 0; app.player.eyeY = 1.62;
+      for (let i = 0; i < 3; i++) app.step(1 / 60);
+      app.camera.rotation.y = yaw * Math.PI / 180; app.camera.rotation.x = 0; app.step(1 / 60);
+      if (/tejpa upp/i.test(btn.textContent) && !btn.hidden) { btn.click(); return true; }
+    }
+    return false;
+  };
+  // 1. tape one up → PUT
+  app.heldDrawing.take(sheet('#d8312e'));
+  check(tapeInHall(), 'taped up in the hall');
+  const ok1 = await until(async () => (await api('/drawings')).length === 1);
+  const id1 = app.posters.list[0]?.rec.id;
+  check(ok1 && (await api('/drawings'))[0].id === id1, 'sent to the server (PUT)');
+  check(await until(() => app.posters.list[0]?.rec.synced), 'marked as synced');
+  const img = await fetch(`${W}/drawings/${id1}`);
+  check(img.ok && img.headers.get('content-type') === 'image/jpeg', 'the server has its image');
+  // 2. someone else's drawing shows up
+  const other = { ...app.posters.list[0].rec, id: 'other-drawing-1', pos: [app.posters.list[0].rec.pos[0] + 0.001, app.posters.list[0].rec.pos[1], app.posters.list[0].rec.pos[2]], time: Date.now(), updated: Date.now(), image: sheet('#2f6fd6') };
+  delete other.synced;
+  await api(`/drawings/${other.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(other) });
+  await app.cloud.sync();
+  check(!!app.posters.byId('other-drawing-1'), 'a drawing from someone else goes up');
+  // 3. throw the first away here → DELETE
+  app.showPoster(app.posters.byId(id1)); app.throwPoster();
+  check(await until(async () => !(await api('/drawings')).some((x) => x.id === id1)), 'thrown away here: gone from the server (DELETE)');
+  // 4. thrown away elsewhere → comes down here
+  await fetch(`${W}/drawings/other-drawing-1`, { method: 'DELETE' });
+  await app.cloud.sync();
+  check(!app.posters.byId('other-drawing-1'), 'thrown away elsewhere: comes down here too');
+  // 5. offline: the change waits in the queue, goes when the server is back
+  app.cloud.url = 'http://localhost:9';
+  app.heldDrawing.take(sheet('#43a047'));
+  tapeInHall();
+  await until(() => app.cloud.queue.length > 0, 3000);
+  const id2 = app.posters.list[0]?.rec.id;
+  const q = JSON.parse(localStorage.getItem('lunden.cloud.queue') ?? '[]');
+  check(q.some((x) => x.id === id2), `offline: queued (${q.length} waiting, kept in localStorage)`);
+  app.cloud.url = W;
+  await app.cloud.sync();
+  check((await api('/drawings')).some((x) => x.id === id2) && !app.cloud.queue.length, 'back online: sent, the queue is empty');
+  // 6. the desk sheet and a cat photo go up
+  app.drawing.stroke({ x: 100, y: 100 }, { x: 300, y: 200 });
+  app.drawing.save();
+  check(await until(async () => { const r = await fetch(W + '/paper'); return r.ok && (await r.json()).updated > 0; }), 'the desk sheet is sent');
+  await app.board.add('Testkatten', sheet('#f2cf2b'));
+  check(await until(async () => (await api('/catphotos')).some((p) => p.name === 'Testkatten')), 'a cat photo is sent');
+  // 7. someone else's cat photo turns up on the board (there is room)
+  await api('/catphotos/someone-elses-cat', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: 'Grannkatten', time: Date.now(), image: sheet('#7b4bc4') }) });
+  await app.cloud.sync();
+  check(app.board.photos.some((p) => p.name === 'Grannkatten'), 'someone else\'s cat photo is on the board');
+  const n = app.board.photos.length;
+  await app.cloud.sync();
+  check(app.board.photos.length === n, 'and only once');
+  // 8. a fresh visitor (empty browser) gets the drawing and the desk sheet
+  await new Promise((res) => { const r = indexedDB.deleteDatabase('lunden'); r.onsuccess = r.onerror = r.onblocked = res; f.src = 'about:blank'; setTimeout(res, 500); });
+  await wait(300);
+  await new Promise((res) => { const r = indexedDB.deleteDatabase('lunden'); r.onsuccess = r.onerror = r.onblocked = res; });
+  localStorage.clear();
+  w = await load(`&cloud=${encodeURIComponent(W)}`); app = w.__app;
+  await app.cloud.ready;
+  check(await until(() => app.posters.byId(id2), 8000), 'a new visitor sees the drawing');
+  check(await until(() => !app.drawing.blank, 4000), 'and the drawing on the desk');
+  // 9. locally without &cloud: off, no requests
+  w = await load(''); app = w.__app;
+  check(!app.cloud.on, 'locally without &cloud: off');
+  out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
+})().catch((e) => { out.textContent = `SOME FAILED\n${lines.join('\n')}\nERROR ${e.stack}`; });
+</script>
+</body>
+</html>

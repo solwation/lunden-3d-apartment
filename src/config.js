@@ -559,6 +559,11 @@ export const SECRET = {
 // The milk carton in the fridge (#168, src/milk.js): 1 l, 7 × 7 × 19.5 cm with a 3 cm gable (a standard carton).
 export const MILK = { w: 0.07, h: 0.195, gable: 0.03, blue: '#2f6fc4', held: { x: 0.2, y: -0.3, z: -0.46 } };
 
+// The shared world (#178, #119, src/cloud.js): the address of the Cloudflare Worker in cloudflare/ (taped-up
+// drawings, the desk sheet, a feed of cat photos). Empty = off: everything stays in this browser only. Written by
+// cloudflare/setup.sh; keep it on one line. Locally (BUILD 'dev') it is off unless the page has &cloud=<url>.
+export const CLOUD_URL = '';
+
 // Drawing with crayons (#93, src/drawing.js): an A3 sheet in the middle of the ALEX desk in Sovrum 3. E on it:
 // the view goes down over the paper, the mouse is freed and you draw with crayons (palette at the bottom,
 // keys 1–9, "Sudda allt"); E / Esc / "Klar" goes back. The drawing is kept in localStorage.

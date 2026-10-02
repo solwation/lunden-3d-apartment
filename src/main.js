@@ -48,6 +48,7 @@ import { Car } from './car.js';
 import { People } from './people.js';
 import { Posters, HeldDrawing, paperOnly } from './posters.js';
 import { PaperBalls } from './paperball.js';
+import { Cloud } from './cloud.js';
 
 const overlay = document.getElementById('overlay');
 const hud = document.getElementById('hud');
@@ -288,7 +289,7 @@ scene.add(target.object); // up only while something that can hit it is in the h
 const marks = new Marks(scene, camera, [world.object, patio.object, target.object], cat); // burn marks, stars, splashes on surfaces (#96)
 // drawings taped up on walls and the fridge (#176); the one in the hand
 const posters = new Posters(scene, world, marks, note);
-posters.load();
+const postersLoaded = posters.load();
 const heldDrawing = new HeldDrawing(scene, camera, drawing);
 drawing.holding = () => heldItem() === heldDrawing;
 heldDrawing.rehang = (rec) => posters.rehang(rec);
@@ -343,7 +344,11 @@ cat.onFound = (label, rare) => catFound(label, rare);
 const board = new CatBoard();
 boardPanel = new BoardPanel(board, boardEl);
 scene.add(board.object);
-board.load();
+const boardLoaded = board.load();
+// the shared world (#178, #119): inert unless CLOUD_URL (or &cloud=) is set — then drawings, the desk sheet and
+// cat photos sync silently with the Cloudflare Worker (cloud.js)
+const cloud = new Cloud({ posters, drawing, board, holding: () => heldItem() === heldDrawing });
+cloud.ready = cloud.on ? Promise.all([postersLoaded, boardLoaded]).then(() => cloud.sync()) : Promise.resolve(); // (tests wait on it)
 cat.onPet = () => {
   bump('petted');
   setTimeout(() => {
@@ -1084,4 +1089,4 @@ function continueAfterReload(r) {
 if (resumeOk && resumed.mode) continueAfterReload(resumed);
 
 // handle for tests/debugging (tools/touchtest.html)
-window.__app = { detail: () => detail, setConstruction, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };
+window.__app = { cloud, detail: () => detail, setConstruction, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };
