@@ -71,6 +71,8 @@ src/fridge.js          the fridge: hollow, lit, opens with E, smoking roast chic
 src/catboard.js        cork board in the kitchen (under the wall clock): a photo (offscreen render) of every petted cat,
                        newest 10 in IndexedDB 'lunden'/'catPhotos', captioned with name + time
 src/shelves.js         kitchen wall shelves with portraits, flowers, books, candles (WALL_SHELVES)
+src/keycabinet.js      hall wall: round mirror + Solstickan key cabinet (E) with the Renault key (E → beep beep);
+                       the cabinet is in world.lids, the key (world.carKey) a target only while it is open
 src/signs.js           hand-lettered name signs on the bedroom doors (DOOR_SIGNS)
 src/water.js           running water: E on a tap/shower (world.taps from interior.js) → stream + hiss
 src/stats.js           visitor statistics (localStorage), "+1" badges per event, the HUD panel
@@ -92,6 +94,7 @@ tools/lighttest.html   headless test: aim at every light switch / floor lamp, to
 tools/pettest.html     headless test of petting the cat (eyes, hand, stats counter)
 tools/notetest.html    headless test of the changelog note ("Nytt", read/close, no walking)
 tools/patiotest.html   headless test of the patio seasons (parasol, beers, snowman) + sofa collision
+tools/keytest.html     headless test of the hall key cabinet: open, car key reachable only then, beep
 tools/clocktest.html   headless test of the wall clock (07:00 start, spool, pause, month → sun height)
 tools/stamp.sh         build the published site with a version stamp (used by CI)
 ```

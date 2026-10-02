@@ -316,6 +316,16 @@ export const WALL_SHELVES = {
   wood: 0xd2b48c, bracket: 0x2a2a2a,
 };
 
+// Hall, the wall on the left as you come in (hall face of the hall/kitchen partition, x 2.057,
+// z 0.465–1.765), src/keycabinet.js (#36): a round mirror and a Solstickan key cabinet (Design House
+// Stockholm, white metal, 16.9 × 16 × 5.5 cm per royaldesign.co.uk, hinged on the left) with a
+// Renault Megane E-Tech key on a hook. rotY −π/2 = facing west (into the hall).
+export const HALL_WALL = {
+  x: 2.057, rotY: -Math.PI / 2,
+  mirror: { z: 0.88, y: 1.55, d: 0.6 },
+  cabinet: { z: 1.5, y: 1.5, w: 0.169, h: 0.16, d: 0.055 },
+};
+
 // Day cycle (src/daycycle.js): one day in `minutes` real minutes. The sun follows the real solar
 // path for the date (declination, hour angle) at Kv. Lunden, Karpvägen / S:t Lars väg in Lund
 // (55.70° N, 13.17° E, docs/tomten-google-maps.jpg). planNorth = compass bearing of the plan's

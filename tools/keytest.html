@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Key cabinet test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+// Hall key cabinet test: aim at the Solstickan cabinet, open it with the action button, the car key
+// becomes a target only once it is open, pressing it beeps (presses counter + LED), close again.
+//   google-chrome --headless=new --dump-dom http://localhost:8137/tools/keytest.html
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const f = document.createElement('iframe');
+f.width = 900; f.height = 600;
+f.src = '../index.html';
+document.body.append(f);
+f.onload = async () => {
+  const w = f.contentWindow, d = f.contentDocument;
+  while (!w.__app) await wait(100);
+  const { player, camera, world, step } = w.__app;
+  const lines = [];
+  const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; };
+  d.getElementById('start-touch').click();
+  await wait(50);
+  const cab = world.lids.find((l) => l.kind === 'keybox');
+  const key = world.carKey;
+  const btn = d.getElementById('action');
+  const aim = (obj) => { // stand 0.9 m west of it, look straight at it
+    cab.object.updateMatrixWorld(true); // no render runs: refresh the (animated) door's matrices
+    const p = obj.getWorldPosition(new obj.position.constructor()); // the iframe's THREE.Vector3
+    player.spawn(p.x - 0.9, p.z, -Math.PI / 2);
+    camera.rotation.y = Math.atan2(-(p.x - player.pos.x), -(p.z - player.pos.z));
+    camera.rotation.x = Math.atan2(p.y - player.eyeY, Math.hypot(p.x - player.pos.x, p.z - player.pos.z));
+    for (let i = 0; i < 3; i++) step(1 / 60);
+  };
+  let pass = check(!!(cab && key), 'cabinet + car key exist');
+  aim(cab.door.children[0]);
+  pass &= check(!btn.hidden && /öppna nyckelskåpet/i.test(btn.textContent), `closed: button "${btn.textContent}"`);
+  aim(key.object.children[1]); // the fob, behind the closed door
+  pass &= check(!/bilnyckeln/i.test(btn.textContent), `key not reachable while closed ("${btn.textContent}")`);
+  aim(cab.door.children[0]);
+  btn.click();
+  for (let i = 0; i < 90; i++) step(1 / 60);
+  pass &= check(cab.isOpen && cab.keyReachable, `cabinet open (t=${cab.t.toFixed(2)})`);
+  aim(key.object.children[1]);
+  pass &= check(!btn.hidden && /trycka på bilnyckeln/i.test(btn.textContent), `open: button "${btn.textContent}"`);
+  btn.click();
+  step(1 / 60);
+  pass &= check(key.presses === 1 && key.blink > 0, `beep beep (presses=${key.presses}, led blinking=${key.blink > 0})`);
+  for (let i = 0; i < 60; i++) step(1 / 60);
+  pass &= check(key.blink === 0, 'LED goes out');
+  cab.toggle();
+  for (let i = 0; i < 90; i++) step(1 / 60);
+  pass &= check(!cab.isOpen && !cab.keyReachable, 'cabinet closes');
+  out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
+};
+</script>
+</body>
+</html>

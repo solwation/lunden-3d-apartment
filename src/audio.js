@@ -264,7 +264,14 @@ export const sfx = {
     tone(t, 0.1, d, { from: opening ? 140 : 90, to: 60, gain: 0.2 });
   },
   /** Light switch click. */
-  click(pos) {
+  /** Car key remote (lock button): the car answers with two short beeps. */
+  carBeep(pos) {
+    if (!ready()) return;
+    const t = ctx.currentTime, d = out(pos, 0.8);
+    tone(t, 0.03, d, { type: 'square', from: 3200, gain: 0.04 }); // the button's own chirp
+    for (const k of [0, 1]) tone(t + 0.12 + k * 0.2, 0.11, d, { type: 'square', from: 2050, gain: 0.12 });
+  },
+    click(pos) {
     if (!ready()) return;
     const t = ctx.currentTime, d = out(pos, 0.6);
     noise(t, 0.02, d, { type: 'highpass', freq: 3000, gain: 0.4 });

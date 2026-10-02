@@ -256,6 +256,8 @@ function use(thing) {
   else if (thing.kind === 'board') showBoard(true);
   else if (thing.kind === 'switch' || thing.kind === 'lamp') { thing.toggle(); if (thing.isOpen) bump('lights'); }
   else if (thing.kind === 'fridge') { thing.toggle(); if (thing.isOpen) bump('fridge'); }
+  else if (thing.kind === 'keybox') thing.toggle();
+  else if (thing.kind === 'carkey') thing.press();
   else if (thing.kind === 'lid') {
     thing.toggle();
     if (thing.isOpen) bump('lids');
@@ -319,6 +321,7 @@ const raycaster = new THREE.Raycaster();
 raycaster.far = 2.2;
 const pickables = [...world.doors.map((d) => d.pickable), ...world.lids.map((l) => l.pickable), ...taps.map((t) => t.pickable), note.pickable, board.pickable, wallClock.pickable, ...lights.targets.map((t) => t.pickable)];
 const center = new THREE.Vector2(0, 0);
+const keyCabinet = world.lids.find((l) => l.kind === 'keybox');
 let focused = null;
 
 /** Is there a wall between the eye and `p` (plan view)? Pickables aren't occluded by walls in the
@@ -339,7 +342,9 @@ function updateFocus() {
   camera.updateMatrixWorld(); // the player just moved it; render hasn't run yet
   raycaster.setFromCamera(center, camera);
   // (the raycaster ignores visibility, so the cat is only a target while it is there)
-  const hit = raycaster.intersectObjects(cat.visible ? [...pickables, cat.object] : pickables, true)[0];
+  // the car key only while its cabinet is open
+  const extra = [...(cat.visible ? [cat.object] : []), ...(keyCabinet?.keyReachable ? [world.carKey.pickable] : [])];
+  const hit = raycaster.intersectObjects(extra.length ? [...pickables, ...extra] : pickables, true)[0];
   focused = hit && !behindWall(hit.point) ? hit.object.userData.door : null;
   const verb = !focused ? '' : focused.verb ?? (focused.isOpen ? 'stänga' : 'öppna');
   if (focused && touch.enabled) {

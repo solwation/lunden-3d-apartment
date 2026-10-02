@@ -8,6 +8,7 @@ import { SwingDoor, SlidingDoor, wardrobeDoors } from './doors.js';
 import { buildExterior } from './exterior.js';
 import { buildFurniture } from './furniture.js';
 import { buildWallShelves } from './shelves.js';
+import { buildHallWall } from './keycabinet.js';
 import { buildInterior } from './interior.js';
 import { Toilet } from './toilet.js';
 import { RoomMap } from './rooms.js';
@@ -503,6 +504,8 @@ export function buildWorld(plan) {
   const furniture = buildFurniture();
   scene.add(furniture.object);
   scene.add(buildWallShelves()); // kitchen wall shelves (WALL_SHELVES)
+  const hallWall = buildHallWall(); // mirror + Solstickan key cabinet (HALL_WALL)
+  scene.add(hallWall.object);
 
   // Site: ground, patio, hedge, fences
   const site = lower.site;
@@ -562,7 +565,8 @@ export function buildWorld(plan) {
     size: { x: W, z: D },
     levels,
     doors: [...l0.doors, ...l1.doors],
-    lids: [...l0.lids, ...l1.lids, ...l0.appliances, ...l1.appliances], // toggled with E, not doors
+    lids: [...l0.lids, ...l1.lids, ...l0.appliances, ...l1.appliances, hallWall.cabinet], // toggled with E, not doors
+    carKey: hallWall.key, // only a target while the key cabinet is open (main.js)
     taps: [...l0.taps, ...l1.taps],
     rooms,
     roomMaps,
