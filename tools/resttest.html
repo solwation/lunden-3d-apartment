@@ -72,13 +72,27 @@ f.onload = async () => {
       for (let i = 0; i < 30; i++) step(1 / 60);
       player.keys = new Set();
       const still = camera.position.distanceTo(p0) < 0.001;
-      const before = player.pos.clone();
+      const before = player.pos.clone(), yawSat = camera.rotation.y;
       (standBtn.hidden ? btn : standBtn).click(); // "Res dig" (the action button, or its own one when something is in reach, #184)
       for (let i = 0; i < 3; i++) step(1 / 60);
-      const back = Math.hypot(player.pos.x - before.x, player.pos.z - before.z) < 0.05 && !rest.active;
+      // up where you stood, or (that being behind you) on a free spot in front, looking the way you looked (#202)
+      const back = (Math.hypot(player.pos.x - before.x, player.pos.z - before.z) < 0.05 || free(t.level, player.pos.x, player.pos.z)) && !rest.active
+        && Math.abs(camera.rotation.y - yawSat) < 1e-6 && (!lying || camera.rotation.x === 0);
       const ok = !!(atSpot && up && still && back && label);
       pass &= check(ok, `${t.name} #${si} (${chosen?.kind ?? t.rest}): "${label}" at spot ${atSpot}, ${lying ? `looking up ${up}, ` : ''}no walking ${still}, back up ${back}`);
     }
+  }
+  // #202: turn your head while seated, get up: you look the same way; the old spot behind you → a spot in front
+  {
+    const t = targets.find((x) => x.name === 'soffan'), sp = t.spots[1];
+    sitOn(t, sp); for (let i = 0; i < 60; i++) step(1 / 60);
+    camera.rotation.y = sp.yaw + 0.5; camera.rotation.x = -0.2; step(1 / 60);
+    const y0 = camera.rotation.y, x0 = camera.rotation.x;
+    rest.standing = { ...rest.standing, x: sp.pos.x + Math.sin(y0) * 0.6, z: sp.pos.z + Math.cos(y0) * 0.6 }; // pretend you came from behind
+    w.__app.standUp(); step(1 / 60);
+    const fx = -Math.sin(y0), fz = -Math.cos(y0), ahead = (player.pos.x - sp.pos.x) * fx + (player.pos.z - sp.pos.z) * fz;
+    pass &= check(Math.abs(camera.rotation.y - y0) < 1e-6 && Math.abs(camera.rotation.x - x0) < 1e-6 && ahead > 0.3 && free(0, player.pos.x, player.pos.z),
+      `head turned 0.5 rad in the sofa: up looking the same way (yaw ${camera.rotation.y.toFixed(2)}, pitch ${camera.rotation.x.toFixed(2)}), ${ahead.toFixed(2)} m in front`);
   }
   // #184: things within reach while sitting — the remote from the sofa, the book from the armchair
   const { remote, book, heldItem, standUp } = w.__app;

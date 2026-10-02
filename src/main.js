@@ -617,13 +617,37 @@ document.addEventListener('keydown', (e) => {
 }, true);
 
 /** Stand up again where you stood before sitting / lying down. */
+/**
+ * Where to get up (#202): where you stood before, unless that is behind you as you look now; then a free spot
+ * in front of the seat, as straight ahead as there is room (clear of walls and furniture, not through a wall), else the old one.
+ */
+function standSpot(seat, yaw, old) {
+  if ((old.x - seat.x) * -Math.sin(yaw) + (old.z - seat.z) * -Math.cos(yaw) >= 0) return old;
+  const [stat, dyn] = player.segments();
+  const dist = (x, z, [ax, az, bx, bz]) => {
+    const vx = bx - ax, vz = bz - az, l = vx * vx + vz * vz || 1, t = Math.max(0, Math.min(1, ((x - ax) * vx + (z - az) * vz) / l));
+    return Math.hypot(x - ax - vx * t, z - az - vz * t);
+  };
+  for (const turn of [0, 0.3, -0.3, 0.6, -0.6, 0.9, -0.9]) for (const d of [0.55, 0.7, 0.85, 1.0, 1.2, 1.4]) { // straight ahead first
+    const x = seat.x - Math.sin(yaw + turn) * d, z = seat.z - Math.cos(yaw + turn) * d;
+    if ([...stat, ...dyn].some((sg) => dist(x, z, sg) < PLAYER.radius + 0.02)) continue;
+    if (behindWall({ x, z })) continue; // (the camera is still at the seat)
+    return { x, z };
+  }
+  return old;
+}
 function standUp() {
   const film = rest.spot?.pc === 'film';
+  const seat = rest.spot?.pos.clone(), lying = rest.kind === 'lie';
+  // you keep looking the way you looked while seated (#202); lying you were facing the ceiling: level
+  const yaw = camera.rotation.y, pitch = lying ? 0 : camera.rotation.x;
   const s = rest.end();
   if (!s) return;
   // getting up from the film: the monitor goes back to the desk (and the game) — the PC stays on
   if (film) for (const t of world.furnitureTargets) if (t.kind === 'pc') t.watch(null);
-  player.spawn(s.x, s.z, s.yaw);
+  const at = seat ? standSpot(seat, yaw, s) : s;
+  player.spawn(at.x, at.z, yaw);
+  camera.rotation.x = pitch;
   player.pos.y = s.y; // spawn() finds the ground floor; upstairs we stood on Övre plan
   player.eyeY = s.y + PLAYER.eye;
   camera.position.y = player.eyeY;
