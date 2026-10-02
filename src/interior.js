@@ -350,10 +350,16 @@ function buildKitchen(B, group, floor, y0, yC, handled, taps, appliances) {
   const hob = hobCab ? [hobCab.z0, hobCab.z1] : null;
   const eastSpans = hob ? [[runZ0, hob[0]], [hob[1], southWall]] : [[runZ0, southWall]];
   const EW = frame(B, { x0: wallX, x1: eastWall, z0: runZ0, z1: southWall }, 'w');
-  for (const [a, b] of eastSpans) EW.box(a, b, -wd, -FT, yW, yTop, M.front);
+  // the first wall cabinet (over the coffee machine) is the cup cabinet: hollow, its door opens (#90)
+  const firstEnd = hob ? hob[0] : southWall - wd;
+  const cupW = (firstEnd - runZ0) / Math.max(1, Math.round((firstEnd - runZ0) / 0.5));
+  for (const [a, b] of eastSpans) EW.box(a === runZ0 ? a + cupW : a, b, -wd, -FT, yW, yTop, M.front);
   // the last 35 cm by the south wall are hidden behind the return wall cabinet
   const visEnd = southWall - wd;
-  doorRow(EW, runZ0, hob ? hob[0] : visEnd, yW, yTop, 0.5, { low: true });
+  doorRow(EW, runZ0 + cupW, hob ? hob[0] : visEnd, yW, yTop, 0.5, { low: true });
+  cupCabinet = { front: wallX, back: eastWall, z0: runZ0, z1: runZ0 + cupW, y0: yW, y1: yTop, material: M.front, handle: M.handle };
+  // the worktop between the tall unit and the hob: somewhere to put a cup down
+  cupSurfaces.push({ x0: eFront + 0.03, x1: eastWall - 0.03, z0: runZ0 + 0.03, z1: firstEnd - 0.03, y: top });
   if (hob) {
     doorRow(EW, hob[1], visEnd, yW, yTop, 0.5, { low: true });
     const yH = yHood + K.hoodHeight;
@@ -478,6 +484,9 @@ function mirrorReflector(group, geo, x, y, z, level) {
 export const mirrorLamps = [];
 /** Loose things among the fitted interior (the Moccamaster): world.js hides them with F. */
 export const looseItems = [];
+/** The cup cabinet's box (cups.js builds it) and worktop rects for cups (#90); filled by buildInterior. */
+export let cupCabinet = null;
+export const cupSurfaces = [];
 
 /** Frosted glass panel between two plan points, floor to 1.95 m, aluminium edge profiles. */
 function glassPanel(B, [ax, az], [bx, bz], y0) {

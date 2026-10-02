@@ -286,6 +286,13 @@ export const TOYS = {
     spot: { intensity: 9, distance: 14, angle: 0.42, penumbra: 0.45, color: 0xfff0d6 } },
 };
 
+// Coffee cups (#90, src/cups.js): three cups in the wall cabinet over the Moccamaster (its door opens with
+// E); taken out, a cup stands on the worktop south of the machine (`counter`), fills from the jug (each
+// cup takes `pour` of it), is held like a toy and can be put down on any table (furniture surfaces).
+// Sizes: a 9 cm tall, 8 cm wide mug (guess).
+export const CUPS = { n: 3, r: 0.04, h: 0.09, color: 0xf3f1ec, coffee: 0x2a1408, pour: 0.25, counter: { x: 5.2, z: 1.68 },
+  held: { x: 0.18, y: -0.2, z: -0.4 } };
+
 // Sitting and lying down (#71/#72, src/rest.js): eye height above the seat / mattress, how far you can
 // turn your head (yaw ± from the way the seat faces) and the pitch range, and the move time.
 export const REST = {

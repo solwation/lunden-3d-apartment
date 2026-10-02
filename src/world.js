@@ -7,14 +7,14 @@ import {
 import { buildStairs } from './stairs.js';
 import { SwingDoor, SlidingDoor, wardrobeDoors } from './doors.js';
 import { buildExterior } from './exterior.js';
-import { buildFurniture } from './furniture.js';
+import { buildFurniture, surfaceBox } from './furniture.js';
 import { buildWallShelves } from './shelves.js';
 import { buildHallWall } from './keycabinet.js';
 import { mergeStatic } from './merge.js';
 import { registerSnow } from './seasons.js';
 import { buildCourtyard } from './courtyard.js';
 import { pavingTexture } from './patio.js';
-import { mirrorLamps, looseItems as interiorLoose, buildInterior } from './interior.js';
+import { mirrorLamps, looseItems as interiorLoose, buildInterior, cupSurfaces, cupCabinet } from './interior.js';
 import { Toilet } from './toilet.js';
 import { RoomMap } from './rooms.js';
 import { buildAO } from './ao.js';
@@ -506,6 +506,7 @@ function buildLevel(floor, li, group) {
 export function buildWorld(plan) {
   mirrorLamps.length = 0; // filled by buildInterior
   interiorLoose.length = 0;
+  cupSurfaces.length = 0;
   const scene = new THREE.Group();
   const [lower, upper] = plan.floors;
   // plan corrections for fixed cabinets (CABINET_FIXES): the hall's EL cabinet is smaller than drawn
@@ -551,6 +552,8 @@ export function buildWorld(plan) {
   // Loose furniture (IKEA LANDSKRONA etc., see FURNITURE in config)
   const furniture = buildFurniture();
   scene.add(furniture.object);
+  // the kitchen worktop as cup surfaces (fitted, so they stay with F; the first one is where a fresh cup stands)
+  const kitchenSurfaces = cupSurfaces.map((r, i) => { const m = surfaceBox(r); if (i === 0) m.userData.counter = true; scene.add(m); return m; });
   const shelves = buildWallShelves(); // kitchen wall shelves (WALL_SHELVES)
   scene.add(shelves);
   const hallWall = buildHallWall(); // mirror + Solstickan key cabinet (HALL_WALL)
@@ -636,6 +639,8 @@ export function buildWorld(plan) {
     object: scene,
     setFurniture,
     looseItems, // hidden by F (main.js may add more)
+    cupSurfaces: [...furniture.surfaces, ...kitchenSurfaces], // table tops a cup can be put on (#90)
+    cupCabinet,
     furnitureTargets: furniture.interactives, // E targets among the furniture (the TV), hidden with F
     lamps: [...furniture.lights, ...mirrorLamps], // floor lamps + mirror LED strips (lights.js makes them switchable)
     windowLights: surroundings.userData.windows, // neighbours' lit windows (daycycle)

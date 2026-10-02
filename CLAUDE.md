@@ -88,6 +88,8 @@ src/holdable.js        things you take and hold (one at a time): home + pick box
 src/saber.js           the lightsaber in Sovrum 2 (SABER), a Holdable
 src/toys.js            Nerf blasters + darts (Sovrum 2), magic wands + sparkles (Sovrum 3), the flashlight
                        (hall wardrobe; one always-present SpotLight), all Holdables (TOYS)
+src/cups.js            coffee cups (CUPS): the wall cabinet over the Moccamaster opens, a cup → worktop → filled
+                       from the jug → held → put down on a table top (furniture `userData.surfaces`, #90)
 src/fridge.js          the fridge: hollow, lit, opens with E, smoking roast chicken (in world.lids)
 src/catboard.js        cork board in the kitchen (under the wall clock): a photo (offscreen render) of every petted cat,
                        newest 10 in IndexedDB 'lunden'/'catPhotos', captioned with name + time
@@ -127,6 +129,7 @@ tools/pctest.html      headless test: switch the gaming PC on/off (game moves, R
                        starts the PC, the bunk seat swings the monitor round (film)
 tools/sabertest.html   headless test: take the lightsaber, swing it, hang it back
 tools/toystest.html    headless test: blaster (dart lands), wand (sparkles), flashlight (beam follows the view)
+tools/cuptest.html     headless test: brew, take a cup out, fill, carry, put down on the dining and coffee tables
 tools/clocktest.html   headless test of the wall clock (07:00 start, spool, pause, month → sun height)
 tools/stamp.sh         build the published site with a version stamp (used by CI)
 ```

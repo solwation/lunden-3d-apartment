@@ -187,6 +187,7 @@ function sidetable(item) {
   const g = new THREE.Group();
   const top = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.22, 0.025, 36), oak);
   top.position.y = 0.52;
+  g.userData.surfaces = [{ x0: -0.15, x1: 0.15, z0: -0.15, z1: 0.15, y: 0.5325 }]; // a cup can stand here (#90)
   g.add(top);
   for (let i = 0; i < 3; i++) {
     const a = (i / 3) * Math.PI * 2;
@@ -212,6 +213,7 @@ const oiledOak = new THREE.MeshStandardMaterial({ color: 0xc69c6d, roughness: 0.
 function coffeetable(item) {
   const g = new THREE.Group();
   const { w, d, h } = item, t = 0.025, legH = h - t;
+  g.userData.surfaces = [{ x0: -w / 2 + 0.03, x1: w / 2 - 0.03, z0: -d / 2 + 0.03, z1: d / 2 - 0.03, y: h }];
   g.add(rbox(w, t, d, 0, h - t / 2, 0, oiledOak, 0.008));
   const lx = w / 2 - 0.09, lz = d / 2 - 0.07;
   for (const x of [-lx, lx]) for (const z of [-lz, lz]) {
@@ -419,6 +421,7 @@ function skansnasTable() {
     leg.castShadow = true;
     g.add(leg);
   }
+  g.userData.surfaces = [{ x0: -hw + 0.04, x1: hw - 0.04, z0: -hl + 0.04, z1: hl - 0.04, y: T.h + 0.004 }];
   g.userData.footprint = [{ x0: -hw, x1: hw, z0: -hl, z1: hl }];
   return g;
 }
@@ -776,6 +779,7 @@ function byas(item) {
     g.add(rbox(door - 0.08, 0.008, 0.004, cx, h - 0.03, d / 2 + 0.001, new THREE.MeshStandardMaterial({ color: 0x9a9a96, roughness: 0.6 }), 0.001));
   }
   g.traverse((m) => { if (m.isMesh) m.castShadow = m.receiveShadow = true; });
+  g.userData.surfaces = [{ x0: -w / 2 + 0.03, x1: w / 2 - 0.03, z0: -d / 2 + 0.03, z1: d / 2 - 0.03, y: h }];
   g.userData.footprint = [{ x0: -w / 2, x1: w / 2, z0: -d / 2, z1: d / 2 }];
   return g;
 }
@@ -873,6 +877,7 @@ function nordkisa(item) {
   g.add(rbox(0.1, 0.022, 0.004, 0, yd + 0.075, w / 2 - 0.013, new THREE.MeshStandardMaterial({ color: 0x5a4632, roughness: 0.8 }), 0.004)); // grip cut-out
   for (let k = 0; k < 5; k++) g.add(rbox(w - 2 * l, 0.012, 0.05, 0, 0.1, -w / 2 + 0.06 + k * ((w - 0.12) / 4), bamboo, 0.003)); // slatted shelf
   g.traverse((m) => { if (m.isMesh) m.castShadow = m.receiveShadow = true; });
+  g.userData.surfaces = [{ x0: -w / 2 + 0.03, x1: w / 2 - 0.03, z0: -w / 2 + 0.03, z1: w / 2 - 0.03, y: h }];
   g.userData.footprint = [{ x0: -w / 2, x1: w / 2, z0: -w / 2, z1: w / 2 }];
   return g;
 }
@@ -1116,6 +1121,7 @@ function gamingdesk(item) {
   g.userData.interact = interact;
   g.userData.keep = [mon, arm, glow, ...g.children.filter((m) => rgb.includes(m.material) || m.material === keysMat || m.material === power)];
   g.traverse((m) => { if (m.isMesh && m !== glow) m.castShadow = true; });
+  g.userData.surfaces = [{ x0: -hw + 0.04, x1: hw - 0.04, z0: -d / 2 + 0.25, z1: d / 2 - 0.03, y: h }];
   g.userData.footprint = [{ x0: -hw, x1: hw, z0: -d / 2, z1: d / 2 }];
   return g;
 }
@@ -1178,11 +1184,21 @@ function rug(item) {
 
 const BUILDERS = { sofa, armchair, footstool, floorlamp, sidetable, coffeetable, loungesofa, loungetable, parasol, planter, bed, skansnasTable, skansnasChair, bunk, daybed, rug, ragrund, coatrack, shoerack, byas, tv, nordkisa, worklamp, gamingdesk, gamingchair };
 
+/** An invisible thin box over a table top (raycast target for putting a cup down, #90). Local rect. */
+export function surfaceBox(r, list) {
+  const m = new THREE.Mesh(new THREE.BoxGeometry(r.x1 - r.x0, 0.01, r.z1 - r.z0), new THREE.MeshBasicMaterial());
+  m.position.set((r.x0 + r.x1) / 2, r.y - 0.005, (r.z0 + r.z1) / 2);
+  m.visible = false;
+  m.userData.surface = r.y;
+  list?.push(m);
+  return m;
+}
+
 /** Build all furniture; returns the scene group, collision segments per level and lamps. */
 export function buildFurniture() {
   const group = new THREE.Group();
   const segments = [[], []];
-  const lights = [], interactives = [];
+  const lights = [], interactives = [], surfaces = [];
   for (const item of FURNITURE) {
     const obj = BUILDERS[item.type](item, lights);
     // one mesh per material per piece (#48); the parasol folds and the beers come and go
@@ -1190,6 +1206,7 @@ export function buildFurniture() {
     const yaw = THREE.MathUtils.degToRad(item.rot ?? 0) + Math.PI; // local +z = facing
     obj.rotation.y = yaw;
     obj.position.set(item.x, LEVELS[item.level].floor + obj.position.y, item.z);
+    for (const r of obj.userData.surfaces ?? []) obj.add(surfaceBox(r, surfaces)); // tables a cup can stand on (#90)
     if (obj.userData.rest) obj.userData.interact = restTarget(obj, item, LEVELS[item.level].floor); // sit / lie (#71/#72)
     if (obj.userData.interact) { // E targets among the furniture (the TV, seats, beds)
       obj.traverse((m) => { m.userData.door = obj.userData.interact; });
@@ -1204,5 +1221,5 @@ export function buildFurniture() {
       for (let i = 0; i < 4; i++) segments[item.level].push([...pts[i], ...pts[(i + 1) % 4]]);
     }
   }
-  return { object: group, segments, lights, interactives };
+  return { object: group, segments, lights, interactives, surfaces };
 }

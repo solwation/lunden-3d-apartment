@@ -10,6 +10,12 @@ import * as THREE from 'three';
 let current = null;
 /** The item in the visitor's hand, or null. */
 export const heldItem = () => current;
+/** Take `item` into the hand (null = empty hand): whatever was held goes home first (cups, #90). */
+export function setHeld(item) {
+  const prev = current;
+  current = item; // first, so the previous item's putBack does not come back here for itself
+  if (prev && prev !== item) prev.putBack();
+}
 
 export class Holdable {
   /**
@@ -43,8 +49,7 @@ export class Holdable {
   }
 
   take() {
-    if (current && current !== this) current.putBack();
-    current = this;
+    setHeld(this);
     this.held = true;
     if (!this.camera.parent) this.scene.add(this.camera); // children of the camera only render in the scene
     this.camera.add(this.model);

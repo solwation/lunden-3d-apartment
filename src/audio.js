@@ -445,6 +445,13 @@ export const sfx = {
     const t = ctx.currentTime, d = out(pos, 0.8);
     [1, 1.26, 1.5, 2].forEach((m, i) => tone(t + i * 0.05, 0.35, d, { type: 'sine', from: 880 * pitch * m, gain: 0.06 }));
   },
+    /** Pouring coffee into a cup: a trickle that rises in pitch as the cup fills. */
+  pour(pos) {
+    if (!ready()) return;
+    const t = ctx.currentTime, d = out(pos, 0.7);
+    noise(t, 1.2, d, { type: 'bandpass', freq: 1300, q: 1.5, gain: 0.12, attack: 0.08 });
+    tone(t, 1.2, d, { type: 'sine', from: 420, to: 900, gain: 0.03 });
+  },
     click(pos) {
     if (!ready()) return;
     const t = ctx.currentTime, d = out(pos, 0.6);

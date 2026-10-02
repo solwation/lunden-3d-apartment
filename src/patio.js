@@ -175,6 +175,7 @@ export function loungetable(item) {
     seasonal.beers.push(beers);
     g.userData.keep = [beers]; // shown/hidden by the season (furniture.js leaves it unmerged)
   }
+  g.userData.surfaces = [{ x0: -w / 2 + 0.03, x1: w / 2 - 0.03, z0: -d / 2 + 0.03, z1: d / 2 - 0.03, y: h }];
   g.userData.footprint = [{ x0: -w / 2, x1: w / 2, z0: -d / 2, z1: d / 2 }];
   return g;
 }

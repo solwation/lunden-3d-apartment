@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Coffee cup test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+// Coffee cups (#90): before brewing a cup in the opened cabinet says "koka kaffe först"; brew; take a cup
+// out (it stands on the worktop), pour (the cup fills, the jug drops), take it, put it down on the dining
+// table and, picked up again, on the coffee table.
+//   google-chrome --headless=new --dump-dom http://localhost:8137/tools/cuptest.html
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const f = document.createElement('iframe');
+f.width = 900; f.height = 600; f.src = '../index.html';
+document.body.append(f);
+f.onload = async () => {
+  const w = f.contentWindow, d = f.contentDocument;
+  while (!w.__app) await wait(100);
+  const { player, camera, step, cups, world, heldItem, scene } = w.__app;
+  const lines = [];
+  const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; };
+  d.getElementById('start-touch').click();
+  await wait(50);
+  const btn = d.getElementById('action');
+  const V = camera.position.constructor;
+  const lookAt = (p, stands, re) => {
+    for (const [x, z] of stands) {
+      player.spawn(x, z, 0);
+      for (let i = 0; i < 3; i++) step(1 / 60);
+      scene.updateMatrixWorld(true);
+      const dx = p.x - camera.position.x, dz = p.z - camera.position.z;
+      camera.rotation.y = Math.atan2(-dx, -dz); camera.rotation.x = Math.atan2(p.y - camera.position.y, Math.hypot(dx, dz));
+      step(1 / 60);
+      if (!btn.hidden && re.test(btn.textContent)) return true;
+    }
+    return false;
+  };
+  const kitchen = [[4.4, 1.7], [4.3, 1.4], [4.5, 2.0], [4.2, 1.2]];
+  const cab = cups.cabinet, cup = cups.cups[1], mocca = world.lids.find((l) => l.kind === 'coffee');
+  let pass = check(lookAt(cab.door.children[0].getWorldPosition(new V()), kitchen, /öppna skåpet/i), `cabinet: "${btn.textContent}"`);
+  btn.click(); for (let i = 0; i < 60; i++) step(1 / 60);
+  pass &= check(cab.isOpen, 'cabinet open');
+  const cupAt = () => cup.model.getWorldPosition(new V()).add(new V(0, 0.05, 0));
+  pass &= check(lookAt(cupAt(), kitchen, /koka kaffe först/i), `before brewing: "${btn.textContent}"`);
+  btn.click(); step(1 / 60);
+  pass &= check(cup.state === 'cabinet', 'nothing happens before brewing');
+  mocca.toggle(); for (let i = 0; i < 20 * 30; i++) mocca.update(1 / 30);
+  pass &= check(mocca.done > 0 && mocca.fill === 1, 'brewed');
+  pass &= check(lookAt(cupAt(), kitchen, /ta fram koppen/i), `after brewing: "${btn.textContent}"`);
+  btn.click(); step(1 / 60);
+  pass &= check(cup.state === 'empty' && Math.abs(cup.model.position.z - 1.68) < 0.01, `on the worktop (${cup.model.position.x.toFixed(2)}, ${cup.model.position.y.toFixed(2)}, ${cup.model.position.z.toFixed(2)})`);
+  pass &= check(lookAt(cupAt(), kitchen, /hälla kaffe i koppen/i), `pour: "${btn.textContent}"`);
+  btn.click(); for (let i = 0; i < 120; i++) step(1 / 60);
+  pass &= check(cup.state === 'full' && cup.fill === 1 && mocca.fill < 1, `full, the jug at ${mocca.fill.toFixed(2)}`);
+  pass &= check(lookAt(cupAt(), kitchen, /ta koppen/i), `take: "${btn.textContent}"`);
+  btn.click(); step(1 / 60);
+  pass &= check(heldItem() === cup && cup.model.parent === camera, 'cup in the hand');
+  // put it down on the dining table, then on the coffee table
+  const table = { x: 3.5, y: 0.75, z: 1.6 }, coffee = { x: 3.64, y: 0.47, z: 10.56 };
+  pass &= check(lookAt(table, [[2.6, 2.2], [2.5, 1.6], [3.5, 2.6]], /ställa ner koppen/i), `dining table: "${btn.textContent}"`);
+  btn.click(); step(1 / 60);
+  pass &= check(cup.state === 'placed' && Math.abs(cup.model.position.y - 0.754) < 0.02, `on the dining table (y ${cup.model.position.y.toFixed(3)})`);
+  pass &= check(lookAt(cupAt(), [[2.6, 2.2], [2.5, 1.6], [3.5, 2.6]], /ta koppen/i), `pick it up again: "${btn.textContent}"`);
+  btn.click(); step(1 / 60);
+  pass &= check(lookAt(coffee, [[3.6, 9.4], [3.0, 9.6], [4.4, 9.5]], /ställa ner koppen/i), `coffee table: "${btn.textContent}"`);
+  btn.click(); step(1 / 60);
+  pass &= check(cup.state === 'placed' && Math.abs(cup.model.position.y - 0.47) < 0.02, `on the coffee table (y ${cup.model.position.y.toFixed(3)})`);
+  out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
+};
+</script>
+</body>
+</html>
