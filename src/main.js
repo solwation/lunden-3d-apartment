@@ -204,7 +204,10 @@ function showCalendar(show) {
   player.keys.clear();
 }
 document.getElementById('cal-close').addEventListener('click', () => showCalendar(false));
-if (day.daylight < 0.3 || params0.has('lights')) lights.setAll(true); // arriving in the dark: lights on
+// the small lamps switch themselves with the dusk, the ceiling lamps are by hand only (#234); &lights: everything on
+lights.forced = params0.has('lights');
+if (lights.forced) lights.setAll(true);
+lights.updateAuto(day.daylight, 0);
 // LED string lights on the patio's screen walls (#81): switched by daylight, borrow pool lights
 {
   const site = plan.floors[0].site;
@@ -1008,7 +1011,8 @@ function step(dt) {
   if (wet && !inShower && performance.now() > shriekAt) { sfx.shriek(); shriekAt = performance.now() + 1500; }
   inShower = wet;
   animateWater(dt);
-  lights.update(Math.max(0, player.level), player.pos);
+  lights.updateAuto(day.daylight, dt);
+  lights.update(Math.max(0, player.level), player.pos, dt);
   day.update(dt);
   wallClock.update(day.hour);
   calendar.update(); // redraws only when the page or the date changed

@@ -572,7 +572,7 @@ function buildKitchen(B, group, floor, y0, yC, handled, taps, appliances) {
     appliances.push(hood);
     // the hood's light on the hob: the wash on the worktop under it, a pool light over the hob
     washPlane(hob[1] - hob[0] - 0.04, eastWall - eFront, hoodWash, -Math.PI / 2, -Math.PI / 2, (eFront + eastWall) / 2, top + 0.012, (hob[0] + hob[1]) / 2);
-    mirrorLamps.push({ object: hood.lampButton, shade: hoodLamp, glows: [hoodWash], height: -0.45, offset: [0.25, -0.12], level: K.level, name: 'lampan i köksfläkten', light: { intensity: 1.2, range: 3 } });
+    mirrorLamps.push({ object: hood.lampButton, shade: hoodLamp, glows: [hoodWash], height: -0.45, offset: [0.25, -0.12], level: K.level, name: 'lampan i köksfläkten', light: { intensity: 1.2, range: 3 }, auto: false }); // a work light: by hand only (#234)
     EW.box(hob[0], hob[1], -wd, 0, yTop, yC, M.white); // Lokal gipsinklädnad ovan spiskåpa
   }
   const fridgeX1 = fridges.length ? Math.max(...fridges.map((c) => c.x1)) : retX0;

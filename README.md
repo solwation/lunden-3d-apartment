@@ -35,7 +35,7 @@ dyker upp för att öppna och stänga dörrar. 📊 visar statistiken.
 <kbd>E</kbd> så får du klappa den. 🐈 Statistiken (katter, dörrar, steg …) sparas i webbläsaren; varje
 sak du gör visas som en liten bricka ("✋ Klappat katt +1").
 
-Ett dygn går på 60 minuter och varje besök börjar på din egen klocka och dagens datum — tänd lamporna med knapparna vid dörrarna när det blir mörkt. Solen går som i Lund. Med klockan på köksväggen (E) kan du spola tiden fram och tillbaka och pausa, och på kattalmanackan bredvid (E) väljer du datum, för att se hur ljuset faller en junimorgon eller en decembermorgon.
+Ett dygn går på 60 minuter och varje besök börjar på din egen klocka och dagens datum — de små lamporna tänds själva när det skymmer, taklamporna tänder du med knapparna vid dörrarna. Solen går som i Lund. Med klockan på köksväggen (E) kan du spola tiden fram och tillbaka och pausa, och på kattalmanackan bredvid (E) väljer du datum, för att se hur ljuset faller en junimorgon eller en decembermorgon.
 
 Vad som är nytt står på lappen på frysen i köket (gå fram och tryck <kbd>E</kbd>). Det som
 tillkommit sedan ditt senaste besök är markerat *Nytt*.

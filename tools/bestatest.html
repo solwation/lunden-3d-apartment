@@ -5,7 +5,7 @@
 <pre id="out">running…</pre>
 <script>
 // The BESTÅ display cabinet (#104): six doors, each opens and closes with the action button; the spots on top
-// light up with the living room's switch.
+// are a small lamp of their own (#234).
 //   google-chrome --headless=new --dump-dom http://localhost:8137/tools/bestatest.html
 const out = document.getElementById('out');
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -39,17 +39,16 @@ f.onload = async () => {
     const shut = !door.isOpen && Math.abs(door.object.rotation.y) < 1e-3;
     pass &= check(/öppna (vitrinskåpet|skåpdörren)/i.test(label) && open && shut, `${door.name} at y ${p.y.toFixed(2)} z ${p.z.toFixed(2)}: "${label}" open=${open} shut=${shut}`);
   }
-  // the spots light up with the room
-  const room = [...lights.rooms.values()].find((R) => R.level === 0 && R.name === 'Vardagsrum');
-  room.toggle();
-  let lens = null;
-  doors[0].object.parent.traverse((m) => { if (m.isMesh && room.mats.includes(m.material)) lens = m; });
-  let fan = null;
-  doors[0].object.parent.traverse((m) => { if (m.isMesh && m.material.userData.glow) fan = m; });
-  pass &= check(!!lens && room.on && lens.material.emissiveIntensity > 0.5, `the spots glow with the room's light (${lens?.material.emissiveIntensity})`);
-  pass &= check(!!fan && room.mats.includes(fan.material) && fan.material.visible && fan.material.opacity > 0.3, `the light on the front / in the glass section is lit (${fan?.material.opacity})`);
-  room.toggle();
-  pass &= check(!room.on && lens.material.emissiveIntensity < 1e-3 && !fan.material.visible, `off with the switch (${lens.material.emissiveIntensity}, glow ${fan.material.visible})`);
+  // the spots are a small lamp of their own (#234): E on a spot, and they switch themselves with the dusk
+  const spots = lights.floorLamps.find((x) => x.name === 'spotsen');
+  let lens = null, fan = null;
+  doors[0].object.parent.traverse((m) => { if (m.isMesh && m.material === spots?.spec.shade) lens = m; if (m.isMesh && m.material.userData.on && m.material.blending === 2) fan = m; });
+  pass &= check(!!spots && spots.auto && !spots.room.on, 'the spots are an automatic lamp of their own, off at noon');
+  spots.set(true);
+  pass &= check(!!lens && lens.material.emissiveIntensity > 0.5, `the spots glow (${lens?.material.emissiveIntensity})`);
+  pass &= check(!!fan && spots.spec.glows.includes(fan.material) && fan.material.visible && fan.material.opacity > 0.3, `the light on the front / in the glass section is lit (${fan?.material.opacity})`);
+  spots.set(false);
+  pass &= check(!spots.room.on && lens.material.emissiveIntensity < 0.1 && !fan.material.visible, `off again (${lens.material.emissiveIntensity}, glow ${fan.material.visible})`);
   out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
 };
 </script>

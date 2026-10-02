@@ -6,7 +6,6 @@ import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.j
 import { FURNITURE, LANDSKRONA as L, LEVELS, SKANSNAS, IDANAS, MYDAL, OTTOMAN, SYMFONISK, SECRET, NYMANE_WALL } from './config.js';
 import { loungesofa, loungetable, parasol, planter } from './patio.js';
 import { Screen } from './screens.js';
-import { lampMat, addLampGlow } from './interior.js';
 import { Openable } from './openables.js';
 import { rifleModel } from './rifle.js';
 import { drawerFill, personFor } from './stuff.js';
@@ -2147,7 +2146,7 @@ function uplightTexture() {
   return uplightTex;
 }
 
-function besta(item) {
+function besta(item, lights) {
   const g = new THREE.Group();
   const B = item, W = B.w, D = B.d, H = B.h, col = W / 2, t = 0.016;
   const white = new THREE.MeshStandardMaterial({ color: 0xf2f2ef, roughness: 0.55 });
@@ -2195,16 +2194,19 @@ function besta(item) {
   [-0.17, -0.05, 0.08].forEach((dx, i) => bottle(-col / 2 + dx, y1, zc, i));
   [-0.17, -0.05, 0.08].forEach((dx, i) => bottle(col / 2 + dx, yShelf + 0.003, zc, i + 3));
   [-0.15, -0.07, 0.01, 0.09].forEach((dx, i) => glassAt(i % 2 ? tumbler : wine, col / 2 + dx, y1, zc + (i % 2 ? 0.05 : -0.04)));
-  // the spots on top (the room's lamp material: lit with the room's switch, #188): black cans at the front edge
-  // aimed out and down over the front (#191), the lens and a thin ring round the rim glow; an additive wash of
-  // light falls down the doors, and the glass section is lit inside (a LED strip under its top + a warm glow on
-  // its back wall)
-  const lens = lampMat(item.level, item.room);
+  // the spots on top (#188), a lamp of their own that switches itself with the dusk (#234; E on a spot): black cans
+  // at the front edge aimed out and down over the front (#191), the lens and a thin ring round the rim glow; an
+  // additive wash of light falls down the doors, and the glass section is lit inside (a LED strip under its top + a
+  // warm glow on its back wall)
+  const lens = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xfff2dc, emissiveIntensity: 0.04 });
+  const spotHeads = new THREE.Group(); // (its origin at the middle spot: the E target)
+  spotHeads.position.set(0, H + 0.04, D - 0.03);
+  g.add(spotHeads);
   const black = new THREE.MeshStandardMaterial({ color: 0x1b1b1d, roughness: 0.45 });
   const glowMat = (opacity) => {
     const m = new THREE.MeshBasicMaterial({ color: 0xffe9c8, map: uplightTexture(), transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false });
-    m.userData.glow = opacity;
-    addLampGlow(item.level, item.room, m);
+    m.visible = false;
+    m.userData.on = opacity; // (lights.js fades it by opacity)
     return m;
   };
   const washMat = glowMat(B.wash.opacity), insideMat = glowMat(B.inside);
@@ -2220,7 +2222,7 @@ function besta(item) {
   }
   for (const x of B.spots) {
     const head = new THREE.Group();
-    head.rotation.x = 2.0; head.position.set(x, H + 0.04, D - 0.03); g.add(head); // the lens out and down over the front
+    head.rotation.x = 2.0; head.position.set(x, 0, 0); spotHeads.add(head); // the lens out and down over the front
     const can = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.07, 14), black); can.castShadow = true; head.add(can);
     const glow = new THREE.Mesh(new THREE.CircleGeometry(0.026, 14), lens);
     glow.rotation.x = -Math.PI / 2; glow.position.y = 0.0352; head.add(glow);
@@ -2257,8 +2259,12 @@ function besta(item) {
     g.add(pivot); targets.push(target); doors.push(pivot);
   }
   g.userData.targets = targets;
-  g.userData.keep = [...doors, ...things.map((t) => t.model)];
+  g.userData.keep = [...doors, ...things.map((t) => t.model), spotHeads];
   g.userData.things = things.map((t) => ({ ...t, back: 'vitrinskåpet' }));
+  // the pool light a little way out in front of the cabinet, below the spots (the group is turned by rot + π)
+  const yaw = THREE.MathUtils.degToRad(item.rot ?? 0) + Math.PI;
+  lights.push({ object: spotHeads, shade: lens, glows: [washMat, insideMat], height: -0.4, level: item.level, name: 'spotsen',
+    light: item.light, offset: [Math.sin(yaw) * 0.4, Math.cos(yaw) * 0.4] });
   g.userData.footprint = [{ x0: -W / 2, x1: W / 2, z0: 0, z1: D }];
   g.position.y = item.y;
   return g;

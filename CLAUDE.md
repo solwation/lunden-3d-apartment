@@ -90,8 +90,9 @@ src/grill.js           the courtyard's kettle grill (GRILL, #204): E lights it �
                        sparks, smoke, crackle + roar, a pool light (lights.extra); out by itself after burnSeconds; F keeps it
 src/surroundings.js    the site (SITE): Hus A/B/C + buildings around, roads, paving, the 3 m drop to the park,
                        Höje å, instanced trees, lit windows, cloudy sky
-src/lights.js          room switches (E), ceiling lamps/pendant/spots/LED, floor lamp; a pool of 4
-                       point lights follows the nearest lit lamps on the visitor's level
+src/lights.js          room switches (E), ceiling lamps/pendant/spots/LED (by hand only), small lamps (FloorLamp:
+                       E, and they switch themselves with the dusk, #234); a pool of 4 point lights goes to the lit
+                       lamps that matter (own room, in sight, nearest), fading when it moves
 src/street.js          Sankt Lars väg's details (SITE.street, #128): curbs, asphalt patches, street lamps (emissive at
                        night), zebra crossing, the site's temporary traffic light + warning signs, cobbles, autumn leaves; the bus stop,
                        the red "Flyttad" sign, a no-parking sign and HepCat's A-board (#129)
@@ -553,7 +554,7 @@ URL parameters (debugging / screenshots):
 - `&cat=x,z[,yawDeg[,y]]` — show the cat there; `&catv=i` coat variant, `&catt=s` animation time, `&catwalk` walking (#224).
 - `&time=HH[.h]` — start at that hour (default: the browser's time), `&month=1–12`, `&day=1–31` (default: today), `&freeze` pauses the clock,
   `&clock` opens the wall clock's strip,
-  `&lights` turns every lamp on (they also start on when arriving in the dark).
+  `&lights` turns every lamp on, ceiling lamps too, and keeps the small ones on (#234).
 - `&car` — our car parked in front of the house. `&water` — turn on every tap and shower. `&tv` — switch the TV on. `&secret=i` — the secret drawer shows surprise i (SECRET.items, with `&open`).
 - `&phone` — the short touch-only start screen. `&install` — show the iPhone install sheet. `&note` — open the changelog note. `&pet` (with `&cat=`) — the cat is being petted.
 - `&clip=y` — clip everything above height y (cut-away plan view, e.g.
@@ -633,10 +634,19 @@ screenshots into the session scratchpad, not the repo.
 - Lights: switches are placed automatically by the latch side of each interior swing door (room
   side), snapped onto a wall outline segment that faces the room and covers the whole plate (`wallFace`,
   #76; lighttest checks every switch has a wall right behind it) plus `LIGHTING.manual` for open rooms and the downstairs Klk (door spans the whole wall).
-  Lamp emissive parts use one material per room (`lampMaterials` in interior.js). Extra additive glows (the BESTÅ wash and glass-section glow, #188, #191) register
+  Lamp emissive parts use one material per room (`lampMaterials` in interior.js). Extra additive glows register
   with `addLampGlow` (switched by opacity); a material with `userData.lit` keeps its own lit colours (Sovrum 1's black
   string shade, `style: 'string'` in `LIGHTING.pendants`, #174). Never add
   per-lamp PointLights — reuse the pool (constant light count = no shader recompiles).
+  Small lamps vs ceiling lamps (#234): everything in `world.lamps` (furniture `lights` + interior `mirrorLamps`: the floor
+  lamp, the NYMÅNE work and bunk reading lamps, the SYMFONISK lamp, the BESTÅ spots with their washes — a lamp of their own
+  now, E on a spot — the bench light, the bathroom mirror LED) is a `FloorLamp`; unless its spec has `auto: false` (the
+  cooker hood's light) it goes on below `LIGHTING.auto.on` daylight and off above `.off` with a `fade` (also when the clock
+  is spooled); an E toggle holds until that state next changes (`updateAuto`). The ceiling lamps start off and follow only
+  their switches. The pool (`update`): candidates are scored by distance, × `poolPick.otherRoom` outside the visitor's room
+  (rooms.js), × `hidden` behind a wall/door leaf (a lamp behind a wall in another room gets none: it would only shine
+  through the wall), ÷ `stick` for the lamp already held; a pool light that moves fades out and in over `poolFade`
+  (the old nearest-4 jump made a lit room go dark as you walked out of it).
 - Day cycle: `DAY` in config. Every visit starts at the browser's own time and date (#95; `&time` /
   `&month` / `&day` override, `&month` alone = the 15th); the date rolls over at midnight. The sun
   position is computed (declination, hour angle, equation of time, CEST in summer) for Lund and

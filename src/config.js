@@ -889,6 +889,17 @@ export const LIGHTING = {
   spots: { intensity: 2.0, range: 4, color: 0xfff0dc },
   pendant: { intensity: 2.2, range: 5, color: 0xffd9a8 },
   floorLamp: { intensity: 1.6, range: 5, color: 0xffd59a },
+  // Small lamps (#234: every lamp lights.js gets from world.lamps — floor/work/reading lamps, the SYMFONISK lamp, the
+  // BESTÅ spots, the kitchen bench light, the bathroom mirror LED — except those whose spec says `auto: false`, the
+  // cooker hood's light) switch themselves on below daylight `on` and off above `off` (hysteresis, like the patio's
+  // string lights), fading over `fade` s. E still toggles one; that holds until the automatic state next changes.
+  // The ceiling lamps (the room switches) are by hand only. Pool lights move between lamps fading out/in over
+  // `poolFade` s; a lamp in the visitor's own room counts as `otherRoom` times nearer than one in another room, one in
+  // line of sight `hidden` times nearer than one behind a wall (none for one behind a wall in another room), and a
+  // lamp that has a pool light keeps it unless another is `stick` times nearer (no flicker on a doorstep). By eye.
+  auto: { on: 0.3, off: 0.4, fade: 1 },
+  poolFade: 0.4,
+  poolPick: { otherRoom: 3, hidden: 6, stick: 1.5 },
   wetRooms: ['Badrum', 'WC/dusch'],       // spots in the soffit instead of a ceiling lamp
   pendants: [
     { level: 0, room: 'Kök / matplats', x: 3.5, z: 1.41, drop: 1.25 }, // over the dining table (SKANSNAS.table)
@@ -1041,7 +1052,8 @@ export const FURNITURE = [
     sections: [0.64, 0.65], walnut: 0x6e4b33, handle: 0x1e1e20, spots: [-0.4, 0, 0.4], openDeg: 100,
     // the spots on top shine down over the front (#191): a soft wash `w` × `h` down the doors, and the glass section
     // is lit inside (a LED strip under its top, a warm glow on its back wall) — a look, not measured
-    wash: { w: 0.5, h: 1.0, opacity: 0.35 }, inside: 0.5 },
+    wash: { w: 0.5, h: 1.0, opacity: 0.35 }, inside: 0.5,
+    light: { intensity: 0.8, range: 3 } }, // its pool light when the spots are on (#234; a look)
   // Secretary "Bang" (IKEA, c. 1960, #118, docs/sekretar-bang-*.png; Bukowskis: teak veneer, L 70, D 30, H 106.5 cm) on
   // the east wall between the TV bench (z < 8.22) and the chaise (z > 10.55), opposite the BYÅS end. Leg height, the
   // drawer, the flap's slope, the shelf and the right drawer column's width are *guesses* from the photos.

@@ -6,8 +6,8 @@ import { stairHeight } from './stairs.js';
 
 // Room lights: a switch by every room's door (E) turns the room's lamps on and off — a ceiling
 // lamp per room (spots / globe / LED strips where interior.js built those) — and floor lamps
-// toggle on their own. Light comes from a small pool of shadowless point lights given to the
-// nearest lit lamps on the visitor's level each frame, so the shader light count never changes.
+// toggle on their own and switch themselves with the dusk (#234). Light comes from a small pool of shadowless point
+// lights given to the lit lamps on the visitor's level that matter most, so the shader light count never changes.
 
 const plateMat = new THREE.MeshStandardMaterial({ color: 0xf6f6f3, roughness: 0.5 });
 const rockerMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.35 });
@@ -139,14 +139,16 @@ class Switch {
   update() { this.rocker.rotation.x = this.room.on ? 0.18 : -0.18; }
 }
 
-/** Floor lamp from furniture.js: E on the lamp toggles it. */
+/** A small lamp (floor/work/reading lamp, BESTÅ spots, bench light, mirror LED … from world.lamps): E on it toggles it;
+ * unless its spec says `auto: false` it also switches itself with the dusk (#234, Lights.updateAuto). `room.on` is
+ * where it is going, `k` how far on it is (a fade when it switches itself, at once by hand). */
 class FloorLamp {
   constructor(spec) {
-    Object.assign(this, { kind: 'lamp', name: spec.name ?? 'golvlampan', on: false, spec });
+    Object.assign(this, { kind: 'lamp', name: spec.name ?? 'golvlampan', on: false, spec, auto: spec.auto !== false, k: 0 });
     this.room = { on: false, lamps: [], mats: [spec.shade] };
     const p = spec.object.getWorldPosition(new THREE.Vector3());
     const [ox, oz] = spec.offset ?? [0, 0];
-    this.room.lamps.push({ pos: new THREE.Vector3(p.x + ox, p.y + spec.height, p.z + oz), ...L.floorLamp, ...(spec.light ?? {}), level: spec.level });
+    this.room.lamps.push({ pos: new THREE.Vector3(p.x + ox, p.y + spec.height, p.z + oz), ...L.floorLamp, ...(spec.light ?? {}), level: spec.level, owner: this });
     spec.object.traverse((m) => { m.userData.door = this; });
     this.pickable = spec.object;
     this.set(false);
@@ -155,16 +157,44 @@ class FloorLamp {
   get isOpen() { return this.room.on; }
   get verb() { return this.room.on ? 'släcka' : 'tända'; }
 
+  /** On or off at once (E, &lights, tests). */
   set(on) {
     this.room.on = on;
-    this.spec.shade.emissiveIntensity = on ? 0.9 : 0.04;
-    for (const m of this.spec.glows ?? []) { m.opacity = on ? m.userData.on : 0; m.visible = on; } // additive washes (#221)
+    this.k = on ? 1 : 0;
+    this.show();
+  }
+
+  /** Fade towards `room.on` (called every frame). */
+  update(dt) {
+    const goal = this.room.on ? 1 : 0;
+    if (this.k === goal) return;
+    this.k += Math.sign(goal - this.k) * Math.min(Math.abs(goal - this.k), dt / L.auto.fade);
+    this.show();
+  }
+
+  show() {
+    const k = this.k;
+    this.spec.shade.emissiveIntensity = 0.04 + 0.86 * k;
+    for (const m of this.spec.glows ?? []) { m.opacity = k * (m.userData.on ?? m.userData.glow); m.visible = k > 0.001; } // additive washes (#221)
   }
 
   toggle() {
     this.set(!this.room.on);
     sfx.click(this.room.lamps[0].pos);
   }
+}
+
+/** Does the line a → b (plan x/z) cross one of the wall outline segments? (the ends just short of b don't count) */
+function blocked(segs, ax, az, bx, bz) {
+  for (const [cx, cz, dx, dz] of segs) {
+    const d = (bx - ax) * (dz - cz) - (bz - az) * (dx - cx);
+    if (Math.abs(d) < 1e-9) continue;
+    const t = ((cx - ax) * (dz - cz) - (cz - az) * (dx - cx)) / d;
+    if (t <= 0 || t >= 0.97) continue;
+    const u = ((cx - ax) * (bz - az) - (cz - az) * (bx - ax)) / d;
+    if (u > 0 && u < 1) return true;
+  }
+  return false;
 }
 
 export class Lights {
@@ -318,6 +348,10 @@ export class Lights {
       scene.add(l);
       return l;
     });
+    this.slots = this.pool.map(() => ({ lamp: null, f: 0 })); // which lamp each pool light serves, how far faded in
+    this.roomMaps = world.roomMaps;
+    this.levels = world.levels;
+    this.doors = world.doors.map((d) => ({ door: d, level: levelOf(d) }));
   }
 
   addSwitch(R, x, y, z, normal, scene) {
@@ -328,28 +362,88 @@ export class Lights {
 
   get targets() { return [...this.switches, ...this.floorLamps]; }
 
-  /** All rooms (and floor lamps) on or off. */
+  /** All rooms (and small lamps) on or off. */
   setAll(on) {
     for (const R of this.rooms.values()) if (R.on !== on) R.toggle();
     for (const s of this.switches) s.update();
     for (const f of this.floorLamps) f.set(on);
   }
 
-  /** Give the pool lights to the nearest lit lamps on `level` (call every frame). */
-  update(level, pos) {
-    const lit = [];
-    // floor / bedside lamps hidden with the furniture (F) give no light
-    const shownLamps = this.floorLamps.filter((f) => { for (let p = f.spec.object.parent; p; p = p.parent) if (!p.visible) return false; return true; });
-    for (const R of [...this.rooms.values(), ...shownLamps.map((f) => f.room)]) {
-      if (!R.on) continue;
-      for (const lamp of R.lamps) if (lamp.level === level) lit.push(lamp);
+  /** The small lamps follow the dusk (#234): on below LIGHTING.auto.on daylight, off above .off. Only a change of
+   * that state switches them, so a lamp toggled by hand stays as it is until the next dusk / dawn. The first call
+   * sets them at once; later changes fade. `forced` (&lights) keeps everything on. */
+  updateAuto(daylight, dt) {
+    const A = L.auto, first = this.dark === undefined;
+    const dark = first ? daylight < (A.on + A.off) / 2 : this.dark ? daylight < A.off : daylight < A.on;
+    if (dark !== this.dark) {
+      this.dark = dark;
+      if (!this.forced) for (const f of this.floorLamps) if (f.auto) { if (first) f.set(dark); else f.room.on = dark; }
+    }
+    for (const f of this.floorLamps) f.update(dt);
+  }
+
+  /** The room a lamp is in (cached; lamps on a window board are just outside the room map: the room in front). */
+  lampRoom(lamp) {
+    if (lamp.roomName === undefined) {
+      const map = this.roomMaps[lamp.level];
+      lamp.roomName = [[0, 0], [0, 0.35], [0, -0.35], [0.35, 0], [-0.35, 0], [0, 0.7], [0, -0.7]]
+        .map(([dx, dz]) => map?.at(lamp.pos.x + dx, lamp.pos.z + dz)).find(Boolean) ?? null;
+    }
+    return lamp.roomName;
+  }
+
+  /**
+   * Hand the pool lights to the lit lamps on `level` that matter most to the visitor at `pos` (call every frame):
+   * the nearest, but lamps in the visitor's own room and in line of sight first (#234), and a lamp keeps its pool
+   * light until another is clearly nearer. A pool light that moves fades out and the next lamp fades in
+   * (LIGHTING.poolFade) instead of jumping — a lit room no longer seems to go dark when you walk out of it.
+   */
+  update(level, pos, dt = 1 / 60) {
+    const on = new Set(), cands = [];
+    // small lamps hidden with the furniture (F) give no light
+    const shown = (f) => { for (let p = f.spec.object.parent; p; p = p.parent) if (!p.visible) return false; return true; };
+    for (const R of this.rooms.values()) if (R.on) for (const lamp of R.lamps) { on.add(lamp); if (lamp.level === level) cands.push([lamp, 1, R.name]); }
+    for (const f of this.floorLamps) {
+      if (f.k <= 0.001 || !shown(f)) continue;
+      for (const lamp of f.room.lamps) { on.add(lamp); if (lamp.level === level) cands.push([lamp, f.k, this.lampRoom(lamp)]); }
     }
     // extra lamps that switch themselves (the patio string lights, #81): k = how far on they are
-    for (const lamp of this.extra) if (lamp.level === level && lamp.k > 0.01) lit.push(lamp);
-    lit.sort((a, b) => a.pos.distanceToSquared(pos) - b.pos.distanceToSquared(pos));
-    this.pool.forEach((l, i) => {
-      const lamp = lit[i];
-      l.intensity = lamp ? lamp.intensity * (lamp.k ?? 1) : 0;
+    for (const lamp of this.extra) if (lamp.k > 0.01) { on.add(lamp); if (lamp.level === level) cands.push([lamp, lamp.k, null]); }
+    const P = L.poolPick, here = this.roomMaps[level]?.at(pos.x, pos.z) ?? null;
+    const segs = [...(this.levels[level]?.wallSegments ?? []), ...this.doors.filter((d) => d.level === level).map((d) => d.door.segment())]; // walls + door leaves
+    const held = new Set(this.slots.map((s) => s.lamp));
+    const score = new Map();
+    for (const [lamp, , room] of cands) {
+      let d = Math.hypot(lamp.pos.x - pos.x, lamp.pos.z - pos.z, (lamp.pos.y - pos.y) * 0.5);
+      const own = here && room === here, hidden = blocked(segs, pos.x, pos.z, lamp.pos.x, lamp.pos.z);
+      if (hidden && !own) continue; // a lamp in another room behind a wall: its light would only shine through the wall
+      if (!own) d *= P.otherRoom;
+      if (hidden) d *= P.hidden;
+      if (held.has(lamp)) d /= P.stick;
+      score.set(lamp, d);
+    }
+    this.scores = score; // (tests and debugging)
+    const k = new Map(cands.map(([lamp, kk]) => [lamp, kk]));
+    const ranked = cands.filter((c) => score.has(c[0])).sort((a, b) => score.get(a[0]) - score.get(b[0]));
+    const want = new Set(ranked.slice(0, this.slots.length).map((c) => c[0]));
+    const step = this.primed ? dt / L.poolFade : 1; // (the first frame: at once)
+    this.primed = true;
+    for (const s of this.slots) {
+      if (!s.lamp) continue;
+      if (!on.has(s.lamp)) { s.lamp = null; s.f = 0; continue; } // switched off: its glow went at once, so does its light
+      s.f = want.has(s.lamp) ? Math.min(1, s.f + step) : s.f - step;
+      if (s.f <= 0) { s.lamp = null; s.f = 0; }
+    }
+    const placed = new Set(this.slots.map((s) => s.lamp));
+    for (const lamp of want) {
+      if (placed.has(lamp)) continue;
+      const s = this.slots.find((x) => !x.lamp);
+      if (!s) break;
+      Object.assign(s, { lamp, f: Math.min(1, step) });
+    }
+    this.slots.forEach((s, i) => {
+      const l = this.pool[i], lamp = s.lamp;
+      l.intensity = lamp ? lamp.intensity * (k.get(lamp) ?? 0) * s.f : 0;
       if (!lamp) return;
       l.position.copy(lamp.pos);
       l.color.setHex(lamp.color);
