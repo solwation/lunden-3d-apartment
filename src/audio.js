@@ -135,25 +135,44 @@ export const sfx = {
     tone(t + dur - 0.03, 0.08, d, { from: wardrobe ? 260 : 160, to: 90, gain: 0.25 });
   },
   /** "Mi-aa-ow": sawtooth voice through moving formants. pitch ~1 = average cat. */
-  meow(pos, pitch = 1) {
+  /** Meow. `voice` (rare breeds): 'trill' = soft rolling mrrrp that rises at the end (perser),
+   * 'rasp' = long, loud, hoarse and insistent (sphynx); null = the ordinary meow. */
+  meow(pos, pitch = 1, voice = null) {
     if (!ready()) return;
-    const t = ctx.currentTime, d = out(pos, 0.9);
-    const dur = 0.55 + Math.random() * 0.35;
+    const t = ctx.currentTime, d = out(pos, voice === 'rasp' ? 1.15 : voice === 'trill' ? 0.75 : 0.9);
+    const dur = voice === 'rasp' ? 0.95 + Math.random() * 0.35 : 0.55 + Math.random() * 0.35;
     const f0 = 480 * pitch;
     const o = ctx.createOscillator();
-    o.type = 'sawtooth';
-    o.frequency.setValueAtTime(f0 * 0.9, t);
-    o.frequency.linearRampToValueAtTime(f0 * 1.3, t + dur * 0.3);
-    o.frequency.linearRampToValueAtTime(f0 * 0.75, t + dur);
+    o.type = voice === 'trill' ? 'triangle' : 'sawtooth';
+    if (voice === 'trill') { // low rolling start, then a questioning rise
+      o.frequency.setValueAtTime(f0 * 0.7, t);
+      o.frequency.linearRampToValueAtTime(f0 * 0.85, t + dur * 0.45);
+      o.frequency.linearRampToValueAtTime(f0 * 1.45, t + dur);
+    } else {
+      o.frequency.setValueAtTime(f0 * 0.9, t);
+      o.frequency.linearRampToValueAtTime(f0 * (voice === 'rasp' ? 1.15 : 1.3), t + dur * 0.3);
+      o.frequency.linearRampToValueAtTime(f0 * 0.75, t + dur);
+    }
     const vib = ctx.createOscillator(), vg = ctx.createGain();
-    vib.frequency.value = 6; vg.gain.value = f0 * 0.02;
+    vib.frequency.value = voice === 'rasp' ? 9 : 6; vg.gain.value = f0 * (voice === 'rasp' ? 0.05 : 0.02);
     vib.connect(vg).connect(o.frequency);
     const env = ctx.createGain();
     env.gain.setValueAtTime(0, t);
     env.gain.linearRampToValueAtTime(0.35, t + 0.05);
     env.gain.setValueAtTime(0.35, t + dur * 0.6);
     env.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-    o.connect(env);
+    let src = o;
+    if (voice === 'trill') { // the rolled r: amplitude flutter over the first half
+      const am = ctx.createGain(), fl = ctx.createOscillator(), fd = ctx.createGain();
+      am.gain.value = 0.6;
+      fl.frequency.value = 28; fd.gain.setValueAtTime(0.45, t); fd.gain.linearRampToValueAtTime(0, t + dur * 0.5);
+      fl.connect(fd).connect(am.gain);
+      o.connect(am);
+      src = am;
+      fl.start(t); fl.stop(t + dur + 0.05);
+    }
+    src.connect(env);
+    if (voice === 'rasp') noise(t, dur, d, { type: 'bandpass', freq: 2600, q: 1.5, gain: 0.12, attack: 0.05 }); // hoarse
     // formants i → a → o
     for (const [a, b, c, q, gain] of [[350, 900, 550, 6, 1], [2300, 1400, 900, 8, 0.6], [3200, 2800, 2500, 10, 0.25]]) {
       const bp = ctx.createBiquadFilter();
@@ -174,19 +193,26 @@ export const sfx = {
     noise(t, 0.04, d, { type: 'highpass', freq: 1800, gain: opening ? 0.2 : 0.35 });
     tone(t, 0.06, d, { from: 900, to: 600, gain: opening ? 0.08 : 0.14 });
   },
-  /** Purring for `dur` seconds: a ~26 Hz pulse train through a low formant, breathing in and out. */
-  purr(pos, dur = 4, pitch = 1) {
+  /** Purring for `dur` seconds: a ~26 Hz pulse train through a low formant, breathing in and out.
+   * `voice` 'trill' (perser) adds little mrrp chirps, 'rasp' (sphynx) purrs deeper, rougher, louder. */
+  purr(pos, dur = 4, pitch = 1, voice = null) {
     if (!ready()) return;
-    const t = ctx.currentTime, d = out(pos, 1.1);
+    const t = ctx.currentTime, d = out(pos, voice === 'rasp' ? 1.4 : 1.1);
+    if (voice === 'trill') {
+      for (let c = 0.6; c < dur - 0.3; c += 1.1 + Math.random() * 0.5) {
+        tone(t + c, 0.14, d, { type: 'triangle', from: 560 * pitch, to: 880 * pitch, gain: 0.07 });
+      }
+    }
     const src = ctx.createBufferSource();
     src.buffer = noiseBuf;
     src.loop = true;
     const lp = ctx.createBiquadFilter();
-    lp.type = 'lowpass'; lp.frequency.value = 260 * pitch;
+    lp.type = 'lowpass'; lp.frequency.value = (voice === 'rasp' ? 420 : 260) * pitch;
     const am = ctx.createGain();
     am.gain.value = 0.5;
     const lfo = ctx.createOscillator(), depth = ctx.createGain();
-    lfo.type = 'sawtooth'; lfo.frequency.value = 26 * pitch; depth.gain.value = 0.5;
+    lfo.type = voice === 'rasp' ? 'square' : 'sawtooth';
+    lfo.frequency.value = (voice === 'rasp' ? 21 : 26) * pitch; depth.gain.value = 0.5;
     lfo.connect(depth).connect(am.gain);
     const env = ctx.createGain();
     env.gain.setValueAtTime(0, t);

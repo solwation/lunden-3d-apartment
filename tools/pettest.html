@@ -40,6 +40,7 @@ f.onload = async () => {
   pass &= check(/Klappat katt \+1/.test(badge), `badge "${badge}"`);
   pass &= check(cat.hand.visible, 'hand visible');
   pass &= check(cat.eyes.every((e) => e.shut.visible && !e.eye.visible), 'eyes closed');
+  pass &= check(cat.voice === null && !cat.stars.visible, `ordinary cat: no special voice, no stars (${cat.breed.name})`);
   btn.click(); // petting again while it purrs counts once
   for (let i = 0; i < 6 * 60; i++) step(1 / 60);
   pass &= check(!cat.petting && !cat.hand.visible && cat.eyes.every((e) => e.eye.visible), 'stops after a while');
@@ -53,8 +54,38 @@ f.onload = async () => {
   await wait(400); // panel refreshes 4×/s
   const petted = Number(d.querySelector('#stats')?.textContent.match(/Klappade katter(\d+)/)?.[1]);
   pass &= check(petted === 1, `stats panel: klappade katter = ${petted}`);
+  pass &= await rareCat(lines, check);
   out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
 };
+
+/** A rare cat (sphynx, &catb=6): its own voice, and stars rise around it while it is petted. */
+async function rareCat(lines, check) {
+  const g = document.createElement('iframe');
+  g.width = 900; g.height = 600;
+  g.src = '../index.html?cat=2.8,9.8,180&catb=6';
+  document.body.append(g);
+  await new Promise((r) => { g.onload = r; });
+  const w = g.contentWindow, d = g.contentDocument;
+  while (!w.__app) await wait(100);
+  const { player, camera, cat, step } = w.__app;
+  d.getElementById('start-touch').click();
+  await wait(50);
+  player.spawn(2.8, 9.0, Math.PI);
+  cat.object.updateMatrixWorld(true);
+  camera.rotation.x = Math.atan2(0.3 - player.eyeY, 0.8);
+  for (let i = 0; i < 5; i++) step(1 / 60);
+  let pass = check(cat.breed.rare && cat.voice === 'rasp', `rare cat: ${cat.breed.name}, voice "${cat.voice}"`);
+  pass &= check(!cat.stars.visible, 'no stars before the pat');
+  d.getElementById('action').click();
+  for (let i = 0; i < 60; i++) step(1 / 60);
+  const c = cat.stars.geometry.attributes.color.array;
+  const lit = [...Array(c.length / 3).keys()].filter((i) => c[i * 3] > 0.05).length;
+  const ys = cat.stars.geometry.attributes.position.array.filter((_, i) => i % 3 === 1);
+  pass &= check(cat.petting && cat.stars.visible && lit > 5 && Math.max(...ys) > 0.3, `stars while petting (${lit} lit, top y ${Math.max(...ys).toFixed(2)})`);
+  for (let i = 0; i < 6 * 60; i++) step(1 / 60);
+  pass &= check(!cat.petting && !cat.stars.visible, 'stars gone after the pat');
+  return pass;
+}
 </script>
 </body>
 </html>

@@ -36,9 +36,9 @@ export const BREEDS = [
     coats: [coat('rödrandig'), coat('grå'), solid('brunrandig', 0x6e5640, 0xc9a43a, { bib: 0xe8dcc8, paw: 0xe8dcc8 })] },
   { name: 'norsk skogkatt', weight: 5, size: 1.2, fluff: 1.2, tail: 1.8, pitch: 0.85,
     coats: [coat('svartvit'), coat('grå'), coat('vit')] },
-  { name: 'perser', weight: 3, rare: true, fluff: 1.3, head: 1.15, muzzle: 0.55, ears: 0.6, tail: 1.6, pitch: 1.2,
+  { name: 'perser', weight: 3, rare: true, voice: 'trill', fluff: 1.3, head: 1.15, muzzle: 0.55, ears: 0.6, tail: 1.6, pitch: 1.2,
     coats: [coat('vit'), solid('gräddvit', 0xe8d8b8, 0xd08a2a), coat('grå')] },
-  { name: 'sphynx', weight: 1, rare: true, fluff: 0.82, ears: 1.7, tail: 0.6, head: 0.95, pitch: 1.25,
+  { name: 'sphynx', weight: 1, rare: true, voice: 'rasp', fluff: 0.82, ears: 1.7, tail: 0.6, head: 0.95, pitch: 1.25,
     coats: [solid('naken', 0xd8b0a4, 0x7fb3e6, { ear: 0xcf9f95, tip: 0xc99b90 })] },
 ];
 
@@ -69,6 +69,47 @@ const pupilMat = new THREE.MeshStandardMaterial({ color: 0x050505, roughness: 0.
 const skin = new THREE.MeshStandardMaterial({ color: 0xe8b996, roughness: 0.7 });
 
 const PET_TIME = 4.5; // seconds of purring per pat
+const STARS = 28;     // star particles around a rare cat while it is petted
+
+/** Soft five-pointed star with a glow, for the stars around a petted rare cat. */
+function starTexture() {
+  const c = document.createElement('canvas');
+  c.width = c.height = 64;
+  const g = c.getContext('2d');
+  const glow = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+  glow.addColorStop(0, 'rgba(255,240,180,0.9)');
+  glow.addColorStop(0.35, 'rgba(255,220,120,0.25)');
+  glow.addColorStop(1, 'rgba(255,220,120,0)');
+  g.fillStyle = glow;
+  g.fillRect(0, 0, 64, 64);
+  g.fillStyle = '#fff6d0';
+  g.beginPath();
+  for (let i = 0; i < 10; i++) {
+    const r = i % 2 ? 7 : 18, a = -Math.PI / 2 + (i * Math.PI) / 5;
+    g.lineTo(32 + r * Math.cos(a), 32 + r * Math.sin(a));
+  }
+  g.fill();
+  return new THREE.CanvasTexture(c);
+}
+
+/** Stars drifting up around the cat (one Points object, additive; colour = brightness). */
+function buildStars() {
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(STARS * 3), 3));
+  geo.setAttribute('color', new THREE.BufferAttribute(new Float32Array(STARS * 3), 3));
+  const pts = new THREE.Points(geo, new THREE.PointsMaterial({
+    size: 0.09, map: starTexture(), vertexColors: true, transparent: true, depthWrite: false,
+    blending: THREE.AdditiveBlending, toneMapped: false,
+  }));
+  pts.frustumCulled = false;
+  pts.visible = false;
+  pts.raycast = () => {}; // Points pick within 1 m by default: never steal the cat's E target
+  // each star: its own start in the cycle, angle around the cat and tint (gold … pale pink/blue)
+  pts.userData.seeds = [...Array(STARS)].map((_, i) => ({
+    phase: i / STARS, angle: i * 2.39996, tint: [[1, 0.8, 0.3], [1, 0.85, 0.45], [1, 0.7, 0.85], [0.8, 0.85, 1]][i % 4],
+  }));
+  return pts;
+}
 
 export function applyVariant(v) {
   for (const [role, m] of Object.entries(ROLE)) m.color.setHex(v[role]);
@@ -219,6 +260,8 @@ export class CatSpawner {
     // look at the cat + E pets it (main.js treats this like a door target)
     this.interact = { name: 'katten', kind: 'cat', verb: 'klappa', pickable: cat };
     cat.traverse((o) => { o.userData.door = this.interact; });
+    this.stars = buildStars(); // only for rare cats while they are petted
+    cat.add(this.stars);
     this.petT = 0;            // seconds of petting left
     this.petPhase = 0;
     this.petFrom = null;      // where the visitor stands
@@ -234,6 +277,9 @@ export class CatSpawner {
   }
 
   get visible() { return this.object.visible; }
+
+  /** Rare breeds have their own voice (meow + purr in audio.js); null = the ordinary cat. */
+  get voice() { return this.breed.rare ? this.breed.voice ?? null : null; }
 
   setCat(breed, coat) {
     this.breed = breed;
@@ -274,7 +320,7 @@ export class CatSpawner {
     if (!this.petting) {
       this.petPhase = 0;
       this.onPet?.();
-      sfx.purr({ x: p.x, y: p.y + 0.3, z: p.z }, PET_TIME, this.variant.pitch * (this.breed.pitch ?? 1));
+      sfx.purr({ x: p.x, y: p.y + 0.3, z: p.z }, PET_TIME, this.variant.pitch * (this.breed.pitch ?? 1), this.voice);
     }
     this.petT = PET_TIME;
     this.petFrom = { x: from.x, z: from.z };
@@ -283,6 +329,7 @@ export class CatSpawner {
 
   stopPetting() {
     this.petT = 0;
+    this.stars.visible = false;
     this.hand.visible = false;
     for (const e of this.eyes) { e.eye.visible = true; e.shut.visible = false; }
   }
@@ -356,7 +403,7 @@ export class CatSpawner {
     this.nextMeow -= dt;
     if (this.nextMeow <= 0) {
       const p = this.object.position;
-      sfx.meow({ x: p.x, y: p.y + 0.3, z: p.z }, this.variant.pitch * (this.breed.pitch ?? 1) * (0.92 + this.rand() * 0.16));
+      sfx.meow({ x: p.x, y: p.y + 0.3, z: p.z }, this.variant.pitch * (this.breed.pitch ?? 1) * (0.92 + this.rand() * 0.16), this.voice);
       this.nextMeow = 8 + this.rand() * 14;
     }
     // washing cycle: lift paw, lick it a few times, wipe over the face, lower, pause
@@ -395,6 +442,21 @@ export class CatSpawner {
     this.hand.visible = this.petT > 0.15;
     this.hand.position.set(0.02 * rub, 0.42 - 0.07 * s, 0.07 - 0.17 * s);
     this.hand.rotation.set(0.25 - 0.35 * s, Math.PI, 0);
+    if (this.breed.rare) this.updateStars(k);
     if (this.petT <= 0) this.stopPetting();
+  }
+
+  /** Stars rise in a slow spiral around the cat and fade, faded in/out with the pat (`k`). */
+  updateStars(k) {
+    const st = this.stars, pos = st.geometry.attributes.position, col = st.geometry.attributes.color;
+    st.visible = true;
+    st.userData.seeds.forEach((sd, i) => {
+      const life = (this.petPhase / 1.8 + sd.phase) % 1;
+      const a = sd.angle + life * 1.8, r = 0.16 + 0.08 * life;
+      pos.setXYZ(i, Math.sin(a) * r, 0.12 + 0.5 * life, Math.cos(a) * r);
+      const b = k * Math.sin(Math.PI * life) * (0.7 + 0.3 * Math.sin(this.petPhase * 9 + i)); // twinkle
+      col.setXYZ(i, sd.tint[0] * b, sd.tint[1] * b, sd.tint[2] * b);
+    });
+    pos.needsUpdate = col.needsUpdate = true;
   }
 }

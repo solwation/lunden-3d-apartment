@@ -253,6 +253,8 @@ screenshots into the session scratchpad, not the repo.
   50 % it's gone, else it moved. A cat appearing from nowhere gets a new random coat.
 - Breeds (`BREEDS` in cat.js) have a weight and a shape (size, fluff, ears, muzzle, tail); perser
   and sphynx are `rare` and count as "ovanliga katter". `&catb=i` picks a breed for screenshots.
+  Rare breeds have a `voice` ('trill' perser, 'rasp' sphynx) passed to `sfx.meow`/`sfx.purr`, and
+  stars (one additive `Points`, raycast disabled) rise around them while they are petted.
 - Look at a visible cat + E pets it: purring (`sfx.purr`), eyes shut, head rubs the visitor's hand
   (`PET_TIME` in cat.js). Raycasts ignore visibility, so main.js only adds the cat as a target
   while it is visible. Tests must call `updateMatrixWorld` on objects they move (no render runs).
