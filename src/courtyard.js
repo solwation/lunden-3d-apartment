@@ -2,11 +2,11 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { COURTYARD as C, COLORS } from './config.js';
 import { pavingTexture } from './patio.js';
-import { registerSnow } from './seasons.js';
+import { registerSnow, registerTrees } from './seasons.js';
 import { SEASON } from './config.js';
 
 // The courtyard on the garage box (#80): stone walks, gravel round the beds, the Borggården's pergola
-// with a dining table and benches, a grill, sandboxes, a boule court, benches, raised beds and planted
+// with a dining table and benches (pale timber, vines, string lights and herringbone brick: #149), a grill, sandboxes, a boule court, benches, raised beds and planted
 // shrubs (instanced). Everything at the courtyard level (y 0). One mesh per material; returns collision
 // segments for the things you can walk into.
 
@@ -30,9 +30,27 @@ function bench(b, wood, metal) {
   return { wood: g.map((q) => q.applyMatrix4(t)), metal: m.map((q) => q.applyMatrix4(t)) };
 }
 
+/** Red brick pavers in a herringbone pattern, 1 × 1 m per tile (#149). */
+function herringbone() {
+  const n = 256, c = document.createElement('canvas'); c.width = c.height = n;
+  const g = c.getContext('2d'), u = n / 8; // a brick 2u × 1u (25 × 12.5 cm)
+  g.fillStyle = '#5a3a2e'; g.fillRect(0, 0, n, n);
+  let s = 3; const r = () => ((s = (s * 16807) % 2147483647) / 2147483647);
+  for (let i = -8; i < 16; i++) for (let j = -8; j < 16; j++) {
+    const x = (i + j) * u, y = (j - i) * u; // each step places an L of two bricks
+    for (const [bx, by, bw, bh] of [[x, y, 2 * u, u], [x + u, y + u, u, 2 * u]]) {
+      g.fillStyle = `hsl(${8 + r() * 8}, ${45 + r() * 15}%, ${30 + r() * 10}%)`;
+      g.fillRect(((bx % n) + n) % n + 1, ((by % n) + n) % n + 1, bw - 2, bh - 2);
+    }
+  }
+  const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+}
+
 export function buildCourtyard() {
   const group = new THREE.Group();
-  const geos = { paving: [], gravel: [], sand: [], wood: [], metal: [], soil: [] };
+  const geos = { paving: [], gravel: [], sand: [], wood: [], metal: [], soil: [], pergola: [], brick: [] };
+  const vines = [], bulbs = []; // climbing plants and string-light bulbs on the pergolas (#149)
   const segments = [];
   for (const p of C.paths) geos.paving.push(plate(p, 0.006));
   for (const g of C.gravel) geos.gravel.push(plate(g, 0.003));
@@ -40,9 +58,25 @@ export function buildCourtyard() {
   for (const p of C.pergolas) {
     const posts = [];
     for (const x of [p.x0, p.x1]) for (let z = p.z0; z <= p.z1 + 1e-3; z += (p.z1 - p.z0) / 3) posts.push([x, z]);
-    for (const [x, z] of posts) { geos.wood.push(box(x - 0.08, x + 0.08, 0, 2.5, z - 0.08, z + 0.08)); segments.push(...rectSegs(x - 0.1, x + 0.1, z - 0.1, z + 0.1)); }
-    for (const x of [p.x0, p.x1]) geos.wood.push(box(x - 0.06, x + 0.06, 2.5, 2.7, p.z0 - 0.2, p.z1 + 0.2));
-    for (let z = p.z0; z <= p.z1 + 1e-3; z += 0.5) geos.wood.push(box(p.x0 - 0.25, p.x1 + 0.25, 2.7, 2.78, z - 0.03, z + 0.03));
+    // pale timber frames like Peab's evening render (#149), red brick in herringbone underneath
+    for (const [x, z] of posts) { geos.pergola.push(box(x - 0.1, x + 0.1, 0, 2.6, z - 0.1, z + 0.1)); segments.push(...rectSegs(x - 0.12, x + 0.12, z - 0.12, z + 0.12)); }
+    for (const x of [p.x0, p.x1]) geos.pergola.push(box(x - 0.1, x + 0.1, 2.6, 2.85, p.z0 - 0.3, p.z1 + 0.3));
+    for (const [, z] of posts.slice(0, posts.length / 2)) geos.pergola.push(box(p.x0 - 0.35, p.x1 + 0.35, 2.85, 3.05, z - 0.1, z + 0.1)); // the cross frames
+    for (let z = p.z0 + 0.4; z < p.z1; z += 0.8) geos.pergola.push(box(p.x0 - 0.2, p.x1 + 0.2, 2.85, 2.93, z - 0.04, z + 0.04));
+    geos.brick.push(plate({ x0: p.x0 - 0.6, x1: p.x1 + 0.6, z0: p.z0 - 0.6, z1: p.z1 + 0.6 }, 0.009));
+    // vines: leaf clumps along the beams and twining up some posts
+    for (const x of [p.x0, p.x1]) for (let z = p.z0 - 0.2; z <= p.z1 + 0.2; z += 0.35) if (Math.sin(z * 3.1 + x) > -0.3) vines.push([x + Math.sin(z * 5) * 0.12, 2.75 + Math.sin(z * 2.3) * 0.12, z, 0.22 + 0.1 * Math.abs(Math.sin(z * 7))]);
+    for (const [, z] of posts.slice(0, posts.length / 2)) for (let x = p.x0; x <= p.x1; x += 0.4) if (Math.cos(x * 4 + z) > 0) vines.push([x, 2.98, z + Math.sin(x * 6) * 0.12, 0.2]);
+    posts.forEach(([x, z], i) => { if (i % 2 === 0) for (let y = 0.3; y < 2.6; y += 0.28) vines.push([x + Math.cos(y * 4) * 0.13, y, z + Math.sin(y * 4) * 0.13, 0.13 + 0.05 * Math.sin(y * 3)]); });
+    // string lights: sagging rows across the pergola between the cross frames
+    for (const [, z] of posts.slice(0, posts.length / 2)) {
+      const n = Math.round((p.x1 - p.x0) / 0.3);
+      for (let k = 0; k <= n; k++) { const u = k / n; bulbs.push([p.x0 + u * (p.x1 - p.x0), 2.8 - 0.35 * 4 * u * (1 - u), z + 0.12]); }
+    }
+    for (const x of [p.x0 + (p.x1 - p.x0) / 3, p.x0 + 2 * (p.x1 - p.x0) / 3]) {
+      const n = Math.round((p.z1 - p.z0) / 0.3);
+      for (let k = 0; k <= n; k++) { const u = (k / n) * 3 % 1; bulbs.push([x, 2.8 - 0.3 * 4 * u * (1 - u), p.z0 + (k / n) * (p.z1 - p.z0)]); }
+    }
     const cx = (p.x0 + p.x1) / 2, tl = (p.z1 - p.z0) * 0.7, z0 = (p.z0 + p.z1) / 2 - tl / 2;
     geos.wood.push(box(cx - 0.45, cx + 0.45, 0.72, 0.76, z0, z0 + tl)); // a long table
     for (const s of [-1, 1]) geos.wood.push(box(cx + s * 0.75 - 0.18, cx + s * 0.75 + 0.18, 0.42, 0.46, z0, z0 + tl)); // benches
@@ -85,7 +119,10 @@ export function buildCourtyard() {
     wood: new THREE.MeshStandardMaterial({ color: 0x8a6544, roughness: 0.8 }),
     metal: new THREE.MeshStandardMaterial({ color: 0x23262a, roughness: 0.5, metalness: 0.5 }),
     soil: new THREE.MeshStandardMaterial({ color: 0x3e2f24, roughness: 1 }),
+    pergola: new THREE.MeshStandardMaterial({ color: 0xd8d0bf, roughness: 0.85 }),
+    brick: new THREE.MeshStandardMaterial({ map: herringbone(), roughness: 0.9 }),
   };
+  registerSnow(mats.brick, SEASON.snow.paving);
   registerSnow(mats.paving, SEASON.snow.paving);
   registerSnow(mats.gravel, SEASON.snow.ground);
   registerSnow(mats.sand, SEASON.snow.ground);
@@ -112,5 +149,19 @@ export function buildCourtyard() {
   });
   shrubs.castShadow = true;
   group.add(shrubs);
-  return { object: group, segments };
+  // the pergola's vines (coloured and thinned by the season like the trees) and its string lights
+  const vine = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1, 0), new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 1, flatShading: true }), vines.length);
+  const seeds = vines.map(([x, y, z, r]) => ({ pos: new THREE.Vector3(x, y, z), rot: new THREE.Quaternion().setFromEuler(new THREE.Euler(rand() * 3, rand() * 6, 0)),
+    scale: new THREE.Vector3(r, r * 0.7, r), r1: 0.3 + rand() * 0.2, r2: 0.5 + rand() * 0.4, r3: 0.2 + rand() * 0.3, r4: 1 }));
+  seeds.forEach((sd, i) => { vine.setMatrixAt(i, m.compose(sd.pos, sd.rot, sd.scale)); vine.setColorAt(i, col.setHSL(0.28, 0.45, 0.28)); });
+  registerTrees(vine, seeds);
+  vine.castShadow = true;
+  const bulbMat = new THREE.MeshBasicMaterial({ color: 0x2a2620, toneMapped: false });
+  const bulb = new THREE.InstancedMesh(new THREE.SphereGeometry(0.03, 8, 6), bulbMat, bulbs.length);
+  bulbs.forEach(([x, y, z], i) => bulb.setMatrixAt(i, m.makeTranslation(x, y, z)));
+  group.add(vine, bulb);
+  const lit = new THREE.Color(0xffd08a), off = new THREE.Color(0x2a2620);
+  return { object: group, segments,
+    /** night 0 … 1 (with the window lights): the pergola's bulbs glow after dusk (no lights, colour only). */
+    update(night) { bulbMat.color.copy(night > 0.35 ? lit : off); } };
 }
