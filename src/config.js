@@ -231,7 +231,7 @@ export const START = { x: 2.875, z: -12, yawDeg: 180, pitchDeg: 8 };
 // the gap in the hedge (SW corner), the lawn behind the row of patios up to z1 (#52).
 export const OUTDOOR = { x0: -12, x1: 17.75, z0: -14, z1: 24 };
 
-// The lightsaber in Sovrum 2 (#78, src/saber.js): two hooks on the west wall above the gaming desk
+// The lightsaber in Sovrum 2 (#78, src/saber.js): two hooks on the west wall (above where the gaming desk stood before #84)
 // (wall face x 2.752), the saber lying across them along z. Hilt 30 cm, blade 90 cm; the blade colour is
 // picked from `colors` each time it is taken down. `held` = where it sits in the view (camera space).
 export const SABER = {
@@ -551,13 +551,17 @@ export const FURNITURE = [
   // Bunks: long side against the side wall, head end against the façade (the user's wish);
   // the ladder ends up on the room side at the foot end.
   { type: 'bunk', level: 1, x: 0.2 + 0.5, z: 0.47 + 1.05, rot: 180, w: 0.9, l: 2.0, sheets: 'unicorn' }, // Sovrum 3 (Livia & Tuva)
-  { type: 'bunk', level: 1, x: 5.55 - 0.5, z: 12.23 - 1.05, rot: 0, w: 0.9, l: 2.0, sheets: 'vader' }, // Sovrum 2 (Walter & Kian)
-  // Walter & Kian's gaming corner (#77): a black desk 140 × 70 on the west wall (clear of the door's swing
-  // and the bunk), facing east; curved 34" ultrawide, RGB tower, keyboard, mouse, headset, speakers
-  // (sizes our pick). E on it switches the PC on (animated game screen, RGB cycling, game sounds).
-  // A black/green gaming chair in front of it is a seat (#71).
-  { type: 'gamingdesk', level: 1, x: 2.75 + 0.35, z: 9.85, rot: -90, w: 1.4, d: 0.7, fps: 12 },
-  { type: 'gamingchair', level: 1, x: 2.75 + 0.35 + 0.62, z: 9.85, rot: 90 },
+  // Sovrum 2 (Walter & Kian). watch.z: a seat in the lower bunk (local z, ~0.25 m north of the desk's
+  // monitor) for watching films on the PC
+  { type: 'bunk', level: 1, x: 5.55 - 0.5, z: 12.23 - 1.05, rot: 0, w: 0.9, l: 2.0, sheets: 'vader', watch: { z: -0.3 } },
+  // Walter & Kian's gaming corner (#77): a black desk 140 × 70 against the south window (the user's wish),
+  // from the west wall (x 2.85) to 0.25 m short of the bunk's ladder (x 4.5), facing north; curved 34"
+  // ultrawide on a monitor arm, RGB tower at the west end (out of the bunk's line of sight), keyboard,
+  // mouse, headset, speakers (sizes our pick). E on it switches the PC on (animated game screen, RGB
+  // cycling, game sounds). The black/green gaming chair in front of it is a seat (#71) and sitting
+  // down starts the PC; sitting in the lower bunk swings the monitor round and plays a film.
+  { type: 'gamingdesk', level: 1, x: 2.85 + 0.7, z: 12.23 - 0.35, rot: 0, w: 1.4, d: 0.7, fps: 12, towerSide: 1 },
+  { type: 'gamingchair', level: 1, x: 2.85 + 0.7, z: 12.23 - 0.35 - 0.62, rot: 180 },
   // Sovrum 4 (Tilly): IKEA HEMNES dagbädd m 3 lådor, vit, 207 × 89 × 83 cm (ikea.com), back to the
   // west wall, with pink cushions. rot = the way the seat faces.
   { type: 'daybed', level: 1, x: 0.2 + 0.46, z: 10.0, rot: -90 },

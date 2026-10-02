@@ -333,13 +333,24 @@ function sitOrLie(target) {
   if (!spot) return;
   player.crouch = false;
   rest.begin(target, spot, { x: player.pos.x, z: player.pos.z, y: player.pos.y, yaw: camera.rotation.y });
-  bump(target.rest === 'lie' ? 'lay' : 'sat');
+  bump(spot.kind === 'lie' ? 'lay' : 'sat');
   sfx.rustle(spot.pos);
+  if (spot.pc) usePc(spot);
+}
+/** The gaming chair starts the PC; the seat in the bunk also swings its monitor round for a film. */
+function usePc(spot) {
+  const pc = world.furnitureTargets.find((t) => t.kind === 'pc' && t.pickable.getWorldPosition(new THREE.Vector3()).distanceTo(spot.pos) < 3);
+  if (!pc) return;
+  pc.watch(spot.pc === 'film' ? spot.pos : null);
+  if (!pc.isOpen) { pc.toggle(); sfx.tvClick(pc.pickable.getWorldPosition(new THREE.Vector3()), true); }
 }
 /** Stand up again where you stood before sitting / lying down. */
 function standUp() {
+  const film = rest.spot?.pc === 'film';
   const s = rest.end();
   if (!s) return;
+  // getting up from the film: the monitor goes back to the desk (and the game) — the PC stays on
+  if (film) for (const t of world.furnitureTargets) if (t.kind === 'pc') t.watch(null);
   player.spawn(s.x, s.z, s.yaw);
   player.pos.y = s.y; // spawn() finds the ground floor; upstairs we stood on Övre plan
   player.eyeY = s.y + PLAYER.eye;
@@ -479,7 +490,9 @@ function updateFocus() {
   // the nearest hit on something actually shown (F hides the loose items, the raycaster doesn't care)
   const hit = raycaster.intersectObjects(extra.length ? [...pickables, ...extra] : pickables, true).find((h) => shown(h.object));
   focused = hit && !behindWall(hit.point) ? hit.object.userData.door : null;
-  const verb = !focused ? '' : focused.verb ?? (focused.isOpen ? 'stänga' : 'öppna');
+  // a bed with a seat in it: the verb of the spot the look ray picks
+  const spot = focused?.kind === 'rest' ? chooseSpot(focused, raycaster.ray, null) : null;
+  const verb = !focused ? '' : spot?.verb ?? focused.verb ?? (focused.isOpen ? 'stänga' : 'öppna');
   if (focused && touch.enabled) {
     actionBtn.textContent = `${verb[0].toUpperCase()}${verb.slice(1)} ${focused.name}`;
   } else if (focused) {

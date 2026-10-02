@@ -514,6 +514,9 @@ function bunk(item) {
   }
   g.userData.rest = { kind: 'lie', name: 'våningssängen', verb: 'lägga dig i',
     spots: [0.25, 1.15].map((y) => ({ x: 0, y: y + 0.17, z: -l / 2 + 0.3, label: y > 1 ? 'överslafen' : 'underslafen' })) };
+  // `watch`: a place to sit in the lower bunk, back to the wall (local −x), facing the room, hunched
+  // under the top bunk; the PC in the room swings its monitor round and plays a film
+  if (item.watch) g.userData.rest.spots.push({ kind: 'sit', verb: 'sätta dig i', x: -w / 2 + 0.22, y: 0.3, z: item.watch.z, dir: [1, 0], pc: 'film' });
   // guard rail on the top bunk (open by the ladder) and the head/foot boards above it
   g.add(rbox(p * 0.6, 0.06, l * 0.62, w / 2 + p / 2, 1.5, -l * 0.17, whiteWood, 0.01));
   for (const z of [-l / 2 - p / 2, l / 2 + p / 2]) g.add(rbox(w, 0.06, p * 0.6, 0, 1.5, z, whiteWood, 0.01));
@@ -867,17 +870,23 @@ const neon = 0x44ff66;
 
 /** A gaming desk with a PC (#77). Faces local +z (the user sits on the +z side), back to the wall at
  * −z. E toggles the PC: an animated game on the curved monitor, RGB fans and keys cycling colours,
- * game sounds; off: a dark screen and a dim power light. */
+ * game sounds; off: a dark screen and a dim power light. The monitor sits on an arm: `watch(pos)`
+ * swings it out and round towards someone watching from elsewhere (the bunk) and plays a film
+ * instead of the game; `watch(null)` brings it back to the desk. */
 function gamingdesk(item) {
   const g = new THREE.Group();
   const { w, d } = item, h = 0.75, hw = w / 2, z0 = -d / 2;
   g.add(rbox(w, 0.03, d, 0, h - 0.015, 0, nearBlack, 0.006));
   for (const x of [-hw + 0.04, hw - 0.04]) g.add(rbox(0.05, h - 0.03, d - 0.08, x, (h - 0.03) / 2, 0, nearBlack, 0.006)); // panel legs
   g.add(rbox(w - 0.1, 0.25, 0.02, 0, h - 0.18, z0 + 0.06, nearBlack, 0.004)); // modesty panel
-  // curved ultrawide: an arc of a cylinder (radius 1 m), 0.8 m wide, 0.34 m high, on a central stand
-  const R = 1.0, sw = 0.8, sh = 0.34, ang = sw / R, my = h + 0.12 + sh / 2, mz = z0 + 0.22;
+  // curved ultrawide: an arc of a cylinder (radius 1 m), 0.8 m wide, 0.34 m high, on a monitor arm
+  // (`mon`, pivoting about the stand at z = pz, so the parts below are built relative to it)
+  const R = 1.0, sw = 0.8, sh = 0.34, ang = sw / R, my = h + 0.12 + sh / 2, mz = z0 + 0.22, pz = mz - 0.03;
+  const mon = new THREE.Group();
+  mon.position.z = pz;
+  g.add(mon);
   const scrGeo = new THREE.CylinderGeometry(R, R, sh, 32, 1, true, Math.PI - ang / 2, ang);
-  scrGeo.translate(0, my, mz + R); // the arc's middle at z = mz, bulging towards −z (the wall)
+  scrGeo.translate(0, my, mz + R - pz); // the arc's middle at z = mz, bulging towards −z (the wall)
   // flip the UVs so the picture reads left→right from the front
   const uv = scrGeo.attributes.uv;
   for (let i = 0; i < uv.count; i++) uv.setX(i, 1 - uv.getX(i));
@@ -888,26 +897,27 @@ function gamingdesk(item) {
   const onMat = new THREE.MeshBasicMaterial({ map: tex, side: THREE.DoubleSide, toneMapped: false });
   const offMat = new THREE.MeshStandardMaterial({ color: 0x07080a, roughness: 0.12, metalness: 0.4, side: THREE.DoubleSide });
   const screen = new THREE.Mesh(scrGeo, offMat);
-  g.add(screen);
+  mon.add(screen);
   const bezel = new THREE.CylinderGeometry(R + 0.012, R + 0.012, sh + 0.02, 32, 1, true, Math.PI - ang / 2 - 0.01, ang + 0.02);
-  bezel.translate(0, my, mz + R);
-  g.add(new THREE.Mesh(bezel, new THREE.MeshStandardMaterial({ color: 0x111214, roughness: 0.5, side: THREE.DoubleSide })));
-  g.add(rbox(0.05, 0.14, 0.04, 0, h + 0.07, mz - 0.03, nearBlack, 0.01), rbox(0.26, 0.012, 0.18, 0, h + 0.006, mz - 0.03, nearBlack, 0.004));
+  bezel.translate(0, my, mz + R - pz);
+  mon.add(new THREE.Mesh(bezel, new THREE.MeshStandardMaterial({ color: 0x111214, roughness: 0.5, side: THREE.DoubleSide })));
+  mon.add(rbox(0.05, 0.14, 0.04, 0, h + 0.07, 0, nearBlack, 0.01), rbox(0.26, 0.012, 0.18, 0, h + 0.006, 0, nearBlack, 0.004));
   // tower on the desk's left end: black case, glass side towards the room, three RGB fan rings
-  const tx = -hw + 0.16, tz = z0 + 0.25;
+  // (towerSide: which end, local x sign; the glass side faces the middle, the headset gets the other end)
+  const ts = item.towerSide ?? -1, tx = ts * (hw - 0.16), tz = z0 + 0.25, hx = -ts * (hw - 0.12);
   g.add(rbox(0.22, 0.46, 0.45, tx, h + 0.23, tz, nearBlack, 0.01));
   const rgb = [0, 1, 2].map(() => new THREE.MeshBasicMaterial({ color: 0x111111, toneMapped: false }));
   rgb.forEach((m, i) => {
     const ring = new THREE.Mesh(new THREE.TorusGeometry(0.055, 0.008, 8, 24), m);
     ring.rotation.y = Math.PI / 2;
-    ring.position.set(tx + 0.112, h + 0.1 + i * 0.13, tz + 0.08);
+    ring.position.set(tx - ts * 0.112, h + 0.1 + i * 0.13, tz + 0.08);
     g.add(ring);
   });
   const glass = new THREE.Mesh(new THREE.PlaneGeometry(0.42, 0.42), new THREE.MeshStandardMaterial({ color: 0x223, transparent: true, opacity: 0.35, roughness: 0.05 }));
-  glass.rotation.y = Math.PI / 2; glass.position.set(tx + 0.115, h + 0.23, tz);
+  glass.rotation.y = -ts * Math.PI / 2; glass.position.set(tx - ts * 0.115, h + 0.23, tz);
   g.add(glass);
   const power = new THREE.MeshBasicMaterial({ color: 0x103018, toneMapped: false });
-  g.add(rbox(0.004, 0.012, 0.012, tx + 0.112, h + 0.42, tz + 0.18, power, 0.002));
+  g.add(rbox(0.004, 0.012, 0.012, tx - ts * 0.112, h + 0.42, tz + 0.18, power, 0.002));
   // keyboard with a glowing underside strip, mouse on a big pad, headset on a stand, speakers, can, mug
   g.add(rbox(0.9, 0.003, 0.4, 0.1, h + 0.0015, 0.12, new THREE.MeshStandardMaterial({ color: 0x0d0e10, roughness: 0.95 }), 0.002));
   g.add(rbox(0.44, 0.025, 0.15, -0.02, h + 0.015, 0.1, nearBlack, 0.006));
@@ -916,11 +926,11 @@ function gamingdesk(item) {
   const mouse = new THREE.Mesh(new THREE.SphereGeometry(1, 14, 8), nearBlack);
   mouse.scale.set(0.033, 0.02, 0.06); mouse.position.set(0.37, h + 0.012, 0.12);
   g.add(mouse);
-  g.add(rbox(0.012, 0.25, 0.012, hw - 0.12, h + 0.125, z0 + 0.15, nearBlack, 0.004), rbox(0.1, 0.01, 0.1, hw - 0.12, h + 0.005, z0 + 0.15, nearBlack, 0.004));
+  g.add(rbox(0.012, 0.25, 0.012, hx, h + 0.125, z0 + 0.15, nearBlack, 0.004), rbox(0.1, 0.01, 0.1, hx, h + 0.005, z0 + 0.15, nearBlack, 0.004));
   const band = new THREE.Mesh(new THREE.TorusGeometry(0.085, 0.012, 8, 20, Math.PI), nearBlack);
-  band.position.set(hw - 0.12, h + 0.25, z0 + 0.15); band.rotation.y = Math.PI / 2;
+  band.position.set(hx, h + 0.25, z0 + 0.15); band.rotation.y = Math.PI / 2;
   g.add(band);
-  for (const s of [-1, 1]) g.add(rbox(0.07, 0.07, 0.07, hw - 0.12 + s * 0.085, h + 0.18, z0 + 0.15, new THREE.MeshStandardMaterial({ color: neon, roughness: 0.5 }), 0.02)); // ear cups (green)
+  for (const s of [-1, 1]) g.add(rbox(0.07, 0.07, 0.07, hx + s * 0.085, h + 0.18, z0 + 0.15, new THREE.MeshStandardMaterial({ color: neon, roughness: 0.5 }), 0.02)); // ear cups (green)
   for (const x of [-0.5, 0.48]) g.add(rbox(0.09, 0.16, 0.09, x, h + 0.08, z0 + 0.1, nearBlack, 0.01));
   const can = new THREE.Mesh(new THREE.CylinderGeometry(0.033, 0.033, 0.12, 16), new THREE.MeshStandardMaterial({ color: 0x1aa34a, roughness: 0.3, metalness: 0.6 }));
   can.position.set(0.55, h + 0.06, 0.18);
@@ -938,7 +948,7 @@ function gamingdesk(item) {
   // the game: a scrolling neon landscape, ships, laser bolts, explosions, a HUD with a running score
   const ctx = c.getContext('2d');
   const sparks = [];
-  let t = 0, acc = 0, score = 0, on = false, nextShot = 0;
+  let t = 0, acc = 0, score = 0, on = false, nextShot = 0, watching = false;
   const draw = () => {
     const W = c.width, H = c.height;
     const sky = ctx.createLinearGradient(0, 0, 0, H);
@@ -978,6 +988,34 @@ function gamingdesk(item) {
     }
     return 'pew';
   };
+  // the film (when watched from the bunk): a letterboxed night flight over dunes, with subtitles
+  const lines = ['— Vi är nästan framme.', '— Ser du ljusen där borta?', '— Håll i dig!', '— Det där var nära …', '— Hem nu. Mamma väntar.'];
+  const drawFilm = () => {
+    const W = c.width, H = c.height, bar = 22;
+    const sky = ctx.createLinearGradient(0, bar, 0, H - bar);
+    sky.addColorStop(0, '#061433'); sky.addColorStop(1, '#2d4a7a');
+    ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = '#f4f1d0'; ctx.beginPath(); ctx.arc(W * 0.78, H * 0.3, 18, 0, 6.28); ctx.fill(); // moon
+    for (let k = 0; k < 40; k++) { ctx.fillStyle = `rgba(255,255,255,${0.3 + 0.25 * ((k * 7) % 3)})`; ctx.fillRect((k * 97 + 13) % W, bar + ((k * 53) % (H * 0.45)), 2, 2); }
+    [[0.62, 30, 0.25, '#1b2a4a'], [0.72, 60, 0.6, '#132038'], [0.82, 110, 1.4, '#0b1426']].forEach(([y0, amp, v, col], i) => {
+      ctx.fillStyle = col; ctx.beginPath(); ctx.moveTo(0, H); // dunes, three layers of parallax
+      for (let x = 0; x <= W; x += 8) ctx.lineTo(x, H * y0 - amp * 0.3 * (1 + Math.sin((x + t * 40 * v) * 0.012 + i * 2)));
+      ctx.lineTo(W, H); ctx.fill();
+    });
+    const sx = W * 0.4 + 30 * Math.sin(t * 0.7), sy = H * 0.42 + 10 * Math.sin(t * 1.3); // the ship and its trail
+    ctx.fillStyle = 'rgba(120,220,255,0.5)'; ctx.fillRect(sx - 70, sy - 1, 60, 3);
+    ctx.fillStyle = '#0a0d14'; ctx.beginPath(); ctx.moveTo(sx + 24, sy); ctx.lineTo(sx - 12, sy - 9); ctx.lineTo(sx - 6, sy); ctx.lineTo(sx - 12, sy + 9); ctx.fill();
+    ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, bar); ctx.fillRect(0, H - bar, W, bar); // letterbox
+    ctx.fillStyle = '#fff'; ctx.font = '14px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText(lines[Math.floor(t / 4) % lines.length], W / 2, H - bar - 10);
+    ctx.textAlign = 'start';
+    tex.needsUpdate = true;
+  };
+  const arm = rbox(0.04, 0.03, 1, 0, h + 0.12, 0, nearBlack, 0.006); // stretched to the monitor
+  arm.geometry.translate(0, 0, 0.5);
+  arm.position.z = pz; arm.scale.z = 0.001;
+  g.add(arm);
+  const turn = { to: 0, out: 0 }; // monitor arm: target yaw, how far it is pulled out from the wall (0–1)
   const where = () => g.getWorldPosition(new THREE.Vector3()).setY(g.getWorldPosition(new THREE.Vector3()).y + 1);
   const interact = {
     name: 'datorn', kind: 'pc', pickable: g,
@@ -988,10 +1026,30 @@ function gamingdesk(item) {
       screen.material = on ? onMat : offMat;
       power.color.setHex(on ? 0x44ff66 : 0x103018);
       if (!on) { rgb.forEach((m) => m.color.setHex(0x111111)); keysMat.color.setHex(0x111111); glowMat.color.setHex(0); }
-      if (on) { draw(); this.fan = sfx.pcFan(where()); } else { this.fan?.stop(); this.fan = null; }
+      if (on) { (watching ? drawFilm : draw)(); this.fan = sfx.pcFan(where()); } else { this.fan?.stop(); this.fan = null; }
       return on;
     },
+    /** Swing the monitor towards `pos` (world) and play the film, or back to the desk (null). */
+    watch(pos) {
+      watching = !!pos;
+      if (pos) {
+        const p = g.worldToLocal(pos.clone());
+        turn.to = THREE.MathUtils.clamp(Math.atan2(p.x, p.z - pz), -1.45, 1.45);
+      } else turn.to = 0;
+      if (on) (watching ? drawFilm : draw)();
+    },
+    get watching() { return watching; },
+    get monitorYaw() { return mon.rotation.y; },
     update(dt) {
+      // the arm: first out from the wall, then round (and back round before it goes in again)
+      const want = turn.to !== 0 ? 1 : 0;
+      if (want && turn.out < 1) turn.out = Math.min(1, turn.out + dt * 2.5);
+      const yawTo = want && turn.out < 1 ? 0 : turn.to;
+      const dy = yawTo - mon.rotation.y;
+      mon.rotation.y += Math.sign(dy) * Math.min(Math.abs(dy), dt * 2.2);
+      if (!want && Math.abs(mon.rotation.y) < 1e-3) turn.out = Math.max(0, turn.out - dt * 2.5);
+      mon.position.z = pz + 0.3 * turn.out;
+      arm.scale.z = Math.max(0.001, 0.3 * turn.out);
       if (!on) return;
       t += dt; acc += dt;
       const hue = (t * 0.15) % 1; // RGB cycling (cheap: only colours change)
@@ -1000,12 +1058,13 @@ function gamingdesk(item) {
       glowMat.color.setHSL(0.8 + 0.1 * Math.sin(t), 0.8, 0.22);
       if (acc < 1 / item.fps) return;
       acc = 0;
+      if (watching) { drawFilm(); return; } // a film: no game sounds
       const [px, py] = draw();
       if (t > nextShot) { nextShot = t + 0.25 + Math.random() * 0.9; sfx.game(where(), shoot(px, py)); }
     },
   };
   g.userData.interact = interact;
-  g.userData.keep = [screen, glow, ...g.children.filter((m) => rgb.includes(m.material) || m.material === keysMat || m.material === power)];
+  g.userData.keep = [mon, arm, glow, ...g.children.filter((m) => rgb.includes(m.material) || m.material === keysMat || m.material === power)];
   g.traverse((m) => { if (m.isMesh && m !== glow) m.castShadow = true; });
   g.userData.footprint = [{ x0: -hw, x1: hw, z0: -d / 2, z1: d / 2 }];
   return g;
@@ -1027,7 +1086,8 @@ function gamingchair() {
   for (const x of [-0.12, 0.12]) g.add(rbox(0.04, 0.78, 0.005, x, 0.92, -0.168, green, 0.002)); // stripes
   g.add(rbox(0.3, 0.12, 0.05, 0, 1.2, -0.16, green, 0.02)); // headrest pillow
   for (const x of [-0.27, 0.27]) g.add(rbox(0.06, 0.04, 0.3, x, 0.66, 0, nearBlack, 0.015)); // arm rests
-  g.userData.rest = { kind: 'sit', name: 'gamingstolen', verb: 'sätta dig i', spots: [{ x: 0, y: 0.5, z: -0.04 }] };
+  // pc: sitting down switches the PC at the desk on (and brings its monitor back from the bunk)
+  g.userData.rest = { kind: 'sit', name: 'gamingstolen', verb: 'sätta dig i', spots: [{ x: 0, y: 0.5, z: -0.04, pc: 'game' }] };
   g.userData.footprint = [{ x0: -0.3, x1: 0.3, z0: -0.3, z1: 0.3 }];
   return g;
 }

@@ -15,7 +15,8 @@ export function restTarget(obj, item, levelFloor) {
     const [ox, oz] = toWorld(p.x, p.z), [dx, dz] = toWorld(...(p.dir ?? [0, 1]));
     return {
       ...p,
-      pos: new THREE.Vector3(item.x + ox, levelFloor + p.y + (R.kind === 'lie' ? REST.lieEye : REST.sitEye), item.z + oz),
+      kind: p.kind ?? R.kind, // a spot can differ from the piece (sitting up in a bed)
+      pos: new THREE.Vector3(item.x + ox, levelFloor + p.y + ((p.kind ?? R.kind) === 'lie' ? REST.lieEye : REST.sitEye), item.z + oz),
       yaw: Math.atan2(-dx, -dz), // camera yaw facing that way
     };
   });
@@ -41,7 +42,7 @@ export class Rest {
   }
 
   get active() { return this.spot !== null; }
-  get kind() { return this.target?.rest ?? null; }
+  get kind() { return this.spot?.kind ?? null; }
 
   /** Sit / lie down at `spot` of `target`; `stand` = where to get up again (player feet pos + yaw). */
   begin(target, spot, stand) {
@@ -51,8 +52,8 @@ export class Rest {
     this.standing = stand;
     this.t = 0;
     this.from = { pos: cam.position.clone(), yaw: cam.rotation.y, pitch: cam.rotation.x };
-    const lim = REST[target.rest];
-    this.to = { yaw: spot.yaw, pitch: target.rest === 'lie' ? lim.startPitch : 0 };
+    const lim = REST[spot.kind];
+    this.to = { yaw: spot.yaw, pitch: spot.kind === 'lie' ? lim.startPitch : 0 };
   }
 
   end() {
@@ -75,7 +76,7 @@ export class Rest {
   /** Clamp a look while resting (yaw within ± of the seat's direction, pitch within its range). */
   clampLook(cam) {
     if (!this.active || this.t < 1) return;
-    const lim = REST[this.target.rest];
+    const lim = REST[this.spot.kind];
     let d = cam.rotation.y - this.spot.yaw;
     d = Math.atan2(Math.sin(d), Math.cos(d));
     cam.rotation.y = this.spot.yaw + THREE.MathUtils.clamp(d, -lim.yaw, lim.yaw);

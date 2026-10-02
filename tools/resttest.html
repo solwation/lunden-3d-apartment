@@ -58,7 +58,7 @@ f.onload = async () => {
       for (let i = 0; i < 60; i++) step(1 / 60);
       const chosen = rest.spot;
       const atSpot = chosen && camera.position.distanceTo(chosen.pos) < 0.02;
-      const lying = t.rest === 'lie';
+      const lying = (chosen?.kind ?? t.rest) === 'lie'; // a spot can differ from its piece (the seat in a bunk)
       const up = !lying || camera.rotation.x > 1.3;
       // walking does nothing, looking is clamped
       const p0 = camera.position.clone();
@@ -71,7 +71,7 @@ f.onload = async () => {
       for (let i = 0; i < 3; i++) step(1 / 60);
       const back = Math.hypot(player.pos.x - before.x, player.pos.z - before.z) < 0.05 && !rest.active;
       const ok = !!(atSpot && up && still && back && label);
-      pass &= check(ok, `${t.name} #${si} (${t.rest}): "${label}" at spot ${atSpot}, ${lying ? `looking up ${up}, ` : ''}no walking ${still}, back up ${back}`);
+      pass &= check(ok, `${t.name} #${si} (${chosen?.kind ?? t.rest}): "${label}" at spot ${atSpot}, ${lying ? `looking up ${up}, ` : ''}no walking ${still}, back up ${back}`);
     }
   }
   out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;

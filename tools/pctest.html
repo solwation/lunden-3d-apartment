@@ -5,7 +5,8 @@
 <pre id="out">running…</pre>
 <script>
 // Walter & Kian's gaming PC (#77): find a place from which the action button says "Starta datorn",
-// switch it on (the game screen moves, the RGB fans change colour), off again; the gaming chair is a seat.
+// switch it on (the game screen moves, the RGB fans change colour), off again; the gaming chair is a seat
+// and sitting in it starts the PC; the seat in the lower bunk swings the monitor round (a film).
 //   google-chrome --headless=new --dump-dom http://localhost:8137/tools/pctest.html
 const out = document.getElementById('out');
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -15,7 +16,7 @@ document.body.append(f);
 f.onload = async () => {
   const w = f.contentWindow, d = f.contentDocument;
   while (!w.__app) await wait(100);
-  const { player, camera, world, step } = w.__app;
+  const { player, camera, world, step, rest, standUp } = w.__app;
   const lines = [];
   const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; };
   d.getElementById('start-touch').click();
@@ -27,7 +28,7 @@ f.onload = async () => {
   const target = pc.pickable.getWorldPosition(new pc.pickable.position.constructor());
   target.y += 0.95;
   let found = false;
-  for (const [x, z] of [[3.9, 9.1], [3.9, 10.6], [4.1, 9.85], [3.7, 9.3], [3.7, 10.4]]) {
+  for (const [x, z] of [[3.55, 10.9], [3.3, 10.8], [3.8, 10.8], [3.55, 10.6]]) {
     player.spawn(x, z, 0); player.pos.y = 3.25; player.eyeY = 3.25 + 1.62;
     for (let i = 0; i < 3; i++) step(1 / 60);
     const dx = target.x - camera.position.x, dz = target.z - camera.position.z;
@@ -38,14 +39,51 @@ f.onload = async () => {
   }
   pass &= check(found, `button "${btn.textContent}"`);
   btn.click();
-  const screen = pc.pickable.children.find((m) => m.material?.map);
-  const ring = pc.pickable.children.find((m) => m.geometry?.type === 'TorusGeometry' && m.material.isMeshBasicMaterial);
+  const meshes = [];
+  pc.pickable.traverse((m) => { if (m.isMesh) meshes.push(m); });
+  const screen = meshes.find((m) => m.material?.map && m.geometry.type === 'CylinderGeometry');
+  const ring = meshes.find((m) => m.geometry?.type === 'TorusGeometry' && m.material.isMeshBasicMaterial);
   const c0 = ring.material.color.getHex(), v0 = screen?.material.map.version ?? -1;
   for (let i = 0; i < 40; i++) step(1 / 60);
   pass &= check(pc.isOpen && screen && screen.material.map.version > v0 && ring.material.color.getHex() !== c0, 'on: the game moves, the fans change colour');
   pc.toggle();
-  pass &= check(!pc.isOpen && !pc.pickable.children.some((m) => m.material?.map && m.material.isMeshBasicMaterial && m.geometry.type === 'CylinderGeometry'), 'off: dark screen');
-  pass &= check(world.furnitureTargets.some((t) => t.kind === 'rest' && t.name === 'gamingstolen'), 'the gaming chair is a seat');
+  pass &= check(!pc.isOpen && !screen.material.map, 'off: dark screen');
+  const chair = world.furnitureTargets.find((t) => t.kind === 'rest' && t.name === 'gamingstolen');
+  pass &= check(!!chair, 'the gaming chair is a seat');
+  // look at the chair and press the button: sit down → the PC starts
+  const sitOn = (target, spot) => {
+    const dx = spot.pos.x - camera.position.x, dz = spot.pos.z - camera.position.z;
+    camera.rotation.y = Math.atan2(-dx, -dz);
+    camera.rotation.x = Math.atan2(spot.pos.y - 0.3 - camera.position.y, Math.hypot(dx, dz));
+    step(1 / 60);
+    const label = btn.textContent;
+    btn.click();
+    for (let i = 0; i < 90; i++) step(1 / 30);
+    return label;
+  };
+  player.spawn(3.55, 10.5, Math.PI); player.pos.y = 3.25; player.eyeY = 3.25 + 1.62;
+  for (let i = 0; i < 3; i++) step(1 / 60);
+  let label = sitOn(chair, chair.spots[0]);
+  pass &= check(rest.active && rest.kind === 'sit' && pc.isOpen && !pc.watching && Math.abs(pc.monitorYaw) < 0.01, `"${label}": sitting in the chair starts the PC (game, monitor at the desk)`);
+  standUp();
+  for (let i = 0; i < 3; i++) step(1 / 60);
+  // the seat in the lower bunk of Sovrum 2
+  const bunk = world.furnitureTargets.find((t) => t.kind === 'rest' && t.spots.some((s) => s.pc === 'film'));
+  const seat = bunk?.spots.find((s) => s.pc === 'film');
+  pass &= check(!!seat, 'the bunk has a seat for films');
+  player.spawn(4.2, 11.0, 0); player.pos.y = 3.25; player.eyeY = 3.25 + 1.62;
+  for (let i = 0; i < 3; i++) step(1 / 60);
+  label = sitOn(bunk, seat);
+  // the monitor now faces the seat: its local +z, turned by monitorYaw, points (in plan) at the eye
+  pc.pickable.updateMatrixWorld(true);
+  const mon = screen.parent, dir = new mon.position.constructor(0, 0, 1).transformDirection(mon.matrixWorld);
+  const at = mon.getWorldPosition(new mon.position.constructor());
+  const to = seat.pos.clone().sub(at); to.y = 0; to.normalize(); dir.y = 0; dir.normalize();
+  pass &= check(rest.active && rest.kind === 'sit' && /sätta dig i/i.test(label) && pc.watching && pc.isOpen && dir.dot(to) > 0.95,
+    `"${label}": sitting in the bunk swings the monitor round (yaw ${pc.monitorYaw.toFixed(2)}, facing ${dir.dot(to).toFixed(3)}) and plays the film`);
+  standUp();
+  for (let i = 0; i < 120; i++) step(1 / 30);
+  pass &= check(!pc.watching && Math.abs(pc.monitorYaw) < 0.01 && pc.isOpen, 'standing up: the monitor goes back to the desk, the PC stays on');
   out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
 };
 </script>
