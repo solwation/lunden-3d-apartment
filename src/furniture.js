@@ -1694,6 +1694,7 @@ function winerack(item) {
   const glass = [new THREE.MeshStandardMaterial({ color: 0x1d2b1c, roughness: 0.15, metalness: 0.2 }), new THREE.MeshStandardMaterial({ color: 0x101210, roughness: 0.15, metalness: 0.2 })];
   const labels = [new THREE.MeshStandardMaterial({ color: 0xf1ead8, roughness: 0.8 }), new THREE.MeshStandardMaterial({ color: 0xd8c7a3, roughness: 0.8 })];
   const gold = new THREE.MeshStandardMaterial({ color: 0xc9a33a, roughness: 0.3, metalness: 0.8 });
+  const corkMat = new THREE.MeshStandardMaterial({ color: 0xb8925f, roughness: 0.9 });
   const profile = [[0, 0], [0.037, 0], [0.038, 0.2], [0.03, 0.24], [0.014, 0.27], [0.013, 0.33], [0.015, 0.335], [0, 0.335]].map(([r, y]) => new THREE.Vector2(r, y));
   const bottleGeo = new THREE.LatheGeometry(profile, 16);
   const tilt = THREE.MathUtils.degToRad(item.tilt);
@@ -1702,13 +1703,14 @@ function winerack(item) {
     // the cradle: a bar out from the frame and a ring under each end of the bottle
     bar(0.006, 0.006, depth, 0, y - 0.045, fz + depth / 2);
     for (const x of [-0.11, 0.1]) { const ring = new THREE.Mesh(new THREE.TorusGeometry(0.04, 0.0025, 6, 18, Math.PI), black); ring.rotation.set(0, Math.PI / 2, Math.PI); ring.position.set(x, y - 0.005 + x * Math.tan(-tilt) * -1, fz + depth - 0.01); g.add(ring); }
-    // the bottle, lying in the cradle, neck to −x and up
+    // the bottle, lying level in the cradle (#151), neck to −x
     const b = new THREE.Group();
     b.add(new THREE.Mesh(bottleGeo, glass[i % 2]));
     const label = new THREE.Mesh(new THREE.CylinderGeometry(0.0385, 0.0385, 0.09, 16, 1, true, -Math.PI / 3, (2 * Math.PI) / 3), labels[i % 2]);
     label.position.y = 0.1;
     b.add(label);
     if (champagne) { const foil = new THREE.Mesh(new THREE.CylinderGeometry(0.0165, 0.02, 0.09, 12), gold); foil.position.y = 0.29; b.add(foil); }
+    else { const cork = new THREE.Mesh(new THREE.CylinderGeometry(0.0115, 0.0115, 0.012, 10), corkMat); cork.position.y = 0.338; b.add(cork); } // the cork in the neck (#151)
     b.rotation.z = Math.PI / 2 - tilt;
     b.position.set(0.16, y + 0.03, fz + depth - 0.01);
     b.traverse((m) => { if (m.isMesh) m.castShadow = true; });
