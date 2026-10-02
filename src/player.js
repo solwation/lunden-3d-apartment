@@ -28,6 +28,7 @@ export class Player {
     this.eyeY = 0;
     this.keys = new Set();
     this.analog = { x: 0, y: 0 }; // touch joystick, −1..1
+    this.sprinting = false;
   }
 
   spawn(x, z, yaw) {
@@ -36,6 +37,12 @@ export class Player {
     this.eyeY = this.pos.y + PLAYER.eye;
     this.camera.position.set(x, this.eyeY, z);
     this.camera.rotation.set(0, yaw, 0, 'YXZ');
+  }
+
+  /** Outside the flat's footprint (street, lawn, patio): the only place to sprint. */
+  get outdoors() {
+    const { x: W, z: D } = this.world.size, p = this.pos;
+    return !(p.x > 0 && p.x < W && p.z > 0 && p.z < D);
   }
 
   get level() {
@@ -80,10 +87,12 @@ export class Player {
     const keySide = (k.has('KeyD') ? 1 : 0) - (k.has('KeyA') ? 1 : 0);
     const fwd = keyFwd || this.analog.y;
     const side = keySide || this.analog.x;
-    // analog stick: speed follows how far it's pushed, almost full = run
+    // analog stick: speed follows how far it's pushed; Shift or the stick pushed all the way out
+    // sprints — outdoors only, inside it is just walking (no rushing through the flat, #43)
     const amount = keyFwd || keySide ? 1 : Math.min(1, Math.hypot(this.analog.x, this.analog.y));
-    const running = k.has('ShiftLeft') || k.has('ShiftRight') || (!keyFwd && !keySide && amount > 0.95);
-    const speed = (running ? PLAYER.run : PLAYER.walk) * (running ? 1 : amount);
+    const wantsRun = k.has('ShiftLeft') || k.has('ShiftRight') || (!keyFwd && !keySide && amount > PLAYER.sprintStick);
+    this.sprinting = wantsRun && this.outdoors && (keyFwd || keySide || amount > 0);
+    const speed = this.sprinting ? PLAYER.run : PLAYER.walk * amount;
 
     const yaw = this.camera.rotation.y;
     const fx = -Math.sin(yaw), fz = -Math.cos(yaw);

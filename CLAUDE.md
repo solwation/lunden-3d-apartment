@@ -313,6 +313,9 @@ screenshots into the session scratchpad, not the repo.
 - Phones/tablets: the Touch button goes fullscreen and calls `screen.orientation.lock('landscape')`
   (Android); in portrait with a coarse pointer (≤ 1100 px wide) a "rotate" overlay covers the page
   (iOS can't lock). Headless Chrome doesn't emulate `pointer: coarse` — test the overlay by hand.
+- Sprint (#43): Shift, or the touch stick pushed past `PLAYER.sprintStick`, runs at `PLAYER.run` —
+  outdoors only (`player.outdoors` = outside the flat's footprint); inside it is walking pace. The
+  stick's knob turns green while sprinting; footsteps use a longer stride. Moves are sub-stepped (5 cm).
 - GNOME's "disable touchpad while typing" (on by default) blocks touchpad look while a WASD key
   is held — not a bug in the app. Arrow keys ← → turn as a keyboard-only fallback.
 

@@ -164,7 +164,7 @@ function footsteps() {
   if (d > 0.5 || player.vy !== 0) return; // teleport / falling
   bump('metres', d);
   stride += d;
-  if (stride < 0.62) return;
+  if (stride < (player.sprinting ? PLAYER.strideRun : PLAYER.strideWalk)) return;
   stride = 0;
   bump('steps');
   const { x, z } = player.pos;
@@ -216,6 +216,7 @@ if (params.has('clip')) renderer.clippingPlanes = [new THREE.Plane(new THREE.Vec
 // Mouse/keyboard uses pointer lock; touch (phone, tablet, Surface screen) uses an
 // on-screen joystick + drag to look. The start screen lets the visitor pick.
 const canvas = renderer.domElement;
+const stickEl = document.getElementById('stick');
 let locked = false;
 const touch = setupTouch({ onLook: (dx, dy) => look(dx * 0.005, dy * 0.005) });
 const active = () => locked || touch.enabled;
@@ -434,6 +435,7 @@ function step(dt) {
     player.analog.x = touch.analog.x;
     player.analog.y = touch.analog.y;
     player.update(dt);
+    stickEl.classList.toggle('sprint', touch.enabled && player.sprinting); // joystick knob turns green
     footsteps();
     updateFocus();
   }

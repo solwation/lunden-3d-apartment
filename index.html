@@ -65,6 +65,8 @@
     #stick { position: fixed; width: 120px; height: 120px; margin: -60px 0 0 -60px; border-radius: 50%; background: rgba(255,255,255,.18); border: 2px solid rgba(255,255,255,.6); pointer-events: none; }
     #stick[hidden] { display: none; }
     #stick .knob { position: absolute; left: 34px; top: 34px; width: 52px; height: 52px; border-radius: 50%; background: rgba(255,255,255,.85); box-shadow: 0 2px 8px rgba(0,0,0,.3); }
+    #stick.sprint { border-color: #7fd18b; }
+    #stick.sprint .knob { background: #5cc06b; } /* sprinting (stick all the way out, outdoors) */
     .touch-only { display: none; }
     body.touch .touch-only { display: block; }
     body.touch #level { bottom: auto; top: calc(16px + var(--st)); }
@@ -167,7 +169,7 @@
       <div class="keys">
         <span><kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd></span><span>gå</span>
         <span><kbd>Mus</kbd></span><span>titta</span>
-        <span><kbd>Shift</kbd></span><span>spring</span>
+        <span><kbd>Shift</kbd></span><span>spring (utomhus)</span>
         <span><kbd>←</kbd> <kbd>→</kbd></span><span>vrid (om pekplattan är spärrad medan du skriver)</span>
         <span><kbd>E</kbd></span><span>öppna/stäng dörren du tittar på, klappa katten</span>
         <span>Klockan</span><span>i köket: E för att spola tiden, pausa och välja månad</span>
@@ -179,7 +181,7 @@
         <span><kbd>Esc</kbd></span><span>släpp musen — här på startskärmen: börja med mus &amp; tangentbord</span>
       </div>
       <div class="keys touch-help">
-        <span>Vänster tumme</span><span>joystick — gå (tryck ut helt för att springa)</span>
+        <span>Vänster tumme</span><span>joystick — gå (tryck ut helt för att springa utomhus)</span>
         <span>Höger tumme</span><span>dra för att titta</span>
         <span>Knapp</span><span>öppna/stäng dörren du tittar på, klappa katten</span>
         <span>📏</span><span>mät: sätt en punkt där krysset pekar, sedan nästa</span>
