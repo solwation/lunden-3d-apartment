@@ -91,8 +91,7 @@ export function buildCourtyard() {
   {
     const { x, z } = C.grill;
     const kettle = new THREE.SphereGeometry(0.3, 18, 10, 0, Math.PI * 2, 0, Math.PI / 2).rotateX(Math.PI).translate(x, 0.85, z);
-    const lid = new THREE.SphereGeometry(0.3, 18, 8, 0, Math.PI * 2, 0, Math.PI / 2.4).translate(x, 0.86, z);
-    geos.metal.push(kettle, lid);
+    geos.metal.push(kettle); // the lid is grill.js's own (it opens when the grill is lit, #204)
     for (let k = 0; k < 3; k++) { const a = (k / 3) * Math.PI * 2; geos.metal.push(box(x + Math.cos(a) * 0.2 - 0.02, x + Math.cos(a) * 0.2 + 0.02, 0, 0.6, z + Math.sin(a) * 0.2 - 0.02, z + Math.sin(a) * 0.2 + 0.02)); }
     segments.push(...rectSegs(x - 0.35, x + 0.35, z - 0.35, z + 0.35));
   }

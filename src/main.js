@@ -28,6 +28,7 @@ import { Pan } from './pan.js';
 import { buildSillPots } from './plants.js';
 import { Chicken } from './chicken.js';
 import { SmokeAlarm } from './hood.js';
+import { Grill } from './grill.js';
 import { Sonos } from './sonos.js';
 import { DetailCuller } from './detail.js';
 import { Beer } from './beer.js';
@@ -257,6 +258,9 @@ const chicken = fridge ? new Chicken(scene, camera, fridge, pan, world.hob) : nu
 if (chicken) holdables.push(chicken);
 // the cooker hood draws the chicken's smoke; without it the smoke alarm in the kitchen ceiling goes off (#194)
 const smokeAlarm = new SmokeAlarm();
+const grill = new Grill(); // the courtyard's kettle grill: E lights it (#204)
+scene.add(grill.object);
+lights.extra.push(grill.lamp);
 scene.add(smokeAlarm.object);
 if (chicken) { chicken.hood = world.hood; chicken.onEaten = () => bump('chicken'); }
 for (const c of cups.cups) c.onSip = (drink) => bump(drink ?? 'coffee'); // drink from a cup (#117) // the Moccamaster's jug: take it, pour, put it back (#141)
@@ -672,6 +676,7 @@ function use(thing) {
   else if (thing.kind === 'appliance') { thing.toggle(); if (thing.isOpen) bump('appliances'); } // oven, microwave (#82)
   else if (thing.kind === 'coffee') thing.toggle();
   else if (thing.kind === 'speaker') { if (!sonos.playing) sonos.play(); showSonos(true); } // music in all the speakers (#187)
+  else if (thing.kind === 'grill') thing.toggle(); // light / put out the grill (#204)
   else if (thing.kind === 'hood') thing.toggle(); // the cooker hood's fan (#194)
   else if (thing.kind === 'hob') { thing.toggle(); if (thing.on) bump('appliances'); } // the induction hob (#158)
   else if (thing.kind === 'cabinet') { thing.toggle(); if (thing.isOpen) bump('cabinets'); } // wall cabinets that open (#138)
@@ -787,7 +792,7 @@ window.addEventListener('resize', () => {
 // --- door interaction: look at a door within reach, press E ----------------
 const raycaster = new THREE.Raycaster();
 raycaster.far = 2.2;
-const pickables = [...world.doors.map((d) => d.pickable), ...world.lids.map((l) => l.pickable), ...taps.map((t) => t.pickable), note.pickable, board.pickable, wallClock.pickable, calendar.pickable, ...lights.targets.map((t) => t.pickable)];
+const pickables = [...world.doors.map((d) => d.pickable), ...world.lids.map((l) => l.pickable), ...taps.map((t) => t.pickable), note.pickable, board.pickable, wallClock.pickable, calendar.pickable, ...lights.targets.map((t) => t.pickable), grill.pickable];
 const center = new THREE.Vector2(0, 0);
 const keyCabinet = world.lids.find((l) => l.kind === 'keybox');
 let focused = null;
@@ -965,6 +970,7 @@ function step(dt) {
   applySeason(day.month); // tree colours, snow (only does work when the month changes)
   for (const t of world.furnitureTargets) t.update?.(dt);
   for (const h of holdables) h.update(dt);
+  grill.update(dt);
   smokeAlarm.update(dt, !!chicken?.freeSmoke); // smoke the hood does not draw away (#194)
   cups.update(dt);
   fish?.update(dt);
@@ -1166,4 +1172,4 @@ function continueAfterReload(r) {
 if (resumeOk && resumed.mode) continueAfterReload(resumed);
 
 // handle for tests/debugging (tools/touchtest.html)
-window.__app = { autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };
+window.__app = { grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };

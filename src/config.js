@@ -226,6 +226,10 @@ export const SITE = {
 // situationsplan.png, p. 3; plan metres as in SITE) and the info brochure p. 16 ("plattsatta gångar,
 // en pergola, grillplats, sittytor, en lekplats för barnen och en boulebana", grusgångar, trädrader).
 // Items the plan does not show are marked guess.
+// The courtyard's kettle grill lit (#204, src/grill.js): `flames` flame sprites up to `height` m, `sparks` sparks, a pool
+// light of `light` while it burns; it goes out by itself after `burnSeconds`. Our numbers.
+export const GRILL = { flames: 16, height: 1.0, sparks: 40, light: 3.2, burnSeconds: 300 };
+
 export const COURTYARD = {
   // stone-paved walks
   paths: [
@@ -239,7 +243,7 @@ export const COURTYARD = {
   gravel: [{ x0: -46, x1: -13.9, z0: 19.6, z1: 30.2 }, { x0: -13.9, x1: 12, z0: 19.6, z1: 25.6 }], // grusgångar round the beds
   // the Borggården's pergola with a dining table (red-brown on the plan) and a second one south of Hus C
   pergolas: [{ x0: -20.6, x1: -14.2, z0: 20.2, z1: 30 }, { x0: -65.5, x1: -60, z0: 41.2, z1: 47.6 }],
-  grill: { x: -21.6, z: 21.0 },               // grillplats beside the pergola (spot: guess)
+  grill: { x: -21.6, z: 21.0 },               // grillplats beside the pergola (spot: guess); it can be lit (GRILL)
   sandboxes: [{ x0: -26.6, x1: -22.6, z0: 23.6, z1: 27.8 }, { x0: -56, x1: -51.2, z0: 41.8, z1: 46.8 }], // lekplats
   boule: { x0: -12.4, x1: -2.6, z0: 21.4, z1: 24.6 }, // boulebana: not marked on the plan, a gravel court by the east beds (guess)
   benches: [{ x: -32, z: 25, rot: 90 }, { x: -30, z: 29.4, rot: 180 }, { x: -6, z: 29.4, rot: 180 }, { x: 4, z: 29.4, rot: 180 }],

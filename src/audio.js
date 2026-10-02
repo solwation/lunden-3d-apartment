@@ -574,6 +574,30 @@ export const sfx = {
     src.connect(lp).connect(g).connect(d); src.start(t, Math.random());
     return { stop() { const t1 = ctx.currentTime; g.gain.cancelScheduledValues(t1); g.gain.setValueAtTime(g.gain.value, t1); g.gain.linearRampToValueAtTime(0, t1 + 0.8); src.stop(t1 + 0.85); } };
   },
+  /** Lighting the grill (#204): a whoomp as the fire catches. */
+  ignite(pos) {
+    if (!ready()) return;
+    const t = ctx.currentTime, d = out(pos, 1);
+    noise(t, 0.7, d, { type: 'lowpass', freq: 500, gain: 0.5, attack: 0.08 });
+    tone(t, 0.4, d, { type: 'sine', from: 70, to: 45, gain: 0.3 });
+  },
+  /** A fire's steady roar (#204) until stopped. */
+  fire(pos) {
+    if (!ready()) return null;
+    const t = ctx.currentTime, d = out(pos, 0.9);
+    const src = ctx.createBufferSource(); src.buffer = noiseBuf; src.loop = true;
+    const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 380; bp.Q.value = 0.6;
+    const g = ctx.createGain(); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.22, t + 1.5);
+    src.connect(bp).connect(g).connect(d); src.start(t, Math.random());
+    return { stop() { const t1 = ctx.currentTime; g.gain.cancelScheduledValues(t1); g.gain.setValueAtTime(g.gain.value, t1); g.gain.linearRampToValueAtTime(0, t1 + 1.5); src.stop(t1 + 1.6); } };
+  },
+  /** A few crackling pops of burning wood / charcoal (#204). */
+  crackle(pos) {
+    if (!ready()) return;
+    const t = ctx.currentTime, d = out(pos, 0.9);
+    const n = 1 + Math.floor(Math.random() * 4);
+    for (let i = 0; i < n; i++) noise(t + Math.random() * 0.12, 0.006 + Math.random() * 0.012, d, { type: 'highpass', freq: 1500 + Math.random() * 2500, gain: 0.25 + Math.random() * 0.35, attack: 0.001 });
+  },
   /** The smoke alarm (#194): a loud, shrill beep-beep-beep until stopped. */
   alarm(pos) {
     if (!ready()) return null;

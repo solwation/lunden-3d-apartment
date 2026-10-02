@@ -82,6 +82,8 @@ src/toilet.js          toilet (Ifö Spira 6260) with an animated lid and a flush
 src/ao.js              baked ambient occlusion: distance field → multiply overlay on floor/ceiling (AO)
 src/courtyard.js       the courtyard on the garage box (COURTYARD): walks, pergolas, grill, sandboxes, boule,
                        benches, raised beds, instanced shrubs; collision for what you can walk into
+src/grill.js           the courtyard's kettle grill (GRILL, #204): E lights it — the lid swings open, flame sprites, glowing coals,
+                       sparks, smoke, crackle + roar, a pool light (lights.extra); out by itself after burnSeconds; F keeps it
 src/surroundings.js    the site (SITE): Hus A/B/C + buildings around, roads, paving, the 3 m drop to the park,
                        Höje å, instanced trees, lit windows, cloudy sky
 src/lights.js          room switches (E), ceiling lamps/pendant/spots/LED, floor lamp; a pool of 4
@@ -290,6 +292,7 @@ tools/fishtest.html    headless test: open the freezer, eat a fish finger, put o
                        back in the carton (it counts down), F clears them and refills it; the cat walks to one on the
                        floor and eats it, ignores one on the table, stops when it is taken up first (#163)
 tools/drawtest.html    headless test: drawing mode, a crayon line from pointer events, clear, E back, saved
+tools/grilltest.html   headless test: light the grill (flames, light, lid), F keeps it, put it out, it burns out by itself
 tools/cooktest.html    headless test: the induction hob on/off (glow), F switches it off; the pan: drawer → hob → drawer, F; the chicken:
                        fry, smoke, the fridge shut stops it, it stops by itself, F; raw/golden, no hood → the alarm, the hood
                        on → quiet, break a leg off and eat it, eat it all, F whole again (#194)

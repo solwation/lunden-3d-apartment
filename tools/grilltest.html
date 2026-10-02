@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Grill test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+// The courtyard grill (#204): aim at it → "Tända grillen", lit: flames, the lid open, a warm pool light; E puts it
+// out (flames die down, the lid closes); lit again it goes out by itself after GRILL.burnSeconds; F keeps it.
+//   google-chrome --headless=new --dump-dom http://localhost:8137/tools/grilltest.html
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const f = document.createElement('iframe');
+f.width = 900; f.height = 600; f.src = '../index.html?time=21&freeze';
+document.body.append(f);
+f.onload = async () => {
+  const w = f.contentWindow, d = f.contentDocument;
+  while (!w.__app) await wait(100);
+  const { player, camera, step, scene, grill, toggleFurniture } = w.__app;
+  const lines = [];
+  const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; };
+  d.getElementById('start-touch').click();
+  await wait(50);
+  const btn = d.getElementById('action');
+  const run = (sec, dt = 0.1) => { for (let i = 0; i < sec / dt; i++) step(dt); };
+  const aim = () => {
+    const p = grill.top;
+    player.spawn(p.x + 1.3, p.z - 0.4, 0);
+    for (let i = 0; i < 3; i++) step(1 / 60);
+    scene.updateMatrixWorld(true);
+    const dx = p.x - camera.position.x, dz = p.z - camera.position.z;
+    camera.rotation.set(Math.atan2(p.y - 0.1 - camera.position.y, Math.hypot(dx, dz)), Math.atan2(-dx, -dz), 0, 'YXZ');
+    step(1 / 60);
+    return btn.hidden ? '(hidden)' : btn.textContent;
+  };
+  let label = aim();
+  let pass = check(/tända grillen/i.test(label), `aimed at the grill: "${label}"`);
+  btn.click(); run(3);
+  const flames = () => grill.flames.filter((s) => s.visible && s.material.opacity > 0.2).length;
+  pass &= check(grill.on && flames() > 5 && grill.lamp.k > 0.5 && grill.lid.rotation.x > 1.5, `lit: ${flames()} flames, light ${grill.lamp.k.toFixed(2)}, lid ${grill.lid.rotation.x.toFixed(2)} rad`);
+  label = aim();
+  pass &= check(/släcka grillen/i.test(label), `"${label}"`);
+  toggleFurniture(); toggleFurniture(); run(0.5);
+  pass &= check(grill.on, 'F keeps it burning (it belongs to the courtyard)');
+  btn.click(); run(4);
+  pass &= check(!grill.on && flames() === 0 && grill.lamp.k < 0.01 && grill.lid.rotation.x < 0.01, 'put out: no flames, no light, the lid shut');
+  grill.toggle(); run(301, 0.5);
+  pass &= check(!grill.on, 'lit again, it goes out by itself after burnSeconds');
+  out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
+};
+</script>
+</body>
+</html>
