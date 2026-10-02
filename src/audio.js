@@ -358,6 +358,12 @@ export const sfx = {
     tone(t + 0.38, 0.03, d, { type: 'square', from: 1200, to: 800, gain: 0.04 });
   },
     /** TV on/off: a soft relay click, and a short rising (on) or falling (off) tone. */
+  /** A TV changing channel: a short burst of static. */
+  tvStatic(pos) {
+    if (!ready()) return;
+    const t = ctx.currentTime, d = out(pos, 0.7);
+    noise(t, 0.3, d, { type: 'highpass', freq: 2200, gain: 0.08, attack: 0.01 });
+  },
   tvClick(pos, on) {
     if (!ready()) return;
     const t = ctx.currentTime, d = out(pos, 0.7);

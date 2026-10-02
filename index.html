@@ -121,6 +121,8 @@
     #measure-btn { position: fixed; right: calc(122px + var(--sr)); bottom: calc(160px + var(--sb)); width: 48px; height: 48px; border: 0; border-radius: 50%; background: var(--panel); font-size: 22px; box-shadow: 0 4px 14px rgba(0,0,0,.2); }
     #crouch-btn { position: fixed; right: calc(122px + var(--sr)); bottom: calc(100px + var(--sb)); width: 48px; height: 48px; border: 0; border-radius: 50%; background: var(--panel); font-size: 22px; touch-action: manipulation; }
     #crouch-btn.on { background: var(--accent); }
+    #power-btn { position: fixed; right: calc(24px + var(--sr)); bottom: calc(100px + var(--sb)); width: 48px; height: 48px; border: 0; border-radius: 50%; background: #c8202a; color: #fff; font-size: 22px; touch-action: manipulation; }
+    #power-btn[hidden] { display: none; }
     #furniture-btn { position: fixed; right: calc(178px + var(--sr)); top: calc(16px + var(--st)); width: 44px; height: 44px; border: 0; border-radius: 50%; background: var(--panel); font-size: 18px; }
     #stats-btn { position: fixed; right: calc(124px + var(--sr)); top: calc(16px + var(--st)); width: 44px; height: 44px; border: 0; border-radius: 50%; background: var(--panel); font-size: 18px; }
     .resume { font-size: 14px; background: #e8f2f6; border-radius: 6px; padding: 8px 10px; }
@@ -285,6 +287,7 @@
     <div id="prompt" hidden></div>
     <div id="stick" hidden><div class="knob"></div></div>
     <button id="action" class="touch-only" hidden></button>
+    <button id="power-btn" class="touch-only" hidden aria-label="Stäng av / slå på TV:n">⏻</button>
     <button id="pause" class="touch-only" aria-label="Paus">❚❚</button>
     <button id="mute" aria-label="Stäng av ljud">🔊</button>
   </div>

@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { COLORS, LEVELS, DAY, START, PLAYER, DRAWING, STAIR, HOLD } from './config.js';
+import { COLORS, LEVELS, DAY, START, PLAYER, DRAWING, STAIR, HOLD, REMOTE } from './config.js';
 const DRAWING_COLORS = DRAWING.colors;
 import { buildWorld } from './world.js';
 import { Player } from './player.js';
@@ -22,6 +22,7 @@ import { saveResume, takeResume } from './resume.js';
 import { Rest, chooseSpot } from './rest.js';
 import { Saber } from './saber.js';
 import { buildToys } from './toys.js';
+import { Remote } from './remote.js';
 import { buildCups } from './cups.js';
 import { Drawing } from './drawing.js';
 import { CatCalendar, CalendarPanel } from './calendar.js';
@@ -175,7 +176,18 @@ const player = new Player(world, camera);
 const rest = new Rest(camera); // sitting / lying down (#71/#72)
 const saber = new Saber(scene, camera); // the lightsaber in Sovrum 2 (#78)
 const toys = buildToys(scene, camera); // Nerf blasters, magic wands, the flashlight (#86, #87, #89)
-const holdables = [saber, ...toys.items]; // things you can take and hold, one at a time (holdable.js)
+// the TV remote (#101): works on the TV in the look direction, within reach, not through a wall
+const tvRay = new THREE.Raycaster();
+const remote = new Remote(scene, camera, () => {
+  camera.updateMatrixWorld();
+  tvRay.setFromCamera(new THREE.Vector2(0, 0), camera);
+  tvRay.far = REMOTE.reach;
+  const tvs = world.furnitureTargets.filter((t) => t.kind === 'tv');
+  const hit = tvRay.intersectObjects(tvs.map((t) => t.pickable), true)[0];
+  if (!hit || behindWall(hit.point)) return null;
+  return tvs.find((t) => { let o = hit.object; while (o && o !== t.pickable) o = o.parent; return !!o; }) ?? null;
+});
+const holdables = [saber, ...toys.items, remote]; // things you can take and hold, one at a time (holdable.js)
 const cups = buildCups(scene, camera, world, world.cupCabinet); // coffee cups in the wall cabinet (#90)
 let placeTarget = null; // while something is held: the table top / floor spot it would go down on (#102)
 // a faint ring where the held thing would land
@@ -512,7 +524,14 @@ document.addEventListener('pointerlockchange', () => {
 document.addEventListener('mousemove', (e) => {
   if (locked) look(e.movementX * PLAYER.mouseSens, e.movementY * PLAYER.mouseSens);
 });
-document.addEventListener('mousedown', (e) => { if (locked && e.button === 0) heldItem()?.use(); }); // a click: swing, fire, toggle the flashlight
+document.addEventListener('mousedown', (e) => {
+  if (locked && e.button === 0) heldItem()?.use(); // a click: swing, fire, toggle the flashlight, change channel
+  if (locked && e.button === 2) heldItem()?.useAlt?.(); // right click: the remote's power button (#101)
+});
+document.addEventListener('contextmenu', (e) => { if (locked) e.preventDefault(); });
+// touch: the remote's power button beside the action button while it is held
+const powerBtn = document.getElementById('power-btn');
+powerBtn.addEventListener('click', () => heldItem()?.useAlt?.());
 const stripKeys = new Set(); // keys pressed while a strip / the note is open
 document.addEventListener('keydown', (e) => {
   if (!locked) return;
@@ -614,6 +633,9 @@ function updateFocus() {
       placeGhost.visible = true;
     }
   }
+  // the remote in the hand, aimed at a TV: the click / the touch button are the remote's (#101)
+  const remoteAim = heldItem() === remote && focused?.kind === 'tv';
+  if (remoteAim) focused = null;
   // a bed with a seat in it: the verb of the spot the look ray picks
   const spot = focused?.kind === 'rest' ? chooseSpot(focused, raycaster.ray, null) : null;
   const verb = !focused ? '' : spot?.verb ?? focused.verb ?? (focused.isOpen ? 'stänga' : 'öppna');
@@ -628,7 +650,9 @@ function updateFocus() {
   if (holding && touch.enabled) actionBtn.textContent = holding.useLabel;
   if (reading && touch.enabled) actionBtn.textContent = 'Stäng lappen';
   promptEl.hidden = !focused || touch.enabled || reading;
+  if (remoteAim && !touch.enabled && !reading) { promptEl.textContent = 'Klicka för att byta kanal · högerklick: av/på'; promptEl.hidden = false; }
   actionBtn.hidden = !(focused || reading || holding) || !touch.enabled || clockPanel.open || calPanel.open; // the strips have their own ×
+  powerBtn.hidden = !touch.enabled || !heldItem()?.useAlt || reading;
 }
 
 // --- furniture on/off (F / 🛋) ---------------------------------------------
@@ -814,4 +838,4 @@ document.addEventListener('pointerlockchange', () => { if (!updateEl.hidden) sho
 watchForUpdates(showUpdate);
 
 // handle for tests/debugging (tools/touchtest.html)
-window.__app = { toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };
+window.__app = { remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };

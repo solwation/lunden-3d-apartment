@@ -99,6 +99,8 @@ src/holdable.js        things you take and hold (one at a time): home + pick box
                        worktop / the floor (HOLD.reach) puts it down (`placeAt`, lying by its shape — `restPose`;
                        cups stand). While something is held other things are `blocked` ("Lägg ifrån dig …")
 src/saber.js           the lightsaber in Sovrum 2 (SABER), a Holdable
+src/remote.js          the TV remote on the coffee table (REMOTE), a Holdable: click = next programme (on if off),
+                       right click / ⏻ (touch) = power, on the TV in the look direction (not through walls)
 src/toys.js            Nerf blasters + darts (Sovrum 2), magic wands + sparkles (Sovrum 3), the flashlight
                        (hall wardrobe; one always-present SpotLight), all Holdables (TOYS)
 src/cups.js            coffee cups (CUPS): the wall cabinet over the Moccamaster opens, a cup → worktop → filled

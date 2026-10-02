@@ -58,6 +58,38 @@ f.onload = async () => {
   for (let i = 0; i < 30; i++) step(1 / 60);
   pass &= check(tv3.isOpen && tv3.screen.texture.version > 1, `Sovrum 3 TV on: ${tv3.screen.program.name}`);
   btn.click();
+  // the remote (#101) on the coffee table: take it, point it at the living-room TV, change channels, power
+  const { remote, heldItem } = w.__app;
+  remote.model.updateMatrixWorld(true);
+  const rp = remote.model.getWorldPosition(new tv.pickable.position.constructor());
+  let took = false;
+  for (const [x, z] of [[rp.x, rp.z + 0.9], [rp.x + 0.8, rp.z + 0.4], [rp.x - 0.8, rp.z + 0.5]]) {
+    player.spawn(x, z, 0); for (let i = 0; i < 3; i++) step(1 / 60);
+    const dx = rp.x - camera.position.x, dz = rp.z - camera.position.z;
+    camera.rotation.y = Math.atan2(-dx, -dz); camera.rotation.x = Math.atan2(rp.y - camera.position.y, Math.hypot(dx, dz)); step(1 / 60);
+    if (/ta fjärrkontrollen/i.test(btn.textContent)) { btn.click(); took = true; break; }
+  }
+  pass &= check(took && heldItem() === remote, `the remote in the hand ("${btn.textContent}")`);
+  aim(); step(1 / 60);
+  const powerBtn = d.getElementById('power-btn');
+  pass &= check(/byt kanal/i.test(btn.textContent) && !powerBtn.hidden, `aimed at the TV: "${btn.textContent}", ⏻ shown`);
+  const wasOn = tv.isOpen;
+  btn.click(); step(1 / 60);
+  pass &= check(!wasOn && tv.isOpen, 'click: the TV comes on');
+  for (let i = 0; i < 20; i++) step(1 / 60);
+  const c0 = tv.screen.channel; btn.click(); step(1 / 60);
+  pass &= check(tv.isOpen && tv.screen.channel !== c0 && tv.screen.snow > 0, `click: next programme (${c0} → ${tv.screen.channel}), static`);
+  for (let i = 0; i < 20; i++) step(1 / 60);
+  pass &= check(remote.presses === 2, `the LED blinked on each press (${remote.presses})`);
+  powerBtn.click(); step(1 / 60);
+  pass &= check(!tv.isOpen, '⏻: the TV goes off');
+  // not through a wall: from the hall behind the stair wall, pointing at the TV
+  player.spawn(tv.pickable.position.x, 6.0, 0); for (let i = 0; i < 3; i++) step(1 / 60);
+  camera.rotation.y = Math.PI; camera.rotation.x = 0; step(1 / 60);
+  for (let i = 0; i < 20; i++) step(1 / 60);
+  btn.click(); step(1 / 60);
+  pass &= check(!tv.isOpen, 'not through the wall');
+  remote.putBack();
   world.setFurniture(false);
   aim();
   pass &= check(!/tv:n/i.test(btn.hidden ? '' : btn.textContent), 'F off: the TV is no target');

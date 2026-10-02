@@ -288,6 +288,11 @@ export const TOYS = {
     spot: { intensity: 9, distance: 14, angle: 0.42, penumbra: 0.45, color: 0xfff0d6 } },
 };
 
+// The TV remote (#101, src/remote.js): slim black, 4 × 18 × 1.5 cm (the user's sketch), lying on the coffee table
+// (ILVA Woodstock, top 0.47 m at x 3.64, z 10.56) towards the TV end, turned a little. `reach` = how far it works.
+export const REMOTE = { w: 0.04, l: 0.18, h: 0.015, x: 3.98, y: 0.47, z: 10.42, turn: 18, reach: 9,
+  held: { x: 0.17, y: -0.19, z: -0.36 } };
+
 // Putting held things down (#102, holdable.js / main.js): a table top, worktop or the floor within `reach` m
 // of the eye.
 export const HOLD = { reach: 2.2 };
