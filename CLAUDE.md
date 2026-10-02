@@ -260,6 +260,7 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   steep dark hip roofs, 3.6 m storeys) after the drone photo/render — storey counts are guesses.
 - Windows (#103): below the transom each casement (one per side of the mullion) opens outwards with E
   (`addWindowFrame` in world.js, an Openable each, max 60°, no collision); the transom light is fixed.
+  An open casement plays `sfx.wind` (looping gusty noise) until it is closed.
 - Skärmvägg by the patio H 1.8 m, stair railing H 1.1 m (bofakta).
 - U-shaped stair with winders at the east end: flight A (Entréplan, going east), 180° winders,
   flight B (going west) arriving in the upstairs hall. Upstairs slab opening = stair outline on

@@ -6,6 +6,7 @@ import {
 } from './config.js';
 import { buildStairs } from './stairs.js';
 import { Openable } from './openables.js';
+import { sfx } from './audio.js';
 import { SwingDoor, SlidingDoor, wardrobeDoors } from './doors.js';
 import { buildExterior } from './exterior.js';
 import { buildFurniture, surfaceBox } from './furniture.js';
@@ -297,6 +298,8 @@ function addWindowFrame(group, x0, x1, fz, y0, y1, transom, out = -1) {
     const along = hingeAt === 'a' ? 1 : -1;
     const o = new Openable({ name: 'fönstret', object: pivot, mode: 'hinge', sign: along * -out, max: 60, speed: 1.6 });
     o.normal = new THREE.Vector3(0, 0, -out); // the room side (tests stand there)
+    const toggle = o.toggle.bind(o), at = new THREE.Vector3((a + b) / 2, (lo + hi) / 2, zo);
+    o.toggle = () => { toggle(); o.wind?.stop(); o.wind = o.isOpen ? sfx.wind(at) : null; }; // the wind blows in while it is open
     sashes.push(o);
   }
   return sashes;

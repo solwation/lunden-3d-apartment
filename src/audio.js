@@ -292,6 +292,35 @@ export const sfx = {
       },
     };
   },
+  /** Wind through an open window until stop(): looping low noise, gusting slowly (an LFO on the filter and gain). */
+  wind(pos) {
+    if (!ready()) return null;
+    const t = ctx.currentTime, d = out(pos, 0.6);
+    const src = ctx.createBufferSource();
+    src.buffer = noiseBuf;
+    src.loop = true;
+    const lp = ctx.createBiquadFilter();
+    lp.type = 'lowpass'; lp.frequency.value = 520; lp.Q.value = 0.8;
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(0.16, t + 1.2);
+    const lfo = ctx.createOscillator(), depth = ctx.createGain(), gust = ctx.createGain();
+    lfo.frequency.value = 0.13; depth.gain.value = 260; gust.gain.value = 0.07;
+    lfo.connect(depth).connect(lp.frequency);
+    lfo.connect(gust).connect(g.gain);
+    src.connect(lp).connect(g).connect(d);
+    src.start(t, Math.random());
+    lfo.start(t);
+    return {
+      stop() {
+        const t1 = ctx.currentTime;
+        g.gain.cancelScheduledValues(t1);
+        g.gain.setValueAtTime(g.gain.value, t1);
+        g.gain.linearRampToValueAtTime(0, t1 + 0.4);
+        src.stop(t1 + 0.45); lfo.stop(t1 + 0.45);
+      },
+    };
+  },
   /** "Iiiiih!" — a startled shriek (cold shower): voiced sawtooth through the formants of [i]. */
   shriek() {
     if (!ready()) return;
