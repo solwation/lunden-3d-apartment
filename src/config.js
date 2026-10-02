@@ -60,6 +60,11 @@ export const DOOR_SIGNS = [
 // unit type (docs/peab/l1004-vardagsrum-render.jpg, scaled by RH 3.0 m): patio door head ≈ 2.65 m,
 // leaf incl. frame ≈ 2.2 m — within the estimate's error, so the values are kept.
 export const DOOR_HEIGHT = 2.1;
+// Interior door finish (#45): the leaf fills the opening with an even `gap` (fog) at hinge, latch and
+// head; white architraves (dörrfoder) `width` × `thickness` around the opening on both wall faces,
+// in the door colour. On a sliding door's track side they are `slideThickness` thin, so the panel
+// (running 1 cm off the wall) clears them.
+export const DOOR_TRIM = { gap: 0.003, width: 0.07, thickness: 0.012, slideThickness: 0.008 };
 export const EXT_DOOR_HEAD = 2.6;
 
 // Windows, matched to the plan by level, façade and centre x (nearest wins).

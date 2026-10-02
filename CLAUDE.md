@@ -157,6 +157,10 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   + a short extra wall in `EXTRA_WALLS`) → Allrum becomes **Sovrum 4** (four bedrooms upstairs).
   Wardrobes (G, and L in Sovrum 2 — `WARDROBE_LABELS`) are hollow with two sliding fronts on separate
   tracks (one open at a time).
+- Interior doors (#45, `DOOR_TRIM`): the swing leaf fills the gap with a 3 mm fog at hinge, latch and
+  head; architraves (70 × 12 mm, door colour, one merged mesh per level) frame every interior swing
+  and sliding door on both wall faces — 8 mm on a sliding panel's track side. Light switches sit just
+  past the architrave on the latch side.
 - Sliding doors run towards the side with enough wall to park the panel (the plan arrows
   are not reliable — the Tvätt arrow pointed through a 19 cm wall stub into the hall).
 - Vardagsrum furniture (wanted by the user): IKEA LANDSKRONA 3-sits + schäslong, Gunnared

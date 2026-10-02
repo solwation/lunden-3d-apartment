@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { DOOR_HEIGHT } from './config.js';
+import { DOOR_HEIGHT, DOOR_TRIM } from './config.js';
 
 const SPEED = 3.0; // open/close animation, fraction per second
 const handleMat = new THREE.MeshStandardMaterial({ color: 0xc9cdd0, metalness: 0.5, roughness: 0.28 });
@@ -21,7 +21,8 @@ export class SwingDoor {
 
     this.object = new THREE.Group();
     this.object.position.set(hinge[0], y0, hinge[1]);
-    const H = DOOR_HEIGHT - 0.02, L = this.len - 0.01;
+    // the leaf fills the opening: world.js already leaves DOOR_TRIM.gap at hinge and latch
+    const H = DOOR_HEIGHT - DOOR_TRIM.gap, L = this.len;
     // local frame: x = leaf thickness, y = up, z = from hinge along the leaf
     const part = (sx, sy, sz, px, py, pz, m) => {
       const mesh = new THREE.Mesh(new THREE.BoxGeometry(sx, sy, sz), m);

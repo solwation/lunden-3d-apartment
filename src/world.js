@@ -1,6 +1,7 @@
 import * as THREE from 'three';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import {
-  LEVELS, SOFFITS, DOOR_HEIGHT, EXT_DOOR_HEAD, WINDOWS, CABINET_HEIGHT, BASE_CABINET, SHELF_HEIGHT, TOILET,
+  LEVELS, SOFFITS, DOOR_HEIGHT, DOOR_TRIM, EXT_DOOR_HEAD, WINDOWS, CABINET_HEIGHT, BASE_CABINET, SHELF_HEIGHT, TOILET,
   STAIR, COLORS, FENCE_HEIGHT, SITE, OUTDOOR, FINISH, OPTIONS, EXTRA_WALLS, ROOM_RENAMES, EXTRA_ROOMS, ROOM_DIVIDERS,
 } from './config.js';
 import { buildStairs } from './stairs.js';
@@ -144,6 +145,29 @@ function findGap(wallBoxes, axis, c, a, b) {
   return { lo, hi, p0, p1, axis };
 }
 
+/**
+ * Architraves (dörrfoder) around a door opening on both wall faces: two jambs and a head piece,
+ * DOOR_TRIM.width wide. `slideFace` = the wall face a sliding panel runs along (thinner trim there).
+ */
+function architraves(gap, y0, head, slideFace = null) {
+  const { width: w, thickness: t, slideThickness } = DOOR_TRIM;
+  const out = [];
+  // a box from along a0..a1, height ya..yb, across the wall p0..p1, in world axes
+  const geo = (a0, a1, ya, yb, p0, p1) => {
+    const [sx, sz, cx, cz] = gap.axis === 'x'
+      ? [a1 - a0, p1 - p0, (a0 + a1) / 2, (p0 + p1) / 2]
+      : [p1 - p0, a1 - a0, (p0 + p1) / 2, (a0 + a1) / 2];
+    return new THREE.BoxGeometry(sx, yb - ya, sz).translate(cx, (ya + yb) / 2, cz);
+  };
+  for (const [face, dir] of [[gap.p0, -1], [gap.p1, 1]]) {
+    const slide = slideFace !== null && Math.sign(slideFace - (gap.p0 + gap.p1) / 2) === dir;
+    const th = slide ? slideThickness : t;
+    const [p0, p1] = dir > 0 ? [face, face + th] : [face - th, face];
+    out.push(geo(gap.lo - w, gap.lo, y0, head + w, p0, p1), geo(gap.hi, gap.hi + w, y0, head + w, p0, p1),
+      geo(gap.lo, gap.hi, head, head + w, p0, p1));
+  }
+  return out;
+}
 function gapBox(gap, y0, y1, material) {
   return gap.axis === 'x'
     ? box(gap.lo, gap.hi, gap.p0, gap.p1, y0, y1, material)
@@ -298,6 +322,7 @@ function buildLevel(floor, li, group) {
   const doors = [];
   const barriers = [...wallBoxes, ...floor.windows]; // closed off for room detection (rooms.js)
   const lids = []; // toilet lids (E opens/closes them, see toilet.js)
+  const trims = []; // architrave geometry around the interior doors (merged below)
   for (const d of floor.doors) {
     const [hx, hz] = d.hinge, [tx, tz] = d.tip, [wx, wz] = d.wall;
     const axis = Math.abs(wx - hx) > Math.abs(wz - hz) ? 'x' : 'z';
@@ -317,13 +342,15 @@ function buildLevel(floor, li, group) {
     if (gap) {
       const hAlong = axis === 'x' ? hx : hz, wAlong = axis === 'x' ? wx : wz;
       const dir = Math.sign(wAlong - hAlong);
-      const h2 = dir > 0 ? gap.lo + 0.005 : gap.hi - 0.005;
-      const w2 = dir > 0 ? gap.hi - 0.005 : gap.lo + 0.005;
+      const g = DOOR_TRIM.gap;
+      const h2 = dir > 0 ? gap.lo + g : gap.hi - g;
+      const w2 = dir > 0 ? gap.hi - g : gap.lo + g;
       const len = Math.abs(w2 - h2);
       leaf = axis === 'x'
         ? { hinge: [h2, hz], wall: [w2, hz], tip: [h2, hz + leafDir * len] }
         : { hinge: [hx, h2], wall: [hx, w2], tip: [hx + leafDir * len, h2] };
     }
+    if (gap && !exterior) trims.push(...architraves(gap, y0, head));
     const door = new SwingDoor(leaf, y0, M.door, false, { glazed: exterior && tz > D, glass: M.glass, frame: M.frame });
     door.name = exterior ? 'ytterdörren' : 'dörren';
     group.add(door.object);
@@ -368,9 +395,16 @@ function buildLevel(floor, li, group) {
     const first = onLine.find((w) => (dir > 0 ? Math.abs(w[along[0]] - gap.hi) < 0.03 : Math.abs(w[along[1]] - gap.lo) < 0.03));
     const travel = first ? first[along[1]] - first[along[0]] - 0.02 : undefined;
     const door = new SlidingDoor(gap, s.arrow, y0, M.door, false, dir, travel);
+    trims.push(...architraves(gap, y0, y0 + DOOR_HEIGHT, door.face));
     door.name = 'skjutdörren';
     group.add(door.object);
     doors.push(door);
+  }
+
+  if (trims.length) {
+    const mesh = new THREE.Mesh(mergeGeometries(trims), M.door);
+    mesh.castShadow = mesh.receiveShadow = true;
+    group.add(mesh);
   }
 
   // Wardrobes (G): adjacent units become one hollow wardrobe with sliding doors.

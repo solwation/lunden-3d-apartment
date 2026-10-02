@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { LEVELS, SOFFITS, LIGHTING as L } from './config.js';
+import { LEVELS, SOFFITS, LIGHTING as L, DOOR_TRIM } from './config.js';
 import { lampMaterials } from './interior.js';
 import { sfx } from './audio.js';
 
@@ -149,10 +149,10 @@ export class Lights {
       for (const side of [1, -1]) {
         const name = map.at(cx + nx * side * 0.35, cz + nz * side * 0.35);
         if (!name || L.manual.some((m) => m.level === level && m.room === name)) continue;
-        // on the wall past the latch end of the closed leaf (else beside the hinge): step from
-        // the door line into the room until the first free cell = the wall face
-        const ax = Math.sin(d.closedAngle), az = Math.cos(d.closedAngle);
-        for (const along of [d.len + 0.08, d.len + 0.05, -0.08]) {
+        // on the wall past the latch end of the closed leaf, just beyond the architrave (else beside
+        // the hinge): step from the door line into the room until the first free cell = the wall face
+        const ax = Math.sin(d.closedAngle), az = Math.cos(d.closedAngle), tw = DOOR_TRIM.width;
+        for (const along of [d.len + tw + 0.06, d.len + tw + 0.04, -(tw + 0.06)]) {
           const lx = d.hinge[0] + ax * along, lz = d.hinge[1] + az * along;
           let off = 0;
           while (off < 0.3 && map.exact(lx + nx * side * off, lz + nz * side * off) !== name) off += 0.01;
