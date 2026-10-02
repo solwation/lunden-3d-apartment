@@ -1398,7 +1398,76 @@ function palm(item) {
   return g;
 }
 
-const BUILDERS = { palm, sofa, armchair, footstool, floorlamp, sidetable, coffeetable, loungesofa, loungetable, parasol, planter, bed, skansnasTable, skansnasChair, bunk, daybed, rug, ragrund, coatrack, shoerack, byas, tv, nordkisa, worklamp, gamingdesk, gamingchair, nordli, alex, kidchair };
+/** The abstract painting (#133): blue, turquoise, purple and green washes running from the top left down to
+ * the right on white, drips and a few black splashes; a thin flat black frame, hung on the wall (local z = 0 is
+ * the wall, the picture faces +z). The picture is a canvas texture, drawn once. */
+function abstractCanvas(px, ratio) {
+  const c = document.createElement('canvas');
+  c.width = px; c.height = Math.round(px * ratio);
+  const ctx = c.getContext('2d'), W = c.width, H = c.height;
+  let seed = 133;
+  const r = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+  ctx.fillStyle = '#f7f6f2'; ctx.fillRect(0, 0, W, H);
+  const hues = ['rgba(40,80,190,', 'rgba(30,160,170,', 'rgba(120,70,170,', 'rgba(60,150,90,', 'rgba(70,120,200,'];
+  // each layer is drawn sharp on its own canvas and blurred once as it goes on (a filter per fill is far too slow)
+  const layer = (blur, paint) => {
+    const l = document.createElement('canvas'); l.width = W; l.height = H;
+    paint(l.getContext('2d'));
+    ctx.filter = `blur(${blur}px)`; ctx.drawImage(l, 0, 0); ctx.filter = 'none';
+  };
+  // soft washes along the diagonal flow
+  layer(Math.round(W / 40), (lc) => {
+    for (let i = 0; i < 26; i++) {
+      const t = r(), x = W * (0.12 + t * 0.6 + (r() - 0.5) * 0.35), y = H * (0.05 + t * 0.75 + (r() - 0.5) * 0.2);
+      lc.fillStyle = hues[i % hues.length] + (0.25 + r() * 0.35) + ')';
+      lc.beginPath(); lc.ellipse(x, y, W * (0.04 + r() * 0.12), H * (0.02 + r() * 0.07), 0.8 + r() * 0.5, 0, Math.PI * 2); lc.fill();
+    }
+  });
+  // spray (fine dots) and drips running down
+  layer(Math.max(1, Math.round(W / 300)), (lc) => {
+    for (let i = 0; i < 900; i++) {
+      const t = r(), x = W * (0.1 + t * 0.7 + (r() - 0.5) * 0.3), y = H * (0.04 + t * 0.8 + (r() - 0.5) * 0.25);
+      lc.fillStyle = hues[Math.floor(r() * hues.length)] + (0.3 + r() * 0.5) + ')';
+      lc.fillRect(x, y, 1 + r() * 2.5, 1 + r() * 2.5);
+    }
+    for (let i = 0; i < 14; i++) {
+      const x = W * (0.25 + r() * 0.55), y = H * (0.2 + r() * 0.5), len = H * (0.05 + r() * 0.2);
+      lc.strokeStyle = hues[i % hues.length] + '0.55)'; lc.lineWidth = 1 + r() * 3;
+      lc.beginPath(); lc.moveTo(x, y); lc.lineTo(x + (r() - 0.3) * W * 0.04, y + len); lc.stroke();
+    }
+  });
+  // black splashes and strokes, and a ring like an eye in the upper right
+  ctx.fillStyle = 'rgba(15,15,20,0.9)'; ctx.strokeStyle = 'rgba(15,15,20,0.9)';
+  for (let i = 0; i < 9; i++) { ctx.beginPath(); ctx.arc(W * (0.45 + r() * 0.4), H * (0.3 + r() * 0.55), 1.5 + r() * W * 0.008, 0, Math.PI * 2); ctx.fill(); }
+  for (let i = 0; i < 4; i++) { const x = W * (0.55 + r() * 0.3), y = H * (0.55 + r() * 0.35); ctx.lineWidth = 1 + r() * 3; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + (r() - 0.5) * W * 0.12, y + r() * H * 0.08); ctx.stroke(); }
+  ctx.lineWidth = W * 0.012;
+  ctx.beginPath(); ctx.ellipse(W * 0.66, H * 0.3, W * 0.05, W * 0.035, -0.4, 0.3, Math.PI * 2 - 0.4); ctx.stroke();
+  ctx.beginPath(); ctx.arc(W * 0.665, H * 0.3, W * 0.012, 0, Math.PI * 2); ctx.fill();
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+
+function painting(item) {
+  const g = new THREE.Group();
+  const { w, h, frame: f, depth: d } = item;
+  const black = new THREE.MeshStandardMaterial({ color: 0x111113, roughness: 0.5 });
+  const pic = new THREE.Mesh(new THREE.PlaneGeometry(w - 2 * f, h - 2 * f), new THREE.MeshStandardMaterial({ map: abstractCanvas(384, h / w), roughness: 0.85 }));
+  pic.position.set(0, 0, d - 0.004);
+  g.add(pic);
+  for (const [sx, sy, x, y] of [[w, f, 0, h / 2 - f / 2], [w, f, 0, -h / 2 + f / 2], [f, h - 2 * f, -w / 2 + f / 2, 0], [f, h - 2 * f, w / 2 - f / 2, 0]]) {
+    const b = new THREE.Mesh(new THREE.BoxGeometry(sx, sy, d), black);
+    b.position.set(x, y, d / 2); b.castShadow = true;
+    g.add(b);
+  }
+  const back = new THREE.Mesh(new THREE.BoxGeometry(w - 2 * f, h - 2 * f, 0.004), black);
+  back.position.set(0, 0, 0.002);
+  g.add(back);
+  g.position.y = item.y;
+  return g;
+}
+
+const BUILDERS = { painting, palm, sofa, armchair, footstool, floorlamp, sidetable, coffeetable, loungesofa, loungetable, parasol, planter, bed, skansnasTable, skansnasChair, bunk, daybed, rug, ragrund, coatrack, shoerack, byas, tv, nordkisa, worklamp, gamingdesk, gamingchair, nordli, alex, kidchair };
 
 /** An invisible thin box over a table top (raycast target for putting a cup down, #90). Local rect. */
 export function surfaceBox(r, list) {

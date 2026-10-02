@@ -612,6 +612,9 @@ export const FURNITURE = [
   // the spots aimed at the seat; `aim` = plan point they point at
   { type: 'floorlamp', level: 0, x: 0.36, z: 8.86, aim: [0.78, 8.38], h: 1.6, base: 0.25 },
   { type: 'sidetable', level: 0, x: 1.52, z: 8.12, flower: true },
+  // The abstract painting (#133, docs/tavla-abstrakt-svart-ram.png): portrait, thin flat black frame, ~70 × 100 cm
+  // (*guess*), centred over the chaise on the east wall (x 5.5; the chaise spans z ~10.55–12.15), centre 1.55 m up.
+  { type: 'painting', level: 0, x: 5.5, z: 11.35, y: 1.55, rot: 90, w: 0.7, h: 1.0, frame: 0.018, depth: 0.025 },
   // Areca / golden cane palm (#106, the user's Amazon pick: "Gold Palm 130 cm", nursery pot Ø 24) in a big anthracite
   // fibre-clay pot (Ø 40 × 45 cm, our pick) right of the patio door seen from inside (between the west party wall at
   // x 0.2 and the door at x 0.95, the wall's inner face at z 12.23). Canes, frond and leaflet lengths are *guesses*
