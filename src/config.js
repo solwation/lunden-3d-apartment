@@ -638,7 +638,9 @@ export const FURNITURE = [
   // fibre-clay pot (Ø 40 × 45 cm, our pick) right of the patio door seen from inside (between the west party wall at
   // x 0.2 and the door at x 0.95, the wall's inner face at z 12.23). Canes, frond and leaflet lengths are *guesses*
   // for a ~1.5 m total height.
-  { type: 'palm', level: 0, x: 0.47, z: 11.96, pot: { r: 0.2, h: 0.45 }, potColor: 0x3d3f42, canes: 15, cane: 0.72, frond: 0.85, leaflet: 0.27 },
+  // `walls`: the fronds stay inside the west party wall and the façade (#137)
+  { type: 'palm', level: 0, x: 0.47, z: 11.96, pot: { r: 0.2, h: 0.45 }, potColor: 0x3d3f42, canes: 15, cane: 0.72, frond: 0.85, leaflet: 0.27,
+    walls: { x0: 0.2, z1: 12.23 } },
   // Soffbord ILVA Woodstock, top i oljebehandlad ekfaner (art. 1055729): 120 × 60 × 47 cm, legs in
   // oiled solid oak, a fixed shelf below (ilva.dk product page). Centred on the three seats
   // (x 2.68–4.60), 40 cm in front of the sofa (front at z 11.26).
@@ -668,7 +670,7 @@ export const FURNITURE = [
   // large planters with exotic plants (the user's wish): by the patio door and in the SE corner. The
   // banana in the SW corner stood in the gap in the hedge (the way out to the lawn) and is gone (#52).
   // by the hedge, and beside the living-room window
-  { type: 'planter', level: 0, x: 0.45, z: 13.25, plant: 'palm' },
+  { type: 'planter', level: 0, x: 0.45, z: 13.25, plant: 'palm', walls: { x0: 0.065, z0: 12.7 } }, // fronds clear of the façade + screen wall (#137)
   { type: 'planter', level: 0, x: 5.3, z: 13.2, plant: 'agave' },
   // Upstairs bedrooms (the user's plan). Beds: rot = direction from the head to the foot end.
   // IKEA NORDKISA bedside tables, bamboo, 40 × 40 cm (ikea.com, #64; the 55 cm height is a guess, about the

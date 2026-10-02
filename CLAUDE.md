@@ -290,7 +290,8 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   mirror/key cabinet/coat rack, door signs, the Moccamaster, the cat board) are hidden, their collision
   segments go, the cat leaves and none turns up, hidden things are no E target and give no light.
   Kept: Peab's kitchen and wet rooms (incl. bathroom mirrors), wardrobes, doors, stair, ceiling lamps,
-  switches, the wall clock, the note on the freezer. New loose things must join `world.looseItems`
+  switches, the wall clock, the note on the freezer. Plants by a wall get `walls: { x0, x1, z0, z1 }` on their FURNITURE item (`keepInside` in furniture.js squeezes
+  leaves short of those lines, #137). New loose things must join `world.looseItems`
   and be kept out of `mergeStatic`. Keep the Sovrum 1 bed clear of the Klk sliding door — the cat test needs floor there.
 - Toilets: the redrawn plan has them rotated; bofakta shows the tank against the wall, so
   `toiletAgainstWall` re-orients them. Modelled as Ifö Spira 6260 (`TOILET` in config,

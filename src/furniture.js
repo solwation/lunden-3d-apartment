@@ -1467,6 +1467,44 @@ function painting(item) {
   return g;
 }
 
+/**
+ * Pull everything of a piece that reaches past `item.walls` ({ x0, x1, z0, z1 }, plan metres, any subset) back
+ * inside (#137: palm fronds through the wall): each vertex's horizontal distance from the piece's axis is
+ * kept up to 60 % of the room there is in its direction and squeezed smoothly into the rest beyond that, so
+ * fronds towards a wall bunch up short of it instead of poking through. Margin 3 cm.
+ */
+function keepInside(obj, item, yaw) {
+  const W = item.walls, c = Math.cos(yaw), s = Math.sin(yaw), m = 0.03, v = new THREE.Vector3();
+  const room = (wx, wz) => { // how far from the axis one can go in world direction (wx, wz)
+    let t = Infinity;
+    if (W.x0 !== undefined && wx < 0) t = Math.min(t, (item.x - W.x0 - m) / -wx);
+    if (W.x1 !== undefined && wx > 0) t = Math.min(t, (W.x1 - m - item.x) / wx);
+    if (W.z0 !== undefined && wz < 0) t = Math.min(t, (item.z - W.z0 - m) / -wz);
+    if (W.z1 !== undefined && wz > 0) t = Math.min(t, (W.z1 - m - item.z) / wz);
+    return t;
+  };
+  for (const mesh of [...obj.children]) {
+    if (!mesh.isMesh) continue;
+    mesh.updateMatrix();
+    const geo = mesh.geometry.clone().applyMatrix4(mesh.matrix);
+    mesh.position.set(0, 0, 0); mesh.quaternion.identity(); mesh.scale.set(1, 1, 1);
+    const pos = geo.attributes.position;
+    let moved = false;
+    for (let i = 0; i < pos.count; i++) {
+      v.fromBufferAttribute(pos, i);
+      const wx = v.x * c + v.z * s, wz = -v.x * s + v.z * c, d = Math.hypot(wx, wz);
+      if (d < 1e-6) continue;
+      const t = room(wx / d, wz / d), k = 0.6 * t;
+      if (d <= k) continue;
+      const nd = k + (t - k) * Math.tanh((d - k) / (t - k));
+      pos.setXYZ(i, v.x * nd / d, v.y, v.z * nd / d);
+      moved = true;
+    }
+    if (moved) geo.computeVertexNormals();
+    mesh.geometry = geo;
+  }
+}
+
 const BUILDERS = { painting, palm, sofa, armchair, footstool, floorlamp, sidetable, coffeetable, loungesofa, loungetable, parasol, planter, bed, skansnasTable, skansnasChair, bunk, daybed, rug, ragrund, coatrack, shoerack, byas, tv, nordkisa, worklamp, gamingdesk, gamingchair, nordli, alex, kidchair };
 
 /** An invisible thin box over a table top (raycast target for putting a cup down, #90). Local rect. */
@@ -1489,6 +1527,7 @@ export function buildFurniture() {
     // one mesh per material per piece (#48); the parasol folds and the beers come and go
     if (item.type !== 'parasol') mergeStatic(obj, obj.userData.keep ?? []);
     const yaw = THREE.MathUtils.degToRad(item.rot ?? 0) + Math.PI; // local +z = facing
+    if (item.walls) keepInside(obj, item, yaw); // plants by a wall: no leaves through it (#137)
     obj.rotation.y = yaw;
     obj.position.set(item.x, LEVELS[item.level].floor + obj.position.y, item.z);
     for (const r of obj.userData.surfaces ?? []) obj.add(surfaceBox(r, surfaces)); // tables a cup can stand on (#90)
