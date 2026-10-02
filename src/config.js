@@ -156,6 +156,19 @@ export const SITE = {
     { name: 'Montessorigrundskolan', x0: -78, x1: -60, z0: -115, z1: -70, base: 0, storeys: 2, roof: 'hip', style: 'old' },
     { name: 'Villa', x0: -64.5, x1: -48.5, z0: 69, z1: 87, base: -3, storeys: 3, roof: 'hip', style: 'old' }, // brick house, hip roof
   ],
+  // The street details (#128, src/street.js; the user's photos in docs/foton/): granite curbs along Sankt Lars väg,
+  // patched asphalt, slender street lamps with a curved arm (lit at night by emissive only), a zebra crossing,
+  // a temporary yellow traffic light and warning signs for the building site, a cobbled corner and fallen leaves
+  // in the autumn months. Positions are our picks.
+  street: {
+    curbs: [{ x0: -95, x1: 22, z: -24 }, { x0: -95, x1: 30, z: -30 }], curbZ: [{ x: 22, z0: -24, z1: 12.7 }, { x: 30, z0: -30, z1: 12.7 }],
+    patches: [[-31, -27.6, 4.5, 1.6], [-6, -25.4, 2.2, 1.0], [4.5, -28.3, 7, 1.2], [15, -26, 1.2, 1.2], [26, -12, 1.4, 3.5], [-55, -28.5, 3, 1.4]],
+    lamps: { h: 6.2, arm: 1.3, our: { z: -22.0, x0: -78, x1: 18, step: 24 }, east: { x: 21.0, z0: -12, z1: 8, step: 20 } },
+    crossing: { x0: 9.5, x1: 12.5, z0: -30, z1: -24 },
+    trafficLight: { x: 8.6, z: -23.5 }, warnings: [[13.2, -23.2], [16, -23.3]],
+    cobbles: { x0: 18, x1: 22, z0: -21.5, z1: -18.5 },
+    leaves: { n: 1400, months: [9, 10, 11], areas: [[-60, 20, -24, -18], [-30, 30, -32.1, -30.05], [20, 22, -24, 12]] },
+  },
   // asphalt (y follows the ground: the street level north of Hus L and on the garage box, park level around it)
   roads: [
     { name: 'Sankt Lars väg', x0: -95, x1: 30, z0: -30, z1: -24 },

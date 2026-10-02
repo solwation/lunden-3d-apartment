@@ -78,6 +78,8 @@ src/surroundings.js    the site (SITE): Hus A/B/C + buildings around, roads, pav
                        Höje å, instanced trees, lit windows, cloudy sky
 src/lights.js          room switches (E), ceiling lamps/pendant/spots/LED, floor lamp; a pool of 4
                        point lights follows the nearest lit lamps on the visitor's level
+src/street.js          Sankt Lars väg's details (SITE.street, #128): curbs, asphalt patches, street lamps (emissive at
+                       night), zebra crossing, the site's temporary traffic light + warning signs, cobbles, autumn leaves
 src/daycycle.js        60-minute day: real solar path for the month (55.7° N), sun → moon light, shader sky
                        (glow, stars, clouds), fog colour; paused / spooled by the wall clock
 src/patio.js           patio: Plantagen Oslo corner lounge set, parasol, planters with exotic plants

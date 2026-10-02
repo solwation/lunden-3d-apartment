@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { SITE as S, COLORS, SEASON, COURTYARD } from './config.js';
 import { registerTrees, registerSnow } from './seasons.js';
+import { buildStreet } from './street.js';
 
 // The rest of Kv. Lunden and its neighbourhood (SITE in config): the brick point blocks Hus A, B, C
 // with low hip roofs, the schools and buildings around the plot, Sankt Lars väg and Karpvägen,
@@ -555,7 +556,7 @@ export function buildSurroundings({ grass }) {
   flat(bw.walls, concrete);
   flat(bw.rails, new THREE.MeshStandardMaterial({ color: 0x3b3e41, roughness: 0.5, metalness: 0.4 }));
   flat(bw.door, new THREE.MeshStandardMaterial({ color: 0x1c1e21, roughness: 0.8, side: THREE.DoubleSide }));
-  flat(S.roads.map((r) => groundStrip(r.x0, r.x1, r.z0, r.z1, 0.012)), COLORS.asphalt, 0xd9dfe4); // ploughed, a little grey
+  flat(S.roads.map((r) => groundStrip(r.x0, r.x1, r.z0, r.z1, 0.012)), new THREE.MeshStandardMaterial({ color: COLORS.asphalt, roughness: 0.7 }), 0xd9dfe4); // ploughed, a little grey; damp (#128)
   flat(S.paving.map((r) => groundStrip(r.x0, r.x1, r.z0, r.z1, 0.008)), COLORS.paving, SEASON.snow.paving);
   flat([groundStrip(S.river.x0, S.river.x1, S.river.z0, S.river.z1, 0.02)],
     new THREE.MeshStandardMaterial({ color: COLORS.water, roughness: 0.15, metalness: 0.2 }));
@@ -602,7 +603,8 @@ export function buildSurroundings({ grass }) {
     }), new THREE.MeshStandardMaterial({ color: 0xf1eee6, roughness: 0.8 }));
   }
   group.add(...trees(rng(3)));
-  group.userData.windows = buildWindowLights();
-  group.add(group.userData.windows.object);
+  const windows = buildWindowLights(), street = buildStreet(); // street lamps, crossing, curbs … (#128)
+  group.add(windows.object, street.object);
+  group.userData.windows = { object: windows.object, update(hour, night) { windows.update(hour, night); street.update(night); } };
   return group;
 }

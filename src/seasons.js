@@ -6,10 +6,13 @@ import { SEASON } from './config.js';
 // roofs, the hedges and the patio paving turn white. Only colours change (no new geometry); the work
 // is done once per month change.
 
-const registry = { crowns: [], materials: [] }; // materials: { mat, snow (hex) } with the original colour kept
+const registry = { crowns: [], materials: [], hooks: [] }; // materials: { mat, snow (hex) } with the original colour kept
 
 /** Trees from surroundings.js: an InstancedMesh of crowns with per-tree base (seed, scale). */
 export function registerTrees(crown, seeds) { registry.crowns.push({ crown, seeds }); }
+
+/** Anything else that follows the month (fallen leaves, #128): fn(month) on every month change. */
+export function registerSeasonal(fn) { registry.hooks.push(fn); }
 
 /** A material that turns `snowHex` in the snow months (its own colour is remembered). */
 export function registerSnow(mat, snowHex) {
@@ -46,6 +49,7 @@ export function applySeason(month) {
     r.mat.color.copy(snow ? r.snow : r.base);
     if (r.map) { r.mat.map = snow ? null : r.map; r.mat.needsUpdate = true; } // snow covers the texture
   }
+  for (const fn of registry.hooks) fn(month);
 }
 
 /** For tests. */
