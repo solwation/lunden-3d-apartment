@@ -315,6 +315,21 @@ function facadeTexture() {
   return tex;
 }
 
+/** The lowest ground under a block's footprint (sampled every 2 m). */
+function lowestGround(b) {
+  let lo = Infinity;
+  for (let x = b.x0; x <= b.x1 + 1e-6; x += Math.max(0.5, (b.x1 - b.x0) / Math.ceil((b.x1 - b.x0) / 2)))
+    for (let z = b.z0; z <= b.z1 + 1e-6; z += Math.max(0.5, (b.z1 - b.z0) / Math.ceil((b.z1 - b.z0) / 2))) lo = Math.min(lo, groundY(x, z));
+  return lo;
+}
+
+/** A plinth under a block that stands on a slope, down to the lowest ground under it (#142), or null. */
+function plinth(b) {
+  const foot = lowestGround(b);
+  if (foot > b.base - 0.05) return null;
+  return new THREE.BoxGeometry(b.x1 - b.x0, b.base - foot + 0.05, b.z1 - b.z0).translate((b.x0 + b.x1) / 2, (foot + b.base) / 2, (b.z0 + b.z1) / 2);
+}
+
 /** Box with façade UVs: u along the wall in bays, v in storeys from the ground. */
 function block(b) {
   const { bay, storey } = dims(b), h = b.storeys * storey;
@@ -645,6 +660,9 @@ export function buildSurroundings({ grass }) {
       return g.translate((b.x0 + b.x1) / 2, h - 0.16, (b.z0 + b.z1) / 2);
     }), new THREE.MeshStandardMaterial({ color: 0xf1eee6, roughness: 0.8 }));
   }
+  // blocks on the slope south of Hus L stand on a plinth down to the ground (#142)
+  const plinths = S.blocks.map(plinth).filter(Boolean);
+  if (plinths.length) mesh(plinths, new THREE.MeshStandardMaterial({ color: 0x6e3326, roughness: 0.95 }));
   group.add(...trees(rng(3)));
   const windows = buildWindowLights(), street = buildStreet(); // street lamps, crossing, curbs … (#128)
   group.add(windows.object, street.object);
