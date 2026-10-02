@@ -6,6 +6,8 @@ import { Fridge } from './fridge.js';
 import { buildOvens } from './ovens.js';
 import { Hob } from './hob.js';
 import { Hood } from './hood.js';
+import { attachContents } from './contents.js';
+import { fillKitchen } from './kitchenstuff.js';
 import { Openable, pivotAround } from './openables.js';
 import { Moccamaster } from './coffee.js';
 import { mirrorMaterial } from './mirror.js';
@@ -227,7 +229,8 @@ function doorRow(F, a0, a1, y0, y1, size, opts) {
     const handle = opts.open?.corner === 'a1' && i === n - 1 ? 'v-hi' : i % 2 ? 'v-lo' : 'v-hi';
     if (!opts.open) { front(F, b0, b1, y0, y1, opts.material ?? M.front, handle, opts); continue; }
     shell(F, b0, b1, y0, y1, opts.open.depth);
-    openFront(opts.open, F, b0, b1, y0, y1, opts.material ?? M.front, handle, opts, { mode: 'hinge', name: opts.open.name ?? 'skåpet' });
+    const o = openFront(opts.open, F, b0, b1, y0, y1, opts.material ?? M.front, handle, opts, { mode: 'hinge', name: opts.open.name ?? 'skåpet' });
+    if (opts.fill) stock(opts.open, F, o, opts.fill[i % opts.fill.length], b0, b1, y0, y1, opts.open.depth);
   }
 }
 
@@ -296,6 +299,23 @@ function openFront(ctx, F, a0, a1, y0, y1, material, handle, opts, how) {
   ctx.group.add(o.object);
   ctx.list.push(o);
   return o;
+}
+
+/**
+ * Fill an opening front's cabinet / drawer with kitchen things (#229, kitchenstuff.js): built into their own batch,
+ * merged per material, hidden until the front opens (contents.js). Hinged doors and flaps leave the contents standing
+ * in the carcass (a shelf half-way when it is tall enough, as `shell` builds it); drawers carry theirs. `o.stock` = the kind.
+ */
+function stock(ctx, F, o, kind, a0, a1, y0, y1, depth, { drawer = false, shelf = true } = {}) {
+  o.stock = kind;
+  const CB = new Batch(), P = onBatch(F, CB), t = 0.016;
+  const b = drawer
+    ? { a0: a0 + 0.04, a1: a1 - 0.04, d0: -FT - depth + 0.02, d1: -FT - 0.01, y0: y0 + 0.029, y1: y1 - 0.045, shelf: null }
+    : { a0: a0 + t + 0.006, a1: a1 - t - 0.006, d0: -depth + 0.015, d1: -FT - 0.03, y0: y0 + t + 0.002, y1: y1 - t - 0.004, shelf: shelf && y1 - y0 > 0.45 ? (y0 + y1) / 2 + 0.009 : null };
+  fillKitchen(P, kind, b);
+  if (!CB.parts.size) return;
+  const g = attachContents(CB.meshes(), o, { carry: drawer });
+  if (!drawer) ctx.group.add(g);
 }
 
 const inside = (r, a, tol = 0.02) => r.x0 >= a.x0 - tol && r.x1 <= a.x1 + tol && r.z0 >= a.z0 - tol && r.z1 <= a.z1 + tol;
@@ -398,7 +418,7 @@ function buildKitchen(B, group, floor, y0, yC, handled, taps, appliances) {
       shell(F, u0, u1, yGrille + K.grille, yTop, F.depth);
       F.box(u0, u1, -F.depth, -FT, yGrille, yGrille + K.grille, M.front);
       F.box(u0, u1, -0.07, -0.05, y0, yb, M.front);
-      openFront(open, F, u0, u1, yb, yOven, M.front, 'v-hi', {}, { mode: 'hinge', name: 'skåpet' });
+      stock(open, F, openFront(open, F, u0, u1, yb, yOven, M.front, 'v-hi', {}, { mode: 'hinge', name: 'skåpet' }), 'baking', u0, u1, yb, yOven, F.depth);
       if (F.dir === 'w') {
         const ov = buildOvens({ f: F.f, z0: u0, z1: u1, yOven, yMicro, yGrille, microW: 0.44 });
         group.add(ov.parts, ...ov.doors.map((d) => d.object));
@@ -409,7 +429,7 @@ function buildKitchen(B, group, floor, y0, yC, handled, taps, appliances) {
         looseItems.push(mocca.object); // a loose thing on the worktop: hidden with F
       }
       F.box(u0 + 0.005, u1 - 0.005, -FT, 0, yGrille, yGrille + K.grille, M.steel);
-      openFront(open, F, u0, u1, yGrille + K.grille, yTop, M.front, 'v-hi', { low: true }, { mode: 'hinge', name: 'skåpet' });
+      stock(open, F, openFront(open, F, u0, u1, yGrille + K.grille, yTop, M.front, 'v-hi', { low: true }, { mode: 'hinge', name: 'skåpet' }), 'serving', u0, u1, yGrille + K.grille, yTop, F.depth);
       continue;
     }
     if (fridges.includes(c)) {
@@ -434,7 +454,8 @@ function buildKitchen(B, group, floor, y0, yC, handled, taps, appliances) {
       shell(F, u0, u1, yF + K.grille, yTop, F.depth, { shelf: false });
       F.box(u0 + 0.005, u1 - 0.005, -FT, 0, yF, yF + K.grille, M.steel);
       for (let y = yF + 0.012; y < yF + K.grille - 0.01; y += 0.012) F.box(u0 + 0.02, u1 - 0.02, 0, 0.002, y, y + 0.004, M.black);
-      openFront(open, F, u0, u1, yF + K.grille, yTop, M.front, 'bottom', {}, { mode: 'flap', top: true, name: 'skåpet', max: 80 }); // lifts up
+      const flap = openFront(open, F, u0, u1, yF + K.grille, yTop, M.front, 'bottom', {}, { mode: 'flap', top: true, name: 'skåpet', max: 80 }); // lifts up
+      stock(open, F, flap, c.label === 'K' ? 'festive' : 'serving', u0, u1, yF + K.grille, yTop, F.depth, { shelf: false }); // the good china, platters (#229)
       continue;
     }
     // base unit: carcass + recessed plinth + fronts (under the sink the carcass stops below the bowl, #122)
@@ -445,7 +466,7 @@ function buildKitchen(B, group, floor, y0, yC, handled, taps, appliances) {
       // integrated dishwasher (KEZA9310W): its door folds down onto a steel tub with two racks
       shell(F, u0, u1, yb, yt, F.depth, { shelf: false, inner: M.dishwasher });
       for (const y of [yb + 0.12, yb + 0.42]) for (let k = 0; k < 9; k++) { const a = u0 + 0.04 + k * (u1 - u0 - 0.08) / 8; F.box(a - 0.002, a + 0.002, -F.depth + 0.04, -FT - 0.04, y, y + 0.004, M.chrome); }
-      openFront(open, F, u0, u1, yb, yt, M.front, 'top', {}, { mode: 'flap', name: 'diskmaskinen', max: 88 });
+      openFront(open, F, u0, u1, yb, yt, M.front, 'top', {}, { mode: 'flap', name: 'diskmaskinen', max: 88 }).stock = 'own'; // its racks
     } else if (sinkUnit) {
       shell(F, u0, u1, yb, top - K.sink.depth - 0.02, F.depth, { shelf: false });
       // waste sorting under the sink (#103): a grey bin, a green one for food waste, a small blue one for paper
@@ -455,21 +476,23 @@ function buildKitchen(B, group, floor, y0, yC, handled, taps, appliances) {
         F.box(a, a + uw, d0, d1, yb + 0.016, yb + 0.016 + h, m);
         F.box(a + 0.01, a + uw - 0.01, d0 + 0.01, d1 - 0.01, yb + 0.016 + h - 0.002, yb + 0.018 + h, M.black); // its opening
       });
-      openFront(open, F, u0, (u0 + u1) / 2, yb, yt, M.front, 'v-hi', {}, { mode: 'hinge', name: 'skåpet' });
-      openFront(open, F, (u0 + u1) / 2, u1, yb, yt, M.front, 'v-lo', {}, { mode: 'hinge', name: 'skåpet' });
+      const sinkTop = top - K.sink.depth - 0.02;
+      stock(open, F, openFront(open, F, u0, (u0 + u1) / 2, yb, yt, M.front, 'v-hi', {}, { mode: 'hinge', name: 'skåpet' }), 'sink', u0, u1, yb, sinkTop, F.depth, { shelf: false });
+      openFront(open, F, (u0 + u1) / 2, u1, yb, yt, M.front, 'v-lo', {}, { mode: 'hinge', name: 'skåpet' }).stock = 'own'; // the bins
     } else if (ret.includes(c)) {
       // corner unit: only the part beside the east run is a visible door
       const vis = Math.min(u1, east[0] ? east[0].x0 : u1);
       shell(F, u0, vis, yb, yt, F.depth);
       if (vis < u1) F.box(vis, u1, -F.depth, -FT, yb, yt, M.front);
-      openFront(open, F, u0, vis, yb, yt, M.front, 'v-hi', {}, { mode: 'hinge', name: 'hörnskåpet' }); // hinged away from the corner: the other run is in the way there
+      stock(open, F, openFront(open, F, u0, vis, yb, yt, M.front, 'v-hi', {}, { mode: 'hinge', name: 'hörnskåpet' }), 'corner', u0, vis, yb, yt, F.depth); // hinged away from the corner: the other run is in the way there
     } else {
       F.box(u0, u1, -F.depth, -FT, yb, yt, M.front); // drawer unit: the drawers' boxes slide out of it
       const h = yt - yb, hs = [0.2 * h, 0.4 * h, 0.4 * h];
       let y = yt;
       hs.forEach((dh, k) => {
         const d = openFront(open, F, u0, u1, y - dh, y, M.front, 'top', {}, { mode: 'drawer', depth: F.depth - 0.08, name: 'lådan' });
-        if (c === hobCab && k === 1) d.panHome = true; // the frying pan's place (#159, pan.js)
+        if (c === hobCab && k === 1) { d.panHome = true; d.stock = 'own'; } // the frying pan's place (#159, pan.js)
+        else stock(open, F, d, [c === hobCab ? 'utensils' : 'cutlery', 'rolls', 'drawerPots'][k], u0, u1, y - dh, y, F.depth - 0.08, { drawer: true }); // #229
         y -= dh;
       });
     }
@@ -533,15 +556,15 @@ function buildKitchen(B, group, floor, y0, yC, handled, taps, appliances) {
   const visEnd = southWall - wd;
   for (const [a, b] of eastSpans) if (b > visEnd) EW.box(visEnd, b, -wd, -FT, yW, yTop, M.front);
   const wallOpen = { ...open, depth: wd };
-  doorRow(EW, runZ0 + cupW, hob ? hob[0] : visEnd, yW, yTop, 0.5, { low: true, open: hob ? wallOpen : { ...wallOpen, corner: 'a1' } });
+  doorRow(EW, runZ0 + cupW, hob ? hob[0] : visEnd, yW, yTop, 0.5, { low: true, open: hob ? wallOpen : { ...wallOpen, corner: 'a1' }, fill: ['plates', 'glasses', 'mugs'] });
   cupCabinet = { front: wallX, back: eastWall, z0: runZ0, z1: runZ0 + cupW, y0: yW, y1: yTop, material: M.front, handle: M.handle };
   // the worktop between the tall unit and the hob: somewhere to put a cup down
   cupSurfaces.push({ x0: eFront + 0.03, x1: eastWall - 0.03, z0: runZ0 + 0.03, z1: firstEnd - 0.03, y: top });
   if (hob) {
-    doorRow(EW, hob[1], visEnd, yW, yTop, 0.5, { low: true, open: { ...wallOpen, corner: 'a1' } });
+    doorRow(EW, hob[1], visEnd, yW, yTop, 0.5, { low: true, open: { ...wallOpen, corner: 'a1' }, fill: ['dry', 'tea'] });
     const yH = yHood + K.hoodHeight;
     shell(EW, hob[0], hob[1], yH, yTop, wd, { shelf: false });
-    openFront(open, EW, hob[0], hob[1], yH, yTop, M.front, 'bottom', {}, { mode: 'flap', top: true, name: 'skåpet', max: 80 }); // over the hood: lifts up
+    openFront(open, EW, hob[0], hob[1], yH, yTop, M.front, 'bottom', {}, { mode: 'flap', top: true, name: 'skåpet', max: 80 }).stock = 'empty'; // over the hood: lifts up; the duct runs there
     EW.box(hob[0] + 0.01, hob[1] - 0.01, -wd + 0.02, 0, yHood, yH, M.steel);
     EW.box(hob[0] + 0.03, hob[1] - 0.03, -wd + 0.05, -0.03, yHood - 0.002, yHood, hoodLamp);
     const hood = new Hood({ x0: wallX, x1: eastWall, z0: hob[0] + 0.01, z1: hob[1] - 0.01, y0: yHood, y1: yH }); // E: the fan (#194); its light has its own button (#221)
@@ -555,7 +578,7 @@ function buildKitchen(B, group, floor, y0, yC, handled, taps, appliances) {
   const fridgeX1 = fridges.length ? Math.max(...fridges.map((c) => c.x1)) : retX0;
   if (fridgeX1 < wallX) {
     const RW = frame(B, { x0: fridgeX1, x1: wallX, z0: southWall - wd, z1: southWall }, 'n');
-    doorRow(RW, fridgeX1, wallX, yW, yTop, 0.5, { low: true, open: { ...wallOpen, corner: 'a1' } });
+    doorRow(RW, fridgeX1, wallX, yW, yTop, 0.5, { low: true, open: { ...wallOpen, corner: 'a1' }, fill: ['tea', 'plates', 'dry'] });
     RW.box(fridgeX1 + 0.02, wallX, -wd + 0.02, -wd + 0.04, yW - 0.008, yW, benchLamp);
   }
   // under-cabinet LED (Belysning LED Linear) and the splashback tiles (10×20 half bond)
