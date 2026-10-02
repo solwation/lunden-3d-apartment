@@ -10,6 +10,7 @@ import { buildExterior } from './exterior.js';
 import { buildFurniture } from './furniture.js';
 import { buildWallShelves } from './shelves.js';
 import { buildHallWall } from './keycabinet.js';
+import { mergeStatic } from './merge.js';
 import { buildInterior } from './interior.js';
 import { Toilet } from './toilet.js';
 import { RoomMap } from './rooms.js';
@@ -584,6 +585,18 @@ export function buildWorld(plan) {
 
   addDoorSigns([...l0.doors, ...l1.doors], (lv, x, z) => roomMaps[lv]?.at(x, z) ?? null,
     (d) => (d.object.position.y > LEVELS[0].floor + 1.6 ? 1 : 0));
+
+  // bake the static fittings into one mesh per material and level (draw calls, #48)
+  const box3 = new THREE.Box3(), mid = new THREE.Vector3();
+  const merged = mergeStatic(scene, [
+    ...l0.doors, ...l1.doors, ...l0.lids, ...l1.lids, ...l0.appliances, ...l1.appliances,
+  ].map((d) => d.object).concat([hallWall.object, furniture.object, exterior, surroundings]), (o) => {
+    box3.setFromObject(o).getCenter(mid);
+    if (mid.x < 0 || mid.x > W || mid.z < 0 || mid.z > D) return 'out';
+    return mid.y < LEVELS[1].floor - 0.05 ? 'l0' : 'l1';
+  });
+  scene.userData.merged = merged;
+  for (const d of [...l0.doors, ...l1.doors]) mergeStatic(d.object, [], () => '', { tagged: true }); // leaf + handles
 
   // furniture can be switched off (F): keep its collision separate from the fixed segments
   const fixed = [l0.segments, l1.segments];

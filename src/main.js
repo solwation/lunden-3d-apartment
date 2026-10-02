@@ -30,7 +30,8 @@ const pauseBtn = document.getElementById('pause');
 setupInstall({ force: new URLSearchParams(location.search).has('install') });
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+const MAX_PIXEL_RATIO = Math.min(window.devicePixelRatio, 1.5);
+renderer.setPixelRatio(MAX_PIXEL_RATIO);
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -69,6 +70,20 @@ Object.assign(sun.shadow.camera, { left: -14, right: 14, top: 14, bottom: -14, n
 sun.shadow.bias = -0.0005;
 sun.shadow.normalBias = 0.02;
 scene.add(sun, sun.target);
+// The shadow map is only redrawn when it can have changed (#48): the sun moved > 0.2°, something
+// was just opened/closed (doors, lids … swing for ~1 s), or at least twice a second.
+renderer.shadowMap.autoUpdate = false;
+const shadowState = { dir: new THREE.Vector3(), hold: 0, age: Infinity };
+function updateShadows(dt) {
+  const dir = new THREE.Vector3().subVectors(sun.position, sun.target.position).normalize();
+  shadowState.hold -= dt;
+  shadowState.age += dt;
+  if (shadowState.hold > 0 || shadowState.age > 0.5 || dir.angleTo(shadowState.dir) > 0.0035) {
+    renderer.shadowMap.needsUpdate = true;
+    shadowState.dir.copy(dir);
+    shadowState.age = 0;
+  }
+}
 
 // Changelog: only on the note on the freezer (the visitor finds it there, #40)
 const changelog = await loadChangelog();
@@ -268,6 +283,7 @@ pauseBtn.addEventListener('click', () => {
 });
 /** E / the action button on what you look at: doors toggle, the note opens. */
 function use(thing) {
+  shadowState.hold = 1.5; // whatever moves now casts a moving shadow
   if (thing.kind === 'note') showNote(true);
   else if (thing.kind === 'clock') showClock(true);
   else if (thing.kind === 'board') showBoard(true);
@@ -458,10 +474,50 @@ function step(dt) {
     lastLevel = lvl;
   }
 }
+// &perf: fps + what the renderer did last frame (draw calls, triangles, geometries, textures)
+const perfEl = new URLSearchParams(location.search).has('perf') ? document.createElement('pre') : null;
+if (perfEl) {
+  perfEl.id = 'perf';
+  Object.assign(perfEl.style, { position: 'fixed', right: '8px', top: '8px', margin: 0, padding: '6px 8px', zIndex: 30,
+    background: 'rgba(0,0,0,.6)', color: '#bdf', font: '12px/1.3 monospace', pointerEvents: 'none' });
+  document.body.append(perfEl);
+}
+let perfFrames = 0, perfT = performance.now();
+// Dynamic resolution (#48): if the frame rate stays under ~30 fps for 2 s, render at a lower pixel
+// ratio (steps of 0.85×, not below 0.6 of the full ratio); back up again after 4 s above ~50 fps.
+const dynRes = { ratio: MAX_PIXEL_RATIO, slow: 0, fast: 0 };
+const shotMode = new URLSearchParams(location.search).has('shot'); // screenshots: always full resolution
+function adaptResolution(dt) {
+  if (dt <= 0) return;
+  const fps = 1 / dt;
+  dynRes.slow = fps < 30 ? dynRes.slow + dt : 0;
+  dynRes.fast = fps > 50 ? dynRes.fast + dt : 0;
+  let next = dynRes.ratio;
+  if (dynRes.slow > 2) next = Math.max(MAX_PIXEL_RATIO * 0.6, dynRes.ratio * 0.85);
+  else if (dynRes.fast > 4) next = Math.min(MAX_PIXEL_RATIO, dynRes.ratio / 0.85);
+  if (Math.abs(next - dynRes.ratio) > 1e-3) {
+    dynRes.ratio = next;
+    renderer.setPixelRatio(next);
+    dynRes.slow = dynRes.fast = 0;
+  }
+}
+function showPerf() {
+  perfFrames++;
+  const now = performance.now();
+  if (now - perfT < 500) return;
+  const i = renderer.info;
+  perfEl.textContent = `${(perfFrames * 1000 / (now - perfT)).toFixed(0)} fps · px ${dynRes.ratio.toFixed(2)}\ncalls ${i.render.calls}\ntris  ${i.render.triangles}\ngeoms ${i.memory.geometries}\ntex   ${i.memory.textures}`;
+  perfFrames = 0; perfT = now;
+}
 renderer.setAnimationLoop(() => {
-  step(Math.min(clock.getDelta(), 0.05));
+  const raw = clock.getDelta(), dt = Math.min(raw, 0.05);
+  if (!overlay.hidden || document.hidden || shotMode) dynRes.slow = dynRes.fast = 0; // only while playing (not &shot)
+  else adaptResolution(raw);
+  step(dt);
+  updateShadows(dt);
   updateListener(camera);
   renderer.render(scene, camera);
+  if (perfEl) showPerf();
 });
 
 // --- "new version published" notice ------------------------------------
@@ -494,4 +550,4 @@ document.addEventListener('pointerlockchange', () => { if (!updateEl.hidden) sho
 watchForUpdates(showUpdate);
 
 // handle for tests/debugging (tools/touchtest.html)
-window.__app = { player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };
+window.__app = { renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };

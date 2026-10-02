@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { mergeStatic } from './merge.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { FURNITURE, LANDSKRONA as L, LEVELS } from './config.js';
 import { loungesofa, loungetable, parasol, planter } from './patio.js';
@@ -415,6 +416,8 @@ export function buildFurniture() {
   const lights = [];
   for (const item of FURNITURE) {
     const obj = BUILDERS[item.type](item, lights);
+    // one mesh per material per piece (#48); the parasol folds and the beers come and go
+    if (item.type !== 'parasol') mergeStatic(obj, obj.userData.keep ?? []);
     const yaw = THREE.MathUtils.degToRad(item.rot ?? 0) + Math.PI; // local +z = facing
     obj.rotation.y = yaw;
     obj.position.set(item.x, LEVELS[item.level].floor, item.z);

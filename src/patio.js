@@ -107,6 +107,7 @@ export function loungetable(item) {
     }
     g.add(beers);
     seasonal.beers.push(beers);
+    g.userData.keep = [beers]; // shown/hidden by the season (furniture.js leaves it unmerged)
   }
   g.userData.footprint = [{ x0: -w / 2, x1: w / 2, z0: -d / 2, z1: d / 2 }];
   return g;

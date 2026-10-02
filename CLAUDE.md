@@ -100,6 +100,7 @@ tools/patiotest.html   headless test of the patio seasons (parasol, beers, snowm
 tools/keytest.html     headless test of the hall key cabinet: open, car key reachable only then, beep
 tools/esctest.html     headless test of Esc on the start screen (click-to-start cover, ignored over the note)
 tools/updatetest.html  headless test of the update notice on a phone-sized touch screen (on top, 44 px, touch works)
+tools/perfcount.html   draw calls / triangles at a few spots (compare before/after optimising)
 tools/clocktest.html   headless test of the wall clock (07:00 start, spool, pause, month → sun height)
 tools/stamp.sh         build the published site with a version stamp (used by CI)
 ```
@@ -318,6 +319,22 @@ screenshots into the session scratchpad, not the repo.
   stick's knob turns green while sprinting; footsteps use a longer stride. Moves are sub-stepped (5 cm).
 - GNOME's "disable touchpad while typing" (on by default) blocks touchpad look while a WASD key
   is held — not a bug in the app. Arrow keys ← → turn as a keyboard-only fallback.
+
+## Performance (#48)
+
+- `&perf` shows fps, pixel ratio, draw calls, triangles, geometries, textures; `tools/perfcount.html`
+  prints draw calls per spot. Baseline → after the first pass: start view 793 → 362 calls, kitchen
+  162 → 109, living room 184 → 87, upstairs 148 → 88 (screenshots pixel-identical).
+- `src/merge.js` `mergeStatic`: world.js bakes every static, opaque, single-material mesh into one
+  per material and cell (Entréplan / Övre plan / outside); doors (leaf + handles merged per door,
+  `tagged`), lids, appliances, the key cabinet, furniture, exterior and surroundings are kept out.
+  furniture.js merges each piece on its own (not the parasol; `userData.keep` for the beers). Anything
+  new that moves, toggles visibility or is a pick target must be in a kept object or have
+  `userData.door` — otherwise it gets baked in.
+- Shadows: `shadowMap.autoUpdate = false`; redrawn when the sun moved > 0.2°, for 1.5 s after any E
+  action (doors swing), and at least twice a second (`updateShadows` in main.js).
+- Dynamic resolution: pixel ratio drops in 0.85× steps (not below 0.6×) after 2 s under 30 fps, comes
+  back after 4 s over 50 fps; off with `&shot`.
 
 ## Conventions
 
