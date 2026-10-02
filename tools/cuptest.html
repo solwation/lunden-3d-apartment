@@ -38,8 +38,15 @@ f.onload = async () => {
   const kitchen = [[4.4, 1.7], [4.3, 1.4], [4.5, 2.0], [4.2, 1.2]];
   const cab = cups.cabinet, cup = cups.cups[1], mocca = world.lids.find((l) => l.kind === 'coffee');
   let pass = check(lookAt(cab.door.children[0].getWorldPosition(new V()), kitchen, /öppna skåpet/i), `cabinet: "${btn.textContent}"`);
-  btn.click(); for (let i = 0; i < 60; i++) step(1 / 60);
+  // the swinging door never reaches north of the cabinet, where the tall oven unit stands (#116)
+  let minZ = Infinity;
+  btn.click();
+  for (let i = 0; i < 60; i++) {
+    step(1 / 60); cab.door.updateMatrixWorld(true);
+    for (const [x, z] of [[0, 0], [-0.04, 0], [0, -cab.width], [-0.04, -cab.width]]) minZ = Math.min(minZ, cab.door.localToWorld(new V(x, 0, z)).z);
+  }
   pass &= check(cab.isOpen, 'cabinet open');
+  pass &= check(minZ > cab.z0 - 0.01, `door swing stays south of z ${cab.z0.toFixed(2)} (min ${minZ.toFixed(3)})`);
   const cupAt = () => cup.model.getWorldPosition(new V()).add(new V(0, 0.05, 0));
   pass &= check(lookAt(cupAt(), kitchen, /koka kaffe först/i), `before brewing: "${btn.textContent}"`);
   btn.click(); step(1 / 60);
