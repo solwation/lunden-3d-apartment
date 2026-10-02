@@ -531,7 +531,10 @@ export const KITCHEN = {
   fridgeHeight: 1.86,    // Electrolux LRT7ME39X / LUS7ME28X: 186 cm
   grille: 0.06,          // ventilationsgaller rostfri (over fridge/freezer and microwave)
   sink: { w: 0.5, d: 0.4, depth: 0.19 }, // Diskho Intra Linea 5040, underlimmad; depth *guess* (typ. 18–20 cm, #122)
-  hob: { w: 0.58, d: 0.52 }, // Induktionshäll EH60KB6BF
+  hob: { w: 0.58, d: 0.52, t: 0.006, // Induktionshäll EH60KB6BF
+    // its four zones (#158) as [a, b, r] on the glass (a 0 = front edge … 1 = back, b 0 = north … 1 = south, r in
+    // fractions of the width); the first is the big front one that glows. A typical 4-zone layout (guess).
+    zones: [[0.33, 0.3, 0.2], [0.33, 0.75, 0.15], [0.74, 0.3, 0.15], [0.74, 0.74, 0.17]] },
 };
 
 // Sink bowls (#122, src/interior.js): the inset steel sink in Tvätt (40 × 26 cm as drawn, depth *guess*)

@@ -4,6 +4,7 @@ import { FINISH, TILED_ROOMS, KITCHEN as K, SKIRTING, LAUNDRY_SINK, LAUNDRY_CABI
 import { wallCabinet } from './cabinets.js';
 import { Fridge } from './fridge.js';
 import { buildOvens } from './ovens.js';
+import { Hob } from './hob.js';
 import { Openable, pivotAround } from './openables.js';
 import { Moccamaster } from './coffee.js';
 import { mirrorMaterial } from './mirror.js';
@@ -488,7 +489,9 @@ function buildKitchen(B, group, floor, y0, yC, handled, taps, appliances) {
   if (hobCab) {
     const [, hz] = centre(hobCab);
     const hx0 = eFront + 0.04;
-    B.box(hx0, hx0 + K.hob.d, hz - K.hob.w / 2, hz + K.hob.w / 2, top, top + 0.006, M.black);
+    const hob = new Hob({ x0: hx0, z: hz, y: top }); // its own object: E switches it on (#158)
+    group.add(hob.object);
+    appliances.push(hob);
   }
   // Corner power box (Hörnbox svart) on the worktop
   B.box(eastWall - 0.1, eastWall, southWall - 0.1, southWall, top, top + 0.05, M.black);

@@ -105,6 +105,8 @@ src/openables.js       Openable (#103): the shared helper for fronts that open w
                        (`openFront`, hollow `shell` carcasses);
                        furniture.js `addDrawer` / `addDoor` for furniture (NORDKISA, NORDLI, ALEX, IDANÄS foot end, BYÅS)
 src/ovens.js           oven (drop-down door) + microwave (side door) in the tall unit, E opens (world.lids)
+src/hob.js             the induction hob (#158): E switches it on/off (the front zone glows, "9" on the display, a hum);
+                       in world.lids, `world.hob` (`zone`, `on`) for the pan/chicken; stays with F but F switches it off
 src/coffee.js          Moccamaster on the worktop (MOCCAMASTER): E brews (red light, sound, the jug fills)
 src/mirror.js          the one mirror material (gradient + glints; hall and bathroom mirrors)
 src/reflections.js     mirror images: a Reflector per mirror, only the nearest one in view (< 4 m) renders
@@ -199,6 +201,7 @@ tools/holdtest.html    headless test: put things down (coffee table, dining tabl
 tools/cuptest.html     headless test: an empty cup out without brewing, onto the worktop, brew, take the jug, pour, jug back,
                        carry the cup to the dining and coffee tables, a cup back into the cabinet
 tools/drawtest.html    headless test: drawing mode, a crayon line from pointer events, clear, E back, saved
+tools/cooktest.html    headless test: the induction hob on/off (glow), F switches it off
 tools/clocktest.html   headless test of the wall clock (?time=7, spool, pause, sun height by month)
 tools/calendartest.html headless test: today's date at the start, pick a date on the calendar, the sun follows
 tools/stamp.sh         build the published site with a version stamp (used by CI)

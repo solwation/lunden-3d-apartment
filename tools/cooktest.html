@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Cook test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+// The kitchen's cooking (#156): (1) the induction hob (#158) — aim at it → "Slå på hällen", on (the zone glows),
+// off again; F switches it off and it stays a target with F.
+//   google-chrome --headless=new --dump-dom http://localhost:8137/tools/cooktest.html
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const f = document.createElement('iframe');
+f.width = 900; f.height = 600; f.src = '../index.html';
+document.body.append(f);
+f.onload = async () => {
+  const w = f.contentWindow, d = f.contentDocument;
+  while (!w.__app) await wait(100);
+  const { player, camera, step, world, scene, toggleFurniture } = w.__app;
+  const lines = [];
+  const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; };
+  d.getElementById('start-touch').click();
+  await wait(50);
+  const btn = d.getElementById('action');
+  const aim = (p, from) => {
+    player.spawn(from[0], from[1], 0);
+    for (let i = 0; i < 3; i++) step(1 / 60);
+    scene.updateMatrixWorld(true);
+    const dx = p.x - camera.position.x, dz = p.z - camera.position.z;
+    camera.rotation.set(Math.atan2(p.y - camera.position.y, Math.hypot(dx, dz)), Math.atan2(-dx, -dz), 0, 'YXZ');
+    step(1 / 60);
+    return btn.hidden ? '(hidden)' : btn.textContent;
+  };
+  const hob = world.hob;
+  let pass = check(!!hob && hob.zone.y > 0.85 && hob.zone.y < 0.95, `world.hob with its zone (${hob?.zone.toArray().map((v) => v.toFixed(2))})`);
+  const from = [hob.zone.x - 0.9, hob.zone.z];
+  let label = aim(hob.zone, from);
+  pass &= check(/slå på hällen/i.test(label), `aimed at the hob: "${label}"`);
+  btn.click(); for (let i = 0; i < 90; i++) step(1 / 60);
+  pass &= check(hob.on && hob.glowMat.opacity > 0.5 && hob.digitMat.opacity > 0.5, `on: the zone glows (${hob.glowMat.opacity.toFixed(2)})`);
+  label = aim(hob.zone, from);
+  pass &= check(/stänga av hällen/i.test(label), `"${label}"`);
+  btn.click(); for (let i = 0; i < 90; i++) step(1 / 60);
+  pass &= check(!hob.on && hob.glowMat.opacity < 0.01, 'off again, the glow gone');
+  // F: the hob stays (Peab's kitchen) but is switched off
+  hob.set(true);
+  toggleFurniture();
+  label = aim(hob.zone, from);
+  pass &= check(!hob.on && /slå på hällen/i.test(label), `F switches it off, still a target ("${label}")`);
+  toggleFurniture();
+  out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
+};
+</script>
+</body>
+</html>

@@ -447,6 +447,19 @@ export const sfx = {
     src.start(t, Math.random());
     return { stop() { const t1 = ctx.currentTime; g.gain.cancelScheduledValues(t1); g.gain.setValueAtTime(g.gain.value, t1); g.gain.linearRampToValueAtTime(0, t1 + 0.4); src.stop(t1 + 0.5); } };
   },
+  /** The induction hob's faint hum while it is on (#158): a soft high whine over a little filtered noise. */
+  hobHum(pos) {
+    if (!ready()) return null;
+    const t = ctx.currentTime, d = out(pos, 0.4);
+    const o = ctx.createOscillator(); o.type = 'sine'; o.frequency.value = 1180;
+    const src = ctx.createBufferSource(); src.buffer = noiseBuf; src.loop = true;
+    const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 3000; bp.Q.value = 2;
+    const g = ctx.createGain(); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.025, t + 0.8);
+    const gn = ctx.createGain(); gn.gain.value = 0.6;
+    o.connect(g); src.connect(bp).connect(gn).connect(g); g.connect(d);
+    o.start(t); src.start(t, Math.random());
+    return { stop() { const t1 = ctx.currentTime; g.gain.cancelScheduledValues(t1); g.gain.setValueAtTime(g.gain.value, t1); g.gain.linearRampToValueAtTime(0, t1 + 0.3); o.stop(t1 + 0.35); src.stop(t1 + 0.35); } };
+  },
   /** Game sounds from the PC speakers: a laser 'pew' or an explosion 'boom'. */
   game(pos, kind) {
     if (!ready()) return;
