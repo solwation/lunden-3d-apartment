@@ -557,7 +557,7 @@ export function buildWorld(plan) {
 
   // Site: ground, patio, hedge, fences
   const site = lower.site;
-  const ground = plate(-200, 200, -200, SITE.dropZ, -0.01, M.grass); // park level: surroundings.js
+  const ground = plate(-200, 200, -200, SITE.terrain.north, -0.01, M.grass); // the street side; south of it: surroundings.js (#79)
   scene.add(ground);
   if (site.patio) scene.add(plate(site.patio.x0, site.patio.x1, D, site.patio.z1, 0.0, M.patio)); // UVs in metres
   const outdoor = [];

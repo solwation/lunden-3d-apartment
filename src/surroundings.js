@@ -8,8 +8,78 @@ import { registerTrees, registerSnow } from './seasons.js';
 // the courtyard walks, the 3 m drop to S:t Lars park, trees and Höje å, plus a sky with clouds.
 // Everything is merged/instanced: a handful of draw calls.
 
-/** Ground height at plan z: courtyard level north of the drop, park level south of it. */
-export const groundY = (z) => -S.dropDepth * THREE.MathUtils.clamp((z - S.dropZ) / S.dropRun, 0, 1);
+const T = S.terrain;
+/** On the garage box (the raised courtyard)? */
+const onBox = (x, z) => T.box.some((b) => x >= b.x0 && x <= b.x1 && z >= b.z0 && z <= b.z1);
+/** Ground height at plan (x, z): the street / courtyard level north of Hus L and on the garage box,
+ * the park level around the box (reached over T.slope m south of Hus L). */
+export function groundY(x, z) {
+  if (z <= T.north || onBox(x, z)) return 0;
+  return T.park * THREE.MathUtils.clamp((z - T.north) / T.slope, 0, 1);
+}
+
+/** Terrain south of Hus L: a grid with lines on every box edge, so the step at the edges is vertical. */
+function terrainGeometry() {
+  const xs = new Set([-200, 200]), zs = new Set([T.north, 260, T.north + T.slope]);
+  for (let x = -200; x <= 200; x += 4) xs.add(x);
+  for (let z = T.north; z <= 260; z += 4) zs.add(z);
+  for (const b of T.box) { for (const x of [b.x0, b.x1]) { xs.add(x - 0.01); xs.add(x + 0.01); } for (const z of [b.z0, b.z1]) { zs.add(z - 0.01); zs.add(z + 0.01); } }
+  const X = [...xs].sort((a, b) => a - b), Z = [...zs].filter((z) => z >= T.north).sort((a, b) => a - b);
+  const pos = [], idx = [];
+  for (const z of Z) for (const x of X) pos.push(x, groundY(x, z) - 0.01, z);
+  const nx = X.length;
+  for (let j = 0; j < Z.length - 1; j++) for (let i = 0; i < nx - 1; i++) {
+    const a = j * nx + i, b = a + 1, c = a + nx, d = c + 1;
+    idx.push(a, c, b, b, c, d);
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  geo.setAttribute('uv', new THREE.Float32BufferAttribute(new Array((pos.length / 3) * 2).fill(0), 2));
+  geo.setIndex(idx);
+  geo.computeVertexNormals();
+  return geo;
+}
+
+/** Retaining walls of the garage box where the ground outside is lower, a coping and a railing on top,
+ * and the garage door in the west face. */
+function boxWalls() {
+  const walls = [], rails = [], door = [];
+  const quad = (ax, az, bx, bz, ya0, yb0) => { // vertical quad from the outside ground up to y 0
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.Float32BufferAttribute([ax, ya0, az, bx, yb0, bz, bx, 0.12, bz, ax, ya0, az, bx, 0.12, bz, ax, 0.12, az], 3));
+    g.setAttribute('uv', new THREE.Float32BufferAttribute(new Array(12).fill(0), 2));
+    g.computeVertexNormals();
+    return g;
+  };
+  const edges = [];
+  for (const b of T.box) edges.push([b.x0, b.z0, b.x1, b.z0, 0, -1], [b.x1, b.z0, b.x1, b.z1, 1, 0], [b.x1, b.z1, b.x0, b.z1, 0, 1], [b.x0, b.z1, b.x0, b.z0, -1, 0]);
+  for (const [ax, az, bx, bz, ox, oz] of edges) {
+    const len = Math.hypot(bx - ax, bz - az), n = Math.max(1, Math.ceil(len / 1));
+    for (let k = 0; k < n; k++) {
+      const t0 = k / n, t1 = (k + 1) / n;
+      const x0 = ax + (bx - ax) * t0, z0 = az + (bz - az) * t0, x1 = ax + (bx - ax) * t1, z1 = az + (bz - az) * t1;
+      const mx = (x0 + x1) / 2 + ox * 0.05, mz = (z0 + z1) / 2 + oz * 0.05; // just outside
+      if (onBox(mx, mz)) continue; // an inner edge between two box parts
+      const y0 = groundY(x0 + ox * 0.05, z0 + oz * 0.05), y1 = groundY(x1 + ox * 0.05, z1 + oz * 0.05);
+      if (y0 > -0.05 && y1 > -0.05) continue; // no step here
+      // the walls stand 4 cm outside the box edge, in front of the terrain's own (grass) step
+      const wx0 = x0 + ox * 0.04, wz0 = z0 + oz * 0.04, wx1 = x1 + ox * 0.04, wz1 = z1 + oz * 0.04;
+      const atDoor = ox < 0 && Math.abs(x0 - T.garageDoor.x) < 0.1 && (z0 + z1) / 2 > T.garageDoor.z0 && (z0 + z1) / 2 < T.garageDoor.z1;
+      if (atDoor) { // the garage door: a dark opening with a grey roller door frame
+        door.push(quad(wx0 + ox * 0.01, wz0, wx1 + ox * 0.01, wz1, y0, y1));
+        walls.push(quad(wx0 + ox * 0.02, wz0, wx1 + ox * 0.02, wz1, y0 + T.garageDoor.h, y1 + T.garageDoor.h));
+        continue;
+      }
+      walls.push(quad(wx0, wz0, wx1, wz1, y0, y1));
+      // coping + a railing (posts every metre, a top rail) on the courtyard side
+      const cop = new THREE.BoxGeometry(Math.abs(x1 - x0) + 0.3 * Math.abs(oz), 0.06, Math.abs(z1 - z0) + 0.3 * Math.abs(ox));
+      rails.push(cop.translate((x0 + x1) / 2, 0.15, (z0 + z1) / 2));
+      rails.push(new THREE.BoxGeometry(0.04, 0.95, 0.04).translate(x0 - ox * 0.08, 0.6, z0 - oz * 0.08));
+      rails.push(new THREE.BoxGeometry(Math.abs(x1 - x0) + 0.04, 0.04, Math.abs(z1 - z0) + 0.04).translate((x0 + x1) / 2 - ox * 0.08, 1.06, (z0 + z1) / 2 - oz * 0.08));
+    }
+  }
+  return { walls, rails, door };
+}
 
 function rng(seed) {
   let s = seed;
@@ -156,7 +226,8 @@ function trees(rand) {
       if (S.blocks.some((b) => x > b.x0 - 2 && x < b.x1 + 2 && z > b.z0 - 2 && z < b.z1 + 2)) continue;
       if (S.roads.some((r) => x > r.x0 - 1 && x < r.x1 + 1 && z > r.z0 - 1 && z < r.z1 + 1)) continue;
       if (z > S.river.z0 - 2 && z < S.river.z1 + 2) continue;
-      spots.push({ x, z, y: groundY(z), s: 0.75 + rand() * 0.6 });
+      if (T.box.some((b) => Math.min(Math.abs(x - b.x0), Math.abs(x - b.x1)) < 1.5 && z > b.z0 && z < b.z1)) continue; // not on a retaining wall
+      spots.push({ x, z, y: groundY(x, z), s: 0.75 + rand() * 0.6 });
     }
   }
   const trunkGeo = new THREE.CylinderGeometry(0.14, 0.2, 1, 7).translate(0, 0.5, 0);
@@ -258,7 +329,7 @@ export function buildWindowLights() {
         if (a - 0.7 < f.a0 || a + 0.7 > f.a1) continue;
         for (let st = 0; st < b.storeys; st++) {
           const y = b.base + st * storey + (old ? 1.9 : 1.55);
-          if (y < groundY(f.along === 'x' ? f.c : a) + 0.8) continue; // below the courtyard
+          if (y < groundY(f.along === 'x' ? a : f.c, f.along === 'x' ? f.c : a) + 0.8) continue; // below the ground
           const s = old ? [0.78, 1.3, 1] : [1, 1, 1]; // the old windows are narrow and tall
           spots.push(f.along === 'x' ? { x: a, y, z: f.c, n: f.n, s } : { x: f.c, y, z: a, n: f.n, s });
         }
@@ -301,14 +372,17 @@ export function buildWindowLights() {
   };
 }
 
-/** Horizontal strip that follows the ground (bends down at the drop). */
+/** Horizontal strip that follows the ground (its height at the strip's centre line in x). */
 function groundStrip(x0, x1, z0, z1, lift) {
-  const zs = [z0, z1, S.dropZ, S.dropZ + S.dropRun].filter((z) => z >= z0 && z <= z1).sort((a, b) => a - b);
+  const cx = (x0 + x1) / 2;
+  const cuts = [z0, z1, T.north, T.north + T.slope, ...T.box.flatMap((b) => [b.z0, b.z1])];
+  for (let z = Math.ceil(z0); z < z1; z += 2) cuts.push(z);
+  const zs = [...new Set(cuts)].filter((z) => z >= z0 && z <= z1).sort((a, b) => a - b);
   const pos = [];
   for (let i = 0; i < zs.length - 1; i++) {
     const za = zs[i], zb = zs[i + 1];
     if (zb - za < 1e-3) continue;
-    const ya = groundY(za) + lift, yb = groundY(zb) + lift;
+    const ya = groundY(cx, za + 1e-3) + lift, yb = groundY(cx, zb - 1e-3) + lift;
     pos.push(x0, ya, za, x0, yb, zb, x1, ya, za, x1, ya, za, x0, yb, zb, x1, yb, zb);
   }
   const geo = new THREE.BufferGeometry();
@@ -327,8 +401,14 @@ export function buildSurroundings({ grass }) {
     mesh.receiveShadow = true;
     group.add(mesh);
   };
-  // the slope down to the park and the park level (the courtyard level is world.js's ground)
-  flat([groundStrip(-200, 200, S.dropZ, 260, -0.01)], grass, SEASON.snow.ground);
+  // the ground south of Hus L: the raised courtyard on the garage box and the park level around it (the
+  // street side north of Hus L is world.js's ground); retaining walls, railings and the garage door
+  flat([terrainGeometry()], grass, SEASON.snow.ground);
+  const bw = boxWalls();
+  const concrete = new THREE.MeshStandardMaterial({ color: 0xb9b4ab, roughness: 0.95, side: THREE.DoubleSide });
+  flat(bw.walls, concrete);
+  flat(bw.rails, new THREE.MeshStandardMaterial({ color: 0x3b3e41, roughness: 0.5, metalness: 0.4 }));
+  flat(bw.door, new THREE.MeshStandardMaterial({ color: 0x1c1e21, roughness: 0.8, side: THREE.DoubleSide }));
   flat(S.roads.map((r) => groundStrip(r.x0, r.x1, r.z0, r.z1, 0.012)), COLORS.asphalt, 0xd9dfe4); // ploughed, a little grey
   flat(S.paving.map((r) => groundStrip(r.x0, r.x1, r.z0, r.z1, 0.008)), COLORS.paving, SEASON.snow.paving);
   flat([groundStrip(S.river.x0, S.river.x1, S.river.z0, S.river.z1, 0.02)],

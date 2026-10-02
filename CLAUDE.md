@@ -165,7 +165,12 @@ North = −z (the bedrooms Sovrum 1/3 face north).
 - Site (`SITE`): measured on the situation/overview plans (1:500, Hus L horizontal = our axes, metres
   from our NW corner). Hus A (x −10…9.5, z 30…54, våning −1…4), B (x −43…−24, z 34…59, −1…3),
   C (x −73…−53, z 12.5…37.5, 1…5), brick with low hip roofs; the courtyard is on a garage and the
-  ground drops ~3 m south of it. **True north**: FOJAB's arrow puts it 58° left of plan-up, so the
+  ground drops ~3 m south of it.
+  Terrain (#79, `SITE.terrain`, `groundY(x, z)` in surroundings.js): the street north of Hus L, our Entréplan
+  and the raised courtyard on the garage box (`terrain.box`, edges traced on the situation plan — guess)
+  are y 0; around the box the ground is one storey lower (`park` −3, Å-husen A/B suterräng); retaining
+  walls with a railing where the box meets it, the garage door in its west face at Karpvägen by Hus C,
+  the roads outside the box go down over `slope` m south of Hus L (guess). **True north**: FOJAB's arrow puts it 58° left of plan-up, so the
   plan's "north" (entrance) faces ENE (bearing 58°, `DAY.planNorth`) and the patio WSW. The schools,
   HepCat and the villa outside the plot are placed from the Google Maps screenshot and drawn in the old
   S:t Lars style (#47, `style: 'old'`: brick, white cornice and string courses, tall arched windows,

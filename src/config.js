@@ -90,7 +90,21 @@ export const WINDOWS = [
 // Buildings outside the plot (schools, shop, villa) are placed from the Google Maps screenshot
 // (docs/tomten-google-maps.jpg) — illustrative boxes, not surveyed.
 export const SITE = {
-  dropZ: 54, dropDepth: 3, dropRun: 5, // courtyard edge → park level (Nivåskillnad ca 3 m)
+  // Terrain (#79). Kv. Lunden stands on a garage box: the courtyard ("den upphöjda gården", info brochure
+  // p. 16) lies on the garage deck at our Entréplan / patio level (y 0; the lower row houses have their
+  // patios "mot den gemensamma gården", and their entrances "direkt från gatan", so Sankt Lars väg north
+  // of Hus L is at y 0 too). Around the box the ground lies one storey lower: Å-husen A and B have a
+  // "Våning -1 (sutteräng)" (overview plans p. 24) and the green between A and B lies "utanför den
+  // upphöjda gården och ner mot å-rummet". `park` = that level. `box` = the garage box (plan rects);
+  // its edges are traced on the situation plan between the buildings — guesses. South of Hus L the
+  // roads outside the box go down to the park level over `slope` m (guess). The garage entrance is
+  // at Karpvägen by Hus C ("NEDFART TILL GARAGE UNDER KVARTERET", situation plan p. 3); its exact
+  // spot is a guess.
+  terrain: {
+    park: -3, north: 12.7, slope: 8,
+    box: [{ x0: -80, x1: 18, z0: 12.7, z1: 30 }, { x0: -80, x1: -43, z0: 30, z1: 40 }],
+    garageDoor: { x: -80, z0: 31.5, z1: 37.5, h: 2.6 },
+  },
   bay: 3.0, storey: 3.0,  // façade texture of the other blocks: one window per 3 × 3 m
   old: { bay: 2.6, storey: 3.6, roofPitch: 0.6 }, // the old S:t Lars buildings (style: 'old'): rise = pitch × half depth
   blocks: [
@@ -108,7 +122,7 @@ export const SITE = {
     { name: 'Montessorigrundskolan', x0: -78, x1: -60, z0: -115, z1: -70, base: 0, storeys: 2, roof: 'hip', style: 'old' },
     { name: 'Villa', x0: -64.5, x1: -48.5, z0: 69, z1: 87, base: -3, storeys: 3, roof: 'hip', style: 'old' }, // brick house, hip roof
   ],
-  // asphalt (y follows the ground: courtyard level north of dropZ, park level south of it)
+  // asphalt (y follows the ground: the street level north of Hus L and on the garage box, park level around it)
   roads: [
     { name: 'Sankt Lars väg', x0: -95, x1: 30, z0: -30, z1: -24 },
     { name: 'Sankt Lars väg', x0: 22, x1: 30, z0: -30, z1: 200 },
