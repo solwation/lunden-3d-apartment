@@ -24,6 +24,7 @@ import { Saber } from './saber.js';
 import { buildToys } from './toys.js';
 import { Remote } from './remote.js';
 import { Book } from './book.js';
+import { Beer } from './beer.js';
 import { buildCups } from './cups.js';
 import { Drawing } from './drawing.js';
 import { CatCalendar, CalendarPanel } from './calendar.js';
@@ -198,9 +199,12 @@ function showBook(show) {
   book.show(show);
   player.keys.clear();
 }
-const holdables = [saber, ...toys.items, remote, book]; // things you can take and hold, one at a time (holdable.js)
+const beer = new Beer(scene, camera); // a big beer on the lounge table when you sit down in the lounge sofa (#117)
+beer.onGulp = () => bump('beer');
+const holdables = [saber, ...toys.items, remote, book, beer]; // things you can take and hold, one at a time (holdable.js)
 const cups = buildCups(scene, camera, world, world.cupCabinet); // coffee cups in the wall cabinet (#90)
-holdables.push(cups.jug); // the Moccamaster's jug: take it, pour, put it back (#141)
+holdables.push(cups.jug);
+for (const c of cups.cups) c.onSip = () => bump('coffee'); // drink from a cup (#117) // the Moccamaster's jug: take it, pour, put it back (#141)
 let placeTarget = null; // while something is held: the table top / floor spot it would go down on (#102)
 // a faint ring where the held thing would land
 const placeGhost = new THREE.Mesh(new THREE.RingGeometry(0.035, 0.05, 24).rotateX(-Math.PI / 2),
@@ -419,6 +423,7 @@ function sitOrLie(target) {
   bump(spot.kind === 'lie' ? 'lay' : 'sat');
   sfx.rustle(spot.pos);
   if (spot.pc) usePc(spot);
+  if (target.name === 'loungesoffan') beer.serve(); // a big beer on the table (#117)
 }
 /** The gaming chair starts the PC; the seat in the bunk also swings its monitor round for a film. */
 function usePc(spot) {
@@ -679,6 +684,7 @@ function updateFocus() {
 function toggleFurniture(on = !world.furnitureOn) {
   if (rest.active) standUp(); // the seat is about to vanish
   world.setFurniture(on);
+  if (!on) beer.show(false); else beer.show(beer.out); // the beer only once served (setFurniture showed it)
   if (!on) { // whatever is in the hand, or put down somewhere, goes home first (#102)
     heldItem()?.putBack(); toys.darts.hide();
     for (const h of holdables) if (h.placed) h.goHome();
@@ -859,4 +865,4 @@ document.addEventListener('pointerlockchange', () => { if (!updateEl.hidden) sho
 watchForUpdates(showUpdate);
 
 // handle for tests/debugging (tools/touchtest.html)
-window.__app = { book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };
+window.__app = { beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };

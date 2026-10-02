@@ -459,6 +459,14 @@ export const sfx = {
     noise(t, 0.12, d, { type: 'lowpass', freq: 1400, gain: 0.35, attack: 0.002 });
     tone(t, 0.08, d, { type: 'sine', from: 320, to: 90, gain: 0.15 });
   },
+    /** A gulp: a soft throat-click and a short low swallow (beer, coffee). */
+  gulp(pos) {
+    if (!ready()) return;
+    const t = ctx.currentTime + 0.25, d = out(pos, 0.9);
+    tone(t, 0.12, d, { type: 'sine', from: 180, to: 90, gain: 0.25 });
+    noise(t, 0.08, d, { type: 'lowpass', freq: 600, gain: 0.25 });
+    tone(t + 0.18, 0.1, d, { type: 'sine', from: 150, to: 80, gain: 0.15 });
+  },
     /** A foam blaster: a springy thunk and a soft whoosh. */
   nerf(pos) {
     if (!ready()) return;

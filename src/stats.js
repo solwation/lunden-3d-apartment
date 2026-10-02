@@ -3,7 +3,7 @@
 // small badge ("✋ Klappat katt +1") pops up for each counted event.
 const KEY = 'lunden.stats';
 
-const fresh = () => ({ cats: 0, rare: 0, byVariant: {}, petted: 0, doors: 0, lids: 0, taps: 0, fridge: 0, appliances: 0, cabinets: 0, lights: 0, sat: 0, lay: 0, steps: 0, metres: 0, stairs: 0, seconds: 0, visited: {} });
+const fresh = () => ({ cats: 0, rare: 0, byVariant: {}, petted: 0, doors: 0, lids: 0, taps: 0, fridge: 0, appliances: 0, cabinets: 0, beer: 0, coffee: 0, lights: 0, sat: 0, lay: 0, steps: 0, metres: 0, stairs: 0, seconds: 0, visited: {} });
 
 function load() {
   try {
@@ -19,7 +19,7 @@ let dirty = false;
 // Badge text per counter; counters missing here (metres, seconds) never get a badge
 const BADGES = {
   petted: '✋ Klappat katt', doors: '🚪 Dörr öppnad', lids: '🚽 Toalettlock', taps: '💧 Kran påslagen',
-  fridge: '🍗 Kylskåpet öppnat', appliances: '🍳 Ugn/mikro öppnad', cabinets: '🗄 Skåp öppnat', lights: '💡 Lampa tänd', stairs: '🪜 Trapptur',
+  fridge: '🍗 Kylskåpet öppnat', appliances: '🍳 Ugn/mikro öppnad', cabinets: '🗄 Skåp öppnat', beer: '🍺 Klunk öl', coffee: '☕ Klunk kaffe', lights: '💡 Lampa tänd', stairs: '🪜 Trapptur',
   sat: '🪑 Satt ner', lay: '🛏 Lagt sig',
 };
 const STEP_BADGE = 100; // a badge every 100 steps

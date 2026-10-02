@@ -1,0 +1,94 @@
+import * as THREE from 'three';
+import { Holdable } from './holdable.js';
+import { sfx } from './audio.js';
+import { BEER as B } from './config.js';
+
+// The big beer on the patio (#117): sit down in the lounge sofa and a 50 cl tankard of lager with a head of
+// foam turns up on the lounge table, all year round. E takes it; a click / the "Drick" touch button drinks a
+// gulp (it goes up to the mouth and tips, the level drops); empty is empty until it goes back on the table
+// (E there, or sitting down again fills it). It can be put down like the other things (holdable.js).
+
+const glassMat = new THREE.MeshStandardMaterial({ color: 0xe8f0f2, roughness: 0.05, transparent: true, opacity: 0.32, depthWrite: false, side: THREE.DoubleSide });
+const beerMat = new THREE.MeshStandardMaterial({ color: 0xd99a1e, roughness: 0.25, transparent: true, opacity: 0.92 });
+const foamMat = new THREE.MeshStandardMaterial({ color: 0xfbf6ea, roughness: 0.9 });
+
+function tankard() {
+  const g = new THREE.Group(); // bottom centre at the origin, the handle towards +x
+  const { r, h } = B;
+  const glass = new THREE.Mesh(new THREE.CylinderGeometry(r, r * 0.94, h, 24, 1, true), glassMat);
+  glass.position.y = h / 2;
+  const base = new THREE.Mesh(new THREE.CylinderGeometry(r * 0.94, r * 0.94, 0.012, 24), glassMat);
+  base.position.y = 0.006;
+  const handle = new THREE.Mesh(new THREE.TorusGeometry(h * 0.27, 0.011, 8, 16, Math.PI), glassMat);
+  handle.rotation.z = -Math.PI / 2; handle.position.set(r, h * 0.52, 0);
+  const beer = new THREE.Mesh(new THREE.CylinderGeometry(r * 0.95, r * 0.9, 1, 22), beerMat); // scaled to the level
+  const foam = new THREE.Mesh(new THREE.CylinderGeometry(r * 0.96, r * 0.95, 0.025, 22), foamMat);
+  g.add(glass, base, handle, beer, foam);
+  return { g, beer, foam };
+}
+
+export class Beer extends Holdable {
+  constructor(scene, camera) {
+    const { g, beer, foam } = tankard();
+    const home = new THREE.Vector3(B.x, B.y, B.z);
+    super(scene, camera, {
+      name: 'ölen', verb: 'ta', backName: 'loungebordet', backVerb: 'ställa tillbaka ölen på', placeVerb: 'ställa ner',
+      model: g, home: { pos: home, rot: new THREE.Euler(0, Math.PI * 0.8, 0) },
+      heldPose: { pos: new THREE.Vector3(B.held.x, B.held.y, B.held.z), rot: new THREE.Euler(0, -0.4, 0) },
+      pick: { pos: home.clone().setY(B.y + B.h / 2), size: [0.16, B.h + 0.04, 0.16] }, cooldown: 0.6,
+    });
+    Object.assign(this, { beer, foam, level: 1, sip: 0, gulps: 0, out: false });
+    this.rest = { q: new THREE.Quaternion(), lift: 0 }; // it stands when put down
+    this.setLevel(1);
+    this.show(false);
+  }
+
+  /** "Drick" while there is beer left; nothing to click when it is empty. */
+  get useLabel() { return this.level > 0.01 ? 'Drick' : null; }
+
+  setLevel(l) {
+    this.level = l < 1e-6 ? 0 : l; // 1 − 5 × 0.2 is not quite 0 in floats
+    const hgt = Math.max(0.001, (B.h - 0.035) * this.level);
+    this.beer.scale.y = hgt; this.beer.position.y = 0.012 + hgt / 2;
+    this.beer.visible = this.level > 0.01;
+    this.foam.visible = this.level > 0.01;
+    this.foam.position.y = 0.012 + hgt + 0.012;
+  }
+
+  /** It is there (on the table, in the hand, put down) or not yet. */
+  show(v) {
+    this.out = v;
+    this.model.visible = v;
+    this.holder.visible = v;
+  }
+
+  /** The visitor sat down in the lounge sofa: a full beer on the table, unless one is in the hand or put down. */
+  serve() {
+    if (this.held || this.placed) { if (!this.out) this.show(true); return; }
+    this.goHome();
+    this.setLevel(1);
+    if (!this.out) sfx.click(this.where());
+    this.show(true);
+  }
+
+  goHome() {
+    super.goHome();
+    if (this.out) this.setLevel(1); // back on the table: a fresh one
+  }
+
+  onUse() {
+    if (this.level <= 0.01) return;
+    this.sip = 1;
+    this.gulps++;
+    this.onGulp?.();
+    sfx.gulp(this.where());
+    this.setLevel(this.level - B.gulp);
+  }
+
+  tick(dt) {
+    this.sip = Math.max(0, this.sip - dt * 1.6);
+    const k = Math.sin(this.sip * Math.PI); // up to the mouth, tipped, and down again
+    this.model.position.set(B.held.x - 0.16 * k, B.held.y + 0.17 * k, B.held.z + 0.18 * k);
+    this.model.rotation.set(0.9 * k, -0.4 + 0.3 * k, 0);
+  }
+}

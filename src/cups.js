@@ -153,9 +153,23 @@ export class Cup {
   /** Another thing was taken: the cup goes down on the worktop. */
   putBack() { if (this.held) this.placeAt(this.counter); }
 
-  use() {} // nothing to click with a cup
+  /** A click drinks a sip while there is coffee in it (#117). */
+  get useLabel() { return this.held && this.fill > 0.01 ? 'Drick' : null; }
+  use() {
+    if (!this.held || this.fill <= 0.01 || this.sip > 0) return;
+    this.sip = 1;
+    this.onSip?.();
+    sfx.gulp(this.model.getWorldPosition(new THREE.Vector3()));
+    this.setFill(this.fill - C.sip < 1e-6 ? 0 : this.fill - C.sip);
+  }
 
   update(dt) {
+    if (this.held) { // a sip: up to the mouth, tipped, and down again
+      this.sip = Math.max(0, (this.sip ?? 0) - dt * 1.6);
+      const k = Math.sin(this.sip * Math.PI);
+      this.model.position.set(C.held.x - 0.14 * k, C.held.y + 0.15 * k, C.held.z + 0.16 * k);
+      this.model.rotation.set(0.1 + 0.9 * k, -0.5, 0);
+    }
     if (this.pouring > 0) {
       const from = this.fill;
       this.pouring -= dt;

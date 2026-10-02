@@ -308,6 +308,10 @@ export const REMOTE = { w: 0.04, l: 0.18, h: 0.015, x: 3.98, y: 0.47, z: 10.42, 
 export const BOOK = { w: 0.15, l: 0.22, h: 0.03, x: 1.6, y: 0.5325, z: 8.2, turn: 28,
   held: { x: 0.16, y: -0.2, z: -0.42 } };
 
+// The big beer on the patio (#117, src/beer.js): a 50 cl tankard (Ø 9 × 16 cm, our pick) that turns up on the
+// lounge table (top at 0.40) when you sit down in the lounge sofa; each gulp drinks `gulp` of it.
+export const BEER = { x: 3.85, y: 0.4, z: 15.4, r: 0.045, h: 0.16, gulp: 0.2, held: { x: 0.2, y: -0.24, z: -0.45 } };
+
 // The Nerf target (#99, src/target.js): a round archery-style board on a wooden stand on the lawn south of the
 // hedge, facing the patio (north), its centre over the hedge so you can shoot from the patio door (~7.5 m).
 // Rings from the centre out score `rings` points; the shooter's distance to the hit multiplies them (`range`:
@@ -345,7 +349,7 @@ export const MARKS = {
 // cup takes `pour` of it), is held like a toy and can be put down on any table (furniture surfaces).
 // Sizes: a 9 cm tall, 8 cm wide mug (guess).
 export const CUPS = { n: 3, r: 0.04, h: 0.09, color: 0xf3f1ec, coffee: 0x2a1408, pour: 0.25, counter: { x: 5.2, z: 1.68 },
-  held: { x: 0.18, y: -0.2, z: -0.4 }, jugHeld: { x: 0.22, y: -0.26, z: -0.55 } }; // jugHeld: the jug in the view (#141)
+  sip: 0.2, held: { x: 0.18, y: -0.2, z: -0.4 }, jugHeld: { x: 0.22, y: -0.26, z: -0.55 } }; // jugHeld: the jug in the view (#141)
 
 // Drawing with crayons (#93, src/drawing.js): an A3 sheet in the middle of the ALEX desk in Sovrum 3. E on it:
 // the view goes down over the paper, the mouse is freed and you draw with crayons (palette at the bottom,

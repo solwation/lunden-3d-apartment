@@ -100,6 +100,8 @@ src/holdable.js        things you take and hold (one at a time): home + pick box
                        use = click / touch button / fast look; E on the home puts it back, E on a table top /
                        worktop / the floor (HOLD.reach) puts it down (`placeAt`, lying by its shape — `restPose`;
                        cups stand). While something is held other things are `blocked` ("Lägg ifrån dig …")
+src/beer.js            the big beer (BEER, #117), a Holdable: served on the lounge table when you sit in the lounge sofa,
+                       click / "Drick" drinks a gulp (the level drops), back on the table = full; cups drink too
 src/book.js            the book on the side table by the armchair (BOOK, #140), a Holdable: click / "Läs" opens
                        #book-panel (a spread; A D / ← → / click turn pages, E / Esc close; reading mode)
 src/saber.js           the lightsaber in Sovrum 2 (SABER), a Holdable; the blade burns marks where it cuts in (#96)
@@ -167,6 +169,7 @@ tools/nerftest.html    headless test: a dart leaves a paint splash in the blaste
 tools/targettest.html  headless test: target points (rings × distance bonus), a dart in the bullseye, E clears the score
 tools/mirrortest.html  headless test: in front of every mirror its Reflector is the active one, on the glass (#139)
 tools/booktest.html    headless test: take the book, read, turn pages, close, put it down, back on the side table
+tools/beertest.html    headless test: sit in the lounge sofa → beer, drink it empty, back = full, a sip of coffee, F
 tools/bestatest.html   headless test: the BESTÅ display cabinet's six doors open/close, its spots light with the room
 tools/holdtest.html    headless test: put things down (coffee table, dining table, floor), one at a time, F → home
 tools/cuptest.html     headless test: an empty cup out without brewing, onto the worktop, brew, take the jug, pour, jug back,

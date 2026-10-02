@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Beer test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+// The big beer (#117): sit down in the lounge sofa → a full tankard on the lounge table; take it, drink it empty
+// with clicks (the level drops, gulps are counted), back on the table = full again. A coffee cup drinks too.
+//   google-chrome --headless=new --dump-dom http://localhost:8137/tools/beertest.html
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const f = document.createElement('iframe');
+f.width = 900; f.height = 600; f.src = '../index.html';
+document.body.append(f);
+f.onload = async () => {
+  const w = f.contentWindow, d = f.contentDocument;
+  while (!w.__app) await wait(100);
+  const { player, camera, step, beer, use, heldItem, world, rest, standUp, stats, cups, scene } = w.__app;
+  const V = camera.position.constructor;
+  const lines = [];
+  const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; };
+  d.getElementById('start-touch').click();
+  await wait(50);
+  let pass = check(!beer.model.visible && !beer.out, 'no beer before sitting down');
+  const sofa = world.furnitureTargets.find((t) => t.name === 'loungesoffan');
+  const sp = sofa.pickable.getWorldPosition(new V());
+  player.spawn(sp.x - 0.3, sp.z - 1.4, 0);
+  for (let i = 0; i < 3; i++) step(1 / 60);
+  scene.updateMatrixWorld(true);
+  const dx = sp.x - camera.position.x, dz = sp.z - camera.position.z;
+  camera.rotation.set(Math.atan2(sp.y + 0.35 - camera.position.y, Math.hypot(dx, dz)), Math.atan2(-dx, -dz), 0, 'YXZ');
+  step(1 / 60);
+  use(sofa);
+  for (let i = 0; i < 60; i++) step(1 / 60);
+  pass &= check(rest.active && beer.out && beer.model.visible && beer.level === 1, 'sitting: a full beer on the table');
+  pass &= check(beer.where().distanceTo(beer.home.pos) < 0.001, `on the lounge table (${beer.where().toArray().map((v) => v.toFixed(2))})`);
+  standUp(); for (let i = 0; i < 60; i++) step(1 / 60);
+  use(beer.target); step(1 / 60);
+  pass &= check(heldItem() === beer && beer.useLabel === 'Drick', 'the beer in the hand, "Drick"');
+  const g0 = stats.beer;
+  for (let k = 0; k < 6; k++) { beer.use(); for (let i = 0; i < 45; i++) step(1 / 60); }
+  pass &= check(beer.level === 0 && beer.gulps === 5 && stats.beer === g0 + 5, `drunk empty in 5 gulps (${beer.gulps}, level ${beer.level.toFixed(2)})`);
+  pass &= check(beer.useLabel === null && !beer.beer.visible, 'empty: nothing to drink');
+  use(beer.backTarget); step(1 / 60);
+  pass &= check(!beer.held && beer.level === 1 && beer.model.visible, 'back on the table: full again');
+  // coffee: a full cup in the hand, a sip
+  const cup = cups.cups[2];
+  cup.take(); cup.setFill(1);
+  const c0 = stats.coffee;
+  pass &= check(cup.useLabel === 'Drick', 'a full cup: "Drick"');
+  cup.use(); for (let i = 0; i < 60; i++) step(1 / 60);
+  pass &= check(Math.abs(cup.fill - 0.8) < 1e-6 && stats.coffee === c0 + 1, `a sip of coffee (fill ${cup.fill.toFixed(2)})`);
+  cup.goHome();
+  // F hides it; back on, it is only there once served again
+  w.__app.toggleFurniture(false); step(1 / 60);
+  pass &= check(!beer.model.visible, 'F: the beer is gone');
+  w.__app.toggleFurniture(true); step(1 / 60);
+  pass &= check(!beer.model.visible, 'F again: still gone until you sit down');
+  out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
+};
+</script>
+</body>
+</html>
