@@ -168,6 +168,9 @@ export const SITE = {
     trafficLight: { x: 8.6, z: -23.5 }, warnings: [[13.2, -23.2], [16, -23.3]],
     cobbles: { x0: 18, x1: 22, z0: -21.5, z1: -18.5 },
     leaves: { n: 1400, months: [9, 10, 11], areas: [[-60, 20, -24, -18], [-30, 30, -32.1, -30.05], [20, 22, -24, 12]] },
+    // signs (#129, the user's photos): the bus stop on the far pavement, the red "Flyttad" sign on ours by the curb,
+    // a no-parking sign at the car park, HepCat's A-board on its pavement. [x, z, facing yaw°]
+    busStop: [2.5, -31.3, 0], moved: [6.5, -23.75, 0], noParking: [-6.5, -21.0, 0], aBoard: [30.0, -4.5, -90],
   },
   // asphalt (y follows the ground: the street level north of Hus L and on the garage box, park level around it)
   roads: [
