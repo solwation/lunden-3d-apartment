@@ -623,6 +623,11 @@ export const FURNITURE = [
   // Bunks: long side against the side wall, head end against the façade (the user's wish);
   // the ladder ends up on the room side at the foot end.
   { type: 'bunk', level: 1, x: 0.2 + 0.5, z: 0.47 + 1.05, rot: 180, w: 0.9, l: 2.0, sheets: 'unicorn' }, // Sovrum 3 (Livia & Tuva)
+  // Livia & Tuva's desk (#92): IKEA ALEX, white, 132 × 58 (ikea.com; the 76 cm height and drawer sizes are
+  // guesses), under the window against the north wall, east of the bunk; a white kids' swivel chair in
+  // front (a seat, #71) and crafts on the top, the middle left free for the drawing paper (#93)
+  { type: 'alex', level: 1, x: 2.61 - 0.66 - 0.02, z: 0.465 + 0.29, rot: 180, w: 1.32, d: 0.58, h: 0.76 },
+  { type: 'kidchair', level: 1, x: 2.61 - 0.66 - 0.02, z: 0.465 + 0.58 + 0.25, rot: 0 },
   // Sovrum 2 (Walter & Kian). watch.z: a seat in the lower bunk (local z, level with the desk's monitor)
   // for watching films on the PC
   { type: 'bunk', level: 1, x: 5.55 - 0.5, z: 12.23 - 1.05, rot: 0, w: 0.9, l: 2.0, sheets: 'vader', watch: { z: -0.3 } },

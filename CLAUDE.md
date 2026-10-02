@@ -241,7 +241,8 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   Sovrum 1 (first right) Sarah & Ofluf, double bed IKEA IDANÄS 180 × 200 (`IDANAS`, #91), a NORDLI chest of
   drawers in its Klk (no wardrobe in Sovrum 1; the Klk is 1.65 × 1.20 inside, #94) (a sage green IKEA chintz bedding set from a Sellpy ad, #83) with IKEA NORDKISA bedside tables (#64) and white NYMÅNE work
   lamps on them (#65, each its own lamp like the floor lamp) + an IKEA RÅGRUND towel-rack chair in the corner left of
-  the window (#60) · Sovrum 3 (second right) Livia & Tuva, bunk (unicorn sheets) ·
+  the window (#60) · Sovrum 3 (second right) Livia & Tuva, bunk (unicorn sheets), an IKEA ALEX desk under the window
+  with crafts and a kids' chair (#92) ·
   Sovrum 2 (first left) Walter & Kian, bunk (Darth Vader sheets), a gaming desk with a PC along the west wall, short end to the window (#77, #84): sitting in its chair starts the
   PC; a sit spot in the lower bunk (`watch`, a spot `kind` can differ from its piece) swings the monitor arm round and plays a film;
   a lightsaber on hooks on the west wall north of the desk (#78) · Sovrum 4 (second left, ex Allrum) Tilly, IKEA HEMNES

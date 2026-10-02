@@ -1239,6 +1239,70 @@ function nordli(item) {
   return g;
 }
 
+/** IKEA ALEX desk (white): top with a cable slot at the back, two wide drawers under the front edge with
+ * half-round cut-out grips, square-tube legs joined by a low crossbar; crafts on the top. Faces local +z
+ * (the user sits on +z; the wall is −z). */
+function alex(item) {
+  const g = new THREE.Group();
+  const { w, d, h } = item, hw = w / 2, hd = d / 2, t = 0.025;
+  const white = new THREE.MeshStandardMaterial({ color: 0xf6f6f3, roughness: 0.45 });
+  const steel = new THREE.MeshStandardMaterial({ color: 0xf0f0ee, roughness: 0.35, metalness: 0.4 });
+  const dark = new THREE.MeshStandardMaterial({ color: 0x9a9a96, roughness: 0.8 });
+  g.add(rbox(w, t, d - 0.03, 0, h - t / 2, 0.015, white, 0.004), rbox(w, t, 0.012, 0, h - t / 2, -hd + 0.006, white, 0.003)); // top, cable slot
+  g.add(rbox(w - 0.1, 0.13, d - 0.1, 0, h - t - 0.065, 0.02, white, 0.004));                   // drawer box
+  for (const s of [-1, 1]) {
+    g.add(rbox(w / 2 - 0.08, 0.12, 0.018, s * (w / 4 - 0.02), h - t - 0.065, hd - 0.03, white, 0.003)); // drawer fronts
+    g.add(rbox(0.1, 0.012, 0.004, s * (w / 4 - 0.02), h - t - 0.012, hd - 0.02, dark, 0.004));          // grips
+    for (const z of [-hd + 0.04, hd - 0.06]) g.add(rbox(0.035, h - t - 0.13, 0.035, s * (hw - 0.04), (h - t - 0.13) / 2, z, steel, 0.003)); // legs
+    g.add(rbox(0.035, 0.035, d - 0.1, s * (hw - 0.04), 0.06, -0.01, steel, 0.003));                        // foot bars
+  }
+  g.add(rbox(w - 0.1, 0.03, 0.025, 0, 0.18, -hd + 0.04, steel, 0.003)); // crossbar between the legs
+  // crafts: a pencil pot with brushes and pencils, a water glass, a paint box, crayons, scissors, a unicorn
+  const y = h, add = (o) => { o.castShadow = true; g.add(o); return o; };
+  const pot = add(new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.032, 0.1, 14), new THREE.MeshStandardMaterial({ color: 0xffb3d1, roughness: 0.6 })));
+  pot.position.set(-hw + 0.12, y + 0.05, -hd + 0.12);
+  [0xe23d3d, 0xf2a33a, 0xf4d23a, 0x4fb34f, 0x3a7be0, 0x8e5bd6].forEach((c, i) => {
+    const a = (i / 6) * Math.PI * 2;
+    const stick = add(new THREE.Mesh(new THREE.CylinderGeometry(0.004, 0.004, 0.17, 6), new THREE.MeshStandardMaterial({ color: c, roughness: 0.5 })));
+    stick.position.set(-hw + 0.12 + Math.cos(a) * 0.015, y + 0.12, -hd + 0.12 + Math.sin(a) * 0.015);
+    stick.rotation.set(Math.sin(a) * 0.15, 0, Math.cos(a) * 0.15);
+  });
+  const glass = add(new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.032, 0.1, 16), new THREE.MeshStandardMaterial({ color: 0xcfe6f2, transparent: true, opacity: 0.45, roughness: 0.05 })));
+  glass.position.set(-hw + 0.24, y + 0.05, -hd + 0.11);
+  const water = add(new THREE.Mesh(new THREE.CylinderGeometry(0.031, 0.03, 0.06, 16), new THREE.MeshStandardMaterial({ color: 0x6aa6d8, transparent: true, opacity: 0.6, roughness: 0.1 })));
+  water.position.set(-hw + 0.24, y + 0.032, -hd + 0.11);
+  add(rbox(0.22, 0.02, 0.09, hw - 0.2, y + 0.01, -hd + 0.1, new THREE.MeshStandardMaterial({ color: 0x2a2d31, roughness: 0.5 }), 0.004)); // paint box
+  [0xe23d3d, 0xf2a33a, 0xf4d23a, 0x4fb34f, 0x3a7be0, 0x8e5bd6, 0xf28bc2, 0x8a5a3c].forEach((c, i) => add(rbox(0.022, 0.006, 0.03, hw - 0.3 + 0.026 * i, y + 0.022, -hd + 0.1, new THREE.MeshStandardMaterial({ color: c, roughness: 0.6 }), 0.002)));
+  [0xe23d3d, 0x3a7be0, 0x4fb34f, 0xf4d23a].forEach((c, i) => { const cr = add(new THREE.Mesh(new THREE.CylinderGeometry(0.006, 0.006, 0.08, 6), new THREE.MeshStandardMaterial({ color: c, roughness: 0.7 }))); cr.rotation.z = Math.PI / 2; cr.rotation.y = 0.3 * i; cr.position.set(hw - 0.22 + i * 0.03, y + 0.006, 0.12 + i * 0.012); });
+  const scis = new THREE.MeshStandardMaterial({ color: 0xff7ad0, roughness: 0.5 });
+  for (const s of [-1, 1]) { const b = add(new THREE.Mesh(new THREE.TorusGeometry(0.013, 0.004, 6, 14), scis)); b.rotation.x = Math.PI / 2; b.position.set(-hw + 0.14 + s * 0.016, y + 0.004, 0.12); }
+  add(rbox(0.006, 0.003, 0.08, -hw + 0.14, y + 0.003, 0.17, new THREE.MeshStandardMaterial({ color: 0xc8ccd0, metalness: 0.7, roughness: 0.3 }), 0.001));
+  const uni = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.6 }); // a little unicorn
+  add(rbox(0.06, 0.035, 0.03, hw - 0.12, y + 0.04, 0.05, uni, 0.012));
+  for (const lx of [-0.022, 0.022]) for (const lz of [-0.01, 0.01]) add(rbox(0.008, 0.025, 0.008, hw - 0.12 + lx, y + 0.012, 0.05 + lz, uni, 0.003));
+  add(rbox(0.02, 0.03, 0.022, hw - 0.09, y + 0.07, 0.05, uni, 0.008));
+  const horn = add(new THREE.Mesh(new THREE.ConeGeometry(0.004, 0.025, 8), new THREE.MeshStandardMaterial({ color: 0xffd23f, metalness: 0.5, roughness: 0.3 })));
+  horn.position.set(hw - 0.085, y + 0.095, 0.05);
+  add(rbox(0.006, 0.03, 0.022, hw - 0.103, y + 0.062, 0.05, new THREE.MeshStandardMaterial({ color: 0xff8fd0 }), 0.003)); // mane
+  g.userData.surfaces = [{ x0: -hw + 0.32, x1: hw - 0.32, z0: -hd + 0.04, z1: hd - 0.04, y: h }];
+  g.userData.footprint = [{ x0: -hw, x1: hw, z0: -hd, z1: hd }];
+  return g;
+}
+
+/** A white kids' swivel chair with a pink seat cushion (a seat, #71). Faces local +z. */
+function kidchair() {
+  const g = new THREE.Group();
+  const white = new THREE.MeshStandardMaterial({ color: 0xf6f6f3, roughness: 0.4 });
+  const pink = new THREE.MeshStandardMaterial({ color: 0xf6a8c8, roughness: 0.9 });
+  for (let k = 0; k < 5; k++) { const a = (k / 5) * Math.PI * 2, leg = rbox(0.24, 0.025, 0.035, Math.cos(a) * 0.12, 0.05, Math.sin(a) * 0.12, white, 0.008); leg.rotation.y = -a; g.add(leg); }
+  g.add(new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.32, 10), white).translateY(0.22));
+  g.add(rbox(0.42, 0.05, 0.4, 0, 0.42, 0.02, white, 0.02), rbox(0.38, 0.03, 0.36, 0, 0.46, 0.02, pink, 0.015));
+  g.add(rbox(0.4, 0.3, 0.04, 0, 0.7, -0.18, white, 0.02));
+  g.userData.rest = { kind: 'sit', name: 'stolen', verb: 'sätta dig på', spots: [{ x: 0, y: 0.47, z: -0.02 }] };
+  g.userData.footprint = [{ x0: -0.22, x1: 0.22, z0: -0.22, z1: 0.22 }];
+  return g;
+}
+
 /** Woven rug texture: base colour, fine random weave, a thin border band (canvas, no image files). */
 function rugTexture(item) {
   const c = document.createElement('canvas');
@@ -1273,7 +1337,7 @@ function rug(item) {
   return g;
 }
 
-const BUILDERS = { sofa, armchair, footstool, floorlamp, sidetable, coffeetable, loungesofa, loungetable, parasol, planter, bed, skansnasTable, skansnasChair, bunk, daybed, rug, ragrund, coatrack, shoerack, byas, tv, nordkisa, worklamp, gamingdesk, gamingchair, nordli };
+const BUILDERS = { sofa, armchair, footstool, floorlamp, sidetable, coffeetable, loungesofa, loungetable, parasol, planter, bed, skansnasTable, skansnasChair, bunk, daybed, rug, ragrund, coatrack, shoerack, byas, tv, nordkisa, worklamp, gamingdesk, gamingchair, nordli, alex, kidchair };
 
 /** An invisible thin box over a table top (raycast target for putting a cup down, #90). Local rect. */
 export function surfaceBox(r, list) {
