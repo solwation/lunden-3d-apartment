@@ -505,6 +505,12 @@ export const PATIO = {
   // paving (#53): 40 × 40 cm light grey concrete slabs, rows in half bond, darker 8 mm joints (our pick,
   // goes with the anthracite Oslo set); also on the neighbours' patios
   paving: { slab: 0.4, joint: 0.008, color: [184, 181, 175], jointColor: '#6f6b65' },
+  // LED string lights on the patio side of each screen wall (#81; all guesses except the wall's height):
+  // hooks 1.68 m up, a 6 cm sag between them, bulbs every 12 cm, warm white. They switch on below
+  // `on` daylight and off above `off` (hysteresis), fading over `fade` s; each string borrows a pool
+  // light (lights.js) with a soft, short reach.
+  stringLights: { y: 1.68, sag: 0.06, hookEvery: 1.2, spacing: 0.12, inset: 0.03, color: 0xffcf8a,
+    on: 0.3, off: 0.4, fade: 1, light: { intensity: 1.4, range: 4 } },
 };
 
 // Placement in plan metres. rot = direction the seat faces, degrees (0 = north/−z,

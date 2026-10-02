@@ -213,6 +213,7 @@ export class Lights {
       this.addSwitch(room(m.level, m.room), m.x, LEVELS[m.level].floor + L.switchHeight, m.z, m.normal, scene);
     }
     this.floorLamps = world.lamps.map((spec) => new FloorLamp(spec));
+    this.extra = []; // self-switching lamps: { pos, intensity, range, color, level, k }
 
     // the light pool
     this.pool = [...Array(L.pool)].map(() => {
@@ -246,10 +247,12 @@ export class Lights {
       if (!R.on) continue;
       for (const lamp of R.lamps) if (lamp.level === level) lit.push(lamp);
     }
+    // extra lamps that switch themselves (the patio string lights, #81): k = how far on they are
+    for (const lamp of this.extra) if (lamp.level === level && lamp.k > 0.01) lit.push(lamp);
     lit.sort((a, b) => a.pos.distanceToSquared(pos) - b.pos.distanceToSquared(pos));
     this.pool.forEach((l, i) => {
       const lamp = lit[i];
-      l.intensity = lamp ? lamp.intensity : 0;
+      l.intensity = lamp ? lamp.intensity * (lamp.k ?? 1) : 0;
       if (!lamp) return;
       l.position.copy(lamp.pos);
       l.color.setHex(lamp.color);

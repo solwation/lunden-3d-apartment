@@ -14,7 +14,7 @@ import { Measure } from './measure.js';
 import { cloudTexture } from './surroundings.js';
 import { DayCycle } from './daycycle.js';
 import { WallClock, ClockPanel } from './wallclock.js';
-import { Patio } from './patio.js';
+import { Patio, buildStringLights } from './patio.js';
 import { updateReflections } from './reflections.js';
 import { applySeason } from './seasons.js';
 import { saveResume, takeResume } from './resume.js';
@@ -135,6 +135,18 @@ function showClock(show) {
 }
 document.getElementById('clock-close').addEventListener('click', () => showClock(false));
 if (day.daylight < 0.3 || params0.has('lights')) lights.setAll(true); // arriving in the dark: lights on
+// LED string lights on the patio's screen walls (#81): switched by daylight, borrow pool lights
+{
+  const site = plan.floors[0].site;
+  if (site.fences?.length) {
+    const sl = buildStringLights(site.fences, site.patio ? (site.patio.x0 + site.patio.x1) / 2 : world.size.x / 2);
+    sl.forced = params0.has('lights');
+    world.looseItems.push(sl.object); // decoration: hidden with F
+    scene.add(sl.object);
+    lights.extra.push(...sl.lamps);
+    patio.setStringLights(sl, sl.forced);
+  }
+}
 const taps = world.taps.map((spec) => new Tap(spec));
 let inShower = false, shriekAt = 0;
 for (const t of taps) scene.add(t.object);

@@ -215,6 +215,9 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   gap in the hedge is gone, #52), two beers on the table Jun–Aug
   12–23, a snowman on the lawn just beyond the gap in the hedge Dec–Feb (`PATIO` in config), on snow (#73). Floor: 40 × 40 light grey slabs in half
   bond (`PATIO.paving`, `pavingTexture` in patio.js, UVs in metres), also on the neighbours' patios.
+  LED string lights on both screen walls (#81, `PATIO.stringLights`, `buildStringLights`): one InstancedMesh
+  of bulbs, on below daylight 0.3 / off above 0.4 with a 1 s fade, each string borrows a pool light
+  (`lights.extra`); `&lights` keeps them on; hidden with F.
   E on the parasol folds/unfolds it (#51, `patio.targets`); the hand-made choice holds until the automatic
   state itself changes (sunrise/sunset, season). Not a target while F hides the furniture.
 - Material choices (Sarah's screenshots in `material/`): parquet Ek Chalk (white-stained oak),

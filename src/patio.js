@@ -101,6 +101,35 @@ export function pavingTexture() {
   return tex;
 }
 
+// --- LED string lights on the screen walls (#81) --------------------------------
+/**
+ * One string per fence (site.fences, the patio side): little bulbs in sagging arcs between hooks, a
+ * thin cable. All bulbs are one InstancedMesh with an emissive material; `lamps` are pool lights for
+ * lights.js (one per string, in its middle). Switched by daylight with hysteresis (Patio.update).
+ */
+export function buildStringLights(fences, patioMidX) {
+  const L = P.stringLights, group = new THREE.Group();
+  const bulbs = [], cable = [], lamps = [];
+  for (const f of fences) {
+    const [ax, az] = f.a, [bx, bz] = f.b;
+    const side = Math.sign(patioMidX - ax) || 1; // the patio side of the wall
+    const x = ax + side * L.inset, len = Math.abs(bz - az), z0 = Math.min(az, bz);
+    const hooks = Math.max(1, Math.round(len / L.hookEvery));
+    const yAt = (z) => { const u = ((z - z0) / (len / hooks)) % 1; return L.y - 4 * L.sag * u * (1 - u); }; // catenary-ish
+    for (let z = z0 + L.spacing / 2; z < z0 + len; z += L.spacing) bulbs.push([x, yAt(z) - 0.02, z]);
+    const pts = [];
+    for (let z = z0; z <= z0 + len + 1e-3; z += 0.05) pts.push(new THREE.Vector3(x, yAt(z), z));
+    cable.push(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), pts.length, 0.003, 4));
+    lamps.push({ pos: new THREE.Vector3(x + side * 0.4, L.y - 0.1, z0 + len / 2), intensity: L.light.intensity, range: L.light.range, color: L.color, level: 0 });
+  }
+  const mat = new THREE.MeshBasicMaterial({ color: 0x000000, toneMapped: false }); // glow = colour (lit by nothing)
+  const inst = new THREE.InstancedMesh(new THREE.SphereGeometry(0.022, 8, 6), mat, bulbs.length);
+  const m = new THREE.Matrix4();
+  bulbs.forEach(([x, y, z], i) => inst.setMatrixAt(i, m.makeTranslation(x, y, z)));
+  group.add(inst, new THREE.Mesh(mergeGeometries(cable), new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.6 })));
+  return { object: group, mat, lamps, level: 0, on: false, glow: 0 };
+}
+
 // --- beers ------------------------------------------------------------------
 const glassMat = new THREE.MeshStandardMaterial({ color: 0xe8f2f4, roughness: 0.05, transparent: true, opacity: 0.25, side: THREE.DoubleSide, depthWrite: false });
 const beerMat = new THREE.MeshStandardMaterial({ color: 0xd88a1c, roughness: 0.2, transparent: true, opacity: 0.88, emissive: 0x6a3a05, emissiveIntensity: 0.25 });
@@ -350,14 +379,26 @@ export class Patio {
 
   /** For tests: parasol open fractions, beers shown, snowman shown. */
   get state() {
-    return { parasols: seasonal.parasols.map((p) => p.open), beers: seasonal.beers.map((b) => b.visible), snowman: this.snowman.visible };
+    return { strings: this.strings?.glow ?? null, parasols: seasonal.parasols.map((p) => p.open), beers: seasonal.beers.map((b) => b.visible), snowman: this.snowman.visible };
   }
 
   /** E targets: the parasols (folded/unfolded by hand). */
   get targets() { return seasonal.parasols.map((p) => p.interact); }
 
+  /** The string lights (main.js hands them over), switched with the daylight. */
+  setStringLights(sl, forceOn = false) { this.strings = sl; if (forceOn) { sl.on = true; sl.glow = 1; } }
+
   update(day, dt) {
     this.t += dt;
+    const sl = this.strings;
+    if (sl) { // on below `on` daylight, off above `off` (no flicker at dusk), a short fade
+      const L = P.stringLights;
+      if (sl.on && day.daylight > L.off && !sl.forced) sl.on = false;
+      else if (!sl.on && day.daylight < L.on) sl.on = true;
+      sl.glow = THREE.MathUtils.clamp(sl.glow + (sl.on ? 1 : -1) * dt / L.fade, 0, 1);
+      sl.mat.color.setHex(L.color).multiplyScalar(0.06 + 1.4 * sl.glow);
+      for (const l of sl.lamps) l.k = sl.glow;
+    }
     const sunUp = day.sunDir.y > 0.02;
     const auto = P.parasol.months.includes(day.month) && sunUp ? 1 : 0;
     for (const p of seasonal.parasols) {

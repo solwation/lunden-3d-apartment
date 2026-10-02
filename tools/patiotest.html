@@ -44,6 +44,11 @@ f.onload = async () => {
   player.keys.clear();
   world.setFurniture(true);
   pass &= check(player.pos.z > 15.6, `F off: walks on (z ${player.pos.z.toFixed(2)})`);
+  // the LED string lights (#81): off at noon, on at 22, off again after dawn; June and December
+  for (const [mon, hours] of [[6, [12, 23.5, 6]], [12, [12, 20, 10]]]) {
+    const st = hours.map((h) => at(mon, h, 3).strings);
+    pass &= check(st[0] === 0 && st[1] === 1 && st[2] === 0, `string lights month ${mon}: ${hours[0]}:00 off, ${hours[1]}:00 on, ${hours[2]}:00 off (${st.join(', ')})`);
+  }
   // E on the parasol (#51): fold it by hand on a summer day, it stays folded while the automatic
   // state stays the same, and the automatic one takes over again after sunset
   s = at(7, 14);
