@@ -90,7 +90,9 @@ src/reflections.js     mirror images: a Reflector per mirror, only the nearest o
 src/seasons.js         month → tree colours/leaf cover and snow on ground, roofs, hedges, paving (SEASON)
 src/rest.js            sitting / lying down (REST): seat & bed spots from furniture userData.rest, look clamp
 src/holdable.js        things you take and hold (one at a time): home + pick box, held pose in camera space,
-                       use = click / touch button / fast look; E on the home puts it back
+                       use = click / touch button / fast look; E on the home puts it back, E on a table top /
+                       worktop / the floor (HOLD.reach) puts it down (`placeAt`, lying by its shape — `restPose`;
+                       cups stand). While something is held other things are `blocked` ("Lägg ifrån dig …")
 src/saber.js           the lightsaber in Sovrum 2 (SABER), a Holdable
 src/toys.js            Nerf blasters + darts (Sovrum 2), magic wands + sparkles (Sovrum 3), the flashlight
                        (hall wardrobe; one always-present SpotLight), all Holdables (TOYS)
@@ -138,6 +140,7 @@ tools/pctest.html      headless test: switch the gaming PC on/off (game moves, R
                        starts the PC, the bunk seat swings the monitor round (film)
 tools/sabertest.html   headless test: take the lightsaber, swing it, hang it back
 tools/toystest.html    headless test: blaster (dart lands), wand (sparkles), flashlight (beam follows the view)
+tools/holdtest.html    headless test: put things down (coffee table, dining table, floor), one at a time, F → home
 tools/cuptest.html     headless test: brew, take a cup out, fill, carry, put down on the dining and coffee tables
 tools/drawtest.html    headless test: drawing mode, a crayon line from pointer events, clear, E back, saved
 tools/clocktest.html   headless test of the wall clock (?time=7, spool, pause, sun height by month)

@@ -50,11 +50,22 @@ f.onload = async () => {
   const dart = toys.darts.list.find((x) => x.flying);
   for (let i = 0; i < 120; i++) step(1 / 60);
   pass &= check(toys.darts.fired === 1 && dart && !dart.flying && Math.abs(dart.g.position.y - 3.258) < 0.02, `a dart flew and landed (y ${dart?.g.position.y.toFixed(3)})`);
-  // take a wand while holding the blaster: the blaster goes home
+  // one thing at a time (#102): the wand can't be taken while holding the blaster
   const wd = toys.wands[0];
+  pass &= check(aim(wd.model, 1, [[1.7, 2.85], [1.9, 3.1], [1.6, 2.6]], /lägg ifrån dig/i), `wand while holding the blaster: "${btn.textContent}"`);
+  btn.click();
+  pass &= check(heldItem() === b && !wd.held, 'still the blaster in the hand, the wand stays');
+  // put the blaster down on the floor in front of you (look down)
+  camera.rotation.y += Math.PI; camera.rotation.x = -1.0; step(1 / 60); // away from the wall, down
+  pass &= check(/lägga ner blastern här/i.test(btn.textContent), `floor: "${btn.textContent}"`);
+  btn.click(); step(1 / 60);
+  b.model.updateMatrixWorld(true);
+  const bb = new w.__app.camera.position.constructor(); b.model.getWorldPosition(bb);
+  pass &= check(!heldItem() && b.placed && b.model.parent === w.__app.scene && Math.abs(bb.y - 3.25) < 0.1, `the blaster lies on the floor (y ${bb.y.toFixed(3)})`);
+  // now the wand
   pass &= check(aim(wd.model, 1, [[1.7, 2.85], [1.9, 3.1], [1.6, 2.6]], /ta trollstaven/i), `wand: "${btn.textContent}"`);
   btn.click();
-  pass &= check(heldItem() === wd && !b.held && b.model.parent !== camera, 'wand in the hand, the blaster went back home');
+  pass &= check(heldItem() === wd && b.placed, 'wand in the hand, the blaster still on the floor');
   const live0 = toys.sparkles.live;
   away();
   btn.click(); step(1 / 60);
@@ -63,6 +74,13 @@ f.onload = async () => {
   pass &= check(aim(wd.holder.children.at(-1), 1, [[1.7, 2.85], [1.9, 3.1]], /hänga tillbaka trollstaven/i), `the hook: "${btn.textContent}"`);
   btn.click();
   pass &= check(!heldItem() && !wd.held, 'wand back on its hook');
+  // pick the blaster up from the floor again and hang it back on the board
+  pass &= check(aim(b.model, 1, [[bb.x + 0.8, bb.z], [bb.x, bb.z + 0.8], [bb.x - 0.8, bb.z], [bb.x, bb.z - 0.8]], /ta blastern/i), `blaster on the floor: "${btn.textContent}"`);
+  btn.click();
+  pass &= check(heldItem() === b && !b.placed, 'blaster taken from the floor');
+  pass &= check(aim(b.holder.children.at(-1), 1, [[4.4, 9.35], [4.6, 9.0], [4.3, 9.7]], /tillbaka/i), `its board: "${btn.textContent}"`);
+  btn.click();
+  pass &= check(!heldItem() && !b.held && !b.placed, 'blaster back on the board');
   // the flashlight in the hall wardrobe: open its front, take it, on, it follows the view, put back
   const fl = toys.flashlight;
   const wardrobe = world.doors.find((x) => x.kind === 'wardrobe' && Math.abs(x.wardrobe.back - 0.2) < 0.1 && x.closedPos < 2.3 && x.closedPos > 1.7);

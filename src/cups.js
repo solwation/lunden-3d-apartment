@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { CUPS as C } from './config.js';
 import { sfx } from './audio.js';
-import { heldItem, setHeld } from './holdable.js';
+import { heldItem, setHeld, handBusy } from './holdable.js';
 
 // Coffee cups (#90). Three mugs in the wall cabinet over the Moccamaster. Once it has brewed:
 // E on a cup in the (open) cabinet → it stands on the worktop beside the machine; E again → it fills
@@ -65,8 +65,9 @@ function mugModel() {
 export class Cup {
   constructor(scene, camera, homePos, mocca, counter) {
     const { g, coffee } = mugModel();
-    Object.assign(this, { scene, camera, model: g, coffee, mocca, counter, state: 'cabinet', fill: 0, pouring: 0, held: false, steamT: 0 });
-    this.target = { name: 'koppen', kind: 'cup', pickable: g, cup: this, get verb() { return this.cup.verb; }, toggle: () => this.press() };
+    Object.assign(this, { name: 'koppen', placeVerb: 'ställa ner', scene, camera, model: g, coffee, mocca, counter, state: 'cabinet', fill: 0, pouring: 0, held: false, steamT: 0 });
+    this.target = { name: 'koppen', kind: 'cup', pickable: g, cup: this, item: this, get verb() { return this.cup.verb; },
+      get blocked() { return (this.cup.state === 'full' || this.cup.state === 'placed') && handBusy(this.cup); }, toggle: () => this.press() };
     g.traverse((m) => { m.userData.door = this.target; });
     scene.add(g);
     g.position.copy(homePos);
@@ -104,6 +105,7 @@ export class Cup {
   }
 
   take() {
+    if (handBusy(this)) return; // put down what you hold first (#102)
     setHeld(this);
     this.held = true;
     this.state = 'held';
@@ -113,7 +115,7 @@ export class Cup {
     this.model.rotation.set(0.1, -0.5, 0);
   }
 
-  /** Put it down at a world point on a table top (`y` = the top's height). */
+  /** Put it down at a world point on a table top / the floor (`y` = the surface's height), standing. */
   placeAt(p) {
     this.held = false;
     if (heldItem() === this) setHeld(null);

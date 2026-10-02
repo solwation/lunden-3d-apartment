@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { COLORS, LEVELS, DAY, START, PLAYER, DRAWING } from './config.js';
+import { COLORS, LEVELS, DAY, START, PLAYER, DRAWING, STAIR, HOLD } from './config.js';
 const DRAWING_COLORS = DRAWING.colors;
 import { buildWorld } from './world.js';
 import { Player } from './player.js';
@@ -177,7 +177,24 @@ const saber = new Saber(scene, camera); // the lightsaber in Sovrum 2 (#78)
 const toys = buildToys(scene, camera); // Nerf blasters, magic wands, the flashlight (#86, #87, #89)
 const holdables = [saber, ...toys.items]; // things you can take and hold, one at a time (holdable.js)
 const cups = buildCups(scene, camera, world, world.cupCabinet); // coffee cups in the wall cabinet (#90)
-let placeTarget = null; // while a cup is held: the table top it would go down on
+let placeTarget = null; // while something is held: the table top / floor spot it would go down on (#102)
+// a faint ring where the held thing would land
+const placeGhost = new THREE.Mesh(new THREE.RingGeometry(0.035, 0.05, 24).rotateX(-Math.PI / 2),
+  new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.45, depthWrite: false }));
+placeGhost.visible = false;
+scene.add(placeGhost);
+const floorPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), floorHit = new THREE.Vector3();
+/** Where the look ray meets the floor the visitor stands on, within reach — or null (stairs, the stair opening). */
+function floorSpot() {
+  const lv = player.level, y = LEVELS[Math.max(0, lv)]?.floor ?? 0;
+  if (lv < 0 || Math.abs(player.pos.y - y) > 0.05) return null;
+  floorPlane.constant = -y;
+  if (!raycaster.ray.intersectPlane(floorPlane, floorHit)) return null;
+  const d = floorHit.distanceTo(camera.position);
+  const h = STAIR.hole;
+  if (d > HOLD.reach || (lv === 1 && floorHit.x > h.x0 && floorHit.x < h.x1 && floorHit.z > h.z0 && floorHit.z < h.z1)) return null;
+  return { point: floorHit.clone(), distance: d };
+}
 const drawing = new Drawing(scene, camera); // crayons on the paper on the desk in Sovrum 3 (#93)
 const measure = new Measure(scene, camera, [world.object], document.getElementById('measure'));
 document.getElementById('measure-btn').addEventListener('click', () => measure.press());
@@ -451,8 +468,9 @@ function use(thing) {
   else if (thing.kind === 'appliance') { thing.toggle(); if (thing.isOpen) bump('appliances'); } // oven, microwave (#82)
   else if (thing.kind === 'coffee') thing.toggle();
   else if (thing.kind === 'rest') sitOrLie(thing);
+  else if (thing.blocked) sfx.click(camera.position); // put down what you hold first (#102)
   else if (thing.kind === 'saber' || thing.kind === 'holdable' || thing.kind === 'cup') thing.toggle();
-  else if (thing.kind === 'cupPlace') thing.cup.placeAt(thing.point);
+  else if (thing.kind === 'place') thing.item.placeAt(thing.point);
   else if (thing.kind === 'paper') beginDraw();
   else if (thing.kind === 'pc') { const on = thing.toggle(); sfx.tvClick(thing.pickable.getWorldPosition(new THREE.Vector3()), on); }
   else if (thing.kind === 'tv') {
@@ -581,19 +599,27 @@ function updateFocus() {
   const cupTargets = cups.cups.filter((c) => !c.held).map((c) => c.target.pickable);
   const hit = raycaster.intersectObjects([...pickables, ...extra, ...cupTargets], true).find((h) => shown(h.object));
   focused = hit && !behindWall(hit.point) ? hit.object.userData.door : null;
-  // holding a cup: a table top in front of you (nearer than anything else) is where it goes down
-  const cup = heldItem();
-  if (cup?.placeAt) {
+  // holding something: a table top / worktop in front of you, or else the floor (nearer than anything
+  // else you look at), is where it goes down (#102)
+  const item = heldItem();
+  placeGhost.visible = false;
+  if (item?.placeAt) {
     const top = raycaster.intersectObjects(world.cupSurfaces, false).find((h) => shown(h.object) && h.point.y >= h.object.userData.surface - 0.02);
-    if (top && (!hit || top.distance <= hit.distance + 0.05) && !behindWall(top.point)) {
-      placeTarget = { name: 'koppen här', kind: 'cupPlace', verb: 'ställa ner', cup, point: top.point.clone().setY(top.object.userData.surface) };
+    let spot = top && top.distance < HOLD.reach && !behindWall(top.point) ? { point: top.point.clone().setY(top.object.userData.surface), distance: top.distance } : null;
+    if (!spot) { const f = floorSpot(); if (f && !behindWall(f.point)) spot = f; } // a table top is always above (before) the floor
+    if (spot && (!hit || spot.distance <= hit.distance + 0.05)) {
+      placeTarget = { name: `${item.name} här`, kind: 'place', verb: item.placeVerb ?? 'lägga ner', item, point: spot.point };
       focused = placeTarget;
+      placeGhost.position.copy(spot.point).y += 0.003;
+      placeGhost.visible = true;
     }
   }
   // a bed with a seat in it: the verb of the spot the look ray picks
   const spot = focused?.kind === 'rest' ? chooseSpot(focused, raycaster.ray, null) : null;
   const verb = !focused ? '' : spot?.verb ?? focused.verb ?? (focused.isOpen ? 'stänga' : 'öppna');
-  if (focused && touch.enabled) {
+  if (focused?.blocked) {
+    actionBtn.textContent = promptEl.textContent = 'Lägg ifrån dig det du håller först';
+  } else if (focused && touch.enabled) {
     actionBtn.textContent = `${verb[0].toUpperCase()}${verb.slice(1)} ${focused.name}`;
   } else if (focused) {
     promptEl.textContent = `Tryck E för att ${verb} ${focused.name}`;
@@ -609,7 +635,11 @@ function updateFocus() {
 function toggleFurniture(on = !world.furnitureOn) {
   if (rest.active) standUp(); // the seat is about to vanish
   world.setFurniture(on);
-  if (!on) { heldItem()?.putBack(); toys.darts.hide(); } // whatever is in the hand goes home first
+  if (!on) { // whatever is in the hand, or put down somewhere, goes home first (#102)
+    heldItem()?.putBack(); toys.darts.hide();
+    for (const h of holdables) if (h.placed) h.goHome();
+    for (const c of cups.cups) if (c.state === 'placed') c.model.position.copy(c.counter);
+  }
   if (!on && cat.visible) cat.hide(); // the cat goes too (and stops purring); none turn up until F is back
   if (!on) for (const t of world.furnitureTargets) if ((t.kind === 'tv' || t.kind === 'pc') && t.isOpen) t.toggle(); // screens off
   try { localStorage.setItem('lunden.furniture', on ? '1' : '0'); } catch { /* ignore */ }
@@ -784,4 +814,4 @@ document.addEventListener('pointerlockchange', () => { if (!updateEl.hidden) sho
 watchForUpdates(showUpdate);
 
 // handle for tests/debugging (tools/touchtest.html)
-window.__app = { calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };
+window.__app = { toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };

@@ -288,6 +288,10 @@ export const TOYS = {
     spot: { intensity: 9, distance: 14, angle: 0.42, penumbra: 0.45, color: 0xfff0d6 } },
 };
 
+// Putting held things down (#102, holdable.js / main.js): a table top, worktop or the floor within `reach` m
+// of the eye.
+export const HOLD = { reach: 2.2 };
+
 // Coffee cups (#90, src/cups.js): three cups in the wall cabinet over the Moccamaster (its door opens with
 // E); taken out, a cup stands on the worktop south of the machine (`counter`), fills from the jug (each
 // cup takes `pour` of it), is held like a toy and can be put down on any table (furniture surfaces).
