@@ -58,7 +58,7 @@ export class Saber extends Holdable {
       pick: { pos: new THREE.Vector3(S.x + 0.06, y0, S.z), size: [0.12, 0.2, 0.4] },
       swing: S.swingSpeed, cooldown: 0.3, useLabel: 'Svinga',
     });
-    Object.assign(this, { saber: g, blade, glowMat, hum: null, swingT: 0, marks: null, cat: null, touchT: 0, meowT: 0 });
+    Object.assign(this, { saber: g, blade, glowMat, hum: null, swingT: 0, marks: null, cat: null, touchT: 0, meowT: 0, hitsTarget: true }); // the lawn target comes up (#179)
   }
 
   get swings() { return this.uses; }
@@ -105,6 +105,9 @@ export class Saber extends Holdable {
     const h = this.marks.hit(this.camera.getWorldPosition(new THREE.Vector3()), this.tip());
     if (!h) return;
     if (h.cat) { if (this.meowT <= 0) { this.cat?.meowNow?.(); this.meowT = 2; } return; }
-    if (this.marks.burn(h)) { this.burns = (this.burns ?? 0) + 1; sfx.sizzle(h.point); }
+    if (this.marks.burn(h)) {
+      this.burns = (this.burns ?? 0) + 1; sfx.sizzle(h.point);
+      h.object.userData.target?.hit(h.point, this.camera.getWorldPosition(new THREE.Vector3())); // a cut in the target scores (#179)
+    }
   }
 }

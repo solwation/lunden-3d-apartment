@@ -2,12 +2,14 @@ import * as THREE from 'three';
 import { TARGET as T } from './config.js';
 import { sfx } from './audio.js';
 import { badge } from './stats.js';
+import { groundY } from './surroundings.js';
 
 // The Nerf target on the lawn (#99): a ring board on a wooden stand facing the patio. A dart that hits the
 // face scores by its ring (10 in the middle … 1 at the edge) times a bonus for the distance it was shot from
 // (TARGET.range); a "+N" badge pops up, a ding (higher for a bullseye), and the small board beside it shows
 // the total and the best shot (kept in localStorage). E on the target clears the score. It is only there
-// while something that shoots is in the hand (#144): it folds up out of the grass, and down again.
+// while something that can hit it is in the hand (`hitsTarget`: the blasters, the lightsaber, the wands; #144,
+// #179): it rises straight up out of the grass, and sinks back under it (hidden when it is all the way down).
 
 const KEY = 'lunden.target';
 const load = () => { try { return { total: 0, best: 0, hits: 0, ...JSON.parse(localStorage.getItem(KEY) ?? '{}') }; } catch { return { total: 0, best: 0, hits: 0 }; } };
@@ -58,17 +60,28 @@ export class Target {
     g.add(post, sign);
     g.traverse((m) => { if (m.isMesh) m.castShadow = true; });
     this.object = g;
+    this.ground = groundY(T.x, T.z);
+    this.height = new THREE.Box3().setFromObject(g).max.y; // board, stand and score board, from y 0
+    this.depth = this.height + 0.05; // how far down it goes: all of it under the grass
+    this.k = 0;
+    g.position.y = this.ground - this.depth;
+    g.visible = false;
     this.target = { kind: 'target', name: 'måltavlan', verb: 'nollställa poängen på', pickable: g, toggle: () => this.reset() };
     g.traverse((m) => { m.userData.door = this.target; });
     this.draw();
   }
 
-  /** Fold up (`show`) or down over ~0.4 s; hidden when down. */
+  /** The top of the target (world y): under `ground` when it is down. */
+  top() { return this.object.position.y + this.height; }
+
+  /** Rise (`show`) or sink over ~0.6 s; hidden when all the way down. `onSink` runs as it starts going down. */
   update(dt, show) {
-    this.k = Math.max(0, Math.min(1, (this.k ?? 0) + (show ? dt : -dt) * 2.5));
-    const e = this.k * this.k * (3 - 2 * this.k);
-    this.object.visible = this.k > 0.001;
-    this.object.scale.set(1, Math.max(0.001, e), 1);
+    const k = Math.max(0, Math.min(1, this.k + (show ? dt : -dt) / 0.6));
+    if (k < this.k && this.k === 1) this.onSink?.();
+    this.k = k;
+    const e = k * k * (3 - 2 * k);
+    this.object.visible = k > 0.001;
+    this.object.position.y = this.ground - (1 - e) * this.depth;
   }
 
   draw() {

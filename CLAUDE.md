@@ -119,8 +119,9 @@ src/things.js          bottles and glasses (#152): furniture builders list `user
                        becomes a Holdable: take, stand on a table, back in its own place
 src/saber.js           the lightsaber in Sovrum 2 (SABER), a Holdable; the blade burns marks where it cuts in (#96)
 src/target.js          the Nerf target on the lawn behind the hedge (TARGET, #99): rings × distance bonus, "+N" badge,
-                       a score board beside it (localStorage 'lunden.target'), E clears it; only up while a
-                       holdable with `shoots` (the blasters) is in the hand (#144)
+                       a score board beside it (localStorage 'lunden.target'), E clears it; it rises out of the grass
+                       only while a holdable with `hitsTarget` (blasters, lightsaber, wands) is in the hand and sinks
+                       under it otherwise (#144, #179); saber cuts and wand magic on it score too
 src/marks.js           marks on surfaces (MARKS, #96): `hit(from, to)` = first surface on a segment (glass, doors, lids
                        → none; the cat → meow), `add(kind, hit)` / `burn(hit)`; one ring buffer, an InstancedMesh per
                        kind (burn, glow, star, butterfly, splash) with a per-instance fade, a Points puff of smoke;
@@ -180,7 +181,8 @@ tools/sabertest.html   headless test: take the lightsaber, swing it, hang it bac
 tools/toystest.html    headless test: blaster (dart lands), wand (sparkles), flashlight (beam follows the view)
 tools/wandtest.html    headless test: a wand's magic on the wall (stars + butterflies), none in the sky, gone after a while
 tools/nerftest.html    headless test: a dart leaves a paint splash in the blaster's colour on the wall, drops, fades
-tools/targettest.html  headless test: target points (rings × distance bonus), a dart in the bullseye, E clears the score
+tools/targettest.html  headless test: target points (rings × distance bonus), a dart in the bullseye, E clears the score;
+                       down in the ground empty-handed, up with a blaster / the saber / a wand (#179)
 tools/mirrortest.html  headless test: in front of every mirror its Reflector is the active one, on the glass (#139)
 tools/booktest.html    headless test: take the book, read, turn pages, close, put it down, back on the side table
 tools/beertest.html    headless test: sit in the lounge sofa → beer, drink it empty, back = full, a sip of coffee, F

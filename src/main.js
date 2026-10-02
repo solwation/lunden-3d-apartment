@@ -231,8 +231,9 @@ document.getElementById('measure-btn').addEventListener('click', () => measure.p
 const cat = new CatSpawner(world);
 scene.add(cat.object);
 const target = new Target(); // the Nerf target on the lawn (#99)
-scene.add(target.object); // shown only while a blaster is in the hand (#144, step)
+scene.add(target.object); // up only while something that can hit it is in the hand (#144, #179, step)
 const marks = new Marks(scene, camera, [world.object, patio.object, target.object], cat); // burn marks, stars, splashes on surfaces (#96)
+target.onSink = () => marks.dropUnder(target.object); // its marks don't hang in the air as it sinks (#179)
 for (const h of [saber, ...toys.wands, toys.darts]) Object.assign(h, { marks, cat }); // the saber burns, the wands do magic (#97), darts splash (#98)
 cat.onFound = (label, rare) => catFound(label, rare);
 // a photo of every cat you pet goes up on the board, once its eyes are shut and the hand is there
@@ -753,7 +754,7 @@ function step(dt) {
   cups.update(dt);
   toys.update(dt);
   marks.update(dt);
-  target.update(dt, world.furnitureOn && !!heldItem()?.shoots); // the target folds up with a blaster in the hand (#144)
+  target.update(dt, world.furnitureOn && !!heldItem()?.hitsTarget); // the target rises with a blaster, the saber or a wand in the hand (#144, #179)
   if (clockPanel.open) clockPanel.render();
   world.windowLights.update(day.hour, 1 - day.daylight);
   cat.update(dt);

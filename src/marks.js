@@ -150,13 +150,13 @@ export class Marks {
     this.ray.far = far;
     segBox.setFromPoints([from, to]);
     for (const o of meshes) {
-      if (!moving(o) && !o.isInstancedMesh && !o.isSkinnedMesh && triCount(o) >= 200) {
+      if (!dynamic(o) && !o.isInstancedMesh && !o.isSkinnedMesh && triCount(o) >= 200) {
         let g = grids.get(o);
         if (!g) grids.set(o, (g = new TriGrid(o)));
         g.hits(this.ray.ray, far, segBox, o.material.side, out);
         continue;
       }
-      if (!moving(o)) { // a cheap box test first (static: its world box once)
+      if (!dynamic(o)) { // a cheap box test first (static: its world box once)
         let b = boxes.get(o);
         if (!b) boxes.set(o, (b = new THREE.Box3().setFromObject(o)));
         if (!b.intersectsBox(segBox)) continue;
@@ -223,6 +223,12 @@ export class Marks {
   }
 
   clear() { while (this.live.length) this.remove(this.live[0]); }
+
+  /** Remove the marks (and butterflies) on anything under `root` — it is about to move away (the target, #179). */
+  dropUnder(root) {
+    for (const l of this.live.filter((x) => isUnder(x.object, root))) this.remove(l);
+    for (const b of this.flutter.b) if (b.object && isUnder(b.object, root)) b.age = b.life;
+  }
 
   update(dt) {
     this.clock += dt;
@@ -317,6 +323,8 @@ const grids = new WeakMap(), boxes = new WeakMap(), segBox = new THREE.Box3();
 const triCount = (o) => (o.geometry.index ? o.geometry.index.count : o.geometry.attributes.position.count) / 3;
 /** Things that move or toggle (doors, lids, the parasol …) — E targets other than seats, beds and the Nerf target. */
 const moving = (o) => !!o.userData.door && o.userData.door.kind !== 'rest' && o.userData.door.kind !== 'target';
+/** Anything that can change place: never cache its shape (the target takes marks but rises and sinks, #179). */
+const dynamic = (o) => moving(o) || o.userData.door?.kind === 'target';
 const catMeshes = (cat) => { const l = []; cat.object.traverse((o) => { if (o.isMesh) l.push(o); }); return l; };
 const isUnder = (o, root) => { for (let p = o; p; p = p.parent) if (p === root) return true; return false; };
 

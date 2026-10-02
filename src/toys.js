@@ -95,7 +95,8 @@ export class Blaster extends Holdable {
       cooldown: 0.35, useLabel: 'Skjut',
     });
     this.darts = darts;
-    this.shoots = true; // fires projectiles: the target on the lawn shows up (#144)
+    this.shoots = true; // fires projectiles
+    this.hitsTarget = true; // the target on the lawn comes up (#144, #179)
     this.i = i;
     this.kick = 0;
   }
@@ -215,7 +216,7 @@ export class Wand extends Holdable {
       pick: { pos: new THREE.Vector3(W.x - 0.05, y0, z), size: [0.1, 0.45, 0.12] },
       swing: 5, cooldown: 0.25, useLabel: 'Trolla',
     });
-    Object.assign(this, { sparkles, color: W.colors[i], wave: 0 });
+    Object.assign(this, { sparkles, color: W.colors[i], wave: 0, hitsTarget: true }); // the lawn target comes up (#179)
   }
 
   onTake() { sfx.pling(this.where(), 1.4); }
@@ -230,7 +231,10 @@ export class Wand extends Holdable {
     const eye = this.camera.getWorldPosition(new THREE.Vector3()), dir = new THREE.Vector3(0, 0, -1).applyQuaternion(this.camera.quaternion);
     const h = this.marks?.hit(eye, eye.clone().addScaledVector(dir, T.wands.reach));
     if (h?.cat) this.cat?.meowNow?.();
-    else if (h) { this.marks.magic(h, eye); this.magics = (this.magics ?? 0) + 1; }
+    else if (h) {
+      this.marks.magic(h, eye); this.magics = (this.magics ?? 0) + 1;
+      h.object.userData.target?.hit(h.point, eye); // magic on the target scores too (#179)
+    }
   }
 
   tick(dt) {
