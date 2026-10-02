@@ -587,50 +587,101 @@ function ragrund(item) {
 }
 
 const blackMetal = new THREE.MeshStandardMaterial({ color: 0x1e1f21, roughness: 0.5, metalness: 0.4 });
-const coatColors = [0x2f4a63, 0x8a8f86, 0x6b3a2e, 0x2b2b2b];
 
-/** Wall coat rack: a hat shelf at 1.75 m on brackets, hooks below with a few jackets and a cap. */
+/** A jacket on a hook: collar, shoulders, a body narrowing down to the hem, sleeves hanging along its
+ * sides. Hung from (0, 0, 0), front towards +z. `len` = hem below the hook, `kind` changes the cut. */
+function jacket(len, color, kind) {
+  const g = new THREE.Group();
+  const m = new THREE.MeshStandardMaterial({ color, roughness: 0.92 });
+  // the rack is 74 cm with jackets on every other hook (29 cm apart): seen from the front they hang
+  // edge to edge, side on (on the hook) they are narrow
+  const sw = 0.26, hw = kind === 'coat' ? 0.27 : kind === 'puffer' ? 0.28 : 0.25; // shoulder / hem width
+  const depth = kind === 'puffer' ? 0.12 : 0.07;
+  // body: a tapered extrusion of a trapezoid (shoulders → hem), rounded
+  const shape = new THREE.Shape();
+  shape.moveTo(-0.06, 0); shape.lineTo(-sw / 2, -0.06); shape.lineTo(-hw / 2, -len); shape.lineTo(hw / 2, -len);
+  shape.lineTo(sw / 2, -0.06); shape.lineTo(0.06, 0); shape.closePath();
+  const body = new THREE.ExtrudeGeometry(shape, { depth, bevelEnabled: true, bevelThickness: 0.015, bevelSize: 0.015, bevelSegments: 2 });
+  body.translate(0, 0, -depth / 2);
+  g.add(new THREE.Mesh(body, m));
+  // collar / hood, sleeves along the sides, a zip line, quilting bands for the puffer
+  g.add(rbox(0.16, 0.05, depth + 0.04, 0, -0.01, 0, m, 0.02));
+  for (const sx of [-1, 1]) {
+    const sl = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.042, len * 0.72, 10), m);
+    sl.position.set(sx * (sw / 2 - 0.02), -0.08 - len * 0.36, 0.01);
+    sl.rotation.z = sx * 0.06;
+    g.add(sl);
+  }
+  const dark = new THREE.MeshStandardMaterial({ color: new THREE.Color(color).multiplyScalar(0.55), roughness: 0.9 });
+  g.add(rbox(0.008, len - 0.08, 0.005, 0, -len / 2 - 0.02, depth / 2 + 0.016, dark, 0.002));
+  if (kind === 'puffer') for (let y = -0.18; y > -len + 0.05; y -= 0.13) g.add(rbox(hw * 0.95, 0.006, 0.004, 0, y, depth / 2 + 0.017, dark, 0.002));
+  g.traverse((o) => { if (o.isMesh) o.castShadow = true; });
+  return g;
+}
+
+/** Wall coat rack: a hat shelf at 1.75 m on brackets, five hooks with jackets (one per hook, spaced, a
+ * little different in length), a beanie and a key bowl on the shelf. Back towards local −z (the wall). */
 function coatrack(item) {
   const g = new THREE.Group();
-  const w = item.w, y = 1.75, back = -0.13; // local −z = the wall
+  const w = item.w, y = 1.75, back = -0.13;
   g.add(rbox(w, 0.025, 0.26, 0, y, back + 0.13, whiteWood, 0.005));            // shelf
   g.add(rbox(w, 0.08, 0.02, 0, y - 0.08, back + 0.01, whiteWood, 0.004));      // hook rail
   for (const x of [-w / 2 + 0.06, w / 2 - 0.06]) g.add(rbox(0.02, 0.14, 0.2, x, y - 0.08, back + 0.11, whiteWood, 0.004));
+  const coats = [[0x2f4a63, 0.78, 'shell'], [0x6b3a2e, 0.95, 'coat'], [0x2b2d30, 0.72, 'puffer']];
   const hooks = 5;
   for (let i = 0; i < hooks; i++) {
     const x = -w / 2 + 0.08 + (i * (w - 0.16)) / (hooks - 1);
     g.add(rbox(0.015, 0.015, 0.06, x, y - 0.1, back + 0.05, blackMetal, 0.004));
-    if (i % 2 === 0 || i === 3) { // jackets on some hooks: shoulders + body, hanging from the hook
-      const m = new THREE.MeshStandardMaterial({ color: coatColors[i % coatColors.length], roughness: 0.95 });
-      g.add(rbox(0.3, 0.75, 0.1, x, y - 0.5, back + 0.08, m, 0.04));
-      g.add(rbox(0.22, 0.08, 0.11, x, y - 0.14, back + 0.08, m, 0.03));
-    }
+    const c = coats[[0, 2, 4].indexOf(i)];
+    if (!c) continue; // three jackets on alternate hooks, so they don't overlap
+    const j = jacket(c[1], c[0], c[2]);
+    j.position.set(x, y - 0.11, back + 0.075 + i * 0.008); // staggered off the wall a little (no z-fighting)
+    g.add(j);
   }
-  // a cap on the shelf and a folded scarf
-  const cap = new THREE.Mesh(new THREE.SphereGeometry(0.09, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2),
-    new THREE.MeshStandardMaterial({ color: 0x9c3b2c, roughness: 0.9 }));
-  cap.position.set(-w * 0.2, y + 0.013, back + 0.14);
-  g.add(cap, rbox(0.2, 0.04, 0.16, w * 0.22, y + 0.033, back + 0.14, new THREE.MeshStandardMaterial({ color: 0xd8c27a, roughness: 1 }), 0.015));
-  g.traverse((m) => { if (m.isMesh) m.castShadow = true; });
+  // a knitted beanie (dome with a folded brim) and a small key bowl on the shelf
+  const knit = new THREE.MeshStandardMaterial({ color: 0x9c3b2c, roughness: 1 });
+  const dome = new THREE.Mesh(new THREE.SphereGeometry(0.085, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2), knit);
+  dome.position.set(-w * 0.22, y + 0.035, back + 0.14);
+  g.add(dome, rbox(0.18, 0.035, 0.18, -w * 0.22, y + 0.03, back + 0.14, knit, 0.015));
+  const bowl = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.05, 0.04, 20), new THREE.MeshStandardMaterial({ color: 0x2f6f77, roughness: 0.4 }));
+  bowl.position.set(w * 0.22, y + 0.033, back + 0.14);
+  bowl.castShadow = true;
+  g.add(bowl);
   g.userData.footprint = [{ x0: -w / 2, x1: w / 2, z0: back, z1: back + 0.18 }]; // the jackets
   return g;
 }
 
-/** Two-tier black wire shoe rack (local −z = the wall) with a few pairs of shoes. */
+/** One shoe: a sole, a rounded upper narrowing to the toe, a heel counter; boots get a shaft. */
+function shoe(col, boot) {
+  const g = new THREE.Group();
+  const up = new THREE.MeshStandardMaterial({ color: col, roughness: 0.65 });
+  const sole = new THREE.MeshStandardMaterial({ color: boot ? 0x2a2522 : 0xf0eee8, roughness: 0.85 });
+  g.add(rbox(0.09, 0.022, 0.27, 0, 0.011, 0, sole, 0.01));
+  const toe = new THREE.Mesh(new THREE.SphereGeometry(1, 14, 8, 0, Math.PI * 2, 0, Math.PI / 2), up);
+  toe.scale.set(0.044, 0.06, 0.1);
+  toe.position.set(0, 0.022, 0.06);
+  g.add(toe, rbox(0.088, 0.075, 0.14, 0, 0.06, -0.06, up, 0.03));
+  if (boot) g.add(rbox(0.085, 0.16, 0.1, 0, 0.17, -0.08, up, 0.03));
+  g.traverse((o) => { if (o.isMesh) o.castShadow = true; });
+  return g;
+}
+
+/** Two-tier black wire shoe rack (local −z = the wall) with pairs of sneakers and boots, no overlaps. */
 function shoerack(item) {
   const g = new THREE.Group();
   const w = item.w, d = 0.28, z = -0.15 + d / 2;
-  for (const y of [0.06, 0.26]) for (let k = 0; k < 4; k++) g.add(rbox(w, 0.01, 0.01, 0, y, z - d / 2 + 0.03 + k * ((d - 0.06) / 3), blackMetal, 0.003));
-  for (const x of [-w / 2, w / 2]) for (const zz of [z - d / 2 + 0.01, z + d / 2 - 0.01]) g.add(rbox(0.012, 0.32, 0.012, x, 0.16, zz, blackMetal, 0.003));
-  const shoeCols = [0x1c1c1c, 0xe9e6df, 0x7a4b2e, 0x3d5a7a, 0xc0392b];
-  const shoe = (x, y, col) => {
-    const m = new THREE.MeshStandardMaterial({ color: col, roughness: 0.7 });
-    for (const dx of [-0.055, 0.055]) {
-      g.add(rbox(0.09, 0.07, 0.26, x + dx, y + 0.04, z, m, 0.03));
-      g.add(rbox(0.095, 0.015, 0.27, x + dx, y + 0.012, z, new THREE.MeshStandardMaterial({ color: 0xf2f0ea, roughness: 0.8 }), 0.006));
+  for (const y of [0.06, 0.3]) for (let k = 0; k < 4; k++) g.add(rbox(w, 0.01, 0.01, 0, y, z - d / 2 + 0.03 + k * ((d - 0.06) / 3), blackMetal, 0.003));
+  for (const x of [-w / 2, w / 2]) for (const zz of [z - d / 2 + 0.01, z + d / 2 - 0.01]) g.add(rbox(0.012, 0.36, 0.012, x, 0.18, zz, blackMetal, 0.003));
+  // pairs: [x of the pair's centre / 0.74 m, shelf, colour, boot]
+  const pairs = [[-0.25, 0.3, 0xe9e6df, false], [0.0, 0.3, 0x3d5a7a, false], [0.25, 0.3, 0xc0392b, false],
+    [-0.2, 0.06, 0x5a3a24, true], [0.18, 0.06, 0x1c1c1c, true]];
+  for (const [px, y, col, boot] of pairs) {
+    for (const dx of [-0.05, 0.05]) {
+      const s1 = shoe(col, boot);
+      s1.position.set(px * (w / 0.74) + dx, y + 0.005, z);
+      g.add(s1);
     }
-  };
-  [[-0.22, 0.27, 0], [0.04, 0.27, 1], [-0.12, 0.07, 2], [0.18, 0.07, 3], [0.22, 0.27, 4]].forEach(([x, y, c]) => shoe(x * (w / 0.74), y, shoeCols[c]));
+  }
   g.userData.footprint = [{ x0: -w / 2, x1: w / 2, z0: -0.15, z1: -0.15 + d }];
   return g;
 }
