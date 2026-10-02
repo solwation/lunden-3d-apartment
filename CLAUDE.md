@@ -31,7 +31,11 @@ writes the commit SHA into `src/version.js` (`BUILD`) and `version.json`, and ap
 The page polls `version.json` every minute and shows a "new version" notice (top centre)
 when it differs from `BUILD`. Its buttons react to a lifted touch as well as a click (`onTap`,
 #41), and "Ladda om" navigates to `?v=<new SHA>` so no cache serves the old page
-(`tools/updatetest.html`). Locally `BUILD = 'dev'` and no checks run. Keep imports
+(`tools/updatetest.html`). That button stores a one-time record (`src/resume.js`: position, level, view,
+clock; sessionStorage + localStorage, < 2 min) which the next load reads, deletes and resumes from (not
+with `?at=`; a spot inside a wall falls back to START); F5 finds none and starts at START. The start screen
+says "Du fortsätter där du var" with "Börja från start", and always offers "Gå till startplatsen"
+(`tools/reloadtest.html`). Locally `BUILD = 'dev'` and no checks run. Keep imports
 between `src/` files in the form `from './x.js'` on one line so the stamp regex finds them.
 Use relative paths only.
 
@@ -108,6 +112,7 @@ tools/updatetest.html  headless test of the update notice on a phone-sized touch
 tools/perfcount.html   draw calls / triangles at a few spots (compare before/after optimising)
 tools/oventest.html    headless test: oven + microwave open/close (lamp inside), Moccamaster brews and clicks off
 tools/tvtest.html      headless test: switch the living-room TV on/off, picture moves, no target with F off
+tools/reloadtest.html  headless test: resume after "Ladda om", F5 starts at START, "Börja från start", bad record
 tools/clocktest.html   headless test of the wall clock (07:00 start, spool, pause, month → sun height)
 tools/stamp.sh         build the published site with a version stamp (used by CI)
 ```

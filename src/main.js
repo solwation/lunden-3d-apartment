@@ -17,6 +17,7 @@ import { WallClock, ClockPanel } from './wallclock.js';
 import { Patio } from './patio.js';
 import { updateReflections } from './reflections.js';
 import { applySeason } from './seasons.js';
+import { saveResume, takeResume } from './resume.js';
 import { Tap, animateWater } from './water.js';
 import { CatBoard, snapshot } from './catboard.js';
 import { Lights } from './lights.js';
@@ -188,8 +189,26 @@ function footsteps() {
   const inside = x > 0 && x < world.size.x && z > 0 && z < world.size.z;
   sfx.step(stairHeight(x, z) !== null ? 'stair' : inside ? 'wood' : 'outside');
 }
-player.spawn(START.x, START.z, THREE.MathUtils.degToRad(START.yawDeg));
-camera.rotation.x = THREE.MathUtils.degToRad(START.pitchDeg);
+function spawnAtStart() {
+  player.spawn(START.x, START.z, THREE.MathUtils.degToRad(START.yawDeg));
+  camera.rotation.x = THREE.MathUtils.degToRad(START.pitchDeg);
+}
+spawnAtStart();
+// after the "Ladda om" button: back where the visitor was (resume.js), unless that spot is no longer
+// walkable (the plan changed) — then the usual start. The start screen offers "Börja från start".
+const resumed = takeResume();
+function resumeAt(r) {
+  player.spawn(r.x, r.z, r.yaw);
+  player.pos.y = r.feetY;
+  player.eyeY = r.feetY + PLAYER.eye;
+  camera.position.y = player.eyeY;
+  camera.rotation.x = r.pitch;
+  // reject spots inside a wall: one standing step must not push the visitor away
+  const before = player.pos.clone();
+  player.update(1 / 60);
+  if (player.pos.distanceTo(before) > 0.05 || Math.abs(player.groundAt(r.x, r.z, r.feetY) - r.feetY) > 0.3) { spawnAtStart(); return false; }
+  return true;
+}
 
 // Debug/screenshot helper: ?at=x,z,yawDeg[,pitchDeg[,feetY]] places the camera (plan metres).
 const at = new URLSearchParams(location.search).get('at');
@@ -199,6 +218,17 @@ if (at) {
   if (feet !== undefined) { player.pos.y = feet; player.eyeY = feet + 1.62; }
   camera.position.y = player.eyeY;
   camera.rotation.x = THREE.MathUtils.degToRad(pitch);
+}
+// the resumed place (not with ?at=): back to the same spot, view and time; the start screen then
+// says so and offers "Börja från start" instead
+const resumeEl = document.getElementById('resume');
+if (resumed && !at && resumeAt(resumed)) {
+  if (Number.isFinite(resumed.hour)) day.hour = resumed.hour;
+  if (resumed.month >= 1 && resumed.month <= 12) day.month = resumed.month;
+  resumeEl.hidden = false;
+}
+for (const id of ['restart', 'to-start']) { // also on the start screen shown when the mouse is freed (pause)
+  document.getElementById(id).addEventListener('click', () => { spawnAtStart(); resumeEl.hidden = true; });
 }
 const params = new URLSearchParams(location.search);
 if (params.has('shot')) overlay.hidden = true;
@@ -559,6 +589,8 @@ function onTap(el, fn) {
 }
 // reload to a fresh URL, so neither the browser's nor GitHub Pages' cache hands back the old page
 onTap(document.getElementById('update-reload'), () => {
+  saveResume({ x: player.pos.x, z: player.pos.z, feetY: player.pos.y, yaw: camera.rotation.y, pitch: camera.rotation.x,
+    hour: day.hour, month: day.month });
   const url = new URL(location.href);
   url.searchParams.set('v', latestVersion ?? Date.now());
   location.replace(url.href);

@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Reload test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+// "Ladda om" keeps the place (#74): (1) a stored record puts the visitor back there (position, level,
+// view, clock), the start screen says so, and the record is gone after reading; (2) without a record
+// (F5) the visit starts at START; (3) "Börja från start" goes back to START; (4) a record inside a wall
+// is ignored.
+//   google-chrome --headless=new --dump-dom http://localhost:8137/tools/reloadtest.html
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const lines = [];
+const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; };
+const load = () => new Promise((resolve) => {
+  const f = document.createElement('iframe');
+  f.width = 900; f.height = 600; f.src = '../index.html';
+  document.body.append(f);
+  f.onload = async () => { while (!f.contentWindow.__app) await wait(100); resolve(f); };
+});
+const KEY = 'lunden.resume';
+(async () => {
+  let pass = true;
+  // (1) upstairs hall, looking west, 20:30 in March
+  const rec = { x: 2.9, z: 6.3, feetY: 3.25, yaw: Math.PI / 2, pitch: -0.2, hour: 20.5, month: 3, ts: Date.now() };
+  sessionStorage.setItem(KEY, JSON.stringify(rec));
+  let f = await load();
+  let { player, camera, day } = f.contentWindow.__app;
+  pass &= check(Math.hypot(player.pos.x - rec.x, player.pos.z - rec.z) < 0.05 && Math.abs(player.pos.y - 3.25) < 0.01,
+    `resumed at (${player.pos.x.toFixed(2)}, ${player.pos.y.toFixed(2)}, ${player.pos.z.toFixed(2)})`);
+  pass &= check(Math.abs(camera.rotation.y - rec.yaw) < 0.01 && Math.abs(camera.rotation.x - rec.pitch) < 0.01, 'same view direction');
+  pass &= check(Math.abs(day.hour - 20.5) < 0.1 && day.month === 3, `same clock (${day.clock}, month ${day.month})`);
+  pass &= check(!f.contentDocument.getElementById('resume').hidden, 'start screen: "Du fortsätter där du var"');
+  pass &= check(!sessionStorage.getItem(KEY) && !localStorage.getItem(KEY), 'the record is deleted when read');
+  // (3) "Börja från start"
+  f.contentDocument.getElementById('restart').click();
+  pass &= check(player.pos.z < -5 && f.contentDocument.getElementById('resume').hidden, `"Börja från start" → start (z ${player.pos.z.toFixed(2)})`);
+  f.remove();
+  // (2) plain reload: no record → START
+  f = await load();
+  ({ player } = f.contentWindow.__app);
+  pass &= check(player.pos.z < -5 && f.contentDocument.getElementById('resume').hidden, `F5 starts at the start (z ${player.pos.z.toFixed(2)})`);
+  f.remove();
+  // (4) a record inside a wall is ignored
+  localStorage.setItem(KEY, JSON.stringify({ ...rec, x: 2.65, z: 3.0, feetY: 3.25, ts: Date.now() }));
+  f = await load();
+  ({ player } = f.contentWindow.__app);
+  pass &= check(player.pos.z < -5, `a spot inside a wall → the start (z ${player.pos.z.toFixed(2)})`);
+  f.remove();
+  out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
+})();
+</script>
+</body>
+</html>
