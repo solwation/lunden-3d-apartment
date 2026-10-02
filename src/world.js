@@ -5,6 +5,7 @@ import {
   STAIR, COLORS, FENCE_HEIGHT, SITE, OUTDOOR, CABINET_FIXES, SEASON, FINISH, OPTIONS, EXTRA_WALLS, ROOM_RENAMES, EXTRA_ROOMS, ROOM_DIVIDERS,
 } from './config.js';
 import { buildStairs } from './stairs.js';
+import { Openable } from './openables.js';
 import { SwingDoor, SlidingDoor, wardrobeDoors } from './doors.js';
 import { buildExterior } from './exterior.js';
 import { buildFurniture, surfaceBox } from './furniture.js';
@@ -261,8 +262,10 @@ function toiletAgainstWall(tank, bowl, wallBoxes) {
   }
 }
 
-/** White window frame in the plane z = fz between x0..x1, y0..y1, with glass. */
-function addWindowFrame(group, x0, x1, fz, y0, y1, transom) {
+/** White window frame in the plane z = fz between x0..x1, y0..y1, with glass. Below the transom the casements
+ * open outwards with E (#103, Swedish windows do): one per side of the mullion, hinged at the outer jambs,
+ * `out` = ±1 the way out along z. Returns their Openables. */
+function addWindowFrame(group, x0, x1, fz, y0, y1, transom, out = -1) {
   const ft = 0.06, d = 0.05;
   const z0 = fz - d, z1 = fz + d;
   group.add(box(x0, x1, z0, z1, y0, y0 + ft, M.frame));
@@ -272,11 +275,31 @@ function addWindowFrame(group, x0, x1, fz, y0, y1, transom) {
   const ty = transom > 0 ? y1 - transom : y1;
   if (transom > 0) group.add(box(x0, x1, z0, z1, ty - ft / 2, ty + ft / 2, M.frame));
   // a mullion for anything wider than a single casement
-  if (x1 - x0 > 0.9 && y1 - y0 > 1.2) {
-    const mx = (x0 + x1) / 2;
-    group.add(box(mx - ft / 2, mx + ft / 2, z0, z1, y0, ty, M.frame));
+  const mullion = x1 - x0 > 0.9 && y1 - y0 > 1.2, mx = (x0 + x1) / 2;
+  if (mullion) group.add(box(mx - ft / 2, mx + ft / 2, z0, z1, y0, ty, M.frame));
+  if (transom > 0) group.add(box(x0, x1, fz - 0.008, fz + 0.008, ty, y1, M.glass, { shadow: false })); // fixed transom light
+  // the casements: a slim sash with its glass, in a pivot at the hinge on the outer face of the frame
+  const lo = y0 + ft, hi = (transom > 0 ? ty - ft / 2 : y1 - ft), sashes = [];
+  const spans = mullion ? [[x0 + ft, mx - ft / 2, 'a'], [mx + ft / 2, x1 - ft, 'b']] : [[x0 + ft, x1 - ft, 'a']];
+  for (const [a, b, hingeAt] of spans) {
+    const hx = hingeAt === 'a' ? a : b, zo = fz + out * 0.03, s = 0.045;
+    const pivot = new THREE.Group();
+    pivot.position.set(hx, (lo + hi) / 2, zo);
+    const rails = [box(a, b, zo - 0.02, zo + 0.02, lo, lo + s, M.frame), box(a, b, zo - 0.02, zo + 0.02, hi - s, hi, M.frame),
+      box(a, a + s, zo - 0.02, zo + 0.02, lo, hi, M.frame), box(b - s, b, zo - 0.02, zo + 0.02, lo, hi, M.frame)];
+    const sash = new THREE.Mesh(mergeGeometries(rails.map((m) => m.geometry.translate(...m.position.clone().sub(pivot.position).toArray()))), M.frame);
+    sash.castShadow = sash.receiveShadow = true; // one mesh for the sash (#48)
+    const pane = box(a + s, b - s, zo - 0.006, zo + 0.006, lo + s, hi - s, M.glass, { shadow: false });
+    pane.position.sub(pivot.position);
+    pivot.add(sash, pane);
+    group.add(pivot);
+    // which way it turns: the free edge has to go out (rotating +x about +y heads for −z)
+    const along = hingeAt === 'a' ? 1 : -1;
+    const o = new Openable({ name: 'fönstret', object: pivot, mode: 'hinge', sign: along * -out, max: 60, speed: 1.6 });
+    o.normal = new THREE.Vector3(0, 0, -out); // the room side (tests stand there)
+    sashes.push(o);
   }
-  group.add(box(x0, x1, fz - 0.008, fz + 0.008, y0, y1, M.glass, { shadow: false }));
+  return sashes;
 }
 
 function buildLevel(floor, li, group) {
@@ -302,6 +325,7 @@ function buildLevel(floor, li, group) {
   // All windows are in the north/south façades (they run along x).
   const openings = { north: [], south: [] };
   const sills = []; // the inner window boards (flower pots, #136)
+  const windows = []; // casements that open (#103), E targets with the appliances
   for (const pr of floor.windows) {
     const facade = pr.z0 < D / 2 ? 'north' : 'south';
     const cx = (pr.x0 + pr.x1) / 2;
@@ -319,7 +343,7 @@ function buildLevel(floor, li, group) {
     // frame sits towards the outside of the wall
     const fz = facade === 'north' ? r.z0 + 0.1 : r.z1 - 0.1;
     const inner = facade === 'north' ? r.z1 : r.z0;
-    addWindowFrame(group, r.x0, r.x1, fz, sill, head, spec.transom);
+    windows.push(...addWindowFrame(group, r.x0, r.x1, fz, sill, head, spec.transom, facade === 'north' ? -1 : 1));
     // inner window board (fönsterbänk)
     const iz0 = Math.min(fz, inner + (facade === 'north' ? 0.03 : -0.03));
     const iz1 = Math.max(fz, inner + (facade === 'north' ? 0.03 : -0.03));
@@ -439,7 +463,7 @@ function buildLevel(floor, li, group) {
   // Kitchen, laundry, bathroom fittings and tiles from our material choices (interior.js)
   const handled = new Set();
   const taps = []; // tap/shower outlets for running water (main.js)
-  const appliances = []; // things that open with E but aren't doors (the fridge)
+  const appliances = [...windows]; // things that open with E but aren't doors (the fridge, the windows)
   for (const r of buildInterior(group, floor, li, y0, yC, wallBoxes, handled, taps, appliances)) segments.push(...rectSegments(r));
 
   // Other fixed cabinets
