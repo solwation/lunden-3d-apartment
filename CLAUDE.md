@@ -412,6 +412,8 @@ screenshots into the session scratchpad, not the repo.
   date is picked on the cat calendar beside the cat board (`src/calendar.js`, `CALENDAR`): E opens
   #cal-panel, A D / ← → / ◀ ▶ months, W S / ↑ ↓ days (held keys repeat; a key already held while walking up is ignored), or click a day. The neighbours' windows are one instanced additive mesh with a
   random evening/morning routine per window (`buildWindowLights` in surroundings.js).
+- Trees (#130): big old trees with several crown lobes by the school (`SITE.bigTrees`), slim young maples along our
+  pavement (`treeAreas` `young`), a shrub row (`SITE.shrubs`); all lobes are one instanced mesh coloured by the season.
 - Seasons (#73, `SEASON` + `src/seasons.js`): crowns get a colour per month (fresh, deep green, mixed autumn
   per tree, bare in Dec–Feb; some blossom in Apr–May) and in `SEASON.snowMonths` registered materials
   (`registerSnow`: lawn, park, roads, paving, hedges, roofs) turn white. Only colours/instance matrices

@@ -362,8 +362,9 @@ function roof(b) {
 }
 
 function trees(rand) {
-  // the trees the situation plan draws in the courtyard and the green (COURTYARD.trees), then the areas
-  const spots = COURTYARD.trees.map(([x, z]) => ({ x, z, y: groundY(x, z), s: 0.85 + rand() * 0.35 }));
+  // the trees the situation plan draws in the courtyard and the green (COURTYARD.trees), then the areas;
+  // young street maples are slim, the big old trees by the school have broad crowns of several lobes (#130)
+  const spots = COURTYARD.trees.map(([x, z]) => ({ x, z, y: groundY(x, z), s: 0.85 + rand() * 0.35, kind: 'tree' }));
   for (const area of S.treeAreas) {
     for (let i = 0; i < area.n; i++) {
       const x = area.x0 + rand() * (area.x1 - area.x0), z = area.z0 + rand() * (area.z1 - area.z0);
@@ -371,27 +372,48 @@ function trees(rand) {
       if (S.roads.some((r) => x > r.x0 - 1 && x < r.x1 + 1 && z > r.z0 - 1 && z < r.z1 + 1)) continue;
       if (z > S.river.z0 - 2 && z < S.river.z1 + 2) continue;
       if (T.box.some((b) => Math.min(Math.abs(x - b.x0), Math.abs(x - b.x1)) < 1.5 && z > b.z0 && z < b.z1)) continue; // not on a retaining wall
-      spots.push({ x, z, y: groundY(x, z), s: 0.75 + rand() * 0.6 });
+      spots.push({ x, z, y: groundY(x, z), s: area.young ? 0.8 + rand() * 0.25 : 0.75 + rand() * 0.6, kind: area.young ? 'young' : 'tree' });
     }
+  }
+  for (const [x, z, s] of S.bigTrees) spots.push({ x, z, y: groundY(x, z), s, kind: 'big' });
+  // crowns: one per tree, three to five lobes per big tree, an ellipsoid per young maple
+  const lobes = [];
+  const trunkM = [], m = new THREE.Matrix4(), q = new THREE.Quaternion();
+  for (const t of spots) {
+    const r = { r1: rand(), r2: rand(), r3: rand(), r4: rand() }; // one tree, one colour (seasons.js)
+    if (t.kind === 'big') {
+      const h = 4.6 * t.s;
+      trunkM.push(m.clone().compose(new THREE.Vector3(t.x, t.y, t.z), q.identity(), new THREE.Vector3(2.0 * t.s, h, 2.0 * t.s)));
+      const n = 4 + Math.floor(rand() * 2);
+      for (let k = 0; k < n; k++) {
+        const a = (k / n) * 6.28 + rand() * 0.6, d = (k === 0 ? 0 : 1.9) * t.s;
+        lobes.push({ pos: new THREE.Vector3(t.x + Math.cos(a) * d, t.y + h + (k === 0 ? 3.0 : 1.8 + rand() * 1.4) * t.s, t.z + Math.sin(a) * d),
+          rot: new THREE.Quaternion().setFromEuler(new THREE.Euler(0, rand() * 6, 0)), scale: new THREE.Vector3(3.0, 2.6, 3.0).multiplyScalar(t.s * (0.8 + rand() * 0.3)), ...r });
+      }
+    } else {
+      const young = t.kind === 'young', h = (young ? 2.6 : 3.2) * t.s;
+      trunkM.push(m.clone().compose(new THREE.Vector3(t.x, t.y, t.z), q.identity(), new THREE.Vector3(young ? 0.6 * t.s : t.s, h, young ? 0.6 * t.s : t.s)));
+      const sc = young ? new THREE.Vector3(1.3, 2.1, 1.3).multiplyScalar(t.s) : new THREE.Vector3(2.4, 2.6, 2.4).multiplyScalar(t.s);
+      lobes.push({ pos: new THREE.Vector3(t.x, t.y + h + (young ? 1.7 : 1.6) * t.s, t.z), rot: new THREE.Quaternion().setFromEuler(new THREE.Euler(0, rand() * 6, 0)), scale: sc, ...r });
+    }
+  }
+  // ornamental shrubs along our pavement: small round bushes, coloured with the season like the trees
+  const sh = S.shrubs;
+  for (let x = sh.x0; x <= sh.x1; x += sh.step) {
+    if (sh.gaps.some(([a, b]) => x > a && x < b)) continue;
+    const s = 0.45 + rand() * 0.2;
+    lobes.push({ pos: new THREE.Vector3(x + (rand() - 0.5) * 0.2, 0.42 * s / 0.55, sh.z + (rand() - 0.5) * 0.15), rot: new THREE.Quaternion().setFromEuler(new THREE.Euler(0, rand() * 6, 0)),
+      scale: new THREE.Vector3(s * 1.2, s, s * 1.1), r1: 0.2 + rand() * 0.15, r2: 0.9, r3: 0.15 + rand() * 0.2, r4: 1 }); // one red-brown hedge; r2 high: some leaves stay; r4: no blossom
   }
   const trunkGeo = new THREE.CylinderGeometry(0.14, 0.2, 1, 7).translate(0, 0.5, 0);
   const crownGeo = new THREE.IcosahedronGeometry(1, 1);
-  const trunk = new THREE.InstancedMesh(trunkGeo, new THREE.MeshStandardMaterial({ color: 0x5a4636, roughness: 1 }), spots.length);
-  const crown = new THREE.InstancedMesh(crownGeo, new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 1, flatShading: true }), spots.length);
-  const m = new THREE.Matrix4(), q = new THREE.Quaternion(), col = new THREE.Color(), seeds = [];
-  spots.forEach((t, i) => {
-    const h = 3.2 * t.s;
-    m.compose(new THREE.Vector3(t.x, t.y, t.z), q, new THREE.Vector3(t.s, h, t.s));
-    trunk.setMatrixAt(i, m);
-    q.setFromEuler(new THREE.Euler(0, rand() * 6, 0));
-    m.compose(new THREE.Vector3(t.x, t.y + h + 1.6 * t.s, t.z), q, new THREE.Vector3(2.4 * t.s, 2.6 * t.s, 2.4 * t.s));
-    crown.setMatrixAt(i, m);
-    // colours and leaf cover come from the season (seasons.js); keep each tree's own variation
-    seeds.push({ pos: new THREE.Vector3(t.x, t.y + h + 1.6 * t.s, t.z), rot: q.clone(), scale: new THREE.Vector3(2.4 * t.s, 2.6 * t.s, 2.4 * t.s),
-      r1: rand(), r2: rand(), r3: rand(), r4: rand() });
-    crown.setColorAt(i, col.setHSL(0.27, 0.45, 0.3));
-  });
-  registerTrees(crown, seeds);
+  const trunk = new THREE.InstancedMesh(trunkGeo, new THREE.MeshStandardMaterial({ color: 0x5a4636, roughness: 1 }), trunkM.length);
+  const crown = new THREE.InstancedMesh(crownGeo, new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 1, flatShading: true }), lobes.length);
+  trunkM.forEach((mm, i) => trunk.setMatrixAt(i, mm));
+  const col = new THREE.Color();
+  lobes.forEach((l, i) => { crown.setMatrixAt(i, m.compose(l.pos, l.rot, l.scale)); crown.setColorAt(i, col.setHSL(0.27, 0.45, 0.3)); });
+  // colours and leaf cover come from the season (seasons.js); keep each tree's own variation
+  registerTrees(crown, lobes);
   trunk.castShadow = crown.castShadow = true;
   return [trunk, crown];
 }

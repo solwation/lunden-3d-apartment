@@ -185,9 +185,13 @@ export const SITE = {
     { x0: -95, x1: 30, z0: -32, z1: -30 },   // … and on the far side, along the school's wall (#126)
   ],                                         // the courtyard's own walks: COURTYARD
   river: { x0: -200, x1: 150, z0: 125, z1: 135 }, // Höje å
+  // big old limes / chestnuts along the far pavement and in the school yard (#130, the user's photos): [x, z, size]
+  bigTrees: [[-36, -34.5, 1.4], [-17, -35.2, 1.6], [-4, -34.8, 1.75], [9, -35.4, 1.45], [27.5, -34.2, 1.6], [33.5, -16, 1.35], [-58, -33.5, 1.5]],
+  // a row of ornamental shrubs along our pavement, with gaps for the paths to the entrances (#130)
+  shrubs: { x0: -60, x1: 18, z: -20.6, step: 0.85, gaps: [[-48, -44], [-6, 8]] },
   treeAreas: [
     // the courtyard's and the green's trees stand where the situation plan draws them: COURTYARD.trees
-    { x0: -92, x1: 18, z0: -20, z1: -19, n: 11 },      // street trees along Sankt Lars väg
+    { x0: -92, x1: 18, z0: -20, z1: -19, n: 11, young: true }, // street trees along Sankt Lars väg: young maples by the site (#130)
     { x0: 18, x1: 20, z0: -16, z1: 56, n: 7 },         // … and along its east leg
     { x0: -130, x1: 70, z0: 68, z1: 140, n: 55 },      // S:t Lars park / woods towards Höje å
     { x0: -130, x1: -92, z0: -30, z1: 68, n: 14 },     // west of Karpvägen
