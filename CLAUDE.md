@@ -11,8 +11,10 @@ in Swedish. Code, comments and this file are in English; UI text is Swedish.
   (`gh issue create`) instead of being done on the side. Keep issues small and concrete;
   reference the issue number in the commit that resolves it (`Fixes #N`).
 - **Label issues `in-progress` when you start on them** (`gh issue edit N --add-label
-  in-progress`) and remove the label if you stop without finishing
-  (`--remove-label in-progress`). Closing via `Fixes #N` is enough when done.
+  in-progress`). The label must never outlive the work: **remove it** (`--remove-label
+  in-progress`) when you stop without finishing, when you close the issue after implementing it
+  (`Fixes #N` closes it, but does not remove the label — do that too), and when you **reopen** an
+  issue. A reopened issue starts without the label until someone picks it up again.
 - Verify changes in a real browser before pushing (see *Testing*). Don't claim something
   works from reading the code alone.
 - **Every user-visible change gets an entry in `data/changelog.json`** (Swedish, newest first,
