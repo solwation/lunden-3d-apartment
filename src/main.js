@@ -18,6 +18,7 @@ import { Patio } from './patio.js';
 import { updateReflections } from './reflections.js';
 import { applySeason } from './seasons.js';
 import { saveResume, takeResume } from './resume.js';
+import { Rest, chooseSpot } from './rest.js';
 import { Tap, animateWater } from './water.js';
 import { CatBoard, snapshot } from './catboard.js';
 import { Lights } from './lights.js';
@@ -138,6 +139,7 @@ let inShower = false, shriekAt = 0;
 for (const t of taps) scene.add(t.object);
 
 const player = new Player(world, camera);
+const rest = new Rest(camera); // sitting / lying down (#71/#72)
 const measure = new Measure(scene, camera, [world.object], document.getElementById('measure'));
 document.getElementById('measure-btn').addEventListener('click', () => measure.press());
 const cat = new CatSpawner(world);
@@ -273,6 +275,7 @@ const active = () => locked || touch.enabled;
 function look(dyaw, dpitch) {
   camera.rotation.y -= dyaw;
   camera.rotation.x = THREE.MathUtils.clamp(camera.rotation.x - dpitch, -1.45, 1.45);
+  rest.clampLook(camera); // sitting / lying: only so far
 }
 
 function showOverlay(show) {
@@ -315,6 +318,26 @@ pauseBtn.addEventListener('click', () => {
   player.analog.x = player.analog.y = 0;
   showOverlay(true);
 });
+/** Sit down / lie down on the furniture you look at (the seat or side nearest the look ray). */
+function sitOrLie(target) {
+  raycaster.setFromCamera(center, camera);
+  const spot = chooseSpot(target, raycaster.ray, cat.visible ? cat.object.position : null);
+  if (!spot) return;
+  player.crouch = false;
+  rest.begin(target, spot, { x: player.pos.x, z: player.pos.z, y: player.pos.y, yaw: camera.rotation.y });
+  bump(target.rest === 'lie' ? 'lay' : 'sat');
+  sfx.rustle(spot.pos);
+}
+/** Stand up again where you stood before sitting / lying down. */
+function standUp() {
+  const s = rest.end();
+  if (!s) return;
+  player.spawn(s.x, s.z, s.yaw);
+  player.pos.y = s.y; // spawn() finds the ground floor; upstairs we stood on Övre plan
+  player.eyeY = s.y + PLAYER.eye;
+  camera.position.y = player.eyeY;
+  sfx.rustle(camera.position);
+}
 /** E / the action button on what you look at: doors toggle, the note opens. */
 function use(thing) {
   shadowState.hold = 1.5; // whatever moves now casts a moving shadow
@@ -326,6 +349,7 @@ function use(thing) {
   else if (thing.kind === 'keybox') thing.toggle();
   else if (thing.kind === 'appliance') { thing.toggle(); if (thing.isOpen) bump('lids'); }
   else if (thing.kind === 'coffee') thing.toggle();
+  else if (thing.kind === 'rest') sitOrLie(thing);
   else if (thing.kind === 'tv') {
     const on = thing.toggle();
     sfx.tvClick(thing.pickable.getWorldPosition(new THREE.Vector3()), on);
@@ -345,7 +369,7 @@ function use(thing) {
   }
   else useDoor(thing);
 }
-actionBtn.addEventListener('click', () => { if (reading) showNote(false); else if (focused) use(focused); });
+actionBtn.addEventListener('click', () => { if (reading) showNote(false); else if (rest.active) standUp(); else if (focused) use(focused); });
 const muteBtn = document.getElementById('mute');
 function updateMute(m = isMuted()) {
   muteBtn.textContent = m ? '🔇' : '🔊';
@@ -374,7 +398,8 @@ document.addEventListener('keydown', (e) => {
   }
   player.keys.add(e.code);
   if (e.code === 'ControlLeft' || e.code === 'ControlRight') player.crouch = true; // crouch while held (#70)
-  if (e.code === 'KeyE' && focused) use(focused);
+  if (e.code === 'KeyE' && rest.active) standUp();
+  else if (e.code === 'KeyE' && focused) use(focused);
   if (e.code === 'KeyM') updateMute(toggleMuted());
   if (e.code === 'KeyT') toggleStats();
   if (e.code === 'Tab') { e.preventDefault(); if (!e.repeat) holdStats(true); }
@@ -426,12 +451,20 @@ function behindWall(p) {
 }
 
 function updateFocus() {
+  if (rest.active) { // sitting / lying: E (or the button) only gets you up again
+    focused = null;
+    promptEl.textContent = 'Tryck E för att resa dig';
+    promptEl.hidden = touch.enabled;
+    actionBtn.textContent = 'Res dig';
+    actionBtn.hidden = !touch.enabled;
+    return;
+  }
   camera.updateMatrixWorld(); // the player just moved it; render hasn't run yet
   raycaster.setFromCamera(center, camera);
   // (the raycaster ignores visibility, so the cat is only a target while it is there)
   // the car key only while its cabinet is open
   const extra = [...(cat.visible ? [cat.object] : []), ...(keyCabinet?.keyReachable ? [world.carKey.pickable] : []),
-    ...(world.furnitureOn ? [...patio.targets, ...world.furnitureTargets].map((t) => t.pickable) : [])]; // parasol, TV — unless F hid the furniture
+    ...(world.furnitureOn ? [...patio.targets, ...world.furnitureTargets].map((t) => t.pickable) : [])]; // parasol, TV, seats, beds — unless F hid the furniture
   const hit = raycaster.intersectObjects(extra.length ? [...pickables, ...extra] : pickables, true)[0];
   focused = hit && !behindWall(hit.point) ? hit.object.userData.door : null;
   const verb = !focused ? '' : focused.verb ?? (focused.isOpen ? 'stänga' : 'öppna');
@@ -447,6 +480,7 @@ function updateFocus() {
 
 // --- furniture on/off (F / 🛋) ---------------------------------------------
 function toggleFurniture(on = !world.furnitureOn) {
+  if (rest.active) standUp(); // the seat is about to vanish
   world.setFurniture(on);
   try { localStorage.setItem('lunden.furniture', on ? '1' : '0'); } catch { /* ignore */ }
 }
@@ -502,6 +536,7 @@ function step(dt) {
   cat.update(dt);
   measure.update(dt, window.innerWidth, window.innerHeight);
   if (active() && reading) updateFocus();
+  else if (active() && rest.active) { rest.update(dt); updateFocus(); } // sitting / lying: look, no walking
   else if (active()) {
     player.analog.x = touch.analog.x;
     player.analog.y = touch.analog.y;
@@ -609,4 +644,4 @@ document.addEventListener('pointerlockchange', () => { if (!updateEl.hidden) sho
 watchForUpdates(showUpdate);
 
 // handle for tests/debugging (tools/touchtest.html)
-window.__app = { renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };
+window.__app = { rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };

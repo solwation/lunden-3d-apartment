@@ -217,6 +217,14 @@ export const START = { x: 2.875, z: -12, yawDeg: 180, pitchDeg: 8 };
 // the gap in the hedge (SW corner), the lawn behind the row of patios up to z1 (#52).
 export const OUTDOOR = { x0: -12, x1: 17.75, z0: -14, z1: 24 };
 
+// Sitting and lying down (#71/#72, src/rest.js): eye height above the seat / mattress, how far you can
+// turn your head (yaw ± from the way the seat faces) and the pitch range, and the move time.
+export const REST = {
+  sitEye: 0.72, lieEye: 0.22, move: 0.5,
+  sit: { yaw: 1.7, pitch: [-1.1, 0.8] },
+  lie: { yaw: 1.3, pitch: [0.15, 1.45], startPitch: 1.45 }, // lying on your back, looking at the ceiling
+};
+
 export const PLAYER = {
   eye: 1.62,
   radius: 0.22,

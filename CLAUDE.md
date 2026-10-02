@@ -79,6 +79,7 @@ src/coffee.js          Moccamaster on the worktop (MOCCAMASTER): E brews (red li
 src/mirror.js          the one mirror material (gradient + glints; hall and bathroom mirrors)
 src/reflections.js     mirror images: a Reflector per mirror, only the nearest one in view (< 4 m) renders
 src/seasons.js         month → tree colours/leaf cover and snow on ground, roofs, hedges, paving (SEASON)
+src/rest.js            sitting / lying down (REST): seat & bed spots from furniture userData.rest, look clamp
 src/fridge.js          the fridge: hollow, lit, opens with E, smoking roast chicken (in world.lids)
 src/catboard.js        cork board in the kitchen (under the wall clock): a photo (offscreen render) of every petted cat,
                        newest 10 in IndexedDB 'lunden'/'catPhotos', captioned with name + time
@@ -113,6 +114,7 @@ tools/perfcount.html   draw calls / triangles at a few spots (compare before/aft
 tools/oventest.html    headless test: oven + microwave open/close (lamp inside), Moccamaster brews and clicks off
 tools/tvtest.html      headless test: switch the living-room TV on/off, picture moves, no target with F off
 tools/reloadtest.html  headless test: resume after "Ladda om", F5 starts at START, "Börja från start", bad record
+tools/resttest.html    headless test: sit on every seat and lie in every bed (spot, no walking, up again)
 tools/clocktest.html   headless test of the wall clock (07:00 start, spool, pause, month → sun height)
 tools/stamp.sh         build the published site with a version stamp (used by CI)
 ```
@@ -354,6 +356,13 @@ screenshots into the session scratchpad, not the repo.
 - Crouch (#70): hold Ctrl (or the 🧎 toggle on touch) → eye `PLAYER.crouchEye` 0.95 m at `crouchSpeed` (50 %),
   no sprint; you only stand up again where there is head room (`roomToStand`: not under the stair's
   upper flight). Released on blur / losing pointer lock so nobody gets stuck down.
+- Sit / lie (#71/#72, `src/rest.js`, `REST`): builders put `userData.rest = { kind: 'sit'|'lie', name, verb,
+  spots }` (local x, seat/mattress y, z, optional dir); buildFurniture turns them into E targets
+  (`world.furnitureTargets`). E picks the spot nearest the look ray (not one the cat sits on), the camera
+  glides there (lying: looking at the ceiling), walking is off and looking is clamped; E / "Res dig" puts
+  you back where you stood (including upstairs: `spawn()` alone would drop you to Entréplan). Seats: the
+  sofa (3 + the chaise), armchair, 4 dining chairs, the lounge sofa (3), RÅGRUND; beds: the double bed (2
+  sides), both bunks (lower/upper), the daybed. F stands you up first.
 - GNOME's "disable touchpad while typing" (on by default) blocks touchpad look while a WASD key
   is held — not a bug in the app. Arrow keys ← → turn as a keyboard-only fallback.
 

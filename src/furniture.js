@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { mergeStatic } from './merge.js';
+import { restTarget } from './rest.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { FURNITURE, LANDSKRONA as L, LEVELS, SKANSNAS } from './config.js';
 import { loungesofa, loungetable, parasol, planter } from './patio.js';
@@ -72,6 +73,10 @@ function sofa(item) {
   const [chX0, chX1] = right ? [-W / 2, -W / 2 + cw] : [W / 2 - cw, W / 2];
   seatModule(g, { x0: mainX0, x1: mainX1, depth: D, cushions: 2, arms: [right ? 'left' : 'right'] });
   seatModule(g, { x0: chX0, x1: chX1, depth: L.chaiseDepth, cushions: 1, arms: [right ? 'right' : 'left'] });
+  // three places on the sofa and one on the chaise (#71), local x, seat height, z, facing +z
+  const third = (mainX1 - mainX0) / 3;
+  g.userData.rest = { kind: 'sit', name: 'soffan', verb: 'sätta dig i', spots: [0.5, 1.5, 2.5].map((k) => ({ x: mainX0 + third * k, y: L.seatHeight, z: -0.08 }))
+    .concat([{ x: (chX0 + chX1) / 2, y: L.seatHeight, z: -0.08 }]) };
   // footprint (local) for collision
   g.userData.footprint = [
     { x0: mainX0, x1: mainX1, z0: -D / 2, z1: D / 2 },
@@ -84,6 +89,7 @@ function armchair() {
   const g = new THREE.Group();
   const W = L.chairWidth;
   seatModule(g, { x0: -W / 2, x1: W / 2, depth: L.depth, cushions: 1, arms: ['left', 'right'] });
+  g.userData.rest = { kind: 'sit', name: 'fåtöljen', verb: 'sätta dig i', spots: [{ x: 0, y: L.seatHeight, z: -0.08 }] };
   g.userData.footprint = [{ x0: -W / 2, x1: W / 2, z0: -L.depth / 2, z1: L.depth / 2 }];
   return g;
 }
@@ -305,6 +311,9 @@ function bed(item) {
   }
   g.add(rbox(w + 0.06, 0.6, 0.08, 0, 0.62, z0 - 0.04, bedFabric, 0.03));
   for (const x of [-w / 2 + 0.06, w / 2 - 0.06]) for (const z of [z0 + 0.06, -z0 - 0.06]) g.add(leg(x, z, 0.1));
+  // lying down (#72): head on the pillows, feet towards local +z; one place per side of a double bed
+  g.userData.rest = { kind: 'lie', name: 'sängen', verb: 'lägga dig i',
+    spots: (w > 1.2 ? [-w / 4, w / 4] : [0]).map((x) => ({ x, y: 0.52, z: z0 + 0.32 })) };
   g.userData.footprint = [{ x0: -w / 2 - 0.03, x1: w / 2 + 0.03, z0: z0 - 0.08, z1: -z0 + 0.02 }];
   return g;
 }
@@ -381,6 +390,7 @@ function skansnasChair() {
     post.castShadow = true;
     g.add(post);
   }
+  g.userData.rest = { kind: 'sit', name: 'stolen', verb: 'sätta dig på', spots: [{ x: 0, y: C.seat, z: -0.06 }] };
   const back = rbox(2 * hw + 0.02, 0.13, 0.02, 0, C.h - 0.1, -hd - 0.04, beech, 0.008);
   back.rotation.x = -0.07;
   g.add(back);
@@ -501,6 +511,8 @@ function bunk(item) {
     g.add(rbox(w, 0.05, l * 0.68, 0, y + 0.19, l * 0.15, duvet, 0.025));
     g.add(rbox(w * 0.7, 0.1, 0.34, 0, y + 0.22, -l / 2 + 0.24, item.sheets ? duvet : linen, 0.05));
   }
+  g.userData.rest = { kind: 'lie', name: 'våningssängen', verb: 'lägga dig i',
+    spots: [0.25, 1.15].map((y) => ({ x: 0, y: y + 0.17, z: -l / 2 + 0.3, label: y > 1 ? 'överslafen' : 'underslafen' })) };
   // guard rail on the top bunk (open by the ladder) and the head/foot boards above it
   g.add(rbox(p * 0.6, 0.06, l * 0.62, w / 2 + p / 2, 1.5, -l * 0.17, whiteWood, 0.01));
   for (const z of [-l / 2 - p / 2, l / 2 + p / 2]) g.add(rbox(w, 0.06, p * 0.6, 0, 1.5, z, whiteWood, 0.01));
@@ -553,6 +565,8 @@ function daybed() {
     g.add(lobe);
   }
   g.traverse((m) => { m.castShadow = m.receiveShadow = true; });
+  // Tilly's daybed (#72): lie along it, head at the −x end (feet towards +x)
+  g.userData.rest = { kind: 'lie', name: 'dagbädden', verb: 'lägga dig i', spots: [{ x: -W / 2 + 0.35, y: 0.5, z: 0, dir: [1, 0] }] };
   g.userData.footprint = [{ x0: -W / 2, x1: W / 2, z0, z1 }];
   return g;
 }
@@ -572,6 +586,7 @@ function ragrund(item) {
     bar(0.02, 0.025, D - 0.04, x, 0.12, 0);    // low stretchers
   }
   for (let k = 0; k < 4; k++) bar(W - 0.02, 0.018, 0.075, 0, S - 0.009, -hz + 0.05 + k * ((2 * hz - 0.06) / 3)); // seat slats
+  g.userData.rest = { kind: 'sit', name: 'stolen', verb: 'sätta dig på', spots: [{ x: 0, y: S, z: -0.05 }] };
   for (const y of [S + 0.32, S + 0.62, H - 0.04]) { // towel bars
     const rod = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 2 * hx, 10).rotateZ(Math.PI / 2), bamboo);
     rod.position.set(0, y, -hz);
@@ -891,13 +906,14 @@ export function buildFurniture() {
     const obj = BUILDERS[item.type](item, lights);
     // one mesh per material per piece (#48); the parasol folds and the beers come and go
     if (item.type !== 'parasol') mergeStatic(obj, obj.userData.keep ?? []);
-    if (obj.userData.interact) { // E targets among the furniture (the TV)
-      obj.traverse((m) => { m.userData.door = obj.userData.interact; });
-      interactives.push(obj.userData.interact);
-    }
     const yaw = THREE.MathUtils.degToRad(item.rot ?? 0) + Math.PI; // local +z = facing
     obj.rotation.y = yaw;
     obj.position.set(item.x, LEVELS[item.level].floor + obj.position.y, item.z);
+    if (obj.userData.rest) obj.userData.interact = restTarget(obj, item, LEVELS[item.level].floor); // sit / lie (#71/#72)
+    if (obj.userData.interact) { // E targets among the furniture (the TV, seats, beds)
+      obj.traverse((m) => { m.userData.door = obj.userData.interact; });
+      interactives.push(obj.userData.interact);
+    }
     group.add(obj);
     // footprint rectangles → world-space collision segments
     const c = Math.cos(yaw), s = Math.sin(yaw);

@@ -3,7 +3,7 @@
 // small badge ("✋ Klappat katt +1") pops up for each counted event.
 const KEY = 'lunden.stats';
 
-const fresh = () => ({ cats: 0, rare: 0, byVariant: {}, petted: 0, doors: 0, lids: 0, taps: 0, fridge: 0, lights: 0, steps: 0, metres: 0, stairs: 0, seconds: 0, visited: {} });
+const fresh = () => ({ cats: 0, rare: 0, byVariant: {}, petted: 0, doors: 0, lids: 0, taps: 0, fridge: 0, lights: 0, sat: 0, lay: 0, steps: 0, metres: 0, stairs: 0, seconds: 0, visited: {} });
 
 function load() {
   try {
@@ -20,6 +20,7 @@ let dirty = false;
 const BADGES = {
   petted: '✋ Klappat katt', doors: '🚪 Dörr öppnad', lids: '🚽 Toalettlock', taps: '💧 Kran påslagen',
   fridge: '🍗 Kylskåpet öppnat', lights: '💡 Lampa tänd', stairs: '🪜 Trapptur',
+  sat: '🪑 Satt ner', lay: '🛏 Lagt sig',
 };
 const STEP_BADGE = 100; // a badge every 100 steps
 
@@ -103,6 +104,8 @@ export function statRows() {
     ['✋ Klappade katter', `${stats.petted}`],
     ['🚪 Dörrar öppnade', `${stats.doors}`],
     ['🚽 Toalettlock', `${stats.lids}`],
+    ['🪑 Satt ner', `${stats.sat}`],
+    ['🛏 Lagt sig', `${stats.lay}`],
     ['💧 Kranar påslagna', `${stats.taps}`],
     ['🍗 Kylskåpet öppnat', `${stats.fridge}`],
     ['💡 Lampor tända', `${stats.lights}`],

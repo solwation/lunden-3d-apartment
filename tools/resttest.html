@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Sit / lie test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+// Sitting and lying down (#71/#72): for every seat and bed, look at each spot, press the action
+// button: the camera ends at the spot (sit: seat + REST.sitEye, lie: mattress + REST.lieEye, looking up),
+// walking does nothing, looking is clamped, the button says "Res dig"; press again → back where you stood.
+//   google-chrome --headless=new --dump-dom http://localhost:8137/tools/resttest.html
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const f = document.createElement('iframe');
+f.width = 900; f.height = 600;
+f.src = '../index.html';
+document.body.append(f);
+f.onload = async () => {
+  const w = f.contentWindow, d = f.contentDocument;
+  while (!w.__app) await wait(100);
+  const { player, camera, world, step, rest } = w.__app;
+  const lines = [];
+  const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; };
+  d.getElementById('start-touch').click();
+  await wait(50);
+  const btn = d.getElementById('action');
+  world.object.updateMatrixWorld(true); // no render has run yet in headless
+  const targets = world.furnitureTargets.filter((t) => t.kind === 'rest');
+  let pass = check(targets.length >= 9, `${targets.length} seats/beds`);
+  const segsOf = (lv) => world.levels[lv].segments;
+  const free = (lv, x, z) => segsOf(lv).every(([ax, az, bx, bz]) => {
+    const dx = bx - ax, dz = bz - az, t = Math.max(0, Math.min(1, ((x - ax) * dx + (z - az) * dz) / (dx * dx + dz * dz || 1)));
+    return Math.hypot(x - ax - t * dx, z - az - t * dz) > 0.225; // PLAYER.radius 0.22
+  });
+  for (const t of targets) {
+    for (const [si, sp] of t.spots.entries()) {
+      // stand on a free spot near it — in front first, then all round — from which the button names it
+      const floorY = t.level ? 3.25 : 0;
+      const cands = [];
+      for (const r of [0.9, 1.2, 1.5]) for (let k = 0; k < 8; k++) cands.push([sp.yaw + (k - 3.5) * 0.3, r]);
+      for (const r of [0.5, 0.6, 0.8, 1.1, 1.4]) for (let k = 0; k < 24; k++) cands.push([sp.yaw + k * (Math.PI / 12), r]);
+      let label = null;
+      for (const [a, r] of cands) {
+        const x = sp.pos.x - Math.sin(a) * r, z = sp.pos.z - Math.cos(a) * r;
+        if (!free(t.level, x, z)) continue;
+        player.spawn(x, z, 0);
+        if (t.level) { player.pos.y = floorY; player.eyeY = floorY + 1.62; }
+        for (let i = 0; i < 3; i++) step(1 / 60);
+        const dx = sp.pos.x - camera.position.x, dz = sp.pos.z - camera.position.z;
+        camera.rotation.y = Math.atan2(-dx, -dz);
+        camera.rotation.x = Math.atan2(sp.pos.y - 0.25 - camera.position.y, Math.hypot(dx, dz));
+        step(1 / 60);
+        if (btn.hidden || !btn.textContent.includes(t.name)) continue;
+        btn.click();
+        if (rest.target === t) { label = btn.textContent; break; }
+        btn.click(); for (let i = 0; i < 3; i++) step(1 / 60); // another chair of the same name: up again, go on
+      }
+      if (!label) { pass &= check(false, `${t.name} #${si} @ (${sp.pos.x.toFixed(2)}, ${sp.pos.z.toFixed(2)}): no free place from which it is a target`); continue; }
+      for (let i = 0; i < 60; i++) step(1 / 60);
+      const chosen = rest.spot;
+      const atSpot = chosen && camera.position.distanceTo(chosen.pos) < 0.02;
+      const lying = t.rest === 'lie';
+      const up = !lying || camera.rotation.x > 1.3;
+      // walking does nothing, looking is clamped
+      const p0 = camera.position.clone();
+      player.keys = new Set(['KeyW']);
+      for (let i = 0; i < 30; i++) step(1 / 60);
+      player.keys = new Set();
+      const still = camera.position.distanceTo(p0) < 0.001;
+      const before = player.pos.clone();
+      btn.click(); // "Res dig"
+      for (let i = 0; i < 3; i++) step(1 / 60);
+      const back = Math.hypot(player.pos.x - before.x, player.pos.z - before.z) < 0.05 && !rest.active;
+      const ok = !!(atSpot && up && still && back && label);
+      pass &= check(ok, `${t.name} #${si} (${t.rest}): "${label}" at spot ${atSpot}, ${lying ? `looking up ${up}, ` : ''}no walking ${still}, back up ${back}`);
+    }
+  }
+  out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
+};
+</script>
+</body>
+</html>

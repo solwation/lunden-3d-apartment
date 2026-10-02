@@ -364,6 +364,13 @@ export const sfx = {
     noise(t, 0.015, d, { type: 'highpass', freq: 2500, gain: 0.25 });
     tone(t + 0.03, 0.18, d, { from: on ? 520 : 780, to: on ? 780 : 520, gain: 0.05 });
   },
+    /** Sitting down / lying down / getting up: a soft fabric rustle and a creak of the cushion. */
+  rustle(pos) {
+    if (!ready()) return;
+    const t = ctx.currentTime, d = out(pos, 0.8);
+    noise(t, 0.4, d, { type: 'bandpass', freq: 900, q: 0.7, gain: 0.16, attack: 0.1 });
+    tone(t + 0.15, 0.2, d, { type: 'triangle', from: 140, to: 95, gain: 0.04 });
+  },
     click(pos) {
     if (!ready()) return;
     const t = ctx.currentTime, d = out(pos, 0.6);

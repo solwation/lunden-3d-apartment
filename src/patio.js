@@ -60,6 +60,10 @@ export function loungesofa() {
     c.rotation.z = -0.12;
     g.add(c);
   }
+  // three places along the long part, facing out (+z) (#71)
+  g.userData.rest = { kind: 'sit', name: 'loungesoffan', verb: 'sätta dig i',
+    spots: split(x0 + D, x1 - t, 2).map(([a, b]) => ({ x: (a + b) / 2, y: P.seatHeight, z: 0 }))
+      .concat([{ x: x0 + D / 2, y: P.seatHeight, z: 0 }]) };
   g.userData.footprint = [{ x0, x1, z0, z1 }, { x0, x1: x0 + D, z0: z1, z1: zs }];
   return g;
 }
