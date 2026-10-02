@@ -420,7 +420,10 @@ export const FURNITURE = [
   // armchair + footstool in the opposite (NW) corner, turned towards the room
   { type: 'armchair', level: 0, x: 0.78, z: 8.38, rot: -135 },
   { type: 'footstool', level: 0, x: 1.33, z: 8.93, rot: -135 },
-  { type: 'floorlamp', level: 0, x: 0.42, z: 8.02 },
+  // IKEA NYMÅNE floor lamp with 3 spots, anthracite (#56; ikea.com: H 160 cm, base Ø 25 cm; arm and head
+  // sizes are guesses): beside the armchair on the sitter's right (the side table is on the left),
+  // the spots aimed at the seat; `aim` = plan point they point at
+  { type: 'floorlamp', level: 0, x: 0.36, z: 8.86, aim: [0.78, 8.38], h: 1.6, base: 0.25 },
   { type: 'sidetable', level: 0, x: 1.52, z: 8.12, flower: true },
   // Soffbord ILVA Woodstock, top i oljebehandlad ekfaner (art. 1055729): 120 × 60 × 47 cm, legs in
   // oiled solid oak, a fixed shelf below (ilva.dk product page). Centred on the three seats

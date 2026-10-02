@@ -69,7 +69,8 @@ class FloorLamp {
     Object.assign(this, { kind: 'lamp', name: 'golvlampan', on: false, spec });
     this.room = { on: false, lamps: [], mats: [spec.shade] };
     const p = spec.object.getWorldPosition(new THREE.Vector3());
-    this.room.lamps.push({ pos: new THREE.Vector3(p.x, p.y + spec.height, p.z), ...L.floorLamp, level: spec.level });
+    const [ox, oz] = spec.offset ?? [0, 0];
+    this.room.lamps.push({ pos: new THREE.Vector3(p.x + ox, p.y + spec.height, p.z + oz), ...L.floorLamp, level: spec.level });
     spec.object.traverse((m) => { m.userData.door = this; });
     this.pickable = spec.object;
     this.set(false);

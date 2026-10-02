@@ -167,7 +167,8 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   are not reliable — the Tvätt arrow pointed through a 19 cm wall stub into the hall).
 - Vardagsrum furniture (wanted by the user): IKEA LANDSKRONA 3-sits + schäslong, Gunnared
   ljusgrön, back to the window, chaise in the SE corner; matching armchair + footstool in
-  the NW corner with a floor lamp and a side table with a small flower. Dimensions in
+  the NW corner with a floor lamp (IKEA NYMÅNE, 3 spots aimed at the seat, on the sitter's right, #56)
+  and a side table with a small flower. Dimensions in
   `LANDSKRONA` (config) — the chaise/armchair/footstool numbers are series estimates. In front
   of the sofa: coffee table ILVA Woodstock, oiled oak veneer top, 120 × 60 × 47 cm, with a shelf.
   Under both: a 300 × 200 cm light rug (#55, no collision).

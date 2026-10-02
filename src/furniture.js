@@ -10,9 +10,6 @@ import { loungesofa, loungetable, parasol, planter } from './patio.js';
 const fabric = new THREE.MeshStandardMaterial({ color: L.fabric, roughness: 0.95 });
 const oak = new THREE.MeshStandardMaterial({ color: L.oak, roughness: 0.55 });
 const metal = new THREE.MeshStandardMaterial({ color: 0x2b2d2f, roughness: 0.4, metalness: 0.6 });
-const shadeMat = new THREE.MeshStandardMaterial({
-  color: 0xf3ead8, roughness: 0.9, side: THREE.DoubleSide, emissive: 0xffe2b0, emissiveIntensity: 0.35,
-});
 const potMat = new THREE.MeshStandardMaterial({ color: 0xb8643f, roughness: 0.85 });
 const leafMat = new THREE.MeshStandardMaterial({ color: 0x4f8a3c, roughness: 0.8 });
 const petalMat = new THREE.MeshStandardMaterial({ color: 0xe87aa4, roughness: 0.7 });
@@ -101,18 +98,43 @@ function footstool() {
   return g;
 }
 
+const anthracite = new THREE.MeshStandardMaterial({ color: 0x33363a, roughness: 0.5, metalness: 0.35 });
+const spotLens = new THREE.MeshStandardMaterial({ color: 0xfff6e6, emissive: 0xffe2b0, emissiveIntensity: 0.04, roughness: 0.4 });
+
+/** IKEA NYMÅNE floor lamp: round base, straight pole, three cylinder spots on short arms aimed at
+ * `item.aim`. The lens discs glow when lit (lights.js toggles their material, shared light pool). */
 function floorlamp(item, lights) {
   const g = new THREE.Group();
-  const base = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.16, 0.025, 28), metal);
-  base.position.y = 0.0125;
-  const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.011, 0.011, 1.45, 10), metal);
-  pole.position.y = 0.025 + 0.725;
-  const shade = new THREE.Mesh(new THREE.CylinderGeometry(0.17, 0.23, 0.3, 32, 1, true), shadeMat);
-  shade.position.y = 1.5;
-  [base, pole, shade].forEach((m) => { m.castShadow = true; g.add(m); });
+  const add = (m) => { m.castShadow = true; g.add(m); return m; };
+  add(new THREE.Mesh(new THREE.CylinderGeometry(item.base / 2, item.base / 2, 0.02, 28), anthracite)).position.y = 0.01;
+  add(new THREE.Mesh(new THREE.CylinderGeometry(0.011, 0.011, item.h - 0.02, 10), anthracite)).position.y = item.h / 2;
+  // aim in local coordinates (the group is turned by rot + π in buildFurniture; rot = 0 here → yaw π)
+  const ax = -(item.aim[0] - item.x), az = -(item.aim[1] - item.z);
+  const yaw = Math.atan2(ax, az);
+  [[item.h - 0.06, 0], [item.h - 0.26, 0.5], [item.h - 0.46, -0.45]].forEach(([y, spread]) => {
+    const arm = new THREE.Group();
+    arm.position.y = y;
+    arm.rotation.y = yaw + spread;
+    const rod = new THREE.Mesh(new THREE.CylinderGeometry(0.006, 0.006, 0.12, 6).rotateX(Math.PI / 2), anthracite);
+    rod.position.z = 0.06;
+    const head = new THREE.Group();
+    head.position.z = 0.13;
+    head.rotation.x = 0.65; // tipped down towards the seat
+    const can = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.12, 18).rotateX(Math.PI / 2), anthracite);
+    const lens = new THREE.Mesh(new THREE.CircleGeometry(0.03, 18), spotLens);
+    lens.position.z = 0.061;
+    head.add(can, lens);
+    arm.add(rod, head);
+    arm.traverse((m) => { if (m.isMesh) m.castShadow = true; });
+    g.add(arm);
+  });
   // the light itself comes from lights.js (switchable with E on the lamp, shared light pool)
-  lights.push({ object: g, shade: shadeMat, height: 1.45, level: item.level });
-  g.userData.footprint = [{ x0: -0.16, x1: 0.16, z0: -0.16, z1: 0.16 }];
+  // the pool light sits a little way towards what the spots light up (the seat)
+  const d = Math.hypot(item.aim[0] - item.x, item.aim[1] - item.z) || 1;
+  const offset = [((item.aim[0] - item.x) / d) * 0.35, ((item.aim[1] - item.z) / d) * 0.35];
+  lights.push({ object: g, shade: spotLens, height: item.h - 0.3, level: item.level, offset });
+  const r = item.base / 2;
+  g.userData.footprint = [{ x0: -r, x1: r, z0: -r, z1: r }];
   return g;
 }
 
