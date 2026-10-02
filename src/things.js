@@ -137,14 +137,14 @@ export class Glass extends Thing {
  * down somewhere else it stays there when the drawer closes. It goes back only while its drawer is open.
  */
 export class Trinket extends Holdable {
-  constructor(scene, camera, { model, name, homeParent, drawer, back }) {
+  constructor(scene, camera, { model, name, homeParent, drawer, back, secret }) {
     model.updateWorldMatrix(true, true);
     const local = { pos: model.position.clone(), rot: model.rotation.clone() };
     const box = new THREE.Box3().setFromObject(model, true), size = box.getSize(new THREE.Vector3());
     const big = size.y > 0.08; // the owl, the cactus
     super(scene, camera, {
       name, kind: 'trinket', verb: 'ta', backName: back, backVerb: drawer ? `lägga tillbaka ${name} i` : `ställa tillbaka ${name} på`, placeVerb: big ? 'ställa ner' : 'lägga ner',
-      model, homeParent, local, drawer, home: { pos: new THREE.Vector3(), rot: new THREE.Euler() },
+      model, homeParent, local, drawer, secret, home: { pos: new THREE.Vector3(), rot: new THREE.Euler() },
       heldPose: big ? { pos: new THREE.Vector3(0.18, -0.26, -0.45), rot: new THREE.Euler(0.1, -0.4, 0) } : { pos: new THREE.Vector3(0.14, -0.16, -0.34), rot: new THREE.Euler(0.6, -0.3, 0) },
       pick: { pos: new THREE.Vector3(), size: [Math.max(size.x, 0.04) + 0.03, size.y + 0.03, Math.max(size.z, 0.04) + 0.03] }, cooldown: 0.3,
     });

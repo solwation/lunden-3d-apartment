@@ -9,7 +9,7 @@ import { CatSpawner, VARIANTS, BREEDS } from './cat.js';
 import { initAudio, sfx, toggleMuted, isMuted, updateListener } from './audio.js';
 import { stairHeight } from './stairs.js';
 import { loadChangelog, renderChangelog, buildNote } from './changelog.js';
-import { stats, bump, catFound, renderStats, resetStats, visitRoom, setRoomTotal, setBadgeElement } from './stats.js';
+import { stats, bump, catFound, secretFound, renderStats, resetStats, visitRoom, setRoomTotal, setBadgeElement } from './stats.js';
 import { Minimap } from './minimap.js';
 import { Measure } from './measure.js';
 import { cloudTexture } from './surroundings.js';
@@ -30,6 +30,7 @@ import { Chicken } from './chicken.js';
 import { Sonos } from './sonos.js';
 import { Beer } from './beer.js';
 import { buildThings } from './things.js';
+import { buildSecret } from './secret.js';
 import { Milk } from './milk.js';
 import { buildCups } from './cups.js';
 import { buildFish } from './fishfingers.js';
@@ -237,6 +238,7 @@ function showBook(show) {
 const beer = new Beer(scene, camera); // a big beer on the lounge table when you sit down in the lounge sofa (#117)
 beer.onGulp = () => bump('beer');
 const things = buildThings(scene, camera, world.things); // bottles and glasses in the living room (#152)
+const secret = buildSecret(things, { first: params0.has('secret') ? Number(params0.get('secret')) : null, onFind: (t, rare) => secretFound(t.secret, t.name, rare) }); // a new surprise in the secretary's secret drawer each time (#183)
 for (const t of things) t.onSip = (drink) => { if (drink) bump(drink); }; // a sip from a glass: wine, whisky … (#167)
 const sillPots = buildSillPots(scene, camera, world.sillPlants); // the pots on the window boards can be lifted (#185)
 const holdables = [saber, ...toys.items, remote, book, beer, ...things, ...sillPots]; // things you can take and hold, one at a time (holdable.js)
@@ -850,7 +852,7 @@ function toggleFurniture(on = !world.furnitureOn) {
   if (!on) { if (sonos.open) showSonos(false); sonos.stop(); } // the speakers go: the music stops
   try { localStorage.setItem('lunden.furniture', on ? '1' : '0'); } catch { /* ignore */ }
 }
-world.looseItems.push(board.object, ...holdables.flatMap((h) => [h.holder, h.model]), ...toys.deco);
+world.looseItems.push(board.object, ...holdables.flatMap((h) => (h.homeParent ? [h.holder] : [h.holder, h.model])), ...toys.deco); // (the secretary's things go home into it with F, and the secret drawer shows one at a time, #183)
 const milk = fridge?.milkAt ? new Milk(scene, camera, fridge) : null; // the milk carton in the fridge (#168): not hidden with F, only sent home
 if (milk) holdables.push(milk);
 world.looseItems.push(...cups.cups.map((c) => c.model), drawing.paper, calendar.object, ...posters.groups, ...(fish ? [fish.object] : [])); // the cups and the paper go with F too // the cat board and the toys go with the furniture (F)
@@ -1055,4 +1057,4 @@ function continueAfterReload(r) {
 if (resumeOk && resumed.mode) continueAfterReload(resumed);
 
 // handle for tests/debugging (tools/touchtest.html)
-window.__app = { sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };
+window.__app = { secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };

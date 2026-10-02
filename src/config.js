@@ -466,6 +466,33 @@ export const DRINKS = {
   sip: 0.15, secs: 1, tilt: 1.5,
 };
 
+// The secret drawer in the secretary (#183, src/secret.js): every time it is opened a new little thing lies in it,
+// drawn by `weight` (never the same twice in a row; `rare` ones pling). Taken out and left somewhere, at most
+// `keep` of them stay where they were put; older ones go home (out of sight). Models: SECRETS in furniture.js.
+export const SECRET = {
+  keep: 3,
+  items: [
+    { key: 'star', name: 'guldstjärnan', weight: 2 },
+    { key: 'goldkey', name: 'guldnyckeln', weight: 1.5 },
+    { key: 'marble', name: 'glaskulan', weight: 2 },
+    { key: 'tooth', name: 'tanden från tandfén', weight: 0.6, rare: true },
+    { key: 'coin', name: 'tvåkronan', weight: 2 },
+    { key: 'ring', name: 'ringen', weight: 0.5, rare: true },
+    { key: 'map', name: 'skattkartan', weight: 0.6, rare: true },
+    { key: 'dino', name: 'dinosaurien', weight: 1.5 },
+    { key: 'feather', name: 'fjädern', weight: 2 },
+    { key: 'shell', name: 'snäckan', weight: 1.5 },
+    { key: 'lego', name: 'LEGO-gubben', weight: 1.2 },
+    { key: 'glitter', name: 'glitterflaskan', weight: 0.6, rare: true },
+    { key: 'die', name: 'tärningen', weight: 2 },
+    { key: 'cattoy', name: 'fjäderbollen', weight: 1.5 },
+    { key: 'heart', name: 'hjärtgodiset', weight: 1.5 },
+    { key: 'duck', name: 'miniankan', weight: 1.5 },
+    { key: 'stamp', name: 'kattfrimärket', weight: 1 },
+    { key: 'folder', name: 'den hemliga pärmen', weight: 0.5, rare: true },
+  ],
+};
+
 // The milk carton in the fridge (#168, src/milk.js): 1 l, 7 × 7 × 19.5 cm with a 3 cm gable (a standard carton).
 export const MILK = { w: 0.07, h: 0.195, gable: 0.03, blue: '#2f6fc4', held: { x: 0.2, y: -0.3, z: -0.46 } };
 

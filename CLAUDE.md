@@ -140,6 +140,9 @@ src/drinks.js          what a glass / cup holds (DRINKS, #166): `Contents` (amou
                        proportion, mixed colour weighted by `tint`), `pourAmount(vessel, drink, fill)`, `GlassLiquid` (a
                        lathe up to the level inside the glass's inner profile, `inner` from furniture.js); colours mix in
                        sRGB, milk uses its `withCoffee` colour in coffee (café au lait)
+src/secret.js           the secret drawer (SECRET, #183): all surprises (SECRETS in furniture.js) are Trinkets in it, one shown;
+                       each open draws a new one by weight (never the same twice, rare ones pling, stats.secrets/secretKinds),
+                       at most `keep` left lying around (older ones go home hidden); `&secret=i` picks the first one
 src/milk.js            the milk carton in the fridge (MILK, #168), a Holdable at `fridge.milkAt`: E with the fridge open
                        takes it, it pours milk into glasses and cups (DRINKS.pour); not hidden with F, only sent home
 src/saber.js           the lightsaber in Sovrum 2 (SABER), a Holdable; the blade burns marks where it cuts in (#96)
@@ -246,7 +249,8 @@ tools/milktest.html    headless test: the milk not reachable through the closed 
                        glass, an empty cup and a cup of coffee (lighter brown), up to full, on the worktop, F sends it home
 tools/secretarytest.html headless test: the secretary's flap (desk) and its 8 drawers open/close, the open desk blocks;
                        its trinkets (#182): the car to the coffee table stays when the drawer closes, back in it rides along,
-                       its place blocked while the drawer is closed, the crayons, the owl, F sends them home
+                       its place blocked while the drawer is closed, the crayons, the owl, F sends them home;
+                       the secret drawer (#183): 10 seeded opens never repeat, a surprise left on the table stays, SECRET.keep
 tools/opentest.html    headless test: every Openable front (kitchen + furniture) opens/closes with the button; open, none
                        overlaps a closed neighbour or goes through a wall (#154)
 tools/bestatest.html   headless test: the BESTÅ display cabinet's six doors open/close, its spots light with the room
@@ -447,7 +451,7 @@ URL parameters (debugging / screenshots):
 - `&time=HH[.h]` — start at that hour (default: the browser's time), `&month=1–12`, `&day=1–31` (default: today), `&freeze` pauses the clock,
   `&clock` opens the wall clock's strip,
   `&lights` turns every lamp on (they also start on when arriving in the dark).
-- `&car` — our car parked in front of the house. `&water` — turn on every tap and shower. `&tv` — switch the TV on.
+- `&car` — our car parked in front of the house. `&water` — turn on every tap and shower. `&tv` — switch the TV on. `&secret=i` — the secret drawer shows surprise i (SECRET.items, with `&open`).
 - `&phone` — the short touch-only start screen. `&install` — show the iPhone install sheet. `&note` — open the changelog note. `&pet` (with `&cat=`) — the cat is being petted.
 - `&clip=y` — clip everything above height y (cut-away plan view, e.g.
   `?shot&at=2.87,6.35,0,-90,16&clip=2.5` for Entréplan from above, `clip=5.6` + feet 19 for Övre plan).

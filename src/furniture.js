@@ -3,7 +3,7 @@ import { sfx } from './audio.js';
 import { mergeStatic } from './merge.js';
 import { restTarget } from './rest.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
-import { FURNITURE, LANDSKRONA as L, LEVELS, SKANSNAS, IDANAS, OTTOMAN, SYMFONISK } from './config.js';
+import { FURNITURE, LANDSKRONA as L, LEVELS, SKANSNAS, IDANAS, OTTOMAN, SYMFONISK, SECRET } from './config.js';
 import { loungesofa, loungetable, parasol, planter } from './patio.js';
 import { Screen } from './screens.js';
 import { lampMat, addLampGlow } from './interior.js';
@@ -1687,6 +1687,78 @@ const TRINKETS = {
   papers: { name: 'pappren', build(g) { ['#f6c', '#5cf', '#fe5'].forEach((col, i) => { const p = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.002, 0.045), new THREE.MeshStandardMaterial({ color: col, roughness: 0.9 })); p.position.set(0.09, 0.002 + i * 0.002, 0); p.rotation.y = i * 0.25; g.add(p); }); } }, // a stack of craft paper
 };
 
+/** A small canvas texture `w` × `h` px, drawn by `draw(ctx, w, h)` (notes, stamps, folders in the secret drawer). */
+function noteTexture(w, h, draw) {
+  const c = document.createElement('canvas');
+  c.width = w; c.height = h;
+  draw(c.getContext('2d'), w, h);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+}
+const std = (color, o = {}) => new THREE.MeshStandardMaterial({ color, roughness: 0.5, ...o });
+/** A flat paper (sx × sz, top printed with `tex`) lying at height y. */
+const paper = (g, sx, sz, tex, y = 0.001, color = 0xffffff) => {
+  const m = new THREE.Mesh(new THREE.BoxGeometry(sx, 0.0015, sz), [std(color), std(color), new THREE.MeshStandardMaterial({ map: tex, roughness: 0.8 }), std(color), std(color), std(color)]);
+  m.position.y = y; g.add(m); return m;
+};
+
+/** The secret drawer's surprises (#183, SECRET in config): each fits in ~12 × 4 × 9 cm, built around (0, 0, 0). */
+const SECRETS = {
+  star: (g, M) => TRINKETS.star.build(g, M),
+  goldkey: (g, M) => { TRINKETS.key.build(g, { brass: M.gold }); g.children[0].position.set(0, 0.003, 0); },
+  marble: (g) => { const m = new THREE.Mesh(new THREE.SphereGeometry(0.011, 16, 12), std(0x3fa9f5, { roughness: 0.05, metalness: 0.1 })); m.position.y = 0.011; g.add(m);
+    const swirl = new THREE.Mesh(new THREE.TorusGeometry(0.0115, 0.0015, 6, 20), std(0xffd23f)); swirl.position.y = 0.011; swirl.rotation.set(0.6, 0.3, 0); g.add(swirl); },
+  tooth: (g) => { const t = new THREE.Mesh(new THREE.SphereGeometry(0.005, 10, 8), std(0xfbfaf4, { roughness: 0.3 })); t.scale.set(1, 1.3, 0.9); t.position.set(-0.03, 0.007, 0); g.add(t);
+    paper(g, 0.06, 0.04, noteTexture(120, 80, (c, w, h) => { c.fillStyle = '#fffbe8'; c.fillRect(0, 0, w, h); c.fillStyle = '#6a3fb5'; c.font = 'italic 22px serif'; c.fillText('Tack!', 14, 34); c.font = 'italic 16px serif'; c.fillText('/Tandfén ✨', 22, 62); })).position.x = 0.015; },
+  coin: (g, M) => { const c = new THREE.Mesh(new THREE.CylinderGeometry(0.0125, 0.0125, 0.002, 20), M.steel); c.position.y = 0.001; g.add(c);
+    const crown = new THREE.Mesh(new THREE.CylinderGeometry(0.006, 0.006, 0.0006, 5), M.steel); crown.position.y = 0.0022; g.add(crown); },
+  ring: (g, M) => { const r = new THREE.Mesh(new THREE.TorusGeometry(0.008, 0.0016, 8, 20), M.gold); r.position.y = 0.0095; g.add(r);
+    const gem = new THREE.Mesh(new THREE.OctahedronGeometry(0.004), std(0xff6fb5, { roughness: 0.05, emissive: 0x80204a, emissiveIntensity: 0.3, flatShading: true })); gem.position.y = 0.0195; g.add(gem); },
+  map: (g) => { paper(g, 0.085, 0.06, noteTexture(170, 120, (c, w, h) => {
+    c.fillStyle = '#f3e3bf'; c.fillRect(0, 0, w, h); c.strokeStyle = '#5a4a3a'; c.lineWidth = 3; c.strokeRect(30, 25, 110, 70); // the house, its rooms
+    c.lineWidth = 2; c.beginPath(); c.moveTo(85, 25); c.lineTo(85, 95); c.moveTo(30, 60); c.lineTo(85, 60); c.stroke();
+    c.setLineDash([4, 4]); c.beginPath(); c.moveTo(10, 110); c.bezierCurveTo(60, 100, 50, 70, 110, 45); c.stroke(); c.setLineDash([]);
+    c.strokeStyle = '#d0201a'; c.lineWidth = 4; c.beginPath(); c.moveTo(103, 37); c.lineTo(117, 51); c.moveTo(117, 37); c.lineTo(103, 51); c.stroke(); })); },
+  dino: (g) => { const m = std(0x4caf50, { roughness: 0.6 });
+    const body = new THREE.Mesh(new THREE.SphereGeometry(0.012, 10, 8), m); body.scale.set(1.6, 1, 1); body.position.y = 0.016; g.add(body);
+    const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.004, 0.006, 0.02, 8), m); neck.position.set(0.02, 0.026, 0); neck.rotation.z = -0.7; g.add(neck);
+    const head = new THREE.Mesh(new THREE.SphereGeometry(0.006, 8, 6), m); head.scale.set(1.4, 1, 1); head.position.set(0.03, 0.034, 0); g.add(head);
+    const tail = new THREE.Mesh(new THREE.ConeGeometry(0.006, 0.03, 8), m); tail.rotation.z = Math.PI / 2 + 0.3; tail.position.set(-0.03, 0.014, 0); g.add(tail);
+    for (const [x, z] of [[-0.009, -0.006], [0.009, -0.006], [-0.009, 0.006], [0.009, 0.006]]) { const l = new THREE.Mesh(new THREE.CylinderGeometry(0.003, 0.003, 0.01, 6), m); l.position.set(x, 0.005, z); g.add(l); } },
+  feather: (g) => { const v = new THREE.Mesh(new THREE.SphereGeometry(1, 12, 8), std(0x2bb3a4, { roughness: 0.8, side: THREE.DoubleSide })); v.scale.set(0.045, 0.002, 0.011); v.position.y = 0.003; g.add(v);
+    const q = new THREE.Mesh(new THREE.CylinderGeometry(0.0008, 0.0008, 0.1, 5), std(0xf5f0e0)); q.rotation.z = Math.PI / 2; q.position.y = 0.004; g.add(q); },
+  shell: (g) => { const s = new THREE.Mesh(new THREE.SphereGeometry(0.016, 14, 8, 0, Math.PI * 2, 0, Math.PI / 2), std(0xf6c9b3, { roughness: 0.4, side: THREE.DoubleSide })); s.scale.set(1, 0.5, 1.1); g.add(s);
+    for (let i = -2; i <= 2; i++) { const r = new THREE.Mesh(new THREE.BoxGeometry(0.0015, 0.0012, 0.03), std(0xd99a83)); r.position.set(i * 0.005, 0.007 - Math.abs(i) * 0.0012, 0); r.rotation.y = i * 0.25; g.add(r); } },
+  lego: (g) => { const leg = new THREE.Mesh(new THREE.BoxGeometry(0.012, 0.012, 0.006), std(0x1e5bc6, { roughness: 0.3 })); leg.position.y = 0.006; g.add(leg);
+    const torso = new THREE.Mesh(new THREE.BoxGeometry(0.014, 0.012, 0.007), std(0xd62f2f, { roughness: 0.3 })); torso.position.y = 0.018; g.add(torso);
+    const head = new THREE.Mesh(new THREE.CylinderGeometry(0.0045, 0.0045, 0.008, 12), std(0xf6d23a, { roughness: 0.3 })); head.position.y = 0.028; g.add(head);
+    g.rotation.x = -Math.PI / 2; }, // lying on its back
+  glitter: (g) => { const glass = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.03, 12), std(0xe6f0f2, { roughness: 0.05, transparent: true, opacity: 0.35, depthWrite: false })); glass.rotation.z = Math.PI / 2; glass.position.y = 0.008; g.add(glass);
+    const sparkle = new THREE.Mesh(new THREE.CylinderGeometry(0.0065, 0.0065, 0.022, 10), std(0xc56cff, { emissive: 0x7a2ad0, emissiveIntensity: 0.6, metalness: 0.8, roughness: 0.2 })); sparkle.rotation.z = Math.PI / 2; sparkle.position.set(-0.003, 0.0075, 0); g.add(sparkle);
+    const cork = new THREE.Mesh(new THREE.CylinderGeometry(0.0055, 0.005, 0.008, 10), std(0xa57a4a, { roughness: 0.9 })); cork.rotation.z = Math.PI / 2; cork.position.set(0.018, 0.008, 0); g.add(cork); },
+  die: (g) => { const d = new THREE.Mesh(new THREE.BoxGeometry(0.016, 0.016, 0.016), std(0xfafafa, { roughness: 0.3 })); d.position.y = 0.008; g.add(d);
+    const pip = std(0x111111);
+    for (const [x, z] of [[-0.004, -0.004], [0.004, 0.004], [0, 0], [-0.004, 0.004], [0.004, -0.004]]) { const p = new THREE.Mesh(new THREE.CylinderGeometry(0.0014, 0.0014, 0.0006, 8), pip); p.position.set(x, 0.0162, z); g.add(p); } },
+  cattoy: (g) => { const b = new THREE.Mesh(new THREE.SphereGeometry(0.011, 12, 10), std(0xff5fa2, { roughness: 0.7 })); b.position.y = 0.011; g.add(b);
+    ['#ffd23f', '#3fa9f5', '#7ed957'].forEach((col, i) => { const f = new THREE.Mesh(new THREE.ConeGeometry(0.004, 0.03, 6), std(col, { roughness: 0.9 })); const a = i * 0.5 - 0.5; f.position.set(-0.018, 0.016 + i * 0.002, a * 0.012); f.rotation.z = Math.PI / 2 + 0.4; f.rotation.y = a * 0.6; g.add(f); }); },
+  heart: (g) => { const s = new THREE.Shape(); s.moveTo(0, -0.012); s.bezierCurveTo(-0.016, 0, -0.012, 0.012, 0, 0.005); s.bezierCurveTo(0.012, 0.012, 0.016, 0, 0, -0.012);
+    const h = new THREE.Mesh(new THREE.ExtrudeGeometry(s, { depth: 0.006, bevelEnabled: true, bevelSize: 0.0015, bevelThickness: 0.0015, bevelSegments: 2 }), std(0xe8203a, { roughness: 0.2 })); h.rotation.x = -Math.PI / 2; h.position.y = 0.0015; g.add(h); },
+  duck: (g) => { const y = std(0xffd21f, { roughness: 0.35 });
+    const body = new THREE.Mesh(new THREE.SphereGeometry(0.011, 12, 10), y); body.scale.set(1.3, 0.85, 1); body.position.y = 0.009; g.add(body);
+    const head = new THREE.Mesh(new THREE.SphereGeometry(0.007, 12, 10), y); head.position.set(0.009, 0.021, 0); g.add(head);
+    const beak = new THREE.Mesh(new THREE.ConeGeometry(0.003, 0.007, 8), std(0xff8a1f)); beak.rotation.z = -Math.PI / 2; beak.position.set(0.0175, 0.02, 0); g.add(beak); },
+  stamp: (g) => { paper(g, 0.03, 0.036, noteTexture(60, 72, (c, w, h) => {
+    c.fillStyle = '#fff'; c.fillRect(0, 0, w, h); c.fillStyle = '#7fc4e8'; c.fillRect(5, 5, w - 10, h - 10);
+    c.fillStyle = '#e08a2c'; c.beginPath(); c.arc(30, 42, 14, 0, Math.PI * 2); c.fill(); // a ginger cat face
+    c.beginPath(); c.moveTo(18, 34); c.lineTo(20, 20); c.lineTo(27, 30); c.moveTo(42, 34); c.lineTo(40, 20); c.lineTo(33, 30); c.fill();
+    c.fillStyle = '#222'; c.fillRect(24, 39, 3, 3); c.fillRect(33, 39, 3, 3); c.font = 'bold 9px sans-serif'; c.fillText('SVERIGE', 11, 15); })); },
+  folder: (g) => { paper(g, 0.08, 0.06, noteTexture(160, 120, (c, w, h) => {
+    c.fillStyle = '#d8b878'; c.fillRect(0, 0, w, h); c.save(); c.translate(80, 62); c.rotate(-0.18);
+    c.strokeStyle = '#c4161c'; c.lineWidth = 4; c.strokeRect(-70, -22, 140, 44); c.fillStyle = '#c4161c'; c.font = 'bold 19px sans-serif'; c.textAlign = 'center';
+    c.fillText('STRENGT', 0, -3); c.fillText('HEMLIGT', 0, 17); c.restore(); }), 0.003, 0xd8b878).scale.y = 4; },
+};
+
 /**
  * Build trinket `key` into a group of its own with its origin at its bottom centre (merged: one mesh per
  * material), placed where it was drawn in `parent` (a drawer or the secretary). Listed in `things` so things.js
@@ -1779,6 +1851,7 @@ function secretary(item) {
     // its things: drawn around the middle of its floor, each a Holdable of its own (things.js)
     const inside = new THREE.Group(); inside.position.set(0, 0.006, d / 2); o.add(inside);
     for (const key of trinkets) trinket(key, inside, M, things, target, name);
+    target.inside = inside;
     g.add(o); targets.push(target); moving.push(o);
     return target;
   };
@@ -1796,7 +1869,9 @@ function secretary(item) {
   [['clips', 'stickers'], ['buttons', 'key'], ['crayons', 'candy']].forEach((tr, i) => drawer('den lilla lådan', rw, rh - 0.004, rd, xR + 0.006 + rw / 2, yF + 0.002 + i * rh, 0.012, teak, tr));
   const lw = xR - (-W / 2 + 0.018), tw = (lw - 0.012) / 3;
   [['crystal'], ['letter'], ['plane']].forEach((tr, i) => drawer('den pyttelilla lådan', tw - 0.004, S.shelf - 0.012, 0.13, -W / 2 + 0.018 + 0.006 + tw / 2 + i * tw, yF + 0.002, 0.012, teak, tr, 0.1));
-  drawer('den hemliga lådan', 0.12, 0.04, 0.09, -W / 2 + 0.018 + lw / 2, shelfY + 0.006, 0.013, teakIn, ['star'], 0.07);
+  // the secret drawer: a surprise each time it is opened (#183) — every one is built here, secret.js shows one at a time
+  const secret = drawer('den hemliga lådan', 0.12, 0.04, 0.09, -W / 2 + 0.018 + lw / 2, shelfY + 0.006, 0.013, teakIn, [], 0.07);
+  for (const s of SECRET.items) { trinket(s.key, secret.inside, M, things, secret, 'den hemliga lådan', SECRETS[s.key], s.name); things.at(-1).secret = s.key; }
   // the flap: hinged at its bottom edge, closed it leans back with the sides; open it is a desk
   const flapL = (yT - yF) / Math.cos(slope);
   const pivot = new THREE.Group();

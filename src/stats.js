@@ -1,9 +1,10 @@
 // Visitor statistics (cats found and petted, doors, steps …), kept in localStorage so they
 // survive a reload. The panel is hidden (Tab held / T / the 📊 button shows it); instead a
 // small badge ("✋ Klappat katt +1") pops up for each counted event.
+import { SECRET } from './config.js';
 const KEY = 'lunden.stats';
 
-const fresh = () => ({ cats: 0, rare: 0, byVariant: {}, petted: 0, doors: 0, lids: 0, flushes: 0, taps: 0, fridge: 0, appliances: 0, cabinets: 0, beer: 0, coffee: 0, fish: 0, catFish: 0, wine: 0, champagne: 0, whisky: 0, milk: 0, kask: 0, posted: 0, thrown: 0, lights: 0, sat: 0, lay: 0, steps: 0, metres: 0, stairs: 0, seconds: 0, visited: {} });
+const fresh = () => ({ cats: 0, rare: 0, byVariant: {}, petted: 0, doors: 0, lids: 0, flushes: 0, taps: 0, fridge: 0, appliances: 0, cabinets: 0, beer: 0, coffee: 0, fish: 0, catFish: 0, wine: 0, champagne: 0, whisky: 0, milk: 0, kask: 0, posted: 0, thrown: 0, lights: 0, sat: 0, lay: 0, steps: 0, metres: 0, stairs: 0, seconds: 0, visited: {}, secrets: 0, secretKinds: {} });
 
 function load() {
   try {
@@ -56,6 +57,15 @@ export function bump(key, n = 1) {
   if (key === 'steps' && stats.steps % STEP_BADGE === 0) badge(`👣 ${stats.steps} steg`, false);
 }
 
+/** A surprise found in the secret drawer (#183): counted, and which kinds have been seen. */
+export function secretFound(key, name, rare = false) {
+  stats.secrets += 1;
+  const isNew = !stats.secretKinds[key];
+  stats.secretKinds[key] = (stats.secretKinds[key] ?? 0) + 1;
+  dirty = true;
+  badge(`${rare ? '✨' : '🤫'} Hemlighet: ${name}${isNew ? ' (ny!)' : ''}`, false);
+}
+
 export function catFound(variantName, rare = false) {
   stats.cats += 1;
   if (rare) stats.rare += 1;
@@ -102,6 +112,7 @@ export function statRows() {
     ['🐈 Katter hittade', `${stats.cats}`, kinds],
     ['✨ Ovanliga katter', `${stats.rare}`],
     ['✋ Klappade katter', `${stats.petted}`],
+    ['🤫 Hemligheter hittade', `${stats.secrets}`, `${Object.keys(stats.secretKinds).length} av ${SECRET.items.length} olika`],
     ['🚪 Dörrar öppnade', `${stats.doors}`],
     ['🚽 Toalettlock', `${stats.lids}`],
     ['🌊 Spolningar', `${stats.flushes}`],
