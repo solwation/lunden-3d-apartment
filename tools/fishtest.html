@@ -78,6 +78,36 @@ f.onload = async () => {
   pass &= check(fish.left === 15 && fish.placed.length === 0 && !two.model.visible, `F: ${fish.left} in the carton, nothing lying out`);
   toggleFurniture(true); step(1 / 60);
   pass &= check(fish.fingers.every((x) => !x.model.visible) && fish.object.visible, 'furniture back: the carton is there, no stray fish fingers');
+  // the cat (#163): sitting in the kitchen, a fish finger put down on the floor 1.3 m away → it walks there and eats it
+  const { cat } = w.__app;
+  const seat = () => { cat.object.position.set(4.3, 0, 2.5); cat.object.rotation.y = 0; cat.object.visible = true; cat.t = 0; cat.object.updateMatrixWorld(true); };
+  seat();
+  const putDown = (p) => { fish.press(); const x = heldItem(); x.placeAt(new V(p.x, 0, p.z)); x.model.updateMatrixWorld(true); return x; };
+  const spot = { x: 4.0, z: 3.7 };
+  const catBefore = stats.catFish;
+  const three = putDown(spot);
+  let sawWalk = false;
+  for (let i = 0; i < 30 * 12; i++) { step(1 / 30); if (cat.fish?.phase === 'walk') sawWalk = true; }
+  const cp = cat.object.position;
+  pass &= check(sawWalk && Math.hypot(cp.x - spot.x, cp.z - spot.z) < 0.4, `the cat walked to it (${cp.x.toFixed(2)}, ${cp.z.toFixed(2)})`);
+  pass &= check(three.state === 'box' && !three.model.visible && fish.catCount === 1 && stats.catFish === catBefore + 1, `and ate it (cat ate ${fish.catCount}, stats ${stats.catFish})`);
+  pass &= check(!cat.fish && cat.visible, 'then it sits and washes itself');
+  // a fish finger on the dining table is no business of the cat's
+  seat();
+  fish.press(); const top = heldItem(); top.placeAt(new V(3.5, 0.75, 1.6));
+  for (let i = 0; i < 30 * 3; i++) step(1 / 30);
+  pass &= check(!cat.fish && top.state === 'placed', 'one on the table: the cat stays put');
+  top.take(); fish.putIn(top);
+  // taken up before it gets there: it only looks after it
+  seat();
+  const four = putDown(spot);
+  for (let i = 0; i < 30 * 2.2; i++) step(1 / 30); // it has noticed it and set off
+  const mid = cat.object.position.clone();
+  four.take();
+  for (let i = 0; i < 30 * 5; i++) step(1 / 30);
+  pass &= check(heldItem() === four && four.model.scale.x === 1 && cat.object.position.distanceTo(mid) < 0.1 && Math.hypot(cat.object.position.x - spot.x, cat.object.position.z - spot.z) > 0.5,
+    `taken up first: the cat stopped (${cat.object.position.z.toFixed(2)}), the fish finger is in the hand`);
+  fish.putIn(four);
   out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
 };
 </script>

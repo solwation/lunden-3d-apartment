@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { LEVELS } from './config.js';
+import { LEVELS, CAT_FISH } from './config.js';
 import { stairHeight } from './stairs.js';
 import { sfx } from './audio.js';
 
@@ -147,9 +147,11 @@ function buildCat() {
   // hind paws
   cat.add(blob(ROLE.paw, 0.035, 0.02, 0.055, 0.075, 0.015, 0.05), blob(ROLE.paw, 0.035, 0.02, 0.055, -0.075, 0.015, 0.05));
 
-  // front legs: left fixed, right on a shoulder pivot so it can lift to the face
-  cat.add(limb(ROLE.paw, 0.021, 0.17, -0.04, 0.17, 0.085));
-  cat.add(blob(ROLE.paw, 0.026, 0.017, 0.035, -0.04, 0.012, 0.1));
+  // front legs, each on a shoulder pivot: the right one lifts to the face, both swing when it walks (#163)
+  const leftShoulder = new THREE.Group();
+  leftShoulder.position.set(-0.04, 0.17, 0.085);
+  leftShoulder.add(limb(ROLE.paw, 0.021, 0.17, 0, 0, 0), blob(ROLE.paw, 0.026, 0.017, 0.035, 0, -0.158, 0.015));
+  cat.add(leftShoulder);
   const shoulder = new THREE.Group();
   shoulder.position.set(0.04, 0.17, 0.085);
   shoulder.add(limb(ROLE.paw, 0.021, 0.17, 0, 0, 0));
@@ -212,7 +214,7 @@ function buildCat() {
   hand.visible = false;
   cat.add(hand);
 
-  return { cat, head, shoulder, tailGroup, eyes, hand, torso, muzzle, ears, tail, tailCurve };
+  return { cat, head, shoulder, leftShoulder, tailGroup, eyes, hand, torso, muzzle, ears, tail, tailCurve };
 }
 
 /** Shape the cat for a breed (see BREEDS). */
@@ -255,8 +257,14 @@ export class CatSpawner {
     this.rand = rand;
     this.chance = { appear: CHANCE_APPEAR, steal: CHANCE_STEAL, vanish: CHANCE_VANISH };
     this.parts = buildCat();
-    const { cat, head, shoulder, tailGroup, eyes, hand } = this.parts;
-    Object.assign(this, { object: cat, head, shoulder, tailGroup, eyes, hand });
+    const { cat, head, shoulder, leftShoulder, tailGroup, eyes, hand } = this.parts;
+    Object.assign(this, { object: cat, head, shoulder, leftShoulder, tailGroup, eyes, hand });
+    this.headHome = head.position.clone();
+    this.fish = null;          // a fish finger on the floor it is after (#163): { f, phase, t, at }
+    this.fishSource = null;    // () => the fish fingers lying out (main.js)
+    this.onFishEaten = null;   // (fishFinger) => {} when it has eaten one
+    this.watchPoint = null;    // () => where the visitor's eyes are (it looks after a fish finger taken away)
+    this.fishScan = 0;
     // look at the cat + E pets it (main.js treats this like a door target)
     this.interact = { name: 'katten', kind: 'cat', verb: 'klappa', pickable: cat };
     cat.traverse((o) => { o.userData.door = this.interact; });
@@ -312,6 +320,7 @@ export class CatSpawner {
     this.object.visible = false;
     this.door = null;
     this.stopPetting();
+    this.dropFish();
   }
 
   get petting() { return this.petT > 0; }
@@ -320,6 +329,7 @@ export class CatSpawner {
   pet(from) {
     if (!this.visible) return;
     const p = this.object.position;
+    this.dropFish(); // petting beats a fish finger
     if (!this.petting) {
       this.petPhase = 0;
       this.onPet?.();
@@ -348,6 +358,7 @@ export class CatSpawner {
       this.onFound?.(catLabel(breed, coat), !!breed.rare);
     }
     this.stopPetting();
+    this.dropFish();
     this.nextMeow = 0.4 + this.rand() * 0.8;
     this.object.position.set(spot.x, spot.y, spot.z);
     this.object.rotation.y = spot.yaw;
@@ -403,6 +414,7 @@ export class CatSpawner {
       this.updatePetting(dt);
       return;
     }
+    if (this.updateFish(dt)) return; // after a fish finger on the floor (#163)
     // meow when found, then now and then
     this.nextMeow -= dt;
     if (this.nextMeow <= 0) {
@@ -425,6 +437,121 @@ export class CatSpawner {
     const idle = 1 - up;
     this.head.rotation.y += idle * 0.35 * Math.sin(this.t * 0.7);
     this.tailGroup.rotation.y = 0.08 * Math.sin(this.t * 2.3) * idle;
+  }
+
+  // --- a fish finger on the floor (#163) ---------------------------------------------------------------
+  /** Which level the cat is on, and the walls + doors there (as they are now). */
+  obstacles() {
+    const level = this.object.position.y > LEVELS[0].floor + 1.6 ? 1 : 0;
+    const onLevel = (d) => (d.object.position.y < LEVELS[0].floor + 1.6 ? 0 : 1) === level;
+    return [...this.world.levels[level].segments, ...this.world.doors.filter(onLevel).map((d) => d.segment())];
+  }
+
+  /** Can it walk straight from where it sits to (x, z)? Nothing in the way, the spot itself free, no stairs. */
+  clearPath(x, z) {
+    const p = this.object.position, segs = this.obstacles();
+    if (stairHeight(x, z) !== null) return false;
+    if (segs.some((s) => segIntersect(p.x, p.z, x, z, s))) return false;
+    return !segs.some((s) => distToSeg(x, z, s) < 0.1);
+  }
+
+  /** Look for a fish finger lying on the cat's floor within reach, in the open (same room). */
+  findFish() {
+    const p = this.object.position, v = new THREE.Vector3();
+    let best = null, bestD = CAT_FISH.reach;
+    for (const f of this.fishSource?.() ?? []) {
+      if (f.state !== 'placed') continue;
+      f.middle(v);
+      if (Math.abs(v.y - p.y) > 0.05) continue; // on a table, or on another floor
+      const d = Math.hypot(v.x - p.x, v.z - p.z);
+      if (d < bestD && this.clearPath(v.x, v.z)) { best = f; bestD = d; }
+    }
+    return best;
+  }
+
+  dropFish() {
+    if (this.fish?.phase === 'eat') this.fish.f.model.scale.setScalar(1); // interrupted: the fish finger is whole again
+    this.fish = null;
+    this.head.position.copy(this.headHome);
+    this.leftShoulder.rotation.set(0, 0, 0);
+  }
+
+  /** Turn the head towards world point `q` (eased by k). */
+  lookTowards(q, k = 1) {
+    const o = this.object;
+    let yaw = Math.atan2(q.x - o.position.x, q.z - o.position.z) - o.rotation.y;
+    yaw = Math.atan2(Math.sin(yaw), Math.cos(yaw));
+    this.head.rotation.set(0.2 * k, THREE.MathUtils.clamp(yaw, -1.1, 1.1) * k, 0);
+  }
+
+  /** The fish finger behaviour; true while it runs (the washing waits). */
+  updateFish(dt) {
+    if (!this.fish) {
+      this.fishScan -= dt;
+      if (this.fishScan > 0 || !this.fishSource) return false;
+      this.fishScan = 0.4;
+      const f = this.findFish();
+      if (!f) return false;
+      this.fish = { f, phase: 'notice', t: 0, at: f.middle(new THREE.Vector3()) };
+      this.nextMeow = 0; // a meow at once: "is that for me?"
+      this.shoulder.rotation.set(0, 0, 0);
+    }
+    const F = this.fish, o = this.object, size = this.breed.size ?? 1;
+    F.t += dt;
+    this.nextMeow -= dt;
+    if (this.nextMeow <= 0) {
+      sfx.meow({ x: o.position.x, y: o.position.y + 0.3, z: o.position.z }, this.variant.pitch * (this.breed.pitch ?? 1), this.voice);
+      this.nextMeow = 6 + this.rand() * 6;
+    }
+    // taken away before it got there: it only looks after it (at the visitor) for a while
+    if (F.phase !== 'look' && F.f.state !== 'placed') {
+      F.phase = 'look'; F.t = 0; F.f.model.scale.setScalar(1);
+      this.head.position.copy(this.headHome); this.leftShoulder.rotation.set(0, 0, 0); this.shoulder.rotation.set(0, 0, 0);
+    }
+    if (F.phase === 'look') {
+      this.lookTowards(this.watchPoint?.() ?? F.at, Math.min(1, F.t * 3));
+      if (F.t > CAT_FISH.look) this.dropFish();
+      return true;
+    }
+    if (F.phase === 'notice') { // turns its head to it, then gets up
+      this.lookTowards(F.at, Math.min(1, F.t * 3));
+      if (F.t > CAT_FISH.notice) { F.phase = 'walk'; F.t = 0; }
+      return true;
+    }
+    if (F.phase === 'walk') {
+      const dx = F.at.x - o.position.x, dz = F.at.z - o.position.z, dist = Math.hypot(dx, dz);
+      const stop = CAT_FISH.stop * size;
+      o.rotation.y = Math.atan2(dx, dz);
+      const go = Math.min(CAT_FISH.speed * dt, Math.max(0, dist - stop));
+      const nx = o.position.x + (dx / dist) * go, nz = o.position.z + (dz / dist) * go;
+      if (go > 0 && this.obstacles().some((s) => distToSeg(nx, nz, s) < 0.08)) { F.phase = 'look'; F.t = 0; return true; } // blocked: gives up
+      o.position.x = nx; o.position.z = nz;
+      // a simple gait: the front legs swing in turn, the head bobs, the tail sways
+      const g = Math.sin(F.t * 9);
+      this.shoulder.rotation.set(0.45 * g, 0, 0);
+      this.leftShoulder.rotation.set(-0.45 * g, 0, 0);
+      this.head.rotation.set(0.15 + 0.05 * Math.abs(g), 0, 0);
+      this.head.position.set(this.headHome.x, this.headHome.y - 0.01 * Math.abs(g), this.headHome.z);
+      this.tailGroup.rotation.y = 0.25 * Math.sin(F.t * 4.5);
+      if (dist - stop < 0.01) { F.phase = 'eat'; F.t = 0; F.chew = 0; this.shoulder.rotation.set(0, 0, 0); this.leftShoulder.rotation.set(0, 0, 0); }
+      return true;
+    }
+    // eat: the head goes down to the floor, the fish finger shrinks, small munching sounds; then a purr
+    const down = Math.min(1, F.t / 0.4);
+    this.head.position.set(this.headHome.x, this.headHome.y - 0.2 * down, this.headHome.z + 0.09 * down);
+    this.head.rotation.set(0.8 * down + 0.08 * Math.sin(F.t * 14), 0, 0);
+    F.f.model.scale.setScalar(Math.max(0.05, 1 - F.t / CAT_FISH.eat));
+    F.chew -= dt;
+    if (F.chew <= 0 && F.t < CAT_FISH.eat) { sfx.chew(F.at, 0.45); F.chew = 0.6; }
+    if (F.t >= CAT_FISH.eat) {
+      F.f.model.scale.setScalar(1);
+      this.onFishEaten?.(F.f);
+      sfx.purr({ x: o.position.x, y: o.position.y + 0.3, z: o.position.z }, 3, this.variant.pitch * (this.breed.pitch ?? 1), this.voice);
+      this.dropFish();
+      this.t = 0; // then it sits down and washes itself
+      this.nextMeow = 8 + this.rand() * 8;
+    }
+    return true;
   }
 
   updatePetting(dt) {

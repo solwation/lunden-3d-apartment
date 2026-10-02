@@ -407,6 +407,10 @@ export const MARKS = {
 // cm sticks, the carton ~19 × 13 × 4.5 cm); `held` = the stick in the view (camera space).
 export const FISH = { n: 15, len: 0.09, w: 0.025, h: 0.016, bites: 3, box: { w: 0.19, d: 0.13, h: 0.045 },
   held: { x: 0.14, y: -0.15, z: -0.34 } };
+// The cat and a fish finger on the floor (#163, cat.js): one within `reach` m in the open (a straight walk with no
+// wall or door in between, i.e. the same room) catches its eye; it looks for `notice` s, walks there at `speed` m/s,
+// stops `stop` m short (its head over it) and eats it in `eat` s. Taken away first: it looks after it for `look` s.
+export const CAT_FISH = { reach: 4, notice: 1.2, speed: 0.55, stop: 0.17, eat: 3, look: 2.5 };
 
 export const CUPS = { n: 3, r: 0.04, h: 0.09, color: 0xf3f1ec, coffee: 0x2a1408, pour: 0.25, counter: { x: 5.2, z: 1.68 },
   sip: 0.2, held: { x: 0.18, y: -0.2, z: -0.4 }, jugHeld: { x: 0.22, y: -0.26, z: -0.55 } }; // jugHeld: the jug in the view (#141)

@@ -208,6 +208,13 @@ export class FishPack {
     this.onEaten?.();
   }
 
+  /** The cat ate it off the floor (#163). */
+  eatenByCat(f) {
+    f.hide();
+    this.catCount = (this.catCount ?? 0) + 1;
+    this.onCatEaten?.();
+  }
+
   /** The fish fingers lying out (E targets). */
   get placed() { return this.fingers.filter((f) => f.state === 'placed'); }
 

@@ -236,7 +236,8 @@ tools/cuptest.html     headless test: an empty cup out without brewing, onto the
                        carry the cup to the dining and coffee tables, a cup back into the cabinet; whisky in a cup of
                        coffee (#169): a splash, a warmer colour, never over full, drunk up as kaffekask
 tools/fishtest.html    headless test: open the freezer, eat a fish finger, put one on the dining table and the floor, one
-                       back in the carton (it counts down), F clears them and refills it
+                       back in the carton (it counts down), F clears them and refills it; the cat walks to one on the
+                       floor and eats it, ignores one on the table, stops when it is taken up first (#163)
 tools/drawtest.html    headless test: drawing mode, a crayon line from pointer events, clear, E back, saved
 tools/cooktest.html    headless test: the induction hob on/off (glow), F switches it off; the pan: drawer → hob → drawer, F; the chicken:
                        fry, smoke, the fridge shut stops it, it stops by itself, F
@@ -476,6 +477,11 @@ screenshots into the session scratchpad, not the repo.
   the stair = Hall); `ROOM_DIVIDERS` split open-plan areas (hall | kitchen | passage | living room).
 - Every new cat gets a name (`CAT_NAMES`); petting it puts a photo on the kitchen board 0.7 s in
   (`CAT_BOARD` in config: under the wall clock on the Tvätt/Badrum wall, kitchen face).
+- Fish fingers (#163, `CAT_FISH`, `updateFish` in cat.js): a visible cat scans `cat.fishSource()` (the fish fingers
+  lying out) for one on its own floor within `reach` with a straight, wall- and door-free path (= the same room),
+  turns its head and meows, walks there (front legs on shoulder pivots swing), eats it (head down, it shrinks,
+  `sfx.chew`, then a purr) and washes again; taken up first → it looks at the visitor. Petting, hide and a new spot
+  cancel it. Counted as `catFish` in the stats.
 - Interaction raycasts only test pickables, so `behindWall` in main.js rejects hits whose eye →
   hit line crosses a wall outline (`levels[i].wallSegments`) — no switching lamps through walls.
 - Lights: switches are placed automatically by the latch side of each interior swing door (room

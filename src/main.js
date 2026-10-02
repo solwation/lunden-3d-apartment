@@ -278,6 +278,13 @@ const heldDrawing = new HeldDrawing(scene, camera, drawing);
 drawing.holding = () => heldItem() === heldDrawing;
 target.onSink = () => marks.dropUnder(target.object); // its marks don't hang in the air as it sinks (#179)
 for (const h of [saber, ...toys.wands, toys.darts]) Object.assign(h, { marks, cat }); // the saber burns, the wands do magic (#97), darts splash (#98)
+// the cat goes for a fish finger lying on the floor near it and eats it (#163)
+if (fish) {
+  cat.fishSource = () => fish.placed;
+  cat.onFishEaten = (f) => fish.eatenByCat(f);
+  fish.onCatEaten = () => bump('catFish');
+  cat.watchPoint = () => camera.position;
+}
 cat.onFound = (label, rare) => catFound(label, rare);
 // a photo of every cat you pet goes up on the board, once its eyes are shut and the hand is there
 const board = new CatBoard();
