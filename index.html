@@ -98,10 +98,20 @@
     #note small { display: block; margin-top: 12px; color: #6a7c84; font: 13px system-ui, sans-serif; }
     #board-view { position: fixed; inset: 0; z-index: 5; display: grid; place-items: center; background: rgba(20, 35, 45, 0.45); }
     #board-view[hidden] { display: none; }
-    #board-view figure { position: relative; margin: 0; }
-    #board-view img { display: block; max-width: calc(100vw - 32px); max-height: calc(100vh - 80px); border: 10px solid #b98d5c; border-radius: 4px; box-shadow: 0 14px 40px rgba(0,0,0,.4); }
-    #board-view figcaption { color: #fff; text-align: center; font-size: 13px; margin-top: 8px; }
-    #board-close { position: absolute; right: 14px; top: 10px; border: 0; background: rgba(255,255,255,.85); border-radius: 50%; width: 34px; height: 34px; font-size: 20px; cursor: pointer; }
+    #board-view .cork { position: relative; width: min(980px, calc(100vw - 32px - var(--sl) - var(--sr))); max-height: calc(100vh - 32px - var(--st) - var(--sb)); overflow: auto; background: #c49a6c; border: 10px solid #b98d5c; border-radius: 4px; box-shadow: 0 14px 40px rgba(0,0,0,.4); padding: 56px 14px 14px; box-sizing: border-box; }
+    #board-view .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(165px, 1fr)); gap: 14px; }
+    #board-view .card { background: #fbfaf6; padding: 8px 8px 6px; box-shadow: 0 4px 10px rgba(0,0,0,.3); display: flex; flex-direction: column; align-items: center; font-family: 'Segoe Print', 'Comic Sans MS', cursive; color: #23324a; outline: 3px solid transparent; }
+    #board-view .card.sel { outline-color: #2a7ad2; }
+    #board-view .card.kept { box-shadow: 0 0 0 3px #d8141e, 0 4px 10px rgba(0,0,0,.3); }
+    #board-view .card img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; background: #ddd; }
+    #board-view .card b { font-size: 16px; margin-top: 4px; }
+    #board-view .card small { font-size: 12px; }
+    #board-view .acts { display: flex; gap: 6px; margin-top: 6px; width: 100%; }
+    #board-view .acts button { flex: 1; min-height: 44px; border: 0; border-radius: 8px; background: #e8e2d6; color: #23324a; font: 600 13px system-ui, sans-serif; cursor: pointer; touch-action: manipulation; }
+    #board-view .acts button[aria-pressed=true] { background: #d8141e; color: #fff; }
+    #board-view .empty { grid-column: 1 / -1; text-align: center; font: bold 22px 'Comic Sans MS', cursive; color: #4a3220; }
+    #board-view .hint { color: #4a3220; text-align: center; font-size: 12px; margin: 10px 0 0; }
+    #board-close { position: absolute; right: 8px; top: 6px; border: 0; background: rgba(255,255,255,.85); border-radius: 50%; width: 44px; height: 44px; font-size: 22px; cursor: pointer; z-index: 1; }
     #note-close { position: absolute; right: 10px; top: 8px; border: 0; background: transparent; font-size: 24px; color: #23324a; cursor: pointer; }
     #stats { position: fixed; left: calc(16px + var(--sl)); top: calc(16px + var(--st)); max-height: calc(100% - 32px - var(--st) - var(--sb)); overflow: hidden; min-width: 190px; background: rgba(20, 35, 45, 0.45); color: #fff; padding: 8px 12px; border-radius: 8px; font-size: 13px; line-height: 1.5; pointer-events: none; backdrop-filter: blur(2px); }
     #stats[hidden] { display: none; }
@@ -275,11 +285,11 @@
     </div>
   </div>
   <div id="board-view" hidden role="dialog" aria-label="Anslagstavlan">
-    <figure>
-      <img id="board-img" alt="Anslagstavlan med foton på klappade katter">
+    <div class="cork">
       <button id="board-close" aria-label="Stäng">×</button>
-      <figcaption>Tryck E (eller ×) för att gå tillbaka.</figcaption>
-    </figure>
+      <div class="grid"></div>
+      <p class="hint">📌 Spara – sparade bilder trillar aldrig ner när nya kommer · 🗑 Släng · piltangenter, S, Delete · E / Esc stänger</p>
+    </div>
   </div>
   <div id="draw-panel" hidden role="dialog" aria-label="Rita">
     <div class="row colors"></div>

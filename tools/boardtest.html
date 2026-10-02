@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Cat board test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+// The cat board (#170): ten photos, keep two, three new ones push off the oldest that aren't kept; throw a kept
+// one away; with all ten kept a new one doesn't go up. The panel: E on the board opens it (no walking), the
+// keep / throw-away buttons and keys work, E / Esc close it; kept flags survive a reload.
+//   google-chrome --headless=new --virtual-time-budget=3000000 --dump-dom http://localhost:8137/tools/boardtest.html
+// (IndexedDB works in real time while virtual time races ahead when idle: give it a big budget, ~3 min real)
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const until = async (fn) => { for (let i = 0; i < 200 && !fn(); i++) await wait(50); return fn(); }; // IndexedDB runs in real time
+const f = document.createElement('iframe');
+f.width = 900; f.height = 600; f.src = '../index.html?time=12&freeze';
+document.body.append(f);
+f.onload = async () => {
+  const w = f.contentWindow, d = f.contentDocument;
+  while (!w.__app) await wait(100);
+  const { player, step, board, use } = w.__app;
+  const lines = [];
+  const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); out.textContent = `running…\n${lines.join('\n')}`; return ok; };
+  d.getElementById('start-touch').click();
+  await wait(300);
+  for (const p of [...board.photos]) await board.discard(p.id ?? p.time);
+  const px = (c) => { const cv = d.createElement('canvas'); cv.width = 8; cv.height = 6; const g = cv.getContext('2d'); g.fillStyle = c; g.fillRect(0, 0, 8, 6); return cv.toDataURL('image/jpeg'); };
+  const names = [];
+  for (let i = 0; i < 10; i++) { names.push(`Katt${i}`); await board.add(`Katt${i}`, px(`hsl(${i * 36},70%,50%)`)); await wait(5); }
+  let pass = check(board.photos.length === 10, `ten photos: ${board.photos.length}`);
+  const byName = (n) => board.photos.find((p) => p.name === n);
+  await board.toggleKeep(byName('Katt0').id); await board.toggleKeep(byName('Katt4').id);
+  for (let i = 10; i < 13; i++) { await board.add(`Katt${i}`, px('#888')); await wait(5); }
+  const have = board.photos.map((p) => p.name);
+  pass &= check(board.photos.length === 10 && have.includes('Katt0') && have.includes('Katt4') && !['Katt1', 'Katt2', 'Katt3'].some((n) => have.includes(n)) && have.includes('Katt12'),
+    `three new: the kept ones stay, the oldest others go (${have.join(' ')})`);
+  await board.discard(byName('Katt4').id);
+  pass &= check(board.photos.length === 9 && !board.photos.some((p) => p.name === 'Katt4'), 'a kept photo can be thrown away');
+  await board.add('Katt13', px('#444'));
+  for (const p of board.photos) if (!p.kept) await board.toggleKeep(p.id);
+  const ok = await board.add('Katt14', px('#000'));
+  pass &= check(ok === false && board.photos.length === 10 && !board.photos.some((p) => p.name === 'Katt14'), 'all ten kept: a new photo does not go up');
+  // the panel
+  use(board);
+  const panel = d.getElementById('board-view');
+  pass &= check(!panel.hidden && panel.querySelectorAll('.card').length === 10, `E opens the panel with ${panel.querySelectorAll('.card').length} photos`);
+  const at = player.pos.clone();
+  player.keys.add('KeyW'); for (let i = 0; i < 30; i++) step(1 / 60); player.keys.clear();
+  pass &= check(player.pos.distanceTo(at) < 1e-6, 'no walking while it is open');
+  const first = panel.querySelector('.card [data-act=keep]');
+  first.click();
+  pass &= check(await until(() => !board.photos.at(-1).kept && /Spara$/.test(panel.querySelector('.card [data-act=keep]').textContent)), 'the keep button un-keeps the newest photo');
+  const n0 = board.photos.length;
+  panel.querySelector('.card [data-act=discard]').click(); await wait(50);
+  pass &= check(board.photos.length === n0 && /Säker/.test(panel.querySelector('.card [data-act=discard]').textContent), 'throw away asks first');
+  panel.querySelector('.card [data-act=discard]').click();
+  pass &= check(await until(() => board.photos.length === n0 - 1 && panel.querySelectorAll('.card').length === n0 - 1), 'the second press throws it away');
+  const key = (code) => d.dispatchEvent(new w.KeyboardEvent('keydown', { code, bubbles: true }));
+  key('ArrowRight'); key('KeyS');
+  pass &= check(await until(() => panel.querySelectorAll('.card')[1]?.classList.contains('sel') && !board.photos.at(-2).kept), 'arrow keys pick, S toggles keep');
+  key('Escape'); await wait(20);
+  pass &= check(panel.hidden, 'Esc closes it');
+  use(board); key('KeyE'); await wait(20);
+  pass &= check(panel.hidden, 'E closes it');
+  // kept flags in IndexedDB: a fresh board loads the same
+  const fresh = new board.constructor(); await fresh.load();
+  pass &= check(fresh.photos.length === board.photos.length && fresh.photos.filter((p) => p.kept).length === board.photos.filter((p) => p.kept).length, `saved: ${fresh.photos.filter((p) => p.kept).length} kept of ${fresh.photos.length} after a reload`);
+  out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
+};
+</script>
+</body>
+</html>

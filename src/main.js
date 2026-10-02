@@ -36,7 +36,7 @@ import { Drawing } from './drawing.js';
 import { CatCalendar, CalendarPanel } from './calendar.js';
 import { heldItem } from './holdable.js';
 import { Tap, animateWater } from './water.js';
-import { CatBoard, snapshot } from './catboard.js';
+import { CatBoard, BoardPanel, snapshot } from './catboard.js';
 import { Lights } from './lights.js';
 import { setupInstall } from './install.js';
 import { Marks } from './marks.js';
@@ -119,13 +119,25 @@ const noteEl = document.getElementById('note');
 renderChangelog(document.getElementById('note-list'), changelog);
 const boardEl = document.getElementById('board-view');
 let reading = false;
-function showBoard(show) {
+let boardPanel = null, boardFreed = false; // the panel (#170) frees the mouse to click its buttons
+function showBoard(show, byKey = 'E') {
   reading = show;
-  boardEl.hidden = !show;
+  boardPanel.show(show);
   player.keys.clear();
-  if (show) document.getElementById('board-img').src = board.canvas.toDataURL('image/jpeg', 0.9);
+  if (show && locked) { boardFreed = true; document.exitPointerLock(); }
+  if (!show && boardFreed) {
+    boardFreed = false;
+    if (byKey === 'Escape') { overlay.hidden = true; armEl.hidden = false; } // Esc can't grab the mouse: click to go on
+    else canvas.requestPointerLock();
+  }
 }
-document.getElementById('board-close').addEventListener('click', () => showBoard(false));
+document.getElementById('board-close').addEventListener('click', () => showBoard(false, 'button'));
+document.addEventListener('keydown', (e) => { // the board panel's keys, with or without pointer lock
+  if (!boardPanel?.open) return;
+  if (e.code === 'KeyE' || e.code === 'Escape') { e.preventDefault(); showBoard(false, e.code); }
+  else if (boardPanel.key(e.code)) e.preventDefault();
+  e.stopImmediatePropagation();
+}, true);
 function showNote(show) {
   if (!show && !boardEl.hidden) { showBoard(false); return; }
   if (!show && clockPanel.open) { showClock(false); return; }
@@ -269,6 +281,7 @@ for (const h of [saber, ...toys.wands, toys.darts]) Object.assign(h, { marks, ca
 cat.onFound = (label, rare) => catFound(label, rare);
 // a photo of every cat you pet goes up on the board, once its eyes are shut and the hand is there
 const board = new CatBoard();
+boardPanel = new BoardPanel(board, boardEl);
 scene.add(board.object);
 board.load();
 cat.onPet = () => {
@@ -593,9 +606,9 @@ document.addEventListener('pointerlockchange', () => {
   if (!locked) unlockedAt = performance.now();
   armEl.hidden = true;
   if (locked) touch.enabled = false;
-  if (!drawing.active) showOverlay(!locked); // drawing frees the mouse on purpose: no start screen
+  if (!drawing.active && !boardFreed) showOverlay(!locked); // drawing and the board panel free the mouse on purpose: no start screen
   if (!locked) { player.keys.clear(); holdStats(false); if (!touch.enabled) player.crouch = false; }
-  if (!locked && reading) showNote(false);
+  if (!locked && reading && !boardFreed) showNote(false);
 });
 document.addEventListener('mousemove', (e) => {
   if (locked) look(e.movementX * PLAYER.mouseSens, e.movementY * PLAYER.mouseSens);
@@ -751,7 +764,7 @@ function updateFocus() {
   }
   const holding = !focused && heldItem()?.useLabel ? heldItem() : null; // touch: the button uses what you hold (fire, wave, light); a cup or the jug has no use of its own
   if (holding && touch.enabled) actionBtn.textContent = holding.useLabel;
-  if (reading && touch.enabled) actionBtn.textContent = 'Stäng lappen';
+  if (reading && touch.enabled) actionBtn.textContent = boardPanel.open ? 'Stäng tavlan' : 'Stäng lappen';
   promptEl.hidden = !focused || touch.enabled || reading;
   if (remoteAim && !touch.enabled && !reading) { promptEl.textContent = 'Klicka för att byta kanal · högerklick: av/på'; promptEl.hidden = false; }
   actionBtn.hidden = !(focused || reading || holding) || !touch.enabled || clockPanel.open || calPanel.open || sonos.open; // the strips have their own ×

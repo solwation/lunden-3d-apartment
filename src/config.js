@@ -608,7 +608,8 @@ export const AO = {
 // Tvätt/Badrum wall, kitchen face x 2.152, z 3.145–5.244, clock bottom 1.85 m): top edge 1.78 m, 0.29 m
 // clear of the Badrum door (#37). Board + calendar are one group centred under the clock (#121).
 // rotY π/2 = facing east.
-export const CAT_BOARD = { x: 2.152, y: 1.4, z: 4.4, w: 1.1, h: 0.76, rotY: Math.PI / 2 };
+// `max` photos fit on it; a new one replaces the oldest that isn't kept (#170)
+export const CAT_BOARD = { x: 2.152, y: 1.4, z: 4.4, w: 1.1, h: 0.76, rotY: Math.PI / 2, max: 10 };
 
 // Moccamaster (Technivorm KBG, black) on the worktop between the tall unit (oven/microwave) and the
 // sink, against the splashback (#59). Size ~32 × 17 × 36 cm (guess, after the KBG series). `z` = centre

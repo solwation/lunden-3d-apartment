@@ -171,7 +171,9 @@ src/calendar.js        the cat calendar (CALENDAR): a cat per month, the days, t
 src/fridge.js          the fridge: hollow, lit, opens with E (in world.lids); `shelfSpot` = the chicken's place; the freezer is
                        the same class (`freezer: true`, #161): drawers + shelves, the changelog note rides on its door
 src/catboard.js        cork board in the kitchen (under the wall clock): a photo (offscreen render) of every petted cat,
-                       newest 10 in IndexedDB 'lunden'/'catPhotos', captioned with name + time
+                       CAT_BOARD.max of them in IndexedDB 'lunden'/'catPhotos', captioned with name + time; E opens
+                       #board-view (BoardPanel, #170: keep 📌 = red pin, never pushed off; throw away 🗑 asks twice;
+                       arrows/S/Delete; frees the mouse like drawing); a full board drops its oldest unkept photo
 src/shelves.js         kitchen wall shelves with portraits, flowers, books, candles (WALL_SHELVES)
 src/keycabinet.js      hall wall: IKEA LINDBYN mirror Ø 110 + Solstickan key cabinet (E) with the Renault key (E → beep beep);
                        the cabinet is in world.lids, the key (world.carKey) a target only while it is open
@@ -242,6 +244,7 @@ tools/postertest.html  headless test: take the drawing (blank sheet stays), back
                        the fridge door (swings with it), none on the kitchen window, reload → both back (`?shots` pictures)
 tools/sonostest.html   headless test: music in all three speakers, songs, volume, panel, pause, upstairs, F; each channel
                        rendered offline (only outside --virtual-time-budget; there it says SKIP)
+tools/boardtest.html   headless test: keep / throw away cat photos, a full board, the panel (needs a big virtual-time budget)
 tools/clocktest.html   headless test of the wall clock (?time=7, spool, pause, sun height by month)
 tools/calendartest.html headless test: today's date at the start, pick a date on the calendar, the sun follows
 tools/stamp.sh         build the published site with a version stamp (used by CI)

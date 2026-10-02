@@ -1,11 +1,14 @@
 import * as THREE from 'three';
 import { CAT_BOARD as B } from './config.js';
 import { withStore as withDb } from './idb.js';
+import { badge } from './stats.js';
 
-// Cork board in the kitchen with a Polaroid of every cat you pet (newest 10), each captioned
-// by hand with the cat's name and the date and time. Photos live in IndexedDB.
+// Cork board in the kitchen with a Polaroid of every cat you pet (B.max of them), each captioned
+// by hand with the cat's name and the date and time. Photos live in IndexedDB. E on the board opens
+// #board-panel (#170): keep a photo (a red pin; kept ones are never pushed off by new photos) or throw
+// it away. Without IndexedDB (private mode) it all works for this visit only.
 
-const STORE = 'catPhotos', MAX = 10;
+const STORE = 'catPhotos', MAX = B.max;
 const withStore = (mode, fn) => withDb(STORE, mode, fn); // the shared 'lunden' database (idb.js)
 
 const loadImage = (src) => new Promise((resolve) => {
@@ -44,26 +47,55 @@ export class CatBoard {
     try {
       this.photos = (await withStore('readonly', (s) => s.getAll())) ?? [];
     } catch { this.photos = []; }
-    this.photos = this.photos.sort((a, b) => a.time - b.time).slice(-MAX);
+    this.photos = this.photos.sort((a, b) => a.time - b.time);
+    // more than fit (an older version kept them all): drop the oldest that aren't kept
+    while (this.photos.length > MAX) {
+      const old = this.photos.find((p) => !p.kept) ?? this.photos[0];
+      await this.discard(old.id ?? old.time, false);
+    }
     await this.loadImages();
     this.draw();
+  }
+
+  /** Keep / stop keeping a photo (#170). */
+  async toggleKeep(id) {
+    const p = this.photos.find((x) => (x.id ?? x.time) === id);
+    if (!p) return;
+    p.kept = !p.kept;
+    try { await withStore('readwrite', (s) => s.put(p)); } catch { /* this visit only */ }
+    this.draw();
+    this.onChange?.();
+  }
+
+  /** Throw a photo away (#170). */
+  async discard(id, redraw = true) {
+    this.photos = this.photos.filter((x) => (x.id ?? x.time) !== id);
+    this.images.delete(id);
+    try { await withStore('readwrite', (s) => s.delete(id)); } catch { /* this visit only */ }
+    if (redraw) { this.draw(); this.onChange?.(); }
   }
 
   async loadImages() {
     for (const p of this.photos) if (!this.images.has(p.id ?? p.time)) this.images.set(p.id ?? p.time, await loadImage(p.data));
   }
 
-  /** Pin a new photo (JPEG data URL) of `name`; drops the oldest beyond 10. */
+  /** Pin a new photo (JPEG data URL) of `name`; a full board drops its oldest photo that isn't kept, and when
+   * every one is kept the new photo doesn't go up (returns false). */
   async add(name, data) {
-    const photo = { time: Date.now(), name, data };
+    if (this.photos.length >= MAX) {
+      const old = this.photos.find((p) => !p.kept);
+      if (!old) { badge('📌 Tavlan är full med sparade bilder, släng en först', false); return false; }
+      await this.discard(old.id ?? old.time, false);
+    }
+    const photo = { time: Date.now(), name, data, kept: false };
     try {
       photo.id = await withStore('readwrite', (s) => s.add(photo));
-      const old = this.photos.length + 1 - MAX;
-      if (old > 0) await withStore('readwrite', (s) => { for (const p of this.photos.slice(0, old)) s.delete(p.id); });
     } catch { photo.id = photo.time; } // no IndexedDB (private mode): keep it for this visit
-    this.photos = [...this.photos, photo].slice(-MAX);
+    this.photos = [...this.photos, photo];
     await this.loadImages();
     this.draw();
+    this.onChange?.();
+    return true;
   }
 
   draw() {
@@ -106,11 +138,82 @@ export class CatBoard {
       g.font = `21px ${hand}`;
       g.fillText(fmt(p.time), 0, 118);
       g.restore();
-      // pin
-      g.fillStyle = ['#d23a2a', '#2a7ad2', '#2aa25a', '#e0b020'][i % 4];
-      g.beginPath(); g.arc(cx, cy - 140, 9, 0, Math.PI * 2); g.fill();
+      // pin: a big red one on the photos that are kept (#170), small other colours on the rest
+      g.fillStyle = p.kept ? '#d8141e' : ['#2a7ad2', '#2aa25a', '#e0b020'][i % 3];
+      g.beginPath(); g.arc(cx, cy - 140, p.kept ? 15 : 9, 0, Math.PI * 2); g.fill();
+      if (p.kept) { g.fillStyle = 'rgba(255,255,255,0.7)'; g.beginPath(); g.arc(cx - 5, cy - 145, 4, 0, Math.PI * 2); g.fill(); }
     });
     this.tex.needsUpdate = true;
+  }
+}
+
+/**
+ * The board up close (#170): every photo in a grid with its name and time, a keep button (📌) and a throw-away
+ * button (🗑, press twice: "Säker?"). Arrow keys pick a photo, S keeps, Delete / Backspace throws away.
+ */
+export class BoardPanel {
+  constructor(board, el) {
+    Object.assign(this, { board, el, open: false, sel: 0, confirm: null });
+    this.grid = el.querySelector('.grid');
+    board.onChange = () => { if (this.open) this.render(); };
+    this.grid.addEventListener('click', (e) => {
+      const b = e.target.closest('button[data-act]');
+      if (!b) return;
+      this.sel = Number(b.dataset.i);
+      this.act(b.dataset.act);
+    });
+  }
+
+  get list() { return [...this.board.photos].reverse(); } // newest first, as on the board
+
+  show(show) {
+    this.open = show;
+    this.el.hidden = !show;
+    this.confirm = null;
+    if (show) { this.sel = 0; this.render(); }
+  }
+
+  async act(what) {
+    const p = this.list[this.sel];
+    if (!p) return;
+    const id = p.id ?? p.time;
+    if (what === 'keep') { this.confirm = null; await this.board.toggleKeep(id); }
+    else if (what === 'discard') {
+      if (this.confirm !== id) this.confirm = id; // first press asks
+      else { this.confirm = null; await this.board.discard(id); this.sel = Math.min(this.sel, this.list.length - 1); }
+    }
+    this.render();
+  }
+
+  /** A key while the panel is open; true if it was used. */
+  key(code) {
+    const n = this.list.length, cols = 5;
+    if (code === 'ArrowRight' || code === 'KeyD') this.sel = Math.min(n - 1, this.sel + 1);
+    else if (code === 'ArrowLeft' || code === 'KeyA') this.sel = Math.max(0, this.sel - 1);
+    else if (code === 'ArrowDown') this.sel = Math.min(n - 1, this.sel + cols);
+    else if (code === 'ArrowUp') this.sel = Math.max(0, this.sel - cols);
+    else if (code === 'KeyS') { this.act('keep'); return true; }
+    else if (code === 'Delete' || code === 'Backspace') { this.act('discard'); return true; }
+    else return false;
+    this.confirm = null;
+    this.render();
+    return true;
+  }
+
+  render() {
+    const list = this.list;
+    this.grid.innerHTML = list.length ? '' : '<p class="empty">Klappa en katt så hamnar den här!</p>';
+    list.forEach((p, i) => {
+      const id = p.id ?? p.time, card = document.createElement('div');
+      card.className = `card${i === this.sel ? ' sel' : ''}${p.kept ? ' kept' : ''}`;
+      card.innerHTML = `<img alt=""><b></b><small>${fmt(p.time)}</small><div class="acts">
+        <button data-act="keep" data-i="${i}" aria-pressed="${!!p.kept}">${p.kept ? '📌 Sparad' : '📌 Spara'}</button>
+        <button data-act="discard" data-i="${i}">${this.confirm === id ? 'Säker? 🗑' : '🗑 Släng'}</button></div>`;
+      card.querySelector('img').src = p.data;
+      card.querySelector('b').textContent = p.name;
+      this.grid.append(card);
+    });
+    this.grid.querySelector('.sel')?.scrollIntoView?.({ block: 'nearest' });
   }
 }
 
