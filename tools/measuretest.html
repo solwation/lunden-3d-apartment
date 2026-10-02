@@ -23,7 +23,7 @@ f.onload = async () => {
   d.getElementById('start-touch').click();
   await wait(50);
   // stand in the living room at x 2.8, eye level, look west then east (level camera)
-  player.spawn(2.8, 10.0, Math.PI / 2);
+  player.spawn(2.8, 9.0, Math.PI / 2); // (z 10 looked at the BESTÅ cabinet, #104)
   camera.rotation.x = 0;
   step(1 / 60);
   d.getElementById('measure-btn').click();

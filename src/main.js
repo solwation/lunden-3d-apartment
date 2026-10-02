@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { COLORS, LEVELS, DAY, START, PLAYER, DRAWING, STAIR, HOLD, REMOTE, REST } from './config.js';
+import { COLORS, LEVELS, DAY, START, PLAYER, DRAWING, STAIR, HOLD, REMOTE, REST, DOOR_HEIGHT } from './config.js';
 const DRAWING_COLORS = DRAWING.colors;
 import { buildWorld } from './world.js';
 import { Player } from './player.js';
@@ -28,6 +28,7 @@ import { Pan } from './pan.js';
 import { buildSillPots } from './plants.js';
 import { Chicken } from './chicken.js';
 import { Sonos } from './sonos.js';
+import { DetailCuller } from './detail.js';
 import { Beer } from './beer.js';
 import { buildThings } from './things.js';
 import { buildSecret } from './secret.js';
@@ -913,6 +914,7 @@ function toggleMap() { // K: the map alone (Tab / T / 📊 show it with the stat
   mapEl.hidden = !(mapPinned || !statsEl.hidden);
 }
 mapEl.hidden = true; // hidden by default (#85); the old saved 'lunden.mapShown' is ignored
+let detail = null; // small-detail culling (#189), set up once everything is built (below)
 function step(dt) {
   for (const d of world.doors) d.update(dt);
   for (const l of world.lids) l.update(dt);
@@ -972,6 +974,7 @@ function step(dt) {
     levelEl.textContent = label;
     lastLevel = lvl;
   }
+  detail?.update(camera); // far-away small things are not drawn (#189)
 }
 // &perf: fps + what the renderer did last frame (draw calls, triangles, geometries, textures)
 const perfEl = new URLSearchParams(location.search).has('perf') ? document.createElement('pre') : null;
@@ -1008,6 +1011,7 @@ function showPerf() {
   perfEl.textContent = `${(perfFrames * 1000 / (now - perfT)).toFixed(0)} fps · px ${dynRes.ratio.toFixed(2)}\ncalls ${i.render.calls}\ntris  ${i.render.triangles}\ngeoms ${i.memory.geometries}\ntex   ${i.memory.textures}`;
   perfFrames = 0; perfT = now;
 }
+detail = new DetailCuller(scene, { W: world.size.x, D: world.size.z, roof: world.openings.roof, floor1: LEVELS[1].floor, doorHeight: DOOR_HEIGHT }, world.openings); // everything is built by now (the holdables too)
 renderer.setAnimationLoop(() => {
   const raw = clock.getDelta(), dt = Math.min(raw, 0.05);
   if (!overlay.hidden || document.hidden || shotMode) dynRes.slow = dynRes.fast = 0; // only while playing (not &shot)
@@ -1080,4 +1084,4 @@ function continueAfterReload(r) {
 if (resumeOk && resumed.mode) continueAfterReload(resumed);
 
 // handle for tests/debugging (tools/touchtest.html)
-window.__app = { setConstruction, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };
+window.__app = { detail: () => detail, setConstruction, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };

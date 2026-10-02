@@ -459,6 +459,11 @@ export const TARGET = {
 // of the eye.
 export const HOLD = { reach: 2.2 };
 
+// Performance (#189): small meshes (radius < maxR m) are not drawn once they would look smaller than `k`
+// (radius / distance, ~0.6° across), never nearer than `minDist`; meshes up to `maxOcclude` inside the flat are
+// not drawn from outside unless seen through a façade opening; re-checked after the camera moved `move` m.
+export const PERF = { detail: { maxR: 0.5, k: 0.009, minDist: 3.2, maxOcclude: 4, move: 0.3 } };
+
 // Marks on surfaces (#96, src/marks.js): one ring buffer of at most `max` flat decals in all, one instanced
 // mesh per kind, canvas textures. Per kind: size (m, randomised ±25 %), life (s; the last `fade` s fade out).
 // burn = the lightsaber (with a short glow and a puff of smoke), star/butterfly = wands, splash = Nerf.

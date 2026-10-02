@@ -2129,7 +2129,10 @@ export function buildFurniture() {
   for (const item of FURNITURE) {
     const obj = BUILDERS[item.type](item, lights);
     // one mesh per material per piece (#48); the parasol folds and the beers come and go
-    if (item.type !== 'parasol') mergeStatic(obj, obj.userData.keep ?? []);
+    if (item.type !== 'parasol') {
+      const keep = obj.userData.keep ?? [];
+      mergeStatic(obj, keep);
+    }
     const yaw = THREE.MathUtils.degToRad(item.rot ?? 0) + Math.PI; // local +z = facing
     if (item.walls) keepInside(obj, item, yaw); // plants by a wall: no leaves through it (#137)
     obj.rotation.y = yaw;

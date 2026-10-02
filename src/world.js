@@ -753,6 +753,7 @@ export function buildWorld(plan) {
     lids: [...l0.lids, ...l1.lids, ...l0.appliances, ...l1.appliances, hallWall.cabinet], // toggled with E, not doors
     hob: [...l0.appliances, ...l1.appliances].find((a) => a.kind === 'hob') ?? null, // the induction hob (#158)
     panDrawer: [...l0.appliances, ...l1.appliances].find((a) => a.panHome) ?? null, // the drawer under the hob (#159)
+    openings: { north, south, roof: roofY + 0.35 }, // the façade openings (plan x, absolute y) and the roof height: what the flat can be seen through from outside (#189)
     carKey: hallWall.key, // only a target while the key cabinet is open (main.js)
     taps: [...l0.taps, ...l1.taps],
     rooms,

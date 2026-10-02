@@ -215,6 +215,8 @@ src/stats.js           visitor statistics (localStorage), "+1" badges per event,
                        (hidden; Tab held / T / 📊 shows it)
 src/screens.js         TV programmes drawn on a canvas (PROGRAMS: space, underwater, superheroes, unicorn …), channel
                        snow, the Ambilight colour per programme; `Screen` is shared by the TVs in furniture.js
+src/detail.js          DetailCuller (#189): far-away small meshes and things inside the flat hidden by its walls (seen from
+                       outside) go to a layer the camera does not render
 src/changelog.js       changelog list + the note on the freezer (E to read)
 src/install.js         iPhone "add to home screen" sheet (no fullscreen API there); install link
                        where the browser offers beforeinstallprompt
@@ -598,6 +600,12 @@ screenshots into the session scratchpad, not the repo.
   furniture.js merges each piece on its own (not the parasol; `userData.keep` for the beers). Anything
   new that moves, toggles visibility or is a pick target must be in a kept object or have
   `userData.door` — otherwise it gets baked in.
+- Detail culling (#189, `src/detail.js`, `PERF.detail`): the exterior and new furniture had grown the start view to ~1200
+  calls (the whole flat is in the frustum from the street). Small meshes that would look tinier than `k` are moved to a
+  layer the camera does not draw (never nearer than `minDist`, so never within reach), and from outside the flat a mesh
+  inside it is only drawn when the line to it passes a façade opening (the front door's leaf is solid). Start view
+  1210 → ~410 calls, the other spots a little lower; screenshots differ by a few dozen pixels. Anything new that
+  raycasts at small things far away must allow for layer 7.
 - Shadows: `shadowMap.autoUpdate = false`; redrawn when the sun moved > 0.2°, for 1.5 s after any E
   action (doors swing), and at least twice a second (`updateShadows` in main.js).
 - Mirror images (#50): one Reflector (512²) per mirror, at most ONE active per frame (nearest in view
