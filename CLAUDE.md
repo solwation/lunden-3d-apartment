@@ -129,7 +129,8 @@ src/chicken.js         the roast chicken in the fridge (#160), a Holdable: E on 
                        until smokeSeconds after the heat, or at once back in the fridge with the door shut
                        (#194: raw it is pale `CHICKEN.raw`, golden once fried; cooked, E breaks off legs, wings, then body
                        pieces into the hand — `ChickenPiece`, a click eats it; F makes it whole and raw again)
-src/hood.js            the cooker hood (#194, `world.hood`, in world.lids): E runs the fan (whoosh, lights, green LED) and
+src/hood.js            the cooker hood (#194, `world.hood`, in world.lids): E runs the fan (whoosh, green LED; its light is a
+                       separate button = its own lamp, #221 — the fan does not light it, like a real hood) and
                        draws the chicken's smoke up into it; the smoke alarm in the kitchen ceiling (SMOKE_ALARM) beeps
                        and blinks red after `delay` s of smoke the hood does not take (`chicken.freeSmoke`); F: fan off
 src/coffee.js          Moccamaster on the worktop (MOCCAMASTER): E brews (red light, sound, the jug fills)
@@ -593,6 +594,9 @@ screenshots into the session scratchpad, not the repo.
   cancel it. Counted as `catFish` in the stats.
 - Interaction raycasts only test pickables, so `behindWall` in main.js rejects hits whose eye →
   hit line crosses a wall outline (`levels[i].wallSegments`) — no switching lamps through walls.
+- Kitchen (#221): the under-cabinet LED ("bänkbelysningen", a rocker under the first wall cabinet after the cup cabinet)
+  and the hood's light (a button on the hood's front) are lamps of their own in `world.lamps` (lights.js FloorLamp with
+  `glows` = additive washes on the worktop/splashback, `light` = pool-light overrides), not the room's switch.
 - Lights: switches are placed automatically by the latch side of each interior swing door (room
   side), snapped onto a wall outline segment that faces the room and covers the whole plate (`wallFace`,
   #76; lighttest checks every switch has a wall right behind it) plus `LIGHTING.manual` for open rooms and the downstairs Klk (door spans the whole wall).

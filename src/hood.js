@@ -3,7 +3,8 @@ import { sfx } from './audio.js';
 import { SMOKE_ALARM as A } from './config.js';
 
 // The cooker hood (Spiskåpa Tango, #194) and the smoke alarm in the kitchen ceiling. E on the hood switches the fan
-// on and off: a low whoosh and its lights under it come on. The chicken's smoke (chicken.js) is drawn up into the
+// on and off: a low whoosh and a green LED. Its light is separate, like on a real hood (#221): a second button on the
+// front (`lampButton`) is a lamp of its own (interior.js puts it in world.lamps; lights.js switches it). The chicken's smoke (chicken.js) is drawn up into the
 // hood while it runs. If something smokes for more than SMOKE_ALARM.delay s without the hood running over it, the
 // alarm goes off — a loud beeping and a blinking red LED — until the smoke is gone or the hood is switched on.
 
@@ -12,20 +13,30 @@ export class Hood {
   constructor({ x0, x1, z0, z1, y0, y1 }) {
     Object.assign(this, { name: 'köksfläkten', kind: 'hood', on: false, sound: null });
     this.object = new THREE.Group();
-    // its lights: a bright panel under it, only lit while the fan runs (the baked LED strip is the room's lamp)
-    this.lightMat = new THREE.MeshBasicMaterial({ color: 0x3a3a38 });
-    const panel = new THREE.Mesh(new THREE.PlaneGeometry(x1 - x0 - 0.1, z1 - z0 - 0.08).rotateX(Math.PI / 2), this.lightMat);
-    panel.position.set((x0 + x1) / 2 - 0.02, y0 - 0.004, (z0 + z1) / 2);
     // a small control strip on the front edge with a green LED
     this.ledMat = new THREE.MeshBasicMaterial({ color: 0x1a2a1a });
     const led = new THREE.Mesh(new THREE.BoxGeometry(0.004, 0.012, 0.012), this.ledMat);
-    led.position.set(x0 - 0.003, (y0 + y1) / 2, z1 - 0.06);
+    led.position.set(x0 - 0.003, (y0 + y1) / 2, z1 - 0.18); // beside the fan button
     // the E box: the whole hood, a little bigger
-    const pick = new THREE.Mesh(new THREE.BoxGeometry(x1 - x0 + 0.04, y1 - y0 + 0.06, z1 - z0), new THREE.MeshBasicMaterial());
-    pick.position.set((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2);
+    const pick = new THREE.Mesh(new THREE.BoxGeometry(x1 - x0, y1 - y0 + 0.06, z1 - z0), new THREE.MeshBasicMaterial()); // flush with the front: the light button stands out of it
+    pick.position.set((x0 + x1) / 2 + 0.005, (y0 + y1) / 2, (z0 + z1) / 2);
     pick.visible = false;
-    this.object.add(panel, led, pick);
+    this.object.add(led, pick);
     this.object.traverse((m) => { m.userData.door = this; });
+    // two buttons on the front edge: the fan (the whole hood is its target) and the light (its own lamp, #221)
+    const btnMat = new THREE.MeshStandardMaterial({ color: 0x2a2b2d, roughness: 0.4 });
+    const fanBtn = new THREE.Mesh(new THREE.BoxGeometry(0.006, 0.02, 0.03), btnMat);
+    fanBtn.position.set(x0 - 0.004, (y0 + y1) / 2, z1 - 0.14);
+    fanBtn.userData.door = this;
+    this.object.add(fanBtn);
+    this.lampButton = new THREE.Group();
+    this.lampButton.position.set(x0 - 0.004, (y0 + y1) / 2, z1 - 0.08);
+    const lampBtn = new THREE.Mesh(new THREE.BoxGeometry(0.006, 0.02, 0.03), new THREE.MeshStandardMaterial({ color: 0xe8e8e4, roughness: 0.4 }));
+    const lampPick = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.07, 0.05), new THREE.MeshBasicMaterial());
+    lampPick.position.x = -0.04;
+    lampPick.visible = false;
+    this.lampButton.add(lampBtn, lampPick);
+    this.object.add(this.lampButton);
     this.pickable = this.object;
     this.intake = new THREE.Vector3((x0 + x1) / 2, y0, (z0 + z1) / 2); // where smoke goes
   }
@@ -40,7 +51,6 @@ export class Hood {
     this.on = on;
     sfx.click(this.intake);
     this.sound?.stop(); this.sound = on ? sfx.fan(this.intake) : null;
-    this.lightMat.color.setHex(on ? 0xfff3d8 : 0x3a3a38);
     this.ledMat.color.setHex(on ? 0x30ff50 : 0x1a2a1a);
   }
 

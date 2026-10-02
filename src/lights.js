@@ -146,7 +146,7 @@ class FloorLamp {
     this.room = { on: false, lamps: [], mats: [spec.shade] };
     const p = spec.object.getWorldPosition(new THREE.Vector3());
     const [ox, oz] = spec.offset ?? [0, 0];
-    this.room.lamps.push({ pos: new THREE.Vector3(p.x + ox, p.y + spec.height, p.z + oz), ...L.floorLamp, level: spec.level });
+    this.room.lamps.push({ pos: new THREE.Vector3(p.x + ox, p.y + spec.height, p.z + oz), ...L.floorLamp, ...(spec.light ?? {}), level: spec.level });
     spec.object.traverse((m) => { m.userData.door = this; });
     this.pickable = spec.object;
     this.set(false);
@@ -158,6 +158,7 @@ class FloorLamp {
   set(on) {
     this.room.on = on;
     this.spec.shade.emissiveIntensity = on ? 0.9 : 0.04;
+    for (const m of this.spec.glows ?? []) { m.opacity = on ? m.userData.on : 0; m.visible = on; } // additive washes (#221)
   }
 
   toggle() {

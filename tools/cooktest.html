@@ -136,7 +136,10 @@ f.onload = async () => {
   pass &= check(smokeAlarm.ringing, 'no hood: the smoke alarm goes off');
   label = aim(hood.intake.clone().add(new V(0, 0.04, 0)), from);
   pass &= check(/slå på köksfläkten/i.test(label), `the hood: "${label}"`);
+  const hoodLight = w.__app.lights.floorLamps.find((x) => x.name === 'lampan i köksfläkten'), litBefore = hoodLight?.room.on;
   btn.click(); run(1);
+  pass &= check(hood.on && hoodLight && hoodLight.room.on === litBefore, 'the fan runs, its light stays as it was (#221)');
+  hoodLight.set(true); hood.set(false); pass &= check(hoodLight.room.on && !hood.on, 'the light on with the fan off'); hood.set(true); hoodLight.set(false);
   pass &= check(hood.on && !smokeAlarm.ringing && chicken.smoking && !chicken.freeSmoke, 'the hood on: the smoke goes up into it, the alarm stops');
   pass &= check(hex() !== chicken.skins[0].raw.getHex(), `cooked: golden (#${hex().toString(16)})`);
   run(10);

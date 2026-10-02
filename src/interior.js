@@ -507,7 +507,21 @@ function buildKitchen(B, group, floor, y0, yC, handled, taps, appliances) {
   // Wall cabinets along the east wall (from the tall unit to the corner) and along the
   // south wall over the corner unit; hood + gypsum boxing to the ceiling over the hob.
   const wd = K.wallDepth, yW = y0 + K.wallBottom, yHood = y0 + K.hoodBottom;
-  const kitchenLamp = lampMat(K.level, K.room); // LED Linear under the wall cabinets + hood light
+  const kitchenLamp = lampMat(K.level, K.room); // (the room's lamp material: the ceiling light's)
+  // #221: the under-cabinet LED (Belysning LED Linear) and the hood's light are lamps of their own (world.lamps → lights.js
+  // FloorLamp): own emissive materials, a warm additive wash on the worktop and splashback, their own switches
+  const benchLamp = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xfff2dc, emissiveIntensity: 0.04 });
+  const hoodLamp = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xfff2dc, emissiveIntensity: 0.04 });
+  const washTex = (() => { // bright along one edge (v = 1), fading out
+    const c = document.createElement('canvas'); c.width = 4; c.height = 64;
+    const g = c.getContext('2d'), r = g.createLinearGradient(0, 0, 0, 64);
+    r.addColorStop(0, 'rgba(255,255,255,1)'); r.addColorStop(1, 'rgba(255,255,255,0)');
+    g.fillStyle = r; g.fillRect(0, 0, 4, 64);
+    return new THREE.CanvasTexture(c);
+  })();
+  const wash = (k) => { const m = new THREE.MeshBasicMaterial({ color: 0xffd9a0, map: washTex, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false }); m.userData.on = k; return m; };
+  const benchWash = wash(0.45), hoodWash = wash(0.6);
+  const washPlane = (w, h, m, rotX, rotY, x, y, z) => { const p = new THREE.Mesh(new THREE.PlaneGeometry(w, h), m); p.rotation.set(rotX, rotY, 0, 'YXZ'); p.position.set(x, y, z); p.raycast = () => {}; p.renderOrder = 2; group.add(p); return p; };
   const wallX = eastWall - wd;
   const hob = hobCab ? [hobCab.z0, hobCab.z1] : null;
   const eastSpans = hob ? [[runZ0, hob[0]], [hob[1], southWall]] : [[runZ0, southWall]];
@@ -529,20 +543,39 @@ function buildKitchen(B, group, floor, y0, yC, handled, taps, appliances) {
     shell(EW, hob[0], hob[1], yH, yTop, wd, { shelf: false });
     openFront(open, EW, hob[0], hob[1], yH, yTop, M.front, 'bottom', {}, { mode: 'flap', top: true, name: 'skåpet', max: 80 }); // over the hood: lifts up
     EW.box(hob[0] + 0.01, hob[1] - 0.01, -wd + 0.02, 0, yHood, yH, M.steel);
-    EW.box(hob[0] + 0.03, hob[1] - 0.03, -wd + 0.05, -0.03, yHood - 0.002, yHood, kitchenLamp);
-    const hood = new Hood({ x0: wallX, x1: eastWall, z0: hob[0] + 0.01, z1: hob[1] - 0.01, y0: yHood, y1: yH }); // E: the fan (#194)
+    EW.box(hob[0] + 0.03, hob[1] - 0.03, -wd + 0.05, -0.03, yHood - 0.002, yHood, hoodLamp);
+    const hood = new Hood({ x0: wallX, x1: eastWall, z0: hob[0] + 0.01, z1: hob[1] - 0.01, y0: yHood, y1: yH }); // E: the fan (#194); its light has its own button (#221)
     group.add(hood.object);
     appliances.push(hood);
+    // the hood's light on the hob: the wash on the worktop under it, a pool light over the hob
+    washPlane(hob[1] - hob[0] - 0.04, eastWall - eFront, hoodWash, -Math.PI / 2, -Math.PI / 2, (eFront + eastWall) / 2, top + 0.012, (hob[0] + hob[1]) / 2);
+    mirrorLamps.push({ object: hood.lampButton, shade: hoodLamp, glows: [hoodWash], height: -0.45, offset: [0.25, -0.12], level: K.level, name: 'lampan i köksfläkten', light: { intensity: 1.2, range: 3 } });
     EW.box(hob[0], hob[1], -wd, 0, yTop, yC, M.white); // Lokal gipsinklädnad ovan spiskåpa
   }
   const fridgeX1 = fridges.length ? Math.max(...fridges.map((c) => c.x1)) : retX0;
   if (fridgeX1 < wallX) {
     const RW = frame(B, { x0: fridgeX1, x1: wallX, z0: southWall - wd, z1: southWall }, 'n');
     doorRow(RW, fridgeX1, wallX, yW, yTop, 0.5, { low: true, open: { ...wallOpen, corner: 'a1' } });
-    RW.box(fridgeX1 + 0.02, wallX, -wd + 0.02, -wd + 0.04, yW - 0.008, yW, kitchenLamp);
+    RW.box(fridgeX1 + 0.02, wallX, -wd + 0.02, -wd + 0.04, yW - 0.008, yW, benchLamp);
   }
   // under-cabinet LED (Belysning LED Linear) and the splashback tiles (10×20 half bond)
-  for (const [a, b] of eastSpans) EW.box(a + 0.02, b - 0.02, -wd + 0.02, -wd + 0.04, yW - 0.008, yW, kitchenLamp);
+  for (const [a, b] of eastSpans) EW.box(a + 0.02, b - 0.02, -wd + 0.02, -wd + 0.04, yW - 0.008, yW, benchLamp);
+  // the bench light's wash: on the worktop (bright by the wall) and up the splashback (bright at the top), under each run
+  for (const [a, b] of eastSpans) {
+    const len = b - a - 0.04, mz = (a + b) / 2;
+    washPlane(len, eastWall - eFront, benchWash, -Math.PI / 2, -Math.PI / 2, (eFront + eastWall) / 2, top + 0.011, mz);   // v = 1 by the wall
+    washPlane(len, yW - top, benchWash, 0, -Math.PI / 2, eastWall - 0.008, (top + yW) / 2, mz);                            // v = 1 at the top
+  }
+  if (fridgeX1 < wallX) washPlane(wallX - fridgeX1, yW - top, benchWash, 0, Math.PI, (fridgeX1 + wallX) / 2, (top + yW) / 2, southWall - 0.008);
+  // its switch: a small white rocker under the first wall cabinet after the cup cabinet, near its front edge
+  const sw = new THREE.Group();
+  sw.position.set(wallX + 0.035, yW - 0.006, runZ0 + cupW + 0.12);
+  const rocker = new THREE.Mesh(new THREE.BoxGeometry(0.025, 0.012, 0.045), new THREE.MeshStandardMaterial({ color: 0xf4f4f2, roughness: 0.4 }));
+  const swPick = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.06, 0.1), new THREE.MeshBasicMaterial());
+  swPick.visible = false;
+  sw.add(rocker, swPick);
+  group.add(sw);
+  mirrorLamps.push({ object: sw, shade: benchLamp, glows: [benchWash], height: -0.5, offset: [0.25, (visEnd - runZ0) / 2 - cupW - 0.12], level: K.level, name: 'bänkbelysningen', light: { intensity: 1.4, range: 4 } });
   const o = [0, top, 0];
   B.box(eastWall - 0.006, eastWall, runZ0, southWall, top, yW, M.splash, o);
   if (hob) B.box(eastWall - 0.006, eastWall, hob[0], hob[1], yW, yHood, M.splash, o);

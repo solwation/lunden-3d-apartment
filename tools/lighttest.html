@@ -57,6 +57,15 @@ f.onload = async () => {
     pass &&= ok;
     lines.push(`${ok ? 'PASS' : 'FAIL'} ${t.name} @ (${target.x.toFixed(2)}, ${target.y.toFixed(2)}, ${target.z.toFixed(2)}) button "${label}" (${t.room.name ?? ''}) on=${on} off=${off}`);
   }
+  // #221: the kitchen's bench light and the hood's light are lamps of their own; their washes follow them
+  for (const name of ['bänkbelysningen', 'lampan i köksfläkten']) {
+    const l = lights.floorLamps.find((x) => x.name === name);
+    if (!l) { pass = false; lines.push(`FAIL ${name}: missing`); continue; }
+    l.set(true); const onOk = l.spec.shade.emissiveIntensity > 0.5 && l.spec.glows.every((g) => g.visible && g.opacity > 0.1);
+    l.set(false); const offOk = l.spec.shade.emissiveIntensity < 0.1 && l.spec.glows.every((g) => !g.visible);
+    pass &&= onOk && offOk;
+    lines.push(`${onOk && offOk ? 'PASS' : 'FAIL'} ${name}: the LED and the wash on (${onOk}) and off (${offOk})`);
+  }
   // the three SYMFONISK speakers (#186): the white one in the kitchen, the black one in Sovrum 1's window (#201), the lamp on
   // the window board behind the sofa
   const sym = {};
