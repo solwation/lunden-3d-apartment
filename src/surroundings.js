@@ -669,7 +669,16 @@ export function buildSurroundings({ grass }) {
   const railMesh = new THREE.Mesh(mergeGeometries(lg.rails.map((g) => g.toNonIndexed())), new THREE.MeshStandardMaterial({ map: railTexture(), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.6 }));
   group.add(railMesh);
   if (lg.plants.length) mesh(lg.plants.map((g) => { g = g.index ? g.toNonIndexed() : g; g.deleteAttribute('uv'); return g; }), new THREE.MeshStandardMaterial({ color: 0x4f7d3a, roughness: 0.9, flatShading: true }));
-  mesh(modern.map(roof), new THREE.MeshStandardMaterial({ color: 0x51575c, roughness: 0.85, side: THREE.DoubleSide }), SEASON.snow.roof);
+  // flat roofs (#147, Peab's renders): grey roofing inside the light metal edge, a few vent hoods and shafts on top
+  mesh(modern.flatMap((b) => {
+    const h = b.base + b.storeys * S.storey, cx = (b.x0 + b.x1) / 2, cz = (b.z0 + b.z1) / 2, r = rng(Math.round(b.x0 * 7 + b.z0 * 13));
+    const geos = [new THREE.BoxGeometry(b.x1 - b.x0 + 0.5, 0.06, b.z1 - b.z0 + 0.5).translate(cx, h + 0.33, cz)]; // inside the white edge (#109)
+    for (let k = 0; k < 5; k++) {
+      const s2 = 0.6 + r() * 0.9;
+      geos.push(new THREE.BoxGeometry(s2, 0.5 + r() * 0.7, s2 * (0.7 + r() * 0.6)).translate(cx + (r() - 0.5) * (b.x1 - b.x0 - 4), h + 0.55, cz + (r() - 0.5) * (b.z1 - b.z0 - 4)));
+    }
+    return geos.map((g) => { g.deleteAttribute('uv'); return g; });
+  }), new THREE.MeshStandardMaterial({ color: 0x6d7175, roughness: 0.9 }), SEASON.snow.roof);
   // white details (#109): a light fascia band under the low roofs, grey downpipes at the corners and every ~12 m
   mesh(modern.map((b) => {
     const h = b.base + b.storeys * S.storey, o = 0.32;
