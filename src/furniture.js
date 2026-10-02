@@ -1507,6 +1507,47 @@ function keepInside(obj, item, yaw) {
 }
 
 
+/** Wall-mounted black metal wine rack (#105): a tall flat-bar frame with `n` wire cradles, each holding a bottle
+ * lying with its neck tilted up towards local −x, the label facing out; two of them champagne with gold foil.
+ * Local: the wall at z 0, out of the wall +z, the frame's bottom at y 0. */
+function winerack(item) {
+  const g = new THREE.Group();
+  const { w, h, n, depth } = item;
+  const black = new THREE.MeshStandardMaterial({ color: 0x151517, roughness: 0.45, metalness: 0.5 });
+  const bar = (sx, sy, sz, x, y, z) => { const o = new THREE.Mesh(new THREE.BoxGeometry(sx, sy, sz), black); o.position.set(x, y, z); o.castShadow = true; g.add(o); };
+  // the frame: flat bars 2 cm × 5 mm, 2 cm out from the wall on small spacers; two hanging eyes on top
+  const fz = 0.02;
+  for (const x of [-w / 2, w / 2]) bar(0.02, h, 0.005, x, h / 2, fz);
+  for (const y of [0, h]) bar(w + 0.02, 0.02, 0.005, 0, y, fz);
+  for (const x of [-w / 2, w / 2]) { bar(0.012, 0.012, fz, x, h - 0.03, fz / 2); bar(0.012, 0.012, fz, x, 0.03, fz / 2); }
+  for (const x of [-w / 2 + 0.04, w / 2 - 0.04]) { const eye = new THREE.Mesh(new THREE.TorusGeometry(0.01, 0.002, 6, 12), black); eye.position.set(x, h + 0.02, fz); g.add(eye); }
+  const glass = [new THREE.MeshStandardMaterial({ color: 0x1d2b1c, roughness: 0.15, metalness: 0.2 }), new THREE.MeshStandardMaterial({ color: 0x101210, roughness: 0.15, metalness: 0.2 })];
+  const labels = [new THREE.MeshStandardMaterial({ color: 0xf1ead8, roughness: 0.8 }), new THREE.MeshStandardMaterial({ color: 0xd8c7a3, roughness: 0.8 })];
+  const gold = new THREE.MeshStandardMaterial({ color: 0xc9a33a, roughness: 0.3, metalness: 0.8 });
+  const profile = [[0, 0], [0.037, 0], [0.038, 0.2], [0.03, 0.24], [0.014, 0.27], [0.013, 0.33], [0.015, 0.335], [0, 0.335]].map(([r, y]) => new THREE.Vector2(r, y));
+  const bottleGeo = new THREE.LatheGeometry(profile, 16);
+  const tilt = THREE.MathUtils.degToRad(item.tilt);
+  for (let i = 0; i < n; i++) {
+    const y = 0.07 + (i * (h - 0.2)) / (n - 1), champagne = item.champagne.includes(i); // the top neck stays inside the frame
+    // the cradle: a bar out from the frame and a ring under each end of the bottle
+    bar(0.006, 0.006, depth, 0, y - 0.045, fz + depth / 2);
+    for (const x of [-0.11, 0.1]) { const ring = new THREE.Mesh(new THREE.TorusGeometry(0.04, 0.0025, 6, 18, Math.PI), black); ring.rotation.set(0, Math.PI / 2, Math.PI); ring.position.set(x, y - 0.005 + x * Math.tan(-tilt) * -1, fz + depth - 0.01); g.add(ring); }
+    // the bottle, lying in the cradle, neck to −x and up
+    const b = new THREE.Group();
+    b.add(new THREE.Mesh(bottleGeo, glass[i % 2]));
+    const label = new THREE.Mesh(new THREE.CylinderGeometry(0.0385, 0.0385, 0.09, 16, 1, true, -Math.PI / 3, (2 * Math.PI) / 3), labels[i % 2]);
+    label.position.y = 0.1;
+    b.add(label);
+    if (champagne) { const foil = new THREE.Mesh(new THREE.CylinderGeometry(0.0165, 0.02, 0.09, 12), gold); foil.position.y = 0.29; b.add(foil); }
+    b.rotation.z = Math.PI / 2 - tilt;
+    b.position.set(0.16, y + 0.03, fz + depth - 0.01);
+    b.traverse((m) => { if (m.isMesh) m.castShadow = true; });
+    g.add(b);
+  }
+  g.position.y = item.y;
+  return g;
+}
+
 /** IKEA BESTÅ display combination (#104): two 60 cm columns hung on the wall, each with a walnut-effect door at
  * the top and the bottom and a glass door between; glass shelves, fine glasses and whisky bottles behind the
  * glass; spots on top lit by the room's switch (its lamp material, no lights of its own). Every door opens on
@@ -1598,7 +1639,7 @@ function besta(item) {
   return g;
 }
 
-const BUILDERS = { besta, painting, palm, sofa, armchair, footstool, floorlamp, sidetable, coffeetable, loungesofa, loungetable, parasol, planter, bed, skansnasTable, skansnasChair, bunk, daybed, rug, ragrund, coatrack, shoerack, byas, tv, nordkisa, worklamp, gamingdesk, gamingchair, nordli, alex, kidchair };
+const BUILDERS = { winerack, besta, painting, palm, sofa, armchair, footstool, floorlamp, sidetable, coffeetable, loungesofa, loungetable, parasol, planter, bed, skansnasTable, skansnasChair, bunk, daybed, rug, ragrund, coatrack, shoerack, byas, tv, nordkisa, worklamp, gamingdesk, gamingchair, nordli, alex, kidchair };
 
 /** An invisible thin box over a table top (raycast target for putting a cup down, #90). Local rect. */
 export function surfaceBox(r, list) {
