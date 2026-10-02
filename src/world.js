@@ -13,6 +13,7 @@ import { buildFurniture, surfaceBox } from './furniture.js';
 import { buildWallShelves } from './shelves.js';
 import { buildHallWall } from './keycabinet.js';
 import { mergeStatic } from './merge.js';
+import { Pack, frameMatrix, hallWardrobe } from './contents.js';
 import { buildSillPlants } from './sillplants.js';
 import { registerSnow } from './seasons.js';
 import { buildCourtyard } from './courtyard.js';
@@ -235,6 +236,17 @@ function buildWardrobe(group, g, y0, h, wallBoxes, doors) {
     group.add(d.object);
     doors.push(d);
   }
+  return { along, outward, a, b, back, front, y0, y1, t };
+}
+
+/** What hangs and stands in the hall wardrobe (#231, contents.js), in the wardrobe's frame: x along the rod, z from
+ * the back out to the front. Peab's fixed wardrobe: it stays with F like the wardrobe itself. */
+function hallWardrobeContents(group, w) {
+  const dir = w.along ? (w.outward > 0 ? 's' : 'n') : (w.outward > 0 ? 'e' : 'w'), m = (w.a + w.b) / 2;
+  const origin = w.along ? new THREE.Vector3(m, w.y0, w.back) : new THREE.Vector3(w.back, w.y0, m);
+  const P = new Pack();
+  hallWardrobe(P, { hl: (w.b - w.a) / 2 - w.t, depth: Math.abs(w.front - w.back), rodY: 1.712, rodZ: Math.abs(w.front - w.back) / 2, shelfY: 1.8, topY: w.y1 - w.y0 - w.t });
+  group.add(...P.meshes(frameMatrix(dir, origin)));
 }
 
 /**
@@ -496,7 +508,8 @@ function buildLevel(floor, li, group) {
     else groups.push({ ...c });
   }
   for (const g of groups) {
-    buildWardrobe(group, g, y0, CABINET_HEIGHT[g.label] ?? CABINET_HEIGHT.G, wallBoxes, doors);
+    const wf = buildWardrobe(group, g, y0, CABINET_HEIGHT[g.label] ?? CABINET_HEIGHT.G, wallBoxes, doors);
+    if (li === 0 && g.label === 'G') hallWardrobeContents(group, wf); // coats, hats and shoes in the hall (#231)
     segments.push(...rectSegments(g));
   }
 

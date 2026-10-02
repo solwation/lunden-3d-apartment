@@ -6,7 +6,7 @@ import { Fridge } from './fridge.js';
 import { buildOvens } from './ovens.js';
 import { Hob } from './hob.js';
 import { Hood } from './hood.js';
-import { attachContents } from './contents.js';
+import { attachContents, Pack, frameMatrix, mirrorCabinet, vanityDrawer, laundrySink } from './contents.js';
 import { fillKitchen } from './kitchenstuff.js';
 import { Openable, pivotAround } from './openables.js';
 import { Moccamaster } from './coffee.js';
@@ -653,13 +653,19 @@ function buildLaundry(B, group, floor, room, y0, handled, taps, appliances) {
   if (sinkF) {
     const F = frame(B, { ...run, z0: sinkF.z0, z1: run.z1 }, 'e');
     F.box(F.u0, F.u1, -F.depth, -FT, y0, y0 + 0.1, M.laundry);
-    shell(F, F.u0, F.u1, y0 + 0.1, yt + 0.033 - LAUNDRY_SINK.depth - 0.02, F.depth, { shelf: false, outer: M.laundry }); // stops below the bowl (#122)
+    const ys = yt + 0.033 - LAUNDRY_SINK.depth - 0.02;
+    shell(F, F.u0, F.u1, y0 + 0.1, ys, F.depth, { shelf: false, outer: M.laundry }); // stops below the bowl (#122)
     // its door opens with E (#103), hinged away from the knob
-    openFront({ group, list: appliances }, F, F.u0, F.u1, y0 + 0.1, yt, M.laundry, null, {}, { mode: 'hinge', at: 'a1', name: 'skåpet', build: (P, a0, a1, b0, b1) => {
+    const door = openFront({ group, list: appliances }, F, F.u0, F.u1, y0 + 0.1, yt, M.laundry, null, {}, { mode: 'hinge', at: 'a1', name: 'skåpet', build: (P, a0, a1, b0, b1) => {
       front(P, a0, a1, b0, b1, M.laundry, null);
       const [kx, kz] = F.at(a0 + 0.04, 0.012);
       P.add(new THREE.SphereGeometry(0.0125, 12, 8).translate(kx, b1 - 0.06, kz), M.chrome);
     } });
+    { // inside (#231): detergent, fabric softener, stain remover, a laundry basket with pegs (drawn while it is open)
+      const P = new Pack(), [x, z] = F.at((F.u0 + F.u1) / 2, 0);
+      laundrySink(P, { hw: (F.u1 - F.u0) / 2 - 0.016 - 0.003, y: 0.116, zb: -F.depth + 0.008 + 0.003, zf: -FT - 0.005, h: ys - y0 - 0.016 - 0.116 });
+      group.add(attachContents(P.meshes(frameMatrix(F.dir, new THREE.Vector3(x, y0, z))), door));
+    }
     const [, sz] = centre(sinkF), h = tvSink, rim = 0.02, yr = yt + 0.03;
     slabWithHole(B, h.x0 - rim, h.x1 + rim, h.z0 - rim, h.z1 + rim, yr, yr + 0.003, h, M.steelDark); // inset sink's rim
     const bottom = sinkBowl(B, h, yr + 0.003, LAUNDRY_SINK.depth, M.steel, 'x0');
@@ -707,8 +713,14 @@ function vanity(B, sinkF, wallX, y0, width, depth, open) {
     if (grip) P.box(a0 + 0.01, a1 - 0.01, 0, 0.003, b0 + 0.0015, b0 + 0.008, M.black);
   };
   const ym = y0 + 0.62;
-  openFront(open, F, F.u0 + 0.02, F.u1 - 0.02, y0 + 0.4, ym, M.vanity, null, {}, { mode: 'drawer', depth: depth - 0.06, name: 'lådan', build: plain(false) });
-  openFront(open, F, F.u0 + 0.02, F.u1 - 0.02, ym, y0 + 0.84, M.vanity, null, {}, { mode: 'drawer', depth: depth - 0.17, name: 'lådan', build: plain(true) });
+  // what is in them (#231): towels below, brushes, plasters and hair ties in the shallow top one; they ride along
+  const fill = (o, top, yb, dd) => {
+    const P = new Pack(), [x, z] = F.at((F.u0 + F.u1) / 2, -FT);
+    vanityDrawer(P, top, { hw: (F.u1 - F.u0 - 0.04) / 2 - 0.032, y: 0.028, depth: dd - 0.012 });
+    attachContents(P.meshes(frameMatrix(F.dir, new THREE.Vector3(x, yb, z))), o, { carry: true });
+  };
+  fill(openFront(open, F, F.u0 + 0.02, F.u1 - 0.02, y0 + 0.4, ym, M.vanity, null, {}, { mode: 'drawer', depth: depth - 0.06, name: 'lådan', build: plain(false) }), false, y0 + 0.4, depth - 0.06);
+  fill(openFront(open, F, F.u0 + 0.02, F.u1 - 0.02, ym, y0 + 0.84, M.vanity, null, {}, { mode: 'drawer', depth: depth - 0.17, name: 'lådan', build: plain(true) }), true, ym, depth - 0.17);
   // the porcelain top with its basin (#122): a hole in the slab, a bowl VANITY_BASIN.depth deep
   const bowl = { x0: wallX + 0.13, x1: wallX + depth - 0.05, z0: cz - width / 2 + 0.07, z1: cz + width / 2 - 0.07 };
   slabWithHole(B, wallX, wallX + depth + 0.01, cz - width / 2, cz + width / 2, y0 + 0.84, y0 + 0.87, bowl, M.porcelain);
@@ -862,6 +874,11 @@ function buildBathroom(B, group, floor, room, y0, handled, taps, appliances) {
       const holder = mirrorReflector(group, new THREE.PlaneGeometry(m.u1 - m.u0 - 0.02, 0.68), m.f + 0.0045, y0 + 1.55, cz, room.level); // on the cabinet's front (#139)
       group.updateMatrixWorld(true);
       door.object.attach(holder);
+      { // on its shelves (#231): a glass of toothbrushes, toothpaste, a razor, jars and bottles (drawn while it is open)
+        const P = new Pack(), [x, z] = m.at(cz, 0);
+        mirrorCabinet(P, { hw: 0.25 - 0.016 - 0.004, zb: -0.15 + 0.008 + 0.003, zf: -FT - 0.005, y0: 1.2 + 0.016 + 0.001, y1: 1.55 + 0.009 });
+        group.add(attachContents(P.meshes(frameMatrix(m.dir, new THREE.Vector3(x, y0, z))), door));
+      }
       holder.traverse((o) => { o.userData.door = door; }); // the (invisible) mirror image is part of the door's E target
     } else {
       // Slot 50 with its LED backlight on a switch of its own (E on the mirror, #50)

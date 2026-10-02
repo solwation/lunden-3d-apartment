@@ -115,7 +115,13 @@ src/minimap.js         plan view with the visitor's arrow, current room highligh
 src/measure.js         tape measure (Q / 📏): two points on any surface, distance label
 src/contents.js        what is inside cabinets/drawers (#228), shared: `attachContents(meshes, openable, { carry })` — world-space
                        meshes (merged per material), hidden while the front is shut, shown as it opens; `carry` = they ride
-                       in the drawer (children of its pivot), else they stand in the carcass; no E targets; `openable.contents`
+                       in the drawer (children of its pivot), else they stand in the carcass; no E targets; `openable.contents`.
+                       #231 (CONTENTS in config): a `Pack` with two finishes (matte / gloss, vertex colours) + `frameMatrix(dir,
+                       origin)` and the builders: `byasDrawer` (games, pads, remotes | films) / `byasMiddle` (console, router; the
+                       open middle, always drawn), `bestaContents` (per wooden door: board games, albums, napkins), `hallWardrobe`
+                       (world.js: coats on hangers above cat height, hats/scarves/gloves, a slanted shoe rack along the back,
+                       rubber boots — the middle of the floor stays free for the cat; always drawn, stays with F), `mirrorCabinet`
+                       (Stage 50), `vanityDrawer` (towels | brushes, plasters, hair ties), `laundrySink` (detergent, basket, pegs)
 src/kitchenstuff.js    the kitchen's cabinet/drawer contents (#229): `fillKitchen(P, kind, box)` — plates, bowls, glasses, mugs,
                        dry goods, spices, tea, pots, baking tins, serving/festive china, the corner unit's machines, cutlery,
                        utensils, rolls; interior.js `stock()` fills each front (`o.stock` = the kind, or 'own' / 'empty')
@@ -329,7 +335,8 @@ tools/secretarytest.html headless test: the secretary's flap (desk) and its 8 dr
                        the secret drawer (#183): 10 seeded opens never repeat, a surprise left on the table stays, SECRET.keep
 tools/opentest.html    headless test: every Openable front (kitchen + furniture) opens/closes with the button; open, none
                        overlaps a closed neighbour or goes through a wall (#154); every kitchen front is stocked (or own/empty)
-                       and its contents are hidden when shut and never out through the front (#229)
+                       and its contents are hidden when shut and never out through the front (#229); the same for every
+                       other front with contents (#230, #231)
 tools/bestatest.html   headless test: the BESTÅ display cabinet's six doors open/close, its spots (down over the front) and the
                        lit glass section switch with the room (#191)
 tools/holdtest.html    headless test: put things down (coffee table, dining table, floor), one at a time, F → home;

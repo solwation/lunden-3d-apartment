@@ -789,6 +789,37 @@ export const LAUNDRY_SINK = { w: 0.22, d: 0.36, depth: 0.15 };
 export const LAUNDRY_CABINET = { depth: 0.35, y0: 1.49, y1: 2.2, units: 2, share: 2 / 3 };
 export const VANITY_BASIN = { depth: 0.1 };
 
+// What lies in the cabinets and drawers (#231, src/contents.js): living room, hall wardrobe, bathrooms, laundry.
+// Sizes of the things from their real counterparts (a DVD case 135 × 190 × 14 mm, a blu-ray 128 × 148 × 12, a
+// game case 135 × 170 × 14, the console the size of a PS5 slim lying down); the rest is a look, not measured.
+export const CONTENTS = {
+  byas: {
+    film: { len: 0.19, h: 0.135, t: 0.014 }, bluray: { len: 0.148, h: 0.128, t: 0.012 }, game: { len: 0.17, h: 0.135, t: 0.014 },
+    filmColours: [0x2f5d8a, 0xb8342f, 0xe0b23a, 0x2d2d2d, 0x4c8a4a, 0x7a4c9a, 0xf2f2ee, 0x1c1c1c, 0xd35400, 0x16a085],
+    console: { w: 0.36, h: 0.085, d: 0.22 }, router: { w: 0.2, h: 0.04, d: 0.13, aerial: 0.1 },
+  },
+  besta: {
+    album: { n: 8, t: 0.042, h: 0.33, d: 0.31, colours: [0xd8c8a8, 0x2c3e50, 0x7b241c, 0x1e5631, 0x5d6d7e, 0xb9770e] },
+    napkins: { w: 0.17, h: 0.045, colours: [0xf4f1e8, 0xc0392b, 0x7fb3d5, 0xf7dc6f, 0xf4f1e8] },
+  },
+  // the hall wardrobe "G": coats on the rod from the left (len = from the shoulders down, w across, t thick), the
+  // grown-ups' long ones first, the kids' short ones after (hem ≥ ~0.7 m: the cat fits under them)
+  wardrobe: {
+    coats: [
+      { len: 0.95, w: 0.44, t: 0.08, colour: 0x2c3e50 }, { len: 0.9, w: 0.44, t: 0.07, colour: 0xa0785a },
+      { len: 0.8, w: 0.46, t: 0.1, colour: 0x1c1c1c, hood: true }, { len: 0.75, w: 0.44, t: 0.09, colour: 0x556b2f, hood: true },
+      { len: 0.85, w: 0.42, t: 0.07, colour: 0x7b241c }, { len: 0.62, w: 0.36, t: 0.08, colour: 0xe84393, kid: true, hood: true },
+      { len: 0.6, w: 0.36, t: 0.08, colour: 0x2e86c1, kid: true, hood: true }, { len: 0.58, w: 0.34, t: 0.08, colour: 0xf1c40f, kid: true, hood: true },
+      { len: 0.56, w: 0.34, t: 0.07, colour: 0x27ae60, kid: true }, { len: 0.52, w: 0.32, t: 0.08, colour: 0x8e44ad, kid: true, hood: true },
+    ],
+    // a slanted shoe rack along the back: heel rail height/depth from the back, the toes up at `tilt`°
+    rack: { tilt: 70, heelY: 0.012, heelZ: 0.12, pitch: 0.19 },
+    shoes: [[0x1c1c1c, false], [0x6e4b33, false], [0xe9e6df, false], [0xe84393, true]], // [colour, kids' size]
+    boots: 0xf1c40f, // a pair of kids' rubber boots
+  },
+  towels: { w: 0.2, h: 0.04, d: 0.26, stack: 3, colours: [0xf4f4f2, 0x9fb7c8, 0xf4f4f2, 0xd5c4a1] }, // folded, in the vanity
+};
+
 // Changelog note (src/changelog.js) on the freezer door: its front is the plan's F cabinet
 // z0 − 4 cm (the freestanding freezer sticks out, see interior.js). rotY π = facing north.
 export const CHANGELOG_NOTE = { x: 4.38, y: 1.42, z: 4.8844 - 0.04 - 0.002, rotY: Math.PI, w: 0.16, tilt: -0.05 };

@@ -9,6 +9,7 @@ import { Screen } from './screens.js';
 import { Openable } from './openables.js';
 import { rifleModel } from './rifle.js';
 import { drawerFill, personFor } from './stuff.js';
+import { Pack, byasDrawer, byasMiddle, bestaContents, attachContents } from './contents.js';
 
 // Loose furniture, built from rounded boxes. Every piece is modelled in a local frame
 // where the sitter faces +z, x is across, y up; config gives position + facing.
@@ -931,29 +932,25 @@ function byas(item) {
   g.add(rbox(w - 2 * door - t, t, d - 0.04, 0, plinth + (h - plinth) * 0.5, -0.01, shelfWhite, 0.003)); // middle shelf
   const groove = new THREE.MeshStandardMaterial({ color: 0x9a9a96, roughness: 0.6 });
   // the end compartments are drawers (#212; IKEA BYÅS: two drawers, an open shelf between): gloss fronts with a thin
-  // shadow line as the grip at the top; inside a few things that end up under a TV (cables, a game pad, films)
-  const dark = new THREE.MeshStandardMaterial({ color: 0x1c1d20, roughness: 0.5 });
-  const cable = new THREE.MeshStandardMaterial({ color: 0x2a2a2c, roughness: 0.7 });
+  // shadow line as the grip at the top; inside (#231): games, game pads, remotes and cables on the left, two rows
+  // of films on the right — one baked mesh per finish per drawer (contents.js)
   const fh = h - plinth - 0.03, dw = door - t - 0.006, depth = d - 0.07;
   for (const s of [-1, 1]) {
     const cx = s * (w / 2 - t - (door - t) / 2) - s * 0.0015; // centred in its compartment (side → divider)
-    addDrawer(g, 'lådan', { x: cx, y: plinth + 0.003, zf: d / 2, w: dw, h: fh, depth, front: gloss, inner: shelfWhite, grip: (o) => {
+    const dr = addDrawer(g, 'lådan', { x: cx, y: plinth + 0.003, zf: d / 2, w: dw, h: fh, depth, front: gloss, inner: shelfWhite, grip: (o) => {
       o.add(rbox(dw - 0.074, 0.008, 0.004, 0, h - 0.03 - plinth - 0.003, 0.001, groove, 0.001)); // the grip groove
-      const y = 0.028, zc = -0.018 - depth / 2;
-      if (s < 0) { // a game pad and a coiled HDMI cable
-        const pad = rbox(0.15, 0.03, 0.1, -0.06, y + 0.015, zc + 0.03, dark, 0.012); pad.rotation.y = 0.3; o.add(pad);
-        for (const [x, z] of [[-0.11, 0.0], [-0.01, 0.06]]) { const st = new THREE.Mesh(new THREE.CylinderGeometry(0.01, 0.01, 0.012, 10), dark); st.position.set(x, y + 0.036, zc + 0.03 + z * 0.5); o.add(st); }
-        const coil = new THREE.Mesh(new THREE.TorusGeometry(0.07, 0.006, 6, 24), cable); coil.rotation.x = Math.PI / 2; coil.position.set(0.1, y + 0.006, zc - 0.05); o.add(coil);
-        const coil2 = coil.clone(); coil2.scale.setScalar(0.8); coil2.position.y += 0.012; o.add(coil2);
-      } else { // a row of films in their cases
-        ['#2f5d8a', '#b8342f', '#e0b23a', '#2d2d2d', '#4c8a4a', '#7a4c9a'].forEach((col, i) => {
-          o.add(rbox(0.015, 0.19, 0.135, -0.12 + i * 0.017, y + 0.095, zc + 0.02, new THREE.MeshStandardMaterial({ color: col, roughness: 0.4 }), 0.002));
-        });
-        const coil = new THREE.Mesh(new THREE.TorusGeometry(0.06, 0.005, 6, 24), cable); coil.rotation.x = Math.PI / 2; coil.position.set(0.1, y + 0.005, zc); o.add(coil);
-      }
     } });
+    const P = new Pack(); // only drawn while the drawer is open (Openable.contents)
+    byasDrawer(P, s, { y: 0.028, depth, hw: (dw - 0.03) / 2 - 0.008 });
+    dr.contents = P.group(new THREE.Matrix4().makeTranslation(0, 0, -0.018));
+    dr.contents.visible = false;
+    dr.object.add(dr.contents);
   }
-  g.traverse((m) => { if (m.isMesh) m.castShadow = m.receiveShadow = true; });
+  // the open middle (#231): the console and games below the shelf, the router on it
+  const P = new Pack();
+  byasMiddle(P, { hw: w / 2 - door - t / 2, y0: plinth + t, y1: plinth + (h - plinth) * 0.5 + t / 2, zb: -d / 2 + t });
+  g.add(...P.meshes());
+  g.traverse((m) => { if (m.isMesh) { m.receiveShadow = true; m.castShadow = !m.material.vertexColors; } }); // contents cast none
   g.userData.surfaces = [{ x0: -w / 2 + 0.03, x1: w / 2 - 0.03, z0: -d / 2 + 0.03, z1: d / 2 - 0.03, y: h }];
   g.userData.footprint = [{ x0: -w / 2, x1: w / 2, z0: -d / 2, z1: d / 2 }];
   return g;
@@ -2258,6 +2255,15 @@ function besta(item, lights) {
     pivot.traverse((m) => { m.userData.door = target; });
     g.add(pivot); targets.push(target); doors.push(pivot);
   }
+  // behind the wooden doors (#231): board games, puzzles and card games, photo albums, napkins, a table cloth — one
+  // baked mesh per compartment, drawn only while its door is open
+  targets.forEach((tg, i) => {
+    const [, , kind] = sections[Math.floor(i / 2)];
+    if (kind !== 'wood') return;
+    const P = new Pack();
+    bestaContents(P, { col, chw: col / 2 - 0.02, yb: t, yt: ys[2] + t / 2, zb: 0.01, zf: fd - 0.015 }, { top: i >= 4, side: i % 2 ? 1 : -1 });
+    g.add(attachContents(P.meshes(), tg));
+  });
   g.userData.targets = targets;
   g.userData.keep = [...doors, ...things.map((t) => t.model), spotHeads];
   g.userData.things = things.map((t) => ({ ...t, back: 'vitrinskåpet' }));
