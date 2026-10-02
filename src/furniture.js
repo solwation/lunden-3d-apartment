@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { FURNITURE, LANDSKRONA as L, LEVELS } from './config.js';
+import { loungesofa, loungetable, parasol, planter } from './patio.js';
 
 // Loose furniture, built from rounded boxes. Every piece is modelled in a local frame
 // where the sitter faces +z, x is across, y up; config gives position + facing.
@@ -405,7 +406,7 @@ function daybed() {
   return g;
 }
 
-const BUILDERS = { sofa, armchair, footstool, floorlamp, sidetable, coffeetable, bed, table, chair, bunk, daybed };
+const BUILDERS = { sofa, armchair, footstool, floorlamp, sidetable, coffeetable, loungesofa, loungetable, parasol, planter, bed, table, chair, bunk, daybed };
 
 /** Build all furniture; returns the scene group, collision segments per level and lamps. */
 export function buildFurniture() {

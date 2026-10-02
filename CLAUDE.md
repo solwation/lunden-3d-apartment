@@ -57,6 +57,9 @@ src/lights.js          room switches (E), ceiling lamps/pendant/spots/LED, floor
                        point lights follows the nearest lit lamps on the visitor's level
 src/daycycle.js        12-minute day: real solar path for the month (55.7° N), sun → moon light, shader sky
                        (glow, stars, clouds), fog colour; paused / spooled by the wall clock
+src/patio.js           patio: Plantagen Oslo corner lounge set, parasol, planters with exotic plants
+                       (furniture builders, FURNITURE + PATIO in config); seasons via Patio.update:
+                       parasol folds at night/in winter, beers in summer, snowman in winter
 src/wallclock.js       analog kitchen clock (WALL_CLOCK) + the control strip: spool ← →, pause, month
 src/rooms.js           room detection: walls + door gaps rasterised, BFS from the room labels
 src/minimap.js         plan view with the visitor's arrow, current room highlighted (K toggles)
@@ -84,6 +87,7 @@ tools/watertest.html   headless test: aim at every tap/shower, turn it on and of
 tools/lighttest.html   headless test: aim at every light switch / floor lamp, toggle it
 tools/pettest.html     headless test of petting the cat (eyes, hand, stats counter)
 tools/notetest.html    headless test of the changelog note ("Nytt", read/close, no walking)
+tools/patiotest.html   headless test of the patio seasons (parasol, beers, snowman) + sofa collision
 tools/clocktest.html   headless test of the wall clock (07:00 start, spool, pause, month → sun height)
 tools/stamp.sh         build the published site with a version stamp (used by CI)
 ```
@@ -136,6 +140,10 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   the NW corner with a floor lamp and a side table with a small flower. Dimensions in
   `LANDSKRONA` (config) — the chaise/armchair/footstool numbers are series estimates. In front
   of the sofa: coffee table ILVA Woodstock, oiled oak veneer top, 120 × 60 × 47 cm, with a shelf.
+- Patio (user's wish): Plantagen Hörngrupp Oslo antracit (corner sofa 198 + 186 × 72 × 76, table
+  120 × 60 × 40) with its back to the hedge and the east screen wall, a parasol (up Apr–Sep while
+  the sun is up), three big planters (palm, banana, agave), two beers on the table Jun–Aug
+  12–23, a snowman on the lawn beyond the hedge Dec–Feb (`PATIO` in config).
 - Material choices (Sarah's screenshots in `material/`): parquet Ek Chalk (white-stained oak),
   walls/doors NCS S 0500-N, stair white-lacquered oak/white, hall granitkeramik City Amsterdam
   30×60, wet rooms City Amsterdam 15×15 + white matt 20×40 wall tiles, kitchen fronts Form Tall

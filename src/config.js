@@ -286,6 +286,19 @@ export const LANDSKRONA = {
   chairWidth: 0.89, stool: { w: 0.92, d: 0.53, h: 0.44 },
 };
 
+// Patio (src/patio.js). Cushion colour of the Oslo set and the parasol (Ø 3 m, centre pole,
+// ecru) are guesses. Seasons (months 1–12): the parasol is up in `parasolMonths` while the sun
+// is up and folded otherwise; beers on the table in summer between `beerHours`; a snowman on
+// the lawn beyond the hedge in winter.
+export const PATIO = {
+  frame: 0x3b3e41, cushion: 0xbdbcb6, tableTop: 0x45484b,
+  seatHeight: 0.42, armHeight: 0.62, height: 0.76, depth: 0.72, long: 1.98, short: 1.86,
+  parasol: { radius: 1.5, height: 2.45, color: 0xe8e1d1, months: [4, 5, 6, 7, 8, 9] },
+  pot: { r: 0.3, h: 0.62, color: 0x55595c }, // fibre-clay planter Ø 60 cm (guess)
+  beerMonths: [6, 7, 8], beerHours: [12, 23],
+  snowman: { x: 3.1, z: 19.2, months: [12, 1, 2] },
+};
+
 // Placement in plan metres. rot = direction the seat faces, degrees (0 = north/−z,
 // 90 = west, 180 = south, −90 = east), same convention as the ?at= camera yaw.
 export const FURNITURE = [
@@ -300,6 +313,18 @@ export const FURNITURE = [
   // oiled solid oak, a fixed shelf below (ilva.dk product page). Centred on the three seats
   // (x 2.68–4.60), 40 cm in front of the sofa (front at z 11.26).
   { type: 'coffeetable', level: 0, x: 3.64, z: 11.26 - 0.4 - 0.3, w: 1.2, d: 0.6, h: 0.47 },
+  // Uteplats (paved z 12.75–16.8 in front of the hedge, see PATIO): Plantagen Hörngrupp Oslo
+  // antracit (art. 558848): corner sofa 198 × 72 × 76 + 186 × 72 × 76 cm on an aluminium frame,
+  // table 120 × 60 × 40 cm (plantagen.se). Backs to the hedge and the east screen wall,
+  // seats facing north-west; the corner is on the sitter's right (east).
+  { type: 'loungesofa', level: 0, x: 5.66 - 1.98 / 2, z: 16.79 - 0.72 / 2, rot: 0 },
+  { type: 'loungetable', level: 0, x: 4.15, z: 15.45, beers: true },
+  { type: 'parasol', level: 0, x: 3.05, z: 15.7 },
+  // large planters with exotic plants (the user's wish): by the patio door, in the SW corner
+  // by the hedge, and beside the living-room window
+  { type: 'planter', level: 0, x: 0.45, z: 13.25, plant: 'palm' },
+  { type: 'planter', level: 0, x: 0.5, z: 16.35, plant: 'banana' },
+  { type: 'planter', level: 0, x: 5.3, z: 13.2, plant: 'agave' },
   // Upstairs bedrooms (the user's plan). Beds: rot = direction from the head to the foot end.
   { type: 'bed', level: 1, x: 5.55 - 1.1, z: 2.3, rot: 90, w: 1.6, l: 2.0 },  // Sovrum 1 (Sarah & Ofluf), head east, clear of the Klk
   // Bunks: long side against the side wall, head end against the façade (the user's wish);

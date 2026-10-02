@@ -14,6 +14,7 @@ import { Measure } from './measure.js';
 import { cloudTexture } from './surroundings.js';
 import { DayCycle } from './daycycle.js';
 import { WallClock, ClockPanel } from './wallclock.js';
+import { Patio } from './patio.js';
 import { Tap, animateWater } from './water.js';
 import { CatBoard, snapshot } from './catboard.js';
 import { Lights } from './lights.js';
@@ -105,6 +106,9 @@ day.paused = params0.has('freeze');
 const wallClock = new WallClock();
 scene.add(wallClock.object);
 const clockPanel = new ClockPanel(day, document.getElementById('clock-panel'));
+// patio seasons: parasol up on summer days, beers in summer, a snowman in winter
+const patio = new Patio();
+scene.add(patio.object);
 function showClock(show) {
   reading = show;
   clockPanel.show(show);
@@ -397,6 +401,7 @@ function step(dt) {
   lights.update(Math.max(0, player.level), player.pos);
   day.update(dt);
   wallClock.update(day.hour);
+  patio.update(day, dt);
   if (clockPanel.open) clockPanel.render();
   world.windowLights.update(day.hour, 1 - day.daylight);
   cat.update(dt);
@@ -449,4 +454,4 @@ document.addEventListener('pointerlockchange', () => { if (!updateEl.hidden) sho
 watchForUpdates(showUpdate);
 
 // handle for tests/debugging (tools/touchtest.html)
-window.__app = { player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock };
+window.__app = { player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };

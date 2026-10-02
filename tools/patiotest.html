@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Patio test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+// Patio seasons: parasol up on summer days and folded at night / in winter (unfolding over
+// time), beers on the table on summer afternoons, a snowman in winter; the lounge sofa blocks
+// walking.
+//   google-chrome --headless=new --dump-dom http://localhost:8137/tools/patiotest.html
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const f = document.createElement('iframe');
+f.width = 900; f.height = 600;
+f.src = '../index.html?shot';
+document.body.append(f);
+f.onload = async () => {
+  const w = f.contentWindow;
+  while (!w.__app) await wait(100);
+  const { day, patio, step, player, world } = w.__app;
+  const lines = [];
+  const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; };
+  const at = (month, hour, secs = 4) => { day.month = month; day.hour = hour; day.paused = true; for (let i = 0; i < secs * 20; i++) step(0.05); return patio.state; };
+  let pass = true, s;
+  s = at(7, 15);
+  pass &= check(s.parasols[0] === 1 && s.beers[0] && !s.snowman, `July 15:00: parasol up, beers, no snowman ${JSON.stringify(s)}`);
+  s = at(7, 23.5);
+  pass &= check(s.parasols[0] === 0 && !s.beers[0], `July 23:30: parasol folded, no beers ${JSON.stringify(s)}`);
+  day.hour = 10; step(0.5);
+  pass &= check(patio.state.parasols[0] > 0 && patio.state.parasols[0] < 1, `July 10:00: unfolding (${patio.state.parasols[0].toFixed(2)})`);
+  s = at(1, 13);
+  pass &= check(s.parasols[0] === 0 && !s.beers[0] && s.snowman, `January 13:00: folded, snowman ${JSON.stringify(s)}`);
+  s = at(4, 9);
+  pass &= check(s.parasols[0] === 1 && !s.beers[0] && !s.snowman, `April 09:00: parasol up, no beers ${JSON.stringify(s)}`);
+  // walk from the patio door towards the lounge sofa: stopped before its seat
+  player.spawn(4.3, 14.2, Math.PI);
+  player.keys.add('KeyW');
+  for (let i = 0; i < 120; i++) player.update(1 / 30);
+  player.keys.clear();
+  pass &= check(player.pos.z < 15.2, `sofa/table block walking (stopped at z ${player.pos.z.toFixed(2)})`);
+  world.setFurniture(false);
+  player.keys.add('KeyW');
+  for (let i = 0; i < 60; i++) player.update(1 / 30);
+  player.keys.clear();
+  world.setFurniture(true);
+  pass &= check(player.pos.z > 15.6, `F off: walks on (z ${player.pos.z.toFixed(2)})`);
+  out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
+};
+</script>
+</body>
+</html>
