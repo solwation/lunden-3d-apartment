@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { LEVELS, CAT_FISH, CAT_LEAVE } from './config.js';
+import { LEVELS, CAT_FISH, CAT_LEAVE, CAT_FURNITURE, REST } from './config.js';
 import { stairHeight } from './stairs.js';
 import { sfx } from './audio.js';
 
@@ -257,7 +257,7 @@ export class CatSpawner {
   constructor(world, rand = Math.random) {
     this.world = world;
     this.rand = rand;
-    this.chance = { appear: CHANCE_APPEAR, steal: CHANCE_STEAL, vanish: CHANCE_VANISH };
+    this.chance = { appear: CHANCE_APPEAR, steal: CHANCE_STEAL, vanish: CHANCE_VANISH, furniture: CAT_FURNITURE.chance };
     this.parts = buildCat();
     const { cat, head, shoulder, leftShoulder, tailGroup, eyes, hand } = this.parts;
     Object.assign(this, { object: cat, head, shoulder, leftShoulder, tailGroup, eyes, hand });
@@ -372,6 +372,7 @@ export class CatSpawner {
     this.nextMeow = 0.4 + this.rand() * 0.8;
     this.object.position.set(spot.x, spot.y, spot.z);
     this.object.rotation.y = spot.yaw;
+    this.on = spot.on ?? null; // 'sit' / 'lie' / 'table' when it is up on the furniture (#200)
     this.object.visible = true;
     this.door = door;
     this.closedSince = false;
@@ -404,6 +405,11 @@ export class CatSpawner {
     const side = Math.sign((from.x - center[0]) * normal[0] + (from.z - center[1]) * normal[1]) || 1;
     const nx = -side * normal[0], nz = -side * normal[1];
     const sx = center[0] + nx * 0.35, sz = center[1] + nz * 0.35;
+    // sometimes up on a bed, a sofa, a chair or a table in that room instead (#200)
+    if (this.rand() < (this.chance.furniture ?? 0)) {
+      const up = this.furnitureSpot(level, y0, [sx, sz], [nx, nz], door);
+      if (up) return up;
+    }
     for (let i = 0; i < 120; i++) {
       // 0.4–3 m in, more often close to the door (rooms with a big bed by the door have little floor, #91)
       const r = this.rand(), dist = 0.4 + r * r * 2.6, lat = (this.rand() - 0.5) * 3;
@@ -417,6 +423,55 @@ export class CatSpawner {
     return null;
   }
 
+  /**
+   * A seat, bed or table top in the room beyond the door (#200), seen straight from the doorway (sx, sz) (no wall or other
+   * door in between), in front of it (direction n) and within CAT_FURNITURE.reach. The height comes from a ray down onto
+   * the furniture there, so the cat sits on the cushion / mattress, and never in something standing on a table.
+   */
+  furnitureSpot(level, y0, [sx, sz], [nx, nz], door) {
+    const W = this.world;
+    if (W.furnitureOn === false) return null;
+    const walls = [...(W.levels[level].wallSegments ?? []), ...W.doors.filter((d) => d !== door).map((d) => d.segment())];
+    const cands = [];
+    for (const t of W.furnitureTargets ?? []) {
+      if (t.kind !== 'rest' || (t.level ?? 0) !== level) continue;
+      for (const sp of t.spots) {
+        if (sp.pc) continue; // the gaming chair / the film spot: they start things
+        cands.push({ x: sp.pos.x, z: sp.pos.z, y: sp.pos.y - (sp.kind === 'lie' ? REST.lieEye : REST.sitEye), kind: sp.kind });
+      }
+    }
+    const box = new THREE.Box3();
+    for (const m of W.cupSurfaces ?? []) {
+      box.setFromObject(m);
+      const sy = m.userData.surface;
+      if (Math.abs(sy - (y0 + 0.75)) > 0.6 || box.max.x - box.min.x < 0.4 || box.max.z - box.min.z < 0.4) continue;
+      for (let k = 0; k < 3; k++) cands.push({ x: box.min.x + 0.15 + this.rand() * (box.max.x - box.min.x - 0.3), z: box.min.z + 0.15 + this.rand() * (box.max.z - box.min.z - 0.3), y: sy, kind: 'table' });
+    }
+    // shuffle, then the first that works
+    for (let i = cands.length - 1; i > 0; i--) { const j = Math.floor(this.rand() * (i + 1)); [cands[i], cands[j]] = [cands[j], cands[i]]; }
+    const ray = new THREE.Raycaster(), down = new THREE.Vector3(0, -1, 0), o = new THREE.Vector3();
+    ray.camera = new THREE.PerspectiveCamera(); // sprites in the furniture need one to be raycast
+    const furniture = W.looseItems ?? [];
+    for (const c of cands) {
+      const ahead = (c.x - sx) * nx + (c.z - sz) * nz, dist = Math.hypot(c.x - sx, c.z - sz);
+      if (ahead < 0.2 || dist > CAT_FURNITURE.reach || Math.abs(c.y - y0) > 1.3) continue;
+      if (walls.some((sg) => segIntersect(sx, sz, c.x, c.z, sg))) continue;
+      // what is really there: the first visible surface under the spot must be about where we expect it
+      ray.set(o.set(c.x, c.y + 0.6, c.z), down); ray.far = 1.0;
+      const hit = ray.intersectObjects(furniture, true).find((h) => h.object.isMesh && this.shownMesh(h.object));
+      if (!hit || hit.point.y < c.y - 0.12 || hit.point.y > c.y + 0.3) continue; // cushions, pillows and duvets stand a little proud
+      const yaw = Math.atan2(sx - c.x, sz - c.z) + (this.rand() - 0.5) * 0.8; // facing the doorway, more or less
+      return { x: c.x, y: hit.point.y, z: c.z, yaw, on: c.kind };
+    }
+    return null;
+  }
+
+  /** Is this mesh actually shown (it and its parents visible, not the cat itself)? Pick boxes are invisible. */
+  shownMesh(m) {
+    for (let p = m; p; p = p.parent) { if (!p.visible || p === this.object) return false; }
+    return true;
+  }
+
   update(dt) {
     if (!this.visible) return;
     this.t += dt;
@@ -425,7 +480,7 @@ export class CatSpawner {
       return;
     }
     if (this.leaving) { this.updateLeaving(dt); return; } // after a pat it walks off and is gone (#206)
-    if (this.updateFish(dt)) return; // after a fish finger on the floor (#163)
+    if (!this.on && this.updateFish(dt)) return; // after a fish finger on the floor (#163; not while up on the furniture)
     // meow when found, then now and then
     this.nextMeow -= dt;
     if (this.nextMeow <= 0) {
@@ -454,6 +509,11 @@ export class CatSpawner {
   /** Pick a way out: away from the visitor, the longest clear straight walk (up to CAT_LEAVE.dist) among a fan of directions. */
   leave() {
     const o = this.object, p = o.position, f = this.petFrom ?? { x: p.x, z: p.z - 1 };
+    if (this.on) { // up on the furniture: it turns away and fades where it is
+      this.leaveY = p.y;
+      this.leaving = { t: 0, yaw: Math.atan2(p.x - f.x, p.z - f.z), d: 0, gone: 0, from: o.rotation.y };
+      return;
+    }
     const away = Math.atan2(p.x - f.x, p.z - f.z), segs = this.obstacles();
     let best = null;
     for (const off of [0, 0.5, -0.5, 1.0, -1.0, 1.5, -1.5, 2.2, -2.2]) {

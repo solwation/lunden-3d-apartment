@@ -491,6 +491,9 @@ export const CAT_FISH = { reach: 4, notice: 1.2, speed: 0.55, stop: 0.17, eat: 3
 // After a pat the cat walks off (#206, cat.js `leave`): up to `dist` m away from the visitor along the clearest straight line,
 // at `speed` m/s, fading out over the last `fade` s, then it is gone.
 export const CAT_LEAVE = { dist: 3, speed: 0.6, fade: 1.2 };
+// A cat turning up behind a door sits up on a bed, sofa, chair or table in that room this often (#200, cat.js furnitureSpot),
+// on one seen straight from the doorway within `reach` m.
+export const CAT_FURNITURE = { chance: 0.4, reach: 5 };
 
 // Steam over hot coffee (#216, cups.js): `strips` soft wisps rising `height` m from the surface, one mesh per cup;
 // fresh coffee is hot and cools over `seconds` (real ones steam a few minutes), cold milk cools it by `milk` × its share;

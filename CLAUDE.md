@@ -253,7 +253,7 @@ data/changelog.json    what changed, for visitors (see Workflow rules)
 tools/extract_plan.py  PDF → data/plan.json (stdlib only)
 tools/walktest.html    headless movement test
 tools/touchtest.html   headless touch-input test (synthetic pointer events)
-tools/cattest.html     headless test of cat placement behind every door/wardrobe
+tools/cattest.html     headless test of cat placement behind every door/wardrobe; up on seats, beds and tables (#200)
 tools/roomtest.html    headless test of room detection at known points (+ a picture of the fill)
 tools/measuretest.html headless test of the tape measure (wall to wall in the living room)
 tools/watertest.html   headless test: aim at every tap/shower, turn it on and off
@@ -551,6 +551,10 @@ screenshots into the session scratchpad, not the repo.
   the stair = Hall); `ROOM_DIVIDERS` split open-plan areas (hall | kitchen | passage | living room).
 - Every new cat gets a name (`CAT_NAMES`); petting it puts a photo on the kitchen board 0.7 s in
   (`CAT_BOARD` in config: under the wall clock on the Tvätt/Badrum wall, kitchen face).
+- Up on the furniture (#200, `CAT_FURNITURE`, `furnitureSpot` in cat.js): a cat turning up behind a door sits on a seat,
+  bed or table top in that room `chance` of the time (one seen straight from the doorway within `reach`; the height from a
+  ray down onto the furniture, so it sits on the cushion and never in something on a table; `cat.on` = 'sit'/'lie'/
+  'table'). `chooseSpot` skips the seat it is on; after a pat it fades where it sits; it ignores fish fingers up there.
 - After a pat (#206, `CAT_LEAVE`, `leave`/`updateLeaving` in cat.js) the cat turns, walks off away from the visitor along
   the clearest straight line (walls, doors, furniture) and fades out (its materials are transparent at opacity 1 all
   the time: no recompile); petted again on the way, it stays. The board photo is taken 0.7 s of game time into the pat

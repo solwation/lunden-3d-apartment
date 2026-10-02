@@ -44,6 +44,32 @@ for (const door of world.doors) {
   pass &&= ok && vanished;
   lines.push(`${ok && vanished ? 'PASS' : 'FAIL'} ${door.name} @ (${center.map((v) => v.toFixed(2)).join(', ')}) → cat (${p.x.toFixed(2)}, ${p.y.toFixed(2)}, ${p.z.toFixed(2)}) vanished-on-reopen=${vanished}`);
 }
+// #200: with chance.furniture = 1 the cat goes up on a seat, bed or table in the room when there is one in view
+const ups = [];
+for (const door of world.doors) {
+  if (door.name === 'ytterdörren' || door.kind === 'wardrobe') continue;
+  let seed = 777;
+  const cat = new CatSpawner(world, () => ((seed = (seed * 16807) % 2147483647) / 2147483647));
+  cat.chance = { appear: 1, steal: 1, vanish: 1, furniture: 1 };
+  const { center, normal } = door.opening();
+  for (const sgn of [1, -1]) { // from both sides: the room beyond may be either way
+  const from = { x: center[0] + sgn * normal[0] * 0.8, z: center[1] + sgn * normal[1] * 0.8 };
+  cat.hide();
+  cat.onOpen(door, from);
+  if (!cat.visible) { pass = false; lines.push(`FAIL furniture: no cat behind ${door.name}`); continue; }
+  const p = cat.object.position, floor = p.y < 1.6 ? 0 : 3.25;
+  const side = sgn * ((p.x - center[0]) * normal[0] + (p.z - center[1]) * normal[1]);
+  if (cat.on) {
+    const ok = side < -0.2 && p.y > floor + 0.3 && p.y < floor + 1.0;
+    pass &&= ok;
+    ups.push(cat.on);
+    lines.push(`${ok ? 'PASS' : 'FAIL'} up on the furniture behind ${door.name}: ${cat.on} at (${p.x.toFixed(2)}, ${p.y.toFixed(2)}, ${p.z.toFixed(2)})`);
+  }
+  }
+}
+const okUps = ups.length >= 4 && ups.includes('lie') && ups.includes('sit');
+pass &&= okUps;
+lines.push(`${okUps ? 'PASS' : 'FAIL'} cats up on furniture behind ${ups.length} doors (${[...new Set(ups)].join(', ')})`);
 document.getElementById('out').textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
 </script>
 </body>
