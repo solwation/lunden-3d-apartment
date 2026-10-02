@@ -22,8 +22,13 @@ f.onload = async () => {
   const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; };
   let pass = check(Math.abs(day.hour - 7) < 0.05, `starts at 07:00 (${day.clock})`);
   pass &= check(day.month === new Date().getMonth() + 1, `month = this month (${day.month})`);
+  // the clock keeps running while the page loads, so compare the hands with the current time
+  // (which must still be close to 07:00) instead of demanding exactly 7:00
   const hourAngle = -wallClock.hourHand.rotation.z / (Math.PI * 2) * 12;
-  pass &= check(Math.abs(hourAngle - 7) < 0.05 && Math.abs(wallClock.minuteHand.rotation.z % (Math.PI * 2)) < 0.05, 'hands show 7:00');
+  const minuteFrac = ((-wallClock.minuteHand.rotation.z / (Math.PI * 2)) % 1 + 1) % 1;
+  const want = day.hour % 12, wantMin = day.hour % 1;
+  const minOk = Math.min(Math.abs(minuteFrac - wantMin), 1 - Math.abs(minuteFrac - wantMin)) < 0.02;
+  pass &= check(Math.abs(day.hour - 7) < 0.1 && Math.abs(hourAngle - want) < 0.02 && minOk, `hands show the time, ~7:00 (${day.clock})`);
   d.getElementById('start-touch').click();
   await wait(50);
   // stand 1.2 m east of the clock, facing west (yaw 90), eye level with it
