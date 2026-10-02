@@ -628,8 +628,10 @@ export function buildWorld(plan) {
   const kitchenSurfaces = cupSurfaces.map((r, i) => { const m = surfaceBox(r); if (i === 0) m.userData.counter = true; scene.add(m); return m; });
   const sillPlants = buildSillPlants([...l0.sills, ...l1.sills]); // flower pots on every window board (#136)
   scene.add(sillPlants);
+  const sillSurfaces = [...l0.sills, ...l1.sills].map((r) => { const m = surfaceBox(r); scene.add(m); return m; }); // things go down on window boards too (#185)
   const shelves = buildWallShelves(); // kitchen wall shelves (WALL_SHELVES)
   scene.add(shelves);
+  shelves.updateMatrixWorld(true);
   const hallWall = buildHallWall(); // mirror + Solstickan key cabinet (HALL_WALL)
   scene.add(hallWall.object);
 
@@ -713,9 +715,10 @@ export function buildWorld(plan) {
     object: scene,
     setFurniture,
     looseItems, // hidden by F (main.js may add more)
-    cupSurfaces: [...furniture.surfaces, ...kitchenSurfaces], // table tops a cup can be put on (#90)
+    cupSurfaces: [...furniture.surfaces, ...kitchenSurfaces, ...sillSurfaces], // table tops a cup can be put on (#90), the window boards (#185)
     cupCabinet,
-    things: furniture.things, // bottles and glasses main.js turns into Holdables (#152)
+    things: [...furniture.things, ...shelves.userData.plants], // bottles, glasses, pot plants main.js turns into Holdables (#152, #185)
+    sillPlants, // the window boards' pots (main.js makes each one a Holdable, #185)
     furnitureTargets: furniture.interactives, // E targets among the furniture (the TV), hidden with F
     /** Collision of moving furniture parts (the secretary's open flap, #118) on `level`. */
     movingSegments(level) {

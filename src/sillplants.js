@@ -6,6 +6,9 @@ import { SILL_PLANTS as S } from './config.js';
 // with a plant from S.kinds (pelargonium, orchid, cactus, basil, ivy, African violet). Leaves and flowers
 // carry vertex colours, so the whole lot is five meshes (pots ×2, soil, leaves, flowers). Seeded random, so
 // every visit shows the same sills. A loose item: F hides it.
+// Each pot can be lifted (#185, plants.js): `userData.pots` holds every pot's own geometry (local to its base);
+// `userData.rebuild(away)` merges again without the pots in `away` (taken or standing somewhere else), and
+// `potModel(pot)` builds one pot as a small group of its own (≤ 5 meshes).
 
 const mats = {
   terracotta: new THREE.MeshStandardMaterial({ color: 0xb8643f, roughness: 0.9 }),
@@ -68,7 +71,7 @@ function plant(kind, x, y, z, R, out) {
 export function buildSillPlants(sills) {
   let seed = 7;
   const R = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
-  const out = { terracotta: [], ceramic: [], soil: [], leaf: [], flower: [] };
+  const pots = []; // { base: Vector3 (world), geos: { material: [geometry local to the base] }, sill, k }
   sills.forEach((s, i) => {
     const L = s.x1 - s.x0, n = L >= 1.5 ? 3 : 2, zc = (s.z0 + s.z1) / 2;
     const kinds = S.byWindow[i] ?? S.kinds;
@@ -76,14 +79,38 @@ export function buildSillPlants(sills) {
       const x = s.x0 + (L * (k + 0.5)) / n + (R() - 0.5) * 0.1, kind = kinds[(k + i) % kinds.length];
       const r = 0.05 + R() * 0.02, h = 0.09 + R() * 0.04, mat = (k + i) % 2 ? 'ceramic' : 'terracotta';
       if (S.skip?.some(([si, sk]) => si === i && sk === k)) continue; // something else stands there (after the random draws: the others stay put)
-      out[mat].push(strip(new THREE.CylinderGeometry(r, r * 0.78, h, 16).translate(x, s.y + h / 2, zc)));
-      out[mat].push(strip(new THREE.TorusGeometry(r - 0.004, 0.006, 5, 16).rotateX(Math.PI / 2).translate(x, s.y + h, zc)));
-      out.soil.push(strip(new THREE.CircleGeometry(r - 0.008, 12).rotateX(-Math.PI / 2).translate(x, s.y + h - 0.015, zc)));
-      plant(kind, x, s.y + h - 0.015, zc, R, out);
+      const out = { terracotta: [], ceramic: [], soil: [], leaf: [], flower: [] };
+      out[mat].push(strip(new THREE.CylinderGeometry(r, r * 0.78, h, 16).translate(0, h / 2, 0)));
+      out[mat].push(strip(new THREE.TorusGeometry(r - 0.004, 0.006, 5, 16).rotateX(Math.PI / 2).translate(0, h, 0)));
+      out.soil.push(strip(new THREE.CircleGeometry(r - 0.008, 12).rotateX(-Math.PI / 2).translate(0, h - 0.015, 0)));
+      plant(kind, 0, h - 0.015, 0, R, out);
+      pots.push({ base: new THREE.Vector3(x, s.y, zc), geos: out, sill: i, k, kind });
     }
   });
   const g = new THREE.Group();
-  for (const [k, list] of Object.entries(out)) {
+  g.userData.pots = pots;
+  g.userData.rebuild = (away = new Set()) => {
+    for (const m of [...g.children]) { m.geometry.dispose(); g.remove(m); }
+    const lists = {};
+    for (const p of pots) {
+      if (away.has(p)) continue;
+      for (const [k, list] of Object.entries(p.geos)) for (const geo of list) (lists[k] ??= []).push(geo.clone().translate(p.base.x, p.base.y, p.base.z));
+    }
+    for (const [k, list] of Object.entries(lists)) {
+      if (!list.length) continue;
+      const m = new THREE.Mesh(mergeGeometries(list), mats[k]);
+      m.castShadow = true;
+      g.add(m);
+    }
+  };
+  g.userData.rebuild();
+  return g;
+}
+
+/** One pot as a group of its own (origin at the bottom of the pot), for carrying it about. */
+export function potModel(pot) {
+  const g = new THREE.Group();
+  for (const [k, list] of Object.entries(pot.geos)) {
     if (!list.length) continue;
     const m = new THREE.Mesh(mergeGeometries(list), mats[k]);
     m.castShadow = true;

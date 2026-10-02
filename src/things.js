@@ -11,10 +11,11 @@ import { Contents, GlassLiquid, pourAmount, drinkName } from './drinks.js';
 // pours (the bottle tips, the glass fills over a second); a click / "Drick" with a filled glass in the hand drinks
 // a sip. A glass put back in the BESTÅ is empty again. The bottles never run dry.
 
-const NAMES = { wine: 'vinflaskan', champagne: 'champagneflaskan', whisky: 'whiskyflaskan', glass: 'glaset' };
+const NAMES = { wine: 'vinflaskan', champagne: 'champagneflaskan', whisky: 'whiskyflaskan', glass: 'glaset', plant: 'blomkrukan' };
 const HELD = {
   glass: { pos: [0.17, -0.2, -0.4], rot: [0.05, 0, 0] },
   bottle: { pos: [0.2, -0.32, -0.48], rot: [0.15, 0, -0.1] },
+  plant: { pos: [0.16, -0.32, -0.5], rot: [0.1, 0, 0] }, // a pot plant held in front, the plant up (#185)
 };
 
 export class Thing extends Holdable {
@@ -23,10 +24,10 @@ export class Thing extends Holdable {
     const pos = model.getWorldPosition(new THREE.Vector3());
     const rot = new THREE.Euler().setFromQuaternion(model.getWorldQuaternion(new THREE.Quaternion()));
     const box = new THREE.Box3().setFromObject(model), size = box.getSize(new THREE.Vector3()), mid = box.getCenter(new THREE.Vector3());
-    const held = HELD[kind === 'glass' ? 'glass' : 'bottle'];
+    const held = HELD[kind === 'glass' || kind === 'plant' ? kind : 'bottle'];
     const name = given ?? NAMES[kind] ?? 'flaskan';
     super(scene, camera, {
-      name, verb: 'ta', backName: back, backVerb: kind === 'glass' ? `ställa tillbaka ${name} i` : `lägga tillbaka ${name} i`, placeVerb: 'ställa ner', model,
+      name, verb: 'ta', backName: back, backVerb: kind === 'plant' ? `ställa tillbaka ${name} på` : kind === 'glass' ? `ställa tillbaka ${name} i` : `lägga tillbaka ${name} i`, placeVerb: 'ställa ner', model,
       home: { pos, rot }, heldPose: { pos: new THREE.Vector3(...held.pos), rot: new THREE.Euler(...held.rot) },
       pick: { pos: mid, size: [size.x + 0.03, size.y + 0.03, size.z + 0.03] }, cooldown: kind === 'glass' ? 0.6 : 0.3,
     });
@@ -172,6 +173,6 @@ export class Trinket extends Holdable {
   onPut() { sfx.click(this.where()); }
 }
 
-const KINDS = { glass: Glass, trinket: Trinket };
-/** Every bottle, glass and secretary trinket furniture.js offers (world.things). */
+const KINDS = { glass: Glass, trinket: Trinket, plant: Thing }; // pot plants (#185) are plain Things
+/** Every bottle, glass, secretary trinket and pot plant furniture.js offers (world.things). */
 export const buildThings = (scene, camera, list) => list.map((t) => new (KINDS[t.kind] ?? Bottle)(scene, camera, t));

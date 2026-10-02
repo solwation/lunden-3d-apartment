@@ -25,6 +25,7 @@ import { buildToys } from './toys.js';
 import { Remote } from './remote.js';
 import { Book } from './book.js';
 import { Pan } from './pan.js';
+import { buildSillPots } from './plants.js';
 import { Chicken } from './chicken.js';
 import { Sonos } from './sonos.js';
 import { Beer } from './beer.js';
@@ -237,7 +238,8 @@ const beer = new Beer(scene, camera); // a big beer on the lounge table when you
 beer.onGulp = () => bump('beer');
 const things = buildThings(scene, camera, world.things); // bottles and glasses in the living room (#152)
 for (const t of things) t.onSip = (drink) => { if (drink) bump(drink); }; // a sip from a glass: wine, whisky … (#167)
-const holdables = [saber, ...toys.items, remote, book, beer, ...things]; // things you can take and hold, one at a time (holdable.js)
+const sillPots = buildSillPots(scene, camera, world.sillPlants); // the pots on the window boards can be lifted (#185)
+const holdables = [saber, ...toys.items, remote, book, beer, ...things, ...sillPots]; // things you can take and hold, one at a time (holdable.js)
 const cups = buildCups(scene, camera, world, world.cupCabinet); // coffee cups in the wall cabinet (#90)
 holdables.push(cups.jug);
 const fish = buildFish(scene, camera, world); // fish fingers in the freezer, one at a time (#162)
@@ -1053,4 +1055,4 @@ function continueAfterReload(r) {
 if (resumeOk && resumed.mode) continueAfterReload(resumed);
 
 // handle for tests/debugging (tools/touchtest.html)
-window.__app = { takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };
+window.__app = { sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };

@@ -4,7 +4,8 @@ import { WALL_SHELVES as S } from './config.js';
 
 // Two wall shelves in the kitchen with small things on them: framed portraits, flowers in a vase and
 // a pot, books, candlesticks and a bowl. Three draw calls: oak + brackets (vertex colours), the
-// portraits (one canvas atlas) and all the small things (vertex colours).
+// portraits (one canvas atlas) and all the small things (vertex colours); the vase of flowers and the pot plant are
+// one mesh each, so they can be taken (#185, `userData.plants`).
 
 const PORTRAITS = [ // background, skin, hair, top: three little painted people
   { bg: '#c9d8e0', skin: '#e8c4a8', hair: '#5a3a22', top: '#7b3b3b' },
@@ -88,13 +89,14 @@ export function buildWallShelves() {
   // lower shelf: books, a vase with flowers, a portrait, a bowl
   [[0.03, 0.23, 0x7b3b3b], [0.025, 0.21, 0x3d5f7a], [0.035, 0.24, 0xc9b27c], [0.028, 0.2, 0x4f6b4a], [0.03, 0.22, 0x2b2b30]]
     .reduce((z, [t, h, c]) => { put(things, box(0.15, h, t), c, x0 + 0.09, y1 + h / 2, z + t / 2); return z + t + 0.003; }, S.z0 + 0.04);
-  const flowers = (z, y, vase, heads) => {
-    put(things, cyl(0.035, 0.03, 0.12), vase, xc, y + 0.06, z);
+  const vase = [], pot = []; // the vase of flowers and the pot plant can be taken (#185): their own meshes
+  const flowers = (z, y, vaseHex, heads) => {
+    put(vase, cyl(0.035, 0.03, 0.12), vaseHex, xc, y + 0.06, z);
     heads.forEach(([dx, dz, h, c]) => {
       const stem = cyl(0.003, 0.003, h, 5);
       stem.rotateZ(-dx * 4).rotateX(dz * 4);
-      put(things, stem, 0x4f7a3a, xc + dx / 2, y + 0.1 + h / 2, z + dz / 2);
-      put(things, new THREE.IcosahedronGeometry(0.018, 0), c, xc + dx, y + 0.1 + h, z + dz);
+      put(vase, stem, 0x4f7a3a, xc + dx / 2, y + 0.1 + h / 2, z + dz / 2);
+      put(vase, new THREE.IcosahedronGeometry(0.018, 0), c, xc + dx, y + 0.1 + h, z + dz);
     });
   };
   flowers(0.98, y1, 0xf2f0ea, [[0, 0, 0.13, 0xe86a92], [0.025, 0.02, 0.11, 0xf2d04a], [-0.02, -0.02, 0.12, 0xffffff], [0.01, -0.03, 0.1, 0xe86a92]]);
@@ -108,12 +110,12 @@ export function buildWallShelves() {
     put(things, cyl(0.01, 0.01, 0.12, 8), 0xf6f1e4, xc, y2 + h + 0.06, z);
   }
   portrait(2, 0.13, 0.18, y2, 1.2, 0xf2f0ea);
-  put(things, cyl(0.045, 0.035, 0.08), 0xb8643e, xc, y2 + 0.04, 1.44); // terracotta pot
+  put(pot, cyl(0.045, 0.035, 0.08), 0xb8643e, xc, y2 + 0.04, 1.44); // terracotta pot
   for (let k = 0; k < 6; k++) {
     const a = (k / 6) * Math.PI * 2;
     const leaf = new THREE.SphereGeometry(0.03, 6, 4).scale(1, 0.5, 1.6);
     leaf.rotateY(a).rotateX(0.5);
-    put(things, leaf, 0x4f8a3e, xc + Math.cos(a) * 0.03, y2 + 0.1 + (k % 2) * 0.02, 1.44 + Math.sin(a) * 0.03);
+    put(pot, leaf, 0x4f8a3e, xc + Math.cos(a) * 0.03, y2 + 0.1 + (k % 2) * 0.02, 1.44 + Math.sin(a) * 0.03);
   }
 
   const vc = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.6 });
@@ -125,5 +127,13 @@ export function buildWallShelves() {
   add(wood, vc);
   add(things, vc);
   add(pics, new THREE.MeshStandardMaterial({ map: portraitAtlas(), roughness: 0.8 }));
+  // the two plants: one mesh each, the origin at its bottom (plants.js makes them Holdables)
+  group.userData.plants = [[vase, 0.98, y1], [pot, 1.44, y2]].map(([geos, z, y]) => {
+    const m = new THREE.Mesh(mergeGeometries(geos.map((g) => (g.index ? g.toNonIndexed() : g))).translate(-xc, -y, -z), vc);
+    m.position.set(xc, y, z);
+    m.castShadow = true;
+    group.add(m);
+    return { model: m, kind: 'plant', back: 'hyllan' };
+  });
   return group;
 }

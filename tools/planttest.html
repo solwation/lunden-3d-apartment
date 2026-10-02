@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Plant test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+// Pot plants you can lift (#185): a pot from the kitchen window onto the dining table (the window's merged meshes
+// lose it, its own model shows), the flower from the side table onto the kitchen window board, the shelf's
+// pot plant; F sends them all home (and the pot melts into the merged meshes again).
+//   google-chrome --headless=new --dump-dom http://localhost:8137/tools/planttest.html
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const f = document.createElement('iframe');
+f.width = 900; f.height = 600; f.src = '../index.html';
+document.body.append(f);
+f.onload = async () => {
+  const w = f.contentWindow, d = f.contentDocument;
+  while (!w.__app) await wait(100);
+  const { player, camera, step, world, scene, sillPots, things, heldItem, toggleFurniture } = w.__app;
+  const lines = [];
+  const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; };
+  d.getElementById('start-touch').click();
+  await wait(50);
+  const btn = d.getElementById('action');
+  const V = camera.position.constructor;
+  const aim = (p, from, feet = 0) => {
+    player.spawn(from[0], from[1], 0);
+    if (feet) { player.pos.y = feet; player.eyeY = feet + 1.62; }
+    for (let i = 0; i < 3; i++) step(1 / 60);
+    scene.updateMatrixWorld(true);
+    const dx = p.x - camera.position.x, dz = p.z - camera.position.z;
+    camera.rotation.set(Math.atan2(p.y - camera.position.y, Math.hypot(dx, dz)), Math.atan2(-dx, -dz), 0, 'YXZ');
+    step(1 / 60);
+    return btn.hidden ? '(hidden)' : btn.textContent;
+  };
+  const sill = world.sillPlants;
+  const verts = () => sill.children.reduce((n, m) => n + m.geometry.attributes.position.count, 0);
+  let pass = check(sillPots.length >= 12, `${sillPots.length} pots on the window boards, ${sill.children.length} merged meshes`);
+  // (1) a pot from the kitchen window (z < 0.6, Entréplan) onto the dining table
+  const pot = sillPots.find((p) => p.home.pos.z < 0.6 && p.home.pos.y < 1);
+  const v0 = verts();
+  let label = aim(pot.home.pos.clone().add(new V(0, 0.08, 0)), [pot.home.pos.x, 1.2]);
+  pass &= check(/ta blomkrukan/i.test(label), `at the kitchen window: "${label}"`);
+  btn.click(); step(1 / 60);
+  pass &= check(heldItem() === pot && verts() < v0 && pot.model.children.every((m) => m.visible), `in the hand: the merged meshes without it (${v0} → ${verts()} vertices), its own model shows`);
+  const at = (m) => m.getWorldPosition(new V());
+  const table = world.cupSurfaces.find((m) => Math.abs(m.userData.surface - 0.75) < 0.01 && at(m).z > 0.8 && at(m).z < 3 && at(m).x > 2.5);
+  const tp = at(table).setY(table.userData.surface);
+  label = aim(tp, [tp.x - 0.9, tp.z + 0.3]);
+  pass &= check(/ställa ner blomkrukan/i.test(label), `at the dining table: "${label}"`);
+  btn.click(); step(1 / 60);
+  pass &= check(pot.placed && Math.abs(pot.model.position.y - table.userData.surface) < 0.01, `standing on the table (y ${pot.model.position.y.toFixed(3)})`);
+  // (2) the side-table flower onto the living-room window board
+  const flower = things.find((t) => t.kind === 'plant' && /sidobordet/.test(t.backTarget.name));
+  label = aim(flower.where().add(new V(0, 0.1, 0)), [flower.home.pos.x + 0.8, flower.home.pos.z + 0.4]);
+  pass &= check(/ta blomkrukan/i.test(label), `the flower on the side table: "${label}"`);
+  btn.click(); step(1 / 60);
+  pass &= check(heldItem() === flower, 'in the hand');
+  const board = world.cupSurfaces.find((m) => at(m).z < 1 && at(m).y < 1 && Math.abs(m.userData.surface - 0.8) < 0.01); // the kitchen window (the living room's is behind the sofa)
+  const bp = at(board).setY(board.userData.surface).add(new V(-0.3, 0, -0.05)); // between two pots
+  label = aim(bp, [bp.x, 1.3]);
+  pass &= check(/ställa ner blomkrukan/i.test(label), `at the kitchen window: "${label}"`);
+  btn.click(); step(1 / 60);
+  pass &= check(flower.placed && Math.abs(flower.model.position.y - board.userData.surface) < 0.01, `on the window board (y ${flower.model.position.y.toFixed(3)})`);
+  // (3) the shelf's pot plant
+  const shelfPot = things.find((t) => t.kind === 'plant' && /hyllan/.test(t.backTarget.name) && t.home.pos.y > 1.7);
+  label = aim(shelfPot.where().add(new V(0, 0.05, 0)), [shelfPot.home.pos.x + 0.9, shelfPot.home.pos.z]);
+  btn.click(); step(1 / 60);
+  pass &= check(heldItem() === shelfPot, `the shelf's pot plant ("${label}")`);
+  // F: all home, the pot back in the merged meshes
+  toggleFurniture(); toggleFurniture();
+  pass &= check(!pot.placed && !pot.held && verts() === v0 && pot.model.children.every((m) => !m.visible), `F: the window pot home (${verts()} vertices)`);
+  pass &= check(!flower.placed && flower.model.position.distanceTo(flower.home.pos) < 0.001 && !shelfPot.held && shelfPot.model.position.distanceTo(shelfPot.home.pos) < 0.001, 'F: the flower and the shelf plant home');
+  out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
+};
+</script>
+</body>
+</html>

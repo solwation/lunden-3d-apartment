@@ -184,7 +184,11 @@ src/catboard.js        cork board in the kitchen (under the wall clock): a photo
 src/shelves.js         kitchen wall shelves with portraits, flowers, books, candles (WALL_SHELVES)
 src/keycabinet.js      hall wall: IKEA LINDBYN mirror Ø 110 + Solstickan key cabinet (E) with the Renault key (E → beep beep);
                        the cabinet is in world.lids, the key (world.carKey) a target only while it is open
-src/sillplants.js      flower pots on every inner window board (SILL_PLANTS, #136): five merged meshes, a loose item
+src/sillplants.js      flower pots on every inner window board (SILL_PLANTS, #136): five merged meshes, a loose item;
+                       `userData.pots` / `rebuild(away)` / `potModel` let one pot be lifted out of the merge (#185)
+src/plants.js          SillPot (#185): each window-board pot is a Holdable; its own model is invisible at home, shows (and
+                       the merged meshes are rebuilt without it) once taken; the side-table flower and the kitchen shelf's
+                       vase / pot plant are plain Things (kind 'plant'); window boards are put-down surfaces too
 src/car.js             our white Renault Megane E-Tech (CAR, #173): the hall key calls it along Sankt Lars väg to stop out
                        front (blinks, a collision box while parked, waits for the visitor), pressed again it U-turns and
                        leaves; sfx.evHum follows it; `&car` = parked (screenshots)
@@ -259,6 +263,7 @@ tools/postertest.html  headless test: take the drawing (blank sheet stays), back
 tools/sonostest.html   headless test: music in all three speakers, songs, volume, panel, pause, upstairs, F; each channel
                        rendered offline (only outside --virtual-time-budget; there it says SKIP)
 tools/boardtest.html   headless test: keep / throw away cat photos, a full board, the panel (needs a big virtual-time budget)
+tools/planttest.html   headless test: lift pot plants (window board → table, side table → window board, the shelf), F home
 tools/clocktest.html   headless test of the wall clock (?time=7, spool, pause, sun height by month)
 tools/calendartest.html headless test: today's date at the start, pick a date on the calendar, the sun follows
 tools/stamp.sh         build the published site with a version stamp (used by CI)

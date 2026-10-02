@@ -259,10 +259,13 @@ function sidetable(item) {
     g.add(l);
   }
   g.traverse((m) => { m.castShadow = m.receiveShadow = true; });
-  if (item.flower) {
+  if (item.flower) { // a little pot plant you can take (#185, things.js)
     const f = flower();
+    mergeStatic(f); // a few meshes (one per material), not a dozen
     f.position.y = 0.533;
     g.add(f);
+    g.userData.keep = [f];
+    g.userData.things = [{ model: f, kind: 'plant', back: 'sidobordet' }];
   }
   g.userData.footprint = [{ x0: -0.22, x1: 0.22, z0: -0.22, z1: 0.22 }];
   return g;
