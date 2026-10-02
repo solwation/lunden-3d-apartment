@@ -47,6 +47,7 @@ src/cat.js             the cat: random coat, washing animation, appears/moves/va
 src/furniture.js       loose furniture from FURNITURE in config (IKEA LANDSKRONA sofa/armchair …)
 src/interior.js        fitted kitchen, laundry, bathroom fittings, tiled floors/walls (FINISH, KITCHEN,
                        TILED_ROOMS in config); merged into one mesh per material
+docs/                  reference images in git (site map screenshot)
 material/              screenshots of our choices in Peab's option portal (local, see below)
 src/audio.js           synthesised positional sound effects (Web Audio): doors, slides, meow, steps
 src/toilet.js          toilet (Ifö Spira 6260) with an animated lid
@@ -154,6 +155,12 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   `toiletAgainstWall` re-orients them. Modelled as Ifö Spira 6260 (`TOILET` in config,
   `src/toilet.js`); the lid opens/closes with E (`world.lids`, kept out of `world.doors` so the
   cat logic and door tests don't see them).
+- Site (the user, `docs/tomten-google-maps.jpg`): Kv. Lunden is the empty plot by Karpvägen /
+  S:t Lars väg in S:t Lars park, Lund (~55.70° N, 13.17° E), next to HepCat Store, between
+  Realgymnasiet, Lunds Montessorigrundskola and Kunskapsskolan; woods towards Höje å to the south.
+  77 Swan-marked homes in four buildings. Peab's PDFs (situationsplan, façades of the other
+  buildings) are on the project page — peabbostad.se is blocked from the cloud sessions, so they
+  must be added to the repo to be used.
 - More info: https://peabbostad.se/projekt/skane/kv.-lunden/l1007/
 
 Values marked *guess* in `src/config.js` (slab thickness, window sill/head, soffit depth,
