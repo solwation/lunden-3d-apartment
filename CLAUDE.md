@@ -155,7 +155,9 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   C (x −73…−53, z 12.5…37.5, 1…5), brick with low hip roofs; the courtyard is on a garage and the
   ground drops ~3 m south of it. **True north**: FOJAB's arrow puts it 58° left of plan-up, so the
   plan's "north" (entrance) faces ENE (bearing 58°, `DAY.planNorth`) and the patio WSW. The schools,
-  HepCat and the villa outside the plot are illustrative boxes placed from the Google Maps screenshot.
+  HepCat and the villa outside the plot are placed from the Google Maps screenshot and drawn in the old
+  S:t Lars style (#47, `style: 'old'`: brick, white cornice and string courses, tall arched windows,
+  steep dark hip roofs, 3.6 m storeys) after the drone photo/render — storey counts are guesses.
 - Skärmvägg by the patio H 1.8 m, stair railing H 1.1 m (bofakta).
 - U-shaped stair with winders at the east end: flight A (Entréplan, going east), 180° winders,
   flight B (going west) arriving in the upstairs hall. Upstairs slab opening = stair outline on

@@ -92,18 +92,21 @@ export const WINDOWS = [
 export const SITE = {
   dropZ: 54, dropDepth: 3, dropRun: 5, // courtyard edge → park level (Nivåskillnad ca 3 m)
   bay: 3.0, storey: 3.0,  // façade texture of the other blocks: one window per 3 × 3 m
+  old: { bay: 2.6, storey: 3.6, roofPitch: 0.6 }, // the old S:t Lars buildings (style: 'old'): rise = pitch × half depth
   blocks: [
     // Kv. Lunden, Å-husen (overview plans): storeys counted from `base`; red brick, low hip roof
     { name: 'Hus A', x0: -10.2, x1: 9.5, z0: 29.6, z1: 54.2, base: -3, storeys: 5, roof: 'hip' },  // våning -1…4
     { name: 'Hus B', x0: -43.4, x1: -23.7, z0: 34.2, z1: 58.6, base: -3, storeys: 4, roof: 'hip' }, // våning -1…3
     { name: 'Hus C', x0: -73.0, x1: -53.3, z0: 12.5, z1: 37.5, base: 0, storeys: 5, roof: 'hip' },  // våning 1…5
-    // outside the plot (illustrative)
-    { name: 'HepCat Store', x0: 28.5, x1: 37, z0: -11, z1: 10, base: 0, storeys: 2, roof: 'gable' },
-    { name: 'Kunskapsskolan', x0: 32, x1: 60, z0: 19.5, z1: 62, base: -3, storeys: 4, roof: 'gable' },
-    { name: 'Realgymnasiet', x0: 5, x1: 70, z0: -74, z1: -50, base: 0, storeys: 3, roof: 'gable' },
-    { name: 'S:t Lars (old hospital)', x0: -62, x1: -22, z0: -62, z1: -46, base: 0, storeys: 3, roof: 'gable' },
-    { name: 'Montessorigrundskolan', x0: -78, x1: -60, z0: -115, z1: -70, base: 0, storeys: 3, roof: 'gable' },
-    { name: 'Villa', x0: -64.5, x1: -48.5, z0: 69, z1: 87, base: -3, storeys: 2, roof: 'gable' },
+    // outside the plot (#47): the old S:t Lars hospital buildings, as on Peab's drone photo and aerial
+    // render (docs/peab/): red brick with white trim, steep dark hip roofs, high storeys and tall
+    // white windows. Storey counts and heights are read off those pictures — guesses, not surveyed.
+    { name: 'HepCat Store', x0: 28.5, x1: 37, z0: -11, z1: 10, base: 0, storeys: 1, roof: 'gable', style: 'old' }, // low brick building
+    { name: 'Kunskapsskolan', x0: 32, x1: 60, z0: 19.5, z1: 62, base: -3, storeys: 3, roof: 'hip', style: 'old' },
+    { name: 'Realgymnasiet', x0: 5, x1: 70, z0: -74, z1: -50, base: 0, storeys: 3, roof: 'hip', style: 'old' },
+    { name: 'S:t Lars (old hospital)', x0: -62, x1: -22, z0: -62, z1: -46, base: 0, storeys: 3, roof: 'hip', style: 'old' },
+    { name: 'Montessorigrundskolan', x0: -78, x1: -60, z0: -115, z1: -70, base: 0, storeys: 2, roof: 'hip', style: 'old' },
+    { name: 'Villa', x0: -64.5, x1: -48.5, z0: 69, z1: 87, base: -3, storeys: 3, roof: 'hip', style: 'old' }, // brick house, hip roof
   ],
   // asphalt (y follows the ground: courtyard level north of dropZ, park level south of it)
   roads: [
