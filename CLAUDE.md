@@ -142,7 +142,7 @@ tools/esctest.html     headless test of Esc on the start screen (click-to-start 
 tools/updatetest.html  headless test of the update notice on a phone-sized touch screen (on top, 44 px, touch works)
 tools/perfcount.html   draw calls / triangles at a few spots (compare before/after optimising)
 tools/oventest.html    headless test: oven + microwave open/close (lamp inside), Moccamaster brews and clicks off
-tools/tvtest.html      headless test: switch the living-room TV on/off, picture moves, no target with F off
+tools/tvtest.html      headless test: TVs on/off (living room + Sovrum 3), new programme each time, the remote, F off
 tools/reloadtest.html  headless test: resume after "Ladda om", F5 starts at START, "Börja från start", bad record
 tools/resttest.html    headless test: sit on every seat and lie in every bed (spot, no walking, up again)
 tools/pctest.html      headless test: switch the gaming PC on/off (game moves, RGB cycles), the chair is a seat and
