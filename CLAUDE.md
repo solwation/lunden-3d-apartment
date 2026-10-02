@@ -309,6 +309,8 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   bathroom are *example* layouts with our materials — the kitchen layout is
   `material/Köksritning.jpg` (tall oven unit, wall cabinets, top cabinets over fridge/freezer,
   gypsum boxing above the hood). Colours/sizes live in `FINISH` / `KITCHEN` in config.
+- The family (#164): Sarah and Olof are married, two families moved in together — Olof is the father of Tilly,
+  Kian and Tuva, Sarah the mother of Walter and Livia. Text that mentions them must not make all five siblings.
 - Who sleeps where (the user's plan; "left/right" as you arrive upstairs walking west):
   Sovrum 1 (first right) Sarah & Olof, double bed IKEA IDANÄS 180 × 200 (`IDANAS`, #91), a NORDLI chest of
   drawers in its Klk (no wardrobe in Sovrum 1; the Klk is 1.65 × 1.20 inside, #94) (a sage green IKEA chintz bedding set from a Sellpy ad, #83) with IKEA NORDKISA bedside tables (#64) and white NYMÅNE work
