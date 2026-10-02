@@ -247,6 +247,55 @@ function ginghamTexture(b) {
   return tex;
 }
 
+/** Seamless chintz (#83): a sage ground with seeded blooms (layered petals), leaves and curling stems in
+ * the bedding's colours; one repeat = b.repeat metres. Everything is drawn wrapped, so it tiles. */
+function chintzTexture(b) {
+  const N = 512, c = document.createElement('canvas');
+  c.width = c.height = N;
+  const g = c.getContext('2d');
+  g.fillStyle = b.ground; g.fillRect(0, 0, N, N);
+  let seed = 21;
+  const rand = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+  const wrapped = (x, y, draw) => { for (const dx of [-N, 0, N]) for (const dy of [-N, 0, N]) { g.save(); g.translate(x + dx, y + dy); draw(); g.restore(); } };
+  const leaf = (len, w, col) => { g.fillStyle = col; g.beginPath(); g.moveTo(0, 0); g.quadraticCurveTo(w, -len / 2, 0, -len); g.quadraticCurveTo(-w, -len / 2, 0, 0); g.fill(); g.strokeStyle = 'rgba(255,255,255,0.55)'; g.lineWidth = 1.2; g.stroke(); };
+  // stems and leaves first
+  for (let i = 0; i < 60; i++) {
+    const x = rand() * N, y = rand() * N, a = rand() * 6.28, col = b.leaves[Math.floor(rand() * b.leaves.length)], sc = 0.6 + rand() * 0.8;
+    wrapped(x, y, () => {
+      g.rotate(a);
+      g.strokeStyle = b.leaves[2]; g.lineWidth = 2.5; g.beginPath(); g.moveTo(0, 0); g.bezierCurveTo(20 * sc, -20 * sc, -10 * sc, -40 * sc, 15 * sc, -60 * sc); g.stroke();
+      leaf(34 * sc, 11 * sc, col);
+      g.rotate(1.1); leaf(26 * sc, 9 * sc, col);
+    });
+  }
+  // blooms: layered rounded petals, a darker heart, white outlines; small white flowers between
+  for (let i = 0; i < 26; i++) {
+    const x = rand() * N, y = rand() * N, r = 16 + rand() * 22, col = b.flowers[Math.floor(rand() * b.flowers.length)], petals = 6 + Math.floor(rand() * 4), rot = rand() * 6.28;
+    wrapped(x, y, () => {
+      g.rotate(rot);
+      for (const [k, sh] of [[1, 0], [0.68, 0.12], [0.38, 0.24]]) {
+        g.fillStyle = col; g.globalAlpha = 1;
+        for (let p = 0; p < petals; p++) {
+          const a = (p / petals) * Math.PI * 2;
+          g.beginPath(); g.ellipse(Math.cos(a) * r * k * 0.55, Math.sin(a) * r * k * 0.55, r * k * 0.5, r * k * 0.34, a, 0, Math.PI * 2);
+          g.fill(); g.strokeStyle = 'rgba(255,255,255,0.7)'; g.lineWidth = 1.3; g.stroke();
+        }
+        g.fillStyle = `rgba(80,20,30,${sh})`; g.beginPath(); g.arc(0, 0, r * k * 0.5, 0, 6.28); g.fill();
+      }
+      g.fillStyle = b.flowers[3]; g.beginPath(); g.arc(0, 0, r * 0.12, 0, 6.28); g.fill();
+    });
+  }
+  for (let i = 0; i < 70; i++) {
+    const x = rand() * N, y = rand() * N, r = 3 + rand() * 3;
+    wrapped(x, y, () => { g.fillStyle = '#f4f1ea'; for (let p = 0; p < 5; p++) { const a = (p / 5) * 6.28; g.beginPath(); g.arc(Math.cos(a) * r, Math.sin(a) * r, r * 0.7, 0, 6.28); g.fill(); } g.fillStyle = b.flowers[3]; g.beginPath(); g.arc(0, 0, r * 0.5, 0, 6.28); g.fill(); });
+  }
+  const tex = new THREE.CanvasTexture(c);
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 8;
+  return tex;
+}
+
 /** A crumpled duvet: a subdivided slab whose top is gently wavy, sides hanging down past the mattress. */
 function duvetGeometry(w, l, drop, seed = 3) {
   const geo = new THREE.BoxGeometry(w, 0.06, l, 24, 1, 24);
@@ -277,8 +326,9 @@ function bed(item) {
   g.add(rbox(w, 0.2, l, 0, 0.32 + 0.1, 0, linen, 0.05));
   const b = item.bedding;
   if (b) {
-    const tex = ginghamTexture(b);
-    tex.repeat.set(1 / (2 * b.check), 1 / (2 * b.check));
+    const tex = b.pattern === 'chintz' ? chintzTexture(b) : ginghamTexture(b);
+    const rep = b.pattern === 'chintz' ? b.repeat : 2 * b.check; // metres per texture repeat
+    tex.repeat.set(1 / rep, 1 / rep);
     const check = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.95 });
     const duv = new THREE.Mesh(duvetGeometry(w + 0.12, l * 0.74, 0.2), check);
     duv.position.set(0, 0.55, z0 + l * 0.63);

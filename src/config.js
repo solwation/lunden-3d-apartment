@@ -573,11 +573,12 @@ export const FURNITURE = [
   // Sovrum 1, the corner left of the window seen from inside (NW), back and towel rack against the
   // west wall, seat facing into the room (east); the seat is below the window sill (BH 0.7)
   { type: 'ragrund', level: 1, x: 2.70 + 0.23, z: 0.465 + 0.205, rot: -90, towel: 0x9fb8c9 },
-  // Sovrum 1 (Sarah & Ofluf), head east, clear of the Klk. Cosy bedding (#66, after IKEA EKTANDVINGE dark
-  // blue/white check): gingham duvet and pillowcases (4.5 cm checks), a crumpled duvet, an extra dark blue
-  // cushion and a knitted sand throw over the foot end
+  // Sovrum 1 (Sarah & Ofluf), head east, clear of the Klk. Bedding (#83, an IKEA set from a Sellpy ad):
+  // sage green with a dense chintz of coral and pink peonies, ochre, slate-blue leaves and grey-green
+  // stems, white outlines (colours read off the photo); a pink cushion and a light grey throw to go with it
   { type: 'bed', level: 1, x: 5.55 - 1.1, z: 2.3, rot: 90, w: 1.6, l: 2.0,
-    bedding: { check: 0.045, blue: '#27406b', white: '#f4f4f0', throw: 0xcdb999, cushion: 0x24395e } },
+    bedding: { pattern: 'chintz', ground: '#adc2b1', repeat: 0.9, // blooms ~8–15 cm flowers: ['#d0696b', '#c9505a', '#e9b7bd', '#d4b45a'],
+      leaves: ['#6f7b86', '#8a96a0', '#7f9a83'], throw: 0xdcdcd8, cushion: 0xe2a3ab } },
   // Bunks: long side against the side wall, head end against the façade (the user's wish);
   // the ladder ends up on the room side at the foot end.
   { type: 'bunk', level: 1, x: 0.2 + 0.5, z: 0.47 + 1.05, rot: 180, w: 0.9, l: 2.0, sheets: 'unicorn' }, // Sovrum 3 (Livia & Tuva)
