@@ -77,8 +77,10 @@ export const WINDOWS = [
   { level: 0, facade: 'south', x: 3.85, sill: 0.6, head: 2.6, transom: 0.45 }, // Vardagsrum
   { level: 1, facade: 'north', x: 1.80, sill: 0.9, head: 2.25, transom: 0 },   // Sovrum 3
   { level: 1, facade: 'north', x: 3.85, sill: 0.7, head: 2.25, transom: 0 },   // Sovrum 1
-  { level: 1, facade: 'south', x: 1.45, sill: 0.7, head: 2.4, transom: 0.4 },  // Allrum
-  { level: 1, facade: 'south', x: 3.85, sill: 0.7, head: 2.4, transom: 0.4 },  // Sovrum 2
+  { level: 1, facade: 'south', x: 1.45, sill: 0.7, head: 2.4, transom: 0.4 },  // Allrum = Sovrum 4 (Tilly)
+  // Sovrum 2 has a smaller window than Sovrum 4 (the user, #107) — like Sovrum 3 vs Sovrum 1 on the north
+  // side. The PDF draws it 1.41 m; `width` (narrows the opening around its centre) and sill/head are *guess*.
+  { level: 1, facade: 'south', x: 3.85, sill: 0.9, head: 2.25, transom: 0, width: 1.2 }, // Sovrum 2
 ];
 
 // The site, measured on FOJAB's situation plan and overview plans in Peab's plan brochure

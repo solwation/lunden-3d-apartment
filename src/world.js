@@ -300,12 +300,18 @@ function buildLevel(floor, li, group) {
   // Windows: sill/head infill, frame with mullion + optional transom, glass, inner sill board.
   // All windows are in the north/south façades (they run along x).
   const openings = { north: [], south: [] };
-  for (const r of floor.windows) {
-    const facade = r.z0 < D / 2 ? 'north' : 'south';
-    const cx = (r.x0 + r.x1) / 2;
+  for (const pr of floor.windows) {
+    const facade = pr.z0 < D / 2 ? 'north' : 'south';
+    const cx = (pr.x0 + pr.x1) / 2;
     const spec = WINDOWS.filter((w) => w.level === li && w.facade === facade)
       .sort((a, b) => Math.abs(a.x - cx) - Math.abs(b.x - cx))[0];
     const sill = y0 + spec.sill, head = y0 + spec.head;
+    // `width` narrows the PDF opening around its centre; the rest is solid wall
+    let r = pr;
+    if (spec.width && spec.width < pr.x1 - pr.x0) {
+      r = { ...pr, x0: cx - spec.width / 2, x1: cx + spec.width / 2 };
+      group.add(box(pr.x0, r.x0, pr.z0, pr.z1, y0, yC, M.wall), box(r.x1, pr.x1, pr.z0, pr.z1, y0, yC, M.wall));
+    }
     group.add(box(r.x0, r.x1, r.z0, r.z1, y0, sill, M.wall));
     group.add(box(r.x0, r.x1, r.z0, r.z1, head, yC, M.wall));
     // frame sits towards the outside of the wall
@@ -317,7 +323,7 @@ function buildLevel(floor, li, group) {
     const iz1 = Math.max(fz, inner + (facade === 'north' ? 0.03 : -0.03));
     group.add(box(r.x0 - 0.02, r.x1 + 0.02, iz0, iz1, sill - 0.03, sill, M.porcelain));
     openings[facade].push({ x0: r.x0, x1: r.x1, y0: sill, y1: head });
-    segments.push(...rectSegments(r));
+    segments.push(...rectSegments(pr));
   }
 
   // Doors: lintel over the gap + an interactive leaf that fills the whole gap. All start
