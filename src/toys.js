@@ -14,7 +14,8 @@ const cyl = (r0, r1, h, m, seg = 12) => { const o = new THREE.Mesh(new THREE.Cyl
 // ---------- Nerf blasters and their darts ----------
 const foam = mat(0x1f6fff, { roughness: 0.9 }), tip = mat(0xff8a1a, { roughness: 0.9 });
 
-/** Foam darts in flight and on the floor (one small pool, simple ballistics against the floor). */
+/** Foam darts in flight and on the floor (one small pool, simple ballistics against the floor); a dart that
+ * reaches a wall or a piece of furniture leaves a paint splash in its blaster's colour (#98, marks.js). */
 class Darts {
   constructor(scene) {
     const D = T.nerf.dart;
@@ -29,10 +30,13 @@ class Darts {
     });
     this.next = 0;
     this.fired = 0;
+    this.splashes = 0;
+    this.marks = null; // set by main.js (#98)
   }
 
-  fire(from, dir) {
+  fire(from, dir, color = 0x1f6fff) {
     const d = this.list[this.next++ % this.list.length];
+    Object.assign(d, { color, spent: false });
     d.floor = from.y > LEVELS[1].floor + 0.3 ? LEVELS[1].floor : LEVELS[0].floor; // the shooter's floor
     d.g.position.copy(from);
     d.v.copy(dir).multiplyScalar(T.nerf.dart.speed);
@@ -46,10 +50,23 @@ class Darts {
     for (const d of this.list) {
       if (!d.flying) continue;
       d.v.y -= T.nerf.dart.gravity * dt;
+      const from = d.g.position.clone();
       d.g.position.addScaledVector(d.v, dt);
+      if (!d.spent && this.marks) this.impact(d, from);
       d.g.lookAt(d.g.position.clone().add(d.v));
       if (d.g.position.y <= d.floor + 0.008) { d.g.position.y = d.floor + 0.008; d.flying = false; d.g.rotation.x = 0; }
     }
+  }
+
+  /** A dart that reached a surface (#98): a paint splash in its colour there, and it drops; the cat just meows. */
+  impact(d, from) {
+    const h = this.marks.hit(from, d.g.position);
+    if (!h) return;
+    d.spent = true;
+    if (h.cat) this.cat?.meowNow?.();
+    else if (this.marks.add('splash', h, { color: d.color, force: true })) { this.splashes++; sfx.splat(h.point); }
+    d.g.position.copy(h.point).addScaledVector(h.normal ?? new THREE.Vector3(), 0.03); // bounce off and fall
+    d.v.copy(h.normal ?? new THREE.Vector3()).multiplyScalar(0.6);
   }
 
   hide() { for (const d of this.list) { d.g.visible = false; d.flying = false; } }
@@ -77,6 +94,7 @@ export class Blaster extends Holdable {
       cooldown: 0.35, useLabel: 'Skjut',
     });
     this.darts = darts;
+    this.i = i;
     this.kick = 0;
   }
 
@@ -86,7 +104,7 @@ export class Blaster extends Holdable {
   onUse() {
     const cam = this.camera, dir = new THREE.Vector3(0, 0, -1).applyQuaternion(cam.quaternion);
     const from = this.where().addScaledVector(dir, 0.3);
-    this.darts.fire(from, dir.add(new THREE.Vector3(0, 0.03, 0)).normalize());
+    this.darts.fire(from, dir.add(new THREE.Vector3(0, 0.03, 0)).normalize(), T.nerf.colors[this.i]);
     sfx.nerf(this.where());
     this.kick = 1;
   }

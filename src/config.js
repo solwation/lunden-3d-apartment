@@ -309,7 +309,7 @@ export const MARKS = {
     glow: { size: 0.12, life: 1.2 },
     star: { size: 0.07, life: 18 },
     butterfly: { size: 0.08, life: 18 },
-    splash: { size: 0.1, life: 30 },
+    splash: { size: 0.14, life: 30 },
   },
   smoke: { n: 40, life: 1.6, rise: 0.25 },
   // the wands' magic (#97): `stars` star marks round the hit (within `spread` m), 2–3 butterflies flutter there

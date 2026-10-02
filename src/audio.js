@@ -445,6 +445,13 @@ export const sfx = {
     noise(t, 0.2, d, { type: 'bandpass', freq: 900, q: 0.8, gain: 0.18 });
     for (let i = 0; i < 6; i++) noise(t + Math.random() * 0.35, 0.02, d, { type: 'highpass', freq: 2000, gain: 0.3 + Math.random() * 0.2, attack: 0.001 });
   },
+    /** A foam dart hitting something with paint: a wet little splat. */
+  splat(pos) {
+    if (!ready()) return;
+    const t = ctx.currentTime, d = out(pos, 0.8);
+    noise(t, 0.12, d, { type: 'lowpass', freq: 1400, gain: 0.35, attack: 0.002 });
+    tone(t, 0.08, d, { type: 'sine', from: 320, to: 90, gain: 0.15 });
+  },
     /** A foam blaster: a springy thunk and a soft whoosh. */
   nerf(pos) {
     if (!ready()) return;

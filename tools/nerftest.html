@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Nerf splash test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+// The Nerf blasters (#86, #98): take one in Sovrum 2, shoot at the west wall → the dart flies, leaves a paint
+// splash in the blaster's colour on the wall and drops to the floor; the splash fades after its life.
+//   google-chrome --headless=new --dump-dom http://localhost:8137/tools/nerftest.html
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const f = document.createElement('iframe');
+f.width = 900; f.height = 600; f.src = '../index.html';
+document.body.append(f);
+f.onload = async () => {
+  const w = f.contentWindow, d = f.contentDocument;
+  while (!w.__app) await wait(100);
+  const { player, camera, step, toys, marks } = w.__app;
+  const lines = [];
+  const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; };
+  d.getElementById('start-touch').click();
+  await wait(50);
+  const blaster = toys.blasters[1];
+  player.spawn(4.4, 9.0, 90); player.pos.y = 3.25; player.eyeY = 3.25 + 1.62;
+  for (let i = 0; i < 3; i++) step(1 / 60);
+  blaster.take();
+  camera.rotation.set(0, Math.PI / 2, 0, 'YXZ'); // west, at the wall 1.6 m away
+  for (let i = 0; i < 30; i++) step(1 / 60);
+  let pass = check(blaster.held, 'blaster in the hand');
+  const s0 = toys.darts.splashes;
+  blaster.use();
+  for (let i = 0; i < 60; i++) step(1 / 60);
+  const sp = marks.live.filter((l) => l.kind === 'splash');
+  pass &= check(toys.darts.splashes === s0 + 1 && sp.length === 1, `one splash (${toys.darts.splashes - s0})`);
+  pass &= check(sp[0] && sp[0].at.x < 2.9, `on the west wall (x ${sp[0]?.at.x.toFixed(3)})`);
+  const col = sp[0] && marks.kinds.splash.mesh.instanceColor.getX(sp[0].slot);
+  pass &= check(sp[0] && Math.abs(col - 0x1f / 255) < 0.2, `in the blaster's colour (r ${col?.toFixed(2)})`);
+  const dart = toys.darts.list.find((x) => x.spent);
+  pass &= check(dart && !dart.flying && Math.abs(dart.g.position.y - 3.25) < 0.05, `the dart dropped to the floor (y ${dart?.g.position.y.toFixed(3)})`);
+  for (let i = 0; i < 35; i++) marks.update(1);
+  pass &= check(!marks.live.some((l) => l.kind === 'splash'), 'the splash is gone after a while');
+  blaster.putBack();
+  out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
+};
+</script>
+</body>
+</html>

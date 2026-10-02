@@ -214,7 +214,7 @@ document.getElementById('measure-btn').addEventListener('click', () => measure.p
 const cat = new CatSpawner(world);
 scene.add(cat.object);
 const marks = new Marks(scene, camera, [world.object, patio.object], cat); // burn marks, stars, splashes on surfaces (#96)
-for (const h of [saber, ...toys.wands]) Object.assign(h, { marks, cat }); // the saber burns, the wands do magic (#97)
+for (const h of [saber, ...toys.wands, toys.darts]) Object.assign(h, { marks, cat }); // the saber burns, the wands do magic (#97), darts splash (#98)
 cat.onFound = (label, rare) => catFound(label, rare);
 // a photo of every cat you pet goes up on the board, once its eyes are shut and the hand is there
 const board = new CatBoard();
