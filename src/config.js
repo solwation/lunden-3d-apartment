@@ -83,6 +83,15 @@ export const WINDOWS = [
   { level: 1, facade: 'south', x: 3.85, sill: 0.9, head: 2.25, transom: 0, width: 1.2 }, // Sovrum 2
 ];
 
+// Flower pots on the inner window boards (#136, the user: "blomkrukor med blommor i alla fönsterkarmar";
+// src/sillplants.js). Plants per window in plan order (Entréplan kitchen, living room; Övre plan Sovrum 3, 1, 4, 2),
+// 2–3 pots each. Our picks.
+export const SILL_PLANTS = {
+  kinds: ['pelargon', 'orchid', 'violet', 'cactus', 'ivy', 'basil'],
+  byWindow: [['basil', 'pelargon', 'basil'], ['orchid', 'ivy', 'pelargon'], ['violet', 'cactus'], ['orchid', 'pelargon', 'ivy'], ['violet', 'pelargon', 'cactus'], ['cactus', 'ivy']],
+  colors: { pelargon: 0xd8283a, orchid: [0xf7f2f5, 0xe58fc4], cactus: 0xff6fa8, violet: 0x7b3fb5 },
+};
+
 // The site, measured on FOJAB's situation plan and overview plans in Peab's plan brochure
 // (docs/peab/, 1:500; drawn with Hus L horizontal, so the plan axes are ours: x along the row,
 // z towards the courtyard; metres from our unit's NW outer corner). Scale from the unit pitch.

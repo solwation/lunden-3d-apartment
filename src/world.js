@@ -11,6 +11,7 @@ import { buildFurniture, surfaceBox } from './furniture.js';
 import { buildWallShelves } from './shelves.js';
 import { buildHallWall } from './keycabinet.js';
 import { mergeStatic } from './merge.js';
+import { buildSillPlants } from './sillplants.js';
 import { registerSnow } from './seasons.js';
 import { buildCourtyard } from './courtyard.js';
 import { pavingTexture } from './patio.js';
@@ -300,6 +301,7 @@ function buildLevel(floor, li, group) {
   // Windows: sill/head infill, frame with mullion + optional transom, glass, inner sill board.
   // All windows are in the north/south façades (they run along x).
   const openings = { north: [], south: [] };
+  const sills = []; // the inner window boards (flower pots, #136)
   for (const pr of floor.windows) {
     const facade = pr.z0 < D / 2 ? 'north' : 'south';
     const cx = (pr.x0 + pr.x1) / 2;
@@ -322,6 +324,7 @@ function buildLevel(floor, li, group) {
     const iz0 = Math.min(fz, inner + (facade === 'north' ? 0.03 : -0.03));
     const iz1 = Math.max(fz, inner + (facade === 'north' ? 0.03 : -0.03));
     group.add(box(r.x0 - 0.02, r.x1 + 0.02, iz0, iz1, sill - 0.03, sill, M.porcelain));
+    sills.push({ x0: r.x0, x1: r.x1, z0: Math.min(iz0, iz1), z1: Math.max(iz0, iz1), y: sill });
     openings[facade].push({ x0: r.x0, x1: r.x1, y0: sill, y1: head });
     segments.push(...rectSegments(pr));
   }
@@ -506,7 +509,7 @@ function buildLevel(floor, li, group) {
     group.add(box(s.x0, s.x1, s.z0, s.z1, y0 + s.height, yC - 0.004, M.ceiling, { shadow: false }));
   }
 
-  return { segments, wallSegments, doors, lids, taps, appliances, openings, barriers, ceiling: yC };
+  return { segments, wallSegments, doors, lids, taps, appliances, openings, sills, barriers, ceiling: yC };
 }
 
 export function buildWorld(plan) {
@@ -560,6 +563,8 @@ export function buildWorld(plan) {
   scene.add(furniture.object);
   // the kitchen worktop as cup surfaces (fitted, so they stay with F; the first one is where a fresh cup stands)
   const kitchenSurfaces = cupSurfaces.map((r, i) => { const m = surfaceBox(r); if (i === 0) m.userData.counter = true; scene.add(m); return m; });
+  const sillPlants = buildSillPlants([...l0.sills, ...l1.sills]); // flower pots on every window board (#136)
+  scene.add(sillPlants);
   const shelves = buildWallShelves(); // kitchen wall shelves (WALL_SHELVES)
   scene.add(shelves);
   const hallWall = buildHallWall(); // mirror + Solstickan key cabinet (HALL_WALL)
@@ -619,7 +624,7 @@ export function buildWorld(plan) {
   const box3 = new THREE.Box3(), mid = new THREE.Vector3();
   const merged = mergeStatic(scene, [
     ...l0.doors, ...l1.doors, ...l0.lids, ...l1.lids, ...l0.appliances, ...l1.appliances,
-  ].map((d) => d.object).concat([hallWall.object, furniture.object, exterior, surroundings, shelves, ...interiorLoose]), (o) => { // loose items stay separate (F hides them)
+  ].map((d) => d.object).concat([sillPlants, hallWall.object, furniture.object, exterior, surroundings, shelves, ...interiorLoose]), (o) => { // loose items stay separate (F hides them)
     box3.setFromObject(o).getCenter(mid);
     if (mid.x < 0 || mid.x > W || mid.z < 0 || mid.z > D) return 'out';
     return mid.y < LEVELS[1].floor - 0.05 ? 'l0' : 'l1';
@@ -634,7 +639,7 @@ export function buildWorld(plan) {
   // shelves and what is on them, the hall mirror + key cabinet + coat rack, door signs, the coffee
   // machine (main.js adds the cat board and hides the cat). Kept: Peab's kitchen, wet rooms, built-in
   // wardrobes, doors, stair, ceiling lamps, switches, the wall clock and the note on the freezer.
-  const looseItems = [furniture.object, shelves, hallWall.object, ...signs, ...interiorLoose];
+  const looseItems = [furniture.object, sillPlants, shelves, hallWall.object, ...signs, ...interiorLoose];
   const setFurniture = (on) => {
     for (const o of looseItems) o.visible = on;
     levels.forEach((l, i) => { l.segments = on ? [...fixed[i], ...furniture.segments[i]] : fixed[i]; });

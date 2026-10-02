@@ -123,6 +123,7 @@ src/catboard.js        cork board in the kitchen (under the wall clock): a photo
 src/shelves.js         kitchen wall shelves with portraits, flowers, books, candles (WALL_SHELVES)
 src/keycabinet.js      hall wall: IKEA LINDBYN mirror Ø 110 + Solstickan key cabinet (E) with the Renault key (E → beep beep);
                        the cabinet is in world.lids, the key (world.carKey) a target only while it is open
+src/sillplants.js      flower pots on every inner window board (SILL_PLANTS, #136): five merged meshes, a loose item
 src/signs.js           hand-lettered name signs on the bedroom doors (DOOR_SIGNS)
 src/water.js           running water: E on a tap/shower (world.taps from interior.js) → stream + hiss
 src/stats.js           visitor statistics (localStorage), "+1" badges per event, the HUD panel
