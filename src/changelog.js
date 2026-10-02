@@ -20,20 +20,27 @@ export async function loadChangelog() {
 
 const fmtDate = (d) => new Date(`${d}T12:00:00`).toLocaleDateString('sv-SE', { day: 'numeric', month: 'short' });
 
-/** Fill a <ul> with the entries (all, or the first `limit`). */
+/** Fill a <ul> with the entries (all, or the first `limit`): a small date line, then the text. */
 export function renderChangelog(ul, entries, limit = Infinity) {
   ul.replaceChildren(...entries.slice(0, limit).map((e) => {
     const li = document.createElement('li');
+    if (e.isNew) li.className = 'is-new';
+    const meta = document.createElement('span');
+    meta.className = 'meta';
+    const date = document.createElement('time');
+    date.dateTime = e.date;
+    date.textContent = fmtDate(e.date);
+    meta.append(date);
     if (e.isNew) {
       const b = document.createElement('span');
       b.className = 'new';
       b.textContent = 'Nytt';
-      li.append(b, ' ');
+      meta.append(' ', b);
     }
-    const date = document.createElement('time');
-    date.dateTime = e.date;
-    date.textContent = fmtDate(e.date);
-    li.append(date, ' ', e.text);
+    const text = document.createElement('span');
+    text.className = 'text';
+    text.textContent = e.text;
+    li.append(meta, text);
     return li;
   }));
 }

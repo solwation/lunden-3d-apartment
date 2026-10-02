@@ -78,17 +78,17 @@
     #update small { display: block; opacity: .75; font-size: 12px; margin-top: 2px; }
     #update button { white-space: nowrap; flex: none; border: 0; border-radius: 6px; font: 600 14px system-ui, sans-serif; cursor: pointer; padding: 8px 14px; min-height: 44px; touch-action: manipulation; }
     #update-reload { background: #fff; color: var(--ink); }
-    .news { font-size: 14px; background: #fff3d6; border-radius: 6px; padding: 8px 10px; }
-    .news[hidden] { display: none; }
-    #note ul { list-style: none; padding: 0; margin: 0; font-size: 14px; line-height: 1.4; }
-    #note li { margin: 0 0 6px; }
-    #note time { color: #6a7c84; font-size: 12px; }
     .new { background: #d23a2a; color: #fff; font-size: 11px; font-weight: 700; padding: 1px 6px; border-radius: 8px; vertical-align: 1px; }
     #note { position: fixed; inset: 0; z-index: 5; display: grid; place-items: center; background: rgba(20, 35, 45, 0.35); }
     #note[hidden] { display: none; }
-    #note .paper { position: relative; width: min(460px, calc(100vw - 32px)); max-height: calc(100vh - 48px); overflow: auto; box-sizing: border-box; padding: 26px 28px 22px; background: repeating-linear-gradient(#fffbe9 0 25px, #dfe7f3 25px 26px); color: #23324a; box-shadow: 0 14px 40px rgba(0,0,0,.35); transform: rotate(-1.2deg); border-radius: 2px; font-family: 'Segoe Print', 'Comic Sans MS', 'Comic Neue', cursive, system-ui; }
-    #note h2 { margin: 0 0 12px; font-size: 26px; }
-    #note li { font-size: 15px; }
+    #note .paper { position: relative; width: min(460px, calc(100vw - 32px)); max-height: calc(100vh - 48px); overflow: auto; box-sizing: border-box; padding: 26px 28px 22px; background: #fffbe9; color: #23324a; box-shadow: 0 14px 40px rgba(0,0,0,.35); transform: rotate(-1.2deg); border-radius: 2px; font-family: 'Segoe Print', 'Comic Sans MS', 'Comic Neue', cursive, system-ui; }
+    #note h2 { margin: 0 0 14px; font-size: 28px; letter-spacing: .01em; }
+    /* entries: date (+ "Nytt") on a small line, one short sentence below, air in between */
+    #note ul { list-style: none; padding: 0; margin: 0; }
+    #note li { margin: 0 0 14px; padding-left: 14px; border-left: 3px solid #c9d6e8; }
+    #note li.is-new { border-left-color: #d23a2a; }
+    #note .meta { display: block; font: 12px/1.6 system-ui, sans-serif; color: #6a7c84; }
+    #note .text { display: block; font: 16px/1.45 system-ui, sans-serif; color: #23324a; }
     #note small { display: block; margin-top: 12px; color: #6a7c84; font: 13px system-ui, sans-serif; }
     #board-view { position: fixed; inset: 0; z-index: 5; display: grid; place-items: center; background: rgba(20, 35, 45, 0.45); }
     #board-view[hidden] { display: none; }
@@ -185,7 +185,6 @@
         <span>📏</span><span>mät: sätt en punkt där krysset pekar, sedan nästa</span>
         <span>📊</span><span>visa/dölj statistiken</span>
       </div>
-      <p class="news" id="news-hint" hidden>📝 Det finns nyheter sedan sist — läs lappen på frysen i köket.</p>
       <div class="start">
         <button id="start-mouse" class="go">Mus &amp; tangentbord</button>
         <button id="start-touch" class="go alt">Touch</button>

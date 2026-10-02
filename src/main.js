@@ -70,9 +70,8 @@ sun.shadow.bias = -0.0005;
 sun.shadow.normalBias = 0.02;
 scene.add(sun, sun.target);
 
-// Changelog: only on the note on the freezer (the start screen just says when there is news)
+// Changelog: only on the note on the freezer (the visitor finds it there, #40)
 const changelog = await loadChangelog();
-document.getElementById('news-hint').hidden = !changelog.some((e) => e.isNew);
 const note = buildNote(changelog);
 scene.add(note.object);
 const noteEl = document.getElementById('note');

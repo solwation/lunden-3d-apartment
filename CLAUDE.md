@@ -16,8 +16,9 @@ in Swedish. Code, comments and this file are in English; UI text is Swedish.
 - Verify changes in a real browser before pushing (see *Testing*). Don't claim something
   works from reading the code alone.
 - **Every user-visible change gets an entry in `data/changelog.json`** (Swedish, newest first,
-  next `id`), in the same commit. It is shown only on the note on the freezer (the start screen just
-  says when there is news); entries newer than the visitor's last visit are marked "Nytt".
+  next `id`), in the same commit — **one short sentence**, no digressions. It is shown only on the
+  note on the freezer (the start screen says nothing about news; visitors find the note themselves);
+  entries newer than the visitor's last visit are marked "Nytt".
 - Keep this file and `README.md` up to date when behaviour, structure or known facts change.
 
 ## Architecture
