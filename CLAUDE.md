@@ -181,7 +181,9 @@ src/cups.js            coffee cups (CUPS): the wall cabinet over the Moccamaster
                        `kask` ("koppen med kaffekask", sips count as stats.kask, #169)
 src/fishfingers.js     fish fingers (FISH, #162): a carton on the freezer's lower shelf; E takes one straight into the hand
                        (FishFinger, like a cup), click / "Ät" bites (FISH.bites, shorter each time, sfx.chew), put down
-                       anywhere / taken again / E on the carton puts it back; F clears them away and refills the carton
+                       anywhere / taken again / E on the carton puts it back; F clears them away and refills the carton;
+                       fried (#214): E on the pan on the hob lays one in (FISH.fry.slots, not with the chicken), frozen pale →
+                       golden after fry.seconds, burnt + smoke from burnAt; fried ones steam, crunch, never go back in the carton
 src/drawing.js         crayon drawing on the paper on the Sovrum 3 desk (DRAWING): canvas texture, drawing mode
                        (view down, pointer free, palette #draw-panel, 1–9, E/Esc back), saved in localStorage;
                        "Ta teckningen" / T takes the sheet into the hand (a blank one stays), E on the desk puts it back
@@ -296,7 +298,7 @@ tools/fishtest.html    headless test: open the freezer, eat a fish finger, put o
 tools/drawtest.html    headless test: drawing mode, a crayon line from pointer events, clear, E back, saved
 tools/grilltest.html   headless test: light the grill (flames, light, lid), F keeps it, put it out, it burns out by itself
 tools/cooktest.html    headless test: the induction hob on/off (glow), F switches it off; the pan: drawer → hob → drawer, F; the chicken:
-                       fry, smoke, the fridge shut stops it, it stops by itself, F; raw/golden, no hood → the alarm, the hood
+                       fry, smoke, the fridge shut stops it, it stops by itself, F; fish fingers fried, eaten, burnt (#214); raw/golden, no hood → the alarm, the hood
                        on → quiet, break a leg off and eat it, eat it all, F whole again (#194)
 tools/postertest.html  headless test: take the drawing (blank sheet stays), back on the desk, tape it up in the hall and on
                        the fridge door (swings with it), none on the kitchen window, reload → both back; look at one (panel, no walking,

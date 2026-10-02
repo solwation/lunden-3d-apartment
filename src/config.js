@@ -478,7 +478,11 @@ export const MARKS = {
 // Fish fingers in the freezer (#162, src/fishfingers.js): a carton on the lower open shelf, n in it; each one taken
 // straight into the hand, eaten in `bites` bites or put down anywhere. Sizes of a typical 15-pack (~9 × 2.5 × 1.6
 // cm sticks, the carton ~19 × 13 × 4.5 cm); `held` = the stick in the view (camera space).
+// Frying them (#214): in the pan on a lit zone, frozen pale → golden over `seconds`, burnt from `burnAt` (dark by
+// `burnt`, smoking); `slots` = how many fit side by side; a fried one steams for `steam` s. Colours multiply the crumb
+// texture (frozen = white). Times are our picks.
 export const FISH = { n: 15, len: 0.09, w: 0.025, h: 0.016, bites: 3, box: { w: 0.19, d: 0.13, h: 0.045 },
+  fry: { seconds: 6, burnAt: 18, burnt: 22, slots: 5, steam: 30, golden: 0xd99a4a, dark: 0x3b2716 },
   held: { x: 0.14, y: -0.15, z: -0.34 } };
 // The cat and a fish finger on the floor (#163, cat.js): one within `reach` m in the open (a straight walk with no
 // wall or door in between, i.e. the same room) catches its eye; it looks for `notice` s, walks there at `speed` m/s,

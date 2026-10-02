@@ -253,6 +253,7 @@ const fish = buildFish(scene, camera, world); // fish fingers in the freezer, on
 if (fish) fish.onEaten = () => bump('fish');
 const pan = world.panDrawer ? new Pan(scene, camera, world.panDrawer, world.hob) : null; // the frying pan in the drawer under the hob (#159)
 if (pan) holdables.push(pan);
+if (fish) Object.assign(fish, { pan, hob: world.hob, onFried: () => bump('fried'), onBurnt: () => bump('burnt') }); // fish fingers fry in the pan too (#214)
 const fridge = world.lids.find((l) => l.kind === 'fridge' && !l.freezer);
 const chicken = fridge ? new Chicken(scene, camera, fridge, pan, world.hob) : null; // the roast chicken: take it, fry it in the pan (#160)
 if (chicken) holdables.push(chicken);
@@ -683,6 +684,7 @@ function use(thing) {
   else if (thing.kind === 'saber' || thing.kind === 'holdable' || thing.kind === 'cup') thing.toggle();
   else if (thing.kind === 'place') thing.item.placeAt(thing.point);
   else if (thing.kind === 'fry') thing.item.intoPan(); // the chicken into the pan on the hob (#160)
+  else if (thing.kind === 'fryfish') thing.item.fryHeld(); // a fish finger into the pan (#214)
   else if (thing.kind === 'paper') { if (heldItem() === heldDrawing) heldDrawing.putBack(); else beginDraw(); } // holding the drawing: back on the desk (#176)
   else if (thing.kind === 'tape') { posters.tape(heldDrawing.image, thing.spot, heldDrawing.meta ?? {}); heldDrawing.release(); drawing.save(); bump('posted'); } // tape the drawing up (#176)
   else if (thing.kind === 'pc') { const on = thing.toggle(); sfx.tvClick(thing.pickable.getWorldPosition(new THREE.Vector3()), on); }
@@ -821,7 +823,7 @@ function updateFocus() {
     ...(world.furnitureOn ? [...(target.object.visible ? [target.target] : []), ...patio.targets, ...world.furnitureTargets, ...holdables.map((h) => h.target), drawing.target, ...posters.targets].map((t) => t.pickable) : [])]; // parasol, TV, seats, beds, toys — unless F hid the furniture
   // the nearest hit on something actually shown (F hides the loose items, the raycaster doesn't care)
   const cupTargets = cups.cups.filter((c) => !c.held).map((c) => c.target.pickable);
-  if (fish && world.furnitureOn) cupTargets.push(fish.target.pickable, ...fish.placed.map((f) => f.target.pickable)); // the carton + fish fingers lying out (#162)
+  if (fish && world.furnitureOn) cupTargets.push(fish.target.pickable, ...fish.placed.map((f) => f.target.pickable), ...fish.inPan.map((f) => f.target.pickable)); // the carton + fish fingers lying out (#162) or in the pan (#214)
   const hit = raycaster.intersectObjects([...pickables, ...extra, ...cupTargets], true)
     .find((h) => shown(h.object) && !(rest.active && (h.object.userData.door === rest.target || h.object.userData.door?.kind === 'rest')));
   focused = hit && !behindWall(hit.point) ? hit.object.userData.door : null;
@@ -859,9 +861,15 @@ function updateFocus() {
     placeGhost.visible = true;
   }
   // the chicken in the hand, aimed at the pan on the hob (or the hob): into the pan (#160)
-  if (item === chicken && pan?.onHob && !chicken.inPan && (focused === pan.takeTarget || focused?.kind === 'hob'
+  if (item === chicken && pan?.onHob && !chicken.inPan && !fish?.inPan.length && (focused === pan.takeTarget || focused?.kind === 'hob'
     || (focused?.kind === 'place' && focused.point.distanceTo(world.hob.zone) < 0.35))) {
     focused = { name: 'kycklingen i pannan', kind: 'fry', verb: 'lägga', item: chicken };
+    placeGhost.visible = false;
+  }
+  // a fish finger in the hand, aimed at the pan on the hob (or a fish finger in it, or the hob): into the pan (#214)
+  if (item?.isFish && fish?.canFry(chicken?.inPan) && (focused === pan.takeTarget || focused?.kind === 'hob' || fish.inPan.some((f) => f.target === focused)
+    || (focused?.kind === 'place' && focused.point.distanceTo(world.hob.zone) < 0.35))) {
+    focused = { name: 'fiskpinnen i pannan', kind: 'fryfish', verb: 'lägga', item: fish };
     placeGhost.visible = false;
   }
   // the remote in the hand, aimed at a TV: the click / the touch button are the remote's (#101)

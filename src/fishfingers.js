@@ -9,22 +9,40 @@ import { heldItem, setHeld, handBusy } from './holdable.js';
 // E on a table top / the worktop / the floor puts it down (holdable.js placement), E on it takes it again, E on
 // the carton while holding one puts it back. Several can lie around at once (like the cups). F (the bare flat)
 // clears them away and fills the carton again; so does a new visit. The cat may eat one off the floor (#163).
+// Frying (#214): E on the pan standing on the hob with one in the hand lays it in (up to FISH.fry.slots side by side;
+// not with the chicken in it). On a lit zone it goes from frozen pale to golden over FISH.fry.seconds (a sizzle), and
+// from burnAt on it burns and smokes; E on it in the pan takes it out (fried: it steams a while, crunches louder and
+// cannot go back in the carton).
 
-function crumbTexture() { // golden breadcrumbs: speckles of lighter and darker brown
+function crumbTexture() { // frozen breadcrumbs: pale yellow with lighter and darker speckles (frying tints it, #214)
   const c = document.createElement('canvas');
   c.width = c.height = 64;
   const g = c.getContext('2d');
-  g.fillStyle = '#c98a3c';
+  g.fillStyle = '#ead7a4';
   g.fillRect(0, 0, 64, 64);
   for (let i = 0; i < 260; i++) {
-    g.fillStyle = Math.random() < 0.5 ? 'rgba(240,190,110,0.8)' : 'rgba(140,80,30,0.6)';
+    g.fillStyle = Math.random() < 0.5 ? 'rgba(250,240,215,0.85)' : 'rgba(190,150,90,0.6)';
     g.fillRect(Math.random() * 64, Math.random() * 64, 1 + Math.random() * 2, 1 + Math.random() * 2);
   }
   const t = new THREE.CanvasTexture(c);
   t.colorSpace = THREE.SRGBColorSpace;
   return t;
 }
-const bread = new THREE.MeshStandardMaterial({ map: crumbTexture(), roughness: 0.95 });
+const crumbs = crumbTexture();
+const F = C.fry;
+const GOLDEN = new THREE.Color(F.golden), DARK = new THREE.Color(F.dark), WHITE = new THREE.Color(0xffffff);
+function puffTexture() {
+  const c = document.createElement('canvas');
+  c.width = c.height = 32;
+  const g = c.getContext('2d');
+  const r = g.createRadialGradient(16, 16, 0, 16, 16, 16);
+  r.addColorStop(0, 'rgba(255,255,255,0.9)');
+  r.addColorStop(1, 'rgba(255,255,255,0)');
+  g.fillStyle = r;
+  g.fillRect(0, 0, 32, 32);
+  return new THREE.CanvasTexture(c);
+}
+const puff = puffTexture();
 const fishMat = new THREE.MeshStandardMaterial({ color: 0xf4f1e8, roughness: 0.7 });
 
 function labelTexture(top) {
@@ -68,19 +86,54 @@ export class FishFinger {
     const { scene, camera } = pack;
     const g = new THREE.Group();
     const geo = new THREE.BoxGeometry(C.len, C.h, C.w).translate(C.len / 2, C.h / 2, 0);
-    this.stick = new THREE.Mesh(geo, bread);
+    this.bread = new THREE.MeshStandardMaterial({ map: crumbs, roughness: 0.95 }); // its own: frying tints it (#214)
+    this.stick = new THREE.Mesh(geo, this.bread);
     this.stick.castShadow = true;
     this.cap = new THREE.Mesh(new THREE.BoxGeometry(0.002, C.h * 0.8, C.w * 0.8).translate(0, C.h / 2, 0), fishMat); // the bitten end
     g.add(this.stick, this.cap);
     g.visible = false;
-    Object.assign(this, { name: 'fiskpinnen', placeVerb: 'lägga ner', isFish: true, pack, scene, camera, model: g, state: 'box', held: false, bites: 0, bite: 0 });
+    Object.assign(this, { name: 'fiskpinnen', placeVerb: 'lägga ner', isFish: true, pack, scene, camera, model: g, state: 'box', held: false, bites: 0, bite: 0,
+      cook: 0, hot: 0, sizzleT: 0, clock: Math.random() * 3 });
+    // steam while it is hot, smoke while it burns: a few sprites that rise from it
+    this.puffs = [...Array(4)].map((_, i) => {
+      const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: puff, transparent: true, depthWrite: false, opacity: 0 }));
+      sp.userData.phase = i / 4; sp.visible = false; sp.raycast = () => {};
+      scene.add(sp);
+      return sp;
+    });
     const self = this;
     this.target = { name: 'fiskpinnen', kind: 'holdable', verb: 'ta', pickable: g, item: this, get blocked() { return handBusy(self); }, toggle: () => this.take() };
     g.traverse((m) => { m.userData.door = this.target; });
     scene.add(g);
     this.setBites(0);
+    this.paint();
   }
 
+  get fried() { return this.cook >= F.seconds; }
+  get burnt() { return this.cook >= F.burnAt; }
+
+  /** Colour by how long it has fried: frozen pale → golden → burnt dark. */
+  paint() {
+    const k = this.cook;
+    if (k < F.seconds) this.bread.color.copy(WHITE).lerp(GOLDEN, k / F.seconds);
+    else if (k < F.burnAt) this.bread.color.copy(GOLDEN);
+    else this.bread.color.copy(GOLDEN).lerp(DARK, Math.min(1, (k - F.burnAt) / (F.burnt - F.burnAt)));
+    this.bread.roughness = k > 0 ? 0.8 : 0.95;
+  }
+
+  /** Into the pan at slot i (a child of the pan: it rides along when the pan is carried). */
+  intoPan(pan, i) {
+    this.held = false;
+    if (heldItem() === this) setHeld(null);
+    this.state = 'pan';
+    this.slot = i;
+    pan.model.add(this.model);
+    this.model.visible = true;
+    const n = F.slots, gap = 0.032;
+    this.model.rotation.set(0, 0, 0);
+    this.model.position.set(-C.len / 2, 0.004, (i - (n - 1) / 2) * gap);
+    sfx.click(this.model.getWorldPosition(new THREE.Vector3()));
+  }
   setBites(n) {
     this.bites = n;
     const k = 1 - n / (C.bites + 0.5); // what is left of it
@@ -92,6 +145,7 @@ export class FishFinger {
   /** Into the hand (from the carton, or picked up from where it lies). */
   take() {
     if (handBusy(this)) return; // one thing at a time (#102)
+    if (this.state === 'pan' && this.fried) this.hot = F.steam; // straight out of the pan: it steams a while
     setHeld(this);
     this.held = true;
     this.state = 'held';
@@ -133,6 +187,9 @@ export class FishFinger {
     this.scene.add(this.model);
     this.model.visible = false;
     this.setBites(0);
+    this.cook = 0; this.hot = 0;
+    this.paint();
+    for (const sp of this.puffs) sp.visible = false;
   }
 
   /** Something else was taken: it goes back in the carton. */
@@ -143,10 +200,41 @@ export class FishFinger {
   use() {
     if (!this.held || this.bite > 0) return;
     this.bite = 1;
-    sfx.chew(this.model.getWorldPosition(new THREE.Vector3()));
+    sfx.chew(this.model.getWorldPosition(new THREE.Vector3()), this.fried ? 1.35 : 1); // fried: a crunchier bite
+  }
+
+  /** In the pan on a lit zone: it fries; hot ones steam, burning ones smoke. */
+  fry(dt) {
+    const pan = this.pack.pan, hob = this.pack.hob;
+    if (this.state === 'pan' && this.model.parent !== pan?.model) this.state = 'placed'; // (not expected: the pan keeps it)
+    const frying = this.state === 'pan' && pan?.onHob && hob?.on;
+    if (frying) {
+      const was = this.fried, wasBurnt = this.burnt;
+      this.cook += dt;
+      this.hot = F.steam;
+      this.paint();
+      if (!was && this.fried) this.pack.onFried?.(this);
+      if (!wasBurnt && this.burnt) this.pack.onBurnt?.(this);
+      if (this.cook > 1 && (this.sizzleT -= dt) <= 0) { sfx.sizzle(this.model.getWorldPosition(new THREE.Vector3())); this.sizzleT = 0.7 + Math.random() * 0.4; }
+    } else if (this.hot > 0) this.hot = Math.max(0, this.hot - dt);
+    // steam (hot and fried) or smoke (burnt and still on the heat)
+    this.clock += dt;
+    const smoke = frying && this.burnt, steam = !smoke && this.hot > 0 && this.cook > 0;
+    const on = (smoke || steam) && this.model.visible && this.state !== 'box';
+    const from = on ? this.middle(new THREE.Vector3()) : null;
+    for (const sp of this.puffs) {
+      sp.visible = !!on;
+      if (!on) continue;
+      const k = (this.clock / (smoke ? 2 : 2.6) + sp.userData.phase) % 1;
+      sp.position.copy(from).add(new THREE.Vector3(Math.sin((k + sp.userData.phase) * 8) * 0.012, 0.01 + k * (smoke ? 0.3 : 0.12), Math.cos((k + sp.userData.phase) * 6) * 0.01));
+      sp.scale.setScalar(smoke ? 0.04 + k * 0.12 : 0.02 + k * 0.05);
+      sp.material.color.setHex(smoke ? 0x8e9093 : 0xffffff);
+      sp.material.opacity = (smoke ? 0.55 : 0.22 * Math.min(1, this.hot / 8)) * Math.sin(Math.PI * k);
+    }
   }
 
   update(dt) {
+    this.fry(dt);
     if (!this.held || this.bite <= 0) return;
     const before = this.bite;
     this.bite = Math.max(0, this.bite - dt * 2.5);
@@ -161,7 +249,7 @@ export class FishFinger {
 /** The carton in the freezer and its fish fingers. */
 export class FishPack {
   constructor(scene, camera, freezer) {
-    Object.assign(this, { scene, camera, freezer, left: C.n, fingers: [], eatenCount: 0 });
+    Object.assign(this, { scene, camera, freezer, left: C.n, fingers: [], eatenCount: 0, pan: null, hob: null });
     const { w, d, h } = C.box;
     const side = new THREE.MeshStandardMaterial({ color: 0x1f5fa8, roughness: 0.7 });
     const top = new THREE.MeshStandardMaterial({ map: labelTexture(true), roughness: 0.7 });
@@ -177,7 +265,8 @@ export class FishPack {
     this.target = { kind: 'holdable', pickable: box, pack: this,
       get name() { return pack.holding || pack.left > 0 ? 'paketet' : 'det tomma paketet'; },
       get verb() { return pack.holding ? 'lägga tillbaka fiskpinnen i' : pack.left > 0 ? 'ta en fiskpinne ur' : 'titta i'; },
-      get blocked() { return !!heldItem() && !pack.holding; },
+      get blocked() { return (!!heldItem() && !pack.holding) || !!pack.holding?.fried; },
+      get blockedText() { return pack.holding?.fried ? 'Den är stekt nu – ät upp den!' : undefined; }, // a fried one does not go back (#214)
       toggle: () => this.press() };
     box.userData.door = this.target;
   }
@@ -188,6 +277,7 @@ export class FishPack {
   /** E on the carton: one out into the hand, or the held one back in. */
   press() {
     const h = this.holding;
+    if (h?.fried) return; // fried: it does not go back in the carton (#214)
     if (h) { this.putIn(h); return; }
     if (this.left <= 0) { sfx.click(this.object.position); return; } // empty
     let f = this.fingers.find((x) => x.state === 'box');
@@ -218,13 +308,34 @@ export class FishPack {
   /** The fish fingers lying out (E targets). */
   get placed() { return this.fingers.filter((f) => f.state === 'placed'); }
 
+  /** The ones in the pan (#214). */
+  get inPan() { return this.fingers.filter((f) => f.state === 'pan'); }
+
+  /** Is there room in the pan for the one in the hand (not with the chicken in it)? */
+  canFry(chickenInPan) { return !!this.holding && !!this.pan?.onHob && !chickenInPan && this.inPan.length < F.slots; }
+
+  /** The held one into the pan, in the first free slot. */
+  fryHeld() {
+    const f = this.holding;
+    if (!f || !this.pan) return;
+    const used = new Set(this.inPan.map((x) => x.slot));
+    let i = 0;
+    while (used.has(i)) i++;
+    if (i >= F.slots) return;
+    f.intoPan(this.pan, i);
+  }
+
   /** F / a fresh start: nothing lying around, a full carton. */
   reset() {
     for (const f of this.fingers) f.hide();
     this.left = C.n;
   }
 
-  update(dt) { for (const f of this.fingers) f.update(dt); }
+  update(dt) {
+    // the pan went back into its drawer with fish fingers in it: they are cleared away
+    if (this.pan && this.pan.model.parent === this.pan.drawer?.object) for (const f of this.inPan) f.hide();
+    for (const f of this.fingers) f.update(dt);
+  }
 }
 
 /** The carton in the freezer (world.lids' freezer), or null when there is no freezer. */

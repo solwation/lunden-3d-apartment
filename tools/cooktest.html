@@ -7,6 +7,7 @@
 // The kitchen's cooking (#156): (1) the induction hob (#158) — aim at it → "Slå på hällen", on (the zone glows),
 // off again; F switches it off and it stays a target with F. (2) the frying pan (#159): open the drawer under
 // the hob, take the pan, stand it on the hob, take it again, back in the drawer, the drawer closes; F sends it home.
+// (5) fish fingers (#214): into the pan, golden, out, eaten; burnt left on; F.
 // (3) the chicken (#160): no smoke in the fridge; taken, into the pan on the lit hob, it smokes after cookSeconds;
 // back in the fridge with the door shut the smoke stops; fried again it stops by itself after smokeSeconds; F.
 //   google-chrome --headless=new --dump-dom http://localhost:8137/tools/cooktest.html
@@ -156,6 +157,42 @@ f.onload = async () => {
   pass &= check(chicken.body.every((m) => !m.visible) && stats.chicken === before + 7 && chicken.plate.visible === false, `all eaten: ${stats.chicken - before} pieces, nothing left in the pan`);
   toggleFurniture(); toggleFurniture();
   pass &= check(!hood.on && !smokeAlarm.ringing && chicken.body.every((m) => m.visible) && chicken.parts.every((p) => !p.gone) && hex() === chicken.skins[0].raw.getHex(), 'F: the fan off, quiet, the chicken whole and raw again');
+  // (5) #214: fish fingers fry in the pan too — frozen pale, golden after FISH.fry.seconds, burnt later; not back in the carton
+  const { fish } = w.__app, FRY = { seconds: 6, burnAt: 18 };
+  const white = (x) => x.bread.color.getHex() === 0xffffff;
+  pan.take(); pan.placeAt(hob.zone); hob.set(true);
+  fish.press();
+  const f1 = heldItem();
+  pass &= check(f1?.isFish && white(f1), 'a frozen fish finger in the hand (pale)');
+  label = aim(hob.zone.clone().add(new V(0, 0.03, 0)), from);
+  pass &= check(/lägga fiskpinnen i pannan/i.test(label), `at the pan: "${label}"`);
+  btn.click(); step(1 / 60);
+  pass &= check(f1.state === 'pan' && f1.model.parent === pan.model && !heldItem(), 'in the pan, the hand free');
+  fish.press(); fish.fryHeld();
+  const f2 = fish.inPan.find((x) => x !== f1);
+  pass &= check(fish.inPan.length === 2 && f2 && f2.slot !== f1.slot, `a second one beside it (slots ${f1.slot}, ${f2?.slot})`);
+  chicken.take();
+  label = aim(hob.zone.clone().add(new V(0, 0.03, 0)), from);
+  pass &= check(!/kycklingen i pannan/i.test(label), `the chicken does not go in with them ("${label}")`);
+  chicken.putBack(); if (fridge.isOpen) fridge.toggle();
+  const fried0 = stats.fried;
+  run(FRY.seconds - 2);
+  pass &= check(!f1.fried && !white(f1), `frying: no longer frozen, not done yet (#${f1.bread.color.getHex().toString(16)})`);
+  run(3);
+  pass &= check(f1.fried && f2.fried && !f1.burnt && stats.fried === fried0 + 2, `golden after ${FRY.seconds + 1} s (stats +${stats.fried - fried0})`);
+  label = aim(f1.middle(new V()), from);
+  pass &= check(/ta fiskpinnen/i.test(label), `"${label}"`);
+  btn.click(); step(1 / 60);
+  pass &= check(heldItem() === f1 && f1.fried && f1.hot > 0, 'out of the pan into the hand, fried and hot (steaming)');
+  pass &= check(fish.target.blocked && /stekt/i.test(fish.target.blockedText), `not back in the carton: "${fish.target.blockedText}"`);
+  const eaten0 = stats.fish;
+  for (let b = 0; b < 3; b++) { f1.use(); run(0.5); }
+  pass &= check(!heldItem() && stats.fish === eaten0 + 1, 'eaten');
+  run(FRY.burnAt - FRY.seconds);
+  const smoking = f2.puffs.some((sp) => sp.visible && sp.material.opacity > 0.01);
+  pass &= check(f2.burnt && smoking, `left on the heat: burnt and smoking (#${f2.bread.color.getHex().toString(16)})`);
+  toggleFurniture(); toggleFurniture();
+  pass &= check(!fish.inPan.length && fish.left === 15 && !hob.on, 'F: the pan is cleared, the carton full, the hob off');
   hob.set(false); pan.goHome(); if (fridge.isOpen) fridge.toggle(); if (drawer.isOpen) drawer.toggle();
   out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
 };
