@@ -1051,7 +1051,8 @@ function showPerf() {
   perfEl.textContent = `${(perfFrames * 1000 / (now - perfT)).toFixed(0)} fps · px ${dynRes.ratio.toFixed(2)}\ncalls ${i.render.calls}\ntris  ${i.render.triangles}\ngeoms ${i.memory.geometries}\ntex   ${i.memory.textures}`;
   perfFrames = 0; perfT = now;
 }
-detail = new DetailCuller(scene, { W: world.size.x, D: world.size.z, roof: world.openings.roof, floor1: LEVELS[1].floor, doorHeight: DOOR_HEIGHT }, world.openings); // everything is built by now (the holdables too)
+const frontDoor = world.doors.find((d) => d.name === 'ytterdörren' && Math.abs(d.object.getWorldPosition(new THREE.Vector3()).z) < 0.5);
+detail = new DetailCuller(scene, { W: world.size.x, D: world.size.z, roof: world.openings.roof, floor1: LEVELS[1].floor, doorHeight: DOOR_HEIGHT }, world.openings, () => frontDoor.t > 0.02); // everything is built by now (the holdables too); the open front door shows the hall (#210)
 renderer.setAnimationLoop(() => {
   const raw = clock.getDelta(), dt = Math.min(raw, 0.05);
   if (!overlay.hidden || document.hidden || shotMode) dynRes.slow = dynRes.fast = 0; // only while playing (not &shot)

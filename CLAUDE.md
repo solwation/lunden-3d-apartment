@@ -303,6 +303,8 @@ tools/postertest.html  headless test: take the drawing (blank sheet stays), back
 tools/sonostest.html   headless test: music in all three speakers, songs, volume, panel, pause, upstairs, F; each channel
                        rendered offline (only outside --virtual-time-budget; there it says SKIP)
 tools/boardtest.html   headless test: keep / throw away cat photos, a full board, the panel (needs a big virtual-time budget)
+tools/detailtest.html  headless test: from the doorstep through the open front door the hall's doors are drawn (#210); inside
+                       every Entréplan door is on a drawn layer, open or shut; outside the culler still works
 tools/planttest.html   headless test: lift pot plants (window board → table, side table → window board, the shelf), F home
 tools/clocktest.html   headless test of the wall clock (?time=7, spool, pause, sun height by month)
 tools/calendartest.html headless test: today's date at the start, pick a date on the calendar, the sun follows
@@ -629,7 +631,8 @@ screenshots into the session scratchpad, not the repo.
 - Detail culling (#189, `src/detail.js`, `PERF.detail`): the exterior and new furniture had grown the start view to ~1200
   calls (the whole flat is in the frustum from the street). Small meshes that would look tinier than `k` are moved to a
   layer the camera does not draw (never nearer than `minDist`, so never within reach), and from outside the flat a mesh
-  inside it is only drawn when the line to it passes a façade opening (the front door's leaf is solid). Start view
+  inside it is only drawn when the line to it passes a façade opening (the front door's leaf is solid while it is shut; open,
+  the whole doorway counts, #210 — `tools/detailtest.html`). Start view
   1210 → ~410 calls, the other spots a little lower; screenshots differ by a few dozen pixels. Anything new that
   raycasts at small things far away must allow for layer 7.
 - Shadows: `shadowMap.autoUpdate = false`; redrawn when the sun moved > 0.2°, for 1.5 s after any E

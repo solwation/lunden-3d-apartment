@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Detail culling test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+// Detail culling (#189) must never hide what is near you (#210): walk in from START through the front door, then
+// on the doorstep with the front door open the hall's doors must be drawn (they vanished, #210), and inside every
+// door on Entréplan must be on a layer the camera draws, before and after opening them.
+//   google-chrome --headless=new --dump-dom http://localhost:8137/tools/detailtest.html
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const lines = [];
+let pass = true;
+const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); pass &&= !!ok; return ok; };
+const f = document.createElement('iframe');
+f.width = 900; f.height = 600;
+document.body.append(f);
+const load = (q) => new Promise((res) => { f.onload = async () => { while (!f.contentWindow.__app) await wait(100); res(f.contentWindow); }; f.src = `../index.html?v=${Math.random()}${q}`; });
+
+(async () => {
+  const w = await load('&shot');
+  const app = w.__app, d = f.contentDocument;
+  d.getElementById('start-touch')?.click(); await wait(50);
+  const cam = app.camera;
+  // meshes of a thing (door leaf, lid, front) the camera would not draw
+  const unseen = (obj) => { const l = []; obj.traverse((m) => { if (m.isMesh && m.visible && !m.layers.test(cam.layers)) l.push(m.name || m.geometry?.type); }); return l; };
+  const things = () => app.world.doors.filter((t) => t.object.getWorldPosition(new (app.camera.position.constructor)()).y < 2); // Entréplan's doors (lids and small fronts may be far-culled)
+  const report = (where) => {
+    const bad = [];
+    for (const t of things()) { const u = unseen(t.object ?? t.pivot ?? t.leaf); if (u.length) bad.push(`${t.name ?? t.kind} (${u.length})`); }
+    check(!bad.length, `${where}: every door on Entréplan drawn${bad.length ? ' — hidden: ' + bad.join(', ') : ''}`);
+  };
+  const walk = (pts) => {
+    for (let i = 1; i < pts.length; i++) {
+      const [x0, z0] = pts[i - 1], [x1, z1] = pts[i], n = Math.ceil(Math.hypot(x1 - x0, z1 - z0) / 0.1);
+      for (let k = 1; k <= n; k++) {
+        const x = x0 + (x1 - x0) * k / n, z = z0 + (z1 - z0) * k / n;
+        app.player.pos.x = x; app.player.pos.z = z; app.player.pos.y = 0;
+        app.step(1 / 60);
+      }
+    }
+  };
+  const yaw = (deg) => { app.camera.rotation.y = deg * Math.PI / 180; app.step(1 / 60); };
+  const front = app.world.doors.find((dd) => Math.abs((dd.hingeZ ?? dd.z ?? 0)) < 0.3) ?? app.world.doors[0];
+  // the doors you see from the doorstep through the open front door (#210): hall → Tvätt, Tvätt → Badrum, the hall wardrobe
+  const near = () => app.world.doors.filter((dd) => { const p = (dd.object).getWorldPosition(new (app.camera.position.constructor)()); return p.y < 2 && p.x < 2.2 && p.z > 1.5 && p.z < 5.5; });
+  const hallDoors = (where) => {
+    const bad = near().filter((dd) => unseen(dd.object).length).map((dd) => dd.name);
+    check(near().length >= 3 && !bad.length, `${where}: the hall's doors drawn (${near().length})${bad.length ? ' — hidden: ' + bad.join(', ') : ''}`);
+  };
+  const frontDoor = app.world.doors.find((dd) => dd.name === 'ytterdörren' && Math.abs(dd.object.getWorldPosition(new (app.camera.position.constructor)()).z) < 0.5);
+  app.player.spawn(2.875, -12, Math.PI); app.step(1 / 60);
+  frontDoor.toggle(); for (let i = 0; i < 40; i++) app.step(0.05);
+  walk([[2.875, -12], [1.3, -3], [1.3, -1.2]]);
+  yaw(180);
+  hallDoors('on the doorstep outside, the front door open');
+  walk([[1.3, -1.2], [1.3, -0.25]]);
+  hallDoors('in the doorway, still outside the façade line');
+  frontDoor.toggle(); for (let i = 0; i < 40; i++) app.step(0.05);
+  walk([[1.3, -0.25], [1.3, -3], [2.875, -12]]);
+  frontDoor.toggle(); for (let i = 0; i < 40; i++) app.step(0.05);
+  walk([[2.875, -12], [1.3, -3], [1.3, -0.5], [1.3, 0.6], [1.3, 1.2], [1.6, 2.4]]);
+  yaw(-90); report('in the hall, after walking in from START');
+  // open every door and lid on Entréplan, look again, close them
+  for (const t of things()) t.toggle?.();
+  for (let i = 0; i < 40; i++) app.step(0.05);
+  report('in the hall, everything open');
+  walk([[1.6, 2.4], [1.4, 3.6]]);
+  report('by the Tvätt door');
+  for (const t of things()) t.toggle?.();
+  for (let i = 0; i < 40; i++) app.step(0.05);
+  report('in the hall, everything closed again');
+  // outside again: the culling still works from the street (fewer meshes drawn there)
+  walk([[1.4, 3.6], [1.3, 1.2], [1.3, -0.5], [1.3, -3], [2.875, -12]]);
+  const hidden = app.detail().items.filter((it) => it.far).length;
+  check(hidden > 50, `back at START: the culler still hides far-away details (${hidden})`);
+  out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
+})().catch((e) => { out.textContent = `SOME FAILED\n${lines.join('\n')}\nERROR ${e.stack}`; });
+</script>
+</body>
+</html>

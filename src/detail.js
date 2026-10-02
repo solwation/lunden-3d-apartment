@@ -8,18 +8,21 @@ import { PERF } from './config.js';
 // Checked when the camera has moved a little, not every frame.
 // From outside the flat, anything inside it is only drawn if the line from the eye to it passes through one of the
 // façade's openings (windows, doors; with a margin of its size): the walls hide the rest (a coarse occlusion test).
+// The front door's leaf only counts as solid while it is shut: open, the whole doorway shows the hall (#210).
 
 const HIDDEN = 7; // the layer far-away details go to
 const D = PERF.detail;
 
 export class DetailCuller {
   /** Collect the small meshes under `root` (call once everything is built). */
-  /** box: { W, D, roof, floor1, doorHeight } the flat's footprint (plan), roof height, Övre plan's floor, the door height; openings: { north: [], south: [] } (x0 x1 y0 y1). */
-  constructor(root, box, openings) {
-    // the front door's leaf is solid: through it only its transom counts (doorHeight above its sill)
+  /** box: { W, D, roof, floor1, doorHeight } the flat's footprint (plan), roof height, Övre plan's floor, the door height; openings: { north: [], south: [] } (x0 x1 y0 y1);
+   * doorOpen(): is the front door open (then its whole doorway counts, #210)? */
+  constructor(root, box, openings, doorOpen = () => false) {
+    // the front door's leaf is solid while it is shut: through it only its transom counts (doorHeight above its sill)
     const solid = (o) => o.y0 < 0.05 || Math.abs(o.y0 - box.floor1) < 0.05;
-    openings = { north: openings.north.map((o) => (solid(o) ? { ...o, y0: o.y0 + box.doorHeight } : o)), south: openings.south };
-    Object.assign(this, { box, openings });
+    this.shut = { north: openings.north.map((o) => (solid(o) ? { ...o, y0: o.y0 + box.doorHeight } : o)), south: openings.south };
+    this.full = { north: openings.north, south: openings.south };
+    Object.assign(this, { box, doorOpen, open: false, openings: this.shut });
     this.items = [];
     this.last = new THREE.Vector3(1e9, 0, 0);
     root.updateMatrixWorld(true);
@@ -34,6 +37,8 @@ export class DetailCuller {
 
   update(camera) {
     const p = camera.getWorldPosition(this.tmp ??= new THREE.Vector3());
+    const open = !!this.doorOpen();
+    if (open !== this.open) { this.open = open; this.openings = open ? this.full : this.shut; this.last.set(1e9, 0, 0); } // look again now
     if (p.distanceToSquared(this.last) < D.move * D.move) return;
     this.last.copy(p);
     const w = this.w ??= new THREE.Vector3();
