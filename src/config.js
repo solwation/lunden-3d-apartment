@@ -426,6 +426,9 @@ export const FURNITURE = [
   // oiled solid oak, a fixed shelf below (ilva.dk product page). Centred on the three seats
   // (x 2.68–4.60), 40 cm in front of the sofa (front at z 11.26).
   { type: 'coffeetable', level: 0, x: 3.64, z: 11.26 - 0.4 - 0.3, w: 1.2, d: 0.6, h: 0.47 },
+  // big rug under the sofa's front legs and the coffee table (#55): 300 × 200 × 1.2 cm (size and
+  // colours are our pick), light oatmeal with a soft weave and a thin border; no collision
+  { type: 'rug', level: 0, x: 3.9, z: 10.6, w: 3.0, d: 2.0, h: 0.012, color: '#dcd3c3', border: '#c4b8a3' },
   // Uteplats (paved z 12.75–16.8 in front of the hedge, see PATIO): Plantagen Hörngrupp Oslo
   // antracit (art. 558848): corner sofa 198 × 72 × 76 + 186 × 72 × 76 cm on an aluminium frame,
   // table 120 × 60 × 40 cm (plantagen.se). Backs to the hedge and the east screen wall,

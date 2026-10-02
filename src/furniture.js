@@ -440,7 +440,41 @@ function daybed() {
   return g;
 }
 
-const BUILDERS = { sofa, armchair, footstool, floorlamp, sidetable, coffeetable, loungesofa, loungetable, parasol, planter, bed, skansnasTable, skansnasChair, bunk, daybed };
+/** Woven rug texture: base colour, fine random weave, a thin border band (canvas, no image files). */
+function rugTexture(item) {
+  const c = document.createElement('canvas');
+  c.width = 768; c.height = 512;
+  const g = c.getContext('2d');
+  g.fillStyle = item.color;
+  g.fillRect(0, 0, c.width, c.height);
+  let seed = 11;
+  const rand = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+  for (let i = 0; i < 26000; i++) { // weave: tiny light/dark dashes
+    g.fillStyle = rand() < 0.5 ? 'rgba(255,255,255,0.10)' : 'rgba(90,70,40,0.07)';
+    g.fillRect(rand() * c.width, rand() * c.height, 2 + rand() * 3, 1);
+  }
+  const b = 26;
+  g.strokeStyle = item.border;
+  g.lineWidth = 7;
+  g.strokeRect(b, b, c.width - 2 * b, c.height - 2 * b);
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 8;
+  return tex;
+}
+
+/** Big rug: a thin slab (w along local x, d along z), walked over (no footprint). */
+function rug(item) {
+  const g = new THREE.Group();
+  const m = new THREE.Mesh(new THREE.BoxGeometry(item.w, item.h, item.d),
+    new THREE.MeshStandardMaterial({ map: rugTexture(item), roughness: 1 }));
+  m.position.y = item.h / 2 + 0.002; // above the floor and its AO overlay
+  m.receiveShadow = true;
+  g.add(m);
+  return g;
+}
+
+const BUILDERS = { sofa, armchair, footstool, floorlamp, sidetable, coffeetable, loungesofa, loungetable, parasol, planter, bed, skansnasTable, skansnasChair, bunk, daybed, rug };
 
 /** Build all furniture; returns the scene group, collision segments per level and lamps. */
 export function buildFurniture() {
