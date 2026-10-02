@@ -117,8 +117,9 @@
     #measure { position: fixed; transform: translate(-50%, -140%); background: rgba(210, 58, 42, 0.92); color: #fff; padding: 4px 10px; border-radius: 6px; font-size: 15px; text-align: center; pointer-events: none; white-space: nowrap; }
     #measure[hidden] { display: none; }
     #measure small { display: block; font-size: 11px; opacity: .85; }
-    #measure-btn { position: fixed; right: calc(24px + var(--sr)); bottom: calc(110px + var(--sb)); width: 52px; height: 52px; border: 0; border-radius: 50%; background: var(--panel); font-size: 22px; box-shadow: 0 4px 14px rgba(0,0,0,.2); }
-    #crouch-btn { position: fixed; right: calc(24px + var(--sr)); bottom: calc(100px + var(--sb)); width: 48px; height: 48px; border: 0; border-radius: 50%; background: var(--panel); font-size: 22px; touch-action: manipulation; }
+    /* 📏 and 🧎: a column left of the minimap (right 16 + 92 wide), above the action button */
+    #measure-btn { position: fixed; right: calc(122px + var(--sr)); bottom: calc(160px + var(--sb)); width: 48px; height: 48px; border: 0; border-radius: 50%; background: var(--panel); font-size: 22px; box-shadow: 0 4px 14px rgba(0,0,0,.2); }
+    #crouch-btn { position: fixed; right: calc(122px + var(--sr)); bottom: calc(100px + var(--sb)); width: 48px; height: 48px; border: 0; border-radius: 50%; background: var(--panel); font-size: 22px; touch-action: manipulation; }
     #crouch-btn.on { background: var(--accent); }
     #furniture-btn { position: fixed; right: calc(178px + var(--sr)); top: calc(16px + var(--st)); width: 44px; height: 44px; border: 0; border-radius: 50%; background: var(--panel); font-size: 18px; }
     #stats-btn { position: fixed; right: calc(124px + var(--sr)); top: calc(16px + var(--st)); width: 44px; height: 44px; border: 0; border-radius: 50%; background: var(--panel); font-size: 18px; }
