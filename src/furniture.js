@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { sfx } from './audio.js';
 import { mergeStatic } from './merge.js';
 import { restTarget } from './rest.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
@@ -861,6 +862,176 @@ function worklamp(item, lights) {
   return g;
 }
 
+const nearBlack = new THREE.MeshStandardMaterial({ color: 0x161719, roughness: 0.45 });
+const neon = 0x44ff66;
+
+/** A gaming desk with a PC (#77). Faces local +z (the user sits on the +z side), back to the wall at
+ * −z. E toggles the PC: an animated game on the curved monitor, RGB fans and keys cycling colours,
+ * game sounds; off: a dark screen and a dim power light. */
+function gamingdesk(item) {
+  const g = new THREE.Group();
+  const { w, d } = item, h = 0.75, hw = w / 2, z0 = -d / 2;
+  g.add(rbox(w, 0.03, d, 0, h - 0.015, 0, nearBlack, 0.006));
+  for (const x of [-hw + 0.04, hw - 0.04]) g.add(rbox(0.05, h - 0.03, d - 0.08, x, (h - 0.03) / 2, 0, nearBlack, 0.006)); // panel legs
+  g.add(rbox(w - 0.1, 0.25, 0.02, 0, h - 0.18, z0 + 0.06, nearBlack, 0.004)); // modesty panel
+  // curved ultrawide: an arc of a cylinder (radius 1 m), 0.8 m wide, 0.34 m high, on a central stand
+  const R = 1.0, sw = 0.8, sh = 0.34, ang = sw / R, my = h + 0.12 + sh / 2, mz = z0 + 0.22;
+  const scrGeo = new THREE.CylinderGeometry(R, R, sh, 32, 1, true, Math.PI - ang / 2, ang);
+  scrGeo.translate(0, my, mz + R); // the arc's middle at z = mz, bulging towards −z (the wall)
+  // flip the UVs so the picture reads left→right from the front
+  const uv = scrGeo.attributes.uv;
+  for (let i = 0; i < uv.count; i++) uv.setX(i, 1 - uv.getX(i));
+  const c = document.createElement('canvas');
+  c.width = 512; c.height = 216;
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  const onMat = new THREE.MeshBasicMaterial({ map: tex, side: THREE.DoubleSide, toneMapped: false });
+  const offMat = new THREE.MeshStandardMaterial({ color: 0x07080a, roughness: 0.12, metalness: 0.4, side: THREE.DoubleSide });
+  const screen = new THREE.Mesh(scrGeo, offMat);
+  g.add(screen);
+  const bezel = new THREE.CylinderGeometry(R + 0.012, R + 0.012, sh + 0.02, 32, 1, true, Math.PI - ang / 2 - 0.01, ang + 0.02);
+  bezel.translate(0, my, mz + R);
+  g.add(new THREE.Mesh(bezel, new THREE.MeshStandardMaterial({ color: 0x111214, roughness: 0.5, side: THREE.DoubleSide })));
+  g.add(rbox(0.05, 0.14, 0.04, 0, h + 0.07, mz - 0.03, nearBlack, 0.01), rbox(0.26, 0.012, 0.18, 0, h + 0.006, mz - 0.03, nearBlack, 0.004));
+  // tower on the desk's left end: black case, glass side towards the room, three RGB fan rings
+  const tx = -hw + 0.16, tz = z0 + 0.25;
+  g.add(rbox(0.22, 0.46, 0.45, tx, h + 0.23, tz, nearBlack, 0.01));
+  const rgb = [0, 1, 2].map(() => new THREE.MeshBasicMaterial({ color: 0x111111, toneMapped: false }));
+  rgb.forEach((m, i) => {
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(0.055, 0.008, 8, 24), m);
+    ring.rotation.y = Math.PI / 2;
+    ring.position.set(tx + 0.112, h + 0.1 + i * 0.13, tz + 0.08);
+    g.add(ring);
+  });
+  const glass = new THREE.Mesh(new THREE.PlaneGeometry(0.42, 0.42), new THREE.MeshStandardMaterial({ color: 0x223, transparent: true, opacity: 0.35, roughness: 0.05 }));
+  glass.rotation.y = Math.PI / 2; glass.position.set(tx + 0.115, h + 0.23, tz);
+  g.add(glass);
+  const power = new THREE.MeshBasicMaterial({ color: 0x103018, toneMapped: false });
+  g.add(rbox(0.004, 0.012, 0.012, tx + 0.112, h + 0.42, tz + 0.18, power, 0.002));
+  // keyboard with a glowing underside strip, mouse on a big pad, headset on a stand, speakers, can, mug
+  g.add(rbox(0.9, 0.003, 0.4, 0.1, h + 0.0015, 0.12, new THREE.MeshStandardMaterial({ color: 0x0d0e10, roughness: 0.95 }), 0.002));
+  g.add(rbox(0.44, 0.025, 0.15, -0.02, h + 0.015, 0.1, nearBlack, 0.006));
+  const keysMat = new THREE.MeshBasicMaterial({ color: 0x111111, toneMapped: false });
+  g.add(rbox(0.42, 0.004, 0.13, -0.02, h + 0.029, 0.1, keysMat, 0.002));
+  const mouse = new THREE.Mesh(new THREE.SphereGeometry(1, 14, 8), nearBlack);
+  mouse.scale.set(0.033, 0.02, 0.06); mouse.position.set(0.37, h + 0.012, 0.12);
+  g.add(mouse);
+  g.add(rbox(0.012, 0.25, 0.012, hw - 0.12, h + 0.125, z0 + 0.15, nearBlack, 0.004), rbox(0.1, 0.01, 0.1, hw - 0.12, h + 0.005, z0 + 0.15, nearBlack, 0.004));
+  const band = new THREE.Mesh(new THREE.TorusGeometry(0.085, 0.012, 8, 20, Math.PI), nearBlack);
+  band.position.set(hw - 0.12, h + 0.25, z0 + 0.15); band.rotation.y = Math.PI / 2;
+  g.add(band);
+  for (const s of [-1, 1]) g.add(rbox(0.07, 0.07, 0.07, hw - 0.12 + s * 0.085, h + 0.18, z0 + 0.15, new THREE.MeshStandardMaterial({ color: neon, roughness: 0.5 }), 0.02)); // ear cups (green)
+  for (const x of [-0.5, 0.48]) g.add(rbox(0.09, 0.16, 0.09, x, h + 0.08, z0 + 0.1, nearBlack, 0.01));
+  const can = new THREE.Mesh(new THREE.CylinderGeometry(0.033, 0.033, 0.12, 16), new THREE.MeshStandardMaterial({ color: 0x1aa34a, roughness: 0.3, metalness: 0.6 }));
+  can.position.set(0.55, h + 0.06, 0.18);
+  g.add(can);
+  // a soft additive glow on the wall behind the monitor
+  const gc = document.createElement('canvas'); gc.width = gc.height = 64;
+  const gg = gc.getContext('2d'), rg = gg.createRadialGradient(32, 32, 6, 32, 32, 32);
+  rg.addColorStop(0, 'rgba(255,255,255,0.85)'); rg.addColorStop(1, 'rgba(255,255,255,0)');
+  gg.fillStyle = rg; gg.fillRect(0, 0, 64, 64);
+  const glowMat = new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(gc), color: 0x000000, transparent: true,
+    blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false });
+  const glow = new THREE.Mesh(new THREE.PlaneGeometry(1.5, 0.9), glowMat);
+  glow.position.set(0, my, z0 + 0.01);
+  g.add(glow);
+  // the game: a scrolling neon landscape, ships, laser bolts, explosions, a HUD with a running score
+  const ctx = c.getContext('2d');
+  const sparks = [];
+  let t = 0, acc = 0, score = 0, on = false, nextShot = 0;
+  const draw = () => {
+    const W = c.width, H = c.height;
+    const sky = ctx.createLinearGradient(0, 0, 0, H);
+    sky.addColorStop(0, '#0b0326'); sky.addColorStop(1, '#3a0b4a');
+    ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
+    ctx.strokeStyle = 'rgba(255,60,200,0.6)'; ctx.lineWidth = 1; // neon grid floor
+    for (let k = 0; k < 12; k++) { const y = H * 0.62 + ((k * 14 + t * 60) % (H * 0.4)); ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+    for (let k = -10; k <= 10; k++) { ctx.beginPath(); ctx.moveTo(W / 2 + k * 12, H * 0.62); ctx.lineTo(W / 2 + k * 70, H); ctx.stroke(); }
+    const px = W * 0.25, py = H * (0.45 + 0.15 * Math.sin(t * 2)); // the player's ship
+    ctx.fillStyle = '#44ff66'; ctx.beginPath(); ctx.moveTo(px + 26, py); ctx.lineTo(px - 14, py - 10); ctx.lineTo(px - 14, py + 10); ctx.fill();
+    for (let k = 0; k < 3; k++) { // enemies
+      const ex = W - ((t * 90 + k * 170) % (W + 60)), ey = H * (0.25 + 0.2 * k + 0.05 * Math.sin(t * 3 + k));
+      ctx.fillStyle = '#ff5533'; ctx.fillRect(ex - 10, ey - 7, 20, 14);
+    }
+    for (let k = sparks.length - 1; k >= 0; k--) { // lasers and explosion sparks
+      const s = sparks[k]; s.x += s.vx; s.y += s.vy; s.life -= 1;
+      ctx.fillStyle = s.col; ctx.fillRect(s.x, s.y, s.w, s.h);
+      if (s.life <= 0) sparks.splice(k, 1);
+    }
+    ctx.fillStyle = '#eaffee'; ctx.font = 'bold 16px monospace'; // HUD
+    ctx.fillText(`SCORE ${String(score).padStart(7, '0')}`, 12, 22);
+    ctx.fillStyle = (Math.floor(t * 4) % 2) ? '#44ff66' : '#1a5a2a'; ctx.fillText('● LIVE', W - 80, 22);
+    ctx.fillStyle = '#44ff66'; ctx.fillRect(12, H - 14, 120 * (0.5 + 0.5 * Math.sin(t)), 6);
+    tex.needsUpdate = true;
+    return [px, py];
+  };
+  const shoot = (px, py) => {
+    sparks.push({ x: px + 26, y: py - 1, vx: 14, vy: 0, w: 18, h: 3, life: 30, col: '#7dffb0' });
+    if (Math.random() < 0.45) { // an explosion somewhere ahead
+      const ex = c.width * (0.6 + Math.random() * 0.35), ey = c.height * (0.2 + Math.random() * 0.4);
+      for (let k = 0; k < 14; k++) {
+        const a = Math.random() * 6.28, v = 1 + Math.random() * 4;
+        sparks.push({ x: ex, y: ey, vx: Math.cos(a) * v, vy: Math.sin(a) * v, w: 3, h: 3, life: 10 + Math.random() * 10, col: ['#ffd23f', '#ff6b35', '#ff3cc8'][k % 3] });
+      }
+      score += 100 + Math.floor(Math.random() * 400);
+      return 'boom';
+    }
+    return 'pew';
+  };
+  const where = () => g.getWorldPosition(new THREE.Vector3()).setY(g.getWorldPosition(new THREE.Vector3()).y + 1);
+  const interact = {
+    name: 'datorn', kind: 'pc', pickable: g,
+    get isOpen() { return on; },
+    get verb() { return on ? 'stänga av' : 'starta'; },
+    toggle() {
+      on = !on;
+      screen.material = on ? onMat : offMat;
+      power.color.setHex(on ? 0x44ff66 : 0x103018);
+      if (!on) { rgb.forEach((m) => m.color.setHex(0x111111)); keysMat.color.setHex(0x111111); glowMat.color.setHex(0); }
+      if (on) { draw(); this.fan = sfx.pcFan(where()); } else { this.fan?.stop(); this.fan = null; }
+      return on;
+    },
+    update(dt) {
+      if (!on) return;
+      t += dt; acc += dt;
+      const hue = (t * 0.15) % 1; // RGB cycling (cheap: only colours change)
+      rgb.forEach((m, i) => m.color.setHSL((hue + i * 0.12) % 1, 1, 0.55));
+      keysMat.color.setHSL((hue + 0.5) % 1, 1, 0.5);
+      glowMat.color.setHSL(0.8 + 0.1 * Math.sin(t), 0.8, 0.22);
+      if (acc < 1 / item.fps) return;
+      acc = 0;
+      const [px, py] = draw();
+      if (t > nextShot) { nextShot = t + 0.25 + Math.random() * 0.9; sfx.game(where(), shoot(px, py)); }
+    },
+  };
+  g.userData.interact = interact;
+  g.userData.keep = [screen, glow, ...g.children.filter((m) => rgb.includes(m.material) || m.material === keysMat || m.material === power)];
+  g.traverse((m) => { if (m.isMesh && m !== glow) m.castShadow = true; });
+  g.userData.footprint = [{ x0: -hw, x1: hw, z0: -d / 2, z1: d / 2 }];
+  return g;
+}
+
+/** Gaming chair (black with green stripes): five-star base, seat, tall back with wings. Faces local +z.
+ * A seat for sitting down (#71). */
+function gamingchair() {
+  const g = new THREE.Group();
+  const green = new THREE.MeshStandardMaterial({ color: neon, roughness: 0.6 });
+  for (let k = 0; k < 5; k++) {
+    const a = (k / 5) * Math.PI * 2, leg = rbox(0.3, 0.03, 0.04, Math.cos(a) * 0.15, 0.06, Math.sin(a) * 0.15, nearBlack, 0.01);
+    leg.rotation.y = -a;
+    g.add(leg);
+  }
+  g.add(new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.36, 10), nearBlack).translateY(0.24));
+  g.add(rbox(0.52, 0.09, 0.5, 0, 0.46, 0.02, nearBlack, 0.03));
+  g.add(rbox(0.5, 0.82, 0.1, 0, 0.92, -0.22, nearBlack, 0.04));
+  for (const x of [-0.12, 0.12]) g.add(rbox(0.04, 0.78, 0.005, x, 0.92, -0.168, green, 0.002)); // stripes
+  g.add(rbox(0.3, 0.12, 0.05, 0, 1.2, -0.16, green, 0.02)); // headrest pillow
+  for (const x of [-0.27, 0.27]) g.add(rbox(0.06, 0.04, 0.3, x, 0.66, 0, nearBlack, 0.015)); // arm rests
+  g.userData.rest = { kind: 'sit', name: 'gamingstolen', verb: 'sätta dig i', spots: [{ x: 0, y: 0.5, z: -0.04 }] };
+  g.userData.footprint = [{ x0: -0.3, x1: 0.3, z0: -0.3, z1: 0.3 }];
+  return g;
+}
+
 /** Woven rug texture: base colour, fine random weave, a thin border band (canvas, no image files). */
 function rugTexture(item) {
   const c = document.createElement('canvas');
@@ -895,7 +1066,7 @@ function rug(item) {
   return g;
 }
 
-const BUILDERS = { sofa, armchair, footstool, floorlamp, sidetable, coffeetable, loungesofa, loungetable, parasol, planter, bed, skansnasTable, skansnasChair, bunk, daybed, rug, ragrund, coatrack, shoerack, byas, tv, nordkisa, worklamp };
+const BUILDERS = { sofa, armchair, footstool, floorlamp, sidetable, coffeetable, loungesofa, loungetable, parasol, planter, bed, skansnasTable, skansnasChair, bunk, daybed, rug, ragrund, coatrack, shoerack, byas, tv, nordkisa, worklamp, gamingdesk, gamingchair };
 
 /** Build all furniture; returns the scene group, collision segments per level and lamps. */
 export function buildFurniture() {

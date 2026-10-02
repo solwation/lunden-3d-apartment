@@ -371,6 +371,29 @@ export const sfx = {
     noise(t, 0.4, d, { type: 'bandpass', freq: 900, q: 0.7, gain: 0.16, attack: 0.1 });
     tone(t + 0.15, 0.2, d, { type: 'triangle', from: 140, to: 95, gain: 0.04 });
   },
+    /** PC fans: a soft steady whoosh until stop(). */
+  pcFan(pos) {
+    if (!ready()) return null;
+    const t = ctx.currentTime, d = out(pos, 0.5);
+    const src = ctx.createBufferSource();
+    src.buffer = noiseBuf; src.loop = true;
+    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 600;
+    const g = ctx.createGain(); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.08, t + 1);
+    src.connect(lp).connect(g).connect(d);
+    src.start(t, Math.random());
+    return { stop() { const t1 = ctx.currentTime; g.gain.cancelScheduledValues(t1); g.gain.setValueAtTime(g.gain.value, t1); g.gain.linearRampToValueAtTime(0, t1 + 0.4); src.stop(t1 + 0.5); } };
+  },
+  /** Game sounds from the PC speakers: a laser 'pew' or an explosion 'boom'. */
+  game(pos, kind) {
+    if (!ready()) return;
+    const t = ctx.currentTime, d = out(pos, 0.6);
+    if (kind === 'boom') {
+      noise(t, 0.45, d, { type: 'lowpass', freq: 500, gain: 0.3, attack: 0.005 });
+      tone(t, 0.35, d, { from: 120, to: 40, gain: 0.18 });
+    } else {
+      tone(t, 0.12, d, { type: 'square', from: 1800, to: 300, gain: 0.05 });
+    }
+  },
     click(pos) {
     if (!ready()) return;
     const t = ctx.currentTime, d = out(pos, 0.6);

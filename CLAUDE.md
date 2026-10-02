@@ -115,6 +115,7 @@ tools/oventest.html    headless test: oven + microwave open/close (lamp inside),
 tools/tvtest.html      headless test: switch the living-room TV on/off, picture moves, no target with F off
 tools/reloadtest.html  headless test: resume after "Ladda om", F5 starts at START, "Börja från start", bad record
 tools/resttest.html    headless test: sit on every seat and lie in every bed (spot, no walking, up again)
+tools/pctest.html      headless test: switch the gaming PC on/off (game moves, RGB cycles), the chair is a seat
 tools/clocktest.html   headless test of the wall clock (07:00 start, spool, pause, month → sun height)
 tools/stamp.sh         build the published site with a version stamp (used by CI)
 ```
@@ -213,7 +214,7 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   Sovrum 1 (first right) Sarah & Ofluf, double bed (blue/white check bedding after IKEA EKTANDVINGE, #66) with IKEA NORDKISA bedside tables (#64) and white NYMÅNE work
   lamps on them (#65, each its own lamp like the floor lamp) + an IKEA RÅGRUND towel-rack chair in the corner left of
   the window (#60) · Sovrum 3 (second right) Livia & Tuva, bunk (unicorn sheets) ·
-  Sovrum 2 (first left) Walter & Kian, bunk (Darth Vader sheets) · Sovrum 4 (second left, ex Allrum) Tilly, IKEA HEMNES
+  Sovrum 2 (first left) Walter & Kian, bunk (Darth Vader sheets), a gaming desk with a PC on the west wall (#77) · Sovrum 4 (second left, ex Allrum) Tilly, IKEA HEMNES
   daybed with pink cushions. Bunks: long side to the side wall, head end to the façade. Name signs: `DOOR_SIGNS` → `src/signs.js` (hall side of the door).
 - Hall (#49): the plan's "EL" cabinet is really the small EL/C (40 cm, `CABINET_FIXES`) plus the coat
   rack "KL" beside it, which the extractor merged; on that wall (right as you come in) a coat rack with

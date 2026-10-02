@@ -356,6 +356,7 @@ function use(thing) {
   else if (thing.kind === 'appliance') { thing.toggle(); if (thing.isOpen) bump('lids'); }
   else if (thing.kind === 'coffee') thing.toggle();
   else if (thing.kind === 'rest') sitOrLie(thing);
+  else if (thing.kind === 'pc') { const on = thing.toggle(); sfx.tvClick(thing.pickable.getWorldPosition(new THREE.Vector3()), on); }
   else if (thing.kind === 'tv') {
     const on = thing.toggle();
     sfx.tvClick(thing.pickable.getWorldPosition(new THREE.Vector3()), on);
@@ -490,6 +491,7 @@ function toggleFurniture(on = !world.furnitureOn) {
   if (rest.active) standUp(); // the seat is about to vanish
   world.setFurniture(on);
   if (!on && cat.visible) cat.hide(); // the cat goes too (and stops purring); none turn up until F is back
+  if (!on) for (const t of world.furnitureTargets) if ((t.kind === 'tv' || t.kind === 'pc') && t.isOpen) t.toggle(); // screens off
   try { localStorage.setItem('lunden.furniture', on ? '1' : '0'); } catch { /* ignore */ }
 }
 world.looseItems.push(board.object); // the cat photo board goes with the furniture (F)

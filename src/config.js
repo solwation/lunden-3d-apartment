@@ -528,6 +528,12 @@ export const FURNITURE = [
   // the ladder ends up on the room side at the foot end.
   { type: 'bunk', level: 1, x: 0.2 + 0.5, z: 0.47 + 1.05, rot: 180, w: 0.9, l: 2.0, sheets: 'unicorn' }, // Sovrum 3 (Livia & Tuva)
   { type: 'bunk', level: 1, x: 5.55 - 0.5, z: 12.23 - 1.05, rot: 0, w: 0.9, l: 2.0, sheets: 'vader' }, // Sovrum 2 (Walter & Kian)
+  // Walter & Kian's gaming corner (#77): a black desk 140 × 70 on the west wall (clear of the door's swing
+  // and the bunk), facing east; curved 34" ultrawide, RGB tower, keyboard, mouse, headset, speakers
+  // (sizes our pick). E on it switches the PC on (animated game screen, RGB cycling, game sounds).
+  // A black/green gaming chair in front of it is a seat (#71).
+  { type: 'gamingdesk', level: 1, x: 2.75 + 0.35, z: 9.85, rot: -90, w: 1.4, d: 0.7, fps: 12 },
+  { type: 'gamingchair', level: 1, x: 2.75 + 0.35 + 0.62, z: 9.85, rot: 90 },
   // Sovrum 4 (Tilly): IKEA HEMNES dagbädd m 3 lådor, vit, 207 × 89 × 83 cm (ikea.com), back to the
   // west wall, with pink cushions. rot = the way the seat faces.
   { type: 'daybed', level: 1, x: 0.2 + 0.46, z: 10.0, rot: -90 },
