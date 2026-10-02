@@ -70,6 +70,15 @@ const loadImage = (src) => new Promise((resolve) => {
 
 const posterGeo = new THREE.PlaneGeometry(TW / PPM, TH / PPM);
 
+/** A copy of a poster texture showing only the paper (no margin, no tape): for the crumpled ball (#177). */
+export function paperOnly(tex) {
+  const t = tex.clone();
+  t.repeat.set(PW / TW, PH / TH);
+  t.offset.set(MARGIN / TW, MARGIN / TH);
+  t.needsUpdate = true;
+  return t;
+}
+
 export class Posters {
   /**
    * marks: the Marks instance (its segment raycasts and surface list); world: wall outlines per level and
@@ -230,12 +239,20 @@ export class Posters {
     return p;
   }
 
+  /** Hang a record up again just as it was (a poster taken down and not taped up elsewhere, #177). */
+  async rehang(rec) {
+    await this.build(rec);
+    await this.save(rec);
+    this.cache = null;
+  }
+
   async save(rec) { try { await withStore(STORE, 'readwrite', (st) => st.put(rec)); } catch { /* no IndexedDB: this visit only */ } }
 
-  /** Take a poster down for good (#177): gone from the wall and from storage. */
-  async remove(p) {
+  /** Take a poster down (#177): gone from the wall and from storage. `keepTexture`: its map lives on (the ball). */
+  async remove(p, keepTexture = false) {
     p.mesh.removeFromParent();
-    p.mesh.material.map.dispose(); p.mesh.material.dispose();
+    if (!keepTexture) p.mesh.material.map.dispose();
+    p.mesh.material.dispose();
     this.list.splice(this.list.indexOf(p), 1);
     this.cache = null;
     try { await withStore(STORE, 'readwrite', (st) => st.delete(p.rec.id)); } catch { /* ignore */ }
@@ -259,6 +276,7 @@ export class HeldDrawing {
 
   /** Take `image` (data URL) into the hand. */
   take(image, meta = null) {
+    if (this.held) this.putBack(); // one sheet at a time
     setHeld(this);
     this.held = true;
     this.image = image;
@@ -280,6 +298,8 @@ export class HeldDrawing {
   putBack() {
     if (!this.held) return;
     this.release();
+    // a poster taken down goes back up where it was if there is a drawing on the desk already (#177)
+    if (this.meta?.rec && !this.drawing.blank) { this.rehang?.(this.meta.rec); return; }
     this.drawing.restore(this.image);
     sfx.paper(this.drawing.paper.position);
   }

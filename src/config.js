@@ -458,7 +458,10 @@ export const DRAWING = { level: 1, x: 2.61 - 0.66 - 0.02, z: 0.465 + 0.31, w: 0.
   // corner, turned up to ±`tilt`°, `lift` m off the surface (+ `step` per poster so overlaps don't flicker).
   // At most `maxPosted` up at once (then "släng en först"); saved in IndexedDB 'lunden'/'drawings'. `wallGap`:
   // how near a wall outline a hit must be to count as the wall (tiles sit a little proud). Our picks.
-  maxPosted: 30, tilt: 4, lift: 0.003, step: 0.0006, wallGap: 0.05, held: { x: 0.05, y: -0.17, z: -0.42 } };
+  maxPosted: 30, tilt: 4, lift: 0.003, step: 0.0006, wallGap: 0.05, held: { x: 0.05, y: -0.17, z: -0.42 },
+  // Thrown away (#177, src/paperball.js): crumpled into a ball, thrown at `throwSpeed` m/s (+ a little up), gone
+  // after `ballSeconds` s. Our picks.
+  throwSpeed: 4.5, ballSeconds: 180 };
 
 // Sitting and lying down (#71/#72, src/rest.js): eye height above the seat / mattress, how far you can
 // turn your head (yaw ± from the way the seat faces) and the pitch range, and the move time.

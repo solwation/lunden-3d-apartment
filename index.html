@@ -178,6 +178,14 @@
     #book-panel .no { position: absolute; bottom: 10px; left: 0; right: 0; text-align: center; font-size: 12px; opacity: .6; }
     #book-panel .row { margin-top: 10px; display: flex; gap: 8px; align-items: center; color: #fff; font: 13px system-ui, sans-serif; }
     #book-panel .row button { border: 0; border-radius: 8px; background: rgba(255,255,255,.92); color: var(--ink); font: 600 16px system-ui, sans-serif; min-width: 44px; height: 38px; cursor: pointer; touch-action: manipulation; }
+    #poster-panel { position: fixed; inset: 0; z-index: 5; display: grid; place-items: center; background: rgba(20, 35, 45, 0.35); }
+    #poster-panel[hidden] { display: none; }
+    #poster-panel figure { margin: 0; background: #fbfaf5; padding: 10px 10px 6px; box-shadow: 0 14px 40px rgba(0,0,0,.4); transform: rotate(-0.6deg); }
+    #poster-panel img { display: block; width: min(760px, calc(100vw - 52px)); max-height: calc(100vh - 150px); object-fit: contain; }
+    #poster-panel figcaption { font: italic 15px Georgia, serif; color: #555; text-align: right; padding-top: 4px; }
+    #poster-panel .row { margin-top: 10px; display: flex; gap: 8px; align-items: center; color: #fff; font: 13px system-ui, sans-serif; }
+    #poster-panel .row button { border: 0; border-radius: 8px; background: rgba(255,255,255,.92); color: var(--ink); font: 600 15px system-ui, sans-serif; min-width: 44px; min-height: 44px; padding: 0 14px; cursor: pointer; touch-action: manipulation; }
+    body.touch #poster-panel .keys { display: none; }
     @media (max-width: 640px) { #book-panel .spread { grid-template-columns: 1fr; } #book-panel .left { display: none; } }
     #cal-panel { position: fixed; left: 50%; bottom: calc(16px + var(--sb)); transform: translateX(-50%); z-index: 5; background: rgba(20, 35, 45, 0.86); color: #fff; padding: 10px 14px 8px; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,.3); text-align: center; }
     #cal-panel[hidden] { display: none; }
@@ -301,6 +309,12 @@
     <div>
       <div class="spread"><div class="page left"></div><div class="page right"></div></div>
       <div class="row"><button data-act="prev" aria-label="Bläddra bakåt">◀</button><button data-act="next" aria-label="Bläddra framåt">▶</button><span class="info"></span><span style="flex:1"></span><span>A D bläddrar · E stänger</span><button data-act="close" aria-label="Stäng">×</button></div>
+    </div>
+  </div>
+  <div id="poster-panel" hidden role="dialog" aria-label="Teckningen">
+    <div>
+      <figure><img alt="Teckningen"><figcaption class="when"></figcaption></figure>
+      <div class="row"><button data-act="throw">🗑 Släng</button><button data-act="down">Ta ner</button><span style="flex:1"></span><span class="keys">S slänger · T tar ner · E stänger</span><button data-act="close" aria-label="Stäng">×</button></div>
     </div>
   </div>
   <div id="cal-panel" hidden role="dialog" aria-label="Almanackan">

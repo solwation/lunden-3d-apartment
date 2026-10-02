@@ -123,6 +123,69 @@ const deg = (d) => (d * Math.PI) / 180;
   const kinds = app.posters.list.map((q) => q.rec.surface).sort().join(',');
   const n = await new Promise((res) => { const q = indexedDB.open('lunden'); q.onsuccess = () => { try { const c = q.result.transaction('drawings').objectStore('drawings').count(); c.onsuccess = () => res(c.result); } catch (e) { res(String(e)); } }; q.onerror = () => res('err'); });
   check(app.posters.list.length === 2 && kinds === 'fridge,wall', `after reload: ${kinds} (stored: ${n})`);
+  // 7. look at a poster (#177): the panel, no walking, × closes without throwing
+  d = f.contentDocument;
+  const b2 = d.getElementById('action');
+  d.getElementById('start-touch').click(); await wait(50);
+  const view = (q) => {
+    const m = q.mesh; m.updateMatrixWorld(true);
+    const c = m.getWorldPosition(m.position.clone()), n = m.getWorldDirection(m.position.clone()).setY(0).normalize();
+    const e = c.clone().addScaledVector(n, 1.0);
+    app.player.spawn(e.x, e.z, Math.atan2(n.x, n.z)); app.player.pos.y = 0; app.player.eyeY = 1.62;
+    for (let i = 0; i < 3; i++) app.step(1 / 60);
+    app.camera.rotation.y = Math.atan2(n.x, n.z); app.camera.rotation.x = Math.atan2(c.y - app.camera.position.y, 1.0);
+    app.step(1 / 60);
+  };
+  const wallQ = app.posters.list.find((q) => q.rec.surface === 'wall');
+  view(wallQ);
+  check(/titta på teckningen/i.test(b2.textContent) && !b2.hidden, `poster prompt: "${b2.textContent}"`);
+  b2.click(); app.step(1 / 60);
+  const panel = d.getElementById('poster-panel');
+  check(!panel.hidden && /Ritad \d+ \w+ \d\d:\d\d/.test(panel.querySelector('.when').textContent), `the panel: "${panel.querySelector('.when').textContent}"`);
+  const pos0 = app.player.pos.clone();
+  app.player.keys = new Set(['KeyW']); for (let i = 0; i < 20; i++) app.step(1 / 60); app.player.keys = new Set();
+  check(app.player.pos.distanceTo(pos0) < 0.001, 'no walking while it is open');
+  panel.querySelector('[data-act=close]').click(); app.step(1 / 60);
+  check(panel.hidden && app.posters.list.length === 2, '× closes it, nothing thrown');
+  b2.click(); app.step(1 / 60);
+  app.showNote(false); app.step(1 / 60); // what E / Esc do
+  check(panel.hidden && app.posters.list.length === 2, 'E / Esc close it, nothing thrown');
+  // Släng: gone from the wall and from storage, a ball flies, lands and vanishes after ballSeconds
+  b2.click(); app.step(1 / 60);
+  panel.querySelector('[data-act=throw]').click();
+  await wait(300);
+  const stored = await new Promise((res) => { const q = indexedDB.open('lunden'); q.onsuccess = () => { const c = q.result.transaction('drawings').objectStore('drawings').count(); c.onsuccess = () => res(c.result); }; });
+  check(panel.hidden && app.posters.list.length === 1 && stored === 1, `thrown: off the wall and out of storage (stored ${stored})`);
+  check(app.balls.balls.length === 1 && app.balls.balls[0].phase === 'crumple', 'it is crumpled into a ball');
+  const shot = () => { if (!location.search.includes('shots')) return; app.renderer.render(app.scene, app.camera); const img = document.createElement('img'); img.className = 'shot'; img.src = app.renderer.domElement.toDataURL('image/png'); document.body.append(img); };
+  for (let i = 0; i < 18; i++) app.step(1 / 60);
+  shot();
+  for (let i = 0; i < 42; i++) app.step(1 / 60);
+  const ball = app.balls.balls[0];
+  check(ball?.phase === 'fly' || ball?.phase === 'rest', `thrown (${ball?.phase})`);
+  for (let i = 0; i < 400; i++) app.step(1 / 60);
+  if (ball) { app.camera.lookAt(ball.ball.position); shot(); }
+  check(ball?.phase === 'rest' && Math.abs(ball.ball.position.y - 0.036) < 0.05, `lies on the floor (y ${ball?.ball.position.y.toFixed(3)})`);
+  check(app.stats.thrown >= 1, 'counted: drawings thrown');
+  for (let i = 0; i < 200; i++) app.balls.update(1);
+  check(app.balls.balls.length === 0, 'the ball is gone after ballSeconds');
+  // Ta ner: the fridge poster into the hand, taped up on the hall wall instead (same id)
+  const fq = app.posters.list[0], fid = fq.rec.id;
+  view(fq);
+  b2.click(); app.step(1 / 60);
+  panel.querySelector('[data-act=down]').click(); await wait(200);
+  check(app.heldItem() === app.heldDrawing && app.posters.list.length === 0, 'taken down into the hand');
+  let ok = false;
+  for (let yaw = 0; yaw < 360 && !ok; yaw += 15) {
+    app.player.spawn(1.17, 1.6, yaw * Math.PI / 180); app.player.pos.y = 0; app.player.eyeY = 1.62;
+    for (let i = 0; i < 3; i++) app.step(1 / 60);
+    app.camera.rotation.y = yaw * Math.PI / 180; app.camera.rotation.x = 0; app.step(1 / 60);
+    ok = /tejpa upp/i.test(b2.textContent) && !b2.hidden;
+  }
+  if (ok) { b2.click(); await wait(300); }
+  check(ok && app.posters.list.length === 1 && app.posters.list[0].rec.id === fid && app.posters.list[0].rec.surface === 'wall', 'taped up again on the wall, the same drawing');
+
+  if (location.search.includes('panel')) { view(app.posters.list[0]); b2.click(); app.step(1 / 60); out.textContent = pass ? 'ALL PASS' : 'SOME FAILED'; return; }
   // ?shots: pictures of both posters (data URLs in <img> tags, for a look by hand)
   if (location.search.includes('shots')) {
     await wait(1500);

@@ -42,7 +42,8 @@ import { setupInstall } from './install.js';
 import { Marks } from './marks.js';
 import { Target } from './target.js';
 import { Car } from './car.js';
-import { Posters, HeldDrawing } from './posters.js';
+import { Posters, HeldDrawing, paperOnly } from './posters.js';
+import { PaperBalls } from './paperball.js';
 
 const overlay = document.getElementById('overlay');
 const hud = document.getElementById('hud');
@@ -145,6 +146,7 @@ function showNote(show) {
   if (!show && sonos.open) { showSonos(false); return; }
   if (!show && calPanel.open) { showCalendar(false); return; }
   if (!show && book.reading) { showBook(false); return; }
+  if (!show && viewing) { showPoster(null); return; }
   reading = show;
   noteEl.hidden = !show;
   player.keys.clear();
@@ -281,6 +283,44 @@ const posters = new Posters(scene, world, marks, note);
 posters.load();
 const heldDrawing = new HeldDrawing(scene, camera, drawing);
 drawing.holding = () => heldItem() === heldDrawing;
+heldDrawing.rehang = (rec) => posters.rehang(rec);
+const balls = new PaperBalls(scene, camera, world, (x, z, y) => player.groundAt(x, z, y)); // thrown-away drawings (#177)
+// E on a taped-up drawing: it fills #poster-panel (reading mode) — Släng / Ta ner / Stäng (#177)
+const posterPanel = document.getElementById('poster-panel');
+const MONTHS = ['jan', 'feb', 'mar', 'apr', 'maj', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec'];
+const drawnAt = (t) => { const d = new Date(t); return `${d.getDate()} ${MONTHS[d.getMonth()]} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`; };
+let viewing = null; // the poster in the panel
+function showPoster(p) {
+  viewing = p;
+  reading = !!p;
+  posterPanel.hidden = !p;
+  player.keys.clear();
+  if (!p) return;
+  posterPanel.querySelector('img').src = p.rec.image;
+  posterPanel.querySelector('.when').textContent = `Ritad ${drawnAt(p.rec.time)}`;
+  sfx.paper(p.mesh.getWorldPosition(new THREE.Vector3()));
+}
+/** Släng: off the wall, out of storage, crumpled and thrown. */
+function throwPoster() {
+  const p = viewing;
+  if (!p) return;
+  showPoster(null);
+  const tex = p.mesh.material.map;
+  posters.remove(p, true);
+  balls.throwAway(tex, paperOnly(tex));
+  bump('thrown');
+}
+/** Ta ner: off the wall and into the hand, to be taped up somewhere else. */
+function takeDownPoster() {
+  const p = viewing;
+  if (!p) return;
+  showPoster(null);
+  posters.remove(p);
+  heldDrawing.take(p.rec.image, { id: p.rec.id, time: p.rec.time, rec: p.rec });
+}
+posterPanel.querySelector('[data-act=throw]').addEventListener('click', throwPoster);
+posterPanel.querySelector('[data-act=down]').addEventListener('click', takeDownPoster);
+posterPanel.querySelector('[data-act=close]').addEventListener('click', () => showPoster(null));
 target.onSink = () => marks.dropUnder(target.object); // its marks don't hang in the air as it sinks (#179)
 for (const h of [saber, ...toys.wands, toys.darts]) Object.assign(h, { marks, cat }); // the saber burns, the wands do magic (#97), darts splash (#98)
 // the cat goes for a fish finger lying on the floor near it and eats it (#163)
@@ -443,7 +483,7 @@ document.getElementById('start-mouse').addEventListener('click', startMouse);
 // click (anywhere) does exactly what the button does. Esc in the game still just frees the mouse.
 const armEl = document.getElementById('arm');
 let unlockedAt = -1e9;
-const otherOverlay = () => ['install', 'note', 'board-view'].some((id) => !document.getElementById(id)?.hidden)
+const otherOverlay = () => ['install', 'note', 'board-view', 'poster-panel'].some((id) => !document.getElementById(id)?.hidden)
   || getComputedStyle(document.getElementById('rotate')).display !== 'none';
 document.addEventListener('keydown', (e) => {
   if (e.code !== 'Escape' || locked || overlay.hidden || otherOverlay()) return;
@@ -568,6 +608,7 @@ function use(thing) {
   else if (thing.kind === 'clock') showClock(true);
   else if (thing.kind === 'calendar') showCalendar(true);
   else if (thing.kind === 'board') showBoard(true);
+  else if (thing.kind === 'poster') showPoster(thing); // a taped-up drawing (#177)
   else if (thing.kind === 'switch' || thing.kind === 'lamp') { thing.toggle(); if (thing.isOpen) bump('lights'); }
   else if (thing.kind === 'fridge') { thing.toggle(); if (thing.isOpen) bump('fridge'); }
   else if (thing.kind === 'keybox') thing.toggle();
@@ -646,6 +687,8 @@ document.addEventListener('keydown', (e) => {
     else if (sonos.open && sonos.key(e.code)) e.preventDefault();
     else if (calPanel.open && calPanel.key(e.code, true)) e.preventDefault();
     else if (book.reading && book.key(e.code)) e.preventDefault();
+    else if (viewing && e.code === 'KeyS') throwPoster(); // the drawing's panel (#177)
+    else if (viewing && e.code === 'KeyT') takeDownPoster();
     else if (e.code === 'KeyE') showNote(false);
     return;
   }
@@ -715,7 +758,7 @@ function updateFocus() {
   // (the raycaster ignores visibility, so the cat is only a target while it is there)
   // the car key only while its cabinet is open
   const extra = [...(cat.visible ? [cat.object] : []), ...(keyCabinet?.keyReachable ? [world.carKey.pickable] : []),
-    ...(world.furnitureOn ? [...(target.object.visible ? [target.target] : []), ...patio.targets, ...world.furnitureTargets, ...holdables.map((h) => h.target), drawing.target].map((t) => t.pickable) : [])]; // parasol, TV, seats, beds, toys — unless F hid the furniture
+    ...(world.furnitureOn ? [...(target.object.visible ? [target.target] : []), ...patio.targets, ...world.furnitureTargets, ...holdables.map((h) => h.target), drawing.target, ...posters.targets].map((t) => t.pickable) : [])]; // parasol, TV, seats, beds, toys — unless F hid the furniture
   // the nearest hit on something actually shown (F hides the loose items, the raycaster doesn't care)
   const cupTargets = cups.cups.filter((c) => !c.held).map((c) => c.target.pickable);
   if (fish && world.furnitureOn) cupTargets.push(fish.target.pickable, ...fish.placed.map((f) => f.target.pickable)); // the carton + fish fingers lying out (#162)
@@ -783,7 +826,7 @@ function updateFocus() {
   if (reading && touch.enabled) actionBtn.textContent = boardPanel.open ? 'Stäng tavlan' : 'Stäng lappen';
   promptEl.hidden = (!focused && !seated) || touch.enabled || reading;
   if (remoteAim && !touch.enabled && !reading) { promptEl.textContent = 'Klicka för att byta kanal · högerklick: av/på'; promptEl.hidden = false; }
-  actionBtn.hidden = !(focused || reading || holding || seated) || !touch.enabled || clockPanel.open || calPanel.open || sonos.open; // the strips have their own ×
+  actionBtn.hidden = !(focused || reading || holding || seated) || !touch.enabled || clockPanel.open || calPanel.open || sonos.open || !!viewing; // the strips have their own ×
   powerBtn.hidden = !touch.enabled || !heldItem()?.useAlt || reading;
 }
 
@@ -865,6 +908,7 @@ function step(dt) {
   fish?.update(dt);
   toys.update(dt);
   marks.update(dt);
+  balls.update(dt);
   target.update(dt, world.furnitureOn && !!heldItem()?.hitsTarget); // the target rises with a blaster, the saber or a wand in the hand (#144, #179)
   if (clockPanel.open) clockPanel.render();
   sonos.update(player.level, (p) => behindWall(p)); // music: schedule ahead, walls muffle (#187)
@@ -1009,4 +1053,4 @@ function continueAfterReload(r) {
 if (resumeOk && resumed.mode) continueAfterReload(resumed);
 
 // handle for tests/debugging (tools/touchtest.html)
-window.__app = { car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };
+window.__app = { takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };

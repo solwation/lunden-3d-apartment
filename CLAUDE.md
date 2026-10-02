@@ -169,6 +169,10 @@ src/posters.js         drawings taped up (#176): HeldDrawing (the sheet in the h
                        freezer door (child of the door, swings with it) tapes it up if the whole sheet lies flat on one
                        mesh (9 probes); one plane + canvas texture with tape per poster; max DRAWING.maxPosted; IndexedDB
                        'lunden'/'drawings'
+                       E on a poster (kind 'poster') opens #poster-panel (#177, reading mode): Släng (S) / Ta ner (T) /
+                       Stäng (E, Esc, ×); Ta ner keeps its id, put back without taping = back up where it was
+src/paperball.js       a drawing thrown away (#177): crumpled in front of the camera, thrown, bounces on the floor (walls:
+                       the level's collision segments), shrinks away after DRAWING.ballSeconds; not saved
 src/idb.js             the shared IndexedDB 'lunden' (version 2: catPhotos + drawings) — every module opens it here
 src/calendar.js        the cat calendar (CALENDAR): a cat per month, the days, the chosen date; #cal-panel picks it
 src/fridge.js          the fridge: hollow, lit, opens with E (in world.lids); `shelfSpot` = the chicken's place; the freezer is
@@ -250,7 +254,8 @@ tools/drawtest.html    headless test: drawing mode, a crayon line from pointer e
 tools/cooktest.html    headless test: the induction hob on/off (glow), F switches it off; the pan: drawer → hob → drawer, F; the chicken:
                        fry, smoke, the fridge shut stops it, it stops by itself, F
 tools/postertest.html  headless test: take the drawing (blank sheet stays), back on the desk, tape it up in the hall and on
-                       the fridge door (swings with it), none on the kitchen window, reload → both back (`?shots` pictures)
+                       the fridge door (swings with it), none on the kitchen window, reload → both back; look at one (panel, no walking,
+                       ×/E close), Släng → ball lands and vanishes, out of storage; Ta ner → taped up elsewhere (`?shots`, `?panel`)
 tools/sonostest.html   headless test: music in all three speakers, songs, volume, panel, pause, upstairs, F; each channel
                        rendered offline (only outside --virtual-time-budget; there it says SKIP)
 tools/boardtest.html   headless test: keep / throw away cat photos, a full board, the panel (needs a big virtual-time budget)
