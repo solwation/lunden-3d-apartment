@@ -77,6 +77,8 @@ src/interior.js        fitted kitchen, laundry, bathroom fittings, tiled floors/
                        TILED_ROOMS in config); merged into one mesh per material
 docs/                  reference images in git (site map screenshot; docs/peab/ = pages of Peab's plan
                        brochure: situation plan, overview plans per floor, unit plans, aerial render)
+textures/              image textures the page loads (published by stamp.sh): stair-pictures.jpg = the 2 × 2 atlas
+                       of the stair pictures (#220), cropped/straightened from docs/tavla-trappa-*.jpg
 material/              screenshots of our choices in Peab's option portal (local, see below)
 src/audio.js           synthesised positional sound effects (Web Audio): doors, slides, meow, steps
 src/toilet.js          toilet (Ifö Spira 6260) with an animated lid and a flush button (`flush`, its own E target in
@@ -422,6 +424,10 @@ North = −z (the bedrooms Sovrum 1/3 face north).
 - U-shaped stair with winders at the east end: flight A (Entréplan, going east), 180° winders,
   flight B (going west) arriving in the upstairs hall. Upstairs slab opening = stair outline on
   Övre plan.
+- Stair pictures (#220): four black-framed 30 × 40 pictures 2 × 2 (fikus, akvarell | peace, solros) on the east
+  party wall straight ahead going up flight A, centred on flight A's width, centre 2.4 m up (clear of the winder
+  treads). FURNITURE `pictures` (one atlas texture, `order` swaps them; two merged meshes), a loose item. "Rakt
+  fram" was read as seen from flight A — the user may mean another wall.
 - Doors: Badrum and Klk on Entréplan swing into the passage by the stair, so all swing doors
   start closed. The dashed door to Allrum is a tillval that **we have chosen** (`OPTIONS.allrumDoor`
   + a short extra wall in `EXTRA_WALLS`) → Allrum becomes **Sovrum 4** (four bedrooms upstairs).

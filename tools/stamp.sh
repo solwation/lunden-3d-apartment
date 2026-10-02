@@ -6,7 +6,7 @@ OUT=${1:?output dir}
 V=${2:?version}
 rm -rf "$OUT"
 mkdir -p "$OUT"
-cp -r index.html manifest.webmanifest icons src data tools L1007_mattsatt_planritning.pdf README.md "$OUT"/
+cp -r index.html manifest.webmanifest icons src data textures tools L1007_mattsatt_planritning.pdf README.md "$OUT"/
 # the running page knows which version it is …
 sed -i "s/^export const BUILD = 'dev';/export const BUILD = '$V';/" "$OUT/src/version.js"
 # … and the server says which version is current

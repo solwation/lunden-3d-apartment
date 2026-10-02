@@ -1714,6 +1714,49 @@ function painting(item) {
   return g;
 }
 
+/** Framed pictures hung in a grid (#220, the stair wall): `cols` × `rows` frames of w × h with `gap` between them,
+ * centred on the item (local z = 0 is the wall, the pictures face +z). Every frame is a thin black box border; its
+ * inside (passe-partout + motif, cropped from the user's photos) is one cell of the `atlas` texture (`grid` cells,
+ * row-major from the top left), `order[i]` = the cell shown in slot i (row-major from the top left). One material
+ * for the frames and one for the pictures, so the whole group merges into two meshes. A little gloss stands in
+ * for the glass. */
+const pictureAtlases = new Map();
+function pictures(item) {
+  const g = new THREE.Group();
+  const { w, h, gap, frame: f, depth: d, cols, rows, order } = item;
+  const [gc, gr] = item.grid;
+  if (!pictureAtlases.has(item.atlas)) {
+    const tex = new THREE.TextureLoader().load(new URL(`../${item.atlas}`, import.meta.url).href);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    tex.anisotropy = 4;
+    pictureAtlases.set(item.atlas, tex);
+  }
+  const black = new THREE.MeshStandardMaterial({ color: 0x111113, roughness: 0.45 });
+  const picMat = new THREE.MeshStandardMaterial({ map: pictureAtlases.get(item.atlas), roughness: 0.32 });
+  const iw = w - 2 * f, ih = h - 2 * f;
+  for (let i = 0; i < cols * rows; i++) {
+    const col = i % cols, row = Math.floor(i / cols);
+    const cx = (col - (cols - 1) / 2) * (w + gap), cy = ((rows - 1) / 2 - row) * (h + gap);
+    const cell = order[i], u0 = (cell % gc) / gc, v1 = 1 - Math.floor(cell / gc) / gr;
+    const geo = new THREE.PlaneGeometry(iw, ih);
+    const uv = geo.attributes.uv; // PlaneGeometry: (0,1) (1,1) (0,0) (1,0)
+    for (let k = 0; k < uv.count; k++) uv.setXY(k, u0 + uv.getX(k) / gc, v1 - (1 - uv.getY(k)) / gr);
+    const pic = new THREE.Mesh(geo, picMat);
+    pic.position.set(cx, cy, d - 0.006);
+    g.add(pic);
+    for (const [sx, sy, x, y] of [[w, f, 0, h / 2 - f / 2], [w, f, 0, -h / 2 + f / 2], [f, h - 2 * f, -w / 2 + f / 2, 0], [f, h - 2 * f, w / 2 - f / 2, 0]]) {
+      const b = new THREE.Mesh(new THREE.BoxGeometry(sx, sy, d), black);
+      b.position.set(cx + x, cy + y, d / 2); b.castShadow = true;
+      g.add(b);
+    }
+    const back = new THREE.Mesh(new THREE.BoxGeometry(iw, ih, 0.004), black);
+    back.position.set(cx, cy, 0.002); back.castShadow = true;
+    g.add(back);
+  }
+  g.position.y = item.y;
+  return g;
+}
+
 /**
  * Pull everything of a piece that reaches past `item.walls` ({ x0, x1, z0, z1 }, plan metres, any subset) back
  * inside (#137: palm fronds through the wall): each vertex's horizontal distance from the piece's axis is
@@ -2209,7 +2252,7 @@ function besta(item) {
   return g;
 }
 
-const BUILDERS = { secretary, winerack, besta, painting, palm, sofa, armchair, ottoman, floorlamp, sidetable, coffeetable, loungesofa, loungetable, parasol, planter, bed, skansnasTable, skansnasChair, bunk, daybed, rug, ragrund, coatrack, shoerack, byas, tv, nordkisa, worklamp, walllamp, symfonisk, gamingdesk, gamingchair, nordli, alex, kidchair };
+const BUILDERS = { secretary, winerack, besta, painting, pictures, palm, sofa, armchair, ottoman, floorlamp, sidetable, coffeetable, loungesofa, loungetable, parasol, planter, bed, skansnasTable, skansnasChair, bunk, daybed, rug, ragrund, coatrack, shoerack, byas, tv, nordkisa, worklamp, walllamp, symfonisk, gamingdesk, gamingchair, nordli, alex, kidchair };
 
 /** An invisible thin box over a table top (raycast target for putting a cup down, #90). Local rect. */
 export function surfaceBox(r, list) {
