@@ -99,7 +99,8 @@ src/streetlife.js      life on the street (SITE.life, #113): the car park's stal
 src/people.js          people in the area (PEOPLE, #114): low-poly figures (one InstancedMesh per body part, a colour each,
                        posed every frame): walkers to and fro on the paths (a dog with one), cyclists on Sankt Lars väg
                        (sfx.bell when they pass close), kids with a ball and in the sandbox, bench sitters, someone on a
-                       blanket (not in the snow months), neighbours on the loftgång; daytime only
+                       blanket (not in the snow months), neighbours on the loftgång; daytime only; none in the courtyard
+                       in the building-site mode (&bygge)
 src/daycycle.js        60-minute day: real solar path for the month (55.7° N), sun → moon light, shader sky
                        (glow, stars, clouds), fog colour; paused / spooled by the wall clock
 src/patio.js           patio: Plantagen Oslo corner lounge set, parasol, planters with exotic plants

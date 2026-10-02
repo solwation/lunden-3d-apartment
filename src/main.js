@@ -947,7 +947,7 @@ function step(dt) {
   sonos.update(player.level, (p) => behindWall(p)); // music: schedule ahead, walls muffle (#187)
   world.windowLights.update(day.hour, 1 - day.daylight);
   car.update(dt, day.daylight < 0.35, player);
-  people.update(dt, day.daylight, day.month, player);
+  people.update(dt, day.daylight, day.month, player, world.constructionOn);
   cat.update(dt);
   measure.update(dt, window.innerWidth, window.innerHeight);
   if (active() && reading) updateFocus();

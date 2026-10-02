@@ -98,14 +98,18 @@ export class People {
     return [x, z, Math.atan2(dx, dz)];
   }
 
-  update(dt, daylight, month, player) {
+  /** `site` = the building-site mode (#131/#132): nobody plays or sits in the courtyard, which is a concrete deck. */
+  update(dt, daylight, month, player, site = false) {
     const show = daylight > P.day;
     this.group.visible = show;
     if (!show) return;
     this.clock += dt;
     const cyc = this.figs.filter((g) => g.role === 'cycle');
-    this.blanket.visible = !SEASON.snowMonths.includes(month);
+    this.blanket.visible = !SEASON.snowMonths.includes(month) && !site;
+    this.ball.visible = !site;
     this.figs.forEach((f, i) => {
+      const yard = ['ball', 'sandbox', 'sit', 'lie'].includes(f.role) || (f.role === 'walk' && Math.min(f.a[1], f.b[1]) > 12.7);
+      if (site && yard) { this.pose(i, f, f.x ?? f.a[0], -5, f.z ?? f.a[1], 0, {}); return; } // out of sight under the ground
       const len = Math.hypot(f.b?.[0] - f.a?.[0], f.b?.[1] - f.a?.[1]);
       if (f.role === 'walk') {
         f.dir ??= 1;
