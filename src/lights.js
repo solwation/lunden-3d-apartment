@@ -35,6 +35,28 @@ class Room {
 }
 
 /** Light switch on a wall: plate + rocker; looking at it + E toggles its room. */
+/**
+ * Distance from (x, z) along the room normal (nx, nz) to a wall face running along (ax, az) that
+ * faces the room and covers ±HALF of a switch plate around the point; null when there is none
+ * within 0.3 m.
+ */
+const HALF = 0.045; // the plate is 8.5 cm wide
+function wallFace(segs, x, z, nx, nz, ax, az, inRoom) {
+  let best = null;
+  for (const [x0, z0, x1, z1] of segs) {
+    const dx = x1 - x0, dz = z1 - z0, len = Math.hypot(dx, dz);
+    if (len < 2 * HALF || Math.abs((dx * nx + dz * nz) / len) > 0.05) continue; // must run along the wall
+    const off = (x0 - x) * nx + (z0 - z) * nz; // distance of the face from the door line
+    if (off < -0.005 || off > 0.3) continue;
+    const t0 = (x0 - x) * ax + (z0 - z) * az, t1 = (x1 - x) * ax + (z1 - z) * az; // the segment along the wall
+    if (Math.min(t0, t1) > -HALF || Math.max(t0, t1) < HALF) continue; // must cover the whole plate
+    // the face of the wall that looks into this room: room in front of it, wall behind it
+    if (!inRoom(x + nx * (off + 0.08), z + nz * (off + 0.08)) || inRoom(x + nx * (off - 0.03), z + nz * (off - 0.03))) continue; // room-map cells are coarse
+    if (best === null || off < best) best = off;
+  }
+  return best;
+}
+
 class Switch {
   constructor(room, x, y, z, [nx, nz]) {
     Object.assign(this, { room, kind: 'switch', name: 'lampan' });
@@ -151,14 +173,16 @@ export class Lights {
         const name = map.at(cx + nx * side * 0.35, cz + nz * side * 0.35);
         if (!name || L.manual.some((m) => m.level === level && m.room === name)) continue;
         // on the wall past the latch end of the closed leaf, just beyond the architrave (else beside
-        // the hinge): step from the door line into the room until the first free cell = the wall face
+        // the hinge): snap onto the real wall face found in the level's wall outlines — a wall segment
+        // running along the door line, facing this room, that covers the whole switch plate (#76: the
+        // raster room map put one in the air beside a short wall stub in WC/dusch)
         const ax = Math.sin(d.closedAngle), az = Math.cos(d.closedAngle), tw = DOOR_TRIM.width;
-        for (const along of [d.len + tw + 0.06, d.len + tw + 0.04, -(tw + 0.06)]) {
+        const segs = world.levels[level].wallSegments;
+        for (const along of [0.06, 0.05, 0.08, 0.1].map((k) => d.len + tw + k).concat([-(tw + 0.06), -(tw + 0.1)])) {
           const lx = d.hinge[0] + ax * along, lz = d.hinge[1] + az * along;
-          let off = 0;
-          while (off < 0.3 && map.exact(lx + nx * side * off, lz + nz * side * off) !== name) off += 0.01;
-          if (off >= 0.3) continue;
-          this.addSwitch(room(level, name), lx + nx * side * off, LEVELS[level].floor + L.switchHeight, lz + nz * side * off, [nx * side, nz * side], scene);
+          const face = wallFace(segs, lx, lz, nx * side, nz * side, ax, az, (px, pz) => map.exact(px, pz) === name);
+          if (face === null) continue;
+          this.addSwitch(room(level, name), lx + nx * side * face, LEVELS[level].floor + L.switchHeight, lz + nz * side * face, [nx * side, nz * side], scene);
           break;
         }
       }

@@ -54,6 +54,26 @@ f.onload = async () => {
     pass &&= ok;
     lines.push(`${ok ? 'PASS' : 'FAIL'} ${t.name} @ (${target.x.toFixed(2)}, ${target.y.toFixed(2)}, ${target.z.toFixed(2)}) button "${label}" (${t.room.name ?? ''}) on=${on} off=${off}`);
   }
+  // every switch sits on a wall: a wall outline segment within 2 cm behind it, covering the plate (#76)
+  {
+    const sw = w.__app.lights.switches;
+    let bad = [];
+    for (const s of sw) {
+      const p = s.object.position, lv = p.y > 3 ? 1 : 0;
+      const n = [Math.sin(s.object.rotation.y), Math.cos(s.object.rotation.y)];
+      const ok = w.__app.world.levels[lv].wallSegments.some(([x0, z0, x1, z1]) => {
+        const dx = x1 - x0, dz = z1 - z0, len = Math.hypot(dx, dz);
+        if (len < 0.1 || Math.abs((dx * n[0] + dz * n[1]) / len) > 0.05) return false;
+        const behind = (p.x - x0) * n[0] + (p.z - z0) * n[1]; // plate centre in front of the face
+        const t = ((p.x - x0) * dx + (p.z - z0) * dz) / len;
+        return behind > -0.001 && behind < 0.02 && t > 0.04 && t < len - 0.04;
+      });
+      if (!ok) bad.push(`(${p.x.toFixed(2)}, ${p.y.toFixed(2)}, ${p.z.toFixed(2)})`);
+    }
+    const okW = bad.length === 0;
+    lines.push(`${okW ? 'PASS' : 'FAIL'} ${sw.length} switches on a wall${bad.length ? ': floating ' + bad.join(' ') : ''}`);
+    pass = pass && okW;
+  }
   out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
 };
 </script>

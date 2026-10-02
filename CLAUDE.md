@@ -309,7 +309,8 @@ screenshots into the session scratchpad, not the repo.
 - Interaction raycasts only test pickables, so `behindWall` in main.js rejects hits whose eye →
   hit line crosses a wall outline (`levels[i].wallSegments`) — no switching lamps through walls.
 - Lights: switches are placed automatically by the latch side of each interior swing door (room
-  side) plus `LIGHTING.manual` for open rooms and the downstairs Klk (door spans the whole wall).
+  side), snapped onto a wall outline segment that faces the room and covers the whole plate (`wallFace`,
+  #76; lighttest checks every switch has a wall right behind it) plus `LIGHTING.manual` for open rooms and the downstairs Klk (door spans the whole wall).
   Lamp emissive parts use one material per room (`lampMaterials` in interior.js). Never add
   per-lamp PointLights — reuse the pool (constant light count = no shader recompiles).
 - Day cycle: `DAY` in config. Every visit starts at 07:00 on the 15th of the current month; the sun
