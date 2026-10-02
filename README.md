@@ -56,7 +56,7 @@ med three.js. Mått som inte finns i ritningen (bröstningshöjd, bjälklag, ned
 m.m.) ligger samlade i `src/config.js`.
 
 Huset (Hus L, Parklängan), Å-husen A, B och C, vägarna och nivåskillnaden ner mot S:t Lars park
-är uppmätta på Peabs situationsplan och översiktsplaner (sidor ur planritningsbroschyren ligger i
+och gården med pergola, grill, lekplats och boulebana är uppmätta på Peabs situationsplan och översiktsplaner (sidor ur planritningsbroschyren ligger i
 `docs/peab/`). Solen går efter verkliga väderstreck: entrén vetter mot östnordost.
 
 Inredningen följer våra materialval i Peabs tillvalsportal: köket med grågröna Form Tall-luckor,

@@ -61,6 +61,8 @@ material/              screenshots of our choices in Peab's option portal (local
 src/audio.js           synthesised positional sound effects (Web Audio): doors, slides, meow, steps
 src/toilet.js          toilet (Ifö Spira 6260) with an animated lid
 src/ao.js              baked ambient occlusion: distance field → multiply overlay on floor/ceiling (AO)
+src/courtyard.js       the courtyard on the garage box (COURTYARD): walks, pergolas, grill, sandboxes, boule,
+                       benches, raised beds, instanced shrubs; collision for what you can walk into
 src/surroundings.js    the site (SITE): Hus A/B/C + buildings around, roads, paving, the 3 m drop to the park,
                        Höje å, instanced trees, lit windows, cloudy sky
 src/lights.js          room switches (E), ceiling lamps/pendant/spots/LED, floor lamp; a pool of 4
@@ -171,7 +173,12 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   and the raised courtyard on the garage box (`terrain.box`, edges traced on the situation plan — guess)
   are y 0; around the box the ground is one storey lower (`park` −3, Å-husen A/B suterräng); retaining
   walls with a railing where the box meets it, the garage door in its west face at Karpvägen by Hus C,
-  the roads outside the box go down over `slope` m south of Hus L (guess). **True north**: FOJAB's arrow puts it 58° left of plan-up, so the
+  the roads outside the box go down over `slope` m south of Hus L (guess).
+  Courtyard (#80, `COURTYARD`, traced on the situation plan + info brochure p. 16): the Borggården between
+  Hus L, C and A with stone walks, gravel, the pergola with a dining table, a grill, a sandbox, a boule
+  court (not on the plan: guess), benches and tree squares; south of Hus C a second pergola, a sandbox and
+  odlingslådor; the trees between A and B on the lower green. Walkable behind Hus L up to the main walk
+  (`OUTDOOR` x −46…, z ≤ 29.5). **True north**: FOJAB's arrow puts it 58° left of plan-up, so the
   plan's "north" (entrance) faces ENE (bearing 58°, `DAY.planNorth`) and the patio WSW. The schools,
   HepCat and the villa outside the plot are placed from the Google Maps screenshot and drawn in the old
   S:t Lars style (#47, `style: 'old'`: brick, white cornice and string courses, tall arched windows,

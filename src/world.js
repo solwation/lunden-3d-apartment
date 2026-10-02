@@ -12,6 +12,7 @@ import { buildWallShelves } from './shelves.js';
 import { buildHallWall } from './keycabinet.js';
 import { mergeStatic } from './merge.js';
 import { registerSnow } from './seasons.js';
+import { buildCourtyard } from './courtyard.js';
 import { pavingTexture } from './patio.js';
 import { mirrorLamps, looseItems as interiorLoose, buildInterior } from './interior.js';
 import { Toilet } from './toilet.js';
@@ -576,6 +577,9 @@ export function buildWorld(plan) {
   const exterior = buildExterior({ W, D, roofTop: roofY + 0.35, north, south, frame: M.frame, wall: M.wall, site, mats: M });
   scene.add(exterior);
   const surroundings = buildSurroundings({ grass: M.grass });
+  const courtyard = buildCourtyard(); // walks, pergola, grill, sandboxes, boule, benches, beds (#80)
+  scene.add(courtyard.object);
+  outdoor.push(...courtyard.segments);
   // snow in the winter months (seasons.js): the lawn, the hedges and the patio paving
   registerSnow(M.grass, SEASON.snow.ground);
   registerSnow(M.hedge, SEASON.snow.hedge);

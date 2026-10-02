@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { SITE as S, COLORS, SEASON } from './config.js';
+import { SITE as S, COLORS, SEASON, COURTYARD } from './config.js';
 import { registerTrees, registerSnow } from './seasons.js';
 
 // The rest of Kv. Lunden and its neighbourhood (SITE in config): the brick point blocks Hus A, B, C
@@ -219,7 +219,8 @@ function roof(b) {
 }
 
 function trees(rand) {
-  const spots = [];
+  // the trees the situation plan draws in the courtyard and the green (COURTYARD.trees), then the areas
+  const spots = COURTYARD.trees.map(([x, z]) => ({ x, z, y: groundY(x, z), s: 0.85 + rand() * 0.35 }));
   for (const area of S.treeAreas) {
     for (let i = 0; i < area.n; i++) {
       const x = area.x0 + rand() * (area.x1 - area.x0), z = area.z0 + rand() * (area.z1 - area.z0);

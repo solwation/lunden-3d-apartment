@@ -102,8 +102,10 @@ export const SITE = {
   // spot is a guess.
   terrain: {
     park: -3, north: 12.7, slope: 8,
-    box: [{ x0: -80, x1: 18, z0: 12.7, z1: 30 }, { x0: -80, x1: -43, z0: 30, z1: 40 }],
-    garageDoor: { x: -80, z0: 31.5, z1: 37.5, h: 2.6 },
+    // the box under the Borggården (between Hus L, C and A) and the yard south of Hus C (situation plan:
+    // the second pergola, sandbox and odlingslådor sit there; the green between A and B is outside it)
+    box: [{ x0: -80, x1: 18, z0: 12.7, z1: 30.2 }, { x0: -80, x1: -43, z0: 30.2, z1: 51 }],
+    garageDoor: { x: -80, z0: 42, z1: 47.5, h: 2.6 }, // the arrow "GARAGE" by Karpvägen, z ≈ 44
   },
   bay: 3.0, storey: 3.0,  // façade texture of the other blocks: one window per 3 × 3 m
   old: { bay: 2.6, storey: 3.6, roofPitch: 0.6 }, // the old S:t Lars buildings (style: 'old'): rise = pitch × half depth
@@ -132,19 +134,47 @@ export const SITE = {
   paving: [
     { x0: -48, x1: 16, z0: -4, z1: 0 },      // path along Hus L's entrances
     { x0: -95, x1: 22, z0: -24, z1: -21.5 }, // pavement along Sankt Lars väg
-    { x0: -76, x1: 18, z0: 26, z1: 28.5 },   // courtyard walk (gångstråk) east–west
-    { x0: -20.5, x1: -11, z0: 12.7, z1: 34 }, // from the portik to the pergola
-  ],
+  ],                                         // the courtyard's own walks: COURTYARD
   river: { x0: -200, x1: 150, z0: 125, z1: 135 }, // Höje å
   treeAreas: [
-    { x0: -46, x1: -39, z0: 20, z1: 29, n: 4 },        // courtyard clusters
-    { x0: -9, x1: -3, z0: 20, z1: 26, n: 3 },
-    { x0: 2, x1: 9, z0: 20, z1: 26, n: 3 },
-    { x0: -21, x1: -14, z0: 34, z1: 57, n: 6 },        // between Hus B and Hus A
+    // the courtyard's and the green's trees stand where the situation plan draws them: COURTYARD.trees
     { x0: -92, x1: 18, z0: -20, z1: -19, n: 11 },      // street trees along Sankt Lars väg
     { x0: 18, x1: 20, z0: -16, z1: 56, n: 7 },         // … and along its east leg
     { x0: -130, x1: 70, z0: 68, z1: 140, n: 55 },      // S:t Lars park / woods towards Höje å
     { x0: -130, x1: -92, z0: -30, z1: 68, n: 14 },     // west of Karpvägen
+  ],
+};
+
+// The courtyard on the garage box (#80, src/courtyard.js), traced on the situation plan (docs/peab/
+// situationsplan.png, p. 3; plan metres as in SITE) and the info brochure p. 16 ("plattsatta gångar,
+// en pergola, grillplats, sittytor, en lekplats för barnen och en boulebana", grusgångar, trädrader).
+// Items the plan does not show are marked guess.
+export const COURTYARD = {
+  // stone-paved walks
+  paths: [
+    { x0: -46, x1: 12, z0: 18.2, z1: 19.6 },   // along the row-house patios
+    { x0: -50, x1: 12, z0: 30.2, z1: 31.7 },   // the main walk across, north of Hus A/B
+    { x0: -13, x1: 12, z0: 25.6, z1: 27.3 },   // to the stair on the east edge
+    { x0: -17.6, x1: -13.9, z0: 12.7, z1: 20 }, // from the portik
+    { x0: -50.2, x1: -47.2, z0: 8, z1: 51 },   // between Hus C and the Borggården
+    { x0: -72, x1: -47.2, z0: 49.3, z1: 50.6 }, // south of Hus C's yard
+  ],
+  gravel: [{ x0: -46, x1: -13.9, z0: 19.6, z1: 30.2 }, { x0: -13.9, x1: 12, z0: 19.6, z1: 25.6 }], // grusgångar round the beds
+  // the Borggården's pergola with a dining table (red-brown on the plan) and a second one south of Hus C
+  pergolas: [{ x0: -20.6, x1: -14.2, z0: 20.2, z1: 30 }, { x0: -65.5, x1: -60, z0: 41.2, z1: 47.6 }],
+  grill: { x: -21.6, z: 21.0 },               // grillplats beside the pergola (spot: guess)
+  sandboxes: [{ x0: -26.6, x1: -22.6, z0: 23.6, z1: 27.8 }, { x0: -56, x1: -51.2, z0: 41.8, z1: 46.8 }], // lekplats
+  boule: { x0: -12.4, x1: -2.6, z0: 21.4, z1: 24.6 }, // boulebana: not marked on the plan, a gravel court by the east beds (guess)
+  benches: [{ x: -32, z: 25, rot: 90 }, { x: -30, z: 29.4, rot: 180 }, { x: -6, z: 29.4, rot: 180 }, { x: 4, z: 29.4, rot: 180 }],
+  beds: [{ x0: -71.2, x1: -69.6, z0: 40.2, z1: 42 }, { x0: -71.2, x1: -69.6, z0: 42.6, z1: 44.4 }, { x0: -71.2, x1: -69.6, z0: 45, z1: 46.8 }], // odlingslådor
+  // planting beds with shrubs and perennials round the tree squares (guess where the plan only shows green)
+  plantings: [{ x0: -45.5, x1: -37.5, z0: 19.8, z1: 28.6, n: 26 }, { x0: -8.5, x1: -1.5, z0: 19.8, z1: 21.4, n: 10 },
+    { x0: 0.5, x1: 8.5, z0: 19.8, z1: 21.4, n: 10 }, { x0: -23, x1: -12, z0: 32, z1: 56, n: 30 }],
+  trees: [ // tree squares and single trees as drawn
+    [-43, 21], [-40, 21], [-43, 24.5], [-40, 24.5], [-38, 29], [-33, 28.8], [-36, 22.5],
+    [-6.6, 21.6], [-3.4, 21.6], [-6.6, 24.6], [-3.4, 24.6], [2.6, 21.6], [5.8, 21.6], [2.6, 24.6], [5.8, 24.6],
+    [-20, 33], [-16.6, 33], [-20, 36.5], [-16.6, 36.5], [-20, 40], [-16.6, 40], [-20, 43.5], [-16.6, 43.5],
+    [-20, 50], [-16.6, 51.5], [-49, 16], [-46, 39], [-49, 44], [-62, 39], [-68, 38.5], [-46.5, 46],
   ],
 };
 
@@ -229,7 +259,7 @@ export const SHELF_HEIGHT = 2.0; // unlabelled shelving in the upstairs Klk
 export const START = { x: 2.875, z: -12, yawDeg: 180, pitchDeg: 8 };
 // Walkable area outside: in front of the north façade (x range, back to z0), our patio and, through
 // the gap in the hedge (SW corner), the lawn behind the row of patios up to z1 (#52).
-export const OUTDOOR = { x0: -12, x1: 17.75, z0: -14, z1: 24 };
+export const OUTDOOR = { x0: -46, x1: 17.75, z0: -14, z1: 29.5 }; // behind Hus L: the patios and the Borggården (#80)
 
 // The lightsaber in Sovrum 2 (#78, src/saber.js): two hooks on the west wall (north of the gaming desk)
 // (wall face x 2.752), the saber lying across them along z. Hilt 30 cm, blade 90 cm; the blade colour is
