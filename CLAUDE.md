@@ -116,7 +116,7 @@ src/openables.js       Openable (#103): the shared helper for fronts that open w
                        interior.js builds the kitchen fronts, vanity drawers, the Stage 50 mirror cabinet, the laundry sink
                        cabinet, the washer/dryer doors and the hall's EL/C cabinet (`buildElCabinet`: fuse box, router) with it
                        (`openFront`, hollow `shell` carcasses);
-                       furniture.js `addDrawer` / `addDoor` for furniture (NORDKISA, NORDLI, ALEX, IDANÄS foot end, BYÅS)
+                       furniture.js `addDrawer` / `addDoor` for furniture (NORDKISA, NORDLI, ALEX, IDANÄS foot end, BYÅS's two end drawers, #212)
 src/ovens.js           oven (drop-down door) + microwave (side door) in the tall unit, E opens (world.lids)
 src/hob.js             the induction hob (#158): E switches it on/off (the front zone glows, "9" on the display, a hum);
                        in world.lids, `world.hob` (`zone`, `on`) for the pan/chicken; stays with F but F switches it off
@@ -406,7 +406,7 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   Under both: a 300 × 200 cm rug (#55, no collision) in Sarah's pattern (#171, `archRugTexture`: dark olive with
   off-white stripes bending in U arches, square fields per `fields` in its FURNITURE item).
   Opposite the sofa (the wall with the stair behind it): IKEA BYÅS TV bench 160 × 42 × 45, high-gloss
-  white (#67), east of the living-room door, with the TV on it (#68: Philips 55", E toggles; an animated
+  white (#67; a drawer at each end, an open shelf between, #212), east of the living-room door, with the TV on it (#68: Philips 55", E toggles; an animated
   canvas picture ~12 fps + an additive Ambilight glow; furniture E targets are `world.furnitureTargets`).
   IKEA SYMFONISK speakers (#186, `SYMFONISK`, FURNITURE `symfonisk`): the black bookshelf speaker stands in Sovrum 1's window (#201; it lay on the TV bench),
   the white one stands at the south end of the kitchen worktop, the lamp speaker (frosted glass, its own lamp: E

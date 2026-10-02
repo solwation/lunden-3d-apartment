@@ -917,11 +917,27 @@ function byas(item) {
   }
   g.add(rbox(w - 2 * door - t, t, d - 0.04, 0, plinth + (h - plinth) * 0.5, -0.01, shelfWhite, 0.003)); // middle shelf
   const groove = new THREE.MeshStandardMaterial({ color: 0x9a9a96, roughness: 0.6 });
-  for (const s of [-1, 1]) { // the doors (#103): gloss fronts hinged at the ends, a thin shadow line as the grip at the top
-    const dw = door - 0.006;
-    addDoor(g, 'luckan', { x: s * (w / 2 - 0.003), y: 0, z: d / 2, side: s, build: (p) => {
-      p.add(rbox(dw, h - plinth - 0.03, 0.018, -s * dw / 2, plinth + (h - plinth - 0.03) / 2 + 0.003, -0.009, gloss, 0.003));
-      p.add(rbox(dw - 0.074, 0.008, 0.004, -s * dw / 2, h - 0.03, 0.001, groove, 0.001));
+  // the end compartments are drawers (#212; IKEA BYÅS: two drawers, an open shelf between): gloss fronts with a thin
+  // shadow line as the grip at the top; inside a few things that end up under a TV (cables, a game pad, films)
+  const dark = new THREE.MeshStandardMaterial({ color: 0x1c1d20, roughness: 0.5 });
+  const cable = new THREE.MeshStandardMaterial({ color: 0x2a2a2c, roughness: 0.7 });
+  const fh = h - plinth - 0.03, dw = door - t - 0.006, depth = d - 0.07;
+  for (const s of [-1, 1]) {
+    const cx = s * (w / 2 - t - (door - t) / 2) - s * 0.0015; // centred in its compartment (side → divider)
+    addDrawer(g, 'lådan', { x: cx, y: plinth + 0.003, zf: d / 2, w: dw, h: fh, depth, front: gloss, inner: shelfWhite, grip: (o) => {
+      o.add(rbox(dw - 0.074, 0.008, 0.004, 0, h - 0.03 - plinth - 0.003, 0.001, groove, 0.001)); // the grip groove
+      const y = 0.028, zc = -0.018 - depth / 2;
+      if (s < 0) { // a game pad and a coiled HDMI cable
+        const pad = rbox(0.15, 0.03, 0.1, -0.06, y + 0.015, zc + 0.03, dark, 0.012); pad.rotation.y = 0.3; o.add(pad);
+        for (const [x, z] of [[-0.11, 0.0], [-0.01, 0.06]]) { const st = new THREE.Mesh(new THREE.CylinderGeometry(0.01, 0.01, 0.012, 10), dark); st.position.set(x, y + 0.036, zc + 0.03 + z * 0.5); o.add(st); }
+        const coil = new THREE.Mesh(new THREE.TorusGeometry(0.07, 0.006, 6, 24), cable); coil.rotation.x = Math.PI / 2; coil.position.set(0.1, y + 0.006, zc - 0.05); o.add(coil);
+        const coil2 = coil.clone(); coil2.scale.setScalar(0.8); coil2.position.y += 0.012; o.add(coil2);
+      } else { // a row of films in their cases
+        ['#2f5d8a', '#b8342f', '#e0b23a', '#2d2d2d', '#4c8a4a', '#7a4c9a'].forEach((col, i) => {
+          o.add(rbox(0.015, 0.19, 0.135, -0.12 + i * 0.017, y + 0.095, zc + 0.02, new THREE.MeshStandardMaterial({ color: col, roughness: 0.4 }), 0.002));
+        });
+        const coil = new THREE.Mesh(new THREE.TorusGeometry(0.06, 0.005, 6, 24), cable); coil.rotation.x = Math.PI / 2; coil.position.set(0.1, y + 0.005, zc); o.add(coil);
+      }
     } });
   }
   g.traverse((m) => { if (m.isMesh) m.castShadow = m.receiveShadow = true; });
