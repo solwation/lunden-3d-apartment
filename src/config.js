@@ -186,6 +186,7 @@ export const PLAYER = {
   walk: 1.6,   // m/s
   run: 3.2,
   turnSpeed: 1.9, // rad/s for the arrow keys
+  mouseSens: 0.0013, // rad per pixel of mouse/touchpad movement under pointer lock (was 0.0022, too twitchy, #46)
   stepUp: 0.45,
   headroom: 1.85,
 };

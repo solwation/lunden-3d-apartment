@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { COLORS, LEVELS, DAY, START } from './config.js';
+import { COLORS, LEVELS, DAY, START, PLAYER } from './config.js';
 import { buildWorld } from './world.js';
 import { Player } from './player.js';
 import { setupTouch } from './touch.js';
@@ -285,7 +285,7 @@ document.addEventListener('pointerlockchange', () => {
   if (!locked && reading) showNote(false);
 });
 document.addEventListener('mousemove', (e) => {
-  if (locked) look(e.movementX * 0.0022, e.movementY * 0.0022);
+  if (locked) look(e.movementX * PLAYER.mouseSens, e.movementY * PLAYER.mouseSens);
 });
 document.addEventListener('keydown', (e) => {
   if (!locked) return;
