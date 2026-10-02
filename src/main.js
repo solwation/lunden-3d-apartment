@@ -521,9 +521,12 @@ document.getElementById('furniture-btn').addEventListener('click', () => toggleF
 const statsEl = document.getElementById('stats');
 setBadgeElement(document.getElementById('badges'));
 let statsPinned = false;
+// the minimap is part of the same "extra HUD" (#85): shown with the stats; K shows the map on its own
+let mapPinned = false;
 function showStats(show) {
   if (show && statsEl.hidden) renderStats(statsEl);
   statsEl.hidden = !show;
+  document.getElementById('minimap').hidden = !(show || mapPinned);
 }
 function toggleStats() { statsPinned = !statsPinned; showStats(statsPinned); }
 const holdStats = (down) => showStats(down || statsPinned);
@@ -540,11 +543,11 @@ let lastLevel = -1, lastRoom = null, mapTimer = 0;
 const mapEl = document.getElementById('minimap');
 const minimap = new Minimap(mapEl, world.roomMaps);
 setRoomTotal(world.roomMaps.reduce((n, m) => n + new Set(m.rooms.map((r) => r.name)).size, 0));
-function toggleMap(show = mapEl.hidden) {
-  mapEl.hidden = !show;
-  try { localStorage.setItem('lunden.mapShown', show ? '1' : '0'); } catch { /* ignore */ }
+function toggleMap() { // K: the map alone (Tab / T / 📊 show it with the stats)
+  mapPinned = !mapPinned;
+  mapEl.hidden = !(mapPinned || !statsEl.hidden);
 }
-try { toggleMap(localStorage.getItem('lunden.mapShown') !== '0'); } catch { /* ignore */ }
+mapEl.hidden = true; // hidden by default (#85); the old saved 'lunden.mapShown' is ignored
 function step(dt) {
   for (const d of world.doors) d.update(dt);
   for (const l of world.lids) l.update(dt);

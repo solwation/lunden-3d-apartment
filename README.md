@@ -20,7 +20,7 @@ Gå runt i lägenheten L1007 (Kv. Lunden, Peab) i webbläsaren som i ett FPS-spe
 | <kbd>Q</kbd> | mät: punkt 1, punkt 2 (tredje trycket rensar) |
 | <kbd>M</kbd> | ljud av/på |
 | <kbd>Tab</kbd> | håll inne för att se statistiken (<kbd>T</kbd> låter den ligga kvar) |
-| <kbd>K</kbd> | visa/dölj minikartan |
+| <kbd>K</kbd> | visa/dölj bara minikartan (den syns annars ihop med statistiken) |
 | <kbd>Esc</kbd> | släpp musen |
 
 **Touch (mobil, surfplatta, Surface):** välj *Touch* på startskärmen (på telefon och surfplatta finns

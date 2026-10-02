@@ -74,7 +74,8 @@ src/patio.js           patio: Plantagen Oslo corner lounge set, parasol, planter
                        parasol folds at night/in winter, beers in summer, snowman in winter
 src/wallclock.js       analog kitchen clock (WALL_CLOCK) + the control strip: spool ← →, pause, month
 src/rooms.js           room detection: walls + door gaps rasterised, BFS from the room labels
-src/minimap.js         plan view with the visitor's arrow, current room highlighted (K toggles)
+src/minimap.js         plan view with the visitor's arrow, current room highlighted; hidden, shown with the
+                       stats (Tab / T / 📊, #85), K shows it alone
 src/measure.js         tape measure (Q / 📏): two points on any surface, distance label
 src/ovens.js           oven (drop-down door) + microwave (side door) in the tall unit, E opens (world.lids)
 src/coffee.js          Moccamaster on the worktop (MOCCAMASTER): E brews (red light, sound, the jug fills)

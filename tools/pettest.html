@@ -49,9 +49,10 @@ f.onload = async () => {
   const after = w.__app.board.photos.length, last = w.__app.board.photos.at(-1);
   pass &= check((after === before + 1 || (before === 10 && after === 10)) && /^data:image\/jpeg/.test(last?.data ?? ''),
     `photo on the board (${before} → ${after}, "${last?.name}")`);
-  pass &= check(d.getElementById('stats').hidden, 'stats panel hidden by default');
+  pass &= check(d.getElementById('stats').hidden && d.getElementById('minimap').hidden, 'stats panel and map hidden by default');
   d.getElementById('stats-btn').click();
   await wait(400); // panel refreshes 4×/s
+  pass &= check(!d.getElementById('minimap').hidden, 'the map shows with the stats (#85)');
   const petted = Number(d.querySelector('#stats')?.textContent.match(/Klappade katter(\d+)/)?.[1]);
   pass &= check(petted === 1, `stats panel: klappade katter = ${petted}`);
   pass &= await rareCat(lines, check);
