@@ -95,6 +95,7 @@ tools/pettest.html     headless test of petting the cat (eyes, hand, stats count
 tools/notetest.html    headless test of the changelog note ("Nytt", read/close, no walking)
 tools/patiotest.html   headless test of the patio seasons (parasol, beers, snowman) + sofa collision
 tools/keytest.html     headless test of the hall key cabinet: open, car key reachable only then, beep
+tools/esctest.html     headless test of Esc on the start screen (click-to-start cover, ignored over the note)
 tools/clocktest.html   headless test of the wall clock (07:00 start, spool, pause, month → sun height)
 tools/stamp.sh         build the published site with a version stamp (used by CI)
 ```
@@ -289,6 +290,10 @@ screenshots into the session scratchpad, not the repo.
   A Surface has both, so the visitor chooses. Touch-only devices (`(pointer: coarse) and
   (hover: none)` → `body.phone`, set by an inline script in index.html) get a short start screen:
   no key list, one *Börja* button (= Touch). `&phone` forces it for screenshots.
+- Esc on the start screen = *Mus & tangentbord*. Browsers don't treat Esc as a user activation, so
+  it can't call requestPointerLock/start audio: it hides the start screen and shows `#arm` ("Klicka
+  för att börja"); that click runs the same `startMouse()`. Ignored for 0.7 s after Esc frees the
+  mouse and while the install sheet, note, board or rotate overlay is up (`tools/esctest.html`).
 - App name everywhere (title, manifest name/short_name, apple-mobile-web-app-title): "Kv. Lunden L1007".
 - iPhone (Safari/Chrome) can't go fullscreen, and the browser bars shifted the tap targets of the
   bottom-right buttons; `src/install.js` asks to add the page to the home screen first (skippable

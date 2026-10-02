@@ -233,7 +233,24 @@ function showOverlay(show) {
 }
 
 // Explicit choice on the start screen — a Surface has both a touchscreen and a keyboard.
-document.getElementById('start-mouse').addEventListener('click', () => { initAudio(); canvas.requestPointerLock(); });
+function startMouse() { initAudio(); canvas.requestPointerLock(); }
+document.getElementById('start-mouse').addEventListener('click', startMouse);
+// Esc on the start screen = "Mus & tangentbord". Browsers don't count Esc as a user gesture, so
+// it can't grab the mouse or start the sound itself: it closes the start screen and the next
+// click (anywhere) does exactly what the button does. Esc in the game still just frees the mouse.
+const armEl = document.getElementById('arm');
+let unlockedAt = -1e9;
+const otherOverlay = () => ['install', 'note', 'board-view'].some((id) => !document.getElementById(id)?.hidden)
+  || getComputedStyle(document.getElementById('rotate')).display !== 'none';
+document.addEventListener('keydown', (e) => {
+  if (e.code !== 'Escape' || locked || overlay.hidden || otherOverlay()) return;
+  if (performance.now() - unlockedAt < 700) return; // the Esc that just freed the mouse
+  e.preventDefault();
+  overlay.hidden = true;
+  armEl.hidden = false;
+});
+armEl.addEventListener('click', () => { armEl.hidden = true; startMouse(); });
+document.addEventListener('pointerlockerror', () => { if (!armEl.hidden || overlay.hidden) { armEl.hidden = true; showOverlay(true); } });
 document.getElementById('start-touch').addEventListener('click', () => {
   initAudio();
   touch.enabled = true;
@@ -279,6 +296,8 @@ muteBtn.addEventListener('click', () => updateMute(toggleMuted()));
 updateMute();
 document.addEventListener('pointerlockchange', () => {
   locked = document.pointerLockElement === canvas;
+  if (!locked) unlockedAt = performance.now();
+  armEl.hidden = true;
   if (locked) touch.enabled = false;
   showOverlay(!locked);
   if (!locked) { player.keys.clear(); holdStats(false); }

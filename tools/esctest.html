@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Escape on the start screen test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+// Esc on the start screen = "Mus & tangentbord": the start screen closes and a "click to start"
+// cover takes its place (a key press can't grab the mouse); a click on it requests pointer lock
+// like the button. Esc while another overlay (the note) is open does nothing.
+//   google-chrome --headless=new --dump-dom http://localhost:8137/tools/esctest.html
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const f = document.createElement('iframe');
+f.width = 900; f.height = 600;
+f.src = '../index.html';
+document.body.append(f);
+f.onload = async () => {
+  const w = f.contentWindow, d = f.contentDocument;
+  while (!w.__app) await wait(100);
+  const lines = [];
+  const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; };
+  const esc = () => d.dispatchEvent(new w.KeyboardEvent('keydown', { code: 'Escape', key: 'Escape', bubbles: true }));
+  const overlay = d.getElementById('overlay'), arm = d.getElementById('arm');
+  d.getElementById('install').hidden = true; // the iPhone sheet is not part of this test
+  let pass = check(!overlay.hidden && arm.hidden, 'start screen up');
+  w.__app.showNote(true);
+  esc();
+  pass &= check(!overlay.hidden && arm.hidden, 'Esc ignored while the note is open');
+  w.__app.showNote(false);
+  esc();
+  pass &= check(overlay.hidden && !arm.hidden && /Klicka för att börja/.test(arm.textContent), 'Esc closes the start screen, "Klicka för att börja" shown');
+  let asked = false;
+  const orig = w.HTMLCanvasElement.prototype.requestPointerLock;
+  w.HTMLCanvasElement.prototype.requestPointerLock = function () { asked = true; return orig.call(this); };
+  arm.click();
+  await wait(300);
+  pass &= check(asked && arm.hidden, 'click asks for pointer lock (same as the button)');
+  pass &= check(/Esc/.test(d.querySelector('.keys').textContent) && /startskärmen/.test(d.querySelector('.keys').textContent), 'Esc in the key list');
+  out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
+};
+</script>
+</body>
+</html>
