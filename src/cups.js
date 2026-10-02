@@ -11,6 +11,8 @@ import { heldItem, setHeld } from './holdable.js';
 
 const white = new THREE.MeshStandardMaterial({ color: 0xf6f6f3, roughness: 0.6 });
 
+const OPEN_DEG = 88; // just short of flat against the tall unit's side (#116)
+
 /** The cup cabinet: a hollow carcass with a shelf and a side-hinged door (a world.lids appliance). */
 export function cupCabinet(c) {
   const g = new THREE.Group();
@@ -20,21 +22,24 @@ export function cupCabinet(c) {
   b(depth, H, w, c.front + depth / 2, yc, c.z0 + w / 2); b(depth, H, w, c.front + depth / 2, yc, c.z1 - w / 2);
   b(w, H, W, c.back - w / 2, yc, zc);
   b(depth - 0.03, 0.014, W - 0.03, c.front + depth / 2 + 0.01, c.y0 + H * 0.5, zc); // shelf
-  // the door: front + a raised shaker frame, hinged at z1 (south) so it opens away from the tall oven unit
-  // beside it, which stands 25 cm proud of the wall cabinets (#116); the black handle at the free north edge
+  // the door: front + a raised shaker frame, a black handle at the free (south) edge, hinged at z0 next to
+  // the tall oven unit, which stands 25 cm proud of the wall cabinets. Like a real cabinet hinge the pivot
+  // sits at the door's outer face (P in front of the carcass, the handle's depth), so the door swings clear
+  // of the carcass and stops flat against the tall unit's side at OPEN_DEG (#116)
+  const P = 0.045;
   const door = new THREE.Group();
-  door.position.set(c.front, c.y0, c.z1);
-  const add = (sx, sy, sz, x, y, z, m) => { const o = new THREE.Mesh(new THREE.BoxGeometry(sx, sy, sz), m); o.position.set(x, y, z); o.castShadow = true; door.add(o); };
-  add(0.02, H - 0.003, W - 0.003, -0.01, H / 2, -W / 2, c.material);
-  for (const [sy, sz, y, z] of [[H - 0.01, 0.06, H / 2, -0.035], [H - 0.01, 0.06, H / 2, -W + 0.035], [0.06, W - 0.01, 0.035, -W / 2], [0.06, W - 0.01, H - 0.035, -W / 2]]) add(0.008, sy, sz, -0.024, y, z, c.material);
-  add(0.02, 0.12, 0.012, -0.035, 0.1, -W + 0.04, c.handle);
+  door.position.set(c.front - P, c.y0, c.z0);
+  const add = (sx, sy, sz, x, y, z, m) => { const o = new THREE.Mesh(new THREE.BoxGeometry(sx, sy, sz), m); o.position.set(x + P, y, z); o.castShadow = true; door.add(o); };
+  add(0.02, H - 0.003, W - 0.003, -0.01, H / 2, W / 2, c.material);
+  for (const [sy, sz, y, z] of [[H - 0.01, 0.06, H / 2, 0.035], [H - 0.01, 0.06, H / 2, W - 0.035], [0.06, W - 0.01, 0.035, W / 2], [0.06, W - 0.01, H - 0.035, W / 2]]) add(0.008, sy, sz, -0.024, y, z, c.material);
+  add(0.02, 0.12, 0.012, -0.035, 0.1, W - 0.04, c.handle);
   const cab = {
     name: 'skåpet', kind: 'appliance', isOpen: false, z0: c.z0, width: W, t: 0, object: door, pickable: door, door, hinge: 'side', lamp: { emissiveIntensity: 0 },
     toggle() { this.isOpen = !this.isOpen; sfx.click(door.getWorldPosition(new THREE.Vector3())); },
     update(dt) {
       const target = this.isOpen ? 1 : 0;
       this.t += Math.sign(target - this.t) * Math.min(Math.abs(target - this.t), dt * 2.5);
-      door.rotation.y = this.t * this.t * (3 - 2 * this.t) * THREE.MathUtils.degToRad(90); // 90°: clear of the next door too
+      door.rotation.y = -this.t * this.t * (3 - 2 * this.t) * THREE.MathUtils.degToRad(OPEN_DEG);
     },
   };
   door.traverse((m) => { m.userData.door = cab; });

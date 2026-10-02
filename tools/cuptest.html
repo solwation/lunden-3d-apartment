@@ -38,15 +38,22 @@ f.onload = async () => {
   const kitchen = [[4.4, 1.7], [4.3, 1.4], [4.5, 2.0], [4.2, 1.2]];
   const cab = cups.cabinet, cup = cups.cups[1], mocca = world.lids.find((l) => l.kind === 'coffee');
   let pass = check(lookAt(cab.door.children[0].getWorldPosition(new V()), kitchen, /öppna skåpet/i), `cabinet: "${btn.textContent}"`);
-  // the swinging door never reaches north of the cabinet, where the tall oven unit stands (#116)
-  let minZ = Infinity;
+  // the door keeps its hinge by the tall oven unit (z0) and opens left, but no part of it ever goes north
+  // of z0, into the tall unit (#116): every vertex of the door, all through the swing
+  let minZ = Infinity, maxAng = 0;
   btn.click();
   for (let i = 0; i < 60; i++) {
     step(1 / 60); cab.door.updateMatrixWorld(true);
-    for (const [x, z] of [[0, 0], [-0.04, 0], [0, -cab.width], [-0.04, -cab.width]]) minZ = Math.min(minZ, cab.door.localToWorld(new V(x, 0, z)).z);
+    maxAng = Math.max(maxAng, -cab.door.rotation.y * 180 / Math.PI);
+    cab.door.traverse((m) => {
+      const a = m.geometry?.attributes.position;
+      if (a) for (let k = 0; k < a.count; k++) minZ = Math.min(minZ, m.localToWorld(new V().fromBufferAttribute(a, k)).z);
+    });
   }
+  const hinge = cab.door.getWorldPosition(new V());
   pass &= check(cab.isOpen, 'cabinet open');
-  pass &= check(minZ > cab.z0 - 0.01, `door swing stays south of z ${cab.z0.toFixed(2)} (min ${minZ.toFixed(3)})`);
+  pass &= check(Math.abs(hinge.z - cab.z0) < 0.01 && maxAng > 80, `hinged at the tall unit (z ${hinge.z.toFixed(2)}), opens ${maxAng.toFixed(0)}°`);
+  pass &= check(minZ > cab.z0 - 0.002, `door never enters the tall unit (min z ${minZ.toFixed(3)} vs ${cab.z0.toFixed(3)})`);
   const cupAt = () => cup.model.getWorldPosition(new V()).add(new V(0, 0.05, 0));
   pass &= check(lookAt(cupAt(), kitchen, /koka kaffe först/i), `before brewing: "${btn.textContent}"`);
   btn.click(); step(1 / 60);
