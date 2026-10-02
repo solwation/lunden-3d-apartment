@@ -7,6 +7,8 @@
 // The kitchen's cooking (#156): (1) the induction hob (#158) — aim at it → "Slå på hällen", on (the zone glows),
 // off again; F switches it off and it stays a target with F. (2) the frying pan (#159): open the drawer under
 // the hob, take the pan, stand it on the hob, take it again, back in the drawer, the drawer closes; F sends it home.
+// (3) the chicken (#160): no smoke in the fridge; taken, into the pan on the lit hob, it smokes after cookSeconds;
+// back in the fridge with the door shut the smoke stops; fried again it stops by itself after smokeSeconds; F.
 //   google-chrome --headless=new --dump-dom http://localhost:8137/tools/cooktest.html
 const out = document.getElementById('out');
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -16,7 +18,7 @@ document.body.append(f);
 f.onload = async () => {
   const w = f.contentWindow, d = f.contentDocument;
   while (!w.__app) await wait(100);
-  const { player, camera, step, world, scene, toggleFurniture, pan, heldItem } = w.__app;
+  const { player, camera, step, world, scene, toggleFurniture, pan, heldItem, chicken } = w.__app;
   const lines = [];
   const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; };
   d.getElementById('start-touch').click();
@@ -80,6 +82,49 @@ f.onload = async () => {
   toggleFurniture(); toggleFurniture();
   pass &= check(pan.model.parent === drawer.object && !pan.placed, 'F sends it home to the drawer');
   drawer.toggle(); for (let i = 0; i < 60; i++) step(1 / 60);
+  // (3) the chicken
+  const fridge = chicken.fridge, C = { cook: 10, smoke: 60 };
+  const smokes = () => chicken.smoke.some((s) => s.visible && s.material.opacity > 0.01);
+  const run = (sec) => { for (let i = 0; i < sec * 10; i++) step(0.1); };
+  const fridgeFrom = [chicken.home.pos.x, chicken.home.pos.z - 1.0];
+  label = aim(chicken.home.pos.clone().add(new V(0, 0.1, 0)), fridgeFrom);
+  pass &= check(/öppna kylskåpet/i.test(label), `the fridge: "${label}"`);
+  btn.click(); run(2);
+  pass &= check(!smokes(), 'no smoke in the open fridge');
+  label = aim(chicken.home.pos.clone().add(new V(0, 0.08, 0)), fridgeFrom);
+  pass &= check(/ta kycklingen/i.test(label), `"${label}"`);
+  btn.click(); step(1 / 60);
+  pass &= check(heldItem() === chicken && !smokes(), 'the chicken in the hand, no smoke');
+  chicken.putBack(); drawer.toggle(); run(1); // the pan onto the hob (as above), the hob on
+  pan.take(); pan.placeAt(hob.zone); hob.set(true); chicken.take();
+  label = aim(hob.zone.clone().add(new V(0, 0.03, 0)), from);
+  pass &= check(/lägga kycklingen i pannan/i.test(label), `at the pan: "${label}"`);
+  btn.click();
+  step(1 / 60);
+  pass &= check(chicken.inPan && chicken.model.parent === pan.model && heldItem() === null, `in the pan, the hand free`);
+  run(C.cook - 2);
+  pass &= check(!smokes(), `no smoke yet after ${C.cook - 2} s`);
+  run(3);
+  pass &= check(smokes(), `smoking after ${C.cook + 1} s`);
+  // into the fridge, shut the door: no smoke
+  chicken.take(); run(0.5);
+  pass &= check(smokes(), 'still smoking in the hand');
+  chicken.putBack(); run(0.5);
+  pass &= check(smokes(), 'still smoking in the open fridge');
+  fridge.toggle(); run(0.3);
+  pass &= check(!fridge.isOpen && !smokes() && !chicken.smoking, 'the fridge door shut: no smoke');
+  // fry again, take it off the heat: the smoke stops by itself after smokeSeconds
+  fridge.toggle(); run(2);
+  chicken.take(); chicken.intoPan(); run(C.cook + 1);
+  chicken.take(); chicken.placeAt(hob.zone.clone().add(new V(0, 0, -0.5)));
+  run(C.smoke - 5);
+  pass &= check(smokes(), `on the worktop, still smoking after ${C.smoke - 5} s`);
+  run(6);
+  pass &= check(!smokes(), `stopped after ${C.smoke + 1} s`);
+  chicken.take(); chicken.intoPan(); run(C.cook + 1);
+  toggleFurniture(); toggleFurniture();
+  pass &= check(!chicken.placed && !chicken.inPan && !smokes() && chicken.model.position.distanceTo(chicken.home.pos) < 0.001, `F: home to the fridge, no smoke (${chicken.placed} ${chicken.inPan} ${smokes()} ${chicken.model.position.distanceTo(chicken.home.pos).toFixed(3)})`);
+  hob.set(false); pan.goHome(); if (fridge.isOpen) fridge.toggle(); if (drawer.isOpen) drawer.toggle();
   out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
 };
 </script>

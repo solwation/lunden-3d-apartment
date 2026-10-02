@@ -25,6 +25,7 @@ import { buildToys } from './toys.js';
 import { Remote } from './remote.js';
 import { Book } from './book.js';
 import { Pan } from './pan.js';
+import { Chicken } from './chicken.js';
 import { Beer } from './beer.js';
 import { buildThings } from './things.js';
 import { buildCups } from './cups.js';
@@ -212,6 +213,9 @@ const cups = buildCups(scene, camera, world, world.cupCabinet); // coffee cups i
 holdables.push(cups.jug);
 const pan = world.panDrawer ? new Pan(scene, camera, world.panDrawer, world.hob) : null; // the frying pan in the drawer under the hob (#159)
 if (pan) holdables.push(pan);
+const fridge = world.lids.find((l) => l.kind === 'fridge' && !l.freezer);
+const chicken = fridge ? new Chicken(scene, camera, fridge, pan, world.hob) : null; // the roast chicken: take it, fry it in the pan (#160)
+if (chicken) holdables.push(chicken);
 for (const c of cups.cups) c.onSip = () => bump('coffee'); // drink from a cup (#117) // the Moccamaster's jug: take it, pour, put it back (#141)
 let placeTarget = null; // while something is held: the table top / floor spot it would go down on (#102)
 // a faint ring where the held thing would land
@@ -520,6 +524,7 @@ function use(thing) {
   else if (thing.blocked) sfx.click(camera.position); // put down what you hold first (#102)
   else if (thing.kind === 'saber' || thing.kind === 'holdable' || thing.kind === 'cup') thing.toggle();
   else if (thing.kind === 'place') thing.item.placeAt(thing.point);
+  else if (thing.kind === 'fry') thing.item.intoPan(); // the chicken into the pan on the hob (#160)
   else if (thing.kind === 'paper') beginDraw();
   else if (thing.kind === 'pc') { const on = thing.toggle(); sfx.tvClick(thing.pickable.getWorldPosition(new THREE.Vector3()), on); }
   else if (thing.kind === 'tv') {
@@ -678,6 +683,12 @@ function updateFocus() {
     placeGhost.position.copy(world.hob.zone).y += 0.003;
     placeGhost.visible = true;
   }
+  // the chicken in the hand, aimed at the pan on the hob (or the hob): into the pan (#160)
+  if (item === chicken && pan?.onHob && !chicken.inPan && (focused === pan.takeTarget || focused?.kind === 'hob'
+    || (focused?.kind === 'place' && focused.point.distanceTo(world.hob.zone) < 0.35))) {
+    focused = { name: 'kycklingen i pannan', kind: 'fry', verb: 'lägga', item: chicken };
+    placeGhost.visible = false;
+  }
   // the remote in the hand, aimed at a TV: the click / the touch button are the remote's (#101)
   const remoteAim = heldItem() === remote && focused?.kind === 'tv';
   if (remoteAim) focused = null;
@@ -713,6 +724,7 @@ function toggleFurniture(on = !world.furnitureOn) {
   if (!on && cat.visible) cat.hide(); // the cat goes too (and stops purring); none turn up until F is back
   if (!on) for (const t of world.furnitureTargets) if ((t.kind === 'tv' || t.kind === 'pc') && t.isOpen) t.toggle(); // screens off
   if (!on) world.hob?.set(false); // the hob stays (Peab's kitchen), but off
+  if (!on) chicken?.reset(); // home to the fridge, no smoke
   try { localStorage.setItem('lunden.furniture', on ? '1' : '0'); } catch { /* ignore */ }
 }
 world.looseItems.push(board.object, ...holdables.flatMap((h) => [h.holder, h.model]), ...toys.deco);
@@ -914,4 +926,4 @@ function continueAfterReload(r) {
 if (resumeOk && resumed.mode) continueAfterReload(resumed);
 
 // handle for tests/debugging (tools/touchtest.html)
-window.__app = { pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };
+window.__app = { chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };

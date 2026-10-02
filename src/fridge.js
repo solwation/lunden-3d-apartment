@@ -3,8 +3,8 @@ import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.j
 import { sfx } from './audio.js';
 
 // The fridge (Electrolux LRT7ME39X, stainless): hollow cabinet with a lit white liner, glass
-// shelves and a door that swings open with E. On the middle shelf: a roast chicken, smoking
-// while the door is open. Kept out of world.doors so the cat logic never uses it.
+// shelves and a door that swings open with E. The roast chicken on the middle shelf is a Holdable of its own
+// (chicken.js, #160; `shelfSpot` = its place). Kept out of world.doors so the cat logic never uses it.
 // The freezer beside it (#161) is the same class with `freezer: true`: frosty liner, shelves + drawers.
 
 const steel = new THREE.MeshStandardMaterial({ color: 0xc3c7ca, roughness: 0.32, metalness: 0.35 });
@@ -39,7 +39,7 @@ function blob(m, sx, sy, sz, x, y, z) {
 }
 
 /** Roast chicken on a plate, ~26 cm long, legs towards +z (the door). */
-function chicken() {
+export function chicken() {
   const g = new THREE.Group();
   const p = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.12, 0.015, 32), plate);
   p.position.y = 0.0075;
@@ -60,18 +60,6 @@ function chicken() {
     g.add(wing);
   }
   return g;
-}
-
-function smokeTexture() {
-  const c = document.createElement('canvas');
-  c.width = c.height = 64;
-  const g = c.getContext('2d');
-  const r = g.createRadialGradient(32, 32, 0, 32, 32, 32);
-  r.addColorStop(0, 'rgba(255,255,255,0.9)');
-  r.addColorStop(1, 'rgba(255,255,255,0)');
-  g.fillStyle = r;
-  g.fillRect(0, 0, 64, 64);
-  return new THREE.CanvasTexture(c);
 }
 
 export class Fridge {
@@ -119,11 +107,8 @@ export class Fridge {
       // glass shelves + a crisper drawer at the bottom
       for (const y of [0.45, 0.82, 1.2, 1.52]) g.add(box(iw - 0.01, 0.006, d - wall - 0.04, cx, y0 + y, cz - 0.01, glass));
       g.add(box(iw - 0.02, 0.22, d - wall - 0.08, cx, y0 + 0.2, cz, glass));
-      // the chicken on the middle shelf, a juice and milk on the top shelf
-      const ch = chicken();
-      ch.position.set(cx, y0 + 0.823, cz - 0.03);
-      g.add(ch);
-      this.chicken = ch;
+      // the chicken's place on the middle shelf (chicken.js), a juice and milk on the top shelf
+      this.shelfSpot = new THREE.Vector3(cx, y0 + 0.823, cz - 0.03);
       g.add(box(0.07, 0.2, 0.07, cx - 0.12, y0 + 1.31, cz, milk, 0.008), box(0.07, 0.18, 0.07, cx + 0.1, y0 + 1.3, cz + 0.02, juice, 0.008));
     }
 
@@ -145,15 +130,6 @@ export class Fridge {
     g.add(this.door);
     this.pickable = this.door;
 
-    // smoke from the chicken, drifting out of the open door
-    const mat = new THREE.SpriteMaterial({ map: smokeTexture(), color: 0xb9bcc0, transparent: true, depthWrite: false, opacity: 0 });
-    this.smoke = freezer ? [] : [...Array(10)].map((_, i) => {
-      const s = new THREE.Sprite(mat.clone());
-      s.userData.phase = i / 10;
-      g.add(s);
-      return s;
-    });
-    this.smokeFrom = new THREE.Vector3(cx, y0 + 0.95, cz - 0.03);
     this.object = g;
   }
 
@@ -168,13 +144,5 @@ export class Fridge {
     this.t += Math.sign(target - this.t) * Math.min(Math.abs(target - this.t), dt * 1.6);
     const e = this.t * this.t * (3 - 2 * this.t);
     this.door.rotation.y = this.sign * e * THREE.MathUtils.degToRad(this.max);
-    this.clock = (this.clock ?? 0) + dt;
-    for (const s of this.smoke) {
-      const k = (this.clock / 3 + s.userData.phase) % 1; // 0 → 1 over 3 s
-      s.position.copy(this.smokeFrom).add(new THREE.Vector3(Math.sin((k + s.userData.phase) * 9) * 0.04, k * 0.75, -k * 0.5));
-      s.scale.setScalar(0.08 + k * 0.22);
-      s.material.opacity = e * 0.6 * Math.sin(Math.PI * k);
-      s.visible = e > 0.05;
-    }
   }
 }

@@ -109,6 +109,9 @@ src/hob.js             the induction hob (#158): E switches it on/off (the front
                        in world.lids, `world.hob` (`zone`, `on`) for the pan/chicken; stays with F but F switches it off
 src/pan.js             the frying pan (#159), a Holdable in the middle drawer under the hob (`world.panDrawer`, a child
                        of the drawer while at home); E on the hob with it in the hand stands it on the front zone (`onHob`)
+src/chicken.js         the roast chicken in the fridge (#160), a Holdable: E on the pan on the hob lays it in (a child of the
+                       pan); fried on a lit zone for CHICKEN.cookSeconds it sizzles, browns and smokes (the smoke follows it)
+                       until smokeSeconds after the heat, or at once back in the fridge with the door shut
 src/coffee.js          Moccamaster on the worktop (MOCCAMASTER): E brews (red light, sound, the jug fills)
 src/mirror.js          the one mirror material (gradient + glints; hall and bathroom mirrors)
 src/reflections.js     mirror images: a Reflector per mirror, only the nearest one in view (< 4 m) renders
@@ -144,8 +147,8 @@ src/cups.js            coffee cups (CUPS): the wall cabinet over the Moccamaster
 src/drawing.js         crayon drawing on the paper on the Sovrum 3 desk (DRAWING): canvas texture, drawing mode
                        (view down, pointer free, palette #draw-panel, 1–9, E/Esc back), saved in localStorage
 src/calendar.js        the cat calendar (CALENDAR): a cat per month, the days, the chosen date; #cal-panel picks it
-src/fridge.js          the fridge: hollow, lit, opens with E, smoking roast chicken (in world.lids); the freezer is the same
-                       class (`freezer: true`, #161): drawers + shelves, the changelog note rides on its door
+src/fridge.js          the fridge: hollow, lit, opens with E (in world.lids); `shelfSpot` = the chicken's place; the freezer is
+                       the same class (`freezer: true`, #161): drawers + shelves, the changelog note rides on its door
 src/catboard.js        cork board in the kitchen (under the wall clock): a photo (offscreen render) of every petted cat,
                        newest 10 in IndexedDB 'lunden'/'catPhotos', captioned with name + time
 src/shelves.js         kitchen wall shelves with portraits, flowers, books, candles (WALL_SHELVES)
@@ -204,7 +207,8 @@ tools/holdtest.html    headless test: put things down (coffee table, dining tabl
 tools/cuptest.html     headless test: an empty cup out without brewing, onto the worktop, brew, take the jug, pour, jug back,
                        carry the cup to the dining and coffee tables, a cup back into the cabinet
 tools/drawtest.html    headless test: drawing mode, a crayon line from pointer events, clear, E back, saved
-tools/cooktest.html    headless test: the induction hob on/off (glow), F switches it off; the pan: drawer → hob → drawer, F
+tools/cooktest.html    headless test: the induction hob on/off (glow), F switches it off; the pan: drawer → hob → drawer, F; the chicken:
+                       fry, smoke, the fridge shut stops it, it stops by itself, F
 tools/clocktest.html   headless test of the wall clock (?time=7, spool, pause, sun height by month)
 tools/calendartest.html headless test: today's date at the start, pick a date on the calendar, the sun follows
 tools/stamp.sh         build the published site with a version stamp (used by CI)

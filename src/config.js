@@ -522,6 +522,11 @@ export const TILED_ROOMS = [
 export const PAN = { d: 0.28, h: 0.05, handle: 0.19, color: 0x1d1d1f, handleColor: 0x2a2522,
   home: { in: 0.27, along: -0.06 }, held: { x: 0.2, y: -0.3, z: -0.72 } };
 
+// The roast chicken in the fridge (#160): it smokes after `cookSeconds` in the pan on a lit zone, for `smokeSeconds`
+// after it leaves the heat (or until it is back in the fridge with the door shut); `darken` = how much browner it
+// gets at most; `inPanY` = its origin above the pan's (the pan's floor), `inPanScale` so it fits; `held` = camera space.
+export const CHICKEN = { cookSeconds: 10, smokeSeconds: 60, darken: 0.35, inPanY: 0.0, inPanScale: 0.8, held: { x: 0.18, y: -0.3, z: -0.55 } };
+
 export const KITCHEN = {
   level: 0,
   room: 'Kök / matplats', // room name (room detection) for its light switch
