@@ -145,8 +145,9 @@ North = −z (the bedrooms Sovrum 1/3 face north).
 - Hus L / "Parklängan" (overview plans + aerial render in `docs/peab/`, `HUS_L` in config): a straight
   four-storey bar along Sankt Lars väg (the user's "L-byggnad" = Hus L, not an L shape). Våning 1–2:
   L1001–L1004 | stair core with a ground-floor portik (L1101 above it) | L1005–L1008; all units the
-  same way round (not mirrored), we are L1007, L1008 is the east end (gable windows, escape spiral
-  stair north of it). Våning 3–4: L1201–L1209 on the same 5.75 m grid (L1208 above us, L1205 over the
+  same way round (not mirrored), we are L1007, L1008 is the east end — our neighbour on the left seen
+  from the street (#42): kitchen window on the gable, no window beside its door, no Sovrum 1 window
+  upstairs, the escape spiral stair right against the house (`HUS_L.endUnitNorthHidden`, towers). Våning 3–4: L1201–L1209 on the same 5.75 m grid (L1208 above us, L1205 over the
   core), white render with brick pilasters, entered from the loftgång on våning 3; spiral stairs in
   brick drums at both ends; flat roof with solar panels.
 - Site (`SITE`): measured on the situation/overview plans (1:500, Hus L horizontal = our axes, metres

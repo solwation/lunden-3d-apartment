@@ -139,10 +139,14 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
     if (glass) holes.forEach((o) => fakeWindow(o, z, northSide));
   };
 
-  // våning 1–2
+  // våning 1–2 (L1008, the east end unit, has its own north façade: see HUS_L.endUnitNorthHidden)
+  const endUnitX = H.after * W;
+  const northOf = (ox) => (Math.abs(ox - endUnitX) < 1e-6
+    ? north.filter((o) => !H.endUnitNorthHidden.some(([a, b]) => (o.x0 + o.x1) / 2 > a && (o.x0 + o.x1) / 2 < b))
+    : north);
   for (const ox of units) {
     const ours = Math.abs(ox) < 1e-6;
-    facade(bricks, ox, ox + W, 0, roofTop, -eps, true, shift(north, ox, 0), !ours);
+    facade(bricks, ox, ox + W, 0, roofTop, -eps, true, shift(northOf(ox), ox, 0), !ours);
     facade(bricks, ox, ox + W, 0, roofTop, D + eps, false, shift(south, ox, 0), !ours);
     if (ours) continue;
     solids.push(boxGeo(ox + 0.001, ox + W - 0.001, 0, roofTop, 0, D));
@@ -213,7 +217,13 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
   const deckX0 = tw.x + tw.r * 0.8;
   solids.push(boxGeo(deckX0, xe, roofTop - 0.25, roofTop, -0.05, loftD));
   solids.push(boxGeo(te.x - 1.2, te.x + 1.2, roofTop - 0.25, roofTop, te.z + te.r * 0.7, 0));
-  for (const t of H.towers) bricks.push(drum(t.x, t.z, t.r, roofTop + H.railHeight));
+  for (const t of H.towers) {
+    bricks.push(drum(t.x, t.z, t.r, roofTop + H.railHeight));
+    for (let i = 0; i < 16; i++) { // collision: a 16-gon round the drum
+      const a0 = (i / 16) * Math.PI * 2, a1 = ((i + 1) / 16) * Math.PI * 2;
+      segments.push([t.x + t.r * Math.cos(a0), t.z + t.r * Math.sin(a0), t.x + t.r * Math.cos(a1), t.z + t.r * Math.sin(a1)]);
+    }
+  }
 
   // loftgång railing: top/bottom rail + balusters every 12 cm (gap at the east drum's landing)
   const rz = 0.04, rh = H.railHeight;
