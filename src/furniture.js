@@ -1697,7 +1697,7 @@ function winerack(item) {
   const corkMat = new THREE.MeshStandardMaterial({ color: 0xb8925f, roughness: 0.9 });
   const profile = [[0, 0], [0.037, 0], [0.038, 0.2], [0.03, 0.24], [0.014, 0.27], [0.013, 0.33], [0.015, 0.335], [0, 0.335]].map(([r, y]) => new THREE.Vector2(r, y));
   const bottleGeo = new THREE.LatheGeometry(profile, 16);
-  const tilt = THREE.MathUtils.degToRad(item.tilt);
+  const tilt = THREE.MathUtils.degToRad(item.tilt), things = [];
   for (let i = 0; i < n; i++) {
     const y = 0.07 + (i * (h - 0.2)) / (n - 1), champagne = item.champagne.includes(i); // the top neck stays inside the frame
     // the cradle: a bar out from the frame and a ring under each end of the bottle
@@ -1715,7 +1715,10 @@ function winerack(item) {
     b.position.set(0.16, y + 0.03, fz + depth - 0.01);
     b.traverse((m) => { if (m.isMesh) m.castShadow = true; });
     g.add(b);
+    things.push({ model: b, kind: champagne ? 'champagne' : 'wine', back: 'vinhyllan' }); // can be taken out (#152)
   }
+  g.userData.keep = things.map((t) => t.model);
+  g.userData.things = things;
   g.position.y = item.y;
   return g;
 }
@@ -1747,17 +1750,22 @@ function besta(item) {
   const wine = lathe([[0.03, 0], [0.03, 0.004], [0.004, 0.008], [0.003, 0.08], [0.02, 0.1], [0.032, 0.14], [0.03, 0.19], [0.028, 0.19]]);
   const flute = lathe([[0.028, 0], [0.028, 0.004], [0.003, 0.008], [0.003, 0.1], [0.012, 0.12], [0.022, 0.21], [0.02, 0.21]]);
   const tumbler = lathe([[0.034, 0], [0.036, 0.09], [0.033, 0.09]]);
-  const glassAt = (geo, x, y, z) => { const o = new THREE.Mesh(geo, crystal); o.position.set(x, y, z); g.add(o); };
+  const things = []; // glasses and bottles you can take out (#152)
+  const glassAt = (geo, x, y, z) => { const o = new THREE.Mesh(geo, crystal); o.position.set(x, y, z); o.castShadow = true; g.add(o); things.push({ model: o, kind: 'glass' }); };
   const bottle = (x, y, z, k) => {
     const hue = [0xb5651d, 0x7a3b12, 0xd08a2c, 0x3b2a1a, 0x9c5a1a, 0x5a2e0e][k % 6];
     const gm = new THREE.MeshStandardMaterial({ color: hue, roughness: 0.15, metalness: 0.1 });
-    const shape = k % 3;
+    const shape = k % 3, bg = new THREE.Group(); // one bottle, its origin at the bottom centre
+    bg.position.set(x, y, z);
     const body = shape === 1 ? new THREE.BoxGeometry(0.08, 0.17, 0.05) : new THREE.CylinderGeometry(shape ? 0.036 : 0.04, 0.04, 0.18, 14);
-    const b = new THREE.Mesh(body, gm); b.position.set(x, y + 0.09, z); g.add(b);
-    const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.016, 0.06, 10), gm); neck.position.set(x, y + 0.21, z); g.add(neck);
-    const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.014, 0.014, 0.022, 10), k % 2 ? walnut : handle); cap.position.set(x, y + 0.25, z); g.add(cap);
+    const b = new THREE.Mesh(body, gm); b.position.set(0, 0.09, 0); bg.add(b);
+    const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.016, 0.06, 10), gm); neck.position.set(0, 0.21, 0); bg.add(neck);
+    const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.014, 0.014, 0.022, 10), k % 2 ? walnut : handle); cap.position.set(0, 0.25, 0); bg.add(cap);
     const label = new THREE.Mesh(new THREE.PlaneGeometry(0.05, 0.06), new THREE.MeshStandardMaterial({ color: k % 2 ? 0xf1e7cf : 0xd9b453, roughness: 0.7 }));
-    label.position.set(x, y + 0.085, z + (shape === 1 ? 0.0255 : 0.0405)); g.add(label);
+    label.position.set(0, 0.085, shape === 1 ? 0.0255 : 0.0405); bg.add(label);
+    bg.traverse((m) => { if (m.isMesh) m.castShadow = true; });
+    g.add(bg);
+    things.push({ model: bg, kind: 'whisky' });
   };
   // left column: glasses on the shelf, bottles below; right column: bottles on the shelf, glasses below
   const zc = fd / 2 + 0.02;
@@ -1805,7 +1813,8 @@ function besta(item) {
     g.add(pivot); targets.push(target); doors.push(pivot);
   }
   g.userData.targets = targets;
-  g.userData.keep = doors;
+  g.userData.keep = [...doors, ...things.map((t) => t.model)];
+  g.userData.things = things.map((t) => ({ ...t, back: 'vitrinskåpet' }));
   g.userData.footprint = [{ x0: -W / 2, x1: W / 2, z0: 0, z1: D }];
   g.position.y = item.y;
   return g;
@@ -1827,7 +1836,7 @@ export function surfaceBox(r, list) {
 export function buildFurniture() {
   const group = new THREE.Group();
   const segments = [[], []];
-  const lights = [], interactives = [], surfaces = [];
+  const lights = [], interactives = [], surfaces = [], things = [];
   for (const item of FURNITURE) {
     const obj = BUILDERS[item.type](item, lights);
     // one mesh per material per piece (#48); the parasol folds and the beers come and go
@@ -1844,6 +1853,7 @@ export function buildFurniture() {
     }
     for (const t of obj.userData.targets ?? []) { t.level = item.level; interactives.push(t); } // several E targets of their own (cabinet doors, #104)
     group.add(obj);
+    things.push(...(obj.userData.things ?? [])); // small things you can take (bottles, glasses, #152)
     // footprint rectangles → world-space collision segments
     const c = Math.cos(yaw), s = Math.sin(yaw);
     const toWorld = (lx, lz) => [item.x + c * lx + s * lz, item.z - s * lx + c * lz];
@@ -1852,5 +1862,5 @@ export function buildFurniture() {
       for (let i = 0; i < 4; i++) segments[item.level].push([...pts[i], ...pts[(i + 1) % 4]]);
     }
   }
-  return { object: group, segments, lights, interactives, surfaces };
+  return { object: group, segments, lights, interactives, surfaces, things };
 }

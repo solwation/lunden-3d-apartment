@@ -25,6 +25,7 @@ import { buildToys } from './toys.js';
 import { Remote } from './remote.js';
 import { Book } from './book.js';
 import { Beer } from './beer.js';
+import { buildThings } from './things.js';
 import { buildCups } from './cups.js';
 import { Drawing } from './drawing.js';
 import { CatCalendar, CalendarPanel } from './calendar.js';
@@ -201,7 +202,8 @@ function showBook(show) {
 }
 const beer = new Beer(scene, camera); // a big beer on the lounge table when you sit down in the lounge sofa (#117)
 beer.onGulp = () => bump('beer');
-const holdables = [saber, ...toys.items, remote, book, beer]; // things you can take and hold, one at a time (holdable.js)
+const things = buildThings(scene, camera, world.things); // bottles and glasses in the living room (#152)
+const holdables = [saber, ...toys.items, remote, book, beer, ...things]; // things you can take and hold, one at a time (holdable.js)
 const cups = buildCups(scene, camera, world, world.cupCabinet); // coffee cups in the wall cabinet (#90)
 holdables.push(cups.jug);
 for (const c of cups.cups) c.onSip = () => bump('coffee'); // drink from a cup (#117) // the Moccamaster's jug: take it, pour, put it back (#141)
@@ -866,4 +868,4 @@ document.addEventListener('pointerlockchange', () => { if (!updateEl.hidden) sho
 watchForUpdates(showUpdate);
 
 // handle for tests/debugging (tools/touchtest.html)
-window.__app = { realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };
+window.__app = { things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };

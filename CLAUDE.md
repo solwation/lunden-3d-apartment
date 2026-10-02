@@ -108,6 +108,8 @@ src/beer.js            the big beer (BEER, #117), a Holdable: served on the loun
                        click / "Drick" drinks a gulp (the level drops), back on the table = full; cups drink too
 src/book.js            the book on the side table by the armchair (BOOK, #140), a Holdable: click / "Läs" opens
                        #book-panel (a spread; A D / ← → / click turn pages, E / Esc close; reading mode)
+src/things.js          bottles and glasses (#152): furniture builders list `userData.things` (wine rack, BESTÅ), each
+                       becomes a Holdable: take, stand on a table, back in its own place
 src/saber.js           the lightsaber in Sovrum 2 (SABER), a Holdable; the blade burns marks where it cuts in (#96)
 src/target.js          the Nerf target on the lawn behind the hedge (TARGET, #99): rings × distance bonus, "+N" badge,
                        a score board beside it (localStorage 'lunden.target'), E clears it; only up while a
@@ -175,6 +177,7 @@ tools/targettest.html  headless test: target points (rings × distance bonus), a
 tools/mirrortest.html  headless test: in front of every mirror its Reflector is the active one, on the glass (#139)
 tools/booktest.html    headless test: take the book, read, turn pages, close, put it down, back on the side table
 tools/beertest.html    headless test: sit in the lounge sofa → beer, drink it empty, back = full, a sip of coffee, F
+tools/thingtest.html   headless test: a wine bottle to the coffee table and back to the rack, a glass, F sends them home
 tools/secretarytest.html headless test: the secretary's flap (desk) and its 8 drawers open/close, the open desk blocks
 tools/bestatest.html   headless test: the BESTÅ display cabinet's six doors open/close, its spots light with the room
 tools/holdtest.html    headless test: put things down (coffee table, dining table, floor), one at a time, F → home

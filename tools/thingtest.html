@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Bottles and glasses test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+// Bottles and glasses (#152): take a wine bottle out of the rack, stand it on the coffee table, take it again,
+// put it back in its place; a glass from the BESTÅ onto the dining table; F sends everything home.
+//   google-chrome --headless=new --dump-dom http://localhost:8137/tools/thingtest.html
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const f = document.createElement('iframe');
+f.width = 900; f.height = 600; f.src = '../index.html';
+document.body.append(f);
+f.onload = async () => {
+  const w = f.contentWindow, d = f.contentDocument;
+  while (!w.__app) await wait(100);
+  const { things, use, heldItem, step, toggleFurniture, camera } = w.__app;
+  const V = camera.position.constructor;
+  const lines = [];
+  const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; };
+  d.getElementById('start-touch').click();
+  await wait(50);
+  const kinds = things.reduce((m, t) => ({ ...m, [t.kind]: (m[t.kind] ?? 0) + 1 }), {});
+  let pass = check(kinds.wine + kinds.champagne === 8 && kinds.whisky === 6 && kinds.glass >= 10, `things: ${JSON.stringify(kinds)}`);
+  const up = (t) => new V(0, 1, 0).applyQuaternion(t.model.getWorldQuaternion(new w.__app.camera.quaternion.constructor())).y;
+  const wine = things.find((t) => t.kind === 'wine');
+  pass &= check(Math.abs(up(wine)) < 0.05, 'the wine bottle lies level in the rack');
+  use(wine.target); step(1 / 60);
+  pass &= check(heldItem() === wine, 'the bottle in the hand');
+  wine.placeAt(new V(3.6, 0.47, 10.4)); step(1 / 60);
+  pass &= check(wine.placed && up(wine) > 0.99 && Math.abs(wine.model.position.y - 0.47) < 0.01, `standing on the coffee table (y ${wine.model.position.y.toFixed(3)})`);
+  use(wine.target); step(1 / 60);
+  pass &= check(heldItem() === wine, 'taken again');
+  use(wine.backTarget); step(1 / 60);
+  pass &= check(!wine.held && !wine.placed && wine.model.position.distanceTo(wine.home.pos) < 1e-4 && Math.abs(up(wine)) < 0.05, 'back in the rack, lying');
+  const glass = things.find((t) => t.kind === 'glass');
+  use(glass.target); step(1 / 60);
+  glass.placeAt(new V(3.5, 0.75, 1.6)); step(1 / 60);
+  pass &= check(glass.placed && up(glass) > 0.99, 'a glass on the dining table');
+  const whisky = things.find((t) => t.kind === 'whisky');
+  use(whisky.target); step(1 / 60);
+  pass &= check(heldItem() === whisky, 'a whisky bottle in the hand');
+  toggleFurniture(false); step(1 / 60);
+  pass &= check(!heldItem() && !glass.placed && glass.model.position.distanceTo(glass.home.pos) < 1e-4 && !whisky.held, 'F: everything goes home');
+  toggleFurniture(true); step(1 / 60);
+  out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
+};
+</script>
+</body>
+</html>

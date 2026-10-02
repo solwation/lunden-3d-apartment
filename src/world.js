@@ -652,6 +652,7 @@ export function buildWorld(plan) {
     looseItems, // hidden by F (main.js may add more)
     cupSurfaces: [...furniture.surfaces, ...kitchenSurfaces], // table tops a cup can be put on (#90)
     cupCabinet,
+    things: furniture.things, // bottles and glasses main.js turns into Holdables (#152)
     furnitureTargets: furniture.interactives, // E targets among the furniture (the TV), hidden with F
     /** Collision of moving furniture parts (the secretary's open flap, #118) on `level`. */
     movingSegments(level) {
