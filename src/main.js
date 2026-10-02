@@ -41,6 +41,7 @@ import { Lights } from './lights.js';
 import { setupInstall } from './install.js';
 import { Marks } from './marks.js';
 import { Target } from './target.js';
+import { Car } from './car.js';
 import { Posters, HeldDrawing } from './posters.js';
 
 const overlay = document.getElementById('overlay');
@@ -269,6 +270,10 @@ document.getElementById('measure-btn').addEventListener('click', () => measure.p
 const cat = new CatSpawner(world);
 scene.add(cat.object);
 const target = new Target(); // the Nerf target on the lawn (#99)
+const car = new Car(); // our Renault, called by the key in the hall (#173)
+scene.add(car.object);
+if (params0.has('car')) car.park(); // &car: parked out front (screenshots)
+{ const moving = world.movingSegments; world.movingSegments = (lvl) => [...moving(lvl), ...(lvl === 0 ? car.segments() : [])]; } // parked: in the way
 scene.add(target.object); // up only while something that can hit it is in the hand (#144, #179, step)
 const marks = new Marks(scene, camera, [world.object, patio.object, target.object], cat); // burn marks, stars, splashes on surfaces (#96)
 // drawings taped up on walls and the fridge (#176); the one in the hand
@@ -587,7 +592,7 @@ function use(thing) {
     const opening = thing.toggle();
     sfx.parasol(thing.pickable.getWorldPosition(new THREE.Vector3()).setY(2), opening);
   }
-  else if (thing.kind === 'carkey') thing.press();
+  else if (thing.kind === 'carkey') { thing.press(); car.call(); } // beep beep: the car comes, or leaves (#173)
   else if (thing.kind === 'flush') { if (thing.toggle()) bump('flushes'); } // the toilet's flush button (#155)
   else if (thing.kind === 'lid') {
     thing.toggle();
@@ -864,6 +869,7 @@ function step(dt) {
   if (clockPanel.open) clockPanel.render();
   sonos.update(player.level, (p) => behindWall(p)); // music: schedule ahead, walls muffle (#187)
   world.windowLights.update(day.hour, 1 - day.daylight);
+  car.update(dt, day.daylight < 0.35, player);
   cat.update(dt);
   measure.update(dt, window.innerWidth, window.innerHeight);
   if (active() && reading) updateFocus();
@@ -1003,4 +1009,4 @@ function continueAfterReload(r) {
 if (resumeOk && resumed.mode) continueAfterReload(resumed);
 
 // handle for tests/debugging (tools/touchtest.html)
-window.__app = { sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };
+window.__app = { car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };

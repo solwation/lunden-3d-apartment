@@ -5,7 +5,7 @@
 <pre id="out">running…</pre>
 <script>
 // Hall key cabinet test: aim at the Solstickan cabinet, open it with the action button, the car key
-// becomes a target only once it is open, pressing it beeps (presses counter + LED), close again.
+// becomes a target only once it is open, pressing it beeps (presses counter + LED) and calls the car (#173), close again.
 //   google-chrome --headless=new --dump-dom http://localhost:8137/tools/keytest.html
 const out = document.getElementById('out');
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -50,6 +50,18 @@ f.onload = async () => {
   pass &= check(key.presses === 1 && key.blink > 0, `beep beep (presses=${key.presses}, led blinking=${key.blink > 0})`);
   for (let i = 0; i < 60; i++) step(1 / 60);
   pass &= check(key.blink === 0, 'LED goes out');
+  // the car (#173): it came along the street when the key beeped, and stops in front of the entrance
+  const car = w.__app.car;
+  pass &= check(car.state === 'arriving' && car.object.visible, `the car is on its way (${car.state})`);
+  for (let i = 0; i < 60 * 30 && car.state === 'arriving'; i++) step(1 / 60);
+  const p = car.object.position;
+  pass &= check(car.state === 'parked' && Math.abs(p.x - 2.9) < 0.05 && Math.abs(p.z + 25.2) < 0.05 && car.segments().length === 4, `parked in front of the house at (${p.x.toFixed(2)}, ${p.z.toFixed(2)}), a collision box`);
+  pass &= check(car.plateText === 'FGZ 56D' && car.plates.length === 2, `plates front and back: ${car.plateText}`);
+  aim(key.object.children[1]); btn.click(); step(1 / 60);
+  pass &= check(car.state === 'leaving' && key.presses === 2, 'beep beep again: it drives off');
+  let turned = false;
+  for (let i = 0; i < 60 * 40 && car.state === 'leaving'; i++) { step(1 / 60); if (Math.abs(car.object.rotation.y - Math.PI) < 0.01) turned = true; }
+  pass &= check(car.state === 'gone' && !car.object.visible && turned && car.segments().length === 0, `it U-turned and is gone (${car.state})`);
   cab.toggle();
   for (let i = 0; i < 90; i++) step(1 / 60);
   pass &= check(!cab.isOpen && !cab.keyReachable, 'cabinet closes');

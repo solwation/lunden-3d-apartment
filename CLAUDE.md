@@ -178,6 +178,9 @@ src/shelves.js         kitchen wall shelves with portraits, flowers, books, cand
 src/keycabinet.js      hall wall: IKEA LINDBYN mirror Ø 110 + Solstickan key cabinet (E) with the Renault key (E → beep beep);
                        the cabinet is in world.lids, the key (world.carKey) a target only while it is open
 src/sillplants.js      flower pots on every inner window board (SILL_PLANTS, #136): five merged meshes, a loose item
+src/car.js             our white Renault Megane E-Tech (CAR, #173): the hall key calls it along Sankt Lars väg to stop out
+                       front (blinks, a collision box while parked, waits for the visitor), pressed again it U-turns and
+                       leaves; sfx.evHum follows it; `&car` = parked (screenshots)
 src/signs.js           hand-lettered name signs on the bedroom doors (DOOR_SIGNS)
 src/water.js           running water: E on a tap/shower (world.taps from interior.js) → stream + hiss
 src/sonos.js           music in the SYMFONISK speakers (#187, SONOS): six generated channels (Web Audio, no files), one mix
@@ -203,7 +206,7 @@ tools/lighttest.html   headless test: aim at every light switch / floor lamp, to
 tools/pettest.html     headless test of petting the cat (eyes, hand, stats counter)
 tools/notetest.html    headless test of the changelog note ("Nytt", read/close, no walking, swings with the freezer door)
 tools/patiotest.html   headless test of the patio seasons (parasol, beers, snowman) + sofa collision
-tools/keytest.html     headless test of the hall key cabinet: open, car key reachable only then, beep
+tools/keytest.html     headless test of the hall key cabinet: open, car key reachable only then, beep; the car comes, parks, leaves
 tools/esctest.html     headless test of Esc on the start screen (click-to-start cover, ignored over the note)
 tools/updatetest.html  headless test of the update notice on a phone-sized touch screen (on top, 44 px, touch works)
 tools/perfcount.html   draw calls / triangles at a few spots (compare before/after optimising)
@@ -426,7 +429,7 @@ URL parameters (debugging / screenshots):
 - `&time=HH[.h]` — start at that hour (default: the browser's time), `&month=1–12`, `&day=1–31` (default: today), `&freeze` pauses the clock,
   `&clock` opens the wall clock's strip,
   `&lights` turns every lamp on (they also start on when arriving in the dark).
-- `&water` — turn on every tap and shower. `&tv` — switch the TV on.
+- `&car` — our car parked in front of the house. `&water` — turn on every tap and shower. `&tv` — switch the TV on.
 - `&phone` — the short touch-only start screen. `&install` — show the iPhone install sheet. `&note` — open the changelog note. `&pet` (with `&cat=`) — the cat is being petted.
 - `&clip=y` — clip everything above height y (cut-away plan view, e.g.
   `?shot&at=2.87,6.35,0,-90,16&clip=2.5` for Entréplan from above, `clip=5.6` + feet 19 for Övre plan).

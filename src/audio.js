@@ -438,6 +438,31 @@ export const sfx = {
     tone(t + 0.15, 0.2, d, { type: 'triangle', from: 140, to: 95, gain: 0.04 });
   },
     /** PC fans: a soft steady whoosh until stop(). */
+  /** An electric car going by (#173): a soft rising whine + tyre noise; move(pos, speed) each frame, stop(). */
+  evHum(pos) {
+    if (!ready()) return null;
+    const t = ctx.currentTime, g = ctx.createGain(), p = ctx.createPanner();
+    Object.assign(p, { panningModel: 'equalpower', distanceModel: 'inverse', refDistance: 3, rolloffFactor: 1 });
+    p.positionX.value = pos.x; p.positionY.value = pos.y; p.positionZ.value = pos.z;
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(1, t + 0.8);
+    g.connect(p).connect(master);
+    const whine = ctx.createOscillator(), wg = ctx.createGain();
+    whine.type = 'sine'; whine.frequency.value = 300; wg.gain.value = 0.025;
+    whine.connect(wg).connect(g);
+    const src = ctx.createBufferSource(), lp = ctx.createBiquadFilter(), ng = ctx.createGain();
+    src.buffer = noiseBuf; src.loop = true; lp.type = 'lowpass'; lp.frequency.value = 500; ng.gain.value = 0.05;
+    src.connect(lp).connect(ng).connect(g);
+    whine.start(t); src.start(t, Math.random());
+    return {
+      move(q, speed) {
+        const now = ctx.currentTime;
+        p.positionX.setTargetAtTime(q.x, now, 0.05); p.positionY.setTargetAtTime(q.y, now, 0.05); p.positionZ.setTargetAtTime(q.z, now, 0.05);
+        whine.frequency.setTargetAtTime(220 + speed * 70, now, 0.2);
+        ng.gain.setTargetAtTime(0.01 + speed * 0.012, now, 0.2);
+      },
+      stop() { const t1 = ctx.currentTime; g.gain.cancelScheduledValues(t1); g.gain.setValueAtTime(g.gain.value, t1); g.gain.linearRampToValueAtTime(0, t1 + 0.6); whine.stop(t1 + 0.7); src.stop(t1 + 0.7); },
+    };
+  },
   pcFan(pos) {
     if (!ready()) return null;
     const t = ctx.currentTime, d = out(pos, 0.5);

@@ -370,6 +370,17 @@ export const BEER = { x: 3.85, y: 0.4, z: 15.4, r: 0.045, h: 0.16, gulp: 0.2, he
 // hedge, facing the patio (north), its centre over the hedge so you can shoot from the patio door (~7.5 m).
 // Rings from the centre out score `rings` points; the shooter's distance to the hit multiplies them (`range`:
 // [up to m, ×]). Our picks.
+// Our car (#173): a white Renault Megane E-Tech Electric 2024 (4.20 × 1.78 × 1.50 m per Renault), plate FGZ 56D.
+// The key in the hall calls it: it comes east along Sankt Lars väg (our lane, right side to our curb at z −24),
+// stops in front of our entrance; called again it drives on, U-turns before the zebra crossing and leaves west.
+// Path and speeds are ours.
+export const CAR = {
+  l: 4.2, w: 1.78, h: 1.5, color: 0xf2f2ee, plate: 'FGZ 56D',
+  lane: -25.2, back: -28.6,        // z of the car's middle in our lane / the far lane
+  from: -95, stop: 2.9, turnAt: 6.9, gone: -95, // x: appears, stops (middle), starts its U-turn, disappears
+  speed: 8, brake: 2,              // m/s cruising, m/s² slowing down to the stop
+};
+
 export const TARGET = {
   x: 2.8, z: 19.5, y: 1.4, r: 0.4,
   rings: [10, 8, 6, 4, 2, 1],
