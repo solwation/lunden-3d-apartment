@@ -266,7 +266,7 @@ function toiletAgainstWall(tank, bowl, wallBoxes) {
 /** White window frame in the plane z = fz between x0..x1, y0..y1, with glass. Below the transom the casements
  * open outwards with E (#103, Swedish windows do): one per side of the mullion, hinged at the outer jambs,
  * `out` = ±1 the way out along z. Returns their Openables. */
-function addWindowFrame(group, x0, x1, fz, y0, y1, transom, out = -1) {
+function addWindowFrame(group, x0, x1, fz, y0, y1, transom, out = -1, opens = true) {
   const ft = 0.06, d = 0.05;
   const z0 = fz - d, z1 = fz + d;
   group.add(box(x0, x1, z0, z1, y0, y0 + ft, M.frame));
@@ -278,6 +278,7 @@ function addWindowFrame(group, x0, x1, fz, y0, y1, transom, out = -1) {
   // a mullion for anything wider than a single casement
   const mullion = x1 - x0 > 0.9 && y1 - y0 > 1.2, mx = (x0 + x1) / 2;
   if (mullion) group.add(box(mx - ft / 2, mx + ft / 2, z0, z1, y0, ty, M.frame));
+  if (!opens) { group.add(box(x0, x1, fz - 0.008, fz + 0.008, y0, y1, M.glass, { shadow: false })); return []; } // a fixed light
   if (transom > 0) group.add(box(x0, x1, fz - 0.008, fz + 0.008, ty, y1, M.glass, { shadow: false })); // fixed transom light
   // the casements: a slim sash with its glass, in a pivot at the hinge on the outer face of the frame
   const lo = y0 + ft, hi = (transom > 0 ? ty - ft / 2 : y1 - ft), sashes = [];
@@ -303,6 +304,35 @@ function addWindowFrame(group, x0, x1, fz, y0, y1, transom, out = -1) {
     sashes.push(o);
   }
   return sashes;
+}
+
+/** The letter box in the front door (#103): a brass plate with a flap on the outside (hinged at its top, lifts
+ * out with E), a dark slot and a brushed plate inside. Built in the door's local frame (x = thickness, z along the
+ * leaf from the hinge); the flap is an Openable in a pivot kept out of the door's merge (`door.keep`). */
+function letterFlap(door) {
+  door.object.updateMatrix();
+  const outX = new THREE.Vector3(1, 0, 0).applyQuaternion(door.object.quaternion).z < 0 ? 1 : -1; // the street side
+  const brass = new THREE.MeshStandardMaterial({ color: 0xc9a650, roughness: 0.3, metalness: 0.8 });
+  const dark = new THREE.MeshStandardMaterial({ color: 0x1b1c1d, roughness: 0.7 });
+  const zc = door.len / 2, y = 0.85, w = 0.3, h = 0.06;
+  const part = (sx, sy, sz, px, py, pz, m, parent = door.object) => {
+    const mesh = new THREE.Mesh(new THREE.BoxGeometry(sx, sy, sz), m);
+    mesh.position.set(px, py, pz);
+    mesh.userData.door = door;
+    parent.add(mesh);
+    return mesh;
+  };
+  part(0.004, h + 0.03, w + 0.03, outX * 0.022, y, zc, brass);                      // outer plate
+  part(0.006, h - 0.02, w - 0.03, outX * 0.022, y, zc, dark);                     // the slot behind the flap
+  part(0.004, h + 0.02, w + 0.02, -outX * 0.022, y, zc, dark);                    // inner brush plate
+  const pivot = new THREE.Group();
+  pivot.position.set(outX * 0.026, y + h / 2, zc);
+  part(0.004, h, w, 0, -h / 2, 0, brass, pivot);
+  part(0.01, 0.008, 0.08, outX * 0.006, -h + 0.008, 0, brass, pivot);                // a little lip to lift it by
+  door.object.add(pivot);
+  door.keep = [pivot];
+  // about the leaf's z axis: +angle swings the bottom edge towards +x
+  return new Openable({ name: 'brevinkastet', object: pivot, mode: 'flap', axis: [0, 0, 1], sign: outX, max: 70, speed: 3 });
 }
 
 function buildLevel(floor, li, group) {
@@ -393,11 +423,12 @@ function buildLevel(floor, li, group) {
     if (gap && !exterior) trims.push(...architraves(gap, y0, head));
     const door = new SwingDoor(leaf, y0, M.door, false, { glazed: exterior && tz > D, glass: M.glass, frame: M.frame });
     door.name = exterior ? 'ytterdörren' : 'dörren';
+    if (exterior && tz < 0) lids.push(letterFlap(door)); // the front door's letter box (#103)
     group.add(door.object);
     doors.push(door);
     if (exterior && gap) {
       // transom above the leaf, in the plane of the closed leaf
-      addWindowFrame(group, gap.lo, gap.hi, leaf.hinge[1] + (tz < 0 ? 0.03 : -0.03), y0 + DOOR_HEIGHT, head, 0);
+      addWindowFrame(group, gap.lo, gap.hi, leaf.hinge[1] + (tz < 0 ? 0.03 : -0.03), y0 + DOOR_HEIGHT, head, 0, -1, false);
       openings[tz < 0 ? 'north' : 'south'].push({ x0: gap.lo, x1: gap.hi, y0, y1: head });
     }
   }
@@ -662,7 +693,7 @@ export function buildWorld(plan) {
     return mid.y < LEVELS[1].floor - 0.05 ? 'l0' : 'l1';
   });
   scene.userData.merged = merged;
-  for (const d of [...l0.doors, ...l1.doors]) mergeStatic(d.object, [], () => '', { tagged: true }); // leaf + handles
+  for (const d of [...l0.doors, ...l1.doors]) mergeStatic(d.object, d.keep ?? [], () => '', { tagged: true }); // leaf + handles (not the letter flap)
 
   // furniture can be switched off (F): keep its collision separate from the fixed segments
   const fixed = [l0.segments, l1.segments];

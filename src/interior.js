@@ -83,6 +83,7 @@ const M = {
   white: std(0xf1f1ee, { roughness: 0.85 }),
   carcass: std(0xf4f4f1, { roughness: 0.6 }), // cabinet insides (#103)
   dishwasher: std(0xb9bcc0, { roughness: 0.35, metalness: 0.5 }),
+  bin: std(0x8a8d90, { roughness: 0.6 }), binGreen: std(0x4f8a4a, { roughness: 0.6 }), binBlue: std(0x3a6fb5, { roughness: 0.6 }),
   skirting: std(0xf4f4f1, { roughness: 0.45 }),
   laundry: std(T.laundryFront, { roughness: 0.45 }),
   appliance: std(0xf7f7f7, { roughness: 0.3 }),
@@ -434,6 +435,13 @@ function buildKitchen(B, group, floor, y0, yC, handled, taps, appliances) {
       openFront(open, F, u0, u1, yb, yt, M.front, 'top', {}, { mode: 'flap', name: 'diskmaskinen', max: 88 });
     } else if (sinkUnit) {
       shell(F, u0, u1, yb, top - K.sink.depth - 0.02, F.depth, { shelf: false });
+      // waste sorting under the sink (#103): a grey bin, a green one for food waste, a small blue one for paper
+      const d0 = -F.depth + 0.06, d1 = -FT - 0.05, uw = (u1 - u0 - 0.06) / 3;
+      [[M.bin, 0.3], [M.binGreen, 0.24], [M.binBlue, 0.2]].forEach(([m, h], k) => {
+        const a = u0 + 0.025 + k * (uw + 0.005);
+        F.box(a, a + uw, d0, d1, yb + 0.016, yb + 0.016 + h, m);
+        F.box(a + 0.01, a + uw - 0.01, d0 + 0.01, d1 - 0.01, yb + 0.016 + h - 0.002, yb + 0.018 + h, M.black); // its opening
+      });
       openFront(open, F, u0, (u0 + u1) / 2, yb, yt, M.front, 'v-hi', {}, { mode: 'hinge', name: 'skåpet' });
       openFront(open, F, (u0 + u1) / 2, u1, yb, yt, M.front, 'v-lo', {}, { mode: 'hinge', name: 'skåpet' });
     } else if (ret.includes(c)) {
