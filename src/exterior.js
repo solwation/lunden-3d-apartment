@@ -94,7 +94,8 @@ function drum(x, z, r, h) {
  *  - våning 1–2: brick, a row of units like ours on both sides of the stair core with the portik;
  *    the other units get our façade openings as glass, and our patio/hedge/screen walls
  *  - våning 3–4: the stacked two-storey units, white render with brick pilasters, set back behind
- *    the loftgång (grey-green railing) on the north side; spiral stairs in brick drums at both ends
+ *    the loftgång (grey-green railing, a light metal fascia, recessed white doors with a lantern each, #111) on the
+ *    north side; spiral stairs in brick drums at both ends
  *  - flat roof with solar panels
  */
 export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, mats }) {
@@ -184,8 +185,23 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
 
   // våning 3–4: the upper units (L1201–L1209), one over each lower unit and one over the core
   const uppers = [...units.map((x0) => [x0, x0 + W]), [coreX0, coreX1]];
+  const Lf = H.loft, doors = [], lampBox = [], lampGlow = [];
+  const isDoor = (o) => o.y0 - roofTop < 0.05 && o.x1 - o.x0 < 1.4; // our front door among the (shifted) north openings
   for (const [x0, x1] of uppers) {
-    facade(renders, x0, x1, roofTop, upperTop, loftD - eps, true, shift(north, x0, roofTop));
+    const holes = shift(north, x0, roofTop);
+    facade(renders, x0, x1, roofTop, upperTop, loftD - eps, true, holes, false);
+    for (const o of holes) {
+      if (!isDoor(o)) { fakeWindow(o, loftD - eps, true); continue; }
+      // the entrance (#111): set back, a white door with a narrow glass light, render reveals, a lantern beside it
+      const zr = loftD + Lf.recess;
+      renders.push(boxGeo(o.x0, o.x0 + 0.01, o.y0, o.y1, loftD, zr), boxGeo(o.x1 - 0.01, o.x1, o.y0, o.y1, loftD, zr), boxGeo(o.x0, o.x1, o.y1 - 0.01, o.y1, loftD, zr));
+      doors.push(boxGeo(o.x0 + 0.01, o.x1 - 0.01, o.y0, o.y1 - 0.01, zr, zr + 0.05));
+      glassGeo.push(quadZ(o.x0 + 0.12, o.x0 + 0.24, o.y0 + 0.9, o.y1 - 0.25, zr - 0.002, true));
+      frames.push(boxGeo(o.x1 - 0.2, o.x1 - 0.08, o.y0 + 1.0, o.y0 + 1.03, zr - 0.04, zr)); // the handle
+      const lx = o.x1 + Lf.lamp.dx, ly = o.y0 + Lf.lamp.y, { w: lw, h: lh } = Lf.lamp;
+      lampBox.push(boxGeo(lx - lw / 2, lx + lw / 2, ly + lh / 2, ly + lh / 2 + 0.03, loftD - 0.12, loftD), boxGeo(lx - 0.03, lx + 0.03, ly - lh / 2, ly + lh / 2, loftD - 0.02, loftD));
+      lampGlow.push(boxGeo(lx - lw / 2 + 0.01, lx + lw / 2 - 0.01, ly - lh / 2, ly + lh / 2, loftD - 0.11, loftD - 0.02));
+    }
     facade(renders, x0, x1, roofTop, upperTop, D + eps, false, shift(south, x0, roofTop));
     solids.push(boxGeo(x0 + 0.001, x1 - 0.001, roofTop, upperTop, loftD, D));
   }
@@ -227,10 +243,11 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
     }
   }
 
-  // loftgång railing: top/bottom rail + balusters every 12 cm (gap at the east drum's landing)
+  // loftgång railing: a round handrail + bottom rail + balusters every 12 cm (gap at the east drum's landing)
   const rz = 0.04, rh = H.railHeight;
+  const fascia = [boxGeo(deckX0, xe, roofTop - 0.27, roofTop + 0.02, -0.075, -0.05)]; // sheet-metal edge of the deck (#111)
   for (const [ra, rb] of [[deckX0, te.x - 1.2], [te.x + 1.2, xe]]) {
-    rails.push(boxGeo(ra, rb, roofTop + rh - 0.04, roofTop + rh, rz - 0.03, rz + 0.03));
+    rails.push(new THREE.CylinderGeometry(Lf.handrailR, Lf.handrailR, rb - ra, 10).rotateZ(Math.PI / 2).translate((ra + rb) / 2, roofTop + rh - Lf.handrailR, rz));
     rails.push(boxGeo(ra, rb, roofTop + 0.08, roofTop + 0.12, rz - 0.02, rz + 0.02));
     for (let x = ra + 0.06; x < rb; x += 0.12) rails.push(boxGeo(x - 0.01, x + 0.01, roofTop, roofTop + rh, rz - 0.01, rz + 0.01));
   }
@@ -249,6 +266,13 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
   add(frames, frame);
   add(glassGeo, new THREE.MeshStandardMaterial({ color: 0x33434d, roughness: 0.1, metalness: 0.4 }), false);
   add(rails, new THREE.MeshStandardMaterial({ color: COLORS.balcony, roughness: 0.5, metalness: 0.3 }));
+  add(fascia, new THREE.MeshStandardMaterial({ color: Lf.fascia, roughness: 0.4, metalness: 0.4 }));
+  add(doors, new THREE.MeshStandardMaterial({ color: Lf.door, roughness: 0.4 }));
+  add(lampBox, new THREE.MeshStandardMaterial({ color: 0x2b2d30, roughness: 0.5, metalness: 0.4 }));
+  const glowMat = new THREE.MeshBasicMaterial({ color: 0x55534d, toneMapped: false }), lit = new THREE.Color(0xffd9a0), off = new THREE.Color(0x8d8b84);
+  add(lampGlow, glowMat, false);
+  /** night 0 … 1 (with the window lights): the lanterns by the loftgång doors glow after dusk. */
+  group.userData.update = (night) => glowMat.color.copy(night > 0.35 ? lit : off);
   const roofMat = new THREE.MeshStandardMaterial({ color: 0x4b5157, roughness: 0.9 });
   registerSnow(roofMat, SEASON.snow.roof);
   add(roofs, roofMat);

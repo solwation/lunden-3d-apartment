@@ -254,6 +254,10 @@ export const HUS_L = {
   loftgangDepth: 1.96,    // walkway over our north bedrooms: z 0 → façade of the upper unit
   railHeight: 1.1,
   render: 0xf2efe7,       // white render, våning 3–4
+  // the loftgång's details (#111, after Peab's renders; sizes are guesses): a light sheet-metal fascia on the deck edge,
+  // a round handrail on the balusters, the upper units' white front doors set back in a recess, a wall lantern
+  // beside each door that lights up at dusk (no lights: colour only, like the pergola's bulbs)
+  loft: { fascia: 0xd5d8d4, handrailR: 0.022, door: 0xf4f4f1, recess: 0.14, lamp: { dx: 0.25, y: 2.1, w: 0.12, h: 0.22 } },
   pilaster: 0.4,          // brick pilaster width at each unit boundary (render)
   // spiral stairs in brick drums at both ends (våning 1/3 plans): centre, radius
   // (#42: the east one, L1008's escape stair, stands right against the house, per the user; #172: so does
