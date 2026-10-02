@@ -520,6 +520,7 @@ function use(thing) {
     sfx.parasol(thing.pickable.getWorldPosition(new THREE.Vector3()).setY(2), opening);
   }
   else if (thing.kind === 'carkey') thing.press();
+  else if (thing.kind === 'flush') { if (thing.toggle()) bump('flushes'); } // the toilet's flush button (#155)
   else if (thing.kind === 'lid') {
     thing.toggle();
     if (thing.isOpen) bump('lids');

@@ -71,7 +71,8 @@ docs/                  reference images in git (site map screenshot; docs/peab/ 
                        brochure: situation plan, overview plans per floor, unit plans, aerial render)
 material/              screenshots of our choices in Peab's option portal (local, see below)
 src/audio.js           synthesised positional sound effects (Web Audio): doors, slides, meow, steps
-src/toilet.js          toilet (Ifö Spira 6260) with an animated lid
+src/toilet.js          toilet (Ifö Spira 6260) with an animated lid and a flush button (`flush`, its own E target in
+                       world.lids: dips, sfx.flush, the water drains and returns, no flush until refilled, #155)
 src/ao.js              baked ambient occlusion: distance field → multiply overlay on floor/ceiling (AO)
 src/courtyard.js       the courtyard on the garage box (COURTYARD): walks, pergolas, grill, sandboxes, boule,
                        benches, raised beds, instanced shrubs; collision for what you can walk into
@@ -171,6 +172,7 @@ tools/keytest.html     headless test of the hall key cabinet: open, car key reac
 tools/esctest.html     headless test of Esc on the start screen (click-to-start cover, ignored over the note)
 tools/updatetest.html  headless test of the update notice on a phone-sized touch screen (on top, 44 px, touch works)
 tools/perfcount.html   draw calls / triangles at a few spots (compare before/after optimising)
+tools/toilettest.html  headless test: flush both toilets (counted, not again until refilled), the lid still opens
 tools/oventest.html    headless test: oven + microwave open/close (lamp inside), Moccamaster brews and clicks off
 tools/tvtest.html      headless test: TVs on/off (living room + Sovrum 3), new programme each time, the remote, F off
 tools/reloadtest.html  headless test: resume after "Ladda om", F5 starts at START, "Börja från start", bad record

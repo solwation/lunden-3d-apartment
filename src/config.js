@@ -313,7 +313,8 @@ export const CABINET_HEIGHT = {
 export const BASE_CABINET = 0.9;
 // WC-stol Ifö Spira 6260 (our choice in both bathrooms): approx. W 35.5 × D 65 cm, seat 42 cm,
 // tank top 84 cm (Ifö product sheet, rounded). Replaces the plan's schematic symbol (#14).
-export const TOILET = { width: 0.355, depth: 0.65, seatHeight: 0.42, tankHeight: 0.84, tankDepth: 0.17 };
+export const TOILET = { width: 0.355, depth: 0.65, seatHeight: 0.42, tankHeight: 0.84, tankDepth: 0.17,
+  refill: 6 }; // s until the tank is full again after a flush (#155, our guess)
 export const SHELF_HEIGHT = 2.0; // unlabelled shelving in the upstairs Klk
 
 // Where a visit starts: out on the grass in front of the entrance façade, facing the house with the

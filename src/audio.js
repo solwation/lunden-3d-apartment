@@ -292,6 +292,28 @@ export const sfx = {
       },
     };
   },
+  /** A toilet flush (#155): a rushing gurgle that drains away, then the tank refilling (a thin hiss) for `refill` s. */
+  flush(pos, refill = 6) {
+    if (!ready()) return;
+    const t = ctx.currentTime, d = out(pos, 0.9);
+    const rush = ctx.createBufferSource(), fill = ctx.createBufferSource();
+    rush.buffer = fill.buffer = noiseBuf; rush.loop = fill.loop = true;
+    const lp = ctx.createBiquadFilter();
+    lp.type = 'lowpass'; lp.Q.value = 2;
+    lp.frequency.setValueAtTime(1800, t); lp.frequency.exponentialRampToValueAtTime(260, t + 2.4);
+    const g1 = ctx.createGain();
+    g1.gain.setValueAtTime(0, t); g1.gain.linearRampToValueAtTime(0.55, t + 0.15); g1.gain.exponentialRampToValueAtTime(0.001, t + 2.8);
+    rush.connect(lp).connect(g1).connect(d);
+    for (let i = 0; i < 6; i++) tone(t + 1.2 + i * 0.22 + Math.random() * 0.1, 0.12, d, { from: 220 + Math.random() * 120, to: 90, gain: 0.12 }); // gurgles
+    const bp = ctx.createBiquadFilter();
+    bp.type = 'bandpass'; bp.frequency.value = 3200; bp.Q.value = 1.2;
+    const g2 = ctx.createGain();
+    g2.gain.setValueAtTime(0, t + 1.5); g2.gain.linearRampToValueAtTime(0.08, t + 2.2);
+    g2.gain.setValueAtTime(0.08, t + refill - 0.6); g2.gain.linearRampToValueAtTime(0, t + refill);
+    fill.connect(bp).connect(g2).connect(d);
+    rush.start(t, Math.random()); rush.stop(t + 3);
+    fill.start(t + 1.5, Math.random()); fill.stop(t + refill + 0.1);
+  },
   /** Wind through an open window until stop(): looping low noise, gusting slowly (an LFO on the filter and gain). */
   wind(pos) {
     if (!ready()) return null;

@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Toilet test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+// Flushing the toilets (#155): aim at each toilet's flush button, flush (counted in the stats), it can't flush
+// again until the tank has refilled, then it can; the lid still opens and closes with E on the bowl.
+//   google-chrome --headless=new --dump-dom http://localhost:8137/tools/toilettest.html
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const f = document.createElement('iframe');
+f.width = 900; f.height = 600; f.src = '../index.html?time=12&freeze';
+document.body.append(f);
+f.onload = async () => {
+  const w = f.contentWindow, d = f.contentDocument;
+  while (!w.__app) await wait(100);
+  const { player, camera, step, world, stats } = w.__app;
+  const lines = [];
+  const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; };
+  d.getElementById('start-touch').click();
+  await wait(500);
+  const btn = d.getElementById('action');
+  const V = camera.position.constructor;
+  const toilets = world.lids.filter((l) => l.kind === 'lid');
+  let pass = check(toilets.length === 2 && toilets.every((t) => t.flush?.kind === 'flush' && world.lids.includes(t.flush)), `${toilets.length} toilets with a flush button`);
+  const look = (p) => {
+    camera.rotation.y = Math.atan2(-(p.x - camera.position.x), -(p.z - camera.position.z));
+    camera.rotation.x = Math.atan2(p.y - camera.position.y, Math.hypot(p.x - camera.position.x, p.z - camera.position.z)); step(1 / 60);
+    return btn.hidden ? '' : btn.textContent;
+  };
+  for (const t of toilets) {
+    t.object.updateMatrixWorld(true);
+    const base = t.object.getWorldPosition(new V()), out_ = new V(0, 0, 1).applyQuaternion(t.object.quaternion); // the way the bowl points
+    const upstairs = base.y > 1;
+    player.spawn(base.x + out_.x * 1.0, base.z + out_.z * 1.0, 0);
+    if (upstairs) { player.pos.y = base.y; player.eyeY = base.y + 1.62; camera.position.y = player.eyeY; }
+    for (let i = 0; i < 3; i++) step(1 / 60);
+    const where = upstairs ? 'Övre plan' : 'Entréplan';
+    const button = t.flush.button.getWorldPosition(new V());
+    const n0 = stats.flushes ?? 0;
+    const label = look(button);
+    pass &= check(/^spola toaletten$/i.test(label), `${where}: aiming at the button says "${label}"`);
+    btn.click(); step(1 / 60);
+    pass &= check(t.flush.count === 1 && (stats.flushes ?? 0) === n0 + 1 && !t.flush.ready, `${where}: it flushes (counted: ${stats.flushes})`);
+    for (let i = 0; i < 6; i++) step(1 / 60);
+    pass &= check(t.flush.button.position.y < t.flush.buttonY, `${where}: the button is pressed down`);
+    const label2 = look(button);
+    btn.click(); step(1 / 60);
+    pass &= check(t.flush.count === 1 && /cisternen fylls/.test(label2), `${where}: not again before the tank is full ("${label2}")`);
+    for (let i = 0; i < 60 * 7; i++) step(1 / 60);
+    pass &= check(t.flush.ready && t.flush.button.position.y === t.flush.buttonY && Math.abs(t.flush.pool.position.y - t.flush.poolY) < 1e-6, `${where}: refilled, button up, water back`);
+    look(button); btn.click(); step(1 / 60);
+    pass &= check(t.flush.count === 2, `${where}: flushes again once full`);
+    for (let i = 0; i < 60 * 7; i++) step(1 / 60);
+    // the lid: aim at the bowl in front of the tank
+    const bowl = t.object.localToWorld(new V(0, 0.42, 0.42));
+    const lidLabel = look(bowl);
+    btn.click(); for (let i = 0; i < 60; i++) step(1 / 60);
+    const opened = t.isOpen;
+    look(bowl); btn.click(); for (let i = 0; i < 60; i++) step(1 / 60);
+    pass &= check(/toalettlocket/.test(lidLabel) && opened && !t.isOpen, `${where}: the lid still opens and closes ("${lidLabel}")`);
+  }
+  out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
+};
+</script>
+</body>
+</html>

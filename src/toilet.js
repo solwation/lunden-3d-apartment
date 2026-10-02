@@ -1,8 +1,11 @@
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { TOILET as T } from './config.js';
+import { sfx } from './audio.js';
 
-// Floor-standing toilet (Ifö Spira 6260) with a seat and a lid that opens/closes with E.
+// Floor-standing toilet (Ifö Spira 6260) with a seat and a lid that opens/closes with E, and a flush button on
+// the tank (its own E target, `flush`, #155): the button dips, it flushes, and it can't flush again until the
+// tank has refilled (FLUSH.refill s).
 // Local frame: back against the wall at z = 0, bowl towards +z, y up from the floor.
 
 const porcelain = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.12 });
@@ -47,7 +50,8 @@ export class Toilet {
     // tank with flush button
     g.add(at(mesh(new RoundedBoxGeometry(T.width, T.tankHeight - 0.4, T.tankDepth, 3, 0.03), porcelain),
       0, (T.tankHeight + 0.4) / 2, T.tankDepth / 2));
-    g.add(at(mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.01, 20), chrome), 0, T.tankHeight + 0.004, T.tankDepth / 2));
+    const button = at(mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.01, 20), chrome), 0, T.tankHeight + 0.004, T.tankDepth / 2);
+    g.add(button);
     // pedestal (tapering towards the floor) + neck to the tank
     const ped = mesh(new THREE.CylinderGeometry(1, 0.62, seat - 0.05, 32), porcelain);
     ped.scale.set(rx * 0.95, 1, rz * 0.95);
@@ -57,7 +61,8 @@ export class Toilet {
       0, (seat - 0.02) / 2, T.tankDepth + 0.06));
     // rim, water, seat
     g.add(at(flat(rx, rz, 0.03, seat - 0.06, porcelain, 0.72), 0, 0, bowlZ));
-    g.add(at(flat(rx * 0.68, rz * 0.66, 0.002, seat - 0.16, water), 0, 0, bowlZ + 0.02));
+    const pool = at(flat(rx * 0.68, rz * 0.66, 0.002, seat - 0.16, water), 0, 0, bowlZ + 0.02);
+    g.add(pool);
     g.add(at(flat(rx * 0.98, rz * 0.98, 0.016, seat - 0.025, porcelain, 0.66), 0, 0, bowlZ));
     // lid: hinged at the back of the seat
     this.hinge = new THREE.Group();
@@ -72,6 +77,11 @@ export class Toilet {
     // the whole toilet is the pick target (looking at the bowl is enough)
     this.pickable = g;
     g.traverse((o) => { o.userData.door = this; });
+    // the flush button: an invisible box over the top of the tank is its E target (the button itself is small)
+    const pick = at(new THREE.Mesh(new THREE.BoxGeometry(T.width * 0.8, 0.06, T.tankDepth + 0.02), new THREE.MeshBasicMaterial()), 0, T.tankHeight + 0.03, T.tankDepth / 2);
+    pick.visible = false;
+    g.add(pick);
+    this.flush = new Flush(button, pool, pick);
   }
 
   toggle() { this.isOpen = !this.isOpen; }
@@ -81,5 +91,39 @@ export class Toilet {
     this.t += Math.sign(target - this.t) * Math.min(Math.abs(target - this.t), dt * 2.5);
     const e = this.t * this.t * (3 - 2 * this.t);
     this.hinge.rotation.x = -e * THREE.MathUtils.degToRad(93); // rests just short of the tank
+  }
+}
+
+/** Flushing (#155): E on the button. `count` flushes so far; `ready` once the tank is full again. */
+class Flush {
+  constructor(button, pool, pick) {
+    Object.assign(this, { button, pool, pick, kind: 'flush', verb: 'spola', object: pick, pickable: pick, refill: 0, count: 0, t: 1 });
+    this.buttonY = button.position.y;
+    this.poolY = pool.position.y;
+    pick.userData.door = this;
+  }
+
+  get ready() { return this.refill <= 0; }
+  get name() { return this.ready ? 'toaletten' : 'toaletten (cisternen fylls)'; }
+
+  /** Flush if the tank is full; returns whether it did. */
+  toggle() {
+    if (!this.ready) return false;
+    this.refill = T.refill;
+    this.t = 0;
+    this.count++;
+    sfx.flush(this.button.getWorldPosition(new THREE.Vector3()), T.refill);
+    return true;
+  }
+
+  update(dt) {
+    if (this.refill > 0) this.refill = Math.max(0, this.refill - dt);
+    if (this.t >= 1) return;
+    this.t = Math.min(1, this.t + dt / T.refill);
+    const press = this.t * T.refill < 0.35; // the button stays down a moment
+    this.button.position.y = this.buttonY - (press ? 0.004 : 0);
+    // the water drains away and comes back as the tank refills
+    const k = this.t < 0.15 ? this.t / 0.15 : 1 - (this.t - 0.15) / 0.85;
+    this.pool.position.y = this.poolY - 0.03 * Math.max(0, k);
   }
 }

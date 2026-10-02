@@ -549,7 +549,7 @@ function buildLevel(floor, li, group) {
         const ew = t.side === 'west' || t.side === 'east';
         const toilet = new Toilet(t.side, ew ? t.face : tx, ew ? tz : t.face, y0);
         group.add(toilet.object);
-        lids.push(toilet);
+        lids.push(toilet, toilet.flush); // the lid, and the flush button (#155)
         segments.push(...rectSegments(t.tank), ...rectSegments(t.bowl));
         break;
       }
