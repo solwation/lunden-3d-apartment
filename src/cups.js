@@ -202,7 +202,7 @@ export class Cup {
   constructor(scene, camera, homePos, counter, design) {
     const { g, coffee, body, plain, inner } = mugModel();
     Object.assign(this, { name: 'koppen', placeVerb: 'ställa ner', isCup: true, scene, camera, model: g, coffee, counter, home: homePos.clone(), body, plain, inner, slot: null, placedAt: 0,
-      state: 'cabinet', contents: new Contents(), held: false, steamT: 0, heat: 0, coffeeWas: 0, milkWas: 0 });
+      state: 'cabinet', contents: new Contents(), held: false, steamT: 0, heat: 0, coffeeWas: 0, milkWas: 0, grip: [C.r + 0.03, C.h * 0.45, 0] }); // grip: the hand on the handle (#195)
     const cup = this;
     this.target = { get name() { return cup.kask ? 'koppen med kaffekask' : 'koppen'; }, kind: 'cup', pickable: g, cup: this, item: this, get verb() { return cup.verb; },
       get blocked() { return cup.blocked; }, get blockedText() { return cup.blockedText; }, toggle: () => this.press() };
@@ -291,7 +291,7 @@ export class Cup {
     if (!this.camera.parent) this.scene.add(this.camera);
     this.camera.add(this.model);
     this.model.position.set(C.held.x, C.held.y, C.held.z);
-    this.model.rotation.set(0.1, -0.5, 0);
+    this.model.rotation.set(0.1, 0.35, 0); // the handle to the right and a little away: the hand holds it there, behind the mug (#195)
     sfx.click(this.model.getWorldPosition(new THREE.Vector3()));
   }
 
@@ -340,7 +340,7 @@ export class Cup {
       this.sip = Math.max(0, (this.sip ?? 0) - dt * 1.6);
       const k = Math.sin(this.sip * Math.PI);
       this.model.position.set(C.held.x - 0.14 * k, C.held.y + 0.15 * k, C.held.z + 0.16 * k);
-      this.model.rotation.set(0.1 + 0.9 * k, -0.5, 0);
+      this.model.rotation.set(0.1 + 0.9 * k, 0.35, 0);
     }
     if (this.contents.update(dt)) this.show();
     this.updateSteam(dt);

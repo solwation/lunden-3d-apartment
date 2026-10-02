@@ -139,6 +139,9 @@ src/holdable.js        things you take and hold (one at a time): home + pick box
                        use = click / touch button / fast look; E on the home puts it back, E on a table top /
                        worktop / the floor (HOLD.reach) puts it down (`placeAt`, lying by its shape — `restPose`;
                        cups stand). While something is held other things are `blocked` ("Lägg ifrån dig …")
+src/hand.js            the visitor's arm + hand (HAND, #195): two meshes in the camera, hidden when empty; holding a thing
+                       the palm sits at its `grip` (or beside its box) and follows it; E (main.js `use`) reaches towards the
+                       target and back. Note: the detail culler (#189) may still hide a thing taken from afar (tests: reset())
 src/beer.js            the big beer (BEER, #117), a Holdable: served on the lounge table when you sit in the lounge sofa,
                        click / "Drick" drinks a gulp (the level drops), back on the table = full; cups drink too
 src/book.js            the book on the side table by the armchair (BOOK, #140), a Holdable: click / "Läs" opens
@@ -302,7 +305,8 @@ tools/opentest.html    headless test: every Openable front (kitchen + furniture)
                        overlaps a closed neighbour or goes through a wall (#154)
 tools/bestatest.html   headless test: the BESTÅ display cabinet's six doors open/close, its spots (down over the front) and the
                        lit glass section switch with the room (#191)
-tools/holdtest.html    headless test: put things down (coffee table, dining table, floor), one at a time, F → home
+tools/holdtest.html    headless test: put things down (coffee table, dining table, floor), one at a time, F → home;
+                       the hand (#195): hidden when empty, at the saber's grip, a reach out and back
 tools/cuptest.html     headless test: an empty cup out without brewing, onto the worktop, brew, take the jug, pour, jug back,
                        carry the cup to the dining and coffee tables, a cup back into the cabinet; whisky in a cup of
                        coffee (#169): a splash, a warmer colour, never over full, drunk up as kaffekask

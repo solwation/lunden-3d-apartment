@@ -556,6 +556,11 @@ export const SECRET = {
   ],
 };
 
+// The visitor's arm and hand (#195, src/hand.js): colours, and points in camera space (x right, y up, −z ahead):
+// the shoulder the sleeve comes from (out of view), where a reach starts from, how far beyond that it reaches (m) and in
+// how long it goes out and back (s). Our numbers.
+export const HAND = { skin: 0xe2b292, sleeve: 0x4a5a6e, shoulder: [0.3, -0.5, 0.15], rest: [0.2, -0.26, -0.32], reach: 0.4, reachTime: 0.4 };
+
 // The milk carton in the fridge (#168, src/milk.js): 1 l, 7 × 7 × 19.5 cm with a 3 cm gable (a standard carton).
 export const MILK = { w: 0.07, h: 0.195, gable: 0.03, blue: '#2f6fc4', held: { x: 0.2, y: -0.3, z: -0.46 } };
 

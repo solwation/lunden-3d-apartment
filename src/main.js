@@ -35,6 +35,7 @@ import { Turbo } from './turbo.js';
 import { Beer } from './beer.js';
 import { buildThings } from './things.js';
 import { buildSecret } from './secret.js';
+import { Hand } from './hand.js';
 import { Milk } from './milk.js';
 import { buildCups } from './cups.js';
 import { buildFish } from './fishfingers.js';
@@ -250,6 +251,7 @@ for (const t of things) t.onSip = (drink) => { if (drink) bump(drink); }; // a s
 const sillPots = buildSillPots(scene, camera, world.sillPlants); // the pots on the window boards can be lifted (#185)
 const holdables = [saber, ...toys.items, remote, book, beer, ...things, ...sillPots]; // things you can take and hold, one at a time (holdable.js)
 const cups = buildCups(scene, camera, world, world.cupCabinet); // coffee cups in the wall cabinet (#90)
+const hand = new Hand(camera, scene); // the visitor's arm and hand: holding things, reaching for doors (#195)
 holdables.push(cups.jug);
 const fish = buildFish(scene, camera, world); // fish fingers in the freezer, one at a time (#162)
 if (fish) fish.onEaten = () => bump('fish');
@@ -676,6 +678,7 @@ function standUp() {
 /** E / the action button on what you look at: doors toggle, the note opens. */
 function use(thing) {
   shadowState.hold = 1.5; // whatever moves now casts a moving shadow
+  if (!heldItem() && !['rest', 'place', 'note', 'clock', 'calendar', 'board', 'poster', 'paper'].includes(thing.kind) && focusPoint && thing === focused) hand.reach(focusPoint); // the arm reaches out (#195)
   if (thing.kind === 'note') showNote(true);
   else if (thing.kind === 'clock') showClock(true);
   else if (thing.kind === 'calendar') showCalendar(true);
@@ -807,7 +810,7 @@ raycaster.far = 2.2;
 const pickables = [...world.doors.map((d) => d.pickable), ...world.lids.map((l) => l.pickable), ...taps.map((t) => t.pickable), note.pickable, board.pickable, wallClock.pickable, calendar.pickable, ...lights.targets.map((t) => t.pickable), grill.pickable];
 const center = new THREE.Vector2(0, 0);
 const keyCabinet = world.lids.find((l) => l.kind === 'keybox');
-let focused = null;
+let focused = null, focusPoint = null;
 
 /** Is there a wall between the eye and `p` (plan view)? Pickables aren't occluded by walls in the
  * raycast (it only tests pickables), so check the line against the level's wall outlines. */
@@ -840,6 +843,7 @@ function updateFocus() {
   const hit = raycaster.intersectObjects([...pickables, ...extra, ...cupTargets], true)
     .find((h) => shown(h.object) && !(rest.active && (h.object.userData.door === rest.target || h.object.userData.door?.kind === 'rest')));
   focused = hit && !behindWall(hit.point) ? hit.object.userData.door : null;
+  focusPoint = focused ? hit.point.clone() : null; // where the hand reaches on E (#195)
   // holding something: a table top / worktop in front of you, or else the floor (nearer than anything
   // else you look at), is where it goes down (#102)
   const item = heldItem();
@@ -996,6 +1000,7 @@ function step(dt) {
   for (const h of holdables) h.update(dt);
   grill.update(dt);
   smokeAlarm.update(dt, !!chicken?.freeSmoke); // smoke the hood does not draw away (#194)
+  hand.update(dt, heldItem()); // the arm: holding something, or reaching for what E was used on (#195)
   cups.update(dt);
   fish?.update(dt);
   toys.update(dt);
@@ -1197,4 +1202,4 @@ function continueAfterReload(r) {
 if (resumeOk && resumed.mode) continueAfterReload(resumed);
 
 // handle for tests/debugging (tools/touchtest.html)
-window.__app = { totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };
+window.__app = { hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };

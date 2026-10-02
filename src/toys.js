@@ -92,7 +92,7 @@ export class Blaster extends Holdable {
       home: { pos: new THREE.Vector3(x - 0.06, y0 + 0.1 - i * 0.22 + 0.15, zc), rot: new THREE.Euler(0, Math.PI / 2 * 0 + Math.PI, 0) },
       heldPose: { pos: new THREE.Vector3(N.held.x, N.held.y, N.held.z), rot: new THREE.Euler(0.05, 0.04, 0) },
       pick: { pos: new THREE.Vector3(x - 0.07, y0 + 0.1 - i * 0.22 + 0.15, zc), size: [0.14, 0.2, 0.36] },
-      cooldown: 0.35, useLabel: 'Skjut',
+      cooldown: 0.35, useLabel: 'Skjut', grip: [0.025, -0.075, 0.07], // grip: the hand on its pistol grip (#195)
     });
     this.darts = darts;
     this.shoots = true; // fires projectiles

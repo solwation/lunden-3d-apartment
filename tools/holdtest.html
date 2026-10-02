@@ -87,6 +87,23 @@ f.onload = async () => {
   w.__app.toggleFurniture(false);
   pass &= check(!world.furnitureOn && !saber.placed && cup.state !== 'placed' && cups.cups.filter((c) => c.state === 'cabinet').length === 3, 'F: the saber is home, the cup off the floor, three cups in the cabinet (#215)');
   w.__app.toggleFurniture(true);
+  // the hand (#195): hidden with nothing in the hand, holding a thing it sits at its grip and follows it
+  const { hand } = w.__app;
+  step(1 / 60);
+  pass &= check(!heldItem() && !hand.visible, 'empty hand: no arm');
+  saber.take(); step(1 / 60);
+  camera.updateMatrixWorld(); scene.updateMatrixWorld(true);
+  const palm = hand.hand.getWorldPosition(new V()), gripW = saber.model.localToWorld(hand.gripOf(saber).clone());
+  pass &= check(hand.visible && palm.distanceTo(gripW) < 0.08, `holding the saber: the hand at its grip (${palm.distanceTo(gripW).toFixed(3)} m)`);
+  saber.putBack(); step(1 / 60);
+  pass &= check(!hand.visible, 'put back: the arm is gone');
+  // E on a door: the arm reaches out and comes back
+  const door = world.doors.find((d) => d.object.position.y < 1);
+  const dp = door.pickable.getWorldPosition(new V());
+  hand.reach(dp); step(0.15);
+  const out1 = hand.visible, far = hand.hand.getWorldPosition(new V()).distanceTo(camera.position);
+  for (let i = 0; i < 20; i++) step(1 / 30);
+  pass &= check(out1 && far > 0.3 && !hand.visible, `a reach: out (${far.toFixed(2)} m from the eye), then back out of sight`);
   out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
 };
 </script>
