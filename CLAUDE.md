@@ -180,6 +180,8 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   `LANDSKRONA` (config) — the chaise/armchair/footstool numbers are series estimates. In front
   of the sofa: coffee table ILVA Woodstock, oiled oak veneer top, 120 × 60 × 47 cm, with a shelf.
   Under both: a 300 × 200 cm light rug (#55, no collision).
+  Opposite the sofa (the wall with the stair behind it): IKEA BYÅS TV bench 160 × 42 × 45, high-gloss
+  white (#67), east of the living-room door, with the TV on it (#68).
 - Patio (user's wish): Plantagen Hörngrupp Oslo antracit (corner sofa 198 + 186 × 72 × 76, table
   120 × 60 × 40) with its back to the hedge and the east screen wall, a parasol (up Apr–Sep while
   the sun is up), two big planters (palm by the patio door, agave in the SE corner; the banana that blocked the

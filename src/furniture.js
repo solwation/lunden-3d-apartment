@@ -564,6 +564,31 @@ function shoerack(item) {
   return g;
 }
 
+const gloss = new THREE.MeshPhysicalMaterial({ color: 0xf7f7f5, roughness: 0.08, clearcoat: 1, clearcoatRoughness: 0.05 });
+const shelfWhite = new THREE.MeshStandardMaterial({ color: 0xeeeeea, roughness: 0.5 });
+
+/** IKEA BYÅS TV bench: low high-gloss white carcass on a recessed plinth, two doors (left, right) with
+ * hidden grips at the top and an open middle section with a shelf. Faces local +z, back at −z. */
+function byas(item) {
+  const g = new THREE.Group();
+  const { w, d, h } = item, plinth = 0.06, t = 0.018, door = w * 0.33;
+  g.add(rbox(w - 0.06, plinth, d - 0.06, 0, plinth / 2, -0.01, shelfWhite, 0.004));          // recessed plinth
+  g.add(rbox(w, t, d, 0, h - t / 2, 0, gloss, 0.004), rbox(w, t, d, 0, plinth + t / 2, 0, gloss, 0.004)); // top, bottom
+  g.add(rbox(w, h - plinth, t, 0, plinth + (h - plinth) / 2, -d / 2 + t / 2, gloss, 0.003));    // back
+  for (const x of [-w / 2 + t / 2, w / 2 - t / 2, -w / 2 + door, w / 2 - door]) {             // sides + dividers
+    g.add(rbox(t, h - plinth, d - 0.01, x, plinth + (h - plinth) / 2, 0, gloss, 0.003));
+  }
+  g.add(rbox(w - 2 * door - t, t, d - 0.04, 0, plinth + (h - plinth) * 0.5, -0.01, shelfWhite, 0.003)); // middle shelf
+  for (const s of [-1, 1]) { // the doors: gloss fronts, a thin shadow line as the grip at the top
+    const cx = s * (w / 2 - door / 2);
+    g.add(rbox(door - 0.006, h - plinth - 0.03, 0.018, cx, plinth + (h - plinth - 0.03) / 2 + 0.003, d / 2 - 0.009, gloss, 0.003));
+    g.add(rbox(door - 0.08, 0.008, 0.004, cx, h - 0.03, d / 2 + 0.001, new THREE.MeshStandardMaterial({ color: 0x9a9a96, roughness: 0.6 }), 0.001));
+  }
+  g.traverse((m) => { if (m.isMesh) m.castShadow = m.receiveShadow = true; });
+  g.userData.footprint = [{ x0: -w / 2, x1: w / 2, z0: -d / 2, z1: d / 2 }];
+  return g;
+}
+
 /** Woven rug texture: base colour, fine random weave, a thin border band (canvas, no image files). */
 function rugTexture(item) {
   const c = document.createElement('canvas');
@@ -598,7 +623,7 @@ function rug(item) {
   return g;
 }
 
-const BUILDERS = { sofa, armchair, footstool, floorlamp, sidetable, coffeetable, loungesofa, loungetable, parasol, planter, bed, skansnasTable, skansnasChair, bunk, daybed, rug, ragrund, coatrack, shoerack };
+const BUILDERS = { sofa, armchair, footstool, floorlamp, sidetable, coffeetable, loungesofa, loungetable, parasol, planter, bed, skansnasTable, skansnasChair, bunk, daybed, rug, ragrund, coatrack, shoerack, byas };
 
 /** Build all furniture; returns the scene group, collision segments per level and lamps. */
 export function buildFurniture() {
