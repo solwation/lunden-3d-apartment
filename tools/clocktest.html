@@ -48,6 +48,13 @@ f.onload = async () => {
   for (let i = 0; i < 30; i++) step(1 / 60);
   w.__app.touch.analog.y = 0;
   pass &= check(Math.hypot(player.pos.x - before.x, player.pos.z - before.z) < 0.01, 'no walking while the strip is open');
+  // normal pace: one real minute = 24 / DAY.minutes hours (#125: a 60-minute day)
+  {
+    const { DAY } = await import('../src/config.js');
+    const h = day.hour; for (let i = 0; i < 60; i++) step(1);
+    const got = ((day.hour - h) % 24 + 24) % 24;
+    pass &= check(Math.abs(got - 24 / DAY.minutes) < 0.01, `1 min of real time = ${(got * 60).toFixed(1)} game minutes (day = ${DAY.minutes} min)`);
+  }
   // pause
   d.querySelector('[data-act=play]').click();
   let h0 = day.hour;
@@ -58,13 +65,14 @@ f.onload = async () => {
   press('fwd', 'pointerdown');
   for (let i = 0; i < 60; i++) step(1 / 60);
   press('fwd', 'pointerup');
+  const { DAY } = await import('../src/config.js');
   const fwd = day.hour - h0;
-  pass &= check(Math.abs(fwd - 1.5) < 0.05, `spool forward 1 s = +${fwd.toFixed(2)} h`);
+  pass &= check(Math.abs(fwd - DAY.spool) < 0.05, `spool forward 1 s = +${fwd.toFixed(2)} h`);
   h0 = day.hour;
   press('back', 'pointerdown');
   for (let i = 0; i < 120; i++) step(1 / 60);
   press('back', 'pointerup');
-  pass &= check(Math.abs(h0 - day.hour - 3) < 0.05 && day.spool === 0, `spool back 2 s = −${(h0 - day.hour).toFixed(2)} h`);
+  pass &= check(Math.abs(h0 - day.hour - 2 * DAY.spool) < 0.05 && day.spool === 0, `spool back 2 s = −${(h0 - day.hour).toFixed(2)} h`);
   const hands = -wallClock.hourHand.rotation.z / (Math.PI * 2) * 12;
   pass &= check(Math.abs(hands - (day.hour % 12)) < 0.01, 'hands follow the spooled time');
   // months (picked on the calendar since #95): the sun at noon is higher in June than in December

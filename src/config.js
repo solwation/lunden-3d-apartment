@@ -468,7 +468,7 @@ export const HALL_WALL = {
   cabinet: { z: 1.67, y: 1.45, w: 0.169, h: 0.16, d: 0.055 },
 };
 
-// Day cycle (src/daycycle.js): one day in `minutes` real minutes. The sun follows the real solar
+// Day cycle (src/daycycle.js): one day in `minutes` real minutes (60, the user #125). The sun follows the real solar
 // path for the date (declination, hour angle) at Kv. Lunden, Karpvägen / S:t Lars väg in Lund
 // (55.70° N, 13.17° E, docs/tomten-google-maps.jpg). planNorth = compass bearing of the plan's
 // "north" (−z, the entrance façade): FOJAB's north arrow on the situation/overview plans
@@ -477,7 +477,7 @@ export const HALL_WALL = {
 // Every visit starts at `startHour` on the 15th of the visitor's month, unless ?time=HH[.h] /
 // ?month=1–12 is given. The wall clock in the kitchen fast-forwards at `spool` hours per second.
 export const DAY = {
-  minutes: 12, startHour: 7, lat: 55.70, lon: 13.17, planNorth: 58, spool: 1.5,
+  minutes: 60, startHour: 7, lat: 55.70, lon: 13.17, planNorth: 58, spool: 1.5,
   moonlight: 0.35, nightAmbient: 0.05,
 };
 
