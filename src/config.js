@@ -711,7 +711,8 @@ export const FURNITURE = [
   // wall (x 0.202) between the armchair/floor lamp (z < 9.1) and the palm (z > 11.5), 35 cm above the floor (the user:
   // floating; tunable). Section heights, handle colour and the spots' positions are *guesses*.
   { type: 'besta', level: 0, room: 'Vardagsrum', x: 0.202, z: 10.55, y: 0.35, rot: -90, w: 1.2, d: 0.42, h: 1.93,
-    sections: [0.64, 0.65], walnut: 0x6e4b33, handle: 0x1e1e20, spots: [-0.4, 0, 0.4], openDeg: 100 },
+    sections: [0.64, 0.65], walnut: 0x6e4b33, handle: 0x1e1e20, spots: [-0.4, 0, 0.4], openDeg: 100,
+    uplight: { w: 0.55, h: 0.65, opacity: 0.55 } }, // the spots' fan of light on the wall above (#188, a look, not measured)
   // Secretary "Bang" (IKEA, c. 1960, #118, docs/sekretar-bang-*.png; Bukowskis: teak veneer, L 70, D 30, H 106.5 cm) on
   // the east wall between the TV bench (z < 8.22) and the chaise (z > 10.55), opposite the BYÅS end. Leg height, the
   // drawer, the flap's slope, the shelf and the right drawer column's width are *guesses* from the photos.

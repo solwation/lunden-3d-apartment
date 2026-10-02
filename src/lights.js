@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { LEVELS, SOFFITS, LIGHTING as L, DOOR_TRIM, STAIR } from './config.js';
-import { lampMaterials } from './interior.js';
+import { lampMaterials, lampGlows } from './interior.js';
 import { sfx } from './audio.js';
 import { stairHeight } from './stairs.js';
 
@@ -19,6 +19,7 @@ function ceilingAt(level, x, z) {
 
 /** Emissive bits that show a lamp is on: on = warm glow, off = plain white plastic/glass. */
 function setGlow(material, on) {
+  if (material.userData.glow) { material.opacity = on ? material.userData.glow : 0; material.visible = on; return; }
   material.emissive.setHex(on ? 0xfff2dc : 0x000000);
   material.emissiveIntensity = on ? 1.2 : 0;
   material.color.setHex(on ? 0xffffff : 0xe9e9e6);
@@ -194,6 +195,7 @@ export class Lights {
         }
         const spec = L.wetRooms.includes(r.name) ? L.spots : L.ceiling;
         if (own && !R.mats.includes(own)) R.mats.push(own);
+        for (const m of lampGlows.get(key) ?? []) if (!R.mats.includes(m)) R.mats.push(m);
         if (L.pendants.some((p) => p.replaces && p.level === level && p.room === r.name)) continue; // its own pendant instead (#134)
         R.lamps.push({ pos: new THREE.Vector3(r.x, y - 0.25, r.z), ...spec, level });
         if (!L.wetRooms.includes(r.name) && r.name !== 'Tvätt') {

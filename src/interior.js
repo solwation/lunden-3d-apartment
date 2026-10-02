@@ -114,6 +114,14 @@ export function lampMat(level, room) {
   }
   return lampMaterials.get(key);
 }
+/** Extra glow materials (additive, e.g. an uplight on the wall) switched with a room: `userData.glow` = the
+ * opacity when lit (lights.js fades them in by opacity, not emissive). Key as for lampMaterials. */
+export const lampGlows = new Map();
+export function addLampGlow(level, room, material) {
+  const key = `${level}:${room}`;
+  if (!lampGlows.has(key)) lampGlows.set(key, []);
+  lampGlows.get(key).push(material);
+}
 
 // ---------- geometry batching ----------
 

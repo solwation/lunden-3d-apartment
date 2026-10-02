@@ -44,7 +44,12 @@ f.onload = async () => {
   room.toggle();
   let lens = null;
   doors[0].object.parent.traverse((m) => { if (m.isMesh && room.mats.includes(m.material)) lens = m; });
+  let fan = null;
+  doors[0].object.parent.traverse((m) => { if (m.isMesh && m.material.userData.glow) fan = m; });
   pass &= check(!!lens && room.on && lens.material.emissiveIntensity > 0.5, `the spots glow with the room's light (${lens?.material.emissiveIntensity})`);
+  pass &= check(!!fan && room.mats.includes(fan.material) && fan.material.visible && fan.material.opacity > 0.3, `the uplight on the wall is lit (${fan?.material.opacity})`);
+  room.toggle();
+  pass &= check(!room.on && lens.material.emissiveIntensity < 1e-3 && !fan.material.visible, `off with the switch (${lens.material.emissiveIntensity}, uplight ${fan.material.visible})`);
   out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
 };
 </script>

@@ -6,7 +6,7 @@ import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.j
 import { FURNITURE, LANDSKRONA as L, LEVELS, SKANSNAS, IDANAS } from './config.js';
 import { loungesofa, loungetable, parasol, planter } from './patio.js';
 import { Screen } from './screens.js';
-import { lampMat } from './interior.js';
+import { lampMat, addLampGlow } from './interior.js';
 import { Openable } from './openables.js';
 
 // Loose furniture, built from rounded boxes. Every piece is modelled in a local frame
@@ -1778,6 +1778,24 @@ function winerack(item) {
  * the top and the bottom and a glass door between; glass shelves, fine glasses and whisky bottles behind the
  * glass; spots on top lit by the room's switch (its lamp material, no lights of its own). Every door opens on
  * its own with E (`userData.targets`). Local: the wall at z 0, the front at z = depth, bottom at y 0. */
+// a soft fan of light, brightest at the bottom centre (where the spot sits), for an additive plane
+let uplightTex = null;
+function uplightTexture() {
+  if (uplightTex) return uplightTex;
+  const c = document.createElement('canvas'); c.width = 128; c.height = 256;
+  const g = c.getContext('2d'), img = g.createImageData(128, 256);
+  for (let y = 0; y < 256; y++) for (let x = 0; x < 128; x++) {
+    const v = 1 - y / 255, u = (x - 63.5) / 63.5; // v: 0 at the bottom (the spot), 1 at the top
+    const spread = 0.18 + 0.8 * Math.pow(v, 0.7); // the fan widens upwards
+    const across = Math.max(0, 1 - Math.pow(Math.abs(u) / Math.max(0.12, spread), 2));
+    const a = across * Math.pow(1 - v, 1.4) * Math.min(1, v * 12); // fades upwards, soft start at the spot
+    const k = (y * 128 + x) * 4; img.data[k] = img.data[k + 1] = img.data[k + 2] = 255 * a; img.data[k + 3] = 255;
+  }
+  g.putImageData(img, 0, 0);
+  uplightTex = new THREE.CanvasTexture(c); uplightTex.colorSpace = THREE.SRGBColorSpace;
+  return uplightTex;
+}
+
 function besta(item) {
   const g = new THREE.Group();
   const B = item, W = B.w, D = B.d, H = B.h, col = W / 2, t = 0.016;
@@ -1824,16 +1842,25 @@ function besta(item) {
   [-0.17, -0.05, 0.08].forEach((dx, i) => bottle(-col / 2 + dx, y1, zc, i));
   [-0.17, -0.05, 0.08].forEach((dx, i) => bottle(col / 2 + dx, yShelf + 0.003, zc, i + 3));
   [-0.15, -0.07, 0.01, 0.09].forEach((dx, i) => glassAt(i % 2 ? tumbler : wine, col / 2 + dx, y1, zc + (i % 2 ? 0.05 : -0.04)));
-  // the spots on top (the room's lamp material: lit with the room's switch)
+  // the spots on top (the room's lamp material: lit with the room's switch, #188): a black can tilted towards
+  // the wall, its lens and a thin ring round its rim glow, and an additive uplight fans out on the wall above
   const lens = lampMat(item.level, item.room);
   const black = new THREE.MeshStandardMaterial({ color: 0x1b1b1d, roughness: 0.45 });
+  const up = new THREE.MeshBasicMaterial({ color: 0xffe9c8, map: uplightTexture(), transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false });
+  up.userData.glow = B.uplight.opacity;
+  addLampGlow(item.level, item.room, up);
   for (const x of B.spots) {
-    const can = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.07, 14), black);
-    can.rotation.x = -0.5; can.position.set(x, H + 0.045, D - 0.08); g.add(can);
-    const glow = new THREE.Mesh(new THREE.CircleGeometry(0.024, 14), lens);
-    glow.rotation.x = Math.PI / 2 - 0.5; glow.position.set(x, H + 0.045 + Math.cos(0.5) * 0.0355 - 0.07, D - 0.08 + Math.sin(0.5) * 0.0355);
-    glow.position.set(x, H + 0.045 + 0.0355 * Math.sin(-0.5 + Math.PI / 2) * 0 + 0.031, D - 0.08 - 0.017); // the lens on the can's upper end, aimed up at the wall
-    g.add(glow);
+    const head = new THREE.Group();
+    head.rotation.x = -0.5; head.position.set(x, H + 0.045, D - 0.08); g.add(head);
+    const can = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.07, 14), black); can.castShadow = true; head.add(can);
+    const glow = new THREE.Mesh(new THREE.CircleGeometry(0.026, 14), lens);
+    glow.rotation.x = -Math.PI / 2; glow.position.y = 0.0352; head.add(glow);
+    const rim = new THREE.Mesh(new THREE.CylinderGeometry(0.031, 0.031, 0.01, 14, 1, true), lens);
+    rim.position.y = 0.03; head.add(rim);
+    const fan = new THREE.Mesh(new THREE.PlaneGeometry(B.uplight.w, B.uplight.h), up);
+    fan.position.set(x, H + 0.04 + B.uplight.h / 2, 0.004); // on the wall, just in front of it
+    fan.raycast = () => {}; fan.renderOrder = 2;
+    g.add(fan);
   }
   // the doors: six of them, the left column hinged on the left, the right on the right
   const targets = [], doors = [];
