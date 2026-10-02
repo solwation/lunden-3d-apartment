@@ -117,6 +117,10 @@ export const SITE = {
     // the second pergola, sandbox and odlingslådor sit there; the green between A and B is outside it)
     box: [{ x0: -80, x1: 18, z0: 12.7, z1: 30.2 }, { x0: -80, x1: -43, z0: 30.2, z1: 51 }],
     garageDoor: { x: -80, z0: 42, z1: 47.5, h: 2.6 }, // the arrow "GARAGE" by Karpvägen, z ≈ 44
+    // the courtyard's edge behind our row (#148, Peab's render: Å-hus with a cyclist below): a brick retaining
+    // wall with a light slatted railing, a straight stair with a landing from the courtyard (y 0) down to the
+    // park level, and a paved cycle path along the foot of the wall. Position read off the situation plan (guess).
+    stairs: { x0: 12.4, x1: 14.0, z: 30.2, step: 0.3, landing: 1.0 }, cyclePath: { x0: 9.6, x1: 22, z0: 37.2, z1: 39.8 },
   },
   bay: 3.0, storey: 3.0,  // façade texture of the other blocks: one window per 3 × 3 m
   // corner loggias on the Å-husen (#145; the overview plans docs/peab/oversikt-vaning-*.png draw the corners notched,
