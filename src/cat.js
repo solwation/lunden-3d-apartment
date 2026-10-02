@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { LEVELS, CAT_FISH } from './config.js';
+import { LEVELS, CAT_FISH, CAT_LEAVE } from './config.js';
 import { stairHeight } from './stairs.js';
 import { sfx } from './audio.js';
 
@@ -61,11 +61,13 @@ export function pickCat(rand = Math.random) {
 /** Name for the statistics: "svartvit" for a huskatt, otherwise "maine coon (grå)". */
 export const catLabel = (breed, coat) => (breed.name === 'huskatt' ? coat.name : `${breed.name} (${coat.name})`);
 
-const fur = () => new THREE.MeshStandardMaterial({ roughness: 0.8 });
+const fur = () => new THREE.MeshStandardMaterial({ roughness: 0.8, transparent: true });
 const ROLE = { coat: fur(), bib: fur(), paw: fur(), face: fur(), blaze: fur(), ear: fur(), tail: fur(), tip: fur() };
-const pink = new THREE.MeshStandardMaterial({ color: 0xd99a9a, roughness: 0.6 });
-const eyeMat = new THREE.MeshStandardMaterial({ color: 0x9bbf3a, roughness: 0.3, emissiveIntensity: 0.25 });
-const pupilMat = new THREE.MeshStandardMaterial({ color: 0x050505, roughness: 0.2 });
+const pink = new THREE.MeshStandardMaterial({ color: 0xd99a9a, roughness: 0.6, transparent: true });
+const eyeMat = new THREE.MeshStandardMaterial({ color: 0x9bbf3a, roughness: 0.3, emissiveIntensity: 0.25, transparent: true });
+const pupilMat = new THREE.MeshStandardMaterial({ color: 0x050505, roughness: 0.2, transparent: true });
+/** The cat's own materials (not the visitor's hand): faded out as it leaves (#206). */
+const catMats = () => [...Object.values(ROLE), pink, eyeMat, pupilMat];
 const skin = new THREE.MeshStandardMaterial({ color: 0xe8b996, roughness: 0.7 });
 
 const PET_TIME = 4.5; // seconds of purring per pat
@@ -321,7 +323,11 @@ export class CatSpawner {
     this.door = null;
     this.stopPetting();
     this.dropFish();
+    this.leaving = null;
+    this.setOpacity(1);
   }
+
+  setOpacity(a) { for (const m of catMats()) m.opacity = a; }
 
   get petting() { return this.petT > 0; }
 
@@ -330,8 +336,10 @@ export class CatSpawner {
     if (!this.visible) return;
     const p = this.object.position;
     this.dropFish(); // petting beats a fish finger
+    if (this.leaving) { this.leaving = null; this.setOpacity(1); this.object.position.y = this.leaveY ?? this.object.position.y; } // petted again on its way: it stays
     if (!this.petting) {
       this.petPhase = 0;
+      this.photoTaken = false;
       this.onPet?.();
       sfx.purr({ x: p.x, y: p.y + 0.3, z: p.z }, PET_TIME, this.variant.pitch * (this.breed.pitch ?? 1), this.voice);
     }
@@ -359,6 +367,8 @@ export class CatSpawner {
     }
     this.stopPetting();
     this.dropFish();
+    this.leaving = null;
+    this.setOpacity(1);
     this.nextMeow = 0.4 + this.rand() * 0.8;
     this.object.position.set(spot.x, spot.y, spot.z);
     this.object.rotation.y = spot.yaw;
@@ -414,6 +424,7 @@ export class CatSpawner {
       this.updatePetting(dt);
       return;
     }
+    if (this.leaving) { this.updateLeaving(dt); return; } // after a pat it walks off and is gone (#206)
     if (this.updateFish(dt)) return; // after a fish finger on the floor (#163)
     // meow when found, then now and then
     this.nextMeow -= dt;
@@ -437,6 +448,50 @@ export class CatSpawner {
     const idle = 1 - up;
     this.head.rotation.y += idle * 0.35 * Math.sin(this.t * 0.7);
     this.tailGroup.rotation.y = 0.08 * Math.sin(this.t * 2.3) * idle;
+  }
+
+  // --- walking off after a pat (#206) -------------------------------------------------------------------------
+  /** Pick a way out: away from the visitor, the longest clear straight walk (up to CAT_LEAVE.dist) among a fan of directions. */
+  leave() {
+    const o = this.object, p = o.position, f = this.petFrom ?? { x: p.x, z: p.z - 1 };
+    const away = Math.atan2(p.x - f.x, p.z - f.z), segs = this.obstacles();
+    let best = null;
+    for (const off of [0, 0.5, -0.5, 1.0, -1.0, 1.5, -1.5, 2.2, -2.2]) {
+      const yaw = away + off;
+      let d = 0;
+      for (let s = 0.25; s <= CAT_LEAVE.dist; s += 0.25) {
+        const x = p.x + Math.sin(yaw) * s, z = p.z + Math.cos(yaw) * s;
+        if (stairHeight(x, z) !== null || segs.some((sg) => distToSeg(x, z, sg) < 0.16) || segs.some((sg) => segIntersect(p.x, p.z, x, z, sg))) break;
+        d = s;
+      }
+      if (!best || d > best.d + 0.3) best = { yaw, d };
+    }
+    this.leaveY = p.y;
+    this.leaving = { t: 0, yaw: best.yaw, d: best.d, gone: 0, from: o.rotation.y };
+    this.shoulder.rotation.set(0, 0, 0);
+  }
+
+  updateLeaving(dt) {
+    const L = this.leaving, o = this.object;
+    L.t += dt;
+    // turn round (0.5 s), then walk off; fade out over the last CAT_LEAVE.fade s of the walk (or in place if boxed in)
+    const turn = Math.min(1, L.t / 0.5);
+    let dy = L.yaw - L.from; dy = Math.atan2(Math.sin(dy), Math.cos(dy));
+    o.rotation.y = L.from + dy * turn * turn * (3 - 2 * turn);
+    if (turn >= 1) {
+      const go = Math.min(CAT_LEAVE.speed * dt, Math.max(0, L.d - L.gone));
+      o.position.x += Math.sin(L.yaw) * go; o.position.z += Math.cos(L.yaw) * go;
+      L.gone += go;
+      const g = Math.sin(L.t * 9);
+      this.shoulder.rotation.set(0.45 * g, 0, 0);
+      this.leftShoulder.rotation.set(-0.45 * g, 0, 0);
+      this.head.rotation.set(0.1, 0, 0);
+      this.tailGroup.rotation.y = 0.3 * Math.sin(L.t * 4.5);
+    }
+    const walkTime = L.d / CAT_LEAVE.speed + 0.5, fadeFrom = Math.max(0.5, walkTime - CAT_LEAVE.fade);
+    const a = 1 - THREE.MathUtils.clamp((L.t - fadeFrom) / CAT_LEAVE.fade, 0, 1);
+    this.setOpacity(a);
+    if (a <= 0) { this.hide(); this.onLeft?.(); }
   }
 
   // --- a fish finger on the floor (#163) ---------------------------------------------------------------
@@ -557,6 +612,7 @@ export class CatSpawner {
   updatePetting(dt) {
     this.petT -= dt;
     this.petPhase += dt;
+    if (!this.photoTaken && this.petPhase >= 0.7) { this.photoTaken = true; this.onPhoto?.(); } // eyes shut, the hand there: a photo (game time, it walks off afterwards, #206)
     const k = Math.min(1, this.petPhase / 0.4) * Math.min(1, this.petT / 0.4); // ease in/out
     const closed = this.petPhase > 0.3 && this.petT > 0.2;
     for (const e of this.eyes) { e.eye.visible = !closed; e.shut.visible = closed; }
@@ -574,7 +630,7 @@ export class CatSpawner {
     this.hand.position.set(0.02 * rub, 0.42 - 0.07 * s, 0.07 - 0.17 * s);
     this.hand.rotation.set(0.25 - 0.35 * s, Math.PI, 0);
     if (this.breed.rare) this.updateStars(k);
-    if (this.petT <= 0) this.stopPetting();
+    if (this.petT <= 0) { this.stopPetting(); this.leave(); }
   }
 
   /** Stars rise in a slow spiral around the cat and fade, faded in/out with the pat (`k`). */

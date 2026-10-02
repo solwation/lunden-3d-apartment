@@ -359,13 +359,10 @@ const boardLoaded = board.load();
 // cat photos sync silently with the Cloudflare Worker (cloud.js)
 const cloud = new Cloud({ posters, drawing, holding: () => heldItem() === heldDrawing });
 cloud.ready = cloud.on ? Promise.all([postersLoaded, boardLoaded]).then(() => cloud.sync()) : Promise.resolve(); // (tests wait on it)
-cat.onPet = () => {
-  bump('petted');
-  setTimeout(() => {
-    if (!cat.visible) return;
-    const head = cat.head.getWorldPosition(new THREE.Vector3());
-    board.add(cat.catName, snapshot(renderer, scene, camera, head));
-  }, 700);
+cat.onPet = () => bump('petted');
+cat.onPhoto = () => { // 0.7 s into the pat (cat.js), before it walks off (#206)
+  const head = cat.head.getWorldPosition(new THREE.Vector3());
+  board.add(cat.catName, snapshot(renderer, scene, camera, head));
 };
 
 /** Open/close a door (with sound); the cat may turn up (or leave) behind doors you open. */

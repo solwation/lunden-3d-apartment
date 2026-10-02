@@ -484,6 +484,9 @@ export const FISH = { n: 15, len: 0.09, w: 0.025, h: 0.016, bites: 3, box: { w: 
 // wall or door in between, i.e. the same room) catches its eye; it looks for `notice` s, walks there at `speed` m/s,
 // stops `stop` m short (its head over it) and eats it in `eat` s. Taken away first: it looks after it for `look` s.
 export const CAT_FISH = { reach: 4, notice: 1.2, speed: 0.55, stop: 0.17, eat: 3, look: 2.5 };
+// After a pat the cat walks off (#206, cat.js `leave`): up to `dist` m away from the visitor along the clearest straight line,
+// at `speed` m/s, fading out over the last `fade` s, then it is gone.
+export const CAT_LEAVE = { dist: 3, speed: 0.6, fade: 1.2 };
 
 export const CUPS = { n: 3, r: 0.04, h: 0.09, color: 0xf3f1ec, coffee: 0x2a1408, pour: 0.25, counter: { x: 5.2, z: 1.68 },
   sip: 0.2, held: { x: 0.18, y: -0.2, z: -0.4 }, jugHeld: { x: 0.22, y: -0.26, z: -0.55 } }; // jugHeld: the jug in the view (#141)

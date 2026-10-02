@@ -251,7 +251,7 @@ tools/roomtest.html    headless test of room detection at known points (+ a pict
 tools/measuretest.html headless test of the tape measure (wall to wall in the living room)
 tools/watertest.html   headless test: aim at every tap/shower, turn it on and off
 tools/lighttest.html   headless test: aim at every light switch / floor lamp, toggle it
-tools/pettest.html     headless test of petting the cat (eyes, hand, stats counter)
+tools/pettest.html     headless test of petting the cat (eyes, hand, stats counter, the photo; then it walks off and is gone)
 tools/notetest.html    headless test of the changelog note ("Nytt", read/close, no walking, swings with the freezer door)
 tools/patiotest.html   headless test of the patio seasons (parasol, beers, snowman) + sofa collision
 tools/keytest.html     headless test of the hall key cabinet: open, car key reachable only then, beep; the car comes, parks, leaves
@@ -542,6 +542,10 @@ screenshots into the session scratchpad, not the repo.
   the stair = Hall); `ROOM_DIVIDERS` split open-plan areas (hall | kitchen | passage | living room).
 - Every new cat gets a name (`CAT_NAMES`); petting it puts a photo on the kitchen board 0.7 s in
   (`CAT_BOARD` in config: under the wall clock on the Tvätt/Badrum wall, kitchen face).
+- After a pat (#206, `CAT_LEAVE`, `leave`/`updateLeaving` in cat.js) the cat turns, walks off away from the visitor along
+  the clearest straight line (walls, doors, furniture) and fades out (its materials are transparent at opacity 1 all
+  the time: no recompile); petted again on the way, it stays. The board photo is taken 0.7 s of game time into the pat
+  (`cat.onPhoto`).
 - Fish fingers (#163, `CAT_FISH`, `updateFish` in cat.js): a visible cat scans `cat.fishSource()` (the fish fingers
   lying out) for one on its own floor within `reach` with a straight, wall- and door-free path (= the same room),
   turns its head and meows, walks there (front legs on shoulder pivots swing), eats it (head down, it shrinks,
