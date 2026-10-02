@@ -491,6 +491,55 @@ function ragrund(item) {
   return g;
 }
 
+const blackMetal = new THREE.MeshStandardMaterial({ color: 0x1e1f21, roughness: 0.5, metalness: 0.4 });
+const coatColors = [0x2f4a63, 0x8a8f86, 0x6b3a2e, 0x2b2b2b];
+
+/** Wall coat rack: a hat shelf at 1.75 m on brackets, hooks below with a few jackets and a cap. */
+function coatrack(item) {
+  const g = new THREE.Group();
+  const w = item.w, y = 1.75, back = -0.13; // local −z = the wall
+  g.add(rbox(w, 0.025, 0.26, 0, y, back + 0.13, whiteWood, 0.005));            // shelf
+  g.add(rbox(w, 0.08, 0.02, 0, y - 0.08, back + 0.01, whiteWood, 0.004));      // hook rail
+  for (const x of [-w / 2 + 0.06, w / 2 - 0.06]) g.add(rbox(0.02, 0.14, 0.2, x, y - 0.08, back + 0.11, whiteWood, 0.004));
+  const hooks = 5;
+  for (let i = 0; i < hooks; i++) {
+    const x = -w / 2 + 0.08 + (i * (w - 0.16)) / (hooks - 1);
+    g.add(rbox(0.015, 0.015, 0.06, x, y - 0.1, back + 0.05, blackMetal, 0.004));
+    if (i % 2 === 0 || i === 3) { // jackets on some hooks: shoulders + body, hanging from the hook
+      const m = new THREE.MeshStandardMaterial({ color: coatColors[i % coatColors.length], roughness: 0.95 });
+      g.add(rbox(0.3, 0.75, 0.1, x, y - 0.5, back + 0.08, m, 0.04));
+      g.add(rbox(0.22, 0.08, 0.11, x, y - 0.14, back + 0.08, m, 0.03));
+    }
+  }
+  // a cap on the shelf and a folded scarf
+  const cap = new THREE.Mesh(new THREE.SphereGeometry(0.09, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2),
+    new THREE.MeshStandardMaterial({ color: 0x9c3b2c, roughness: 0.9 }));
+  cap.position.set(-w * 0.2, y + 0.013, back + 0.14);
+  g.add(cap, rbox(0.2, 0.04, 0.16, w * 0.22, y + 0.033, back + 0.14, new THREE.MeshStandardMaterial({ color: 0xd8c27a, roughness: 1 }), 0.015));
+  g.traverse((m) => { if (m.isMesh) m.castShadow = true; });
+  g.userData.footprint = [{ x0: -w / 2, x1: w / 2, z0: back, z1: back + 0.18 }]; // the jackets
+  return g;
+}
+
+/** Two-tier black wire shoe rack (local −z = the wall) with a few pairs of shoes. */
+function shoerack(item) {
+  const g = new THREE.Group();
+  const w = item.w, d = 0.28, z = -0.15 + d / 2;
+  for (const y of [0.06, 0.26]) for (let k = 0; k < 4; k++) g.add(rbox(w, 0.01, 0.01, 0, y, z - d / 2 + 0.03 + k * ((d - 0.06) / 3), blackMetal, 0.003));
+  for (const x of [-w / 2, w / 2]) for (const zz of [z - d / 2 + 0.01, z + d / 2 - 0.01]) g.add(rbox(0.012, 0.32, 0.012, x, 0.16, zz, blackMetal, 0.003));
+  const shoeCols = [0x1c1c1c, 0xe9e6df, 0x7a4b2e, 0x3d5a7a, 0xc0392b];
+  const shoe = (x, y, col) => {
+    const m = new THREE.MeshStandardMaterial({ color: col, roughness: 0.7 });
+    for (const dx of [-0.055, 0.055]) {
+      g.add(rbox(0.09, 0.07, 0.26, x + dx, y + 0.04, z, m, 0.03));
+      g.add(rbox(0.095, 0.015, 0.27, x + dx, y + 0.012, z, new THREE.MeshStandardMaterial({ color: 0xf2f0ea, roughness: 0.8 }), 0.006));
+    }
+  };
+  [[-0.22, 0.27, 0], [0.04, 0.27, 1], [-0.12, 0.07, 2], [0.18, 0.07, 3], [0.22, 0.27, 4]].forEach(([x, y, c]) => shoe(x * (w / 0.74), y, shoeCols[c]));
+  g.userData.footprint = [{ x0: -w / 2, x1: w / 2, z0: -0.15, z1: -0.15 + d }];
+  return g;
+}
+
 /** Woven rug texture: base colour, fine random weave, a thin border band (canvas, no image files). */
 function rugTexture(item) {
   const c = document.createElement('canvas');
@@ -525,7 +574,7 @@ function rug(item) {
   return g;
 }
 
-const BUILDERS = { sofa, armchair, footstool, floorlamp, sidetable, coffeetable, loungesofa, loungetable, parasol, planter, bed, skansnasTable, skansnasChair, bunk, daybed, rug, ragrund };
+const BUILDERS = { sofa, armchair, footstool, floorlamp, sidetable, coffeetable, loungesofa, loungetable, parasol, planter, bed, skansnasTable, skansnasChair, bunk, daybed, rug, ragrund, coatrack, shoerack };
 
 /** Build all furniture; returns the scene group, collision segments per level and lamps. */
 export function buildFurniture() {

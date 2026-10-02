@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import {
   LEVELS, SOFFITS, DOOR_HEIGHT, DOOR_TRIM, EXT_DOOR_HEAD, WINDOWS, CABINET_HEIGHT, BASE_CABINET, SHELF_HEIGHT, TOILET,
-  STAIR, COLORS, FENCE_HEIGHT, SITE, OUTDOOR, FINISH, OPTIONS, EXTRA_WALLS, ROOM_RENAMES, EXTRA_ROOMS, ROOM_DIVIDERS,
+  STAIR, COLORS, FENCE_HEIGHT, SITE, OUTDOOR, CABINET_FIXES, FINISH, OPTIONS, EXTRA_WALLS, ROOM_RENAMES, EXTRA_ROOMS, ROOM_DIVIDERS,
 } from './config.js';
 import { buildStairs } from './stairs.js';
 import { SwingDoor, SlidingDoor, wardrobeDoors } from './doors.js';
@@ -505,6 +505,13 @@ export function buildWorld(plan) {
   mirrorLamps.length = 0; // filled by buildInterior
   const scene = new THREE.Group();
   const [lower, upper] = plan.floors;
+  // plan corrections for fixed cabinets (CABINET_FIXES): the hall's EL cabinet is smaller than drawn
+  plan.floors.forEach((f, li) => {
+    for (const fix of CABINET_FIXES.filter((x) => x.level === li)) {
+      const c = f.cabinets.find((k) => k.label === fix.label);
+      if (c) Object.assign(c, { ...fix, level: undefined });
+    }
+  });
   const W = lower.size.x, D = lower.size.z;
 
   const l0 = buildLevel(lower, 0, scene);

@@ -178,6 +178,13 @@ export const BUILDING = {
 };
 
 // Fixed cabinet heights by plan label (fallback: kitchen base cabinet).
+// Fixed cabinets corrected against the plan text (#49): the extractor merged the hall's "EL/C" cabinet
+// with the coat rack "KL" beside it into one 1.18 m unit; the user confirms the EL cabinet is small and
+// there is room for a coat rack and a shoe rack. Matched by level + label; fields replace the plan's.
+export const CABINET_FIXES = [
+  { level: 0, label: 'EL', z1: 0.465 + 0.4 },
+];
+
 export const CABINET_HEIGHT = {
   EL: 2.1, G: 2.1, L: 2.1, 'U/M': 2.1, K: 2.1, F: 2.1,
   TT: 0.85, TM: 0.85, DM: 0.9,
@@ -448,6 +455,11 @@ export const FURNITURE = [
   // Soffbord ILVA Woodstock, top i oljebehandlad ekfaner (art. 1055729): 120 × 60 × 47 cm, legs in
   // oiled solid oak, a fixed shelf below (ilva.dk product page). Centred on the three seats
   // (x 2.68–4.60), 40 cm in front of the sofa (front at z 11.26).
+  // Hall, right as you come in, between the EL cabinet and the wardrobes (#49, "KL" on the plan; sizes
+  // are our pick): a wall coat rack with a hat shelf and hooks (jackets, a cap) above a two-tier
+  // black shoe rack with a few pairs on it
+  { type: 'coatrack', level: 0, x: 0.2 + 0.14, z: 1.255, rot: -90, w: 0.74 },
+  { type: 'shoerack', level: 0, x: 0.2 + 0.16, z: 1.255, rot: -90, w: 0.74 },
   { type: 'coffeetable', level: 0, x: 3.64, z: 11.26 - 0.4 - 0.3, w: 1.2, d: 0.6, h: 0.47 },
   // big rug under the sofa's front legs and the coffee table (#55): 300 × 200 × 1.2 cm (size and
   // colours are our pick), light oatmeal with a soft weave and a thin border; no collision

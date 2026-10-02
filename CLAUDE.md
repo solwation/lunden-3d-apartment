@@ -202,6 +202,9 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   the window (#60) · Sovrum 3 (second right) Livia & Tuva, bunk (unicorn sheets) ·
   Sovrum 2 (first left) Walter & Kian, bunk (Darth Vader sheets) · Sovrum 4 (second left, ex Allrum) Tilly, IKEA HEMNES
   daybed with pink cushions. Bunks: long side to the side wall, head end to the façade. Name signs: `DOOR_SIGNS` → `src/signs.js` (hall side of the door).
+- Hall (#49): the plan's "EL" cabinet is really the small EL/C (40 cm, `CABINET_FIXES`) plus the coat
+  rack "KL" beside it, which the extractor merged; on that wall (right as you come in) a coat rack with
+  jackets and a shoe rack (FURNITURE `coatrack`/`shoerack`). The mirror + key cabinet are on the left.
 - Dining set (user's choice, #62/#57): IKEA SKANSNÄS table and 4 chairs, brown beech (`SKANSNAS`, one
   colour for both): the table round Ø 115 (its normal size; 170 extended is not modelled), close to the
   kitchen window; 2 + 2 chairs on the west/east sides between the legs, pushed in under the top. The
