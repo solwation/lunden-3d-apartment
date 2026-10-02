@@ -137,7 +137,7 @@ export class KeyCabinet {
   }
 }
 
-/** Mirrors (IKEA LINDBYN, black, in the living room since #205; Rusta Staffan in the hall, #218) + the key cabinet. */
+/** Mirrors (IKEA LINDBYN, black, in the living room since #205; IKEA NISSEDAL in the hall, #226) + the key cabinet. */
 export function buildHallWall() {
   const group = new THREE.Group();
   const m = H.mirror;
@@ -150,7 +150,7 @@ export function buildHallWall() {
   mirror.position.set(m.x, m.y, m.z); // on the living-room wall behind the armchair (#205), local +z out of the wall
   mirror.rotation.y = m.rotY;
   addReflector(disc, new THREE.CircleGeometry(m.d / 2 - m.frame, 64), { level: 0 }); // mirror image (#50)
-  // Rusta "Staffan" in the hall (#218): upright glass in a flat black frame, local +z out of the wall
+  // IKEA NISSEDAL in the hall (#226; Rusta "Staffan" before, #218): upright glass in a flat black frame, local +z out of the wall
   const T = H.tall, tall = new THREE.Group(), gw = T.w - 2 * T.frame, gh = T.h - 2 * T.frame;
   const glass = mesh(new THREE.PlaneGeometry(gw, gh), mirrorMaterial, 0, 0, T.depth - 0.002);
   tall.add(glass);

@@ -803,9 +803,10 @@ export const WALL_SHELVES = {
 export const HALL_WALL = {
   x: 2.057, rotY: -Math.PI / 2,
   mirror: { x: 1.177, z: 7.804, rotY: 0, y: 1.5, d: 1.1, frame: 0.018, depth: 0.03 },
-  // where LINDBYN hung before #205, the hall wall on the left as you come in: Rusta "Staffan" 34 × 110 cm, a slim flat
-  // black frame (~2 cm, guess), hung upright and centred on the wall, bottom ~0.6 m / top ~1.7 m up (#218, guess)
-  tall: { x: 2.057, z: 1.115, rotY: -Math.PI / 2, y: 1.15, w: 0.34, h: 1.1, frame: 0.02, depth: 0.02 },
+  // where LINDBYN hung before #205, the hall wall on the left as you come in: IKEA NISSEDAL black 40 × 150 cm (#226,
+  // replacing Rusta "Staffan", #218), a flat black frame ~2.5 cm wide and ~3 cm deep (guess), hung upright and centred
+  // on the wall, bottom ~0.4 m / top ~1.9 m up (guess: a full-length mirror)
+  tall: { x: 2.057, z: 1.115, rotY: -Math.PI / 2, y: 1.15, w: 0.4, h: 1.5, frame: 0.025, depth: 0.03 },
   cabinet: { x: 1.935, z: 0.478, y: 1.5, rotY: 0, w: 0.169, h: 0.16, d: 0.055 },
 };
 
