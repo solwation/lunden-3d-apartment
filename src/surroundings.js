@@ -319,56 +319,46 @@ function facadeTexture() {
 function railTexture() {
   const c = document.createElement('canvas'); c.width = 128; c.height = 64;
   const g = c.getContext('2d');
-  g.fillStyle = '#e3e5e4';
-  for (let x = 2; x < 128; x += 8) g.fillRect(x, 6, 4, 58);
-  g.fillRect(0, 0, 128, 7); g.fillRect(0, 58, 128, 6);
+  g.fillStyle = '#b9bdbd';
+  for (let x = 1; x < 128; x += 16) g.fillRect(x, 6, 7, 58);
+  g.fillRect(0, 0, 128, 9); g.fillRect(0, 57, 128, 7);
   const t = new THREE.CanvasTexture(c); t.wrapS = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace;
   return t;
 }
 
-/** Balconies on the modern blocks (#108): instanced slabs, railings (front + sides), white niche fields, plants. */
-function balconies(blocks) {
-  const B = S.balconies, list = [];
+/** A modern block cut at its four corners (#145): two crossing boxes, each with the façade UVs of block(). */
+function notchedBlock(b) {
+  const d = S.loggia.d;
+  return [block({ ...b, x0: b.x0 + d, x1: b.x1 - d }), block({ ...b, z0: b.z0 + d, z1: b.z1 - d })];
+}
+
+/** The corner loggias (#145): slabs, rendered inner walls, brick piers (façade texture), railings, a few plants. */
+function loggias(blocks) {
+  const L = S.loggia, d = L.d, p = L.pier, slabs = [], walls = [], piers = [], rails = [], plants = [];
+  const rand = rng(43);
   for (const b of blocks) {
-    const faces = [
-      { along: 'x', c: b.z0, a0: b.x0, a1: b.x1, n: [0, -1] }, { along: 'x', c: b.z1, a0: b.x0, a1: b.x1, n: [0, 1] },
-      { along: 'z', c: b.x0, a0: b.z0, a1: b.z1, n: [-1, 0] }, { along: 'z', c: b.x1, a0: b.z0, a1: b.z1, n: [1, 0] },
-    ];
-    for (const f of faces) {
-      for (let k = Math.ceil(f.a0 / S.bay - 0.5); (k + 0.5) * S.bay < f.a1; k++) {
-        if (((k % B.every) + B.every) % B.every !== 1) continue;
-        const a = (k + 0.5) * S.bay;
-        if (a - B.width / 2 - 0.6 < f.a0 || a + B.width / 2 + 0.6 > f.a1) continue;
-        const [x, z] = f.along === 'x' ? [a, f.c] : [f.c, a];
-        for (let st = 1; st < b.storeys; st++) {
-          const y = b.base + st * S.storey;
-          if (y < groundY(x + f.n[0] * 2, z + f.n[1] * 2) + 1.5) continue; // the ground floor has its patio
-          list.push({ x, y, z, yaw: Math.atan2(f.n[0], f.n[1]) });
+    const top = b.base + b.storeys * S.storey;
+    for (const [cx, cz, sx, sz] of [[b.x0, b.z0, 1, 1], [b.x1, b.z0, -1, 1], [b.x1, b.z1, -1, -1], [b.x0, b.z1, 1, -1]]) {
+      // (cx, cz) = the outer corner; (sx, sz) point into the block
+      const ix = cx + sx * d, iz = cz + sz * d, mx = (cx + ix) / 2, mz = (cz + iz) / 2;
+      piers.push(block({ x0: Math.min(cx, cx + sx * p), x1: Math.max(cx, cx + sx * p), z0: Math.min(cz, cz + sz * p), z1: Math.max(cz, cz + sz * p), base: b.base, storeys: b.storeys }));
+      walls.push(new THREE.PlaneGeometry(d, top - b.base).rotateY(sz > 0 ? 0 : Math.PI).translate(mx, (b.base + top) / 2, iz - sz * 0.01)); // the inner wall facing out along z
+      walls.push(new THREE.PlaneGeometry(d, top - b.base).rotateY(sx > 0 ? -Math.PI / 2 : Math.PI / 2).translate(ix - sx * 0.01, (b.base + top) / 2, mz)); // … along x
+      for (let st = 0; st <= b.storeys; st++) {
+        const y = b.base + st * S.storey;
+        if (st > 0) slabs.push(new THREE.BoxGeometry(d, 0.22, d).translate(mx, y - 0.11, mz)); // floor above / ceiling below
+        if (st === b.storeys || y < groundY(cx, cz) + 1.2) continue; // no railing on the roof or at the ground
+        rails.push(new THREE.PlaneGeometry(d - p, L.rail).translate(cx + sx * (p + (d - p) / 2), y + L.rail / 2, cz + sz * 0.06).scale(1, 1, 1)); // along x, in the z façade line
+        rails.push(new THREE.PlaneGeometry(d - p, L.rail).rotateY(Math.PI / 2).translate(cx + sx * 0.06, y + L.rail / 2, cz + sz * (p + (d - p) / 2))); // along z
+        if (rand() < L.plants) {
+          const px = cx + sx * (d - 0.45), pz = cz + sz * (p + 0.4);
+          plants.push(new THREE.CylinderGeometry(0.17, 0.13, 0.38, 8).translate(px, y + 0.19, pz), new THREE.IcosahedronGeometry(0.34, 0).translate(px, y + 0.62, pz));
         }
       }
     }
   }
-  const { width: w, depth: d, rail: h } = B;
-  const slab = new THREE.BoxGeometry(w, 0.18, d).translate(0, -0.09, d / 2);
-  const rails = [new THREE.PlaneGeometry(w, h).translate(0, h / 2, d - 0.02)];
-  for (const sx of [-1, 1]) rails.push(new THREE.PlaneGeometry(d - 0.04, h).rotateY(Math.PI / 2).translate(sx * (w / 2 - 0.02), h / 2, d / 2));
-  rails.forEach((g, i) => { const uv = g.attributes.uv; for (let j = 0; j < uv.count; j++) uv.setX(j, uv.getX(j) * (i ? d : w) / 0.5); }); // a slat every 6 cm
-  const niche = new THREE.PlaneGeometry(w, S.storey - 0.25).translate(0, (S.storey - 0.25) / 2, 0.03);
-  const rand = rng(41), withPlant = list.filter(() => rand() < B.plants);
-  const plant = mergeGeometries([new THREE.CylinderGeometry(0.16, 0.12, 0.35, 8).translate(w / 2 - 0.35, 0.175, d - 0.3), new THREE.IcosahedronGeometry(0.32, 0).translate(w / 2 - 0.35, 0.6, d - 0.3)].map((g) => (g.index ? g.toNonIndexed() : g)));
-  const inst = (geo, mat, items, shadow = true) => {
-    const m = new THREE.InstancedMesh(geo, mat, items.length), M = new THREE.Matrix4(), q = new THREE.Quaternion(), up = new THREE.Vector3(0, 1, 0), one = new THREE.Vector3(1, 1, 1);
-    items.forEach((p, i) => m.setMatrixAt(i, M.compose(new THREE.Vector3(p.x, p.y, p.z), q.setFromAxisAngle(up, p.yaw), one)));
-    m.castShadow = shadow; m.receiveShadow = true;
-    return m;
-  };
-  const white = new THREE.MeshStandardMaterial({ color: 0xf0efeb, roughness: 0.8 });
-  return [
-    inst(slab, white, list),
-    inst(mergeGeometries(rails), new THREE.MeshStandardMaterial({ map: railTexture(), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.6 }), list),
-    inst(niche, white, list, false),
-    inst(plant, new THREE.MeshStandardMaterial({ color: 0x4f7d3a, roughness: 0.9, flatShading: true }), withPlant),
-  ];
+  for (const g of rails) { const uv = g.attributes.uv; for (let j = 0; j < uv.count; j++) uv.setX(j, uv.getX(j) * (d - p) / 1.0); } // a slat every 12 cm
+  return { slabs, walls, piers, rails, plants };
 }
 
 /** The lowest ground under a block's footprint (sampled every 2 m). */
@@ -576,6 +566,7 @@ export function buildWindowLights() {
         const a = (k + 0.5) * bay;
         if (a - 0.7 < f.a0 || a + 0.7 > f.a1) continue;
         const [px, pz] = f.along === 'x' ? [a, f.c] : [f.c, a];
+        if (!b.style && (a - f.a0 < S.loggia.d + 0.3 || f.a1 - a < S.loggia.d + 0.3)) continue; // a corner loggia there (#145)
         if (b.style === 'school' && S.blocks.some((o) => o !== b && o.style === 'school' && px > o.x0 && px < o.x1 && pz > o.z0 && pz < o.z1)) continue; // inside a pavilion
         for (const { y, s } of rows) {
           if (y < groundY(f.along === 'x' ? a : f.c, f.along === 'x' ? f.c : a) + 0.8) continue; // below the ground
@@ -671,9 +662,14 @@ export function buildSurroundings({ grass }) {
     m.receiveShadow = true;
     group.add(m);
   };
-  mesh(modern.map(block), new THREE.MeshStandardMaterial({ map: facadeTexture(), roughness: 0.95 }));
+  const lg = loggias(modern); // corner loggias (#145)
+  mesh([...modern.flatMap(notchedBlock), ...lg.piers], new THREE.MeshStandardMaterial({ map: facadeTexture(), roughness: 0.95 }));
+  const white = new THREE.MeshStandardMaterial({ color: 0xf0efeb, roughness: 0.85, side: THREE.DoubleSide });
+  mesh([...lg.slabs.map((g) => g.toNonIndexed()), ...lg.walls.map((g) => g.toNonIndexed())].map((g) => { g.deleteAttribute('uv'); return g; }), white);
+  const railMesh = new THREE.Mesh(mergeGeometries(lg.rails.map((g) => g.toNonIndexed())), new THREE.MeshStandardMaterial({ map: railTexture(), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.6 }));
+  group.add(railMesh);
+  if (lg.plants.length) mesh(lg.plants.map((g) => { g = g.index ? g.toNonIndexed() : g; g.deleteAttribute('uv'); return g; }), new THREE.MeshStandardMaterial({ color: 0x4f7d3a, roughness: 0.9, flatShading: true }));
   mesh(modern.map(roof), new THREE.MeshStandardMaterial({ color: 0x51575c, roughness: 0.85, side: THREE.DoubleSide }), SEASON.snow.roof);
-  group.add(...balconies(modern)); // balconies with slatted railings (#108)
   // white details (#109): a light fascia band under the low roofs, grey downpipes at the corners and every ~12 m
   mesh(modern.map((b) => {
     const h = b.base + b.storeys * S.storey, o = 0.32;
