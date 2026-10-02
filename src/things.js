@@ -130,5 +130,48 @@ export class Glass extends Thing {
   }
 }
 
-/** Every bottle and glass furniture.js offers (world.things). */
-export const buildThings = (scene, camera, list) => list.map((t) => new (t.kind === 'glass' ? Glass : Bottle)(scene, camera, t));
+/**
+ * A small thing in the secretary (#182): the toy car, the crayons, the letter … in its drawers, the owl and the
+ * cactus on top. Its home is in its drawer's own frame, so at home it slides in and out with the drawer; put
+ * down somewhere else it stays there when the drawer closes. It goes back only while its drawer is open.
+ */
+export class Trinket extends Holdable {
+  constructor(scene, camera, { model, name, homeParent, drawer, back }) {
+    model.updateWorldMatrix(true, true);
+    const local = { pos: model.position.clone(), rot: model.rotation.clone() };
+    const box = new THREE.Box3().setFromObject(model, true), size = box.getSize(new THREE.Vector3());
+    const big = size.y > 0.08; // the owl, the cactus
+    super(scene, camera, {
+      name, kind: 'trinket', verb: 'ta', backName: back, backVerb: drawer ? `lägga tillbaka ${name} i` : `ställa tillbaka ${name} på`, placeVerb: big ? 'ställa ner' : 'lägga ner',
+      model, homeParent, local, drawer, home: { pos: new THREE.Vector3(), rot: new THREE.Euler() },
+      heldPose: big ? { pos: new THREE.Vector3(0.18, -0.26, -0.45), rot: new THREE.Euler(0.1, -0.4, 0) } : { pos: new THREE.Vector3(0.14, -0.16, -0.34), rot: new THREE.Euler(0.6, -0.3, 0) },
+      pick: { pos: new THREE.Vector3(), size: [Math.max(size.x, 0.04) + 0.03, size.y + 0.03, Math.max(size.z, 0.04) + 0.03] }, cooldown: 0.3,
+    });
+    // the "put it back" box lives in the drawer (it rides along) and only counts while the drawer is open
+    const pick = this.backTarget.pickable;
+    homeParent.add(pick);
+    pick.position.copy(local.pos).y += size.y / 2;
+    const ray = pick.raycast.bind(pick); // its drawer is a recursive pick target: the box only counts while this is held
+    pick.raycast = (r, hits) => { if (this.held) ray(r, hits); };
+    Object.defineProperties(this.backTarget, {
+      blocked: { get: () => !!drawer && !drawer.isOpen, configurable: true },
+      blockedText: { get: () => 'Öppna lådan först', configurable: true },
+    });
+    this.rest = { q: new THREE.Quaternion(), lift: 0 }; // its origin is its bottom centre: down as it lies in the drawer
+  }
+
+  /** Home: in its drawer (or on the secretary), in that frame. */
+  goHome() {
+    this.placed = false;
+    this.homeParent.add(this.model);
+    this.model.position.copy(this.local.pos);
+    this.model.rotation.copy(this.local.rot);
+  }
+
+  onTake() { sfx.click(this.where()); }
+  onPut() { sfx.click(this.where()); }
+}
+
+const KINDS = { glass: Glass, trinket: Trinket };
+/** Every bottle, glass and secretary trinket furniture.js offers (world.things). */
+export const buildThings = (scene, camera, list) => list.map((t) => new (KINDS[t.kind] ?? Bottle)(scene, camera, t));

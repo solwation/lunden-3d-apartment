@@ -1664,24 +1664,45 @@ function keepInside(obj, item, yaw) {
 }
 
 
-/** Small things in the secretary's drawers (#118), each a few merged-later meshes in group `g` around (0, 0, 0). */
+/** Small things in the secretary's drawers (#118), each builds its meshes into group `g` around (0, 0, 0). Every one
+ * can be taken out (#182): `name` is how the prompt calls it. */
 const TRINKETS = {
-  clips(g, M) { for (let i = 0; i < 4; i++) { const c = new THREE.Mesh(new THREE.TorusGeometry(0.008, 0.0012, 4, 12), M.steel); c.scale.set(1, 2, 1); c.rotation.x = -Math.PI / 2; c.rotation.z = i * 0.7; c.position.set(-0.05 + i * 0.022, 0.003, -0.01 + (i % 2) * 0.02); g.add(c); }
-    ['#d33', '#36c', '#3a3', '#f0a020'].forEach((col, i) => { const st = new THREE.Mesh(new THREE.BoxGeometry(0.022, 0.001, 0.026), new THREE.MeshStandardMaterial({ color: col, roughness: 0.8 })); st.position.set(0.03 + (i % 2) * 0.026, 0.002 + i * 0.001, -0.02 + Math.floor(i / 2) * 0.03); st.rotation.y = i * 0.3; g.add(st); }); },
-  buttons(g, M) { [0xd33, 0x36c, 0xfc3, 0x3a3, 0xfff, 0x222, 0xe6a].forEach((col, i) => { const b = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.003, 10), new THREE.MeshStandardMaterial({ color: col, roughness: 0.4 })); b.position.set(-0.06 + (i % 4) * 0.025, 0.002, -0.015 + Math.floor(i / 4) * 0.025); g.add(b); });
-    const k = new THREE.Group(); k.add(new THREE.Mesh(new THREE.TorusGeometry(0.008, 0.002, 6, 12), M.brass)); const sh = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.003, 0.004), M.brass); sh.position.x = 0.022; k.add(sh); const bit = new THREE.Mesh(new THREE.BoxGeometry(0.005, 0.003, 0.008), M.brass); bit.position.set(0.033, 0, 0.005); k.add(bit); k.rotation.x = -Math.PI / 2; k.position.set(0.05, 0.003, 0.01); g.add(k); },
-  crayons(g) { ['#e33', '#f90', '#fd2', '#4b4', '#38f', '#a5d'].forEach((col, i) => { const c = new THREE.Mesh(new THREE.CylinderGeometry(0.004, 0.004, 0.07, 8), new THREE.MeshStandardMaterial({ color: col, roughness: 0.6 })); c.rotation.z = Math.PI / 2; c.rotation.y = 0.1 * i; c.position.set(-0.02, 0.005, -0.03 + i * 0.011); g.add(c); });
-    ['#f4a', '#fd2', '#6cf'].forEach((col, i) => { const sw = new THREE.Mesh(new THREE.SphereGeometry(0.008, 10, 8), new THREE.MeshStandardMaterial({ color: col, roughness: 0.25 })); sw.position.set(0.055, 0.008, -0.02 + i * 0.02); g.add(sw); }); },
-  crystal(g) { const c = new THREE.Mesh(new THREE.OctahedronGeometry(0.018), new THREE.MeshStandardMaterial({ color: 0xb98cff, emissive: 0x5a2aa0, emissiveIntensity: 0.4, roughness: 0.1, flatShading: true })); c.scale.y = 1.6; c.position.y = 0.028; g.add(c); },
-  letter(g) { const l = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.002, 0.055), new THREE.MeshStandardMaterial({ color: 0xf6f1e4, roughness: 0.9 })); l.position.y = 0.002; g.add(l); const seal = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.002, 12), new THREE.MeshStandardMaterial({ color: 0xa31818, roughness: 0.5 })); seal.position.set(0, 0.004, 0); g.add(seal); },
-  plane(g) { const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.Float32BufferAttribute([0, 0.012, -0.05, -0.03, 0.004, 0.04, 0, 0.004, 0.04, 0, 0.012, -0.05, 0, 0.004, 0.04, 0.03, 0.004, 0.04, 0, 0.012, -0.05, 0, 0.004, 0.04, 0, -0.008, 0.035], 3)); geo.computeVertexNormals(); g.add(new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.9, side: THREE.DoubleSide }))); },
-  star(g, M) { const sh = new THREE.Shape(); for (let i = 0; i < 10; i++) { const r = i % 2 ? 0.007 : 0.016, a = (i / 10) * Math.PI * 2 - Math.PI / 2; i ? sh.lineTo(Math.cos(a) * r, Math.sin(a) * r) : sh.moveTo(Math.cos(a) * r, Math.sin(a) * r); }
-    const st = new THREE.Mesh(new THREE.ExtrudeGeometry(sh, { depth: 0.003, bevelEnabled: false }), M.gold); st.rotation.x = -Math.PI / 2; st.position.y = 0.002; g.add(st); },
-  car(g) { const red = new THREE.MeshStandardMaterial({ color: 0xd8262a, roughness: 0.35, metalness: 0.3 }), blk = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.6 });
+  clips: { name: 'gemen', build(g, M) { for (let i = 0; i < 4; i++) { const c = new THREE.Mesh(new THREE.TorusGeometry(0.008, 0.0012, 4, 12), M.steel); c.scale.set(1, 2, 1); c.rotation.x = -Math.PI / 2; c.rotation.z = i * 0.7; c.position.set(-0.05 + i * 0.022, 0.003, -0.01 + (i % 2) * 0.02); g.add(c); } } },
+  stickers: { name: 'klistermärkena', build(g) { ['#d33', '#36c', '#3a3', '#f0a020'].forEach((col, i) => { const st = new THREE.Mesh(new THREE.BoxGeometry(0.022, 0.001, 0.026), new THREE.MeshStandardMaterial({ color: col, roughness: 0.8 })); st.position.set(0.03 + (i % 2) * 0.026, 0.002 + i * 0.001, -0.02 + Math.floor(i / 2) * 0.03); st.rotation.y = i * 0.3; g.add(st); }); } },
+  buttons: { name: 'knapparna', build(g) { [0xd33, 0x36c, 0xfc3, 0x3a3, 0xfff, 0x222, 0xe6a].forEach((col, i) => { const b = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.003, 10), new THREE.MeshStandardMaterial({ color: col, roughness: 0.4 })); b.position.set(-0.06 + (i % 4) * 0.025, 0.002, -0.015 + Math.floor(i / 4) * 0.025); g.add(b); }); } },
+  key: { name: 'nyckeln', build(g, M) { const k = new THREE.Group(); k.add(new THREE.Mesh(new THREE.TorusGeometry(0.008, 0.002, 6, 12), M.brass)); const sh = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.003, 0.004), M.brass); sh.position.x = 0.022; k.add(sh); const bit = new THREE.Mesh(new THREE.BoxGeometry(0.005, 0.003, 0.008), M.brass); bit.position.set(0.033, 0, 0.005); k.add(bit); k.rotation.x = -Math.PI / 2; k.position.set(0.05, 0.003, 0.01); g.add(k); } },
+  crayons: { name: 'kritorna', build(g) { ['#e33', '#f90', '#fd2', '#4b4', '#38f', '#a5d'].forEach((col, i) => { const c = new THREE.Mesh(new THREE.CylinderGeometry(0.004, 0.004, 0.07, 8), new THREE.MeshStandardMaterial({ color: col, roughness: 0.6 })); c.rotation.z = Math.PI / 2; c.rotation.y = 0.1 * i; c.position.set(-0.02, 0.005, -0.03 + i * 0.011); g.add(c); }); } },
+  candy: { name: 'godiset', build(g) { ['#f4a', '#fd2', '#6cf'].forEach((col, i) => { const sw = new THREE.Mesh(new THREE.SphereGeometry(0.008, 10, 8), new THREE.MeshStandardMaterial({ color: col, roughness: 0.25 })); sw.position.set(0.055, 0.008, -0.02 + i * 0.02); g.add(sw); }); } },
+  crystal: { name: 'kristallen', build(g) { const c = new THREE.Mesh(new THREE.OctahedronGeometry(0.018), new THREE.MeshStandardMaterial({ color: 0xb98cff, emissive: 0x5a2aa0, emissiveIntensity: 0.4, roughness: 0.1, flatShading: true })); c.scale.y = 1.6; c.position.y = 0.028; g.add(c); } },
+  letter: { name: 'brevet', build(g) { const l = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.002, 0.055), new THREE.MeshStandardMaterial({ color: 0xf6f1e4, roughness: 0.9 })); l.position.y = 0.002; g.add(l); const seal = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.002, 12), new THREE.MeshStandardMaterial({ color: 0xa31818, roughness: 0.5 })); seal.position.set(0, 0.004, 0); g.add(seal); } },
+  plane: { name: 'pappersflygplanet', build(g) { const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.Float32BufferAttribute([0, 0.012, -0.05, -0.03, 0.004, 0.04, 0, 0.004, 0.04, 0, 0.012, -0.05, 0, 0.004, 0.04, 0.03, 0.004, 0.04, 0, 0.012, -0.05, 0, 0.004, 0.04, 0, -0.008, 0.035], 3)); geo.computeVertexNormals(); g.add(new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.9, side: THREE.DoubleSide }))); } },
+  star: { name: 'guldstjärnan', build(g, M) { const sh = new THREE.Shape(); for (let i = 0; i < 10; i++) { const r = i % 2 ? 0.007 : 0.016, a = (i / 10) * Math.PI * 2 - Math.PI / 2; i ? sh.lineTo(Math.cos(a) * r, Math.sin(a) * r) : sh.moveTo(Math.cos(a) * r, Math.sin(a) * r); }
+    const st = new THREE.Mesh(new THREE.ExtrudeGeometry(sh, { depth: 0.003, bevelEnabled: false }), M.gold); st.rotation.x = -Math.PI / 2; st.position.y = 0.002; g.add(st); } },
+  car: { name: 'leksaksbilen', build(g) { const red = new THREE.MeshStandardMaterial({ color: 0xd8262a, roughness: 0.35, metalness: 0.3 }), blk = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.6 });
     const b = new THREE.Mesh(new THREE.BoxGeometry(0.075, 0.018, 0.034), red); b.position.y = 0.015; g.add(b); const c = new THREE.Mesh(new THREE.BoxGeometry(0.038, 0.014, 0.03), red); c.position.set(-0.005, 0.03, 0); g.add(c);
-    for (const [x, z] of [[-0.024, -0.018], [0.024, -0.018], [-0.024, 0.018], [0.024, 0.018]]) { const w = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.006, 10), blk); w.rotation.x = Math.PI / 2; w.position.set(x, 0.008, z); g.add(w); }
-    ['#f6c', '#5cf', '#fe5'].forEach((col, i) => { const p = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.002, 0.045), new THREE.MeshStandardMaterial({ color: col, roughness: 0.9 })); p.position.set(0.09, 0.002 + i * 0.002, 0); p.rotation.y = i * 0.25; g.add(p); }); }, // and a stack of craft paper
+    for (const [x, z] of [[-0.024, -0.018], [0.024, -0.018], [-0.024, 0.018], [0.024, 0.018]]) { const w = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.006, 10), blk); w.rotation.x = Math.PI / 2; w.position.set(x, 0.008, z); g.add(w); } } },
+  papers: { name: 'pappren', build(g) { ['#f6c', '#5cf', '#fe5'].forEach((col, i) => { const p = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.002, 0.045), new THREE.MeshStandardMaterial({ color: col, roughness: 0.9 })); p.position.set(0.09, 0.002 + i * 0.002, 0); p.rotation.y = i * 0.25; g.add(p); }); } }, // a stack of craft paper
 };
+
+/**
+ * Build trinket `key` into a group of its own with its origin at its bottom centre (merged: one mesh per
+ * material), placed where it was drawn in `parent` (a drawer or the secretary). Listed in `things` so things.js
+ * makes it a Holdable whose home rides with the drawer (#182).
+ */
+function trinket(key, parent, M, things, drawer, back, build = TRINKETS[key].build, name = TRINKETS[key].name) {
+  const raw = new THREE.Group();
+  build(raw, M);
+  raw.updateMatrixWorld(true);
+  const box = new THREE.Box3().setFromObject(raw), c = box.getCenter(new THREE.Vector3());
+  const tg = new THREE.Group();
+  raw.position.sub(new THREE.Vector3(c.x, box.min.y, c.z)); tg.add(raw); // (its own turn stays in raw)
+  mergeStatic(tg, []);
+  tg.traverse((m) => { if (m.isMesh) m.castShadow = true; });
+  tg.position.set(c.x, box.min.y, c.z);
+  parent.add(tg);
+  things.push({ model: tg, kind: 'trinket', name, homeParent: parent, drawer, back });
+  return tg;
+}
 
 /** The secretary "Bang" (IKEA, c. 1960, #118): teak veneer on black hairpin legs with X braces and a wire shelf;
  * a drawer under a sloping flap that folds down into a desk. Behind the flap: an open section with a shelf,
@@ -1731,7 +1752,8 @@ function secretary(item) {
   g.add(bulb);
 
   const targets = [], moving = [];
-  const drawer = (name, w, h, d, x, y, zBack, front, trinket, out = 0.75 * d) => {
+  const things = []; // what is in the drawers and on top can be taken out (#182)
+  const drawer = (name, w, h, d, x, y, zBack, front, trinkets = [], out = 0.75 * d) => {
     // a drawer box whose front is at zBack + d; slides out along +z; its contents ride along
     const o = new THREE.Group();
     o.position.set(x, y, zBack);
@@ -1741,7 +1763,6 @@ function secretary(item) {
     box(o, w - 0.004, h - 0.004, 0.012, 0, h / 2, d + 0.006, front);
     const knob = new THREE.Mesh(new THREE.SphereGeometry(Math.min(0.008, h * 0.12), 10, 8), black);
     knob.position.set(0, h / 2, d + 0.016); o.add(knob);
-    if (trinket) { const tg = new THREE.Group(); tg.position.set(0, 0.006, d / 2); TRINKETS[trinket](tg, M); o.add(tg); }
     const target = {
       name, kind: 'appliance', isOpen: false, t: 0, object: o, pickable: o,
       toggle() { this.isOpen = !this.isOpen; sfx.slide(o.getWorldPosition(new THREE.Vector3()), { dur: 0.22 }); },
@@ -1752,11 +1773,14 @@ function secretary(item) {
       },
     };
     o.traverse((m) => { m.userData.door = target; });
+    // its things: drawn around the middle of its floor, each a Holdable of its own (things.js)
+    const inside = new THREE.Group(); inside.position.set(0, 0.006, d / 2); o.add(inside);
+    for (const key of trinkets) trinket(key, inside, M, things, target, name);
     g.add(o); targets.push(target); moving.push(o);
     return target;
   };
   // the big drawer under the flap, with the key in its lock
-  const big = drawer('lådan', W - 0.04, S.drawerH - 0.01, D - 0.04, 0, y0 + 0.018, 0.01, teak, 'car');
+  const big = drawer('lådan', W - 0.04, S.drawerH - 0.01, D - 0.04, 0, y0 + 0.018, 0.01, teak, ['car', 'papers']);
   const key = new THREE.Group();
   key.add(new THREE.Mesh(new THREE.TorusGeometry(0.01, 0.0025, 6, 14), M.brass));
   const shank = new THREE.Mesh(new THREE.CylinderGeometry(0.002, 0.002, 0.03, 6), M.brass); shank.rotation.x = Math.PI / 2; shank.position.z = -0.015; key.add(shank);
@@ -1766,10 +1790,10 @@ function secretary(item) {
   big.object.children.find((m) => m.geometry?.type === 'SphereGeometry').visible = false; // the key is its handle
   // inside: three drawers in the right column, three tiny ones under the shelf, the secret one behind it
   const rw = S.rightW - 0.006, rh = (yT - yF - 0.01) / 3, rd = topD - 0.03;
-  ['clips', 'buttons', 'crayons'].forEach((tr, i) => drawer('den lilla lådan', rw, rh - 0.004, rd, xR + 0.006 + rw / 2, yF + 0.002 + i * rh, 0.012, teak, tr));
+  [['clips', 'stickers'], ['buttons', 'key'], ['crayons', 'candy']].forEach((tr, i) => drawer('den lilla lådan', rw, rh - 0.004, rd, xR + 0.006 + rw / 2, yF + 0.002 + i * rh, 0.012, teak, tr));
   const lw = xR - (-W / 2 + 0.018), tw = (lw - 0.012) / 3;
-  ['crystal', 'letter', 'plane'].forEach((tr, i) => drawer('den pyttelilla lådan', tw - 0.004, S.shelf - 0.012, 0.13, -W / 2 + 0.018 + 0.006 + tw / 2 + i * tw, yF + 0.002, 0.012, teak, tr, 0.1));
-  drawer('den hemliga lådan', 0.12, 0.04, 0.09, -W / 2 + 0.018 + lw / 2, shelfY + 0.006, 0.013, teakIn, 'star', 0.07);
+  [['crystal'], ['letter'], ['plane']].forEach((tr, i) => drawer('den pyttelilla lådan', tw - 0.004, S.shelf - 0.012, 0.13, -W / 2 + 0.018 + 0.006 + tw / 2 + i * tw, yF + 0.002, 0.012, teak, tr, 0.1));
+  drawer('den hemliga lådan', 0.12, 0.04, 0.09, -W / 2 + 0.018 + lw / 2, shelfY + 0.006, 0.013, teakIn, ['star'], 0.07);
   // the flap: hinged at its bottom edge, closed it leans back with the sides; open it is a desk
   const flapL = (yT - yF) / Math.cos(slope);
   const pivot = new THREE.Group();
@@ -1803,7 +1827,7 @@ function secretary(item) {
   g.add(pivot); targets.push(flap); moving.push(pivot);
   // on top: a little stone owl and a cactus in a terracotta pot
   const stone = new THREE.MeshStandardMaterial({ color: 0xb7afa2, roughness: 0.9, flatShading: true });
-  const owl = new THREE.Group();
+  trinket('owl', g, M, things, null, 'sekretären', (owl) => {
   const body = new THREE.Mesh(new THREE.SphereGeometry(0.045, 8, 6), stone); body.scale.set(1, 1.25, 0.9); body.position.y = 0.055; owl.add(body);
   const head = new THREE.Mesh(new THREE.SphereGeometry(0.038, 8, 6), stone); head.scale.set(1.1, 0.9, 0.9); head.position.y = 0.125; owl.add(head);
   for (const sx of [-1, 1]) {
@@ -1813,9 +1837,9 @@ function secretary(item) {
   }
   const beak = new THREE.Mesh(new THREE.ConeGeometry(0.006, 0.016, 5), stone); beak.rotation.x = Math.PI; beak.position.set(0, 0.113, 0.036); owl.add(beak);
   owl.position.set(-W / 2 + 0.13, yT + 0.02, topD / 2 + 0.01); owl.rotation.y = 0.25;
-  g.add(owl);
+  }, 'ugglan');
   const terracotta = new THREE.MeshStandardMaterial({ color: 0xb8643e, roughness: 0.85 });
-  const cactus = new THREE.Group();
+  trinket('cactus', g, M, things, null, 'sekretären', (cactus) => {
   const pot = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.032, 0.06, 14), terracotta); pot.position.y = 0.03; cactus.add(pot);
   const cg = new THREE.CylinderGeometry(0.028, 0.03, 0.08, 12, 4);
   const cp = cg.attributes.position;
@@ -1826,10 +1850,11 @@ function secretary(item) {
   const dome = new THREE.Mesh(new THREE.SphereGeometry(0.029, 12, 6, 0, Math.PI * 2, 0, Math.PI / 2), green); dome.position.y = 0.14; cactus.add(dome);
   const flower = new THREE.Mesh(new THREE.SphereGeometry(0.009, 8, 6), new THREE.MeshStandardMaterial({ color: 0xff5fa2, roughness: 0.5 })); flower.scale.y = 0.6; flower.position.set(0.006, 0.168, 0.004); cactus.add(flower);
   cactus.position.set(W / 2 - 0.11, yT + 0.02, topD / 2);
-  g.add(cactus);
+  }, 'kaktusen');
   g.traverse((m) => { if (m.isMesh) m.castShadow = true; });
   g.userData.targets = targets;
-  g.userData.keep = moving;
+  g.userData.keep = [...moving, ...things.map((t) => t.model)];
+  g.userData.things = things;
   g.userData.footprint = [{ x0: -W / 2 - 0.02, x1: W / 2 + 0.02, z0: 0, z1: D + 0.03 }];
   return g;
 }

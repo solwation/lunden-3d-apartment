@@ -130,6 +130,9 @@ src/things.js          bottles and glasses (#152): furniture builders list `user
                        pours; Glass (#167): with something that pours in the hand (`drink` + `pour(secs)`), E on a glass
                        standing out pours (DRINKS.pour.glass); click / "Drick" sips; back in the BESTÅ = empty; a full
                        vessel's target has `blockedText` ("Vinglaset är fullt") instead of "Lägg ifrån dig …"
+                       Trinket (#182): the secretary's things (`trinket()` in furniture.js, origin at the bottom centre, merged
+                       per material); home = a local spot in its drawer (`homeParent`), so it rides along; its back box sits
+                       in the drawer, raycasts only while held and is blocked ("Öppna lådan först") while the drawer is shut
 src/drinks.js          what a glass / cup holds (DRINKS, #166): `Contents` (amounts per drink, pour over a second, sip in
                        proportion, mixed colour weighted by `tint`), `pourAmount(vessel, drink, fill)`, `GlassLiquid` (a
                        lathe up to the level inside the glass's inner profile, `inner` from furniture.js); colours mix in
@@ -230,7 +233,9 @@ tools/thingtest.html   headless test: a wine bottle to the coffee table and back
                        pour wine into a glass and drink it empty, whisky splashes into a tumbler, back in the BESTÅ = empty
 tools/milktest.html    headless test: the milk not reachable through the closed fridge, take it, back on its shelf, pour into a
                        glass, an empty cup and a cup of coffee (lighter brown), up to full, on the worktop, F sends it home
-tools/secretarytest.html headless test: the secretary's flap (desk) and its 8 drawers open/close, the open desk blocks
+tools/secretarytest.html headless test: the secretary's flap (desk) and its 8 drawers open/close, the open desk blocks;
+                       its trinkets (#182): the car to the coffee table stays when the drawer closes, back in it rides along,
+                       its place blocked while the drawer is closed, the crayons, the owl, F sends them home
 tools/opentest.html    headless test: every Openable front (kitchen + furniture) opens/closes with the button; open, none
                        overlaps a closed neighbour or goes through a wall (#154)
 tools/bestatest.html   headless test: the BESTÅ display cabinet's six doors open/close, its spots light with the room
