@@ -54,6 +54,18 @@ f.onload = async () => {
     pass &&= ok;
     lines.push(`${ok ? 'PASS' : 'FAIL'} ${t.name} @ (${target.x.toFixed(2)}, ${target.y.toFixed(2)}, ${target.z.toFixed(2)}) button "${label}" (${t.room.name ?? ''}) on=${on} off=${off}`);
   }
+  // no ceiling lamp hangs in the stair opening (#88): Entréplan lamps outside STAIR.hole
+  {
+    const { STAIR } = await import('../src/config.js');
+    const h = STAIR.hole;
+    // inside the opening a lamp must hang under a tread (the Klk under the stair, well below the
+    // Entréplan ceiling), never at ceiling height in mid-air
+    const bad = [...w.__app.lights.rooms.values()].flatMap((R) => R.lamps.filter((l) => l.level === 0
+      && l.pos.x > h.x0 && l.pos.x < h.x1 && l.pos.z > h.z0 && l.pos.z < h.z1
+      && !(w.__app.stairHeight(l.pos.x, l.pos.z) !== null && w.__app.stairHeight(l.pos.x, l.pos.z) - 0.2 > l.pos.y)).map((l) => `${R.name} (${l.pos.x.toFixed(2)}, ${l.pos.y.toFixed(2)}, ${l.pos.z.toFixed(2)})`));
+    lines.push(`${bad.length ? 'FAIL' : 'PASS'} no lamp in the stair opening${bad.length ? ': ' + bad.join(', ') : ''}`);
+    pass = pass && !bad.length;
+  }
   // every switch sits on a wall: a wall outline segment within 2 cm behind it, covering the plate (#76)
   {
     const sw = w.__app.lights.switches;

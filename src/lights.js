@@ -1,7 +1,8 @@
 import * as THREE from 'three';
-import { LEVELS, SOFFITS, LIGHTING as L, DOOR_TRIM } from './config.js';
+import { LEVELS, SOFFITS, LIGHTING as L, DOOR_TRIM, STAIR } from './config.js';
 import { lampMaterials } from './interior.js';
 import { sfx } from './audio.js';
+import { stairHeight } from './stairs.js';
 
 // Room lights: a switch by every room's door (E) turns the room's lamps on and off — a ceiling
 // lamp per room (spots / globe / LED strips where interior.js built those) — and floor lamps
@@ -131,7 +132,28 @@ export class Lights {
         const R = room(level, r.name);
         const key = `${level}:${r.name}`;
         const own = lampMaterials.get(key);
-        const y = ceilingAt(level, r.x, r.z);
+        let underStair = false;
+        // a region centre under the stair opening has no ceiling (#88): move the lamp just outside the
+        // opening, to the nearest spot that still belongs to the room
+        if (level === 0) {
+          const h = STAIR.hole, m = 0.35;
+          if (r.x > h.x0 - m && r.x < h.x1 + m && r.z > h.z0 - m && r.z < h.z1 + m) {
+            const cands = [[h.x0 - m, r.z], [h.x1 + m, r.z], [r.x, h.z0 - m], [r.x, h.z1 + m]]
+              .sort((a, b) => Math.hypot(a[0] - r.x, a[1] - r.z) - Math.hypot(b[0] - r.x, b[1] - r.z));
+            const ok = cands.find(([x, z]) => map.exact(x, z) === r.name);
+            if (ok) [r.x, r.z] = ok;
+            else underStair = true; // a room under the stair (the Klk): its ceiling is the stair's underside
+          }
+        }
+        let y = ceilingAt(level, r.x, r.z);
+        if (underStair) {
+          let best = null;
+          for (let x = STAIR.hole.x0 + 0.1; x < STAIR.hole.x1; x += 0.1) for (let z = STAIR.hole.z0 + 0.1; z < STAIR.hole.z1; z += 0.1) {
+            const sh = stairHeight(x, z);
+            if (sh !== null && map.exact(x, z) === r.name && (!best || sh > best[2])) best = [x, z, sh];
+          }
+          if (best) { [r.x, r.z] = best; y = best[2] - 0.28; } // under the highest tread above the Klk, below its slab
+        }
         const spec = L.wetRooms.includes(r.name) ? L.spots : L.ceiling;
         R.lamps.push({ pos: new THREE.Vector3(r.x, y - 0.25, r.z), ...spec, level });
         if (own && !R.mats.includes(own)) R.mats.push(own);
