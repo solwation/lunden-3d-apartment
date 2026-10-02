@@ -1,12 +1,12 @@
 import * as THREE from 'three';
 import { SABER as S, LEVELS } from './config.js';
 import { sfx } from './audio.js';
+import { Holdable } from './holdable.js';
 
-// The lightsaber in Sovrum 2 (#78). It hangs on two hooks on the wall; E on it takes it down: it ignites
-// (snap-hiss), hums, and is held low on the right of the view (a child of the camera). Looking around
-// fast (mouse, touch drag) or clicking swings it with a whoosh that follows the speed. It goes along
-// everywhere; E on the empty hooks hangs it back (it switches off). The blade glows with emissive and
-// additive materials only (no lights).
+// The lightsaber in Sovrum 2 (#78), a Holdable (holdable.js). It hangs on two hooks on the wall; E takes
+// it down: it ignites (snap-hiss), hums, and is held low on the right of the view. Looking around fast or
+// clicking swings it with a whoosh that follows the speed. E on the empty hooks hangs it back (off). The
+// blade glows with emissive and additive materials only (no lights).
 
 const hiltMat = new THREE.MeshStandardMaterial({ color: 0xc9cdd2, roughness: 0.25, metalness: 0.9 });
 const gripMat = new THREE.MeshStandardMaterial({ color: 0x1a1a1c, roughness: 0.6 });
@@ -35,96 +35,60 @@ function buildSaber() {
   return { g, blade, glowMat };
 }
 
-export class Saber {
+export class Saber extends Holdable {
   constructor(scene, camera) {
-    Object.assign(this, { camera, held: false, t: 0, hum: null, swing: 0, swings: 0, lastYaw: camera.rotation.y, lastPitch: camera.rotation.x, cooldown: 0 });
     const y0 = LEVELS[S.level].floor + S.y;
-    // the holder: two black hooks on the wall
-    this.holder = new THREE.Group();
+    // the holder: two black hooks on the wall (the switched-off saber is just its 30 cm hilt)
     const hook = new THREE.MeshStandardMaterial({ color: 0x151515, roughness: 0.5 });
-    for (const dz of [-0.1, 0.1]) { // the switched-off saber is just its 30 cm hilt
+    const parts = [];
+    for (const dz of [-0.1, 0.1]) {
       const h = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.03, 0.02), hook);
       h.position.set(S.x + 0.025, y0 - 0.02, S.z + dz);
       const lip = new THREE.Mesh(new THREE.BoxGeometry(0.01, 0.03, 0.02), hook);
       lip.position.set(S.x + 0.05, y0, S.z + dz);
-      this.holder.add(h, lip);
+      parts.push(h, lip);
     }
-    // an invisible box over the hooks: the E target for hanging it back
-    const pick = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.2, 0.4), new THREE.MeshBasicMaterial());
-    pick.position.set(S.x + 0.06, y0, S.z);
-    pick.visible = false;
-    this.holder.add(pick);
-    scene.add(this.holder);
     const { g, blade, glowMat } = buildSaber();
-    Object.assign(this, { saber: g, blade, glowMat });
-    this.wall = { pos: new THREE.Vector3(S.x + 0.04, y0 + 0.012, S.z - S.hilt / 2), rot: new THREE.Euler(Math.PI / 2, 0, 0) }; // hilt centred on the hooks
-    this.hang(scene);
-    this.takeTarget = { name: 'lightsabern', kind: 'saber', verb: 'ta', pickable: g, toggle: () => this.take() };
-    this.backTarget = { name: 'hållaren', kind: 'saber', verb: 'hänga tillbaka lightsabern på', pickable: pick, toggle: () => this.putBack() };
-    g.traverse((m) => { m.userData.door = this.takeTarget; });
-    pick.userData.door = this.backTarget;
-    this.scene = scene;
+    super(scene, camera, {
+      name: 'lightsabern', backName: 'hållaren', backVerb: 'hänga tillbaka lightsabern på', model: g, parts,
+      home: { pos: new THREE.Vector3(S.x + 0.04, y0 + 0.012, S.z - S.hilt / 2), rot: new THREE.Euler(Math.PI / 2, 0, 0) }, // hilt on the hooks
+      heldPose: { pos: new THREE.Vector3(S.held.x, S.held.y, S.held.z), rot: new THREE.Euler(-1.0, 0, -0.25) }, // tipped forward, inwards
+      pick: { pos: new THREE.Vector3(S.x + 0.06, y0, S.z), size: [0.12, 0.2, 0.4] },
+      swing: S.swingSpeed, cooldown: 0.3, useLabel: 'Svinga',
+    });
+    Object.assign(this, { saber: g, blade, glowMat, hum: null, swingT: 0 });
   }
 
-  /** The E target right now: the saber on the wall, or the empty hooks while it is held. */
-  get target() { return this.held ? this.backTarget : this.takeTarget; }
+  get swings() { return this.uses; }
 
-  hang(scene) {
-    scene.add(this.saber);
-    this.saber.position.copy(this.wall.pos);
-    this.saber.rotation.copy(this.wall.rot); // lying across the hooks, hilt to the north
-  }
-
-  take() {
-    this.held = true;
-    if (!this.camera.parent) this.scene.add(this.camera); // children of the camera only render in the scene
-    this.camera.add(this.saber);
-    this.saber.position.set(S.held.x, S.held.y, S.held.z);
-    this.saber.rotation.set(-1.0, 0, -0.25); // tipped forward and a little inwards
+  onTake() {
     this.glowMat.color.setHex(S.colors[Math.floor(Math.random() * S.colors.length)]);
     this.blade.visible = true;
-    this.t = 0;
     sfx.saberOn(this.where());
     this.hum = sfx.saberHum(this.where());
-    this.lastYaw = this.camera.rotation.y; this.lastPitch = this.camera.rotation.x;
   }
 
-  putBack() {
-    this.held = false;
+  onPut() {
     this.hum?.stop(); this.hum = null;
     sfx.saberOff(this.where());
     this.blade.visible = false;
     this.blade.scale.y = 0.0001;
-    this.hang(this.scene);
   }
 
-  /** Swing (also on a mouse click). */
-  swingNow(speed = S.swingSpeed * 1.5) {
-    if (!this.held || this.cooldown > 0) return;
-    this.swing = 1;
-    this.cooldown = 0.3;
-    this.swings++;
-    sfx.saberSwing(this.where(), Math.min(1, speed / (S.swingSpeed * 3)));
+  onUse(speed) {
+    this.swingT = 1;
+    sfx.saberSwing(this.where(), Math.min(1, (speed || S.swingSpeed * 1.5) / (S.swingSpeed * 3)));
   }
 
-  where() { return this.saber.getWorldPosition(new THREE.Vector3()); }
+  /** Kept for main.js / old callers: a click swings it. */
+  swingNow() { this.use(S.swingSpeed * 1.5); }
 
-  update(dt) {
-    if (!this.held) return;
-    this.t += dt;
-    this.cooldown -= dt;
+  tick(dt, speed) {
     this.blade.scale.y = Math.min(1, this.t / 0.25); // the blade extends
-    // looking around fast = a swing
-    if (dt > 0) {
-      let dy = this.camera.rotation.y - this.lastYaw; dy = Math.atan2(Math.sin(dy), Math.cos(dy));
-      const speed = Math.hypot(dy, this.camera.rotation.x - this.lastPitch) / dt;
-      if (speed > S.swingSpeed) this.swingNow(speed);
-      this.hum?.set(Math.min(1, speed / (S.swingSpeed * 2)));
-    }
-    this.lastYaw = this.camera.rotation.y; this.lastPitch = this.camera.rotation.x;
+    this.hum?.set(Math.min(1, speed / (S.swingSpeed * 2)));
     // swing animation: a quick arc across the view and back
-    this.swing = Math.max(0, this.swing - dt * 3.5);
-    const k = Math.sin(this.swing * Math.PI);
-    this.saber.rotation.set(-1.0 - 0.6 * k, 0.5 * k, -0.25 + 1.2 * k);
+    this.swingT = Math.max(0, this.swingT - dt * 3.5);
+    const k = Math.sin(this.swingT * Math.PI);
+    this.model.rotation.set(-1.0 - 0.6 * k, 0.5 * k, -0.25 + 1.2 * k);
   }
 }

@@ -83,7 +83,11 @@ src/mirror.js          the one mirror material (gradient + glints; hall and bath
 src/reflections.js     mirror images: a Reflector per mirror, only the nearest one in view (< 4 m) renders
 src/seasons.js         month → tree colours/leaf cover and snow on ground, roofs, hedges, paving (SEASON)
 src/rest.js            sitting / lying down (REST): seat & bed spots from furniture userData.rest, look clamp
-src/saber.js           the lightsaber in Sovrum 2 (SABER): E takes it (held as a child of the camera), swings, E on the hooks
+src/holdable.js        things you take and hold (one at a time): home + pick box, held pose in camera space,
+                       use = click / touch button / fast look; E on the home puts it back
+src/saber.js           the lightsaber in Sovrum 2 (SABER), a Holdable
+src/toys.js            Nerf blasters + darts (Sovrum 2), magic wands + sparkles (Sovrum 3), the flashlight
+                       (hall wardrobe; one always-present SpotLight), all Holdables (TOYS)
 src/fridge.js          the fridge: hollow, lit, opens with E, smoking roast chicken (in world.lids)
 src/catboard.js        cork board in the kitchen (under the wall clock): a photo (offscreen render) of every petted cat,
                        newest 10 in IndexedDB 'lunden'/'catPhotos', captioned with name + time
@@ -122,6 +126,7 @@ tools/resttest.html    headless test: sit on every seat and lie in every bed (sp
 tools/pctest.html      headless test: switch the gaming PC on/off (game moves, RGB cycles), the chair is a seat and
                        starts the PC, the bunk seat swings the monitor round (film)
 tools/sabertest.html   headless test: take the lightsaber, swing it, hang it back
+tools/toystest.html    headless test: blaster (dart lands), wand (sparkles), flashlight (beam follows the view)
 tools/clocktest.html   headless test of the wall clock (07:00 start, spool, pause, month → sun height)
 tools/stamp.sh         build the published site with a version stamp (used by CI)
 ```

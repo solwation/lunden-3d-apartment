@@ -431,6 +431,20 @@ export const sfx = {
     noise(t, 0.28, d, { type: 'bandpass', freq: 500 + 900 * k, q: 1.2, gain: 0.12 + 0.18 * k, attack: 0.06 });
     tone(t, 0.25, d, { type: 'sawtooth', from: 110 + 60 * k, to: 80, gain: 0.05 + 0.05 * k });
   },
+    /** A foam blaster: a springy thunk and a soft whoosh. */
+  nerf(pos) {
+    if (!ready()) return;
+    const t = ctx.currentTime, d = out(pos, 0.8);
+    noise(t, 0.05, d, { type: 'lowpass', freq: 900, gain: 0.35 });
+    tone(t, 0.07, d, { type: 'triangle', from: 260, to: 120, gain: 0.12 });
+    noise(t + 0.03, 0.2, d, { type: 'bandpass', freq: 1600, q: 1, gain: 0.08, attack: 0.02 });
+  },
+  /** A magic pling: a few bright bell tones going up. */
+  pling(pos, pitch = 1) {
+    if (!ready()) return;
+    const t = ctx.currentTime, d = out(pos, 0.8);
+    [1, 1.26, 1.5, 2].forEach((m, i) => tone(t + i * 0.05, 0.35, d, { type: 'sine', from: 880 * pitch * m, gain: 0.06 }));
+  },
     click(pos) {
     if (!ready()) return;
     const t = ctx.currentTime, d = out(pos, 0.6);

@@ -271,6 +271,21 @@ export const SABER = {
   swingSpeed: 4, // rad/s of looking that counts as a swing
 };
 
+// Toys you can take and use (src/toys.js, Holdables like the saber; sizes and spots are our picks).
+// Nerf (#86): a pegboard on Sovrum 2's east wall between the wardrobe and the bunk with three foam blasters
+// (click = fire a dart that flies and lands), a dart bandolier and goggles. Wands (#87): three star wands
+// and a unicorn headband on hooks on Sovrum 3's east wall, clear of the door's swing (click / waving =
+// sparkles + a pling). Flashlight (#89): on the hat shelf of the hall wardrobe by the front door (open
+// its sliding front first); click toggles one SpotLight that always exists (0 when off: no recompile).
+export const TOYS = {
+  nerf: { level: 1, x: 5.551, y: 1.35, z: 9.35, board: [0.9, 0.8], colors: [0xff7a1a, 0x1f8bff, 0xffd21a],
+    dart: { speed: 9, gravity: 6, max: 8 }, held: { x: 0.22, y: -0.22, z: -0.45 } },
+  wands: { level: 1, x: 2.61, y: 1.45, z: [2.85, 3.2, 3.55], colors: [0xff7ad0, 0x9b7bff, 0x5fd7ff],
+    held: { x: 0.2, y: -0.22, z: -0.42 }, headband: { z: 3.9 } },
+  flashlight: { level: 0, x: 0.58, y: 1.83, z: 2.08, held: { x: 0.2, y: -0.2, z: -0.38 },
+    spot: { intensity: 9, distance: 14, angle: 0.42, penumbra: 0.45, color: 0xfff0d6 } },
+};
+
 // Sitting and lying down (#71/#72, src/rest.js): eye height above the seat / mattress, how far you can
 // turn your head (yaw ± from the way the seat faces) and the pitch range, and the move time.
 export const REST = {

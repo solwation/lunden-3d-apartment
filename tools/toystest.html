@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Toys test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+// Toys you can hold (#86, #87, #89): for a blaster, a wand and the flashlight: aim at it, take it with the
+// action button (it is now in the hand, only one thing at a time), use it (a dart flies and lands / a
+// burst of sparkles / the light goes on and follows the view), aim at its home and put it back.
+//   google-chrome --headless=new --dump-dom http://localhost:8137/tools/toystest.html
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const f = document.createElement('iframe');
+f.width = 900; f.height = 600; f.src = '../index.html';
+document.body.append(f);
+f.onload = async () => {
+  const w = f.contentWindow, d = f.contentDocument;
+  while (!w.__app) await wait(100);
+  const { player, camera, step, toys, heldItem, world } = w.__app;
+  const lines = [];
+  const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; };
+  d.getElementById('start-touch').click();
+  await wait(50);
+  world.object.updateMatrixWorld(true);
+  const btn = d.getElementById('action');
+  const V = camera.position.constructor;
+  const aim = (obj, level, stands, re) => { // stand somewhere listed, look at obj, until the button matches
+    obj.updateMatrixWorld(true);
+    const p = obj.getWorldPosition(new V());
+    for (const [x, z] of stands) {
+      player.spawn(x, z, 0); if (level) { player.pos.y = 3.25; player.eyeY = 3.25 + 1.62; }
+      for (let i = 0; i < 3; i++) step(1 / 60);
+      const dx = p.x - camera.position.x, dz = p.z - camera.position.z;
+      camera.rotation.y = Math.atan2(-dx, -dz); camera.rotation.x = Math.atan2(p.y - camera.position.y, Math.hypot(dx, dz));
+      step(1 / 60);
+      if (!btn.hidden && re.test(btn.textContent)) return true;
+    }
+    return false;
+  };
+  let pass = true;
+  // a blaster: take, fire (the dart lands on the floor), hang back
+  const b = toys.blasters[1];
+  pass &= check(aim(b.model, 1, [[4.4, 9.35], [4.6, 9.0], [4.3, 9.7]], /ta blastern/i), `blaster: "${btn.textContent}"`);
+  btn.click();
+  pass &= check(heldItem() === b && b.model.parent === camera, 'blaster in the hand');
+  const away = () => { camera.rotation.x = -0.5; step(1 / 60); }; // look away from the home: the button now uses what you hold
+  away();
+  pass &= check(/skjut/i.test(btn.textContent), `the button: "${btn.textContent}"`);
+  btn.click(); // touch: the button fires
+  const dart = toys.darts.list.find((x) => x.flying);
+  for (let i = 0; i < 120; i++) step(1 / 60);
+  pass &= check(toys.darts.fired === 1 && dart && !dart.flying && Math.abs(dart.g.position.y - 3.258) < 0.02, `a dart flew and landed (y ${dart?.g.position.y.toFixed(3)})`);
+  // take a wand while holding the blaster: the blaster goes home
+  const wd = toys.wands[0];
+  pass &= check(aim(wd.model, 1, [[1.7, 2.85], [1.9, 3.1], [1.6, 2.6]], /ta trollstaven/i), `wand: "${btn.textContent}"`);
+  btn.click();
+  pass &= check(heldItem() === wd && !b.held && b.model.parent !== camera, 'wand in the hand, the blaster went back home');
+  const live0 = toys.sparkles.live;
+  away();
+  btn.click(); step(1 / 60);
+  pass &= check(toys.sparkles.live > live0 + 5, `sparkles (${toys.sparkles.live})`);
+  for (let i = 0; i < 30; i++) step(1 / 60);
+  pass &= check(aim(wd.holder.children.at(-1), 1, [[1.7, 2.85], [1.9, 3.1]], /hänga tillbaka trollstaven/i), `the hook: "${btn.textContent}"`);
+  btn.click();
+  pass &= check(!heldItem() && !wd.held, 'wand back on its hook');
+  // the flashlight in the hall wardrobe: open its front, take it, on, it follows the view, put back
+  const fl = toys.flashlight;
+  const wardrobe = world.doors.find((x) => x.kind === 'wardrobe' && Math.abs(x.wardrobe.back - 0.2) < 0.1 && x.closedPos < 2.3 && x.closedPos > 1.7);
+  if (wardrobe) { wardrobe.toggle(); for (let i = 0; i < 90; i++) wardrobe.update(1 / 60); wardrobe.panel.updateMatrixWorld(true); } // no render runs
+  pass &= check(aim(fl.model, 0, [[1.5, 2.1], [1.4, 1.8], [1.6, 2.4], [1.3, 2.1]], /ta ficklampan/i), `flashlight: "${btn.textContent}"`);
+  btn.click(); step(1 / 60);
+  pass &= check(heldItem() === fl && fl.on && fl.spot.intensity > 0, 'flashlight in the hand, on');
+  away();
+  camera.rotation.y += 0.5; step(1 / 60);
+  const dir = fl.spot.target.position.clone().sub(fl.spot.position).normalize();
+  const look = new V(0, 0, -1).applyQuaternion(camera.quaternion);
+  pass &= check(dir.dot(look) > 0.95, `the beam follows the view (${dir.dot(look).toFixed(3)})`);
+  fl.use(); step(1 / 60); // a mouse click (the touch button may be aiming at the wardrobe now)
+  pass &= check(!fl.on && fl.spot.intensity === 0, 'clicked off');
+  pass &= check(aim(fl.holder.children.at(-1), 0, [[1.5, 2.1], [1.4, 1.8], [1.6, 2.4]], /lägga tillbaka ficklampan/i), `the shelf: "${btn.textContent}"`);
+  btn.click();
+  pass &= check(!heldItem() && fl.spot.intensity === 0, 'back on the shelf, off');
+  out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
+};
+</script>
+</body>
+</html>
