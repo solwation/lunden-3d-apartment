@@ -105,7 +105,7 @@ src/patio.js           patio: Plantagen Oslo corner lounge set, parasol, planter
                        parasol folds at night/in winter, beers in summer, snowman in winter
 src/wallclock.js       analog kitchen clock (WALL_CLOCK) + the control strip: spool A D / ← →, pause
 src/rooms.js           room detection: walls + door gaps rasterised, BFS from the room labels
-src/minimap.js         plan view with the visitor's arrow, current room highlighted; hidden, shown with the
+src/minimap.js         plan view with the visitor's arrow, current room highlighted (top right, under the HUD buttons); hidden, shown with the
                        stats (Tab / T / 📊, #85), K shows it alone
 src/measure.js         tape measure (Q / 📏): two points on any surface, distance label
 src/cabinets.js        wall cabinets with side-hung doors that open with E (Openables, max 90°; `corner` = that end's door

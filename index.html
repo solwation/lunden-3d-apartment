@@ -160,9 +160,9 @@
     #stats ol.lb { margin: 2px 0 0; }
     #stats small { flex-basis: 100%; opacity: .7; font-size: 11px; line-height: 1.2; margin: -2px 0 2px 20px; }
     body.touch #stats { top: calc(60px + var(--st)); max-height: calc(100% - 76px - var(--st) - var(--sb)); }
-    #minimap { position: fixed; left: calc(16px + var(--sl)); bottom: calc(56px + var(--sb)); width: 92px; height: auto; image-rendering: pixelated; border-radius: 6px; background: rgba(20, 35, 45, 0.25); pointer-events: none; }
+    /* top right under the HUD buttons, on every device: bottom left the long stats panel ran over it */
+    #minimap { position: fixed; right: calc(16px + var(--sr)); top: calc(72px + var(--st)); width: 92px; height: auto; image-rendering: pixelated; border-radius: 6px; background: rgba(20, 35, 45, 0.25); pointer-events: none; }
     #minimap[hidden] { display: none; }
-    body.touch #minimap { left: auto; right: calc(16px + var(--sr)); bottom: auto; top: calc(72px + var(--st)); }
     #measure { position: fixed; transform: translate(-50%, -140%); background: rgba(210, 58, 42, 0.92); color: #fff; padding: 4px 10px; border-radius: 6px; font-size: 15px; text-align: center; pointer-events: none; white-space: nowrap; }
     #measure[hidden] { display: none; }
     #measure small { display: block; font-size: 11px; opacity: .85; }
