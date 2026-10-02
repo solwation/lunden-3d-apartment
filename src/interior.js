@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { FINISH, TILED_ROOMS, KITCHEN as K, SKIRTING } from './config.js';
 import { Fridge } from './fridge.js';
+import { buildOvens } from './ovens.js';
 
 // Fixed interior from our material choices: fitted kitchen, laundry, bathroom fittings,
 // tiled floors and walls. Everything is merged into one mesh per material (few draw calls),
@@ -254,16 +255,18 @@ function buildKitchen(B, group, floor, y0, yC, handled, taps, appliances) {
     const F = frame(B, c, dirOf(c));
     const { u0, u1 } = F;
     if (c === tall) {
-      // tall unit: door, oven, microwave, grille, top door (Peab render)
-      F.box(u0, u1, -F.depth, -FT, y0, yTop, M.front);
-      F.box(u0, u1, -0.07, -0.05, y0, yb, M.front);
+      // tall unit: door, oven, microwave, grille, top door (Peab render). The oven and microwave
+      // doors open with E (ovens.js): hollow insides, the carcass is solid only below and above.
       const yOven = y0 + 0.78, yMicro = yOven + 0.6, yGrille = yMicro + 0.4;
+      F.box(u0, u1, -F.depth, -FT, y0, yOven, M.front);
+      F.box(u0, u1, -F.depth, -FT, yGrille, yTop, M.front);
+      F.box(u0, u1, -0.07, -0.05, y0, yb, M.front);
       front(F, u0, u1, yb, yOven, M.front, 'v-hi');
-      F.box(u0 + 0.01, u1 - 0.01, -FT, 0.004, yOven + 0.005, yMicro - 0.005, M.black);
-      F.box(u0 + 0.07, u1 - 0.07, 0.004, 0.006, yOven + 0.1, yMicro - 0.12, M.glassDark);
-      F.box(u0 + 0.06, u1 - 0.06, 0.02, 0.035, yMicro - 0.07, yMicro - 0.055, M.steel);
-      F.box(u0 + 0.01, u1 - 0.01, -FT, 0.004, yMicro + 0.005, yGrille - 0.005, M.black);
-      F.box(u0 + 0.05, u0 + 0.4, 0.004, 0.006, yMicro + 0.06, yGrille - 0.06, M.glassDark);
+      if (F.dir === 'w') {
+        const ov = buildOvens({ f: F.f, z0: u0, z1: u1, yOven, yMicro, yGrille, microW: 0.44 });
+        group.add(ov.parts, ...ov.doors.map((d) => d.object));
+        appliances.push(...ov.doors);
+      }
       F.box(u0 + 0.005, u1 - 0.005, -FT, 0, yGrille, yGrille + K.grille, M.steel);
       front(F, u0, u1, yGrille + K.grille, yTop, M.front, 'v-hi', { low: true });
       continue;

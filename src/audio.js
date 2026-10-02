@@ -297,6 +297,21 @@ export const sfx = {
     tone(t, 0.03, d, { type: 'square', from: 3200, gain: 0.04 }); // the button's own chirp
     for (const k of [0, 1]) tone(t + 0.12 + k * 0.2, 0.11, d, { type: 'square', from: 2050, gain: 0.12 });
   },
+    /** Oven door: a spring creak while it drops (or lifts), a soft thunk at the end. */
+  ovenDoor(pos, opening) {
+    if (!ready()) return;
+    const t = ctx.currentTime, d = out(pos, 0.9);
+    tone(t, 0.32, d, { type: 'sawtooth', from: opening ? 340 : 260, to: opening ? 220 : 380, gain: 0.025 });
+    noise(t + 0.38, 0.06, d, { type: 'lowpass', freq: 700, gain: 0.3 });
+    tone(t + 0.38, 0.08, d, { from: 120, to: 70, gain: 0.18 });
+  },
+  /** Microwave door: the latch click when it opens, a plasticky clack when it shuts. */
+  microDoor(pos, opening) {
+    if (!ready()) return;
+    const t = ctx.currentTime + (opening ? 0 : 0.42), d = out(pos, 0.8);
+    noise(t, 0.025, d, { type: 'highpass', freq: 2200, gain: 0.35 });
+    tone(t, 0.04, d, { type: 'square', from: opening ? 1400 : 900, to: 600, gain: 0.05 });
+  },
     click(pos) {
     if (!ready()) return;
     const t = ctx.currentTime, d = out(pos, 0.6);

@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Oven and microwave test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+// Kitchen oven + microwave (#58): aim at each door, open it with the action button (the oven door
+// drops, the microwave door swings out, the lamp inside lights), close it again.
+//   google-chrome --headless=new --dump-dom http://localhost:8137/tools/oventest.html
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const f = document.createElement('iframe');
+f.width = 900; f.height = 600;
+f.src = '../index.html';
+document.body.append(f);
+f.onload = async () => {
+  const w = f.contentWindow, d = f.contentDocument;
+  while (!w.__app) await wait(100);
+  const { player, camera, world, step } = w.__app;
+  const lines = [];
+  const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; };
+  d.getElementById('start-touch').click();
+  await wait(50);
+  const btn = d.getElementById('action');
+  let pass = true;
+  for (const name of ['ugnen', 'mikron']) {
+    const a = world.lids.find((l) => l.name === name);
+    pass &= check(!!a, `${name} exists`);
+    if (!a) continue;
+    const aim = () => {
+      a.object.updateMatrixWorld(true);
+      const p = a.object.children[0].getWorldPosition(new a.object.position.constructor());
+      player.spawn(p.x - 1.0, p.z, -Math.PI / 2);
+      camera.rotation.y = Math.atan2(-(p.x - player.pos.x), -(p.z - player.pos.z));
+      camera.rotation.x = Math.atan2(p.y - player.eyeY, Math.hypot(p.x - player.pos.x, p.z - player.pos.z));
+      for (let i = 0; i < 3; i++) step(1 / 60);
+    };
+    aim();
+    pass &= check(!btn.hidden && new RegExp(`öppna ${name}`, 'i').test(btn.textContent), `${name}: button "${btn.textContent}"`);
+    btn.click();
+    for (let i = 0; i < 90; i++) step(1 / 60);
+    const angle = a.hinge === 'bottom' ? a.door.rotation.z : -a.door.rotation.y;
+    pass &= check(a.isOpen && angle > 1.3 && a.lamp.emissiveIntensity > 0, `${name} open (angle ${(angle * 180 / Math.PI).toFixed(0)}°, lamp ${a.lamp.emissiveIntensity})`);
+    a.toggle();
+    for (let i = 0; i < 90; i++) step(1 / 60);
+    pass &= check(!a.isOpen && Math.abs(a.hinge === 'bottom' ? a.door.rotation.z : a.door.rotation.y) < 1e-3 && a.lamp.emissiveIntensity === 0, `${name} closes, lamp off`);
+  }
+  out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
+};
+</script>
+</body>
+</html>
