@@ -84,7 +84,7 @@ export class Player {
     const doorSegs = this.world.doors
       .filter((d) => (d.object.position.y < LEVELS[0].floor + 1.6 ? 0 : 1) === this.level)
       .map((d) => d.segment());
-    return [lvl.segments, doorSegs];
+    return [lvl.segments, [...doorSegs, ...(this.world.movingSegments?.(this.level) ?? [])]]; // + open furniture flaps (#118)
   }
 
   update(dt) {

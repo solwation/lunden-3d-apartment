@@ -682,6 +682,11 @@ export const FURNITURE = [
   // floating; tunable). Section heights, handle colour and the spots' positions are *guesses*.
   { type: 'besta', level: 0, room: 'Vardagsrum', x: 0.202, z: 10.55, y: 0.35, rot: -90, w: 1.2, d: 0.42, h: 1.93,
     sections: [0.64, 0.65], walnut: 0x6e4b33, handle: 0x1e1e20, spots: [-0.4, 0, 0.4], openDeg: 100 },
+  // Secretary "Bang" (IKEA, c. 1960, #118, docs/sekretar-bang-*.png; Bukowskis: teak veneer, L 70, D 30, H 106.5 cm) on
+  // the east wall between the TV bench (z < 8.22) and the chaise (z > 10.55), opposite the BYÅS end. Leg height, the
+  // drawer, the flap's slope, the shelf and the right drawer column's width are *guesses* from the photos.
+  { type: 'secretary', level: 0, x: 5.5, z: 9.35, rot: 90, w: 0.7, d: 0.3, h: 1.065, legH: 0.55, drawerH: 0.12, slope: 13,
+    shelf: 0.15, rightW: 0.24, teak: 0xb06a32, teakInside: 0xc07a3e },
   // Black metal wine rack (#105, the user's photo): 8 bottles lying slightly tilted (necks up towards the BESTÅ, i.e.
   // south = the viewer's left), two champagne with gold foil. On the west wall between the armchair/floor lamp
   // (z < 9.1) and the BESTÅ (z > 9.95), bottom 1.1 m up; 38 × 105 cm and the 10 cm depth are *guesses*.

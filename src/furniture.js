@@ -1507,6 +1507,176 @@ function keepInside(obj, item, yaw) {
 }
 
 
+/** Small things in the secretary's drawers (#118), each a few merged-later meshes in group `g` around (0, 0, 0). */
+const TRINKETS = {
+  clips(g, M) { for (let i = 0; i < 4; i++) { const c = new THREE.Mesh(new THREE.TorusGeometry(0.008, 0.0012, 4, 12), M.steel); c.scale.set(1, 2, 1); c.rotation.x = -Math.PI / 2; c.rotation.z = i * 0.7; c.position.set(-0.05 + i * 0.022, 0.003, -0.01 + (i % 2) * 0.02); g.add(c); }
+    ['#d33', '#36c', '#3a3', '#f0a020'].forEach((col, i) => { const st = new THREE.Mesh(new THREE.BoxGeometry(0.022, 0.001, 0.026), new THREE.MeshStandardMaterial({ color: col, roughness: 0.8 })); st.position.set(0.03 + (i % 2) * 0.026, 0.002 + i * 0.001, -0.02 + Math.floor(i / 2) * 0.03); st.rotation.y = i * 0.3; g.add(st); }); },
+  buttons(g, M) { [0xd33, 0x36c, 0xfc3, 0x3a3, 0xfff, 0x222, 0xe6a].forEach((col, i) => { const b = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.003, 10), new THREE.MeshStandardMaterial({ color: col, roughness: 0.4 })); b.position.set(-0.06 + (i % 4) * 0.025, 0.002, -0.015 + Math.floor(i / 4) * 0.025); g.add(b); });
+    const k = new THREE.Group(); k.add(new THREE.Mesh(new THREE.TorusGeometry(0.008, 0.002, 6, 12), M.brass)); const sh = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.003, 0.004), M.brass); sh.position.x = 0.022; k.add(sh); const bit = new THREE.Mesh(new THREE.BoxGeometry(0.005, 0.003, 0.008), M.brass); bit.position.set(0.033, 0, 0.005); k.add(bit); k.rotation.x = -Math.PI / 2; k.position.set(0.05, 0.003, 0.01); g.add(k); },
+  crayons(g) { ['#e33', '#f90', '#fd2', '#4b4', '#38f', '#a5d'].forEach((col, i) => { const c = new THREE.Mesh(new THREE.CylinderGeometry(0.004, 0.004, 0.07, 8), new THREE.MeshStandardMaterial({ color: col, roughness: 0.6 })); c.rotation.z = Math.PI / 2; c.rotation.y = 0.1 * i; c.position.set(-0.02, 0.005, -0.03 + i * 0.011); g.add(c); });
+    ['#f4a', '#fd2', '#6cf'].forEach((col, i) => { const sw = new THREE.Mesh(new THREE.SphereGeometry(0.008, 10, 8), new THREE.MeshStandardMaterial({ color: col, roughness: 0.25 })); sw.position.set(0.055, 0.008, -0.02 + i * 0.02); g.add(sw); }); },
+  crystal(g) { const c = new THREE.Mesh(new THREE.OctahedronGeometry(0.018), new THREE.MeshStandardMaterial({ color: 0xb98cff, emissive: 0x5a2aa0, emissiveIntensity: 0.4, roughness: 0.1, flatShading: true })); c.scale.y = 1.6; c.position.y = 0.028; g.add(c); },
+  letter(g) { const l = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.002, 0.055), new THREE.MeshStandardMaterial({ color: 0xf6f1e4, roughness: 0.9 })); l.position.y = 0.002; g.add(l); const seal = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.002, 12), new THREE.MeshStandardMaterial({ color: 0xa31818, roughness: 0.5 })); seal.position.set(0, 0.004, 0); g.add(seal); },
+  plane(g) { const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.Float32BufferAttribute([0, 0.012, -0.05, -0.03, 0.004, 0.04, 0, 0.004, 0.04, 0, 0.012, -0.05, 0, 0.004, 0.04, 0.03, 0.004, 0.04, 0, 0.012, -0.05, 0, 0.004, 0.04, 0, -0.008, 0.035], 3)); geo.computeVertexNormals(); g.add(new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.9, side: THREE.DoubleSide }))); },
+  star(g, M) { const sh = new THREE.Shape(); for (let i = 0; i < 10; i++) { const r = i % 2 ? 0.007 : 0.016, a = (i / 10) * Math.PI * 2 - Math.PI / 2; i ? sh.lineTo(Math.cos(a) * r, Math.sin(a) * r) : sh.moveTo(Math.cos(a) * r, Math.sin(a) * r); }
+    const st = new THREE.Mesh(new THREE.ExtrudeGeometry(sh, { depth: 0.003, bevelEnabled: false }), M.gold); st.rotation.x = -Math.PI / 2; st.position.y = 0.002; g.add(st); },
+  car(g) { const red = new THREE.MeshStandardMaterial({ color: 0xd8262a, roughness: 0.35, metalness: 0.3 }), blk = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.6 });
+    const b = new THREE.Mesh(new THREE.BoxGeometry(0.075, 0.018, 0.034), red); b.position.y = 0.015; g.add(b); const c = new THREE.Mesh(new THREE.BoxGeometry(0.038, 0.014, 0.03), red); c.position.set(-0.005, 0.03, 0); g.add(c);
+    for (const [x, z] of [[-0.024, -0.018], [0.024, -0.018], [-0.024, 0.018], [0.024, 0.018]]) { const w = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.006, 10), blk); w.rotation.x = Math.PI / 2; w.position.set(x, 0.008, z); g.add(w); }
+    ['#f6c', '#5cf', '#fe5'].forEach((col, i) => { const p = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.002, 0.045), new THREE.MeshStandardMaterial({ color: col, roughness: 0.9 })); p.position.set(0.09, 0.002 + i * 0.002, 0); p.rotation.y = i * 0.25; g.add(p); }); }, // and a stack of craft paper
+};
+
+/** The secretary "Bang" (IKEA, c. 1960, #118): teak veneer on black hairpin legs with X braces and a wire shelf;
+ * a drawer under a sloping flap that folds down into a desk. Behind the flap: an open section with a shelf,
+ * three small drawers on the right, three tiny ones under the shelf and a secret one behind it, and a little
+ * lamp that comes on with the flap. Everything opens with E (`userData.targets`); things in every drawer. An owl
+ * statue and a cactus on top. Local: the wall at z 0, the front +z, x across. */
+function secretary(item) {
+  const g = new THREE.Group();
+  const S = item, W = S.w, D = S.d, y0 = S.legH, yF = y0 + S.drawerH, yT = S.h - 0.035, slope = THREE.MathUtils.degToRad(S.slope);
+  const teak = new THREE.MeshStandardMaterial({ color: S.teak, roughness: 0.5 });
+  const teakIn = new THREE.MeshStandardMaterial({ color: S.teakInside, roughness: 0.6 });
+  const black = new THREE.MeshStandardMaterial({ color: 0x141415, roughness: 0.4, metalness: 0.5 });
+  const M = { steel: new THREE.MeshStandardMaterial({ color: 0xc9ccd0, roughness: 0.3, metalness: 0.8 }), brass: new THREE.MeshStandardMaterial({ color: 0xb08a3e, roughness: 0.35, metalness: 0.8 }),
+    gold: new THREE.MeshStandardMaterial({ color: 0xf2c94c, roughness: 0.3, metalness: 0.8 }) };
+  const box = (parent, sx, sy, sz, x, y, z, m) => { const o = new THREE.Mesh(new THREE.BoxGeometry(sx, sy, sz), m); o.position.set(x, y, z); o.castShadow = o.receiveShadow = true; parent.add(o); return o; };
+  const rod = (a, b, r = 0.005) => { // a thin black rod from a to b
+    const v = new THREE.Vector3().subVectors(b, a), m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, v.length(), 6), black);
+    m.position.copy(a).addScaledVector(v, 0.5); m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), v.normalize()); g.add(m);
+  };
+  const V = (x, y, z) => new THREE.Vector3(x, y, z);
+  // the stand: four splayed legs, X braces on the sides, a wire shelf low down
+  const lx = W / 2 - 0.04, lz0 = 0.04, lz1 = D - 0.04, splay = 0.03;
+  for (const sx of [-1, 1]) for (const [zt, zb] of [[lz0, lz0 - splay * 0.5], [lz1, lz1 + splay]]) rod(V(sx * lx, y0, zt), V(sx * (lx + splay * 0.6), 0.015, zb));
+  for (const sx of [-1, 1]) { rod(V(sx * lx, y0 - 0.02, lz0), V(sx * (lx + 0.012), 0.2, lz1 + 0.01), 0.003); rod(V(sx * lx, y0 - 0.02, lz1), V(sx * (lx + 0.012), 0.2, lz0 - 0.005), 0.003); }
+  const ys = 0.2;
+  for (const z of [lz0, lz1 + 0.012]) rod(V(-lx - 0.012, ys, z), V(lx + 0.012, ys, z), 0.004);
+  for (let i = 0; i <= 7; i++) { const x = -lx + (i / 7) * 2 * lx; rod(V(x, ys, lz0), V(x, ys, lz1 + 0.012), 0.002); }
+  // the body: bottom, back, the wedge sides, the top with a raised back edge
+  box(g, W, 0.018, D, 0, y0 + 0.009, D / 2, teak);
+  box(g, W - 0.036, S.h - y0, 0.012, 0, (y0 + S.h) / 2, 0.006, teakIn);
+  const sideShape = new THREE.Shape([new THREE.Vector2(0, 0), new THREE.Vector2(D, 0), new THREE.Vector2(D, yF - y0), new THREE.Vector2(D - Math.tan(slope) * (yT - yF), yT - y0), new THREE.Vector2(0.06, S.h - y0), new THREE.Vector2(0, S.h - y0)]);
+  for (const sx of [-1, 1]) { const sg = new THREE.ExtrudeGeometry(sideShape, { depth: 0.018, bevelEnabled: false }); const m = new THREE.Mesh(sg, teak); m.rotation.y = -Math.PI / 2; m.position.set(sx * W / 2 + (sx < 0 ? 0.018 : 0), y0, 0); m.castShadow = true; g.add(m); }
+  const topD = D - Math.tan(slope) * (yT - yF);
+  box(g, W - 0.036, 0.02, topD, 0, yT + 0.01, topD / 2, teak);
+  box(g, W - 0.036, 0.03, 0.015, 0, yT + 0.035, 0.0075, teak);
+  // the cavity behind the flap: its floor (the drawer's top), a partition, the left shelf
+  box(g, W - 0.036, 0.014, D - 0.02, 0, yF - 0.007, (D - 0.02) / 2, teakIn);
+  const xR = W / 2 - 0.018 - S.rightW; // the right column of drawers starts here
+  box(g, 0.012, yT - yF, topD, xR, (yF + yT) / 2, topD / 2, teakIn);
+  const shelfY = yF + S.shelf;
+  box(g, xR - (-W / 2 + 0.018), 0.012, topD - 0.02, (xR - W / 2 + 0.018) / 2, shelfY, (topD - 0.02) / 2, teakIn);
+  // the little lamp under the top: lit while the flap is open
+  const bulbMat = new THREE.MeshStandardMaterial({ color: 0xfff4dc, emissive: 0xffd28a, emissiveIntensity: 0, roughness: 0.3 });
+  const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.012, 10, 8), bulbMat);
+  bulb.position.set((xR - W / 2) / 2, yT - 0.02, 0.06);
+  box(g, 0.02, 0.008, 0.02, bulb.position.x, yT - 0.004, 0.06, M.brass);
+  g.add(bulb);
+
+  const targets = [], moving = [];
+  const drawer = (name, w, h, d, x, y, zBack, front, trinket, out = 0.75 * d) => {
+    // a drawer box whose front is at zBack + d; slides out along +z; its contents ride along
+    const o = new THREE.Group();
+    o.position.set(x, y, zBack);
+    box(o, w, 0.006, d, 0, 0.003, d / 2, teakIn);
+    for (const sx of [-1, 1]) box(o, 0.006, h * 0.7, d, sx * (w / 2 - 0.003), h * 0.35, d / 2, teakIn);
+    box(o, w, h * 0.7, 0.006, 0, h * 0.35, 0.003, teakIn);
+    box(o, w - 0.004, h - 0.004, 0.012, 0, h / 2, d + 0.006, front);
+    const knob = new THREE.Mesh(new THREE.SphereGeometry(Math.min(0.008, h * 0.12), 10, 8), black);
+    knob.position.set(0, h / 2, d + 0.016); o.add(knob);
+    if (trinket) { const tg = new THREE.Group(); tg.position.set(0, 0.006, d / 2); TRINKETS[trinket](tg, M); o.add(tg); }
+    const target = {
+      name, kind: 'appliance', isOpen: false, t: 0, object: o, pickable: o,
+      toggle() { this.isOpen = !this.isOpen; sfx.slide(o.getWorldPosition(new THREE.Vector3()), { dur: 0.22 }); },
+      update(dt) {
+        const goal = this.isOpen ? 1 : 0;
+        this.t += Math.sign(goal - this.t) * Math.min(Math.abs(goal - this.t), dt * 3);
+        o.position.z = zBack + out * this.t * this.t * (3 - 2 * this.t);
+      },
+    };
+    o.traverse((m) => { m.userData.door = target; });
+    g.add(o); targets.push(target); moving.push(o);
+    return target;
+  };
+  // the big drawer under the flap, with the key in its lock
+  const big = drawer('lådan', W - 0.04, S.drawerH - 0.01, D - 0.04, 0, y0 + 0.018, 0.01, teak, 'car');
+  const key = new THREE.Group();
+  key.add(new THREE.Mesh(new THREE.TorusGeometry(0.01, 0.0025, 6, 14), M.brass));
+  const shank = new THREE.Mesh(new THREE.CylinderGeometry(0.002, 0.002, 0.03, 6), M.brass); shank.rotation.x = Math.PI / 2; shank.position.z = -0.015; key.add(shank);
+  key.position.set(0, (S.drawerH - 0.01) / 2 - 0.012, D - 0.04 + 0.025);
+  big.object.add(key);
+  key.traverse((m) => { m.userData.door = big; }); // the key is part of the drawer's E target
+  big.object.children.find((m) => m.geometry?.type === 'SphereGeometry').visible = false; // the key is its handle
+  // inside: three drawers in the right column, three tiny ones under the shelf, the secret one behind it
+  const rw = S.rightW - 0.006, rh = (yT - yF - 0.01) / 3, rd = topD - 0.03;
+  ['clips', 'buttons', 'crayons'].forEach((tr, i) => drawer('den lilla lådan', rw, rh - 0.004, rd, xR + 0.006 + rw / 2, yF + 0.002 + i * rh, 0.012, teak, tr));
+  const lw = xR - (-W / 2 + 0.018), tw = (lw - 0.012) / 3;
+  ['crystal', 'letter', 'plane'].forEach((tr, i) => drawer('den pyttelilla lådan', tw - 0.004, S.shelf - 0.012, 0.13, -W / 2 + 0.018 + 0.006 + tw / 2 + i * tw, yF + 0.002, 0.012, teak, tr, 0.1));
+  drawer('den hemliga lådan', 0.12, 0.04, 0.09, -W / 2 + 0.018 + lw / 2, shelfY + 0.006, 0.013, teakIn, 'star', 0.07);
+  // the flap: hinged at its bottom edge, closed it leans back with the sides; open it is a desk
+  const flapL = (yT - yF) / Math.cos(slope);
+  const pivot = new THREE.Group();
+  pivot.position.set(0, yF, D);
+  box(pivot, W - 0.04, flapL, 0.018, 0, flapL / 2, 0.009, teak);
+  const plate = box(pivot, 0.05, 0.012, 0.004, 0, flapL - 0.03, 0.02, black); // the black key plate / grip at the top
+  plate.rotation.z = 0.15;
+  const flap = {
+    name: 'sekretären', kind: 'appliance', isOpen: false, t: 0, object: pivot, pickable: pivot,
+    toggle() { this.isOpen = !this.isOpen; sfx.cupboard(pivot.getWorldPosition(new THREE.Vector3()), this.isOpen); },
+    update(dt) {
+      const goal = this.isOpen ? 1 : 0;
+      this.t += Math.sign(goal - this.t) * Math.min(Math.abs(goal - this.t), dt * 1.6);
+      const e = this.t * this.t * (3 - 2 * this.t);
+      pivot.rotation.x = -slope + e * (Math.PI / 2 + slope);
+      bulbMat.emissiveIntensity = 1.6 * e;
+    },
+    /** Open, the desk sticks out in front: it blocks the way (world-space segments, player.js). */
+    segments() {
+      if (this.t < 0.5) return [];
+      pivot.updateMatrixWorld();
+      const p = (x, z) => new THREE.Vector3(x, 0, z).applyMatrix4(pivot.matrixWorld);
+      const a = p(-(W - 0.04) / 2, 0), b = p((W - 0.04) / 2, 0);
+      const tip = (q) => q.clone().add(new THREE.Vector3(0, flapL, 0).applyQuaternion(pivot.getWorldQuaternion(new THREE.Quaternion())));
+      const c = tip(a), d = tip(b);
+      return [[a.x, a.z, c.x, c.z], [c.x, c.z, d.x, d.z], [d.x, d.z, b.x, b.z]];
+    },
+  };
+  pivot.rotation.x = -slope;
+  pivot.traverse((m) => { m.userData.door = flap; });
+  g.add(pivot); targets.push(flap); moving.push(pivot);
+  // on top: a little stone owl and a cactus in a terracotta pot
+  const stone = new THREE.MeshStandardMaterial({ color: 0xb7afa2, roughness: 0.9, flatShading: true });
+  const owl = new THREE.Group();
+  const body = new THREE.Mesh(new THREE.SphereGeometry(0.045, 8, 6), stone); body.scale.set(1, 1.25, 0.9); body.position.y = 0.055; owl.add(body);
+  const head = new THREE.Mesh(new THREE.SphereGeometry(0.038, 8, 6), stone); head.scale.set(1.1, 0.9, 0.9); head.position.y = 0.125; owl.add(head);
+  for (const sx of [-1, 1]) {
+    const eye = new THREE.Mesh(new THREE.CircleGeometry(0.014, 12), new THREE.MeshStandardMaterial({ color: 0xece6d8, roughness: 0.7 })); eye.position.set(sx * 0.017, 0.128, 0.034); owl.add(eye);
+    const pupil = new THREE.Mesh(new THREE.CircleGeometry(0.006, 10), black); pupil.position.set(sx * 0.017, 0.128, 0.0345); owl.add(pupil);
+    const tuft = new THREE.Mesh(new THREE.ConeGeometry(0.01, 0.03, 5), stone); tuft.position.set(sx * 0.026, 0.162, 0); tuft.rotation.z = -sx * 0.4; owl.add(tuft);
+  }
+  const beak = new THREE.Mesh(new THREE.ConeGeometry(0.006, 0.016, 5), stone); beak.rotation.x = Math.PI; beak.position.set(0, 0.113, 0.036); owl.add(beak);
+  owl.position.set(-W / 2 + 0.13, yT + 0.02, topD / 2 + 0.01); owl.rotation.y = 0.25;
+  g.add(owl);
+  const terracotta = new THREE.MeshStandardMaterial({ color: 0xb8643e, roughness: 0.85 });
+  const cactus = new THREE.Group();
+  const pot = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.032, 0.06, 14), terracotta); pot.position.y = 0.03; cactus.add(pot);
+  const cg = new THREE.CylinderGeometry(0.028, 0.03, 0.08, 12, 4);
+  const cp = cg.attributes.position;
+  for (let i = 0; i < cp.count; i++) { const x = cp.getX(i), z = cp.getZ(i), a = Math.atan2(z, x), k = 1 + 0.12 * Math.cos(a * 12); cp.setX(i, x * k); cp.setZ(i, z * k); }
+  cg.computeVertexNormals();
+  const green = new THREE.MeshStandardMaterial({ color: 0x4f8a3a, roughness: 0.7 });
+  const stem = new THREE.Mesh(cg, green); stem.position.y = 0.1; cactus.add(stem);
+  const dome = new THREE.Mesh(new THREE.SphereGeometry(0.029, 12, 6, 0, Math.PI * 2, 0, Math.PI / 2), green); dome.position.y = 0.14; cactus.add(dome);
+  const flower = new THREE.Mesh(new THREE.SphereGeometry(0.009, 8, 6), new THREE.MeshStandardMaterial({ color: 0xff5fa2, roughness: 0.5 })); flower.scale.y = 0.6; flower.position.set(0.006, 0.168, 0.004); cactus.add(flower);
+  cactus.position.set(W / 2 - 0.11, yT + 0.02, topD / 2);
+  g.add(cactus);
+  g.traverse((m) => { if (m.isMesh) m.castShadow = true; });
+  g.userData.targets = targets;
+  g.userData.keep = moving;
+  g.userData.footprint = [{ x0: -W / 2 - 0.02, x1: W / 2 + 0.02, z0: 0, z1: D + 0.03 }];
+  return g;
+}
+
 /** Wall-mounted black metal wine rack (#105): a tall flat-bar frame with `n` wire cradles, each holding a bottle
  * lying with its neck tilted up towards local −x, the label facing out; two of them champagne with gold foil.
  * Local: the wall at z 0, out of the wall +z, the frame's bottom at y 0. */
@@ -1639,7 +1809,7 @@ function besta(item) {
   return g;
 }
 
-const BUILDERS = { winerack, besta, painting, palm, sofa, armchair, footstool, floorlamp, sidetable, coffeetable, loungesofa, loungetable, parasol, planter, bed, skansnasTable, skansnasChair, bunk, daybed, rug, ragrund, coatrack, shoerack, byas, tv, nordkisa, worklamp, gamingdesk, gamingchair, nordli, alex, kidchair };
+const BUILDERS = { secretary, winerack, besta, painting, palm, sofa, armchair, footstool, floorlamp, sidetable, coffeetable, loungesofa, loungetable, parasol, planter, bed, skansnasTable, skansnasChair, bunk, daybed, rug, ragrund, coatrack, shoerack, byas, tv, nordkisa, worklamp, gamingdesk, gamingchair, nordli, alex, kidchair };
 
 /** An invisible thin box over a table top (raycast target for putting a cup down, #90). Local rect. */
 export function surfaceBox(r, list) {
@@ -1670,7 +1840,7 @@ export function buildFurniture() {
       obj.traverse((m) => { m.userData.door = obj.userData.interact; });
       interactives.push(obj.userData.interact);
     }
-    interactives.push(...(obj.userData.targets ?? [])); // several E targets of their own (cabinet doors, #104)
+    for (const t of obj.userData.targets ?? []) { t.level = item.level; interactives.push(t); } // several E targets of their own (cabinet doors, #104)
     group.add(obj);
     // footprint rectangles → world-space collision segments
     const c = Math.cos(yaw), s = Math.sin(yaw);

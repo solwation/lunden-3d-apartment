@@ -328,7 +328,7 @@ if (params.has('tv')) for (const t of world.furnitureTargets) if (t.kind === 'tv
 // &water turns every tap on (screenshots)
 // &tv switches the TV on (screenshots)
 if (params.has('water')) for (const t of taps) t.toggle();
-if (params.has('open')) for (const d of [...world.doors, ...world.lids]) { d.toggle(); for (let i = 0; i < 30; i++) d.update(0.1); }
+if (params.has('open')) for (const d of [...world.doors, ...world.lids, ...world.furnitureTargets.filter((t) => t.kind === 'appliance')]) { d.toggle(); for (let i = 0; i < 30; i++) d.update(0.1); } // + cabinet doors / drawers in the furniture
 // ?cat=x,z[,yaw[,feetY]] puts the cat somewhere (screenshots)
 if (params.has('cat')) {
   const [x, z, yaw = 0, y = 0] = params.get('cat').split(',').map(Number);

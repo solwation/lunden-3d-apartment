@@ -170,6 +170,7 @@ tools/targettest.html  headless test: target points (rings × distance bonus), a
 tools/mirrortest.html  headless test: in front of every mirror its Reflector is the active one, on the glass (#139)
 tools/booktest.html    headless test: take the book, read, turn pages, close, put it down, back on the side table
 tools/beertest.html    headless test: sit in the lounge sofa → beer, drink it empty, back = full, a sip of coffee, F
+tools/secretarytest.html headless test: the secretary's flap (desk) and its 8 drawers open/close, the open desk blocks
 tools/bestatest.html   headless test: the BESTÅ display cabinet's six doors open/close, its spots light with the room
 tools/holdtest.html    headless test: put things down (coffee table, dining table, floor), one at a time, F → home
 tools/cuptest.html     headless test: an empty cup out without brewing, onto the worktop, brew, take the jug, pour, jug back,
@@ -340,7 +341,7 @@ URL parameters (debugging / screenshots):
 - `?at=x,z,yawDeg[,pitchDeg[,feetY]]` — place the camera. yaw 0 = north (−z), 90 = west,
   180 = south, −90 = east. `feetY` = 3.25 for Övre plan.
 - `&shot` — hide the start overlay.
-- `&open` — open every door (screenshots of open doors / wardrobes).
+- `&open` — open every door, cabinet door and drawer (screenshots of open doors / wardrobes / furniture).
 - `&cat=x,z[,yawDeg[,y]]` — show the cat there; `&catv=i` coat variant, `&catt=s` animation time.
 - `&time=HH[.h]` — start at that hour (default: the browser's time), `&month=1–12`, `&day=1–31` (default: today), `&freeze` pauses the clock,
   `&clock` opens the wall clock's strip,

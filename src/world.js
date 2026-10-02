@@ -653,6 +653,11 @@ export function buildWorld(plan) {
     cupSurfaces: [...furniture.surfaces, ...kitchenSurfaces], // table tops a cup can be put on (#90)
     cupCabinet,
     furnitureTargets: furniture.interactives, // E targets among the furniture (the TV), hidden with F
+    /** Collision of moving furniture parts (the secretary's open flap, #118) on `level`. */
+    movingSegments(level) {
+      if (!furniture.object.visible) return [];
+      return furniture.interactives.filter((t) => t.segments && t.level === level).flatMap((t) => t.segments());
+    },
     lamps: [...furniture.lights, ...mirrorLamps], // floor lamps + mirror LED strips (lights.js makes them switchable)
     windowLights: surroundings.userData.windows, // neighbours' lit windows (daycycle)
     get furnitureOn() { return furniture.object.visible; },
