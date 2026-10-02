@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Update notice test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+// "New version" notice on a phone-sized touch screen: nothing covers its buttons, they are at least
+// 44 px high, and a touch (pointerdown + pointerup, no click) works — tested on the close button
+// (the reload button navigates away; it uses the same handler).
+//   google-chrome --headless=new --dump-dom http://localhost:8137/tools/updatetest.html
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const f = document.createElement('iframe');
+f.width = 844; f.height = 390;
+f.src = '../index.html?phone';
+document.body.append(f);
+f.onload = async () => {
+  const w = f.contentWindow, d = f.contentDocument;
+  while (!w.__app) await wait(100);
+  const lines = [];
+  const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; };
+  d.getElementById('install').hidden = true;
+  d.getElementById('start-touch').click();
+  await wait(100);
+  w.__app.showUpdate('abc1234');
+  let pass = true;
+  for (const id of ['update-reload', 'update-close']) {
+    const r = d.getElementById(id).getBoundingClientRect();
+    const top = d.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2);
+    pass &= check(top?.id === id && r.height >= 44, `${id}: on top (${top?.id || top?.tagName}), ${r.width.toFixed(0)}×${r.height.toFixed(0)} px`);
+  }
+  const close = d.getElementById('update-close'), r = close.getBoundingClientRect();
+  const opts = { pointerType: 'touch', pointerId: 7, isPrimary: true, bubbles: true, clientX: r.x + 5, clientY: r.y + 5 };
+  close.dispatchEvent(new w.PointerEvent('pointerdown', opts));
+  close.dispatchEvent(new w.PointerEvent('pointerup', opts));
+  pass &= check(d.getElementById('update').hidden, 'a touch (no click) closes the notice');
+  out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
+};
+</script>
+</body>
+</html>

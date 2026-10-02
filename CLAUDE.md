@@ -28,7 +28,9 @@ https://solwation.github.io/lunden-3d-apartment/ (public repo) via
 writes the commit SHA into `src/version.js` (`BUILD`) and `version.json`, and appends
 `?v=SHA` to module imports / `data/plan.json` so a reload never mixes cached old modules.
 The page polls `version.json` every minute and shows a "new version" notice (top centre)
-when it differs from `BUILD`. Locally `BUILD = 'dev'` and no checks run. Keep imports
+when it differs from `BUILD`. Its buttons react to a lifted touch as well as a click (`onTap`,
+#41), and "Ladda om" navigates to `?v=<new SHA>` so no cache serves the old page
+(`tools/updatetest.html`). Locally `BUILD = 'dev'` and no checks run. Keep imports
 between `src/` files in the form `from './x.js'` on one line so the stamp regex finds them.
 Use relative paths only.
 
@@ -96,6 +98,7 @@ tools/notetest.html    headless test of the changelog note ("Nytt", read/close, 
 tools/patiotest.html   headless test of the patio seasons (parasol, beers, snowman) + sofa collision
 tools/keytest.html     headless test of the hall key cabinet: open, car key reachable only then, beep
 tools/esctest.html     headless test of Esc on the start screen (click-to-start cover, ignored over the note)
+tools/updatetest.html  headless test of the update notice on a phone-sized touch screen (on top, 44 px, touch works)
 tools/clocktest.html   headless test of the wall clock (07:00 start, spool, pause, month → sun height)
 tools/stamp.sh         build the published site with a version stamp (used by CI)
 ```

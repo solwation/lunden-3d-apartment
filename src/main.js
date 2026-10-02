@@ -466,14 +466,29 @@ renderer.setAnimationLoop(() => {
 // --- "new version published" notice ------------------------------------
 const updateEl = document.getElementById('update');
 const updateHint = document.getElementById('update-hint');
-function showUpdate() {
+let latestVersion = null;
+function showUpdate(version = latestVersion) {
+  latestVersion = version;
   updateHint.textContent = locked
     ? 'Tryck Esc för att släppa musen och ladda sedan om sidan.'
     : 'Ladda om sidan för att se den.';
   updateEl.hidden = false;
 }
-document.getElementById('update-reload').addEventListener('click', () => location.reload());
-document.getElementById('update-close').addEventListener('click', () => { updateEl.hidden = true; });
+/** Button that also reacts to the touch being lifted (some phones never send the click to these
+ * fixed buttons over the canvas, #41); runs once per press. */
+function onTap(el, fn) {
+  let done = false;
+  el.addEventListener('pointerdown', () => { done = false; });
+  el.addEventListener('pointerup', (e) => { if (e.pointerType !== 'mouse' && !done) { done = true; fn(); } });
+  el.addEventListener('click', () => { if (!done) fn(); done = false; });
+}
+// reload to a fresh URL, so neither the browser's nor GitHub Pages' cache hands back the old page
+onTap(document.getElementById('update-reload'), () => {
+  const url = new URL(location.href);
+  url.searchParams.set('v', latestVersion ?? Date.now());
+  location.replace(url.href);
+});
+onTap(document.getElementById('update-close'), () => { updateEl.hidden = true; });
 document.addEventListener('pointerlockchange', () => { if (!updateEl.hidden) showUpdate(); });
 watchForUpdates(showUpdate);
 
