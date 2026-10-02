@@ -6,6 +6,7 @@ import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.j
 import { FURNITURE, LANDSKRONA as L, LEVELS, SKANSNAS, IDANAS } from './config.js';
 import { loungesofa, loungetable, parasol, planter } from './patio.js';
 import { Screen } from './screens.js';
+import { lampMat } from './interior.js';
 
 // Loose furniture, built from rounded boxes. Every piece is modelled in a local frame
 // where the sitter faces +z, x is across, y up; config gives position + facing.
@@ -1505,7 +1506,99 @@ function keepInside(obj, item, yaw) {
   }
 }
 
-const BUILDERS = { painting, palm, sofa, armchair, footstool, floorlamp, sidetable, coffeetable, loungesofa, loungetable, parasol, planter, bed, skansnasTable, skansnasChair, bunk, daybed, rug, ragrund, coatrack, shoerack, byas, tv, nordkisa, worklamp, gamingdesk, gamingchair, nordli, alex, kidchair };
+
+/** IKEA BESTÅ display combination (#104): two 60 cm columns hung on the wall, each with a walnut-effect door at
+ * the top and the bottom and a glass door between; glass shelves, fine glasses and whisky bottles behind the
+ * glass; spots on top lit by the room's switch (its lamp material, no lights of its own). Every door opens on
+ * its own with E (`userData.targets`). Local: the wall at z 0, the front at z = depth, bottom at y 0. */
+function besta(item) {
+  const g = new THREE.Group();
+  const B = item, W = B.w, D = B.d, H = B.h, col = W / 2, t = 0.016;
+  const white = new THREE.MeshStandardMaterial({ color: 0xf2f2ef, roughness: 0.55 });
+  const walnut = new THREE.MeshStandardMaterial({ color: B.walnut, roughness: 0.6 });
+  const handle = new THREE.MeshStandardMaterial({ color: B.handle, roughness: 0.35, metalness: 0.6 });
+  const glass = new THREE.MeshStandardMaterial({ color: 0xcfe6e2, roughness: 0.05, metalness: 0.1, transparent: true, opacity: 0.18, depthWrite: false });
+  const shelfGlass = new THREE.MeshStandardMaterial({ color: 0xb7dcd6, roughness: 0.05, transparent: true, opacity: 0.35, depthWrite: false });
+  const add = (parent, sx, sy, sz, x, y, z, m) => { const o = new THREE.Mesh(new THREE.BoxGeometry(sx, sy, sz), m); o.position.set(x, y, z); o.castShadow = o.receiveShadow = m !== glass; parent.add(o); return o; };
+  // the carcass: back, sides, the middle wall, top/bottom and the section boards
+  const fd = D - 0.02; // carcass depth (the doors make up the rest)
+  add(g, W, H, 0.01, 0, H / 2, 0.005, white);
+  for (const x of [-W / 2 + t / 2, 0, W / 2 - t / 2]) add(g, t, H, fd, x, H / 2, fd / 2, white);
+  const sec = B.sections, ys = [0, sec[0], sec[0] + sec[1], H]; // bottom, glass, top (from below)
+  for (const y of ys) add(g, W, t, fd, 0, Math.min(H - t / 2, Math.max(t / 2, y)), fd / 2, white);
+  // glass shelves in the display section, and what stands on them
+  const y1 = ys[1] + t / 2, y2 = ys[2] - t / 2, yShelf = (y1 + y2) / 2;
+  for (const x of [-col / 2, col / 2]) add(g, col - t * 1.5, 0.006, fd - 0.03, x, yShelf, fd / 2, shelfGlass);
+  const crystal = new THREE.MeshStandardMaterial({ color: 0xe6f0f2, roughness: 0.08, metalness: 0.35 });
+  const lathe = (pts) => new THREE.LatheGeometry(pts.map(([r, y]) => new THREE.Vector2(r, y)), 14);
+  const wine = lathe([[0.03, 0], [0.03, 0.004], [0.004, 0.008], [0.003, 0.08], [0.02, 0.1], [0.032, 0.14], [0.03, 0.19], [0.028, 0.19]]);
+  const flute = lathe([[0.028, 0], [0.028, 0.004], [0.003, 0.008], [0.003, 0.1], [0.012, 0.12], [0.022, 0.21], [0.02, 0.21]]);
+  const tumbler = lathe([[0.034, 0], [0.036, 0.09], [0.033, 0.09]]);
+  const glassAt = (geo, x, y, z) => { const o = new THREE.Mesh(geo, crystal); o.position.set(x, y, z); g.add(o); };
+  const bottle = (x, y, z, k) => {
+    const hue = [0xb5651d, 0x7a3b12, 0xd08a2c, 0x3b2a1a, 0x9c5a1a, 0x5a2e0e][k % 6];
+    const gm = new THREE.MeshStandardMaterial({ color: hue, roughness: 0.15, metalness: 0.1 });
+    const shape = k % 3;
+    const body = shape === 1 ? new THREE.BoxGeometry(0.08, 0.17, 0.05) : new THREE.CylinderGeometry(shape ? 0.036 : 0.04, 0.04, 0.18, 14);
+    const b = new THREE.Mesh(body, gm); b.position.set(x, y + 0.09, z); g.add(b);
+    const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.016, 0.06, 10), gm); neck.position.set(x, y + 0.21, z); g.add(neck);
+    const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.014, 0.014, 0.022, 10), k % 2 ? walnut : handle); cap.position.set(x, y + 0.25, z); g.add(cap);
+    const label = new THREE.Mesh(new THREE.PlaneGeometry(0.05, 0.06), new THREE.MeshStandardMaterial({ color: k % 2 ? 0xf1e7cf : 0xd9b453, roughness: 0.7 }));
+    label.position.set(x, y + 0.085, z + (shape === 1 ? 0.0255 : 0.0405)); g.add(label);
+  };
+  // left column: glasses on the shelf, bottles below; right column: bottles on the shelf, glasses below
+  const zc = fd / 2 + 0.02;
+  [-0.19, -0.12, -0.05].forEach((dx, i) => { glassAt(wine, -col / 2 + dx + 0.12, yShelf + 0.003, zc - 0.05); glassAt(flute, -col / 2 + dx + 0.16, yShelf + 0.003, zc + 0.06); if (i < 2) glassAt(tumbler, -col / 2 + dx + 0.24, yShelf + 0.003, zc); });
+  [-0.17, -0.05, 0.08].forEach((dx, i) => bottle(-col / 2 + dx, y1, zc, i));
+  [-0.17, -0.05, 0.08].forEach((dx, i) => bottle(col / 2 + dx, yShelf + 0.003, zc, i + 3));
+  [-0.15, -0.07, 0.01, 0.09].forEach((dx, i) => glassAt(i % 2 ? tumbler : wine, col / 2 + dx, y1, zc + (i % 2 ? 0.05 : -0.04)));
+  // the spots on top (the room's lamp material: lit with the room's switch)
+  const lens = lampMat(item.level, item.room);
+  const black = new THREE.MeshStandardMaterial({ color: 0x1b1b1d, roughness: 0.45 });
+  for (const x of B.spots) {
+    const can = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.07, 14), black);
+    can.rotation.x = -0.5; can.position.set(x, H + 0.045, D - 0.08); g.add(can);
+    const glow = new THREE.Mesh(new THREE.CircleGeometry(0.024, 14), lens);
+    glow.rotation.x = Math.PI / 2 - 0.5; glow.position.set(x, H + 0.045 + Math.cos(0.5) * 0.0355 - 0.07, D - 0.08 + Math.sin(0.5) * 0.0355);
+    glow.position.set(x, H + 0.045 + 0.0355 * Math.sin(-0.5 + Math.PI / 2) * 0 + 0.031, D - 0.08 - 0.017); // the lens on the can's upper end, aimed up at the wall
+    g.add(glow);
+  }
+  // the doors: six of them, the left column hinged on the left, the right on the right
+  const targets = [], doors = [];
+  const sections = [[ys[0], ys[1], 'wood'], [ys[1], ys[2], 'glass'], [ys[2], ys[3], 'wood']];
+  for (const [ya, yb, kind] of sections) for (const sideX of [-1, 1]) {
+    const dw = col - 0.004, dh = yb - ya - 0.004, pivot = new THREE.Group();
+    pivot.position.set(sideX * W / 2, (ya + yb) / 2, D - 0.009);
+    const cx = -sideX * dw / 2; // the leaf extends from the hinge towards the middle
+    if (kind === 'wood') add(pivot, dw, dh, 0.018, cx, 0, 0, walnut);
+    else {
+      for (const [sx, sy, x, y] of [[dw, 0.05, cx, dh / 2 - 0.025], [dw, 0.05, cx, -dh / 2 + 0.025], [0.05, dh, cx - dw / 2 + 0.025, 0], [0.05, dh, cx + dw / 2 - 0.025, 0]]) add(pivot, sx, sy, 0.018, x, y, 0, white);
+      add(pivot, dw - 0.1, dh - 0.1, 0.004, cx, 0, 0, glass);
+    }
+    // a slim handle near the free edge (bottom doors: at the top of the door, top doors: at the bottom)
+    const hy = kind === 'glass' ? 0 : (ya < sec[0] ? dh / 2 - 0.06 : -dh / 2 + 0.06);
+    if (kind === 'glass') add(pivot, 0.012, 0.12, 0.012, cx - sideX * (dw / 2 - 0.035), hy, 0.018, handle);
+    else add(pivot, 0.1, 0.012, 0.012, cx - sideX * (dw / 2 - 0.08), hy, 0.018, handle);
+    const target = {
+      name: kind === 'glass' ? 'vitrinskåpet' : 'skåpdörren', kind: 'appliance', isOpen: false, t: 0, object: pivot, pickable: pivot,
+      toggle() { this.isOpen = !this.isOpen; sfx.cupboard(pivot.getWorldPosition(new THREE.Vector3()), this.isOpen); },
+      update(dt) {
+        const goal = this.isOpen ? 1 : 0;
+        this.t += Math.sign(goal - this.t) * Math.min(Math.abs(goal - this.t), dt * 2.4);
+        pivot.rotation.y = -sideX * this.t * this.t * (3 - 2 * this.t) * THREE.MathUtils.degToRad(B.openDeg);
+      },
+    };
+    pivot.traverse((m) => { m.userData.door = target; });
+    g.add(pivot); targets.push(target); doors.push(pivot);
+  }
+  g.userData.targets = targets;
+  g.userData.keep = doors;
+  g.userData.footprint = [{ x0: -W / 2, x1: W / 2, z0: 0, z1: D }];
+  g.position.y = item.y;
+  return g;
+}
+
+const BUILDERS = { besta, painting, palm, sofa, armchair, footstool, floorlamp, sidetable, coffeetable, loungesofa, loungetable, parasol, planter, bed, skansnasTable, skansnasChair, bunk, daybed, rug, ragrund, coatrack, shoerack, byas, tv, nordkisa, worklamp, gamingdesk, gamingchair, nordli, alex, kidchair };
 
 /** An invisible thin box over a table top (raycast target for putting a cup down, #90). Local rect. */
 export function surfaceBox(r, list) {
@@ -1536,6 +1629,7 @@ export function buildFurniture() {
       obj.traverse((m) => { m.userData.door = obj.userData.interact; });
       interactives.push(obj.userData.interact);
     }
+    interactives.push(...(obj.userData.targets ?? [])); // several E targets of their own (cabinet doors, #104)
     group.add(obj);
     // footprint rectangles → world-space collision segments
     const c = Math.cos(yaw), s = Math.sin(yaw);

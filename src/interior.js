@@ -103,7 +103,7 @@ for (const k of ['splash', 'wallTile', 'hallTile', 'wetTile']) M[k].userData.ski
  * the room's switch can turn them on and off (lights.js). Key: "level:room name".
  */
 export const lampMaterials = new Map();
-function lampMat(level, room) {
+export function lampMat(level, room) {
   const key = `${level}:${room}`;
   if (!lampMaterials.has(key)) {
     lampMaterials.set(key, new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xfff2dc, emissiveIntensity: 1.2 }));

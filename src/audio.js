@@ -358,6 +358,13 @@ export const sfx = {
     tone(t + 0.38, 0.03, d, { type: 'square', from: 1200, to: 800, gain: 0.04 });
   },
     /** TV on/off: a soft relay click, and a short rising (on) or falling (off) tone. */
+  /** A cabinet door: the soft-close hinge's whisper and a muffled knock when it shuts. */
+  cupboard(pos, opening) {
+    if (!ready()) return;
+    const t = ctx.currentTime, d = out(pos, 0.8);
+    noise(t, 0.12, d, { type: 'bandpass', freq: opening ? 1400 : 900, q: 0.8, gain: 0.06, attack: 0.03 });
+    if (!opening) { noise(t + 0.32, 0.05, d, { type: 'lowpass', freq: 600, gain: 0.25 }); tone(t + 0.32, 0.06, d, { from: 160, to: 90, gain: 0.12 }); }
+  },
   /** A TV changing channel: a short burst of static. */
   tvStatic(pos) {
     if (!ready()) return;

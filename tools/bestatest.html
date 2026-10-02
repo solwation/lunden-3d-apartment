@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>BESTÅ test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+// The BESTÅ display cabinet (#104): six doors, each opens and closes with the action button; the spots on top
+// light up with the living room's switch.
+//   google-chrome --headless=new --dump-dom http://localhost:8137/tools/bestatest.html
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const f = document.createElement('iframe');
+f.width = 900; f.height = 600; f.src = '../index.html?time=12&freeze';
+document.body.append(f);
+f.onload = async () => {
+  const w = f.contentWindow, d = f.contentDocument;
+  while (!w.__app) await wait(100);
+  const { player, camera, step, world, lights, scene } = w.__app;
+  const lines = [];
+  const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; };
+  d.getElementById('start-touch').click();
+  await wait(50);
+  const btn = d.getElementById('action');
+  const V = camera.position.constructor;
+  scene.updateMatrixWorld(true);
+  const doors = world.furnitureTargets.filter((t) => /vitrinskåpet|skåpdörren/.test(t.name) && t.object.getWorldPosition(new V()).x < 1);
+  let pass = check(doors.length === 6, `${doors.length} doors`);
+  for (const door of doors) {
+    door.object.updateMatrixWorld(true);
+    const leaf = door.object.children[0];
+    const p = leaf.getWorldPosition(new V());
+    player.spawn(p.x + 1.4, p.z, -Math.PI / 2); for (let i = 0; i < 3; i++) step(1 / 60);
+    camera.rotation.y = Math.atan2(-(p.x - camera.position.x), -(p.z - camera.position.z));
+    camera.rotation.x = Math.atan2(p.y - camera.position.y, Math.hypot(p.x - camera.position.x, p.z - camera.position.z)); step(1 / 60);
+    const label = btn.textContent;
+    btn.click(); for (let i = 0; i < 60; i++) step(1 / 60);
+    const open = door.isOpen && Math.abs(door.object.rotation.y) > 1.5;
+    btn.click(); for (let i = 0; i < 60; i++) step(1 / 60);
+    const shut = !door.isOpen && Math.abs(door.object.rotation.y) < 1e-3;
+    pass &= check(/öppna (vitrinskåpet|skåpdörren)/i.test(label) && open && shut, `${door.name} at y ${p.y.toFixed(2)} z ${p.z.toFixed(2)}: "${label}" open=${open} shut=${shut}`);
+  }
+  // the spots light up with the room
+  const room = [...lights.rooms.values()].find((R) => R.level === 0 && R.name === 'Vardagsrum');
+  room.toggle();
+  let lens = null;
+  doors[0].object.parent.traverse((m) => { if (m.isMesh && room.mats.includes(m.material)) lens = m; });
+  pass &= check(!!lens && room.on && lens.material.emissiveIntensity > 0.5, `the spots glow with the room's light (${lens?.material.emissiveIntensity})`);
+  out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
+};
+</script>
+</body>
+</html>

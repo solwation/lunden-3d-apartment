@@ -163,6 +163,7 @@ tools/wandtest.html    headless test: a wand's magic on the wall (stars + butter
 tools/nerftest.html    headless test: a dart leaves a paint splash in the blaster's colour on the wall, drops, fades
 tools/targettest.html  headless test: target points (rings × distance bonus), a dart in the bullseye, E clears the score
 tools/mirrortest.html  headless test: in front of every mirror its Reflector is the active one, on the glass (#139)
+tools/bestatest.html   headless test: the BESTÅ display cabinet's six doors open/close, its spots light with the room
 tools/holdtest.html    headless test: put things down (coffee table, dining table, floor), one at a time, F → home
 tools/cuptest.html     headless test: brew, take a cup out, fill, carry, put down on the dining and coffee tables
 tools/drawtest.html    headless test: drawing mode, a crayon line from pointer events, clear, E back, saved

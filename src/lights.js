@@ -193,9 +193,9 @@ export class Lights {
           if (best) { [r.x, r.z] = best; y = best[2] - 0.28; } // under the highest tread above the Klk, below its slab
         }
         const spec = L.wetRooms.includes(r.name) ? L.spots : L.ceiling;
+        if (own && !R.mats.includes(own)) R.mats.push(own);
         if (L.pendants.some((p) => p.replaces && p.level === level && p.room === r.name)) continue; // its own pendant instead (#134)
         R.lamps.push({ pos: new THREE.Vector3(r.x, y - 0.25, r.z), ...spec, level });
-        if (own && !R.mats.includes(own)) R.mats.push(own);
         if (!L.wetRooms.includes(r.name) && r.name !== 'Tvätt') {
           if (!fixtureMats.has(key)) fixtureMats.set(key, new THREE.MeshStandardMaterial({ color: 0xe9e9e6, roughness: 0.4 }));
           const m = fixtureMats.get(key);
