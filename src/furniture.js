@@ -2009,7 +2009,8 @@ function winerack(item) {
  * the top and the bottom and a glass door between; glass shelves, fine glasses and whisky bottles behind the
  * glass; spots on top lit by the room's switch (its lamp material, no lights of its own). Every door opens on
  * its own with E (`userData.targets`). Local: the wall at z 0, the front at z = depth, bottom at y 0. */
-// a soft fan of light, brightest at the bottom centre (where the spot sits), for an additive plane
+// a soft fan of light, brightest at the bottom centre (where the spot sits), for an additive plane (turned over when
+// the light comes from above)
 let uplightTex = null;
 function uplightTexture() {
   if (uplightTex) return uplightTex;
@@ -2075,25 +2076,38 @@ function besta(item) {
   [-0.17, -0.05, 0.08].forEach((dx, i) => bottle(-col / 2 + dx, y1, zc, i));
   [-0.17, -0.05, 0.08].forEach((dx, i) => bottle(col / 2 + dx, yShelf + 0.003, zc, i + 3));
   [-0.15, -0.07, 0.01, 0.09].forEach((dx, i) => glassAt(i % 2 ? tumbler : wine, col / 2 + dx, y1, zc + (i % 2 ? 0.05 : -0.04)));
-  // the spots on top (the room's lamp material: lit with the room's switch, #188): a black can tilted towards
-  // the wall, its lens and a thin ring round its rim glow, and an additive uplight fans out on the wall above
+  // the spots on top (the room's lamp material: lit with the room's switch, #188): black cans at the front edge
+  // aimed out and down over the front (#191), the lens and a thin ring round the rim glow; an additive wash of
+  // light falls down the doors, and the glass section is lit inside (a LED strip under its top + a warm glow on
+  // its back wall)
   const lens = lampMat(item.level, item.room);
   const black = new THREE.MeshStandardMaterial({ color: 0x1b1b1d, roughness: 0.45 });
-  const up = new THREE.MeshBasicMaterial({ color: 0xffe9c8, map: uplightTexture(), transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false });
-  up.userData.glow = B.uplight.opacity;
-  addLampGlow(item.level, item.room, up);
+  const glowMat = (opacity) => {
+    const m = new THREE.MeshBasicMaterial({ color: 0xffe9c8, map: uplightTexture(), transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false });
+    m.userData.glow = opacity;
+    addLampGlow(item.level, item.room, m);
+    return m;
+  };
+  const washMat = glowMat(B.wash.opacity), insideMat = glowMat(B.inside);
+  const fan = (w, h, x, yTop, z, m) => { // the texture's bright end at the top
+    const o = new THREE.Mesh(new THREE.PlaneGeometry(w, h), m);
+    o.rotation.z = Math.PI; o.position.set(x, yTop - h / 2, z);
+    o.raycast = () => {}; o.renderOrder = 2;
+    g.add(o);
+  };
+  for (const x of [-col / 2, col / 2]) {
+    add(g, col - 0.06, 0.008, 0.012, x, y2 - 0.006, fd - 0.04, lens);                 // LED strip under the glass section's top
+    fan(col - 0.04, y2 - y1, x, y2 - 0.01, 0.012, insideMat);                           // its light on the back wall
+  }
   for (const x of B.spots) {
     const head = new THREE.Group();
-    head.rotation.x = -0.5; head.position.set(x, H + 0.045, D - 0.08); g.add(head);
+    head.rotation.x = 2.0; head.position.set(x, H + 0.04, D - 0.03); g.add(head); // the lens out and down over the front
     const can = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.07, 14), black); can.castShadow = true; head.add(can);
     const glow = new THREE.Mesh(new THREE.CircleGeometry(0.026, 14), lens);
     glow.rotation.x = -Math.PI / 2; glow.position.y = 0.0352; head.add(glow);
     const rim = new THREE.Mesh(new THREE.CylinderGeometry(0.031, 0.031, 0.01, 14, 1, true), lens);
     rim.position.y = 0.03; head.add(rim);
-    const fan = new THREE.Mesh(new THREE.PlaneGeometry(B.uplight.w, B.uplight.h), up);
-    fan.position.set(x, H + 0.04 + B.uplight.h / 2, 0.004); // on the wall, just in front of it
-    fan.raycast = () => {}; fan.renderOrder = 2;
-    g.add(fan);
+    fan(B.wash.w, B.wash.h, x, H, D + 0.012, washMat); // the wash down the doors, just in front of them
   }
   // the doors: six of them, the left column hinged on the left, the right on the right
   const targets = [], doors = [];

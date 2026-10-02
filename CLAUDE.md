@@ -287,7 +287,8 @@ tools/secretarytest.html headless test: the secretary's flap (desk) and its 8 dr
                        the secret drawer (#183): 10 seeded opens never repeat, a surprise left on the table stays, SECRET.keep
 tools/opentest.html    headless test: every Openable front (kitchen + furniture) opens/closes with the button; open, none
                        overlaps a closed neighbour or goes through a wall (#154)
-tools/bestatest.html   headless test: the BESTÅ display cabinet's six doors open/close, its spots light with the room
+tools/bestatest.html   headless test: the BESTÅ display cabinet's six doors open/close, its spots (down over the front) and the
+                       lit glass section switch with the room (#191)
 tools/holdtest.html    headless test: put things down (coffee table, dining table, floor), one at a time, F → home
 tools/cuptest.html     headless test: an empty cup out without brewing, onto the worktop, brew, take the jug, pour, jug back,
                        carry the cup to the dining and coffee tables, a cup back into the cabinet; whisky in a cup of
