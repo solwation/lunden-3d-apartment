@@ -1,13 +1,14 @@
 import * as THREE from 'three';
 import { CUPS as C } from './config.js';
 import { sfx } from './audio.js';
-import { heldItem, setHeld, handBusy } from './holdable.js';
+import { heldItem, setHeld, handBusy, Holdable } from './holdable.js';
 
-// Coffee cups (#90). Three mugs in the wall cabinet over the Moccamaster. Once it has brewed:
-// E on a cup in the (open) cabinet → it stands on the worktop beside the machine; E again → it fills
-// from the jug (the jug level drops); E on the full cup → you hold it (steam rising); E while looking at
-// a table top → it is put down there (and can be picked up again). One held thing at a time, shared
-// with the toys (holdable.js).
+// Coffee cups (#90, #141). Three mugs in the wall cabinet over the Moccamaster: E on one (the cabinet open)
+// takes it into the hand, brewed or not. A cup is put down with E on a table top / the worktop / the floor and
+// taken again with E; E on the open cabinet while holding one puts it back on its shelf. The glass jug is a
+// thing of its own (Jug, a Holdable): E takes it off the hot plate, and with it in the hand E on a cup that
+// stands somewhere pours (the jug's level drops by CUPS.pour per cup); E on the hot plate puts it back.
+// Brewing only fills the jug while it stands there (coffee.js). One held thing at a time (holdable.js).
 
 const white = new THREE.MeshStandardMaterial({ color: 0xf6f6f3, roughness: 0.6 });
 
@@ -35,7 +36,11 @@ export function cupCabinet(c) {
   add(0.02, 0.12, 0.012, -0.035, 0.1, W - 0.04, c.handle);
   const cab = {
     name: 'skåpet', kind: 'appliance', isOpen: false, z0: c.z0, width: W, t: 0, object: door, pickable: door, door, hinge: 'side', lamp: { emissiveIntensity: 0 },
-    toggle() { this.isOpen = !this.isOpen; sfx.click(door.getWorldPosition(new THREE.Vector3())); },
+    get verb() { return this.isOpen && heldItem()?.isCup ? 'ställa tillbaka koppen i' : this.isOpen ? 'stänga' : 'öppna'; },
+    toggle() {
+      if (this.isOpen && heldItem()?.isCup) { heldItem().goHome(); return; } // the held cup back on its shelf (#141)
+      this.isOpen = !this.isOpen; sfx.click(door.getWorldPosition(new THREE.Vector3()));
+    },
     update(dt) {
       const target = this.isOpen ? 1 : 0;
       this.t += Math.sign(target - this.t) * Math.min(Math.abs(target - this.t), dt * 2.5);
@@ -63,11 +68,13 @@ function mugModel() {
 }
 
 export class Cup {
-  constructor(scene, camera, homePos, mocca, counter) {
+  constructor(scene, camera, homePos, counter) {
     const { g, coffee } = mugModel();
-    Object.assign(this, { name: 'koppen', placeVerb: 'ställa ner', scene, camera, model: g, coffee, mocca, counter, state: 'cabinet', fill: 0, pouring: 0, held: false, steamT: 0 });
-    this.target = { name: 'koppen', kind: 'cup', pickable: g, cup: this, item: this, get verb() { return this.cup.verb; },
-      get blocked() { return (this.cup.state === 'full' || this.cup.state === 'placed') && handBusy(this.cup); }, toggle: () => this.press() };
+    Object.assign(this, { name: 'koppen', placeVerb: 'ställa ner', isCup: true, scene, camera, model: g, coffee, counter, home: homePos.clone(),
+      state: 'cabinet', fill: 0, pouring: 0, held: false, steamT: 0 });
+    const cup = this;
+    this.target = { name: 'koppen', kind: 'cup', pickable: g, cup: this, item: this, get verb() { return cup.verb; },
+      get blocked() { return cup.blocked; }, toggle: () => this.press() };
     g.traverse((m) => { m.userData.door = this.target; });
     scene.add(g);
     g.position.copy(homePos);
@@ -76,10 +83,13 @@ export class Cup {
     g.add(this.steam);
   }
 
-  get brewed() { return this.mocca && this.mocca.done > 0; }
+  /** The jug in the hand, if that is what you hold. */
+  get jug() { const h = heldItem(); return h?.isJug ? h : null; }
+  /** Pouring is possible: the jug in the hand and the cup standing out (not in the cabinet, not in the hand). */
+  get pourable() { return !!this.jug && this.state === 'placed'; }
+  get blocked() { return this.pourable ? this.fill >= 0.99 : handBusy(this); }
   get verb() {
-    if (this.state === 'cabinet') return this.brewed ? 'ta fram' : 'koka kaffe först, sedan ta fram';
-    if (this.state === 'empty') return this.mocca.fill > 0.05 ? 'hälla kaffe i' : 'koka mer kaffe, sedan hälla i';
+    if (this.pourable) return this.jug.fill > 0.05 ? 'hälla kaffe i' : 'koka kaffe först, sedan hälla i';
     return 'ta';
   }
 
@@ -91,17 +101,19 @@ export class Cup {
 
   press() {
     if (this.pouring > 0) return;
-    if (this.state === 'cabinet') {
-      if (!this.brewed) { sfx.click(this.model.getWorldPosition(new THREE.Vector3())); return; } // "koka kaffe först"
-      this.state = 'empty';
-      this.model.position.copy(this.counter);
-      this.model.rotation.set(0, Math.random() * 6, 0);
-      sfx.click(this.counter);
-    } else if (this.state === 'empty') {
-      if (this.mocca.fill <= 0.05) return;
-      this.pouring = 1.2;
-      sfx.pour(this.model.getWorldPosition(new THREE.Vector3()));
-    } else this.take();
+    if (this.pourable) this.pourFrom(this.jug);
+    else this.take();
+  }
+
+  /** Pour from the held jug (#141): what the jug has, up to a full cup (CUPS.pour of the jug per cup). */
+  pourFrom(jug) {
+    const want = (1 - this.fill) * C.pour, got = Math.min(want, jug.fill);
+    if (got < 0.01) { sfx.click(this.model.getWorldPosition(new THREE.Vector3())); return; }
+    this.pouring = 1.2;
+    this.pourTo = this.fill + got / C.pour;
+    this.pourJug = jug;
+    jug.pour(got, 1.2);
+    sfx.pour(this.model.getWorldPosition(new THREE.Vector3()));
   }
 
   take() {
@@ -113,6 +125,7 @@ export class Cup {
     this.camera.add(this.model);
     this.model.position.set(C.held.x, C.held.y, C.held.z);
     this.model.rotation.set(0.1, -0.5, 0);
+    sfx.click(this.model.getWorldPosition(new THREE.Vector3()));
   }
 
   /** Put it down at a world point on a table top / the floor (`y` = the surface's height), standing. */
@@ -126,16 +139,27 @@ export class Cup {
     sfx.click(this.model.position);
   }
 
-  /** Another thing was taken: the cup goes back on the worktop. */
+  /** Back on its shelf in the cabinet (#141). */
+  goHome() {
+    this.held = false;
+    if (heldItem() === this) setHeld(null);
+    this.state = 'cabinet';
+    this.scene.add(this.model);
+    this.model.position.copy(this.home);
+    this.model.rotation.set(0, 0, 0);
+    sfx.click(this.home);
+  }
+
+  /** Another thing was taken: the cup goes down on the worktop. */
   putBack() { if (this.held) this.placeAt(this.counter); }
 
   use() {} // nothing to click with a cup
 
   update(dt) {
     if (this.pouring > 0) {
+      const from = this.fill;
       this.pouring -= dt;
-      this.setFill(Math.min(1, this.fill + dt / 1.2));
-      if (this.pouring <= 0) { this.state = 'full'; this.setFill(1); this.mocca.setFill(Math.max(0, this.mocca.fill - C.pour)); }
+      this.setFill(this.pouring > 0 ? Math.min(this.pourTo, from + (this.pourTo - from) * dt / (this.pouring + dt)) : this.pourTo);
     }
     // steam over a full cup, a soft wisp going up
     this.steamT += dt;
@@ -143,6 +167,44 @@ export class Cup {
     this.steam.material.opacity = this.fill > 0.5 ? 0.18 * Math.sin(Math.PI * k) : 0;
     this.steam.position.y = C.h + 0.04 + 0.1 * k;
     this.steam.quaternion.copy(this.camera.quaternion).premultiply(this.model.getWorldQuaternion(new THREE.Quaternion()).invert()); // face the camera
+  }
+}
+
+/** The Moccamaster's glass jug (#141): take it off the hot plate, pour into cups, put it back on the plate. */
+export class Jug extends Holdable {
+  constructor(scene, camera, mocca) {
+    const model = mocca.jug;
+    model.updateWorldMatrix(true, false);
+    const pos = model.getWorldPosition(new THREE.Vector3()), rot = new THREE.Euler().setFromQuaternion(model.getWorldQuaternion(new THREE.Quaternion()));
+    model.removeFromParent();
+    super(scene, camera, {
+      name: 'kannan', verb: 'ta', backName: 'kaffebryggarens platta', backVerb: 'ställa tillbaka kannan på', placeVerb: 'ställa ner',
+      model, home: { pos, rot },
+      heldPose: { pos: new THREE.Vector3(C.jugHeld.x, C.jugHeld.y, C.jugHeld.z), rot: new THREE.Euler(0, -1.4, 0) }, // handle to the right
+      pick: { pos: pos.clone().setY(pos.y + 0.09), size: [0.2, 0.2, 0.2] }, cooldown: 0.3, // pouring = E on a cup
+    });
+    Object.assign(this, { isJug: true, mocca, tilt: 0, tiltT: 0 });
+    this.rest = { q: new THREE.Quaternion(), lift: 0 }; // it stands when put down (holdable.js would lay it on its side)
+    mocca.jugHolder = this;
+  }
+
+  get fill() { return this.mocca.fill; }
+  get atHome() { return !this.held && !this.placed; }
+
+  /** Pour `amount` (of a full jug) over `secs` seconds: the level drops, the jug tips forward meanwhile. */
+  pour(amount, secs) {
+    this.mocca.setFill(Math.max(0, this.mocca.fill - amount));
+    this.tiltT = secs;
+  }
+
+  onTake() { sfx.click(this.where()); }
+  onPut() { sfx.click(this.where()); }
+
+  tick(dt) {
+    this.tiltT = Math.max(0, this.tiltT - dt);
+    const target = this.tiltT > 0 ? 1 : 0;
+    this.tilt += (target - this.tilt) * Math.min(1, dt * 8);
+    this.model.rotation.set(0, -1.4, -1.1 * this.tilt); // tips its spout towards the cup
   }
 }
 
@@ -154,6 +216,7 @@ export function buildCups(scene, camera, world, cabinetBox) {
   world.lids.push(cab.cab);
   const counterY = world.cupSurfaces?.find((s) => s.userData.counter)?.userData.surface ?? cabinetBox.counterY;
   const counter = new THREE.Vector3(C.counter.x, counterY, C.counter.z);
-  const cups = [...Array(C.n)].map((_, i) => new Cup(scene, camera, new THREE.Vector3(cab.x - 0.02, cab.shelfY, cab.zc + (i - 1) * 0.11), mocca, counter));
-  return { cups, cabinet: cab.cab, group: [cab.object, ...cups.map((c) => c.model)], update(dt) { for (const c of cups) c.update(dt); } };
+  const cups = [...Array(C.n)].map((_, i) => new Cup(scene, camera, new THREE.Vector3(cab.x - 0.02, cab.shelfY, cab.zc + (i - 1) * 0.11), counter));
+  const jug = new Jug(scene, camera, mocca);
+  return { cups, jug, cabinet: cab.cab, group: [cab.object, ...cups.map((c) => c.model)], update(dt) { for (const c of cups) c.update(dt); } };
 }

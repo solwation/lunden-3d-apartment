@@ -55,18 +55,28 @@ f.onload = async () => {
   pass &= check(Math.abs(hinge.z - cab.z0) < 0.01 && maxAng > 80, `hinged at the tall unit (z ${hinge.z.toFixed(2)}), opens ${maxAng.toFixed(0)}°`);
   pass &= check(minZ > cab.z0 - 0.002, `door never enters the tall unit (min z ${minZ.toFixed(3)} vs ${cab.z0.toFixed(3)})`);
   const cupAt = () => cup.model.getWorldPosition(new V()).add(new V(0, 0.05, 0));
-  pass &= check(lookAt(cupAt(), kitchen, /koka kaffe först/i), `before brewing: "${btn.textContent}"`);
+  // #141: a cup comes out empty, brewed or not, and goes down on the worktop by hand
+  pass &= check(lookAt(cupAt(), kitchen, /^ta koppen/i), `an empty cup, nothing brewed: "${btn.textContent}"`);
   btn.click(); step(1 / 60);
-  pass &= check(cup.state === 'cabinet', 'nothing happens before brewing');
+  pass &= check(heldItem() === cup && cup.fill === 0, 'the empty cup in the hand');
+  const counter = cup.counter.clone();
+  pass &= check(lookAt(counter, kitchen, /ställa ner koppen/i), `the worktop: "${btn.textContent}"`);
+  btn.click(); step(1 / 60);
+  pass &= check(cup.state === 'placed' && Math.abs(cup.model.position.y - counter.y) < 0.02, `on the worktop (y ${cup.model.position.y.toFixed(3)})`);
   mocca.toggle(); for (let i = 0; i < 20 * 30; i++) mocca.update(1 / 30);
   pass &= check(mocca.done > 0 && mocca.fill === 1, 'brewed');
-  pass &= check(lookAt(cupAt(), kitchen, /ta fram koppen/i), `after brewing: "${btn.textContent}"`);
+  // the jug: take it, pour, put it back on the hot plate
+  const jug = cups.jug, jugAt = () => jug.where().add(new V(0, 0.08, 0));
+  pass &= check(lookAt(jugAt(), kitchen, /ta kannan/i), `the jug: "${btn.textContent}"`);
   btn.click(); step(1 / 60);
-  pass &= check(cup.state === 'empty' && Math.abs(cup.model.position.z - 1.68) < 0.01, `on the worktop (${cup.model.position.x.toFixed(2)}, ${cup.model.position.y.toFixed(2)}, ${cup.model.position.z.toFixed(2)})`);
+  pass &= check(heldItem() === jug && !jug.atHome, 'the jug in the hand');
   pass &= check(lookAt(cupAt(), kitchen, /hälla kaffe i koppen/i), `pour: "${btn.textContent}"`);
   btn.click(); for (let i = 0; i < 120; i++) step(1 / 60);
-  pass &= check(cup.state === 'full' && cup.fill === 1 && mocca.fill < 1, `full, the jug at ${mocca.fill.toFixed(2)}`);
-  pass &= check(lookAt(cupAt(), kitchen, /ta koppen/i), `take: "${btn.textContent}"`);
+  pass &= check(cup.fill === 1 && Math.abs(mocca.fill - 0.75) < 0.01, `a full cup, the jug at ${mocca.fill.toFixed(2)}`);
+  pass &= check(lookAt(jug.holder.children[0].getWorldPosition(new V()), kitchen, /ställa tillbaka kannan/i), `the hot plate: "${btn.textContent}"`);
+  btn.click(); step(1 / 60);
+  pass &= check(jug.atHome && !heldItem(), 'the jug back on the plate');
+  pass &= check(lookAt(cupAt(), kitchen, /^ta koppen/i), `take: "${btn.textContent}"`);
   btn.click(); step(1 / 60);
   pass &= check(heldItem() === cup && cup.model.parent === camera, 'cup in the hand');
   // put it down on the dining table, then on the coffee table
@@ -79,6 +89,13 @@ f.onload = async () => {
   pass &= check(lookAt(coffee, [[3.6, 9.4], [3.0, 9.6], [4.4, 9.5]], /ställa ner koppen/i), `coffee table: "${btn.textContent}"`);
   btn.click(); step(1 / 60);
   pass &= check(cup.state === 'placed' && Math.abs(cup.model.position.y - 0.47) < 0.02, `on the coffee table (y ${cup.model.position.y.toFixed(3)})`);
+  // another cup out and back into the cabinet with E on the open cabinet
+  const cup2 = cups.cups[0], cup2At = () => cup2.model.getWorldPosition(new V()).add(new V(0, 0.05, 0));
+  pass &= check(lookAt(cup2At(), kitchen, /^ta koppen/i), `the second cup: "${btn.textContent}"`);
+  btn.click(); step(1 / 60);
+  pass &= check(lookAt(cab.door.children[0].getWorldPosition(new V()), kitchen, /ställa tillbaka koppen i skåpet/i), `the open cabinet: "${btn.textContent}"`);
+  btn.click(); step(1 / 60);
+  pass &= check(cup2.state === 'cabinet' && !heldItem() && cup2.model.position.distanceTo(cup2.home) < 0.001, 'back on its shelf');
   out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
 };
 </script>

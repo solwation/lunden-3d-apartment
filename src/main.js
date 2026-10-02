@@ -200,6 +200,7 @@ function showBook(show) {
 }
 const holdables = [saber, ...toys.items, remote, book]; // things you can take and hold, one at a time (holdable.js)
 const cups = buildCups(scene, camera, world, world.cupCabinet); // coffee cups in the wall cabinet (#90)
+holdables.push(cups.jug); // the Moccamaster's jug: take it, pour, put it back (#141)
 let placeTarget = null; // while something is held: the table top / floor spot it would go down on (#102)
 // a faint ring where the held thing would land
 const placeGhost = new THREE.Mesh(new THREE.RingGeometry(0.035, 0.05, 24).rotateX(-Math.PI / 2),
@@ -665,7 +666,7 @@ function updateFocus() {
   } else if (focused) {
     promptEl.textContent = `Tryck E för att ${verb} ${focused.name}`;
   }
-  const holding = !focused && heldItem(); // touch: the button uses what you hold (fire, wave, light)
+  const holding = !focused && heldItem()?.useLabel ? heldItem() : null; // touch: the button uses what you hold (fire, wave, light); a cup or the jug has no use of its own
   if (holding && touch.enabled) actionBtn.textContent = holding.useLabel;
   if (reading && touch.enabled) actionBtn.textContent = 'Stäng lappen';
   promptEl.hidden = !focused || touch.enabled || reading;

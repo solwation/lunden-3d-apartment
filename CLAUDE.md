@@ -114,8 +114,9 @@ src/remote.js          the TV remote on the coffee table (REMOTE), a Holdable: c
                        right click / ⏻ (touch) = power, on the TV in the look direction (not through walls)
 src/toys.js            Nerf blasters + darts (Sovrum 2), magic wands + sparkles (Sovrum 3), the flashlight
                        (hall wardrobe; one always-present SpotLight), all Holdables (TOYS)
-src/cups.js            coffee cups (CUPS): the wall cabinet over the Moccamaster opens, a cup → worktop → filled
-                       from the jug → held → put down on a table top (furniture `userData.surfaces`, #90)
+src/cups.js            coffee cups (CUPS): the wall cabinet over the Moccamaster opens; a cup is taken straight into the
+                       hand (empty, brewed or not, #141), put down on a table / worktop / floor, back in the open cabinet
+                       with E on it; the jug is a Holdable (Jug): E on a standing cup pours, E on the hot plate puts it back
 src/drawing.js         crayon drawing on the paper on the Sovrum 3 desk (DRAWING): canvas texture, drawing mode
                        (view down, pointer free, palette #draw-panel, 1–9, E/Esc back), saved in localStorage
 src/calendar.js        the cat calendar (CALENDAR): a cat per month, the days, the chosen date; #cal-panel picks it
@@ -168,7 +169,8 @@ tools/mirrortest.html  headless test: in front of every mirror its Reflector is 
 tools/booktest.html    headless test: take the book, read, turn pages, close, put it down, back on the side table
 tools/bestatest.html   headless test: the BESTÅ display cabinet's six doors open/close, its spots light with the room
 tools/holdtest.html    headless test: put things down (coffee table, dining table, floor), one at a time, F → home
-tools/cuptest.html     headless test: brew, take a cup out, fill, carry, put down on the dining and coffee tables
+tools/cuptest.html     headless test: an empty cup out without brewing, onto the worktop, brew, take the jug, pour, jug back,
+                       carry the cup to the dining and coffee tables, a cup back into the cabinet
 tools/drawtest.html    headless test: drawing mode, a crayon line from pointer events, clear, E back, saved
 tools/clocktest.html   headless test of the wall clock (?time=7, spool, pause, sun height by month)
 tools/calendartest.html headless test: today's date at the start, pick a date on the calendar, the sun follows

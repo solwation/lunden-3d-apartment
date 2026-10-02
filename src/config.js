@@ -345,7 +345,7 @@ export const MARKS = {
 // cup takes `pour` of it), is held like a toy and can be put down on any table (furniture surfaces).
 // Sizes: a 9 cm tall, 8 cm wide mug (guess).
 export const CUPS = { n: 3, r: 0.04, h: 0.09, color: 0xf3f1ec, coffee: 0x2a1408, pour: 0.25, counter: { x: 5.2, z: 1.68 },
-  held: { x: 0.18, y: -0.2, z: -0.4 } };
+  held: { x: 0.18, y: -0.2, z: -0.4 }, jugHeld: { x: 0.22, y: -0.26, z: -0.55 } }; // jugHeld: the jug in the view (#141)
 
 // Drawing with crayons (#93, src/drawing.js): an A3 sheet in the middle of the ALEX desk in Sovrum 3. E on it:
 // the view goes down over the paper, the mouse is freed and you draw with crayons (palette at the bottom,
