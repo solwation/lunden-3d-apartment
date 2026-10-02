@@ -137,7 +137,7 @@ export class KeyCabinet {
   }
 }
 
-/** Mirror (IKEA LINDBYN, black) + key cabinet on the hall wall. */
+/** Mirror (IKEA LINDBYN, black; in the living room since #205) + key cabinet on the hall wall. */
 export function buildHallWall() {
   const group = new THREE.Group();
   const m = H.mirror;
@@ -147,17 +147,13 @@ export function buildHallWall() {
   const face = mesh(new THREE.RingGeometry(m.d / 2 - m.frame, m.d / 2, 64), frameMat, 0, 0, m.depth + 0.0005);
   const mirror = new THREE.Group();
   mirror.add(disc, rim, face);
-  mirror.position.set(m.z, m.y, 0);
+  mirror.position.set(m.x, m.y, m.z); // on the living-room wall behind the armchair (#205), local +z out of the wall
+  mirror.rotation.y = m.rotY;
   addReflector(disc, new THREE.CircleGeometry(m.d / 2 - m.frame, 64), { level: 0 }); // mirror image (#50)
-  // local x runs along the wall: turn so local +z faces into the hall (−x) and local x = plan z
-  const wall = new THREE.Group();
-  wall.add(mirror);
-  wall.rotation.y = H.rotY;
-  wall.position.set(H.x, 0, 0);
   // the key cabinet on its own wall (#123), local +z out of the wall
   const cabinet = new KeyCabinet();
   cabinet.object.position.set(H.cabinet.x, H.cabinet.y, H.cabinet.z);
   cabinet.object.rotation.y = H.cabinet.rotY;
-  group.add(wall, cabinet.object);
+  group.add(mirror, cabinet.object);
   return { object: group, cabinet, key: cabinet.key };
 }

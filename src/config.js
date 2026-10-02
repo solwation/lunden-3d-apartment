@@ -738,14 +738,16 @@ export const WALL_SHELVES = {
 // z 0.465–1.765), src/keycabinet.js: the mirror IKEA LINDBYN black Ø 110 cm (ikea.com 904.392.18,
 // #61; frame width and depth are guesses) and a Solstickan key cabinet (#36; Design House Stockholm,
 // white metal, 16.9 × 16 × 5.5 cm per royaldesign.co.uk, hinged on the left) with a Renault Megane
-// E-Tech key. The mirror is centred on the 130 cm wall (z 1.115); rotY −π/2 = facing west (into the hall).
+// E-Tech key. The mirror has moved to the living room (#205): the wall behind the armchair on the right seen from
+// the room, i.e. the north wall's west part (room face z 7.804, x 0.202–2.152, the living-room door east of it),
+// centred on it (x 1.177), its middle 1.5 m up; rotY 0 = facing south (into the living room).
 // The cabinet hangs on the narrow wall right of the entrance door (the user, #123): the façade's inner face
 // z 0.465, x 1.812–2.057, at eye height above the light switch (x 1.95, y 1.05). rotY 0 = facing south (into
 // the hall). Centred on that wall (#135: at x 1.97 the mirror's rim hid its edge), so it overlaps the door's
 // 12 mm architrave by ~3 cm and hangs on a 13 mm spacer (z) clear of it.
 export const HALL_WALL = {
   x: 2.057, rotY: -Math.PI / 2,
-  mirror: { z: 1.115, y: 1.45, d: 1.1, frame: 0.018, depth: 0.03 },
+  mirror: { x: 1.177, z: 7.804, rotY: 0, y: 1.5, d: 1.1, frame: 0.018, depth: 0.03 },
   cabinet: { x: 1.935, z: 0.478, y: 1.5, rotY: 0, w: 0.169, h: 0.16, d: 0.055 },
 };
 

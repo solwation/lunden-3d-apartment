@@ -211,7 +211,7 @@ src/catboard.js        cork board in the kitchen (under the wall clock): a photo
                        #board-view (BoardPanel, #170: keep 📌 = red pin, never pushed off; throw away 🗑 asks twice;
                        arrows/S/Delete; frees the mouse like drawing); a full board drops its oldest unkept photo
 src/shelves.js         kitchen wall shelves with portraits, flowers, books, candles (WALL_SHELVES)
-src/keycabinet.js      hall wall: IKEA LINDBYN mirror Ø 110 + Solstickan key cabinet (E) with the Renault key (E → beep beep);
+src/keycabinet.js      the IKEA LINDBYN mirror Ø 110 (living room since #205) + the hall's Solstickan key cabinet (E) with the Renault key (E → beep beep);
                        the cabinet is in world.lids, the key (world.carKey) a target only while it is open
 src/sillplants.js      flower pots on every inner window board (SILL_PLANTS, #136): five merged meshes, a loose item;
                        `userData.pots` / `rebuild(away)` / `potModel` let one pot be lifted out of the merge (#185)
@@ -436,7 +436,7 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   daybed with pink cushions. Bunks: long side to the side wall, head end to the façade. Name signs: `DOOR_SIGNS` → `src/signs.js` (hall side of the door).
 - Hall (#49): the plan's "EL" cabinet is really the small EL/C (40 cm, `CABINET_FIXES`) plus the coat
   rack "KL" beside it, which the extractor merged; on that wall (right as you come in) a coat rack with
-  jackets and a shoe rack (FURNITURE `coatrack`/`shoerack`). The mirror is centred on the left wall; the key cabinet hangs centred on the narrow wall right of the entrance door, above the switch, clear of the mirror (#123, #135).
+  jackets and a shoe rack (FURNITURE `coatrack`/`shoerack`). The key cabinet hangs centred on the narrow wall right of the entrance door, above the switch (#123, #135). The round LINDBYN mirror that hung on the left wall now hangs in the living room, centred on the wall behind the armchair on its right (the north wall west of the living-room door, #205).
 - Dining set (user's choice, #62/#57/#63): IKEA SKANSNÄS table and 4 chairs, brown beech (`SKANSNAS`, one
   frame colour for both; light woven paper-cord seats): the table rectangular 150 × 90 (closed; 205
   extended is not modelled), short end to the kitchen window; 2 + 2 chairs on the long sides, pushed
