@@ -607,18 +607,32 @@ export function buildWorld(plan) {
   // treads: the very same Ek Chalk parquet material as the floors (our Peab choice, #54); white risers
   scene.add(buildStairs([M.floor, M.riser]));
   const y1 = LEVELS[1].floor, rail = STAIR.railHeight;
+  const midZ = (STAIR.aZ[0] + STAIR.bZ[1]) / 2; // the line between flight A (below) and flight B (above)
   const railSegs = [
-    [STAIR.hole.x0, (STAIR.aZ[0] + STAIR.bZ[1]) / 2, STAIR.hole.x0, STAIR.hole.z1],
-    [STAIR.hole.x0, (STAIR.aZ[0] + STAIR.bZ[1]) / 2, STAIR.center[0], (STAIR.aZ[0] + STAIR.bZ[1]) / 2],
+    [STAIR.hole.x0, midZ, STAIR.hole.x0, STAIR.hole.z1],
+    [STAIR.hole.x0, midZ, STAIR.center[0], midZ],
   ];
+  // The middle run stands over Entréplan's wall between the flights, which stops at the level's ceiling,
+  // a slab thickness below y1 (no slab in the hole). Carry that wall on up to the upstairs floor as an
+  // upstand, so the balusters stand on it instead of hanging in the air above the turn (#232).
+  const midWall = lower.walls.map((w) => {
+    const xs = w.outer.map((q) => q[0]), zs = w.outer.map((q) => q[1]);
+    return { x0: Math.min(...xs), x1: Math.max(...xs), z0: Math.min(...zs), z1: Math.max(...zs) };
+  }).find((b) => b.z0 <= midZ && b.z1 >= midZ && b.x0 <= STAIR.hole.x0 && b.x1 >= STAIR.center[0] - 0.1);
+  if (midWall) scene.add(box(Math.max(midWall.x0, STAIR.hole.x0), midWall.x1, midWall.z0, midWall.z1, slabY0 - 0.01, y1, M.wall));
   for (const [ax, az, bx, bz] of railSegs) {
     scene.add(box(Math.min(ax, bx) - 0.02, Math.max(ax, bx) + 0.02, Math.min(az, bz) - 0.02, Math.max(az, bz) + 0.02,
       y1 + rail - 0.05, y1 + rail, M.rail));
     const n = Math.max(2, Math.round(Math.hypot(bx - ax, bz - az) / 0.12));
-    for (let i = 0; i <= n; i++) {
+    for (let i = 1; i < n; i++) { // the ends are newel posts
       const x = ax + ((bx - ax) * i) / n, z = az + ((bz - az) * i) / n;
       scene.add(box(x - 0.01, x + 0.01, z - 0.01, z + 0.01, y1, y1 + rail, M.rail));
     }
+  }
+  // newel posts at the corner and both ends (Peab's 3D plan), on the slab edge / the upstand's end
+  const np = STAIR.newel / 2, endX = Math.min(STAIR.center[0], (midWall?.x1 ?? STAIR.center[0]) - np);
+  for (const [x, z] of [[STAIR.hole.x0, midZ], [STAIR.hole.x0, STAIR.hole.z1 - np], [endX, midZ]]) {
+    scene.add(box(x - np, x + np, z - np, z + np, y1 - 0.01, y1 + rail + 0.03, M.rail));
   }
   l1.segments.push(...railSegs);
 

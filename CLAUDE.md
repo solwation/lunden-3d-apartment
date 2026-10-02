@@ -421,7 +421,8 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   (`addWindowFrame` in world.js, an Openable each, max 60°, no collision); the transom light is fixed.
   An open casement plays `sfx.wind` (looping gusty noise) until it is closed. The front door has a brass letter
   flap (`letterFlap`, an Openable in world.lids riding on the leaf, kept out of the door's merge via `door.keep`).
-- Skärmvägg by the patio H 1.8 m, stair railing H 1.1 m (bofakta).
+- Skärmvägg by the patio H 1.8 m, stair railing H 1.1 m (bofakta). The railing's middle run stands on Entréplan's wall between
+  the flights, carried up to the upstairs floor (no slab in the hole), with newel posts (`STAIR.newel`) at its corner and ends (#232).
 - U-shaped stair with winders at the east end: flight A (Entréplan, going east), 180° winders,
   flight B (going west) arriving in the upstairs hall. Upstairs slab opening = stair outline on
   Övre plan.

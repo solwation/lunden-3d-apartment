@@ -645,6 +645,7 @@ export const STAIR = {
   // Upstairs slab opening = stair outline on Övre plan.
   hole: { x0: 3.86, x1: 5.49, z0: 5.77, z1: 7.54 },
   railHeight: 1.1, // bofakta: H 1,1 m
+  newel: 0.08,     // newel post at the railing's corner and ends, square (guess, Peab 3D plan shows heavier posts)
 };
 
 export const COLORS = {
