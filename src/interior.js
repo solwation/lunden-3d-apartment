@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { FINISH, TILED_ROOMS, KITCHEN as K, SKIRTING } from './config.js';
+import { FINISH, TILED_ROOMS, KITCHEN as K, SKIRTING, LAUNDRY_SINK, VANITY_BASIN } from './config.js';
 import { Fridge } from './fridge.js';
 import { buildOvens } from './ovens.js';
 import { Moccamaster } from './coffee.js';
@@ -218,6 +218,41 @@ function cylinderY(B, x, z, r, y0, y1, material, segs = 16) {
   B.add(geo, material);
 }
 
+/** A slab (x0..x1, z0..z1, y0..y1) with a rectangular hole `h` cut out: four boxes around it. */
+function slabWithHole(B, x0, x1, z0, z1, y0, y1, h, material) {
+  B.box(x0, x1, z0, h.z0, y0, y1, material);
+  B.box(x0, x1, h.z1, z1, y0, y1, material);
+  B.box(x0, h.x0, h.z0, h.z1, y0, y1, material);
+  B.box(h.x1, x1, h.z0, h.z1, y0, y1, material);
+}
+
+/**
+ * A sink bowl hanging from `top` into the hole `h` (#122): four walls, a bottom `depth` below the top,
+ * a drain (grate + plug) in the middle and an overflow hole on the wall at x = h[overflow]. Returns the
+ * bottom's height (where a tap's stream lands).
+ */
+function sinkBowl(B, h, top, depth, material, overflow = 'x1') {
+  const t = 0.008, yb = top - depth;
+  B.box(h.x0, h.x1, h.z0, h.z1, yb - t, yb, material);
+  B.box(h.x0, h.x1, h.z0 - t, h.z0, yb, top, material);
+  B.box(h.x0, h.x1, h.z1, h.z1 + t, yb, top, material);
+  B.box(h.x0 - t, h.x0, h.z0, h.z1, yb, top, material);
+  B.box(h.x1, h.x1 + t, h.z0, h.z1, yb, top, material);
+  // soft inner corners: a slim fillet strip down each corner and along the bottom edges
+  const f = 0.012;
+  for (const [x, z] of [[h.x0, h.z0], [h.x0, h.z1], [h.x1, h.z0], [h.x1, h.z1]]) {
+    B.box(Math.min(x, x + (x === h.x0 ? f : -f)), Math.max(x, x + (x === h.x0 ? f : -f)),
+      Math.min(z, z + (z === h.z0 ? f : -f)), Math.max(z, z + (z === h.z0 ? f : -f)), yb, top - 0.002, material);
+  }
+  const cx = (h.x0 + h.x1) / 2, cz = (h.z0 + h.z1) / 2;
+  cylinderY(B, cx, cz, 0.035, yb, yb + 0.002, M.chrome, 20);           // drain ring
+  cylinderY(B, cx, cz, 0.026, yb + 0.002, yb + 0.0028, M.black, 20);    // the dark hole under the grate
+  for (const dz of [-0.016, -0.008, 0, 0.008, 0.016]) B.box(cx - 0.024, cx + 0.024, cz + dz - 0.0015, cz + dz + 0.0015, yb + 0.0028, yb + 0.0034, M.chrome); // grate
+  const ox = overflow === 'x1' ? h.x1 - 0.0005 : h.x0 + 0.0005, s = overflow === 'x1' ? -1 : 1;
+  B.box(Math.min(ox, ox + s * 0.002), Math.max(ox, ox + s * 0.002), cz - 0.02, cz + 0.02, top - 0.05, top - 0.035, M.black); // overflow
+  return yb;
+}
+
 /** Gooseneck mixer: column, half-circle spout towards the front (direction dx, dz). */
 function mixer(B, x, z, y, [dx, dz], material, { h = 0.3, r = 0.09, tube = 0.011 } = {}) {
   cylinderY(B, x, z, 0.024, y, y + 0.06, material);
@@ -299,8 +334,9 @@ function buildKitchen(B, group, floor, y0, yC, handled, taps, appliances) {
       front(F, u0, u1, yF + K.grille, yTop, M.front, 'bottom');
       continue;
     }
-    // base unit: carcass + recessed plinth + fronts
-    F.box(u0, u1, -F.depth, -FT, y0, yt, M.front);
+    // base unit: carcass + recessed plinth + fronts (under the sink the carcass stops below the bowl, #122)
+    const sinkUnit = sinkF && inside(sinkF, c);
+    F.box(u0, u1, -F.depth, -FT, y0, sinkUnit ? top - K.sink.depth - 0.02 : yt, M.front);
     F.box(u0, u1, -0.07, -0.05, y0, yb, M.front);
     if (c.label === 'DM') {
       front(F, u0, u1, yb, yt, M.front, 'top'); // integrated dishwasher (KEZA9310W)
@@ -320,18 +356,20 @@ function buildKitchen(B, group, floor, y0, yC, handled, taps, appliances) {
   // Worktop (Delaware stone): east run + the corner, and the return in front of the corner unit
   const runZ0 = tall ? tall.z1 : Math.min(...east.map((c) => c.z0));
   const eFront = east.length ? Math.min(...east.map((c) => c.x0)) : eastWall - depth;
-  B.box(eFront - 0.02, eastWall, runZ0, southWall, yt, top, M.counter);
+  // the sink's hole in the stone (undermounted: the stone edge shows), see below
+  const sinkC = sinkF && centre(sinkF), sinkX = sinkF && Math.min(sinkC[0], eastWall - K.sink.d / 2 - 0.08);
+  const sinkHole = sinkF && { x0: sinkX - K.sink.d / 2 + 0.02, x1: sinkX + K.sink.d / 2 - 0.02, z0: sinkC[1] - K.sink.w / 2 + 0.02, z1: sinkC[1] + K.sink.w / 2 - 0.02 };
+  if (sinkHole) slabWithHole(B, eFront - 0.02, eastWall, runZ0, southWall, yt, top, sinkHole, M.counter);
+  else B.box(eFront - 0.02, eastWall, runZ0, southWall, yt, top, M.counter);
   const retX0 = ret.length ? Math.min(...ret.map((c) => c.x0)) : eFront;
   const retFront = ret.length ? Math.min(...ret.map((c) => c.z0)) : southWall - depth;
   if (retX0 < eFront) B.box(retX0, eFront - 0.02, retFront - 0.02, southWall, yt, top, M.counter);
 
   // Sink (undermounted, steel) + matt black gooseneck mixer behind it
   if (sinkF) {
-    const [sx, sz] = centre(sinkF);
-    const cx = Math.min(sx, eastWall - K.sink.d / 2 - 0.08);
-    B.box(cx - K.sink.d / 2, cx + K.sink.d / 2, sz - K.sink.w / 2, sz + K.sink.w / 2, top, top + 0.0012, M.steelDark);
-    B.box(cx - K.sink.d / 2 + 0.02, cx + K.sink.d / 2 - 0.02, sz - K.sink.w / 2 + 0.02, sz + K.sink.w / 2 - 0.02, top + 0.0012, top + 0.002, M.steel);
-    taps.push({ ...mixer(B, eastWall - 0.06, sz, top, [-1, 0], M.handle), name: 'köksblandaren' });
+    const sz = sinkC[1];
+    const bottom = sinkBowl(B, sinkHole, top, K.sink.depth, M.steel, 'x1');
+    taps.push({ ...mixer(B, eastWall - 0.06, sz, top, [-1, 0], M.handle), basin: bottom, name: 'köksblandaren' });
   }
   // Induction hob, centred on its cabinet
   if (hobCab) {
@@ -413,19 +451,21 @@ function buildLaundry(B, floor, room, y0, handled, taps) {
     B.add(glass, M.glassDark);
   }
   // worktop over the machines + the sink cabinet (Arkitekt plus Frost, knob Point krom)
-  B.box(run.x0, run.x1 + 0.02, run.z0, run.z1, yt, yt + 0.03, M.counter);
+  const tvSink = sinkF && (() => { const [sx, sz] = centre(sinkF), { w, d } = LAUNDRY_SINK; return { x0: sx - d / 2, x1: sx + d / 2, z0: sz - w / 2, z1: sz + w / 2 }; })();
+  if (tvSink) slabWithHole(B, run.x0, run.x1 + 0.02, run.z0, run.z1, yt, yt + 0.03, tvSink, M.counter);
+  else B.box(run.x0, run.x1 + 0.02, run.z0, run.z1, yt, yt + 0.03, M.counter);
   if (sinkF) {
     const F = frame(B, { ...run, z0: sinkF.z0, z1: run.z1 }, 'e');
-    F.box(F.u0, F.u1, -F.depth, -FT, y0, yt, M.laundry);
+    F.box(F.u0, F.u1, -F.depth, -FT, y0, yt + 0.033 - LAUNDRY_SINK.depth - 0.02, M.laundry); // stops below the bowl (#122)
     front(F, F.u0, F.u1, y0 + 0.1, yt, M.laundry, null);
     const [kx, kz] = F.at(F.u0 + 0.04, 0.012);
     const knob = new THREE.SphereGeometry(0.0125, 12, 8);
     knob.translate(kx, yt - 0.06, kz);
     B.add(knob, M.chrome);
-    const [sx, sz] = centre(sinkF);
-    B.box(sx - 0.2, sx + 0.2, sz - 0.13, sz + 0.13, yt + 0.03, yt + 0.0315, M.steelDark);
-    B.box(sx - 0.18, sx + 0.18, sz - 0.11, sz + 0.11, yt + 0.0315, yt + 0.032, M.steel);
-    taps.push({ ...mixer(B, run.x0 + 0.06, sz, yt + 0.03, [1, 0], M.chrome, { h: 0.28, r: 0.08 }), name: 'blandaren' });
+    const [, sz] = centre(sinkF), h = tvSink, rim = 0.02, yr = yt + 0.03;
+    slabWithHole(B, h.x0 - rim, h.x1 + rim, h.z0 - rim, h.z1 + rim, yr, yr + 0.003, h, M.steelDark); // inset sink's rim
+    const bottom = sinkBowl(B, h, yr + 0.003, LAUNDRY_SINK.depth, M.steel, 'x0');
+    taps.push({ ...mixer(B, run.x0 + 0.06, sz, yt + 0.03, [1, 0], M.chrome, { h: 0.28, r: 0.08 }), basin: bottom, name: 'blandaren' });
   }
   // ceiling globe (Classic glob 150 vit klarglas)
   const [cx, cz] = centre(room);
@@ -444,12 +484,18 @@ function vanity(B, sinkF, wallX, y0, width, depth) {
   const [, cz] = centre(sinkF);
   const r = { x0: wallX, x1: wallX + depth, z0: cz - width / 2, z1: cz + width / 2 };
   const F = frame(B, r, 'e');
-  F.box(F.u0, F.u1, -depth, 0, y0 + 0.4, y0 + 0.84, M.vanity);
+  // the body stops below the basin; the top drawer front (2 cm) runs up to the porcelain top (#122)
+  F.box(F.u0, F.u1, -depth, -0.02, y0 + 0.4, y0 + 0.86 - VANITY_BASIN.depth, M.vanity);
+  F.box(F.u0, F.u1, -0.02, 0, y0 + 0.4, y0 + 0.84, M.vanity);
+  for (const u of [F.u0, F.u1 - 0.02]) F.box(u, u + 0.02, -depth, -0.02, y0 + 0.4, y0 + 0.84, M.vanity); // the sides
   F.box(F.u0 + 0.01, F.u1 - 0.01, 0, 0.003, y0 + 0.615, y0 + 0.625, M.black); // grip line between drawers
-  F.box(F.u0, F.u1, -depth, 0.01, y0 + 0.84, y0 + 0.87, M.porcelain);
+  // the porcelain top with its basin (#122): a hole in the slab, a bowl VANITY_BASIN.depth deep
+  const bowl = { x0: wallX + 0.13, x1: wallX + depth - 0.05, z0: cz - width / 2 + 0.07, z1: cz + width / 2 - 0.07 };
+  slabWithHole(B, wallX, wallX + depth + 0.01, cz - width / 2, cz + width / 2, y0 + 0.84, y0 + 0.87, bowl, M.porcelain);
+  const bottom = sinkBowl(B, bowl, y0 + 0.87, VANITY_BASIN.depth, M.porcelain, 'x0');
   cylinderY(B, wallX + 0.08, cz, 0.018, y0 + 0.87, y0 + 1.0, M.chrome);
   B.box(wallX + 0.08, wallX + 0.2, cz - 0.012, cz + 0.012, y0 + 0.97, y0 + 0.99, M.chrome);
-  r.tap = { pos: [wallX + 0.19, y0 + 0.966, cz], dir: [0, -1, 0], r: 0.008, basin: y0 + 0.86, name: 'blandaren' };
+  r.tap = { pos: [wallX + 0.19, y0 + 0.966, cz], dir: [0, -1, 0], r: 0.008, basin: bottom, name: 'blandaren' };
   return r;
 }
 

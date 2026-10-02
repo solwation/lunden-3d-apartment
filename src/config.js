@@ -421,9 +421,14 @@ export const KITCHEN = {
   hoodHeight: 0.08,
   fridgeHeight: 1.86,    // Electrolux LRT7ME39X / LUS7ME28X: 186 cm
   grille: 0.06,          // ventilationsgaller rostfri (over fridge/freezer and microwave)
-  sink: { w: 0.5, d: 0.4 }, // Diskho Intra Linea 5040, underlimmad
+  sink: { w: 0.5, d: 0.4, depth: 0.19 }, // Diskho Intra Linea 5040, underlimmad; depth *guess* (typ. 18–20 cm, #122)
   hob: { w: 0.58, d: 0.52 }, // Induktionshäll EH60KB6BF
 };
+
+// Sink bowls (#122, src/interior.js): the inset steel sink in Tvätt (40 × 26 cm as drawn, depth *guess*)
+// and the basin in the bathroom vanities (Core Grip with a porcelain top, depth *guess*).
+export const LAUNDRY_SINK = { w: 0.22, d: 0.36, depth: 0.15 };
+export const VANITY_BASIN = { depth: 0.1 };
 
 // Changelog note (src/changelog.js) on the freezer door: its front is the plan's F cabinet
 // z0 − 4 cm (the freestanding freezer sticks out, see interior.js). rotY π = facing north.
