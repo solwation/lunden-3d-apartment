@@ -9,6 +9,8 @@ import { Reflector } from 'three/addons/objects/Reflector.js';
 const MAX_DIST = 4;
 const RES = 512;
 const mirrors = [];
+/** Every mirror's { r: Reflector, level } (tests). */
+export const reflectors = () => mirrors;
 
 /** Put a reflector over a mirror. `geometry` lies in the parent's local frame facing +z. */
 export function addReflector(parent, geometry, { level = 0, offset = 0.0015 } = {}) {

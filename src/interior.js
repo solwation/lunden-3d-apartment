@@ -633,7 +633,7 @@ function buildBathroom(B, group, floor, room, y0, handled, taps) {
       const m = frame(B, { x0: room.x0, x1: room.x0 + 0.15, z0: cz - 0.25, z1: cz + 0.25 }, 'e');
       m.box(m.u0, m.u1, -0.15, 0, y0 + 1.2, y0 + 1.9, M.vanity);
       m.box(m.u0 + 0.01, m.u1 - 0.01, 0, 0.004, y0 + 1.21, y0 + 1.89, M.mirror);
-      mirrorReflector(group, new THREE.PlaneGeometry(m.u1 - m.u0 - 0.02, 0.68), room.x0 + 0.0045, y0 + 1.55, cz, room.level);
+      mirrorReflector(group, new THREE.PlaneGeometry(m.u1 - m.u0 - 0.02, 0.68), m.f + 0.0045, y0 + 1.55, cz, room.level); // on the cabinet's front (#139)
     } else {
       // Slot 50 with its LED backlight on a switch of its own (E on the mirror, #50)
       const led = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xfff2dc, emissiveIntensity: 0.04 });

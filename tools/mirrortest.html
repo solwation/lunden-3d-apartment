@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Mirror test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+// Mirror images (#50, #139): stand 1 m in front of every mirror, look at it → that mirror's Reflector is the
+// active one, and it sits on the visible glass (nothing in front of it between the eye and it).
+//   google-chrome --headless=new --dump-dom http://localhost:8137/tools/mirrortest.html
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const f = document.createElement('iframe');
+f.width = 900; f.height = 600; f.src = '../index.html';
+document.body.append(f);
+f.onload = async () => {
+  const w = f.contentWindow, d = f.contentDocument;
+  while (!w.__app) await wait(100);
+  const { player, camera, step, reflectors, updateReflections, world, scene } = w.__app;
+  const V = camera.position.constructor;
+  const lines = [];
+  const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; };
+  d.getElementById('start-touch').click();
+  await wait(50);
+  scene.updateMatrixWorld(true);
+  let pass = check(reflectors().length >= 3, `${reflectors().length} mirrors`);
+  const ray = new (Object.getPrototypeOf(w.__app.marks.ray).constructor)();
+  ray.camera = camera; // sprites need it
+  reflectors().forEach((m, i) => {
+    const p = m.r.getWorldPosition(new V()), n = new V(0, 0, 1).transformDirection(m.r.matrixWorld);
+    const eye = p.clone().addScaledVector(n, 0.8);
+    const floor = m.level === 1 ? 3.25 : 0;
+    player.spawn(eye.x, eye.z, 0); player.pos.y = floor; player.eyeY = floor + 1.62;
+    for (let k = 0; k < 3; k++) step(1 / 60);
+    camera.position.set(eye.x, p.y, eye.z);
+    camera.lookAt(p);
+    camera.updateMatrixWorld(true);
+    updateReflections(camera, m.level, true); // what the render loop does every frame
+    const active = reflectors().filter((x) => x.r.visible);
+    // nothing between the eye and the glass (the reflector must be on the mirror's face, not inside its cabinet)
+    m.r.visible = false;
+    ray.set(camera.position.clone(), p.clone().sub(camera.position).normalize());
+    ray.far = camera.position.distanceTo(p) - 0.003;
+    const blocker = ray.intersectObject(world.object, true).find((h) => h.object.visible && h.object.isMesh && !h.object.material.transparent);
+    pass &= check(active.length === 1 && active[0] === m, `mirror ${i} (level ${m.level}, ${p.toArray().map((v) => v.toFixed(2))}): active ${active.length === 1 && active[0] === m}`);
+    pass &= check(!blocker, `mirror ${i}: nothing in front of the glass${blocker ? ` (hit at ${blocker.distance.toFixed(3)} m)` : ''}`);
+  });
+  out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
+};
+</script>
+</body>
+</html>
