@@ -315,7 +315,10 @@ if (at) {
 // the resumed place (not with ?at=): back to the same spot and view (the clock is real, #143); the start screen then
 // says so and offers "Börja från start" instead
 const resumeEl = document.getElementById('resume');
-if (resumed && !at && resumeAt(resumed)) resumeEl.hidden = false; // the place only: the clock is the real one (#143)
+const resumeOk = !!resumed && !at && resumeAt(resumed); // the place only: the clock is the real one (#143)
+// reloaded mid-visit (#181): no start screen, straight back in (see `continueAfterReload` below); a record made
+// on the start screen (no mode) shows it with "Du fortsätter där du var" as before
+if (resumeOk && !resumed.mode) resumeEl.hidden = false;
 /** Back to the real time and date (#143): the wall clock and the cat calendar show now, not what was spooled or picked. */
 function realNow() {
   const n = new Date();
@@ -860,7 +863,8 @@ function onTap(el, fn) {
 // reload to a fresh URL, so neither the browser's nor GitHub Pages' cache hands back the old page
 onTap(document.getElementById('update-reload'), () => {
   saveResume({ x: player.pos.x, z: player.pos.z, feetY: player.pos.y, yaw: camera.rotation.y, pitch: camera.rotation.x,
-    hour: day.hour, month: day.month });
+    hour: day.hour, month: day.month, muted: isMuted(), fullscreen: !!document.fullscreenElement,
+    mode: locked ? 'mouse' : touch.enabled ? 'touch' : (!armEl.hidden ? 'mouse' : undefined) }); // no mode: on the start screen
   const url = new URL(location.href);
   url.searchParams.set('v', latestVersion ?? Date.now());
   location.replace(url.href);
@@ -869,5 +873,31 @@ onTap(document.getElementById('update-close'), () => { updateEl.hidden = true; }
 document.addEventListener('pointerlockchange', () => { if (!updateEl.hidden) showUpdate(); });
 watchForUpdates(showUpdate);
 
+// After "Ladda om" mid-visit (#181): no start screen. Touch plays at once (sound and fullscreen wait for the
+// first touch: they need a gesture); mouse & keyboard gets the "Klicka för att fortsätta" cover (pointer lock
+// needs a click). A short "Omladdning klar" fades out at the top. F5 / a new visit find no record.
+const reloadedEl = document.getElementById('reloaded');
+const RELOAD_NOTE_S = 3; // seconds the "Omladdning klar" note stays before it fades
+function continueAfterReload(r) {
+  if (r.muted && !isMuted()) updateMute(toggleMuted());
+  if (r.mode === 'touch') {
+    touch.enabled = true;
+    showOverlay(false);
+    window.addEventListener('pointerdown', () => {
+      initAudio();
+      if (r.fullscreen) document.documentElement.requestFullscreen?.().then(() => screen.orientation?.lock?.('landscape')).catch(() => {});
+    }, { once: true, capture: true });
+  } else {
+    overlay.hidden = true;
+    armEl.querySelector('div').innerHTML = 'Klicka för att fortsätta<small>mus &amp; tangentbord</small>';
+    armEl.hidden = false;
+  }
+  reloadedEl.hidden = false;
+  reloadedEl.classList.remove('gone');
+  setTimeout(() => reloadedEl.classList.add('gone'), RELOAD_NOTE_S * 1000);
+  setTimeout(() => { reloadedEl.hidden = true; }, RELOAD_NOTE_S * 1000 + 700);
+}
+if (resumeOk && resumed.mode) continueAfterReload(resumed);
+
 // handle for tests/debugging (tools/touchtest.html)
-window.__app = { things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };
+window.__app = { reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };

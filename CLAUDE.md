@@ -43,10 +43,12 @@ The page polls `version.json` every minute and shows a "new version" notice (top
 when it differs from `BUILD`. Its buttons react to a lifted touch as well as a click (`onTap`,
 #41), and "Ladda om" navigates to `?v=<new SHA>` so no cache serves the old page
 (`tools/updatetest.html`). That button stores a one-time record (`src/resume.js`: position, level, view,
-clock; sessionStorage + localStorage, < 2 min) which the next load reads, deletes and resumes from (the place only — the clock and the calendar always
-start at the real time and date, #143; not with `?at=`; a spot inside a wall falls back to START); F5 finds none and starts at START. The start screen
-says "Du fortsätter där du var" with "Börja från start", and always offers "Gå till startplatsen" (both also
-set the clock and calendar back to now, `realNow`)
+clock, input mode, mute, fullscreen; sessionStorage + localStorage, < 2 min) which the next load reads, deletes and resumes from (the place only — the clock and the calendar always
+start at the real time and date, #143; not with `?at=`; a spot inside a wall falls back to START); F5 finds none and starts at START.
+A record made mid-visit skips the start screen (#181, `continueAfterReload`): touch plays at once (sound/fullscreen on the
+first touch), mouse & keyboard gets the `#arm` cover "Klicka för att fortsätta"; "Omladdning klar" fades out at the top after 3 s.
+A record made on the start screen (no mode) shows it with "Du fortsätter där du var" + "Börja från start". The start screen
+always offers "Gå till startplatsen" (both also set the clock and calendar back to now, `realNow`)
 (`tools/reloadtest.html`). Locally `BUILD = 'dev'` and no checks run. Keep imports
 between `src/` files in the form `from './x.js'` on one line so the stamp regex finds them.
 Use relative paths only.

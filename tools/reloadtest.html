@@ -7,7 +7,8 @@
 // "Ladda om" keeps the place (#74): (1) a stored record puts the visitor back there (position, level,
 // view, clock), the start screen says so, and the record is gone after reading; (2) without a record
 // (F5) the visit starts at START; (3) "Börja från start" goes back to START; (4) a record inside a wall
-// is ignored.
+// is ignored; (5) a record made mid-visit (#181): no start screen, "Omladdning klar" fades out after ~3 s; touch
+// plays at once, mouse & keyboard gets the "Klicka för att fortsätta" cover; the mute choice is kept.
 //   google-chrome --headless=new --dump-dom http://localhost:8137/tools/reloadtest.html
 const out = document.getElementById('out');
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -50,6 +51,25 @@ const KEY = 'lunden.resume';
   f = await load();
   ({ player } = f.contentWindow.__app);
   pass &= check(player.pos.z < -5, `a spot inside a wall → the start (z ${player.pos.z.toFixed(2)})`);
+  f.remove();
+  // (5) mid-visit records: touch → straight in; mouse → the click cover; muted stays muted
+  sessionStorage.setItem(KEY, JSON.stringify({ ...rec, mode: 'touch', muted: true, ts: Date.now() }));
+  f = await load();
+  let d = f.contentDocument, app = f.contentWindow.__app;
+  const note = d.getElementById('reloaded');
+  pass &= check(d.getElementById('overlay').hidden && app.touch.enabled && d.getElementById('arm').hidden, 'touch: no start screen, the joystick is on');
+  pass &= check(Math.hypot(app.player.pos.x - rec.x, app.player.pos.z - rec.z) < 0.05, 'touch: at the stored place');
+  pass &= check(!note.hidden && !note.classList.contains('gone'), `"${note.textContent}" shown`);
+  pass &= check(d.getElementById('mute').textContent === '🔇', 'still muted');
+  await wait(4200);
+  pass &= check(note.hidden, 'the note is gone after ~3 s');
+  f.remove();
+  sessionStorage.setItem(KEY, JSON.stringify({ ...rec, mode: 'mouse', ts: Date.now() }));
+  f = await load();
+  d = f.contentDocument; app = f.contentWindow.__app;
+  const arm = d.getElementById('arm');
+  pass &= check(d.getElementById('overlay').hidden && !arm.hidden && /fortsätta/.test(arm.textContent) && !app.touch.enabled, `mouse: no start screen, "${arm.textContent}"`);
+  pass &= check(!d.getElementById('reloaded').hidden && d.getElementById('mute').textContent === '🔊', 'mouse: the note, sound on');
   f.remove();
   out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
 })();

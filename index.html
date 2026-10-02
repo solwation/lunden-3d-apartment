@@ -77,6 +77,10 @@
     #pause { position: fixed; right: calc(16px + var(--sr)); top: calc(16px + var(--st)); width: 44px; height: 44px; border: 0; border-radius: 50%; background: var(--panel); color: var(--ink); font-size: 18px; }
     #update { position: fixed; top: calc(16px + var(--st)); left: 50%; transform: translateX(-50%); z-index: 10; width: max-content; display: flex; align-items: center; gap: 12px; max-width: calc(100vw - 32px); box-sizing: border-box; background: var(--ink); color: #fff; padding: 10px 10px 10px 16px; border-radius: 10px; box-shadow: 0 8px 30px rgba(0,0,0,.3); font-size: 15px; }
     #update[hidden] { display: none; }
+    #reloaded { position: fixed; top: calc(16px + var(--st)); left: 50%; transform: translateX(-50%); z-index: 10; pointer-events: none; background: var(--ink); color: #fff; padding: 10px 16px; border-radius: 10px; box-shadow: 0 8px 30px rgba(0,0,0,.3); font-size: 15px; opacity: 1; transition: opacity .6s; }
+    #reloaded[hidden] { display: none; }
+    #reloaded.gone { opacity: 0; }
+    #reloaded small { opacity: .75; font-size: 12px; margin-left: 6px; }
     #update small { display: block; opacity: .75; font-size: 12px; margin-top: 2px; }
     #update button { white-space: nowrap; flex: none; border: 0; border-radius: 6px; font: 600 14px system-ui, sans-serif; cursor: pointer; padding: 8px 14px; min-height: 44px; touch-action: manipulation; }
     #update-reload { background: #fff; color: var(--ink); }
@@ -247,6 +251,7 @@
   </div>
   <div id="arm" hidden role="button"><div>Klicka för att börja<small>mus &amp; tangentbord</small></div></div>
   <div id="rotate" role="alert"><div><span class="ico">📱</span><p>Vänd telefonen eller plattan till liggande läge.</p></div></div>
+  <div id="reloaded" hidden role="status">Omladdning klar<small>– ny version</small></div>
   <div id="update" hidden role="status">
     <div>Det finns en ny version av lägenheten.<small id="update-hint">Ladda om sidan för att se den.</small></div>
     <button id="update-reload">Ladda om</button>
