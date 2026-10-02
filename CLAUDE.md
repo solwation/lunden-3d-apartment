@@ -178,7 +178,9 @@ src/cups.js            coffee cups (CUPS): the wall cabinet over the Moccamaster
                        hand (empty, brewed or not, #141), put down on a table / worktop / floor, back in the open cabinet
                        with E on it; the jug is a Holdable (Jug): E on a standing cup pours, E on the hot plate puts it back;
                        a cup holds a Contents (drinks.js): milk and whisky pour in too (DRINKS.pour.cup); coffee + whisky =
-                       `kask` ("koppen med kaffekask", sips count as stats.kask, #169)
+                       `kask` ("koppen med kaffekask", sips count as stats.kask, #169);
+                       steam (#216, CUP_STEAM): a few swaying wisps in one mesh per cup while it is hot (`heat`: fresh coffee 1,
+                       cools over CUP_STEAM.seconds, milk cools it), leaning back when the cup moves
 src/fishfingers.js     fish fingers (FISH, #162): a carton on the freezer's lower shelf; E takes one straight into the hand
                        (FishFinger, like a cup), click / "Ät" bites (FISH.bites, shorter each time, sfx.chew), put down
                        anywhere / taken again / E on the carton puts it back; F clears them away and refills the carton;

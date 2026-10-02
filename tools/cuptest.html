@@ -118,6 +118,22 @@ f.onload = async () => {
   let sips = 0;
   while (cup2.fill > 0.01 && sips < 10) { cup2.use(); sips++; steps(0.7); }
   pass &= check(cup2.fill === 0 && stats.kask === k0 + sips && sips === 5, `drunk up in ${sips} sips, ${stats.kask - k0} counted as kaffekask`);
+  // steam (#216): a fresh cup steams, it cools off over CUP_STEAM.seconds, an empty one never, milk cools it
+  if (heldItem()) heldItem().putBack?.();
+  const c3 = cups.cups[2];
+  if (c3.state === 'cabinet' || c3.held) { c3.take?.(); c3.placeAt(cup2.counter.clone().add(new V(0, 0, 0.12))); }
+  c3.contents.clear(); c3.heat = 0; steps(0.2);
+  const shows = (c) => c.steam.mesh.visible && c.steam.mesh.material.opacity > 0.01;
+  pass &= check(!shows(c3) && c3.steamLevel === 0, 'an empty cup: no steam');
+  c3.setFill(0.9); steps(0.5);
+  const hot = c3.steamLevel;
+  pass &= check(shows(c3) && hot > 0.5, `fresh coffee: steam (${hot.toFixed(2)}, opacity ${c3.steam.mesh.material.opacity.toFixed(2)})`);
+  const pos = c3.steam.mesh.geometry.attributes.position.array, top = Math.max(...pos.filter((_, i) => i % 3 === 1));
+  pass &= check(top > c3.coffee.position.y + 0.08, `the wisps rise from the surface (${(top - c3.coffee.position.y).toFixed(2)} m)`);
+  c3.contents.set('coffee', 0.9); c3.contents.pour('milk', 0.1, 0.01); steps(0.3);
+  pass &= check(c3.steamLevel < hot - 0.05, `milk in it: less steam (${hot.toFixed(2)} → ${c3.steamLevel.toFixed(2)})`);
+  steps(250);
+  pass &= check(!shows(c3) && c3.steamLevel === 0, 'after four minutes it has cooled: no steam');
   out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
 };
 </script>

@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { CUPS as C, DRINKS as D } from './config.js';
+import { CUPS as C, DRINKS as D, CUP_STEAM } from './config.js';
 import { sfx } from './audio.js';
 import { heldItem, setHeld, handBusy, Holdable } from './holdable.js';
 import { Contents, pourAmount, drinkName } from './drinks.js';
@@ -54,6 +54,75 @@ export function cupCabinet(c) {
   return { object: g, cab, shelfY: c.y0 + w, x: c.front + depth / 2, zc };
 }
 
+/** The wisp texture: soft across (u), fading in at the bottom and out at the top (v). */
+function wispTexture() {
+  const c = document.createElement('canvas');
+  c.width = 32; c.height = 64;
+  const g = c.getContext('2d'), img = g.createImageData(32, 64);
+  for (let y = 0; y < 64; y++) for (let x = 0; x < 32; x++) {
+    const u = (x + 0.5) / 32, v = 1 - (y + 0.5) / 64; // v 0 = the bottom
+    const across = Math.exp(-((u - 0.5) ** 2) / 0.045);
+    const along = Math.min(1, v / 0.15) * (1 - v) ** 1.4;
+    const i = (y * 32 + x) * 4;
+    img.data[i] = img.data[i + 1] = img.data[i + 2] = 255;
+    img.data[i + 3] = Math.round(255 * across * along);
+  }
+  g.putImageData(img, 0, 0);
+  return new THREE.CanvasTexture(c);
+}
+let wisp = null;
+const S = CUP_STEAM;
+
+/**
+ * Steam over a cup (#216): S.strips thin ribbons in one mesh (one draw call), each a column of S.segments quads that
+ * sways as it rises and drifts back when the cup moves. Rebuilt on the CPU each frame while it shows (a few dozen
+ * vertices), turned towards the camera about the vertical.
+ */
+class Steam {
+  constructor() {
+    wisp ??= wispTexture();
+    const n = S.strips, m = S.segments, verts = n * (m + 1) * 2;
+    this.pos = new Float32Array(verts * 3);
+    const uv = new Float32Array(verts * 2), idx = [];
+    for (let i = 0; i < n; i++) for (let j = 0; j <= m; j++) {
+      const v = (i * (m + 1) + j) * 2;
+      uv.set([0, j / m, 1, j / m], v * 2);
+      if (j < m) idx.push(v, v + 1, v + 2, v + 1, v + 3, v + 2);
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(this.pos, 3).setUsage(THREE.DynamicDrawUsage));
+    geo.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+    geo.setIndex(idx);
+    geo.boundingSphere = new THREE.Sphere(new THREE.Vector3(0, 0.1, 0), 0.2);
+    this.mesh = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ map: wisp, color: 0xf3f5f7, transparent: true, opacity: 0, depthWrite: false, side: THREE.DoubleSide }));
+    Object.assign(this.mesh, { visible: false, castShadow: false, frustumCulled: false, renderOrder: 2 });
+    this.mesh.raycast = () => {};
+    this.phase = [...Array(n)].map(() => Math.random() * 6.28);
+    this.lean = new THREE.Vector3();
+  }
+
+  /** y0: the coffee surface (cup-local); k: strength 0…1; t: time; side: the camera's sideways direction (cup-local, horizontal). */
+  update(y0, k, t, side, lean) {
+    this.mesh.visible = k > 0.01;
+    if (!this.mesh.visible) return;
+    this.mesh.material.opacity = S.opacity * k;
+    const n = S.strips, m = S.segments, p = this.pos, H = S.height * (0.6 + 0.4 * k);
+    for (let i = 0; i < n; i++) {
+      const ph = this.phase[i], x0 = (i - (n - 1) / 2) * 0.012, sx = side.x, sz = side.z;
+      for (let j = 0; j <= m; j++) {
+        const a = j / m, y = y0 + a * H;
+        const sway = Math.sin(a * 5.5 - t * 1.7 + ph) * 0.018 * a + Math.sin(a * 2.3 - t * 0.9 + ph * 1.7) * 0.009 * a;
+        const w = S.width * (0.5 + a * 1.4) * (0.8 + 0.2 * Math.sin(t * 1.3 + ph + a * 3));
+        const cx = (x0 * (1 - a * 0.5) + sway) * sx + lean.x * a * a, cz = (x0 * (1 - a * 0.5) + sway) * sz + lean.z * a * a;
+        const v = (i * (m + 1) + j) * 2 * 3;
+        p[v] = cx - sx * w / 2; p[v + 1] = y; p[v + 2] = cz - sz * w / 2;
+        p[v + 3] = cx + sx * w / 2; p[v + 4] = y; p[v + 5] = cz + sz * w / 2;
+      }
+    }
+    this.mesh.geometry.attributes.position.needsUpdate = true;
+  }
+}
+
 function mugModel() {
   const g = new THREE.Group();
   const body = new THREE.Mesh(new THREE.CylinderGeometry(C.r, C.r * 0.92, C.h, 20, 1, true), new THREE.MeshStandardMaterial({ color: C.color, roughness: 0.3, side: THREE.DoubleSide }));
@@ -73,16 +142,16 @@ export class Cup {
   constructor(scene, camera, homePos, counter) {
     const { g, coffee } = mugModel();
     Object.assign(this, { name: 'koppen', placeVerb: 'ställa ner', isCup: true, scene, camera, model: g, coffee, counter, home: homePos.clone(),
-      state: 'cabinet', contents: new Contents(), held: false, steamT: 0 });
+      state: 'cabinet', contents: new Contents(), held: false, steamT: 0, heat: 0, coffeeWas: 0, milkWas: 0 });
     const cup = this;
     this.target = { get name() { return cup.kask ? 'koppen med kaffekask' : 'koppen'; }, kind: 'cup', pickable: g, cup: this, item: this, get verb() { return cup.verb; },
       get blocked() { return cup.blocked; }, get blockedText() { return cup.blockedText; }, toggle: () => this.press() };
     g.traverse((m) => { m.userData.door = this.target; });
     scene.add(g);
     g.position.copy(homePos);
-    this.steam = new THREE.Mesh(new THREE.PlaneGeometry(0.06, 0.12), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0, depthWrite: false }));
-    this.steam.position.y = C.h + 0.08;
-    g.add(this.steam);
+    this.steam = new Steam();
+    g.add(this.steam.mesh);
+    this.lastAt = homePos.clone();
   }
 
   get fill() { return this.contents.total; }
@@ -199,12 +268,37 @@ export class Cup {
       this.model.rotation.set(0.1 + 0.9 * k, -0.5, 0);
     }
     if (this.contents.update(dt)) this.show();
-    // steam over a full cup, a soft wisp going up
+    this.updateSteam(dt);
+  }
+
+  /** How strongly it steams, 0…1 (#216): hot coffee, more when full, less with milk in it. */
+  get steamLevel() {
+    const a = this.contents.a, coffee = a.coffee ?? 0, tot = this.fill;
+    if (coffee < 0.02 || this.heat <= 0) return 0;
+    return this.heat * Math.min(1, (coffee / tot) * 1.15) * (0.45 + 0.55 * Math.min(1, tot));
+  }
+
+  updateSteam(dt) {
+    // fresh coffee in: hot again; milk in: cooler by its share; then it cools over CUP_STEAM.seconds
+    const a = this.contents.a, coffee = a.coffee ?? 0, milk = a.milk ?? 0, tot = this.fill;
+    if (coffee > this.coffeeWas + 0.005) this.heat = Math.min(1, this.heat + (coffee - this.coffeeWas) / Math.max(0.05, tot) * 2);
+    if (milk > this.milkWas + 0.005 && tot > 0) this.heat = Math.max(0, this.heat - S.milk * (milk - this.milkWas) / tot);
+    this.coffeeWas = coffee; this.milkWas = milk;
+    if (coffee < 0.02) this.heat = 0;
+    else this.heat = Math.max(0, this.heat - dt / S.seconds);
+    const k = this.steamLevel;
     this.steamT += dt;
-    const k = (this.steamT % 2) / 2;
-    this.steam.material.opacity = this.fill > 0.5 && this.contents.has('coffee') ? 0.18 * Math.sin(Math.PI * k) : 0;
-    this.steam.position.y = C.h + 0.04 + 0.1 * k;
-    this.steam.quaternion.copy(this.camera.quaternion).premultiply(this.model.getWorldQuaternion(new THREE.Quaternion()).invert()); // face the camera
+    if (k <= 0.01) { this.steam.update(0, 0); return; }
+    // the camera's sideways direction and the drift (from how the cup moves), both in the cup's own frame
+    const q = this.model.getWorldQuaternion(new THREE.Quaternion()).invert();
+    const at = this.model.getWorldPosition(new THREE.Vector3());
+    const side = new THREE.Vector3(1, 0, 0).applyQuaternion(this.camera.getWorldQuaternion(new THREE.Quaternion())).applyQuaternion(q);
+    side.y = 0; if (side.lengthSq() < 1e-6) side.set(1, 0, 0); side.normalize();
+    const vel = at.clone().sub(this.lastAt).divideScalar(Math.max(dt, 1e-3));
+    this.lastAt.copy(at);
+    const want = vel.multiplyScalar(-S.drift).clampLength(0, 0.06).applyQuaternion(q);
+    this.steam.lean.lerp(want.setY(0), Math.min(1, dt * 4));
+    this.steam.update(this.coffee.position.y + 0.004, k, this.steamT, side, this.steam.lean);
   }
 }
 
