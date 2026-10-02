@@ -359,7 +359,7 @@ screenshots into the session scratchpad, not the repo.
 - Day cycle: `DAY` in config. Every visit starts at the browser's own time and date (#95; `&time` /
   `&month` / `&day` override, `&month` alone = the 15th); the date rolls over at midnight. The sun
   position is computed (declination, hour angle, equation of time, CEST in summer) for Lund and
-  rotated into plan axes by `DAY.planNorth`. The wall clock in the kitchen (right of the Badrum door seen from the kitchen) opens a strip at the bottom
+  rotated into plan axes by `DAY.planNorth`. The wall clock in the kitchen (centred on the wall between the hall and the Badrum door, over the cat board + calendar) opens a strip at the bottom
   (`reading` mode, so no walking, but looking works): hold A D / ← → / ⏪ ⏩ to spool, Space / ⏸ pause. The
   date is picked on the cat calendar beside the cat board (`src/calendar.js`, `CALENDAR`): E opens
   #cal-panel, A D / ← → / ◀ ▶ months, W S / ↑ ↓ days (held keys repeat; a key already held while walking up is ignored), or click a day. The neighbours' windows are one instanced additive mesh with a

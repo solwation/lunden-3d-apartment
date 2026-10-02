@@ -436,9 +436,9 @@ export const AO = {
   ceiling: { strength: 0.3, radius: 0.3 },
 };
 
-// Cork board with photos of petted cats (src/catboard.js), straight under the kitchen wall clock and
-// a little to its right (WALL_CLOCK: Tvätt/Badrum wall, kitchen face x 2.152, z 3.145–5.244, clock
-// centre z 4.55, bottom 1.85 m): top edge 1.78 m, 0.29 m clear of the Badrum door (#37).
+// Cork board with photos of petted cats (src/catboard.js), under the kitchen wall clock (WALL_CLOCK:
+// Tvätt/Badrum wall, kitchen face x 2.152, z 3.145–5.244, clock bottom 1.85 m): top edge 1.78 m, 0.29 m
+// clear of the Badrum door (#37). Board + calendar are one group centred under the clock (#121).
 // rotY π/2 = facing east.
 export const CAT_BOARD = { x: 2.152, y: 1.4, z: 4.4, w: 1.1, h: 0.76, rotY: Math.PI / 2 };
 
@@ -481,15 +481,16 @@ export const DAY = {
   moonlight: 0.35, nightAmbient: 0.05,
 };
 
-// Analog wall clock (src/wallclock.js) on the kitchen side of the Tvätt/Badrum wall, to the
-// right of the Badrum door seen from the kitchen (wall face x 2.152, z 3.145–5.244, door at
-// 5.244). rotY π/2 = facing east. Diameter 30 cm (typical kitchen clock).
-export const WALL_CLOCK = { x: 2.152, y: 2.0, z: 4.55, rotY: Math.PI / 2, d: 0.3 };
+// Analog wall clock (src/wallclock.js) on the kitchen side of the Tvätt/Badrum wall, centred on the
+// wall between the hall and the Badrum door (the user, #121): wall face x 2.152, z 3.145 to the door
+// architrave at 5.244 − DOOR_TRIM.width = 5.174 → z 4.16. rotY π/2 = facing east. Diameter 30 cm
+// (typical kitchen clock).
+export const WALL_CLOCK = { x: 2.152, y: 2.0, z: 4.16, rotY: Math.PI / 2, d: 0.3 };
 
 // The cat calendar (#95, src/calendar.js) on the kitchen face of the Tvätt/Badrum wall, under the wall clock and
-// beside the cat board (which covers z 3.85–4.95): a 30 × 45 cm paper calendar with a cat picture for each
+// beside the cat board (which covers z 3.85–4.95; together z 3.37–4.95, centred under the clock, #121): a 30 × 45 cm paper calendar with a cat picture for each
 // month and the days; E opens a strip to pick the month and the day, which set the day cycle's date.
-export const CALENDAR = { x: 2.152, y: 1.5, z: 3.47, w: 0.3, h: 0.45, rotY: Math.PI / 2 };
+export const CALENDAR = { x: 2.152, y: 1.5, z: 3.52, w: 0.3, h: 0.45, rotY: Math.PI / 2 };
 
 // Room lights (src/lights.js). Intensities are candela-ish (three.js physical lights), tuned by
 // eye at night. `pool` = point lights shared by the nearest lit lamps (keep small: Iris 640).
