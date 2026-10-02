@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Kaffeturbo test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+// Kaffeturbo (#217) with an injected real-time clock: three cups of coffee within five minutes → faster (indoors too),
+// "Kaffeturbo!" shows, the view widens; after TURBO.seconds it is over. Three cups spread over ten minutes, or milk /
+// whisky, do not count. Walking with the turbo on still stops at walls.
+//   google-chrome --headless=new --dump-dom http://localhost:8137/tools/turbotest.html
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const lines = [];
+let pass = true;
+const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); pass &&= !!ok; return ok; };
+const f = document.createElement('iframe');
+f.width = 900; f.height = 600;
+document.body.append(f);
+f.src = `../index.html?v=${Math.random()}&shot`;
+f.onload = async () => { try {
+  while (!f.contentWindow.__app) await wait(100);
+  const w = f.contentWindow, d = f.contentDocument, app = w.__app, { turbo, cups, step, player, camera, stats, touch } = app;
+  d.getElementById('start-touch').click(); await wait(50);
+  let clock = 1000; turbo.now = () => clock;
+  const run = (s) => { for (let t = 0; t < s; t += 0.1) { clock += 0.1; step(0.1); } };
+  const cup = cups.cups[0];
+  if (cup.state === 'cabinet') cup.take();
+  const drinkCup = (kind = 'coffee') => { if (!cup.held) cup.take(); cup.contents.set(kind, 1); cup.show(); for (let i = 0; i < 5; i++) { cup.use(); run(0.8); } };
+  // spread out: no turbo
+  drinkCup(); run(250); drinkCup(); run(250); drinkCup();
+  check(!turbo.active, 'three cups over ~ten minutes: no turbo');
+  run(400);
+  // milk and whisky do not count
+  drinkCup('milk'); drinkCup('milk'); drinkCup('whisky');
+  check(!turbo.active, 'milk and whisky do not count');
+  run(400);
+  // three cups of coffee in a row
+  const n0 = stats.turbo;
+  drinkCup(); drinkCup();
+  check(!turbo.active, 'two cups: not yet');
+  drinkCup();
+  check(turbo.active && stats.turbo === n0 + 1, `the third cup: Kaffeturbo (counted ${stats.turbo - n0})`);
+  const el = d.getElementById('turbo');
+  check(!el.hidden && /kaffeturbo/i.test(el.textContent), `"${el.textContent.trim()}" on the screen`);
+  run(2);
+  check(Math.abs(player.boost - 1.8) < 0.05 && camera.fov > 75, `faster (×${player.boost.toFixed(2)}), the view wider (${camera.fov.toFixed(1)}°)`);
+  // indoors: the walking speed really is higher
+  cup.putBack?.();
+  const walk = (secs) => { player.spawn(1.3, 2.6, 0); const z0 = player.pos.z; touch.analog.y = 1; for (let t = 0; t < secs; t += 1 / 30) { clock += 1 / 30; step(1 / 30); } touch.analog.y = 0; return z0 - player.pos.z; };
+  // (in the hall going north towards the front door: 2 m free)
+  const fast = walk(0.5);
+  check(fast > 1.6 * 0.5 * 1.6, `indoors in turbo: ${fast.toFixed(2)} m in 0.5 s (walking pace is 0.8)`);
+  // walls still hold: into the wall west of the hall for two seconds
+  player.spawn(1.0, 1.6, Math.PI / 2); touch.analog.y = 1; for (let t = 0; t < 2; t += 1 / 30) { clock += 1 / 30; step(1 / 30); } touch.analog.y = 0;
+  check(player.pos.x > 0.3 && player.pos.x < 0.9, `walks west in the hall and is stopped by the wall / coat rack there (x ${player.pos.x.toFixed(2)})`);
+  // more coffee adds time, up to the max
+  const left0 = turbo.left; drinkCup();
+  check(turbo.left > left0 && turbo.left <= 240 + 1e-6, `another cup adds time (${left0.toFixed(0)} → ${turbo.left.toFixed(0)} s)`);
+  run(turbo.left + 3);
+  check(!turbo.active && el.hidden && Math.abs(player.boost - 1) < 0.02 && camera.fov < 72.1, 'over: normal pace, the text gone, the view back');
+  out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
+} catch (e) { out.textContent = `SOME FAILED\n${lines.join('\n')}\nERROR ${e.stack}`; } };
+</script>
+</body>
+</html>

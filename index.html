@@ -83,6 +83,20 @@
     #update[hidden] { display: none; }
     #reloaded { position: fixed; top: calc(16px + var(--st)); left: 50%; transform: translateX(-50%); z-index: 10; pointer-events: none; background: var(--ink); color: #fff; padding: 10px 16px; border-radius: 10px; box-shadow: 0 8px 30px rgba(0,0,0,.3); font-size: 15px; opacity: 1; transition: opacity .6s; }
     #reloaded[hidden] { display: none; }
+    /* Kaffeturbo (#217): a big bouncy word, then a small label with the time left; a rainbow glow round the edge */
+    #turbo { position: fixed; left: 50%; top: 42%; transform: translate(-50%, -50%); z-index: 9; pointer-events: none; text-align: center; color: #fff; font: 900 64px system-ui, sans-serif; letter-spacing: .02em; text-shadow: 0 3px 0 #b8432e, 0 6px 18px rgba(0,0,0,.45); transition: top .6s, font-size .6s; }
+    #turbo[hidden] { display: none; }
+    #turbo.pop { animation: turbo-pop .7s cubic-bezier(.2, 1.6, .4, 1); }
+    #turbo.small { top: calc(70px + var(--st)); font-size: 20px; }
+    #turbo .bar { display: block; width: 140px; height: 5px; margin: 4px auto 0; background: rgba(255,255,255,.3); border-radius: 3px; overflow: hidden; opacity: 0; transition: opacity .6s; }
+    #turbo.small .bar { opacity: 1; }
+    #turbo .bar i { display: block; height: 100%; background: linear-gradient(90deg, #f2c230, #e5484d); }
+    #turbo.ending { animation: turbo-blink .35s steps(2) infinite; }
+    @keyframes turbo-pop { 0% { transform: translate(-50%, -50%) scale(.2); opacity: 0; } 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; } }
+    @keyframes turbo-blink { 50% { opacity: .35; } }
+    #turbo-edge { position: fixed; inset: 0; z-index: 3; pointer-events: none; box-shadow: inset 0 0 60px 14px #e5484d; animation: turbo-hue 1.2s linear infinite; opacity: 0; }
+    #turbo-edge[hidden] { display: none; }
+    @keyframes turbo-hue { from { filter: hue-rotate(0deg); } to { filter: hue-rotate(360deg); } }
     #reloaded.gone { opacity: 0; }
     #reloaded small { opacity: .75; font-size: 12px; margin-left: 6px; }
     #update small { display: block; opacity: .75; font-size: 12px; margin-top: 2px; }
@@ -287,6 +301,8 @@
   <div id="rotate" role="alert"><div><span class="ico">📱</span><p>Vänd telefonen eller plattan till liggande läge.</p></div></div>
   <div id="fade" hidden></div>
   <div id="reloaded" hidden role="status">Ny version laddad</div>
+  <div id="turbo" hidden role="status">Kaffeturbo!<span class="bar"><i></i></span></div>
+  <div id="turbo-edge" hidden></div>
   <div id="update" hidden role="status">
     <div>Det finns en ny version av lägenheten.<small id="update-hint">Ladda om sidan för att se den.</small></div>
     <button id="update-reload">Ladda om</button>

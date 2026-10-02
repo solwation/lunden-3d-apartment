@@ -328,7 +328,8 @@ export class Cup {
   use() {
     if (!this.held || this.fill <= 0.01 || this.sip > 0) return;
     this.sip = 1;
-    this.onSip?.(this.kask ? 'kask' : this.contents.main); // coffee with whisky in it counts as kaffekask (#169)
+    const a = this.contents.a, coffee = Math.min(C.sip, this.fill) * (a.coffee ?? 0) / this.fill; // cups of coffee in this sip (#217)
+    this.onSip?.(this.kask ? 'kask' : this.contents.main, coffee); // coffee with whisky in it counts as kaffekask (#169)
     sfx.gulp(this.model.getWorldPosition(new THREE.Vector3()));
     this.contents.sip(C.sip);
     this.show();

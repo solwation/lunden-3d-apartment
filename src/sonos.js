@@ -156,7 +156,15 @@ export class Sonos {
   }
 
   /** The level the mix should be at (volume steps). */
-  get gain() { return this.playing ? S.gain * (this.volume / S.steps) ** 1.5 : 0; }
+  get gain() { return this.playing ? S.gain * (this.volume / S.steps) ** 1.5 * (this.duck ?? 1) : 0; }
+
+  /** Turn the speakers down to `f` of their volume while something else plays (the Kaffeturbo tune, #217). */
+  setDuck(f) {
+    if ((this.duck ?? 1) === f) return;
+    this.duck = f;
+    const A = audioParts();
+    if (A && this.bus) this.bus.mix.gain.setTargetAtTime(this.gain, A.ctx.currentTime, 0.3);
+  }
 
   play() {
     const A = this.ensureBus();

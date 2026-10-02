@@ -103,7 +103,7 @@ export class Player {
     // crouch (#70): down at once, up only where there is head room (under the stair there may be none)
     this.crouched = this.crouch || (this.crouched && !this.roomToStand());
     this.sprinting = wantsRun && this.outdoors && !this.crouched && (keyFwd || keySide || amount > 0);
-    const speed = (this.sprinting ? PLAYER.run : PLAYER.walk * amount) * (this.crouched ? PLAYER.crouchSpeed : 1);
+    const speed = (this.sprinting ? PLAYER.run : PLAYER.walk * amount) * (this.crouched ? PLAYER.crouchSpeed : 1) * (this.boost ?? 1); // boost: Kaffeturbo (#217)
 
     const yaw = this.camera.rotation.y;
     const fx = -Math.sin(yaw), fz = -Math.cos(yaw);

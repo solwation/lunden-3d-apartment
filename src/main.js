@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { COLORS, LEVELS, DAY, START, PLAYER, DRAWING, STAIR, HOLD, REMOTE, REST, DOOR_HEIGHT } from './config.js';
+import { COLORS, LEVELS, DAY, START, PLAYER, DRAWING, STAIR, HOLD, REMOTE, REST, DOOR_HEIGHT, TURBO } from './config.js';
 const DRAWING_COLORS = DRAWING.colors;
 import { buildWorld } from './world.js';
 import { Player } from './player.js';
@@ -31,6 +31,7 @@ import { SmokeAlarm } from './hood.js';
 import { Grill } from './grill.js';
 import { Sonos } from './sonos.js';
 import { DetailCuller } from './detail.js';
+import { Turbo } from './turbo.js';
 import { Beer } from './beer.js';
 import { buildThings } from './things.js';
 import { buildSecret } from './secret.js';
@@ -264,7 +265,9 @@ scene.add(grill.object);
 lights.extra.push(grill.lamp);
 scene.add(smokeAlarm.object);
 if (chicken) { chicken.hood = world.hood; chicken.onEaten = () => bump('chicken'); }
-for (const c of cups.cups) c.onSip = (drink) => bump(drink ?? 'coffee'); // drink from a cup (#117) // the Moccamaster's jug: take it, pour, put it back (#141)
+const turbo = new Turbo({ el: document.getElementById('turbo'), edge: document.getElementById('turbo-edge') }); // three cups of coffee: Kaffeturbo! (#217)
+turbo.onStart = () => bump('turbo');
+for (const c of cups.cups) c.onSip = (drink, coffee) => { bump(drink ?? 'coffee'); turbo.drink(coffee); }; // drink from a cup (#117); the coffee counts towards Kaffeturbo (#217) // the Moccamaster's jug: take it, pour, put it back (#141)
 let placeTarget = null; // while something is held: the table top / floor spot it would go down on (#102)
 // a faint ring where the held thing would land
 const placeGhost = new THREE.Mesh(new THREE.RingGeometry(0.035, 0.05, 24).rotateX(-Math.PI / 2),
@@ -447,6 +450,7 @@ for (const id of ['restart', 'to-start']) { // also on the start screen shown wh
 const params = new URLSearchParams(location.search);
 if (params.has('shot')) overlay.hidden = true;
 if (params.has('tv')) for (const t of world.furnitureTargets) if (t.kind === 'tv') t.toggle();
+if (params.has('turbo')) turbo.start(); // Kaffeturbo at once (screenshots, #217)
 // ?open opens every door (screenshots of open doors/wardrobes)
 // &water turns every tap on (screenshots)
 // &tv switches the TV on (screenshots)
@@ -964,6 +968,12 @@ mapEl.hidden = true; // hidden by default (#85); the old saved 'lunden.mapShown'
 let detail = null; // small-detail culling (#189), set up once everything is built (below)
 function step(dt) {
   autoReload.update(dt);
+  // Kaffeturbo (#217): faster feet, a wider view, the speakers turned down under the tune
+  turbo.update(dt);
+  player.boost = turbo.speed;
+  const fov = 72 + TURBO.fov * turbo.k;
+  if (Math.abs(camera.fov - fov) > 0.01) { camera.fov = fov; camera.updateProjectionMatrix(); }
+  sonos.setDuck(turbo.active ? 0.3 : 1);
   for (const d of world.doors) d.update(dt);
   for (const l of world.lids) l.update(dt);
   for (const t of taps) t.update(dt);
@@ -1183,4 +1193,4 @@ function continueAfterReload(r) {
 if (resumeOk && resumed.mode) continueAfterReload(resumed);
 
 // handle for tests/debugging (tools/touchtest.html)
-window.__app = { grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };
+window.__app = { turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };

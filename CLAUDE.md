@@ -234,6 +234,10 @@ src/car.js             our white Renault Megane E-Tech (CAR, #173): the hall key
                        leaves; sfx.evHum follows it; `&car` = parked (screenshots)
 src/signs.js           hand-lettered name signs on the bedroom doors (DOOR_SIGNS)
 src/water.js           running water: E on a tap/shower (world.taps from interior.js) → stream + hiss
+src/turbo.js           Kaffeturbo (#217, TURBO): TURBO.cups cups' worth of coffee (cups.js passes the coffee per sip) within
+                       TURBO.window real seconds → `player.boost` = TURBO.speed (indoors too) for TURBO.seconds, the fov wider,
+                       #turbo ("Kaffeturbo!" pops, then a small label with a bar) + #turbo-edge rainbow glow, our own
+                       chiptune (square/pulse lead, bass, noise hat; Sonos ducked meanwhile); real time (`turbo.now`), `&turbo`
 src/sonos.js           music in the SYMFONISK speakers (#187, SONOS): six generated channels (Web Audio, no files), one mix
                        → a panner per speaker (walls / the other floor muffle), #sonos-panel (⏮ ⏭ ⏯ volume, reading mode)
 src/stats.js           visitor statistics (localStorage), "+1" badges per event, the HUD panel
@@ -316,6 +320,8 @@ tools/boardtest.html   headless test: keep / throw away cat photos, a full board
 tools/detailtest.html  headless test: from the doorstep through the open front door the hall's doors are drawn (#210); inside
                        every Entréplan door is on a drawn layer, open or shut; outside the culler still works
 tools/planttest.html   headless test: lift pot plants (window board → table, side table → window board, the shelf), F home
+tools/turbotest.html   headless test: Kaffeturbo with an injected clock — three cups in five minutes (not spread out, not milk /
+                       whisky), faster indoors, the text, more coffee adds time, over again; `walktest.html?turbo` walks at that pace
 tools/clocktest.html   headless test of the wall clock (?time=7, spool, pause, sun height by month)
 tools/calendartest.html headless test: today's date at the start, pick a date on the calendar, the sun follows
 tools/cloudtest.html   headless test of the shared world against `node cloudflare/dev.mjs 8144` (start it first): PUT on

@@ -27,6 +27,7 @@ const world = buildWorld(plan);
 const camera = new THREE.PerspectiveCamera();
 camera.rotation.order = 'YXZ';
 const player = new Player(world, camera);
+if (new URLSearchParams(location.search).has('turbo')) player.boost = 1.8; // Kaffeturbo pace (#217): walls must still hold
 
 const routes = {
   'start ute → ytterdörren → hall': {
@@ -107,10 +108,11 @@ for (const [name, r] of Object.entries(routes)) {
   };
   const outV = run(START.x, START.z, Math.PI / 2, 1); // west along the street
   const inV = run(1.3, 0.8, Math.PI, 0.5);             // hall, facing south
-  const okOut = Math.abs(outV - PLAYER.run) < 0.15, okIn = Math.abs(inV - PLAYER.walk) < 0.15;
+  const B = player.boost ?? 1; // ?turbo: every pace × the Kaffeturbo factor
+  const okOut = Math.abs(outV - PLAYER.run * B) < 0.15 * B, okIn = Math.abs(inV - PLAYER.walk * B) < 0.15 * B;
   pass &&= okOut && okIn;
-  out.dataset.log += `${okOut ? 'PASS' : 'FAIL'} sprint utomhus (${outV.toFixed(2)} m/s, vill ${PLAYER.run})\n`;
-  out.dataset.log += `${okIn ? 'PASS' : 'FAIL'} inomhus bara gång med Shift (${inV.toFixed(2)} m/s, vill ${PLAYER.walk})\n`;
+  out.dataset.log += `${okOut ? 'PASS' : 'FAIL'} sprint utomhus (${outV.toFixed(2)} m/s, vill ${PLAYER.run * B})\n`;
+  out.dataset.log += `${okIn ? 'PASS' : 'FAIL'} inomhus bara gång med Shift (${inV.toFixed(2)} m/s, vill ${PLAYER.walk * B})\n`;
   // sprint straight at a neighbour's screen wall from the lawn: must stop at it
   run(-2.0, 21.0, 0, 3);
   const okWall = player.pos.z > 17.5;
@@ -129,7 +131,7 @@ for (const [name, r] of Object.entries(routes)) {
   for (let i = 0; i < 30; i++) player.update(dt);
   const v = (player.pos.z - z0) / 0.5;
   player.keys = new Set();
-  const okEye = Math.abs(eye - PLAYER.crouchEye) < 0.05, okV = Math.abs(v - PLAYER.walk * PLAYER.crouchSpeed) < 0.1;
+  const okEye = Math.abs(eye - PLAYER.crouchEye) < 0.05, okV = Math.abs(v - PLAYER.walk * PLAYER.crouchSpeed * (player.boost ?? 1)) < 0.1 * (player.boost ?? 1);
   out.dataset.log += `${okEye ? 'PASS' : 'FAIL'} huk: ögonhöjd ${eye.toFixed(2)} m\n${okV ? 'PASS' : 'FAIL'} huk: fart ${v.toFixed(2)} m/s\n`;
   pass &&= okEye && okV;
   // walk up the stair on your haunches

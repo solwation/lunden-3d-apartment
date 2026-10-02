@@ -499,6 +499,10 @@ export const CAT_FURNITURE = { chance: 0.4, reach: 5 };
 // fresh coffee is hot and cools over `seconds` (real ones steam a few minutes), cold milk cools it by `milk` × its share;
 // `opacity` at the hottest, full cup. Our picks, tuned on screenshots.
 export const CUP_STEAM = { seconds: 240, strips: 3, segments: 10, height: 0.13, width: 0.018, opacity: 0.4, milk: 2.5, drift: 0.04 };
+// "Kaffeturbo!" (#217, src/turbo.js): `cups` cups of coffee within `window` real seconds → `speed` × walking (indoors too)
+// for `seconds`; more coffee meanwhile adds `extend` × the time per 3 cups' worth, up to `max` s left; `fov` degrees wider;
+// the last `ending` s the tune speeds up; `bpm`, `volume` of the chiptune. Our picks.
+export const TURBO = { cups: 3, window: 300, seconds: 120, max: 240, extend: 1, speed: 1.8, fov: 6, ending: 5, bpm: 190, volume: 0.5 };
 // Cup patterns (#215, cups.js `DESIGNS`): every cup gets one; opening the cabinet fills an empty shelf spot with a new
 // cup of a random pattern (not one already in there). At most `maxOut` cups stand outside the cabinet: past that the
 // one put down longest ago goes. `designs` = the pattern names drawn in cups.js (the family's names after #164).
