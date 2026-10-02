@@ -9,7 +9,7 @@
 //   google-chrome --headless=new --dump-dom http://localhost:8137/tools/cloudtest.html   (?worker=<url> for another one)
 // A taped-up drawing is PUT, a drawing that appears on the server goes up on the wall, a thrown one is DELETEd, a
 // drawing thrown away elsewhere comes down here, changes made offline wait in the queue and go when it is back,
-// the desk sheet and a cat photo go up, someone else's cat photo turns up on the board, and without &cloud
+// the desk sheet goes up, a cat photo is neither sent nor fetched (personal, #211), and without &cloud
 // (locally) the cloud is off.
 const out = document.getElementById('out');
 const W = new URLSearchParams(location.search).get('worker') ?? 'http://localhost:8144';
@@ -77,19 +77,17 @@ const sheet = (color) => { const c = document.createElement('canvas'); c.width =
   app.cloud.url = W;
   await app.cloud.sync();
   check((await api('/drawings')).some((x) => x.id === id2) && !app.cloud.queue.length, 'back online: sent, the queue is empty');
-  // 6. the desk sheet and a cat photo go up
+  // 6. the desk sheet goes up; a cat photo stays personal (#211): nothing queued, nothing on the server
   app.drawing.stroke({ x: 100, y: 100 }, { x: 300, y: 200 });
   app.drawing.save();
   check(await until(async () => { const r = await fetch(W + '/paper'); return r.ok && (await r.json()).updated > 0; }), 'the desk sheet is sent');
+  const sent = [], ff = w.fetch;
+  w.fetch = (u, o) => { sent.push(String(u)); return ff.call(w, u, o); };
   await app.board.add('Testkatten', sheet('#f2cf2b'));
-  check(await until(async () => (await api('/catphotos')).some((p) => p.name === 'Testkatten')), 'a cat photo is sent');
-  // 7. someone else's cat photo turns up on the board (there is room)
-  await api('/catphotos/someone-elses-cat', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: 'Grannkatten', time: Date.now(), image: sheet('#7b4bc4') }) });
   await app.cloud.sync();
-  check(app.board.photos.some((p) => p.name === 'Grannkatten'), 'someone else\'s cat photo is on the board');
-  const n = app.board.photos.length;
-  await app.cloud.sync();
-  check(app.board.photos.length === n, 'and only once');
+  w.fetch = ff;
+  check(!app.cloud.queue.some((q) => q.type === 'cat') && !sent.some((u) => u.includes('/catphotos')), 'a cat photo is not sent, and no cat photos are fetched');
+  check((await fetch(W + '/catphotos')).status === 404, 'the worker has no /catphotos');
   // 8. a fresh visitor (empty browser) gets the drawing and the desk sheet
   await new Promise((res) => { const r = indexedDB.deleteDatabase('lunden'); r.onsuccess = r.onerror = r.onblocked = res; f.src = 'about:blank'; setTimeout(res, 500); });
   await wait(300);

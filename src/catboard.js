@@ -97,24 +97,9 @@ export class CatBoard {
     await this.loadImages();
     this.draw();
     this.onChange?.();
-    this.onAdded?.(photo); // the shared world (cloud.js, #119)
     return true;
   }
 
-  /** Room for one more without pushing a photo off? */
-  get hasRoom() { return this.photos.length < MAX; }
-
-  /** Someone else's photo from the shared world (cloud.js, #119): up it goes in its place by time, if there is room. */
-  async addRemote({ uid: u, name, time, data }) {
-    if (!this.hasRoom || this.photos.some((p) => p.uid === u)) return false;
-    const photo = { time, name, data, kept: false, uid: u };
-    try { photo.id = await withStore('readwrite', (s) => s.add(photo)); } catch { photo.id = time; }
-    this.photos = [...this.photos, photo].sort((a, b) => a.time - b.time);
-    await this.loadImages();
-    this.draw();
-    this.onChange?.();
-    return true;
-  }
 
   draw() {
     const g = this.canvas.getContext('2d'), W = this.canvas.width, H = this.canvas.height;

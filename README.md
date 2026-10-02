@@ -66,7 +66,7 @@ badrum och WC/dusch, samt tillvalsdörren till Allrum (fyra sovrum på övre pla
 Mått på ritningen är ungefärliga (≈, avrundade till 5 cm). Kontrollera kritiska mått mot Peabs
 byggritning.
 
-Teckningar som tejpas upp, teckningen på skrivbordet och kattfotona kan delas mellan alla besökare via en
-Cloudflare Worker – slå på det med `./cloudflare/setup.sh` (se `cloudflare/README.md`).
+Teckningar som tejpas upp och teckningen på skrivbordet kan delas mellan alla besökare via en
+Cloudflare Worker (kattfotona är personliga och stannar i webbläsaren) – slå på det med `./cloudflare/setup.sh` (se `cloudflare/README.md`).
 
 Mer om lägenheten: https://peabbostad.se/projekt/skane/kv.-lunden/l1007/

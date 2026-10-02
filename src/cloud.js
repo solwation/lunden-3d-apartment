@@ -1,16 +1,16 @@
 import { CLOUD_URL } from './config.js';
 import { BUILD } from './version.js';
 
-// The shared world (#178, #119): taped-up drawings, the sheet on the Sovrum 3 desk and a feed of cat photos go
+// The shared world (#178, #119): taped-up drawings and the sheet on the Sovrum 3 desk go
 // to the Cloudflare Worker in cloudflare/ (when CLOUD_URL is set), so visitors find things others made. Silent:
-// no icon, no message — things are just there. Everything is saved locally first (posters.js, drawing.js,
-// catboard.js) and works without the Worker; changes go into a queue (localStorage) that is sent in order and
+// no icon, no message — things are just there. Everything is saved locally first (posters.js, drawing.js)
+// and works without the Worker; changes go into a queue (localStorage) that is sent in order and
 // kept while offline. A pull at the start, every minute and when the tab comes back merges the server in:
 // drawings — the newer `updated` wins, a drawing gone from the server (thrown away elsewhere) comes down here
-// too; the desk sheet — the newer one wins; cat photos — someone else's new photo goes up on the board if there
-// is room (one per pull). &sync=debug logs what happens to the console.
+// too; the desk sheet — the newer one wins. Cat photos are personal and never leave the browser (#211).
+// &sync=debug logs what happens to the console.
 
-const QKEY = 'lunden.cloud.queue', SEEN = 'lunden.cloud.seenCats', PAPER_T = 'lunden.drawing.updated';
+const QKEY = 'lunden.cloud.queue', PAPER_T = 'lunden.drawing.updated';
 const POLL = 60_000;
 const params = new URLSearchParams(location.search);
 const debug = params.get('sync') === 'debug';
@@ -36,15 +36,16 @@ const toDataURL = (blob) => new Promise((resolve, reject) => {
 class Retry extends Error {}
 
 export class Cloud {
-  /** posters (posters.js), drawing (drawing.js), board (catboard.js), holding(): is the desk sheet in the hand? */
-  constructor({ posters, drawing, board, holding = () => false }, url = cloudUrl()) {
-    Object.assign(this, { url, posters, drawing, board, holding, busy: false, pulling: false });
-    this.queue = readJSON(QKEY, []);
+  /** posters (posters.js), drawing (drawing.js), holding(): is the desk sheet in the hand? */
+  constructor({ posters, drawing, holding = () => false }, url = cloudUrl()) {
+    Object.assign(this, { url, posters, drawing, holding, busy: false, pulling: false });
+    // cat photos queued by an older version are never sent (#211)
+    this.queue = readJSON(QKEY, []).filter((q) => q.type !== 'cat');
+    try { localStorage.removeItem('lunden.cloud.seenCats'); } catch { /* blocked */ }
     if (!this.on) return; // off: nothing is hooked up, nothing is sent
     posters.onPut = (rec) => this.push({ type: 'drawing', key: `d:${rec.id}`, id: rec.id });
     posters.onDelete = (id) => this.push({ type: 'undraw', key: `d:${id}`, id });
     drawing.onSaved = () => { writeJSON(PAPER_T, Date.now()); this.push({ type: 'paper', key: 'paper' }); };
-    board.onAdded = (photo) => { this.seen(photo.uid); this.push({ type: 'cat', key: `c:${photo.uid}`, uid: photo.uid }); };
     this.timer = setInterval(() => this.sync(), POLL);
     document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') this.sync(); });
     addEventListener('online', () => this.sync());
@@ -103,17 +104,7 @@ export class Cloud {
       const updated = readJSON(PAPER_T, Date.now());
       const r = await this.req('PUT', '/paper', { image: this.drawing.canvas.toDataURL('image/jpeg', 0.85), updated });
       log('put paper', r.status);
-    } else if (op.type === 'cat') {
-      const p = this.board.photos.find((x) => x.uid === op.uid);
-      if (!p) return;
-      const r = await this.req('PUT', `/catphotos/${op.uid}`, { name: p.name, time: p.time, image: p.data });
-      log('put cat', op.uid, r.status);
     }
-  }
-
-  seen(uid) {
-    const s = readJSON(SEEN, []);
-    if (!s.includes(uid)) writeJSON(SEEN, [...s, uid].slice(-300));
   }
 
   async image(path) {
@@ -132,7 +123,6 @@ export class Cloud {
       await this.flush();
       await this.pullDrawings();
       await this.pullPaper();
-      await this.pullCats();
     } catch (e) { log('sync stopped:', e.message); } finally { this.pulling = false; }
   }
 
@@ -161,19 +151,5 @@ export class Cloud {
     if (!r.ok) return;
     const { image, updated } = await r.json();
     if (updated > readJSON(PAPER_T, 0)) { log('a newer desk sheet'); writeJSON(PAPER_T, updated); this.drawing.restore(image, true); }
-  }
-
-  async pullCats() {
-    const r = await this.req('GET', '/catphotos');
-    if (!r.ok) return;
-    const seen = new Set(readJSON(SEEN, []));
-    const fresh = (await r.json()).filter((p) => !seen.has(p.id) && !this.board.photos.some((x) => x.uid === p.id));
-    const p = fresh[fresh.length - 1]; // the newest one we haven't had
-    if (!p || !this.board.hasRoom) return;
-    const data = await this.image(`/catphotos/${p.id}`);
-    if (!data) return;
-    this.seen(p.id);
-    log('a cat from someone else', p.name);
-    await this.board.addRemote({ uid: p.id, name: p.name, time: p.time, data });
   }
 }

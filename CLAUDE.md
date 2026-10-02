@@ -198,11 +198,11 @@ src/paperball.js       a drawing thrown away (#177): crumpled in front of the ca
                        the level's collision segments), shrinks away after DRAWING.ballSeconds; not saved
 src/idb.js             the shared IndexedDB 'lunden' (version 2: catPhotos + drawings) — every module opens it here
 src/cloud.js           the shared world (#178, #119): inert unless CLOUD_URL (config) is set on the published site, or the
-                       page has &cloud=<url>. Taped-up drawings (posters.onPut/onDelete), the desk sheet (drawing.onSaved)
-                       and new cat photos (board.onAdded) go into a queue (localStorage 'lunden.cloud.queue', kept offline)
+                       page has &cloud=<url>. Taped-up drawings (posters.onPut/onDelete) and the desk sheet (drawing.onSaved)
+                       go into a queue (localStorage 'lunden.cloud.queue', kept offline)
                        sent in order; a pull at start (`cloud.ready`), every minute and on tab focus merges the server in
-                       (newer `updated` wins; synced drawings missing on the server come down; one foreign cat photo per
-                       pull if the board has room). Silent; &sync=debug logs
+                       (newer `updated` wins; synced drawings missing on the server come down). Cat photos are personal and
+                       never synced (#211). Silent; &sync=debug logs
 cloudflare/            the Worker (NOT published on Pages): worker.js (API, limits, CORS, admin emergency brake), wrangler.toml,
                        setup.sh (the user's one-command setup: login, KV, deploy, ADMIN_TOKEN, CLOUD_URL into config),
                        dev.mjs (the same Worker on Node with an in-memory KV, for tests), README.md (Swedish, for the user);
@@ -308,7 +308,7 @@ tools/clocktest.html   headless test of the wall clock (?time=7, spool, pause, s
 tools/calendartest.html headless test: today's date at the start, pick a date on the calendar, the sun follows
 tools/cloudtest.html   headless test of the shared world against `node cloudflare/dev.mjs 8144` (start it first): PUT on
                        taping, someone else's drawing appears, DELETE on throwing, thrown elsewhere → gone here, offline
-                       queue, desk sheet, cat photos both ways, a fresh visitor gets them, off without &cloud
+                       queue, desk sheet, cat photos neither sent nor fetched (#211), a fresh visitor gets them, off without &cloud
 tools/stamp.sh         build the published site with a version stamp (used by CI)
 ```
 

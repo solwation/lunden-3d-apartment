@@ -1,5 +1,5 @@
 // Kv. Lunden L1007 — the shared world (#178, #119): a small Cloudflare Worker with one KV namespace (binding
-// LUNDEN). It keeps the drawings taped up in the flat, the sheet on the Sovrum 3 desk and a feed of cat photos,
+// LUNDEN). It keeps the drawings taped up in the flat, and the sheet on the Sovrum 3 desk,
 // so visitors find things they didn't make themselves. Writing is open (there is no secret a public page could
 // keep), so the damage is kept small here: CORS only for the site (+ localhost), JPEG/PNG only, size caps, a
 // cap on how many there are, and a per-IP write limit.
@@ -10,19 +10,15 @@
 //   DELETE /drawings/:id
 //   GET    /paper                 → { image, updated } (or 404)
 //   PUT    /paper                 ← { image: data URL, updated }
-//   GET    /catphotos             → [{ id, name, time }] (newest last, at most MAX_CATS)
-//   GET    /catphotos/:id         → the image
-//   PUT    /catphotos/:id         ← { name, time, image: data URL }
-//   DELETE /admin/:what           (what = drawings | catphotos | paper | all) with "Authorization: Bearer <ADMIN_TOKEN>"
+//   DELETE /admin/:what           (what = drawings | paper | all) with "Authorization: Bearer <ADMIN_TOKEN>"
 //                                  — the emergency brake; ADMIN_TOKEN is a Worker secret (cloudflare/setup.sh sets one)
 //
-// KV keys: 'drawings' (the metadata list), 'drawing:<id>' (image bytes, metadata { type }), 'paper' (JSON),
-// 'catphotos' (list), 'cat:<id>' (image bytes).
+// KV keys: 'drawings' (the metadata list), 'drawing:<id>' (image bytes, metadata { type }), 'paper' (JSON).
+// Cat photos are personal and stay in each visitor's browser (#211).
 
 const ORIGINS = [/^https:\/\/solwation\.github\.io$/, /^http:\/\/localhost(:\d+)?$/, /^http:\/\/127\.0\.0\.1(:\d+)?$/];
 const MAX_IMAGE = 300 * 1024;  // bytes per image
 const MAX_DRAWINGS = 100;
-const MAX_CATS = 20;
 const WRITES_PER_MINUTE = 30;  // per IP (per Worker instance; add a LIMITER rate-limit binding for a global one)
 const SURFACES = ['wall', 'fridge', 'freezer'];
 const ID = /^[A-Za-z0-9-]{6,64}$/;
@@ -135,28 +131,10 @@ export default {
       }
     }
 
-    if (what === 'catphotos') {
-      if (m === 'GET' && !id) return json(await getList(env, 'catphotos'), 200, h);
-      if (m === 'GET') return image(env, `cat:${id}`, h);
-      if (m === 'PUT' && id) {
-        const img = decodeImage(body.image);
-        const name = typeof body.name === 'string' ? body.name.replace(/[\u0000-\u001f<>]/g, '').slice(0, 30) : '';
-        if (!img || !name || !num(body.time, 1e12, 1e13)) return fail(400, 'bad photo', h);
-        let list = await getList(env, 'catphotos');
-        if (list.some((p) => p.id === id)) return json({ ok: true }, 200, h);
-        await env.LUNDEN.put(`cat:${id}`, img.bytes, { metadata: { type: img.type } });
-        list = [...list, { id, name, time: body.time }].sort((a, b) => a.time - b.time);
-        for (const old of list.splice(0, Math.max(0, list.length - MAX_CATS))) await env.LUNDEN.delete(`cat:${old.id}`);
-        await env.LUNDEN.put('catphotos', JSON.stringify(list));
-        return json({ ok: true }, 200, h);
-      }
-    }
-
     if (what === 'admin' && m === 'DELETE') {
       if (!env.ADMIN_TOKEN || request.headers.get('Authorization') !== `Bearer ${env.ADMIN_TOKEN}`) return fail(403, 'no', h);
       const all = id === 'all';
       if (all || id === 'drawings') { for (const d of await getList(env, 'drawings')) await env.LUNDEN.delete(`drawing:${d.id}`); await env.LUNDEN.delete('drawings'); }
-      if (all || id === 'catphotos') { for (const p of await getList(env, 'catphotos')) await env.LUNDEN.delete(`cat:${p.id}`); await env.LUNDEN.delete('catphotos'); }
       if (all || id === 'paper') await env.LUNDEN.delete('paper');
       return json({ ok: true }, 200, h);
     }

@@ -357,7 +357,7 @@ scene.add(board.object);
 const boardLoaded = board.load();
 // the shared world (#178, #119): inert unless CLOUD_URL (or &cloud=) is set — then drawings, the desk sheet and
 // cat photos sync silently with the Cloudflare Worker (cloud.js)
-const cloud = new Cloud({ posters, drawing, board, holding: () => heldItem() === heldDrawing });
+const cloud = new Cloud({ posters, drawing, holding: () => heldItem() === heldDrawing });
 cloud.ready = cloud.on ? Promise.all([postersLoaded, boardLoaded]).then(() => cloud.sync()) : Promise.resolve(); // (tests wait on it)
 cat.onPet = () => {
   bump('petted');
