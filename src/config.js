@@ -308,6 +308,14 @@ export const AO = {
 // rotY π/2 = facing east.
 export const CAT_BOARD = { x: 2.152, y: 1.4, z: 4.4, w: 1.1, h: 0.76, rotY: Math.PI / 2 };
 
+// Wall shelves in the kitchen (src/shelves.js) where the cat board used to hang: the kitchen face of
+// the hall/kitchen partition (x 2.15, z 0.46–1.76), above the light switch (1.05 m). Two oak shelves
+// 100 × 20 cm on black brackets with portraits, flowers, books, candles and a bowl (#38).
+export const WALL_SHELVES = {
+  x: 2.15, z0: 0.56, z1: 1.56, depth: 0.2, thick: 0.025, heights: [1.35, 1.75],
+  wood: 0xd2b48c, bracket: 0x2a2a2a,
+};
+
 // Day cycle (src/daycycle.js): one day in `minutes` real minutes. The sun follows the real solar
 // path for the date (declination, hour angle) at Kv. Lunden, Karpvägen / S:t Lars väg in Lund
 // (55.70° N, 13.17° E, docs/tomten-google-maps.jpg). planNorth = compass bearing of the plan's
@@ -340,7 +348,7 @@ export const LIGHTING = {
   // switches for rooms without a door of their own (normal = the way the wall faces)
   manual: [
     { level: 0, room: 'Hall', x: 1.95, z: 0.465, normal: [0, 1] },          // by the front door
-    { level: 0, room: 'Kök / matplats', x: 2.15, z: 1.65, normal: [1, 0] },  // beside the cat board
+    { level: 0, room: 'Kök / matplats', x: 2.15, z: 1.65, normal: [1, 0] },  // under the wall shelves
     { level: 0, room: 'Vardagsrum', x: 3.4, z: 7.8, normal: [0, 1] },
     { level: 1, room: 'Hall', x: 2.65, z: 5.13, normal: [0, 1] },           // between the bedroom doors
     { level: 1, room: 'Klk', x: 4.85, z: 4.28, normal: [0, 1] },

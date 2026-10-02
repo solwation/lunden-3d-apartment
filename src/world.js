@@ -7,6 +7,7 @@ import { buildStairs } from './stairs.js';
 import { SwingDoor, SlidingDoor, wardrobeDoors } from './doors.js';
 import { buildExterior } from './exterior.js';
 import { buildFurniture } from './furniture.js';
+import { buildWallShelves } from './shelves.js';
 import { buildInterior } from './interior.js';
 import { Toilet } from './toilet.js';
 import { RoomMap } from './rooms.js';
@@ -501,6 +502,7 @@ export function buildWorld(plan) {
   // Loose furniture (IKEA LANDSKRONA etc., see FURNITURE in config)
   const furniture = buildFurniture();
   scene.add(furniture.object);
+  scene.add(buildWallShelves()); // kitchen wall shelves (WALL_SHELVES)
 
   // Site: ground, patio, hedge, fences
   const site = lower.site;

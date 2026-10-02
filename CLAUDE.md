@@ -70,6 +70,7 @@ src/measure.js         tape measure (Q / 📏): two points on any surface, dista
 src/fridge.js          the fridge: hollow, lit, opens with E, smoking roast chicken (in world.lids)
 src/catboard.js        cork board in the kitchen (under the wall clock): a photo (offscreen render) of every petted cat,
                        newest 10 in IndexedDB 'lunden'/'catPhotos', captioned with name + time
+src/shelves.js         kitchen wall shelves with portraits, flowers, books, candles (WALL_SHELVES)
 src/signs.js           hand-lettered name signs on the bedroom doors (DOOR_SIGNS)
 src/water.js           running water: E on a tap/shower (world.taps from interior.js) → stream + hiss
 src/stats.js           visitor statistics (localStorage), "+1" badges per event, the HUD panel
