@@ -718,6 +718,21 @@ export const SYMFONISK = {
   colors: { white: 0xe8e8e4, black: 0x1f2022 },
 };
 
+// Music in the SYMFONISK speakers (#187, src/sonos.js): generated in Web Audio, no files. `channels` = the "songs"
+// (⏮ ⏭ step through them), volume in `steps` (start at `start`), `gain` at full volume. Through a wall a speaker
+// is `wall` as loud, from the other floor `floor` (on top of the panner's distance fall-off).
+export const SONOS = {
+  channels: [
+    { id: 'lofi', name: 'Lugn lofi' },
+    { id: 'jazz', name: 'Jazzig pianotrio' },
+    { id: 'kids', name: 'Barnvisor' },
+    { id: 'synth', name: 'Synthwave' },
+    { id: 'bach', name: 'Bach: Preludium i C-dur' },
+    { id: 'rain', name: 'Regn och brasa' },
+  ],
+  steps: 10, start: 5, gain: 0.5, wall: 0.45, floor: 0.2, lookahead: 0.6,
+};
+
 export const LANDSKRONA = {
   fabric: 0xa7b39a, // Gunnared ljusgrön
   oak: 0xc9a67a,

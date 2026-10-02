@@ -1056,6 +1056,9 @@ function worklamp(item, lights) {
   return g;
 }
 
+/** The speakers' status light (one material, sonos.js turns it white while music plays, #187). */
+export const sonosLed = new THREE.MeshBasicMaterial({ color: 0x4a4a4a });
+
 /** IKEA SYMFONISK (#186): a bookshelf speaker (standing, or `lying`), or the table lamp speaker with a frosted glass
  * shade. Faces local +z. The lamp's glass is its own lamp (lights.js FloorLamp: E toggles it, a pool light). */
 function symfonisk(item, lights) {
@@ -1075,8 +1078,11 @@ function symfonisk(item, lights) {
     const R = L.shadeR, H = L.shadeH; // a soft dome, open below round the stem
     const dome = new THREE.LatheGeometry([[0.02, 0], [R * 0.9, 0.012], [R, 0.04], [R * 0.95, H * 0.62], [R * 0.66, H * 0.9], [0, H]].map(([x, y]) => new THREE.Vector2(x, y)), 40);
     const y0 = L.baseH + 0.008 + L.stem;
-    add(new THREE.Mesh(dome, glass), 0, y0, 0);
-    lights.push({ object: g, shade: glass, height: y0 + H * 0.5, level: item.level, name: 'lampan' });
+    const shade = add(new THREE.Mesh(dome, glass), 0, y0, 0);
+    add(new THREE.Mesh(new THREE.SphereGeometry(0.0025, 8, 6), sonosLed), 0, L.baseH + 0.009, L.baseR - 0.012);
+    // E on the glass = the light (its own lamp); E on the speaker base = the music (#187)
+    lights.push({ object: shade, shade: glass, height: H * 0.5, level: item.level, name: 'lampan' });
+    g.userData.keep = [shade]; // stays its own mesh: it is the lamp's E target
   } else {
     const { w, d, h } = S.speaker;
     const [W, Hh, D] = item.lying ? [h, w, d] : [w, h, d]; // lying on its side: 31 wide, 15 high, still 10 deep
@@ -1085,11 +1091,12 @@ function symfonisk(item, lights) {
     // play/pause and volume ± on top towards the back, a small white status light
     const top = Hh + 0.0015, by = -D / 2 + 0.03;
     [-0.022, 0, 0.022].forEach((dx, i) => add(new THREE.Mesh(new THREE.CylinderGeometry(i === 1 ? 0.007 : 0.005, i === 1 ? 0.007 : 0.005, 0.003, 12), btnMat), dx, top, by));
-    add(new THREE.Mesh(new THREE.SphereGeometry(0.0025, 8, 6), new THREE.MeshBasicMaterial({ color: 0xf6f6f2 })), 0.04, top, by);
+    add(new THREE.Mesh(new THREE.SphereGeometry(0.0025, 8, 6), sonosLed), 0.04, top, by);
   }
   g.position.y = item.y ?? 0;
   g.userData.footprint = [];
   g.userData.symfonisk = `${item.kind} ${item.color}`; // (tests find them by this)
+  g.userData.interact = { name: item.kind === 'lamp' ? 'högtalaren i lampan' : 'högtalaren', kind: 'speaker', verb: 'spela musik på', pickable: g, object: g, level: item.level };
   return g;
 }
 

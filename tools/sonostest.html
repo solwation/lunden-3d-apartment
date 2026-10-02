@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Sonos test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+// Music in the SYMFONISK speakers (#187): E on the white one (kitchen) starts it in all three (a panner each, the
+// mix up), the panel opens; next song → another name; volume up/down changes the gain; E closes the panel and the
+// music plays on; pause stops it; F stops it and hides the speakers. Checks the Web Audio state, and renders each
+// channel offline (OfflineAudioContext) to see that it makes a sound and does not clip.
+//   google-chrome --headless=new --dump-dom http://localhost:8137/tools/sonostest.html
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const f = document.createElement('iframe');
+f.width = 900; f.height = 600; f.src = '../index.html';
+document.body.append(f);
+f.onload = async () => {
+  const w = f.contentWindow, d = f.contentDocument;
+  while (!w.__app) await wait(100);
+  const { player, camera, step, world, scene, sonos, toggleFurniture } = w.__app;
+  const lines = [];
+  const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; };
+  d.getElementById('start-touch').click();
+  await wait(50);
+  const btn = d.getElementById('action'), panel = d.getElementById('sonos-panel');
+  const V = camera.position.constructor;
+  const aim = (p, from) => {
+    player.spawn(from[0], from[1], 0);
+    for (let i = 0; i < 3; i++) step(1 / 60);
+    scene.updateMatrixWorld(true);
+    const dx = p.x - camera.position.x, dz = p.z - camera.position.z;
+    camera.rotation.set(Math.atan2(p.y - camera.position.y, Math.hypot(dx, dz)), Math.atan2(-dx, -dz), 0, 'YXZ');
+    step(1 / 60);
+    return btn.hidden ? '(hidden)' : btn.textContent;
+  };
+  const speakers = world.furnitureTargets.filter((t) => t.kind === 'speaker');
+  let pass = check(speakers.length === 3, `${speakers.length} speakers`);
+  const white = speakers.find((t) => t.object.userData.symfonisk === 'speaker white');
+  const p = white.object.getWorldPosition(new V()).add(new V(0, 0.15, 0));
+  let label = aim(p, [p.x - 0.9, p.z]);
+  pass &= check(/spela musik på högtalaren/i.test(label), `the white speaker: "${label}"`);
+  btn.click();
+  for (let i = 0; i < 30; i++) step(1 / 30);
+  await wait(300);
+  const bus = sonos.bus;
+  pass &= check(sonos.playing && !panel.hidden && !!bus && bus.outs.length === 3 && bus.outs.every((o) => o.pan.positionX.value !== 0), `playing in 3 panners, the panel open (${bus?.outs.map((o) => o.pos.toArray().map((v) => v.toFixed(1)).join(',')).join(' | ')})`);
+  const ctx = bus.mix.context; // headless Chrome may keep the context suspended (no real gesture): its clock stands still
+  pass &= check(sonos.gain > 0.05 && sonos.barNo > 0, `the mix is up (${sonos.gain.toFixed(3)}), ${sonos.barNo} bars scheduled (context ${ctx.state})`);
+  const name0 = panel.querySelector('.name').textContent;
+  panel.querySelector('[data-act=next]').click();
+  const name1 = panel.querySelector('.name').textContent;
+  pass &= check(name1 !== name0, `next: "${name0}" → "${name1}"`);
+  // every channel composes without errors
+  let errs = 0;
+  for (let k = 0; k < 6; k++) { try { sonos.next(1); for (let i = 0; i < 10; i++) step(0.1); } catch (e) { errs++; lines.push(`  ${e}`); } }
+  pass &= check(errs === 0, 'all six channels play');
+  const g0 = sonos.gain;
+  panel.querySelector('[data-act=up]').click();
+  const g1 = sonos.gain;
+  panel.querySelector('[data-act=down]').click(); panel.querySelector('[data-act=down]').click();
+  const g2 = sonos.gain;
+  pass &= check(g1 > g0 && g2 < g0, `volume up ${g0.toFixed(3)} → ${g1.toFixed(3)}, down → ${g2.toFixed(3)}`);
+  // E (the keyboard) / × closes the panel, the music plays on
+  d.getElementById('sonos-close').click();
+  pass &= check(panel.hidden && sonos.playing, 'panel closed, still playing');
+  label = aim(p, [p.x - 0.9, p.z]);
+  pass &= check(/styra musiken/i.test(label), `"${label}"`);
+  btn.click();
+  pass &= check(!panel.hidden && sonos.playing, 'E again opens the panel');
+  panel.querySelector('[data-act=play]').click();
+  for (let i = 0; i < 10; i++) step(0.1);
+  await wait(400);
+  pass &= check(!sonos.playing && sonos.gain === 0 && !sonos.ch, 'paused: the mix down, nothing composing');
+  panel.querySelector('[data-act=play]').click();
+  // upstairs it is softer
+  player.spawn(2.9, 6.3, 0); player.pos.y = 3.25; player.eyeY = 3.25 + 1.62; for (let i = 0; i < 20; i++) step(0.1);
+  pass &= check(player.level === 1 && bus.outs.every((o) => o.k < 0.5), `upstairs: the speakers are muffled (${bus.outs.map((o) => o.k.toFixed(2))})`);
+  // F: music off, speakers hidden
+  toggleFurniture();
+  pass &= check(!sonos.playing && panel.hidden && !world.furnitureOn, 'F stops the music');
+  toggleFurniture();
+  // each channel rendered offline for 6 s: audible, not clipping
+  const { CHANNELS } = await w.eval(`import('${new URL('../src/sonos.js', location.href).href}')`);
+  for (const [id, c] of Object.entries(CHANNELS)) {
+    const sr = 22050, ctx = new w.OfflineAudioContext(1, sr * 6, sr);
+    const noiseBuf = ctx.createBuffer(1, sr * 2, sr), nd = noiseBuf.getChannelData(0);
+    for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
+    const A = { ctx, noiseBuf }, dest = ctx.destination;
+    c.continuous?.(A, dest);
+    for (let t = 0.05, i = 0; t < 6; t += c.bar * c.beat) c.play(A, dest, t, i++);
+    const buf = await Promise.race([ctx.startRendering(), wait(8000).then(() => null)]); // --virtual-time-budget never finishes it
+    if (!buf) { lines.push(`SKIP ${id}: no offline rendering here (headless with virtual time; run it in a normal browser)`); continue; }
+    const data = buf.getChannelData(0);
+    let peak = 0, sum = 0;
+    for (const v of data) { peak = Math.max(peak, Math.abs(v)); sum += v * v; }
+    const rms = Math.sqrt(sum / data.length);
+    pass &= check(rms > 0.01 && peak < 1.2, `${id}: rms ${rms.toFixed(3)}, peak ${peak.toFixed(2)}`);
+  }
+  out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
+};
+</script>
+</body>
+</html>

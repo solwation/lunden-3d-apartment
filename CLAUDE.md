@@ -178,6 +178,8 @@ src/keycabinet.js      hall wall: IKEA LINDBYN mirror Ø 110 + Solstickan key ca
 src/sillplants.js      flower pots on every inner window board (SILL_PLANTS, #136): five merged meshes, a loose item
 src/signs.js           hand-lettered name signs on the bedroom doors (DOOR_SIGNS)
 src/water.js           running water: E on a tap/shower (world.taps from interior.js) → stream + hiss
+src/sonos.js           music in the SYMFONISK speakers (#187, SONOS): six generated channels (Web Audio, no files), one mix
+                       → a panner per speaker (walls / the other floor muffle), #sonos-panel (⏮ ⏭ ⏯ volume, reading mode)
 src/stats.js           visitor statistics (localStorage), "+1" badges per event, the HUD panel
                        (hidden; Tab held / T / 📊 shows it)
 src/screens.js         TV programmes drawn on a canvas (PROGRAMS: space, underwater, superheroes, unicorn …), channel
@@ -238,6 +240,8 @@ tools/cooktest.html    headless test: the induction hob on/off (glow), F switche
                        fry, smoke, the fridge shut stops it, it stops by itself, F
 tools/postertest.html  headless test: take the drawing (blank sheet stays), back on the desk, tape it up in the hall and on
                        the fridge door (swings with it), none on the kitchen window, reload → both back (`?shots` pictures)
+tools/sonostest.html   headless test: music in all three speakers, songs, volume, panel, pause, upstairs, F; each channel
+                       rendered offline (only outside --virtual-time-budget; there it says SKIP)
 tools/clocktest.html   headless test of the wall clock (?time=7, spool, pause, sun height by month)
 tools/calendartest.html headless test: today's date at the start, pick a date on the calendar, the sun follows
 tools/stamp.sh         build the published site with a version stamp (used by CI)
@@ -494,7 +498,7 @@ screenshots into the session scratchpad, not the repo.
   change, once per month change (`applySeason` in the loop).
 - Statistics (`src/stats.js`): cats found per coat, cats petted, doors, toilet lids, steps/metres,
   stair trips, time inside; reset on the start screen.
-- Sounds are synthesised (no audio files) and positional; the AudioContext is started by the
+- Sounds are synthesised (no audio files) and positional — the speakers' music too (`src/sonos.js`); the AudioContext is started by the
   start-screen buttons (browser autoplay rules). M / the speaker button mutes.
 
 ## Input notes

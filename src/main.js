@@ -26,6 +26,7 @@ import { Remote } from './remote.js';
 import { Book } from './book.js';
 import { Pan } from './pan.js';
 import { Chicken } from './chicken.js';
+import { Sonos } from './sonos.js';
 import { Beer } from './beer.js';
 import { buildThings } from './things.js';
 import { Milk } from './milk.js';
@@ -128,6 +129,7 @@ document.getElementById('board-close').addEventListener('click', () => showBoard
 function showNote(show) {
   if (!show && !boardEl.hidden) { showBoard(false); return; }
   if (!show && clockPanel.open) { showClock(false); return; }
+  if (!show && sonos.open) { showSonos(false); return; }
   if (!show && calPanel.open) { showCalendar(false); return; }
   if (!show && book.reading) { showBook(false); return; }
   reading = show;
@@ -159,6 +161,14 @@ function showClock(show) {
   player.keys.clear();
 }
 document.getElementById('clock-close').addEventListener('click', () => showClock(false));
+// music in the SYMFONISK speakers (#187): E on one plays in all of them, #sonos-panel steers it (reading mode)
+const sonos = new Sonos(world.furnitureTargets.filter((t) => t.kind === 'speaker'), document.getElementById('sonos-panel'));
+function showSonos(show) {
+  reading = show;
+  sonos.show(show);
+  player.keys.clear();
+}
+document.getElementById('sonos-close').addEventListener('click', () => showSonos(false));
 // the cat calendar under the clock: E opens a strip to pick the date (#95)
 const calendar = new CatCalendar(day);
 scene.add(calendar.object);
@@ -538,6 +548,7 @@ function use(thing) {
   else if (thing.kind === 'keybox') thing.toggle();
   else if (thing.kind === 'appliance') { thing.toggle(); if (thing.isOpen) bump('appliances'); } // oven, microwave (#82)
   else if (thing.kind === 'coffee') thing.toggle();
+  else if (thing.kind === 'speaker') { if (!sonos.playing) sonos.play(); showSonos(true); } // music in all the speakers (#187)
   else if (thing.kind === 'hob') { thing.toggle(); if (thing.on) bump('appliances'); } // the induction hob (#158)
   else if (thing.kind === 'cabinet') { thing.toggle(); if (thing.isOpen) bump('cabinets'); } // wall cabinets that open (#138)
   else if (thing.kind === 'target') thing.toggle(); // clear the score (#99)
@@ -605,6 +616,7 @@ document.addEventListener('keydown', (e) => {
     if (!e.repeat) stripKeys.add(e.code);
     else if (!stripKeys.has(e.code)) return;
     if (clockPanel.open && clockPanel.key(e.code, true, e.repeat)) e.preventDefault();
+    else if (sonos.open && sonos.key(e.code)) e.preventDefault();
     else if (calPanel.open && calPanel.key(e.code, true)) e.preventDefault();
     else if (book.reading && book.key(e.code)) e.preventDefault();
     else if (e.code === 'KeyE') showNote(false);
@@ -742,7 +754,7 @@ function updateFocus() {
   if (reading && touch.enabled) actionBtn.textContent = 'Stäng lappen';
   promptEl.hidden = !focused || touch.enabled || reading;
   if (remoteAim && !touch.enabled && !reading) { promptEl.textContent = 'Klicka för att byta kanal · högerklick: av/på'; promptEl.hidden = false; }
-  actionBtn.hidden = !(focused || reading || holding) || !touch.enabled || clockPanel.open || calPanel.open; // the strips have their own ×
+  actionBtn.hidden = !(focused || reading || holding) || !touch.enabled || clockPanel.open || calPanel.open || sonos.open; // the strips have their own ×
   powerBtn.hidden = !touch.enabled || !heldItem()?.useAlt || reading;
 }
 
@@ -761,6 +773,7 @@ function toggleFurniture(on = !world.furnitureOn) {
   if (!on) for (const t of world.furnitureTargets) if ((t.kind === 'tv' || t.kind === 'pc') && t.isOpen) t.toggle(); // screens off
   if (!on) world.hob?.set(false); // the hob stays (Peab's kitchen), but off
   if (!on) chicken?.reset(); // home to the fridge, no smoke
+  if (!on) { if (sonos.open) showSonos(false); sonos.stop(); } // the speakers go: the music stops
   try { localStorage.setItem('lunden.furniture', on ? '1' : '0'); } catch { /* ignore */ }
 }
 world.looseItems.push(board.object, ...holdables.flatMap((h) => [h.holder, h.model]), ...toys.deco);
@@ -825,6 +838,7 @@ function step(dt) {
   marks.update(dt);
   target.update(dt, world.furnitureOn && !!heldItem()?.hitsTarget); // the target rises with a blaster, the saber or a wand in the hand (#144, #179)
   if (clockPanel.open) clockPanel.render();
+  sonos.update(player.level, (p) => behindWall(p)); // music: schedule ahead, walls muffle (#187)
   world.windowLights.update(day.hour, 1 - day.daylight);
   cat.update(dt);
   measure.update(dt, window.innerWidth, window.innerHeight);
@@ -965,4 +979,4 @@ function continueAfterReload(r) {
 if (resumeOk && resumed.mode) continueAfterReload(resumed);
 
 // handle for tests/debugging (tools/touchtest.html)
-window.__app = { milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };
+window.__app = { sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };

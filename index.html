@@ -185,6 +185,14 @@
     #clock-panel .month button { height: 32px; min-width: 40px; }
     #clock-panel .date { font: 600 16px system-ui, sans-serif; min-width: 120px; }
     #clock-panel .info { font-size: 13px; opacity: .9; margin-top: 6px; }
+    #sonos-panel { position: fixed; left: 50%; bottom: calc(16px + var(--sb)); transform: translateX(-50%); z-index: 5; width: max-content; max-width: calc(100vw - 32px - var(--sl) - var(--sr)); box-sizing: border-box; background: rgba(20, 35, 45, 0.82); color: #fff; padding: 10px 14px 8px; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,.3); text-align: center; }
+    #sonos-panel[hidden] { display: none; }
+    #sonos-panel .row { display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; }
+    #sonos-panel button { border: 0; border-radius: 8px; background: rgba(255,255,255,.92); color: var(--ink); font: 600 16px system-ui, sans-serif; min-width: 44px; height: 40px; padding: 0 10px; cursor: pointer; touch-action: manipulation; }
+    #sonos-panel button:active { background: #fff3d6; }
+    #sonos-panel .name { font: 700 18px system-ui, sans-serif; min-width: 190px; }
+    #sonos-panel .vol { --v: 50%; width: 90px; height: 8px; border-radius: 4px; background: linear-gradient(90deg, #fff var(--v), rgba(255,255,255,.25) var(--v)); }
+    #sonos-panel small { display: block; margin-top: 6px; opacity: .85; }
     #clock-panel small { display: block; font-size: 11px; opacity: .65; margin-top: 3px; }
     body.touch #clock-panel small { display: none; }
     #clock-close { background: transparent !important; color: #fff !important; font-size: 20px !important; min-width: 32px !important; }
@@ -298,6 +306,19 @@
     </div>
     <div class="info"></div>
     <small>Håll A D för att spola · Mellanslag pausar · E stänger · datumet väljer du på almanackan</small>
+  </div>
+  <div id="sonos-panel" hidden role="dialog" aria-label="Musiken">
+    <div class="row">
+      <button data-act="prev" aria-label="Föregående">⏮</button>
+      <span class="name"></span>
+      <button data-act="next" aria-label="Nästa">⏭</button>
+      <button data-act="play"></button>
+      <button data-act="down" aria-label="Sänk volymen">🔉</button>
+      <span class="vol" role="meter"></span>
+      <button data-act="up" aria-label="Höj volymen">🔊</button>
+      <button id="sonos-close" aria-label="Stäng">×</button>
+    </div>
+    <small>A D byter låt · W S volym · Mellanslag spelar/pausar · E stänger (musiken spelar vidare)</small>
   </div>
   <div id="hud" hidden>
     <div id="crosshair"></div>

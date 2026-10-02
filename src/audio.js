@@ -24,6 +24,8 @@ export function toggleMuted() {
   return muted;
 }
 export const isMuted = () => muted;
+/** The running AudioContext, its master gain and the shared noise buffer (music, sonos.js), or null before initAudio. */
+export const audioParts = () => (ctx ? { ctx, master, noiseBuf } : null);
 
 /** Keep the listener on the camera. */
 export function updateListener(camera) {
