@@ -173,6 +173,6 @@ export class Trinket extends Holdable {
   onPut() { sfx.click(this.where()); }
 }
 
-const KINDS = { glass: Glass, trinket: Trinket, plant: Thing }; // pot plants (#185) are plain Things
+export const KINDS = { glass: Glass, trinket: Trinket, plant: Thing }; // (rifle.js adds 'rifle', #196) // pot plants (#185) are plain Things
 /** Every bottle, glass, secretary trinket and pot plant furniture.js offers (world.things). */
 export const buildThings = (scene, camera, list) => list.map((t) => new (KINDS[t.kind] ?? Bottle)(scene, camera, t));

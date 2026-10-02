@@ -54,6 +54,12 @@ const TEXTURES = {
     }
     g.fillStyle = '#333'; g.fillRect(n * 0.48, n * 0.25, n * 0.04, n * 0.55);
   }),
+  // a bullet hole (#196): a dark centre, a ring of chipped grey dust
+  hole: () => canvas(64, (g, n) => {
+    blob(g, n / 2, n / 2, n / 2, 'rgba(90,86,80,0.55)', 'rgba(120,115,108,0)');
+    for (let i = 0; i < 7; i++) { const a = Math.random() * Math.PI * 2, d = n * (0.12 + Math.random() * 0.14); blob(g, n / 2 + Math.cos(a) * d, n / 2 + Math.sin(a) * d, n * 0.08, 'rgba(70,66,60,0.5)', 'rgba(70,66,60,0)'); }
+    blob(g, n / 2, n / 2, n * 0.16, 'rgba(10,9,8,1)', 'rgba(20,18,16,0.9)');
+  }),
   splash: () => canvas(64, (g, n) => {
     g.fillStyle = '#fff';
     g.beginPath(); g.arc(n / 2, n / 2, n * 0.2, 0, Math.PI * 2); g.fill();
@@ -88,7 +94,7 @@ export class Marks {
     this.ray.camera = camera; // sprites need it (they are looked through anyway)
     this.kinds = {};
     for (const [kind, k] of Object.entries(K.kinds)) {
-      const lit = kind === 'burn' || kind === 'splash' || kind === 'butterfly'; // paint and soot take the light
+      const lit = kind === 'burn' || kind === 'splash' || kind === 'butterfly' || kind === 'hole'; // paint and soot take the light
       const mat = fadeMaterial(lit ? THREE.MeshLambertMaterial : THREE.MeshBasicMaterial, {
         map: TEXTURES[kind](), ...(kind === 'glow' ? { blending: THREE.AdditiveBlending, toneMapped: false } : {}) });
       const mesh = new THREE.InstancedMesh(new THREE.PlaneGeometry(1, 1), mat, K.max);

@@ -414,7 +414,7 @@ export const REMOTE = { w: 0.04, l: 0.18, h: 0.015, x: 3.98, y: 0.47, z: 10.72, 
 // The book on the side table by the armchair (#140, src/book.js): a hardback 15 × 22 × 3 cm lying beside the
 // flower (side table at 1.52, 8.12, top at 0.5325). `held` = where it sits in the view (camera space).
 export const BOOK = { w: 0.15, l: 0.22, h: 0.03, x: 1.6, y: 0.5325, z: 8.2, turn: 28,
-  held: { x: 0.16, y: -0.2, z: -0.42 } };
+  held: { x: 0.17, y: -0.24, z: -0.56 } };
 
 // The big beer on the patio (#117, src/beer.js): a 50 cl tankard (Ø 9 × 16 cm, our pick) that turns up on the
 // lounge table (top at 0.40) when you sit down in the lounge sofa; each gulp drinks `gulp` of it.
@@ -457,6 +457,11 @@ export const PERF = { detail: { maxR: 0.5, k: 0.009, minDist: 3.2, maxOcclude: 4
 // mesh per kind, canvas textures. Per kind: size (m, randomised ±25 %), life (s; the last `fade` s fade out).
 // burn = the lightsaber (with a short glow and a puff of smoke), star/butterfly = wands, splash = Nerf.
 // Our picks. `gap`: no new mark closer than this to the last one, nor sooner than `every` s.
+// The AK-47 in the NORDLI chest (#196, src/rifle.js): a folding-stock AKMS, folded ~68 cm (fits the wide bottom drawer).
+// `mag` rounds, `rpm` automatic, `spread` (rad) per shot, `range` m; empty → `reloadDelay` s → a `reloadSeconds` reload;
+// dropped magazines lie `magLife` s (at most `maxDrops`). `held` = where it sits in the view. Our picks.
+export const RIFLE = { mag: 30, rpm: 600, spread: 0.012, range: 60, reloadDelay: 0.25, reloadSeconds: 1.6, magLife: 120, maxDrops: 6,
+  held: { x: 0.17, y: -0.24, z: -0.56 } };
 export const MARKS = {
   max: 60, fade: 3, gap: 0.06, every: 0.15,
   kinds: {
@@ -465,6 +470,7 @@ export const MARKS = {
     star: { size: 0.07, life: 18 },
     butterfly: { size: 0.08, life: 18 },
     splash: { size: 0.14, life: 30 },
+    hole: { size: 0.03, life: 90 }, // bullet holes (#196)
   },
   smoke: { n: 40, life: 1.6, rise: 0.25 },
   // the wands' magic (#97): `stars` star marks round the hit (within `spread` m), 2–3 butterflies flutter there
@@ -1047,7 +1053,7 @@ export const FURNITURE = [
   // wardrobe, its storage is the Klk behind the sliding door: inside 1.65 × 1.20 m (x 3.90–5.55,
   // z 4.29–5.48), the door slides in the wall plane. The chest stands against its back (south) wall,
   // centred, 73 cm of floor left in front of it; facing north (into the Klk)
-  { type: 'nordli', level: 1, x: (3.90 + 5.55) / 2, z: 5.48 - 0.235, rot: 0, w: 1.2, h: 0.99, d: 0.47 },
+  { type: 'nordli', level: 1, x: (3.90 + 5.55) / 2, z: 5.48 - 0.235, rot: 0, w: 1.2, h: 0.99, d: 0.47, rifle: true }, // + the AK-47 in the wide bottom drawer (#196)
   // the mattress centre: the headboard (IDANAS.head) against the east wall
   { type: 'bed', level: 1, x: 5.55 - IDANAS.head - 1.0, z: 2.3, rot: 90, w: 1.8, l: 2.0, model: 'idanas', sitUp: { tv: 'Sovrum 1' },
     // repeat = metres per texture tile (blooms ~8–15 cm)

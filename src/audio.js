@@ -621,6 +621,35 @@ export const sfx = {
     for (let i = 0; i < 3; i++) noise(t + 0.25 + i * 0.22, 0.09, d, { type: 'lowpass', freq: 500, gain: 0.18, attack: 0.02 });
   },
     /** A foam blaster: a springy thunk and a soft whoosh. */
+  /** A rifle shot (#196): a sharp crack, a low thump and a short room tail — loud, not deafening. */
+  gunshot(pos) {
+    if (!ready()) return;
+    const t = ctx.currentTime, d = out(pos, 0.9);
+    noise(t, 0.04, d, { type: 'highpass', freq: 1800, gain: 0.7, attack: 0.001 });
+    noise(t, 0.12, d, { type: 'lowpass', freq: 700, gain: 0.6, attack: 0.002 });
+    tone(t, 0.1, d, { type: 'sine', from: 140, to: 45, gain: 0.45 });
+    noise(t + 0.03, 0.35, d, { type: 'bandpass', freq: 500, q: 0.7, gain: 0.08, attack: 0.03 });
+  },
+  /** The empty magazine pulled out, and a fresh one clicked in (#196). */
+  magOut(pos) {
+    if (!ready()) return;
+    const t = ctx.currentTime, d = out(pos, 0.7);
+    noise(t, 0.05, d, { type: 'bandpass', freq: 2600, q: 3, gain: 0.25 });
+    tone(t + 0.02, 0.04, d, { type: 'square', from: 900, to: 600, gain: 0.05 });
+  },
+  magIn(pos) {
+    if (!ready()) return;
+    const t = ctx.currentTime, d = out(pos, 0.8);
+    noise(t, 0.03, d, { type: 'bandpass', freq: 3200, q: 4, gain: 0.35 });
+    noise(t + 0.09, 0.03, d, { type: 'bandpass', freq: 2400, q: 4, gain: 0.3 });
+    tone(t + 0.09, 0.03, d, { type: 'square', from: 1400, to: 900, gain: 0.05 });
+  },
+  /** A magazine landing on the floor. */
+  clatter(pos) {
+    if (!ready()) return;
+    const t = ctx.currentTime, d = out(pos, 0.6);
+    for (const k of [0, 0.07, 0.12]) noise(t + k, 0.05, d, { type: 'bandpass', freq: 1800 + k * 4000, q: 2, gain: 0.25 - k });
+  },
   nerf(pos) {
     if (!ready()) return;
     const t = ctx.currentTime, d = out(pos, 0.8);

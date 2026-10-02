@@ -305,6 +305,8 @@ if (params0.has('car')) car.park(); // &car: parked out front (screenshots)
 { const moving = world.movingSegments; world.movingSegments = (lvl) => [...moving(lvl), ...(lvl === 0 ? car.segments() : [])]; } // parked: in the way
 scene.add(target.object); // up only while something that can hit it is in the hand (#144, #179, step)
 const marks = new Marks(scene, camera, [world.object, patio.object, target.object], cat); // burn marks, stars, splashes on surfaces (#96)
+const rifle = things.find((t) => t.isRifle) ?? null; // the AK-47 in the NORDLI chest (#196): bullet holes, the target, the cat
+if (rifle) Object.assign(rifle, { marks, cat, onShot: () => bump('shots') });
 // drawings taped up on walls and the fridge (#176); the one in the hand
 const posters = new Posters(scene, world, marks, note);
 const postersLoaded = posters.load();
@@ -752,10 +754,15 @@ document.addEventListener('mousemove', (e) => {
   if (locked) look(e.movementX * PLAYER.mouseSens, e.movementY * PLAYER.mouseSens);
 });
 document.addEventListener('mousedown', (e) => {
+  if (locked && e.button === 0 && heldItem()?.trigger) { heldItem().trigger(true); return; } // the rifle: automatic fire while held (#196)
   if (locked && e.button === 0) { if (book.reading) book.turn(1); else heldItem()?.use(); } // a click: swing, fire, toggle the flashlight, change channel, read / turn the page
   if (locked && e.button === 2) heldItem()?.useAlt?.(); // right click: the remote's power button (#101)
 });
 document.addEventListener('contextmenu', (e) => { if (locked) e.preventDefault(); });
+document.addEventListener('mouseup', (e) => { if (e.button === 0) heldItem()?.trigger?.(false); });
+// touch: holding the action button keeps the rifle firing (#196)
+actionBtn.addEventListener('pointerdown', () => { if (!focused && heldItem()?.trigger) heldItem().trigger(true); });
+for (const ev of ['pointerup', 'pointercancel', 'pointerleave']) actionBtn.addEventListener(ev, () => heldItem()?.trigger?.(false));
 // touch: the remote's power button beside the action button while it is held
 const powerBtn = document.getElementById('power-btn');
 powerBtn.addEventListener('click', () => heldItem()?.useAlt?.());
@@ -795,7 +802,7 @@ document.addEventListener('keyup', (e) => {
   if (clockPanel.open && clockPanel.key(e.code, false)) e.preventDefault(); // no button click on Space
   if (e.code === 'Tab') holdStats(false);
 });
-window.addEventListener('blur', () => { if (!touch.enabled) player.crouch = false; }); // no stuck crouch
+window.addEventListener('blur', () => { if (!touch.enabled) player.crouch = false; heldItem()?.trigger?.(false); }); // no stuck crouch, no stuck trigger
 // touch: a crouch toggle beside the action button
 const crouchBtn = document.getElementById('crouch-btn');
 crouchBtn.addEventListener('click', () => {
@@ -928,6 +935,7 @@ function toggleFurniture(on = !world.furnitureOn) {
   if (!on) { // whatever is in the hand, or put down somewhere, goes home first (#102)
     heldItem()?.putBack(); toys.darts.hide();
     fish?.reset(); // the fish fingers lying around are cleared away, the carton is full again (#162)
+    rifle?.reset(); // the dropped magazines go, a full one in (#196)
     for (const h of holdables) if (h.placed) h.goHome();
     cups.reset(); // the cups standing out go, the cabinet is full again (#215)
   }

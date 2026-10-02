@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Rifle test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+// The AK-47 in the NORDLI chest (#196): in the wide bottom drawer (rides with it), taken, automatic fire empties the
+// magazine (30) into the Sovrum 1 wall — bullet holes there — then the empty magazine falls to the floor and a full
+// one clicks in; a single click is one shot; the lawn target comes up while it is held and a shot in it scores; F clears
+// the magazines.
+//   google-chrome --headless=new --dump-dom http://localhost:8137/tools/rifletest.html
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const lines = [];
+let pass = true;
+const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); pass &&= !!ok; return ok; };
+const f = document.createElement('iframe');
+f.width = 900; f.height = 600;
+document.body.append(f);
+f.src = `../index.html?v=${Math.random()}&shot&at=4.6,2.6,90,0,3.25`;
+f.onload = async () => { try {
+  while (!f.contentWindow.__app) await wait(100);
+  const w = f.contentWindow, d = f.contentDocument, app = w.__app, { things, step, heldItem, marks, target, toggleFurniture, player, camera, scene } = app;
+  d.getElementById('start-touch').click(); await wait(50);
+  const run = (s) => { for (let t = 0; t < s; t += 1 / 30) step(1 / 30); };
+  const V = camera.position.constructor;
+  const rifle = things.find((t) => t.isRifle);
+  check(!!rifle && rifle.model.parent === rifle.homeParent && rifle.drawer, 'the AK-47 lies in a NORDLI drawer');
+  const p0 = rifle.model.getWorldPosition(new V());
+  rifle.drawer.toggle(); run(1.5);
+  const p1 = rifle.model.getWorldPosition(new V());
+  check(p1.distanceTo(p0) > 0.2, `it rides out with the drawer (${p0.distanceTo(p1).toFixed(2)} m)`);
+  rifle.take(); run(0.2);
+  check(heldItem() === rifle && rifle.ammo === 30, 'in the hand, 30 rounds');
+  target.update(0.1, true); // (main.js: the target rises with something that hits it)
+  check(rifle.hitsTarget && rifle.shoots, 'it raises the lawn target (hitsTarget)');
+  // face the west wall of Sovrum 1 and hold the trigger
+  player.spawn(4.6, 2.6, Math.PI / 2); player.pos.y = 3.25; player.eyeY = 3.25 + 1.62; run(0.3);
+  camera.rotation.set(0, Math.PI / 2, 0, 'YXZ'); run(0.05);
+  const holes0 = marks.live.filter((l) => l.kind === 'hole').length;
+  rifle.trigger(true); run(3.5); rifle.trigger(false);
+  const holes = marks.live.filter((l) => l.kind === 'hole').length - holes0;
+  check(rifle.shots >= 30 && holes >= 20, `automatic fire: ${rifle.shots} shots, ${holes} bullet holes on the wall`);
+  check(rifle.reload >= 0 || rifle.ammo === 30, `empty: reloading (${rifle.reload.toFixed(2)} s in)`);
+  run(2.5);
+  check(rifle.ammo === 30 && rifle.reload < 0 && rifle.mag.visible, 'a fresh magazine in: 30 rounds');
+  const drop = rifle.drops[0];
+  check(rifle.drops.length === 1 && drop.down && Math.abs(drop.m.position.y - (3.25 + 0.015)) < 0.03, `the empty one on the floor (y ${drop?.m.position.y.toFixed(2)})`);
+  await wait(450); rifle.use(); run(0.2);
+  check(rifle.ammo === 29, `a click: one shot (${rifle.ammo} left)`);
+  check(!rifle.firing, 'not firing after the click');
+  // the lawn target (#99, #179): up while the rifle is held, a bullet in the face scores like a dart
+  player.spawn(2.8, 16.5, Math.PI); run(1.5); // (it rises out of the grass meanwhile)
+  const face = target.face.getWorldPosition(new V());
+  camera.rotation.set(Math.atan2(face.y - camera.position.y, Math.hypot(face.x - camera.position.x, face.z - camera.position.z)), Math.atan2(-(face.x - camera.position.x), -(face.z - camera.position.z)), 0, 'YXZ');
+  run(0.1); scene.updateMatrixWorld(true);
+  const pts0 = target.score.total;
+  await wait(450); rifle.use(); run(0.2);
+  check(target.object.visible && target.score.total > pts0, `the target is up and a shot scores (+${target.score.total - pts0})`);
+  toggleFurniture(false);
+  check(!rifle.drops.length && !heldItem() && rifle.model.parent === rifle.homeParent && rifle.ammo === 30, 'F: back in its drawer, no magazines on the floor, full');
+  toggleFurniture(true);
+  out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
+} catch (e) { out.textContent = `SOME FAILED\n${lines.join('\n')}\nERROR ${e.stack}`; } };
+</script>
+</body>
+</html>

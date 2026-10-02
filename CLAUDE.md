@@ -164,6 +164,10 @@ src/secret.js           the secret drawer (SECRET, #183): all surprises (SECRETS
 src/milk.js            the milk carton in the fridge (MILK, #168), a Holdable at `fridge.milkAt`: E with the fridge open
                        takes it, it pours milk into glasses and cups (DRINKS.pour); not hidden with F, only sent home
 src/saber.js           the lightsaber in Sovrum 2 (SABER), a Holdable; the blade burns marks where it cuts in (#96)
+src/rifle.js           the AK-47 (#196, RIFLE): a folding-stock AKMS lying in NORDLI's wide bottom drawer (a Trinket, KINDS.rifle,
+                       rides with the drawer); click = a shot, held (`trigger`: mouse button / the touch button) = automatic;
+                       hitscan from the eye → a 'hole' mark (marks.js), the lawn target scores, the cat meows; after RIFLE.mag
+                       the empty magazine drops to the floor and a full one clicks in; F clears the dropped magazines
 src/target.js          the Nerf target on the lawn behind the hedge (TARGET, #99): rings × distance bonus, "+N" badge,
                        a score board beside it (localStorage 'lunden.target'), E clears it; it rises out of the grass
                        only while a holdable with `hitsTarget` (blasters, lightsaber, wands) is in the hand and sinks
@@ -331,6 +335,8 @@ tools/boardtest.html   headless test: keep / throw away cat photos, a full board
 tools/detailtest.html  headless test: from the doorstep through the open front door the hall's doors are drawn (#210); inside
                        every Entréplan door is on a drawn layer, open or shut; outside the culler still works
 tools/planttest.html   headless test: lift pot plants (window board → table, side table → window board, the shelf), F home
+tools/rifletest.html   headless test: the AK-47 rides with its drawer, 30 shots of automatic fire leave bullet holes, reload,
+                       the magazine on the floor, a click = one shot, a shot in the lawn target scores, F
 tools/turbotest.html   headless test: Kaffeturbo with an injected clock — three cups in five minutes (not spread out, not milk /
                        whisky), faster indoors, the text, more coffee adds time, over again; `walktest.html?turbo` walks at that pace
 tools/clocktest.html   headless test of the wall clock (?time=7, spool, pause, sun height by month)
@@ -461,7 +467,7 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   Kian and Tuva, Sarah the mother of Walter and Livia. Text that mentions them must not make all five siblings.
 - Who sleeps where (the user's plan; "left/right" as you arrive upstairs walking west):
   Sovrum 1 (first right) Sarah & Olof, double bed IKEA IDANÄS 180 × 200 (`IDANAS`, #91), a NORDLI chest of
-  drawers in its Klk (no wardrobe in Sovrum 1; the Klk is 1.65 × 1.20 inside, #94) (a sage green IKEA chintz bedding set from a Sellpy ad, #83) with IKEA NORDKISA bedside tables (#64) and white NYMÅNE work
+  drawers in its Klk (an AK-47 in its wide bottom drawer, #196) (no wardrobe in Sovrum 1; the Klk is 1.65 × 1.20 inside, #94) (a sage green IKEA chintz bedding set from a Sellpy ad, #83) with IKEA NORDKISA bedside tables (#64) and white NYMÅNE work
   lamps on them (#65, each its own lamp like the floor lamp) + an IKEA RÅGRUND towel-rack chair in the corner left of
   the window (#60), and a Philips 43" PQS7801 on the west wall across from the bed (#213, black frame, no Ambilight):
   "sätta dig upp i sängen" (look at the bed's foot half; `aim` on a rest spot) puts it on, getting up puts it off · Sovrum 3 (second right) Livia & Tuva, bunk (unicorn sheets), an IKEA ALEX desk under the window

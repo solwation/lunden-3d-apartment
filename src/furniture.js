@@ -8,6 +8,7 @@ import { loungesofa, loungetable, parasol, planter } from './patio.js';
 import { Screen } from './screens.js';
 import { lampMat, addLampGlow } from './interior.js';
 import { Openable } from './openables.js';
+import { rifleModel } from './rifle.js';
 
 // Loose furniture, built from rounded boxes. Every piece is modelled in a local frame
 // where the sitter faces +z, x is across, y up; config gives position + facing.
@@ -1379,8 +1380,17 @@ function nordli(item) {
     for (const [a, b] of parts) {
       const x0 = -w / 2 + a * w + gap, x1 = -w / 2 + b * w - gap, cx = (x0 + x1) / 2;
       const gw = Math.min(0.16, (x1 - x0) * 0.5);
-      addDrawer(g, 'lådan', { x: cx, y: y0 + gap, zf: d / 2, w: x1 - x0, h: rowH - 2 * gap, depth: d - 0.08, front: white, inner: white,
-        out: 0.3, grip: (o) => o.add(rbox(gw, 0.016, 0.004, 0, rowH - 2 * gap - 0.024, 0.001, grip, 0.002)) });
+      let box = null;
+      const dr = addDrawer(g, 'lådan', { x: cx, y: y0 + gap, zf: d / 2, w: x1 - x0, h: rowH - 2 * gap, depth: d - 0.08, front: white, inner: white,
+        out: 0.3, grip: (o) => { box = o; o.add(rbox(gw, 0.016, 0.004, 0, rowH - 2 * gap - 0.024, 0.001, grip, 0.002)); } });
+      // the AK-47 (#196) lies on its side in the wide bottom drawer, the barrel along it, the magazine to the back
+      if (item.rifle && r === 3 && a === 0) {
+        const { g: gun, mag, flash } = rifleModel();
+        gun.quaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI / 2).multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), Math.PI / 2));
+        gun.position.set(0.21, 0.046, -0.11);
+        box.add(gun);
+        (g.userData.things ??= []).push({ model: gun, kind: 'rifle', name: 'AK-47:an', homeParent: box, drawer: dr, back: 'lådan', parts: { mag, flash } });
+      }
     }
   }
   g.traverse((m) => { if (m.isMesh) m.castShadow = m.receiveShadow = true; });
