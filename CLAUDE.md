@@ -96,7 +96,8 @@ src/cabinets.js        wall cabinets with side-hung doors that open with E (kind
                        Tvätt wall cabinet over the worktop (LAUNDRY_CABINET, #138)
 src/openables.js       Openable (#103): the shared helper for fronts that open with E — 'hinge' (with a `max` stop, never
                        through a neighbour), 'flap' (bottom- or top-hinged), 'drawer'; kind 'cabinet', in world.lids.
-                       interior.js builds every kitchen front with it (`openFront`, hollow `shell` carcasses)
+                       interior.js builds every kitchen front with it (`openFront`, hollow `shell` carcasses);
+                       furniture.js `addDrawer` for drawers in furniture (NORDKISA, NORDLI, ALEX, IDANÄS foot end)
 src/ovens.js           oven (drop-down door) + microwave (side door) in the tall unit, E opens (world.lids)
 src/coffee.js          Moccamaster on the worktop (MOCCAMASTER): E brews (red light, sound, the jug fills)
 src/mirror.js          the one mirror material (gradient + glints; hall and bathroom mirrors)
@@ -182,7 +183,7 @@ tools/booktest.html    headless test: take the book, read, turn pages, close, pu
 tools/beertest.html    headless test: sit in the lounge sofa → beer, drink it empty, back = full, a sip of coffee, F
 tools/thingtest.html   headless test: a wine bottle to the coffee table and back to the rack, a glass, F sends them home
 tools/secretarytest.html headless test: the secretary's flap (desk) and its 8 drawers open/close, the open desk blocks
-tools/opentest.html    headless test: every Openable front opens/closes with the button, none overlaps a neighbour open
+tools/opentest.html    headless test: every Openable front (kitchen + furniture) opens/closes with the button, none overlaps a neighbour open
 tools/bestatest.html   headless test: the BESTÅ display cabinet's six doors open/close, its spots light with the room
 tools/holdtest.html    headless test: put things down (coffee table, dining table, floor), one at a time, F → home
 tools/cuptest.html     headless test: an empty cup out without brewing, onto the worktop, brew, take the jug, pour, jug back,

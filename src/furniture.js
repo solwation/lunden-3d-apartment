@@ -7,6 +7,7 @@ import { FURNITURE, LANDSKRONA as L, LEVELS, SKANSNAS, IDANAS } from './config.j
 import { loungesofa, loungetable, parasol, planter } from './patio.js';
 import { Screen } from './screens.js';
 import { lampMat } from './interior.js';
+import { Openable } from './openables.js';
 
 // Loose furniture, built from rounded boxes. Every piece is modelled in a local frame
 // where the sitter faces +z, x is across, y up; config gives position + facing.
@@ -26,6 +27,30 @@ function rbox(w, h, d, x, y, z, material, r = 0.04) {
   return m;
 }
 
+/**
+ * A drawer that opens with E (#103): its front (`w` × `h`, bottom at `y`, outer face at local z = `zf`) and an
+ * open box `depth` deep behind it, sliding out `out` m along +z of an anchor turned by `rot` about y (0 = the
+ * piece's +z). `grip(o)` adds a handle in the drawer's frame (front face at z 0). The drawer is an Openable
+ * in g.userData.targets and kept out of the merge.
+ */
+function addDrawer(g, name, { x, y, zf, w, h, depth, front, inner = front, rot = 0, out = depth * 0.75, grip }) {
+  const anchor = new THREE.Group();
+  anchor.position.set(x, y, zf);
+  anchor.rotation.y = rot;
+  const o = new THREE.Group();
+  anchor.add(o);
+  const bh = h * 0.7, t = 0.008, bw = w - 0.03;
+  o.add(rbox(w, h, 0.018, 0, h / 2, -0.009, front, 0.003));
+  o.add(rbox(bw, t, depth, 0, 0.02, -0.018 - depth / 2, inner, 0.002));                         // bottom
+  for (const s of [-1, 1]) o.add(rbox(t, bh, depth, s * (bw - t) / 2, 0.02 + bh / 2, -0.018 - depth / 2, inner, 0.002)); // sides
+  o.add(rbox(bw, bh, t, 0, 0.02 + bh / 2, -0.018 - depth + t / 2, inner, 0.002));              // back
+  grip?.(o);
+  g.add(anchor);
+  const d = new Openable({ name, object: o, mode: 'drawer', out: [0, 0, out], speed: 3 });
+  (g.userData.targets ??= []).push(d);
+  (g.userData.keep ??= []).push(anchor);
+  return d;
+}
 
 function leg(x, z, h = L.legHeight, material = oak) {
   const m = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.016, h, 12), material);
@@ -351,7 +376,12 @@ function idanasFrame(g, item) {
   g.add(rbox(I.W, fh, frameL, 0, fy, 0.015, fabric, 0.03));
   // drawer fronts (two each side), a slim shadow line round each
   const line = new THREE.MeshStandardMaterial({ color: 0x2a2c2f, roughness: 0.9 });
-  for (const s of [-1, 1]) for (const k of [-1, 1]) g.add(rbox(0.004, fh - 0.12, l * 0.42, s * (I.W / 2 + 0.001), fy, k * l * 0.23, line, 0.002));
+  for (const s of [-1, 1]) {
+    g.add(rbox(0.004, fh - 0.12, l * 0.42, s * (I.W / 2 + 0.001), fy, -l * 0.23, line, 0.002));
+    // the foot-end drawers open (#103); the head-end ones stay shut behind the bedside tables
+    addDrawer(g, 'sänglådan', { x: s * (I.W / 2 + 0.002), y: fy - (fh - 0.12) / 2, zf: l * 0.23, w: l * 0.42, h: fh - 0.12, depth: sideW + w / 2 - 0.1,
+      front: fabric, inner: new THREE.MeshStandardMaterial({ color: 0xf2f0ea, roughness: 0.8 }), rot: s * Math.PI / 2, out: 0.45 });
+  }
   const wood = new THREE.MeshStandardMaterial({ color: 0xd8b98c, roughness: 0.6 });
   for (const x of [-I.W / 2 + 0.08, I.W / 2 - 0.08]) for (const z of [z0 + 0.1, -z0 - 0.06]) {
     const lg = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.018, I.legH, 10), wood);
@@ -940,8 +970,9 @@ function nordkisa(item) {
   g.add(rbox(w, 0.02, w, 0, h - 0.01, 0, bamboo, 0.004));                          // top
   const yd = h - 0.2;                                                              // drawer box under the open shelf
   g.add(rbox(w - 0.02, 0.012, w - 0.02, 0, yd + 0.1, 0, bamboo, 0.003));           // shelf / drawer top
-  g.add(rbox(w - 2 * l, 0.1, w - 0.03, 0, yd + 0.045, 0, bamboo, 0.003));          // drawer
-  g.add(rbox(0.1, 0.022, 0.004, 0, yd + 0.075, w / 2 - 0.013, new THREE.MeshStandardMaterial({ color: 0x5a4632, roughness: 0.8 }), 0.004)); // grip cut-out
+  const cut = new THREE.MeshStandardMaterial({ color: 0x5a4632, roughness: 0.8 });
+  addDrawer(g, 'lådan', { x: 0, y: yd - 0.005, zf: w / 2 - 0.013, w: w - 2 * l, h: 0.1, depth: w - 0.07, front: bamboo,
+    grip: (o) => o.add(rbox(0.1, 0.022, 0.004, 0, 0.08, 0.002, cut, 0.004)) }); // grip cut-out
   for (let k = 0; k < 5; k++) g.add(rbox(w - 2 * l, 0.012, 0.05, 0, 0.1, -w / 2 + 0.06 + k * ((w - 0.12) / 4), bamboo, 0.003)); // slatted shelf
   g.traverse((m) => { if (m.isMesh) m.castShadow = m.receiveShadow = true; });
   g.userData.surfaces = [{ x0: -w / 2 + 0.03, x1: w / 2 - 0.03, z0: -w / 2 + 0.03, z1: w / 2 - 0.03, y: h }];
@@ -1229,8 +1260,9 @@ function nordli(item) {
     const parts = narrowLeft ? [[0, 1 / 3], [1 / 3, 1]] : [[0, 2 / 3], [2 / 3, 1]];
     for (const [a, b] of parts) {
       const x0 = -w / 2 + a * w + gap, x1 = -w / 2 + b * w - gap, cx = (x0 + x1) / 2;
-      g.add(rbox(x1 - x0, rowH - 2 * gap, 0.018, cx, y0 + rowH / 2, d / 2 - 0.009, white, 0.003));
-      g.add(rbox(Math.min(0.16, (x1 - x0) * 0.5), 0.016, 0.004, cx, y0 + rowH - 0.028, d / 2 + 0.001, grip, 0.002));
+      const gw = Math.min(0.16, (x1 - x0) * 0.5);
+      addDrawer(g, 'lådan', { x: cx, y: y0 + gap, zf: d / 2, w: x1 - x0, h: rowH - 2 * gap, depth: d - 0.08, front: white, inner: white,
+        out: 0.3, grip: (o) => o.add(rbox(gw, 0.016, 0.004, 0, rowH - 2 * gap - 0.024, 0.001, grip, 0.002)) });
     }
   }
   g.traverse((m) => { if (m.isMesh) m.castShadow = m.receiveShadow = true; });
@@ -1251,8 +1283,8 @@ function alex(item) {
   g.add(rbox(w, t, d - 0.03, 0, h - t / 2, 0.015, white, 0.004), rbox(w, t, 0.012, 0, h - t / 2, -hd + 0.006, white, 0.003)); // top, cable slot
   g.add(rbox(w - 0.1, 0.13, d - 0.1, 0, h - t - 0.065, 0.02, white, 0.004));                   // drawer box
   for (const s of [-1, 1]) {
-    g.add(rbox(w / 2 - 0.08, 0.12, 0.018, s * (w / 4 - 0.02), h - t - 0.065, hd - 0.03, white, 0.003)); // drawer fronts
-    g.add(rbox(0.1, 0.012, 0.004, s * (w / 4 - 0.02), h - t - 0.012, hd - 0.02, dark, 0.004));          // grips
+    addDrawer(g, 'lådan', { x: s * (w / 4 - 0.02), y: h - t - 0.125, zf: hd - 0.021, w: w / 2 - 0.08, h: 0.12, depth: d - 0.16, front: white, // drawers
+      grip: (o) => o.add(rbox(0.1, 0.012, 0.004, 0, 0.113, 0.001, dark, 0.004)) });                       // grips
     for (const z of [-hd + 0.04, hd - 0.06]) g.add(rbox(0.035, h - t - 0.13, 0.035, s * (hw - 0.04), (h - t - 0.13) / 2, z, steel, 0.003)); // legs
     g.add(rbox(0.035, 0.035, d - 0.1, s * (hw - 0.04), 0.06, -0.01, steel, 0.003));                        // foot bars
   }
@@ -1848,7 +1880,7 @@ export function buildFurniture() {
     for (const r of obj.userData.surfaces ?? []) obj.add(surfaceBox(r, surfaces)); // tables a cup can stand on (#90)
     if (obj.userData.rest) obj.userData.interact = restTarget(obj, item, LEVELS[item.level].floor); // sit / lie (#71/#72)
     if (obj.userData.interact) { // E targets among the furniture (the TV, seats, beds)
-      obj.traverse((m) => { m.userData.door = obj.userData.interact; });
+      obj.traverse((m) => { m.userData.door ??= obj.userData.interact; }); // drawers in a bed keep their own (#103)
       interactives.push(obj.userData.interact);
     }
     for (const t of obj.userData.targets ?? []) { t.level = item.level; interactives.push(t); } // several E targets of their own (cabinet doors, #104)
