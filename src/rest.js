@@ -17,6 +17,8 @@ export function restTarget(obj, item, levelFloor) {
       ...p,
       kind: p.kind ?? R.kind, // a spot can differ from the piece (sitting up in a bed)
       pos: new THREE.Vector3(item.x + ox, levelFloor + p.y + ((p.kind ?? R.kind) === 'lie' ? REST.lieEye : REST.sitEye), item.z + oz),
+      // `aim` (local x, z): where to look to pick this spot, when it is not the spot itself (sitting up in a bed, #213)
+      aimPos: p.aim ? new THREE.Vector3(item.x + toWorld(...p.aim)[0], levelFloor + p.y, item.z + toWorld(...p.aim)[1]) : null,
       yaw: Math.atan2(-dx, -dz), // camera yaw facing that way
     };
   });
@@ -29,7 +31,7 @@ export function chooseSpot(target, ray, catPos) {
   let best = null, bestD = Infinity;
   for (const sp of target.spots) {
     if (catPos && Math.hypot(catPos.x - sp.pos.x, catPos.z - sp.pos.z) < 0.35 && Math.abs(catPos.y - (sp.pos.y - 0.6)) < 0.6) continue;
-    const d = ray.distanceSqToPoint(sp.pos);
+    const d = ray.distanceSqToPoint(sp.aimPos ?? sp.pos);
     if (d < bestD) { bestD = d; best = sp; }
   }
   return best;

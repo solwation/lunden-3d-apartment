@@ -46,9 +46,10 @@ f.onload = async () => {
         player.spawn(x, z, 0);
         if (t.level) { player.pos.y = floorY; player.eyeY = floorY + 1.62; }
         for (let i = 0; i < 3; i++) step(1 / 60);
-        const dx = sp.pos.x - camera.position.x, dz = sp.pos.z - camera.position.z;
+        const aim = sp.aimPos ?? sp.pos.clone().setY(sp.pos.y - 0.25); // a spot picked by looking elsewhere (sitting up in bed, #213)
+        const dx = aim.x - camera.position.x, dz = aim.z - camera.position.z;
         camera.rotation.y = Math.atan2(-dx, -dz);
-        camera.rotation.x = Math.atan2(sp.pos.y - 0.25 - camera.position.y, Math.hypot(dx, dz));
+        camera.rotation.x = Math.atan2(aim.y - camera.position.y, Math.hypot(dx, dz));
         step(1 / 60);
         if (btn.hidden || !btn.textContent.includes(t.name)) continue;
         btn.click();
@@ -80,6 +81,24 @@ f.onload = async () => {
         && Math.abs(camera.rotation.y - yawSat) < 1e-6 && (!lying || camera.rotation.x === 0);
       const ok = !!(atSpot && up && still && back && label);
       pass &= check(ok, `${t.name} #${si} (${chosen?.kind ?? t.rest}): "${label}" at spot ${atSpot}, ${lying ? `looking up ${up}, ` : ''}no walking ${still}, back up ${back}`);
+    }
+  }
+  // #213: sitting up in the double bed (both sides) puts the Sovrum 1 TV on, in view; getting up puts it off
+  {
+    const bed = targets.find((x) => x.name === 'sängen' && x.spots.some((s) => s.tv));
+    const tv = w.__app.world.furnitureTargets.find((x) => x.kind === 'tv' && x.room === 'Sovrum 1');
+    for (const sp of bed.spots.filter((s) => s.tv)) {
+      const label = sitOn(bed, sp);
+      for (let i = 0; i < 60; i++) step(1 / 60);
+      camera.updateMatrixWorld(); camera.updateProjectionMatrix();
+      const THREE = await w.eval("import('three')");
+      const fr = new THREE.Frustum().setFromProjectionMatrix(new THREE.Matrix4().multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse));
+      tv.pickable.updateMatrixWorld(true);
+      const inView = fr.containsPoint(tv.pickable.getWorldPosition(new THREE.Vector3()));
+      const sat = rest.spot === sp && rest.kind === 'sit';
+      const on = tv.isOpen;
+      (standBtn.hidden ? btn : standBtn).click(); for (let i = 0; i < 3; i++) step(1 / 60);
+      pass &= check(/sätta dig upp i sängen/i.test(label ?? '') && sat && on && inView && !tv.isOpen, `sitting up in bed (${sp.x > 0 ? 'one' : 'other'} side): "${label}", sat ${sat}, the TV on ${on} and in view ${inView}, off again ${!tv.isOpen}`);
     }
   }
   // #202: turn your head while seated, get up: you look the same way; the old spot behind you → a spot in front

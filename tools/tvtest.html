@@ -47,7 +47,8 @@ f.onload = async () => {
   tv.toggle(); const ch1 = tv.screen.channel; tv.toggle(); tv.toggle(); const ch2 = tv.screen.channel; tv.toggle();
   pass &= check(ch1 !== ch2, `a new programme each time (${tv.screen.program.name}: ${ch1} → ${ch2})`);
   // Sovrum 3: the wall-mounted 32" across from the bunk, faces west into the room
-  const tv3 = world.furnitureTargets.find((t) => t.kind === 'tv' && t !== tv);
+  const V0 = tv.pickable.position.constructor, at = (t) => { t.pickable.updateMatrixWorld(true); return t.pickable.getWorldPosition(new V0()); };
+  const tv3 = world.furnitureTargets.find((t) => t.kind === 'tv' && t !== tv && Math.abs(at(t).x - 2.61) < 0.05);
   tv3.pickable.updateMatrixWorld(true);
   const p3 = tv3.pickable.getWorldPosition(new tv.pickable.position.constructor());
   player.spawn(p3.x - 1.2, p3.z, -Math.PI / 2); player.pos.y = 3.25; player.eyeY = 3.25 + 1.62;
@@ -58,6 +59,18 @@ f.onload = async () => {
   for (let i = 0; i < 30; i++) step(1 / 60);
   pass &= check(tv3.isOpen && tv3.screen.texture.version > 1, `Sovrum 3 TV on: ${tv3.screen.program.name}`);
   btn.click();
+  // Sovrum 1 (#213): the 43" on the west wall across from the bed, faces east; on/off, a new programme each time
+  const tv1 = world.furnitureTargets.find((t) => t.kind === 'tv' && t.room === 'Sovrum 1');
+  const p1 = at(tv1);
+  player.spawn(p1.x + 1.5, p1.z, Math.PI / 2); player.pos.y = 3.25; player.eyeY = 3.25 + 1.62;
+  for (let i = 0; i < 3; i++) step(1 / 60);
+  camera.rotation.y = Math.PI / 2; camera.rotation.x = Math.atan2(p1.y - camera.position.y, camera.position.x - p1.x); step(1 / 60); // facing west
+  const l1 = btn.textContent;
+  btn.click(); for (let i = 0; i < 30; i++) step(1 / 60);
+  const on1 = tv1.isOpen && tv1.screen.texture.version > 1, c1 = tv1.screen.channel;
+  btn.click(); step(1 / 60); btn.click(); step(1 / 60);
+  const c2 = tv1.screen.channel; btn.click(); step(1 / 60);
+  pass &= check(/slå på tv:n/i.test(l1) && on1 && c1 !== c2 && !tv1.isOpen && Math.abs(p1.y - 4.55) < 0.05, `Sovrum 1 TV at (${p1.x.toFixed(2)}, ${p1.y.toFixed(2)}, ${p1.z.toFixed(2)}): "${l1}", on ${on1}, new programme ${c1} → ${c2}, off`);
   // the remote (#101) on the coffee table: take it, point it at the living-room TV, change channels, power
   const { remote, heldItem } = w.__app;
   remote.model.updateMatrixWorld(true);

@@ -1023,7 +1023,7 @@ export const FURNITURE = [
   // centred, 73 cm of floor left in front of it; facing north (into the Klk)
   { type: 'nordli', level: 1, x: (3.90 + 5.55) / 2, z: 5.48 - 0.235, rot: 0, w: 1.2, h: 0.99, d: 0.47 },
   // the mattress centre: the headboard (IDANAS.head) against the east wall
-  { type: 'bed', level: 1, x: 5.55 - IDANAS.head - 1.0, z: 2.3, rot: 90, w: 1.8, l: 2.0, model: 'idanas',
+  { type: 'bed', level: 1, x: 5.55 - IDANAS.head - 1.0, z: 2.3, rot: 90, w: 1.8, l: 2.0, model: 'idanas', sitUp: { tv: 'Sovrum 1' },
     // repeat = metres per texture tile (blooms ~8–15 cm)
     bedding: { pattern: 'chintz', ground: '#adc2b1', repeat: 0.9, flowers: ['#d0696b', '#c9505a', '#e9b7bd', '#d4b45a'],
       leaves: ['#6f7b86', '#8a96a0', '#7f9a83'], throw: 0xdcdcd8, cushion: 0xe2a3ab } },
@@ -1036,6 +1036,10 @@ export const FURNITURE = [
   // Philips 32" PFS6906 (#100, Elgiganten: 3-sided Ambilight, thin silver bezel; panel ~71 × 41 cm), wall-mounted on
   // Sovrum 3's east wall (x 2.61) straight across from the bunk (z 0.47–2.57), clear of the desk (z < 1.04) and the
   // wands' hooks (z ≥ 2.85); centre 1.2 m up (the user: watchable from both bunks; tunable). Faces west.
+  // Sovrum 1 (#213, docs/tv-philips-43-pqs7801.png): Philips 43" PQS7801 QLED (~96 × 56 cm; slim black frame, a silver
+  // edge below, no Ambilight) on the west wall straight across from the double bed (z 2.3), centre 1.3 m up for
+  // sitting up in bed (guess). Faces east.
+  { type: 'tv', level: 1, room: 'Sovrum 1', x: 2.752, z: 2.3, y: 1.3, rot: -90, w: 0.96, h: 0.56, fps: 12, px: 320, mount: 'wall', frame: 'black', ambilight: false, name: 'tv:n' },
   { type: 'tv', level: 1, x: 2.61, z: 1.75, y: 1.2, rot: 90, w: 0.71, h: 0.41, fps: 12, px: 256, mount: 'wall', name: 'tv:n' },
   { type: 'alex', level: 1, x: 2.61 - 0.66 - 0.02, z: 0.465 + 0.29, rot: 180, w: 1.32, d: 0.58, h: 0.76 },
   { type: 'kidchair', level: 1, x: 2.61 - 0.66 - 0.02, z: 0.465 + 0.58 + 0.25, rot: 0 },

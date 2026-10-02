@@ -560,6 +560,10 @@ function sitOrLie(target) {
   bump(spot.kind === 'lie' ? 'lay' : 'sat');
   sfx.rustle(spot.pos);
   if (spot.pc) usePc(spot);
+  if (spot.tv) { // sitting up in bed puts the room's TV on (#213), and getting up puts it off again
+    const tv = world.furnitureTargets.find((t) => t.kind === 'tv' && t.room === spot.tv);
+    if (tv && !tv.isOpen) { tv.toggle(); sfx.tvClick(tv.pickable.getWorldPosition(new THREE.Vector3()), true); rest.tvOn = tv; }
+  }
   if (target.name === 'loungesoffan') beer.serve(); // a big beer on the table (#117)
 }
 /** The gaming chair starts the PC; the seat in the bunk also swings its monitor round for a film. */
@@ -650,6 +654,7 @@ function standUp() {
   const yaw = camera.rotation.y, pitch = lying ? 0 : camera.rotation.x;
   const s = rest.end();
   if (!s) return;
+  if (rest.tvOn) { if (rest.tvOn.isOpen) { rest.tvOn.toggle(); sfx.tvClick(rest.tvOn.pickable.getWorldPosition(new THREE.Vector3()), false); } rest.tvOn = null; } // (#213)
   // getting up from the film: the monitor goes back to the desk (and the game) — the PC stays on
   if (film) for (const t of world.furnitureTargets) if (t.kind === 'pc') t.watch(null);
   const at = seat ? standSpot(seat, yaw, s) : s;

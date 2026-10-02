@@ -503,6 +503,11 @@ function bed(item) {
   // lying down (#72): head on the pillows, feet towards local +z; one place per side of a double bed
   g.userData.rest = { kind: 'lie', name: 'sängen', verb: 'lägga dig i',
     spots: (w > 1.2 ? [-w / 4, w / 4] : [0]).map((x) => ({ x, y: top, z: z0 + 0.32 })) };
+  // sitting up against the headboard (#213), chosen by looking at the foot half of the bed; `tv` = the room whose
+  // TV comes on while you sit there
+  if (item.sitUp) for (const x of (w > 1.2 ? [-w / 4, w / 4] : [0])) {
+    g.userData.rest.spots.push({ kind: 'sit', verb: 'sätta dig upp i', x, y: top - 0.05, z: z0 + 0.42, aim: [x, -z0 - 0.5], tv: item.sitUp.tv });
+  }
   const hw = item.model === 'idanas' ? IDANAS.W / 2 : w / 2 + 0.03, back = item.model === 'idanas' ? IDANAS.head : 0.08;
   g.userData.footprint = [{ x0: -hw, x1: hw, z0: z0 - back, z1: -z0 + 0.03 }];
   return g;
@@ -955,7 +960,8 @@ function tv(item) {
   const { w, h } = item, wall = item.mount === 'wall';
   const dark = new THREE.MeshStandardMaterial({ color: 0x141518, roughness: 0.35, metalness: 0.2 });
   const stand = new THREE.MeshStandardMaterial({ color: 0x3a3c40, roughness: 0.4, metalness: 0.5 });
-  const bezel = wall ? new THREE.MeshStandardMaterial({ color: 0xc9ccd1, roughness: 0.3, metalness: 0.7 }) : dark;
+  const silver = new THREE.MeshStandardMaterial({ color: 0xc9ccd1, roughness: 0.3, metalness: 0.7 });
+  const bezel = wall && item.frame !== 'black' ? silver : dark; // `frame: 'black'`: a slim black frame, a silver edge below (#213)
   // the panel's front face is at zf; y0 = the screen's bottom (on the bench, or centred on item.y for the wall)
   let zf, y0, glowZ;
   if (wall) {
@@ -963,6 +969,10 @@ function tv(item) {
     g.add(rbox(0.2, 0.2, 0.03, 0, 0, 0.015, stand, 0.004));                      // wall bracket
     g.add(rbox(w * 0.6, h * 0.6, 0.04, 0, 0, 0.05, dark, 0.01));                 // back housing
     g.add(rbox(w, h, 0.02, 0, 0, zf - 0.01, bezel, 0.006));                      // thin silver bezel / panel
+    if (item.frame === 'black') {
+      g.add(rbox(w - 0.02, 0.006, 0.022, 0, -h / 2 + 0.002, zf - 0.01, silver, 0.002)); // the thin silver edge along the bottom
+      g.add(rbox(0.05, 0.007, 0.002, 0, -h / 2 + 0.012, zf + 0.001, silver, 0.001));   // Philips on the bottom edge
+    }
   } else {
     y0 = 0.075; zf = -0.03 + 0.0125; glowZ = -0.19;                              // just off the wall behind the bench
     g.add(rbox(0.42, 0.012, 0.24, 0, 0.006, -0.02, stand, 0.004));               // foot plate
@@ -991,12 +1001,13 @@ function tv(item) {
     blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false });
   const glow = new THREE.Mesh(new THREE.PlaneGeometry(w * 1.9, h * 2.1), glowMat);
   glow.position.set(0, y0 + h / 2 + (wall ? h * 0.08 : 0), glowZ); // 3-sided Ambilight: a bit more above than below
+  glow.visible = item.ambilight !== false; // (PQS7801 has no Ambilight, #213)
   g.add(glow);
   let on = false, acc = 0;
   const target = new THREE.Color();
   const shine = ([hh, ss, ll]) => target.setHSL(hh, ss, ll);
   const interact = {
-    name: item.name ?? 'tv:n', kind: 'tv', pickable: g, screen: scr,
+    name: item.name ?? 'tv:n', kind: 'tv', pickable: g, screen: scr, room: item.room,
     get isOpen() { return on; },
     get verb() { return on ? 'stänga av' : 'slå på'; },
     toggle() {
