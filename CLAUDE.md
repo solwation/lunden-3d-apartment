@@ -96,7 +96,8 @@ src/cabinets.js        wall cabinets with side-hung doors that open with E (kind
                        Tvätt wall cabinet over the worktop (LAUNDRY_CABINET, #138)
 src/openables.js       Openable (#103): the shared helper for fronts that open with E — 'hinge' (with a `max` stop, never
                        through a neighbour), 'flap' (bottom- or top-hinged), 'drawer'; kind 'cabinet', in world.lids.
-                       interior.js builds every kitchen front with it (`openFront`, hollow `shell` carcasses);
+                       interior.js builds the kitchen fronts, vanity drawers, the Stage 50 mirror cabinet, the laundry sink
+                       cabinet and the washer/dryer doors with it (`openFront`, hollow `shell` carcasses);
                        furniture.js `addDrawer` / `addDoor` for furniture (NORDKISA, NORDLI, ALEX, IDANÄS foot end, BYÅS)
 src/ovens.js           oven (drop-down door) + microwave (side door) in the tall unit, E opens (world.lids)
 src/coffee.js          Moccamaster on the worktop (MOCCAMASTER): E brews (red light, sound, the jug fills)

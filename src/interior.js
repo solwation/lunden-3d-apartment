@@ -228,17 +228,17 @@ function onBatch(F, OB) {
     else if (dir === 'e') OB.box(f + d0, f + d1, a0, a1, y0, y1, m, origin);
     else OB.box(a0, a1, f - d1, f - d0, y0, y1, m, origin);
   };
-  return { ...F, box };
+  return { ...F, box, add: (geo, m) => OB.add(geo, m) };
 }
 
 /** A hollow carcass behind the front plane (#103): outer sides/top/bottom in the front colour, white inside,
- * a shelf when it is tall enough. `depth` = from the front plane to the wall. */
-function shell(F, a0, a1, y0, y1, depth, { shelf = true, inner = M.carcass } = {}) {
+ * a shelf when it is tall enough (`outer`: another colour). `depth` = from the front plane to the wall. */
+function shell(F, a0, a1, y0, y1, depth, { shelf = true, inner = M.carcass, outer = M.front } = {}) {
   const t = 0.016, d0 = -depth, d1 = -FT;
-  F.box(a0, a0 + t, d0, d1, y0, y1, M.front);
-  F.box(a1 - t, a1, d0, d1, y0, y1, M.front);
-  F.box(a0 + t, a1 - t, d0, d1, y0, y0 + t, M.front);
-  F.box(a0 + t, a1 - t, d0, d1, y1 - t, y1, M.front);
+  F.box(a0, a0 + t, d0, d1, y0, y1, outer);
+  F.box(a1 - t, a1, d0, d1, y0, y1, outer);
+  F.box(a0 + t, a1 - t, d0, d1, y0, y0 + t, outer);
+  F.box(a0 + t, a1 - t, d0, d1, y1 - t, y1, outer);
   F.box(a0 + t, a1 - t, d0, d0 + 0.008, y0 + t, y1 - t, inner);                                    // back
   for (const [b0, b1] of [[a0 + t, a0 + t + 0.001], [a1 - t - 0.001, a1 - t]]) F.box(b0, b1, d0, d1, y0 + t, y1 - t, inner); // linings
   F.box(a0 + t, a1 - t, d0, d1, y0 + t, y0 + t + 0.001, inner);
@@ -250,12 +250,12 @@ function shell(F, a0, a1, y0, y1, depth, { shelf = true, inner = M.carcass } = {
  * A front that opens (#103): built into its own batch, wrapped in a pivot and driven by an Openable.
  * how: { mode: 'hinge' (on the side away from the handle, or `at`: 'a0' / 'a1'), 'flap' (hinged at the
  * bottom, `top: true` = at the top, lifting up), 'drawer' (a box `depth` deep behind the front, slides out),
- * name, max }. The pivot sits on the front plane, so the door swings clear of its own carcass and the
+ * name, max, build(P, a0, a1, y0, y1) = a front of its own instead of the shaker one }. The pivot sits on the front plane, so the door swings clear of its own carcass and the
  * neighbours; `max` stops it before it meets anything. `ctx` = { group, list }.
  */
 function openFront(ctx, F, a0, a1, y0, y1, material, handle, opts, how) {
   const OB = new Batch(), P = onBatch(F, OB);
-  front(P, a0, a1, y0, y1, material, handle, opts);
+  if (how.build) how.build(P, a0, a1, y0, y1); else front(P, a0, a1, y0, y1, material, handle, opts);
   const normal = F.dir === 'w' ? [-1, 0, 0] : F.dir === 'e' ? [1, 0, 0] : [0, 0, -1];
   const world = (u, d, y) => { const [x, z] = F.at(u, d); return new THREE.Vector3(x, y, z); };
   let at, o;
@@ -538,14 +538,27 @@ function buildLaundry(B, group, floor, room, y0, handled, taps, appliances) {
     F.box(a0, a1, -F.depth + 0.02, 0, y0 + 0.01, y0 + 0.85, M.appliance);
     F.box(a0 + 0.02, a1 - 0.02, 0, 0.004, y0 + 0.74, y0 + 0.82, M.steel);
     const [dx, dz] = F.at((a0 + a1) / 2, 0.01);
+    // the drum opening behind the door
+    const drum = new THREE.CylinderGeometry(0.16, 0.16, 0.004, 32);
+    drum.rotateZ(Math.PI / 2);
+    drum.translate(...(([x, z]) => [x, y0 + 0.42, z])(F.at((a0 + a1) / 2, 0.001)));
+    B.add(drum, M.black);
+    // the round door: hinged on its left edge, opens with E (#103)
+    const DB = new Batch();
     const ring = new THREE.TorusGeometry(0.17, 0.025, 10, 32);
     ring.rotateY(Math.PI / 2);
     ring.translate(dx, y0 + 0.42, dz);
-    B.add(ring, M.chrome);
+    DB.add(ring, M.chrome);
     const glass = new THREE.CylinderGeometry(0.15, 0.15, 0.02, 32);
     glass.rotateZ(Math.PI / 2);
     glass.translate(dx, y0 + 0.42, dz);
-    B.add(glass, M.glassDark);
+    DB.add(glass, M.glassDark);
+    const [hx, hz] = F.at((a0 + a1) / 2 - 0.195, 0.01), at = new THREE.Vector3(hx, y0 + 0.42, hz);
+    const free = new THREE.Vector3(dx - hx, 0, dz - hz).applyAxisAngle(new THREE.Vector3(0, 1, 0), 0.1);
+    const o = new Openable({ name: c.label === 'TM' ? 'tvättmaskinen' : 'torktumlaren', object: pivotAround(DB.meshes(), at), mode: 'hinge', sign: free.x > 0 ? 1 : -1, max: 100 });
+    o.normal = new THREE.Vector3(1, 0, 0);
+    group.add(o.object);
+    appliances.push(o);
   }
   // worktop over the machines + the sink cabinet (Arkitekt plus Frost, knob Point krom)
   const tvSink = sinkF && (() => { const [sx, sz] = centre(sinkF), { w, d } = LAUNDRY_SINK; return { x0: sx - d / 2, x1: sx + d / 2, z0: sz - w / 2, z1: sz + w / 2 }; })();
@@ -553,12 +566,14 @@ function buildLaundry(B, group, floor, room, y0, handled, taps, appliances) {
   else B.box(run.x0, run.x1 + 0.02, run.z0, run.z1, yt, yt + 0.03, M.counter);
   if (sinkF) {
     const F = frame(B, { ...run, z0: sinkF.z0, z1: run.z1 }, 'e');
-    F.box(F.u0, F.u1, -F.depth, -FT, y0, yt + 0.033 - LAUNDRY_SINK.depth - 0.02, M.laundry); // stops below the bowl (#122)
-    front(F, F.u0, F.u1, y0 + 0.1, yt, M.laundry, null);
-    const [kx, kz] = F.at(F.u0 + 0.04, 0.012);
-    const knob = new THREE.SphereGeometry(0.0125, 12, 8);
-    knob.translate(kx, yt - 0.06, kz);
-    B.add(knob, M.chrome);
+    F.box(F.u0, F.u1, -F.depth, -FT, y0, y0 + 0.1, M.laundry);
+    shell(F, F.u0, F.u1, y0 + 0.1, yt + 0.033 - LAUNDRY_SINK.depth - 0.02, F.depth, { shelf: false, outer: M.laundry }); // stops below the bowl (#122)
+    // its door opens with E (#103), hinged away from the knob
+    openFront({ group, list: appliances }, F, F.u0, F.u1, y0 + 0.1, yt, M.laundry, null, {}, { mode: 'hinge', at: 'a1', name: 'skåpet', build: (P, a0, a1, b0, b1) => {
+      front(P, a0, a1, b0, b1, M.laundry, null);
+      const [kx, kz] = F.at(a0 + 0.04, 0.012);
+      P.add(new THREE.SphereGeometry(0.0125, 12, 8).translate(kx, b1 - 0.06, kz), M.chrome);
+    } });
     const [, sz] = centre(sinkF), h = tvSink, rim = 0.02, yr = yt + 0.03;
     slabWithHole(B, h.x0 - rim, h.x1 + rim, h.z0 - rim, h.z1 + rim, yr, yr + 0.003, h, M.steelDark); // inset sink's rim
     const bottom = sinkBowl(B, h, yr + 0.003, LAUNDRY_SINK.depth, M.steel, 'x0');
@@ -591,15 +606,21 @@ function buildLaundry(B, group, floor, room, y0, handled, taps, appliances) {
 // ---------- bathrooms ----------
 
 /** Wall-hung vanity (Core Grip, Carbon Grey) with a white basin and a chrome mixer. */
-function vanity(B, sinkF, wallX, y0, width, depth) {
+function vanity(B, sinkF, wallX, y0, width, depth, open) {
   const [, cz] = centre(sinkF);
   const r = { x0: wallX, x1: wallX + depth, z0: cz - width / 2, z1: cz + width / 2 };
   const F = frame(B, r, 'e');
   // the body stops below the basin; the top drawer front (2 cm) runs up to the porcelain top (#122)
   F.box(F.u0, F.u1, -depth, -0.02, y0 + 0.4, y0 + 0.86 - VANITY_BASIN.depth, M.vanity);
-  F.box(F.u0, F.u1, -0.02, 0, y0 + 0.4, y0 + 0.84, M.vanity);
   for (const u of [F.u0, F.u1 - 0.02]) F.box(u, u + 0.02, -depth, -0.02, y0 + 0.4, y0 + 0.84, M.vanity); // the sides
-  F.box(F.u0 + 0.01, F.u1 - 0.01, 0, 0.003, y0 + 0.615, y0 + 0.625, M.black); // grip line between drawers
+  // two drawers (#103), plain fronts with the grip line between them; the top one is short: the basin is behind it
+  const plain = (grip) => (P, a0, a1, b0, b1) => {
+    P.box(a0 + 0.0015, a1 - 0.0015, -0.02, 0, b0 + 0.0015, b1 - 0.0015, M.vanity);
+    if (grip) P.box(a0 + 0.01, a1 - 0.01, 0, 0.003, b0 + 0.0015, b0 + 0.008, M.black);
+  };
+  const ym = y0 + 0.62;
+  openFront(open, F, F.u0 + 0.02, F.u1 - 0.02, y0 + 0.4, ym, M.vanity, null, {}, { mode: 'drawer', depth: depth - 0.06, name: 'lådan', build: plain(false) });
+  openFront(open, F, F.u0 + 0.02, F.u1 - 0.02, ym, y0 + 0.84, M.vanity, null, {}, { mode: 'drawer', depth: depth - 0.17, name: 'lådan', build: plain(true) });
   // the porcelain top with its basin (#122): a hole in the slab, a bowl VANITY_BASIN.depth deep
   const bowl = { x0: wallX + 0.13, x1: wallX + depth - 0.05, z0: cz - width / 2 + 0.07, z1: cz + width / 2 - 0.07 };
   slabWithHole(B, wallX, wallX + depth + 0.01, cz - width / 2, cz + width / 2, y0 + 0.84, y0 + 0.87, bowl, M.porcelain);
@@ -635,6 +656,7 @@ function mirrorReflector(group, geo, x, y, z, level) {
   holder.rotation.y = Math.PI / 2; // local +z → world +x
   group.add(holder);
   addReflector(holder, geo, { level });
+  return holder;
 }
 
 /** LED strips on mirrors, switchable with E on their own (lights.js treats them like floor lamps). */
@@ -727,7 +749,7 @@ function spots(B, room, y, n, material) {
   }
 }
 
-function buildBathroom(B, group, floor, room, y0, handled, taps) {
+function buildBathroom(B, group, floor, room, y0, handled, taps, appliances) {
   const segs = [];
   const sinkF = floor.fixtures.find((f) => f.kind === 'sink' && inside(f, room));
   const shower = floor.fixtures.find((f) => f.kind === 'shower' && inside(f, room));
@@ -736,15 +758,23 @@ function buildBathroom(B, group, floor, room, y0, handled, taps) {
   if (sinkF) {
     handled.add(sinkF);
     // Badrum: Core Grip 60 + Slot 50 oval mirror. WC/dusch: Core XS Grip 50 + mirror cabinet Stage 50.
-    const r = vanity(B, sinkF, room.x0 + 0.005, y0, upstairs ? 0.5 : 0.6, upstairs ? 0.36 : 0.45);
+    const open = { group, list: appliances }; // drawers and the mirror cabinet open with E (#103)
+    const r = vanity(B, sinkF, room.x0 + 0.005, y0, upstairs ? 0.5 : 0.6, upstairs ? 0.36 : 0.45, open);
     segs.push(r);
     taps.push(r.tap);
     const [, cz] = centre(sinkF);
     if (upstairs) {
       const m = frame(B, { x0: room.x0, x1: room.x0 + 0.15, z0: cz - 0.25, z1: cz + 0.25 }, 'e');
-      m.box(m.u0, m.u1, -0.15, 0, y0 + 1.2, y0 + 1.9, M.vanity);
-      m.box(m.u0 + 0.01, m.u1 - 0.01, 0, 0.004, y0 + 1.21, y0 + 1.89, M.mirror);
-      mirrorReflector(group, new THREE.PlaneGeometry(m.u1 - m.u0 - 0.02, 0.68), m.f + 0.0045, y0 + 1.55, cz, room.level); // on the cabinet's front (#139)
+      // Stage 50: a hollow cabinet with shelves, its mirror door opens with E (#103); the mirror image rides on the door
+      shell(m, m.u0, m.u1, y0 + 1.2, y0 + 1.9, 0.15, { inner: M.white, outer: M.vanity });
+      const door = openFront(open, m, m.u0, m.u1, y0 + 1.2, y0 + 1.9, M.vanity, null, {}, { mode: 'hinge', at: 'a0', name: 'spegelskåpet', max: 100, build: (P, a0, a1, b0, b1) => {
+        P.box(a0, a1, -FT, 0, b0, b1, M.vanity);
+        P.box(a0 + 0.01, a1 - 0.01, 0, 0.004, b0 + 0.01, b1 - 0.01, M.mirror);
+      } });
+      const holder = mirrorReflector(group, new THREE.PlaneGeometry(m.u1 - m.u0 - 0.02, 0.68), m.f + 0.0045, y0 + 1.55, cz, room.level); // on the cabinet's front (#139)
+      group.updateMatrixWorld(true);
+      door.object.attach(holder);
+      holder.traverse((o) => { o.userData.door = door; }); // the (invisible) mirror image is part of the door's E target
     } else {
       // Slot 50 with its LED backlight on a switch of its own (E on the mirror, #50)
       const led = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xfff2dc, emissiveIntensity: 0.04 });
@@ -846,7 +876,7 @@ export function buildInterior(group, floor, li, y0, yC, wallBoxes, handled, taps
     B.box(room.x0, room.x1, room.z0, room.z1, y0 + 0.001, y0 + 0.004, M[room.floor]);
     if (room.wallTile) {
       tileWalls(B, room, wallBoxes, y0, room.wallTile, M.wallTile);
-      rects.push(...buildBathroom(B, group, floor, room, y0, handled, taps));
+      rects.push(...buildBathroom(B, group, floor, room, y0, handled, taps, appliances));
     }
     if (room.name === 'Tvätt') rects.push(...buildLaundry(B, group, floor, { ...room, ceiling: 2.5 }, y0, handled, taps, appliances));
   }
