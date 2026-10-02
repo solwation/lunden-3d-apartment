@@ -46,7 +46,7 @@ when it differs from `BUILD`. Its buttons react to a lifted touch as well as a c
 clock, input mode, mute, fullscreen; sessionStorage + localStorage, < 2 min) which the next load reads, deletes and resumes from (the place only — the clock and the calendar always
 start at the real time and date, #143; not with `?at=`; a spot inside a wall falls back to START); F5 finds none and starts at START.
 A record made mid-visit skips the start screen (#181, `continueAfterReload`): touch plays at once (sound/fullscreen on the
-first touch), mouse & keyboard gets the `#arm` cover "Klicka för att fortsätta"; "Omladdning klar" fades out at the top after 3 s.
+first touch), mouse & keyboard gets the see-through `#arm` (the next click takes the mouse, #190); "Omladdning klar" fades out at the top after 3 s.
 A record made on the start screen (no mode) shows it with "Du fortsätter där du var" + "Börja från start". The start screen
 always offers "Gå till startplatsen" (both also set the clock and calendar back to now, `realNow`)
 (`tools/reloadtest.html`). Locally `BUILD = 'dev'` and no checks run. Keep imports
@@ -566,8 +566,9 @@ screenshots into the session scratchpad, not the repo.
   (hover: none)` → `body.phone`, set by an inline script in index.html) get a short start screen:
   no key list, one *Börja* button (= Touch). `&phone` forces it for screenshots.
 - Esc on the start screen = *Mus & tangentbord*. Browsers don't treat Esc as a user activation, so
-  it can't call requestPointerLock/start audio: it hides the start screen and shows `#arm` ("Klicka
-  för att börja"); that click runs the same `startMouse()`. Ignored for 0.7 s after Esc frees the
+  it can't call requestPointerLock/start audio: it hides the start screen and shows `#arm` (see-through, a small "Klicka för att styra med musen" line, #190);
+  the next click runs the same `startMouse()`. A refused pointer lock is retried once while the click still counts as a
+  gesture, else `#arm` — never the start screen again. Ignored for 0.7 s after Esc frees the
   mouse and while the install sheet, note, board or rotate overlay is up (`tools/esctest.html`).
 - App name everywhere (title, manifest name/short_name, apple-mobile-web-app-title): "Kv. Lunden L1007".
 - iPhone (Safari/Chrome) can't go fullscreen, and the browser bars shifted the tap targets of the
