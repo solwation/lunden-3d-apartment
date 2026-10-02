@@ -275,6 +275,10 @@ screenshots into the session scratchpad, not the repo.
 
 ## Input notes
 
+- A visit starts outside, ~12 m in front of the entrance façade facing the house (`START` in config);
+  the walkable outdoor area is `OUTDOOR` (in front of Hus L, closed off by the façade line beside our
+  unit) plus our patio (world.js). walktest walks from `START` in through the front door.
+
 - Start screen has two buttons: *Mus & tangentbord* (pointer lock) and *Touch* (joystick).
   A Surface has both, so the visitor chooses. Touch-only devices (`(pointer: coarse) and
   (hover: none)` → `body.phone`, set by an inline script in index.html) get a short start screen:

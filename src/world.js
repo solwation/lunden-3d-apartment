@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import {
   LEVELS, SOFFITS, DOOR_HEIGHT, EXT_DOOR_HEAD, WINDOWS, CABINET_HEIGHT, BASE_CABINET, SHELF_HEIGHT, TOILET,
-  STAIR, COLORS, FENCE_HEIGHT, SITE, FINISH, OPTIONS, EXTRA_WALLS, ROOM_RENAMES, EXTRA_ROOMS, ROOM_DIVIDERS,
+  STAIR, COLORS, FENCE_HEIGHT, SITE, OUTDOOR, FINISH, OPTIONS, EXTRA_WALLS, ROOM_RENAMES, EXTRA_ROOMS, ROOM_DIVIDERS,
 } from './config.js';
 import { buildStairs } from './stairs.js';
 import { SwingDoor, SlidingDoor, wardrobeDoors } from './doors.js';
@@ -523,11 +523,12 @@ export function buildWorld(plan) {
   scene.add(buildExterior({ W, D, roofTop: roofY + 0.35, north, south, frame: M.frame, wall: M.wall, site, mats: M }));
   const surroundings = buildSurroundings({ grass: M.grass });
   scene.add(surroundings);
-  // keep the visitor near the house
-  const bounds = { x0: 0.05, x1: W - 0.05, z0: -6, z1: site.patio ? site.patio.z1 : D + 4 };
+  // keep the visitor near the house: the area in front of Hus L's north façade (the façade line
+  // closes it off beside our unit) and our patio behind it
+  const o = OUTDOOR, pz = site.patio ? site.patio.z1 : D + 4;
   outdoor.push(
-    [bounds.x0, bounds.z0, bounds.x1, bounds.z0], [bounds.x1, bounds.z0, bounds.x1, bounds.z1],
-    [bounds.x1, bounds.z1, bounds.x0, bounds.z1], [bounds.x0, bounds.z1, bounds.x0, bounds.z0],
+    [o.x0, o.z0, o.x1, o.z0], [o.x0, o.z0, o.x0, 0], [o.x1, o.z0, o.x1, 0], [o.x0, 0, 0, 0], [W, 0, o.x1, 0],
+    [0.05, D, 0.05, pz], [W - 0.05, D, W - 0.05, pz], [0.05, pz, W - 0.05, pz],
   );
   l0.segments.push(...outdoor);
 

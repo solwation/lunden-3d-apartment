@@ -174,6 +174,12 @@ export const BASE_CABINET = 0.9;
 export const TOILET = { width: 0.355, depth: 0.65, seatHeight: 0.42, tankHeight: 0.84, tankDepth: 0.17 };
 export const SHELF_HEIGHT = 2.0; // unlabelled shelving in the upstairs Klk
 
+// Where a visit starts: out on the grass in front of the entrance façade, facing the house with the
+// gaze slightly up, so the whole unit (and Hus L above it) is in view (#35). yaw 180 = facing south.
+export const START = { x: 2.875, z: -12, yawDeg: 180, pitchDeg: 8 };
+// Walkable area outside: in front of the north façade (x range, back to z0), and the patio.
+export const OUTDOOR = { x0: -12, x1: 17.75, z0: -14 };
+
 export const PLAYER = {
   eye: 1.62,
   radius: 0.22,

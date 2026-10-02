@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { COLORS, LEVELS, DAY } from './config.js';
+import { COLORS, LEVELS, DAY, START } from './config.js';
 import { buildWorld } from './world.js';
 import { Player } from './player.js';
 import { setupTouch } from './touch.js';
@@ -172,8 +172,8 @@ function footsteps() {
   const inside = x > 0 && x < world.size.x && z > 0 && z < world.size.z;
   sfx.step(stairHeight(x, z) !== null ? 'stair' : inside ? 'wood' : 'outside');
 }
-const entrance = world.doors.find((d) => d.name === 'ytterdörren' && d.hinge[1] < 1);
-player.spawn(entrance ? entrance.hinge[0] + entrance.len / 2 : 1.2, -1.6, Math.PI);
+player.spawn(START.x, START.z, THREE.MathUtils.degToRad(START.yawDeg));
+camera.rotation.x = THREE.MathUtils.degToRad(START.pitchDeg);
 
 // Debug/screenshot helper: ?at=x,z,yawDeg[,pitchDeg[,feetY]] places the camera (plan metres).
 const at = new URLSearchParams(location.search).get('at');
