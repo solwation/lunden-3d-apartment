@@ -92,7 +92,8 @@ src/rooms.js           room detection: walls + door gaps rasterised, BFS from th
 src/minimap.js         plan view with the visitor's arrow, current room highlighted; hidden, shown with the
                        stats (Tab / T / 📊, #85), K shows it alone
 src/measure.js         tape measure (Q / 📏): two points on any surface, distance label
-src/cabinets.js        wall cabinets with side-hung doors that open with E (kind 'cabinet', in world.lids), e.g. the
+src/cabinets.js        wall cabinets with side-hung doors that open with E (Openables, max 90°; `corner` = that end's door
+                       hinges away from the side wall, #154; in world.lids), e.g. the
                        Tvätt wall cabinet over the machines, none over the sink (LAUNDRY_CABINET, #138, #153)
 src/openables.js       Openable (#103): the shared helper for fronts that open with E — 'hinge' (with a `max` stop, never
                        through a neighbour), 'flap' (bottom- or top-hinged), 'drawer'; kind 'cabinet', in world.lids.
@@ -185,7 +186,8 @@ tools/booktest.html    headless test: take the book, read, turn pages, close, pu
 tools/beertest.html    headless test: sit in the lounge sofa → beer, drink it empty, back = full, a sip of coffee, F
 tools/thingtest.html   headless test: a wine bottle to the coffee table and back to the rack, a glass, F sends them home
 tools/secretarytest.html headless test: the secretary's flap (desk) and its 8 drawers open/close, the open desk blocks
-tools/opentest.html    headless test: every Openable front (kitchen + furniture) opens/closes with the button, none overlaps a neighbour open
+tools/opentest.html    headless test: every Openable front (kitchen + furniture) opens/closes with the button; open, none
+                       overlaps a closed neighbour or goes through a wall (#154)
 tools/bestatest.html   headless test: the BESTÅ display cabinet's six doors open/close, its spots light with the room
 tools/holdtest.html    headless test: put things down (coffee table, dining table, floor), one at a time, F → home
 tools/cuptest.html     headless test: an empty cup out without brewing, onto the worktop, brew, take the jug, pour, jug back,
@@ -388,6 +390,9 @@ google-chrome --headless=new --use-angle=swiftshader --enable-unsafe-swiftshader
 google-chrome --headless=new --use-angle=swiftshader --enable-unsafe-swiftshader \
   --virtual-time-budget=30000 --dump-dom http://localhost:8137/tools/touchtest.html
 ```
+
+`python3 -m http.server` sends no Cache-Control, so a headless Chrome reusing a profile may serve an *old* copy of a
+module that hasn't changed for a while (heuristic caching) — give each run a fresh `--user-data-dir=$(mktemp -d)`.
 
 To test the update notice locally: `tools/stamp.sh /tmp/site abc1234`, edit
 `/tmp/site/version.json` to another version, serve `/tmp/site` and load it.

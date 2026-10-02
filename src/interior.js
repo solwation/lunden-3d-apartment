@@ -598,7 +598,8 @@ function buildLaundry(B, group, floor, room, y0, handled, taps, appliances) {
     caps.push(new THREE.CylinderGeometry(r * 0.45, r * 0.45, 0.03, 10).translate(xIn + 0.12, shelf + h + 0.015, run.z0 + dz));
   }
   bottles.push(new THREE.BoxGeometry(0.18, 0.22, 0.12).translate(xIn + 0.13, cy0 + 0.016 + 0.11, run.z0 + 1.02)); // a box of washing powder
-  const lc = wallCabinet({ wall: run.x0, dir: 1, z0: run.z0, z1: cz1, y0: cy0, y1: cy1, depth: C.depth, units: C.units, material: M.laundry, handle: M.chrome,
+  // the north end meets the side wall: that door hinges on its other side (#154)
+  const lc = wallCabinet({ wall: run.x0, dir: 1, z0: run.z0, z1: cz1, corner: 'z0', y0: cy0, y1: cy1, depth: C.depth, units: C.units, material: M.laundry, handle: M.chrome,
     contents: [[towels, std(0xd9e6ea, { roughness: 0.95 })], [bottles, std(0x3b7fc4, { roughness: 0.4 })], [caps, M.white]] });
   group.add(lc.object);
   appliances.push(...lc.doors);
