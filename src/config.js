@@ -120,6 +120,13 @@ export const SITE = {
   },
   bay: 3.0, storey: 3.0,  // façade texture of the other blocks: one window per 3 × 3 m
   old: { bay: 2.6, storey: 3.6, roofPitch: 0.6 }, // the old S:t Lars buildings (style: 'old'): rise = pitch × half depth
+  // the school straight across Sankt Lars väg (#126, docs/foton/rakt-over-gatan-tegelmur-skolbyggnad.jpg): two high
+  // storeys of brick with white quoins, trim and plinth, arched windows below, square ones above, a dark metal
+  // roof with chimneys. One façade texture tile = a bay × the whole height (`storey`); `rows` = window-light
+  // centres and sizes. A greenhouse in its yard and a 2.3 m brick wall with a black coping along the pavement.
+  school: { bay: 3.0, storey: 8.6, roofPitch: 0.32, rows: [{ y: 2.05, s: [0.95, 1.6, 1] }, { y: 5.95, s: [0.95, 1.35, 1] }],
+    wall: { x0: -26, x1: 30, z: -32.15, h: 2.3, t: 0.3 }, greenhouse: { x0: 13, x1: 21, z0: -36.8, z1: -33.6, h: 2.2, ridge: 1.0 },
+    chimneys: [-14, -3, 8, 17] },
   blocks: [
     // Kv. Lunden, Å-husen (overview plans): storeys counted from `base`; red brick, low hip roof
     { name: 'Hus A', x0: -10.2, x1: 9.5, z0: 29.6, z1: 54.2, base: -3, storeys: 5, roof: 'hip' },  // våning -1…4
@@ -131,6 +138,11 @@ export const SITE = {
     { name: 'HepCat Store', x0: 28.5, x1: 37, z0: -11, z1: 10, base: 0, storeys: 1, roof: 'gable', style: 'old' }, // low brick building
     { name: 'Kunskapsskolan', x0: 32, x1: 60, z0: 19.5, z1: 62, base: -3, storeys: 3, roof: 'hip', style: 'old' },
     { name: 'Realgymnasiet', x0: 5, x1: 70, z0: -74, z1: -50, base: 0, storeys: 3, roof: 'hip', style: 'old' },
+    // straight across the street from our kitchen (#126): a long two-storey school with end pavilions that stand
+    // a little forward (the user's photos; position and length are guesses), behind a brick wall
+    { name: 'Skolan över gatan', x0: -21.5, x1: 25.5, z0: -48, z1: -38, base: 0, storeys: 1, roof: 'hip', style: 'school' },
+    { name: 'Skolan, västra flygeln', x0: -22, x1: -13, z0: -48.4, z1: -37.4, base: 0, storeys: 1, roof: 'hip', style: 'school' },
+    { name: 'Skolan, östra flygeln', x0: 17, x1: 26, z0: -48.4, z1: -37.4, base: 0, storeys: 1, roof: 'hip', style: 'school' },
     { name: 'S:t Lars (old hospital)', x0: -62, x1: -22, z0: -62, z1: -46, base: 0, storeys: 3, roof: 'hip', style: 'old' },
     { name: 'Montessorigrundskolan', x0: -78, x1: -60, z0: -115, z1: -70, base: 0, storeys: 2, roof: 'hip', style: 'old' },
     { name: 'Villa', x0: -64.5, x1: -48.5, z0: 69, z1: 87, base: -3, storeys: 3, roof: 'hip', style: 'old' }, // brick house, hip roof
@@ -145,6 +157,7 @@ export const SITE = {
   paving: [
     { x0: -48, x1: 16, z0: -4, z1: 0 },      // path along Hus L's entrances
     { x0: -95, x1: 22, z0: -24, z1: -21.5 }, // pavement along Sankt Lars väg
+    { x0: -95, x1: 30, z0: -32, z1: -30 },   // … and on the far side, along the school's wall (#126)
   ],                                         // the courtyard's own walks: COURTYARD
   river: { x0: -200, x1: 150, z0: 125, z1: 135 }, // Höje å
   treeAreas: [

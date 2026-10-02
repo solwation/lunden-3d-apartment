@@ -87,7 +87,7 @@ function rng(seed) {
 }
 
 /** Bay width and storey height of a block (the old S:t Lars buildings are taller, narrower bays). */
-const dims = (b) => (b.style === 'old' ? S.old : S);
+const dims = (b) => (b.style === 'old' ? S.old : b.style === 'school' ? S.school : S);
 
 /** Old S:t Lars style bay: brick, a white string course at the floor line, a tall white-framed
  * window with a round-arched top (v = 0 is the bottom of the canvas). */
@@ -127,6 +127,102 @@ function oldFacadeTexture() {
   tex.colorSpace = THREE.SRGBColorSpace;
   tex.anisotropy = 4;
   return tex;
+}
+
+const brickCourses = (g, pw, ph, m, seed, base = new THREE.Color(COLORS.brick)) => {
+  const rand = rng(seed), bw = 0.26 * m, bh = 0.075 * m;
+  for (let row = 0; row * bh < ph; row++) {
+    for (let x = (row % 2) * -bw / 2; x < pw; x += bw) {
+      g.fillStyle = base.clone().offsetHSL(0, (rand() - 0.5) * 0.1, (rand() - 0.5) * 0.08).getStyle();
+      g.fillRect(x + 1, row * bh + 1, bw - 2, bh - 1.5);
+    }
+  }
+};
+const canvasTex = (c) => {
+  const tex = new THREE.CanvasTexture(c);
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 4;
+  return tex;
+};
+
+/** Plain brick, 2 × 2 m per tile (the wall along the street, #126). */
+function brickTexture() {
+  const pw = 256, c = document.createElement('canvas');
+  c.width = c.height = pw;
+  const g = c.getContext('2d');
+  g.fillStyle = '#cfc6b8'; g.fillRect(0, 0, pw, pw);
+  brickCourses(g, pw, pw, pw / 2, 31, new THREE.Color(COLORS.brick).offsetHSL(0.01, 0.06, 0.04));
+  return canvasTex(c);
+}
+
+/** The school across the street (#126): one bay over the full two storeys — white plinth, a tall arched window
+ * below, a white string course, a square window with a white surround and a cornice line above. */
+function schoolFacadeTexture() {
+  const { bay, storey } = S.school;
+  const pw = 192, ph = Math.round((pw * storey) / bay), c = document.createElement('canvas');
+  c.width = pw; c.height = ph;
+  const g = c.getContext('2d'), m = pw / bay, Y = (y) => ph - y * m; // y in metres from the ground
+  g.fillStyle = '#d6cfc2'; g.fillRect(0, 0, pw, ph);
+  brickCourses(g, pw, ph, m, 29, new THREE.Color(COLORS.brick).offsetHSL(0.01, 0.04, 0.02));
+  const white = '#f3f1eb';
+  g.fillStyle = white;
+  g.fillRect(0, Y(0.6), pw, 0.6 * m);               // plinth
+  g.fillRect(0, Y(4.35), pw, 0.25 * m);             // string course
+  g.fillRect(0, Y(8.6), pw, 0.45 * m);              // frieze under the cornice
+  const glass = (y0, y1) => { const gr = g.createLinearGradient(0, Y(y1), 0, Y(y0)); gr.addColorStop(0, '#61788a'); gr.addColorStop(1, '#2a3843'); return gr; };
+  const ww = 1.15 * m, wx = (pw - ww) / 2;
+  // ground floor: arched, white surround and keystone
+  const arch = (x, yb, w, yt) => { const r = w / 2; g.beginPath(); g.moveTo(x, Y(yb)); g.lineTo(x, Y(yt) + r); g.arc(x + r, Y(yt) + r, r, Math.PI, 0); g.lineTo(x + w, Y(yb)); g.closePath(); g.fill(); };
+  g.fillStyle = white; arch(wx - 7, 0.85, ww + 14, 3.35);
+  g.fillStyle = glass(0.95, 3.25); arch(wx, 0.95, ww, 3.25);
+  g.fillStyle = white;
+  g.fillRect(wx + ww / 2 - 2, Y(3.25) + ww / 2, 4, (2.3 * m) - ww / 2); // mullion
+  g.fillRect(wx, Y(2.45), ww, 4);                                       // transom
+  g.fillRect(pw / 2 - 6, Y(3.42), 12, 0.22 * m);                        // keystone
+  // upper floor: square-headed, white surround, a small cornice over it
+  g.fillStyle = white; g.fillRect(wx - 7, Y(6.95), ww + 14, 2.0 * m + 7);
+  g.fillRect(wx - 12, Y(7.12), ww + 24, 0.14 * m);
+  g.fillStyle = glass(5.05, 6.85); g.fillRect(wx, Y(6.85), ww, 1.8 * m);
+  g.fillStyle = white;
+  g.fillRect(wx + ww / 2 - 2, Y(6.85), 4, 1.8 * m);
+  g.fillRect(wx, Y(6.3), ww, 4);
+  return canvasTex(c);
+}
+
+/** White corner quoins on a block: alternating long and short stones up both sides of every corner. */
+function quoins(b, h) {
+  const geos = [], step = 0.42;
+  for (const [x, z, sx, sz] of [[b.x0, b.z0, 1, 1], [b.x1, b.z0, -1, 1], [b.x1, b.z1, -1, -1], [b.x0, b.z1, 1, -1]]) {
+    for (let k = 0, y = 0.6; y + step <= h; k++, y += step) {
+      const l = k % 2 ? 0.32 : 0.55;
+      geos.push(new THREE.BoxGeometry(l, step - 0.05, 0.06).translate(x + sx * l / 2, b.base + y + step / 2, z - sz * 0.03)); // on the x face
+      geos.push(new THREE.BoxGeometry(0.06, step - 0.05, l).translate(x - sx * 0.03, b.base + y + step / 2, z + sz * l / 2)); // on the z face
+    }
+  }
+  return geos;
+}
+
+/** The brick wall along the far pavement, its black metal coping, the school's chimneys and greenhouse (#126). */
+function schoolGrounds() {
+  const W = S.school.wall, G = S.school.greenhouse;
+  const wall = new THREE.BoxGeometry(W.x1 - W.x0, W.h, W.t).translate((W.x0 + W.x1) / 2, W.h / 2, W.z);
+  const p = wall.attributes.position, n = wall.attributes.normal, uv = wall.attributes.uv;
+  for (let i = 0; i < p.count; i++) uv.setXY(i, (Math.abs(n.getX(i)) > 0.5 ? p.getZ(i) : p.getX(i)) / 2, p.getY(i) / 2); // 2 × 2 m per tile
+  const coping = new THREE.BoxGeometry(W.x1 - W.x0 + 0.06, 0.06, W.t + 0.08).translate((W.x0 + W.x1) / 2, W.h + 0.03, W.z);
+  const chimneys = [], main = S.blocks.find((b) => b.style === 'school'), top = main.base + S.school.storey;
+  const rise = S.school.roofPitch * Math.min(main.x1 - main.x0, main.z1 - main.z0) / 2 + 0.3;
+  for (const x of S.school.chimneys) chimneys.push(new THREE.BoxGeometry(0.7, 1.6, 0.5).translate(x, top + rise + 0.2, (main.z0 + main.z1) / 2 + (x % 2 ? 0.8 : -0.8)));
+  // greenhouse: a dark frame and glass panes under a pitched glass roof
+  const frame = [], panes = [], cx = (G.x0 + G.x1) / 2, cz = (G.z0 + G.z1) / 2, d = G.z1 - G.z0;
+  for (let x = G.x0; x <= G.x1 + 1e-6; x += (G.x1 - G.x0) / 8) for (const z of [G.z0, G.z1]) frame.push(new THREE.BoxGeometry(0.05, G.h, 0.05).translate(x, G.h / 2, z));
+  for (const z of [G.z0, G.z1]) frame.push(new THREE.BoxGeometry(G.x1 - G.x0, 0.05, 0.05).translate(cx, G.h, z));
+  frame.push(new THREE.BoxGeometry(G.x1 - G.x0, 0.06, 0.06).translate(cx, G.h + G.ridge, cz));
+  const roofLen = Math.hypot(d / 2, G.ridge), tilt = Math.atan2(G.ridge, d / 2);
+  for (const sgn of [-1, 1]) panes.push(new THREE.PlaneGeometry(G.x1 - G.x0, roofLen).rotateX(-Math.PI / 2 + sgn * tilt).translate(cx, G.h + G.ridge / 2, cz + sgn * d / 4));
+  panes.push(new THREE.PlaneGeometry(G.x1 - G.x0, G.h).translate(cx, G.h / 2, G.z0), new THREE.PlaneGeometry(G.x1 - G.x0, G.h).translate(cx, G.h / 2, G.z1));
+  for (const x of [G.x0, G.x1]) panes.push(new THREE.PlaneGeometry(d, G.h).rotateY(Math.PI / 2).translate(x, G.h / 2, cz));
+  return { wall: [wall], coping: [coping, ...chimneys], frame, panes };
 }
 
 /** One storey × one window bay of brick façade with a white-framed window. */
@@ -182,7 +278,7 @@ function hipRoof(b) {
   const h = b.base + b.storeys * dims(b).storey, o = 0.3;
   const x0 = b.x0 - o, x1 = b.x1 + o, z0 = b.z0 - o, z1 = b.z1 + o;
   const r = Math.min(x1 - x0, z1 - z0) / 2;
-  const rise = b.style === 'old' ? S.old.roofPitch * r : 1.4; // the Å-husen look flat, the old ones are steep
+  const rise = b.style === 'old' || b.style === 'school' ? dims(b).roofPitch * r : 1.4; // the Å-husen look flat, the old ones are steep
   const cx = (x0 + x1) / 2, cz = (z0 + z1) / 2;
   const [ra0, ra1] = x1 - x0 >= z1 - z0 ? [[x0 + r, cz], [x1 - r, cz]] : [[cx, z0 + r], [cx, z1 - r]];
   const v = (x, y, z) => [x, y, z];
@@ -325,13 +421,16 @@ export function buildWindowLights() {
     for (const f of faces) {
       // window centres sit mid-bay in the façade texture (u = along / bay)
       const { bay, storey } = dims(b), old = b.style === 'old';
+      // window rows: one per storey (the old windows are narrow and tall), or the school's own two (#126)
+      const rows = b.style === 'school' ? S.school.rows.map((r) => ({ y: b.base + r.y, s: r.s }))
+        : [...Array(b.storeys)].map((_, st) => ({ y: b.base + st * storey + (old ? 1.9 : 1.55), s: old ? [0.78, 1.3, 1] : [1, 1, 1] }));
       for (let k = Math.ceil(f.a0 / bay - 0.5); (k + 0.5) * bay < f.a1; k++) {
         const a = (k + 0.5) * bay;
         if (a - 0.7 < f.a0 || a + 0.7 > f.a1) continue;
-        for (let st = 0; st < b.storeys; st++) {
-          const y = b.base + st * storey + (old ? 1.9 : 1.55);
+        const [px, pz] = f.along === 'x' ? [a, f.c] : [f.c, a];
+        if (b.style === 'school' && S.blocks.some((o) => o !== b && o.style === 'school' && px > o.x0 && px < o.x1 && pz > o.z0 && pz < o.z1)) continue; // inside a pavilion
+        for (const { y, s } of rows) {
           if (y < groundY(f.along === 'x' ? a : f.c, f.along === 'x' ? f.c : a) + 0.8) continue; // below the ground
-          const s = old ? [0.78, 1.3, 1] : [1, 1, 1]; // the old windows are narrow and tall
           spots.push(f.along === 'x' ? { x: a, y, z: f.c, n: f.n, s } : { x: f.c, y, z: a, n: f.n, s });
         }
       }
@@ -416,7 +515,7 @@ export function buildSurroundings({ grass }) {
     new THREE.MeshStandardMaterial({ color: COLORS.water, roughness: 0.15, metalness: 0.2 }));
   // Kv. Lunden's own blocks and the old S:t Lars buildings: own façade texture and roof colour each,
   // plus a white cornice under the old roofs (#47)
-  const modern = S.blocks.filter((b) => b.style !== 'old'), oldB = S.blocks.filter((b) => b.style === 'old');
+  const modern = S.blocks.filter((b) => !b.style), oldB = S.blocks.filter((b) => b.style === 'old'), school = S.blocks.filter((b) => b.style === 'school');
   const mesh = (geos, material, snow) => {
     if (snow) registerSnow(material, snow);
     const m = new THREE.Mesh(mergeGeometries(geos), material);
@@ -425,6 +524,20 @@ export function buildSurroundings({ grass }) {
   };
   mesh(modern.map(block), new THREE.MeshStandardMaterial({ map: facadeTexture(), roughness: 0.95 }));
   mesh(modern.map(roof), new THREE.MeshStandardMaterial({ color: 0x51575c, roughness: 0.85, side: THREE.DoubleSide }), SEASON.snow.roof);
+  if (school.length) { // the school across the street, its wall and greenhouse (#126)
+    const white = new THREE.MeshStandardMaterial({ color: 0xf1eee6, roughness: 0.8 });
+    mesh(school.map(block), new THREE.MeshStandardMaterial({ map: schoolFacadeTexture(), roughness: 0.95 }));
+    mesh(school.map(roof), new THREE.MeshStandardMaterial({ color: 0x4a5056, roughness: 0.45, metalness: 0.45, side: THREE.DoubleSide }), SEASON.snow.roof);
+    mesh(school.flatMap((b) => [...quoins(b, S.school.storey), new THREE.BoxGeometry(b.x1 - b.x0 + 0.36, 0.32, b.z1 - b.z0 + 0.36)
+      .translate((b.x0 + b.x1) / 2, b.base + S.school.storey - 0.16, (b.z0 + b.z1) / 2)]), white); // quoins + cornice
+    const sg = schoolGrounds();
+    mesh(sg.wall, new THREE.MeshStandardMaterial({ map: brickTexture(), roughness: 0.95 }));
+    mesh(sg.coping, new THREE.MeshStandardMaterial({ color: 0x1f2124, roughness: 0.5, metalness: 0.3 }), SEASON.snow.roof);
+    mesh(sg.frame, new THREE.MeshStandardMaterial({ color: 0x2b2e31, roughness: 0.5, metalness: 0.4 }));
+    const glassMat = new THREE.MeshStandardMaterial({ color: 0xdfe8ec, roughness: 0.05, transparent: true, opacity: 0.35, depthWrite: false, side: THREE.DoubleSide });
+    const gm = new THREE.Mesh(mergeGeometries(sg.panes), glassMat);
+    group.add(gm);
+  }
   if (oldB.length) {
     mesh(oldB.map(block), new THREE.MeshStandardMaterial({ map: oldFacadeTexture(), roughness: 0.95 }));
     mesh(oldB.map(roof), new THREE.MeshStandardMaterial({ color: 0x33383c, roughness: 0.7, metalness: 0.15, side: THREE.DoubleSide }), SEASON.snow.roof);
