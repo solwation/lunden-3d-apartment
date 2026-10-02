@@ -19,6 +19,7 @@ import { updateReflections } from './reflections.js';
 import { applySeason } from './seasons.js';
 import { saveResume, takeResume } from './resume.js';
 import { Rest, chooseSpot } from './rest.js';
+import { Saber } from './saber.js';
 import { Tap, animateWater } from './water.js';
 import { CatBoard, snapshot } from './catboard.js';
 import { Lights } from './lights.js';
@@ -140,6 +141,7 @@ for (const t of taps) scene.add(t.object);
 
 const player = new Player(world, camera);
 const rest = new Rest(camera); // sitting / lying down (#71/#72)
+const saber = new Saber(scene, camera); // the lightsaber in Sovrum 2 (#78)
 const measure = new Measure(scene, camera, [world.object], document.getElementById('measure'));
 document.getElementById('measure-btn').addEventListener('click', () => measure.press());
 const cat = new CatSpawner(world);
@@ -356,6 +358,7 @@ function use(thing) {
   else if (thing.kind === 'appliance') { thing.toggle(); if (thing.isOpen) bump('lids'); }
   else if (thing.kind === 'coffee') thing.toggle();
   else if (thing.kind === 'rest') sitOrLie(thing);
+  else if (thing.kind === 'saber') thing.toggle();
   else if (thing.kind === 'pc') { const on = thing.toggle(); sfx.tvClick(thing.pickable.getWorldPosition(new THREE.Vector3()), on); }
   else if (thing.kind === 'tv') {
     const on = thing.toggle();
@@ -396,6 +399,7 @@ document.addEventListener('pointerlockchange', () => {
 document.addEventListener('mousemove', (e) => {
   if (locked) look(e.movementX * PLAYER.mouseSens, e.movementY * PLAYER.mouseSens);
 });
+document.addEventListener('mousedown', (e) => { if (locked && e.button === 0) saber.swingNow(); }); // a click swings the saber
 document.addEventListener('keydown', (e) => {
   if (!locked) return;
   if (reading) {
@@ -471,7 +475,7 @@ function updateFocus() {
   // (the raycaster ignores visibility, so the cat is only a target while it is there)
   // the car key only while its cabinet is open
   const extra = [...(cat.visible ? [cat.object] : []), ...(keyCabinet?.keyReachable ? [world.carKey.pickable] : []),
-    ...(world.furnitureOn ? [...patio.targets, ...world.furnitureTargets].map((t) => t.pickable) : [])]; // parasol, TV, seats, beds — unless F hid the furniture
+    ...(world.furnitureOn ? [...patio.targets, ...world.furnitureTargets, saber.target].map((t) => t.pickable) : [])]; // parasol, TV, seats, beds, the saber — unless F hid the furniture
   // the nearest hit on something actually shown (F hides the loose items, the raycaster doesn't care)
   const hit = raycaster.intersectObjects(extra.length ? [...pickables, ...extra] : pickables, true).find((h) => shown(h.object));
   focused = hit && !behindWall(hit.point) ? hit.object.userData.door : null;
@@ -490,11 +494,12 @@ function updateFocus() {
 function toggleFurniture(on = !world.furnitureOn) {
   if (rest.active) standUp(); // the seat is about to vanish
   world.setFurniture(on);
+  if (!on && saber.held) saber.putBack(); // the saber back on its hooks first
   if (!on && cat.visible) cat.hide(); // the cat goes too (and stops purring); none turn up until F is back
   if (!on) for (const t of world.furnitureTargets) if ((t.kind === 'tv' || t.kind === 'pc') && t.isOpen) t.toggle(); // screens off
   try { localStorage.setItem('lunden.furniture', on ? '1' : '0'); } catch { /* ignore */ }
 }
-world.looseItems.push(board.object); // the cat photo board goes with the furniture (F)
+world.looseItems.push(board.object, saber.holder, saber.saber); // the cat photo board and the saber go with the furniture (F)
 try { if (localStorage.getItem('lunden.furniture') === '0') toggleFurniture(false); } catch { /* ignore */ }
 document.getElementById('furniture-btn').addEventListener('click', () => toggleFurniture());
 
@@ -542,6 +547,7 @@ function step(dt) {
   patio.update(day, dt);
   applySeason(day.month); // tree colours, snow (only does work when the month changes)
   for (const t of world.furnitureTargets) t.update?.(dt);
+  saber.update(dt);
   if (clockPanel.open) clockPanel.render();
   world.windowLights.update(day.hour, 1 - day.daylight);
   cat.update(dt);
@@ -655,4 +661,4 @@ document.addEventListener('pointerlockchange', () => { if (!updateEl.hidden) sho
 watchForUpdates(showUpdate);
 
 // handle for tests/debugging (tools/touchtest.html)
-window.__app = { rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };
+window.__app = { saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };

@@ -80,6 +80,7 @@ src/mirror.js          the one mirror material (gradient + glints; hall and bath
 src/reflections.js     mirror images: a Reflector per mirror, only the nearest one in view (< 4 m) renders
 src/seasons.js         month → tree colours/leaf cover and snow on ground, roofs, hedges, paving (SEASON)
 src/rest.js            sitting / lying down (REST): seat & bed spots from furniture userData.rest, look clamp
+src/saber.js           the lightsaber in Sovrum 2 (SABER): E takes it (held as a child of the camera), swings, E on the hooks
 src/fridge.js          the fridge: hollow, lit, opens with E, smoking roast chicken (in world.lids)
 src/catboard.js        cork board in the kitchen (under the wall clock): a photo (offscreen render) of every petted cat,
                        newest 10 in IndexedDB 'lunden'/'catPhotos', captioned with name + time
@@ -116,6 +117,7 @@ tools/tvtest.html      headless test: switch the living-room TV on/off, picture 
 tools/reloadtest.html  headless test: resume after "Ladda om", F5 starts at START, "Börja från start", bad record
 tools/resttest.html    headless test: sit on every seat and lie in every bed (spot, no walking, up again)
 tools/pctest.html      headless test: switch the gaming PC on/off (game moves, RGB cycles), the chair is a seat
+tools/sabertest.html   headless test: take the lightsaber, swing it, hang it back
 tools/clocktest.html   headless test of the wall clock (07:00 start, spool, pause, month → sun height)
 tools/stamp.sh         build the published site with a version stamp (used by CI)
 ```
@@ -214,7 +216,8 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   Sovrum 1 (first right) Sarah & Ofluf, double bed (blue/white check bedding after IKEA EKTANDVINGE, #66) with IKEA NORDKISA bedside tables (#64) and white NYMÅNE work
   lamps on them (#65, each its own lamp like the floor lamp) + an IKEA RÅGRUND towel-rack chair in the corner left of
   the window (#60) · Sovrum 3 (second right) Livia & Tuva, bunk (unicorn sheets) ·
-  Sovrum 2 (first left) Walter & Kian, bunk (Darth Vader sheets), a gaming desk with a PC on the west wall (#77) · Sovrum 4 (second left, ex Allrum) Tilly, IKEA HEMNES
+  Sovrum 2 (first left) Walter & Kian, bunk (Darth Vader sheets), a gaming desk with a PC on the west wall (#77) and a lightsaber
+  on hooks above it (#78) · Sovrum 4 (second left, ex Allrum) Tilly, IKEA HEMNES
   daybed with pink cushions. Bunks: long side to the side wall, head end to the façade. Name signs: `DOOR_SIGNS` → `src/signs.js` (hall side of the door).
 - Hall (#49): the plan's "EL" cabinet is really the small EL/C (40 cm, `CABINET_FIXES`) plus the coat
   rack "KL" beside it, which the extractor merged; on that wall (right as you come in) a coat rack with

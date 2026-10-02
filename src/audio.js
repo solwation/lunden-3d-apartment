@@ -394,6 +394,43 @@ export const sfx = {
       tone(t, 0.12, d, { type: 'square', from: 1800, to: 300, gain: 0.05 });
     }
   },
+    /** Lightsaber ignition: a snap and a rising hiss into the hum. */
+  saberOn(pos) {
+    if (!ready()) return;
+    const t = ctx.currentTime, d = out(pos, 0.9);
+    noise(t, 0.05, d, { type: 'highpass', freq: 2500, gain: 0.3 });
+    tone(t, 0.35, d, { type: 'sawtooth', from: 80, to: 140, gain: 0.12 });
+    noise(t + 0.02, 0.3, d, { type: 'bandpass', freq: 1800, q: 1, gain: 0.15, attack: 0.05 });
+  },
+  /** Lightsaber off: a falling hiss. */
+  saberOff(pos) {
+    if (!ready()) return;
+    const t = ctx.currentTime, d = out(pos, 0.9);
+    tone(t, 0.3, d, { type: 'sawtooth', from: 140, to: 50, gain: 0.1 });
+    noise(t, 0.25, d, { type: 'bandpass', freq: 1200, q: 1, gain: 0.1 });
+  },
+  /** The hum while it is lit; set(0…1) bends it with the movement. */
+  saberHum(pos) {
+    if (!ready()) return null;
+    const t = ctx.currentTime, d = out(pos, 0.7);
+    const o1 = ctx.createOscillator(), o2 = ctx.createOscillator(), g = ctx.createGain(), lp = ctx.createBiquadFilter();
+    o1.type = 'sawtooth'; o1.frequency.value = 90; o2.type = 'sawtooth'; o2.frequency.value = 92.5;
+    lp.type = 'lowpass'; lp.frequency.value = 420;
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.06, t + 0.3);
+    o1.connect(lp); o2.connect(lp); lp.connect(g).connect(d);
+    o1.start(t); o2.start(t);
+    return {
+      set(k) { const now = ctx.currentTime; o1.frequency.setTargetAtTime(90 + 40 * k, now, 0.05); o2.frequency.setTargetAtTime(92.5 + 42 * k, now, 0.05); g.gain.setTargetAtTime(0.06 + 0.06 * k, now, 0.05); },
+      stop() { const now = ctx.currentTime; g.gain.cancelScheduledValues(now); g.gain.setValueAtTime(g.gain.value, now); g.gain.linearRampToValueAtTime(0, now + 0.2); o1.stop(now + 0.25); o2.stop(now + 0.25); },
+    };
+  },
+  /** A swing: a whoosh, louder and higher with the speed (0…1). */
+  saberSwing(pos, k = 0.5) {
+    if (!ready()) return;
+    const t = ctx.currentTime, d = out(pos, 0.9);
+    noise(t, 0.28, d, { type: 'bandpass', freq: 500 + 900 * k, q: 1.2, gain: 0.12 + 0.18 * k, attack: 0.06 });
+    tone(t, 0.25, d, { type: 'sawtooth', from: 110 + 60 * k, to: 80, gain: 0.05 + 0.05 * k });
+  },
     click(pos) {
     if (!ready()) return;
     const t = ctx.currentTime, d = out(pos, 0.6);

@@ -217,6 +217,16 @@ export const START = { x: 2.875, z: -12, yawDeg: 180, pitchDeg: 8 };
 // the gap in the hedge (SW corner), the lawn behind the row of patios up to z1 (#52).
 export const OUTDOOR = { x0: -12, x1: 17.75, z0: -14, z1: 24 };
 
+// The lightsaber in Sovrum 2 (#78, src/saber.js): two hooks on the west wall above the gaming desk
+// (wall face x 2.752), the saber lying across them along z. Hilt 30 cm, blade 90 cm; the blade colour is
+// picked from `colors` each time it is taken down. `held` = where it sits in the view (camera space).
+export const SABER = {
+  level: 1, x: 2.752, y: 1.62, z: 9.85, hilt: 0.3, blade: 0.9,
+  colors: [0x3aa0ff, 0x44ff66, 0xff3030],
+  held: { x: 0.26, y: -0.3, z: -0.5 },
+  swingSpeed: 4, // rad/s of looking that counts as a swing
+};
+
 // Sitting and lying down (#71/#72, src/rest.js): eye height above the seat / mattress, how far you can
 // turn your head (yaw ± from the way the seat faces) and the pitch range, and the move time.
 export const REST = {

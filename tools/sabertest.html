@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Lightsaber test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+// The lightsaber in Sovrum 2 (#78): aim at it on the wall, "Ta lightsabern" → held in view, lit; looking
+// around fast swings it; aim at the empty hooks, "Hänga tillbaka …" → back on the wall, off.
+//   google-chrome --headless=new --dump-dom http://localhost:8137/tools/sabertest.html
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const f = document.createElement('iframe');
+f.width = 900; f.height = 600; f.src = '../index.html';
+document.body.append(f);
+f.onload = async () => {
+  const w = f.contentWindow, d = f.contentDocument;
+  while (!w.__app) await wait(100);
+  const { player, camera, step, saber, world } = w.__app;
+  const lines = [];
+  const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; };
+  d.getElementById('start-touch').click();
+  await wait(50);
+  world.object.updateMatrixWorld(true); saber.holder.updateMatrixWorld(true); saber.saber.updateMatrixWorld(true);
+  const btn = d.getElementById('action');
+  const aimAt = (p) => {
+    for (const [x, z] of [[3.9, 9.85], [3.8, 9.3], [3.8, 10.4], [4.1, 9.6]]) {
+      player.spawn(x, z, 0); player.pos.y = 3.25; player.eyeY = 3.25 + 1.62;
+      for (let i = 0; i < 3; i++) step(1 / 60);
+      const dx = p.x - camera.position.x, dz = p.z - camera.position.z;
+      camera.rotation.y = Math.atan2(-dx, -dz);
+      camera.rotation.x = Math.atan2(p.y - camera.position.y, Math.hypot(dx, dz));
+      step(1 / 60);
+      if (!btn.hidden && /lightsabern/i.test(btn.textContent)) return btn.textContent;
+    }
+    return btn.hidden ? '(hidden)' : btn.textContent;
+  };
+  const onWall = saber.saber.getWorldPosition(new saber.saber.position.constructor());
+  onWall.z += 0.15; // aim at the middle of the hilt
+  let label = aimAt(onWall);
+  let pass = check(/ta lightsabern/i.test(label), `on the wall: "${label}"`);
+  btn.click();
+  for (let i = 0; i < 30; i++) step(1 / 60);
+  pass &= check(saber.held && saber.saber.parent === camera && saber.blade.visible && saber.blade.scale.y === 1, 'held in view, blade lit');
+  const n0 = saber.swings;
+  camera.rotation.y += 0.3; step(1 / 60); // a fast turn
+  pass &= check(saber.swings === n0 + 1, `a fast look swings it (${saber.swings - n0})`);
+  for (let i = 0; i < 30; i++) step(1 / 60);
+  label = aimAt(saber.holder.children[saber.holder.children.length - 1].getWorldPosition(new saber.saber.position.constructor()));
+  pass &= check(/hänga tillbaka lightsabern/i.test(label), `at the hooks: "${label}"`);
+  btn.click();
+  pass &= check(!saber.held && saber.saber.parent !== camera && !saber.blade.visible, 'back on the wall, off');
+  out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
+};
+</script>
+</body>
+</html>
