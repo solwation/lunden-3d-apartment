@@ -229,8 +229,7 @@ document.getElementById('measure-btn').addEventListener('click', () => measure.p
 const cat = new CatSpawner(world);
 scene.add(cat.object);
 const target = new Target(); // the Nerf target on the lawn (#99)
-scene.add(target.object);
-world.looseItems.push(target.object);
+scene.add(target.object); // shown only while a blaster is in the hand (#144, step)
 const marks = new Marks(scene, camera, [world.object, patio.object, target.object], cat); // burn marks, stars, splashes on surfaces (#96)
 for (const h of [saber, ...toys.wands, toys.darts]) Object.assign(h, { marks, cat }); // the saber burns, the wands do magic (#97), darts splash (#98)
 cat.onFound = (label, rare) => catFound(label, rare);
@@ -639,7 +638,7 @@ function updateFocus() {
   // (the raycaster ignores visibility, so the cat is only a target while it is there)
   // the car key only while its cabinet is open
   const extra = [...(cat.visible ? [cat.object] : []), ...(keyCabinet?.keyReachable ? [world.carKey.pickable] : []),
-    ...(world.furnitureOn ? [target.target, ...patio.targets, ...world.furnitureTargets, ...holdables.map((h) => h.target), drawing.target].map((t) => t.pickable) : [])]; // parasol, TV, seats, beds, toys — unless F hid the furniture
+    ...(world.furnitureOn ? [...(target.object.visible ? [target.target] : []), ...patio.targets, ...world.furnitureTargets, ...holdables.map((h) => h.target), drawing.target].map((t) => t.pickable) : [])]; // parasol, TV, seats, beds, toys — unless F hid the furniture
   // the nearest hit on something actually shown (F hides the loose items, the raycaster doesn't care)
   const cupTargets = cups.cups.filter((c) => !c.held).map((c) => c.target.pickable);
   const hit = raycaster.intersectObjects([...pickables, ...extra, ...cupTargets], true).find((h) => shown(h.object));
@@ -752,6 +751,7 @@ function step(dt) {
   cups.update(dt);
   toys.update(dt);
   marks.update(dt);
+  target.update(dt, world.furnitureOn && !!heldItem()?.shoots); // the target folds up with a blaster in the hand (#144)
   if (clockPanel.open) clockPanel.render();
   world.windowLights.update(day.hour, 1 - day.daylight);
   cat.update(dt);

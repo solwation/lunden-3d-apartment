@@ -6,7 +6,8 @@ import { badge } from './stats.js';
 // The Nerf target on the lawn (#99): a ring board on a wooden stand facing the patio. A dart that hits the
 // face scores by its ring (10 in the middle … 1 at the edge) times a bonus for the distance it was shot from
 // (TARGET.range); a "+N" badge pops up, a ding (higher for a bullseye), and the small board beside it shows
-// the total and the best shot (kept in localStorage). E on the target clears the score.
+// the total and the best shot (kept in localStorage). E on the target clears the score. It is only there
+// while something that shoots is in the hand (#144): it folds up out of the grass, and down again.
 
 const KEY = 'lunden.target';
 const load = () => { try { return { total: 0, best: 0, hits: 0, ...JSON.parse(localStorage.getItem(KEY) ?? '{}') }; } catch { return { total: 0, best: 0, hits: 0 }; } };
@@ -60,6 +61,14 @@ export class Target {
     this.target = { kind: 'target', name: 'måltavlan', verb: 'nollställa poängen på', pickable: g, toggle: () => this.reset() };
     g.traverse((m) => { m.userData.door = this.target; });
     this.draw();
+  }
+
+  /** Fold up (`show`) or down over ~0.4 s; hidden when down. */
+  update(dt, show) {
+    this.k = Math.max(0, Math.min(1, (this.k ?? 0) + (show ? dt : -dt) * 2.5));
+    const e = this.k * this.k * (3 - 2 * this.k);
+    this.object.visible = this.k > 0.001;
+    this.object.scale.set(1, Math.max(0.001, e), 1);
   }
 
   draw() {

@@ -21,11 +21,14 @@ f.onload = async () => {
   const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; };
   d.getElementById('start-touch').click();
   await wait(50);
+  let pass = check(!target.object.visible, 'no blaster: no target (#144)');
+  toys.blasters[0].take();
+  for (let i = 0; i < 40; i++) step(1 / 60);
+  pass &= check(target.object.visible && target.object.scale.y > 0.99, 'a blaster in the hand: the target is up');
   target.object.updateMatrixWorld(true);
   target.reset();
   const c = target.face.getWorldPosition(new V());
   const at = (dz) => c.clone().add(new V(0, 0, -dz)); // a shooter dz m north of the board
-  let pass = true;
   for (const [dz, want] of [[1, 10], [3, 20], [5, 30], [8, 40]]) pass &= check(target.points(c, at(dz)) === want, `bullseye from ${dz} m: ${target.points(c, at(dz))} (want ${want})`);
   pass &= check(target.points(c.clone().add(new V(0.35, 0, 0)), at(1)) === 1, `the outer ring: ${target.points(c.clone().add(new V(0.35, 0, 0)), at(1))}`);
   pass &= check(target.points(c.clone().add(new V(0.5, 0, 0)), at(1)) === 0, 'outside the face: 0');
@@ -37,6 +40,9 @@ f.onload = async () => {
   pass &= check(w.__app.marks.live.some((l) => l.kind === 'splash'), 'a paint mark on the board');
   use(target.target);
   pass &= check(target.score.total === 0 && target.score.best === 0, 'E on the target clears the score');
+  toys.blasters[0].putBack();
+  for (let i = 0; i < 40; i++) step(1 / 60);
+  pass &= check(!target.object.visible, 'blaster back: the target folds away');
   out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
 };
 </script>

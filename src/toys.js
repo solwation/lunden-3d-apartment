@@ -95,6 +95,7 @@ export class Blaster extends Holdable {
       cooldown: 0.35, useLabel: 'Skjut',
     });
     this.darts = darts;
+    this.shoots = true; // fires projectiles: the target on the lawn shows up (#144)
     this.i = i;
     this.kick = 0;
   }

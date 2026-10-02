@@ -110,7 +110,8 @@ src/book.js            the book on the side table by the armchair (BOOK, #140), 
                        #book-panel (a spread; A D / ← → / click turn pages, E / Esc close; reading mode)
 src/saber.js           the lightsaber in Sovrum 2 (SABER), a Holdable; the blade burns marks where it cuts in (#96)
 src/target.js          the Nerf target on the lawn behind the hedge (TARGET, #99): rings × distance bonus, "+N" badge,
-                       a score board beside it (localStorage 'lunden.target'), E clears it
+                       a score board beside it (localStorage 'lunden.target'), E clears it; only up while a
+                       holdable with `shoots` (the blasters) is in the hand (#144)
 src/marks.js           marks on surfaces (MARKS, #96): `hit(from, to)` = first surface on a segment (glass, doors, lids
                        → none; the cat → meow), `add(kind, hit)` / `burn(hit)`; one ring buffer, an InstancedMesh per
                        kind (burn, glow, star, butterfly, splash) with a per-instance fade, a Points puff of smoke;
