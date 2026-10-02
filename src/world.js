@@ -619,6 +619,7 @@ export function buildWorld(plan) {
   return {
     object: scene,
     setFurniture,
+    furnitureTargets: furniture.interactives, // E targets among the furniture (the TV), hidden with F
     lamps: [...furniture.lights, ...mirrorLamps], // floor lamps + mirror LED strips (lights.js makes them switchable)
     windowLights: surroundings.userData.windows, // neighbours' lit windows (daycycle)
     get furnitureOn() { return furniture.object.visible; },

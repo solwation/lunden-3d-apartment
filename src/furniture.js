@@ -589,6 +589,86 @@ function byas(item) {
   return g;
 }
 
+/** Philips 55" TV with a central stand. E toggles it; on: an animated swirl of colour on the screen
+ * (canvas texture redrawn at item.fps) and an additive Ambilight glow on the wall behind. */
+function tv(item) {
+  const g = new THREE.Group();
+  const { w, h } = item, y0 = 0.075; // screen bottom above the bench
+  const dark = new THREE.MeshStandardMaterial({ color: 0x141518, roughness: 0.35, metalness: 0.2 });
+  const stand = new THREE.MeshStandardMaterial({ color: 0x3a3c40, roughness: 0.4, metalness: 0.5 });
+  g.add(rbox(0.42, 0.012, 0.24, 0, 0.006, -0.02, stand, 0.004));                  // foot plate
+  g.add(rbox(0.12, y0 + 0.12, 0.03, 0, (y0 + 0.12) / 2, -0.05, stand, 0.006));     // neck
+  g.add(rbox(w, h, 0.025, 0, y0 + h / 2, -0.03, dark, 0.008));                     // panel
+  g.add(rbox(w * 0.7, h * 0.6, 0.05, 0, y0 + h * 0.45, -0.065, dark, 0.02));       // back housing
+  // the picture
+  const c = document.createElement('canvas');
+  c.width = 384; c.height = 216;
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  const screenMat = new THREE.MeshBasicMaterial({ map: tex, color: 0xffffff, toneMapped: false });
+  const offMat = new THREE.MeshStandardMaterial({ color: 0x07080a, roughness: 0.12, metalness: 0.4 });
+  const screen = new THREE.Mesh(new THREE.PlaneGeometry(w - 0.012, h - 0.012), offMat);
+  screen.position.set(0, y0 + h / 2, -0.016);
+  g.add(screen);
+  // Ambilight: a soft additive glow on the wall behind
+  const gc = document.createElement('canvas');
+  gc.width = gc.height = 64;
+  const gg = gc.getContext('2d'), rg = gg.createRadialGradient(32, 32, 6, 32, 32, 32);
+  rg.addColorStop(0, 'rgba(255,255,255,0.9)'); rg.addColorStop(1, 'rgba(255,255,255,0)');
+  gg.fillStyle = rg; gg.fillRect(0, 0, 64, 64);
+  const glowMat = new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(gc), color: 0x000000, transparent: true,
+    blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false });
+  const glow = new THREE.Mesh(new THREE.PlaneGeometry(w * 1.9, h * 2.1), glowMat);
+  glow.position.set(0, y0 + h / 2, -0.19); // just off the wall behind (the bench is 0.42 deep, the TV near its back)
+  g.add(glow);
+  const ctx = c.getContext('2d');
+  const blobs = [[285, 0.9], [320, 0.85], [25, 0.9], [50, 0.95], [175, 0.8], [215, 0.85]]; // hues: purple, pink, orange, yellow, teal, blue
+  const draw = (t) => {
+    ctx.fillStyle = '#12082a';
+    ctx.fillRect(0, 0, c.width, c.height);
+    ctx.globalCompositeOperation = 'lighter';
+    blobs.forEach(([hue, sat], i) => {
+      const x = c.width * (0.5 + 0.38 * Math.sin(t * 0.21 + i * 1.7)), y = c.height * (0.5 + 0.36 * Math.cos(t * 0.17 + i * 2.3));
+      const r = c.height * (0.55 + 0.15 * Math.sin(t * 0.3 + i));
+      const grad = ctx.createRadialGradient(x, y, 0, x, y, r);
+      grad.addColorStop(0, `hsla(${hue},${sat * 100}%,60%,0.85)`);
+      grad.addColorStop(1, `hsla(${hue},${sat * 100}%,50%,0)`);
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, c.width, c.height);
+    });
+    ctx.globalCompositeOperation = 'source-over';
+    tex.needsUpdate = true;
+  };
+  let on = false, t = 0, acc = 0;
+  const interact = {
+    name: 'tv:n', kind: 'tv', pickable: g,
+    get isOpen() { return on; },
+    get verb() { return on ? 'stänga av' : 'slå på'; },
+    toggle() {
+      on = !on;
+      screen.material = on ? screenMat : offMat;
+      glowMat.color.setHex(on ? 0x6a4a8a : 0x000000);
+      if (on) draw(t);
+      return on;
+    },
+    update(dt) {
+      if (!on) return;
+      t += dt; acc += dt;
+      if (acc < 1 / item.fps) return;
+      acc = 0;
+      draw(t);
+      // the Ambilight follows the picture's average hue, slowly
+      const hue = ((t * 8) % 360) / 360;
+      glowMat.color.setHSL(hue, 0.7, 0.32);
+    },
+  };
+  g.userData.interact = interact;
+  g.userData.keep = [screen, glow];
+  g.position.y = item.y;
+  g.traverse((m) => { if (m.isMesh && m !== glow) m.castShadow = true; });
+  return g;
+}
+
 /** Woven rug texture: base colour, fine random weave, a thin border band (canvas, no image files). */
 function rugTexture(item) {
   const c = document.createElement('canvas');
@@ -623,20 +703,24 @@ function rug(item) {
   return g;
 }
 
-const BUILDERS = { sofa, armchair, footstool, floorlamp, sidetable, coffeetable, loungesofa, loungetable, parasol, planter, bed, skansnasTable, skansnasChair, bunk, daybed, rug, ragrund, coatrack, shoerack, byas };
+const BUILDERS = { sofa, armchair, footstool, floorlamp, sidetable, coffeetable, loungesofa, loungetable, parasol, planter, bed, skansnasTable, skansnasChair, bunk, daybed, rug, ragrund, coatrack, shoerack, byas, tv };
 
 /** Build all furniture; returns the scene group, collision segments per level and lamps. */
 export function buildFurniture() {
   const group = new THREE.Group();
   const segments = [[], []];
-  const lights = [];
+  const lights = [], interactives = [];
   for (const item of FURNITURE) {
     const obj = BUILDERS[item.type](item, lights);
     // one mesh per material per piece (#48); the parasol folds and the beers come and go
     if (item.type !== 'parasol') mergeStatic(obj, obj.userData.keep ?? []);
+    if (obj.userData.interact) { // E targets among the furniture (the TV)
+      obj.traverse((m) => { m.userData.door = obj.userData.interact; });
+      interactives.push(obj.userData.interact);
+    }
     const yaw = THREE.MathUtils.degToRad(item.rot ?? 0) + Math.PI; // local +z = facing
     obj.rotation.y = yaw;
-    obj.position.set(item.x, LEVELS[item.level].floor, item.z);
+    obj.position.set(item.x, LEVELS[item.level].floor + obj.position.y, item.z);
     group.add(obj);
     // footprint rectangles → world-space collision segments
     const c = Math.cos(yaw), s = Math.sin(yaw);
@@ -646,5 +730,5 @@ export function buildFurniture() {
       for (let i = 0; i < 4; i++) segments[item.level].push([...pts[i], ...pts[(i + 1) % 4]]);
     }
   }
-  return { object: group, segments, lights };
+  return { object: group, segments, lights, interactives };
 }

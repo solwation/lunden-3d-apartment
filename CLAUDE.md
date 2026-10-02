@@ -106,6 +106,7 @@ tools/esctest.html     headless test of Esc on the start screen (click-to-start 
 tools/updatetest.html  headless test of the update notice on a phone-sized touch screen (on top, 44 px, touch works)
 tools/perfcount.html   draw calls / triangles at a few spots (compare before/after optimising)
 tools/oventest.html    headless test: oven + microwave open/close (lamp inside), Moccamaster brews and clicks off
+tools/tvtest.html      headless test: switch the living-room TV on/off, picture moves, no target with F off
 tools/clocktest.html   headless test of the wall clock (07:00 start, spool, pause, month → sun height)
 tools/stamp.sh         build the published site with a version stamp (used by CI)
 ```
@@ -181,7 +182,8 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   of the sofa: coffee table ILVA Woodstock, oiled oak veneer top, 120 × 60 × 47 cm, with a shelf.
   Under both: a 300 × 200 cm light rug (#55, no collision).
   Opposite the sofa (the wall with the stair behind it): IKEA BYÅS TV bench 160 × 42 × 45, high-gloss
-  white (#67), east of the living-room door, with the TV on it (#68).
+  white (#67), east of the living-room door, with the TV on it (#68: Philips 55", E toggles; an animated
+  canvas picture ~12 fps + an additive Ambilight glow; furniture E targets are `world.furnitureTargets`).
 - Patio (user's wish): Plantagen Hörngrupp Oslo antracit (corner sofa 198 + 186 × 72 × 76, table
   120 × 60 × 40) with its back to the hedge and the east screen wall, a parasol (up Apr–Sep while
   the sun is up), two big planters (palm by the patio door, agave in the SE corner; the banana that blocked the
@@ -247,7 +249,7 @@ URL parameters (debugging / screenshots):
 - `&time=HH[.h]` — start at that hour (default 07:00), `&month=1–12` (default: this month), `&freeze` pauses the clock,
   `&clock` opens the wall clock's strip,
   `&lights` turns every lamp on (they also start on when arriving in the dark).
-- `&water` — turn on every tap and shower.
+- `&water` — turn on every tap and shower. `&tv` — switch the TV on.
 - `&phone` — the short touch-only start screen. `&install` — show the iPhone install sheet. `&note` — open the changelog note. `&pet` (with `&cat=`) — the cat is being petted.
 - `&clip=y` — clip everything above height y (cut-away plan view, e.g.
   `?shot&at=2.87,6.35,0,-90,16&clip=2.5` for Entréplan from above, `clip=5.6` + feet 19 for Övre plan).

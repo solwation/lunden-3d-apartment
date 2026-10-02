@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>TV test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+// Living-room TV (#68): aim at it, switch it on with the action button (screen shows the picture,
+// Ambilight glows, the picture moves), switch it off; with F (furniture off) it is no target.
+//   google-chrome --headless=new --dump-dom http://localhost:8137/tools/tvtest.html
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const f = document.createElement('iframe');
+f.width = 900; f.height = 600;
+f.src = '../index.html';
+document.body.append(f);
+f.onload = async () => {
+  const w = f.contentWindow, d = f.contentDocument;
+  while (!w.__app) await wait(100);
+  const { player, camera, world, step } = w.__app;
+  const lines = [];
+  const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; };
+  d.getElementById('start-touch').click();
+  await wait(50);
+  const tv = world.furnitureTargets.find((t) => t.kind === 'tv');
+  let pass = check(!!tv, 'TV exists');
+  const btn = d.getElementById('action');
+  tv.pickable.updateMatrixWorld(true);
+  const p = tv.pickable.getWorldPosition(new tv.pickable.position.constructor());
+  const aim = () => {
+    player.spawn(p.x, p.z + 2.0, 0); // 2 m in front (south), facing north
+    camera.rotation.x = Math.atan2(p.y + 0.43 - player.eyeY, 2.0);
+    for (let i = 0; i < 3; i++) step(1 / 60);
+  };
+  aim();
+  pass &= check(!btn.hidden && /slå på tv:n/i.test(btn.textContent), `button "${btn.textContent}"`);
+  btn.click();
+  const screen = tv.pickable.children.find((m) => m.isMesh && m.geometry.type === 'PlaneGeometry');
+  const v0 = screen.material.map?.version ?? -1;
+  for (let i = 0; i < 30; i++) step(1 / 60);
+  const v1 = screen.material.map?.version ?? -1;
+  pass &= check(tv.isOpen && !!screen.material.map && v1 > v0, `on: picture shown and moving (texture v${v0} → v${v1})`);
+  aim();
+  pass &= check(/stänga av tv:n/i.test(btn.textContent), `button "${btn.textContent}"`);
+  btn.click();
+  pass &= check(!tv.isOpen && !screen.material.map, 'off: dark screen');
+  world.setFurniture(false);
+  aim();
+  pass &= check(!/tv:n/i.test(btn.hidden ? '' : btn.textContent), 'F off: the TV is no target');
+  world.setFurniture(true);
+  out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
+};
+</script>
+</body>
+</html>

@@ -201,8 +201,10 @@ if (at) {
 }
 const params = new URLSearchParams(location.search);
 if (params.has('shot')) overlay.hidden = true;
+if (params.has('tv')) for (const t of world.furnitureTargets) if (t.kind === 'tv') t.toggle();
 // ?open opens every door (screenshots of open doors/wardrobes)
 // &water turns every tap on (screenshots)
+// &tv switches the TV on (screenshots)
 if (params.has('water')) for (const t of taps) t.toggle();
 if (params.has('open')) for (const d of [...world.doors, ...world.lids]) { d.toggle(); for (let i = 0; i < 30; i++) d.update(0.1); }
 // ?cat=x,z[,yaw[,feetY]] puts the cat somewhere (screenshots)
@@ -293,7 +295,10 @@ function use(thing) {
   else if (thing.kind === 'keybox') thing.toggle();
   else if (thing.kind === 'appliance') { thing.toggle(); if (thing.isOpen) bump('lids'); }
   else if (thing.kind === 'coffee') thing.toggle();
-  else if (thing.kind === 'parasol') {
+  else if (thing.kind === 'tv') {
+    const on = thing.toggle();
+    sfx.tvClick(thing.pickable.getWorldPosition(new THREE.Vector3()), on);
+  } else if (thing.kind === 'parasol') {
     const opening = thing.toggle();
     sfx.parasol(thing.pickable.getWorldPosition(new THREE.Vector3()).setY(2), opening);
   }
@@ -386,7 +391,7 @@ function updateFocus() {
   // (the raycaster ignores visibility, so the cat is only a target while it is there)
   // the car key only while its cabinet is open
   const extra = [...(cat.visible ? [cat.object] : []), ...(keyCabinet?.keyReachable ? [world.carKey.pickable] : []),
-    ...(world.furnitureOn ? patio.targets.map((t) => t.pickable) : [])]; // the parasol, unless F hid the furniture
+    ...(world.furnitureOn ? [...patio.targets, ...world.furnitureTargets].map((t) => t.pickable) : [])]; // parasol, TV — unless F hid the furniture
   const hit = raycaster.intersectObjects(extra.length ? [...pickables, ...extra] : pickables, true)[0];
   focused = hit && !behindWall(hit.point) ? hit.object.userData.door : null;
   const verb = !focused ? '' : focused.verb ?? (focused.isOpen ? 'stänga' : 'öppna');
@@ -450,6 +455,7 @@ function step(dt) {
   day.update(dt);
   wallClock.update(day.hour);
   patio.update(day, dt);
+  for (const t of world.furnitureTargets) t.update?.(dt);
   if (clockPanel.open) clockPanel.render();
   world.windowLights.update(day.hour, 1 - day.daylight);
   cat.update(dt);

@@ -357,6 +357,13 @@ export const sfx = {
     noise(t + 0.38, 0.02, d, { type: 'highpass', freq: 3000, gain: 0.3 });
     tone(t + 0.38, 0.03, d, { type: 'square', from: 1200, to: 800, gain: 0.04 });
   },
+    /** TV on/off: a soft relay click, and a short rising (on) or falling (off) tone. */
+  tvClick(pos, on) {
+    if (!ready()) return;
+    const t = ctx.currentTime, d = out(pos, 0.7);
+    noise(t, 0.015, d, { type: 'highpass', freq: 2500, gain: 0.25 });
+    tone(t + 0.03, 0.18, d, { from: on ? 520 : 780, to: on ? 780 : 520, gain: 0.05 });
+  },
     click(pos) {
     if (!ready()) return;
     const t = ctx.currentTime, d = out(pos, 0.6);

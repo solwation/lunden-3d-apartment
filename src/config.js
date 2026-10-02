@@ -463,6 +463,10 @@ export const FURNITURE = [
   // IKEA BYÅS TV bench, high-gloss white, 160 × 42 × 45 cm (ikea.com, #67): against the wall opposite the
   // sofa (the stair is behind it), east of the living-room door's architrave, near the sofa's centre line
   { type: 'byas', level: 0, x: 4.25, z: 7.8 + 0.21, rot: 180, w: 1.6, d: 0.42, h: 0.45 },
+  // Philips 55" The One PUS8897 on the bench (#68): panel ~123 × 71 cm, thin black bezel, one central
+  // anthracite pedestal; depth, stand size and the ~78 cm total height are guesses. E switches it on: a
+  // slowly moving colourful demo picture (canvas, ~12 fps) and an Ambilight glow on the wall behind.
+  { type: 'tv', level: 0, x: 4.25, z: 7.8 + 0.2, y: 0.45, rot: 180, w: 1.23, h: 0.715, fps: 12 },
   // big rug under the sofa's front legs and the coffee table (#55): 300 × 200 × 1.2 cm (size and
   // colours are our pick), light oatmeal with a soft weave and a thin border; no collision
   { type: 'rug', level: 0, x: 3.9, z: 10.6, w: 3.0, d: 2.0, h: 0.012, color: '#dcd3c3', border: '#c4b8a3' },
