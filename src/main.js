@@ -359,7 +359,7 @@ document.addEventListener('pointerlockchange', () => {
   armEl.hidden = true;
   if (locked) touch.enabled = false;
   showOverlay(!locked);
-  if (!locked) { player.keys.clear(); holdStats(false); }
+  if (!locked) { player.keys.clear(); holdStats(false); if (!touch.enabled) player.crouch = false; }
   if (!locked && reading) showNote(false);
 });
 document.addEventListener('mousemove', (e) => {
@@ -373,6 +373,7 @@ document.addEventListener('keydown', (e) => {
     return;
   }
   player.keys.add(e.code);
+  if (e.code === 'ControlLeft' || e.code === 'ControlRight') player.crouch = true; // crouch while held (#70)
   if (e.code === 'KeyE' && focused) use(focused);
   if (e.code === 'KeyM') updateMute(toggleMuted());
   if (e.code === 'KeyT') toggleStats();
@@ -384,8 +385,16 @@ document.addEventListener('keydown', (e) => {
 });
 document.addEventListener('keyup', (e) => {
   player.keys.delete(e.code);
+  if (e.code === 'ControlLeft' || e.code === 'ControlRight') player.crouch = false;
   if (clockPanel.open && clockPanel.key(e.code, false)) e.preventDefault(); // no button click on Space
   if (e.code === 'Tab') holdStats(false);
+});
+window.addEventListener('blur', () => { if (!touch.enabled) player.crouch = false; }); // no stuck crouch
+// touch: a crouch toggle beside the action button
+const crouchBtn = document.getElementById('crouch-btn');
+crouchBtn.addEventListener('click', () => {
+  player.crouch = !player.crouch;
+  crouchBtn.classList.toggle('on', player.crouch);
 });
 window.addEventListener('resize', () => {
   window.scrollTo(0, 0); // iOS may have scrolled the page when the bars or orientation changed

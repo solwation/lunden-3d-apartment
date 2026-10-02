@@ -13,6 +13,7 @@ Gå runt i lägenheten L1007 (Kv. Lunden, Peab) i webbläsaren som i ett FPS-spe
 | <kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> / piltangenter | gå |
 | Mus | titta |
 | <kbd>Shift</kbd> | spring (bara utomhus) |
+| <kbd>Ctrl</kbd> | håll inne för att huka dig |
 | <kbd>←</kbd> <kbd>→</kbd> | vrid |
 | <kbd>E</kbd> | öppna/stäng dörren du tittar på, klappa katten, läsa lappen |
 | <kbd>F</kbd> | möbler av/på |

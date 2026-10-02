@@ -114,6 +114,40 @@ for (const [name, r] of Object.entries(routes)) {
   pass &&= okWall;
   out.dataset.log += `${okWall ? 'PASS' : 'FAIL'} sprint tunnlar inte genom häcken (z ${player.pos.z.toFixed(2)})\n`;
 }
+// crouch (#70): Ctrl lowers the eye to PLAYER.crouchEye at half speed, and the stair still works
+{
+  const { PLAYER } = await import('../src/config.js');
+  player.spawn(1.3, 0.8, Math.PI);
+  player.crouch = true;
+  for (let i = 0; i < 60; i++) player.update(dt);
+  const eye = player.eyeY - player.pos.y;
+  player.keys = new Set(['KeyW']);
+  const z0 = player.pos.z;
+  for (let i = 0; i < 30; i++) player.update(dt);
+  const v = (player.pos.z - z0) / 0.5;
+  player.keys = new Set();
+  const okEye = Math.abs(eye - PLAYER.crouchEye) < 0.05, okV = Math.abs(v - PLAYER.walk * PLAYER.crouchSpeed) < 0.1;
+  out.dataset.log += `${okEye ? 'PASS' : 'FAIL'} huk: ögonhöjd ${eye.toFixed(2)} m\n${okV ? 'PASS' : 'FAIL'} huk: fart ${v.toFixed(2)} m/s\n`;
+  pass &&= okEye && okV;
+  // walk up the stair on your haunches
+  player.spawn(2.7, 7.13, -Math.PI / 2);
+  for (const [x, z] of [[4.3, 7.13], [5.1, 7.0], [5.15, 6.2], [4.3, 6.2], [3.0, 6.2]]) {
+    for (let t = 0; t < 12 && Math.hypot(player.pos.x - x, player.pos.z - z) > 0.12; t += dt) {
+      camera.rotation.y = Math.atan2(-(x - player.pos.x), -(z - player.pos.z));
+      player.keys = new Set(['KeyW']);
+      player.update(dt);
+    }
+  }
+  player.keys = new Set();
+  const okStair = player.level === 1;
+  out.dataset.log += `${okStair ? 'PASS' : 'FAIL'} huk: uppför trappan (level ${player.level})\n`;
+  pass &&= okStair;
+  player.crouch = false;
+  for (let i = 0; i < 60; i++) player.update(dt);
+  const up = Math.abs(player.eyeY - player.pos.y - PLAYER.eye) < 0.05;
+  out.dataset.log += `${up ? 'PASS' : 'FAIL'} reser sig när Ctrl släpps\n`;
+  pass &&= up;
+}
 out.textContent = (pass ? 'ALL PASS\n' : 'SOME FAILED\n') + out.dataset.log;
 </script>
 </body>

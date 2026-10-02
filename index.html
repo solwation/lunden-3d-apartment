@@ -118,6 +118,8 @@
     #measure[hidden] { display: none; }
     #measure small { display: block; font-size: 11px; opacity: .85; }
     #measure-btn { position: fixed; right: calc(24px + var(--sr)); bottom: calc(110px + var(--sb)); width: 52px; height: 52px; border: 0; border-radius: 50%; background: var(--panel); font-size: 22px; box-shadow: 0 4px 14px rgba(0,0,0,.2); }
+    #crouch-btn { position: fixed; right: calc(24px + var(--sr)); bottom: calc(100px + var(--sb)); width: 48px; height: 48px; border: 0; border-radius: 50%; background: var(--panel); font-size: 22px; touch-action: manipulation; }
+    #crouch-btn.on { background: var(--accent); }
     #furniture-btn { position: fixed; right: calc(178px + var(--sr)); top: calc(16px + var(--st)); width: 44px; height: 44px; border: 0; border-radius: 50%; background: var(--panel); font-size: 18px; }
     #stats-btn { position: fixed; right: calc(124px + var(--sr)); top: calc(16px + var(--st)); width: 44px; height: 44px; border: 0; border-radius: 50%; background: var(--panel); font-size: 18px; }
     .resume { font-size: 14px; background: #e8f2f6; border-radius: 6px; padding: 8px 10px; }
@@ -173,6 +175,7 @@
         <span><kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd></span><span>gå</span>
         <span><kbd>Mus</kbd></span><span>titta</span>
         <span><kbd>Shift</kbd></span><span>spring (utomhus)</span>
+        <span><kbd>Ctrl</kbd></span><span>håll inne för att huka dig (nära katterna)</span>
         <span><kbd>←</kbd> <kbd>→</kbd></span><span>vrid (om pekplattan är spärrad medan du skriver)</span>
         <span><kbd>E</kbd></span><span>öppna/stäng dörren du tittar på, klappa katten</span>
         <span>Klockan</span><span>i köket: E för att spola tiden, pausa och välja månad</span>
@@ -187,6 +190,7 @@
         <span>Vänster tumme</span><span>joystick — gå (tryck ut helt för att springa utomhus)</span>
         <span>Höger tumme</span><span>dra för att titta</span>
         <span>Knapp</span><span>öppna/stäng dörren du tittar på, klappa katten</span>
+        <span>🧎</span><span>huka dig / res dig</span>
         <span>📏</span><span>mät: sätt en punkt där krysset pekar, sedan nästa</span>
         <span>📊</span><span>visa/dölj statistiken</span>
       </div>
@@ -258,6 +262,7 @@
     <div id="measure" hidden></div>
  <button id="furniture-btn" class="touch-only" aria-label="Möbler av/på">🛋</button>
     <button id="measure-btn" class="touch-only" aria-label="Mät">📏</button>
+    <button id="crouch-btn" class="touch-only" aria-label="Huka dig">🧎</button>
     <button id="stats-btn" class="touch-only" aria-label="Statistik">📊</button>
     <div id="prompt" hidden></div>
     <div id="stick" hidden><div class="knob"></div></div>

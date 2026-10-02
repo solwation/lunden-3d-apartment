@@ -351,6 +351,9 @@ screenshots into the session scratchpad, not the repo.
 - Sprint (#43): Shift, or the touch stick pushed past `PLAYER.sprintStick`, runs at `PLAYER.run` —
   outdoors only (`player.outdoors` = outside the flat's footprint); inside it is walking pace. The
   stick's knob turns green while sprinting; footsteps use a longer stride. Moves are sub-stepped (5 cm).
+- Crouch (#70): hold Ctrl (or the 🧎 toggle on touch) → eye `PLAYER.crouchEye` 0.95 m at `crouchSpeed` (50 %),
+  no sprint; you only stand up again where there is head room (`roomToStand`: not under the stair's
+  upper flight). Released on blur / losing pointer lock so nobody gets stuck down.
 - GNOME's "disable touchpad while typing" (on by default) blocks touchpad look while a WASD key
   is held — not a bug in the app. Arrow keys ← → turn as a keyboard-only fallback.
 

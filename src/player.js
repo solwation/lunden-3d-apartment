@@ -29,6 +29,8 @@ export class Player {
     this.keys = new Set();
     this.analog = { x: 0, y: 0 }; // touch joystick, −1..1
     this.sprinting = false;
+    this.crouch = false;   // wanted (Ctrl held / touch toggle)
+    this.crouched = false; // actually down (stays down where there is no room to stand)
   }
 
   spawn(x, z, yaw) {
@@ -64,6 +66,13 @@ export class Player {
     return best;
   }
 
+  /** Can the visitor stand up here? (Not under the underside of the upper flight / winders.) */
+  roomToStand() {
+    const { x, z, y } = this.pos;
+    const s = stairHeight(x, z);
+    return !(s !== null && s > y + PLAYER.crouchEye + 0.25 && s - 0.25 < y + PLAYER.headroom);
+  }
+
   /** True when a stair surface at (x, z) is a wall for someone standing at `feet`. */
   blockedByStair(x, z, feet) {
     const s = stairHeight(x, z);
@@ -91,8 +100,10 @@ export class Player {
     // sprints — outdoors only, inside it is just walking (no rushing through the flat, #43)
     const amount = keyFwd || keySide ? 1 : Math.min(1, Math.hypot(this.analog.x, this.analog.y));
     const wantsRun = k.has('ShiftLeft') || k.has('ShiftRight') || (!keyFwd && !keySide && amount > PLAYER.sprintStick);
-    this.sprinting = wantsRun && this.outdoors && (keyFwd || keySide || amount > 0);
-    const speed = this.sprinting ? PLAYER.run : PLAYER.walk * amount;
+    // crouch (#70): down at once, up only where there is head room (under the stair there may be none)
+    this.crouched = this.crouch || (this.crouched && !this.roomToStand());
+    this.sprinting = wantsRun && this.outdoors && !this.crouched && (keyFwd || keySide || amount > 0);
+    const speed = (this.sprinting ? PLAYER.run : PLAYER.walk * amount) * (this.crouched ? PLAYER.crouchSpeed : 1);
 
     const yaw = this.camera.rotation.y;
     const fx = -Math.sin(yaw), fz = -Math.cos(yaw);
@@ -136,7 +147,7 @@ export class Player {
     }
 
     // smooth the eye height over stair steps
-    const target = this.pos.y + PLAYER.eye;
+    const target = this.pos.y + (this.crouched ? PLAYER.crouchEye : PLAYER.eye);
     this.eyeY += (target - this.eyeY) * Math.min(1, dt * 14);
     this.camera.position.set(this.pos.x, this.eyeY, this.pos.z);
   }

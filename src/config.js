@@ -225,6 +225,8 @@ export const PLAYER = {
   sprintStick: 0.95, // joystick deflection that counts as "all the way out"
   strideWalk: 0.62, strideRun: 0.95, // metres per footstep sound
   turnSpeed: 1.9, // rad/s for the arrow keys
+  crouchEye: 0.95,   // eye height on your haunches (Ctrl / the touch button, #70)
+  crouchSpeed: 0.5,  // walking speed factor while crouching
   mouseSens: 0.0013, // rad per pixel of mouse/touchpad movement under pointer lock (was 0.0022, too twitchy, #46)
   stepUp: 0.45,
   headroom: 1.85,
