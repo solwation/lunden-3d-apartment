@@ -72,11 +72,12 @@ src/minimap.js         plan view with the visitor's arrow, current room highligh
 src/measure.js         tape measure (Q / 📏): two points on any surface, distance label
 src/ovens.js           oven (drop-down door) + microwave (side door) in the tall unit, E opens (world.lids)
 src/coffee.js          Moccamaster on the worktop (MOCCAMASTER): E brews (red light, sound, the jug fills)
+src/mirror.js          the one mirror material (gradient + glints; hall and bathroom mirrors)
 src/fridge.js          the fridge: hollow, lit, opens with E, smoking roast chicken (in world.lids)
 src/catboard.js        cork board in the kitchen (under the wall clock): a photo (offscreen render) of every petted cat,
                        newest 10 in IndexedDB 'lunden'/'catPhotos', captioned with name + time
 src/shelves.js         kitchen wall shelves with portraits, flowers, books, candles (WALL_SHELVES)
-src/keycabinet.js      hall wall: round mirror + Solstickan key cabinet (E) with the Renault key (E → beep beep);
+src/keycabinet.js      hall wall: IKEA LINDBYN mirror Ø 110 + Solstickan key cabinet (E) with the Renault key (E → beep beep);
                        the cabinet is in world.lids, the key (world.carKey) a target only while it is open
 src/signs.js           hand-lettered name signs on the bedroom doors (DOOR_SIGNS)
 src/water.js           running water: E on a tap/shower (world.taps from interior.js) → stream + hiss

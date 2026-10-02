@@ -331,13 +331,15 @@ export const WALL_SHELVES = {
 };
 
 // Hall, the wall on the left as you come in (hall face of the hall/kitchen partition, x 2.057,
-// z 0.465–1.765), src/keycabinet.js (#36): a round mirror and a Solstickan key cabinet (Design House
-// Stockholm, white metal, 16.9 × 16 × 5.5 cm per royaldesign.co.uk, hinged on the left) with a
-// Renault Megane E-Tech key on a hook. rotY −π/2 = facing west (into the hall).
+// z 0.465–1.765), src/keycabinet.js: the mirror IKEA LINDBYN black Ø 110 cm (ikea.com 904.392.18,
+// #61; frame width and depth are guesses) and a Solstickan key cabinet (#36; Design House Stockholm,
+// white metal, 16.9 × 16 × 5.5 cm per royaldesign.co.uk, hinged on the left) with a Renault Megane
+// E-Tech key. The 130 cm wall just takes both: the mirror in the north part, the cabinet at the end.
+// rotY −π/2 = facing west (into the hall).
 export const HALL_WALL = {
   x: 2.057, rotY: -Math.PI / 2,
-  mirror: { z: 0.88, y: 1.55, d: 0.6 },
-  cabinet: { z: 1.5, y: 1.5, w: 0.169, h: 0.16, d: 0.055 },
+  mirror: { z: 1.03, y: 1.45, d: 1.1, frame: 0.018, depth: 0.03 },
+  cabinet: { z: 1.67, y: 1.45, w: 0.169, h: 0.16, d: 0.055 },
 };
 
 // Day cycle (src/daycycle.js): one day in `minutes` real minutes. The sun follows the real solar

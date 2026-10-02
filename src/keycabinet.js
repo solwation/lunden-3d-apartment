@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { HALL_WALL as H } from './config.js';
 import { sfx } from './audio.js';
+import { mirrorMaterial } from './mirror.js';
 
 // The hall wall on the left as you come in: a round mirror, and a Solstickan key cabinet (white
 // metal box with the matchbox boy, hinged on the left) that opens with E. Inside on a hook hangs
@@ -14,32 +15,9 @@ const hookMat = new THREE.MeshStandardMaterial({ color: 0xb8bcc0, roughness: 0.3
 const fobMat = new THREE.MeshStandardMaterial({ color: 0x1b1c1f, roughness: 0.35 });
 const chrome = new THREE.MeshStandardMaterial({ color: 0xd9dde0, roughness: 0.2, metalness: 0.9 });
 const brass = new THREE.MeshStandardMaterial({ color: 0x2b2b2b, roughness: 0.5, metalness: 0.4 });
+const frameMat = new THREE.MeshStandardMaterial({ color: 0x151515, roughness: 0.45, side: THREE.DoubleSide }); // LINDBYN frame
 const keyMat = new THREE.MeshStandardMaterial({ color: 0xc9a64a, roughness: 0.35, metalness: 0.3 });
 
-/** No real reflection (draw calls): a soft light gradient with two diagonal glints reads as a mirror. */
-function mirrorTexture() {
-  const c = document.createElement('canvas');
-  c.width = c.height = 256;
-  const g = c.getContext('2d');
-  const grad = g.createLinearGradient(0, 0, 0, 256);
-  grad.addColorStop(0, '#e9eef1');
-  grad.addColorStop(0.55, '#c8d1d6');
-  grad.addColorStop(1, '#b9b3ab');
-  g.fillStyle = grad;
-  g.fillRect(0, 0, 256, 256);
-  g.rotate(-0.6);
-  for (const [y, w, a] of [[150, 26, 0.55], [196, 10, 0.4]]) {
-    const s = g.createLinearGradient(0, y - w, 0, y + w);
-    s.addColorStop(0, 'rgba(255,255,255,0)'); s.addColorStop(0.5, `rgba(255,255,255,${a})`); s.addColorStop(1, 'rgba(255,255,255,0)');
-    g.fillStyle = s;
-    g.fillRect(-200, y - w, 600, 2 * w);
-  }
-  const tex = new THREE.CanvasTexture(c);
-  tex.colorSpace = THREE.SRGBColorSpace;
-  return tex;
-}
-const mirrorMap = mirrorTexture();
-const glass = new THREE.MeshStandardMaterial({ map: mirrorMap, emissiveMap: mirrorMap, emissive: 0x4a4a4a, roughness: 0.05, metalness: 0.1 });
 
 const mesh = (geo, mat, x = 0, y = 0, z = 0) => {
   const m = new THREE.Mesh(geo, mat);
@@ -158,14 +136,16 @@ export class KeyCabinet {
   }
 }
 
-/** Mirror + key cabinet on the hall wall. */
+/** Mirror (IKEA LINDBYN, black) + key cabinet on the hall wall. */
 export function buildHallWall() {
   const group = new THREE.Group();
   const m = H.mirror;
-  const disc = mesh(new THREE.CircleGeometry(m.d / 2, 48), glass, 0, 0, 0.012);
-  const rim = mesh(new THREE.TorusGeometry(m.d / 2, 0.008, 8, 64), brass, 0, 0, 0.01);
+  // LINDBYN: round glass in a slim black frame, standing m.depth off the wall
+  const disc = mesh(new THREE.CircleGeometry(m.d / 2 - m.frame, 64), mirrorMaterial, 0, 0, m.depth);
+  const rim = mesh(new THREE.CylinderGeometry(m.d / 2, m.d / 2, m.depth, 64, 1, true).rotateX(Math.PI / 2), frameMat, 0, 0, m.depth / 2);
+  const face = mesh(new THREE.RingGeometry(m.d / 2 - m.frame, m.d / 2, 64), frameMat, 0, 0, m.depth + 0.0005);
   const mirror = new THREE.Group();
-  mirror.add(disc, rim);
+  mirror.add(disc, rim, face);
   mirror.position.set(m.z, m.y, 0);
   const cabinet = new KeyCabinet();
   cabinet.object.position.set(H.cabinet.z, H.cabinet.y, 0);

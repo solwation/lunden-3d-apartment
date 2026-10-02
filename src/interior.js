@@ -4,6 +4,7 @@ import { FINISH, TILED_ROOMS, KITCHEN as K, SKIRTING } from './config.js';
 import { Fridge } from './fridge.js';
 import { buildOvens } from './ovens.js';
 import { Moccamaster } from './coffee.js';
+import { mirrorMaterial } from './mirror.js';
 
 // Fixed interior from our material choices: fitted kitchen, laundry, bathroom fittings,
 // tiled floors and walls. Everything is merged into one mesh per material (few draw calls),
@@ -83,7 +84,7 @@ const M = {
   vanity: std(T.vanity, { roughness: 0.5 }),
   porcelain: std(0xffffff, { roughness: 0.15 }),
   chrome: std(T.chrome, { roughness: 0.15, metalness: 0.6 }),
-  mirror: std(0xdde5ea, { roughness: 0.05, metalness: 0.2 }),
+  mirror: mirrorMaterial, // shared with the hall mirror (mirror.js)
   frosted: new THREE.MeshStandardMaterial({
     color: 0xf1f5f6, transparent: true, opacity: 0.55, roughness: 0.3, depthWrite: false, side: THREE.DoubleSide,
   }),
