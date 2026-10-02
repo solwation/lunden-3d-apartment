@@ -96,7 +96,7 @@ function drum(x, z, r, h) {
  *  - våning 3–4: the stacked two-storey units, white render with brick pilasters, set back behind
  *    the loftgång (grey-green railing, a light metal fascia, recessed white doors with a lantern each, #111) on the
  *    north side; spiral stairs in brick drums at both ends
- *  - flat roof with solar panels
+ *  - flat roof with solar panels and a light metal capping; French balconies at the upper units' courtyard doors (#110)
  */
 export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, mats }) {
   const group = new THREE.Group();
@@ -185,7 +185,7 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
 
   // våning 3–4: the upper units (L1201–L1209), one over each lower unit and one over the core
   const uppers = [...units.map((x0) => [x0, x0 + W]), [coreX0, coreX1]];
-  const Lf = H.loft, doors = [], lampBox = [], lampGlow = [];
+  const Lf = H.loft, doors = [], lampBox = [], lampGlow = [], balc = [];
   const isDoor = (o) => o.y0 - roofTop < 0.05 && o.x1 - o.x0 < 1.4; // our front door among the (shifted) north openings
   for (const [x0, x1] of uppers) {
     const holes = shift(north, x0, roofTop);
@@ -202,7 +202,15 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
       lampBox.push(boxGeo(lx - lw / 2, lx + lw / 2, ly + lh / 2, ly + lh / 2 + 0.03, loftD - 0.12, loftD), boxGeo(lx - 0.03, lx + 0.03, ly - lh / 2, ly + lh / 2, loftD - 0.02, loftD));
       lampGlow.push(boxGeo(lx - lw / 2 + 0.01, lx + lw / 2 - 0.01, ly - lh / 2, ly + lh / 2, loftD - 0.11, loftD - 0.02));
     }
-    facade(renders, x0, x1, roofTop, upperTop, D + eps, false, shift(south, x0, roofTop));
+    const southHoles = shift(south, x0, roofTop);
+    facade(renders, x0, x1, roofTop, upperTop, D + eps, false, southHoles);
+    // a French balcony in front of the tall door to the courtyard (#110): white top rail, bottom rail, balusters
+    for (const o of southHoles.filter((h) => h.y0 - roofTop < 0.05)) {
+      const zf = D + 0.09, yb = o.y0 + 0.05, yt = o.y0 + 1.0;
+      balc.push(boxGeo(o.x0 - 0.05, o.x1 + 0.05, yt - 0.04, yt, zf - 0.03, zf + 0.03), boxGeo(o.x0 - 0.05, o.x1 + 0.05, yb, yb + 0.03, zf - 0.02, zf + 0.02));
+      for (let x = o.x0 + 0.06; x < o.x1 - 0.02; x += 0.11) balc.push(boxGeo(x - 0.008, x + 0.008, yb, yt, zf - 0.008, zf + 0.008));
+      for (const x of [o.x0 - 0.05, o.x1 + 0.03]) balc.push(boxGeo(x, x + 0.02, yb, yt, D, zf)); // fixed to the reveals
+    }
     solids.push(boxGeo(x0 + 0.001, x1 - 0.001, roofTop, upperTop, loftD, D));
   }
   const edges = [...new Set(uppers.flat().map((x) => +x.toFixed(3)))];
@@ -227,6 +235,7 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
 
   // flat roof with a parapet, solar panels
   roofs.push(boxGeo(xw - 0.1, xe + 0.1, upperTop, upperTop + 0.3, loftD - 0.1, D + 0.1));
+  const capping = [boxGeo(xw - 0.13, xe + 0.13, upperTop + 0.3, upperTop + 0.35, loftD - 0.13, D + 0.13)]; // light sheet-metal capping on the parapet (#110)
   for (const [xa, xb] of H.solar.x) for (const [za, zb] of H.solar.z) panels.push(boxGeo(xa, xb, upperTop + 0.35, upperTop + 0.42, za, zb));
 
   // loftgång deck from the west drum to the east end, plus the landing to the east drum
@@ -266,7 +275,8 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
   add(frames, frame);
   add(glassGeo, new THREE.MeshStandardMaterial({ color: 0x33434d, roughness: 0.1, metalness: 0.4 }), false);
   add(rails, new THREE.MeshStandardMaterial({ color: COLORS.balcony, roughness: 0.5, metalness: 0.3 }));
-  add(fascia, new THREE.MeshStandardMaterial({ color: Lf.fascia, roughness: 0.4, metalness: 0.4 }));
+  add([...fascia, ...capping], new THREE.MeshStandardMaterial({ color: Lf.fascia, roughness: 0.4, metalness: 0.4 }));
+  add(balc, new THREE.MeshStandardMaterial({ color: Lf.door, roughness: 0.45, metalness: 0.2 }));
   add(doors, new THREE.MeshStandardMaterial({ color: Lf.door, roughness: 0.4 }));
   add(lampBox, new THREE.MeshStandardMaterial({ color: 0x2b2d30, roughness: 0.5, metalness: 0.4 }));
   const glowMat = new THREE.MeshBasicMaterial({ color: 0x55534d, toneMapped: false }), lit = new THREE.Color(0xffd9a0), off = new THREE.Color(0x8d8b84);
