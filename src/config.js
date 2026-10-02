@@ -610,6 +610,11 @@ export const FURNITURE = [
   // Sovrum 1 (Sarah & Ofluf), head east, clear of the Klk. Bedding (#83, an IKEA set from a Sellpy ad):
   // sage green with a dense chintz of coral and pink peonies, ochre, slate-blue leaves and grey-green
   // stems, white outlines (colours read off the photo); a pink cushion and a light grey throw to go with it
+  // IKEA NORDLI chest of 8 drawers, white, 120 × 99 (#94; the 47 cm depth is a guess). Sovrum 1 has no
+  // wardrobe, its storage is the Klk behind the sliding door: inside 1.65 × 1.20 m (x 3.90–5.55,
+  // z 4.29–5.48), the door slides in the wall plane. The chest stands against its back (south) wall,
+  // centred, 73 cm of floor left in front of it; facing north (into the Klk)
+  { type: 'nordli', level: 1, x: (3.90 + 5.55) / 2, z: 5.48 - 0.235, rot: 0, w: 1.2, h: 0.99, d: 0.47 },
   // the mattress centre: the headboard (IDANAS.head) against the east wall
   { type: 'bed', level: 1, x: 5.55 - IDANAS.head - 1.0, z: 2.3, rot: 90, w: 1.8, l: 2.0, model: 'idanas',
     // repeat = metres per texture tile (blooms ~8–15 cm)

@@ -1215,6 +1215,30 @@ function gamingchair() {
   return g;
 }
 
+/** IKEA NORDLI chest of 8 drawers (white): four rows of a narrow (⅓) and a wide (⅔) drawer — narrow left in
+ * the top two rows, right in the lower two — each with a black cut-out grip at the top; a low plinth. Faces +z. */
+function nordli(item) {
+  const g = new THREE.Group();
+  const { w, h, d } = item, plinth = 0.06, gap = 0.004, rowH = (h - plinth - 0.02) / 4;
+  const white = new THREE.MeshStandardMaterial({ color: 0xf4f4f1, roughness: 0.5 });
+  const grip = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.7 });
+  g.add(rbox(w, h - plinth, d - 0.02, 0, plinth + (h - plinth) / 2, -0.01, white, 0.004));
+  g.add(rbox(w - 0.04, plinth, d - 0.06, 0, plinth / 2, -0.02, new THREE.MeshStandardMaterial({ color: 0xe6e6e2, roughness: 0.6 }), 0.003));
+  for (let r = 0; r < 4; r++) {
+    const y0 = plinth + 0.01 + (3 - r) * rowH, narrowLeft = r < 2;
+    const parts = narrowLeft ? [[0, 1 / 3], [1 / 3, 1]] : [[0, 2 / 3], [2 / 3, 1]];
+    for (const [a, b] of parts) {
+      const x0 = -w / 2 + a * w + gap, x1 = -w / 2 + b * w - gap, cx = (x0 + x1) / 2;
+      g.add(rbox(x1 - x0, rowH - 2 * gap, 0.018, cx, y0 + rowH / 2, d / 2 - 0.009, white, 0.003));
+      g.add(rbox(Math.min(0.16, (x1 - x0) * 0.5), 0.016, 0.004, cx, y0 + rowH - 0.028, d / 2 + 0.001, grip, 0.002));
+    }
+  }
+  g.traverse((m) => { if (m.isMesh) m.castShadow = m.receiveShadow = true; });
+  g.userData.surfaces = [{ x0: -w / 2 + 0.03, x1: w / 2 - 0.03, z0: -d / 2 + 0.03, z1: d / 2 - 0.03, y: h }];
+  g.userData.footprint = [{ x0: -w / 2, x1: w / 2, z0: -d / 2, z1: d / 2 }];
+  return g;
+}
+
 /** Woven rug texture: base colour, fine random weave, a thin border band (canvas, no image files). */
 function rugTexture(item) {
   const c = document.createElement('canvas');
@@ -1249,7 +1273,7 @@ function rug(item) {
   return g;
 }
 
-const BUILDERS = { sofa, armchair, footstool, floorlamp, sidetable, coffeetable, loungesofa, loungetable, parasol, planter, bed, skansnasTable, skansnasChair, bunk, daybed, rug, ragrund, coatrack, shoerack, byas, tv, nordkisa, worklamp, gamingdesk, gamingchair };
+const BUILDERS = { sofa, armchair, footstool, floorlamp, sidetable, coffeetable, loungesofa, loungetable, parasol, planter, bed, skansnasTable, skansnasChair, bunk, daybed, rug, ragrund, coatrack, shoerack, byas, tv, nordkisa, worklamp, gamingdesk, gamingchair, nordli };
 
 /** An invisible thin box over a table top (raycast target for putting a cup down, #90). Local rect. */
 export function surfaceBox(r, list) {
