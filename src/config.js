@@ -493,7 +493,11 @@ export const FURNITURE = [
   // Sovrum 1, the corner left of the window seen from inside (NW), back and towel rack against the
   // west wall, seat facing into the room (east); the seat is below the window sill (BH 0.7)
   { type: 'ragrund', level: 1, x: 2.70 + 0.23, z: 0.465 + 0.205, rot: -90, towel: 0x9fb8c9 },
-  { type: 'bed', level: 1, x: 5.55 - 1.1, z: 2.3, rot: 90, w: 1.6, l: 2.0 },  // Sovrum 1 (Sarah & Ofluf), head east, clear of the Klk
+  // Sovrum 1 (Sarah & Ofluf), head east, clear of the Klk. Cosy bedding (#66, after IKEA EKTANDVINGE dark
+  // blue/white check): gingham duvet and pillowcases (4.5 cm checks), a crumpled duvet, an extra dark blue
+  // cushion and a knitted sand throw over the foot end
+  { type: 'bed', level: 1, x: 5.55 - 1.1, z: 2.3, rot: 90, w: 1.6, l: 2.0,
+    bedding: { check: 0.045, blue: '#27406b', white: '#f4f4f0', throw: 0xcdb999, cushion: 0x24395e } },
   // Bunks: long side against the side wall, head end against the façade (the user's wish);
   // the ladder ends up on the room side at the foot end.
   { type: 'bunk', level: 1, x: 0.2 + 0.5, z: 0.47 + 1.05, rot: 180, w: 0.9, l: 2.0, sheets: 'unicorn' }, // Sovrum 3 (Livia & Tuva)

@@ -224,14 +224,85 @@ const linen = new THREE.MeshStandardMaterial({ color: 0xeeeeea, roughness: 0.95 
 const duvet = new THREE.MeshStandardMaterial({ color: 0xd9dfe2, roughness: 0.95 });
 const bedFabric = new THREE.MeshStandardMaterial({ color: 0x8f969b, roughness: 0.95 });
 
-/** Bed: upholstered base on legs, mattress, duvet, pillows, headboard. Local −z = head end. */
+/** Gingham check texture (two blues where the stripes cross, white between), one repeat = 2 checks. */
+function ginghamTexture(b) {
+  const c = document.createElement('canvas');
+  c.width = c.height = 64;
+  const g = c.getContext('2d');
+  g.fillStyle = b.white; g.fillRect(0, 0, 64, 64);
+  g.globalAlpha = 0.55; g.fillStyle = b.blue;
+  g.fillRect(0, 0, 32, 64); g.fillRect(0, 0, 64, 32);
+  g.globalAlpha = 1; g.fillRect(0, 0, 32, 32);
+  const tex = new THREE.CanvasTexture(c);
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 8;
+  return tex;
+}
+
+/** A crumpled duvet: a subdivided slab whose top is gently wavy, sides hanging down past the mattress. */
+function duvetGeometry(w, l, drop, seed = 3) {
+  const geo = new THREE.BoxGeometry(w, 0.06, l, 24, 1, 24);
+  const p = geo.attributes.position;
+  let s = seed;
+  const rnd = () => ((s = (s * 16807) % 2147483647) / 2147483647);
+  const waves = [...Array(5)].map(() => [rnd() * 6 + 3, rnd() * 6 + 3, rnd() * 6, 0.006 + rnd() * 0.01]);
+  for (let i = 0; i < p.count; i++) {
+    const x = p.getX(i), y = p.getY(i), z = p.getZ(i);
+    let h = 0;
+    for (const [a, b, ph, amp] of waves) h += amp * Math.sin(x * a + ph) * Math.cos(z * b + ph);
+    const edge = Math.max(Math.abs(x) / (w / 2), 0); // 1 at the sides
+    const sag = Math.pow(Math.max(0, edge - 0.85) / 0.15, 2) * drop; // the sides hang down
+    p.setY(i, y + h * (1 - edge * 0.5) - sag);
+  }
+  geo.computeVertexNormals();
+  const uv = geo.attributes.uv; // UVs in metres for the check
+  for (let i = 0; i < p.count; i++) uv.setXY(i, p.getX(i), p.getZ(i));
+  return geo;
+}
+
+/** Bed: upholstered base on legs, mattress, duvet, pillows, headboard. Local −z = head end.
+ * `item.bedding` gives the cosy check bedding (Sovrum 1); otherwise plain linen. */
 function bed(item) {
   const g = new THREE.Group();
   const w = item.w, l = item.l, z0 = -l / 2;
   g.add(rbox(w + 0.04, 0.22, l + 0.04, 0, 0.1 + 0.11, 0, bedFabric, 0.02));
   g.add(rbox(w, 0.2, l, 0, 0.32 + 0.1, 0, linen, 0.05));
-  g.add(rbox(w + 0.02, 0.06, l * 0.7, 0, 0.53, z0 + l * 0.65, duvet, 0.03));
-  for (const px of w > 1.2 ? [-w / 4, w / 4] : [0]) g.add(rbox(Math.min(0.6, w * 0.8), 0.12, 0.38, px, 0.58, z0 + 0.28, linen, 0.06));
+  const b = item.bedding;
+  if (b) {
+    const tex = ginghamTexture(b);
+    tex.repeat.set(1 / (2 * b.check), 1 / (2 * b.check));
+    const check = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.95 });
+    const duv = new THREE.Mesh(duvetGeometry(w + 0.12, l * 0.74, 0.2), check);
+    duv.position.set(0, 0.55, z0 + l * 0.63);
+    duv.castShadow = duv.receiveShadow = true;
+    g.add(duv);
+    // two pillows in check pillowcases, plump, and a dark blue cushion in front of them
+    for (const px of [-w / 4, w / 4]) {
+      // planar UVs in metres (top view) so the pillowcase checks match the duvet's
+      const pg = new THREE.SphereGeometry(1, 20, 12).scale(0.33, 0.08, 0.22);
+      const pp = pg.attributes.position, pu = pg.attributes.uv;
+      for (let i = 0; i < pp.count; i++) pu.setXY(i, pp.getX(i), pp.getZ(i));
+      const pil = new THREE.Mesh(pg, check);
+      pil.position.set(px, 0.6, z0 + 0.27);
+      pil.rotation.x = -0.25;
+      pil.castShadow = true;
+      g.add(pil);
+    }
+    const cushion = new THREE.Mesh(new THREE.SphereGeometry(1, 16, 10), new THREE.MeshStandardMaterial({ color: b.cushion, roughness: 0.9 }));
+    cushion.scale.set(0.22, 0.07, 0.16);
+    cushion.position.set(-0.05, 0.64, z0 + 0.5);
+    cushion.rotation.set(-0.6, 0.15, 0.1);
+    cushion.castShadow = true;
+    g.add(cushion);
+    // a knitted throw folded over the foot end, hanging down a little on one side
+    const knit = new THREE.MeshStandardMaterial({ color: b.throw, roughness: 1 });
+    g.add(rbox(w * 0.85, 0.035, 0.42, 0.04, 0.59, -z0 - 0.3, knit, 0.015));
+    g.add(rbox(0.035, 0.2, 0.42, 0.04 + w * 0.425 + 0.02, 0.5, -z0 - 0.3, knit, 0.012));
+  } else {
+    g.add(rbox(w + 0.02, 0.06, l * 0.7, 0, 0.53, z0 + l * 0.65, duvet, 0.03));
+    for (const px of w > 1.2 ? [-w / 4, w / 4] : [0]) g.add(rbox(Math.min(0.6, w * 0.8), 0.12, 0.38, px, 0.58, z0 + 0.28, linen, 0.06));
+  }
   g.add(rbox(w + 0.06, 0.6, 0.08, 0, 0.62, z0 - 0.04, bedFabric, 0.03));
   for (const x of [-w / 2 + 0.06, w / 2 - 0.06]) for (const z of [z0 + 0.06, -z0 - 0.06]) g.add(leg(x, z, 0.1));
   g.userData.footprint = [{ x0: -w / 2 - 0.03, x1: w / 2 + 0.03, z0: z0 - 0.08, z1: -z0 + 0.02 }];
