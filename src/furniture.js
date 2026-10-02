@@ -1336,7 +1336,69 @@ function rug(item) {
   return g;
 }
 
-const BUILDERS = { sofa, armchair, footstool, floorlamp, sidetable, coffeetable, loungesofa, loungetable, parasol, planter, bed, skansnasTable, skansnasChair, bunk, daybed, rug, ragrund, coatrack, shoerack, byas, tv, nordkisa, worklamp, gamingdesk, gamingchair, nordli, alex, kidchair };
+/** Areca / golden cane palm (#106) in a big pot: thin yellow-green canes fanning out of the soil, each with a
+ * feathery frond arching out and down (leaflets as thin quads on both sides of the midrib, vertex colours
+ * light → dark). One mesh per material after the merge. Sizes from item (PALM in config). */
+function palm(item) {
+  const g = new THREE.Group();
+  const P = item, R = (() => { let s = 11; return () => ((s = (s * 16807) % 2147483647) / 2147483647); })();
+  const potMat = new THREE.MeshStandardMaterial({ color: P.potColor, roughness: 0.85 });
+  const pot = new THREE.Mesh(new THREE.CylinderGeometry(P.pot.r, P.pot.r * 0.82, P.pot.h, 28), potMat);
+  pot.position.y = P.pot.h / 2;
+  const rim = new THREE.Mesh(new THREE.TorusGeometry(P.pot.r - 0.012, 0.012, 6, 28).rotateX(Math.PI / 2), potMat);
+  rim.position.y = P.pot.h;
+  const soil = new THREE.Mesh(new THREE.CircleGeometry(P.pot.r - 0.02, 24).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ color: 0x3b2a1e, roughness: 1 }));
+  soil.position.y = P.pot.h - 0.04;
+  g.add(pot, rim, soil);
+  const caneMat = new THREE.MeshStandardMaterial({ color: 0xa7b94e, roughness: 0.6 });
+  const leafMat = new THREE.MeshStandardMaterial({ vertexColors: true, side: THREE.DoubleSide, roughness: 0.7 });
+  const pos = [], col = [], light = new THREE.Color(0x8fbf45), dark = new THREE.Color(0x2f6a26);
+  const quad = (a, b, c, d, ca, cb) => {
+    for (const [p, cc] of [[a, ca], [b, ca], [c, cb], [a, ca], [c, cb], [d, cb]]) { pos.push(p.x, p.y, p.z); col.push(cc.r, cc.g, cc.b); }
+  };
+  const y0 = P.pot.h - 0.04, up = new THREE.Vector3(0, 1, 0);
+  for (let k = 0; k < P.canes; k++) {
+    const a = (k / P.canes) * Math.PI * 2 + R() * 0.5, lean = 0.12 + R() * 0.3;
+    const dir = new THREE.Vector3(Math.cos(a), 0, Math.sin(a));
+    const caneH = P.cane * (0.6 + R() * 0.5);
+    // the cane: a thin cylinder from the soil, leaning out
+    const top = dir.clone().multiplyScalar(Math.sin(lean) * caneH).setY(y0 + Math.cos(lean) * caneH);
+    const cane = new THREE.Mesh(new THREE.CylinderGeometry(0.006, 0.009, caneH, 5), caneMat);
+    cane.position.copy(top).add(new THREE.Vector3(0, y0, 0)).multiplyScalar(0.5);
+    cane.quaternion.setFromUnitVectors(up, top.clone().sub(new THREE.Vector3(0, y0, 0)).normalize());
+    g.add(cane);
+    // the frond: the midrib arches out (elevation e0 → drooping), leaflets along it
+    const L = P.frond * (0.75 + R() * 0.4), e0 = 0.9 + R() * 0.35, side = new THREE.Vector3().crossVectors(up, dir).normalize();
+    const at = (t) => dir.clone().multiplyScalar(L * t * 0.8).add(up.clone().multiplyScalar(L * t * Math.tan(e0) * 0.45 - L * t * t * 0.75)).add(top);
+    const n = 14;
+    for (let i = 1; i <= n; i++) {
+      const t = 0.12 + (i / n) * 0.88, p = at(t), q = at(Math.min(1, t + 0.05));
+      const along = q.clone().sub(p).normalize(), len = P.leaflet * (1 - 0.55 * t) * (0.85 + R() * 0.3), w = 0.012;
+      for (const sgn of [-1, 1]) {
+        const out = side.clone().multiplyScalar(sgn).multiplyScalar(len).add(along.clone().multiplyScalar(len * 0.55)).add(new THREE.Vector3(0, -len * 0.35, 0));
+        const tip = p.clone().add(out);
+        const a1 = p.clone().addScaledVector(along, -w), a2 = p.clone().addScaledVector(along, w);
+        const t1 = tip.clone().addScaledVector(along, -w * 0.3), t2 = tip.clone().addScaledVector(along, w * 0.3);
+        quad(a1, a2, t2, t1, light.clone().lerp(dark, t * 0.6), dark);
+      }
+    }
+    // the midrib itself as a thin strip
+    for (let i = 0; i < 10; i++) {
+      const p = at(i / 10), q = at((i + 1) / 10), off = side.clone().multiplyScalar(0.004);
+      quad(p.clone().sub(off), p.clone().add(off), q.clone().add(off), q.clone().sub(off), light, light);
+    }
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  geo.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+  geo.computeVertexNormals();
+  g.add(new THREE.Mesh(geo, leafMat));
+  g.traverse((m) => { if (m.isMesh) m.castShadow = true; });
+  g.userData.footprint = [{ x0: -P.pot.r, x1: P.pot.r, z0: -P.pot.r, z1: P.pot.r }];
+  return g;
+}
+
+const BUILDERS = { palm, sofa, armchair, footstool, floorlamp, sidetable, coffeetable, loungesofa, loungetable, parasol, planter, bed, skansnasTable, skansnasChair, bunk, daybed, rug, ragrund, coatrack, shoerack, byas, tv, nordkisa, worklamp, gamingdesk, gamingchair, nordli, alex, kidchair };
 
 /** An invisible thin box over a table top (raycast target for putting a cup down, #90). Local rect. */
 export function surfaceBox(r, list) {

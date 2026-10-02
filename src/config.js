@@ -595,6 +595,11 @@ export const FURNITURE = [
   // the spots aimed at the seat; `aim` = plan point they point at
   { type: 'floorlamp', level: 0, x: 0.36, z: 8.86, aim: [0.78, 8.38], h: 1.6, base: 0.25 },
   { type: 'sidetable', level: 0, x: 1.52, z: 8.12, flower: true },
+  // Areca / golden cane palm (#106, the user's Amazon pick: "Gold Palm 130 cm", nursery pot Ø 24) in a big anthracite
+  // fibre-clay pot (Ø 40 × 45 cm, our pick) right of the patio door seen from inside (between the west party wall at
+  // x 0.2 and the door at x 0.95, the wall's inner face at z 12.23). Canes, frond and leaflet lengths are *guesses*
+  // for a ~1.5 m total height.
+  { type: 'palm', level: 0, x: 0.47, z: 11.96, pot: { r: 0.2, h: 0.45 }, potColor: 0x3d3f42, canes: 15, cane: 0.72, frond: 0.85, leaflet: 0.27 },
   // Soffbord ILVA Woodstock, top i oljebehandlad ekfaner (art. 1055729): 120 × 60 × 47 cm, legs in
   // oiled solid oak, a fixed shelf below (ilva.dk product page). Centred on the three seats
   // (x 2.68–4.60), 40 cm in front of the sofa (front at z 11.26).
