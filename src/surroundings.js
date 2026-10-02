@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { SITE as S, COLORS } from './config.js';
+import { SITE as S, COLORS, SEASON } from './config.js';
+import { registerTrees, registerSnow } from './seasons.js';
 
 // The rest of Kv. Lunden and its neighbourhood (SITE in config): the brick point blocks Hus A, B, C
 // with low hip roofs, the schools and buildings around the plot, Sankt Lars väg and Karpvägen,
@@ -162,7 +163,7 @@ function trees(rand) {
   const crownGeo = new THREE.IcosahedronGeometry(1, 1);
   const trunk = new THREE.InstancedMesh(trunkGeo, new THREE.MeshStandardMaterial({ color: 0x5a4636, roughness: 1 }), spots.length);
   const crown = new THREE.InstancedMesh(crownGeo, new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 1, flatShading: true }), spots.length);
-  const m = new THREE.Matrix4(), q = new THREE.Quaternion(), col = new THREE.Color();
+  const m = new THREE.Matrix4(), q = new THREE.Quaternion(), col = new THREE.Color(), seeds = [];
   spots.forEach((t, i) => {
     const h = 3.2 * t.s;
     m.compose(new THREE.Vector3(t.x, t.y, t.z), q, new THREE.Vector3(t.s, h, t.s));
@@ -170,11 +171,12 @@ function trees(rand) {
     q.setFromEuler(new THREE.Euler(0, rand() * 6, 0));
     m.compose(new THREE.Vector3(t.x, t.y + h + 1.6 * t.s, t.z), q, new THREE.Vector3(2.4 * t.s, 2.6 * t.s, 2.4 * t.s));
     crown.setMatrixAt(i, m);
-    // mostly greens, now and then an autumn tree (the drone photo is from September)
-    const autumn = rand() < 0.15;
-    col.setHSL(autumn ? 0.08 + rand() * 0.04 : 0.22 + rand() * 0.08, autumn ? 0.6 : 0.4 + rand() * 0.15, 0.28 + rand() * 0.1);
-    crown.setColorAt(i, col);
+    // colours and leaf cover come from the season (seasons.js); keep each tree's own variation
+    seeds.push({ pos: new THREE.Vector3(t.x, t.y + h + 1.6 * t.s, t.z), rot: q.clone(), scale: new THREE.Vector3(2.4 * t.s, 2.6 * t.s, 2.4 * t.s),
+      r1: rand(), r2: rand(), r3: rand(), r4: rand() });
+    crown.setColorAt(i, col.setHSL(0.27, 0.45, 0.3));
   });
+  registerTrees(crown, seeds);
   trunk.castShadow = crown.castShadow = true;
   return [trunk, crown];
 }
@@ -318,30 +320,33 @@ function groundStrip(x0, x1, z0, z1, lift) {
 
 export function buildSurroundings({ grass }) {
   const group = new THREE.Group();
-  const flat = (geos, color, lift = 0) => {
-    const mesh = new THREE.Mesh(mergeGeometries(geos), color.isMaterial ? color : new THREE.MeshStandardMaterial({ color, roughness: 1 }));
+  const flat = (geos, color, snow) => {
+    const mat = color.isMaterial ? color : new THREE.MeshStandardMaterial({ color, roughness: 1 });
+    if (snow) registerSnow(mat, snow);
+    const mesh = new THREE.Mesh(mergeGeometries(geos), mat);
     mesh.receiveShadow = true;
     group.add(mesh);
   };
   // the slope down to the park and the park level (the courtyard level is world.js's ground)
-  flat([groundStrip(-200, 200, S.dropZ, 260, -0.01)], grass);
-  flat(S.roads.map((r) => groundStrip(r.x0, r.x1, r.z0, r.z1, 0.012)), COLORS.asphalt);
-  flat(S.paving.map((r) => groundStrip(r.x0, r.x1, r.z0, r.z1, 0.008)), COLORS.paving);
+  flat([groundStrip(-200, 200, S.dropZ, 260, -0.01)], grass, SEASON.snow.ground);
+  flat(S.roads.map((r) => groundStrip(r.x0, r.x1, r.z0, r.z1, 0.012)), COLORS.asphalt, 0xd9dfe4); // ploughed, a little grey
+  flat(S.paving.map((r) => groundStrip(r.x0, r.x1, r.z0, r.z1, 0.008)), COLORS.paving, SEASON.snow.paving);
   flat([groundStrip(S.river.x0, S.river.x1, S.river.z0, S.river.z1, 0.02)],
     new THREE.MeshStandardMaterial({ color: COLORS.water, roughness: 0.15, metalness: 0.2 }));
   // Kv. Lunden's own blocks and the old S:t Lars buildings: own façade texture and roof colour each,
   // plus a white cornice under the old roofs (#47)
   const modern = S.blocks.filter((b) => b.style !== 'old'), oldB = S.blocks.filter((b) => b.style === 'old');
-  const mesh = (geos, material) => {
+  const mesh = (geos, material, snow) => {
+    if (snow) registerSnow(material, snow);
     const m = new THREE.Mesh(mergeGeometries(geos), material);
     m.receiveShadow = true;
     group.add(m);
   };
   mesh(modern.map(block), new THREE.MeshStandardMaterial({ map: facadeTexture(), roughness: 0.95 }));
-  mesh(modern.map(roof), new THREE.MeshStandardMaterial({ color: 0x51575c, roughness: 0.85, side: THREE.DoubleSide }));
+  mesh(modern.map(roof), new THREE.MeshStandardMaterial({ color: 0x51575c, roughness: 0.85, side: THREE.DoubleSide }), SEASON.snow.roof);
   if (oldB.length) {
     mesh(oldB.map(block), new THREE.MeshStandardMaterial({ map: oldFacadeTexture(), roughness: 0.95 }));
-    mesh(oldB.map(roof), new THREE.MeshStandardMaterial({ color: 0x33383c, roughness: 0.7, metalness: 0.15, side: THREE.DoubleSide }));
+    mesh(oldB.map(roof), new THREE.MeshStandardMaterial({ color: 0x33383c, roughness: 0.7, metalness: 0.15, side: THREE.DoubleSide }), SEASON.snow.roof);
     mesh(oldB.map((b) => {
       const h = b.base + b.storeys * S.old.storey, o = 0.18;
       const g = new THREE.BoxGeometry(b.x1 - b.x0 + 2 * o, 0.32, b.z1 - b.z0 + 2 * o);

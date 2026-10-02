@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { HUS_L as H, COLORS, FENCE_HEIGHT } from './config.js';
+import { HUS_L as H, COLORS, FENCE_HEIGHT, SEASON } from './config.js';
+import { registerSnow } from './seasons.js';
 
 // Brick: 250 × 65 mm + 10 mm joints → 0.26 m per brick, 0.075 m per course.
 const TILE_W = 1.04, TILE_H = 0.6; // one texture tile = 4 bricks × 8 courses
@@ -247,7 +248,9 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
   add(frames, frame);
   add(glassGeo, new THREE.MeshStandardMaterial({ color: 0x33434d, roughness: 0.1, metalness: 0.4 }), false);
   add(rails, new THREE.MeshStandardMaterial({ color: COLORS.balcony, roughness: 0.5, metalness: 0.3 }));
-  add(roofs, new THREE.MeshStandardMaterial({ color: 0x4b5157, roughness: 0.9 }));
+  const roofMat = new THREE.MeshStandardMaterial({ color: 0x4b5157, roughness: 0.9 });
+  registerSnow(roofMat, SEASON.snow.roof);
+  add(roofs, roofMat);
   add(panels, new THREE.MeshStandardMaterial({ color: COLORS.solar, roughness: 0.3, metalness: 0.5 }), false);
   add(patios, mats.patio, false);
   add(hedges, mats.hedge);

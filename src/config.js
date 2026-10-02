@@ -167,6 +167,21 @@ export const HUS_L = {
   solar: { x: [[-41.4, -26.7], [-25.0, -6.6], [-5.0, 9.9]], z: [[3.5, 4.5], [5.4, 6.4], [7.4, 8.4], [9.4, 10.4]] },
 };
 
+// Seasons (src/seasons.js, #73), by the day cycle's month (the wall clock can change it). Tree crowns:
+// hue/saturation/lightness per month (each tree varies around it), `leaves` = how much crown is left
+// (0 = bare branches in winter). Snow months: ground, roofs, hedges and paving turn white.
+export const SEASON = {
+  snowMonths: [12, 1, 2],
+  // month → [hue, sat, light, leaves]   (spring light yellow-green, summer deep green, autumn mixed)
+  trees: {
+    1: [0.08, 0.2, 0.22, 0], 2: [0.08, 0.2, 0.22, 0], 3: [0.22, 0.45, 0.42, 0.45], 4: [0.24, 0.55, 0.45, 0.85],
+    5: [0.25, 0.55, 0.38, 1], 6: [0.28, 0.5, 0.3, 1], 7: [0.29, 0.5, 0.27, 1], 8: [0.27, 0.45, 0.28, 1],
+    9: [0.2, 0.5, 0.32, 1], 10: [0.09, 0.65, 0.38, 0.95], 11: [0.06, 0.45, 0.3, 0.45], 12: [0.08, 0.2, 0.22, 0],
+  },
+  blossomMonths: [4, 5], // some trees flower white/pink
+  snow: { ground: 0xeef3f7, roof: 0xf4f7fa, hedge: 0xdfe8ec, paving: 0xe6ebee },
+};
+
 export const FENCE_HEIGHT = 1.8; // bofakta: Skärmvägg H = 1,8 m
 
 export const BUILDING = {
@@ -421,7 +436,8 @@ export const PATIO = {
   parasol: { radius: 1.5, height: 2.45, color: 0xe8e1d1, months: [4, 5, 6, 7, 8, 9] },
   pot: { r: 0.3, h: 0.62, color: 0x55595c }, // fibre-clay planter Ø 60 cm (guess)
   beerMonths: [6, 7, 8], beerHours: [12, 23],
-  snowman: { x: 3.1, z: 19.2, months: [12, 1, 2] },
+  // the snowman stands just beyond the gap in the hedge, in view from the patio door and the sofa (#73)
+  snowman: { x: 1.4, z: 18.4, months: [12, 1, 2] },
   // paving (#53): 40 × 40 cm light grey concrete slabs, rows in half bond, darker 8 mm joints (our pick,
   // goes with the anthracite Oslo set); also on the neighbours' patios
   paving: { slab: 0.4, joint: 0.008, color: [184, 181, 175], jointColor: '#6f6b65' },

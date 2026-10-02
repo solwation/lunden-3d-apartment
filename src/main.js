@@ -16,6 +16,7 @@ import { DayCycle } from './daycycle.js';
 import { WallClock, ClockPanel } from './wallclock.js';
 import { Patio } from './patio.js';
 import { updateReflections } from './reflections.js';
+import { applySeason } from './seasons.js';
 import { Tap, animateWater } from './water.js';
 import { CatBoard, snapshot } from './catboard.js';
 import { Lights } from './lights.js';
@@ -455,6 +456,7 @@ function step(dt) {
   day.update(dt);
   wallClock.update(day.hour);
   patio.update(day, dt);
+  applySeason(day.month); // tree colours, snow (only does work when the month changes)
   for (const t of world.furnitureTargets) t.update?.(dt);
   if (clockPanel.open) clockPanel.render();
   world.windowLights.update(day.hour, 1 - day.daylight);

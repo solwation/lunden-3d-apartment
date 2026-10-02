@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import {
   LEVELS, SOFFITS, DOOR_HEIGHT, DOOR_TRIM, EXT_DOOR_HEAD, WINDOWS, CABINET_HEIGHT, BASE_CABINET, SHELF_HEIGHT, TOILET,
-  STAIR, COLORS, FENCE_HEIGHT, SITE, OUTDOOR, CABINET_FIXES, FINISH, OPTIONS, EXTRA_WALLS, ROOM_RENAMES, EXTRA_ROOMS, ROOM_DIVIDERS,
+  STAIR, COLORS, FENCE_HEIGHT, SITE, OUTDOOR, CABINET_FIXES, SEASON, FINISH, OPTIONS, EXTRA_WALLS, ROOM_RENAMES, EXTRA_ROOMS, ROOM_DIVIDERS,
 } from './config.js';
 import { buildStairs } from './stairs.js';
 import { SwingDoor, SlidingDoor, wardrobeDoors } from './doors.js';
@@ -11,6 +11,7 @@ import { buildFurniture } from './furniture.js';
 import { buildWallShelves } from './shelves.js';
 import { buildHallWall } from './keycabinet.js';
 import { mergeStatic } from './merge.js';
+import { registerSnow } from './seasons.js';
 import { pavingTexture } from './patio.js';
 import { mirrorLamps, buildInterior } from './interior.js';
 import { Toilet } from './toilet.js';
@@ -573,6 +574,10 @@ export function buildWorld(plan) {
   const exterior = buildExterior({ W, D, roofTop: roofY + 0.35, north, south, frame: M.frame, wall: M.wall, site, mats: M });
   scene.add(exterior);
   const surroundings = buildSurroundings({ grass: M.grass });
+  // snow in the winter months (seasons.js): the lawn, the hedges and the patio paving
+  registerSnow(M.grass, SEASON.snow.ground);
+  registerSnow(M.hedge, SEASON.snow.hedge);
+  registerSnow(M.patio, SEASON.snow.paving);
   scene.add(surroundings);
   // keep the visitor near the house: the area in front of Hus L's north façade and the strip behind
   // it (patios + lawn), each closed off by the façade line beside our unit; the neighbours' screen

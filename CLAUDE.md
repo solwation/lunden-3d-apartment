@@ -74,6 +74,7 @@ src/ovens.js           oven (drop-down door) + microwave (side door) in the tall
 src/coffee.js          Moccamaster on the worktop (MOCCAMASTER): E brews (red light, sound, the jug fills)
 src/mirror.js          the one mirror material (gradient + glints; hall and bathroom mirrors)
 src/reflections.js     mirror images: a Reflector per mirror, only the nearest one in view (< 4 m) renders
+src/seasons.js         month → tree colours/leaf cover and snow on ground, roofs, hedges, paving (SEASON)
 src/fridge.js          the fridge: hollow, lit, opens with E, smoking roast chicken (in world.lids)
 src/catboard.js        cork board in the kitchen (under the wall clock): a photo (offscreen render) of every petted cat,
                        newest 10 in IndexedDB 'lunden'/'catPhotos', captioned with name + time
@@ -188,7 +189,7 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   120 × 60 × 40) with its back to the hedge and the east screen wall, a parasol (up Apr–Sep while
   the sun is up), two big planters (palm by the patio door, agave in the SE corner; the banana that blocked the
   gap in the hedge is gone, #52), two beers on the table Jun–Aug
-  12–23, a snowman on the lawn beyond the hedge Dec–Feb (`PATIO` in config). Floor: 40 × 40 light grey slabs in half
+  12–23, a snowman on the lawn just beyond the gap in the hedge Dec–Feb (`PATIO` in config), on snow (#73). Floor: 40 × 40 light grey slabs in half
   bond (`PATIO.paving`, `pavingTexture` in patio.js, UVs in metres), also on the neighbours' patios.
   E on the parasol folds/unfolds it (#51, `patio.targets`); the hand-made choice holds until the automatic
   state itself changes (sunrise/sunset, season). Not a target while F hides the furniture.
@@ -310,6 +311,10 @@ screenshots into the session scratchpad, not the repo.
   (`reading` mode, so no walking, but looking works): hold ← → / ⏪ ⏩ to spool, Space / ⏸ pause,
   ↑ ↓ / mån buttons for the month. The neighbours' windows are one instanced additive mesh with a
   random evening/morning routine per window (`buildWindowLights` in surroundings.js).
+- Seasons (#73, `SEASON` + `src/seasons.js`): crowns get a colour per month (fresh, deep green, mixed autumn
+  per tree, bare in Dec–Feb; some blossom in Apr–May) and in `SEASON.snowMonths` registered materials
+  (`registerSnow`: lawn, park, roads, paving, hedges, roofs) turn white. Only colours/instance matrices
+  change, once per month change (`applySeason` in the loop).
 - Statistics (`src/stats.js`): cats found per coat, cats petted, doors, toilet lids, steps/metres,
   stair trips, time inside; reset on the start screen.
 - Sounds are synthesised (no audio files) and positional; the AudioContext is started by the
