@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Wand magic test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+// The magic wands (#87, #97): take one in Sovrum 3, point at the wall and click → sparkles, star marks on
+// the wall and butterflies fluttering there; they are gone after their life. Pointing at the open air only
+// sparkles.
+//   google-chrome --headless=new --dump-dom http://localhost:8137/tools/wandtest.html
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const f = document.createElement('iframe');
+f.width = 900; f.height = 600; f.src = '../index.html';
+document.body.append(f);
+f.onload = async () => {
+  const w = f.contentWindow, d = f.contentDocument;
+  while (!w.__app) await wait(100);
+  const { player, camera, step, toys, marks } = w.__app;
+  const lines = [];
+  const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; };
+  d.getElementById('start-touch').click();
+  await wait(50);
+  const wand = toys.wands[0];
+  // Sovrum 3, facing west towards the wall the wands hang on is east — look at the opposite (west) wall
+  player.spawn(1.6, 3.2, 90); player.pos.y = 3.25; player.eyeY = 3.25 + 1.62;
+  for (let i = 0; i < 3; i++) step(1 / 60);
+  wand.take();
+  camera.rotation.set(0, Math.PI / 2, 0, 'YXZ'); // west
+  wand.lastYaw = camera.rotation.y; wand.lastPitch = camera.rotation.x; // no fast-look wave
+  for (let i = 0; i < 30; i++) step(1 / 60);
+  let pass = check(wand.held, 'wand in the hand');
+  const s0 = marks.live.filter((l) => l.kind === 'star').length;
+  wand.use();
+  step(1 / 60);
+  const stars = marks.live.filter((l) => l.kind === 'star');
+  pass &= check(stars.length - s0 >= 3, `stars on the wall (${stars.length - s0})`);
+  pass &= check(stars.every((l) => l.at.x < 1.0), `on the west wall (x ${stars.map((l) => l.at.x.toFixed(2)).join(', ')})`);
+  pass &= check(marks.flutter.live >= 2, `butterflies flutter (${marks.flutter.live})`);
+  pass &= check(toys.sparkles.live > 0, 'sparkles from the star');
+  // into the open air (straight up through the stair hole would still hit the roof): look at the sky outside
+  for (let i = 0; i < 30; i++) step(1 / 60);
+  player.spawn(2.9, -6, 0); player.pos.y = 0; player.eyeY = 1.62;
+  camera.rotation.set(1.2, Math.PI, 0, 'YXZ'); // up into the sky
+  wand.lastYaw = camera.rotation.y; wand.lastPitch = camera.rotation.x;
+  for (let i = 0; i < 30; i++) step(1 / 60);
+  const n1 = marks.count;
+  wand.use(); step(1 / 60);
+  pass &= check(marks.count === n1, 'the sky takes no marks');
+  for (let i = 0; i < 25; i++) marks.update(1);
+  pass &= check(!marks.live.some((l) => l.kind === 'star') && marks.flutter.live === 0, 'stars and butterflies gone after a while');
+  wand.putBack();
+  out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
+};
+</script>
+</body>
+</html>

@@ -118,6 +118,8 @@ export function nerfBoard() {
 }
 
 // ---------- magic wands ----------
+// Click / wave: sparkles from the star, and where the view points stars and butterflies appear on the
+// surface (#97, marks.js `magic`) and fade away after a while.
 function starShape(r0, r1) {
   const sh = new THREE.Shape();
   for (let i = 0; i < 10; i++) { const r = i % 2 ? r1 : r0, a = (i / 10) * Math.PI * 2 + Math.PI / 2; i ? sh.lineTo(Math.cos(a) * r, Math.sin(a) * r) : sh.moveTo(Math.cos(a) * r, Math.sin(a) * r); }
@@ -204,6 +206,11 @@ export class Wand extends Holdable {
     this.sparkles.burst(at, this.color, speed > 0 ? 1.5 : 1);
     sfx.pling(at, 1 + Math.random() * 0.6);
     this.wave = 1;
+    // where the view points (#97): stars and butterflies on the surface there; nothing hit = only sparkles
+    const eye = this.camera.getWorldPosition(new THREE.Vector3()), dir = new THREE.Vector3(0, 0, -1).applyQuaternion(this.camera.quaternion);
+    const h = this.marks?.hit(eye, eye.clone().addScaledVector(dir, T.wands.reach));
+    if (h?.cat) this.cat?.meowNow?.();
+    else if (h) { this.marks.magic(h, eye); this.magics = (this.magics ?? 0) + 1; }
   }
 
   tick(dt) {

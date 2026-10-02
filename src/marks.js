@@ -7,7 +7,8 @@ import { TriGrid } from './trigrid.js';
 // the ray hit, along its normal, at a random turn and size. Cheap: one instanced mesh per kind (hidden
 // while it has none), canvas textures, one ring buffer of at most K.max marks in all (the oldest goes),
 // a per-instance fade attribute, no lights. A mark on something F hides (furniture) hides with it; nothing
-// is saved, so a reload clears them. A puff of smoke = one small Points cloud.
+// is saved, so a reload clears them. A puff of smoke = one small Points cloud; the wands' butterflies (#97)
+// flutter in one more instanced mesh.
 
 const canvas = (n, draw) => {
   const c = document.createElement('canvas'); c.width = c.height = n;
@@ -89,7 +90,7 @@ export class Marks {
     for (const [kind, k] of Object.entries(K.kinds)) {
       const lit = kind === 'burn' || kind === 'splash' || kind === 'butterfly'; // paint and soot take the light
       const mat = fadeMaterial(lit ? THREE.MeshLambertMaterial : THREE.MeshBasicMaterial, {
-        map: TEXTURES[kind](), ...(kind === 'glow' || kind === 'star' ? { blending: THREE.AdditiveBlending, toneMapped: false } : {}) });
+        map: TEXTURES[kind](), ...(kind === 'glow' ? { blending: THREE.AdditiveBlending, toneMapped: false } : {}) });
       const mesh = new THREE.InstancedMesh(new THREE.PlaneGeometry(1, 1), mat, K.max);
       const fade = new THREE.InstancedBufferAttribute(new Float32Array(K.max), 1);
       mesh.geometry.setAttribute('fade', fade);
@@ -102,6 +103,7 @@ export class Marks {
       this.kinds[kind] = { ...k, mesh, fade, free: [...Array(K.max).keys()].reverse() };
     }
     this.smoke = new Smoke(scene);
+    this.flutter = new Flutter(scene, TEXTURES.butterfly());
   }
 
   /** How many marks there are now (glows included). */
@@ -228,7 +230,8 @@ export class Marks {
       l.age += dt;
       if (l.age >= l.life) { this.remove(l); continue; }
       const k = this.kinds[l.kind];
-      const f = l.kind === 'glow' ? 1 - l.age / l.life : Math.min(1, (l.life - l.age) / K.fade);
+      let f = l.kind === 'glow' ? 1 - l.age / l.life : Math.min(1, (l.life - l.age) / K.fade);
+      if (l.kind === 'star') f *= 0.7 + 0.3 * Math.sin(this.clock * 5 + l.slot * 1.7); // they twinkle
       k.fade.setX(l.slot, shown(l.object) ? f : 0); // on furniture F hid: hidden with it
     }
     for (const k of Object.values(this.kinds)) {
@@ -236,6 +239,77 @@ export class Marks {
       if (k.mesh.visible) k.fade.needsUpdate = true;
     }
     this.smoke.update(dt);
+    this.flutter.update(dt);
+  }
+
+  /**
+   * A wand's magic at a hit (#97): stars of the wand's colours scattered round it on the same surface (each
+   * found by a ray from `eye`), and 2–3 butterflies fluttering there for a while. Returns how many stars.
+   */
+  magic(hit, eye) {
+    const M = K.magic, pick = () => M.colors[Math.floor(Math.random() * M.colors.length)];
+    const t1 = new THREE.Vector3().crossVectors(hit.normal, Math.abs(hit.normal.y) > 0.9 ? X : Y).normalize();
+    const t2 = new THREE.Vector3().crossVectors(hit.normal, t1);
+    let n = 0;
+    for (let i = 0; i < M.stars; i++) {
+      const a = Math.random() * Math.PI * 2, r = i ? M.spread * Math.sqrt(Math.random()) : 0;
+      const target = hit.point.clone().addScaledVector(t1, Math.cos(a) * r).addScaledVector(t2, Math.sin(a) * r);
+      const end = target.clone().addScaledVector(target.clone().sub(eye).normalize(), 0.05);
+      const h = i ? this.hit(eye, end) : hit;
+      if (h && !h.cat && h.normal.dot(hit.normal) > 0.95 && this.add('star', h, { color: pick(), force: true })) n++;
+    }
+    for (let i = 0, k = 2 + Math.floor(Math.random() * 2); i < k; i++) this.flutter.spawn(hit, pick());
+    return n;
+  }
+}
+
+const X = new THREE.Vector3(1, 0, 0), Y = new THREE.Vector3(0, 1, 0);
+
+/** Butterflies that flutter round a spot for a while (#97): one instanced mesh, wings beat by scaling x. */
+class Flutter {
+  constructor(scene, map) {
+    const F = K.magic.flutter;
+    this.mesh = new THREE.InstancedMesh(new THREE.PlaneGeometry(1, 1), fadeMaterial(THREE.MeshBasicMaterial, { map, side: THREE.DoubleSide, polygonOffset: false }), F.n);
+    this.fade = new THREE.InstancedBufferAttribute(new Float32Array(F.n), 1);
+    this.mesh.geometry.setAttribute('fade', this.fade);
+    for (let i = 0; i < F.n; i++) { this.mesh.setMatrixAt(i, zero); this.mesh.setColorAt(i, new THREE.Color(1, 1, 1)); }
+    Object.assign(this.mesh, { frustumCulled: false, visible: false, raycast: () => {} });
+    scene.add(this.mesh);
+    this.b = [...Array(F.n)].map(() => ({ age: 1e9, life: 0 }));
+    this.next = 0;
+  }
+
+  get live() { return this.b.filter((b) => b.age < b.life).length; }
+
+  spawn(hit, color) {
+    const i = this.next++ % this.b.length, b = this.b[i];
+    const t1 = new THREE.Vector3().crossVectors(hit.normal, Math.abs(hit.normal.y) > 0.9 ? X : Y).normalize();
+    Object.assign(b, { age: 0, life: K.magic.flutter.life * (0.8 + Math.random() * 0.4), at: hit.point.clone(), n: hit.normal.clone(), t1,
+      t2: new THREE.Vector3().crossVectors(hit.normal, t1), r: 0.08 + Math.random() * 0.12, w: (Math.random() < 0.5 ? -1 : 1) * (0.8 + Math.random()),
+      ph: Math.random() * 6.3, object: hit.object });
+    this.mesh.setColorAt(i, new THREE.Color(color));
+    this.mesh.instanceColor.needsUpdate = true;
+    this.mesh.visible = true;
+  }
+
+  update(dt) {
+    if (!this.mesh.visible) return;
+    const s = K.magic.flutter.size, p = new THREE.Vector3(), sc = new THREE.Vector3();
+    let any = false;
+    this.b.forEach((b, i) => {
+      b.age += dt;
+      if (b.age >= b.life) { this.mesh.setMatrixAt(i, zero); this.fade.setX(i, 0); return; }
+      any = true;
+      const a = b.ph + b.age * b.w; // circling the spot, bobbing off the surface
+      p.copy(b.at).addScaledVector(b.t1, Math.cos(a) * b.r).addScaledVector(b.t2, Math.sin(a) * b.r * 0.7)
+        .addScaledVector(b.n, 0.06 + 0.04 * Math.sin(b.age * 2.3 + b.ph));
+      q.setFromUnitVectors(Z, b.n).multiply(qs.setFromAxisAngle(Z, a + (b.w > 0 ? Math.PI : 0)));
+      sc.set(s * (0.25 + 0.75 * Math.abs(Math.cos(b.age * 16 + b.ph))), s, 1); // wing beats
+      this.mesh.setMatrixAt(i, m4.compose(p, q, sc));
+      this.fade.setX(i, shown(b.object) ? Math.min(1, b.age * 3, (b.life - b.age) / K.fade) : 0);
+    });
+    this.mesh.instanceMatrix.needsUpdate = this.fade.needsUpdate = true;
+    this.mesh.visible = any;
   }
 }
 

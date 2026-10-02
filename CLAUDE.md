@@ -101,7 +101,8 @@ src/holdable.js        things you take and hold (one at a time): home + pick box
 src/saber.js           the lightsaber in Sovrum 2 (SABER), a Holdable; the blade burns marks where it cuts in (#96)
 src/marks.js           marks on surfaces (MARKS, #96): `hit(from, to)` = first surface on a segment (glass, doors, lids
                        → none; the cat → meow), `add(kind, hit)` / `burn(hit)`; one ring buffer, an InstancedMesh per
-                       kind (burn, glow, star, butterfly, splash) with a per-instance fade, a Points puff of smoke
+                       kind (burn, glow, star, butterfly, splash) with a per-instance fade, a Points puff of smoke;
+                       `magic(hit, eye)` = the wands' stars + fluttering butterflies (#97)
 src/trigrid.js         world-space triangle grid per big static mesh, so short segment hits skip three's full raycast
 src/remote.js          the TV remote on the coffee table (REMOTE), a Holdable: click = next programme (on if off),
                        right click / ⏻ (touch) = power, on the TV in the look direction (not through walls)
@@ -153,6 +154,7 @@ tools/pctest.html      headless test: switch the gaming PC on/off (game moves, R
                        starts the PC, the bunk seat swings the monitor round (film)
 tools/sabertest.html   headless test: take the lightsaber, swing it, hang it back
 tools/toystest.html    headless test: blaster (dart lands), wand (sparkles), flashlight (beam follows the view)
+tools/wandtest.html    headless test: a wand's magic on the wall (stars + butterflies), none in the sky, gone after a while
 tools/holdtest.html    headless test: put things down (coffee table, dining table, floor), one at a time, F → home
 tools/cuptest.html     headless test: brew, take a cup out, fill, carry, put down on the dining and coffee tables
 tools/drawtest.html    headless test: drawing mode, a crayon line from pointer events, clear, E back, saved
