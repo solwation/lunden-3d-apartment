@@ -3,6 +3,7 @@ import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.j
 import { HALL_WALL as H } from './config.js';
 import { sfx } from './audio.js';
 import { mirrorMaterial } from './mirror.js';
+import { addReflector } from './reflections.js';
 
 // The hall wall on the left as you come in: a round mirror, and a Solstickan key cabinet (white
 // metal box with the matchbox boy, hinged on the left) that opens with E. Inside on a hook hangs
@@ -147,6 +148,7 @@ export function buildHallWall() {
   const mirror = new THREE.Group();
   mirror.add(disc, rim, face);
   mirror.position.set(m.z, m.y, 0);
+  addReflector(disc, new THREE.CircleGeometry(m.d / 2 - m.frame, 64), { level: 0 }); // mirror image (#50)
   const cabinet = new KeyCabinet();
   cabinet.object.position.set(H.cabinet.z, H.cabinet.y, 0);
   group.add(mirror, cabinet.object);

@@ -15,6 +15,7 @@ import { cloudTexture } from './surroundings.js';
 import { DayCycle } from './daycycle.js';
 import { WallClock, ClockPanel } from './wallclock.js';
 import { Patio } from './patio.js';
+import { updateReflections } from './reflections.js';
 import { Tap, animateWater } from './water.js';
 import { CatBoard, snapshot } from './catboard.js';
 import { Lights } from './lights.js';
@@ -522,6 +523,8 @@ renderer.setAnimationLoop(() => {
   else adaptResolution(raw);
   step(dt);
   updateShadows(dt);
+  // one mirror image at a time, and none once the frame rate has made us lower the resolution
+  updateReflections(camera, Math.max(0, player.level), dynRes.ratio >= MAX_PIXEL_RATIO * 0.99);
   updateListener(camera);
   renderer.render(scene, camera);
   if (perfEl) showPerf();

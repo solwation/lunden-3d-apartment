@@ -12,7 +12,7 @@ import { buildWallShelves } from './shelves.js';
 import { buildHallWall } from './keycabinet.js';
 import { mergeStatic } from './merge.js';
 import { pavingTexture } from './patio.js';
-import { buildInterior } from './interior.js';
+import { mirrorLamps, buildInterior } from './interior.js';
 import { Toilet } from './toilet.js';
 import { RoomMap } from './rooms.js';
 import { buildAO } from './ao.js';
@@ -502,6 +502,7 @@ function buildLevel(floor, li, group) {
 }
 
 export function buildWorld(plan) {
+  mirrorLamps.length = 0; // filled by buildInterior
   const scene = new THREE.Group();
   const [lower, upper] = plan.floors;
   const W = lower.size.x, D = lower.size.z;
@@ -611,7 +612,7 @@ export function buildWorld(plan) {
   return {
     object: scene,
     setFurniture,
-    lamps: furniture.lights, // floor lamps (lights.js makes them switchable)
+    lamps: [...furniture.lights, ...mirrorLamps], // floor lamps + mirror LED strips (lights.js makes them switchable)
     windowLights: surroundings.userData.windows, // neighbours' lit windows (daycycle)
     get furnitureOn() { return furniture.object.visible; },
     size: { x: W, z: D },

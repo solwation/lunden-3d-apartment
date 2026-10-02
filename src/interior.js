@@ -5,6 +5,7 @@ import { Fridge } from './fridge.js';
 import { buildOvens } from './ovens.js';
 import { Moccamaster } from './coffee.js';
 import { mirrorMaterial } from './mirror.js';
+import { addReflector } from './reflections.js';
 
 // Fixed interior from our material choices: fitted kitchen, laundry, bathroom fittings,
 // tiled floors and walls. Everything is merged into one mesh per material (few draw calls),
@@ -460,7 +461,20 @@ function ovalMirror(B, wallX, cz, y0, w, h, led) {
     geo.translate(wallX + d, y0, cz);
     B.add(geo, m);
   }
+  return { shape: shape(1), x: wallX + 0.018, y: y0, z: cz };
 }
+
+/** Mirror image over a mirror lying in the plane x = const, facing +x (shape in its own y/z). */
+function mirrorReflector(group, geo, x, y, z, level) {
+  const holder = new THREE.Group();
+  holder.position.set(x, y, z);
+  holder.rotation.y = Math.PI / 2; // local +z → world +x
+  group.add(holder);
+  addReflector(holder, geo, { level });
+}
+
+/** LED strips on mirrors, switchable with E on their own (lights.js treats them like floor lamps). */
+export const mirrorLamps = [];
 
 /** Frosted glass panel between two plan points, floor to 1.95 m, aluminium edge profiles. */
 function glassPanel(B, [ax, az], [bx, bz], y0) {
@@ -544,7 +558,7 @@ function spots(B, room, y, n, material) {
   }
 }
 
-function buildBathroom(B, floor, room, y0, handled, taps) {
+function buildBathroom(B, group, floor, room, y0, handled, taps) {
   const segs = [];
   const sinkF = floor.fixtures.find((f) => f.kind === 'sink' && inside(f, room));
   const shower = floor.fixtures.find((f) => f.kind === 'shower' && inside(f, room));
@@ -561,8 +575,17 @@ function buildBathroom(B, floor, room, y0, handled, taps) {
       const m = frame(B, { x0: room.x0, x1: room.x0 + 0.15, z0: cz - 0.25, z1: cz + 0.25 }, 'e');
       m.box(m.u0, m.u1, -0.15, 0, y0 + 1.2, y0 + 1.9, M.vanity);
       m.box(m.u0 + 0.01, m.u1 - 0.01, 0, 0.004, y0 + 1.21, y0 + 1.89, M.mirror);
+      mirrorReflector(group, new THREE.PlaneGeometry(m.u1 - m.u0 - 0.02, 0.68), room.x0 + 0.0045, y0 + 1.55, cz, room.level);
     } else {
-      ovalMirror(B, room.x0, cz, y0 + 1.5, 0.5, 0.9, lampMat(room.level, room.name));
+      // Slot 50 with its LED backlight on a switch of its own (E on the mirror, #50)
+      const led = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xfff2dc, emissiveIntensity: 0.04 });
+      const om = ovalMirror(B, room.x0, cz, y0 + 1.5, 0.5, 0.9, led);
+      mirrorReflector(group, new THREE.ShapeGeometry(om.shape, 24), om.x, om.y, om.z, room.level);
+      const pick = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.95, 0.56), new THREE.MeshBasicMaterial());
+      pick.position.set(room.x0 + 0.03, y0 + 1.5, cz);
+      pick.visible = false; // raycasts ignore visibility: the E target for the LED strip
+      group.add(pick);
+      mirrorLamps.push({ object: pick, shade: led, height: 0, level: room.level, name: 'spegelbelysningen', offset: [0.35, 0] });
     }
   }
   if (shower) {
@@ -654,7 +677,7 @@ export function buildInterior(group, floor, li, y0, yC, wallBoxes, handled, taps
     B.box(room.x0, room.x1, room.z0, room.z1, y0 + 0.001, y0 + 0.004, M[room.floor]);
     if (room.wallTile) {
       tileWalls(B, room, wallBoxes, y0, room.wallTile, M.wallTile);
-      rects.push(...buildBathroom(B, floor, room, y0, handled, taps));
+      rects.push(...buildBathroom(B, group, floor, room, y0, handled, taps));
     }
     if (room.name === 'Tvätt') rects.push(...buildLaundry(B, floor, { ...room, ceiling: 2.5 }, y0, handled, taps));
   }

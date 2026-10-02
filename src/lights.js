@@ -66,7 +66,7 @@ class Switch {
 /** Floor lamp from furniture.js: E on the lamp toggles it. */
 class FloorLamp {
   constructor(spec) {
-    Object.assign(this, { kind: 'lamp', name: 'golvlampan', on: false, spec });
+    Object.assign(this, { kind: 'lamp', name: spec.name ?? 'golvlampan', on: false, spec });
     this.room = { on: false, lamps: [], mats: [spec.shade] };
     const p = spec.object.getWorldPosition(new THREE.Vector3());
     const [ox, oz] = spec.offset ?? [0, 0];

@@ -73,6 +73,7 @@ src/measure.js         tape measure (Q / 📏): two points on any surface, dista
 src/ovens.js           oven (drop-down door) + microwave (side door) in the tall unit, E opens (world.lids)
 src/coffee.js          Moccamaster on the worktop (MOCCAMASTER): E brews (red light, sound, the jug fills)
 src/mirror.js          the one mirror material (gradient + glints; hall and bathroom mirrors)
+src/reflections.js     mirror images: a Reflector per mirror, only the nearest one in view (< 4 m) renders
 src/fridge.js          the fridge: hollow, lit, opens with E, smoking roast chicken (in world.lids)
 src/catboard.js        cork board in the kitchen (under the wall clock): a photo (offscreen render) of every petted cat,
                        newest 10 in IndexedDB 'lunden'/'catPhotos', captioned with name + time
@@ -345,6 +346,9 @@ screenshots into the session scratchpad, not the repo.
   `userData.door` — otherwise it gets baked in.
 - Shadows: `shadowMap.autoUpdate = false`; redrawn when the sun moved > 0.2°, for 1.5 s after any E
   action (doors swing), and at least twice a second (`updateShadows` in main.js).
+- Mirror images (#50): one Reflector (512²) per mirror, at most ONE active per frame (nearest in view
+  within 4 m, visitor's level) and none once dynamic resolution has stepped down. The Badrum mirror's
+  LED strip is its own lamp (`mirrorLamps` in interior.js → `world.lamps`, switched like the floor lamp).
 - Dynamic resolution: pixel ratio drops in 0.85× steps (not below 0.6×) after 2 s under 30 fps, comes
   back after 4 s over 50 fps; off with `&shot`.
 
