@@ -144,7 +144,8 @@ src/cups.js            coffee cups (CUPS): the wall cabinet over the Moccamaster
 src/drawing.js         crayon drawing on the paper on the Sovrum 3 desk (DRAWING): canvas texture, drawing mode
                        (view down, pointer free, palette #draw-panel, 1–9, E/Esc back), saved in localStorage
 src/calendar.js        the cat calendar (CALENDAR): a cat per month, the days, the chosen date; #cal-panel picks it
-src/fridge.js          the fridge: hollow, lit, opens with E, smoking roast chicken (in world.lids)
+src/fridge.js          the fridge: hollow, lit, opens with E, smoking roast chicken (in world.lids); the freezer is the same
+                       class (`freezer: true`, #161): drawers + shelves, the changelog note rides on its door
 src/catboard.js        cork board in the kitchen (under the wall clock): a photo (offscreen render) of every petted cat,
                        newest 10 in IndexedDB 'lunden'/'catPhotos', captioned with name + time
 src/shelves.js         kitchen wall shelves with portraits, flowers, books, candles (WALL_SHELVES)
@@ -172,7 +173,7 @@ tools/measuretest.html headless test of the tape measure (wall to wall in the li
 tools/watertest.html   headless test: aim at every tap/shower, turn it on and off
 tools/lighttest.html   headless test: aim at every light switch / floor lamp, toggle it
 tools/pettest.html     headless test of petting the cat (eyes, hand, stats counter)
-tools/notetest.html    headless test of the changelog note ("Nytt", read/close, no walking)
+tools/notetest.html    headless test of the changelog note ("Nytt", read/close, no walking, swings with the freezer door)
 tools/patiotest.html   headless test of the patio seasons (parasol, beers, snowman) + sofa collision
 tools/keytest.html     headless test of the hall key cabinet: open, car key reachable only then, beep
 tools/esctest.html     headless test of Esc on the start screen (click-to-start cover, ignored over the note)

@@ -107,6 +107,9 @@ function updateShadows(dt) {
 const changelog = await loadChangelog();
 const note = buildNote(changelog);
 scene.add(note.object);
+// the note sits on the freezer door and swings with it (#161); E on it still reads it (it is nearer than the door)
+const freezer = world.lids.find((l) => l.kind === 'fridge' && l.freezer);
+if (freezer) { freezer.door.updateWorldMatrix(true, false); freezer.door.attach(note.object); }
 const noteEl = document.getElementById('note');
 renderChangelog(document.getElementById('note-list'), changelog);
 const boardEl = document.getElementById('board-view');
@@ -126,7 +129,7 @@ function showNote(show) {
   reading = show;
   noteEl.hidden = !show;
   player.keys.clear();
-  if (show) sfx.paper({ x: note.object.position.x, y: note.object.position.y, z: note.object.position.z });
+  if (show) sfx.paper(note.object.getWorldPosition(new THREE.Vector3()));
 }
 document.getElementById('note-close').addEventListener('click', () => showNote(false));
 

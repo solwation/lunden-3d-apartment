@@ -27,10 +27,11 @@ f.onload = async () => {
   d.getElementById('start-touch').click();
   await wait(50);
   // stand 1 m north of the note, facing south (yaw 180), eye level with it
-  const p = note.object.position;
+  w.__app.scene.updateMatrixWorld(true); // normally done by the first render
+  const V = note.object.position.constructor; // the iframe's THREE.Vector3
+  const p = note.object.getWorldPosition(new V());
   player.spawn(p.x, p.z - 1.0, Math.PI);
   camera.rotation.x = Math.atan2(p.y - player.eyeY, 1.0);
-  note.object.parent.updateMatrixWorld(true); // normally done by the first render
   for (let i = 0; i < 5; i++) step(1 / 60);
   const btn = d.getElementById('action');
   pass &= check(!btn.hidden && /läsa lappen/i.test(btn.textContent), `action button "${btn.textContent}"`);
@@ -43,6 +44,21 @@ f.onload = async () => {
   pass &= check(Math.hypot(player.pos.x - before.x, player.pos.z - before.z) < 0.01, 'no walking while reading');
   btn.click();
   pass &= check(d.getElementById('note').hidden, 'note closes');
+  // the freezer opens (#161): the note is on its door and swings with it (open, it faces the corner unit)
+  const { world, use } = w.__app;
+  const fz = world.lids.find((l) => l.kind === 'fridge' && l.freezer);
+  pass &= check(!!fz && note.object.parent === fz.door, 'note is on the freezer door');
+  if (fz) {
+    use(fz);
+    for (let i = 0; i < 120; i++) step(1 / 60);
+    w.__app.scene.updateMatrixWorld(true);
+    const q = note.object.getWorldPosition(new V());
+    pass &= check(fz.isOpen && q.distanceTo(p) > 0.2, `freezer open, the note moved ${q.distanceTo(p).toFixed(2)} m`);
+    use(fz);
+    for (let i = 0; i < 120; i++) step(1 / 60);
+    w.__app.scene.updateMatrixWorld(true);
+    pass &= check(!fz.isOpen && note.object.getWorldPosition(new V()).distanceTo(p) < 0.005, 'freezer closed, the note back in place');
+  }
   out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
 };
 </script>
