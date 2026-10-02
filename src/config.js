@@ -453,6 +453,10 @@ export const FURNITURE = [
   { type: 'planter', level: 0, x: 0.45, z: 13.25, plant: 'palm' },
   { type: 'planter', level: 0, x: 5.3, z: 13.2, plant: 'agave' },
   // Upstairs bedrooms (the user's plan). Beds: rot = direction from the head to the foot end.
+  // IKEA RÅGRUND chair with towel rack, bamboo (#60; H 140, W 39, D 44, seat 48 cm per IKEA/dimensions.com):
+  // Sovrum 1, the corner left of the window seen from inside (NW), back and towel rack against the
+  // west wall, seat facing into the room (east); the seat is below the window sill (BH 0.7)
+  { type: 'ragrund', level: 1, x: 2.70 + 0.23, z: 0.465 + 0.205, rot: -90, towel: 0x9fb8c9 },
   { type: 'bed', level: 1, x: 5.55 - 1.1, z: 2.3, rot: 90, w: 1.6, l: 2.0 },  // Sovrum 1 (Sarah & Ofluf), head east, clear of the Klk
   // Bunks: long side against the side wall, head end against the façade (the user's wish);
   // the ladder ends up on the room side at the foot end.

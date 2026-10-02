@@ -462,6 +462,35 @@ function daybed() {
   return g;
 }
 
+const bamboo = new THREE.MeshStandardMaterial({ color: 0xd9b98a, roughness: 0.6 });
+
+/** IKEA RÅGRUND chair with towel rack (bamboo): slatted seat, back posts rising to 140 cm with three
+ * round towel bars, a towel over the top bar. Faces local +z. */
+function ragrund(item) {
+  const g = new THREE.Group();
+  const W = 0.39, D = 0.44, H = 1.4, S = 0.48, hx = W / 2 - 0.02, hz = D / 2 - 0.02;
+  const bar = (sx, sy, sz, x, y, z) => g.add(rbox(sx, sy, sz, x, y, z, bamboo, 0.004));
+  for (const x of [-hx, hx]) {
+    bar(0.03, S, 0.03, x, S / 2, hz);          // front legs
+    bar(0.03, H, 0.03, x, H / 2, -hz);         // back posts = towel rack sides
+    bar(0.02, 0.03, D - 0.04, x, S - 0.04, 0); // seat side rails
+    bar(0.02, 0.025, D - 0.04, x, 0.12, 0);    // low stretchers
+  }
+  for (let k = 0; k < 4; k++) bar(W - 0.02, 0.018, 0.075, 0, S - 0.009, -hz + 0.05 + k * ((2 * hz - 0.06) / 3)); // seat slats
+  for (const y of [S + 0.32, S + 0.62, H - 0.04]) { // towel bars
+    const rod = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 2 * hx, 10).rotateZ(Math.PI / 2), bamboo);
+    rod.position.set(0, y, -hz);
+    rod.castShadow = true;
+    g.add(rod);
+  }
+  // a towel folded over the top bar, hanging down on both sides
+  const towel = new THREE.MeshStandardMaterial({ color: item.towel ?? 0x9fb8c9, roughness: 1 });
+  for (const s of [-1, 1]) g.add(rbox(0.32, 0.36, 0.012, 0, H - 0.04 - 0.18, -hz + s * 0.016, towel, 0.004));
+  g.add(rbox(0.32, 0.02, 0.045, 0, H - 0.03, -hz, towel, 0.008));
+  g.userData.footprint = [{ x0: -W / 2, x1: W / 2, z0: -D / 2, z1: D / 2 }];
+  return g;
+}
+
 /** Woven rug texture: base colour, fine random weave, a thin border band (canvas, no image files). */
 function rugTexture(item) {
   const c = document.createElement('canvas');
@@ -496,7 +525,7 @@ function rug(item) {
   return g;
 }
 
-const BUILDERS = { sofa, armchair, footstool, floorlamp, sidetable, coffeetable, loungesofa, loungetable, parasol, planter, bed, skansnasTable, skansnasChair, bunk, daybed, rug };
+const BUILDERS = { sofa, armchair, footstool, floorlamp, sidetable, coffeetable, loungesofa, loungetable, parasol, planter, bed, skansnasTable, skansnasChair, bunk, daybed, rug, ragrund };
 
 /** Build all furniture; returns the scene group, collision segments per level and lamps. */
 export function buildFurniture() {
