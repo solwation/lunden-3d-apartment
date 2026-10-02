@@ -247,7 +247,9 @@ export const COURTYARD = {
   grill: { x: -21.6, z: 21.0 },               // grillplats beside the pergola (spot: guess); it can be lit (GRILL)
   sandboxes: [{ x0: -26.6, x1: -22.6, z0: 23.6, z1: 27.8 }, { x0: -56, x1: -51.2, z0: 41.8, z1: 46.8 }], // lekplats
   boule: { x0: -12.4, x1: -2.6, z0: 21.4, z1: 24.6 }, // boulebana: not marked on the plan, a gravel court by the east beds (guess)
-  benches: [{ x: -32, z: 25, rot: 90 }, { x: -30, z: 29.4, rot: 180 }, { x: -6, z: 29.4, rot: 180 }, { x: 4, z: 29.4, rot: 180 }],
+  // backs to the nearest house (#207): the three by the main walk have Hus A / Hus B right behind them (south), the
+  // one in the gravel west of the sandbox has Hus B nearest (south) too — all face north, out over the courtyard
+  benches: [{ x: -32, z: 25, rot: 0 }, { x: -30, z: 29.4, rot: 0 }, { x: -6, z: 29.4, rot: 0 }, { x: 4, z: 29.4, rot: 0 }],
   beds: [{ x0: -71.2, x1: -69.6, z0: 40.2, z1: 42 }, { x0: -71.2, x1: -69.6, z0: 42.6, z1: 44.4 }, { x0: -71.2, x1: -69.6, z0: 45, z1: 46.8 }], // odlingslådor
   // planting beds with shrubs and perennials round the tree squares (guess where the plan only shows green)
   plantings: [{ x0: -45.5, x1: -37.5, z0: 19.8, z1: 28.6, n: 26 }, { x0: -8.5, x1: -1.5, z0: 19.8, z1: 21.4, n: 10 },
@@ -366,7 +368,7 @@ export const PEOPLE = {
   cyclists: [{ a: [-90, -26.4], b: [20, -26.4], speed: 4.5 }, { a: [20, -27.8], b: [-90, -27.8], speed: 5.2 }],
   ball: [[-35.5, 20.6], [-30.5, 22.2]],          // two kids passing a ball (on the gravel by the sandbox)
   sandbox: [[-25.2, 25.2], [-23.8, 26.4]],         // kids sitting in the sandbox
-  benches: [{ x: -6, z: 29.4, yaw: 0 }, { x: -32, z: 25, yaw: -90 }],
+  benches: [{ x: -6, z: 29.4, yaw: 180 }, { x: -32, z: 25, yaw: 180 }], // on COURTYARD.benches: yaw = the bench's rot − 180 (#207)
   blanket: { x: -9.5, z: 28.3 },
   loftgang: [[-30.5, 1.0], [-9.2, 1.1]],          // neighbours standing on the loftgång (våning 3)
   bellNear: 12,                                    // m: a cyclist rings the bell passing this close
