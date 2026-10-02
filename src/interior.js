@@ -272,6 +272,7 @@ function buildKitchen(B, group, floor, y0, yC, handled, taps, appliances) {
         const mocca = new Moccamaster(top); // on the worktop between the tall unit and the sink
         group.add(mocca.object);
         appliances.push(mocca);
+        looseItems.push(mocca.object); // a loose thing on the worktop: hidden with F
       }
       F.box(u0 + 0.005, u1 - 0.005, -FT, 0, yGrille, yGrille + K.grille, M.steel);
       front(F, u0, u1, yGrille + K.grille, yTop, M.front, 'v-hi', { low: true });
@@ -475,6 +476,8 @@ function mirrorReflector(group, geo, x, y, z, level) {
 
 /** LED strips on mirrors, switchable with E on their own (lights.js treats them like floor lamps). */
 export const mirrorLamps = [];
+/** Loose things among the fitted interior (the Moccamaster): world.js hides them with F. */
+export const looseItems = [];
 
 /** Frosted glass panel between two plan points, floor to 1.95 m, aluminium edge profiles. */
 function glassPanel(B, [ax, az], [bx, bz], y0) {

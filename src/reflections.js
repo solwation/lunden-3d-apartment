@@ -20,6 +20,7 @@ export function addReflector(parent, geometry, { level = 0, offset = 0.0015 } = 
   return r;
 }
 
+const shownParents = (o) => { for (let q = o; q; q = q.parent) if (!q.visible) return false; return true; };
 const p = new THREE.Vector3(), n = new THREE.Vector3(), toCam = new THREE.Vector3(), fwd = new THREE.Vector3();
 
 /** Pick the one mirror to reflect this frame (or none). */
@@ -28,7 +29,7 @@ export function updateReflections(camera, level, allowed) {
   if (allowed) {
     camera.getWorldDirection(fwd);
     for (const m of mirrors) {
-      if (m.level !== level) continue;
+      if (m.level !== level || !shownParents(m.r.parent)) continue; // e.g. the hall mirror hidden by F
       m.r.getWorldPosition(p);
       n.set(0, 0, 1).transformDirection(m.r.matrixWorld);
       toCam.subVectors(camera.position, p);

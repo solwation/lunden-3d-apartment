@@ -221,8 +221,12 @@ North = −z (the bedrooms Sovrum 1/3 face north).
 - Dining set (user's choice, #62/#57/#63): IKEA SKANSNÄS table and 4 chairs, brown beech (`SKANSNAS`, one
   frame colour for both; light woven paper-cord seats): the table rectangular 150 × 90 (closed; 205
   extended is not modelled), short end to the kitchen window; 2 + 2 chairs on the long sides, pushed
-  in under the top. The user finds the kitchen cramped easily — keep it airy. F toggles all furniture (`world.setFurniture`, which also swaps the collision
-  segments). Keep the Sovrum 1 bed clear of the Klk sliding door — the cat test needs floor there.
+  in under the top. The user finds the kitchen cramped easily — keep it airy. F (#75) shows the bare flat: `world.looseItems` (furniture, kitchen shelves, the hall
+  mirror/key cabinet/coat rack, door signs, the Moccamaster, the cat board) are hidden, their collision
+  segments go, the cat leaves and none turns up, hidden things are no E target and give no light.
+  Kept: Peab's kitchen and wet rooms (incl. bathroom mirrors), wardrobes, doors, stair, ceiling lamps,
+  switches, the wall clock, the note on the freezer. New loose things must join `world.looseItems`
+  and be kept out of `mergeStatic`. Keep the Sovrum 1 bed clear of the Klk sliding door — the cat test needs floor there.
 - Toilets: the redrawn plan has them rotated; bofakta shows the tank against the wall, so
   `toiletAgainstWall` re-orients them. Modelled as Ifö Spira 6260 (`TOILET` in config,
   `src/toilet.js`); the lid opens/closes with E (`world.lids`, kept out of `world.doors` so the

@@ -32,9 +32,10 @@ f.onload = async () => {
       a.object.updateMatrixWorld(true);
       const p = a.object.children[0].getWorldPosition(new a.object.position.constructor());
       player.spawn(p.x - 1.0, p.z, -Math.PI / 2);
-      camera.rotation.y = Math.atan2(-(p.x - player.pos.x), -(p.z - player.pos.z));
-      camera.rotation.x = Math.atan2(p.y - player.eyeY, Math.hypot(p.x - player.pos.x, p.z - player.pos.z));
-      for (let i = 0; i < 3; i++) step(1 / 60);
+      for (let i = 0; i < 3; i++) step(1 / 60); // settle first (a dining chair may push you aside)
+      camera.rotation.y = Math.atan2(-(p.x - camera.position.x), -(p.z - camera.position.z));
+      camera.rotation.x = Math.atan2(p.y - camera.position.y, Math.hypot(p.x - camera.position.x, p.z - camera.position.z));
+      step(1 / 60);
     };
     aim();
     pass &= check(!btn.hidden && new RegExp(`öppna ${name}`, 'i').test(btn.textContent), `${name}: button "${btn.textContent}"`);

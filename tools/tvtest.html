@@ -46,6 +46,14 @@ f.onload = async () => {
   world.setFurniture(false);
   aim();
   pass &= check(!/tv:n/i.test(btn.hidden ? '' : btn.textContent), 'F off: the TV is no target');
+  // F off hides every loose item (#75): the shelves, the hall mirror/key cabinet, the coffee machine,
+  // the cat board; no cat turns up behind doors
+  const { cat, useDoor } = w.__app;
+  const hidden = world.looseItems.every((o) => !o.visible);
+  const door = world.doors.find((d) => d.kind === 'swing' && d.name === 'dörren');
+  cat.chance.appear = 1;
+  useDoor(door); for (let i = 0; i < 60; i++) step(1 / 60); useDoor(door);
+  pass &= check(hidden && !cat.visible && world.looseItems.length >= 5, `F off: ${world.looseItems.length} loose items hidden, no cat behind a door`);
   world.setFurniture(true);
   out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
 };

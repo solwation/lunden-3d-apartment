@@ -171,7 +171,7 @@ function useDoor(door) {
   } else {
     sfx.slide(pos, { dur: 0.45, wardrobe: door.kind === 'wardrobe' });
   }
-  if (opening) cat.onOpen(door, player.pos);
+  if (opening && world.furnitureOn) cat.onOpen(door, player.pos);
   else cat.onClose(door);
 }
 
@@ -318,6 +318,12 @@ pauseBtn.addEventListener('click', () => {
   player.analog.x = player.analog.y = 0;
   showOverlay(true);
 });
+/** Are all the object's parents visible? (Its own flag is ignored: invisible pick helpers on taps and
+ * mirrors are meant to be hit; what F hides is a parent group.) */
+function shown(o) {
+  for (let p = o.parent; p; p = p.parent) if (!p.visible) return false;
+  return true;
+}
 /** Sit down / lie down on the furniture you look at (the seat or side nearest the look ray). */
 function sitOrLie(target) {
   raycaster.setFromCamera(center, camera);
@@ -465,7 +471,8 @@ function updateFocus() {
   // the car key only while its cabinet is open
   const extra = [...(cat.visible ? [cat.object] : []), ...(keyCabinet?.keyReachable ? [world.carKey.pickable] : []),
     ...(world.furnitureOn ? [...patio.targets, ...world.furnitureTargets].map((t) => t.pickable) : [])]; // parasol, TV, seats, beds — unless F hid the furniture
-  const hit = raycaster.intersectObjects(extra.length ? [...pickables, ...extra] : pickables, true)[0];
+  // the nearest hit on something actually shown (F hides the loose items, the raycaster doesn't care)
+  const hit = raycaster.intersectObjects(extra.length ? [...pickables, ...extra] : pickables, true).find((h) => shown(h.object));
   focused = hit && !behindWall(hit.point) ? hit.object.userData.door : null;
   const verb = !focused ? '' : focused.verb ?? (focused.isOpen ? 'stänga' : 'öppna');
   if (focused && touch.enabled) {
@@ -482,8 +489,10 @@ function updateFocus() {
 function toggleFurniture(on = !world.furnitureOn) {
   if (rest.active) standUp(); // the seat is about to vanish
   world.setFurniture(on);
+  if (!on && cat.visible) cat.hide(); // the cat goes too (and stops purring); none turn up until F is back
   try { localStorage.setItem('lunden.furniture', on ? '1' : '0'); } catch { /* ignore */ }
 }
+world.looseItems.push(board.object); // the cat photo board goes with the furniture (F)
 try { if (localStorage.getItem('lunden.furniture') === '0') toggleFurniture(false); } catch { /* ignore */ }
 document.getElementById('furniture-btn').addEventListener('click', () => toggleFurniture());
 

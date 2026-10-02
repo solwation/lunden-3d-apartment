@@ -13,7 +13,7 @@ import { buildHallWall } from './keycabinet.js';
 import { mergeStatic } from './merge.js';
 import { registerSnow } from './seasons.js';
 import { pavingTexture } from './patio.js';
-import { mirrorLamps, buildInterior } from './interior.js';
+import { mirrorLamps, looseItems as interiorLoose, buildInterior } from './interior.js';
 import { Toilet } from './toilet.js';
 import { RoomMap } from './rooms.js';
 import { buildAO } from './ao.js';
@@ -504,6 +504,7 @@ function buildLevel(floor, li, group) {
 
 export function buildWorld(plan) {
   mirrorLamps.length = 0; // filled by buildInterior
+  interiorLoose.length = 0;
   const scene = new THREE.Group();
   const [lower, upper] = plan.floors;
   // plan corrections for fixed cabinets (CABINET_FIXES): the hall's EL cabinet is smaller than drawn
@@ -549,7 +550,8 @@ export function buildWorld(plan) {
   // Loose furniture (IKEA LANDSKRONA etc., see FURNITURE in config)
   const furniture = buildFurniture();
   scene.add(furniture.object);
-  scene.add(buildWallShelves()); // kitchen wall shelves (WALL_SHELVES)
+  const shelves = buildWallShelves(); // kitchen wall shelves (WALL_SHELVES)
+  scene.add(shelves);
   const hallWall = buildHallWall(); // mirror + Solstickan key cabinet (HALL_WALL)
   scene.add(hallWall.object);
 
@@ -597,14 +599,14 @@ export function buildWorld(plan) {
   const roomMaps = [l0, l1].map((l, li) => new RoomMap({ x: W, z: D },
     [...l.barriers, ...ROOM_DIVIDERS.filter((d) => d.level === li)], rooms[li]));
 
-  addDoorSigns([...l0.doors, ...l1.doors], (lv, x, z) => roomMaps[lv]?.at(x, z) ?? null,
+  const signs = addDoorSigns([...l0.doors, ...l1.doors], (lv, x, z) => roomMaps[lv]?.at(x, z) ?? null,
     (d) => (d.object.position.y > LEVELS[0].floor + 1.6 ? 1 : 0));
 
   // bake the static fittings into one mesh per material and level (draw calls, #48)
   const box3 = new THREE.Box3(), mid = new THREE.Vector3();
   const merged = mergeStatic(scene, [
     ...l0.doors, ...l1.doors, ...l0.lids, ...l1.lids, ...l0.appliances, ...l1.appliances,
-  ].map((d) => d.object).concat([hallWall.object, furniture.object, exterior, surroundings]), (o) => {
+  ].map((d) => d.object).concat([hallWall.object, furniture.object, exterior, surroundings, shelves, ...interiorLoose]), (o) => { // loose items stay separate (F hides them)
     box3.setFromObject(o).getCenter(mid);
     if (mid.x < 0 || mid.x > W || mid.z < 0 || mid.z > D) return 'out';
     return mid.y < LEVELS[1].floor - 0.05 ? 'l0' : 'l1';
@@ -615,8 +617,13 @@ export function buildWorld(plan) {
   // furniture can be switched off (F): keep its collision separate from the fixed segments
   const fixed = [l0.segments, l1.segments];
   const levels = [l0, l1];
+  // F (#75) shows the bare flat: everything we furnished and decorated is a loose item — furniture,
+  // shelves and what is on them, the hall mirror + key cabinet + coat rack, door signs, the coffee
+  // machine (main.js adds the cat board and hides the cat). Kept: Peab's kitchen, wet rooms, built-in
+  // wardrobes, doors, stair, ceiling lamps, switches, the wall clock and the note on the freezer.
+  const looseItems = [furniture.object, shelves, hallWall.object, ...signs, ...interiorLoose];
   const setFurniture = (on) => {
-    furniture.object.visible = on;
+    for (const o of looseItems) o.visible = on;
     levels.forEach((l, i) => { l.segments = on ? [...fixed[i], ...furniture.segments[i]] : fixed[i]; });
   };
   setFurniture(true);
@@ -624,6 +631,7 @@ export function buildWorld(plan) {
   return {
     object: scene,
     setFurniture,
+    looseItems, // hidden by F (main.js may add more)
     furnitureTargets: furniture.interactives, // E targets among the furniture (the TV), hidden with F
     lamps: [...furniture.lights, ...mirrorLamps], // floor lamps + mirror LED strips (lights.js makes them switchable)
     windowLights: surroundings.userData.windows, // neighbours' lit windows (daycycle)

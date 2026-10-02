@@ -218,7 +218,9 @@ export class Lights {
   /** Give the pool lights to the nearest lit lamps on `level` (call every frame). */
   update(level, pos) {
     const lit = [];
-    for (const R of [...this.rooms.values(), ...this.floorLamps.map((f) => f.room)]) {
+    // floor / bedside lamps hidden with the furniture (F) give no light
+    const shownLamps = this.floorLamps.filter((f) => { for (let p = f.spec.object.parent; p; p = p.parent) if (!p.visible) return false; return true; });
+    for (const R of [...this.rooms.values(), ...shownLamps.map((f) => f.room)]) {
       if (!R.on) continue;
       for (const lamp of R.lamps) if (lamp.level === level) lit.push(lamp);
     }

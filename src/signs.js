@@ -40,6 +40,7 @@ function signTexture(text, color) {
  * `roomAt(level, x, z)` finds the room on each side of a door.
  */
 export function addDoorSigns(doors, roomAt, levelOf) {
+  const signs = [];
   for (const s of DOOR_SIGNS) {
     const door = doors.find((d) => {
       if (d.kind !== 'swing' || levelOf(d) !== s.level) return false;
@@ -60,5 +61,7 @@ export function addDoorSigns(doors, roomAt, levelOf) {
     sign.position.set(face * 0.022, 1.52, door.len / 2);
     sign.userData.door = door; // looking at the sign still opens the door
     door.object.add(sign);
+    signs.push(sign);
   }
+  return signs; // hidden with the furniture (F)
 }
