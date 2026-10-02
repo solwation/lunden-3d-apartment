@@ -82,7 +82,10 @@ src/construction.js    the building site as it is now (CONSTRUCTION, #131): an o
                        "Visa bygget som det ser ut nu", localStorage 'lunden.bygge', `&bygge` / `&bygge=0`):
                        system scaffolding round Hus L (not our unit) and Hus A/B/C (instanced tubes + decks), white
                        netting, blue weatherboard, mobile fencing, barriers, a wheel loader and an excavator;
-                       `world.setConstruction(on)` shows it and adds its collision
+                       `world.setConstruction(on)` shows it and adds its collision; the courtyard as it is now
+                       (#132, `CONSTRUCTION.courtyard`): the finished courtyard (kept out of mergeStatic) and its trees
+                       (`hideCourtyardTrees` in surroundings.js) are hidden, a wet concrete deck with puddles, gravel and
+                       grey concrete walls at the east edge, a site hut, toilet, skip, pallets, tarps, hose, young maples
 src/surroundings.js    the site (SITE): Hus A/B/C + buildings around, roads, paving, the 3 m drop to the park,
                        Höje å, instanced trees, lit windows, cloudy sky
 src/lights.js          room switches (E), ceiling lamps/pendant/spots/LED, floor lamp; a pool of 4

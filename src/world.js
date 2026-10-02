@@ -14,7 +14,7 @@ import { buildWallShelves } from './shelves.js';
 import { buildHallWall } from './keycabinet.js';
 import { mergeStatic } from './merge.js';
 import { buildSillPlants } from './sillplants.js';
-import { registerSnow } from './seasons.js';
+import { registerSnow, refreshSeason } from './seasons.js';
 import { buildCourtyard } from './courtyard.js';
 import { buildStreetLife } from './streetlife.js';
 import { buildConstruction } from './construction.js';
@@ -694,7 +694,7 @@ export function buildWorld(plan) {
   const box3 = new THREE.Box3(), mid = new THREE.Vector3();
   const merged = mergeStatic(scene, [
     ...l0.doors, ...l1.doors, ...l0.lids, ...l1.lids, ...l0.appliances, ...l1.appliances,
-  ].map((d) => d.object).concat([sillPlants, hallWall.object, furniture.object, exterior, surroundings, shelves, ...interiorLoose]), (o) => { // loose items stay separate (F hides them)
+  ].map((d) => d.object).concat([sillPlants, hallWall.object, furniture.object, exterior, surroundings, shelves, courtyard.object, ...interiorLoose]), (o) => { // loose items stay separate (F hides them)
     box3.setFromObject(o).getCenter(mid);
     if (mid.x < 0 || mid.x > W || mid.z < 0 || mid.z > D) return 'out';
     return mid.y < LEVELS[1].floor - 0.05 ? 'l0' : 'l1';
@@ -706,7 +706,8 @@ export function buildWorld(plan) {
   // the fixed outdoor segments while it is shown
   const construction = buildConstruction();
   scene.add(construction.object);
-  const baseL0 = l0.segments;
+  const baseL0 = l0.segments, courtSegs = new Set(courtyard.segments);
+  const siteL0 = [...baseL0.filter((sg) => !courtSegs.has(sg)), ...construction.segments]; // the finished courtyard's collision goes (#132)
   // furniture can be switched off (F): keep its collision separate from the fixed segments
   const fixed = [l0.segments, l1.segments];
   const levels = [l0, l1];
@@ -723,7 +724,10 @@ export function buildWorld(plan) {
   /** The building site as it is now (#131): scaffolding, netting, weatherboard, fencing, machines. */
   const setConstruction = (on) => {
     construction.object.visible = on;
-    fixed[0] = on ? [...baseL0, ...construction.segments] : baseL0;
+    courtyard.object.visible = !on; // the courtyard as it is now instead of the finished one (#132)
+    surroundings.userData.hideCourtyardTrees(on); // its trees are not planted yet
+    refreshSeason();
+    fixed[0] = on ? siteL0 : baseL0;
     setFurniture(furniture.object.visible);
   };
 
@@ -732,6 +736,7 @@ export function buildWorld(plan) {
     setFurniture,
     setConstruction,
     construction,
+    courtyard: courtyard.object, // hidden while the building site is shown (#132)
     get constructionOn() { return construction.object.visible; },
     looseItems, // hidden by F (main.js may add more)
     cupSurfaces: [...furniture.surfaces, ...kitchenSurfaces, ...sillSurfaces], // table tops a cup can be put on (#90), the window boards (#185)

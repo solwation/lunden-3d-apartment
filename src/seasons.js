@@ -53,4 +53,7 @@ export function applySeason(month) {
 }
 
 /** For tests. */
+/** Re-apply the season on the next applySeason (after seeds changed, e.g. trees hidden by the building site, #132). */
+export function refreshSeason() { lastMonth = -1; }
+
 export const seasonState = () => ({ month: lastMonth, crowns: registry.crowns.length, materials: registry.materials.length });

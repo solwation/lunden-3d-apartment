@@ -2,13 +2,16 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { CONSTRUCTION as C, HUS_L, SITE } from './config.js';
 import { groundY } from './surroundings.js';
+import { registerTrees } from './seasons.js';
 
 // The building site as it is now (#131): an optional mode (world.setConstruction, the start screen button,
 // `&bygge`). Hus L (all but our own unit) and Å-husen A, B, C stand in system scaffolding — standards, ledgers,
 // guard rails, diagonals and timber decks every lift, all instanced (two draw calls) — some runs netted in white,
 // blue weatherboard where the brick is not up yet, mobile fence panels on concrete feet round the site, red and
 // yellow barriers on the pavement and a wheel loader and an excavator. Everything merged per material; collision
-// segments for the parts the visitor can walk into.
+// segments for the parts the visitor can walk into. The courtyard (#132) is a wet concrete deck then (world.js hides the
+// finished courtyard): puddles, red-brown gravel and grey concrete walls at the east edge, a site hut, a portable
+// toilet, a skip, pallets with big bags, tarps, a hose, a wheelbarrow and young maples.
 
 const box = (sx, sy, sz, x, y, z) => new THREE.BoxGeometry(sx, sy, sz).translate(x, y, z);
 const cyl = (r, h, x, y, z, seg = 12) => new THREE.CylinderGeometry(r, r, h, seg).translate(x, y, z);
@@ -251,6 +254,142 @@ function machines(group) {
   return segs;
 }
 
+// --- the courtyard as it is now (#132) -------------------------------------------------------------------------
+/** A flat plate at y with UVs per 3 m. */
+function plate(x0, x1, z0, z1, y) {
+  const g = new THREE.PlaneGeometry(x1 - x0, z1 - z0).rotateX(-Math.PI / 2).translate((x0 + x1) / 2, y, (z0 + z1) / 2);
+  const p = g.attributes.position, uv = g.attributes.uv;
+  for (let i = 0; i < p.count; i++) uv.setXY(i, p.getX(i) / 3, p.getZ(i) / 3);
+  return g;
+}
+
+/** Wet grey concrete (the garage deck with its screed), lighter and darker patches, per 3 m tile. */
+const concreteTexture = () => canvasTex(128, 128, (g, w, h) => {
+  g.fillStyle = '#8b8f91'; g.fillRect(0, 0, w, h);
+  for (let i = 0; i < 400; i++) { g.fillStyle = Math.random() < 0.5 ? 'rgba(255,255,255,0.05)' : 'rgba(40,45,50,0.05)'; g.fillRect(Math.random() * w, Math.random() * h, 3 + Math.random() * 10, 3 + Math.random() * 10); }
+  g.strokeStyle = 'rgba(60,64,66,0.35)'; g.strokeRect(0, 0, w, h);
+});
+/** Red-brown gravel and soil, per 3 m tile. */
+const gravelTexture = () => canvasTex(128, 128, (g, w, h) => {
+  g.fillStyle = '#8a5d45'; g.fillRect(0, 0, w, h);
+  for (let i = 0; i < 1500; i++) { g.fillStyle = ['#a07258', '#6e4836', '#b08a70', '#5d3d2e'][i % 4]; g.fillRect(Math.random() * w, Math.random() * h, 1 + Math.random() * 2, 1 + Math.random() * 2); }
+});
+/** Light grey precast concrete wall panels, a joint every 2.4 m. */
+const wallTexture = () => canvasTex(64, 64, (g, w, h) => {
+  g.fillStyle = '#b9b8b2'; g.fillRect(0, 0, w, h);
+  for (let i = 0; i < 120; i++) { g.fillStyle = 'rgba(90,90,85,0.08)'; g.fillRect(Math.random() * w, Math.random() * h, 2, 2); }
+  g.fillStyle = 'rgba(80,80,76,0.6)'; g.fillRect(0, 0, 2, h);
+});
+
+/** Concrete skins on the garage box's retaining walls (where the ground outside is lower), just in front of the brick. */
+function boxWallSkins() {
+  const T = SITE.terrain, geos = [];
+  const onBox = (x, z) => T.box.some((b) => x >= b.x0 && x <= b.x1 && z >= b.z0 && z <= b.z1);
+  for (const b of T.box) for (const [ax, az, bx, bz, ox, oz] of [[b.x0, b.z0, b.x1, b.z0, 0, -1], [b.x1, b.z0, b.x1, b.z1, 1, 0], [b.x1, b.z1, b.x0, b.z1, 0, 1], [b.x0, b.z1, b.x0, b.z0, -1, 0]]) {
+    const len = Math.hypot(bx - ax, bz - az), n = Math.ceil(len);
+    for (let k = 0; k < n; k++) {
+      const x0 = ax + (bx - ax) * k / n, z0 = az + (bz - az) * k / n, x1 = ax + (bx - ax) * (k + 1) / n, z1 = az + (bz - az) * (k + 1) / n;
+      if (onBox((x0 + x1) / 2 + ox * 0.05, (z0 + z1) / 2 + oz * 0.05)) continue;
+      const y0 = groundY(x0 + ox * 0.08, z0 + oz * 0.08) - 0.02, y1 = groundY(x1 + ox * 0.08, z1 + oz * 0.08) - 0.02;
+      if (y0 > -0.06 && y1 > -0.06) continue;
+      const px0 = x0 + ox * 0.08, pz0 = z0 + oz * 0.08, px1 = x1 + ox * 0.08, pz1 = z1 + oz * 0.08, top = 0.2;
+      const u0 = (Math.abs(ox) ? z0 : x0) / 2.4, u1 = (Math.abs(ox) ? z1 : x1) / 2.4;
+      const g = new THREE.BufferGeometry();
+      g.setAttribute('position', new THREE.Float32BufferAttribute([px0, y0, pz0, px1, y1, pz1, px1, top, pz1, px0, y0, pz0, px1, top, pz1, px0, top, pz0], 3));
+      g.setAttribute('uv', new THREE.Float32BufferAttribute([u0, 0, u1, 0, u1, 1, u0, 0, u1, 1, u0, 1], 2));
+      g.computeVertexNormals();
+      geos.push(g);
+    }
+  }
+  return geos;
+}
+
+/** The courtyard now: wet concrete deck with puddles, gravel outside the east wall, concrete walls, a site hut, a
+ * portable toilet, a skip, pallets with big bags, tarps, a hose, a wheelbarrow, a site switchboard, young maples. */
+function siteCourtyard(group) {
+  const K = C.courtyard, segs = [];
+  const deck = new THREE.Mesh(mergeGeometries(K.deck.map(([x0, x1, z0, z1]) => plate(x0, x1, z0, z1, 0.012))), new THREE.MeshStandardMaterial({ map: concreteTexture(), roughness: 0.35, metalness: 0.05 }));
+  deck.receiveShadow = true;
+  // puddles: dark, glossy ellipses
+  let seed = 7; const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+  const puddles = [];
+  for (let i = 0; i < K.puddles; i++) {
+    const [x0, x1, z0, z1] = K.deck[i % 2], x = x0 + 1 + rnd() * (x1 - x0 - 2), z = z0 + 1 + rnd() * (z1 - z0 - 2);
+    puddles.push(new THREE.CircleGeometry(1, 16).rotateX(-Math.PI / 2).scale(0.6 + rnd() * 1.8, 1, 0.4 + rnd() * 1.0).rotateY(rnd() * 3).translate(x, 0.016, z));
+  }
+  const puddle = new THREE.Mesh(mergeGeometries(puddles), new THREE.MeshStandardMaterial({ color: 0x737c82, roughness: 0.06 }));
+  puddle.receiveShadow = true;
+  // gravel outside the east wall (park level), draped over the slope
+  const [gx0, gx1, gz0, gz1] = K.gravel, gpos = [], gidx = [], guv = [], nx = Math.ceil(gx1 - gx0) + 1, nz = Math.ceil(gz1 - gz0) + 1;
+  for (let j = 0; j < nz; j++) for (let i = 0; i < nx; i++) {
+    const x = gx0 + (gx1 - gx0) * i / (nx - 1), z = gz0 + (gz1 - gz0) * j / (nz - 1);
+    gpos.push(x, groundY(x, z) + 0.03, z); guv.push(x / 3, z / 3);
+  }
+  for (let j = 0; j < nz - 1; j++) for (let i = 0; i < nx - 1; i++) { const a = j * nx + i; gidx.push(a, a + nx, a + 1, a + 1, a + nx, a + nx + 1); }
+  const gg = new THREE.BufferGeometry();
+  gg.setAttribute('position', new THREE.Float32BufferAttribute(gpos, 3)); gg.setAttribute('uv', new THREE.Float32BufferAttribute(guv, 2)); gg.setIndex(gidx); gg.computeVertexNormals();
+  const gravel = new THREE.Mesh(gg, new THREE.MeshStandardMaterial({ map: gravelTexture(), roughness: 1 }));
+  gravel.receiveShadow = true;
+  const walls = new THREE.Mesh(mergeGeometries(boxWallSkins()), new THREE.MeshStandardMaterial({ map: wallTexture(), roughness: 0.9 }));
+  group.add(deck, puddle, gravel, walls);
+
+  // the things standing about, merged per material
+  const mats = {
+    hut: new THREE.MeshStandardMaterial({ color: 0xeceeea, roughness: 0.6 }), blue: new THREE.MeshStandardMaterial({ color: 0x2d5fb0, roughness: 0.6 }),
+    win: new THREE.MeshStandardMaterial({ color: 0x2c3a44, roughness: 0.15, metalness: 0.2 }), skip: new THREE.MeshStandardMaterial({ color: 0x3f5a3c, roughness: 0.7 }),
+    wood: new THREE.MeshStandardMaterial({ color: 0xb08a5a, roughness: 0.9 }), bag: new THREE.MeshStandardMaterial({ color: 0xf1efe8, roughness: 0.95 }),
+    green: new THREE.MeshStandardMaterial({ color: 0x2f8a3a, roughness: 0.6 }), grey: new THREE.MeshStandardMaterial({ color: 0x8c9196, roughness: 0.5, metalness: 0.3 }),
+    dark: new THREE.MeshStandardMaterial({ color: 0x222325, roughness: 0.8 }),
+  };
+  const lists = Object.fromEntries(Object.keys(mats).map((k) => [k, []]));
+  const put = ([x, z, deg], parts, half) => {
+    const t = new THREE.Matrix4().makeRotationY(THREE.MathUtils.degToRad(deg)).setPosition(x, groundY(x, z), z);
+    for (const [k, g] of parts) lists[k].push(g.applyMatrix4(t));
+    if (half) segs.push(...rectSegs([[-half[0], -half[1]], [half[0], -half[1]], [half[0], half[1]], [-half[0], half[1]]].map(([u, v]) => { const q = new THREE.Vector3(u, 0, v).applyMatrix4(t); return [q.x, q.z]; })));
+  };
+  // site hut (byggbod), 6 × 2.45 m, door and windows towards −z, on sleepers, a steel step
+  put(K.hut, [['hut', box(6, 2.5, 2.45, 0, 1.45, 0)], ['blue', box(6.02, 0.25, 2.47, 0, 2.5, 0)], ['dark', box(5.8, 0.2, 0.3, 0, 0.1, -0.9)], ['dark', box(5.8, 0.2, 0.3, 0, 0.1, 0.9)],
+    ['win', box(1.2, 0.9, 0.04, -1.6, 1.75, -1.24)], ['win', box(1.2, 0.9, 0.04, 1.9, 1.75, -1.24)], ['grey', box(0.9, 2.0, 0.05, 0.3, 1.25, -1.25)], ['grey', box(1.1, 0.2, 0.6, 0.3, 0.1, -1.6)]], [3.05, 1.3]);
+  // portable toilet
+  put(K.toilet, [['blue', box(1.1, 2.25, 1.15, 0, 1.12, 0)], ['hut', box(1.15, 0.1, 1.2, 0, 2.3, 0)], ['hut', box(0.5, 0.18, 0.02, 0, 1.6, -0.59)]], [0.6, 0.62]);
+  // skip (open steel container) with a heap of offcuts
+  put(K.skip, [['skip', box(4.0, 0.12, 1.8, 0, 0.1, 0)], ['skip', box(4.0, 1.3, 0.08, 0, 0.75, -0.86)], ['skip', box(4.0, 1.3, 0.08, 0, 0.75, 0.86)],
+    ['skip', box(0.08, 1.3, 1.8, -1.96, 0.75, 0)], ['skip', box(0.08, 1.3, 1.8, 1.96, 0.75, 0)], ['wood', box(3.4, 0.5, 1.4, 0, 1.1, 0).rotateZ(0.06)]], [2.05, 0.95]);
+  // pallets with white big bags (sand, insulation)
+  for (const p of K.pallets) put(p, [['wood', box(1.2, 0.14, 0.8, 0, 0.07, 0)], ['bag', box(0.95, 0.85, 0.75, 0, 0.57, 0)], ['bag', box(0.7, 0.08, 0.5, 0, 1.03, 0)]], [0.65, 0.45]);
+  for (const t of K.tarps) put(t, [['blue', box(1.6, 0.35, 1.1, 0, 0.17, 0).rotateY(0.3)], ['blue', box(1.0, 0.3, 0.8, 0.2, 0.45, 0.1)]], [0.9, 0.7]);
+  // a wheelbarrow, a site switchboard
+  put(K.barrow, [['green', box(0.65, 0.3, 0.95, 0, 0.62, 0)], ['dark', wheel(0.2, 0.08, 0, 0.2, 0.62)], ['grey', box(0.05, 0.05, 1.4, -0.28, 0.5, -0.2)], ['grey', box(0.05, 0.05, 1.4, 0.28, 0.5, -0.2)]]);
+  put(K.switchboard, [['grey', box(0.8, 1.25, 0.45, 0, 0.62, 0)], ['skip', box(0.82, 0.08, 0.47, 0, 1.28, 0)]], [0.45, 0.28]);
+  // a green hose snaking from the hut over the deck
+  lists.green.push(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(K.hose.map(([x, z]) => new THREE.Vector3(x, 0.035, z))), 80, 0.022, 6));
+  const clean = (g) => {
+    const n = g.index ? g.toNonIndexed() : g;
+    for (const a of Object.keys(n.attributes)) if (!['position', 'normal', 'uv'].includes(a)) n.deleteAttribute(a);
+    return n;
+  };
+  for (const [k, list] of Object.entries(lists)) {
+    if (!list.length) continue;
+    const o = new THREE.Mesh(mergeGeometries(list.map(clean)), mats[k]);
+    o.castShadow = o.receiveShadow = true;
+    group.add(o);
+  }
+  // young maples (thin trunks, small crowns; coloured by the season like the other trees)
+  const trunks = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.06, 0.09, 1, 6).translate(0, 0.5, 0), new THREE.MeshStandardMaterial({ color: 0x5b4a3a, roughness: 0.9 }), K.maples.length);
+  const crowns = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1, 1), new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 1, flatShading: true }), K.maples.length);
+  const seeds = K.maples.map(([x, z, h], i) => {
+    const y = groundY(x, z);
+    trunks.setMatrixAt(i, mtx.compose(mid.set(x, y, z), qq.identity(), scl.set(1, h * 0.55, 1)));
+    return { pos: new THREE.Vector3(x, y + h * 0.65, z), rot: new THREE.Quaternion().setFromEuler(new THREE.Euler(0, i * 1.7, 0)), scale: new THREE.Vector3(h * 0.3, h * 0.38, h * 0.3), r1: 0.2 + 0.15 * (i % 3), r2: 0.6, r3: 0.5, r4: 1 };
+  });
+  const col = new THREE.Color(0x9bbf4a);
+  seeds.forEach((sd, i) => { crowns.setMatrixAt(i, mtx.compose(sd.pos, sd.rot, sd.scale)); crowns.setColorAt(i, col); });
+  registerTrees(crowns, seeds);
+  trunks.castShadow = crowns.castShadow = true;
+  group.add(trunks, crowns);
+  return segs;
+}
+
 /** The whole site as one group (hidden until world.setConstruction(true)) and its collision segments. */
 export function buildConstruction() {
   const group = new THREE.Group();
@@ -259,7 +398,7 @@ export function buildConstruction() {
   buildScaffolding(out);
   instanceScaffold(out, group);
   boards(group);
-  const segments = [...out.segments, ...fencing(group), ...barriers(group), ...machines(group)];
+  const segments = [...out.segments, ...fencing(group), ...barriers(group), ...machines(group), ...siteCourtyard(group)];
   group.visible = false;
   return { object: group, segments, counts: { tubes: out.tubes.length, decks: out.decks.length } };
 }

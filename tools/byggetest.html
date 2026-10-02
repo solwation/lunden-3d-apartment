@@ -25,7 +25,8 @@ f.onload = async () => {
   let pass = check(!world.constructionOn && !world.construction.object.visible, 'off by default');
   btn.click();
   pass &= check(world.constructionOn && world.construction.object.visible && localStorage.getItem('lunden.bygge') === '1', `the button: on ("${btn.textContent}")`);
-  pass &= check(world.levels[0].segments.length > n0, `collision added (${n0} → ${world.levels[0].segments.length})`);
+  pass &= check(world.construction.segments.every((sg) => world.levels[0].segments.includes(sg)), `the site's collision is in, the courtyard's out (${n0} → ${world.levels[0].segments.length})`);
+  pass &= check(!world.courtyard.visible, 'the finished courtyard is hidden (#132)');
   const counts = world.construction.counts;
   pass &= check(counts.tubes > 500 && counts.decks > 100, `scaffolding: ${counts.tubes} tubes, ${counts.decks} decks (instanced)`);
   // walk: START → the front door, in, and from the patio through the hedge gap onto the lawn
@@ -48,6 +49,7 @@ f.onload = async () => {
   pass &= check(player.pos.z > -1.2, `walked to the front door (z ${player.pos.z.toFixed(2)})`);
   btn.click();
   pass &= check(!world.constructionOn && world.levels[0].segments.length === n0 && localStorage.getItem('lunden.bygge') === '0', 'off again, collision as before');
+  pass &= check(world.courtyard.visible, 'the finished courtyard is back');
   out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
 };
 </script>
