@@ -236,10 +236,20 @@ export const AO = {
 // and the kitchen (its kitchen face, x 2.15, z 0.46–1.76). rotY π/2 = facing east.
 export const CAT_BOARD = { x: 2.15, y: 1.5, z: 1.11, w: 1.1, h: 0.76, rotY: Math.PI / 2 };
 
-// Day cycle (src/daycycle.js): one day in `minutes` real minutes. Sun up 06–18, noon elevation
-// (Lund ~56° N in spring/autumn ≈ 34°, a bit more for a brighter look). Start = the visitor's
-// real clock unless ?time=HH[.h] is given.
-export const DAY = { minutes: 12, sunrise: 6, sunset: 18, noonElevation: 40, moonlight: 0.35, nightAmbient: 0.05 };
+// Day cycle (src/daycycle.js): one day in `minutes` real minutes. The sun follows the real solar
+// path for the date (declination, hour angle) at Kv. Lunden — Skåne, ~55.7° N 13.2° E (Lund;
+// close enough anywhere in western Skåne). Clock time is Swedish local time (CEST in summer).
+// Every visit starts at `startHour` on the 15th of the visitor's month, unless ?time=HH[.h] /
+// ?month=1–12 is given. The wall clock in the kitchen fast-forwards at `spool` hours per second.
+export const DAY = {
+  minutes: 12, startHour: 7, lat: 55.7, lon: 13.2, spool: 1.5,
+  moonlight: 0.35, nightAmbient: 0.05,
+};
+
+// Analog wall clock (src/wallclock.js) on the kitchen side of the Tvätt/Badrum wall, to the
+// right of the Badrum door seen from the kitchen (wall face x 2.152, z 3.145–5.244, door at
+// 5.244). rotY π/2 = facing east. Diameter 30 cm (typical kitchen clock).
+export const WALL_CLOCK = { x: 2.152, y: 2.0, z: 4.55, rotY: Math.PI / 2, d: 0.3 };
 
 // Room lights (src/lights.js). Intensities are candela-ish (three.js physical lights), tuned by
 // eye at night. `pool` = point lights shared by the nearest lit lamps (keep small: Iris 640).

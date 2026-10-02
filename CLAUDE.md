@@ -54,7 +54,9 @@ src/ao.js              baked ambient occlusion: distance field → multiply over
 src/surroundings.js    neighbourhood: brick blocks with gable roofs, instanced trees, cloudy sky
 src/lights.js          room switches (E), ceiling lamps/pendant/spots/LED, floor lamp; a pool of 4
                        point lights follows the nearest lit lamps on the visitor's level
-src/daycycle.js        12-minute day: sun → moon light, shader sky (glow, stars, clouds), fog colour
+src/daycycle.js        12-minute day: real solar path for the month (55.7° N), sun → moon light, shader sky
+                       (glow, stars, clouds), fog colour; paused / spooled by the wall clock
+src/wallclock.js       analog kitchen clock (WALL_CLOCK) + the control strip: spool ← →, pause, month
 src/rooms.js           room detection: walls + door gaps rasterised, BFS from the room labels
 src/minimap.js         plan view with the visitor's arrow, current room highlighted (K toggles)
 src/measure.js         tape measure (Q / 📏): two points on any surface, distance label
@@ -81,6 +83,7 @@ tools/watertest.html   headless test: aim at every tap/shower, turn it on and of
 tools/lighttest.html   headless test: aim at every light switch / floor lamp, toggle it
 tools/pettest.html     headless test of petting the cat (eyes, hand, stats counter)
 tools/notetest.html    headless test of the changelog note ("Nytt", read/close, no walking)
+tools/clocktest.html   headless test of the wall clock (07:00 start, spool, pause, month → sun height)
 tools/stamp.sh         build the published site with a version stamp (used by CI)
 ```
 
@@ -171,7 +174,8 @@ URL parameters (debugging / screenshots):
 - `&shot` — hide the start overlay.
 - `&open` — open every door (screenshots of open doors / wardrobes).
 - `&cat=x,z[,yawDeg[,y]]` — show the cat there; `&catv=i` coat variant, `&catt=s` animation time.
-- `&time=HH[.h]` — start at that hour (default: the visitor's clock), `&freeze` stops the clock,
+- `&time=HH[.h]` — start at that hour (default 07:00), `&month=1–12` (default: this month), `&freeze` pauses the clock,
+  `&clock` opens the wall clock's strip,
   `&lights` turns every lamp on (they also start on when arriving in the dark).
 - `&water` — turn on every tap and shower.
 - `&install` — show the iPhone install sheet. `&note` — open the changelog note. `&pet` (with `&cat=`) — the cat is being petted.
@@ -225,7 +229,11 @@ screenshots into the session scratchpad, not the repo.
   side) plus `LIGHTING.manual` for open rooms and the downstairs Klk (door spans the whole wall).
   Lamp emissive parts use one material per room (`lampMaterials` in interior.js). Never add
   per-lamp PointLights — reuse the pool (constant light count = no shader recompiles).
-- Day cycle: `DAY` in config; the neighbours' windows are one instanced additive mesh with a
+- Day cycle: `DAY` in config. Every visit starts at 07:00 on the 15th of the current month; the sun
+  position is computed (declination, hour angle, equation of time, CEST in summer) for Lund. The wall
+  clock in the kitchen (right of the Badrum door seen from the kitchen) opens a strip at the bottom
+  (`reading` mode, so no walking, but looking works): hold ← → / ⏪ ⏩ to spool, Space / ⏸ pause,
+  ↑ ↓ / mån buttons for the month. The neighbours' windows are one instanced additive mesh with a
   random evening/morning routine per window (`buildWindowLights` in surroundings.js).
 - Statistics (`src/stats.js`): cats found per coat, cats petted, doors, toilet lids, steps/metres,
   stair trips, time inside; reset on the start screen.

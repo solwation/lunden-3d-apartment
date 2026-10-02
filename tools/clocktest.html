@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Wall clock test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+// Wall clock test: a new visit starts at 07:00, the kitchen clock's hands show it, E on the
+// clock opens the strip, spooling forward/back moves the time, pause stops it, the month
+// buttons move the sun (noon higher in June than in December), and the strip closes again.
+//   google-chrome --headless=new --dump-dom http://localhost:8137/tools/clocktest.html
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const f = document.createElement('iframe');
+f.width = 900; f.height = 600;
+f.src = '../index.html';
+document.body.append(f);
+f.onload = async () => {
+  const w = f.contentWindow, d = f.contentDocument;
+  while (!w.__app) await wait(100);
+  const { player, camera, wallClock, clockPanel, day, step } = w.__app;
+  const lines = [];
+  const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; };
+  let pass = check(Math.abs(day.hour - 7) < 0.05, `starts at 07:00 (${day.clock})`);
+  pass &= check(day.month === new Date().getMonth() + 1, `month = this month (${day.month})`);
+  const hourAngle = -wallClock.hourHand.rotation.z / (Math.PI * 2) * 12;
+  pass &= check(Math.abs(hourAngle - 7) < 0.05 && Math.abs(wallClock.minuteHand.rotation.z % (Math.PI * 2)) < 0.05, 'hands show 7:00');
+  d.getElementById('start-touch').click();
+  await wait(50);
+  // stand 1.2 m east of the clock, facing west (yaw 90), eye level with it
+  const p = wallClock.object.position;
+  player.spawn(p.x + 1.2, p.z, Math.PI / 2);
+  camera.rotation.x = Math.atan2(p.y - player.eyeY, 1.2);
+  wallClock.object.parent.updateMatrixWorld(true); // normally done by the first render
+  for (let i = 0; i < 5; i++) step(1 / 60);
+  const btn = d.getElementById('action');
+  pass &= check(!btn.hidden && /ställa klockan/i.test(btn.textContent), `action button "${btn.textContent}"`);
+  btn.click();
+  const panel = d.getElementById('clock-panel');
+  pass &= check(!panel.hidden, 'strip opens');
+  const before = { x: player.pos.x, z: player.pos.z };
+  w.__app.touch.analog.y = 1;
+  for (let i = 0; i < 30; i++) step(1 / 60);
+  w.__app.touch.analog.y = 0;
+  pass &= check(Math.hypot(player.pos.x - before.x, player.pos.z - before.z) < 0.01, 'no walking while the strip is open');
+  // pause
+  d.querySelector('[data-act=play]').click();
+  let h0 = day.hour;
+  for (let i = 0; i < 60; i++) step(1 / 60);
+  pass &= check(day.paused && day.hour === h0, 'paused: time stands still');
+  // spool forward 1 s (held), then back 2 s (also while paused)
+  const press = (act, type) => d.querySelector(`[data-act=${act}]`).dispatchEvent(new w.PointerEvent(type, { bubbles: true, pointerId: 1 }));
+  press('fwd', 'pointerdown');
+  for (let i = 0; i < 60; i++) step(1 / 60);
+  press('fwd', 'pointerup');
+  const fwd = day.hour - h0;
+  pass &= check(Math.abs(fwd - 1.5) < 0.05, `spool forward 1 s = +${fwd.toFixed(2)} h`);
+  h0 = day.hour;
+  press('back', 'pointerdown');
+  for (let i = 0; i < 120; i++) step(1 / 60);
+  press('back', 'pointerup');
+  pass &= check(Math.abs(h0 - day.hour - 3) < 0.05 && day.spool === 0, `spool back 2 s = −${(h0 - day.hour).toFixed(2)} h`);
+  const hands = -wallClock.hourHand.rotation.z / (Math.PI * 2) * 12;
+  pass &= check(Math.abs(hands - (day.hour % 12)) < 0.01, 'hands follow the spooled time');
+  // months: the sun at noon is higher in June than in December (keyboard ↑ ↓ does the same)
+  day.hour = 13;
+  while (day.month !== 6) d.querySelector('[data-act=next]').click();
+  step(0);
+  const june = day.sunDir.y;
+  while (day.month !== 12) d.querySelector('[data-act=prev]').click();
+  step(0);
+  const dec = day.sunDir.y;
+  const deg = (y) => (Math.asin(y) * 180 / Math.PI).toFixed(0);
+  pass &= check(june > 0.8 && dec > 0.1 && dec < 0.25, `noon sun: June ${deg(june)}°, December ${deg(dec)}°`);
+  pass &= check(/december/.test(panel.querySelector('.info').textContent), `info "${panel.querySelector('.info').textContent}"`);
+  day.hour = 7; step(0);
+  const darkDec = day.sunDir.y < 0;
+  day.month = 6; step(0);
+  pass &= check(darkDec && day.sunDir.y > 0.2, '07:00: dark in December, sun up in June');
+  d.getElementById('clock-close').click();
+  pass &= check(panel.hidden && !day.spool, 'strip closes');
+  out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
+};
+</script>
+</body>
+</html>

@@ -1,19 +1,56 @@
 import * as THREE from 'three';
 import { DAY } from './config.js';
 
-// Day and night: a whole day passes in DAY.minutes real minutes. The sun rises in the east
-// (+x), passes south (+z) and sets in the west; at night the moon takes its place. Drives the
-// sun light, the ambient light, fog and a shader sky with sunset glow, stars and the moon.
+// Day and night: a whole day passes in DAY.minutes real minutes. The sun follows its real path
+// for the date at Kv. Lunden (rises north-east in summer, south-east in winter); at night a full
+// moon takes its place. Drives the sun light, the ambient light, fog and a shader sky with
+// sunset glow, stars and the moon. The wall clock can pause and spool the time (wallclock.js).
 
 const smooth = (a, b, x) => THREE.MathUtils.smoothstep(x, a, b);
+const RAD = Math.PI / 180;
 
-/** Direction (unit) to the sun at `hour`; below the horizon at night. */
-export function sunDirection(hour, out = new THREE.Vector3()) {
-  const k = (hour - DAY.sunrise) / (DAY.sunset - DAY.sunrise); // 0 … 1 over the day
-  const elev = Math.sin(Math.PI * k) * THREE.MathUtils.degToRad(DAY.noonElevation);
-  const az = Math.PI * (0.5 - k); // +π/2 = east … −π/2 = west, 0 = south
-  return out.set(Math.cos(elev) * Math.sin(az), Math.sin(elev), Math.cos(elev) * Math.cos(az)).normalize();
+/** Solar declination (radians) on day `doy` (1–365). */
+const declination = (doy) => 23.44 * RAD * Math.sin((2 * Math.PI * (284 + doy)) / 365);
+
+/** Swedish summer time (CEST), roughly the last Sunday of March … of October. */
+const summerTime = (doy) => doy >= 87 && doy < 300;
+
+/** Equation of time in minutes (sundial − clock), Spencer's short form. */
+function equationOfTime(doy) {
+  const b = (2 * Math.PI * (doy - 81)) / 364;
+  return 9.87 * Math.sin(2 * b) - 7.53 * Math.cos(b) - 1.5 * Math.sin(b);
 }
+
+/** Local solar time (hours) for clock time `hour` on day `doy`. */
+const solarHour = (hour, doy) => hour - (summerTime(doy) ? 2 : 1) + DAY.lon / 15 + equationOfTime(doy) / 60;
+
+/** Direction (unit) to a body with declination `dec` at solar hour `solar`; below the horizon at
+ * night. Plan axes: +x east, +z south, y up. */
+function skyDirection(solar, dec, out) {
+  const lat = DAY.lat * RAD, h = (solar - 12) * 15 * RAD; // hour angle, + = afternoon
+  const sinEl = Math.sin(lat) * Math.sin(dec) + Math.cos(lat) * Math.cos(dec) * Math.cos(h);
+  const el = Math.asin(sinEl);
+  const az = Math.atan2(Math.sin(h), Math.cos(h) * Math.sin(lat) - Math.tan(dec) * Math.cos(lat)); // from south, + = west
+  return out.set(-Math.cos(el) * Math.sin(az), sinEl, Math.cos(el) * Math.cos(az)).normalize();
+}
+
+/** Direction (unit) to the sun at clock time `hour` on day of year `doy`. */
+export function sunDirection(hour, doy, out = new THREE.Vector3()) {
+  return skyDirection(solarHour(hour, doy), declination(doy), out);
+}
+
+/** Clock times [rise, set] of the sun on day `doy` (null when it never sets / never rises). */
+export function sunTimes(doy) {
+  const lat = DAY.lat * RAD, dec = declination(doy);
+  const c = (Math.sin(-0.83 * RAD) - Math.sin(lat) * Math.sin(dec)) / (Math.cos(lat) * Math.cos(dec));
+  if (Math.abs(c) > 1) return null;
+  const half = Math.acos(c) / (15 * RAD);
+  const noon = 12 - (solarHour(12, doy) - 12);
+  return [noon - half, noon + half];
+}
+
+/** Day of year (1–365) of the 15th of `month` (1–12). */
+export const midMonth = (month) => [15, 46, 74, 105, 135, 166, 196, 227, 258, 288, 319, 349][month - 1];
 
 const skyVert = /* glsl */`
   varying vec3 vDir;
@@ -63,8 +100,8 @@ const SUN_LOW = new THREE.Color(0xffb070), SUN_HIGH = new THREE.Color(0xfff1dc),
 
 export class DayCycle {
   /** lights: { sun, hemi, ambient, fill } from main.js; clouds: canvas texture with alpha. */
-  constructor({ scene, camera, lights, clouds, startHour }) {
-    Object.assign(this, { scene, camera, lights, hour: startHour });
+  constructor({ scene, camera, lights, clouds, startHour, month }) {
+    Object.assign(this, { scene, camera, lights, hour: startHour, month, paused: false, spool: 0 });
     this.base = { hemi: lights.hemi.intensity, ambient: lights.ambient.intensity, fill: lights.fill.intensity, sun: lights.sun.intensity };
     this.uniforms = {
       uSun: { value: new THREE.Vector3() }, uMoon: { value: new THREE.Vector3() },
@@ -86,11 +123,15 @@ export class DayCycle {
   /** 0 = full night … 1 = full day. */
   get daylight() { return smooth(-0.08, 0.18, this.sunDir.y); }
 
+  get doy() { return midMonth(this.month); }
+
+  /** Advance the clock: normal pace, stopped while paused, or spooled (−1 / +1) by the wall clock. */
   update(dt) {
-    this.hour = (this.hour + (dt * 24) / (DAY.minutes * 60)) % 24;
-    sunDirection(this.hour, this.sunDir);
-    sunDirection((this.hour + 12) % 24, this.moonDir);
-    this.moonDir.x *= -1; // a little off the sun's path
+    const rate = this.spool ? this.spool * DAY.spool : this.paused ? 0 : 24 / (DAY.minutes * 60);
+    this.hour = (((this.hour + dt * rate) % 24) + 24) % 24;
+    sunDirection(this.hour, this.doy, this.sunDir);
+    // full moon: opposite the sun (12 h later, opposite declination)
+    skyDirection(solarHour(this.hour, this.doy) + 12, -declination(this.doy), this.moonDir);
     const day = this.daylight, night = 1 - day;
     const low = 1 - smooth(0.0, 0.35, Math.abs(this.sunDir.y)); // sunrise/sunset band
     const u = this.uniforms;
@@ -118,8 +159,11 @@ export class DayCycle {
   }
 
   /** "HH:MM" for the HUD. */
-  get clock() {
-    const h = Math.floor(this.hour), m = Math.floor((this.hour - h) * 60);
-    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
-  }
+  get clock() { return formatHour(this.hour); }
+}
+
+/** "HH:MM" for an hour 0–24. */
+export function formatHour(hour) {
+  const t = Math.floor((((hour % 24) + 24) % 24) * 60);
+  return `${String(Math.floor(t / 60)).padStart(2, '0')}:${String(t % 60).padStart(2, '0')}`;
 }

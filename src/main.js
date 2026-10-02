@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { COLORS, LEVELS } from './config.js';
+import { COLORS, LEVELS, DAY } from './config.js';
 import { buildWorld } from './world.js';
 import { Player } from './player.js';
 import { setupTouch } from './touch.js';
@@ -13,6 +13,7 @@ import { Minimap } from './minimap.js';
 import { Measure } from './measure.js';
 import { cloudTexture } from './surroundings.js';
 import { DayCycle } from './daycycle.js';
+import { WallClock, ClockPanel } from './wallclock.js';
 import { Tap, animateWater } from './water.js';
 import { CatBoard, snapshot } from './catboard.js';
 import { Lights } from './lights.js';
@@ -86,6 +87,7 @@ function showBoard(show) {
 document.getElementById('board-close').addEventListener('click', () => showBoard(false));
 function showNote(show) {
   if (!show && !boardEl.hidden) { showBoard(false); return; }
+  if (!show && clockPanel.open) { showClock(false); return; }
   reading = show;
   noteEl.hidden = !show;
   player.keys.clear();
@@ -94,10 +96,21 @@ function showNote(show) {
 document.getElementById('note-close').addEventListener('click', () => showNote(false));
 
 const lights = new Lights(scene, world);
-// time of day: the visitor's clock, or ?time=HH (e.g. ?time=21.5)
-const now = new Date();
-const startHour = params0.has('time') ? Number(params0.get('time')) : now.getHours() + now.getMinutes() / 60;
-const day = new DayCycle({ scene, camera, lights: { sun, hemi, ambient, fill }, clouds: cloudTexture(), startHour });
+// every visit starts at 07:00 in the visitor's month, or ?time=HH (e.g. ?time=21.5) / ?month=1–12
+const startHour = params0.has('time') ? Number(params0.get('time')) : DAY.startHour;
+const month = params0.has('month') ? Number(params0.get('month')) : new Date().getMonth() + 1;
+const day = new DayCycle({ scene, camera, lights: { sun, hemi, ambient, fill }, clouds: cloudTexture(), startHour, month });
+day.paused = params0.has('freeze');
+// the kitchen wall clock: shows the time; E opens the strip to spool/pause it and pick the month
+const wallClock = new WallClock();
+scene.add(wallClock.object);
+const clockPanel = new ClockPanel(day, document.getElementById('clock-panel'));
+function showClock(show) {
+  reading = show;
+  clockPanel.show(show);
+  player.keys.clear();
+}
+document.getElementById('clock-close').addEventListener('click', () => showClock(false));
 if (day.daylight < 0.3 || params0.has('lights')) lights.setAll(true); // arriving in the dark: lights on
 const taps = world.taps.map((spec) => new Tap(spec));
 let inShower = false, shriekAt = 0;
@@ -191,6 +204,8 @@ if (params.has('cat')) {
 }
 // ?note opens the changelog note (screenshots)
 if (params.has('note')) showNote(true);
+// ?clock opens the wall clock's strip (screenshots)
+if (params.has('clock')) showClock(true);
 // ?clip=y cuts away everything above height y (plan check from above)
 if (params.has('clip')) renderer.clippingPlanes = [new THREE.Plane(new THREE.Vector3(0, -1, 0), Number(params.get('clip')))];
 
@@ -232,6 +247,7 @@ pauseBtn.addEventListener('click', () => {
 /** E / the action button on what you look at: doors toggle, the note opens. */
 function use(thing) {
   if (thing.kind === 'note') showNote(true);
+  else if (thing.kind === 'clock') showClock(true);
   else if (thing.kind === 'board') showBoard(true);
   else if (thing.kind === 'switch' || thing.kind === 'lamp') { thing.toggle(); if (thing.isOpen) bump('lights'); }
   else if (thing.kind === 'fridge') { thing.toggle(); if (thing.isOpen) bump('fridge'); }
@@ -267,7 +283,8 @@ document.addEventListener('mousemove', (e) => {
 document.addEventListener('keydown', (e) => {
   if (!locked) return;
   if (reading) {
-    if (e.code === 'KeyE') showNote(false);
+    if (clockPanel.open && clockPanel.key(e.code, true, e.repeat)) e.preventDefault();
+    else if (e.code === 'KeyE') showNote(false);
     return;
   }
   player.keys.add(e.code);
@@ -282,6 +299,7 @@ document.addEventListener('keydown', (e) => {
 });
 document.addEventListener('keyup', (e) => {
   player.keys.delete(e.code);
+  if (clockPanel.open && clockPanel.key(e.code, false)) e.preventDefault(); // no button click on Space
   if (e.code === 'Tab') holdStats(false);
 });
 window.addEventListener('resize', () => {
@@ -294,7 +312,7 @@ window.addEventListener('resize', () => {
 // --- door interaction: look at a door within reach, press E ----------------
 const raycaster = new THREE.Raycaster();
 raycaster.far = 2.2;
-const pickables = [...world.doors.map((d) => d.pickable), ...world.lids.map((l) => l.pickable), ...taps.map((t) => t.pickable), note.pickable, board.pickable, ...lights.targets.map((t) => t.pickable)];
+const pickables = [...world.doors.map((d) => d.pickable), ...world.lids.map((l) => l.pickable), ...taps.map((t) => t.pickable), note.pickable, board.pickable, wallClock.pickable, ...lights.targets.map((t) => t.pickable)];
 const center = new THREE.Vector2(0, 0);
 let focused = null;
 
@@ -326,7 +344,7 @@ function updateFocus() {
   }
   if (reading && touch.enabled) actionBtn.textContent = 'Stäng lappen';
   promptEl.hidden = !focused || touch.enabled || reading;
-  actionBtn.hidden = !(focused || reading) || !touch.enabled;
+  actionBtn.hidden = !(focused || reading) || !touch.enabled || clockPanel.open; // the strip has its own ×
 }
 
 // --- furniture on/off (F / 🛋) ---------------------------------------------
@@ -376,7 +394,9 @@ function step(dt) {
   inShower = wet;
   animateWater(dt);
   lights.update(Math.max(0, player.level), player.pos);
-  day.update(params0.has('freeze') ? 0 : dt);
+  day.update(dt);
+  wallClock.update(day.hour);
+  if (clockPanel.open) clockPanel.render();
   world.windowLights.update(day.hour, 1 - day.daylight);
   cat.update(dt);
   measure.update(dt, window.innerWidth, window.innerHeight);
@@ -428,4 +448,4 @@ document.addEventListener('pointerlockchange', () => { if (!updateEl.hidden) sho
 watchForUpdates(showUpdate);
 
 // handle for tests/debugging (tools/touchtest.html)
-window.__app = { player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day };
+window.__app = { player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock };

@@ -33,7 +33,7 @@ dyker upp för att öppna och stänga dörrar. 📊 visar statistiken.
 <kbd>E</kbd> så får du klappa den. 🐈 Statistiken (katter, dörrar, steg …) sparas i webbläsaren; varje
 sak du gör visas som en liten bricka ("✋ Klappat katt +1").
 
-Ett dygn går på 12 minuter — tänd lamporna med knapparna vid dörrarna när det blir mörkt.
+Ett dygn går på 12 minuter och varje besök börjar kl. 07:00 — tänd lamporna med knapparna vid dörrarna när det blir mörkt. Solen går som i Skåne den 15:e i aktuell månad. Med klockan på köksväggen (E) kan du spola tiden fram och tillbaka, pausa och välja månad, för att se hur ljuset faller en junimorgon eller en decembermorgon.
 
 Vad som är nytt står på lappen på frysen i köket (gå fram och tryck <kbd>E</kbd>); startskärmen
 säger bara till när det finns nyheter. Det som tillkommit sedan ditt senaste besök är markerat *Nytt*.
