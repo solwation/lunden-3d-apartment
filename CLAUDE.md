@@ -426,10 +426,11 @@ North = −z (the bedrooms Sovrum 1/3 face north).
 - U-shaped stair with winders at the east end: flight A (Entréplan, going east), 180° winders,
   flight B (going west) arriving in the upstairs hall. Upstairs slab opening = stair outline on
   Övre plan.
-- Stair pictures (#220): four black-framed 30 × 40 pictures 2 × 2 (fikus, akvarell | peace, solros) on the east
-  party wall straight ahead going up flight A, centred on flight A's width, centre 2.4 m up (clear of the winder
-  treads). FURNITURE `pictures` (one atlas texture, `order` swaps them; two merged meshes), a loose item. "Rakt
-  fram" was read as seen from flight A — the user may mean another wall.
+- Stair pictures (#220, #233): four black-framed pictures 2 × 2 (fikus, akvarell | peace, solros) in the upstairs
+  stairwell, on the east party wall across the stair hole (seen face on from the upstairs hall and on the winders),
+  centred on it (z 6.654), centre 1.57 m over the Övre plan floor. Each picture 30 × 40 cm, 40 × 50 cm outside with
+  passe-partout and frame (*guess*). FURNITURE `pictures` (one atlas texture, 720 × 920 px per frame, `order` swaps
+  them; two merged meshes), a loose item.
 - Doors: Badrum and Klk on Entréplan swing into the passage by the stair, so all swing doors
   start closed. The dashed door to Allrum is a tillval that **we have chosen** (`OPTIONS.allrumDoor`
   + a short extra wall in `EXTRA_WALLS`) → Allrum becomes **Sovrum 4** (four bedrooms upstairs).

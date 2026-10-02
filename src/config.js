@@ -1021,15 +1021,15 @@ export const FURNITURE = [
   // The abstract painting (#133, docs/tavla-abstrakt-svart-ram.png): portrait, thin flat black frame, ~70 × 100 cm
   // (*guess*), centred over the chaise on the east wall (x 5.5; the chaise spans z ~10.55–12.15), centre 1.55 m up.
   { type: 'painting', level: 0, x: 5.5, z: 11.35, y: 1.55, rot: 90, w: 0.7, h: 1.0, frame: 0.018, depth: 0.025 },
-  // Four framed pictures on the stair wall straight ahead going up flight A (#220, the user's photos
-  // docs/tavla-trappa-*.jpg): the east party wall (inner face x 5.551) where the stair turns, centred on flight A's
-  // width (z 6.72–7.54: the part of that wall seen between the walls of the flight). Black frames 30 × 40 cm portrait
-  // (*guess*, IKEA RIBBA type), 2 × 2 with a 7 cm gap. The winder treads against the wall there are up to ~1.62 m
-  // high, so the centre sits at 2.4 m (bottom ~1.97, a third of a metre over them; eye height on the top step of
-  // flight A, under the upstairs slab edge). The atlas
-  // (textures/stair-pictures.jpg, cropped and straightened from the photos) holds fikus, akvarell | peace, solros;
-  // `order` = which atlas cell hangs in each slot, top left → bottom right.
-  { type: 'pictures', level: 0, x: 5.551, z: 7.13, y: 2.4, rot: 90, w: 0.3, h: 0.4, gap: 0.07, frame: 0.02, depth: 0.03,
+  // Four framed pictures in the upstairs stairwell (#220, #233, the user's photos docs/tavla-trappa-*.jpg): the east
+  // party wall (inner face x 5.551) across the stair hole, seen face on from the upstairs hall and when turning on
+  // the winders; centred on that wall between the hole's side walls (z 5.704–7.604 → 6.654), centre 1.57 m over the
+  // Övre plan floor. Each picture is 30 × 40 cm (the user); with a ~3 cm passe-partout and a 2 cm black frame that is
+  // 40 × 50 cm outside (*guess* from the photos; the watercolour runs to the frame on white paper, same size), 2 × 2
+  // with a 7 cm gap. The atlas (textures/stair-pictures.jpg, cropped and straightened from the photos, 720 × 920 px
+  // per frame inside) holds fikus, akvarell | peace, solros; `order` = which atlas cell hangs in each slot, top left
+  // → bottom right.
+  { type: 'pictures', level: 1, x: 5.551, z: 6.654, y: 1.57, rot: 90, w: 0.4, h: 0.5, gap: 0.07, frame: 0.02, depth: 0.03,
     cols: 2, rows: 2, atlas: 'textures/stair-pictures.jpg', grid: [2, 2], order: [0, 1, 2, 3] },
   // Areca / golden cane palm (#106, the user's Amazon pick: "Gold Palm 130 cm", nursery pot Ø 24) in a big anthracite
   // fibre-clay pot (Ø 40 × 45 cm, our pick) right of the patio door seen from inside (between the west party wall at
