@@ -539,7 +539,8 @@ export const LAUNDRY_SINK = { w: 0.22, d: 0.36, depth: 0.15 };
 // Wall cabinet over the Tvätt worktop (#138, the user: there is one, with white doors; Peab's redrawn plan does
 // not show it). Over the whole run (machines + sink), white Arkitekt plus Frost doors like the base unit, three
 // units; bottom 58 cm over the worktop, top 30 cm under the lowered ceiling (RH 2.5). Depth/heights *guess*.
-export const LAUNDRY_CABINET = { depth: 0.35, y0: 1.49, y1: 2.2, units: 3 };
+// the wall cabinet covers the north `share` of the worktop: none over the sink (the user, #153)
+export const LAUNDRY_CABINET = { depth: 0.35, y0: 1.49, y1: 2.2, units: 2, share: 2 / 3 };
 export const VANITY_BASIN = { depth: 0.1 };
 
 // Changelog note (src/changelog.js) on the freezer door: its front is the plan's F cabinet

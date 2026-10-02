@@ -590,14 +590,15 @@ function buildLaundry(B, group, floor, room, y0, handled, taps, appliances) {
   // the wall cabinet over the worktop (#138): white doors that open, detergent and towels inside
   const C = LAUNDRY_CABINET, cy0 = y0 + C.y0, cy1 = y0 + C.y1, shelf = cy0 + (cy1 - cy0) * 0.5 + 0.007;
   const xIn = run.x0 + 0.02, towels = [], bottles = [], caps = [];
+  const cz1 = run.z0 + (run.z1 - run.z0) * C.share;
   for (let k = 0; k < 3; k++) towels.push(new THREE.BoxGeometry(0.25, 0.045, 0.3).translate(xIn + 0.15, cy0 + 0.016 + 0.0225 + k * 0.046, run.z0 + 0.25)); // folded towels
-  for (let k = 0; k < 2; k++) towels.push(new THREE.BoxGeometry(0.25, 0.045, 0.3).translate(xIn + 0.15, cy0 + 0.016 + 0.0225 + k * 0.046, run.z0 + 0.62));
-  for (const [dz, h, r] of [[0.95, 0.24, 0.045], [1.07, 0.2, 0.04], [1.32, 0.28, 0.05]]) { // bottles of detergent and fabric softener
+  for (let k = 0; k < 2; k++) towels.push(new THREE.BoxGeometry(0.25, 0.045, 0.3).translate(xIn + 0.15, cy0 + 0.016 + 0.0225 + k * 0.046, run.z0 + 0.76));
+  for (const [dz, h, r] of [[0.2, 0.24, 0.045], [0.34, 0.2, 0.04], [0.85, 0.28, 0.05]]) { // bottles of detergent and fabric softener
     bottles.push(new THREE.CylinderGeometry(r, r, h, 14).translate(xIn + 0.12, shelf + h / 2, run.z0 + dz));
     caps.push(new THREE.CylinderGeometry(r * 0.45, r * 0.45, 0.03, 10).translate(xIn + 0.12, shelf + h + 0.015, run.z0 + dz));
   }
-  bottles.push(new THREE.BoxGeometry(0.18, 0.22, 0.12).translate(xIn + 0.13, cy0 + 0.016 + 0.11, run.z0 + 1.3)); // a box of washing powder
-  const lc = wallCabinet({ wall: run.x0, dir: 1, z0: run.z0, z1: run.z1, y0: cy0, y1: cy1, depth: C.depth, units: C.units, material: M.laundry, handle: M.chrome,
+  bottles.push(new THREE.BoxGeometry(0.18, 0.22, 0.12).translate(xIn + 0.13, cy0 + 0.016 + 0.11, run.z0 + 1.02)); // a box of washing powder
+  const lc = wallCabinet({ wall: run.x0, dir: 1, z0: run.z0, z1: cz1, y0: cy0, y1: cy1, depth: C.depth, units: C.units, material: M.laundry, handle: M.chrome,
     contents: [[towels, std(0xd9e6ea, { roughness: 0.95 })], [bottles, std(0x3b7fc4, { roughness: 0.4 })], [caps, M.white]] });
   group.add(lc.object);
   appliances.push(...lc.doors);

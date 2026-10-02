@@ -93,7 +93,7 @@ src/minimap.js         plan view with the visitor's arrow, current room highligh
                        stats (Tab / T / 📊, #85), K shows it alone
 src/measure.js         tape measure (Q / 📏): two points on any surface, distance label
 src/cabinets.js        wall cabinets with side-hung doors that open with E (kind 'cabinet', in world.lids), e.g. the
-                       Tvätt wall cabinet over the worktop (LAUNDRY_CABINET, #138)
+                       Tvätt wall cabinet over the machines, none over the sink (LAUNDRY_CABINET, #138, #153)
 src/openables.js       Openable (#103): the shared helper for fronts that open with E — 'hinge' (with a `max` stop, never
                        through a neighbour), 'flap' (bottom- or top-hinged), 'drawer'; kind 'cabinet', in world.lids.
                        interior.js builds the kitchen fronts, vanity drawers, the Stage 50 mirror cabinet, the laundry sink
