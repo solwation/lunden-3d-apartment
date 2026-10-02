@@ -496,8 +496,13 @@ export const CAT_LEAVE = { dist: 3, speed: 0.6, fade: 1.2 };
 // fresh coffee is hot and cools over `seconds` (real ones steam a few minutes), cold milk cools it by `milk` × its share;
 // `opacity` at the hottest, full cup. Our picks, tuned on screenshots.
 export const CUP_STEAM = { seconds: 240, strips: 3, segments: 10, height: 0.13, width: 0.018, opacity: 0.4, milk: 2.5, drift: 0.04 };
+// Cup patterns (#215, cups.js `DESIGNS`): every cup gets one; opening the cabinet fills an empty shelf spot with a new
+// cup of a random pattern (not one already in there). At most `maxOut` cups stand outside the cabinet: past that the
+// one put down longest ago goes. `designs` = the pattern names drawn in cups.js (the family's names after #164).
 export const CUPS = { n: 3, r: 0.04, h: 0.09, color: 0xf3f1ec, coffee: 0x2a1408, pour: 0.25, counter: { x: 5.2, z: 1.68 },
-  sip: 0.2, held: { x: 0.18, y: -0.2, z: -0.4 }, jugHeld: { x: 0.22, y: -0.26, z: -0.55 } }; // jugHeld: the jug in the view (#141)
+  sip: 0.2, maxOut: 8, designs: ['blue-stripes', 'mustard-stripes', 'red-dots', 'flowers', 'blue-white', 'cat', 'sarah', 'olof',
+    'hearts', 'black-gold', 'rainbow', 'lunden', 'letter-T', 'letter-K', 'letter-W', 'letter-L'],
+  held: { x: 0.18, y: -0.2, z: -0.4 }, jugHeld: { x: 0.22, y: -0.26, z: -0.55 } }; // jugHeld: the jug in the view (#141)
 
 // Drinks (#166–#169, src/drinks.js): what a glass or a cup holds. Per drink its colour, opacity and `tint` (how
 // strongly it colours a mix: a splash of milk lightens coffee more than its share, guess). `pour`: what one pour

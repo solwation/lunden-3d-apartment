@@ -85,7 +85,7 @@ f.onload = async () => {
   pass &= check(!heldItem() && cup.state === 'placed' && Math.abs(cup.model.position.y) < 0.01 && Math.abs(cup.model.rotation.x) < 1e-6, `the cup stands on the floor (y ${cup.model.position.y.toFixed(3)})`);
   // F: everything put down goes home
   w.__app.toggleFurniture(false);
-  pass &= check(!world.furnitureOn && !saber.placed && Math.abs(cup.model.position.z - cup.counter.z) < 0.01, 'F: the saber is home, the cup on the worktop');
+  pass &= check(!world.furnitureOn && !saber.placed && cup.state !== 'placed' && cups.cups.filter((c) => c.state === 'cabinet').length === 3, 'F: the saber is home, the cup off the floor, three cups in the cabinet (#215)');
   w.__app.toggleFurniture(true);
   out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
 };

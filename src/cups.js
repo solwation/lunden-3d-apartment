@@ -11,6 +11,9 @@ import { Contents, pourAmount, drinkName } from './drinks.js';
 // stands somewhere pours (the jug's level drops by CUPS.pour per cup); E on the hot plate puts it back.
 // Brewing only fills the jug while it stands there (coffee.js). One held thing at a time (holdable.js).
 // What is in a cup is a Contents (drinks.js, #167): coffee, and whatever else DRINKS.pour.cup lets in.
+// Patterns (#215): every cup wears one of DESIGNS (a canvas drawn once per pattern, shared). The cabinet has three
+// shelf spots; opening it fills an empty one with a cup of a new random pattern (from the spare pool, or the cup put
+// down longest ago once CUPS.maxOut stand outside). A cup put back keeps its pattern. Spare cups are not in the scene.
 
 const white = new THREE.MeshStandardMaterial({ color: 0xf6f6f3, roughness: 0.6 });
 
@@ -39,9 +42,12 @@ export function cupCabinet(c) {
   const cab = {
     name: 'skåpet', kind: 'appliance', isOpen: false, z0: c.z0, width: W, t: 0, object: door, pickable: door, door, hinge: 'side', lamp: { emissiveIntensity: 0 },
     get verb() { return this.isOpen && heldItem()?.isCup ? 'ställa tillbaka koppen i' : this.isOpen ? 'stänga' : 'öppna'; },
+    get blocked() { return this.isOpen && !!heldItem()?.isCup && this.freeSlot?.() < 0; }, // all three spots taken (#215)
+    get blockedText() { return this.blocked ? 'Skåpet är fullt' : undefined; },
     toggle() {
-      if (this.isOpen && heldItem()?.isCup) { heldItem().goHome(); return; } // the held cup back on its shelf (#141)
+      if (this.isOpen && heldItem()?.isCup) { if (this.freeSlot?.() >= 0) heldItem().goHome(); return; } // the held cup back on its shelf (#141)
       this.isOpen = !this.isOpen; sfx.click(door.getWorldPosition(new THREE.Vector3()));
+      if (this.isOpen) this.onOpen?.(); // a new cup on every empty spot (#215)
     },
     update(dt) {
       const target = this.isOpen ? 1 : 0;
@@ -123,25 +129,79 @@ class Steam {
   }
 }
 
+// ---------- patterns (#215) ----------
+
+const PAT_W = 512, PAT_H = 192; // the texture wraps once round the mug; x = 0 is opposite the handle's side
+const nameText = (g, text, colour, size = 54) => { g.fillStyle = colour; g.font = `bold ${size}px "Comic Sans MS", "Segoe Print", cursive, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(text, PAT_W * 0.75, PAT_H / 2); };
+const heart = (g, x, y, r) => { g.beginPath(); g.moveTo(x, y + r * 0.9); g.bezierCurveTo(x - r * 1.6, y - r * 0.2, x - r * 0.6, y - r * 1.3, x, y - r * 0.4); g.bezierCurveTo(x + r * 0.6, y - r * 1.3, x + r * 1.6, y - r * 0.2, x, y + r * 0.9); g.fill(); };
+/** name → { base: the handle / inside colour, draw(g) on a PAT_W × PAT_H canvas }. */
+export const DESIGNS = {
+  'blue-stripes': { base: 0xf6f6f3, draw(g) { g.fillStyle = '#f6f6f3'; g.fillRect(0, 0, PAT_W, PAT_H); g.fillStyle = '#2d5d9a'; for (let y = 14; y < PAT_H; y += 30) g.fillRect(0, y, PAT_W, 12); } },
+  'mustard-stripes': { base: 0xf4efe2, draw(g) { g.fillStyle = '#f4efe2'; g.fillRect(0, 0, PAT_W, PAT_H); g.fillStyle = '#d8a530'; for (let x = 0; x < PAT_W; x += 48) g.fillRect(x, 0, 24, PAT_H); } },
+  'red-dots': { base: 0xfaf8f4, draw(g) { g.fillStyle = '#faf8f4'; g.fillRect(0, 0, PAT_W, PAT_H); g.fillStyle = '#c8302c'; for (let y = 16, r = 0; y < PAT_H; y += 32, r++) for (let x = (r % 2) * 20 + 10; x < PAT_W; x += 40) { g.beginPath(); g.arc(x, y, 8, 0, 7); g.fill(); } } },
+  flowers: { base: 0xffffff, draw(g) { g.fillStyle = '#ffffff'; g.fillRect(0, 0, PAT_W, PAT_H); // big poppy-like blooms (our own)
+    for (const [x, y, r, c] of [[60, 70, 54, '#e5484d'], [190, 130, 46, '#f39a2b'], [320, 60, 58, '#e5484d'], [450, 140, 50, '#f2c230'], [-60, 140, 50, '#f2c230']]) {
+      g.fillStyle = c; for (let k = 0; k < 4; k++) { const a = k * Math.PI / 2 + 0.4; g.beginPath(); g.ellipse(x + Math.cos(a) * r * 0.45, y + Math.sin(a) * r * 0.45, r * 0.55, r * 0.42, a, 0, 7); g.fill(); }
+      g.fillStyle = '#2b2b2b'; g.beginPath(); g.arc(x, y, r * 0.22, 0, 7); g.fill();
+    } } },
+  'blue-white': { base: 0xf7f8fb, draw(g) { g.fillStyle = '#f7f8fb'; g.fillRect(0, 0, PAT_W, PAT_H); g.strokeStyle = '#1f3f8a'; g.fillStyle = '#1f3f8a'; g.lineWidth = 4;
+    g.fillRect(0, 8, PAT_W, 6); g.fillRect(0, PAT_H - 14, PAT_W, 6);
+    for (let x = 32; x < PAT_W; x += 128) { g.beginPath(); g.arc(x + 32, 96, 30, 0, 7); g.stroke(); for (let k = 0; k < 8; k++) { const a = k * Math.PI / 4; g.beginPath(); g.ellipse(x + 32 + Math.cos(a) * 44, 96 + Math.sin(a) * 44, 10, 5, a, 0, 7); g.fill(); } g.beginPath(); g.arc(x + 32, 96, 10, 0, 7); g.fill(); } } },
+  cat: { base: 0xf6f6f3, draw(g) { g.fillStyle = '#f6f6f3'; g.fillRect(0, 0, PAT_W, PAT_H); const x = PAT_W * 0.75; // a cat peeking over the rim
+    g.fillStyle = '#3b3b3e'; g.beginPath(); g.ellipse(x, 70, 64, 52, 0, 0, 7); g.fill();
+    for (const s of [-1, 1]) { g.beginPath(); g.moveTo(x + s * 58, 40); g.lineTo(x + s * 44, -6); g.lineTo(x + s * 18, 26); g.fill(); }
+    g.fillStyle = '#f2d34b'; for (const s of [-1, 1]) { g.beginPath(); g.ellipse(x + s * 24, 66, 11, 14, 0, 0, 7); g.fill(); }
+    g.fillStyle = '#111'; for (const s of [-1, 1]) { g.beginPath(); g.ellipse(x + s * 24, 66, 4, 11, 0, 0, 7); g.fill(); }
+    g.fillStyle = '#e88a9b'; g.beginPath(); g.moveTo(x - 7, 86); g.lineTo(x + 7, 86); g.lineTo(x, 94); g.fill();
+    g.fillStyle = '#3b3b3e'; for (const s of [-1, 1]) { g.beginPath(); g.ellipse(x + s * 40, 124, 20, 13, 0, 0, 7); g.fill(); } } },
+  sarah: { base: 0xfde9ef, draw(g) { g.fillStyle = '#fde9ef'; g.fillRect(0, 0, PAT_W, PAT_H); g.fillStyle = '#e46f93'; heart(g, PAT_W * 0.75, 52, 16); nameText(g, 'Sarah', '#b3305a'); } },
+  olof: { base: 0xe6eef7, draw(g) { g.fillStyle = '#e6eef7'; g.fillRect(0, 0, PAT_W, PAT_H); g.fillStyle = '#2d5d9a'; g.fillRect(0, PAT_H - 22, PAT_W, 10); nameText(g, 'Olof', '#1f3f6f'); } },
+  hearts: { base: 0x4f8f5a, draw(g) { g.fillStyle = '#4f8f5a'; g.fillRect(0, 0, PAT_W, PAT_H); g.fillStyle = '#ffffff'; for (let y = 30, r = 0; y < PAT_H; y += 52, r++) for (let x = (r % 2) * 32 + 20; x < PAT_W; x += 64) heart(g, x, y, 12); } },
+  'black-gold': { base: 0x1c1c1e, draw(g) { g.fillStyle = '#1c1c1e'; g.fillRect(0, 0, PAT_W, PAT_H); g.fillStyle = '#d4af37'; g.fillRect(0, 0, PAT_W, 9); } },
+  rainbow: { base: 0xffffff, draw(g) { g.fillStyle = '#ffffff'; g.fillRect(0, 0, PAT_W, PAT_H); ['#e5484d', '#f39a2b', '#f2c230', '#46a758', '#3e8ed0', '#8e4ec6'].forEach((c, i) => { g.strokeStyle = c; g.lineWidth = 11; g.beginPath(); g.arc(PAT_W * 0.75, PAT_H + 10, 120 - i * 12, Math.PI, 0); g.stroke(); }); } },
+  lunden: { base: 0xf4f1ea, draw(g) { g.fillStyle = '#f4f1ea'; g.fillRect(0, 0, PAT_W, PAT_H); const x = PAT_W * 0.75; // a little brick house
+    g.fillStyle = '#a8432c'; g.fillRect(x - 46, 52, 92, 64); g.fillStyle = '#3b3b3e'; g.beginPath(); g.moveTo(x - 56, 54); g.lineTo(x, 18); g.lineTo(x + 56, 54); g.fill();
+    g.fillStyle = '#f6f6f3'; g.fillRect(x - 10, 82, 20, 34); g.fillRect(x - 36, 66, 18, 16); g.fillRect(x + 18, 66, 18, 16);
+    g.fillStyle = '#3b3b3e'; g.font = 'bold 26px sans-serif'; g.textAlign = 'center'; g.fillText('Lunden L1007', x, 150); } },
+};
+for (const L of 'TKWLSO') DESIGNS[`letter-${L}`] = { base: 0xf6f6f3, draw(g) { g.fillStyle = '#f6f6f3'; g.fillRect(0, 0, PAT_W, PAT_H); g.fillStyle = '#2b2b2b'; g.font = 'bold 140px Georgia, serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(L, PAT_W * 0.75, PAT_H / 2 + 8); } };
+const patTex = new Map();
+function patternTexture(design) {
+  if (!patTex.has(design)) {
+    const c = document.createElement('canvas');
+    c.width = PAT_W; c.height = PAT_H;
+    (DESIGNS[design] ?? DESIGNS['blue-stripes']).draw(c.getContext('2d'));
+    const t = new THREE.CanvasTexture(c);
+    t.colorSpace = THREE.SRGBColorSpace;
+    t.anisotropy = 4;
+    patTex.set(design, t);
+  }
+  return patTex.get(design);
+}
+
 function mugModel() {
   const g = new THREE.Group();
-  const body = new THREE.Mesh(new THREE.CylinderGeometry(C.r, C.r * 0.92, C.h, 20, 1, true), new THREE.MeshStandardMaterial({ color: C.color, roughness: 0.3, side: THREE.DoubleSide }));
+  // the outside wears the pattern (#215); inside, the bottom and the handle are the pattern's base colour
+  const body = new THREE.Mesh(new THREE.CylinderGeometry(C.r, C.r * 0.92, C.h, 28, 1, true), new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3 }));
   body.position.y = C.h / 2;
-  const bottom = new THREE.Mesh(new THREE.CircleGeometry(C.r * 0.92, 20).rotateX(-Math.PI / 2), body.material);
+  const plain = new THREE.MeshStandardMaterial({ color: C.color, roughness: 0.3, side: THREE.DoubleSide });
+  const inner = new THREE.Mesh(new THREE.CylinderGeometry(C.r * 0.985, C.r * 0.905, C.h * 0.995, 20, 1, true), new THREE.MeshStandardMaterial({ color: C.color, roughness: 0.3, side: THREE.BackSide }));
+  inner.position.y = C.h / 2;
+  const bottom = new THREE.Mesh(new THREE.CircleGeometry(C.r * 0.92, 20).rotateX(-Math.PI / 2), plain);
   bottom.position.y = 0.004;
-  const handle = new THREE.Mesh(new THREE.TorusGeometry(0.026, 0.007, 8, 16, Math.PI), body.material);
+  const handle = new THREE.Mesh(new THREE.TorusGeometry(0.026, 0.007, 8, 16, Math.PI), plain);
   handle.rotation.z = -Math.PI / 2; handle.position.set(C.r + 0.002, C.h * 0.55, 0);
   const coffee = new THREE.Mesh(new THREE.CircleGeometry(C.r * 0.94, 20).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ color: C.coffee, roughness: 0.15 }));
   coffee.visible = false;
-  g.add(body, bottom, handle, coffee);
+  g.add(body, inner, bottom, handle, coffee);
   g.traverse((m) => { if (m.isMesh) m.castShadow = true; });
-  return { g, coffee };
+  return { g, coffee, body, plain, inner };
 }
 
 export class Cup {
-  constructor(scene, camera, homePos, counter) {
-    const { g, coffee } = mugModel();
-    Object.assign(this, { name: 'koppen', placeVerb: 'ställa ner', isCup: true, scene, camera, model: g, coffee, counter, home: homePos.clone(),
+  constructor(scene, camera, homePos, counter, design) {
+    const { g, coffee, body, plain, inner } = mugModel();
+    Object.assign(this, { name: 'koppen', placeVerb: 'ställa ner', isCup: true, scene, camera, model: g, coffee, counter, home: homePos.clone(), body, plain, inner, slot: null, placedAt: 0,
       state: 'cabinet', contents: new Contents(), held: false, steamT: 0, heat: 0, coffeeWas: 0, milkWas: 0 });
     const cup = this;
     this.target = { get name() { return cup.kask ? 'koppen med kaffekask' : 'koppen'; }, kind: 'cup', pickable: g, cup: this, item: this, get verb() { return cup.verb; },
@@ -149,9 +209,19 @@ export class Cup {
     g.traverse((m) => { m.userData.door = this.target; });
     scene.add(g);
     g.position.copy(homePos);
+    this.setDesign(design);
     this.steam = new Steam();
     g.add(this.steam.mesh);
     this.lastAt = homePos.clone();
+  }
+
+  /** Wear pattern `d` (DESIGNS): the outside's texture, the base colour inside / on the handle. */
+  setDesign(d) {
+    this.design = d;
+    this.body.material.map = patternTexture(d);
+    this.body.material.needsUpdate = true;
+    const base = (DESIGNS[d] ?? DESIGNS['blue-stripes']).base;
+    this.plain.color.setHex(base); this.inner.material.color.setHex(base);
   }
 
   get fill() { return this.contents.total; }
@@ -217,6 +287,7 @@ export class Cup {
     setHeld(this);
     this.held = true;
     this.state = 'held';
+    this.slot = null; // off its shelf spot
     if (!this.camera.parent) this.scene.add(this.camera);
     this.camera.add(this.model);
     this.model.position.set(C.held.x, C.held.y, C.held.z);
@@ -229,17 +300,20 @@ export class Cup {
     this.held = false;
     if (heldItem() === this) setHeld(null);
     this.state = 'placed';
+    this.placedAt = performance.now();
     this.scene.add(this.model);
     this.model.position.set(p.x, p.y, p.z);
     this.model.rotation.set(0, Math.random() * 6, 0);
     sfx.click(this.model.position);
   }
 
-  /** Back on its shelf in the cabinet (#141). */
-  goHome() {
+  /** Back on a shelf spot in the cabinet (#141): `slot`, or the first free one (cups.js buildCups sets `freeSlot`). */
+  goHome(slot = this.slot ?? Math.max(0, this.freeSlot?.() ?? 0)) {
     this.held = false;
     if (heldItem() === this) setHeld(null);
     this.state = 'cabinet';
+    this.slot = slot;
+    if (this.slots) this.home.copy(this.slots[slot]);
     this.scene.add(this.model);
     this.model.position.copy(this.home);
     this.model.rotation.set(0, 0, 0);
@@ -348,7 +422,41 @@ export function buildCups(scene, camera, world, cabinetBox) {
   world.lids.push(cab.cab);
   const counterY = world.cupSurfaces?.find((s) => s.userData.counter)?.userData.surface ?? cabinetBox.counterY;
   const counter = new THREE.Vector3(C.counter.x, counterY, C.counter.z);
-  const cups = [...Array(C.n)].map((_, i) => new Cup(scene, camera, new THREE.Vector3(cab.x - 0.02, cab.shelfY, cab.zc + (i - 1) * 0.11), counter));
+  const slots = [...Array(C.n)].map((_, i) => new THREE.Vector3(cab.x - 0.02, cab.shelfY, cab.zc + (i - 1) * 0.11));
+  // three random patterns to start with (&cups=i,j,k picks them for screenshots)
+  const asked = new URLSearchParams(location.search).get('cups')?.split(',').map(Number);
+  const pool = [...C.designs];
+  const pick = (not = []) => { const free = pool.filter((d) => !not.includes(d)); return free[Math.floor(Math.random() * free.length)] ?? pool[0]; };
+  const first = [];
+  for (let i = 0; i < C.n; i++) first.push(asked?.[i] !== undefined && C.designs[asked[i]] ? C.designs[asked[i]] : pick(first));
+  // the pool: the cabinet's cups and up to maxOut more; the spare ones are not in the scene
+  const cups = [...Array(C.n + C.maxOut)].map((_, i) => new Cup(scene, camera, slots[i % C.n], counter, first[i] ?? pick()));
+  const inCab = () => cups.filter((c) => c.state === 'cabinet');
+  const freeSlot = () => slots.findIndex((_, i) => !inCab().some((c) => c.slot === i));
+  cups.forEach((c, i) => {
+    Object.assign(c, { slots, freeSlot });
+    if (i < C.n) { c.slot = i; return; }
+    c.state = 'spare';
+    c.model.removeFromParent();
+  });
+  /** Opening the cabinet (#215): every empty shelf spot gets a new cup with a pattern not already in there. */
+  function refill() {
+    for (let i = freeSlot(); i >= 0; i = freeSlot()) {
+      let c = cups.find((x) => x.state === 'spare');
+      if (!c) c = cups.filter((x) => x.state === 'placed').sort((a, b) => a.placedAt - b.placedAt)[0]; // the oldest out goes
+      if (!c) return;
+      c.contents.clear(); c.heat = 0; c.coffeeWas = c.milkWas = 0; c.show();
+      c.setDesign(pick(inCab().map((x) => x.design)));
+      c.goHome(i);
+    }
+  }
+  /** F: every cup outside the cabinet goes, the cabinet is full. */
+  function reset() {
+    for (const c of cups) if (c.state === 'placed') { c.state = 'spare'; c.model.removeFromParent(); }
+    refill();
+  }
+  cab.cab.onOpen = refill;
+  cab.cab.freeSlot = freeSlot;
   const jug = new Jug(scene, camera, mocca);
-  return { cups, jug, cabinet: cab.cab, group: [cab.object, ...cups.map((c) => c.model)], update(dt) { for (const c of cups) c.update(dt); } };
+  return { cups, jug, cabinet: cab.cab, refill, reset, slots, group: [cab.object, ...cups.map((c) => c.model)], update(dt) { for (const c of cups) if (c.state !== 'spare') c.update(dt); } };
 }

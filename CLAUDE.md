@@ -179,6 +179,9 @@ src/cups.js            coffee cups (CUPS): the wall cabinet over the Moccamaster
                        with E on it; the jug is a Holdable (Jug): E on a standing cup pours, E on the hot plate puts it back;
                        a cup holds a Contents (drinks.js): milk and whisky pour in too (DRINKS.pour.cup); coffee + whisky =
                        `kask` ("koppen med kaffekask", sips count as stats.kask, #169);
+                       patterns (#215, `DESIGNS`, CUPS.designs; `&cups=i,j,k`): opening the cabinet puts a cup of a new pattern on
+                       every empty shelf spot (a spare from the pool, or the one put down longest ago past CUPS.maxOut); spare
+                       cups are out of the scene (state 'spare'); a cup put back keeps its pattern; F: none out, three in
                        steam (#216, CUP_STEAM): a few swaying wisps in one mesh per cup while it is hot (`heat`: fresh coffee 1,
                        cools over CUP_STEAM.seconds, milk cools it), leaning back when the cup moves
 src/fishfingers.js     fish fingers (FISH, #162): a carton on the freezer's lower shelf; E takes one straight into the hand

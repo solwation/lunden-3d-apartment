@@ -134,6 +134,36 @@ f.onload = async () => {
   pass &= check(c3.steamLevel < hot - 0.05, `milk in it: less steam (${hot.toFixed(2)} → ${c3.steamLevel.toFixed(2)})`);
   steps(250);
   pass &= check(!shows(c3) && c3.steamLevel === 0, 'after four minutes it has cooled: no steam');
+  // patterns and refills (#215): a missing cup is replaced on opening, never more than CUPS.maxOut out, F fills the cabinet
+  try {
+  const MAX_OUT = 8;
+  if (heldItem()) heldItem().putBack?.();
+  w.__app.toggleFurniture(false); w.__app.toggleFurniture(true);
+  const inCab = () => cups.cups.filter((c) => c.state === 'cabinet'), outside = () => cups.cups.filter((c) => c.state === 'placed' || c.state === 'held');
+  pass &= check(inCab().length === 3 && !outside().length && new Set(inCab().map((c) => c.design)).size === 3, `three cups, three patterns (${inCab().map((c) => c.design).join(', ')})`);
+  if (!cab.isOpen) cab.toggle();
+  const spot = (i) => cup.counter.clone().add(new V(0, 0, -0.1 - 0.06 * (i % 4))).setX(cup.counter.x - 0.08 * Math.floor(i / 4));
+  const a1 = inCab()[0]; a1.take(); a1.placeAt(spot(0));
+  cab.toggle(); cab.toggle(); // close, open
+  pass &= check(inCab().length === 3 && outside().length === 1 && new Set(inCab().map((c) => c.design)).size === 3, `opened again: a new cup on the empty spot (${inCab().map((c) => c.design).join(', ')}), 1 out`);
+  for (let i = 1; i < 12; i++) { const c = inCab()[0]; c.take(); c.placeAt(spot(i)); cab.toggle(); cab.toggle(); }
+  pass &= check(inCab().length === 3 && outside().length === MAX_OUT, `after 12 taken out: still 3 in the cabinet, ${outside().length} out (max ${MAX_OUT})`);
+  // the cabinet full and a cup in the hand: "Skåpet är fullt"; with a spot free it goes back keeping its pattern
+  const b = outside()[0]; b.take();
+  pass &= check(cab.blocked && cab.blockedText === 'Skåpet är fullt', `the cabinet full: "${cab.blockedText}"`);
+  b.placeAt(spot(0));
+  const c1 = inCab()[1]; c1.take(); c1.placeAt(spot(1));
+  const back = outside().find((c) => c !== c1); const keep = back.design; back.take(); cab.toggle();
+  pass &= check(back.state === 'cabinet' && back.design === keep && inCab().length === 3, `put back on the free spot, still "${keep}"`);
+  // a refilled cup pours and drinks like the others
+  const fresh = inCab()[0]; fresh.take(); fresh.placeAt(spot(2)); fresh.setFill(0.6); fresh.take();
+  fresh.use(); steps(1);
+  pass &= check(Math.abs(fresh.fill - 0.4) < 1e-6, `a refilled cup drinks (${fresh.fill.toFixed(2)})`);
+  fresh.putBack();
+  w.__app.toggleFurniture(false);
+  pass &= check(inCab().length === 3 && !outside().length, 'F: none left out, three in the cabinet');
+  w.__app.toggleFurniture(true);
+  } catch (e) { pass = false; lines.push(`FAIL error ${e.stack}`); }
   out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
 };
 </script>

@@ -822,7 +822,7 @@ function updateFocus() {
   const extra = [...(cat.visible ? [cat.object] : []), ...(keyCabinet?.keyReachable ? [world.carKey.pickable] : []),
     ...(world.furnitureOn ? [...(target.object.visible ? [target.target] : []), ...patio.targets, ...world.furnitureTargets, ...holdables.map((h) => h.target), drawing.target, ...posters.targets].map((t) => t.pickable) : [])]; // parasol, TV, seats, beds, toys — unless F hid the furniture
   // the nearest hit on something actually shown (F hides the loose items, the raycaster doesn't care)
-  const cupTargets = cups.cups.filter((c) => !c.held).map((c) => c.target.pickable);
+  const cupTargets = cups.cups.filter((c) => !c.held && c.state !== 'spare').map((c) => c.target.pickable);
   if (fish && world.furnitureOn) cupTargets.push(fish.target.pickable, ...fish.placed.map((f) => f.target.pickable), ...fish.inPan.map((f) => f.target.pickable)); // the carton + fish fingers lying out (#162) or in the pan (#214)
   const hit = raycaster.intersectObjects([...pickables, ...extra, ...cupTargets], true)
     .find((h) => shown(h.object) && !(rest.active && (h.object.userData.door === rest.target || h.object.userData.door?.kind === 'rest')));
@@ -907,7 +907,7 @@ function toggleFurniture(on = !world.furnitureOn) {
     heldItem()?.putBack(); toys.darts.hide();
     fish?.reset(); // the fish fingers lying around are cleared away, the carton is full again (#162)
     for (const h of holdables) if (h.placed) h.goHome();
-    for (const c of cups.cups) if (c.state === 'placed') c.model.position.copy(c.counter);
+    cups.reset(); // the cups standing out go, the cabinet is full again (#215)
   }
   if (!on && cat.visible) cat.hide(); // the cat goes too (and stops purring); none turn up until F is back
   if (!on) for (const t of world.furnitureTargets) if ((t.kind === 'tv' || t.kind === 'pc') && t.isOpen) t.toggle(); // screens off
