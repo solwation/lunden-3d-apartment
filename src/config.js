@@ -302,9 +302,11 @@ export const AO = {
   ceiling: { strength: 0.3, radius: 0.3 },
 };
 
-// Cork board with photos of petted cats (src/catboard.js), on the short wall between the hall
-// and the kitchen (its kitchen face, x 2.15, z 0.46–1.76). rotY π/2 = facing east.
-export const CAT_BOARD = { x: 2.15, y: 1.5, z: 1.11, w: 1.1, h: 0.76, rotY: Math.PI / 2 };
+// Cork board with photos of petted cats (src/catboard.js), straight under the kitchen wall clock and
+// a little to its right (WALL_CLOCK: Tvätt/Badrum wall, kitchen face x 2.152, z 3.145–5.244, clock
+// centre z 4.55, bottom 1.85 m): top edge 1.78 m, 0.29 m clear of the Badrum door (#37).
+// rotY π/2 = facing east.
+export const CAT_BOARD = { x: 2.152, y: 1.4, z: 4.4, w: 1.1, h: 0.76, rotY: Math.PI / 2 };
 
 // Day cycle (src/daycycle.js): one day in `minutes` real minutes. The sun follows the real solar
 // path for the date (declination, hour angle) at Kv. Lunden, Karpvägen / S:t Lars väg in Lund

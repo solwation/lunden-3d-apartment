@@ -43,7 +43,8 @@ f.onload = async () => {
   btn.click(); // petting again while it purrs counts once
   for (let i = 0; i < 6 * 60; i++) step(1 / 60);
   pass &= check(!cat.petting && !cat.hand.visible && cat.eyes.every((e) => e.eye.visible), 'stops after a while');
-  await wait(1200); // the photo is taken 0.7 s into the pat
+  // the photo is taken 0.7 s into the pat; rendering it + IndexedDB can take a while in SwiftShader
+  for (let i = 0; i < 100 && w.__app.board.photos.length === before && before < 10; i++) await wait(100);
   const after = w.__app.board.photos.length, last = w.__app.board.photos.at(-1);
   pass &= check((after === before + 1 || (before === 10 && after === 10)) && /^data:image\/jpeg/.test(last?.data ?? ''),
     `photo on the board (${before} → ${after}, "${last?.name}")`);
