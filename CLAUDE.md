@@ -16,8 +16,8 @@ in Swedish. Code, comments and this file are in English; UI text is Swedish.
 - Verify changes in a real browser before pushing (see *Testing*). Don't claim something
   works from reading the code alone.
 - **Every user-visible change gets an entry in `data/changelog.json`** (Swedish, newest first,
-  next `id`), in the same commit. It is shown on the start screen and on the note on the freezer;
-  entries newer than the visitor's last visit are marked "Nytt".
+  next `id`), in the same commit. It is shown only on the note on the freezer (the start screen just
+  says when there is news); entries newer than the visitor's last visit are marked "Nytt".
 - Keep this file and `README.md` up to date when behaviour, structure or known facts change.
 
 ## Architecture
@@ -63,8 +63,12 @@ src/catboard.js        cork board in the kitchen: a photo (offscreen render) of 
                        newest 10 in IndexedDB 'lunden'/'catPhotos', captioned with name + time
 src/signs.js           hand-lettered name signs on the bedroom doors (DOOR_SIGNS)
 src/water.js           running water: E on a tap/shower (world.taps from interior.js) → stream + hiss
-src/stats.js           visitor statistics (localStorage) + the translucent HUD panel (T toggles)
-src/changelog.js       changelog list (start screen) + the note on the freezer (E to read)
+src/stats.js           visitor statistics (localStorage), "+1" badges per event, the HUD panel
+                       (hidden; Tab held / T / 📊 shows it)
+src/changelog.js       changelog list + the note on the freezer (E to read)
+src/install.js         iPhone "add to home screen" sheet (no fullscreen API there); install link
+                       where the browser offers beforeinstallprompt
+manifest.webmanifest   web app manifest; icons/ = icon.svg rendered to PNG (192, 512, apple-touch 180)
 data/plan.json         GENERATED — do not edit by hand
 data/changelog.json    what changed, for visitors (see Workflow rules)
 tools/extract_plan.py  PDF → data/plan.json (stdlib only)
@@ -170,7 +174,7 @@ URL parameters (debugging / screenshots):
 - `&time=HH[.h]` — start at that hour (default: the visitor's clock), `&freeze` stops the clock,
   `&lights` turns every lamp on (they also start on when arriving in the dark).
 - `&water` — turn on every tap and shower.
-- `&note` — open the changelog note. `&pet` (with `&cat=`) — the cat is being petted.
+- `&install` — show the iPhone install sheet. `&note` — open the changelog note. `&pet` (with `&cat=`) — the cat is being petted.
 - `&clip=y` — clip everything above height y (cut-away plan view, e.g.
   `?shot&at=2.87,6.35,0,-90,16&clip=2.5` for Entréplan from above, `clip=5.6` + feet 19 for Övre plan).
 
@@ -232,6 +236,10 @@ screenshots into the session scratchpad, not the repo.
 
 - Start screen has two buttons: *Mus & tangentbord* (pointer lock) and *Touch* (joystick).
   A Surface has both, so the visitor chooses.
+- iPhone (Safari/Chrome) can't go fullscreen, and the browser bars shifted the tap targets of the
+  bottom-right buttons; `src/install.js` asks to add the page to the home screen first (skippable
+  per session). The page uses `viewport-fit=cover` with `--sl/--sr/--st/--sb` safe-area insets on
+  every HUD element, and `body` is `position: fixed` so iOS never scrolls/zooms it.
 - Phones/tablets: the Touch button goes fullscreen and calls `screen.orientation.lock('landscape')`
   (Android); in portrait with a coarse pointer (≤ 1100 px wide) a "rotate" overlay covers the page
   (iOS can't lock). Headless Chrome doesn't emulate `pointer: coarse` — test the overlay by hand.

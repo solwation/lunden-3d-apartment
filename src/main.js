@@ -8,7 +8,7 @@ import { CatSpawner, VARIANTS, BREEDS } from './cat.js';
 import { initAudio, sfx, toggleMuted, isMuted, updateListener } from './audio.js';
 import { stairHeight } from './stairs.js';
 import { loadChangelog, renderChangelog, buildNote } from './changelog.js';
-import { bump, catFound, renderStats, resetStats, statsShown, setStatsShown, visitRoom, setRoomTotal } from './stats.js';
+import { bump, catFound, renderStats, resetStats, visitRoom, setRoomTotal, setBadgeElement } from './stats.js';
 import { Minimap } from './minimap.js';
 import { Measure } from './measure.js';
 import { cloudTexture } from './surroundings.js';
@@ -16,6 +16,7 @@ import { DayCycle } from './daycycle.js';
 import { Tap, animateWater } from './water.js';
 import { CatBoard, snapshot } from './catboard.js';
 import { Lights } from './lights.js';
+import { setupInstall } from './install.js';
 
 const overlay = document.getElementById('overlay');
 const hud = document.getElementById('hud');
@@ -23,6 +24,8 @@ const levelEl = document.getElementById('level');
 const promptEl = document.getElementById('prompt');
 const actionBtn = document.getElementById('action');
 const pauseBtn = document.getElementById('pause');
+// iPhone: "add to home screen" first (&install shows the sheet anywhere, for screenshots)
+setupInstall({ force: new URLSearchParams(location.search).has('install') });
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
@@ -65,10 +68,9 @@ sun.shadow.bias = -0.0005;
 sun.shadow.normalBias = 0.02;
 scene.add(sun, sun.target);
 
-// Changelog: latest entries on the start screen, the full list on a note on the freezer
+// Changelog: only on the note on the freezer (the start screen just says when there is news)
 const changelog = await loadChangelog();
-renderChangelog(document.getElementById('changes'), changelog, 3);
-document.getElementById('changes-box').hidden = !changelog.length;
+document.getElementById('news-hint').hidden = !changelog.some((e) => e.isNew);
 const note = buildNote(changelog);
 scene.add(note.object);
 const noteEl = document.getElementById('note');
@@ -256,7 +258,7 @@ document.addEventListener('pointerlockchange', () => {
   locked = document.pointerLockElement === canvas;
   if (locked) touch.enabled = false;
   showOverlay(!locked);
-  if (!locked) player.keys.clear();
+  if (!locked) { player.keys.clear(); holdStats(false); }
   if (!locked && reading) showNote(false);
 });
 document.addEventListener('mousemove', (e) => {
@@ -272,13 +274,18 @@ document.addEventListener('keydown', (e) => {
   if (e.code === 'KeyE' && focused) use(focused);
   if (e.code === 'KeyM') updateMute(toggleMuted());
   if (e.code === 'KeyT') toggleStats();
+  if (e.code === 'Tab') { e.preventDefault(); if (!e.repeat) holdStats(true); }
   if (e.code === 'KeyK') toggleMap();
   if (e.code === 'KeyQ') measure.press();
   if (e.code === 'KeyF') toggleFurniture();
   if (e.code.startsWith('Arrow')) e.preventDefault();
 });
-document.addEventListener('keyup', (e) => player.keys.delete(e.code));
+document.addEventListener('keyup', (e) => {
+  player.keys.delete(e.code);
+  if (e.code === 'Tab') holdStats(false);
+});
 window.addEventListener('resize', () => {
+  window.scrollTo(0, 0); // iOS may have scrolled the page when the bars or orientation changed
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
@@ -330,13 +337,17 @@ function toggleFurniture(on = !world.furnitureOn) {
 try { if (localStorage.getItem('lunden.furniture') === '0') toggleFurniture(false); } catch { /* ignore */ }
 document.getElementById('furniture-btn').addEventListener('click', () => toggleFurniture());
 
-// --- statistics panel (T / 📊 toggles, reset on the start screen) ---------------
+// --- statistics panel: hidden; Tab held (like a scoreboard), T / 📊 toggle -------
+// Counted events pop up as small badges instead.
 const statsEl = document.getElementById('stats');
-function toggleStats(show = statsEl.hidden) {
+setBadgeElement(document.getElementById('badges'));
+let statsPinned = false;
+function showStats(show) {
+  if (show && statsEl.hidden) renderStats(statsEl);
   statsEl.hidden = !show;
-  setStatsShown(show);
 }
-toggleStats(statsShown());
+function toggleStats() { statsPinned = !statsPinned; showStats(statsPinned); }
+const holdStats = (down) => showStats(down || statsPinned);
 document.getElementById('stats-btn').addEventListener('click', () => toggleStats());
 document.getElementById('stats-reset').addEventListener('click', () => {
   if (confirm('Nollställa statistiken?')) { resetStats(); renderStats(statsEl); }

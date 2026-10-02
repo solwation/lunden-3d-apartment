@@ -18,20 +18,25 @@ Gå runt i lägenheten L1007 (Kv. Lunden, Peab) i webbläsaren som i ett FPS-spe
 | <kbd>F</kbd> | möbler av/på |
 | <kbd>Q</kbd> | mät: punkt 1, punkt 2 (tredje trycket rensar) |
 | <kbd>M</kbd> | ljud av/på |
-| <kbd>T</kbd> / <kbd>K</kbd> | visa/dölj statistiken / minikartan |
+| <kbd>Tab</kbd> | håll inne för att se statistiken (<kbd>T</kbd> låter den ligga kvar) |
+| <kbd>K</kbd> | visa/dölj minikartan |
 | <kbd>Esc</kbd> | släpp musen |
 
 **Touch (mobil, surfplatta, Surface):** välj *Touch* på startskärmen. Vänster tumme är en joystick
 (tryck ut den helt för att springa), dra med höger tumme för att titta, och tryck på knappen som
-dyker upp för att öppna och stänga dörrar.
+dyker upp för att öppna och stänga dörrar. 📊 visar statistiken.
+
+**iPhone:** sidan blir bara helskärm som app, så den ber dig först lägga till den på hemskärmen
+(Dela → *Lägg till på hemskärmen*). Appen har egen statistik, skild från webbläsarens.
 
 Öppna dörrar och garderober — ibland sitter det en katt där och tvättar sig. Gå fram och tryck
-<kbd>E</kbd> så får du klappa den. 🐈 Statistiken (katter, dörrar, steg …) sparas i webbläsaren.
+<kbd>E</kbd> så får du klappa den. 🐈 Statistiken (katter, dörrar, steg …) sparas i webbläsaren; varje
+sak du gör visas som en liten bricka ("✋ Klappat katt +1").
 
 Ett dygn går på 12 minuter — tänd lamporna med knapparna vid dörrarna när det blir mörkt.
 
-Vad som är nytt står på startskärmen och på lappen på frysen i köket (gå fram och tryck
-<kbd>E</kbd>). Det som tillkommit sedan ditt senaste besök är markerat *Nytt*.
+Vad som är nytt står på lappen på frysen i köket (gå fram och tryck <kbd>E</kbd>); startskärmen
+säger bara till när det finns nyheter. Det som tillkommit sedan ditt senaste besök är markerat *Nytt*.
 
 ## Köra lokalt
 

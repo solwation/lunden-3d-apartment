@@ -1,0 +1,16 @@
+{
+  "name": "Kv. Lunden L1007",
+  "short_name": "Lunden",
+  "description": "Gå runt i lägenhet L1007, Kv. Lunden, i 3D.",
+  "lang": "sv",
+  "start_url": "./",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#24373f",
+  "theme_color": "#24373f",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

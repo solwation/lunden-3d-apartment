@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- app icon: the brick row house with its lit windows, and a cat on the step -->
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#7fb6dd"/><stop offset="1" stop-color="#d7e9f5"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" fill="url(#sky)"/>
+  <rect y="408" width="512" height="104" fill="#7fa36a"/>
+  <polygon points="96,212 256,92 416,212" fill="#3b4a52"/>
+  <rect x="116" y="200" width="280" height="216" fill="#b5523b"/>
+  <g stroke="#9a4532" stroke-width="3">
+    <path d="M116 236h280M116 272h280M116 308h280M116 344h280M116 380h280"/>
+  </g>
+  <rect x="146" y="226" width="78" height="70" rx="3" fill="#ffe7a8" stroke="#fff" stroke-width="8"/>
+  <rect x="288" y="226" width="78" height="70" rx="3" fill="#ffe7a8" stroke="#fff" stroke-width="8"/>
+  <rect x="146" y="318" width="78" height="62" rx="3" fill="#ffe7a8" stroke="#fff" stroke-width="8"/>
+  <rect x="290" y="318" width="64" height="98" fill="#24373f" stroke="#fff" stroke-width="8"/>
+  <!-- cat -->
+  <g fill="#24373f">
+    <ellipse cx="410" cy="420" rx="34" ry="26"/>
+    <circle cx="412" cy="382" r="20"/>
+    <polygon points="396,372 398,350 410,366"/>
+    <polygon points="428,372 426,350 414,366"/>
+    <path d="M440 430 q34 -6 26 -46" stroke="#24373f" stroke-width="9" fill="none" stroke-linecap="round"/>
+  </g>
+</svg>

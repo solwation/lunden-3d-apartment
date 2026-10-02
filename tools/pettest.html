@@ -36,6 +36,8 @@ f.onload = async () => {
   btn.click();
   for (let i = 0; i < 40; i++) step(1 / 60);
   pass &= check(cat.petting, 'cat is being petted');
+  const badge = d.getElementById('badges').textContent;
+  pass &= check(/Klappat katt \+1/.test(badge), `badge "${badge}"`);
   pass &= check(cat.hand.visible, 'hand visible');
   pass &= check(cat.eyes.every((e) => e.shut.visible && !e.eye.visible), 'eyes closed');
   btn.click(); // petting again while it purrs counts once
@@ -45,6 +47,8 @@ f.onload = async () => {
   const after = w.__app.board.photos.length, last = w.__app.board.photos.at(-1);
   pass &= check((after === before + 1 || (before === 10 && after === 10)) && /^data:image\/jpeg/.test(last?.data ?? ''),
     `photo on the board (${before} → ${after}, "${last?.name}")`);
+  pass &= check(d.getElementById('stats').hidden, 'stats panel hidden by default');
+  d.getElementById('stats-btn').click();
   await wait(400); // panel refreshes 4×/s
   const petted = Number(d.querySelector('#stats')?.textContent.match(/Klappade katter(\d+)/)?.[1]);
   pass &= check(petted === 1, `stats panel: klappade katter = ${petted}`);

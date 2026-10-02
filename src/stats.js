@@ -1,7 +1,7 @@
 // Visitor statistics (cats found and petted, doors, steps …), kept in localStorage so they
-// survive a reload, shown in a small translucent panel (T / the 📊 button toggles it).
+// survive a reload. The panel is hidden (Tab held / T / the 📊 button shows it); instead a
+// small badge ("✋ Klappat katt +1") pops up for each counted event.
 const KEY = 'lunden.stats';
-const SHOW_KEY = 'lunden.statsShown';
 
 const fresh = () => ({ cats: 0, rare: 0, byVariant: {}, petted: 0, doors: 0, lids: 0, taps: 0, fridge: 0, lights: 0, steps: 0, metres: 0, stairs: 0, seconds: 0, visited: {} });
 
@@ -16,9 +16,43 @@ function load() {
 export const stats = load();
 let dirty = false;
 
+// Badge text per counter; counters missing here (metres, seconds) never get a badge
+const BADGES = {
+  petted: '✋ Klappat katt', doors: '🚪 Dörr öppnad', lids: '🚽 Toalettlock', taps: '💧 Kran påslagen',
+  fridge: '🍗 Kylskåpet öppnat', lights: '💡 Lampa tänd', stairs: '🪜 Trapptur',
+};
+const STEP_BADGE = 100; // a badge every 100 steps
+
+let badgeEl = null;
+/** Where the badges go (an empty container in the HUD). */
+export const setBadgeElement = (el) => { badgeEl = el; };
+
+/** Pop up a badge; the same text again while it is still shown adds to its count. */
+export function badge(text, count = true) {
+  if (!badgeEl) return;
+  let b = [...badgeEl.children].find((c) => c.dataset.text === text);
+  if (b) {
+    b.dataset.n = Number(b.dataset.n) + 1;
+    clearTimeout(b.timer);
+    b.classList.remove('bump');
+    void b.offsetWidth; // restart the pop animation
+  } else {
+    b = document.createElement('div');
+    b.dataset.text = text;
+    b.dataset.n = 1;
+    badgeEl.append(b);
+    while (badgeEl.children.length > 4) badgeEl.firstChild.remove();
+  }
+  b.textContent = count ? `${text} +${b.dataset.n}` : text;
+  b.classList.add('bump');
+  b.timer = setTimeout(() => b.remove(), 2600);
+}
+
 export function bump(key, n = 1) {
   stats[key] += n;
   dirty = true;
+  if (BADGES[key]) badge(BADGES[key]);
+  if (key === 'steps' && stats.steps % STEP_BADGE === 0) badge(`👣 ${stats.steps} steg`, false);
 }
 
 export function catFound(variantName, rare = false) {
@@ -26,6 +60,7 @@ export function catFound(variantName, rare = false) {
   if (rare) stats.rare += 1;
   stats.byVariant[variantName] = (stats.byVariant[variantName] ?? 0) + 1;
   dirty = true;
+  badge(rare ? '✨ Ovanlig katt hittad' : '🐈 Katt hittad');
 }
 
 let roomTotal = 0;
@@ -36,6 +71,7 @@ export function visitRoom(key) {
   if (stats.visited[key]) return;
   stats.visited[key] = true;
   dirty = true;
+  badge(`🏠 Nytt rum: ${key.split(':').slice(1).join(':')}`, false);
 }
 
 export function resetStats() {
@@ -51,13 +87,6 @@ function save() {
 }
 setInterval(save, 2000);
 addEventListener('pagehide', save);
-
-export function statsShown() {
-  try { return localStorage.getItem(SHOW_KEY) !== '0'; } catch { return true; }
-}
-export function setStatsShown(show) {
-  try { localStorage.setItem(SHOW_KEY, show ? '1' : '0'); } catch { /* ignore */ }
-}
 
 const fmtTime = (s) => {
   const m = Math.floor(s / 60), h = Math.floor(m / 60);
