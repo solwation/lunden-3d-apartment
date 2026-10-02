@@ -402,6 +402,12 @@ export const MARKS = {
 // E); taken out, a cup stands on the worktop south of the machine (`counter`), fills from the jug (each
 // cup takes `pour` of it), is held like a toy and can be put down on any table (furniture surfaces).
 // Sizes: a 9 cm tall, 8 cm wide mug (guess).
+// Fish fingers in the freezer (#162, src/fishfingers.js): a carton on the lower open shelf, n in it; each one taken
+// straight into the hand, eaten in `bites` bites or put down anywhere. Sizes of a typical 15-pack (~9 × 2.5 × 1.6
+// cm sticks, the carton ~19 × 13 × 4.5 cm); `held` = the stick in the view (camera space).
+export const FISH = { n: 15, len: 0.09, w: 0.025, h: 0.016, bites: 3, box: { w: 0.19, d: 0.13, h: 0.045 },
+  held: { x: 0.14, y: -0.15, z: -0.34 } };
+
 export const CUPS = { n: 3, r: 0.04, h: 0.09, color: 0xf3f1ec, coffee: 0x2a1408, pour: 0.25, counter: { x: 5.2, z: 1.68 },
   sip: 0.2, held: { x: 0.18, y: -0.2, z: -0.4 }, jugHeld: { x: 0.22, y: -0.26, z: -0.55 } }; // jugHeld: the jug in the view (#141)
 

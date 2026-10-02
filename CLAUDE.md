@@ -150,6 +150,9 @@ src/toys.js            Nerf blasters + darts (Sovrum 2), magic wands + sparkles 
 src/cups.js            coffee cups (CUPS): the wall cabinet over the Moccamaster opens; a cup is taken straight into the
                        hand (empty, brewed or not, #141), put down on a table / worktop / floor, back in the open cabinet
                        with E on it; the jug is a Holdable (Jug): E on a standing cup pours, E on the hot plate puts it back
+src/fishfingers.js     fish fingers (FISH, #162): a carton on the freezer's lower shelf; E takes one straight into the hand
+                       (FishFinger, like a cup), click / "Ät" bites (FISH.bites, shorter each time, sfx.chew), put down
+                       anywhere / taken again / E on the carton puts it back; F clears them away and refills the carton
 src/drawing.js         crayon drawing on the paper on the Sovrum 3 desk (DRAWING): canvas texture, drawing mode
                        (view down, pointer free, palette #draw-panel, 1–9, E/Esc back), saved in localStorage;
                        "Ta teckningen" / T takes the sheet into the hand (a blank one stays), E on the desk puts it back
@@ -220,6 +223,8 @@ tools/bestatest.html   headless test: the BESTÅ display cabinet's six doors ope
 tools/holdtest.html    headless test: put things down (coffee table, dining table, floor), one at a time, F → home
 tools/cuptest.html     headless test: an empty cup out without brewing, onto the worktop, brew, take the jug, pour, jug back,
                        carry the cup to the dining and coffee tables, a cup back into the cabinet
+tools/fishtest.html    headless test: open the freezer, eat a fish finger, put one on the dining table and the floor, one
+                       back in the carton (it counts down), F clears them and refills it
 tools/drawtest.html    headless test: drawing mode, a crayon line from pointer events, clear, E back, saved
 tools/cooktest.html    headless test: the induction hob on/off (glow), F switches it off; the pan: drawer → hob → drawer, F; the chicken:
                        fry, smoke, the fridge shut stops it, it stops by itself, F

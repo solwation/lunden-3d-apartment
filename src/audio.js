@@ -531,6 +531,14 @@ export const sfx = {
     noise(t, 0.08, d, { type: 'lowpass', freq: 600, gain: 0.25 });
     tone(t + 0.18, 0.1, d, { type: 'sine', from: 150, to: 80, gain: 0.15 });
   },
+  /** A bite of something crispy (a fish finger, #162): a crunch, then a few soft chews. `k` = loudness. */
+  chew(pos, k = 1) {
+    if (!ready()) return;
+    const t = ctx.currentTime, d = out(pos, 0.8 * k);
+    noise(t, 0.06, d, { type: 'bandpass', freq: 2600, q: 0.7, gain: 0.3, attack: 0.002 });
+    for (let i = 0; i < 6; i++) noise(t + 0.03 + i * 0.012, 0.012, d, { type: 'highpass', freq: 2200, gain: 0.25 * Math.random(), attack: 0.001 });
+    for (let i = 0; i < 3; i++) noise(t + 0.25 + i * 0.22, 0.09, d, { type: 'lowpass', freq: 500, gain: 0.18, attack: 0.02 });
+  },
     /** A foam blaster: a springy thunk and a soft whoosh. */
   nerf(pos) {
     if (!ready()) return;

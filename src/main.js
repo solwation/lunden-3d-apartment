@@ -29,6 +29,7 @@ import { Chicken } from './chicken.js';
 import { Beer } from './beer.js';
 import { buildThings } from './things.js';
 import { buildCups } from './cups.js';
+import { buildFish } from './fishfingers.js';
 import { Drawing } from './drawing.js';
 import { CatCalendar, CalendarPanel } from './calendar.js';
 import { heldItem } from './holdable.js';
@@ -213,6 +214,8 @@ for (const t of things) t.onSip = (drink) => { if (drink) bump(drink); }; // a s
 const holdables = [saber, ...toys.items, remote, book, beer, ...things]; // things you can take and hold, one at a time (holdable.js)
 const cups = buildCups(scene, camera, world, world.cupCabinet); // coffee cups in the wall cabinet (#90)
 holdables.push(cups.jug);
+const fish = buildFish(scene, camera, world); // fish fingers in the freezer, one at a time (#162)
+if (fish) fish.onEaten = () => bump('fish');
 const pan = world.panDrawer ? new Pan(scene, camera, world.panDrawer, world.hob) : null; // the frying pan in the drawer under the hob (#159)
 if (pan) holdables.push(pan);
 const fridge = world.lids.find((l) => l.kind === 'fridge' && !l.freezer);
@@ -678,6 +681,7 @@ function updateFocus() {
     ...(world.furnitureOn ? [...(target.object.visible ? [target.target] : []), ...patio.targets, ...world.furnitureTargets, ...holdables.map((h) => h.target), drawing.target].map((t) => t.pickable) : [])]; // parasol, TV, seats, beds, toys — unless F hid the furniture
   // the nearest hit on something actually shown (F hides the loose items, the raycaster doesn't care)
   const cupTargets = cups.cups.filter((c) => !c.held).map((c) => c.target.pickable);
+  if (fish && world.furnitureOn) cupTargets.push(fish.target.pickable, ...fish.placed.map((f) => f.target.pickable)); // the carton + fish fingers lying out (#162)
   const hit = raycaster.intersectObjects([...pickables, ...extra, ...cupTargets], true).find((h) => shown(h.object));
   focused = hit && !behindWall(hit.point) ? hit.object.userData.door : null;
   // holding something: a table top / worktop in front of you, or else the floor (nearer than anything
@@ -748,6 +752,7 @@ function toggleFurniture(on = !world.furnitureOn) {
   if (!on) beer.show(false); else beer.show(beer.out); // the beer only once served (setFurniture showed it)
   if (!on) { // whatever is in the hand, or put down somewhere, goes home first (#102)
     heldItem()?.putBack(); toys.darts.hide();
+    fish?.reset(); // the fish fingers lying around are cleared away, the carton is full again (#162)
     for (const h of holdables) if (h.placed) h.goHome();
     for (const c of cups.cups) if (c.state === 'placed') c.model.position.copy(c.counter);
   }
@@ -758,7 +763,7 @@ function toggleFurniture(on = !world.furnitureOn) {
   try { localStorage.setItem('lunden.furniture', on ? '1' : '0'); } catch { /* ignore */ }
 }
 world.looseItems.push(board.object, ...holdables.flatMap((h) => [h.holder, h.model]), ...toys.deco);
-world.looseItems.push(...cups.cups.map((c) => c.model), drawing.paper, calendar.object, ...posters.groups); // the cups and the paper go with F too // the cat board and the toys go with the furniture (F)
+world.looseItems.push(...cups.cups.map((c) => c.model), drawing.paper, calendar.object, ...posters.groups, ...(fish ? [fish.object] : [])); // the cups and the paper go with F too // the cat board and the toys go with the furniture (F)
 try { if (localStorage.getItem('lunden.furniture') === '0') toggleFurniture(false); } catch { /* ignore */ }
 document.getElementById('furniture-btn').addEventListener('click', () => toggleFurniture());
 
@@ -812,6 +817,7 @@ function step(dt) {
   for (const t of world.furnitureTargets) t.update?.(dt);
   for (const h of holdables) h.update(dt);
   cups.update(dt);
+  fish?.update(dt);
   toys.update(dt);
   marks.update(dt);
   target.update(dt, world.furnitureOn && !!heldItem()?.hitsTarget); // the target rises with a blaster, the saber or a wand in the hand (#144, #179)
@@ -956,4 +962,4 @@ function continueAfterReload(r) {
 if (resumeOk && resumed.mode) continueAfterReload(resumed);
 
 // handle for tests/debugging (tools/touchtest.html)
-window.__app = { posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };
+window.__app = { fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };
