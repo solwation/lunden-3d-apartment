@@ -652,6 +652,10 @@ export const FURNITURE = [
   // Livia & Tuva's desk (#92): IKEA ALEX, white, 132 × 58 (ikea.com; the 76 cm height and drawer sizes are
   // guesses), under the window against the north wall, east of the bunk; a white kids' swivel chair in
   // front (a seat, #71) and crafts on the top, the middle left free for the drawing paper (#93)
+  // Philips 32" PFS6906 (#100, Elgiganten: 3-sided Ambilight, thin silver bezel; panel ~71 × 41 cm), wall-mounted on
+  // Sovrum 3's east wall (x 2.61) straight across from the bunk (z 0.47–2.57), clear of the desk (z < 1.04) and the
+  // wands' hooks (z ≥ 2.85); centre 1.2 m up (the user: watchable from both bunks; tunable). Faces west.
+  { type: 'tv', level: 1, x: 2.61, z: 1.75, y: 1.2, rot: 90, w: 0.71, h: 0.41, fps: 12, px: 256, mount: 'wall', name: 'tv:n' },
   { type: 'alex', level: 1, x: 2.61 - 0.66 - 0.02, z: 0.465 + 0.29, rot: 180, w: 1.32, d: 0.58, h: 0.76 },
   { type: 'kidchair', level: 1, x: 2.61 - 0.66 - 0.02, z: 0.465 + 0.58 + 0.25, rot: 0 },
   // Sovrum 2 (Walter & Kian). watch.z: a seat in the lower bunk (local z, level with the desk's monitor)

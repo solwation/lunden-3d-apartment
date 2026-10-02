@@ -116,6 +116,8 @@ src/signs.js           hand-lettered name signs on the bedroom doors (DOOR_SIGNS
 src/water.js           running water: E on a tap/shower (world.taps from interior.js) → stream + hiss
 src/stats.js           visitor statistics (localStorage), "+1" badges per event, the HUD panel
                        (hidden; Tab held / T / 📊 shows it)
+src/screens.js         TV programmes drawn on a canvas (PROGRAMS: space, underwater, superheroes, unicorn …), channel
+                       snow, the Ambilight colour per programme; `Screen` is shared by the TVs in furniture.js
 src/changelog.js       changelog list + the note on the freezer (E to read)
 src/install.js         iPhone "add to home screen" sheet (no fullscreen API there); install link
                        where the browser offers beforeinstallprompt

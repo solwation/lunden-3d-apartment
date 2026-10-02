@@ -5,6 +5,7 @@ import { restTarget } from './rest.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { FURNITURE, LANDSKRONA as L, LEVELS, SKANSNAS, IDANAS } from './config.js';
 import { loungesofa, loungetable, parasol, planter } from './patio.js';
+import { Screen } from './screens.js';
 
 // Loose furniture, built from rounded boxes. Every piece is modelled in a local frame
 // where the sitter faces +z, x is across, y up; config gives position + facing.
@@ -851,27 +852,41 @@ function byas(item) {
   return g;
 }
 
-/** Philips 55" TV with a central stand. E toggles it; on: an animated swirl of colour on the screen
- * (canvas texture redrawn at item.fps) and an additive Ambilight glow on the wall behind. */
+/** A TV (#68, #100): Philips 55" on a central stand, or wall-mounted (`mount: 'wall'`, Philips 32" PFS6906
+ * with a thin silver bezel on a bracket). E toggles it; on: a random procedural programme (screens.js, redrawn
+ * at item.fps) and an additive Ambilight glow on the wall behind in the programme's colours. The remote
+ * (#101) calls `channel()` / `toggle()`. Faces local +z. */
 function tv(item) {
   const g = new THREE.Group();
-  const { w, h } = item, y0 = 0.075; // screen bottom above the bench
+  const { w, h } = item, wall = item.mount === 'wall';
   const dark = new THREE.MeshStandardMaterial({ color: 0x141518, roughness: 0.35, metalness: 0.2 });
   const stand = new THREE.MeshStandardMaterial({ color: 0x3a3c40, roughness: 0.4, metalness: 0.5 });
-  g.add(rbox(0.42, 0.012, 0.24, 0, 0.006, -0.02, stand, 0.004));                  // foot plate
-  g.add(rbox(0.12, y0 + 0.12, 0.03, 0, (y0 + 0.12) / 2, -0.05, stand, 0.006));     // neck
-  g.add(rbox(w, h, 0.025, 0, y0 + h / 2, -0.03, dark, 0.008));                     // panel
-  g.add(rbox(w * 0.7, h * 0.6, 0.05, 0, y0 + h * 0.45, -0.065, dark, 0.02));       // back housing
-  // the picture
-  const c = document.createElement('canvas');
-  c.width = 384; c.height = 216;
-  const tex = new THREE.CanvasTexture(c);
-  tex.colorSpace = THREE.SRGBColorSpace;
-  const screenMat = new THREE.MeshBasicMaterial({ map: tex, color: 0xffffff, toneMapped: false });
+  const bezel = wall ? new THREE.MeshStandardMaterial({ color: 0xc9ccd1, roughness: 0.3, metalness: 0.7 }) : dark;
+  // the panel's front face is at zf; y0 = the screen's bottom (on the bench, or centred on item.y for the wall)
+  let zf, y0, glowZ;
+  if (wall) {
+    y0 = -h / 2; zf = 0.03 + 0.06; glowZ = 0.004;                                 // wall at z 0, bracket 3 cm, panel 6 cm
+    g.add(rbox(0.2, 0.2, 0.03, 0, 0, 0.015, stand, 0.004));                      // wall bracket
+    g.add(rbox(w * 0.6, h * 0.6, 0.04, 0, 0, 0.05, dark, 0.01));                 // back housing
+    g.add(rbox(w, h, 0.02, 0, 0, zf - 0.01, bezel, 0.006));                      // thin silver bezel / panel
+  } else {
+    y0 = 0.075; zf = -0.03 + 0.0125; glowZ = -0.19;                              // just off the wall behind the bench
+    g.add(rbox(0.42, 0.012, 0.24, 0, 0.006, -0.02, stand, 0.004));               // foot plate
+    g.add(rbox(0.12, y0 + 0.12, 0.03, 0, (y0 + 0.12) / 2, -0.05, stand, 0.006)); // neck
+    g.add(rbox(w, h, 0.025, 0, y0 + h / 2, -0.03, dark, 0.008));                 // panel
+    g.add(rbox(w * 0.7, h * 0.6, 0.05, 0, y0 + h * 0.45, -0.065, dark, 0.02));   // back housing
+  }
+  const scr = new Screen(item.px ?? 384, Math.round((item.px ?? 384) * 9 / 16));
+  const screenMat = new THREE.MeshBasicMaterial({ map: scr.texture, color: 0xffffff, toneMapped: false });
   const offMat = new THREE.MeshStandardMaterial({ color: 0x07080a, roughness: 0.12, metalness: 0.4 });
-  const screen = new THREE.Mesh(new THREE.PlaneGeometry(w - 0.012, h - 0.012), offMat);
-  screen.position.set(0, y0 + h / 2, -0.016);
+  const inset = wall ? 0.016 : 0.012;
+  const screen = new THREE.Mesh(new THREE.PlaneGeometry(w - inset, h - inset), offMat);
+  screen.position.set(0, y0 + h / 2, zf + 0.0015);
   g.add(screen);
+  // power LED under the screen: red on standby, white while on
+  const led = new THREE.Mesh(new THREE.CircleGeometry(0.003, 8), new THREE.MeshBasicMaterial({ color: 0xff2a2a, toneMapped: false }));
+  led.position.set(w * 0.42, y0 + 0.004, zf + 0.002);
+  g.add(led);
   // Ambilight: a soft additive glow on the wall behind
   const gc = document.createElement('canvas');
   gc.width = gc.height = 64;
@@ -881,53 +896,37 @@ function tv(item) {
   const glowMat = new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(gc), color: 0x000000, transparent: true,
     blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false });
   const glow = new THREE.Mesh(new THREE.PlaneGeometry(w * 1.9, h * 2.1), glowMat);
-  glow.position.set(0, y0 + h / 2, -0.19); // just off the wall behind (the bench is 0.42 deep, the TV near its back)
+  glow.position.set(0, y0 + h / 2 + (wall ? h * 0.08 : 0), glowZ); // 3-sided Ambilight: a bit more above than below
   g.add(glow);
-  const ctx = c.getContext('2d');
-  const blobs = [[285, 0.9], [320, 0.85], [25, 0.9], [50, 0.95], [175, 0.8], [215, 0.85]]; // hues: purple, pink, orange, yellow, teal, blue
-  const draw = (t) => {
-    ctx.fillStyle = '#12082a';
-    ctx.fillRect(0, 0, c.width, c.height);
-    ctx.globalCompositeOperation = 'lighter';
-    blobs.forEach(([hue, sat], i) => {
-      const x = c.width * (0.5 + 0.38 * Math.sin(t * 0.21 + i * 1.7)), y = c.height * (0.5 + 0.36 * Math.cos(t * 0.17 + i * 2.3));
-      const r = c.height * (0.55 + 0.15 * Math.sin(t * 0.3 + i));
-      const grad = ctx.createRadialGradient(x, y, 0, x, y, r);
-      grad.addColorStop(0, `hsla(${hue},${sat * 100}%,60%,0.85)`);
-      grad.addColorStop(1, `hsla(${hue},${sat * 100}%,50%,0)`);
-      ctx.fillStyle = grad;
-      ctx.fillRect(0, 0, c.width, c.height);
-    });
-    ctx.globalCompositeOperation = 'source-over';
-    tex.needsUpdate = true;
-  };
-  let on = false, t = 0, acc = 0;
+  let on = false, acc = 0;
+  const target = new THREE.Color();
+  const shine = ([hh, ss, ll]) => target.setHSL(hh, ss, ll);
   const interact = {
-    name: 'tv:n', kind: 'tv', pickable: g,
+    name: item.name ?? 'tv:n', kind: 'tv', pickable: g, screen: scr,
     get isOpen() { return on; },
     get verb() { return on ? 'stänga av' : 'slå på'; },
     toggle() {
       on = !on;
       screen.material = on ? screenMat : offMat;
-      glowMat.color.setHex(on ? 0x6a4a8a : 0x000000);
-      if (on) draw(t);
+      led.material.color.setHex(on ? 0xf4f4f4 : 0xff2a2a);
+      if (on) { scr.tune(); shine(scr.draw(0)); glowMat.color.copy(target); } else glowMat.color.setHex(0x000000);
       return on;
     },
+    /** The remote's channel button (#101): the next programme, through snow. */
+    channel() { if (!on) return false; scr.tune(); return true; },
     update(dt) {
       if (!on) return;
-      t += dt; acc += dt;
+      acc += dt;
       if (acc < 1 / item.fps) return;
+      shine(scr.draw(acc));
       acc = 0;
-      draw(t);
-      // the Ambilight follows the picture's average hue, slowly
-      const hue = ((t * 8) % 360) / 360;
-      glowMat.color.setHSL(hue, 0.7, 0.32);
+      glowMat.color.lerp(target, 0.25); // the Ambilight follows the picture's colours, softly
     },
   };
   g.userData.interact = interact;
-  g.userData.keep = [screen, glow];
+  g.userData.keep = [screen, glow, led];
   g.position.y = item.y;
-  g.traverse((m) => { if (m.isMesh && m !== glow) m.castShadow = true; });
+  g.traverse((m) => { if (m.isMesh && m !== glow && m !== led) m.castShadow = true; });
   return g;
 }
 

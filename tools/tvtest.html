@@ -43,6 +43,21 @@ f.onload = async () => {
   pass &= check(/stänga av tv:n/i.test(btn.textContent), `button "${btn.textContent}"`);
   btn.click();
   pass &= check(!tv.isOpen && !screen.material.map, 'off: dark screen');
+  // a different programme every time it is switched on (#100)
+  tv.toggle(); const ch1 = tv.screen.channel; tv.toggle(); tv.toggle(); const ch2 = tv.screen.channel; tv.toggle();
+  pass &= check(ch1 !== ch2, `a new programme each time (${tv.screen.program.name}: ${ch1} → ${ch2})`);
+  // Sovrum 3: the wall-mounted 32" across from the bunk, faces west into the room
+  const tv3 = world.furnitureTargets.find((t) => t.kind === 'tv' && t !== tv);
+  tv3.pickable.updateMatrixWorld(true);
+  const p3 = tv3.pickable.getWorldPosition(new tv.pickable.position.constructor());
+  player.spawn(p3.x - 1.2, p3.z, -Math.PI / 2); player.pos.y = 3.25; player.eyeY = 3.25 + 1.62;
+  for (let i = 0; i < 3; i++) step(1 / 60);
+  camera.rotation.y = -Math.PI / 2; camera.rotation.x = Math.atan2(p3.y - camera.position.y, p3.x - camera.position.x); step(1 / 60); // facing east
+  pass &= check(Math.abs(p3.x - 2.61) < 0.01 && p3.y > 4.3 && p3.y < 4.6 && /slå på tv:n/i.test(btn.textContent), `Sovrum 3 TV at (${p3.x.toFixed(2)}, ${p3.y.toFixed(2)}, ${p3.z.toFixed(2)}): "${btn.textContent}"`);
+  btn.click();
+  for (let i = 0; i < 30; i++) step(1 / 60);
+  pass &= check(tv3.isOpen && tv3.screen.texture.version > 1, `Sovrum 3 TV on: ${tv3.screen.program.name}`);
+  btn.click();
   world.setFurniture(false);
   aim();
   pass &= check(!/tv:n/i.test(btn.hidden ? '' : btn.textContent), 'F off: the TV is no target');
