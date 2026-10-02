@@ -473,13 +473,14 @@ function trees(rand) {
       if (S.roads.some((r) => x > r.x0 - 1 && x < r.x1 + 1 && z > r.z0 - 1 && z < r.z1 + 1)) continue;
       if (z > S.river.z0 - 2 && z < S.river.z1 + 2) continue;
       if (T.box.some((b) => Math.min(Math.abs(x - b.x0), Math.abs(x - b.x1)) < 1.5 && z > b.z0 && z < b.z1)) continue; // not on a retaining wall
-      spots.push({ x, z, y: groundY(x, z), s: area.young ? 0.8 + rand() * 0.25 : 0.75 + rand() * 0.6, kind: area.young ? 'young' : 'tree' });
+      const birch = !area.young && rand() < S.birchShare; // slim birches with white trunks among the others (#115)
+      spots.push({ x, z, y: groundY(x, z), s: area.young ? 0.8 + rand() * 0.25 : 0.75 + rand() * 0.6, kind: area.young ? 'young' : birch ? 'birch' : 'tree' });
     }
   }
   for (const [x, z, s] of S.bigTrees) spots.push({ x, z, y: groundY(x, z), s, kind: 'big' });
   // crowns: one per tree, three to five lobes per big tree, an ellipsoid per young maple
   const lobes = [];
-  const trunkM = [], m = new THREE.Matrix4(), q = new THREE.Quaternion();
+  const trunkM = [], birchM = [], m = new THREE.Matrix4(), q = new THREE.Quaternion();
   for (const t of spots) {
     const r = { r1: rand(), r2: rand(), r3: rand(), r4: rand() }; // one tree, one colour (seasons.js)
     if (t.kind === 'big') {
@@ -491,6 +492,10 @@ function trees(rand) {
         lobes.push({ pos: new THREE.Vector3(t.x + Math.cos(a) * d, t.y + h + (k === 0 ? 3.0 : 1.8 + rand() * 1.4) * t.s, t.z + Math.sin(a) * d),
           rot: new THREE.Quaternion().setFromEuler(new THREE.Euler(0, rand() * 6, 0)), scale: new THREE.Vector3(3.0, 2.6, 3.0).multiplyScalar(t.s * (0.8 + rand() * 0.3)), ...r });
       }
+    } else if (t.kind === 'birch') { // a tall white trunk, a narrow crown high up
+      const h = 4.4 * t.s;
+      birchM.push(m.clone().compose(new THREE.Vector3(t.x, t.y, t.z), q.identity(), new THREE.Vector3(0.55 * t.s, h, 0.55 * t.s)));
+      lobes.push({ pos: new THREE.Vector3(t.x, t.y + h + 1.2 * t.s, t.z), rot: new THREE.Quaternion().setFromEuler(new THREE.Euler(0, rand() * 6, 0)), scale: new THREE.Vector3(1.4, 2.6, 1.4).multiplyScalar(t.s), ...r, r1: 0.75 + r.r1 * 0.25 }); // r1 high: they go yellow in autumn
     } else {
       const young = t.kind === 'young', h = (young ? 2.6 : 3.2) * t.s;
       trunkM.push(m.clone().compose(new THREE.Vector3(t.x, t.y, t.z), q.identity(), new THREE.Vector3(young ? 0.6 * t.s : t.s, h, young ? 0.6 * t.s : t.s)));
@@ -515,8 +520,11 @@ function trees(rand) {
   lobes.forEach((l, i) => { crown.setMatrixAt(i, m.compose(l.pos, l.rot, l.scale)); crown.setColorAt(i, col.setHSL(0.27, 0.45, 0.3)); });
   // colours and leaf cover come from the season (seasons.js); keep each tree's own variation
   registerTrees(crown, lobes);
-  trunk.castShadow = crown.castShadow = true;
-  return [trunk, crown];
+  const birches = new THREE.InstancedMesh(trunkGeo, new THREE.MeshStandardMaterial({ color: 0xe6e3da, roughness: 0.9 }), Math.max(1, birchM.length));
+  birchM.forEach((mm, i) => birches.setMatrixAt(i, mm));
+  birches.count = birchM.length;
+  trunk.castShadow = crown.castShadow = birches.castShadow = true;
+  return [trunk, birches, crown];
 }
 
 /** Sky for scene.background: vertical gradient with a few soft clouds (equirectangular). */

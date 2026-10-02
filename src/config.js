@@ -212,6 +212,7 @@ export const SITE = {
   bigTrees: [[-36, -34.5, 1.4], [-17, -35.2, 1.6], [-4, -34.8, 1.75], [9, -35.4, 1.45], [27.5, -34.2, 1.6], [33.5, -16, 1.35], [-58, -33.5, 1.5]],
   // a row of ornamental shrubs along our pavement, with gaps for the paths to the entrances (#130)
   shrubs: { x0: -60, x1: 18, z: -20.6, step: 0.85, gaps: [[-48, -44], [-6, 8]] },
+  birchShare: 0.3, // of the trees in the areas (not the young street maples): birches (#115)
   treeAreas: [
     // the courtyard's and the green's trees stand where the situation plan draws them: COURTYARD.trees
     { x0: -92, x1: 18, z0: -20, z1: -19, n: 11, young: true }, // street trees along Sankt Lars väg: young maples by the site (#130)
