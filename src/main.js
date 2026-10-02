@@ -482,6 +482,8 @@ if (params.has('cat')) {
   cat.setCat(breed, coats[Number(params.get('catv') ?? 0) % coats.length]);
   cat.t = Number(params.get('catt') ?? 1.5);
   cat.nextMeow = 1e9;
+  // &catwalk: up on all four, walking on the spot (#224; &catt = the moment in the gait)
+  if (params.has('catwalk')) cat.walkOnTheSpot();
   cat.update(0);
   // &pet: the cat is being petted (screenshots)
   if (params.has('pet')) { cat.pet(player.pos); cat.petT = 1e9; cat.update(1.1); }

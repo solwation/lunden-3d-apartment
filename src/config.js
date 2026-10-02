@@ -497,6 +497,10 @@ export const CAT_FISH = { reach: 4, notice: 1.2, speed: 0.55, stop: 0.17, eat: 3
 // After a pat the cat walks off (#206, cat.js `leave`): up to `dist` m away from the visitor along the clearest straight line,
 // at `speed` m/s, fading out over the last `fade` s, then it is gone.
 export const CAT_LEAVE = { dist: 3, speed: 0.6, fade: 1.2 };
+// The cat walks on all four (#224, cat.js `pose`): it rises from sitting to standing in `rise` s before it walks and sits
+// down again in the same time when it stops; a diagonal-pair gait, one leg cycle per `stride` m (× breed size), legs
+// swinging ±`swing` rad, the hind knee flexing up to `knee` rad as the paw comes forward, the body bobbing `bob` m. Our picks.
+export const CAT_WALK = { rise: 0.3, stride: 0.3, swing: 0.4, knee: 0.6, bob: 0.006 };
 // A cat turning up behind a door sits up on a bed, sofa, chair or table in that room this often (#200, cat.js furnitureSpot),
 // on one seen straight from the doorway within `reach` m.
 export const CAT_FURNITURE = { chance: 0.4, reach: 5 };

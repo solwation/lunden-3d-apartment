@@ -87,9 +87,30 @@ f.onload = async () => {
   const catBefore = stats.catFish;
   const three = putDown(spot);
   let sawWalk = false;
-  for (let i = 0; i < 30 * 12; i++) { step(1 / 30); if (cat.fish?.phase === 'walk') sawWalk = true; }
+  // on all four (#224): it rises before it moves, the hips come up from the sitting pose and all four legs swing
+  const sitHip = cat.parts.hips[0].hip.position.y;
+  const legs = () => [cat.shoulder, cat.leftShoulder, ...cat.parts.hips.map((h) => h.hip)].map((l) => l.rotation.x);
+  const lo = [9, 9, 9, 9], hi = [-9, -9, -9, -9];
+  let hipUp = 0, movedSitting = false, startAt = null, sitAgain = false;
+  for (let i = 0; i < 30 * 12; i++) {
+    step(1 / 30);
+    if (cat.fish?.phase === 'walk') {
+      sawWalk = true;
+      startAt ??= cat.object.position.clone();
+      if (cat.stand < 1 && cat.object.position.distanceTo(startAt) > 1e-6) movedSitting = true;
+      if (cat.standing && cat.walked) {
+        hipUp = Math.max(hipUp, Math.min(...cat.parts.hips.map((h) => h.hip.position.y)));
+        legs().forEach((r, k) => { lo[k] = Math.min(lo[k], r); hi[k] = Math.max(hi[k], r); });
+      }
+    }
+    if (cat.fish?.phase === 'eat' && cat.fish.t > 0.5 && cat.stand === 0) sitAgain = true;
+  }
   const cp = cat.object.position;
   pass &= check(sawWalk && Math.hypot(cp.x - spot.x, cp.z - spot.z) < 0.4, `the cat walked to it (${cp.x.toFixed(2)}, ${cp.z.toFixed(2)})`);
+  pass &= check(!movedSitting, 'it stood up before it set off');
+  pass &= check(hipUp > sitHip + 0.08, `walking, the hips are up (${hipUp.toFixed(3)} vs ${sitHip.toFixed(3)} sitting)`);
+  pass &= check(lo.every((l, k) => hi[k] - l > 0.4), `all four legs swing (${lo.map((l, k) => (hi[k] - l).toFixed(2)).join(' ')} rad)`);
+  pass &= check(sitAgain, 'there it sits down again to eat');
   pass &= check(three.state === 'box' && !three.model.visible && fish.catCount === 1 && stats.catFish === catBefore + 1, `and ate it (cat ate ${fish.catCount}, stats ${stats.catFish})`);
   pass &= check(!cat.fish && cat.visible, 'then it sits and washes itself');
   // a fish finger on the dining table is no business of the cat's

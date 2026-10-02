@@ -325,7 +325,8 @@ tools/cuptest.html     headless test: an empty cup out without brewing, onto the
                        coffee (#169): a splash, a warmer colour, never over full, drunk up as kaffekask
 tools/fishtest.html    headless test: open the freezer, eat a fish finger, put one on the dining table and the floor, one
                        back in the carton (it counts down), F clears them and refills it; the cat walks to one on the
-                       floor and eats it, ignores one on the table, stops when it is taken up first (#163)
+                       floor (on all four: up first, hips raised, every leg swings, sits to eat, #224) and eats it,
+                       ignores one on the table, stops when it is taken up first (#163)
 tools/drawtest.html    headless test: drawing mode, a crayon line from pointer events, clear, E back, saved
 tools/grilltest.html   headless test: light the grill (flames, light, lid), F keeps it, put it out, it burns out by itself
 tools/cooktest.html    headless test: the induction hob on/off (glow), F switches it off; the pan: drawer → hob → drawer, F; the chicken:
@@ -533,7 +534,7 @@ URL parameters (debugging / screenshots):
   180 = south, −90 = east. `feetY` = 3.25 for Övre plan.
 - `&shot` — hide the start overlay.
 - `&open` — open every door, cabinet door and drawer (screenshots of open doors / wardrobes / furniture).
-- `&cat=x,z[,yawDeg[,y]]` — show the cat there; `&catv=i` coat variant, `&catt=s` animation time.
+- `&cat=x,z[,yawDeg[,y]]` — show the cat there; `&catv=i` coat variant, `&catt=s` animation time, `&catwalk` walking (#224).
 - `&time=HH[.h]` — start at that hour (default: the browser's time), `&month=1–12`, `&day=1–31` (default: today), `&freeze` pauses the clock,
   `&clock` opens the wall clock's strip,
   `&lights` turns every lamp on (they also start on when arriving in the dark).
@@ -586,6 +587,12 @@ screenshots into the session scratchpad, not the repo.
   while it is visible. Tests must call `updateMatrixWorld` on objects they move (no render runs).
 - Room detection: labels come from the PDF plus `EXTRA_ROOMS` (WC/dusch upstairs, the passage by
   the stair = Hall); `ROOM_DIVIDERS` split open-plan areas (hall | kitchen | passage | living room).
+- Walking (#224, `CAT_WALK`, `pose` in cat.js): the cat blends between two poses (`POSE.sit` / `POSE.stand`, size-1 local
+  metres): it rises in `rise` s before it walks (fish fingers, leaving after a pat) and sits down again when it stops;
+  standing, the hips (hind legs on hip pivots: haunch + a hock pivot with shin and paw) are at shoulder height, the back
+  level, the tail up. Behaviours set `wantStand`, call `stride(m)` for the diagonal-pair gait and put head offsets in
+  `headOff`; `pose` runs after them every frame (the tail tube is rebuilt only while the pose changes). `&catwalk` (with
+  `&cat=`) = walking on the spot.
 - Every new cat gets a name (`CAT_NAMES`); petting it puts a photo on the kitchen board 0.7 s in
   (`CAT_BOARD` in config: under the wall clock on the Tvätt/Badrum wall, kitchen face; it and the calendar are
   positioned together, centred under the clock).
@@ -599,7 +606,7 @@ screenshots into the session scratchpad, not the repo.
   (`cat.onPhoto`).
 - Fish fingers (#163, `CAT_FISH`, `updateFish` in cat.js): a visible cat scans `cat.fishSource()` (the fish fingers
   lying out) for one on its own floor within `reach` with a straight, wall- and door-free path (= the same room),
-  turns its head and meows, walks there (front legs on shoulder pivots swing), eats it (head down, it shrinks,
+  turns its head and meows, gets up and walks there, eats it (head down, it shrinks,
   `sfx.chew`, then a purr) and washes again; taken up first → it looks at the visitor. Petting, hide and a new spot
   cancel it. Counted as `catFish` in the stats.
 - Interaction raycasts only test pickables, so `behindWall` in main.js rejects hits whose eye →

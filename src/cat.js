@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { LEVELS, CAT_FISH, CAT_LEAVE, CAT_FURNITURE, REST } from './config.js';
+import { LEVELS, CAT_FISH, CAT_LEAVE, CAT_FURNITURE, CAT_WALK, REST } from './config.js';
 import { stairHeight } from './stairs.js';
 import { sfx } from './audio.js';
 
@@ -134,28 +134,62 @@ function limb(material, r, len, x, y, z) {
   return m;
 }
 
-/** Sitting cat, ~35 cm tall, facing +z in its local frame. */
+// The two poses the cat blends between (#224), in its local frame at size 1 (metres, facing +z): `sit` is the old sitting
+// cat (~35 cm tall, washing itself), `stand` the walking one (back level, hips at shoulder height ~17 cm). Positions [x, y, z]
+// (x mirrored per side for the legs), blob scales, the body's tilt; the tail as points from its root.
+const HIND_SHIN = 0.09;
+const POSE = {
+  sit: {
+    body: [0, 0.17, -0.01], bodyScale: [0.11, 0.17, 0.13], bodyTilt: -0.25,
+    bib: [0, 0.19, 0.085], bibScale: [0.07, 0.12, 0.05],
+    shoulder: [0.04, 0.17, 0.085], head: [0, 0.325, 0.05],
+    hip: [0.07, 0.075, -0.03], thigh: [0, 0, 0], thighScale: [0.075, 0.075, 0.11],
+    hock: [0, -0.057, 0], hockAngle: -Math.PI / 2, footScale: [0.035, 0.02, 0.055],
+    tailRoot: [0, 0.04, -0.13],
+    tail: [[0, 0, 0], [0.09, -0.015, 0.01], [0.14, -0.02, 0.11], [0.12, -0.02, 0.21], [0.06, -0.02, 0.26]],
+  },
+  stand: {
+    body: [0, 0.2, -0.03], bodyScale: [0.095, 0.072, 0.19], bodyTilt: 0,
+    bib: [0, 0.18, 0.13], bibScale: [0.062, 0.08, 0.06],
+    shoulder: [0.04, 0.175, 0.1], head: [0, 0.27, 0.19],
+    hip: [0.045, 0.175, -0.16], thigh: [0, -0.03, 0.005], thighScale: [0.048, 0.07, 0.062],
+    hock: [0, -0.068, 0], hockAngle: 0.15, footScale: [0.028, 0.017, 0.04],
+    tailRoot: [0, 0.215, -0.21],
+    tail: [[0, 0, 0], [0, 0.03, -0.07], [0, 0.11, -0.12], [0, 0.2, -0.12], [0, 0.26, -0.08]],
+  },
+};
+const mix = (a, b, k) => a + (b - a) * k;
+const mix3 = (v, a, b, k, sx = 1) => v.set(mix(a[0], b[0], k) * sx, mix(a[1], b[1], k), mix(a[2], b[2], k));
+
+/** Sitting cat, ~35 cm tall, facing +z in its local frame (it stands up to walk: `pose`). */
 function buildCat() {
   const cat = new THREE.Group();
 
-  // body + haunches + bib (in a torso group the breed can widen)
+  // body + bib (in a torso group the breed can widen); their shape comes from `pose` (sitting ↔ standing, #224)
   const torso = new THREE.Group();
-  const body = blob(ROLE.coat, 0.11, 0.17, 0.13, 0, 0.17, -0.01);
-  body.rotation.x = -0.25;
-  torso.add(body);
-  torso.add(blob(ROLE.coat, 0.075, 0.075, 0.11, 0.07, 0.075, -0.03), blob(ROLE.coat, 0.075, 0.075, 0.11, -0.07, 0.075, -0.03));
-  torso.add(blob(ROLE.bib, 0.07, 0.12, 0.05, 0, 0.19, 0.085));
+  const body = blob(ROLE.coat, 1, 1, 1, 0, 0, 0);
+  const bib = blob(ROLE.bib, 1, 1, 1, 0, 0, 0);
+  torso.add(body, bib);
   cat.add(torso);
-  // hind paws
-  cat.add(blob(ROLE.paw, 0.035, 0.02, 0.055, 0.075, 0.015, 0.05), blob(ROLE.paw, 0.035, 0.02, 0.055, -0.075, 0.015, 0.05));
+  // hind legs, each on a hip pivot: the haunch (thigh) and a hock pivot with the shin and the paw. Sitting, the shin
+  // lies forward on the floor under the haunch; standing, the hips are up at shoulder height (#224)
+  const hips = [];
+  for (const s of [-1, 1]) {
+    const hip = new THREE.Group();
+    const thigh = blob(ROLE.coat, 1, 1, 1, 0, 0, 0);
+    const hock = new THREE.Group();
+    const foot = blob(ROLE.paw, 1, 1, 1, 0, -HIND_SHIN, 0.015);
+    hock.add(limb(ROLE.paw, 0.019, HIND_SHIN, 0, 0, 0), foot);
+    hip.add(thigh, hock);
+    cat.add(hip);
+    hips.push({ hip, thigh, hock, foot, side: s });
+  }
 
-  // front legs, each on a shoulder pivot: the right one lifts to the face, both swing when it walks (#163)
+  // front legs, each on a shoulder pivot: the right one lifts to the face, all four swing when it walks (#163, #224)
   const leftShoulder = new THREE.Group();
-  leftShoulder.position.set(-0.04, 0.17, 0.085);
   leftShoulder.add(limb(ROLE.paw, 0.021, 0.17, 0, 0, 0), blob(ROLE.paw, 0.026, 0.017, 0.035, 0, -0.158, 0.015));
   cat.add(leftShoulder);
   const shoulder = new THREE.Group();
-  shoulder.position.set(0.04, 0.17, 0.085);
   shoulder.add(limb(ROLE.paw, 0.021, 0.17, 0, 0, 0));
   const paw = blob(ROLE.paw, 0.026, 0.017, 0.035, 0, -0.158, 0.015);
   shoulder.add(paw);
@@ -163,7 +197,6 @@ function buildCat() {
 
   // head
   const head = new THREE.Group();
-  head.position.set(0, 0.325, 0.05);
   head.add(blob(ROLE.coat, 0.072, 0.064, 0.068, 0, 0, 0));
   const muzzle = blob(ROLE.face, 0.042, 0.032, 0.035, 0, -0.022, 0.05);
   head.add(muzzle);
@@ -190,14 +223,12 @@ function buildCat() {
   }
   cat.add(head);
 
-  // tail curled around the side onto the floor, with a tip
-  const pts = [[0, 0.04, -0.13], [0.09, 0.025, -0.12], [0.14, 0.02, -0.02], [0.12, 0.02, 0.08], [0.06, 0.02, 0.13]]
-    .map(([x, y, z]) => new THREE.Vector3(x, y, z));
+  // tail on a pivot at its root: curled round onto the floor while sitting, raised up behind while standing (`pose`)
   const tailGroup = new THREE.Group();
-  const tailCurve = new THREE.CatmullRomCurve3(pts);
-  const tail = new THREE.Mesh(new THREE.TubeGeometry(tailCurve, 24, 0.017, 8), ROLE.tail);
+  const tail = new THREE.Mesh(new THREE.BufferGeometry(), ROLE.tail);
   tail.castShadow = true;
-  tailGroup.add(tail, blob(ROLE.tip, 0.02, 0.018, 0.03, 0.06, 0.02, 0.13));
+  const tip = blob(ROLE.tip, 0.02, 0.018, 0.03, 0, 0, 0);
+  tailGroup.add(tail, tip);
   cat.add(tailGroup);
 
   // the visitor's hand, shown while petting (palm + four fingers + thumb, palm down)
@@ -216,7 +247,7 @@ function buildCat() {
   hand.visible = false;
   cat.add(hand);
 
-  return { cat, head, shoulder, leftShoulder, tailGroup, eyes, hand, torso, muzzle, ears, tail, tailCurve };
+  return { cat, head, shoulder, leftShoulder, hips, tailGroup, tip, eyes, hand, torso, body, bib, muzzle, ears, tail };
 }
 
 /** Shape the cat for a breed (see BREEDS). */
@@ -224,13 +255,10 @@ function applyBreed(p, b) {
   const size = b.size ?? 1, fluff = b.fluff ?? 1;
   p.cat.scale.setScalar(size);
   p.hand.scale.setScalar(1 / size); // the visitor's hand stays the same size
-  p.torso.scale.set(fluff, 1, fluff);
   p.head.scale.setScalar(b.head ?? 1);
   for (const e of p.ears) e.scale.setScalar(b.ears ?? 1);
   p.muzzle.scale.set(0.042, 0.032, 0.035 * (b.muzzle ?? 1));
   p.muzzle.position.z = 0.05 - 0.035 * (1 - (b.muzzle ?? 1)) * 0.6;
-  p.tail.geometry.dispose();
-  p.tail.geometry = new THREE.TubeGeometry(p.tailCurve, 24, 0.017 * (b.tail ?? 1), 8);
   for (const m of Object.values(ROLE)) m.roughness = b.name === 'sphynx' ? 0.55 : 0.8;
 }
 
@@ -261,7 +289,14 @@ export class CatSpawner {
     this.parts = buildCat();
     const { cat, head, shoulder, leftShoulder, tailGroup, eyes, hand } = this.parts;
     Object.assign(this, { object: cat, head, shoulder, leftShoulder, tailGroup, eyes, hand });
-    this.headHome = head.position.clone();
+    this.headOff = new THREE.Vector3(); // the behaviours' head offset on top of the pose (eating: down to the floor)
+    this.stand = 0;          // 0 sitting … 1 standing (#224), eased towards `wantStand` in CAT_WALK.rise s
+    this.wantStand = 0;
+    this.gaitPhase = 0;      // radians, one leg cycle per CAT_WALK.stride m
+    this.gaitAmp = 0;        // 0 … 1: the legs swing while it walks, eased in and out
+    this.walked = false;     // `stride` was called this frame
+    this.tailK = -1;         // the pose the tail geometry was last built for
+    this.treadmill = false;  // &catwalk: it walks on the spot (screenshots)
     this.fish = null;          // a fish finger on the floor it is after (#163): { f, phase, t, at }
     this.fishSource = null;    // () => the fish fingers lying out (main.js)
     this.onFishEaten = null;   // (fishFinger) => {} when it has eaten one
@@ -299,6 +334,8 @@ export class CatSpawner {
     this.variant = coat;
     applyVariant(coat);
     applyBreed(this.parts, breed);
+    this.tailK = -1; // new tail thickness
+    this.pose(0);
   }
 
   /** Call when the player opens `door` from `from` (player position). */
@@ -474,7 +511,92 @@ export class CatSpawner {
 
   update(dt) {
     if (!this.visible) return;
+    this.wantStand = 0;
+    this.walked = false;
+    this.behave(dt);
+    this.pose(dt);
+  }
+
+  /** Walked `m` metres this frame (#224): the legs move on in the gait. */
+  stride(m) {
+    this.gaitPhase = (this.gaitPhase + (m / (CAT_WALK.stride * (this.breed.size ?? 1))) * 2 * Math.PI) % (2 * Math.PI);
+    this.walked = true;
+  }
+
+  /** &catwalk (screenshots): up on all four at once, walking on the spot; `t` = the moment in the gait. */
+  walkOnTheSpot() {
+    this.treadmill = true;
+    this.stand = this.gaitAmp = 1;
+    this.stride(this.t * CAT_FISH.speed);
+  }
+
+  /** Is it up on all four (the rise finished)? */
+  get standing() { return this.stand >= 1; }
+
+  /**
+   * Shape the cat between sitting and standing and move its legs in the gait (#224). The behaviours set `wantStand`,
+   * call `stride` and put head offsets in `headOff`; this runs after them every frame. A diagonal-pair walk: the front
+   * leg on +x goes with the hind leg on −x, the other pair half a cycle later; the hind knees flex as their paw comes
+   * forward, the body bobs twice per cycle and the head nods with it.
+   */
+  pose(dt) {
+    const W = CAT_WALK, p = this.parts, fluff = this.breed.fluff ?? 1;
+    const d = this.wantStand - this.stand;
+    this.stand += Math.sign(d) * Math.min(Math.abs(d), dt / W.rise);
+    const da = (this.walked ? 1 : 0) - this.gaitAmp;
+    this.gaitAmp += Math.sign(da) * Math.min(Math.abs(da), dt / 0.2);
+    const S = POSE.sit, T = POSE.stand, k = smooth(0, 1, this.stand), a = this.gaitAmp, ph = this.gaitPhase;
+    const bob = a * W.bob * Math.cos(2 * ph);
+    // standing, the fluff makes it taller rather than longer
+    p.torso.scale.set(fluff, mix(1, fluff, k), mix(fluff, 1, k));
+    p.torso.position.y = bob;
+    mix3(p.body.position, S.body, T.body, k);
+    mix3(p.body.scale, S.bodyScale, T.bodyScale, k);
+    p.body.rotation.x = mix(S.bodyTilt, T.bodyTilt, k);
+    mix3(p.bib.position, S.bib, T.bib, k);
+    mix3(p.bib.scale, S.bibScale, T.bibScale, k);
+    mix3(this.shoulder.position, S.shoulder, T.shoulder, k).y += bob;
+    mix3(this.leftShoulder.position, S.shoulder, T.shoulder, k, -1).y += bob;
+    if (a > 1e-3) {
+      this.shoulder.rotation.set(a * W.swing * Math.sin(ph), 0, 0);
+      this.leftShoulder.rotation.set(a * W.swing * Math.sin(ph + Math.PI), 0, 0);
+    }
+    for (const h of p.hips) {
+      const phi = h.side < 0 ? ph : ph + Math.PI; // diagonal to the front leg on the other side
+      mix3(h.hip.position, S.hip, T.hip, k, h.side * fluff).y += bob;
+      h.hip.rotation.x = a * W.swing * Math.sin(phi);
+      mix3(h.thigh.position, S.thigh, T.thigh, k);
+      mix3(h.thigh.scale, S.thighScale, T.thighScale, k);
+      h.thigh.scale.x *= fluff; h.thigh.scale.z *= mix(fluff, 1, k);
+      mix3(h.hock.position, S.hock, T.hock, k);
+      h.hock.rotation.x = mix(S.hockAngle, T.hockAngle, k) + a * W.knee * Math.max(0, -Math.cos(phi));
+      mix3(h.foot.scale, S.footScale, T.footScale, k);
+      h.foot.rotation.x = -(h.hip.rotation.x + h.hock.rotation.x); // the paw stays flat
+    }
+    mix3(this.head.position, S.head, T.head, k).add(this.headOff).y += bob;
+    if (a > 1e-3) this.head.rotation.x += a * 0.06 * Math.sin(2 * ph + 0.6);
+    mix3(this.tailGroup.position, S.tailRoot, T.tailRoot, k).y += bob;
+    if (Math.abs(k - this.tailK) > 0.004) { // rebuilt only while it gets up or sits down
+      this.tailK = k;
+      const pts = S.tail.map((q, i) => mix3(new THREE.Vector3(), q, T.tail[i], k));
+      p.tail.geometry.dispose();
+      p.tail.geometry = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 24, 0.017 * (this.breed.tail ?? 1), 8);
+      p.tip.position.copy(pts[pts.length - 1]);
+      const r = this.breed.tail ?? 1; // a thick tail gets a thick tip (it shows once the tail is up)
+      p.tip.scale.set(0.02 * r, 0.018 * r, mix(0.03, 0.02, k) * r);
+    }
+  }
+
+  /** What the cat is doing this frame (petting, leaving, a fish finger, washing). */
+  behave(dt) {
     this.t += dt;
+    if (this.treadmill) { // &catwalk: on its feet, walking on the spot at the fish-finger pace
+      this.wantStand = 1;
+      if (this.standing) this.stride(CAT_FISH.speed * dt);
+      this.head.rotation.set(0.12, 0, 0);
+      this.tailGroup.rotation.y = 0.25 * Math.sin(this.t * 4.5);
+      return;
+    }
     if (this.petting) {
       this.updatePetting(dt);
       return;
@@ -534,21 +656,23 @@ export class CatSpawner {
   updateLeaving(dt) {
     const L = this.leaving, o = this.object;
     L.t += dt;
-    // turn round (0.5 s), then walk off; fade out over the last CAT_LEAVE.fade s of the walk (or in place if boxed in)
+    // get up and turn round (0.5 s, stepping round on the spot), then walk off on all four (#224); fade out over the last
+    // CAT_LEAVE.fade s of the walk (or in place if boxed in)
+    this.wantStand = 1;
     const turn = Math.min(1, L.t / 0.5);
     let dy = L.yaw - L.from; dy = Math.atan2(Math.sin(dy), Math.cos(dy));
-    o.rotation.y = L.from + dy * turn * turn * (3 - 2 * turn);
-    if (turn >= 1) {
+    const yaw = L.from + dy * turn * turn * (3 - 2 * turn);
+    if (this.stand > 0.5) this.stride(Math.abs(yaw - o.rotation.y) * 0.15 * (this.breed.size ?? 1));
+    o.rotation.y = yaw;
+    this.head.rotation.set(0.1, 0, 0);
+    if (turn >= 1 && this.standing) {
       const go = Math.min(CAT_LEAVE.speed * dt, Math.max(0, L.d - L.gone));
       o.position.x += Math.sin(L.yaw) * go; o.position.z += Math.cos(L.yaw) * go;
       L.gone += go;
-      const g = Math.sin(L.t * 9);
-      this.shoulder.rotation.set(0.45 * g, 0, 0);
-      this.leftShoulder.rotation.set(-0.45 * g, 0, 0);
-      this.head.rotation.set(0.1, 0, 0);
+      if (go > 0) this.stride(go);
       this.tailGroup.rotation.y = 0.3 * Math.sin(L.t * 4.5);
     }
-    const walkTime = L.d / CAT_LEAVE.speed + 0.5, fadeFrom = Math.max(0.5, walkTime - CAT_LEAVE.fade);
+    const walkTime = L.d / CAT_LEAVE.speed + 0.5 + CAT_WALK.rise, fadeFrom = Math.max(0.5, walkTime - CAT_LEAVE.fade);
     const a = 1 - THREE.MathUtils.clamp((L.t - fadeFrom) / CAT_LEAVE.fade, 0, 1);
     this.setOpacity(a);
     if (a <= 0) { this.hide(); this.onLeft?.(); }
@@ -587,7 +711,7 @@ export class CatSpawner {
   dropFish() {
     if (this.fish?.phase === 'eat') this.fish.f.model.scale.setScalar(1); // interrupted: the fish finger is whole again
     this.fish = null;
-    this.head.position.copy(this.headHome);
+    this.headOff.set(0, 0, 0);
     this.leftShoulder.rotation.set(0, 0, 0);
   }
 
@@ -621,7 +745,7 @@ export class CatSpawner {
     // taken away before it got there: it only looks after it (at the visitor) for a while
     if (F.phase !== 'look' && F.f.state !== 'placed') {
       F.phase = 'look'; F.t = 0; F.f.model.scale.setScalar(1);
-      this.head.position.copy(this.headHome); this.leftShoulder.rotation.set(0, 0, 0); this.shoulder.rotation.set(0, 0, 0);
+      this.headOff.set(0, 0, 0); this.leftShoulder.rotation.set(0, 0, 0); this.shoulder.rotation.set(0, 0, 0);
     }
     if (F.phase === 'look') {
       this.lookTowards(this.watchPoint?.() ?? F.at, Math.min(1, F.t * 3));
@@ -634,26 +758,24 @@ export class CatSpawner {
       return true;
     }
     if (F.phase === 'walk') {
+      this.wantStand = 1; // up on all four first (#224), then it walks
       const dx = F.at.x - o.position.x, dz = F.at.z - o.position.z, dist = Math.hypot(dx, dz);
       const stop = CAT_FISH.stop * size;
       o.rotation.y = Math.atan2(dx, dz);
-      const go = Math.min(CAT_FISH.speed * dt, Math.max(0, dist - stop));
+      const go = this.standing ? Math.min(CAT_FISH.speed * dt, Math.max(0, dist - stop)) : 0;
       const nx = o.position.x + (dx / dist) * go, nz = o.position.z + (dz / dist) * go;
       if (go > 0 && this.obstacles().some((s) => distToSeg(nx, nz, s) < 0.08)) { F.phase = 'look'; F.t = 0; return true; } // blocked: gives up
       o.position.x = nx; o.position.z = nz;
-      // a simple gait: the front legs swing in turn, the head bobs, the tail sways
-      const g = Math.sin(F.t * 9);
-      this.shoulder.rotation.set(0.45 * g, 0, 0);
-      this.leftShoulder.rotation.set(-0.45 * g, 0, 0);
-      this.head.rotation.set(0.15 + 0.05 * Math.abs(g), 0, 0);
-      this.head.position.set(this.headHome.x, this.headHome.y - 0.01 * Math.abs(g), this.headHome.z);
+      if (go > 0) this.stride(go); // the legs (pose), the head looks ahead and down a little, the tail sways
+      this.head.rotation.set(0.15, 0, 0);
       this.tailGroup.rotation.y = 0.25 * Math.sin(F.t * 4.5);
-      if (dist - stop < 0.01) { F.phase = 'eat'; F.t = 0; F.chew = 0; this.shoulder.rotation.set(0, 0, 0); this.leftShoulder.rotation.set(0, 0, 0); }
+      if (this.standing && dist - stop < 0.01) { F.phase = 'eat'; F.t = 0; F.chew = 0; this.shoulder.rotation.set(0, 0, 0); this.leftShoulder.rotation.set(0, 0, 0); }
       return true;
     }
-    // eat: the head goes down to the floor, the fish finger shrinks, small munching sounds; then a purr
+    // eat: it sits down again (#224), the head goes down to the floor, the fish finger shrinks, small munching sounds;
+    // then a purr
     const down = Math.min(1, F.t / 0.4);
-    this.head.position.set(this.headHome.x, this.headHome.y - 0.2 * down, this.headHome.z + 0.09 * down);
+    this.headOff.set(0, -0.2 * down, 0.09 * down);
     this.head.rotation.set(0.8 * down + 0.08 * Math.sin(F.t * 14), 0, 0);
     F.f.model.scale.setScalar(Math.max(0.05, 1 - F.t / CAT_FISH.eat));
     F.chew -= dt;
