@@ -255,8 +255,9 @@ export const HUS_L = {
   render: 0xf2efe7,       // white render, våning 3–4
   pilaster: 0.4,          // brick pilaster width at each unit boundary (render)
   // spiral stairs in brick drums at both ends (våning 1/3 plans): centre, radius
-  // (#42: the east one, L1008's escape stair, stands right against the house, per the user)
-  towers: [{ x: -46.2, z: 1.1, r: 1.6 }, { x: 10.2, z: -1.62, r: 1.6 }],
+  // (#42: the east one, L1008's escape stair, stands right against the house, per the user; #172: so does
+  // the west one, against the west gable — `gable: 'west'` = its x is worked out in exterior.js, gable − r)
+  towers: [{ gable: 'west', z: 1.1, r: 1.6 }, { x: 10.2, z: -1.62, r: 1.6 }],
   // L1008 (the east end unit, our neighbour on the left seen from the street) is not a copy of ours
   // (#42, plan p. 43): no window beside the front door (its kitchen window is on the gable), and
   // upstairs no window where the escape stair stands. Façade openings whose centre x (unit

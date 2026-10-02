@@ -214,11 +214,12 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
   for (const [xa, xb] of H.solar.x) for (const [za, zb] of H.solar.z) panels.push(boxGeo(xa, xb, upperTop + 0.35, upperTop + 0.42, za, zb));
 
   // loftgång deck from the west drum to the east end, plus the landing to the east drum
-  const [tw, te] = H.towers;
+  const towers = H.towers.map((t) => (t.gable === 'west' ? { ...t, x: xw - t.r } : t)); // right against the gable (#172)
+  const [tw, te] = towers;
   const deckX0 = tw.x + tw.r * 0.8;
   solids.push(boxGeo(deckX0, xe, roofTop - 0.25, roofTop, -0.05, loftD));
   solids.push(boxGeo(te.x - 1.2, te.x + 1.2, roofTop - 0.25, roofTop, te.z + te.r * 0.7, 0));
-  for (const t of H.towers) {
+  for (const t of towers) {
     bricks.push(drum(t.x, t.z, t.r, roofTop + H.railHeight));
     for (let i = 0; i < 16; i++) { // collision: a 16-gon round the drum
       const a0 = (i / 16) * Math.PI * 2, a1 = ((i + 1) / 16) * Math.PI * 2;

@@ -243,7 +243,7 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   from the street (#42): kitchen window on the gable, no window beside its door, no Sovrum 1 window
   upstairs, the escape spiral stair right against the house (`HUS_L.endUnitNorthHidden`, towers). Våning 3–4: L1201–L1209 on the same 5.75 m grid (L1208 above us, L1205 over the
   core), white render with brick pilasters, entered from the loftgång on våning 3; spiral stairs in
-  brick drums at both ends; flat roof with solar panels.
+  brick drums at both ends, both right against the house (#42, #172: the west one against the west gable); flat roof with solar panels.
 - Site (`SITE`): measured on the situation/overview plans (1:500, Hus L horizontal = our axes, metres
   from our NW corner). Hus A (x −10…9.5, z 30…54, våning −1…4), B (x −43…−24, z 34…59, −1…3),
   C (x −73…−53, z 12.5…37.5, 1…5), brick with low hip roofs; the courtyard is on a garage and the
