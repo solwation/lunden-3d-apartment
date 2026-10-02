@@ -31,8 +31,9 @@ f.onload = async () => {
     const dx = bx - ax, dz = bz - az, t = Math.max(0, Math.min(1, ((x - ax) * dx + (z - az) * dz) / (dx * dx + dz * dz || 1)));
     return Math.hypot(x - ax - t * dx, z - az - t * dz) > 0.225; // PLAYER.radius 0.22
   });
-  for (const t of targets) {
-    for (const [si, sp] of t.spots.entries()) {
+  const standBtn = d.getElementById('stand-btn');
+  /** Sit down on spot `sp` of `t` from a free place near it (the button must name it); returns the label or null. */
+  const sitOn = (t, sp) => {
       // stand on a free spot near it — in front first, then all round — from which the button names it
       const floorY = t.level ? 3.25 : 0;
       const cands = [];
@@ -52,8 +53,13 @@ f.onload = async () => {
         if (btn.hidden || !btn.textContent.includes(t.name)) continue;
         btn.click();
         if (rest.target === t) { label = btn.textContent; break; }
-        btn.click(); for (let i = 0; i < 3; i++) step(1 / 60); // another chair of the same name: up again, go on
+        w.__app.standUp(); for (let i = 0; i < 3; i++) step(1 / 60); // another chair of the same name: up again, go on
       }
+      return label;
+  };
+  for (const t of targets) {
+    for (const [si, sp] of t.spots.entries()) {
+      const label = sitOn(t, sp);
       if (!label) { pass &= check(false, `${t.name} #${si} @ (${sp.pos.x.toFixed(2)}, ${sp.pos.z.toFixed(2)}): no free place from which it is a target`); continue; }
       for (let i = 0; i < 60; i++) step(1 / 60);
       const chosen = rest.spot;
@@ -67,13 +73,65 @@ f.onload = async () => {
       player.keys = new Set();
       const still = camera.position.distanceTo(p0) < 0.001;
       const before = player.pos.clone();
-      btn.click(); // "Res dig"
+      (standBtn.hidden ? btn : standBtn).click(); // "Res dig" (the action button, or its own one when something is in reach, #184)
       for (let i = 0; i < 3; i++) step(1 / 60);
       const back = Math.hypot(player.pos.x - before.x, player.pos.z - before.z) < 0.05 && !rest.active;
       const ok = !!(atSpot && up && still && back && label);
       pass &= check(ok, `${t.name} #${si} (${chosen?.kind ?? t.rest}): "${label}" at spot ${atSpot}, ${lying ? `looking up ${up}, ` : ''}no walking ${still}, back up ${back}`);
     }
   }
+  // #184: things within reach while sitting — the remote from the sofa, the book from the armchair
+  const { remote, book, heldItem, standUp } = w.__app;
+  const V = camera.position.constructor;
+  const look = (p) => { const dx = p.x - camera.position.x, dz = p.z - camera.position.z; camera.rotation.set(Math.atan2(p.y - camera.position.y, Math.hypot(dx, dz)), Math.atan2(-dx, -dz), 0, 'YXZ'); step(1 / 60); return btn.hidden ? '(hidden)' : btn.textContent; };
+  const sofa = targets.find((t) => t.name === 'soffan');
+  // the seat nearest the remote
+  remote.model.updateMatrixWorld(true);
+  const rp = remote.where();
+  const seat = [...sofa.spots].sort((a, b) => a.pos.distanceTo(rp) - b.pos.distanceTo(rp))[0];
+  sitOn(sofa, seat); for (let i = 0; i < 60; i++) step(1 / 60);
+  let label = look(remote.where());
+  pass &= check(rest.active && /ta fjärrkontrollen/i.test(label) && !standBtn.hidden, `in the sofa (${camera.position.distanceTo(rp).toFixed(2)} m from the remote): "${label}", the "Res dig" button beside it`);
+  btn.click(); step(1 / 60);
+  pass &= check(heldItem() === remote && rest.active, 'the remote in the hand, still sitting');
+  const tv = world.furnitureTargets.find((t) => t.kind === 'tv' && t.level === 0) ?? world.furnitureTargets.find((t) => t.kind === 'tv');
+  if (tv.isOpen) tv.toggle();
+  look(tv.pickable.getWorldPosition(new V()));
+  remote.use(); step(1 / 60);
+  pass &= check(tv.isOpen && rest.active, 'a click: the TV comes on, from the sofa');
+  // stand up with it in the hand (Space): you keep it
+  d.dispatchEvent(new w.KeyboardEvent('keydown', { code: 'Space', bubbles: true }));
+  step(1 / 60);
+  const locked = !rest.active; // the key handler only runs with the mouse locked: fall back to the button
+  if (!locked) standBtn.click();
+  step(1 / 60);
+  pass &= check(!rest.active && heldItem() === remote, `up again (${locked ? 'Space' : 'the button'}), the remote still in the hand`);
+  remote.putBack(); tv.toggle();
+  // the armchair: the book on the side table
+  const chair = targets.find((t) => t.name === 'fåtöljen');
+  sitOn(chair, chair.spots[0]); for (let i = 0; i < 60; i++) step(1 / 60);
+  book.model.updateMatrixWorld(true);
+  label = look(book.where());
+  pass &= check(rest.active && /ta boken/i.test(label), `in the armchair: "${label}" (${camera.position.distanceTo(book.where()).toFixed(2)} m)`);
+  btn.click(); step(1 / 60);
+  look(book.where().add(new V(0, 1, 0))); // up, at nothing
+  btn.click(); step(1 / 60); // "Läs"
+  pass &= check(book.reading && rest.active, 'reading, still sitting');
+  btn.click(); step(1 / 60); // close
+  pass &= check(!book.reading && rest.active && heldItem() === book, 'closed, still sitting');
+  label = look(book.home.pos.clone().add(new V(0, 0.05, 0)));
+  btn.click(); step(1 / 60);
+  pass &= check(!book.held && rest.active, `back on the side table ("${label}")`);
+  // far away (beyond reach): nothing; E / the button with nothing in reach stands you up
+  label = look(camera.position.clone().add(new V(0, 0, 0)).add(new V(3, 0, 3)));
+  pass &= check(label === 'Res dig' && standBtn.hidden, `looking away: "${label}"`);
+  btn.click(); step(1 / 60);
+  pass &= check(!rest.active, 'nothing in reach: the button stands you up');
+  // beyond reach while sitting: the TV across the room is no target
+  sitOn(sofa, seat); for (let i = 0; i < 60; i++) step(1 / 60);
+  label = look(tv.pickable.getWorldPosition(new V()));
+  pass &= check(!/tv/i.test(label), `the TV across the room is out of reach: "${label}"`);
+  standUp();
   out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
 };
 </script>

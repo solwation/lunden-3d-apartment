@@ -537,7 +537,10 @@ screenshots into the session scratchpad, not the repo.
   spots }` (local x, seat/mattress y, z, optional dir); buildFurniture turns them into E targets
   (`world.furnitureTargets`). E picks the spot nearest the look ray (not one the cat sits on), the camera
   glides there (lying: looking at the ceiling), walking is off and looking is clamped; E / "Res dig" puts
-  you back where you stood (including upstairs: `spawn()` alone would drop you to Entréplan). Seats: the
+  you back where you stood (including upstairs: `spawn()` alone would drop you to Entréplan). While sitting / lying (#184) the
+  focus works as standing but within `REST.reach` of the eye (not the seat itself, nothing to sit on): take the remote
+  from the sofa, the book from the armchair, put things down within reach; E with nothing in reach, Space / C or the
+  touch "Res dig" button (#stand-btn) get you up, keeping what is in the hand. Seats: the
   sofa (3 + the chaise), armchair, 4 dining chairs, the lounge sofa (3), RÅGRUND; beds: the double bed (2
   sides), both bunks (lower/upper), the daybed. F stands you up first.
 - GNOME's "disable touchpad while typing" (on by default) blocks touchpad look while a WASD key

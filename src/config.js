@@ -353,8 +353,8 @@ export const TOYS = {
 };
 
 // The TV remote (#101, src/remote.js): slim black, 4 × 18 × 1.5 cm (the user's sketch), lying on the coffee table
-// (ILVA Woodstock, top 0.47 m at x 3.64, z 10.56) towards the TV end, turned a little. `reach` = how far it works.
-export const REMOTE = { w: 0.04, l: 0.18, h: 0.015, x: 3.98, y: 0.47, z: 10.42, turn: 18, reach: 9,
+// (ILVA Woodstock, top 0.47 m at x 3.64, z 10.56) on the sofa's side (within reach from the sofa, #184), turned a little. `reach` = how far it works.
+export const REMOTE = { w: 0.04, l: 0.18, h: 0.015, x: 3.98, y: 0.47, z: 10.72, turn: 18, reach: 9,
   held: { x: 0.17, y: -0.19, z: -0.36 } };
 
 // The book on the side table by the armchair (#140, src/book.js): a hardback 15 × 22 × 3 cm lying beside the
@@ -451,6 +451,7 @@ export const REST = {
   sitEye: 0.72, lieEye: 0.22, move: 0.5,
   sit: { yaw: 1.7, pitch: [-1.1, 0.8] },
   lie: { yaw: 1.3, pitch: [0.15, 1.45], startPitch: 1.45 }, // lying on your back, looking at the ceiling
+  reach: { sit: 1.3, lie: 0.8 }, // how far from the eye you can reach things while sitting (leaning forward) / lying (#184)
 };
 
 export const PLAYER = {

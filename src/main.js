@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { COLORS, LEVELS, DAY, START, PLAYER, DRAWING, STAIR, HOLD, REMOTE } from './config.js';
+import { COLORS, LEVELS, DAY, START, PLAYER, DRAWING, STAIR, HOLD, REMOTE, REST } from './config.js';
 const DRAWING_COLORS = DRAWING.colors;
 import { buildWorld } from './world.js';
 import { Player } from './player.js';
@@ -593,7 +593,9 @@ function use(thing) {
   }
   else useDoor(thing);
 }
-actionBtn.addEventListener('click', () => { if (reading) showNote(false); else if (rest.active) standUp(); else if (focused) use(focused); else heldItem()?.use(); });
+actionBtn.addEventListener('click', () => { if (reading) showNote(false); else if (focused) use(focused); else if (heldItem()?.useLabel) heldItem().use(); else if (rest.active) standUp(); });
+const standBtn = document.getElementById('stand-btn'); // touch, sitting with something in reach or in the hand: get up (#184)
+standBtn.addEventListener('click', () => { if (rest.active) standUp(); });
 const muteBtn = document.getElementById('mute');
 function updateMute(m = isMuted()) {
   muteBtn.textContent = m ? '🔇' : '🔊';
@@ -637,8 +639,9 @@ document.addEventListener('keydown', (e) => {
   }
   player.keys.add(e.code);
   if (e.code === 'ControlLeft' || e.code === 'ControlRight') player.crouch = true; // crouch while held (#70)
-  if (e.code === 'KeyE' && rest.active) standUp();
-  else if (e.code === 'KeyE' && focused) use(focused);
+  if (e.code === 'KeyE' && focused) use(focused); // also while sitting: what is within reach (#184)
+  else if (e.code === 'KeyE' && rest.active) standUp();
+  else if ((e.code === 'Space' || e.code === 'KeyC') && rest.active) { e.preventDefault(); standUp(); }
   if (e.code === 'KeyM') updateMute(toggleMuted());
   if (e.code === 'KeyT') toggleStats();
   if (e.code === 'Tab') { e.preventDefault(); if (!e.repeat) holdStats(true); }
@@ -691,16 +694,12 @@ function behindWall(p) {
 }
 
 function updateFocus() {
-  if (rest.active) { // sitting / lying: E (or the button) only gets you up again
-    focused = null;
-    promptEl.textContent = 'Tryck E för att resa dig';
-    promptEl.hidden = touch.enabled;
-    actionBtn.textContent = 'Res dig';
-    actionBtn.hidden = !touch.enabled;
-    return;
-  }
+  // sitting / lying (#184): what is within arm's reach can be used as usual (not the seat itself, nothing to sit on);
+  // E with nothing in reach, Space / C or the "Res dig" button get you up
+  const reach = rest.active ? REST.reach[rest.spot.kind === 'lie' ? 'lie' : 'sit'] : HOLD.reach;
   camera.updateMatrixWorld(); // the player just moved it; render hasn't run yet
   raycaster.setFromCamera(center, camera);
+  raycaster.far = reach;
   // (the raycaster ignores visibility, so the cat is only a target while it is there)
   // the car key only while its cabinet is open
   const extra = [...(cat.visible ? [cat.object] : []), ...(keyCabinet?.keyReachable ? [world.carKey.pickable] : []),
@@ -708,7 +707,8 @@ function updateFocus() {
   // the nearest hit on something actually shown (F hides the loose items, the raycaster doesn't care)
   const cupTargets = cups.cups.filter((c) => !c.held).map((c) => c.target.pickable);
   if (fish && world.furnitureOn) cupTargets.push(fish.target.pickable, ...fish.placed.map((f) => f.target.pickable)); // the carton + fish fingers lying out (#162)
-  const hit = raycaster.intersectObjects([...pickables, ...extra, ...cupTargets], true).find((h) => shown(h.object));
+  const hit = raycaster.intersectObjects([...pickables, ...extra, ...cupTargets], true)
+    .find((h) => shown(h.object) && !(rest.active && (h.object.userData.door === rest.target || h.object.userData.door?.kind === 'rest')));
   focused = hit && !behindWall(hit.point) ? hit.object.userData.door : null;
   // holding something: a table top / worktop in front of you, or else the floor (nearer than anything
   // else you look at), is where it goes down (#102)
@@ -728,8 +728,8 @@ function updateFocus() {
   posters.showGhost(posterSpot, heldDrawing.tex);
   if (item?.placeAt) {
     const top = raycaster.intersectObjects(world.cupSurfaces, false).find((h) => shown(h.object) && h.point.y >= h.object.userData.surface - 0.02);
-    let spot = top && top.distance < HOLD.reach && !behindWall(top.point) ? { point: top.point.clone().setY(top.object.userData.surface), distance: top.distance } : null;
-    if (!spot) { const f = floorSpot(); if (f && !behindWall(f.point)) spot = f; } // a table top is always above (before) the floor
+    let spot = top && top.distance < reach && !behindWall(top.point) ? { point: top.point.clone().setY(top.object.userData.surface), distance: top.distance } : null;
+    if (!spot) { const f = floorSpot(); if (f && f.distance < reach && !behindWall(f.point)) spot = f; } // a table top is always above (before) the floor
     if (spot && (!hit || spot.distance <= hit.distance + 0.05)) {
       placeTarget = { name: `${item.name} här`, kind: 'place', verb: item.placeVerb ?? 'lägga ner', item, point: spot.point };
       focused = placeTarget;
@@ -764,10 +764,14 @@ function updateFocus() {
   }
   const holding = !focused && heldItem()?.useLabel ? heldItem() : null; // touch: the button uses what you hold (fire, wave, light); a cup or the jug has no use of its own
   if (holding && touch.enabled) actionBtn.textContent = holding.useLabel;
+  const seated = rest.active && !reading; // sitting / lying: E with nothing in reach gets you up; Space / C always do
+  if (seated && !focused && !holding) actionBtn.textContent = 'Res dig';
+  if (seated && !touch.enabled) promptEl.textContent = focused && !focused.blocked ? `${promptEl.textContent} · Mellanslag – res dig` : focused?.blocked ? promptEl.textContent : 'Tryck E för att resa dig';
+  standBtn.hidden = !touch.enabled || !seated || (!focused && !holding);
   if (reading && touch.enabled) actionBtn.textContent = boardPanel.open ? 'Stäng tavlan' : 'Stäng lappen';
-  promptEl.hidden = !focused || touch.enabled || reading;
+  promptEl.hidden = (!focused && !seated) || touch.enabled || reading;
   if (remoteAim && !touch.enabled && !reading) { promptEl.textContent = 'Klicka för att byta kanal · högerklick: av/på'; promptEl.hidden = false; }
-  actionBtn.hidden = !(focused || reading || holding) || !touch.enabled || clockPanel.open || calPanel.open || sonos.open; // the strips have their own ×
+  actionBtn.hidden = !(focused || reading || holding || seated) || !touch.enabled || clockPanel.open || calPanel.open || sonos.open; // the strips have their own ×
   powerBtn.hidden = !touch.enabled || !heldItem()?.useAlt || reading;
 }
 
