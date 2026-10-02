@@ -1374,7 +1374,50 @@ function kidchair() {
 }
 
 /** Woven rug texture: base colour, fine random weave, a thin border band (canvas, no image files). */
+/**
+ * Sarah's rug (#171, docs/matta-vardagsrum-sarah.jpg): a dark olive ground with off-white stripes laid in square
+ * fields; in each field the stripes come in straight from one edge and turn round in concentric half circles
+ * (a U), the corners beside the bend filled with short straight stripes. `item.fields` = per row of fields, the
+ * edge each U opens towards ('e', 'w', 'n', 's' in canvas terms: e = +x, s = +y). No border.
+ */
+function archRugTexture(item) {
+  const ppm = 2048 / item.w, c = document.createElement('canvas');
+  c.width = 2048; c.height = Math.round(item.d * ppm);
+  const g = c.getContext('2d');
+  g.fillStyle = item.color;
+  g.fillRect(0, 0, c.width, c.height);
+  const rows = item.fields, cell = c.height / rows.length, pitch = item.pitch * ppm, h = cell / 2;
+  g.strokeStyle = item.stripe; g.lineWidth = item.white * ppm; g.lineCap = 'butt';
+  const turn = { e: 0, s: Math.PI / 2, w: Math.PI, n: -Math.PI / 2 };
+  rows.forEach((row, j) => [...row].forEach((dir, i) => {
+    g.save();
+    g.beginPath(); g.rect(i * cell, j * cell, cell, cell); g.clip();
+    g.translate(i * cell + h, j * cell + h); g.rotate(turn[dir]); // local: the U opens towards +x
+    g.beginPath();
+    for (let r = pitch * 0.6; r < h; r += pitch) { // the U: legs to the +x edge, half circle round the middle
+      g.moveTo(h + 2, -r); g.lineTo(0, -r); g.arc(0, 0, r, -Math.PI / 2, Math.PI / 2, true); g.lineTo(h + 2, r);
+    }
+    for (let r = pitch * 0.6; r < h + pitch; r += pitch) { // the corners beside the bend: straight, up to the outer arc
+      const x = r < h ? -Math.sqrt(h * h - r * r) : 0;
+      for (const s of [-1, 1]) { g.moveTo(-h - 2, s * r); g.lineTo(x, s * r); }
+    }
+    g.stroke();
+    g.restore();
+  }));
+  let seed = 7;
+  const rand = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+  for (let i = 0; i < 60000; i++) { // the tufted pile: tiny light/dark flecks
+    g.fillStyle = rand() < 0.5 ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.08)';
+    g.fillRect(rand() * c.width, rand() * c.height, 2 + rand() * 2, 2);
+  }
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 8;
+  return tex;
+}
+
 function rugTexture(item) {
+  if (item.fields) return archRugTexture(item);
   const c = document.createElement('canvas');
   c.width = 768; c.height = 512;
   const g = c.getContext('2d');

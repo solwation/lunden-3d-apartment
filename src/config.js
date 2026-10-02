@@ -765,7 +765,11 @@ export const FURNITURE = [
   { type: 'tv', level: 0, x: 4.25, z: 7.8 + 0.2, y: 0.45, rot: 180, w: 1.23, h: 0.715, fps: 12 },
   // big rug under the sofa's front legs and the coffee table (#55): 300 × 200 × 1.2 cm (size and
   // colours are our pick), light oatmeal with a soft weave and a thin border; no collision
-  { type: 'rug', level: 0, x: 3.9, z: 10.6, w: 3.0, d: 2.0, h: 0.012, color: '#dcd3c3', border: '#c4b8a3' },
+  // Sarah's rug (#171, docs/matta-vardagsrum-sarah.jpg): dark olive with off-white stripes (~2 cm white, 4 cm green)
+  // bending round in U arches, square fields of 1 m (3 × 2); colours/stripes read off the photo, size kept at
+  // 300 × 200 (Sarah's own may differ)
+  { type: 'rug', level: 0, x: 3.9, z: 10.6, w: 3.0, d: 2.0, h: 0.012, color: '#5a6150', stripe: '#e6e1d6', pitch: 0.062, white: 0.022,
+    fields: ['ewn', 'nes'] },
   // Uteplats (paved z 12.75–16.8 in front of the hedge, see PATIO): Plantagen Hörngrupp Oslo
   // antracit (art. 558848): corner sofa 198 × 72 × 76 + 186 × 72 × 76 cm on an aluminium frame,
   // table 120 × 60 × 40 cm (plantagen.se). Backs to the hedge and the east screen wall,
