@@ -30,11 +30,14 @@ const KEY = 'lunden.resume';
   pass &= check(Math.hypot(player.pos.x - rec.x, player.pos.z - rec.z) < 0.05 && Math.abs(player.pos.y - 3.25) < 0.01,
     `resumed at (${player.pos.x.toFixed(2)}, ${player.pos.y.toFixed(2)}, ${player.pos.z.toFixed(2)})`);
   pass &= check(Math.abs(camera.rotation.y - rec.yaw) < 0.01 && Math.abs(camera.rotation.x - rec.pitch) < 0.01, 'same view direction');
-  pass &= check(Math.abs(day.hour - 20.5) < 0.1 && day.month === 3, `same clock (${day.clock}, month ${day.month})`);
+  const now = new Date(), realH = now.getHours() + now.getMinutes() / 60;
+  pass &= check(Math.abs(day.hour - realH) < 0.1 && day.month === now.getMonth() + 1 && day.date === now.getDate(), `the real clock and date, not the record's (${day.clock}, ${day.date}/${day.month}) (#143)`);
   pass &= check(!f.contentDocument.getElementById('resume').hidden, 'start screen: "Du fortsätter där du var"');
   pass &= check(!sessionStorage.getItem(KEY) && !localStorage.getItem(KEY), 'the record is deleted when read');
-  // (3) "Börja från start"
+  // (3) "Börja från start": after spooling and picking another date, back to now (#143)
+  day.hour = 3; day.month = 1; day.date = 2; day.paused = true;
   f.contentDocument.getElementById('restart').click();
+  pass &= check(Math.abs(day.hour - realH) < 0.1 && day.month === now.getMonth() + 1 && day.date === now.getDate() && !day.paused, `restart → the real time and date (${day.clock}, ${day.date}/${day.month})`);
   pass &= check(player.pos.z < -5 && f.contentDocument.getElementById('resume').hidden, `"Börja från start" → start (z ${player.pos.z.toFixed(2)})`);
   f.remove();
   // (2) plain reload: no record → START

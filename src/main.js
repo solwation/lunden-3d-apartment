@@ -310,16 +310,17 @@ if (at) {
   camera.position.y = player.eyeY;
   camera.rotation.x = THREE.MathUtils.degToRad(pitch);
 }
-// the resumed place (not with ?at=): back to the same spot, view and time; the start screen then
+// the resumed place (not with ?at=): back to the same spot and view (the clock is real, #143); the start screen then
 // says so and offers "Börja från start" instead
 const resumeEl = document.getElementById('resume');
-if (resumed && !at && resumeAt(resumed)) {
-  if (Number.isFinite(resumed.hour)) day.hour = resumed.hour;
-  if (resumed.month >= 1 && resumed.month <= 12) day.month = resumed.month;
-  resumeEl.hidden = false;
+if (resumed && !at && resumeAt(resumed)) resumeEl.hidden = false; // the place only: the clock is the real one (#143)
+/** Back to the real time and date (#143): the wall clock and the cat calendar show now, not what was spooled or picked. */
+function realNow() {
+  const n = new Date();
+  Object.assign(day, { hour: n.getHours() + n.getMinutes() / 60 + n.getSeconds() / 3600, year: n.getFullYear(), month: n.getMonth() + 1, date: n.getDate(), paused: false, spool: 0 });
 }
 for (const id of ['restart', 'to-start']) { // also on the start screen shown when the mouse is freed (pause)
-  document.getElementById(id).addEventListener('click', () => { spawnAtStart(); resumeEl.hidden = true; });
+  document.getElementById(id).addEventListener('click', () => { spawnAtStart(); realNow(); resumeEl.hidden = true; });
 }
 const params = new URLSearchParams(location.search);
 if (params.has('shot')) overlay.hidden = true;
@@ -865,4 +866,4 @@ document.addEventListener('pointerlockchange', () => { if (!updateEl.hidden) sho
 watchForUpdates(showUpdate);
 
 // handle for tests/debugging (tools/touchtest.html)
-window.__app = { beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };
+window.__app = { realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };
