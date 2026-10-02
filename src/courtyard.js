@@ -6,7 +6,8 @@ import { registerSnow, registerTrees } from './seasons.js';
 import { SEASON } from './config.js';
 
 // The courtyard on the garage box (#80): stone walks, gravel round the beds, the Borggården's pergola
-// with a dining table and benches (pale timber, vines, string lights and herringbone brick: #149), a grill, sandboxes, a boule court, benches, raised beds and planted
+// with a dining table and benches (pale timber, vines, string lights and herringbone brick: #149), a grill, sandboxes, a boule court, benches, raised beds,
+// path bollards that light up at dusk, a playhouse and a bike rack (#112), and planted
 // shrubs (instanced). Everything at the courtyard level (y 0). One mesh per material; returns collision
 // segments for the things you can walk into.
 
@@ -111,6 +112,43 @@ export function buildCourtyard() {
   for (const b of C.benches) { const r = bench(b, null, null); geos.wood.push(...r.wood); geos.metal.push(...r.metal); segments.push(...rectSegs(b.x - 0.8, b.x + 0.8, b.z - 0.3, b.z + 0.3)); }
   for (const r of C.beds) { geos.wood.push(box(r.x0, r.x1, 0, 0.5, r.z0, r.z1)); geos.soil.push(plate({ x0: r.x0 + 0.05, x1: r.x1 - 0.05, z0: r.z0 + 0.05, z1: r.z1 - 0.05 }, 0.48)); }
 
+  // #112: bollards along the walks (a glowing band under the cap), the playhouse, the bike rack
+  const glow = [], paint = [], bikes = [];
+  for (const row of C.bollards.rows) for (let x = row.x0; x <= row.x1; x += row.step) {
+    const { h, r } = C.bollards;
+    geos.metal.push(new THREE.CylinderGeometry(r, r, h - 0.12, 12).translate(x, (h - 0.12) / 2, row.z), new THREE.CylinderGeometry(r + 0.01, r + 0.01, 0.04, 12).translate(x, h - 0.02, row.z));
+    glow.push(new THREE.CylinderGeometry(r - 0.005, r - 0.005, 0.08, 12).translate(x, h - 0.08, row.z));
+    segments.push(...rectSegs(x - r, x + r, row.z - r, row.z + r));
+  }
+  {
+    const P = C.playhouse, cx = (P.x0 + P.x1) / 2, cz = (P.z0 + P.z1) / 2, w = P.x1 - P.x0, d = P.z1 - P.z0;
+    paint.push(box(P.x0, P.x1, 0, P.h, P.z0, P.z1)); // walls (falu red), a door and a window in white trim, a gable roof
+    geos.pergola.push(box(cx - 0.3, cx + 0.3, 0.05, 1.0, P.z0 - 0.02, P.z0), box(P.x0 + 0.25, P.x0 + 0.65, 0.6, 1.0, P.z0 - 0.02, P.z0));
+    const run = w / 2 + 0.15, rise = P.ridge - P.h, a = Math.atan2(rise, run);
+    for (const s of [-1, 1]) { // two roof slabs, each rising from its eave to the ridge
+      geos.metal.push(new THREE.BoxGeometry(Math.hypot(run, rise), 0.05, d + 0.3).rotateZ(-s * a).translate(cx + s * run / 2, (P.h + P.ridge) / 2, cz));
+    }
+    const gable = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(P.x0, P.h, 0), new THREE.Vector3(P.x1, P.h, 0), new THREE.Vector3(cx, P.ridge, 0)]);
+    gable.setIndex([0, 1, 2, 2, 1, 0]); gable.computeVertexNormals();
+    gable.setAttribute('uv', new THREE.Float32BufferAttribute(new Float32Array(6), 2)); // (merges with the boxes)
+    for (const z of [P.z0 + 0.001, P.z1 - 0.001]) paint.push(gable.clone().translate(0, 0, z));
+    segments.push(...rectSegs(P.x0, P.x1, P.z0, P.z1));
+  }
+  {
+    const B = C.bikeRack, tint = (g, hex) => { const c = new THREE.Color(hex), n = g.attributes.position.count; g.setAttribute('color', new THREE.Float32BufferAttribute(new Float32Array(n * 3).map((_, i) => [c.r, c.g, c.b][i % 3]), 3)); return g; };
+    const len = (B.n - 1) * B.gap;
+    geos.metal.push(box(B.x - 0.02, B.x + 0.02, 0.0, 0.4, B.z0 - 0.2, B.z0 + len + 0.2)); // the rack's rail
+    for (let k = 0; k < B.n; k++) {
+      const z = B.z0 + k * B.gap, col = B.colors[k % B.colors.length];
+      for (const dx of [-0.55, 0.5]) geos.metal.push(new THREE.TorusGeometry(0.33, 0.025, 6, 20).translate(B.x + dx, 0.34, z)); // wheels (in the x-y plane)
+      bikes.push(tint(box(B.x - 0.55, B.x + 0.45, 0.5, 0.54, z - 0.02, z + 0.02).rotateZ(0), col), // top tube
+        tint(new THREE.BoxGeometry(0.04, 0.5, 0.04).rotateZ(0.5).translate(B.x - 0.1, 0.45, z), col), // down tube
+        tint(new THREE.BoxGeometry(0.04, 0.4, 0.04).rotateZ(-0.25).translate(B.x - 0.42, 0.55, z), col)); // seat tube
+      geos.metal.push(box(B.x - 0.52, B.x - 0.36, 0.76, 0.8, z - 0.05, z + 0.05), box(B.x + 0.4, B.x + 0.44, 0.54, 0.9, z - 0.02, z + 0.02), box(B.x + 0.38, B.x + 0.46, 0.88, 0.92, z - 0.24, z + 0.24)); // saddle, stem, bars
+    }
+    segments.push(...rectSegs(B.x - 0.9, B.x + 0.85, B.z0 - 0.3, B.z0 + len + 0.3));
+  }
+
   const paveTex = pavingTexture();
   const mats = {
     paving: new THREE.MeshStandardMaterial({ map: paveTex, roughness: 0.95 }),
@@ -133,6 +171,11 @@ export function buildCourtyard() {
     mesh.receiveShadow = true;
     group.add(mesh);
   }
+  const add = (list, mat, shadow = true) => { const mesh = new THREE.Mesh(mergeGeometries(list.map((g) => (g.index ? g.toNonIndexed() : g))), mat); mesh.castShadow = shadow; mesh.receiveShadow = true; group.add(mesh); };
+  add(paint, new THREE.MeshStandardMaterial({ color: C.playhouse.color, roughness: 0.85, side: THREE.DoubleSide }));
+  add(bikes, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.4, metalness: 0.3 }));
+  const bollardGlow = new THREE.MeshBasicMaterial({ color: 0x8d8b84, toneMapped: false });
+  add(glow, bollardGlow, false);
   // shrubs and perennials in the plantings: instanced, some with flowers
   let seed = 9;
   const rand = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
@@ -160,8 +203,8 @@ export function buildCourtyard() {
   const bulb = new THREE.InstancedMesh(new THREE.SphereGeometry(0.03, 8, 6), bulbMat, bulbs.length);
   bulbs.forEach(([x, y, z], i) => bulb.setMatrixAt(i, m.makeTranslation(x, y, z)));
   group.add(vine, bulb);
-  const lit = new THREE.Color(0xffd08a), off = new THREE.Color(0x2a2620);
+  const lit = new THREE.Color(0xffd08a), off = new THREE.Color(0x2a2620); const bollardOff = new THREE.Color(0x8d8b84);
   return { object: group, segments,
     /** night 0 … 1 (with the window lights): the pergola's bulbs glow after dusk (no lights, colour only). */
-    update(night) { bulbMat.color.copy(night > 0.35 ? lit : off); } };
+    update(night) { bulbMat.color.copy(night > 0.35 ? lit : off); bollardGlow.color.copy(night > 0.35 ? lit : bollardOff); } }; // the bollards too (#112)
 }

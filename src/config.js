@@ -246,6 +246,11 @@ export const COURTYARD = {
   // planting beds with shrubs and perennials round the tree squares (guess where the plan only shows green)
   plantings: [{ x0: -45.5, x1: -37.5, z0: 19.8, z1: 28.6, n: 26 }, { x0: -8.5, x1: -1.5, z0: 19.8, z1: 21.4, n: 10 },
     { x0: 0.5, x1: 8.5, z0: 19.8, z1: 21.4, n: 10 }, { x0: -23, x1: -12, z0: 32, z1: 56, n: 30 }],
+  // #112 (after Peab's courtyard renders; places are guesses): low path bollards that light up at dusk along the
+  // patio walk and the main walk, a red wooden playhouse by the sandbox, a bike rack with bikes by the portik walk
+  bollards: { h: 0.8, r: 0.07, rows: [{ x0: -44, x1: 10, z: 18.05, step: 6 }, { x0: -46, x1: 10, z: 30.05, step: 7 }] },
+  playhouse: { x0: -30.2, x1: -28.0, z0: 24.0, z1: 26.0, h: 1.3, ridge: 1.9, color: 0x9c2f24, trim: 0xf2efe7 },
+  bikeRack: { x: -12.6, z0: 13.4, n: 5, gap: 0.7, colors: [0x2f5d8c, 0xc23b32, 0x2e2e30, 0x5e8f4a, 0xe8e4da] },
   trees: [ // tree squares and single trees as drawn
     [-43, 21], [-40, 21], [-43, 24.5], [-40, 24.5], [-38, 29], [-33, 28.8], [-36, 22.5],
     [-6.6, 21.6], [-3.4, 21.6], [-6.6, 24.6], [-3.4, 24.6], [2.6, 21.6], [5.8, 21.6], [2.6, 24.6], [5.8, 24.6],
