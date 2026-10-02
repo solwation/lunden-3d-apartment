@@ -980,6 +980,7 @@ function toggleMap() { // K: the map alone (Tab / T / 📊 show it with the stat
 }
 mapEl.hidden = true; // hidden by default (#85); the old saved 'lunden.mapShown' is ignored
 let detail = null; // small-detail culling (#189), set up once everything is built (below)
+let lastHeld = null;
 function step(dt) {
   autoReload.update(dt);
   // Kaffeturbo (#217): faster feet, a wider view, the speakers turned down under the tune
@@ -1049,6 +1050,8 @@ function step(dt) {
     levelEl.textContent = label;
     lastLevel = lvl;
   }
+  const held = heldItem();
+  if (held !== lastHeld) { lastHeld = held; detail?.refresh(); } // a thing taken from afar is drawn in the hand at once
   detail?.update(camera); // far-away small things are not drawn (#189)
 }
 // &perf: fps + what the renderer did last frame (draw calls, triangles, geometries, textures)

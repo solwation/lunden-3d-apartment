@@ -141,7 +141,7 @@ src/holdable.js        things you take and hold (one at a time): home + pick box
                        cups stand). While something is held other things are `blocked` ("Lägg ifrån dig …")
 src/hand.js            the visitor's arm + hand (HAND, #195): two meshes in the camera, hidden when empty; holding a thing
                        the palm sits at its `grip` (or beside its box) and follows it; E (main.js `use`) reaches towards the
-                       target and back. Note: the detail culler (#189) may still hide a thing taken from afar (tests: reset())
+                       target and back. The detail culler (#189) looks again whenever the held thing changes (`refresh()`)
 src/beer.js            the big beer (BEER, #117), a Holdable: served on the lounge table when you sit in the lounge sofa,
                        click / "Drick" drinks a gulp (the level drops), back on the table = full; cups drink too
 src/book.js            the book on the side table by the armchair (BOOK, #140), a Holdable: click / "Läs" opens

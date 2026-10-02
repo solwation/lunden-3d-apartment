@@ -69,6 +69,9 @@ export class DetailCuller {
     return !this.openings[face].some((o) => x > o.x0 - m && x < o.x1 + m && y > o.y0 - m && y < o.y1 + m);
   }
 
+  /** Look again at the next update even if the camera has not moved (something was taken into the hand or put down). */
+  refresh() { this.last.set(1e9, 0, 0); }
+
   /** Everything back on the normal layer (screenshots of detail, tests). */
   reset() { for (const it of this.items) { it.far = false; it.o.layers.set(0); } this.last.set(1e9, 0, 0); }
 }
