@@ -686,6 +686,44 @@ function nordkisa(item) {
   return g;
 }
 
+const lampWhite = new THREE.MeshStandardMaterial({ color: 0xf2f2ef, roughness: 0.45 });
+
+/** IKEA NYMÅNE work lamp (white): round flat charging base, a lower arm leaning back, an upper arm
+ * reaching forward (local +z) to a cylinder head pointing down. Its lens has its own material, so each
+ * lamp switches on its own (lights.js, the shared light pool). */
+function worklamp(item, lights) {
+  const g = new THREE.Group();
+  const lens = new THREE.MeshStandardMaterial({ color: 0xfff6e6, emissive: 0xffd9a0, emissiveIntensity: 0.04, roughness: 0.4 });
+  const add = (m) => { m.castShadow = true; g.add(m); return m; };
+  add(new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.015, 28), lampWhite)).position.y = 0.0075;
+  const arm = (len, from, ang) => { // a rod from `from` (y, z) tilted by `ang` from vertical towards +z
+    const rod = new THREE.Mesh(new THREE.CylinderGeometry(0.007, 0.007, len, 8), lampWhite);
+    rod.rotation.x = ang;
+    rod.position.set(0, from[0] + (Math.cos(ang) * len) / 2, from[1] + (Math.sin(ang) * len) / 2);
+    add(rod);
+    return [from[0] + Math.cos(ang) * len, from[1] + Math.sin(ang) * len];
+  };
+  const j1 = arm(0.3, [0.015, 0.02], -0.25);   // lower arm, leaning back
+  add(new THREE.Mesh(new THREE.SphereGeometry(0.014, 10, 8), lampWhite)).position.set(0, j1[0], j1[1]);
+  const j2 = arm(0.28, j1, 1.15);              // upper arm, reaching forward
+  const head = new THREE.Group();
+  head.position.set(0, j2[0], j2[1]);
+  head.rotation.x = 0.5;                       // pointing down and a little forward
+  const can = new THREE.Mesh(new THREE.CylinderGeometry(0.032, 0.032, 0.1, 18), lampWhite);
+  can.castShadow = true;
+  const disc = new THREE.Mesh(new THREE.CircleGeometry(0.028, 18).rotateX(Math.PI / 2), lens);
+  disc.position.y = -0.051;
+  head.add(can, disc);
+  g.add(head);
+  // the pool light sits a little way out where the head points (the group is turned by rot + π)
+  const yaw = THREE.MathUtils.degToRad(item.rot ?? 0) + Math.PI, reach = j2[1] + 0.05;
+  lights.push({ object: g, shade: lens, height: j2[0] - 0.05, level: item.level, name: 'nattlampan',
+    offset: [Math.sin(yaw) * reach, Math.cos(yaw) * reach] });
+  g.position.y = item.y;
+  g.userData.footprint = [];
+  return g;
+}
+
 /** Woven rug texture: base colour, fine random weave, a thin border band (canvas, no image files). */
 function rugTexture(item) {
   const c = document.createElement('canvas');
@@ -720,7 +758,7 @@ function rug(item) {
   return g;
 }
 
-const BUILDERS = { sofa, armchair, footstool, floorlamp, sidetable, coffeetable, loungesofa, loungetable, parasol, planter, bed, skansnasTable, skansnasChair, bunk, daybed, rug, ragrund, coatrack, shoerack, byas, tv, nordkisa };
+const BUILDERS = { sofa, armchair, footstool, floorlamp, sidetable, coffeetable, loungesofa, loungetable, parasol, planter, bed, skansnasTable, skansnasChair, bunk, daybed, rug, ragrund, coatrack, shoerack, byas, tv, nordkisa, worklamp };
 
 /** Build all furniture; returns the scene group, collision segments per level and lamps. */
 export function buildFurniture() {

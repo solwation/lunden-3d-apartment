@@ -202,7 +202,8 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   `material/Köksritning.jpg` (tall oven unit, wall cabinets, top cabinets over fridge/freezer,
   gypsum boxing above the hood). Colours/sizes live in `FINISH` / `KITCHEN` in config.
 - Who sleeps where (the user's plan; "left/right" as you arrive upstairs walking west):
-  Sovrum 1 (first right) Sarah & Ofluf, double bed with IKEA NORDKISA bedside tables (#64) + an IKEA RÅGRUND towel-rack chair in the corner left of
+  Sovrum 1 (first right) Sarah & Ofluf, double bed with IKEA NORDKISA bedside tables (#64) and white NYMÅNE work
+  lamps on them (#65, each its own lamp like the floor lamp) + an IKEA RÅGRUND towel-rack chair in the corner left of
   the window (#60) · Sovrum 3 (second right) Livia & Tuva, bunk (unicorn sheets) ·
   Sovrum 2 (first left) Walter & Kian, bunk (Darth Vader sheets) · Sovrum 4 (second left, ex Allrum) Tilly, IKEA HEMNES
   daybed with pink cushions. Bunks: long side to the side wall, head end to the façade. Name signs: `DOOR_SIGNS` → `src/signs.js` (hall side of the door).

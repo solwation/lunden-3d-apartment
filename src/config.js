@@ -486,6 +486,9 @@ export const FURNITURE = [
   // IKEA NORDKISA bedside tables, bamboo, 40 × 40 cm (ikea.com, #64; the 55 cm height is a guess, about the
   // mattress top): one each side of the double bed's head end (east wall), clear of the Klk door
   ...[1.5 - 0.24, 3.1 + 0.24].map((z) => ({ type: 'nordkisa', level: 1, x: 5.55 - 0.23, z, rot: 90, w: 0.4, h: 0.55 })),
+  // IKEA NYMÅNE work lamps with wireless charging, white (#65; base Ø ~20 cm, arms and head guessed from the
+  // product photo), one on each bedside table, the head reaching over towards the bed; E on each one
+  ...[[1.5 - 0.24, 180], [3.1 + 0.24, 0]].map(([z, rot]) => ({ type: 'worklamp', level: 1, x: 5.55 - 0.25, z, y: 0.55, rot })),
   // IKEA RÅGRUND chair with towel rack, bamboo (#60; H 140, W 39, D 44, seat 48 cm per IKEA/dimensions.com):
   // Sovrum 1, the corner left of the window seen from inside (NW), back and towel rack against the
   // west wall, seat facing into the room (east); the seat is below the window sill (BH 0.7)
