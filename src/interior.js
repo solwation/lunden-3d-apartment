@@ -4,6 +4,7 @@ import { FINISH, TILED_ROOMS, KITCHEN as K, SKIRTING, LAUNDRY_SINK, LAUNDRY_CABI
 import { wallCabinet } from './cabinets.js';
 import { Fridge } from './fridge.js';
 import { buildOvens } from './ovens.js';
+import { Openable, pivotAround } from './openables.js';
 import { Moccamaster } from './coffee.js';
 import { mirrorMaterial } from './mirror.js';
 import { addReflector } from './reflections.js';
@@ -80,6 +81,8 @@ const M = {
   glassDark: std(0x050606, { roughness: 0.08 }),
   led: new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xfff2dc, emissiveIntensity: 1.2 }),
   white: std(0xf1f1ee, { roughness: 0.85 }),
+  carcass: std(0xf4f4f1, { roughness: 0.6 }), // cabinet insides (#103)
+  dishwasher: std(0xb9bcc0, { roughness: 0.35, metalness: 0.5 }),
   skirting: std(0xf4f4f1, { roughness: 0.45 }),
   laundry: std(T.laundryFront, { roughness: 0.45 }),
   appliance: std(0xf7f7f7, { roughness: 0.3 }),
@@ -201,13 +204,87 @@ function front(F, a0, a1, y0, y1, material, handle, { low = false, rail = 0.06 }
   }
 }
 
-/** Split [a0, a1] into doors of about `size` and add them with paired handles. */
+/** Split [a0, a1] into doors of about `size` and add them with paired handles. With `opts.open` ({ group,
+ * list, depth }) every door opens (#103): a hollow carcass behind each one, the door on a hinge opposite its
+ * handle. */
 function doorRow(F, a0, a1, y0, y1, size, opts) {
   const n = Math.max(1, Math.round((a1 - a0) / size));
   const w = (a1 - a0) / n;
   for (let i = 0; i < n; i++) {
-    front(F, a0 + i * w, a0 + (i + 1) * w, y0, y1, opts.material ?? M.front, i % 2 ? 'v-lo' : 'v-hi', opts);
+    const b0 = a0 + i * w, b1 = a0 + (i + 1) * w;
+    // a door ending in an inside corner (`corner`: 'a1') hinges on its other side: the other run is in the way
+    const handle = opts.open?.corner === 'a1' && i === n - 1 ? 'v-hi' : i % 2 ? 'v-lo' : 'v-hi';
+    if (!opts.open) { front(F, b0, b1, y0, y1, opts.material ?? M.front, handle, opts); continue; }
+    shell(F, b0, b1, y0, y1, opts.open.depth);
+    openFront(opts.open, F, b0, b1, y0, y1, opts.material ?? M.front, handle, opts, { mode: 'hinge', name: opts.open.name ?? 'skåpet' });
   }
+}
+
+/** A frame like F that builds into another batch (an opening front's own geometry). */
+function onBatch(F, OB) {
+  const { f, dir } = F;
+  const box = (a0, a1, d0, d1, y0, y1, m, origin) => {
+    if (dir === 'w') OB.box(f - d1, f - d0, a0, a1, y0, y1, m, origin);
+    else if (dir === 'e') OB.box(f + d0, f + d1, a0, a1, y0, y1, m, origin);
+    else OB.box(a0, a1, f - d1, f - d0, y0, y1, m, origin);
+  };
+  return { ...F, box };
+}
+
+/** A hollow carcass behind the front plane (#103): outer sides/top/bottom in the front colour, white inside,
+ * a shelf when it is tall enough. `depth` = from the front plane to the wall. */
+function shell(F, a0, a1, y0, y1, depth, { shelf = true, inner = M.carcass } = {}) {
+  const t = 0.016, d0 = -depth, d1 = -FT;
+  F.box(a0, a0 + t, d0, d1, y0, y1, M.front);
+  F.box(a1 - t, a1, d0, d1, y0, y1, M.front);
+  F.box(a0 + t, a1 - t, d0, d1, y0, y0 + t, M.front);
+  F.box(a0 + t, a1 - t, d0, d1, y1 - t, y1, M.front);
+  F.box(a0 + t, a1 - t, d0, d0 + 0.008, y0 + t, y1 - t, inner);                                    // back
+  for (const [b0, b1] of [[a0 + t, a0 + t + 0.001], [a1 - t - 0.001, a1 - t]]) F.box(b0, b1, d0, d1, y0 + t, y1 - t, inner); // linings
+  F.box(a0 + t, a1 - t, d0, d1, y0 + t, y0 + t + 0.001, inner);
+  F.box(a0 + t, a1 - t, d0, d1, y1 - t - 0.001, y1 - t, inner);
+  if (shelf && y1 - y0 > 0.45) F.box(a0 + t, a1 - t, d0 + 0.01, d1 - 0.02, (y0 + y1) / 2 - 0.009, (y0 + y1) / 2 + 0.009, inner);
+}
+
+/**
+ * A front that opens (#103): built into its own batch, wrapped in a pivot and driven by an Openable.
+ * how: { mode: 'hinge' (on the side away from the handle, or `at`: 'a0' / 'a1'), 'flap' (hinged at the
+ * bottom, `top: true` = at the top, lifting up), 'drawer' (a box `depth` deep behind the front, slides out),
+ * name, max }. The pivot sits on the front plane, so the door swings clear of its own carcass and the
+ * neighbours; `max` stops it before it meets anything. `ctx` = { group, list }.
+ */
+function openFront(ctx, F, a0, a1, y0, y1, material, handle, opts, how) {
+  const OB = new Batch(), P = onBatch(F, OB);
+  front(P, a0, a1, y0, y1, material, handle, opts);
+  const normal = F.dir === 'w' ? [-1, 0, 0] : F.dir === 'e' ? [1, 0, 0] : [0, 0, -1];
+  const world = (u, d, y) => { const [x, z] = F.at(u, d); return new THREE.Vector3(x, y, z); };
+  let at, o;
+  if (how.mode === 'drawer') {
+    const dd = how.depth, t = 0.012, c = M.carcass;
+    P.box(a0 + 0.02, a1 - 0.02, -FT - dd, -FT, y0 + 0.02, y0 + 0.028, c);             // bottom
+    P.box(a0 + 0.02, a0 + 0.02 + t, -FT - dd, -FT, y0 + 0.02, y1 - 0.04, c);           // sides
+    P.box(a1 - 0.02 - t, a1 - 0.02, -FT - dd, -FT, y0 + 0.02, y1 - 0.04, c);
+    P.box(a0 + 0.02, a1 - 0.02, -FT - dd, -FT - dd + t, y0 + 0.02, y1 - 0.04, c);      // back
+    at = world((a0 + a1) / 2, 0, y0);
+    o = new Openable({ name: how.name ?? 'lådan', object: pivotAround(OB.meshes(), at), mode: 'drawer', out: normal.map((v) => v * dd * 0.8), speed: 3 });
+  } else if (how.mode === 'flap') {
+    at = world((a0 + a1) / 2, 0, how.top ? y1 : y0);
+    const axis = F.dir === 'n' ? [1, 0, 0] : [0, 0, 1];
+    // which way: the free edge has to come out of the front (along the normal)
+    const edge = new THREE.Vector3(0, how.top ? -1 : 1, 0).applyAxisAngle(new THREE.Vector3(...axis), 0.1);
+    const sign = edge.dot(new THREE.Vector3(...normal)) > 0 ? 1 : -1;
+    o = new Openable({ name: how.name ?? 'luckan', object: pivotAround(OB.meshes(), at), mode: 'flap', axis, sign, max: how.max ?? 85 });
+  } else {
+    const hinge = how.at ?? (handle === 'v-lo' ? 'a1' : 'a0'), u = hinge === 'a0' ? a0 : a1;
+    at = world(u, 0, (y0 + y1) / 2);
+    const free = world(hinge === 'a0' ? a1 : a0, 0, at.y).sub(at);
+    const sign = free.clone().applyAxisAngle(new THREE.Vector3(0, 1, 0), 0.1).dot(new THREE.Vector3(...normal)) > 0 ? 1 : -1;
+    o = new Openable({ name: how.name ?? 'skåpet', object: pivotAround(OB.meshes(), at), mode: 'hinge', sign, max: how.max ?? 90 }); // 90°: flat beside the neighbour, never over it
+  }
+  o.normal = new THREE.Vector3(...normal); // which way the front faces (tests stand in front of it)
+  ctx.group.add(o.object);
+  ctx.list.push(o);
+  return o;
 }
 
 const inside = (r, a, tol = 0.02) => r.x0 >= a.x0 - tol && r.x1 <= a.x1 + tol && r.z0 >= a.z0 - tol && r.z1 <= a.z1 + tol;
@@ -274,6 +351,7 @@ function buildKitchen(B, group, floor, y0, yC, handled, taps, appliances) {
   if (!cabs.length) return [];
   const fixtures = floor.fixtures.filter((f) => inside(f, K.area));
   for (const x of [...cabs, ...fixtures]) handled.add(x);
+  const open = { group, list: appliances }; // fronts that open with E (#103)
   const sinkF = fixtures.find((f) => f.kind === 'sink');
   const hobF = fixtures.find((f) => f.kind === 'hob');
 
@@ -290,17 +368,26 @@ function buildKitchen(B, group, floor, y0, yC, handled, taps, appliances) {
   const ret = cabs.filter((c) => dirOf(c) === 'n' && !fridges.includes(c));
   const hobCab = hobF && cabs.find((c) => inside(hobF, c));
 
+  // the plan's cabinet rectangles overlap by a couple of cm along a run: meet in the middle, so neighbouring
+  // fronts (and doors swung open beside them) don't run into each other (#103)
+  const span = new Map(cabs.map((c) => [c, dirOf(c) === 'w' ? [c.z0, c.z1] : [c.x0, c.x1]]));
+  for (const run of [east, ret]) for (let i = 1; i < run.length; i++) {
+    const a = span.get(run[i - 1]), b = span.get(run[i]);
+    if (a[1] > b[0]) a[1] = b[0] = (a[1] + b[0]) / 2;
+  }
   for (const c of cabs) {
     const F = frame(B, c, dirOf(c));
-    const { u0, u1 } = F;
+    const [u0, u1] = span.get(c);
     if (c === tall) {
       // tall unit: door, oven, microwave, grille, top door (Peab render). The oven and microwave
       // doors open with E (ovens.js): hollow insides, the carcass is solid only below and above.
       const yOven = y0 + 0.78, yMicro = yOven + 0.6, yGrille = yMicro + 0.4;
-      F.box(u0, u1, -F.depth, -FT, y0, yOven, M.front);
-      F.box(u0, u1, -F.depth, -FT, yGrille, yTop, M.front);
+      F.box(u0, u1, -F.depth, -FT, y0, yb, M.front);
+      shell(F, u0, u1, yb, yOven, F.depth);
+      shell(F, u0, u1, yGrille + K.grille, yTop, F.depth);
+      F.box(u0, u1, -F.depth, -FT, yGrille, yGrille + K.grille, M.front);
       F.box(u0, u1, -0.07, -0.05, y0, yb, M.front);
-      front(F, u0, u1, yb, yOven, M.front, 'v-hi');
+      openFront(open, F, u0, u1, yb, yOven, M.front, 'v-hi', {}, { mode: 'hinge', name: 'skåpet' });
       if (F.dir === 'w') {
         const ov = buildOvens({ f: F.f, z0: u0, z1: u1, yOven, yMicro, yGrille, microW: 0.44 });
         group.add(ov.parts, ...ov.doors.map((d) => d.object));
@@ -311,7 +398,7 @@ function buildKitchen(B, group, floor, y0, yC, handled, taps, appliances) {
         looseItems.push(mocca.object); // a loose thing on the worktop: hidden with F
       }
       F.box(u0 + 0.005, u1 - 0.005, -FT, 0, yGrille, yGrille + K.grille, M.steel);
-      front(F, u0, u1, yGrille + K.grille, yTop, M.front, 'v-hi', { low: true });
+      openFront(open, F, u0, u1, yGrille + K.grille, yTop, M.front, 'v-hi', { low: true }, { mode: 'hinge', name: 'skåpet' });
       continue;
     }
     if (fridges.includes(c)) {
@@ -329,28 +416,37 @@ function buildKitchen(B, group, floor, y0, yC, handled, taps, appliances) {
         const a = hiSide ? u1 - 0.05 : u0 + 0.05;
         F.box(a - 0.01, a + 0.01, 0.04, 0.07, y0 + 0.75, y0 + 1.7, M.steelDark);
       }
-      F.box(u0, u1, -F.depth, -FT, yF, yTop, M.front);
+      F.box(u0, u1, -F.depth, -FT, yF, yF + K.grille, M.front);
+      shell(F, u0, u1, yF + K.grille, yTop, F.depth, { shelf: false });
       F.box(u0 + 0.005, u1 - 0.005, -FT, 0, yF, yF + K.grille, M.steel);
       for (let y = yF + 0.012; y < yF + K.grille - 0.01; y += 0.012) F.box(u0 + 0.02, u1 - 0.02, 0, 0.002, y, y + 0.004, M.black);
-      front(F, u0, u1, yF + K.grille, yTop, M.front, 'bottom');
+      openFront(open, F, u0, u1, yF + K.grille, yTop, M.front, 'bottom', {}, { mode: 'flap', top: true, name: 'skåpet', max: 80 }); // lifts up
       continue;
     }
     // base unit: carcass + recessed plinth + fronts (under the sink the carcass stops below the bowl, #122)
     const sinkUnit = sinkF && inside(sinkF, c);
-    F.box(u0, u1, -F.depth, -FT, y0, sinkUnit ? top - K.sink.depth - 0.02 : yt, M.front);
     F.box(u0, u1, -0.07, -0.05, y0, yb, M.front);
+    F.box(u0, u1, -F.depth, -0.07, y0, yb, M.front);
     if (c.label === 'DM') {
-      front(F, u0, u1, yb, yt, M.front, 'top'); // integrated dishwasher (KEZA9310W)
-    } else if (sinkF && inside(sinkF, c)) {
-      front(F, u0, (u0 + u1) / 2, yb, yt, M.front, 'v-hi');
-      front(F, (u0 + u1) / 2, u1, yb, yt, M.front, 'v-lo');
+      // integrated dishwasher (KEZA9310W): its door folds down onto a steel tub with two racks
+      shell(F, u0, u1, yb, yt, F.depth, { shelf: false, inner: M.dishwasher });
+      for (const y of [yb + 0.12, yb + 0.42]) for (let k = 0; k < 9; k++) { const a = u0 + 0.04 + k * (u1 - u0 - 0.08) / 8; F.box(a - 0.002, a + 0.002, -F.depth + 0.04, -FT - 0.04, y, y + 0.004, M.chrome); }
+      openFront(open, F, u0, u1, yb, yt, M.front, 'top', {}, { mode: 'flap', name: 'diskmaskinen', max: 88 });
+    } else if (sinkUnit) {
+      shell(F, u0, u1, yb, top - K.sink.depth - 0.02, F.depth, { shelf: false });
+      openFront(open, F, u0, (u0 + u1) / 2, yb, yt, M.front, 'v-hi', {}, { mode: 'hinge', name: 'skåpet' });
+      openFront(open, F, (u0 + u1) / 2, u1, yb, yt, M.front, 'v-lo', {}, { mode: 'hinge', name: 'skåpet' });
     } else if (ret.includes(c)) {
       // corner unit: only the part beside the east run is a visible door
-      front(F, u0, Math.min(u1, east[0] ? east[0].x0 : u1), yb, yt, M.front, 'v-lo');
+      const vis = Math.min(u1, east[0] ? east[0].x0 : u1);
+      shell(F, u0, vis, yb, yt, F.depth);
+      if (vis < u1) F.box(vis, u1, -F.depth, -FT, yb, yt, M.front);
+      openFront(open, F, u0, vis, yb, yt, M.front, 'v-hi', {}, { mode: 'hinge', name: 'hörnskåpet' }); // hinged away from the corner: the other run is in the way there
     } else {
+      F.box(u0, u1, -F.depth, -FT, yb, yt, M.front); // drawer unit: the drawers' boxes slide out of it
       const h = yt - yb, hs = [0.2 * h, 0.4 * h, 0.4 * h];
       let y = yt;
-      for (const dh of hs) { front(F, u0, u1, y - dh, y, M.front, 'top'); y -= dh; }
+      for (const dh of hs) { openFront(open, F, u0, u1, y - dh, y, M.front, 'top', {}, { mode: 'drawer', depth: F.depth - 0.08, name: 'lådan' }); y -= dh; }
     }
   }
 
@@ -392,18 +488,19 @@ function buildKitchen(B, group, floor, y0, yC, handled, taps, appliances) {
   // the first wall cabinet (over the coffee machine) is the cup cabinet: hollow, its door opens (#90)
   const firstEnd = hob ? hob[0] : southWall - wd;
   const cupW = (firstEnd - runZ0) / Math.max(1, Math.round((firstEnd - runZ0) / 0.5));
-  for (const [a, b] of eastSpans) EW.box(a === runZ0 ? a + cupW : a, b, -wd, -FT, yW, yTop, M.front);
   // the last 35 cm by the south wall are hidden behind the return wall cabinet
   const visEnd = southWall - wd;
-  doorRow(EW, runZ0 + cupW, hob ? hob[0] : visEnd, yW, yTop, 0.5, { low: true });
+  for (const [a, b] of eastSpans) if (b > visEnd) EW.box(visEnd, b, -wd, -FT, yW, yTop, M.front);
+  const wallOpen = { ...open, depth: wd };
+  doorRow(EW, runZ0 + cupW, hob ? hob[0] : visEnd, yW, yTop, 0.5, { low: true, open: hob ? wallOpen : { ...wallOpen, corner: 'a1' } });
   cupCabinet = { front: wallX, back: eastWall, z0: runZ0, z1: runZ0 + cupW, y0: yW, y1: yTop, material: M.front, handle: M.handle };
   // the worktop between the tall unit and the hob: somewhere to put a cup down
   cupSurfaces.push({ x0: eFront + 0.03, x1: eastWall - 0.03, z0: runZ0 + 0.03, z1: firstEnd - 0.03, y: top });
   if (hob) {
-    doorRow(EW, hob[1], visEnd, yW, yTop, 0.5, { low: true });
+    doorRow(EW, hob[1], visEnd, yW, yTop, 0.5, { low: true, open: { ...wallOpen, corner: 'a1' } });
     const yH = yHood + K.hoodHeight;
-    EW.box(hob[0], hob[1], -wd, -FT, yH, yTop, M.front);
-    front(EW, hob[0], hob[1], yH, yTop, M.front, 'bottom');
+    shell(EW, hob[0], hob[1], yH, yTop, wd, { shelf: false });
+    openFront(open, EW, hob[0], hob[1], yH, yTop, M.front, 'bottom', {}, { mode: 'flap', top: true, name: 'skåpet', max: 80 }); // over the hood: lifts up
     EW.box(hob[0] + 0.01, hob[1] - 0.01, -wd + 0.02, 0, yHood, yH, M.steel);
     EW.box(hob[0] + 0.03, hob[1] - 0.03, -wd + 0.05, -0.03, yHood - 0.002, yHood, kitchenLamp);
     EW.box(hob[0], hob[1], -wd, 0, yTop, yC, M.white); // Lokal gipsinklädnad ovan spiskåpa
@@ -411,8 +508,7 @@ function buildKitchen(B, group, floor, y0, yC, handled, taps, appliances) {
   const fridgeX1 = fridges.length ? Math.max(...fridges.map((c) => c.x1)) : retX0;
   if (fridgeX1 < wallX) {
     const RW = frame(B, { x0: fridgeX1, x1: wallX, z0: southWall - wd, z1: southWall }, 'n');
-    RW.box(fridgeX1, wallX, -wd, -FT, yW, yTop, M.front);
-    doorRow(RW, fridgeX1, wallX, yW, yTop, 0.5, { low: true });
+    doorRow(RW, fridgeX1, wallX, yW, yTop, 0.5, { low: true, open: { ...wallOpen, corner: 'a1' } });
     RW.box(fridgeX1 + 0.02, wallX, -wd + 0.02, -wd + 0.04, yW - 0.008, yW, kitchenLamp);
   }
   // under-cabinet LED (Belysning LED Linear) and the splashback tiles (10×20 half bond)
