@@ -151,7 +151,14 @@ src/cups.js            coffee cups (CUPS): the wall cabinet over the Moccamaster
                        hand (empty, brewed or not, #141), put down on a table / worktop / floor, back in the open cabinet
                        with E on it; the jug is a Holdable (Jug): E on a standing cup pours, E on the hot plate puts it back
 src/drawing.js         crayon drawing on the paper on the Sovrum 3 desk (DRAWING): canvas texture, drawing mode
-                       (view down, pointer free, palette #draw-panel, 1–9, E/Esc back), saved in localStorage
+                       (view down, pointer free, palette #draw-panel, 1–9, E/Esc back), saved in localStorage;
+                       "Ta teckningen" / T takes the sheet into the hand (a blank one stays), E on the desk puts it back
+src/posters.js         drawings taped up (#176): HeldDrawing (the sheet in the hand, shares setHeld) and Posters — E on a
+                       wall (near a wall outline, or a material with userData.poster) / the fridge or
+                       freezer door (child of the door, swings with it) tapes it up if the whole sheet lies flat on one
+                       mesh (9 probes); one plane + canvas texture with tape per poster; max DRAWING.maxPosted; IndexedDB
+                       'lunden'/'drawings'
+src/idb.js             the shared IndexedDB 'lunden' (version 2: catPhotos + drawings) — every module opens it here
 src/calendar.js        the cat calendar (CALENDAR): a cat per month, the days, the chosen date; #cal-panel picks it
 src/fridge.js          the fridge: hollow, lit, opens with E (in world.lids); `shelfSpot` = the chicken's place; the freezer is
                        the same class (`freezer: true`, #161): drawers + shelves, the changelog note rides on its door
@@ -216,6 +223,8 @@ tools/cuptest.html     headless test: an empty cup out without brewing, onto the
 tools/drawtest.html    headless test: drawing mode, a crayon line from pointer events, clear, E back, saved
 tools/cooktest.html    headless test: the induction hob on/off (glow), F switches it off; the pan: drawer → hob → drawer, F; the chicken:
                        fry, smoke, the fridge shut stops it, it stops by itself, F
+tools/postertest.html  headless test: take the drawing (blank sheet stays), back on the desk, tape it up in the hall and on
+                       the fridge door (swings with it), none on the kitchen window, reload → both back (`?shots` pictures)
 tools/clocktest.html   headless test of the wall clock (?time=7, spool, pause, sun height by month)
 tools/calendartest.html headless test: today's date at the start, pick a date on the calendar, the sun follows
 tools/stamp.sh         build the published site with a version stamp (used by CI)

@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Poster test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+// Drawings taped up (#176): draw on the paper in Sovrum 3, "Ta teckningen" (the drawing in the hand, a fresh
+// sheet on the desk), tape it up on a wall in the hall and on the fridge door, open the fridge (the poster swings
+// with the door), no tape prompt on the kitchen window, reload: both are back up (IndexedDB).
+//   google-chrome --headless=new --dump-dom http://localhost:8137/tools/postertest.html
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const lines = [];
+let pass = true;
+const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); pass &&= !!ok; return ok; };
+localStorage.removeItem('lunden.drawing');
+const f = document.createElement('iframe');
+f.width = 900; f.height = 600;
+document.body.append(f);
+const load = () => new Promise((res) => { f.onload = async () => { while (!f.contentWindow.__app) await wait(100); res(f.contentWindow); }; f.src = '../index.html?v=' + Math.random(); });
+const deg = (d) => (d * Math.PI) / 180;
+
+(async () => {
+  // a fresh start: no saved posters
+  await new Promise((res) => { const r = indexedDB.deleteDatabase('lunden'); r.onsuccess = r.onerror = r.onblocked = res; });
+  let w = await load(), d = f.contentDocument;
+  let app = w.__app;
+  const { player, camera, step, drawing, scene, posters, heldDrawing, world } = app;
+  d.getElementById('start-touch').click();
+  await wait(50);
+  const btn = d.getElementById('action');
+  const stand = (x, z, yaw, pitch, feet = 0) => {
+    player.spawn(x, z, deg(yaw)); player.pos.y = feet; player.eyeY = feet + 1.62;
+    camera.position.y = player.eyeY; camera.rotation.x = deg(pitch);
+    for (let i = 0; i < 3; i++) step(1 / 60);
+    camera.rotation.y = deg(yaw); camera.rotation.x = deg(pitch); step(1 / 60);
+  };
+  // 1. draw something and take it
+  scene.updateMatrixWorld(true);
+  const p = drawing.paper.position;
+  stand(p.x, p.z + 0.9, 0, 0, 3.25);
+  camera.rotation.x = Math.atan2(p.y - camera.position.y, Math.hypot(p.x - camera.position.x, p.z - camera.position.z));
+  step(1 / 60);
+  btn.click();
+  for (let i = 0; i < 40; i++) step(1 / 60);
+  const take = d.querySelector('#draw-panel [data-act=take]');
+  check(drawing.active && take.disabled, 'drawing mode; "Ta teckningen" disabled on a blank sheet');
+  const cv = d.querySelector('canvas'), r = cv.getBoundingClientRect();
+  const ev = (type, x, y) => cv.dispatchEvent(new w.PointerEvent(type, { clientX: r.left + x * r.width, clientY: r.top + y * r.height, bubbles: true, pointerType: 'mouse' }));
+  d.querySelectorAll('#draw-panel .colors button')[0].click();
+  ev('pointerdown', 0.4, 0.5); for (let k = 1; k <= 10; k++) ev('pointermove', 0.4 + k * 0.02, 0.5 + k * 0.01);
+  w.dispatchEvent(new w.PointerEvent('pointerup', { bubbles: true }));
+  check(!take.disabled, '"Ta teckningen" enabled after drawing');
+  take.click();
+  step(1 / 60);
+  check(!drawing.active && app.heldItem() === heldDrawing && heldDrawing.held, 'the drawing is in the hand');
+  check(drawing.blank, 'a fresh, blank sheet on the desk');
+  // E on the desk while holding it puts it back; take it again
+  camera.rotation.x = Math.atan2(p.y - camera.position.y, Math.hypot(p.x - camera.position.x, p.z - camera.position.z));
+  step(1 / 60);
+  check(/lägga tillbaka teckningen/i.test(btn.textContent), `desk prompt while holding: "${btn.textContent}"`);
+  btn.click(); await wait(200);
+  check(!heldDrawing.held && !drawing.blank, 'E on the desk: the drawing is back on it');
+  btn.click(); for (let i = 0; i < 40; i++) step(1 / 60);
+  take.click(); step(1 / 60);
+  check(heldDrawing.held, 'taken again');
+
+  // 2. a wall in the hall: turn round until the tape prompt shows
+  const tapeAt = (x, z, feet, pitch) => {
+    for (let yaw = 0; yaw < 360; yaw += 15) {
+      stand(x, z, yaw, pitch, feet);
+      if (/tejpa upp/i.test(btn.textContent) && !btn.hidden) return yaw;
+    }
+    return null;
+  };
+  const yaw = tapeAt(1.17, 1.6, 0, 0);
+  check(yaw !== null, `hall: a wall to tape on (yaw ${yaw})`);
+  btn.click(); await wait(300);
+  check(posters.list.length === 1 && posters.list[0].rec.surface === 'wall' && !heldDrawing.held, 'taped up on the hall wall');
+
+  // 3. the fridge door: a second drawing
+  const fridge = world.lids.find((l) => l.kind === 'fridge' && !l.freezer);
+  check(!!fridge, 'the fridge is there');
+  stand(p.x, p.z + 0.9, 0, 0, 3.25);
+  camera.rotation.x = Math.atan2(p.y - camera.position.y, Math.hypot(p.x - camera.position.x, p.z - camera.position.z));
+  step(1 / 60);
+  btn.click(); for (let i = 0; i < 40; i++) step(1 / 60);
+  ev('pointerdown', 0.45, 0.4); for (let k = 1; k <= 10; k++) ev('pointermove', 0.45, 0.4 + k * 0.02);
+  w.dispatchEvent(new w.PointerEvent('pointerup', { bubbles: true }));
+  take.click(); step(1 / 60);
+  fridge.door.updateMatrixWorld(true);
+  const dp = fridge.door.localToWorld(fridge.door.position.clone().set(0.3, 1.3, -0.06));
+  stand(dp.x, dp.z - 1.2, 180, 0);
+  camera.rotation.x = Math.atan2(dp.y - camera.position.y, 1.2); step(1 / 60);
+  check(/tejpa upp/i.test(btn.textContent) && !btn.hidden, `fridge door prompt: "${btn.textContent}"`);
+  btn.click(); await wait(300);
+  const fp = posters.list.find((q) => q.rec.surface === 'fridge');
+  check(!!fp && fp.mesh.parent?.parent === fridge.door, 'taped on the fridge door (a child of the door)');
+  const before = fp.mesh.getWorldPosition(dp.clone());
+  fridge.toggle(); for (let i = 0; i < 60; i++) fridge.update(0.05);
+  fridge.door.updateMatrixWorld(true);
+  const after = fp.mesh.getWorldPosition(dp.clone());
+  check(after.distanceTo(before) > 0.2, `it swings with the door (${after.distanceTo(before).toFixed(2)} m)`);
+  fridge.toggle(); for (let i = 0; i < 60; i++) fridge.update(0.05);
+
+  // 4. no tape prompt on the kitchen window
+  stand(p.x, p.z + 0.9, 0, 0, 3.25);
+  camera.rotation.x = Math.atan2(p.y - camera.position.y, Math.hypot(p.x - camera.position.x, p.z - camera.position.z));
+  step(1 / 60);
+  btn.click(); for (let i = 0; i < 40; i++) step(1 / 60);
+  ev('pointerdown', 0.5, 0.5); ev('pointermove', 0.6, 0.6); w.dispatchEvent(new w.PointerEvent('pointerup', { bubbles: true }));
+  take.click(); step(1 / 60);
+  let onWindow = false;
+  for (const pitch of [-5, 0, 5, 10]) for (const x of [3.6, 3.85, 4.1]) { stand(x, 1.4, 0, pitch); if (/tejpa upp/i.test(btn.textContent) && !btn.hidden) onWindow = true; }
+  check(!onWindow, 'no tape prompt on the kitchen window');
+  // 5. the limit: when full, the prompt says so
+  const max = posters.full;
+  check(!max, 'not full with 2');
+
+  // 6. reload: both back up
+  w = await load(); d = f.contentDocument; app = w.__app;
+  for (let i = 0; i < 80 && app.posters.list.length < 2; i++) await wait(100);
+  const kinds = app.posters.list.map((q) => q.rec.surface).sort().join(',');
+  const n = await new Promise((res) => { const q = indexedDB.open('lunden'); q.onsuccess = () => { try { const c = q.result.transaction('drawings').objectStore('drawings').count(); c.onsuccess = () => res(c.result); } catch (e) { res(String(e)); } }; q.onerror = () => res('err'); });
+  check(app.posters.list.length === 2 && kinds === 'fridge,wall', `after reload: ${kinds} (stored: ${n})`);
+  // ?shots: pictures of both posters (data URLs in <img> tags, for a look by hand)
+  if (location.search.includes('shots')) {
+    await wait(1500);
+    for (const q of app.posters.list) {
+      const m = q.mesh, c = m.getWorldPosition(m.position.clone()), n = m.getWorldDirection(m.position.clone());
+      app.camera.position.copy(c).addScaledVector(n, 1.1); app.camera.position.y = c.y; app.camera.lookAt(c);
+      app.renderer.render(app.scene, app.camera);
+      const img = document.createElement('img'); img.className = 'shot'; img.src = app.renderer.domElement.toDataURL('image/png'); document.body.append(img);
+    }
+  }
+  out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
+})().catch((e) => { out.textContent = `SOME FAILED\n${lines.join('\n')}\nERROR ${e.stack}`; });
+</script>
+</body>
+</html>

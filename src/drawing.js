@@ -5,19 +5,20 @@ import { sfx } from './audio.js';
 // Drawing with crayons on a sheet of paper on the desk in Sovrum 3 (#93). The sheet is a canvas texture;
 // strokes are many small, slightly scattered semi-transparent dabs (a crayon on paper), drawn only while
 // you draw. In drawing mode the camera hangs over the sheet looking straight down; the pointer is free
-// and maps onto the sheet through a raycast. The drawing is saved in localStorage.
+// and maps onto the sheet through a raycast. The drawing is saved in localStorage. "Ta teckningen" (#176) takes
+// the sheet into the hand (posters.js) and leaves a fresh one; while it is held, E on the desk puts it back.
 
 const KEY = 'lunden.drawing';
 
 export class Drawing {
   constructor(scene, camera) {
-    Object.assign(this, { scene, camera, active: false, t: 0, color: D.colors[4], last: null, down: false, strokes: 0, sound: 0 });
+    Object.assign(this, { scene, camera, active: false, blank: true, holding: () => false, t: 0, color: D.colors[4], last: null, down: false, strokes: 0, sound: 0 });
     const c = document.createElement('canvas');
     c.width = D.px; c.height = Math.round(D.px * D.h / D.w);
     this.canvas = c;
     this.ctx = c.getContext('2d');
     this.clear(false);
-    try { const saved = localStorage.getItem(KEY); if (saved) { const img = new Image(); img.onload = () => { this.ctx.drawImage(img, 0, 0); this.tex.needsUpdate = true; }; img.src = saved; } } catch { /* blocked */ }
+    try { const saved = localStorage.getItem(KEY); if (saved) { const img = new Image(); img.onload = () => { this.ctx.drawImage(img, 0, 0); this.tex.needsUpdate = true; this.blank = this.isBlank(); }; img.src = saved; } } catch { /* blocked */ }
     this.tex = new THREE.CanvasTexture(c);
     this.tex.colorSpace = THREE.SRGBColorSpace;
     this.tex.anisotropy = 8;
@@ -26,7 +27,8 @@ export class Drawing {
     this.paper.position.set(D.x, y, D.z);
     this.paper.receiveShadow = true;
     scene.add(this.paper);
-    this.target = { name: 'pappret', kind: 'paper', verb: 'rita på', pickable: this.paper };
+    const self = this; // while the drawing is in the hand, E on the desk puts it back (#176)
+    this.target = { name: 'pappret', kind: 'paper', get verb() { return self.holding() ? 'lägga tillbaka teckningen på' : 'rita på'; }, pickable: this.paper };
     this.paper.userData.door = this.target;
     this.ray = new THREE.Raycaster();
     this.view = { pos: new THREE.Vector3(D.x, y + D.eye, D.z), yaw: 0, pitch: -Math.PI / 2 };
@@ -37,7 +39,30 @@ export class Drawing {
     g.fillStyle = '#fbfaf5'; g.fillRect(0, 0, this.canvas.width, this.canvas.height);
     g.strokeStyle = 'rgba(0,0,0,0.05)'; g.lineWidth = 2; g.strokeRect(1, 1, this.canvas.width - 2, this.canvas.height - 2);
     if (this.tex) this.tex.needsUpdate = true;
+    this.blank = true;
     if (save) this.save();
+  }
+
+  /** Nothing drawn? (Every pixel still the paper colour, give or take.) */
+  isBlank() {
+    const d = this.ctx.getImageData(4, 4, this.canvas.width - 8, this.canvas.height - 8).data;
+    for (let i = 0; i < d.length; i += 16) if (Math.abs(d[i] - 0xfb) + Math.abs(d[i + 1] - 0xfa) + Math.abs(d[i + 2] - 0xf5) > 24) return false;
+    return true;
+  }
+
+  /** Take the drawing off the desk (#176): its JPEG data URL; a fresh sheet lies there (saved once it is taped up). */
+  take() {
+    const url = this.canvas.toDataURL('image/jpeg', 0.9);
+    this.clear(false);
+    return url;
+  }
+
+  /** Put a drawing (data URL) back on the desk. */
+  restore(url) {
+    const img = new Image();
+    img.onload = () => { this.ctx.drawImage(img, 0, 0, this.canvas.width, this.canvas.height); this.tex.needsUpdate = true; this.save(); };
+    img.src = url;
+    this.blank = false;
   }
 
   save() { try { localStorage.setItem(KEY, this.canvas.toDataURL('image/png')); } catch { /* full or blocked */ } }
@@ -96,6 +121,7 @@ export class Drawing {
     }
     g.globalAlpha = 1;
     this.tex.needsUpdate = true;
+    this.blank = false;
     if (this.sound <= 0 && len > 1) { sfx.crayon(this.paper.position, Math.min(1, len / 30)); this.sound = 0.12; }
   }
 

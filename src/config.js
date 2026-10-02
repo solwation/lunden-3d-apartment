@@ -427,7 +427,13 @@ export const DRINKS = {
 // keys 1–9, "Sudda allt"); E / Esc / "Klar" goes back. The drawing is kept in localStorage.
 export const DRAWING = { level: 1, x: 2.61 - 0.66 - 0.02, z: 0.465 + 0.31, w: 0.42, h: 0.297, px: 840, eye: 0.3,
   colors: ['#d8312e', '#f08a24', '#f2cf2b', '#43a047', '#2f6fd6', '#7b4bc4', '#f27bb3', '#8a5a3c', '#222222'],
-  width: 9 };
+  width: 9,
+  // Taping it up (#176, src/posters.js): "Ta teckningen" in drawing mode puts the sheet in the hand (a fresh one
+  // lies on the desk); E on a wall (both levels) or the fridge/freezer door tapes it up, a tape strip at each
+  // corner, turned up to ±`tilt`°, `lift` m off the surface (+ `step` per poster so overlaps don't flicker).
+  // At most `maxPosted` up at once (then "släng en först"); saved in IndexedDB 'lunden'/'drawings'. `wallGap`:
+  // how near a wall outline a hit must be to count as the wall (tiles sit a little proud). Our picks.
+  maxPosted: 30, tilt: 4, lift: 0.003, step: 0.0006, wallGap: 0.05, held: { x: 0.05, y: -0.17, z: -0.42 } };
 
 // Sitting and lying down (#71/#72, src/rest.js): eye height above the seat / mattress, how far you can
 // turn your head (yaw ± from the way the seat faces) and the pitch range, and the move time.

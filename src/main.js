@@ -38,6 +38,7 @@ import { Lights } from './lights.js';
 import { setupInstall } from './install.js';
 import { Marks } from './marks.js';
 import { Target } from './target.js';
+import { Posters, HeldDrawing } from './posters.js';
 
 const overlay = document.getElementById('overlay');
 const hud = document.getElementById('hud');
@@ -244,6 +245,11 @@ scene.add(cat.object);
 const target = new Target(); // the Nerf target on the lawn (#99)
 scene.add(target.object); // up only while something that can hit it is in the hand (#144, #179, step)
 const marks = new Marks(scene, camera, [world.object, patio.object, target.object], cat); // burn marks, stars, splashes on surfaces (#96)
+// drawings taped up on walls and the fridge (#176); the one in the hand
+const posters = new Posters(scene, world, marks, note);
+posters.load();
+const heldDrawing = new HeldDrawing(scene, camera, drawing);
+drawing.holding = () => heldItem() === heldDrawing;
 target.onSink = () => marks.dropUnder(target.object); // its marks don't hang in the air as it sinks (#179)
 for (const h of [saber, ...toys.wands, toys.darts]) Object.assign(h, { marks, cat }); // the saber burns, the wands do magic (#97), darts splash (#98)
 cat.onFound = (label, rare) => catFound(label, rare);
@@ -467,6 +473,7 @@ pickColor(4);
 let drawTouch = false;
 function beginDraw() {
   drawing.begin();
+  takeBtn.disabled = drawing.blank;
   drawPanel.hidden = false;
   promptEl.hidden = true;
   actionBtn.hidden = true;
@@ -481,14 +488,23 @@ function endDraw(byKey = 'E') {
   else if (byKey === 'Escape') { overlay.hidden = true; armEl.hidden = false; } // Esc can't grab the mouse: click to go on
   else canvas.requestPointerLock();
 }
-drawPanel.querySelector('[data-act=clear]').addEventListener('click', () => drawing.clear());
+drawPanel.querySelector('[data-act=clear]').addEventListener('click', () => { drawing.clear(); takeBtn.disabled = true; });
 drawPanel.querySelector('[data-act=done]').addEventListener('click', () => endDraw('button'));
-canvas.addEventListener('pointerdown', (e) => { if (drawing.active) { drawing.pointerDown(e.clientX, e.clientY, canvas); e.preventDefault(); } });
+/** "Ta teckningen" (#176): out of drawing mode with the sheet in the hand; a fresh one on the desk. */
+const takeBtn = drawPanel.querySelector('[data-act=take]');
+function takeDrawing(byKey = 'button') {
+  if (drawing.blank) return;
+  endDraw(byKey);
+  heldDrawing.take(drawing.take());
+}
+takeBtn.addEventListener('click', () => takeDrawing());
+canvas.addEventListener('pointerdown', (e) => { if (drawing.active) { drawing.pointerDown(e.clientX, e.clientY, canvas); takeBtn.disabled = drawing.blank; e.preventDefault(); } });
 canvas.addEventListener('pointermove', (e) => { if (drawing.active) drawing.pointerMove(e.clientX, e.clientY, canvas); });
 window.addEventListener('pointerup', () => { if (drawing.active) drawing.pointerUp(); });
 document.addEventListener('keydown', (e) => {
   if (!drawing.active) return;
   if (e.code === 'KeyE' || e.code === 'Escape') { e.preventDefault(); endDraw(e.code); }
+  else if (e.code === 'KeyT') takeDrawing('E'); // T: take the drawing (#176)
   else if (/^Digit[1-9]$/.test(e.code)) pickColor(Number(e.code.slice(5)) - 1);
   e.stopImmediatePropagation();
 }, true);
@@ -526,7 +542,8 @@ function use(thing) {
   else if (thing.kind === 'saber' || thing.kind === 'holdable' || thing.kind === 'cup') thing.toggle();
   else if (thing.kind === 'place') thing.item.placeAt(thing.point);
   else if (thing.kind === 'fry') thing.item.intoPan(); // the chicken into the pan on the hob (#160)
-  else if (thing.kind === 'paper') beginDraw();
+  else if (thing.kind === 'paper') { if (heldItem() === heldDrawing) heldDrawing.putBack(); else beginDraw(); } // holding the drawing: back on the desk (#176)
+  else if (thing.kind === 'tape') { posters.tape(heldDrawing.image, thing.spot, heldDrawing.meta ?? {}); heldDrawing.release(); drawing.save(); bump('posted'); } // tape the drawing up (#176)
   else if (thing.kind === 'pc') { const on = thing.toggle(); sfx.tvClick(thing.pickable.getWorldPosition(new THREE.Vector3()), on); }
   else if (thing.kind === 'tv') {
     const on = thing.toggle();
@@ -667,6 +684,18 @@ function updateFocus() {
   // else you look at), is where it goes down (#102)
   const item = heldItem();
   placeGhost.visible = false;
+  // holding a drawing: a wall or the fridge/freezer door in front of you is where it can be taped up (#176)
+  let posterSpot = null;
+  if (item === heldDrawing) {
+    posterSpot = posters.spot(raycaster.ray, player.level, behindWall);
+    if (posterSpot && hit && posterSpot.distance > hit.distance + 0.05 && hit.object.userData.door?.kind !== 'fridge' && hit.object.userData.door?.kind !== 'freezer') posterSpot = null;
+    if (posterSpot) {
+      posterSpot.level = Math.max(0, player.level);
+      focused = posterSpot.full ? { name: '', kind: 'tape', blocked: true, blockedText: 'Det får inte plats fler teckningar – släng en först' }
+        : { name: 'teckningen', kind: 'tape', verb: 'tejpa upp', spot: posterSpot };
+    }
+  }
+  posters.showGhost(posterSpot, heldDrawing.tex);
   if (item?.placeAt) {
     const top = raycaster.intersectObjects(world.cupSurfaces, false).find((h) => shown(h.object) && h.point.y >= h.object.userData.surface - 0.02);
     let spot = top && top.distance < HOLD.reach && !behindWall(top.point) ? { point: top.point.clone().setY(top.object.userData.surface), distance: top.distance } : null;
@@ -729,7 +758,7 @@ function toggleFurniture(on = !world.furnitureOn) {
   try { localStorage.setItem('lunden.furniture', on ? '1' : '0'); } catch { /* ignore */ }
 }
 world.looseItems.push(board.object, ...holdables.flatMap((h) => [h.holder, h.model]), ...toys.deco);
-world.looseItems.push(...cups.cups.map((c) => c.model), drawing.paper, calendar.object); // the cups and the paper go with F too // the cat board and the toys go with the furniture (F)
+world.looseItems.push(...cups.cups.map((c) => c.model), drawing.paper, calendar.object, ...posters.groups); // the cups and the paper go with F too // the cat board and the toys go with the furniture (F)
 try { if (localStorage.getItem('lunden.furniture') === '0') toggleFurniture(false); } catch { /* ignore */ }
 document.getElementById('furniture-btn').addEventListener('click', () => toggleFurniture());
 
@@ -927,4 +956,4 @@ function continueAfterReload(r) {
 if (resumeOk && resumed.mode) continueAfterReload(resumed);
 
 // handle for tests/debugging (tools/touchtest.html)
-window.__app = { chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };
+window.__app = { posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };

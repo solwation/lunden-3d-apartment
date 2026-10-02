@@ -570,6 +570,25 @@ export const sfx = {
     const t = ctx.currentTime, d = out(pos, 0.7);
     for (let i = 0; i < 4; i++) noise(t + i * 0.05 + Math.random() * 0.03, 0.07, d, { freq: 3000 + Math.random() * 2500, q: 0.8, gain: 0.12 });
   },
+  /** Tape torn off the roll and pressed on (#176): a short rip, then four little pats. */
+  tape(pos) {
+    if (!ready()) return;
+    const t = ctx.currentTime, d = out(pos, 0.7);
+    noise(t, 0.16, d, { type: 'highpass', freq: 2500, gain: 0.14, attack: 0.01 });
+    for (let i = 0; i < 4; i++) noise(t + 0.22 + i * 0.09, 0.03, d, { type: 'lowpass', freq: 900, gain: 0.18 });
+  },
+  /** A sheet crumpled into a ball (#177): a burst of crackles. */
+  crumple(pos) {
+    if (!ready()) return;
+    const t = ctx.currentTime, d = out(pos, 0.8);
+    for (let i = 0; i < 14; i++) noise(t + i * 0.04 + Math.random() * 0.03, 0.05, d, { freq: 1800 + Math.random() * 4000, q: 0.9, gain: 0.1 + Math.random() * 0.08 });
+  },
+  /** A paper ball landing (#177). */
+  ballBounce(pos, k = 1) {
+    if (!ready()) return;
+    const t = ctx.currentTime, d = out(pos, 0.6);
+    noise(t, 0.04, d, { freq: 1500, q: 0.7, gain: 0.08 * k });
+  },
   /** A soft footstep; `surface` 'wood' | 'stair' | 'outside'. */
   step(surface = 'wood') {
     if (!ready()) return;

@@ -1,29 +1,12 @@
 import * as THREE from 'three';
 import { CAT_BOARD as B } from './config.js';
+import { withStore as withDb } from './idb.js';
 
 // Cork board in the kitchen with a Polaroid of every cat you pet (newest 10), each captioned
 // by hand with the cat's name and the date and time. Photos live in IndexedDB.
 
-const DB = 'lunden', STORE = 'catPhotos', MAX = 10;
-
-function openDB() {
-  return new Promise((resolve, reject) => {
-    const req = indexedDB.open(DB, 1);
-    req.onupgradeneeded = () => req.result.createObjectStore(STORE, { keyPath: 'id', autoIncrement: true });
-    req.onsuccess = () => resolve(req.result);
-    req.onerror = () => reject(req.error);
-  });
-}
-
-async function withStore(mode, fn) {
-  const db = await openDB();
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE, mode);
-    const out = fn(tx.objectStore(STORE));
-    tx.oncomplete = () => resolve(out?.result ?? out);
-    tx.onerror = () => reject(tx.error);
-  });
-}
+const STORE = 'catPhotos', MAX = 10;
+const withStore = (mode, fn) => withDb(STORE, mode, fn); // the shared 'lunden' database (idb.js)
 
 const loadImage = (src) => new Promise((resolve) => {
   const img = new Image();
