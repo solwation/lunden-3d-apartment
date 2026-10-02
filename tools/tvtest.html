@@ -66,10 +66,14 @@ f.onload = async () => {
   for (let i = 0; i < 3; i++) step(1 / 60);
   camera.rotation.y = Math.PI / 2; camera.rotation.x = Math.atan2(p1.y - camera.position.y, camera.position.x - p1.x); step(1 / 60); // facing west
   const l1 = btn.textContent;
+  const glow1 = tv1.pickable.children.find((m) => m.material?.blending === 2); // additive (THREE.AdditiveBlending)
   btn.click(); for (let i = 0; i < 30; i++) step(1 / 60);
   const on1 = tv1.isOpen && tv1.screen.texture.version > 1, c1 = tv1.screen.channel;
+  const lit1 = glow1?.visible && glow1.material.color.r + glow1.material.color.g + glow1.material.color.b > 0.05;
   btn.click(); step(1 / 60); btn.click(); step(1 / 60);
   const c2 = tv1.screen.channel; btn.click(); step(1 / 60);
+  const dark1 = glow1 && glow1.material.color.r + glow1.material.color.g + glow1.material.color.b === 0;
+  pass &= check(lit1 && dark1, `Sovrum 1 TV: Ambilight on with it (${lit1}), dark when off (${dark1}) (#223)`);
   pass &= check(/slå på tv:n/i.test(l1) && on1 && c1 !== c2 && !tv1.isOpen && Math.abs(p1.y - 4.55) < 0.05, `Sovrum 1 TV at (${p1.x.toFixed(2)}, ${p1.y.toFixed(2)}, ${p1.z.toFixed(2)}): "${l1}", on ${on1}, new programme ${c1} → ${c2}, off`);
   // the remote (#101) on the coffee table: take it, point it at the living-room TV, change channels, power
   const { remote, heldItem } = w.__app;

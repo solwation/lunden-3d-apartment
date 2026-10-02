@@ -1069,9 +1069,9 @@ export const FURNITURE = [
   // Sovrum 3's east wall (x 2.61) straight across from the bunk (z 0.47–2.57), clear of the desk (z < 1.04) and the
   // wands' hooks (z ≥ 2.85); centre 1.2 m up (the user: watchable from both bunks; tunable). Faces west.
   // Sovrum 1 (#213, docs/tv-philips-43-pqs7801.png): Philips 43" PQS7801 QLED (~96 × 56 cm; slim black frame, a silver
-  // edge below, no Ambilight) on the west wall straight across from the double bed (z 2.3), centre 1.3 m up for
+  // edge below; Ambilight, the user #223) on the west wall straight across from the double bed (z 2.3), centre 1.3 m up for
   // sitting up in bed (guess). Faces east.
-  { type: 'tv', level: 1, room: 'Sovrum 1', x: 2.752, z: 2.3, y: 1.3, rot: -90, w: 0.96, h: 0.56, fps: 12, px: 320, mount: 'wall', frame: 'black', ambilight: false, name: 'tv:n' },
+  { type: 'tv', level: 1, room: 'Sovrum 1', x: 2.752, z: 2.3, y: 1.3, rot: -90, w: 0.96, h: 0.56, fps: 12, px: 320, mount: 'wall', frame: 'black', name: 'tv:n' }, // with Ambilight (#223)
   { type: 'tv', level: 1, x: 2.61, z: 1.75, y: 1.2, rot: 90, w: 0.71, h: 0.41, fps: 12, px: 256, mount: 'wall', name: 'tv:n' },
   { type: 'alex', level: 1, x: 2.61 - 0.66 - 0.02, z: 0.465 + 0.29, rot: 180, w: 1.32, d: 0.58, h: 0.76 },
   { type: 'kidchair', level: 1, x: 2.61 - 0.66 - 0.02, z: 0.465 + 0.58 + 0.25, rot: 0 },

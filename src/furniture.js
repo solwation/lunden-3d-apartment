@@ -1002,7 +1002,7 @@ function tv(item) {
     blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false });
   const glow = new THREE.Mesh(new THREE.PlaneGeometry(w * 1.9, h * 2.1), glowMat);
   glow.position.set(0, y0 + h / 2 + (wall ? h * 0.08 : 0), glowZ); // 3-sided Ambilight: a bit more above than below
-  glow.visible = item.ambilight !== false; // (PQS7801 has no Ambilight, #213)
+  glow.visible = item.ambilight !== false; // `ambilight: false`: a TV without it
   g.add(glow);
   let on = false, acc = 0;
   const target = new THREE.Color();
