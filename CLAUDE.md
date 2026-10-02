@@ -10,6 +10,11 @@ in Swedish. Code, comments and this file are in English; UI text is Swedish.
 - **Basic function first.** Work that isn't needed right now goes into a GitHub issue
   (`gh issue create`) instead of being done on the side. Keep issues small and concrete;
   reference the issue number in the commit that resolves it (`Fixes #N`).
+- **Several agents work in parallel (other computers push to `main` too).** Never take an issue that
+  is labelled `in-progress` (`gh issue list --state open --json number,title,labels`). Before starting
+  **each** new issue: `git pull --rebase origin main`, then `git status` must be clean and
+  `git reset --hard origin/main` if it is not (nothing of value should be uncommitted between issues);
+  re-check the issue's label right before labelling it. Work on one issue at a time until done.
 - **Label issues `in-progress` when you start on them** (`gh issue edit N --add-label
   in-progress`). The label must never outlive the work: **remove it** (`--remove-label
   in-progress`) when you stop without finishing, when you close the issue after implementing it
