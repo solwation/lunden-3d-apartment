@@ -3,7 +3,7 @@ import { sfx } from './audio.js';
 import { mergeStatic } from './merge.js';
 import { restTarget } from './rest.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
-import { FURNITURE, LANDSKRONA as L, LEVELS, SKANSNAS } from './config.js';
+import { FURNITURE, LANDSKRONA as L, LEVELS, SKANSNAS, IDANAS } from './config.js';
 import { loungesofa, loungetable, parasol, planter } from './patio.js';
 
 // Loose furniture, built from rounded boxes. Every piece is modelled in a local frame
@@ -321,11 +321,75 @@ function duvetGeometry(w, l, drop, seed = 3) {
 
 /** Bed: upholstered base on legs, mattress, duvet, pillows, headboard. Local −z = head end.
  * `item.bedding` gives the cosy check bedding (Sovrum 1); otherwise plain linen. */
+/** Gunnared-like melange (canvas): fine dark and light flecks on the base colour. */
+function melangeTexture(hex) {
+  const c = document.createElement('canvas');
+  c.width = c.height = 128;
+  const g = c.getContext('2d'), base = new THREE.Color(hex);
+  g.fillStyle = base.getStyle(); g.fillRect(0, 0, 128, 128);
+  let seed = 5;
+  const rand = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+  for (let i = 0; i < 3000; i++) {
+    g.fillStyle = base.clone().offsetHSL(0, 0, (rand() - 0.5) * 0.16).getStyle();
+    g.fillRect(rand() * 128, rand() * 128, 1 + rand() * 2, 1);
+  }
+  const tex = new THREE.CanvasTexture(c);
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  tex.repeat.set(6, 6);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+
+/** IKEA IDANÄS frame (#91): an upholstered frame down to short pale wooden legs, drawer fronts on the sides,
+ * a tall sloping headboard with deep buttons. Local −z = the head end; the mattress is item.w × item.l. */
+function idanasFrame(g, item) {
+  const I = IDANAS, w = item.w, l = item.l, z0 = -l / 2;
+  const fabric = new THREE.MeshStandardMaterial({ color: 0xffffff, map: melangeTexture(I.color), roughness: 0.95 });
+  const sideW = (I.W - w) / 2, frameL = l + 0.03, fy = (I.legH + I.frameH) / 2, fh = I.frameH - I.legH;
+  g.add(rbox(I.W, fh, frameL, 0, fy, 0.015, fabric, 0.03));
+  // drawer fronts (two each side), a slim shadow line round each
+  const line = new THREE.MeshStandardMaterial({ color: 0x2a2c2f, roughness: 0.9 });
+  for (const s of [-1, 1]) for (const k of [-1, 1]) g.add(rbox(0.004, fh - 0.12, l * 0.42, s * (I.W / 2 + 0.001), fy, k * l * 0.23, line, 0.002));
+  const wood = new THREE.MeshStandardMaterial({ color: 0xd8b98c, roughness: 0.6 });
+  for (const x of [-I.W / 2 + 0.08, I.W / 2 - 0.08]) for (const z of [z0 + 0.1, -z0 - 0.06]) {
+    const lg = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.018, I.legH, 10), wood);
+    lg.position.set(x, I.legH / 2, z);
+    lg.castShadow = true;
+    g.add(lg);
+  }
+  // the headboard: leaning back a little, buttons in a grid (dark dimples)
+  const hb = new THREE.Group();
+  hb.position.set(0, I.legH, z0 - I.head / 2);
+  hb.rotation.x = -0.08;
+  hb.add(rbox(I.W, I.headH - I.legH, I.head * 0.75, 0, (I.headH - I.legH) / 2, 0, fabric, 0.06));
+  const button = new THREE.MeshStandardMaterial({ color: 0x232527, roughness: 0.8 });
+  for (let r = 0; r < 3; r++) for (let c = 0; c < 9; c++) {
+    const bx = -I.W / 2 + 0.15 + c * ((I.W - 0.3) / 8) + (r % 2 ? (I.W - 0.3) / 16 : 0);
+    if (bx > I.W / 2 - 0.1) continue;
+    const bt = new THREE.Mesh(new THREE.SphereGeometry(0.012, 8, 6), button);
+    bt.scale.z = 0.5;
+    bt.position.set(bx, I.frameH + 0.25 + r * 0.16, I.head * 0.375 + 0.003);
+    hb.add(bt);
+  }
+  g.add(hb);
+  return I.frameH - 0.1 + I.mattressH; // the mattress top: it sits 10 cm into the frame
+}
+
 function bed(item) {
   const g = new THREE.Group();
   const w = item.w, l = item.l, z0 = -l / 2;
-  g.add(rbox(w + 0.04, 0.22, l + 0.04, 0, 0.1 + 0.11, 0, bedFabric, 0.02));
-  g.add(rbox(w, 0.2, l, 0, 0.32 + 0.1, 0, linen, 0.05));
+  let top = 0.52; // mattress top (the plain bed)
+  if (item.model === 'idanas') {
+    top = idanasFrame(g, item);
+    g.add(rbox(w, IDANAS.mattressH, l, 0, top - IDANAS.mattressH / 2, 0, linen, 0.05));
+  } else {
+    g.add(rbox(w + 0.04, 0.22, l + 0.04, 0, 0.1 + 0.11, 0, bedFabric, 0.02));
+    g.add(rbox(w, 0.2, l, 0, 0.32 + 0.1, 0, linen, 0.05));
+  }
+  const dy = top - 0.52; // the bedding below is laid out for a 0.52 m mattress top
+  const bedding = new THREE.Group();
+  bedding.position.y = dy;
+  g.add(bedding);
   const b = item.bedding;
   if (b) {
     const tex = b.pattern === 'chintz' ? chintzTexture(b) : ginghamTexture(b);
@@ -335,7 +399,7 @@ function bed(item) {
     const duv = new THREE.Mesh(duvetGeometry(w + 0.12, l * 0.74, 0.2), check);
     duv.position.set(0, 0.55, z0 + l * 0.63);
     duv.castShadow = duv.receiveShadow = true;
-    g.add(duv);
+    bedding.add(duv);
     // two pillows in check pillowcases, plump, and a dark blue cushion in front of them
     for (const px of [-w / 4, w / 4]) {
       // planar UVs in metres (top view) so the pillowcase checks match the duvet's
@@ -346,28 +410,31 @@ function bed(item) {
       pil.position.set(px, 0.6, z0 + 0.27);
       pil.rotation.x = -0.25;
       pil.castShadow = true;
-      g.add(pil);
+      bedding.add(pil);
     }
     const cushion = new THREE.Mesh(new THREE.SphereGeometry(1, 16, 10), new THREE.MeshStandardMaterial({ color: b.cushion, roughness: 0.9 }));
     cushion.scale.set(0.22, 0.07, 0.16);
     cushion.position.set(-0.05, 0.64, z0 + 0.5);
     cushion.rotation.set(-0.6, 0.15, 0.1);
     cushion.castShadow = true;
-    g.add(cushion);
+    bedding.add(cushion);
     // a knitted throw folded over the foot end, hanging down a little on one side
     const knit = new THREE.MeshStandardMaterial({ color: b.throw, roughness: 1 });
-    g.add(rbox(w * 0.85, 0.035, 0.42, 0.04, 0.59, -z0 - 0.3, knit, 0.015));
-    g.add(rbox(0.035, 0.2, 0.42, 0.04 + w * 0.425 + 0.02, 0.5, -z0 - 0.3, knit, 0.012));
+    bedding.add(rbox(w * 0.85, 0.035, 0.42, 0.04, 0.59, -z0 - 0.3, knit, 0.015));
+    bedding.add(rbox(0.035, 0.2, 0.42, 0.04 + w * 0.425 + 0.02, 0.5, -z0 - 0.3, knit, 0.012));
   } else {
-    g.add(rbox(w + 0.02, 0.06, l * 0.7, 0, 0.53, z0 + l * 0.65, duvet, 0.03));
-    for (const px of w > 1.2 ? [-w / 4, w / 4] : [0]) g.add(rbox(Math.min(0.6, w * 0.8), 0.12, 0.38, px, 0.58, z0 + 0.28, linen, 0.06));
+    bedding.add(rbox(w + 0.02, 0.06, l * 0.7, 0, 0.53, z0 + l * 0.65, duvet, 0.03));
+    for (const px of w > 1.2 ? [-w / 4, w / 4] : [0]) bedding.add(rbox(Math.min(0.6, w * 0.8), 0.12, 0.38, px, 0.58, z0 + 0.28, linen, 0.06));
   }
-  g.add(rbox(w + 0.06, 0.6, 0.08, 0, 0.62, z0 - 0.04, bedFabric, 0.03));
-  for (const x of [-w / 2 + 0.06, w / 2 - 0.06]) for (const z of [z0 + 0.06, -z0 - 0.06]) g.add(leg(x, z, 0.1));
+  if (item.model !== 'idanas') {
+    g.add(rbox(w + 0.06, 0.6, 0.08, 0, 0.62, z0 - 0.04, bedFabric, 0.03));
+    for (const x of [-w / 2 + 0.06, w / 2 - 0.06]) for (const z of [z0 + 0.06, -z0 - 0.06]) g.add(leg(x, z, 0.1));
+  }
   // lying down (#72): head on the pillows, feet towards local +z; one place per side of a double bed
   g.userData.rest = { kind: 'lie', name: 'sängen', verb: 'lägga dig i',
-    spots: (w > 1.2 ? [-w / 4, w / 4] : [0]).map((x) => ({ x, y: 0.52, z: z0 + 0.32 })) };
-  g.userData.footprint = [{ x0: -w / 2 - 0.03, x1: w / 2 + 0.03, z0: z0 - 0.08, z1: -z0 + 0.02 }];
+    spots: (w > 1.2 ? [-w / 4, w / 4] : [0]).map((x) => ({ x, y: top, z: z0 + 0.32 })) };
+  const hw = item.model === 'idanas' ? IDANAS.W / 2 : w / 2 + 0.03, back = item.model === 'idanas' ? IDANAS.head : 0.08;
+  g.userData.footprint = [{ x0: -hw, x1: hw, z0: z0 - back, z1: -z0 + 0.03 }];
   return g;
 }
 

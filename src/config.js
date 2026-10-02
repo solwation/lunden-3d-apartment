@@ -548,6 +548,11 @@ export const SKANSNAS = {
   chairUnder: 0.2,
 };
 
+// IKEA IDANÄS upholstered storage bed, Gunnared dark grey, 180 × 200 (#91; ikea.com: length 223, width 190,
+// headboard height 121, footboard/frame height 49). Headboard thickness, leg height, drawer sizes and the
+// 22 cm mattress are guesses. `head` = depth behind the mattress taken by the sloping headboard.
+export const IDANAS = { L: 2.23, W: 1.9, frameH: 0.49, headH: 1.21, head: 0.2, legH: 0.1, mattressH: 0.22, color: 0x5f6266 };
+
 export const FURNITURE = [
   // Vardagsrum: sofa with its back to the window (south wall), chaise in the SE corner
   { type: 'sofa', level: 0, x: 5.5 - 2.82 / 2, z: 12.15 - 0.89 / 2, rot: 0, chaise: 'right' }, // sitter's right = east
@@ -593,10 +598,11 @@ export const FURNITURE = [
   // Upstairs bedrooms (the user's plan). Beds: rot = direction from the head to the foot end.
   // IKEA NORDKISA bedside tables, bamboo, 40 × 40 cm (ikea.com, #64; the 55 cm height is a guess, about the
   // mattress top): one each side of the double bed's head end (east wall), clear of the Klk door
-  ...[1.5 - 0.24, 3.1 + 0.24].map((z) => ({ type: 'nordkisa', level: 1, x: 5.55 - 0.23, z, rot: 90, w: 0.4, h: 0.55 })),
+  // either side of the IDANÄS bed (190 wide, centred at z 2.3): z 1.35 − 0.22 and 3.25 + 0.22
+  ...[1.13, 3.47].map((z) => ({ type: 'nordkisa', level: 1, x: 5.55 - 0.23, z, rot: 90, w: 0.4, h: 0.55 })),
   // IKEA NYMÅNE work lamps with wireless charging, white (#65; base Ø ~20 cm, arms and head guessed from the
   // product photo), one on each bedside table, the head reaching over towards the bed; E on each one
-  ...[[1.5 - 0.24, 180], [3.1 + 0.24, 0]].map(([z, rot]) => ({ type: 'worklamp', level: 1, x: 5.55 - 0.25, z, y: 0.55, rot })),
+  ...[[1.13, 180], [3.47, 0]].map(([z, rot]) => ({ type: 'worklamp', level: 1, x: 5.55 - 0.25, z, y: 0.55, rot })),
   // IKEA RÅGRUND chair with towel rack, bamboo (#60; H 140, W 39, D 44, seat 48 cm per IKEA/dimensions.com):
   // Sovrum 1, the corner left of the window seen from inside (NW), back and towel rack against the
   // west wall, seat facing into the room (east); the seat is below the window sill (BH 0.7)
@@ -604,7 +610,8 @@ export const FURNITURE = [
   // Sovrum 1 (Sarah & Ofluf), head east, clear of the Klk. Bedding (#83, an IKEA set from a Sellpy ad):
   // sage green with a dense chintz of coral and pink peonies, ochre, slate-blue leaves and grey-green
   // stems, white outlines (colours read off the photo); a pink cushion and a light grey throw to go with it
-  { type: 'bed', level: 1, x: 5.55 - 1.1, z: 2.3, rot: 90, w: 1.6, l: 2.0,
+  // the mattress centre: the headboard (IDANAS.head) against the east wall
+  { type: 'bed', level: 1, x: 5.55 - IDANAS.head - 1.0, z: 2.3, rot: 90, w: 1.8, l: 2.0, model: 'idanas',
     // repeat = metres per texture tile (blooms ~8–15 cm)
     bedding: { pattern: 'chintz', ground: '#adc2b1', repeat: 0.9, flowers: ['#d0696b', '#c9505a', '#e9b7bd', '#d4b45a'],
       leaves: ['#6f7b86', '#8a96a0', '#7f9a83'], throw: 0xdcdcd8, cushion: 0xe2a3ab } },

@@ -380,8 +380,9 @@ export class CatSpawner {
     const side = Math.sign((from.x - center[0]) * normal[0] + (from.z - center[1]) * normal[1]) || 1;
     const nx = -side * normal[0], nz = -side * normal[1];
     const sx = center[0] + nx * 0.35, sz = center[1] + nz * 0.35;
-    for (let i = 0; i < 60; i++) {
-      const dist = 0.6 + this.rand() * 2.4, lat = (this.rand() - 0.5) * 3;
+    for (let i = 0; i < 120; i++) {
+      // 0.4–3 m in, more often close to the door (rooms with a big bed by the door have little floor, #91)
+      const r = this.rand(), dist = 0.4 + r * r * 2.6, lat = (this.rand() - 0.5) * 3;
       const x = center[0] + nx * dist - nz * lat, z = center[1] + nz * dist + nx * lat;
       if (stairHeight(x, z) !== null) continue;
       if (segs.some((s) => distToSeg(x, z, s) < 0.24)) continue;
