@@ -78,14 +78,6 @@ src/toilet.js          toilet (Ifö Spira 6260) with an animated lid and a flush
 src/ao.js              baked ambient occlusion: distance field → multiply overlay on floor/ceiling (AO)
 src/courtyard.js       the courtyard on the garage box (COURTYARD): walks, pergolas, grill, sandboxes, boule,
                        benches, raised beds, instanced shrubs; collision for what you can walk into
-src/construction.js    the building site as it is now (CONSTRUCTION, #131): an optional mode (start screen button
-                       "Visa bygget som det ser ut nu", localStorage 'lunden.bygge', `&bygge` / `&bygge=0`):
-                       system scaffolding round Hus L (not our unit) and Hus A/B/C (instanced tubes + decks), white
-                       netting, blue weatherboard, mobile fencing, barriers, a wheel loader and an excavator;
-                       `world.setConstruction(on)` shows it and adds its collision; the courtyard as it is now
-                       (#132, `CONSTRUCTION.courtyard`): the finished courtyard (kept out of mergeStatic) and its trees
-                       (`hideCourtyardTrees` in surroundings.js) are hidden, a wet concrete deck with puddles, gravel and
-                       grey concrete walls at the east edge, a site hut, toilet, skip, pallets, tarps, hose, young maples
 src/surroundings.js    the site (SITE): Hus A/B/C + buildings around, roads, paving, the 3 m drop to the park,
                        Höje å, instanced trees, lit windows, cloudy sky
 src/lights.js          room switches (E), ceiling lamps/pendant/spots/LED, floor lamp; a pool of 4
@@ -99,8 +91,7 @@ src/streetlife.js      life on the street (SITE.life, #113): the car park's stal
 src/people.js          people in the area (PEOPLE, #114): low-poly figures (one InstancedMesh per body part, a colour each,
                        posed every frame): walkers to and fro on the paths (a dog with one), cyclists on Sankt Lars väg
                        (sfx.bell when they pass close), kids with a ball and in the sandbox, bench sitters, someone on a
-                       blanket (not in the snow months), neighbours on the loftgång; daytime only; none in the courtyard
-                       in the building-site mode (&bygge)
+                       blanket (not in the snow months), neighbours on the loftgång; daytime only
 src/daycycle.js        60-minute day: real solar path for the month (55.7° N), sun → moon light, shader sky
                        (glow, stars, clouds), fog colour; paused / spooled by the wall clock
 src/patio.js           patio: Plantagen Oslo corner lounge set, parasol, planters with exotic plants
@@ -298,7 +289,6 @@ tools/boardtest.html   headless test: keep / throw away cat photos, a full board
 tools/planttest.html   headless test: lift pot plants (window board → table, side table → window board, the shelf), F home
 tools/clocktest.html   headless test of the wall clock (?time=7, spool, pause, sun height by month)
 tools/calendartest.html headless test: today's date at the start, pick a date on the calendar, the sun follows
-tools/byggetest.html   headless test: the building site on/off (button, collision), START → front door still free
 tools/cloudtest.html   headless test of the shared world against `node cloudflare/dev.mjs 8144` (start it first): PUT on
                        taping, someone else's drawing appears, DELETE on throwing, thrown elsewhere → gone here, offline
                        queue, desk sheet, cat photos both ways, a fresh visitor gets them, off without &cloud
@@ -480,7 +470,7 @@ URL parameters (debugging / screenshots):
 - `&time=HH[.h]` — start at that hour (default: the browser's time), `&month=1–12`, `&day=1–31` (default: today), `&freeze` pauses the clock,
   `&clock` opens the wall clock's strip,
   `&lights` turns every lamp on (they also start on when arriving in the dark).
-- `&bygge` — the building site as it is now (#131; `&bygge=0` the finished houses). `&car` — our car parked in front of the house. `&water` — turn on every tap and shower. `&tv` — switch the TV on. `&secret=i` — the secret drawer shows surprise i (SECRET.items, with `&open`).
+- `&car` — our car parked in front of the house. `&water` — turn on every tap and shower. `&tv` — switch the TV on. `&secret=i` — the secret drawer shows surprise i (SECRET.items, with `&open`).
 - `&phone` — the short touch-only start screen. `&install` — show the iPhone install sheet. `&note` — open the changelog note. `&pet` (with `&cat=`) — the cat is being petted.
 - `&clip=y` — clip everything above height y (cut-away plan view, e.g.
   `?shot&at=2.87,6.35,0,-90,16&clip=2.5` for Entréplan from above, `clip=5.6` + feet 19 for Övre plan).

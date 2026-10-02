@@ -524,17 +524,7 @@ function trees(rand) {
   birchM.forEach((mm, i) => birches.setMatrixAt(i, mm));
   birches.count = birchM.length;
   trunk.castShadow = crown.castShadow = birches.castShadow = true;
-  // the courtyard's own trees come first (one trunk + one lobe each): the building site mode hides them (#132)
-  const n = COURTYARD.trees.length, saved = lobes.slice(0, n).map((l) => l.scale.clone()), savedT = trunkM.slice(0, n);
-  const tiny = new THREE.Matrix4().makeScale(1e-4, 1e-4, 1e-4);
-  const hideCourtyard = (hide) => {
-    for (let i = 0; i < n; i++) {
-      lobes[i].scale.copy(saved[i]).multiplyScalar(hide ? 1e-4 : 1);
-      trunk.setMatrixAt(i, hide ? tiny : savedT[i]);
-    }
-    trunk.instanceMatrix.needsUpdate = true;
-  };
-  return [trunk, birches, crown, hideCourtyard];
+  return [trunk, birches, crown];
 }
 
 /** Sky for scene.background: vertical gradient with a few soft clouds (equirectangular). */
@@ -781,9 +771,7 @@ export function buildSurroundings({ grass }) {
   // blocks on the slope south of Hus L stand on a plinth down to the ground (#142)
   const plinths = S.blocks.map(plinth).filter(Boolean);
   if (plinths.length) mesh(plinths, new THREE.MeshStandardMaterial({ color: 0x6e3326, roughness: 0.95 }));
-  const [trunk, birches, crown, hideCourtyardTrees] = trees(rng(3));
-  group.add(trunk, birches, crown);
-  group.userData.hideCourtyardTrees = hideCourtyardTrees; // crowns follow on the next applySeason (refreshSeason)
+  group.add(...trees(rng(3)));
   const windows = buildWindowLights(), street = buildStreet(); // street lamps, crossing, curbs … (#128)
   group.add(windows.object, street.object);
   group.userData.windows = { object: windows.object, update(hour, night) { windows.update(hour, night); street.update(night); } };

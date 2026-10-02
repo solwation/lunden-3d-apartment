@@ -371,39 +371,6 @@ export const PEOPLE = {
   hair: [0x2a1d14, 0x5a3a22, 0xc89b52, 0x1a1a1a, 0x8a5a32, 0xd8c7a0],
 };
 
-// The building site as it is now (#131, #132, src/construction.js): an optional mode (start screen button, `&bygge`)
-// where Kv. Lunden stands in scaffolding, partly netted, with blue weatherboard where the brick is not up yet, mobile
-// fencing, barriers and machines, and the courtyard is a wet concrete deck with a site hut (the user's photos
-// docs/foton/*, autumn 2026). Our own unit stays finished. Scaffold: `off` from the wall, `depth` deep, bays and lifts
-// in metres (a typical system scaffold). `skipL` = plan x ranges of Hus L left bare (our unit L1007 + L1208 above it;
-// the east spiral stair on the north side). `boards` = façade rects [ax, az, bx, bz, y0, y1, n] (n = the outward
-// normal's sign); `fence` = polylines of 3.5 m panels; positions of machines and props are guesses
-// read off the photos.
-export const CONSTRUCTION = {
-  scaffold: { off: 0.3, depth: 0.75, bay: 2.5, lift: 2.0, over: 1.0 },
-  skipL: { both: [[-0.7, 6.45]], north: [[6.3, 12]] },
-  netted: ['L-s-0', 'L-n-0', 'C-e-0', 'B-n-0', 'A-w-0'], // runs with white netting: building-side-piece (pieces counted from west / north)
-  boards: [ // blue weatherboard ("Weatherboard 365") with yellow insulation edges; the last number = the normal (±1 on the other axis)
-    [-43.25, 12.7, -20.25, 12.7, 6, 12, 1], [-11.5, 12.7, -0.7, 12.7, 6, 12, 1], [6.45, 12.7, 11.5, 12.7, 6, 12, 1],
-    [-43.25, 1.96, -20.25, 1.96, 6.1, 12, -1], [-11.5, 1.96, -0.7, 1.96, 6.1, 12, -1],
-    [-53.3, 12.5, -53.3, 37.5, 0, 6, 1], [-10.2, 29.6, 9.5, 29.6, 0, 3, -1], [-43.4, 34.2, -23.7, 34.2, -3, 3, -1],
-  ],
-  fence: [[[12.2, -0.6], [16.2, -0.6], [16.2, 12.7], [22.2, 12.7], [22.2, 30.6]], [[-46.5, -0.6], [-53, -0.6], [-53, 12]]],
-  barriers: [[13.6, -2.4, 0], [16.4, -2.4, 0], [-48.2, -2.4, 0]],
-  machines: { loader: [8.5, 25.8, 2.4], excavator: [-21, 24.8, -0.6] },
-  // the courtyard now (#132, docs/foton/mellan-husen-pagaende-bygge.jpg): the finished courtyard is hidden, the garage deck
-  // is wet concrete (`deck` rects x0, x1, z0, z1; puddles on the first two), red-brown gravel at park level outside the
-  // east wall (`gravel`), the box walls in grey concrete; things standing about at [x, z, yaw°]; maples [x, z, height]
-  courtyard: {
-    deck: [[-53.3, 18, 17.8, 30.2], [11.6, 18, 12.75, 17.8], [-53.3, -43.3, 12.75, 17.8], [-80, -43, 37.6, 51], [-53.3, -43, 30.2, 37.6]],
-    puddles: 26, gravel: [18.1, 22.1, 12.75, 30.2],
-    hut: [-32.5, 27.0, 0], toilet: [-28.4, 27.5, 0], skip: [-40, 25.5, 0], switchboard: [-6, 24.6, 0], barrow: [15.4, 20.8, 60],
-    pallets: [[-14, 22.5, 10], [-12.6, 23.7, 0], [12.5, 21.5, -20], [-37, 21, 30]], tarps: [[-2, 27.2, 0], [-44.5, 20.5, 40]],
-    hose: [[-29.8, 26], [-27, 25], [-24, 26.2], [-21, 23.8], [-17, 23.5]],
-    maples: [[20.4, 15.5, 5], [20.8, 22.5, 6], [20.2, 28.8, 5.5], [19.2, 6, 5]],
-  },
-};
-
 export const OUTDOOR = { x0: -46, x1: 17.75, z0: -14, z1: 29.5 }; // behind Hus L: the patios and the Borggården (#80)
 
 // The lightsaber in Sovrum 2 (#78, src/saber.js): two hooks on the west wall (north of the gaming desk)
