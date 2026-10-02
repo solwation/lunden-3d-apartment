@@ -24,6 +24,7 @@ import { Saber } from './saber.js';
 import { buildToys } from './toys.js';
 import { Remote } from './remote.js';
 import { Book } from './book.js';
+import { Pan } from './pan.js';
 import { Beer } from './beer.js';
 import { buildThings } from './things.js';
 import { buildCups } from './cups.js';
@@ -206,6 +207,8 @@ const things = buildThings(scene, camera, world.things); // bottles and glasses 
 const holdables = [saber, ...toys.items, remote, book, beer, ...things]; // things you can take and hold, one at a time (holdable.js)
 const cups = buildCups(scene, camera, world, world.cupCabinet); // coffee cups in the wall cabinet (#90)
 holdables.push(cups.jug);
+const pan = world.panDrawer ? new Pan(scene, camera, world.panDrawer, world.hob) : null; // the frying pan in the drawer under the hob (#159)
+if (pan) holdables.push(pan);
 for (const c of cups.cups) c.onSip = () => bump('coffee'); // drink from a cup (#117) // the Moccamaster's jug: take it, pour, put it back (#141)
 let placeTarget = null; // while something is held: the table top / floor spot it would go down on (#102)
 // a faint ring where the held thing would land
@@ -666,6 +669,12 @@ function updateFocus() {
       placeGhost.visible = true;
     }
   }
+  // the pan in the hand, aimed at the hob (or a spot on it): stand it on the big front zone (#159)
+  if (item === pan && world.hob && (focused?.kind === 'hob' || (focused?.kind === 'place' && focused.point.distanceTo(world.hob.zone) < 0.35))) {
+    focused = { name: 'stekpannan på hällen', kind: 'place', verb: 'ställa', item: pan, point: world.hob.zone.clone() };
+    placeGhost.position.copy(world.hob.zone).y += 0.003;
+    placeGhost.visible = true;
+  }
   // the remote in the hand, aimed at a TV: the click / the touch button are the remote's (#101)
   const remoteAim = heldItem() === remote && focused?.kind === 'tv';
   if (remoteAim) focused = null;
@@ -902,4 +911,4 @@ function continueAfterReload(r) {
 if (resumeOk && resumed.mode) continueAfterReload(resumed);
 
 // handle for tests/debugging (tools/touchtest.html)
-window.__app = { reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };
+window.__app = { pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };

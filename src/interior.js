@@ -463,7 +463,11 @@ function buildKitchen(B, group, floor, y0, yC, handled, taps, appliances) {
       F.box(u0, u1, -F.depth, -FT, yb, yt, M.front); // drawer unit: the drawers' boxes slide out of it
       const h = yt - yb, hs = [0.2 * h, 0.4 * h, 0.4 * h];
       let y = yt;
-      for (const dh of hs) { openFront(open, F, u0, u1, y - dh, y, M.front, 'top', {}, { mode: 'drawer', depth: F.depth - 0.08, name: 'lådan' }); y -= dh; }
+      hs.forEach((dh, k) => {
+        const d = openFront(open, F, u0, u1, y - dh, y, M.front, 'top', {}, { mode: 'drawer', depth: F.depth - 0.08, name: 'lådan' });
+        if (c === hobCab && k === 1) d.panHome = true; // the frying pan's place (#159, pan.js)
+        y -= dh;
+      });
     }
   }
 

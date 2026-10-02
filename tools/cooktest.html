@@ -5,7 +5,8 @@
 <pre id="out">running…</pre>
 <script>
 // The kitchen's cooking (#156): (1) the induction hob (#158) — aim at it → "Slå på hällen", on (the zone glows),
-// off again; F switches it off and it stays a target with F.
+// off again; F switches it off and it stays a target with F. (2) the frying pan (#159): open the drawer under
+// the hob, take the pan, stand it on the hob, take it again, back in the drawer, the drawer closes; F sends it home.
 //   google-chrome --headless=new --dump-dom http://localhost:8137/tools/cooktest.html
 const out = document.getElementById('out');
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -15,7 +16,7 @@ document.body.append(f);
 f.onload = async () => {
   const w = f.contentWindow, d = f.contentDocument;
   while (!w.__app) await wait(100);
-  const { player, camera, step, world, scene, toggleFurniture } = w.__app;
+  const { player, camera, step, world, scene, toggleFurniture, pan, heldItem } = w.__app;
   const lines = [];
   const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; };
   d.getElementById('start-touch').click();
@@ -47,6 +48,38 @@ f.onload = async () => {
   label = aim(hob.zone, from);
   pass &= check(!hob.on && /slå på hällen/i.test(label), `F switches it off, still a target ("${label}")`);
   toggleFurniture();
+  // (2) the pan
+  const drawer = world.panDrawer;
+  const V = camera.position.constructor;
+  const front = () => drawer.object.getWorldPosition(new V()).add(new V(0, 0.08, 0));
+  pass &= check(!!pan && !!drawer && pan.model.parent === drawer.object, 'the pan lies in the drawer under the hob');
+  label = aim(front(), from);
+  pass &= check(/öppna lådan/i.test(label), `the drawer: "${label}"`);
+  btn.click(); for (let i = 0; i < 60; i++) step(1 / 60);
+  label = aim(pan.model.getWorldPosition(new V()), [hob.zone.x - 0.75, hob.zone.z]);
+  pass &= check(/ta stekpannan/i.test(label), `in the open drawer: "${label}"`);
+  btn.click(); step(1 / 60);
+  pass &= check(heldItem() === pan, 'the pan in the hand');
+  label = aim(hob.zone, from);
+  pass &= check(/ställa stekpannan på hällen/i.test(label), `at the hob: "${label}"`);
+  btn.click(); step(1 / 60);
+  pass &= check(!pan.held && pan.onHob && pan.model.getWorldPosition(new V()).distanceTo(hob.zone) < 0.03, 'standing on the front zone');
+  label = aim(pan.model.getWorldPosition(new V()).add(new V(0, 0.03, 0)), from);
+  btn.click(); step(1 / 60);
+  pass &= check(heldItem() === pan && !pan.onHob, `taken again ("${label}")`);
+  label = aim(pan.holder.children.at(-1).getWorldPosition(new V()), [hob.zone.x - 0.75, hob.zone.z]);
+  pass &= check(/lägga tillbaka stekpannan/i.test(label), `at its place in the drawer: "${label}"`);
+  btn.click(); step(1 / 60);
+  pass &= check(!pan.held && pan.model.parent === drawer.object, 'back in the drawer');
+  label = aim(front(), from);
+  btn.click(); for (let i = 0; i < 60; i++) step(1 / 60);
+  pass &= check(!drawer.isOpen && drawer.t === 0, `the drawer closes ("${label}")`);
+  // F sends it home from the hob
+  drawer.toggle(); for (let i = 0; i < 60; i++) step(1 / 60);
+  pan.take(); pan.placeAt(hob.zone);
+  toggleFurniture(); toggleFurniture();
+  pass &= check(pan.model.parent === drawer.object && !pan.placed, 'F sends it home to the drawer');
+  drawer.toggle(); for (let i = 0; i < 60; i++) step(1 / 60);
   out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
 };
 </script>

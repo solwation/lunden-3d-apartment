@@ -516,6 +516,12 @@ export const TILED_ROOMS = [
 // Kitchen (Kök / matplats): the plan's cabinets inside `area` are built as a fitted kitchen
 // after material/Köksritning.jpg (our planning): tall oven/microwave unit, base run with
 // sink + hob, wall cabinets above, freestanding fridge + freezer with top cabinets.
+// The frying pan in the middle drawer under the hob (#159): black, Ø 28 cm (the issue), the rest guesses.
+// `home` = its place in the drawer (drawer-local: in = metres back from the front, along = along the run);
+// `held` = camera space, the handle towards you.
+export const PAN = { d: 0.28, h: 0.05, handle: 0.19, color: 0x1d1d1f, handleColor: 0x2a2522,
+  home: { in: 0.27, along: -0.06 }, held: { x: 0.2, y: -0.3, z: -0.72 } };
+
 export const KITCHEN = {
   level: 0,
   room: 'Kök / matplats', // room name (room detection) for its light switch
