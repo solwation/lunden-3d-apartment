@@ -10,10 +10,14 @@
 //   DELETE /drawings/:id
 //   GET    /paper                 → { image, updated } (or 404)
 //   PUT    /paper                 ← { image: data URL, updated }
-//   DELETE /admin/:what           (what = drawings | paper | all) with "Authorization: Bearer <ADMIN_TOKEN>"
+//   GET    /scores                → [{ name, score }] the top SCORE_TOP (#198)
+//   POST   /scores                ← { id, name, score } — one row per browser (id); a score can't grow faster than
+//                                  SCORE_RATE per minute since that row's last post (SCORE_START for a new row)
+//   DELETE /admin/:what           (what = drawings | paper | scores | all; /admin/scores?id=<id or name>: one row) with "Authorization: Bearer <ADMIN_TOKEN>"
 //                                  — the emergency brake; ADMIN_TOKEN is a Worker secret (cloudflare/setup.sh sets one)
 //
-// KV keys: 'drawings' (the metadata list), 'drawing:<id>' (image bytes, metadata { type }), 'paper' (JSON).
+// KV keys: 'drawings' (the metadata list), 'drawing:<id>' (image bytes, metadata { type }), 'paper' (JSON),
+// 'scores' (all rows { id, name, score, updated }, the best MAX_SCORES).
 // Cat photos are personal and stay in each visitor's browser (#211).
 
 const ORIGINS = [/^https:\/\/solwation\.github\.io$/, /^http:\/\/localhost(:\d+)?$/, /^http:\/\/127\.0\.0\.1(:\d+)?$/];
@@ -21,13 +25,14 @@ const MAX_IMAGE = 300 * 1024;  // bytes per image
 const MAX_DRAWINGS = 100;
 const WRITES_PER_MINUTE = 30;  // per IP (per Worker instance; add a LIMITER rate-limit binding for a global one)
 const SURFACES = ['wall', 'fridge', 'freezer'];
+const SCORE_TOP = 20, MAX_SCORES = 500, SCORE_RATE = 600, SCORE_START = 3000; // points per minute / a new row's first post
 const ID = /^[A-Za-z0-9-]{6,64}$/;
 
 const recent = new Map(); // ip → [timestamps] (this isolate only)
 
 function cors(origin) {
   const ok = origin && ORIGINS.some((r) => r.test(origin));
-  return ok ? { 'Access-Control-Allow-Origin': origin, 'Access-Control-Allow-Methods': 'GET, PUT, DELETE, OPTIONS',
+  return ok ? { 'Access-Control-Allow-Origin': origin, 'Access-Control-Allow-Methods': 'GET, PUT, POST, DELETE, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization', 'Access-Control-Max-Age': '86400', Vary: 'Origin' } : { Vary: 'Origin' };
 }
 
@@ -84,11 +89,11 @@ export default {
     const url = new URL(request.url), parts = url.pathname.split('/').filter(Boolean), [what, id] = parts;
     const m = request.method;
     if (parts.length > 2 || (id !== undefined && !ID.test(id) && what !== 'admin')) return fail(404, 'not found', h);
-    if (m === 'PUT' || m === 'DELETE') {
+    if (m === 'PUT' || m === 'DELETE' || m === 'POST') {
       if (await limited(request, env)) return fail(429, 'too many writes', h);
     }
     let body = null;
-    if (m === 'PUT') {
+    if (m === 'PUT' || m === 'POST') {
       const len = Number(request.headers.get('Content-Length') ?? 0);
       if (len > MAX_IMAGE * 1.5) return fail(413, 'too big', h);
       try { body = await request.json(); } catch { return fail(400, 'bad json', h); }
@@ -131,11 +136,31 @@ export default {
       }
     }
 
+    if (what === 'scores' && !id) {
+      const top = (l) => l.sort((a, b) => b.score - a.score).slice(0, SCORE_TOP).map(({ name, score }) => ({ name, score }));
+      if (m === 'GET') return json(top(await getList(env, 'scores')), 200, h);
+      if (m === 'POST') {
+        const name = typeof body.name === 'string' ? body.name.replace(/[\u0000-\u001f<>&"]/g, '').trim().slice(0, 20) : '';
+        if (!ID.test(body.id ?? '') || !name || !Number.isInteger(body.score) || body.score < 0 || body.score > 1e7) return fail(400, 'bad score', h);
+        let list = await getList(env, 'scores');
+        const now = Date.now(), old = list.find((r) => r.id === body.id);
+        const cap = old ? old.score + SCORE_RATE * ((now - old.updated) / 60000 + 1) : SCORE_START;
+        const score = Math.max(Math.min(body.score, Math.floor(cap)), old?.score ?? 0); // not faster than anyone can play
+        list = [...list.filter((r) => r.id !== body.id), { id: body.id, name, score, updated: now }];
+        list.sort((a, b) => b.score - a.score);
+        await env.LUNDEN.put('scores', JSON.stringify(list.slice(0, MAX_SCORES)));
+        return json(top(list), 200, h);
+      }
+    }
+
     if (what === 'admin' && m === 'DELETE') {
       if (!env.ADMIN_TOKEN || request.headers.get('Authorization') !== `Bearer ${env.ADMIN_TOKEN}`) return fail(403, 'no', h);
       const all = id === 'all';
       if (all || id === 'drawings') { for (const d of await getList(env, 'drawings')) await env.LUNDEN.delete(`drawing:${d.id}`); await env.LUNDEN.delete('drawings'); }
       if (all || id === 'paper') await env.LUNDEN.delete('paper');
+      const one = url.searchParams.get('id');
+      if (id === 'scores' && one) await env.LUNDEN.put('scores', JSON.stringify((await getList(env, 'scores')).filter((r) => r.id !== one && r.name !== one)));
+      else if (all || id === 'scores') await env.LUNDEN.delete('scores');
       return json({ ok: true }, 200, h);
     }
     return fail(404, 'not found', h);

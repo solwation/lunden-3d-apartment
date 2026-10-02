@@ -141,6 +141,16 @@
     body.touch #badges { top: calc(70px + var(--st)); }
     #stats div { display: flex; flex-wrap: wrap; gap: 0 10px; justify-content: space-between; }
     #stats b { font-variant-numeric: tabular-nums; }
+    #lb-name { margin: 10px 0 4px; }
+    #lb-name[hidden], #lb-start[hidden] { display: none; }
+    #lb-name label { display: grid; gap: 4px; font-size: 13px; font-weight: 600; }
+    #lb-name input { font: 15px system-ui, sans-serif; padding: 8px 10px; border: 1px solid #c8ced3; border-radius: 6px; }
+    ol.lb { list-style: none; margin: 6px 0 10px; padding: 0; font-size: 13px; }
+    ol.lb li { display: flex; justify-content: space-between; gap: 10px; padding: 1px 0; }
+    ol.lb li.me { font-weight: 700; }
+    ol.lb b { font-variant-numeric: tabular-nums; }
+    #stats .lb-head { margin-top: 6px; padding-top: 6px; border-top: 1px solid rgba(255,255,255,.25); }
+    #stats ol.lb { margin: 2px 0 0; }
     #stats small { flex-basis: 100%; opacity: .7; font-size: 11px; line-height: 1.2; margin: -2px 0 2px 20px; }
     body.touch #stats { top: calc(60px + var(--st)); max-height: calc(100% - 76px - var(--st) - var(--sb)); }
     #minimap { position: fixed; left: calc(16px + var(--sl)); bottom: calc(56px + var(--sb)); width: 92px; height: auto; image-rendering: pixelated; border-radius: 6px; background: rgba(20, 35, 45, 0.25); pointer-events: none; }
@@ -277,6 +287,8 @@
       </div>
       <p class="resume" id="resume" hidden>Du fortsätter där du var.
         <button id="restart" class="linkish">Börja från start</button></p>
+      <div id="lb-name" hidden><label>Ditt namn på topplistan <input id="player-name" type="text" placeholder="valfritt" autocomplete="nickname" spellcheck="false"></label></div>
+      <ol id="lb-start" class="lb" hidden></ol>
       <div class="start">
         <button id="start-mouse" class="go">Mus &amp; tangentbord</button>
         <button id="start-touch" class="go alt">Touch</button>

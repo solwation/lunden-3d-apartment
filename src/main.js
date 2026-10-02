@@ -9,7 +9,7 @@ import { CatSpawner, VARIANTS, BREEDS } from './cat.js';
 import { initAudio, sfx, toggleMuted, isMuted, updateListener } from './audio.js';
 import { stairHeight } from './stairs.js';
 import { loadChangelog, renderChangelog, buildNote } from './changelog.js';
-import { stats, bump, catFound, secretFound, renderStats, resetStats, visitRoom, setRoomTotal, setBadgeElement } from './stats.js';
+import { totalScore, setStatsExtra, stats, bump, catFound, secretFound, renderStats, resetStats, visitRoom, setRoomTotal, setBadgeElement } from './stats.js';
 import { Minimap } from './minimap.js';
 import { Measure } from './measure.js';
 import { cloudTexture } from './surroundings.js';
@@ -52,6 +52,7 @@ import { People } from './people.js';
 import { Posters, HeldDrawing, paperOnly } from './posters.js';
 import { PaperBalls } from './paperball.js';
 import { Cloud } from './cloud.js';
+import { Leaderboard } from './leaderboard.js';
 
 const overlay = document.getElementById('overlay');
 const hud = document.getElementById('hud');
@@ -362,6 +363,9 @@ const boardLoaded = board.load();
 // the shared world (#178, #119): inert unless CLOUD_URL (or &cloud=) is set — then drawings, the desk sheet and
 // cat photos sync silently with the Cloudflare Worker (cloud.js)
 const cloud = new Cloud({ posters, drawing, holding: () => heldItem() === heldDrawing });
+// the global leaderboard (#198): the name on the start screen (optional), the top list there and under the stats
+const leaderboard = new Leaderboard(cloud.url, totalScore, { nameRow: document.getElementById('lb-name'), input: document.getElementById('player-name'), list: document.getElementById('lb-start') });
+setStatsExtra(() => leaderboard.html());
 cloud.ready = cloud.on ? Promise.all([postersLoaded, boardLoaded]).then(() => cloud.sync()) : Promise.resolve(); // (tests wait on it)
 cat.onPet = () => bump('petted');
 cat.onPhoto = () => { // 0.7 s into the pat (cat.js), before it walks off (#206)
@@ -1193,4 +1197,4 @@ function continueAfterReload(r) {
 if (resumeOk && resumed.mode) continueAfterReload(resumed);
 
 // handle for tests/debugging (tools/touchtest.html)
-window.__app = { turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };
+window.__app = { totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };

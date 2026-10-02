@@ -210,6 +210,10 @@ src/cloud.js           the shared world (#178, #119): inert unless CLOUD_URL (co
                        sent in order; a pull at start (`cloud.ready`), every minute and on tab focus merges the server in
                        (newer `updated` wins; synced drawings missing on the server come down). Cat photos are personal and
                        never synced (#211). Silent; &sync=debug logs
+src/leaderboard.js     the global leaderboard (#198), only with the cloud on: optional name on the start screen (#lb-name,
+                       never blocks starting; localStorage 'lunden.name', a random 'lunden.playerId'), the top list there
+                       (#lb-start) and under the stats (setStatsExtra); the score (stats.js totalScore, SCORE in config) is
+                       POSTed as text/plain when changed, every LEADERBOARD.every s, sendBeacon when hidden; names escaped
 cloudflare/            the Worker (NOT published on Pages): worker.js (API, limits, CORS, admin emergency brake), wrangler.toml,
                        setup.sh (the user's one-command setup: login, KV, deploy, ADMIN_TOKEN, CLOUD_URL into config),
                        dev.mjs (the same Worker on Node with an in-memory KV, for tests), README.md (Swedish, for the user);
@@ -326,7 +330,8 @@ tools/clocktest.html   headless test of the wall clock (?time=7, spool, pause, s
 tools/calendartest.html headless test: today's date at the start, pick a date on the calendar, the sun follows
 tools/cloudtest.html   headless test of the shared world against `node cloudflare/dev.mjs 8144` (start it first): PUT on
                        taping, someone else's drawing appears, DELETE on throwing, thrown elsewhere → gone here, offline
-                       queue, desk sheet, cat photos neither sent nor fetched (#211), a fresh visitor gets them, off without &cloud
+                       queue, desk sheet, cat photos neither sent nor fetched (#211), a fresh visitor gets them, the
+                       leaderboard (name, score, escaped list, a capped cheat), off without &cloud
 tools/stamp.sh         build the published site with a version stamp (used by CI)
 ```
 

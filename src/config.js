@@ -564,6 +564,16 @@ export const MILK = { w: 0.07, h: 0.195, gable: 0.03, blue: '#2f6fc4', held: { x
 // cloudflare/setup.sh; keep it on one line. Locally (BUILD 'dev') it is off unless the page has &cloud=<url>.
 export const CLOUD_URL = '';
 
+// The score (#198, the global leaderboard; #197 shows it in the HUD): points per counted thing in stats.js (per
+// event, `visited` per room, `steps` per step). Our picks; extend it when new statistics come.
+export const SCORE = {
+  cats: 20, rare: 50, petted: 10, catFish: 15, doors: 1, lids: 1, flushes: 2, taps: 1, fridge: 2, appliances: 2,
+  cabinets: 1, beer: 2, coffee: 2, fish: 3, chicken: 5, wine: 2, champagne: 2, whisky: 2, milk: 2, kask: 3, posted: 10,
+  thrown: 3, lights: 1, sat: 2, lay: 2, stairs: 2, secrets: 15, visited: 5, steps: 0.01,
+};
+// The leaderboard: how many rows are shown, how often a changed score is sent (s).
+export const LEADERBOARD = { show: 10, every: 30, nameMax: 20 };
+
 // Drawing with crayons (#93, src/drawing.js): an A3 sheet in the middle of the ALEX desk in Sovrum 3. E on it:
 // the view goes down over the paper, the mouse is freed and you draw with crayons (palette at the bottom,
 // keys 1–9, "Sudda allt"); E / Esc / "Klar" goes back. The drawing is kept in localStorage.

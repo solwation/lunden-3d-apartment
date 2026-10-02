@@ -97,9 +97,28 @@ const sheet = (color) => { const c = document.createElement('canvas'); c.width =
   await app.cloud.ready;
   check(await until(() => app.posters.byId(id2), 8000), 'a new visitor sees the drawing');
   check(await until(() => !app.drawing.blank, 4000), 'and the drawing on the desk');
+  // 10. the leaderboard (#198): the name on the start screen, the score sent, the top list shown (escaped)
+  d = f.contentDocument;
+  const nameRow = d.getElementById('lb-name'), nameIn = d.getElementById('player-name');
+  check(!nameRow.hidden, 'the name field is on the start screen');
+  check(!d.getElementById('start-mouse').disabled && !d.getElementById('start-touch').disabled, 'starting does not need a name');
+  nameIn.value = "Tilly O'Test"; nameIn.dispatchEvent(new w.Event('input'));
+  app.stats.doors += 7;
+  const myScore = app.totalScore();
+  await app.leaderboard.send();
+  const top = await api('/scores');
+  check(top.some((r) => r.name === "Tilly O'Test" && r.score === myScore), `the score is sent (${myScore})`);
+  await api('/scores', { method: 'POST', body: JSON.stringify({ id: 'cheater-123', name: 'Fusk<img src=x>', score: 999999 }) });
+  const cheat = (await api('/scores')).find((r) => /Fusk/.test(r.name));
+  check(cheat && cheat.score <= 3000 && !/[<>]/.test(cheat.name), `a new row is capped and its name cleaned (${cheat?.name} ${cheat?.score})`);
+  await app.leaderboard.refresh();
+  const lis = [...d.querySelectorAll('#lb-start li')].map((li) => li.textContent);
+  check(lis.some((t) => t.includes("Tilly O'Test")) && !d.querySelector('#lb-start img'), `the top list on the start screen: ${lis.join(' | ')}`);
+  check(app.leaderboard.html().includes('Din poäng'), 'and under the statistics');
   // 9. locally without &cloud: off, no requests
   w = await load(''); app = w.__app;
   check(!app.cloud.on, 'locally without &cloud: off');
+  check(f.contentDocument.getElementById('lb-name').hidden && !app.leaderboard.on, 'no name field, no leaderboard');
   out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
 })().catch((e) => { out.textContent = `SOME FAILED\n${lines.join('\n')}\nERROR ${e.stack}`; });
 </script>

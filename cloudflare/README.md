@@ -1,7 +1,8 @@
 # Delad värld (Cloudflare Worker)
 
 Uppsatta teckningar och teckningen på skrivbordet i Sovrum 3 delas mellan alla besökare via en liten
-Cloudflare Worker med KV-lagring (#178, #119). Kattfotona är personliga och skickas aldrig (#211). Utan den fungerar allt som förut, bara lokalt i webbläsaren.
+Cloudflare Worker med KV-lagring (#178, #119). Kattfotona är personliga och skickas aldrig (#211). Samma worker håller
+en global topplista (#198): startskärmen frågar efter ett namn (valfritt) och poängen skickas. Utan den fungerar allt som förut, bara lokalt i webbläsaren.
 
 ## Slå på det
 
@@ -26,7 +27,10 @@ den är pushad. Skriptet går att köra om hur många gånger som helst – det 
   `https://solwation.github.io` (och localhost).
 - **Nödbroms:** töm allt (eller bara en del) om något olämpligt hamnar där:
   `curl -X DELETE -H "Authorization: Bearer $(cat ~/.config/lunden-l1007/admin-token)" <adress>/admin/all`
-  (`/admin/drawings`, `/admin/paper`).
+  (`/admin/drawings`, `/admin/paper`, `/admin/scores`). Ta bort ett enda olämpligt namn från topplistan:
+  `curl -X DELETE -H "Authorization: Bearer $(cat ~/.config/lunden-l1007/admin-token)" "<adress>/admin/scores?id=<namnet>"`.
+- **Topplistan:** en rad per webbläsare (slumpat id), namn högst 20 tecken (`<>&"` och styrtecken tas bort), och en
+  poäng kan inte växa snabbare än 600 per minut (en ny rad börjar på högst 3000) – fusk blir litet.
 - **Stänga av:** sätt `CLOUD_URL = ''` i `src/config.js` och pusha.
 - **Automatisk omdriftsättning (valfritt):** `.github/workflows/cloud.yml` driftsätter om workern när
   `cloudflare/**` ändras på main, om repot har secrets `CLOUDFLARE_API_TOKEN` (en API-token med *Workers Scripts:
@@ -44,4 +48,6 @@ den är pushad. Skriptet går att köra om hur många gånger som helst – det 
 | `PUT /drawings/:id` | metadata + `image` (data-URL); senaste `updated` vinner |
 | `DELETE /drawings/:id` | slängd |
 | `GET` / `PUT /paper` | teckningen på skrivbordet `{ image, updated }` |
+| `GET /scores` | topp 20 `[{ name, score }]` |
+| `POST /scores` | `{ id, name, score }` (text/plain eller JSON) |
 | `DELETE /admin/:what` | nödbroms, kräver `ADMIN_TOKEN` |

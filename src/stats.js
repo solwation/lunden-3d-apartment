@@ -1,7 +1,7 @@
 // Visitor statistics (cats found and petted, doors, steps …), kept in localStorage so they
 // survive a reload. The panel is hidden (Tab held / T / the 📊 button shows it); instead a
 // small badge ("✋ Klappat katt +1") pops up for each counted event.
-import { SECRET } from './config.js';
+import { SECRET, SCORE } from './config.js';
 const KEY = 'lunden.stats';
 
 const fresh = () => ({ cats: 0, rare: 0, byVariant: {}, petted: 0, doors: 0, lids: 0, flushes: 0, taps: 0, fridge: 0, appliances: 0, cabinets: 0, beer: 0, coffee: 0, fish: 0, turbo: 0, fried: 0, burnt: 0, catFish: 0, chicken: 0, wine: 0, champagne: 0, whisky: 0, milk: 0, kask: 0, posted: 0, thrown: 0, lights: 0, sat: 0, lay: 0, steps: 0, metres: 0, stairs: 0, seconds: 0, visited: {}, secrets: 0, secretKinds: {} });
@@ -48,6 +48,16 @@ export function badge(text, count = true) {
   b.textContent = count ? `${text} +${b.dataset.n}` : text;
   b.classList.add('bump');
   b.timer = setTimeout(() => b.remove(), 2600);
+}
+
+/** The visitor's score (#198): SCORE points per counted thing (rooms per room visited, steps per step). */
+export function totalScore() {
+  let t = 0;
+  for (const [k, pts] of Object.entries(SCORE)) {
+    const v = k === 'visited' ? Object.keys(stats.visited).length : stats[k];
+    if (typeof v === 'number') t += v * pts;
+  }
+  return Math.floor(t);
 }
 
 export function bump(key, n = 1) {
@@ -137,8 +147,12 @@ export function statRows() {
 }
 
 /** Render into `el` (cheap enough to call a few times a second). */
+let extra = () => '';
+/** More HTML under the rows (the leaderboard, #198). */
+export const setStatsExtra = (fn) => { extra = fn; };
+
 export function renderStats(el) {
   const html = statRows().map(([label, value, sub]) =>
-    `<div><span>${label}</span><b>${value}</b>${sub ? `<small>${sub}</small>` : ''}</div>`).join('');
+    `<div><span>${label}</span><b>${value}</b>${sub ? `<small>${sub}</small>` : ''}</div>`).join('') + extra();
   if (el.innerHTML !== html) el.innerHTML = html;
 }
