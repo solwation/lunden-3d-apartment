@@ -32,6 +32,7 @@ import { CatBoard, snapshot } from './catboard.js';
 import { Lights } from './lights.js';
 import { setupInstall } from './install.js';
 import { Marks } from './marks.js';
+import { Target } from './target.js';
 
 const overlay = document.getElementById('overlay');
 const hud = document.getElementById('hud');
@@ -213,7 +214,10 @@ const measure = new Measure(scene, camera, [world.object], document.getElementBy
 document.getElementById('measure-btn').addEventListener('click', () => measure.press());
 const cat = new CatSpawner(world);
 scene.add(cat.object);
-const marks = new Marks(scene, camera, [world.object, patio.object], cat); // burn marks, stars, splashes on surfaces (#96)
+const target = new Target(); // the Nerf target on the lawn (#99)
+scene.add(target.object);
+world.looseItems.push(target.object);
+const marks = new Marks(scene, camera, [world.object, patio.object, target.object], cat); // burn marks, stars, splashes on surfaces (#96)
 for (const h of [saber, ...toys.wands, toys.darts]) Object.assign(h, { marks, cat }); // the saber burns, the wands do magic (#97), darts splash (#98)
 cat.onFound = (label, rare) => catFound(label, rare);
 // a photo of every cat you pet goes up on the board, once its eyes are shut and the hand is there
@@ -482,6 +486,7 @@ function use(thing) {
   else if (thing.kind === 'keybox') thing.toggle();
   else if (thing.kind === 'appliance') { thing.toggle(); if (thing.isOpen) bump('appliances'); } // oven, microwave (#82)
   else if (thing.kind === 'coffee') thing.toggle();
+  else if (thing.kind === 'target') thing.toggle(); // clear the score (#99)
   else if (thing.kind === 'rest') sitOrLie(thing);
   else if (thing.blocked) sfx.click(camera.position); // put down what you hold first (#102)
   else if (thing.kind === 'saber' || thing.kind === 'holdable' || thing.kind === 'cup') thing.toggle();
@@ -616,7 +621,7 @@ function updateFocus() {
   // (the raycaster ignores visibility, so the cat is only a target while it is there)
   // the car key only while its cabinet is open
   const extra = [...(cat.visible ? [cat.object] : []), ...(keyCabinet?.keyReachable ? [world.carKey.pickable] : []),
-    ...(world.furnitureOn ? [...patio.targets, ...world.furnitureTargets, ...holdables.map((h) => h.target), drawing.target].map((t) => t.pickable) : [])]; // parasol, TV, seats, beds, toys — unless F hid the furniture
+    ...(world.furnitureOn ? [target.target, ...patio.targets, ...world.furnitureTargets, ...holdables.map((h) => h.target), drawing.target].map((t) => t.pickable) : [])]; // parasol, TV, seats, beds, toys — unless F hid the furniture
   // the nearest hit on something actually shown (F hides the loose items, the raycaster doesn't care)
   const cupTargets = cups.cups.filter((c) => !c.held).map((c) => c.target.pickable);
   const hit = raycaster.intersectObjects([...pickables, ...extra, ...cupTargets], true).find((h) => shown(h.object));
@@ -842,4 +847,4 @@ document.addEventListener('pointerlockchange', () => { if (!updateEl.hidden) sho
 watchForUpdates(showUpdate);
 
 // handle for tests/debugging (tools/touchtest.html)
-window.__app = { marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };
+window.__app = { target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };

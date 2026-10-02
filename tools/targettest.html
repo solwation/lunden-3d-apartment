@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Nerf target test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+// The Nerf target on the lawn (#99): ring points × a distance bonus; a real dart into the bullseye scores 10,
+// the board shows the total and best shot, E on the target clears it.
+//   google-chrome --headless=new --dump-dom http://localhost:8137/tools/targettest.html
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const f = document.createElement('iframe');
+f.width = 900; f.height = 600; f.src = '../index.html';
+document.body.append(f);
+f.onload = async () => {
+  const w = f.contentWindow, d = f.contentDocument;
+  while (!w.__app) await wait(100);
+  const { player, camera, step, toys, target, use } = w.__app;
+  const V = camera.position.constructor;
+  const lines = [];
+  const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; };
+  d.getElementById('start-touch').click();
+  await wait(50);
+  target.object.updateMatrixWorld(true);
+  target.reset();
+  const c = target.face.getWorldPosition(new V());
+  const at = (dz) => c.clone().add(new V(0, 0, -dz)); // a shooter dz m north of the board
+  let pass = true;
+  for (const [dz, want] of [[1, 10], [3, 20], [5, 30], [8, 40]]) pass &= check(target.points(c, at(dz)) === want, `bullseye from ${dz} m: ${target.points(c, at(dz))} (want ${want})`);
+  pass &= check(target.points(c.clone().add(new V(0.35, 0, 0)), at(1)) === 1, `the outer ring: ${target.points(c.clone().add(new V(0.35, 0, 0)), at(1))}`);
+  pass &= check(target.points(c.clone().add(new V(0.5, 0, 0)), at(1)) === 0, 'outside the face: 0');
+  // a real dart from 1 m, straight at the middle (it drops ~4 cm on the way: still the bullseye)
+  player.spawn(c.x, c.z - 1.3, 0); step(1 / 60);
+  toys.darts.fire(at(1), new V(0, 0.02, 1).normalize(), 0xff7a1a);
+  for (let i = 0; i < 30; i++) step(1 / 60);
+  pass &= check(target.score.total === 10 && target.score.best === 10 && target.score.hits === 1, `a dart in the bullseye: total ${target.score.total}, best ${target.score.best}`);
+  pass &= check(w.__app.marks.live.some((l) => l.kind === 'splash'), 'a paint mark on the board');
+  use(target.target);
+  pass &= check(target.score.total === 0 && target.score.best === 0, 'E on the target clears the score');
+  out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
+};
+</script>
+</body>
+</html>

@@ -315,8 +315,8 @@ class Flutter {
 
 const grids = new WeakMap(), boxes = new WeakMap(), segBox = new THREE.Box3();
 const triCount = (o) => (o.geometry.index ? o.geometry.index.count : o.geometry.attributes.position.count) / 3;
-/** Things that move or toggle (doors, lids, the parasol …) — E targets other than seats and beds. */
-const moving = (o) => !!o.userData.door && o.userData.door.kind !== 'rest';
+/** Things that move or toggle (doors, lids, the parasol …) — E targets other than seats, beds and the Nerf target. */
+const moving = (o) => !!o.userData.door && o.userData.door.kind !== 'rest' && o.userData.door.kind !== 'target';
 const catMeshes = (cat) => { const l = []; cat.object.traverse((o) => { if (o.isMesh) l.push(o); }); return l; };
 const isUnder = (o, root) => { for (let p = o; p; p = p.parent) if (p === root) return true; return false; };
 

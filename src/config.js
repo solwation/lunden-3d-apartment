@@ -294,6 +294,16 @@ export const TOYS = {
 export const REMOTE = { w: 0.04, l: 0.18, h: 0.015, x: 3.98, y: 0.47, z: 10.42, turn: 18, reach: 9,
   held: { x: 0.17, y: -0.19, z: -0.36 } };
 
+// The Nerf target (#99, src/target.js): a round archery-style board on a wooden stand on the lawn south of the
+// hedge, facing the patio (north), its centre over the hedge so you can shoot from the patio door (~7.5 m).
+// Rings from the centre out score `rings` points; the shooter's distance to the hit multiplies them (`range`:
+// [up to m, ×]). Our picks.
+export const TARGET = {
+  x: 2.8, z: 19.5, y: 1.4, r: 0.4,
+  rings: [10, 8, 6, 4, 2, 1],
+  range: [[2, 1], [4, 2], [6, 3], [Infinity, 4]],
+};
+
 // Putting held things down (#102, holdable.js / main.js): a table top, worktop or the floor within `reach` m
 // of the eye.
 export const HOLD = { reach: 2.2 };

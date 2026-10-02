@@ -99,6 +99,8 @@ src/holdable.js        things you take and hold (one at a time): home + pick box
                        worktop / the floor (HOLD.reach) puts it down (`placeAt`, lying by its shape — `restPose`;
                        cups stand). While something is held other things are `blocked` ("Lägg ifrån dig …")
 src/saber.js           the lightsaber in Sovrum 2 (SABER), a Holdable; the blade burns marks where it cuts in (#96)
+src/target.js          the Nerf target on the lawn behind the hedge (TARGET, #99): rings × distance bonus, "+N" badge,
+                       a score board beside it (localStorage 'lunden.target'), E clears it
 src/marks.js           marks on surfaces (MARKS, #96): `hit(from, to)` = first surface on a segment (glass, doors, lids
                        → none; the cat → meow), `add(kind, hit)` / `burn(hit)`; one ring buffer, an InstancedMesh per
                        kind (burn, glow, star, butterfly, splash) with a per-instance fade, a Points puff of smoke;
@@ -156,6 +158,7 @@ tools/sabertest.html   headless test: take the lightsaber, swing it, hang it bac
 tools/toystest.html    headless test: blaster (dart lands), wand (sparkles), flashlight (beam follows the view)
 tools/wandtest.html    headless test: a wand's magic on the wall (stars + butterflies), none in the sky, gone after a while
 tools/nerftest.html    headless test: a dart leaves a paint splash in the blaster's colour on the wall, drops, fades
+tools/targettest.html  headless test: target points (rings × distance bonus), a dart in the bullseye, E clears the score
 tools/holdtest.html    headless test: put things down (coffee table, dining table, floor), one at a time, F → home
 tools/cuptest.html     headless test: brew, take a cup out, fill, carry, put down on the dining and coffee tables
 tools/drawtest.html    headless test: drawing mode, a crayon line from pointer events, clear, E back, saved

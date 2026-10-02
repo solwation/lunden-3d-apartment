@@ -36,7 +36,7 @@ class Darts {
 
   fire(from, dir, color = 0x1f6fff) {
     const d = this.list[this.next++ % this.list.length];
-    Object.assign(d, { color, spent: false });
+    Object.assign(d, { color, spent: false, from: from.clone() });
     d.floor = from.y > LEVELS[1].floor + 0.3 ? LEVELS[1].floor : LEVELS[0].floor; // the shooter's floor
     d.g.position.copy(from);
     d.v.copy(dir).multiplyScalar(T.nerf.dart.speed);
@@ -64,6 +64,7 @@ class Darts {
     if (!h) return;
     d.spent = true;
     if (h.cat) this.cat?.meowNow?.();
+    else if (h.object.userData.target) { h.object.userData.target.hit(h.point, d.from); this.marks.add('splash', h, { color: d.color, force: true, size: 0.06 }); sfx.splat(h.point); }
     else if (this.marks.add('splash', h, { color: d.color, force: true })) { this.splashes++; sfx.splat(h.point); }
     d.g.position.copy(h.point).addScaledVector(h.normal ?? new THREE.Vector3(), 0.03); // bounce off and fall
     d.v.copy(h.normal ?? new THREE.Vector3()).multiplyScalar(0.6);
