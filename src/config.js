@@ -362,7 +362,7 @@ export const LIGHTING = {
   pendant: { intensity: 2.2, range: 5, color: 0xffd9a8 },
   floorLamp: { intensity: 1.6, range: 5, color: 0xffd59a },
   wetRooms: ['Badrum', 'WC/dusch'],       // spots in the soffit instead of a ceiling lamp
-  pendants: [{ level: 0, room: 'Kök / matplats', x: 3.5, z: 1.72, drop: 1.25 }], // over the dining table
+  pendants: [{ level: 0, room: 'Kök / matplats', x: 3.5, z: 1.22, drop: 1.25 }], // over the dining table (SKANSNAS.table)
   // switches for rooms without a door of their own (normal = the way the wall faces)
   manual: [
     { level: 0, room: 'Hall', x: 1.95, z: 0.465, normal: [0, 1] },          // by the front door
@@ -402,6 +402,18 @@ export const PATIO = {
 
 // Placement in plan metres. rot = direction the seat faces, degrees (0 = north/−z,
 // 90 = west, 180 = south, −90 = east), same convention as the ?at= camera yaw.
+// IKEA SKANSNÄS, brown beech (ikea.com product pages): extendable table Ø 115 cm (170 cm with the
+// butterfly leaf, not used), H 75 cm, four tapered legs under a square apron; chair W 48 × D 51 ×
+// H 78 cm (seat height 45 cm and the leg/apron sizes are guesses). Table and chairs share one colour.
+// chairPush = chair centre relative to the table edge (negative = under the top): the seat goes
+// well in under the top, the back stays near the edge.
+export const SKANSNAS = {
+  color: 0x6a4e3a,
+  table: { x: 3.5, z: 1.22, d: 1.15, h: 0.75, top: 0.025, apron: 0.64, apronH: 0.08, leg: 0.05 },
+  chair: { w: 0.48, d: 0.51, h: 0.78, seat: 0.45 },
+  chairPush: -0.1,
+};
+
 export const FURNITURE = [
   // Vardagsrum: sofa with its back to the window (south wall), chaise in the SE corner
   { type: 'sofa', level: 0, x: 5.5 - 2.82 / 2, z: 12.15 - 0.89 / 2, rot: 0, chaise: 'right' }, // sitter's right = east
@@ -435,12 +447,16 @@ export const FURNITURE = [
   // Sovrum 4 (Tilly): IKEA HEMNES dagbädd m 3 lådor, vit, 207 × 89 × 83 cm (ikea.com), back to the
   // west wall, with pink cushions. rot = the way the seat faces.
   { type: 'daybed', level: 1, x: 0.2 + 0.46, z: 10.0, rot: -90 },
-  // Matplats: table 180 × 90 with the short end to the kitchen window, three chairs on each
-  // long side, dark brown wood (the user's wish). Kept a little west of the window centre so
-  // the east chairs clear the kitchen fronts (x 4.95).
-  { type: 'table', level: 0, x: 3.5, z: 1.72, w: 0.9, d: 1.8, wood: 'dark' },
-  ...[1.12, 1.72, 2.32].flatMap((z) => [
-    { type: 'chair', level: 0, x: 3.5 - 0.62, z, rot: -90, wood: 'dark' }, // west side, facing east
-    { type: 'chair', level: 0, x: 3.5 + 0.62, z, rot: 90, wood: 'dark' },  // east side, facing west
-  ]),
+  // Matplats: IKEA SKANSNÄS table and 4 chairs, brown beech (#62, the user's choice; the table in its
+  // normal round size, not extended). Close to the kitchen window, a little west of its centre so the
+  // east chairs clear the kitchen fronts (x 4.95); two chairs on the west and two on the east side,
+  // between the legs, pushed in under the top (#57).
+  { type: 'skansnasTable', level: 0, x: SKANSNAS.table.x, z: SKANSNAS.table.z },
+  ...[45, 135, 225, 315].map((a) => {
+    const r = SKANSNAS.table.d / 2 + SKANSNAS.chairPush, t = (a * Math.PI) / 180;
+    const x = SKANSNAS.table.x + r * Math.cos(t), z = SKANSNAS.table.z + r * Math.sin(t);
+    // rot = the way the seat faces: towards the table centre
+    const rot = (Math.atan2(-Math.cos(t), -Math.sin(t)) * 180) / Math.PI - 180;
+    return { type: 'skansnasChair', level: 0, x, z, rot };
+  }),
 ];

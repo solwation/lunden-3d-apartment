@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { mergeStatic } from './merge.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
-import { FURNITURE, LANDSKRONA as L, LEVELS } from './config.js';
+import { FURNITURE, LANDSKRONA as L, LEVELS, SKANSNAS } from './config.js';
 import { loungesofa, loungetable, parasol, planter } from './patio.js';
 
 // Loose furniture, built from rounded boxes. Every piece is modelled in a local frame
@@ -25,7 +25,6 @@ function rbox(w, h, d, x, y, z, material, r = 0.04) {
   return m;
 }
 
-const darkWood = new THREE.MeshStandardMaterial({ color: 0x4a3324, roughness: 0.5 }); // dark brown, dining set
 
 function leg(x, z, h = L.legHeight, material = oak) {
   const m = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.016, h, 12), material);
@@ -217,24 +216,58 @@ function bed(item) {
   return g;
 }
 
-/** Dining table (oak or dark wood), top at 75 cm. Local x = w, z = d. */
-function table(item) {
-  const g = new THREE.Group();
-  const { w, d } = item, wood = item.wood === 'dark' ? darkWood : oak;
-  g.add(rbox(w, 0.03, d, 0, 0.735, 0, wood, 0.01));
-  for (const x of [-w / 2 + 0.05, w / 2 - 0.05]) for (const z of [-d / 2 + 0.05, d / 2 - 0.05]) g.add(leg(x, z, 0.72, wood));
-  g.userData.footprint = [{ x0: -w / 2, x1: w / 2, z0: -d / 2, z1: d / 2 }];
+const beech = new THREE.MeshStandardMaterial({ color: SKANSNAS.color, roughness: 0.55 }); // brown beech, table + chairs
+const beechRail = new THREE.MeshStandardMaterial({ color: SKANSNAS.color, roughness: 0.55, side: THREE.DoubleSide }); // open curved rails
+
+/** IKEA SKANSNÄS extendable table, round Ø 115 (not extended). Legs on the local axes, apron at 45°. */
+function skansnasTable() {
+  const T = SKANSNAS.table, g = new THREE.Group(), R = T.d / 2;
+  const top = new THREE.Mesh(new THREE.CylinderGeometry(R, R, T.top, 56), beech);
+  top.position.y = T.h - T.top / 2;
+  top.castShadow = top.receiveShadow = true;
+  g.add(top);
+  const apron = new THREE.Group();
+  const s = T.apron, y = T.h - T.top - T.apronH / 2;
+  for (const [x, z, w, d] of [[0, s / 2, s, 0.02], [0, -s / 2, s, 0.02], [s / 2, 0, 0.02, s], [-s / 2, 0, 0.02, s]]) {
+    apron.add(rbox(w, T.apronH, d, x, y, z, beech, 0.005));
+  }
+  apron.rotation.y = Math.PI / 4;
+  g.add(apron);
+  const lr = s / Math.SQRT2 - 0.01, lh = T.h - T.top;
+  for (const [x, z] of [[lr, 0], [-lr, 0], [0, lr], [0, -lr]]) {
+    const leg = new THREE.Mesh(new THREE.CylinderGeometry(T.leg / 2, T.leg * 0.34, lh, 14), beech);
+    leg.position.set(x, lh / 2, z);
+    leg.castShadow = true;
+    g.add(leg);
+  }
+  const f = R * 0.72; // inscribed square: walk round the table, not through it
+  g.userData.footprint = [{ x0: -f, x1: f, z0: -f, z1: f }];
   return g;
 }
 
-/** Simple chair (oak or dark wood), seat 45 cm, facing local +z. */
-function chair(item) {
-  const g = new THREE.Group();
-  const wood = item.wood === 'dark' ? darkWood : oak;
-  g.add(rbox(0.42, 0.03, 0.42, 0, 0.45, 0, wood, 0.01));
-  g.add(rbox(0.42, 0.28, 0.03, 0, 0.66, -0.195, wood, 0.01));
-  for (const x of [-0.18, 0.18]) for (const z of [-0.18, 0.18]) g.add(leg(x, z, 0.44, wood));
-  g.userData.footprint = [{ x0: -0.21, x1: 0.21, z0: -0.21, z1: 0.21 }];
+/** IKEA SKANSNÄS chair, brown beech: seat, four legs, back posts with a curved top rail. Faces local +z. */
+function skansnasChair() {
+  const C = SKANSNAS.chair, g = new THREE.Group();
+  const hw = C.w / 2 - 0.03, hd = C.d / 2 - 0.04;
+  g.add(rbox(C.w - 0.03, 0.035, C.d - 0.06, 0, C.seat - 0.018, 0.01, beech, 0.012));
+  for (const x of [-hw, hw]) {
+    g.add(leg(x, hd, C.seat - 0.03, beech));
+    const post = new THREE.Mesh(new THREE.CylinderGeometry(0.016, 0.02, C.h, 10), beech);
+    post.position.set(x, C.h / 2, -hd);
+    post.rotation.x = -0.06; // a little lean back
+    post.castShadow = true;
+    g.add(post);
+  }
+  // curved top rail and a middle rail between the back posts
+  for (const [y, h] of [[C.h - 0.05, 0.07], [C.seat + 0.17, 0.03]]) {
+    const span = 2 * hw + 0.03, rad = 0.45, ang = 2 * Math.asin(span / 2 / rad);
+    // an open arc of a cylinder: its middle (θ = π, local −z) just behind the posts, ends curving forward
+    const rail = new THREE.Mesh(new THREE.CylinderGeometry(rad, rad, h, 18, 1, true, Math.PI - ang / 2, ang), beechRail);
+    rail.position.set(0, y, -hd - 0.01 + rad);
+    rail.castShadow = true;
+    g.add(rail);
+  }
+  g.userData.footprint = [{ x0: -C.w / 2, x1: C.w / 2, z0: -C.d / 2, z1: C.d / 2 }];
   return g;
 }
 
@@ -407,7 +440,7 @@ function daybed() {
   return g;
 }
 
-const BUILDERS = { sofa, armchair, footstool, floorlamp, sidetable, coffeetable, loungesofa, loungetable, parasol, planter, bed, table, chair, bunk, daybed };
+const BUILDERS = { sofa, armchair, footstool, floorlamp, sidetable, coffeetable, loungesofa, loungetable, parasol, planter, bed, skansnasTable, skansnasChair, bunk, daybed };
 
 /** Build all furniture; returns the scene group, collision segments per level and lamps. */
 export function buildFurniture() {

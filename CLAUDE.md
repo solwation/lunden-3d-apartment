@@ -188,8 +188,10 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   Sovrum 1 (first right) Sarah & Ofluf, double bed · Sovrum 3 (second right) Livia & Tuva, bunk (unicorn sheets) ·
   Sovrum 2 (first left) Walter & Kian, bunk (Darth Vader sheets) · Sovrum 4 (second left, ex Allrum) Tilly, IKEA HEMNES
   daybed with pink cushions. Bunks: long side to the side wall, head end to the façade. Name signs: `DOOR_SIGNS` → `src/signs.js` (hall side of the door).
-- Dining set (user's wish): table 180 × 90, short end to the kitchen window, 3 + 3 chairs, dark
-  brown wood. F toggles all furniture (`world.setFurniture`, which also swaps the collision
+- Dining set (user's choice, #62/#57): IKEA SKANSNÄS table and 4 chairs, brown beech (`SKANSNAS`, one
+  colour for both): the table round Ø 115 (its normal size; 170 extended is not modelled), close to the
+  kitchen window; 2 + 2 chairs on the west/east sides between the legs, pushed in under the top. The
+  user finds the kitchen cramped easily — keep it airy. F toggles all furniture (`world.setFurniture`, which also swaps the collision
   segments). Keep the Sovrum 1 bed clear of the Klk sliding door — the cat test needs floor there.
 - Toilets: the redrawn plan has them rotated; bofakta shows the tank against the wall, so
   `toiletAgainstWall` re-orients them. Modelled as Ifö Spira 6260 (`TOILET` in config,
