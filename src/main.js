@@ -23,6 +23,7 @@ import { Rest, chooseSpot } from './rest.js';
 import { Saber } from './saber.js';
 import { buildToys } from './toys.js';
 import { Remote } from './remote.js';
+import { Book } from './book.js';
 import { buildCups } from './cups.js';
 import { Drawing } from './drawing.js';
 import { CatCalendar, CalendarPanel } from './calendar.js';
@@ -118,6 +119,7 @@ function showNote(show) {
   if (!show && !boardEl.hidden) { showBoard(false); return; }
   if (!show && clockPanel.open) { showClock(false); return; }
   if (!show && calPanel.open) { showCalendar(false); return; }
+  if (!show && book.reading) { showBook(false); return; }
   reading = show;
   noteEl.hidden = !show;
   player.keys.clear();
@@ -189,7 +191,14 @@ const remote = new Remote(scene, camera, () => {
   if (!hit || behindWall(hit.point)) return null;
   return tvs.find((t) => { let o = hit.object; while (o && o !== t.pickable) o = o.parent; return !!o; }) ?? null;
 });
-const holdables = [saber, ...toys.items, remote]; // things you can take and hold, one at a time (holdable.js)
+// the book on the side table by the armchair (#140): a click opens it in #book-panel (reading mode)
+const book = new Book(scene, camera, document.getElementById('book-panel'), (show) => showBook(show));
+function showBook(show) {
+  reading = show;
+  book.show(show);
+  player.keys.clear();
+}
+const holdables = [saber, ...toys.items, remote, book]; // things you can take and hold, one at a time (holdable.js)
 const cups = buildCups(scene, camera, world, world.cupCabinet); // coffee cups in the wall cabinet (#90)
 let placeTarget = null; // while something is held: the table top / floor spot it would go down on (#102)
 // a faint ring where the held thing would land
@@ -534,7 +543,7 @@ document.addEventListener('mousemove', (e) => {
   if (locked) look(e.movementX * PLAYER.mouseSens, e.movementY * PLAYER.mouseSens);
 });
 document.addEventListener('mousedown', (e) => {
-  if (locked && e.button === 0) heldItem()?.use(); // a click: swing, fire, toggle the flashlight, change channel
+  if (locked && e.button === 0) { if (book.reading) book.turn(1); else heldItem()?.use(); } // a click: swing, fire, toggle the flashlight, change channel, read / turn the page
   if (locked && e.button === 2) heldItem()?.useAlt?.(); // right click: the remote's power button (#101)
 });
 document.addEventListener('contextmenu', (e) => { if (locked) e.preventDefault(); });
@@ -550,6 +559,7 @@ document.addEventListener('keydown', (e) => {
     else if (!stripKeys.has(e.code)) return;
     if (clockPanel.open && clockPanel.key(e.code, true, e.repeat)) e.preventDefault();
     else if (calPanel.open && calPanel.key(e.code, true)) e.preventDefault();
+    else if (book.reading && book.key(e.code)) e.preventDefault();
     else if (e.code === 'KeyE') showNote(false);
     return;
   }
@@ -848,4 +858,4 @@ document.addEventListener('pointerlockchange', () => { if (!updateEl.hidden) sho
 watchForUpdates(showUpdate);
 
 // handle for tests/debugging (tools/touchtest.html)
-window.__app = { reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };
+window.__app = { book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };

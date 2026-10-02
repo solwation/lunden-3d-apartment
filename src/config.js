@@ -303,6 +303,11 @@ export const TOYS = {
 export const REMOTE = { w: 0.04, l: 0.18, h: 0.015, x: 3.98, y: 0.47, z: 10.42, turn: 18, reach: 9,
   held: { x: 0.17, y: -0.19, z: -0.36 } };
 
+// The book on the side table by the armchair (#140, src/book.js): a hardback 15 × 22 × 3 cm lying beside the
+// flower (side table at 1.52, 8.12, top at 0.5325). `held` = where it sits in the view (camera space).
+export const BOOK = { w: 0.15, l: 0.22, h: 0.03, x: 1.6, y: 0.5325, z: 8.2, turn: 28,
+  held: { x: 0.16, y: -0.2, z: -0.42 } };
+
 // The Nerf target (#99, src/target.js): a round archery-style board on a wooden stand on the lawn south of the
 // hedge, facing the patio (north), its centre over the hedge so you can shoot from the patio door (~7.5 m).
 // Rings from the centre out score `rings` points; the shooter's distance to the hit multiplies them (`range`:

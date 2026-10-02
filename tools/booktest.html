@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Book test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+// The book on the side table (#140): aim at it → "Ta boken"; read (the spread panel), turn pages with D / A,
+// E closes; put it down on the coffee table, take it again, put it back on the side table.
+//   google-chrome --headless=new --dump-dom http://localhost:8137/tools/booktest.html
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const f = document.createElement('iframe');
+f.width = 900; f.height = 600; f.src = '../index.html';
+document.body.append(f);
+f.onload = async () => {
+  const w = f.contentWindow, d = f.contentDocument;
+  while (!w.__app) await wait(100);
+  const { player, camera, step, book, use, heldItem, scene } = w.__app;
+  const V = camera.position.constructor;
+  const lines = [];
+  const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; };
+  d.getElementById('start-touch').click();
+  await wait(50);
+  const btn = d.getElementById('action'), panel = d.getElementById('book-panel');
+  const aim = (p, from) => {
+    player.spawn(from[0], from[1], 0);
+    for (let i = 0; i < 3; i++) step(1 / 60);
+    scene.updateMatrixWorld(true); // no render runs: children of a moved thing
+    const dx = p.x - camera.position.x, dz = p.z - camera.position.z;
+    camera.rotation.set(Math.atan2(p.y - camera.position.y, Math.hypot(dx, dz)), Math.atan2(-dx, -dz), 0, 'YXZ');
+    step(1 / 60);
+    return btn.hidden ? '(hidden)' : btn.textContent;
+  };
+  book.model.updateMatrixWorld(true);
+  let label = aim(book.where(), [2.2, 8.9]);
+  let pass = check(/ta boken/i.test(label), `on the side table: "${label}"`);
+  btn.click(); step(1 / 60);
+  pass &= check(heldItem() === book, 'the book in the hand');
+  camera.rotation.set(0.6, 0, 0, 'YXZ'); step(1 / 60); // look away (up), at nothing
+  label = btn.textContent;
+  pass &= check(/läs/i.test(label), `the touch button: "${label}"`);
+  btn.click(); step(1 / 60);
+  pass &= check(!panel.hidden && book.reading && /Katten på Karpvägen/.test(panel.textContent), 'reading: the title page');
+  // keys only reach the panel with the pointer locked; drive it directly like the key handler does
+  book.key('KeyD'); book.key('KeyD');
+  pass &= check(book.spread === 2 && /Fler katter/.test(panel.textContent), `turned two spreads (${book.spread})`);
+  book.key('KeyA');
+  pass &= check(book.spread === 1, 'and one back');
+  for (let i = 0; i < 20; i++) book.key('KeyD');
+  pass &= check(book.spread === book.spreads - 1 && /SLUT/.test(panel.textContent), 'the last spread: SLUT');
+  btn.click(); step(1 / 60); // the touch button closes it while reading
+  pass &= check(panel.hidden && !book.reading && heldItem() === book, 'closed, still in the hand');
+  // put it down on the coffee table, take it again
+  const tableTop = new V(3.6, 0.48, 10.4);
+  label = aim(tableTop, [3.6, 9.3]);
+  pass &= check(/lägga ner boken/i.test(label), `at the coffee table: "${label}"`);
+  btn.click(); step(1 / 60);
+  pass &= check(!book.held && book.placed && Math.abs(book.model.position.y - 0.47) < 0.05, `lying on the coffee table (y ${book.model.position.y.toFixed(3)})`);
+  label = aim(book.where(), [3.6, 9.3]);
+  btn.click(); step(1 / 60);
+  pass &= check(heldItem() === book, `taken again ("${label}")`);
+  use(book.backTarget); step(1 / 60);
+  pass &= check(!book.held && !book.placed && book.model.position.distanceTo(book.home.pos) < 0.001, 'back on the side table');
+  out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
+};
+</script>
+</body>
+</html>
