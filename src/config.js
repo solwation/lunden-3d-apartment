@@ -49,7 +49,7 @@ export const ROOM_DIVIDERS = [
 
 // Name signs on the hall side of the bedroom doors (src/signs.js). Matched to the nearest door.
 export const DOOR_SIGNS = [
-  { level: 1, room: 'Sovrum 1', text: 'Sarah & Ofluf', color: '#fde9d9' },
+  { level: 1, room: 'Sovrum 1', text: 'Sarah & Olof', color: '#fde9d9' },
   { level: 1, room: 'Sovrum 3', text: 'Livia & Tuva', color: '#e6f3e1' },
   { level: 1, room: 'Sovrum 2', text: 'Walter & Kian', color: '#dfeefb' },
   { level: 1, room: 'Sovrum 4', text: 'Tilly', color: '#fde2ee' },
@@ -774,7 +774,7 @@ export const FURNITURE = [
   // Sovrum 1, the corner left of the window seen from inside (NW), back and towel rack against the
   // west wall, seat facing into the room (east); the seat is below the window sill (BH 0.7)
   { type: 'ragrund', level: 1, x: 2.70 + 0.23, z: 0.465 + 0.205, rot: -90, towel: 0x9fb8c9 },
-  // Sovrum 1 (Sarah & Ofluf), head east, clear of the Klk. Bedding (#83, an IKEA set from a Sellpy ad):
+  // Sovrum 1 (Sarah & Olof), head east, clear of the Klk. Bedding (#83, an IKEA set from a Sellpy ad):
   // sage green with a dense chintz of coral and pink peonies, ochre, slate-blue leaves and grey-green
   // stems, white outlines (colours read off the photo); a pink cushion and a light grey throw to go with it
   // IKEA NORDLI chest of 8 drawers, white, 120 × 99 (#94; the 47 cm depth is a guess). Sovrum 1 has no
