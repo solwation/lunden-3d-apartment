@@ -484,6 +484,11 @@ export const DAY = {
 // 5.244). rotY π/2 = facing east. Diameter 30 cm (typical kitchen clock).
 export const WALL_CLOCK = { x: 2.152, y: 2.0, z: 4.55, rotY: Math.PI / 2, d: 0.3 };
 
+// The cat calendar (#95, src/calendar.js) on the kitchen face of the Tvätt/Badrum wall, under the wall clock and
+// beside the cat board (which covers z 3.85–4.95): a 30 × 45 cm paper calendar with a cat picture for each
+// month and the days; E opens a strip to pick the month and the day, which set the day cycle's date.
+export const CALENDAR = { x: 2.152, y: 1.5, z: 3.47, w: 0.3, h: 0.45, rotY: Math.PI / 2 };
+
 // Room lights (src/lights.js). Intensities are candela-ish (three.js physical lights), tuned by
 // eye at night. `pool` = point lights shared by the nearest lit lamps (keep small: Iris 640).
 export const LIGHTING = {

@@ -24,6 +24,7 @@ import { Saber } from './saber.js';
 import { buildToys } from './toys.js';
 import { buildCups } from './cups.js';
 import { Drawing } from './drawing.js';
+import { CatCalendar, CalendarPanel } from './calendar.js';
 import { heldItem } from './holdable.js';
 import { Tap, animateWater } from './water.js';
 import { CatBoard, snapshot } from './catboard.js';
@@ -113,6 +114,7 @@ document.getElementById('board-close').addEventListener('click', () => showBoard
 function showNote(show) {
   if (!show && !boardEl.hidden) { showBoard(false); return; }
   if (!show && clockPanel.open) { showClock(false); return; }
+  if (!show && calPanel.open) { showCalendar(false); return; }
   reading = show;
   noteEl.hidden = !show;
   player.keys.clear();
@@ -121,12 +123,15 @@ function showNote(show) {
 document.getElementById('note-close').addEventListener('click', () => showNote(false));
 
 const lights = new Lights(scene, world);
-// every visit starts at 07:00 in the visitor's month, or ?time=HH (e.g. ?time=21.5) / ?month=1–12
-const startHour = params0.has('time') ? Number(params0.get('time')) : DAY.startHour;
-const month = params0.has('month') ? Number(params0.get('month')) : new Date().getMonth() + 1;
-const day = new DayCycle({ scene, camera, lights: { sun, hemi, ambient, fill }, clouds: cloudTexture(), startHour, month });
+// every visit starts at the browser's own time and date (#95), or ?time=HH (e.g. ?time=21.5) / ?month=1–12 /
+// ?day=1–31 (with ?month alone the date is the 15th)
+const now = new Date();
+const startHour = params0.has('time') ? Number(params0.get('time')) : now.getHours() + now.getMinutes() / 60;
+const month = params0.has('month') ? Number(params0.get('month')) : now.getMonth() + 1;
+const date = params0.has('day') ? Number(params0.get('day')) : params0.has('month') ? 15 : now.getDate();
+const day = new DayCycle({ scene, camera, lights: { sun, hemi, ambient, fill }, clouds: cloudTexture(), startHour, month, date, year: now.getFullYear() });
 day.paused = params0.has('freeze');
-// the kitchen wall clock: shows the time; E opens the strip to spool/pause it and pick the month
+// the kitchen wall clock: shows the time; E opens the strip to spool / pause it (the date: the calendar)
 const wallClock = new WallClock();
 scene.add(wallClock.object);
 const clockPanel = new ClockPanel(day, document.getElementById('clock-panel'));
@@ -139,6 +144,16 @@ function showClock(show) {
   player.keys.clear();
 }
 document.getElementById('clock-close').addEventListener('click', () => showClock(false));
+// the cat calendar under the clock: E opens a strip to pick the date (#95)
+const calendar = new CatCalendar(day);
+scene.add(calendar.object);
+const calPanel = new CalendarPanel(calendar, document.getElementById('cal-panel'));
+function showCalendar(show) {
+  reading = show;
+  calPanel.show(show);
+  player.keys.clear();
+}
+document.getElementById('cal-close').addEventListener('click', () => showCalendar(false));
 if (day.daylight < 0.3 || params0.has('lights')) lights.setAll(true); // arriving in the dark: lights on
 // LED string lights on the patio's screen walls (#81): switched by daylight, borrow pool lights
 {
@@ -428,6 +443,7 @@ function use(thing) {
   shadowState.hold = 1.5; // whatever moves now casts a moving shadow
   if (thing.kind === 'note') showNote(true);
   else if (thing.kind === 'clock') showClock(true);
+  else if (thing.kind === 'calendar') showCalendar(true);
   else if (thing.kind === 'board') showBoard(true);
   else if (thing.kind === 'switch' || thing.kind === 'lamp') { thing.toggle(); if (thing.isOpen) bump('lights'); }
   else if (thing.kind === 'fridge') { thing.toggle(); if (thing.isOpen) bump('fridge'); }
@@ -483,6 +499,7 @@ document.addEventListener('keydown', (e) => {
   if (!locked) return;
   if (reading) {
     if (clockPanel.open && clockPanel.key(e.code, true, e.repeat)) e.preventDefault();
+    else if (calPanel.open && calPanel.key(e.code, true)) e.preventDefault();
     else if (e.code === 'KeyE') showNote(false);
     return;
   }
@@ -521,7 +538,7 @@ window.addEventListener('resize', () => {
 // --- door interaction: look at a door within reach, press E ----------------
 const raycaster = new THREE.Raycaster();
 raycaster.far = 2.2;
-const pickables = [...world.doors.map((d) => d.pickable), ...world.lids.map((l) => l.pickable), ...taps.map((t) => t.pickable), note.pickable, board.pickable, wallClock.pickable, ...lights.targets.map((t) => t.pickable)];
+const pickables = [...world.doors.map((d) => d.pickable), ...world.lids.map((l) => l.pickable), ...taps.map((t) => t.pickable), note.pickable, board.pickable, wallClock.pickable, calendar.pickable, ...lights.targets.map((t) => t.pickable)];
 const center = new THREE.Vector2(0, 0);
 const keyCabinet = world.lids.find((l) => l.kind === 'keybox');
 let focused = null;
@@ -580,7 +597,7 @@ function updateFocus() {
   if (holding && touch.enabled) actionBtn.textContent = holding.useLabel;
   if (reading && touch.enabled) actionBtn.textContent = 'Stäng lappen';
   promptEl.hidden = !focused || touch.enabled || reading;
-  actionBtn.hidden = !(focused || reading || holding) || !touch.enabled || clockPanel.open; // the strip has its own ×
+  actionBtn.hidden = !(focused || reading || holding) || !touch.enabled || clockPanel.open || calPanel.open; // the strips have their own ×
 }
 
 // --- furniture on/off (F / 🛋) ---------------------------------------------
@@ -593,7 +610,7 @@ function toggleFurniture(on = !world.furnitureOn) {
   try { localStorage.setItem('lunden.furniture', on ? '1' : '0'); } catch { /* ignore */ }
 }
 world.looseItems.push(board.object, ...holdables.flatMap((h) => [h.holder, h.model]), ...toys.deco);
-world.looseItems.push(...cups.cups.map((c) => c.model), drawing.paper); // the cups and the paper go with F too // the cat board and the toys go with the furniture (F)
+world.looseItems.push(...cups.cups.map((c) => c.model), drawing.paper, calendar.object); // the cups and the paper go with F too // the cat board and the toys go with the furniture (F)
 try { if (localStorage.getItem('lunden.furniture') === '0') toggleFurniture(false); } catch { /* ignore */ }
 document.getElementById('furniture-btn').addEventListener('click', () => toggleFurniture());
 
@@ -641,6 +658,7 @@ function step(dt) {
   lights.update(Math.max(0, player.level), player.pos);
   day.update(dt);
   wallClock.update(day.hour);
+  calendar.update(); // redraws only when the page or the date changed
   patio.update(day, dt);
   applySeason(day.month); // tree colours, snow (only does work when the month changes)
   for (const t of world.furnitureTargets) t.update?.(dt);
@@ -652,7 +670,7 @@ function step(dt) {
   cat.update(dt);
   measure.update(dt, window.innerWidth, window.innerHeight);
   if (active() && reading) updateFocus();
-  if (drawing.active) drawing.update(dt); // drawing: the camera over the paper, nothing else moves you
+  else if (drawing.active) drawing.update(dt); // drawing: the camera over the paper, nothing else moves you
   else if (active() && rest.active) { rest.update(dt); updateFocus(); } // sitting / lying: look, no walking
   else if (active()) {
     player.analog.x = touch.analog.x;
@@ -761,4 +779,4 @@ document.addEventListener('pointerlockchange', () => { if (!updateEl.hidden) sho
 watchForUpdates(showUpdate);
 
 // handle for tests/debugging (tools/touchtest.html)
-window.__app = { drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };
+window.__app = { calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };

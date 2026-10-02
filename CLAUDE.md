@@ -92,6 +92,7 @@ src/cups.js            coffee cups (CUPS): the wall cabinet over the Moccamaster
                        from the jug → held → put down on a table top (furniture `userData.surfaces`, #90)
 src/drawing.js         crayon drawing on the paper on the Sovrum 3 desk (DRAWING): canvas texture, drawing mode
                        (view down, pointer free, palette #draw-panel, 1–9, E/Esc back), saved in localStorage
+src/calendar.js        the cat calendar (CALENDAR): a cat per month, the days, the chosen date; #cal-panel picks it
 src/fridge.js          the fridge: hollow, lit, opens with E, smoking roast chicken (in world.lids)
 src/catboard.js        cork board in the kitchen (under the wall clock): a photo (offscreen render) of every petted cat,
                        newest 10 in IndexedDB 'lunden'/'catPhotos', captioned with name + time
@@ -133,7 +134,8 @@ tools/sabertest.html   headless test: take the lightsaber, swing it, hang it bac
 tools/toystest.html    headless test: blaster (dart lands), wand (sparkles), flashlight (beam follows the view)
 tools/cuptest.html     headless test: brew, take a cup out, fill, carry, put down on the dining and coffee tables
 tools/drawtest.html    headless test: drawing mode, a crayon line from pointer events, clear, E back, saved
-tools/clocktest.html   headless test of the wall clock (07:00 start, spool, pause, month → sun height)
+tools/clocktest.html   headless test of the wall clock (?time=7, spool, pause, sun height by month)
+tools/calendartest.html headless test: today's date at the start, pick a date on the calendar, the sun follows
 tools/stamp.sh         build the published site with a version stamp (used by CI)
 ```
 
@@ -294,7 +296,7 @@ URL parameters (debugging / screenshots):
 - `&shot` — hide the start overlay.
 - `&open` — open every door (screenshots of open doors / wardrobes).
 - `&cat=x,z[,yawDeg[,y]]` — show the cat there; `&catv=i` coat variant, `&catt=s` animation time.
-- `&time=HH[.h]` — start at that hour (default 07:00), `&month=1–12` (default: this month), `&freeze` pauses the clock,
+- `&time=HH[.h]` — start at that hour (default: the browser's time), `&month=1–12`, `&day=1–31` (default: today), `&freeze` pauses the clock,
   `&clock` opens the wall clock's strip,
   `&lights` turns every lamp on (they also start on when arriving in the dark).
 - `&water` — turn on every tap and shower. `&tv` — switch the TV on.
@@ -352,11 +354,13 @@ screenshots into the session scratchpad, not the repo.
   #76; lighttest checks every switch has a wall right behind it) plus `LIGHTING.manual` for open rooms and the downstairs Klk (door spans the whole wall).
   Lamp emissive parts use one material per room (`lampMaterials` in interior.js). Never add
   per-lamp PointLights — reuse the pool (constant light count = no shader recompiles).
-- Day cycle: `DAY` in config. Every visit starts at 07:00 on the 15th of the current month; the sun
+- Day cycle: `DAY` in config. Every visit starts at the browser's own time and date (#95; `&time` /
+  `&month` / `&day` override, `&month` alone = the 15th); the date rolls over at midnight. The sun
   position is computed (declination, hour angle, equation of time, CEST in summer) for Lund and
   rotated into plan axes by `DAY.planNorth`. The wall clock in the kitchen (right of the Badrum door seen from the kitchen) opens a strip at the bottom
-  (`reading` mode, so no walking, but looking works): hold ← → / ⏪ ⏩ to spool, Space / ⏸ pause,
-  ↑ ↓ / mån buttons for the month. The neighbours' windows are one instanced additive mesh with a
+  (`reading` mode, so no walking, but looking works): hold ← → / ⏪ ⏩ to spool, Space / ⏸ pause. The
+  date is picked on the cat calendar beside the cat board (`src/calendar.js`, `CALENDAR`): E opens
+  #cal-panel, ← → / ◀ ▶ months, ↑ ↓ days, or click a day. The neighbours' windows are one instanced additive mesh with a
   random evening/morning routine per window (`buildWindowLights` in surroundings.js).
 - Seasons (#73, `SEASON` + `src/seasons.js`): crowns get a colour per month (fresh, deep green, mixed autumn
   per tree, bare in Dec–Feb; some blossom in Apr–May) and in `SEASON.snowMonths` registered materials

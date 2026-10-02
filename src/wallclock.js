@@ -80,16 +80,13 @@ export class WallClock {
 
 /**
  * The control strip (#clock-panel). Buttons work by click/touch; with the mouse locked the keys
- * do the same: ← → spool (held), Space pause/play, ↑ ↓ month. `day` is the DayCycle.
+ * do the same: ← → spool (held), Space pause/play. The date is picked on the calendar (#95). `day` is the DayCycle.
  */
 export class ClockPanel {
   constructor(day, el) {
     Object.assign(this, { day, el, held: new Map() }); // what is spooling: key/button → ±1
     this.timeEl = el.querySelector('.time');
     this.infoEl = el.querySelector('.info');
-    this.dateEl = el.querySelector('.date');
-    this.prevBtn = el.querySelector('[data-act=prev]');
-    this.nextBtn = el.querySelector('[data-act=next]');
     this.playBtn = el.querySelector('[data-act=play]');
     for (const [act, dir] of [['back', -1], ['fwd', 1]]) {
       const b = el.querySelector(`[data-act=${act}]`);
@@ -100,8 +97,6 @@ export class ClockPanel {
       b.addEventListener('lostpointercapture', stop);
     }
     this.playBtn.addEventListener('click', () => this.togglePause());
-    this.prevBtn.addEventListener('click', () => this.month(-1));
-    this.nextBtn.addEventListener('click', () => this.month(1));
     this.render();
   }
 
@@ -122,15 +117,11 @@ export class ClockPanel {
 
   togglePause() { this.day.paused = !this.day.paused; this.render(); }
 
-  month(d) { this.day.month = ((this.day.month - 1 + d + 12) % 12) + 1; this.render(); }
-
   /** Keyboard while the strip is open; returns true when the key was used. */
   key(code, down, repeat) {
     if (code === 'ArrowLeft' || code === 'ArrowRight') { this.hold(code, down ? (code === 'ArrowLeft' ? -1 : 1) : 0); return true; }
-    if (!down || repeat) return code === 'Space' || code === 'ArrowUp' || code === 'ArrowDown';
+    if (!down || repeat) return code === 'Space';
     if (code === 'Space') this.togglePause();
-    else if (code === 'ArrowUp') this.month(1);
-    else if (code === 'ArrowDown') this.month(-1);
     else return false;
     return true;
   }
@@ -140,11 +131,7 @@ export class ClockPanel {
     this.timeEl.textContent = formatHour(d.hour);
     const sun = sunTimes(d.doy);
     const state = d.spool < 0 ? '⏪ spolar bakåt' : d.spool > 0 ? '⏩ spolar framåt' : d.paused ? '⏸ pausad' : '';
-    this.dateEl.textContent = `15 ${MONTHS[d.month - 1]}`;
-    // the neighbouring months by name ("‹ sep", "nov ›"), so nothing reads as "mån" = måndag
-    this.prevBtn.textContent = `‹ ${MONTHS[(d.month + 10) % 12].slice(0, 3)}`;
-    this.nextBtn.textContent = `${MONTHS[d.month % 12].slice(0, 3)} ›`;
-    this.infoEl.textContent = [sun && `sol upp ${formatHour(sun[0])}, ner ${formatHour(sun[1])}`, state].filter(Boolean).join(' · ');
+    this.infoEl.textContent = [`${d.date} ${MONTHS[d.month - 1]}`, sun && `sol upp ${formatHour(sun[0])}, ner ${formatHour(sun[1])}`, state].filter(Boolean).join(' · ');
     this.playBtn.textContent = d.paused ? '▶' : '⏸';
     this.playBtn.setAttribute('aria-label', d.paused ? 'Starta tiden' : 'Pausa tiden');
   }

@@ -56,6 +56,11 @@ export function sunTimes(doy) {
 /** Day of year (1–365) of the 15th of `month` (1–12). */
 export const midMonth = (month) => [15, 46, 74, 105, 135, 166, 196, 227, 258, 288, 319, 349][month - 1];
 
+/** Days in `month` (1–12) of `year`. */
+export const daysIn = (year, month) => new Date(year, month, 0).getDate();
+/** Day of year (1…366) of a date. */
+export const dayOfYear = (year, month, date) => Math.round((Date.UTC(year, month - 1, date) - Date.UTC(year, 0, 0)) / 864e5);
+
 const skyVert = /* glsl */`
   varying vec3 vDir;
   void main() {
@@ -104,8 +109,8 @@ const SUN_LOW = new THREE.Color(0xffb070), SUN_HIGH = new THREE.Color(0xfff1dc),
 
 export class DayCycle {
   /** lights: { sun, hemi, ambient, fill } from main.js; clouds: canvas texture with alpha. */
-  constructor({ scene, camera, lights, clouds, startHour, month }) {
-    Object.assign(this, { scene, camera, lights, hour: startHour, month, paused: false, spool: 0 });
+  constructor({ scene, camera, lights, clouds, startHour, month, date = 15, year = new Date().getFullYear() }) {
+    Object.assign(this, { scene, camera, lights, hour: startHour, month, date, year, paused: false, spool: 0 });
     this.base = { hemi: lights.hemi.intensity, ambient: lights.ambient.intensity, fill: lights.fill.intensity, sun: lights.sun.intensity };
     this.uniforms = {
       uSun: { value: new THREE.Vector3() }, uMoon: { value: new THREE.Vector3() },
@@ -127,12 +132,21 @@ export class DayCycle {
   /** 0 = full night … 1 = full day. */
   get daylight() { return smooth(-0.08, 0.18, this.sunDir.y); }
 
-  get doy() { return midMonth(this.month); }
+  /** The date's day of year (the day of month clamped to the month, e.g. after a month change). */
+  get doy() { return dayOfYear(this.year, this.month, Math.min(this.date, daysIn(this.year, this.month))); }
+
+  /** Move the date by `n` days (past midnight while the clock runs or spools, #95). */
+  addDays(n) {
+    const d = new Date(this.year, this.month - 1, Math.min(this.date, daysIn(this.year, this.month)) + n);
+    this.year = d.getFullYear(); this.month = d.getMonth() + 1; this.date = d.getDate();
+  }
 
   /** Advance the clock: normal pace, stopped while paused, or spooled (−1 / +1) by the wall clock. */
   update(dt) {
     const rate = this.spool ? this.spool * DAY.spool : this.paused ? 0 : 24 / (DAY.minutes * 60);
-    this.hour = (((this.hour + dt * rate) % 24) + 24) % 24;
+    const h = this.hour + dt * rate;
+    if (h >= 24) this.addDays(1); else if (h < 0) this.addDays(-1); // midnight: the next / previous day
+    this.hour = ((h % 24) + 24) % 24;
     sunDirection(this.hour, this.doy, this.sunDir);
     // full moon: opposite the sun (12 h later, opposite declination)
     skyDirection(solarHour(this.hour, this.doy) + 12, -declination(this.doy), this.moonDir);
