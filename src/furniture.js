@@ -669,6 +669,23 @@ function tv(item) {
   return g;
 }
 
+/** IKEA NORDKISA bedside table (bamboo): four square legs, top, an open shelf under it, a drawer with
+ * a cut-out grip, a slatted bottom shelf. Faces local +z. */
+function nordkisa(item) {
+  const g = new THREE.Group();
+  const w = item.w, h = item.h, l = 0.032, hw = w / 2 - l / 2;
+  for (const x of [-hw, hw]) for (const z of [-hw, hw]) g.add(rbox(l, h - 0.02, l, x, (h - 0.02) / 2, z, bamboo, 0.004));
+  g.add(rbox(w, 0.02, w, 0, h - 0.01, 0, bamboo, 0.004));                          // top
+  const yd = h - 0.2;                                                              // drawer box under the open shelf
+  g.add(rbox(w - 0.02, 0.012, w - 0.02, 0, yd + 0.1, 0, bamboo, 0.003));           // shelf / drawer top
+  g.add(rbox(w - 2 * l, 0.1, w - 0.03, 0, yd + 0.045, 0, bamboo, 0.003));          // drawer
+  g.add(rbox(0.1, 0.022, 0.004, 0, yd + 0.075, w / 2 - 0.013, new THREE.MeshStandardMaterial({ color: 0x5a4632, roughness: 0.8 }), 0.004)); // grip cut-out
+  for (let k = 0; k < 5; k++) g.add(rbox(w - 2 * l, 0.012, 0.05, 0, 0.1, -w / 2 + 0.06 + k * ((w - 0.12) / 4), bamboo, 0.003)); // slatted shelf
+  g.traverse((m) => { if (m.isMesh) m.castShadow = m.receiveShadow = true; });
+  g.userData.footprint = [{ x0: -w / 2, x1: w / 2, z0: -w / 2, z1: w / 2 }];
+  return g;
+}
+
 /** Woven rug texture: base colour, fine random weave, a thin border band (canvas, no image files). */
 function rugTexture(item) {
   const c = document.createElement('canvas');
@@ -703,7 +720,7 @@ function rug(item) {
   return g;
 }
 
-const BUILDERS = { sofa, armchair, footstool, floorlamp, sidetable, coffeetable, loungesofa, loungetable, parasol, planter, bed, skansnasTable, skansnasChair, bunk, daybed, rug, ragrund, coatrack, shoerack, byas, tv };
+const BUILDERS = { sofa, armchair, footstool, floorlamp, sidetable, coffeetable, loungesofa, loungetable, parasol, planter, bed, skansnasTable, skansnasChair, bunk, daybed, rug, ragrund, coatrack, shoerack, byas, tv, nordkisa };
 
 /** Build all furniture; returns the scene group, collision segments per level and lamps. */
 export function buildFurniture() {

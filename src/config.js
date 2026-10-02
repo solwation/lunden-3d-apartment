@@ -483,6 +483,9 @@ export const FURNITURE = [
   { type: 'planter', level: 0, x: 0.45, z: 13.25, plant: 'palm' },
   { type: 'planter', level: 0, x: 5.3, z: 13.2, plant: 'agave' },
   // Upstairs bedrooms (the user's plan). Beds: rot = direction from the head to the foot end.
+  // IKEA NORDKISA bedside tables, bamboo, 40 × 40 cm (ikea.com, #64; the 55 cm height is a guess, about the
+  // mattress top): one each side of the double bed's head end (east wall), clear of the Klk door
+  ...[1.5 - 0.24, 3.1 + 0.24].map((z) => ({ type: 'nordkisa', level: 1, x: 5.55 - 0.23, z, rot: 90, w: 0.4, h: 0.55 })),
   // IKEA RÅGRUND chair with towel rack, bamboo (#60; H 140, W 39, D 44, seat 48 cm per IKEA/dimensions.com):
   // Sovrum 1, the corner left of the window seen from inside (NW), back and towel rack against the
   // west wall, seat facing into the room (east); the seat is below the window sill (BH 0.7)
