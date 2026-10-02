@@ -85,6 +85,9 @@ src/lights.js          room switches (E), ceiling lamps/pendant/spots/LED, floor
 src/street.js          Sankt Lars väg's details (SITE.street, #128): curbs, asphalt patches, street lamps (emissive at
                        night), zebra crossing, the site's temporary traffic light + warning signs, cobbles, autumn leaves; the bus stop,
                        the red "Flyttad" sign, a no-parking sign and HepCat's A-board (#129)
+src/streetlife.js      life on the street (SITE.life, #113): the car park's stall lines and parked cars (instanced, a colour
+                       each, collision), bikes by Hus L's entrances and in racks, the paved square with corten beds and
+                       sitting steps in front of Hus C
 src/daycycle.js        60-minute day: real solar path for the month (55.7° N), sun → moon light, shader sky
                        (glow, stars, clouds), fog colour; paused / spooled by the wall clock
 src/patio.js           patio: Plantagen Oslo corner lounge set, parasol, planters with exotic plants

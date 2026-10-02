@@ -182,6 +182,19 @@ export const SITE = {
     // a no-parking sign at the car park, HepCat's A-board on its pavement. [x, z, facing yaw°]
     busStop: [2.5, -31.3, 0], moved: [6.5, -23.75, 0], noParking: [-6.5, -21.0, 0], aBoard: [30.0, -4.5, -90],
   },
+  // Life on the street (#113, src/streetlife.js; Peab's aerial docs/peab-flygbild-soder.png): the car park north
+  // of Hus L marked out in two rows of stalls with parked cars (colours ours; the teal one is the electric car in
+  // the render), bikes leaning by some of Hus L's entrances (not ours), and the square in front of Hus C towards
+  // the street: light stone paving, raised beds with corten edges and sitting steps, bike racks. All guesses.
+  life: {
+    lot: { x0: -50, x1: -6, z0: -20, z1: -9, stall: 2.5, depth: 5 }, fill: 0.65,
+    carColors: [0xf0f0ec, 0x23272c, 0x8d9399, 0x1f6f78, 0x7b1e22, 0x2d4e7a, 0xc9c3b8, 0x0f1012],
+    bikes: [[-40.2, -0.9], [-39.5, -0.9], [-28.6, -0.9], [-17.4, -0.9], [-16.7, -0.9], [-5.6, -0.9], [12.9, -0.9]], // x, z (along the façade)
+    square: { x0: -72, x1: -47.5, z0: 0.5, z1: 12.3 },
+    beds: [[-70, -63, 2, 4.5], [-58, -52, 2, 4.5], [-71, -66.5, 7.5, 10.5]], // x0, x1, z0, z1
+    steps: { x0: -63, x1: -58, z0: 2.4, n: 3, rise: 0.15, tread: 0.4 },
+    racks: [[-64, 7.2, 6], [-55, 7.2, 5]], // x0, z, bikes
+  },
   // asphalt (y follows the ground: the street level north of Hus L and on the garage box, park level around it)
   roads: [
     { name: 'Sankt Lars väg', x0: -95, x1: 30, z0: -30, z1: -24 },

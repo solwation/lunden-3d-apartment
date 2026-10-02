@@ -16,6 +16,7 @@ import { mergeStatic } from './merge.js';
 import { buildSillPlants } from './sillplants.js';
 import { registerSnow } from './seasons.js';
 import { buildCourtyard } from './courtyard.js';
+import { buildStreetLife } from './streetlife.js';
 import { pavingTexture } from './patio.js';
 import { mirrorLamps, looseItems as interiorLoose, buildInterior, buildElCabinet, cupSurfaces, cupCabinet } from './interior.js';
 import { Toilet } from './toilet.js';
@@ -659,6 +660,9 @@ export function buildWorld(plan) {
   const courtyard = buildCourtyard(); // walks, pergola, grill, sandboxes, boule, benches, beds (#80)
   scene.add(courtyard.object);
   outdoor.push(...courtyard.segments);
+  const life = buildStreetLife(); // parked cars, bikes, the square in front of Hus C (#113)
+  scene.add(life.object);
+  outdoor.push(...life.segments);
   // snow in the winter months (seasons.js): the lawn, the hedges and the patio paving
   registerSnow(M.grass, SEASON.snow.ground);
   registerSnow(M.hedge, SEASON.snow.hedge);
