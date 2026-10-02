@@ -80,7 +80,7 @@ export class WallClock {
 
 /**
  * The control strip (#clock-panel). Buttons work by click/touch; with the mouse locked the keys
- * do the same: ← → spool (held), Space pause/play. The date is picked on the calendar (#95). `day` is the DayCycle.
+ * do the same: A D / ← → spool (held), Space pause/play. The date is picked on the calendar (#95). `day` is the DayCycle.
  */
 export class ClockPanel {
   constructor(day, el) {
@@ -119,6 +119,7 @@ export class ClockPanel {
 
   /** Keyboard while the strip is open; returns true when the key was used. */
   key(code, down, repeat) {
+    code = { KeyA: 'ArrowLeft', KeyD: 'ArrowRight' }[code] ?? code; // A D spool too, like the calendar (#120)
     if (code === 'ArrowLeft' || code === 'ArrowRight') { this.hold(code, down ? (code === 'ArrowLeft' ? -1 : 1) : 0); return true; }
     if (!down || repeat) return code === 'Space';
     if (code === 'Space') this.togglePause();

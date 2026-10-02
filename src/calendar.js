@@ -140,7 +140,7 @@ export class CatCalendar {
   }
 }
 
-/** The strip (#cal-panel): ◀ month ▶, a grid of day buttons, ×. ← → month, ↑ ↓ day. */
+/** The strip (#cal-panel): ◀ month ▶, a grid of day buttons, ×. A D / ← → month, W S / ↑ ↓ day. */
 export class CalendarPanel {
   constructor(cal, el) {
     Object.assign(this, { cal, day: cal.day, el });
@@ -172,8 +172,9 @@ export class CalendarPanel {
     this.render();
   }
 
-  /** Keyboard while open: ← → months, ↑ ↓ days. Returns true when used. */
+  /** Keyboard while open: A D / ← → months, W S / ↑ ↓ days (#120; held keys repeat). Returns true when used. */
   key(code, down) {
+    code = { KeyA: 'ArrowLeft', KeyD: 'ArrowRight', KeyW: 'ArrowUp', KeyS: 'ArrowDown' }[code] ?? code;
     if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(code)) return false;
     if (!down) return true;
     if (code === 'ArrowLeft' || code === 'ArrowRight') this.page(code === 'ArrowLeft' ? -1 : 1);

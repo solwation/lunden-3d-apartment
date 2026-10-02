@@ -46,6 +46,17 @@ f.onload = async () => {
   // ↑ steps a day; to 21 December via ▶ ×6 and the 21st
   calPanel.key('ArrowUp', true);
   pass &= check(day.month === 6 && day.date === 22, `↑ = the next day (${day.date}/${day.month})`);
+  // WASD (#120): W/S a day, A/D a month; held keys repeat
+  calPanel.key('KeyW', true); calPanel.key('KeyW', true);
+  pass &= check(day.date === 24, `W W = two days on (${day.date}/${day.month})`);
+  calPanel.key('KeyS', true);
+  pass &= check(day.date === 23, `S = a day back (${day.date}/${day.month})`);
+  const m0 = calendar.view.month;
+  calPanel.key('KeyD', true);
+  pass &= check(calendar.view.month === m0 + 1, `D = next month page (${calendar.view.month})`);
+  calPanel.key('KeyA', true);
+  pass &= check(calendar.view.month === m0, `A = previous month page (${calendar.view.month})`);
+  [...d.querySelectorAll('#cal-panel .days button')].find((b) => b.textContent === '22').click();
   for (let i = 0; i < 6; i++) d.querySelector('#cal-panel [data-act=next]').click();
   [...d.querySelectorAll('#cal-panel .days button')].find((b) => b.textContent === '21').click();
   day.hour = 12.5; step(0);
@@ -57,7 +68,7 @@ f.onload = async () => {
   day.month = 3; day.date = 3; calendar.update();
   pass &= check(calendar.shown.endsWith('-3-3'), `the page follows the date (${calendar.shown})`);
   // the day rolls over at midnight while the clock runs
-  day.paused = false; day.hour = 23.99; day.month = 1; day.date = 31; for (let i = 0; i < 10; i++) step(0.1);
+  day.paused = false; day.hour = 23.999; day.month = 1; day.date = 31; for (let i = 0; i < 10; i++) step(0.1);
   pass &= check(day.month === 2 && day.date === 1, `midnight on 31 January → 1 February (${day.date}/${day.month})`);
   d.getElementById('cal-close').click();
   pass &= check(!calPanel.open, 'closed');

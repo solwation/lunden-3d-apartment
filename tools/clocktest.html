@@ -68,6 +68,14 @@ f.onload = async () => {
   const { DAY } = await import('../src/config.js');
   const fwd = day.hour - h0;
   pass &= check(Math.abs(fwd - DAY.spool) < 0.05, `spool forward 1 s = +${fwd.toFixed(2)} h`);
+  // A / D spool like ← → (#120)
+  {
+    const { clockPanel } = w.__app, h1 = day.hour;
+    clockPanel.key('KeyD', true); for (let i = 0; i < 60; i++) step(1 / 60); clockPanel.key('KeyD', false);
+    pass &= check(Math.abs(day.hour - h1 - DAY.spool) < 0.05 && day.spool === 0, `D held 1 s spools +${(day.hour - h1).toFixed(2)} h`);
+    clockPanel.key('KeyA', true); for (let i = 0; i < 60; i++) step(1 / 60); clockPanel.key('KeyA', false);
+    pass &= check(Math.abs(day.hour - h1) < 0.05, `A held 1 s spools back (${day.hour.toFixed(2)})`);
+  }
   h0 = day.hour;
   press('back', 'pointerdown');
   for (let i = 0; i < 120; i++) step(1 / 60);

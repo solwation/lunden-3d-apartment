@@ -74,7 +74,7 @@ src/daycycle.js        60-minute day: real solar path for the month (55.7° N), 
 src/patio.js           patio: Plantagen Oslo corner lounge set, parasol, planters with exotic plants
                        (furniture builders, FURNITURE + PATIO in config); seasons via Patio.update:
                        parasol folds at night/in winter, beers in summer, snowman in winter
-src/wallclock.js       analog kitchen clock (WALL_CLOCK) + the control strip: spool ← →, pause, month
+src/wallclock.js       analog kitchen clock (WALL_CLOCK) + the control strip: spool A D / ← →, pause
 src/rooms.js           room detection: walls + door gaps rasterised, BFS from the room labels
 src/minimap.js         plan view with the visitor's arrow, current room highlighted; hidden, shown with the
                        stats (Tab / T / 📊, #85), K shows it alone
@@ -360,9 +360,9 @@ screenshots into the session scratchpad, not the repo.
   `&month` / `&day` override, `&month` alone = the 15th); the date rolls over at midnight. The sun
   position is computed (declination, hour angle, equation of time, CEST in summer) for Lund and
   rotated into plan axes by `DAY.planNorth`. The wall clock in the kitchen (right of the Badrum door seen from the kitchen) opens a strip at the bottom
-  (`reading` mode, so no walking, but looking works): hold ← → / ⏪ ⏩ to spool, Space / ⏸ pause. The
+  (`reading` mode, so no walking, but looking works): hold A D / ← → / ⏪ ⏩ to spool, Space / ⏸ pause. The
   date is picked on the cat calendar beside the cat board (`src/calendar.js`, `CALENDAR`): E opens
-  #cal-panel, ← → / ◀ ▶ months, ↑ ↓ days, or click a day. The neighbours' windows are one instanced additive mesh with a
+  #cal-panel, A D / ← → / ◀ ▶ months, W S / ↑ ↓ days (held keys repeat; a key already held while walking up is ignored), or click a day. The neighbours' windows are one instanced additive mesh with a
   random evening/morning routine per window (`buildWindowLights` in surroundings.js).
 - Seasons (#73, `SEASON` + `src/seasons.js`): crowns get a colour per month (fresh, deep green, mixed autumn
   per tree, bare in Dec–Feb; some blossom in Apr–May) and in `SEASON.snowMonths` registered materials

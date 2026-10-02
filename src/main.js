@@ -495,9 +495,13 @@ document.addEventListener('mousemove', (e) => {
   if (locked) look(e.movementX * PLAYER.mouseSens, e.movementY * PLAYER.mouseSens);
 });
 document.addEventListener('mousedown', (e) => { if (locked && e.button === 0) heldItem()?.use(); }); // a click: swing, fire, toggle the flashlight
+const stripKeys = new Set(); // keys pressed while a strip / the note is open
 document.addEventListener('keydown', (e) => {
   if (!locked) return;
   if (reading) {
+    // WASD drive the strips (#120): auto-repeat of a key already held while walking up to them is ignored
+    if (!e.repeat) stripKeys.add(e.code);
+    else if (!stripKeys.has(e.code)) return;
     if (clockPanel.open && clockPanel.key(e.code, true, e.repeat)) e.preventDefault();
     else if (calPanel.open && calPanel.key(e.code, true)) e.preventDefault();
     else if (e.code === 'KeyE') showNote(false);
@@ -517,6 +521,7 @@ document.addEventListener('keydown', (e) => {
 });
 document.addEventListener('keyup', (e) => {
   player.keys.delete(e.code);
+  stripKeys.delete(e.code);
   if (e.code === 'ControlLeft' || e.code === 'ControlRight') player.crouch = false;
   if (clockPanel.open && clockPanel.key(e.code, false)) e.preventDefault(); // no button click on Space
   if (e.code === 'Tab') holdStats(false);
