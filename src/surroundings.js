@@ -87,7 +87,7 @@ function rng(seed) {
 }
 
 /** Bay width and storey height of a block (the old S:t Lars buildings are taller, narrower bays). */
-const dims = (b) => (b.style === 'old' ? S.old : b.style === 'school' ? S.school : S);
+const dims = (b) => (b.style ? S[b.style] ?? S : S); // the style's bay, storey (and rows); the Å-husen: SITE's
 
 /** Old S:t Lars style bay: brick, a white string course at the floor line, a tall white-framed
  * window with a round-arched top (v = 0 is the bottom of the canvas). */
@@ -145,6 +145,52 @@ const canvasTex = (c) => {
   tex.anisotropy = 4;
   return tex;
 };
+
+/** One bay of the buildings east of us (#127): 'hepcat' = brick with a white pilaster at the bay edge and a
+ * pair of white-framed windows; 'hepcatWhite' = white render, a pair below and a small window in the gable;
+ * 'longhouse' = brick with a dark window in a yellow frame. */
+function sideFacadeTexture(style) {
+  const { bay, storey } = S[style];
+  const pw = 160, ph = Math.round((pw * storey) / bay), c = document.createElement('canvas');
+  c.width = pw; c.height = ph;
+  const g = c.getContext('2d'), m = pw / bay, Y = (y) => ph - y * m;
+  if (style === 'hepcatWhite') { g.fillStyle = '#efede7'; g.fillRect(0, 0, pw, ph); }
+  else { g.fillStyle = '#d6cfc2'; g.fillRect(0, 0, pw, ph); brickCourses(g, pw, ph, m, style === 'hepcat' ? 37 : 41); }
+  const win = (cx, y0, w, h, frame, bars = true) => {
+    g.fillStyle = frame; g.fillRect(cx - w / 2 - 5, Y(y0 + h) - 5, w + 10, h * m + 10);
+    const gr = g.createLinearGradient(0, Y(y0 + h), 0, Y(y0)); gr.addColorStop(0, '#61788a'); gr.addColorStop(1, '#2a3843');
+    g.fillStyle = gr; g.fillRect(cx - w / 2, Y(y0 + h), w, h * m);
+    if (bars) { g.fillStyle = frame; g.fillRect(cx - 2, Y(y0 + h), 4, h * m); }
+  };
+  if (style === 'hepcat') {
+    g.fillStyle = '#f1efe9'; g.fillRect(0, 0, 0.45 * m, ph);               // pilaster
+    g.fillRect(0, Y(0.45), pw, 0.45 * m);                                    // plinth
+    g.fillRect(pw / 2 - 0.95 * m, Y(2.65), 1.9 * m, 0.22 * m);               // lintel over the pair
+    win(pw / 2 - 0.42 * m, 1.05, 0.62 * m, 1.35, '#f7f6f2'); win(pw / 2 + 0.42 * m, 1.05, 0.62 * m, 1.35, '#f7f6f2');
+  } else if (style === 'hepcatWhite') {
+    win(pw / 2 - 0.45 * m, 1.05, 0.66 * m, 1.35, '#ffffff'); win(pw / 2 + 0.45 * m, 1.05, 0.66 * m, 1.35, '#ffffff');
+    win(pw / 2, 3.9, 0.5 * m, 0.95, '#ffffff');
+  } else {
+    g.fillStyle = '#6b5d4c'; g.fillRect(0, Y(0.5), pw, 0.5 * m);            // a stone plinth
+    win(pw / 2, 0.9, 1.0 * m, 1.45, '#e8c43a', false);
+  }
+  return canvasTex(c);
+}
+
+/** Dormers on the street side (west) of the long brick building's roof (#127). */
+function dormers(list) {
+  const geos = [];
+  for (const b of list) {
+    const top = b.base + S.longhouse.storey, n = Math.max(1, Math.round(S.longhouse.dormers * (b.z1 - b.z0) / 37));
+    for (let k = 0; k < n; k++) {
+      const z = b.z0 + ((k + 0.5) * (b.z1 - b.z0)) / n, x = b.x0 + 1.6;
+      geos.push(new THREE.BoxGeometry(1.4, 1.1, 1.6).translate(x, top + 0.75, z));
+      const cap = new THREE.CylinderGeometry(0.0001, 1.1, 0.5, 4, 1).rotateY(Math.PI / 4).scale(1.05, 1, 1.15).translate(x, top + 1.55, z);
+      geos.push(cap.index ? cap.toNonIndexed() : cap);
+    }
+  }
+  return geos.map((g) => { const x = g.index ? g.toNonIndexed() : g; return x; });
+}
 
 /** Plain brick, 2 × 2 m per tile (the wall along the street, #126). */
 function brickTexture() {
@@ -422,7 +468,7 @@ export function buildWindowLights() {
       // window centres sit mid-bay in the façade texture (u = along / bay)
       const { bay, storey } = dims(b), old = b.style === 'old';
       // window rows: one per storey (the old windows are narrow and tall), or the school's own two (#126)
-      const rows = b.style === 'school' ? S.school.rows.map((r) => ({ y: b.base + r.y, s: r.s }))
+      const rows = dims(b).rows ? dims(b).rows.map((r) => ({ y: b.base + r.y, s: r.s }))
         : [...Array(b.storeys)].map((_, st) => ({ y: b.base + st * storey + (old ? 1.9 : 1.55), s: old ? [0.78, 1.3, 1] : [1, 1, 1] }));
       for (let k = Math.ceil(f.a0 / bay - 0.5); (k + 0.5) * bay < f.a1; k++) {
         const a = (k + 0.5) * bay;
@@ -516,6 +562,7 @@ export function buildSurroundings({ grass }) {
   // Kv. Lunden's own blocks and the old S:t Lars buildings: own façade texture and roof colour each,
   // plus a white cornice under the old roofs (#47)
   const modern = S.blocks.filter((b) => !b.style), oldB = S.blocks.filter((b) => b.style === 'old'), school = S.blocks.filter((b) => b.style === 'school');
+  const side = (st) => S.blocks.filter((b) => b.style === st);
   const mesh = (geos, material, snow) => {
     if (snow) registerSnow(material, snow);
     const m = new THREE.Mesh(mergeGeometries(geos), material);
@@ -527,7 +574,7 @@ export function buildSurroundings({ grass }) {
   if (school.length) { // the school across the street, its wall and greenhouse (#126)
     const white = new THREE.MeshStandardMaterial({ color: 0xf1eee6, roughness: 0.8 });
     mesh(school.map(block), new THREE.MeshStandardMaterial({ map: schoolFacadeTexture(), roughness: 0.95 }));
-    mesh(school.map(roof), new THREE.MeshStandardMaterial({ color: 0x4a5056, roughness: 0.45, metalness: 0.45, side: THREE.DoubleSide }), SEASON.snow.roof);
+    mesh(school.map(roof), new THREE.MeshStandardMaterial({ color: 0x5c6369, roughness: 0.5, metalness: 0.15, side: THREE.DoubleSide }), SEASON.snow.roof);
     mesh(school.flatMap((b) => [...quoins(b, S.school.storey), new THREE.BoxGeometry(b.x1 - b.x0 + 0.36, 0.32, b.z1 - b.z0 + 0.36)
       .translate((b.x0 + b.x1) / 2, b.base + S.school.storey - 0.16, (b.z0 + b.z1) / 2)]), white); // quoins + cornice
     const sg = schoolGrounds();
@@ -537,6 +584,13 @@ export function buildSurroundings({ grass }) {
     const glassMat = new THREE.MeshStandardMaterial({ color: 0xdfe8ec, roughness: 0.05, transparent: true, opacity: 0.35, depthWrite: false, side: THREE.DoubleSide });
     const gm = new THREE.Mesh(mergeGeometries(sg.panes), glassMat);
     group.add(gm);
+  }
+  if (side('hepcat').length) { // HepCat Store and the long brick building behind it (#127)
+    const metal = new THREE.MeshStandardMaterial({ color: 0x737a81, roughness: 0.5, metalness: 0.15, side: THREE.DoubleSide }); // standing-seam grey
+    for (const st of ['hepcat', 'hepcatWhite', 'longhouse']) mesh(side(st).map(block), new THREE.MeshStandardMaterial({ map: sideFacadeTexture(st), roughness: 0.95 }));
+    mesh([...['hepcat', 'hepcatWhite', 'longhouse'].flatMap((st) => side(st).map(roof)), ...dormers(side('longhouse'))], metal, SEASON.snow.roof);
+    mesh(side('hepcat').flatMap((b) => (b.chimneys ?? []).map((dz) => new THREE.BoxGeometry(0.6, 1.4, 0.6).translate((b.x0 + b.x1) / 2, b.base + S.hepcat.storey + 2.3, (b.z0 + b.z1) / 2 + dz))),
+      new THREE.MeshStandardMaterial({ color: 0x2a2b2d, roughness: 0.8 }));
   }
   if (oldB.length) {
     mesh(oldB.map(block), new THREE.MeshStandardMaterial({ map: oldFacadeTexture(), roughness: 0.95 }));

@@ -237,7 +237,9 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   plan's "north" (entrance) faces ENE (bearing 58°, `DAY.planNorth`) and the patio WSW. The schools,
   HepCat and the villa outside the plot are placed from the Google Maps screenshot; straight across Sankt Lars väg
   stand a 2.3 m brick wall and a two-storey school with white quoins (`style: 'school'`, `SITE.school`, #126,
-  the user's photos in `docs/foton/`). The others are drawn in the old
+  the user's photos in `docs/foton/`); east of our row HepCat Store (brick, white pilasters and a white rendered
+  gable part) and the long brick building with dormers behind it (`hepcat`, `hepcatWhite`, `longhouse`, #127).
+  The others are drawn in the old
   S:t Lars style (#47, `style: 'old'`: brick, white cornice and string courses, tall arched windows,
   steep dark hip roofs, 3.6 m storeys) after the drone photo/render — storey counts are guesses.
 - Skärmvägg by the patio H 1.8 m, stair railing H 1.1 m (bofakta).

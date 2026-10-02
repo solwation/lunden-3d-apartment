@@ -127,6 +127,13 @@ export const SITE = {
   school: { bay: 3.0, storey: 8.6, roofPitch: 0.32, rows: [{ y: 2.05, s: [0.95, 1.6, 1] }, { y: 5.95, s: [0.95, 1.35, 1] }],
     wall: { x0: -26, x1: 30, z: -32.15, h: 2.3, t: 0.3 }, greenhouse: { x0: 13, x1: 21, z0: -36.8, z1: -33.6, h: 2.2, ridge: 1.0 },
     chimneys: [-14, -3, 8, 17] },
+  // HepCat Store and the long brick building behind it, east of our row across Sankt Lars väg (#127, the user's photos
+  // docs/foton/hepcat-store-sidan-byggnadsstallning.jpg, sidogatan-tegelhus-plattak-byggplats.jpg): a storey and a
+  // half of brick with white pilasters and a white rendered middle part with its own gable, a dark standing-seam
+  // metal roof; behind it a long low brick building with dormers and yellow-framed windows. `rows` = window lights.
+  hepcat: { bay: 3.2, storey: 4.2, rows: [{ y: 1.7, s: [1.1, 1.0, 1] }] },
+  hepcatWhite: { bay: 4.0, storey: 6.0, rows: [{ y: 1.7, s: [1.1, 1.0, 1] }, { y: 4.4, s: [0.6, 0.8, 1] }] },
+  longhouse: { bay: 2.6, storey: 3.8, rows: [{ y: 1.6, s: [0.9, 1.2, 1] }], dormers: 5 },
   blocks: [
     // Kv. Lunden, Å-husen (overview plans): storeys counted from `base`; red brick, low hip roof
     { name: 'Hus A', x0: -10.2, x1: 9.5, z0: 29.6, z1: 54.2, base: -3, storeys: 5, roof: 'hip' },  // våning -1…4
@@ -135,8 +142,10 @@ export const SITE = {
     // outside the plot (#47): the old S:t Lars hospital buildings, as on Peab's drone photo and aerial
     // render (docs/peab/): red brick with white trim, steep dark hip roofs, high storeys and tall
     // white windows. Storey counts and heights are read off those pictures — guesses, not surveyed.
-    { name: 'HepCat Store', x0: 28.5, x1: 37, z0: -11, z1: 10, base: 0, storeys: 1, roof: 'gable', style: 'old' }, // low brick building
-    { name: 'Kunskapsskolan', x0: 32, x1: 60, z0: 19.5, z1: 62, base: -3, storeys: 3, roof: 'hip', style: 'old' },
+    { name: 'HepCat Store', x0: 31, x1: 39, z0: -9, z1: 7, base: 0, storeys: 1, roof: 'gable', style: 'hepcat', chimneys: [-5, 4] }, // #127
+    { name: 'HepCat Store, the white middle', x0: 30.6, x1: 39, z0: -2.2, z1: 2.2, base: 0, storeys: 1, roof: 'gable', style: 'hepcatWhite' },
+    { name: 'The long brick building', x0: 32, x1: 41, z0: 9, z1: 21, base: 0, storeys: 1, roof: 'gable', style: 'longhouse' },
+    { name: 'The long brick building (lower part)', x0: 32, x1: 41, z0: 21, z1: 46, base: -3, storeys: 1, roof: 'gable', style: 'longhouse' },
     { name: 'Realgymnasiet', x0: 5, x1: 70, z0: -74, z1: -50, base: 0, storeys: 3, roof: 'hip', style: 'old' },
     // straight across the street from our kitchen (#126): a long two-storey school with end pavilions that stand
     // a little forward (the user's photos; position and length are guesses), behind a brick wall
