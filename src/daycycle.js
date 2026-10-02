@@ -2,9 +2,10 @@ import * as THREE from 'three';
 import { DAY } from './config.js';
 
 // Day and night: a whole day passes in DAY.minutes real minutes. The sun follows its real path
-// for the date at Kv. Lunden (rises north-east in summer, south-east in winter); at night a full
-// moon takes its place. Drives the sun light, the ambient light, fog and a shader sky with
-// sunset glow, stars and the moon. The wall clock can pause and spool the time (wallclock.js).
+// for the date at Kv. Lunden (rises north-east in summer, south-east in winter; the house is
+// turned, see DAY.planNorth); at night a full moon takes its place. Drives the sun light, the
+// ambient light, fog and a shader sky with sunset glow, stars and the moon. The wall clock can
+// pause and spool the time (wallclock.js).
 
 const smooth = (a, b, x) => THREE.MathUtils.smoothstep(x, a, b);
 const RAD = Math.PI / 180;
@@ -25,13 +26,16 @@ function equationOfTime(doy) {
 const solarHour = (hour, doy) => hour - (summerTime(doy) ? 2 : 1) + DAY.lon / 15 + equationOfTime(doy) / 60;
 
 /** Direction (unit) to a body with declination `dec` at solar hour `solar`; below the horizon at
- * night. Plan axes: +x east, +z south, y up. */
+ * night. In plan axes (y up): the plan's "north" (−z) really points DAY.planNorth degrees east of
+ * true north, so the geographic east/south components are rotated into plan x/z. */
 function skyDirection(solar, dec, out) {
   const lat = DAY.lat * RAD, h = (solar - 12) * 15 * RAD; // hour angle, + = afternoon
   const sinEl = Math.sin(lat) * Math.sin(dec) + Math.cos(lat) * Math.cos(dec) * Math.cos(h);
   const el = Math.asin(sinEl);
   const az = Math.atan2(Math.sin(h), Math.cos(h) * Math.sin(lat) - Math.tan(dec) * Math.cos(lat)); // from south, + = west
-  return out.set(-Math.cos(el) * Math.sin(az), sinEl, Math.cos(el) * Math.cos(az)).normalize();
+  const e = -Math.cos(el) * Math.sin(az), s = Math.cos(el) * Math.cos(az); // geographic east, south
+  const b = DAY.planNorth * RAD, cb = Math.cos(b), sb = Math.sin(b);
+  return out.set(e * cb + s * sb, sinEl, s * cb - e * sb).normalize();
 }
 
 /** Direction (unit) to the sun at clock time `hour` on day of year `doy`. */

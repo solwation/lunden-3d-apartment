@@ -38,7 +38,8 @@ src/config.js          everything NOT in the PDF: heights, soffits, stair layout
 src/world.js           builds meshes + per-level collision segments from data/plan.json
 src/stairs.js          stair treads + walking height function (stairHeight)
 src/doors.js           SwingDoor / SlidingDoor (E to open/close, animated, dynamic collision)
-src/exterior.js        brick façades, neighbouring units, stacked unit above, loftgång, street
+src/exterior.js        Hus L (HUS_L): brick row with the core/portik, neighbours' patios, rendered upper
+                       units with pilasters, loftgång, spiral-stair drums, roof with solar panels
 src/player.js          WASD/arrow/joystick movement, circle-vs-segment collision, step-up, gravity
 src/touch.js           on-screen joystick (left) + drag-to-look (right), multi-touch pointer events
 src/main.js            renderer, lights, input modes, door raycast prompt/button, loop (step)
@@ -47,12 +48,14 @@ src/cat.js             the cat: random coat, washing animation, appears/moves/va
 src/furniture.js       loose furniture from FURNITURE in config (IKEA LANDSKRONA sofa/armchair …)
 src/interior.js        fitted kitchen, laundry, bathroom fittings, tiled floors/walls (FINISH, KITCHEN,
                        TILED_ROOMS in config); merged into one mesh per material
-docs/                  reference images in git (site map screenshot)
+docs/                  reference images in git (site map screenshot; docs/peab/ = pages of Peab's plan
+                       brochure: situation plan, overview plans per floor, unit plans, aerial render)
 material/              screenshots of our choices in Peab's option portal (local, see below)
 src/audio.js           synthesised positional sound effects (Web Audio): doors, slides, meow, steps
 src/toilet.js          toilet (Ifö Spira 6260) with an animated lid
 src/ao.js              baked ambient occlusion: distance field → multiply overlay on floor/ceiling (AO)
-src/surroundings.js    neighbourhood: brick blocks with gable roofs, instanced trees, cloudy sky
+src/surroundings.js    the site (SITE): Hus A/B/C + buildings around, roads, paving, the 3 m drop to the park,
+                       Höje å, instanced trees, lit windows, cloudy sky
 src/lights.js          room switches (E), ceiling lamps/pendant/spots/LED, floor lamp; a pool of 4
                        point lights follows the nearest lit lamps on the visitor's level
 src/daycycle.js        12-minute day: real solar path for the month (55.7° N), sun → moon light, shader sky
@@ -123,7 +126,20 @@ North = −z (the bedrooms Sovrum 1/3 face north).
 - Peab's 3D plan of L1002–L1007 (peabbostad.se …/planlosningar-i-3d/l1002-…-l1007.jpg, a mirrored
   sibling unit) confirms the stair: straight lower flight between the Klk wall and the living-room
   wall, winders at the far end, white railing with balusters around the opening, oak treads with
-  white risers. The surroundings (`SURROUNDINGS`) are illustrative, after the drone photo.
+  white risers.
+- Hus L / "Parklängan" (overview plans + aerial render in `docs/peab/`, `HUS_L` in config): a straight
+  four-storey bar along Sankt Lars väg (the user's "L-byggnad" = Hus L, not an L shape). Våning 1–2:
+  L1001–L1004 | stair core with a ground-floor portik (L1101 above it) | L1005–L1008; all units the
+  same way round (not mirrored), we are L1007, L1008 is the east end (gable windows, escape spiral
+  stair north of it). Våning 3–4: L1201–L1209 on the same 5.75 m grid (L1208 above us, L1205 over the
+  core), white render with brick pilasters, entered from the loftgång on våning 3; spiral stairs in
+  brick drums at both ends; flat roof with solar panels.
+- Site (`SITE`): measured on the situation/overview plans (1:500, Hus L horizontal = our axes, metres
+  from our NW corner). Hus A (x −10…9.5, z 30…54, våning −1…4), B (x −43…−24, z 34…59, −1…3),
+  C (x −73…−53, z 12.5…37.5, 1…5), brick with low hip roofs; the courtyard is on a garage and the
+  ground drops ~3 m south of it. **True north**: FOJAB's arrow puts it 58° left of plan-up, so the
+  plan's "north" (entrance) faces ENE (bearing 58°, `DAY.planNorth`) and the patio WSW. The schools,
+  HepCat and the villa outside the plot are illustrative boxes placed from the Google Maps screenshot.
 - Skärmvägg by the patio H 1.8 m, stair railing H 1.1 m (bofakta).
 - U-shaped stair with winders at the east end: flight A (Entréplan, going east), 180° winders,
   flight B (going west) arriving in the upstairs hall. Upstairs slab opening = stair outline on
@@ -166,9 +182,10 @@ North = −z (the bedrooms Sovrum 1/3 face north).
 - Site (the user, `docs/tomten-google-maps.jpg`): Kv. Lunden is the empty plot by Karpvägen /
   S:t Lars väg in S:t Lars park, Lund (~55.70° N, 13.17° E), next to HepCat Store, between
   Realgymnasiet, Lunds Montessorigrundskola and Kunskapsskolan; woods towards Höje å to the south.
-  77 Swan-marked homes in four buildings. Peab's PDFs (situationsplan, façades of the other
-  buildings) are on the project page — peabbostad.se is blocked from the cloud sessions, so they
-  must be added to the repo to be used.
+  77 Swan-marked homes in four buildings. Peab's PDFs are on the project page (plan brochure with
+  situation plan + overview plans, info brochure, bofakta; there are no façade drawings) —
+  peabbostad.se is blocked from the cloud sessions (it works from the user's machine), so pages
+  that are used go into `docs/peab/`.
 - More info: https://peabbostad.se/projekt/skane/kv.-lunden/l1007/
 
 Values marked *guess* in `src/config.js` (slab thickness, window sill/head, soffit depth,
@@ -246,8 +263,8 @@ screenshots into the session scratchpad, not the repo.
   Lamp emissive parts use one material per room (`lampMaterials` in interior.js). Never add
   per-lamp PointLights — reuse the pool (constant light count = no shader recompiles).
 - Day cycle: `DAY` in config. Every visit starts at 07:00 on the 15th of the current month; the sun
-  position is computed (declination, hour angle, equation of time, CEST in summer) for Lund. The wall
-  clock in the kitchen (right of the Badrum door seen from the kitchen) opens a strip at the bottom
+  position is computed (declination, hour angle, equation of time, CEST in summer) for Lund and
+  rotated into plan axes by `DAY.planNorth`. The wall clock in the kitchen (right of the Badrum door seen from the kitchen) opens a strip at the bottom
   (`reading` mode, so no walking, but looking works): hold ← → / ⏪ ⏩ to spool, Space / ⏸ pause,
   ↑ ↓ / mån buttons for the month. The neighbours' windows are one instanced additive mesh with a
   random evening/morning routine per window (`buildWindowLights` in surroundings.js).

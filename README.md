@@ -54,6 +54,10 @@ PDF:ens vektordata och skriver `data/plan.json`. Sidan (`index.html` + `src/`) b
 med three.js. Mått som inte finns i ritningen (bröstningshöjd, bjälklag, nedsänkt tak i sovrummen
 m.m.) ligger samlade i `src/config.js`.
 
+Huset (Hus L, Parklängan), Å-husen A, B och C, vägarna och nivåskillnaden ner mot S:t Lars park
+är uppmätta på Peabs situationsplan och översiktsplaner (sidor ur planritningsbroschyren ligger i
+`docs/peab/`). Solen går efter verkliga väderstreck: entrén vetter mot östnordost.
+
 Inredningen följer våra materialval i Peabs tillvalsportal: köket med grågröna Form Tall-luckor,
 överskåp och kyl/frys enligt vår köksritning, Ek Chalk-parkett, klinker i hall och våtrum, kakel i
 badrum och WC/dusch, samt tillvalsdörren till Allrum (fyra sovrum på övre plan).

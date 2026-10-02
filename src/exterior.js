@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { BUILDING, COLORS } from './config.js';
+import { HUS_L as H, COLORS, FENCE_HEIGHT } from './config.js';
 
 // Brick: 250 × 65 mm + 10 mm joints → 0.26 m per brick, 0.075 m per course.
 const TILE_W = 1.04, TILE_H = 0.6; // one texture tile = 4 bricks × 8 courses
@@ -31,7 +31,7 @@ function brickTexture() {
   return tex;
 }
 
-const brickMat = () => new THREE.MeshStandardMaterial({ map: brickTexture(), roughness: 0.95 });
+const brickMat = () => new THREE.MeshStandardMaterial({ map: brickTexture(), roughness: 0.95, side: THREE.DoubleSide });
 
 /** Rectangles covering [x0,x1]×[y0,y1] minus the holes (all axis-aligned). */
 function complement(x0, x1, y0, y1, holes) {
@@ -79,20 +79,37 @@ function boxGeo(x0, x1, y0, y1, z0, z1) {
   return geo;
 }
 
+/** Open brick drum (spiral stair tower) with world-space brick UVs. */
+function drum(x, z, r, h) {
+  const geo = new THREE.CylinderGeometry(r, r, h, 28, 1, true);
+  geo.translate(x, h / 2, z);
+  const uv = geo.attributes.uv;
+  for (let i = 0; i < uv.count; i++) uv.setXY(i, (uv.getX(i) * 2 * Math.PI * r) / TILE_W, (uv.getY(i) * h) / TILE_H);
+  return geo;
+}
+
 /**
- * Everything outside the apartment's own walls:
- *  - brick on our north/south façades (around the real openings)
- *  - neighbouring identical units on both sides (same façade pattern, glass only)
- *  - the stacked two-storey unit above, set back behind the loftgång on the north side
- *  - the loftgång (access balcony) with a grey-green railing, a street on the north side
+ * Hus L around the apartment (see HUS_L in config):
+ *  - våning 1–2: brick, a row of units like ours on both sides of the stair core with the portik;
+ *    the other units get our façade openings as glass, and our patio/hedge/screen walls
+ *  - våning 3–4: the stacked two-storey units, white render with brick pilasters, set back behind
+ *    the loftgång (grey-green railing) on the north side; spiral stairs in brick drums at both ends
+ *  - flat roof with solar panels
  */
-export function buildExterior({ W, D, roofTop, north, south, frame, wall }) {
+export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, mats }) {
   const group = new THREE.Group();
-  const bricks = [], glassGeo = [], frames = [], solids = [], rails = [], roofs = [];
-  const N = BUILDING.neighbours;
-  const loftD = BUILDING.loftgangDepth;
-  const upperTop = roofTop + BUILDING.upperStoreys * BUILDING.storeyHeight;
+  const bricks = [], renders = [], glassGeo = [], frames = [], solids = [], rails = [], roofs = [], pilasters = [], panels = [];
+  const patios = [], hedges = [], fences = [];
+  const loftD = H.loftgangDepth;
+  const upperTop = roofTop + H.upperStoreys * H.storeyHeight;
   const eps = 0.006;
+
+  // unit origins along x: west row | core | east row (ours = 0)
+  const coreX1 = -H.before * W, coreX0 = coreX1 - H.core.w;
+  const units = [];
+  for (let k = H.west; k >= 1; k--) units.push(coreX0 - k * W);
+  for (let k = -H.before; k <= H.after; k++) units.push(k * W);
+  const xw = coreX0 - H.west * W, xe = (H.after + 1) * W;
 
   const fakeWindow = (o, z, northSide) => {
     const s = northSide ? -1 : 1;
@@ -105,48 +122,94 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall }) {
       boxGeo(o.x1 - f, o.x1, o.y0, o.y1, z - 0.02, z + 0.02),
     );
   };
+  const fakeWindowX = (o, x, west) => { // o: z0/z1/y0/y1 on a gable
+    const s = west ? -1 : 1;
+    glassGeo.push(quadX(o.z0, o.z1, o.y0, o.y1, x + s * 0.002, west));
+    const f = 0.06;
+    frames.push(
+      boxGeo(x - 0.02, x + 0.02, o.y0, o.y0 + f, o.z0, o.z1), boxGeo(x - 0.02, x + 0.02, o.y1 - f, o.y1, o.z0, o.z1),
+      boxGeo(x - 0.02, x + 0.02, o.y0, o.y1, o.z0, o.z0 + f), boxGeo(x - 0.02, x + 0.02, o.y0, o.y1, o.z1 - f, o.z1),
+    );
+  };
   const shift = (list, dx, dy) => list.map((o) => ({ x0: o.x0 + dx, x1: o.x1 + dx, y0: o.y0 + dy, y1: o.y1 + dy }));
+  /** Façade quads around the holes into `out` (z plane), glass in the holes unless it is our unit. */
+  const facade = (out, x0, x1, y0, y1, z, northSide, holes, glass = true) => {
+    for (const [xa, xb, ya, yb] of complement(x0, x1, y0, y1, holes)) out.push(quadZ(xa, xb, ya, yb, z, northSide));
+    if (glass) holes.forEach((o) => fakeWindow(o, z, northSide));
+  };
 
-  for (let k = -N; k <= N; k++) {
-    const ox = k * W;
-    // lower stack (our apartment / the neighbours' apartments)
-    const n0 = shift(north, ox, 0), s0 = shift(south, ox, 0);
-    for (const [xa, xb, ya, yb] of complement(ox, ox + W, 0, roofTop, n0)) bricks.push(quadZ(xa, xb, ya, yb, -eps, true));
-    for (const [xa, xb, ya, yb] of complement(ox, ox + W, 0, roofTop, s0)) bricks.push(quadZ(xa, xb, ya, yb, D + eps, false));
-    if (k !== 0) {
-      solids.push(boxGeo(ox + 0.001, ox + W - 0.001, 0, roofTop, 0, D));
-      n0.forEach((o) => fakeWindow(o, -eps, true));
-      s0.forEach((o) => fakeWindow(o, D + eps, false));
+  // våning 1–2
+  for (const ox of units) {
+    const ours = Math.abs(ox) < 1e-6;
+    facade(bricks, ox, ox + W, 0, roofTop, -eps, true, shift(north, ox, 0), !ours);
+    facade(bricks, ox, ox + W, 0, roofTop, D + eps, false, shift(south, ox, 0), !ours);
+    if (ours) continue;
+    solids.push(boxGeo(ox + 0.001, ox + W - 0.001, 0, roofTop, 0, D));
+    // the neighbours' patios: same slab, hedge and screen walls as ours
+    if (site.patio) patios.push(boxGeo(ox + site.patio.x0, ox + site.patio.x1, -0.01, 0.0, D, site.patio.z1));
+    if (site.hedge) hedges.push(boxGeo(ox + site.hedge.x0, ox + site.hedge.x1, 0, 1.1, site.hedge.z0, site.hedge.z1));
+    for (const f of site.fences ?? []) {
+      fences.push(boxGeo(ox + f.a[0] - 0.025, ox + f.b[0] + 0.025, 0, FENCE_HEIGHT, Math.min(f.a[1], f.b[1]), Math.max(f.a[1], f.b[1])));
     }
-    // upper unit, set back behind the loftgång
-    const n1 = shift(north, ox, roofTop), s1 = shift(south, ox, roofTop);
-    solids.push(boxGeo(ox + 0.001, ox + W - 0.001, roofTop, upperTop, loftD, D));
-    for (const [xa, xb, ya, yb] of complement(ox, ox + W, roofTop, upperTop, n1)) bricks.push(quadZ(xa, xb, ya, yb, loftD - eps, true));
-    for (const [xa, xb, ya, yb] of complement(ox, ox + W, roofTop, upperTop, s1)) bricks.push(quadZ(xa, xb, ya, yb, D + eps, false));
-    n1.forEach((o) => fakeWindow(o, loftD - eps, true));
-    s1.forEach((o) => fakeWindow(o, D + eps, false));
+  }
+  // stair core with the portik through the ground floor, a flat (L1101) on våning 2
+  {
+    const [p0, p1] = H.core.portik.map((p) => coreX0 + p), ph = H.core.portikHeight;
+    const y2 = roofTop / 2;
+    const win = (xa) => ({ x0: coreX0 + xa, x1: coreX0 + xa + 1.2, y0: y2 + 0.8, y1: y2 + 2.4 });
+    const holes = [{ x0: p0, x1: p1, y0: 0, y1: ph }, win(1.0), win(6.4)];
+    facade(bricks, coreX0, coreX1, 0, roofTop, -eps, true, holes, false);
+    facade(bricks, coreX0, coreX1, 0, roofTop, D + eps, false, holes, false);
+    [win(1.0), win(6.4)].forEach((o) => { fakeWindow(o, -eps, true); fakeWindow(o, D + eps, false); });
+    solids.push(boxGeo(coreX0, p0, 0, roofTop, 0, D), boxGeo(p1, coreX1, 0, roofTop, 0, D), boxGeo(p0, p1, ph, roofTop, 0, D));
+    bricks.push(quadX(0, D, 0, ph, p0 + eps, false), quadX(0, D, 0, ph, p1 - eps, true));
   }
 
-  // gable ends of the row
-  const xw = -N * W, xe = (N + 1) * W;
-  bricks.push(quadX(0, D, 0, roofTop, xw - eps, true), quadX(0, D, 0, roofTop, xe + eps, false));
-  bricks.push(quadX(loftD, D, roofTop, upperTop, xw - eps, true), quadX(loftD, D, roofTop, upperTop, xe + eps, false));
+  // våning 3–4: the upper units (L1201–L1209), one over each lower unit and one over the core
+  const uppers = [...units.map((x0) => [x0, x0 + W]), [coreX0, coreX1]];
+  for (const [x0, x1] of uppers) {
+    facade(renders, x0, x1, roofTop, upperTop, loftD - eps, true, shift(north, x0, roofTop));
+    facade(renders, x0, x1, roofTop, upperTop, D + eps, false, shift(south, x0, roofTop));
+    solids.push(boxGeo(x0 + 0.001, x1 - 0.001, roofTop, upperTop, loftD, D));
+  }
+  const edges = [...new Set(uppers.flat().map((x) => +x.toFixed(3)))];
+  const pw = H.pilaster / 2;
+  for (const x of edges) {
+    pilasters.push(boxGeo(x - pw, x + pw, roofTop, upperTop + 0.5, loftD - 0.1, loftD));
+    pilasters.push(boxGeo(x - pw, x + pw, roofTop, upperTop + 0.5, D, D + 0.1));
+  }
 
-  // roof over the upper units + the loftgång deck edge
+  // gable ends (L1008's east gable has windows)
+  bricks.push(quadX(0, D, 0, roofTop, xw - eps, true));
+  const sh = [0, roofTop / 2, roofTop, roofTop + H.storeyHeight];
+  const gw = H.gableWindows.map((g) => ({ z0: g.z0, z1: g.z1, y0: sh[g.storey] + g.sill, y1: sh[g.storey] + g.head, storey: g.storey }));
+  for (const [za, zb, ya, yb] of complement(0, D, 0, roofTop, gw.filter((g) => g.storey < 2).map((g) => ({ x0: g.z0, x1: g.z1, y0: g.y0, y1: g.y1 })))) {
+    bricks.push(quadX(za, zb, ya, yb, xe + eps, false));
+  }
+  renders.push(quadX(loftD, D, roofTop, upperTop, xw - eps, true));
+  for (const [za, zb, ya, yb] of complement(loftD, D, roofTop, upperTop, gw.filter((g) => g.storey >= 2).map((g) => ({ x0: g.z0, x1: g.z1, y0: g.y0, y1: g.y1 })))) {
+    renders.push(quadX(za, zb, ya, yb, xe + eps, false));
+  }
+  gw.forEach((g) => fakeWindowX(g, xe + eps, false));
+
+  // flat roof with a parapet, solar panels
   roofs.push(boxGeo(xw - 0.1, xe + 0.1, upperTop, upperTop + 0.3, loftD - 0.1, D + 0.1));
-  solids.push(boxGeo(xw, xe, roofTop - 0.25, roofTop, -0.05, loftD));
+  for (const [xa, xb] of H.solar.x) for (const [za, zb] of H.solar.z) panels.push(boxGeo(xa, xb, upperTop + 0.35, upperTop + 0.42, za, zb));
 
-  // loftgång railing: top/bottom rail + balusters every 12 cm
-  const rz = 0.04, rh = BUILDING.railHeight;
-  rails.push(boxGeo(xw, xe, roofTop + rh - 0.04, roofTop + rh, rz - 0.03, rz + 0.03));
-  rails.push(boxGeo(xw, xe, roofTop + 0.08, roofTop + 0.12, rz - 0.02, rz + 0.02));
-  for (let x = xw + 0.06; x < xe; x += 0.12) rails.push(boxGeo(x - 0.01, x + 0.01, roofTop, roofTop + rh, rz - 0.01, rz + 0.01));
+  // loftgång deck from the west drum to the east end, plus the landing to the east drum
+  const [tw, te] = H.towers;
+  const deckX0 = tw.x + tw.r * 0.8;
+  solids.push(boxGeo(deckX0, xe, roofTop - 0.25, roofTop, -0.05, loftD));
+  solids.push(boxGeo(te.x - 1.2, te.x + 1.2, roofTop - 0.25, roofTop, te.z + te.r * 0.7, 0));
+  for (const t of H.towers) bricks.push(drum(t.x, t.z, t.r, roofTop + H.railHeight));
 
-  // street/pavement in front of the entrances
-  const street = new THREE.Mesh(boxGeo(xw - 20, xe + 20, -0.02, 0.0, -14, 0),
-    new THREE.MeshStandardMaterial({ color: COLORS.street, roughness: 1 }));
-  street.receiveShadow = true;
-  group.add(street);
+  // loftgång railing: top/bottom rail + balusters every 12 cm (gap at the east drum's landing)
+  const rz = 0.04, rh = H.railHeight;
+  for (const [ra, rb] of [[deckX0, te.x - 1.2], [te.x + 1.2, xe]]) {
+    rails.push(boxGeo(ra, rb, roofTop + rh - 0.04, roofTop + rh, rz - 0.03, rz + 0.03));
+    rails.push(boxGeo(ra, rb, roofTop + 0.08, roofTop + 0.12, rz - 0.02, rz + 0.02));
+    for (let x = ra + 0.06; x < rb; x += 0.12) rails.push(boxGeo(x - 0.01, x + 0.01, roofTop, roofTop + rh, rz - 0.01, rz + 0.01));
+  }
 
   const add = (geos, material, shadow = true) => {
     if (!geos.length) return;
@@ -156,10 +219,16 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall }) {
     group.add(mesh);
   };
   add(bricks, brickMat());
+  add(renders, new THREE.MeshStandardMaterial({ color: H.render, roughness: 0.95 }));
+  add(pilasters, new THREE.MeshStandardMaterial({ color: COLORS.brick, roughness: 0.95 }));
   add(solids, wall);
   add(frames, frame);
   add(glassGeo, new THREE.MeshStandardMaterial({ color: 0x33434d, roughness: 0.1, metalness: 0.4 }), false);
   add(rails, new THREE.MeshStandardMaterial({ color: COLORS.balcony, roughness: 0.5, metalness: 0.3 }));
   add(roofs, new THREE.MeshStandardMaterial({ color: 0x4b5157, roughness: 0.9 }));
+  add(panels, new THREE.MeshStandardMaterial({ color: COLORS.solar, roughness: 0.3, metalness: 0.5 }), false);
+  add(patios, mats.patio, false);
+  add(hedges, mats.hedge);
+  add(fences, mats.fence);
   return group;
 }

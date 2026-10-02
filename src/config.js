@@ -72,24 +72,81 @@ export const WINDOWS = [
   { level: 1, facade: 'south', x: 3.85, sill: 0.7, head: 2.4, transom: 0.4 },  // Sovrum 2
 ];
 
-// Building envelope around the apartment (from the brochure: "staplade radhus" — two-storey
-// units on top with entrances from access balconies on floor 3; red brick façades).
-// Neighbourhood around the row (St Lars, Lund): red-brick blocks with gable roofs and trees,
-// after Peab's drone photo and renders. Positions are illustrative, not surveyed (#2).
-export const SURROUNDINGS = {
-  bay: 3.0, storey: 3.0,  // façade texture: one window per 3 × 3 m
+// The site, measured on FOJAB's situation plan and overview plans in Peab's plan brochure
+// (docs/peab/, 1:500; drawn with Hus L horizontal, so the plan axes are ours: x along the row,
+// z towards the courtyard; metres from our unit's NW outer corner). Scale from the unit pitch.
+// Kv. Lunden = four buildings around a courtyard on top of a garage: Hus L "Parklängan" (ours)
+// along Sankt Lars väg, the point blocks Å-huset A, B, C to the south/west. The ground drops
+// ~3 m south of the courtyard (A/B have a suterräng floor) towards S:t Lars park and Höje å.
+// Buildings outside the plot (schools, shop, villa) are placed from the Google Maps screenshot
+// (docs/tomten-google-maps.jpg) — illustrative boxes, not surveyed.
+export const SITE = {
+  dropZ: 54, dropDepth: 3, dropRun: 5, // courtyard edge → park level (Nivåskillnad ca 3 m)
+  bay: 3.0, storey: 3.0,  // façade texture of the other blocks: one window per 3 × 3 m
   blocks: [
-    { x0: -26, x1: 32, z0: -32, z1: -21, storeys: 4 }, // across the street (north)
-    { x0: -22, x1: 28, z0: 36, z1: 47, storeys: 4 },   // across the courtyard (south)
-    { x0: 25, x1: 37, z0: -8, z1: 24, storeys: 3 },    // east
-    { x0: -31, x1: -19, z0: -8, z1: 24, storeys: 3 },  // west
+    // Kv. Lunden, Å-husen (overview plans): storeys counted from `base`; red brick, low hip roof
+    { name: 'Hus A', x0: -10.2, x1: 9.5, z0: 29.6, z1: 54.2, base: -3, storeys: 5, roof: 'hip' },  // våning -1…4
+    { name: 'Hus B', x0: -43.4, x1: -23.7, z0: 34.2, z1: 58.6, base: -3, storeys: 4, roof: 'hip' }, // våning -1…3
+    { name: 'Hus C', x0: -73.0, x1: -53.3, z0: 12.5, z1: 37.5, base: 0, storeys: 5, roof: 'hip' },  // våning 1…5
+    // outside the plot (illustrative)
+    { name: 'HepCat Store', x0: 28.5, x1: 37, z0: -11, z1: 10, base: 0, storeys: 2, roof: 'gable' },
+    { name: 'Kunskapsskolan', x0: 32, x1: 60, z0: 19.5, z1: 62, base: -3, storeys: 4, roof: 'gable' },
+    { name: 'Realgymnasiet', x0: 5, x1: 70, z0: -74, z1: -50, base: 0, storeys: 3, roof: 'gable' },
+    { name: 'S:t Lars (old hospital)', x0: -62, x1: -22, z0: -62, z1: -46, base: 0, storeys: 3, roof: 'gable' },
+    { name: 'Montessorigrundskolan', x0: -78, x1: -60, z0: -115, z1: -70, base: 0, storeys: 3, roof: 'gable' },
+    { name: 'Villa', x0: -64.5, x1: -48.5, z0: 69, z1: 87, base: -3, storeys: 2, roof: 'gable' },
   ],
+  // asphalt (y follows the ground: courtyard level north of dropZ, park level south of it)
+  roads: [
+    { name: 'Sankt Lars väg', x0: -95, x1: 30, z0: -30, z1: -24 },
+    { name: 'Sankt Lars väg', x0: 22, x1: 30, z0: -30, z1: 200 },
+    { name: 'Karpvägen', x0: -88, x1: -80, z0: -30, z1: 200 },
+    { name: 'P-platser', x0: -50, x1: -6, z0: -20, z1: -9 },
+  ],
+  paving: [
+    { x0: -48, x1: 16, z0: -4, z1: 0 },      // path along Hus L's entrances
+    { x0: -95, x1: 22, z0: -24, z1: -21.5 }, // pavement along Sankt Lars väg
+    { x0: -76, x1: 18, z0: 26, z1: 28.5 },   // courtyard walk (gångstråk) east–west
+    { x0: -20.5, x1: -11, z0: 12.7, z1: 34 }, // from the portik to the pergola
+  ],
+  river: { x0: -200, x1: 150, z0: 125, z1: 135 }, // Höje å
   treeAreas: [
-    { x0: -20, x1: 26, z0: 20, z1: 33, n: 14 },     // courtyard beyond the patios
-    { x0: -24, x1: 30, z0: -19.5, z1: -15.5, n: 9 }, // verge across the street
-    { x0: 18.5, x1: 23, z0: -3, z1: 30, n: 5 },
-    { x0: -17, x1: -12.5, z0: -3, z1: 30, n: 5 },
+    { x0: -46, x1: -39, z0: 20, z1: 29, n: 4 },        // courtyard clusters
+    { x0: -9, x1: -3, z0: 20, z1: 26, n: 3 },
+    { x0: 2, x1: 9, z0: 20, z1: 26, n: 3 },
+    { x0: -21, x1: -14, z0: 34, z1: 57, n: 6 },        // between Hus B and Hus A
+    { x0: -92, x1: 18, z0: -20, z1: -19, n: 11 },      // street trees along Sankt Lars väg
+    { x0: 18, x1: 20, z0: -16, z1: 56, n: 7 },         // … and along its east leg
+    { x0: -130, x1: 70, z0: 68, z1: 140, n: 55 },      // S:t Lars park / woods towards Höje å
+    { x0: -130, x1: -92, z0: -30, z1: 68, n: 14 },     // west of Karpvägen
   ],
+};
+
+// Hus L (Parklängan): stacked row houses, overview plans våning 1–5 + Peab's aerial render.
+// Våning 1–2: L1001–L1004 | stair core + portik (+ L1101 on våning 2) | L1005–L1008; we are
+// L1007, L1008 is the east end unit (gable windows, spiral escape stair north of it).
+// Våning 3–4: L1201–L1209, two-storey units entered from the loftgång on våning 3 (L1208 is the one
+// above us), white render with red brick pilasters between the units; flat roof with solar panels.
+export const HUS_L = {
+  before: 2, after: 1, west: 4,     // units east of the core: 2 west of us, 1 east; 4 west of the core
+  core: { w: 8.75, portik: [3.65, 5.45], portikHeight: 3.0 }, // stair core; portik x from its west end
+  upperStoreys: 2,
+  storeyHeight: 3.0,
+  loftgangDepth: 1.96,    // walkway over our north bedrooms: z 0 → façade of the upper unit
+  railHeight: 1.1,
+  render: 0xf2efe7,       // white render, våning 3–4
+  pilaster: 0.4,          // brick pilaster width at each unit boundary (render)
+  // spiral stairs in brick drums at both ends (våning 1/3 plans): centre, radius
+  towers: [{ x: -46.2, z: 1.1, r: 1.6 }, { x: 10.2, z: -2.6, r: 1.6 }],
+  // L1008's east gable (plan p. 43): windows as plan z ranges, sill/head per storey (guess)
+  gableWindows: [
+    { storey: 0, z0: 2.8, z1: 4.1, sill: 0.7, head: 2.6 }, { storey: 0, z0: 8.5, z1: 9.8, sill: 0.7, head: 2.6 },
+    { storey: 1, z0: 2.8, z1: 4.1, sill: 0.6, head: 2.25 },
+    { storey: 2, z0: 4.0, z1: 5.2, sill: 0.8, head: 2.3 }, { storey: 2, z0: 8.0, z1: 9.2, sill: 0.8, head: 2.3 },
+    { storey: 3, z0: 4.0, z1: 5.2, sill: 0.8, head: 2.3 }, { storey: 3, z0: 8.0, z1: 9.2, sill: 0.8, head: 2.3 },
+  ],
+  // solar panel fields on the roof (situation plan): x ranges × rows of z ranges
+  solar: { x: [[-41.4, -26.7], [-25.0, -6.6], [-5.0, 9.9]], z: [[3.5, 4.5], [5.4, 6.4], [7.4, 8.4], [9.4, 10.4]] },
 };
 
 export const FENCE_HEIGHT = 1.8; // bofakta: Skärmvägg H = 1,8 m
@@ -162,8 +219,11 @@ export const COLORS = {
   fence: 0xa7b6aa, // grey-green screen wall (skärmvägg), Peab render
   brick: 0x8a3b2a,
   mortar: 0xcfc6b8,
-  street: 0x9b9a95,
   balcony: 0x8fa396, // pinnaräcke grågrön (brochure)
+  asphalt: 0x5d5f61,
+  paving: 0xb9b4aa,
+  water: 0x47657a,
+  solar: 0x1d2735,
 };
 
 // Fixed interior from our material choices in Peab's option portal (screenshots in
@@ -237,12 +297,15 @@ export const AO = {
 export const CAT_BOARD = { x: 2.15, y: 1.5, z: 1.11, w: 1.1, h: 0.76, rotY: Math.PI / 2 };
 
 // Day cycle (src/daycycle.js): one day in `minutes` real minutes. The sun follows the real solar
-// path for the date (declination, hour angle) at Kv. Lunden — Skåne, ~55.7° N 13.2° E (Lund;
-// close enough anywhere in western Skåne). Clock time is Swedish local time (CEST in summer).
+// path for the date (declination, hour angle) at Kv. Lunden, Karpvägen / S:t Lars väg in Lund
+// (55.70° N, 13.17° E, docs/tomten-google-maps.jpg). planNorth = compass bearing of the plan's
+// "north" (−z, the entrance façade): FOJAB's north arrow on the situation/overview plans
+// (docs/peab/) puts true north 58° to the left of the plan's up, so the entrance faces ENE and
+// the patio WSW. Clock time is Swedish local time (CEST in summer).
 // Every visit starts at `startHour` on the 15th of the visitor's month, unless ?time=HH[.h] /
 // ?month=1–12 is given. The wall clock in the kitchen fast-forwards at `spool` hours per second.
 export const DAY = {
-  minutes: 12, startHour: 7, lat: 55.7, lon: 13.2, spool: 1.5,
+  minutes: 12, startHour: 7, lat: 55.70, lon: 13.17, planNorth: 58, spool: 1.5,
   moonlight: 0.35, nightAmbient: 0.05,
 };
 

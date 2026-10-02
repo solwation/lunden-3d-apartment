@@ -1,10 +1,14 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { SURROUNDINGS as S, COLORS } from './config.js';
+import { SITE as S, COLORS } from './config.js';
 
-// The neighbourhood seen through the windows: red-brick blocks with grey gable roofs around
-// the courtyard and across the street (St Lars, from Peab's drone photo and renders), trees,
-// and a sky with a few clouds. Everything is merged/instanced: a handful of draw calls.
+// The rest of Kv. Lunden and its neighbourhood (SITE in config): the brick point blocks Hus A, B, C
+// with low hip roofs, the schools and buildings around the plot, Sankt Lars väg and Karpvägen,
+// the courtyard walks, the 3 m drop to S:t Lars park, trees and Höje å, plus a sky with clouds.
+// Everything is merged/instanced: a handful of draw calls.
+
+/** Ground height at plan z: courtyard level north of the drop, park level south of it. */
+export const groundY = (z) => -S.dropDepth * THREE.MathUtils.clamp((z - S.dropZ) / S.dropRun, 0, 1);
 
 function rng(seed) {
   let s = seed;
@@ -50,18 +54,40 @@ function facadeTexture() {
 function block(b) {
   const h = b.storeys * S.storey;
   const geo = new THREE.BoxGeometry(b.x1 - b.x0, h, b.z1 - b.z0);
-  geo.translate((b.x0 + b.x1) / 2, h / 2, (b.z0 + b.z1) / 2);
+  geo.translate((b.x0 + b.x1) / 2, b.base + h / 2, (b.z0 + b.z1) / 2);
   const p = geo.attributes.position, n = geo.attributes.normal, uv = geo.attributes.uv;
   for (let i = 0; i < p.count; i++) {
     const along = Math.abs(n.getX(i)) > 0.5 ? p.getZ(i) : p.getX(i);
-    uv.setXY(i, along / S.bay, p.getY(i) / S.storey);
+    uv.setXY(i, along / S.bay, (p.getY(i) - b.base) / S.storey);
   }
+  return geo;
+}
+
+/** Low hip roof (Å-husen: flat-looking, the plans draw the hips). */
+function hipRoof(b) {
+  const h = b.base + b.storeys * S.storey, o = 0.3, rise = 1.4;
+  const x0 = b.x0 - o, x1 = b.x1 + o, z0 = b.z0 - o, z1 = b.z1 + o;
+  const r = Math.min(x1 - x0, z1 - z0) / 2;
+  const cx = (x0 + x1) / 2, cz = (z0 + z1) / 2;
+  const [ra0, ra1] = x1 - x0 >= z1 - z0 ? [[x0 + r, cz], [x1 - r, cz]] : [[cx, z0 + r], [cx, z1 - r]];
+  const v = (x, y, z) => [x, y, z];
+  const A = v(x0, h, z0), B = v(x1, h, z0), C = v(x1, h, z1), Dd = v(x0, h, z1);
+  const P = v(ra0[0], h + rise, ra0[1]), Q = v(ra1[0], h + rise, ra1[1]);
+  // P is the ridge end nearer x0/z0
+  const tris = x1 - x0 >= z1 - z0
+    ? [[A, P, Q], [A, Q, B], [B, Q, C], [C, Q, P], [C, P, Dd], [Dd, P, A]]
+    : [[A, P, B], [B, P, Q], [B, Q, C], [C, Q, Dd], [Dd, Q, P], [Dd, P, A]];
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(tris.flat(2), 3));
+  geo.setAttribute('uv', new THREE.Float32BufferAttribute(new Array(tris.length * 6).fill(0), 2));
+  geo.computeVertexNormals();
   return geo;
 }
 
 /** Gable roof along the block's long side. */
 function roof(b) {
-  const h = b.storeys * S.storey, alongX = b.x1 - b.x0 >= b.z1 - b.z0;
+  if (b.roof === 'hip') return hipRoof(b);
+  const h = b.base + b.storeys * S.storey, alongX = b.x1 - b.x0 >= b.z1 - b.z0;
   const [a0, a1] = alongX ? [b.z0, b.z1] : [b.x0, b.x1];
   const len = alongX ? b.x1 - b.x0 : b.z1 - b.z0;
   const ridge = Math.min(4, (a1 - a0) * 0.35);
@@ -82,7 +108,10 @@ function trees(rand) {
   for (const area of S.treeAreas) {
     for (let i = 0; i < area.n; i++) {
       const x = area.x0 + rand() * (area.x1 - area.x0), z = area.z0 + rand() * (area.z1 - area.z0);
-      spots.push({ x, z, s: 0.75 + rand() * 0.6 });
+      if (S.blocks.some((b) => x > b.x0 - 2 && x < b.x1 + 2 && z > b.z0 - 2 && z < b.z1 + 2)) continue;
+      if (S.roads.some((r) => x > r.x0 - 1 && x < r.x1 + 1 && z > r.z0 - 1 && z < r.z1 + 1)) continue;
+      if (z > S.river.z0 - 2 && z < S.river.z1 + 2) continue;
+      spots.push({ x, z, y: groundY(z), s: 0.75 + rand() * 0.6 });
     }
   }
   const trunkGeo = new THREE.CylinderGeometry(0.14, 0.2, 1, 7).translate(0, 0.5, 0);
@@ -92,10 +121,10 @@ function trees(rand) {
   const m = new THREE.Matrix4(), q = new THREE.Quaternion(), col = new THREE.Color();
   spots.forEach((t, i) => {
     const h = 3.2 * t.s;
-    m.compose(new THREE.Vector3(t.x, 0, t.z), q, new THREE.Vector3(t.s, h, t.s));
+    m.compose(new THREE.Vector3(t.x, t.y, t.z), q, new THREE.Vector3(t.s, h, t.s));
     trunk.setMatrixAt(i, m);
     q.setFromEuler(new THREE.Euler(0, rand() * 6, 0));
-    m.compose(new THREE.Vector3(t.x, h + 1.6 * t.s, t.z), q, new THREE.Vector3(2.4 * t.s, 2.6 * t.s, 2.4 * t.s));
+    m.compose(new THREE.Vector3(t.x, t.y + h + 1.6 * t.s, t.z), q, new THREE.Vector3(2.4 * t.s, 2.6 * t.s, 2.4 * t.s));
     crown.setMatrixAt(i, m);
     // mostly greens, now and then an autumn tree (the drone photo is from September)
     const autumn = rand() < 0.15;
@@ -158,6 +187,9 @@ export function cloudTexture() {
   const tex = new THREE.CanvasTexture(c);
   tex.flipY = false;
   tex.wrapS = THREE.RepeatWrapping;
+  // no mipmaps: the atan() seam in the sky shader would pick the smallest mip there (a dashed line)
+  tex.generateMipmaps = false;
+  tex.minFilter = THREE.LinearFilter;
   return tex;
 }
 
@@ -178,14 +210,15 @@ export function buildWindowLights() {
         const a = (k + 0.5) * S.bay;
         if (a - 0.7 < f.a0 || a + 0.7 > f.a1) continue;
         for (let st = 0; st < b.storeys; st++) {
-          const y = st * S.storey + 1.55;
+          const y = b.base + st * S.storey + 1.55;
+          if (y < groundY(f.along === 'x' ? f.c : a) + 0.8) continue; // below the courtyard
           spots.push(f.along === 'x' ? { x: a, y, z: f.c, n: f.n } : { x: f.c, y, z: a, n: f.n });
         }
       }
     }
   }
   const geo = new THREE.PlaneGeometry(1.25, 1.45);
-  const mat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false });
+  const mat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false, fog: false }); // fog would add its colour to black (unlit) quads
   const mesh = new THREE.InstancedMesh(geo, mat, spots.length);
   const m = new THREE.Matrix4(), q = new THREE.Quaternion(), one = new THREE.Vector3(1, 1, 1), up = new THREE.Vector3(0, 1, 0);
   const rand = rng(17);
@@ -220,8 +253,36 @@ export function buildWindowLights() {
   };
 }
 
-export function buildSurroundings() {
+/** Horizontal strip that follows the ground (bends down at the drop). */
+function groundStrip(x0, x1, z0, z1, lift) {
+  const zs = [z0, z1, S.dropZ, S.dropZ + S.dropRun].filter((z) => z >= z0 && z <= z1).sort((a, b) => a - b);
+  const pos = [];
+  for (let i = 0; i < zs.length - 1; i++) {
+    const za = zs[i], zb = zs[i + 1];
+    if (zb - za < 1e-3) continue;
+    const ya = groundY(za) + lift, yb = groundY(zb) + lift;
+    pos.push(x0, ya, za, x0, yb, zb, x1, ya, za, x1, ya, za, x0, yb, zb, x1, yb, zb);
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  geo.setAttribute('uv', new THREE.Float32BufferAttribute(new Array((pos.length / 3) * 2).fill(0), 2));
+  geo.computeVertexNormals();
+  return geo;
+}
+
+export function buildSurroundings({ grass }) {
   const group = new THREE.Group();
+  const flat = (geos, color, lift = 0) => {
+    const mesh = new THREE.Mesh(mergeGeometries(geos), color.isMaterial ? color : new THREE.MeshStandardMaterial({ color, roughness: 1 }));
+    mesh.receiveShadow = true;
+    group.add(mesh);
+  };
+  // the slope down to the park and the park level (the courtyard level is world.js's ground)
+  flat([groundStrip(-200, 200, S.dropZ, 260, -0.01)], grass);
+  flat(S.roads.map((r) => groundStrip(r.x0, r.x1, r.z0, r.z1, 0.012)), COLORS.asphalt);
+  flat(S.paving.map((r) => groundStrip(r.x0, r.x1, r.z0, r.z1, 0.008)), COLORS.paving);
+  flat([groundStrip(S.river.x0, S.river.x1, S.river.z0, S.river.z1, 0.02)],
+    new THREE.MeshStandardMaterial({ color: COLORS.water, roughness: 0.15, metalness: 0.2 }));
   const walls = new THREE.Mesh(mergeGeometries(S.blocks.map(block)),
     new THREE.MeshStandardMaterial({ map: facadeTexture(), roughness: 0.95 }));
   const roofs = new THREE.Mesh(mergeGeometries(S.blocks.map(roof)),

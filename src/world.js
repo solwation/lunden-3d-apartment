@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import {
   LEVELS, SOFFITS, DOOR_HEIGHT, EXT_DOOR_HEAD, WINDOWS, CABINET_HEIGHT, BASE_CABINET, SHELF_HEIGHT, TOILET,
-  STAIR, COLORS, FENCE_HEIGHT, FINISH, OPTIONS, EXTRA_WALLS, ROOM_RENAMES, EXTRA_ROOMS, ROOM_DIVIDERS,
+  STAIR, COLORS, FENCE_HEIGHT, SITE, FINISH, OPTIONS, EXTRA_WALLS, ROOM_RENAMES, EXTRA_ROOMS, ROOM_DIVIDERS,
 } from './config.js';
 import { buildStairs } from './stairs.js';
 import { SwingDoor, SlidingDoor, wardrobeDoors } from './doors.js';
@@ -504,7 +504,7 @@ export function buildWorld(plan) {
 
   // Site: ground, patio, hedge, fences
   const site = lower.site;
-  const ground = plate(-120, W + 120, -120, D + 120, -0.01, M.grass);
+  const ground = plate(-200, 200, -200, SITE.dropZ, -0.01, M.grass); // park level: surroundings.js
   scene.add(ground);
   if (site.patio) scene.add(box(site.patio.x0, site.patio.x1, D, site.patio.z1, -0.01, 0.0, M.patio, { shadow: false }));
   const outdoor = [];
@@ -517,11 +517,11 @@ export function buildWorld(plan) {
     scene.add(box(ax - 0.025, bx + 0.025, Math.min(az, bz), Math.max(az, bz), 0, FENCE_HEIGHT, M.fence));
     outdoor.push([ax, az, bx, bz]);
   }
-  // Brick façades, the stacked units above, the loftgång and the neighbouring units
+  // Hus L: brick façades, the neighbouring units, the stacked units above and the loftgång
   const north = [...l0.openings.north, ...l1.openings.north];
   const south = [...l0.openings.south, ...l1.openings.south];
-  scene.add(buildExterior({ W, D, roofTop: roofY + 0.35, north, south, frame: M.frame, wall: M.wall }));
-  const surroundings = buildSurroundings();
+  scene.add(buildExterior({ W, D, roofTop: roofY + 0.35, north, south, frame: M.frame, wall: M.wall, site, mats: M }));
+  const surroundings = buildSurroundings({ grass: M.grass });
   scene.add(surroundings);
   // keep the visitor near the house
   const bounds = { x0: 0.05, x1: W - 0.05, z0: -6, z1: site.patio ? site.patio.z1 : D + 4 };
