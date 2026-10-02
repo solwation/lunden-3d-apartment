@@ -9,7 +9,7 @@ import { CatSpawner, VARIANTS, BREEDS } from './cat.js';
 import { initAudio, sfx, toggleMuted, isMuted, updateListener } from './audio.js';
 import { stairHeight } from './stairs.js';
 import { loadChangelog, renderChangelog, buildNote } from './changelog.js';
-import { totalScore, setStatsExtra, stats, bump, catFound, secretFound, renderStats, resetStats, visitRoom, setRoomTotal, setBadgeElement } from './stats.js';
+import { setScoreElement, totalScore, setStatsExtra, stats, bump, catFound, secretFound, renderStats, resetStats, visitRoom, setRoomTotal, setBadgeElement } from './stats.js';
 import { Minimap } from './minimap.js';
 import { Measure } from './measure.js';
 import { cloudTexture } from './surroundings.js';
@@ -241,6 +241,7 @@ const book = new Book(scene, camera, document.getElementById('book-panel'), (sho
 function showBook(show) {
   reading = show;
   book.show(show);
+  if (show) bump('read'); // statistics and points (#197)
   player.keys.clear();
 }
 const beer = new Beer(scene, camera); // a big beer on the lounge table when you sit down in the lounge sofa (#117)
@@ -348,7 +349,10 @@ posterPanel.querySelector('[data-act=throw]').addEventListener('click', throwPos
 posterPanel.querySelector('[data-act=down]').addEventListener('click', takeDownPoster);
 posterPanel.querySelector('[data-act=close]').addEventListener('click', () => showPoster(null));
 target.onSink = () => marks.dropUnder(target.object); // its marks don't hang in the air as it sinks (#179)
-for (const h of [saber, ...toys.wands, toys.darts]) Object.assign(h, { marks, cat }); // the saber burns, the wands do magic (#97), darts splash (#98)
+for (const h of [saber, ...toys.wands, toys.darts]) Object.assign(h, { marks, cat });
+for (const wd of toys.wands) wd.onMagic = () => bump('magic'); // statistics and points (#197)
+target.onHit = (pts) => bump('target', pts);
+sonos.onPlay = () => bump('songs'); // the saber burns, the wands do magic (#97), darts splash (#98)
 // the cat goes for a fish finger lying on the floor near it and eats it (#163)
 if (fish) {
   cat.fishSource = () => fish.placed;
@@ -371,6 +375,7 @@ setStatsExtra(() => leaderboard.html());
 cloud.ready = cloud.on ? Promise.all([postersLoaded, boardLoaded]).then(() => cloud.sync()) : Promise.resolve(); // (tests wait on it)
 cat.onPet = () => bump('petted');
 cat.onPhoto = () => { // 0.7 s into the pat (cat.js), before it walks off (#206)
+  bump('catPhotos');
   const head = cat.head.getWorldPosition(new THREE.Vector3());
   board.add(cat.catName, snapshot(renderer, scene, camera, head));
 };
@@ -690,8 +695,8 @@ function use(thing) {
   else if (thing.kind === 'appliance') { thing.toggle(); if (thing.isOpen) bump('appliances'); } // oven, microwave (#82)
   else if (thing.kind === 'coffee') thing.toggle();
   else if (thing.kind === 'speaker') { if (!sonos.playing) sonos.play(); showSonos(true); } // music in all the speakers (#187)
-  else if (thing.kind === 'grill') thing.toggle(); // light / put out the grill (#204)
-  else if (thing.kind === 'hood') thing.toggle(); // the cooker hood's fan (#194)
+  else if (thing.kind === 'grill') { thing.toggle(); if (thing.on) bump('grill'); } // light / put out the grill (#204)
+  else if (thing.kind === 'hood') { thing.toggle(); if (thing.on) bump('hood'); } // the cooker hood's fan (#194)
   else if (thing.kind === 'hob') { thing.toggle(); if (thing.on) bump('appliances'); } // the induction hob (#158)
   else if (thing.kind === 'cabinet') { thing.toggle(); if (thing.isOpen) bump('cabinets'); } // wall cabinets that open (#138)
   else if (thing.kind === 'target') thing.toggle(); // clear the score (#99)
@@ -711,7 +716,7 @@ function use(thing) {
     const opening = thing.toggle();
     sfx.parasol(thing.pickable.getWorldPosition(new THREE.Vector3()).setY(2), opening);
   }
-  else if (thing.kind === 'carkey') { thing.press(); car.call(); } // beep beep: the car comes, or leaves (#173)
+  else if (thing.kind === 'carkey') { thing.press(); car.call(); bump('car'); } // beep beep: the car comes, or leaves (#173)
   else if (thing.kind === 'flush') { if (thing.toggle()) bump('flushes'); } // the toilet's flush button (#155)
   else if (thing.kind === 'lid') {
     thing.toggle();
@@ -945,6 +950,7 @@ document.getElementById('furniture-btn').addEventListener('click', () => toggleF
 // Counted events pop up as small badges instead.
 const statsEl = document.getElementById('stats');
 setBadgeElement(document.getElementById('badges'));
+setScoreElement(document.getElementById('score')); // points, top left (#197)
 let statsPinned = false;
 // the minimap is part of the same "extra HUD" (#85): shown with the stats; K shows the map on its own
 let mapPinned = false;

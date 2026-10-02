@@ -249,6 +249,8 @@ src/sonos.js           music in the SYMFONISK speakers (#187, SONOS): six genera
                        → a panner per speaker (walls / the other floor muffle), #sonos-panel (⏮ ⏭ ⏯ volume, reading mode)
 src/stats.js           visitor statistics (localStorage), "+1" badges per event, the HUD panel
                        (hidden; Tab held / T / 📊 shows it)
+                       The score (#197/#198): `totalScore()` from SCORE in config × the counts shows top left (#score,
+                       `renderScore` after every count) with a "+N" when it grows
 src/screens.js         TV programmes drawn on a canvas (PROGRAMS: space, underwater, superheroes, unicorn …), channel
                        snow, the Ambilight colour per programme; `Screen` is shared by the TVs in furniture.js
 src/detail.js          DetailCuller (#189): far-away small meshes and things inside the flat hidden by its walls (seen from
@@ -270,6 +272,7 @@ tools/measuretest.html headless test of the tape measure (wall to wall in the li
 tools/watertest.html   headless test: aim at every tap/shower, turn it on and off
 tools/lighttest.html   headless test: aim at every light switch / floor lamp, toggle it
 tools/pettest.html     headless test of petting the cat (eyes, hand, stats counter, the photo; then it walks off and is gone)
+tools/scoretest.html   headless test: points from 0, a door +1, the grill +10, a fish finger the cat eats +15 (a stat too), reset
 tools/notetest.html    headless test of the changelog note ("Nytt", read/close, no walking, swings with the freezer door)
 tools/patiotest.html   headless test of the patio seasons (parasol, beers, snowman) + sofa collision
 tools/keytest.html     headless test of the hall key cabinet: open, car key reachable only then, beep; the car comes, parks, leaves

@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Score test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+// Points (#197): the score starts at 0 after a reset and is shown top left; opening a door gives SCORE.doors, lighting the
+// grill SCORE.grill, a fish finger the cat eats SCORE.catFish (a stat too), a "+N" pops up; the reset clears it.
+//   google-chrome --headless=new --dump-dom http://localhost:8137/tools/scoretest.html
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+localStorage.removeItem('lunden.stats');
+const f = document.createElement('iframe');
+f.width = 900; f.height = 600; f.src = '../index.html';
+document.body.append(f);
+f.onload = async () => {
+  const w = f.contentWindow, d = f.contentDocument;
+  while (!w.__app) await wait(100);
+  const { stats, world, use, grill, fish, cat, step, player, heldItem, camera, totalScore } = w.__app;
+  const lines = [];
+  const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; };
+  w.confirm = () => true;
+  d.getElementById('stats-reset').click();
+  d.getElementById('start-touch').click();
+  await wait(50);
+  player.spawn(1.3, -6, Math.PI); // outside, no room to visit
+  step(1 / 60);
+  const el = d.getElementById('score');
+  const shown = () => Number(el.querySelector('b').textContent.replace(/\s/g, ''));
+  let pass = check(totalScore() === 0 && shown() === 0 && !el.closest('[hidden]'), `starts at 0, shown top left ("${el.textContent.trim()}")`);
+  cat.chance.appear = 0; cat.chance.steal = 0; // no cat (and its points) behind the door
+  const door = world.doors.find((x) => x.name === 'dörren');
+  use(door);
+  pass &= check(totalScore() === 1 && shown() === 1 && /\+1/.test(el.textContent), `a door: +1 ("${el.textContent.trim()}")`);
+  use(grill);
+  pass &= check(totalScore() === 11 && stats.grill === 1, `the grill lit: +10 (score ${totalScore()})`);
+  grill.set(false);
+  // a fish finger the cat eats: a statistic and 15 points
+  const V = camera.position.constructor;
+  cat.object.position.set(4.3, 0, 2.5); cat.object.visible = true; cat.on = null; cat.object.updateMatrixWorld(true);
+  fish.press(); heldItem().placeAt(new V(4.0, 0, 3.7));
+  for (let i = 0; i < 30 * 12; i++) step(1 / 30);
+  pass &= check(stats.catFish === 1 && totalScore() === 26, `the cat ate a fish finger: catFish ${stats.catFish}, score ${totalScore()}`);
+  const row = d.getElementById('stats');
+  w.__app.renderStats?.(row);
+  d.getElementById('stats-reset').click();
+  pass &= check(totalScore() === 0 && shown() === 0, 'reset: back to 0');
+  out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
+};
+</script>
+</body>
+</html>

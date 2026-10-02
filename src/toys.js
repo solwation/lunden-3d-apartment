@@ -233,6 +233,7 @@ export class Wand extends Holdable {
     if (h?.cat) this.cat?.meowNow?.();
     else if (h) {
       this.marks.magic(h, eye); this.magics = (this.magics ?? 0) + 1;
+      this.onMagic?.(); // statistics and points (#197)
       h.object.userData.target?.hit(h.point, eye); // magic on the target scores too (#179)
     }
   }

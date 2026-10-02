@@ -114,6 +114,7 @@ export class Target {
     this.last = pts;
     this.save(); this.draw();
     badge(`🎯 +${pts}`, false);
+    this.onHit?.(pts); // statistics and points (#197)
     sfx.pling(p, this.points(this.face.getWorldPosition(new THREE.Vector3()), from) === pts ? 2 : 1.2); // higher for a bullseye
     return pts;
   }

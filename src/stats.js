@@ -4,7 +4,7 @@
 import { SECRET, SCORE } from './config.js';
 const KEY = 'lunden.stats';
 
-const fresh = () => ({ cats: 0, rare: 0, byVariant: {}, petted: 0, doors: 0, lids: 0, flushes: 0, taps: 0, fridge: 0, appliances: 0, cabinets: 0, beer: 0, coffee: 0, fish: 0, turbo: 0, fried: 0, burnt: 0, catFish: 0, chicken: 0, wine: 0, champagne: 0, whisky: 0, milk: 0, kask: 0, posted: 0, thrown: 0, lights: 0, sat: 0, lay: 0, steps: 0, metres: 0, stairs: 0, seconds: 0, visited: {}, secrets: 0, secretKinds: {} });
+const fresh = () => ({ cats: 0, rare: 0, byVariant: {}, petted: 0, doors: 0, lids: 0, flushes: 0, taps: 0, fridge: 0, appliances: 0, cabinets: 0, beer: 0, coffee: 0, fish: 0, turbo: 0, fried: 0, burnt: 0, catFish: 0, chicken: 0, wine: 0, champagne: 0, whisky: 0, milk: 0, kask: 0, posted: 0, thrown: 0, lights: 0, sat: 0, lay: 0, steps: 0, metres: 0, stairs: 0, seconds: 0, visited: {}, secrets: 0, secretKinds: {}, catPhotos: 0, grill: 0, hood: 0, songs: 0, read: 0, car: 0, magic: 0, target: 0 });
 
 function load() {
   try {
@@ -22,6 +22,7 @@ const BADGES = {
   petted: '✋ Klappat katt', doors: '🚪 Dörr öppnad', lids: '🚽 Toalettlock', flushes: '🌊 Spolat', taps: '💧 Kran påslagen',
   fridge: '🍗 Kylskåpet öppnat', appliances: '🍳 Ugn/mikro öppnad', cabinets: '🗄 Skåp öppnat', beer: '🍺 Klunk öl', coffee: '☕ Klunk kaffe', turbo: '⚡ Kaffeturbo!', fish: '🐟 Fiskpinne uppäten', fried: '🍳 Fiskpinne stekt', burnt: '🔥 Fiskpinne bränd', catFish: '🐈 Katten åt en fiskpinne', chicken: '🍗 Kycklingbit uppäten', wine: '🍷 Klunk vin', champagne: '🥂 Klunk champagne', whisky: '🥃 Klunk whisky', milk: '🥛 Klunk mjölk', kask: '☕ Klunk kaffekask', lights: '💡 Lampa tänd', stairs: '🪜 Trapptur',
   sat: '🪑 Satt ner', lay: '🛏 Lagt sig', posted: '📌 Teckning uppsatt', thrown: '🗑 Teckning slängd',
+  catPhotos: '📸 Kattfoto', grill: '🔥 Grillen tänd', hood: '🌀 Fläkten på', songs: '🎵 Musik på', read: '📖 Läste boken', car: '🚗 Bilen kallad', magic: '✨ Trolleri',
 };
 const STEP_BADGE = 100; // a badge every 100 steps
 
@@ -50,6 +51,30 @@ export function badge(text, count = true) {
   b.timer = setTimeout(() => b.remove(), 2600);
 }
 
+// --- the score in the HUD (#197): totalScore() top left (#score), a "+N" popping up when it grows ---
+let scoreEl = null, plusEl = null, plusTimer = 0, plusSum = 0, lastScore = null;
+/** Where the score goes: a container in the HUD. */
+export function setScoreElement(el) {
+  scoreEl = el;
+  el.innerHTML = '<span class="label">Poäng</span> <b></b><span class="plus"></span>';
+  plusEl = el.querySelector('.plus');
+  renderScore();
+}
+/** Show the current total; if it grew since last time, pop up the difference (summed while it shows). */
+export function renderScore() {
+  if (!scoreEl) return;
+  const t = totalScore();
+  scoreEl.querySelector('b').textContent = t.toLocaleString('sv-SE');
+  if (lastScore !== null && t > lastScore) {
+    plusSum = (plusTimer ? plusSum : 0) + (t - lastScore);
+    plusEl.textContent = `+${plusSum}`;
+    plusEl.classList.remove('pop'); void plusEl.offsetWidth; plusEl.classList.add('pop');
+    clearTimeout(plusTimer);
+    plusTimer = setTimeout(() => { plusTimer = 0; plusEl.textContent = ''; plusEl.classList.remove('pop'); }, 1800);
+  }
+  lastScore = t;
+}
+
 /** The visitor's score (#198): SCORE points per counted thing (rooms per room visited, steps per step). */
 export function totalScore() {
   let t = 0;
@@ -63,6 +88,7 @@ export function totalScore() {
 export function bump(key, n = 1) {
   stats[key] += n;
   dirty = true;
+  renderScore();
   if (BADGES[key]) badge(BADGES[key]);
   if (key === 'steps' && stats.steps % STEP_BADGE === 0) badge(`👣 ${stats.steps} steg`, false);
 }
@@ -73,6 +99,7 @@ export function secretFound(key, name, rare = false) {
   const isNew = !stats.secretKinds[key];
   stats.secretKinds[key] = (stats.secretKinds[key] ?? 0) + 1;
   dirty = true;
+  renderScore();
   badge(`${rare ? '✨' : '🤫'} Hemlighet: ${name}${isNew ? ' (ny!)' : ''}`, false);
 }
 
@@ -81,6 +108,7 @@ export function catFound(variantName, rare = false) {
   if (rare) stats.rare += 1;
   stats.byVariant[variantName] = (stats.byVariant[variantName] ?? 0) + 1;
   dirty = true;
+  renderScore();
   badge(rare ? '✨ Ovanlig katt hittad' : '🐈 Katt hittad');
 }
 
@@ -92,12 +120,15 @@ export function visitRoom(key) {
   if (stats.visited[key]) return;
   stats.visited[key] = true;
   dirty = true;
+  renderScore();
   badge(`🏠 Nytt rum: ${key.split(':').slice(1).join(':')}`, false);
 }
 
 export function resetStats() {
   Object.assign(stats, fresh());
   dirty = true;
+  lastScore = null;
+  renderScore();
   save();
 }
 
@@ -139,6 +170,14 @@ export function statRows() {
     ['💡 Lampor tända', `${stats.lights}`],
     ['📌 Teckningar uppsatta', `${stats.posted}`],
     ['🗑 Teckningar slängda', `${stats.thrown}`],
+    ['📸 Kattfoton', `${stats.catPhotos}`],
+    ['🔥 Grillen tänd', `${stats.grill}`],
+    ['🌀 Köksfläkten på', `${stats.hood}`],
+    ['🎵 Musik spelad', `${stats.songs}`],
+    ['📖 Boken läst', `${stats.read}`],
+    ['🚗 Bilen kallad', `${stats.car}`],
+    ['✨ Trollstavsträffar', `${stats.magic}`],
+    ['🎯 Måltavlepoäng', `${stats.target}`],
     ['👣 Steg', `${stats.steps}`, `${Math.round(stats.metres)} m`],
     ['🪜 Trappturer', `${stats.stairs}`],
     ['🏠 Rum besökta', `${Object.keys(stats.visited).length}${roomTotal ? ` av ${roomTotal}` : ''}`],

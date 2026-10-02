@@ -575,6 +575,7 @@ export const SCORE = {
   cats: 20, rare: 50, petted: 10, catFish: 15, doors: 1, lids: 1, flushes: 2, taps: 1, fridge: 2, appliances: 2,
   cabinets: 1, beer: 2, coffee: 2, fish: 3, chicken: 5, wine: 2, champagne: 2, whisky: 2, milk: 2, kask: 3, posted: 10,
   thrown: 3, lights: 1, sat: 2, lay: 2, stairs: 2, secrets: 15, visited: 5, steps: 0.01,
+  fried: 5, burnt: 1, catPhotos: 5, grill: 10, hood: 3, songs: 3, read: 5, car: 15, magic: 2, target: 1, // #197 (target = per target point)
 };
 // The leaderboard: how many rows are shown, how often a changed score is sent (s).
 export const LEADERBOARD = { show: 10, every: 30, nameMax: 20 };

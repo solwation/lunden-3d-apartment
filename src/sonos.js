@@ -168,6 +168,7 @@ export class Sonos {
 
   play() {
     const A = this.ensureBus();
+    if (!this.playing) this.onPlay?.(); // statistics and points (#197)
     this.playing = true;
     if (A) { this.startChannel(A); this.bus.mix.gain.setTargetAtTime(this.gain, A.ctx.currentTime, 0.05); }
     this.render();
