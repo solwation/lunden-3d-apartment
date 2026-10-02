@@ -564,6 +564,30 @@ export const sfx = {
     noise(t, 0.08, d, { type: 'lowpass', freq: 600, gain: 0.25 });
     tone(t + 0.18, 0.1, d, { type: 'sine', from: 150, to: 80, gain: 0.15 });
   },
+  /** The cooker hood's fan (#194): a low, steady whoosh until stopped. */
+  fan(pos) {
+    if (!ready()) return null;
+    const t = ctx.currentTime, d = out(pos, 0.6);
+    const src = ctx.createBufferSource(); src.buffer = noiseBuf; src.loop = true;
+    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 700;
+    const g = ctx.createGain(); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.18, t + 1.2);
+    src.connect(lp).connect(g).connect(d); src.start(t, Math.random());
+    return { stop() { const t1 = ctx.currentTime; g.gain.cancelScheduledValues(t1); g.gain.setValueAtTime(g.gain.value, t1); g.gain.linearRampToValueAtTime(0, t1 + 0.8); src.stop(t1 + 0.85); } };
+  },
+  /** The smoke alarm (#194): a loud, shrill beep-beep-beep until stopped. */
+  alarm(pos) {
+    if (!ready()) return null;
+    const t = ctx.currentTime, d = out(pos, 1.2);
+    const o = ctx.createOscillator(); o.type = 'square'; o.frequency.value = 3150;
+    const g = ctx.createGain(); g.gain.value = 0;
+    const lfo = ctx.createOscillator(); lfo.type = 'square'; lfo.frequency.value = 2.2; // on/off a couple of times a second
+    const lg = ctx.createGain(); lg.gain.value = 0.06;
+    const bias = ctx.createConstantSource(); bias.offset.value = 0.06;
+    lfo.connect(lg).connect(g.gain); bias.connect(g.gain);
+    o.connect(g).connect(d);
+    o.start(t); lfo.start(t); bias.start(t);
+    return { stop() { const t1 = ctx.currentTime + 0.05; o.stop(t1); lfo.stop(t1); bias.stop(t1); } };
+  },
   /** A bite of something crispy (a fish finger, #162): a crunch, then a few soft chews. `k` = loudness. */
   chew(pos, k = 1) {
     if (!ready()) return;

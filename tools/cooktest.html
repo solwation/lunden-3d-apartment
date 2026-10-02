@@ -124,6 +124,38 @@ f.onload = async () => {
   chicken.take(); chicken.intoPan(); run(C.cook + 1);
   toggleFurniture(); toggleFurniture();
   pass &= check(!chicken.placed && !chicken.inPan && !smokes() && chicken.model.position.distanceTo(chicken.home.pos) < 0.001, `F: home to the fridge, no smoke (${chicken.placed} ${chicken.inPan} ${smokes()} ${chicken.model.position.distanceTo(chicken.home.pos).toFixed(3)})`);
+  // (4) #194: raw it is pale; frying without the hood → the smoke alarm; the hood on → quiet; cooked: break a leg off, eat it
+  const { smokeAlarm, stats } = w.__app, hood = world.hood;
+  const hex = () => chicken.skins[0].m.color.getHex();
+  pass &= check(!!hood && hex() === chicken.skins[0].raw.getHex(), `raw: pale skin (#${hex().toString(16)})`);
+  pan.take(); pan.placeAt(hob.zone); hob.set(true); chicken.take(); chicken.intoPan();
+  run(C.cook + 4);
+  pass &= check(chicken.smoking && !smokeAlarm.ringing, `smoking ${C.cook + 4} s in, ${smokeAlarm.smokyFor.toFixed(1)} s of smoke: not yet`);
+  run(3);
+  pass &= check(smokeAlarm.ringing, 'no hood: the smoke alarm goes off');
+  label = aim(hood.intake.clone().add(new V(0, 0.04, 0)), from);
+  pass &= check(/slå på köksfläkten/i.test(label), `the hood: "${label}"`);
+  btn.click(); run(1);
+  pass &= check(hood.on && !smokeAlarm.ringing && chicken.smoking && !chicken.freeSmoke, 'the hood on: the smoke goes up into it, the alarm stops');
+  pass &= check(hex() !== chicken.skins[0].raw.getHex(), `cooked: golden (#${hex().toString(16)})`);
+  run(10);
+  pass &= check(!smokeAlarm.ringing, 'still quiet with the hood running');
+  // eat: a leg
+  const leg = chicken.parts[0], legAt = leg.meshes[0].getWorldPosition(new V());
+  label = aim(legAt, from);
+  pass &= check(/bryta loss kycklingbenet/i.test(label), `the leg: "${label}"`);
+  const before = stats.chicken;
+  btn.click(); step(1 / 60);
+  const piece = heldItem();
+  pass &= check(piece?.isChickenPiece && leg.gone && !leg.meshes[0].visible, 'the leg in the hand, gone from the bird');
+  for (let b = 0; b < 3; b++) { piece.use(); run(0.5); }
+  pass &= check(!heldItem() && stats.chicken === before + 1, `eaten (stats ${stats.chicken})`);
+  // everything else: three more limbs, then the body in pieces → just the plate
+  for (const p of chicken.parts.slice(1)) { chicken.breakOff(p); for (let b = 0; b < 3; b++) { heldItem()?.use(); run(0.5); } }
+  for (let k = 0; k < 3; k++) { chicken.breakOff(null); for (let b = 0; b < 3; b++) { heldItem()?.use(); run(0.5); } }
+  pass &= check(chicken.body.every((m) => !m.visible) && stats.chicken === before + 7 && chicken.plate.visible === false, `all eaten: ${stats.chicken - before} pieces, nothing left in the pan`);
+  toggleFurniture(); toggleFurniture();
+  pass &= check(!hood.on && !smokeAlarm.ringing && chicken.body.every((m) => m.visible) && chicken.parts.every((p) => !p.gone) && hex() === chicken.skins[0].raw.getHex(), 'F: the fan off, quiet, the chicken whole and raw again');
   hob.set(false); pan.goHome(); if (fridge.isOpen) fridge.toggle(); if (drawer.isOpen) drawer.toggle();
   out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
 };

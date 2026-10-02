@@ -662,7 +662,13 @@ export const PAN = { d: 0.28, h: 0.05, handle: 0.19, color: 0x1d1d1f, handleColo
 // The roast chicken in the fridge (#160): it smokes after `cookSeconds` in the pan on a lit zone, for `smokeSeconds`
 // after it leaves the heat (or until it is back in the fridge with the door shut); `darken` = how much browner it
 // gets at most; `inPanY` = its origin above the pan's (the pan's floor), `inPanScale` so it fits; `held` = camera space.
-export const CHICKEN = { cookSeconds: 10, smokeSeconds: 60, darken: 0.35, inPanY: 0.0, inPanScale: 0.8, held: { x: 0.18, y: -0.3, z: -0.55 } };
+export const CHICKEN = { cookSeconds: 10, smokeSeconds: 60, darken: 0.35, inPanY: 0.0, inPanScale: 0.8, held: { x: 0.18, y: -0.3, z: -0.55 },
+  // #194: raw it is pale beige-pink (skin, the darker parts), it turns the old golden brown as it fries; cooked, E breaks
+  // off the legs and wings and then `bodyBites` pieces of the body, each eaten in `bites` bites; `piece` = in the view
+  raw: [0xe9c7a6, 0xddb48f], bodyBites: 3, bites: 2, piece: { x: 0.15, y: -0.17, z: -0.36 } };
+// The smoke alarm in the kitchen ceiling (#194, src/hood.js): it goes off after `delay` s of smoke that the cooker hood
+// does not draw away (the hood draws what is within `hoodReach` m of its middle, below it). Position: mid-kitchen (ours).
+export const SMOKE_ALARM = { x: 4.2, y: 3.0, z: 2.6, delay: 5, hoodReach: 0.6 };
 
 export const KITCHEN = {
   level: 0,

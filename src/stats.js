@@ -4,7 +4,7 @@
 import { SECRET } from './config.js';
 const KEY = 'lunden.stats';
 
-const fresh = () => ({ cats: 0, rare: 0, byVariant: {}, petted: 0, doors: 0, lids: 0, flushes: 0, taps: 0, fridge: 0, appliances: 0, cabinets: 0, beer: 0, coffee: 0, fish: 0, catFish: 0, wine: 0, champagne: 0, whisky: 0, milk: 0, kask: 0, posted: 0, thrown: 0, lights: 0, sat: 0, lay: 0, steps: 0, metres: 0, stairs: 0, seconds: 0, visited: {}, secrets: 0, secretKinds: {} });
+const fresh = () => ({ cats: 0, rare: 0, byVariant: {}, petted: 0, doors: 0, lids: 0, flushes: 0, taps: 0, fridge: 0, appliances: 0, cabinets: 0, beer: 0, coffee: 0, fish: 0, catFish: 0, chicken: 0, wine: 0, champagne: 0, whisky: 0, milk: 0, kask: 0, posted: 0, thrown: 0, lights: 0, sat: 0, lay: 0, steps: 0, metres: 0, stairs: 0, seconds: 0, visited: {}, secrets: 0, secretKinds: {} });
 
 function load() {
   try {
@@ -20,7 +20,7 @@ let dirty = false;
 // Badge text per counter; counters missing here (metres, seconds) never get a badge
 const BADGES = {
   petted: '✋ Klappat katt', doors: '🚪 Dörr öppnad', lids: '🚽 Toalettlock', flushes: '🌊 Spolat', taps: '💧 Kran påslagen',
-  fridge: '🍗 Kylskåpet öppnat', appliances: '🍳 Ugn/mikro öppnad', cabinets: '🗄 Skåp öppnat', beer: '🍺 Klunk öl', coffee: '☕ Klunk kaffe', fish: '🐟 Fiskpinne uppäten', catFish: '🐈 Katten åt en fiskpinne', wine: '🍷 Klunk vin', champagne: '🥂 Klunk champagne', whisky: '🥃 Klunk whisky', milk: '🥛 Klunk mjölk', kask: '☕ Klunk kaffekask', lights: '💡 Lampa tänd', stairs: '🪜 Trapptur',
+  fridge: '🍗 Kylskåpet öppnat', appliances: '🍳 Ugn/mikro öppnad', cabinets: '🗄 Skåp öppnat', beer: '🍺 Klunk öl', coffee: '☕ Klunk kaffe', fish: '🐟 Fiskpinne uppäten', catFish: '🐈 Katten åt en fiskpinne', chicken: '🍗 Kycklingbit uppäten', wine: '🍷 Klunk vin', champagne: '🥂 Klunk champagne', whisky: '🥃 Klunk whisky', milk: '🥛 Klunk mjölk', kask: '☕ Klunk kaffekask', lights: '💡 Lampa tänd', stairs: '🪜 Trapptur',
   sat: '🪑 Satt ner', lay: '🛏 Lagt sig', posted: '📌 Teckning uppsatt', thrown: '🗑 Teckning slängd',
 };
 const STEP_BADGE = 100; // a badge every 100 steps
@@ -123,6 +123,7 @@ export function statRows() {
     ['🍳 Ugn/mikro öppnad', `${stats.appliances}`],
     ['🐟 Fiskpinnar uppätna', `${stats.fish}`],
     ['🐈 Fiskpinnar katten ätit', `${stats.catFish}`],
+    ['🍗 Kycklingbitar uppätna', `${stats.chicken}`],
     ['💡 Lampor tända', `${stats.lights}`],
     ['📌 Teckningar uppsatta', `${stats.posted}`],
     ['🗑 Teckningar slängda', `${stats.thrown}`],

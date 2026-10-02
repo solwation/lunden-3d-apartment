@@ -5,6 +5,7 @@ import { wallCabinet } from './cabinets.js';
 import { Fridge } from './fridge.js';
 import { buildOvens } from './ovens.js';
 import { Hob } from './hob.js';
+import { Hood } from './hood.js';
 import { Openable, pivotAround } from './openables.js';
 import { Moccamaster } from './coffee.js';
 import { mirrorMaterial } from './mirror.js';
@@ -529,6 +530,9 @@ function buildKitchen(B, group, floor, y0, yC, handled, taps, appliances) {
     openFront(open, EW, hob[0], hob[1], yH, yTop, M.front, 'bottom', {}, { mode: 'flap', top: true, name: 'skåpet', max: 80 }); // over the hood: lifts up
     EW.box(hob[0] + 0.01, hob[1] - 0.01, -wd + 0.02, 0, yHood, yH, M.steel);
     EW.box(hob[0] + 0.03, hob[1] - 0.03, -wd + 0.05, -0.03, yHood - 0.002, yHood, kitchenLamp);
+    const hood = new Hood({ x0: wallX, x1: eastWall, z0: hob[0] + 0.01, z1: hob[1] - 0.01, y0: yHood, y1: yH }); // E: the fan (#194)
+    group.add(hood.object);
+    appliances.push(hood);
     EW.box(hob[0], hob[1], -wd, 0, yTop, yC, M.white); // Lokal gipsinklädnad ovan spiskåpa
   }
   const fridgeX1 = fridges.length ? Math.max(...fridges.map((c) => c.x1)) : retX0;

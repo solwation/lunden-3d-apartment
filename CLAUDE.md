@@ -121,6 +121,11 @@ src/pan.js             the frying pan (#159), a Holdable in the middle drawer un
 src/chicken.js         the roast chicken in the fridge (#160), a Holdable: E on the pan on the hob lays it in (a child of the
                        pan); fried on a lit zone for CHICKEN.cookSeconds it sizzles, browns and smokes (the smoke follows it)
                        until smokeSeconds after the heat, or at once back in the fridge with the door shut
+                       (#194: raw it is pale `CHICKEN.raw`, golden once fried; cooked, E breaks off legs, wings, then body
+                       pieces into the hand — `ChickenPiece`, a click eats it; F makes it whole and raw again)
+src/hood.js            the cooker hood (#194, `world.hood`, in world.lids): E runs the fan (whoosh, lights, green LED) and
+                       draws the chicken's smoke up into it; the smoke alarm in the kitchen ceiling (SMOKE_ALARM) beeps
+                       and blinks red after `delay` s of smoke the hood does not take (`chicken.freeSmoke`); F: fan off
 src/coffee.js          Moccamaster on the worktop (MOCCAMASTER): E brews (red light, sound, the jug fills)
 src/mirror.js          the one mirror material (gradient + glints; hall and bathroom mirrors)
 src/reflections.js     mirror images: a Reflector per mirror, only the nearest one in view (< 4 m) renders
@@ -282,7 +287,8 @@ tools/fishtest.html    headless test: open the freezer, eat a fish finger, put o
                        floor and eats it, ignores one on the table, stops when it is taken up first (#163)
 tools/drawtest.html    headless test: drawing mode, a crayon line from pointer events, clear, E back, saved
 tools/cooktest.html    headless test: the induction hob on/off (glow), F switches it off; the pan: drawer → hob → drawer, F; the chicken:
-                       fry, smoke, the fridge shut stops it, it stops by itself, F
+                       fry, smoke, the fridge shut stops it, it stops by itself, F; raw/golden, no hood → the alarm, the hood
+                       on → quiet, break a leg off and eat it, eat it all, F whole again (#194)
 tools/postertest.html  headless test: take the drawing (blank sheet stays), back on the desk, tape it up in the hall and on
                        the fridge door (swings with it), none on the kitchen window, reload → both back; look at one (panel, no walking,
                        ×/E close), Släng → ball lands and vanishes, out of storage; Ta ner → taped up elsewhere (`?shots`, `?panel`)
