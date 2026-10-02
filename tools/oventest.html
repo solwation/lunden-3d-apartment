@@ -47,6 +47,16 @@ f.onload = async () => {
     for (let i = 0; i < 90; i++) step(1 / 60);
     pass &= check(!a.isOpen && Math.abs(a.hinge === 'bottom' ? a.door.rotation.z : a.door.rotation.y) < 1e-3 && a.lamp.emissiveIntensity === 0, `${name} closes, lamp off`);
   }
+  // statistics (#82): the oven and the microwave count as "Ugn/mikro", not as toilet lids
+  {
+    const { stats, use } = w.__app;
+    const a0 = stats.appliances, l0 = stats.lids;
+    for (const name of ['ugnen', 'mikron']) { const a = world.lids.find((l) => l.name === name); use(a); for (let i = 0; i < 60; i++) step(1 / 60); use(a); }
+    pass &= check(stats.appliances === a0 + 2 && stats.lids === l0, `stats: Ugn/mikro +${stats.appliances - a0}, toilet lids +${stats.lids - l0}`);
+    const lid = world.lids.find((l) => l.kind === 'lid');
+    use(lid); for (let i = 0; i < 60; i++) step(1 / 60);
+    pass &= check(stats.lids === l0 + 1, `a toilet lid still counts as a lid (+${stats.lids - l0})`);
+  }
   const mc = world.lids.find((l) => l.kind === 'coffee');
   pass &= check(!!mc, 'Moccamaster exists');
   if (mc) {
