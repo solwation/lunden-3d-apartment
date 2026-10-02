@@ -160,6 +160,29 @@ f.onload = async () => {
   pass &= check(label === 'Res dig' && standBtn.hidden, `looking away: "${label}"`);
   btn.click(); step(1 / 60);
   pass &= check(!rest.active, 'nothing in reach: the button stands you up');
+  // #219: lying in each bunk berth, the NYMÅNE reading lamp by the pillow is in reach: on and off without getting up
+  {
+    const reading = w.__app.lights.targets.filter((t) => t.name === 'läslampan');
+    const bunks = targets.filter((t) => t.name === 'våningssängen');
+    let n = 0;
+    for (const t of bunks) for (const sp of t.spots.filter((s) => s.kind === 'lie')) {
+      const lamp = [...reading].sort((a, b) => a.pickable.getWorldPosition(new V()).distanceTo(sp.pos) - b.pickable.getWorldPosition(new V()).distanceTo(sp.pos))[0];
+      const o = lamp.pickable.getWorldPosition(new V()), out = o.x < 3 ? 1 : -1;
+      sitOn(t, sp); for (let i = 0; i < 60; i++) step(1 / 60);
+      const lying = rest.active && rest.kind === 'lie' && rest.spot === sp;
+      const lbl = look(o.clone().add(new V(out * 0.12, -0.06, 0))); // the shade
+      const was = lamp.isOpen; // lamps start on when arriving in the dark
+      btn.click(); step(1 / 60);
+      const on = lamp.isOpen !== was && rest.active;
+      btn.click(); step(1 / 60);
+      const off = lamp.isOpen === was && rest.active;
+      n++;
+      pass &= check(lying && new RegExp(`${was ? 'släcka' : 'tända'} läslampan`, 'i').test(lbl) && on && off,
+        `lying in ${sp.label} (${lamp.spec.room}, ${o.distanceTo(sp.pos).toFixed(2)} m from the eye): "${lbl}", toggled ${on}, back ${off}, still lying`);
+      standUp(); for (let i = 0; i < 3; i++) step(1 / 60);
+    }
+    pass &= check(n === 4, `${n} berths with a reading lamp`);
+  }
   // beyond reach while sitting: the TV across the room is no target
   sitOn(sofa, seat); for (let i = 0; i < 60; i++) step(1 / 60);
   label = look(tv.pickable.getWorldPosition(new V()));

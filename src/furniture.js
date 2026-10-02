@@ -3,7 +3,7 @@ import { sfx } from './audio.js';
 import { mergeStatic } from './merge.js';
 import { restTarget } from './rest.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
-import { FURNITURE, LANDSKRONA as L, LEVELS, SKANSNAS, IDANAS, OTTOMAN, SYMFONISK, SECRET } from './config.js';
+import { FURNITURE, LANDSKRONA as L, LEVELS, SKANSNAS, IDANAS, OTTOMAN, SYMFONISK, SECRET, NYMANE_WALL } from './config.js';
 import { loungesofa, loungetable, parasol, planter } from './patio.js';
 import { Screen } from './screens.js';
 import { lampMat, addLampGlow } from './interior.js';
@@ -1093,6 +1093,49 @@ function worklamp(item, lights) {
   return g;
 }
 
+/** IKEA NYMÅNE wall/reading lamp (#219), white or black: a wall plate with a round switch, a short arm out (local +z)
+ * and a cylinder shade pointing down and out, a cord hanging from the plate. Origin = the plate's centre on the wall.
+ * The inside of the shade and its bulb have their own material, so each lamp switches on its own (lights.js, the
+ * shared light pool: the pool light sits just below the shade's mouth). */
+function walllamp(item, lights) {
+  const N = NYMANE_WALL, P = N.plate, S = N.shade, g = new THREE.Group();
+  const body = new THREE.MeshStandardMaterial({ color: N.colors[item.color], roughness: 0.4 });
+  const cordMat = new THREE.MeshStandardMaterial({ color: N.cordColors[item.color], roughness: 0.95 });
+  const lens = new THREE.MeshStandardMaterial({ color: 0xfff6e6, emissive: 0xffd9a0, emissiveIntensity: 0.04, roughness: 0.5, side: THREE.BackSide });
+  const add = (m, x, y, z) => { m.position.set(x, y, z); m.castShadow = true; g.add(m); return m; };
+  add(rbox(P.w, P.h, P.d, 0, 0, 0, body, 0.006), 0, 0, P.d / 2);
+  // the round switch on the front, a little above the arm
+  add(new THREE.Mesh(new THREE.CylinderGeometry(N.button, N.button, 0.006, 18).rotateX(Math.PI / 2), body), 0, P.h * 0.25, P.d + 0.003);
+  const ay = -P.h * 0.15;
+  add(new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, N.arm, 10).rotateX(Math.PI / 2), body), 0, ay, P.d + N.arm / 2);
+  const jz = P.d + N.arm;
+  add(new THREE.Mesh(new THREE.SphereGeometry(0.011, 10, 8), body), 0, ay, jz);
+  // the shade: its top at the joint, the mouth pointing down and out (tilt from vertical towards +z)
+  const down = new THREE.Vector3(0, -Math.cos(S.tilt), Math.sin(S.tilt));
+  const shade = new THREE.Group();
+  shade.position.set(0, ay, jz).addScaledVector(down, S.h / 2 - 0.005);
+  shade.rotation.x = -S.tilt;
+  const outer = new THREE.Mesh(new THREE.CylinderGeometry(S.r, S.r, S.h, 22, 1, true), body);
+  const inner = new THREE.Mesh(new THREE.CylinderGeometry(S.r - 0.002, S.r - 0.002, S.h, 22, 1, true), lens); // glows (BackSide)
+  const cap = new THREE.Mesh(new THREE.CircleGeometry(S.r, 22).rotateX(-Math.PI / 2), body);
+  cap.position.y = S.h / 2;
+  const bulb = new THREE.Mesh(new THREE.CircleGeometry(S.r * 0.8, 18).rotateX(-Math.PI / 2), lens); // the GU10 face, seen from below
+  bulb.position.y = S.h / 2 - 0.02;
+  for (const m of [outer, inner, cap, bulb]) { m.castShadow = true; shade.add(m); }
+  g.add(shade);
+  // the fabric cord from the plate's underside down the wall
+  add(new THREE.Mesh(new THREE.CylinderGeometry(0.0035, 0.0035, N.cord, 6), cordMat), 0, -P.h / 2 - N.cord / 2, P.d * 0.5);
+  // the pool light just below the shade's mouth (the group is turned by rot + π)
+  const mouth = new THREE.Vector3(0, ay, jz).addScaledVector(down, S.h + 0.05);
+  const yaw = THREE.MathUtils.degToRad(item.rot ?? 0) + Math.PI;
+  lights.push({ object: g, shade: lens, height: mouth.y, level: item.level, name: 'läslampan', berth: item.berth, room: item.room,
+    light: N.light, offset: [Math.sin(yaw) * mouth.z, Math.cos(yaw) * mouth.z] });
+  g.position.y = item.y;
+  g.userData.footprint = [];
+  g.userData.walllamp = `${item.room} ${item.berth}`; // (tests find them by this)
+  return g;
+}
+
 /** The speakers' status light (one material, sonos.js turns it white while music plays, #187). */
 export const sonosLed = new THREE.MeshBasicMaterial({ color: 0x4a4a4a });
 
@@ -2166,7 +2209,7 @@ function besta(item) {
   return g;
 }
 
-const BUILDERS = { secretary, winerack, besta, painting, palm, sofa, armchair, ottoman, floorlamp, sidetable, coffeetable, loungesofa, loungetable, parasol, planter, bed, skansnasTable, skansnasChair, bunk, daybed, rug, ragrund, coatrack, shoerack, byas, tv, nordkisa, worklamp, symfonisk, gamingdesk, gamingchair, nordli, alex, kidchair };
+const BUILDERS = { secretary, winerack, besta, painting, palm, sofa, armchair, ottoman, floorlamp, sidetable, coffeetable, loungesofa, loungetable, parasol, planter, bed, skansnasTable, skansnasChair, bunk, daybed, rug, ragrund, coatrack, shoerack, byas, tv, nordkisa, worklamp, walllamp, symfonisk, gamingdesk, gamingchair, nordli, alex, kidchair };
 
 /** An invisible thin box over a table top (raycast target for putting a cup down, #90). Local rect. */
 export function surfaceBox(r, list) {

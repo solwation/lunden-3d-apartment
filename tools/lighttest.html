@@ -25,6 +25,7 @@ f.onload = async () => {
   let pass = taps.length >= 14;
   lines.push(`${pass ? 'PASS' : 'FAIL'} ${taps.length} switches/lamps`);
   for (const t of taps) {
+    if (t.name === 'läslampan') continue; // the bunks' reading lamps (#219): their own test below
     (t.object ?? t.pickable).updateMatrixWorld(true);
     // stand 0.7 m from the pick target, on the side facing the room, and look at it
     // the SYMFONISK lamp (#186): aim at its glass (its origin is at its foot on the window board)
@@ -65,6 +66,41 @@ f.onload = async () => {
     l.set(false); const offOk = l.spec.shade.emissiveIntensity < 0.1 && l.spec.glows.every((g) => !g.visible);
     pass &&= onOk && offOk;
     lines.push(`${onOk && offOk ? 'PASS' : 'FAIL'} ${name}: the LED and the wash on (${onOk}) and off (${offOk})`);
+  }
+  // the bunks' NYMÅNE reading lamps (#219): one per berth, white in Sovrum 3, black in Sovrum 2. Stand on the room side
+  // of the bunk level with the lamp's berth (crouched for the lower one, under the top bunk), aim at the shade, on, off
+  {
+    const THREE = await w.eval("import('three')");
+    const reading = taps.filter((t) => t.name === 'läslampan');
+    let ok = reading.length === 4;
+    lines.push(`${ok ? 'PASS' : 'FAIL'} ${reading.length} reading lamps at the bunks`);
+    for (const t of reading) {
+      const g = t.pickable; g.updateMatrixWorld(true);
+      const box = new THREE.Box3().setFromObject(g), c = box.getCenter(new THREE.Vector3());
+      const wallX = g.getWorldPosition(new THREE.Vector3()).x, out = wallX < 3 ? 1 : -1; // into the room
+      const lower = t.spec.berth === 'underslafen';
+      const colour = g.children.some((m) => m.material?.color?.getHex() === (t.spec.room === 'Sovrum 3' ? 0xf2f2ef : 0x1c1c1e));
+      const room = w.__app.world.roomMaps[1].exact(wallX + out * 0.5, c.z);
+      player.crouch = lower;
+      player.spawn(wallX + out * 1.35, c.z, out > 0 ? Math.PI / 2 : -Math.PI / 2);
+      player.pos.y = 3.25; player.eyeY = 3.25 + (lower ? 0.95 : 1.62);
+      for (let i = 0; i < 40; i++) step(1 / 60);
+      const o = g.getWorldPosition(new THREE.Vector3()), aim = o.clone().add(new THREE.Vector3(out * 0.12, -0.06, 0)); // the shade, out and below the arm
+      camera.rotation.y = Math.atan2(-(aim.x - camera.position.x), -(aim.z - camera.position.z));
+      camera.rotation.x = Math.atan2(aim.y - camera.position.y, Math.hypot(aim.x - camera.position.x, aim.z - camera.position.z));
+      step(1 / 60);
+      const label = btn.hidden ? '(hidden)' : btn.textContent;
+      btn.click(); step(1 / 60);
+      const lp = t.room.lamps[0].pos;
+      const on = t.isOpen && t.spec.shade.emissiveIntensity > 0.5 && lights.pool.some((l) => l.intensity > 0 && l.position.distanceTo(lp) < 0.01);
+      btn.click(); step(1 / 60);
+      const off = !t.isOpen;
+      const okL = /tända läslampan/i.test(label) && on && off && colour && room === t.spec.room;
+      ok &&= okL;
+      lines.push(`${okL ? 'PASS' : 'FAIL'} läslampan ${t.spec.room} ${t.spec.berth} @ (${aim.x.toFixed(2)}, ${(aim.y - 3.25).toFixed(2)}, ${aim.z.toFixed(2)}) from (${camera.position.x.toFixed(2)}, ${(camera.position.y - 3.25).toFixed(2)}, ${camera.position.z.toFixed(2)}) ${lower ? 'crouched' : 'standing'}: "${label}", on=${on} off=${off}, colour ${colour}, room ${room}`);
+    }
+    player.crouch = false;
+    pass &&= ok;
   }
   // the three SYMFONISK speakers (#186): the white one in the kitchen, the black one in Sovrum 1's window (#201), the lamp on
   // the window board behind the sofa

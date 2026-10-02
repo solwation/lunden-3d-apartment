@@ -954,6 +954,22 @@ export const SKANSNAS = {
 // 22 cm mattress are guesses. `head` = depth behind the mattress taken by the sloping headboard.
 export const IDANAS = { L: 2.23, W: 1.9, frameH: 0.49, headH: 1.21, head: 0.2, legH: 0.1, mattressH: 0.22, color: 0x5f6266 };
 
+// IKEA NYMÅNE wall/reading lamp, GU10 (#219, docs/nymane-vagglampa-vit.png): a wall plate with a round switch,
+// a short round arm and a cylinder shade pointing down and out, a fabric cord hanging from the plate. All sizes are
+// guesses from the product photo. One per bunk berth, on the side wall by the head end (`fromHead` along the bed),
+// the plate centre `aboveMattress` over the berth's mattress top, reachable lying there (REST.reach.lie 0.8 m).
+// `berths`: the side wall's x, the head end's z, which way along z the bed runs (+1 / −1), rot = the way the lamp faces.
+export const NYMANE_WALL = {
+  plate: { w: 0.06, h: 0.11, d: 0.025 }, button: 0.012, arm: 0.07, shade: { r: 0.035, h: 0.08, tilt: 0.6 }, cord: 0.45,
+  fromHead: 0.42, aboveMattress: 0.42, mattress: [0.42, 1.32], // the bunk's mattress tops (furniture.js bunk: y + 0.17)
+  colors: { white: 0xf2f2ef, black: 0x1c1c1e }, cordColors: { white: 0xe8e6e0, black: 0x222224 },
+  light: { intensity: 0.9, range: 3.5, color: 0xffd59a }, // weaker than the floor lamp: one GU10 bulb
+  berths: [
+    { room: 'Sovrum 3', color: 'white', x: 0.2, head: 0.47 + 0.05, dir: 1, rot: -90 },   // Livia & Tuva, west wall
+    { room: 'Sovrum 2', color: 'black', x: 5.55, head: 12.23 - 0.05, dir: -1, rot: 90 }, // Walter & Kian, east wall
+  ],
+};
+
 export const FURNITURE = [
   // Vardagsrum: sofa with its back to the window (south wall), chaise in the SE corner
   { type: 'sofa', level: 0, x: 5.5 - 2.82 / 2, z: 12.15 - 0.89 / 2, rot: 0, chaise: 'right' }, // sitter's right = east
@@ -1063,6 +1079,9 @@ export const FURNITURE = [
   // Bunks: long side against the side wall, head end against the façade (the user's wish);
   // the ladder ends up on the room side at the foot end.
   { type: 'bunk', level: 1, x: 0.2 + 0.5, z: 0.47 + 1.05, rot: 180, w: 0.9, l: 2.0, sheets: 'unicorn' }, // Sovrum 3 (Livia & Tuva)
+  // a NYMÅNE wall lamp at every berth (#219): white in Sovrum 3, black in Sovrum 2
+  ...NYMANE_WALL.berths.flatMap((b) => NYMANE_WALL.mattress.map((m, i) => ({ type: 'walllamp', level: 1, color: b.color, room: b.room,
+    x: b.x, z: b.head + b.dir * NYMANE_WALL.fromHead, y: m + NYMANE_WALL.aboveMattress, rot: b.rot, berth: i ? 'överslafen' : 'underslafen' }))),
   // Livia & Tuva's desk (#92): IKEA ALEX, white, 132 × 58 (ikea.com; the 76 cm height and drawer sizes are
   // guesses), under the window against the north wall, east of the bunk; a white kids' swivel chair in
   // front (a seat, #71) and crafts on the top, the middle left free for the drawing paper (#93)
