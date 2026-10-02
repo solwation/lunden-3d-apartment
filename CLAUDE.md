@@ -231,7 +231,8 @@ cloudflare/            the Worker (NOT published on Pages): worker.js (API, limi
 src/calendar.js        the cat calendar (CALENDAR): a cat per month, the days, the chosen date; #cal-panel picks it
 src/fridge.js          the fridge: hollow, lit, opens with E (in world.lids); `shelfSpot` = the chicken's place; the freezer is
                        the same class (`freezer: true`, #161): drawers + shelves, the changelog note rides on its door
-src/catboard.js        cork board in the kitchen (under the wall clock): a photo (offscreen render) of every petted cat,
+src/catboard.js        cork board in the kitchen (under the wall clock): a real-size Polaroid (offscreen render, #225; the board's
+                       size follows from CAT_BOARD.polaroid / cols / rows / gap) of every petted cat,
                        CAT_BOARD.max of them in IndexedDB 'lunden'/'catPhotos', captioned with name + time; E opens
                        #board-view (BoardPanel, #170: keep 📌 = red pin, never pushed off; throw away 🗑 asks twice;
                        arrows/S/Delete; frees the mouse like drawing); a full board drops its oldest unkept photo
@@ -580,7 +581,8 @@ screenshots into the session scratchpad, not the repo.
 - Room detection: labels come from the PDF plus `EXTRA_ROOMS` (WC/dusch upstairs, the passage by
   the stair = Hall); `ROOM_DIVIDERS` split open-plan areas (hall | kitchen | passage | living room).
 - Every new cat gets a name (`CAT_NAMES`); petting it puts a photo on the kitchen board 0.7 s in
-  (`CAT_BOARD` in config: under the wall clock on the Tvätt/Badrum wall, kitchen face).
+  (`CAT_BOARD` in config: under the wall clock on the Tvätt/Badrum wall, kitchen face; it and the calendar are
+  positioned together, centred under the clock).
 - Up on the furniture (#200, `CAT_FURNITURE`, `furnitureSpot` in cat.js): a cat turning up behind a door sits on a seat,
   bed or table top in that room `chance` of the time (one seen straight from the doorway within `reach`; the height from a
   ray down onto the furniture, so it sits on the cushion and never in something on a table; `cat.on` = 'sit'/'lie'/

@@ -768,12 +768,6 @@ export const AO = {
   ceiling: { strength: 0.3, radius: 0.3 },
 };
 
-// Cork board with photos of petted cats (src/catboard.js), under the kitchen wall clock (WALL_CLOCK:
-// Tvätt/Badrum wall, kitchen face x 2.152, z 3.145–5.244, clock bottom 1.85 m): top edge 1.78 m, 0.29 m
-// clear of the Badrum door (#37). Board + calendar are one group centred under the clock (#121).
-// rotY π/2 = facing east.
-// `max` photos fit on it; a new one replaces the oldest that isn't kept (#170)
-export const CAT_BOARD = { x: 2.152, y: 1.4, z: 4.4, w: 1.1, h: 0.76, rotY: Math.PI / 2, max: 10 };
 
 // Moccamaster (Technivorm KBG, black) on the worktop between the tall unit (oven/microwave) and the
 // sink, against the splashback (#59). Size ~32 × 17 × 36 cm (guess, after the KBG series). `z` = centre
@@ -830,9 +824,29 @@ export const DAY = {
 export const WALL_CLOCK = { x: 2.152, y: 2.0, z: 4.16, rotY: Math.PI / 2, d: 0.3 };
 
 // The cat calendar (#95, src/calendar.js) on the kitchen face of the Tvätt/Badrum wall, under the wall clock and
-// beside the cat board (which covers z 3.85–4.95; together z 3.37–4.95, centred under the clock, #121): a 30 × 45 cm paper calendar with a cat picture for each
+// beside the cat board (north of it: on its right seen from the kitchen): a 30 × 45 cm paper calendar with a cat picture for each
 // month and the days; E opens a strip to pick the month and the day, which set the day cycle's date.
-export const CALENDAR = { x: 2.152, y: 1.5, z: 3.52, w: 0.3, h: 0.45, rotY: Math.PI / 2 };
+// Its z is set below with the cat board's: the two are one group centred under the clock (#121, #225).
+export const CALENDAR = { x: 2.152, y: 1.5, z: 0, w: 0.3, h: 0.45, rotY: Math.PI / 2 };
+
+// Cork board with photos of petted cats (src/catboard.js), under the kitchen wall clock (WALL_CLOCK: Tvätt/Badrum
+// wall, kitchen face x 2.152, z 3.145 to the Badrum door's architrave at 5.174, clock bottom 1.85 m). Real Polaroid
+// 600 / i-Type size (#225): 8.8 × 10.7 cm, a 7.9 × 7.9 cm picture 0.45 cm from the top and sides, the wide bottom
+// edge for the handwritten name + time. `cols` × `rows` photos with `gap` between them and `margin` round them;
+// w / h (the cork, frame `frame` round it) are computed from those. `max` photos fit; a new one replaces the oldest
+// that isn't kept (#170). `px` = canvas pixels per metre. The board's top lines up with the calendar's, `space`
+// between them, and the group (calendar + board) is centred under the clock. rotY π/2 = facing east.
+export const CAT_BOARD = (() => {
+  const polaroid = { w: 0.088, h: 0.107, img: 0.079, side: 0.0045 }, cols = 5, rows = 2, gap = 0.015, margin = 0.02;
+  const frame = 0.02, space = 0.08;
+  const w = cols * polaroid.w + (cols - 1) * gap + 2 * margin, h = rows * polaroid.h + (rows - 1) * gap + 2 * margin;
+  const group = CALENDAR.w + space + w + 2 * frame, z0 = WALL_CLOCK.z - group / 2; // the group's north end
+  CALENDAR.z = z0 + CALENDAR.w / 2;
+  return {
+    x: 2.152, y: CALENDAR.y + CALENDAR.h / 2 - frame - h / 2, z: z0 + CALENDAR.w + space + frame + w / 2,
+    w, h, frame, polaroid, cols, rows, gap, margin, rotY: Math.PI / 2, max: cols * rows, px: 4000, tilt: 2,
+  };
+})();
 
 // Room lights (src/lights.js). Intensities are candela-ish (three.js physical lights), tuned by
 // eye at night. `pool` = point lights shared by the nearest lit lamps (keep small: Iris 640).

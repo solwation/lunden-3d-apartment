@@ -27,12 +27,12 @@ export class CatBoard {
   constructor() {
     Object.assign(this, { name: 'anslagstavlan', kind: 'board', verb: 'titta på', photos: [], images: new Map() });
     this.canvas = document.createElement('canvas');
-    this.canvas.width = 1100; this.canvas.height = 760;
+    this.canvas.width = Math.round(B.w * B.px); this.canvas.height = Math.round(B.h * B.px);
     this.tex = new THREE.CanvasTexture(this.canvas);
     this.tex.colorSpace = THREE.SRGBColorSpace;
     this.tex.anisotropy = 8;
     const g = new THREE.Group();
-    const frame = new THREE.Mesh(new THREE.BoxGeometry(B.w + 0.04, B.h + 0.04, 0.02), new THREE.MeshStandardMaterial({ color: 0xb98d5c, roughness: 0.7 }));
+    const frame = new THREE.Mesh(new THREE.BoxGeometry(B.w + 2 * B.frame, B.h + 2 * B.frame, 0.02), new THREE.MeshStandardMaterial({ color: 0xb98d5c, roughness: 0.7 }));
     frame.position.z = 0.01;
     const cork = new THREE.Mesh(new THREE.PlaneGeometry(B.w, B.h), new THREE.MeshStandardMaterial({ map: this.tex, roughness: 0.9 }));
     cork.position.z = 0.0205;
@@ -102,49 +102,62 @@ export class CatBoard {
 
 
   draw() {
-    const g = this.canvas.getContext('2d'), W = this.canvas.width, H = this.canvas.height;
+    const g = this.canvas.getContext('2d'), W = this.canvas.width, H = this.canvas.height, k = W / B.w; // px per metre
     // cork
     g.fillStyle = '#c49a6c';
     g.fillRect(0, 0, W, H);
     let seed = 5;
     const rand = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
-    for (let i = 0; i < 9000; i++) {
+    const grain = Math.max(2, Math.round(k * 0.0006));
+    for (let i = 0, n = W * H / 250; i < n; i++) {
       g.fillStyle = rand() < 0.5 ? 'rgba(120,80,40,0.25)' : 'rgba(240,210,170,0.25)';
-      g.fillRect(rand() * W, rand() * H, 2, 2);
+      g.fillRect(rand() * W, rand() * H, grain, grain);
     }
     if (!this.photos.length) {
       g.fillStyle = '#4a3220';
-      g.font = `bold 46px ${hand}`;
+      g.font = `bold ${Math.round(k * 0.02)}px ${hand}`;
       g.textAlign = 'center';
-      g.fillText('Klappa en katt så hamnar den här!', W / 2, H / 2);
+      g.fillText('Klappa en katt så hamnar', W / 2, H / 2 - k * 0.006);
+      g.fillText('den här!', W / 2, H / 2 + k * 0.022);
       this.tex.needsUpdate = true;
       return;
     }
-    // newest first, 5 per row
+    // Polaroids in a straight grid (#225), newest first, B.cols per row, each tilted at most ±B.tilt°
+    const P = B.polaroid, pw = P.w * k, ph = P.h * k, side = P.side * k, img = P.img * k;
     [...this.photos].reverse().forEach((p, i) => {
-      const col = i % 5, row = Math.floor(i / 5);
-      const cx = 115 + col * 217, cy = 190 + row * 370;
-      const r = rng(p.time)() * 0.16 - 0.08;
+      const col = i % B.cols, row = Math.floor(i / B.cols);
+      const cx = (B.margin + col * (P.w + B.gap) + P.w / 2) * k, cy = (B.margin + row * (P.h + B.gap) + P.h / 2) * k;
+      const r = (rng(p.time)() * 2 - 1) * THREE.MathUtils.degToRad(B.tilt);
       g.save();
       g.translate(cx, cy);
       g.rotate(r);
-      g.shadowColor = 'rgba(0,0,0,0.35)'; g.shadowBlur = 10; g.shadowOffsetY = 4;
+      g.shadowColor = 'rgba(0,0,0,0.35)'; g.shadowBlur = k * 0.002; g.shadowOffsetY = k * 0.0008;
       g.fillStyle = '#fbfaf6';
-      g.fillRect(-95, -150, 190, 290);
+      g.fillRect(-pw / 2, -ph / 2, pw, ph);
       g.shadowColor = 'transparent';
-      const img = this.images.get(p.id ?? p.time);
-      if (img) g.drawImage(img, -85, -140, 170, 170 * (img.height / img.width));
+      // the square picture: the middle of the 4:3 snapshot
+      const im = this.images.get(p.id ?? p.time), x0 = -img / 2, y0 = -ph / 2 + side;
+      if (im) {
+        const s = Math.min(im.width, im.height);
+        g.drawImage(im, (im.width - s) / 2, (im.height - s) / 2, s, s, x0, y0, img, img);
+      } else { g.fillStyle = '#2a2a2a'; g.fillRect(x0, y0, img, img); }
+      // the wide bottom edge: name + time by hand
+      const bottom = y0 + img, rest = ph / 2 - bottom;
       g.fillStyle = '#23324a';
       g.textAlign = 'center';
-      g.font = `bold 30px ${hand}`;
-      g.fillText(p.name, 0, 85);
-      g.font = `21px ${hand}`;
-      g.fillText(fmt(p.time), 0, 118);
+      g.font = `bold ${Math.round(rest * 0.42)}px ${hand}`;
+      g.fillText(p.name, 0, bottom + rest * 0.46, pw - 2 * side);
+      g.font = `${Math.round(rest * 0.27)}px ${hand}`;
+      g.fillText(fmt(p.time), 0, bottom + rest * 0.82, pw - 2 * side);
       g.restore();
-      // pin: a big red one on the photos that are kept (#170), small other colours on the rest
+      // the pin at the top: a big red one on the photos that are kept (#170), small other colours on the rest
+      const py = cy - ph / 2 + side * 0.9, pr = k * (p.kept ? 0.0045 : 0.003);
+      g.fillStyle = 'rgba(0,0,0,0.3)';
+      g.beginPath(); g.arc(cx + pr * 0.3, py + pr * 0.4, pr, 0, Math.PI * 2); g.fill();
       g.fillStyle = p.kept ? '#d8141e' : ['#2a7ad2', '#2aa25a', '#e0b020'][i % 3];
-      g.beginPath(); g.arc(cx, cy - 140, p.kept ? 15 : 9, 0, Math.PI * 2); g.fill();
-      if (p.kept) { g.fillStyle = 'rgba(255,255,255,0.7)'; g.beginPath(); g.arc(cx - 5, cy - 145, 4, 0, Math.PI * 2); g.fill(); }
+      g.beginPath(); g.arc(cx, py, pr, 0, Math.PI * 2); g.fill();
+      g.fillStyle = 'rgba(255,255,255,0.7)';
+      g.beginPath(); g.arc(cx - pr * 0.35, py - pr * 0.35, pr * 0.28, 0, Math.PI * 2); g.fill();
     });
     this.tex.needsUpdate = true;
   }
