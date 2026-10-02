@@ -404,6 +404,24 @@ export const MARKS = {
 export const CUPS = { n: 3, r: 0.04, h: 0.09, color: 0xf3f1ec, coffee: 0x2a1408, pour: 0.25, counter: { x: 5.2, z: 1.68 },
   sip: 0.2, held: { x: 0.18, y: -0.2, z: -0.4 }, jugHeld: { x: 0.22, y: -0.26, z: -0.55 } }; // jugHeld: the jug in the view (#141)
 
+// Drinks (#166–#169, src/drinks.js): what a glass or a cup holds. Per drink its colour, opacity and `tint` (how
+// strongly it colours a mix: a splash of milk lightens coffee more than its share, guess). `pour`: what one pour
+// does in a vessel, as a fraction of the vessel's height: `to` = fill up to that level, `add` = a splash on top
+// (whisky ~2–4 cl), `empty` = the level when poured into an empty vessel; never above full. `sip` = one sip from
+// a glass, `secs` = how long a pour takes, `tilt` = how far a bottle tips while it pours (rad).
+export const DRINKS = {
+  wine: { color: 0x5c0a1c, opacity: 0.92, tint: 1, name: 'vin' },
+  champagne: { color: 0xeed98a, opacity: 0.6, tint: 1, name: 'champagne' },
+  whisky: { color: 0xb8651c, opacity: 0.82, tint: 1, name: 'whisky' },
+  milk: { color: 0xf7f5ef, opacity: 1, tint: 3, name: 'mjölk' },
+  coffee: { color: 0x2a1408, opacity: 1, tint: 1, name: 'kaffe' },
+  pour: {
+    glass: { wine: { to: 0.45 }, champagne: { to: 0.85 }, whisky: { add: 0.2 } },
+    cup: {},
+  },
+  sip: 0.15, secs: 1, tilt: 1.5,
+};
+
 // Drawing with crayons (#93, src/drawing.js): an A3 sheet in the middle of the ALEX desk in Sovrum 3. E on it:
 // the view goes down over the paper, the mouse is freed and you draw with crayons (palette at the bottom,
 // keys 1–9, "Sudda allt"); E / Esc / "Klar" goes back. The drawing is kept in localStorage.

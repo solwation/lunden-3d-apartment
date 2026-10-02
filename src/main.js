@@ -208,6 +208,7 @@ function showBook(show) {
 const beer = new Beer(scene, camera); // a big beer on the lounge table when you sit down in the lounge sofa (#117)
 beer.onGulp = () => bump('beer');
 const things = buildThings(scene, camera, world.things); // bottles and glasses in the living room (#152)
+for (const t of things) t.onSip = (drink) => { if (drink) bump(drink); }; // a sip from a glass: wine, whisky … (#167)
 const holdables = [saber, ...toys.items, remote, book, beer, ...things]; // things you can take and hold, one at a time (holdable.js)
 const cups = buildCups(scene, camera, world, world.cupCabinet); // coffee cups in the wall cabinet (#90)
 holdables.push(cups.jug);
@@ -216,7 +217,7 @@ if (pan) holdables.push(pan);
 const fridge = world.lids.find((l) => l.kind === 'fridge' && !l.freezer);
 const chicken = fridge ? new Chicken(scene, camera, fridge, pan, world.hob) : null; // the roast chicken: take it, fry it in the pan (#160)
 if (chicken) holdables.push(chicken);
-for (const c of cups.cups) c.onSip = () => bump('coffee'); // drink from a cup (#117) // the Moccamaster's jug: take it, pour, put it back (#141)
+for (const c of cups.cups) c.onSip = (drink) => bump(drink ?? 'coffee'); // drink from a cup (#117) // the Moccamaster's jug: take it, pour, put it back (#141)
 let placeTarget = null; // while something is held: the table top / floor spot it would go down on (#102)
 // a faint ring where the held thing would land
 const placeGhost = new THREE.Mesh(new THREE.RingGeometry(0.035, 0.05, 24).rotateX(-Math.PI / 2),
@@ -696,7 +697,7 @@ function updateFocus() {
   const spot = focused?.kind === 'rest' ? chooseSpot(focused, raycaster.ray, null) : null;
   const verb = !focused ? '' : spot?.verb ?? focused.verb ?? (focused.isOpen ? 'stänga' : 'öppna');
   if (focused?.blocked) {
-    actionBtn.textContent = promptEl.textContent = 'Lägg ifrån dig det du håller först';
+    actionBtn.textContent = promptEl.textContent = focused.blockedText ?? 'Lägg ifrån dig det du håller först'; // or: the glass / cup is full (#167)
   } else if (focused && touch.enabled) {
     actionBtn.textContent = `${verb[0].toUpperCase()}${verb.slice(1)} ${focused.name}`;
   } else if (focused) {

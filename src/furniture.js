@@ -1876,13 +1876,15 @@ function besta(item) {
   // glass shelves in the display section, and what stands on them
   const y1 = ys[1] + t / 2, y2 = ys[2] - t / 2, yShelf = (y1 + y2) / 2;
   for (const x of [-col / 2, col / 2]) add(g, col - t * 1.5, 0.006, fd - 0.03, x, yShelf, fd / 2, shelfGlass);
-  const crystal = new THREE.MeshStandardMaterial({ color: 0xe6f0f2, roughness: 0.08, metalness: 0.35 });
+  const crystal = new THREE.MeshStandardMaterial({ color: 0xe6f0f2, roughness: 0.05, metalness: 0.2, transparent: true, opacity: 0.3, depthWrite: false, side: THREE.DoubleSide }); // see-through: what is poured in shows (#167)
   const lathe = (pts) => new THREE.LatheGeometry(pts.map(([r, y]) => new THREE.Vector2(r, y)), 14);
   const wine = lathe([[0.03, 0], [0.03, 0.004], [0.004, 0.008], [0.003, 0.08], [0.02, 0.1], [0.032, 0.14], [0.03, 0.19], [0.028, 0.19]]);
   const flute = lathe([[0.028, 0], [0.028, 0.004], [0.003, 0.008], [0.003, 0.1], [0.012, 0.12], [0.022, 0.21], [0.02, 0.21]]);
   const tumbler = lathe([[0.034, 0], [0.036, 0.09], [0.033, 0.09]]);
   const things = []; // glasses and bottles you can take out (#152)
-  const glassAt = (geo, x, y, z) => { const o = new THREE.Mesh(geo, crystal); o.position.set(x, y, z); o.castShadow = true; g.add(o); things.push({ model: o, kind: 'glass' }); };
+  // the inside of each glass ([r, y] from the bottom of the bowl up): what is poured in follows it (#167)
+  const inner = new Map([[wine, [[0.004, 0.086], [0.018, 0.102], [0.029, 0.14], [0.027, 0.185]]], [flute, [[0.003, 0.106], [0.01, 0.122], [0.019, 0.205]]], [tumbler, [[0.032, 0.006], [0.034, 0.088]]]]);
+  const glassAt = (geo, x, y, z) => { const o = new THREE.Mesh(geo, crystal); o.position.set(x, y, z); o.castShadow = true; g.add(o); things.push({ model: o, kind: 'glass', name: geo === wine ? 'vinglaset' : geo === flute ? 'champagneglaset' : 'whiskyglaset', inner: inner.get(geo) }); };
   const bottle = (x, y, z, k) => {
     const hue = [0xb5651d, 0x7a3b12, 0xd08a2c, 0x3b2a1a, 0x9c5a1a, 0x5a2e0e][k % 6];
     const gm = new THREE.MeshStandardMaterial({ color: hue, roughness: 0.15, metalness: 0.1 });

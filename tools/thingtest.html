@@ -44,6 +44,44 @@ f.onload = async () => {
   toggleFurniture(false); step(1 / 60);
   pass &= check(!heldItem() && !glass.placed && glass.model.position.distanceTo(glass.home.pos) < 1e-4 && !whisky.held, 'F: everything goes home');
   toggleFurniture(true); step(1 / 60);
+  // pouring (#167): a wine glass on the coffee table, wine from a bottle, drink it empty; then whisky in a tumbler
+  const steps = (s) => { for (let t = 0; t < s; t += 1 / 30) step(1 / 30); };
+  const wg = things.find((t) => t.name === 'vinglaset'), tumbler = things.find((t) => t.name === 'whiskyglaset');
+  use(wg.target); step(1 / 60); wg.placeAt(new V(3.6, 0.47, 10.3)); step(1 / 60);
+  use(wine.target); step(1 / 60);
+  pass &= check(heldItem() === wine && wg.target.verb === 'hälla vin i' && !wg.target.blocked, `the bottle over the glass: "${wg.target.verb}"`);
+  use(wg.target); steps(0.5);
+  pass &= check(wg.fill > 0.05 && wg.fill < 0.4 && wine.tilt > 0.5, `filling (${wg.fill.toFixed(2)}), the bottle tipped (${wine.tilt.toFixed(2)})`);
+  steps(1);
+  pass &= check(Math.abs(wg.fill - 0.45) < 1e-6 && wg.contents.main === 'wine' && wg.liquid.mesh.visible && wine.tilt < 0.1, `wine in the glass (fill ${wg.fill.toFixed(2)}), the bottle upright again`);
+  pass &= check(wg.target.blocked && wg.target.blockedText === 'Vinglaset är fullt', `full: "${wg.target.blockedText}"`);
+  const red = wg.liquid.material.color.getHexString();
+  use(wine.backTarget); step(1 / 60);
+  use(wg.target); step(1 / 60);
+  pass &= check(heldItem() === wg && wg.useLabel === 'Drick', 'the filled glass in the hand: "Drick"');
+  const s0 = w.__app.stats.wine;
+  let sips = 0;
+  while (wg.fill > 0.01 && sips < 10) { wg.use(); sips++; steps(0.7); }
+  pass &= check(wg.fill === 0 && sips === 3 && w.__app.stats.wine === s0 + 3 && !wg.liquid.mesh.visible && wg.useLabel === null, `drunk empty in ${sips} sips`);
+  wg.placeAt(new V(3.6, 0.47, 10.3)); step(1 / 60);
+  use(tumbler.target); step(1 / 60); tumbler.placeAt(new V(3.3, 0.47, 10.3)); step(1 / 60);
+  use(whisky.target); step(1 / 60);
+  pass &= check(tumbler.target.verb === 'hälla whisky i', `"${tumbler.target.verb}"`);
+  use(tumbler.target); steps(1.5);
+  pass &= check(Math.abs(tumbler.fill - 0.2) < 1e-6 && tumbler.contents.main === 'whisky' && tumbler.liquid.material.color.getHexString() !== red, `a splash of whisky (${tumbler.fill.toFixed(2)}, #${tumbler.liquid.material.color.getHexString()} vs wine #${red})`);
+  use(tumbler.target); steps(1.5);
+  pass &= check(Math.abs(tumbler.fill - 0.4) < 1e-6, `another splash (${tumbler.fill.toFixed(2)})`);
+  use(whisky.backTarget); step(1 / 60);
+  use(tumbler.target); step(1 / 60); tumbler.use(); steps(0.7);
+  pass &= check(Math.abs(tumbler.fill - 0.25) < 1e-6, `a sip of whisky (${tumbler.fill.toFixed(2)})`);
+  pass &= check(!tumbler.pourable, 'the held glass can\'t be poured into');
+  use(tumbler.backTarget); step(1 / 60);
+  pass &= check(tumbler.fill === 0 && !tumbler.liquid.mesh.visible, 'back in the BESTÅ: empty');
+  use(wine.target); step(1 / 60); use(wg.target); steps(1.5);
+  pass &= check(wg.fill > 0.4, 'wine in the glass again');
+  toggleFurniture(false); step(1 / 60);
+  pass &= check(!heldItem() && !wg.placed && wg.fill === 0 && !wine.held, 'F: the glass goes home empty, the bottle too');
+  toggleFurniture(true); step(1 / 60);
   out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
 };
 </script>
