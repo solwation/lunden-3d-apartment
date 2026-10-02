@@ -948,6 +948,7 @@ function toggleMap() { // K: the map alone (Tab / T / 📊 show it with the stat
 mapEl.hidden = true; // hidden by default (#85); the old saved 'lunden.mapShown' is ignored
 let detail = null; // small-detail culling (#189), set up once everything is built (below)
 function step(dt) {
+  autoReload.update(dt);
   for (const d of world.doors) d.update(dt);
   for (const l of world.lids) l.update(dt);
   for (const t of taps) t.update(dt);
@@ -1095,7 +1096,40 @@ onTap(document.getElementById('update-reload'), () => {
 });
 onTap(document.getElementById('update-close'), () => { updateEl.hidden = true; });
 document.addEventListener('pointerlockchange', () => { if (!updateEl.hidden) showUpdate(); });
-watchForUpdates(showUpdate);
+// A new version (#192): no button to press — once the visitor has been still for a moment (no keys, stick, mouse
+// or touch, not walking, no panel open, no music playing) the picture fades out, the place is saved and the new
+// version loads; it fades back in where they were with "Ny version laddad". Never still for AUTO_RELOAD.fallback s:
+// the old notice with its "Ladda om" button.
+const AUTO_RELOAD = { still: 2.5, fade: 0.4, fallback: 300 };
+const fadeEl = document.getElementById('fade');
+const autoReload = {
+  version: null, still: 0, since: 0, going: false, last: new THREE.Vector3(),
+  go(url) { location.replace(url); }, // (tests replace this)
+  poke() { this.still = 0; },
+  update(dt) {
+    if (!this.version || this.going) return;
+    const moved = player.pos.distanceTo(this.last) > 0.01;
+    this.last.copy(player.pos);
+    const busy = moved || player.keys.size || touch.analog.x || touch.analog.y || reading || drawing.active || sonos.playing || !document.hasFocus?.() && false;
+    this.still = busy ? 0 : this.still + dt;
+    if ((performance.now() - this.since) / 1000 > AUTO_RELOAD.fallback && updateEl.hidden) showUpdate(this.version);
+    if (this.still < AUTO_RELOAD.still) return;
+    this.going = true;
+    fadeEl.style.transition = `opacity ${AUTO_RELOAD.fade}s`;
+    fadeEl.hidden = false;
+    void fadeEl.offsetWidth; // (a reflow, so the change of opacity is animated)
+    fadeEl.style.opacity = '1';
+    setTimeout(() => {
+      saveResume({ ...placeNow(), build: null }); // a new version for sure
+      const url = new URL(location.href);
+      url.searchParams.set('v', this.version);
+      this.go(url.href);
+    }, AUTO_RELOAD.fade * 1000 + 50);
+  },
+};
+for (const ev of ['keydown', 'mousedown', 'pointerdown', 'wheel']) window.addEventListener(ev, () => autoReload.poke(), { capture: true, passive: true });
+window.addEventListener('mousemove', (e) => { if (Math.abs(e.movementX) + Math.abs(e.movementY) > 2) autoReload.poke(); }, { passive: true });
+watchForUpdates((v) => { autoReload.version = v; autoReload.since = performance.now(); autoReload.still = 0; });
 
 // After "Ladda om" mid-visit (#181): no start screen. Touch plays at once (sound and fullscreen wait for the
 // first touch: they need a gesture); mouse & keyboard gets the "Klicka för att fortsätta" cover (pointer lock
@@ -1105,6 +1139,12 @@ const reloadedEl = document.getElementById('reloaded');
 const RELOAD_NOTE_S = 3; // seconds the "Ny version laddad" note stays before it fades
 function continueAfterReload(r) {
   played = true;
+  if (r.build !== BUILD) { // fade back in from the dark the page left in (#192)
+    fadeEl.style.transition = 'none'; fadeEl.style.opacity = '1'; fadeEl.hidden = false;
+    void fadeEl.offsetWidth;
+    fadeEl.style.transition = 'opacity 0.6s'; fadeEl.style.opacity = '0';
+    setTimeout(() => { fadeEl.hidden = true; }, 900);
+  }
   if (r.muted && !isMuted()) updateMute(toggleMuted());
   if (r.mode === 'touch') {
     touch.enabled = true;
@@ -1126,4 +1166,4 @@ function continueAfterReload(r) {
 if (resumeOk && resumed.mode) continueAfterReload(resumed);
 
 // handle for tests/debugging (tools/touchtest.html)
-window.__app = { smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };
+window.__app = { autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };

@@ -36,6 +36,8 @@
     }
     #overlay[hidden] { display: none; }
     /* Esc on the start screen: a key press can't grab the mouse, so the next click does */
+    #fade { position: fixed; inset: 0; background: #14232d; opacity: 0; pointer-events: none; z-index: 40; }
+    #fade[hidden] { display: none; }
     #arm { position: fixed; inset: 0; cursor: pointer; background: transparent; }
     #arm[hidden] { display: none; }
     #arm div { position: absolute; left: 50%; bottom: calc(26px + var(--sb)); transform: translateX(-50%); background: rgba(20, 35, 45, 0.55); color: #fff; padding: 6px 14px; border-radius: 16px; font: 500 13px system-ui, sans-serif; white-space: nowrap; pointer-events: none; }
@@ -279,6 +281,7 @@
   </div>
   <div id="arm" hidden role="button"><div>Klicka för att styra med musen</div></div>
   <div id="rotate" role="alert"><div><span class="ico">📱</span><p>Vänd telefonen eller plattan till liggande läge.</p></div></div>
+  <div id="fade" hidden></div>
   <div id="reloaded" hidden role="status">Ny version laddad</div>
   <div id="update" hidden role="status">
     <div>Det finns en ny version av lägenheten.<small id="update-hint">Ladda om sidan för att se den.</small></div>

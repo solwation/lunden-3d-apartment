@@ -39,8 +39,10 @@ https://solwation.github.io/lunden-3d-apartment/ (public repo) via
 `.github/workflows/pages.yml`, which runs `tools/stamp.sh`: it copies the site to `_site`,
 writes the commit SHA into `src/version.js` (`BUILD`) and `version.json`, and appends
 `?v=SHA` to module imports / `data/plan.json` so a reload never mixes cached old modules.
-The page polls `version.json` every minute and shows a "new version" notice (top centre)
-when it differs from `BUILD`. Its buttons react to a lifted touch as well as a click (`onTap`,
+The page polls `version.json` every minute; when it differs from `BUILD` it reloads by itself (#192, `autoReload` in
+main.js): once the visitor has been still for 2.5 s (no keys/stick/mouse/touch, not walking, no panel, no music) the
+picture fades out, the place is saved (resume record) and `?v=<new SHA>` loads, fading back in with "Ny version laddad";
+only if they are never still for 5 min does the old "new version" notice (top centre) appear. Its buttons react to a lifted touch as well as a click (`onTap`,
 #41), and "Ladda om" navigates to `?v=<new SHA>` so no cache serves the old page
 (`tools/updatetest.html`). That button stores a one-time record (`src/resume.js`: position, level, view,
 clock, input mode, mute, fullscreen; sessionStorage + localStorage, < 2 min) which the next load reads, deletes and resumes from (the place only — the clock and the calendar always
