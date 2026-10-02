@@ -63,6 +63,9 @@
     #start-go { display: none; }
     body.phone .keys, body.phone #start-mouse, body.phone #start-touch { display: none; }
     body.phone #start-go { display: block; }
+    .card .qr { display: flex; align-items: center; gap: 10px; margin: 12px 0 0; font-size: 12px; opacity: .85; }
+    .card .qr img { width: 111px; height: 111px; border-radius: 4px; image-rendering: pixelated; }
+    body.phone .card .qr { display: none; } /* already on a phone (#193) */
     #stick { position: fixed; width: 120px; height: 120px; margin: -60px 0 0 -60px; border-radius: 50%; background: rgba(255,255,255,.18); border: 2px solid rgba(255,255,255,.6); pointer-events: none; }
     #stick[hidden] { display: none; }
     #stick .knob { position: absolute; left: 34px; top: 34px; width: 52px; height: 52px; border-radius: 50%; background: rgba(255,255,255,.85); box-shadow: 0 2px 8px rgba(0,0,0,.3); }
@@ -268,6 +271,7 @@
       <button id="install-btn" class="linkish" hidden>Installera som app</button>
       <button id="to-start" class="linkish">Gå till startplatsen</button>
       <button id="stats-reset" class="linkish">Nollställ statistiken</button>
+      <figure class="qr"><img src="icons/qr-site.svg" alt="QR-kod till solwation.github.io/lunden-3d-apartment" width="111" height="111"><figcaption>Skanna för att öppna på en annan enhet</figcaption></figure>
     </div>
   </div>
   <div id="install" hidden role="dialog" aria-label="Installera appen">

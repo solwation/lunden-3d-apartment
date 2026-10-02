@@ -239,6 +239,8 @@ src/changelog.js       changelog list + the note on the freezer (E to read)
 src/install.js         iPhone "add to home screen" sheet (no fullscreen API there); install link
                        where the browser offers beforeinstallprompt
 manifest.webmanifest   web app manifest; icons/ = icon.svg rendered to PNG (192, 512, apple-touch 180)
+                       + qr-site.svg, the start screen's QR code to the site (#193; made with OpenCV's
+                       cv2.QRCodeEncoder, level M, and checked with cv2.QRCodeDetector on a screenshot; hidden on phones)
 data/plan.json         GENERATED — do not edit by hand
 data/changelog.json    what changed, for visitors (see Workflow rules)
 tools/extract_plan.py  PDF → data/plan.json (stdlib only)
