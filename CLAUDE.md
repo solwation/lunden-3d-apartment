@@ -256,7 +256,7 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   daybed with pink cushions. Bunks: long side to the side wall, head end to the façade. Name signs: `DOOR_SIGNS` → `src/signs.js` (hall side of the door).
 - Hall (#49): the plan's "EL" cabinet is really the small EL/C (40 cm, `CABINET_FIXES`) plus the coat
   rack "KL" beside it, which the extractor merged; on that wall (right as you come in) a coat rack with
-  jackets and a shoe rack (FURNITURE `coatrack`/`shoerack`). The mirror + key cabinet are on the left.
+  jackets and a shoe rack (FURNITURE `coatrack`/`shoerack`). The mirror is centred on the left wall; the key cabinet hangs on the narrow wall right of the entrance door, above the switch (#123).
 - Dining set (user's choice, #62/#57/#63): IKEA SKANSNÄS table and 4 chairs, brown beech (`SKANSNAS`, one
   frame colour for both; light woven paper-cord seats): the table rectangular 150 × 90 (closed; 205
   extended is not modelled), short end to the kitchen window; 2 + 2 chairs on the long sides, pushed
