@@ -60,7 +60,7 @@ for (const door of world.doors) {
   const p = cat.object.position, floor = p.y < 1.6 ? 0 : 3.25;
   const side = sgn * ((p.x - center[0]) * normal[0] + (p.z - center[1]) * normal[1]);
   if (cat.on) {
-    const ok = side < -0.2 && p.y > floor + 0.3 && p.y < floor + 1.0;
+    const ok = side < -0.2 && p.y > floor + 0.3 && p.y < floor + 1.5; // (a top bunk is ~1.3 m up)
     pass &&= ok;
     ups.push(cat.on);
     lines.push(`${ok ? 'PASS' : 'FAIL'} up on the furniture behind ${door.name}: ${cat.on} at (${p.x.toFixed(2)}, ${p.y.toFixed(2)}, ${p.z.toFixed(2)})`);

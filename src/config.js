@@ -978,9 +978,15 @@ export const IDANAS = { L: 2.23, W: 1.9, frameH: 0.49, headH: 1.21, head: 0.2, l
 // guesses from the product photo. One per bunk berth, on the side wall by the head end (`fromHead` along the bed),
 // the plate centre `aboveMattress` over the berth's mattress top, reachable lying there (REST.reach.lie 0.8 m).
 // `berths`: the side wall's x, the head end's z, which way along z the bed runs (+1 / −1), rot = the way the lamp faces.
+// The bunks (#227, docs/vaningssang-mydal-vit.png): IKEA MYDAL, white lacquered pine, for 90 × 200 mattresses,
+// 97 × 207 × 157 cm (ikea.com); posts 5.5 cm; the bed bases' tops at `base` (~85 cm free between them, guess),
+// mattresses `mattress` thick; a guard rail of two boards round the top bunk (open by the ladder), two boards in
+// each end at both bunks, a straight three-rung ladder on the room side by the foot end
+export const MYDAL = { W: 0.97, L: 2.07, H: 1.57, post: 0.055, base: [0.2, 1.1], mattress: 0.12, board: 0.09 };
+
 export const NYMANE_WALL = {
   plate: { w: 0.06, h: 0.11, d: 0.025 }, button: 0.012, arm: 0.07, shade: { r: 0.035, h: 0.08, tilt: 0.6 }, cord: 0.45,
-  fromHead: 0.42, aboveMattress: 0.42, mattress: [0.42, 1.32], // the bunk's mattress tops (furniture.js bunk: y + 0.17)
+  fromHead: 0.42, aboveMattress: 0.42, mattress: MYDAL.base.map((b) => b + MYDAL.mattress), // the bunks' mattress tops (#227)
   colors: { white: 0xf2f2ef, black: 0x1c1c1e }, cordColors: { white: 0xe8e6e0, black: 0x222224 },
   light: { intensity: 0.9, range: 3.5, color: 0xffd59a }, // weaker than the floor lamp: one GU10 bulb
   berths: [

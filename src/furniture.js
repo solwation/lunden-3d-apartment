@@ -3,7 +3,7 @@ import { sfx } from './audio.js';
 import { mergeStatic } from './merge.js';
 import { restTarget } from './rest.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
-import { FURNITURE, LANDSKRONA as L, LEVELS, SKANSNAS, IDANAS, OTTOMAN, SYMFONISK, SECRET, NYMANE_WALL } from './config.js';
+import { FURNITURE, LANDSKRONA as L, LEVELS, SKANSNAS, IDANAS, MYDAL, OTTOMAN, SYMFONISK, SECRET, NYMANE_WALL } from './config.js';
 import { loungesofa, loungetable, parasol, planter } from './patio.js';
 import { Screen } from './screens.js';
 import { lampMat, addLampGlow } from './interior.js';
@@ -697,36 +697,39 @@ const sheetMat = (kind) => (sheetMats[kind] ??= new THREE.MeshStandardMaterial({
 const bunkBase = whiteWood.clone();
 bunkBase.userData = { posterCeiling: true };
 
+/** IKEA MYDAL bunk bed (#227): four posts floor to top, two boards in each end at both bunks, side rails under the
+ * mattresses, a two-board guard rail round the top bunk (open on the room side by the ladder), a straight
+ * three-rung ladder on the room side (+x) at the foot end. Mattresses and bedding as before (`sheets`). Head at −z. */
 function bunk(item) {
-  const g = new THREE.Group();
-  const w = item.w, l = item.l, H = 1.6, p = 0.05;
-  for (const x of [-w / 2 - p / 2, w / 2 + p / 2]) for (const z of [-l / 2 - p / 2, l / 2 + p / 2]) {
-    g.add(rbox(p, H, p, x, H / 2, z, whiteWood, 0.01));
+  const g = new THREE.Group(), M = MYDAL;
+  const w = item.w, l = item.l, p = M.post, hx = w / 2 + p / 2, hz = l / 2 + p / 2, b = M.board;
+  for (const x of [-hx, hx]) for (const z of [-hz, hz]) g.add(rbox(p, M.H, p, x, M.H / 2, z, whiteWood, 0.006)); // posts
+  const duvet = item.sheets ? sheetMat(item.sheets) : duvetMat();
+  M.base.forEach((y, k) => {
+    for (const x of [-hx, hx]) g.add(rbox(0.03, 0.14, l, x, y - 0.03, 0, whiteWood, 0.004)); // side rails
+    g.add(rbox(w, 0.02, l, 0, y - 0.01, 0, k === 1 ? bunkBase : whiteWood, 0.003)); // the bed base (the top one's underside takes drawings, #199)
+    for (const z of [-hz, hz]) for (const dy of [0.06, 0.06 + b + 0.1]) g.add(rbox(w, b, 0.025, 0, y + dy, z, whiteWood, 0.004)); // end boards
+    // mattress, duvet, pillow
+    g.add(rbox(w - 0.02, M.mattress, l - 0.02, 0, y + M.mattress / 2, 0, linen, 0.04));
+    g.add(rbox(w, 0.05, l * 0.68, 0, y + M.mattress + 0.02, l * 0.15, duvet, 0.025));
+    g.add(rbox(w * 0.7, 0.1, 0.34, 0, y + M.mattress + 0.05, -l / 2 + 0.24, item.sheets ? duvet : linen, 0.05));
+  });
+  // guard rail round the top bunk: two boards, the room side open by the ladder
+  const top = M.base[1], lz0 = l / 2 - 0.5, lz1 = l / 2 - 0.05; // the ladder's span (foot end)
+  for (const dy of [0.2, 0.38]) {
+    g.add(rbox(0.025, b, l, -hx, top + dy, 0, whiteWood, 0.004));                                  // wall side
+    g.add(rbox(0.025, b, lz0 + l / 2, hx, top + dy, (-l / 2 + lz0) / 2, whiteWood, 0.004));          // room side, up to the ladder
   }
-  for (const y of [0.25, 1.15]) {
-    // frame, mattress, duvet, pillow
-    for (const x of [-w / 2 - p / 2, w / 2 + p / 2]) g.add(rbox(p * 0.8, 0.12, l, x, y, 0, whiteWood, 0.01));
-    for (const z of [-l / 2 - p / 2, l / 2 + p / 2]) g.add(rbox(w, 0.12, p * 0.8, 0, y, z, whiteWood, 0.01));
-    g.add(rbox(w - 0.02, 0.14, l - 0.02, 0, y + 0.1, 0, linen, 0.04));
-    const duvet = item.sheets ? sheetMat(item.sheets) : duvetMat();
-    g.add(rbox(w, 0.05, l * 0.68, 0, y + 0.19, l * 0.15, duvet, 0.025));
-    g.add(rbox(w * 0.7, 0.1, 0.34, 0, y + 0.22, -l / 2 + 0.24, item.sheets ? duvet : linen, 0.05));
-  }
-  // the top bunk's base board: its underside is the "ceiling" over the lower bunk, where drawings can be taped (#199)
-  g.add(rbox(w, 0.012, l, 0, 1.175, 0, bunkBase, 0.003));
+  // the ladder: two stiles from the floor to the top rail, three rungs
+  const lx = hx + 0.035;
+  for (const z of [lz0, lz1]) g.add(rbox(0.03, top + 0.4, 0.045, lx, (top + 0.4) / 2, z, whiteWood, 0.005));
+  for (let k = 1; k <= 3; k++) g.add(rbox(0.03, 0.03, lz1 - lz0, lx, (top / 4) * k + 0.05, (lz0 + lz1) / 2, whiteWood, 0.006));
   g.userData.rest = { kind: 'lie', name: 'våningssängen', verb: 'lägga dig i',
-    spots: [0.25, 1.15].map((y) => ({ x: 0, y: y + 0.17, z: -l / 2 + 0.3, label: y > 1 ? 'överslafen' : 'underslafen' })) };
+    spots: M.base.map((y, k) => ({ x: 0, y: y + M.mattress, z: -l / 2 + 0.3, label: k ? 'överslafen' : 'underslafen' })) };
   // `watch`: a place to sit in the lower bunk, back to the wall (local −x), facing the room, hunched
   // under the top bunk; the PC in the room swings its monitor round and plays a film
-  if (item.watch) g.userData.rest.spots.push({ kind: 'sit', verb: 'sätta dig i', x: -w / 2 + 0.22, y: 0.3, z: item.watch.z, dir: [1, 0], pc: 'film' });
-  // guard rail on the top bunk (open by the ladder) and the head/foot boards above it
-  g.add(rbox(p * 0.6, 0.06, l * 0.62, w / 2 + p / 2, 1.5, -l * 0.17, whiteWood, 0.01));
-  for (const z of [-l / 2 - p / 2, l / 2 + p / 2]) g.add(rbox(w, 0.06, p * 0.6, 0, 1.5, z, whiteWood, 0.01));
-  // ladder on the room side (+x) at the foot end
-  const lx = w / 2 + p + 0.02, lz0 = l / 2 - 0.42, lz1 = l / 2 - 0.02;
-  for (const z of [lz0, lz1]) g.add(rbox(0.035, 1.55, 0.035, lx, 0.775, z, whiteWood, 0.008));
-  for (let y = 0.3; y < 1.5; y += 0.27) g.add(rbox(0.03, 0.03, lz1 - lz0, lx, y, (lz0 + lz1) / 2, whiteWood, 0.008));
-  g.userData.footprint = [{ x0: -w / 2 - p, x1: lx + 0.03, z0: -l / 2 - p, z1: l / 2 + p }];
+  if (item.watch) g.userData.rest.spots.push({ kind: 'sit', verb: 'sätta dig i', x: -w / 2 + 0.22, y: M.base[0] + M.mattress - 0.04, z: item.watch.z, dir: [1, 0], pc: 'film' });
+  g.userData.footprint = [{ x0: -hx - p / 2, x1: lx + 0.02, z0: -hz - p / 2, z1: hz + p / 2 }];
   return g;
 }
 
