@@ -15,6 +15,10 @@ in Swedish. Code, comments and this file are in English; UI text is Swedish.
   in-progress`) when you stop without finishing, when you close the issue after implementing it
   (`Fixes #N` closes it, but does not remove the label — do that too), and when you **reopen** an
   issue. A reopened issue starts without the label until someone picks it up again.
+- **Reference images** (screenshots, product photos, Peab renders) that the user sends in with a
+  request are always committed to `docs/` (descriptive file names, e.g. `docs/sekretar-bang-oppen.png`)
+  and linked from the issue as `https://github.com/solwation/lunden-3d-apartment/blob/main/docs/<file>`,
+  so the agent working on the issue sees them. Push the images before creating the issue.
 - Verify changes in a real browser before pushing (see *Testing*). Don't claim something
   works from reading the code alone.
 - **Every user-visible change gets an entry in `data/changelog.json`** (Swedish, newest first,
