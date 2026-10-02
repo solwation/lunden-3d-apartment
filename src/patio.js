@@ -170,7 +170,19 @@ export function parasol() {
   finial.position.y = height + 0.02;
   g.add(canopy, finial);
   g.traverse((m) => { m.castShadow = true; });
-  const p = { canopy, open: 0, radius };
+  const p = { canopy, open: 0, radius, manual: null, manualAuto: null, auto: 0 };
+  // E on the parasol folds/unfolds it by hand (#51); see Patio.update for how long that choice holds
+  p.interact = {
+    name: 'parasollet', kind: 'parasol', pickable: g,
+    get isOpen() { return (p.manual ?? p.auto) === 1; },
+    get verb() { return this.isOpen ? 'fälla ihop' : 'fälla ut'; },
+    toggle() {
+      p.manual = this.isOpen ? 0 : 1;
+      p.manualAuto = p.auto;
+      return p.manual === 1;
+    },
+  };
+  g.traverse((m) => { m.userData.door = p.interact; });
   seasonal.parasols.push(p);
   setParasol(p, 0);
   g.userData.footprint = [{ x0: -0.12, x1: 0.12, z0: -0.12, z1: 0.12 }];
@@ -337,13 +349,22 @@ export class Patio {
     return { parasols: seasonal.parasols.map((p) => p.open), beers: seasonal.beers.map((b) => b.visible), snowman: this.snowman.visible };
   }
 
+  /** E targets: the parasols (folded/unfolded by hand). */
+  get targets() { return seasonal.parasols.map((p) => p.interact); }
+
   update(day, dt) {
     this.t += dt;
     const sunUp = day.sunDir.y > 0.02;
-    const open = P.parasol.months.includes(day.month) && sunUp ? 1 : 0;
+    const auto = P.parasol.months.includes(day.month) && sunUp ? 1 : 0;
     for (const p of seasonal.parasols) {
-      if (this.first) setParasol(p, open); // no unfolding on arrival
-      else if (p.open !== open) setParasol(p, THREE.MathUtils.clamp(p.open + Math.sign(open - p.open) * dt * 0.5, 0, 1));
+      // A choice made by hand (E) holds until the automatic state itself changes (sunset/sunrise,
+      // a new season): then the automatic one takes over again.
+      if (p.manual !== null && auto !== p.manualAuto) p.manual = null;
+      p.auto = auto;
+      const target = p.manual ?? auto;
+      const speed = p.manual !== null ? 2.5 : 0.5; // by hand: a quick flick; by itself: slowly
+      if (this.first) setParasol(p, target); // no unfolding on arrival
+      else if (p.open !== target) setParasol(p, THREE.MathUtils.clamp(p.open + Math.sign(target - p.open) * dt * speed, 0, 1));
     }
     const [h0, h1] = P.beerHours;
     const beers = P.beerMonths.includes(day.month) && day.hour >= h0 && day.hour < h1;

@@ -292,6 +292,10 @@ function use(thing) {
   else if (thing.kind === 'keybox') thing.toggle();
   else if (thing.kind === 'appliance') { thing.toggle(); if (thing.isOpen) bump('lids'); }
   else if (thing.kind === 'coffee') thing.toggle();
+  else if (thing.kind === 'parasol') {
+    const opening = thing.toggle();
+    sfx.parasol(thing.pickable.getWorldPosition(new THREE.Vector3()).setY(2), opening);
+  }
   else if (thing.kind === 'carkey') thing.press();
   else if (thing.kind === 'lid') {
     thing.toggle();
@@ -380,7 +384,8 @@ function updateFocus() {
   raycaster.setFromCamera(center, camera);
   // (the raycaster ignores visibility, so the cat is only a target while it is there)
   // the car key only while its cabinet is open
-  const extra = [...(cat.visible ? [cat.object] : []), ...(keyCabinet?.keyReachable ? [world.carKey.pickable] : [])];
+  const extra = [...(cat.visible ? [cat.object] : []), ...(keyCabinet?.keyReachable ? [world.carKey.pickable] : []),
+    ...(world.furnitureOn ? patio.targets.map((t) => t.pickable) : [])]; // the parasol, unless F hid the furniture
   const hit = raycaster.intersectObjects(extra.length ? [...pickables, ...extra] : pickables, true)[0];
   focused = hit && !behindWall(hit.point) ? hit.object.userData.door : null;
   const verb = !focused ? '' : focused.verb ?? (focused.isOpen ? 'stänga' : 'öppna');

@@ -182,6 +182,8 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   gap in the hedge is gone, #52), two beers on the table Jun–Aug
   12–23, a snowman on the lawn beyond the hedge Dec–Feb (`PATIO` in config). Floor: 40 × 40 light grey slabs in half
   bond (`PATIO.paving`, `pavingTexture` in patio.js, UVs in metres), also on the neighbours' patios.
+  E on the parasol folds/unfolds it (#51, `patio.targets`); the hand-made choice holds until the automatic
+  state itself changes (sunrise/sunset, season). Not a target while F hides the furniture.
 - Material choices (Sarah's screenshots in `material/`): parquet Ek Chalk (white-stained oak),
   walls/doors NCS S 0500-N, stair treads in the same Ek Chalk parquet as the floors (an extra-cost
   choice; `buildStairs([M.floor, M.riser])`, #54) with white risers, hall granitkeramik City Amsterdam

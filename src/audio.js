@@ -349,6 +349,14 @@ export const sfx = {
     noise(t, 0.025, d, { type: 'highpass', freq: 2200, gain: 0.35 });
     tone(t, 0.04, d, { type: 'square', from: opening ? 1400 : 900, to: 600, gain: 0.05 });
   },
+    /** Parasol: a fabric rustle as the canopy folds or unfolds, a click of the runner at the end. */
+  parasol(pos, opening) {
+    if (!ready()) return;
+    const t = ctx.currentTime, d = out(pos, 0.9);
+    noise(t, 0.35, d, { type: 'bandpass', freq: opening ? 1800 : 1300, q: 0.8, gain: 0.18, attack: 0.08 });
+    noise(t + 0.38, 0.02, d, { type: 'highpass', freq: 3000, gain: 0.3 });
+    tone(t + 0.38, 0.03, d, { type: 'square', from: 1200, to: 800, gain: 0.04 });
+  },
     click(pos) {
     if (!ready()) return;
     const t = ctx.currentTime, d = out(pos, 0.6);

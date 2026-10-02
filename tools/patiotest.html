@@ -17,7 +17,7 @@ document.body.append(f);
 f.onload = async () => {
   const w = f.contentWindow;
   while (!w.__app) await wait(100);
-  const { day, patio, step, player, world } = w.__app;
+  const { day, patio, step, player, world, camera, use } = w.__app;
   const lines = [];
   const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; };
   const at = (month, hour, secs = 4) => { day.month = month; day.hour = hour; day.paused = true; for (let i = 0; i < secs * 20; i++) step(0.05); return patio.state; };
@@ -44,6 +44,25 @@ f.onload = async () => {
   player.keys.clear();
   world.setFurniture(true);
   pass &= check(player.pos.z > 15.6, `F off: walks on (z ${player.pos.z.toFixed(2)})`);
+  // E on the parasol (#51): fold it by hand on a summer day, it stays folded while the automatic
+  // state stays the same, and the automatic one takes over again after sunset
+  s = at(7, 14);
+  const par = patio.targets[0];
+  const pp = par.pickable.getWorldPosition(new par.pickable.position.constructor());
+  w.__app.touch.enabled = true;
+  player.spawn(pp.x, pp.z - 1.2, Math.PI); // 1.2 m north of the pole, facing south
+  camera.rotation.x = Math.atan2(1.6 - player.eyeY, 1.2);
+  for (let i = 0; i < 3; i++) step(1 / 60);
+  const btn = w.document.getElementById('action');
+  pass &= check(!btn.hidden && /fälla ihop parasollet/i.test(btn.textContent), `action button "${btn.textContent}"`);
+  btn.click();
+  s = at(7, 14.2, 2);
+  pass &= check(s.parasols[0] === 0, `folded by hand on a July afternoon (${s.parasols[0]})`);
+  s = at(7, 16, 2);
+  pass &= check(s.parasols[0] === 0, `stays folded while it is still day (${s.parasols[0]})`);
+  s = at(7, 23.5, 2);
+  s = at(7, 10, 4);
+  pass &= check(s.parasols[0] === 1, `after the night the automatic state is back: up next morning (${s.parasols[0]})`);
   out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
 };
 </script>
