@@ -88,6 +88,8 @@ src/rooms.js           room detection: walls + door gaps rasterised, BFS from th
 src/minimap.js         plan view with the visitor's arrow, current room highlighted; hidden, shown with the
                        stats (Tab / T / 📊, #85), K shows it alone
 src/measure.js         tape measure (Q / 📏): two points on any surface, distance label
+src/cabinets.js        wall cabinets with side-hung doors that open with E (kind 'cabinet', in world.lids), e.g. the
+                       Tvätt wall cabinet over the worktop (LAUNDRY_CABINET, #138)
 src/ovens.js           oven (drop-down door) + microwave (side door) in the tall unit, E opens (world.lids)
 src/coffee.js          Moccamaster on the worktop (MOCCAMASTER): E brews (red light, sound, the jug fills)
 src/mirror.js          the one mirror material (gradient + glints; hall and bathroom mirrors)

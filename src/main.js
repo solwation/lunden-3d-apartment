@@ -486,6 +486,7 @@ function use(thing) {
   else if (thing.kind === 'keybox') thing.toggle();
   else if (thing.kind === 'appliance') { thing.toggle(); if (thing.isOpen) bump('appliances'); } // oven, microwave (#82)
   else if (thing.kind === 'coffee') thing.toggle();
+  else if (thing.kind === 'cabinet') { thing.toggle(); if (thing.isOpen) bump('cabinets'); } // wall cabinets that open (#138)
   else if (thing.kind === 'target') thing.toggle(); // clear the score (#99)
   else if (thing.kind === 'rest') sitOrLie(thing);
   else if (thing.blocked) sfx.click(camera.position); // put down what you hold first (#102)

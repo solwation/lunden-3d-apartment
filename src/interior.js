@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { FINISH, TILED_ROOMS, KITCHEN as K, SKIRTING, LAUNDRY_SINK, VANITY_BASIN } from './config.js';
+import { FINISH, TILED_ROOMS, KITCHEN as K, SKIRTING, LAUNDRY_SINK, LAUNDRY_CABINET, VANITY_BASIN } from './config.js';
+import { wallCabinet } from './cabinets.js';
 import { Fridge } from './fridge.js';
 import { buildOvens } from './ovens.js';
 import { Moccamaster } from './coffee.js';
@@ -426,7 +427,7 @@ function buildKitchen(B, group, floor, y0, yC, handled, taps, appliances) {
 
 // ---------- laundry (Tvätt) ----------
 
-function buildLaundry(B, floor, room, y0, handled, taps) {
+function buildLaundry(B, group, floor, room, y0, handled, taps, appliances) {
   const cabs = floor.cabinets.filter((c) => (c.label === 'TT' || c.label === 'TM') && inside(c, room));
   if (!cabs.length) return [];
   const sinkF = floor.fixtures.find((f) => f.kind === 'sink' && inside(f, room));
@@ -467,6 +468,20 @@ function buildLaundry(B, floor, room, y0, handled, taps) {
     const bottom = sinkBowl(B, h, yr + 0.003, LAUNDRY_SINK.depth, M.steel, 'x0');
     taps.push({ ...mixer(B, run.x0 + 0.06, sz, yt + 0.03, [1, 0], M.chrome, { h: 0.28, r: 0.08 }), basin: bottom, name: 'blandaren' });
   }
+  // the wall cabinet over the worktop (#138): white doors that open, detergent and towels inside
+  const C = LAUNDRY_CABINET, cy0 = y0 + C.y0, cy1 = y0 + C.y1, shelf = cy0 + (cy1 - cy0) * 0.5 + 0.007;
+  const xIn = run.x0 + 0.02, towels = [], bottles = [], caps = [];
+  for (let k = 0; k < 3; k++) towels.push(new THREE.BoxGeometry(0.25, 0.045, 0.3).translate(xIn + 0.15, cy0 + 0.016 + 0.0225 + k * 0.046, run.z0 + 0.25)); // folded towels
+  for (let k = 0; k < 2; k++) towels.push(new THREE.BoxGeometry(0.25, 0.045, 0.3).translate(xIn + 0.15, cy0 + 0.016 + 0.0225 + k * 0.046, run.z0 + 0.62));
+  for (const [dz, h, r] of [[0.95, 0.24, 0.045], [1.07, 0.2, 0.04], [1.32, 0.28, 0.05]]) { // bottles of detergent and fabric softener
+    bottles.push(new THREE.CylinderGeometry(r, r, h, 14).translate(xIn + 0.12, shelf + h / 2, run.z0 + dz));
+    caps.push(new THREE.CylinderGeometry(r * 0.45, r * 0.45, 0.03, 10).translate(xIn + 0.12, shelf + h + 0.015, run.z0 + dz));
+  }
+  bottles.push(new THREE.BoxGeometry(0.18, 0.22, 0.12).translate(xIn + 0.13, cy0 + 0.016 + 0.11, run.z0 + 1.3)); // a box of washing powder
+  const lc = wallCabinet({ wall: run.x0, dir: 1, z0: run.z0, z1: run.z1, y0: cy0, y1: cy1, depth: C.depth, units: C.units, material: M.laundry, handle: M.chrome,
+    contents: [[towels, std(0xd9e6ea, { roughness: 0.95 })], [bottles, std(0x3b7fc4, { roughness: 0.4 })], [caps, M.white]] });
+  group.add(lc.object);
+  appliances.push(...lc.doors);
   // ceiling globe (Classic glob 150 vit klarglas)
   const [cx, cz] = centre(room);
   const yc = y0 + (room.ceiling ?? 2.5);
@@ -737,7 +752,7 @@ export function buildInterior(group, floor, li, y0, yC, wallBoxes, handled, taps
       tileWalls(B, room, wallBoxes, y0, room.wallTile, M.wallTile);
       rects.push(...buildBathroom(B, group, floor, room, y0, handled, taps));
     }
-    if (room.name === 'Tvätt') rects.push(...buildLaundry(B, floor, { ...room, ceiling: 2.5 }, y0, handled, taps));
+    if (room.name === 'Tvätt') rects.push(...buildLaundry(B, group, floor, { ...room, ceiling: 2.5 }, y0, handled, taps, appliances));
   }
   skirting(B, [...wallBoxes, ...floor.windows], li, floor.size, y0);
   group.add(...B.meshes());
