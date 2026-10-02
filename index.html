@@ -36,10 +36,9 @@
     }
     #overlay[hidden] { display: none; }
     /* Esc on the start screen: a key press can't grab the mouse, so the next click does */
-    #arm { position: fixed; inset: 0; display: grid; place-items: center; cursor: pointer; background: rgba(20, 35, 45, 0.25); }
+    #arm { position: fixed; inset: 0; cursor: pointer; background: transparent; }
     #arm[hidden] { display: none; }
-    #arm div { background: var(--panel); padding: 16px 24px; border-radius: 10px; font: 600 18px system-ui, sans-serif; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,.25); }
-    #arm small { display: block; font-weight: 400; font-size: 13px; margin-top: 4px; opacity: .75; }
+    #arm div { position: absolute; left: 50%; bottom: calc(26px + var(--sb)); transform: translateX(-50%); background: rgba(20, 35, 45, 0.55); color: #fff; padding: 6px 14px; border-radius: 16px; font: 500 13px system-ui, sans-serif; white-space: nowrap; pointer-events: none; }
     .card { background: var(--panel); padding: 28px 32px; border-radius: 10px; max-width: 420px; box-shadow: 0 10px 40px rgba(0,0,0,.25); }
     .card h1 { margin: 0 0 2px; font-size: 26px; }
     .card .kicker { color: var(--accent); font-weight: 700; font-size: 13px; letter-spacing: .05em; }
@@ -278,7 +277,7 @@
       <button id="install-skip" class="linkish">Spela i webbläsaren ändå</button>
     </div>
   </div>
-  <div id="arm" hidden role="button"><div>Klicka för att börja<small>mus &amp; tangentbord</small></div></div>
+  <div id="arm" hidden role="button"><div>Klicka för att styra med musen</div></div>
   <div id="rotate" role="alert"><div><span class="ico">📱</span><p>Vänd telefonen eller plattan till liggande läge.</p></div></div>
   <div id="reloaded" hidden role="status">Omladdning klar<small>– ny version</small></div>
   <div id="update" hidden role="status">

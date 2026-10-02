@@ -490,11 +490,17 @@ function showOverlay(show) {
 }
 
 // Explicit choice on the start screen — a Surface has both a touchscreen and a keyboard.
-function startMouse() { initAudio(); canvas.requestPointerLock(); }
+let startClickAt = -1e9, lockRetried = false;
+function startMouse() {
+  initAudio();
+  startClickAt = performance.now(); lockRetried = false;
+  canvas.requestPointerLock()?.catch?.(() => {}); // a refusal also fires pointerlockerror (handled below)
+}
 document.getElementById('start-mouse').addEventListener('click', startMouse);
 // Esc on the start screen = "Mus & tangentbord". Browsers don't count Esc as a user gesture, so
 // it can't grab the mouse or start the sound itself: it closes the start screen and the next
-// click (anywhere) does exactly what the button does. Esc in the game still just frees the mouse.
+// click (anywhere) does exactly what the button does — #arm is a see-through click catcher with a small
+// line at the bottom, no box (#190). Esc in the game still just frees the mouse.
 const armEl = document.getElementById('arm');
 let unlockedAt = -1e9;
 const otherOverlay = () => ['install', 'note', 'board-view', 'poster-panel'].some((id) => !document.getElementById(id)?.hidden)
@@ -507,7 +513,13 @@ document.addEventListener('keydown', (e) => {
   armEl.hidden = false;
 });
 armEl.addEventListener('click', () => { armEl.hidden = true; startMouse(); });
-document.addEventListener('pointerlockerror', () => { if (!armEl.hidden || overlay.hidden) { armEl.hidden = true; showOverlay(true); } });
+// refused (Chrome wants ~1 s between freeing the mouse and taking it again): try once more while the click
+// still counts as a gesture, else the game shows and the next click takes the mouse — never back to the start
+// screen, never a box to click (#190)
+document.addEventListener('pointerlockerror', () => {
+  if (!lockRetried && performance.now() - startClickAt < 4000) { lockRetried = true; setTimeout(() => canvas.requestPointerLock()?.catch?.(() => {}), 1100); }
+  showOverlay(false); armEl.hidden = false;
+});
 document.getElementById('start-touch').addEventListener('click', () => {
   initAudio();
   touch.enabled = true;
@@ -1060,8 +1072,7 @@ function continueAfterReload(r) {
     }, { once: true, capture: true });
   } else {
     overlay.hidden = true;
-    armEl.querySelector('div').innerHTML = 'Klicka för att fortsätta<small>mus &amp; tangentbord</small>';
-    armEl.hidden = false;
+    armEl.hidden = false; // the next click takes the mouse (pointer lock needs a gesture)
   }
   reloadedEl.hidden = false;
   reloadedEl.classList.remove('gone');

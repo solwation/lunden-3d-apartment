@@ -68,7 +68,7 @@ const KEY = 'lunden.resume';
   f = await load();
   d = f.contentDocument; app = f.contentWindow.__app;
   const arm = d.getElementById('arm');
-  pass &= check(d.getElementById('overlay').hidden && !arm.hidden && /fortsätta/.test(arm.textContent) && !app.touch.enabled, `mouse: no start screen, "${arm.textContent}"`);
+  pass &= check(d.getElementById('overlay').hidden && !arm.hidden && /styra med musen/.test(arm.textContent) && !app.touch.enabled, `mouse: no start screen, the next click takes the mouse ("${arm.textContent}")`);
   pass &= check(!d.getElementById('reloaded').hidden && d.getElementById('mute').textContent === '🔊', 'mouse: the note, sound on');
   f.remove();
   out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;

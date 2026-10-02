@@ -28,13 +28,14 @@ f.onload = async () => {
   pass &= check(!overlay.hidden && arm.hidden, 'Esc ignored while the note is open');
   w.__app.showNote(false);
   esc();
-  pass &= check(overlay.hidden && !arm.hidden && /Klicka för att börja/.test(arm.textContent), 'Esc closes the start screen, "Klicka för att börja" shown');
+  pass &= check(overlay.hidden && !arm.hidden && /styra med musen/.test(arm.textContent) && getComputedStyle(arm).backgroundColor === 'rgba(0, 0, 0, 0)', 'Esc closes the start screen: the game shows, a click anywhere takes the mouse (no box, #190)');
   let asked = false;
   const orig = w.HTMLCanvasElement.prototype.requestPointerLock;
   w.HTMLCanvasElement.prototype.requestPointerLock = function () { asked = true; return orig.call(this); };
   arm.click();
   await wait(300);
-  pass &= check(asked && arm.hidden, 'click asks for pointer lock (same as the button)');
+  // (headless Chrome refuses pointer lock: the game stays up and the next click tries again, never the start screen)
+  pass &= check(asked && overlay.hidden, 'click asks for pointer lock (same as the button); a refusal does not bring back the start screen');
   pass &= check(/Esc/.test(d.querySelector('.keys').textContent) && /startskärmen/.test(d.querySelector('.keys').textContent), 'Esc in the key list');
   out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
 };
