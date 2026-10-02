@@ -11,6 +11,7 @@ import { buildFurniture } from './furniture.js';
 import { buildWallShelves } from './shelves.js';
 import { buildHallWall } from './keycabinet.js';
 import { mergeStatic } from './merge.js';
+import { pavingTexture } from './patio.js';
 import { buildInterior } from './interior.js';
 import { Toilet } from './toilet.js';
 import { RoomMap } from './rooms.js';
@@ -71,7 +72,7 @@ const M = {
   riser: mat(COLORS.riser, { roughness: 0.6 }), // stair risers and stringers (white)
   dark: mat(0x1d2023, { roughness: 0.3 }),
   grass: mat(COLORS.grass, { roughness: 1 }),
-  patio: mat(COLORS.patio, { roughness: 0.95 }),
+  patio: mat(0xffffff, { map: pavingTexture(), roughness: 0.95 }), // slab paving (PATIO.paving)
   hedge: mat(COLORS.hedge, { roughness: 1 }),
   fence: mat(COLORS.fence, { roughness: 0.9 }),
 };
@@ -547,7 +548,7 @@ export function buildWorld(plan) {
   const site = lower.site;
   const ground = plate(-200, 200, -200, SITE.dropZ, -0.01, M.grass); // park level: surroundings.js
   scene.add(ground);
-  if (site.patio) scene.add(box(site.patio.x0, site.patio.x1, D, site.patio.z1, -0.01, 0.0, M.patio, { shadow: false }));
+  if (site.patio) scene.add(plate(site.patio.x0, site.patio.x1, D, site.patio.z1, 0.0, M.patio)); // UVs in metres
   const outdoor = [];
   if (site.hedge) {
     scene.add(box(site.hedge.x0, site.hedge.x1, site.hedge.z0, site.hedge.z1, 0, 1.1, M.hedge));

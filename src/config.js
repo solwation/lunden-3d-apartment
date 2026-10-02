@@ -406,6 +406,9 @@ export const PATIO = {
   pot: { r: 0.3, h: 0.62, color: 0x55595c }, // fibre-clay planter Ø 60 cm (guess)
   beerMonths: [6, 7, 8], beerHours: [12, 23],
   snowman: { x: 3.1, z: 19.2, months: [12, 1, 2] },
+  // paving (#53): 40 × 40 cm light grey concrete slabs, rows in half bond, darker 8 mm joints (our pick,
+  // goes with the anthracite Oslo set); also on the neighbours' patios
+  paving: { slab: 0.4, joint: 0.008, color: [184, 181, 175], jointColor: '#6f6b65' },
 };
 
 // Placement in plan metres. rot = direction the seat faces, degrees (0 = north/−z,

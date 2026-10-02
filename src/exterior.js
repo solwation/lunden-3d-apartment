@@ -147,7 +147,12 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
     if (ours) continue;
     solids.push(boxGeo(ox + 0.001, ox + W - 0.001, 0, roofTop, 0, D));
     // the neighbours' patios: same slab, hedge and screen walls as ours
-    if (site.patio) patios.push(boxGeo(ox + site.patio.x0, ox + site.patio.x1, -0.01, 0.0, D, site.patio.z1));
+    if (site.patio) { // slab paving like ours: UVs in metres (x, z)
+      const pg = boxGeo(ox + site.patio.x0, ox + site.patio.x1, -0.01, 0.0, D, site.patio.z1);
+      const pp = pg.attributes.position, uv = pg.attributes.uv;
+      for (let i = 0; i < pp.count; i++) uv.setXY(i, pp.getX(i), pp.getZ(i));
+      patios.push(pg);
+    }
     if (site.hedge) {
       const h = site.hedge;
       hedges.push(boxGeo(ox + h.x0, ox + h.x1, 0, 1.1, h.z0, h.z1));
