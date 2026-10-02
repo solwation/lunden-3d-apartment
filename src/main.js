@@ -31,6 +31,7 @@ import { Tap, animateWater } from './water.js';
 import { CatBoard, snapshot } from './catboard.js';
 import { Lights } from './lights.js';
 import { setupInstall } from './install.js';
+import { Marks } from './marks.js';
 
 const overlay = document.getElementById('overlay');
 const hud = document.getElementById('hud');
@@ -212,6 +213,8 @@ const measure = new Measure(scene, camera, [world.object], document.getElementBy
 document.getElementById('measure-btn').addEventListener('click', () => measure.press());
 const cat = new CatSpawner(world);
 scene.add(cat.object);
+const marks = new Marks(scene, camera, [world.object, patio.object], cat); // burn marks, stars, splashes on surfaces (#96)
+saber.marks = marks; saber.cat = cat;
 cat.onFound = (label, rare) => catFound(label, rare);
 // a photo of every cat you pet goes up on the board, once its eyes are shut and the hand is there
 const board = new CatBoard();
@@ -724,6 +727,7 @@ function step(dt) {
   for (const h of holdables) h.update(dt);
   cups.update(dt);
   toys.update(dt);
+  marks.update(dt);
   if (clockPanel.open) clockPanel.render();
   world.windowLights.update(day.hour, 1 - day.daylight);
   cat.update(dt);
@@ -838,4 +842,4 @@ document.addEventListener('pointerlockchange', () => { if (!updateEl.hidden) sho
 watchForUpdates(showUpdate);
 
 // handle for tests/debugging (tools/touchtest.html)
-window.__app = { remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };
+window.__app = { marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };

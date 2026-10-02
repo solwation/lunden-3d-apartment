@@ -437,6 +437,14 @@ export const sfx = {
     noise(t, 0.28, d, { type: 'bandpass', freq: 500 + 900 * k, q: 1.2, gain: 0.12 + 0.18 * k, attack: 0.06 });
     tone(t, 0.25, d, { type: 'sawtooth', from: 110 + 60 * k, to: 80, gain: 0.05 + 0.05 * k });
   },
+    /** The blade burning into something: a crackling, frying hiss. */
+  sizzle(pos) {
+    if (!ready()) return;
+    const t = ctx.currentTime, d = out(pos, 0.9);
+    noise(t, 0.45, d, { type: 'highpass', freq: 3200, gain: 0.22, attack: 0.01 });
+    noise(t, 0.2, d, { type: 'bandpass', freq: 900, q: 0.8, gain: 0.18 });
+    for (let i = 0; i < 6; i++) noise(t + Math.random() * 0.35, 0.02, d, { type: 'highpass', freq: 2000, gain: 0.3 + Math.random() * 0.2, attack: 0.001 });
+  },
     /** A foam blaster: a springy thunk and a soft whoosh. */
   nerf(pos) {
     if (!ready()) return;

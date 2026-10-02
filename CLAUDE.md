@@ -98,7 +98,11 @@ src/holdable.js        things you take and hold (one at a time): home + pick box
                        use = click / touch button / fast look; E on the home puts it back, E on a table top /
                        worktop / the floor (HOLD.reach) puts it down (`placeAt`, lying by its shape — `restPose`;
                        cups stand). While something is held other things are `blocked` ("Lägg ifrån dig …")
-src/saber.js           the lightsaber in Sovrum 2 (SABER), a Holdable
+src/saber.js           the lightsaber in Sovrum 2 (SABER), a Holdable; the blade burns marks where it cuts in (#96)
+src/marks.js           marks on surfaces (MARKS, #96): `hit(from, to)` = first surface on a segment (glass, doors, lids
+                       → none; the cat → meow), `add(kind, hit)` / `burn(hit)`; one ring buffer, an InstancedMesh per
+                       kind (burn, glow, star, butterfly, splash) with a per-instance fade, a Points puff of smoke
+src/trigrid.js         world-space triangle grid per big static mesh, so short segment hits skip three's full raycast
 src/remote.js          the TV remote on the coffee table (REMOTE), a Holdable: click = next programme (on if off),
                        right click / ⏻ (touch) = power, on the TV in the look direction (not through walls)
 src/toys.js            Nerf blasters + darts (Sovrum 2), magic wands + sparkles (Sovrum 3), the flashlight

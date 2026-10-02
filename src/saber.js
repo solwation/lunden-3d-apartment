@@ -6,7 +6,9 @@ import { Holdable } from './holdable.js';
 // The lightsaber in Sovrum 2 (#78), a Holdable (holdable.js). It hangs on two hooks on the wall; E takes
 // it down: it ignites (snap-hiss), hums, and is held low on the right of the view. Looking around fast or
 // clicking swings it with a whoosh that follows the speed. E on the empty hooks hangs it back (off). The
-// blade glows with emissive and additive materials only (no lights).
+// blade glows with emissive and additive materials only (no lights). When the blade cuts into a wall, the
+// floor or a piece of furniture (#96) it leaves a burn mark with a puff of smoke (marks.js) and sizzles;
+// the cat only meows.
 
 const hiltMat = new THREE.MeshStandardMaterial({ color: 0xc9cdd2, roughness: 0.25, metalness: 0.9 });
 const gripMat = new THREE.MeshStandardMaterial({ color: 0x1a1a1c, roughness: 0.6 });
@@ -56,7 +58,7 @@ export class Saber extends Holdable {
       pick: { pos: new THREE.Vector3(S.x + 0.06, y0, S.z), size: [0.12, 0.2, 0.4] },
       swing: S.swingSpeed, cooldown: 0.3, useLabel: 'Svinga',
     });
-    Object.assign(this, { saber: g, blade, glowMat, hum: null, swingT: 0 });
+    Object.assign(this, { saber: g, blade, glowMat, hum: null, swingT: 0, marks: null, cat: null, touchT: 0, meowT: 0 });
   }
 
   get swings() { return this.uses; }
@@ -90,5 +92,19 @@ export class Saber extends Holdable {
     this.swingT = Math.max(0, this.swingT - dt * 3.5);
     const k = Math.sin(this.swingT * Math.PI);
     this.model.rotation.set(-1.0 - 0.6 * k, 0.5 * k, -0.25 + 1.2 * k);
+    // contact: while swinging every frame, otherwise now and then (the blade held into a wall)
+    this.touchT -= dt; this.meowT -= dt;
+    if (this.marks && this.blade.scale.y === 1 && (this.swingT > 0 || this.touchT <= 0)) { this.touchT = S.touchEvery; this.burnCheck(); }
+  }
+
+  /** Where the blade's tip is in the world. */
+  tip(out = new THREE.Vector3()) { this.model.updateMatrixWorld(true); return this.model.localToWorld(out.set(0, S.hilt + S.blade, 0)); }
+
+  /** The first surface between the eye and the tip: burn it (the line we see the blade along). */
+  burnCheck() {
+    const h = this.marks.hit(this.camera.getWorldPosition(new THREE.Vector3()), this.tip());
+    if (!h) return;
+    if (h.cat) { if (this.meowT <= 0) { this.cat?.meowNow?.(); this.meowT = 2; } return; }
+    if (this.marks.burn(h)) { this.burns = (this.burns ?? 0) + 1; sfx.sizzle(h.point); }
   }
 }

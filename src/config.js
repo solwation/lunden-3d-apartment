@@ -271,6 +271,7 @@ export const SABER = {
   colors: [0x3aa0ff, 0x44ff66, 0xff3030],
   held: { x: 0.26, y: -0.3, z: -0.5 },
   swingSpeed: 4, // rad/s of looking that counts as a swing
+  touchEvery: 0.25, // s between contact checks while not swinging (burn marks, #96)
 };
 
 // Toys you can take and use (src/toys.js, Holdables like the saber; sizes and spots are our picks).
@@ -296,6 +297,22 @@ export const REMOTE = { w: 0.04, l: 0.18, h: 0.015, x: 3.98, y: 0.47, z: 10.42, 
 // Putting held things down (#102, holdable.js / main.js): a table top, worktop or the floor within `reach` m
 // of the eye.
 export const HOLD = { reach: 2.2 };
+
+// Marks on surfaces (#96, src/marks.js): one ring buffer of at most `max` flat decals in all, one instanced
+// mesh per kind, canvas textures. Per kind: size (m, randomised ±25 %), life (s; the last `fade` s fade out).
+// burn = the lightsaber (with a short glow and a puff of smoke), star/butterfly = wands, splash = Nerf.
+// Our picks. `gap`: no new mark closer than this to the last one, nor sooner than `every` s.
+export const MARKS = {
+  max: 60, fade: 3, gap: 0.06, every: 0.15,
+  kinds: {
+    burn: { size: 0.09, life: 150 },
+    glow: { size: 0.12, life: 1.2 },
+    star: { size: 0.07, life: 25 },
+    butterfly: { size: 0.08, life: 25 },
+    splash: { size: 0.1, life: 30 },
+  },
+  smoke: { n: 40, life: 1.6, rise: 0.25 },
+};
 
 // Coffee cups (#90, src/cups.js): three cups in the wall cabinet over the Moccamaster (its door opens with
 // E); taken out, a cup stands on the worktop south of the machine (`counter`), fills from the jug (each

@@ -278,6 +278,9 @@ export class CatSpawner {
 
   get visible() { return this.object.visible; }
 
+  /** Meow right away (the lightsaber touched it, #96). */
+  meowNow() { if (this.visible && !this.petting) this.nextMeow = 0; }
+
   /** Rare breeds have their own voice (meow + purr in audio.js); null = the ordinary cat. */
   get voice() { return this.breed.rare ? this.breed.voice ?? null : null; }
 
