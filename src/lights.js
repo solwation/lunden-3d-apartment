@@ -24,6 +24,44 @@ function setGlow(material, on) {
   material.color.setHex(on ? 0xffffff : 0xe9e9e6);
 }
 
+/** A pleated paper lamp shade (Le Klint style, #134): `rows` rings of `n` points, every other ring turned half
+ * a step and pulled in a little, so the facets between them fold into diamonds. Open at the top and bottom;
+ * bottom at y 0, height h, widest radius r. Non-indexed, for flat shading. */
+function pleatedShade(r, h, n = 20, rows = 7) {
+  const ring = (j) => {
+    const t = j / rows, rad = r * (0.7 + 0.3 * Math.sin(Math.PI * t)) * (j % 2 ? 0.94 : 1);
+    return [...Array(n + 1)].map((_, i) => { const u = (i + (j % 2) * 0.5) / n, a = u * Math.PI * 2; return { p: [Math.cos(a) * rad, t * h, Math.sin(a) * rad], uv: [u, t] }; });
+  };
+  const pos = [], uv = [];
+  const tri = (...vs) => { for (const v of vs) { pos.push(...v.p); uv.push(...v.uv); } };
+  for (let j = 0; j < rows; j++) {
+    const A = ring(j), B = ring(j + 1);
+    for (let i = 0; i < n; i++) {
+      if (j % 2 === 0) tri(A[i], B[i], A[i + 1], A[i + 1], B[i], B[i + 1]); // ring j+1 is turned +½ step
+      else tri(A[i], B[i + 1], A[i + 1], A[i], B[i], B[i + 1]);             // ring j is turned +½ step
+    }
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+  g.computeVertexNormals();
+  // the folds as faint lines on the paper (they show through when it is lit): the facet edges in uv space
+  const c = document.createElement('canvas');
+  c.width = 512; c.height = 256;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, c.width, c.height);
+  ctx.strokeStyle = 'rgba(150,140,125,0.55)'; ctx.lineWidth = 2;
+  for (let k = 0; k < pos.length / 9; k++) for (let e = 0; e < 3; e++) {
+    const q0 = (k * 3 + e) * 2, q1 = (k * 3 + (e + 1) % 3) * 2;
+    if (Math.abs(uv[q0 + 1] - uv[q1 + 1]) < 1e-6) continue; // only the slanted folds: they make the diamonds
+    ctx.beginPath(); ctx.moveTo(uv[q0] * c.width, (1 - uv[q0 + 1]) * c.height); ctx.lineTo(uv[q1] * c.width, (1 - uv[q1 + 1]) * c.height); ctx.stroke();
+  }
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  g.userData.folds = tex;
+  return g;
+}
+
 class Room {
   constructor(level, name) {
     Object.assign(this, { level, name, on: false, lamps: [], mats: [] });
@@ -155,6 +193,7 @@ export class Lights {
           if (best) { [r.x, r.z] = best; y = best[2] - 0.28; } // under the highest tread above the Klk, below its slab
         }
         const spec = L.wetRooms.includes(r.name) ? L.spots : L.ceiling;
+        if (L.pendants.some((p) => p.replaces && p.level === level && p.room === r.name)) continue; // its own pendant instead (#134)
         R.lamps.push({ pos: new THREE.Vector3(r.x, y - 0.25, r.z), ...spec, level });
         if (own && !R.mats.includes(own)) R.mats.push(own);
         if (!L.wetRooms.includes(r.name) && r.name !== 'Tvätt') {
@@ -176,8 +215,21 @@ export class Lights {
       const y = ceilingAt(p.level, p.x, p.z);
       const shade = new THREE.MeshStandardMaterial({ color: 0xe9e9e6, roughness: 0.6, side: THREE.DoubleSide });
       R.mats.push(shade);
-      const cord = new THREE.Mesh(new THREE.CylinderGeometry(0.004, 0.004, p.drop, 6), new THREE.MeshStandardMaterial({ color: 0x222222 }));
+      const cord = new THREE.Mesh(new THREE.CylinderGeometry(0.004, 0.004, p.drop, 6), new THREE.MeshStandardMaterial({ color: p.cord ?? 0x222222 }));
       cord.position.set(p.x, y - p.drop / 2, p.z);
+      if (p.style === 'paper') {
+        // folded white paper shade (#134): a barrel of staggered rings → diamond pleats, lit from inside
+        shade.flatShading = true;
+        const geo = pleatedShade(p.w / 2, p.h);
+        shade.map = shade.emissiveMap = geo.userData.folds;
+        const lamp = new THREE.Mesh(geo, shade);
+        lamp.position.set(p.x, y - p.drop - p.h, p.z);
+        const hook = new THREE.Mesh(new THREE.TorusGeometry(0.012, 0.0025, 6, 12), cord.material);
+        hook.position.set(p.x, y - 0.014, p.z);
+        scene.add(cord, lamp, hook);
+        R.lamps.push({ pos: new THREE.Vector3(p.x, y - p.drop - p.h / 2, p.z), ...L.pendant, level: p.level });
+        continue;
+      }
       const cone = new THREE.Mesh(new THREE.ConeGeometry(0.22, 0.22, 32, 1, true), shade);
       cone.position.set(p.x, y - p.drop - 0.05, p.z);
       scene.add(cord, cone);

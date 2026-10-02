@@ -548,7 +548,13 @@ export const LIGHTING = {
   pendant: { intensity: 2.2, range: 5, color: 0xffd9a8 },
   floorLamp: { intensity: 1.6, range: 5, color: 0xffd59a },
   wetRooms: ['Badrum', 'WC/dusch'],       // spots in the soffit instead of a ceiling lamp
-  pendants: [{ level: 0, room: 'Kök / matplats', x: 3.5, z: 1.41, drop: 1.25 }], // over the dining table (SKANSNAS.table)
+  pendants: [
+    { level: 0, room: 'Kök / matplats', x: 3.5, z: 1.41, drop: 1.25 }, // over the dining table (SKANSNAS.table)
+    // the living room's folded white paper pendant (#134, docs/taklampa-vit-veckad-papper.png; Le Klint style),
+    // over the sitting group between the coffee table and the TV; 45 × 32 cm and the 55 cm cord are *guesses*
+    // (shade bottom ~2.1 m up). It replaces the room's ceiling dome.
+    { level: 0, room: 'Vardagsrum', x: 3.64, z: 10.2, drop: 0.55, style: 'paper', w: 0.45, h: 0.32, cord: 0xf2f2f0, replaces: true },
+  ],
   // switches for rooms without a door of their own (normal = the way the wall faces)
   manual: [
     { level: 0, room: 'Hall', x: 1.95, z: 0.465, normal: [0, 1] },          // by the front door
