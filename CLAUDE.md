@@ -152,7 +152,9 @@ src/toys.js            Nerf blasters + darts (Sovrum 2), magic wands + sparkles 
                        (hall wardrobe; one always-present SpotLight), all Holdables (TOYS)
 src/cups.js            coffee cups (CUPS): the wall cabinet over the Moccamaster opens; a cup is taken straight into the
                        hand (empty, brewed or not, #141), put down on a table / worktop / floor, back in the open cabinet
-                       with E on it; the jug is a Holdable (Jug): E on a standing cup pours, E on the hot plate puts it back
+                       with E on it; the jug is a Holdable (Jug): E on a standing cup pours, E on the hot plate puts it back;
+                       a cup holds a Contents (drinks.js): milk and whisky pour in too (DRINKS.pour.cup); coffee + whisky =
+                       `kask` ("koppen med kaffekask", sips count as stats.kask, #169)
 src/fishfingers.js     fish fingers (FISH, #162): a carton on the freezer's lower shelf; E takes one straight into the hand
                        (FishFinger, like a cup), click / "Ät" bites (FISH.bites, shorter each time, sfx.chew), put down
                        anywhere / taken again / E on the carton puts it back; F clears them away and refills the carton
@@ -227,7 +229,8 @@ tools/opentest.html    headless test: every Openable front (kitchen + furniture)
 tools/bestatest.html   headless test: the BESTÅ display cabinet's six doors open/close, its spots light with the room
 tools/holdtest.html    headless test: put things down (coffee table, dining table, floor), one at a time, F → home
 tools/cuptest.html     headless test: an empty cup out without brewing, onto the worktop, brew, take the jug, pour, jug back,
-                       carry the cup to the dining and coffee tables, a cup back into the cabinet
+                       carry the cup to the dining and coffee tables, a cup back into the cabinet; whisky in a cup of
+                       coffee (#169): a splash, a warmer colour, never over full, drunk up as kaffekask
 tools/fishtest.html    headless test: open the freezer, eat a fish finger, put one on the dining table and the floor, one
                        back in the carton (it counts down), F clears them and refills it
 tools/drawtest.html    headless test: drawing mode, a crayon line from pointer events, clear, E back, saved

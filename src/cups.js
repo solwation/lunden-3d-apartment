@@ -75,7 +75,7 @@ export class Cup {
     Object.assign(this, { name: 'koppen', placeVerb: 'ställa ner', isCup: true, scene, camera, model: g, coffee, counter, home: homePos.clone(),
       state: 'cabinet', contents: new Contents(), held: false, steamT: 0 });
     const cup = this;
-    this.target = { name: 'koppen', kind: 'cup', pickable: g, cup: this, item: this, get verb() { return cup.verb; },
+    this.target = { get name() { return cup.kask ? 'koppen med kaffekask' : 'koppen'; }, kind: 'cup', pickable: g, cup: this, item: this, get verb() { return cup.verb; },
       get blocked() { return cup.blocked; }, get blockedText() { return cup.blockedText; }, toggle: () => this.press() };
     g.traverse((m) => { m.userData.door = this.target; });
     scene.add(g);
@@ -86,6 +86,8 @@ export class Cup {
   }
 
   get fill() { return this.contents.total; }
+  /** Coffee with a splash of whisky: a kaffekask (#169). */
+  get kask() { return this.contents.has('coffee') && this.contents.has('whisky'); }
   /** The jug in the hand, if that is what you hold. */
   get jug() { const h = heldItem(); return h?.isJug ? h : null; }
   /** The held thing that can pour into a cup: the jug, or a drink DRINKS.pour.cup lets in (#167). */
@@ -183,7 +185,7 @@ export class Cup {
   use() {
     if (!this.held || this.fill <= 0.01 || this.sip > 0) return;
     this.sip = 1;
-    this.onSip?.(this.contents.main);
+    this.onSip?.(this.kask ? 'kask' : this.contents.main); // coffee with whisky in it counts as kaffekask (#169)
     sfx.gulp(this.model.getWorldPosition(new THREE.Vector3()));
     this.contents.sip(C.sip);
     this.show();

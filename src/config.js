@@ -424,7 +424,7 @@ export const DRINKS = {
   coffee: { color: 0x2a1408, opacity: 1, tint: 1, name: 'kaffe' },
   pour: {
     glass: { wine: { to: 0.45 }, champagne: { to: 0.85 }, whisky: { add: 0.2 }, milk: { to: 0.75 } },
-    cup: { milk: { empty: 0.8, add: 0.15 } }, // milk: a cup of it, or a splash in the coffee (#168)
+    cup: { milk: { empty: 0.8, add: 0.15 }, whisky: { add: 0.12 } }, // milk: a cup of it or a splash in the coffee (#168); whisky: a splash (#169)
   },
   sip: 0.15, secs: 1, tilt: 1.5,
 };

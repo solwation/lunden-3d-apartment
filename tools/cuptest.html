@@ -96,6 +96,28 @@ f.onload = async () => {
   pass &= check(lookAt(cab.door.children[0].getWorldPosition(new V()), kitchen, /ställa tillbaka koppen i skåpet/i), `the open cabinet: "${btn.textContent}"`);
   btn.click(); step(1 / 60);
   pass &= check(cup2.state === 'cabinet' && !heldItem() && cup2.model.position.distanceTo(cup2.home) < 0.001, 'back on its shelf');
+  // whisky in the coffee (#169): a cup of coffee on the worktop, a sip, a splash of whisky, drink it up
+  const { use, things, stats } = w.__app, steps = (s) => { for (let t = 0; t < s; t += 1 / 30) step(1 / 30); };
+  const spot = cup2.counter.clone().add(new V(0, 0, -0.15)), whisky = things.find((t) => t.kind === 'whisky');
+  use(cup2.target); step(1 / 60); cup2.placeAt(spot);
+  use(jug.target); step(1 / 60); use(cup2.target); steps(1.5); use(jug.backTarget); step(1 / 60);
+  use(cup2.target); step(1 / 60); cup2.use(); steps(0.7); cup2.placeAt(spot);
+  pass &= check(Math.abs(cup2.fill - 0.8) < 1e-6 && cup2.contents.main === 'coffee', `coffee, a sip taken (${cup2.fill.toFixed(2)})`);
+  const before = cup2.coffee.material.color.clone();
+  use(whisky.target); step(1 / 60);
+  pass &= check(heldItem() === whisky && cup2.target.verb === 'hälla whisky i' && !cup2.target.blocked, `the whisky bottle over the cup: "${cup2.target.verb}"`);
+  use(cup2.target); steps(1.5);
+  const after = cup2.coffee.material.color, warm = (c) => (c.r - c.b) / (c.r + c.g + c.b);
+  pass &= check(Math.abs(cup2.fill - 0.92) < 1e-6 && cup2.contents.has('whisky') && cup2.kask && cup2.target.name === 'koppen med kaffekask', `a splash of whisky: ${cup2.fill.toFixed(2)}, "${cup2.target.name}"`);
+  pass &= check(warm(after) > warm(before), `a warmer colour: #${before.getHexString()} → #${after.getHexString()}`);
+  use(cup2.target); steps(1.5);
+  pass &= check(Math.abs(cup2.fill - 1) < 1e-6 && cup2.target.blocked && cup2.target.blockedText === 'Koppen är full', `never over full (${cup2.fill.toFixed(2)}): "${cup2.target.blockedText}"`);
+  use(whisky.backTarget); step(1 / 60);
+  use(cup2.target); step(1 / 60);
+  const k0 = stats.kask;
+  let sips = 0;
+  while (cup2.fill > 0.01 && sips < 10) { cup2.use(); sips++; steps(0.7); }
+  pass &= check(cup2.fill === 0 && stats.kask === k0 + sips && sips === 5, `drunk up in ${sips} sips, ${stats.kask - k0} counted as kaffekask`);
   out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
 };
 </script>
