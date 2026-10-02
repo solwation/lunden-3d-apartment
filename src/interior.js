@@ -868,6 +868,34 @@ function skirting(B, boxes, li, size, y0) {
  * Build the fixed interior of one level into `group`. Cabinets and fixtures it builds are
  * added to `handled` so world.js skips them. Returns collision rectangles.
  */
+/**
+ * The hall's EL/C cabinet (#103): a tall hollow white cabinet facing into the hall (`dir`), its door opens with E.
+ * Inside: the fuse box (a grey enclosure with rows of breakers, the main switch) and the fibre box + router with
+ * blinking-green LEDs on a shelf above it. Returns the Openable (an E target in world.lids).
+ */
+export function buildElCabinet(group, cab, dir, y0, h, list) {
+  const B = new Batch(), F = frame(B, cab, dir), y1 = y0 + h;
+  const white = std(0xf4f4f1, { roughness: 0.5 }), grey = std(0xc9cbc8, { roughness: 0.6 }), dark = std(0x2b2d2f, { roughness: 0.5 });
+  const ledGreen = std(0x40ff70, { emissive: 0x30ff60, emissiveIntensity: 1.5 });
+  shell(F, F.u0, F.u1, y0, y1, F.depth, { shelf: false, inner: white, outer: white });
+  const a0 = F.u0 + 0.05, a1 = F.u1 - 0.05, d = -F.depth + 0.008;
+  F.box(a0, a1, d, d + 0.11, y0 + 1.15, y0 + 1.75, grey);                                  // fuse box
+  for (let r = 0; r < 3; r++) for (let k = 0; k < 10; k++) {                                 // breakers in three rows
+    const u = a0 + 0.025 + k * (a1 - a0 - 0.05) / 10;
+    F.box(u, u + 0.022, d + 0.11, d + 0.13, y0 + 1.25 + r * 0.16, y0 + 1.34 + r * 0.16, k === 0 && r === 2 ? M.handle : white);
+    F.box(u + 0.006, u + 0.016, d + 0.13, d + 0.14, y0 + 1.3 + r * 0.16, y0 + 1.32 + r * 0.16, dark); // toggle
+  }
+  F.box(F.u0 + 0.016, F.u1 - 0.016, -F.depth + 0.01, -FT - 0.02, y0 + 1.9, y0 + 1.918, white);  // shelf
+  F.box(a0, a0 + 0.14, d, d + 0.18, y0 + 1.918, y0 + 1.95, dark);                           // router
+  F.box(a0 + 0.17, a1, d, d + 0.06, y0 + 1.918, y0 + 2.0, white);                            // fibre box
+  for (let k = 0; k < 4; k++) F.box(a0 + 0.02 + k * 0.025, a0 + 0.03 + k * 0.025, d + 0.18, d + 0.182, y0 + 1.935, y0 + 1.94, ledGreen);
+  group.add(...B.meshes());
+  return openFront({ group, list }, F, F.u0, F.u1, y0, y1, white, null, {}, { mode: 'hinge', at: 'a0', name: 'elskåpet', build: (P, b0, b1, c0, c1) => {
+    P.box(b0 + 0.0015, b1 - 0.0015, -FT, 0, c0 + 0.0015, c1 - 0.0015, white);
+    P.box(b1 - 0.04, b1 - 0.025, 0, 0.012, c0 + 1.05, c0 + 1.15, M.chrome);                 // a small handle
+  } });
+}
+
 export function buildInterior(group, floor, li, y0, yC, wallBoxes, handled, taps = [], appliances = []) {
   const B = new Batch();
   const rects = [];

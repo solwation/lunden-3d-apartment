@@ -15,7 +15,7 @@ import { buildSillPlants } from './sillplants.js';
 import { registerSnow } from './seasons.js';
 import { buildCourtyard } from './courtyard.js';
 import { pavingTexture } from './patio.js';
-import { mirrorLamps, looseItems as interiorLoose, buildInterior, cupSurfaces, cupCabinet } from './interior.js';
+import { mirrorLamps, looseItems as interiorLoose, buildInterior, buildElCabinet, cupSurfaces, cupCabinet } from './interior.js';
 import { Toilet } from './toilet.js';
 import { RoomMap } from './rooms.js';
 import { buildAO } from './ao.js';
@@ -448,6 +448,11 @@ function buildLevel(floor, li, group) {
     if (WARDROBE_LABELS.includes(label) || handled.has(cab)) continue;
     const h = label ? CABINET_HEIGHT[label] ?? BASE_CABINET
       : (cab.x1 - cab.x0 < 0.3 || cab.z1 - cab.z0 < 0.3) ? SHELF_HEIGHT : BASE_CABINET;
+    if (label === 'EL' && li === 0) { // the hall's EL/C cabinet opens (#103)
+      appliances.push(buildElCabinet(group, cab, 'e', y0, h, []));
+      segments.push(...rectSegments(cab));
+      continue;
+    }
     const appliance = label === 'TT' || label === 'TM';
     const inset = 0.01;
     group.add(box(cab.x0 + inset, cab.x1 - inset, cab.z0 + inset, cab.z1 - inset, y0, y0 + h,
