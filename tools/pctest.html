@@ -28,7 +28,7 @@ f.onload = async () => {
   const target = pc.pickable.getWorldPosition(new pc.pickable.position.constructor());
   target.y += 0.95;
   let found = false;
-  for (const [x, z] of [[3.55, 10.9], [3.3, 10.8], [3.8, 10.8], [3.55, 10.6]]) {
+  for (const [x, z] of [[4.0, 11.5], [4.1, 11.2], [4.0, 10.9], [4.2, 11.6]]) {
     player.spawn(x, z, 0); player.pos.y = 3.25; player.eyeY = 3.25 + 1.62;
     for (let i = 0; i < 3; i++) step(1 / 60);
     const dx = target.x - camera.position.x, dz = target.z - camera.position.z;
@@ -61,7 +61,7 @@ f.onload = async () => {
     for (let i = 0; i < 90; i++) step(1 / 30);
     return label;
   };
-  player.spawn(3.55, 10.5, Math.PI); player.pos.y = 3.25; player.eyeY = 3.25 + 1.62;
+  player.spawn(4.3, 11.0, Math.PI / 2); player.pos.y = 3.25; player.eyeY = 3.25 + 1.62;
   for (let i = 0; i < 3; i++) step(1 / 60);
   let label = sitOn(chair, chair.spots[0]);
   pass &= check(rest.active && rest.kind === 'sit' && pc.isOpen && !pc.watching && Math.abs(pc.monitorYaw) < 0.01, `"${label}": sitting in the chair starts the PC (game, monitor at the desk)`);

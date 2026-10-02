@@ -222,9 +222,9 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   Sovrum 1 (first right) Sarah & Ofluf, double bed (blue/white check bedding after IKEA EKTANDVINGE, #66) with IKEA NORDKISA bedside tables (#64) and white NYMÅNE work
   lamps on them (#65, each its own lamp like the floor lamp) + an IKEA RÅGRUND towel-rack chair in the corner left of
   the window (#60) · Sovrum 3 (second right) Livia & Tuva, bunk (unicorn sheets) ·
-  Sovrum 2 (first left) Walter & Kian, bunk (Darth Vader sheets), a gaming desk with a PC at the south window, 0.25 m from the bunk (#77, #84): sitting in its chair starts the
+  Sovrum 2 (first left) Walter & Kian, bunk (Darth Vader sheets), a gaming desk with a PC along the west wall, short end to the window (#77, #84): sitting in its chair starts the
   PC; a sit spot in the lower bunk (`watch`, a spot `kind` can differ from its piece) swings the monitor arm round and plays a film;
-  a lightsaber on hooks on the west wall (#78, where the desk used to be) · Sovrum 4 (second left, ex Allrum) Tilly, IKEA HEMNES
+  a lightsaber on hooks on the west wall north of the desk (#78) · Sovrum 4 (second left, ex Allrum) Tilly, IKEA HEMNES
   daybed with pink cushions. Bunks: long side to the side wall, head end to the façade. Name signs: `DOOR_SIGNS` → `src/signs.js` (hall side of the door).
 - Hall (#49): the plan's "EL" cabinet is really the small EL/C (40 cm, `CABINET_FIXES`) plus the coat
   rack "KL" beside it, which the extractor merged; on that wall (right as you come in) a coat rack with
