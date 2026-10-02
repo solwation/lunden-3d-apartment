@@ -290,24 +290,31 @@ function facadeTexture() {
     }
   }
   // window: 1.3 × 1.5 m, sill 0.8 m above the storey floor (v = 0 is the bottom of the canvas); like Peab's
-  // renders (#109): a broad white surround, white sashes with a mullion and a transom, a light sill flashing
+  // renders (#146): set back in a deep brick reveal (its shadow on the top and the left), white sashes with a
+  // mullion and a transom, a soldier course of upright bricks under it and over it
   const ww = 1.3 * m, wh = 1.5 * m, wx = (px - ww) / 2, wy = px - (0.8 * m + wh);
-  g.fillStyle = '#f4f4f1';
-  g.fillRect(wx - 0.09 * m, wy - 0.09 * m, ww + 0.18 * m, wh + 0.18 * m);
-  g.fillStyle = 'rgba(0,0,0,0.18)'; // the reveal's shadow inside the surround
-  g.fillRect(wx - 0.02 * m, wy - 0.02 * m, ww + 0.04 * m, 0.05 * m);
+  const soldiers = (y, h) => {
+    for (let x = wx - 0.06 * m; x < wx + ww + 0.06 * m; x += 0.075 * m) {
+      g.fillStyle = base.clone().offsetHSL(0, 0, -0.06 + (rand() - 0.5) * 0.06).getStyle();
+      g.fillRect(x + 1, y, 0.075 * m - 2, h);
+    }
+  };
+  g.fillStyle = '#cfc6b8'; g.fillRect(wx - 0.07 * m, wy + wh, ww + 0.14 * m, 0.2 * m); // mortar behind the soldiers
+  soldiers(wy + wh + 0.01 * m, 0.18 * m);                                              // the sill: upright bricks
+  g.fillStyle = '#cfc6b8'; g.fillRect(wx - 0.07 * m, wy - 0.2 * m, ww + 0.14 * m, 0.2 * m);
+  soldiers(wy - 0.19 * m, 0.18 * m);                                                   // the lintel
   const glass = g.createLinearGradient(0, wy, 0, wy + wh);
   glass.addColorStop(0, '#6b8293');
   glass.addColorStop(1, '#2c3a45');
+  g.fillStyle = '#f4f4f1'; g.fillRect(wx, wy, ww, wh);                                 // the white frame
   g.fillStyle = glass;
-  g.fillRect(wx + 0.03 * m, wy + 0.03 * m, ww - 0.06 * m, wh - 0.06 * m);
+  g.fillRect(wx + 0.05 * m, wy + 0.05 * m, ww - 0.1 * m, wh - 0.1 * m);
   g.fillStyle = '#f4f4f1';
   g.fillRect(wx + ww * 0.62 - 3, wy, 6, wh);                 // mullion (a wide and a narrow light)
   g.fillRect(wx, wy + wh * 0.22, ww * 0.62, 5);              // transom over the wide light
-  g.fillStyle = '#c9cccd';
-  g.fillRect(wx - 0.13 * m, wy + wh + 0.06 * m, ww + 0.26 * m, 0.07 * m); // sill flashing
-  g.fillStyle = 'rgba(0,0,0,0.15)';
-  g.fillRect(wx - 0.13 * m, wy + wh + 0.13 * m, ww + 0.26 * m, 0.04 * m);
+  g.fillStyle = 'rgba(0,0,0,0.28)';                          // the deep reveal's shadow
+  g.fillRect(wx, wy, ww, 0.07 * m);
+  g.fillRect(wx, wy, 0.06 * m, wh);
   const tex = new THREE.CanvasTexture(c);
   tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
   tex.colorSpace = THREE.SRGBColorSpace;
@@ -679,11 +686,11 @@ export function buildSurroundings({ grass }) {
     }
     return geos.map((g) => { g.deleteAttribute('uv'); return g; });
   }), new THREE.MeshStandardMaterial({ color: 0x6d7175, roughness: 0.9 }), SEASON.snow.roof);
-  // white details (#109): a light fascia band under the low roofs, grey downpipes at the corners and every ~12 m
+  // details (#109, #146): a light grey metal edge round the flat roofs, grey downpipes at the corners and every ~12 m
   mesh(modern.map((b) => {
     const h = b.base + b.storeys * S.storey, o = 0.32;
     return new THREE.BoxGeometry(b.x1 - b.x0 + 2 * o, 0.42, b.z1 - b.z0 + 2 * o).translate((b.x0 + b.x1) / 2, h + 0.1, (b.z0 + b.z1) / 2);
-  }), new THREE.MeshStandardMaterial({ color: 0xe9e9e6, roughness: 0.6 }));
+  }), new THREE.MeshStandardMaterial({ color: 0xc7cacb, roughness: 0.45, metalness: 0.2 })); // light grey sheet metal (#146)
   const pipes = [];
   for (const b of modern) {
     const h = b.storeys * S.storey, y = b.base + h / 2;
