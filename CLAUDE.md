@@ -71,6 +71,7 @@ src/rooms.js           room detection: walls + door gaps rasterised, BFS from th
 src/minimap.js         plan view with the visitor's arrow, current room highlighted (K toggles)
 src/measure.js         tape measure (Q / 📏): two points on any surface, distance label
 src/ovens.js           oven (drop-down door) + microwave (side door) in the tall unit, E opens (world.lids)
+src/coffee.js          Moccamaster on the worktop (MOCCAMASTER): E brews (red light, sound, the jug fills)
 src/fridge.js          the fridge: hollow, lit, opens with E, smoking roast chicken (in world.lids)
 src/catboard.js        cork board in the kitchen (under the wall clock): a photo (offscreen render) of every petted cat,
                        newest 10 in IndexedDB 'lunden'/'catPhotos', captioned with name + time
@@ -102,7 +103,7 @@ tools/keytest.html     headless test of the hall key cabinet: open, car key reac
 tools/esctest.html     headless test of Esc on the start screen (click-to-start cover, ignored over the note)
 tools/updatetest.html  headless test of the update notice on a phone-sized touch screen (on top, 44 px, touch works)
 tools/perfcount.html   draw calls / triangles at a few spots (compare before/after optimising)
-tools/oventest.html    headless test: open/close the oven and the microwave, lamp inside
+tools/oventest.html    headless test: oven + microwave open/close (lamp inside), Moccamaster brews and clicks off
 tools/clocktest.html   headless test of the wall clock (07:00 start, spool, pause, month → sun height)
 tools/stamp.sh         build the published site with a version stamp (used by CI)
 ```

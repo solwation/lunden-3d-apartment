@@ -316,6 +316,12 @@ export const AO = {
 // rotY π/2 = facing east.
 export const CAT_BOARD = { x: 2.152, y: 1.4, z: 4.4, w: 1.1, h: 0.76, rotY: Math.PI / 2 };
 
+// Moccamaster (Technivorm KBG, black) on the worktop between the tall unit (oven/microwave) and the
+// sink, against the splashback (#59). Size ~32 × 17 × 36 cm (guess, after the KBG series). `z` = centre
+// along the east run, `back` = x of its back. E brews for `brewSeconds`: red power light, sound,
+// the jug fills.
+export const MOCCAMASTER = { back: 5.53, z: 1.4, w: 0.32, d: 0.17, h: 0.36, brewSeconds: 18 };
+
 // Wall shelves in the kitchen (src/shelves.js) where the cat board used to hang: the kitchen face of
 // the hall/kitchen partition (x 2.15, z 0.46–1.76), above the light switch (1.05 m). Two oak shelves
 // 100 × 20 cm on black brackets with portraits, flowers, books, candles and a bowl (#38).

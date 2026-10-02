@@ -229,6 +229,43 @@ export const sfx = {
     src.start(t); lfo.start(t);
     src.stop(t + dur + 0.1); lfo.stop(t + dur + 0.1);
   },
+  /** Coffee brewing for `dur` s: a hissing, gurgling heater (filtered noise with bubble pops) and
+   * drips into the jug; stop() fades it out early. */
+  brew(pos, dur = 18) {
+    if (!ready()) return null;
+    const t = ctx.currentTime, d = out(pos, 0.8);
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(1, t + 1.5);
+    g.gain.setValueAtTime(1, t + dur - 1.5);
+    g.gain.linearRampToValueAtTime(0, t + dur);
+    g.connect(d);
+    const src = ctx.createBufferSource();
+    src.buffer = noiseBuf;
+    src.loop = true;
+    const lp = ctx.createBiquadFilter();
+    lp.type = 'lowpass'; lp.frequency.value = 900;
+    const hiss = ctx.createGain();
+    hiss.gain.value = 0.08;
+    src.connect(lp).connect(hiss).connect(g);
+    src.start(t, Math.random());
+    src.stop(t + dur + 0.1);
+    for (let k = 0.6; k < dur - 0.4; k += 0.05 + Math.random() * 0.22) { // bubbles in the heater
+      tone(t + k, 0.035, g, { from: 180 + Math.random() * 260, to: 90 + Math.random() * 80, gain: 0.05 + Math.random() * 0.06 });
+    }
+    for (let k = 2.5; k < dur - 0.6; k += 0.35 + Math.random() * 0.5) { // drips into the jug
+      tone(t + k, 0.05, g, { from: 1500 + Math.random() * 700, to: 700, gain: 0.03 });
+    }
+    return {
+      stop() {
+        const t1 = ctx.currentTime;
+        g.gain.cancelScheduledValues(t1);
+        g.gain.setValueAtTime(g.gain.value, t1);
+        g.gain.linearRampToValueAtTime(0, t1 + 0.3);
+        src.stop(t1 + 0.35);
+      },
+    };
+  },
   /** Running water until stop() is called: looping filtered noise (a hiss), louder for showers. */
   water(pos, shower = false) {
     if (!ready()) return null;

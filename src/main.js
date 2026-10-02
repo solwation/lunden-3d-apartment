@@ -291,6 +291,7 @@ function use(thing) {
   else if (thing.kind === 'fridge') { thing.toggle(); if (thing.isOpen) bump('fridge'); }
   else if (thing.kind === 'keybox') thing.toggle();
   else if (thing.kind === 'appliance') { thing.toggle(); if (thing.isOpen) bump('lids'); }
+  else if (thing.kind === 'coffee') thing.toggle();
   else if (thing.kind === 'carkey') thing.press();
   else if (thing.kind === 'lid') {
     thing.toggle();

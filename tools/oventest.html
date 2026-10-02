@@ -5,7 +5,8 @@
 <pre id="out">running…</pre>
 <script>
 // Kitchen oven + microwave (#58): aim at each door, open it with the action button (the oven door
-// drops, the microwave door swings out, the lamp inside lights), close it again.
+// drops, the microwave door swings out, the lamp inside lights), close it again. The Moccamaster
+// (#59): switch it on (red light), it brews for MOCCAMASTER.brewSeconds, fills the jug, clicks off.
 //   google-chrome --headless=new --dump-dom http://localhost:8137/tools/oventest.html
 const out = document.getElementById('out');
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -44,6 +45,22 @@ f.onload = async () => {
     a.toggle();
     for (let i = 0; i < 90; i++) step(1 / 60);
     pass &= check(!a.isOpen && Math.abs(a.hinge === 'bottom' ? a.door.rotation.z : a.door.rotation.y) < 1e-3 && a.lamp.emissiveIntensity === 0, `${name} closes, lamp off`);
+  }
+  const mc = world.lids.find((l) => l.kind === 'coffee');
+  pass &= check(!!mc, 'Moccamaster exists');
+  if (mc) {
+    mc.object.updateMatrixWorld(true);
+    const p = mc.object.children[2].getWorldPosition(new mc.object.position.constructor()); // the tank
+    player.spawn(p.x - 1.0, p.z, -Math.PI / 2);
+    camera.rotation.y = Math.atan2(-(p.x - player.pos.x), -(p.z - player.pos.z));
+    camera.rotation.x = Math.atan2(p.y - player.eyeY, Math.hypot(p.x - player.pos.x, p.z - player.pos.z));
+    for (let i = 0; i < 3; i++) step(1 / 60);
+    pass &= check(/sätta på kaffebryggaren/i.test(btn.textContent), `button "${btn.textContent}"`);
+    btn.click();
+    for (let i = 0; i < 10 * 60; i++) step(1 / 60);
+    pass &= check(mc.isOpen && mc.led.emissiveIntensity > 0 && mc.fill > 0.2 && mc.fill < 0.9, `brewing: red light, jug filling (${mc.fill.toFixed(2)})`);
+    for (let i = 0; i < 10 * 60; i++) step(1 / 60);
+    pass &= check(!mc.isOpen && mc.led.emissiveIntensity === 0 && mc.fill === 1 && mc.done === 1, `done: light off, jug full (${mc.fill.toFixed(2)})`);
   }
   out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
 };

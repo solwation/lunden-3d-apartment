@@ -3,6 +3,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { FINISH, TILED_ROOMS, KITCHEN as K, SKIRTING } from './config.js';
 import { Fridge } from './fridge.js';
 import { buildOvens } from './ovens.js';
+import { Moccamaster } from './coffee.js';
 
 // Fixed interior from our material choices: fitted kitchen, laundry, bathroom fittings,
 // tiled floors and walls. Everything is merged into one mesh per material (few draw calls),
@@ -266,6 +267,9 @@ function buildKitchen(B, group, floor, y0, yC, handled, taps, appliances) {
         const ov = buildOvens({ f: F.f, z0: u0, z1: u1, yOven, yMicro, yGrille, microW: 0.44 });
         group.add(ov.parts, ...ov.doors.map((d) => d.object));
         appliances.push(...ov.doors);
+        const mocca = new Moccamaster(top); // on the worktop between the tall unit and the sink
+        group.add(mocca.object);
+        appliances.push(mocca);
       }
       F.box(u0 + 0.005, u1 - 0.005, -FT, 0, yGrille, yGrille + K.grille, M.steel);
       front(F, u0, u1, yGrille + K.grille, yTop, M.front, 'v-hi', { low: true });
