@@ -3,7 +3,7 @@ import { sfx } from './audio.js';
 import { mergeStatic } from './merge.js';
 import { restTarget } from './rest.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
-import { FURNITURE, LANDSKRONA as L, LEVELS, SKANSNAS, IDANAS } from './config.js';
+import { FURNITURE, LANDSKRONA as L, LEVELS, SKANSNAS, IDANAS, OTTOMAN } from './config.js';
 import { loungesofa, loungetable, parasol, planter } from './patio.js';
 import { Screen } from './screens.js';
 import { lampMat, addLampGlow } from './interior.js';
@@ -138,13 +138,32 @@ function armchair() {
   return g;
 }
 
-function footstool() {
+/** The dark red upholstered stool in front of the armchair (#180, after the user's photo): an upholstered frame
+ * on short dark tapered legs, a loose cushion on top that sticks out a little, a welt seam round its edges. */
+function ottoman(item) {
   const g = new THREE.Group();
-  const { w, d, h } = L.stool;
-  g.add(rbox(w, h - L.legHeight - 0.12, d, 0, (L.legHeight + h - 0.12) / 2, 0, fabric, 0.02));
-  g.add(rbox(w, 0.13, d, 0, h - 0.065, 0, fabric, 0.05));
-  for (const x of [-w / 2 + 0.05, w / 2 - 0.05]) for (const z of [-d / 2 + 0.05, d / 2 - 0.05]) g.add(leg(x, z));
-  g.userData.footprint = [{ x0: -w / 2, x1: w / 2, z0: -d / 2, z1: d / 2 }];
+  const O = OTTOMAN, { w, d, h, legH, cushion: c, overhang: o } = O;
+  const cloth = new THREE.MeshStandardMaterial({ color: O.color, roughness: 0.97 });
+  const welt = new THREE.MeshStandardMaterial({ color: O.welt, roughness: 0.9 });
+  const legMat = new THREE.MeshStandardMaterial({ color: O.legColor, roughness: 0.5 });
+  const frameH = h - legH - c;
+  g.add(rbox(w, frameH, d, 0, legH + frameH / 2, 0, cloth, 0.015));
+  const cw = w + 2 * o, cd = d + 2 * o, cy = h - c / 2;
+  g.add(rbox(cw, c, cd, 0, cy, 0, cloth, 0.03));
+  // the welt round the cushion's top and bottom edges, and the seam low on the frame
+  const band = (W, D, y, r) => {
+    for (const [sx, sz, x, z] of [[W, r, 0, D / 2], [W, r, 0, -D / 2], [r, D, W / 2, 0], [r, D, -W / 2, 0]]) {
+      const m = new THREE.Mesh(new THREE.BoxGeometry(sx, r, sz), welt); m.position.set(x, y, z); g.add(m);
+    }
+  };
+  band(cw - 0.02, cd - 0.02, h - 0.012, 0.008);
+  band(cw - 0.02, cd - 0.02, h - c + 0.012, 0.008);
+  band(w + 0.002, d + 0.002, legH + 0.05, 0.005);
+  for (const x of [-w / 2 + 0.05, w / 2 - 0.05]) for (const z of [-d / 2 + 0.05, d / 2 - 0.05]) {
+    const m = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.011, legH, 10), legMat);
+    m.position.set(x, legH / 2, z); m.castShadow = true; g.add(m);
+  }
+  g.userData.footprint = [{ x0: -cw / 2, x1: cw / 2, z0: -cd / 2, z1: cd / 2 }];
   return g;
 }
 
@@ -1898,7 +1917,7 @@ function besta(item) {
   return g;
 }
 
-const BUILDERS = { secretary, winerack, besta, painting, palm, sofa, armchair, footstool, floorlamp, sidetable, coffeetable, loungesofa, loungetable, parasol, planter, bed, skansnasTable, skansnasChair, bunk, daybed, rug, ragrund, coatrack, shoerack, byas, tv, nordkisa, worklamp, gamingdesk, gamingchair, nordli, alex, kidchair };
+const BUILDERS = { secretary, winerack, besta, painting, palm, sofa, armchair, ottoman, floorlamp, sidetable, coffeetable, loungesofa, loungetable, parasol, planter, bed, skansnasTable, skansnasChair, bunk, daybed, rug, ragrund, coatrack, shoerack, byas, tv, nordkisa, worklamp, gamingdesk, gamingchair, nordli, alex, kidchair };
 
 /** An invisible thin box over a table top (raycast target for putting a cup down, #90). Local rect. */
 export function surfaceBox(r, list) {

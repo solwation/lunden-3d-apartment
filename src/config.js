@@ -643,15 +643,22 @@ export const LIGHTING = {
 
 // Furniture (issue #8). IKEA LANDSKRONA, Gunnared ljusgrön, oak legs.
 // 3-sits: 204 × 89 × 78 cm, seat height 44, seat depth 61, armrest height 64 (ikea.com).
-// With schäslong 282 cm wide, chaise 158 cm deep; armchair 89 × 89; footstool ~92 × 53 × 44
+// With schäslong 282 cm wide, chaise 158 cm deep; armchair 89 × 89
 // (series dimensions, not on the product page — estimates).
+// The dark red upholstered stool in front of the armchair (#180, the user's photo docs/pall-vardagsrum-rod.jpg;
+// model unknown): all sizes and the colour are guesses from the photo (a Surface Pro on it for scale).
+export const OTTOMAN = {
+  w: 0.68, d: 0.48, h: 0.45, legH: 0.06, cushion: 0.1, overhang: 0.01,
+  color: 0x5c2c38, welt: 0x4a222c, legColor: 0x2a1f1a,
+};
+
 export const LANDSKRONA = {
   fabric: 0xa7b39a, // Gunnared ljusgrön
   oak: 0xc9a67a,
   height: 0.78, seatHeight: 0.44, seatDepth: 0.61, armHeight: 0.64, armWidth: 0.12,
   depth: 0.89, legHeight: 0.15,
   sofaWidth: 2.82, chaiseWidth: 0.9, chaiseDepth: 1.58,
-  chairWidth: 0.89, stool: { w: 0.92, d: 0.53, h: 0.44 },
+  chairWidth: 0.89,
 };
 
 // Patio (src/patio.js). Cushion colour of the Oslo set and the parasol (Ø 3 m, centre pole,
@@ -698,9 +705,9 @@ export const IDANAS = { L: 2.23, W: 1.9, frameH: 0.49, headH: 1.21, head: 0.2, l
 export const FURNITURE = [
   // Vardagsrum: sofa with its back to the window (south wall), chaise in the SE corner
   { type: 'sofa', level: 0, x: 5.5 - 2.82 / 2, z: 12.15 - 0.89 / 2, rot: 0, chaise: 'right' }, // sitter's right = east
-  // armchair + footstool in the opposite (NW) corner, turned towards the room
+  // armchair + the dark red stool (#180) in the opposite (NW) corner, turned towards the room
   { type: 'armchair', level: 0, x: 0.78, z: 8.38, rot: -135 },
-  { type: 'footstool', level: 0, x: 1.33, z: 8.93, rot: -135 },
+  { type: 'ottoman', level: 0, x: 1.33, z: 8.93, rot: -135 },
   // IKEA NYMÅNE floor lamp with 3 spots, anthracite (#56; ikea.com: H 160 cm, base Ø 25 cm; arm and head
   // sizes are guesses): beside the armchair on the sitter's right (the side table is on the left),
   // the spots aimed at the seat; `aim` = plan point they point at
