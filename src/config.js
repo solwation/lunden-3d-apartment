@@ -177,8 +177,9 @@ export const SHELF_HEIGHT = 2.0; // unlabelled shelving in the upstairs Klk
 // Where a visit starts: out on the grass in front of the entrance façade, facing the house with the
 // gaze slightly up, so the whole unit (and Hus L above it) is in view (#35). yaw 180 = facing south.
 export const START = { x: 2.875, z: -12, yawDeg: 180, pitchDeg: 8 };
-// Walkable area outside: in front of the north façade (x range, back to z0), and the patio.
-export const OUTDOOR = { x0: -12, x1: 17.75, z0: -14 };
+// Walkable area outside: in front of the north façade (x range, back to z0), our patio and, through
+// the gap in the hedge (SW corner), the lawn behind the row of patios up to z1 (#52).
+export const OUTDOOR = { x0: -12, x1: 17.75, z0: -14, z1: 24 };
 
 export const PLAYER = {
   eye: 1.62,
@@ -414,10 +415,10 @@ export const FURNITURE = [
   { type: 'loungesofa', level: 0, x: 5.66 - 1.98 / 2, z: 16.79 - 0.72 / 2, rot: 0 },
   { type: 'loungetable', level: 0, x: 4.15, z: 15.45, beers: true },
   { type: 'parasol', level: 0, x: 3.05, z: 15.7 },
-  // large planters with exotic plants (the user's wish): by the patio door, in the SW corner
+  // large planters with exotic plants (the user's wish): by the patio door and in the SE corner. The
+  // banana in the SW corner stood in the gap in the hedge (the way out to the lawn) and is gone (#52).
   // by the hedge, and beside the living-room window
   { type: 'planter', level: 0, x: 0.45, z: 13.25, plant: 'palm' },
-  { type: 'planter', level: 0, x: 0.5, z: 16.35, plant: 'banana' },
   { type: 'planter', level: 0, x: 5.3, z: 13.2, plant: 'agave' },
   // Upstairs bedrooms (the user's plan). Beds: rot = direction from the head to the foot end.
   { type: 'bed', level: 1, x: 5.55 - 1.1, z: 2.3, rot: 90, w: 1.6, l: 2.0 },  // Sovrum 1 (Sarah & Ofluf), head east, clear of the Klk

@@ -525,15 +525,18 @@ export function buildWorld(plan) {
   // Hus L: brick façades, the neighbouring units, the stacked units above and the loftgång
   const north = [...l0.openings.north, ...l1.openings.north];
   const south = [...l0.openings.south, ...l1.openings.south];
-  scene.add(buildExterior({ W, D, roofTop: roofY + 0.35, north, south, frame: M.frame, wall: M.wall, site, mats: M }));
+  const exterior = buildExterior({ W, D, roofTop: roofY + 0.35, north, south, frame: M.frame, wall: M.wall, site, mats: M });
+  scene.add(exterior);
   const surroundings = buildSurroundings({ grass: M.grass });
   scene.add(surroundings);
-  // keep the visitor near the house: the area in front of Hus L's north façade (the façade line
-  // closes it off beside our unit) and our patio behind it
-  const o = OUTDOOR, pz = site.patio ? site.patio.z1 : D + 4;
+  // keep the visitor near the house: the area in front of Hus L's north façade and the strip behind
+  // it (patios + lawn), each closed off by the façade line beside our unit; the neighbours' screen
+  // walls and hedges block like ours
+  const o = OUTDOOR;
   outdoor.push(
     [o.x0, o.z0, o.x1, o.z0], [o.x0, o.z0, o.x0, 0], [o.x1, o.z0, o.x1, 0], [o.x0, 0, 0, 0], [W, 0, o.x1, 0],
-    [0.05, D, 0.05, pz], [W - 0.05, D, W - 0.05, pz], [0.05, pz, W - 0.05, pz],
+    [o.x0, D, 0, D], [W, D, o.x1, D], [o.x0, D, o.x0, o.z1], [o.x1, D, o.x1, o.z1], [o.x0, o.z1, o.x1, o.z1],
+    ...exterior.userData.segments,
   );
   l0.segments.push(...outdoor);
 

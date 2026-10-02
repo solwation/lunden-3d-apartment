@@ -166,7 +166,8 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   of the sofa: coffee table ILVA Woodstock, oiled oak veneer top, 120 × 60 × 47 cm, with a shelf.
 - Patio (user's wish): Plantagen Hörngrupp Oslo antracit (corner sofa 198 + 186 × 72 × 76, table
   120 × 60 × 40) with its back to the hedge and the east screen wall, a parasol (up Apr–Sep while
-  the sun is up), three big planters (palm, banana, agave), two beers on the table Jun–Aug
+  the sun is up), two big planters (palm by the patio door, agave in the SE corner; the banana that blocked the
+  gap in the hedge is gone, #52), two beers on the table Jun–Aug
   12–23, a snowman on the lawn beyond the hedge Dec–Feb (`PATIO` in config).
 - Material choices (Sarah's screenshots in `material/`): parquet Ek Chalk (white-stained oak),
   walls/doors NCS S 0500-N, stair white-lacquered oak/white, hall granitkeramik City Amsterdam
@@ -286,8 +287,9 @@ screenshots into the session scratchpad, not the repo.
 ## Input notes
 
 - A visit starts outside, ~12 m in front of the entrance façade facing the house (`START` in config);
-  the walkable outdoor area is `OUTDOOR` (in front of Hus L, closed off by the façade line beside our
-  unit) plus our patio (world.js). walktest walks from `START` in through the front door.
+  the walkable outdoor area is `OUTDOOR`: in front of Hus L and behind it (our patio, out through the
+  gap in the hedge to the lawn up to `z1`), each closed off by the façade line beside our unit; the
+  neighbours' screen walls and hedges collide (`exterior.userData.segments`). walktest walks from `START` in through the front door.
 
 - Start screen has two buttons: *Mus & tangentbord* (pointer lock) and *Touch* (joystick).
   A Surface has both, so the visitor chooses. Touch-only devices (`(pointer: coarse) and

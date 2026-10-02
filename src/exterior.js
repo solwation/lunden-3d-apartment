@@ -100,6 +100,7 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
   const group = new THREE.Group();
   const bricks = [], renders = [], glassGeo = [], frames = [], solids = [], rails = [], roofs = [], pilasters = [], panels = [];
   const patios = [], hedges = [], fences = [];
+  const segments = []; // collision for the neighbours' screen walls and hedges (lawn side)
   const loftD = H.loftgangDepth;
   const upperTop = roofTop + H.upperStoreys * H.storeyHeight;
   const eps = 0.006;
@@ -147,9 +148,15 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
     solids.push(boxGeo(ox + 0.001, ox + W - 0.001, 0, roofTop, 0, D));
     // the neighbours' patios: same slab, hedge and screen walls as ours
     if (site.patio) patios.push(boxGeo(ox + site.patio.x0, ox + site.patio.x1, -0.01, 0.0, D, site.patio.z1));
-    if (site.hedge) hedges.push(boxGeo(ox + site.hedge.x0, ox + site.hedge.x1, 0, 1.1, site.hedge.z0, site.hedge.z1));
+    if (site.hedge) {
+      const h = site.hedge;
+      hedges.push(boxGeo(ox + h.x0, ox + h.x1, 0, 1.1, h.z0, h.z1));
+      segments.push([ox + h.x0, h.z0, ox + h.x1, h.z0], [ox + h.x1, h.z0, ox + h.x1, h.z1],
+        [ox + h.x1, h.z1, ox + h.x0, h.z1], [ox + h.x0, h.z1, ox + h.x0, h.z0]);
+    }
     for (const f of site.fences ?? []) {
       fences.push(boxGeo(ox + f.a[0] - 0.025, ox + f.b[0] + 0.025, 0, FENCE_HEIGHT, Math.min(f.a[1], f.b[1]), Math.max(f.a[1], f.b[1])));
+      segments.push([ox + f.a[0], f.a[1], ox + f.b[0], f.b[1]]);
     }
   }
   // stair core with the portik through the ground floor, a flat (L1101) on våning 2
@@ -230,5 +237,6 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
   add(patios, mats.patio, false);
   add(hedges, mats.hedge);
   add(fences, mats.fence);
+  group.userData.segments = segments;
   return group;
 }
