@@ -91,8 +91,8 @@ src/lights.js          room switches (E), ceiling lamps/pendant/spots/LED, floor
 src/street.js          Sankt Lars väg's details (SITE.street, #128): curbs, asphalt patches, street lamps (emissive at
                        night), zebra crossing, the site's temporary traffic light + warning signs, cobbles, autumn leaves; the bus stop,
                        the red "Flyttad" sign, a no-parking sign and HepCat's A-board (#129)
-src/streetlife.js      life on the street (SITE.life, #113): the car park's stall lines and parked cars (instanced, a colour
-                       each, collision), bikes by Hus L's entrances and in racks, the paved square with corten beds and
+src/streetlife.js      life on the street (SITE.life, #113): the car park: one row of stalls along the shrubs (#208) with parked cars
+                       (instanced, a colour each, collision); the front yard is asphalt up to the entrance paving, bikes by Hus L's entrances and in racks, the paved square with corten beds and
                        sitting steps in front of Hus C
 src/people.js          people in the area (PEOPLE, #114): low-poly figures (one InstancedMesh per body part, a colour each,
                        posed every frame): walkers to and fro on the paths (a dog with one), cyclists on Sankt Lars väg
@@ -222,8 +222,8 @@ src/sillplants.js      flower pots on every inner window board (SILL_PLANTS, #13
 src/plants.js          SillPot (#185): each window-board pot is a Holdable; its own model is invisible at home, shows (and
                        the merged meshes are rebuilt without it) once taken; the side-table flower and the kitchen shelf's
                        vase / pot plant are plain Things (kind 'plant'); window boards are put-down surfaces too
-src/car.js             our white Renault Megane E-Tech (CAR, #173): the hall key calls it along Sankt Lars väg to stop out
-                       front (blinks, a collision box while parked, waits for the visitor), pressed again it U-turns and
+src/car.js             our white Renault Megane E-Tech (CAR, #173): the hall key calls it in through the gap in the shrubs
+                       to stop right outside our door (#208; waypoint paths rounded off) (blinks, a collision box while parked, waits for the visitor), pressed again it U-turns and
                        leaves; sfx.evHum follows it; `&car` = parked (screenshots)
 src/signs.js           hand-lettered name signs on the bedroom doors (DOOR_SIGNS)
 src/water.js           running water: E on a tap/shower (world.taps from interior.js) → stream + hiss

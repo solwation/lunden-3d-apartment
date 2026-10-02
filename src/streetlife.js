@@ -4,7 +4,7 @@ import { SITE, SEASON } from './config.js';
 import { pavingTexture } from './patio.js';
 import { registerSnow } from './seasons.js';
 
-// Life on the street (#113, SITE.life): the car park with parked cars (instanced: a body with a colour per car,
+// Life on the street (#113, SITE.life): the car park (one row along the shrubs, #208) with parked cars (instanced: a body with a colour per car,
 // the glass/black parts, the wheels — three draw calls), its white stall lines, bikes by Hus L's entrances and in
 // racks on the square in front of Hus C (two draw calls), the square's paving, corten beds and sitting steps.
 // Returns { object, segments } (the parked cars block the way).
@@ -45,12 +45,14 @@ function instanced(geo, material, mats, colors) {
 export function buildStreetLife() {
   const group = new THREE.Group(), segments = [], R = rng(17);
   const white = new THREE.MeshStandardMaterial({ color: 0xeeeeea, roughness: 0.7 });
-  // the car park: two rows of stalls facing the aisle in the middle, cars nose in
+  // the car park: one row of stalls along the shrubs, nose to the hedge, a gap in front of us (#208)
   const lot = L.lot, lines = [], cars = [], carColors = [];
-  const rows = [{ z0: lot.z0, z1: lot.z0 + lot.depth, yaw: -Math.PI / 2 }, { z0: lot.z1 - lot.depth, z1: lot.z1, yaw: Math.PI / 2 }];
+  const rows = [{ z0: lot.z0, z1: lot.z0 + lot.depth, yaw: Math.PI / 2 }];
+  const inGap = (x) => x > lot.gap[0] - 1e-6 && x < lot.gap[1] + 1e-6;
   for (const row of rows) {
-    for (let x = lot.x0; x <= lot.x1 + 1e-6; x += lot.stall) lines.push(flat(x - 0.06, x + 0.06, row.z0, row.z1, 0.02));
+    for (let x = lot.x0; x <= lot.x1 + 1e-6; x += lot.stall) if (!inGap(x) || Math.abs(x - lot.gap[0]) < 1e-6) lines.push(flat(x - 0.06, x + 0.06, row.z0, row.z1, 0.02));
     for (let x = lot.x0; x + lot.stall <= lot.x1 + 1e-6; x += lot.stall) {
+      if (x + lot.stall > lot.gap[0] + 1e-6 && x < lot.gap[1] - 1e-6) continue; // the way in
       if (R() > L.fill) continue;
       const cx = x + lot.stall / 2, cz = (row.z0 + row.z1) / 2 + (R() - 0.5) * 0.3;
       const yaw = row.yaw + (R() - 0.5) * 0.06 + (R() < 0.2 ? Math.PI : 0); // a few reversed in

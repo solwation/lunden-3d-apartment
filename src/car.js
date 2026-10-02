@@ -4,9 +4,27 @@ import { CAR as C } from './config.js';
 import { sfx } from './audio.js';
 
 // Our car (#173): a white Renault Megane E-Tech, called by the key in the hall. State 'gone' → press → 'arriving'
-// (east along our lane, slowing to a stop in front of the entrance) → 'parked' (a collision box) → press →
-// 'leaving' (on, a U-turn before the zebra crossing, west out of sight) → 'gone'. A press while it drives is
+// (east along our lane, in through the gap in the shrubs, slowing to a stop right outside our door, #208) →
+// 'parked' (a collision box) → press → 'leaving' (round in the yard, out the same gap, west out of sight) → 'gone'. A press while it drives is
 // ignored. It waits rather than drive into the visitor. Built facing local +x; y = 0 is the road.
+
+/** Waypoints → a polyline with the corners rounded off (Chaikin, the ends kept) + cumulative lengths. */
+function smooth(wp) {
+  let pts = wp.map((p) => [...p]);
+  for (let it = 0; it < 4; it++) {
+    const out = [pts[0]];
+    for (let i = 0; i < pts.length - 1; i++) {
+      const [ax, az] = pts[i], [bx, bz] = pts[i + 1];
+      if (i > 0) out.push([ax * 0.75 + bx * 0.25, az * 0.75 + bz * 0.25]);
+      if (i < pts.length - 2) out.push([ax * 0.25 + bx * 0.75, az * 0.25 + bz * 0.75]);
+    }
+    out.push(pts.at(-1));
+    pts = out;
+  }
+  const len = [0];
+  for (let i = 1; i < pts.length; i++) len.push(len[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]));
+  return { pts, len };
+}
 
 function plateTexture(text) {
   const c = document.createElement('canvas'); c.width = 520; c.height = 110;
@@ -72,30 +90,18 @@ export class Car {
   /** Parked in front of the house at once (&car, screenshots). */
   park() { this.path = this.arrival(); this.d = this.total(); this.state = 'parked'; this.object.visible = true; this.place(); }
 
-  arrival() { return [{ a: [C.from, C.lane], b: [C.stop, C.lane] }]; }
-  departure() {
-    const r = (C.lane - C.back) / 2, cz = (C.lane + C.back) / 2;
-    return [{ a: [C.stop, C.lane], b: [C.turnAt, C.lane] }, { arc: [C.turnAt, cz], r }, { a: [C.turnAt, C.back], b: [C.gone, C.back] }];
-  }
+  arrival() { return smooth(C.arrive); }
+  departure() { return smooth(C.leave); }
 
-  /** Length of path piece p. */
-  len(p) { return p.arc ? Math.PI * p.r : Math.hypot(p.b[0] - p.a[0], p.b[1] - p.a[1]); }
-  total() { return this.path.reduce((s, p) => s + this.len(p), 0); }
+  total() { return this.path.len.at(-1); }
 
   /** Position + heading at distance d along the path. */
   at(d) {
-    for (const p of this.path) {
-      const l = this.len(p);
-      if (d <= l || p === this.path.at(-1)) {
-        const k = Math.min(1, d / l);
-        if (p.arc) { // a left U-turn round (cx, cz): from our lane (cz + r) heading east to the far lane heading west
-          return { x: p.arc[0] + Math.sin(k * Math.PI) * p.r, z: p.arc[1] + Math.cos(k * Math.PI) * p.r, yaw: k * Math.PI };
-        }
-        const x = p.a[0] + (p.b[0] - p.a[0]) * k, z = p.a[1] + (p.b[1] - p.a[1]) * k;
-        return { x, z, yaw: p.b[0] >= p.a[0] ? 0 : Math.PI };
-      }
-      d -= l;
-    }
+    const { pts, len } = this.path;
+    let k = 1;
+    while (k < pts.length - 1 && len[k] < d) k++;
+    const [ax, az] = pts[k - 1], [bx, bz] = pts[k], u = Math.min(1, Math.max(0, (d - len[k - 1]) / (len[k] - len[k - 1] || 1)));
+    return { x: ax + (bx - ax) * u, z: az + (bz - az) * u, yaw: Math.atan2(-(bz - az), bx - ax) }; // local +x along the way
   }
 
   place() {

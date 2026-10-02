@@ -55,7 +55,7 @@ f.onload = async () => {
   pass &= check(car.state === 'arriving' && car.object.visible, `the car is on its way (${car.state})`);
   for (let i = 0; i < 60 * 30 && car.state === 'arriving'; i++) step(1 / 60);
   const p = car.object.position;
-  pass &= check(car.state === 'parked' && Math.abs(p.x - 2.9) < 0.05 && Math.abs(p.z + 25.2) < 0.05 && car.segments().length === 4, `parked in front of the house at (${p.x.toFixed(2)}, ${p.z.toFixed(2)}), a collision box`);
+  pass &= check(car.state === 'parked' && Math.abs(p.x - 2.9) < 0.05 && Math.abs(p.z + 5.4) < 0.05 && Math.abs(car.object.rotation.y) < 0.05 && car.segments().length === 4, `parked right outside our door, heading east (#208), at (${p.x.toFixed(2)}, ${p.z.toFixed(2)}), a collision box`);
   pass &= check(car.plateText === 'FGZ 56D' && car.plates.length === 2, `plates front and back: ${car.plateText}`);
   aim(key.object.children[1]); btn.click(); step(1 / 60);
   pass &= check(car.state === 'leaving' && key.presses === 2, 'beep beep again: it drives off');

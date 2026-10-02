@@ -187,7 +187,8 @@ export const SITE = {
   // the render), bikes leaning by some of Hus L's entrances (not ours), and the square in front of Hus C towards
   // the street: light stone paving, raised beds with corten edges and sitting steps, bike racks. All guesses.
   life: {
-    lot: { x0: -50, x1: -6, z0: -20, z1: -9, stall: 2.5, depth: 5 }, fill: 0.65,
+    // one row of stalls along the shrubs the whole way, nose to the hedge, none in the gap in front of us (#208)
+    lot: { x0: -48, x1: 17.5, z0: -20, depth: 5, stall: 2.5, gap: [-7, 9] }, fill: 0.65,
     carColors: [0xf0f0ec, 0x23272c, 0x8d9399, 0x1f6f78, 0x7b1e22, 0x2d4e7a, 0xc9c3b8, 0x0f1012],
     bikes: [[-40.2, -0.9], [-39.5, -0.9], [-28.6, -0.9], [-17.4, -0.9], [-16.7, -0.9], [-5.6, -0.9], [12.9, -0.9]], // x, z (along the façade)
     square: { x0: -72, x1: -47.5, z0: 0.5, z1: 12.3 },
@@ -200,7 +201,7 @@ export const SITE = {
     { name: 'Sankt Lars väg', x0: -95, x1: 30, z0: -30, z1: -24 },
     { name: 'Sankt Lars väg', x0: 22, x1: 30, z0: -30, z1: 200 },
     { name: 'Karpvägen', x0: -88, x1: -80, z0: -30, z1: 200 },
-    { name: 'P-platser', x0: -50, x1: -6, z0: -20, z1: -9 },
+    { name: 'Gården framför Hus L', x0: -48, x1: 17.75, z0: -20, z1: -4 }, // asphalt up to the entrance paving (#208)
   ],
   paving: [
     { x0: -48, x1: 16, z0: -4, z1: 0 },      // path along Hus L's entrances
@@ -425,10 +426,13 @@ export const BEER = { x: 3.85, y: 0.4, z: 15.4, r: 0.045, h: 0.16, gulp: 0.2, he
 // The key in the hall calls it: it comes east along Sankt Lars väg (our lane, right side to our curb at z −24),
 // stops in front of our entrance; called again it drives on, U-turns before the zebra crossing and leaves west.
 // Path and speeds are ours.
+// #208: it turns in through the gap in the shrubs in front of us and stops right outside our door (heading east,
+// passenger side to the house); leaving, it swings round in the yard and goes out the same gap, west in the far
+// lane. Paths = waypoints (x, z), rounded off at the corners (car.js).
 export const CAR = {
   l: 4.2, w: 1.78, h: 1.5, color: 0xf2f2ee, plate: 'FGZ 56D',
-  lane: -25.2, back: -28.6,        // z of the car's middle in our lane / the far lane
-  from: -95, stop: 2.9, turnAt: 6.9, gone: -95, // x: appears, stops (middle), starts its U-turn, disappears
+  arrive: [[-95, -25.2], [-6, -25.2], [-1.2, -22], [-1.2, -8.5], [0.6, -5.4], [2.9, -5.4]], // ends at our door
+  leave: [[2.9, -5.4], [10, -5.4], [13, -7.4], [12.6, -11.2], [9, -12], [1.6, -12], [0.4, -14.5], [0.4, -22], [-2.5, -27.6], [-8, -27.8], [-95, -27.8]],
   speed: 8, brake: 2,              // m/s cruising, m/s² slowing down to the stop
 };
 
