@@ -119,6 +119,9 @@ export const SITE = {
     garageDoor: { x: -80, z0: 42, z1: 47.5, h: 2.6 }, // the arrow "GARAGE" by Karpvägen, z ≈ 44
   },
   bay: 3.0, storey: 3.0,  // façade texture of the other blocks: one window per 3 × 3 m
+  // balconies on the Å-husen (#108, Peab's renders docs/peab-hus-hornet-norr.png): a stack in every `every`-th bay from
+  // the first storey above the ground, a white slab `depth` out, a light slatted railing; `plants` = share with a plant
+  balconies: { every: 3, width: 2.5, depth: 1.1, rail: 1.05, plants: 0.4 },
   old: { bay: 2.6, storey: 3.6, roofPitch: 0.6 }, // the old S:t Lars buildings (style: 'old'): rise = pitch × half depth
   // the school straight across Sankt Lars väg (#126, docs/foton/rakt-over-gatan-tegelmur-skolbyggnad.jpg): two high
   // storeys of brick with white quoins, trim and plinth, arched windows below, square ones above, a dark metal

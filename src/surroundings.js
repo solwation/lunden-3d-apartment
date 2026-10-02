@@ -315,6 +315,62 @@ function facadeTexture() {
   return tex;
 }
 
+/** Light slatted balcony railing (#108): vertical slats under a handrail, transparent between (alphaTest). */
+function railTexture() {
+  const c = document.createElement('canvas'); c.width = 128; c.height = 64;
+  const g = c.getContext('2d');
+  g.fillStyle = '#e3e5e4';
+  for (let x = 2; x < 128; x += 8) g.fillRect(x, 6, 4, 58);
+  g.fillRect(0, 0, 128, 7); g.fillRect(0, 58, 128, 6);
+  const t = new THREE.CanvasTexture(c); t.wrapS = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+}
+
+/** Balconies on the modern blocks (#108): instanced slabs, railings (front + sides), white niche fields, plants. */
+function balconies(blocks) {
+  const B = S.balconies, list = [];
+  for (const b of blocks) {
+    const faces = [
+      { along: 'x', c: b.z0, a0: b.x0, a1: b.x1, n: [0, -1] }, { along: 'x', c: b.z1, a0: b.x0, a1: b.x1, n: [0, 1] },
+      { along: 'z', c: b.x0, a0: b.z0, a1: b.z1, n: [-1, 0] }, { along: 'z', c: b.x1, a0: b.z0, a1: b.z1, n: [1, 0] },
+    ];
+    for (const f of faces) {
+      for (let k = Math.ceil(f.a0 / S.bay - 0.5); (k + 0.5) * S.bay < f.a1; k++) {
+        if (((k % B.every) + B.every) % B.every !== 1) continue;
+        const a = (k + 0.5) * S.bay;
+        if (a - B.width / 2 - 0.6 < f.a0 || a + B.width / 2 + 0.6 > f.a1) continue;
+        const [x, z] = f.along === 'x' ? [a, f.c] : [f.c, a];
+        for (let st = 1; st < b.storeys; st++) {
+          const y = b.base + st * S.storey;
+          if (y < groundY(x + f.n[0] * 2, z + f.n[1] * 2) + 1.5) continue; // the ground floor has its patio
+          list.push({ x, y, z, yaw: Math.atan2(f.n[0], f.n[1]) });
+        }
+      }
+    }
+  }
+  const { width: w, depth: d, rail: h } = B;
+  const slab = new THREE.BoxGeometry(w, 0.18, d).translate(0, -0.09, d / 2);
+  const rails = [new THREE.PlaneGeometry(w, h).translate(0, h / 2, d - 0.02)];
+  for (const sx of [-1, 1]) rails.push(new THREE.PlaneGeometry(d - 0.04, h).rotateY(Math.PI / 2).translate(sx * (w / 2 - 0.02), h / 2, d / 2));
+  rails.forEach((g, i) => { const uv = g.attributes.uv; for (let j = 0; j < uv.count; j++) uv.setX(j, uv.getX(j) * (i ? d : w) / 0.5); }); // a slat every 6 cm
+  const niche = new THREE.PlaneGeometry(w, S.storey - 0.25).translate(0, (S.storey - 0.25) / 2, 0.03);
+  const rand = rng(41), withPlant = list.filter(() => rand() < B.plants);
+  const plant = mergeGeometries([new THREE.CylinderGeometry(0.16, 0.12, 0.35, 8).translate(w / 2 - 0.35, 0.175, d - 0.3), new THREE.IcosahedronGeometry(0.32, 0).translate(w / 2 - 0.35, 0.6, d - 0.3)].map((g) => (g.index ? g.toNonIndexed() : g)));
+  const inst = (geo, mat, items, shadow = true) => {
+    const m = new THREE.InstancedMesh(geo, mat, items.length), M = new THREE.Matrix4(), q = new THREE.Quaternion(), up = new THREE.Vector3(0, 1, 0), one = new THREE.Vector3(1, 1, 1);
+    items.forEach((p, i) => m.setMatrixAt(i, M.compose(new THREE.Vector3(p.x, p.y, p.z), q.setFromAxisAngle(up, p.yaw), one)));
+    m.castShadow = shadow; m.receiveShadow = true;
+    return m;
+  };
+  const white = new THREE.MeshStandardMaterial({ color: 0xf0efeb, roughness: 0.8 });
+  return [
+    inst(slab, white, list),
+    inst(mergeGeometries(rails), new THREE.MeshStandardMaterial({ map: railTexture(), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.6 }), list),
+    inst(niche, white, list, false),
+    inst(plant, new THREE.MeshStandardMaterial({ color: 0x4f7d3a, roughness: 0.9, flatShading: true }), withPlant),
+  ];
+}
+
 /** The lowest ground under a block's footprint (sampled every 2 m). */
 function lowestGround(b) {
   let lo = Infinity;
@@ -617,6 +673,7 @@ export function buildSurroundings({ grass }) {
   };
   mesh(modern.map(block), new THREE.MeshStandardMaterial({ map: facadeTexture(), roughness: 0.95 }));
   mesh(modern.map(roof), new THREE.MeshStandardMaterial({ color: 0x51575c, roughness: 0.85, side: THREE.DoubleSide }), SEASON.snow.roof);
+  group.add(...balconies(modern)); // balconies with slatted railings (#108)
   // white details (#109): a light fascia band under the low roofs, grey downpipes at the corners and every ~12 m
   mesh(modern.map((b) => {
     const h = b.base + b.storeys * S.storey, o = 0.32;
