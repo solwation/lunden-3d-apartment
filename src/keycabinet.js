@@ -149,11 +149,15 @@ export function buildHallWall() {
   mirror.add(disc, rim, face);
   mirror.position.set(m.z, m.y, 0);
   addReflector(disc, new THREE.CircleGeometry(m.d / 2 - m.frame, 64), { level: 0 }); // mirror image (#50)
-  const cabinet = new KeyCabinet();
-  cabinet.object.position.set(H.cabinet.z, H.cabinet.y, 0);
-  group.add(mirror, cabinet.object);
   // local x runs along the wall: turn so local +z faces into the hall (−x) and local x = plan z
-  group.rotation.y = H.rotY;
-  group.position.set(H.x, 0, 0);
+  const wall = new THREE.Group();
+  wall.add(mirror);
+  wall.rotation.y = H.rotY;
+  wall.position.set(H.x, 0, 0);
+  // the key cabinet on its own wall (#123), local +z out of the wall
+  const cabinet = new KeyCabinet();
+  cabinet.object.position.set(H.cabinet.x, H.cabinet.y, H.cabinet.z);
+  cabinet.object.rotation.y = H.cabinet.rotY;
+  group.add(wall, cabinet.object);
   return { object: group, cabinet, key: cabinet.key };
 }

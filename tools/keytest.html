@@ -24,13 +24,15 @@ f.onload = async () => {
   const cab = world.lids.find((l) => l.kind === 'keybox');
   const key = world.carKey;
   const btn = d.getElementById('action');
-  const aim = (obj) => { // stand 0.9 m west of it, look straight at it
+  const aim = (obj) => { // stand 0.9 m in front of the cabinet (along its facing), look straight at it
     cab.object.updateMatrixWorld(true); // no render runs: refresh the (animated) door's matrices
     const p = obj.getWorldPosition(new obj.position.constructor()); // the iframe's THREE.Vector3
-    player.spawn(p.x - 0.9, p.z, -Math.PI / 2);
+    const ry = cab.object.getWorldQuaternion(new camera.quaternion.constructor()), n = new p.constructor(0, 0, 1).applyQuaternion(ry);
+    player.spawn(p.x + n.x * 0.9, p.z + n.z * 0.9, 0);
+    for (let i = 0; i < 3; i++) step(1 / 60); // collision may nudge the player off the wall first
     camera.rotation.y = Math.atan2(-(p.x - player.pos.x), -(p.z - player.pos.z));
     camera.rotation.x = Math.atan2(p.y - player.eyeY, Math.hypot(p.x - player.pos.x, p.z - player.pos.z));
-    for (let i = 0; i < 3; i++) step(1 / 60);
+    step(1 / 60);
   };
   let pass = check(!!(cab && key), 'cabinet + car key exist');
   aim(cab.door.children[0]);
