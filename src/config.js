@@ -223,8 +223,7 @@ export const COLORS = {
   glass: 0xa9cce3,
   door: 0xf1f1ee,   // Innerdörr Stable GW / skjutdörrar NCS S 0500-N
   rail: 0xf4f4f1,   // stair railing: white balusters + handrail (Peab 3D plan of L1002–L1007)
-  stair: 0xdccfba,  // Trappa vitlaserad ek/vit: white-lacquered oak treads …
-  riser: 0xf4f4f1,  // … white risers and stringers
+  riser: 0xf4f4f1,  // stair risers and stringers, white (the treads use the floor's Ek Chalk parquet, #54)
   grass: 0x7fa65c,
   patio: 0xbdb7ab,
   hedge: 0x46703a,

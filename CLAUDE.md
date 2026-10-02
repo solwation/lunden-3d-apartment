@@ -134,7 +134,7 @@ North = −z (the bedrooms Sovrum 1/3 face north).
 - Peab's 3D plan of L1002–L1007 (peabbostad.se …/planlosningar-i-3d/l1002-…-l1007.jpg, a mirrored
   sibling unit) confirms the stair: straight lower flight between the Klk wall and the living-room
   wall, winders at the far end, white railing with balusters around the opening, oak treads with
-  white risers.
+  white risers (ours: Ek Chalk treads like the floor, see Material choices).
 - Hus L / "Parklängan" (overview plans + aerial render in `docs/peab/`, `HUS_L` in config): a straight
   four-storey bar along Sankt Lars väg (the user's "L-byggnad" = Hus L, not an L shape). Våning 1–2:
   L1001–L1004 | stair core with a ground-floor portik (L1101 above it) | L1005–L1008; all units the
@@ -170,7 +170,8 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   gap in the hedge is gone, #52), two beers on the table Jun–Aug
   12–23, a snowman on the lawn beyond the hedge Dec–Feb (`PATIO` in config).
 - Material choices (Sarah's screenshots in `material/`): parquet Ek Chalk (white-stained oak),
-  walls/doors NCS S 0500-N, stair white-lacquered oak/white, hall granitkeramik City Amsterdam
+  walls/doors NCS S 0500-N, stair treads in the same Ek Chalk parquet as the floors (an extra-cost
+  choice; `buildStairs([M.floor, M.riser])`, #54) with white risers, hall granitkeramik City Amsterdam
   30×60, wet rooms City Amsterdam 15×15 + white matt 20×40 wall tiles, kitchen fronts Form Tall
   (grey-green shaker) with black Solo handles, Delaware stone worktop, white 10×20 half-bond
   splashback, stainless fridge/freezer, black oven/microwave/hob. The photos of the kitchen and

@@ -66,7 +66,7 @@ const M = {
   }),
   door: mat(COLORS.door, { roughness: 0.6 }),
   rail: mat(COLORS.rail, { roughness: 0.4, metalness: 0.3 }),
-  stair: [mat(COLORS.stair, { roughness: 0.45 }), mat(COLORS.riser, { roughness: 0.6 })], // treads, risers
+  riser: mat(COLORS.riser, { roughness: 0.6 }), // stair risers and stringers (white)
   dark: mat(0x1d2023, { roughness: 0.3 }),
   grass: mat(COLORS.grass, { roughness: 1 }),
   patio: mat(COLORS.patio, { roughness: 0.95 }),
@@ -483,7 +483,8 @@ export function buildWorld(plan) {
   scene.add(box(0, W, 0, D, roofY, roofY + 0.35, M.wall));
 
   // Stairs + upstairs railing around the opening above flight A
-  scene.add(buildStairs(M.stair));
+  // treads: the very same Ek Chalk parquet material as the floors (our Peab choice, #54); white risers
+  scene.add(buildStairs([M.floor, M.riser]));
   const y1 = LEVELS[1].floor, rail = STAIR.railHeight;
   const railSegs = [
     [STAIR.hole.x0, (STAIR.aZ[0] + STAIR.bZ[1]) / 2, STAIR.hole.x0, STAIR.hole.z1],
