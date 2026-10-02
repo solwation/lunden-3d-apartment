@@ -137,7 +137,7 @@ export class KeyCabinet {
   }
 }
 
-/** Mirror (IKEA LINDBYN, black; in the living room since #205) + key cabinet on the hall wall. */
+/** Mirrors (IKEA LINDBYN, black, in the living room since #205; Rusta Staffan in the hall, #218) + the key cabinet. */
 export function buildHallWall() {
   const group = new THREE.Group();
   const m = H.mirror;
@@ -150,10 +150,20 @@ export function buildHallWall() {
   mirror.position.set(m.x, m.y, m.z); // on the living-room wall behind the armchair (#205), local +z out of the wall
   mirror.rotation.y = m.rotY;
   addReflector(disc, new THREE.CircleGeometry(m.d / 2 - m.frame, 64), { level: 0 }); // mirror image (#50)
+  // Rusta "Staffan" in the hall (#218): upright glass in a flat black frame, local +z out of the wall
+  const T = H.tall, tall = new THREE.Group(), gw = T.w - 2 * T.frame, gh = T.h - 2 * T.frame;
+  const glass = mesh(new THREE.PlaneGeometry(gw, gh), mirrorMaterial, 0, 0, T.depth - 0.002);
+  tall.add(glass);
+  for (const [w, h, x, y] of [[T.w, T.frame, 0, (T.h - T.frame) / 2], [T.w, T.frame, 0, -(T.h - T.frame) / 2], [T.frame, gh, (T.w - T.frame) / 2, 0], [T.frame, gh, -(T.w - T.frame) / 2, 0]]) {
+    tall.add(mesh(new THREE.BoxGeometry(w, h, T.depth), frameMat, x, y, T.depth / 2));
+  }
+  tall.position.set(T.x, T.y, T.z);
+  tall.rotation.y = T.rotY;
+  addReflector(glass, new THREE.PlaneGeometry(gw, gh), { level: 0 }); // its mirror image (#50)
   // the key cabinet on its own wall (#123), local +z out of the wall
   const cabinet = new KeyCabinet();
   cabinet.object.position.set(H.cabinet.x, H.cabinet.y, H.cabinet.z);
   cabinet.object.rotation.y = H.cabinet.rotY;
-  group.add(mirror, cabinet.object);
+  group.add(mirror, tall, cabinet.object);
   return { object: group, cabinet, key: cabinet.key };
 }
