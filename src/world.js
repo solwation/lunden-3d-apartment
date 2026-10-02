@@ -24,6 +24,7 @@ import { RoomMap } from './rooms.js';
 import { buildAO } from './ao.js';
 import { buildSurroundings } from './surroundings.js';
 import { addDoorSigns } from './signs.js';
+import { wardrobeFill, personFor } from './stuff.js';
 
 const mat = (color, extra = {}) => new THREE.MeshStandardMaterial({ color, roughness: 0.85, ...extra });
 
@@ -203,6 +204,8 @@ const gapRect = (g) => (g.axis === 'x' ? { x0: g.lo, x1: g.hi, z0: g.p0, z1: g.p
 
 const insideRect = (f, r) => f.x0 >= r.x0 - 0.01 && f.x1 <= r.x1 + 0.01 && f.z0 >= r.z0 - 0.01 && f.z1 <= r.z1 + 0.01;
 
+const wardrobeSpecs = []; // the wardrobes buildWardrobe made (their contents come later, #230)
+
 /** Hollow wardrobe (carcass, hat shelf, rod) + two sliding doors on the open side. */
 function buildWardrobe(group, g, y0, h, wallBoxes, doors) {
   const along = g.x1 - g.x0 > g.z1 - g.z0; // doors run along x?
@@ -226,6 +229,8 @@ function buildWardrobe(group, g, y0, h, wallBoxes, doors) {
   piece(a + t, b - t, back, front - outward * 0.05, y0 + 1.78, y0 + 1.8); // hat shelf
   const mid = (back + front) / 2;
   piece(a + t, b - t, mid - 0.012, mid + 0.012, y0 + 1.7, y0 + 1.724); // clothes rod
+  // what goes inside (#230/#231) is added once the rooms are known (buildWorld): who sleeps here
+  wardrobeSpecs.push({ group, along, a0: a + t, a1: b - t, mid, front, back, depth: Math.abs(front - back) - t - 0.05, outward, y0, rodY: y0 + 1.7, shelfY: y0 + 1.8, topY: y1 - t });
   for (const d of wardrobeDoors({ along, front, back, outward, a, b, y0, height: h, material: M.door })) {
     group.add(d.object);
     doors.push(d);
@@ -702,6 +707,16 @@ export function buildWorld(plan) {
 
   const signs = addDoorSigns([...l0.doors, ...l1.doors], (lv, x, z) => roomMaps[lv]?.at(x, z) ?? null,
     (d) => (d.object.position.y > LEVELS[0].floor + 1.6 ? 1 : 0));
+
+  // the wardrobes' contents (#230/#231): clothes on the rod, folded things on the hat shelf, shoes — by who lives there
+  wardrobeSpecs.forEach((w, i) => {
+    const lv = w.y0 > LEVELS[0].floor + 1.6 ? 1 : 0, ac = (w.a0 + w.a1) / 2, fz = w.front + w.outward * 0.4;
+    const room = roomMaps[lv].at(w.along ? ac : fz, w.along ? fz : ac);
+    const who = personFor(room);
+    const m = who ? wardrobeFill(w, who, 11 + i * 7) : null;
+    if (m) { m.userData.room = room; w.group.add(m); }
+  });
+  wardrobeSpecs.length = 0;
 
   // bake the static fittings into one mesh per material and level (draw calls, #48)
   const box3 = new THREE.Box3(), mid = new THREE.Vector3();

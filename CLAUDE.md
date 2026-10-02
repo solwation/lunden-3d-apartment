@@ -125,8 +125,14 @@ src/openables.js       Openable (#103): the shared helper for fronts that open w
                        through a neighbour), 'flap' (bottom- or top-hinged), 'drawer'; kind 'cabinet', in world.lids.
                        interior.js builds the kitchen fronts, vanity drawers, the Stage 50 mirror cabinet, the laundry sink
                        cabinet, the washer/dryer doors and the hall's EL/C cabinet (`buildElCabinet`: fuse box, router) with it
-                       (`openFront`, hollow `shell` carcasses);
+                       (`openFront`, hollow `shell` carcasses); `contents` (a mesh): only drawn while the front is
+                       (partly) open (#228)
                        furniture.js `addDrawer` / `addDoor` for furniture (NORDKISA, NORDLI, ALEX, IDANÄS foot end, BYÅS's two end drawers, #212)
+src/stuff.js           what is inside wardrobes and drawers (#228, STUFF): `Pack` (tinted boxes merged into one vertex-coloured
+                       mesh, no raycast), `garment`, `stack`, `rolls`, `shoes`; `wardrobeFill` (world.js: clothes on the rod,
+                       hat shelf, shoes — by the room's person, `personFor`), `drawerFill` (addDrawer `fill`: tees, socks,
+                       underwear, pyjamas, jeans, toys, crafts, nightstand). Sovrum 1: NORDLI, NORDKISA, IDANAS drawers;
+                       Sovrum 2: wardrobe L; Sovrum 3: wardrobe G + ALEX drawers (#230)
 src/ovens.js           oven (drop-down door) + microwave (side door) in the tall unit, E opens (world.lids)
 src/hob.js             the induction hob (#158): E switches it on/off (the front zone glows, "9" on the display, a hum);
                        in world.lids, `world.hob` (`zone`, `on`) for the pan/chicken; stays with F but F switches it off

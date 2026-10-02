@@ -45,6 +45,7 @@ export class Openable {
     if (this.t === goal) return;
     this.t += Math.sign(goal - this.t) * Math.min(Math.abs(goal - this.t), dt * this.speed);
     this.pose(ease(this.t));
+    if (this.contents) this.contents.visible = this.t > 0; // what is inside is only drawn while it is open (#228)
   }
 }
 

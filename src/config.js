@@ -571,6 +571,33 @@ export const SECRET = {
 // how long it goes out and back (s). Our numbers.
 export const HAND = { skin: 0xe2b292, sleeve: 0x4a5a6e, shoulder: [0.3, -0.5, 0.15], rest: [0.2, -0.26, -0.32], reach: 0.4, reachTime: 0.4 };
 
+// What is in the wardrobes and drawers (#228, src/stuff.js): shared colours, and per person (by room) the clothes:
+// `size` (1 adult, ~0.65 a child), garment colours, what hangs on the rod, folded colours, shoes, socks, underwear.
+// Who sleeps where: CLAUDE.md. Our picks.
+export const STUFF = {
+  hanger: 0xc9a77c, hook: 0x9a9ea3, sole: 0x2a2a2a,
+  boxes: [0xd9cbb5, 0xf2f2f2, 0xb7c9d6],
+  socks: [0x222222, 0xf2f2f2, 0x7a8a99, 0x3b5f94, 0xc0392b],
+  under: [0x222222, 0xf2f2f2, 0x5b6b7c, 0x9aa8b6],
+  people: [
+    { who: 'Sarah & Olof', rooms: ['Sovrum 1'], size: 1, hang: ['shirt', 'dress', 'trousers', 'jacket'],
+      colors: [0xf5f5f0, 0x9fb7d0, 0x2e3a4f, 0x6b8f71, 0xd8b4a0, 0x8c2f39, 0x1f1f1f],
+      folded: [0xf2f2f2, 0x2e3a4f, 0x9fb7d0, 0x6b8f71, 0x1f1f1f, 0xd8b4a0], shoes: [0x3b2a1e, 0x1f1f1f, 0xe8e2d6] },
+    { who: 'Walter & Kian', rooms: ['Sovrum 2'], size: 0.68, hang: ['tee', 'shirt', 'trousers', 'jacket'],
+      colors: [0x1d3557, 0x2a9d8f, 0xe63946, 0x6c757d, 0x111111, 0xf4a261, 0x3a86ff],
+      folded: [0x1d3557, 0xe63946, 0x6c757d, 0x2a9d8f, 0x111111, 0xf1faee], shoes: [0x1d3557, 0x111111, 0xe63946],
+      socks: [0x111111, 0x1d3557, 0xe63946, 0x6c757d, 0xf1faee], under: [0x1d3557, 0x6c757d, 0x2a9d8f, 0x111111] },
+    { who: 'Livia & Tuva', rooms: ['Sovrum 3'], size: 0.64, hang: ['dress', 'tee', 'shirt', 'trousers'],
+      colors: [0xffafcc, 0xcdb4db, 0xffe66d, 0x95e1d3, 0xffffff, 0xa2d2ff, 0xff70a6],
+      folded: [0xffafcc, 0xcdb4db, 0xffe66d, 0x95e1d3, 0xa2d2ff, 0xffffff], shoes: [0xff70a6, 0xcdb4db, 0xffffff],
+      socks: [0xffafcc, 0xffe66d, 0xcdb4db, 0xffffff, 0x95e1d3], under: [0xffffff, 0xffafcc, 0xcdb4db, 0xa2d2ff] },
+    { who: 'Tilly', rooms: ['Sovrum 4'], size: 0.76, hang: ['dress', 'shirt', 'tee', 'jacket'],
+      colors: [0xff6fb5, 0x9b5de5, 0x00bbf9, 0xfee440, 0xf15bb5, 0xffffff, 0x2ec4b6],
+      folded: [0xff6fb5, 0x9b5de5, 0x00bbf9, 0xfee440, 0xffffff, 0x2ec4b6], shoes: [0x9b5de5, 0xff6fb5, 0xffffff],
+      socks: [0xff6fb5, 0x9b5de5, 0xfee440, 0xffffff], under: [0xffffff, 0xff6fb5, 0x9b5de5] },
+  ],
+};
+
 // The milk carton in the fridge (#168, src/milk.js): 1 l, 7 × 7 × 19.5 cm with a 3 cm gable (a standard carton).
 export const MILK = { w: 0.07, h: 0.195, gable: 0.03, blue: '#2f6fc4', held: { x: 0.2, y: -0.3, z: -0.46 } };
 

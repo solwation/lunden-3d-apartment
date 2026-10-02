@@ -9,6 +9,7 @@ import { Screen } from './screens.js';
 import { lampMat, addLampGlow } from './interior.js';
 import { Openable } from './openables.js';
 import { rifleModel } from './rifle.js';
+import { drawerFill, personFor } from './stuff.js';
 
 // Loose furniture, built from rounded boxes. Every piece is modelled in a local frame
 // where the sitter faces +z, x is across, y up; config gives position + facing.
@@ -34,7 +35,7 @@ function rbox(w, h, d, x, y, z, material, r = 0.04) {
  * piece's +z). `grip(o)` adds a handle in the drawer's frame (front face at z 0). The drawer is an Openable
  * in g.userData.targets and kept out of the merge.
  */
-function addDrawer(g, name, { x, y, zf, w, h, depth, front, inner = front, rot = 0, out = depth * 0.75, grip }) {
+function addDrawer(g, name, { x, y, zf, w, h, depth, front, inner = front, rot = 0, out = depth * 0.75, grip, fill, who, seed = 1 }) {
   const anchor = new THREE.Group();
   anchor.position.set(x, y, zf);
   anchor.rotation.y = rot;
@@ -48,6 +49,9 @@ function addDrawer(g, name, { x, y, zf, w, h, depth, front, inner = front, rot =
   grip?.(o);
   g.add(anchor);
   const d = new Openable({ name, object: o, mode: 'drawer', out: [0, 0, out], speed: 3 });
+  // what is in it (#230/#231, stuff.js): one merged mesh, only drawn while the drawer is (partly) open
+  const stuff = fill ? drawerFill(fill, { w: bw - 2 * t, depth: depth - t, h: bh, y: 0.024 }, who ? personFor(who) : null, seed) : null;
+  if (stuff) { stuff.visible = false; o.add(stuff); d.contents = stuff; }
   (g.userData.targets ??= []).push(d);
   (g.userData.keep ??= []).push(anchor);
   return d;
@@ -419,7 +423,8 @@ function idanasFrame(g, item) {
     g.add(rbox(0.004, fh - 0.12, l * 0.42, s * (I.W / 2 + 0.001), fy, -l * 0.23, line, 0.002));
     // the foot-end drawers open (#103); the head-end ones stay shut behind the bedside tables
     addDrawer(g, 'sänglådan', { x: s * (I.W / 2 + 0.002), y: fy - (fh - 0.12) / 2, zf: l * 0.23, w: l * 0.42, h: fh - 0.12, depth: sideW + w / 2 - 0.1,
-      front: fabric, inner: new THREE.MeshStandardMaterial({ color: 0xf2f0ea, roughness: 0.8 }), rot: s * Math.PI / 2, out: 0.45 });
+      front: fabric, inner: new THREE.MeshStandardMaterial({ color: 0xf2f0ea, roughness: 0.8 }), rot: s * Math.PI / 2, out: 0.45,
+      fill: 'pyjamas', who: 'Sovrum 1', seed: 30 + s }); // pyjamas and spare bedding (#230)
   }
   const wood = new THREE.MeshStandardMaterial({ color: 0xd8b98c, roughness: 0.6 });
   for (const x of [-I.W / 2 + 0.08, I.W / 2 - 0.08]) for (const z of [z0 + 0.1, -z0 - 0.06]) {
@@ -1050,7 +1055,7 @@ function nordkisa(item) {
   g.add(rbox(w - 0.02, 0.012, w - 0.02, 0, yd + 0.1, 0, bamboo, 0.003));           // shelf / drawer top
   const cut = new THREE.MeshStandardMaterial({ color: 0x5a4632, roughness: 0.8 });
   addDrawer(g, 'lådan', { x: 0, y: yd - 0.005, zf: w / 2 - 0.013, w: w - 2 * l, h: 0.1, depth: w - 0.07, front: bamboo,
-    grip: (o) => o.add(rbox(0.1, 0.022, 0.004, 0, 0.08, 0.002, cut, 0.004)) }); // grip cut-out
+    grip: (o) => o.add(rbox(0.1, 0.022, 0.004, 0, 0.08, 0.002, cut, 0.004)), fill: 'nightstand', seed: Math.round(item.x * 10) }); // grip cut-out; books, a charger, a glasses case (#230)
   for (let k = 0; k < 5; k++) g.add(rbox(w - 2 * l, 0.012, 0.05, 0, 0.1, -w / 2 + 0.06 + k * ((w - 0.12) / 4), bamboo, 0.003)); // slatted shelf
   g.traverse((m) => { if (m.isMesh) m.castShadow = m.receiveShadow = true; });
   g.userData.surfaces = [{ x0: -w / 2 + 0.03, x1: w / 2 - 0.03, z0: -w / 2 + 0.03, z1: w / 2 - 0.03, y: h }];
@@ -1411,6 +1416,9 @@ function gamingchair() {
   return g;
 }
 
+// What lies in each NORDLI row (#230), [narrow, wide], top row first: socks and underwear, t-shirts, pyjamas, jeans.
+const NORDLI_FILL = [['socks', 'underwear'], ['socks', 'tees'], ['underwear', 'tees'], ['jeans', 'pyjamas']];
+
 /** IKEA NORDLI chest of 8 drawers (white): four rows of a narrow (⅓) and a wide (⅔) drawer — narrow left in
  * the top two rows, right in the lower two — each with a black cut-out grip at the top; a low plinth. Faces +z. */
 function nordli(item) {
@@ -1428,7 +1436,8 @@ function nordli(item) {
       const gw = Math.min(0.16, (x1 - x0) * 0.5);
       let box = null;
       const dr = addDrawer(g, 'lådan', { x: cx, y: y0 + gap, zf: d / 2, w: x1 - x0, h: rowH - 2 * gap, depth: d - 0.08, front: white, inner: white,
-        out: 0.3, grip: (o) => { box = o; o.add(rbox(gw, 0.016, 0.004, 0, rowH - 2 * gap - 0.024, 0.001, grip, 0.002)); } });
+        out: 0.3, grip: (o) => { box = o; o.add(rbox(gw, 0.016, 0.004, 0, rowH - 2 * gap - 0.024, 0.001, grip, 0.002)); },
+        fill: item.rifle && r === 3 && a === 0 ? null : NORDLI_FILL[r][b - a < 0.5 ? 0 : 1], who: 'Sovrum 1', seed: 40 + r * 2 + a * 3 }); // clothes (#230)
       // the AK-47 (#196) lies on its side in the wide bottom drawer, the barrel along it, the magazine to the back
       if (item.rifle && r === 3 && a === 0) {
         const { g: gun, mag, flash } = rifleModel();
@@ -1458,7 +1467,7 @@ function alex(item) {
   g.add(rbox(w - 0.1, 0.13, d - 0.1, 0, h - t - 0.065, 0.02, white, 0.004));                   // drawer box
   for (const s of [-1, 1]) {
     addDrawer(g, 'lådan', { x: s * (w / 4 - 0.02), y: h - t - 0.125, zf: hd - 0.021, w: w / 2 - 0.08, h: 0.12, depth: d - 0.16, front: white, // drawers
-      grip: (o) => o.add(rbox(0.1, 0.012, 0.004, 0, 0.113, 0.001, dark, 0.004)) });                       // grips
+      grip: (o) => o.add(rbox(0.1, 0.012, 0.004, 0, 0.113, 0.001, dark, 0.004)), fill: s < 0 ? 'crafts' : 'toys', who: 'Sovrum 3', seed: 50 + s }); // pyssel, toys (#230)                       // grips
     for (const z of [-hd + 0.04, hd - 0.06]) g.add(rbox(0.035, h - t - 0.13, 0.035, s * (hw - 0.04), (h - t - 0.13) / 2, z, steel, 0.003)); // legs
     g.add(rbox(0.035, 0.035, d - 0.1, s * (hw - 0.04), 0.06, -0.01, steel, 0.003));                        // foot bars
   }
