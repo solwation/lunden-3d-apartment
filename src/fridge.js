@@ -19,7 +19,6 @@ const skin = new THREE.MeshStandardMaterial({ color: 0xb8662a, roughness: 0.35 }
 const skinDark = new THREE.MeshStandardMaterial({ color: 0x8e4a1c, roughness: 0.4 });
 const bone = new THREE.MeshStandardMaterial({ color: 0xf1e7d2, roughness: 0.6 });
 const plate = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.15 });
-const milk = new THREE.MeshStandardMaterial({ color: 0x3f7fd0, roughness: 0.6 });
 const juice = new THREE.MeshStandardMaterial({ color: 0xf2a33a, roughness: 0.5 });
 
 function box(sx, sy, sz, x, y, z, m, r = 0) {
@@ -107,9 +106,10 @@ export class Fridge {
       // glass shelves + a crisper drawer at the bottom
       for (const y of [0.45, 0.82, 1.2, 1.52]) g.add(box(iw - 0.01, 0.006, d - wall - 0.04, cx, y0 + y, cz - 0.01, glass));
       g.add(box(iw - 0.02, 0.22, d - wall - 0.08, cx, y0 + 0.2, cz, glass));
-      // the chicken's place on the middle shelf (chicken.js), a juice and milk on the top shelf
+      // the chicken's place on the middle shelf (chicken.js), a juice (and the milk, #168) on the shelf above
       this.shelfSpot = new THREE.Vector3(cx, y0 + 0.823, cz - 0.03);
-      g.add(box(0.07, 0.2, 0.07, cx - 0.12, y0 + 1.31, cz, milk, 0.008), box(0.07, 0.18, 0.07, cx + 0.1, y0 + 1.3, cz + 0.02, juice, 0.008));
+      g.add(box(0.07, 0.18, 0.07, cx + 0.1, y0 + 1.3, cz + 0.02, juice, 0.008));
+      this.milkAt = new THREE.Vector3(cx - 0.12, y0 + 1.203, cz); // the milk carton stands here (a Holdable, milk.js, #168)
     }
 
     // door: pivot on the hinge edge, panel in front of the cabinet (s = which way it runs from the hinge)

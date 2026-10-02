@@ -132,7 +132,10 @@ src/things.js          bottles and glasses (#152): furniture builders list `user
                        vessel's target has `blockedText` ("Vinglaset är fullt") instead of "Lägg ifrån dig …"
 src/drinks.js          what a glass / cup holds (DRINKS, #166): `Contents` (amounts per drink, pour over a second, sip in
                        proportion, mixed colour weighted by `tint`), `pourAmount(vessel, drink, fill)`, `GlassLiquid` (a
-                       lathe up to the level inside the glass's inner profile, `inner` from furniture.js)
+                       lathe up to the level inside the glass's inner profile, `inner` from furniture.js); colours mix in
+                       sRGB, milk uses its `withCoffee` colour in coffee (café au lait)
+src/milk.js            the milk carton in the fridge (MILK, #168), a Holdable at `fridge.milkAt`: E with the fridge open
+                       takes it, it pours milk into glasses and cups (DRINKS.pour); not hidden with F, only sent home
 src/saber.js           the lightsaber in Sovrum 2 (SABER), a Holdable; the blade burns marks where it cuts in (#96)
 src/target.js          the Nerf target on the lawn behind the hedge (TARGET, #99): rings × distance bonus, "+N" badge,
                        a score board beside it (localStorage 'lunden.target'), E clears it; it rises out of the grass
@@ -216,6 +219,8 @@ tools/booktest.html    headless test: take the book, read, turn pages, close, pu
 tools/beertest.html    headless test: sit in the lounge sofa → beer, drink it empty, back = full, a sip of coffee, F
 tools/thingtest.html   headless test: a wine bottle to the coffee table and back to the rack, a glass, F sends them home;
                        pour wine into a glass and drink it empty, whisky splashes into a tumbler, back in the BESTÅ = empty
+tools/milktest.html    headless test: the milk not reachable through the closed fridge, take it, back on its shelf, pour into a
+                       glass, an empty cup and a cup of coffee (lighter brown), up to full, on the worktop, F sends it home
 tools/secretarytest.html headless test: the secretary's flap (desk) and its 8 drawers open/close, the open desk blocks
 tools/opentest.html    headless test: every Openable front (kitchen + furniture) opens/closes with the button; open, none
                        overlaps a closed neighbour or goes through a wall (#154)

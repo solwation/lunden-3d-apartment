@@ -68,17 +68,22 @@ export class Contents {
     for (const k in this.a) this.a[k] *= left / tot;
   }
 
-  /** The colour of the mix (each part weighted by its amount × its tint), into `out`. */
+  /**
+   * The colour of the mix, into `out`: each part weighted by its amount × its tint, mixed in sRGB (as paint
+   * looks); a part's `withCoffee` colour stands in for its own when there is coffee in it (milk → café au lait).
+   */
   color(out = new THREE.Color()) {
     let w = 0;
-    out.setRGB(0, 0, 0);
+    const coffee = this.has('coffee');
+    tmpB.setRGB(0, 0, 0);
     for (const k in this.a) {
       const wk = this.a[k] * (D[k]?.tint ?? 1);
       if (wk <= 0) continue;
-      out.add(tmpA.set(D[k]?.color ?? 0x888888).multiplyScalar(wk));
+      const hex = (coffee && D[k]?.withCoffee) || (D[k]?.color ?? 0x888888);
+      tmpB.add(tmpA.set(hex).convertLinearToSRGB().multiplyScalar(wk));
       w += wk;
     }
-    return w > 0 ? out.multiplyScalar(1 / w) : out.set(0x888888);
+    return w > 0 ? out.copy(tmpB.multiplyScalar(1 / w).convertSRGBToLinear()) : out.set(0x888888);
   }
 
   opacity() {

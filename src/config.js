@@ -420,14 +420,17 @@ export const DRINKS = {
   wine: { color: 0x5c0a1c, opacity: 0.92, tint: 1, name: 'vin' },
   champagne: { color: 0xeed98a, opacity: 0.6, tint: 1, name: 'champagne' },
   whisky: { color: 0xb8651c, opacity: 0.82, tint: 1, name: 'whisky' },
-  milk: { color: 0xf7f5ef, opacity: 1, tint: 3, name: 'mjölk' },
+  milk: { color: 0xf7f5ef, opacity: 1, tint: 2, name: 'mjölk', withCoffee: 0xc39a6b }, // withCoffee: its colour in a mix with coffee (café au lait, #168)
   coffee: { color: 0x2a1408, opacity: 1, tint: 1, name: 'kaffe' },
   pour: {
-    glass: { wine: { to: 0.45 }, champagne: { to: 0.85 }, whisky: { add: 0.2 } },
-    cup: {},
+    glass: { wine: { to: 0.45 }, champagne: { to: 0.85 }, whisky: { add: 0.2 }, milk: { to: 0.75 } },
+    cup: { milk: { empty: 0.8, add: 0.15 } }, // milk: a cup of it, or a splash in the coffee (#168)
   },
   sip: 0.15, secs: 1, tilt: 1.5,
 };
+
+// The milk carton in the fridge (#168, src/milk.js): 1 l, 7 × 7 × 19.5 cm with a 3 cm gable (a standard carton).
+export const MILK = { w: 0.07, h: 0.195, gable: 0.03, blue: '#2f6fc4', held: { x: 0.2, y: -0.3, z: -0.46 } };
 
 // Drawing with crayons (#93, src/drawing.js): an A3 sheet in the middle of the ALEX desk in Sovrum 3. E on it:
 // the view goes down over the paper, the mouse is freed and you draw with crayons (palette at the bottom,
