@@ -115,20 +115,24 @@ export const SITE = {
   // of Hus L is at y 0 too). Around the box the ground lies one storey lower: Å-husen A and B have a
   // "Våning -1 (sutteräng)" (overview plans p. 24) and the green between A and B lies "utanför den
   // upphöjda gården och ner mot å-rummet". `park` = that level. `box` = the garage box (plan rects);
-  // its edges are traced on the situation plan between the buildings — guesses. South of Hus L the
-  // roads outside the box go down to the park level over `slope` m (guess). The garage entrance is
-  // at Karpvägen by Hus C ("NEDFART TILL GARAGE UNDER KVARTERET", situation plan p. 3); its exact
-  // spot is a guess.
+  // its edges (#254) are measured on the suterräng plan (våning −1) and the level lines on våning 1
+  // (docs/peab/kalibrerad/). South of Hus L the roads outside the box go down to the park level over `slope` m
+  // (guess). The garage entrance ("INFART GARAGE", våning −1; "NEDFART TILL GARAGE UNDER KVARTERET", situation
+  // plan) is in the box's west wall south of Hus C, reached from Karpvägen over a short asphalt drive.
   terrain: {
     park: -3, north: 12.7, slope: 8,
-    // the box under the Borggården (between Hus L, C and A) and the yard south of Hus C (situation plan:
-    // the second pergola, sandbox and odlingslådor sit there; the green between A and B is outside it)
-    box: [{ x0: -77.22, x1: 17.37, z0: 12.7, z1: 28.8 }, { x0: -77.22, x1: -41.5, z0: 28.8, z1: 49.23 }],
-    garageDoor: { x: -77.22, z0: 40.54, z1: 45.85, h: 2.6 }, // the arrow "GARAGE" by Karpvägen, z ≈ 44
-    // the courtyard's edge behind our row (#148, Peab's render: Å-hus with a cyclist below): a brick retaining
-    // wall with a light slatted railing, a straight stair with a landing from the courtyard (y 0) down to the
-    // park level, and a paved cycle path along the foot of the wall. Position read off the situation plan (guess).
-    stairs: { x0: 11.97, x1: 13.51, z: 29.15, step: 0.3, landing: 1.0 }, cyclePath: { x0: 9.27, x1: 21.23, z0: 35.91, z1: 38.42 },
+    // the box (#254): the west part from Hus C's west façade (the garage's outer wall towards Karpvägen) to Hus B's
+    // west façade and south to the level line at z 52.5 (the yard south of Hus C: second pergola, sandbox,
+    // odlingslådor); the middle part up to the level line "NIVÅSKILLNAD CA 3M" from Hus B's NE corner to Hus A's
+    // west façade (z 33.3); the east part up to Hus A's north face. The green between A and B is outside it.
+    box: [{ x0: -70.5, x1: -41.7, z0: 12.1, z1: 52.5 }, { x0: -41.7, x1: -9.76, z0: 12.1, z1: 33.3 }, { x0: -9.76, x1: 17.37, z0: 12.1, z1: 28.8 }],
+    garageDoor: { x: -70.5, z0: 41, z1: 47, h: 2.6, drive: -77.22 }, // `drive`: the asphalt reaches west to Karpvägen
+    // stairs from the courtyard (y 0) down to the park level, a landing halfway; `z` = the box edge they leave, going
+    // south. #148: behind our row (Peab's render: Å-hus with a cyclist below; a brick retaining wall with a light
+    // slatted railing, a paved cycle path along its foot; position a guess). #254: "TRAPPA" between Hus C and Hus B
+    // (våning 1: x −47.4…−45.9, from the level line at z 52.5 down to z ≈ 59).
+    stairs: [{ x0: 11.97, x1: 13.51, z: 28.8, step: 0.3, landing: 1.0 }, { x0: -47.4, x1: -45.9, z: 52.5, step: 0.3, landing: 1.0 }],
+    cyclePath: { x0: 9.27, x1: 21.23, z0: 35.91, z1: 38.42 },
   },
   bay: 3.0, storey: 3.0,  // façade texture of the other blocks: one window per 3 × 3 m
   // corner loggias on the Å-husen (#145; the overview plans docs/peab/oversikt-vaning-*.png draw the corners notched,
@@ -245,7 +249,7 @@ export const COURTYARD = {
     { x0: -48.26, x1: -41.5, z0: 29.15, z1: 30.6 },  // the main walk north of Hus B, only where the box reaches (#246: further east it lay in Hus A / over the park)
     { x0: -12.55, x1: 11.58, z0: 24.71, z1: 26.35 },   // to the stair on the east edge
     { x0: -16.99, x1: -13.42, z0: 12.7, z1: 19.3 }, // from the portik
-    { x0: -48.45, x1: -45.56, z0: 7.72, z1: 49.23 },   // between Hus C and the Borggården
+    { x0: -48.45, x1: -45.56, z0: 7.72, z1: 52.5 },   // between Hus C and the Borggården, to the stair south (#254)
     { x0: -69.5, x1: -45.56, z0: 47.59, z1: 48.84 }, // south of Hus C's yard
   ],
   gravel: [{ x0: -44.4, x1: -13.42, z0: 19.1, z1: 29.15 }, { x0: -13.42, x1: 11.58, z0: 19.1, z1: 24.71 }], // grusgångar round the beds

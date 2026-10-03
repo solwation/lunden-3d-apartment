@@ -479,10 +479,13 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   B (x −41.7…−22.6, z 33.3…57.4, −1…3), C (x −70.6…−51.4, z 12.6…36.7, 1…5), each 19.2 × 24.1 m, brick with low hip roofs; the courtyard is on a garage and the
   ground drops ~3 m south of it.
   Terrain (#79, `SITE.terrain`, `groundY(x, z)` in surroundings.js): the street north of Hus L, our Entréplan
-  and the raised courtyard on the garage box (`terrain.box`, edges traced on the situation plan — guess)
+  and the raised courtyard on the garage box (`terrain.box`, #254: edges from våning −1 and the level lines on
+  våning 1 — west part x −70.5…−41.7 to z 52.5, between B and A to z 33.3, east of that to Hus A's north face)
   are y 0; around the box the ground is one storey lower (`park` −3, Å-husen A/B suterräng); retaining
-  walls with a railing where the box meets it, the garage door in its west face at Karpvägen by Hus C,
-  the roads outside the box go down over `slope` m south of Hus L (guess).
+  walls with a railing where the box meets it (none along a house's façade), the garage door in its west face
+  south of Hus C (z 41…47) with an asphalt drive from Karpvägen, stairs down to the park level (`terrain.stairs`:
+  behind our row, #148, and between Hus C and B, #254); the roads outside the box go down over `slope` m south of
+  Hus L (guess).
   Courtyard (#80, `COURTYARD`, traced on the situation plan + info brochure p. 16): the Borggården between
   Hus L, C and A with stone walks, gravel, the pergola with a dining table, a grill, a sandbox, a boule
   court (not on the plan: guess), benches and tree squares; south of Hus C a second pergola, a sandbox and

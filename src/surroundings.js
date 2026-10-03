@@ -53,8 +53,8 @@ function boxWalls() {
     g.computeVertexNormals();
     return g;
   };
-  const St = T.stairs, slats = [];
-  const atStairs = (x0, x1, z) => Math.abs(z - St.z) < 0.05 && Math.max(x0, x1) > St.x0 - 0.05 && Math.min(x0, x1) < St.x1 + 0.05;
+  const slats = [];
+  const atStairs = (x0, x1, z) => T.stairs.some((St) => Math.abs(z - St.z) < 0.05 && Math.max(x0, x1) > St.x0 - 0.05 && Math.min(x0, x1) < St.x1 + 0.05);
   const edges = [];
   for (const b of T.box) edges.push([b.x0, b.z0, b.x1, b.z0, 0, -1], [b.x1, b.z0, b.x1, b.z1, 1, 0], [b.x1, b.z1, b.x0, b.z1, 0, 1], [b.x0, b.z1, b.x0, b.z0, -1, 0]);
   for (const [ax, az, bx, bz, ox, oz] of edges) {
@@ -73,9 +73,7 @@ function boxWalls() {
       if (atDoor) { // the garage door: a dark opening with a grey roller door frame
         door.push(quad(wx0 + ox * 0.01, wz0, wx1 + ox * 0.01, wz1, y0, y1));
         walls.push(quad(wx0 + ox * 0.02, wz0, wx1 + ox * 0.02, wz1, y0 + T.garageDoor.h, y1 + T.garageDoor.h));
-        continue;
-      }
-      walls.push(quad(wx0, wz0, wx1, wz1, y0, y1));
+      } else walls.push(quad(wx0, wz0, wx1, wz1, y0, y1));
       if (atStairs(x0, x1, z0)) continue; // the stair goes down here: no railing
       // coping + a light slatted railing (posts every metre, a top rail) on the courtyard side
       const sl = new THREE.PlaneGeometry(Math.hypot(x1 - x0, z1 - z0), 0.85).rotateY(Math.abs(ox) > 0 ? Math.PI / 2 : 0).translate((x0 + x1) / 2 - ox * 0.08, 0.6, (z0 + z1) / 2 - oz * 0.08);
@@ -86,12 +84,13 @@ function boxWalls() {
       rails.push(new THREE.BoxGeometry(Math.abs(x1 - x0) + 0.04, 0.04, Math.abs(z1 - z0) + 0.04).translate((x0 + x1) / 2 - ox * 0.08, 1.06, (z0 + z1) / 2 - oz * 0.08));
     }
   }
-  return { walls, rails, door, slats, stairs: terraceStairs() };
+  const stairs = T.stairs.map(terraceStairs);
+  return { walls, rails, door, slats, stairs: { solid: stairs.flatMap((s) => s.solid), rails: stairs.flatMap((s) => s.rails), ends: stairs.map((s) => s.end) } };
 }
 
-/** The stair from the courtyard down to the cycle path (#148): treads, a landing halfway, cheek walls with rails. */
-function terraceStairs() {
-  const St = T.stairs, steps = Math.round(-T.park / 0.17), rise = -T.park / steps, half = Math.floor(steps / 2);
+/** A stair from the courtyard down to the park level, going south (#148, #254): treads, a landing halfway, handrails. */
+function terraceStairs(St) {
+  const steps = Math.round(-T.park / 0.17), rise = -T.park / steps, half = Math.floor(steps / 2);
   const solid = [], rails = [];
   let z = St.z, y = 0;
   for (let k = 0; k < steps; k++) {
@@ -690,12 +689,14 @@ export function buildSurroundings({ grass }) {
   const lightRail = new THREE.MeshStandardMaterial({ color: 0xb9bdbd, roughness: 0.5, metalness: 0.3 });
   flat([...bw.rails, ...bw.stairs.rails.map((g) => g.toNonIndexed())].map((g) => { g = g.index ? g.toNonIndexed() : g; g.deleteAttribute('uv'); return g; }), lightRail);
   group.add(new THREE.Mesh(mergeGeometries(bw.slats.map((g) => g.toNonIndexed())), new THREE.MeshStandardMaterial({ map: railTexture(), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.6 })));
-  flat(bw.stairs.solid, concrete, SEASON.snow.paving); // the stair down to the cycle path (#148)
+  flat(bw.stairs.solid, concrete, SEASON.snow.paving); // the stairs down to the park level (#148, #254)
   const cp = T.cyclePath; // the cycle path at the foot of the wall
   flat([groundStrip(cp.x0, cp.x1, cp.z0, cp.z1, 0.012)], new THREE.MeshStandardMaterial({ color: 0x55585b, roughness: 0.8 }));
-  flat([groundStrip(T.stairs.x0 - 0.3, T.stairs.x1 + 0.3, bw.stairs.end, cp.z0, 0.01)], COLORS.paving); // from the stair's foot to the path
+  const St = T.stairs[0]; // #148: from the stair's foot to the path
+  flat([groundStrip(St.x0 - 0.3, St.x1 + 0.3, bw.stairs.ends[0], cp.z0, 0.01)], COLORS.paving);
   flat(bw.door, new THREE.MeshStandardMaterial({ color: 0x1c1e21, roughness: 0.8, side: THREE.DoubleSide }));
-  flat(S.roads.map((r) => groundStrip(r.x0, r.x1, r.z0, r.z1, 0.012)), new THREE.MeshStandardMaterial({ color: COLORS.asphalt, roughness: 0.7 }), 0xd9dfe4); // ploughed, a little grey; damp (#128)
+  const gd = T.garageDoor; // the drive from Karpvägen to the garage door (#254)
+  flat([...S.roads, { x0: gd.drive, x1: gd.x + 0.05, z0: gd.z0 - 0.5, z1: gd.z1 + 0.5 }].map((r) => groundStrip(r.x0, r.x1, r.z0, r.z1, 0.012)), new THREE.MeshStandardMaterial({ color: COLORS.asphalt, roughness: 0.7 }), 0xd9dfe4); // ploughed, a little grey; damp (#128)
   flat(S.paving.map((r) => groundStrip(r.x0, r.x1, r.z0, r.z1, 0.008)), COLORS.paving, SEASON.snow.paving);
   flat([groundStrip(S.river.x0, S.river.x1, S.river.z0, S.river.z1, 0.02)],
     new THREE.MeshStandardMaterial({ color: COLORS.water, roughness: 0.15, metalness: 0.2 }));
