@@ -284,6 +284,18 @@
     #sonos-panel small { display: block; margin-top: 6px; opacity: .85; }
     #clock-panel small { display: block; font-size: 11px; opacity: .65; margin-top: 3px; }
     body.touch #clock-panel small { display: none; }
+    #blind-panel { position: fixed; left: 50%; bottom: calc(16px + var(--sb)); transform: translateX(-50%); z-index: 5; width: max-content; max-width: calc(100vw - 32px - var(--sl) - var(--sr)); box-sizing: border-box; background: rgba(20, 35, 45, 0.82); color: #fff; padding: 10px 14px 8px; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,.3); text-align: center; }
+    #blind-panel[hidden] { display: none; }
+    #blind-panel .row { display: flex; align-items: center; justify-content: center; gap: 10px; }
+    #blind-panel .ud { display: flex; flex-direction: column; gap: 6px; }
+    #blind-panel button { border: 0; border-radius: 8px; background: rgba(255,255,255,.92); color: var(--ink); font: 600 18px system-ui, sans-serif; min-width: 56px; height: 44px; padding: 0 10px; cursor: pointer; touch-action: none; }
+    #blind-panel button:active { background: #fff3d6; }
+    #blind-panel .level { position: relative; display: block; width: 26px; height: 94px; border-radius: 4px; background: rgba(255,255,255,.18); overflow: hidden; }
+    #blind-panel .level i { position: absolute; left: 0; right: 0; bottom: 0; height: 0; background: repeating-linear-gradient(0deg, #f2efe6 0 3px, #c9c5ba 3px 5px); }
+    #blind-panel .pct { font: 600 15px system-ui, sans-serif; margin-top: 6px; }
+    #blind-panel small { display: block; font-size: 11px; opacity: .65; margin-top: 3px; }
+    body.touch #blind-panel small { display: none; }
+    #blind-close { background: transparent !important; color: #fff !important; font-size: 20px !important; min-width: 32px !important; align-self: flex-start; }
     #clock-close { background: transparent !important; color: #fff !important; font-size: 20px !important; min-width: 32px !important; }
     #update-close { background: transparent; color: #fff; padding: 8px 10px !important; font-size: 18px !important; }
   </style>
@@ -407,6 +419,18 @@
     </div>
     <div class="info"></div>
     <small>Håll A D för att spola · Mellanslag pausar · E stänger · datumet väljer du på almanackan</small>
+  </div>
+  <div id="blind-panel" hidden role="dialog" aria-label="Plisségardinen">
+    <div class="row">
+      <span class="level" aria-hidden="true"><i></i></span>
+      <div class="ud">
+        <button data-act="up" aria-label="Dra upp (håll inne)">▲</button>
+        <button data-act="down" aria-label="Dra ner (håll inne)">▼</button>
+      </div>
+      <button id="blind-close" aria-label="Stäng">×</button>
+    </div>
+    <div class="pct"></div>
+    <small>W/S: dra upp/ner · E: klar</small>
   </div>
   <div id="sonos-panel" hidden role="dialog" aria-label="Musiken">
     <div class="row">

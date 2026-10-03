@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import {
-  LEVELS, SOFFITS, DOOR_HEIGHT, DOOR_TRIM, EXT_DOOR_HEAD, WINDOWS, WINDOW_TOP_HUNG_MAX, CABINET_HEIGHT, BASE_CABINET, SHELF_HEIGHT, TOILET,
+  LEVELS, SOFFITS, DOOR_HEIGHT, DOOR_TRIM, EXT_DOOR_HEAD, WINDOWS, WINDOW_TOP_HUNG_MAX, BLINDS, CABINET_HEIGHT, BASE_CABINET, SHELF_HEIGHT, TOILET,
   STAIR, COLORS, FENCE_HEIGHT, SITE, OUTDOOR, CABINET_FIXES, SEASON, FINISH, OPTIONS, EXTRA_WALLS, ROOM_RENAMES, EXTRA_ROOMS, ROOM_DIVIDERS,
 } from './config.js';
 import { buildStairs } from './stairs.js';
@@ -26,6 +26,7 @@ import { buildAO } from './ao.js';
 import { buildSurroundings, terrainNorth } from './surroundings.js';
 import { addDoorSigns } from './signs.js';
 import { wardrobeFill, personFor } from './stuff.js';
+import { Blinds } from './blinds.js';
 
 const mat = (color, extra = {}) => new THREE.MeshStandardMaterial({ color, roughness: 0.85, ...extra });
 
@@ -379,6 +380,7 @@ function buildLevel(floor, li, group) {
   const openings = { north: [], south: [] };
   const sills = []; // the inner window boards (flower pots, #136)
   const windows = []; // casements that open (#103), E targets with the appliances
+  const blindSpecs = []; // pleated blinds (#273), built by buildWorld
   for (const pr of floor.windows) {
     const facade = pr.z0 < D / 2 ? 'north' : 'south';
     const cx = (pr.x0 + pr.x1) / 2;
@@ -397,6 +399,14 @@ function buildLevel(floor, li, group) {
     const fz = facade === 'north' ? r.z0 + 0.1 : r.z1 - 0.1;
     const inner = facade === 'north' ? r.z1 : r.z0;
     windows.push(...addWindowFrame(group, r.x0, r.x1, fz, sill, head, spec.transom, facade === 'north' ? -1 : 1, true, spec));
+    // a pleated blind in the reveal on the room side of the frame (#273): one per window, two where a mullion splits it
+    {
+      const out = facade === 'north' ? -1 : 1, bz = fz - out * BLINDS.gap, g = 0.004;
+      const mx = spec.split > 0 ? (spec.opens === 'b' ? r.x1 - spec.split * (r.x1 - r.x0) : r.x0 + spec.split * (r.x1 - r.x0)) : null;
+      for (const [x0, x1] of mx === null ? [[r.x0, r.x1]] : [[r.x0, mx], [mx, r.x1]]) {
+        blindSpecs.push({ level: li, x0: x0 + g, x1: x1 - g, z: bz, out, y0: sill, y1: head, tone: spec.blind ?? (li ? 'dark' : 'light') });
+      }
+    }
     // inner window board (fönsterbänk)
     const iz0 = Math.min(fz, inner + (facade === 'north' ? 0.03 : -0.03));
     const iz1 = Math.max(fz, inner + (facade === 'north' ? 0.03 : -0.03));
@@ -593,7 +603,7 @@ function buildLevel(floor, li, group) {
     group.add(box(s.x0, s.x1, s.z0, s.z1, y0 + s.height, yC - 0.004, M.ceiling, { shadow: false }));
   }
 
-  return { segments, wallSegments, doors, lids, taps, appliances, openings, sills, barriers, ceiling: yC };
+  return { segments, wallSegments, doors, lids, taps, appliances, openings, sills, barriers, blindSpecs, ceiling: yC };
 }
 
 export function buildWorld(plan) {
@@ -664,6 +674,10 @@ export function buildWorld(plan) {
   const sillPlants = buildSillPlants([...l0.sills, ...l1.sills]); // flower pots on every window board (#136)
   scene.add(sillPlants);
   const sillSurfaces = [...l0.sills, ...l1.sills].map((r) => { const m = surfaceBox(r); scene.add(m); return m; }); // things go down on window boards too (#185)
+  // pleated blinds in every window (#273): fittings (F keeps them); the rails and cords are baked below
+  const blinds = new Blinds();
+  for (const sp of [...l0.blindSpecs, ...l1.blindSpecs]) blinds.add(sp);
+  scene.add(blinds.object, blinds.statics);
   const shelves = buildWallShelves(); // kitchen wall shelves (WALL_SHELVES)
   scene.add(shelves);
   shelves.updateMatrixWorld(true);
@@ -723,6 +737,7 @@ export function buildWorld(plan) {
   const roomMaps = [l0, l1].map((l, li) => new RoomMap({ x: W, z: D },
     [...l.barriers, ...ROOM_DIVIDERS.filter((d) => d.level === li)], rooms[li]));
 
+  blinds.init((lv, x, z) => roomMaps[lv]?.at(x, z) ?? null); // their rooms, and the state from the last visit
   const signs = addDoorSigns([...l0.doors, ...l1.doors], (lv, x, z) => roomMaps[lv]?.at(x, z) ?? null,
     (d) => (d.object.position.y > LEVELS[0].floor + 1.6 ? 1 : 0));
 
@@ -740,7 +755,7 @@ export function buildWorld(plan) {
   const box3 = new THREE.Box3(), mid = new THREE.Vector3();
   const merged = mergeStatic(scene, [
     ...l0.doors, ...l1.doors, ...l0.lids, ...l1.lids, ...l0.appliances, ...l1.appliances,
-  ].map((d) => d.object).concat([sillPlants, hallWall.object, furniture.object, exterior, surroundings, shelves, ...interiorLoose]), (o) => { // loose items stay separate (F hides them)
+  ].map((d) => d.object).concat([blinds.object, sillPlants, hallWall.object, furniture.object, exterior, surroundings, shelves, ...interiorLoose]), (o) => { // loose items stay separate (F hides them)
     box3.setFromObject(o).getCenter(mid);
     if (mid.x < 0 || mid.x > W || mid.z < 0 || mid.z > D) return 'out';
     return mid.y < LEVELS[1].floor - 0.05 ? 'l0' : 'l1';
@@ -787,6 +802,7 @@ export function buildWorld(plan) {
     hood: [...l0.appliances, ...l1.appliances].find((a) => a.kind === 'hood') ?? null, // the cooker hood's fan (#194)
     panDrawer: [...l0.appliances, ...l1.appliances].find((a) => a.panHome) ?? null, // the drawer under the hob (#159)
     openings: { north, south, roof: roofY + 0.35 }, // the façade openings (plan x, absolute y) and the roof height: what the flat can be seen through from outside (#189)
+    blinds, // the pleated blinds (#273, src/blinds.js)
     carKey: hallWall.key, // only a target while the key cabinet is open (main.js)
     taps: [...l0.taps, ...l1.taps],
     rooms,

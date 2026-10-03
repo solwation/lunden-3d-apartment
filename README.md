@@ -37,6 +37,9 @@ sak du gör visas som en liten bricka ("✋ Klappat katt +1").
 
 Ett dygn går på 60 minuter och varje besök börjar på din egen klocka och dagens datum — de små lamporna tänds själva när det skymmer, taklamporna tänder du med knapparna vid dörrarna. Solen går som i Lund. Med klockan på köksväggen (E) kan du spola tiden fram och tillbaka och pausa, och på kattalmanackan bredvid (E) väljer du datum, för att se hur ljuset faller en junimorgon eller en decembermorgon.
 
+I alla fönster sitter plisségardiner som dras upp nerifrån: gå fram och tryck <kbd>E</kbd>, dra upp och ner med
+<kbd>W</kbd> <kbd>S</kbd> (eller ▲ ▼), <kbd>E</kbd> när du är klar. De mörka i sovrummen gör rummet mörkt mitt på dagen.
+
 Vad som är nytt står på lappen på frysen i köket (gå fram och tryck <kbd>E</kbd>). Det som
 tillkommit sedan ditt senaste besök är markerat *Nytt*.
 

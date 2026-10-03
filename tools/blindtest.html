@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Blind test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+// Pleated blinds test (#273): every window has a blind (two in the living room's split window), folded at the start,
+// dark upstairs / light on Entréplan (WINDOWS.blind); E (the touch button) opens the blind mode; no walking then;
+// ▲ held draws it up to the window's head and no further, ▼ / S lowers it to folded, W moves it at BLINDS.speed;
+// the first pull scores; the room loses daylight (blackout more than white), a white blind glows by day; × and E
+// (showNote(false), the reading-mode close) leave the mode; the sash behind a drawn blind still opens; the state
+// survives a reload.
+//   google-chrome --headless=new --dump-dom http://localhost:8137/tools/blindtest.html
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+try { localStorage.removeItem('lunden.blinds'); } catch { /* */ }
+const lines = [];
+let pass = true;
+const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); pass &&= !!ok; return ok; };
+const f = document.createElement('iframe');
+f.width = 900; f.height = 600;
+const URL0 = '../index.html?time=12&month=6&day=21&freeze&weather=clear';
+f.src = URL0;
+document.body.append(f);
+const loaded = () => new Promise((r) => { f.onload = r; });
+
+async function run() {
+  await loaded();
+  let w = f.contentWindow, d = f.contentDocument;
+  while (!w.__app) await wait(100);
+  const { WINDOWS, BLINDS, LEVELS } = await import('../src/config.js');
+  let app = w.__app;
+  const { player, camera, step, blinds, blindPanel, day, stats } = app;
+  const list = blinds.list;
+  const want = WINDOWS.reduce((n, s) => n + (s.split ? 2 : 1), 0);
+  check(list.length === want, `a blind in every window: ${list.length} (want ${want})`);
+  for (const lv of [0, 1]) {
+    const n = WINDOWS.filter((s) => s.level === lv).reduce((k, s) => k + (s.split ? 2 : 1), 0);
+    check(list.filter((b) => b.level === lv).length === n, `level ${lv}: ${n} blinds`);
+  }
+  check(list.every((b) => b.t === 0), 'all folded at the start');
+  check(list.every((b) => b.dark === (b.level === 1)), `dark upstairs, light on Entréplan (${list.map((b) => (b.dark ? 'D' : 'L')).join('')})`);
+  check(list.every((b) => b.room), `each in a room (${[...new Set(list.map((b) => b.room))].join(', ')})`);
+  check(list.every((b) => b.fabric.castShadow), 'the fabric casts the sun\'s shadow');
+  const packH = Math.max(...list.map((b) => b.top.position.y - b.y0));
+  check(packH < 0.08, `the folded pack is slim (≤ ${(packH * 100).toFixed(1)} cm over the board)`);
+
+  d.getElementById('start-touch').click();
+  await wait(50);
+  // Sovrum 1's blind: stand 1.3 m in front of it, look at the folded pack's top rail
+  const b = list.find((x) => x.level === 1 && x.room === 'Sovrum 1');
+  check(!!b, 'Sovrum 1 has a blind');
+  const cx = b.x0 + (b.x1 - b.x0) * 0.33, gz = b.z - b.out * 1.3; // between the pots (and the speaker in the middle)
+  const up = LEVELS[1].floor;
+  player.spawn(cx, gz, b.out < 0 ? 0 : Math.PI); player.pos.y = up; player.eyeY = up + 1.62;
+  const aim = () => {
+    for (let i = 0; i < 3; i++) step(1 / 60);
+    camera.rotation.x = Math.atan2(b.top.position.y + 0.01 - camera.position.y, 1.3);
+    w.__app.world.object.updateMatrixWorld(true);
+    for (let i = 0; i < 3; i++) step(1 / 60);
+  };
+  aim();
+  const btn = d.getElementById('action');
+  check(!btn.hidden && /plisségardinen/i.test(btn.textContent), `action button "${btn.textContent}"`);
+  const score0 = stats.seen?.blinds ? Object.keys(stats.seen.blinds).length : 0;
+  btn.click();
+  const panel = d.getElementById('blind-panel');
+  check(!panel.hidden && blinds.active === b, 'E opens the blind mode (#blind-panel)');
+  step(1 / 60);
+  check(btn.hidden, 'the action button gives way to the panel (touch)');
+  const before = { x: player.pos.x, z: player.pos.z };
+  app.touch.analog.y = 1;
+  for (let i = 0; i < 30; i++) step(1 / 60);
+  app.touch.analog.y = 0;
+  check(Math.hypot(player.pos.x - before.x, player.pos.z - before.z) < 0.01, 'no walking in the blind mode');
+  // ▲ held (touch / mouse on the button)
+  const press = (act, type) => d.querySelector(`#blind-panel [data-act=${act}]`).dispatchEvent(new w.PointerEvent(type, { bubbles: true, pointerId: 1 }));
+  press('up', 'pointerdown');
+  for (let i = 0; i < 60; i++) step(1 / 30);
+  const t1 = b.t;
+  const secs = (b.hMax - b.hMin) / BLINDS.speed;
+  for (let i = 0; i < Math.ceil(secs * 30) + 30; i++) step(1 / 30);
+  const yTop = b.top.position.y + BLINDS.rail.h;
+  check(t1 > 0.1 && t1 < 1, `▲ draws it up (${(t1 * 100).toFixed(0)} % after 2 s)`);
+  check(b.t === 1 && yTop <= b.y1 + 1e-6 && yTop > b.y1 - 0.02, `up to the head and no further (top ${yTop.toFixed(3)}, head ${b.y1.toFixed(3)})`);
+  for (let i = 0; i < 30; i++) step(1 / 30);
+  check(b.t === 1, 'held on: still at the head');
+  press('up', 'pointerup');
+  check(blinds.dir === 0, '▲ released: it stops');
+  check(/helt uppdragen/.test(panel.querySelector('.pct').textContent), `the panel says "${panel.querySelector('.pct').textContent}"`);
+  const score1 = stats.seen?.blinds ? Object.keys(stats.seen.blinds).length : 0;
+  check(score1 === score0 + 1 && stats.blinds >= 1, `the first pull scores (blinds seen ${score1})`);
+  // the room gets dark: daylight cut by the blackout blind
+  for (let i = 0; i < 120; i++) step(1 / 30);
+  const dimDark = day.dim, hemiDark = day.lights.hemi.intensity;
+  check(dimDark > BLINDS.dim.dark * 0.9, `Sovrum 1 with its blackout blind up: daylight cut ${dimDark.toFixed(2)} (hemi ${hemiDark.toFixed(2)})`);
+  // the sash behind it still opens
+  {
+    const wins = app.world.lids.filter((o) => o.name === 'fönstret');
+    let best = null, bd = Infinity;
+    for (const o of wins) { const p = o.object.position; const dd = Math.hypot(p.x - cx, p.z - b.z) + Math.abs(p.y - b.y1); if (dd < bd) { bd = dd; best = o; } }
+    best.toggle();
+    for (let i = 0; i < 90; i++) step(1 / 30);
+    check(best.t > 0.9 && b.t === 1, `the sash opens behind the drawn blind (sash ${best.t.toFixed(2)})`);
+    best.toggle();
+    for (let i = 0; i < 90; i++) step(1 / 30);
+  }
+  // S lowers it to folded; W moves it at BLINDS.speed
+  blindPanel.key('KeyS', true);
+  for (let i = 0; i < Math.ceil(secs * 30) + 30; i++) step(1 / 30);
+  blindPanel.key('KeyS', false);
+  check(b.t === 0, `S lowers it to folded (${b.t})`);
+  blindPanel.key('KeyW', true);
+  for (let i = 0; i < 30; i++) step(1 / 30);
+  blindPanel.key('KeyW', false);
+  const moved = b.t * (b.hMax - b.hMin);
+  check(Math.abs(moved - BLINDS.speed) < 0.03, `W held 1 s: ${(moved * 100).toFixed(0)} cm (speed ${BLINDS.speed} m/s)`);
+  // × closes
+  d.getElementById('blind-close').click();
+  check(panel.hidden && !blinds.active, '× leaves the blind mode');
+  for (let i = 0; i < 3; i++) step(1 / 60);
+  for (let i = 0; i < 20; i++) step(1 / 60);
+  // E closes it too (the reading-mode close the E key calls)
+  aim();
+  btn.click();
+  check(!panel.hidden, 'opened again');
+  app.showNote(false);
+  check(panel.hidden && !blinds.active, 'E leaves the blind mode');
+  // the living room's white blinds fully up: a softer cut; they glow by day
+  const lr = list.filter((x) => x.level === 0 && x.room === 'Vardagsrum');
+  check(lr.length === 2, `two blinds in the living room's split window (${lr.length})`);
+  for (const x of lr) x.set(1);
+  player.spawn((lr[0].x0 + lr[1].x1) / 2, lr[0].z - lr[0].out * 1.5, Math.PI);
+  for (let i = 0; i < 120; i++) step(1 / 30);
+  check(day.dim > BLINDS.dim.light * 0.85 && day.dim < BLINDS.dim.dark * 0.6, `living room, white blinds up: a softer cut ${day.dim.toFixed(2)}`);
+  const glow = lr[0].mat.emissive, glowD = b.mat.emissive;
+  check(glow.r > 0.1 && glowD.r < 0.05, `white glows by day (${glow.r.toFixed(2)}), black does not (${glowD.r.toFixed(2)})`);
+  // outside: no cut
+  player.spawn(cx, -6, 0);
+  for (let i = 0; i < 120; i++) step(1 / 30);
+  check(day.dim < 0.02, `outdoors: no cut (${day.dim.toFixed(3)})`);
+  // remembered over a reload
+  b.set(0.5); blinds.save();
+  const keep = list.map((x) => x.t);
+  f.src = URL0 + '&r=1';
+  await loaded();
+  w = f.contentWindow; d = f.contentDocument;
+  while (!w.__app) await wait(100);
+  app = w.__app;
+  const again = app.blinds.list.map((x) => x.t);
+  check(again.every((t, i) => Math.abs(t - keep[i]) < 0.002), `the state survives a reload (${again.map((t) => t.toFixed(2)).join(' ')})`);
+  try { localStorage.removeItem('lunden.blinds'); } catch { /* */ }
+}
+run().catch((e) => check(false, `ERROR ${e.message}\n${e.stack}`)).finally(() => {
+  out.textContent = `${lines.join('\n')}\n${pass ? 'ALL PASS' : 'SOME FAILED'}`;
+});
+</script>
+</body>
+</html>

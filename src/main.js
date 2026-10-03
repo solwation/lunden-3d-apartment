@@ -31,6 +31,7 @@ import { SmokeAlarm } from './hood.js';
 import { Grill } from './grill.js';
 import { Sonos } from './sonos.js';
 import { DetailCuller } from './detail.js';
+import { BlindPanel } from './blinds.js';
 import { Turbo } from './turbo.js';
 import { Beer } from './beer.js';
 import { buildThings } from './things.js';
@@ -159,6 +160,7 @@ function showNote(show) {
   if (!show && clockPanel.open) { showClock(false); return; }
   if (!show && sonos.open) { showSonos(false); return; }
   if (!show && calPanel.open) { showCalendar(false); return; }
+  if (!show && blindPanel.open) { showBlind(null); return; }
   if (!show && book.reading) { showBook(false); return; }
   if (!show && viewing) { showPoster(null); return; }
   reading = show;
@@ -216,6 +218,17 @@ function showCalendar(show) {
   player.keys.clear();
 }
 document.getElementById('cal-close').addEventListener('click', () => showCalendar(false));
+// the pleated blinds (#273): E on one opens #blind-panel (reading mode): W / S, ↑ / ↓ or ▲ ▼ held draw it up / down
+const blinds = world.blinds;
+const blindPanel = new BlindPanel(blinds, document.getElementById('blind-panel'));
+function showBlind(b) {
+  reading = !!b;
+  blindPanel.show(b);
+  player.keys.clear();
+}
+document.getElementById('blind-close').addEventListener('click', () => showBlind(null));
+blinds.onMove = (b, first) => { shadowState.hold = Math.max(shadowState.hold, 0.3); if (first) bump('blinds', 1, b.id); }; // its shadow moves; the first pull each time scores
+if (params0.has('blinds')) for (const b of blinds.list) b.set(Number(params0.get('blinds')) || 0); // &blinds=0…1 (screenshots; not saved)
 // the small lamps switch themselves with the dusk, the ceiling lamps are by hand only (#234); &lights: everything on
 lights.forced = params0.has('lights');
 if (lights.forced) lights.setAll(true);
@@ -761,6 +774,7 @@ function use(thing) {
   if (thing.kind === 'note') showNote(true);
   else if (thing.kind === 'clock') { showClock(true); bump('clock'); }
   else if (thing.kind === 'calendar') { showCalendar(true); bump('calendar'); }
+  else if (thing.kind === 'blind') showBlind(thing); // a pleated blind (#273)
   else if (thing.kind === 'board') showBoard(true);
   else if (thing.kind === 'poster') showPoster(thing); // a taped-up drawing (#177)
   else if (thing.kind === 'switch' || thing.kind === 'lamp') { thing.toggle(); if (thing.isOpen) bump('lights', 1, idOf(thing)); }
@@ -854,6 +868,7 @@ document.addEventListener('keydown', (e) => {
     if (clockPanel.open && clockPanel.key(e.code, true, e.repeat)) e.preventDefault();
     else if (sonos.open && sonos.key(e.code)) e.preventDefault();
     else if (calPanel.open && calPanel.key(e.code, true)) e.preventDefault();
+    else if (blindPanel.open && blindPanel.key(e.code, true)) e.preventDefault();
     else if (book.reading && book.key(e.code)) e.preventDefault();
     else if (viewing && e.code === 'KeyS') throwPoster(); // the drawing's panel (#177)
     else if (viewing && e.code === 'KeyT') takeDownPoster();
@@ -883,6 +898,7 @@ document.addEventListener('keyup', (e) => {
   stripKeys.delete(e.code);
   if (isCtrl(e.code) || e.code === 'KeyC') player.crouch = ['KeyC', 'ControlLeft', 'ControlRight'].some((k) => player.keys.has(k));
   if (clockPanel.open && clockPanel.key(e.code, false)) e.preventDefault(); // no button click on Space
+  if (blindPanel.open) blindPanel.key(e.code, false);
   if (e.code === 'Tab') holdStats(false);
 });
 window.addEventListener('blur', () => { if (!touch.enabled) player.crouch = false; heldItem()?.trigger?.(false); }); // no stuck crouch, no stuck trigger
@@ -902,7 +918,7 @@ window.addEventListener('resize', () => {
 // --- door interaction: look at a door within reach, press E ----------------
 const raycaster = new THREE.Raycaster();
 raycaster.far = 2.2;
-const pickables = [...world.doors.map((d) => d.pickable), ...world.lids.map((l) => l.pickable), ...taps.map((t) => t.pickable), note.pickable, board.pickable, wallClock.pickable, calendar.pickable, ...lights.targets.map((t) => t.pickable), grill.pickable];
+const pickables = [...world.doors.map((d) => d.pickable), ...world.lids.map((l) => l.pickable), ...taps.map((t) => t.pickable), note.pickable, board.pickable, wallClock.pickable, calendar.pickable, ...lights.targets.map((t) => t.pickable), grill.pickable, blinds.object];
 const center = new THREE.Vector2(0, 0);
 const keyCabinet = world.lids.find((l) => l.kind === 'keybox');
 let focused = null, focusPoint = null;
@@ -1012,7 +1028,7 @@ function updateFocus() {
   promptEl.hidden = (!focused && !seated) || touch.enabled || reading;
   if (remoteAim && !touch.enabled && !reading) { promptEl.textContent = 'Klicka för att byta kanal · högerklick: av/på'; promptEl.hidden = false; }
   if (heldItem() === ball && !focused && !touch.enabled && !reading) { promptEl.textContent = 'Klicka för att skjuta · högerklick: studsa bollen'; promptEl.hidden = false; }
-  actionBtn.hidden = !(focused || reading || holding || seated) || !touch.enabled || clockPanel.open || calPanel.open || sonos.open || !!viewing; // the strips have their own ×
+  actionBtn.hidden = !(focused || reading || holding || seated) || !touch.enabled || clockPanel.open || calPanel.open || blindPanel.open || sonos.open || !!viewing; // the strips have their own ×
   powerBtn.hidden = !touch.enabled || !heldItem()?.useAlt || reading;
   if (!powerBtn.hidden) { const icon = heldItem().altIcon ?? '⏻'; if (powerBtn.textContent !== icon) { powerBtn.textContent = icon; powerBtn.setAttribute('aria-label', heldItem().altLabel ?? 'Stäng av / slå på TV:n'); } }
 }
@@ -1108,6 +1124,9 @@ function step(dt) {
   animateWater(dt);
   lights.updateAuto(day.daylight * (1 - 0.6 * weather.overcast), dt); // under rain clouds the small lamps come on earlier (#248)
   lights.update(Math.max(0, player.level), player.pos, dt);
+  day.dim = blinds.update(dt, { level: Math.max(0, player.level), room: player.outdoors ? null : world.roomAt(Math.max(0, player.level), player.pos.x, player.pos.z),
+    outdoors: player.outdoors, daylight: day.daylight, sunDir: day.sunDir, overcast: weather.overcast, lit: (lv, name) => lights.roomLit(lv, name) }); // blinds drawn up: less daylight in the room (#273)
+  if (blindPanel.open) blindPanel.render();
   day.update(dt);
   wallClock.update(day.hour);
   calendar.update(); // redraws only when the page or the date changed
@@ -1355,4 +1374,4 @@ if (resumeOk && resumed.mode) continueAfterReload(resumed);
 document.documentElement.classList.remove('resuming'); // the page is ready: off with the "Laddar…" cover (#222)
 
 // handle for tests/debugging (tools/touchtest.html)
-window.__app = { pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };
+window.__app = { blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };

@@ -137,6 +137,12 @@ src/patio.js           patio: Plantagen Oslo corner lounge set, parasol, planter
                        (furniture builders, FURNITURE + PATIO in config); seasons via Patio.update:
                        parasol folds at night/in winter, beers in summer, snowman in winter
 src/wallclock.js       analog kitchen clock (WALL_CLOCK) + the control strip: spool A D / ← →, pause
+src/blinds.js          pleated blinds, bottom-up (BLINDS, #273): one per window in the reveal on the room side of the frame
+                       (the living room's split window: two), `blind: 'dark' | 'light'` per WINDOWS entry; the fabric (a
+                       zig-zag rebuilt only while it moves, castShadow) + the top rail are two meshes per blind, the bottom
+                       rail / cords are baked; E opens #blind-panel (BlindPanel, reading mode like the clock's strip): W / S,
+                       ↑ / ↓ or ▲ ▼ held; the visitor's room loses daylight (`DayCycle.dim`) by its blinds' cover; a white
+                       one glows by day and warm from a lit room (`lights.roomLit`); localStorage 'lunden.blinds'; F keeps them
 src/rooms.js           room detection: walls + door gaps rasterised, BFS from the room labels
 src/minimap.js         plan view with the visitor's arrow, current room highlighted (top right, under the HUD buttons); hidden, shown with the
                        stats (Tab / T / 📊, #85), K shows it alone
@@ -459,6 +465,10 @@ tools/weathertest.html headless test: showers per season, thunderstorms only in 
                        spring / storms, snowflakes not in Hus L, walking 20 m out in it counts once, not indoors; clear = no rain
 tools/greettest.html   headless test: "Hälsa på grannen" on the bench sitter, your line, the answer, the wave, counted, not through
                        Hus A, a walker stops and turns to you (#247)
+tools/blindtest.html   headless test: a blind in every window, folded at the start, dark upstairs / light downstairs; E opens the
+                       mode (no walking), ▲ up to the head and no further, S down to folded, W at BLINDS.speed, the first pull
+                       scores, the room's daylight cut (blackout > white), white glows, × / E close, the sash opens behind it,
+                       the state survives a reload
 tools/clocktest.html   headless test of the wall clock (?time=7, spool, pause, sun height by month)
 tools/calendartest.html headless test: today's date at the start, pick a date on the calendar, the sun follows
 tools/cloudtest.html   headless test of the shared world against `node cloudflare/dev.mjs 8144` (start it first): PUT on
@@ -565,6 +575,9 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   The living-room window is three-part (the L1004 render): the transom over the whole width, an off-centre mullion,
   a wide fixed pane on the left and a narrow sash on the right seen from inside (`split` / `opens` in `WINDOWS`).
   The neighbours' / upper units' fake windows (exterior.js) copy the transom bar, mullion and sash rails (`win`).
+  Pleated blinds (#273, `BLINDS`, src/blinds.js): bottom-up plissé in every window (dark blackout in the bedrooms,
+  white on Entréplan), folded by default on the window board, drawn up to the head (over the transom too); the sash opens
+  outwards behind a drawn blind. Blackout blinds up = the room gets dark by day (sun shadow + `DayCycle.dim`).
   An open casement plays `sfx.wind` (looping gusty noise) until it is closed. The front door has a brass letter
   flap (`letterFlap`, an Openable in world.lids riding on the leaf, kept out of the door's merge via `door.keep`).
 - Skärmvägg by the patio H 1.8 m, stair railing H 1.1 m (bofakta). The railing's middle run stands on Entréplan's wall between
@@ -698,6 +711,7 @@ URL parameters (debugging / screenshots):
   `&clock` opens the wall clock's strip,
   `&lights` turns every lamp on, ceiling lamps too, and keeps the small ones on (#234).
 - `&weather=rain|storm|snow|hail|clear` — force the weather (#248, #249).
+- `&blinds=0…1` — every pleated blind drawn up that far (#273; not saved).
 - `&hoop` — the basketball hoop up out front. `&car` — our car parked in front of the house. `&water` — turn on every tap and shower. `&tv` — switch the TV on. `&secret=i` — the secret drawer shows surprise i (SECRET.items, with `&open`).
 - `&phone` — the short touch-only start screen. `&install` — show the iPhone install sheet. `&note` — open the changelog note. `&pet` (with `&cat=`) — the cat is being petted.
 - `&clip=y` — clip everything above height y (cut-away plan view, e.g.

@@ -81,15 +81,37 @@ export const EXT_DOOR_HEAD = 2.6;
 // width (~115 : 210 px in the render, *guess*), `opens` = its side ('a' = x0, 'b' = x1); the other side is fixed.
 export const WINDOW_TOP_HUNG_MAX = 40;
 export const WINDOWS = [
-  { level: 0, facade: 'north', x: 3.85, sill: 0.8, head: 2.6, transom: 0.45 }, // Kök/matplats
-  { level: 0, facade: 'south', x: 3.85, sill: 0.6, head: 2.6, transom: 0.45, split: 0.35, opens: 'a' }, // Vardagsrum
-  { level: 1, facade: 'north', x: 1.80, sill: 0.9, head: 2.25, transom: 0 },   // Sovrum 3
-  { level: 1, facade: 'north', x: 3.85, sill: 0.7, head: 2.25, transom: 0 },   // Sovrum 1
-  { level: 1, facade: 'south', x: 1.45, sill: 0.7, head: 2.4, transom: 0.4 },  // Allrum = Sovrum 4 (Tilly)
+  { level: 0, facade: 'north', x: 3.85, sill: 0.8, head: 2.6, transom: 0.45, blind: 'light' }, // Kök/matplats
+  { level: 0, facade: 'south', x: 3.85, sill: 0.6, head: 2.6, transom: 0.45, split: 0.35, opens: 'a', blind: 'light' }, // Vardagsrum
+  { level: 1, facade: 'north', x: 1.80, sill: 0.9, head: 2.25, transom: 0, blind: 'dark' },   // Sovrum 3
+  { level: 1, facade: 'north', x: 3.85, sill: 0.7, head: 2.25, transom: 0, blind: 'dark' },   // Sovrum 1
+  { level: 1, facade: 'south', x: 1.45, sill: 0.7, head: 2.4, transom: 0.4, blind: 'dark' },  // Allrum = Sovrum 4 (Tilly)
   // Sovrum 2 has a smaller window than Sovrum 4 (the user, #107) — like Sovrum 3 vs Sovrum 1 on the north
   // side. The PDF draws it 1.41 m; `width` (narrows the opening around its centre) and sill/head are *guess*.
-  { level: 1, facade: 'south', x: 3.85, sill: 0.9, head: 2.25, transom: 0, width: 1.2 }, // Sovrum 2
+  { level: 1, facade: 'south', x: 3.85, sill: 0.9, head: 2.25, transom: 0, width: 1.2, blind: 'dark' }, // Sovrum 2
 ];
+
+// Pleated blinds (plissé) in every window (#273, the user; docs/plisse-gardin-nerifran-upp.jpg, Hemtex), bottom-up:
+// the folded pack lies on the window board against the frame and the top rail is drawn up, at most to the window's
+// head — over the transom too (one blind per window, in the reveal on the room side of the frame, so the top-hung
+// sash opens outwards behind it; the living room's mullion splits it in two: one over the wide fixed pane, one over
+// the narrow sash). `blind` per window in WINDOWS: 'dark' = blackout (the bedrooms), 'light' = white, translucent
+// (Entréplan). They are fittings: F keeps them. Our picks / *guess* unless noted:
+// pleat = the pitch of the folds fully drawn (the photo: ~2 cm), fold = half a pleat's fabric width (the folds'
+// depth is √(fold² − rise²), deepest in the pack), pack = fabric thickness per pleat when folded, rail = the
+// aluminium rails' height / depth, gap = the blind's plane, this far into the room from the frame's centre plane,
+// speed = m/s while W/S (▲ ▼) are held (the issue's guess). Light: `dim` = the share of the room's daylight (hemi /
+// ambient / fill, the sun casts the blind's shadow anyway) a fully drawn blind takes away — a bedroom with every
+// blackout blind up gets dark, a white one only softens; `glow` = a white blind's emissive by day (+ `sun` when the
+// sun shines on its façade) and warm from a lit room at night (seen from outside too); `fade` = s for the room to
+// follow. The state is kept per window in localStorage ('lunden.blinds'); the first pull of each blind scores.
+export const BLINDS = {
+  pleat: 0.02, fold: 0.011, pack: 0.0004, rail: { h: 0.018, d: 0.022 }, gap: 0.062, speed: 0.3,
+  colors: { dark: 0x2a2b2e, light: 0xf2efe6, rail: 0xb8bbbf, warm: 0xffc27a, day: 0xfff6ea },
+  dim: { dark: 0.85, light: 0.3 },
+  glow: { day: 0.22, sun: 0.3, lamp: 0.3, dark: 0.03 },
+  fade: 1.2,
+};
 
 // Flower pots on the inner window boards (#136, the user: "blomkrukor med blommor i alla fönsterkarmar";
 // src/sillplants.js). Plants per window in plan order (Entréplan kitchen, living room; Övre plan Sovrum 3, 1, 4, 2),
@@ -856,6 +878,7 @@ export const SCORE = {
   first: {
     doors: 2, lids: 1, flushes: 2, taps: 1, fridge: 2, appliances: 2, cabinets: 1, lights: 1, sat: 2, lay: 2,
     visited: 5, songs: 3, read: 5, car: 15, grill: 10, hood: 3, tv: 3, pc: 5, parasol: 3, clock: 3, calendar: 3,
+    blinds: 2, // per window's blind, the first time it is drawn up or down (#273)
     coats: 10, greets: 2, // greets: per person (#247)
     catButts: 15, // a cat's bum seen from behind with its tail up (#262): per cat, then `again` per tail-up
     walkRain: 15, walkSnow: 25, walkHail: 40, walkStorm: 30, // out in the weather (#249): the first time, then `again` per shower
@@ -867,7 +890,7 @@ export const SCORE = {
     doors: 0.1, lids: 0.1, flushes: 0.2, taps: 0.1, fridge: 0.1, appliances: 0.1, cabinets: 0.05, lights: 0.05,
     sat: 0.1, lay: 0.1, songs: 0.2, read: 0.5, car: 1, grill: 1, hood: 0.2, tv: 0.2, pc: 0.3, parasol: 0.2,
     clock: 0.1, calendar: 0.1, greets: 0.1, catButts: 1, walkRain: 2, walkSnow: 3, walkHail: 4, walkStorm: 3,
-    shattered: 0.3, carMusic: 0.2, pingpingHugs: 0.2,
+    shattered: 0.3, carMusic: 0.2, pingpingHugs: 0.2, blinds: 0.05,
   },
   breeds: { huskatt: 10, siames: 30, 'brittiskt korthår': 30, 'maine coon': 35, 'norsk skogkatt': 40, perser: 100, sphynx: 250 },
   secrets: { kinds: 10, rare: 40 },

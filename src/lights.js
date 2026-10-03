@@ -382,6 +382,12 @@ export class Lights {
     for (const f of this.floorLamps) f.update(dt);
   }
 
+  /** Is anything lit in room `name` on `level`: its ceiling lamp or a small lamp standing in it (the blinds' glow, #273)? */
+  roomLit(level, name) {
+    if (this.rooms.get(`${level}:${name}`)?.on) return true;
+    return this.floorLamps.some((f) => f.room.on && f.room.lamps[0]?.level === level && this.lampRoom(f.room.lamps[0]) === name);
+  }
+
   /** The room a lamp is in (cached; lamps on a window board are just outside the room map: the room in front). */
   lampRoom(lamp) {
     if (lamp.roomName === undefined) {
