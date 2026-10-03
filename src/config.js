@@ -397,6 +397,13 @@ export const WEATHER = {
   sunCut: 0.85, fogFar: 80, people: 0.4, // people go in above this much rain
   flash: { every: [6, 22], dist: [400, 4000], light: 2.2 },
   sound: 0.22, // the rain's gain outdoors (indoors a quarter, muffled)
+  // #249: snow — the chance per day by month (Jan…Dec; mostly the snow months), `flakes` Points drifting down at `speed`
+  // m/s, swaying `sway` m/s, `size` m; hail — short showers in `months` (`chance` per day) and at the start of a
+  // thunderstorm (`storm`): `stones` white pellets of `size` m falling ~`speed` m/s, bouncing once
+  snow: { chance: [0.38, 0.4, 0.1, 0, 0, 0, 0, 0, 0, 0, 0.06, 0.35], len: [1.5, 6], flakes: 2400, speed: 1.1, sway: 0.35, size: 0.07 },
+  hail: { months: [3, 4, 5], chance: 0.12, len: [0.25, 0.6], storm: 0.3, speed: 11, stones: 2200, size: 0.05, lie: 2.5 }, // lie: s a pellet lies on the ground at most
+  // out in it (#249): `metres` walked outdoors while at least `min` of it falls counts once per shower
+  experience: { min: 0.3, metres: 20 },
 };
 
 // Greeting the people outside (#247, src/greet.js): within `reach` m; the bubbles show for `bubble` s. The lines are
@@ -690,11 +697,12 @@ export const SCORE = {
     doors: 2, lids: 1, flushes: 2, taps: 1, fridge: 2, appliances: 2, cabinets: 1, lights: 1, sat: 2, lay: 2,
     visited: 5, songs: 3, read: 5, car: 15, grill: 10, hood: 3, tv: 3, pc: 5, parasol: 3, clock: 3, calendar: 3,
     coats: 10, greets: 2, // greets: per person (#247)
+    walkRain: 15, walkSnow: 25, walkHail: 40, walkStorm: 30, // out in the weather (#249): the first time, then `again` per shower
   },
   again: {
     doors: 0.1, lids: 0.1, flushes: 0.2, taps: 0.1, fridge: 0.1, appliances: 0.1, cabinets: 0.05, lights: 0.05,
     sat: 0.1, lay: 0.1, songs: 0.2, read: 0.5, car: 1, grill: 1, hood: 0.2, tv: 0.2, pc: 0.3, parasol: 0.2,
-    clock: 0.1, calendar: 0.1, greets: 0.1,
+    clock: 0.1, calendar: 0.1, greets: 0.1, walkRain: 2, walkSnow: 3, walkHail: 4, walkStorm: 3,
   },
   breeds: { huskatt: 10, siames: 30, 'brittiskt korthår': 30, 'maine coon': 35, 'norsk skogkatt': 40, perser: 100, sphynx: 250 },
   secrets: { kinds: 10, rare: 40 },

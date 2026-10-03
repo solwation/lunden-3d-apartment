@@ -9,7 +9,7 @@ import { CatSpawner, VARIANTS, BREEDS } from './cat.js';
 import { initAudio, sfx, toggleMuted, isMuted, updateListener } from './audio.js';
 import { stairHeight } from './stairs.js';
 import { loadChangelog, renderChangelog, buildNote } from './changelog.js';
-import { setScoreElement, totalScore, setStatsExtra, stats, bump, catFound, secretFound, renderStats, resetStats, visitRoom, setRoomTotal, setBadgeElement } from './stats.js';
+import { setScoreElement, totalScore, setStatsExtra, stats, bump, badge, catFound, secretFound, renderStats, resetStats, visitRoom, setRoomTotal, setBadgeElement } from './stats.js';
 import { Minimap } from './minimap.js';
 import { Measure } from './measure.js';
 import { cloudTexture } from './surroundings.js';
@@ -176,6 +176,10 @@ const month = params0.has('month') ? Number(params0.get('month')) : now.getMonth
 const date = params0.has('day') ? Number(params0.get('day')) : params0.has('month') ? 15 : now.getDate();
 const day = new DayCycle({ scene, camera, lights: { sun, hemi, ambient, fill }, clouds: cloudTexture(), startHour, month, date, year: now.getFullYear() });
 const weather = new Weather(scene, camera, day, params0.get('weather')); // rain in spring and autumn, thunder in late summer (#248)
+const lastWeatherPos = new THREE.Vector3();
+// out in it (#249): walking about outdoors in rain / snow / hail / a thunderstorm counts once per shower
+const WEATHER_WALKS = { rain: ['walkRain', '🌧 Ute i regnet'], snow: ['walkSnow', '❄️ Ute i snön'], hail: ['walkHail', '🧊 Ute i haglet'], storm: ['walkStorm', '⛈ Ute i åskvädret'] };
+weather.onExperience = (kind) => { const [key, text] = WEATHER_WALKS[kind]; bump(key); badge(text, false); };
 day.paused = params0.has('freeze');
 // the kitchen wall clock: shows the time; E opens the strip to spool / pause it (the date: the calendar)
 const wallClock = new WallClock();
@@ -1080,7 +1084,9 @@ function step(dt) {
   sonos.update(player.level, (p) => behindWall(p)); // music: schedule ahead, walls muffle (#187)
   world.windowLights.update(day.hour, 1 - day.daylight);
   car.update(dt, day.daylight < 0.35, player);
-  weather.update(dt, !player.outdoors); // after the day: it sets the overcast / flash the next day.update applies (#248)
+  const moved = Math.hypot(player.pos.x - lastWeatherPos.x, player.pos.z - lastWeatherPos.z); // on foot (not a jump / spawn)
+  lastWeatherPos.copy(player.pos);
+  weather.update(dt, !player.outdoors, moved < 1 ? moved : 0); // after the day: it sets the overcast / flash the next day.update applies (#248)
   people.update(dt, weather.rain > WEATHER.people ? 0 : day.daylight, day.month, player); // they go in when it pours
   greet.update(dt); // greetings and answers (#247)
   cat.update(dt);

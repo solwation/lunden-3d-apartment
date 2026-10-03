@@ -183,6 +183,8 @@ export function statRows() {
     ['🚽 Toalettlock', `${stats.lids}`],
     ['🌊 Spolningar', `${stats.flushes}`],
     ['👋 Hälsat', `${stats.greets ?? 0}`],
+    ['🌦 Ute i vädret', `${['walkRain', 'walkSnow', 'walkHail', 'walkStorm'].reduce((n, k) => n + (stats[k] ?? 0), 0)}`,
+      [['regn', 'walkRain'], ['snö', 'walkSnow'], ['hagel', 'walkHail'], ['åska', 'walkStorm']].filter(([, k]) => stats[k]).map(([t, k]) => `${t} ${stats[k]}`).join(', ')],
     ['🪑 Satt ner', `${stats.sat}`],
     ['🛏 Lagt sig', `${stats.lay}`],
     ['💧 Kranar påslagna', `${stats.taps}`],

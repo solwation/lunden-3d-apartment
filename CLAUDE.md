@@ -98,7 +98,12 @@ src/weather.js         weather (WEATHER, #248): a seeded draw per date (`showers
                        LineSegments of streaks around the eye ending on the ground or a roof (`roofAt`: the house boxes of
                        greet.js `occluders` + our unit), DayCycle `overcast` (grey sky, fog, weaker sun) and `flash`
                        (lightning), sfx.rain (muffled indoors) / sfx.thunder after distance / 343; the small lamps come on
-                       earlier, the people go in, the parasol folds; 🌧 / ⛈ in the HUD; `&weather=rain|storm|clear`
+                       earlier, the people go in, the parasol folds; 🌧 / ⛈ in the HUD; `&weather=rain|storm|snow|hail|clear`.
+                       #249: each shower has a `kind`: snow (mostly Dec–Feb; slow swaying Points, a lighter sky, silent),
+                       hail (spring, and at the start of some storms; white pellets that bounce once and lie a moment, a
+                       louder rattle); ❄️ / 🧊 in the HUD. Walking WEATHER.experience.metres outdoors while it falls calls
+                       `onExperience` once per shower → stats walkRain / walkSnow / walkHail / walkStorm (big points the
+                       first time, a little each later shower; a badge every time)
 src/greet.js           greeting the people outside (GREET, #247): looking at one within `reach` (not through a house: boxes for
                        SITE.blocks + Hus L, the flat's walls via `behindWall`) the action is "Hälsa på grannen / barnet /
                        cyklisten"; a random line from you (bubble at the bottom), the answer a moment later in a bubble over
@@ -399,7 +404,8 @@ tools/rifletest.html   headless test: the AK-47 rides with its drawer, 30 shots 
 tools/turbotest.html   headless test: Kaffeturbo with an injected clock — three cups in five minutes (not spread out, not milk /
                        whisky), faster indoors, the text, more coffee adds time, over again; `walktest.html?turbo` walks at that pace
 tools/weathertest.html headless test: showers per season, thunderstorms only in late summer, a shower ramps in; with &weather=storm:
-                       drops (none inside Hus L), grey sky, a flash and back, ⛈ in the HUD, people in; clear = no rain
+                       drops (none inside Hus L), grey sky, a flash and back, ⛈ in the HUD, people in; snow only in winter, hail in
+                       spring / storms, snowflakes not in Hus L, walking 20 m out in it counts once, not indoors; clear = no rain
 tools/greettest.html   headless test: "Hälsa på grannen" on the bench sitter, your line, the answer, the wave, counted, not through
                        Hus A, a walker stops and turns to you (#247)
 tools/clocktest.html   headless test of the wall clock (?time=7, spool, pause, sun height by month)
@@ -600,7 +606,7 @@ URL parameters (debugging / screenshots):
 - `&time=HH[.h]` — start at that hour (default: the browser's time), `&month=1–12`, `&day=1–31` (default: today), `&freeze` pauses the clock,
   `&clock` opens the wall clock's strip,
   `&lights` turns every lamp on, ceiling lamps too, and keeps the small ones on (#234).
-- `&weather=rain|storm|clear` — force the weather (#248).
+- `&weather=rain|storm|snow|hail|clear` — force the weather (#248, #249).
 - `&hoop` — the basketball hoop up out front. `&car` — our car parked in front of the house. `&water` — turn on every tap and shower. `&tv` — switch the TV on. `&secret=i` — the secret drawer shows surprise i (SECRET.items, with `&open`).
 - `&phone` — the short touch-only start screen. `&install` — show the iPhone install sheet. `&note` — open the changelog note. `&pet` (with `&cat=`) — the cat is being petted.
 - `&clip=y` — clip everything above height y (cut-away plan view, e.g.

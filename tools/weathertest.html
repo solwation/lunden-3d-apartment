@@ -13,7 +13,8 @@
 <script type="module">
 // Weather (#248): the showers over a year (none in the snow months, more in spring and autumn than in summer,
 // thunderstorms only in late summer); with &weather=storm: rain streaks, none inside Hus L, a grey sky and a
-// weaker sun, a lightning flash; ⛈ in the HUD; forced clear = no rain.
+// weaker sun, a lightning flash; ⛈ in the HUD; snow flakes (not in Hus L), walking out in it counts once per
+// shower, not indoors (#249); forced clear = no rain.
 //   google-chrome --headless=new --dump-dom http://localhost:8137/tools/weathertest.html
 import { rainAt, showersOn } from '../src/weather.js';
 import { WEATHER } from '../src/config.js';
@@ -22,18 +23,22 @@ const lines = [];
 const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; };
 let pass = true;
 // a year of days: the share of days with rain per season, the thunderstorm days
-const days = { winter: [0, 0], spring: [0, 0], summer: [0, 0], autumn: [0, 0] }, storms = [];
+const days = { winter: [0, 0], spring: [0, 0], summer: [0, 0], autumn: [0, 0] }, storms = [], snows = [], hails = [];
 for (const year of [2025, 2026, 2027]) for (let m = 1; m <= 12; m++) for (let d = 1; d <= new Date(year, m, 0).getDate(); d++) {
   const s = showersOn(year, m, d), season = [12, 1, 2].includes(m) ? 'winter' : m <= 5 ? 'spring' : m <= 8 ? 'summer' : 'autumn';
   days[season][1]++;
-  if (s.some((x) => !x.storm)) days[season][0]++;
-  for (const x of s) if (x.storm) storms.push(m * 100 + d);
+  if (s.some((x) => !x.storm && x.kind === 'rain')) days[season][0]++;
+  for (const x of s) if (x.storm && x.kind === 'rain') storms.push(m * 100 + d);
+  for (const x of s) if (x.kind === 'snow') snows.push(m); else if (x.kind === 'hail') hails.push(x.storm ? 'storm' : m);
 }
 const share = (k) => days[k][0] / days[k][1];
 pass &= check(share('winter') === 0, `no rain in the snow months (${share('winter')})`);
 pass &= check(share('spring') > share('summer') && share('autumn') > share('summer'), `spring ${share('spring').toFixed(2)} and autumn ${share('autumn').toFixed(2)} wetter than summer ${share('summer').toFixed(2)}`);
 const T = WEATHER.thunder, lo = T.from[0] * 100 + T.from[1], hi = T.to[0] * 100 + T.to[1];
 pass &= check(storms.length > 5 && storms.every((md) => md >= lo && md <= hi), `${storms.length} thunderstorms, all in late summer`);
+const winterSnow = snows.filter((m) => [12, 1, 2].includes(m)).length;
+pass &= check(snows.length > 30 && winterSnow / snows.length > 0.85 && snows.every((m) => WEATHER.snow.chance[m - 1] > 0), `${snows.length} snowfalls, ${winterSnow} of them Dec–Feb`);
+pass &= check(hails.length > 10 && hails.every((m) => m === 'storm' || WEATHER.hail.months.includes(m)), `${hails.length} hail showers, in spring or at a thunderstorm`);
 // a rainy day: it rains within a shower, not long before or after
 let wet = null;
 for (let m = 9; m <= 11 && !wet; m++) for (let d = 1; d <= 30 && !wet; d++) { const s = showersOn(2026, m, d).find((x) => x.end < 23 && x.start > 2 && x.end - x.start > 1.5); if (s) wet = { m, d, s }; }
@@ -67,6 +72,30 @@ f.onload = async () => {
   pass &= check(/⛈/.test(d.getElementById('level').textContent), `HUD "${d.getElementById('level').textContent}"`);
   // people go in when it pours
   pass &= check(!w.__app.people.object.visible, 'the people outside have gone in');
+  // snow: flakes, none inside Hus L; walking 25 m out in it counts once (#249)
+  weather.force = 'snow';
+  player.spawn(2.9, -8, 0);
+  for (let i = 0; i < 30; i++) step(1 / 30);
+  const fp = weather.fpos;
+  let flakesIn = 0;
+  for (let i = 0; i < WEATHER.snow.flakes * weather.rain; i++) { const o = i * 3; if (fp[o] > -43 && fp[o] < 11.4 && fp[o + 2] > 0.1 && fp[o + 2] < 12.6 && fp[o + 1] < 6 && fp[o + 1] > -50) flakesIn++; }
+  pass &= check(weather.flakes.visible && !weather.lines.visible && flakesIn === 0 && /❄/.test(d.getElementById('level').textContent), `snow: flakes, none inside Hus L (${flakesIn}), ❄ in the HUD`);
+  const { stats } = w.__app;
+  const walk = (m) => { for (let k = 0; k < m * 4; k++) { player.pos.x -= 0.25; step(1 / 60); } };
+  const before = stats.walkSnow ?? 0;
+  walk(10);
+  pass &= check((stats.walkSnow ?? 0) === before, 'not yet after 10 m');
+  walk(12);
+  pass &= check((stats.walkSnow ?? 0) === before + 1, `22 m out in the snow: counted (${stats.walkSnow})`);
+  walk(30);
+  pass &= check((stats.walkSnow ?? 0) === before + 1, 'once per shower');
+  // hail, but walking about indoors: not counted
+  weather.force = 'hail';
+  player.spawn(2.2, 6.5, 0);
+  for (let i = 0; i < 10; i++) step(1 / 30);
+  const hb = stats.walkHail ?? 0;
+  for (let k = 0; k < 120; k++) { player.pos.z = 6.5 + Math.sin(k / 10) * 1.2; step(1 / 60); }
+  pass &= check(weather.flakes.visible && (stats.walkHail ?? 0) === hb, `hail: pellets; walking about indoors does not count (${stats.walkHail ?? 0})`);
   weather.force = 'clear';
   for (let i = 0; i < 10; i++) step(1 / 30);
   pass &= check(weather.rain === 0 && !weather.lines.visible && day.lights.sun.intensity > sunRain * 3, `clear: no rain, the sun back (${sunRain.toFixed(2)} → ${day.lights.sun.intensity.toFixed(2)})`);
