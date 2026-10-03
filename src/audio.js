@@ -467,6 +467,15 @@ export const sfx = {
     noise(t, 0.015, d, { type: 'highpass', freq: 2500, gain: 0.25 });
     tone(t + 0.03, 0.18, d, { from: on ? 520 : 780, to: on ? 780 : 520, gain: 0.05 });
   },
+  /** One step of the laptop's short-video beat (#283): 'kick', 'snare', 'hat' or a 'blip' at `freq` Hz, quiet (`gain`). */
+  beat(pos, kind, gain = 0.12, freq = 440) {
+    if (!ready()) return;
+    const t = ctx.currentTime, d = out(pos, gain);
+    if (kind === 'kick') tone(t, 0.18, d, { from: 140, to: 45, gain: 0.9 });
+    else if (kind === 'snare') { noise(t, 0.12, d, { type: 'bandpass', freq: 1800, q: 0.8, gain: 0.5 }); tone(t, 0.08, d, { type: 'triangle', from: 220, to: 160, gain: 0.25 }); }
+    else if (kind === 'hat') noise(t, 0.035, d, { type: 'highpass', freq: 7000, gain: 0.25 });
+    else tone(t, 0.14, d, { type: 'square', from: freq, to: freq * 0.98, gain: 0.12 });
+  },
     /** Sitting down / lying down / getting up: a soft fabric rustle and a creak of the cushion. */
   rustle(pos) {
     if (!ready()) return;

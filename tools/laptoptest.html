@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Laptop test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+// Tilly's laptop on the vanity (#283): E on the screen switches it on (the feed draws), the clip swipes up to the next
+// after LAPTOP.swipe s and with E, each clip kind counts once (stats.clips), E on the keyboard switches it off; not
+// through the wall from Sovrum 2; F switches it off and it is no target.
+//   google-chrome --headless=new --dump-dom http://localhost:8137/tools/laptoptest.html
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const f = document.createElement('iframe');
+f.width = 900; f.height = 600;
+f.src = '../index.html';
+document.body.append(f);
+f.onload = async () => {
+  const w = f.contentWindow, d = f.contentDocument;
+  while (!w.__app) await wait(100);
+  const { player, camera, world, step, stats, toggleFurniture } = w.__app;
+  const lines = [];
+  const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; };
+  d.getElementById('start-touch').click();
+  await wait(50);
+  world.object.updateMatrixWorld(true);
+  const ts = world.furnitureTargets.filter((t) => t.kind === 'laptop');
+  const scr = ts.find((t) => t.part === 'screen'), pow = ts.find((t) => t.part === 'power');
+  let pass = check(!!(scr && pow), `laptop targets: ${ts.map((t) => t.part).join(', ')}`);
+  const lap = scr.laptop, feed = lap.feed;
+  const V = camera.position.constructor;
+  const sp = lap.screen.getWorldPosition(new V());
+  const btn = d.getElementById('action');
+  /** Stand at (x, z) upstairs and look at world point p. */
+  const lookAt = (x, z, p) => {
+    player.spawn(x, z, 0); player.pos.y = 3.25; player.eyeY = 3.25 + 1.62;
+    for (let i = 0; i < 3; i++) step(1 / 60);
+    const dx = p.x - camera.position.x, dz = p.z - camera.position.z;
+    camera.rotation.y = Math.atan2(-dx, -dz); camera.rotation.x = Math.atan2(p.y - camera.position.y, Math.hypot(dx, dz));
+    step(1 / 60);
+  };
+  const front = [sp.x - 0.75, sp.z - 0.1]; // in front of the vanity, beside the stool
+  lookAt(...front, sp);
+  pass &= check(!btn.hidden && /slå på laptopen/i.test(btn.textContent), `the screen: "${btn.textContent}"`);
+  const c0 = stats.clips;
+  btn.click(); step(1 / 60);
+  const v0 = feed.texture.version;
+  for (let i = 0; i < 30; i++) step(1 / 60);
+  pass &= check(lap.on && lap.screen.material.map === feed.texture && feed.texture.version > v0, `on: the feed draws (texture v${v0} → v${feed.texture.version}), clip ${feed.clip.key}`);
+  pass &= check(stats.clips === c0 + 1, `the first clip counted (${c0} → ${stats.clips})`);
+  // after LAPTOP.swipe s it slides up to the next clip
+  const k0 = feed.clip.key;
+  for (let i = 0; i < 9 * 20; i++) step(1 / 20);
+  pass &= check(feed.clip.key !== k0 && stats.clips === c0 + 2, `swiped by itself: ${k0} → ${feed.clip.key} (clips ${stats.clips})`);
+  // E on the screen: the next clip at once
+  lookAt(...front, sp);
+  pass &= check(/bläddra till nästa klipp/i.test(btn.textContent), `on, the screen: "${btn.textContent}"`);
+  const k1 = feed.clip.key;
+  btn.click();
+  for (let i = 0; i < 20; i++) step(1 / 30);
+  pass &= check(lap.on && feed.clip.key !== k1, `E: next clip ${k1} → ${feed.clip.key}`);
+  // all eight kinds: each counts once, and the score's `first` for clips sees them all
+  for (let i = 0; i < 12; i++) { feed.swipe(); for (let k = 0; k < 15; k++) step(1 / 30); }
+  const kinds = Object.keys(stats.seen.clips ?? {});
+  pass &= check(kinds.length === 8, `every clip kind seen: ${kinds.join(', ')}`);
+  // E on the keyboard: off
+  const kp = pow.pickable.getWorldPosition(new V());
+  lookAt(sp.x - 0.6, sp.z, kp);
+  pass &= check(/stänga av laptopen/i.test(btn.textContent), `the keyboard: "${btn.textContent}"`);
+  btn.click(); step(1 / 60);
+  pass &= check(!lap.on && lap.screen.material.map !== feed.texture, 'off: a dark screen');
+  lookAt(sp.x - 0.6, sp.z, kp);
+  btn.click(); step(1 / 60);
+  pass &= check(lap.on, 'the keyboard: on again');
+  btn.click(); step(1 / 60);
+  // not through the wall: from Sovrum 2, east of the wall, looking at it
+  lookAt(sp.x + 0.9, sp.z, sp);
+  pass &= check(btn.hidden || !/laptopen|klipp/i.test(btn.textContent), `not through the wall from Sovrum 2 ("${btn.hidden ? '' : btn.textContent}")`);
+  // F: off, and no target
+  lookAt(...front, sp); btn.click(); step(1 / 60);
+  const wasOn = lap.on;
+  toggleFurniture(false);
+  lookAt(...front, sp);
+  pass &= check(wasOn && !lap.on && (btn.hidden || !/laptopen|klipp/i.test(btn.textContent)), `F: off (${!lap.on}) and no target`);
+  toggleFurniture(true);
+  out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
+};
+</script>
+</body>
+</html>

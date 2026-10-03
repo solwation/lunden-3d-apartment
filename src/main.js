@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { COLORS, LEVELS, DAY, START, PLAYER, DRAWING, STAIR, HOLD, REMOTE, REST, DOOR_HEIGHT, TURBO, WEATHER, BREAK, CAR, KITCHEN } from './config.js';
+import { COLORS, LEVELS, DAY, START, PLAYER, DRAWING, STAIR, HOLD, REMOTE, REST, DOOR_HEIGHT, TURBO, WEATHER, BREAK, CAR, KITCHEN, LAPTOP } from './config.js';
 const DRAWING_COLORS = DRAWING.colors;
 import { buildWorld } from './world.js';
 import { Player } from './player.js';
@@ -552,6 +552,10 @@ for (const id of ['restart', 'to-start']) { // also on the start screen shown wh
 const params = new URLSearchParams(location.search);
 if (params.has('shot')) overlay.hidden = true;
 if (params.has('tv')) for (const t of world.furnitureTargets) if (t.kind === 'tv') t.toggle();
+// Tilly's laptop (#283): every clip kind seen counts once (stats `clips`); &laptop switches it on (screenshots)
+const laptops = [...new Set(world.furnitureTargets.filter((t) => t.kind === 'laptop').map((t) => t.laptop))];
+for (const l of laptops) l.onClip = (key) => bump('clips', 1, key);
+if (params.has('laptop')) for (const l of laptops) l.set(true);
 if (params.has('turbo')) turbo.start(); // Kaffeturbo at once (screenshots, #217)
 // ?open opens every door (screenshots of open doors/wardrobes)
 // &water turns every tap on (screenshots)
@@ -807,7 +811,12 @@ function use(thing) {
   else if (thing.kind === 'paper') { if (heldItem() === heldDrawing) heldDrawing.putBack(); else beginDraw(); } // holding the drawing: back on the desk (#176)
   else if (thing.kind === 'tape') { posters.tape(heldDrawing.image, thing.spot, heldDrawing.meta ?? {}); heldDrawing.release(); drawing.save(); bump('posted'); } // tape the drawing up (#176)
   else if (thing.kind === 'pc') { const on = thing.toggle(); if (on) bump('pc', 1, idOf(thing)); sfx.tvClick(thing.pickable.getWorldPosition(new THREE.Vector3()), on); }
-  else if (thing.kind === 'tv') {
+  else if (thing.kind === 'laptop') { // the screen: on, then the next clip; the keyboard: on / off (#283)
+    const was = thing.isOpen;
+    thing.toggle();
+    if (thing.isOpen !== was) sfx.tvClick(thing.pickable.getWorldPosition(new THREE.Vector3()), thing.isOpen);
+    else sfx.beat(thing.pickable.getWorldPosition(new THREE.Vector3()), 'hat', 0.2); // a soft swipe
+  } else if (thing.kind === 'tv') {
     const on = thing.toggle();
     if (on) bump('tv', 1, idOf(thing));
     sfx.tvClick(thing.pickable.getWorldPosition(new THREE.Vector3()), on);
@@ -1070,6 +1079,7 @@ function toggleFurniture(on = !world.furnitureOn) {
   }
   if (!on && cat.visible) cat.hide(); // the cat goes too (and stops purring); none turn up until F is back
   if (!on) for (const t of world.furnitureTargets) if ((t.kind === 'tv' || t.kind === 'pc') && t.isOpen) t.toggle(); // screens off
+  if (!on) for (const l of laptops) l.set(false); // Tilly's laptop too (#283)
   if (!on) world.hob?.set(false); // the hob stays (Peab's kitchen), but off
   if (!on) chicken?.reset(); // home to the fridge, no smoke
   if (!on) { world.hood?.set(false); smokeAlarm.reset(); } // the fan off, the alarm quiet (#194)
@@ -1127,6 +1137,7 @@ function toggleMap() { // K: the map alone (Tab / T / 📊 show it with the stat
 mapEl.hidden = true; // hidden by default (#85); the old saved 'lunden.mapShown' is ignored
 let detail = null; // small-detail culling (#189), set up once everything is built (below)
 let lastHeld = null;
+const tmpV = new THREE.Vector3();
 function step(dt) {
   autoReload.update(dt);
   // Kaffeturbo (#217): faster feet, a wider view, the speakers turned down under the tune
@@ -1134,7 +1145,8 @@ function step(dt) {
   player.boost = turbo.speed;
   const fov = 72 + TURBO.fov * turbo.k;
   if (Math.abs(camera.fov - fov) > 0.01) { camera.fov = fov; camera.updateProjectionMatrix(); }
-  sonos.setDuck(turbo.active ? 0.3 : car.radio.playing && car.occupied ? CAR.music.duckHouse : 1); // (sitting in the car with its music on, #268)
+  const clipsNear = laptops.some((l) => l.on && l.screen.getWorldPosition(tmpV).distanceTo(camera.position) < LAPTOP.near); // Tilly's clips playing near (#283)
+  sonos.setDuck(turbo.active ? 0.3 : car.radio.playing && car.occupied ? CAR.music.duckHouse : clipsNear ? LAPTOP.duck : 1); // (sitting in the car with its music on, #268)
   car.radio.setDuck(turbo.active ? 0.3 : 1);
   for (const d of world.doors) d.update(dt);
   for (const l of world.lids) l.update(dt);

@@ -899,6 +899,7 @@ export const SCORE = {
     pingpingHugs: 10, // hugging Pingping (#269)
     carMusic: 3, // per song played in the car (#268), like the speakers' songs
     airfried: 6, // a batch of fish fingers done in the air fryer (#287): the first time, then `again` per batch
+    clips: 2, // per kind of clip seen on Tilly's laptop (#283); no points for repeats (they come by themselves)
   },
   again: {
     doors: 0.1, lids: 0.1, flushes: 0.2, taps: 0.1, fridge: 0.1, appliances: 0.1, cabinets: 0.05, lights: 0.05,
@@ -1525,6 +1526,14 @@ export const VANITY = {
   stool: { r: 0.18, h: 0.42, color: 0xc7a6e0 },
 };
 
+// Tilly's laptop on the vanity (#283, src/laptop.js): a thin unbranded rose-gold laptop, 30 × 21 cm, lid open ~110°,
+// two stickers on the lid. E on the screen: on, then the next clip; E on the keyboard: on / off. On, it shows an invented
+// short-video app ("Klipp": no real brand, no real people) — a phone-shaped column of canvas-drawn clips that swipes up
+// to the next one every `swipe` s (the slide takes `slide` s), redrawn at `fps`; each clip has a quiet beat (`bpm`,
+// sfx.beat at `gain`) and the house speakers are turned down to `duck` while it plays within `near` m. Sizes are guesses.
+export const LAPTOP = { w: 0.3, d: 0.21, base: 0.014, lid: 0.006, open: 110, px: [400, 250], fps: 12, swipe: 7, slide: 0.45,
+  gain: 0.1, duck: 0.6, near: 3.5 };
+
 export const FURNITURE = [
   // Vardagsrum: sofa with its back to the window (south wall), chaise in the SE corner
   { type: 'sofa', level: 0, x: 5.5 - 2.82 / 2, z: 12.15 - 0.89 / 2, rot: 0, chaise: 'right' }, // sitter's right = east
@@ -1709,6 +1718,8 @@ export const FURNITURE = [
   { type: 'mulig', level: 1, x: 2.632 - MULIG.D / 2 - 0.02, z: 9.55, rot: 90 },
   // her K-pop posters (#280, KPOP_POSTERS): world coordinates, so the item sits at the origin unturned (rot 180 = yaw 0)
   { type: 'kposters', level: 1, x: 0, z: 0, rot: 180 },
+  // Tilly's laptop (#283, LAPTOP) on the vanity's free end (vanity-local x 0.29), turned 15° towards the stool
+  { type: 'laptop', level: 1, x: 2.632 - VANITY.d / 2 - 0.004 - 0.02, z: 11.45 + 0.29, y: VANITY.h, rot: 75 },
   // Matplats: IKEA SKANSNÄS (#62/#63), closed (150 cm), the short end to the kitchen window and a little
   // west of its centre so the east chairs clear the kitchen fronts (x 4.95); two chairs on each long
   // side, pushed in under the top (#57)

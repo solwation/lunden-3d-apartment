@@ -11,6 +11,7 @@ import { loungesofa, loungetable, parasol, planter } from './patio.js';
 import { Screen } from './screens.js';
 import { Openable } from './openables.js';
 import { rifleModel } from './rifle.js';
+import { laptop } from './laptop.js';
 import { pingpingModel } from './pingping.js';
 import { drawerFill, personFor, Pack as StuffPack, garment, shoes } from './stuff.js';
 import { Pack, byasDrawer, byasMiddle, bestaContents, attachContents } from './contents.js';
@@ -2223,7 +2224,7 @@ function vanity(item, lights) {
   lights.push({ object: mirror, shade: bulbMat, height: 0, level: item.level, name: 'sminkspegelns lampor', room: 'Sovrum 4', light: V.light,
     offset: [Math.sin(yaw) * out, Math.cos(yaw) * out] });
   g.userData.vanity = { mirror, glass };
-  g.userData.surfaces = [{ x0: 0.0, x1: hw - 0.03, z0: -hd + 0.04, z1: hd - 0.03, y: h }]; // the free right end
+  g.userData.surfaces = [{ x0: 0.0, x1: 0.13, z0: -hd + 0.2, z1: hd - 0.03, y: h }]; // in front of the stool, beside the laptop (#283)
   g.userData.footprint = [{ x0: -hw, x1: hw, z0: -hd, z1: hd }];
   return g;
 }
@@ -3100,7 +3101,7 @@ function besta(item, lights) {
   return g;
 }
 
-const BUILDERS = { tubelamp, secretary, winerack, besta, painting, pictures, palm, sofa, armchair, ottoman, floorlamp, sidetable, coffeetable, loungesofa, loungetable, parasol, planter, bed, skansnasTable, skansnasChair, bunk, daybed, kposters, mulig, rug, ragrund, coatrack, shoerack, byas, tv, nordkisa, worklamp, walllamp, symfonisk, gamingdesk, gamingchair, nordli, malm, alex, kidchair, vanity, vanitystool };
+const BUILDERS = { tubelamp, secretary, winerack, besta, painting, pictures, palm, sofa, armchair, ottoman, floorlamp, sidetable, coffeetable, loungesofa, loungetable, parasol, planter, bed, skansnasTable, skansnasChair, bunk, daybed, kposters, mulig, rug, ragrund, coatrack, shoerack, byas, tv, nordkisa, worklamp, walllamp, symfonisk, gamingdesk, gamingchair, nordli, malm, alex, kidchair, vanity, vanitystool, laptop };
 
 /** An invisible thin box over a table top (raycast target for putting a cup down, #90). Local rect. */
 export function surfaceBox(r, list) {

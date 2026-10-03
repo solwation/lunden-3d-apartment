@@ -337,6 +337,11 @@ src/sillplants.js      flower pots on every inner window board (SILL_PLANTS, #13
 src/plants.js          SillPot (#185): each window-board pot is a Holdable; its own model is invisible at home, shows (and
                        the merged meshes are rebuilt without it) once taken; the side-table flower and the kitchen shelf's
                        vase / pot plant are plain Things (kind 'plant'); window boards are put-down surfaces too
+src/laptop.js          Tilly's laptop on the vanity (#283, LAPTOP): an unbranded rose-gold laptop with stickers; `Feed` draws "Klipp",
+                       an invented short-video app (no real brand / people) on a canvas — eight canvas clips (`CLIPS`) in a phone
+                       column, user, caption, likes, progress bar — swiping up every `swipe` s; two E targets (kind 'laptop'): the
+                       screen (on, then the next clip) and the keyboard (on / off); a quiet beat per clip (sfx.beat), the Sonos
+                       ducked within `near` m; each clip kind counts once (stats `clips`); F / toggleFurniture switches it off
 src/carmodel.js        car bodies from a side profile (#250, MEGANE: `top` / `belt` / `bot` lines, wheel arches, plan rounding, a
                        shoulder, the glasshouse leaning in): `buildCar(spec, { doors })` — with doors: four hinged doors (lower
                        panel, black frame + glass, handle, mirror), the cabin (dashboard, OpenR screens, steering wheel on the
@@ -484,6 +489,8 @@ tools/blindtest.html   headless test: a blind in every window, folded at the sta
                        mode (no walking), ▲ up to the head and no further, S down to folded, W at BLINDS.speed, the first pull
                        scores, the room's daylight cut (blackout > white), white glows, × / E close, the sash opens behind it,
                        the state survives a reload
+tools/laptoptest.html  headless test: Tilly's laptop (#283) on with E on the screen, swipes by itself and with E, every clip kind
+                       counted once, off with the keyboard, not through the wall from Sovrum 2, F
 tools/clocktest.html   headless test of the wall clock (?time=7, spool, pause, sun height by month)
 tools/calendartest.html headless test: today's date at the start, pick a date on the calendar, the sun follows
 tools/cloudtest.html   headless test of the shared world against `node cloudflare/dev.mjs 8144` (start it first): PUT on
@@ -684,7 +691,8 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   east wall north of the vanity (`MULIG`, #281: her clothes on hangers, sneakers and a tote bag on the shelf); a vanity on the east wall by the window (#282, `VANITY`, builders `vanity` / `vanitystool`):
   an IKEA ALEX 100 × 48 with a drawer column (make-up, hair things, clothes), make-up on the top, a Hollywood mirror with
   14 globe bulbs (a lamp of its own, `sminkspegelns lampor`, at dusk like #234; a Reflector) and a lilac stool (a seat
-  with an invisible pick box over it). Bunks: IKEA MYDAL, white, 97 × 207 × 157 (`MYDAL`, #227: posts, end boards, a two-board guard rail, a straight
+  with an invisible pick box over it); on its free end a rose-gold laptop (#283, `src/laptop.js`, `LAPTOP`) playing an
+  invented short-video feed ("Klipp"). Bunks: IKEA MYDAL, white, 97 × 207 × 157 (`MYDAL`, #227: posts, end boards, a two-board guard rail, a straight
   ladder on the room side at the foot end); long side to the side wall, head end to the façade; a white IKEA MALM chest of 6 drawers
   (80 × 124 × 50, `malm`, #235: 2 small + 4 big, clothes inside) with its back against each bunk's foot end on top (`MALM_DECO`, item `deco`) a themed lamp of its own (a Death Star in Sovrum 2, a unicorn in Sovrum 3) and
   a pot plant you can take (a cactus | a pink flower); an IKEA NYMÅNE wall/reading lamp at
@@ -741,7 +749,7 @@ URL parameters (debugging / screenshots):
   `&lights` turns every lamp on, ceiling lamps too, and keeps the small ones on (#234).
 - `&weather=rain|storm|snow|hail|clear` — force the weather (#248, #249).
 - `&blinds=0…1` — every pleated blind drawn up that far (#273; not saved).
-- `&hoop` — the basketball hoop up out front. `&car` — our car parked in front of the house. `&water` — turn on every tap and shower. `&tv` — switch the TV on. `&secret=i` — the secret drawer shows surprise i (SECRET.items, with `&open`).
+- `&hoop` — the basketball hoop up out front. `&car` — our car parked in front of the house. `&water` — turn on every tap and shower. `&tv` — switch the TV on. `&laptop` — Tilly's laptop on. `&secret=i` — the secret drawer shows surprise i (SECRET.items, with `&open`).
 - `&phone` — the short touch-only start screen. `&install` — show the iPhone install sheet. `&note` — open the changelog note. `&pet` (with `&cat=`) — the cat is being petted.
 - `&clip=y` — clip everything above height y (cut-away plan view, e.g.
   `?shot&at=2.87,6.35,0,-90,16&clip=2.5` for Entréplan from above, `clip=5.6` + feet 19 for Övre plan).
