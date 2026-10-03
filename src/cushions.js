@@ -1,31 +1,87 @@
 import * as THREE from 'three';
 import { CUSHIONS as C } from './config.js';
 
-// Decorative cushions and the waffle throw (#278). All cushions share one material: an atlas texture (leaf print |
-// waffle | plain weave) tinted by vertex colours, so a sofa's cushions merge into one mesh (one draw call). The throws
-// share one waffle material that repeats in metres.
+// Decorative cushions and the ribbed fleece throws (#278, #313). All cushions share one material: an atlas texture
+// (leaf print | bobble knit | geometric patchwork | corduroy) tinted by vertex colours, so a sofa's cushions merge into
+// one mesh (one draw call). Each throw colour has its own fleece material that repeats in metres.
 
-const COLS = 3; // atlas columns: 0 = leaf print, 1 = waffle, 2 = plain
-const COL = { print: 0, waffle: 1, plain: 2 };
+const COLS = 4; // atlas columns: 0 = leaf print, 1 = bobble knit, 2 = geometric, 3 = corduroy
+const COL = { print: 0, knit: 1, geo: 2, cord: 3 };
 
 function rng(seed) {
   let s = seed >>> 0 || 1;
   return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; };
 }
 
-/** One waffle cell pattern into a square of `n` px with `cells` cells: raised squares, darker grooves. */
-function drawWaffle(ctx, x0, n, cells, bump) {
+/** The bobble knit: raised rectangular knobs (a little taller than wide) in a grid, deep grooves between. */
+function drawKnit(ctx, x0, n, cells, bump) {
   const c = n / cells;
-  ctx.fillStyle = bump ? '#202020' : '#bdbdbd';
+  ctx.fillStyle = bump ? '#101010' : '#ffffff'; // the grooves show the lighter yarn between the knobs
   ctx.fillRect(x0, 0, n, n);
   for (let i = 0; i < cells; i++) for (let j = 0; j < cells; j++) {
-    const g = ctx.createRadialGradient(x0 + (i + 0.5) * c, (j + 0.5) * c, c * 0.05, x0 + (i + 0.5) * c, (j + 0.5) * c, c * 0.62);
-    g.addColorStop(0, bump ? '#ffffff' : '#ffffff');
-    g.addColorStop(0.7, bump ? '#b0b0b0' : '#f0f0f0');
-    g.addColorStop(1, bump ? '#303030' : '#d2d2d2');
+    const cx = x0 + (i + 0.5) * c, cy = (j + 0.5) * c;
+    const g = ctx.createRadialGradient(cx - c * 0.08, cy - c * 0.1, c * 0.04, cx, cy, c * 0.5);
+    g.addColorStop(0, bump ? '#ffffff' : '#a8a8a8');
+    g.addColorStop(0.6, bump ? '#c0c0c0' : '#8c8c8c');
+    g.addColorStop(1, bump ? '#404040' : '#6a6a6a');
     ctx.fillStyle = g;
-    const p = c * 0.1;
-    ctx.beginPath(); ctx.roundRect(x0 + i * c + p, j * c + p, c - 2 * p, c - 2 * p, c * 0.3); ctx.fill();
+    ctx.beginPath(); ctx.roundRect(cx - c * 0.36, cy - c * 0.42, c * 0.72, c * 0.84, c * 0.25); ctx.fill();
+  }
+}
+
+/** The geometric patchwork: squares whose corners are cut by diamonds at every grid point → octagons and diamonds,
+ * each octagon halved along a diagonal into two shades; a faint weave over it all. */
+function drawGeo(ctx, x0, n) {
+  const k = 3, c = n / k, col = C.geo.colors, r = rng(31);
+  const pick = (not) => { let v; do v = col[Math.floor(r() * col.length)]; while (v === not); return v; };
+  ctx.save();
+  ctx.beginPath(); ctx.rect(x0, 0, n, n); ctx.clip();
+  for (let i = 0; i < k; i++) for (let j = 0; j < k; j++) {
+    const x = x0 + i * c, y = j * c, a = pick(), b = pick(a);
+    // two triangles (diagonal alternating per cell)
+    const flip = (i + j) % 2 === 0;
+    ctx.fillStyle = a; ctx.beginPath();
+    if (flip) { ctx.moveTo(x, y); ctx.lineTo(x + c, y); ctx.lineTo(x, y + c); } else { ctx.moveTo(x, y); ctx.lineTo(x + c, y); ctx.lineTo(x + c, y + c); }
+    ctx.closePath(); ctx.fill();
+    ctx.fillStyle = b; ctx.beginPath();
+    if (flip) { ctx.moveTo(x + c, y); ctx.lineTo(x + c, y + c); ctx.lineTo(x, y + c); } else { ctx.moveTo(x, y); ctx.lineTo(x + c, y + c); ctx.lineTo(x, y + c); }
+    ctx.closePath(); ctx.fill();
+  }
+  // diamonds on the grid points (wrapping, so the tile repeats), split in halves of two shades
+  const d = c * 0.32;
+  for (let i = 0; i <= k; i++) for (let j = 0; j <= k; j++) {
+    const x = x0 + i * c, y = j * c, a = pick(), b = pick(a);
+    ctx.fillStyle = a; ctx.beginPath(); ctx.moveTo(x, y - d); ctx.lineTo(x + d, y); ctx.lineTo(x - d, y); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = b; ctx.beginPath(); ctx.moveTo(x, y + d); ctx.lineTo(x + d, y); ctx.lineTo(x - d, y); ctx.closePath(); ctx.fill();
+  }
+  // the weave
+  ctx.lineWidth = 1;
+  for (let i = 0; i < n; i += 2) {
+    ctx.strokeStyle = 'rgba(0,0,0,0.06)'; ctx.beginPath(); ctx.moveTo(x0 + i, 0); ctx.lineTo(x0 + i, n); ctx.stroke();
+    ctx.strokeStyle = 'rgba(255,255,255,0.05)'; ctx.beginPath(); ctx.moveTo(x0, i); ctx.lineTo(x0 + n, i); ctx.stroke();
+  }
+  ctx.restore();
+}
+
+/** Soft ribs: `ribs` bands across a square (vertical when `across`, else horizontal), light on the crest, darker in
+ * the furrow. Used for the corduroy (vertical ribs) and the fleece throws. */
+function drawRibs(ctx, x0, n, ribs, { vertical = true, crest = '#ffffff', furrow = '#9c9c9c' } = {}) {
+  const w = n / ribs;
+  for (let i = 0; i < ribs; i++) {
+    const a = i * w;
+    const g = vertical ? ctx.createLinearGradient(x0 + a, 0, x0 + a + w, 0) : ctx.createLinearGradient(0, a, 0, a + w);
+    g.addColorStop(0, furrow); g.addColorStop(0.18, crest); g.addColorStop(0.55, crest); g.addColorStop(0.92, furrow); g.addColorStop(1, furrow);
+    ctx.fillStyle = g;
+    if (vertical) ctx.fillRect(x0 + a, 0, w + 0.5, n); else ctx.fillRect(x0, a, n, w + 0.5);
+  }
+}
+
+/** A fuzz of faint specks over a square (the pile of the cord / fleece). */
+function fuzz(ctx, x0, n, seed, alpha) {
+  const r = rng(seed);
+  for (let k = 0; k < n * 6; k++) {
+    ctx.fillStyle = r() < 0.5 ? `rgba(255,255,255,${alpha})` : `rgba(0,0,0,${alpha})`;
+    ctx.fillRect(x0 + r() * n, r() * n, 1, 1 + r() * 2);
   }
 }
 
@@ -36,55 +92,62 @@ function cushionMaterial() {
   cv.width = bv.width = n * COLS; cv.height = bv.height = n;
   const ctx = cv.getContext('2d'), bx = bv.getContext('2d');
   bx.fillStyle = '#808080'; bx.fillRect(0, 0, n * COLS, n);
-  // leaf print: big leaves and petals in dusty reds, sage, pale blue and dark green on white (the user's photo)
+  // leaf print (#313): big flat leaves and petals in grey-blue / sage, burgundy-plum, mustard-olive and black on cream
   ctx.fillStyle = C.print.ground; ctx.fillRect(0, 0, n, n);
   const r = rng(7);
-  for (let k = 0; k < 26; k++) {
-    const x = r() * n, y = r() * n, len = 30 + r() * 60, wid = len * (0.25 + r() * 0.2), a = r() * Math.PI * 2;
+  for (let k = 0; k < 22; k++) {
+    const x = r() * n, y = r() * n, len = 40 + r() * 70, wid = len * (0.28 + r() * 0.22), a = r() * Math.PI * 2;
     ctx.save(); ctx.translate(x, y); ctx.rotate(a);
     ctx.fillStyle = C.print.colors[Math.floor(r() * C.print.colors.length)];
     ctx.beginPath(); ctx.moveTo(-len / 2, 0);
     ctx.quadraticCurveTo(0, -wid, len / 2, 0); ctx.quadraticCurveTo(0, wid, -len / 2, 0); ctx.fill();
-    ctx.strokeStyle = 'rgba(40,30,30,0.45)'; ctx.lineWidth = 1.5; // a vein / outline like the print's ink lines
-    ctx.beginPath(); ctx.moveTo(-len / 2, 0); ctx.quadraticCurveTo(0, -wid * 0.15, len / 2, 0); ctx.stroke();
     ctx.restore();
   }
-  // waffle (grey: the vertex colour tints it), and its bump
-  drawWaffle(ctx, n, n, 14, false);
-  drawWaffle(bx, n, n, 14, true);
-  // plain weave: near-white with a faint cross-hatch
-  ctx.fillStyle = '#f2f2f2'; ctx.fillRect(2 * n, 0, n, n);
-  ctx.strokeStyle = 'rgba(0,0,0,0.05)'; ctx.lineWidth = 1;
-  for (let i = 0; i < n; i += 3) {
-    ctx.beginPath(); ctx.moveTo(2 * n + i, 0); ctx.lineTo(2 * n + i, n); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(2 * n, i); ctx.lineTo(3 * n, i); ctx.stroke();
+  // a few round plum petals, as on the photo's flower heads
+  for (let k = 0; k < 4; k++) {
+    ctx.fillStyle = '#5e1f33';
+    ctx.beginPath(); ctx.ellipse(r() * n, r() * n, 9 + r() * 7, 7 + r() * 5, r() * 3, 0, Math.PI * 2); ctx.fill();
   }
+  // bobble knit (grey: the vertex colour tints it), and its bump
+  drawKnit(ctx, n, n, C.knit.cells, false);
+  drawKnit(bx, n, n, C.knit.cells, true);
+  // geometric patchwork in its own colours, a slight weave in the bump
+  drawGeo(ctx, 2 * n, n);
+  for (let i = 0; i < n; i += 2) { bx.fillStyle = i % 4 ? '#8a8a8a' : '#767676'; bx.fillRect(2 * n + i, 0, 1, n); }
+  // corduroy: wide soft vertical ribs, a little fuzz (the vertex colour tints it pink)
+  drawRibs(ctx, 3 * n, n, C.cord.ribs, { crest: '#ffffff', furrow: '#cdc6c4' });
+  fuzz(ctx, 3 * n, n, 5, 0.05);
+  drawRibs(bx, 3 * n, n, C.cord.ribs, { crest: '#ffffff', furrow: '#202020' });
   const map = new THREE.CanvasTexture(cv);
   map.colorSpace = THREE.SRGBColorSpace; map.anisotropy = 4;
   atlas = new THREE.MeshStandardMaterial({ map, bumpMap: new THREE.CanvasTexture(bv), bumpScale: 1.5, vertexColors: true, roughness: 0.96 });
   return atlas;
 }
 
-let throwMat = null;
-/** The grey waffle knit of the throws, repeating every 4 cells (UVs in metres / (4 × cell)). */
-export function throwMaterial() {
-  if (throwMat) return throwMat;
+const throwMats = {};
+/** Ribbed fleece (#313) in one of CUSHIONS.fleece's colours, two ribs per tile (UVs in metres / (2 × rib)). */
+export function throwMaterial(color = 'grey') {
+  if (throwMats[color]) return throwMats[color];
   const n = 128, cv = document.createElement('canvas'), bv = document.createElement('canvas');
   cv.width = cv.height = bv.width = bv.height = n;
-  drawWaffle(cv.getContext('2d'), 0, n, 4, false);
-  drawWaffle(bv.getContext('2d'), 0, n, 4, true);
+  const ctx = cv.getContext('2d');
+  drawRibs(ctx, 0, n, 2, { vertical: false, crest: '#ffffff', furrow: '#8a8a8a' });
+  fuzz(ctx, 0, n, 9, 0.06);
+  drawRibs(bv.getContext('2d'), 0, n, 2, { vertical: false, crest: '#ffffff', furrow: '#1a1a1a' });
   const map = new THREE.CanvasTexture(cv), bump = new THREE.CanvasTexture(bv);
   map.colorSpace = THREE.SRGBColorSpace;
   for (const t of [map, bump]) { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 4; }
-  throwMat = new THREE.MeshStandardMaterial({ map, bumpMap: bump, bumpScale: 2, color: C.waffle.color, roughness: 1, side: THREE.DoubleSide });
-  return throwMat;
+  // a slightly shiny pile: lower roughness than the cushions
+  throwMats[color] = new THREE.MeshStandardMaterial({ map, bumpMap: bump, bumpScale: 3, color: C.fleece[color] ?? C.fleece.grey, roughness: 0.72, side: THREE.DoubleSide });
+  return throwMats[color];
 }
+const RIB_TILE = () => 2 * C.fleece.rib;
 
 /**
  * A plump cushion `s` × `s`, `t` thick at the middle, facing ±z: a subdivided box whose faces puff out and whose edges
  * close to a seam, the edge middles drawn in so the corners stick out; `crumple` dents it a little.
  */
-function cushionGeometry(s, t, kind, color, crumple, seed) {
+function cushionGeometry(s, t, kind, crumple, seed) {
   const g = new THREE.BoxGeometry(2, 2, 2, 12, 12, 2);
   const p = g.attributes.position, uv = g.attributes.uv, r = rng(seed);
   const ph = [r() * 6, r() * 6, r() * 6, r() * 6];
@@ -96,9 +159,9 @@ function cushionGeometry(s, t, kind, color, crumple, seed) {
     p.setXYZ(i, a * s / 2 * (1 - 0.08 * (1 - b * b)), b * s / 2 * (1 - 0.08 * (1 - a * a)), (c * f * (1 + dent) * t) / 2 + sag * s * (1 - f));
   }
   // atlas column, and a tint per vertex
-  const col = COL[kind] ?? 2;
+  const col = COL[kind] ?? 0;
   for (let i = 0; i < uv.count; i++) uv.setX(i, (col + 0.02 + uv.getX(i) * 0.96) / COLS);
-  const tint = new THREE.Color(kind === 'print' ? 0xffffff : color);
+  const tint = new THREE.Color(C[kind]?.color ?? 0xffffff); // print and geo carry their own colours
   const cols = new Float32Array(p.count * 3);
   for (let i = 0; i < p.count; i++) { cols[i * 3] = tint.r; cols[i * 3 + 1] = tint.g; cols[i * 3 + 2] = tint.b; }
   g.setAttribute('color', new THREE.BufferAttribute(cols, 3));
@@ -114,7 +177,7 @@ export function addCushions(g, list, { backZ, seatY }) {
   const mat = cushionMaterial();
   list.forEach((c, i) => {
     const s = c.size ?? C.size, t = C.thick * (c.size ? c.size / C.size : 1);
-    const m = new THREE.Mesh(cushionGeometry(s, t, c.kind, c.color, c.crumple ?? 0.3, 11 + i * 17), mat);
+    const m = new THREE.Mesh(cushionGeometry(s, t, c.kind, c.crumple ?? 0.3, 11 + i * 17), mat);
     // stand it up, lean it back, turn it; its bottom edge on the seat, its back against the back cushion
     m.rotation.set(-c.lean, c.yaw, 0, 'YXZ');
     m.position.set(c.x, seatY - 0.02 + (s / 2) * Math.cos(c.lean) * 0.96, backZ + c.z);
@@ -125,8 +188,8 @@ export function addCushions(g, list, { backZ, seatY }) {
 }
 
 /** A throw folded into a neat soft slab: `layers` rounded sheets stacked, the top one a little short (the fold). */
-export function addFoldedThrow(g, { w, d, layer, layers, x, z, y, yaw }) {
-  const mat = throwMaterial(), per = 4 * C.waffle.cell;
+export function addFoldedThrow(g, { w, d, layer, layers, x, z, y, yaw, color }) {
+  const mat = throwMaterial(color), per = RIB_TILE();
   for (let k = 0; k < layers; k++) {
     const sh = new THREE.BoxGeometry(w - k * 0.01, layer, d - (k === layers - 1 ? 0.04 : 0), 8, 1, 6);
     const p = sh.attributes.position, uv = sh.attributes.uv, nx = sh.attributes.normal;
@@ -150,10 +213,10 @@ export function addFoldedThrow(g, { w, d, layer, layers, x, z, y, yaw }) {
  * A throw draped over an arm: a cross-section path `pts` ([x, y] pairs, local, from the hanging edge outside over the
  * arm to the end lying on the seat), swept along z from `z0` to `z1`, with soft folds. One double-sided sheet.
  */
-export function addDrapedThrow(g, pts, z0, z1, seed = 3) {
+export function addDrapedThrow(g, pts, z0, z1, seed = 3, color = 'grey') {
   // resample the path evenly
   const path = pts.map(([x, y]) => new THREE.Vector2(x, y));
-  const curve = new THREE.SplineCurve(path), N = 40, M = 18, len = curve.getLength(), per = 4 * C.waffle.cell;
+  const curve = new THREE.SplineCurve(path), N = 40, M = 18, len = curve.getLength(), per = RIB_TILE();
   const r = rng(seed), ph = [r() * 6, r() * 6, r() * 6];
   const pos = [], uvs = [], idx = [];
   for (let i = 0; i <= N; i++) {
@@ -177,7 +240,7 @@ export function addDrapedThrow(g, pts, z0, z1, seed = 3) {
   geo.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
   geo.setIndex(idx);
   geo.computeVertexNormals();
-  const m = new THREE.Mesh(geo, throwMaterial());
+  const m = new THREE.Mesh(geo, throwMaterial(color));
   m.castShadow = m.receiveShadow = true;
   g.add(m);
   return m;

@@ -97,8 +97,9 @@ src/reset.js           "Återställ" on the start screen (#303): clears every lo
 src/cat.js             the cat: random coat, washing animation, appears/moves/vanishes behind doors
 src/furniture.js       loose furniture from FURNITURE in config (IKEA LANDSKRONA sofa/armchair …)
 src/rugs.js            the rugs furniture.js built (#55, #310): `rugLift(level, x, z)` = a shown rug's top over the floor there
-src/cushions.js        decorative cushions (one atlas material: leaf print | waffle | plain, vertex-colour tint) and the grey
-                       waffle throws (folded on the chaise, draped over the armchair's arm) for the LANDSKRONA pieces (CUSHIONS, #278)
+src/cushions.js        decorative cushions (one atlas material: leaf print | bobble knit | geometric | corduroy, vertex-colour
+                       tint, #313) and the ribbed fleece throws (plum folded on the chaise, grey draped over the armchair's
+                       arm; one material per colour) for the LANDSKRONA pieces (CUSHIONS, #278)
 src/interior.js        fitted kitchen, laundry, bathroom fittings, tiled floors/walls (FINISH, KITCHEN,
                        TILED_ROOMS in config); merged into one mesh per material
 docs/                  reference images in git (site map screenshot; docs/peab/ = pages of Peab's plan
@@ -691,9 +692,10 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   are not reliable — the Tvätt arrow pointed through a 19 cm wall stub into the hall).
 - Vardagsrum furniture (wanted by the user): IKEA LANDSKRONA 3-sits + schäslong, Gunnared
   ljusgrön, back to the window, chaise in the SE corner (its outer arm ends flush with the sofa's seat
-  cushions, the chaise cushion runs on past it full width, `chaiseArmDepth`, #279); decorative cushions (a leaf print, a crumpled grey-brown
-  waffle, plain cream / terracotta) and a folded grey waffle throw on the chaise's foot end; in the armchair the leaf print and
-  the waffle cushion with the throw draped over its right arm, as in `docs/fatolj-kuddar-filt.jpg` (`CUSHIONS`, #278; the
+  cushions, the chaise cushion runs on past it full width, `chaiseArmDepth`, #279); decorative cushions of our four kinds (#313,
+  `docs/vardagsrum-prydnadskuddar-filtar.jpg`; along the back from the chaise: a near-black bobble knit, a geometric patchwork,
+  a blush pink corduroy, a leaf print on cream) and a folded plum ribbed fleece throw on the chaise's foot end; in the armchair
+  the leaf print and the bobble knit with a dark grey fleece throw draped over its right arm (`CUSHIONS`, #278; the
   sofa's sit spots keep clear of the corner cushion); matching armchair and, in front of it, a dark red upholstered stool (#180, `OTTOMAN`, guessed from the user's photo) in
   the NW corner with a floor lamp (IKEA NYMÅNE, 3 spots aimed at the seat, on the sitter's right, #56)
   and a side table with a small flower. Dimensions in

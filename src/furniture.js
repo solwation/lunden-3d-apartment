@@ -156,12 +156,12 @@ function armchair() {
   const g = new THREE.Group();
   const W = L.chairWidth;
   seatModule(g, { x0: -W / 2, x1: W / 2, depth: L.depth, cushions: 1, arms: ['left', 'right'] });
-  // two cushions and the waffle throw over the sitter's right arm onto the seat, as in the user's photo (#278)
+  // two cushions and the grey fleece throw over the sitter's right arm onto the seat, as in the user's photo (#278)
   const seatTop = L.seatHeight + 0.01, ax = -W / 2, ai = ax + L.armWidth, top = L.armHeight, T = CUSHIONS.chairThrow;
   addCushions(g, CUSHIONS.armchair, { backZ: -L.depth / 2 + 0.35, seatY: seatTop });
   addDrapedThrow(g, [[ax - 0.012, top - T.hang], [ax - 0.016, top - 0.1], [ax - 0.004, top + 0.008], [(ax + ai) / 2, top + 0.028],
     [ai + 0.004, top + 0.006], [ai + 0.014, top - 0.09], [ai + 0.03, seatTop + 0.03], [ai + 0.1, seatTop + 0.02],
-    [ai + T.spill, seatTop + 0.035]], T.z0, T.z1);
+    [ai + T.spill, seatTop + 0.035]], T.z0, T.z1, 3, T.color);
   g.userData.rest = { kind: 'sit', name: 'fåtöljen', verb: 'sätta dig i', spots: [{ x: 0, y: L.seatHeight, z: -0.08 }] };
   g.userData.footprint = [{ x0: -W / 2, x1: W / 2, z0: -L.depth / 2, z1: L.depth / 2 }];
   return g;
