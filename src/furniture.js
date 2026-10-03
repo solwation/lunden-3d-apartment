@@ -3,7 +3,8 @@ import { sfx } from './audio.js';
 import { mergeStatic } from './merge.js';
 import { restTarget } from './rest.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
-import { FURNITURE, LANDSKRONA as L, LEVELS, SKANSNAS, IDANAS, PINGPING, MYDAL, OTTOMAN, SYMFONISK, SECRET, NYMANE_WALL, MALM_DECO, YUCCA, LANGLAMPA, VANITY } from './config.js';
+import { addCushions, addFoldedThrow, addDrapedThrow } from './cushions.js';
+import { CUSHIONS, FURNITURE, LANDSKRONA as L, LEVELS, SKANSNAS, IDANAS, PINGPING, MYDAL, OTTOMAN, SYMFONISK, SECRET, NYMANE_WALL, MALM_DECO, YUCCA, LANGLAMPA, VANITY } from './config.js';
 import { mirrorMaterial } from './mirror.js';
 import { addReflector } from './reflections.js';
 import { loungesofa, loungetable, parasol, planter } from './patio.js';
@@ -127,9 +128,16 @@ function sofa(item) {
   const [chX0, chX1] = right ? [-W / 2, -W / 2 + cw] : [W / 2 - cw, W / 2];
   seatModule(g, { x0: mainX0, x1: mainX1, depth: D, cushions: 2, arms: [right ? 'left' : 'right'] });
   seatModule(g, { x0: chX0, x1: chX1, depth: L.chaiseDepth, cushions: 1, arms: [right ? 'right' : 'left'], armDepth: L.chaiseArmDepth });
-  // three places on the sofa and one on the chaise (#71), local x, seat height, z, facing +z
-  const third = (mainX1 - mainX0) / 3;
-  g.userData.rest = { kind: 'sit', name: 'soffan', verb: 'sätta dig i', spots: [0.5, 1.5, 2.5].map((k) => ({ x: mainX0 + third * k, y: L.seatHeight, z: -0.08 }))
+  // three places on the sofa and one on the chaise (#71), local x, seat height, z, facing +z; spread over the seat
+  // short of the arm and the cushion in its corner (#278)
+  const [sx0, sx1] = right ? [mainX0, mainX1 - L.armWidth - 0.14] : [mainX0 + L.armWidth + 0.14, mainX1];
+  const third = (sx1 - sx0) / 3;
+  // decorative cushions and a folded throw on the chaise's foot end (#278); CUSHIONS is laid out for a chaise on the right
+  const flip = right ? 1 : -1, seatTop = L.seatHeight + 0.01;
+  addCushions(g, CUSHIONS.sofa.map((c) => ({ ...c, x: c.x * flip, yaw: c.yaw * flip })), { backZ: -D / 2 + 0.35, seatY: seatTop });
+  const T = CUSHIONS.sofaThrow;
+  addFoldedThrow(g, { ...T, x: T.x * flip, z: -D / 2 + L.chaiseDepth - T.zFront, y: seatTop, yaw: T.yaw * flip });
+  g.userData.rest = { kind: 'sit', name: 'soffan', verb: 'sätta dig i', spots: [0.5, 1.5, 2.5].map((k) => ({ x: sx0 + third * k, y: L.seatHeight, z: -0.08 }))
     .concat([{ x: (chX0 + chX1) / 2, y: L.seatHeight, z: -0.08 }]) };
   // the seats, where a plush toy can be put down (#269; `soft`: not cups and glasses)
   g.userData.surfaces = [{ x0: mainX0 + 0.06, x1: mainX1 - 0.06, z0: -0.25, z1: D / 2 - 0.06, y: L.seatHeight, soft: true },
@@ -146,6 +154,12 @@ function armchair() {
   const g = new THREE.Group();
   const W = L.chairWidth;
   seatModule(g, { x0: -W / 2, x1: W / 2, depth: L.depth, cushions: 1, arms: ['left', 'right'] });
+  // two cushions and the waffle throw over the sitter's right arm onto the seat, as in the user's photo (#278)
+  const seatTop = L.seatHeight + 0.01, ax = -W / 2, ai = ax + L.armWidth, top = L.armHeight, T = CUSHIONS.chairThrow;
+  addCushions(g, CUSHIONS.armchair, { backZ: -L.depth / 2 + 0.35, seatY: seatTop });
+  addDrapedThrow(g, [[ax - 0.012, top - T.hang], [ax - 0.016, top - 0.1], [ax - 0.004, top + 0.008], [(ax + ai) / 2, top + 0.028],
+    [ai + 0.004, top + 0.006], [ai + 0.014, top - 0.09], [ai + 0.03, seatTop + 0.03], [ai + 0.1, seatTop + 0.02],
+    [ai + T.spill, seatTop + 0.035]], T.z0, T.z1);
   g.userData.rest = { kind: 'sit', name: 'fåtöljen', verb: 'sätta dig i', spots: [{ x: 0, y: L.seatHeight, z: -0.08 }] };
   g.userData.footprint = [{ x0: -W / 2, x1: W / 2, z0: -L.depth / 2, z1: L.depth / 2 }];
   return g;

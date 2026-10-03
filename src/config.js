@@ -1339,6 +1339,34 @@ export const LANDSKRONA = {
   chairWidth: 0.89,
 };
 
+// Decorative cushions and a waffle throw in the sofa and the armchair (#278, after the user's photo
+// docs/fatolj-kuddar-filt.jpg: a big leaf print, a crumpled dark grey-brown waffle, a grey waffle throw ≈ #77736f;
+// the plain terracotta and cream ones on the sofa are our picks to go with Gunnared light green and the olive rug).
+// Sizes are guesses: cushions 45 × 45 × 14 cm, the throw's waffle cells 3 cm. Each cushion: `x` across the piece
+// (local, + = the sitter's left), `z` from the front of the back cushion, `yaw` (rad, + turns its face towards −x),
+// `lean` (rad back), `kind` = print | waffle | plain, `color` (plain / waffle tint), `crumple` 0–1.
+// The sit spots stay clear: no cushion within ~20 cm of a spot's x (furniture.js moves the sofa's three spots a little
+// away from the arm so the corner cushion fits).
+export const CUSHIONS = {
+  size: 0.45, thick: 0.14,
+  print: { ground: '#f4f0ea', colors: ['#9c3b3f', '#6e2230', '#b89aa0', '#9fb39c', '#a9c3d3', '#2f4a3a', '#c76a6a'] },
+  waffle: { cell: 0.03, color: 0x77736f },
+  sofa: [
+    { x: 1.14, z: 0.1, yaw: -0.75, lean: 0.35, kind: 'print', crumple: 0.3 },        // in the corner by the arm
+    { x: -0.6, z: 0.07, yaw: 0.12, lean: 0.4, kind: 'waffle', color: 0x5b5249, crumple: 0.8 }, // where the chaise meets
+    { x: -1.16, z: 0.1, yaw: 0.75, lean: 0.35, kind: 'plain', color: 0xe4d9c3, crumple: 0.2 }, // the chaise's corner
+    { x: -1.24, z: 0.36, yaw: 1.45, lean: 0.25, kind: 'plain', color: 0xb0603c, crumple: 0.3, size: 0.4 }, // against its arm
+  ],
+  // the folded throw on the chaise's foot end: w × d (folded), `layers` thick, x/z of its centre (z from the front)
+  sofaThrow: { w: 0.55, d: 0.4, layer: 0.025, layers: 3, x: -0.98, zFront: 0.42, yaw: 0.08 },
+  armchair: [
+    { x: -0.19, z: 0.1, yaw: -0.65, lean: 0.35, kind: 'print', crumple: 0.35 },
+    { x: 0.17, z: 0.08, yaw: 0.2, lean: 0.45, kind: 'waffle', color: 0x5b5249, crumple: 1 },
+  ],
+  // the throw draped over the armchair's right arm (the sitter's; left seen from the front) and onto the seat
+  chairThrow: { z0: -0.12, z1: 0.34, hang: 0.25, spill: 0.2 },
+};
+
 // Patio (src/patio.js). Cushion colour of the Oslo set and the parasol (Ø 3 m, centre pole,
 // ecru) are guesses. Seasons (months 1–12): the parasol is up in `parasolMonths` while the sun
 // is up and folded otherwise; beers on the table in summer between `beerHours`; a snowman on

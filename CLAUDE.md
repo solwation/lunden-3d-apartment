@@ -73,6 +73,8 @@ src/main.js            renderer, lights, input modes, door raycast prompt/button
 src/version.js         BUILD stamp + polling for a newer published version
 src/cat.js             the cat: random coat, washing animation, appears/moves/vanishes behind doors
 src/furniture.js       loose furniture from FURNITURE in config (IKEA LANDSKRONA sofa/armchair …)
+src/cushions.js        decorative cushions (one atlas material: leaf print | waffle | plain, vertex-colour tint) and the grey
+                       waffle throws (folded on the chaise, draped over the armchair's arm) for the LANDSKRONA pieces (CUSHIONS, #278)
 src/interior.js        fitted kitchen, laundry, bathroom fittings, tiled floors/walls (FINISH, KITCHEN,
                        TILED_ROOMS in config); merged into one mesh per material
 docs/                  reference images in git (site map screenshot; docs/peab/ = pages of Peab's plan
@@ -610,7 +612,10 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   are not reliable — the Tvätt arrow pointed through a 19 cm wall stub into the hall).
 - Vardagsrum furniture (wanted by the user): IKEA LANDSKRONA 3-sits + schäslong, Gunnared
   ljusgrön, back to the window, chaise in the SE corner (its outer arm ends flush with the sofa's seat
-  cushions, the chaise cushion runs on past it full width, `chaiseArmDepth`, #279); matching armchair and, in front of it, a dark red upholstered stool (#180, `OTTOMAN`, guessed from the user's photo) in
+  cushions, the chaise cushion runs on past it full width, `chaiseArmDepth`, #279); decorative cushions (a leaf print, a crumpled grey-brown
+  waffle, plain cream / terracotta) and a folded grey waffle throw on the chaise's foot end; in the armchair the leaf print and
+  the waffle cushion with the throw draped over its right arm, as in `docs/fatolj-kuddar-filt.jpg` (`CUSHIONS`, #278; the
+  sofa's sit spots keep clear of the corner cushion); matching armchair and, in front of it, a dark red upholstered stool (#180, `OTTOMAN`, guessed from the user's photo) in
   the NW corner with a floor lamp (IKEA NYMÅNE, 3 spots aimed at the seat, on the sitter's right, #56)
   and a side table with a small flower. Dimensions in
   `LANDSKRONA` (config) — the chaise/armchair numbers are series estimates. In front
