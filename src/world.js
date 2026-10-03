@@ -281,10 +281,11 @@ function toiletAgainstWall(tank, bowl, wallBoxes) {
   }
 }
 
-/** White window frame in the plane z = fz between x0..x1, y0..y1, with glass. Below the transom the casements
- * open outwards with E (#103, Swedish windows do): one per side of the mullion, hinged at the outer jambs,
- * `out` = ±1 the way out along z; `single` = one top-hung casement over the whole width (no mullion), its bottom swings out. Returns their Openables. */
-function addWindowFrame(group, x0, x1, fz, y0, y1, transom, out = -1, opens = true, single = false) {
+/** White window frame in the plane z = fz between x0..x1, y0..y1, with glass. Below the (fixed) transom one top-hung
+ * sash opens outwards with E (#103, #272): hinged along its head, the bottom swings out; `out` = ±1 the way out along
+ * z. `split` (the living room): an off-centre mullion, the sash takes that share of the width on side `opens`
+ * ('a' = x0, 'b' = x1), the other side is a fixed pane. Returns the Openables. */
+function addWindowFrame(group, x0, x1, fz, y0, y1, transom, out = -1, opens = true, { split = 0, opens: side = 'a' } = {}) {
   const ft = 0.06, d = 0.05;
   const z0 = fz - d, z1 = fz + d;
   group.add(box(x0, x1, z0, z1, y0, y0 + ft, M.frame));
@@ -293,38 +294,36 @@ function addWindowFrame(group, x0, x1, fz, y0, y1, transom, out = -1, opens = tr
   group.add(box(x1 - ft, x1, z0, z1, y0, y1, M.frame));
   const ty = transom > 0 ? y1 - transom : y1;
   if (transom > 0) group.add(box(x0, x1, z0, z1, ty - ft / 2, ty + ft / 2, M.frame));
-  // a mullion for anything wider than a single casement
-  const mullion = !single && x1 - x0 > 0.9 && y1 - y0 > 1.2, mx = (x0 + x1) / 2;
-  if (mullion) group.add(box(mx - ft / 2, mx + ft / 2, z0, z1, y0, ty, M.frame));
   if (!opens) { group.add(box(x0, x1, fz - 0.008, fz + 0.008, y0, y1, M.glass, { shadow: false })); return []; } // a fixed light
   if (transom > 0) group.add(box(x0, x1, fz - 0.008, fz + 0.008, ty, y1, M.glass, { shadow: false })); // fixed transom light
-  // the casements: a slim sash with its glass, in a pivot at the hinge on the outer face of the frame
-  const lo = y0 + ft, hi = (transom > 0 ? ty - ft / 2 : y1 - ft), sashes = [];
-  const spans = mullion ? [[x0 + ft, mx - ft / 2, 'a'], [mx + ft / 2, x1 - ft, 'b']] : [[x0 + ft, x1 - ft, 'a']];
-  for (const [a, b, hingeAt] of spans) {
-    const hx = hingeAt === 'a' ? a : b, zo = fz + out * 0.03, s = 0.045;
-    const pivot = new THREE.Group();
-    if (single) pivot.position.set((a + b) / 2, hi, zo); // top-hung: the hinge along the head, the bottom swings out
-    else pivot.position.set(hx, (lo + hi) / 2, zo);
-    const rails = [box(a, b, zo - 0.02, zo + 0.02, lo, lo + s, M.frame), box(a, b, zo - 0.02, zo + 0.02, hi - s, hi, M.frame),
-      box(a, a + s, zo - 0.02, zo + 0.02, lo, hi, M.frame), box(b - s, b, zo - 0.02, zo + 0.02, lo, hi, M.frame)];
-    const sash = new THREE.Mesh(mergeGeometries(rails.map((m) => m.geometry.translate(...m.position.clone().sub(pivot.position).toArray()))), M.frame);
-    sash.castShadow = sash.receiveShadow = true; // one mesh for the sash (#48)
-    const pane = box(a + s, b - s, zo - 0.006, zo + 0.006, lo + s, hi - s, M.glass, { shadow: false });
-    pane.position.sub(pivot.position);
-    pivot.add(sash, pane);
-    group.add(pivot);
-    // which way it turns: the free edge has to go out (rotating +x about +y heads for −z)
-    const along = hingeAt === 'a' ? 1 : -1;
-    // top-hung: turning +y about +x sends the bottom towards −z
-    const o = single ? new Openable({ name: 'fönstret', object: pivot, mode: 'flap', axis: [1, 0, 0], sign: -out, max: WINDOW_TOP_HUNG_MAX, speed: 1.6 })
-      : new Openable({ name: 'fönstret', object: pivot, mode: 'hinge', sign: along * -out, max: 60, speed: 1.6 });
-    o.normal = new THREE.Vector3(0, 0, -out); // the room side (tests stand there)
-    const toggle = o.toggle.bind(o), at = new THREE.Vector3((a + b) / 2, (lo + hi) / 2, zo);
-    o.toggle = () => { toggle(); o.wind?.stop(); o.wind = o.isOpen ? sfx.wind(at) : null; }; // the wind blows in while it is open
-    sashes.push(o);
+  const lo = y0 + ft, hi = (transom > 0 ? ty - ft / 2 : y1 - ft);
+  // the sash's span; with `split` a mullion and a fixed pane beside it
+  let a = x0 + ft, b = x1 - ft;
+  if (split > 0) {
+    const mx = side === 'a' ? x0 + split * (x1 - x0) : x1 - split * (x1 - x0);
+    group.add(box(mx - ft / 2, mx + ft / 2, z0, z1, y0, ty, M.frame));
+    const [fa, fb] = side === 'a' ? [mx + ft / 2, x1 - ft] : [x0 + ft, mx - ft / 2];
+    group.add(box(fa, fb, fz - 0.008, fz + 0.008, lo, hi, M.glass, { shadow: false }));
+    if (side === 'a') b = mx - ft / 2; else a = mx + ft / 2;
   }
-  return sashes;
+  // the sash: a slim frame with its glass, in a pivot along the head on the outer face of the frame
+  const zo = fz + out * 0.03, s = 0.045;
+  const pivot = new THREE.Group();
+  pivot.position.set((a + b) / 2, hi, zo);
+  const rails = [box(a, b, zo - 0.02, zo + 0.02, lo, lo + s, M.frame), box(a, b, zo - 0.02, zo + 0.02, hi - s, hi, M.frame),
+    box(a, a + s, zo - 0.02, zo + 0.02, lo, hi, M.frame), box(b - s, b, zo - 0.02, zo + 0.02, lo, hi, M.frame)];
+  const sash = new THREE.Mesh(mergeGeometries(rails.map((m) => m.geometry.translate(...m.position.clone().sub(pivot.position).toArray()))), M.frame);
+  sash.castShadow = sash.receiveShadow = true; // one mesh for the sash (#48)
+  const pane = box(a + s, b - s, zo - 0.006, zo + 0.006, lo + s, hi - s, M.glass, { shadow: false });
+  pane.position.sub(pivot.position);
+  pivot.add(sash, pane);
+  group.add(pivot);
+  // top-hung: turning +y about +x sends the bottom towards −z
+  const o = new Openable({ name: 'fönstret', object: pivot, mode: 'flap', axis: [1, 0, 0], sign: -out, max: WINDOW_TOP_HUNG_MAX, speed: 1.6 });
+  o.normal = new THREE.Vector3(0, 0, -out); // the room side (tests stand there)
+  const toggle = o.toggle.bind(o), at = new THREE.Vector3((a + b) / 2, (lo + hi) / 2, zo);
+  o.toggle = () => { toggle(); o.wind?.stop(); o.wind = o.isOpen ? sfx.wind(at) : null; }; // the wind blows in while it is open
+  return [o];
 }
 
 /** The letter box in the front door (#103): a brass plate with a flap on the outside (hinged at its top, lifts
@@ -375,7 +374,7 @@ function buildLevel(floor, li, group) {
     wallSegments.push(...polySegments(w.outer));
   }
 
-  // Windows: sill/head infill, frame with mullion + optional transom, glass, inner sill board.
+  // Windows: sill/head infill, frame with optional transom, one top-hung sash, glass, inner sill board.
   // All windows are in the north/south façades (they run along x).
   const openings = { north: [], south: [] };
   const sills = []; // the inner window boards (flower pots, #136)
@@ -397,13 +396,13 @@ function buildLevel(floor, li, group) {
     // frame sits towards the outside of the wall
     const fz = facade === 'north' ? r.z0 + 0.1 : r.z1 - 0.1;
     const inner = facade === 'north' ? r.z1 : r.z0;
-    windows.push(...addWindowFrame(group, r.x0, r.x1, fz, sill, head, spec.transom, facade === 'north' ? -1 : 1, true, spec.single));
+    windows.push(...addWindowFrame(group, r.x0, r.x1, fz, sill, head, spec.transom, facade === 'north' ? -1 : 1, true, spec));
     // inner window board (fönsterbänk)
     const iz0 = Math.min(fz, inner + (facade === 'north' ? 0.03 : -0.03));
     const iz1 = Math.max(fz, inner + (facade === 'north' ? 0.03 : -0.03));
     group.add(box(r.x0 - 0.02, r.x1 + 0.02, iz0, iz1, sill - 0.03, sill, M.porcelain));
     sills.push({ x0: r.x0, x1: r.x1, z0: Math.min(iz0, iz1), z1: Math.max(iz0, iz1), y: sill });
-    openings[facade].push({ x0: r.x0, x1: r.x1, y0: sill, y1: head });
+    openings[facade].push({ x0: r.x0, x1: r.x1, y0: sill, y1: head, win: spec }); // `win`: the neighbours copy its parts
     segments.push(...rectSegments(pr));
   }
 

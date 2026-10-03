@@ -551,8 +551,11 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   The others are drawn in the old
   S:t Lars style (#47, `style: 'old'`: brick, white cornice and string courses, tall arched windows,
   steep dark hip roofs, 3.6 m storeys) after the drone photo/render — storey counts are guesses.
-- Windows (#103): below the transom each casement (one per side of the mullion) opens outwards with E
-  (`addWindowFrame` in world.js, an Openable each, max 60°, no collision); the transom light is fixed.
+- Windows (#103, #272): one top-hung sash per window, no mullion — below the fixed transom (if any) it opens with E,
+  the bottom swinging out (`addWindowFrame` in world.js, a 'flap' Openable, `WINDOW_TOP_HUNG_MAX`, no collision).
+  The living-room window is three-part (the L1004 render): the transom over the whole width, an off-centre mullion,
+  a wide fixed pane on the left and a narrow sash on the right seen from inside (`split` / `opens` in `WINDOWS`).
+  The neighbours' / upper units' fake windows (exterior.js) copy the transom bar, mullion and sash rails (`win`).
   An open casement plays `sfx.wind` (looping gusty noise) until it is closed. The front door has a brass letter
   flap (`letterFlap`, an Openable in world.lids riding on the leaf, kept out of the door's merge via `door.keep`).
 - Skärmvägg by the patio H 1.8 m, stair railing H 1.1 m (bofakta). The railing's middle run stands on Entréplan's wall between

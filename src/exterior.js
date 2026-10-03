@@ -120,6 +120,21 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
       boxGeo(o.x0, o.x0 + f, o.y0, o.y1, z - 0.02, z + 0.02),
       boxGeo(o.x1 - f, o.x1, o.y0, o.y1, z - 0.02, z + 0.02),
     );
+    // our window's parts (#272, `win` = its WINDOWS spec): the transom bar, the living room's off-centre mullion,
+    // the top-hung sash's rails standing a little proud of the frame
+    const w = o.win;
+    if (!w) return;
+    const ty = w.transom > 0 ? o.y1 - w.transom : o.y1;
+    if (w.transom > 0) frames.push(boxGeo(o.x0, o.x1, ty - f / 2, ty + f / 2, z - 0.02, z + 0.02));
+    let a = o.x0 + f, b = o.x1 - f;
+    if (w.split > 0) {
+      const side = w.opens ?? 'a', mx = side === 'a' ? o.x0 + w.split * (o.x1 - o.x0) : o.x1 - w.split * (o.x1 - o.x0);
+      frames.push(boxGeo(mx - f / 2, mx + f / 2, o.y0, ty, z - 0.02, z + 0.02));
+      if (side === 'a') b = mx - f / 2; else a = mx + f / 2;
+    }
+    const lo = o.y0 + f, hi = w.transom > 0 ? ty - f / 2 : o.y1 - f, r = 0.045, zs = z + s * 0.02;
+    frames.push(boxGeo(a, b, lo, lo + r, zs - 0.015, zs + 0.015), boxGeo(a, b, hi - r, hi, zs - 0.015, zs + 0.015),
+      boxGeo(a, a + r, lo, hi, zs - 0.015, zs + 0.015), boxGeo(b - r, b, lo, hi, zs - 0.015, zs + 0.015));
   };
   const fakeWindowX = (o, x, west) => { // o: z0/z1/y0/y1 on a gable
     const s = west ? -1 : 1;
@@ -130,7 +145,7 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
       boxGeo(x - 0.02, x + 0.02, o.y0, o.y1, o.z0, o.z0 + f), boxGeo(x - 0.02, x + 0.02, o.y0, o.y1, o.z1 - f, o.z1),
     );
   };
-  const shift = (list, dx, dy) => list.map((o) => ({ x0: o.x0 + dx, x1: o.x1 + dx, y0: o.y0 + dy, y1: o.y1 + dy }));
+  const shift = (list, dx, dy) => list.map((o) => ({ x0: o.x0 + dx, x1: o.x1 + dx, y0: o.y0 + dy, y1: o.y1 + dy, win: o.win }));
   /** Façade quads around the holes into `out` (z plane), glass in the holes unless it is our unit. */
   const facade = (out, x0, x1, y0, y1, z, northSide, holes, glass = true) => {
     for (const [xa, xb, ya, yb] of complement(x0, x1, y0, y1, holes)) out.push(quadZ(xa, xb, ya, yb, z, northSide));
