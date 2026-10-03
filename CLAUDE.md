@@ -346,7 +346,10 @@ src/keycabinet.js      the IKEA LINDBYN mirror Ø 110 (living room since #205), 
                        + the hall's Solstickan key cabinet (E) with the Renault key (E → beep beep);
                        the cabinet is in world.lids, the key (world.carKey) a target only while it is open
 src/sillplants.js      flower pots on every inner window board (SILL_PLANTS, #136): five merged meshes, a loose item;
-                       `userData.pots` / `rebuild(away)` / `potModel` let one pot be lifted out of the merge (#185)
+                       `userData.pots` / `rebuild(away)` / `potModel` let one pot be lifted out of the merge (#185).
+                       #290: big lush plants (`leafShape` leaves; pelargon, orchid, violet, cactus, ivy, basil, monstera,
+                       pothos, fern, olive), squeezed short of the blind's pack (`sill.blind`, `clear`) and the reveal;
+                       ivy / pothos trail over the board's edge (`trail`; lying flat round the pot once taken)
 src/plants.js          SillPot (#185): each window-board pot is a Holdable; its own model is invisible at home, shows (and
                        the merged meshes are rebuilt without it) once taken; the side-table flower and the kitchen shelf's
                        vase / pot plant are plain Things (kind 'plant'); window boards are put-down surfaces too

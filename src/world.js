@@ -411,7 +411,7 @@ function buildLevel(floor, li, group) {
     const iz0 = Math.min(fz, inner + (facade === 'north' ? 0.03 : -0.03));
     const iz1 = Math.max(fz, inner + (facade === 'north' ? 0.03 : -0.03));
     group.add(box(r.x0 - 0.02, r.x1 + 0.02, iz0, iz1, sill - 0.03, sill, M.porcelain));
-    sills.push({ x0: r.x0, x1: r.x1, z0: Math.min(iz0, iz1), z1: Math.max(iz0, iz1), y: sill });
+    sills.push({ x0: r.x0, x1: r.x1, z0: Math.min(iz0, iz1), z1: Math.max(iz0, iz1), y: sill, blind: fz - (facade === 'north' ? -1 : 1) * BLINDS.gap, out: facade === 'north' ? -1 : 1 }); // `blind`: the folded pack's plane (#290)
     openings[facade].push({ x0: r.x0, x1: r.x1, y0: sill, y1: head, win: spec }); // `win`: the neighbours copy its parts
     segments.push(...rectSegments(pr));
   }

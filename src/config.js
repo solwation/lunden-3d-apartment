@@ -115,12 +115,18 @@ export const BLINDS = {
 
 // Flower pots on the inner window boards (#136, the user: "blomkrukor med blommor i alla fönsterkarmar";
 // src/sillplants.js). Plants per window in plan order (Entréplan kitchen, living room; Övre plan Sovrum 3, 1, 4, 2),
-// 2–3 pots each. Our picks.
+// 2–3 pots each, one kind per pot slot. Our picks. #290 (the user: bigger and lusher, in every window): pots `pot.r` /
+// `pot.h` m (radius, height; monstera and olive 12 % bigger), plants ~25–45 cm; `clear` = m kept free in front of the
+// blind's folded pack (#273), `side` = from the reveal's sides, `trail` = how far ivy / pothos hang down over the
+// board's front edge (above a desk or table under the window). Our picks.
 export const SILL_PLANTS = {
-  kinds: ['pelargon', 'orchid', 'violet', 'cactus', 'ivy', 'basil'],
-  byWindow: [['basil', 'pelargon', 'basil'], ['orchid', 'ivy', 'pelargon'], ['violet', 'cactus'], ['orchid', 'pelargon', 'ivy'], ['violet', 'pelargon', 'cactus'], ['cactus', 'ivy']],
+  kinds: ['pelargon', 'orchid', 'violet', 'cactus', 'ivy', 'basil', 'monstera', 'pothos', 'fern', 'olive'],
+  byWindow: [['basil', 'pelargon', 'basil'], ['orchid', 'monstera', 'fern'], ['pothos', 'violet'], ['orchid', 'violet', 'fern'], ['olive', 'cactus', 'pelargon'], ['cactus', 'ivy']],
   skip: [[0, 2], [1, 2], [3, 1]], // [sill, pot]: no pot there (the white SYMFONISK speaker in the kitchen window, #289; the lamp on the window board behind the sofa, #186; the black speaker in Sovrum 1's window, #201)
-  colors: { pelargon: 0xd8283a, orchid: [0xf7f2f5, 0xe58fc4], cactus: 0xff6fa8, violet: 0x7b3fb5 },
+  pot: { r: [0.062, 0.072], h: [0.115, 0.14] },
+  clear: 0.03, side: 0.015, trail: 0.11,
+  // a colour (or a list: one picked per pot); orchids: [petals, lip] pairs
+  colors: { pelargon: [0xd8283a, 0xe8577a, 0xf06a4a], orchid: [[0xf7f2f5, 0xe58fc4], [0xe58fc4, 0xb8337a]], cactus: 0xff6fa8, violet: [0x7b3fb5, 0xc04fa0] },
 };
 
 // The site, measured on FOJAB's situation plan and overview plans in Peab's plan brochure
