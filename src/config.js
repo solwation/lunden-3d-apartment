@@ -400,8 +400,12 @@ export const SABER = {
 // its sliding front first); click toggles one SpotLight that always exists (0 when off: no recompile).
 export const TOYS = {
   // face: +1 = the board faces east (on a west wall), −1 west
+  // #236: three different models (`models`: a pistol, a drum blaster, a long one with a clip and a stock), each in its
+  // colour with side panels in `accents`, grey details and an orange muzzle; `shift` = m along the board per blaster
+  // (the long one sits further from the bandolier). Shapes after Nerf Elite 2.0 / N-Strike, sizes ours.
   nerf: { level: 1, x: 2.752, face: 1, y: 1.35, z: 9.18, board: [0.9, 0.8], colors: [0xff7a1a, 0x1f8bff, 0xffd21a],
-    dart: { speed: 9, gravity: 6, max: 8 }, held: { x: 0.22, y: -0.22, z: -0.45 } },
+    models: ['pistol', 'drum', 'long'], accents: [0xf2f2f2, 0xf2f2f2, 0x2f3338], shift: [0, 0, -0.08],
+    dart: { speed: 9, gravity: 6, max: 8 }, held: { x: 0.2, y: -0.18, z: -0.42 } },
   wands: { level: 1, x: 2.61, y: 1.45, z: [2.85, 3.2, 3.55], colors: [0xff7ad0, 0x9b7bff, 0x5fd7ff],
     held: { x: 0.2, y: -0.22, z: -0.42 }, headband: { z: 3.9 }, reach: 8 }, // reach: m to the surface the magic lands on (#97)
   flashlight: { level: 0, x: 0.58, y: 1.83, z: 2.08, held: { x: 0.2, y: -0.2, z: -0.38 },
