@@ -640,7 +640,7 @@ URL parameters (debugging / screenshots):
   180 = south, −90 = east. `feetY` = 3.25 for Övre plan.
 - `&shot` — hide the start overlay.
 - `&open` — open every door, cabinet door and drawer (screenshots of open doors / wardrobes / furniture).
-- `&cat=x,z[,yawDeg[,y]]` — show the cat there; `&catv=i` coat variant, `&catt=s` animation time, `&catwalk` walking (#224).
+- `&cat=x,z[,yawDeg[,y]]` — show the cat there; `&catv=i` coat variant, `&catt=s` animation time, `&catwalk` walking (#224), `&cattail` its tail up (#262).
 - `&time=HH[.h]` — start at that hour (default: the browser's time), `&month=1–12`, `&day=1–31` (default: today), `&freeze` pauses the clock,
   `&clock` opens the wall clock's strip,
   `&lights` turns every lamp on, ceiling lamps too, and keeps the small ones on (#234).
@@ -700,6 +700,11 @@ screenshots into the session scratchpad, not the repo.
   level, the tail up. Behaviours set `wantStand`, call `stride(m)` for the diagonal-pair gait and put head offsets in
   `headOff`; `pose` runs after them every frame (the tail tube is rebuilt only while the pose changes). `&catwalk` (with
   `&cat=`) = walking on the spot.
+- Tail up (#262, `CAT_TAIL_UP`, `updateTail` / `tailIdle` in cat.js): now and then (sooner while it is on its feet, and
+  `leave` of the times it walks off after a pat) the cat gets up, raises its tail straight up (`TAIL_UP`, blended over either
+  pose; the tube is rebuilt while `tailU` changes), turns round on the spot and a small dark X (`parts.butt`) shows under the
+  tail root; sitting it never does, a pat lowers it. Seen from behind (`buttFacing`: within `cone`° and `dist` m, main.js
+  `checkCatButt`: on screen, not `behindWall`) it counts once per tail-up (`tailPeriod`): stats `catButts`, SCORE.first per cat.
 - Every new cat gets a name (`CAT_NAMES`); petting it puts a photo on the kitchen board 0.7 s in
   (`CAT_BOARD` in config: under the wall clock on the Tvätt/Badrum wall, kitchen face; it and the calendar are
   positioned together, centred under the clock).

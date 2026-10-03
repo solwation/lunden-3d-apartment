@@ -55,6 +55,39 @@ f.onload = async () => {
   for (let i = 0; i < 30 * 12; i++) step(1 / 30);
   pass &= check(stats.catFish === 1 && near(rawScore() - t, SCORE.each.catFish), `the cat ate a fish finger: catFish ${stats.catFish}, +${(rawScore() - t).toFixed(2)}`);
   cat.hide?.();
+  // the cat's bum (#262): tail up, the eye behind it → points once (per cat, then `again` per tail-up); from the front or
+  // through a wall → none
+  const butts = (x, z, yaw, cx, cz, catYaw) => {
+    cat.object.position.set(cx, 0, cz); cat.object.rotation.y = catYaw; cat.object.visible = true; cat.on = null;
+    cat.nextMeow = 1e9; cat.forceTail = true; cat.stand = 1; cat.tailU = 1;
+    cat.tailTurn = { from: catYaw, by: 0, t: 1 }; // no turning round
+    cat.object.updateMatrixWorld(true);
+    player.spawn(x, z, yaw);
+    const c = camera.position, p = cat.object.position;
+    camera.rotation.x = -Math.atan2(c.y - 0.2, Math.hypot(c.x - p.x, c.z - p.z)); // look down at it
+    const n = stats.catButts, r0 = Object.keys(stats.visited).length;
+    for (let i = 0; i < 10; i++) step(1 / 30);
+    t += (Object.keys(stats.visited).length - r0) * SCORE.first.visited; // (a room visited on the way is not the cat's)
+    return stats.catButts - n;
+  };
+  cat.catName = 'Testkatten';
+  t = rawScore();
+  const front = butts(2.8, 8.4, Math.PI, 2.8, 9.8, Math.PI); // the eye in front of it (north), looking south
+  pass &= check(front === 0 && cat.tailU > 0.9 && cat.parts.butt.visible, `tail up, seen from the front: no points (${front})`);
+  const behind = butts(2.8, 11.0, 0, 2.8, 9.8, Math.PI); // behind it (south), looking north
+  pass &= check(behind === 1 && near(rawScore() - t, SCORE.first.catButts), `seen from behind: counted once (${behind}), +${(rawScore() - t).toFixed(2)}`);
+  t = rawScore();
+  cat.forceTail = false; cat.tailUp = false; cat.raiseTail(); cat.forceTail = true; // a new tail-up of the same cat
+  const again2 = butts(2.8, 11.0, 0, 2.8, 9.8, Math.PI);
+  pass &= check(again2 === 1 && near(rawScore() - t, SCORE.again.catButts), `the same cat, its next tail-up: +${(rawScore() - t).toFixed(2)} (a little)`);
+  // through a wall: the cat just south of a wall on Entréplan, facing south; the eye north of the wall
+  const seg = world.levels[0].wallSegments.find(([ax, az, bx, bz]) => Math.abs(az - bz) < 1e-3 && Math.abs(ax - bx) > 1.2 && az > 2 && az < 11
+    && ((ax + bx) / 2 < 3.3 || (ax + bx) / 2 > 5.7)); // not over the stair
+  cat.catName = 'Väggkatten';
+  const mx = (seg[0] + seg[2]) / 2, wz = seg[1];
+  const wall = butts(mx, wz - 0.8, Math.PI, mx, wz + 0.3, 0); // the eye north of the wall, looking south at the cat's back (it faces south)
+  pass &= check(wall === 0, `behind it but through a wall (x ${mx.toFixed(2)}, z ${wz.toFixed(2)}): none (${wall})`);
+  cat.forceTail = false; cat.hide();
   // cats by breed: a huskatt (+ its coat the first time), the same coat again, a sphynx
   t = rawScore(); catFound('huskatt grå', false, 'huskatt');
   const hus = rawScore() - t;

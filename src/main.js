@@ -409,6 +409,19 @@ cat.onPhoto = () => { // 0.7 s into the pat (cat.js), before it walks off (#206)
   board.add(cat.catName, snapshot(renderer, scene, camera, head));
 };
 
+// a cat's bum (the X) seen from behind with its tail up (#262): once per tail-up, the first time per cat counts the most
+const buttFrustum = new THREE.Frustum(), buttMat = new THREE.Matrix4(), buttAt = new THREE.Vector3();
+let buttCounted = null;
+function checkCatButt() {
+  const key = `${cat.catName}|${cat.breed.name}|${cat.variant.name}`;
+  if (buttCounted === `${key}#${cat.tailPeriod}` || !cat.buttFacing(camera.position)) return;
+  camera.updateMatrixWorld();
+  buttFrustum.setFromProjectionMatrix(buttMat.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse));
+  if (!buttFrustum.containsPoint(cat.buttPoint(buttAt)) || behindWall(buttAt)) return;
+  buttCounted = `${key}#${cat.tailPeriod}`;
+  bump('catButts', 1, key);
+}
+
 /** A stable name for a thing you use (its name and where it is), for the points that come once per thing (#197). */
 function idOf(t) {
   const o = t.pickable ?? t.object;
@@ -518,6 +531,8 @@ if (params.has('cat')) {
   cat.nextMeow = 1e9;
   // &catwalk: up on all four, walking on the spot (#224; &catt = the moment in the gait)
   if (params.has('catwalk')) cat.walkOnTheSpot();
+  // &cattail: the tail always up, the X showing (#262)
+  if (params.has('cattail')) { cat.forceTail = true; cat.updateTail(0); cat.tailU = 1; }
   cat.update(0);
   // &pet: the cat is being petted (screenshots)
   if (params.has('pet')) { cat.pet(player.pos); cat.petT = 1e9; cat.update(1.1); }
@@ -1093,6 +1108,7 @@ function step(dt) {
   people.update(dt, weather.rain > WEATHER.people ? 0 : day.daylight, day.month, player); // they go in when it pours
   greet.update(dt); // greetings and answers (#247)
   cat.update(dt);
+  checkCatButt();
   measure.update(dt, window.innerWidth, window.innerHeight);
   if (active() && reading) updateFocus();
   else if (drawing.active) drawing.update(dt); // drawing: the camera over the paper, nothing else moves you

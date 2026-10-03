@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { LEVELS, CAT_FISH, CAT_LEAVE, CAT_FURNITURE, CAT_WALK, REST } from './config.js';
+import { LEVELS, CAT_FISH, CAT_LEAVE, CAT_FURNITURE, CAT_WALK, CAT_TAIL_UP, REST } from './config.js';
 import { stairHeight } from './stairs.js';
 import { sfx } from './audio.js';
 
@@ -162,6 +162,9 @@ const POSE = {
     tail: [[0, 0, 0], [0, 0.03, -0.07], [0, 0.11, -0.12], [0, 0.2, -0.12], [0, 0.26, -0.08]],
   },
 };
+// The tail held straight up (#262), blended over either pose; the X under the tail root, as an offset from the root (sit/stand)
+const TAIL_UP = [[0, 0, 0], [0, 0.07, -0.01], [0, 0.15, -0.015], [0, 0.23, -0.01], [0, 0.28, 0.015]];
+const BUTT = { sit: [0, 0.035, -0.02], stand: [0, -0.022, -0.014] };
 const mix = (a, b, k) => a + (b - a) * k;
 const mix3 = (v, a, b, k, sx = 1) => v.set(mix(a[0], b[0], k) * sx, mix(a[1], b[1], k), mix(a[2], b[2], k));
 
@@ -234,6 +237,16 @@ function buildCat() {
   const tip = blob(ROLE.tip, 0.02, 0.018, 0.03, 0, 0, 0);
   tailGroup.add(tail, tip);
   cat.add(tailGroup);
+  // the bum hole as a cartoon X (#262), facing back, shown only while the tail is up
+  const butt = new THREE.Group();
+  for (const s of [-1, 1]) {
+    const stroke = new THREE.Mesh(new THREE.BoxGeometry(1, 0.18, 0.12), pupilMat);
+    stroke.rotation.z = s * Math.PI / 4;
+    butt.add(stroke);
+  }
+  butt.scale.setScalar(CAT_TAIL_UP.x);
+  butt.visible = false;
+  cat.add(butt);
 
   // the visitor's hand, shown while petting (palm + four fingers + thumb, palm down)
   const hand = new THREE.Group();
@@ -251,7 +264,7 @@ function buildCat() {
   hand.visible = false;
   cat.add(hand);
 
-  return { cat, head, shoulder, leftShoulder, hips, tailGroup, tip, eyes, hand, torso, body, bib, muzzle, ears, tail };
+  return { cat, head, shoulder, leftShoulder, hips, tailGroup, tip, eyes, hand, torso, body, bib, muzzle, ears, tail, butt };
 }
 
 /** Shape the cat for a breed (see BREEDS). */
@@ -300,6 +313,12 @@ export class CatSpawner {
     this.gaitAmp = 0;        // 0 … 1: the legs swing while it walks, eased in and out
     this.walked = false;     // `stride` was called this frame
     this.tailK = -1;         // the pose the tail geometry was last built for
+    this.tailU = 0;          // 0 … 1: the tail held straight up (#262), eased towards `tailUp`
+    this.tailUK = -1;        // the tailU the tail geometry was last built for
+    this.tailUp = false;     // the tail is (going) up
+    this.tailWait = this.nextTailWait(); // s until the tail goes up (or, while it is up, down)
+    this.tailPeriod = 0;     // counts tail-ups: seeing the X counts once per period
+    this.forceTail = false;  // &cattail: always up (screenshots, tests)
     this.treadmill = false;  // &catwalk: it walks on the spot (screenshots)
     this.fish = null;          // a fish finger on the floor it is after (#163): { f, phase, t, at }
     this.fishSource = null;    // () => the fish fingers lying out (main.js)
@@ -367,6 +386,7 @@ export class CatSpawner {
     this.dropFish();
     this.leaving = null;
     this.setOpacity(1);
+    this.tailUp = false; this.tailU = 0; this.tailWait = this.nextTailWait(); // the next cat starts with its tail down
   }
 
   setOpacity(a) { for (const m of catMats()) m.opacity = a; }
@@ -378,6 +398,7 @@ export class CatSpawner {
     if (!this.visible) return;
     const p = this.object.position;
     this.dropFish(); // petting beats a fish finger
+    if (this.tailUp && !this.forceTail) { this.tailUp = false; this.tailWait = this.nextTailWait(); } // it sits for the pat
     if (this.leaving) { this.leaving = null; this.setOpacity(1); this.object.position.y = this.leaveY ?? this.object.position.y; } // petted again on its way: it stays
     if (!this.petting) {
       this.petPhase = 0;
@@ -526,7 +547,46 @@ export class CatSpawner {
     this.wantStand = 0;
     this.walked = false;
     this.behave(dt);
+    this.updateTail(dt);
     this.pose(dt);
+  }
+
+  // --- the tail held straight up now and then, the X showing (#262) ----------------------------------------------
+  nextTailWait() { const [a, b] = CAT_TAIL_UP.every; return a + this.rand() * (b - a); }
+
+  /** Raise the tail now (for `secs` s, default a random CAT_TAIL_UP.seconds). */
+  raiseTail(secs) {
+    const [a, b] = CAT_TAIL_UP.seconds;
+    if (!this.tailUp) this.tailPeriod++;
+    this.tailUp = true;
+    this.tailWait = secs ?? a + this.rand() * (b - a);
+  }
+
+  updateTail(dt) {
+    if (this.forceTail) { if (!this.tailUp) this.raiseTail(); this.tailWait = 1e9; }
+    if (!this.petting) this.tailWait -= dt * (!this.tailUp && this.wantStand ? CAT_TAIL_UP.standing : 1);
+    if (this.tailWait <= 0) {
+      if (this.tailUp) { this.tailUp = false; this.tailWait = this.nextTailWait(); } else this.raiseTail();
+    }
+    // only on its feet: the tail goes up as it rises (sitting, the tail lies on the floor round it)
+    const d = (this.tailUp && this.stand > 0.3 ? 1 : 0) - this.tailU;
+    this.tailU += Math.sign(d) * Math.min(Math.abs(d), dt / CAT_TAIL_UP.blend);
+  }
+
+  /** Is the X showing to an eye at `eye` (world) from behind (#262)? Walls and the screen are main.js's business. */
+  buttFacing(eye) {
+    if (!this.visible || this.tailU < 0.8 || !this.parts.butt.visible || catMats()[0].opacity < 0.5) return false;
+    const x = this.buttPoint(new THREE.Vector3()), yaw = this.object.rotation.y;
+    const dx = eye.x - x.x, dz = eye.z - x.z, dist = Math.hypot(dx, dz, eye.y - x.y);
+    if (dist > CAT_TAIL_UP.dist || dist < 1e-3) return false;
+    const h = Math.hypot(dx, dz) || 1e-9;
+    return (-Math.sin(yaw) * dx - Math.cos(yaw) * dz) / h > Math.cos(THREE.MathUtils.degToRad(CAT_TAIL_UP.cone));
+  }
+
+  /** Where the X is (world). */
+  buttPoint(out) {
+    this.parts.butt.updateWorldMatrix(true, false);
+    return this.parts.butt.getWorldPosition(out);
   }
 
   /** Walked `m` metres this frame (#224): the legs move on in the gait. */
@@ -588,14 +648,22 @@ export class CatSpawner {
     mix3(this.head.position, S.head, T.head, k).add(this.headOff).y += bob;
     if (a > 1e-3) this.head.rotation.x += a * 0.06 * Math.sin(2 * ph + 0.6);
     mix3(this.tailGroup.position, S.tailRoot, T.tailRoot, k).y += bob;
-    if (Math.abs(k - this.tailK) > 0.004) { // rebuilt only while it gets up or sits down
-      this.tailK = k;
-      const pts = S.tail.map((q, i) => mix3(new THREE.Vector3(), q, T.tail[i], k));
+    const u = smooth(0, 1, this.tailU);
+    // the X under the tail root while the tail is up (#262); a fluffy coat sitting covers a little of it
+    const butt = p.butt;
+    butt.visible = u > 0.6;
+    if (butt.visible) {
+      mix3(butt.position, BUTT.sit, BUTT.stand, k).add(this.tailGroup.position);
+      butt.position.z -= 0.13 * (fluff - 1) * (1 - k);
+    }
+    if (Math.abs(k - this.tailK) > 0.004 || Math.abs(u - this.tailUK) > 0.004) { // rebuilt only while the pose or the tail changes
+      this.tailK = k; this.tailUK = u;
+      const pts = S.tail.map((q, i) => mix3(new THREE.Vector3(), q, T.tail[i], k).lerp(new THREE.Vector3(...TAIL_UP[i]), u));
       p.tail.geometry.dispose();
       p.tail.geometry = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 24, 0.017 * (this.breed.tail ?? 1), 8);
       p.tip.position.copy(pts[pts.length - 1]);
       const r = this.breed.tail ?? 1; // a thick tail gets a thick tip (it shows once the tail is up)
-      p.tip.scale.set(0.02 * r, 0.018 * r, mix(0.03, 0.02, k) * r);
+      p.tip.scale.set(0.02 * r, 0.018 * r, mix(mix(0.03, 0.02, k), 0.02, u) * r);
     }
   }
 
@@ -622,6 +690,8 @@ export class CatSpawner {
       sfx.meow({ x: p.x, y: p.y + 0.3, z: p.z }, this.variant.pitch * (this.breed.pitch ?? 1) * (0.92 + this.rand() * 0.16), this.voice);
       this.nextMeow = 8 + this.rand() * 14;
     }
+    if (this.tailUp) { this.tailIdle(dt); return; } // up on its feet with the tail up (#262)
+    this.tailTurn = null;
     // washing cycle: lift paw, lick it a few times, wipe over the face, lower, pause
     const c = this.t % 6;
     const up = smooth(0.0, 0.5, c) * (1 - smooth(3.2, 3.7, c));
@@ -637,6 +707,24 @@ export class CatSpawner {
     const idle = 1 - up;
     this.head.rotation.y += idle * 0.35 * Math.sin(this.t * 0.7);
     this.tailGroup.rotation.y = 0.08 * Math.sin(this.t * 2.3) * idle;
+  }
+
+  /** Idle with the tail up (#262): it gets up, turns round on the spot (often showing its back) and looks about. */
+  tailIdle(dt) {
+    const o = this.object;
+    this.wantStand = 1;
+    this.shoulder.rotation.set(0, 0, 0);
+    if (!this.tailTurn) this.tailTurn = { from: o.rotation.y, by: (this.rand() < 0.5 ? -1 : 1) * Math.PI * (0.5 + this.rand() * 0.5), t: 0 };
+    const T = this.tailTurn;
+    if (this.standing && T.t < 1) {
+      const before = T.t;
+      T.t = Math.min(1, T.t + dt / CAT_TAIL_UP.turn);
+      const e = (x) => x * x * (3 - 2 * x), yaw = T.from + T.by * e(T.t);
+      this.stride(Math.abs(T.by * (e(T.t) - e(before))) * 0.15 * (this.breed.size ?? 1));
+      o.rotation.y = yaw;
+    }
+    this.head.rotation.set(0.05, 0.4 * Math.sin(this.t * 0.7), 0);
+    this.tailGroup.rotation.y = 0.12 * Math.sin(this.t * 2.3);
   }
 
   // --- walking off after a pat (#206) -------------------------------------------------------------------------
@@ -663,6 +751,7 @@ export class CatSpawner {
     this.leaveY = p.y;
     this.leaving = { t: 0, yaw: best.yaw, d: best.d, gone: 0, from: o.rotation.y };
     this.shoulder.rotation.set(0, 0, 0);
+    if (this.rand() < CAT_TAIL_UP.leave) this.raiseTail(best.d / CAT_LEAVE.speed + 2); // off it goes, tail up (#262)
   }
 
   updateLeaving(dt) {

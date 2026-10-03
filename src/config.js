@@ -650,6 +650,13 @@ export const CAT_WALK = { rise: 0.3, stride: 0.3, swing: 0.4, knee: 0.6, bob: 0.
 // A cat turning up behind a door sits up on a bed, sofa, chair or table in that room this often (#200, cat.js furnitureSpot),
 // on one seen straight from the doorway within `reach` m.
 export const CAT_FURNITURE = { chance: 0.4, reach: 5 };
+// Tail up (#262, cat.js `updateTail`): now and then (a wait of `every` [min, max] s, `standing` × as fast while it is up on
+// its feet) the cat gets up and holds its tail straight up for `seconds` [min, max] s, raised/lowered over `blend` s, turning
+// round on the spot over `turn` s (sitting it washes; the tail never goes up while it sits); walking off after a pat it does
+// so `leave` of the time. Then a small dark X (`x` m across) shows under the tail root. Seen from behind —
+// the eye within `cone`° of straight behind it, within `dist` m, the X on screen, no wall between — it counts once per
+// tail-up (stats catButts, SCORE). Our picks.
+export const CAT_TAIL_UP = { every: [10, 25], seconds: [4, 8], standing: 3, blend: 0.4, turn: 1.5, leave: 0.6, x: 0.022, cone: 55, dist: 3.5 };
 
 // Steam over hot coffee (#216, cups.js): `strips` soft wisps rising `height` m from the surface, one mesh per cup;
 // fresh coffee is hot and cools over `seconds` (real ones steam a few minutes), cold milk cools it by `milk` × its share;
@@ -779,12 +786,13 @@ export const SCORE = {
     doors: 2, lids: 1, flushes: 2, taps: 1, fridge: 2, appliances: 2, cabinets: 1, lights: 1, sat: 2, lay: 2,
     visited: 5, songs: 3, read: 5, car: 15, grill: 10, hood: 3, tv: 3, pc: 5, parasol: 3, clock: 3, calendar: 3,
     coats: 10, greets: 2, // greets: per person (#247)
+    catButts: 15, // a cat's bum seen from behind with its tail up (#262): per cat, then `again` per tail-up
     walkRain: 15, walkSnow: 25, walkHail: 40, walkStorm: 30, // out in the weather (#249): the first time, then `again` per shower
   },
   again: {
     doors: 0.1, lids: 0.1, flushes: 0.2, taps: 0.1, fridge: 0.1, appliances: 0.1, cabinets: 0.05, lights: 0.05,
     sat: 0.1, lay: 0.1, songs: 0.2, read: 0.5, car: 1, grill: 1, hood: 0.2, tv: 0.2, pc: 0.3, parasol: 0.2,
-    clock: 0.1, calendar: 0.1, greets: 0.1, walkRain: 2, walkSnow: 3, walkHail: 4, walkStorm: 3,
+    clock: 0.1, calendar: 0.1, greets: 0.1, catButts: 1, walkRain: 2, walkSnow: 3, walkHail: 4, walkStorm: 3,
   },
   breeds: { huskatt: 10, siames: 30, 'brittiskt korthår': 30, 'maine coon': 35, 'norsk skogkatt': 40, perser: 100, sphynx: 250 },
   secrets: { kinds: 10, rare: 40 },
