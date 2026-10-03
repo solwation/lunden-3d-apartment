@@ -806,10 +806,14 @@ export const CUP_STEAM = { seconds: 240, strips: 3, segments: 10, height: 0.13, 
 // for `seconds`; more coffee meanwhile adds `extend` × the time per 3 cups' worth, up to `max` s left; `fov` degrees wider;
 // the last `ending` s the tune speeds up; `bpm`, `volume` of the chiptune. Our picks.
 export const TURBO = { cups: 3, window: 300, seconds: 120, max: 240, extend: 1, speed: 1.8, fov: 6, ending: 5, bpm: 190, volume: 0.5 };
+// The coffee (#316, the user: "we live in Skåne, there we drink it dark" — Zoégas Mollbergs Blandning, a dark roast):
+// one colour for the jug (coffee.js), the cups (cups.js) and the mixes (DRINKS.coffee); almost black-brown, not reddish
+// (*guess*, tuned on screenshots). `roughness` low so light catching the surface gives a faint glint.
+export const COFFEE = { color: 0x1b0f08, roughness: 0.12 };
 // Cup patterns (#215, cups.js `DESIGNS`): every cup gets one; opening the cabinet fills an empty shelf spot with a new
 // cup of a random pattern (not one already in there). At most `maxOut` cups stand outside the cabinet: past that the
 // one put down longest ago goes. `designs` = the pattern names drawn in cups.js (the family's names after #164).
-export const CUPS = { n: 3, r: 0.04, h: 0.09, color: 0xf3f1ec, coffee: 0x2a1408, pour: 0.25, counter: { x: 5.2, z: 1.68 },
+export const CUPS = { n: 3, r: 0.04, h: 0.09, color: 0xf3f1ec, coffee: COFFEE.color, pour: 0.25, counter: { x: 5.2, z: 1.68 },
   sip: 0.2, maxOut: 8, designs: ['blue-stripes', 'mustard-stripes', 'red-dots', 'flowers', 'blue-white', 'cat', 'sarah', 'olof',
     'hearts', 'black-gold', 'rainbow', 'lunden', 'letter-T', 'letter-K', 'letter-W', 'letter-L'],
   held: { x: 0.18, y: -0.2, z: -0.4 }, jugHeld: { x: 0.22, y: -0.26, z: -0.55 } }; // jugHeld: the jug in the view (#141)
@@ -823,8 +827,8 @@ export const DRINKS = {
   wine: { color: 0x5c0a1c, opacity: 0.92, tint: 1, name: 'vin' },
   champagne: { color: 0xeed98a, opacity: 0.6, tint: 1, name: 'champagne' },
   whisky: { color: 0xb8651c, opacity: 0.82, tint: 1, name: 'whisky' },
-  milk: { color: 0xf7f5ef, opacity: 1, tint: 2, name: 'mjölk', withCoffee: 0xc39a6b }, // withCoffee: its colour in a mix with coffee (café au lait, #168)
-  coffee: { color: 0x2a1408, opacity: 1, tint: 1, name: 'kaffe' },
+  milk: { color: 0xf7f5ef, opacity: 1, tint: 2.5, name: 'mjölk', withCoffee: 0xc39a6b }, // withCoffee: its colour in a mix with coffee (café au lait, #168); tint 2 → 2.5 with the darker coffee (#316) so a splash lightens it as much as before
+  coffee: { color: COFFEE.color, opacity: 1, tint: 1, name: 'kaffe' }, // #316: dark roast
   pour: {
     glass: { wine: { to: 0.45 }, champagne: { to: 0.85 }, whisky: { add: 0.2 }, milk: { to: 0.75 } },
     cup: { milk: { empty: 0.8, add: 0.15 }, whisky: { add: 0.12 } }, // milk: a cup of it or a splash in the coffee (#168); whisky: a splash (#169)

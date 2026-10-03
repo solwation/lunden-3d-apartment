@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { CUPS as C, DRINKS as D, CUP_STEAM } from './config.js';
+import { CUPS as C, DRINKS as D, CUP_STEAM, COFFEE } from './config.js';
 import { sfx } from './audio.js';
 import { heldItem, setHeld, handBusy, Holdable } from './holdable.js';
 import { Contents, pourAmount, drinkName } from './drinks.js';
@@ -202,7 +202,7 @@ function mugModel() {
   bottom.position.y = 0.004;
   const handle = new THREE.Mesh(new THREE.TorusGeometry(0.026, 0.007, 8, 16, Math.PI), plain);
   handle.rotation.z = -Math.PI / 2; handle.position.set(C.r + 0.002, C.h * 0.55, 0);
-  const coffee = new THREE.Mesh(new THREE.CircleGeometry(C.r * 0.94, 20).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ color: C.coffee, roughness: 0.15 }));
+  const coffee = new THREE.Mesh(new THREE.CircleGeometry(C.r * 0.94, 20).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ color: C.coffee, roughness: COFFEE.roughness }));
   coffee.visible = false;
   g.add(body, inner, bottom, handle, coffee);
   g.traverse((m) => { if (m.isMesh) m.castShadow = true; });

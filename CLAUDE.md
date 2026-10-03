@@ -221,7 +221,8 @@ src/hood.js            the cooker hood (#194, `world.hood`, in world.lids): E ru
                        separate button = its own lamp, #221 — the fan does not light it, like a real hood) and
                        draws the chicken's smoke up into it; the smoke alarm in the kitchen ceiling (SMOKE_ALARM) beeps
                        and blinks red after `delay` s of smoke the hood does not take (`chicken.freeSmoke`); F: fan off
-src/coffee.js          Moccamaster on the worktop (MOCCAMASTER): E brews (red light, sound, the jug fills)
+src/coffee.js          Moccamaster on the worktop (MOCCAMASTER): E brews (red light, sound, the jug fills); tank + switch on the left, jug
+                       on the right (#315); the coffee colour (jug, cups, mixes) is COFFEE in config, a dark Scanian roast (#316)
 src/airfryer.js        the air fryer (AIRFRYER, #287): an OBH Nordica Easy Fry Deluxe in the worktop corner left of the freezer, turned
                        `rot` 45° with its front diagonally out of the corner (#296; one group, so the basket's slide, the panel,
                        the slots and the vents turn with it), its cord to the corner power box behind it; E on the handle pulls the basket out / in, E on the panel starts / stops a run

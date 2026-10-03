@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { MOCCAMASTER as C } from './config.js';
+import { MOCCAMASTER as C, COFFEE } from './config.js';
 import { sfx } from './audio.js';
 
 // The Moccamaster on the kitchen worktop (#59): black base with the hot plate, the water tank
@@ -11,8 +11,8 @@ import { sfx } from './audio.js';
 
 const black = new THREE.MeshStandardMaterial({ color: 0x17181a, roughness: 0.35 });
 const tankMat = new THREE.MeshStandardMaterial({ color: 0x2a2c30, roughness: 0.15, transparent: true, opacity: 0.75 });
-const glass = new THREE.MeshStandardMaterial({ color: 0xdfe8ec, roughness: 0.05, transparent: true, opacity: 0.3, depthWrite: false });
-const coffee = new THREE.MeshStandardMaterial({ color: 0x2a1408, roughness: 0.3 });
+const glass = new THREE.MeshStandardMaterial({ color: 0xdfe8ec, roughness: 0.05, transparent: true, opacity: 0.2, depthWrite: false }); // 0.3 → 0.2 (#316): the dark coffee shows through
+const coffee = new THREE.MeshStandardMaterial({ color: COFFEE.color, roughness: COFFEE.roughness }); // dark roast (#316)
 const steel = new THREE.MeshStandardMaterial({ color: 0xb9bdc0, roughness: 0.3, metalness: 0.5 });
 
 const mesh = (geo, m, x, y, z) => {
