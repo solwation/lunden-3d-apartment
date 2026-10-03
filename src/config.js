@@ -164,7 +164,18 @@ export const SITE = {
   // line. `recesses` per block: { face n|e|s|w, a0, a1 (plan coordinate along the face), depth, from/to (storeys, counted
   // from `base`; none = all), door (the storey with the entrance door) } — white-rendered entrance recesses (A/B north,
   // A west / B east at the park level, Hus C east with loggias above). `plants` = share of the loggias with a plant.
-  loggia: { pier: 0.5, rail: 1.05, plants: 0.35, mid: 4.5, midAt: 3.5 },
+  // #266 (docs/hus-a-loggia-norr-skarmbild.png, docs/peab/hus-a-norrfasad-vaning1.png): on every storey the longer
+  // inner wall has a glazed `door` from the flat in the inner corner (`gap` from the other inner wall) and a `window`
+  // `from` m from the façade line, up to `max` wide and `gap` short of the door (NW 1.0 m, SW 2.2 m on the plans); the
+  // other inner wall is solid. A loggia whose floor is at the ground (the flats' uteplatser, våning 1 on the courtyard)
+  // has a brick `parapet` (h, t: guess) with a light coping instead of the railing, with an `open`ing next to the
+  // flat's wall on the longer front (våning 1: the band stops ~0.85 m short, x −7.2…−6.4 for Hus A NW). The upper
+  // storeys keep the light slatted metal railing (thin lines on våning 2–4, Peab's aerial render). `entrance`: the
+  // recess's glazed door (w) with a sidelight (side), a canopy over the mouth (out, at, t), a house letter beside it.
+  loggia: { pier: 0.5, rail: 1.05, plants: 0.35, mid: 4.5, midAt: 3.5,
+    door: { w: 0.9, h: 2.3, gap: 0.08 }, window: { from: 0.9, max: 2.2, gap: 0.5, sill: 0.8, head: 2.3 },
+    parapet: { h: 1.05, t: 0.2, open: 0.85, coping: 0.04 },
+    entrance: { w: 1.1, side: 0.55, h: 2.35, canopy: { out: 0.7, at: 2.85, t: 0.14 }, sign: 0.42 } },
   // their roof: a low hip roof with the ridge along the long side (N–S), roofing felt ("papp", Peab's Q&A); the 0.3 m
   // lines round the houses on the plans = the eaves. `rise` read off Peab's aerial render (guess).
   hipRoof: { rise: 1.5, overhang: 0.32 },
