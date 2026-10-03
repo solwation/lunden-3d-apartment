@@ -360,10 +360,12 @@ export const START = { x: 2.875, z: -12, yawDeg: 180, pitchDeg: 8 };
 // `day`); the blanket only outside the snow months. Positions and colours are ours.
 export const PEOPLE = {
   day: 0.3,
+  // #244: none on the main walk at z 30.2–31.7 — past the garage box's edge it is outside the railing; the east walk instead,
+  // and a kid on the patio walk beside the other walker there (z 18.5 | 19.2, clear of the bollards at 18.05)
   walkers: [
     { a: [-80, -22.7], b: [18, -22.7], speed: 1.3, dog: true }, { a: [15, -22.9], b: [-60, -22.9], speed: 1.15 },
-    { a: [-46, -2.2], b: [15, -2.2], speed: 1.2 }, { a: [-48, 31], b: [10, 31], speed: 1.25 }, { a: [8, 30.8], b: [-40, 30.8], speed: 1.0, kid: true },
-    { a: [-44, 18.9], b: [10, 18.9], speed: 1.1 }, { a: [-48.7, 9], b: [-48.7, 49], speed: 1.3 },
+    { a: [-46, -2.2], b: [15, -2.2], speed: 1.2 }, { a: [-13, 26.45], b: [12, 26.45], speed: 1.25 }, { a: [8, 18.5], b: [-40, 18.5], speed: 1.0, kid: true },
+    { a: [-44, 19.2], b: [10, 19.2], speed: 1.1 }, { a: [-48.7, 9], b: [-48.7, 49], speed: 1.3 },
   ],
   cyclists: [{ a: [-90, -26.4], b: [20, -26.4], speed: 4.5 }, { a: [20, -27.8], b: [-90, -27.8], speed: 5.2 }],
   ball: [[-35.5, 20.6], [-30.5, 22.2]],          // two kids passing a ball (on the gravel by the sandbox)
