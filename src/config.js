@@ -146,7 +146,7 @@ export const SITE = {
   longhouse: { bay: 2.6, storey: 3.8, rows: [{ y: 1.6, s: [0.9, 1.2, 1] }], dormers: 5 },
   blocks: [
     // Kv. Lunden, Å-husen (overview plans): storeys counted from `base`; red brick, low hip roof
-    { name: 'Hus A', x0: -10.2, x1: 9.5, z0: 29.6, z1: 54.2, base: -3, storeys: 5, roof: 'hip' },  // våning -1…4
+    { name: 'Hus A', x0: -10.2, x1: 9.5, z0: 30.2, z1: 54.2, base: -3, storeys: 5, roof: 'hip' },  // våning -1…4; north face on the box edge (#246)
     { name: 'Hus B', x0: -43.4, x1: -23.7, z0: 34.2, z1: 58.6, base: -3, storeys: 4, roof: 'hip' }, // våning -1…3
     { name: 'Hus C', x0: -73.0, x1: -53.3, z0: 12.5, z1: 37.5, base: 0, storeys: 5, roof: 'hip' },  // våning 1…5
     // outside the plot (#47): the old S:t Lars hospital buildings, as on Peab's drone photo and aerial
@@ -235,7 +235,7 @@ export const COURTYARD = {
   // stone-paved walks
   paths: [
     { x0: -46, x1: 12, z0: 18.2, z1: 19.6 },   // along the row-house patios
-    { x0: -50, x1: 12, z0: 30.2, z1: 31.7 },   // the main walk across, north of Hus A/B
+    { x0: -50, x1: -43, z0: 30.2, z1: 31.7 },  // the main walk north of Hus B, only where the box reaches (#246: further east it lay in Hus A / over the park)
     { x0: -13, x1: 12, z0: 25.6, z1: 27.3 },   // to the stair on the east edge
     { x0: -17.6, x1: -13.9, z0: 12.7, z1: 20 }, // from the portik
     { x0: -50.2, x1: -47.2, z0: 8, z1: 51 },   // between Hus C and the Borggården

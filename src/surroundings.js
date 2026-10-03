@@ -66,6 +66,7 @@ function boxWalls() {
       if (onBox(mx, mz)) continue; // an inner edge between two box parts
       const y0 = groundY(x0 + ox * 0.05, z0 + oz * 0.05), y1 = groundY(x1 + ox * 0.05, z1 + oz * 0.05);
       if (y0 > -0.05 && y1 > -0.05) continue; // no step here
+      if (S.blocks.some((b) => mx > b.x0 && mx < b.x1 && mz > b.z0 && mz < b.z1)) continue; // a house's façade is the edge here (#246)
       // the walls stand 4 cm outside the box edge, in front of the terrain's own (grass) step
       const wx0 = x0 + ox * 0.04, wz0 = z0 + oz * 0.04, wx1 = x1 + ox * 0.04, wz1 = z1 + oz * 0.04;
       const atDoor = ox < 0 && Math.abs(x0 - T.garageDoor.x) < 0.1 && (z0 + z1) / 2 > T.garageDoor.z0 && (z0 + z1) / 2 < T.garageDoor.z1;
@@ -379,7 +380,7 @@ function loggias(blocks) {
       for (let st = 0; st <= b.storeys; st++) {
         const y = b.base + st * S.storey;
         if (st > 0) slabs.push(new THREE.BoxGeometry(d, 0.22, d).translate(mx, y - 0.11, mz)); // floor above / ceiling below
-        if (st === b.storeys || y < groundY(cx, cz) + 1.2) continue; // no railing on the roof or at the ground
+        if (st === b.storeys || y < groundY(mx, mz) + 1.2) continue; // no railing on the roof or at the ground under the loggia (#246)
         rails.push(new THREE.PlaneGeometry(d - p, L.rail).translate(cx + sx * (p + (d - p) / 2), y + L.rail / 2, cz + sz * 0.06).scale(1, 1, 1)); // along x, in the z façade line
         rails.push(new THREE.PlaneGeometry(d - p, L.rail).rotateY(Math.PI / 2).translate(cx + sx * 0.06, y + L.rail / 2, cz + sz * (p + (d - p) / 2))); // along z
         if (rand() < L.plants) {
