@@ -122,6 +122,7 @@ export class Weather {
   roofAt(x, z) {
     let top = -Infinity;
     for (const b of this.boxes) if (x > b.x0 && x < b.x1 && z > b.z0 && z < b.z1 && b.y1 > top) top = b.y1;
+    for (const b of this.extraBoxes?.() ?? []) if (x > b.x0 && x < b.x1 && z > b.z0 && z < b.z1 && b.y1 > top) top = b.y1; // our parked car (#250)
     return top;
   }
 

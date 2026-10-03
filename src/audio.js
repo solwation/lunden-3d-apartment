@@ -407,6 +407,16 @@ export const sfx = {
     tone(t, 0.1, d, { from: opening ? 140 : 90, to: 60, gain: 0.2 });
   },
   /** Light switch click. */
+  /** A car door (#250): opening, the handle's click and the seal letting go; closing, a solid low "chunk" after `delay` s. */
+  carDoor(pos, opening, delay = 0.45) {
+    if (!ready()) return;
+    const t = ctx.currentTime, d = out(pos, 0.9);
+    if (opening) { latch(t, d, 0.35); noise(t + 0.03, 0.12, d, { type: 'lowpass', freq: 600, gain: 0.25 }); return; }
+    noise(t, delay, d, { freq: 300, q: 0.7, gain: 0.05, attack: delay * 0.8 });
+    tone(t + delay, 0.18, d, { from: 110, to: 55, gain: 0.7 });
+    noise(t + delay, 0.12, d, { type: 'lowpass', freq: 450, gain: 0.6 });
+    latch(t + delay + 0.01, d, 0.25);
+  },
   /** Car key remote (lock button): the car answers with two short beeps. */
   carBeep(pos) {
     if (!ready()) return;

@@ -293,7 +293,14 @@ src/sillplants.js      flower pots on every inner window board (SILL_PLANTS, #13
 src/plants.js          SillPot (#185): each window-board pot is a Holdable; its own model is invisible at home, shows (and
                        the merged meshes are rebuilt without it) once taken; the side-table flower and the kitchen shelf's
                        vase / pot plant are plain Things (kind 'plant'); window boards are put-down surfaces too
-src/car.js             our white Renault Megane E-Tech (CAR, #173): the hall key calls it in through the gap in the shrubs
+src/carmodel.js        car bodies from a side profile (#250, MEGANE: `top` / `belt` / `bot` lines, wheel arches, plan rounding, a
+                       shoulder, the glasshouse leaning in): `buildCar(spec, { doors })` — with doors: four hinged doors (lower
+                       panel, black frame + glass, handle, mirror), the cabin (dashboard, OpenR screens, steering wheel on the
+                       left, console, front seats, rear bench); without: a closed body as per-material geometries (`parts`)
+src/car.js             our white Renault Megane E-Tech (CAR, #173; the model from carmodel.js, #250): parked, E on a door opens /
+                       shuts it (kind 'cardoor', `car.targets()`), E on a front seat whose door is open sits you in it (rest.js,
+                       looking ahead; getting up puts you back by the door); not drivable; the key shuts open doors before it
+                       leaves; the screens wake while a door is open / someone sits; `car.box()` keeps the rain out; the hall key calls it in through the gap in the shrubs
                        to stop right outside our door (#208; waypoint paths rounded off) (blinks, a collision box while parked, waits for the visitor), pressed again it U-turns and
                        leaves; sfx.evHum follows it; `&car` = parked (screenshots)
 src/signs.js           hand-lettered name signs on the bedroom doors (DOOR_SIGNS)
@@ -338,6 +345,8 @@ tools/scoretest.html   headless test: points from 0, a door (again: a little), t
                        (+ a new coat), 100 sips (no cap), a basket / a three, secret kinds (+ rare), the balance, reset
 tools/notetest.html    headless test of the changelog note ("Nytt", read/close, no walking, swings with the freezer door)
 tools/patiotest.html   headless test of the patio seasons (parasol, beers, snowman) + sofa collision
+tools/cartest.html     headless test: our parked car — open the driver's / passenger's door, the seat only then, sit inside looking
+                       ahead, out by the door; the key shuts the doors first, then it drives off (#250)
 tools/keytest.html     headless test of the hall key cabinet: open, car key reachable only then, beep; the car comes, parks, leaves
 tools/esctest.html     headless test of Esc on the start screen (click-to-start cover, ignored over the note)
 tools/updatetest.html  headless test of the update notice on a phone-sized touch screen (on top, 44 px, touch works)

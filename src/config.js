@@ -481,6 +481,7 @@ export const CAR = {
   arrive: [[-95, -25.2], [-6, -25.2], [-1.2, -22], [-1.2, -8.5], [0.6, -5.4], [2.9, -5.4]], // ends at our door
   leave: [[2.9, -5.4], [10, -5.4], [13, -7.4], [12.6, -11.2], [9, -12], [1.6, -12], [0.4, -14.5], [0.4, -22], [-2.5, -27.6], [-8, -27.8], [-95, -27.8]],
   speed: 8, brake: 2,              // m/s cruising, m/s² slowing down to the stop
+  doorOpen: 1.1,                   // rad: how far a door opens (#250)
 };
 
 // Tilly's basketball (src/basket.js, the user): a size 6 ball (Ø 23 cm) in a wall holder over her daybed (Sovrum 4's

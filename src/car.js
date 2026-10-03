@@ -1,6 +1,6 @@
 import * as THREE from 'three';
-import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
-import { CAR as C } from './config.js';
+import { CAR as C, REST } from './config.js';
+import { buildCar, MEGANE } from './carmodel.js';
 import { sfx } from './audio.js';
 
 // Our car (#173): a white Renault Megane E-Tech, called by the key in the hall. State 'gone' → press → 'arriving'
@@ -39,53 +39,82 @@ function plateTexture(text) {
   return t;
 }
 
+const DOOR_NAMES = { '1,-1': 'förardörren', '1,1': 'passagerardörren', '0,-1': 'bakdörren', '0,1': 'bakdörren' };
+
 export class Car {
   constructor() {
-    const g = new THREE.Group(), L = C.l, W = C.w;
-    const paint = new THREE.MeshStandardMaterial({ color: C.color, roughness: 0.25, metalness: 0.3 });
-    const black = new THREE.MeshStandardMaterial({ color: 0x15171a, roughness: 0.4 });
-    const glass = new THREE.MeshStandardMaterial({ color: 0x1b2430, roughness: 0.1, metalness: 0.5 });
-    const chrome = new THREE.MeshStandardMaterial({ color: 0xd7dadc, roughness: 0.2, metalness: 0.8 });
-    this.lightMat = new THREE.MeshStandardMaterial({ color: 0xf4f6ff, emissive: 0xeaf0ff, emissiveIntensity: 0.2 });
-    this.tailMat = new THREE.MeshStandardMaterial({ color: 0x8a0f12, emissive: 0xff2020, emissiveIntensity: 0.15 });
-    this.blinkMat = new THREE.MeshStandardMaterial({ color: 0xc87a10, emissive: 0xffa020, emissiveIntensity: 0 });
-    const box = (sx, sy, sz, x, y, z, m, r = 0.04) => { const o = new THREE.Mesh(new RoundedBoxGeometry(sx, sy, sz, 3, Math.min(r, sx / 2, sy / 2, sz / 2)), m); o.position.set(x, y, z); o.castShadow = true; g.add(o); return o; };
-    box(L, 0.62, W, 0, 0.62, 0, paint, 0.16);                         // body
-    box(L * 0.92, 0.12, W + 0.04, 0, 0.36, 0, black, 0.05);            // black sills / lower cladding
-    box(L * 0.5, 0.44, W * 0.86, -0.35, 1.14, 0, glass, 0.12);         // cabin glass
-    box(L * 0.48, 0.05, W * 0.84, -0.37, 1.37, 0, black, 0.025);       // black roof
-    box(0.82, 0.05, W * 0.84, 0.6, 1.12, 0, glass, 0.02).rotation.z = -0.62; // raked windscreen down to the bonnet
-    box(0.5, 0.05, W * 0.84, -1.55, 1.1, 0, glass, 0.02).rotation.z = 0.9;   // sloping tailgate glass
-    for (const s of [-1, 1]) box(0.14, 0.08, 0.1, L * 0.14, 1.06, s * (W / 2 + 0.04), black, 0.03); // mirrors
-    for (const s of [-1, 1]) box(0.04, 0.05, 0.5, L / 2 - 0.01, 0.82, s * 0.55, this.lightMat, 0.02); // slim LED headlights
-    box(0.04, 0.06, W * 0.86, -L / 2 + 0.01, 0.92, 0, this.tailMat, 0.02);  // the light bar across the back
-    for (const s of [-1, 1]) for (const x of [L / 2 - 0.05, -L / 2 + 0.05]) box(0.06, 0.04, 0.1, x, 0.75, s * (W / 2 - 0.08), this.blinkMat, 0.015);
-    const logo = box(0.02, 0.12, 0.12, L / 2 + 0.01, 0.72, 0, chrome, 0.01); logo.rotation.x = Math.PI / 4; // the diamond
+    // the body, doors, cabin and wheels (#250, carmodel.js); built facing +x, y = 0 the road
+    const m = buildCar(MEGANE, { doors: true, paint: C.color }), g = m.group, L = C.l;
+    this.lightMat = m.materials.led;
+    this.tailMat = m.materials.tail;
+    this.blinkMat = m.materials.blink;
+    this.screenMat = m.materials.screen;
     const plate = new THREE.MeshStandardMaterial({ map: plateTexture(C.plate), roughness: 0.5 });
     this.plates = [];
-    for (const [x, ry] of [[L / 2 + 0.03, Math.PI / 2], [-L / 2 - 0.03, -Math.PI / 2]]) {
-      const p = new THREE.Mesh(new THREE.PlaneGeometry(0.52, 0.11), plate); p.position.set(x, 0.5, 0); p.rotation.y = ry; g.add(p); this.plates.push(p);
+    for (const [x, y, ry] of [[L / 2 + 0.065, 0.46, Math.PI / 2], [-L / 2 - 0.065, 0.6, -Math.PI / 2]]) {
+      const p = new THREE.Mesh(new THREE.PlaneGeometry(0.52, 0.11), plate); p.position.set(x, y, 0); p.rotation.y = ry; g.add(p); this.plates.push(p);
     }
-    this.wheels = [];
-    const tyre = new THREE.CylinderGeometry(0.36, 0.36, 0.24, 24).rotateX(Math.PI / 2), rim = new THREE.CylinderGeometry(0.24, 0.24, 0.25, 12).rotateX(Math.PI / 2);
-    for (const x of [L * 0.32, -L * 0.32]) for (const s of [-1, 1]) {
-      const w = new THREE.Group(); w.position.set(x, 0.36, s * (W / 2 - 0.12));
-      w.add(new THREE.Mesh(tyre, black), new THREE.Mesh(rim, chrome));
-      for (let k = 0; k < 5; k++) { const sp = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.4, 0.02), black); sp.rotation.z = (k / 5) * Math.PI; sp.position.z = s * 0.13; w.add(sp); } // spokes: they show it turning
-      g.add(w); this.wheels.push(w);
-      const arch = new THREE.Mesh(new THREE.TorusGeometry(0.42, 0.05, 6, 16, Math.PI), black); arch.position.set(x, 0.38, s * (W / 2 + 0.005)); g.add(arch);
-    }
+    this.wheels = m.wheels;
+    // the doors: E on one opens / closes it while the car is parked
+    this.doors = m.doors.map((d) => {
+      const name = DOOR_NAMES[`${d.front ? 1 : 0},${d.side}`];
+      const door = { ...d, name, kind: 'cardoor', pickable: d.pivot, car: this,
+        get isOpen() { return this.target > 0; },
+        toggle: () => this.toggleDoor(door) };
+      d.pivot.traverse((o) => { o.userData.door = door; });
+      return door;
+    });
+    // the front seats: E sits you down (rest.js) while that side's front door is open — or you are already in it
+    this.seats = m.seats.map((s) => {
+      const pick = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.55, 0.5), new THREE.MeshBasicMaterial());
+      pick.position.set(s.x - 0.1, s.y + 0.15, s.z); pick.visible = false; g.add(pick);
+      const car = this, side = Math.sign(s.z);
+      const target = { kind: 'rest', rest: 'sit', name: s.name, verbText: 'sätta dig i', pickable: pick, level: 0, seat: s, car: this,
+        get verb() { return this.verbText; },
+        get door() { return car.doors.find((d) => d.front && d.side === side); },
+        get spots() { return [car.spot(s)]; } };
+      pick.userData.door = target;
+      return target;
+    });
     g.visible = false;
     this.object = g;
-    Object.assign(this, { state: 'gone', d: 0, speed: 0, blinkT: 0, hum: null, path: null, plateText: C.plate });
+    Object.assign(this, { state: 'gone', d: 0, speed: 0, blinkT: 0, hum: null, path: null, plateText: C.plate, leaveWhenShut: false, awake: 0 });
   }
+
+  /** The rest spot of seat `s` (world): eye over the cushion, looking forward along the car. */
+  spot(s) {
+    this.object.updateMatrixWorld();
+    const pos = new THREE.Vector3(s.x, s.y + REST.sitEye, s.z).applyMatrix4(this.object.matrixWorld);
+    const yaw = this.object.rotation.y - Math.PI / 2; // the camera's yaw looking along local +x
+    return { kind: 'sit', pos, yaw, aimPos: null, car: true };
+  }
+
+  /** E targets while parked: the doors, and the front seats whose door is open (`seated`: the target sat in now). */
+  targets(seated = null) {
+    if (this.state !== 'parked') return [];
+    return [...this.doors, ...this.seats.filter((t) => t.door.isOpen || t === seated)];
+  }
+
+  toggleDoor(door) {
+    if (this.state !== 'parked') return;
+    const open = door.target === 0;
+    door.target = open ? C.doorOpen : 0;
+    sfx.carDoor(door.pivot.getWorldPosition(new THREE.Vector3()), open);
+  }
+
+  get doorsShut() { return this.doors.every((d) => d.target === 0 && d.angle < 0.01); }
 
   /** The key was pressed. */
   call() {
     if (this.state === 'gone') { this.path = this.arrival(); this.d = 0; this.state = 'arriving'; this.speed = C.speed; this.object.visible = true; this.hum = sfx.evHum(this.object.position); }
-    else if (this.state === 'parked') { this.path = this.departure(); this.d = 0; this.state = 'leaving'; this.speed = 0; this.blinkT = 1.2; this.hum = sfx.evHum(this.object.position); }
+    else if (this.state === 'parked') {
+      if (!this.doorsShut) { for (const d of this.doors) if (d.target > 0) this.toggleDoor(d); this.leaveWhenShut = true; return; } // shut the doors first
+      this.leave();
+    }
     this.place();
   }
+
+  leave() { this.path = this.departure(); this.d = 0; this.state = 'leaving'; this.speed = 0; this.blinkT = 1.2; this.hum = sfx.evHum(this.object.position); this.place(); }
 
   /** Parked in front of the house at once (&car, screenshots). */
   park() { this.path = this.arrival(); this.d = this.total(); this.state = 'parked'; this.object.visible = true; this.place(); }
@@ -124,6 +153,15 @@ export class Car {
     this.blinkMat.emissiveIntensity = this.blinkT > 0 && Math.floor(this.blinkT * 3) % 2 === 0 ? 2.5 : 0;
     this.lightMat.emissiveIntensity = night ? 2.2 : 0.3;
     this.tailMat.emissiveIntensity = night ? 1.2 : 0.2;
+    // the doors swing (eased), the screens wake while a door is open or someone sits inside
+    for (const d of this.doors) {
+      d.angle += (d.target - d.angle) * Math.min(1, dt * 7);
+      d.pivot.rotation.y = d.side * d.angle;
+    }
+    this.awake = Math.max(0, this.awake - dt);
+    if (this.doors.some((d) => d.target > 0) || this.occupied) this.awake = 20;
+    this.screenMat.emissiveIntensity += ((this.awake > 0 ? 0.9 : 0) - this.screenMat.emissiveIntensity) * Math.min(1, dt * 3);
+    if (this.leaveWhenShut && this.doorsShut) { this.leaveWhenShut = false; this.leave(); }
     if (this.state !== 'arriving' && this.state !== 'leaving') return;
     const left = this.total() - this.d;
     let want = C.speed;
@@ -131,7 +169,7 @@ export class Car {
     if (this.blocked(player)) want = 0; // never into the visitor
     this.speed += Math.sign(want - this.speed) * Math.min(Math.abs(want - this.speed), C.brake * 1.5 * dt);
     this.d = Math.min(this.total(), this.d + this.speed * dt);
-    for (const w of this.wheels) w.rotation.z -= (this.speed * dt) / 0.36;
+    for (const w of this.wheels) w.rotation.z -= (this.speed * dt) / MEGANE.wheelR;
     this.place();
     this.hum?.move(this.object.position, this.speed);
     if (this.d >= this.total() - 1e-6) {
@@ -139,6 +177,13 @@ export class Car {
       if (this.state === 'arriving') { this.state = 'parked'; this.blinkT = 1.2; } // blinks twice as it stops
       else { this.state = 'gone'; this.object.visible = false; }
     }
+  }
+
+  /** Its box while parked (plan x/z, roof height y1) — weather.js keeps the rain out of it. */
+  box() {
+    if (this.state !== 'parked') return [];
+    const { x, z } = this.object.position;
+    return [{ x0: x - C.l / 2, x1: x + C.l / 2, z0: z - C.w / 2, z1: z + C.w / 2, y1: C.h }];
   }
 
   /** Collision while parked (world segments, plan x/z). */

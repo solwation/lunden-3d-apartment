@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Car test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+// Our Megane (#250): parked outside the door (&car). Open the driver's door, sit in the driver's seat (inside the car,
+// looking ahead), get out by the door; the passenger side likewise; the seat is no target while its door is shut;
+// the key sends it away — the open doors shut first, then it drives off.
+//   google-chrome --headless=new --dump-dom http://localhost:8137/tools/cartest.html
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const f = document.createElement('iframe');
+f.width = 900; f.height = 600; f.src = '../index.html?car&time=12';
+document.body.append(f);
+f.onload = async () => {
+  const w = f.contentWindow, d = f.contentDocument;
+  while (!w.__app) await wait(100);
+  const { player, camera, step, car, rest, standUp } = w.__app;
+  const lines = [];
+  const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; };
+  d.getElementById('start-touch').click();
+  await wait(50);
+  const btn = d.getElementById('action'), V = camera.position.constructor;
+  const look = (p) => { const dx = p.x - camera.position.x, dz = p.z - camera.position.z; camera.rotation.set(Math.atan2(p.y - camera.position.y, Math.hypot(dx, dz)), Math.atan2(-dx, -dz), 0, 'YXZ'); step(1 / 60); };
+  const local = (x, y, z) => { car.object.updateMatrixWorld(true); return new V(x, y, z).applyMatrix4(car.object.matrixWorld); };
+  let pass = check(car.state === 'parked', 'parked');
+  for (const [side, standZ, door, seat] of [[-1, -1.25, /öppna förardörren/i, /sätta dig i förarsätet/i], [1, 1.25, /öppna passagerardörren/i, /sätta dig i passagerarsätet/i]]) {
+    const stand = local(0.1, 0, standZ);
+    player.spawn(stand.x, stand.z, 0);
+    for (let i = 0; i < 3; i++) step(1 / 60);
+    look(local(0.5, 0.75, side * 0.86));
+    pass &= check(!btn.hidden && door.test(btn.textContent), `the door: "${btn.textContent}"`);
+    look(local(-0.05, 0.6, side * 0.37));
+    pass &= check(!seat.test(btn.textContent), `the seat is no target while the door is shut ("${btn.hidden ? '' : btn.textContent}")`);
+    look(local(0.5, 0.75, side * 0.86)); btn.click();
+    for (let i = 0; i < 60; i++) step(1 / 60);
+    const dr = car.doors.find((x) => x.front && x.side === side);
+    pass &= check(dr.angle > 0.9, `the door opens (${dr.angle.toFixed(2)} rad)`);
+    look(local(-0.05, 0.6, side * 0.37));
+    pass &= check(!btn.hidden && seat.test(btn.textContent), `now the seat: "${btn.textContent}"`);
+    btn.click();
+    for (let i = 0; i < 60; i++) step(1 / 60);
+    car.object.updateMatrixWorld(true);
+    const inCar = camera.position.clone().applyMatrix4(car.object.matrixWorld.clone().invert());
+    pass &= check(rest.active && Math.abs(inCar.z - side * 0.37) < 0.05 && inCar.y > 1.1 && inCar.y < 1.42, `sitting inside (local ${inCar.x.toFixed(2)}, ${inCar.y.toFixed(2)}, ${inCar.z.toFixed(2)})`);
+    const fwd = new V(0, 0, -1).applyQuaternion(camera.quaternion);
+    pass &= check(fwd.x > 0.9, `looking ahead along the car (${fwd.x.toFixed(2)})`);
+    pass &= check(car.screenMat.emissiveIntensity > 0.3, 'the screens are awake');
+    standUp();
+    for (let i = 0; i < 5; i++) step(1 / 60);
+    pass &= check(!rest.active && Math.hypot(player.pos.x - stand.x, player.pos.z - stand.z) < 0.05, 'out again where you stood, by the door');
+  }
+  // the key: the doors shut first, then it leaves
+  car.call();
+  pass &= check(car.state === 'parked' && car.doors.every((x) => x.target === 0), 'the key: the doors close first');
+  for (let i = 0; i < 90; i++) step(1 / 60);
+  pass &= check(car.state === 'leaving', `then it drives off (${car.state})`);
+  out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
+};
+</script>
+</body>
+</html>

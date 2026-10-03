@@ -315,6 +315,7 @@ const people = new People(); // walkers, cyclists, kids, neighbours (#114)
 scene.add(people.object);
 const greet = new Greetings(people, camera, document.getElementById('speech'), (p) => behindWall(p)); // say hello to them (#247)
 if (params0.has('car')) car.park(); // &car: parked out front (screenshots)
+weather.extraBoxes = () => car.box(); // no rain inside our parked car (#250)
 { const moving = world.movingSegments; world.movingSegments = (lvl) => [...moving(lvl), ...(lvl === 0 ? car.segments() : [])]; } // parked: in the way
 scene.add(target.object); // up only while something that can hit it is in the hand (#144, #179, step)
 const marks = new Marks(scene, camera, [world.object, patio.object, target.object], cat); // burn marks, stars, splashes on surfaces (#96)
@@ -702,7 +703,7 @@ function standSpot(seat, yaw, old) {
 }
 function standUp() {
   const film = rest.spot?.pc === 'film';
-  const seat = rest.spot?.pos.clone(), lying = rest.kind === 'lie';
+  const seat = rest.spot?.pos.clone(), lying = rest.kind === 'lie', inCar = rest.spot?.car; // out of the car: back where you stood, by the door (#250)
   // you keep looking the way you looked while seated (#202); lying you were facing the ceiling: level
   const yaw = camera.rotation.y, pitch = lying ? 0 : camera.rotation.x;
   const s = rest.end();
@@ -710,7 +711,7 @@ function standUp() {
   if (rest.tvOn) { if (rest.tvOn.isOpen) { rest.tvOn.toggle(); sfx.tvClick(rest.tvOn.pickable.getWorldPosition(new THREE.Vector3()), false); } rest.tvOn = null; } // (#213)
   // getting up from the film: the monitor goes back to the desk (and the game) — the PC stays on
   if (film) for (const t of world.furnitureTargets) if (t.kind === 'pc') t.watch(null);
-  const at = seat ? standSpot(seat, yaw, s) : s;
+  const at = seat && !inCar ? standSpot(seat, yaw, s) : s;
   player.spawn(at.x, at.z, yaw);
   camera.rotation.x = pitch;
   player.pos.y = s.y; // spawn() finds the ground floor; upstairs we stood on Övre plan
@@ -756,6 +757,7 @@ function use(thing) {
     bump('parasol');
     sfx.parasol(thing.pickable.getWorldPosition(new THREE.Vector3()).setY(2), opening);
   }
+  else if (thing.kind === 'cardoor') thing.toggle(); // open / shut a door of our car (#250)
   else if (thing.kind === 'carkey') { thing.press(); car.call(); bump('car'); } // beep beep: the car comes, or leaves (#173)
   else if (thing.kind === 'flush') { if (thing.toggle()) bump('flushes', 1, idOf(thing)); } // the toilet's flush button (#155)
   else if (thing.kind === 'lid') {
@@ -886,7 +888,7 @@ function updateFocus() {
   raycaster.far = reach;
   // (the raycaster ignores visibility, so the cat is only a target while it is there)
   // the car key only while its cabinet is open
-  const extra = [...(cat.visible ? [cat.object] : []), ...(keyCabinet?.keyReachable ? [world.carKey.pickable] : []),
+  const extra = [...(cat.visible ? [cat.object] : []), ...(keyCabinet?.keyReachable ? [world.carKey.pickable] : []), ...car.targets(rest.target).map((t) => t.pickable), // our car's doors and front seats (#250)
     ...(world.furnitureOn ? [...(target.object.visible ? [target.target] : []), ...patio.targets, ...world.furnitureTargets, ...holdables.map((h) => h.target), drawing.target, ...posters.targets].map((t) => t.pickable) : [])]; // parasol, TV, seats, beds, toys — unless F hid the furniture
   // the nearest hit on something actually shown (F hides the loose items, the raycaster doesn't care)
   const cupTargets = cups.cups.filter((c) => !c.held && c.state !== 'spare').map((c) => c.target.pickable);
@@ -1083,6 +1085,7 @@ function step(dt) {
   if (clockPanel.open) clockPanel.render();
   sonos.update(player.level, (p) => behindWall(p)); // music: schedule ahead, walls muffle (#187)
   world.windowLights.update(day.hour, 1 - day.daylight);
+  car.occupied = !!rest.target?.car; // sitting in it: the screens stay awake (#250)
   car.update(dt, day.daylight < 0.35, player);
   const moved = Math.hypot(player.pos.x - lastWeatherPos.x, player.pos.z - lastWeatherPos.z); // on foot (not a jump / spawn)
   lastWeatherPos.copy(player.pos);
