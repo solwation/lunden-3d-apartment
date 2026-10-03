@@ -1535,6 +1535,13 @@ export const FURNITURE = [
     // repeat = metres per texture tile (blooms ~8–15 cm)
     bedding: { pattern: 'chintz', ground: '#adc2b1', repeat: 0.9, flowers: ['#d0696b', '#c9505a', '#e9b7bd', '#d4b45a'],
       leaves: ['#6f7b86', '#8a96a0', '#7f9a83'], throw: 0xdcdcd8, cushion: 0xe2a3ab } },
+  // The meadow-grass picture over the bed (#284, docs/tavla-sovrum1-angsgras.jpg): 150 × 100 cm outside (the user), a
+  // thin flat black frame (~2 cm face, ~3 cm deep, *guess* from the photo). On the east wall (inner face x 5.551) centred
+  // on the bed (z 2.3, spanning z 1.55–3.05, so its north part is under the RH 2.4 soffit, z < 1.96): the bottom edge
+  // 12 cm over the headboard (IDANAS.headH 1.21) → 1.33–2.33 m, 7 cm under the soffit; above the NYMÅNE work lamps.
+  // textures/angsgras-sovrum1.jpg is the photo straightened, the glass's reflections painted out, a little brighter.
+  { type: 'pictures', level: 1, x: 5.551, z: 2.3, y: 1.83, rot: 90, w: 1.5, h: 1.0, gap: 0, frame: 0.02, depth: 0.03,
+    cols: 1, rows: 1, atlas: 'textures/angsgras-sovrum1.jpg', grid: [1, 1], order: [0] },
   // Bunks: long side against the side wall, head end against the façade (the user's wish);
   // the ladder ends up on the room side at the foot end.
   { type: 'bunk', level: 1, x: 0.2 + 0.5, z: 0.47 + 1.05, rot: 180, w: 0.9, l: 2.0, sheets: 'unicorn' }, // Sovrum 3 (Livia & Tuva)

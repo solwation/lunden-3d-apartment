@@ -82,7 +82,8 @@ docs/                  reference images in git (site map screenshot; docs/peab/ 
                        modell-mot-plan.jpg (the model before #252/#253 over the situation plan); bostader/ = bofakta
                        sheets of Hus L's other units, text/ = Q&A + info brochure text; index: docs/peab/README.md
 textures/              image textures the page loads (published by stamp.sh): stair-pictures.jpg = the 2 × 2 atlas
-                       of the stair pictures (#220), cropped/straightened from docs/tavla-trappa-*.jpg
+                       of the stair pictures (#220), cropped/straightened from docs/tavla-trappa-*.jpg; angsgras-sovrum1.jpg = the picture over the
+                       Sovrum 1 bed (#284), straightened, reflections painted out
 material/              screenshots of our choices in Peab's option portal (local, see below)
 src/audio.js           synthesised positional sound effects (Web Audio): doors, slides, meow, steps
 src/toilet.js          toilet (Ifö Spira 6260) with an animated lid and a flush button (`flush`, its own E target in
@@ -648,7 +649,7 @@ North = −z (the bedrooms Sovrum 1/3 face north).
 - The family (#164): Sarah and Olof are married, two families moved in together — Olof is the father of Tilly,
   Kian and Tuva, Sarah the mother of Walter and Livia. Text that mentions them must not make all five siblings.
 - Who sleeps where (the user's plan; "left/right" as you arrive upstairs walking west):
-  Sovrum 1 (first right) Sarah & Olof, double bed IKEA IDANÄS 180 × 200 (`IDANAS`, #91), a NORDLI chest of
+  Sovrum 1 (first right) Sarah & Olof, double bed IKEA IDANÄS 180 × 200 (`IDANAS`, #91), under a 150 × 100 cm black-framed meadow-grass picture on the east wall, 1.33–2.33 m up, clear of the soffit (#284, `pictures` item, textures/angsgras-sovrum1.jpg from docs/tavla-sovrum1-angsgras.jpg), a NORDLI chest of
   drawers in its Klk (an AK-47 in its wide bottom drawer, #196) (no wardrobe in Sovrum 1; the Klk is 1.65 × 1.20 inside, #94) (a sage green IKEA chintz bedding set from a Sellpy ad, #83) with IKEA NORDKISA bedside tables (#64) and white NYMÅNE work
   lamps on them (#65, each its own lamp like the floor lamp) + an IKEA RÅGRUND towel-rack chair in the corner left of
   the window (#60), and a Philips 43" PQS7801 on the west wall across from the bed (#213, black frame, Ambilight #223):
