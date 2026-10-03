@@ -40,7 +40,7 @@ f.onload = async () => {
   let pass = true;
   // a blaster: take, fire (the dart lands on the floor), hang back
   const b = toys.blasters[1];
-  pass &= check(aim(b.model, 1, [[4.4, 9.35], [4.6, 9.0], [4.3, 9.7]], /ta blastern/i), `blaster: "${btn.textContent}"`);
+  pass &= check(aim(b.model, 1, [[3.6, 8.9], [3.8, 8.8], [3.5, 9.2]], /ta blastern/i), `blaster: "${btn.textContent}"`);
   btn.click();
   pass &= check(heldItem() === b && b.model.parent === camera, 'blaster in the hand');
   const away = () => { camera.rotation.x = -0.5; step(1 / 60); }; // look away from the home: the button now uses what you hold
@@ -56,7 +56,7 @@ f.onload = async () => {
   btn.click();
   pass &= check(heldItem() === b && !wd.held, 'still the blaster in the hand, the wand stays');
   // put the blaster down on the floor in front of you (look down)
-  camera.rotation.y += Math.PI; camera.rotation.x = -1.0; step(1 / 60); // away from the wall, down
+  camera.rotation.y += Math.PI; camera.rotation.x = -1.35; step(1 / 60); // away from the wall, steeply down (clear of the MALM, #235)
   pass &= check(/lägga ner blastern här/i.test(btn.textContent), `floor: "${btn.textContent}"`);
   btn.click(); step(1 / 60);
   b.model.updateMatrixWorld(true);
@@ -78,7 +78,7 @@ f.onload = async () => {
   pass &= check(aim(b.model, 1, [[bb.x + 0.8, bb.z], [bb.x, bb.z + 0.8], [bb.x - 0.8, bb.z], [bb.x, bb.z - 0.8]], /ta blastern/i), `blaster on the floor: "${btn.textContent}"`);
   btn.click();
   pass &= check(heldItem() === b && !b.placed, 'blaster taken from the floor');
-  pass &= check(aim(b.holder.children.at(-1), 1, [[4.4, 9.35], [4.6, 9.0], [4.3, 9.7]], /tillbaka/i), `its board: "${btn.textContent}"`);
+  pass &= check(aim(b.holder.children.at(-1), 1, [[3.6, 8.9], [3.8, 8.8], [3.5, 9.2]], /tillbaka/i), `its board: "${btn.textContent}"`);
   btn.click();
   pass &= check(!heldItem() && !b.held && !b.placed, 'blaster back on the board');
   // the flashlight in the hall wardrobe: open its front, take it, on, it follows the view, put back

@@ -85,13 +85,13 @@ function blasterModel(color) {
 
 export class Blaster extends Holdable {
   constructor(scene, camera, i, darts) {
-    const N = T.nerf, y0 = LEVELS[N.level].floor + N.y, zc = N.z + (i - 1) * 0.28, x = N.x;
+    const N = T.nerf, y0 = LEVELS[N.level].floor + N.y, zc = N.z + (i - 1) * 0.28, f = N.face, x = N.x;
     const model = blasterModel(N.colors[i]);
     super(scene, camera, {
       name: 'blastern', backName: 'väggen', backVerb: 'hänga tillbaka blastern på', model,
-      home: { pos: new THREE.Vector3(x - 0.06, y0 + 0.1 - i * 0.22 + 0.15, zc), rot: new THREE.Euler(0, Math.PI / 2 * 0 + Math.PI, 0) },
+      home: { pos: new THREE.Vector3(x + f * 0.06, y0 + 0.1 - i * 0.22 + 0.15, zc), rot: new THREE.Euler(0, Math.PI / 2 * 0 + Math.PI, 0) },
       heldPose: { pos: new THREE.Vector3(N.held.x, N.held.y, N.held.z), rot: new THREE.Euler(0.05, 0.04, 0) },
-      pick: { pos: new THREE.Vector3(x - 0.07, y0 + 0.1 - i * 0.22 + 0.15, zc), size: [0.14, 0.2, 0.36] },
+      pick: { pos: new THREE.Vector3(x + f * 0.07, y0 + 0.1 - i * 0.22 + 0.15, zc), size: [0.14, 0.2, 0.36] },
       cooldown: 0.35, useLabel: 'Skjut', grip: [0.025, -0.075, 0.07], // grip: the hand on its pistol grip (#195)
     });
     this.darts = darts;
@@ -121,20 +121,20 @@ export class Blaster extends Holdable {
 
 /** The pegboard with the gear (bandolier, goggles) — static decoration around the blasters. */
 export function nerfBoard() {
-  const N = T.nerf, y0 = LEVELS[N.level].floor + N.y, [w, h] = N.board, g = new THREE.Group();
+  const N = T.nerf, y0 = LEVELS[N.level].floor + N.y, [w, h] = N.board, f = N.face, g = new THREE.Group();
   const board = mat(0xe8e2d6, { roughness: 0.9 });
-  g.add(box(0.02, h, w, N.x - 0.01, y0 + 0.05, N.z, board));
+  g.add(box(0.02, h, w, N.x + f * 0.01, y0 + 0.05, N.z, board));
   const peg = mat(0x2f3338);
-  for (let i = 0; i < 3; i++) for (const dz of [-0.11, 0.11]) g.add(box(0.06, 0.012, 0.012, N.x - 0.04, y0 + 0.1 - i * 0.22 + 0.11, N.z + (i - 1) * 0.28 + dz, peg));
+  for (let i = 0; i < 3; i++) for (const dz of [-0.11, 0.11]) g.add(box(0.06, 0.012, 0.012, N.x + f * 0.04, y0 + 0.1 - i * 0.22 + 0.11, N.z + (i - 1) * 0.28 + dz, peg));
   // a dart bandolier hanging in a curve, and safety goggles on a peg
   const strap = mat(0x2a2d31, { roughness: 0.8 });
   for (let k = 0; k < 9; k++) {
     const u = k / 8, z = N.z + w / 2 - 0.05 - u * 0.0, y = y0 + 0.38 - 0.6 * u;
-    g.add(box(0.015, 0.075, 0.05, N.x - 0.03, y, N.z + w / 2 - 0.06, strap));
-    g.add(box(0.012, 0.02, 0.012, N.x - 0.045, y, N.z + w / 2 - 0.06, tip));
+    g.add(box(0.015, 0.075, 0.05, N.x + f * 0.03, y, N.z + w / 2 - 0.06, strap));
+    g.add(box(0.012, 0.02, 0.012, N.x + f * 0.045, y, N.z + w / 2 - 0.06, tip));
   }
   const goggles = mat(0xffd21a, { roughness: 0.4 }), lens = mat(0x2b3b4a, { roughness: 0.1, metalness: 0.3 });
-  g.add(box(0.04, 0.05, 0.16, N.x - 0.04, y0 + 0.38, N.z - w / 2 + 0.12, goggles), box(0.008, 0.035, 0.13, N.x - 0.062, y0 + 0.38, N.z - w / 2 + 0.12, lens));
+  g.add(box(0.04, 0.05, 0.16, N.x + f * 0.04, y0 + 0.38, N.z - w / 2 + 0.12, goggles), box(0.008, 0.035, 0.13, N.x + f * 0.062, y0 + 0.38, N.z - w / 2 + 0.12, lens));
   return g;
 }
 
