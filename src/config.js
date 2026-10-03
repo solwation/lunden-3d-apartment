@@ -627,35 +627,34 @@ export const MILK = { w: 0.07, h: 0.195, gable: 0.03, blue: '#2f6fc4', held: { x
 // cloudflare/setup.sh; keep it on one line. Locally (BUILD 'dev') it is off unless the page has &cloud=<url>.
 export const CLOUD_URL = '';
 
-// The score (#198, the global leaderboard; #197 shows it in the HUD), balanced (the user): luck and skill pay most,
-// easy things little, and nothing can be farmed by doing the same easy thing over and over. Our picks.
-//  each:   points per counted event (stats.js `bump`); `cap` = only the first that many count (things you can repeat
-//          at will: sips, steps, stair trips, baskets …). Statistics keep counting past the cap.
-//  once:   points per distinct thing, the first time only (each door, lamp, seat, tap, cabinet front, room, song …:
-//          `bump(key, n, id)`; without an id the key itself = one thing). Repeating it gives none.
+// The score (#198, the global leaderboard; #197 shows it in the HUD), balanced (the user): you can grind for ever, but
+// what is easy to repeat gives little and what is rare or hard gives a lot. Our picks.
+//  each:   points per counted event (stats.js `bump`), every time.
+//  first:  points for each distinct thing the first time (each door, lamp, seat, tap, cabinet front, room, song …:
+//          `bump(key, n, id)`; without an id the key itself = one thing); `again` = points for every time after that.
 //  breeds: points per cat found, by how rare its breed is (cat.js BREEDS weights: huskatt 70, siames 8, brittiskt
-//          korthår 7, maine coon 6, norsk skogkatt 5, perser 3, sphynx 1 of 100); `coats` once per new coat seen.
-//  secrets: the secret drawer — `kinds` once per surprise kind found, `rare` once more per rare kind.
+//          korthår 7, maine coon 6, norsk skogkatt 5, perser 3, sphynx 1 of 100); `first.coats` once per new coat.
+//  secrets: the secret drawer — `kinds` once per surprise kind found, `rare` once more per rare kind (+ each.secrets).
 export const SCORE = {
   each: {
     petted: 8, catPhotos: 2, catFish: 25,                 // a pat (a cat to find first), its photo; feeding one takes a plan
-    target: 1, splashes: 0.5, cuts: 0.5, magic: 1,        // Nerf target: per target point (rings × distance = skill)
-    baskets: 6, threes: 6, dribbles: 0.2,                 // a three = a basket + a three (12)
+    target: 1, splashes: 0.2, cuts: 0.1, magic: 0.3,      // Nerf target: per target point (rings × distance = skill)
+    baskets: 6, threes: 6, dribbles: 0.1,                 // a three = a basket + a three (12)
     turbo: 20,                                            // three cups of coffee in five minutes
-    beer: 1, coffee: 1, wine: 1, champagne: 1, whisky: 1, milk: 1, kask: 2,
-    fish: 1, fried: 3, chicken: 2, cooked: 10, brews: 3,  // cooked = a whole chicken fried golden
-    posted: 6, thrown: 1, drawn: 3,
-    secrets: 1, stairs: 1, steps: 0.01,
+    beer: 0.3, coffee: 0.3, wine: 0.3, champagne: 0.3, whisky: 0.3, milk: 0.3, kask: 0.6, // sips
+    fish: 0.5, fried: 2, burnt: 0.2, chicken: 1, cooked: 8, brews: 2, // cooked = a whole chicken fried golden
+    posted: 3, thrown: 0.5, drawn: 2,
+    secrets: 1, stairs: 0.3, steps: 0.01,
   },
-  cap: {
-    beer: 10, coffee: 15, wine: 10, champagne: 10, whisky: 10, milk: 10, kask: 10, fish: 15, fried: 15, chicken: 12,
-    cooked: 3, brews: 5, posted: 10, thrown: 10, drawn: 5, magic: 30, splashes: 40, cuts: 40, dribbles: 50,
-    baskets: 100, threes: 100, target: 2000, turbo: 5, secrets: 30, stairs: 30, steps: 10000, catPhotos: 50,
-  },
-  once: {
+  first: {
     doors: 2, lids: 1, flushes: 2, taps: 1, fridge: 2, appliances: 2, cabinets: 1, lights: 1, sat: 2, lay: 2,
     visited: 5, songs: 3, read: 5, car: 15, grill: 10, hood: 3, tv: 3, pc: 5, parasol: 3, clock: 3, calendar: 3,
     coats: 10,
+  },
+  again: {
+    doors: 0.1, lids: 0.1, flushes: 0.2, taps: 0.1, fridge: 0.1, appliances: 0.1, cabinets: 0.05, lights: 0.05,
+    sat: 0.1, lay: 0.1, songs: 0.2, read: 0.5, car: 1, grill: 1, hood: 0.2, tv: 0.2, pc: 0.3, parasol: 0.2,
+    clock: 0.1, calendar: 0.1,
   },
   breeds: { huskatt: 10, siames: 30, 'brittiskt korthår': 30, 'maine coon': 35, 'norsk skogkatt': 40, perser: 100, sphynx: 250 },
   secrets: { kinds: 10, rare: 40 },

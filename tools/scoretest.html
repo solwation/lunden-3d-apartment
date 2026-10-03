@@ -4,10 +4,10 @@
 <body>
 <pre id="out">running…</pre>
 <script>
-// Points (#197, balanced): the score starts at 0 after a reset and is shown top left; opening a door gives SCORE.once.doors
-// the first time only, lighting the grill once.grill once, a fish finger the cat eats each.catFish (a stat too), a "+N"
-// pops up; cats by breed (+ a new coat once), sips only up to their cap, a basket / a three, the secret drawer by kind;
-// the reset clears it.
+// Points (#197, balanced): the score starts at 0 after a reset and is shown top left; opening a door gives SCORE.first.doors
+// the first time and SCORE.again.doors after that, the grill likewise, a fish finger the cat eats each.catFish (a stat too),
+// a "+N" pops up; cats by breed (+ a new coat once), sips keep counting (no cap: you can grind, it is just little), a
+// basket / a three, the secret drawer by kind; easy repeats give far less than skill and rare cats; the reset clears it.
 //   google-chrome --headless=new --dump-dom http://localhost:8137/tools/scoretest.html
 const out = document.getElementById('out');
 addEventListener('unhandledrejection', (e) => { out.textContent = `ERROR ${e.reason?.message ?? e.reason}`; });
@@ -20,8 +20,9 @@ f.onload = async () => {
   const w = f.contentWindow, d = f.contentDocument;
   while (!w.__app) await wait(100);
   const { stats, world, use, grill, fish, cat, step, player, heldItem, camera, totalScore, ball } = w.__app;
+  const near = (a, b) => Math.abs(a - b) < 1e-6;
   const { SCORE } = await w.eval(`import('${new URL('src/config.js', w.location.href)}')`);
-  const { catFound, secretFound, bump } = await w.eval(`import('${new URL('src/stats.js', w.location.href)}')`); // the iframe's own module instance
+  const { catFound, secretFound, bump, rawScore } = await w.eval(`import('${new URL('src/stats.js', w.location.href)}')`); // the iframe's own module instance
   const lines = [];
   const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; };
   w.confirm = () => true;
@@ -36,44 +37,48 @@ f.onload = async () => {
   cat.chance.appear = 0; cat.chance.steal = 0; // no cat (and its points) behind the door
   const door = world.doors.find((x) => x.name === 'dörren');
   use(door);
-  const D = SCORE.once.doors;
+  const D = SCORE.first.doors;
   pass &= check(totalScore() === D && shown() === D && new RegExp(`\\+${D}`).test(el.textContent), `a door: +${D} ("${el.textContent.trim()}")`);
+  let t = rawScore();
   use(door); use(door);
-  pass &= check(totalScore() === D && stats.doors === 2, `the same door again: counted (${stats.doors}) but no more points (${totalScore()})`);
-  let t = totalScore();
+  pass &= check(stats.doors === 2 && near(rawScore() - t, SCORE.again.doors), `the same door again: counted (${stats.doors}), +${(rawScore() - t).toFixed(2)} (a little)`);
+  t = rawScore();
   use(grill);
-  pass &= check(totalScore() === t + SCORE.once.grill && stats.grill === 1, `the grill lit: +${SCORE.once.grill} (score ${totalScore()})`);
-  grill.set(false); t = totalScore(); use(grill); grill.set(false);
-  pass &= check(totalScore() === t, 'lit again: no more points');
+  pass &= check(near(rawScore() - t, SCORE.first.grill) && stats.grill === 1, `the grill lit: +${SCORE.first.grill} (score ${totalScore()})`);
+  grill.set(false); t = rawScore(); use(grill); grill.set(false);
+  pass &= check(near(rawScore() - t, SCORE.again.grill), `lit again: +${(rawScore() - t).toFixed(2)}`);
   // a fish finger the cat eats: a statistic and its points
   const V = camera.position.constructor;
   cat.object.position.set(4.3, 0, 2.5); cat.object.visible = true; cat.on = null; cat.object.updateMatrixWorld(true);
-  t = totalScore();
+  t = rawScore();
   fish.press(); heldItem().placeAt(new V(4.0, 0, 3.7));
   for (let i = 0; i < 30 * 12; i++) step(1 / 30);
-  pass &= check(stats.catFish === 1 && totalScore() === t + SCORE.each.catFish, `the cat ate a fish finger: catFish ${stats.catFish}, +${totalScore() - t}`);
+  pass &= check(stats.catFish === 1 && near(rawScore() - t, SCORE.each.catFish), `the cat ate a fish finger: catFish ${stats.catFish}, +${(rawScore() - t).toFixed(2)}`);
   cat.hide?.();
   // cats by breed: a huskatt (+ its coat the first time), the same coat again, a sphynx
-  t = totalScore(); catFound('huskatt grå', false, 'huskatt');
-  const hus = totalScore() - t;
-  t = totalScore(); catFound('huskatt grå', false, 'huskatt');
-  const again = totalScore() - t;
-  t = totalScore(); catFound('sphynx rosa', true, 'sphynx');
-  const sph = totalScore() - t;
-  pass &= check(hus === SCORE.breeds.huskatt + SCORE.once.coats && again === SCORE.breeds.huskatt && sph === SCORE.breeds.sphynx + SCORE.once.coats && sph > 10 * again,
-    `cats: a new huskatt +${hus}, the same coat again +${again}, a sphynx +${sph}`);
+  t = rawScore(); catFound('huskatt grå', false, 'huskatt');
+  const hus = rawScore() - t;
+  t = rawScore(); catFound('huskatt grå', false, 'huskatt');
+  const again = rawScore() - t;
+  t = rawScore(); catFound('sphynx rosa', true, 'sphynx');
+  const sph = rawScore() - t;
+  pass &= check(near(hus, SCORE.breeds.huskatt + SCORE.first.coats) && near(again, SCORE.breeds.huskatt) && near(sph, SCORE.breeds.sphynx + SCORE.first.coats) && sph > 10 * again,
+    `cats: a new huskatt +${hus.toFixed(1)}, the same coat again +${again.toFixed(1)}, a sphynx +${sph.toFixed(1)}`);
   // sips count only up to their cap
-  t = totalScore(); for (let i = 0; i < SCORE.cap.beer + 5; i++) bump('beer');
-  pass &= check(totalScore() - t === SCORE.cap.beer * SCORE.each.beer && stats.beer === SCORE.cap.beer + 5, `${stats.beer} sips of beer: +${totalScore() - t} (capped)`);
+  t = rawScore(); for (let i = 0; i < 100; i++) bump('beer');
+  pass &= check(near(rawScore() - t, 100 * SCORE.each.beer) && stats.beer === 100, `100 sips of beer: +${(rawScore() - t).toFixed(1)} (no cap, little each)`);
+  // the balance: an easy repeat ≪ a basket ≪ a rare cat
+  pass &= check(SCORE.again.doors * 20 < SCORE.each.baskets && SCORE.each.beer * 10 < SCORE.each.baskets && SCORE.each.baskets * 10 < SCORE.breeds.perser,
+    `balance: a door again ${SCORE.again.doors}, a sip ${SCORE.each.beer} ≪ a basket ${SCORE.each.baskets} ≪ a perser ${SCORE.breeds.perser}`);
   // a basket, a three
-  t = totalScore(); ball.onBasket(false); const two = totalScore() - t;
-  t = totalScore(); ball.onBasket(true); const three = totalScore() - t;
-  pass &= check(two === SCORE.each.baskets && three === SCORE.each.baskets + SCORE.each.threes && stats.baskets === 2 && stats.threes === 1, `a basket +${two}, a three +${three}`);
+  t = rawScore(); ball.onBasket(false); const two = rawScore() - t;
+  t = rawScore(); ball.onBasket(true); const three = rawScore() - t;
+  pass &= check(near(two, SCORE.each.baskets) && near(three, SCORE.each.baskets + SCORE.each.threes) && stats.baskets === 2 && stats.threes === 1, `a basket +${two}, a three +${three}`);
   // the secret drawer: a new kind, the same again, a rare kind
-  t = totalScore(); secretFound('owl', 'Ugglan'); const k1 = totalScore() - t;
-  t = totalScore(); secretFound('owl', 'Ugglan'); const k2 = totalScore() - t;
-  t = totalScore(); secretFound('gem', 'Ädelstenen', true); const k3 = totalScore() - t;
-  pass &= check(k1 === SCORE.secrets.kinds + SCORE.each.secrets && k2 === SCORE.each.secrets && k3 === SCORE.secrets.kinds + SCORE.secrets.rare + SCORE.each.secrets,
+  t = rawScore(); secretFound('owl', 'Ugglan'); const k1 = rawScore() - t;
+  t = rawScore(); secretFound('owl', 'Ugglan'); const k2 = rawScore() - t;
+  t = rawScore(); secretFound('gem', 'Ädelstenen', true); const k3 = rawScore() - t;
+  pass &= check(near(k1, SCORE.secrets.kinds + SCORE.each.secrets) && near(k2, SCORE.each.secrets) && near(k3, SCORE.secrets.kinds + SCORE.secrets.rare + SCORE.each.secrets),
     `secrets: a new kind +${k1}, the same again +${k2}, a rare kind +${k3}`);
   const row = d.getElementById('stats');
   w.__app.renderStats?.(row);

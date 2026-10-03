@@ -13,7 +13,7 @@ function load() {
     // statistics from before the balanced score: cats without a breed count as huskatt / perser, and every kind of
     // thing done before counts as one distinct thing
     if (!old.byBreed && s.cats) s.byBreed = { huskatt: s.cats - s.rare, ...(s.rare ? { perser: s.rare } : {}) };
-    if (!old.seen) for (const k of Object.keys(SCORE.once)) if (typeof s[k] === 'number' && s[k] > 0) s.seen[k] = { tidigare: 1 };
+    if (!old.seen) for (const k of Object.keys(SCORE.first)) if (typeof s[k] === 'number' && s[k] > 0) s.seen[k] = { tidigare: 1 };
     return s;
   } catch {
     return fresh();
@@ -81,27 +81,30 @@ export function renderScore() {
   lastScore = t;
 }
 
-/** The visitor's score (#198): SCORE in config — points per event up to a cap, per distinct thing once, cats by breed,
- * the secret drawer by kind. */
-export function totalScore() {
+/** The visitor's score (#198): SCORE in config — points per event, per distinct thing the first time and less every
+ * time after, cats by breed, the secret drawer by kind. */
+export function totalScore() { return Math.floor(rawScore() + 1e-9); }
+/** The score before rounding down (the small points for repeats are fractions). */
+export function rawScore() {
   const S = SCORE, n = (o) => Object.keys(o ?? {}).length;
   let t = 0;
-  for (const [k, pts] of Object.entries(S.each)) t += Math.min(stats[k] ?? 0, S.cap[k] ?? Infinity) * pts;
-  for (const [k, pts] of Object.entries(S.once)) {
-    const things = k === 'visited' ? stats.visited : k === 'coats' ? stats.byVariant : stats.seen[k];
-    t += n(things) * pts;
+  for (const [k, pts] of Object.entries(S.each)) t += (stats[k] ?? 0) * pts;
+  for (const [k, pts] of Object.entries(S.first)) {
+    const things = n(k === 'visited' ? stats.visited : k === 'coats' ? stats.byVariant : stats.seen[k]);
+    const times = typeof stats[k] === 'number' ? stats[k] : things; // (rooms and coats are only counted as things)
+    t += things * pts + Math.max(0, times - things) * (S.again[k] ?? 0);
   }
   for (const [b, pts] of Object.entries(S.breeds)) t += (stats.byBreed[b] ?? 0) * pts;
   t += n(stats.secretKinds) * S.secrets.kinds + n(stats.secretRare) * S.secrets.rare;
-  return Math.floor(t);
+  return t;
 }
 
-/** Count `n` of `key`; `id` names the thing (a door, a lamp …) for the points that come once per thing (SCORE.once).
+/** Count `n` of `key`; `id` names the thing (a door, a lamp …) for the bigger points the first time (SCORE.first).
  * The badge for those only shows the first time. */
 export function bump(key, n = 1, id = key) {
   stats[key] = (stats[key] ?? 0) + n;
   let fresh = true;
-  if (SCORE.once[key] !== undefined) {
+  if (SCORE.first[key] !== undefined) {
     const seen = (stats.seen[key] ??= {});
     fresh = !seen[id];
     seen[id] = 1;
