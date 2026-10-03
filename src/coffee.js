@@ -97,6 +97,7 @@ export class Moccamaster {
       this.sound = null;
       this.led.emissiveIntensity = 0;
       this.done++;
+      this.onBrewed?.(); // statistics and points
       sfx.click(this.object.getWorldPosition(new THREE.Vector3()));
     }
   }

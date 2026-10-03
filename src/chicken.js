@@ -155,7 +155,7 @@ export class Chicken extends Holdable {
       this.cooked += dt;
       if (!this.done) this.paint(Math.min(1, this.cooked / C.cookSeconds)); // raw → golden while it fries
       if (this.cooked >= C.cookSeconds) {
-        if (!this.done) { this.done = true; this.retarget(); }
+        if (!this.done) { this.done = true; this.retarget(); this.onCooked?.(); }
         this.brownK = Math.min(1, (this.brownK ?? 0) + dt / (2 * C.cookSeconds)); // a little darker the longer it fries
         this.brown(this.brownK);
         this.smokeT = C.smokeSeconds; // keeps smoking while it fries, then smokeSeconds more

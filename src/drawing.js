@@ -74,7 +74,7 @@ export class Drawing {
   /** Keep it (localStorage); if it changed, tell the shared world (onSaved, cloud.js #119). */
   save() {
     try { localStorage.setItem(KEY, this.canvas.toDataURL('image/png')); } catch { /* full or blocked */ }
-    if (this.dirty) { this.dirty = false; this.onSaved?.(); }
+    if (this.dirty) { this.dirty = false; this.onSaved?.(); this.onDrawn?.(); }
   }
 
   begin() {

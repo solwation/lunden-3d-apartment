@@ -4,11 +4,17 @@
 import { SECRET, SCORE } from './config.js';
 const KEY = 'lunden.stats';
 
-const fresh = () => ({ cats: 0, rare: 0, byVariant: {}, petted: 0, doors: 0, lids: 0, flushes: 0, taps: 0, fridge: 0, appliances: 0, cabinets: 0, beer: 0, coffee: 0, fish: 0, turbo: 0, shots: 0, fried: 0, burnt: 0, catFish: 0, chicken: 0, wine: 0, champagne: 0, whisky: 0, milk: 0, kask: 0, posted: 0, thrown: 0, lights: 0, sat: 0, lay: 0, steps: 0, metres: 0, stairs: 0, seconds: 0, visited: {}, secrets: 0, secretKinds: {}, catPhotos: 0, grill: 0, hood: 0, songs: 0, read: 0, car: 0, magic: 0, target: 0, baskets: 0, threes: 0 });
+const fresh = () => ({ cats: 0, rare: 0, byVariant: {}, petted: 0, doors: 0, lids: 0, flushes: 0, taps: 0, fridge: 0, appliances: 0, cabinets: 0, beer: 0, coffee: 0, fish: 0, turbo: 0, shots: 0, fried: 0, burnt: 0, catFish: 0, chicken: 0, wine: 0, champagne: 0, whisky: 0, milk: 0, kask: 0, posted: 0, thrown: 0, lights: 0, sat: 0, lay: 0, steps: 0, metres: 0, stairs: 0, seconds: 0, visited: {}, secrets: 0, secretKinds: {}, catPhotos: 0, grill: 0, hood: 0, songs: 0, read: 0, car: 0, magic: 0, target: 0, baskets: 0, threes: 0,
+  byBreed: {}, seen: {}, secretRare: {}, tv: 0, pc: 0, parasol: 0, clock: 0, calendar: 0, cooked: 0, brews: 0, drawn: 0, splashes: 0, cuts: 0, dribbles: 0 });
 
 function load() {
   try {
-    return { ...fresh(), ...JSON.parse(localStorage.getItem(KEY) ?? '{}') };
+    const old = JSON.parse(localStorage.getItem(KEY) ?? '{}'), s = { ...fresh(), ...old };
+    // statistics from before the balanced score: cats without a breed count as huskatt / perser, and every kind of
+    // thing done before counts as one distinct thing
+    if (!old.byBreed && s.cats) s.byBreed = { huskatt: s.cats - s.rare, ...(s.rare ? { perser: s.rare } : {}) };
+    if (!old.seen) for (const k of Object.keys(SCORE.once)) if (typeof s[k] === 'number' && s[k] > 0) s.seen[k] = { tidigare: 1 };
+    return s;
   } catch {
     return fresh();
   }
@@ -22,7 +28,7 @@ const BADGES = {
   petted: '✋ Klappat katt', doors: '🚪 Dörr öppnad', lids: '🚽 Toalettlock', flushes: '🌊 Spolat', taps: '💧 Kran påslagen',
   fridge: '🍗 Kylskåpet öppnat', appliances: '🍳 Ugn/mikro öppnad', cabinets: '🗄 Skåp öppnat', beer: '🍺 Klunk öl', coffee: '☕ Klunk kaffe', turbo: '⚡ Kaffeturbo!', fish: '🐟 Fiskpinne uppäten', fried: '🍳 Fiskpinne stekt', burnt: '🔥 Fiskpinne bränd', catFish: '🐈 Katten åt en fiskpinne', chicken: '🍗 Kycklingbit uppäten', wine: '🍷 Klunk vin', champagne: '🥂 Klunk champagne', whisky: '🥃 Klunk whisky', milk: '🥛 Klunk mjölk', kask: '☕ Klunk kaffekask', lights: '💡 Lampa tänd', stairs: '🪜 Trapptur',
   sat: '🪑 Satt ner', lay: '🛏 Lagt sig', posted: '📌 Teckning uppsatt', thrown: '🗑 Teckning slängd',
-  catPhotos: '📸 Kattfoto', grill: '🔥 Grillen tänd', hood: '🌀 Fläkten på', songs: '🎵 Musik på', read: '📖 Läste boken', car: '🚗 Bilen kallad', magic: '✨ Trolleri',
+  catPhotos: '📸 Kattfoto', cooked: '🍗 Kycklingen är klar', brews: '☕ Kaffet är klart', tv: '📺 Tv på', pc: '🎮 Datorn på', parasol: '⛱ Parasollet', clock: '🕰 Väggklockan', calendar: '📅 Kattkalendern', grill: '🔥 Grillen tänd', hood: '🌀 Fläkten på', songs: '🎵 Musik på', read: '📖 Läste boken', car: '🚗 Bilen kallad', magic: '✨ Trolleri',
 };
 const STEP_BADGE = 100; // a badge every 100 steps
 
@@ -75,21 +81,34 @@ export function renderScore() {
   lastScore = t;
 }
 
-/** The visitor's score (#198): SCORE points per counted thing (rooms per room visited, steps per step). */
+/** The visitor's score (#198): SCORE in config — points per event up to a cap, per distinct thing once, cats by breed,
+ * the secret drawer by kind. */
 export function totalScore() {
+  const S = SCORE, n = (o) => Object.keys(o ?? {}).length;
   let t = 0;
-  for (const [k, pts] of Object.entries(SCORE)) {
-    const v = k === 'visited' ? Object.keys(stats.visited).length : stats[k];
-    if (typeof v === 'number') t += v * pts;
+  for (const [k, pts] of Object.entries(S.each)) t += Math.min(stats[k] ?? 0, S.cap[k] ?? Infinity) * pts;
+  for (const [k, pts] of Object.entries(S.once)) {
+    const things = k === 'visited' ? stats.visited : k === 'coats' ? stats.byVariant : stats.seen[k];
+    t += n(things) * pts;
   }
+  for (const [b, pts] of Object.entries(S.breeds)) t += (stats.byBreed[b] ?? 0) * pts;
+  t += n(stats.secretKinds) * S.secrets.kinds + n(stats.secretRare) * S.secrets.rare;
   return Math.floor(t);
 }
 
-export function bump(key, n = 1) {
-  stats[key] += n;
+/** Count `n` of `key`; `id` names the thing (a door, a lamp …) for the points that come once per thing (SCORE.once).
+ * The badge for those only shows the first time. */
+export function bump(key, n = 1, id = key) {
+  stats[key] = (stats[key] ?? 0) + n;
+  let fresh = true;
+  if (SCORE.once[key] !== undefined) {
+    const seen = (stats.seen[key] ??= {});
+    fresh = !seen[id];
+    seen[id] = 1;
+  }
   dirty = true;
   renderScore();
-  if (BADGES[key]) badge(BADGES[key]);
+  if (BADGES[key] && fresh) badge(BADGES[key]);
   if (key === 'steps' && stats.steps % STEP_BADGE === 0) badge(`👣 ${stats.steps} steg`, false);
 }
 
@@ -98,14 +117,16 @@ export function secretFound(key, name, rare = false) {
   stats.secrets += 1;
   const isNew = !stats.secretKinds[key];
   stats.secretKinds[key] = (stats.secretKinds[key] ?? 0) + 1;
+  if (rare) stats.secretRare[key] = 1;
   dirty = true;
   renderScore();
   badge(`${rare ? '✨' : '🤫'} Hemlighet: ${name}${isNew ? ' (ny!)' : ''}`, false);
 }
 
-export function catFound(variantName, rare = false) {
+export function catFound(variantName, rare = false, breed = 'huskatt') {
   stats.cats += 1;
   if (rare) stats.rare += 1;
+  stats.byBreed[breed] = (stats.byBreed[breed] ?? 0) + 1;
   stats.byVariant[variantName] = (stats.byVariant[variantName] ?? 0) + 1;
   dirty = true;
   renderScore();
@@ -152,6 +173,7 @@ export function statRows() {
   return [
     ['🐈 Katter hittade', `${stats.cats}`, kinds],
     ['✨ Ovanliga katter', `${stats.rare}`],
+    ['🧬 Kattraser', `${Object.keys(stats.byBreed).length} av ${Object.keys(SCORE.breeds).length}`, Object.entries(stats.byBreed).map(([b, k]) => `${b} ${k}`).join(', ')],
     ['✋ Klappade katter', `${stats.petted}`],
     ['🤫 Hemligheter hittade', `${stats.secrets}`, `${Object.keys(stats.secretKinds).length} av ${SECRET.items.length} olika`],
     ['🚪 Dörrar öppnade', `${stats.doors}`],
@@ -179,6 +201,13 @@ export function statRows() {
     ['✨ Trollstavsträffar', `${stats.magic}`],
     ['🎯 Måltavlepoäng', `${stats.target}`],
     ['🏀 Korgar', `${stats.baskets}`, stats.threes ? `${stats.threes} trepoängare` : ''],
+    ['🏀 Studsar', `${stats.dribbles}`],
+    ['💥 Nerf-pilar som träffat', `${stats.splashes}`],
+    ['⚔️ Lightsaber-hugg', `${stats.cuts}`],
+    ['🍗 Hela kycklingar stekta', `${stats.cooked}`],
+    ['☕ Kannor kaffe bryggda', `${stats.brews}`],
+    ['🖍 Teckningar ritade', `${stats.drawn}`],
+    ['📺 Tv / dator på', `${stats.tv + stats.pc}`],
     ['👣 Steg', `${stats.steps}`, `${Math.round(stats.metres)} m`],
     ['🪜 Trappturer', `${stats.stairs}`],
     ['🏠 Rum besökta', `${Object.keys(stats.visited).length}${roomTotal ? ` av ${roomTotal}` : ''}`],

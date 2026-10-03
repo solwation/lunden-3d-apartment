@@ -272,7 +272,7 @@ const grill = new Grill(); // the courtyard's kettle grill: E lights it (#204)
 scene.add(grill.object);
 lights.extra.push(grill.lamp);
 scene.add(smokeAlarm.object);
-if (chicken) { chicken.hood = world.hood; chicken.onEaten = () => bump('chicken'); }
+if (chicken) { chicken.hood = world.hood; chicken.onEaten = () => bump('chicken'); chicken.onCooked = () => bump('cooked'); }
 const turbo = new Turbo({ el: document.getElementById('turbo'), edge: document.getElementById('turbo-edge') }); // three cups of coffee: Kaffeturbo! (#217)
 turbo.onStart = () => bump('turbo');
 for (const c of cups.cups) c.onSip = (drink, coffee) => { bump(drink ?? 'coffee'); turbo.drink(coffee); }; // drink from a cup (#117); the coffee counts towards Kaffeturbo (#217) // the Moccamaster's jug: take it, pour, put it back (#141)
@@ -311,12 +311,17 @@ scene.add(target.object); // up only while something that can hit it is in the h
 const marks = new Marks(scene, camera, [world.object, patio.object, target.object], cat); // burn marks, stars, splashes on surfaces (#96)
 const rifle = things.find((t) => t.isRifle) ?? null; // the AK-47 in the NORDLI chest (#196): bullet holes, the target, the cat
 if (rifle) Object.assign(rifle, { marks, cat, onShot: () => bump('shots') });
+saber.onBurn = () => bump('cuts'); // the lightsaber's marks (#96)
+toys.darts.onSplash = () => bump('splashes'); // a Nerf dart's paint splash (#98)
+drawing.onDrawn = () => bump('drawn'); // a drawing changed and kept (#93)
+{ const mocca = world.lids.find((l) => l.kind === 'coffee'); if (mocca) mocca.onBrewed = () => bump('brews'); } // a full jug brewed
 // Tilly's basketball over her daybed; the hoop out front rises while it is out of its holder (basket.js)
 const hoop = new Hoop();
 scene.add(hoop.object);
 if (params0.has('hoop')) hoop.update(10, true); // &hoop: up from the start (screenshots)
 const ball = new Basketball(scene, camera, { marks, hoop, world });
 ball.onBasket = (three) => { bump('baskets'); if (three) bump('threes'); };
+ball.onDribble = () => bump('dribbles');
 holdables.push(ball);
 { const moving = world.movingSegments; world.movingSegments = (lvl) => [...moving(lvl), ...(lvl === 0 ? hoop.segments() : [])]; } // its base is in the way
 // drawings taped up on walls and the fridge (#176); the one in the hand
@@ -366,7 +371,7 @@ target.onSink = () => marks.dropUnder(target.object); // its marks don't hang in
 for (const h of [saber, ...toys.wands, toys.darts]) Object.assign(h, { marks, cat });
 for (const wd of toys.wands) wd.onMagic = () => bump('magic'); // statistics and points (#197)
 target.onHit = (pts) => bump('target', pts);
-sonos.onPlay = () => bump('songs'); // the saber burns, the wands do magic (#97), darts splash (#98)
+sonos.onPlay = (ch) => bump('songs', 1, ch); // each song (channel) once // the saber burns, the wands do magic (#97), darts splash (#98)
 // the cat goes for a fish finger lying on the floor near it and eats it (#163)
 if (fish) {
   cat.fishSource = () => fish.placed;
@@ -374,7 +379,7 @@ if (fish) {
   fish.onCatEaten = () => bump('catFish');
   cat.watchPoint = () => camera.position;
 }
-cat.onFound = (label, rare) => catFound(label, rare);
+cat.onFound = (label, rare, breed) => catFound(label, rare, breed);
 // a photo of every cat you pet goes up on the board, once its eyes are shut and the hand is there
 const board = new CatBoard();
 boardPanel = new BoardPanel(board, boardEl);
@@ -394,11 +399,18 @@ cat.onPhoto = () => { // 0.7 s into the pat (cat.js), before it walks off (#206)
   board.add(cat.catName, snapshot(renderer, scene, camera, head));
 };
 
+/** A stable name for a thing you use (its name and where it is), for the points that come once per thing (#197). */
+function idOf(t) {
+  const o = t.pickable ?? t.object;
+  if (!o?.getWorldPosition) return t.name ?? t.kind;
+  const p = o.getWorldPosition(new THREE.Vector3());
+  return `${t.name ?? t.kind}@${p.x.toFixed(1)},${p.y.toFixed(1)},${p.z.toFixed(1)}`;
+}
 /** Open/close a door (with sound); the cat may turn up (or leave) behind doors you open. */
 function useDoor(door) {
   const opening = !door.isOpen;
   door.toggle();
-  if (opening) bump('doors');
+  if (opening) bump('doors', 1, idOf(door));
   const [x, z] = door.opening().center;
   const pos = { x, y: player.pos.y + 1.1, z };
   if (door.kind === 'swing') {
@@ -589,7 +601,7 @@ function sitOrLie(target) {
   if (!spot) return;
   player.crouch = false;
   rest.begin(target, spot, { x: player.pos.x, z: player.pos.z, y: player.pos.y, yaw: camera.rotation.y });
-  bump(spot.kind === 'lie' ? 'lay' : 'sat');
+  bump(spot.kind === 'lie' ? 'lay' : 'sat', 1, `${target.name}@${spot.pos.x.toFixed(1)},${spot.pos.y.toFixed(1)},${spot.pos.z.toFixed(1)}`); // each seat / side of a bed once
   sfx.rustle(spot.pos);
   if (spot.pc) usePc(spot);
   if (spot.tv) { // sitting up in bed puts the room's TV on (#213), and getting up puts it off again
@@ -702,20 +714,20 @@ function use(thing) {
   shadowState.hold = 1.5; // whatever moves now casts a moving shadow
   if (!heldItem() && !['rest', 'place', 'note', 'clock', 'calendar', 'board', 'poster', 'paper'].includes(thing.kind) && focusPoint && thing === focused) hand.reach(focusPoint); // the arm reaches out (#195)
   if (thing.kind === 'note') showNote(true);
-  else if (thing.kind === 'clock') showClock(true);
-  else if (thing.kind === 'calendar') showCalendar(true);
+  else if (thing.kind === 'clock') { showClock(true); bump('clock'); }
+  else if (thing.kind === 'calendar') { showCalendar(true); bump('calendar'); }
   else if (thing.kind === 'board') showBoard(true);
   else if (thing.kind === 'poster') showPoster(thing); // a taped-up drawing (#177)
-  else if (thing.kind === 'switch' || thing.kind === 'lamp') { thing.toggle(); if (thing.isOpen) bump('lights'); }
-  else if (thing.kind === 'fridge') { thing.toggle(); if (thing.isOpen) bump('fridge'); }
-  else if (thing.kind === 'keybox') thing.toggle();
-  else if (thing.kind === 'appliance') { thing.toggle(); if (thing.isOpen) bump('appliances'); } // oven, microwave (#82)
+  else if (thing.kind === 'switch' || thing.kind === 'lamp') { thing.toggle(); if (thing.isOpen) bump('lights', 1, idOf(thing)); }
+  else if (thing.kind === 'fridge') { thing.toggle(); if (thing.isOpen) bump('fridge', 1, idOf(thing)); }
+  else if (thing.kind === 'keybox') { thing.toggle(); if (thing.isOpen) bump('cabinets', 1, idOf(thing)); }
+  else if (thing.kind === 'appliance') { thing.toggle(); if (thing.isOpen) bump('appliances', 1, idOf(thing)); } // oven, microwave (#82)
   else if (thing.kind === 'coffee') thing.toggle();
   else if (thing.kind === 'speaker') { if (!sonos.playing) sonos.play(); showSonos(true); } // music in all the speakers (#187)
   else if (thing.kind === 'grill') { thing.toggle(); if (thing.on) bump('grill'); } // light / put out the grill (#204)
   else if (thing.kind === 'hood') { thing.toggle(); if (thing.on) bump('hood'); } // the cooker hood's fan (#194)
-  else if (thing.kind === 'hob') { thing.toggle(); if (thing.on) bump('appliances'); } // the induction hob (#158)
-  else if (thing.kind === 'cabinet') { thing.toggle(); if (thing.isOpen) bump('cabinets'); } // wall cabinets that open (#138)
+  else if (thing.kind === 'hob') { thing.toggle(); if (thing.on) bump('appliances', 1, 'hob'); } // the induction hob (#158)
+  else if (thing.kind === 'cabinet') { thing.toggle(); if (thing.isOpen) bump('cabinets', 1, idOf(thing)); } // wall cabinets that open (#138)
   else if (thing.kind === 'target') thing.toggle(); // clear the score (#99)
   else if (thing.kind === 'rest') sitOrLie(thing);
   else if (thing.blocked) sfx.click(camera.position); // put down what you hold first (#102)
@@ -725,24 +737,26 @@ function use(thing) {
   else if (thing.kind === 'fryfish') thing.item.fryHeld(); // a fish finger into the pan (#214)
   else if (thing.kind === 'paper') { if (heldItem() === heldDrawing) heldDrawing.putBack(); else beginDraw(); } // holding the drawing: back on the desk (#176)
   else if (thing.kind === 'tape') { posters.tape(heldDrawing.image, thing.spot, heldDrawing.meta ?? {}); heldDrawing.release(); drawing.save(); bump('posted'); } // tape the drawing up (#176)
-  else if (thing.kind === 'pc') { const on = thing.toggle(); sfx.tvClick(thing.pickable.getWorldPosition(new THREE.Vector3()), on); }
+  else if (thing.kind === 'pc') { const on = thing.toggle(); if (on) bump('pc', 1, idOf(thing)); sfx.tvClick(thing.pickable.getWorldPosition(new THREE.Vector3()), on); }
   else if (thing.kind === 'tv') {
     const on = thing.toggle();
+    if (on) bump('tv', 1, idOf(thing));
     sfx.tvClick(thing.pickable.getWorldPosition(new THREE.Vector3()), on);
   } else if (thing.kind === 'parasol') {
     const opening = thing.toggle();
+    bump('parasol');
     sfx.parasol(thing.pickable.getWorldPosition(new THREE.Vector3()).setY(2), opening);
   }
   else if (thing.kind === 'carkey') { thing.press(); car.call(); bump('car'); } // beep beep: the car comes, or leaves (#173)
-  else if (thing.kind === 'flush') { if (thing.toggle()) bump('flushes'); } // the toilet's flush button (#155)
+  else if (thing.kind === 'flush') { if (thing.toggle()) bump('flushes', 1, idOf(thing)); } // the toilet's flush button (#155)
   else if (thing.kind === 'lid') {
     thing.toggle();
-    if (thing.isOpen) bump('lids');
+    if (thing.isOpen) bump('lids', 1, idOf(thing));
     sfx.lid(thing.object.position, thing.isOpen);
   } else if (thing.kind === 'cat') cat.pet(player.pos);
   else if (thing.kind === 'tap') {
     thing.toggle();
-    if (thing.isOpen) bump('taps');
+    if (thing.isOpen) bump('taps', 1, idOf(thing));
   }
   else useDoor(thing);
 }

@@ -297,7 +297,7 @@ export class Basketball extends Holdable {
     if (sp > 1e-3) this.model.rotateOnWorldAxis(tmp.set(v.z, 0, -v.x).normalize(), (sp * dt) / r);
     // into the hand again: a dribble on its way up, or a throw that comes back past you
     const hand = this.hand(tmp2), near = c.distanceTo(hand) < b.catch;
-    if (near && this.air > 0.15 && (!this.dribbling || v.y > -0.5) && !this.handBusy()) { this.take(); return; }
+    if (near && this.air > 0.15 && (!this.dribbling || v.y > -0.5) && !this.handBusy()) { if (this.dribbling) this.onDribble?.(); this.take(); return; }
     if (this.dribbling && this.air > 2.5) this.dribbling = false;
     if (contact && v.length() < 0.06) { this.flying = false; v.set(0, 0, 0); } // lies still where it is (placed)
   }

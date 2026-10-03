@@ -65,7 +65,7 @@ class Darts {
     d.spent = true;
     if (h.cat) this.cat?.meowNow?.();
     else if (h.object.userData.target) { h.object.userData.target.hit(h.point, d.from); this.marks.add('splash', h, { color: d.color, force: true, size: 0.06 }); sfx.splat(h.point); }
-    else if (this.marks.add('splash', h, { color: d.color, force: true })) { this.splashes++; sfx.splat(h.point); }
+    else if (this.marks.add('splash', h, { color: d.color, force: true })) { this.splashes++; sfx.splat(h.point); this.onSplash?.(); }
     d.g.position.copy(h.point).addScaledVector(h.normal ?? new THREE.Vector3(), 0.03); // bounce off and fall
     d.v.copy(h.normal ?? new THREE.Vector3()).multiplyScalar(0.6);
   }

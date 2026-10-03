@@ -168,7 +168,7 @@ export class Sonos {
 
   play() {
     const A = this.ensureBus();
-    if (!this.playing) this.onPlay?.(); // statistics and points (#197)
+    this.onPlay?.(this.channel); // statistics and points (#197): each channel once
     this.playing = true;
     if (A) { this.startChannel(A); this.bus.mix.gain.setTargetAtTime(this.gain, A.ctx.currentTime, 0.05); }
     this.render();
@@ -187,7 +187,7 @@ export class Sonos {
 
   next(d) {
     this.channel = (this.channel + d + S.channels.length) % S.channels.length;
-    if (this.playing) { const A = audioParts(); if (A) this.startChannel(A); }
+    if (this.playing) { const A = audioParts(); if (A) this.startChannel(A); this.onPlay?.(this.channel); }
     this.render();
   }
 

@@ -400,7 +400,7 @@ export class CatSpawner {
       const { breed, coat } = pickCat(this.rand);
       this.setCat(breed, coat);
       this.catName = CAT_NAMES[Math.floor(this.rand() * CAT_NAMES.length)];
-      this.onFound?.(catLabel(breed, coat), !!breed.rare);
+      this.onFound?.(catLabel(breed, coat), !!breed.rare, breed.name);
     }
     this.stopPetting();
     this.dropFish();

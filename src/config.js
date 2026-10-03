@@ -627,13 +627,38 @@ export const MILK = { w: 0.07, h: 0.195, gable: 0.03, blue: '#2f6fc4', held: { x
 // cloudflare/setup.sh; keep it on one line. Locally (BUILD 'dev') it is off unless the page has &cloud=<url>.
 export const CLOUD_URL = '';
 
-// The score (#198, the global leaderboard; #197 shows it in the HUD): points per counted thing in stats.js (per
-// event, `visited` per room, `steps` per step). Our picks; extend it when new statistics come.
+// The score (#198, the global leaderboard; #197 shows it in the HUD), balanced (the user): luck and skill pay most,
+// easy things little, and nothing can be farmed by doing the same easy thing over and over. Our picks.
+//  each:   points per counted event (stats.js `bump`); `cap` = only the first that many count (things you can repeat
+//          at will: sips, steps, stair trips, baskets …). Statistics keep counting past the cap.
+//  once:   points per distinct thing, the first time only (each door, lamp, seat, tap, cabinet front, room, song …:
+//          `bump(key, n, id)`; without an id the key itself = one thing). Repeating it gives none.
+//  breeds: points per cat found, by how rare its breed is (cat.js BREEDS weights: huskatt 70, siames 8, brittiskt
+//          korthår 7, maine coon 6, norsk skogkatt 5, perser 3, sphynx 1 of 100); `coats` once per new coat seen.
+//  secrets: the secret drawer — `kinds` once per surprise kind found, `rare` once more per rare kind.
 export const SCORE = {
-  cats: 20, rare: 50, petted: 10, catFish: 15, doors: 1, lids: 1, flushes: 2, taps: 1, fridge: 2, appliances: 2,
-  cabinets: 1, beer: 2, coffee: 2, fish: 3, chicken: 5, wine: 2, champagne: 2, whisky: 2, milk: 2, kask: 3, posted: 10,
-  thrown: 3, lights: 1, sat: 2, lay: 2, stairs: 2, secrets: 15, visited: 5, steps: 0.01,
-  fried: 5, burnt: 1, catPhotos: 5, grill: 10, hood: 3, songs: 3, read: 5, car: 15, magic: 2, target: 1, baskets: 5, threes: 5, // #197 (target = per target point); a three counts as a basket too
+  each: {
+    petted: 8, catPhotos: 2, catFish: 25,                 // a pat (a cat to find first), its photo; feeding one takes a plan
+    target: 1, splashes: 0.5, cuts: 0.5, magic: 1,        // Nerf target: per target point (rings × distance = skill)
+    baskets: 6, threes: 6, dribbles: 0.2,                 // a three = a basket + a three (12)
+    turbo: 20,                                            // three cups of coffee in five minutes
+    beer: 1, coffee: 1, wine: 1, champagne: 1, whisky: 1, milk: 1, kask: 2,
+    fish: 1, fried: 3, chicken: 2, cooked: 10, brews: 3,  // cooked = a whole chicken fried golden
+    posted: 6, thrown: 1, drawn: 3,
+    secrets: 1, stairs: 1, steps: 0.01,
+  },
+  cap: {
+    beer: 10, coffee: 15, wine: 10, champagne: 10, whisky: 10, milk: 10, kask: 10, fish: 15, fried: 15, chicken: 12,
+    cooked: 3, brews: 5, posted: 10, thrown: 10, drawn: 5, magic: 30, splashes: 40, cuts: 40, dribbles: 50,
+    baskets: 100, threes: 100, target: 2000, turbo: 5, secrets: 30, stairs: 30, steps: 10000, catPhotos: 50,
+  },
+  once: {
+    doors: 2, lids: 1, flushes: 2, taps: 1, fridge: 2, appliances: 2, cabinets: 1, lights: 1, sat: 2, lay: 2,
+    visited: 5, songs: 3, read: 5, car: 15, grill: 10, hood: 3, tv: 3, pc: 5, parasol: 3, clock: 3, calendar: 3,
+    coats: 10,
+  },
+  breeds: { huskatt: 10, siames: 30, 'brittiskt korthår': 30, 'maine coon': 35, 'norsk skogkatt': 40, perser: 100, sphynx: 250 },
+  secrets: { kinds: 10, rare: 40 },
 };
 // The leaderboard: how many rows are shown, how often a changed score is sent (s).
 export const LEADERBOARD = { show: 10, every: 30, nameMax: 20 };

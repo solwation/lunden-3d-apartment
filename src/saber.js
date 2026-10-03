@@ -106,7 +106,7 @@ export class Saber extends Holdable {
     if (!h) return;
     if (h.cat) { if (this.meowT <= 0) { this.cat?.meowNow?.(); this.meowT = 2; } return; }
     if (this.marks.burn(h)) {
-      this.burns = (this.burns ?? 0) + 1; sfx.sizzle(h.point);
+      this.burns = (this.burns ?? 0) + 1; sfx.sizzle(h.point); this.onBurn?.();
       h.object.userData.target?.hit(h.point, this.camera.getWorldPosition(new THREE.Vector3())); // a cut in the target scores (#179)
     }
   }

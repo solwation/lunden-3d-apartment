@@ -4,10 +4,13 @@
 <body>
 <pre id="out">running…</pre>
 <script>
-// Points (#197): the score starts at 0 after a reset and is shown top left; opening a door gives SCORE.doors, lighting the
-// grill SCORE.grill, a fish finger the cat eats SCORE.catFish (a stat too), a "+N" pops up; the reset clears it.
+// Points (#197, balanced): the score starts at 0 after a reset and is shown top left; opening a door gives SCORE.once.doors
+// the first time only, lighting the grill once.grill once, a fish finger the cat eats each.catFish (a stat too), a "+N"
+// pops up; cats by breed (+ a new coat once), sips only up to their cap, a basket / a three, the secret drawer by kind;
+// the reset clears it.
 //   google-chrome --headless=new --dump-dom http://localhost:8137/tools/scoretest.html
 const out = document.getElementById('out');
+addEventListener('unhandledrejection', (e) => { out.textContent = `ERROR ${e.reason?.message ?? e.reason}`; });
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 localStorage.removeItem('lunden.stats');
 const f = document.createElement('iframe');
@@ -16,7 +19,9 @@ document.body.append(f);
 f.onload = async () => {
   const w = f.contentWindow, d = f.contentDocument;
   while (!w.__app) await wait(100);
-  const { stats, world, use, grill, fish, cat, step, player, heldItem, camera, totalScore } = w.__app;
+  const { stats, world, use, grill, fish, cat, step, player, heldItem, camera, totalScore, ball } = w.__app;
+  const { SCORE } = await w.eval(`import('${new URL('src/config.js', w.location.href)}')`);
+  const { catFound, secretFound, bump } = await w.eval(`import('${new URL('src/stats.js', w.location.href)}')`); // the iframe's own module instance
   const lines = [];
   const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; };
   w.confirm = () => true;
@@ -31,16 +36,45 @@ f.onload = async () => {
   cat.chance.appear = 0; cat.chance.steal = 0; // no cat (and its points) behind the door
   const door = world.doors.find((x) => x.name === 'dörren');
   use(door);
-  pass &= check(totalScore() === 1 && shown() === 1 && /\+1/.test(el.textContent), `a door: +1 ("${el.textContent.trim()}")`);
+  const D = SCORE.once.doors;
+  pass &= check(totalScore() === D && shown() === D && new RegExp(`\\+${D}`).test(el.textContent), `a door: +${D} ("${el.textContent.trim()}")`);
+  use(door); use(door);
+  pass &= check(totalScore() === D && stats.doors === 2, `the same door again: counted (${stats.doors}) but no more points (${totalScore()})`);
+  let t = totalScore();
   use(grill);
-  pass &= check(totalScore() === 11 && stats.grill === 1, `the grill lit: +10 (score ${totalScore()})`);
-  grill.set(false);
-  // a fish finger the cat eats: a statistic and 15 points
+  pass &= check(totalScore() === t + SCORE.once.grill && stats.grill === 1, `the grill lit: +${SCORE.once.grill} (score ${totalScore()})`);
+  grill.set(false); t = totalScore(); use(grill); grill.set(false);
+  pass &= check(totalScore() === t, 'lit again: no more points');
+  // a fish finger the cat eats: a statistic and its points
   const V = camera.position.constructor;
   cat.object.position.set(4.3, 0, 2.5); cat.object.visible = true; cat.on = null; cat.object.updateMatrixWorld(true);
+  t = totalScore();
   fish.press(); heldItem().placeAt(new V(4.0, 0, 3.7));
   for (let i = 0; i < 30 * 12; i++) step(1 / 30);
-  pass &= check(stats.catFish === 1 && totalScore() === 26, `the cat ate a fish finger: catFish ${stats.catFish}, score ${totalScore()}`);
+  pass &= check(stats.catFish === 1 && totalScore() === t + SCORE.each.catFish, `the cat ate a fish finger: catFish ${stats.catFish}, +${totalScore() - t}`);
+  cat.hide?.();
+  // cats by breed: a huskatt (+ its coat the first time), the same coat again, a sphynx
+  t = totalScore(); catFound('huskatt grå', false, 'huskatt');
+  const hus = totalScore() - t;
+  t = totalScore(); catFound('huskatt grå', false, 'huskatt');
+  const again = totalScore() - t;
+  t = totalScore(); catFound('sphynx rosa', true, 'sphynx');
+  const sph = totalScore() - t;
+  pass &= check(hus === SCORE.breeds.huskatt + SCORE.once.coats && again === SCORE.breeds.huskatt && sph === SCORE.breeds.sphynx + SCORE.once.coats && sph > 10 * again,
+    `cats: a new huskatt +${hus}, the same coat again +${again}, a sphynx +${sph}`);
+  // sips count only up to their cap
+  t = totalScore(); for (let i = 0; i < SCORE.cap.beer + 5; i++) bump('beer');
+  pass &= check(totalScore() - t === SCORE.cap.beer * SCORE.each.beer && stats.beer === SCORE.cap.beer + 5, `${stats.beer} sips of beer: +${totalScore() - t} (capped)`);
+  // a basket, a three
+  t = totalScore(); ball.onBasket(false); const two = totalScore() - t;
+  t = totalScore(); ball.onBasket(true); const three = totalScore() - t;
+  pass &= check(two === SCORE.each.baskets && three === SCORE.each.baskets + SCORE.each.threes && stats.baskets === 2 && stats.threes === 1, `a basket +${two}, a three +${three}`);
+  // the secret drawer: a new kind, the same again, a rare kind
+  t = totalScore(); secretFound('owl', 'Ugglan'); const k1 = totalScore() - t;
+  t = totalScore(); secretFound('owl', 'Ugglan'); const k2 = totalScore() - t;
+  t = totalScore(); secretFound('gem', 'Ädelstenen', true); const k3 = totalScore() - t;
+  pass &= check(k1 === SCORE.secrets.kinds + SCORE.each.secrets && k2 === SCORE.each.secrets && k3 === SCORE.secrets.kinds + SCORE.secrets.rare + SCORE.each.secrets,
+    `secrets: a new kind +${k1}, the same again +${k2}, a rare kind +${k3}`);
   const row = d.getElementById('stats');
   w.__app.renderStats?.(row);
   d.getElementById('stats-reset').click();
