@@ -755,7 +755,7 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   across the bed, z 0.6–4.0, from the head wall to 18 cm past the foot), and a Philips 43" PQS7801 on the west wall across from the bed (#213, black frame, Ambilight #223):
   "sätta dig upp i sängen" (look at the bed's foot half; `aim` on a rest spot) puts it on, getting up puts it off; Pingping, a navy
   penguin cushion, sits between the pillows (#269, docs/pingping-pingvinkudde.jpg) · Sovrum 3 (second right) Livia & Tuva, bunk (unicorn sheets), an IKEA ALEX desk under the window
-  with crafts and a kids' chair (#92), a round dusty-pink short-pile rug Ø 160 (guess) partly under the bunk, desk and chair
+  with crafts and a kids' chair (#92), a round dusty-pink short-pile rug Ø 160 (guess) out in the room under the bunk's ladder (#318)
   (#310, `shape: 'round'` on a `rug` item; `src/rugs.js` `rugLift`: the cat's floor spots and things put on the floor stand on a rug) ·
   Sovrum 2 (first left) Walter & Kian, bunk (Darth Vader sheets), a gaming desk with a PC along the west wall, short end to the window (#77, #84): sitting in its chair starts the
   PC; a sit spot in the lower bunk (`watch`, a spot `kind` can differ from its piece) swings the monitor arm round and plays a film;

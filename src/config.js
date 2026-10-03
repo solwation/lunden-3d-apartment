@@ -1811,10 +1811,11 @@ export const FURNITURE = [
   { type: 'alex', level: 1, x: 2.61 - 0.66 - 0.02, z: 0.465 + 0.29, rot: 180, w: 1.32, d: 0.58, h: 0.76 },
   { type: 'kidchair', level: 1, x: 2.61 - 0.66 - 0.02, z: 0.465 + 0.58 + 0.25, rot: 0 },
   // a round dusty-pink short-pile rug (#310, the user; docs/matta-sovrum3-rosa-farg.png for the colour,
-  // docs/matta-sovrum3-lizette-rund.png for the shape: "Matta Lizette", several sizes) in the corner between the bunk and
-  // the desk, partly under both and the chair. Ø 160 × 1.2 cm is a guess; centred so it clears the north wall (z 0.47),
-  // the east wall (x 2.61) and the MALM (z ≥ 2.58). Colour sampled from the photo. No collision (a loose item, like #55)
-  { type: 'rug', shape: 'round', level: 1, x: 1.42, z: 1.33, d: 1.6, h: 0.012, color: '#c8928d', seed: 31 },
+  // docs/matta-sovrum3-lizette-rund.png for the shape: "Matta Lizette", several sizes). Ø 160 × 1.2 cm is a guess.
+  // #318 (the user): out in the room under the bunk's ladder (room side x ~1.2, z 2.02–2.47) rather than in the corner
+  // under the desk: x 0.85–2.45, z 1.45–3.05 — 16 cm from the east wall (x 2.61), well clear of the door's swing
+  // (z ≥ 4.2), only the MALM's front corner (x ≤ 1.1, z ≥ 2.58) on it. Colour sampled from the photo. No collision (#55)
+  { type: 'rug', shape: 'round', level: 1, x: 1.65, z: 2.25, d: 1.6, h: 0.012, color: '#c8928d', seed: 31 },
   // IKEA MALM chests of 6 drawers, white, 80 × 124 × 50 cm (the user, #235, docs/malm-byra-6-lador.png), one per
   // bunk room with its back against the bunk's free short end (MYDAL posts reach l/2 + post = 1.055 m from its
   // centre), centred on the bunk, facing into the room. Sovrum 3 faces south, Sovrum 2 north.
