@@ -9,15 +9,17 @@
 // (F5) the visit starts at START; (3) "Börja från start" goes back to START; (4) a record inside a wall
 // is ignored; (5) a record made mid-visit (#181): no start screen, "Ny version laddad" fades out after ~3 s; touch
 // plays at once, mouse & keyboard: the next click takes the mouse; the mute choice is kept; (6) F5 (#203) carries
-// on from the tab's running record without a note; (7) a record from an older build shows "Ny version laddad".
+// on from the tab's running record without a note; (7) a record from an older build shows "Ny version laddad";
+// (9) a page-made reload keeps the world (#277): the car still arriving, a cup of coffee in the hand, the fridge open,
+// the lamps as switched, sitting in the sofa, the game's clock; (10) a new tab after that starts fresh at the real time.
 //   google-chrome --headless=new --dump-dom http://localhost:8137/tools/reloadtest.html
 const out = document.getElementById('out');
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 const lines = [];
-const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; };
-const load = () => new Promise((resolve) => {
+const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); out.textContent = `running…\n${lines.join('\n')}`; return ok; };
+const load = (q = '') => new Promise((resolve) => {
   const f = document.createElement('iframe');
-  f.width = 900; f.height = 600; f.src = '../index.html';
+  f.width = 900; f.height = 600; f.src = `../index.html${q}`;
   document.body.append(f);
   f.onload = async () => { while (!f.contentWindow.__app) await wait(100); resolve(f); };
 });
@@ -115,8 +117,75 @@ const KEY = 'lunden.resume', SESSION = 'lunden.session';
   e = await early();
   pass &= check(e.first === true && e.after === true, `no record: the start screen from the start (first ${e.first})`);
   sessionStorage.removeItem(SESSION);
+  // (9) #277: a reload made by the page keeps the world — the car on its way, a cup of coffee in the hand, the fridge
+  // open, a ceiling lamp on, a small lamp put out by hand, sitting in the sofa, the game's clock (spooled and paused)
+  sessionStorage.removeItem(SESSION); localStorage.removeItem(KEY);
+  f = await load('?time=21.5&month=1&day=10');
+  d = f.contentDocument; app = f.contentWindow.__app;
+  d.getElementById('start-touch').click();
+  {
+    const { step, player, camera, world, rest, cups, fridge, lights, day, car } = app;
+    const sofa = world.furnitureTargets.find((t) => t.kind === 'rest' && t.name === 'soffan'), sp = sofa.spots[1];
+    let stood = null;
+    for (const r of [0.9, 1.2, 1.5, 0.7]) for (let k = 0; k < 12 && !stood; k++) {
+      const a = sp.yaw + k * (Math.PI / 6), x = sp.pos.x - Math.sin(a) * r, z = sp.pos.z - Math.cos(a) * r;
+      player.spawn(x, z, 0);
+      for (let i = 0; i < 3; i++) step(1 / 60);
+      if (Math.hypot(player.pos.x - x, player.pos.z - z) < 0.01) stood = { x, z };
+    }
+    rest.begin(sofa, sp, { x: player.pos.x, z: player.pos.z, y: player.pos.y, yaw: camera.rotation.y });
+    for (let i = 0; i < 60; i++) step(1 / 60);
+    const bottle = app.things.find((t) => t.drink && !t.homeParent);
+    bottle.take(); bottle.placeAt(new player.pos.constructor(stood.x + 0.25, 0, stood.z)); // on the floor beside you
+    const bottleAt = bottle.model.position.clone(), bottleI = app.things.indexOf(bottle);
+    const tv = world.furnitureTargets.find((t) => t.kind === 'tv' && t.name === 'tv:n'); if (!tv.isOpen) tv.toggle();
+    app.cat.object.position.set(stood.x - 0.4, 0, stood.z); app.cat.object.visible = true; app.cat.catName = 'Testkatt';
+    const cup = cups.cups.find((c) => c.state === 'cabinet');
+    cup.take(); cup.setFill(0.8);
+    fridge.toggle();
+    const sw = lights.switches.find((s) => !s.isOpen); sw.toggle();
+    const lamp = lights.floorLamps.find((l) => l.auto && l.isOpen); lamp.toggle();
+    day.hour = 21.75; day.paused = true;
+    player.spawn(stood.x, stood.z, 0); // (the standing spot does not move while seated)
+    car.call();
+    for (let i = 0; i < 60 * 2; i++) step(1 / 60);
+    const d0 = car.d, swRoom = sw.room, lampName = lamp.name, cupI = cups.cups.indexOf(cup);
+    pass &= check(rest.active && car.state === 'arriving' && !!stood, `before: sitting ${rest.active}, the car arriving (${d0.toFixed(1)} m along)`);
+    const world0 = app.keepWorld();
+    const size = JSON.stringify(world0).length;
+    pass &= check(world0 && world0.v === 1 && size < 6000, `the world record: v ${world0?.v}, ${size} bytes`);
+    sessionStorage.setItem(KEY, JSON.stringify({ x: player.pos.x, z: player.pos.z, feetY: player.pos.y, yaw: camera.rotation.y, pitch: camera.rotation.x, mode: 'touch', build: null, world: world0, ts: Date.now() }));
+    f.remove();
+    f = await load();
+    d = f.contentDocument; app = f.contentWindow.__app;
+    const a2 = app;
+    pass &= check(a2.car.state === 'arriving' && Math.abs(a2.car.d - d0) < 0.1 && a2.car.object.visible, `after: the car still arriving (${a2.car.state}, ${a2.car.d.toFixed(1)} m)`);
+    pass &= check(a2.heldItem() === a2.cups.cups[cupI] && Math.abs(a2.cups.cups[cupI].fill - 0.8) < 0.01, `after: the cup of coffee in the hand (${a2.heldItem()?.name}, ${a2.heldItem()?.fill?.toFixed(2)})`);
+    pass &= check(a2.fridge.isOpen && a2.fridge.t > 0.9, 'after: the fridge open');
+    const sw2 = a2.lights.rooms.get(`${swRoom.level}:${swRoom.name}`), lamp2 = a2.lights.floorLamps.find((l) => l.name === lampName);
+    pass &= check(sw2?.on && lamp2 && !lamp2.isOpen, `after: the room lamp on (${swRoom.name}), the small lamp off by hand (${lampName})`);
+    pass &= check(a2.rest.active && a2.rest.target?.name === 'soffan' && a2.camera.position.distanceTo(a2.rest.spot.pos) < 0.01, 'after: sitting in the sofa');
+    pass &= check(Math.abs(a2.day.hour - 21.75) < 0.01 && a2.day.paused && a2.day.month === 1 && a2.day.date === 10, `after: the game's clock (${a2.day.clock}, ${a2.day.date}/${a2.day.month}, paused ${a2.day.paused})`);
+    const b2 = a2.things[bottleI], tv2 = a2.world.furnitureTargets.find((t) => t.kind === 'tv' && t.name === 'tv:n');
+    pass &= check(b2.placed && b2.model.position.distanceTo(bottleAt) < 0.01, `after: the ${b2.name} where it was put down`);
+    pass &= check(tv2.isOpen, 'after: the TV on');
+    pass &= check(a2.cat.visible && a2.cat.catName === 'Testkatt' && Math.abs(a2.cat.object.position.x - (stood.x - 0.4)) < 0.01, `after: the cat still there (${a2.cat.catName})`);
+    for (let i = 0; i < 60 * 30 && a2.car.state === 'arriving'; i++) a2.step(1 / 60);
+    pass &= check(a2.car.state === 'parked' && !lamp2.isOpen && a2.rest.active, `the car parks (${a2.car.state}); the lamp stays off, still sitting`);
+    f.remove();
+  }
+  // (10) a new tab after that: fresh, at START, the real time
+  sessionStorage.removeItem(SESSION); localStorage.removeItem(KEY);
+  f = await load();
+  app = f.contentWindow.__app;
+  {
+    const n = new Date(), h = n.getHours() + n.getMinutes() / 60;
+    pass &= check(app.player.pos.z < -5 && Math.abs(app.day.hour - h) < 0.1 && app.car.state === 'gone' && !app.heldItem() && !app.fridge.isOpen && !app.rest.active,
+      `a new tab: at the start, the real time (${app.day.clock}), no car, empty hands, the fridge shut`);
+  }
+  f.remove();
   out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
-})();
+})().catch((e) => { out.textContent = `ERROR ${e.stack}\n${lines.join("\n")}`; });
 </script>
 </body>
 </html>

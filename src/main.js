@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { COLORS, LEVELS, DAY, START, PLAYER, DRAWING, STAIR, HOLD, REMOTE, REST, DOOR_HEIGHT, TURBO, WEATHER, BREAK, CAR, KITCHEN, LAPTOP } from './config.js';
+import { COLORS, LEVELS, DAY, START, PLAYER, DRAWING, STAIR, HOLD, REMOTE, REST, DOOR_HEIGHT, TURBO, WEATHER, BREAK, CAR, KITCHEN, LAPTOP, AUTO_RELOAD } from './config.js';
 const DRAWING_COLORS = DRAWING.colors;
 import { buildWorld } from './world.js';
 import { Player } from './player.js';
@@ -19,6 +19,7 @@ import { Patio, buildStringLights } from './patio.js';
 import { updateReflections, reflectors } from './reflections.js';
 import { applySeason } from './seasons.js';
 import { saveResume, saveSession, takeResume } from './resume.js';
+import { saveWorld, loadWorld } from './keep.js';
 import { Rest, chooseSpot } from './rest.js';
 import { Saber } from './saber.js';
 import { buildToys } from './toys.js';
@@ -540,7 +541,7 @@ if (at) {
 // the resumed place (not with ?at=): back to the same spot and view (the clock is real, #143); the start screen then
 // says so and offers "Börja från start" instead
 const resumeEl = document.getElementById('resume');
-const resumeOk = !!resumed && !at && resumeAt(resumed); // the place only: the clock is the real one (#143)
+const resumeOk = !!resumed && !at && resumeAt(resumed); // the place; the clock is the real one (#143) unless a mid-visit record keeps the world (#277, below)
 // reloaded mid-visit (#181): no start screen, straight back in (see `continueAfterReload` below); a record made
 // on the start screen (no mode) shows it with "Du fortsätter där du var" as before
 if (resumeOk && !resumed.mode) resumeEl.hidden = false;
@@ -673,16 +674,21 @@ function sitOrLie(target) {
   raycaster.setFromCamera(center, camera);
   const spot = chooseSpot(target, raycaster.ray, cat.visible ? cat.object.position : null);
   if (!spot) return;
-  player.crouch = false;
-  rest.begin(target, spot, { x: player.pos.x, z: player.pos.z, y: player.pos.y, yaw: camera.rotation.y });
+  sitAt(target, spot, { x: player.pos.x, z: player.pos.z, y: player.pos.y, yaw: camera.rotation.y });
   bump(spot.kind === 'lie' ? 'lay' : 'sat', 1, `${target.name}@${spot.pos.x.toFixed(1)},${spot.pos.y.toFixed(1)},${spot.pos.z.toFixed(1)}`); // each seat / side of a bed once
   sfx.rustle(spot.pos);
+  if (target.name === 'loungesoffan') beer.serve(); // a big beer on the table (#117)
+}
+/** Down on `spot` of `target`; `stand` = where to get up again. `now`: already there (a reload putting you back, #277). */
+function sitAt(target, spot, stand, now = false) {
+  player.crouch = false;
+  rest.begin(target, spot, stand);
+  if (now) { rest.t = 1; camera.position.copy(spot.pos); rest.clampLook(camera); }
   if (spot.pc) usePc(spot);
   if (spot.tv) { // sitting up in bed puts the room's TV on (#213), and getting up puts it off again
     const tv = world.furnitureTargets.find((t) => t.kind === 'tv' && t.room === spot.tv);
-    if (tv && !tv.isOpen) { tv.toggle(); sfx.tvClick(tv.pickable.getWorldPosition(new THREE.Vector3()), true); rest.tvOn = tv; }
+    if (tv && (!tv.isOpen || now)) { if (!tv.isOpen) { tv.toggle(); sfx.tvClick(tv.pickable.getWorldPosition(new THREE.Vector3()), true); } rest.tvOn = tv; }
   }
-  if (target.name === 'loungesoffan') beer.serve(); // a big beer on the table (#117)
 }
 /** The gaming chair starts the PC; the seat in the bunk also swings its monitor round for a film. */
 function usePc(spot) {
@@ -1343,7 +1349,7 @@ document.addEventListener('fullscreenchange', () => {
 });
 onTap(document.getElementById('update-reload'), () => {
   reloading = true;
-  saveResume({ ...placeNow(), build: null }); // a new version for sure
+  saveResume({ ...placeNow(), build: null, world: keepWorld() }); // a new version for sure; the world as it is (#277)
   const url = new URL(location.href);
   url.searchParams.set('v', latestVersion ?? Date.now());
   location.replace(url.href);
@@ -1351,30 +1357,54 @@ onTap(document.getElementById('update-reload'), () => {
 onTap(document.getElementById('update-close'), () => { updateEl.hidden = true; });
 document.addEventListener('pointerlockchange', () => { if (!updateEl.hidden) showUpdate(); });
 // A new version (#192): no button to press — once the visitor has been still for a moment (no keys, stick, mouse
-// or touch, not walking, no panel open, no music playing) the picture fades out, the place is saved and the new
-// version loads; it fades back in where they were with "Ny version laddad". Never still for AUTO_RELOAD.fallback s:
-// the old notice with its "Ladda om" button.
-const AUTO_RELOAD = { still: 2.5, fade: 0.4, fallback: 300 };
+// or touch, not walking, no panel open, no music playing, nothing time-bound going on) "Uppdateras om 5 … 1" counts
+// down at the top (#277); any input or movement cancels it ("Uppdatering avbruten") and the stillness starts over.
+// Then the picture fades out, the place and the world's state (keep.js: the car on its way, what you hold, doors,
+// lamps, sitting, the clock …) are saved and the new version loads; it fades back in where they were with "Ny version
+// laddad". Never still for AUTO_RELOAD.fallback s: the old notice with its "Ladda om" button.
 const fadeEl = document.getElementById('fade');
+const countEl = document.getElementById('countdown');
 const autoReload = {
-  version: null, still: 0, since: 0, going: false, last: new THREE.Vector3(),
+  version: null, still: 0, since: 0, going: false, count: null, cancelT: 0, last: new THREE.Vector3(),
   go(url) { location.replace(url); }, // (tests replace this)
-  poke() { this.still = 0; },
+  poke() { this.still = 0; if (this.count !== null) this.cancel(); },
+  /** Input or movement during the countdown: called off, said so briefly. */
+  cancel() {
+    this.count = null; this.still = 0;
+    countEl.textContent = 'Uppdatering avbruten';
+    countEl.hidden = false;
+    clearTimeout(this.cancelT);
+    this.cancelT = setTimeout(() => { if (this.count === null) countEl.hidden = true; }, AUTO_RELOAD.cancelled * 1000);
+  },
+  /** Something time-bound that a reload would cut short (and keep.js does not keep): wait for it to end. */
+  get waiting() {
+    return !!(world.lids.find((l) => l.kind === 'coffee')?.isOpen || chicken?.smoking || (world.hob?.on && pan?.onHob)
+      || airFryer.running || grill.on || turbo.active || car.radio.playing || ball.flying);
+  },
   update(dt) {
     if (!this.version || this.going) return;
     const moved = player.pos.distanceTo(this.last) > 0.01;
     this.last.copy(player.pos);
-    const busy = moved || player.keys.size || touch.analog.x || touch.analog.y || reading || drawing.active || sonos.playing || !document.hasFocus?.() && false;
-    this.still = busy ? 0 : this.still + dt;
+    const busy = moved || player.keys.size || touch.analog.x || touch.analog.y || reading || drawing.active || sonos.playing || this.waiting;
+    if (busy) { if (this.count !== null) this.cancel(); this.still = 0; } else this.still += dt;
     if ((performance.now() - this.since) / 1000 > AUTO_RELOAD.fallback && updateEl.hidden) showUpdate(this.version);
-    if (this.still < AUTO_RELOAD.still) return;
+    if (this.count === null) {
+      if (this.still < AUTO_RELOAD.still) return;
+      this.count = AUTO_RELOAD.countdown;
+      clearTimeout(this.cancelT);
+      countEl.hidden = false;
+    }
+    this.count -= dt;
+    if (this.count > 0) { countEl.textContent = `Uppdateras om ${Math.ceil(this.count)}`; return; }
+    this.count = null;
+    countEl.hidden = true;
     this.going = true;
     fadeEl.style.transition = `opacity ${AUTO_RELOAD.fade}s`;
     fadeEl.hidden = false;
     void fadeEl.offsetWidth; // (a reflow, so the change of opacity is animated)
     fadeEl.style.opacity = '1';
     setTimeout(() => {
-      saveResume({ ...placeNow(), build: null }); // a new version for sure
+      saveResume({ ...placeNow(), build: null, world: keepWorld() }); // a new version for sure; the world as it is (#277)
       reloading = true;
       const url = new URL(location.href);
       url.searchParams.set('v', this.version);
@@ -1418,8 +1448,13 @@ function continueAfterReload(r) {
   setTimeout(() => reloadedEl.classList.add('gone'), RELOAD_NOTE_S * 1000);
   setTimeout(() => { reloadedEl.hidden = true; }, RELOAD_NOTE_S * 1000 + 700);
 }
+// the world's state for a reload made by the page (#277, keep.js): what each part needs
+const keepApp = { car, world, lights, day, grill, sonos, patio, holdables, cups, beer, chicken, scene, rest, cat, BREEDS, VARIANTS,
+  sitAt: (target, spot, stand) => sitAt(target, spot, stand, true) };
+function keepWorld() { try { return saveWorld(keepApp); } catch (e) { console.warn('keep', e); return null; } }
+if (resumeOk && resumed.mode && resumed.world) loadWorld(keepApp, resumed.world); // mid-visit only: the game's clock too (a new visit: real time, #143)
 if (resumeOk && resumed.mode) continueAfterReload(resumed);
 document.documentElement.classList.remove('resuming'); // the page is ready: off with the "Laddar…" cover (#222)
 
 // handle for tests/debugging (tools/touchtest.html)
-window.__app = { airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };
+window.__app = { keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };

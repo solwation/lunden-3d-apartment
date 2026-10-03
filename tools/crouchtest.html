@@ -58,7 +58,7 @@ f.onload = async () => {
   let went = null;
   autoReload.go = (url) => { went = url; };
   autoReload.version = 'abc'; autoReload.still = 10;
-  autoReload.update(0); autoReload.update(3); // (the first call notes where you stand)
+  autoReload.update(0); autoReload.update(3); for (let i = 0; i < 7; i++) autoReload.update(1); // (the first call notes where you stand; then the countdown, #277)
   await wait(800);
   pass &= check(went && !leave(), 'a new version reloads the page without asking');
   out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;

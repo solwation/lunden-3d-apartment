@@ -40,13 +40,21 @@ https://solwation.github.io/lunden-3d-apartment/ (public repo) via
 writes the commit SHA into `src/version.js` (`BUILD`) and `version.json`, and appends
 `?v=SHA` to module imports / `data/plan.json` so a reload never mixes cached old modules.
 The page polls `version.json` every minute; when it differs from `BUILD` it reloads by itself (#192, `autoReload` in
-main.js): once the visitor has been still for 2.5 s (no keys/stick/mouse/touch, not walking, no panel, no music) the
-picture fades out, the place is saved (resume record) and `?v=<new SHA>` loads, fading back in with "Ny version laddad";
+main.js, `AUTO_RELOAD` in config): once the visitor has been still for 2.5 s (no keys/stick/mouse/touch, not walking, no panel,
+no music, nothing time-bound: coffee brewing, frying, the airfryer, the grill, Kaffeturbo, the car's music, a ball in the air) "Uppdateras om
+5 … 1" counts down at the top (#277, `#countdown`; any input or movement cancels it: "Uppdatering avbruten"), then the
+picture fades out, the place and the world are saved (resume record) and `?v=<new SHA>` loads, fading back in with "Ny version laddad";
 only if they are never still for 5 min does the old "new version" notice (top centre) appear. Its buttons react to a lifted touch as well as a click (`onTap`,
 #41), and "Ladda om" navigates to `?v=<new SHA>` so no cache serves the old page
 (`tools/updatetest.html`). That button stores a one-time record (`src/resume.js`: position, level, view,
-clock, input mode, mute, fullscreen; sessionStorage + localStorage, < 2 min) which the next load reads, deletes and resumes from (the place only — the clock and the calendar always
-start at the real time and date, #143; not with `?at=`; a spot inside a wall falls back to START); F5 uses the running record below (a new tab starts at START).
+clock, input mode, mute, fullscreen; sessionStorage + localStorage, < 2 min) which the next load reads, deletes and resumes from (not with `?at=`; a spot
+inside a wall falls back to START); F5 uses the running record below (a new tab starts at START). The automatic update and "Ladda om" also put
+a `world` part in it (#277, `src/keep.js` `saveWorld` / `loadWorld`, versioned plain JSON, every part optional and read tolerantly): the
+game's clock and date (spooled / paused — only a new visit starts at the real time, #143), the car (`Car.saveState`: arriving / leaving
+carries on along its path, parked with its doors, the music), open doors / lids / fronts / windows, room lamps + small lamps (on/off and the
+dusk state, not the pool), TV / PC / hob / hood / grill, the coffee in the jug, the Sonos, the parasol's hand choice, things put down and the
+one in the hand (cups with pattern and contents, glasses, the served beer), sitting / lying (`sitAt`), the cat. Fresh as before: the
+chicken / fish fingers, taps, a drawing in the hand, F5 (place only).
 A record made mid-visit skips the start screen (#181, `continueAfterReload`): touch plays at once (sound/fullscreen on the
 first touch), mouse & keyboard gets the see-through `#arm` (the next click takes the mouse, #190); "Ny version laddad" fades out at the top after 3 s.
 F5 (#203): while visiting, the place (+ view, mode, mute, `BUILD`) is written to this tab's sessionStorage every 2 s and on
@@ -71,6 +79,7 @@ src/player.js          WASD/arrow/joystick movement, circle-vs-segment collision
 src/touch.js           on-screen joystick (left) + drag-to-look (right), multi-touch pointer events
 src/main.js            renderer, lights, input modes, door raycast prompt/button, loop (step)
 src/version.js         BUILD stamp + polling for a newer published version
+src/keep.js            the world's state across a page-made reload (#277): saveWorld / loadWorld, one part per module
 src/cat.js             the cat: random coat, washing animation, appears/moves/vanishes behind doors
 src/furniture.js       loose furniture from FURNITURE in config (IKEA LANDSKRONA sofa/armchair …)
 src/cushions.js        decorative cushions (one atlas material: leaf print | waffle | plain, vertex-colour tint) and the grey
@@ -423,12 +432,15 @@ tools/keytest.html     headless test of the hall key cabinet: open, car key reac
 tools/esctest.html     headless test of Esc on the start screen (click-to-start cover, ignored over the note)
 tools/crouchtest.html  headless test: C crouches (Ctrl too, other Ctrl shortcuts prevented), seated C stands up, leaving mid-visit
                        asks (beforeunload), not on the start screen nor on a new-version reload (#274)
-tools/updatetest.html  headless test of the update notice on a phone-sized touch screen (on top, 44 px, touch works)
+tools/updatetest.html  headless test of the update notice on a phone-sized touch screen (on top, 44 px, touch works);
+                       the countdown 5 … 1, cancelled by a key / mouse move / the stick / a touch, held back by brewing (#277)
 tools/perfcount.html   draw calls / triangles at a few spots (compare before/after optimising)
 tools/toilettest.html  headless test: flush both toilets (counted, not again until refilled), the lid still opens
 tools/oventest.html    headless test: oven + microwave open/close (lamp inside), Moccamaster brews and clicks off
 tools/tvtest.html      headless test: TVs on/off (living room + Sovrum 3), new programme each time, the remote, F off
-tools/reloadtest.html  headless test: resume after "Ladda om", F5 starts at START, "Börja från start", bad record
+tools/reloadtest.html  headless test: resume after "Ladda om", F5 starts at START, "Börja från start", bad record;
+                       the world kept (#277): the car still arriving then parks, a cup of coffee in the hand, the fridge open, lamps,
+                       sitting, a bottle put down, the TV, the cat, the game's clock; a new tab fresh at the real time
 tools/resttest.html    headless test: sit on every seat and lie in every bed (spot, no walking, up again looking the same way;
                        head turned, old spot behind: up in front, #202)
 tools/pctest.html      headless test: switch the gaming PC on/off (game moves, RGB cycles), the chair is a seat and

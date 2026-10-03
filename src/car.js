@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { CAR as C, REST } from './config.js';
+import { CAR as C, REST, SONOS } from './config.js';
 import { buildCar, MEGANE, drawScreen, SCREEN_BUTTONS } from './carmodel.js';
 import { sfx } from './audio.js';
 import { CarRadio } from './sonos.js';
@@ -214,12 +214,40 @@ export class Car {
     this.d = Math.min(this.total(), this.d + this.speed * dt);
     for (const w of this.wheels) w.rotation.z -= (this.speed * dt) / MEGANE.wheelR;
     this.place();
+    if (!this.hum) this.hum = sfx.evHum(this.object.position); // (driving on after a reload: the sound once the audio runs, #277)
     this.hum?.move(this.object.position, this.speed);
     if (this.d >= this.total() - 1e-6) {
       this.hum?.stop(); this.hum = null; this.speed = 0;
       if (this.state === 'arriving') { this.state = 'parked'; this.blinkT = 1.2; } // blinks twice as it stops
       else { this.state = 'gone'; this.object.visible = false; }
     }
+  }
+
+  /** The car for a reload record (#277): where it is on its way, its doors, its music; null when it is gone and silent. */
+  saveState() {
+    if (this.state === 'gone' && !this.radio.playing) return null;
+    return { s: this.state, d: Math.round(this.d * 100) / 100, v: Math.round(this.speed * 100) / 100, doors: this.doors.map((d) => (d.target > 0 ? 1 : 0)),
+      music: this.radio.playing ? 1 : 0, ch: this.radio.channel, shut: this.leaveWhenShut ? 1 : 0 };
+  }
+
+  /** Back as saved (tolerant of anything missing): arriving / leaving carries on from the same point of its path. */
+  loadState(s) {
+    if (!s || !['arriving', 'parked', 'leaving'].includes(s.s)) return;
+    if (s.s === 'parked') this.park();
+    else {
+      this.path = s.s === 'arriving' ? this.arrival() : this.departure();
+      this.state = s.s;
+      this.d = Math.min(this.total(), Math.max(0, Number(s.d) || 0));
+      this.speed = Number.isFinite(s.v) ? s.v : s.s === 'arriving' ? C.speed : 0;
+      this.object.visible = true;
+      this.place();
+    }
+    if (this.state === 'parked') {
+      (s.doors ?? []).forEach((o, i) => { const d = this.doors[i]; if (d) { d.target = d.angle = o ? C.doorOpen : 0; d.pivot.rotation.y = d.side * d.angle; } });
+      this.leaveWhenShut = !!s.shut;
+    }
+    if (Number.isInteger(s.ch) && s.ch >= 0) this.radio.channel = s.ch % SONOS.channels.length;
+    if (s.music && this.state !== 'leaving') { const f = this.radio.onPlay; this.radio.onPlay = null; this.radio.play(); this.radio.onPlay = f; } // (no points for it again)
   }
 
   /** Its box while parked (plan x/z, roof height y1) — weather.js keeps the rain out of it. */

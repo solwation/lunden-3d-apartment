@@ -663,6 +663,12 @@ export const TARGET = {
 // of the eye.
 export const HOLD = { reach: 2.2 };
 
+// A new version loads by itself (#192, #277, main.js `autoReload`): after `still` s without input / movement / panel
+// / music (and nothing time-bound going on) "Uppdateras om N" counts down from `countdown` s, any input cancels it
+// ("Uppdatering avbruten" for `cancelled` s); then a `fade` s fade-out and the new version. Never still for `fallback`
+// s: the old notice with its "Ladda om" button. (The user's numbers: 5 s countdown; the rest are ours.)
+export const AUTO_RELOAD = { still: 2.5, countdown: 5, cancelled: 1.5, fade: 0.4, fallback: 300 };
+
 // Performance (#189): small meshes (radius < maxR m) are not drawn once they would look smaller than `k`
 // (radius / distance, ~0.6° across), never nearer than `minDist`; meshes up to `maxOcclude` inside the flat are
 // not drawn from outside unless seen through a façade opening; re-checked after the camera moved `move` m.

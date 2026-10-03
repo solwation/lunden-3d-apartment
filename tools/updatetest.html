@@ -7,7 +7,8 @@
 // "New version" notice on a phone-sized touch screen: nothing covers its buttons, they are at least
 // 44 px high, and a touch (pointerdown + pointerup, no click) works — tested on the close button
 // (the reload button navigates away; it uses the same handler). The automatic reload (#192): not while walking,
-// after 2.5 s standing still the picture fades out, the place is saved and the new version loads.
+// after 2.5 s standing still "Uppdateras om 5 … 1" (#277) — a key, a mouse move, the stick or a touch cancels it, the
+// coffee brewing holds it back — then the picture fades out, the place and the world are saved and the new version loads.
 //   google-chrome --headless=new --dump-dom http://localhost:8137/tools/updatetest.html
 const out = document.getElementById('out');
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -35,21 +36,55 @@ f.onload = async () => {
   close.dispatchEvent(new w.PointerEvent('pointerdown', opts));
   close.dispatchEvent(new w.PointerEvent('pointerup', opts));
   pass &= check(d.getElementById('update').hidden, 'a touch (no click) closes the notice');
-  // the automatic reload (#192): while the visitor walks nothing happens; still for 2.5 s → fade out, save, go
-  const app = w.__app, ar = app.autoReload;
+  // the automatic reload (#192, #277): while the visitor walks nothing happens; still for 2.5 s → "Uppdateras om 5 … 1",
+  // any input cancels it; at the end fade out, save the place and the world, go
+  const app = w.__app, ar = app.autoReload, cd = app.countEl;
   let went = null;
   ar.go = (url) => { went = url; };
   ar.version = 'abc1234'; ar.since = performance.now(); ar.still = 0;
+  const steps = (s) => { for (let i = 0; i < Math.round(s * 60); i++) app.step(1 / 60); };
   app.player.keys.add('KeyW');
-  for (let i = 0; i < 60 * 4; i++) app.step(1 / 60);
+  steps(4);
   app.player.keys.clear();
-  pass &= check(!went && !ar.going, 'walking: no reload');
-  for (let i = 0; i < 60 * 3; i++) app.step(1 / 60);
+  pass &= check(!went && !ar.going && cd.hidden, 'walking: no reload, no countdown');
+  steps(3);
+  pass &= check(!cd.hidden && cd.textContent === 'Uppdateras om 5' && !went, `still for 2.5 s: "${cd.textContent}"`);
+  const r2 = cd.getBoundingClientRect();
+  pass &= check(r2.top < 60 && Math.abs(r2.left + r2.width / 2 - 422) < 3, `at the top centre (${r2.left.toFixed(0)}, ${r2.top.toFixed(0)})`);
+  // cancelled by a key, a mouse move, the stick
+  const cancels = [
+    ['a key', () => w.dispatchEvent(new w.KeyboardEvent('keydown', { code: 'KeyQ', bubbles: true }))],
+    ['a mouse move', () => w.dispatchEvent(new w.MouseEvent('mousemove', { movementX: 12, movementY: 3, bubbles: true }))],
+    ['the stick', () => { app.touch.analog.x = 0.6; app.step(1 / 60); app.touch.analog.x = 0; }],
+    ['a touch', () => d.body.dispatchEvent(new w.PointerEvent('pointerdown', { pointerType: 'touch', bubbles: true }))],
+  ];
+  for (const [what, fn] of cancels) {
+    steps(3.2);
+    const counting = !cd.hidden && /Uppdateras om/.test(cd.textContent);
+    fn();
+    app.step(1 / 60);
+    pass &= check(counting && cd.textContent === 'Uppdatering avbruten' && ar.count === null && !went, `${what} cancels the countdown ("${cd.textContent}")`);
+    steps(2);
+    pass &= check(!went && !/Uppdateras/.test(cd.textContent), `${what}: the stillness starts over, nothing reloads`);
+  }
+  // something time-bound holds it back: the coffee brewing
+  const mocca = app.world.lids.find((l) => l.kind === 'coffee');
+  mocca.toggle();
+  steps(4);
+  pass &= check(cd.hidden || !/Uppdateras/.test(cd.textContent), 'the coffee brewing: no countdown');
+  mocca.toggle();
+  ar.still = 0;
+  // the whole countdown: 5, 4, 3, 2, 1, then the fade and the reload
+  const seen = [];
+  for (let i = 0; i < 60 * 9 && !ar.going; i++) { app.step(1 / 60); if (!cd.hidden && seen.at(-1) !== cd.textContent) seen.push(cd.textContent); }
+  pass &= check(seen.join(',') === 'Uppdatering avbruten,Uppdateras om 5,Uppdateras om 4,Uppdateras om 3,Uppdateras om 2,Uppdateras om 1'
+    || seen.join(',') === 'Uppdateras om 5,Uppdateras om 4,Uppdateras om 3,Uppdateras om 2,Uppdateras om 1', `counted down: ${seen.join(' · ')}`);
   await wait(600);
   const fade = d.getElementById('fade');
-  pass &= check(went && /[?&]v=abc1234/.test(went) && !fade.hidden && fade.style.opacity === '1', `still for 2.5 s: faded out and loads ${went ? new URL(went).search : '—'}`);
+  pass &= check(went && /[?&]v=abc1234/.test(went) && !fade.hidden && fade.style.opacity === '1' && cd.hidden, `then faded out and loads ${went ? new URL(went).search : '—'}`);
   const rec = JSON.parse(w.sessionStorage.getItem('lunden.resume') ?? 'null');
-  pass &= check(rec && rec.mode === 'touch' && Math.abs(rec.x - app.player.pos.x) < 0.01, 'the place is saved for the new version');
+  pass &= check(rec && rec.mode === 'touch' && Math.abs(rec.x - app.player.pos.x) < 0.01 && rec.world?.v === 1 && !!rec.world.clock, 'the place and the world are saved for the new version');
+  w.sessionStorage.removeItem('lunden.resume'); w.localStorage.removeItem('lunden.resume');
   pass &= check(d.getElementById('update').hidden, 'no button to press');
   out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
 };

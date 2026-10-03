@@ -176,7 +176,7 @@ export class Sonos extends Composer {
     const A = audioParts();
     if (!A || this.bus) return A;
     const { ctx, master } = A;
-    const mix = ctx.createGain(); mix.gain.value = 0;
+    const mix = ctx.createGain(); mix.gain.value = this.gain; // (0 unless it already plays: resumed after a reload)
     const outs = this.speakers.map((t) => {
       const p = t.object.getWorldPosition(new THREE.Vector3()).add(new THREE.Vector3(0, 0.15, 0));
       const g = ctx.createGain(), pan = ctx.createPanner();
@@ -245,7 +245,7 @@ export class Sonos extends Composer {
 
   /** Each frame: schedule ahead, and how loud each speaker is where the visitor stands. `muffled(i)` = through a wall? */
   update(level, muffled) {
-    const A = audioParts();
+    const A = this.playing ? this.ensureBus() : audioParts(); // (playing since before the audio ran: after a reload, #277)
     sonosLed.color.setHex(this.playing ? 0xffffff : 0x4a4a4a);
     if (!A || !this.playing || !this.bus) return;
     const t = A.ctx.currentTime;

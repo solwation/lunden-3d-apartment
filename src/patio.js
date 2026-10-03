@@ -386,6 +386,13 @@ export class Patio {
   /** E targets: the parasols (folded/unfolded by hand). */
   get targets() { return seasonal.parasols.map((p) => p.interact); }
 
+  /** A choice made by hand on the parasols, for a reload record (#277, keep.js); null when none was made. */
+  saveState() { return seasonal.parasols.some((p) => p.manual !== null) ? seasonal.parasols.map((p) => [p.manual, p.manualAuto]) : null; }
+  loadState(s) {
+    if (!Array.isArray(s)) return;
+    seasonal.parasols.forEach((p, i) => { const [m, ma] = s[i] ?? []; if ((m === 0 || m === 1) && (ma === 0 || ma === 1)) { p.manual = m; p.manualAuto = ma; } });
+  }
+
   /** The string lights (main.js hands them over), switched with the daylight. */
   setStringLights(sl, forceOn = false) { this.strings = sl; if (forceOn) { sl.on = true; sl.glow = 1; } }
 
