@@ -121,9 +121,11 @@ src/roads.js           the roads' shapes (SITE.roads, #257): rectangles, centre 
 src/street.js          Sankt Lars väg's details (SITE.street, #128): curbs (along every `path` road and fillet, not across
                        another road), asphalt patches, street lamps in rows along a road (emissive at night), zebra crossing, the site's temporary traffic light + warning signs, cobbles, autumn leaves; the bus stop,
                        the red "Flyttad" sign, a no-parking sign and HepCat's A-board (#129)
-src/streetlife.js      life on the street (SITE.life, #113): the car park: one row of stalls along the shrubs (#208) with parked cars
-                       (instanced, a colour each, collision); the front yard is asphalt up to the entrance paving, bikes by Hus L's entrances and in racks, the paved square with corten beds and
-                       sitting steps in front of Hus C
+src/streetlife.js      life on the street (SITE.life, #113): the car park as on the situation plan (#260): asphalt from the hedge (SITE.shrubs,
+                       z −16.3; the drive through it in front of the portik) to a low green strip along Hus L's entrances (z −3.5…−2.9, open
+                       at the portik, no collision), one row of stalls nose to the hedge west of the drive with parked cars (instanced, a colour
+                       each, collision); bikes by Hus L's entrances; the bike yard NW of Hus L / north of Hus C (lawns, a tree, two rows of
+                       racks; west of x −66 is left for #256's stair down to Karpvägen)
 src/people.js          people in the area (PEOPLE, #114): low-poly figures (one InstancedMesh per body part, a colour each; #239:
                        lathe-turned torso/arms/legs, knees (#243: thigh + shin, `kneeL/R`), hands and shoes ride the arm / shin; a rounded dog;
                        posed every frame): walkers to and fro on the paths (a dog with one), cyclists on Sankt Lars väg
@@ -313,8 +315,8 @@ src/carmodel.js        car bodies from a side profile (#250, MEGANE: `top` / `be
 src/car.js             our white Renault Megane E-Tech (CAR, #173; the model from carmodel.js, #250): parked, E on a door opens /
                        shuts it (kind 'cardoor', `car.targets()`), E on a front seat whose door is open sits you in it (rest.js,
                        looking ahead; getting up puts you back by the door); not drivable; the key shuts open doors before it
-                       leaves; the screens wake while a door is open / someone sits; `car.box()` keeps the rain out; the hall key calls it in through the gap in the shrubs
-                       to stop right outside our door (#208; waypoint paths rounded off) (blinks, a collision box while parked, waits for the visitor), pressed again it U-turns and
+                       leaves; the screens wake while a door is open / someone sits; `car.box()` keeps the rain out; the hall key calls it in through the car park's drive
+                       (in front of the portik, #260) to stop right outside our door (#208; waypoint paths rounded off) (blinks, a collision box while parked, waits for the visitor), pressed again it U-turns and
                        leaves; sfx.evHum follows it; `&car` = parked (screenshots)
 src/signs.js           hand-lettered name signs on the bedroom doors (DOOR_SIGNS)
 src/water.js           running water: E on a tap/shower (world.taps from interior.js) → stream + hiss

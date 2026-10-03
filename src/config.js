@@ -227,21 +227,27 @@ export const SITE = {
     leaves: { n: 1400, months: [9, 10, 11], areas: [[-60, 12, -24, -18], [-30, 10, -32.1, -30.05], [19, 21, -12, 12]] },
     // signs (#129, the user's photos): the bus stop on the far pavement, the red "Flyttad" sign on ours by the curb,
     // a no-parking sign at the car park, HepCat's A-board on its pavement. [x, z, facing yaw°]
-    busStop: [2.5, -31.3, 0], moved: [6.5, -23.75, 0], noParking: [-6.5, -21.0, 0], aBoard: [28.4, -12.2, -60], // by HepCat's north corner (#261, photo)
+    busStop: [2.5, -31.3, 0], moved: [6.5, -23.75, 0], noParking: [-13.6, -16.9, 0], aBoard: [28.4, -12.2, -60], // by HepCat's north corner (#261, photo)
   },
-  // Life on the street (#113, src/streetlife.js; Peab's aerial docs/peab-flygbild-soder.png): the car park north
-  // of Hus L marked out in two rows of stalls with parked cars (colours ours; the teal one is the electric car in
-  // the render), bikes leaning by some of Hus L's entrances (not ours), and the square in front of Hus C towards
-  // the street: light stone paving, raised beds with corten edges and sitting steps, bike racks. All guesses.
+  // Life on the street (#113, src/streetlife.js). #260, the situation plan (docs/peab/kalibrerad/situationsplan-300dpi.jpg):
+  // "P-platser för S:t Lars området" between the hedge (z −16.3) and a low green strip along Hus L (z −3.5…−2.9, open at
+  // the portik); one row of stalls nose to the hedge (the plan's ticks, z −16.3…−11.3), none from the drive (in front of
+  // the portik — the plan's photo covers that stretch: guess) to the east end; the aisle in front of the entrances. Parked
+  // car colours are ours. Bikes lean by some of Hus L's entrances (not ours). NW of Hus L, north of Hus C, the plan's
+  // "Cykelvänligt kvarter" yard: a lawn with a tree and two smaller ones, a paved bike place with two rows of racks, a
+  // narrow lawn east of it; light paving round it (west of x −66 is left for the stair down to Karpvägen, #256).
   life: {
-    // one row of stalls along the shrubs the whole way, nose to the hedge, none in the gap in front of us (#208)
-    lot: { x0: -46.33, x1: 16.89, z0: -20, depth: 5, stall: 2.5, gap: [-7, 9] }, fill: 0.65,
+    lot: { x0: -70.5, x1: -13, z0: -16.3, depth: 5, stall: 2.5 }, fill: 0.65,
     carColors: [0xf0f0ec, 0x23272c, 0x8d9399, 0x1f6f78, 0x7b1e22, 0x2d4e7a, 0xc9c3b8, 0x0f1012],
     bikes: [[-38.8, -0.9], [-38.13, -0.9], [-27.61, -0.9], [-16.79, -0.9], [-16.12, -0.9], [-5.41, -0.9], [12.45, -0.9]], // x, z (along the façade)
-    square: { x0: -69.5, x1: -45.85, z0: 0.48, z1: 11.87 },
-    beds: [[-67.57, -60.81, 1.93, 4.34], [-55.98, -50.19, 1.93, 4.34], [-68.53, -64.19, 7.24, 10.13]], // x0, x1, z0, z1
-    steps: { x0: -60.81, x1: -55.98, z0: 2.32, n: 3, rise: 0.15, tread: 0.4 },
-    racks: [[-61.77, 6.95, 6], [-53.09, 6.95, 5]], // x0, z, bikes
+    // the low green strip along the entrances: a concrete edge, grass and low perennials (walked over, no collision)
+    strip: { z0: -3.5, z1: -2.9, h: 0.1, parts: [[-46, -10.6], [-8.5, 5.8]] },
+    yard: { x0: -66, x1: -46.33, z0: -3.5, z1: 9.6 },                              // the bike yard's paving
+    lawns: [[-65, -59.1, 1.2, 8.5], [-53, -50.1, 1.2, 8.5]],                         // x0, x1, z0, z1
+    bikePlace: { x0: -59.1, x1: -53, z0: 1.2, z1: 8.5 },                              // lighter paving
+    // racks along z at x, the bikes along x pointing `dir` (front wheel in the rack), `n` from z0 at `gap` m
+    racks: [{ x: -58.7, z0: 1.6, n: 9, gap: 0.75, dir: -1 }, { x: -53.4, z0: 1.6, n: 9, gap: 0.75, dir: 1 }],
+    trees: [[-62.5, 3.4, 0.75], [-63.3, 6.0, 0.4], [-61.4, 7.6, 0.45], [9.9, -7.4, 0.45]], // [x, z, size]; the last by Hus L's east end
   },
   // asphalt (y follows the ground: the street level north of Hus L and on the garage box, park level around it).
   // src/roads.js: a rectangle, a centre line (`path`: [x, z, r] — the corner at that point rounded to radius r; `w` = the
@@ -258,22 +264,23 @@ export const SITE = {
       walks: [{ side: 1, w: 2.5 }, { side: -1, w: 2 }] }, // our pavement; the far one along the school's wall (#126)
     { name: 'Karpvägen', path: [[-75.8, -27], [-75.8, 22, 30], [-79.9, 51, 20], [-84.5, 66, 8], [-200, 70]], w: 5.8 },
     { name: 'Karpvägen, hörnen', fillets: [{ x: -78.7, z: -24, sx: -1, sz: 1, r: 9 }, { x: -72.9, z: -24, sx: 1, sz: 1, r: 3 }] },
-    { name: 'Gården framför Hus L', x0: -46.33, x1: 17.13, z0: -20, z1: -4 }, // asphalt up to the entrance paving (#208)
+    { name: 'Gården framför Hus L', x0: -70.5, x1: 13.5, z0: -16.3, z1: -3.5 }, // the car park up to the green strip (#260)
   ],
   paving: [
-    { x0: -46.33, x1: 15.44, z0: -4, z1: 0 },  // path along Hus L's entrances
+    { x0: -46.33, x1: 13.5, z0: -3.5, z1: 0 },  // path along Hus L's entrances (under the green strip too, #260)
   ],                                         // the pavements: roads' `walks`; the courtyard's own walks: COURTYARD
   river: { x0: -193.04, x1: 144.78, z0: 120.65, z1: 130.3 }, // Höje å
   // big old limes / chestnuts along the far pavement and in the school yard (#130, the user's photos): [x, z, size]
   bigTrees: [[-36, -34.5, 1.4], [-17, -35.2, 1.6], [-4, -34.8, 1.75], [9, -35.4, 1.45], [27.5, -34.2, 1.6], [33.5, -16, 1.35], [-58, -33.5, 1.5]],
-  // a row of ornamental shrubs along our pavement, with gaps for the paths to the entrances (#130)
-  shrubs: { x0: -57.91, x1: 14.8, z: -20.6, step: 0.85, gaps: [[-46.33, -42.47], [-6, 8]] },
+  // a row of ornamental shrubs along our pavement (#130): the situation plan's hedge between the planting strip and the car
+  // park (#260), with the drive into it in front of the portik (guess: the plan's photo covers it)
+  shrubs: { x0: -70.5, x1: 11, z: -16.3, step: 0.85, gaps: [[-13, -7.5]] },
   // the narrow planting between Karpvägen and the plot line / Hus C's garage wall (#257, the situation plan: two trees)
   vergeTrees: [[-73.4, 37.5], [-74.4, 50]],
   birchShare: 0.3, // of the trees in the areas (not the young street maples): birches (#115)
   treeAreas: [
     // the courtyard's and the green's trees stand where the situation plan draws them: COURTYARD.trees
-    { x0: -88.8, x1: 17.37, z0: -20, z1: -19, n: 11, young: true }, // street trees along Sankt Lars väg: young maples by the site (#130)
+    { x0: -88.8, x1: 17.37, z0: -20, z1: -19, n: 11, young: true, skip: [[-14, -6.5]] }, // street trees along Sankt Lars väg: young maples by the site (#130); none in the drive (#260)
     { x0: 16.9, x1: 18.4, z0: -12, z1: 54.05, n: 7 },          // … and along its east leg (west of the cycle path, #255)
     { x0: -125.48, x1: 67.57, z0: 65.63, z1: 135.13, n: 55 },      // S:t Lars park / woods towards Höje å
     { x0: -125.48, x1: -80, z0: -20, z1: 65.63, n: 16 },          // west of Karpvägen (#257: off the road by onRoad)
@@ -554,13 +561,14 @@ export const BEER = { x: 3.85, y: 0.4, z: 15.4, r: 0.045, h: 0.16, gulp: 0.2, he
 // The key in the hall calls it: it comes east along Sankt Lars väg (our lane, right side to our curb at z −24),
 // stops in front of our entrance; called again it drives on, U-turns before the zebra crossing and leaves west.
 // Path and speeds are ours.
-// #208: it turns in through the gap in the shrubs in front of us and stops right outside our door (heading east,
-// passenger side to the house); leaving, it swings round in the yard and goes out the same gap, west in the far
-// lane. Paths = waypoints (x, z), rounded off at the corners (car.js).
+// #208: it turns into the car park and stops right outside our door (heading east, passenger side to the house);
+// leaving, it swings round at the east end and goes out the same way, west in the far lane. #260: the way in is the
+// car park's drive through the hedge in front of the portik (x −13…−7.5). Paths = waypoints (x, z), rounded off at the
+// corners (car.js).
 export const CAR = {
   l: 4.2, w: 1.78, h: 1.5, color: 0xf2f2ee, plate: 'FGZ 56D',
-  arrive: [[-95, -25.2], [-6, -25.2], [-1.2, -22], [-1.2, -8.5], [0.6, -5.4], [2.9, -5.4]], // ends at our door
-  leave: [[2.9, -5.4], [10, -5.4], [13, -7.4], [12.6, -11.2], [9, -12], [1.6, -12], [0.4, -14.5], [0.4, -22], [-2.5, -27.6], [-8, -27.8], [-95, -27.8]],
+  arrive: [[-95, -25.2], [-14.5, -25.2], [-10.25, -21.5], [-10.25, -15], [-7.5, -9.5], [-2, -5.6], [2.9, -5.4]], // ends at our door
+  leave: [[2.9, -5.4], [6.5, -5.6], [8.4, -8], [7, -10.6], [3, -11.2], [-4, -11.2], [-8.5, -13.5], [-10.25, -16.3], [-10.25, -22], [-12.5, -27.6], [-18, -27.8], [-95, -27.8]],
   speed: 8, brake: 2,              // m/s cruising, m/s² slowing down to the stop
   doorOpen: 1.1,                   // rad: how far a door opens (#250)
 };
@@ -571,15 +579,15 @@ export const CAR = {
 // ± jitter of it; right click / the
 // 🏀 button dribbles (straight down at `dribble` m/s); it bounces with `bounce` (normal speed kept), loses `slip` of the
 // speed along a surface per bounce, rolls out with `roll` /s damping, and comes back into the hand within `catch` m.
-// The hoop (a portable one, our pick) stands on the asphalt in front of Hus L west of our entrance, clear of the car's
-// way in (x −1.2) and the visitor's start, the board facing the house; it is up while the ball is out of its holder.
+// The hoop (a portable one, our pick) stands on the asphalt east of our entrance by the hedge (#260), clear of the car's
+// loop and the visitor's start, the board facing the house; it is up while the ball is out of its holder.
 // Rim 3.05 m, Ø 45 cm, 15 cm in front of the board (regulation); board 112 × 72 cm, its bottom `below` the rim.
 // `assist`: looking within this many metres of the rim aims at the rim. A basket from beyond `three` m is a three.
 export const BASKET = {
   ball: { r: 0.115, level: 1, x: 0.202, z: 10.0, y: 1.5, held: { x: 0.17, y: -0.17, z: -0.5 },
     gravity: 9.81, entry: 0.85, flat: 0.25, maxSpeed: 13, jitter: 0.015, dribble: 4.6,
     bounce: 0.8, slip: 0.12, roll: 0.8, catch: 0.42 },
-  hoop: { x: -4.5, z: -12, rim: 3.05, rimR: 0.23, rimTube: 0.01, rimZ: 0.38, board: [1.12, 0.72], below: 0.15,
+  hoop: { x: 7, z: -13.4, rim: 3.05, rimR: 0.23, rimTube: 0.01, rimZ: 0.38, board: [1.12, 0.72], below: 0.15,
     base: [1.0, 0.3, 0.7], baseZ: -0.75, arm: 0.35, net: 0.42, rise: 1.2, assist: 1.2 },
   three: 6.75,
 };

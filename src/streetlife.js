@@ -5,10 +5,10 @@ import { pavingTexture } from './patio.js';
 import { registerSnow } from './seasons.js';
 import { buildCar, MEGANE } from './carmodel.js';
 
-// Life on the street (#113, SITE.life): the car park (one row along the shrubs, #208) with parked cars (instanced: a body with a colour per car,
-// trim, glass, tyres — four draw calls; the bodies from carmodel.js, #251), its white stall lines, bikes by Hus L's entrances and in
-// racks on the square in front of Hus C (two draw calls), the square's paving, corten beds and sitting steps.
-// Returns { object, segments } (the parked cars block the way).
+// Life on the street (#113, SITE.life): the car park (one row along the hedge, #208, #260) with parked cars (instanced: a body with a
+// colour per car, trim, glass, tyres — four draw calls; the bodies from carmodel.js, #251), its white stall lines, the low green strip
+// along Hus L's entrances, bikes by the entrances and in the racks of the bike yard NW of Hus L (two draw calls), the yard's paving
+// and lawns (#260). Returns { object, segments } (the parked cars and the racks block the way).
 
 const L = SITE.life;
 const keep = (g) => { const n = g.index ? g.toNonIndexed() : g; for (const k of Object.keys(n.attributes)) if (k !== 'position' && k !== 'normal' && k !== 'uv') n.deleteAttribute(k); return n; };
@@ -52,14 +52,12 @@ function instanced(geo, material, mats, colors) {
 export function buildStreetLife() {
   const group = new THREE.Group(), segments = [], R = rng(17);
   const white = new THREE.MeshStandardMaterial({ color: 0xeeeeea, roughness: 0.7 });
-  // the car park: one row of stalls along the shrubs, nose to the hedge, a gap in front of us (#208)
+  // the car park: one row of stalls along the hedge, nose to it, from the west end to the drive (#208, #260)
   const lot = L.lot, lines = [], cars = [], carColors = [];
   const rows = [{ z0: lot.z0, z1: lot.z0 + lot.depth, yaw: Math.PI / 2 }];
-  const inGap = (x) => x > lot.gap[0] - 1e-6 && x < lot.gap[1] + 1e-6;
   for (const row of rows) {
-    for (let x = lot.x0; x <= lot.x1 + 1e-6; x += lot.stall) if (!inGap(x) || Math.abs(x - lot.gap[0]) < 1e-6) lines.push(flat(x - 0.06, x + 0.06, row.z0, row.z1, 0.02));
+    for (let x = lot.x0; x <= lot.x1 + 1e-6; x += lot.stall) lines.push(flat(x - 0.06, x + 0.06, row.z0, row.z1, 0.02));
     for (let x = lot.x0; x + lot.stall <= lot.x1 + 1e-6; x += lot.stall) {
-      if (x + lot.stall > lot.gap[0] + 1e-6 && x < lot.gap[1] - 1e-6) continue; // the way in
       if (R() > L.fill) continue;
       const cx = x + lot.stall / 2, cz = (row.z0 + row.z1) / 2 + (R() - 0.5) * 0.3;
       const yaw = row.yaw + (R() - 0.5) * 0.06 + (R() < 0.2 ? Math.PI : 0); // a few reversed in
@@ -76,40 +74,50 @@ export function buildStreetLife() {
     instanced(trim, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.3, metalness: 0.45 }), cars),
     instanced(glass, new THREE.MeshStandardMaterial({ color: 0x33495c, roughness: 0.05, metalness: 0.55 }), cars),
     instanced(carTyres, new THREE.MeshStandardMaterial({ color: 0x141517, roughness: 0.85 }), cars));
-  // the square in front of Hus C: light stone paving, corten beds with shrubs, sitting steps
-  const sq = L.square, tex = pavingTexture();
+  // the bike yard NW of Hus L (#260): light stone paving, a lighter bike place, lawns
+  const tex = pavingTexture(), tw = 2.4;
   tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-  const pg = flat(sq.x0, sq.x1, sq.z0, sq.z1, 0.012), uv = pg.attributes.uv; // uv in metres / the texture's width
-  const tw = 2.4;
-  for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * (sq.x1 - sq.x0) / tw, uv.getY(i) * (sq.z1 - sq.z0) / tw);
+  const paved = (r, y) => { const g = flat(r.x0, r.x1, r.z0, r.z1, y), uv = g.attributes.uv; // uv in metres / the texture's width
+    for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * (r.x1 - r.x0) / tw, uv.getY(i) * (r.z1 - r.z0) / tw);
+    return g; };
   const paveMat = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.85, color: 0xf3efe6 });
-  const pave = new THREE.Mesh(pg, paveMat); pave.receiveShadow = true;
-  registerSnow(paveMat, SEASON.snow.paving);
-  group.add(pave);
-  const corten = [], soil = [], shrubs = [];
-  for (const [x0, x1, z0, z1] of L.beds) {
-    const t = 0.03, h = 0.45, cx = (x0 + x1) / 2, cz = (z0 + z1) / 2;
-    corten.push(box(x1 - x0, h, t, cx, h / 2, z0 + t / 2), box(x1 - x0, h, t, cx, h / 2, z1 - t / 2), box(t, h, z1 - z0, x0 + t / 2, h / 2, cz), box(t, h, z1 - z0, x1 - t / 2, h / 2, cz));
-    soil.push(box(x1 - x0 - 2 * t, 0.02, z1 - z0 - 2 * t, cx, h - 0.04, cz));
-    for (let k = 0; k < (x1 - x0) * (z1 - z0) * 0.9; k++) shrubs.push(new THREE.IcosahedronGeometry(0.25 + R() * 0.25, 0).scale(1, 0.8, 1).translate(x0 + 0.3 + R() * (x1 - x0 - 0.6), h + 0.15, z0 + 0.3 + R() * (z1 - z0 - 0.6)));
-    const c = [[x0, z0], [x1, z0], [x1, z1], [x0, z1]];
-    c.forEach((p, i) => segments.push([...p, ...c[(i + 1) % 4]]));
+  const placeMat = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.85, color: 0xfdfcf8 });
+  const pave = new THREE.Mesh(paved(L.yard, 0.012), paveMat), place = new THREE.Mesh(paved(L.bikePlace, 0.016), placeMat);
+  pave.receiveShadow = place.receiveShadow = true;
+  registerSnow(paveMat, SEASON.snow.paving); registerSnow(placeMat, SEASON.snow.paving);
+  const lawnMat = new THREE.MeshStandardMaterial({ color: 0x5f8a3e, roughness: 1 });
+  registerSnow(lawnMat, SEASON.snow.ground);
+  const lawn = new THREE.Mesh(merge(L.lawns.map(([x0, x1, z0, z1]) => flat(x0, x1, z0, z1, 0.02))), lawnMat); lawn.receiveShadow = true;
+  group.add(pave, place, lawn);
+  // the low green strip along Hus L's entrances (#260): a concrete edge, grass, low perennials
+  const S = L.strip, edge = [], grass = [], clumps = [];
+  for (const [x0, x1] of S.parts) {
+    const cx = (x0 + x1) / 2, w = x1 - x0;
+    edge.push(box(w, S.h, 0.08, cx, S.h / 2, S.z0 + 0.04), box(w, S.h, 0.08, cx, S.h / 2, S.z1 - 0.04));
+    grass.push(flat(x0, x1, S.z0 + 0.08, S.z1 - 0.08, S.h - 0.02));
+    for (let x = x0 + 0.3; x < x1 - 0.2; x += 0.45 + R() * 0.25) clumps.push(new THREE.IcosahedronGeometry(0.16 + R() * 0.08, 0).scale(1, 0.75, 1).translate(x, S.h + 0.06, (S.z0 + S.z1) / 2 + (R() - 0.5) * 0.15));
   }
-  group.add(new THREE.Mesh(merge(corten), new THREE.MeshStandardMaterial({ color: 0x8a4a26, roughness: 0.9, metalness: 0.2 })),
-    new THREE.Mesh(merge(soil), new THREE.MeshStandardMaterial({ color: 0x3b2a1e, roughness: 1 })));
-  const shrubMat = new THREE.MeshStandardMaterial({ color: 0x4d7a3a, roughness: 0.9, flatShading: true });
-  group.add(new THREE.Mesh(merge(shrubs), shrubMat));
-  const st = L.steps, steps = [];
-  for (let i = 0; i < st.n; i++) steps.push(box(st.x1 - st.x0, st.rise * (i + 1), st.tread, (st.x0 + st.x1) / 2, st.rise * (i + 1) / 2, st.z0 + (st.n - 1 - i) * st.tread + st.tread / 2));
-  group.add(new THREE.Mesh(merge(steps), new THREE.MeshStandardMaterial({ color: 0xbdb8ae, roughness: 0.85 })));
-  // bikes: leaning by the entrances (along the façade), and in the racks on the square (side by side)
+  const clumpMat = new THREE.MeshStandardMaterial({ color: 0x4f7a38, roughness: 0.9, flatShading: true });
+  registerSnow(clumpMat, SEASON.snow.hedge);
+  group.add(new THREE.Mesh(merge(edge), new THREE.MeshStandardMaterial({ color: 0xbdb8ae, roughness: 0.85 })),
+    new THREE.Mesh(merge(grass), lawnMat), new THREE.Mesh(merge(clumps), clumpMat));
+  // bikes: leaning by the entrances (along the façade), and in the yard's racks (front wheel in the rack)
   const bikes = [], bikeColors = [], cols = [0x1d3c6e, 0xb02a2a, 0x2a2a2a, 0xe2e2dc, 0x3c7a4a, 0x8a8f96, 0xd8a020];
   const put = (x, z, yaw, lean) => { bikes.push(new THREE.Matrix4().compose(new THREE.Vector3(x, 0, z), new THREE.Quaternion().setFromEuler(new THREE.Euler(lean, yaw, 0, 'YXZ')), new THREE.Vector3(1, 1, 1))); bikeColors.push(cols[Math.floor(R() * cols.length)]); };
   for (const [x, z] of L.bikes) put(x, z, (R() - 0.5) * 0.1, -0.12);
   const rack = [];
-  for (const [x0, z, n] of L.racks) {
-    rack.push(box(n * 0.7, 0.04, 0.04, x0 + n * 0.35, 0.3, z));
-    for (let k = 0; k < n; k++) { rack.push(box(0.04, 0.6, 0.5, x0 + 0.35 + k * 0.7, 0.3, z)); if (R() < 0.7) put(x0 + 0.35 + k * 0.7, z, Math.PI / 2 + (R() - 0.5) * 0.1, 0); }
+  for (const r of L.racks) {
+    const len = (r.n - 1) * r.gap + 0.5, cz = r.z0 + (r.n - 1) * r.gap / 2;
+    rack.push(box(0.04, 0.04, len, r.x, 0.3, cz));
+    for (let k = 0; k < r.n; k++) {
+      const z = r.z0 + k * r.gap;
+      rack.push(box(0.5, 0.6, 0.04, r.x - r.dir * 0.2, 0.3, z));
+      if (R() < 0.7) put(r.x - r.dir * 0.42, z, r.dir > 0 ? 0 : Math.PI, 0); // the front wheel (local +0.42) at the rack
+    }
+    // the rack and its bikes as one block to walk round
+    const xa = Math.min(r.x, r.x - r.dir * 1.3), xb = Math.max(r.x, r.x - r.dir * 1.3), za = r.z0 - 0.3, zb = r.z0 + (r.n - 1) * r.gap + 0.3;
+    const c = [[xa, za], [xb, za], [xb, zb], [xa, zb]];
+    c.forEach((p, i) => segments.push([...p, ...c[(i + 1) % 4]]));
   }
   group.add(new THREE.Mesh(merge(rack), new THREE.MeshStandardMaterial({ color: 0x6f7377, roughness: 0.5, metalness: 0.5 })));
   const [frame, tyres] = bikeGeometry();
