@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import {
-  LEVELS, SOFFITS, DOOR_HEIGHT, DOOR_TRIM, EXT_DOOR_HEAD, WINDOWS, CABINET_HEIGHT, BASE_CABINET, SHELF_HEIGHT, TOILET,
+  LEVELS, SOFFITS, DOOR_HEIGHT, DOOR_TRIM, EXT_DOOR_HEAD, WINDOWS, WINDOW_TOP_HUNG_MAX, CABINET_HEIGHT, BASE_CABINET, SHELF_HEIGHT, TOILET,
   STAIR, COLORS, FENCE_HEIGHT, SITE, OUTDOOR, CABINET_FIXES, SEASON, FINISH, OPTIONS, EXTRA_WALLS, ROOM_RENAMES, EXTRA_ROOMS, ROOM_DIVIDERS,
 } from './config.js';
 import { buildStairs } from './stairs.js';
@@ -283,7 +283,7 @@ function toiletAgainstWall(tank, bowl, wallBoxes) {
 
 /** White window frame in the plane z = fz between x0..x1, y0..y1, with glass. Below the transom the casements
  * open outwards with E (#103, Swedish windows do): one per side of the mullion, hinged at the outer jambs,
- * `out` = ±1 the way out along z; `single` = one casement over the whole width (no mullion). Returns their Openables. */
+ * `out` = ±1 the way out along z; `single` = one top-hung casement over the whole width (no mullion), its bottom swings out. Returns their Openables. */
 function addWindowFrame(group, x0, x1, fz, y0, y1, transom, out = -1, opens = true, single = false) {
   const ft = 0.06, d = 0.05;
   const z0 = fz - d, z1 = fz + d;
@@ -304,7 +304,8 @@ function addWindowFrame(group, x0, x1, fz, y0, y1, transom, out = -1, opens = tr
   for (const [a, b, hingeAt] of spans) {
     const hx = hingeAt === 'a' ? a : b, zo = fz + out * 0.03, s = 0.045;
     const pivot = new THREE.Group();
-    pivot.position.set(hx, (lo + hi) / 2, zo);
+    if (single) pivot.position.set((a + b) / 2, hi, zo); // top-hung: the hinge along the head, the bottom swings out
+    else pivot.position.set(hx, (lo + hi) / 2, zo);
     const rails = [box(a, b, zo - 0.02, zo + 0.02, lo, lo + s, M.frame), box(a, b, zo - 0.02, zo + 0.02, hi - s, hi, M.frame),
       box(a, a + s, zo - 0.02, zo + 0.02, lo, hi, M.frame), box(b - s, b, zo - 0.02, zo + 0.02, lo, hi, M.frame)];
     const sash = new THREE.Mesh(mergeGeometries(rails.map((m) => m.geometry.translate(...m.position.clone().sub(pivot.position).toArray()))), M.frame);
@@ -315,7 +316,9 @@ function addWindowFrame(group, x0, x1, fz, y0, y1, transom, out = -1, opens = tr
     group.add(pivot);
     // which way it turns: the free edge has to go out (rotating +x about +y heads for −z)
     const along = hingeAt === 'a' ? 1 : -1;
-    const o = new Openable({ name: 'fönstret', object: pivot, mode: 'hinge', sign: along * -out, max: 60, speed: 1.6 });
+    // top-hung: turning +y about +x sends the bottom towards −z
+    const o = single ? new Openable({ name: 'fönstret', object: pivot, mode: 'flap', axis: [1, 0, 0], sign: -out, max: WINDOW_TOP_HUNG_MAX, speed: 1.6 })
+      : new Openable({ name: 'fönstret', object: pivot, mode: 'hinge', sign: along * -out, max: 60, speed: 1.6 });
     o.normal = new THREE.Vector3(0, 0, -out); // the room side (tests stand there)
     const toggle = o.toggle.bind(o), at = new THREE.Vector3((a + b) / 2, (lo + hi) / 2, zo);
     o.toggle = () => { toggle(); o.wind?.stop(); o.wind = o.isOpen ? sfx.wind(at) : null; }; // the wind blows in while it is open

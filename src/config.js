@@ -73,7 +73,9 @@ export const EXT_DOOR_HEAD = 2.6;
 // transom bar ≈ 2.15, head ≈ 2.6 m — no floor-to-ceiling glazing towards the patio. Upstairs heads
 // are still estimates, kept below the lowered ceiling in the north bedrooms.
 // `single`: one casement over the whole width, no mullion — the street-side (north) windows, seen on the site
-// (the user's photo, docs/foton/framsida-fonster-bygge.jpg): one sash each that opens outwards.
+// (the user's photo, docs/foton/framsida-fonster-bygge.jpg): one sash each that opens outwards, top-hung (the user:
+// it opens vertically, the bottom swings out) up to WINDOW_TOP_HUNG_MAX degrees (*guess*).
+export const WINDOW_TOP_HUNG_MAX = 40;
 export const WINDOWS = [
   { level: 0, facade: 'north', x: 3.85, sill: 0.8, head: 2.6, transom: 0.45, single: true }, // Kök/matplats
   { level: 0, facade: 'south', x: 3.85, sill: 0.6, head: 2.6, transom: 0.45 }, // Vardagsrum
