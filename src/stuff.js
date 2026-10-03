@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { STUFF as S } from './config.js';
 
 // What is inside the cupboards, wardrobes and drawers (#228: #230 bedrooms, #231 living room, hall, bathrooms,
@@ -29,6 +30,13 @@ export class Pack {
   /** An axis-aligned box sx × sy × sz with its bottom centre at (x, y, z), turned `ry` about y. */
   box(sx, sy, sz, x, y, z, hex, ry = 0) {
     return this.add(new THREE.BoxGeometry(sx, sy, sz).translate(0, sy / 2, 0).rotateY(ry).translate(x, y, z), hex);
+  }
+
+  /** Like `box`, with rounded edges (radius r, soft normals; #240) — fabric, shoes. `rx` tilts it about x round its top. */
+  rbox(sx, sy, sz, x, y, z, hex, r, ry = 0, rx = 0) {
+    const g = new RoundedBoxGeometry(sx, sy, sz, 1, Math.min(r, sx / 2.01, sy / 2.01, sz / 2.01));
+    if (rx) g.translate(0, -sy / 2, 0).rotateX(rx).translate(0, sy / 2, 0);
+    return this.add(g.translate(0, sy / 2, 0).rotateY(ry).translate(x, y, z), hex);
   }
 
   /** A cylinder (radius r, length l) lying along x (axis 'x') or z, or standing (y), bottom/centre at (x, y, z). */
@@ -77,43 +85,48 @@ export function garment(p, kind, hex, s = 1) {
   p.add(new THREE.TorusGeometry(0.018, 0.0025, 4, 8, Math.PI).rotateY(Math.PI / 2).translate(0, -0.012, 0), S.hook); // its hook over the rod
   const top = -0.055;
   const L = { shirt: 0.72, tee: 0.62, dress: 1.0, trousers: 0.62, jacket: 0.8, coat: 1.05 }[kind] * s;
-  if (kind === 'trousers') { // folded over the bar: two layers hanging
-    p.box(t * 0.8, L / 2, W * 0.8, 0, top - L / 2, 0, hex);
-    p.box(t * 0.4, 0.02, W * 0.82, 0, top - 0.01, 0, hex);
+  if (kind === 'trousers') { // folded over the bar: two layers hanging, the legs apart at the bottom
+    p.rbox(t * 0.8, L / 2 - 0.08, W * 0.8, 0, top - L / 2 + 0.08, 0, hex, 0.012);
+    for (const sz of [-1, 1]) p.rbox(t * 0.8, 0.1, W * 0.38, 0, top - L / 2, sz * W * 0.21, hex, 0.012);
+    p.add(new THREE.CylinderGeometry(0.012, 0.012, W * 0.82, 8).rotateX(Math.PI / 2).translate(0, top - 0.004, 0), hex); // round over the bar
     return;
   }
   if (kind === 'dress') { // a narrow bodice, a flared skirt
-    p.box(t * 0.8, L * 0.38, W * 0.62, 0, top - L * 0.38, 0, hex);
+    p.rbox(t * 0.8, L * 0.38, W * 0.62, 0, top - L * 0.38, 0, hex, 0.014);
     p.add(new THREE.CylinderGeometry(W * 0.32, W * 0.62, L * 0.62, 4, 1).rotateY(Math.PI / 4).scale(0.11, 1, 1.42).translate(0, top - L * 0.38 - L * 0.31, 0), hex);
     return;
   }
   const thick = kind === 'coat' || kind === 'jacket' ? t * 1.6 : t;
-  p.box(thick, L, W, 0, top - L, 0, hex);                                                  // the body
-  if (kind !== 'tee') for (const sz of [-1, 1]) p.box(thick * 0.8, L * 0.78, 0.07 * s + 0.02, 0.004, top - 0.02 - L * 0.78, sz * (W / 2 + 0.03 * s), hex); // sleeves
-  else for (const sz of [-1, 1]) p.box(thick * 0.9, L * 0.25, 0.08 * s, 0, top - L * 0.25, sz * (W / 2 + 0.03), hex);
-  if (kind === 'coat' || kind === 'jacket') p.box(thick * 1.05, 0.08 * s, W * 0.55, 0, top - 0.06 * s, 0, S.collar ?? hex); // collar
+  p.rbox(thick, L - 0.03, W, 0, top - L, 0, hex, thick * 0.45);                            // the body
+  p.rbox(thick, 0.06, W * 0.8, 0, top - 0.06, 0, hex, 0.026);                              // sloping, rounded shoulders
+  // sleeves from the shoulders, hanging a little out from the body
+  const sl = kind === 'tee' ? L * 0.25 : L * 0.78, sw = kind === 'tee' ? 0.08 * s : 0.07 * s + 0.02;
+  for (const sz of [-1, 1]) p.rbox(thick * (kind === 'tee' ? 0.9 : 0.8), sl, sw, 0.004, top - 0.03 - sl, sz * (W / 2 + sw / 2 - 0.012), hex, Math.min(sw, thick) * 0.45, 0, -sz * 0.08);
+  if (kind === 'coat' || kind === 'jacket') p.rbox(thick * 1.05, 0.08 * s, W * 0.55, 0, top - 0.06 * s, 0, S.collar ?? hex, 0.02); // collar
 }
 
 /** A folded stack on a shelf / in a drawer: `n` pieces w × h × d, colours cycling, bottom centre at (x, y, z). */
 export function stack(p, n, w, h, d, x, y, z, colors, R = Math.random) {
-  for (let i = 0; i < n; i++) p.box(w - R() * 0.01, h, d - R() * 0.01, x + (R() - 0.5) * 0.008, y + i * h, z + (R() - 0.5) * 0.008, colors[i % colors.length]);
+  for (let i = 0; i < n; i++) p.rbox(w - R() * 0.01, h, d - R() * 0.01, x + (R() - 0.5) * 0.008, y + i * h, z + (R() - 0.5) * 0.008, colors[i % colors.length], h * 0.45);
 }
 
 /** Rolled socks / underwear: a grid of small rolls lying along z, bottom at y. */
 export function rolls(p, nx, nz, r, l, x0, x1, z0, z1, y, colors, R) {
   for (let i = 0; i < nx; i++) for (let k = 0; k < nz; k++) {
     const x = x0 + (x1 - x0) * (i + 0.5) / nx, z = z0 + (z1 - z0) * (k + 0.5) / nz;
-    p.cyl(r, l, x, y, z, colors[(i * nz + k + Math.floor(R() * 3)) % colors.length], 'z', 7);
+    p.add(new THREE.CapsuleGeometry(r, Math.max(0.001, l - 2 * r), 3, 8).rotateX(Math.PI / 2).translate(x, y + r, z), colors[(i * nz + k + Math.floor(R() * 3)) % colors.length]); // soft rolls (#240)
   }
 }
 
 /** A pair of shoes side by side, toes towards local −z of the frame, at (x, y, z). */
 export function shoes(p, len, hex, x, y, z, ry = 0) {
   p.at(x, y, z, ry, (q) => {
-    for (const sx of [-1, 1]) {
-      q.box(len * 0.36, len * 0.22, len * 0.75, sx * len * 0.22, 0, len * 0.1, hex);        // the heel and upper
-      q.box(len * 0.34, len * 0.14, len * 0.3, sx * len * 0.22, 0, -len * 0.35, hex);       // the toe
-      q.box(len * 0.37, len * 0.03, len, sx * len * 0.22, 0, 0, S.sole);                    // the sole
+    for (const sx of [-1, 1]) { // rounded (#240): a sole, the heel and upper with an opening's collar, a domed toe
+      const x = sx * len * 0.22;
+      q.rbox(len * 0.37, len * 0.04, len, x, 0, 0, S.sole, len * 0.08);                     // the sole
+      q.rbox(len * 0.35, len * 0.22, len * 0.55, x, len * 0.03, len * 0.2, hex, len * 0.09); // the heel and upper
+      q.add(new THREE.SphereGeometry(1, 12, 8, 0, Math.PI * 2, 0, Math.PI / 2).scale(len * 0.17, len * 0.16, len * 0.3).translate(x, len * 0.03, -len * 0.12), hex); // the toe
+      q.rbox(len * 0.3, len * 0.012, len * 0.3, x, len * 0.25, len * 0.24, S.sole, len * 0.05); // the opening, dark
     }
   });
 }
