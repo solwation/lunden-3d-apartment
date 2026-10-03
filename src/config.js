@@ -1553,6 +1553,20 @@ export const PILLOWS = {
   hotel: { w: 1.0, d: 0.7, h: 0.16 },
 };
 
+// Bedding in every bed (#309, src/bedding.js `duvet`): duvets `th` thick (*guess*: a soft all-year duvet in its cover
+// ~7–8 cm), hanging `drop` over the mattress sides (Sovrum 1: down to the IDANÄS frame's edge; the bunks: to the side
+// rails), turned back `fold` m at the head end; `bump` = the low unevenness on top. The mattresses get rounded edges
+// (`mattressR`) in a pale ticking (`ticking`) with a fitted sheet (`sheet` colour per set) over the top `sheetH` of it.
+// Tilly's bedspread is quilted in channels `quilt` m apart. The bunks' pillows are 50 × 60 (`bunkPillow`).
+export const BEDDING = {
+  ticking: 0xe4e2db, mattressR: 0.045, sheetH: 0.75,
+  sheets: { chintz: 0xf3f1ea, vader: 0x2b2e35, unicorn: 0xf6e9f1, plain: 0xf1f0ea },
+  double: { th: 0.08, drop: 0.11, fold: 0.3 },
+  bunk: { th: 0.07, drop: 0.075, fold: 0.26 },
+  bunkPillow: { w: 0.6, d: 0.45, h: 0.12 },
+  spread: { th: 0.035, drop: 0.16, quilt: 0.16 },
+};
+
 // IKEA NYMÅNE wall/reading lamp, GU10 (#219, docs/nymane-vagglampa-vit.png): a wall plate with a round switch,
 // a short round arm and a cylinder shade pointing down and out, a fabric cord hanging from the plate. All sizes are
 // guesses from the product photo. One per bunk berth, on the side wall by the head end (`fromHead` along the bed),

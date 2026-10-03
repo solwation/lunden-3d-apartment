@@ -102,6 +102,10 @@ src/rugs.js            the rugs furniture.js built (#55, #310, #317): `rugLift(l
 src/bedding.js         bedding shapes shared by every bed: `pillow(w, d, h, opts)` (#308) — a stuffed case with pinched-in sides (the
                        corners stick out), full in the middle, thin at the seams, low bumps, a head `dent`, `base(x, z)` to lie on
                        something (a pillow on a pillow); planar metre UVs; `geo.userData.top(x, z)` = its top for stacking
+                       `duvet(w, l, th, opts)` (#309): a thick soft shell over a mattress with rounded edges, hanging `drop` over
+                       the sides with a flare, low bumps (crumpled near the head), rounded seams, `quilt` channels, `extentL`
+                       (a throw ending on top); UVs in metres along the cloth. furniture.js `addMattress` (ticking + a fitted
+                       sheet) / `addDuvet` (+ the fold turned back at the head end) build every bed with them (BEDDING)
 src/cushions.js        decorative cushions (one atlas material: leaf print | bobble knit | geometric | corduroy, vertex-colour
                        tint, #313) and the ribbed fleece throws (plum folded on the chaise, grey draped over the armchair's
                        arm; one material per colour) for the LANDSKRONA pieces (CUSHIONS, #278)

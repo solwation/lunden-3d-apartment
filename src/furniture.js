@@ -4,7 +4,7 @@ import { mergeStatic } from './merge.js';
 import { restTarget } from './rest.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { addCushions, addFoldedThrow, addDrapedThrow } from './cushions.js';
-import { CUSHIONS, FURNITURE, LANDSKRONA as L, LEVELS, SKANSNAS, IDANAS, PILLOWS, PINGPING, MYDAL, OTTOMAN, SYMFONISK, SECRET, NYMANE_WALL, MALM_DECO, YUCCA, LANGLAMPA, VANITY, HEMNES_DAYBED, KPOP_POSTERS, SMASTAD, PHOTO_FRAME } from './config.js';
+import { CUSHIONS, FURNITURE, LANDSKRONA as L, LEVELS, SKANSNAS, IDANAS, PILLOWS, BEDDING, PINGPING, MYDAL, OTTOMAN, SYMFONISK, SECRET, NYMANE_WALL, MALM_DECO, YUCCA, LANGLAMPA, VANITY, HEMNES_DAYBED, KPOP_POSTERS, SMASTAD, PHOTO_FRAME } from './config.js';
 import { mirrorMaterial } from './mirror.js';
 import { addReflector } from './reflections.js';
 import { loungesofa, loungetable, parasol, planter } from './patio.js';
@@ -14,7 +14,7 @@ import { rifleModel } from './rifle.js';
 import { laptop } from './laptop.js';
 import { registerRug, rugUnder } from './rugs.js';
 import { pingpingModel } from './pingping.js';
-import { pillow } from './bedding.js';
+import { pillow, duvet as duvetShape } from './bedding.js';
 import { drawerFill, personFor, Pack as StuffPack, garment, shoes, stack, rolls, rng } from './stuff.js';
 import { Pack, byasDrawer, byasMiddle, bestaContents, attachContents } from './contents.js';
 
@@ -491,29 +491,6 @@ function chintzTexture(b) {
   return tex;
 }
 
-/** A crumpled duvet: a subdivided slab whose top is gently wavy, sides hanging down past the mattress. */
-function duvetGeometry(w, l, drop, seed = 3) {
-  const geo = new THREE.BoxGeometry(w, 0.06, l, 24, 1, 24);
-  const p = geo.attributes.position;
-  let s = seed;
-  const rnd = () => ((s = (s * 16807) % 2147483647) / 2147483647);
-  const waves = [...Array(5)].map(() => [rnd() * 6 + 3, rnd() * 6 + 3, rnd() * 6, 0.006 + rnd() * 0.01]);
-  for (let i = 0; i < p.count; i++) {
-    const x = p.getX(i), y = p.getY(i), z = p.getZ(i);
-    let h = 0;
-    for (const [a, b, ph, amp] of waves) h += amp * Math.sin(x * a + ph) * Math.cos(z * b + ph);
-    const edge = Math.max(Math.abs(x) / (w / 2), 0); // 1 at the sides
-    const sag = Math.pow(Math.max(0, edge - 0.85) / 0.15, 2) * drop; // the sides hang down
-    p.setY(i, y + h * (1 - edge * 0.5) - sag);
-  }
-  geo.computeVertexNormals();
-  const uv = geo.attributes.uv; // UVs in metres for the check
-  for (let i = 0; i < p.count; i++) uv.setXY(i, p.getX(i), p.getZ(i));
-  return geo;
-}
-
-/** Bed: upholstered base on legs, mattress, duvet, pillows, headboard. Local −z = head end.
- * `item.bedding` gives the cosy check bedding (Sovrum 1); otherwise plain linen. */
 /** Gunnared-like melange (canvas): fine dark and light flecks on the base colour. */
 function melangeTexture(hex) {
   const c = document.createElement('canvas');
@@ -565,31 +542,59 @@ function idanasFrame(g, item) {
   return I.frameH - 0.1 + I.mattressH; // the mattress top: it sits 10 cm into the frame
 }
 
+const ticking = new THREE.MeshStandardMaterial({ color: BEDDING.ticking, roughness: 0.9 });
+const fittedMats = {};
+const fittedSheet = (kind) => (fittedMats[kind] ??= new THREE.MeshStandardMaterial({ color: BEDDING.sheets[kind] ?? BEDDING.sheets.plain, roughness: 0.92 }));
+
+/** A mattress with rounded edges (#309): pale ticking, a fitted sheet over its top part (its elastic edge shows above
+ * the ticking). `y` = its top. */
+function addMattress(g, w, h, l, x, y, z, sheet) {
+  const r = Math.min(BEDDING.mattressR, h / 2 - 0.005), sh = h * BEDDING.sheetH;
+  g.add(rbox(w - 0.008, h, l - 0.008, x, y - h / 2, z, ticking, r));
+  g.add(rbox(w, sh, l, x, y - sh / 2, z, sheet, r));
+}
+
+/** A thick, soft duvet on a mattress `w` wide with its top at `y` (#309, `duvet` in bedding.js): from its head end at
+ * z `zh`, `len` long, hanging `D.drop` over the sides; turned back `D.fold` m at the head end, the fold lying on it and
+ * crumpled a little. `o` goes on to the duvet shape (seed, uv, drops). */
+function addDuvet(g, mat, w, y, zh, len, D, o = {}) {
+  const add = (geo, x, yy, z) => {
+    const m = new THREE.Mesh(geo, mat);
+    m.position.set(x, yy, z);
+    m.castShadow = m.receiveShadow = true;
+    g.add(m);
+  };
+  const r = o.r ?? BEDDING.mattressR;
+  add(duvetShape(w, len, D.th, { drop: D.drop, crumple: 0, ...o, r }), o.x ?? 0, y, zh + len / 2);
+  if (D.fold) {
+    const th = D.th * 0.85;
+    add(duvetShape(w + 2 * D.th, D.fold, th, { drop: D.drop * 0.6, bump: 0.007, crumple: D.fold, ...o, r: r + D.th, dropL: undefined, dropR: undefined, seed: (o.seed ?? 5) + 17 }),
+      o.x ?? 0, y + D.th + 0.006, zh + D.fold / 2 + 0.01);
+  }
+}
+
+/** Bed: upholstered base on legs, mattress, duvet, pillows, headboard. Local −z = head end.
+ * `item.bedding` gives the cosy check bedding (Sovrum 1); otherwise plain linen. */
 function bed(item) {
   const g = new THREE.Group();
   const w = item.w, l = item.l, z0 = -l / 2;
   let top = 0.52; // mattress top (the plain bed)
   if (item.model === 'idanas') {
     top = idanasFrame(g, item);
-    g.add(rbox(w, IDANAS.mattressH, l, 0, top - IDANAS.mattressH / 2, 0, linen, 0.05));
+    addMattress(g, w, IDANAS.mattressH, l, 0, top, 0, fittedSheet(item.bedding?.pattern ?? 'plain'));
   } else {
     g.add(rbox(w + 0.04, 0.22, l + 0.04, 0, 0.1 + 0.11, 0, bedFabric, 0.02));
-    g.add(rbox(w, 0.2, l, 0, 0.32 + 0.1, 0, linen, 0.05));
+    addMattress(g, w, 0.2, l, 0, 0.52, 0, fittedSheet('plain'));
   }
-  const dy = top - 0.52; // the bedding below is laid out for a 0.52 m mattress top
-  const bedding = new THREE.Group();
-  bedding.position.y = dy;
-  g.add(bedding);
   const b = item.bedding, hotelTops = [];
   if (b) {
     const tex = b.pattern === 'chintz' ? chintzTexture(b) : ginghamTexture(b);
     const rep = b.pattern === 'chintz' ? b.repeat : 2 * b.check; // metres per texture repeat
     tex.repeat.set(1 / rep, 1 / rep);
     const check = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.95 });
-    const duv = new THREE.Mesh(duvetGeometry(w + 0.12, l * 0.74, 0.2), check);
-    duv.position.set(0, 0.55, z0 + l * 0.63);
-    duv.castShadow = duv.receiveShadow = true;
-    bedding.add(duv);
+    // the duvet (#309): thick and soft, down to the frame's edge at the sides, turned back in front of the pillows
+    const D = BEDDING.double, zh = z0 + 0.62;
+    addDuvet(g, check, w, top, zh, -z0 - zh, D, { seed: 3 });
     // two pillows in the set's cases (#308: real pillow shapes, `pillow` in bedding.js; planar UVs in metres, so the
     // print matches the duvet's); in Sovrum 1 each lies on a white 70 × 100 hotel pillow (`item.hotel`)
     const H = PILLOWS.head, pz = z0 + 0.3;
@@ -612,20 +617,24 @@ function bed(item) {
       pil.castShadow = pil.receiveShadow = true;
       g.add(pil);
     });
-    const cushion = new THREE.Mesh(new THREE.SphereGeometry(1, 16, 10), new THREE.MeshStandardMaterial({ color: b.cushion, roughness: 0.9 }));
-    cushion.scale.set(0.22, 0.07, 0.16);
-    if (item.hotel) cushion.position.set(-0.05, 0.66, z0 + 0.66); // in front of the hotel pillows
-    else cushion.position.set(-0.05, 0.64, z0 + 0.5);
-    cushion.rotation.set(-0.6, 0.15, 0.1);
-    cushion.castShadow = true;
-    bedding.add(cushion);
-    // a knitted throw folded over the foot end, hanging down a little on one side
+    // a small cushion lying on the fold in front of the pillows, its back edge up against them
+    const cushion = new THREE.Mesh(pillow(0.42, 0.3, 0.1, { seed: 23, under: 0.4 }), new THREE.MeshStandardMaterial({ color: b.cushion, roughness: 0.9 }));
+    cushion.position.set(-0.05, top + D.th * 1.85 + 0.05, zh + 0.16);
+    cushion.rotation.set(0.45, 0.15, 0.05);
+    cushion.castShadow = cushion.receiveShadow = true;
+    g.add(cushion);
+    // a knitted throw across the foot end on the duvet, hanging down the side
     const knit = new THREE.MeshStandardMaterial({ color: b.throw, roughness: 1 });
-    bedding.add(rbox(w * 0.85, 0.035, 0.42, 0.04, 0.59, -z0 - 0.3, knit, 0.015));
-    bedding.add(rbox(0.035, 0.2, 0.42, 0.04 + w * 0.425 + 0.02, 0.5, -z0 - 0.3, knit, 0.012));
+    addDuvet(g, knit, w + 2 * D.th, top + D.th + 0.012, -z0 - 0.52, 0.42, { th: 0.03, drop: 0.3 },
+      { r: BEDDING.mattressR + D.th, extentL: w * 0.38, bump: 0.003, seed: 9 });
   } else {
-    bedding.add(rbox(w + 0.02, 0.06, l * 0.7, 0, 0.53, z0 + l * 0.65, duvet, 0.03));
-    for (const px of w > 1.2 ? [-w / 4, w / 4] : [0]) bedding.add(rbox(Math.min(0.6, w * 0.8), 0.12, 0.38, px, 0.58, z0 + 0.28, linen, 0.06));
+    addDuvet(g, duvet, w, 0.52, z0 + 0.6, l - 0.6, BEDDING.double, { seed: 4 });
+    for (const px of w > 1.2 ? [-w / 4, w / 4] : [0]) {
+      const pil = new THREE.Mesh(pillow(PILLOWS.head.w, PILLOWS.head.d, PILLOWS.head.h, { seed: 5 }), linen);
+      pil.position.set(px, 0.52, z0 + 0.3);
+      pil.castShadow = pil.receiveShadow = true;
+      g.add(pil);
+    }
   }
   if (item.model !== 'idanas') {
     g.add(rbox(w + 0.06, 0.6, 0.08, 0, 0.62, z0 - 0.04, bedFabric, 0.03));
@@ -832,7 +841,7 @@ function sheetTexture(kind) {
   return tex;
 }
 const sheetMats = {};
-const sheetMat = (kind) => (sheetMats[kind] ??= new THREE.MeshStandardMaterial({ map: sheetTexture(kind), roughness: 0.95 }));
+const sheetMat = (kind) => (sheetMats[kind] ??= new THREE.MeshStandardMaterial({ map: sheetTexture(kind), roughness: 0.95 })); // UVs in metres: a tile 0.8 m (#309)
 
 /** Bunk bed, white: four posts, two mattresses with duvets, guard rail and a ladder. −z = head. */
 // the same white as the frame; its own material so posters.js knows the board under the top bunk (#199)
@@ -851,10 +860,14 @@ function bunk(item) {
     for (const x of [-hx, hx]) g.add(rbox(0.03, 0.14, l, x, y - 0.03, 0, whiteWood, 0.004)); // side rails
     g.add(rbox(w, 0.02, l, 0, y - 0.01, 0, k === 1 ? bunkBase : whiteWood, 0.003)); // the bed base (the top one's underside takes drawings, #199)
     for (const z of [-hz, hz]) for (const dy of [0.06, 0.06 + b + 0.1]) g.add(rbox(w, b, 0.025, 0, y + dy, z, whiteWood, 0.004)); // end boards
-    // mattress, duvet, pillow
-    g.add(rbox(w - 0.02, M.mattress, l - 0.02, 0, y + M.mattress / 2, 0, linen, 0.04));
-    g.add(rbox(w, 0.05, l * 0.68, 0, y + M.mattress + 0.02, l * 0.15, duvet, 0.025));
-    g.add(rbox(w * 0.7, 0.1, 0.34, 0, y + M.mattress + 0.05, -l / 2 + 0.24, item.sheets ? duvet : linen, 0.05));
+    // mattress with a fitted sheet, a thick duvet turned back at the head end, a real pillow (#309)
+    const mt = y + M.mattress, P = BEDDING.bunkPillow;
+    addMattress(g, w - 0.02, M.mattress, l - 0.02, 0, mt, 0, fittedSheet(item.sheets ?? 'plain'));
+    addDuvet(g, duvet, w - 0.02, mt, -l / 2 + 0.5, l - 0.52, BEDDING.bunk, { seed: 7 + k * 4, uv: 0.8 });
+    const pil = new THREE.Mesh(pillow(P.w, P.d, P.h, { seed: 13 + k, uv: 0.8, dent: { x: 0, z: 0.03, r: 0.13, depth: PILLOWS.head.dent } }), item.sheets ? duvet : linen);
+    pil.position.set(0, mt, -l / 2 + 0.01 + P.d / 2);
+    pil.castShadow = pil.receiveShadow = true;
+    g.add(pil);
   });
   // guard rail round the top bunk: two boards, the room side open by the ladder
   const top = M.base[1], lz0 = l / 2 - 0.5, lz1 = l / 2 - 0.05; // the ladder's span (foot end)
@@ -1047,19 +1060,20 @@ function daybed() {
   // the top mattress (ÅFJÄLL), quilted in channels across
   const n = HD.channels, cw = (iw - 0.01) / n, mz = 0.01, md = D - 0.1;
   for (let i = 0; i < n; i++) g.add(rbox(cw + 0.02, m1 - m0, md, -(iw - 0.01) / 2 + cw * (i + 0.5), (m0 + m1) / 2, mz, M.mattress, 0.03));
-  // the bedspread over the foot end (+x), down over the front edge
-  const sx0 = -0.48, sx1 = iw / 2 - 0.005, st = 0.025, front = mz + md / 2;
-  const spread = (w, h, d, x, y, z) => {
-    const m = new THREE.Mesh(metreUV(new RoundedBoxGeometry(w, h, d, 2, 0.01), 0.6, 0.6), M.spread);
-    m.position.set(x, y, z);
-    g.add(m);
-  };
-  spread(sx1 - sx0, st, md - 0.02, (sx0 + sx1) / 2, m1 + st / 2, mz + 0.01);
-  spread(sx1 - sx0, 0.17, 0.02, (sx0 + sx1) / 2, m1 + st - 0.085, front + 0.012);
-  // cushions against the back: black, holographic lilac, a graphic one, a faux-fur one, a small muted pink one
+  // the bedspread over the foot end (+x), quilted in channels, soft over the front edge and tucked in at the back
+  // (#309, `duvet` in bedding.js: its length runs along x, so it is turned a quarter round; its −x side = the front)
+  const sx0 = -0.48, sx1 = iw / 2 - 0.005, S = BEDDING.spread, st = S.th;
+  const sp = new THREE.Mesh(duvetShape(md, sx1 - sx0, S.th, { r: 0.03, dropL: S.drop, dropR: 0, quilt: S.quilt, uv: 0.6, bump: 0.003, crumple: 0, seed: 12 }), M.spread);
+  sp.position.set((sx0 + sx1) / 2, m1, mz);
+  sp.rotation.y = Math.PI / 2;
+  g.add(sp);
+  // cushions against the back: black, holographic lilac, a graphic one, a faux-fur one, a small muted pink one; real
+  // cushion shapes (#309: `pillow` stood up, its face to the front, leaning back by `tilt`)
   const cushion = (w, h, d, x, y, z, mat, tilt, roll = 0) => {
-    const c = rbox(w, h, d, x, y, z, mat, 0.06);
-    c.rotation.set(tilt, 0, roll);
+    const c = new THREE.Mesh(pillow(w, h, d * 1.25, { under: 0.5, p: 4.5, unitUV: true, seed: Math.round(x * 100) + 50 }), mat);
+    c.position.set(x, y, z);
+    c.rotation.order = 'ZXY';
+    c.rotation.set(Math.PI / 2 + tilt, 0, roll);
     g.add(c);
   };
   cushion(0.46, 0.46, 0.15, -0.66, m1 + 0.22, z0 + 0.16, M.black, -0.18);
