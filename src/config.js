@@ -580,6 +580,13 @@ export const CAR = {
   leave: [[2.9, -5.4], [6.5, -5.6], [8.4, -8], [7, -10.6], [3, -11.2], [-4, -11.2], [-8.5, -13.5], [-10.25, -16.3], [-10.25, -22], [-12.5, -27.6], [-18, -27.8], [-95, -27.8]],
   speed: 8, brake: 2,              // m/s cruising, m/s² slowing down to the stop
   doorOpen: 1.1,                   // rad: how far a door opens (#250)
+  // Music in the car (#268, CarRadio in sonos.js): the SYMFONISK channels from the dashboard (`dash`, local metres).
+  // How you hear it (our choice): sitting inside clear; outside through a door that is open a little softer, through the
+  // shut doors low and dull (a low-pass). It plays on when you get out, until switched off on the screen, the key sends the
+  // car away, or F. While it plays and you sit in the car the house's SYMFONISK speakers are ducked to `duckHouse`.
+  // `songLength` (s): the channels never end, so the screen's progress bar runs over a nominal song length.
+  music: { gain: 0.45, ref: 0.8, rolloff: 1.3, dash: [0.62, 1.0, 0], songLength: 180, duckHouse: 0.3, redraw: 0.5,
+    inside: { gain: 1, cutoff: 18000 }, open: { gain: 0.75, cutoff: 6000 }, shut: { gain: 0.3, cutoff: 500 } },
 };
 
 // Tilly's basketball (src/basket.js, the user): a size 6 ball (Ø 23 cm) in a wall holder over her daybed (Sovrum 4's
@@ -830,12 +837,13 @@ export const SCORE = {
     catButts: 15, // a cat's bum seen from behind with its tail up (#262): per cat, then `again` per tail-up
     walkRain: 15, walkSnow: 25, walkHail: 40, walkStorm: 30, // out in the weather (#249): the first time, then `again` per shower
     shattered: 5, // per kind of thing shot to pieces (#263)
+    carMusic: 3, // per song played in the car (#268), like the speakers' songs
   },
   again: {
     doors: 0.1, lids: 0.1, flushes: 0.2, taps: 0.1, fridge: 0.1, appliances: 0.1, cabinets: 0.05, lights: 0.05,
     sat: 0.1, lay: 0.1, songs: 0.2, read: 0.5, car: 1, grill: 1, hood: 0.2, tv: 0.2, pc: 0.3, parasol: 0.2,
     clock: 0.1, calendar: 0.1, greets: 0.1, catButts: 1, walkRain: 2, walkSnow: 3, walkHail: 4, walkStorm: 3,
-    shattered: 0.3,
+    shattered: 0.3, carMusic: 0.2,
   },
   breeds: { huskatt: 10, siames: 30, 'brittiskt korthår': 30, 'maine coon': 35, 'norsk skogkatt': 40, perser: 100, sphynx: 250 },
   secrets: { kinds: 10, rare: 40 },

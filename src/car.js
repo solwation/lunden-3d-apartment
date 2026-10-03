@@ -1,7 +1,8 @@
 import * as THREE from 'three';
 import { CAR as C, REST } from './config.js';
-import { buildCar, MEGANE } from './carmodel.js';
+import { buildCar, MEGANE, drawScreen, SCREEN_BUTTONS } from './carmodel.js';
 import { sfx } from './audio.js';
+import { CarRadio } from './sonos.js';
 
 // Our car (#173): a white Renault Megane E-Tech, called by the key in the hall. State 'gone' → press → 'arriving'
 // (east along our lane, in through the gap in the shrubs, slowing to a stop right outside our door, #208) →
@@ -76,6 +77,29 @@ export class Car {
       pick.userData.door = target;
       return target;
     });
+    // music (#268): the centre screen is a target while you sit in a front seat; its own canvas shows "now playing"
+    this.radio = new CarRadio();
+    this.screenCanvas = document.createElement('canvas'); this.screenCanvas.width = 512; this.screenCanvas.height = 160;
+    drawScreen(this.screenCanvas.getContext('2d'));
+    const tex = new THREE.CanvasTexture(this.screenCanvas); tex.colorSpace = THREE.SRGBColorSpace;
+    this.screenMat.emissiveMap = tex; this.screenTex = tex;
+    const half = new THREE.Mesh(new THREE.PlaneGeometry(0.31, 0.19), new THREE.MeshBasicMaterial()); // the centre half of the sheet
+    half.position.set(0.155, 0, 0.004); half.visible = false; m.screen.add(half);
+    const radio = this.radio, car = this;
+    this.musicTarget = { kind: 'carmusic', name: '', pickable: half, car: this, button: null,
+      get verb() {
+        if (this.button === 'next') return radio.playing ? 'byta till nästa låt' : 'spela nästa låt';
+        if (this.button === 'prev') return radio.playing ? 'byta till förra låten' : 'spela förra låten';
+        return radio.playing ? 'stänga av musiken' : 'sätta på musik';
+      },
+      /** Where on the screen the look ray is (main.js, each frame): the button row's ⏮ ⏯ ⏭, or anywhere else = on/off. */
+      aimAt(p) {
+        const q = half.worldToLocal(p.clone()), x = 256 + (q.x / 0.31 + 0.5) * 256, y = (0.5 - q.y / 0.19) * 160;
+        this.button = y < SCREEN_BUTTONS ? null : x < 262 + 244 / 3 ? 'prev' : x > 262 + 488 / 3 ? 'next' : null;
+      },
+      toggle() { if (this.button) radio.next(this.button === 'next' ? 1 : -1); else radio.toggle(); car.drawScreen(); } };
+    half.userData.door = this.musicTarget;
+    this.screenT = 0; this.shown = null;
     g.visible = false;
     this.object = g;
     Object.assign(this, { state: 'gone', d: 0, speed: 0, blinkT: 0, hum: null, path: null, plateText: C.plate, leaveWhenShut: false, awake: 0 });
@@ -89,10 +113,20 @@ export class Car {
     return { kind: 'sit', pos, yaw, aimPos: null, car: true };
   }
 
-  /** E targets while parked: the doors, and the front seats whose door is open (`seated`: the target sat in now). */
+  /** E targets while parked: the doors, and the front seats whose door is open (`seated`: the target sat in now);
+   * sitting in a front seat, the centre screen (music, #268). */
   targets(seated = null) {
     if (this.state !== 'parked') return [];
-    return [...this.doors, ...this.seats.filter((t) => t.door.isOpen || t === seated)];
+    return [...this.doors, ...this.seats.filter((t) => t.door.isOpen || t === seated), ...(seated?.car === this ? [this.musicTarget] : [])];
+  }
+
+  /** The centre screen: "now playing" while the music is on, else the map (only redrawn when something changed). */
+  drawScreen() {
+    const np = this.radio.playing ? this.radio.nowPlaying : null, key = np ? `${np.name}|${np.time}` : 'map';
+    if (key === this.shown) return;
+    this.shown = key;
+    drawScreen(this.screenCanvas.getContext('2d'), np);
+    this.screenTex.needsUpdate = true;
   }
 
   toggleDoor(door) {
@@ -114,7 +148,7 @@ export class Car {
     this.place();
   }
 
-  leave() { this.path = this.departure(); this.d = 0; this.state = 'leaving'; this.speed = 0; this.blinkT = 1.2; this.hum = sfx.evHum(this.object.position); this.place(); }
+  leave() { this.radio.stop(); this.path = this.departure(); this.d = 0; this.state = 'leaving'; this.speed = 0; this.blinkT = 1.2; this.hum = sfx.evHum(this.object.position); this.place(); }
 
   /** Parked in front of the house at once (&car, screenshots). */
   park() { this.path = this.arrival(); this.d = this.total(); this.state = 'parked'; this.object.visible = true; this.place(); }
@@ -159,7 +193,15 @@ export class Car {
       d.pivot.rotation.y = d.side * d.angle;
     }
     this.awake = Math.max(0, this.awake - dt);
-    if (this.doors.some((d) => d.target > 0) || this.occupied) this.awake = 20;
+    if (this.doors.some((d) => d.target > 0) || this.occupied || this.radio.playing) this.awake = 20;
+    // the music (#268): from the dashboard, clear inside, muffled through the doors; the screen follows it
+    this.screenT -= dt;
+    if (this.screenT <= 0 || (this.shown === 'map') === this.radio.playing) { this.screenT = C.music.redraw; this.drawScreen(); }
+    if (this.radio.playing) {
+      const [dx, dy, dz] = C.music.dash;
+      this.object.updateMatrixWorld();
+      this.radio.update(new THREE.Vector3(dx, dy, dz).applyMatrix4(this.object.matrixWorld), !!this.occupied, this.doors.some((d) => d.angle > 0.15));
+    }
     this.screenMat.emissiveIntensity += ((this.awake > 0 ? 0.9 : 0) - this.screenMat.emissiveIntensity) * Math.min(1, dt * 3);
     if (this.leaveWhenShut && this.doorsShut) { this.leaveWhenShut = false; this.leave(); }
     if (this.state !== 'arriving' && this.state !== 'leaving') return;

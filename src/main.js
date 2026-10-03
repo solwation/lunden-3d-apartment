@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { COLORS, LEVELS, DAY, START, PLAYER, DRAWING, STAIR, HOLD, REMOTE, REST, DOOR_HEIGHT, TURBO, WEATHER, BREAK } from './config.js';
+import { COLORS, LEVELS, DAY, START, PLAYER, DRAWING, STAIR, HOLD, REMOTE, REST, DOOR_HEIGHT, TURBO, WEATHER, BREAK, CAR } from './config.js';
 const DRAWING_COLORS = DRAWING.colors;
 import { buildWorld } from './world.js';
 import { Player } from './player.js';
@@ -395,6 +395,7 @@ target.onSink = () => marks.dropUnder(target.object); // its marks don't hang in
 for (const h of [saber, ...toys.wands, toys.darts]) Object.assign(h, { marks, cat });
 for (const wd of toys.wands) wd.onMagic = () => bump('magic'); // statistics and points (#197)
 target.onHit = (pts) => bump('target', pts);
+car.radio.onPlay = (ch) => bump('carMusic', 1, ch); // each song in the car once (#268)
 sonos.onPlay = (ch) => bump('songs', 1, ch); // each song (channel) once // the saber burns, the wands do magic (#97), darts splash (#98)
 // the cat goes for a fish finger lying on the floor near it and eats it (#163)
 if (fish) {
@@ -787,6 +788,7 @@ function use(thing) {
     sfx.parasol(thing.pickable.getWorldPosition(new THREE.Vector3()).setY(2), opening);
   }
   else if (thing.kind === 'cardoor') thing.toggle(); // open / shut a door of our car (#250)
+  else if (thing.kind === 'carmusic') thing.toggle(); // music in the car: on / off, ⏮ ⏭ (#268)
   else if (thing.kind === 'carkey') { thing.press(); car.call(); bump('car'); } // beep beep: the car comes, or leaves (#173)
   else if (thing.kind === 'flush') { if (thing.toggle()) bump('flushes', 1, idOf(thing)); } // the toilet's flush button (#155)
   else if (thing.kind === 'lid') {
@@ -825,7 +827,7 @@ document.addEventListener('mousemove', (e) => {
 });
 document.addEventListener('mousedown', (e) => {
   if (locked && e.button === 0 && heldItem()?.trigger) { heldItem().trigger(true); return; } // the rifle: automatic fire while held (#196)
-  if (locked && e.button === 0) { if (book.reading) book.turn(1); else heldItem()?.use(); } // a click: swing, fire, toggle the flashlight, change channel, read / turn the page
+  if (locked && e.button === 0) { if (book.reading) book.turn(1); else if (!heldItem() && focused?.kind === 'carmusic') use(focused); else heldItem()?.use(); } // (a click on the car's screen works like E, #268) // a click: swing, fire, toggle the flashlight, change channel, read / turn the page
   if (locked && e.button === 2) heldItem()?.useAlt?.(); // right click: the remote's power button (#101)
 });
 document.addEventListener('contextmenu', (e) => { if (locked) e.preventDefault(); });
@@ -926,6 +928,7 @@ function updateFocus() {
     .find((h) => shown(h.object) && !(rest.active && (h.object.userData.door === rest.target || h.object.userData.door?.kind === 'rest')));
   focused = hit && !behindWall(hit.point) ? hit.object.userData.door : null;
   focusPoint = focused ? hit.point.clone() : null; // where the hand reaches on E (#195)
+  focused?.aimAt?.(focusPoint); // the car's screen: which of its buttons (#268)
   if (!focused && !rest.active) { // nothing in reach: a person outside further off to say hello to (#247)
     const g = greet.target(raycaster.ray);
     if (g) { focused = g; focusPoint = g.point; }
@@ -1022,6 +1025,7 @@ function toggleFurniture(on = !world.furnitureOn) {
   if (!on) chicken?.reset(); // home to the fridge, no smoke
   if (!on) { world.hood?.set(false); smokeAlarm.reset(); } // the fan off, the alarm quiet (#194)
   if (!on) { if (sonos.open) showSonos(false); sonos.stop(); } // the speakers go: the music stops
+  if (!on) car.radio.stop(); // and the car's (#268)
   try { localStorage.setItem('lunden.furniture', on ? '1' : '0'); } catch { /* ignore */ }
 }
 world.looseItems.push(board.object, ...holdables.flatMap((h) => (h.homeParent ? [h.holder] : [h.holder, h.model])), ...toys.deco); // (the secretary's things go home into it with F, and the secret drawer shows one at a time, #183)
@@ -1081,7 +1085,8 @@ function step(dt) {
   player.boost = turbo.speed;
   const fov = 72 + TURBO.fov * turbo.k;
   if (Math.abs(camera.fov - fov) > 0.01) { camera.fov = fov; camera.updateProjectionMatrix(); }
-  sonos.setDuck(turbo.active ? 0.3 : 1);
+  sonos.setDuck(turbo.active ? 0.3 : car.radio.playing && car.occupied ? CAR.music.duckHouse : 1); // (sitting in the car with its music on, #268)
+  car.radio.setDuck(turbo.active ? 0.3 : 1);
   for (const d of world.doors) d.update(dt);
   for (const l of world.lids) l.update(dt);
   for (const t of taps) t.update(dt);

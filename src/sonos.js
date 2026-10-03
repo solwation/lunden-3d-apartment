@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { audioParts, isMuted } from './audio.js';
 import { sonosLed } from './furniture.js';
-import { SONOS as S } from './config.js';
+import { SONOS as S, CAR } from './config.js';
 
 // Music in all the SYMFONISK speakers (#187). Generated in Web Audio — no sound files: six "channels" (lofi, a jazz
 // trio, children's songs, synthwave, Bach's C major prelude, rain and a fire), each a little composer that schedules
@@ -119,9 +119,44 @@ export const CHANNELS = { // exported for the offline render in tools/sonostest.
   } },
 };
 
-export class Sonos {
+/** What the SYMFONISK speakers and the car's radio (#268) share: a channel's sub-mix into `this.bus.mix`, and composing
+ * a bar at a time ahead. */
+class Composer {
+  get name() { return S.channels[this.channel].name; }
+
+  /** A fresh sub-mix for the channel (the old one fades out with what it had scheduled). */
+  startChannel(A) {
+    this.stopChannel();
+    const g = A.ctx.createGain(); g.gain.value = 1; g.connect(this.bus.mix);
+    this.ch = g;
+    this.barNo = 0; this.nextBar = A.ctx.currentTime + 0.08;
+    this.songStart = performance.now();
+    const c = CHANNELS[S.channels[this.channel].id];
+    this.stopCont = c.continuous?.(A, g) ?? null;
+  }
+
+  stopChannel() {
+    const A = audioParts();
+    if (this.ch && A) { const g = this.ch, t = A.ctx.currentTime; g.gain.setTargetAtTime(0, t, 0.05); setTimeout(() => g.disconnect(), 1500); }
+    this.stopCont?.(); this.stopCont = null;
+    this.ch = null;
+  }
+
+  /** Schedule the bars up to `lookahead` ahead (not while muted: the master is silent). */
+  compose(A) {
+    if (!this.ch) this.startChannel(A); // the context came up after play()
+    const t = A.ctx.currentTime;
+    if (isMuted()) { this.nextBar = Math.max(this.nextBar, t); return; } // the master is silent: don't compose
+    const c = CHANNELS[S.channels[this.channel].id], len = c.bar * c.beat;
+    if (this.nextBar < t - 1) this.nextBar = t + 0.05; // a long stall (a hidden tab): start afresh
+    while (this.nextBar < t + S.lookahead) { c.play(A, this.ch, this.nextBar, this.barNo++); this.nextBar += len; }
+  }
+}
+
+export class Sonos extends Composer {
   /** speakers: the furniture targets of kind 'speaker'; panel: #sonos-panel. */
   constructor(speakers, panel) {
+    super();
     Object.assign(this, { speakers, panel, playing: false, channel: 0, volume: S.start, bus: null, ch: null, nextBar: 0, barNo: 0, stopCont: null });
     const self = this;
     for (const t of speakers) Object.defineProperty(t, 'verb', { get: () => (self.playing ? 'styra musiken på' : 'spela musik på') });
@@ -134,7 +169,6 @@ export class Sonos {
   }
 
   get open() { return !this.panel.hidden; }
-  get name() { return S.channels[this.channel].name; }
   show(v) { this.panel.hidden = !v; this.render(); }
 
   /** Build the mix → one gain + panner per speaker, once the AudioContext runs. */
@@ -198,23 +232,6 @@ export class Sonos {
     this.render();
   }
 
-  /** A fresh sub-mix for the channel (the old one fades out with what it had scheduled). */
-  startChannel(A) {
-    this.stopChannel();
-    const g = A.ctx.createGain(); g.gain.value = 1; g.connect(this.bus.mix);
-    this.ch = g;
-    this.barNo = 0; this.nextBar = A.ctx.currentTime + 0.08;
-    const c = CHANNELS[S.channels[this.channel].id];
-    this.stopCont = c.continuous?.(A, g) ?? null;
-  }
-
-  stopChannel() {
-    const A = audioParts();
-    if (this.ch && A) { const g = this.ch, t = A.ctx.currentTime; g.gain.setTargetAtTime(0, t, 0.05); setTimeout(() => g.disconnect(), 1500); }
-    this.stopCont?.(); this.stopCont = null;
-    this.ch = null;
-  }
-
   /** Keys while the panel is open (main.js); true when used. */
   key(code) {
     if (code === 'KeyA' || code === 'ArrowLeft') this.next(-1);
@@ -231,16 +248,12 @@ export class Sonos {
     const A = audioParts();
     sonosLed.color.setHex(this.playing ? 0xffffff : 0x4a4a4a);
     if (!A || !this.playing || !this.bus) return;
-    if (!this.ch) this.startChannel(A); // the context came up after play()
     const t = A.ctx.currentTime;
-    this.bus.outs.forEach((o, i) => {
+    this.bus.outs.forEach((o) => {
       const k = (o.level !== level ? S.floor : 1) * (muffled(o.pos) ? S.wall : 1);
       if (o.k !== k) { o.k = k; o.g.gain.setTargetAtTime(k, t, 0.15); } // o.k: where it is heading (tests read it)
     });
-    if (isMuted()) { this.nextBar = Math.max(this.nextBar, t); return; } // the master is silent: don't compose
-    const c = CHANNELS[S.channels[this.channel].id], len = c.bar * c.beat;
-    if (this.nextBar < t - 1) this.nextBar = t + 0.05; // a long stall (a hidden tab): start afresh
-    while (this.nextBar < t + S.lookahead) { c.play(A, this.ch, this.nextBar, this.barNo++); this.nextBar += len; }
+    this.compose(A);
   }
 
   render() {
@@ -249,5 +262,84 @@ export class Sonos {
     this.volEl.setAttribute('aria-label', `Volym ${this.volume} av ${S.steps}`);
     this.playBtn.textContent = this.playing ? '⏸' : '▶';
     this.playBtn.setAttribute('aria-label', this.playing ? 'Pausa' : 'Spela');
+  }
+}
+
+/** Music in our Renault (#268): the same channels from one panner at the dashboard. E / a click on the centre screen
+ * while you sit in a front seat starts and stops it (its ⏮ ⏭ change song); `CAR.music` says how loud and how muffled
+ * outside the car (doors shut / a door open). It plays on when you get out, until it is switched off, the car drives
+ * away or F. The car's screen shows `nowPlaying`. */
+export class CarRadio extends Composer {
+  constructor() {
+    super();
+    Object.assign(this, { playing: false, channel: 0, bus: null, ch: null, nextBar: 0, barNo: 0, stopCont: null, duck: 1, songStart: 0, k: null });
+  }
+
+  ensureBus() {
+    const A = audioParts();
+    if (!A || this.bus) return A;
+    const { ctx, master } = A, M = CAR.music;
+    const mix = ctx.createGain(); mix.gain.value = this.gain;
+    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = M.inside.cutoff;
+    const out = ctx.createGain(); out.gain.value = 1;
+    const pan = ctx.createPanner();
+    pan.panningModel = 'equalpower'; pan.distanceModel = 'inverse'; pan.refDistance = M.ref; pan.rolloffFactor = M.rolloff;
+    mix.connect(lp).connect(out).connect(pan).connect(master);
+    this.bus = { mix, lp, out, pan };
+    return A;
+  }
+
+  get gain() { return this.playing ? CAR.music.gain * this.duck : 0; }
+
+  setDuck(f) {
+    if (this.duck === f) return;
+    this.duck = f;
+    const A = audioParts();
+    if (A && this.bus) this.bus.mix.gain.setTargetAtTime(this.gain, A.ctx.currentTime, 0.3);
+  }
+
+  play() {
+    const A = this.ensureBus();
+    this.onPlay?.(this.channel); // statistics and points: each song once (#268)
+    this.playing = true;
+    if (A) { this.startChannel(A); this.bus.mix.gain.setTargetAtTime(this.gain, A.ctx.currentTime, 0.05); }
+    else this.songStart = performance.now();
+  }
+
+  stop() {
+    if (!this.playing) return;
+    this.playing = false;
+    const A = audioParts();
+    if (A && this.bus) this.bus.mix.gain.setTargetAtTime(0, A.ctx.currentTime, 0.08);
+    this.stopChannel();
+  }
+
+  toggle() { if (this.playing) this.stop(); else this.play(); }
+
+  next(d) {
+    this.channel = (this.channel + d + S.channels.length) % S.channels.length;
+    if (!this.playing) { this.play(); return; } // ⏮ ⏭ on a silent screen: that song
+    const A = audioParts(); if (A) this.startChannel(A); else this.songStart = performance.now();
+    this.onPlay?.(this.channel);
+  }
+
+  /** For the screen: song, progress through a nominal song length, the time. */
+  get nowPlaying() {
+    const L = CAR.music.songLength, e = ((performance.now() - this.songStart) / 1000) % L;
+    const mmss = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+    return { name: this.name, playing: this.playing, progress: e / L, time: `${mmss(e)} / ${mmss(L)}` };
+  }
+
+  /** Each frame: where the dashboard is, and how the visitor hears it: `inside` (sitting in the car), else through the
+   * shut doors or an open one. */
+  update(pos, inside, doorOpen) {
+    if (!this.playing) return;
+    const A = this.ensureBus(); // (the context may have come up after play())
+    if (!A) return;
+    const t = A.ctx.currentTime, { pan, lp, out } = this.bus, M = CAR.music;
+    pan.positionX.setTargetAtTime(pos.x, t, 0.05); pan.positionY.setTargetAtTime(pos.y, t, 0.05); pan.positionZ.setTargetAtTime(pos.z, t, 0.05);
+    const k = inside ? M.inside : doorOpen ? M.open : M.shut;
+    if (this.k !== k) { this.k = k; lp.frequency.setTargetAtTime(k.cutoff, t, 0.1); out.gain.setTargetAtTime(k.gain, t, 0.1); } // this.k: tests read it
+    this.compose(A);
   }
 }

@@ -100,30 +100,52 @@ export function renaultLogo() {
   return logoTex;
 }
 
-/** The OpenR screens' picture: the driver's display (speed, range) and the centre screen (a map, Google built in). */
-let screenTex = null;
-function screenTexture() {
-  if (screenTex) return screenTex;
-  const c = document.createElement('canvas'); c.width = 512; c.height = 160;
-  const g = c.getContext('2d');
+/** The OpenR screens' picture: the driver's display (speed, range) and the centre screen — a map (Google built in), or
+ * while the car's music plays (#268) "now playing": the song, a progress bar (`progress` 0–1, `time` text), ⏮ ⏯ ⏭.
+ * 512 × 160 px; the centre screen is the right half (x 262–506), its button row y ≥ SCREEN_BUTTONS. */
+export const SCREEN_BUTTONS = 70;
+export function drawScreen(g, music = null) {
   g.fillStyle = '#05080c'; g.fillRect(0, 0, 512, 160);
   // driver's display (left half): speed, gear, range
   g.fillStyle = '#e9eef5'; g.font = 'bold 54px sans-serif'; g.textAlign = 'center'; g.fillText('0', 120, 92);
   g.font = '16px sans-serif'; g.fillStyle = '#8fa3b8'; g.fillText('km/h', 120, 116); g.fillText('P', 40, 92);
   g.fillStyle = '#2bd17e'; g.fillRect(170, 128, 70, 6); g.fillStyle = '#8fa3b8'; g.fillText('412 km', 205, 150);
+  if (music) { // now playing — kept in the top ~2/3: the dashboard hides the sheet's bottom edge
+    g.fillStyle = '#121a24'; g.fillRect(262, 6, 244, 148);
+    const grad = g.createLinearGradient(272, 12, 312, 52); grad.addColorStop(0, '#ff7a3d'); grad.addColorStop(1, '#8a3dff');
+    g.fillStyle = grad; g.fillRect(272, 12, 40, 40); // the "cover"
+    g.fillStyle = '#ffffff'; g.font = 'bold 26px sans-serif'; g.textAlign = 'center'; g.fillText('♪', 292, 42);
+    g.textAlign = 'left'; g.fillStyle = '#8fa3b8'; g.font = '12px sans-serif'; g.fillText(music.playing ? 'Spelas nu' : 'Pausad', 322, 25);
+    g.textAlign = 'right'; g.fillText(music.time, 496, 25);
+    g.textAlign = 'left'; g.fillStyle = '#f2f5f9'; g.font = 'bold 17px sans-serif';
+    let name = music.name;
+    while (g.measureText(name).width > 174 && name.length > 4) name = `${name.slice(0, name.endsWith('…') ? -2 : -1)}…`;
+    g.fillText(name, 322, 46);
+    g.fillStyle = '#2c3a48'; g.fillRect(272, 60, 224, 4);
+    g.fillStyle = '#4aa3ff'; g.fillRect(272, 60, 224 * music.progress, 4);
+    g.textAlign = 'center'; g.fillStyle = '#e9eef5'; g.font = '24px sans-serif';
+    ['⏮', music.playing ? '⏸' : '▶', '⏭'].forEach((t, i) => g.fillText(t, 262 + 244 * (i + 0.5) / 3, 96));
+    return;
+  }
   // centre screen (right half): a map
   g.fillStyle = '#1d2a35'; g.fillRect(262, 6, 244, 148);
   g.strokeStyle = '#3d5466'; g.lineWidth = 8;
   for (const [a, b, d, e] of [[262, 60, 506, 90], [330, 6, 360, 154], [430, 6, 410, 154]]) { g.beginPath(); g.moveTo(a, b); g.lineTo(d, e); g.stroke(); }
   g.strokeStyle = '#4aa3ff'; g.lineWidth = 5; g.beginPath(); g.moveTo(345, 154); g.lineTo(352, 78); g.lineTo(450, 90); g.stroke();
   g.fillStyle = '#ffffff'; g.beginPath(); g.arc(345, 140, 7, 0, 7); g.fill();
+}
+let screenTex = null;
+function screenTexture() {
+  if (screenTex) return screenTex;
+  const c = document.createElement('canvas'); c.width = 512; c.height = 160;
+  drawScreen(c.getContext('2d'));
   screenTex = new THREE.CanvasTexture(c); screenTex.colorSpace = THREE.SRGBColorSpace;
   return screenTex;
 }
 
 /**
  * Build a car. Returns { group, parts (closed body: per-material geometries, no group), doors: [{ pivot, side, front }],
- * seats: [{ x, y, z, name }], materials }.
+ * seats: [{ x, y, z, name }], screen (the OpenR sheet, our car), materials }.
  * opts: { doors: true → hinged doors + interior (our car), paint: hex }.
  */
 export function buildCar(S = MEGANE, { doors: withDoors = false, paint = 0xf2f2ee, lite = false } = {}) {
@@ -186,6 +208,7 @@ export function buildCar(S = MEGANE, { doors: withDoors = false, paint = 0xf2f2e
   for (const x of [wx, -wx]) for (const s of [-1, 1]) wheels.push({ x, s, z: s * (hw * planK(S, x) - 0.12) });
   // ---- doors (our car) or the closed sides' handles (parked cars)
   const doors = [], seats = [];
+  let screen = null; // the OpenR sheet (our car)
   const mats = {
     paint: new THREE.MeshStandardMaterial({ color: paint, roughness: 0.22, metalness: 0.35 }),
     black: new THREE.MeshStandardMaterial({ color: 0x0c0d0f, roughness: 0.25, metalness: 0.2 }),
@@ -256,6 +279,7 @@ export function buildCar(S = MEGANE, { doors: withDoors = false, paint = 0xf2f2e
     const scr = new THREE.Mesh(new THREE.PlaneGeometry(0.62, 0.19), mats.screen); // the OpenR "L": both screens in one sheet
     scr.position.set(0.64, 1.02, -0.13); scr.rotation.set(0, -Math.PI / 2, 0); scr.rotateX(-0.25);
     group.add(scr);
+    screen = scr;
   }
   // logos front and back, plates are car.js's
   for (const [x, ry] of [[S.L / 2 + 0.052, Math.PI / 2], [-S.L / 2 - 0.058, -Math.PI / 2]]) {
@@ -275,7 +299,7 @@ export function buildCar(S = MEGANE, { doors: withDoors = false, paint = 0xf2f2e
     t.castShadow = true; o.add(t, r); group.add(o);
     return o;
   });
-  return { group, parts, doors, seats, materials: mats, wheels: wheelObjs };
+  return { group, parts, doors, seats, screen, materials: mats, wheels: wheelObjs };
 }
 
 /** After mirroring a geometry (scale z −1) its triangles wind the wrong way: swap two corners of each. */
