@@ -29,6 +29,9 @@ export function lerpTable(t, x) {
   for (let i = 1; i < t.length; i++) if (x >= t[i][0]) { const [x0, y0] = t[i - 1], [x1, y1] = t[i]; return y1 + (y0 - y1) * (x - x1) / (x0 - x1); }
   return t.at(-1)[1];
 }
+/** Detail level (#251): `lite` for the many parked cars — coarser curves, fewer segments. Set by buildCar. */
+const HIGH = { step: 0.05, segs: 3, box: 2, round: 28, arch: 22 }, LOW = { step: 0.16, segs: 1, box: 1, round: 12, arch: 10 };
+let Q = HIGH;
 const smooth = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
 
 /** The profile lines of a spec as functions of x. */
@@ -54,6 +57,7 @@ function shape(pts, holes = []) {
 /** Extrude a side outline `width` across (centred on z = 0 unless z0 given), with rounded edges; then `fz(x, y, z)` may
  * move z (plan rounding); smooth normals. */
 function extrude(sh, width, { bevel = 0.04, segs = 3, z0 = null, fz = null } = {}) {
+  segs = Math.min(segs, Q.segs);
   const depth = Math.max(0.002, width - 2 * bevel);
   let g = new THREE.ExtrudeGeometry(sh, { depth, bevelEnabled: bevel > 0, bevelThickness: bevel, bevelSize: bevel, bevelSegments: segs, curveSegments: 4 });
   g.translate(0, 0, z0 ?? -depth / 2);
@@ -66,12 +70,13 @@ function extrude(sh, width, { bevel = 0.04, segs = 3, z0 = null, fz = null } = {
 
 /** Points along f(x) from x0 to x1 (either direction) every `step` m. */
 function along(f, x0, x1, step = 0.05) {
+  step = Math.max(step, Q.step);
   const n = Math.max(2, Math.ceil(Math.abs(x1 - x0) / step)), out = [];
   for (let i = 0; i <= n; i++) { const x = x0 + (x1 - x0) * (i / n); out.push([x, f(x)]); }
   return out;
 }
 
-const rbox = (sx, sy, sz, x, y, z, r = 0.02) => new RoundedBoxGeometry(sx, sy, sz, 2, Math.min(r, sx / 2.01, sy / 2.01, sz / 2.01)).translate(x, y, z);
+const rbox = (sx, sy, sz, x, y, z, r = 0.02) => new RoundedBoxGeometry(sx, sy, sz, Q.box, Math.min(r, sx / 2.01, sy / 2.01, sz / 2.01)).translate(x, y, z);
 const clean = (g) => { g = g.index ? g.toNonIndexed() : g; for (const k of Object.keys(g.attributes)) if (k !== 'position' && k !== 'normal') g.deleteAttribute(k); return g; };
 
 /** Collects geometries per material name and merges them. */
@@ -121,7 +126,8 @@ function screenTexture() {
  * seats: [{ x, y, z, name }], materials }.
  * opts: { doors: true → hinged doors + interior (our car), paint: hex }.
  */
-export function buildCar(S = MEGANE, { doors: withDoors = false, paint = 0xf2f2ee } = {}) {
+export function buildCar(S = MEGANE, { doors: withDoors = false, paint = 0xf2f2ee, lite = false } = {}) {
+  Q = lite ? LOW : HIGH;
   const P = new Parts(), { top, belt, bot, lowerTop, wx } = lines(S), W = S.W, hw = W / 2, [xA, xB, xC] = S.doors;
   const shoulder = (y) => 0.055 * smooth(0.78, 1.06, y) + 0.035 * smooth(0.45, 0.22, y); // the sides round in to the belt and tuck in below
   const fzPlan = (x, y, z) => z * planK(S, x) * (1 - shoulder(y)); // rounded in plan too
@@ -133,7 +139,7 @@ export function buildCar(S = MEGANE, { doors: withDoors = false, paint = 0xf2f2e
   } else P.add('paint', extrude(lower(S.L / 2, -S.L / 2), W, { bevel: 0.05, fz: fzPlan }));
   // black cladding: the wheel arches and along the sills, the lower bumpers
   for (const x of [wx, -wx]) for (const s of [-1, 1]) {
-    P.add('black', new THREE.TorusGeometry(S.arch + 0.015, 0.035, 6, 22, Math.PI).translate(x, S.wheelR, s * (hw * planK(S, x) - 0.005)));
+    P.add('black', new THREE.TorusGeometry(S.arch + 0.015, 0.035, lite ? 3 : 6, Q.arch, Math.PI).translate(x, S.wheelR, s * (hw * planK(S, x) - 0.005)));
   }
   for (const s of [-1, 1]) P.add('black', rbox(2 * (wx - S.arch) - 0.02, 0.07, 0.04, 0, 0.25, s * (hw - 0.005), 0.02));
   P.add('black', rbox(0.06, 0.12, W * 0.66, S.L / 2 + 0.03, 0.34, 0, 0.03), rbox(0.06, 0.14, W * 0.7, -S.L / 2 - 0.03, 0.36, 0, 0.03)); // lower bumpers
@@ -172,9 +178,9 @@ export function buildCar(S = MEGANE, { doors: withDoors = false, paint = 0xf2f2e
   P.add('tail', rbox(0.03, 0.03, W * 0.76, -S.L / 2 - 0.012, 0.94, 0, 0.012));
   P.add('chrome', rbox(0.02, 0.02, W * 0.4, -2.08, 0.82, 0, 0.008)); // trim on the tailgate
   // ---- wheels: tyre, the aero rim with five twin spokes, the hub (one geometry per material, all four)
-  const tyre = new THREE.LatheGeometry([[0.25, -0.11], [0.31, -0.115], [S.wheelR - 0.01, -0.1], [S.wheelR, -0.05], [S.wheelR, 0.05], [S.wheelR - 0.01, 0.1], [0.31, 0.115], [0.25, 0.11]].map(([r, y]) => new THREE.Vector2(r, y)), 28).rotateX(Math.PI / 2);
-  const rimParts = [new THREE.CylinderGeometry(0.255, 0.255, 0.04, 28).rotateX(Math.PI / 2).translate(0, 0, 0.085)];
-  for (let k = 0; k < 5; k++) for (const o of [-0.09, 0.09]) rimParts.push(new THREE.BoxGeometry(0.035, 0.22, 0.03).translate(0, 0.13, 0.11).rotateZ(k / 5 * Math.PI * 2 + o));
+  const tyre = new THREE.LatheGeometry([[0.25, -0.11], [0.31, -0.115], [S.wheelR - 0.01, -0.1], [S.wheelR, -0.05], [S.wheelR, 0.05], [S.wheelR - 0.01, 0.1], [0.31, 0.115], [0.25, 0.11]].map(([r, y]) => new THREE.Vector2(r, y)), Q.round).rotateX(Math.PI / 2);
+  const rimParts = [new THREE.CylinderGeometry(0.255, 0.255, 0.04, Q.round).rotateX(Math.PI / 2).translate(0, 0, 0.085)];
+  for (let k = 0; k < 5; k++) for (const o of lite ? [0] : [-0.09, 0.09]) rimParts.push(new THREE.BoxGeometry(0.035, 0.22, 0.03).translate(0, 0.13, 0.11).rotateZ(k / 5 * Math.PI * 2 + o));
   const rim = mergeGeometries(rimParts.map(clean)), hub = new THREE.CylinderGeometry(0.05, 0.05, 0.03, 12).rotateX(Math.PI / 2).translate(0, 0, 0.125);
   const wheels = [];
   for (const x of [wx, -wx]) for (const s of [-1, 1]) wheels.push({ x, s, z: s * (hw * planK(S, x) - 0.12) });

@@ -3,9 +3,10 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { SITE, SEASON } from './config.js';
 import { pavingTexture } from './patio.js';
 import { registerSnow } from './seasons.js';
+import { buildCar, MEGANE } from './carmodel.js';
 
 // Life on the street (#113, SITE.life): the car park (one row along the shrubs, #208) with parked cars (instanced: a body with a colour per car,
-// the glass/black parts, the wheels — three draw calls), its white stall lines, bikes by Hus L's entrances and in
+// trim, glass, tyres — four draw calls; the bodies from carmodel.js, #251), its white stall lines, bikes by Hus L's entrances and in
 // racks on the square in front of Hus C (two draw calls), the square's paving, corten beds and sitting steps.
 // Returns { object, segments } (the parked cars block the way).
 
@@ -17,13 +18,19 @@ const flat = (x0, x1, z0, z1, y) => new THREE.PlaneGeometry(x1 - x0, z1 - z0).ro
 
 function rng(seed) { let s = seed; return () => ((s = (s * 16807) % 2147483647) / 2147483647); }
 
-/** One car, facing +x: [body, glass + trim, wheels] geometries. */
+/** One parked car, facing +x (#251): the body from carmodel.js (lite), as [paint, trim (vertex colours: black, lights,
+ * chrome, rims), glass, tyres] geometries for instancing. */
+const TRIM = { black: 0x0c0d0f, roof: 0x0b0c0e, lens: 0x15181c, led: 0xdfe4ea, blink: 0xc87a10, tail: 0x8a0f12, chrome: 0xd9dde0, rim: 0x8e949a };
 function carGeometry() {
-  const body = merge([box(4.3, 0.62, 1.8, 0, 0.62, 0), box(2.3, 0.08, 1.56, -0.25, 1.4, 0)]);
-  const glass = merge([box(2.2, 0.46, 1.6, -0.25, 1.16, 0), box(4.32, 0.1, 1.82, 0, 0.36, 0)]);
-  const wheel = new THREE.CylinderGeometry(0.33, 0.33, 0.22, 14).rotateX(Math.PI / 2);
-  const wheels = merge([[1.4, 0.8], [1.4, -0.8], [-1.4, 0.8], [-1.4, -0.8]].map(([x, z]) => wheel.clone().translate(x, 0.33, z)));
-  return [body, glass, wheels];
+  const { parts } = buildCar(MEGANE, { lite: true });
+  const trim = Object.entries(TRIM).filter(([k]) => parts[k]).map(([k, hex]) => {
+    const g = keep(parts[k]), c = new THREE.Color(hex), n = g.attributes.position.count, col = new Float32Array(n * 3);
+    for (let i = 0; i < n; i++) col.set([c.r, c.g, c.b], i * 3);
+    g.deleteAttribute('uv'); g.setAttribute('color', new THREE.BufferAttribute(col, 3));
+    return g;
+  });
+  const bare = (g) => { g = keep(g); g.deleteAttribute('uv'); return g; };
+  return [bare(parts.paint), mergeGeometries(trim), bare(parts.glass), bare(parts.tyre)];
 }
 
 /** One bike along +x: [frame, tyres]. */
@@ -56,7 +63,7 @@ export function buildStreetLife() {
       if (R() > L.fill) continue;
       const cx = x + lot.stall / 2, cz = (row.z0 + row.z1) / 2 + (R() - 0.5) * 0.3;
       const yaw = row.yaw + (R() - 0.5) * 0.06 + (R() < 0.2 ? Math.PI : 0); // a few reversed in
-      cars.push(new THREE.Matrix4().compose(new THREE.Vector3(cx, 0, cz), new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), yaw), new THREE.Vector3(1, 1, 1)));
+      cars.push(new THREE.Matrix4().compose(new THREE.Vector3(cx, 0, cz), new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), yaw), new THREE.Vector3(0.94 + R() * 0.1, 0.95 + R() * 0.12, 0.96 + R() * 0.07))); // a little variety in size (#251)
       carColors.push(L.carColors[Math.floor(R() * L.carColors.length)]);
       const hx = 0.92, hz = 2.17; // footprint (turned 90°: across x)
       const c = [[cx - hx, cz - hz], [cx + hx, cz - hz], [cx + hx, cz + hz], [cx - hx, cz + hz]];
@@ -64,10 +71,11 @@ export function buildStreetLife() {
     }
   }
   group.add(new THREE.Mesh(merge(lines), white));
-  const [body, glass, wheels] = carGeometry();
-  group.add(instanced(body, new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3, metalness: 0.35 }), cars, carColors),
-    instanced(glass, new THREE.MeshStandardMaterial({ color: 0x1a2028, roughness: 0.15, metalness: 0.4 }), cars),
-    instanced(wheels, new THREE.MeshStandardMaterial({ color: 0x141518, roughness: 0.7 }), cars));
+  const [body, trim, glass, carTyres] = carGeometry();
+  group.add(instanced(body, new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.25, metalness: 0.35 }), cars, carColors),
+    instanced(trim, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.3, metalness: 0.45 }), cars),
+    instanced(glass, new THREE.MeshStandardMaterial({ color: 0x33495c, roughness: 0.05, metalness: 0.55 }), cars),
+    instanced(carTyres, new THREE.MeshStandardMaterial({ color: 0x141517, roughness: 0.85 }), cars));
   // the square in front of Hus C: light stone paving, corten beds with shrubs, sitting steps
   const sq = L.square, tex = pavingTexture();
   tex.wrapS = tex.wrapT = THREE.RepeatWrapping;

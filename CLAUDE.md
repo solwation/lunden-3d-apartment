@@ -296,7 +296,9 @@ src/plants.js          SillPot (#185): each window-board pot is a Holdable; its 
 src/carmodel.js        car bodies from a side profile (#250, MEGANE: `top` / `belt` / `bot` lines, wheel arches, plan rounding, a
                        shoulder, the glasshouse leaning in): `buildCar(spec, { doors })` — with doors: four hinged doors (lower
                        panel, black frame + glass, handle, mirror), the cabin (dashboard, OpenR screens, steering wheel on the
-                       left, console, front seats, rear bench); without: a closed body as per-material geometries (`parts`)
+                       left, console, front seats, rear bench); without: a closed body as per-material geometries (`parts`);
+                       `lite` (#251) = coarser (~5k triangles) for the parked cars (streetlife.js: paint / trim in vertex
+                       colours / glass / tyres, instanced, a little variety in size)
 src/car.js             our white Renault Megane E-Tech (CAR, #173; the model from carmodel.js, #250): parked, E on a door opens /
                        shuts it (kind 'cardoor', `car.targets()`), E on a front seat whose door is open sits you in it (rest.js,
                        looking ahead; getting up puts you back by the door); not drivable; the key shuts open doors before it
