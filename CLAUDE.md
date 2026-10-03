@@ -95,6 +95,7 @@ src/keep.js            the world's state across a page-made reload (#277): saveW
 src/reset.js           "Återställ" on the start screen (#303): clears every local 'lunden.*' key except RESET_KEEP (config)
 src/cat.js             the cat: random coat, washing animation, appears/moves/vanishes behind doors
 src/furniture.js       loose furniture from FURNITURE in config (IKEA LANDSKRONA sofa/armchair …)
+src/rugs.js            the rugs furniture.js built (#55, #310): `rugLift(level, x, z)` = a shown rug's top over the floor there
 src/cushions.js        decorative cushions (one atlas material: leaf print | waffle | plain, vertex-colour tint) and the grey
                        waffle throws (folded on the chaise, draped over the armchair's arm) for the LANDSKRONA pieces (CUSHIONS, #278)
 src/interior.js        fitted kitchen, laundry, bathroom fittings, tiled floors/walls (FINISH, KITCHEN,
@@ -737,7 +738,8 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   the window (#60), and a Philips 43" PQS7801 on the west wall across from the bed (#213, black frame, Ambilight #223):
   "sätta dig upp i sängen" (look at the bed's foot half; `aim` on a rest spot) puts it on, getting up puts it off; Pingping, a navy
   penguin cushion, sits between the pillows (#269, docs/pingping-pingvinkudde.jpg) · Sovrum 3 (second right) Livia & Tuva, bunk (unicorn sheets), an IKEA ALEX desk under the window
-  with crafts and a kids' chair (#92) ·
+  with crafts and a kids' chair (#92), a round dusty-pink short-pile rug Ø 160 (guess) partly under the bunk, desk and chair
+  (#310, `shape: 'round'` on a `rug` item; `src/rugs.js` `rugLift`: the cat's floor spots and things put on the floor stand on a rug) ·
   Sovrum 2 (first left) Walter & Kian, bunk (Darth Vader sheets), a gaming desk with a PC along the west wall, short end to the window (#77, #84): sitting in its chair starts the
   PC; a sit spot in the lower bunk (`watch`, a spot `kind` can differ from its piece) swings the monitor arm round and plays a film;
   a lightsaber on hooks on the west wall north of the desk (#78) · Sovrum 4 (second left, ex Allrum) Tilly (15), IKEA HEMNES

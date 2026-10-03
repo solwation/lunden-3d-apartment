@@ -12,6 +12,7 @@ import { Screen } from './screens.js';
 import { Openable } from './openables.js';
 import { rifleModel } from './rifle.js';
 import { laptop } from './laptop.js';
+import { registerRug } from './rugs.js';
 import { pingpingModel } from './pingping.js';
 import { drawerFill, personFor, Pack as StuffPack, garment, shoes, stack, rolls, rng } from './stuff.js';
 import { Pack, byasDrawer, byasMiddle, bestaContents, attachContents } from './contents.js';
@@ -2349,14 +2350,66 @@ function rugTexture(item) {
   return tex;
 }
 
+/**
+ * Short-pile texture (#310): the base colour mottled by soft light/dark clouds (the velvety sheen of a pile brushed
+ * different ways) and fine flecks; the same clouds, grey, as a roughness map (brushed-flat patches a little smoother).
+ */
+function pileTextures(item) {
+  const n = 1024, map = document.createElement('canvas'), rough = document.createElement('canvas');
+  map.width = map.height = rough.width = rough.height = n;
+  const g = map.getContext('2d'), r = rough.getContext('2d');
+  g.fillStyle = item.color; g.fillRect(0, 0, n, n);
+  r.fillStyle = '#f2f2f2'; r.fillRect(0, 0, n, n);
+  let seed = item.seed ?? 31;
+  const rand = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+  for (let i = 0; i < 260; i++) { // the clouds
+    const x = rand() * n, y = rand() * n, rad = 30 + rand() * 110, light = rand() < 0.5, a = 0.05 + rand() * 0.07;
+    for (const [ctx, col] of [[g, light ? '255,235,232' : '120,70,70'], [r, light ? '170,170,170' : '255,255,255']]) {
+      const gr = ctx.createRadialGradient(x, y, 0, x, y, rad);
+      gr.addColorStop(0, `rgba(${col},${ctx === g ? a : a * 2.5})`); gr.addColorStop(1, `rgba(${col},0)`);
+      ctx.fillStyle = gr; ctx.fillRect(x - rad, y - rad, 2 * rad, 2 * rad);
+    }
+  }
+  for (let i = 0; i < 90000; i++) { // the pile: tiny tufts
+    g.fillStyle = rand() < 0.5 ? 'rgba(255,240,236,0.10)' : 'rgba(90,45,45,0.09)';
+    g.fillRect(rand() * n, rand() * n, 1 + rand() * 2, 1 + rand() * 2);
+  }
+  const tex = new THREE.CanvasTexture(map), rtex = new THREE.CanvasTexture(rough);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = rtex.anisotropy = 8;
+  return { map: tex, roughnessMap: rtex };
+}
+
+/** Round rug (#310): a disc d across, h high, its rim rounded off (a lathe), UVs laid flat over the disc. */
+function roundRug(item) {
+  const g = new THREE.Group(), R = item.d / 2, h = item.h, e = Math.min(h * 0.75, 0.01);
+  const pts = [new THREE.Vector2(0, h)];
+  for (let i = 0; i <= 8; i++) { // the rounded rim: a quarter circle from the top down the side
+    const a = (i / 8) * Math.PI / 2;
+    pts.push(new THREE.Vector2(R - e + e * Math.sin(a), h - e + e * Math.cos(a)));
+  }
+  pts.push(new THREE.Vector2(R, 0));
+  const geo = new THREE.LatheGeometry(pts.reverse(), 128); // bottom → top, so the faces point out and up
+  const pos = geo.attributes.position, uv = geo.attributes.uv;
+  for (let i = 0; i < pos.count; i++) uv.setXY(i, pos.getX(i) / item.d + 0.5, pos.getZ(i) / item.d + 0.5);
+  const m = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ ...pileTextures(item), roughness: 1 }));
+  m.position.y = 0.002; // above the floor and its AO overlay
+  m.receiveShadow = true;
+  g.add(m);
+  registerRug(item, g);
+  return g;
+}
+
 /** Big rug: a thin slab (w along local x, d along z), walked over (no footprint). */
 function rug(item) {
+  if (item.shape === 'round') return roundRug(item);
   const g = new THREE.Group();
   const m = new THREE.Mesh(new THREE.BoxGeometry(item.w, item.h, item.d),
     new THREE.MeshStandardMaterial({ map: rugTexture(item), roughness: 1 }));
   m.position.y = item.h / 2 + 0.002; // above the floor and its AO overlay
   m.receiveShadow = true;
   g.add(m);
+  registerRug(item, g);
   return g;
 }
 

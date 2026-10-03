@@ -8,6 +8,7 @@ import { watchForUpdates, BUILD } from './version.js';
 import { CatSpawner, VARIANTS, BREEDS } from './cat.js';
 import { initAudio, sfx, toggleMuted, isMuted, updateListener } from './audio.js';
 import { stairHeight } from './stairs.js';
+import { rugLift } from './rugs.js';
 import { loadChangelog, renderChangelog, buildNote, scrollNote } from './changelog.js';
 import { setScoreElement, totalScore, setStatsExtra, stats, bump, badge, catFound, secretFound, renderStats, resetStats, visitRoom, setRoomTotal, setBadgeElement, penalize } from './stats.js';
 import { Minimap } from './minimap.js';
@@ -337,7 +338,7 @@ function floorSpot() {
   const d = floorHit.distanceTo(camera.position);
   const h = STAIR.hole;
   if (d > HOLD.reach || (lv === 1 && floorHit.x > h.x0 && floorHit.x < h.x1 && floorHit.z > h.z0 && floorHit.z < h.z1)) return null;
-  return { point: floorHit.clone(), distance: d };
+  return { point: floorHit.clone().setY(y + rugLift(lv, floorHit.x, floorHit.z)), distance: d }; // on a rug: on top of it (#310)
 }
 const drawing = new Drawing(scene, camera); // crayons on the paper on the desk in Sovrum 3 (#93)
 const measure = new Measure(scene, camera, [world.object], document.getElementById('measure'));

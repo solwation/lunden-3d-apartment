@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { LEVELS, CAT_FISH, CAT_LEAVE, CAT_FURNITURE, CAT_WALK, CAT_TAIL_UP, CAT_HURT, REST } from './config.js';
 import { stairHeight } from './stairs.js';
+import { rugLift } from './rugs.js';
 import { sfx } from './audio.js';
 
 // A cat (random coat) that sometimes turns up behind a door you open, sitting and
@@ -512,7 +513,7 @@ export class CatSpawner {
       if (segs.some((s) => distToSeg(x, z, s) < 0.24)) continue;
       if (segs.some((s) => segIntersect(sx, sz, x, z, s))) continue;
       const yaw = Math.atan2(center[0] - x, center[1] - z) + (this.rand() - 0.5) * 1.6;
-      return { x, y: y0, z, yaw };
+      return { x, y: y0 + rugLift(level, x, z), z, yaw }; // on top of a rug, not in it (#310)
     }
     return null;
   }
