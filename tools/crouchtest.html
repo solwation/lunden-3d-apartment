@@ -51,6 +51,8 @@ f.onload = async () => {
   pass &= check(c.defaultPrevented && !rest.active && !player.crouch, 'seated: C gets you up, held it does not crouch');
   key('keyup', 'KeyC');
   pass &= check(leave(), 'mid-visit: leaving (Ctrl+W, closing the tab) asks first');
+  w.dispatchEvent(new w.KeyboardEvent('keydown', { code: 'F5', key: 'F5' }));
+  pass &= check(!leave(), 'mid-visit: F5 reloads without asking (it carries on, #203)');
   pass &= check(/<kbd>C<\/kbd><\/span><span>håll inne för att huka dig/.test(d.querySelector('.keys').innerHTML), 'C in the start-screen key list');
   // the page's own reload for a new version goes through
   let went = null;

@@ -1251,6 +1251,11 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 // Ctrl+W by mistake (#274): the browser keeps Ctrl+W to itself, so while a visit runs (not on the start screen) leaving
 // the page asks first; the page's own reloads (a new version, "Ladda om") set `reloading` and go through
 let reloading = false;
+// F5 / Ctrl+R mid-visit is a reload that carries on (#203), not leaving: no question for it (the browser's own reload
+// button cannot be told from closing the tab, so that one still asks)
+window.addEventListener('keydown', (e) => {
+  if (e.code === 'F5' || (e.code === 'KeyR' && (e.ctrlKey || e.metaKey))) reloading = true;
+}, true);
 window.addEventListener('beforeunload', (e) => {
   if (reloading || !played || !overlay.hidden) return;
   e.preventDefault();
