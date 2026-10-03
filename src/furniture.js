@@ -4,7 +4,7 @@ import { mergeStatic } from './merge.js';
 import { restTarget } from './rest.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { addCushions, addFoldedThrow, addDrapedThrow } from './cushions.js';
-import { CUSHIONS, FURNITURE, LANDSKRONA as L, LEVELS, SKANSNAS, IDANAS, PINGPING, MYDAL, OTTOMAN, SYMFONISK, SECRET, NYMANE_WALL, MALM_DECO, YUCCA, LANGLAMPA, VANITY } from './config.js';
+import { CUSHIONS, FURNITURE, LANDSKRONA as L, LEVELS, SKANSNAS, IDANAS, PINGPING, MYDAL, OTTOMAN, SYMFONISK, SECRET, NYMANE_WALL, MALM_DECO, YUCCA, LANGLAMPA, VANITY, HEMNES_DAYBED, KPOP_POSTERS } from './config.js';
 import { mirrorMaterial } from './mirror.js';
 import { addReflector } from './reflections.js';
 import { loungesofa, loungetable, parasol, planter } from './patio.js';
@@ -869,57 +869,362 @@ function bunk(item) {
   return g;
 }
 
-const pinks = [0xf6b8cf, 0xf29bbb, 0xfbd3e1, 0xe983a8].map((c) => new THREE.MeshStandardMaterial({ color: c, roughness: 0.95 }));
+/** UVs in units of (sx, sy) metres from the geometry's own positions (faces turned towards ±x use z across), so a
+ * repeating texture keeps its scale whatever the box's size (#280: beadboard grooves, the bedspread print). */
+function metreUV(geo, sx = 1, sy = 1) {
+  const p = geo.attributes.position, n = geo.attributes.normal, uv = geo.attributes.uv;
+  for (let i = 0; i < p.count; i++) {
+    const nx = Math.abs(n.getX(i)), ny = Math.abs(n.getY(i));
+    uv.setXY(i, (nx > 0.5 ? p.getZ(i) : p.getX(i)) / sx, (ny > 0.5 ? p.getZ(i) : p.getY(i)) / sy);
+  }
+  return geo;
+}
 
-/** IKEA HEMNES daybed with 3 drawers, white, 207 × 89 × 83 cm, seat facing +z, pink cushions. */
+const repeatTex = (c) => {
+  const t = new THREE.CanvasTexture(c);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.anisotropy = 8;
+  return t;
+};
+
+/** HEMNES beadboard: one groove (a dark line with a lit edge beside it) per texture width. */
+function beadTexture() {
+  const c = document.createElement('canvas');
+  c.width = 32; c.height = 4;
+  const g = c.getContext('2d');
+  g.fillStyle = '#f3f2ee'; g.fillRect(0, 0, 32, 4);
+  g.fillStyle = '#c3c2bb'; g.fillRect(0, 0, 2, 4);
+  g.fillStyle = '#dcdbd5'; g.fillRect(2, 0, 1, 4);
+  g.fillStyle = '#ffffff'; g.fillRect(3, 0, 2, 4);
+  return repeatTex(c);
+}
+
+/** Tilly's bedspread (#280): charcoal checks, lilac lightning bolts and white sparkles; one tile = 0.6 m. */
+function spreadTexture(C) {
+  const c = document.createElement('canvas');
+  c.width = c.height = 512;
+  const g = c.getContext('2d');
+  g.fillStyle = C.spread; g.fillRect(0, 0, 512, 512);
+  g.fillStyle = 'rgba(255,255,255,0.045)';
+  for (let i = 0; i < 8; i++) for (let j = 0; j < 8; j++) if ((i + j) % 2) g.fillRect(i * 64, j * 64, 64, 64);
+  const bolt = (x, y, s, a) => {
+    g.save(); g.translate(x, y); g.rotate(a); g.scale(s, s);
+    g.fillStyle = C.bolt;
+    g.beginPath(); g.moveTo(8, -40); g.lineTo(-14, 4); g.lineTo(0, 4); g.lineTo(-8, 40); g.lineTo(16, -6); g.lineTo(2, -6); g.closePath(); g.fill();
+    g.restore();
+  };
+  const sparkle = (x, y, r) => {
+    g.fillStyle = C.star;
+    g.beginPath();
+    for (let k = 0; k < 8; k++) { const a = (k * Math.PI) / 4, rr = k % 2 ? r * 0.25 : r; g.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr); }
+    g.fill();
+  };
+  // drawn again one tile over on every side, so the print repeats without seams
+  for (const [x, y, s, a] of [[110, 120, 1.3, 0.35], [360, 230, 1.1, -0.3], [200, 400, 1.2, 0.15], [470, 470, 0.9, 0.5]])
+    for (const dx of [-512, 0, 512]) for (const dy of [-512, 0, 512]) bolt(x + dx, y + dy, s, a);
+  for (const [x, y, r] of [[250, 90, 14], [60, 300, 11], [420, 60, 9], [320, 360, 12], [140, 220, 7], [470, 300, 8], [30, 470, 9], [300, 500, 7]])
+    for (const dx of [-512, 0, 512]) for (const dy of [-512, 0, 512]) sparkle(x + dx, y + dy, r);
+  return repeatTex(c);
+}
+
+const HANGUL = "'Malgun Gothic', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Noto Sans CJK KR', 'WenQuanYi Zen Hei', sans-serif";
+
+/** A small canvas for a cushion face: 'holo' (a holographic lilac–aqua–pink sheen) or 'graphic' (white, a black
+ * badge with a lilac sparkle and a little Korean emoticon). */
+function cushionTexture(kind) {
+  const c = document.createElement('canvas');
+  c.width = c.height = 256;
+  const g = c.getContext('2d');
+  if (kind === 'holo') {
+    const gr = g.createLinearGradient(0, 0, 256, 256);
+    for (const [t, col] of [[0, '#c6b3ff'], [0.3, '#a9f0ff'], [0.55, '#f6c2ff'], [0.8, '#b9a6ff'], [1, '#d6fff4']]) gr.addColorStop(t, col);
+    g.fillStyle = gr; g.fillRect(0, 0, 256, 256);
+  } else {
+    g.fillStyle = '#f2f0ec'; g.fillRect(0, 0, 256, 256);
+    g.fillStyle = '#17171a'; g.beginPath(); g.arc(128, 118, 70, 0, Math.PI * 2); g.fill();
+    g.fillStyle = '#b79cff';
+    g.beginPath();
+    for (let k = 0; k < 8; k++) { const a = (k * Math.PI) / 4, rr = k % 2 ? 12 : 44; g.lineTo(128 + Math.cos(a) * rr, 118 + Math.sin(a) * rr); }
+    g.fill();
+    g.fillStyle = '#17171a'; g.textAlign = 'center';
+    g.font = `bold 30px ${HANGUL}`;
+    g.fillText('ㅇㅅㅇ', 128, 228);
+  }
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+}
+
+/** A round faux-fur cushion: a squashed sphere with a shaggy, noisy surface (seam vertices share the noise). */
+function furCushion(r, mat) {
+  const geo = new THREE.SphereGeometry(r, 28, 18);
+  const p = geo.attributes.position, v = new THREE.Vector3();
+  const hash = (x, y, z) => { const s = Math.sin(x * 127.1 + y * 311.7 + z * 74.7) * 43758.5453; return s - Math.floor(s); };
+  for (let i = 0; i < p.count; i++) {
+    v.fromBufferAttribute(p, i);
+    const k = 1 + (hash(Math.round(v.x * 1e3), Math.round(v.y * 1e3), Math.round(v.z * 1e3)) - 0.5) * 0.14;
+    p.setXYZ(i, v.x * k, v.y * k * 0.85, v.z * k * 0.45);
+  }
+  geo.computeVertexNormals();
+  return new THREE.Mesh(geo, mat);
+}
+
+const HD = HEMNES_DAYBED;
+const dayMats = {};
+function daybedMats() {
+  if (dayMats.bead) return dayMats;
+  const C = HD.colors, std = (o) => new THREE.MeshStandardMaterial({ roughness: 0.95, ...o });
+  Object.assign(dayMats, {
+    bead: new THREE.MeshStandardMaterial({ map: beadTexture(), roughness: 0.6 }),
+    mattress: std({ color: C.mattress }),
+    spread: std({ map: spreadTexture(C), roughness: 0.9 }),
+    knob: new THREE.MeshStandardMaterial({ color: C.knob, roughness: 0.35, metalness: 0.6 }),
+    black: std({ color: C.black }),
+    holo: new THREE.MeshStandardMaterial({ map: cushionTexture('holo'), roughness: 0.3, metalness: 0.35 }),
+    graphic: std({ map: cushionTexture('graphic') }),
+    fur: std({ color: C.fur, roughness: 1 }),
+    pink: std({ color: C.pink }),
+  });
+  return dayMats;
+}
+
+/** IKEA HEMNES daybed with 3 drawers / 2 mattresses, white, 207 × 89 × 83 cm (#280, docs/hemnes-dagbadd-vit.jpg),
+ * seat facing +z: beadboard back and ends in a flat frame with a top rail, an arched apron under the quilted top
+ * mattress, the pull-out's mattress behind it, three drawers with round knobs; Tilly's charcoal and lilac bedding. */
 function daybed() {
-  const g = new THREE.Group();
-  const W = 2.07, D = 0.89, H = 0.83, z0 = -D / 2, z1 = D / 2;
-  // the base: a hollow box (top, back, plinth, dividers) with three drawers that open with E — basketball shoes and
-  // hair things in them (the user; stuff.js)
-  const bw = W - 0.1, fw = bw / 3 - 0.02, depth = D - 0.16;
-  g.add(rbox(bw, 0.02, D - 0.04, 0, 0.32, 0, whiteWood, 0.004));                 // top under the mattress
-  g.add(rbox(bw, 0.015, D - 0.04, 0, 0.035, 0, whiteWood, 0.003));               // bottom
-  g.add(rbox(bw, 0.27, 0.02, 0, 0.18, z0 + 0.03, whiteWood, 0.004));             // back
-  g.add(rbox(bw, 0.03, 0.02, 0, 0.045, z1 - 0.03, whiteWood, 0.004));            // plinth under the fronts
-  for (let i = 1; i < 3; i++) g.add(rbox(0.02, 0.27, D - 0.08, -bw / 2 + (bw * i) / 3, 0.18, 0, whiteWood, 0.003)); // dividers
-  for (const sx of [-1, 1]) g.add(rbox(0.02, 0.29, D - 0.04, sx * (bw / 2 - 0.01), 0.175, 0, whiteWood, 0.003)); // ends
+  const g = new THREE.Group(), M = daybedMats();
+  const { W, D, H } = HD, z0 = -D / 2, z1 = D / 2;
+  const bead = (w, h, d, x, y, z) => {
+    const m = new THREE.Mesh(metreUV(new THREE.BoxGeometry(w, h, d), HD.groove, 1), M.bead);
+    m.position.set(x, y, z);
+    g.add(m);
+  };
+  // the ends: posts front and back, a frame round a beadboard panel, a cap overhanging outwards and at the front
+  const xe = W / 2 - 0.03, iw = W - 0.12; // the ends' centre line; the width between them
+  for (const s of [-1, 1]) {
+    const x = s * xe;
+    for (const z of [z0 + 0.03, z1 - 0.03]) g.add(rbox(0.06, H - 0.02, 0.06, x, (H - 0.02) / 2, z, whiteWood, 0.006));
+    g.add(rbox(0.05, 0.07, D - 0.1, x, H - 0.075, 0, whiteWood, 0.004));    // top rail
+    g.add(rbox(0.05, 0.06, D - 0.1, x, 0.07, 0, whiteWood, 0.004));         // bottom rail
+    bead(0.02, H - 0.21, D - 0.1, x, 0.1 + (H - 0.21) / 2, 0);              // panel
+    g.add(rbox(0.085, 0.025, D + 0.02, x + s * 0.0125, H - 0.0125, 0.01, whiteWood, 0.005)); // cap
+  }
+  // the back: top rail with a thin cap, a beadboard panel down to a rail behind the mattress, closed below
+  const zb = z0 + 0.03, [m0, m1] = HD.mattress;
+  g.add(rbox(iw, 0.07, 0.045, 0, H - 0.075, zb, whiteWood, 0.004));
+  g.add(rbox(iw, 0.02, 0.065, 0, H - 0.01, zb + 0.005, whiteWood, 0.004));
+  g.add(rbox(iw, 0.06, 0.045, 0, m0 - 0.01, zb, whiteWood, 0.004));
+  bead(iw, H - 0.11 - m0, 0.018, 0, (H - 0.11 + m0) / 2, zb);
+  g.add(rbox(iw, m0 - 0.04, 0.02, 0, (m0 - 0.04) / 2 + 0.02, zb, whiteWood, 0.004));
+  // the base: bottom, a deck over the drawers carrying the pull-out mattress, dividers, a set-back plinth
+  const [dy, dh] = HD.drawer, bw = iw - 0.01, fw = bw / 3 - 0.012, depth = D - 0.16;
+  g.add(rbox(bw, 0.015, D - 0.06, 0, 0.035, 0, whiteWood, 0.003));
+  g.add(rbox(bw, 0.02, D - 0.06, 0, dy + dh + 0.012, -0.01, whiteWood, 0.003));
+  g.add(rbox(bw, 0.035, 0.02, 0, 0.025, z1 - 0.04, whiteWood, 0.003));
+  for (let i = 1; i < 3; i++) g.add(rbox(0.02, dh, D - 0.08, -bw / 2 + (bw * i) / 3, dy + dh / 2, -0.01, whiteWood, 0.003));
   ['basketshoes', 'hair', 'basketshoes'].forEach((fill, i) => {
     const x = -bw / 2 + bw * (i + 0.5) / 3;
-    addDrawer(g, 'lådan', { x, y: 0.06, zf: z1 - 0.01, w: fw, h: 0.24, depth, front: whiteWood, out: 0.55,
-      grip: (o) => o.add(rbox(0.12, 0.02, 0.02, 0, 0.2, 0.01, metal, 0.005)), fill, who: 'Sovrum 4', seed: 120 + i * 7 });
+    addDrawer(g, 'lådan', { x, y: dy, zf: z1 - 0.005, w: fw, h: dh, depth, front: whiteWood, out: 0.55, fill, who: 'Sovrum 4', seed: 120 + i * 7,
+      grip: (o) => { const k = new THREE.Mesh(new THREE.SphereGeometry(HD.knob / 2, 16, 10), M.knob); k.scale.z = 0.7; k.position.set(0, dh / 2, 0.01); o.add(k); } });
   });
-  // ends with spindles, back with spindles, top rails
-  for (const s of [-1, 1]) {
-    const x = s * (W / 2 - 0.03);
-    for (const z of [z0 + 0.03, z1 - 0.03]) g.add(rbox(0.06, H, 0.06, x, H / 2, z, whiteWood, 0.01));
-    g.add(rbox(0.05, 0.06, D - 0.06, x, H - 0.03, 0, whiteWood, 0.01));
-    for (let k = 1; k < 5; k++) g.add(rbox(0.025, H - 0.4, 0.025, x, 0.35 + (H - 0.4) / 2, z0 + (D * k) / 5, whiteWood, 0.005));
-  }
-  g.add(rbox(W - 0.06, 0.06, 0.05, 0, H - 0.03, z0 + 0.03, whiteWood, 0.01));
-  for (let k = 1; k < 14; k++) g.add(rbox(0.025, H - 0.4, 0.025, -W / 2 + (W * k) / 14, 0.35 + (H - 0.4) / 2, z0 + 0.03, whiteWood, 0.005));
-  // mattress (two ÅFJÄLL stacked when closed) and cushions
-  g.add(rbox(W - 0.14, 0.2, D - 0.1, 0, 0.43, 0.02, linen, 0.05));
-  const cushions = [[-0.6, 0.42, 0], [-0.15, 0.4, 1], [0.32, 0.44, 2], [0.75, 0.36, 3]];
-  for (const [x, size, i] of cushions) {
-    const c = rbox(size, size, 0.14, x, 0.53 + size / 2, z0 + 0.15, pinks[i], 0.06);
-    c.rotation.x = -0.18;
+  const [p0, p1] = HD.pullout;
+  g.add(rbox(bw - 0.02, p1 - p0, D - 0.12, 0, (p0 + p1) / 2, -0.02, M.mattress, 0.025)); // the pull-out's mattress
+  // the arched apron under the top mattress (a flat board, its lower edge curving up to the middle)
+  const [a0, a1, a2] = HD.apron, shape = new THREE.Shape();
+  shape.moveTo(-iw / 2, a0); shape.lineTo(-iw / 2, a2); shape.lineTo(iw / 2, a2); shape.lineTo(iw / 2, a0);
+  shape.quadraticCurveTo(0, 2 * a1 - a0, -iw / 2, a0);
+  const apron = new THREE.Mesh(new THREE.ExtrudeGeometry(shape, { depth: 0.02, bevelEnabled: false, curveSegments: 16 }), whiteWood);
+  apron.position.z = z1 - 0.05;
+  g.add(apron);
+  g.add(rbox(iw, 0.02, D - 0.08, 0, a2 - 0.01, -0.01, whiteWood, 0.003)); // the slatted base under the top mattress
+  // the top mattress (ÅFJÄLL), quilted in channels across
+  const n = HD.channels, cw = (iw - 0.01) / n, mz = 0.01, md = D - 0.1;
+  for (let i = 0; i < n; i++) g.add(rbox(cw + 0.02, m1 - m0, md, -(iw - 0.01) / 2 + cw * (i + 0.5), (m0 + m1) / 2, mz, M.mattress, 0.03));
+  // the bedspread over the foot end (+x), down over the front edge
+  const sx0 = -0.48, sx1 = iw / 2 - 0.005, st = 0.025, front = mz + md / 2;
+  const spread = (w, h, d, x, y, z) => {
+    const m = new THREE.Mesh(metreUV(new RoundedBoxGeometry(w, h, d, 2, 0.01), 0.6, 0.6), M.spread);
+    m.position.set(x, y, z);
+    g.add(m);
+  };
+  spread(sx1 - sx0, st, md - 0.02, (sx0 + sx1) / 2, m1 + st / 2, mz + 0.01);
+  spread(sx1 - sx0, 0.17, 0.02, (sx0 + sx1) / 2, m1 + st - 0.085, front + 0.012);
+  // cushions against the back: black, holographic lilac, a graphic one, a faux-fur one, a small muted pink one
+  const cushion = (w, h, d, x, y, z, mat, tilt, roll = 0) => {
+    const c = rbox(w, h, d, x, y, z, mat, 0.06);
+    c.rotation.set(tilt, 0, roll);
     g.add(c);
-  }
-  // a small round cushion and a heart-ish one in front
-  const round = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 0.1, 24), pinks[2]);
-  round.rotation.x = Math.PI / 2 - 0.3;
-  round.position.set(0.05, 0.68, z0 + 0.3);
-  g.add(round);
-  for (const s of [-1, 1]) {
-    const lobe = rbox(0.12, 0.12, 0.08, s * 0.05 - 0.45, 0.62, z0 + 0.32, pinks[1], 0.05);
-    lobe.rotation.z = s * 0.6; // two tilted lobes = a little heart
-    g.add(lobe);
-  }
+  };
+  cushion(0.46, 0.46, 0.15, -0.66, m1 + 0.22, z0 + 0.16, M.black, -0.18);
+  cushion(0.46, 0.46, 0.14, -0.2, m1 + 0.22, z0 + 0.17, M.holo, -0.2, 0.05);
+  cushion(0.42, 0.42, 0.13, 0.27, m1 + st + 0.2, z0 + 0.17, M.graphic, -0.2, -0.04);
+  const fur = furCushion(0.19, M.fur);
+  fur.position.set(0.68, m1 + st + 0.15, z0 + 0.2);
+  fur.rotation.x = -0.25;
+  g.add(fur);
+  cushion(0.34, 0.2, 0.1, -0.42, m1 + 0.11, z0 + 0.34, M.pink, -0.35, 0.08);
   g.traverse((m) => { m.castShadow = m.receiveShadow = true; });
   // Tilly's daybed (#72): lie along it, head at the −x end (feet towards +x)
-  g.userData.rest = { kind: 'lie', name: 'dagbädden', verb: 'lägga dig i', spots: [{ x: -W / 2 + 0.35, y: 0.5, z: 0, dir: [1, 0] }] };
+  g.userData.rest = { kind: 'lie', name: 'dagbädden', verb: 'lägga dig i', spots: [{ x: -W / 2 + 0.35, y: m1, z: 0, dir: [1, 0] }] };
   g.userData.footprint = [{ x0: -W / 2, x1: W / 2, z0, z1 }];
+  return g;
+}
+
+/** Tilly's K-pop posters (#280, KPOP_POSTERS): invented groups drawn on one canvas atlas (3 × 2 cells of 512 × 724,
+ * the A-paper ratio), each with tape in its corners. */
+const POSTER_ART = ['nova', 'moon', 'bloom', 'lumi', 'starlyt'];
+function kposterTexture() {
+  const PW = 512, PH = 724, c = document.createElement('canvas');
+  c.width = PW * 3; c.height = PH * 2;
+  const g = c.getContext('2d');
+  const LATIN = "'Arial Black', 'Helvetica Neue', Arial, sans-serif";
+  let seed = 280;
+  const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+  const text = (t, x, y, size, fill, { font = LATIN, weight = 'bold', stroke, glow, align = 'center' } = {}) => {
+    g.font = `${weight} ${size}px ${font}`; g.textAlign = align; g.textBaseline = 'middle';
+    if (glow) { g.shadowColor = glow; g.shadowBlur = size * 0.35; }
+    g.fillStyle = fill; g.fillText(t, x, y);
+    g.shadowBlur = 0;
+    if (stroke) { g.strokeStyle = stroke; g.lineWidth = Math.max(2, size / 30); g.strokeText(t, x, y); }
+  };
+  const grad = (x0, y0, x1, y1, stops) => { const gr = g.createLinearGradient(x0, y0, x1, y1); stops.forEach(([t, col]) => gr.addColorStop(t, col)); return gr; };
+  // a stylised figure: head, neck and shoulders down to `base`; `arms` raised for dancing
+  const figure = (x, base, s, col, { hair = 0, arms = 0 } = {}) => {
+    g.fillStyle = col; g.strokeStyle = col;
+    g.beginPath(); g.ellipse(x, base - 0.45 * s, 0.5 * s, 0.75 * s, 0, Math.PI, 0); g.lineTo(x + 0.5 * s, base); g.lineTo(x - 0.5 * s, base); g.fill();
+    g.fillRect(x - 0.1 * s, base - 1.35 * s, 0.2 * s, 0.25 * s);
+    g.beginPath(); g.arc(x, base - 1.55 * s, 0.27 * s, 0, Math.PI * 2); g.fill();
+    if (hair === 1) { g.beginPath(); g.ellipse(x, base - 1.35 * s, 0.32 * s, 0.42 * s, 0, 0, Math.PI * 2); g.fill(); }
+    if (hair === 2) { g.beginPath(); g.arc(x + 0.1 * s, base - 1.88 * s, 0.13 * s, 0, Math.PI * 2); g.fill(); }
+    if (arms) {
+      g.lineWidth = 0.16 * s; g.lineCap = 'round';
+      for (const sd of [-1, 1]) { g.beginPath(); g.moveTo(x + sd * 0.38 * s, base - 1.0 * s); g.lineTo(x + sd * (0.6 + 0.2 * arms) * s, base - 1.6 * s); g.lineTo(x + sd * (0.45 + 0.35 * arms) * s, base - 2.2 * s); g.stroke(); }
+    }
+  };
+  const sparkle = (x, y, r, col) => {
+    g.fillStyle = col; g.beginPath();
+    for (let k = 0; k < 8; k++) { const a = (k * Math.PI) / 4, rr = k % 2 ? r * 0.22 : r; g.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr); }
+    g.fill();
+  };
+  const ART = {
+    nova() { // a five-member group against a neon sunset, chrome lettering
+      g.fillStyle = grad(0, 0, 0, PH, [[0, '#1b0b3a'], [0.45, '#7a1fa2'], [0.75, '#ff3d8b'], [1, '#ffb347']]); g.fillRect(0, 0, PW, PH);
+      g.fillStyle = 'rgba(255,255,255,0.07)';
+      for (let k = 0; k < 18; k++) { const a = (k / 18) * Math.PI * 2; g.beginPath(); g.moveTo(PW / 2, PH * 0.66); g.lineTo(PW / 2 + Math.cos(a) * 900, PH * 0.66 + Math.sin(a) * 900); g.lineTo(PW / 2 + Math.cos(a + 0.09) * 900, PH * 0.66 + Math.sin(a + 0.09) * 900); g.fill(); }
+      text('NOVA9', PW / 2, 118, 132, grad(0, 60, 0, 180, [[0, '#ffffff'], [0.5, '#c9d6ff'], [1, '#8f9bd9']]), { stroke: '#ff4fd8', glow: '#ff4fd8' });
+      text('노바나인', PW / 2, 210, 46, '#ffffff', { font: HANGUL });
+      [[0.14, 74, 1], [0.32, 82, 0], [0.5, 90, 2], [0.68, 80, 1], [0.86, 72, 0]].forEach(([fx, s, hair]) => figure(PW * fx, PH - 92, s, '#150726', { hair }));
+      g.fillStyle = '#150726'; g.fillRect(0, PH - 96, PW, 96);
+      text('THE 1ST MINI ALBUM', PW / 2, PH - 62, 22, '#ffd2ef');
+      text('AFTERGLOW', PW / 2, PH - 32, 30, '#ffffff', { glow: '#ff7ac8' });
+    },
+    moon() { // three dancers in front of a huge pastel moon
+      g.fillStyle = '#07070d'; g.fillRect(0, 0, PW, PH);
+      for (let k = 0; k < 140; k++) { g.fillStyle = `rgba(255,255,255,${0.3 + rnd() * 0.6})`; g.fillRect(rnd() * PW, rnd() * PH * 0.75, 1.5, 1.5); }
+      const mg = g.createRadialGradient(PW / 2, PH * 0.38, 20, PW / 2, PH * 0.38, 190);
+      mg.addColorStop(0, '#fff6d8'); mg.addColorStop(0.75, '#f7d6ea'); mg.addColorStop(1, '#e9b3d6');
+      g.shadowColor = '#ffc4e6'; g.shadowBlur = 60;
+      g.fillStyle = mg; g.beginPath(); g.arc(PW / 2, PH * 0.38, 185, 0, Math.PI * 2); g.fill();
+      g.shadowBlur = 0;
+      g.fillStyle = 'rgba(200,150,190,0.25)';
+      for (const [x, y, r] of [[-60, -50, 30], [50, 20, 22], [-20, 70, 16], [80, -80, 14]]) { g.beginPath(); g.arc(PW / 2 + x, PH * 0.38 + y, r, 0, Math.PI * 2); g.fill(); }
+      figure(PW * 0.3, PH * 0.66, 78, '#000000', { hair: 1, arms: 1 });
+      figure(PW * 0.5, PH * 0.66, 90, '#000000', { arms: 0.4 });
+      figure(PW * 0.7, PH * 0.66, 78, '#000000', { hair: 2, arms: 1 });
+      g.fillStyle = '#000'; g.fillRect(0, PH * 0.66 - 2, PW, PH * 0.34);
+      text('MOONRUSH', PW / 2, PH * 0.77, 76, '#ff2e88', { glow: '#ff2e88' });
+      text('문러쉬', PW / 2, PH * 0.85, 40, '#ffd1e6', { font: HANGUL });
+      text('2ND FULL ALBUM · MIDNIGHT RUN', PW / 2, PH * 0.92, 20, '#c9c9d6');
+    },
+    bloom() { // a big Hangul character on a lilac–mint gradient
+      g.fillStyle = grad(0, 0, PW, PH, [[0, '#c8b6ff'], [0.5, '#b8f2e6'], [1, '#ffd6f6']]); g.fillRect(0, 0, PW, PH);
+      for (let k = 0; k < 22; k++) sparkle(rnd() * PW, rnd() * PH, 6 + rnd() * 12, 'rgba(255,255,255,0.85)');
+      text('ZEPHYRA', PW / 2, 92, 74, '#3b1f6b');
+      g.shadowColor = 'rgba(59,31,107,0.6)'; g.shadowOffsetX = 8; g.shadowOffsetY = 10;
+      text('꿈', PW / 2, PH * 0.5, 300, '#ffffff', { font: HANGUL });
+      g.shadowColor = 'transparent'; g.shadowOffsetX = g.shadowOffsetY = 0;
+      text('SPECIAL SINGLE', PW / 2, PH - 110, 26, '#3b1f6b');
+      text('꿈길', PW / 2, PH - 66, 40, '#7b4fd6', { font: HANGUL });
+    },
+    lumi() { // a glowing light stick: a fan-meeting poster
+      const bg = g.createRadialGradient(PW / 2, PH * 0.45, 30, PW / 2, PH * 0.45, 520);
+      bg.addColorStop(0, '#24357d'); bg.addColorStop(1, '#05061a'); g.fillStyle = bg; g.fillRect(0, 0, PW, PH);
+      const glow = g.createRadialGradient(PW / 2, 300, 10, PW / 2, 300, 230);
+      glow.addColorStop(0, 'rgba(160,240,255,0.9)'); glow.addColorStop(0.4, 'rgba(196,155,255,0.45)'); glow.addColorStop(1, 'rgba(196,155,255,0)');
+      g.fillStyle = glow; g.fillRect(0, 60, PW, 480);
+      g.fillStyle = grad(0, 390, 0, 620, [[0, '#f4f4fb'], [1, '#a8a8c0']]); g.beginPath(); g.roundRect(PW / 2 - 24, 380, 48, 250, 20); g.fill();
+      g.fillStyle = '#c49bff'; for (const y of [420, 450]) g.fillRect(PW / 2 - 24, y, 48, 8);
+      const globe = g.createRadialGradient(PW / 2 - 20, 280, 10, PW / 2, 300, 100);
+      globe.addColorStop(0, '#ffffff'); globe.addColorStop(0.5, '#9fe8ff'); globe.addColorStop(1, '#c49bff');
+      g.fillStyle = globe; g.beginPath(); g.arc(PW / 2, 300, 96, 0, Math.PI * 2); g.fill();
+      g.fillStyle = '#ffffff'; g.beginPath();
+      for (let k = 0; k < 10; k++) { const a = (k * Math.PI) / 5 - Math.PI / 2, rr = k % 2 ? 22 : 52; g.lineTo(PW / 2 + Math.cos(a) * rr, 300 + Math.sin(a) * rr); }
+      g.fill();
+      for (let k = 0; k < 26; k++) sparkle(rnd() * PW, rnd() * PH, 3 + rnd() * 8, `rgba(255,255,255,${0.4 + rnd() * 0.6})`);
+      text('LUMIRAE', PW / 2, 86, 84, '#ffffff', { glow: '#9fe8ff' });
+      text('루미레', PW / 2, 148, 38, '#c9f3ff', { font: HANGUL });
+      text('FAN MEETING', PW / 2, PH - 112, 34, '#ffffff');
+      text('빛나는 밤', PW / 2, PH - 70, 32, '#c49bff', { font: HANGUL });
+      text('SEOUL · TOKYO · STOCKHOLM', PW / 2, PH - 32, 18, '#9aa6d8');
+    },
+    starlyt() { // a discography: four album-cover squares
+      g.fillStyle = '#f4f1ea'; g.fillRect(0, 0, PW, PH);
+      text('STARLYT', PW / 2, 88, 86, '#141414');
+      text('스타릿', PW / 2, 146, 36, '#ff4f9a', { font: HANGUL });
+      const covers = [
+        [['#ff9ad5', '#ffd36e'], (x, y) => { g.fillStyle = '#fff'; g.beginPath(); g.arc(x + 100, y + 100, 52, 0, Math.PI * 2); g.fill(); }],
+        [['#1b1b2f', '#5b2bd1'], (x, y) => sparkle(x + 100, y + 100, 70, '#ffe66d')],
+        [['#7af0c8', '#3a86ff'], (x, y) => { g.strokeStyle = '#fff'; g.lineWidth = 9; for (let k = 0; k < 4; k++) { g.beginPath(); g.moveTo(x + 20, y + 60 + k * 28); g.bezierCurveTo(x + 70, y + 30 + k * 28, x + 130, y + 90 + k * 28, x + 180, y + 60 + k * 28); g.stroke(); } }],
+        [['#ff4f6d', '#2b0f2e'], (x, y) => { g.fillStyle = '#fff'; g.beginPath(); g.moveTo(x + 100, y + 150); g.bezierCurveTo(x + 20, y + 95, x + 50, y + 35, x + 100, y + 75); g.bezierCurveTo(x + 150, y + 35, x + 180, y + 95, x + 100, y + 150); g.fill(); }],
+      ];
+      const names = ['SUGAR RUSH', 'NIGHT SKY', 'WAVE', 'HEARTBEAT'];
+      covers.forEach(([cols, art], i) => {
+        const x = 46 + (i % 2) * 220, y = 190 + Math.floor(i / 2) * 250;
+        g.fillStyle = grad(x, y, x + 200, y + 200, [[0, cols[0]], [1, cols[1]]]); g.fillRect(x, y, 200, 200);
+        art(x, y);
+        text(`VOL.${i + 1}  ${names[i]}`, x + 100, y + 220, 17, '#333333');
+      });
+      text('DISCOGRAPHY 2023–2026', PW / 2, PH - 34, 22, '#141414');
+    },
+  };
+  POSTER_ART.forEach((key, i) => {
+    g.save();
+    g.translate((i % 3) * PW, Math.floor(i / 3) * PH);
+    g.beginPath(); g.rect(0, 0, PW, PH); g.clip();
+    ART[key]();
+    // tape over the corners
+    g.fillStyle = 'rgba(238,232,214,0.82)';
+    for (const [x, y, a] of [[0, 0, -0.75], [PW, 0, 0.75], [0, PH, 0.75], [PW, PH, -0.75]]) {
+      g.save(); g.translate(x, y); g.rotate(a); g.fillRect(-40, -13, 80, 26); g.restore();
+    }
+    g.restore();
+  });
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 8;
+  return tex;
+}
+
+/** The posters on Sovrum 4's walls (#280): planes in world coordinates (the item sits at the origin, unturned),
+ * one atlas material, so they merge into a single mesh. */
+const POSTER_SIZE = { A2: [0.42, 0.594], A3: [0.297, 0.42] };
+const POSTER_WALL = { west: { x: 0.2055, rot: Math.PI / 2 }, north: { z: 7.8085, rot: 0 } };
+function kposters() {
+  const g = new THREE.Group();
+  const mat = new THREE.MeshStandardMaterial({ map: kposterTexture(), roughness: 0.55 });
+  for (const p of KPOP_POSTERS) {
+    const [w, h] = POSTER_SIZE[p.size], cell = POSTER_ART.indexOf(p.art), wall = POSTER_WALL[p.wall];
+    const geo = new THREE.PlaneGeometry(w, h), uv = geo.attributes.uv;
+    const u0 = (cell % 3) / 3, v1 = 1 - Math.floor(cell / 3) / 2;
+    for (let k = 0; k < uv.count; k++) uv.setXY(k, u0 + uv.getX(k) / 3, v1 - (1 - uv.getY(k)) / 2);
+    const m = new THREE.Mesh(geo, mat);
+    m.rotation.y = wall.rot;
+    if (p.wall === 'west') m.position.set(wall.x, p.y, p.at);
+    else m.position.set(p.at, p.y, wall.z);
+    m.receiveShadow = true;
+    g.add(m);
+  }
   return g;
 }
 
@@ -2751,7 +3056,7 @@ function besta(item, lights) {
   return g;
 }
 
-const BUILDERS = { tubelamp, secretary, winerack, besta, painting, pictures, palm, sofa, armchair, ottoman, floorlamp, sidetable, coffeetable, loungesofa, loungetable, parasol, planter, bed, skansnasTable, skansnasChair, bunk, daybed, rug, ragrund, coatrack, shoerack, byas, tv, nordkisa, worklamp, walllamp, symfonisk, gamingdesk, gamingchair, nordli, malm, alex, kidchair, vanity, vanitystool };
+const BUILDERS = { tubelamp, secretary, winerack, besta, painting, pictures, palm, sofa, armchair, ottoman, floorlamp, sidetable, coffeetable, loungesofa, loungetable, parasol, planter, bed, skansnasTable, skansnasChair, bunk, daybed, kposters, rug, ragrund, coatrack, shoerack, byas, tv, nordkisa, worklamp, walllamp, symfonisk, gamingdesk, gamingchair, nordli, malm, alex, kidchair, vanity, vanitystool };
 
 /** An invisible thin box over a table top (raycast target for putting a cup down, #90). Local rect. */
 export function surfaceBox(r, list) {

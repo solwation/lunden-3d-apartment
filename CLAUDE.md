@@ -666,9 +666,11 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   with crafts and a kids' chair (#92) ·
   Sovrum 2 (first left) Walter & Kian, bunk (Darth Vader sheets), a gaming desk with a PC along the west wall, short end to the window (#77, #84): sitting in its chair starts the
   PC; a sit spot in the lower bunk (`watch`, a spot `kind` can differ from its piece) swings the monitor arm round and plays a film;
-  a lightsaber on hooks on the west wall north of the desk (#78) · Sovrum 4 (second left, ex Allrum) Tilly, IKEA HEMNES
-  daybed with pink cushions, its three drawers open (basketball shoes | hair things | shoes), her basketball in a wall
-  holder over it (`src/basket.js`); a vanity on the east wall by the window (#282, `VANITY`, builders `vanity` / `vanitystool`):
+  a lightsaber on hooks on the west wall north of the desk (#78) · Sovrum 4 (second left, ex Allrum) Tilly (15), IKEA HEMNES
+  daybed (`HEMNES_DAYBED`, #280: beadboard back and ends, an arched apron, a quilted top mattress, the pull-out's below,
+  round knobs; a charcoal bedspread with lilac bolts, black / holographic / graphic / faux-fur cushions), its three drawers
+  open (basketball shoes | hair things | shoes), her basketball in a wall holder over it (`src/basket.js`), invented K-pop
+  posters round it and on the north wall (`KPOP_POSTERS`, one canvas atlas, builder `kposters`; no real idols or logos); a vanity on the east wall by the window (#282, `VANITY`, builders `vanity` / `vanitystool`):
   an IKEA ALEX 100 × 48 with a drawer column (make-up, hair things, clothes), make-up on the top, a Hollywood mirror with
   14 globe bulbs (a lamp of its own, `sminkspegelns lampor`, at dusk like #234; a Reflector) and a lilac stool (a seat
   with an invisible pick box over it). Bunks: IKEA MYDAL, white, 97 × 207 × 157 (`MYDAL`, #227: posts, end boards, a two-board guard rail, a straight

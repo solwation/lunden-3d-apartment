@@ -52,7 +52,7 @@ export const DOOR_SIGNS = [
   { level: 1, room: 'Sovrum 1', text: 'Sarah & Olof', color: '#fde9d9' },
   { level: 1, room: 'Sovrum 3', text: 'Livia & Tuva', color: '#e6f3e1' },
   { level: 1, room: 'Sovrum 2', text: 'Walter & Kian', color: '#dfeefb' },
-  { level: 1, room: 'Sovrum 4', text: 'Tilly', color: '#fde2ee' },
+  { level: 1, room: 'Sovrum 4', text: 'Tilly', color: '#e2d9f6' },
 ];
 
 // Interior doors: standard Swedish 21M leaf (2.1 m). Exterior doors have a glazed transom (överljus)
@@ -1419,6 +1419,35 @@ export const IDANAS = { L: 2.23, W: 1.9, frameH: 0.49, headH: 1.21, head: 0.2, l
 // each end at both bunks, a straight three-rung ladder on the room side by the foot end
 export const MYDAL = { W: 0.97, L: 2.07, H: 1.57, post: 0.055, base: [0.2, 1.1], mattress: 0.12, board: 0.09 };
 
+// Tilly's daybed (#280, docs/hemnes-dagbadd-vit.jpg): IKEA HEMNES dagbädd m 3 lådor/2 madrasser, vit, 80 × 200,
+// 207 × 89 × 83 cm (ikea.com). White frame, the back and the ends vertical beadboard (`groove` m apart) in a flat frame
+// with a top rail, the ends' cap overhanging a little; an arched apron under the top mattress, the second mattress in the
+// pull-out behind it, three drawers with round dark grey knobs (Ø `knob`). Heights of the parts are *guesses* from the
+// photo: drawer fronts `drawer` [bottom, height], the pull-out mattress `pullout` [bottom, top], the apron `apron`
+// [bottom at the ends, bottom in the middle, top], the top mattress (ÅFJÄLL, quilted with `channels` channels across)
+// `mattress` [bottom, top]. Bedding (the user: less pink, a cool 15-year-old): a charcoal bedspread with lilac
+// lightning bolts and white stars over the foot end, black / holographic lilac / graphic cushions, a faux-fur one and
+// a small muted pink one (our picks).
+export const HEMNES_DAYBED = {
+  W: 2.07, D: 0.89, H: 0.83, groove: 0.04, knob: 0.03,
+  drawer: [0.05, 0.22], pullout: [0.29, 0.345], apron: [0.335, 0.375, 0.42], mattress: [0.42, 0.56], channels: 10,
+  colors: { frame: 0xf3f2ee, mattress: 0xf6f6f3, knob: 0x55585c, spread: '#202127', bolt: '#b79cff', star: '#f4f1ff',
+    black: 0x18181b, fur: 0xe8e2d8, pink: 0xc7949f },
+};
+
+// Tilly's K-pop posters (#280, the user): invented groups only — no real idols' names, faces, photos or logos. Each is
+// drawn on one canvas atlas (src/furniture.js `kposterTexture`), taped to the wall (A2 42 × 59.4, A3 29.7 × 42 cm).
+// `wall`: 'west' (face x 0.202) or 'north' (face z 7.804) of Sovrum 4; `at` = z (west) or x (north) of the centre,
+// `y` = centre height over the floor. Over the daybed around the basketball holder (z 10, y 1.5) and on the north wall
+// west of the door's switch; not on the east wall (the vanity, #282) or the window wall.
+export const KPOP_POSTERS = [
+  { art: 'nova', size: 'A2', wall: 'west', at: 9.27, y: 1.58 },
+  { art: 'moon', size: 'A2', wall: 'west', at: 10.73, y: 1.58 },
+  { art: 'bloom', size: 'A3', wall: 'west', at: 10.0, y: 2.08 },
+  { art: 'lumi', size: 'A2', wall: 'north', at: 0.55, y: 1.6 },
+  { art: 'starlyt', size: 'A2', wall: 'north', at: 1.13, y: 1.6 },
+];
+
 // Långlampan (#270, docs/langlampan.jpg): a tall slim tube of coarse natural linen with a spiral wire frame and several
 // bulbs inside, standing in the living room's NE corner right of the TV (FURNITURE `tubelamp`). The user: it stands on a
 // round foot with a ~20 cm stem, the shade starting ~0.2 m above the floor. Shade Ø, height, the wire's pitch, the foot
@@ -1625,13 +1654,15 @@ export const FURNITURE = [
   // swings the monitor round towards it and plays a film.
   { type: 'gamingdesk', level: 1, x: 2.75 + 0.35, z: 12.23 - 0.7, rot: -90, w: 1.4, d: 0.7, fps: 12 },
   { type: 'gamingchair', level: 1, x: 2.75 + 0.35 + 0.62, z: 12.23 - 0.7, rot: 90 },
-  // Sovrum 4 (Tilly): IKEA HEMNES dagbädd m 3 lådor, vit, 207 × 89 × 83 cm (ikea.com), back to the
-  // west wall, with pink cushions. rot = the way the seat faces.
+  // Sovrum 4 (Tilly): IKEA HEMNES dagbädd m 3 lådor, vit, 207 × 89 × 83 cm (ikea.com, HEMNES_DAYBED), back to the
+  // west wall, charcoal and lilac bedding (#280). rot = the way the seat faces.
   { type: 'daybed', level: 1, x: 0.2 + 0.46, z: 10.0, rot: -90 },
   // Tilly's vanity (#282, VANITY): against the east wall (face x 2.632) south of the door's swing, short of the window
   // corner; the drawer column at the north end, the free end (the laptop, #283) towards the window; the stool in front
   { type: 'vanity', level: 1, x: 2.632 - VANITY.d / 2 - 0.004, z: 11.45, rot: 90 },
   { type: 'vanitystool', level: 1, x: 2.632 - VANITY.d - 0.2, z: 11.55, rot: -90 },
+  // her K-pop posters (#280, KPOP_POSTERS): world coordinates, so the item sits at the origin unturned (rot 180 = yaw 0)
+  { type: 'kposters', level: 1, x: 0, z: 0, rot: 180 },
   // Matplats: IKEA SKANSNÄS (#62/#63), closed (150 cm), the short end to the kitchen window and a little
   // west of its centre so the east chairs clear the kitchen fronts (x 4.95); two chairs on each long
   // side, pushed in under the top (#57)
