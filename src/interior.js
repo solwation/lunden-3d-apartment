@@ -1082,7 +1082,36 @@ export function buildElCabinet(group, cab, dir, y0, h, list) {
   } });
 }
 
-export function buildInterior(group, floor, li, y0, yC, wallBoxes, handled, taps = [], appliances = []) {
+/**
+ * Tiles through the door openings of tiled rooms (#306): a room's rectangle stops at the wall's face, so the opening
+ * (the wall's depth) showed the parquet. A door between a tiled room and parquet gets the tile up to the closed leaf's
+ * plane (`c`, the threshold), an exterior door the whole depth of the opening, two different tiles meet under the leaf.
+ * The patches lie over the parquet and overlap their own room's tiles seamlessly (world-space UVs).
+ */
+function doorwayTiles(B, rooms, doorways, y0) {
+  for (const { gap, c, exterior } of doorways) {
+    const x = gap.axis === 'x';
+    const mid = (gap.lo + gap.hi) / 2;
+    const [n0, n1] = x ? ['z0', 'z1'] : ['x0', 'x1']; // across the opening
+    const [a0, a1] = x ? ['x0', 'x1'] : ['z0', 'z1']; // along it
+    // the tiled room on each side: it covers the opening's middle, lies on that side and reaches within 15 cm of the
+    // wall face (its rectangle may end inside the wall: the hall's stops 17 cm into the 47 cm front wall)
+    const lo = rooms.find((r) => r[a0] < mid && r[a1] > mid && r[n0] < gap.p0 && r[n1] > gap.p0 - 0.15);
+    const hi = rooms.find((r) => r[a0] < mid && r[a1] > mid && r[n1] > gap.p1 && r[n0] < gap.p1 + 0.15);
+    const strip = (room, p0, p1) => {
+      if (p1 - p0 < 0.002) return;
+      // 1 mm above the room floors: where two tiles meet under the leaf, the strip wins over the other room's rectangle
+      if (x) B.box(gap.lo, gap.hi, p0, p1, y0 + 0.001, y0 + 0.005, M[room.floor]);
+      else B.box(p0, p1, gap.lo, gap.hi, y0 + 0.001, y0 + 0.005, M[room.floor]);
+    };
+    const from = lo && Math.min(gap.p0, lo[n1]), to = hi && Math.max(gap.p1, hi[n0]);
+    if (lo && hi && lo.floor === hi.floor) strip(lo, from, to);
+    else if (exterior) { if (lo) strip(lo, from, gap.p1); if (hi) strip(hi, gap.p0, to); }
+    else { if (lo) strip(lo, from, c); if (hi) strip(hi, c, to); }
+  }
+}
+
+export function buildInterior(group, floor, li, y0, yC, wallBoxes, handled, taps = [], appliances = [], doorways = []) {
   const B = new Batch();
   const rects = [];
   if (li === K.level) rects.push(...buildKitchen(B, group, floor, y0, yC, handled, taps, appliances));
@@ -1094,6 +1123,7 @@ export function buildInterior(group, floor, li, y0, yC, wallBoxes, handled, taps
     }
     if (room.name === 'Tvätt') rects.push(...buildLaundry(B, group, floor, { ...room, ceiling: 2.5 }, y0, handled, taps, appliances));
   }
+  doorwayTiles(B, TILED_ROOMS.filter((r) => r.level === li), doorways, y0);
   skirting(B, [...wallBoxes, ...floor.windows], li, floor.size, y0);
   group.add(...B.meshes());
   return rects;

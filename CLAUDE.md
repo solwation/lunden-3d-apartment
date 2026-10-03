@@ -104,7 +104,8 @@ src/cushions.js        decorative cushions (one atlas material: leaf print | bob
                        tint, #313) and the ribbed fleece throws (plum folded on the chaise, grey draped over the armchair's
                        arm; one material per colour) for the LANDSKRONA pieces (CUSHIONS, #278)
 src/interior.js        fitted kitchen, laundry, bathroom fittings, tiled floors/walls (FINISH, KITCHEN,
-                       TILED_ROOMS in config); merged into one mesh per material
+                       TILED_ROOMS in config); merged into one mesh per material; a tiled room's floor runs on through
+                       its door openings (`doorwayTiles`, world.js `doorways`, #306): to the closed leaf, the front door's whole depth
 docs/                  reference images in git (site map screenshot; docs/peab/ = pages of Peab's plan
                        brochure: situation plan, overview plans per floor, unit plans, aerial render)
                        docs/peab/kalibrerad/ = the overview plans + situation plan at 300 dpi from the

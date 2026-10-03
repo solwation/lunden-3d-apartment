@@ -423,6 +423,7 @@ function buildLevel(floor, li, group) {
   const barriers = [...wallBoxes, ...floor.windows]; // closed off for room detection (rooms.js)
   const lids = []; // toilet lids (E opens/closes them, see toilet.js)
   const trims = []; // architrave geometry around the interior doors (merged below)
+  const doorways = []; // door openings + the closed leaf's plane: tiled floors run through them to the threshold (#306)
   for (const d of floor.doors) {
     const [hx, hz] = d.hinge, [tx, tz] = d.tip, [wx, wz] = d.wall;
     const axis = Math.abs(wx - hx) > Math.abs(wz - hz) ? 'x' : 'z';
@@ -451,6 +452,7 @@ function buildLevel(floor, li, group) {
         : { hinge: [hx, h2], wall: [hx, w2], tip: [hx + leafDir * len, h2] };
     }
     if (gap && !exterior) trims.push(...architraves(gap, y0, head));
+    if (gap) doorways.push({ gap, c, exterior });
     const door = new SwingDoor(leaf, y0, M.door, false, { glazed: exterior && tz > D, glass: M.glass, frame: M.frame });
     door.name = exterior ? 'ytterdörren' : 'dörren';
     if (exterior && tz < 0) lids.push(letterFlap(door)); // the front door's letter box (#103)
@@ -497,6 +499,7 @@ function buildLevel(floor, li, group) {
     const travel = first ? first[along[1]] - first[along[0]] - 0.02 : undefined;
     const door = new SlidingDoor(gap, s.arrow, y0, M.door, false, dir, travel);
     trims.push(...architraves(gap, y0, y0 + DOOR_HEIGHT, door.face));
+    doorways.push({ gap, c, exterior: false });
     door.name = 'skjutdörren';
     group.add(door.object);
     doors.push(door);
@@ -529,7 +532,7 @@ function buildLevel(floor, li, group) {
   const handled = new Set();
   const taps = []; // tap/shower outlets for running water (main.js)
   const appliances = [...windows]; // things that open with E but aren't doors (the fridge, the windows)
-  for (const r of buildInterior(group, floor, li, y0, yC, wallBoxes, handled, taps, appliances)) segments.push(...rectSegments(r));
+  for (const r of buildInterior(group, floor, li, y0, yC, wallBoxes, handled, taps, appliances, doorways)) segments.push(...rectSegments(r));
 
   // Other fixed cabinets
   for (const cab of floor.cabinets) {
