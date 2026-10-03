@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Reset test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+// "Återställ" (#303) against the real Worker code run locally (cloudflare/dev.mjs, in-memory KV):
+//   node cloudflare/dev.mjs 8144 &        (then)
+//   google-chrome --headless=new --virtual-time-budget=300000 --dump-dom http://localhost:8137/tools/resettest.html   (?worker=<url> for another one)
+// Change a lot (a door, blinds, the bare flat, the target's score, the clock, a resume record), tape up a drawing
+// (synced) and one offline (queued), score, a name, a cat photo. Avbryt changes nothing; Återställ clears the local
+// home and reloads: the start screen at START at the real time, "Hemmet är återställt", the defaults back — while the
+// drawings, the queue (it still goes out afterwards), the server's copy, the score, the name and the cat photo stay;
+// another reload starts fresh (no resume).
+const out = document.getElementById('out');
+const W = new URLSearchParams(location.search).get('worker') ?? 'http://localhost:8144';
+const OFF = 'http://localhost:9';
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const lines = [];
+let pass = true;
+const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); pass &&= !!ok; out.textContent = `running…\n${lines.join('\n')}`; return ok; };
+const until = async (fn, ms = 6000) => { for (let t = 0; t < ms; t += 100) { if (await fn()) return true; await wait(100); } return false; };
+const api = (path, opts) => fetch(W + path, opts).then((r) => r.json());
+const f = document.createElement('iframe');
+f.width = 900; f.height = 600;
+document.body.append(f);
+const ready = () => new Promise((res) => { f.onload = async () => { while (!f.contentWindow.__app) await wait(100); res(f.contentWindow); }; });
+const load = (q) => { const p = ready(); f.src = `../index.html?v=${Math.random()}${q}`; return p; };
+const sheet = (color) => { const c = document.createElement('canvas'); c.width = 420; c.height = 297; const g = c.getContext('2d'); g.fillStyle = '#fbfaf5'; g.fillRect(0, 0, 420, 297); g.fillStyle = color; g.fillRect(100, 80, 200, 120); return c.toDataURL('image/jpeg', 0.9); };
+const lsKeys = () => Object.keys(localStorage).filter((k) => k.startsWith('lunden.')).sort();
+const atStart = (app) => app.player.pos.z < -5;
+const realHour = () => { const n = new Date(); return n.getHours() + n.getMinutes() / 60; };
+
+(async () => {
+  try { await fetch(W + '/drawings'); } catch { out.textContent = `SOME FAILED\nFAIL no Worker at ${W} (node cloudflare/dev.mjs 8144)`; return; }
+  await fetch(W + '/admin/all', { method: 'DELETE', headers: { Authorization: 'Bearer testtoken' } });
+  await new Promise((res) => { const r = indexedDB.deleteDatabase('lunden'); r.onsuccess = r.onerror = r.onblocked = res; });
+  localStorage.clear(); sessionStorage.clear();
+  localStorage.setItem('other.page', 'x'); // another page on the same origin: never ours to clear
+  let w = await load(`&cloud=${encodeURIComponent(W)}`), d = f.contentDocument, app = w.__app;
+  await app.cloud.ready;
+  d.getElementById('start-touch').click(); await wait(50);
+  const btn = d.getElementById('action');
+  const tapeInHall = () => {
+    for (let yaw = 0; yaw < 360; yaw += 15) {
+      app.player.spawn(1.17, 1.6, yaw * Math.PI / 180); app.player.pos.y = 0; app.player.eyeY = 1.62;
+      for (let i = 0; i < 3; i++) app.step(1 / 60);
+      app.camera.rotation.y = yaw * Math.PI / 180; app.camera.rotation.x = 0; app.step(1 / 60);
+      if (/tejpa upp/i.test(btn.textContent) && !btn.hidden) { btn.click(); return true; }
+    }
+    return false;
+  };
+  // a synced drawing on the wall
+  app.heldDrawing.take(sheet('#d8312e'));
+  check(tapeInHall(), 'a drawing taped up in the hall');
+  check(await until(() => app.posters.list[0]?.rec.synced), 'synced to the server');
+  const id1 = app.posters.list[0].rec.id;
+  // one taped up offline: it waits in the queue
+  app.cloud.url = OFF;
+  app.heldDrawing.take(sheet('#43a047'));
+  tapeInHall();
+  await until(() => app.cloud.queue.length > 0, 3000);
+  const id2 = app.posters.list.find((p) => p.rec.id !== id1)?.rec.id;
+  check(JSON.parse(localStorage.getItem('lunden.cloud.queue') ?? '[]').some((x) => x.id === id2), 'an offline drawing waits in the queue');
+  // the desk drawing, the score, a name, a cat photo
+  app.drawing.stroke({ x: 100, y: 100 }, { x: 300, y: 200 }); app.drawing.save();
+  const desk = localStorage.getItem('lunden.drawing');
+  app.bump('doors', 7);
+  const score = app.totalScore();
+  const nameIn = d.getElementById('player-name');
+  nameIn.value = 'Återställ-Testaren'; nameIn.dispatchEvent(new w.Event('input'));
+  await app.board.add('Testkatten', sheet('#f2cf2b'));
+  const photos = app.board.photos.length;
+  // the home changed: a door open, the blinds up, the bare flat (F), the target's score, the clock, a resume record
+  const door = app.world.doors[0];
+  door.toggle(); for (let i = 0; i < 30; i++) door.update(0.1);
+  for (const b of app.blinds.list) b.set(1);
+  app.blinds.save();
+  app.toggleFurniture(false);
+  app.target.score.total = 42; app.target.save();
+  app.day.hour = 3; app.day.paused = true;
+  localStorage.setItem('lunden.resume', JSON.stringify({ x: 2.9, z: 6.3, feetY: 3.25, yaw: 0, pitch: 0, mode: 'touch', ts: Date.now() }));
+  await wait(2200); // the F5 record (lunden.session) is written every 2 s
+  check(['lunden.blinds', 'lunden.furniture', 'lunden.target', 'lunden.resume'].every((k) => localStorage.getItem(k)) && sessionStorage.getItem('lunden.session'), 'the local state is in storage');
+  // Avbryt: nothing changes
+  const before = JSON.stringify(lsKeys().map((k) => [k, localStorage.getItem(k)]));
+  const confirmEl = d.getElementById('reset-confirm');
+  check(!d.getElementById('reset-home').hidden && /Återställ/.test(d.getElementById('reset-home').textContent), 'the "Återställ" link is on the start screen');
+  d.getElementById('reset-home').click();
+  check(!confirmEl.hidden && /Teckningar som är uppsatta/.test(confirmEl.textContent), 'it asks first');
+  d.getElementById('reset-no').click();
+  check(confirmEl.hidden && JSON.stringify(lsKeys().map((k) => [k, localStorage.getItem(k)])) === before && !app.resetHome.going, 'Avbryt changes nothing');
+  // Esc closes the question too
+  d.getElementById('reset-home').click();
+  d.dispatchEvent(new w.KeyboardEvent('keydown', { code: 'Escape', bubbles: true }));
+  check(confirmEl.hidden, 'Esc closes the question');
+  // Återställ (the reload is real; the iframe's next page is checked offline so the queue is not sent yet)
+  const queue = localStorage.getItem('lunden.cloud.queue');
+  d.getElementById('reset-home').click();
+  let goUrl = null;
+  app.resetHome.go = (u) => { goUrl = u; };
+  d.getElementById('reset-yes').click();
+  const left = lsKeys();
+  check(goUrl === w.location.href, 'it reloads the page');
+  check(!['lunden.blinds', 'lunden.furniture', 'lunden.target', 'lunden.resume'].some((k) => localStorage.getItem(k)) && !sessionStorage.getItem('lunden.session') && !sessionStorage.getItem('lunden.resume'),
+    `the home's keys and the resume / F5 records are gone (left: ${left.join(', ')})`);
+  check(queue && localStorage.getItem('lunden.cloud.queue') === queue && localStorage.getItem('lunden.drawing') === desk, 'the cloud queue and the desk drawing are untouched');
+  check(localStorage.getItem('lunden.name') === 'Återställ-Testaren' && localStorage.getItem('lunden.playerId') && localStorage.getItem('lunden.stats'), 'the name, the player id and the statistics stay');
+  check(localStorage.getItem('other.page') === 'x', "another page's key on the same origin stays");
+  w.dispatchEvent(new w.Event('pagehide')); // leaving: no new F5 record
+  check(!sessionStorage.getItem('lunden.session'), 'no F5 record written on the way out');
+  // the next page (as the reload would load it; cloud unreachable for now)
+  w = await load(`&cloud=${encodeURIComponent(OFF)}`); d = f.contentDocument; app = w.__app;
+  await app.cloud.ready;
+  check(!d.getElementById('overlay').hidden && !d.documentElement.classList.contains('resuming') && d.getElementById('resume').hidden, 'the start screen, no resume');
+  check(!d.getElementById('reset-done').hidden && /Hemmet är återställt/.test(d.getElementById('reset-done').textContent), '"Hemmet är återställt"');
+  check(atStart(app) && Math.abs(app.day.hour - realHour()) < 0.1 && !app.day.paused, `at START at the real time (${app.day.clock})`);
+  check(app.world.doors.every((x) => !x.isOpen) && app.blinds.list.every((b) => b.t === 0) && app.target.score.total === 0, 'doors shut, blinds folded, the target cleared');
+  check(app.world.furnitureOn, 'the furniture is back (not the bare flat)');
+  check(app.totalScore() === score, `the score is unchanged (${app.totalScore()})`);
+  check(await until(() => app.posters.byId(id1) && app.posters.byId(id2), 4000), 'both drawings are still on the wall');
+  check(!app.drawing.blank, 'the desk drawing is still there');
+  check(app.cloud.queue.some((x) => x.id === id2), 'the queue is intact');
+  await until(() => app.board.photos.length >= photos, 3000);
+  check(app.board.photos.length === photos, 'the cat photo is kept');
+  check((await api('/drawings')).some((x) => x.id === id1), 'the synced drawing is still on the server');
+  d.getElementById('start-touch').click(); await wait(50);
+  check(d.getElementById('reset-done').hidden, 'the notice goes with the start screen');
+  // the cloud back: the queue still goes out
+  app.cloud.url = W;
+  await app.cloud.sync();
+  check((await api('/drawings')).some((x) => x.id === id2) && !app.cloud.queue.length, 'back online: the queued drawing is sent');
+  // a real Återställ (no stub): the iframe reloads by itself
+  app.toggleFurniture(false);
+  const next = ready();
+  d.getElementById('reset-home').click(); d.getElementById('reset-yes').click();
+  w = await next; d = f.contentDocument; app = w.__app;
+  check(!d.getElementById('reset-done').hidden && app.world.furnitureOn && atStart(app), 'a real reset reloads by itself, fresh');
+  // another reload: fresh, no note, no resume
+  w = await load(''); d = f.contentDocument; app = w.__app;
+  check(atStart(app) && d.getElementById('reset-done').hidden && d.getElementById('resume').hidden, 'a later reload starts fresh, without the note');
+  localStorage.removeItem('other.page');
+  out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
+})().catch((e) => { out.textContent = `SOME FAILED\n${lines.join('\n')}\nERROR ${e.stack}`; });
+</script>
+</body>
+</html>

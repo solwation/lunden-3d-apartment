@@ -222,6 +222,12 @@
     @media (orientation: portrait) and (pointer: coarse) and (max-width: 1100px) { #rotate { display: grid; } }
     #install { position: fixed; inset: 0; z-index: 25; display: grid; place-items: center; background: rgba(20, 35, 45, 0.85); padding: var(--st) var(--sr) var(--sb) var(--sl); }
     #install[hidden] { display: none; }
+    /* "Återställ" (#303): asks first, touch-friendly */
+    #reset-confirm { position: fixed; inset: 0; z-index: 25; display: grid; place-items: center; background: rgba(20, 35, 45, 0.85); padding: var(--st) var(--sr) var(--sb) var(--sl); }
+    #reset-confirm[hidden] { display: none; }
+    #reset-confirm .card { margin: 16px; }
+    #reset-confirm .card h1 { font-size: 22px; }
+    #reset-confirm .go { touch-action: manipulation; min-height: 44px; }
     #install .card { text-align: center; }
     #install img { width: 72px; height: 72px; border-radius: 16px; box-shadow: 0 4px 14px rgba(0,0,0,.25); }
     #install ol { text-align: left; padding-left: 22px; line-height: 1.5; font-size: 15px; }
@@ -349,7 +355,9 @@
         <button id="start-go" class="go">Börja</button>
       </div>
       <button id="install-btn" class="linkish" hidden>Installera som app</button>
+      <p class="resume" id="reset-done" hidden role="status">Hemmet är återställt.</p>
       <button id="to-start" class="linkish">Gå till startplatsen</button>
+      <button id="reset-home" class="linkish">Återställ</button>
       <button id="stats-reset" class="linkish">Nollställ statistiken</button>
       <figure class="qr"><img src="icons/qr-site.svg" alt="QR-kod till solwation.github.io/lunden-3d-apartment" width="111" height="111"><figcaption>Skanna för att öppna på en annan enhet</figcaption></figure>
     </div>
@@ -361,6 +369,16 @@
       <p>På iPhone blir lägenheten bara helskärm som app. Det tar tio sekunder:</p>
       <ol id="install-steps"></ol>
       <button id="install-skip" class="linkish">Spela i webbläsaren ändå</button>
+    </div>
+  </div>
+  <div id="reset-confirm" hidden role="dialog" aria-label="Återställa hemmet">
+    <div class="card">
+      <h1>Återställa hemmet?</h1>
+      <p>Dörrar, lampor, saker och gardiner går tillbaka till hur det var från början. Teckningar som är uppsatta (delade) och poängen påverkas inte.</p>
+      <div class="start">
+        <button id="reset-yes" class="go">Återställ</button>
+        <button id="reset-no" class="go alt">Avbryt</button>
+      </div>
     </div>
   </div>
   <div id="arm" hidden role="button"><div>Klicka för att styra med musen</div></div>

@@ -20,6 +20,7 @@ import { updateReflections, reflectors } from './reflections.js';
 import { applySeason } from './seasons.js';
 import { saveResume, saveSession, takeResume } from './resume.js';
 import { saveWorld, loadWorld } from './keep.js';
+import { clearLocalHome, takeResetDone } from './reset.js';
 import { Rest, chooseSpot } from './rest.js';
 import { Saber } from './saber.js';
 import { buildToys } from './toys.js';
@@ -618,7 +619,7 @@ function look(dyaw, dpitch) {
 
 let played = false; // left the start screen at least once this visit (an F5 then carries on, #203)
 function showOverlay(show) {
-  if (!show) played = true;
+  if (!show) { played = true; document.getElementById('reset-done').hidden = true; } // "Hemmet är återställt" only until the visit starts (#303)
   overlay.hidden = !show;
   hud.hidden = show;
   document.body.classList.toggle('touch', touch.enabled);
@@ -638,7 +639,7 @@ document.getElementById('start-mouse').addEventListener('click', startMouse);
 // line at the bottom, no box (#190). Esc in the game still just frees the mouse.
 const armEl = document.getElementById('arm');
 let unlockedAt = -1e9;
-const otherOverlay = () => ['install', 'note', 'board-view', 'poster-panel'].some((id) => !document.getElementById(id)?.hidden)
+const otherOverlay = () => ['install', 'reset-confirm', 'note', 'board-view', 'poster-panel'].some((id) => !document.getElementById(id)?.hidden)
   || getComputedStyle(document.getElementById('rotate')).display !== 'none';
 document.addEventListener('keydown', (e) => {
   if (e.code !== 'Escape' || locked || overlay.hidden || otherOverlay()) return;
@@ -1342,7 +1343,7 @@ const placeNow = () => ({ x: player.pos.x, z: player.pos.z, feetY: player.pos.y,
   hour: day.hour, month: day.month, muted: isMuted(), fullscreen: !!document.fullscreenElement, build: BUILD,
   mode: locked ? 'mouse' : touch.enabled ? 'touch' : (!armEl.hidden || played) ? 'mouse' : undefined });
 // F5 carries on (#203): the place goes to this tab's sessionStorage every 2 s and when the page goes away
-const keepSession = () => { if (played) saveSession(placeNow()); };
+const keepSession = () => { if (played && !resetHome.going) saveSession(placeNow()); };
 setInterval(keepSession, 2000);
 window.addEventListener('pagehide', keepSession);
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') keepSession(); });
@@ -1366,6 +1367,28 @@ document.addEventListener('fullscreenchange', () => {
   if (document.fullscreenElement) navigator.keyboard?.lock?.(GAME_KEYS).catch(() => {});
   else navigator.keyboard?.unlock?.();
 });
+// "Återställ" (#303): asks first, then every local 'lunden.*' key but the whitelist goes (reset.js, RESET_KEEP: never
+// the cloud's queue, drawings, the score or the name) and the page reloads clean — no resume or F5 record, so it is a
+// fresh first visit: START, the real time, everything shut, off and at home. The new page says "Hemmet är återställt".
+const resetEl = document.getElementById('reset-confirm');
+const resetHome = {
+  going: false,
+  go(url) { location.replace(url); }, // (tests replace this)
+  ask() { resetEl.hidden = false; },
+  cancel() { resetEl.hidden = true; },
+  confirm() {
+    if (this.going) return;
+    this.going = true; // no F5 record on the way out (keepSession)
+    reloading = true; // no "leave the page?" question
+    clearLocalHome();
+    this.go(location.href);
+  },
+};
+onTap(document.getElementById('reset-home'), () => resetHome.ask());
+onTap(document.getElementById('reset-no'), () => resetHome.cancel());
+onTap(document.getElementById('reset-yes'), () => resetHome.confirm());
+document.addEventListener('keydown', (e) => { if (e.code === 'Escape' && !resetEl.hidden) { e.preventDefault(); resetHome.cancel(); } });
+if (takeResetDone()) document.getElementById('reset-done').hidden = false;
 onTap(document.getElementById('update-reload'), () => {
   reloading = true;
   saveResume({ ...placeNow(), build: null, world: keepWorld() }); // a new version for sure; the world as it is (#277)
@@ -1476,4 +1499,4 @@ if (resumeOk && resumed.mode) continueAfterReload(resumed);
 document.documentElement.classList.remove('resuming'); // the page is ready: off with the "Laddar…" cover (#222)
 
 // handle for tests/debugging (tools/touchtest.html)
-window.__app = { fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };
+window.__app = { resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };

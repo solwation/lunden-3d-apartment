@@ -35,6 +35,9 @@ dyker upp för att öppna och stänga dörrar. 📊 visar statistiken.
 <kbd>E</kbd> så får du klappa den. 🐈 Statistiken (katter, dörrar, steg …) sparas i webbläsaren; varje
 sak du gör visas som en liten bricka ("✋ Klappat katt +1").
 
+*Återställ* på startskärmen ställer tillbaka hela hemmet som vid första besöket (dörrar, lampor, saker,
+gardiner, möblerna, klockan) — uppsatta teckningar, poängen, namnet på topplistan och kattfotona finns kvar.
+
 Ett dygn går på 60 minuter och varje besök börjar på din egen klocka och dagens datum — de små lamporna tänds själva när det skymmer, taklamporna tänder du med knapparna vid dörrarna. Solen går som i Lund. Med klockan på köksväggen (E) kan du spola tiden fram och tillbaka och pausa, och på kattalmanackan bredvid (E) väljer du datum, för att se hur ljuset faller en junimorgon eller en decembermorgon.
 
 I alla fönster sitter plisségardiner som dras upp nerifrån: gå fram och tryck <kbd>E</kbd>, dra upp och ner med

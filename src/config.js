@@ -675,6 +675,18 @@ export const HOLD = { reach: 2.2 };
 // s: the old notice with its "Ladda om" button. (The user's numbers: 5 s countdown; the rest are ours.)
 export const AUTO_RELOAD = { still: 2.5, countdown: 5, cancelled: 1.5, fade: 0.4, fallback: 300 };
 
+// "Återställ" on the start screen (#303, src/reset.js): every 'lunden.*' key in localStorage / sessionStorage is
+// removed EXCEPT these — a whitelist, so a new key is reset by default unless it is added here as "reality" or
+// personal. Kept: what the shared world (cloud.js) owns or still has to send (the offline queue must never be
+// dropped), the desk drawing (the visitor's own creation; synced when the cloud is on), the score / statistics
+// ("Nollställ statistiken" is separate), the leaderboard name and id, and per-visitor conveniences. IndexedDB is not
+// touched at all: taped-up drawings (synced or, with the cloud off, the visitor's own) and the cat photos stay.
+export const RESET_KEEP = [
+  'lunden.cloud.queue', 'lunden.cloud.seenCats', 'lunden.drawing', 'lunden.drawing.updated', // the shared world
+  'lunden.stats', 'lunden.name', 'lunden.playerId', // the score and the leaderboard
+  'lunden.changelogSeen', 'lunden.installSkipped', 'lunden.mapShown', // conveniences
+];
+
 // Performance (#189): small meshes (radius < maxR m) are not drawn once they would look smaller than `k`
 // (radius / distance, ~0.6° across), never nearer than `minDist`; meshes up to `maxOcclude` inside the flat are
 // not drawn from outside unless seen through a façade opening; re-checked after the camera moved `move` m.

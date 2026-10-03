@@ -68,6 +68,13 @@ An inline script in index.html's <head> sees a valid record with a mode before a
 `html.resuming` (start screen hidden, a dark "Laddar…" cover) until main.js has resumed — or drops it on a bad record (#222).
 A record made on the start screen (no mode) shows it with "Du fortsätter där du var" + "Börja från start". The start screen
 always offers "Gå till startplatsen" (both also set the clock and calendar back to now, `realNow`)
+and "Återställ" (#303, `src/reset.js`, `resetHome` in main.js): after a question (#reset-confirm, Avbryt / Esc changes nothing)
+every 'lunden.*' key in local/sessionStorage goes except the whitelist `RESET_KEEP` in config (the cloud's queue and
+seen list, the desk drawing, the stats/score, the leaderboard name + id, conveniences) — a new key is reset unless it is
+added there — and the page reloads clean (no resume / F5 record): START, the real time, everything shut / off / at home,
+"Hemmet är återställt" on the start screen. IndexedDB is never touched: every taped-up drawing stays (synced ones, and
+with the cloud off the visitor's own — their creations, not the home's state), the cat photos too; nothing is sent to
+the cloud (`tools/resettest.html`, with `node cloudflare/dev.mjs`)
 (`tools/reloadtest.html`). Locally `BUILD = 'dev'` and no checks run. Keep imports
 between `src/` files in the form `from './x.js'` on one line so the stamp regex finds them.
 Use relative paths only.
@@ -85,6 +92,7 @@ src/touch.js           on-screen joystick (left) + drag-to-look (right), multi-t
 src/main.js            renderer, lights, input modes, door raycast prompt/button, loop (step)
 src/version.js         BUILD stamp + polling for a newer published version
 src/keep.js            the world's state across a page-made reload (#277): saveWorld / loadWorld, one part per module
+src/reset.js           "Återställ" on the start screen (#303): clears every local 'lunden.*' key except RESET_KEEP (config)
 src/cat.js             the cat: random coat, washing animation, appears/moves/vanishes behind doors
 src/furniture.js       loose furniture from FURNITURE in config (IKEA LANDSKRONA sofa/armchair …)
 src/cushions.js        decorative cushions (one atlas material: leaf print | waffle | plain, vertex-colour tint) and the grey
@@ -539,6 +547,9 @@ tools/laptoptest.html  headless test: Tilly's laptop (#283) on with E on the scr
                        counted once, off with the keyboard, not through the wall from Sovrum 2, F
 tools/clocktest.html   headless test of the wall clock (?time=7, spool, pause, sun height by month)
 tools/calendartest.html headless test: today's date at the start, pick a date on the calendar, the sun follows
+tools/resettest.html   headless test of "Återställ" (#303) against `node cloudflare/dev.mjs 8144`: Avbryt / Esc change nothing; the
+                       home's keys and resume / F5 records go, the queue, drawings (wall, desk, server), score, name and cat
+                       photo stay, START at the real time with the notice; the queued drawing still goes out; a later reload fresh
 tools/cloudtest.html   headless test of the shared world against `node cloudflare/dev.mjs 8144` (start it first): PUT on
                        taping, someone else's drawing appears, DELETE on throwing, thrown elsewhere → gone here, offline
                        queue, desk sheet, cat photos neither sent nor fetched (#211), a fresh visitor gets them, the
