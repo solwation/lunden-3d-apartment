@@ -125,14 +125,25 @@ export const SITE = {
     // west façade and south to the level line at z 52.5 (the yard south of Hus C: second pergola, sandbox,
     // odlingslådor); the middle part up to the level line "NIVÅSKILLNAD CA 3M" from Hus B's NE corner to Hus A's
     // west façade (z 33.3); the east part up to Hus A's north face. The green between A and B is outside it.
-    box: [{ x0: -70.5, x1: -41.7, z0: 12.1, z1: 52.5 }, { x0: -41.7, x1: -9.76, z0: 12.1, z1: 33.3 }, { x0: -9.76, x1: 17.37, z0: 12.1, z1: 28.8 }],
+    // #255: the east part ends at x 11.6; beyond it a strip x 11.6…13.5 inside a wall along Sankt Lars väg holds the
+    // ramp ("RAMP NIVÅSKILLNAD CA 0,9M", våning 1: from Hus L's east gable at z 11.5 to a landing at z 24.5…27.25 that
+    // opens onto the walk along Hus A). The 0.9 m is between the courtyard and the pavement east of Hus L's gable, which
+    // the model keeps at y 0 like the whole street side (#256 asks about that), so the ramp lies level for now.
+    box: [{ x0: -70.5, x1: -41.7, z0: 12.1, z1: 52.5 }, { x0: -41.7, x1: -9.76, z0: 12.1, z1: 33.3 }, { x0: -9.76, x1: 11.6, z0: 12.1, z1: 28.8 },
+      { x0: 11.6, x1: 13.5, z0: 12.1, z1: 27.25 }],
     garageDoor: { x: -70.5, z0: 41, z1: 47, h: 2.6, drive: -77.22 }, // `drive`: the asphalt reaches west to Karpvägen
-    // stairs from the courtyard (y 0) down to the park level, a landing halfway; `z` = the box edge they leave, going
-    // south. #148: behind our row (Peab's render: Å-hus with a cyclist below; a brick retaining wall with a light
-    // slatted railing, a paved cycle path along its foot; position a guess). #254: "TRAPPA" between Hus C and Hus B
-    // (våning 1: x −47.4…−45.9, from the level line at z 52.5 down to z ≈ 59).
-    stairs: [{ x0: 11.97, x1: 13.51, z: 28.8, step: 0.3, landing: 1.0 }, { x0: -47.4, x1: -45.9, z: 52.5, step: 0.3, landing: 1.0 }],
-    cyclePath: { x0: 9.27, x1: 21.23, z0: 35.91, z1: 38.42 },
+    // East of the courtyard (#255) Sankt Lars väg lies only ~1 m below it, not a storey: from x0 (Hus A's east façade) to
+    // x1 (the road's far edge) the ground follows `profile` ([z, y] pairs, linear): level with the street at Hus L, 1.4 m
+    // down at the foot of the stair, park level further south (the last point: guess); east of the road it blends into
+    // the park level over `blend` m.
+    east: { x0: 9.42, x1: 28.96, blend: 2.5, profile: [[12.7, 0], [30.0, -1.4], [44, -3]] },
+    // stairs from the courtyard (y 0) going south, `z` = the box edge they leave; `drop` m in `steps` (default: down to
+    // the park level, ~0.17 m each, a `landing` halfway); `walk` = paving from the foot. #255: "TRAPPA NIVÅSKILLNAD CA
+    // 1,4M" (våning 1: 9 risers x 11.6…13.5, z 27.25…30) from the landing at the walk along Hus A down to the walk east
+    // to Sankt Lars väg (z 30…31.8). #254: "TRAPPA" between Hus C and Hus B (x −47.4…−45.9, from the level line at
+    // z 52.5 down to z ≈ 59).
+    stairs: [{ x0: 11.6, x1: 13.5, z: 27.25, step: 0.3, drop: 1.4, steps: 9, walk: { x0: 11.6, x1: 18.8, z0: 29.95, z1: 31.8 } }, // the walk meets the pavement along Sankt Lars väg (SITE.roads)
+      { x0: -47.4, x1: -45.9, z: 52.5, step: 0.3, landing: 1.0 }],
   },
   bay: 3.0, storey: 3.0,  // façade texture of the other blocks: one window per 3 × 3 m
   // the Å-husen's shape (#145, #258), measured on the calibrated overview plans (docs/peab/kalibrerad/vaning-1/2-300dpi.png):
@@ -257,7 +268,7 @@ export const SITE = {
   treeAreas: [
     // the courtyard's and the green's trees stand where the situation plan draws them: COURTYARD.trees
     { x0: -88.8, x1: 17.37, z0: -20, z1: -19, n: 11, young: true }, // street trees along Sankt Lars väg: young maples by the site (#130)
-    { x0: 17.37, x1: 19.3, z0: -12, z1: 54.05, n: 7 },            // … and along its east leg
+    { x0: 16.9, x1: 18.4, z0: -12, z1: 54.05, n: 7 },          // … and along its east leg (west of the cycle path, #255)
     { x0: -125.48, x1: 67.57, z0: 65.63, z1: 135.13, n: 55 },      // S:t Lars park / woods towards Höje å
     { x0: -125.48, x1: -80, z0: -20, z1: 65.63, n: 16 },          // west of Karpvägen (#257: off the road by onRoad)
   ],
@@ -276,7 +287,8 @@ export const COURTYARD = {
   paths: [
     { x0: -44.4, x1: 11.58, z0: 17.8, z1: 19.1 },   // along the row-house patios (z: from the patios' hedges, our plan)
     { x0: -48.26, x1: -41.5, z0: 29.15, z1: 30.6 },  // the main walk north of Hus B, only where the box reaches (#246: further east it lay in Hus A / over the park)
-    { x0: -12.55, x1: 11.58, z0: 24.71, z1: 26.35 },   // to the stair on the east edge
+    { x0: -12.55, x1: 11.6, z0: 24.71, z1: 26.35 },   // to the stair on the east edge
+    { x0: 11.6, x1: 13.4, z0: 12.7, z1: 27.25 },     // the ramp along Sankt Lars väg and its landing at the stair (#255)
     { x0: -16.99, x1: -13.42, z0: 12.7, z1: 19.3 }, // from the portik
     { x0: -48.45, x1: -45.56, z0: 7.72, z1: 52.5 },   // between Hus C and the Borggården, to the stair south (#254)
     { x0: -69.5, x1: -45.56, z0: 47.59, z1: 48.84 }, // south of Hus C's yard

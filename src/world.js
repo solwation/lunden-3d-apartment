@@ -711,6 +711,7 @@ export function buildWorld(plan) {
     [o.x0, o.z0, o.x1, o.z0], [o.x0, o.z0, o.x0, 0], [o.x1, o.z0, o.x1, 0], [o.x0, 0, 0, 0], [W, 0, o.x1, 0],
     [o.x0, D, 0, D], [W, D, o.x1, D], [o.x0, D, o.x0, o.z1], [o.x1, D, o.x1, o.z1], [o.x0, o.z1, o.x1, o.z1],
     ...exterior.userData.segments,
+    ...surroundings.userData.segments.filter((s) => Math.max(s[0], s[2]) > o.x0 - 1 && Math.min(s[0], s[2]) < o.x1 + 1 && Math.min(s[1], s[3]) < o.z1 + 1), // the courtyard's edge (#255)
   );
   l0.segments.push(...outdoor);
 

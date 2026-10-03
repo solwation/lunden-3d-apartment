@@ -493,8 +493,12 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   are y 0; around the box the ground is one storey lower (`park` −3, Å-husen A/B suterräng); retaining
   walls with a railing where the box meets it (none along a house's façade), the garage door in its west face
   south of Hus C (z 41…47) with an asphalt drive from Karpvägen, stairs down to the park level (`terrain.stairs`:
-  behind our row, #148, and between Hus C and B, #254); the roads outside the box go down over `slope` m south of
-  Hus L (guess).
+  between Hus C and B, #254); the roads outside the box go down over `slope` m south of Hus L (guess).
+  East edge (#255): the box ends at x 11.6, a ramp strip x 11.6…13.5 (level for now: its 0.9 m is to the street side,
+  #256) runs from Hus L's gable to a landing by the walk along Hus A, where a stair goes 1.4 m down to a walk east to
+  Sankt Lars väg; east of the courtyard the ground follows `terrain.east.profile` (0 at Hus L, −1.4 at the stair's
+  foot, the park level by z 44) instead of dropping a storey. The box edge pieces are collision too
+  (`surroundings.userData.segments`, those near `OUTDOOR`), so the visitor never walks off it.
   Courtyard (#80, `COURTYARD`, traced on the situation plan + info brochure p. 16): the Borggården between
   Hus L, C and A with stone walks, gravel, the pergola with a dining table, a grill, a sandbox, a boule
   court (not on the plan: guess), benches and tree squares; south of Hus C a second pergola, a sandbox and

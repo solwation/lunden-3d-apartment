@@ -13,16 +13,26 @@ import { onRoad, pathStrip, filletGeometry } from './roads.js';
 const T = S.terrain;
 /** On the garage box (the raised courtyard)? */
 const onBox = (x, z) => T.box.some((b) => x >= b.x0 && x <= b.x1 && z >= b.z0 && z <= b.z1);
+const E = T.east;
+/** The ground east of the courtyard along Sankt Lars väg (#255): T.east.profile, linear in z. */
+function eastY(z) {
+  const P = E.profile;
+  if (z <= P[0][0]) return P[0][1];
+  for (let i = 1; i < P.length; i++) if (z <= P[i][0]) return P[i - 1][1] + ((z - P[i - 1][0]) / (P[i][0] - P[i - 1][0])) * (P[i][1] - P[i - 1][1]);
+  return P[P.length - 1][1];
+}
 /** Ground height at plan (x, z): the street / courtyard level north of Hus L and on the garage box,
- * the park level around the box (reached over T.slope m south of Hus L). */
+ * the park level around the box (reached over T.slope m south of Hus L), east of it Sankt Lars väg's gentler slope. */
 export function groundY(x, z) {
   if (z <= T.north || onBox(x, z)) return 0;
-  return T.park * THREE.MathUtils.clamp((z - T.north) / T.slope, 0, 1);
+  const park = T.park * THREE.MathUtils.clamp((z - T.north) / T.slope, 0, 1);
+  if (x < E.x0) return park;
+  return THREE.MathUtils.lerp(eastY(z), park, THREE.MathUtils.clamp((x - E.x1) / E.blend, 0, 1));
 }
 
 /** Terrain south of Hus L: a grid with lines on every box edge, so the step at the edges is vertical. */
 function terrainGeometry() {
-  const xs = new Set([-200, 200]), zs = new Set([T.north, 260, T.north + T.slope]);
+  const xs = new Set([-200, 200, E.x0 - 0.01, E.x0 + 0.01, E.x1, E.x1 + E.blend]), zs = new Set([T.north, 260, T.north + T.slope, ...E.profile.map((p) => p[0])]);
   for (let x = -200; x <= 200; x += 4) xs.add(x);
   for (let z = T.north; z <= 260; z += 4) zs.add(z);
   for (const b of T.box) { for (const x of [b.x0, b.x1]) { xs.add(x - 0.01); xs.add(x + 0.01); } for (const z of [b.z0, b.z1]) { zs.add(z - 0.01); zs.add(z + 0.01); } }
@@ -54,7 +64,7 @@ function boxWalls() {
     g.computeVertexNormals();
     return g;
   };
-  const slats = [];
+  const slats = [], segments = [];
   const atStairs = (x0, x1, z) => T.stairs.some((St) => Math.abs(z - St.z) < 0.05 && Math.max(x0, x1) > St.x0 - 0.05 && Math.min(x0, x1) < St.x1 + 0.05);
   const edges = [];
   for (const b of T.box) edges.push([b.x0, b.z0, b.x1, b.z0, 0, -1], [b.x1, b.z0, b.x1, b.z1, 1, 0], [b.x1, b.z1, b.x0, b.z1, 0, 1], [b.x0, b.z1, b.x0, b.z0, -1, 0]);
@@ -66,8 +76,10 @@ function boxWalls() {
       const mx = (x0 + x1) / 2 + ox * 0.05, mz = (z0 + z1) / 2 + oz * 0.05; // just outside
       if (onBox(mx, mz)) continue; // an inner edge between two box parts
       const y0 = groundY(x0 + ox * 0.05, z0 + oz * 0.05), y1 = groundY(x1 + ox * 0.05, z1 + oz * 0.05);
-      if (y0 > -0.05 && y1 > -0.05) continue; // no step here
+      if (y0 > -0.005 && y1 > -0.005) continue; // no step here
       if (S.blocks.some((b) => mx > b.x0 && mx < b.x1 && mz > b.z0 && mz < b.z1)) continue; // a house's façade is the edge here (#246)
+      segments.push([x0, z0, x1, z1]); // the visitor stays on the courtyard (#255), across the stairs' tops too
+      if (y0 > -0.05 && y1 > -0.05) continue; // too small a step for a wall
       // the walls stand 4 cm outside the box edge, in front of the terrain's own (grass) step
       const wx0 = x0 + ox * 0.04, wz0 = z0 + oz * 0.04, wx1 = x1 + ox * 0.04, wz1 = z1 + oz * 0.04;
       const atDoor = ox < 0 && Math.abs(x0 - T.garageDoor.x) < 0.1 && (z0 + z1) / 2 > T.garageDoor.z0 && (z0 + z1) / 2 < T.garageDoor.z1;
@@ -86,24 +98,25 @@ function boxWalls() {
     }
   }
   const stairs = T.stairs.map(terraceStairs);
-  return { walls, rails, door, slats, stairs: { solid: stairs.flatMap((s) => s.solid), rails: stairs.flatMap((s) => s.rails), ends: stairs.map((s) => s.end) } };
+  return { walls, rails, door, slats, segments, stairs: { solid: stairs.flatMap((s) => s.solid), rails: stairs.flatMap((s) => s.rails), ends: stairs.map((s) => s.end) } };
 }
 
-/** A stair from the courtyard down to the park level, going south (#148, #254): treads, a landing halfway, handrails. */
+/** A stair from the courtyard going south, down `drop` m (default: to the park level) (#148, #254, #255): treads, a
+ * landing halfway if it has one, handrails. */
 function terraceStairs(St) {
-  const steps = Math.round(-T.park / 0.17), rise = -T.park / steps, half = Math.floor(steps / 2);
+  const drop = St.drop ?? -T.park, foot = -drop, steps = St.steps ?? Math.round(drop / 0.17), rise = drop / steps, half = St.landing ? Math.floor(steps / 2) : -1;
   const solid = [], rails = [];
   let z = St.z, y = 0;
   for (let k = 0; k < steps; k++) {
     y -= rise;
     const run = k === half - 1 ? St.landing : St.step;
-    solid.push(new THREE.BoxGeometry(St.x1 - St.x0, y - T.park + 0.02, run).translate((St.x0 + St.x1) / 2, (y + T.park) / 2, z + run / 2));
+    solid.push(new THREE.BoxGeometry(St.x1 - St.x0, y - foot + 0.02, run).translate((St.x0 + St.x1) / 2, (y + foot) / 2, z + run / 2));
     z += run;
   }
   for (const x of [St.x0 - 0.06, St.x1 + 0.06]) { // handrails following the flight, posts at both ends
-    const pts = [new THREE.Vector3(x, 0.95, St.z), new THREE.Vector3(x, T.park + 0.95, z)];
+    const pts = [new THREE.Vector3(x, 0.95, St.z), new THREE.Vector3(x, foot + 0.95, z)];
     rails.push(new THREE.TubeGeometry(new THREE.LineCurve3(...pts), 1, 0.022, 6));
-    for (const [pz, py] of [[St.z + 0.1, 0], [z - 0.1, T.park]]) rails.push(new THREE.BoxGeometry(0.04, 0.95, 0.04).translate(x, py + 0.47, pz));
+    for (const [pz, py] of [[St.z + 0.1, 0], [z - 0.1, foot]]) rails.push(new THREE.BoxGeometry(0.04, 0.95, 0.04).translate(x, py + 0.47, pz));
   }
   return { solid, rails, end: z };
 }
@@ -744,7 +757,7 @@ export function buildWindowLights() {
 /** Horizontal strip that follows the ground (its height at the strip's centre line in x). */
 function groundStrip(x0, x1, z0, z1, lift) {
   const cx = (x0 + x1) / 2;
-  const cuts = [z0, z1, T.north, T.north + T.slope, ...T.box.flatMap((b) => [b.z0, b.z1])];
+  const cuts = [z0, z1, T.north, T.north + T.slope, ...E.profile.map((p) => p[0]), ...T.box.flatMap((b) => [b.z0, b.z1])];
   for (let z = Math.ceil(z0); z < z1; z += 2) cuts.push(z);
   const zs = [...new Set(cuts)].filter((z) => z >= z0 && z <= z1).sort((a, b) => a - b);
   const pos = [];
@@ -780,10 +793,8 @@ export function buildSurroundings({ grass }) {
   flat([...bw.rails, ...bw.stairs.rails.map((g) => g.toNonIndexed())].map((g) => { g = g.index ? g.toNonIndexed() : g; g.deleteAttribute('uv'); return g; }), lightRail);
   group.add(new THREE.Mesh(mergeGeometries(bw.slats.map((g) => g.toNonIndexed())), new THREE.MeshStandardMaterial({ map: railTexture(), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.6 })));
   flat(bw.stairs.solid, concrete, SEASON.snow.paving); // the stairs down to the park level (#148, #254)
-  const cp = T.cyclePath; // the cycle path at the foot of the wall
-  flat([groundStrip(cp.x0, cp.x1, cp.z0, cp.z1, 0.012)], new THREE.MeshStandardMaterial({ color: 0x55585b, roughness: 0.8 }));
-  const St = T.stairs[0]; // #148: from the stair's foot to the path
-  flat([groundStrip(St.x0 - 0.3, St.x1 + 0.3, bw.stairs.ends[0], cp.z0, 0.01)], COLORS.paving);
+  flat(T.stairs.filter((St) => St.walk).map((St) => groundStrip(St.walk.x0, St.walk.x1, St.walk.z0, St.walk.z1, 0.01)), COLORS.paving); // from a stair's foot on
+  group.userData.segments = bw.segments; // the box edge: collision for the courtyard (world.js)
   flat(bw.door, new THREE.MeshStandardMaterial({ color: 0x1c1e21, roughness: 0.8, side: THREE.DoubleSide }));
   // roads (#257, src/roads.js): rectangles, centre lines with rounded corners, fillets at the junctions
   const gd = T.garageDoor; // + the drive from Karpvägen to the garage door (#254)
