@@ -1333,6 +1333,9 @@ export const LANDSKRONA = {
   height: 0.78, seatHeight: 0.44, seatDepth: 0.61, armHeight: 0.64, armWidth: 0.12,
   depth: 0.89, legHeight: 0.15,
   sofaWidth: 2.82, chaiseWidth: 0.9, chaiseDepth: 1.58,
+  // the chaise's outer arm is the sofa's arm: it ends flush with the sofa's seat cushions, the chaise's
+  // long cushion runs on past it (#279, the user)
+  chaiseArmDepth: 0.89,
   chairWidth: 0.89,
 };
 

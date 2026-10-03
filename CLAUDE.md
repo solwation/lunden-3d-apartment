@@ -605,7 +605,8 @@ North = −z (the bedrooms Sovrum 1/3 face north).
 - Sliding doors run towards the side with enough wall to park the panel (the plan arrows
   are not reliable — the Tvätt arrow pointed through a 19 cm wall stub into the hall).
 - Vardagsrum furniture (wanted by the user): IKEA LANDSKRONA 3-sits + schäslong, Gunnared
-  ljusgrön, back to the window, chaise in the SE corner; matching armchair and, in front of it, a dark red upholstered stool (#180, `OTTOMAN`, guessed from the user's photo) in
+  ljusgrön, back to the window, chaise in the SE corner (its outer arm ends flush with the sofa's seat
+  cushions, the chaise cushion runs on past it full width, `chaiseArmDepth`, #279); matching armchair and, in front of it, a dark red upholstered stool (#180, `OTTOMAN`, guessed from the user's photo) in
   the NW corner with a floor lamp (IKEA NYMÅNE, 3 spots aimed at the seat, on the sitter's right, #56)
   and a side table with a small flower. Dimensions in
   `LANDSKRONA` (config) — the chaise/armchair numbers are series estimates. In front

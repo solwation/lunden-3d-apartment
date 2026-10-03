@@ -85,7 +85,7 @@ function leg(x, z, h = L.legHeight, material = oak) {
  * LANDSKRONA-style seat module: frame, seat cushion(s), back cushion(s), armrests.
  * `arms` = which ends get an armrest ('left' is the sitter's left = +x).
  */
-function seatModule(g, { x0, x1, depth, cushions, arms }) {
+function seatModule(g, { x0, x1, depth, cushions, arms, armDepth = depth }) {
   const legH = L.legHeight, D = L.depth;
   const z0 = -D / 2, zF = z0 + depth; // back … front
   const base = L.seatHeight - 0.14;   // top of the frame under the seat cushion
@@ -95,7 +95,9 @@ function seatModule(g, { x0, x1, depth, cushions, arms }) {
   g.add(rbox(x1 - x0, 0.3, 0.14, (x0 + x1) / 2, base + 0.15, z0 + 0.07, fabric, 0.03));
   // seat + back cushions
   const aw = L.armWidth;
-  const ix0 = x0 + (arms.includes('right') ? aw : 0), ix1 = x1 - (arms.includes('left') ? aw : 0);
+  // a short arm (the chaise's): the seat cushion runs the full width, out past the arm's end
+  const inset = armDepth < depth ? 0 : aw;
+  const ix0 = x0 + (arms.includes('right') ? inset : 0), ix1 = x1 - (arms.includes('left') ? inset : 0);
   const cw = (ix1 - ix0) / cushions;
   for (let i = 0; i < cushions; i++) {
     const cx = ix0 + cw * (i + 0.5);
@@ -104,10 +106,10 @@ function seatModule(g, { x0, x1, depth, cushions, arms }) {
     back.rotation.x = -0.14;
     g.add(back);
   }
-  // armrests: sitter's right = −x, left = +x
+  // armrests: sitter's right = −x, left = +x; `armDepth` from the back (the chaise's ends with the sofa's seats, #279)
   for (const side of arms) {
     const ax = side === 'right' ? x0 + aw / 2 : x1 - aw / 2;
-    g.add(rbox(aw, L.armHeight - legH, depth, ax, (L.armHeight + legH) / 2, (z0 + zF) / 2, fabric, 0.05));
+    g.add(rbox(aw, L.armHeight - legH, armDepth, ax, (L.armHeight + legH) / 2, z0 + armDepth / 2, fabric, 0.05));
   }
   // legs
   for (const lx of [x0 + 0.06, x1 - 0.06]) for (const lz of [z0 + 0.06, zF - 0.06]) g.add(leg(lx, lz));
@@ -122,7 +124,7 @@ function sofa(item) {
   const [mainX0, mainX1] = right ? [-W / 2 + cw, W / 2] : [-W / 2, W / 2 - cw];
   const [chX0, chX1] = right ? [-W / 2, -W / 2 + cw] : [W / 2 - cw, W / 2];
   seatModule(g, { x0: mainX0, x1: mainX1, depth: D, cushions: 2, arms: [right ? 'left' : 'right'] });
-  seatModule(g, { x0: chX0, x1: chX1, depth: L.chaiseDepth, cushions: 1, arms: [right ? 'right' : 'left'] });
+  seatModule(g, { x0: chX0, x1: chX1, depth: L.chaiseDepth, cushions: 1, arms: [right ? 'right' : 'left'], armDepth: L.chaiseArmDepth });
   // three places on the sofa and one on the chaise (#71), local x, seat height, z, facing +z
   const third = (mainX1 - mainX0) / 3;
   g.userData.rest = { kind: 'sit', name: 'soffan', verb: 'sätta dig i', spots: [0.5, 1.5, 2.5].map((k) => ({ x: mainX0 + third * k, y: L.seatHeight, z: -0.08 }))
