@@ -1148,10 +1148,21 @@ export const MOCCAMASTER = { back: 5.53, z: 1.4, w: 0.32, d: 0.17, h: 0.36, brew
 
 // Wall shelves in the kitchen (src/shelves.js) where the cat board used to hang: the kitchen face of
 // the hall/kitchen partition (x 2.15, z 0.46–1.76), above the light switch (1.05 m). Two oak shelves
-// 100 × 20 cm on black brackets with portraits, flowers, books, candles and a bowl (#38).
+// 100 × 20 cm on black brackets (#38). Dressed like a Scandinavian kitchen shelf (#291): cookbooks, glass jars of dry
+// goods, stoneware (a speckled jug, plates, a bowl, vases), a mortar, brass candlesticks, a cutting board, three framed
+// prints; a vase of dried eucalyptus and a trailing pothos can be taken. Sizes are everyday-object guesses; `colors`
+// are soft, muted glazes and materials (guess).
 export const WALL_SHELVES = {
   x: 2.15, z0: 0.56, z1: 1.56, depth: 0.2, thick: 0.025, heights: [1.35, 1.75],
-  wood: 0xd2b48c, bracket: 0x2a2a2a,
+  colors: {
+    oak: 0xd2b48c, bracket: 0x2a2a2a, black: 0x262524, pages: 0xf1ead9,
+    books: [0x5d6448, 0xa9674c, 0xd8cbb0, 0x55657a], // olive, terracotta, oat, slate blue
+    offwhite: 0xebe6da, sand: 0xcdb89a, sage: 0xa3ae96, clay: 0x9a7258, // stoneware glazes + the bare clay foot / rim
+    stone: 0x8f8b84, stone2: 0x7d7973, brass: 0xc9a25a, tin: 0x5f7d78, wax: 0xf3ecdc, wax2: 0xe9dccb,
+    pasta: 0xe3c47e, lentils: 0xb0573a, cork: 0xb89a72, olive: 0x6e7a55,
+    eucalyptus: 0x8fa39a, eucalyptus2: 0x7d948c, euStem: 0x6b5a4a, straw: 0xcbb790, straw2: 0xe9dfc8,
+    pothos: 0x4c7a2f, pothos2: 0x93a845, pothos3: 0x3e6a2a, vine: 0x5a7a3a, soil: 0x3b2c22,
+  },
 };
 
 // Hall, the wall on the left as you come in (hall face of the hall/kitchen partition, x 2.057,

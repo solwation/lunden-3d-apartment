@@ -325,7 +325,9 @@ src/catboard.js        cork board in the kitchen (under the wall clock): a real-
                        CAT_BOARD.max of them in IndexedDB 'lunden'/'catPhotos', captioned with name + time; E opens
                        #board-view (BoardPanel, #170: keep 📌 = red pin, never pushed off; throw away 🗑 asks twice;
                        arrows/S/Delete; frees the mouse like drawing); a full board drops its oldest unkept photo
-src/shelves.js         kitchen wall shelves with portraits, flowers, books, candles (WALL_SHELVES)
+src/shelves.js         kitchen wall shelves (WALL_SHELVES, #291): cookbooks, glass jars, lathe-turned stoneware (speckle map),
+                       brass candlesticks, a mortar, a cutting board, framed prints (one canvas atlas); merged per material;
+                       the eucalyptus vase ('vasen') and the trailing pothos are Things (kind 'plant', #185)
 src/keycabinet.js      the IKEA LINDBYN mirror Ø 110 (living room since #205), the hall's IKEA NISSEDAL mirror (#226), IKEA SKOGSGRÄNSEN
                        over the secretary (#265, `SKOGSGRANSEN`: tinted glass + a tint overlay, copper bars below the horizon)
                        + the hall's Solstickan key cabinet (E) with the Renault key (E → beep beep);
