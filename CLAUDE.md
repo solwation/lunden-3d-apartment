@@ -97,6 +97,9 @@ src/reset.js           "Återställ" on the start screen (#303): clears every lo
 src/cat.js             the cat: random coat, washing animation, appears/moves/vanishes behind doors
 src/furniture.js       loose furniture from FURNITURE in config (IKEA LANDSKRONA sofa/armchair …)
 src/rugs.js            the rugs furniture.js built (#55, #310): `rugLift(level, x, z)` = a shown rug's top over the floor there
+src/bedding.js         bedding shapes shared by every bed: `pillow(w, d, h, opts)` (#308) — a stuffed case with pinched-in sides (the
+                       corners stick out), full in the middle, thin at the seams, low bumps, a head `dent`, `base(x, z)` to lie on
+                       something (a pillow on a pillow); planar metre UVs; `geo.userData.top(x, z)` = its top for stacking
 src/cushions.js        decorative cushions (one atlas material: leaf print | bobble knit | geometric | corduroy, vertex-colour
                        tint, #313) and the ribbed fleece throws (plum folded on the chaise, grey draped over the armchair's
                        arm; one material per colour) for the LANDSKRONA pieces (CUSHIONS, #278)
@@ -475,7 +478,7 @@ tools/reloadtest.html  headless test: resume after "Ladda om", F5 starts at STAR
                        the world kept (#277): the car still arriving then parks, a cup of coffee in the hand, the fridge open, lamps,
                        sitting, a bottle put down, the TV, the cat, the game's clock; a new tab fresh at the real time
 tools/resttest.html    headless test: sit on every seat and lie in every bed (spot, no walking, up again looking the same way;
-                       head turned, old spot behind: up in front, #202; every spot ahead / turned, from behind: free floor, #302)
+                       head turned, old spot behind: up in front, #202; every spot ahead / turned, from behind: free floor, #302; in every bed the eye clear of the bedding, #308)
 tools/stucktest.html   headless test (#314): a 5 cm scan of both floors (doors open; the free floor in one piece, pockets out of
                        reach listed), getting up from every seat / bed with the old spot inside it, F putting the sofa / bed back
                        round you, the car parking on you, the hoop rising under you, a door shut on you, a resume record in the bed
@@ -739,7 +742,7 @@ North = −z (the bedrooms Sovrum 1/3 face north).
 - The family (#164): Sarah and Olof are married, two families moved in together — Olof is the father of Tilly,
   Kian and Tuva, Sarah the mother of Walter and Livia. Text that mentions them must not make all five siblings.
 - Who sleeps where (the user's plan; "left/right" as you arrive upstairs walking west):
-  Sovrum 1 (first right) Sarah & Olof, double bed IKEA IDANÄS 180 × 200 (`IDANAS`, #91), under a 150 × 100 cm black-framed meadow-grass picture on the east wall, 1.33–2.33 m up, clear of the soffit (#284, `pictures` item, textures/angsgras-sovrum1.jpg from docs/tavla-sovrum1-angsgras.jpg), a NORDLI chest of
+  Sovrum 1 (first right) Sarah & Olof, double bed IKEA IDANÄS 180 × 200 (`IDANAS`, #91; a white 70 × 100 hotel pillow under each chintz head pillow, `PILLOWS`, `hotel`, #308, docs/hotellkudde-70x100.jpg), under a 150 × 100 cm black-framed meadow-grass picture on the east wall, 1.33–2.33 m up, clear of the soffit (#284, `pictures` item, textures/angsgras-sovrum1.jpg from docs/tavla-sovrum1-angsgras.jpg), a NORDLI chest of
   drawers in its Klk (an AK-47 in its wide bottom drawer, #196) (no wardrobe in Sovrum 1; the Klk is 1.65 × 1.20 inside, #94) (a sage green IKEA chintz bedding set from a Sellpy ad, #83) with IKEA NORDKISA bedside tables (#64) and white NYMÅNE work
   lamps on them (#65, each its own lamp like the floor lamp) + an IKEA RÅGRUND towel-rack chair in the corner left of
   the window (#60), and a Philips 43" PQS7801 on the west wall across from the bed (#213, black frame, Ambilight #223):

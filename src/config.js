@@ -1520,6 +1520,15 @@ export const SKANSNAS = {
 // 22 cm mattress are guesses. `head` = depth behind the mattress taken by the sloping headboard.
 export const IDANAS = { L: 2.23, W: 1.9, frameH: 0.49, headH: 1.21, head: 0.2, legH: 0.1, mattressH: 0.22, color: 0x5f6266 };
 
+// Pillows (#308, src/bedding.js `pillow`): `head` = the ordinary pillow in its case (~50 × 60, the chintz set's case,
+// 60 across the bed), `hotel` = Hemtex "Hotellkudde" 70 × 100 in a white case (docs/hotellkudde-70x100.jpg), one under
+// each head pillow in the Sovrum 1 bed, 100 across, its head end at the headboard. `h` = height in the middle (*guess*:
+// a soft hotel pillow ~16 cm, a head pillow ~12 cm), `dent` = the hollow where a head has been.
+export const PILLOWS = {
+  head: { w: 0.6, d: 0.5, h: 0.12, dent: 0.025 },
+  hotel: { w: 1.0, d: 0.7, h: 0.16 },
+};
+
 // IKEA NYMÅNE wall/reading lamp, GU10 (#219, docs/nymane-vagglampa-vit.png): a wall plate with a round switch,
 // a short round arm and a cylinder shade pointing down and out, a fabric cord hanging from the plate. All sizes are
 // guesses from the product photo. One per bunk berth, on the side wall by the head end (`fromHead` along the bed),
@@ -1752,7 +1761,7 @@ export const FURNITURE = [
   // centred, 73 cm of floor left in front of it; facing north (into the Klk)
   { type: 'nordli', level: 1, x: (3.90 + 5.55) / 2, z: 5.48 - 0.235, rot: 0, w: 1.2, h: 0.99, d: 0.47, rifle: true }, // + the AK-47 in the wide bottom drawer (#196)
   // the mattress centre: the headboard (IDANAS.head) against the east wall
-  { type: 'bed', level: 1, x: 5.55 - IDANAS.head - 1.0, z: 2.3, rot: 90, w: 1.8, l: 2.0, model: 'idanas', sitUp: { tv: 'Sovrum 1' }, pingping: true, // Pingping between the pillows (#269)
+  { type: 'bed', level: 1, x: 5.55 - IDANAS.head - 1.0, z: 2.3, rot: 90, w: 1.8, l: 2.0, model: 'idanas', sitUp: { tv: 'Sovrum 1' }, pingping: true, hotel: true, // Pingping between the pillows (#269), hotel pillows under the head pillows (#308)
     // repeat = metres per texture tile (blooms ~8–15 cm)
     bedding: { pattern: 'chintz', ground: '#adc2b1', repeat: 0.9, flowers: ['#d0696b', '#c9505a', '#e9b7bd', '#d4b45a'],
       leaves: ['#6f7b86', '#8a96a0', '#7f9a83'], throw: 0xdcdcd8, cushion: 0xe2a3ab } },

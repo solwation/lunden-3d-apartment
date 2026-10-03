@@ -104,6 +104,23 @@ f.onload = async () => {
       pass &= check(/sätta dig upp i sängen/i.test(label ?? '') && sat && on && inView && !tv.isOpen, `sitting up in bed (${sp.x > 0 ? 'one' : 'other'} side): "${label}", sat ${sat}, the TV on ${on} and in view ${inView}, off again ${!tv.isOpen}`);
     }
   }
+  // #308/#309: in every bed the eye is clear of the bedding — a ray from 25 cm above the eye straight down meets
+  // nothing before it is 4 cm below the eye (pillows, duvets; a closed pillow round the eye would be hit from above)
+  {
+    const THREE = await w.eval("import('three')");
+    const ray = new THREE.Raycaster();
+    ray.layers.enableAll();
+    const scene = w.__app.scene;
+    scene.updateMatrixWorld(true);
+    for (const t of targets.filter((x) => x.rest === 'lie' || x.spots.some((s) => s.kind === 'lie'))) for (const [si, sp] of t.spots.entries()) {
+      if ((sp.kind ?? t.rest) !== 'lie' && !sp.tv) continue; // lying, or sitting up against the pillows (not hunched under a top bunk)
+      ray.set(sp.pos.clone().setY(sp.pos.y + 0.25), new THREE.Vector3(0, -1, 0));
+      ray.far = 0.6;
+      const hit = ray.intersectObject(scene, true).find((h) => h.object.visible !== false && h.object.isMesh && !h.object.isInstancedMesh && h.object.material?.visible !== false);
+      const gap = hit ? hit.distance - 0.25 : Infinity;
+      pass &= check(gap > 0.04, `${t.name} #${si} (${sp.kind ?? t.rest}): the eye ${gap === Infinity ? 'over nothing within 35 cm' : `${(gap * 100).toFixed(0)} cm over ${hit.object.name || hit.object.material?.name || 'a surface'}`}`);
+    }
+  }
   // #202: turn your head while seated, get up: you look the same way; the old spot behind you → a spot in front
   {
     const t = targets.find((x) => x.name === 'soffan'), sp = t.spots[1];

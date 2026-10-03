@@ -4,7 +4,7 @@ import { mergeStatic } from './merge.js';
 import { restTarget } from './rest.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { addCushions, addFoldedThrow, addDrapedThrow } from './cushions.js';
-import { CUSHIONS, FURNITURE, LANDSKRONA as L, LEVELS, SKANSNAS, IDANAS, PINGPING, MYDAL, OTTOMAN, SYMFONISK, SECRET, NYMANE_WALL, MALM_DECO, YUCCA, LANGLAMPA, VANITY, HEMNES_DAYBED, KPOP_POSTERS, SMASTAD } from './config.js';
+import { CUSHIONS, FURNITURE, LANDSKRONA as L, LEVELS, SKANSNAS, IDANAS, PILLOWS, PINGPING, MYDAL, OTTOMAN, SYMFONISK, SECRET, NYMANE_WALL, MALM_DECO, YUCCA, LANGLAMPA, VANITY, HEMNES_DAYBED, KPOP_POSTERS, SMASTAD } from './config.js';
 import { mirrorMaterial } from './mirror.js';
 import { addReflector } from './reflections.js';
 import { loungesofa, loungetable, parasol, planter } from './patio.js';
@@ -14,6 +14,7 @@ import { rifleModel } from './rifle.js';
 import { laptop } from './laptop.js';
 import { registerRug } from './rugs.js';
 import { pingpingModel } from './pingping.js';
+import { pillow } from './bedding.js';
 import { drawerFill, personFor, Pack as StuffPack, garment, shoes, stack, rolls, rng } from './stuff.js';
 import { Pack, byasDrawer, byasMiddle, bestaContents, attachContents } from './contents.js';
 
@@ -579,7 +580,7 @@ function bed(item) {
   const bedding = new THREE.Group();
   bedding.position.y = dy;
   g.add(bedding);
-  const b = item.bedding;
+  const b = item.bedding, hotelTops = [];
   if (b) {
     const tex = b.pattern === 'chintz' ? chintzTexture(b) : ginghamTexture(b);
     const rep = b.pattern === 'chintz' ? b.repeat : 2 * b.check; // metres per texture repeat
@@ -589,21 +590,32 @@ function bed(item) {
     duv.position.set(0, 0.55, z0 + l * 0.63);
     duv.castShadow = duv.receiveShadow = true;
     bedding.add(duv);
-    // two pillows in check pillowcases, plump, and a dark blue cushion in front of them
-    for (const px of [-w / 4, w / 4]) {
-      // planar UVs in metres (top view) so the pillowcase checks match the duvet's
-      const pg = new THREE.SphereGeometry(1, 20, 12).scale(0.33, 0.08, 0.22);
-      const pp = pg.attributes.position, pu = pg.attributes.uv;
-      for (let i = 0; i < pp.count; i++) pu.setXY(i, pp.getX(i), pp.getZ(i));
-      const pil = new THREE.Mesh(pg, check);
-      pil.position.set(px, 0.6, z0 + 0.27);
-      pil.rotation.x = -0.25;
-      pil.castShadow = true;
-      bedding.add(pil);
-    }
+    // two pillows in the set's cases (#308: real pillow shapes, `pillow` in bedding.js; planar UVs in metres, so the
+    // print matches the duvet's); in Sovrum 1 each lies on a white 70 × 100 hotel pillow (`item.hotel`)
+    const H = PILLOWS.head, pz = z0 + 0.3;
+    (w > 1.2 ? [-w / 4, w / 4] : [0]).forEach((px, k) => {
+      let base = () => 0.002;
+      if (item.hotel) {
+        const P = PILLOWS.hotel, hx = Math.sign(px) * (w / 2 + 0.05 - P.w / 2), hz = z0 + P.d / 2 + 0.005;
+        // its outer edge drapes over the side of the mattress
+        const hg = pillow(P.w, P.d, P.h, { seed: 11 + k, p: 4, under: 0.12, pinch: 0.035, base: (x) => 0.003 - 12 * Math.max(0, Math.abs(hx + x) - w / 2) ** 2 });
+        const hot = new THREE.Mesh(hg, linen);
+        hot.position.set(hx, top, hz);
+        hot.castShadow = hot.receiveShadow = true;
+        g.add(hot);
+        hotelTops.push((x, z) => hg.userData.top(x - hx, z - hz));
+        base = (x, z) => hg.userData.top(x + px - hx, z + pz - hz) + 0.004;
+      }
+      const pil = new THREE.Mesh(pillow(H.w, H.d, H.h, { seed: 3 + k * 5, under: item.hotel ? 0.15 : 0.3, base,
+        dent: { x: 0, z: 0.03, r: 0.14, depth: H.dent } }), check);
+      pil.position.set(px, top, pz);
+      pil.castShadow = pil.receiveShadow = true;
+      g.add(pil);
+    });
     const cushion = new THREE.Mesh(new THREE.SphereGeometry(1, 16, 10), new THREE.MeshStandardMaterial({ color: b.cushion, roughness: 0.9 }));
     cushion.scale.set(0.22, 0.07, 0.16);
-    cushion.position.set(-0.05, 0.64, z0 + 0.5);
+    if (item.hotel) cushion.position.set(-0.05, 0.66, z0 + 0.66); // in front of the hotel pillows
+    else cushion.position.set(-0.05, 0.64, z0 + 0.5);
     cushion.rotation.set(-0.6, 0.15, 0.1);
     cushion.castShadow = true;
     bedding.add(cushion);
@@ -621,7 +633,7 @@ function bed(item) {
   }
   // lying down (#72): head on the pillows, feet towards local +z; one place per side of a double bed
   g.userData.rest = { kind: 'lie', name: 'sängen', verb: 'lägga dig i',
-    spots: (w > 1.2 ? [-w / 4, w / 4] : [0]).map((x) => ({ x, y: top, z: z0 + 0.32 })) };
+    spots: (w > 1.2 ? [-w / 4, w / 4] : [0]).map((x) => ({ x, y: top + (item.hotel ? 0.1 : 0), z: z0 + 0.32 })) }; // the head up on the pillow stack (#308)
   // sitting up against the headboard (#213), chosen by looking at the foot half of the bed; `tv` = the room whose
   // TV comes on while you sit there
   if (item.sitUp) for (const x of (w > 1.2 ? [-w / 4, w / 4] : [0])) {
@@ -630,14 +642,15 @@ function bed(item) {
   // Pingping (#269): sitting up between the pillows, leaning back against the headboard, facing the foot end; a Thing
   if (item.pingping) {
     const pp = pingpingModel();
-    pp.position.set(0, top, z0 + PINGPING.home.z);
+    const lift = Math.max(0, ...hotelTops.map((f) => f(0, z0 + PINGPING.home.z))); // on the hotel pillows' meeting edges (#308)
+    pp.position.set(0, top + lift, z0 + PINGPING.home.z);
     pp.rotation.x = PINGPING.home.tilt;
     g.add(pp);
     (g.userData.keep ??= []).push(pp);
     (g.userData.things ??= []).push({ model: pp, kind: 'pingping', back: 'sängen' });
   }
   // a plush toy can be put down on the duvet (#269; `soft`: not cups and glasses)
-  g.userData.surfaces = [{ x0: -w / 2 + 0.08, x1: w / 2 - 0.08, z0: z0 + 0.45, z1: -z0 - 0.15, y: top + 0.05, soft: true }];
+  g.userData.surfaces = [{ x0: -w / 2 + 0.08, x1: w / 2 - 0.08, z0: z0 + (item.hotel ? 0.74 : 0.45), z1: -z0 - 0.15, y: top + 0.05, soft: true }];
   const hw = item.model === 'idanas' ? IDANAS.W / 2 : w / 2 + 0.03, back = item.model === 'idanas' ? IDANAS.head : 0.08;
   g.userData.footprint = [{ x0: -hw, x1: hw, z0: z0 - back, z1: -z0 + 0.03 }];
   return g;
