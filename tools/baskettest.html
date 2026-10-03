@@ -37,7 +37,7 @@ f.onload = async () => {
   let pass = true;
 
   // the daybed's three drawers: they open, and what is in them shows
-  const drawers = world.furnitureTargets.filter((t) => t.name === 'lådan' && t.object && (() => { const p = t.object.getWorldPosition(new V()); return p.x < 1.4 && p.z > 8.8 && p.z < 11.2 && p.y > 3.2 && p.y < 3.6; })());
+  const drawers = world.furnitureTargets.filter((t) => t.name === 'lådan' && t.object && (() => { const p = t.object.getWorldPosition(new V()); return p.x < 1.4 && p.z > 9.8 && p.z < 12.3 && p.y > 3.2 && p.y < 3.6; })());
   pass &= check(drawers.length === 3, `the daybed has 3 drawers (${drawers.length})`);
   for (const dr of drawers) { dr.toggle(); for (let i = 0; i < 30; i++) dr.update(0.1); }
   pass &= check(drawers.every((dr) => dr.isOpen && dr.contents?.visible), 'open, with shoes / hair things showing');
@@ -47,7 +47,8 @@ f.onload = async () => {
   // the hoop is down until the ball is taken
   run(0.2);
   pass &= check(!hoop.object.visible && hoop.k === 0, 'the hoop is under the asphalt while the ball is in its holder');
-  pass &= check(aim(ball.model, 1, [[1.6, 10], [1.8, 9.6], [1.5, 10.4]], /ta basketbollen/i), `the ball over the daybed: "${btn.textContent}"`);
+  const bz = ball.model.getWorldPosition(new V()).z; // the holder is centred on the daybed (#312: by the window)
+  pass &= check(aim(ball.model, 1, [[1.6, bz], [1.8, bz - 0.4], [1.5, bz + 0.4]], /ta basketbollen/i), `the ball over the daybed: "${btn.textContent}"`);
   btn.click(); step(1 / 60);
   pass &= check(heldItem() === ball, 'the ball in the hand');
   run(1.5);

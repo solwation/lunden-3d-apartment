@@ -650,6 +650,12 @@ export const CAR = {
     inside: { gain: 1, cutoff: 18000 }, open: { gain: 0.75, cutoff: 6000 }, shut: { gain: 0.3, cutoff: 500 } },
 };
 
+// Where Tilly's daybed stands along Sovrum 4's west wall (#312, the user: more open floor): its centre's z, the head end
+// against the window wall — the wall's inner face z 12.2337 (data/plan.json), less the window board's 3 cm nose (world.js:
+// the daybed's end, 83 cm high, overlaps the window's west part, x 0.652…, so it stops short of the board, never in the
+// reveal), less a 4 mm gap, less half its length (HEMNES_DAYBED.W 2.07). The basketball holder and the posters follow it.
+export const DAYBED_Z = 12.2337 - 0.03 - 0.004 - 2.07 / 2;
+
 // Tilly's basketball (src/basket.js, the user): a size 6 ball (Ø 23 cm) in a wall holder over her daybed (Sovrum 4's
 // west wall, x 0.202, centred on the bed, ball centre `y` over the floor). Click shoots it on an arc through the point
 // you look at, coming down onto it at `entry` rad (the rim) or `flat` (anything else); speed up to maxSpeed m/s,
@@ -661,7 +667,7 @@ export const CAR = {
 // Rim 3.05 m, Ø 45 cm, 15 cm in front of the board (regulation); board 112 × 72 cm, its bottom `below` the rim.
 // `assist`: looking within this many metres of the rim aims at the rim. A basket from beyond `three` m is a three.
 export const BASKET = {
-  ball: { r: 0.115, level: 1, x: 0.202, z: 10.0, y: 1.5, held: { x: 0.17, y: -0.17, z: -0.5 },
+  ball: { r: 0.115, level: 1, x: 0.202, z: DAYBED_Z, y: 1.5, held: { x: 0.17, y: -0.17, z: -0.5 },
     gravity: 9.81, entry: 0.85, flat: 0.25, maxSpeed: 13, jitter: 0.015, dribble: 4.6,
     bounce: 0.8, slip: 0.12, roll: 0.8, catch: 0.42 },
   hoop: { x: 7, z: -13.4, rim: 3.05, rimR: 0.23, rimTube: 0.01, rimZ: 0.38, board: [1.12, 0.72], below: 0.15,
@@ -1598,15 +1604,15 @@ export const SMASTAD = {
 // Tilly's K-pop posters (#280, the user): invented groups only — no real idols' names, faces, photos or logos. Each is
 // drawn on one canvas atlas (src/furniture.js `kposterTexture`), taped to the wall (A2 42 × 59.4, A3 29.7 × 42 cm).
 // `wall`: 'west' (face x 0.202) or 'north' (face z 7.804) of Sovrum 4; `at` = z (west) or x (north) of the centre,
-// `y` = centre height over the floor. Over the daybed around the basketball holder (z 10, y 1.5), beside it and on the
+// `y` = centre height over the floor. Over the daybed around the basketball holder (DAYBED_Z, y 1.5), north of it and on the
 // north wall east of the wardrobe (#311); not on the east wall (the vanity, #282) or the window wall. None may be covered
 // by the wardrobe or swept by its open doors (#311, the user: move posters, never cover them; opentest checks it).
 export const KPOP_POSTERS = [
-  { art: 'nova', size: 'A2', wall: 'west', at: 9.27, y: 1.58 },
-  { art: 'moon', size: 'A2', wall: 'west', at: 10.73, y: 1.58 },
-  { art: 'bloom', size: 'A3', wall: 'west', at: 10.0, y: 2.08 },
+  { art: 'nova', size: 'A2', wall: 'west', at: DAYBED_Z - 0.73, y: 1.58 }, // round the holder over the daybed (#312)
+  { art: 'moon', size: 'A2', wall: 'west', at: DAYBED_Z + 0.73, y: 1.58 },
+  { art: 'bloom', size: 'A3', wall: 'west', at: DAYBED_Z, y: 2.08 },
   { art: 'lumi', size: 'A2', wall: 'north', at: 1.3, y: 1.6 },     // east of the wardrobe, short of the switch (#311)
-  { art: 'starlyt', size: 'A2', wall: 'west', at: 11.5, y: 1.58 }, // clear of the wardrobe's open left door (#311)
+  { art: 'starlyt', size: 'A2', wall: 'west', at: 9.5, y: 1.58 }, // between the wardrobe's open left door (#311) and nova
 ];
 
 // Långlampan (#270, docs/langlampan.jpg): a tall slim tube of coarse natural linen with a spiral wire frame and several
@@ -1844,8 +1850,8 @@ export const FURNITURE = [
   { type: 'gamingdesk', level: 1, x: 2.75 + 0.35, z: 12.23 - 0.7, rot: -90, w: 1.4, d: 0.7, fps: 12 },
   { type: 'gamingchair', level: 1, x: 2.75 + 0.35 + 0.62, z: 12.23 - 0.7, rot: 90 },
   // Sovrum 4 (Tilly): IKEA HEMNES dagbädd m 3 lådor, vit, 207 × 89 × 83 cm (ikea.com, HEMNES_DAYBED), back to the
-  // west wall, charcoal and lilac bedding (#280). rot = the way the seat faces.
-  { type: 'daybed', level: 1, x: 0.2 + 0.46, z: 10.0, rot: -90 },
+  // west wall, charcoal and lilac bedding (#280), its head end by the window (#312, DAYBED_Z). rot = the way the seat faces.
+  { type: 'daybed', level: 1, x: 0.2 + 0.46, z: DAYBED_Z, rot: -90 },
   // Tilly's vanity (#282, VANITY): against the east wall (face x 2.632) south of the door's swing, short of the window
   // corner; the drawer column at the north end, the free end (the laptop, #283) towards the window; the stool in front
   { type: 'vanity', level: 1, x: 2.632 - VANITY.d / 2 - 0.004, z: 11.45, rot: 90 },
