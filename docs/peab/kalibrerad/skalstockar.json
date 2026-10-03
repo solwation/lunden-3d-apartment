@@ -1,0 +1,240 @@
+[
+  {
+    "name": "00_situationsplan",
+    "source": "original/lunden-planritningsbroschyr-webb-2024-12-18.pdf",
+    "source_pdf_page": 3,
+    "source_printed_page": 5,
+    "source_clip_points": [
+      595.2750244140625,
+      0.0,
+      1190.550048828125,
+      841.8900146484375
+    ],
+    "output_pdf_size_points": [
+      0.0,
+      0.0,
+      595.2750244140625,
+      841.8900146484375
+    ],
+    "png_dpi": 300,
+    "status": "original artwork extracted; no redrawing"
+  },
+  {
+    "name": "01_suterrang",
+    "source": "original/lunden-planritningsbroschyr-webb-2024-12-18.pdf",
+    "source_pdf_page": 24,
+    "source_printed_page": 46,
+    "source_clip_points": [
+      0.0,
+      0.0,
+      595.2750244140625,
+      841.8900146484375
+    ],
+    "output_pdf_size_points": [
+      0.0,
+      0.0,
+      595.2750244140625,
+      841.8900146484375
+    ],
+    "png_dpi": 300,
+    "status": "original artwork extracted; no redrawing",
+    "scale_bar": {
+      "length_m": 25,
+      "start_svg_xy": [
+        386.2590026855469,
+        739.5617065429688
+      ],
+      "end_svg_xy": [
+        527.9150390625,
+        739.5617065429688
+      ],
+      "m_per_svg_unit": 0.17648383111238455,
+      "method": "visually verified 0–25 m scale bar; vector endpoints extracted",
+      "accuracy": "graphic calibration only; no survey accuracy implied"
+    }
+  },
+  {
+    "name": "02_vaning_1",
+    "source": "original/lunden-planritningsbroschyr-webb-2024-12-18.pdf",
+    "source_pdf_page": 24,
+    "source_printed_page": 47,
+    "source_clip_points": [
+      595.2750244140625,
+      0.0,
+      1190.550048828125,
+      841.8900146484375
+    ],
+    "output_pdf_size_points": [
+      0.0,
+      0.0,
+      595.2750244140625,
+      841.8900146484375
+    ],
+    "png_dpi": 300,
+    "status": "original artwork extracted; no redrawing",
+    "scale_bar": {
+      "length_m": 25,
+      "start_svg_xy": [
+        386.00360107421875,
+        739.5126953125
+      ],
+      "end_svg_xy": [
+        527.6595458984375,
+        739.5126953125
+      ],
+      "m_per_svg_unit": 0.1764839451745041,
+      "method": "visually verified 0–25 m scale bar; vector endpoints extracted",
+      "accuracy": "graphic calibration only; no survey accuracy implied"
+    }
+  },
+  {
+    "name": "03_vaning_2",
+    "source": "original/lunden-planritningsbroschyr-webb-2024-12-18.pdf",
+    "source_pdf_page": 25,
+    "source_printed_page": 48,
+    "source_clip_points": [
+      0.0,
+      0.0,
+      595.2750244140625,
+      841.8900146484375
+    ],
+    "output_pdf_size_points": [
+      0.0,
+      0.0,
+      595.2750244140625,
+      841.8900146484375
+    ],
+    "png_dpi": 300,
+    "status": "original artwork extracted; no redrawing",
+    "scale_bar": {
+      "length_m": 25,
+      "start_svg_xy": [
+        386.00299072265625,
+        739.5617065429688
+      ],
+      "end_svg_xy": [
+        527.6589965820312,
+        739.5617065429688
+      ],
+      "m_per_svg_unit": 0.1764838691330747,
+      "method": "visually verified 0–25 m scale bar; vector endpoints extracted",
+      "accuracy": "graphic calibration only; no survey accuracy implied"
+    }
+  },
+  {
+    "name": "04_vaning_3",
+    "source": "original/lunden-planritningsbroschyr-webb-2024-12-18.pdf",
+    "source_pdf_page": 25,
+    "source_printed_page": 49,
+    "source_clip_points": [
+      595.2750244140625,
+      0.0,
+      1190.550048828125,
+      841.8900146484375
+    ],
+    "output_pdf_size_points": [
+      0.0,
+      0.0,
+      595.2750244140625,
+      841.8900146484375
+    ],
+    "png_dpi": 300,
+    "status": "original artwork extracted; no redrawing",
+    "scale_bar": {
+      "length_m": 25,
+      "start_svg_xy": [
+        386.25946044921875,
+        739.5617065429688
+      ],
+      "end_svg_xy": [
+        527.9154052734375,
+        739.5617065429688
+      ],
+      "m_per_svg_unit": 0.1764839451745041,
+      "method": "visually verified 0–25 m scale bar; vector endpoints extracted",
+      "accuracy": "graphic calibration only; no survey accuracy implied"
+    }
+  },
+  {
+    "name": "05_vaning_4",
+    "source": "original/lunden-planritningsbroschyr-webb-2024-12-18.pdf",
+    "source_pdf_page": 26,
+    "source_printed_page": 50,
+    "source_clip_points": [
+      0.0,
+      0.0,
+      595.2750244140625,
+      841.8900146484375
+    ],
+    "output_pdf_size_points": [
+      0.0,
+      0.0,
+      595.2750244140625,
+      841.8900146484375
+    ],
+    "png_dpi": 300,
+    "status": "original artwork extracted; no redrawing",
+    "scale_bar": {
+      "length_m": 25,
+      "start_svg_xy": [
+        386.1310119628906,
+        739.5367431640625
+      ],
+      "end_svg_xy": [
+        527.7869873046875,
+        739.5367431640625
+      ],
+      "m_per_svg_unit": 0.1764839071537812,
+      "method": "visually verified 0–25 m scale bar; vector endpoints extracted",
+      "accuracy": "graphic calibration only; no survey accuracy implied"
+    }
+  },
+  {
+    "name": "06_vaning_5",
+    "source": "original/lunden-planritningsbroschyr-webb-2024-12-18.pdf",
+    "source_pdf_page": 26,
+    "source_printed_page": 51,
+    "source_clip_points": [
+      595.2750244140625,
+      0.0,
+      1190.550048828125,
+      841.8900146484375
+    ],
+    "output_pdf_size_points": [
+      0.0,
+      0.0,
+      595.2750244140625,
+      841.8900146484375
+    ],
+    "png_dpi": 300,
+    "status": "original artwork extracted; no redrawing",
+    "scale_bar": {
+      "length_m": 25,
+      "start_svg_xy": [
+        386.00360107421875,
+        739.5617065429688
+      ],
+      "end_svg_xy": [
+        527.6595458984375,
+        739.5617065429688
+      ],
+      "m_per_svg_unit": 0.1764839451745041,
+      "method": "visually verified 0–25 m scale bar; vector endpoints extracted",
+      "accuracy": "graphic calibration only; no survey accuracy implied"
+    }
+  },
+  {
+    "name": "07_L1007_original_sida_1",
+    "source": "original/240822-bofakta-l1002-l1003-l1004-l1005-l1006-l1007---.pdf_66dad49f-ce74-ef11-a670-002248a08468_2327882.pdf",
+    "source_pdf_page": 1,
+    "png_dpi": 300,
+    "status": "original artwork; page 1 includes both storeys, page 2 legend/scale"
+  },
+  {
+    "name": "07_L1007_original_sida_2",
+    "source": "original/240822-bofakta-l1002-l1003-l1004-l1005-l1006-l1007---.pdf_66dad49f-ce74-ef11-a670-002248a08468_2327882.pdf",
+    "source_pdf_page": 2,
+    "png_dpi": 300,
+    "status": "original artwork; page 1 includes both storeys, page 2 legend/scale"
+  }
+]

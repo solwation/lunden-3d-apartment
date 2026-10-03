@@ -77,6 +77,9 @@ src/interior.js        fitted kitchen, laundry, bathroom fittings, tiled floors/
                        TILED_ROOMS in config); merged into one mesh per material
 docs/                  reference images in git (site map screenshot; docs/peab/ = pages of Peab's plan
                        brochure: situation plan, overview plans per floor, unit plans, aerial render)
+                       docs/peab/kalibrerad/ = the overview plans + situation plan at 300 dpi from the
+                       collected Peab material, skalstockar.json (m per PDF unit from each 0–25 m scale bar),
+                       modell-mot-plan.jpg (the current model's footprints over the situation plan)
 textures/              image textures the page loads (published by stamp.sh): stair-pictures.jpg = the 2 × 2 atlas
                        of the stair pictures (#220), cropped/straightened from docs/tavla-trappa-*.jpg
 material/              screenshots of our choices in Peab's option portal (local, see below)
