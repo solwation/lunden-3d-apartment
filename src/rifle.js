@@ -8,7 +8,7 @@ import { Trinket, KINDS } from './things.js';
 // rides with its drawer while at home, E takes it, it can be put down like the other things. Click = one shot,
 // held (mouse button / the touch button) = automatic fire at R.rpm; a short muzzle flash, a crack (sfx.gunshot).
 // Shots are hitscan from the eye: a bullet hole where they land (marks.js 'hole'), the lawn target scores (#99),
-// the cat meows. After R.mag shots the empty magazine is pulled out and dropped (it lies on the floor until F or
+// the cat hisses and runs off (#288, cat.hurt). After R.mag shots the empty magazine is pulled out and dropped (it lies on the floor until F or
 // R.magLife s), a fresh one clicks in; no shooting while reloading.
 
 const steel = new THREE.MeshStandardMaterial({ color: 0x1d1e20, roughness: 0.45, metalness: 0.6 });
@@ -116,7 +116,7 @@ export class Rifle extends Trinket {
     const dir = new THREE.Vector3((Math.random() - 0.5) * R.spread, (Math.random() - 0.5) * R.spread, -1).normalize().applyQuaternion(cam.getWorldQuaternion(new THREE.Quaternion()));
     const h = this.marks?.hit(from, from.clone().addScaledVector(dir, R.range), { weapon: 'rifle', glass: true }); // a glass or bottle shatters (#263)
     if (h && !h.broke) {
-      if (h.cat) this.cat?.meowNow?.();
+      if (h.cat) this.cat?.hurt?.('rifle', from); // it hisses and flees (#288)
       else if (h.object.userData.target) { h.object.userData.target.hit(h.point, from); this.marks.add('hole', h, { force: true }); }
       else this.marks.add('hole', h, { force: true });
     }

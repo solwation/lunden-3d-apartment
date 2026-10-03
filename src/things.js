@@ -73,9 +73,20 @@ export class Glass extends Thing {
       blockedText: { get: () => (self.pourable ? `${self.name[0].toUpperCase()}${self.name.slice(1)} är fullt` : null), configurable: true },
     });
     this.takeTarget.toggle = () => this.press();
+    this.takeTarget.overflow = () => this.overflow();
   }
 
   get fill() { return this.contents.total; }
+
+  /** E on it full anyway, with something that pours in the hand: it runs over (#288) — the bottle tips, nothing more goes
+   * in; the spill's place (world) and colour, or null. main.js makes the splash and the deduction. */
+  overflow() {
+    const src = this.source;
+    if (!src || this.contents.pouring || pourAmount('glass', src.drink, this.fill) > 0) return null;
+    src.pour?.(D.secs);
+    sfx.pour(this.where(), D.secs);
+    return { at: this.where(), color: D[src.drink]?.color ?? 0xffffff };
+  }
   /** The held thing that pours, if it can pour into this glass now (the glass standing out, #167). */
   get source() { const h = heldItem(); return h?.drink && D.pour.glass[h.drink] && this.placed && !this.held ? h : null; }
   get pourable() { return !!this.source; }

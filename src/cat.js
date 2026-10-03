@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { LEVELS, CAT_FISH, CAT_LEAVE, CAT_FURNITURE, CAT_WALK, CAT_TAIL_UP, REST } from './config.js';
+import { LEVELS, CAT_FISH, CAT_LEAVE, CAT_FURNITURE, CAT_WALK, CAT_TAIL_UP, CAT_HURT, REST } from './config.js';
 import { stairHeight } from './stairs.js';
 import { sfx } from './audio.js';
 
@@ -351,6 +351,27 @@ export class CatSpawner {
   /** Meow right away (the lightsaber touched it, #96). */
   meowNow() { if (this.visible && !this.petting) this.nextMeow = 0; }
 
+  /**
+   * Shot, cut or hit (#288, `weapon`: rifle, dart, saber, wand; `from` = where it came from): the cat hisses, runs off
+   * away from it and fades (nothing graphic), and no cat turns up behind a door for CAT_HURT.away s. Once per flight:
+   * hits while it runs do nothing. `onHurt(weapon)` (main.js: a deduction). True if it counted.
+   */
+  hurt(weapon, from = null) {
+    if (!this.visible || this.leaving?.hurt) return false;
+    const p = this.object.position;
+    this.stopPetting();
+    this.dropFish();
+    sfx.hiss({ x: p.x, y: p.y + 0.3, z: p.z }, this.variant.pitch * (this.breed.pitch ?? 1));
+    if (from) this.petFrom = { x: from.x, z: from.z };
+    this.tailUp = false;
+    this.leave();
+    this.leaving.hurt = true;
+    this.leaving.speed = CAT_LEAVE.speed * CAT_HURT.speed;
+    this.awayFor = CAT_HURT.away;
+    this.onHurt?.(weapon);
+    return true;
+  }
+
   /** Rare breeds have their own voice (meow + purr in audio.js); null = the ordinary cat. */
   get voice() { return this.breed.rare ? this.breed.voice ?? null : null; }
 
@@ -366,6 +387,7 @@ export class CatSpawner {
   /** Call when the player opens `door` from `from` (player position). */
   onOpen(door, from) {
     if (door.name === 'ytterdörren') return;
+    if (this.awayFor > 0 && !this.visible) return; // a cat that was hurt keeps away for a while (#288)
     if (this.visible && this.door === door) {
       if (!this.closedSince) return;
       if (this.rand() < this.chance.vanish) this.hide();
@@ -400,6 +422,7 @@ export class CatSpawner {
     const p = this.object.position;
     this.dropFish(); // petting beats a fish finger
     if (this.tailUp && !this.forceTail) { this.tailUp = false; this.tailWait = this.nextTailWait(); } // it sits for the pat
+    if (this.leaving?.hurt) return; // running from being hurt: no pat (#288)
     if (this.leaving) { this.leaving = null; this.setOpacity(1); this.object.position.y = this.leaveY ?? this.object.position.y; } // petted again on its way: it stays
     if (!this.petting) {
       this.petPhase = 0;
@@ -545,6 +568,7 @@ export class CatSpawner {
   }
 
   update(dt) {
+    if (this.awayFor > 0) this.awayFor -= dt;
     if (!this.visible) return;
     this.wantStand = 0;
     this.walked = false;
@@ -769,13 +793,13 @@ export class CatSpawner {
     o.rotation.y = yaw;
     this.head.rotation.set(0.1, 0, 0);
     if (turn >= 1 && this.standing) {
-      const go = Math.min(CAT_LEAVE.speed * dt, Math.max(0, L.d - L.gone));
+      const go = Math.min((L.speed ?? CAT_LEAVE.speed) * dt, Math.max(0, L.d - L.gone));
       o.position.x += Math.sin(L.yaw) * go; o.position.z += Math.cos(L.yaw) * go;
       L.gone += go;
       if (go > 0) this.stride(go);
       this.tailGroup.rotation.y = 0.3 * Math.sin(L.t * 4.5);
     }
-    const walkTime = L.d / CAT_LEAVE.speed + 0.5 + CAT_WALK.rise, fadeFrom = Math.max(0.5, walkTime - CAT_LEAVE.fade);
+    const walkTime = L.d / (L.speed ?? CAT_LEAVE.speed) + 0.5 + CAT_WALK.rise, fadeFrom = Math.max(0.5, walkTime - CAT_LEAVE.fade);
     const a = 1 - THREE.MathUtils.clamp((L.t - fadeFrom) / CAT_LEAVE.fade, 0, 1);
     this.setOpacity(a);
     if (a <= 0) { this.hide(); this.onLeft?.(); }

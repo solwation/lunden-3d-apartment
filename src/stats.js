@@ -5,7 +5,7 @@ import { SECRET, SCORE } from './config.js';
 const KEY = 'lunden.stats';
 
 const fresh = () => ({ cats: 0, rare: 0, byVariant: {}, petted: 0, doors: 0, lids: 0, flushes: 0, taps: 0, fridge: 0, appliances: 0, cabinets: 0, beer: 0, coffee: 0, fish: 0, turbo: 0, shots: 0, fried: 0, burnt: 0, catFish: 0, chicken: 0, wine: 0, champagne: 0, whisky: 0, milk: 0, kask: 0, posted: 0, thrown: 0, lights: 0, sat: 0, lay: 0, steps: 0, metres: 0, stairs: 0, seconds: 0, visited: {}, secrets: 0, secretKinds: {}, catPhotos: 0, grill: 0, hood: 0, songs: 0, carMusic: 0, read: 0, car: 0, magic: 0, target: 0, baskets: 0, threes: 0,
-  byBreed: {}, seen: {}, secretRare: {}, tv: 0, pc: 0, parasol: 0, clock: 0, calendar: 0, cooked: 0, brews: 0, drawn: 0, splashes: 0, cuts: 0, dribbles: 0, catButts: 0, shattered: 0, shatterRange: 0, pingpingHugs: 0, blinds: 0, airfried: 0, clips: 0 });
+  byBreed: {}, seen: {}, secretRare: {}, tv: 0, pc: 0, parasol: 0, clock: 0, calendar: 0, cooked: 0, brews: 0, drawn: 0, splashes: 0, cuts: 0, dribbles: 0, catButts: 0, shattered: 0, shatterRange: 0, pingpingHugs: 0, blinds: 0, airfried: 0, clips: 0, penalties: {}, penaltyPoints: 0 });
 
 function load() {
   try {
@@ -76,14 +76,26 @@ export function renderScore() {
     plusEl.textContent = `+${plusSum}`;
     plusEl.classList.remove('pop'); void plusEl.offsetWidth; plusEl.classList.add('pop');
     clearTimeout(plusTimer);
+    plusEl.classList.remove('minus');
     plusTimer = setTimeout(() => { plusTimer = 0; plusEl.textContent = ''; plusEl.classList.remove('pop'); }, 1800);
   }
   lastScore = t;
 }
 
+/** A deduction pops up red next to the score: "−N" and why (#288). */
+function showMinus(pts, reason) {
+  if (!plusEl) return;
+  clearTimeout(plusTimer);
+  plusTimer = 0; plusSum = 0;
+  plusEl.textContent = `−${pts} ${reason}`;
+  plusEl.classList.add('minus');
+  plusEl.classList.remove('pop'); void plusEl.offsetWidth; plusEl.classList.add('pop');
+  plusTimer = setTimeout(() => { plusTimer = 0; plusEl.textContent = ''; plusEl.classList.remove('pop', 'minus'); }, 2600);
+}
+
 /** The visitor's score (#198): SCORE in config — points per event, per distinct thing the first time and less every
  * time after, cats by breed, the secret drawer by kind. */
-export function totalScore() { return Math.floor(rawScore() + 1e-9); }
+export function totalScore() { return Math.floor(Math.max(0, rawScore() - (stats.penaltyPoints ?? 0)) + 1e-9); }
 /** The score before rounding down (the small points for repeats are fractions). */
 export function rawScore() {
   const S = SCORE, n = (o) => Object.keys(o ?? {}).length;
@@ -113,6 +125,28 @@ export function bump(key, n = 1, id = key) {
   renderScore();
   if (BADGES[key] && fresh) badge(BADGES[key]);
   if (key === 'steps' && stats.steps % STEP_BADGE === 0) badge(`👣 ${stats.steps} steg`, false);
+}
+
+// what the deductions are called (#288): the red "−N" next to the score, and the stats panel
+const PENALTY_TEXT = { fridgeOpen: 'Kylen stod öppen', freezerOpen: 'Frysen stod öppen', fridgeLonger: 'Kylen står fortfarande öppen',
+  freezerLonger: 'Frysen står fortfarande öppen', burnt: 'Bränt!', smokeAlarm: 'Brandlarmet!', spill: 'Spill',
+  catShot: 'Stackars katten!' };
+const PENALTY_ROWS = [['Kyl/frys öppen', ['fridgeOpen', 'freezerOpen', 'fridgeLonger', 'freezerLonger']], ['bränt', ['burnt']],
+  ['brandlarm', ['smokeAlarm']], ['spill', ['spill']], ['katten', ['catShot']]];
+
+/** A deduction (#288, SCORE.penalties): `key` (+ `sub`, the weapon for catShot); the freezer's keys use the fridge's
+ * points. Counted in stats.penalties; takes at most what the score has, so it never goes below 0 (and leaves no debt). */
+export function penalize(key, sub = null) {
+  const P = SCORE.penalties, base = key.replace('freezer', 'fridge');
+  const pts = (sub ? P[base]?.[sub] : P[base]) ?? 0;
+  const id = sub ? `${key}:${sub}` : key;
+  stats.penalties[id] = (stats.penalties[id] ?? 0) + 1;
+  const take = Math.min(pts, Math.max(0, rawScore() - (stats.penaltyPoints ?? 0)));
+  stats.penaltyPoints = (stats.penaltyPoints ?? 0) + take;
+  dirty = true;
+  renderScore();
+  showMinus(Math.round(take), PENALTY_TEXT[key] ?? '');
+  return take;
 }
 
 /** A surprise found in the secret drawer (#183): counted, and which kinds have been seen. */
@@ -225,6 +259,8 @@ export function statRows() {
     ['🪜 Trappturer', `${stats.stairs}`],
     ['🏠 Rum besökta', `${Object.keys(stats.visited).length}${roomTotal ? ` av ${roomTotal}` : ''}`],
     ['⏱ Tid i lägenheten', fmtTime(stats.seconds)],
+    ['😬 Avdrag', `−${Math.round(stats.penaltyPoints ?? 0)}`, PENALTY_ROWS.map(([t, keys]) => [t, Object.entries(stats.penalties ?? {})
+      .filter(([k]) => keys.includes(k.split(':')[0])).reduce((n, [, v]) => n + v, 0)]).filter(([, n]) => n).map(([t, n]) => `${t} ${n}`).join(', ')],
   ];
 }
 

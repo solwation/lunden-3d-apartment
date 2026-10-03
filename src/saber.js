@@ -8,7 +8,7 @@ import { Holdable } from './holdable.js';
 // clicking swings it with a whoosh that follows the speed. E on the empty hooks hangs it back (off). The
 // blade glows with emissive and additive materials only (no lights). When the blade cuts into a wall, the
 // floor or a piece of furniture (#96) it leaves a burn mark with a puff of smoke (marks.js) and sizzles;
-// the cat only meows.
+// the cat hisses and runs off (#288, cat.hurt).
 
 const hiltMat = new THREE.MeshStandardMaterial({ color: 0xc9cdd2, roughness: 0.25, metalness: 0.9 });
 const gripMat = new THREE.MeshStandardMaterial({ color: 0x1a1a1c, roughness: 0.6 });
@@ -104,7 +104,7 @@ export class Saber extends Holdable {
   burnCheck() {
     const h = this.marks.hit(this.camera.getWorldPosition(new THREE.Vector3()), this.tip(), { weapon: 'saber' }); // cuts glass and bottles to pieces (#263)
     if (!h || h.broke) return;
-    if (h.cat) { if (this.meowT <= 0) { this.cat?.meowNow?.(); this.meowT = 2; } return; }
+    if (h.cat) { this.cat?.hurt?.('saber', this.camera.getWorldPosition(new THREE.Vector3())); return; } // it hisses and flees (#288)
     if (this.marks.burn(h)) {
       this.burns = (this.burns ?? 0) + 1; sfx.sizzle(h.point); this.onBurn?.();
       h.object.userData.target?.hit(h.point, this.camera.getWorldPosition(new THREE.Vector3())); // a cut in the target scores (#179)

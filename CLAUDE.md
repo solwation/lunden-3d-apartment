@@ -321,7 +321,9 @@ cloudflare/            the Worker (NOT published on Pages): worker.js (API, limi
                        .github/workflows/cloud.yml redeploys on cloudflare/** changes when the repo has Cloudflare secrets
 src/calendar.js        the cat calendar (CALENDAR): a cat per month, the days, the chosen date; #cal-panel picks it
 src/fridge.js          the fridge: hollow, lit, opens with E (in world.lids); `shelfSpot` = the chicken's place; the freezer is
-                       the same class (`freezer: true`, #161): drawers + shelves, the changelog note rides on its door
+                       the same class (`freezer: true`, #161): drawers + shelves, the changelog note rides on its door;
+                       open past FRIDGE_ALARM.after s it beeps and a red LED blinks (`onAlarm` → a deduction, #288; the note
+                       open pauses the freezer's timer, `paused`); F shuts both
 src/catboard.js        cork board in the kitchen (under the wall clock): a real-size Polaroid (offscreen render, #225; the board's
                        size follows from CAT_BOARD.polaroid / cols / rows / gap) of every petted cat,
                        CAT_BOARD.max of them in IndexedDB 'lunden'/'catPhotos', captioned with name + time; E opens
@@ -379,6 +381,11 @@ src/stats.js           visitor statistics (localStorage), "+1" badges per event,
                        time (`bump(key, n, id)`, main.js `idOf(thing)` = name + position; doors, lamps, seats, taps, fronts,
                        songs, rooms, new cat coats) and `again` (fractions) every time after, `breeds` = per cat by how rare
                        its breed is, `secrets` = per surprise kind (+ rare kinds); `rawScore()` unrounded. Repeats show no badge
+                       Deductions (#288, SCORE.penalties, `penalize(key, sub)`): the fridge/freezer door alarm (and more while it
+                       beeps), food burnt, the smoke alarm, a spill (E on a full glass/cup with a pourer: it runs over, a splash),
+                       a cat shot / cut / hit (by weapon); a red "−N reason" by the score, `stats.penalties` counts, the "Avdrag"
+                       row; a deduction takes at most what the score has (`penaltyPoints`): never below 0, no debt. The
+                       leaderboard gets the net score (the Worker keeps each row's best)
 src/screens.js         TV programmes drawn on a canvas (PROGRAMS: space, underwater, superheroes, unicorn …), channel
                        snow, the Ambilight colour per programme; `Screen` is shared by the TVs in furniture.js
 src/detail.js          DetailCuller (#189): far-away small meshes and things inside the flat hidden by its walls (seen from
@@ -403,7 +410,9 @@ tools/watertest.html   headless test: aim at every tap/shower, turn it on and of
 tools/lighttest.html   headless test: aim at every light switch / floor lamp, toggle it
 tools/pettest.html     headless test of petting the cat (eyes, hand, stats counter, the photo; then it walks off and is gone)
 tools/scoretest.html   headless test: points from 0, a door (again: a little), the grill, a fish finger the cat eats, cats by breed
-                       (+ a new coat), 100 sips (no cap), a basket / a three, secret kinds (+ rare), the balance, reset
+                       (+ a new coat), 100 sips (no cap), a basket / a three, secret kinds (+ rare), the balance; deductions (#288):
+                       the fridge alarm (+ longer, the note pauses the freezer), a burnt fish finger, the smoke alarm, a spill, the cat
+                       shot (hiss, flight, once, no cat for a while), never below 0 / no debt, the red "−N"; reset
 tools/notetest.html    headless test of the changelog note ("Nytt", read/close, no walking, swings with the freezer door;
                        scrolling keys, a W held from before ignored, #275)
 tools/patiotest.html   headless test of the patio seasons (parasol, beers, snowman) + sofa collision
@@ -821,6 +830,9 @@ screenshots into the session scratchpad, not the repo.
   bed or table top in that room `chance` of the time (one seen straight from the doorway within `reach`; the height from a
   ray down onto the furniture, so it sits on the cushion and never in something on a table; `cat.on` = 'sit'/'lie'/
   'table'). `chooseSpot` skips the seat it is on; after a pat it fades where it sits; it ignores fish fingers up there.
+- Hurt (#288, `hurt(weapon, from)`, CAT_HURT): a rifle bullet, a dart, the lightsaber or a wand's magic on the cat makes it
+  hiss (`sfx.hiss`) and run off (`leave`, faster, no pat stops it), once per flight; no cat turns up behind a door for
+  `away` s; `onHurt` → a deduction. Nothing graphic.
 - After a pat (#206, `CAT_LEAVE`, `leave`/`updateLeaving` in cat.js) the cat turns, walks off away from the visitor along
   the clearest straight line (walls, doors, furniture) and fades out (its materials are transparent at opacity 1 all
   the time: no recompile); petted again on the way, it stays. The board photo is taken 0.7 s of game time into the pat

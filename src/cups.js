@@ -216,7 +216,7 @@ export class Cup {
       state: 'cabinet', contents: new Contents(), held: false, steamT: 0, heat: 0, coffeeWas: 0, milkWas: 0, grip: [C.r + 0.03, C.h * 0.45, 0] }); // grip: the hand on the handle (#195)
     const cup = this;
     this.target = { get name() { return cup.kask ? 'koppen med kaffekask' : 'koppen'; }, kind: 'cup', pickable: g, cup: this, item: this, get verb() { return cup.verb; },
-      get blocked() { return cup.blocked; }, get blockedText() { return cup.blockedText; }, toggle: () => this.press() };
+      get blocked() { return cup.blocked; }, get blockedText() { return cup.blockedText; }, toggle: () => this.press(), overflow: () => this.overflow() };
     g.traverse((m) => { m.userData.door = this.target; });
     scene.add(g);
     g.position.copy(homePos);
@@ -253,6 +253,18 @@ export class Cup {
     if (this.pourable && this.jug) return this.jug.fill > 0.05 ? 'hälla kaffe i' : 'koka kaffe först, sedan hälla i';
     if (this.pourable) return `hälla ${drinkName(this.source.drink)} i`;
     return 'ta';
+  }
+
+  /** E on it full anyway, with something that pours in the hand: it runs over (#288); the spill's place and colour, or
+   * null (an empty jug pours nothing). main.js makes the splash and the deduction. */
+  overflow() {
+    const src = this.source;
+    if (!this.pourable || !this.blocked || this.contents.pouring) return null;
+    const at = this.model.getWorldPosition(new THREE.Vector3());
+    if (src.isJug) { if (src.fill < 0.05) return null; src.pour(Math.min(src.fill, 0.05), 1.2); sfx.pour(at); return { at, color: D.coffee.color }; }
+    src.pour?.(D.secs);
+    sfx.pour(at, D.secs);
+    return { at, color: D[src.drink]?.color ?? 0xffffff };
   }
 
   /** Only coffee, up to `f` (tests). */

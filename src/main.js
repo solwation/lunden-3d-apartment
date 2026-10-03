@@ -9,7 +9,7 @@ import { CatSpawner, VARIANTS, BREEDS } from './cat.js';
 import { initAudio, sfx, toggleMuted, isMuted, updateListener } from './audio.js';
 import { stairHeight } from './stairs.js';
 import { loadChangelog, renderChangelog, buildNote, scrollNote } from './changelog.js';
-import { setScoreElement, totalScore, setStatsExtra, stats, bump, badge, catFound, secretFound, renderStats, resetStats, visitRoom, setRoomTotal, setBadgeElement } from './stats.js';
+import { setScoreElement, totalScore, setStatsExtra, stats, bump, badge, catFound, secretFound, renderStats, resetStats, visitRoom, setRoomTotal, setBadgeElement, penalize } from './stats.js';
 import { Minimap } from './minimap.js';
 import { Measure } from './measure.js';
 import { cloudTexture } from './surroundings.js';
@@ -291,7 +291,7 @@ const fish = buildFish(scene, camera, world); // fish fingers in the freezer, on
 if (fish) fish.onEaten = () => bump('fish');
 const pan = world.panDrawer ? new Pan(scene, camera, world.panDrawer, world.hob) : null; // the frying pan in the drawer under the hob (#159)
 if (pan) holdables.push(pan);
-if (fish) Object.assign(fish, { pan, hob: world.hob, onFried: () => bump('fried'), onBurnt: () => bump('burnt') }); // fish fingers fry in the pan too (#214)
+if (fish) Object.assign(fish, { pan, hob: world.hob, onFried: () => bump('fried'), onBurnt: () => { bump('burnt'); penalize('burnt'); } }); // fish fingers fry in the pan too (#214); burnt: a deduction (#288)
 // the air fryer on the worktop in the corner left of the freezer (#287): a loose thing (F hides it)
 const airFryer = new AirFryer(KITCHEN.baseTop + KITCHEN.worktop);
 scene.add(airFryer.object);
@@ -307,6 +307,9 @@ const grill = new Grill(); // the courtyard's kettle grill: E lights it (#204)
 scene.add(grill.object);
 lights.extra.push(grill.lamp);
 scene.add(smokeAlarm.object);
+smokeAlarm.onRing = () => penalize('smokeAlarm'); // a deduction (#288)
+// the fridge and freezer beep when left open too long: a deduction when it starts, a little more while it goes on (#288)
+for (const l of world.lids) if (l.kind === 'fridge') l.onAlarm = (longer) => penalize(`${l.freezer ? 'freezer' : 'fridge'}${longer ? 'Longer' : 'Open'}`);
 if (chicken) { chicken.hood = world.hood; chicken.onEaten = () => bump('chicken'); chicken.onCooked = () => bump('cooked'); }
 const turbo = new Turbo({ el: document.getElementById('turbo'), edge: document.getElementById('turbo-edge') }); // three cups of coffee: Kaffeturbo! (#217)
 turbo.onStart = () => bump('turbo');
@@ -444,6 +447,7 @@ const leaderboard = new Leaderboard(cloud.url, totalScore, { nameRow: document.g
 setStatsExtra(() => leaderboard.html());
 cloud.ready = cloud.on ? Promise.all([postersLoaded, boardLoaded]).then(() => cloud.sync()) : Promise.resolve(); // (tests wait on it)
 cat.onPet = () => bump('petted');
+cat.onHurt = (weapon) => penalize('catShot', weapon); // shot, cut or hit: it hisses and flees (#288)
 cat.onPhoto = () => { // 0.7 s into the pat (cat.js), before it walks off (#206)
   bump('catPhotos');
   const head = cat.head.getWorldPosition(new THREE.Vector3());
@@ -779,6 +783,13 @@ function standUp() {
   camera.position.y = player.eyeY;
   sfx.rustle(camera.position);
 }
+/** A drink run over (#288, `o` = { at, color } from a glass / cup's overflow): a splash on the surface beside it, a deduction. */
+function spill(o) {
+  const side = new THREE.Vector3(camera.position.x - o.at.x, 0, camera.position.z - o.at.z).normalize().multiplyScalar(0.07);
+  const from = o.at.clone().add(side), h = marks.hit(from.clone().setY(o.at.y + 0.12), from.clone().setY(o.at.y - 0.4));
+  if (h?.object) marks.add('splash', h, { color: o.color, force: true, size: 0.08 });
+  penalize('spill');
+}
 /** E / the action button on what you look at: doors toggle, the note opens. */
 function use(thing) {
   shadowState.hold = 1.5; // whatever moves now casts a moving shadow
@@ -801,7 +812,7 @@ function use(thing) {
   else if (thing.kind === 'cabinet') { thing.toggle(); if (thing.isOpen) bump('cabinets', 1, idOf(thing)); } // wall cabinets that open (#138)
   else if (thing.kind === 'target') thing.toggle(); // clear the score (#99)
   else if (thing.kind === 'rest') sitOrLie(thing);
-  else if (thing.blocked) sfx.click(camera.position); // put down what you hold first (#102)
+  else if (thing.blocked) { const o = thing.overflow?.(); if (o) spill(o); else sfx.click(camera.position); } // put down what you hold first (#102); E on a full glass/cup anyway: it runs over (#288)
   else if (thing.kind === 'airfryer') { thing.toggle(); if (thing.isOpen) bump('appliances', 1, thing.id); } // the air fryer's basket / panel (#287)
   else if (thing.kind === 'airfry') thing.item.airfryHeld(); // a fish finger into the air fryer's basket (#287)
   else if (thing.kind === 'saber' || thing.kind === 'holdable' || thing.kind === 'cup') thing.toggle();
@@ -1073,6 +1084,7 @@ function toggleFurniture(on = !world.furnitureOn) {
     heldItem()?.putBack(); toys.darts.hide();
     fish?.reset(); // the fish fingers lying around are cleared away, the carton is full again (#162)
     airFryer.reset(); // off, the basket in and empty (#287)
+    for (const l of world.lids) if (l.kind === 'fridge' && l.isOpen) l.toggle(); // the fridge and freezer doors shut: no alarm (#288)
     rifle?.reset(); // the dropped magazines go, a full one in (#196)
     for (const h of holdables) if (h.placed) h.goHome();
     cups.reset(); // the cups standing out go, the cabinet is full again (#215)
@@ -1170,6 +1182,7 @@ function step(dt) {
   for (const h of holdables) h.update(dt);
   grill.update(dt);
   airFryer.update(dt);
+  if (fish) fish.freezer.paused = !noteEl.hidden; // reading the note on the freezer door counts as using it (#288)
   smokeAlarm.update(dt, !!chicken?.freeSmoke || !!fish?.fryerSmoke); // smoke the hood does not draw away (#194); a burning air fryer (#287)
   cat.ownHand = !!heldItem(); // petting with a thing in the hand: the cat shows a free hand of its own (#242)
   const petting = cat.ownHand ? null : cat.petHand(petAt);

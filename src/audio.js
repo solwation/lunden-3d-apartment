@@ -658,6 +658,20 @@ export const sfx = {
     o.start(t); lfo.start(t); bias.start(t);
     return { stop() { const t1 = ctx.currentTime + 0.05; o.stop(t1); lfo.stop(t1); bias.stop(t1); } };
   },
+  /** The fridge/freezer door alarm (#288): two short soft beeps. */
+  fridgeBeep(pos) {
+    if (!ready()) return;
+    const t = ctx.currentTime, d = out(pos, 0.6);
+    for (let i = 0; i < 2; i++) tone(t + i * 0.18, 0.12, d, { type: 'square', from: 1650, gain: 0.05 });
+  },
+  /** A frightened cat (#288): a hoarse hiss, then a short low growl. */
+  hiss(pos, pitch = 1) {
+    if (!ready()) return;
+    const t = ctx.currentTime, d = out(pos, 1);
+    noise(t, 0.9, d, { type: 'highpass', freq: 2800, gain: 0.35, attack: 0.04 });
+    noise(t, 0.7, d, { type: 'bandpass', freq: 5200, q: 2, gain: 0.2, attack: 0.03 });
+    tone(t + 0.55, 0.45, d, { type: 'sawtooth', from: 210 * pitch, to: 160 * pitch, gain: 0.08 });
+  },
   /** The air fryer is done (#287): `n` short high beeps. */
   fryerBeep(pos, n = 3) {
     if (!ready()) return;

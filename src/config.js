@@ -883,7 +883,7 @@ export const SCORE = {
     baskets: 6, threes: 6, dribbles: 0.1,                 // a three = a basket + a three (12)
     turbo: 20,                                            // three cups of coffee in five minutes
     beer: 0.3, coffee: 0.3, wine: 0.3, champagne: 0.3, whisky: 0.3, milk: 0.3, kask: 0.6, // sips
-    fish: 0.5, fried: 2, burnt: 0.2, chicken: 1, cooked: 8, brews: 2, // cooked = a whole chicken fried golden
+    fish: 0.5, fried: 2, chicken: 1, cooked: 8, brews: 2, // cooked = a whole chicken fried golden (burnt: a deduction, #288)
     posted: 3, thrown: 0.5, drawn: 2,
     secrets: 1, stairs: 0.3, steps: 0.01,
     shatterRange: 1,                                      // something shot to pieces from afar: per range point (#263)
@@ -909,7 +909,21 @@ export const SCORE = {
   },
   breeds: { huskatt: 10, siames: 30, 'brittiskt korthår': 30, 'maine coon': 35, 'norsk skogkatt': 40, perser: 100, sphynx: 250 },
   secrets: { kinds: 10, rare: 40 },
+  // A small moral deduction (#288, stats.js `penalize`): points off for careless or unkind things — the fridge/freezer door
+  // left open (`fridgeOpen` when its alarm starts, `fridgeLonger` for each further FRIDGE_ALARM.after s it beeps, at most
+  // `fridgeMax` of those per time), food burnt (per item), the smoke alarm going off, a drink spilt (poured over a full
+  // glass/cup), a cat shot / cut / hit (`catShot` by weapon, the rifle the most). Small next to what normal play gives
+  // (a pat 8, a cat 10–250), big enough to notice. Never below 0: a deduction takes at most what the score has (no debt).
+  penalties: { fridgeOpen: 5, fridgeLonger: 2, fridgeMax: 3, burnt: 3, smokeAlarm: 5, spill: 2,
+    catShot: { rifle: 20, saber: 10, dart: 5, wand: 3 } },
 };
+// The fridge and freezer door alarm (#288, fridge.js): open for `after` s (game time) it beeps every `every` s and a red
+// LED blinks on the door until it is shut (a real one waits ~1–2 min; ours 60 s). The freezer's timer stands still while
+// the changelog note on its door is open (reading it counts as using it).
+export const FRIDGE_ALARM = { after: 60, every: 2 };
+// A cat that is shot, cut or hit (#288, cat.js `hurt`): it hisses and runs off (CAT_LEAVE, `speed` × as fast) and fades;
+// no cat turns up behind a door for `away` s. Nothing graphic.
+export const CAT_HURT = { speed: 2.2, away: 90 };
 // The leaderboard: how many rows are shown, how often a changed score is sent (s).
 export const LEADERBOARD = { show: 10, every: 30, nameMax: 20 };
 

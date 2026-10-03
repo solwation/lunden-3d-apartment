@@ -1,11 +1,15 @@
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { sfx } from './audio.js';
+import { FRIDGE_ALARM as AL, SCORE } from './config.js';
 
 // The fridge (Electrolux LRT7ME39X, stainless): hollow cabinet with a lit white liner, glass
 // shelves and a door that swings open with E. The roast chicken on the middle shelf is a Holdable of its own
 // (chicken.js, #160; `shelfSpot` = its place). Kept out of world.doors so the cat logic never uses it.
 // The freezer beside it (#161) is the same class with `freezer: true`: frosty liner, shelves + drawers.
+// The door alarm (#288): open longer than FRIDGE_ALARM.after s it beeps every `every` s and a red LED on the door's
+// top blinks until it is shut; `onAlarm(longer)` (main.js: a deduction) when it starts and for each further `after` s
+// (at most SCORE.penalties.fridgeMax of those); `paused` (main.js: the note on the freezer door is open) stops the timer.
 
 const steel = new THREE.MeshStandardMaterial({ color: 0xc3c7ca, roughness: 0.32, metalness: 0.35 });
 const steelDark = new THREE.MeshStandardMaterial({ color: 0x8f9497, roughness: 0.35, metalness: 0.35 });
@@ -69,7 +73,7 @@ export class Fridge {
    * drawers instead of food. `max` = the door's stop in degrees (#116).
    */
   constructor({ x0, x1, zFront, zBack, y0, h, hinge = 'x0', freezer = false, max = 105, name = 'kylskåpet' }) {
-    Object.assign(this, { name, kind: 'fridge', isOpen: false, t: 0, freezer, max });
+    Object.assign(this, { name, kind: 'fridge', isOpen: false, t: 0, freezer, max, openFor: 0, alarming: false, beepT: 0, longer: 0, paused: false });
     const g = new THREE.Group();
     const w = x1 - x0, d = zBack - zFront, cx = (x0 + x1) / 2, cz = (zFront + zBack) / 2;
     const wall = 0.04;
@@ -126,6 +130,12 @@ export class Fridge {
       for (const y of [0.4, 0.85, 1.3]) this.door.add(box(w - 0.1, 0.08, 0.07, s * w / 2, y, 0.035, glass)); // door bins
       this.door.add(box(0.07, 0.24, 0.07, s * w * 0.3, 0.56, 0.035, juice, 0.01));
     }
+    // the door alarm's LED (#288): a small red dot on the door's front, near the top on the handle side
+    this.ledMat = new THREE.MeshBasicMaterial({ color: 0x3a0c0c });
+    const led = new THREE.Mesh(new THREE.CircleGeometry(0.005, 12), this.ledMat);
+    led.rotation.y = Math.PI; // the door's front faces −z
+    led.position.set(s * (w - 0.05), h - 0.08, -dt - 0.0005);
+    this.door.add(led);
     this.door.traverse((m) => { m.userData.door = this; });
     g.add(this.door);
     this.pickable = this.door;
@@ -144,5 +154,16 @@ export class Fridge {
     this.t += Math.sign(target - this.t) * Math.min(Math.abs(target - this.t), dt * 1.6);
     const e = this.t * this.t * (3 - 2 * this.t);
     this.door.rotation.y = this.sign * e * THREE.MathUtils.degToRad(this.max);
+    // the door alarm (#288)
+    if (!this.isOpen) this.openFor = 0;
+    else if (!this.paused) this.openFor += dt;
+    const ring = this.isOpen && this.openFor > AL.after;
+    if (ring && !this.alarming) { this.alarming = true; this.beepT = 0; this.longer = 0; this.onAlarm?.(false); }
+    if (!ring && this.alarming) this.alarming = false;
+    if (ring) {
+      if ((this.beepT -= dt) <= 0) { this.beepT = AL.every; sfx.fridgeBeep(this.door.getWorldPosition(new THREE.Vector3()).setY(this.door.position.y + 1.7)); }
+      if (this.longer < SCORE.penalties.fridgeMax && this.openFor > AL.after * (this.longer + 2)) { this.longer++; this.onAlarm?.(true); }
+    }
+    this.ledMat.color.setHex(ring && this.beepT > AL.every / 2 ? 0xff2a2a : 0x3a0c0c);
   }
 }

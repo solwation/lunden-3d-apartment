@@ -61,13 +61,13 @@ class Darts {
     }
   }
 
-  /** A dart that reached a surface (#98): a paint splash in its colour there, and it drops; the cat just meows. */
+  /** A dart that reached a surface (#98): a paint splash in its colour there, and it drops; the cat hisses and flees (#288). */
   impact(d, from) {
     const h = this.marks.hit(from, d.g.position, { weapon: 'dart', eye: d.from }); // a glass or cup breaks (#263)
     if (!h) return;
     d.spent = true;
     if (h.broke) { d.v.multiplyScalar(0.3); return; } // on through the pieces, slowed
-    if (h.cat) this.cat?.meowNow?.();
+    if (h.cat) this.cat?.hurt?.('dart', d.from); // it hisses and flees (#288)
     else if (h.object.userData.target) { h.object.userData.target.hit(h.point, d.from); this.marks.add('splash', h, { color: d.color, force: true, size: 0.06 }); sfx.splat(h.point); }
     else if (this.marks.add('splash', h, { color: d.color, force: true })) { this.splashes++; sfx.splat(h.point); this.onSplash?.(); }
     d.g.position.copy(h.point).addScaledVector(h.normal ?? new THREE.Vector3(), 0.03); // bounce off and fall
@@ -371,7 +371,7 @@ export class Wand extends Holdable {
     const eye = this.camera.getWorldPosition(new THREE.Vector3()), dir = new THREE.Vector3(0, 0, -1).applyQuaternion(this.camera.quaternion);
     const h = this.marks?.hit(eye, eye.clone().addScaledVector(dir, T.wands.reach), { weapon: 'wand' }); // magic breaks glass too (#263)
     if (h?.broke) return;
-    if (h?.cat) this.cat?.meowNow?.();
+    if (h?.cat) this.cat?.hurt?.('wand', eye); // it hisses and flees (#288)
     else if (h) {
       this.marks.magic(h, eye); this.magics = (this.magics ?? 0) + 1;
       this.onMagic?.(); // statistics and points (#197)

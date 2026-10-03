@@ -19,10 +19,10 @@ document.body.append(f);
 f.onload = async () => {
   const w = f.contentWindow, d = f.contentDocument;
   while (!w.__app) await wait(100);
-  const { stats, world, use, grill, fish, cat, step, player, heldItem, camera, totalScore, ball } = w.__app;
+  const { stats, world, use, grill, fish, cat, step, player, heldItem, camera, totalScore, ball, scene, toggleFurniture } = w.__app;
   const near = (a, b) => Math.abs(a - b) < 1e-6;
   const { SCORE } = await w.eval(`import('${new URL('src/config.js', w.location.href)}')`);
-  const { catFound, secretFound, bump, rawScore } = await w.eval(`import('${new URL('src/stats.js', w.location.href)}')`); // the iframe's own module instance
+  const { catFound, secretFound, bump, rawScore, penalize } = await w.eval(`import('${new URL('src/stats.js', w.location.href)}')`); // the iframe's own module instance
   const lines = [];
   const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; };
   w.confirm = () => true;
@@ -113,6 +113,67 @@ f.onload = async () => {
   t = rawScore(); secretFound('gem', 'Ädelstenen', true); const k3 = rawScore() - t;
   pass &= check(near(k1, SCORE.secrets.kinds + SCORE.each.secrets) && near(k2, SCORE.each.secrets) && near(k3, SCORE.secrets.kinds + SCORE.secrets.rare + SCORE.each.secrets),
     `secrets: a new kind +${k1}, the same again +${k2}, a rare kind +${k3}`);
+  // #288: deductions — the fridge left open, a burnt fish finger, the smoke alarm, a spill, the cat shot; never below 0
+  const { things, smokeAlarm, airFryer, marks } = w.__app, P = SCORE.penalties;
+  const run = (sec) => { for (let i = 0; i < Math.round(sec * 10); i++) step(0.1); };
+  const plus = el.querySelector('.plus');
+  const fr = world.lids.find((l) => l.kind === 'fridge' && !l.freezer);
+  t = totalScore(); fr.toggle(); run(58);
+  pass &= check(!fr.alarming && totalScore() === t, `the fridge open 58 s: quiet, no deduction (${totalScore()})`);
+  run(3);
+  pass &= check(fr.alarming && stats.penalties.fridgeOpen === 1 && totalScore() === t - P.fridgeOpen && plus.classList.contains('minus') && plus.textContent.startsWith(`−${P.fridgeOpen}`),
+    `past ${60} s: it beeps, −${P.fridgeOpen} ("${plus.textContent}", red: ${plus.classList.contains('minus')})`);
+  const led = fr.ledMat.color.getHex(); run(1); const led2 = fr.ledMat.color.getHex();
+  pass &= check(led !== led2, 'its LED blinks');
+  run(60);
+  pass &= check(stats.penalties.fridgeLonger === 1 && totalScore() === t - P.fridgeOpen - P.fridgeLonger, `a minute more: −${P.fridgeLonger} (${totalScore()})`);
+  fr.toggle(); run(1);
+  pass &= check(!fr.alarming && fr.ledMat.color.getHex() === 0x3a0c0c, 'shut: quiet, the LED off');
+  // the freezer: the note on its door open stops the timer
+  const fz = fish.freezer;
+  fz.toggle(); w.__app.showNote(true); run(70);
+  pass &= check(!fz.alarming && fz.paused, 'the freezer open with the note read: no alarm');
+  w.__app.showNote(false); fz.toggle(); run(1);
+  // a fish finger burnt in the air fryer: −burnt once; its smoke sets off the smoke alarm: −smokeAlarm
+  airFryer.setOpen(true); run(1); fish.press(); fish.airfryHeld();
+  const ff = fish.inFryer[0]; ff.cook = 17.5; airFryer.setOpen(false); run(1);
+  t = totalScore(); airFryer.press(); run(3);
+  pass &= check(ff.burnt && stats.penalties.burnt === 1 && totalScore() === t - P.burnt, `a fish finger burnt: −${P.burnt} (${plus.textContent})`);
+  run(5);
+  pass &= check(smokeAlarm.ringing && stats.penalties.burnt === 1 && stats.penalties.smokeAlarm === 1 && totalScore() === t - P.burnt - P.smokeAlarm, `burnt once, the smoke alarm: −${P.smokeAlarm} (${totalScore()})`);
+  airFryer.reset(); fish.reset(); smokeAlarm.reset();
+  // a spill: wine poured over a full glass
+  const wine = things.find((x) => x.kind === 'wine'), wg = things.find((x) => x.name === 'vinglaset');
+  use(wg.target); step(1 / 60); wg.placeAt(new V(3.6, 0.47, 10.3)); step(1 / 60);
+  player.spawn(3.6, 11.2, 0); step(1 / 60);
+  use(wine.target); step(1 / 60); use(wg.target); run(1.5);
+  const m0 = marks.count; t = totalScore();
+  pass &= check(wg.target.blocked, `the glass full: "${wg.target.blockedText}"`);
+  use(wg.target); run(0.2);
+  pass &= check(stats.penalties.spill === 1 && totalScore() === t - P.spill && marks.count === m0 + 1 && Math.abs(wg.fill - 0.45) < 1e-6, `E on it anyway: it runs over, a splash, −${P.spill}`);
+  toggleFurniture(false); toggleFurniture(true);
+  // the cat shot with the AK-47: −catShot.rifle, it hisses and runs off; once per flight; no cat for a while
+  const rifle = things.find((x) => x.isRifle);
+  cat.object.position.set(4.3, 0, 2.3); cat.object.rotation.y = 0; cat.object.visible = true; cat.on = null; cat.setOpacity(1); cat.object.updateMatrixWorld(true);
+  rifle.drawer.toggle(); run(1.5); rifle.take(); run(0.2);
+  player.spawn(4.3, 3.6, 0); step(1 / 60);
+  const cp = cat.object.position.clone().add(new V(0, 0.15, 0));
+  camera.rotation.set(Math.atan2(cp.y - camera.position.y, Math.hypot(cp.x - camera.position.x, cp.z - camera.position.z)), Math.atan2(-(cp.x - camera.position.x), -(cp.z - camera.position.z)), 0, 'YXZ');
+  camera.updateMatrixWorld(true); scene.updateMatrixWorld(true);
+  t = totalScore(); rifle.shoot(); step(1 / 60);
+  pass &= check(stats.penalties['catShot:rifle'] === 1 && totalScore() === t - P.catShot.rifle && cat.leaving?.hurt && /katten/i.test(plus.textContent), `the cat shot: −${P.catShot.rifle} ("${plus.textContent}"), it runs`);
+  cat.hurt('dart');
+  pass &= check(stats.penalties['catShot:rifle'] === 1 && !stats.penalties['catShot:dart'], 'hit again while it runs: nothing more');
+  run(6);
+  pass &= check(!cat.visible, 'gone');
+  cat.chance.appear = 1; use(door); use(door); use(door);
+  pass &= check(!cat.visible && cat.awayFor > 0, `no new cat behind a door for a while (${cat.awayFor.toFixed(0)} s left)`);
+  cat.awayFor = 0; cat.chance.appear = 0; rifle.goHome?.(); toggleFurniture(false); toggleFurniture(true);
+  // never below 0, and no debt
+  for (let i = 0; i < 200; i++) penalize('catShot', 'rifle');
+  pass &= check(totalScore() === 0 && shown() === 0 && rawScore() - stats.penaltyPoints >= -1e-9, `never below 0 (${totalScore()})`);
+  catFound('sphynx rosa', true, 'sphynx');
+  pass &= check(totalScore() >= SCORE.breeds.sphynx - 1, `no debt: a sphynx after that shows +${totalScore()}`);
   const row = d.getElementById('stats');
   w.__app.renderStats?.(row);
   d.getElementById('stats-reset').click();
