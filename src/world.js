@@ -283,8 +283,8 @@ function toiletAgainstWall(tank, bowl, wallBoxes) {
 
 /** White window frame in the plane z = fz between x0..x1, y0..y1, with glass. Below the transom the casements
  * open outwards with E (#103, Swedish windows do): one per side of the mullion, hinged at the outer jambs,
- * `out` = ±1 the way out along z. Returns their Openables. */
-function addWindowFrame(group, x0, x1, fz, y0, y1, transom, out = -1, opens = true) {
+ * `out` = ±1 the way out along z; `single` = one casement over the whole width (no mullion). Returns their Openables. */
+function addWindowFrame(group, x0, x1, fz, y0, y1, transom, out = -1, opens = true, single = false) {
   const ft = 0.06, d = 0.05;
   const z0 = fz - d, z1 = fz + d;
   group.add(box(x0, x1, z0, z1, y0, y0 + ft, M.frame));
@@ -294,7 +294,7 @@ function addWindowFrame(group, x0, x1, fz, y0, y1, transom, out = -1, opens = tr
   const ty = transom > 0 ? y1 - transom : y1;
   if (transom > 0) group.add(box(x0, x1, z0, z1, ty - ft / 2, ty + ft / 2, M.frame));
   // a mullion for anything wider than a single casement
-  const mullion = x1 - x0 > 0.9 && y1 - y0 > 1.2, mx = (x0 + x1) / 2;
+  const mullion = !single && x1 - x0 > 0.9 && y1 - y0 > 1.2, mx = (x0 + x1) / 2;
   if (mullion) group.add(box(mx - ft / 2, mx + ft / 2, z0, z1, y0, ty, M.frame));
   if (!opens) { group.add(box(x0, x1, fz - 0.008, fz + 0.008, y0, y1, M.glass, { shadow: false })); return []; } // a fixed light
   if (transom > 0) group.add(box(x0, x1, fz - 0.008, fz + 0.008, ty, y1, M.glass, { shadow: false })); // fixed transom light
@@ -394,7 +394,7 @@ function buildLevel(floor, li, group) {
     // frame sits towards the outside of the wall
     const fz = facade === 'north' ? r.z0 + 0.1 : r.z1 - 0.1;
     const inner = facade === 'north' ? r.z1 : r.z0;
-    windows.push(...addWindowFrame(group, r.x0, r.x1, fz, sill, head, spec.transom, facade === 'north' ? -1 : 1));
+    windows.push(...addWindowFrame(group, r.x0, r.x1, fz, sill, head, spec.transom, facade === 'north' ? -1 : 1, true, spec.single));
     // inner window board (fönsterbänk)
     const iz0 = Math.min(fz, inner + (facade === 'north' ? 0.03 : -0.03));
     const iz1 = Math.max(fz, inner + (facade === 'north' ? 0.03 : -0.03));

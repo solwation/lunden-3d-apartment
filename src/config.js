@@ -72,11 +72,13 @@ export const EXT_DOOR_HEAD = 2.6;
 // of L1004's living room (docs/peab/l1004-vardagsrum-render.jpg, RH 3.0 m as scale): sill ≈ 0.65,
 // transom bar ≈ 2.15, head ≈ 2.6 m — no floor-to-ceiling glazing towards the patio. Upstairs heads
 // are still estimates, kept below the lowered ceiling in the north bedrooms.
+// `single`: one casement over the whole width, no mullion — the street-side (north) windows, seen on the site
+// (the user's photo, docs/foton/framsida-fonster-bygge.jpg): one sash each that opens outwards.
 export const WINDOWS = [
-  { level: 0, facade: 'north', x: 3.85, sill: 0.8, head: 2.6, transom: 0.45 }, // Kök/matplats
+  { level: 0, facade: 'north', x: 3.85, sill: 0.8, head: 2.6, transom: 0.45, single: true }, // Kök/matplats
   { level: 0, facade: 'south', x: 3.85, sill: 0.6, head: 2.6, transom: 0.45 }, // Vardagsrum
-  { level: 1, facade: 'north', x: 1.80, sill: 0.9, head: 2.25, transom: 0 },   // Sovrum 3
-  { level: 1, facade: 'north', x: 3.85, sill: 0.7, head: 2.25, transom: 0 },   // Sovrum 1
+  { level: 1, facade: 'north', x: 1.80, sill: 0.9, head: 2.25, transom: 0, single: true },   // Sovrum 3
+  { level: 1, facade: 'north', x: 3.85, sill: 0.7, head: 2.25, transom: 0, single: true },   // Sovrum 1
   { level: 1, facade: 'south', x: 1.45, sill: 0.7, head: 2.4, transom: 0.4 },  // Allrum = Sovrum 4 (Tilly)
   // Sovrum 2 has a smaller window than Sovrum 4 (the user, #107) — like Sovrum 3 vs Sovrum 1 on the north
   // side. The PDF draws it 1.41 m; `width` (narrows the opening around its centre) and sill/head are *guess*.
