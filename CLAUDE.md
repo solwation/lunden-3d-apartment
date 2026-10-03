@@ -478,6 +478,10 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   tracing was 3.6 % too big and was scaled by 5.55 / 5.75). Hus A (x −9.8…9.4, z 28.8…52.9, våning −1…4),
   B (x −41.7…−22.6, z 33.3…57.4, −1…3), C (x −70.6…−51.4, z 12.6…36.7, 1…5), each 19.2 × 24.1 m, brick with low hip roofs; the courtyard is on a garage and the
   ground drops ~3 m south of it.
+  Å-husen's shape (#258, per block `corners` / `recesses`, `SITE.loggia`, `SITE.hipRoof`; `aHouse` / `loggias` in
+  surroundings.js): an outline extruded per storey band — corner loggias of their own size (A/B: north 3.4 × 2.0, south
+  5.9 × 2.05 with a mid pier; Hus C turned, its NE one opening east), white-rendered entrance recesses with a dark glazed
+  door (A/B north on våning 1, A west / B east on the park level, Hus C east with loggias above), a low hip roof (ridge N–S).
   Terrain (#79, `SITE.terrain`, `groundY(x, z)` in surroundings.js): the street north of Hus L, our Entréplan
   and the raised courtyard on the garage box (`terrain.box`, #254: edges from våning −1 and the level lines on
   våning 1 — west part x −70.5…−41.7 to z 52.5, between B and A to z 33.3, east of that to Hus A's north face)

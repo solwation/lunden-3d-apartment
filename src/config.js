@@ -135,11 +135,18 @@ export const SITE = {
     cyclePath: { x0: 9.27, x1: 21.23, z0: 35.91, z1: 38.42 },
   },
   bay: 3.0, storey: 3.0,  // façade texture of the other blocks: one window per 3 × 3 m
-  // corner loggias on the Å-husen (#145; the overview plans docs/peab/oversikt-vaning-*.png draw the corners notched,
-  // Peab's renders show loggias open on both sides there): every corner is cut `d` × `d` m over the full height,
-  // white slabs and rendered inner walls, a brick pier at the outer corner, a slatted railing in the façade line.
-  // `plants` = share of the loggias with a plant. Sizes are guesses read off the 1:500 plans.
-  loggia: { d: 2.3, pier: 0.45, rail: 1.05, plants: 0.35 },
+  // the Å-husen's shape (#145, #258), measured on the calibrated overview plans (docs/peab/kalibrerad/vaning-1/2-300dpi.png):
+  // each corner is a loggia over the full height, `corners` per block = [length along x, depth along z] in m (A and B: the
+  // north ones 3.4 × 2.0, the south ones 5.9 × 2.05 with the middle 7.5 m standing out; Hus C is turned: its NE one opens
+  // east, 2.0 × 4.15). White slabs and rendered inner walls ("håligheter … vitputsade", info brochure), a brick pier at
+  // the outer corner and one `midAt` m along a front longer than `mid` (the plans draw it), a slatted railing in the façade
+  // line. `recesses` per block: { face n|e|s|w, a0, a1 (plan coordinate along the face), depth, from/to (storeys, counted
+  // from `base`; none = all), door (the storey with the entrance door) } — white-rendered entrance recesses (A/B north,
+  // A west / B east at the park level, Hus C east with loggias above). `plants` = share of the loggias with a plant.
+  loggia: { pier: 0.5, rail: 1.05, plants: 0.35, mid: 4.5, midAt: 3.5 },
+  // their roof: a low hip roof with the ridge along the long side (N–S), roofing felt ("papp", Peab's Q&A); the 0.3 m
+  // lines round the houses on the plans = the eaves. `rise` read off Peab's aerial render (guess).
+  hipRoof: { rise: 1.5, overhang: 0.32 },
   old: { bay: 2.6, storey: 3.6, roofPitch: 0.6 }, // the old S:t Lars buildings (style: 'old'): rise = pitch × half depth
   // the school straight across Sankt Lars väg (#126, docs/foton/rakt-over-gatan-tegelmur-skolbyggnad.jpg): two high
   // storeys of brick with white quoins, trim and plinth, arched windows below, square ones above, a dark metal
@@ -157,9 +164,17 @@ export const SITE = {
   longhouse: { bay: 2.6, storey: 3.8, rows: [{ y: 1.6, s: [0.9, 1.2, 1] }], dormers: 5 },
   blocks: [
     // Kv. Lunden, Å-husen (overview plans): storeys counted from `base`; red brick, low hip roof
-    { name: 'Hus A', x0: -9.76, x1: 9.42, z0: 28.8, z1: 52.86, base: -3, storeys: 5, roof: 'hip' },  // våning -1…4; north face on the box edge (#246)
-    { name: 'Hus B', x0: -41.74, x1: -22.6, z0: 33.3, z1: 57.35, base: -3, storeys: 4, roof: 'hip' }, // våning -1…3
-    { name: 'Hus C', x0: -70.6, x1: -51.4, z0: 12.6, z1: 36.68, base: 0, storeys: 5, roof: 'hip' },  // våning 1…5
+    { name: 'Hus A', x0: -9.76, x1: 9.42, z0: 28.8, z1: 52.86, base: -3, storeys: 5, roof: 'hip', // våning -1…4; north face on the box edge (#246)
+      corners: { nw: [3.4, 2.0], ne: [3.4, 2.0], se: [5.9, 2.05], sw: [5.9, 2.05] },
+      recesses: [{ face: 'n', a0: 0.23, a1: 2.22, depth: 2.1, from: 1, to: 1, door: 1 },   // the main entrance from the courtyard (våning 1)
+        { face: 'w', a0: 41.4, a1: 43.4, depth: 1.0, from: 0, to: 0, door: 0 }] },     // towards the green, park level (våning -1)
+    { name: 'Hus B', x0: -41.74, x1: -22.6, z0: 33.3, z1: 57.35, base: -3, storeys: 4, roof: 'hip', // våning -1…3
+      corners: { nw: [3.4, 2.0], ne: [3.4, 2.0], se: [5.9, 2.05], sw: [5.9, 2.05] },
+      recesses: [{ face: 'n', a0: -34.58, a1: -32.5, depth: 2.1, from: 1, to: 1, door: 1 }, // mirrored: west of the middle
+        { face: 'e', a0: 46.1, a1: 48.1, depth: 1.0, from: 0, to: 0, door: 0 }] },
+    { name: 'Hus C', x0: -70.6, x1: -51.4, z0: 12.6, z1: 36.68, base: 0, storeys: 5, roof: 'hip', // våning 1…5
+      corners: { nw: [5.5, 2.1], ne: [2.0, 4.15], se: [5.4, 2.0], sw: [6.1, 2.0] },
+      recesses: [{ face: 'e', a0: 21.5, a1: 24.8, depth: 2.0, door: 0 }] },                // the entrance, loggias above it
     // outside the plot (#47): the old S:t Lars hospital buildings, as on Peab's drone photo and aerial
     // render (docs/peab/): red brick with white trim, steep dark hip roofs, high storeys and tall
     // white windows. Storey counts and heights are read off those pictures — guesses, not surveyed.

@@ -358,39 +358,126 @@ function railTexture() {
   return t;
 }
 
-/** A modern block cut at its four corners (#145): two crossing boxes, each with the façade UVs of block(). */
-function notchedBlock(b) {
-  const d = S.loggia.d;
-  return [block({ ...b, x0: b.x0 + d, x1: b.x1 - d }), block({ ...b, z0: b.z0 + d, z1: b.z1 - d })];
+/** Is a recess on storey `st` (-1 = on any)? */
+const onStorey = (r, st) => st < 0 || (st >= (r.from ?? 0) && st <= (r.to ?? Infinity));
+
+/** The cuts in an Å-hus façade (#258): [a0, a1] spans along face n|e|s|w (plan x on n/s, z on e/w) taken by a corner
+ * loggia or by a recess on storey `st` (-1 = any storey). */
+function cuts(b, face, st = -1) {
+  const c = b.corners, i = face === 'n' || face === 's' ? 0 : 1;
+  const [lo, hi] = i === 0 ? [b.x0, b.x1] : [b.z0, b.z1];
+  const [first, last] = { n: [c.nw, c.ne], s: [c.sw, c.se], w: [c.nw, c.sw], e: [c.ne, c.se] }[face];
+  return [[lo, lo + first[i]], [hi - last[i], hi], ...(b.recesses ?? []).filter((r) => r.face === face && onStorey(r, st)).map((r) => [r.a0, r.a1])];
+}
+/** Does [a0, a1] along a face overlap a loggia or recess there? */
+const inCut = (b, face, a0, a1, st = -1) => cuts(b, face, st).some(([c0, c1]) => a1 > c0 && a0 < c1);
+
+/** An Å-hus's plan outline on storey `st`: the rectangle with its corner loggias and the recesses of that storey. */
+function outline(b, st) {
+  const { nw, ne, se, sw } = b.corners;
+  const rs = (f, desc) => (b.recesses ?? []).filter((r) => r.face === f && onStorey(r, st)).sort((p, q) => (desc ? q.a0 - p.a0 : p.a0 - q.a0));
+  const pts = [[b.x0, b.z0 + nw[1]], [b.x0 + nw[0], b.z0 + nw[1]], [b.x0 + nw[0], b.z0]];
+  for (const r of rs('n')) pts.push([r.a0, b.z0], [r.a0, b.z0 + r.depth], [r.a1, b.z0 + r.depth], [r.a1, b.z0]);
+  pts.push([b.x1 - ne[0], b.z0], [b.x1 - ne[0], b.z0 + ne[1]], [b.x1, b.z0 + ne[1]]);
+  for (const r of rs('e')) pts.push([b.x1, r.a0], [b.x1 - r.depth, r.a0], [b.x1 - r.depth, r.a1], [b.x1, r.a1]);
+  pts.push([b.x1, b.z1 - se[1]], [b.x1 - se[0], b.z1 - se[1]], [b.x1 - se[0], b.z1]);
+  for (const r of rs('s', true)) pts.push([r.a1, b.z1], [r.a1, b.z1 - r.depth], [r.a0, b.z1 - r.depth], [r.a0, b.z1]);
+  pts.push([b.x0 + sw[0], b.z1], [b.x0 + sw[0], b.z1 - sw[1]], [b.x0, b.z1 - sw[1]]);
+  for (const r of rs('w', true)) pts.push([b.x0, r.a1], [b.x0 + r.depth, r.a1], [b.x0 + r.depth, r.a0], [b.x0, r.a0]);
+  return pts;
 }
 
-/** The corner loggias (#145): slabs, rendered inner walls, brick piers (façade texture), railings, a few plants. */
+/** An Å-hus's brick body (#145, #258): its outline extruded band by band (a band = a run of storeys with the same
+ * recesses), with the façade UVs of block(). */
+function aHouse(b) {
+  const geos = [], key = (st) => (b.recesses ?? []).map((r) => +onStorey(r, st)).join();
+  for (let st = 0; st < b.storeys;) {
+    let end = st + 1;
+    while (end < b.storeys && key(end) === key(st)) end++;
+    const shape = new THREE.Shape(outline(b, st).map(([x, z]) => new THREE.Vector2(x, -z)));
+    const geo = new THREE.ExtrudeGeometry(shape, { depth: (end - st) * S.storey, bevelEnabled: false });
+    geo.rotateX(-Math.PI / 2).translate(0, b.base + st * S.storey, 0); // shape (x, -z) → plan (x, z), extruded up
+    const p = geo.attributes.position, n = geo.attributes.normal, uv = geo.attributes.uv;
+    for (let i = 0; i < p.count; i++) {
+      const along = Math.abs(n.getX(i)) > 0.5 ? p.getZ(i) : p.getX(i);
+      uv.setXY(i, along / S.bay, (p.getY(i) - b.base) / S.storey);
+    }
+    geo.clearGroups();
+    geos.push(geo);
+    st = end;
+  }
+  return geos;
+}
+
+/** A vertical quad from (xa, za) to (xb, zb), y0…y1, facing (nx, nz), 1 cm proud of the wall behind it. */
+function quad(xa, za, xb, zb, nx, nz, y0, y1) {
+  return new THREE.PlaneGeometry(Math.abs(xb - xa) + Math.abs(zb - za), y1 - y0).rotateY(Math.atan2(nx, nz))
+    .translate((xa + xb) / 2 + nx * 0.01, (y0 + y1) / 2, (za + zb) / 2 + nz * 0.01);
+}
+
+/** A slatted railing panel from (xa, za) to (xb, zb) standing on y (a slat every 12 cm). */
+function railPanel(xa, za, xb, zb, y) {
+  const len = Math.hypot(xb - xa, zb - za), rail = S.loggia.rail;
+  const g = new THREE.PlaneGeometry(len, rail).rotateY(-Math.atan2(zb - za, xb - xa)).translate((xa + xb) / 2, y + rail / 2, (za + zb) / 2);
+  const uv = g.attributes.uv;
+  for (let j = 0; j < uv.count; j++) uv.setX(j, uv.getX(j) * len);
+  return g;
+}
+
+/** The Å-husen's loggias and entrances (#145, #258): slabs, white-rendered inner walls, brick piers (façade texture),
+ * railings, a few plants, the entrance doors. */
 function loggias(blocks) {
-  const L = S.loggia, d = L.d, p = L.pier, slabs = [], walls = [], piers = [], rails = [], plants = [];
+  const L = S.loggia, p = L.pier, slabs = [], walls = [], piers = [], rails = [], plants = [], doors = [];
   const rand = rng(43);
+  const pier = (b, x0, x1, z0, z1) => piers.push(block({ x0: Math.min(x0, x1), x1: Math.max(x0, x1), z0: Math.min(z0, z1), z1: Math.max(z0, z1), base: b.base, storeys: b.storeys }).toNonIndexed());
+  const plant = (x, y, z) => {
+    if (rand() < L.plants) plants.push(new THREE.CylinderGeometry(0.17, 0.13, 0.38, 8).translate(x, y + 0.19, z), new THREE.IcosahedronGeometry(0.34, 0).translate(x, y + 0.62, z));
+  };
   for (const b of blocks) {
-    const top = b.base + b.storeys * S.storey;
-    for (const [cx, cz, sx, sz] of [[b.x0, b.z0, 1, 1], [b.x1, b.z0, -1, 1], [b.x1, b.z1, -1, -1], [b.x0, b.z1, 1, -1]]) {
-      // (cx, cz) = the outer corner; (sx, sz) point into the block
-      const ix = cx + sx * d, iz = cz + sz * d, mx = (cx + ix) / 2, mz = (cz + iz) / 2;
-      piers.push(block({ x0: Math.min(cx, cx + sx * p), x1: Math.max(cx, cx + sx * p), z0: Math.min(cz, cz + sz * p), z1: Math.max(cz, cz + sz * p), base: b.base, storeys: b.storeys }));
-      walls.push(new THREE.PlaneGeometry(d, top - b.base).rotateY(sz > 0 ? 0 : Math.PI).translate(mx, (b.base + top) / 2, iz - sz * 0.01)); // the inner wall facing out along z
-      walls.push(new THREE.PlaneGeometry(d, top - b.base).rotateY(sx > 0 ? -Math.PI / 2 : Math.PI / 2).translate(ix - sx * 0.01, (b.base + top) / 2, mz)); // … along x
+    const top = b.base + b.storeys * S.storey, C = b.corners;
+    for (const [cx, cz, sx, sz, [lx, lz]] of [[b.x0, b.z0, 1, 1, C.nw], [b.x1, b.z0, -1, 1, C.ne], [b.x1, b.z1, -1, -1, C.se], [b.x0, b.z1, 1, -1, C.sw]]) {
+      // (cx, cz) = the outer corner; (sx, sz) point into the block; the loggia is lx along x, lz along z
+      const ix = cx + sx * lx, iz = cz + sz * lz, mx = (cx + ix) / 2, mz = (cz + iz) / 2;
+      pier(b, cx, cx + sx * p, cz, cz + sz * p);
+      if (lx > L.mid) pier(b, cx + sx * (L.midAt - p / 2), cx + sx * (L.midAt + p / 2), cz, cz + sz * p); // part-way along a long front
+      if (lz > L.mid) pier(b, cx, cx + sx * p, cz + sz * (L.midAt - p / 2), cz + sz * (L.midAt + p / 2));
+      walls.push(quad(cx, iz, ix, iz, 0, -sz, b.base, top), quad(ix, cz, ix, iz, -sx, 0, b.base, top)); // the rendered inner walls
       for (let st = 0; st <= b.storeys; st++) {
         const y = b.base + st * S.storey;
-        if (st > 0) slabs.push(new THREE.BoxGeometry(d, 0.22, d).translate(mx, y - 0.11, mz)); // floor above / ceiling below
+        if (st > 0) slabs.push(new THREE.BoxGeometry(lx, 0.22, lz).translate(mx, y - 0.11, mz)); // floor above / ceiling below
         if (st === b.storeys || y < groundY(mx, mz) + 1.2) continue; // no railing on the roof or at the ground under the loggia (#246)
-        rails.push(new THREE.PlaneGeometry(d - p, L.rail).translate(cx + sx * (p + (d - p) / 2), y + L.rail / 2, cz + sz * 0.06).scale(1, 1, 1)); // along x, in the z façade line
-        rails.push(new THREE.PlaneGeometry(d - p, L.rail).rotateY(Math.PI / 2).translate(cx + sx * 0.06, y + L.rail / 2, cz + sz * (p + (d - p) / 2))); // along z
-        if (rand() < L.plants) {
-          const px = cx + sx * (d - 0.45), pz = cz + sz * (p + 0.4);
-          plants.push(new THREE.CylinderGeometry(0.17, 0.13, 0.38, 8).translate(px, y + 0.19, pz), new THREE.IcosahedronGeometry(0.34, 0).translate(px, y + 0.62, pz));
-        }
+        rails.push(railPanel(cx + sx * p, cz + sz * 0.06, ix, cz + sz * 0.06, y), railPanel(cx + sx * 0.06, cz + sz * p, cx + sx * 0.06, iz, y));
+        plant(ix - sx * 0.45, y, cz + sz * (p + 0.4));
+      }
+    }
+    for (const r of b.recesses ?? []) {
+      // `out` = +1 when the face looks towards +x / +z; `at(along, across)` → plan [x, z]
+      const nz = r.face === 'n' || r.face === 's', out = r.face === 's' || r.face === 'e' ? 1 : -1;
+      const line = { n: b.z0, s: b.z1, w: b.x0, e: b.x1 }[r.face], back = line - out * r.depth;
+      const at = (a, c) => (nz ? [a, c] : [c, a]), nrm = (k) => (nz ? [0, k] : [k, 0]), side = (k) => (nz ? [k, 0] : [0, k]);
+      const s0 = r.from ?? 0, s1 = Math.min(r.to ?? Infinity, b.storeys - 1), y0 = b.base + s0 * S.storey, y1 = b.base + (s1 + 1) * S.storey;
+      walls.push(quad(...at(r.a0, back), ...at(r.a1, back), ...nrm(out), y0, y1), // the back wall and the sides
+        quad(...at(r.a0, back), ...at(r.a0, line), ...side(1), y0, y1), quad(...at(r.a1, back), ...at(r.a1, line), ...side(-1), y0, y1));
+      const [mx, mz] = at((r.a0 + r.a1) / 2, (line + back) / 2), [w, d] = nz ? [r.a1 - r.a0, r.depth] : [r.depth, r.a1 - r.a0];
+      for (let st = s0; st <= s1 + 1; st++) {
+        const y = b.base + st * S.storey;
+        if (st > s0) slabs.push(new THREE.BoxGeometry(w, 0.22, d).translate(mx, y - 0.11, mz)); // a ceiling, a loggia floor
+        else if (y > groundY(mx, mz) + 0.1) slabs.push(new THREE.BoxGeometry(w, 0.04, d).translate(mx, y + 0.02, mz)); // the floor over a storey below
+        if (st > s1 || st === r.door || y < groundY(mx, mz) + 1.2) continue;
+        const f = line - out * 0.06;
+        rails.push(railPanel(...at(r.a0, f), ...at(r.a1, f), y));
+        const [px, pz] = at(r.a0 + 0.5, back + out * 0.45);
+        plant(px, y, pz);
+      }
+      if (r.door != null) { // a dark glazed entrance door on the back wall, a sidelight beside it in a wide recess
+        const y = b.base + r.door * S.storey, mid = (r.a0 + r.a1) / 2, c = back + out * 0.04, dw = 1.2;
+        const box = (a, wa, h, yy) => { const [x, z] = at(a, c); return new THREE.BoxGeometry(nz ? wa : 0.08, h, nz ? 0.08 : wa).translate(x, yy + h / 2, z); };
+        doors.push(box(mid, dw, 2.3, y), box(mid, dw + 0.2, 0.12, y + 2.3)); // the leaf, the head
+        if (r.a1 - r.a0 > 2.6) doors.push(box(mid + dw / 2 + 0.45, 0.6, 2.42, y));
       }
     }
   }
-  for (const g of rails) { const uv = g.attributes.uv; for (let j = 0; j < uv.count; j++) uv.setX(j, uv.getX(j) * (d - p) / 1.0); } // a slat every 12 cm
-  return { slabs, walls, piers, rails, plants };
+  return { slabs, walls, piers, rails, plants, doors };
 }
 
 /** The lowest ground under a block's footprint (sampled every 2 m). */
@@ -423,10 +510,11 @@ function block(b) {
 
 /** Low hip roof (Å-husen: flat-looking, the plans draw the hips). */
 function hipRoof(b) {
-  const h = b.base + b.storeys * dims(b).storey, o = 0.3;
+  const ah = !b.style, o = ah ? S.hipRoof.overhang : 0.3; // the Å-husen's eaves sit on the metal edge (#258)
+  const h = b.base + b.storeys * dims(b).storey + (ah ? 0.32 : 0);
   const x0 = b.x0 - o, x1 = b.x1 + o, z0 = b.z0 - o, z1 = b.z1 + o;
   const r = Math.min(x1 - x0, z1 - z0) / 2;
-  const rise = b.style === 'old' || b.style === 'school' ? dims(b).roofPitch * r : 1.4; // the Å-husen look flat, the old ones are steep
+  const rise = ah ? S.hipRoof.rise : dims(b).roofPitch * r; // the Å-husen look nearly flat, the old ones are steep
   const cx = (x0 + x1) / 2, cz = (z0 + z1) / 2;
   const [ra0, ra1] = x1 - x0 >= z1 - z0 ? [[x0 + r, cz], [x1 - r, cz]] : [[cx, z0 + r], [cx, z1 - r]];
   const v = (x, y, z) => [x, y, z];
@@ -593,22 +681,22 @@ export function buildWindowLights() {
   const spots = [];
   for (const b of S.blocks) {
     const faces = [
-      { along: 'x', c: b.z0 - 0.03, a0: b.x0, a1: b.x1, n: [0, -1] }, { along: 'x', c: b.z1 + 0.03, a0: b.x0, a1: b.x1, n: [0, 1] },
-      { along: 'z', c: b.x0 - 0.03, a0: b.z0, a1: b.z1, n: [-1, 0] }, { along: 'z', c: b.x1 + 0.03, a0: b.z0, a1: b.z1, n: [1, 0] },
+      { along: 'x', c: b.z0 - 0.03, a0: b.x0, a1: b.x1, n: [0, -1], f: 'n' }, { along: 'x', c: b.z1 + 0.03, a0: b.x0, a1: b.x1, n: [0, 1], f: 's' },
+      { along: 'z', c: b.x0 - 0.03, a0: b.z0, a1: b.z1, n: [-1, 0], f: 'w' }, { along: 'z', c: b.x1 + 0.03, a0: b.z0, a1: b.z1, n: [1, 0], f: 'e' },
     ];
     for (const f of faces) {
       // window centres sit mid-bay in the façade texture (u = along / bay)
       const { bay, storey } = dims(b), old = b.style === 'old';
       // window rows: one per storey (the old windows are narrow and tall), or the school's own two (#126)
       const rows = dims(b).rows ? dims(b).rows.map((r) => ({ y: b.base + r.y, s: r.s }))
-        : [...Array(b.storeys)].map((_, st) => ({ y: b.base + st * storey + (old ? 1.9 : 1.55), s: old ? [0.78, 1.3, 1] : [1, 1, 1] }));
+        : [...Array(b.storeys)].map((_, st) => ({ y: b.base + st * storey + (old ? 1.9 : 1.55), s: old ? [0.78, 1.3, 1] : [1, 1, 1], st }));
       for (let k = Math.ceil(f.a0 / bay - 0.5); (k + 0.5) * bay < f.a1; k++) {
         const a = (k + 0.5) * bay;
         if (a - 0.7 < f.a0 || a + 0.7 > f.a1) continue;
         const [px, pz] = f.along === 'x' ? [a, f.c] : [f.c, a];
-        if (!b.style && (a - f.a0 < S.loggia.d + 0.3 || f.a1 - a < S.loggia.d + 0.3)) continue; // a corner loggia there (#145)
         if (b.style === 'school' && S.blocks.some((o) => o !== b && o.style === 'school' && px > o.x0 && px < o.x1 && pz > o.z0 && pz < o.z1)) continue; // inside a pavilion
-        for (const { y, s } of rows) {
+        for (const { y, s, st } of rows) {
+          if (b.corners && inCut(b, f.f, a - 0.95, a + 0.95, st)) continue; // a loggia or an entrance recess there (#145, #258)
           if (y < groundY(f.along === 'x' ? a : f.c, f.along === 'x' ? f.c : a) + 0.8) continue; // below the ground
           spots.push(f.along === 'x' ? { x: a, y, z: f.c, n: f.n, s } : { x: f.c, y, z: a, n: f.n, s });
         }
@@ -710,23 +798,26 @@ export function buildSurroundings({ grass }) {
     m.receiveShadow = true;
     group.add(m);
   };
-  const lg = loggias(modern); // corner loggias (#145)
-  mesh([...modern.flatMap(notchedBlock), ...lg.piers], new THREE.MeshStandardMaterial({ map: facadeTexture(), roughness: 0.95 }));
+  const lg = loggias(modern); // corner loggias and entrances (#145, #258)
+  mesh([...modern.flatMap(aHouse), ...lg.piers], new THREE.MeshStandardMaterial({ map: facadeTexture(), roughness: 0.95 }));
   const white = new THREE.MeshStandardMaterial({ color: 0xf0efeb, roughness: 0.85, side: THREE.DoubleSide });
   mesh([...lg.slabs.map((g) => g.toNonIndexed()), ...lg.walls.map((g) => g.toNonIndexed())].map((g) => { g.deleteAttribute('uv'); return g; }), white);
   const railMesh = new THREE.Mesh(mergeGeometries(lg.rails.map((g) => g.toNonIndexed())), new THREE.MeshStandardMaterial({ map: railTexture(), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.6 }));
   group.add(railMesh);
   if (lg.plants.length) mesh(lg.plants.map((g) => { g = g.index ? g.toNonIndexed() : g; g.deleteAttribute('uv'); return g; }), new THREE.MeshStandardMaterial({ color: 0x4f7d3a, roughness: 0.9, flatShading: true }));
-  // flat roofs (#147, Peab's renders): grey roofing inside the light metal edge, a few vent hoods and shafts on top
+  if (lg.doors.length) mesh(lg.doors.map((g) => { g = g.toNonIndexed(); g.deleteAttribute('uv'); return g; }), new THREE.MeshStandardMaterial({ color: 0x3a4650, roughness: 0.25, metalness: 0.35 })); // glazed entrance doors (#258)
+  // low hip roofs of roofing felt (#258; Peab's aerial render, Q&A) over the light metal edge, a few vent hoods along the ridge
   mesh(modern.flatMap((b) => {
-    const h = b.base + b.storeys * S.storey, cx = (b.x0 + b.x1) / 2, cz = (b.z0 + b.z1) / 2, r = rng(Math.round(b.x0 * 7 + b.z0 * 13));
-    const geos = [new THREE.BoxGeometry(b.x1 - b.x0 + 0.5, 0.06, b.z1 - b.z0 + 0.5).translate(cx, h + 0.33, cz)]; // inside the white edge (#109)
-    for (let k = 0; k < 5; k++) {
-      const s2 = 0.6 + r() * 0.9;
-      geos.push(new THREE.BoxGeometry(s2, 0.5 + r() * 0.7, s2 * (0.7 + r() * 0.6)).translate(cx + (r() - 0.5) * (b.x1 - b.x0 - 4), h + 0.55, cz + (r() - 0.5) * (b.z1 - b.z0 - 4)));
+    const o = S.hipRoof.overhang, eave = b.base + b.storeys * S.storey + 0.32, cx = (b.x0 + b.x1) / 2, cz = (b.z0 + b.z1) / 2, r = rng(Math.round(b.x0 * 7 + b.z0 * 13));
+    const hx = (b.x1 - b.x0) / 2 + o, hz = (b.z1 - b.z0) / 2 + o, k = S.hipRoof.rise / Math.min(hx, hz);
+    const roofY = (x, z) => eave + k * Math.min(hx - Math.abs(x - cx), hz - Math.abs(z - cz)); // on the hip roof
+    const geos = [hipRoof(b)];
+    for (let i = 0; i < 5; i++) {
+      const s2 = 0.6 + r() * 0.9, hgt = 0.5 + r() * 0.7, x = cx + (r() - 0.5) * 3, z = cz + (r() - 0.5) * Math.max(2, 2 * (hz - hx) + 2);
+      geos.push(new THREE.BoxGeometry(s2, hgt, s2 * (0.7 + r() * 0.6)).translate(x, roofY(x, z) - 0.15 + hgt / 2, z).toNonIndexed());
     }
     return geos.map((g) => { g.deleteAttribute('uv'); return g; });
-  }), new THREE.MeshStandardMaterial({ color: 0x6d7175, roughness: 0.9 }), SEASON.snow.roof);
+  }), new THREE.MeshStandardMaterial({ color: 0x6d7175, roughness: 0.9, side: THREE.DoubleSide }), SEASON.snow.roof);
   // details (#109, #146): a light grey metal edge round the flat roofs, grey downpipes at the corners and every ~12 m
   mesh(modern.map((b) => {
     const h = b.base + b.storeys * S.storey, o = 0.32;
@@ -736,8 +827,9 @@ export function buildSurroundings({ grass }) {
   for (const b of modern) {
     const h = b.storeys * S.storey, y = b.base + h / 2;
     for (const [x, z] of [[b.x0, b.z0], [b.x1, b.z0], [b.x1, b.z1], [b.x0, b.z1]]) pipes.push(new THREE.CylinderGeometry(0.05, 0.05, h, 6).translate(x + Math.sign((b.x0 + b.x1) / 2 - x) * 0.35, y, z + Math.sign((b.z0 + b.z1) / 2 - z) * -0.07));
-    for (const [z, sgn] of [[b.z0, -1], [b.z1, 1]]) for (let x = b.x0 + 12; x < b.x1 - 4; x += 12) pipes.push(new THREE.CylinderGeometry(0.05, 0.05, h, 6).translate(x, y, z + sgn * 0.07));
-    for (const [x, sgn] of [[b.x0, -1], [b.x1, 1]]) for (let z = b.z0 + 12; z < b.z1 - 4; z += 12) pipes.push(new THREE.CylinderGeometry(0.05, 0.05, h, 6).translate(x + sgn * 0.07, y, z));
+    // (none in front of a loggia or a recess, #258)
+    for (const [z, sgn, f] of [[b.z0, -1, 'n'], [b.z1, 1, 's']]) for (let x = b.x0 + 12; x < b.x1 - 4; x += 12) if (!inCut(b, f, x - 0.1, x + 0.1)) pipes.push(new THREE.CylinderGeometry(0.05, 0.05, h, 6).translate(x, y, z + sgn * 0.07));
+    for (const [x, sgn, f] of [[b.x0, -1, 'w'], [b.x1, 1, 'e']]) for (let z = b.z0 + 12; z < b.z1 - 4; z += 12) if (!inCut(b, f, z - 0.1, z + 0.1)) pipes.push(new THREE.CylinderGeometry(0.05, 0.05, h, 6).translate(x + sgn * 0.07, y, z));
   }
   mesh(pipes, new THREE.MeshStandardMaterial({ color: 0x8f9396, roughness: 0.5, metalness: 0.3 }));
   if (school.length) { // the school across the street, its wall and greenhouse (#126)
