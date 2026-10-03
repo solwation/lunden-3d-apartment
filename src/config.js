@@ -1757,11 +1757,19 @@ export const FURNITURE = [
   ...[1.13, 3.47].map((z) => ({ type: 'nordkisa', level: 1, x: 5.55 - 0.23, z, rot: 90, w: 0.4, h: 0.55 })),
   // IKEA NYMÅNE work lamps with wireless charging, white (#65; base Ø ~20 cm, arms and head guessed from the
   // product photo), one on each bedside table, the head reaching over towards the bed; E on each one
-  ...[[1.13, 180], [3.47, 0]].map(([z, rot]) => ({ type: 'worklamp', level: 1, x: 5.55 - 0.25, z, y: 0.55, rot })),
+  ...[[1.13, 180], [3.47, 0]].map(([z, rot]) => ({ type: 'worklamp', level: 1, x: 5.55 - 0.25, z, y: 0.55, rot, onRug: true })), // their tables stand on the rug (#317)
   // IKEA RÅGRUND chair with towel rack, bamboo (#60; H 140, W 39, D 44, seat 48 cm per IKEA/dimensions.com):
   // Sovrum 1, the corner left of the window seen from inside (NW), back and towel rack against the
   // west wall, seat facing into the room (east); the seat is below the window sill (BH 0.7)
   { type: 'ragrund', level: 1, x: 2.70 + 0.23, z: 0.465 + 0.205, rot: -90, towel: 0x9fb8c9 },
+  // the user's big grey shag rug (#317, docs/matta-gra-sicksack-sovrum1.jpg, from under their sofa today) under the double
+  // bed: 240 × 340 cm (the user), the long side across the bed so it sticks out ~0.75 m on each side (z 0.6–4.0, centred
+  // on the bed; clear of the north wall z 0.47 and the Klk wall + sliding door track z 4.16). Along the bed it runs from
+  // the head wall (x 5.54, under the NORDKISA tables) 18 cm past the foot (x 3.14) — limited by the room: further west it
+  // would run under the RÅGRUND chair (x ≤ 3.15). ~2.8 cm thick, soft rounded edge, no fringe. Colour, line width and
+  // pitch *guess* from the warm-lit photo (a neutral grey); pieces standing wholly on it stand on top (rugs.js `rugUnder`)
+  { type: 'rug', level: 1, x: 5.54 - 1.2, z: 2.3, w: 2.4, d: 3.4, h: 0.028, edge: 0.012, pattern: 'zigzag', color: '#5c5b59', stripe: '#e8e4dc',
+    line: 0.012, pitch: 0.14, seed: 17 },
   // Sovrum 1 (Sarah & Olof), head east, clear of the Klk. Bedding (#83, an IKEA set from a Sellpy ad):
   // sage green with a dense chintz of coral and pink peonies, ochre, slate-blue leaves and grey-green
   // stems, white outlines (colours read off the photo); a pink cushion and a light grey throw to go with it

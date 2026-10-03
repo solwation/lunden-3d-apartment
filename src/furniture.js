@@ -12,7 +12,7 @@ import { Screen } from './screens.js';
 import { Openable } from './openables.js';
 import { rifleModel } from './rifle.js';
 import { laptop } from './laptop.js';
-import { registerRug } from './rugs.js';
+import { registerRug, rugUnder } from './rugs.js';
 import { pingpingModel } from './pingping.js';
 import { pillow } from './bedding.js';
 import { drawerFill, personFor, Pack as StuffPack, garment, shoes, stack, rolls, rng } from './stuff.js';
@@ -2349,6 +2349,56 @@ function archRugTexture(item) {
   return tex;
 }
 
+/**
+ * The grey shag rug in Sovrum 1 (#317, docs/matta-gra-sicksack-sovrum1.jpg): thin, fuzzy off-white lines in a stepped
+ * zig-zag of nested open rectangles running diagonally (45°), rows offset by half a cell; over it the shag: soft light
+ * and dark patches where the pile lies differently (also as a roughness map) and dense tufts that fray the lines.
+ * `item.line` = line width, `item.pitch` = the distance between nested lines (m).
+ */
+function zigzagRugTextures(item) {
+  const ppm = 512, map = document.createElement('canvas'), rough = document.createElement('canvas');
+  map.width = rough.width = Math.round(item.w * ppm); map.height = rough.height = Math.round(item.d * ppm);
+  const W = map.width, H = map.height, g = map.getContext('2d'), r = rough.getContext('2d');
+  g.fillStyle = item.color; g.fillRect(0, 0, W, H);
+  r.fillStyle = '#e0e0e0'; r.fillRect(0, 0, W, H);
+  let seed = item.seed ?? 17;
+  const rand = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+  // the pattern, drawn in a frame turned 45°: cells 7 × 5 pitches, each three nested rectangles open on one long side
+  const P = item.pitch * ppm, A = 7 * P, B = 5 * P;
+  g.save();
+  g.translate(W / 2, H / 2); g.rotate(Math.PI / 4);
+  g.strokeStyle = item.stripe; g.lineWidth = item.line * ppm; g.lineCap = 'square';
+  g.shadowColor = item.stripe; g.shadowBlur = 0.006 * ppm; g.globalAlpha = 0.85; // pile, not paint: a soft, fuzzy line
+  const reach = Math.hypot(W, H) / 2 + A;
+  g.beginPath();
+  for (let j = -Math.ceil(reach / B); j <= Math.ceil(reach / B); j++) {
+    for (let i = -Math.ceil(reach / A); i <= Math.ceil(reach / A); i++) {
+      const cx = i * A + (j & 1) * A / 2, cy = j * B, open = (i + j) & 1 ? 1 : -1; // open towards ±y
+      for (const [hx, hy] of [[3 * P, 2 * P], [2 * P, P], [P, 0]]) { // 6 × 4 pitches, 4 × 2 inside it, a bar in the middle
+        g.moveTo(cx - hx, cy + open * hy); g.lineTo(cx - hx, cy - open * hy); g.lineTo(cx + hx, cy - open * hy); g.lineTo(cx + hx, cy + open * hy);
+      }
+    }
+  }
+  g.stroke();
+  g.restore();
+  for (let i = 0; i < 320; i++) { // patches where the pile lies differently
+    const x = rand() * W, y = rand() * H, rad = (0.08 + rand() * 0.3) * ppm, light = rand() < 0.5, a = 0.04 + rand() * 0.06;
+    for (const [ctx, col, k] of [[g, light ? '255,255,250' : '0,0,0', 1], [r, light ? '150,150,150' : '255,255,255', 2.5]]) {
+      const gr = ctx.createRadialGradient(x, y, 0, x, y, rad);
+      gr.addColorStop(0, `rgba(${col},${a * k})`); gr.addColorStop(1, `rgba(${col},0)`);
+      ctx.fillStyle = gr; ctx.fillRect(x - rad, y - rad, 2 * rad, 2 * rad);
+    }
+  }
+  for (let i = 0; i < W * H / 9; i++) { // the shag: tufts, some across the lines
+    g.fillStyle = rand() < 0.5 ? 'rgba(255,255,255,0.08)' : 'rgba(20,18,16,0.13)';
+    g.fillRect(rand() * W, rand() * H, 1 + rand() * 3, 1 + rand() * 3);
+  }
+  const tex = new THREE.CanvasTexture(map), rtex = new THREE.CanvasTexture(rough);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = rtex.anisotropy = 8;
+  return { map: tex, roughnessMap: rtex };
+}
+
 function rugTexture(item) {
   if (item.fields) return archRugTexture(item);
   const c = document.createElement('canvas');
@@ -2426,8 +2476,9 @@ function roundRug(item) {
 function rug(item) {
   if (item.shape === 'round') return roundRug(item);
   const g = new THREE.Group();
-  const m = new THREE.Mesh(new THREE.BoxGeometry(item.w, item.h, item.d),
-    new THREE.MeshStandardMaterial({ map: rugTexture(item), roughness: 1 }));
+  const geo = item.edge ? new RoundedBoxGeometry(item.w, item.h, item.d, 2, item.edge) : new THREE.BoxGeometry(item.w, item.h, item.d);
+  const m = new THREE.Mesh(geo, new THREE.MeshStandardMaterial(item.pattern === 'zigzag' ? { ...zigzagRugTextures(item), roughness: 1 }
+    : { map: rugTexture(item), roughness: 1 }));
   m.position.y = item.h / 2 + 0.002; // above the floor and its AO overlay
   m.receiveShadow = true;
   g.add(m);
@@ -3212,6 +3263,20 @@ export function surfaceBox(r, list) {
 
 /** Build all furniture; returns the scene group, collision segments per level (+ the footprint quads they
  * outline, #302) and lamps. */
+/**
+ * How far a piece is lifted by a rug under it (#317): one whose whole footprint is on a rug stands on top of it (a
+ * piece only partly on one keeps its legs on the floor); one without a footprint only with `onRug` (the lamps on the
+ * bedside tables).
+ */
+function rugLiftFor(item, obj, toWorld) {
+  if (item.type === 'rug') return 0;
+  const fp = obj.userData.footprint;
+  if (!fp?.length) return item.onRug ? rugUnder(item.level, item.x, item.z) : 0;
+  let h = Infinity;
+  for (const r of fp) for (const [lx, lz] of [[r.x0, r.z0], [r.x1, r.z0], [r.x1, r.z1], [r.x0, r.z1]]) h = Math.min(h, rugUnder(item.level, ...toWorld(lx, lz)));
+  return h;
+}
+
 export function buildFurniture() {
   const group = new THREE.Group();
   const segments = [[], []], footprints = [[], []];
@@ -3226,13 +3291,17 @@ export function buildFurniture() {
     const yaw = THREE.MathUtils.degToRad(item.rot ?? 0) + Math.PI; // local +z = facing
     if (item.walls) keepInside(obj, item, yaw); // plants by a wall: no leaves through it (#137)
     obj.rotation.y = yaw;
-    obj.position.set(item.x, LEVELS[item.level].floor + obj.position.y, item.z);
+    const c = Math.cos(yaw), s = Math.sin(yaw);
+    const toWorld = (lx, lz) => [item.x + c * lx + s * lz, item.z - s * lx + c * lz];
+    const lift = rugLiftFor(item, obj, toWorld); // standing on a rug: on top of it, not in the pile (#317)
+    const floor = LEVELS[item.level].floor + lift;
+    obj.position.set(item.x, floor + obj.position.y, item.z);
     for (const r of obj.userData.surfaces ?? []) { // tables a cup can stand on (#90)
       const m = surfaceBox(r, surfaces);
       m.userData.surface += obj.position.y; // its height in the world (upstairs too, #269)
       obj.add(m);
     }
-    if (obj.userData.rest) obj.userData.interact = restTarget(obj, item, LEVELS[item.level].floor); // sit / lie (#71/#72)
+    if (obj.userData.rest) obj.userData.interact = restTarget(obj, item, floor); // sit / lie (#71/#72)
     if (obj.userData.interact) { // E targets among the furniture (the TV, seats, beds)
       obj.traverse((m) => { m.userData.door ??= obj.userData.interact; }); // drawers in a bed keep their own (#103)
       interactives.push(obj.userData.interact);
@@ -3241,8 +3310,6 @@ export function buildFurniture() {
     group.add(obj);
     things.push(...(obj.userData.things ?? [])); // small things you can take (bottles, glasses, #152)
     // footprint rectangles → world-space collision segments
-    const c = Math.cos(yaw), s = Math.sin(yaw);
-    const toWorld = (lx, lz) => [item.x + c * lx + s * lz, item.z - s * lx + c * lz];
     for (const r of obj.userData.footprint ?? []) {
       const pts = [toWorld(r.x0, r.z0), toWorld(r.x1, r.z0), toWorld(r.x1, r.z1), toWorld(r.x0, r.z1)];
       for (let i = 0; i < 4; i++) segments[item.level].push([...pts[i], ...pts[(i + 1) % 4]]);

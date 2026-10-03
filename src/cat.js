@@ -424,7 +424,7 @@ export class CatSpawner {
     this.dropFish(); // petting beats a fish finger
     if (this.tailUp && !this.forceTail) { this.tailUp = false; this.tailWait = this.nextTailWait(); } // it sits for the pat
     if (this.leaving?.hurt) return; // running from being hurt: no pat (#288)
-    if (this.leaving) { this.leaving = null; this.setOpacity(1); this.object.position.y = this.leaveY ?? this.object.position.y; } // petted again on its way: it stays
+    if (this.leaving) { this.leaving = null; this.setOpacity(1); if (this.rugY == null) this.object.position.y = this.leaveY ?? this.object.position.y; } // petted again on its way: it stays
     if (!this.petting) {
       this.petPhase = 0;
       this.photoTaken = false;
@@ -468,6 +468,7 @@ export class CatSpawner {
     this.object.position.set(spot.x, spot.y, spot.z);
     this.object.rotation.y = spot.yaw;
     this.on = spot.on ?? null; // 'sit' / 'lie' / 'table' when it is up on the furniture (#200)
+    this.rugY = this.on ? null : (spot.lift ?? 0); // how far a rug lifts it now; followed as it walks (#317)
     this.object.visible = true;
     this.door = door;
     this.closedSince = false;
@@ -513,7 +514,8 @@ export class CatSpawner {
       if (segs.some((s) => distToSeg(x, z, s) < 0.24)) continue;
       if (segs.some((s) => segIntersect(sx, sz, x, z, s))) continue;
       const yaw = Math.atan2(center[0] - x, center[1] - z) + (this.rand() - 0.5) * 1.6;
-      return { x, y: y0 + rugLift(level, x, z), z, yaw }; // on top of a rug, not in it (#310)
+      const lift = rugLift(level, x, z);
+      return { x, y: y0 + lift, z, yaw, lift }; // on top of a rug, not in it (#310)
     }
     return null;
   }
@@ -781,6 +783,14 @@ export class CatSpawner {
     if (this.rand() < CAT_TAIL_UP.leave) this.raiseTail(best.d / CAT_LEAVE.speed + 2); // off it goes, tail up (#262)
   }
 
+  /** On the floor, walking: up onto a rug or down off it (#317; it kept the height it started at). */
+  followRug() {
+    if (this.rugY == null) return;
+    const p = this.object.position, level = p.y > LEVELS[0].floor + 1.6 ? 1 : 0, h = rugLift(level, p.x, p.z);
+    p.y += h - this.rugY;
+    this.rugY = h;
+  }
+
   updateLeaving(dt) {
     const L = this.leaving, o = this.object;
     L.t += dt;
@@ -797,6 +807,7 @@ export class CatSpawner {
       const go = Math.min((L.speed ?? CAT_LEAVE.speed) * dt, Math.max(0, L.d - L.gone));
       o.position.x += Math.sin(L.yaw) * go; o.position.z += Math.cos(L.yaw) * go;
       L.gone += go;
+      this.followRug();
       if (go > 0) this.stride(go);
       this.tailGroup.rotation.y = 0.3 * Math.sin(L.t * 4.5);
     }
@@ -894,6 +905,7 @@ export class CatSpawner {
       const nx = o.position.x + (dx / dist) * go, nz = o.position.z + (dz / dist) * go;
       if (go > 0 && this.obstacles().some((s) => distToSeg(nx, nz, s) < 0.08)) { F.phase = 'look'; F.t = 0; return true; } // blocked: gives up
       o.position.x = nx; o.position.z = nz;
+      this.followRug();
       if (go > 0) this.stride(go); // the legs (pose), the head looks ahead and down a little, the tail sways
       this.head.rotation.set(0.15, 0, 0);
       this.tailGroup.rotation.y = 0.25 * Math.sin(F.t * 4.5);
