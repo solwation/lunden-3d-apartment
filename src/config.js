@@ -1605,12 +1605,13 @@ export const FURNITURE = [
   // (*guess*), centred over the chaise on the east wall (x 5.5; the chaise spans z ~10.55–12.15), centre 1.55 m up.
   { type: 'painting', level: 0, x: 5.5, z: 11.35, y: 1.55, rot: 90, w: 0.7, h: 1.0, frame: 0.018, depth: 0.025 },
   // The black and white canvas at the foot of the stair (#286, docs/tavla-svartvit-trappan.jpg): coming down flight A
-  // (going west) it is straight ahead, on the passage face of Badrum's east wall (x 2.152, free from the Badrum door's
-  // architrave at z ~6.22 to the corner at 7.80). Square, unframed, the canvas wrapped round a ~3.5 cm stretcher with
-  // black edges; ~80 × 80 cm (*guess*, 70–90 from the user's photo against a 27" monitor). Centred on the stair's
-  // line (z 7.13, flight A spans z 6.72–7.54), centre 1.55 m up (*guess*). textures/tavla-svartvit-trappan.jpg = the
-  // photo straightened, the ring light in front of it painted out, the black taken down to ~#1c.
-  { type: 'pictures', level: 0, x: 2.152, z: 7.13, y: 1.55, rot: -90, w: 0.8, h: 0.8, gap: 0, frame: 0, depth: 0.035,
+  // (going west) it is straight ahead, on the passage face of Badrum's east wall (x 2.152). Square, unframed, the canvas
+  // wrapped round a ~3.5 cm stretcher with black edges; ~80 × 80 cm (*guess*, 70–90 from the user's photo against a 27"
+  // monitor). Centred on the free wall between the Badrum door and the living room (#300, the user): from the door's
+  // architrave (jamb z 6.1543 + DOOR_TRIM.width 0.07 = 6.2243) to the corner at the living room's north wall (z 7.8042,
+  // plan.json) → z 7.014; centre 1.55 m up (*guess*). textures/tavla-svartvit-trappan.jpg = the photo straightened, the
+  // ring light in front of it painted out, the black taken down to ~#1c.
+  { type: 'pictures', level: 0, x: 2.152, z: 7.014, y: 1.55, rot: -90, w: 0.8, h: 0.8, gap: 0, frame: 0, depth: 0.035,
     rough: 0.85, cols: 1, rows: 1, atlas: 'textures/tavla-svartvit-trappan.jpg', grid: [1, 1], order: [0] },
   // Four framed pictures in the upstairs stairwell (#220, #233, the user's photos docs/tavla-trappa-*.jpg): the east
   // party wall (inner face x 5.551) across the stair hole, seen face on from the upstairs hall and when turning on
