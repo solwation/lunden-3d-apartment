@@ -29,7 +29,11 @@ f.onload = async () => {
   let pass = check(blaster.held, 'blaster in the hand');
   const s0 = toys.darts.splashes;
   blaster.use();
-  for (let i = 0; i < 60; i++) step(1 / 60);
+  for (let i = 0; i < 3; i++) { step(1 / 60); w.__app.scene.updateMatrixWorld(); } // as renders would
+  const flying = toys.darts.list.find((x) => x.flying);
+  const layers = flying ? flying.g.children.map((m) => m.layers.isEnabled(0)) : [];
+  pass &= check(flying && layers.every(Boolean), `the dart in flight is drawn with the camera still (#267; ${layers})`);
+  for (let i = 0; i < 57; i++) step(1 / 60);
   const sp = marks.live.filter((l) => l.kind === 'splash');
   pass &= check(toys.darts.splashes === s0 + 1 && sp.length === 1, `one splash (${toys.darts.splashes - s0})`);
   pass &= check(sp[0] && sp[0].at.x < 2.9, `on the west wall (x ${sp[0]?.at.x.toFixed(3)})`);

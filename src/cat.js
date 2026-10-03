@@ -171,6 +171,7 @@ const mix3 = (v, a, b, k, sx = 1) => v.set(mix(a[0], b[0], k) * sx, mix(a[1], b[
 /** Sitting cat, ~35 cm tall, facing +z in its local frame (it stands up to walk: `pose`). */
 function buildCat() {
   const cat = new THREE.Group();
+  cat.userData.moving = true; // it walks while the visitor stands still: the detail culler judges it every update (#267)
 
   // body + bib (in a torso group the breed can widen); their shape comes from `pose` (sitting ↔ standing, #224)
   const torso = new THREE.Group();

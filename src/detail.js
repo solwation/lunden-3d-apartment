@@ -9,6 +9,9 @@ import { PERF } from './config.js';
 // From outside the flat, anything inside it is only drawn if the line from the eye to it passes through one of the
 // façade's openings (windows, doors; with a margin of its size): the walls hide the rest (a coarse occlusion test).
 // The front door's leaf only counts as solid while it is shut: open, the whole doorway shows the hall (#210).
+// Things that move by themselves while the visitor may stand still (the car driving in, the cat, darts in flight …)
+// mark their root with `userData.moving`: the meshes under it are judged again every update, not only when the
+// camera has moved (#267 — the car's wheels and rear windows stayed hidden from when it was far away).
 
 const HIDDEN = 7; // the layer far-away details go to
 const D = PERF.detail;
@@ -25,26 +28,37 @@ export class DetailCuller {
     Object.assign(this, { box, doorOpen, open: false, openings: this.shut });
     this.items = [];
     this.last = new THREE.Vector3(1e9, 0, 0);
+    this.moving = []; // the items under a root with userData.moving
+    this.movers = []; // those roots: their matrices are brought up to date before they are judged (no render has run yet)
     root.updateMatrixWorld(true);
-    root.traverse((o) => {
+    const walk = (o, moving) => {
+      if (o.userData.moving && !moving) this.movers.push(o);
+      moving ||= !!o.userData.moving;
+      for (const c of o.children) walk(c, moving);
       if (!o.isMesh || o.isInstancedMesh || !o.geometry) return;
       if (!o.geometry.boundingSphere) o.geometry.computeBoundingSphere();
       const s = o.geometry.boundingSphere;
       const r = s.radius * o.matrixWorld.getMaxScaleOnAxis();
-      if (r > 0 && r < D.maxOcclude) this.items.push({ o, r, center: s.center.clone(), cut: r < D.maxR ? Math.max(D.minDist, r / D.k) : Infinity, far: false });
-    });
+      if (!(r > 0 && r < D.maxOcclude)) return;
+      const it = { o, r, center: s.center.clone(), cut: r < D.maxR ? Math.max(D.minDist, r / D.k) : Infinity, far: false };
+      this.items.push(it);
+      if (moving) this.moving.push(it);
+    };
+    walk(root, false);
   }
 
   update(camera) {
     const p = camera.getWorldPosition(this.tmp ??= new THREE.Vector3());
     const open = !!this.doorOpen();
     if (open !== this.open) { this.open = open; this.openings = open ? this.full : this.shut; this.last.set(1e9, 0, 0); } // look again now
-    if (p.distanceToSquared(this.last) < D.move * D.move) return;
-    this.last.copy(p);
+    const still = p.distanceToSquared(this.last) < D.move * D.move;
+    if (still && !this.moving.length) return;
+    if (!still) this.last.copy(p);
+    for (const o of this.movers) o.updateMatrixWorld();
     const w = this.w ??= new THREE.Vector3();
     const { W, D: Dz, roof } = this.box;
     const outside = p.x < 0 || p.x > W || p.z < 0 || p.z > Dz || p.y > roof;
-    for (const it of this.items) {
+    for (const it of still ? this.moving : this.items) {
       w.copy(it.center).applyMatrix4(it.o.matrixWorld);
       const far = w.distanceToSquared(p) > it.cut * it.cut || (outside && this.hidden(p, w, it.r));
       if (far === it.far) continue;

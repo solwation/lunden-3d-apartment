@@ -30,6 +30,7 @@ function ballModel() {
   const m = new THREE.Mesh(new THREE.SphereGeometry(B.ball.r, 28, 18), new THREE.MeshStandardMaterial({ map: t, roughness: 0.75 }));
   m.castShadow = true;
   const g2 = new THREE.Group(); g2.add(m);
+  g2.userData.moving = true; // it bounces and rolls while the visitor stands still (detail culler, #267)
   return g2;
 }
 

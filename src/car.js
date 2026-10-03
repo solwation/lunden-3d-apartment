@@ -101,6 +101,7 @@ export class Car {
     half.userData.door = this.musicTarget;
     this.screenT = 0; this.shown = null;
     g.visible = false;
+    g.userData.moving = true; // it drives while the visitor stands still: the detail culler judges it every update (#267)
     this.object = g;
     Object.assign(this, { state: 'gone', d: 0, speed: 0, blinkT: 0, hum: null, path: null, plateText: C.plate, leaveWhenShut: false, awake: 0 });
   }

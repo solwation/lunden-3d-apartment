@@ -52,16 +52,38 @@ f.onload = async () => {
   pass &= check(key.blink === 0, 'LED goes out');
   // the car (#173): it came along the street when the key beeped, and stops in front of the entrance
   const car = w.__app.car;
+  // #267: the camera stands still at the cabinet while the car drives in; every one of its meshes near enough to be
+  // drawn (closer than the detail culler's cut for it) must be on a drawn layer — not left hidden from when it was far
+  const items = w.__app.detail().items.filter((it) => { let o = it.o; while (o && o !== car.object) o = o.parent; return !!o; });
+  const eye = camera.getWorldPosition(new camera.position.constructor()), c = new eye.constructor();
+  let culled = 0, checked = 0;
+  const drawn = () => { car.object.updateMatrixWorld(true); /* as a render would */ for (const it of items) { c.copy(it.center).applyMatrix4(it.o.matrixWorld); if (c.distanceTo(eye) > it.cut * 0.95) continue; checked++; if (!it.o.layers.isEnabled(0)) culled++; } };
   pass &= check(car.state === 'arriving' && car.object.visible, `the car is on its way (${car.state})`);
-  for (let i = 0; i < 60 * 30 && car.state === 'arriving'; i++) step(1 / 60);
+  for (let i = 0; i < 60 * 30 && car.state === 'arriving'; i++) { step(1 / 60); drawn(); }
+  pass &= check(items.length > 20 && checked > 0 && culled === 0, `arriving with the camera still: every car mesh near enough is drawn (#267; ${items.length} meshes, ${culled} of ${checked} checks hidden)`);
+  culled = checked = 0;
   const p = car.object.position;
   pass &= check(car.state === 'parked' && Math.abs(p.x - 2.9) < 0.05 && Math.abs(p.z + 5.4) < 0.05 && Math.abs(car.object.rotation.y) < 0.05 && car.segments().length === 4, `parked right outside our door, heading east (#208), at (${p.x.toFixed(2)}, ${p.z.toFixed(2)}), a collision box`);
   pass &= check(car.plateText === 'FGZ 56D' && car.plates.length === 2, `plates front and back: ${car.plateText}`);
   aim(key.object.children[1]); btn.click(); step(1 / 60);
   pass &= check(car.state === 'leaving' && key.presses === 2, 'beep beep again: it drives off');
   let turned = false;
-  for (let i = 0; i < 60 * 40 && car.state === 'leaving'; i++) { step(1 / 60); if (Math.abs(car.object.rotation.y - Math.PI) < 0.01) turned = true; }
+  for (let i = 0; i < 60 * 40 && car.state === 'leaving'; i++) { step(1 / 60); drawn(); if (Math.abs(car.object.rotation.y - Math.PI) < 0.01) turned = true; }
+  pass &= check(checked > 0 && culled === 0, `leaving: every car mesh near enough is drawn (#267; ${culled} of ${checked} checks hidden)`);
   pass &= check(car.state === 'gone' && !car.object.visible && turned && car.segments().length === 0, `it U-turned and is gone (${car.state})`);
+  // #267 again: the visitor walked out onto the street while the car was gone far away (its small parts were judged
+  // too far to draw), then stands still and calls it from there: they must show up as it comes near
+  player.spawn(1.2, -2.2, 0);
+  camera.rotation.set(0, 0, 0);
+  for (let i = 0; i < 5; i++) step(1 / 60);
+  eye.copy(camera.getWorldPosition(c));
+  const hiddenFar = items.filter((it) => !it.o.layers.isEnabled(0)).length;
+  car.call();
+  culled = checked = 0;
+  for (let i = 0; i < 60 * 30 && car.state === 'arriving'; i++) { step(1 / 60); drawn(); }
+  pass &= check(car.state === 'parked' && checked > 0 && culled === 0, `called from the street, standing still: every car mesh near enough is drawn (#267; ${hiddenFar} hidden while far, ${culled} of ${checked} checks hidden)`);
+  car.call();
+  for (let i = 0; i < 60 * 40 && car.state === 'leaving'; i++) step(1 / 60);
   cab.toggle();
   for (let i = 0; i < 90; i++) step(1 / 60);
   pass &= check(!cab.isOpen && !cab.keyReachable, 'cabinet closes');

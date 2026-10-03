@@ -351,7 +351,8 @@ src/stats.js           visitor statistics (localStorage), "+1" badges per event,
 src/screens.js         TV programmes drawn on a canvas (PROGRAMS: space, underwater, superheroes, unicorn …), channel
                        snow, the Ambilight colour per programme; `Screen` is shared by the TVs in furniture.js
 src/detail.js          DetailCuller (#189): far-away small meshes and things inside the flat hidden by its walls (seen from
-                       outside) go to a layer the camera does not render
+                       outside) go to a layer the camera does not render; roots with `userData.moving` (our car, the cat,
+                       darts, the basketball) are judged every update, not only when the camera moves (#267)
 src/changelog.js       changelog list + the note on the freezer (E to read)
 src/install.js         iPhone "add to home screen" sheet (no fullscreen API there); install link
                        where the browser offers beforeinstallprompt
@@ -853,7 +854,8 @@ screenshots into the session scratchpad, not the repo.
   inside it is only drawn when the line to it passes a façade opening (the front door's leaf is solid while it is shut; open,
   the whole doorway counts, #210 — `tools/detailtest.html`). Start view
   1210 → ~410 calls, the other spots a little lower; screenshots differ by a few dozen pixels. Anything new that
-  raycasts at small things far away must allow for layer 7.
+  raycasts at small things far away must allow for layer 7. Anything new that moves by itself (while the visitor may
+  stand still) and exists when the culler is built needs `userData.moving` on its root (#267).
 - Shadows: `shadowMap.autoUpdate = false`; redrawn when the sun moved > 0.2°, for 1.5 s after any E
   action (doors swing), and at least twice a second (`updateShadows` in main.js).
 - Mirror images (#50): one Reflector (512²) per mirror, at most ONE active per frame (nearest in view

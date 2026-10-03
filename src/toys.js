@@ -27,6 +27,7 @@ class Darts {
       const t = cyl(0.007, 0.007, 0.012, tip, 8); t.rotation.x = Math.PI / 2; t.position.z = -0.041;
       g.add(body, t);
       g.visible = false;
+      g.userData.moving = true; // flies while the visitor stands still (detail culler, #267)
       scene.add(g);
       return { g, v: new THREE.Vector3(), flying: false };
     });
