@@ -6,7 +6,8 @@ import { HAND as H } from './config.js';
 // The visitor's right arm and hand (#195, #238), children of the camera, in the lower right of the view. Hidden
 // while the hand is empty. Holding something (holdable.js, a cup), the hand closes round the held thing's grip
 // point — `grip` ([x, y, z] in the thing's own frame) if it has one, else round the right edge of its box — or, for a
-// thing with `handPose: 'palm'` (the basketball), carries it on an open palm turned up; it follows the thing as it
+// thing with `handPose: 'palm'` (the basketball), carries it on an open palm turned up; `handPose: 'hug'` (Pingping, #269):
+// both arms round it, the hands on its sides at its `hugGrips` (right, left; the left arm is the right one mirrored); it follows the thing as it
 // swings, tips or is drunk from. Petting the cat with an empty hand, the palm strokes its head and back (#242). E on a door, a cabinet, a tap, a switch …: the arm reaches out towards it (~0.35 s)
 // with the fingers opening, and back.
 // The hand is one mesh: a palm, a thumb and four fingers of three joints each (capsules, soft normals) and the bare
@@ -107,6 +108,14 @@ export class Hand {
     this.cuff = new THREE.Mesh(cuffGeometry(), sleeve);
     this.arm = new THREE.Mesh(sleeveGeometry(), sleeve); // length 1 along +z
     for (const m of [this.hand, this.arm, this.cuff]) { m.visible = false; m.castShadow = false; m.renderOrder = 1; m.raycast = () => {}; m.frustumCulled = false; camera.add(m); }
+    this.right = { hand: this.hand, arm: this.arm, cuff: this.cuff };
+    // the left arm (#269, only for a hug): the same meshes in a mirrored frame (x → −x), posed like the right one
+    this.mirror = new THREE.Group();
+    this.mirror.scale.x = -1;
+    camera.add(this.mirror);
+    this.left = { hand: new THREE.Mesh(this.hand.geometry, skin), arm: new THREE.Mesh(this.arm.geometry, sleeve), cuff: new THREE.Mesh(this.cuff.geometry, sleeve) };
+    this.left.hand.morphTargetInfluences = [0, 0];
+    for (const m of Object.values(this.left)) { m.visible = false; m.castShadow = false; m.renderOrder = 1; m.raycast = () => {}; m.frustumCulled = false; this.mirror.add(m); }
     this.shoulder = new THREE.Vector3(...H.shoulder);
     this.rest = new THREE.Vector3(...H.rest);
     this.low = this.rest.clone().add(new THREE.Vector3(0.05, -0.25, 0.12)); // below the view
@@ -145,31 +154,42 @@ export class Hand {
     this.reachT = 0;
   }
 
-  /** Place the hand so that its contact point (`mode` 'grip' / 'palm' / 'reach') is at `at` (camera space), the arm
-   * coming from the shoulder. 'palm' turns the palm up. */
-  pose(at, mode = 'grip') {
+  /** Place the hand so that its contact point (`mode` 'grip' / 'palm' / 'reach' / 'pet' / 'hug') is at `at` (camera space,
+   * or the mirrored frame for the left side), the arm coming from the shoulder. 'palm' turns the palm up. */
+  pose(at, mode = 'grip', side = this.right) {
+    const { hand, cuff: cuffM, arm: armM } = side;
     const dir = at.clone().sub(this.shoulder).normalize();
     tmpM.lookAt(at.clone().add(dir), at, up); // its z axis = eye − target = along the arm
-    this.hand.quaternion.setFromRotationMatrix(tmpM);
-    if (mode === 'palm') this.hand.quaternion.multiply(rollQ.setFromAxisAngle(Z, Math.PI / 2)); // the palm up, the thumb out
-    else if (mode === 'pet') this.hand.quaternion.multiply(rollQ.setFromAxisAngle(Z, -Math.PI / 2)); // the palm down on the cat
-    const contact = (mode === 'palm' || mode === 'pet' ? CONTACT.palm : mode === 'grip' ? CONTACT.grip : new THREE.Vector3(0.01, 0, 0.06)).clone().multiplyScalar(H.size);
-    this.hand.position.copy(at).sub(contact.applyQuaternion(this.hand.quaternion)); // the wrist
-    const cuff = new THREE.Vector3(0, 0, -H.cuff * H.size).applyQuaternion(this.hand.quaternion).add(this.hand.position);
-    this.cuff.position.copy(cuff);
-    this.cuff.quaternion.copy(this.hand.quaternion);
+    hand.quaternion.setFromRotationMatrix(tmpM);
+    if (mode === 'palm') hand.quaternion.multiply(rollQ.setFromAxisAngle(Z, Math.PI / 2)); // the palm up, the thumb out
+    else if (mode === 'pet') hand.quaternion.multiply(rollQ.setFromAxisAngle(Z, -Math.PI / 2)); // the palm down on the cat
+    const contact = (mode === 'palm' || mode === 'pet' || mode === 'hug' ? CONTACT.palm : mode === 'grip' ? CONTACT.grip : new THREE.Vector3(0.01, 0, 0.06)).clone().multiplyScalar(H.size);
+    hand.position.copy(at).sub(contact.applyQuaternion(hand.quaternion)); // the wrist
+    const cuff = new THREE.Vector3(0, 0, -H.cuff * H.size).applyQuaternion(hand.quaternion).add(hand.position);
+    cuffM.position.copy(cuff);
+    cuffM.quaternion.copy(hand.quaternion);
     const arm = cuff.clone().sub(this.shoulder), len = arm.length();
     tmpM.lookAt(cuff.clone().add(arm), cuff, up);
-    this.arm.position.copy(this.shoulder);
-    this.arm.quaternion.setFromRotationMatrix(tmpM);
-    this.arm.scale.set(1, 1, Math.max(0.05, len - 0.012));
+    armM.position.copy(this.shoulder);
+    armM.quaternion.setFromRotationMatrix(tmpM);
+    armM.scale.set(1, 1, Math.max(0.05, len - 0.012));
   }
 
   /** `item`: the held thing (or null); `pet`: a world point on the cat being petted with the empty hand (#242), or null. */
   update(dt, item, pet = null) {
     const held = item?.held && item.model?.parent === this.camera;
-    let show = false, grip = 0, spread = 0;
-    if (held) {
+    let show = false, grip = 0, spread = 0, hug = false;
+    if (held && item.handPose === 'hug') { // both arms round it, a hand on each side (#269)
+      item.model.updateMatrix();
+      const [r, l] = item.hugGrips;
+      this.pose(new THREE.Vector3(...r).applyMatrix4(item.model.matrix), 'hug');
+      const pl = new THREE.Vector3(...l).applyMatrix4(item.model.matrix);
+      pl.x = -pl.x; // into the mirrored frame
+      this.pose(pl, 'hug', this.left);
+      grip = H.hugCurl;
+      show = hug = true;
+      this.reachT = 1;
+    } else if (held) {
       item.model.updateMatrix();
       const palm = item.handPose === 'palm';
       this.pose(this.gripOf(item).clone().applyMatrix4(item.model.matrix), palm ? 'palm' : 'grip');
@@ -194,5 +214,8 @@ export class Hand {
     inf[0] += ((show ? grip : 0) - inf[0]) * a;
     inf[1] = spread;
     this.hand.visible = this.arm.visible = this.cuff.visible = show;
+    const lInf = this.left.hand.morphTargetInfluences;
+    lInf[0] = inf[0]; lInf[1] = inf[1];
+    for (const m of Object.values(this.left)) m.visible = hug;
   }
 }

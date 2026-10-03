@@ -6,7 +6,8 @@
 <script>
 // Holding and putting things down (#102): take a cup, put it on the coffee table; take the lightsaber;
 // the cup can't be taken while the saber is in the hand; the saber goes down lying on the dining table;
-// then the cup can be taken, and goes down standing on the floor; F sends everything home.
+// then the cup can be taken, and goes down standing on the floor; F sends everything home. Pingping (#269): in your
+// arms, a hug, on the sofa, back in the bed, F.
 //   google-chrome --headless=new --dump-dom http://localhost:8137/tools/holdtest.html
 const out = document.getElementById('out');
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -104,6 +105,55 @@ f.onload = async () => {
   const out1 = hand.visible, far = hand.hand.getWorldPosition(new V()).distanceTo(camera.position);
   for (let i = 0; i < 20; i++) step(1 / 30);
   pass &= check(out1 && far > 0.3 && !hand.visible, `a reach: out (${far.toFixed(2)} m from the eye), then back out of sight`);
+  // Pingping (#269): in the bed between the pillows; take him in your arms (both hands), hug him (pulled in, squashed,
+  // counted, hearts), put him on the sofa (a cup can't go there), back in the bed, and F sends him home from the floor
+  const { pingping, stats } = w.__app;
+  const P = pingping.home.pos.clone();
+  pass &= check(Math.abs(P.y - 3.86) < 0.05 && P.x > 5 && P.z > 2 && P.z < 2.6, `Pingping on the mattress between the pillows (${P.x.toFixed(2)}, ${P.y.toFixed(2)}, ${P.z.toFixed(2)})`);
+  const bedStands = [[3.3, 2.3], [3.1, 2.0], [3.3, 2.6]];
+  pass &= check(lookAt(P.clone().setY(P.y + 0.2), /ta pingping/i, bedStands), `take him: "${btn.textContent}"`);
+  btn.click(); step(1 / 60);
+  pass &= check(heldItem() === pingping && hand.visible && hand.left.hand.visible, 'Pingping in your arms: both hands');
+  camera.updateMatrixWorld(); scene.updateMatrixWorld(true);
+  const rG = pingping.model.localToWorld(new V(...pingping.hugGrips[0])), lG = pingping.model.localToWorld(new V(...pingping.hugGrips[1]));
+  const rH = hand.hand.getWorldPosition(new V()), lH = hand.left.hand.getWorldPosition(new V());
+  pass &= check(rH.distanceTo(rG) < 0.1 && lH.distanceTo(lG) < 0.1 && rH.distanceTo(lG) > 0.25, `the hands on his sides (right ${rH.distanceTo(rG).toFixed(3)}, left ${lH.distanceTo(lG).toFixed(3)} m)`);
+  camera.rotation.x = 0.4; step(1 / 60); // nothing in front: the touch button hugs
+  pass &= check(/krama/i.test(btn.textContent), `the touch button: "${btn.textContent}"`);
+  const hugs0 = stats.pingpingHugs ?? 0, z0 = pingping.model.position.z;
+  btn.click(); for (let i = 0; i < 15; i++) step(1 / 60);
+  const sq = pingping.model.scale.z, pz = pingping.model.position.z;
+  pass &= check(sq < 0.9 && pz > z0 + 0.04 && stats.pingpingHugs === hugs0 + 1 && pingping.hearts.points.visible, `a hug: squashed to ${sq.toFixed(2)}, pulled in ${((pz - z0) * 100).toFixed(0)} cm, counted, hearts`);
+  for (let i = 0; i < 60; i++) step(1 / 60);
+  pass &= check(Math.abs(pingping.model.scale.z - 1) < 1e-6 && Math.abs(pingping.model.position.z - z0) < 1e-6, 'and back to his shape');
+  // on the sofa
+  const seat = { x: 4.0, y: 0.44, z: 11.5 }, sofaStands = [[4.0, 9.9], [3.6, 9.9], [4.4, 9.9]]; // the middle of the three seats
+  pass &= check(lookAt(seat, /sätta ner pingping här/i, sofaStands), `the sofa: "${btn.textContent}"`);
+  btn.click(); step(1 / 60);
+  pass &= check(!heldItem() && pingping.placed && Math.abs(pingping.model.position.y - 0.44) < 0.02 && Math.abs(pingping.model.rotation.x) < 1e-6, `he sits on the sofa (y ${pingping.model.position.y.toFixed(3)})`);
+  const cup2 = cups.cups.find((c) => c.state === 'cabinet') ?? cups.cups[1];
+  cup2.take(); step(1 / 60);
+  player.spawn(4.6, 10.0, 0); for (let i = 0; i < 3; i++) step(1 / 60);
+  { const dx = 4.0 - camera.position.x, dz = 11.5 - camera.position.z; camera.rotation.y = Math.atan2(-dx, -dz); camera.rotation.x = Math.atan2(0.44 - camera.position.y, Math.hypot(dx, dz)); }
+  step(1 / 60);
+  pass &= check(!/koppen här/i.test(btn.textContent), `a cup can't go on the sofa: "${btn.textContent}"`);
+  cup2.putBack(); step(1 / 60);
+  // back in the bed
+  pass &= check(lookAt(at(pingping.model).add(new V(0, 0.2, 0)), /ta pingping/i, sofaStands), `take him from the sofa: "${btn.textContent}"`);
+  btn.click(); step(1 / 60);
+  pass &= check(lookAt(P.clone().setY(P.y + 0.15), /lägga tillbaka pingping i sängen/i, bedStands), `his place in the bed: "${btn.textContent}"`);
+  btn.click(); step(1 / 60);
+  pass &= check(!heldItem() && !pingping.placed && pingping.model.position.distanceTo(P) < 1e-6, 'back between the pillows');
+  // on the floor, then F
+  pingping.take(); step(1 / 60);
+  player.spawn(1.5, 8.6, Math.PI); for (let i = 0; i < 3; i++) step(1 / 60);
+  camera.rotation.y = Math.PI; camera.rotation.x = -0.9; step(1 / 60);
+  pass &= check(/sätta ner pingping här/i.test(btn.textContent), `the floor: "${btn.textContent}"`);
+  btn.click(); step(1 / 60);
+  pass &= check(pingping.placed && Math.abs(pingping.model.position.y) < 0.01, 'he sits on the floor');
+  w.__app.toggleFurniture(false);
+  pass &= check(!pingping.placed && pingping.model.position.distanceTo(P) < 1e-6, 'F: Pingping is home in the bed');
+  w.__app.toggleFurniture(true);
   out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
 };
 </script>

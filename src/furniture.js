@@ -3,11 +3,12 @@ import { sfx } from './audio.js';
 import { mergeStatic } from './merge.js';
 import { restTarget } from './rest.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
-import { FURNITURE, LANDSKRONA as L, LEVELS, SKANSNAS, IDANAS, MYDAL, OTTOMAN, SYMFONISK, SECRET, NYMANE_WALL, MALM_DECO, YUCCA, LANGLAMPA } from './config.js';
+import { FURNITURE, LANDSKRONA as L, LEVELS, SKANSNAS, IDANAS, PINGPING, MYDAL, OTTOMAN, SYMFONISK, SECRET, NYMANE_WALL, MALM_DECO, YUCCA, LANGLAMPA } from './config.js';
 import { loungesofa, loungetable, parasol, planter } from './patio.js';
 import { Screen } from './screens.js';
 import { Openable } from './openables.js';
 import { rifleModel } from './rifle.js';
+import { pingpingModel } from './pingping.js';
 import { drawerFill, personFor } from './stuff.js';
 import { Pack, byasDrawer, byasMiddle, bestaContents, attachContents } from './contents.js';
 
@@ -126,6 +127,9 @@ function sofa(item) {
   const third = (mainX1 - mainX0) / 3;
   g.userData.rest = { kind: 'sit', name: 'soffan', verb: 'sätta dig i', spots: [0.5, 1.5, 2.5].map((k) => ({ x: mainX0 + third * k, y: L.seatHeight, z: -0.08 }))
     .concat([{ x: (chX0 + chX1) / 2, y: L.seatHeight, z: -0.08 }]) };
+  // the seats, where a plush toy can be put down (#269; `soft`: not cups and glasses)
+  g.userData.surfaces = [{ x0: mainX0 + 0.06, x1: mainX1 - 0.06, z0: -0.25, z1: D / 2 - 0.06, y: L.seatHeight, soft: true },
+    { x0: chX0 + 0.06, x1: chX1 - 0.06, z0: -0.25, z1: -D / 2 + L.chaiseDepth - 0.06, y: L.seatHeight, soft: true }];
   // footprint (local) for collision
   g.userData.footprint = [
     { x0: mainX0, x1: mainX1, z0: -D / 2, z1: D / 2 },
@@ -612,6 +616,17 @@ function bed(item) {
   if (item.sitUp) for (const x of (w > 1.2 ? [-w / 4, w / 4] : [0])) {
     g.userData.rest.spots.push({ kind: 'sit', verb: 'sätta dig upp i', x, y: top - 0.05, z: z0 + 0.42, aim: [x, -z0 - 0.5], tv: item.sitUp.tv });
   }
+  // Pingping (#269): sitting up between the pillows, leaning back against the headboard, facing the foot end; a Thing
+  if (item.pingping) {
+    const pp = pingpingModel();
+    pp.position.set(0, top, z0 + PINGPING.home.z);
+    pp.rotation.x = PINGPING.home.tilt;
+    g.add(pp);
+    (g.userData.keep ??= []).push(pp);
+    (g.userData.things ??= []).push({ model: pp, kind: 'pingping', back: 'sängen' });
+  }
+  // a plush toy can be put down on the duvet (#269; `soft`: not cups and glasses)
+  g.userData.surfaces = [{ x0: -w / 2 + 0.08, x1: w / 2 - 0.08, z0: z0 + 0.45, z1: -z0 - 0.15, y: top + 0.05, soft: true }];
   const hw = item.model === 'idanas' ? IDANAS.W / 2 : w / 2 + 0.03, back = item.model === 'idanas' ? IDANAS.head : 0.08;
   g.userData.footprint = [{ x0: -hw, x1: hw, z0: z0 - back, z1: -z0 + 0.03 }];
   return g;
@@ -2586,6 +2601,7 @@ export function surfaceBox(r, list) {
   m.position.set((r.x0 + r.x1) / 2, r.y - 0.005, (r.z0 + r.z1) / 2);
   m.visible = false;
   m.userData.surface = r.y;
+  if (r.soft) m.userData.soft = true; // a bed / a sofa: only for things that are `soft` (#269)
   list?.push(m);
   return m;
 }
@@ -2606,7 +2622,11 @@ export function buildFurniture() {
     if (item.walls) keepInside(obj, item, yaw); // plants by a wall: no leaves through it (#137)
     obj.rotation.y = yaw;
     obj.position.set(item.x, LEVELS[item.level].floor + obj.position.y, item.z);
-    for (const r of obj.userData.surfaces ?? []) obj.add(surfaceBox(r, surfaces)); // tables a cup can stand on (#90)
+    for (const r of obj.userData.surfaces ?? []) { // tables a cup can stand on (#90)
+      const m = surfaceBox(r, surfaces);
+      m.userData.surface += obj.position.y; // its height in the world (upstairs too, #269)
+      obj.add(m);
+    }
     if (obj.userData.rest) obj.userData.interact = restTarget(obj, item, LEVELS[item.level].floor); // sit / lie (#71/#72)
     if (obj.userData.interact) { // E targets among the furniture (the TV, seats, beds)
       obj.traverse((m) => { m.userData.door ??= obj.userData.interact; }); // drawers in a bed keep their own (#103)

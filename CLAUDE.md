@@ -198,6 +198,10 @@ src/hand.js            the visitor's arm + hand (HAND, #195, #238): three meshes
                        (the basketball) carries it on the palm turned up; petting the cat with a free hand (#242) the palm
                        strokes it (`cat.petHand()`, its own spare hand only while you hold something) and `player.kneel` crouches;
                        E (main.js `use`) reaches towards the target and back with the fingers opening. The detail culler (#189) looks again whenever the held thing changes (`refresh()`)
+src/pingping.js        Pingping (#269, PINGPING): the penguin cushion between the pillows in the Sovrum 1 bed, a Thing (kind 'pingping'):
+                       held in both arms (hand.js `handPose: 'hug'`, `hugGrips`; the left arm = the right one mirrored); click /
+                       "Krama" hugs (pulled in + squashed, sfx.squeak, rising hearts, stats pingpingHugs); `soft` = may go down on
+                       the bed's / sofa's `soft` surfaces too (furniture surfaces with `soft: true`: not for cups, not cat tables)
 src/beer.js            the big beer (BEER, #117), a Holdable: served on the lounge table when you sit in the lounge sofa,
                        click / "Drick" drinks a gulp (the level drops), back on the table = full; cups drink too
 src/book.js            the book on the side table by the armchair (BOOK, #140), a Holdable: click / "Läs" opens
@@ -415,7 +419,8 @@ tools/opentest.html    headless test: every Openable front (kitchen + furniture)
 tools/bestatest.html   headless test: the BESTÅ display cabinet's six doors open/close, its spots (down over the front) and the
                        lit glass section switch with the room (#191)
 tools/holdtest.html    headless test: put things down (coffee table, dining table, floor), one at a time, F → home;
-                       the hand (#195): hidden when empty, at the saber's grip, a reach out and back
+                       the hand (#195): hidden when empty, at the saber's grip, a reach out and back; Pingping (#269): take him
+                       (both hands on his sides), a hug (squashed, counted), onto the sofa (not a cup), back in the bed, F
 tools/cuptest.html     headless test: an empty cup out without brewing, onto the worktop, brew, take the jug, pour, jug back,
                        carry the cup to the dining and coffee tables, a cup back into the cabinet; whisky in a cup of
                        coffee (#169): a splash, a warmer colour, never over full, drunk up as kaffekask
@@ -628,7 +633,8 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   drawers in its Klk (an AK-47 in its wide bottom drawer, #196) (no wardrobe in Sovrum 1; the Klk is 1.65 × 1.20 inside, #94) (a sage green IKEA chintz bedding set from a Sellpy ad, #83) with IKEA NORDKISA bedside tables (#64) and white NYMÅNE work
   lamps on them (#65, each its own lamp like the floor lamp) + an IKEA RÅGRUND towel-rack chair in the corner left of
   the window (#60), and a Philips 43" PQS7801 on the west wall across from the bed (#213, black frame, Ambilight #223):
-  "sätta dig upp i sängen" (look at the bed's foot half; `aim` on a rest spot) puts it on, getting up puts it off · Sovrum 3 (second right) Livia & Tuva, bunk (unicorn sheets), an IKEA ALEX desk under the window
+  "sätta dig upp i sängen" (look at the bed's foot half; `aim` on a rest spot) puts it on, getting up puts it off; Pingping, a navy
+  penguin cushion, sits between the pillows (#269, docs/pingping-pingvinkudde.jpg) · Sovrum 3 (second right) Livia & Tuva, bunk (unicorn sheets), an IKEA ALEX desk under the window
   with crafts and a kids' chair (#92) ·
   Sovrum 2 (first left) Walter & Kian, bunk (Darth Vader sheets), a gaming desk with a PC along the west wall, short end to the window (#77, #84): sitting in its chair starts the
   PC; a sit spot in the lower bunk (`watch`, a spot `kind` can differ from its piece) swings the monitor arm round and plays a film;

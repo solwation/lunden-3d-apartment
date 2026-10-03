@@ -573,6 +573,14 @@ export const REMOTE = { w: 0.04, l: 0.18, h: 0.015, x: 3.98, y: 0.47, z: 10.72, 
 export const BOOK = { w: 0.15, l: 0.22, h: 0.03, x: 1.6, y: 0.5325, z: 8.2, turn: 28,
   held: { x: 0.17, y: -0.24, z: -0.56 } };
 
+// Pingping (#269, src/pingping.js): the penguin cushion between the pillows in Sarah and Olof's bed (the user's photo
+// docs/pingping-pingvinkudde.jpg). A squat, squishy body `w` × `h` × `d` m (*guess*: Squishmallow-like, ~40 cm),
+// navy velour with an off-white face mask and belly, pink cheeks, a yellow beak, flippers and feet; colours read
+// off the photo. `held` = where he sits in your arms (camera space, his bottom centre), `tilt` = leaning back (rad).
+// A hug (click / "Krama"): pulled in `pull` m and squashed by `squash` over `hugTime` s, `hearts` rise.
+export const PINGPING = { w: 0.4, h: 0.38, d: 0.22, navy: 0x34437a, white: '#ece6da', cheek: '#f0a3ad', beak: '#e8cf6a', feet: 0xe2cf7a,
+  home: { z: 0.14, tilt: -0.16 }, held: { x: 0.0, y: -0.57, z: -0.45, tilt: -0.45 }, pull: 0.1, squash: 0.22, hugTime: 0.7, hearts: 14 };
+
 // The big beer on the patio (#117, src/beer.js): a 50 cl tankard (Ø 9 × 16 cm, our pick) that turns up on the
 // lounge table (top at 0.40) when you sit down in the lounge sofa; each gulp drinks `gulp` of it.
 export const BEER = { x: 3.85, y: 0.4, z: 15.4, r: 0.045, h: 0.16, gulp: 0.2, held: { x: 0.2, y: -0.24, z: -0.45 } };
@@ -788,7 +796,7 @@ export const SECRET = {
 // isn't grey (cheap stand-in for light through skin); `cuff` = m from the wrist back to the sleeve's cuff; how far
 // the fingers close: 1 round a `grip`, `boxCurl` beside a thing without one, `palmCurl` under one carried on the palm.
 export const HAND = { skin: 0xe2b292, skinGlow: 0x2a0e06, sleeve: 0x4a5a6e, shoulder: [0.3, -0.5, 0.15], rest: [0.2, -0.26, -0.32],
-  reach: 0.4, reachTime: 0.4, size: 0.95, cuff: 0.085, boxCurl: 0.75, palmCurl: 0.2, petCurl: 0.15 }; // petCurl: stroking the cat (#242)
+  reach: 0.4, reachTime: 0.4, size: 0.95, cuff: 0.085, boxCurl: 0.75, palmCurl: 0.2, petCurl: 0.15, hugCurl: 0.45 }; // petCurl: stroking the cat (#242); hugCurl: round Pingping (#269)
 
 // What is in the wardrobes and drawers (#228, src/stuff.js): shared colours, and per person (by room) the clothes:
 // `size` (1 adult, ~0.65 a child), garment colours, what hangs on the rod, folded colours, shoes, socks, underwear.
@@ -852,13 +860,14 @@ export const SCORE = {
     catButts: 15, // a cat's bum seen from behind with its tail up (#262): per cat, then `again` per tail-up
     walkRain: 15, walkSnow: 25, walkHail: 40, walkStorm: 30, // out in the weather (#249): the first time, then `again` per shower
     shattered: 5, // per kind of thing shot to pieces (#263)
+    pingpingHugs: 10, // hugging Pingping (#269)
     carMusic: 3, // per song played in the car (#268), like the speakers' songs
   },
   again: {
     doors: 0.1, lids: 0.1, flushes: 0.2, taps: 0.1, fridge: 0.1, appliances: 0.1, cabinets: 0.05, lights: 0.05,
     sat: 0.1, lay: 0.1, songs: 0.2, read: 0.5, car: 1, grill: 1, hood: 0.2, tv: 0.2, pc: 0.3, parasol: 0.2,
     clock: 0.1, calendar: 0.1, greets: 0.1, catButts: 1, walkRain: 2, walkSnow: 3, walkHail: 4, walkStorm: 3,
-    shattered: 0.3, carMusic: 0.2,
+    shattered: 0.3, carMusic: 0.2, pingpingHugs: 0.2,
   },
   breeds: { huskatt: 10, siames: 30, 'brittiskt korthår': 30, 'maine coon': 35, 'norsk skogkatt': 40, perser: 100, sphynx: 250 },
   secrets: { kinds: 10, rare: 40 },
@@ -1486,7 +1495,7 @@ export const FURNITURE = [
   // centred, 73 cm of floor left in front of it; facing north (into the Klk)
   { type: 'nordli', level: 1, x: (3.90 + 5.55) / 2, z: 5.48 - 0.235, rot: 0, w: 1.2, h: 0.99, d: 0.47, rifle: true }, // + the AK-47 in the wide bottom drawer (#196)
   // the mattress centre: the headboard (IDANAS.head) against the east wall
-  { type: 'bed', level: 1, x: 5.55 - IDANAS.head - 1.0, z: 2.3, rot: 90, w: 1.8, l: 2.0, model: 'idanas', sitUp: { tv: 'Sovrum 1' },
+  { type: 'bed', level: 1, x: 5.55 - IDANAS.head - 1.0, z: 2.3, rot: 90, w: 1.8, l: 2.0, model: 'idanas', sitUp: { tv: 'Sovrum 1' }, pingping: true, // Pingping between the pillows (#269)
     // repeat = metres per texture tile (blooms ~8–15 cm)
     bedding: { pattern: 'chintz', ground: '#adc2b1', repeat: 0.9, flowers: ['#d0696b', '#c9505a', '#e9b7bd', '#d4b45a'],
       leaves: ['#6f7b86', '#8a96a0', '#7f9a83'], throw: 0xdcdcd8, cushion: 0xe2a3ab } },

@@ -720,6 +720,22 @@ export const sfx = {
     tone(t, 0.07, d, { type: 'triangle', from: 260, to: 120, gain: 0.12 });
     noise(t + 0.03, 0.2, d, { type: 'bandpass', freq: 1600, q: 1, gain: 0.08, attack: 0.02 });
   },
+  /** A plush toy taken or put down (#269): a soft fabric whump. */
+  plush(pos) {
+    if (!ready()) return;
+    const t = ctx.currentTime, d = out(pos, 0.8);
+    noise(t, 0.16, d, { type: 'lowpass', freq: 900, gain: 0.18, attack: 0.02 });
+    tone(t, 0.1, d, { type: 'sine', from: 140, to: 80, gain: 0.08 });
+  },
+  /** Pingping hugged (#269): the plush squeezed, then a happy little squeak — two rising chirps. */
+  squeak(pos) {
+    if (!ready()) return;
+    const t = ctx.currentTime, d = out(pos, 0.9);
+    noise(t, 0.3, d, { type: 'lowpass', freq: 700, gain: 0.16, attack: 0.08 });
+    const p = 0.92 + Math.random() * 0.16;
+    tone(t + 0.12, 0.11, d, { type: 'triangle', from: 950 * p, to: 1500 * p, gain: 0.09 });
+    tone(t + 0.26, 0.16, d, { type: 'triangle', from: 1150 * p, to: 1900 * p, gain: 0.08 });
+  },
   /** A magic pling: a few bright bell tones going up. */
   pling(pos, pitch = 1) {
     if (!ready()) return;
