@@ -534,7 +534,7 @@ function buildKitchen(B, group, floor, y0, yC, handled, taps, appliances) {
   B.box(eastWall - 0.1, eastWall, southWall - 0.1, southWall, top, top + 0.05, M.black);
 
   // Wall cabinets along the east wall (from the tall unit to the corner) and along the
-  // south wall over the corner unit; hood + gypsum boxing to the ceiling over the hob.
+  // south wall over the corner unit; hood, a dummy front over it (#320) + gypsum boxing to the ceiling over the hob.
   const wd = K.wallDepth, yW = y0 + K.wallBottom, yHood = y0 + K.hoodBottom;
   const kitchenLamp = lampMat(K.level, K.room); // (the room's lamp material: the ceiling light's)
   // #221: the under-cabinet LED (Belysning LED Linear) and the hood's light are lamps of their own (world.lamps → lights.js
@@ -591,8 +591,10 @@ function buildKitchen(B, group, floor, y0, yC, handled, taps, appliances) {
     // its corner door hinges at the corner and opens to the right (the user, #319): handle away from the return row's
     doorRow(EW, hob[1], visEnd, yW, yTop, 0.5, { low: true, open: { ...wallOpen, corner: 'a1', cornerMax: K.cornerDoorMax }, fill: ['dry', 'tea'] });
     const yH = yHood + K.hoodHeight;
-    shell(EW, hob[0], hob[1], yH, yTop, wd, { shelf: false });
-    openFront(open, EW, hob[0], hob[1], yH, yTop, M.front, 'bottom', {}, { mode: 'flap', top: true, name: 'skåpet', max: 80 }).stock = 'empty'; // over the hood: lifts up; the duct runs there
+    // over the hood: a dummy front (#320), the duct runs there — no handle, no E target, no Openable; a solid carcass
+    // behind it (baked into the static merge) so no gap shows between the gypsum boxing above and the hood below
+    EW.box(hob[0] + 0.002, hob[1] - 0.002, -wd, -FT, yH, yTop, M.front);
+    front(EW, hob[0], hob[1], yH, yTop, M.front, null);
     EW.box(hob[0] + 0.01, hob[1] - 0.01, -wd + 0.02, 0, yHood, yH, M.steel);
     EW.box(hob[0] + 0.03, hob[1] - 0.03, -wd + 0.05, -0.03, yHood - 0.002, yHood, hoodLamp);
     const hood = new Hood({ x0: wallX, x1: eastWall, z0: hob[0] + 0.01, z1: hob[1] - 0.01, y0: yHood, y1: yH }); // E: the fan (#194); its light has its own button (#221)
