@@ -112,8 +112,13 @@ src/greet.js           greeting the people outside (GREET, #247): looking at one
                        cyklisten"; a random line from you (bubble at the bottom), the answer a moment later in a bubble over
                        the head; speech = Web Speech API sv-SE (pitch/rate per person, children higher; silent when muted);
                        the person waves (people.js `answer`, `greetT`), a walker stops and turns to you; stats `greets`
-src/street.js          Sankt Lars väg's details (SITE.street, #128): curbs, asphalt patches, street lamps (emissive at
-                       night), zebra crossing, the site's temporary traffic light + warning signs, cobbles, autumn leaves; the bus stop,
+src/roads.js           the roads' shapes (SITE.roads, #257): rectangles, centre lines (`path` [x, z, r]: corners rounded to arcs,
+                       `w` per point, pavements `walks`) and junction `fillets`; `samples`, `onRoad(x, z, margin)` (trees keep
+                       off), `along` (lamp rows), `pathStrip` / `filletGeometry` (meshes on the ground, built by surroundings.js).
+                       Sankt Lars väg turns south round the plot's NE corner in a curve; Karpvägen runs along Hus C, bends
+                       west into the park and meets Sankt Lars väg with rounded corners
+src/street.js          Sankt Lars väg's details (SITE.street, #128): curbs (along every `path` road and fillet, not across
+                       another road), asphalt patches, street lamps in rows along a road (emissive at night), zebra crossing, the site's temporary traffic light + warning signs, cobbles, autumn leaves; the bus stop,
                        the red "Flyttad" sign, a no-parking sign and HepCat's A-board (#129)
 src/streetlife.js      life on the street (SITE.life, #113): the car park: one row of stalls along the shrubs (#208) with parked cars
                        (instanced, a colour each, collision); the front yard is asphalt up to the entrance paving, bikes by Hus L's entrances and in racks, the paved square with corten beds and

@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { SITE } from './config.js';
 import { registerSeasonal } from './seasons.js';
+import { samples, onRoad, along, filletOutline } from './roads.js';
 
 // Sankt Lars väg's details (#128, SITE.street; the user's photos in docs/foton/): granite curbs, darker patches
 // in the asphalt, slender street lamps with a curved arm (their heads glow at night: emissive only, no
@@ -37,12 +38,40 @@ function lampGeometry() {
   return { body: [pole, bend, reach, housing], glass: new THREE.BoxGeometry(0.18, 0.02, 0.42).translate(0, h + 0.27, arm) };
 }
 
-export function buildStreet() {
+/** Granite curbs (15 cm, 10 cm proud of the road) along a polyline of road-edge points; `out(p)` = a point just
+ * outside the asphalt next to p: no curb where that lies on a road (a junction's mouth). Each block follows the slope. */
+function curbRun(pts, out, groundY, list) {
+  const m = new THREE.Matrix4(), up = new THREE.Vector3(0, 1, 0);
+  for (let k = 1; k < pts.length; k++) {
+    const p = pts[k - 1], q = pts[k], mid = { x: (p.x + q.x) / 2, z: (p.z + q.z) / 2, nx: (p.nx + q.nx) / 2, nz: (p.nz + q.nz) / 2 };
+    if (onRoad(...out(mid))) continue;
+    const a = new THREE.Vector3(p.x, groundY(p.x, p.z) + 0.04, p.z), b = new THREE.Vector3(q.x, groundY(q.x, q.z) + 0.04, q.z);
+    const len = a.distanceTo(b);
+    if (len < 1e-3) continue;
+    m.lookAt(b, a, up).setPosition(a.clone().add(b).multiplyScalar(0.5));
+    list.push(new THREE.BoxGeometry(0.15, 0.12, len + 0.02).applyMatrix4(m));
+  }
+}
+
+export function buildStreet(groundY) {
   const group = new THREE.Group();
   const grey = new THREE.MeshStandardMaterial({ color: 0xa9a7a2, roughness: 0.85 });
-  // curbs: 15 cm granite blocks, 10 cm proud of the road
-  const curbs = [...S.curbs.map((c) => new THREE.BoxGeometry(c.x1 - c.x0, 0.12, 0.15).translate((c.x0 + c.x1) / 2, 0.04, c.z)),
-    ...S.curbZ.map((c) => new THREE.BoxGeometry(0.15, 0.12, c.z1 - c.z0).translate(c.x, 0.04, (c.z0 + c.z1) / 2))];
+  // curbs along both edges of the roads with a centre line, and round the junctions' fillets (#257)
+  const curbs = [];
+  for (const r of SITE.roads) {
+    if (r.path) {
+      const P = samples(r);
+      for (const side of [-1, 1]) {
+        const edge = P.map((p) => ({ x: p.x + p.nx * side * (p.w / 2 + 0.075), z: p.z + p.nz * side * (p.w / 2 + 0.075), nx: p.nx * side, nz: p.nz * side }));
+        curbRun(edge, (p) => [p.x + p.nx * 0.3, p.z + p.nz * 0.3], groundY, curbs);
+      }
+    }
+    for (const f of r.fillets || []) {
+      const cx = f.x + f.sx * f.r, cz = f.z + f.sz * f.r;
+      const arc = filletOutline(f).slice(1).map(([x, z]) => { const l = Math.hypot(cx - x, cz - z); return { x: x + ((cx - x) / l) * 0.075, z: z + ((cz - z) / l) * 0.075, nx: (cx - x) / l, nz: (cz - z) / l }; });
+      curbRun(arc, (p) => [p.x + p.nx * 0.3, p.z + p.nz * 0.3], groundY, curbs);
+    }
+  }
   group.add(merged(curbs, grey, false));
   // patched asphalt: darker, smoother rectangles a hair above the road
   group.add(merged(S.patches.map(([x, z, w, d]) => flatRect(x - w / 2, x + w / 2, z - d / 2, z + d / 2, 0.016)),
@@ -58,15 +87,19 @@ export function buildStreet() {
   group.add(cob);
   // street lamps (instanced): along our pavement facing the road, and along the east leg
   const spots = [];
-  for (let x = S.lamps.our.x0; x <= S.lamps.our.x1; x += S.lamps.our.step) spots.push([x, S.lamps.our.z, Math.PI]); // arm towards −z
-  for (let z = S.lamps.east.z0; z <= S.lamps.east.z1; z += S.lamps.east.step) spots.push([S.lamps.east.x, z, Math.PI / 2]); // arm towards +x
+  for (const row of S.lamps.rows) {
+    const road = SITE.roads.find((r) => r.name === row.road);
+    for (const p of along(road, row.from, row.to, row.step, (w) => row.side * (w / 2 + row.off))) {
+      spots.push([p.x, p.z, Math.atan2(-row.side * p.nx, -row.side * p.nz)]); // the arm over the road: (sin yaw, cos yaw)
+    }
+  }
   const L = lampGeometry();
   const body = new THREE.InstancedMesh(mergeGeometries(L.body.map(keepPN)), new THREE.MeshStandardMaterial({ color: 0x3a3d40, roughness: 0.6, metalness: 0.3 }), spots.length);
   const headMat = new THREE.MeshStandardMaterial({ color: 0xf2efe6, emissive: 0xffe2a8, emissiveIntensity: 0, roughness: 0.4 });
   const head = new THREE.InstancedMesh(keepPN(L.glass), headMat, spots.length);
   const m = new THREE.Matrix4(), q = new THREE.Quaternion(), one = new THREE.Vector3(1, 1, 1);
   spots.forEach(([x, z, yaw], i) => {
-    m.compose(new THREE.Vector3(x, 0, z), q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), yaw), one);
+    m.compose(new THREE.Vector3(x, groundY(x, z), z), q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), yaw), one);
     body.setMatrixAt(i, m); head.setMatrixAt(i, m);
   });
   body.castShadow = true;

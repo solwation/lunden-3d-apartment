@@ -197,13 +197,18 @@ export const SITE = {
   // a temporary yellow traffic light and warning signs for the building site, a cobbled corner and fallen leaves
   // in the autumn months. Positions are our picks.
   street: {
-    curbs: [{ x0: -95, x1: 22, z: -24 }, { x0: -95, x1: 30, z: -30 }], curbZ: [{ x: 22, z0: -24, z1: 12.7 }, { x: 30, z0: -30, z1: 12.7 }],
+    // curbs run along both edges of every road with a `path` and round the fillets, except across another road (#257)
     patches: [[-31, -27.6, 4.5, 1.6], [-6, -25.4, 2.2, 1.0], [4.5, -28.3, 7, 1.2], [15, -26, 1.2, 1.2], [26, -12, 1.4, 3.5], [-55, -28.5, 3, 1.4]],
-    lamps: { h: 6.2, arm: 1.3, our: { z: -22.0, x0: -78, x1: 18, step: 24 }, east: { x: 21.0, z0: -12, z1: 8, step: 20 } },
+    // street lamps in rows along a road (`road` = its name): from / to = the plan points nearest the first and last,
+    // `off` m from the road's edge on `side` (1 = right of the path's direction, −1 = left), the arm over the road
+    lamps: { h: 6.2, arm: 1.3, rows: [
+      { road: 'Sankt Lars väg', from: [-66, -27], to: [25.1, 8], step: 24, side: 1, off: 2.0 }, // our pavement, round the corner
+      { road: 'Karpvägen', from: [-75.8, -12], to: [-78.5, 44], step: 26, side: -1, off: 0.8 },  // along Hus C (#257)
+    ] },
     crossing: { x0: 9.5, x1: 12.5, z0: -30, z1: -24 },
-    trafficLight: { x: 8.6, z: -23.5 }, warnings: [[13.2, -23.2], [16, -23.3]],
-    cobbles: { x0: 18, x1: 22, z0: -21.5, z1: -18.5 },
-    leaves: { n: 1400, months: [9, 10, 11], areas: [[-60, 20, -24, -18], [-30, 30, -32.1, -30.05], [20, 22, -24, 12]] },
+    trafficLight: { x: 8.6, z: -23.5 }, warnings: [[13.2, -23.0], [10.6, -23.2]],
+    cobbles: { x0: 17.2, x1: 19.5, z0: -17.5, z1: -12.5 }, // inside the corner, by the end of our car park
+    leaves: { n: 1400, months: [9, 10, 11], areas: [[-60, 12, -24, -18], [-30, 10, -32.1, -30.05], [19, 21, -12, 12]] },
     // signs (#129, the user's photos): the bus stop on the far pavement, the red "Flyttad" sign on ours by the curb,
     // a no-parking sign at the car park, HepCat's A-board on its pavement. [x, z, facing yaw°]
     busStop: [2.5, -31.3, 0], moved: [6.5, -23.75, 0], noParking: [-6.5, -21.0, 0], aBoard: [30.0, -4.5, -90],
@@ -222,30 +227,39 @@ export const SITE = {
     steps: { x0: -60.81, x1: -55.98, z0: 2.32, n: 3, rise: 0.15, tread: 0.4 },
     racks: [[-61.77, 6.95, 6], [-53.09, 6.95, 5]], // x0, z, bikes
   },
-  // asphalt (y follows the ground: the street level north of Hus L and on the garage box, park level around it)
+  // asphalt (y follows the ground: the street level north of Hus L and on the garage box, park level around it).
+  // src/roads.js: a rectangle, a centre line (`path`: [x, z, r] — the corner at that point rounded to radius r; `w` = the
+  // width at each point; `walks` = pavements along it, `w` m wide on `side` 1 = right of the direction, −1 = left) or
+  // `fillets` (asphalt in a square corner between two road edges, a quarter circle of radius r; sx, sz point away from
+  // the asphalt). #257, the situation plan: Sankt Lars väg runs along Hus L (z −30…−24, right already) and turns south
+  // in a wide curve round the plot's NE corner (the plan's curve is wider still, but it would run over our car park);
+  // Karpvägen comes up along Hus C (x −79…−73.5 at z 25–30, −81.6…−75.7 at z 45), bends west into the park south of
+  // the sheet, and meets Sankt Lars väg in a sweeping curve on its west side (the plan's NW corner is under a photo:
+  // guess) and a small rounding on the east.
   roads: [
-    { name: 'Sankt Lars väg', x0: -95, x1: 30, z0: -30, z1: -24 },
-    { name: 'Sankt Lars väg', x0: 21.23, x1: 28.96, z0: -30, z1: 200 },
-    { name: 'Karpvägen', x0: -84.94, x1: -77.22, z0: -30, z1: 200 },
+    { name: 'Sankt Lars väg', path: [[-150, -27], [25.1, -27, 13], [25.1, 10], [25.1, 200]], w: [6, 6, 7.73, 7.73],
+      walks: [{ side: 1, w: 2.5 }, { side: -1, w: 2 }] }, // our pavement; the far one along the school's wall (#126)
+    { name: 'Karpvägen', path: [[-75.8, -27], [-75.8, 22, 30], [-79.9, 51, 20], [-84.5, 66, 8], [-200, 70]], w: 5.8 },
+    { name: 'Karpvägen, hörnen', fillets: [{ x: -78.7, z: -24, sx: -1, sz: 1, r: 9 }, { x: -72.9, z: -24, sx: 1, sz: 1, r: 3 }] },
     { name: 'Gården framför Hus L', x0: -46.33, x1: 17.13, z0: -20, z1: -4 }, // asphalt up to the entrance paving (#208)
   ],
   paving: [
     { x0: -46.33, x1: 15.44, z0: -4, z1: 0 },  // path along Hus L's entrances
-    { x0: -95, x1: 22, z0: -24, z1: -21.5 }, // pavement along Sankt Lars väg
-    { x0: -95, x1: 30, z0: -32, z1: -30 },   // … and on the far side, along the school's wall (#126)
-  ],                                         // the courtyard's own walks: COURTYARD
+  ],                                         // the pavements: roads' `walks`; the courtyard's own walks: COURTYARD
   river: { x0: -193.04, x1: 144.78, z0: 120.65, z1: 130.3 }, // Höje å
   // big old limes / chestnuts along the far pavement and in the school yard (#130, the user's photos): [x, z, size]
   bigTrees: [[-36, -34.5, 1.4], [-17, -35.2, 1.6], [-4, -34.8, 1.75], [9, -35.4, 1.45], [27.5, -34.2, 1.6], [33.5, -16, 1.35], [-58, -33.5, 1.5]],
   // a row of ornamental shrubs along our pavement, with gaps for the paths to the entrances (#130)
-  shrubs: { x0: -57.91, x1: 17.37, z: -20.6, step: 0.85, gaps: [[-46.33, -42.47], [-6, 8]] },
+  shrubs: { x0: -57.91, x1: 15.5, z: -20.6, step: 0.85, gaps: [[-46.33, -42.47], [-6, 8]] },
+  // the narrow planting between Karpvägen and the plot line / Hus C's garage wall (#257, the situation plan: two trees)
+  vergeTrees: [[-73.4, 37.5], [-74.4, 50]],
   birchShare: 0.3, // of the trees in the areas (not the young street maples): birches (#115)
   treeAreas: [
     // the courtyard's and the green's trees stand where the situation plan draws them: COURTYARD.trees
     { x0: -88.8, x1: 17.37, z0: -20, z1: -19, n: 11, young: true }, // street trees along Sankt Lars väg: young maples by the site (#130)
-    { x0: 17.37, x1: 19.3, z0: -15.44, z1: 54.05, n: 7 },         // … and along its east leg
+    { x0: 17.37, x1: 19.3, z0: -12, z1: 54.05, n: 7 },            // … and along its east leg
     { x0: -125.48, x1: 67.57, z0: 65.63, z1: 135.13, n: 55 },      // S:t Lars park / woods towards Höje å
-    { x0: -125.48, x1: -88.8, z0: -28.96, z1: 65.63, n: 14 },     // west of Karpvägen
+    { x0: -125.48, x1: -80, z0: -20, z1: 65.63, n: 16 },          // west of Karpvägen (#257: off the road by onRoad)
   ],
 };
 
@@ -394,11 +408,11 @@ export const PEOPLE = {
   // #244: none on the main walk at z 30.2–31.7 — past the garage box's edge it is outside the railing; the east walk instead,
   // and a kid on the patio walk beside the other walker there (z 18.5 | 19.2, clear of the bollards at 18.05)
   walkers: [
-    { a: [-80, -22.7], b: [18, -22.7], speed: 1.3, dog: true }, { a: [15, -22.9], b: [-60, -22.9], speed: 1.15 },
+    { a: [-70, -22.7], b: [12, -22.7], speed: 1.3, dog: true }, { a: [12, -22.9], b: [-60, -22.9], speed: 1.15 },
     { a: [-44.4, -2.2], b: [14.48, -2.2], speed: 1.2 }, { a: [-12.55, 25.53], b: [11.58, 25.53], speed: 1.25 }, { a: [7.72, 18.2], b: [-38.61, 18.2], speed: 1.0, kid: true },
     { a: [-42.47, 18.8], b: [9.65, 18.8], speed: 1.1 }, { a: [-47.01, 8.69], b: [-47.01, 47.3], speed: 1.3 },
   ],
-  cyclists: [{ a: [-90, -26.4], b: [20, -26.4], speed: 4.5 }, { a: [20, -27.8], b: [-90, -27.8], speed: 5.2 }],
+  cyclists: [{ a: [-90, -26.4], b: [10, -26.4], speed: 4.5 }, { a: [10, -27.8], b: [-90, -27.8], speed: 5.2 }], // the straight (#257)
   ball: [[-34.27, 19.88], [-29.44, 21.43]],          // two kids passing a ball (on the gravel by the sandbox)
   sandbox: [[-24.32, 24.32], [-22.97, 25.48]],         // kids sitting in the sandbox
   benches: [{ x: -5.79, z: 28.38, yaw: 180 }, { x: -30.89, z: 24.13, yaw: 180 }], // on COURTYARD.benches: yaw = the bench's rot − 180 (#207)

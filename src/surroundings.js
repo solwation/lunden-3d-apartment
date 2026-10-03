@@ -3,6 +3,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { SITE as S, COLORS, SEASON, COURTYARD } from './config.js';
 import { registerTrees, registerSnow } from './seasons.js';
 import { buildStreet } from './street.js';
+import { onRoad, pathStrip, filletGeometry } from './roads.js';
 
 // The rest of Kv. Lunden and its neighbourhood (SITE in config): the brick point blocks Hus A, B, C
 // with low hip roofs, the schools and buildings around the plot, Sankt Lars väg and Karpvägen,
@@ -558,7 +559,7 @@ function trees(rand) {
     for (let i = 0; i < area.n; i++) {
       const x = area.x0 + rand() * (area.x1 - area.x0), z = area.z0 + rand() * (area.z1 - area.z0);
       if (S.blocks.some((b) => x > b.x0 - 2 && x < b.x1 + 2 && z > b.z0 - 2 && z < b.z1 + 2)) continue;
-      if (S.roads.some((r) => x > r.x0 - 1 && x < r.x1 + 1 && z > r.z0 - 1 && z < r.z1 + 1)) continue;
+      if (onRoad(x, z, 1)) continue;
       if (z > S.river.z0 - 2 && z < S.river.z1 + 2) continue;
       if (T.box.some((b) => Math.min(Math.abs(x - b.x0), Math.abs(x - b.x1)) < 1.5 && z > b.z0 && z < b.z1)) continue; // not on a retaining wall
       const birch = !area.young && rand() < S.birchShare; // slim birches with white trunks among the others (#115)
@@ -566,6 +567,7 @@ function trees(rand) {
     }
   }
   for (const [x, z, s] of S.bigTrees) spots.push({ x, z, y: groundY(x, z), s, kind: 'big' });
+  for (const [x, z] of S.vergeTrees) spots.push({ x, z, y: groundY(x, z), s: 0.8 + rand() * 0.3, kind: 'tree' }); // by Karpvägen (#257)
   // crowns: one per tree, three to five lobes per big tree, an ellipsoid per young maple
   const lobes = [];
   const trunkM = [], birchM = [], m = new THREE.Matrix4(), q = new THREE.Quaternion();
@@ -783,9 +785,15 @@ export function buildSurroundings({ grass }) {
   const St = T.stairs[0]; // #148: from the stair's foot to the path
   flat([groundStrip(St.x0 - 0.3, St.x1 + 0.3, bw.stairs.ends[0], cp.z0, 0.01)], COLORS.paving);
   flat(bw.door, new THREE.MeshStandardMaterial({ color: 0x1c1e21, roughness: 0.8, side: THREE.DoubleSide }));
-  const gd = T.garageDoor; // the drive from Karpvägen to the garage door (#254)
-  flat([...S.roads, { x0: gd.drive, x1: gd.x + 0.05, z0: gd.z0 - 0.5, z1: gd.z1 + 0.5 }].map((r) => groundStrip(r.x0, r.x1, r.z0, r.z1, 0.012)), new THREE.MeshStandardMaterial({ color: COLORS.asphalt, roughness: 0.7 }), 0xd9dfe4); // ploughed, a little grey; damp (#128)
-  flat(S.paving.map((r) => groundStrip(r.x0, r.x1, r.z0, r.z1, 0.008)), COLORS.paving, SEASON.snow.paving);
+  // roads (#257, src/roads.js): rectangles, centre lines with rounded corners, fillets at the junctions
+  const gd = T.garageDoor; // + the drive from Karpvägen to the garage door (#254)
+  const asphalt = [...S.roads, { x0: gd.drive, x1: gd.x + 0.05, z0: gd.z0 - 0.5, z1: gd.z1 + 0.5 }].flatMap((r) => r.path ? [pathStrip(r, (w) => -w / 2, (w) => w / 2, 0.012, groundY)]
+    : r.fillets ? r.fillets.map((f) => filletGeometry(f, 0.012, groundY)) : [groundStrip(r.x0, r.x1, r.z0, r.z1, 0.012)]);
+  flat(asphalt, new THREE.MeshStandardMaterial({ color: COLORS.asphalt, roughness: 0.7 }), 0xd9dfe4); // ploughed, a little grey; damp (#128)
+  // pavements along the roads (left out where they would lie on another road's asphalt: a junction's mouth)
+  const walks = S.roads.flatMap((r) => (r.walks || []).map((k) => k.side > 0
+    ? pathStrip(r, (w) => w / 2, (w) => w / 2 + k.w, 0.008, groundY, true) : pathStrip(r, (w) => -w / 2 - k.w, (w) => -w / 2, 0.008, groundY, true)));
+  flat([...S.paving.map((r) => groundStrip(r.x0, r.x1, r.z0, r.z1, 0.008)), ...walks], COLORS.paving, SEASON.snow.paving);
   flat([groundStrip(S.river.x0, S.river.x1, S.river.z0, S.river.z1, 0.02)],
     new THREE.MeshStandardMaterial({ color: COLORS.water, roughness: 0.15, metalness: 0.2 }));
   // Kv. Lunden's own blocks and the old S:t Lars buildings: own façade texture and roof colour each,
@@ -866,7 +874,7 @@ export function buildSurroundings({ grass }) {
   const plinths = S.blocks.map(plinth).filter(Boolean);
   if (plinths.length) mesh(plinths, new THREE.MeshStandardMaterial({ color: 0x6e3326, roughness: 0.95 }));
   group.add(...trees(rng(3)));
-  const windows = buildWindowLights(), street = buildStreet(); // street lamps, crossing, curbs … (#128)
+  const windows = buildWindowLights(), street = buildStreet(groundY); // street lamps, crossing, curbs … (#128)
   group.add(windows.object, street.object);
   group.userData.windows = { object: windows.object, update(hour, night) { windows.update(hour, night); street.update(night); } };
   return group;
