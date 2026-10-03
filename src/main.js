@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { COLORS, LEVELS, DAY, START, PLAYER, DRAWING, STAIR, HOLD, REMOTE, REST, DOOR_HEIGHT, TURBO } from './config.js';
+import { COLORS, LEVELS, DAY, START, PLAYER, DRAWING, STAIR, HOLD, REMOTE, REST, DOOR_HEIGHT, TURBO, WEATHER } from './config.js';
 const DRAWING_COLORS = DRAWING.colors;
 import { buildWorld } from './world.js';
 import { Player } from './player.js';
@@ -51,6 +51,7 @@ import { Target } from './target.js';
 import { Car } from './car.js';
 import { People } from './people.js';
 import { Greetings } from './greet.js';
+import { Weather } from './weather.js';
 import { Posters, HeldDrawing, paperOnly } from './posters.js';
 import { PaperBalls } from './paperball.js';
 import { Cloud } from './cloud.js';
@@ -174,6 +175,7 @@ const startHour = params0.has('time') ? Number(params0.get('time')) : now.getHou
 const month = params0.has('month') ? Number(params0.get('month')) : now.getMonth() + 1;
 const date = params0.has('day') ? Number(params0.get('day')) : params0.has('month') ? 15 : now.getDate();
 const day = new DayCycle({ scene, camera, lights: { sun, hemi, ambient, fill }, clouds: cloudTexture(), startHour, month, date, year: now.getFullYear() });
+const weather = new Weather(scene, camera, day, params0.get('weather')); // rain in spring and autumn, thunder in late summer (#248)
 day.paused = params0.has('freeze');
 // the kitchen wall clock: shows the time; E opens the strip to spool / pause it (the date: the calendar)
 const wallClock = new WallClock();
@@ -1052,7 +1054,7 @@ function step(dt) {
   if (wet && !inShower && performance.now() > shriekAt) { sfx.shriek(); shriekAt = performance.now() + 1500; }
   inShower = wet;
   animateWater(dt);
-  lights.updateAuto(day.daylight, dt);
+  lights.updateAuto(day.daylight * (1 - 0.6 * weather.overcast), dt); // under rain clouds the small lamps come on earlier (#248)
   lights.update(Math.max(0, player.level), player.pos, dt);
   day.update(dt);
   wallClock.update(day.hour);
@@ -1078,7 +1080,8 @@ function step(dt) {
   sonos.update(player.level, (p) => behindWall(p)); // music: schedule ahead, walls muffle (#187)
   world.windowLights.update(day.hour, 1 - day.daylight);
   car.update(dt, day.daylight < 0.35, player);
-  people.update(dt, day.daylight, day.month, player);
+  weather.update(dt, !player.outdoors); // after the day: it sets the overcast / flash the next day.update applies (#248)
+  people.update(dt, weather.rain > WEATHER.people ? 0 : day.daylight, day.month, player); // they go in when it pours
   greet.update(dt); // greetings and answers (#247)
   cat.update(dt);
   measure.update(dt, window.innerWidth, window.innerHeight);
@@ -1106,7 +1109,7 @@ function step(dt) {
   if (active() && !outside) bump('seconds', dt);
   if (lvl !== lastLevel && lvl >= 0 && lastLevel >= 0) bump('stairs');
   if (lvl < 0) lastRoom = null;
-  const label = `${lvl < 0 ? 'Utomhus' : `${LEVELS[lvl].name}${lastRoom ? ` · ${lastRoom}` : ''}`} · ${day.clock}`;
+  const label = `${lvl < 0 ? 'Utomhus' : `${LEVELS[lvl].name}${lastRoom ? ` · ${lastRoom}` : ''}`} · ${day.clock}${weather.icon}`;
   if (lvl !== lastLevel || label !== levelEl.textContent) {
     levelEl.textContent = label;
     lastLevel = lvl;
@@ -1273,4 +1276,4 @@ if (resumeOk && resumed.mode) continueAfterReload(resumed);
 document.documentElement.classList.remove('resuming'); // the page is ready: off with the "Laddar…" cover (#222)
 
 // handle for tests/debugging (tools/touchtest.html)
-window.__app = { greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };
+window.__app = { weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };

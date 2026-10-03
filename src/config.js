@@ -382,6 +382,23 @@ export const PEOPLE = {
   shoes: [0x1a1a1a, 0xf2f2f2, 0x5a3a22, 0x2e3a4f, 0x8c8c8c], // #239, our picks
 };
 
+// Weather (#248, src/weather.js): per date a seeded draw. `rain` = the chance per day of showers by month (Jan…Dec):
+// spring and autumn, a little in summer, none in the snow months (Lund's wettest months are Jul–Nov, the user wants
+// spring and autumn); `second` = the chance of a second shower that day. `thunder`: late summer (from / to as [month,
+// day]) a chance per day of a thunderstorm starting between `hours`. Lengths in hours (the 60-minute day: 1 h = 2.5
+// real min), `ramp` = h to come and go. Drops: `drops` streaks within `radius` m of the eye, `height` m above it,
+// falling `speed` m/s, `len` m long, slanted by `wind`. Overcast: the sun × (1 − `sunCut`), fog `fogFar` m. Lightning
+// every `flash.every` real s (random in between), thunder after distance / 343 m/s. Our numbers.
+export const WEATHER = {
+  rain: [0, 0, 0.3, 0.38, 0.3, 0.12, 0.12, 0.15, 0.38, 0.5, 0.45, 0], second: 0.35,
+  showers: { len: [1, 4.5], ramp: 0.35, strength: [0.45, 1] },
+  thunder: { from: [7, 20], to: [8, 31], chance: 0.4, hours: [14, 20], len: [1, 2.5] },
+  drops: 1800, radius: 13, height: 9, speed: 9.5, len: 0.5, wind: 0.12,
+  sunCut: 0.85, fogFar: 80, people: 0.4, // people go in above this much rain
+  flash: { every: [6, 22], dist: [400, 4000], light: 2.2 },
+  sound: 0.22, // the rain's gain outdoors (indoors a quarter, muffled)
+};
+
 // Greeting the people outside (#247, src/greet.js): within `reach` m; the bubbles show for `bubble` s. The lines are
 // ours; one is picked at random (the visitor's from `say`, children answer from `kids`, cyclists from `cyclists`).
 export const GREET = {

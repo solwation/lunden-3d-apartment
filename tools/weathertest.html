@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Weather test</title>
+  <script type="importmap">
+    { "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+    } }
+  </script>
+</head>
+<body>
+<pre id="out">running…</pre>
+<script type="module">
+// Weather (#248): the showers over a year (none in the snow months, more in spring and autumn than in summer,
+// thunderstorms only in late summer); with &weather=storm: rain streaks, none inside Hus L, a grey sky and a
+// weaker sun, a lightning flash; ⛈ in the HUD; forced clear = no rain.
+//   google-chrome --headless=new --dump-dom http://localhost:8137/tools/weathertest.html
+import { rainAt, showersOn } from '../src/weather.js';
+import { WEATHER } from '../src/config.js';
+const out = document.getElementById('out');
+const lines = [];
+const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; };
+let pass = true;
+// a year of days: the share of days with rain per season, the thunderstorm days
+const days = { winter: [0, 0], spring: [0, 0], summer: [0, 0], autumn: [0, 0] }, storms = [];
+for (const year of [2025, 2026, 2027]) for (let m = 1; m <= 12; m++) for (let d = 1; d <= new Date(year, m, 0).getDate(); d++) {
+  const s = showersOn(year, m, d), season = [12, 1, 2].includes(m) ? 'winter' : m <= 5 ? 'spring' : m <= 8 ? 'summer' : 'autumn';
+  days[season][1]++;
+  if (s.some((x) => !x.storm)) days[season][0]++;
+  for (const x of s) if (x.storm) storms.push(m * 100 + d);
+}
+const share = (k) => days[k][0] / days[k][1];
+pass &= check(share('winter') === 0, `no rain in the snow months (${share('winter')})`);
+pass &= check(share('spring') > share('summer') && share('autumn') > share('summer'), `spring ${share('spring').toFixed(2)} and autumn ${share('autumn').toFixed(2)} wetter than summer ${share('summer').toFixed(2)}`);
+const T = WEATHER.thunder, lo = T.from[0] * 100 + T.from[1], hi = T.to[0] * 100 + T.to[1];
+pass &= check(storms.length > 5 && storms.every((md) => md >= lo && md <= hi), `${storms.length} thunderstorms, all in late summer`);
+// a rainy day: it rains within a shower, not long before or after
+let wet = null;
+for (let m = 9; m <= 11 && !wet; m++) for (let d = 1; d <= 30 && !wet; d++) { const s = showersOn(2026, m, d).find((x) => x.end < 23 && x.start > 2 && x.end - x.start > 1.5); if (s) wet = { m, d, s }; }
+const mid = rainAt(2026, wet.m, wet.d, (wet.s.start + wet.s.end) / 2).rain, before = rainAt(2026, wet.m, wet.d, wet.s.start - 1).rain;
+pass &= check(mid > 0.3 && before < mid, `a shower on 2026-${wet.m}-${wet.d}: ${mid.toFixed(2)} in it, ${before.toFixed(2)} an hour before`);
+
+// in the page, forced thunderstorm
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const f = document.createElement('iframe');
+f.width = 900; f.height = 600; f.src = '../index.html?weather=storm&time=14&month=8&day=25';
+document.body.append(f);
+f.onload = async () => {
+  const w = f.contentWindow, d = f.contentDocument;
+  while (!w.__app) await wait(100);
+  const { step, weather, day, player } = w.__app;
+  d.getElementById('start-touch').click();
+  await wait(50);
+  for (let i = 0; i < 60; i++) step(1 / 30);
+  pass &= check(weather.rain === 1 && weather.storm && weather.lines.visible && weather.geo.drawRange.count === WEATHER.drops * 2, `storm: rain ${weather.rain}, ${weather.geo.drawRange.count / 2} drops`);
+  // none inside Hus L (x -43.25 … 11.5, z 0 … 12.7) below its roof
+  const p = weather.pos;
+  let inside = 0;
+  for (let i = 0; i < WEATHER.drops; i++) { const o = i * 6; if (p[o] > -43 && p[o] < 11.4 && p[o + 2] > 0.1 && p[o + 2] < 12.6 && p[o + 4] < 6 && p[o + 4] > -50) inside++; } // (parked ones are far below)
+  pass &= check(inside === 0, `no drops inside Hus L (${inside})`);
+  const sunRain = w.__app.renderer && day.lights.sun.intensity;
+  pass &= check(day.uniforms.uOvercast.value === 1, 'grey sky');
+  weather.strike(false); step(1 / 60);
+  pass &= check(day.flash > 0.3 && day.lights.hemi.intensity > 1, `a lightning flash (${day.flash.toFixed(2)}, hemi ${day.lights.hemi.intensity.toFixed(2)})`);
+  for (let i = 0; i < 60; i++) step(1 / 30);
+  pass &= check(day.flash === 0, 'and it is over');
+  pass &= check(/⛈/.test(d.getElementById('level').textContent), `HUD "${d.getElementById('level').textContent}"`);
+  // people go in when it pours
+  pass &= check(!w.__app.people.object.visible, 'the people outside have gone in');
+  weather.force = 'clear';
+  for (let i = 0; i < 10; i++) step(1 / 30);
+  pass &= check(weather.rain === 0 && !weather.lines.visible && day.lights.sun.intensity > sunRain * 3, `clear: no rain, the sun back (${sunRain.toFixed(2)} → ${day.lights.sun.intensity.toFixed(2)})`);
+  out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
+};
+</script>
+</body>
+</html>

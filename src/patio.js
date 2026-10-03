@@ -401,7 +401,7 @@ export class Patio {
       for (const l of sl.lamps) l.k = sl.glow;
     }
     const sunUp = day.sunDir.y > 0.02;
-    const auto = P.parasol.months.includes(day.month) && sunUp ? 1 : 0;
+    const auto = P.parasol.months.includes(day.month) && sunUp && !(day.overcast > 0.6) ? 1 : 0; // folded under rain clouds too (#248)
     for (const p of seasonal.parasols) {
       // A choice made by hand (E) holds until the automatic state itself changes (sunset/sunrise,
       // a new season): then the automatic one takes over again.

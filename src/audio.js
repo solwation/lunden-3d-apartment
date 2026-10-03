@@ -345,6 +345,33 @@ export const sfx = {
       },
     };
   },
+  /** Rain (#248): a looping hiss whose level and muffling are set every frame (`set(gain, cutoff)`); null before audio. */
+  rain() {
+    if (!ctx) return null;
+    const src = ctx.createBufferSource();
+    src.buffer = noiseBuf; src.loop = true;
+    const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 400;
+    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 7000;
+    const g = ctx.createGain(); g.gain.value = 0;
+    src.connect(hp).connect(lp).connect(g).connect(master);
+    src.start();
+    return {
+      set(gain, cutoff) {
+        const t = ctx.currentTime;
+        g.gain.setTargetAtTime(gain, t, 0.3);
+        lp.frequency.setTargetAtTime(cutoff, t, 0.3);
+      },
+    };
+  },
+  /** Thunder (#248) `delay` s from now: a crack if it is near (`near` 0…1), then a long rolling rumble; `inside` muffles. */
+  thunder(delay, near, inside = false) {
+    if (!ready()) return;
+    const t = ctx.currentTime + delay, d = out(null, inside ? 0.45 : 1);
+    if (near > 0.6) noise(t, 0.35, d, { type: 'highpass', freq: 900, gain: 0.5 * near, attack: 0.002 });
+    const dur = 3.5 + 3 * (1 - near) + Math.random() * 2;
+    noise(t, dur, d, { type: 'lowpass', freq: inside ? 160 : 260 + 300 * near, q: 0.7, gain: 0.55 + 0.35 * near, attack: 0.08 + 0.4 * (1 - near) });
+    for (let k = 0; k < 3; k++) noise(t + 0.4 + Math.random() * dur * 0.6, 1.2 + Math.random() * 1.5, d, { type: 'lowpass', freq: 140, q: 1, gain: 0.35, attack: 0.15 });
+  },
   /** "Iiiiih!" — a startled shriek (cold shower): voiced sawtooth through the formants of [i]. */
   shriek() {
     if (!ready()) return;
