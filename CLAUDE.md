@@ -79,7 +79,8 @@ docs/                  reference images in git (site map screenshot; docs/peab/ 
                        brochure: situation plan, overview plans per floor, unit plans, aerial render)
                        docs/peab/kalibrerad/ = the overview plans + situation plan at 300 dpi from the
                        collected Peab material, skalstockar.json (m per PDF unit from each 0–25 m scale bar),
-                       modell-mot-plan.jpg (the current model's footprints over the situation plan)
+                       modell-mot-plan.jpg (the model before #252/#253 over the situation plan); bostader/ = bofakta
+                       sheets of Hus L's other units, text/ = Q&A + info brochure text; index: docs/peab/README.md
 textures/              image textures the page loads (published by stamp.sh): stair-pictures.jpg = the 2 × 2 atlas
                        of the stair pictures (#220), cropped/straightened from docs/tavla-trappa-*.jpg
 material/              screenshots of our choices in Peab's option portal (local, see below)
