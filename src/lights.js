@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { LEVELS, SOFFITS, LIGHTING as L, DOOR_TRIM, STAIR } from './config.js';
 import { lampMaterials, lampGlows } from './interior.js';
 import { sfx } from './audio.js';
@@ -16,6 +17,28 @@ const rockerMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0
 function ceilingAt(level, x, z) {
   const s = SOFFITS.find((s) => s.level === level && x > s.x0 && x < s.x1 && z > s.z0 && z < s.z1);
   return LEVELS[level].floor + (s ? s.height : LEVELS[level].ceiling);
+}
+
+/** A little painted room for glossy metal to reflect (#307; the scene has no environment map): an equirectangular
+ * canvas — a pale ceiling, cream walls with two bright windows, a light oak floor. Made once. */
+let envTex = null;
+function roomEnv() {
+  if (envTex) return envTex;
+  const c = document.createElement('canvas');
+  c.width = 256; c.height = 128;
+  const g = c.getContext('2d');
+  const grad = g.createLinearGradient(0, 0, 0, 128);
+  grad.addColorStop(0, '#f2eee8'); grad.addColorStop(0.38, '#e2dbd0'); grad.addColorStop(0.5, '#cbc1b2');
+  grad.addColorStop(0.56, '#b9a993'); grad.addColorStop(1, '#8f7d68');
+  g.fillStyle = grad; g.fillRect(0, 0, 256, 128);
+  g.fillStyle = '#ffffff';
+  g.fillRect(40, 40, 30, 28); g.fillRect(170, 44, 22, 24); // windows
+  g.fillStyle = '#3d3a36';
+  g.fillRect(100, 52, 24, 20); // a dark doorway / cabinets
+  envTex = new THREE.CanvasTexture(c);
+  envTex.mapping = THREE.EquirectangularReflectionMapping;
+  envTex.colorSpace = THREE.SRGBColorSpace;
+  return envTex;
 }
 
 /** Emissive bits that show a lamp is on: on = warm glow, off = plain white plastic/glass. */
@@ -267,6 +290,7 @@ export class Lights {
       const y = ceilingAt(p.level, p.x, p.z);
       const shade = new THREE.MeshStandardMaterial({ color: 0xe9e9e6, roughness: 0.6, side: THREE.DoubleSide });
       R.mats.push(shade);
+      if (p.style === 'copper3') { this.copperPendants(scene, R, p, y, shade); continue; }
       const cord = new THREE.Mesh(new THREE.CylinderGeometry(0.004, 0.004, p.drop, 6), new THREE.MeshStandardMaterial({ color: p.cord ?? 0x222222 }));
       cord.position.set(p.x, y - p.drop / 2, p.z);
       if (p.style === 'string') {
@@ -370,6 +394,67 @@ export class Lights {
     this.doors = world.doors.map((d) => ({ door: d, level: levelOf(d) }));
   }
 
+  /**
+   * The three copper pendants over the dining table (#307): a dome canopy with two arms along z, glossy copper drop
+   * shades on black cords at different heights, a frosted diffuser disc in each mouth (it glows with the room, `shade`)
+   * and the shades' insides warm. Merged per material: copper, cords, insides, discs = 4 draw calls. One pool anchor
+   * between the shades (no light of its own). The copper reflects a little painted room (`roomEnv`), its strength
+   * following the daylight / the room's switch (updateAuto), so it is neither flat brown nor glowing in the dark.
+   */
+  copperPendants(scene, R, p, y, disc) {
+    const floor = LEVELS[p.level].floor, H = p.shadeH, S = p.shadeR;
+    const copperGeos = [], cordGeos = [], innerGeos = [], discGeos = [];
+    const cyl = (r, x0, y0, z0, x1, y1, z1, seg = 8) => { // a rod from one point to another
+      const a = new THREE.Vector3(x0, y0, z0), b = new THREE.Vector3(x1, y1, z1), len = a.distanceTo(b);
+      const g = new THREE.CylinderGeometry(r, r, len, seg);
+      g.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), b.clone().sub(a).normalize()));
+      g.translate((a.x + b.x) / 2, (a.y + b.y) / 2, (a.z + b.z) / 2);
+      return g;
+    };
+    // the canopy: a shallow dome under the ceiling, a little stem in its middle
+    const dome = new THREE.SphereGeometry(p.canopy / 2, 28, 8, 0, Math.PI * 2, 0, Math.PI / 2);
+    dome.scale(1, 0.45, 1); dome.rotateX(Math.PI); dome.translate(p.x, y - 0.002, p.z);
+    const domeH = p.canopy / 2 * 0.45;
+    copperGeos.push(dome, cyl(0.009, p.x, y - domeH, p.z, p.x, y - domeH - 0.03, p.z, 12));
+    // the shade's outline (radius, height from its mouth) — an onion drop, widest low down, into a thin neck
+    const prof = [[0.82, 0], [0.95, 0.06], [1, 0.17], [0.97, 0.3], [0.86, 0.45], [0.64, 0.62], [0.4, 0.78], [0.22, 0.9], [0.14, 1]]
+      .map(([r, h]) => new THREE.Vector2(r * S, h * H))
+      .concat([new THREE.Vector2(0.011, H + 0.006), new THREE.Vector2(0.011, H + p.neck), new THREE.Vector2(0.001, H + p.neck)]);
+    const drops = [-1, 0, 1];
+    drops.forEach((side, i) => {
+      const sz = p.z + side * p.arm, bottom = floor + p.bottoms[i], top = bottom + H + p.neck;
+      let hang; // where the cord leaves the fixture
+      if (side) {
+        const ay = y - 0.014;
+        copperGeos.push(cyl(0.0045, p.x, ay, p.z + side * p.canopy * 0.4, p.x, ay, sz)); // the arm along the ceiling
+        const bead = new THREE.SphereGeometry(0.0065, 10, 6); bead.translate(p.x, ay, sz);
+        copperGeos.push(bead, cyl(0.0045, p.x, ay, sz, p.x, ay - p.bend, sz)); // bent down at the tip
+        hang = ay - p.bend;
+      } else hang = y - domeH - 0.03;
+      cordGeos.push(cyl(0.0032, p.x, hang, sz, p.x, top, sz, 6));
+      const shell = new THREE.LatheGeometry(prof, 36);
+      shell.translate(p.x, bottom, sz);
+      copperGeos.push(shell);
+      innerGeos.push(shell.clone());
+      const d = new THREE.CircleGeometry(S * 0.86, 28);
+      d.rotateX(Math.PI / 2); // facing down
+      d.translate(p.x, bottom + 0.014, sz);
+      discGeos.push(d);
+    });
+    const copper = new THREE.MeshStandardMaterial({ color: p.copper, metalness: 0.9, roughness: 0.22, envMap: roomEnv() });
+    const inner = new THREE.MeshStandardMaterial({ color: 0xf0e6da, roughness: 0.5, side: THREE.BackSide });
+    inner.userData.lit = { emissive: 0xffc68a, intensity: 0.9 };
+    R.mats.push(inner);
+    const cords = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.8 });
+    for (const [geos, m] of [[copperGeos, copper], [cordGeos, cords], [innerGeos, inner], [discGeos, disc]]) {
+      const mesh = new THREE.Mesh(mergeGeometries(geos), m);
+      mesh.name = 'kopparlamporna';
+      scene.add(mesh);
+    }
+    (this.copper ??= []).push({ material: copper, room: R });
+    R.lamps.push({ pos: new THREE.Vector3(p.x, floor + (p.bottoms[0] + p.bottoms[1]) / 2 - 0.06, p.z), ...L.pendant, level: p.level });
+  }
+
   addSwitch(R, x, y, z, normal, scene) {
     const s = new Switch(R, x, y, z, normal);
     scene.add(s.object);
@@ -396,6 +481,8 @@ export class Lights {
       if (!this.forced) for (const f of this.floorLamps) if (f.auto) { if (first) f.set(dark); else f.room.on = dark; }
     }
     for (const f of this.floorLamps) f.update(dt);
+    // the copper pendants' reflections (#307): the painted room shows by day and when their room is lit
+    for (const c of this.copper ?? []) c.material.envMapIntensity = 0.1 + 0.8 * Math.min(1, Math.max(0, daylight)) + (c.room.on ? 0.45 : 0);
   }
 
   /** Is anything lit in room `name` on `level`: its ceiling lamp or a small lamp standing in it (the blinds' glow, #273)? */

@@ -1345,7 +1345,15 @@ export const LIGHTING = {
   wash: { rays: 192, facade: [0.465, 12.234] },
   wetRooms: ['Badrum', 'WC/dusch'],       // spots in the soffit instead of a ceiling lamp
   pendants: [
-    { level: 0, room: 'Kök / matplats', x: 3.5, z: 1.41, drop: 1.25 }, // over the dining table (SKANSNAS.table)
+    // over the dining table (SKANSNAS.table): the family's three copper pendants (#307, docs/kopparlampor-koksbord.jpg).
+    // A copper dome canopy (Ø `canopy`) with two thin arms (`arm` m each) along the table's long axis (z), bent down
+    // `bend` at their tips; three glossy copper drop shades (Ø `shadeR` × 2, `shadeH` tall + a `neck`) on black cords
+    // from the centre and the arm tips, a frosted diffuser disc in each mouth. The shades' bottoms `bottoms` m above the
+    // floor (outer, middle, outer: the middle one higher; the table top is at 0.75). All sizes are *guesses* from the
+    // photo. It does not replace the room's ceiling dome (that one lights the worktops by the sink).
+    { level: 0, room: 'Kök / matplats', x: 3.5, z: 1.41, style: 'copper3', drop: 0, // = SKANSNAS.table's centre
+      canopy: 0.12, arm: 0.38, bend: 0.04, shadeR: 0.085, shadeH: 0.2, neck: 0.035, bottoms: [1.47, 1.6, 1.47],
+      copper: 0xc8845e },
     // the living room's folded white paper pendant (#134, docs/taklampa-vit-veckad-papper.png; Le Klint style),
     // over the sitting group between the coffee table and the TV; 45 × 32 cm and the 55 cm cord are *guesses*
     // (shade bottom ~2.1 m up). It replaces the room's ceiling dome.

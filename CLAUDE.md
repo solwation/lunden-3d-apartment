@@ -767,7 +767,11 @@ North = −z (the bedrooms Sovrum 1/3 face north).
 - Dining set (user's choice, #62/#57/#63): IKEA SKANSNÄS table and 4 chairs, brown beech (`SKANSNAS`, one
   frame colour for both; light woven paper-cord seats): the table rectangular 150 × 90 (closed; 205
   extended is not modelled), short end to the kitchen window; 2 + 2 chairs on the long sides, pushed
-  in under the top. The user finds the kitchen cramped easily — keep it airy. F (#75) shows the bare flat: `world.looseItems` (furniture, kitchen shelves, the hall
+  in under the top. Over it the family's three copper pendants (#307, docs/kopparlampor-koksbord.jpg, `LIGHTING.pendants`
+  style 'copper3', `copperPendants` in lights.js): a dome canopy with two arms along the table, glossy copper drops on
+  black cords (the middle one higher), frosted discs that glow with the kitchen switch, one pool anchor; merged into 4
+  meshes; the copper reflects a small painted room (`roomEnv`, strength by daylight / switch). The kitchen's ceiling dome
+  stays. The user finds the kitchen cramped easily — keep it airy. F (#75) shows the bare flat: `world.looseItems` (furniture, kitchen shelves, the hall
   mirror/key cabinet/coat rack, door signs, the Moccamaster, the cat board) are hidden, their collision
   segments go, the cat leaves and none turns up, hidden things are no E target and give no light.
   Kept: Peab's kitchen and wet rooms (incl. bathroom mirrors), wardrobes, doors, stair, ceiling lamps,
