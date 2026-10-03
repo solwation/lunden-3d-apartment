@@ -196,6 +196,13 @@ src/target.js          the Nerf target on the lawn behind the hedge (TARGET, #99
                        a score board beside it (localStorage 'lunden.target'), E clears it; it rises out of the grass
                        only while a holdable with `hitsTarget` (blasters, lightsaber, wands) is in the hand and sinks
                        under it otherwise (#144, #179); saber cuts and wand magic on it score too
+src/basket.js          Tilly's basketball (BASKET): a Holdable in a wall holder over her daybed; click shoots it on an arc
+                       through the point you look at (near the rim: at the rim, coming down at `entry`), right click / the
+                       🏀 button (#power-btn, its icon = the held thing's `altIcon`) dribbles; out of the hand it bounces off
+                       every raycast surface (`marks.segment`, glass and doors too), rolls out, lies still (placed), and is
+                       caught when it passes the hand (or E). `Hoop`: a portable hoop on the asphalt west of our entrance,
+                       up while the ball is out of its holder (rises like the Nerf target), analytic collision (rim, board,
+                       pole, base); down through the rim = a basket (stats baskets / threes from beyond `three` m)
 src/marks.js           marks on surfaces (MARKS, #96): `hit(from, to)` = first surface on a segment (glass, doors, lids
                        → none; the cat → meow), `add(kind, hit)` / `burn(hit)`; one ring buffer, an InstancedMesh per
                        kind (burn, glow, star, butterfly, splash) with a per-instance fade, a Points puff of smoke;
@@ -363,6 +370,8 @@ tools/boardtest.html   headless test: keep / throw away cat photos, a full board
 tools/detailtest.html  headless test: from the doorstep through the open front door the hall's doors are drawn (#210); inside
                        every Entréplan door is on a drawn layer, open or shut; outside the culler still works
 tools/planttest.html   headless test: lift pot plants (window board → table, side table → window board, the shelf), F home
+tools/baskettest.html  headless test: the daybed's drawers (shoes, hair things), take the ball → the hoop rises, dribble and
+                       catch, a throw at the wall stays in the room, shots from 4 m (a basket) and 7.5 m (a three), a miss, F
 tools/rifletest.html   headless test: the AK-47 rides with its drawer, 30 shots of automatic fire leave bullet holes, reload,
                        the magazine on the floor, a click = one shot, a shot in the lawn target scores, F
 tools/turbotest.html   headless test: Kaffeturbo with an injected clock — three cups in five minutes (not spread out, not milk /
@@ -509,7 +518,8 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   Sovrum 2 (first left) Walter & Kian, bunk (Darth Vader sheets), a gaming desk with a PC along the west wall, short end to the window (#77, #84): sitting in its chair starts the
   PC; a sit spot in the lower bunk (`watch`, a spot `kind` can differ from its piece) swings the monitor arm round and plays a film;
   a lightsaber on hooks on the west wall north of the desk (#78) · Sovrum 4 (second left, ex Allrum) Tilly, IKEA HEMNES
-  daybed with pink cushions. Bunks: IKEA MYDAL, white, 97 × 207 × 157 (`MYDAL`, #227: posts, end boards, a two-board guard rail, a straight
+  daybed with pink cushions, its three drawers open (basketball shoes | hair things | shoes), her basketball in a wall
+  holder over it (`src/basket.js`). Bunks: IKEA MYDAL, white, 97 × 207 × 157 (`MYDAL`, #227: posts, end boards, a two-board guard rail, a straight
   ladder on the room side at the foot end); long side to the side wall, head end to the façade; a white IKEA MALM chest of 6 drawers
   (80 × 124 × 50, `malm`, #235: 2 small + 4 big, clothes inside) with its back against each bunk's foot end on top (`MALM_DECO`, item `deco`) a themed lamp of its own (a Death Star in Sovrum 2, a unicorn in Sovrum 3) and
   a pot plant you can take (a cactus | a pink flower); an IKEA NYMÅNE wall/reading lamp at
@@ -564,7 +574,7 @@ URL parameters (debugging / screenshots):
 - `&time=HH[.h]` — start at that hour (default: the browser's time), `&month=1–12`, `&day=1–31` (default: today), `&freeze` pauses the clock,
   `&clock` opens the wall clock's strip,
   `&lights` turns every lamp on, ceiling lamps too, and keeps the small ones on (#234).
-- `&car` — our car parked in front of the house. `&water` — turn on every tap and shower. `&tv` — switch the TV on. `&secret=i` — the secret drawer shows surprise i (SECRET.items, with `&open`).
+- `&hoop` — the basketball hoop up out front. `&car` — our car parked in front of the house. `&water` — turn on every tap and shower. `&tv` — switch the TV on. `&secret=i` — the secret drawer shows surprise i (SECRET.items, with `&open`).
 - `&phone` — the short touch-only start screen. `&install` — show the iPhone install sheet. `&note` — open the changelog note. `&pet` (with `&cat=`) — the cat is being petted.
 - `&clip=y` — clip everything above height y (cut-away plan view, e.g.
   `?shot&at=2.87,6.35,0,-90,16&clip=2.5` for Entréplan from above, `clip=5.6` + feet 19 for Övre plan).

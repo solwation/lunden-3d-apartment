@@ -440,6 +440,25 @@ export const CAR = {
   speed: 8, brake: 2,              // m/s cruising, m/s² slowing down to the stop
 };
 
+// Tilly's basketball (src/basket.js, the user): a size 6 ball (Ø 23 cm) in a wall holder over her daybed (Sovrum 4's
+// west wall, x 0.202, centred on the bed, ball centre `y` over the floor). Click shoots it on an arc through the point
+// you look at, coming down onto it at `entry` rad (the rim) or `flat` (anything else); speed up to maxSpeed m/s,
+// ± jitter of it; right click / the
+// 🏀 button dribbles (straight down at `dribble` m/s); it bounces with `bounce` (normal speed kept), loses `slip` of the
+// speed along a surface per bounce, rolls out with `roll` /s damping, and comes back into the hand within `catch` m.
+// The hoop (a portable one, our pick) stands on the asphalt in front of Hus L west of our entrance, clear of the car's
+// way in (x −1.2) and the visitor's start, the board facing the house; it is up while the ball is out of its holder.
+// Rim 3.05 m, Ø 45 cm, 15 cm in front of the board (regulation); board 112 × 72 cm, its bottom `below` the rim.
+// `assist`: looking within this many metres of the rim aims at the rim. A basket from beyond `three` m is a three.
+export const BASKET = {
+  ball: { r: 0.115, level: 1, x: 0.202, z: 10.0, y: 1.5, held: { x: 0.16, y: -0.25, z: -0.5 },
+    gravity: 9.81, entry: 0.85, flat: 0.25, maxSpeed: 13, jitter: 0.015, dribble: 4.6,
+    bounce: 0.8, slip: 0.12, roll: 0.8, catch: 0.42 },
+  hoop: { x: -4.5, z: -12, rim: 3.05, rimR: 0.23, rimTube: 0.01, rimZ: 0.38, board: [1.12, 0.72], below: 0.15,
+    base: [1.0, 0.3, 0.7], baseZ: -0.75, arm: 0.35, net: 0.42, rise: 1.2, assist: 1.2 },
+  three: 6.75,
+};
+
 export const TARGET = {
   x: 2.8, z: 19.5, y: 1.4, r: 0.4,
   rings: [10, 8, 6, 4, 2, 1],
@@ -614,7 +633,7 @@ export const SCORE = {
   cats: 20, rare: 50, petted: 10, catFish: 15, doors: 1, lids: 1, flushes: 2, taps: 1, fridge: 2, appliances: 2,
   cabinets: 1, beer: 2, coffee: 2, fish: 3, chicken: 5, wine: 2, champagne: 2, whisky: 2, milk: 2, kask: 3, posted: 10,
   thrown: 3, lights: 1, sat: 2, lay: 2, stairs: 2, secrets: 15, visited: 5, steps: 0.01,
-  fried: 5, burnt: 1, catPhotos: 5, grill: 10, hood: 3, songs: 3, read: 5, car: 15, magic: 2, target: 1, // #197 (target = per target point)
+  fried: 5, burnt: 1, catPhotos: 5, grill: 10, hood: 3, songs: 3, read: 5, car: 15, magic: 2, target: 1, baskets: 5, threes: 5, // #197 (target = per target point); a three counts as a basket too
 };
 // The leaderboard: how many rows are shown, how often a changed score is sent (s).
 export const LEADERBOARD = { show: 10, every: 30, nameMax: 20 };

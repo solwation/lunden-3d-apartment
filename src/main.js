@@ -54,6 +54,7 @@ import { Posters, HeldDrawing, paperOnly } from './posters.js';
 import { PaperBalls } from './paperball.js';
 import { Cloud } from './cloud.js';
 import { Leaderboard } from './leaderboard.js';
+import { Basketball, Hoop } from './basket.js';
 
 const overlay = document.getElementById('overlay');
 const hud = document.getElementById('hud');
@@ -310,6 +311,14 @@ scene.add(target.object); // up only while something that can hit it is in the h
 const marks = new Marks(scene, camera, [world.object, patio.object, target.object], cat); // burn marks, stars, splashes on surfaces (#96)
 const rifle = things.find((t) => t.isRifle) ?? null; // the AK-47 in the NORDLI chest (#196): bullet holes, the target, the cat
 if (rifle) Object.assign(rifle, { marks, cat, onShot: () => bump('shots') });
+// Tilly's basketball over her daybed; the hoop out front rises while it is out of its holder (basket.js)
+const hoop = new Hoop();
+scene.add(hoop.object);
+if (params0.has('hoop')) hoop.update(10, true); // &hoop: up from the start (screenshots)
+const ball = new Basketball(scene, camera, { marks, hoop, world });
+ball.onBasket = (three) => { bump('baskets'); if (three) bump('threes'); };
+holdables.push(ball);
+{ const moving = world.movingSegments; world.movingSegments = (lvl) => [...moving(lvl), ...(lvl === 0 ? hoop.segments() : [])]; } // its base is in the way
 // drawings taped up on walls and the fridge (#176); the one in the hand
 const posters = new Posters(scene, world, marks, note);
 const postersLoaded = posters.load();
@@ -929,8 +938,10 @@ function updateFocus() {
   if (reading && touch.enabled) actionBtn.textContent = boardPanel.open ? 'Stäng tavlan' : 'Stäng lappen';
   promptEl.hidden = (!focused && !seated) || touch.enabled || reading;
   if (remoteAim && !touch.enabled && !reading) { promptEl.textContent = 'Klicka för att byta kanal · högerklick: av/på'; promptEl.hidden = false; }
+  if (heldItem() === ball && !focused && !touch.enabled && !reading) { promptEl.textContent = 'Klicka för att skjuta · högerklick: studsa bollen'; promptEl.hidden = false; }
   actionBtn.hidden = !(focused || reading || holding || seated) || !touch.enabled || clockPanel.open || calPanel.open || sonos.open || !!viewing; // the strips have their own ×
   powerBtn.hidden = !touch.enabled || !heldItem()?.useAlt || reading;
+  if (!powerBtn.hidden) { const icon = heldItem().altIcon ?? '⏻'; if (powerBtn.textContent !== icon) { powerBtn.textContent = icon; powerBtn.setAttribute('aria-label', heldItem().altLabel ?? 'Stäng av / slå på TV:n'); } }
 }
 
 // --- furniture on/off (F / 🛋) ---------------------------------------------
@@ -1029,6 +1040,7 @@ function step(dt) {
   marks.update(dt);
   balls.update(dt);
   target.update(dt, world.furnitureOn && !!heldItem()?.hitsTarget); // the target rises with a blaster, the saber or a wand in the hand (#144, #179)
+  hoop.update(dt, world.furnitureOn && (ball.out || params0.has('hoop'))); // the hoop stands out front while the basketball is out of its holder
   if (clockPanel.open) clockPanel.render();
   sonos.update(player.level, (p) => behindWall(p)); // music: schedule ahead, walls muffle (#187)
   world.windowLights.update(day.hour, 1 - day.daylight);
@@ -1227,4 +1239,4 @@ if (resumeOk && resumed.mode) continueAfterReload(resumed);
 document.documentElement.classList.remove('resuming'); // the page is ready: off with the "Laddar…" cover (#222)
 
 // handle for tests/debugging (tools/touchtest.html)
-window.__app = { hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };
+window.__app = { ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };

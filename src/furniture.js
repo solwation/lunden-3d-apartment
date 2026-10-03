@@ -744,13 +744,20 @@ const pinks = [0xf6b8cf, 0xf29bbb, 0xfbd3e1, 0xe983a8].map((c) => new THREE.Mesh
 function daybed() {
   const g = new THREE.Group();
   const W = 2.07, D = 0.89, H = 0.83, z0 = -D / 2, z1 = D / 2;
-  // base with three drawers on the front
-  g.add(rbox(W - 0.1, 0.3, D - 0.04, 0, 0.18, 0, whiteWood, 0.01));
-  for (let i = 0; i < 3; i++) {
-    const x = -W / 2 + 0.05 + (W - 0.1) * (i + 0.5) / 3;
-    g.add(rbox((W - 0.1) / 3 - 0.02, 0.24, 0.02, x, 0.18, z1 - 0.02, whiteWood, 0.006));
-    g.add(rbox(0.12, 0.02, 0.02, x, 0.26, z1, metal, 0.005)); // handle
-  }
+  // the base: a hollow box (top, back, plinth, dividers) with three drawers that open with E — basketball shoes and
+  // hair things in them (the user; stuff.js)
+  const bw = W - 0.1, fw = bw / 3 - 0.02, depth = D - 0.16;
+  g.add(rbox(bw, 0.02, D - 0.04, 0, 0.32, 0, whiteWood, 0.004));                 // top under the mattress
+  g.add(rbox(bw, 0.015, D - 0.04, 0, 0.035, 0, whiteWood, 0.003));               // bottom
+  g.add(rbox(bw, 0.27, 0.02, 0, 0.18, z0 + 0.03, whiteWood, 0.004));             // back
+  g.add(rbox(bw, 0.03, 0.02, 0, 0.045, z1 - 0.03, whiteWood, 0.004));            // plinth under the fronts
+  for (let i = 1; i < 3; i++) g.add(rbox(0.02, 0.27, D - 0.08, -bw / 2 + (bw * i) / 3, 0.18, 0, whiteWood, 0.003)); // dividers
+  for (const sx of [-1, 1]) g.add(rbox(0.02, 0.29, D - 0.04, sx * (bw / 2 - 0.01), 0.175, 0, whiteWood, 0.003)); // ends
+  ['basketshoes', 'hair', 'basketshoes'].forEach((fill, i) => {
+    const x = -bw / 2 + bw * (i + 0.5) / 3;
+    addDrawer(g, 'lådan', { x, y: 0.06, zf: z1 - 0.01, w: fw, h: 0.24, depth, front: whiteWood, out: 0.55,
+      grip: (o) => o.add(rbox(0.12, 0.02, 0.02, 0, 0.2, 0.01, metal, 0.005)), fill, who: 'Sovrum 4', seed: 120 + i * 7 });
+  });
   // ends with spindles, back with spindles, top rails
   for (const s of [-1, 1]) {
     const x = s * (W / 2 - 0.03);

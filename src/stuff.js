@@ -167,7 +167,7 @@ export function wardrobeFill({ along, a0, a1, mid, depth, outward, y0, rodY, she
 
 /**
  * A drawer's contents in its own frame (x across, z from −0.018 back to −0.018 − depth, floor at `y`): `what` is
- * 'tees' | 'socks' | 'underwear' | 'pyjamas' | 'jeans' | 'toys' | 'crafts' | 'nightstand'.
+ * 'tees' | 'socks' | 'underwear' | 'pyjamas' | 'jeans' | 'toys' | 'crafts' | 'nightstand' | 'basketshoes' | 'hair'.
  */
 export function drawerFill(what, { w, depth, h, y }, who, seed = 1) {
   const R = rng(seed), p = new Pack(), zc = -0.018 - depth / 2, z0 = -0.018 - depth + 0.02, z1 = -0.038;
@@ -193,6 +193,32 @@ export function drawerFill(what, { w, depth, h, y }, who, seed = 1) {
     stack(p, 6, 0.21, 0.004, 0.297 > depth - 0.04 ? depth - 0.04 : 0.297, -w / 4, y, zc, [0xffffff, 0xffc8dd, 0xbde0fe, 0xfff3b0], R);
     p.box(0.2, 0.04, 0.06, w / 4, y, zc - 0.06, 0x9b5de5);
     for (let i = 0; i < 8; i++) p.cyl(0.005, 0.09, w / 4 - 0.08 + i * 0.022, y, zc + 0.06, pick(R, [0xe63946, 0xf77f00, 0xfcbf49, 0x2a9d8f, 0x3a86ff, 0x8338ec]), 'z', 6);
+  } else if (what === 'basketshoes') { // high-top basketball shoes side by side, a pair of balled-up sports socks (Tilly)
+    const len = 0.25, cols = pick(R, [[0xffffff, 0xff4fa3], [0x1d1d1f, 0x9b5de5], [0xf2f2f2, 0x2a6fdb]]);
+    const n = Math.max(1, Math.min(2, Math.floor((w - 0.04) / (len * 0.9 + 0.04))));
+    for (let i = 0; i < n; i++) {
+      const x = -w / 2 + 0.02 + (i + 0.5) * (w - 0.04) / n, col = i ? cols[1] : cols[0], trim = i ? cols[0] : cols[1];
+      p.at(x, y, zc, 0, (q) => {
+        shoes(q, len, col, 0, 0, 0);
+        for (const sx of [-1, 1]) {
+          q.box(len * 0.34, len * 0.22, len * 0.3, sx * len * 0.22, len * 0.2, len * 0.3, col);        // the high ankle
+          q.box(len * 0.38, len * 0.05, len * 0.36, sx * len * 0.22, len * 0.38, len * 0.28, trim);     // its padded collar
+          q.box(len * 0.39, len * 0.06, len * 0.5, sx * len * 0.22, len * 0.03, -len * 0.05, trim);    // the side swoosh band
+        }
+      });
+    }
+    if (w > 0.5) for (let i = 0; i < 2; i++) p.add(new THREE.SphereGeometry(0.035, 8, 6).translate(w / 2 - 0.06, y + 0.035, zc - 0.1 + i * 0.09), 0xffffff);
+  } else if (what === 'hair') { // hair things (Tilly): scrunchies, hair ties, clips, a brush, a comb, headbands, a box of pins
+    const pastel = [0xff6fb5, 0x9b5de5, 0xfee440, 0x00bbf9, 0xffffff, 0xf15bb5, 0x111111];
+    for (let i = 0; i < 5; i++) p.add(new THREE.TorusGeometry(0.03, 0.012, 6, 14).rotateX(Math.PI / 2).translate(-w / 2 + 0.06 + i * 0.07, y + 0.012, z0 + 0.06 + (i % 2) * 0.05), pick(R, pastel)); // scrunchies
+    for (let i = 0; i < 10; i++) p.add(new THREE.TorusGeometry(0.016, 0.0025, 4, 12).rotateX(Math.PI / 2).translate(-w / 2 + 0.05 + (i % 5) * 0.035, y + 0.003, zc + 0.02 + Math.floor(i / 5) * 0.04), pick(R, pastel)); // hair ties
+    for (let i = 0; i < 6; i++) p.box(0.05, 0.012, 0.018, -0.02 + (i % 3) * 0.06, y, zc + 0.12 + Math.floor(i / 3) * 0.035, pick(R, pastel), (R() - 0.5) * 0.6); // claw clips
+    p.box(0.07, 0.025, 0.1, w / 2 - 0.08, y, z0 + 0.07, 0xf7c6dc);                                  // the brush head …
+    p.box(0.025, 0.02, 0.12, w / 2 - 0.08, y + 0.003, z0 + 0.18, 0xf7c6dc);                         // … and handle
+    p.box(0.06, 0.012, 0.004, w / 2 - 0.08, y + 0.025, z0 + 0.07, 0x222222);                        // its bristles' black top
+    p.box(0.16, 0.004, 0.035, w / 2 - 0.12, y, zc + 0.08, 0x2b2b2b, 0.2);                          // a comb
+    for (let i = 0; i < 2; i++) p.add(new THREE.TorusGeometry(0.07, 0.006, 5, 18, Math.PI).rotateX(Math.PI / 2).translate(0.03 + i * 0.02, y + 0.006 + i * 0.012, z0 + 0.12), i ? 0xff6fb5 : 0x9b5de5); // headbands
+    p.box(0.08, 0.03, 0.05, 0.02, y, z1 - 0.04, 0xffe0ef);                                          // a little box of bobby pins
   } else if (what === 'nightstand') { // books, a charger, a glasses case
     stack(p, 3, 0.15, 0.025, 0.21, -w / 2 + 0.1, y, zc, [0x6d597a, 0xb56576, 0x355070], R);
     p.box(0.16, 0.035, 0.06, w / 2 - 0.12, y, zc - 0.05, 0x222222);

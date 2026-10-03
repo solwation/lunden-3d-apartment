@@ -4,7 +4,7 @@
 import { SECRET, SCORE } from './config.js';
 const KEY = 'lunden.stats';
 
-const fresh = () => ({ cats: 0, rare: 0, byVariant: {}, petted: 0, doors: 0, lids: 0, flushes: 0, taps: 0, fridge: 0, appliances: 0, cabinets: 0, beer: 0, coffee: 0, fish: 0, turbo: 0, shots: 0, fried: 0, burnt: 0, catFish: 0, chicken: 0, wine: 0, champagne: 0, whisky: 0, milk: 0, kask: 0, posted: 0, thrown: 0, lights: 0, sat: 0, lay: 0, steps: 0, metres: 0, stairs: 0, seconds: 0, visited: {}, secrets: 0, secretKinds: {}, catPhotos: 0, grill: 0, hood: 0, songs: 0, read: 0, car: 0, magic: 0, target: 0 });
+const fresh = () => ({ cats: 0, rare: 0, byVariant: {}, petted: 0, doors: 0, lids: 0, flushes: 0, taps: 0, fridge: 0, appliances: 0, cabinets: 0, beer: 0, coffee: 0, fish: 0, turbo: 0, shots: 0, fried: 0, burnt: 0, catFish: 0, chicken: 0, wine: 0, champagne: 0, whisky: 0, milk: 0, kask: 0, posted: 0, thrown: 0, lights: 0, sat: 0, lay: 0, steps: 0, metres: 0, stairs: 0, seconds: 0, visited: {}, secrets: 0, secretKinds: {}, catPhotos: 0, grill: 0, hood: 0, songs: 0, read: 0, car: 0, magic: 0, target: 0, baskets: 0, threes: 0 });
 
 function load() {
   try {
@@ -178,6 +178,7 @@ export function statRows() {
     ['🚗 Bilen kallad', `${stats.car}`],
     ['✨ Trollstavsträffar', `${stats.magic}`],
     ['🎯 Måltavlepoäng', `${stats.target}`],
+    ['🏀 Korgar', `${stats.baskets}`, stats.threes ? `${stats.threes} trepoängare` : ''],
     ['👣 Steg', `${stats.steps}`, `${Math.round(stats.metres)} m`],
     ['🪜 Trappturer', `${stats.stairs}`],
     ['🏠 Rum besökta', `${Object.keys(stats.visited).length}${roomTotal ? ` av ${roomTotal}` : ''}`],

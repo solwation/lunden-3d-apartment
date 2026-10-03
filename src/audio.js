@@ -650,6 +650,20 @@ export const sfx = {
     const t = ctx.currentTime, d = out(pos, 0.6);
     for (const k of [0, 0.07, 0.12]) noise(t + k, 0.05, d, { type: 'bandpass', freq: 1800 + k * 4000, q: 2, gain: 0.25 - k });
   },
+  /** A basketball bouncing: a hollow thump, louder the harder (k 0..1). */
+  bounce(pos, k = 1) {
+    if (!ready() || k < 0.05) return;
+    const t = ctx.currentTime, d = out(pos, 0.9);
+    tone(t, 0.14, d, { type: 'sine', from: 150, to: 75, gain: 0.4 * k });
+    noise(t, 0.04, d, { type: 'lowpass', freq: 700, gain: 0.3 * k, attack: 0.001 });
+  },
+  /** The ball through the net: a soft swish. */
+  swish(pos) {
+    if (!ready()) return;
+    const t = ctx.currentTime, d = out(pos, 0.9);
+    noise(t, 0.35, d, { type: 'bandpass', freq: 2600, q: 0.7, gain: 0.3, attack: 0.04 });
+    noise(t + 0.05, 0.25, d, { type: 'highpass', freq: 4000, gain: 0.12, attack: 0.03 });
+  },
   nerf(pos) {
     if (!ready()) return;
     const t = ctx.currentTime, d = out(pos, 0.8);
