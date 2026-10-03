@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { GREET as G, SITE, HUS_L } from './config.js';
 import { isMuted } from './audio.js';
+import { husLLayout } from './exterior.js';
 
 // Greeting the people outside (#247): look at one within `G.reach` m (not through a house) and the action is
 // "Hälsa på grannen / barnet / cyklisten". The visitor says a random greeting, the person answers a moment later
@@ -16,7 +17,7 @@ const tmp = new THREE.Vector3(), dir = new THREE.Vector3();
  * behind the loftgång. */
 export function occluders() {
   const boxes = SITE.blocks.map((b) => ({ x0: b.x0, x1: b.x1, z0: b.z0, z1: b.z1, y0: b.base, y1: b.base + b.storeys * (b.style === 'old' ? SITE.old.storey : SITE.storey) + 1 }));
-  const w = 5.75, west = -(HUS_L.before * w + HUS_L.core.w + HUS_L.west * w), east = (HUS_L.after + 1) * w, low = 2 * HUS_L.storeyHeight;
+  const w = 5.75, { xw: west, xe: east } = husLLayout(w), low = 2 * HUS_L.storeyHeight;
   boxes.push({ x0: west, x1: 0, z0: 0.05, z1: 12.65, y0: 0, y1: low }, { x0: w, x1: east, z0: 0.05, z1: 12.65, y0: 0, y1: low },
     { x0: west, x1: east, z0: HUS_L.loftgangDepth, z1: 12.65, y0: low + 0.3, y1: low * 2 + 0.3 });
   return boxes;

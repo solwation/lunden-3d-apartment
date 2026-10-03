@@ -468,12 +468,15 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   L1001–L1004 | stair core with a ground-floor portik (L1101 above it) | L1005–L1008; all units the
   same way round (not mirrored), we are L1007, L1008 is the east end — our neighbour on the left seen
   from the street (#42): kitchen window on the gable, no window beside its door, no Sovrum 1 window
-  upstairs, the escape spiral stair right against the house (`HUS_L.endUnitNorthHidden`, towers). Våning 3–4: L1201–L1209 on the same 5.75 m grid (L1208 above us, L1205 over the
-  core), white render with brick pilasters, entered from the loftgång on våning 3; spiral stairs in
+  upstairs, the escape spiral stair right against the house (`HUS_L.endUnitNorthHidden`, towers). Våning 3–4: L1201–L1209 on the same grid (L1208 above us, L1205 over the
+  core). The units share their party walls (#252): 5.55 m between wall centres (`HUS_L.pitch`; our plan.json
+  draws both 0.2 m walls in full, W = 5.75), core 8.175 m, end units 0.38 m wider; 53.3 m gable to gable —
+  `husLLayout` in exterior.js gives the units' façade strips (greet.js uses it too), white render with brick pilasters, entered from the loftgång on våning 3; spiral stairs in
   brick drums at both ends, both right against the house (#42, #172: the west one against the west gable); flat roof with solar panels.
 - Site (`SITE`): measured on the situation/overview plans (1:500, Hus L horizontal = our axes, metres
-  from our NW corner). Hus A (x −10…9.5, z 30…54, våning −1…4), B (x −43…−24, z 34…59, −1…3),
-  C (x −73…−53, z 12.5…37.5, 1…5), brick with low hip roofs; the courtyard is on a garage and the
+  from our NW corner), scale from the sheets' 0–25 m scale bars (#253, `docs/peab/kalibrerad/`; the first
+  tracing was 3.6 % too big and was scaled by 5.55 / 5.75). Hus A (x −9.8…9.4, z 28.8…52.9, våning −1…4),
+  B (x −41.7…−22.6, z 33.3…57.4, −1…3), C (x −70.6…−51.4, z 12.6…36.7, 1…5), each 19.2 × 24.1 m, brick with low hip roofs; the courtyard is on a garage and the
   ground drops ~3 m south of it.
   Terrain (#79, `SITE.terrain`, `groundY(x, z)` in surroundings.js): the street north of Hus L, our Entréplan
   and the raised courtyard on the garage box (`terrain.box`, edges traced on the situation plan — guess)

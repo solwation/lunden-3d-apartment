@@ -107,12 +107,8 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
   const upperTop = roofTop + H.upperStoreys * H.storeyHeight;
   const eps = 0.006;
 
-  // unit origins along x: west row | core | east row (ours = 0)
-  const coreX1 = -H.before * W, coreX0 = coreX1 - H.core.w;
-  const units = [];
-  for (let k = H.west; k >= 1; k--) units.push(coreX0 - k * W);
-  for (let k = -H.before; k <= H.after; k++) units.push(k * W);
-  const xw = coreX0 - H.west * W, xe = (H.after + 1) * W;
+  // the units along x: west row | core | east row (ours: ox = 0); each neighbour spans its own façade strip
+  const { units, core: [coreX0, coreX1], xw, xe } = husLLayout(W);
 
   const fakeWindow = (o, z, northSide) => {
     const s = northSide ? -1 : 1;
@@ -142,19 +138,19 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
   };
 
   // våning 1–2 (L1008, the east end unit, has its own north façade: see HUS_L.endUnitNorthHidden)
-  const endUnitX = H.after * W;
+  const endUnitX = units[units.length - 1].ox;
   const northOf = (ox) => (Math.abs(ox - endUnitX) < 1e-6
     ? north.filter((o) => !H.endUnitNorthHidden.some(([a, b]) => (o.x0 + o.x1) / 2 > a && (o.x0 + o.x1) / 2 < b))
     : north);
-  for (const ox of units) {
+  for (const { ox, x0: ux0, x1: ux1 } of units) {
     const ours = Math.abs(ox) < 1e-6;
-    facade(bricks, ox, ox + W, 0, roofTop, -eps, true, shift(northOf(ox), ox, 0), !ours);
-    facade(bricks, ox, ox + W, 0, roofTop, D + eps, false, shift(south, ox, 0), !ours);
+    facade(bricks, ux0, ux1, 0, roofTop, -eps, true, shift(northOf(ox), ox, 0), !ours);
+    facade(bricks, ux0, ux1, 0, roofTop, D + eps, false, shift(south, ox, 0), !ours);
     if (ours) continue;
-    solids.push(boxGeo(ox + 0.001, ox + W - 0.001, 0, roofTop, 0, D));
-    // the neighbours' patios: same slab, hedge and screen walls as ours
+    solids.push(boxGeo(ux0 + 0.001, ux1 - 0.001, 0, roofTop, 0, D));
+    // the neighbours' patios: same slab, hedge and screen walls as ours (within their own strip: no overlap with ours)
     if (site.patio) { // slab paving like ours: UVs in metres (x, z)
-      const pg = boxGeo(ox + site.patio.x0, ox + site.patio.x1, -0.01, 0.0, D, site.patio.z1);
+      const pg = boxGeo(Math.max(ux0, ox + site.patio.x0), Math.min(ux1, ox + site.patio.x1), -0.01, 0.0, D, site.patio.z1);
       const pp = pg.attributes.position, uv = pg.attributes.uv;
       for (let i = 0; i < pp.count; i++) uv.setXY(i, pp.getX(i), pp.getZ(i));
       patios.push(pg);
@@ -165,7 +161,11 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
       segments.push([ox + h.x0, h.z0, ox + h.x1, h.z0], [ox + h.x1, h.z0, ox + h.x1, h.z1],
         [ox + h.x1, h.z1, ox + h.x0, h.z1], [ox + h.x0, h.z1, ox + h.x0, h.z0]);
     }
-    for (const f of site.fences ?? []) {
+    for (let f of site.fences ?? []) {
+      // the screen walls stand on the party lines: snapped to the strip's edge; the one shared with our unit is ours
+      const fx = (x) => (x < W / 2 ? ux0 : ux1) - ox;
+      if (ox + fx(f.a[0]) > -0.25 && ox + fx(f.a[0]) < W + 0.25) continue;
+      f = { a: [fx(f.a[0]), f.a[1]], b: [fx(f.b[0]), f.b[1]] };
       fences.push(boxGeo(ox + f.a[0] - 0.025, ox + f.b[0] + 0.025, 0, FENCE_HEIGHT, Math.min(f.a[1], f.b[1]), Math.max(f.a[1], f.b[1])));
       segments.push([ox + f.a[0], f.a[1], ox + f.b[0], f.b[1]]);
     }
@@ -184,11 +184,11 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
   }
 
   // våning 3–4: the upper units (L1201–L1209), one over each lower unit and one over the core
-  const uppers = [...units.map((x0) => [x0, x0 + W]), [coreX0, coreX1]];
+  const uppers = [...units.map((u) => [u.x0, u.x1, u.ox]), [coreX0, coreX1]];
   const Lf = H.loft, doors = [], lampBox = [], lampGlow = [], balc = [];
   const isDoor = (o) => o.y0 - roofTop < 0.05 && o.x1 - o.x0 < 1.4; // our front door among the (shifted) north openings
-  for (const [x0, x1] of uppers) {
-    const holes = shift(north, x0, roofTop);
+  for (const [x0, x1, ox = x0] of uppers) {
+    const holes = shift(north, ox, roofTop);
     facade(renders, x0, x1, roofTop, upperTop, loftD - eps, true, holes, false);
     for (const o of holes) {
       if (!isDoor(o)) { fakeWindow(o, loftD - eps, true); continue; }
@@ -202,7 +202,7 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
       lampBox.push(boxGeo(lx - lw / 2, lx + lw / 2, ly + lh / 2, ly + lh / 2 + 0.03, loftD - 0.12, loftD), boxGeo(lx - 0.03, lx + 0.03, ly - lh / 2, ly + lh / 2, loftD - 0.02, loftD));
       lampGlow.push(boxGeo(lx - lw / 2 + 0.01, lx + lw / 2 - 0.01, ly - lh / 2, ly + lh / 2, loftD - 0.11, loftD - 0.02));
     }
-    const southHoles = shift(south, x0, roofTop);
+    const southHoles = shift(south, ox, roofTop);
     facade(renders, x0, x1, roofTop, upperTop, D + eps, false, southHoles);
     // a French balcony in front of the tall door to the courtyard (#110): white top rail, bottom rail, balusters
     for (const o of southHoles.filter((h) => h.y0 - roofTop < 0.05)) {
@@ -292,4 +292,24 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
   add(fences, mats.fence);
   group.userData.segments = segments;
   return group;
+}
+
+/**
+ * Hus L along x (#252, våningsöversikterna): the units share their party walls, so they follow each other at
+ * HUS_L.pitch between the wall centres (our own plan draws both 0.2 m walls in full: W = 5.75). Unit k's openings
+ * sit at ox = k × pitch, like ours at 0; its façade strip runs between its wall centres (ox + wall … ox + wall +
+ * pitch), clipped against our unit [0, W]; the end units reach `gableExtra` past their last wall centre (thicker
+ * gables). The core lies between the wall centres either side of it. Returns the units (ox, x0, x1; west → east),
+ * the core [x0, x1] and the gables xw / xe.
+ */
+export function husLLayout(W = 5.75) {
+  const P = H.pitch, c = H.wall, units = [];
+  const span = (ox) => (Math.abs(ox) < 1e-6 ? { ox, x0: 0, x1: W }
+    : ox < 0 ? { ox, x0: ox + c, x1: Math.min(ox + c + P, 0) } : { ox, x0: Math.max(ox + c, W), x1: ox + c + P });
+  const coreX1 = -H.before * P, coreX0 = coreX1 - H.core.w;
+  for (let k = H.west; k >= 1; k--) units.push(span(coreX0 - k * P));
+  for (let k = -H.before; k <= H.after; k++) units.push(span(k * P));
+  units[0].x0 -= H.gableExtra;
+  units[units.length - 1].x1 += H.gableExtra;
+  return { units, core: [coreX0 + c, coreX1 + c], xw: units[0].x0, xe: units[units.length - 1].x1 };
 }

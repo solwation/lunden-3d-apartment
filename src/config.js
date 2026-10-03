@@ -99,7 +99,10 @@ export const SILL_PLANTS = {
 
 // The site, measured on FOJAB's situation plan and overview plans in Peab's plan brochure
 // (docs/peab/, 1:500; drawn with Hus L horizontal, so the plan axes are ours: x along the row,
-// z towards the courtyard; metres from our unit's NW outer corner). Scale from the unit pitch.
+// z towards the courtyard; metres from our unit's NW outer corner). Scale from the sheets' 0–25 m scale bars
+// (docs/peab/kalibrerad/skalstockar.json, #253): the first tracing took it from a 5.75 m unit pitch and came out 3.6 %
+// too big (the units share their party walls: 5.55 m), so everything traced then was scaled by 5.55 / 5.75; the
+// Å-husen are re-measured on våning 1–3 (outer corners incl. the corner piers).
 // Kv. Lunden = four buildings around a courtyard on top of a garage: Hus L "Parklängan" (ours)
 // along Sankt Lars väg, the point blocks Å-huset A, B, C to the south/west. The ground drops
 // ~3 m south of the courtyard (A/B have a suterräng floor) towards S:t Lars park and Höje å.
@@ -120,12 +123,12 @@ export const SITE = {
     park: -3, north: 12.7, slope: 8,
     // the box under the Borggården (between Hus L, C and A) and the yard south of Hus C (situation plan:
     // the second pergola, sandbox and odlingslådor sit there; the green between A and B is outside it)
-    box: [{ x0: -80, x1: 18, z0: 12.7, z1: 30.2 }, { x0: -80, x1: -43, z0: 30.2, z1: 51 }],
-    garageDoor: { x: -80, z0: 42, z1: 47.5, h: 2.6 }, // the arrow "GARAGE" by Karpvägen, z ≈ 44
+    box: [{ x0: -77.22, x1: 17.37, z0: 12.7, z1: 28.8 }, { x0: -77.22, x1: -41.5, z0: 28.8, z1: 49.23 }],
+    garageDoor: { x: -77.22, z0: 40.54, z1: 45.85, h: 2.6 }, // the arrow "GARAGE" by Karpvägen, z ≈ 44
     // the courtyard's edge behind our row (#148, Peab's render: Å-hus with a cyclist below): a brick retaining
     // wall with a light slatted railing, a straight stair with a landing from the courtyard (y 0) down to the
     // park level, and a paved cycle path along the foot of the wall. Position read off the situation plan (guess).
-    stairs: { x0: 12.4, x1: 14.0, z: 30.2, step: 0.3, landing: 1.0 }, cyclePath: { x0: 9.6, x1: 22, z0: 37.2, z1: 39.8 },
+    stairs: { x0: 11.97, x1: 13.51, z: 29.15, step: 0.3, landing: 1.0 }, cyclePath: { x0: 9.27, x1: 21.23, z0: 35.91, z1: 38.42 },
   },
   bay: 3.0, storey: 3.0,  // façade texture of the other blocks: one window per 3 × 3 m
   // corner loggias on the Å-husen (#145; the overview plans docs/peab/oversikt-vaning-*.png draw the corners notched,
@@ -150,9 +153,9 @@ export const SITE = {
   longhouse: { bay: 2.6, storey: 3.8, rows: [{ y: 1.6, s: [0.9, 1.2, 1] }], dormers: 5 },
   blocks: [
     // Kv. Lunden, Å-husen (overview plans): storeys counted from `base`; red brick, low hip roof
-    { name: 'Hus A', x0: -10.2, x1: 9.5, z0: 30.2, z1: 54.2, base: -3, storeys: 5, roof: 'hip' },  // våning -1…4; north face on the box edge (#246)
-    { name: 'Hus B', x0: -43.4, x1: -23.7, z0: 34.2, z1: 58.6, base: -3, storeys: 4, roof: 'hip' }, // våning -1…3
-    { name: 'Hus C', x0: -73.0, x1: -53.3, z0: 12.5, z1: 37.5, base: 0, storeys: 5, roof: 'hip' },  // våning 1…5
+    { name: 'Hus A', x0: -9.76, x1: 9.42, z0: 28.8, z1: 52.86, base: -3, storeys: 5, roof: 'hip' },  // våning -1…4; north face on the box edge (#246)
+    { name: 'Hus B', x0: -41.74, x1: -22.6, z0: 33.3, z1: 57.35, base: -3, storeys: 4, roof: 'hip' }, // våning -1…3
+    { name: 'Hus C', x0: -70.6, x1: -51.4, z0: 12.6, z1: 36.68, base: 0, storeys: 5, roof: 'hip' },  // våning 1…5
     // outside the plot (#47): the old S:t Lars hospital buildings, as on Peab's drone photo and aerial
     // render (docs/peab/): red brick with white trim, steep dark hip roofs, high storeys and tall
     // white windows. Storey counts and heights are read off those pictures — guesses, not surveyed.
@@ -168,7 +171,7 @@ export const SITE = {
     { name: 'Skolan, östra flygeln', x0: 17, x1: 26, z0: -48.4, z1: -37.4, base: 0, storeys: 1, roof: 'hip', style: 'school' },
     { name: 'S:t Lars (old hospital)', x0: -62, x1: -22, z0: -62, z1: -46, base: 0, storeys: 3, roof: 'hip', style: 'old' },
     { name: 'Montessorigrundskolan', x0: -78, x1: -60, z0: -115, z1: -70, base: 0, storeys: 2, roof: 'hip', style: 'old' },
-    { name: 'Villa', x0: -64.5, x1: -48.5, z0: 69, z1: 87, base: -3, storeys: 3, roof: 'hip', style: 'old' }, // brick house, hip roof
+    { name: 'Villa', x0: -62.26, x1: -46.81, z0: 66.6, z1: 83.97, base: -3, storeys: 3, roof: 'hip', style: 'old' }, // brick house, hip roof
   ],
   // The street details (#128, src/street.js; the user's photos in docs/foton/): granite curbs along Sankt Lars väg,
   // patched asphalt, slender street lamps with a curved arm (lit at night by emissive only), a zebra crossing,
@@ -192,38 +195,38 @@ export const SITE = {
   // the street: light stone paving, raised beds with corten edges and sitting steps, bike racks. All guesses.
   life: {
     // one row of stalls along the shrubs the whole way, nose to the hedge, none in the gap in front of us (#208)
-    lot: { x0: -48, x1: 17.5, z0: -20, depth: 5, stall: 2.5, gap: [-7, 9] }, fill: 0.65,
+    lot: { x0: -46.33, x1: 16.89, z0: -20, depth: 5, stall: 2.5, gap: [-7, 9] }, fill: 0.65,
     carColors: [0xf0f0ec, 0x23272c, 0x8d9399, 0x1f6f78, 0x7b1e22, 0x2d4e7a, 0xc9c3b8, 0x0f1012],
-    bikes: [[-40.2, -0.9], [-39.5, -0.9], [-28.6, -0.9], [-17.4, -0.9], [-16.7, -0.9], [-5.6, -0.9], [12.9, -0.9]], // x, z (along the façade)
-    square: { x0: -72, x1: -47.5, z0: 0.5, z1: 12.3 },
-    beds: [[-70, -63, 2, 4.5], [-58, -52, 2, 4.5], [-71, -66.5, 7.5, 10.5]], // x0, x1, z0, z1
-    steps: { x0: -63, x1: -58, z0: 2.4, n: 3, rise: 0.15, tread: 0.4 },
-    racks: [[-64, 7.2, 6], [-55, 7.2, 5]], // x0, z, bikes
+    bikes: [[-38.8, -0.9], [-38.13, -0.9], [-27.61, -0.9], [-16.79, -0.9], [-16.12, -0.9], [-5.41, -0.9], [12.45, -0.9]], // x, z (along the façade)
+    square: { x0: -69.5, x1: -45.85, z0: 0.48, z1: 11.87 },
+    beds: [[-67.57, -60.81, 1.93, 4.34], [-55.98, -50.19, 1.93, 4.34], [-68.53, -64.19, 7.24, 10.13]], // x0, x1, z0, z1
+    steps: { x0: -60.81, x1: -55.98, z0: 2.32, n: 3, rise: 0.15, tread: 0.4 },
+    racks: [[-61.77, 6.95, 6], [-53.09, 6.95, 5]], // x0, z, bikes
   },
   // asphalt (y follows the ground: the street level north of Hus L and on the garage box, park level around it)
   roads: [
     { name: 'Sankt Lars väg', x0: -95, x1: 30, z0: -30, z1: -24 },
-    { name: 'Sankt Lars väg', x0: 22, x1: 30, z0: -30, z1: 200 },
-    { name: 'Karpvägen', x0: -88, x1: -80, z0: -30, z1: 200 },
-    { name: 'Gården framför Hus L', x0: -48, x1: 17.75, z0: -20, z1: -4 }, // asphalt up to the entrance paving (#208)
+    { name: 'Sankt Lars väg', x0: 21.23, x1: 28.96, z0: -30, z1: 200 },
+    { name: 'Karpvägen', x0: -84.94, x1: -77.22, z0: -30, z1: 200 },
+    { name: 'Gården framför Hus L', x0: -46.33, x1: 17.13, z0: -20, z1: -4 }, // asphalt up to the entrance paving (#208)
   ],
   paving: [
-    { x0: -48, x1: 16, z0: -4, z1: 0 },      // path along Hus L's entrances
+    { x0: -46.33, x1: 15.44, z0: -4, z1: 0 },  // path along Hus L's entrances
     { x0: -95, x1: 22, z0: -24, z1: -21.5 }, // pavement along Sankt Lars väg
     { x0: -95, x1: 30, z0: -32, z1: -30 },   // … and on the far side, along the school's wall (#126)
   ],                                         // the courtyard's own walks: COURTYARD
-  river: { x0: -200, x1: 150, z0: 125, z1: 135 }, // Höje å
+  river: { x0: -193.04, x1: 144.78, z0: 120.65, z1: 130.3 }, // Höje å
   // big old limes / chestnuts along the far pavement and in the school yard (#130, the user's photos): [x, z, size]
   bigTrees: [[-36, -34.5, 1.4], [-17, -35.2, 1.6], [-4, -34.8, 1.75], [9, -35.4, 1.45], [27.5, -34.2, 1.6], [33.5, -16, 1.35], [-58, -33.5, 1.5]],
   // a row of ornamental shrubs along our pavement, with gaps for the paths to the entrances (#130)
-  shrubs: { x0: -60, x1: 18, z: -20.6, step: 0.85, gaps: [[-48, -44], [-6, 8]] },
+  shrubs: { x0: -57.91, x1: 17.37, z: -20.6, step: 0.85, gaps: [[-46.33, -42.47], [-6, 8]] },
   birchShare: 0.3, // of the trees in the areas (not the young street maples): birches (#115)
   treeAreas: [
     // the courtyard's and the green's trees stand where the situation plan draws them: COURTYARD.trees
-    { x0: -92, x1: 18, z0: -20, z1: -19, n: 11, young: true }, // street trees along Sankt Lars väg: young maples by the site (#130)
-    { x0: 18, x1: 20, z0: -16, z1: 56, n: 7 },         // … and along its east leg
-    { x0: -130, x1: 70, z0: 68, z1: 140, n: 55 },      // S:t Lars park / woods towards Höje å
-    { x0: -130, x1: -92, z0: -30, z1: 68, n: 14 },     // west of Karpvägen
+    { x0: -88.8, x1: 17.37, z0: -20, z1: -19, n: 11, young: true }, // street trees along Sankt Lars väg: young maples by the site (#130)
+    { x0: 17.37, x1: 19.3, z0: -15.44, z1: 54.05, n: 7 },         // … and along its east leg
+    { x0: -125.48, x1: 67.57, z0: 65.63, z1: 135.13, n: 55 },      // S:t Lars park / woods towards Höje å
+    { x0: -125.48, x1: -88.8, z0: -28.96, z1: 65.63, n: 14 },     // west of Karpvägen
   ],
 };
 
@@ -238,36 +241,36 @@ export const GRILL = { flames: 16, height: 1.0, sparks: 40, light: 3.2, burnSeco
 export const COURTYARD = {
   // stone-paved walks
   paths: [
-    { x0: -46, x1: 12, z0: 18.2, z1: 19.6 },   // along the row-house patios
-    { x0: -50, x1: -43, z0: 30.2, z1: 31.7 },  // the main walk north of Hus B, only where the box reaches (#246: further east it lay in Hus A / over the park)
-    { x0: -13, x1: 12, z0: 25.6, z1: 27.3 },   // to the stair on the east edge
-    { x0: -17.6, x1: -13.9, z0: 12.7, z1: 20 }, // from the portik
-    { x0: -50.2, x1: -47.2, z0: 8, z1: 51 },   // between Hus C and the Borggården
-    { x0: -72, x1: -47.2, z0: 49.3, z1: 50.6 }, // south of Hus C's yard
+    { x0: -44.4, x1: 11.58, z0: 17.8, z1: 19.1 },   // along the row-house patios (z: from the patios' hedges, our plan)
+    { x0: -48.26, x1: -41.5, z0: 29.15, z1: 30.6 },  // the main walk north of Hus B, only where the box reaches (#246: further east it lay in Hus A / over the park)
+    { x0: -12.55, x1: 11.58, z0: 24.71, z1: 26.35 },   // to the stair on the east edge
+    { x0: -16.99, x1: -13.42, z0: 12.7, z1: 19.3 }, // from the portik
+    { x0: -48.45, x1: -45.56, z0: 7.72, z1: 49.23 },   // between Hus C and the Borggården
+    { x0: -69.5, x1: -45.56, z0: 47.59, z1: 48.84 }, // south of Hus C's yard
   ],
-  gravel: [{ x0: -46, x1: -13.9, z0: 19.6, z1: 30.2 }, { x0: -13.9, x1: 12, z0: 19.6, z1: 25.6 }], // grusgångar round the beds
+  gravel: [{ x0: -44.4, x1: -13.42, z0: 19.1, z1: 29.15 }, { x0: -13.42, x1: 11.58, z0: 19.1, z1: 24.71 }], // grusgångar round the beds
   // the Borggården's pergola with a dining table (red-brown on the plan) and a second one south of Hus C
-  pergolas: [{ x0: -20.6, x1: -14.2, z0: 20.2, z1: 30 }, { x0: -65.5, x1: -60, z0: 41.2, z1: 47.6 }],
-  grill: { x: -21.6, z: 21.0 },               // grillplats beside the pergola (spot: guess); it can be lit (GRILL)
-  sandboxes: [{ x0: -26.6, x1: -22.6, z0: 23.6, z1: 27.8 }, { x0: -56, x1: -51.2, z0: 41.8, z1: 46.8 }], // lekplats
-  boule: { x0: -12.4, x1: -2.6, z0: 21.4, z1: 24.6 }, // boulebana: not marked on the plan, a gravel court by the east beds (guess)
+  pergolas: [{ x0: -19.88, x1: -13.71, z0: 19.5, z1: 28.96 }, { x0: -63.22, x1: -57.91, z0: 39.77, z1: 45.94 }],
+  grill: { x: -20.85, z: 20.27 },               // grillplats beside the pergola (spot: guess); it can be lit (GRILL)
+  sandboxes: [{ x0: -25.67, x1: -21.81, z0: 22.78, z1: 26.83 }, { x0: -54.05, x1: -49.42, z0: 40.35, z1: 45.17 }], // lekplats
+  boule: { x0: -11.97, x1: -2.51, z0: 20.66, z1: 23.74 }, // boulebana: not marked on the plan, a gravel court by the east beds (guess)
   // backs to the nearest house (#207): the three by the main walk have Hus A / Hus B right behind them (south), the
   // one in the gravel west of the sandbox has Hus B nearest (south) too — all face north, out over the courtyard
-  benches: [{ x: -32, z: 25, rot: 0 }, { x: -30, z: 29.4, rot: 0 }, { x: -6, z: 29.4, rot: 0 }, { x: 4, z: 29.4, rot: 0 }],
-  beds: [{ x0: -71.2, x1: -69.6, z0: 40.2, z1: 42 }, { x0: -71.2, x1: -69.6, z0: 42.6, z1: 44.4 }, { x0: -71.2, x1: -69.6, z0: 45, z1: 46.8 }], // odlingslådor
+  benches: [{ x: -30.89, z: 24.13, rot: 0 }, { x: -28.96, z: 28.38, rot: 0 }, { x: -5.79, z: 28.38, rot: 0 }, { x: 3.86, z: 28.38, rot: 0 }],
+  beds: [{ x0: -68.72, x1: -67.18, z0: 38.8, z1: 40.54 }, { x0: -68.72, x1: -67.18, z0: 41.12, z1: 42.86 }, { x0: -68.72, x1: -67.18, z0: 43.43, z1: 45.17 }], // odlingslådor
   // planting beds with shrubs and perennials round the tree squares (guess where the plan only shows green)
-  plantings: [{ x0: -45.5, x1: -37.5, z0: 19.8, z1: 28.6, n: 26 }, { x0: -8.5, x1: -1.5, z0: 19.8, z1: 21.4, n: 10 },
-    { x0: 0.5, x1: 8.5, z0: 19.8, z1: 21.4, n: 10 }, { x0: -23, x1: -12, z0: 32, z1: 56, n: 30 }],
+  plantings: [{ x0: -43.92, x1: -36.2, z0: 19.11, z1: 27.61, n: 26 }, { x0: -8.2, x1: -1.45, z0: 19.11, z1: 20.66, n: 10 },
+    { x0: 0.48, x1: 8.2, z0: 19.11, z1: 20.66, n: 10 }, { x0: -22.2, x1: -11.58, z0: 30.89, z1: 54.05, n: 30 }],
   // #112 (after Peab's courtyard renders; places are guesses): low path bollards that light up at dusk along the
   // patio walk and the main walk, a red wooden playhouse by the sandbox, a bike rack with bikes by the portik walk
-  bollards: { h: 0.8, r: 0.07, rows: [{ x0: -44, x1: 10, z: 18.05, step: 6 }, { x0: -46, x1: 10, z: 30.05, step: 7 }] },
-  playhouse: { x0: -30.2, x1: -28.0, z0: 24.0, z1: 26.0, h: 1.3, ridge: 1.9, color: 0x9c2f24, trim: 0xf2efe7 },
-  bikeRack: { x: -12.6, z0: 13.4, n: 5, gap: 0.7, colors: [0x2f5d8c, 0xc23b32, 0x2e2e30, 0x5e8f4a, 0xe8e4da] },
+  bollards: { h: 0.8, r: 0.07, rows: [{ x0: -42.47, x1: 9.65, z: 17.85, step: 6 }, { x0: -44.4, x1: 9.65, z: 29, step: 7 }] },
+  playhouse: { x0: -29.15, x1: -27.03, z0: 23.17, z1: 25.1, h: 1.3, ridge: 1.9, color: 0x9c2f24, trim: 0xf2efe7 },
+  bikeRack: { x: -12.16, z0: 13.4, n: 5, gap: 0.7, colors: [0x2f5d8c, 0xc23b32, 0x2e2e30, 0x5e8f4a, 0xe8e4da] },
   trees: [ // tree squares and single trees as drawn
-    [-43, 21], [-40, 21], [-43, 24.5], [-40, 24.5], [-38, 29], [-33, 28.8], [-36, 22.5],
-    [-6.6, 21.6], [-3.4, 21.6], [-6.6, 24.6], [-3.4, 24.6], [2.6, 21.6], [5.8, 21.6], [2.6, 24.6], [5.8, 24.6],
-    [-20, 33], [-16.6, 33], [-20, 36.5], [-16.6, 36.5], [-20, 40], [-16.6, 40], [-20, 43.5], [-16.6, 43.5],
-    [-20, 50], [-16.6, 51.5], [-49, 16], [-46, 39], [-49, 44], [-62, 39], [-68, 38.5], [-46.5, 46],
+    [-41.5, 20.27], [-38.61, 20.27], [-41.5, 23.65], [-38.61, 23.65], [-36.68, 27.99], [-31.85, 27.8], [-34.75, 21.72],
+    [-6.37, 20.85], [-3.28, 20.85], [-6.37, 23.74], [-3.28, 23.74], [2.51, 20.85], [5.6, 20.85], [2.51, 23.74], [5.6, 23.74],
+    [-19.3, 31.85], [-16.02, 31.85], [-19.3, 35.23], [-16.02, 35.23], [-19.3, 38.61], [-16.02, 38.61], [-19.3, 41.99], [-16.02, 41.99],
+    [-19.3, 48.26], [-16.02, 49.71], [-47.3, 15.44], [-44.4, 37.64], [-47.3, 42.47], [-59.84, 37.64], [-65.63, 37.16], [-44.88, 44.4],
   ],
 };
 
@@ -278,7 +281,12 @@ export const COURTYARD = {
 // above us), white render with red brick pilasters between the units; flat roof with solar panels.
 export const HUS_L = {
   before: 2, after: 1, west: 4,     // units east of the core: 2 west of us, 1 east; 4 west of the core
-  core: { w: 8.75, portik: [3.65, 5.45], portikHeight: 3.0 }, // stair core; portik x from its west end
+  // #252 (våningsöversikterna, 1:500 with the scale bar): the units share their party walls, `pitch` m between the
+  // wall centres (`wall` = half a party wall: ours are 0.2 m in plan.json); the end units are `gableExtra` wider
+  // (thicker gables); the core is `w` between the wall centres either side, the portik x from its west wall centre.
+  // Hus L 53.3 m gable to gable (exterior.js husLLayout).
+  pitch: 5.55, wall: 0.1, gableExtra: 0.38,
+  core: { w: 8.175, portik: [3.4, 5.1], portikHeight: 3.0 }, // stair core
   upperStoreys: 2,
   storeyHeight: 3.0,
   loftgangDepth: 1.96,    // walkway over our north bedrooms: z 0 → façade of the upper unit
@@ -292,7 +300,7 @@ export const HUS_L = {
   // spiral stairs in brick drums at both ends (våning 1/3 plans): centre, radius
   // (#42: the east one, L1008's escape stair, stands right against the house, per the user; #172: so does
   // the west one, against the west gable — `gable: 'west'` = its x is worked out in exterior.js, gable − r)
-  towers: [{ gable: 'west', z: 1.1, r: 1.6 }, { x: 10.2, z: -1.62, r: 1.6 }],
+  towers: [{ gable: 'west', z: 1.5, r: 1.6 }, { x: 10.0, z: -2.0, r: 1.6 }], // centres per våning 1 (#252)
   // L1008 (the east end unit, our neighbour on the left seen from the street) is not a copy of ours
   // (#42, plan p. 43): no window beside the front door (its kitchen window is on the gable), and
   // upstairs no window where the escape stair stands. Façade openings whose centre x (unit
@@ -306,7 +314,7 @@ export const HUS_L = {
     { storey: 3, z0: 4.0, z1: 5.2, sill: 0.8, head: 2.3 }, { storey: 3, z0: 8.0, z1: 9.2, sill: 0.8, head: 2.3 },
   ],
   // solar panel fields on the roof (situation plan): x ranges × rows of z ranges
-  solar: { x: [[-41.4, -26.7], [-25.0, -6.6], [-5.0, 9.9]], z: [[3.5, 4.5], [5.4, 6.4], [7.4, 8.4], [9.4, 10.4]] },
+  solar: { x: [[-39.96, -25.77], [-24.13, -6.37], [-4.83, 9.56]], z: [[3.5, 4.5], [5.4, 6.4], [7.4, 8.4], [9.4, 10.4]] },
 };
 
 // Seasons (src/seasons.js, #73), by the day cycle's month (the wall clock can change it). Tree crowns:
@@ -368,16 +376,16 @@ export const PEOPLE = {
   // and a kid on the patio walk beside the other walker there (z 18.5 | 19.2, clear of the bollards at 18.05)
   walkers: [
     { a: [-80, -22.7], b: [18, -22.7], speed: 1.3, dog: true }, { a: [15, -22.9], b: [-60, -22.9], speed: 1.15 },
-    { a: [-46, -2.2], b: [15, -2.2], speed: 1.2 }, { a: [-13, 26.45], b: [12, 26.45], speed: 1.25 }, { a: [8, 18.5], b: [-40, 18.5], speed: 1.0, kid: true },
-    { a: [-44, 19.2], b: [10, 19.2], speed: 1.1 }, { a: [-48.7, 9], b: [-48.7, 49], speed: 1.3 },
+    { a: [-44.4, -2.2], b: [14.48, -2.2], speed: 1.2 }, { a: [-12.55, 25.53], b: [11.58, 25.53], speed: 1.25 }, { a: [7.72, 18.2], b: [-38.61, 18.2], speed: 1.0, kid: true },
+    { a: [-42.47, 18.8], b: [9.65, 18.8], speed: 1.1 }, { a: [-47.01, 8.69], b: [-47.01, 47.3], speed: 1.3 },
   ],
   cyclists: [{ a: [-90, -26.4], b: [20, -26.4], speed: 4.5 }, { a: [20, -27.8], b: [-90, -27.8], speed: 5.2 }],
-  ball: [[-35.5, 20.6], [-30.5, 22.2]],          // two kids passing a ball (on the gravel by the sandbox)
-  sandbox: [[-25.2, 25.2], [-23.8, 26.4]],         // kids sitting in the sandbox
-  benches: [{ x: -6, z: 29.4, yaw: 180 }, { x: -32, z: 25, yaw: 180 }], // on COURTYARD.benches: yaw = the bench's rot − 180 (#207)
+  ball: [[-34.27, 19.88], [-29.44, 21.43]],          // two kids passing a ball (on the gravel by the sandbox)
+  sandbox: [[-24.32, 24.32], [-22.97, 25.48]],         // kids sitting in the sandbox
+  benches: [{ x: -5.79, z: 28.38, yaw: 180 }, { x: -30.89, z: 24.13, yaw: 180 }], // on COURTYARD.benches: yaw = the bench's rot − 180 (#207)
   seat: 0.52, // the sitters' hip height: the bench seat (0.46) + the thigh (#243)
-  blanket: { x: -9.5, z: 28.3 },
-  loftgang: [[-30.5, 1.0], [-9.2, 1.1]],          // neighbours standing on the loftgång (våning 3)
+  blanket: { x: -9.17, z: 27.32 },
+  loftgang: [[-29.44, 1.0], [-8.88, 1.1]],          // neighbours standing on the loftgång (våning 3)
   bellNear: 12,                                    // m: a cyclist rings the bell passing this close
   shirts: [0x2f5d8a, 0xc0392b, 0xe7d9b8, 0x3e7b4f, 0xf2f2f0, 0x7d4a8c, 0xe08a2a, 0x1f2a36, 0x9bb7d4, 0xd4577a],
   pants: [0x23324a, 0x2b2b2b, 0x6b5844, 0x8a8f96, 0x384b6b, 0xc8bfa8],
@@ -421,7 +429,7 @@ export const GREET = {
   cyclists: ['Hej!', 'Hej hej!', 'Tjena!', 'Hej, akta dig!'],
 };
 
-export const OUTDOOR = { x0: -46, x1: 17.75, z0: -14, z1: 29.5 }; // behind Hus L: the patios and the Borggården (#80)
+export const OUTDOOR = { x0: -44.4, x1: 17.75, z0: -14, z1: 28.47 }; // behind Hus L: the patios and the Borggården (#80)
 
 // The lightsaber in Sovrum 2 (#78, src/saber.js): two hooks on the west wall (north of the gaming desk)
 // (wall face x 2.752), the saber lying across them along z. Hilt 30 cm, blade 90 cm; the blade colour is
