@@ -532,7 +532,7 @@ function melangeTexture(hex) {
 }
 
 /** IKEA IDANÄS frame (#91): an upholstered frame down to short pale wooden legs, drawer fronts on the sides,
- * a tall sloping headboard with deep buttons. Local −z = the head end; the mattress is item.w × item.l. */
+ * a tall sloping plain upholstered headboard (the real one's buttons are the fabric's colour and barely show, #299). Local −z = the head end; the mattress is item.w × item.l. */
 function idanasFrame(g, item) {
   const I = IDANAS, w = item.w, l = item.l, z0 = -l / 2;
   const fabric = new THREE.MeshStandardMaterial({ color: 0xffffff, map: melangeTexture(I.color), roughness: 0.95 });
@@ -554,20 +554,11 @@ function idanasFrame(g, item) {
     lg.castShadow = true;
     g.add(lg);
   }
-  // the headboard: leaning back a little, buttons in a grid (dark dimples)
+  // the headboard: leaning back a little, plain (#299: no dark button dimples)
   const hb = new THREE.Group();
   hb.position.set(0, I.legH, z0 - I.head / 2);
   hb.rotation.x = -0.08;
   hb.add(rbox(I.W, I.headH - I.legH, I.head * 0.75, 0, (I.headH - I.legH) / 2, 0, fabric, 0.06));
-  const button = new THREE.MeshStandardMaterial({ color: 0x232527, roughness: 0.8 });
-  for (let r = 0; r < 3; r++) for (let c = 0; c < 9; c++) {
-    const bx = -I.W / 2 + 0.15 + c * ((I.W - 0.3) / 8) + (r % 2 ? (I.W - 0.3) / 16 : 0);
-    if (bx > I.W / 2 - 0.1) continue;
-    const bt = new THREE.Mesh(new THREE.SphereGeometry(0.012, 8, 6), button);
-    bt.scale.z = 0.5;
-    bt.position.set(bx, I.frameH + 0.25 + r * 0.16, I.head * 0.375 + 0.003);
-    hb.add(bt);
-  }
   g.add(hb);
   return I.frameH - 0.1 + I.mattressH; // the mattress top: it sits 10 cm into the frame
 }

@@ -4,7 +4,7 @@
 <body>
 <pre id="out">running…</pre>
 <script>
-// Music in the SYMFONISK speakers (#187): E on the black one (kitchen, #298) starts it in all three (a panner each, the
+// Music in the SYMFONISK speakers (#187): E on the white one (kitchen) starts it in all three (a panner each, the
 // mix up), the panel opens; next song → another name; volume up/down changes the gain; E closes the panel and the
 // music plays on; pause stops it; F stops it and hides the speakers. Checks the Web Audio state, and renders each
 // channel offline (OfflineAudioContext) to see that it makes a sound and does not clip.
@@ -35,10 +35,10 @@ f.onload = async () => {
   };
   const speakers = world.furnitureTargets.filter((t) => t.kind === 'speaker');
   let pass = check(speakers.length === 3, `${speakers.length} speakers`);
-  const kitchen = speakers.find((t) => t.object.userData.symfonisk === 'speaker black'); // (#298)
-  const p = kitchen.object.getWorldPosition(new V()).add(new V(0, 0.15, 0));
+  const white = speakers.find((t) => t.object.userData.symfonisk === 'speaker white');
+  const p = white.object.getWorldPosition(new V()).add(new V(0, 0.15, 0));
   let label = aim(p, [p.x, p.z + 0.9]); // from the room: it stands on the kitchen window board (#289)
-  pass &= check(/spela musik på högtalaren/i.test(label), `the black speaker (kitchen): "${label}"`);
+  pass &= check(/spela musik på högtalaren/i.test(label), `the white speaker: "${label}"`);
   btn.click();
   for (let i = 0; i < 30; i++) step(1 / 30);
   await wait(300);
@@ -74,7 +74,7 @@ f.onload = async () => {
   panel.querySelector('[data-act=play]').click();
   // upstairs the ones downstairs are softer; the one in Sovrum 1 is up there
   player.spawn(2.9, 6.3, 0); player.pos.y = 3.25; player.eyeY = 3.25 + 1.62; for (let i = 0; i < 20; i++) step(0.1);
-  const up = (o) => o.level === 1; // the white one in Sovrum 1 (#201, #298)
+  const up = (o) => o.level === 1; // the black one in Sovrum 1 (#201)
   pass &= check(player.level === 1 && bus.outs.some(up) && bus.outs.every((o) => (up(o) ? o.k > 0.5 : o.k < 0.5)), `upstairs: the speakers below are muffled, the one in Sovrum 1 is not (${bus.outs.map((o) => `${o.level}:${o.k.toFixed(2)}`)})`);
   // F: music off, speakers hidden
   toggleFurniture();

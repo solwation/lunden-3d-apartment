@@ -122,7 +122,7 @@ export const BLINDS = {
 export const SILL_PLANTS = {
   kinds: ['pelargon', 'orchid', 'violet', 'cactus', 'ivy', 'basil', 'monstera', 'pothos', 'fern', 'olive'],
   byWindow: [['basil', 'pelargon', 'basil'], ['orchid', 'monstera', 'fern'], ['pothos', 'violet'], ['orchid', 'violet', 'fern'], ['olive', 'cactus', 'pelargon'], ['cactus', 'ivy']],
-  skip: [[0, 2], [1, 2], [3, 1]], // [sill, pot]: no pot there (the black SYMFONISK speaker in the kitchen window, #289, #298; the lamp on the window board behind the sofa, #186; the white speaker in Sovrum 1's window, #201, #298)
+  skip: [[0, 2], [1, 2], [3, 1]], // [sill, pot]: no pot there (the white SYMFONISK speaker in the kitchen window, #289; the lamp on the window board behind the sofa, #186; the black speaker in Sovrum 1's window, #201)
   pot: { r: [0.062, 0.072], h: [0.115, 0.14] },
   clear: 0.03, side: 0.015, trail: 0.11,
   // a colour (or a list: one picked per pot); orchids: [petals, lip] pairs
@@ -1648,13 +1648,14 @@ export const FURNITURE = [
   // anthracite pedestal; depth, stand size and the ~78 cm total height are guesses. E switches it on: a
   // slowly moving colourful demo picture (canvas, ~12 fps) and an Ambilight glow on the wall behind.
   { type: 'tv', level: 0, x: 4.25, z: 7.8 + 0.2, y: 0.45, rot: 180, w: 1.23, h: 0.715, fps: 12 },
-  // IKEA SYMFONISK (Sonos) speakers (#186, SYMFONISK below): two bookshelf speakers and the lamp speaker (frosted glass
-  // shade) on the window board behind the sofa. #298 (the user): the white and the black bookshelf speakers swapped places.
-  // the white one stands in Sovrum 1's window (#201, the user), in the middle pot's place on the window board (SILL_PLANTS.skip)
-  { type: 'symfonisk', kind: 'speaker', color: 'white', level: 1, x: 3.85, z: 0.32, y: 0.7, rot: 180 },
-  // the black one on the kitchen window's inner board (#289, the user; it stood at the south end of the worktop): the east
+  // IKEA SYMFONISK (Sonos) speakers (#186, SYMFONISK below): the black bookshelf speaker (once on the TV bench beside
+  // the TV's foot, now in Sovrum 1, #201), the white one stands on the worktop at the south end of the kitchen run (clear of the Moccamaster,
+  // the cups and the hob), the lamp speaker (frosted glass shade) stands on the window board behind the sofa
+  // the black one stands in Sovrum 1's window (#201, the user), in the middle pot's place on the window board (SILL_PLANTS.skip)
+  { type: 'symfonisk', kind: 'speaker', color: 'black', level: 1, x: 3.85, z: 0.32, y: 0.7, rot: 180 },
+  // the white one on the kitchen window's inner board (#289, the user; it stood at the south end of the worktop): the east
   // end, in the third pot's place (SILL_PLANTS.skip), facing the room, clear of the blind's folded pack (z 0.16)
-  { type: 'symfonisk', kind: 'speaker', color: 'black', level: 0, x: 4.48, z: 0.33, y: 0.8, rot: 180 },
+  { type: 'symfonisk', kind: 'speaker', color: 'white', level: 0, x: 4.48, z: 0.33, y: 0.8, rot: 180 },
   { type: 'symfonisk', kind: 'lamp', color: 'white', level: 0, x: 4.55, z: 12.3, y: 0.6, rot: 0 },
   // big rug under the sofa's front legs and the coffee table (#55): 300 × 200 × 1.2 cm (size and
   // colours are our pick), light oatmeal with a soft weave and a thin border; no collision
