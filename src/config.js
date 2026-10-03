@@ -1289,6 +1289,14 @@ export const YUCCA = {
   leaves: 34, leaf: [0.2, 0.32], width: 0.024, wallGap: 0.045, green: 0x2f5f2c, seed: 7,
 };
 
+// The framed photo of Miele, the family's cat (#322, docs/miele-foto-ram.jpg), on Sovrum 1's window board: a thin black
+// frame in landscape, `w` × `h` outside with a `border` wide, `depth` deep moulding and no passe-partout (*guess*: an A5 /
+// 13 × 18 frame), leaning back `lean` rad on a folding stand; the photo is textures/miele.jpg (cropped and straightened
+// from the reference, the frame trimmed). A Thing (things.js, kind 'photo'): taken into the hand; click / "Titta på Miele"
+// brings it up close (`look`: its place in the view, camera space) and back.
+export const PHOTO_FRAME = { w: 0.21, h: 0.16, border: 0.012, depth: 0.012, lean: 0.2, texture: 'textures/miele.jpg',
+  held: { pos: [0.15, -0.22, -0.45], rot: [0.3, -0.15, 0] }, look: { pos: [0, -0.02, -0.3], rot: [0.2, 0, 0] } };
+
 // Day cycle (src/daycycle.js): one day in `minutes` real minutes (60, the user #125). The sun follows the real solar
 // path for the date (declination, hour angle) at Kv. Lunden, Karpvägen / S:t Lars väg in Lund
 // (55.70° N, 13.17° E, docs/tomten-google-maps.jpg). planNorth = compass bearing of the plan's
@@ -1727,6 +1735,9 @@ export const FURNITURE = [
   // shade) on the window board behind the sofa. #298 (the user): the white and the black bookshelf speakers swapped places.
   // the white one stands in Sovrum 1's window (#201, the user), in the middle pot's place on the window board (SILL_PLANTS.skip)
   { type: 'symfonisk', kind: 'speaker', color: 'white', level: 1, x: 3.85, z: 0.32, y: 0.7, rot: 180 },
+  // the framed photo of Miele (#322): east of the speaker, between it and the fern, near the board's front edge (z 0.495)
+  // and clear of the blind's folded pack (z 0.19), turned 15° towards the bed (*guess*)
+  { type: 'photoframe', level: 1, x: 4.08, z: 0.43, y: 0.7, rot: 195 },
   // the black one on the kitchen window's inner board (#289, the user; it stood at the south end of the worktop): the east
   // end, in the third pot's place (SILL_PLANTS.skip), facing the room, clear of the blind's folded pack (z 0.16)
   { type: 'symfonisk', kind: 'speaker', color: 'black', level: 0, x: 4.48, z: 0.33, y: 0.8, rot: 180 },

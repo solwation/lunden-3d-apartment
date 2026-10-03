@@ -116,7 +116,8 @@ docs/                  reference images in git (site map screenshot; docs/peab/ 
                        sheets of Hus L's other units, text/ = Q&A + info brochure text; index: docs/peab/README.md
 textures/              image textures the page loads (published by stamp.sh): stair-pictures.jpg = the 2 × 2 atlas
                        of the stair pictures (#220), cropped/straightened from docs/tavla-trappa-*.jpg; angsgras-sovrum1.jpg = the picture over the
-                       Sovrum 1 bed (#284), straightened, reflections painted out
+                       Sovrum 1 bed (#284), straightened, reflections painted out; miele.jpg = the cat photo in the window-board
+                       frame (#322), cropped and straightened from docs/miele-foto-ram.jpg
 material/              screenshots of our choices in Peab's option portal (local, see below)
 src/audio.js           synthesised positional sound effects (Web Audio): doors, slides, meow, steps
 src/toilet.js          toilet (Ifö Spira 6260) with an animated lid and a flush button (`flush`, its own E target in
@@ -754,7 +755,9 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   the window (#60), the user's grey shag rug 240 × 340 with a white zig-zag under the bed (#317, `pattern: 'zigzag'`, 2.8 cm;
   across the bed, z 0.6–4.0, from the head wall to 18 cm past the foot), and a Philips 43" PQS7801 on the west wall across from the bed (#213, black frame, Ambilight #223):
   "sätta dig upp i sängen" (look at the bed's foot half; `aim` on a rest spot) puts it on, getting up puts it off; Pingping, a navy
-  penguin cushion, sits between the pillows (#269, docs/pingping-pingvinkudde.jpg) · Sovrum 3 (second right) Livia & Tuva, bunk (unicorn sheets), an IKEA ALEX desk under the window
+  penguin cushion, sits between the pillows (#269, docs/pingping-pingvinkudde.jpg); a framed photo of Miele, the family's cat, stands on the window
+  board east of the speaker (#322, `PHOTO_FRAME`, builder `photoframe`, textures/miele.jpg from docs/miele-foto-ram.jpg; a Thing, kind
+  'photo': "Titta på Miele" brings it up close) · Sovrum 3 (second right) Livia & Tuva, bunk (unicorn sheets), an IKEA ALEX desk under the window
   with crafts and a kids' chair (#92), a round dusty-pink short-pile rug Ø 160 (guess) out in the room under the bunk's ladder (#318)
   (#310, `shape: 'round'` on a `rug` item; `src/rugs.js` `rugLift`: the cat's floor spots and things put on the floor stand on a rug) ·
   Sovrum 2 (first left) Walter & Kian, bunk (Darth Vader sheets), a gaming desk with a PC along the west wall, short end to the window (#77, #84): sitting in its chair starts the

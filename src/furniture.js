@@ -4,7 +4,7 @@ import { mergeStatic } from './merge.js';
 import { restTarget } from './rest.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { addCushions, addFoldedThrow, addDrapedThrow } from './cushions.js';
-import { CUSHIONS, FURNITURE, LANDSKRONA as L, LEVELS, SKANSNAS, IDANAS, PILLOWS, PINGPING, MYDAL, OTTOMAN, SYMFONISK, SECRET, NYMANE_WALL, MALM_DECO, YUCCA, LANGLAMPA, VANITY, HEMNES_DAYBED, KPOP_POSTERS, SMASTAD } from './config.js';
+import { CUSHIONS, FURNITURE, LANDSKRONA as L, LEVELS, SKANSNAS, IDANAS, PILLOWS, PINGPING, MYDAL, OTTOMAN, SYMFONISK, SECRET, NYMANE_WALL, MALM_DECO, YUCCA, LANGLAMPA, VANITY, HEMNES_DAYBED, KPOP_POSTERS, SMASTAD, PHOTO_FRAME } from './config.js';
 import { mirrorMaterial } from './mirror.js';
 import { addReflector } from './reflections.js';
 import { loungesofa, loungetable, parasol, planter } from './patio.js';
@@ -3046,6 +3046,44 @@ function secretary(item) {
   return g;
 }
 
+/** The framed photo of Miele (#322, PHOTO_FRAME): a thin black frame leaning back on a folding stand, the photo inside.
+ * Local: origin at the bottom centre of the frame's front edge, facing +z. The frame + stand merge into one mesh, the photo
+ * is the other; the whole model is a Thing you can take (kind 'photo'). */
+let mieleTex = null;
+function photoframe(item, _lights, P = PHOTO_FRAME) {
+  const g = new THREE.Group(), model = new THREE.Group(), tilt = new THREE.Group();
+  const { w, h, border: b, depth: d, lean } = P;
+  if (!mieleTex) {
+    mieleTex = new THREE.TextureLoader().load(new URL(`../${P.texture}`, import.meta.url).href);
+    mieleTex.colorSpace = THREE.SRGBColorSpace;
+    mieleTex.anisotropy = 4;
+  }
+  const black = new THREE.MeshStandardMaterial({ color: 0x141416, roughness: 0.4 });
+  const photo = new THREE.MeshStandardMaterial({ map: mieleTex, roughness: 0.22 }); // a little gloss for the glass
+  const box = (sx, sy, sz, x, y, z, parent = tilt) => { const m = new THREE.Mesh(new THREE.BoxGeometry(sx, sy, sz), black); m.position.set(x, y, z); parent.add(m); return m; };
+  // the frame leans back about its bottom front edge: in `tilt`, y = up the frame, z = 0 its front face
+  box(w, b, d, 0, b / 2, -d / 2); box(w, b, d, 0, h - b / 2, -d / 2);
+  box(b, h - 2 * b, d, -w / 2 + b / 2, h / 2, -d / 2); box(b, h - 2 * b, d, w / 2 - b / 2, h / 2, -d / 2);
+  box(w - 0.004, h - 0.004, 0.003, 0, h / 2, -d + 0.0015); // the back board
+  const pic = new THREE.Mesh(new THREE.PlaneGeometry(w - 2 * b + 0.004, h - 2 * b + 0.004), photo); // under the moulding's lip
+  pic.position.set(0, h / 2, -d * 0.6);
+  tilt.add(pic);
+  tilt.rotation.x = -lean;
+  model.add(tilt);
+  // the folding stand: a strut from the back board, 60 % up, to the board behind it
+  const top = new THREE.Vector3(0, h * 0.6, -d).applyEuler(tilt.rotation), foot = new THREE.Vector3(0, 0, top.z - 0.05);
+  const len = top.distanceTo(foot);
+  const strut = box(0.03, len, 0.004, 0, (top.y + foot.y) / 2, (top.z + foot.z) / 2, model);
+  strut.rotation.x = Math.atan2(top.z - foot.z, top.y - foot.y);
+  model.traverse((m) => { if (m.isMesh) m.castShadow = true; });
+  mergeStatic(model);
+  g.add(model);
+  g.position.y = item.y ?? 0;
+  g.userData.keep = [model];
+  g.userData.things = [{ model, kind: 'photo', name: 'fotot av Miele', back: 'fönsterbänken', held: P.held }];
+  return g;
+}
+
 /** Wall-mounted black metal wine rack (#105): a tall flat-bar frame with `n` wire cradles, each holding a bottle
  * lying with its neck tilted up towards local −x, the label facing out; two of them champagne with gold foil.
  * Local: the wall at z 0, out of the wall +z, the frame's bottom at y 0. */
@@ -3248,7 +3286,7 @@ function besta(item, lights) {
   return g;
 }
 
-const BUILDERS = { tubelamp, secretary, winerack, besta, painting, pictures, palm, sofa, armchair, ottoman, floorlamp, sidetable, coffeetable, loungesofa, loungetable, parasol, planter, bed, skansnasTable, skansnasChair, bunk, daybed, kposters, smastad, rug, ragrund, coatrack, shoerack, byas, tv, nordkisa, worklamp, walllamp, symfonisk, gamingdesk, gamingchair, nordli, malm, alex, kidchair, vanity, vanitystool, laptop };
+const BUILDERS = { tubelamp, secretary, winerack, besta, painting, pictures, palm, sofa, armchair, ottoman, floorlamp, sidetable, coffeetable, loungesofa, loungetable, parasol, planter, bed, skansnasTable, skansnasChair, bunk, daybed, kposters, smastad, rug, ragrund, coatrack, shoerack, byas, tv, nordkisa, worklamp, walllamp, symfonisk, gamingdesk, gamingchair, nordli, malm, alex, kidchair, vanity, vanitystool, laptop, photoframe };
 
 /** An invisible thin box over a table top (raycast target for putting a cup down, #90). Local rect. */
 export function surfaceBox(r, list) {

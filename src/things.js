@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { Holdable, heldItem, handBusy } from './holdable.js';
 import { sfx } from './audio.js';
-import { DRINKS as D } from './config.js';
+import { DRINKS as D, PHOTO_FRAME } from './config.js';
 import { Contents, GlassLiquid, pourAmount, drinkName } from './drinks.js';
 
 // Small things in the living room you can take (#152): the wine bottles in the wine rack, the whisky bottles and
@@ -27,7 +27,7 @@ export class Thing extends Holdable {
     const held = own ?? HELD[kind === 'glass' || kind === 'plant' ? kind : 'bottle']; // (a tall plant is held lower, #265)
     const name = given ?? NAMES[kind] ?? 'flaskan';
     super(scene, camera, {
-      name, verb: 'ta', backName: back, backVerb: kind === 'plant' ? `ställa tillbaka ${name} på` : kind === 'glass' ? `ställa tillbaka ${name} i` : `lägga tillbaka ${name} i`, placeVerb: 'ställa ner', model,
+      name, verb: 'ta', backName: back, backVerb: kind === 'plant' || kind === 'photo' ? `ställa tillbaka ${name} på` : kind === 'glass' ? `ställa tillbaka ${name} i` : `lägga tillbaka ${name} i`, placeVerb: 'ställa ner', model,
       home: { pos, rot }, heldPose: { pos: new THREE.Vector3(...held.pos), rot: new THREE.Euler(...held.rot) },
       pick: { pos: mid, size: [size.x + 0.03, size.y + 0.03, size.z + 0.03] }, cooldown: kind === 'glass' ? 0.6 : 0.3,
     });
@@ -184,6 +184,29 @@ export class Trinket extends Holdable {
   onPut() { sfx.click(this.where()); }
 }
 
-export const KINDS = { glass: Glass, trinket: Trinket, plant: Thing }; // (rifle.js adds 'rifle', #196) // pot plants (#185) are plain Things
+/** The framed photo of Miele (#322): held in front of you; click / "Titta på Miele" brings it up close, again puts it
+ * back down in the hand. */
+export class Photo extends Thing {
+  constructor(scene, camera, opts) {
+    super(scene, camera, opts);
+    const L = PHOTO_FRAME.look;
+    const P = PHOTO_FRAME;
+    this.grip = [P.w / 2 - P.border, P.border * 1.5, -P.depth / 2]; // the frame's bottom right corner: the hand keeps off the photo
+    Object.assign(this, { useLabel: 'Titta på Miele', looking: false, look: 0,
+      lookPose: { pos: new THREE.Vector3(...L.pos), q: new THREE.Quaternion().setFromEuler(new THREE.Euler(...L.rot)) },
+      holdQ: new THREE.Quaternion().setFromEuler(this.heldPose.rot) });
+  }
+
+  onUse() { this.looking = !this.looking; }
+  onTake() { this.looking = false; this.look = 0; super.onTake(); }
+
+  tick(dt) {
+    const k = this.look = this.look + ((this.looking ? 1 : 0) - this.look) * Math.min(1, dt * 7);
+    this.model.position.lerpVectors(this.heldPose.pos, this.lookPose.pos, k);
+    this.model.quaternion.slerpQuaternions(this.holdQ, this.lookPose.q, k);
+  }
+}
+
+export const KINDS = { glass: Glass, trinket: Trinket, plant: Thing, photo: Photo }; // (rifle.js adds 'rifle', #196) // pot plants (#185) are plain Things
 /** Every bottle, glass, secretary trinket and pot plant furniture.js offers (world.things). */
 export const buildThings = (scene, camera, list) => list.map((t) => new (KINDS[t.kind] ?? Bottle)(scene, camera, t));

@@ -7,7 +7,7 @@
 // Holding and putting things down (#102): take a cup, put it on the coffee table; take the lightsaber;
 // the cup can't be taken while the saber is in the hand; the saber goes down lying on the dining table;
 // then the cup can be taken, and goes down standing on the floor; F sends everything home. Pingping (#269): in your
-// arms, a hug, on the sofa, back in the bed, F.
+// arms, a hug, on the sofa, back in the bed, F. The photo of Miele (#322): take it, look at it up close, on the window board, F.
 //   google-chrome --headless=new --dump-dom http://localhost:8137/tools/holdtest.html
 const out = document.getElementById('out');
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -154,6 +154,29 @@ f.onload = async () => {
   w.__app.toggleFurniture(false);
   pass &= check(!pingping.placed && pingping.model.position.distanceTo(P) < 1e-6, 'F: Pingping is home in the bed');
   w.__app.toggleFurniture(true);
+  // the framed photo of Miele (#322) on Sovrum 1's window board: take it, look at it up close and back, down on the
+  // board elsewhere, F home
+  try {
+  const photo = w.__app.things.find((t) => t.kind === 'photo'), M = photo.home.pos.clone();
+  pass &= check(Math.abs(M.y - 3.95) < 0.01 && M.z > 0.2 && M.z < 0.495 && Math.abs(M.x - 4.08) < 0.01, `Miele's photo on the window board (${M.x.toFixed(2)}, ${M.y.toFixed(2)}, ${M.z.toFixed(2)})`);
+  const sillStands = [[4.08, 1.2], [3.9, 1.1], [4.3, 1.3], [4.08, 1.5]];
+  pass &= check(lookAt(M.clone().setY(M.y + 0.07), /ta fotot av miele/i, sillStands), `take it: "${btn.textContent}"`);
+  btn.click(); step(1 / 60);
+  camera.rotation.x = 1.3; step(1 / 60); // at the ceiling: nothing in focus, the button uses what you hold
+  pass &= check(heldItem() === photo && btn.textContent === 'Titta på Miele', `in the hand: "${btn.textContent}"`);
+  const far = photo.model.position.z;
+  btn.click(); for (let i = 0; i < 30; i++) step(1 / 60);
+  pass &= check(photo.looking && photo.model.position.z > far + 0.1 && Math.abs(photo.model.position.x) < 0.02, `up close: z ${far.toFixed(2)} → ${photo.model.position.z.toFixed(2)}`);
+  photo.use(); for (let i = 0; i < 40; i++) step(1 / 60);
+  pass &= check(!photo.looking && Math.abs(photo.model.position.z - far) < 0.01, 'and back down');
+  const spot = new V(3.55, 3.955, 0.42);
+  pass &= check(lookAt(spot, /ställa ner fotot av miele här/i, [[3.55, 1.1], [3.4, 1.2], [3.7, 1.0]]), `between the orchid and the speaker: "${btn.textContent}"`);
+  btn.click(); step(1 / 60);
+  pass &= check(photo.placed && Math.abs(photo.model.position.y - 3.95) < 0.01, `it stands on the board (y ${photo.model.position.y.toFixed(3)})`);
+  w.__app.toggleFurniture(false);
+  pass &= check(!photo.placed && photo.model.position.distanceTo(M) < 1e-6, 'F: back in its place');
+  w.__app.toggleFurniture(true);
+  } catch (e) { pass = false; lines.push(`FAIL error ${e.stack}`); }
   out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
 };
 </script>
