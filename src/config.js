@@ -1129,6 +1129,9 @@ export const KITCHEN = {
   top: 2.25,             // top line of tall units and wall cabinets (guess)
   wallBottom: 1.45,      // underside of wall cabinets (guess, ~52 cm above the worktop)
   wallDepth: 0.35,
+  // #319: the east run's corner wall cabinet door hinges at the corner (handle on its north edge, opens to the right);
+  // the stop in degrees, before its face meets the return row's corner handle (~3 cm from the corner, 2.4 cm proud)
+  cornerDoorMax: 42,
   hoodBottom: 1.6,       // underside of the hood (Spiskåpa Tango) under the hob cabinet
   hoodHeight: 0.08,
   // the under-cabinet LED ("bänkbelysningen") and the hood's light (#221, #271): `pool` = the pool point light each

@@ -229,11 +229,13 @@ function doorRow(F, a0, a1, y0, y1, size, opts) {
   const w = (a1 - a0) / n;
   for (let i = 0; i < n; i++) {
     const b0 = a0 + i * w, b1 = a0 + (i + 1) * w;
-    // a door ending in an inside corner (`corner`: 'a1') hinges on its other side: the other run is in the way
-    const handle = opts.open?.corner === 'a1' && i === n - 1 ? 'v-hi' : i % 2 ? 'v-lo' : 'v-hi';
+    // a door ending in an inside corner (`corner`: 'a1') hinges on its other side: the other run is in the way (#154);
+    // `cornerMax` (#319) instead hinges it at the corner (handle on its other edge), stopped at that many degrees
+    const last = opts.open?.corner === 'a1' && i === n - 1, atCorner = last && opts.open.cornerMax;
+    const handle = atCorner ? 'v-lo' : last ? 'v-hi' : i % 2 ? 'v-lo' : 'v-hi';
     if (!opts.open) { front(F, b0, b1, y0, y1, opts.material ?? M.front, handle, opts); continue; }
     shell(F, b0, b1, y0, y1, opts.open.depth);
-    const o = openFront(opts.open, F, b0, b1, y0, y1, opts.material ?? M.front, handle, opts, { mode: 'hinge', name: opts.open.name ?? 'skåpet' });
+    const o = openFront(opts.open, F, b0, b1, y0, y1, opts.material ?? M.front, handle, opts, { mode: 'hinge', name: opts.open.name ?? 'skåpet', ...(atCorner ? { at: 'a1', max: opts.open.cornerMax } : {}) });
     if (opts.fill) stock(opts.open, F, o, opts.fill[i % opts.fill.length], b0, b1, y0, y1, opts.open.depth);
   }
 }
@@ -586,7 +588,8 @@ function buildKitchen(B, group, floor, y0, yC, handled, taps, appliances) {
   // the worktop between the tall unit and the hob: somewhere to put a cup down
   cupSurfaces.push({ x0: eFront + 0.03, x1: eastWall - 0.03, z0: runZ0 + 0.03, z1: firstEnd - 0.03, y: top });
   if (hob) {
-    doorRow(EW, hob[1], visEnd, yW, yTop, 0.5, { low: true, open: { ...wallOpen, corner: 'a1' }, fill: ['dry', 'tea'] });
+    // its corner door hinges at the corner and opens to the right (the user, #319): handle away from the return row's
+    doorRow(EW, hob[1], visEnd, yW, yTop, 0.5, { low: true, open: { ...wallOpen, corner: 'a1', cornerMax: K.cornerDoorMax }, fill: ['dry', 'tea'] });
     const yH = yHood + K.hoodHeight;
     shell(EW, hob[0], hob[1], yH, yTop, wd, { shelf: false });
     openFront(open, EW, hob[0], hob[1], yH, yTop, M.front, 'bottom', {}, { mode: 'flap', top: true, name: 'skåpet', max: 80 }).stock = 'empty'; // over the hood: lifts up; the duct runs there
