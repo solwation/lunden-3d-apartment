@@ -24,21 +24,32 @@ export function cupCabinet(c) {
   const g = new THREE.Group();
   const w = 0.016, depth = c.back - c.front, zc = (c.z0 + c.z1) / 2, yc = (c.y0 + c.y1) / 2, H = c.y1 - c.y0, W = c.z1 - c.z0;
   const b = (sx, sy, sz, x, y, z, m = white) => { const o = new THREE.Mesh(new THREE.BoxGeometry(sx, sy, sz), m); o.position.set(x, y, z); o.castShadow = o.receiveShadow = true; g.add(o); return o; };
-  b(depth, w, W, c.front + depth / 2, c.y0 + w / 2, zc); b(depth, w, W, c.front + depth / 2, c.y1 - w / 2, zc);
-  b(depth, H, w, c.front + depth / 2, yc, c.z0 + w / 2); b(depth, H, w, c.front + depth / 2, yc, c.z1 - w / 2);
+  // the carcass like the rest of the row (interior.js `shell`, #264): it starts FT behind the front plane (the door
+  // fills that), its outside in the front colour, white inside
+  const FT = 0.02, cx0 = c.front + FT, cd = c.back - cx0, cx = cx0 + cd / 2;
+  b(cd, w, W, cx, c.y0 + w / 2, zc, c.material); b(cd, w, W, cx, c.y1 - w / 2, zc, c.material);
+  b(cd, H, w, cx, yc, c.z0 + w / 2, c.material); b(cd, H, w, cx, yc, c.z1 - w / 2, c.material);
+  b(cd, w * 0.06, W - 2 * w, cx, c.y0 + w + 0.0005, zc); b(cd, w * 0.06, W - 2 * w, cx, c.y1 - w - 0.0005, zc); // white linings
+  b(cd, H - 2 * w, 0.001, cx, yc, c.z0 + w + 0.0005); b(cd, H - 2 * w, 0.001, cx, yc, c.z1 - w - 0.0005);
   b(w, H, W, c.back - w / 2, yc, zc);
-  b(depth - 0.03, 0.014, W - 0.03, c.front + depth / 2 + 0.01, c.y0 + H * 0.5, zc); // shelf
-  // the door: front + a raised shaker frame, a black handle at the free (south) edge, hinged at z0 next to
-  // the tall oven unit, which stands 25 cm proud of the wall cabinets. Like a real cabinet hinge the pivot
-  // sits at the door's outer face (P in front of the carcass, the handle's depth), so the door swings clear
-  // of the carcass and stops flat against the tall unit's side at OPEN_DEG (#116)
-  const P = 0.045;
+  b(cd - 0.03, 0.014, W - 0.03, cx + 0.01, c.y0 + H * 0.5, zc); // shelf
+  // the door: the same shaker front as the rest of the row (interior.js `front`: a 14 mm slab behind a 6 mm raised
+  // frame whose face is the row's front plane c.front, 1.5 mm gaps, the bar handle low at the free south edge),
+  // hinged at z0 next to the tall oven unit, which stands 25 cm proud of the wall cabinets. Like a real cabinet hinge
+  // the pivot sits P in front of the front plane (the handle's outer face), so the door swings clear of the carcass
+  // and stops flat against the tall unit's side at OPEN_DEG (#116)
+  const P = 0.024, gap = 0.0015;
   const door = new THREE.Group();
   door.position.set(c.front - P, c.y0, c.z0);
-  const add = (sx, sy, sz, x, y, z, m) => { const o = new THREE.Mesh(new THREE.BoxGeometry(sx, sy, sz), m); o.position.set(x + P, y, z); o.castShadow = true; door.add(o); };
-  add(0.02, H - 0.003, W - 0.003, -0.01, H / 2, W / 2, c.material);
-  for (const [sy, sz, y, z] of [[H - 0.01, 0.06, H / 2, 0.035], [H - 0.01, 0.06, H / 2, W - 0.035], [0.06, W - 0.01, 0.035, W / 2], [0.06, W - 0.01, H - 0.035, W / 2]]) add(0.008, sy, sz, -0.024, y, z, c.material);
-  add(0.02, 0.12, 0.012, -0.035, 0.1, W - 0.04, c.handle);
+  // add(d0, d1, …): d = distance in front of the front plane (negative = behind it), like interior.js `frame`
+  const add = (d0, d1, y0, y1, z0, z1, m) => { const o = new THREE.Mesh(new THREE.BoxGeometry(d1 - d0, y1 - y0, z1 - z0), m); o.position.set(P - (d0 + d1) / 2, (y0 + y1) / 2, (z0 + z1) / 2); o.castShadow = true; door.add(o); };
+  const a0 = gap, a1 = W - gap, f0 = gap, f1 = H - gap, rw = Math.min(0.06, (f1 - f0) / 4, (a1 - a0) / 4);
+  add(-FT, -0.006, f0, f1, a0, a1, c.material);
+  add(-0.006, 0, f1 - rw, f1, a0, a1, c.material); add(-0.006, 0, f0, f0 + rw, a0, a1, c.material);
+  add(-0.006, 0, f0 + rw, f1 - rw, a0, a0 + rw, c.material); add(-0.006, 0, f0 + rw, f1 - rw, a1 - rw, a1, c.material);
+  const L = 0.15, t = 0.012, hz = a1 - rw / 2, hy = f0 + 0.05 + L / 2;
+  add(0.012, 0.012 + t, hy - L / 2, hy + L / 2, hz - t / 2, hz + t / 2, c.handle);
+  for (const s of [-1, 1]) add(0, 0.012, hy + s * 0.064 - 0.005, hy + s * 0.064 + 0.005, hz - 0.005, hz + 0.005, c.handle);
   const cab = {
     name: 'skåpet', kind: 'appliance', isOpen: false, z0: c.z0, width: W, t: 0, object: door, pickable: door, door, hinge: 'side', lamp: { emissiveIntensity: 0 },
     get verb() { return this.isOpen && heldItem()?.isCup ? 'ställa tillbaka koppen i' : this.isOpen ? 'stänga' : 'öppna'; },
