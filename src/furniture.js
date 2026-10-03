@@ -1221,11 +1221,12 @@ function kposters() {
   return g;
 }
 
-/** IKEA SMÅSTAD / PLATSA wardrobe (#305, SMASTAD): a white carcass (back, sides, top, bottom on a recessed plinth), a
- * shelf near the top with the clothes rail under it, a shelf low down and two wire baskets below; one white door hinged
- * on the right (seen from the front) that opens with E (an Openable). Tilly's clothes on hangers, folded sweaters and
- * a cap on the top shelf, sneakers, socks and a tote bag low down — one vertex-coloured mesh (stuff.js), drawn only
- * while the door is open. Local: the back at z −D/2, the door's face at z D/2, faces +z. */
+/** IKEA SMÅSTAD / PLATSA wardrobe (#305, #311, SMASTAD): a white carcass (back, sides, top, bottom on a recessed plinth),
+ * a shelf near the top with the clothes rail under it, a shelf low down and two wire baskets per door below; two white
+ * French doors (Openables, E): the left hinged on its left edge, opening to the left, the right on its right edge,
+ * opening to the right, a small knob on each by the middle joint. Tilly's clothes on hangers, folded sweaters and a cap
+ * on the top shelf, sneakers, socks and a tote bag low down — one vertex-coloured mesh (stuff.js) per door's half, drawn
+ * only while that door is open. Local: the back at z −D/2, the doors' faces at z D/2, faces +z. */
 function smastad(item) {
   const g = new THREE.Group(), S = SMASTAD, { W, D, H, t } = S;
   const white = new THREE.MeshStandardMaterial({ color: S.color, roughness: 0.5 });
@@ -1241,56 +1242,64 @@ function smastad(item) {
   const rail = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, W - 2 * t, 12).rotateZ(Math.PI / 2), new THREE.MeshStandardMaterial({ color: 0xc9cbcd, roughness: 0.3, metalness: 0.7 }));
   rail.position.set(0, S.rail, zc);
   g.add(rail);
-  // the door, hinged on the right: the leaf runs from the hinge towards −x; a small white knob near its free edge
-  const door = addDoor(g, 'garderoben', { x: W / 2, y: 0, z: D / 2, side: 1, max: S.max, build: (p) => {
-    p.add(rbox(W - 0.004, H - 0.006, S.door, -W / 2, H / 2, -S.door / 2, white, 0.004));
-    const knob = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.014, 0.022, 14).rotateX(Math.PI / 2), white);
-    knob.position.set(-W + 0.045, 1.0, 0.011);
-    knob.castShadow = true;
-    p.add(knob);
-  } });
-  // inside (in the piece's frame): the clothes, the shelves' things, the baskets
-  const p = new StuffPack(), R = rng(305), iw = W - 2 * t;
+  // the doors: s = −1 the left (hinge at x −W/2, the leaf towards +x, swings out to the left), +1 the right (mirrored);
+  // a small white knob near each free edge, by the middle joint
+  const dw = W / 2 - 0.003;
+  const doors = [-1, 1].map((s, i) => addDoor(g, s < 0 ? 'garderobens vänstra dörr' : 'garderobens högra dörr', {
+    x: s * W / 2, y: 0, z: D / 2, side: s, max: S.max[i], build: (p) => {
+      p.add(rbox(dw, H - 0.006, S.door, -s * dw / 2, H / 2, -S.door / 2, white, 0.004));
+      const knob = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.014, 0.022, 14).rotateX(Math.PI / 2), white);
+      knob.position.set(-s * (dw - 0.045), 1.0, 0.011);
+      knob.castShadow = true;
+      p.add(knob);
+    } }));
+  // inside (in the piece's frame): each door's half gets its own pack
+  const [pl, pr] = [new StuffPack(), new StuffPack()], R = rng(305), iw = W - 2 * t;
+  const half = (x) => (x < 0 ? pl : pr);
   S.clothes.forEach(([kind, hex], i) => {
     const x = -iw / 2 + 0.04 + ((iw - 0.08) * (i + 0.5)) / S.clothes.length;
-    p.at(x, S.rail, zc, (((i * 37) % 5) - 2) * 0.012, (q) => garment(q, kind, hex, S.size));
+    half(x).at(x, S.rail, zc, (((i * 37) % 5) - 2) * 0.012, (q) => garment(q, kind, hex, S.size));
   });
-  // the top shelf: two stacks of folded sweaters and a cap
-  stack(p, 3, 0.22, 0.055, 0.28, -0.14, S.topShelf, zc + 0.02, S.sweaters, R);
-  stack(p, 2, 0.22, 0.06, 0.28, 0.1, S.topShelf, zc + 0.02, S.sweaters.slice(2).concat(S.sweaters), R);
-  p.add(new THREE.SphereGeometry(0.085, 12, 6, 0, Math.PI * 2, 0, Math.PI / 2).scale(1, 0.7, 1).translate(0.1, S.topShelf + 0.12, zc - 0.06), S.cap);
-  p.add(new THREE.CylinderGeometry(0.07, 0.07, 0.006, 12, 1, false, -Math.PI / 2, Math.PI).scale(1, 1, 0.9).translate(0.1, S.topShelf + 0.123, zc + 0.02), S.cap); // the peak
-  // the low shelf: two pairs of sneakers, toes to the back
-  S.shoes.slice(0, 2).forEach((hex, i) => shoes(p, 0.25, hex, -0.13 + i * 0.26, S.lowShelf, zc + 0.03, 0.06 * (i ? -1 : 1)));
-  // the wire baskets: a rim, a grid of bottom wires, upright wires round the sides
-  const bw = iw - 0.03, bd = cd - 0.06, bz = zc - 0.01, wr = 0.0025;
-  for (const [y0, h] of S.baskets) {
-    p.box(bw, 0.008, 0.008, 0, y0 + h - 0.008, bz + bd / 2 - 0.004, S.wire);
-    p.box(bw, 0.008, 0.008, 0, y0 + h - 0.008, bz - bd / 2 + 0.004, S.wire);
-    for (const s of [-1, 1]) p.box(0.008, 0.008, bd, s * (bw / 2 - 0.004), y0 + h - 0.008, bz, S.wire);
-    p.box(bw, 0.03, 0.006, 0, y0 + h - 0.05, bz + bd / 2, S.wire);                          // the front grip band
+  // the top shelf: a stack of folded sweaters behind each door, a cap on the right
+  stack(pl, 3, 0.22, 0.055, 0.28, -0.2, S.topShelf, zc + 0.02, S.sweaters, R);
+  stack(pr, 2, 0.22, 0.06, 0.28, 0.08, S.topShelf, zc + 0.02, S.sweaters.slice(2).concat(S.sweaters), R);
+  pr.add(new THREE.SphereGeometry(0.085, 12, 6, 0, Math.PI * 2, 0, Math.PI / 2).scale(1, 0.7, 1).translate(0.29, S.topShelf + 0.12, zc - 0.06), S.cap);
+  pr.add(new THREE.CylinderGeometry(0.07, 0.07, 0.006, 12, 1, false, -Math.PI / 2, Math.PI).scale(1, 1, 0.9).translate(0.29, S.topShelf + 0.123, zc + 0.02), S.cap); // the peak
+  // the low shelf: a pair of sneakers behind each door, toes to the back
+  S.shoes.slice(0, 2).forEach((hex, i) => shoes(i ? pr : pl, 0.25, hex, (i ? 1 : -1) * iw / 4, S.lowShelf, zc + 0.03, 0.06 * (i ? -1 : 1)));
+  // the wire baskets, two behind each door: a rim, a grid of bottom wires, upright wires round the sides
+  const bw = iw / 2 - 0.03, bd = cd - 0.06, bz = zc - 0.01, wr = 0.0025;
+  for (const s of [-1, 1]) for (const [y0, h] of S.baskets) {
+    const p = half(s), bx = s * iw / 4;
+    p.box(bw, 0.008, 0.008, bx, y0 + h - 0.008, bz + bd / 2 - 0.004, S.wire);
+    p.box(bw, 0.008, 0.008, bx, y0 + h - 0.008, bz - bd / 2 + 0.004, S.wire);
+    for (const e of [-1, 1]) p.box(0.008, 0.008, bd, bx + e * (bw / 2 - 0.004), y0 + h - 0.008, bz, S.wire);
+    p.box(bw, 0.03, 0.006, bx, y0 + h - 0.05, bz + bd / 2, S.wire);                         // the front grip band
     for (let x = -bw / 2 + 0.01; x <= bw / 2; x += 0.035) {
-      p.box(wr, wr, bd, x, y0, bz, S.wire);                                               // bottom wires
-      for (const s of [-1, 1]) p.box(wr, h, wr, x, y0, bz + s * (bd / 2 - wr), S.wire);   // front / back uprights
+      p.box(wr, wr, bd, bx + x, y0, bz, S.wire);                                           // bottom wires
+      for (const e of [-1, 1]) p.box(wr, h, wr, bx + x, y0, bz + e * (bd / 2 - wr), S.wire); // front / back uprights
     }
     for (let z = -bd / 2 + 0.01; z <= bd / 2; z += 0.035) {
-      p.box(bw, wr, wr, 0, y0, bz + z, S.wire);
-      for (const s of [-1, 1]) p.box(wr, h, wr, s * (bw / 2 - wr), y0, bz + z, S.wire);    // side uprights
+      p.box(bw, wr, wr, bx, y0, bz + z, S.wire);
+      for (const e of [-1, 1]) p.box(wr, h, wr, bx + e * (bw / 2 - wr), y0, bz + z, S.wire); // side uprights
     }
   }
   const [lo, hi] = S.baskets, yb = (b) => b[0] + 0.004;
-  // the lower basket: rolled socks; the upper: a pair of sneakers and the tote bag folded flat
-  rolls(p, 5, 4, 0.03, 0.09, -bw / 2 + 0.04, bw / 2 - 0.04, bz - bd / 2 + 0.04, bz + bd / 2 - 0.04, yb(lo), S.socks, R);
-  shoes(p, 0.25, S.shoes[2], -0.12, yb(hi), bz, 0.1);
+  // the lower baskets: rolled socks; the upper: a pair of sneakers (left) and the tote bag folded flat (right)
+  for (const s of [-1, 1]) rolls(half(s), 3, 4, 0.03, 0.09, s * iw / 4 - bw / 2 + 0.03, s * iw / 4 + bw / 2 - 0.03, bz - bd / 2 + 0.04, bz + bd / 2 - 0.04, yb(lo), s < 0 ? S.socks : S.socks.slice(2).concat(S.socks), R);
+  shoes(pl, 0.25, S.shoes[2], -iw / 4, yb(hi), bz, 0.1);
   const [tw, th] = S.tote.size;
-  p.rbox(tw, 0.025, th, 0.12, yb(hi), bz, S.tote.color, 0.01, 0.2);
-  const stuff = p.mesh();
-  stuff.castShadow = true;
-  stuff.visible = false;
-  g.add(stuff);
-  door.contents = stuff; // (Openable.update shows it while the door is open, #228)
-  g.userData.keep.push(stuff);
-  g.traverse((m) => { if (m.isMesh && m !== stuff) m.castShadow = m.receiveShadow = true; });
+  pr.rbox(tw, 0.025, th, iw / 4, yb(hi), bz, S.tote.color, 0.01, 0.2);
+  [pl, pr].forEach((p, i) => {
+    const stuff = p.mesh();
+    stuff.castShadow = true;
+    stuff.visible = false;
+    g.add(stuff);
+    doors[i].contents = stuff; // (Openable.update shows it while that door is open, #228)
+    g.userData.keep.push(stuff);
+  });
+  const stuffs = new Set(doors.map((d) => d.contents));
+  g.traverse((m) => { if (m.isMesh && !stuffs.has(m)) m.castShadow = m.receiveShadow = true; });
   g.userData.footprint = [{ x0: -W / 2, x1: W / 2, z0: -D / 2, z1: D / 2 }];
   return g;
 }

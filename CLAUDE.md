@@ -747,10 +747,11 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   round knobs; a charcoal bedspread with lilac bolts, black / holographic / graphic / faux-fur cushions), its three drawers
   open (basketball shoes | hair things | shoes), her basketball in a wall holder over it (`src/basket.js`), invented K-pop
   posters round it and on the north wall (`KPOP_POSTERS`, one canvas atlas, builder `kposters`; no real idols or logos), a white IKEA SMÅSTAD /
-  PLATSA wardrobe 60 × 57 × 181 on the north wall west of the door, clear of the switch (`SMASTAD`, builder `smastad`, #305,
-  docs/smastad-platsa-garderob.jpg; it replaced the MULIG rack of #281): one white door hinged towards the room door (E, an
-  Openable, max 105°: hinged on the west it would hit the daybed's end), her clothes on the rail, sweaters and a cap on
-  the top shelf, sneakers, socks and a tote bag on the low shelf / in two wire baskets (drawn only while open); a vanity on the east wall by the window (#282, `VANITY`, builders `vanity` / `vanitystool`):
+  PLATSA wardrobe 80 × 57 × 181 in the NW corner of the north wall (`SMASTAD`, builder `smastad`, #305, #311,
+  docs/smastad-platsa-garderob.jpg; it replaced the MULIG rack of #281): white French doors (E, Openables), the left hinged
+  on the left and opening to the left (max 85°: its knob stays off the west wall), the right to the right; her clothes on
+  the rail, sweaters and a cap on the top shelf, sneakers, socks and a tote bag on the low shelf / in wire baskets (each
+  door's half drawn only while that door is open); no poster is covered by it or its open doors (opentest checks); a vanity on the east wall by the window (#282, `VANITY`, builders `vanity` / `vanitystool`):
   an IKEA ALEX 100 × 48 with a drawer column (make-up, hair things, clothes), make-up on the top, a Hollywood mirror with
   14 globe bulbs (a lamp of its own, `sminkspegelns lampor`, at dusk like #234; a Reflector) and a lilac stool (a seat
   with an invisible pick box over it); on its free end a rose-gold laptop (#283, `src/laptop.js`, `LAPTOP`) playing an

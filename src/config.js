@@ -1532,18 +1532,21 @@ export const HEMNES_DAYBED = {
     black: 0x18181b, fur: 0xe8e2d8, pink: 0xc7949f },
 };
 
-// Tilly's wardrobe (#305, docs/smastad-platsa-garderob.jpg): IKEA SMÅSTAD / PLATSA, 60 × 57 × 181 cm (ikea.com), white
-// carcass and — the user's wish — a white door (not the photo's blue), on the north wall west of the room's door. Inside,
-// as in the photo: a shelf near the top, the clothes rail under it, a long hanging space, a shelf low down and two pull-out
-// wire baskets at the bottom (heights are guesses from the photo). The door is hinged on the side towards the room's
-// door (east) so it swings away from the daybed's end (its west side would hit it) — `max` degrees. Her clothes (from
-// the MULIG rack it replaces, #281) on hangers (stuff.js `garment`, `size`: their sleeves must stay inside the 55 cm carcass): an oversized black hoodie,
-// an olive bomber, a plaid-red skirt, cargo pants, a black band tee, a denim jacket, a lilac shirt, a neon green tee;
-// folded sweaters and a cap on the top shelf, sneakers on the low shelf and in a basket with the tote bag, socks in the
-// other basket (our picks).
+// Tilly's wardrobe (#305, #311, docs/smastad-platsa-garderob.jpg): IKEA SMÅSTAD / PLATSA, the two-door 80 × 57 × 181 cm
+// (*guess*, the series also comes 120 wide: its 60 cm doors would reach too far into the room), white carcass and — the
+// user's wish — white doors (not the photo's blue), in the NW corner of the north wall (its west side against the west
+// wall). French doors (#311): the left one (seen from the front) hinged on the left edge, opening to the left, the right
+// one on the right edge, opening to the right, a knob on each by the middle joint. `max` = [left, right] degrees: the
+// left stops at 85° so its knob stays clear of the west wall (the door lies almost along it). Inside, as in the photo, a
+// shelf near the top, the clothes rail under it, a long hanging space, a shelf low down and a wire basket per door at the
+// bottom (heights are guesses from the photo); each door's half has its own contents, drawn only while that door is
+// open. Her clothes (from the MULIG rack it replaced, #281) on hangers (stuff.js `garment`, `size`: their sleeves must
+// stay inside the 55 cm carcass): an oversized black hoodie, an olive bomber, a plaid-red skirt, cargo pants, a black
+// band tee, a denim jacket, a lilac shirt, a neon green tee; folded sweaters and a cap on the top shelf, sneakers on the
+// low shelf and in a basket with the tote bag, socks in the other basket (our picks).
 export const SMASTAD = {
-  W: 0.6, D: 0.57, H: 1.81, t: 0.018, door: 0.018, plinth: 0.06, topShelf: 1.55, rail: 1.49, lowShelf: 0.44,
-  baskets: [[0.08, 0.15], [0.255, 0.15]], max: 105, color: 0xf4f4f1, wire: 0xd9dadb, size: 0.75,
+  W: 0.8, D: 0.57, H: 1.81, t: 0.018, door: 0.018, plinth: 0.06, topShelf: 1.55, rail: 1.49, lowShelf: 0.44,
+  baskets: [[0.08, 0.15], [0.255, 0.15]], max: [85, 95], color: 0xf4f4f1, wire: 0xd9dadb, size: 0.75,
   clothes: [['jacket', 0x18181b], ['jacket', 0x4b5440], ['skirt', 0x7a2633], ['trousers', 0x6b6b4e],
     ['tee', 0x111111], ['jacket', 0x4a6fa5], ['shirt', 0xb79cff], ['tee', 0xa3e635]],
   sweaters: [0x2a2a30, 0xb79cff, 0xe9e4da, 0x6f7f96], cap: 0x18181b,
@@ -1553,14 +1556,15 @@ export const SMASTAD = {
 // Tilly's K-pop posters (#280, the user): invented groups only — no real idols' names, faces, photos or logos. Each is
 // drawn on one canvas atlas (src/furniture.js `kposterTexture`), taped to the wall (A2 42 × 59.4, A3 29.7 × 42 cm).
 // `wall`: 'west' (face x 0.202) or 'north' (face z 7.804) of Sovrum 4; `at` = z (west) or x (north) of the centre,
-// `y` = centre height over the floor. Over the daybed around the basketball holder (z 10, y 1.5), in the NW corner and
-// on the north wall west of the wardrobe (#305); not on the east wall (the vanity, #282) or the window wall.
+// `y` = centre height over the floor. Over the daybed around the basketball holder (z 10, y 1.5), beside it and on the
+// north wall east of the wardrobe (#311); not on the east wall (the vanity, #282) or the window wall. None may be covered
+// by the wardrobe or swept by its open doors (#311, the user: move posters, never cover them; opentest checks it).
 export const KPOP_POSTERS = [
   { art: 'nova', size: 'A2', wall: 'west', at: 9.27, y: 1.58 },
   { art: 'moon', size: 'A2', wall: 'west', at: 10.73, y: 1.58 },
   { art: 'bloom', size: 'A3', wall: 'west', at: 10.0, y: 2.08 },
-  { art: 'lumi', size: 'A2', wall: 'north', at: 0.55, y: 1.6 },
-  { art: 'starlyt', size: 'A2', wall: 'west', at: 8.42, y: 1.58 }, // moved off the north wall for the wardrobe (#305)
+  { art: 'lumi', size: 'A2', wall: 'north', at: 1.3, y: 1.6 },     // east of the wardrobe, short of the switch (#311)
+  { art: 'starlyt', size: 'A2', wall: 'west', at: 11.5, y: 1.58 }, // clear of the wardrobe's open left door (#311)
 ];
 
 // Långlampan (#270, docs/langlampan.jpg): a tall slim tube of coarse natural linen with a spiral wire frame and several
@@ -1792,9 +1796,9 @@ export const FURNITURE = [
   // corner; the drawer column at the north end, the free end (the laptop, #283) towards the window; the stool in front
   { type: 'vanity', level: 1, x: 2.632 - VANITY.d / 2 - 0.004, z: 11.45, rot: 90 },
   { type: 'vanitystool', level: 1, x: 2.632 - VANITY.d - 0.2, z: 11.55, rot: -90 },
-  // her wardrobe (#305, SMASTAD): back to the north wall west of the door (the only side with room: 5 cm east of its
-  // hinge), its east side 5 cm short of the light switch (x 1.64) by the door's architrave; it faces the room (south)
-  { type: 'smastad', level: 1, x: 1.55 - SMASTAD.W / 2, z: 7.804 + 0.004 + SMASTAD.D / 2, rot: 180 },
+  // her wardrobe (#305, #311, SMASTAD): back to the north wall in the NW corner, its west side 4 mm off the west wall
+  // (face x 0.202); it faces the room (south)
+  { type: 'smastad', level: 1, x: 0.202 + 0.004 + SMASTAD.W / 2, z: 7.804 + 0.004 + SMASTAD.D / 2, rot: 180 },
   // her K-pop posters (#280, KPOP_POSTERS): world coordinates, so the item sits at the origin unturned (rot 180 = yaw 0)
   { type: 'kposters', level: 1, x: 0, z: 0, rot: 180 },
   // Tilly's laptop (#283, LAPTOP) on the vanity's free end (vanity-local x 0.29), turned 15° towards the stool
