@@ -4,7 +4,7 @@ import { mergeStatic } from './merge.js';
 import { restTarget } from './rest.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { addCushions, addFoldedThrow, addDrapedThrow } from './cushions.js';
-import { CUSHIONS, FURNITURE, LANDSKRONA as L, LEVELS, SKANSNAS, IDANAS, PINGPING, MYDAL, OTTOMAN, SYMFONISK, SECRET, NYMANE_WALL, MALM_DECO, YUCCA, LANGLAMPA, VANITY, HEMNES_DAYBED, KPOP_POSTERS, MULIG } from './config.js';
+import { CUSHIONS, FURNITURE, LANDSKRONA as L, LEVELS, SKANSNAS, IDANAS, PINGPING, MYDAL, OTTOMAN, SYMFONISK, SECRET, NYMANE_WALL, MALM_DECO, YUCCA, LANGLAMPA, VANITY, HEMNES_DAYBED, KPOP_POSTERS, SMASTAD } from './config.js';
 import { mirrorMaterial } from './mirror.js';
 import { addReflector } from './reflections.js';
 import { loungesofa, loungetable, parasol, planter } from './patio.js';
@@ -13,7 +13,7 @@ import { Openable } from './openables.js';
 import { rifleModel } from './rifle.js';
 import { laptop } from './laptop.js';
 import { pingpingModel } from './pingping.js';
-import { drawerFill, personFor, Pack as StuffPack, garment, shoes } from './stuff.js';
+import { drawerFill, personFor, Pack as StuffPack, garment, shoes, stack, rolls, rng } from './stuff.js';
 import { Pack, byasDrawer, byasMiddle, bestaContents, attachContents } from './contents.js';
 
 // Loose furniture, built from rounded boxes. Every piece is modelled in a local frame
@@ -1220,47 +1220,77 @@ function kposters() {
   return g;
 }
 
-/** IKEA MULIG clothes rack (#281, MULIG): thin round steel tubes — two narrow inverted-U side frames on foot tubes,
- * the hanging rail across the top, a pair of shelf tubes low down; Tilly's clothes on hangers along the rail (slightly
- * turned, overlapping), sneakers and a tote bag on the shelf (stuff.js, one vertex-coloured mesh). Faces +z. */
-function mulig(item) {
-  const g = new THREE.Group(), M = MULIG, mat = new THREE.MeshStandardMaterial({ color: M.color, roughness: 0.45, metalness: 0.5 });
-  const r = M.tube / 2, hw = M.W / 2 - r, hd = M.D / 2 - r, top = M.H - M.bend;
-  const tube = (len, x, y, z, axis) => {
-    const geo = new THREE.CylinderGeometry(r, r, len, 10);
-    if (axis === 'x') geo.rotateZ(Math.PI / 2); else if (axis === 'z') geo.rotateX(Math.PI / 2);
-    const m = new THREE.Mesh(geo, mat);
-    m.position.set(x, y, z);
-    m.castShadow = true;
-    g.add(m);
-  };
-  for (const s of [-1, 1]) {
-    const x = s * hw;
-    tube(M.D, x, r, 0, 'z');                                                             // the foot
-    for (const z of [-M.bend, M.bend]) tube(top - 2 * r, x, r + (top - 2 * r) / 2 + r, z, 'y'); // the uprights
-    const bend = new THREE.Mesh(new THREE.TorusGeometry(M.bend, r, 6, 12, Math.PI).rotateY(Math.PI / 2), mat); // the U's top
-    bend.position.set(x, top, 0);
-    g.add(bend);
-    tube(2 * hd * 0.8, x, M.shelf, 0, 'z');                                              // carries the shelf tubes
-  }
-  tube(M.W, 0, M.H - r, 0, 'x');                                                         // the hanging rail
-  for (const z of M.shelfZ) tube(M.W - 2 * r, 0, M.shelf + 2 * r, z, 'x');                // the shelf tubes
-  // the clothes, the shoes and the bag
-  const p = new StuffPack();
-  const rail = M.H - r, n = M.clothes.length, span = M.W - 0.16;
-  M.clothes.forEach(([kind, hex], i) => {
-    const x = -span / 2 + (span * (i + 0.5)) / n;
-    p.at(x, rail, 0, (((i * 37) % 7) - 3) * 0.05, (q) => garment(q, kind, hex, M.size));
+/** IKEA SMÅSTAD / PLATSA wardrobe (#305, SMASTAD): a white carcass (back, sides, top, bottom on a recessed plinth), a
+ * shelf near the top with the clothes rail under it, a shelf low down and two wire baskets below; one white door hinged
+ * on the right (seen from the front) that opens with E (an Openable). Tilly's clothes on hangers, folded sweaters and
+ * a cap on the top shelf, sneakers, socks and a tote bag low down — one vertex-coloured mesh (stuff.js), drawn only
+ * while the door is open. Local: the back at z −D/2, the door's face at z D/2, faces +z. */
+function smastad(item) {
+  const g = new THREE.Group(), S = SMASTAD, { W, D, H, t } = S;
+  const white = new THREE.MeshStandardMaterial({ color: S.color, roughness: 0.5 });
+  const zb = -D / 2, zf = D / 2 - S.door, cd = zf - zb, zc = (zb + zf) / 2; // the carcass: back … front, its middle
+  const board = (sx, sy, sz, x, y, z) => g.add(rbox(sx, sy, sz, x, y, z, white, 0.002));
+  board(W, H, 0.006, 0, H / 2, zb + 0.003);                                              // the back
+  for (const s of [-1, 1]) board(t, H, cd, s * (W / 2 - t / 2), H / 2, zc);              // the sides
+  board(W - 2 * t, t, cd, 0, H - t / 2, zc);                                             // the top
+  board(W - 2 * t, t, cd, 0, S.plinth + t / 2, zc);                                      // the bottom
+  board(W - 2 * t, S.plinth, t, 0, S.plinth / 2, zf - 0.03);                             // the plinth, set back
+  board(W - 2 * t, t, cd - 0.01, 0, S.topShelf - t / 2, zc - 0.005);                     // the top shelf
+  board(W - 2 * t, t, cd - 0.01, 0, S.lowShelf - t / 2, zc - 0.005);                     // the low shelf
+  const rail = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, W - 2 * t, 12).rotateZ(Math.PI / 2), new THREE.MeshStandardMaterial({ color: 0xc9cbcd, roughness: 0.3, metalness: 0.7 }));
+  rail.position.set(0, S.rail, zc);
+  g.add(rail);
+  // the door, hinged on the right: the leaf runs from the hinge towards −x; a small white knob near its free edge
+  const door = addDoor(g, 'garderoben', { x: W / 2, y: 0, z: D / 2, side: 1, max: S.max, build: (p) => {
+    p.add(rbox(W - 0.004, H - 0.006, S.door, -W / 2, H / 2, -S.door / 2, white, 0.004));
+    const knob = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.014, 0.022, 14).rotateX(Math.PI / 2), white);
+    knob.position.set(-W + 0.045, 1.0, 0.011);
+    knob.castShadow = true;
+    p.add(knob);
+  } });
+  // inside (in the piece's frame): the clothes, the shelves' things, the baskets
+  const p = new StuffPack(), R = rng(305), iw = W - 2 * t;
+  S.clothes.forEach(([kind, hex], i) => {
+    const x = -iw / 2 + 0.04 + ((iw - 0.08) * (i + 0.5)) / S.clothes.length;
+    p.at(x, S.rail, zc, (((i * 37) % 5) - 2) * 0.012, (q) => garment(q, kind, hex, S.size));
   });
-  const ys = M.shelf + 3 * r;
-  M.shoes.forEach((hex, i) => shoes(p, 0.25, hex, -M.W / 2 + 0.135 + i * 0.21, ys, 0.02, Math.PI + (i - 1) * 0.12));
-  const [bw, bh, bd] = M.tote.size, bx = M.W / 2 - 0.2;
-  p.rbox(bw, bh, bd, bx, ys, 0, M.tote.color, 0.012, 0.15);
-  p.add(new THREE.TorusGeometry(bw * 0.28, 0.006, 4, 12, Math.PI).rotateY(0.15).translate(bx, ys + bh, 0), M.tote.color);
+  // the top shelf: two stacks of folded sweaters and a cap
+  stack(p, 3, 0.22, 0.055, 0.28, -0.14, S.topShelf, zc + 0.02, S.sweaters, R);
+  stack(p, 2, 0.22, 0.06, 0.28, 0.1, S.topShelf, zc + 0.02, S.sweaters.slice(2).concat(S.sweaters), R);
+  p.add(new THREE.SphereGeometry(0.085, 12, 6, 0, Math.PI * 2, 0, Math.PI / 2).scale(1, 0.7, 1).translate(0.1, S.topShelf + 0.12, zc - 0.06), S.cap);
+  p.add(new THREE.CylinderGeometry(0.07, 0.07, 0.006, 12, 1, false, -Math.PI / 2, Math.PI).scale(1, 1, 0.9).translate(0.1, S.topShelf + 0.123, zc + 0.02), S.cap); // the peak
+  // the low shelf: two pairs of sneakers, toes to the back
+  S.shoes.slice(0, 2).forEach((hex, i) => shoes(p, 0.25, hex, -0.13 + i * 0.26, S.lowShelf, zc + 0.03, 0.06 * (i ? -1 : 1)));
+  // the wire baskets: a rim, a grid of bottom wires, upright wires round the sides
+  const bw = iw - 0.03, bd = cd - 0.06, bz = zc - 0.01, wr = 0.0025;
+  for (const [y0, h] of S.baskets) {
+    p.box(bw, 0.008, 0.008, 0, y0 + h - 0.008, bz + bd / 2 - 0.004, S.wire);
+    p.box(bw, 0.008, 0.008, 0, y0 + h - 0.008, bz - bd / 2 + 0.004, S.wire);
+    for (const s of [-1, 1]) p.box(0.008, 0.008, bd, s * (bw / 2 - 0.004), y0 + h - 0.008, bz, S.wire);
+    p.box(bw, 0.03, 0.006, 0, y0 + h - 0.05, bz + bd / 2, S.wire);                          // the front grip band
+    for (let x = -bw / 2 + 0.01; x <= bw / 2; x += 0.035) {
+      p.box(wr, wr, bd, x, y0, bz, S.wire);                                               // bottom wires
+      for (const s of [-1, 1]) p.box(wr, h, wr, x, y0, bz + s * (bd / 2 - wr), S.wire);   // front / back uprights
+    }
+    for (let z = -bd / 2 + 0.01; z <= bd / 2; z += 0.035) {
+      p.box(bw, wr, wr, 0, y0, bz + z, S.wire);
+      for (const s of [-1, 1]) p.box(wr, h, wr, s * (bw / 2 - wr), y0, bz + z, S.wire);    // side uprights
+    }
+  }
+  const [lo, hi] = S.baskets, yb = (b) => b[0] + 0.004;
+  // the lower basket: rolled socks; the upper: a pair of sneakers and the tote bag folded flat
+  rolls(p, 5, 4, 0.03, 0.09, -bw / 2 + 0.04, bw / 2 - 0.04, bz - bd / 2 + 0.04, bz + bd / 2 - 0.04, yb(lo), S.socks, R);
+  shoes(p, 0.25, S.shoes[2], -0.12, yb(hi), bz, 0.1);
+  const [tw, th] = S.tote.size;
+  p.rbox(tw, 0.025, th, 0.12, yb(hi), bz, S.tote.color, 0.01, 0.2);
   const stuff = p.mesh();
   stuff.castShadow = true;
+  stuff.visible = false;
   g.add(stuff);
-  g.userData.footprint = [{ x0: -M.W / 2, x1: M.W / 2, z0: -M.D / 2, z1: M.D / 2 }];
+  door.contents = stuff; // (Openable.update shows it while the door is open, #228)
+  g.userData.keep.push(stuff);
+  g.traverse((m) => { if (m.isMesh && m !== stuff) m.castShadow = m.receiveShadow = true; });
+  g.userData.footprint = [{ x0: -W / 2, x1: W / 2, z0: -D / 2, z1: D / 2 }];
   return g;
 }
 
@@ -3092,7 +3122,7 @@ function besta(item, lights) {
   return g;
 }
 
-const BUILDERS = { tubelamp, secretary, winerack, besta, painting, pictures, palm, sofa, armchair, ottoman, floorlamp, sidetable, coffeetable, loungesofa, loungetable, parasol, planter, bed, skansnasTable, skansnasChair, bunk, daybed, kposters, mulig, rug, ragrund, coatrack, shoerack, byas, tv, nordkisa, worklamp, walllamp, symfonisk, gamingdesk, gamingchair, nordli, malm, alex, kidchair, vanity, vanitystool, laptop };
+const BUILDERS = { tubelamp, secretary, winerack, besta, painting, pictures, palm, sofa, armchair, ottoman, floorlamp, sidetable, coffeetable, loungesofa, loungetable, parasol, planter, bed, skansnasTable, skansnasChair, bunk, daybed, kposters, smastad, rug, ragrund, coatrack, shoerack, byas, tv, nordkisa, worklamp, walllamp, symfonisk, gamingdesk, gamingchair, nordli, malm, alex, kidchair, vanity, vanitystool, laptop };
 
 /** An invisible thin box over a table top (raycast target for putting a cup down, #90). Local rect. */
 export function surfaceBox(r, list) {
