@@ -197,6 +197,72 @@ f.onload = async () => {
   toggleFurniture(); toggleFurniture();
   pass &= check(!fish.inPan.length && fish.left === 15 && !hob.on, 'F: the pan is cleared, the carton full, the hob off');
   hob.set(false); pan.goHome(); if (fridge.isOpen) fridge.toggle(); if (drawer.isOpen) drawer.toggle();
+  // (6) #287: the air fryer in the corner left of the freezer — open the basket, three fish fingers in, shut, start;
+  // it counts down, they turn golden, it beeps "End" and stops; one out and eaten; run again and again → burnt + smoke; F
+  const { airFryer } = w.__app, AF = { seconds: 20 };
+  const fzr = fish.freezer;
+  pass &= check(!!airFryer && airFryer.object.position.x > fzr.object.getWorldPosition(new V()).x && Math.abs(airFryer.object.position.y - 0.93) < 0.01, `the air fryer on the worktop (${airFryer?.object.position.toArray().map((v) => v.toFixed(2))})`);
+  const afFrom = [airFryer.object.position.x - 0.1, airFryer.object.position.z - 0.9];
+  const basketAt = () => airFryer.basket.getWorldPosition(new V()).add(new V(0, 0.09, -0.2));
+  label = aim(basketAt(), afFrom);
+  pass &= check(/dra ut korgen i airfryern/i.test(label), `the basket: "${label}"`);
+  btn.click(); run(1);
+  pass &= check(airFryer.open && airFryer.basket.position.z < -0.15, `pulled out (${airFryer.basket.position.z.toFixed(2)})`);
+  if (!fzr.isOpen) fzr.toggle();
+  for (let k = 0; k < 3; k++) {
+    fish.press();
+    label = aim(airFryer.basket.getWorldPosition(new V()).add(new V(0, 0.05, -0.12)), afFrom);
+    if (k === 0) pass &= check(/lägga fiskpinnen i airfryern/i.test(label), `a fish finger at the basket: "${label}"`);
+    btn.click(); step(1 / 60);
+  }
+  fzr.toggle();
+  const inF = fish.inFryer;
+  pass &= check(inF.length === 3 && inF.every((x) => x.model.parent === airFryer.basket && white(x)) && !heldItem(), `three in the basket, frozen (${inF.length})`);
+  label = aim(airFryer.panelPick.getWorldPosition(new V()), afFrom);
+  pass &= check(/skjut in korgen först/i.test(label), `the panel with the basket out: "${label}"`);
+  label = aim(basketAt(), afFrom);
+  btn.click(); run(1);
+  pass &= check(!airFryer.open && airFryer.basket.position.z === 0 && inF[0].model.getWorldPosition(new V()).z > airFryer.object.position.z - 0.2, `pushed in, they ride along ("${label}")`);
+  label = aim(airFryer.panelPick.getWorldPosition(new V()), afFrom);
+  pass &= check(/starta airfryern/i.test(label), `the panel: "${label}"`);
+  const af0 = stats.airfried ?? 0;
+  btn.click(); run(0.5);
+  pass &= check(airFryer.running && airFryer.shown === '200|7:48' && airFryer.glowMat.opacity > 0, `running: "${airFryer.shown}" on the display, the vents glow`);
+  run(AF.seconds / 2);
+  pass &= check(!inF[0].fried && !white(inF[0]), `half way: browning (#${inF[0].bread.color.getHex().toString(16)})`);
+  // pulled out mid-run: paused
+  airFryer.setOpen(true); const left = airFryer.left; run(3);
+  pass &= check(airFryer.running && airFryer.left === left && !airFryer.cooking, `basket out: paused at ${left.toFixed(1)} s`);
+  airFryer.setOpen(false); run(1);
+  pass &= check(airFryer.cooking && airFryer.left < left, 'pushed in: it goes on');
+  run(AF.seconds / 2 + 1);
+  pass &= check(!airFryer.running && airFryer.done && airFryer.shown === 'End' && inF.every((x) => x.fried && !x.burnt) && stats.airfried === af0 + 1, `done: "End", golden, counted (${stats.airfried})`);
+  run(3);
+  pass &= check(airFryer.glowMat.opacity < 0.01, 'the vents cool off');
+  airFryer.setOpen(true); run(1);
+  label = aim(inF[0].middle(new V()), afFrom);
+  pass &= check(/ta fiskpinnen/i.test(label), `one in the open basket: "${label}"`);
+  label = aim(airFryer.handle.getWorldPosition(new V()), afFrom);
+  pass &= check(/skjuta in korgen/i.test(label), `its handle: "${label}"`);
+  label = aim(inF[0].middle(new V()), afFrom);
+  btn.click(); step(1 / 60);
+  const ff = heldItem();
+  pass &= check(ff?.isFish && ff.fried && ff.hot > 0 && fish.inFryer.length === 2, 'out into the hand, fried and steaming');
+  const e0 = stats.fish;
+  for (let b = 0; b < 3; b++) { ff?.use(); run(0.5); }
+  pass &= check(!heldItem() && stats.fish === e0 + 1, 'eaten');
+  // left far too long: two more runs → burnt, smoke out of the vents, the smoke alarm
+  airFryer.setOpen(false); run(0.5);
+  airFryer.press(); run(AF.seconds + 0.5);
+  const rest = fish.inFryer;
+  pass &= check(rest.every((x) => x.fried && !x.burnt) && !airFryer.running, 'a second run: still golden');
+  airFryer.press(); run(11);
+  pass &= check(rest.every((x) => x.burnt) && airFryer.running, `burnt in the third run (#${rest[0].bread.color.getHex().toString(16)})`);
+  pass &= check(fish.fryerSmoke && rest[0].puffs.some((sp) => sp.visible && sp.position.y > airFryer.object.position.y + 0.3), 'smoke out of the vents');
+  run(6);
+  pass &= check(smokeAlarm.ringing, 'the smoke alarm goes off');
+  toggleFurniture(); toggleFurniture();
+  pass &= check(!airFryer.running && !airFryer.open && !fish.inFryer.length && fish.left === 15 && !smokeAlarm.ringing && airFryer.shown === '', 'F: off, the basket in and empty, quiet');
   out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
 };
 </script>

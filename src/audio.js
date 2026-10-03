@@ -649,6 +649,12 @@ export const sfx = {
     o.start(t); lfo.start(t); bias.start(t);
     return { stop() { const t1 = ctx.currentTime + 0.05; o.stop(t1); lfo.stop(t1); bias.stop(t1); } };
   },
+  /** The air fryer is done (#287): `n` short high beeps. */
+  fryerBeep(pos, n = 3) {
+    if (!ready()) return;
+    const t = ctx.currentTime, d = out(pos, 0.7);
+    for (let i = 0; i < n; i++) tone(t + i * 0.32, 0.18, d, { type: 'square', from: 2350, gain: 0.07 });
+  },
   /** A bite of something crispy (a fish finger, #162): a crunch, then a few soft chews. `k` = loudness. */
   chew(pos, k = 1) {
     if (!ready()) return;

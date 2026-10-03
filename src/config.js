@@ -728,6 +728,18 @@ export const BREAK = {
 export const FISH = { n: 15, len: 0.09, w: 0.025, h: 0.016, bites: 3, box: { w: 0.19, d: 0.13, h: 0.045 },
   fry: { seconds: 6, burnAt: 18, burnt: 22, slots: 5, steam: 30, golden: 0xd99a4a, dark: 0x3b2716 },
   held: { x: 0.13, y: -0.12, z: -0.42 } }; // held: a little further out so the hand round it (#242) does not fill the view
+// The air fryer (#287, src/airfryer.js): an OBH Nordica Easy Fry Deluxe in brushed stainless on the worktop in the corner left
+// of the freezer (the corner unit's top, back to the splashback, a gap to the freezer's side). The product page is blocked
+// from the cloud session: W × D × H 30 × 38 × 32 cm is the issue's *guess* for a ~5 l model. `x`, `z` = its centre;
+// `basket` = the pull-out drawer (front part of the lower body: depth, height, how far it slides out, `in` s to slide);
+// `slots` fish fingers fit in it (2 rows of 3, *guess*). E on the panel with the basket in runs it for `seconds` real
+// seconds (the display counts down game time: × `clock` = 24, the 60-minute day, so 20 s shows 8:00) at `temp` °C; it
+// cooks fish fingers `rate` × as fast as the pan would, so one run makes them golden (FISH.fry.seconds, a little before
+// the end) and they burn early in a third run (FISH.fry.burnAt, "left far too long"). Basket out mid-run: paused. Done: `beeps` beeps. The cord runs to
+// the corner power box ("Hörnbox", interior.js) at `socket`.
+export const AIRFRYER = { x: 4.84, z: 5.27, w: 0.3, d: 0.38, h: 0.32,
+  basket: { d: 0.25, h: 0.15, out: 0.2, in: 0.35 }, slots: 6, seconds: 20, clock: 24, temp: 200, beeps: 3,
+  get rate() { return 1.2 * FISH.fry.seconds / this.seconds; }, socket: { x: 5.45, z: 5.434 } };
 // The cat and a fish finger on the floor (#163, cat.js): one within `reach` m in the open (a straight walk with no
 // wall or door in between, i.e. the same room) catches its eye; it looks for `notice` s, walks there at `speed` m/s,
 // stops `stop` m short (its head over it) and eats it in `eat` s. Taken away first: it looks after it for `look` s.
@@ -885,12 +897,13 @@ export const SCORE = {
     shattered: 5, // per kind of thing shot to pieces (#263)
     pingpingHugs: 10, // hugging Pingping (#269)
     carMusic: 3, // per song played in the car (#268), like the speakers' songs
+    airfried: 6, // a batch of fish fingers done in the air fryer (#287): the first time, then `again` per batch
   },
   again: {
     doors: 0.1, lids: 0.1, flushes: 0.2, taps: 0.1, fridge: 0.1, appliances: 0.1, cabinets: 0.05, lights: 0.05,
     sat: 0.1, lay: 0.1, songs: 0.2, read: 0.5, car: 1, grill: 1, hood: 0.2, tv: 0.2, pc: 0.3, parasol: 0.2,
     clock: 0.1, calendar: 0.1, greets: 0.1, catButts: 1, walkRain: 2, walkSnow: 3, walkHail: 4, walkStorm: 3,
-    shattered: 0.3, carMusic: 0.2, pingpingHugs: 0.2, blinds: 0.05,
+    shattered: 0.3, carMusic: 0.2, pingpingHugs: 0.2, blinds: 0.05, airfried: 0.5,
   },
   breeds: { huskatt: 10, siames: 30, 'brittiskt korthår': 30, 'maine coon': 35, 'norsk skogkatt': 40, perser: 100, sphynx: 250 },
   secrets: { kinds: 10, rare: 40 },

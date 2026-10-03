@@ -195,6 +195,12 @@ src/hood.js            the cooker hood (#194, `world.hood`, in world.lids): E ru
                        draws the chicken's smoke up into it; the smoke alarm in the kitchen ceiling (SMOKE_ALARM) beeps
                        and blinks red after `delay` s of smoke the hood does not take (`chicken.freeSmoke`); F: fan off
 src/coffee.js          Moccamaster on the worktop (MOCCAMASTER): E brews (red light, sound, the jug fills)
+src/airfryer.js        the air fryer (AIRFRYER, #287): an OBH Nordica Easy Fry Deluxe in the worktop corner left of the freezer, its
+                       cord to the corner power box; E on the handle pulls the basket out / in, E on the panel starts / stops a run
+                       (200° + a game-time countdown, fan hum, glowing vents; basket out = paused; "End" + beeps); fish fingers go
+                       in the open basket (`FishPack.airfryHeld`, a child of the basket; a look into the open basket takes the
+                       nearest one), cook golden in one run, burn in a third (smoke from the vents → the smoke alarm); a loose
+                       item; F: off, in, emptied
 src/mirror.js          the one mirror material (gradient + glints; hall and bathroom mirrors)
 src/reflections.js     mirror images: a Reflector per mirror, only the nearest one in view (< 4 m) renders
 src/seasons.js         month → tree colours/leaf cover and snow on ground, roofs, hedges, paving (SEASON)
@@ -446,7 +452,8 @@ tools/drawtest.html    headless test: drawing mode, a crayon line from pointer e
 tools/grilltest.html   headless test: light the grill (flames, light, lid), F keeps it, put it out, it burns out by itself
 tools/cooktest.html    headless test: the induction hob on/off (glow), F switches it off; the pan: drawer → hob → drawer, F; the chicken:
                        fry, smoke, the fridge shut stops it, it stops by itself, F; fish fingers fried, eaten, burnt (#214); raw/golden, no hood → the alarm, the hood
-                       on → quiet, break a leg off and eat it, eat it all, F whole again (#194)
+                       on → quiet, break a leg off and eat it, eat it all, F whole again (#194); the air fryer: basket out, three in, start, countdown, paused while out, golden + "End", one out
+                       and eaten, burnt in a third run (smoke, the alarm), F (#287)
 tools/postertest.html  headless test: take the drawing (blank sheet stays), back on the desk, tape it up in the hall and on
                        the fridge door (swings with it), none on the kitchen window, reload → both back; look at one (panel, no walking,
                        ×/E close), Släng → ball lands and vanishes, out of storage; Ta ner → taped up elsewhere; lying in each lower bunk:
