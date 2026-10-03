@@ -589,6 +589,9 @@ North = −z (the bedrooms Sovrum 1/3 face north).
 - U-shaped stair with winders at the east end: flight A (Entréplan, going east), 180° winders,
   flight B (going west) arriving in the upstairs hall. Upstairs slab opening = stair outline on
   Övre plan.
+- Foot of the stair (#286): coming down flight A (west) you face Badrum's east wall (x 2.152, passage side); an unframed
+  black and white canvas ~80 × 80 cm (*guess*) hangs there centred on the stair (z 7.13, centre 1.55 m) — FURNITURE
+  `pictures` with `frame: 0` (a black stretcher box, the picture on its face), textures/tavla-svartvit-trappan.jpg.
 - Stair pictures (#220, #233): four black-framed pictures 2 × 2 (fikus, akvarell | peace, solros) in the upstairs
   stairwell, on the east party wall across the stair hole (seen face on from the upstairs hall and on the winders),
   centred on it (z 6.654), centre 1.57 m over the Övre plan floor. Each picture 30 × 40 cm, 40 × 50 cm outside with

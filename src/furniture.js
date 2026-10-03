@@ -2111,7 +2111,8 @@ function painting(item) {
  * inside (passe-partout + motif, cropped from the user's photos) is one cell of the `atlas` texture (`grid` cells,
  * row-major from the top left), `order[i]` = the cell shown in slot i (row-major from the top left). One material
  * for the frames and one for the pictures, so the whole group merges into two meshes. A little gloss stands in
- * for the glass. */
+ * for the glass. `frame: 0` = an unframed stretched canvas (#286): a black box `depth` deep (the wrapped, painted
+ * edges) with the picture on its front face; `rough` overrides the picture's roughness (matte paint). */
 const pictureAtlases = new Map();
 function pictures(item) {
   const g = new THREE.Group();
@@ -2124,7 +2125,7 @@ function pictures(item) {
     pictureAtlases.set(item.atlas, tex);
   }
   const black = new THREE.MeshStandardMaterial({ color: 0x111113, roughness: 0.45 });
-  const picMat = new THREE.MeshStandardMaterial({ map: pictureAtlases.get(item.atlas), roughness: 0.32 });
+  const picMat = new THREE.MeshStandardMaterial({ map: pictureAtlases.get(item.atlas), roughness: item.rough ?? 0.32 });
   const iw = w - 2 * f, ih = h - 2 * f;
   for (let i = 0; i < cols * rows; i++) {
     const col = i % cols, row = Math.floor(i / cols);
@@ -2134,8 +2135,14 @@ function pictures(item) {
     const uv = geo.attributes.uv; // PlaneGeometry: (0,1) (1,1) (0,0) (1,0)
     for (let k = 0; k < uv.count; k++) uv.setXY(k, u0 + uv.getX(k) / gc, v1 - (1 - uv.getY(k)) / gr);
     const pic = new THREE.Mesh(geo, picMat);
-    pic.position.set(cx, cy, d - 0.006);
+    pic.position.set(cx, cy, f ? d - 0.006 : d + 0.0005);
     g.add(pic);
+    if (!f) { // unframed canvas: the stretcher with its black-painted edges
+      const box = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), black);
+      box.position.set(cx, cy, d / 2); box.castShadow = true;
+      g.add(box);
+      continue;
+    }
     for (const [sx, sy, x, y] of [[w, f, 0, h / 2 - f / 2], [w, f, 0, -h / 2 + f / 2], [f, h - 2 * f, -w / 2 + f / 2, 0], [f, h - 2 * f, w / 2 - f / 2, 0]]) {
       const b = new THREE.Mesh(new THREE.BoxGeometry(sx, sy, d), black);
       b.position.set(cx + x, cy + y, d / 2); b.castShadow = true;
