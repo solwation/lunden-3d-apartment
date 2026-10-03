@@ -376,6 +376,7 @@ export const PEOPLE = {
   pants: [0x23324a, 0x2b2b2b, 0x6b5844, 0x8a8f96, 0x384b6b, 0xc8bfa8],
   skin: [0xf1c9a5, 0xe0ac86, 0xc68a62, 0x8d5a3b, 0xf6d8bf],
   hair: [0x2a1d14, 0x5a3a22, 0xc89b52, 0x1a1a1a, 0x8a5a32, 0xd8c7a0],
+  shoes: [0x1a1a1a, 0xf2f2f2, 0x5a3a22, 0x2e3a4f, 0x8c8c8c], // #239, our picks
 };
 
 export const OUTDOOR = { x0: -46, x1: 17.75, z0: -14, z1: 29.5 }; // behind Hus L: the patios and the Borggården (#80)

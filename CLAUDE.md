@@ -99,7 +99,8 @@ src/street.js          Sankt Lars väg's details (SITE.street, #128): curbs, asp
 src/streetlife.js      life on the street (SITE.life, #113): the car park: one row of stalls along the shrubs (#208) with parked cars
                        (instanced, a colour each, collision); the front yard is asphalt up to the entrance paving, bikes by Hus L's entrances and in racks, the paved square with corten beds and
                        sitting steps in front of Hus C
-src/people.js          people in the area (PEOPLE, #114): low-poly figures (one InstancedMesh per body part, a colour each,
+src/people.js          people in the area (PEOPLE, #114): low-poly figures (one InstancedMesh per body part, a colour each; #239:
+                       lathe-turned torso/arms/legs, hands and shoes share the arm's/leg's matrix; a rounded dog;
                        posed every frame): walkers to and fro on the paths (a dog with one), cyclists on Sankt Lars väg
                        (sfx.bell when they pass close), kids with a ball and in the sandbox, bench sitters, someone on a
                        blanket (not in the snow months), neighbours on the loftgång; daytime only

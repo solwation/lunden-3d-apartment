@@ -1,9 +1,10 @@
 import * as THREE from 'three';
 import { PEOPLE as P, LEVELS, SEASON } from './config.js';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { bikeGeometry } from './streetlife.js';
 import { sfx } from './audio.js';
 
-// People in the area (#114): simple low-poly figures (a body, two arms, two legs, a head, hair — one
+// People in the area (#114): low-poly figures (a body, two arms and hands, two legs and shoes, a head, hair — one
 // InstancedMesh per part, a colour per person) walking to and fro on the paths, cycling on Sankt Lars väg, passing
 // a ball, sitting on benches and in the sandbox, lying on a blanket, standing on the loftgång; a dog trots after
 // one walker. Daytime only. Every figure is posed each frame from a few numbers (no skinning).
@@ -12,14 +13,23 @@ const rnd = (() => { let s = 23; return () => ((s = (s * 16807) % 2147483647) / 
 const pick = (a) => a[Math.floor(rnd() * a.length)];
 const Y = new THREE.Vector3(0, 1, 0), X = new THREE.Vector3(1, 0, 0);
 
+// Rounded parts (#239): lathe-turned torso, arms and legs with soft normals (shoulders, waist, knees, wrists), hands
+// and shoes as parts of their own (skin / shoe colour) that share the arm's and the leg's matrix.
+const lathe = (pts, seg = 12) => new THREE.LatheGeometry((pts[0][1] > pts.at(-1)[1] ? [...pts].reverse() : pts).map(([r, y]) => new THREE.Vector2(r, y)), seg); // bottom to top: normals out
 const geo = {
-  torso: new THREE.CylinderGeometry(0.17, 0.15, 0.6, 8).translate(0, 0.3, 0).scale(1.15, 1, 0.7),   // hip at 0
-  arm: new THREE.CylinderGeometry(0.045, 0.04, 0.58, 6).translate(0, -0.29, 0),                     // from the shoulder
-  leg: new THREE.CylinderGeometry(0.075, 0.055, 0.88, 6).translate(0, -0.44, 0),                    // from the hip
-  head: new THREE.SphereGeometry(0.11, 10, 8).scale(0.92, 1.08, 1),
-  hair: new THREE.SphereGeometry(0.118, 10, 6, 0, Math.PI * 2, 0, Math.PI * 0.55).translate(0, 0.012, -0.008),
+  torso: lathe([[0, 0], [0.13, 0.0], [0.155, 0.04], [0.16, 0.12], [0.142, 0.26], [0.155, 0.4], [0.17, 0.5], [0.16, 0.57],
+    [0.11, 0.62], [0.05, 0.64], [0.045, 0.7], [0, 0.71]]).scale(1.15, 1, 0.7),                   // hip at 0, the neck on top
+  arm: lathe([[0, 0.035], [0.035, 0.03], [0.05, -0.02], [0.047, -0.15], [0.041, -0.29], [0.04, -0.33], [0.033, -0.5],
+    [0.028, -0.53], [0, -0.535]], 10),                                                            // from the shoulder
+  hand: new THREE.SphereGeometry(0.04, 10, 8).scale(0.75, 1.3, 1.05).translate(0, -0.575, 0.004),
+  leg: lathe([[0, 0.04], [0.06, 0.03], [0.079, -0.04], [0.07, -0.3], [0.053, -0.46], [0.052, -0.55], [0.04, -0.8],
+    [0.034, -0.85], [0, -0.86]], 10),                                                             // from the hip
+  shoe: new RoundedBoxGeometry(0.095, 0.075, 0.25, 2, 0.032).translate(0, -0.85, 0.045),
+  head: new THREE.SphereGeometry(0.11, 16, 12).scale(0.92, 1.08, 1),
+  hair: new THREE.SphereGeometry(0.118, 16, 8, 0, Math.PI * 2, 0, Math.PI * 0.55).translate(0, 0.012, -0.008),
 };
-const PARTS = ['torso', 'armL', 'armR', 'legL', 'legR', 'head', 'hair'];
+const PARTS = ['torso', 'armL', 'armR', 'handL', 'handR', 'legL', 'legR', 'shoeL', 'shoeR', 'head', 'hair'];
+const geoOf = (p) => geo[p.replace(/[LR]$/, '')];
 
 export class People {
   constructor() {
@@ -38,15 +48,16 @@ export class People {
     const mat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.85 });
     this.parts = {};
     for (const p of PARTS) {
-      const g = p.startsWith('arm') ? geo.arm : p.startsWith('leg') ? geo.leg : geo[p];
+      const g = geoOf(p);
       const m = new THREE.InstancedMesh(g, mat, figs.length);
       m.castShadow = true; m.frustumCulled = false;
       this.parts[p] = m;
       this.group.add(m);
     }
     figs.forEach((f, i) => {
-      const shirt = pick(P.shirts), pants = pick(P.pants), skin = pick(P.skin), hair = pick(P.hair);
-      for (const [p, c] of [['torso', shirt], ['armL', shirt], ['armR', shirt], ['legL', pants], ['legR', pants], ['head', skin], ['hair', hair]]) this.parts[p].setColorAt(i, new THREE.Color(c));
+      const shirt = pick(P.shirts), pants = pick(P.pants), skin = pick(P.skin), hair = pick(P.hair), shoes = pick(P.shoes);
+      for (const [p, c] of [['torso', shirt], ['armL', shirt], ['armR', shirt], ['handL', skin], ['handR', skin], ['legL', pants], ['legR', pants],
+        ['shoeL', shoes], ['shoeR', shoes], ['head', skin], ['hair', hair]]) this.parts[p].setColorAt(i, new THREE.Color(c));
     });
     // bikes under the cyclists, the ball, the dog, the blanket
     const [frame, tyres] = bikeGeometry();
@@ -59,10 +70,14 @@ export class People {
     this.ball.castShadow = true;
     const dogMat = new THREE.MeshStandardMaterial({ color: 0x8a5a32, roughness: 0.9 });
     this.dog = new THREE.Group();
-    const dogBody = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.16, 0.5), dogMat); dogBody.position.y = 0.32;
-    const dogHead = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.14, 0.18), dogMat); dogHead.position.set(0, 0.44, 0.3);
-    this.dogLegs = [[-0.06, 0.18], [0.06, 0.18], [-0.06, -0.18], [0.06, -0.18]].map(([x, z]) => { const l = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.26, 0.04).translate(0, -0.13, 0), dogMat); l.position.set(x, 0.26, z); return l; });
-    const tail = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.03, 0.2), dogMat); tail.position.set(0, 0.42, -0.3); tail.rotation.x = -0.6;
+    const cap = (r, l) => new THREE.CapsuleGeometry(r, l, 4, 10);
+    const dogBody = new THREE.Mesh(cap(0.085, 0.34).rotateX(Math.PI / 2).scale(1, 1.05, 1), dogMat); dogBody.position.y = 0.32;
+    const dogHead = new THREE.Mesh(new THREE.SphereGeometry(0.075, 14, 10).scale(0.95, 1, 1.1), dogMat); dogHead.position.set(0, 0.45, 0.28);
+    const snout = new THREE.Mesh(cap(0.036, 0.05).rotateX(Math.PI / 2), dogMat); snout.position.set(0, -0.025, 0.08); dogHead.add(snout);
+    const nose = new THREE.Mesh(new THREE.SphereGeometry(0.014, 8, 6), new THREE.MeshStandardMaterial({ color: 0x141414, roughness: 0.4 })); nose.position.set(0, -0.015, 0.14); dogHead.add(nose);
+    for (const sx of [-1, 1]) { const ear = new THREE.Mesh(new THREE.SphereGeometry(0.035, 8, 6).scale(0.35, 1.2, 0.8), dogMat); ear.position.set(sx * 0.06, -0.01, -0.01); ear.rotation.z = sx * 0.35; dogHead.add(ear); }
+    this.dogLegs = [[-0.055, 0.17], [0.055, 0.17], [-0.055, -0.17], [0.055, -0.17]].map(([x, z]) => { const l = new THREE.Mesh(cap(0.024, 0.22).translate(0, -0.13, 0), dogMat); l.position.set(x, 0.27, z); return l; });
+    const tail = new THREE.Mesh(cap(0.016, 0.17), dogMat); tail.position.set(0, 0.4, -0.27); tail.rotation.x = -0.9;
     this.dog.add(dogBody, dogHead, tail, ...this.dogLegs);
     const blanket = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.01, 1.9), new THREE.MeshStandardMaterial({ color: 0xc2453a, roughness: 1 }));
     blanket.position.set(P.blanket.x, 0.01, P.blanket.z);
@@ -83,10 +98,8 @@ export class People {
       this.parts[part].setMatrixAt(i, this.m4.premultiply(root));
     };
     put('torso', 0, hip, 0, 0);
-    put('armL', 0.21, hip + 0.56, 0, armL);
-    put('armR', -0.21, hip + 0.56, 0, armR);
-    put('legL', 0.085, hip, 0, legL);
-    put('legR', -0.085, hip, 0, legR);
+    for (const [side, sx, a] of [['L', 1, armL], ['R', -1, armR]]) { put('arm' + side, sx * 0.21, hip + 0.56, 0, a); put('hand' + side, sx * 0.21, hip + 0.56, 0, a); }
+    for (const [side, sx, l] of [['L', 1, legL], ['R', -1, legR]]) { put('leg' + side, sx * 0.085, hip, 0, l); put('shoe' + side, sx * 0.085, hip, 0, l); }
     put('head', 0, hip + 0.74, 0.01, 0);
     put('hair', 0, hip + 0.74, 0.01, 0);
   }
