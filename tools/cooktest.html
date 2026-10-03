@@ -202,16 +202,24 @@ f.onload = async () => {
   const { airFryer } = w.__app, AF = { seconds: 20 };
   const fzr = fish.freezer;
   pass &= check(!!airFryer && airFryer.object.position.x > fzr.object.getWorldPosition(new V()).x && Math.abs(airFryer.object.position.y - 0.93) < 0.01, `the air fryer on the worktop (${airFryer?.object.position.toArray().map((v) => v.toFixed(2))})`);
-  const afFrom = [airFryer.object.position.x - 0.1, airFryer.object.position.z - 0.9];
-  const basketAt = () => airFryer.basket.getWorldPosition(new V()).add(new V(0, 0.09, -0.2));
+  // #296: turned 45°, the front diagonally out of the corner — look at it from 0.9 m out along its front, aim in its own frame
+  const afRot = airFryer.object.rotation.y, afFront = new V(-Math.sin(afRot), 0, -Math.cos(afRot));
+  pass &= check(Math.abs(afRot - Math.PI / 4) < 1e-6 && afFront.x < -0.5 && afFront.z < -0.5, `turned 45°, facing out of the corner (${afFront.toArray().map((v) => v.toFixed(2))})`);
+  const afFrom = [airFryer.object.position.x + afFront.x * 0.9, airFryer.object.position.z + afFront.z * 0.9];
+  const inBasket = (x, y, z) => { scene.updateMatrixWorld(true); return airFryer.basket.localToWorld(new V(x, y, z)); };
+  const basketAt = () => inBasket(0, 0.09, -0.2);
   label = aim(basketAt(), afFrom);
   pass &= check(/dra ut korgen i airfryern/i.test(label), `the basket: "${label}"`);
   btn.click(); run(1);
   pass &= check(airFryer.open && airFryer.basket.position.z < -0.15, `pulled out (${airFryer.basket.position.z.toFixed(2)})`);
+  { // #296: out diagonally along its front, on the worktop (its corner at the east run's front x, the return's front z)
+    const fr = inBasket(0, 0.02, -0.18), moved = airFryer.basket.getWorldPosition(new V()).sub(airFryer.object.position);
+    pass &= check(moved.x < -0.1 && moved.z < -0.1 && Math.abs(moved.x - moved.z) < 0.01 && fr.x > 4.89 && fr.z > 4.87, `the basket slides out diagonally, its front on the worktop (${fr.x.toFixed(3)}, ${fr.z.toFixed(3)})`);
+  }
   if (!fzr.isOpen) fzr.toggle();
   for (let k = 0; k < 3; k++) {
     fish.press();
-    label = aim(airFryer.basket.getWorldPosition(new V()).add(new V(0, 0.05, -0.12)), afFrom);
+    label = aim(inBasket(0, 0.05, -0.12), afFrom);
     if (k === 0) pass &= check(/lägga fiskpinnen i airfryern/i.test(label), `a fish finger at the basket: "${label}"`);
     btn.click(); step(1 / 60);
   }
@@ -222,7 +230,7 @@ f.onload = async () => {
   pass &= check(/skjut in korgen först/i.test(label), `the panel with the basket out: "${label}"`);
   label = aim(basketAt(), afFrom);
   btn.click(); run(1);
-  pass &= check(!airFryer.open && airFryer.basket.position.z === 0 && inF[0].model.getWorldPosition(new V()).z > airFryer.object.position.z - 0.2, `pushed in, they ride along ("${label}")`);
+  pass &= check(!airFryer.open && airFryer.basket.position.z === 0 && inF[0].model.getWorldPosition(new V()).distanceTo(airFryer.object.position) < 0.2, `pushed in, they ride along ("${label}")`);
   label = aim(airFryer.panelPick.getWorldPosition(new V()), afFrom);
   pass &= check(/starta airfryern/i.test(label), `the panel: "${label}"`);
   const af0 = stats.airfried ?? 0;

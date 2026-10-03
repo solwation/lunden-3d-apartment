@@ -12,7 +12,8 @@ import { sfx } from './audio.js';
 //    resumes it. At 0:00 it beeps, the fan stops and the display shows "End".
 // The fish fingers cook from frozen pale to golden in one run (FishFinger.fry: `cooking`, `rate`), and burn if run again
 // and again; burning ones smoke out of the vents (`smoking` → the smoke alarm). F: off, the basket in, emptied (main.js).
-// Built facing −z (north, the kitchen): local x = across, z = front (−d/2) … back (+d/2), y up from the worktop.
+// Built facing −z: local x = across, z = front (−d/2) … back (+d/2), y up from the worktop; the group is turned AIRFRYER.rot
+// (#296: 45°, the front diagonally out of the corner), so the basket's slide, the panel, the slots and the vents turn with it.
 
 const steel = (() => { // brushed stainless: fine horizontal streaks
   const c = document.createElement('canvas'); c.width = 128; c.height = 128;
@@ -65,7 +66,10 @@ export class AirFryer {
     Object.assign(this, { name: 'airfryern', out: 0, open: false, running: false, left: 0, done: false, hum: null, glow: 0, shown: '' });
     const g = new THREE.Group();
     g.position.set(A.x, y, A.z);
+    g.rotation.y = THREE.MathUtils.degToRad(A.rot ?? 0);
+    g.updateMatrixWorld(true);
     this.object = g;
+    const local = (wx, yy, wz) => g.worldToLocal(new THREE.Vector3(wx, y + yy, wz)); // a world (x, z) at yy over the worktop
     const base = 0.018, capY = h - 0.03, frontZ = -d / 2, basketBack = frontZ + B.d;
     // black base, the stainless body (above the basket all the way, behind it below), the black top cap
     const baseM = new THREE.Mesh(rounded(w, d, base, 0.05), black); baseM.receiveShadow = true;
@@ -93,7 +97,7 @@ export class AirFryer {
     const glow = new THREE.Mesh(new THREE.PlaneGeometry(w * 0.62, 0.09), this.glowMat);
     glow.position.set(0, capY - 0.065, d / 2 + 0.003); glow.raycast = () => {};
     g.add(glow);
-    this.vent = new THREE.Vector3(A.x, y + h + 0.02, A.z + d / 2 - 0.03); // where smoke comes out
+    this.vent = g.localToWorld(new THREE.Vector3(0, h + 0.02, d / 2 - 0.03)); // where smoke comes out (the group never moves)
     // the basket: a black drawer — front panel, handle with a release button, open-top tray with the crisper plate
     const bk = new THREE.Group();
     bk.position.set(0, base, 0);
@@ -115,13 +119,16 @@ export class AirFryer {
       const col = i % 3, row = Math.floor(i / 3);
       return new THREE.Vector3((col - 1) * 0.06, this.plateY, frontZ + 0.03 + row * 0.1);
     };
-    // the cord: from the back near the bottom, along the splashback to the corner power box
-    const s = A.socket, wy = 0.006;
-    const pts = [[0.08, 0.03, d / 2 - 0.005], [0.1, wy, d / 2 + 0.02], [0.25, wy, d / 2 + 0.03], [s.x - A.x - 0.08, wy, s.z - A.z], [s.x - A.x - 0.002, 0.022, s.z - A.z]]
-      .map(([x, yy, z]) => new THREE.Vector3(x, yy, z));
-    const cord = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 32, 0.0035, 6), cordMat);
+    // the cord: from the back near the bottom, a short way along the worktop to a plug in the corner power box's north face
+    // (#296: the box sits right behind the turned back); the plug square to the walls, not to the fryer
+    const s = A.socket, wy = 0.006, plugAt = local(s.x - 0.025, 0.025, s.z - 0.05 - 0.01), cordEnd = local(s.x - 0.025, 0.022, s.z - 0.05 - 0.02);
+    const pts = [new THREE.Vector3(0.03, 0.03, d / 2 - 0.005), new THREE.Vector3(0.035, wy, d / 2 + 0.012),
+      new THREE.Vector3(cordEnd.x, wy, cordEnd.z - 0.01), cordEnd];
+    const cord = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 24, 0.0035, 6), cordMat);
     cord.raycast = () => {};
-    g.add(cord, box(0.012, 0.022, 0.03, cordMat, s.x - A.x - 0.008, 0.025, s.z - A.z)); // the plug in the box
+    const plug = box(0.012, 0.022, 0.02, cordMat, plugAt.x, plugAt.y, plugAt.z);
+    plug.rotation.y = -g.rotation.y;
+    g.add(cord, plug);
     const self = this;
     this.basketTarget = { kind: 'airfryer', id: 'airfryer-basket', pickable: bk, toggle: () => this.setOpen(!this.open),
       get name() { return 'korgen i airfryern'; }, get verb() { return self.open ? 'skjuta in' : 'dra ut'; }, get isOpen() { return self.open; } };

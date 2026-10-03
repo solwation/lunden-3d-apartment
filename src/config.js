@@ -749,7 +749,10 @@ export const FISH = { n: 15, len: 0.09, w: 0.025, h: 0.016, bites: 3, box: { w: 
 // cooks fish fingers `rate` × as fast as the pan would, so one run makes them golden (FISH.fry.seconds, a little before
 // the end) and they burn early in a third run (FISH.fry.burnAt, "left far too long"). Basket out mid-run: paused. Done: `beeps` beeps. The cord runs to
 // the corner power box ("Hörnbox", interior.js) at `socket`.
-export const AIRFRYER = { x: 4.84, z: 5.27, w: 0.3, d: 0.38, h: 0.32,
+// #296 (the user): further into the corner and turned `rot`° (about y) so the front and basket face diagonally out of it,
+// away from both splashbacks (+45 = front towards north-west). `x`, `z` put its rounded footprint (±0.22 m along x and z
+// turned) 3.5 cm from the east and south splashbacks (5.50 / 5.484) and its flat back ~3 cm short of the power box.
+export const AIRFRYER = { x: 5.245, z: 5.229, rot: 45, w: 0.3, d: 0.38, h: 0.32,
   basket: { d: 0.25, h: 0.15, out: 0.2, in: 0.35 }, slots: 6, seconds: 20, clock: 24, temp: 200, beeps: 3,
   get rate() { return 1.2 * FISH.fry.seconds / this.seconds; }, socket: { x: 5.45, z: 5.434 } };
 // The cat and a fish finger on the floor (#163, cat.js): one within `reach` m in the open (a straight walk with no

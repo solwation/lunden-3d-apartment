@@ -567,6 +567,7 @@ if (params.has('turbo')) turbo.start(); // Kaffeturbo at once (screenshots, #217
 // &tv switches the TV on (screenshots)
 if (params.has('water')) for (const t of taps) t.toggle();
 if (params.has('open')) for (const d of [...world.doors, ...world.lids, ...world.furnitureTargets.filter((t) => t.kind === 'appliance' || t.kind === 'cabinet')]) { d.toggle(); for (let i = 0; i < 30; i++) d.update(0.1); } // + cabinet doors / drawers in the furniture
+if (params.has('open')) { airFryer.setOpen(true); airFryer.update(1); } // the air fryer's basket out too (#296 screenshots)
 // ?cat=x,z[,yaw[,feetY]] puts the cat somewhere (screenshots)
 if (params.has('cat')) {
   const [x, z, yaw = 0, y = 0] = params.get('cat').split(',').map(Number);
