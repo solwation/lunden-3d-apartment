@@ -50,6 +50,7 @@ import { Marks } from './marks.js';
 import { Target } from './target.js';
 import { Car } from './car.js';
 import { People } from './people.js';
+import { Greetings } from './greet.js';
 import { Posters, HeldDrawing, paperOnly } from './posters.js';
 import { PaperBalls } from './paperball.js';
 import { Cloud } from './cloud.js';
@@ -306,6 +307,7 @@ scene.add(car.object);
 try { localStorage.removeItem('lunden.bygge'); } catch { /* the removed building-site mode's setting (#209) */ }
 const people = new People(); // walkers, cyclists, kids, neighbours (#114)
 scene.add(people.object);
+const greet = new Greetings(people, camera, document.getElementById('speech'), (p) => behindWall(p)); // say hello to them (#247)
 if (params0.has('car')) car.park(); // &car: parked out front (screenshots)
 { const moving = world.movingSegments; world.movingSegments = (lvl) => [...moving(lvl), ...(lvl === 0 ? car.segments() : [])]; } // parked: in the way
 scene.add(target.object); // up only while something that can hit it is in the hand (#144, #179, step)
@@ -755,6 +757,7 @@ function use(thing) {
     if (thing.isOpen) bump('lids', 1, idOf(thing));
     sfx.lid(thing.object.position, thing.isOpen);
   } else if (thing.kind === 'cat') cat.pet(player.pos);
+  else if (thing.kind === 'greet') { greet.greet(thing.fig); bump('greets', 1, `fig${people.figs.indexOf(thing.fig)}`); } // hello (#247)
   else if (thing.kind === 'tap') {
     thing.toggle();
     if (thing.isOpen) bump('taps', 1, idOf(thing));
@@ -886,6 +889,10 @@ function updateFocus() {
     .find((h) => shown(h.object) && !(rest.active && (h.object.userData.door === rest.target || h.object.userData.door?.kind === 'rest')));
   focused = hit && !behindWall(hit.point) ? hit.object.userData.door : null;
   focusPoint = focused ? hit.point.clone() : null; // where the hand reaches on E (#195)
+  if (!focused && !rest.active) { // nothing in reach: a person outside further off to say hello to (#247)
+    const g = greet.target(raycaster.ray);
+    if (g) { focused = g; focusPoint = g.point; }
+  }
   // holding something: a table top / worktop in front of you, or else the floor (nearer than anything
   // else you look at), is where it goes down (#102)
   const item = heldItem();
@@ -1072,6 +1079,7 @@ function step(dt) {
   world.windowLights.update(day.hour, 1 - day.daylight);
   car.update(dt, day.daylight < 0.35, player);
   people.update(dt, day.daylight, day.month, player);
+  greet.update(dt); // greetings and answers (#247)
   cat.update(dt);
   measure.update(dt, window.innerWidth, window.innerHeight);
   if (active() && reading) updateFocus();
@@ -1265,4 +1273,4 @@ if (resumeOk && resumed.mode) continueAfterReload(resumed);
 document.documentElement.classList.remove('resuming'); // the page is ready: off with the "Laddar…" cover (#222)
 
 // handle for tests/debugging (tools/touchtest.html)
-window.__app = { ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };
+window.__app = { greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };

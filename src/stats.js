@@ -27,7 +27,7 @@ let dirty = false;
 const BADGES = {
   petted: '✋ Klappat katt', doors: '🚪 Dörr öppnad', lids: '🚽 Toalettlock', flushes: '🌊 Spolat', taps: '💧 Kran påslagen',
   fridge: '🍗 Kylskåpet öppnat', appliances: '🍳 Ugn/mikro öppnad', cabinets: '🗄 Skåp öppnat', beer: '🍺 Klunk öl', coffee: '☕ Klunk kaffe', turbo: '⚡ Kaffeturbo!', fish: '🐟 Fiskpinne uppäten', fried: '🍳 Fiskpinne stekt', burnt: '🔥 Fiskpinne bränd', catFish: '🐈 Katten åt en fiskpinne', chicken: '🍗 Kycklingbit uppäten', wine: '🍷 Klunk vin', champagne: '🥂 Klunk champagne', whisky: '🥃 Klunk whisky', milk: '🥛 Klunk mjölk', kask: '☕ Klunk kaffekask', lights: '💡 Lampa tänd', stairs: '🪜 Trapptur',
-  sat: '🪑 Satt ner', lay: '🛏 Lagt sig', posted: '📌 Teckning uppsatt', thrown: '🗑 Teckning slängd',
+  greets: '👋 Hälsat', sat: '🪑 Satt ner', lay: '🛏 Lagt sig', posted: '📌 Teckning uppsatt', thrown: '🗑 Teckning slängd',
   catPhotos: '📸 Kattfoto', cooked: '🍗 Kycklingen är klar', brews: '☕ Kaffet är klart', tv: '📺 Tv på', pc: '🎮 Datorn på', parasol: '⛱ Parasollet', clock: '🕰 Väggklockan', calendar: '📅 Kattkalendern', grill: '🔥 Grillen tänd', hood: '🌀 Fläkten på', songs: '🎵 Musik på', read: '📖 Läste boken', car: '🚗 Bilen kallad', magic: '✨ Trolleri',
 };
 const STEP_BADGE = 100; // a badge every 100 steps
@@ -182,6 +182,7 @@ export function statRows() {
     ['🚪 Dörrar öppnade', `${stats.doors}`],
     ['🚽 Toalettlock', `${stats.lids}`],
     ['🌊 Spolningar', `${stats.flushes}`],
+    ['👋 Hälsat', `${stats.greets ?? 0}`],
     ['🪑 Satt ner', `${stats.sat}`],
     ['🛏 Lagt sig', `${stats.lay}`],
     ['💧 Kranar påslagna', `${stats.taps}`],

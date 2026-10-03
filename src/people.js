@@ -94,7 +94,12 @@ export class People {
   /** Pose figure i: root at (x, y, z) turned `yaw` (facing +z at 0), legs/arms swung, the knees bent back by `kneeL/R`,
    * body tilted `lean` about x. */
   pose(i, f, x, y, z, yaw, { legL = 0, legR = 0, kneeL = 0, kneeR = 0, armL = 0, armR = 0, lean = 0, hip = 0.9 } = {}) {
+    if (f.greetT > 0) armR = -2.55 + 0.35 * Math.sin(this.clock * 9); // waving back (#247)
     const s = f.s, root = new THREE.Matrix4().compose(this.v.set(x, y, z), this.q.setFromAxisAngle(Y, yaw).multiply(this.q2.setFromAxisAngle(X, lean)), this.one.set(s, s, s));
+    // where it is, for greeting (#247): the feet and the head (world), shown unless parked out of sight
+    (f.foot ??= new THREE.Vector3()).set(x, y, z);
+    (f.head ??= new THREE.Vector3()).set(0, hip + 0.74, 0.01).applyMatrix4(root);
+    f.shown = y > -4;
     const put = (part, ox, oy, oz, rx) => {
       this.m4.compose(this.v.set(ox, oy, oz), this.q2.setFromAxisAngle(X, rx), this.one.set(1, 1, 1));
       this.parts[part].setMatrixAt(i, this.m4.premultiply(root));
@@ -108,6 +113,15 @@ export class People {
     }
     put('head', 0, hip + 0.74, 0.01, 0);
     put('hair', 0, hip + 0.74, 0.01, 0);
+  }
+
+  /** The figures that can be greeted now (#247): daytime, shown. */
+  get greetable() { return this.group.visible ? this.figs.filter((f) => f.shown && f.head) : []; }
+
+  /** Figure `f` answers a greeting from (x, z) (#247): it waves for `secs`; a walker stops and turns to face you. */
+  answer(f, x, z, secs) {
+    f.greetT = secs;
+    f.faceYaw = f.role === 'walk' ? Math.atan2(x - f.foot.x, z - f.foot.z) : undefined;
   }
 
   /** Along a to-and-fro path: position at t ∈ [0, 1] and the heading (yaw) for direction dir. */
@@ -125,6 +139,7 @@ export class People {
     const cyc = this.figs.filter((g) => g.role === 'cycle');
     this.blanket.visible = !SEASON.snowMonths.includes(month);
     this.figs.forEach((f, i) => {
+      if (f.greetT > 0) f.greetT -= dt;
       const len = Math.hypot(f.b?.[0] - f.a?.[0], f.b?.[1] - f.a?.[1]);
       if (f.role === 'walk') {
         f.dir ??= 1;
@@ -133,7 +148,9 @@ export class People {
           f.t += (f.dir * f.speed * dt) / len; f.phase += dt * f.speed * 5.2 / f.s;
           if (f.t > 1 || f.t < 0) { f.t = Math.min(1, Math.max(0, f.t)); f.dir *= -1; f.pause = 1 + rnd() * 3; } // turn round at the end
         }
-        const [x, z, yaw] = this.along(f), w = f.pause > 0 ? 0 : Math.sin(f.phase);
+        if (f.greetT > 0 && f.faceYaw !== undefined) f.pause = Math.max(f.pause, 0.4); // stops to answer a greeting (#247)
+        const [x, z, pathYaw] = this.along(f), w = f.pause > 0 ? 0 : Math.sin(f.phase);
+        const yaw = f.greetT > 0 && f.faceYaw !== undefined ? f.faceYaw : pathYaw;
         this.pose(i, f, x, 0, z, yaw, { legL: w * 0.45, legR: -w * 0.45, kneeL: 0.05 + Math.max(0, w) * 0.7, kneeR: 0.05 + Math.max(0, -w) * 0.7, armL: -w * 0.35, armR: w * 0.35 });
         if (f.dog) { // trotting a little ahead and to the side
           const ax = Math.sin(yaw), az = Math.cos(yaw);

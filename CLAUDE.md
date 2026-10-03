@@ -93,6 +93,11 @@ src/surroundings.js    the site (SITE): Hus A/B/C + buildings around, roads, pav
 src/lights.js          room switches (E), ceiling lamps/pendant/spots/LED (by hand only), small lamps (FloorLamp:
                        E, and they switch themselves with the dusk, #234); a pool of 4 point lights goes to the lit
                        lamps that matter (own room, in sight, nearest), fading when it moves
+src/greet.js           greeting the people outside (GREET, #247): looking at one within `reach` (not through a house: boxes for
+                       SITE.blocks + Hus L, the flat's walls via `behindWall`) the action is "Hälsa på grannen / barnet /
+                       cyklisten"; a random line from you (bubble at the bottom), the answer a moment later in a bubble over
+                       the head; speech = Web Speech API sv-SE (pitch/rate per person, children higher; silent when muted);
+                       the person waves (people.js `answer`, `greetT`), a walker stops and turns to you; stats `greets`
 src/street.js          Sankt Lars väg's details (SITE.street, #128): curbs, asphalt patches, street lamps (emissive at
                        night), zebra crossing, the site's temporary traffic light + warning signs, cobbles, autumn leaves; the bus stop,
                        the red "Flyttad" sign, a no-parking sign and HepCat's A-board (#129)
@@ -387,6 +392,8 @@ tools/rifletest.html   headless test: the AK-47 rides with its drawer, 30 shots 
                        the magazine on the floor, a click = one shot, a shot in the lawn target scores, F
 tools/turbotest.html   headless test: Kaffeturbo with an injected clock — three cups in five minutes (not spread out, not milk /
                        whisky), faster indoors, the text, more coffee adds time, over again; `walktest.html?turbo` walks at that pace
+tools/greettest.html   headless test: "Hälsa på grannen" on the bench sitter, your line, the answer, the wave, counted, not through
+                       Hus A, a walker stops and turns to you (#247)
 tools/clocktest.html   headless test of the wall clock (?time=7, spool, pause, sun height by month)
 tools/calendartest.html headless test: today's date at the start, pick a date on the calendar, the sun follows
 tools/cloudtest.html   headless test of the shared world against `node cloudflare/dev.mjs 8144` (start it first): PUT on

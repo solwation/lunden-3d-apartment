@@ -382,6 +382,17 @@ export const PEOPLE = {
   shoes: [0x1a1a1a, 0xf2f2f2, 0x5a3a22, 0x2e3a4f, 0x8c8c8c], // #239, our picks
 };
 
+// Greeting the people outside (#247, src/greet.js): within `reach` m; the bubbles show for `bubble` s. The lines are
+// ours; one is picked at random (the visitor's from `say`, children answer from `kids`, cyclists from `cyclists`).
+export const GREET = {
+  reach: 14, bubble: 2.8,
+  say: ['Hej hej!', 'Hallå där!', 'Hejsan!', 'Tjena!', 'God dag!', 'Hej, vi har precis flyttat in här!', 'Tja!', 'Hej! Fint här, va?'],
+  answer: ['Hej hej!', 'Hejsan!', 'Hej, välkommen till Lunden!', 'Tjenare!', 'Hallå!', 'Hej, trevligt att träffas!', 'Hej! Bor du i L1007?',
+    'Goddag, goddag!', 'Hej! Har du sett en katt springa förbi?', 'Hej! Ses vid grillen!'],
+  kids: ['Hej!', 'Hejsan!', 'Vill du leka?', 'Hej! Kolla vad jag kan!', 'Tjena!', 'Hej hej hej!', 'Hej! Har du en fiskpinne?'],
+  cyclists: ['Hej!', 'Hej hej!', 'Tjena!', 'Hej, akta dig!'],
+};
+
 export const OUTDOOR = { x0: -46, x1: 17.75, z0: -14, z1: 29.5 }; // behind Hus L: the patios and the Borggården (#80)
 
 // The lightsaber in Sovrum 2 (#78, src/saber.js): two hooks on the west wall (north of the gaming desk)
@@ -661,12 +672,12 @@ export const SCORE = {
   first: {
     doors: 2, lids: 1, flushes: 2, taps: 1, fridge: 2, appliances: 2, cabinets: 1, lights: 1, sat: 2, lay: 2,
     visited: 5, songs: 3, read: 5, car: 15, grill: 10, hood: 3, tv: 3, pc: 5, parasol: 3, clock: 3, calendar: 3,
-    coats: 10,
+    coats: 10, greets: 2, // greets: per person (#247)
   },
   again: {
     doors: 0.1, lids: 0.1, flushes: 0.2, taps: 0.1, fridge: 0.1, appliances: 0.1, cabinets: 0.05, lights: 0.05,
     sat: 0.1, lay: 0.1, songs: 0.2, read: 0.5, car: 1, grill: 1, hood: 0.2, tv: 0.2, pc: 0.3, parasol: 0.2,
-    clock: 0.1, calendar: 0.1,
+    clock: 0.1, calendar: 0.1, greets: 0.1,
   },
   breeds: { huskatt: 10, siames: 30, 'brittiskt korthår': 30, 'maine coon': 35, 'norsk skogkatt': 40, perser: 100, sphynx: 250 },
   secrets: { kinds: 10, rare: 40 },

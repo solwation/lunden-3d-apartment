@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Greeting test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+// Greeting the people outside (#247): look at the bench sitter in the courtyard → "Hälsa på grannen"; press it →
+// your line at the bottom, then the answer in a bubble over the head, the sitter waves; counted in the stats.
+// Not through a house (Hus A between); a walker stops and turns to you.
+//   google-chrome --headless=new --dump-dom http://localhost:8137/tools/greettest.html
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const f = document.createElement('iframe');
+f.width = 900; f.height = 600; f.src = '../index.html?time=12&month=6';
+document.body.append(f);
+f.onload = async () => {
+  const w = f.contentWindow, d = f.contentDocument;
+  while (!w.__app) await wait(100);
+  const { player, camera, step, greet, people, stats } = w.__app;
+  const lines = [];
+  const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; };
+  d.getElementById('start-touch').click();
+  await wait(50);
+  const V = camera.position.constructor;
+  for (let i = 0; i < 3; i++) step(1 / 60);
+  const sitter = people.figs.find((g) => g.role === 'sit' && Math.abs(g.x + 6) < 0.1);
+  const btn = d.getElementById('action');
+  const lookAt = (p) => { const dx = p.x - camera.position.x, dz = p.z - camera.position.z; camera.rotation.set(Math.atan2(p.y - camera.position.y, Math.hypot(dx, dz)), Math.atan2(-dx, -dz), 0, 'YXZ'); };
+  player.spawn(-6, 24.5, 0);
+  for (let i = 0; i < 3; i++) step(1 / 60);
+  lookAt(sitter.head.clone().add(new V(0, -0.3, 0)));
+  step(1 / 60);
+  let pass = check(!btn.hidden && /hälsa på grannen/i.test(btn.textContent), `the button on the bench sitter: "${btn.textContent}"`);
+  const before = stats.greets ?? 0;
+  btn.click();
+  step(1 / 60);
+  const mine = d.querySelector('#speech .say.mine');
+  pass &= check(mine && !mine.hidden && w.__app.greet.said === 1 && mine.textContent.length > 1, `you say "${mine?.textContent}"`);
+  for (let i = 0; i < 150; i++) step(1 / 60);
+  const theirs = d.querySelector('#speech .say.theirs');
+  pass &= check(theirs && theirs.textContent.length > 1 && greet.answered === 1, `the answer "${theirs?.textContent}"`);
+  pass &= check(sitter.greetT > 0, 'the sitter waves');
+  const hand = people.parts.armR, m = camera.matrix.clone(); // the raised arm: its hand above the shoulder
+  hand.getMatrixAt(people.figs.indexOf(sitter), m);
+  const tip = new V(0, -0.5, 0).applyMatrix4(m), shoulder = new V(0, 0, 0).applyMatrix4(m);
+  pass &= check(tip.y > shoulder.y, `the arm is up (hand ${tip.y.toFixed(2)} > shoulder ${shoulder.y.toFixed(2)})`);
+  pass &= check((stats.greets ?? 0) === before + 1, `counted (${stats.greets})`);
+  for (let i = 0; i < 300; i++) step(1 / 60);
+  pass &= check(!greet.talking, 'the bubbles are gone after a while');
+  // not through Hus A
+  const o1 = new V(-14, 1.6, 40), p = sitter.head.clone().add(new V(0, -0.3, 0));
+  pass &= check(greet.targetFrom(o1, p) === null, 'not through Hus A');
+  const o2 = new V(-6 - 9, 1.6, 29.4 - 9); // as far, in the open
+  pass &= check(greet.targetFrom(o2, p)?.fig === sitter, 'the same distance in the open: yes');
+  // a walker stops and turns to you
+  const walker = people.figs.find((g) => g.role === 'walk' && !g.kid);
+  const eye = camera.position.clone();
+  greet.greet(walker);
+  const t0 = walker.t;
+  for (let i = 0; i < 30; i++) step(1 / 60);
+  const want = Math.atan2(eye.x - walker.foot.x, eye.z - walker.foot.z);
+  pass &= check(Math.abs(walker.t - t0) < 0.002 && walker.faceYaw !== undefined && Math.abs(walker.faceYaw - want) < 0.01, 'a walker stops and turns to you');
+  out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
+};
+</script>
+</body>
+</html>

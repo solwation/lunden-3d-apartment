@@ -65,6 +65,14 @@
     #level { position: fixed; left: calc(16px + var(--sl)); bottom: calc(16px + var(--sb)); background: var(--panel); padding: 6px 12px; border-radius: 6px; font-weight: 600; font-size: 14px; }
     #prompt { position: fixed; left: 50%; top: calc(50% + 28px); transform: translateX(-50%); background: rgba(20,35,45,.8); color: #fff; padding: 6px 12px; border-radius: 6px; font-size: 14px; pointer-events: none; white-space: nowrap; }
     #prompt[hidden] { display: none; }
+    /* greetings (#247): your line at the bottom, theirs over their heads (positioned by greet.js) */
+    #speech { position: fixed; inset: 0; pointer-events: none; z-index: 5; overflow: hidden; }
+    #speech .say { position: absolute; left: 0; top: 0; max-width: 260px; background: #fff; color: var(--ink); padding: 6px 12px; border-radius: 14px;
+      font: 600 15px system-ui, sans-serif; box-shadow: 0 3px 10px rgba(0,0,0,.25); white-space: nowrap; }
+    #speech .say::after { content: ''; position: absolute; left: 50%; bottom: -7px; margin-left: -7px; border: 7px solid transparent; border-bottom: 0; border-top-color: #fff; }
+    #speech .say.mine { left: 50%; top: auto; bottom: calc(110px + var(--sb)); transform: translateX(-50%); background: #ffe9a8; }
+    #speech .say.mine::after { border-top-color: #ffe9a8; }
+    #speech .say[hidden] { display: none; }
     .card { max-height: calc(100vh - 32px); overflow: auto; margin: 16px; }
     .touch-help { display: none; }
     @media (any-pointer: coarse) { .touch-help { display: grid; } }
@@ -428,6 +436,7 @@
     <button id="crouch-btn" class="touch-only" aria-label="Huka dig">🧎</button>
     <button id="stats-btn" class="touch-only" aria-label="Statistik">📊</button>
     <div id="prompt" hidden></div>
+    <div id="speech" aria-live="polite"></div>
     <div id="stick" hidden><div class="knob"></div></div>
     <button id="action" class="touch-only" hidden></button>
     <button id="power-btn" class="touch-only" hidden aria-label="Stäng av / slå på TV:n">⏻</button>
