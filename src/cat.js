@@ -127,9 +127,13 @@ function blob(material, sx, sy, sz, x, y, z) {
   return m;
 }
 
+/** A leg hanging `len` down from its pivot (#241): turned, with a rounded top that sinks into the body, a fuller upper
+ * part, a slimmer wrist and a rounded end in the paw; radius r at the middle. */
 function limb(material, r, len, x, y, z) {
-  const m = new THREE.Mesh(new THREE.CylinderGeometry(r, r * 0.9, len, 10), material);
-  m.position.set(x, y - len / 2, z);
+  const pts = [[0, -len], [0.7 * r, -len + 0.3 * r], [0.85 * r, -len + 0.9 * r], [0.8 * r, -0.62 * len], [0.95 * r, -0.42 * len],
+    [1.22 * r, -0.16 * len], [1.2 * r, 0], [0.75 * r, 0.75 * r], [0, r]];
+  const m = new THREE.Mesh(new THREE.LatheGeometry(pts.map(([a, b]) => new THREE.Vector2(a, b)), 12), material);
+  m.position.set(x, y, z);
   m.castShadow = true;
   return m;
 }
