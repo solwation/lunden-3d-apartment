@@ -289,7 +289,8 @@ src/turbo.js           Kaffeturbo (#217, TURBO): TURBO.cups cups' worth of coffe
 src/sonos.js           music in the SYMFONISK speakers (#187, SONOS): six generated channels (Web Audio, no files), one mix
                        → a panner per speaker (walls / the other floor muffle), #sonos-panel (⏮ ⏭ ⏯ volume, reading mode)
 src/stats.js           visitor statistics (localStorage), "+1" badges per event, the HUD panel
-                       (hidden; Tab held / T / 📊 shows it)
+                       (hidden; Tab held / T / 📊 shows it; touch, #245: narrower than the right-hand controls, scrolls with a
+                       finger — touch.js ignores #stats — ⤢ full screen in columns, ✕ closes; rows go into #stats-body)
                        The score (#197/#198): `totalScore()` from SCORE in config shows top left (#score, `renderScore` after
                        every count) with a "+N" when it grows. Balanced (the user): you can grind for ever, but easy repeats give
                        little and rare / hard things a lot — `each` = points per event, `first` = per distinct thing the first

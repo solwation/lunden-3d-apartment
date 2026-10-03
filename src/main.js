@@ -988,25 +988,33 @@ document.getElementById('furniture-btn').addEventListener('click', () => toggleF
 
 // --- statistics panel: hidden; Tab held (like a scoreboard), T / 📊 toggle -------
 // Counted events pop up as small badges instead.
-const statsEl = document.getElementById('stats');
+const statsEl = document.getElementById('stats'), statsBody = document.getElementById('stats-body');
 setBadgeElement(document.getElementById('badges'));
 setScoreElement(document.getElementById('score')); // points, top left (#197)
 let statsPinned = false;
 // the minimap is part of the same "extra HUD" (#85): shown with the stats; K shows the map on its own
 let mapPinned = false;
 function showStats(show) {
-  if (show && statsEl.hidden) renderStats(statsEl);
+  if (show && statsEl.hidden) renderStats(statsBody);
   statsEl.hidden = !show;
+  if (!show) { statsEl.classList.remove('full'); document.getElementById('stats-full').textContent = '⤢'; } // full screen (#245) only until it is closed
   document.getElementById('minimap').hidden = !(show || mapPinned);
 }
 function toggleStats() { statsPinned = !statsPinned; showStats(statsPinned); }
 const holdStats = (down) => showStats(down || statsPinned);
 document.getElementById('stats-btn').addEventListener('click', () => toggleStats());
-document.getElementById('stats-reset').addEventListener('click', () => {
-  if (confirm('Nollställa statistiken?')) { resetStats(); renderStats(statsEl); }
+// touch (#245): ⤢ full screen and back, ✕ closes (the same as 📊 again)
+document.getElementById('stats-full').addEventListener('click', () => {
+  const full = statsEl.classList.toggle('full');
+  document.getElementById('stats-full').textContent = full ? '⤡' : '⤢';
+  statsEl.scrollTop = 0;
 });
-renderStats(statsEl);
-setInterval(() => { if (!statsEl.hidden) renderStats(statsEl); }, 250);
+document.getElementById('stats-close').addEventListener('click', () => { statsPinned = false; showStats(false); });
+document.getElementById('stats-reset').addEventListener('click', () => {
+  if (confirm('Nollställa statistiken?')) { resetStats(); renderStats(statsBody); }
+});
+renderStats(statsBody);
+setInterval(() => { if (!statsEl.hidden) renderStats(statsBody); }, 250);
 
 // --- loop ----------------------------------------------------------------
 const clock = new THREE.Clock();
