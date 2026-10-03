@@ -50,18 +50,26 @@ async function run() {
   // Sovrum 1's blind: stand 1.3 m in front of it, look at the folded pack's top rail
   const b = list.find((x) => x.level === 1 && x.room === 'Sovrum 1');
   check(!!b, 'Sovrum 1 has a blind');
-  const cx = b.x0 + (b.x1 - b.x0) * 0.33, gz = b.z - b.out * 1.3; // between the pots (and the speaker in the middle)
+  // between the pots (and the speaker in the middle), on free floor (#323: since #314 a spot inside a piece of furniture
+  // — the bed, a bedside table — glides the tester out before it looks, and the aim misses the rail; in Sovrum 1 the
+  // bed leaves a strip under 0.5 m at the window)
+  let cx = b.x0 + (b.x1 - b.x0) * 0.33, dist = 1.3;
+  free: for (const dd of [1.3, 1.2, 1.4, 1.1, 1.5, 1.0, 0.9, 0.8, 0.7, 0.6]) for (const f of [0.33, 0.25, 0.4, 0.2, 0.45, 0.15]) {
+    const x = b.x0 + (b.x1 - b.x0) * f;
+    if (player.isFree(x, b.z - b.out * dd, 1)) { cx = x; dist = dd; break free; }
+  }
+  const gz = b.z - b.out * dist;
   const up = LEVELS[1].floor;
   player.spawn(cx, gz, b.out < 0 ? 0 : Math.PI); player.pos.y = up; player.eyeY = up + 1.62;
   const aim = () => {
     for (let i = 0; i < 3; i++) step(1 / 60);
-    camera.rotation.x = Math.atan2(b.top.position.y + 0.01 - camera.position.y, 1.3);
+    camera.rotation.x = Math.atan2(b.top.position.y + 0.01 - camera.position.y, dist);
     w.__app.world.object.updateMatrixWorld(true);
     for (let i = 0; i < 3; i++) step(1 / 60);
   };
   aim();
   const btn = d.getElementById('action');
-  check(!btn.hidden && /plisségardinen/i.test(btn.textContent), `action button "${btn.textContent}"`);
+  check(!btn.hidden && /plisségardinen/i.test(btn.textContent), `action button "${btn.textContent}" (stood at ${cx.toFixed(2)}, ${gz.toFixed(2)}; now ${player.pos.x.toFixed(2)}, ${player.pos.y.toFixed(2)}, ${player.pos.z.toFixed(2)}, pitch ${camera.rotation.x.toFixed(2)}, rail y ${b.top.position.y.toFixed(2)})`);
   const score0 = stats.seen?.blinds ? Object.keys(stats.seen.blinds).length : 0;
   btn.click();
   const panel = d.getElementById('blind-panel');
