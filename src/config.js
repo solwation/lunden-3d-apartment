@@ -995,6 +995,7 @@ export const REST = {
 };
 
 export const PLAYER = {
+  unstick: 2.0, // m/s: the glide out of a piece of furniture / the car you ended up inside (#314)
   eye: 1.62,
   radius: 0.22,
   walk: 1.6,   // m/s

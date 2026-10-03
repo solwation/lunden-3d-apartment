@@ -5,6 +5,28 @@ import { groundY } from './surroundings.js';
 
 const GRAVITY = 9.8;
 
+/** Distance from (x, z) to a segment. */
+export function segDist(x, z, [ax, az, bx, bz]) {
+  const vx = bx - ax, vz = bz - az, l = vx * vx + vz * vz || 1, t = Math.max(0, Math.min(1, ((x - ax) * vx + (z - az) * vz) / l));
+  return Math.hypot(x - ax - vx * t, z - az - vz * t);
+}
+/** Is (x, z) inside the convex polygon `q` ([[x, z], ...], either winding)? */
+export function inPoly(q, x, z) {
+  let pos = 0, neg = 0;
+  for (let i = 0; i < q.length; i++) {
+    const [ax, az] = q[i], [bx, bz] = q[(i + 1) % q.length], c = (bx - ax) * (z - az) - (bz - az) * (x - ax);
+    if (c > 0) pos++; else if (c < 0) neg++;
+  }
+  return !(pos && neg);
+}
+/** Does the segment a → b cross the segment s (strictly inside a → b)? */
+export function crosses(ax, az, bx, bz, [cx, cz, dx, dz]) {
+  const d = (bx - ax) * (dz - cz) - (bz - az) * (dx - cx);
+  if (Math.abs(d) < 1e-9) return false;
+  const t = ((cx - ax) * (dz - cz) - (cz - az) * (dx - cx)) / d, u = ((cx - ax) * (bz - az) - (cz - az) * (bx - ax)) / d;
+  return t > 0 && t < 1 && u >= 0 && u <= 1;
+}
+
 function pushOut(pos, r, [ax, az, bx, bz]) {
   const dx = bx - ax, dz = bz - az;
   const len2 = dx * dx + dz * dz || 1e-9;
@@ -38,6 +60,7 @@ export class Player {
   spawn(x, z, yaw) {
     this.pos.set(x, this.groundAt(x, z, 0) ?? 0, z);
     this.vy = 0;
+    this.glide = null; // (an unstick under way is for the old place, #314)
     this.eyeY = this.pos.y + PLAYER.eye;
     this.camera.position.set(x, this.eyeY, z);
     this.camera.rotation.set(0, yaw, 0, 'YXZ');
@@ -89,7 +112,60 @@ export class Player {
     return [lvl.segments, [...doorSegs, ...(this.world.movingSegments?.(this.level) ?? [])]]; // + open furniture flaps (#118)
   }
 
+  /**
+   * Closed obstacles on `level` (#314): the furniture's footprints (#302) and closed moving boxes (our parked car, the
+   * hoop's base) as convex polygons. Collision is segments only, so a visitor put inside one (getting up, F putting the
+   * furniture back, a resume record, the car parking on you) could never get out.
+   */
+  obstacles(level = this.level) {
+    return [...(this.world.levels[level]?.footprints ?? []), ...(this.world.movingPolys?.(level) ?? [])];
+  }
+
+  /** Can the visitor stand at (x, z) on `level` (#314)? Clear of every segment by the radius + `margin`, inside no obstacle. */
+  isFree(x, z, level = this.level, margin = 0.02) {
+    const lvl = this.world.levels[level];
+    const doorSegs = this.world.doors.filter((d) => (d.object.position.y < LEVELS[0].floor + 1.6 ? 0 : 1) === level).map((d) => d.segment());
+    const segs = [...lvl.segments, ...doorSegs, ...(this.world.movingSegments?.(level) ?? [])];
+    if (segs.some((sg) => segDist(x, z, sg) < PLAYER.radius + margin)) return false;
+    if (this.obstacles(level).some((q) => inPoly(q, x, z))) return false;
+    if (level === 1) { const h = STAIR.hole; if (x > h.x0 && x < h.x1 && z > h.z0 && z < h.z1) return false; }
+    return true;
+  }
+
+  /** The nearest free spot to (x, z) reached through no wall, window or door (a spiral search), or null (#314). */
+  nearestFree(x, z, level = this.level) {
+    const walls = [...(this.world.levels[level]?.fixedSegments ?? this.world.levels[level].segments),
+      ...this.world.doors.filter((d) => (d.object.position.y < LEVELS[0].floor + 1.6 ? 0 : 1) === level).map((d) => d.segment())];
+    for (let r = 0.05; r < 3.01; r += 0.05) {
+      const n = Math.max(8, Math.round(2 * Math.PI * r / 0.05));
+      for (let i = 0; i < n; i++) {
+        const a = i / n * 2 * Math.PI, px = x + Math.sin(a) * r, pz = z + Math.cos(a) * r;
+        if (this.isFree(px, pz, level) && !walls.some((sg) => crosses(x, z, px, pz, sg))) return { x: px, z: pz };
+      }
+    }
+    return null;
+  }
+
+  /** Inside an obstacle (#314)? Then glide (or with `instant` jump) to the nearest free spot; true while it does. */
+  unstick(dt, instant = false) {
+    const p = this.pos;
+    if (!this.glide) {
+      if (!this.obstacles().some((q) => inPoly(q, p.x, p.z))) return false;
+      const to = this.nearestFree(p.x, p.z);
+      if (!to) return false;
+      if (this.debug) console.log(`unstick (#314): (${p.x.toFixed(2)}, ${p.z.toFixed(2)}) → (${to.x.toFixed(2)}, ${to.z.toFixed(2)})`);
+      this.unstuck = (this.unstuck ?? 0) + 1;
+      this.glide = to;
+    }
+    const dx = this.glide.x - p.x, dz = this.glide.z - p.z, d = Math.hypot(dx, dz), step = instant ? d : PLAYER.unstick * dt;
+    if (d <= step) { p.x = this.glide.x; p.z = this.glide.z; this.glide = null; }
+    else { p.x += dx / d * step; p.z += dz / d * step; }
+    this.camera.position.x = p.x; this.camera.position.z = p.z;
+    return true;
+  }
+
   update(dt) {
+    if (this.unstick(dt)) return; // pushed out of a piece of furniture / the car first (#314)
     const k = this.keys;
     // ← → turn (useful when the touchpad is disabled while typing), ↑ ↓ walk
     const turn = (k.has('ArrowLeft') ? 1 : 0) - (k.has('ArrowRight') ? 1 : 0);

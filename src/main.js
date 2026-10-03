@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { COLORS, LEVELS, DAY, START, PLAYER, DRAWING, STAIR, HOLD, REMOTE, REST, DOOR_HEIGHT, TURBO, WEATHER, BREAK, CAR, KITCHEN, LAPTOP, AUTO_RELOAD } from './config.js';
 const DRAWING_COLORS = DRAWING.colors;
 import { buildWorld } from './world.js';
-import { Player } from './player.js';
+import { Player, inPoly, crosses } from './player.js';
 import { setupTouch } from './touch.js';
 import { watchForUpdates, BUILD } from './version.js';
 import { CatSpawner, VARIANTS, BREEDS } from './cat.js';
@@ -385,6 +385,9 @@ ball.onBasket = (three) => { bump('baskets'); if (three) bump('threes'); };
 ball.onDribble = () => bump('dribbles');
 holdables.push(ball);
 { const moving = world.movingSegments; world.movingSegments = (lvl) => [...moving(lvl), ...(lvl === 0 ? hoop.segments() : [])]; } // its base is in the way
+// the parked car and the hoop's base as closed boxes: one that appears round the visitor pushes them out (#314)
+world.movingPolys = (lvl) => lvl === 0 ? [car.segments(), hoop.segments()].filter((sg) => sg.length).map((sg) => sg.map(([x, z]) => [x, z])) : [];
+player.debug = new URLSearchParams(location.search).has('debug'); // log every unstick (#314)
 // drawings taped up on walls and the fridge (#176); the one in the hand
 const posters = new Posters(scene, world, marks, note);
 const postersLoaded = posters.load();
@@ -529,6 +532,7 @@ function resumeAt(r) {
   player.eyeY = r.feetY + PLAYER.eye;
   camera.position.y = player.eyeY;
   camera.rotation.x = r.pitch;
+  player.unstick(0, true); // a record inside a piece of furniture / the car: the nearest free floor (#314)
   // reject spots inside a wall: one standing step must not push the visitor away
   const before = player.pos.clone();
   player.update(1 / 60);
@@ -766,9 +770,11 @@ document.addEventListener('keydown', (e) => {
  * in front of the seat, as straight ahead as there is room. Free = clear of walls and furniture, not inside a piece's
  * footprint (a table's middle is far from its edges) and reached from the seat without crossing furniture (not over the
  * dining table to its far side), not through a wall. None in front (a chair pushed in under the table): the old spot if
- * it is still free, else the nearest free spot all round (behind the chair), else the old one.
+ * it is still free, else the nearest free spot all round (behind the chair), else the nearest free floor (#314). Out of a
+ * bed (`bed`): the old spot whenever it is free (#314).
  */
-function standSpot(seat, yaw, old) {
+function standSpot(seat, yaw, old, bed = false) {
+  if (bed && standFree(seat, old.x, old.z, false)) return old; // out of a bed: where you got in (lying, "in front" means nothing, #314)
   const ahead = (old.x - seat.x) * -Math.sin(yaw) + (old.z - seat.z) * -Math.cos(yaw) >= 0;
   if (ahead && standFree(seat, old.x, old.z, false)) return old;
   const ring = (turns) => {
@@ -787,39 +793,21 @@ function standSpot(seat, yaw, old) {
     const x = seat.x - Math.sin(yaw + turn) * d, z = seat.z - Math.cos(yaw + turn) * d;
     if (standFree(seat, x, z, true)) return { x, z };
   }
-  return old;
+  return player.nearestFree(seat.x, seat.z) ?? old; // never into a blocked spot (#314)
 }
 /** Can the visitor stand at (x, z) after getting up from `seat` (#302)? `path`: also the way there from the seat. */
 function standFree(seat, x, z, path) {
-  const [stat, dyn] = player.segments(), feet = world.levels[player.level]?.footprints ?? [];
-  const dist = (px, pz, [ax, az, bx, bz]) => {
-    const vx = bx - ax, vz = bz - az, l = vx * vx + vz * vz || 1, t = Math.max(0, Math.min(1, ((px - ax) * vx + (pz - az) * vz) / l));
-    return Math.hypot(px - ax - vx * t, pz - az - vz * t);
-  };
-  const inQuad = (q, px, pz) => { // convex, either winding
-    let pos = 0, neg = 0;
-    for (let i = 0; i < 4; i++) {
-      const [ax, az] = q[i], [bx, bz] = q[(i + 1) % 4], c = (bx - ax) * (pz - az) - (bz - az) * (px - ax);
-      if (c > 0) pos++; else if (c < 0) neg++;
-    }
-    return !(pos && neg);
-  };
-  if ([...stat, ...dyn].some((sg) => dist(x, z, sg) < PLAYER.radius + 0.02) || feet.some((q) => inQuad(q, x, z))) return false;
+  if (!player.isFree(x, z)) return false; // clear of walls and furniture, inside no footprint (#314)
   if (behindWall({ x, z })) return false; // (the camera is still at the seat)
   if (path) { // through no wall or window (#302: behindWall knows no windows), and out of the seat's own piece(s) and
     // never into another one: not over the table to its far side
-    const cross = ([ax, az, bx, bz]) => {
-      const d = (x - seat.x) * (bz - az) - (z - seat.z) * (bx - ax);
-      if (Math.abs(d) < 1e-9) return false;
-      const t = ((ax - seat.x) * (bz - az) - (az - seat.z) * (bx - ax)) / d, u = ((ax - seat.x) * (z - seat.z) - (az - seat.z) * (x - seat.x)) / d;
-      return t > 0 && t < 1 && u >= 0 && u <= 1;
-    };
-    if ((world.levels[player.level]?.fixedSegments ?? []).some(cross) || dyn.some(cross)) return false;
-    const own = feet.filter((q) => inQuad(q, seat.x, seat.z)), n = Math.ceil(Math.hypot(x - seat.x, z - seat.z) / 0.05);
+    const [, dyn] = player.segments(), feet = player.obstacles();
+    if ([...(world.levels[player.level]?.fixedSegments ?? []), ...dyn].some((sg) => crosses(seat.x, seat.z, x, z, sg))) return false;
+    const own = feet.filter((q) => inPoly(q, seat.x, seat.z)), n = Math.ceil(Math.hypot(x - seat.x, z - seat.z) / 0.05);
     let out = false;
     for (let i = 1; i < n; i++) {
       const px = seat.x + (x - seat.x) * i / n, pz = seat.z + (z - seat.z) * i / n;
-      const hit = feet.filter((q) => inQuad(q, px, pz));
+      const hit = feet.filter((q) => inPoly(q, px, pz));
       if (hit.length === 0) out = true;
       else if (out || hit.some((q) => !own.includes(q))) return false;
     }
@@ -828,6 +816,7 @@ function standFree(seat, x, z, path) {
 }
 function standUp() {
   const film = rest.spot?.pc === 'film';
+  const bed = rest.target?.rest === 'lie'; // lying or sitting up in a bed (#213)
   const seat = rest.spot?.pos.clone(), lying = rest.kind === 'lie', inCar = rest.spot?.car; // out of the car: back where you stood, by the door (#250)
   // you keep looking the way you looked while seated (#202); lying you were facing the ceiling: level
   const yaw = camera.rotation.y, pitch = lying ? 0 : camera.rotation.x;
@@ -836,7 +825,7 @@ function standUp() {
   if (rest.tvOn) { if (rest.tvOn.isOpen) { rest.tvOn.toggle(); sfx.tvClick(rest.tvOn.pickable.getWorldPosition(new THREE.Vector3()), false); } rest.tvOn = null; } // (#213)
   // getting up from the film: the monitor goes back to the desk (and the game) — the PC stays on
   if (film) for (const t of world.furnitureTargets) if (t.kind === 'pc') t.watch(null);
-  const at = seat && !inCar ? standSpot(seat, yaw, s) : s;
+  const at = seat && !inCar ? standSpot(seat, yaw, s, bed) : s;
   player.spawn(at.x, at.z, yaw);
   camera.rotation.x = pitch;
   player.pos.y = s.y; // spawn() finds the ground floor; upstairs we stood on Övre plan

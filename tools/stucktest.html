@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Stuck test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+// Never stuck (#314): a 5 cm scan of each floor (the free floor's pieces: isolated ones are listed); getting up from every
+// seat / bed with the old spot inside the piece itself lands on the main free floor; F putting the sofa / the bed back
+// round you, our car parking on you, the hoop's base rising under you and a resume record inside the bed all end on free
+// floor (unstick); a door shut on you leaves you free to walk.
+//   google-chrome --headless=new --dump-dom http://localhost:8137/tools/stucktest.html
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const lines = [];
+const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; };
+const load = (q = '') => new Promise((resolve) => {
+  const f = document.createElement('iframe');
+  f.width = 900; f.height = 600; f.src = `../index.html${q}`;
+  document.body.append(f);
+  f.onload = async () => { while (!f.contentWindow.__app) await wait(100); resolve(f); };
+});
+(async () => {
+  let pass = true;
+  const f = await load('?shot');
+  const w = f.contentWindow, d = f.contentDocument;
+  const { player, camera, world, step, rest, standUp, toggleFurniture, car, hoop, useDoor } = w.__app;
+  d.getElementById('start-touch').click();
+  await wait(50);
+  world.object.updateMatrixWorld(true);
+  const { LEVELS } = await w.eval("import('../src/config.js')");
+  const { inPoly } = await w.eval("import('../src/player.js')");
+  const put = (x, z, lv) => { player.pos.set(x, LEVELS[lv].floor, z); player.eyeY = LEVELS[lv].floor + 1.62; camera.position.set(x, player.eyeY, z); player.glide = null; };
+  const steps = (n) => { for (let i = 0; i < n; i++) step(1 / 60); };
+  const inside = (lv) => player.obstacles(lv).some((q) => inPoly(q, player.pos.x, player.pos.z));
+  const walksAway = (lv) => { // 0.5 m in some direction
+    const { x, z } = player.pos;
+    for (let k = 0; k < 8; k++) {
+      put(x, z, lv); camera.rotation.set(0, k * Math.PI / 4, 0, 'YXZ');
+      player.keys = new Set(['KeyW']); steps(25); player.keys = new Set();
+      if (Math.hypot(player.pos.x - x, player.pos.z - z) > 0.5 && !inside(lv)) return true;
+    }
+    return false;
+  };
+
+  // (1) the floor scan (every door open): free cells, their connected pieces; the biggest is the floor you walk on
+  for (const dr of world.doors) if (!dr.isOpen) dr.toggle();
+  steps(120);
+  const G = 0.05, { x: W, z: D } = world.size, main = []; // 5 cm: the gap at the foot of the double bed is a few cm wide
+  for (const lv of [0, 1]) {
+    const nx = Math.ceil(W / G), nz = Math.ceil(D / G), free = new Uint8Array(nx * nz), comp = new Int32Array(nx * nz).fill(-1);
+    for (let i = 0; i < nx; i++) for (let j = 0; j < nz; j++) free[i * nz + j] = player.isFree((i + 0.5) * G, (j + 0.5) * G, lv, 0) ? 1 : 0;
+    const sizes = [];
+    for (let s = 0; s < nx * nz; s++) {
+      if (!free[s] || comp[s] >= 0) continue;
+      const id = sizes.length, q = [s]; comp[s] = id; let n = 0;
+      while (q.length) {
+        const c = q.pop(); n++;
+        const i = Math.floor(c / nz), j = c % nz;
+        for (const [di, dj] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+          const a = i + di, b = j + dj, t = a * nz + b;
+          if (a >= 0 && a < nx && b >= 0 && b < nz && free[t] && comp[t] < 0) { comp[t] = id; q.push(t); }
+        }
+      }
+      sizes.push(n);
+    }
+    const big = sizes.indexOf(Math.max(...sizes));
+    main[lv] = (x, z) => { const i = Math.floor(x / G), j = Math.floor(z / G); if (i < 0 || j < 0 || i >= nx || j >= nz) return true; // outdoors
+      for (const [di, dj] of [[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1]]) { const t = (i + di) * nz + j + dj; if (comp[t] === big) return true; } return false; };
+    const pockets = [];
+    // (slivers of a few cells by a wall are left out)
+    sizes.forEach((n, id) => { if (id !== big && n >= 10) { const s = comp.indexOf(id); pockets.push(`${n} cells at (${(Math.floor(s / nz) * G).toFixed(1)}, ${(s % nz * G).toFixed(1)})`); } });
+    pass &= check(sizes[big] > 500, `${LEVELS[lv].name}: ${sizes[big]} free cells in one piece; ${pockets.length} pockets out of reach${pockets.length ? `: ${pockets.join(', ')}` : ''}`);
+  }
+
+  // (2) getting up with the old spot inside the piece itself (the worst record): free, on the main floor, can walk away
+  const targets = world.furnitureTargets.filter((t) => t.kind === 'rest');
+  let bad = 0, n = 0;
+  for (const t of targets) for (const [si, sp] of t.spots.entries()) for (const turn of [0, 1, -1, 2]) {
+    const lv = t.level;
+    put(sp.pos.x, sp.pos.z, lv);
+    rest.begin(t, sp, { x: sp.pos.x, z: sp.pos.z, y: LEVELS[lv].floor });
+    rest.t = 1; camera.position.copy(sp.pos); camera.rotation.set(0, sp.yaw + turn * 0.8, 0, 'YXZ');
+    standUp(); steps(60);
+    const { x, z, y } = player.pos, ok = Math.abs(y - LEVELS[lv].floor) < 0.02 && player.isFree(x, z, lv, 0) && main[lv](x, z) && walksAway(lv);
+    n++;
+    if (!ok) { bad++; lines.push(`FAIL ${t.name} #${si} (turn ${turn}): up at (${x.toFixed(2)}, ${z.toFixed(2)}, y ${y.toFixed(2)}), free ${player.isFree(x, z, lv, 0)}, main floor ${main[lv](x, z)}`); }
+  }
+  pass &= check(bad === 0, `${n - bad} / ${n} get-ups with the old spot inside the seat / bed: on free floor, walking away`);
+
+  // (3) F puts the sofa / the bed back round you: pushed out to free floor
+  for (const name of ['soffan', 'sängen']) {
+    const t = targets.find((x) => x.name === name), sp = t.spots[0], lv = t.level;
+    toggleFurniture(false); put(sp.pos.x, sp.pos.z, lv); steps(5);
+    const was = player.isFree(player.pos.x, player.pos.z, lv, 0);
+    toggleFurniture(true); steps(120);
+    const ok = was && !inside(lv) && player.isFree(player.pos.x, player.pos.z, lv, 0) && walksAway(lv);
+    pass &= check(ok, `F back on while standing in ${name}: out at (${player.pos.x.toFixed(2)}, ${player.pos.z.toFixed(2)}), ${player.unstuck ?? 0} unsticks so far`);
+  }
+
+  // (4) our car parks where you stand
+  {
+    car.park(); const c = car.object.position.clone(); car.state = 'gone'; car.object.visible = false;
+    put(c.x, c.z, 0); steps(5);
+    car.park(); steps(120);
+    const ok = !inside(0) && player.isFree(player.pos.x, player.pos.z, 0, 0) && walksAway(0);
+    pass &= check(ok, `the car parked on you: out at (${player.pos.x.toFixed(2)}, ${player.pos.z.toFixed(2)})`);
+    car.state = 'gone'; car.object.visible = false;
+  }
+
+  // (5) the hoop's base rising under you
+  if (hoop?.baseBox) {
+    const b = hoop.baseBox, x = (b.min.x + b.max.x) / 2, z = (b.min.z + b.max.z) / 2, up = hoop.update;
+    hoop.update = (dt) => up.call(hoop, dt, true); // as if the ball were out
+    put(x, z, 0); steps(150);
+    const ok = !inside(0) && walksAway(0);
+    pass &= check(ok, `the hoop's base under you: out at (${player.pos.x.toFixed(2)}, ${player.pos.z.toFixed(2)})`);
+    hoop.update = up;
+  }
+
+  // (6) a door shut on you (each Entréplan swing door): you end on one side, free to walk
+  {
+    let n = 0, ok = 0;
+    for (const door of world.doors.filter((dr) => dr.kind === 'swing' && dr.object.position.y < 1.6)) {
+      const [cx, cz] = door.opening().center;
+      if (!door.isOpen) { door.toggle(); steps(90); }
+      put(cx, cz, 0); steps(3);
+      useDoor(door); steps(120);
+      n++;
+      if (player.isFree(player.pos.x, player.pos.z, 0, -0.005) && walksAway(0)) ok++;
+      else lines.push(`FAIL door at (${cx.toFixed(2)}, ${cz.toFixed(2)}): left at (${player.pos.x.toFixed(2)}, ${player.pos.z.toFixed(2)})`);
+    }
+    pass &= check(n > 0 && ok === n, `${ok} / ${n} swing doors shut on you: free to walk away`);
+  }
+
+  // (7) a resume record inside the double bed: the nearest free floor beside it, not the start
+  {
+    const t = targets.find((x) => x.name === 'sängen'), sp = t.spots[0];
+    const rec = { x: sp.pos.x, z: sp.pos.z, feetY: LEVELS[1].floor, yaw: 0, pitch: 0, hour: 12, month: 6, mode: 'touch', ts: Date.now() };
+    sessionStorage.setItem('lunden.resume', JSON.stringify(rec));
+    f.remove();
+    const g = await load();
+    const a = g.contentWindow.__app;
+    for (let i = 0; i < 60; i++) a.step(1 / 60);
+    const p = a.player.pos, near = Math.hypot(p.x - rec.x, p.z - rec.z);
+    const ok = Math.abs(p.y - LEVELS[1].floor) < 0.02 && a.player.isFree(p.x, p.z, 1, 0) && near < 2;
+    pass &= check(ok, `a resume record inside the bed: up at (${p.x.toFixed(2)}, ${p.y.toFixed(2)}, ${p.z.toFixed(2)}), ${near.toFixed(2)} m away`);
+  }
+  out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
+})();
+</script>
+</body>
+</html>

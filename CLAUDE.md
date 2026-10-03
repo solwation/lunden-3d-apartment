@@ -87,7 +87,8 @@ src/stairs.js          stair treads + walking height function (stairHeight)
 src/doors.js           SwingDoor / SlidingDoor (E to open/close, animated, dynamic collision)
 src/exterior.js        Hus L (HUS_L): brick row with the core/portik, neighbours' patios, rendered upper
                        units with pilasters, loftgång, spiral-stair drums, roof with solar panels
-src/player.js          WASD/arrow/joystick movement, circle-vs-segment collision, step-up, gravity; outdoors the terrain (`groundY`, #256)
+src/player.js          WASD/arrow/joystick movement, circle-vs-segment collision, step-up, gravity; outdoors the terrain (`groundY`, #256);
+                       `isFree` / `obstacles` / `nearestFree` / `unstick` (#314, see Input notes)
 src/touch.js           on-screen joystick (left) + drag-to-look (right), multi-touch pointer events
 src/main.js            renderer, lights, input modes, door raycast prompt/button, loop (step)
 src/version.js         BUILD stamp + polling for a newer published version
@@ -473,7 +474,10 @@ tools/reloadtest.html  headless test: resume after "Ladda om", F5 starts at STAR
                        the world kept (#277): the car still arriving then parks, a cup of coffee in the hand, the fridge open, lamps,
                        sitting, a bottle put down, the TV, the cat, the game's clock; a new tab fresh at the real time
 tools/resttest.html    headless test: sit on every seat and lie in every bed (spot, no walking, up again looking the same way;
-                       head turned, old spot behind: up in front, #202)
+                       head turned, old spot behind: up in front, #202; every spot ahead / turned, from behind: free floor, #302)
+tools/stucktest.html   headless test (#314): a 5 cm scan of both floors (doors open; the free floor in one piece, pockets out of
+                       reach listed), getting up from every seat / bed with the old spot inside it, F putting the sofa / bed back
+                       round you, the car parking on you, the hoop rising under you, a door shut on you, a resume record in the bed
 tools/pctest.html      headless test: switch the gaming PC on/off (game moves, RGB cycles), the chair is a seat and
                        starts the PC, the bunk seat swings the monitor round (film)
 tools/sabertest.html   headless test: take the lightsaber, swing it, hang it back
@@ -988,6 +992,13 @@ screenshots into the session scratchpad, not the repo.
   (Chromium) captures them, Ctrl+W too; released on leaving fullscreen. Mouse & keyboard is not forced fullscreen.
   Fallback: a `beforeunload` guard while visiting (not on the start screen); the page's own reloads (autoReload,
   "Ladda om") set `reloading` and pass.
+- Never stuck (#314): `player.isFree(x, z, level)` = clear of every segment (walls, doors, furniture, moving parts) by the
+  radius + a margin, inside no `obstacles()` (furniture footprints + `world.movingPolys`: the parked car, the hoop's base) and
+  not in the stair hole. Collision is segments only, so a visitor put inside an obstacle (F putting the furniture back, the car
+  parking on you, the hoop rising, a resume record) could never leave: `unstick()` (first thing in `Player.update`) glides
+  them at `PLAYER.unstick` to `nearestFree` (spiral search, not through a wall or door); a resume does it at once. `&debug`
+  logs each one. The gap at the foot of the double bed (past RÅGRUND) to the window side is only ~8 cm wider than the
+  visitor: passable, but aim for it.
 - Sit / lie (#71/#72, `src/rest.js`, `REST`): builders put `userData.rest = { kind: 'sit'|'lie', name, verb,
   spots }` (local x, seat/mattress y, z, optional dir); buildFurniture turns them into E targets
   (`world.furnitureTargets`). E picks the spot nearest the look ray (not one the cat sits on), the camera
@@ -995,7 +1006,8 @@ screenshots into the session scratchpad, not the repo.
   you back where you stood (including upstairs: `spawn()` alone would drop you to Entréplan), looking the way you looked while
   seated (lying: level); if your old spot is behind you, on a free spot in front (`standSpot`, #202); a spot counts as free only outside every furniture
   footprint (`levels[i].footprints`) and reached from the seat through no wall, window or other piece (`standFree`, #302: not on / over
-  the dining table), else the old spot, else the nearest free one all round. While sitting / lying (#184) the
+  the dining table), else the old spot, else the nearest free one all round, else the nearest free floor; out of a bed the old
+  spot whenever it is free (#314). While sitting / lying (#184) the
   focus works as standing but within `REST.reach` of the eye (not the seat itself, nothing to sit on): take the remote
   from the sofa, the book from the armchair, put things down within reach; E with nothing in reach, Space / C or the
   touch "Res dig" button (#stand-btn) get you up, keeping what is in the hand. Seats: the
