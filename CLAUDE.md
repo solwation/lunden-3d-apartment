@@ -636,8 +636,9 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   docs/langlampan.jpg): a round foot, a ~20 cm stem, a tall linen tube with a spiral wire and bulbs inside; a small lamp
   (dusk on/off, E on the shade), lit it glows warm with additive washes on the two corner walls and a dim pool light.
   IKEA SYMFONISK speakers (#186, `SYMFONISK`, FURNITURE `symfonisk`): the black bookshelf speaker stands in Sovrum 1's window (#201; it lay on the TV bench),
-  the white one stands at the south end of the kitchen worktop, the lamp speaker (frosted glass, its own lamp: E
-  toggles it) on the window board behind the sofa, where a sill pot is skipped (`SILL_PLANTS.skip`, also for the black one).
+  the white one at the east end of the kitchen window's inner board (#289; it stood on the worktop, that spot is left free), the lamp
+  speaker (frosted glass, its own lamp: E toggles it) on the window board behind the sofa; a sill pot is skipped where each
+  stands (`SILL_PLANTS.skip`).
   Over the secretary "Bang" (#118) on the east wall: the IKEA SKOGSGRÄNSEN mirror Ø 50, copper (#265, `SKOGSGRANSEN`, hung with
   the wavy bars at the bottom, centre 1.58 m up), and on the secretary's north end a small yucca palm (`YUCCA`, a Thing you can
   take, kind 'plant') whose leaves cover the mirror's north edge; the owl and the cactus moved south.

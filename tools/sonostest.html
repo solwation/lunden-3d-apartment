@@ -37,7 +37,7 @@ f.onload = async () => {
   let pass = check(speakers.length === 3, `${speakers.length} speakers`);
   const white = speakers.find((t) => t.object.userData.symfonisk === 'speaker white');
   const p = white.object.getWorldPosition(new V()).add(new V(0, 0.15, 0));
-  let label = aim(p, [p.x - 0.9, p.z]);
+  let label = aim(p, [p.x, p.z + 0.9]); // from the room: it stands on the kitchen window board (#289)
   pass &= check(/spela musik på högtalaren/i.test(label), `the white speaker: "${label}"`);
   btn.click();
   for (let i = 0; i < 30; i++) step(1 / 30);
@@ -63,7 +63,7 @@ f.onload = async () => {
   // E (the keyboard) / × closes the panel, the music plays on
   d.getElementById('sonos-close').click();
   pass &= check(panel.hidden && sonos.playing, 'panel closed, still playing');
-  label = aim(p, [p.x - 0.9, p.z]);
+  label = aim(p, [p.x, p.z + 0.9]);
   pass &= check(/styra musiken/i.test(label), `"${label}"`);
   btn.click();
   pass &= check(!panel.hidden && sonos.playing, 'E again opens the panel');

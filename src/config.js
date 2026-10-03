@@ -119,7 +119,7 @@ export const BLINDS = {
 export const SILL_PLANTS = {
   kinds: ['pelargon', 'orchid', 'violet', 'cactus', 'ivy', 'basil'],
   byWindow: [['basil', 'pelargon', 'basil'], ['orchid', 'ivy', 'pelargon'], ['violet', 'cactus'], ['orchid', 'pelargon', 'ivy'], ['violet', 'pelargon', 'cactus'], ['cactus', 'ivy']],
-  skip: [[1, 2], [3, 1]], // [sill, pot]: no pot there (the SYMFONISK lamp on the window board behind the sofa, #186; the black speaker in Sovrum 1's window, #201)
+  skip: [[0, 2], [1, 2], [3, 1]], // [sill, pot]: no pot there (the white SYMFONISK speaker in the kitchen window, #289; the lamp on the window board behind the sofa, #186; the black speaker in Sovrum 1's window, #201)
   colors: { pelargon: 0xd8283a, orchid: [0xf7f2f5, 0xe58fc4], cactus: 0xff6fa8, violet: 0x7b3fb5 },
 };
 
@@ -1579,7 +1579,9 @@ export const FURNITURE = [
   // the cups and the hob), the lamp speaker (frosted glass shade) stands on the window board behind the sofa
   // the black one stands in Sovrum 1's window (#201, the user), in the middle pot's place on the window board (SILL_PLANTS.skip)
   { type: 'symfonisk', kind: 'speaker', color: 'black', level: 1, x: 3.85, z: 0.32, y: 0.7, rot: 180 },
-  { type: 'symfonisk', kind: 'speaker', color: 'white', level: 0, x: 5.42, z: 4.62, y: 0.934, rot: 90 },
+  // the white one on the kitchen window's inner board (#289, the user; it stood at the south end of the worktop): the east
+  // end, in the third pot's place (SILL_PLANTS.skip), facing the room, clear of the blind's folded pack (z 0.16)
+  { type: 'symfonisk', kind: 'speaker', color: 'white', level: 0, x: 4.48, z: 0.33, y: 0.8, rot: 180 },
   { type: 'symfonisk', kind: 'lamp', color: 'white', level: 0, x: 4.55, z: 12.3, y: 0.6, rot: 0 },
   // big rug under the sofa's front legs and the coffee table (#55): 300 × 200 × 1.2 cm (size and
   // colours are our pick), light oatmeal with a soft weave and a thin border; no collision
