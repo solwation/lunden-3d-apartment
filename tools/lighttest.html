@@ -36,19 +36,23 @@ f.onload = async () => {
     const ring = [...Array(16)].map((_, a) => [target.x + Math.sin((a / 16) * Math.PI * 2) * 0.7, target.z + Math.cos((a / 16) * Math.PI * 2) * 0.7]);
     // on a window board the target is outside the room map: the room in front of it
     const want = w.__app.world.roomMaps[level].at(target.x, target.z) ?? ring.map(([x, z]) => w.__app.world.roomMaps[level].exact(x, z)).find(Boolean);
-    let best = null;
+    // the first spot in that room from where the button offers the lamp (not, say, the bunk a lamp on a chest stands by)
+    let best = null, label = '';
     for (let a = 0; a < 16; a++) {
       const ang = (a / 16) * Math.PI * 2, x = target.x + Math.sin(ang) * 0.7, z = target.z + Math.cos(ang) * 0.7;
-      if (w.__app.world.roomMaps[level].exact(x, z) === want) { best = { x, z }; break; }
+      if (w.__app.world.roomMaps[level].exact(x, z) !== want) continue;
+      best ??= { x, z };
+      player.spawn(x, z, Math.atan2(-(target.x - x), -(target.z - z)));
+      player.pos.y = floorY; player.eyeY = floorY + 1.62;
+      for (let i = 0; i < 3; i++) step(1 / 60);
+      camera.rotation.y = Math.atan2(-(target.x - camera.position.x), -(target.z - camera.position.z));
+      camera.rotation.x = Math.atan2(target.y - camera.position.y, Math.hypot(target.x - camera.position.x, target.z - camera.position.z));
+      step(1 / 60);
+      label = btn.textContent;
+      if (/tända/i.test(label)) break;
     }
     if (!best) { lines.push(`FAIL ${t.name}: no place to stand`); pass = false; continue; }
-    player.spawn(best.x, best.z, Math.atan2(-(target.x - best.x), -(target.z - best.z)));
-    player.pos.y = floorY; player.eyeY = floorY + 1.62;
-    for (let i = 0; i < 3; i++) step(1 / 60);
-    camera.rotation.y = Math.atan2(-(target.x - camera.position.x), -(target.z - camera.position.z));
-    camera.rotation.x = Math.atan2(target.y - camera.position.y, Math.hypot(target.x - camera.position.x, target.z - camera.position.z));
-    step(1 / 60);
-    const label = btn.textContent;
+    if (!/tända/i.test(label)) { lines.push(`FAIL ${t.name}: not offered from any spot ("${label}")`); pass = false; continue; }
     btn.click();
     step(1 / 60);
     // (a room behind a closed door from here — the Klk under the stair — gets no pool light through it, #234: then its fixture glows)

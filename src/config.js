@@ -973,6 +973,18 @@ export const OTTOMAN = {
 // is 31 × 15 × 10 with the fabric front still facing out — we use these, the exact numbers are guesses). The table
 // lamp speaker gen 2 with the glass shade: a fabric speaker base Ø 15 × 20 cm, a short stem, a frosted glass dome
 // Ø 20 cm, ~40 cm in all (guesses from ikea.com photos). Fabric colours by name.
+// Things on top of the MALM chests (the user): a small themed lamp and a pot plant you can take (#185, things.js).
+// Sizes are our picks. `x` = across the top (local, +x = the chest's left seen from the front), `z` = front/back.
+// Sovrum 2 (Star Wars, Darth Vader sheets): a Death Star lamp (Ø 15 cm globe, cool white) and a cactus in a black pot;
+// Sovrum 3 (unicorn sheets): a lying unicorn night light (frosted white, pink glow) and a pink-flowering plant in a lilac pot.
+// Each lamp is a lamp of its own (lights.js FloorLamp: E, and on with the dusk, #234); `light` = its pool light.
+export const MALM_DECO = {
+  vader: { lamp: { x: -0.2, z: -0.06, name: 'dödsstjärnan', r: 0.075, light: { intensity: 0.7, range: 3, color: 0xcfe0ff } },
+    plant: { x: 0.24, z: -0.04, name: 'kaktusen' } },
+  unicorn: { lamp: { x: 0.2, z: -0.05, name: 'enhörningslampan', light: { intensity: 0.7, range: 3, color: 0xffb8e2 } },
+    plant: { x: -0.24, z: -0.04, name: 'blomkrukan' } },
+};
+
 export const SYMFONISK = {
   speaker: { w: 0.15, d: 0.1, h: 0.31 },
   lamp: { baseR: 0.075, baseH: 0.2, stem: 0.04, shadeR: 0.1, shadeH: 0.16 },
@@ -1205,11 +1217,11 @@ export const FURNITURE = [
   // IKEA MALM chests of 6 drawers, white, 80 × 124 × 50 cm (the user, #235, docs/malm-byra-6-lador.png), one per
   // bunk room with its back against the bunk's free short end (MYDAL posts reach l/2 + post = 1.055 m from its
   // centre), centred on the bunk, facing into the room. Sovrum 3 faces south, Sovrum 2 north.
-  { type: 'malm', level: 1, room: 'Sovrum 3', x: 0.2 + 0.5, z: 0.47 + 1.05 + 1.06 + 0.25, rot: 180, w: 0.8, h: 1.24, d: 0.5, seed: 70 },
+  { type: 'malm', level: 1, room: 'Sovrum 3', x: 0.2 + 0.5, z: 0.47 + 1.05 + 1.06 + 0.25, rot: 180, w: 0.8, h: 1.24, d: 0.5, seed: 70, deco: 'unicorn' },
   // Sovrum 2 (Walter & Kian). watch.z: a seat in the lower bunk (local z, level with the desk's monitor)
   // for watching films on the PC
   { type: 'bunk', level: 1, x: 5.55 - 0.5, z: 12.23 - 1.05, rot: 0, w: 0.9, l: 2.0, sheets: 'vader', watch: { z: -0.3 } },
-  { type: 'malm', level: 1, room: 'Sovrum 2', x: 5.55 - 0.5, z: 12.23 - 1.05 - 1.06 - 0.25, rot: 0, w: 0.8, h: 1.24, d: 0.5, seed: 90 }, // its MALM (#235)
+  { type: 'malm', level: 1, room: 'Sovrum 2', x: 5.55 - 0.5, z: 12.23 - 1.05 - 1.06 - 0.25, rot: 0, w: 0.8, h: 1.24, d: 0.5, seed: 90, deco: 'vader' }, // its MALM (#235)
   // Walter & Kian's gaming corner (#77, #84): a black desk 140 × 70 along the west wall (opposite the bunk),
   // its short end against the south window wall, facing east; curved 34" ultrawide on a monitor arm, RGB
   // tower at the window end (out of the bunk's line of sight), keyboard, mouse, headset, speakers (sizes

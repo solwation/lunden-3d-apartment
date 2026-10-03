@@ -3,7 +3,7 @@ import { sfx } from './audio.js';
 import { mergeStatic } from './merge.js';
 import { restTarget } from './rest.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
-import { FURNITURE, LANDSKRONA as L, LEVELS, SKANSNAS, IDANAS, MYDAL, OTTOMAN, SYMFONISK, SECRET, NYMANE_WALL } from './config.js';
+import { FURNITURE, LANDSKRONA as L, LEVELS, SKANSNAS, IDANAS, MYDAL, OTTOMAN, SYMFONISK, SECRET, NYMANE_WALL, MALM_DECO } from './config.js';
 import { loungesofa, loungetable, parasol, planter } from './patio.js';
 import { Screen } from './screens.js';
 import { Openable } from './openables.js';
@@ -1456,7 +1456,7 @@ const MALM_FILL = [['socks', 'underwear'], ['tees'], ['tees'], ['pyjamas'], ['je
 /** IKEA MALM chest of 6 drawers (white, #235): a top slab overhanging the carcass a little, a recessed plinth,
  * five equal rows — two small drawers side by side at the top, four full-width ones — each front with MALM's
  * rounded lip along its top edge as the grip. Faces +z. */
-function malm(item) {
+function malm(item, lights) {
   const g = new THREE.Group();
   const { w, h, d } = item, plinth = 0.06, top = 0.02, gap = 0.004, rowH = (h - plinth - top - 0.01) / 5;
   const white = new THREE.MeshStandardMaterial({ color: 0xf4f4f1, roughness: 0.5 });
@@ -1475,6 +1475,105 @@ function malm(item) {
   g.traverse((m) => { if (m.isMesh) m.castShadow = m.receiveShadow = true; });
   g.userData.surfaces = [{ x0: -w / 2 + 0.03, x1: w / 2 - 0.03, z0: -d / 2 + 0.03, z1: d / 2 - 0.03, y: h }];
   g.userData.footprint = [{ x0: -w / 2, x1: w / 2, z0: -d / 2, z1: d / 2 + 0.02 }];
+  if (item.deco) malmDeco(g, item, lights);
+  return g;
+}
+
+/** A themed lamp and a pot plant on a MALM's top (MALM_DECO). The lamp stays its own group (its E target, a lamp of
+ * its own); the plant is a Thing you can take (things.js), back on 'byrån'. */
+function malmDeco(g, item, lights) {
+  const D = MALM_DECO[item.deco], h = item.h;
+  const lamp = (item.deco === 'vader' ? deathStarLamp : unicornLamp)(D.lamp);
+  lamp.group.position.set(D.lamp.x, h, D.lamp.z);
+  g.add(lamp.group);
+  lights.push({ object: lamp.group, shade: lamp.shade, height: lamp.height, level: item.level, name: D.lamp.name, light: D.lamp.light });
+  const plant = item.deco === 'vader' ? cactus() : pinkFlower();
+  mergeStatic(plant);
+  plant.position.set(D.plant.x, h, D.plant.z);
+  g.add(plant);
+  (g.userData.keep ??= []).push(lamp.group, plant);
+  (g.userData.things ??= []).push({ model: plant, kind: 'plant', name: D.plant.name, back: 'byrån' });
+}
+
+/** A Death Star lamp: a grey globe on a small black stand, the equatorial trench and the superlaser dish; the globe
+ * glows cool white when it is on. Origin = the bottom centre. */
+function deathStarLamp({ r }) {
+  const group = new THREE.Group();
+  const shade = new THREE.MeshStandardMaterial({ color: 0xb9bec4, roughness: 0.55, emissive: 0xdce8ff, emissiveIntensity: 0.04 });
+  const dark = new THREE.MeshStandardMaterial({ color: 0x2c3036, roughness: 0.6 });
+  const add = (m, x, y, z) => { m.position.set(x, y, z); m.castShadow = true; group.add(m); return m; };
+  add(new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.055, 0.02, 24), dark), 0, 0.01, 0);         // the stand
+  add(new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.018, 0.03, 12), dark), 0, 0.035, 0);
+  const cy = 0.04 + r;
+  add(new THREE.Mesh(new THREE.SphereGeometry(r, 32, 20), shade), 0, cy, 0);
+  const trench = add(new THREE.Mesh(new THREE.TorusGeometry(r * 1.002, 0.0025, 6, 48), dark), 0, cy, 0); // the equatorial trench
+  trench.rotation.x = Math.PI / 2;
+  // the superlaser dish in the northern half, facing the room (+z), a little inward: a dark disc with a centre point
+  const dir = new THREE.Vector3(0.25, 0.45, 1).normalize();
+  const dish = add(new THREE.Mesh(new THREE.CircleGeometry(r * 0.3, 24), dark), dir.x * r * 0.97, cy + dir.y * r * 0.97, dir.z * r * 0.97);
+  dish.lookAt(new THREE.Vector3(dir.x * 2 * r, cy + dir.y * 2 * r, dir.z * 2 * r));
+  add(new THREE.Mesh(new THREE.SphereGeometry(r * 0.05, 8, 6), shade), dir.x * r * 0.99, cy + dir.y * r * 0.99, dir.z * r * 0.99);
+  // a few panel lines of latitude
+  for (const k of [-0.55, 0.3, -0.25]) {
+    const ring = add(new THREE.Mesh(new THREE.TorusGeometry(r * Math.sqrt(1 - k * k) * 1.001, 0.0009, 4, 40), dark), 0, cy + k * r, 0);
+    ring.rotation.x = Math.PI / 2;
+  }
+  return { group, shade, height: cy };
+}
+
+/** A unicorn night light: a frosted white unicorn lying on an oval base, a golden horn, a pink and lilac mane and
+ * tail; the body glows (pink-tinted) when it is on. Faces +z, origin = the bottom centre. */
+function unicornLamp() {
+  const group = new THREE.Group();
+  const shade = new THREE.MeshStandardMaterial({ color: 0xfbf7fb, roughness: 0.5, emissive: 0xffc6e8, emissiveIntensity: 0.04 });
+  const base = new THREE.MeshStandardMaterial({ color: 0xf3c6dd, roughness: 0.5 });
+  const gold = new THREE.MeshStandardMaterial({ color: 0xf2c94c, roughness: 0.3, metalness: 0.6 });
+  const mane = [0xff8fd0, 0xc59bff, 0x8fd8ff].map((c) => new THREE.MeshStandardMaterial({ color: c, roughness: 0.6 }));
+  const add = (m, x, y, z) => { m.position.set(x, y, z); m.castShadow = true; group.add(m); return m; };
+  const ball = (r, sx, sy, sz, x, y, z, mat = shade) => { const m = add(new THREE.Mesh(new THREE.SphereGeometry(r, 20, 14), mat), x, y, z); m.scale.set(sx, sy, sz); return m; };
+  const oval = add(new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.075, 0.02, 32), base), 0, 0.01, 0);
+  oval.scale.set(1, 1, 1.6);
+  ball(0.05, 0.85, 0.7, 1.35, 0, 0.055, -0.01);                       // the body, lying along z
+  ball(0.022, 1, 0.7, 1.6, 0.04, 0.035, 0.03);                        // folded front legs
+  ball(0.022, 1, 0.7, 1.6, -0.04, 0.035, -0.05);                      // a hind leg
+  const neck = ball(0.022, 1, 1.8, 1, 0, 0.1, 0.045); neck.rotation.x = 0.35;
+  ball(0.03, 0.85, 0.9, 1.25, 0, 0.14, 0.07);                          // the head
+  ball(0.017, 0.9, 0.8, 1.1, 0, 0.13, 0.1);                            // the muzzle
+  for (const s of [-1, 1]) { const ear = add(new THREE.Mesh(new THREE.ConeGeometry(0.008, 0.022, 8), shade), s * 0.014, 0.172, 0.06); ear.rotation.z = -s * 0.25; }
+  const horn = add(new THREE.Mesh(new THREE.ConeGeometry(0.007, 0.05, 12), gold), 0, 0.185, 0.085); horn.rotation.x = 0.45;
+  mane.forEach((m, i) => { const t = ball(0.011, 1, 1.4, 1, 0, 0.165 - i * 0.025, 0.04 - i * 0.018, m); t.rotation.x = 0.5; }); // the mane down the neck
+  mane.forEach((m, i) => { const t = ball(0.012, 1, 0.9, 2.2, 0.01 * (i - 1), 0.05 + i * 0.012, -0.085 - i * 0.012, m); t.rotation.x = -0.7 - i * 0.2; }); // the tail
+  return { group, shade, height: 0.09 };
+}
+
+/** A cactus in a black pot (a desert world for the Star Wars room): a ribbed column with two arms. Origin = bottom. */
+function cactus() {
+  const g = new THREE.Group();
+  const pot = new THREE.MeshStandardMaterial({ color: 0x1d1f22, roughness: 0.6 });
+  const green = new THREE.MeshStandardMaterial({ color: 0x4f7f4a, roughness: 0.75 });
+  const sand = new THREE.MeshStandardMaterial({ color: 0xd8c39a, roughness: 1 });
+  const add = (m, x, y, z) => { m.position.set(x, y, z); m.castShadow = true; g.add(m); return m; };
+  add(new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.04, 0.09, 20), pot), 0, 0.045, 0);
+  add(new THREE.Mesh(new THREE.CylinderGeometry(0.046, 0.046, 0.005, 20), sand), 0, 0.087, 0);
+  const column = (r, len, x, y, z) => { // a ribbed column with a round top
+    add(new THREE.Mesh(new THREE.CylinderGeometry(r, r, len, 10), green), x, y + len / 2, z);
+    add(new THREE.Mesh(new THREE.SphereGeometry(r, 10, 6, 0, Math.PI * 2, 0, Math.PI / 2), green), x, y + len, z);
+  };
+  column(0.024, 0.15, 0, 0.088, 0);
+  for (const [s, y, len] of [[1, 0.15, 0.06], [-1, 0.12, 0.045]]) { // an arm out to the side, then up
+    const out = add(new THREE.Mesh(new THREE.CylinderGeometry(0.013, 0.013, 0.035, 8), green), s * 0.035, y, 0);
+    out.rotation.z = Math.PI / 2;
+    column(0.014, len, s * 0.05, y - 0.005, 0);
+  }
+  return g;
+}
+
+/** A pink-flowering pot plant in a lilac pot (the unicorn room): the side table's flower with more, pinker blooms. */
+function pinkFlower() {
+  const g = flower();
+  const pot = new THREE.MeshStandardMaterial({ color: 0xc7a6e8, roughness: 0.6 });
+  const pink = new THREE.MeshStandardMaterial({ color: 0xff7ac0, roughness: 0.7 });
+  g.traverse((m) => { if (m.material === potMat) m.material = pot; else if (m.material === petalMat) m.material = pink; });
   return g;
 }
 
