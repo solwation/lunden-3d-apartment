@@ -7,7 +7,7 @@ import { HAND as H } from './config.js';
 // while the hand is empty. Holding something (holdable.js, a cup), the hand closes round the held thing's grip
 // point — `grip` ([x, y, z] in the thing's own frame) if it has one, else round the right edge of its box — or, for a
 // thing with `handPose: 'palm'` (the basketball), carries it on an open palm turned up; it follows the thing as it
-// swings, tips or is drunk from. E on a door, a cabinet, a tap, a switch …: the arm reaches out towards it (~0.35 s)
+// swings, tips or is drunk from. Petting the cat with an empty hand, the palm strokes its head and back (#242). E on a door, a cabinet, a tap, a switch …: the arm reaches out towards it (~0.35 s)
 // with the fingers opening, and back.
 // The hand is one mesh: a palm, a thumb and four fingers of three joints each (capsules, soft normals) and the bare
 // wrist, built in three poses that are its morph targets (relaxed | closed round a handle | spread for a reach).
@@ -152,7 +152,8 @@ export class Hand {
     tmpM.lookAt(at.clone().add(dir), at, up); // its z axis = eye − target = along the arm
     this.hand.quaternion.setFromRotationMatrix(tmpM);
     if (mode === 'palm') this.hand.quaternion.multiply(rollQ.setFromAxisAngle(Z, Math.PI / 2)); // the palm up, the thumb out
-    const contact = (mode === 'palm' ? CONTACT.palm : mode === 'grip' ? CONTACT.grip : new THREE.Vector3(0.01, 0, 0.06)).clone().multiplyScalar(H.size);
+    else if (mode === 'pet') this.hand.quaternion.multiply(rollQ.setFromAxisAngle(Z, -Math.PI / 2)); // the palm down on the cat
+    const contact = (mode === 'palm' || mode === 'pet' ? CONTACT.palm : mode === 'grip' ? CONTACT.grip : new THREE.Vector3(0.01, 0, 0.06)).clone().multiplyScalar(H.size);
     this.hand.position.copy(at).sub(contact.applyQuaternion(this.hand.quaternion)); // the wrist
     const cuff = new THREE.Vector3(0, 0, -H.cuff * H.size).applyQuaternion(this.hand.quaternion).add(this.hand.position);
     this.cuff.position.copy(cuff);
@@ -164,14 +165,21 @@ export class Hand {
     this.arm.scale.set(1, 1, Math.max(0.05, len - 0.012));
   }
 
-  update(dt, item) {
+  /** `item`: the held thing (or null); `pet`: a world point on the cat being petted with the empty hand (#242), or null. */
+  update(dt, item, pet = null) {
     const held = item?.held && item.model?.parent === this.camera;
     let show = false, grip = 0, spread = 0;
     if (held) {
       item.model.updateMatrix();
       const palm = item.handPose === 'palm';
       this.pose(this.gripOf(item).clone().applyMatrix4(item.model.matrix), palm ? 'palm' : 'grip');
-      grip = palm ? H.palmCurl : item.grip ? 1 : H.boxCurl; // round a handle; a little cupped under a ball
+      grip = item.handCurl ?? (palm ? H.palmCurl : item.grip ? 1 : H.boxCurl); // round a handle; a little cupped under a ball
+      show = true;
+      this.reachT = 1;
+    } else if (pet) { // stroking the cat: the palm down on its head and back, the fingers relaxed
+      this.camera.updateMatrixWorld();
+      this.pose(this.camera.worldToLocal(pet.clone()), 'pet');
+      grip = H.petCurl;
       show = true;
       this.reachT = 1;
     } else if (this.reachT < 1) {

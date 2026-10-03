@@ -257,6 +257,7 @@ const sillPots = buildSillPots(scene, camera, world.sillPlants); // the pots on 
 const holdables = [saber, ...toys.items, remote, book, beer, ...things, ...sillPots]; // things you can take and hold, one at a time (holdable.js)
 const cups = buildCups(scene, camera, world, world.cupCabinet); // coffee cups in the wall cabinet (#90)
 const hand = new Hand(camera, scene); // the visitor's arm and hand: holding things, reaching for doors (#195)
+const petAt = new THREE.Vector3();
 holdables.push(cups.jug);
 const fish = buildFish(scene, camera, world); // fish fingers in the freezer, one at a time (#162)
 if (fish) fish.onEaten = () => bump('fish');
@@ -1047,7 +1048,10 @@ function step(dt) {
   for (const h of holdables) h.update(dt);
   grill.update(dt);
   smokeAlarm.update(dt, !!chicken?.freeSmoke); // smoke the hood does not draw away (#194)
-  hand.update(dt, heldItem()); // the arm: holding something, or reaching for what E was used on (#195)
+  cat.ownHand = !!heldItem(); // petting with a thing in the hand: the cat shows a free hand of its own (#242)
+  const petting = cat.ownHand ? null : cat.petHand(petAt);
+  player.kneel = !!petting && petting.y < player.pos.y + 0.7; // down on your knees to stroke a cat on the floor (#242)
+  hand.update(dt, heldItem(), petting); // the arm: holding something, petting the cat, or reaching for what E was used on (#195)
   cups.update(dt);
   fish?.update(dt);
   toys.update(dt);

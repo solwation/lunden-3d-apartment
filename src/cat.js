@@ -312,6 +312,7 @@ export class CatSpawner {
     this.stars = buildStars(); // only for rare cats while they are petted
     cat.add(this.stars);
     this.petT = 0;            // seconds of petting left
+    this.ownHand = false;     // true: the visitor holds something, so the cat shows a free hand of its own (#242)
     this.petPhase = 0;
     this.petFrom = null;      // where the visitor stands
     this.onFound = null;      // (variant) => {} when a new cat turns up
@@ -387,6 +388,13 @@ export class CatSpawner {
     this.petT = PET_TIME;
     this.petFrom = { x: from.x, z: from.z };
     this.nextMeow = Math.max(this.nextMeow, PET_TIME + 2);
+  }
+
+  /** While it is petted (and the visitor's hand is free): the world point the stroking palm is at, else null (#242). */
+  petHand(out) {
+    if (!this.petting || this.petT <= 0.15 || !this.visible) return null;
+    this.hand.updateWorldMatrix(true, false);
+    return this.hand.getWorldPosition(out);
   }
 
   stopPetting() {
@@ -812,7 +820,7 @@ export class CatSpawner {
     this.tailGroup.rotation.y = 0.15 * Math.sin(this.petPhase * 1.3);
     // the hand strokes from the forehead back along the neck, following the rub
     const s = (Math.sin(this.petPhase * 2.6 - Math.PI / 2) + 1) / 2; // 0 = head, 1 = back
-    this.hand.visible = this.petT > 0.15;
+    this.hand.visible = this.petT > 0.15 && this.ownHand; // else the visitor's own hand strokes it (#242, petHand)
     this.hand.position.set(0.02 * rub, 0.42 - 0.07 * s, 0.07 - 0.17 * s);
     this.hand.rotation.set(0.25 - 0.35 * s, Math.PI, 0);
     if (this.breed.rare) this.updateStars(k);

@@ -5,7 +5,7 @@
 <pre id="out">running…</pre>
 <script>
 // Petting test: puts the cat in the living room in front of the visitor (touch mode), looks
-// at it, presses the action button and checks purring state, closed eyes, hand and stats.
+// at it, presses the action button and checks purring state, closed eyes, the visitor's hand on it (#242) and stats.
 //   google-chrome --headless=new --dump-dom http://localhost:8137/tools/pettest.html
 const out = document.getElementById('out');
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -17,7 +17,7 @@ document.body.append(f);
 f.onload = async () => {
   const w = f.contentWindow, d = f.contentDocument;
   while (!w.__app) await wait(100);
-  const { player, camera, cat, step } = w.__app;
+  const { player, camera, cat, step, hand } = w.__app;
   const lines = [];
   const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; };
   d.getElementById('start-touch').click();
@@ -38,12 +38,15 @@ f.onload = async () => {
   pass &= check(cat.petting, 'cat is being petted');
   const badge = d.getElementById('badges').textContent;
   pass &= check(/Klappat katt \+1/.test(badge), `badge "${badge}"`);
-  pass &= check(cat.hand.visible, 'hand visible');
+  // #242: the visitor's own hand strokes it (palm on the cat, not the cat's spare hand)
+  const V = camera.position.constructor, palm = cat.petHand(new V());
+  const wrist = hand.hand.getWorldPosition(new V());
+  pass &= check(hand.visible && !cat.hand.visible && palm && wrist.distanceTo(palm) < 0.12, `the visitor's hand on the cat (wrist ${palm ? wrist.distanceTo(palm).toFixed(3) : '-'} m from the stroke)`);
   pass &= check(cat.eyes.every((e) => e.shut.visible && !e.eye.visible), 'eyes closed');
   pass &= check(cat.voice === null && !cat.stars.visible, `ordinary cat: no special voice, no stars (${cat.breed.name})`);
   btn.click(); // petting again while it purrs counts once
   for (let i = 0; i < 6 * 60; i++) step(1 / 60);
-  pass &= check(!cat.petting && !cat.hand.visible && cat.eyes.every((e) => e.eye.visible), 'stops after a while');
+  pass &= check(!cat.petting && !cat.hand.visible && !hand.visible && cat.eyes.every((e) => e.eye.visible), 'stops after a while, the hand gone');
   // #206: then it turns, walks away from the visitor and is gone
   const d0 = 0.8; // it sat 0.8 m in front of the visitor
   for (let i = 0; i < 60 && cat.visible; i++) { step(0.1); if (cat.leaving && cat.leaving.gone > 0.3) break; }
@@ -75,7 +78,7 @@ async function rareCat(lines, check) {
   await new Promise((r) => { g.onload = r; });
   const w = g.contentWindow, d = g.contentDocument;
   while (!w.__app) await wait(100);
-  const { player, camera, cat, step } = w.__app;
+  const { player, camera, cat, step, hand } = w.__app;
   d.getElementById('start-touch').click();
   await wait(50);
   player.spawn(2.8, 9.0, Math.PI);

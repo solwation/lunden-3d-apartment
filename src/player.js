@@ -31,6 +31,7 @@ export class Player {
     this.sprinting = false;
     this.crouch = false;   // wanted (Ctrl held / touch toggle)
     this.crouched = false; // actually down (stays down where there is no room to stand)
+    this.kneel = false;    // down to pet a cat on the floor (#242), set by main.js
   }
 
   spawn(x, z, yaw) {
@@ -101,7 +102,7 @@ export class Player {
     const amount = keyFwd || keySide ? 1 : Math.min(1, Math.hypot(this.analog.x, this.analog.y));
     const wantsRun = k.has('ShiftLeft') || k.has('ShiftRight') || (!keyFwd && !keySide && amount > PLAYER.sprintStick);
     // crouch (#70): down at once, up only where there is head room (under the stair there may be none)
-    this.crouched = this.crouch || (this.crouched && !this.roomToStand());
+    this.crouched = this.crouch || this.kneel || (this.crouched && !this.roomToStand());
     this.sprinting = wantsRun && this.outdoors && !this.crouched && (keyFwd || keySide || amount > 0);
     const speed = (this.sprinting ? PLAYER.run : PLAYER.walk * amount) * (this.crouched ? PLAYER.crouchSpeed : 1) * (this.boost ?? 1); // boost: Kaffeturbo (#217)
 

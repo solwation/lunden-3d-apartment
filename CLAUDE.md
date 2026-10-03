@@ -167,7 +167,9 @@ src/holdable.js        things you take and hold (one at a time): home + pick box
 src/hand.js            the visitor's arm + hand (HAND, #195, #238): three meshes in the camera (sleeve, cuff, the hand: palm,
                        thumb, four three-joint fingers of capsules + the bare wrist, with morph targets relaxed | grip |
                        spread), hidden when empty; holding a thing the fingers close round its `grip` (or the right edge of
-                       its box) and follow it, `handPose: 'palm'` (the basketball) carries it on the palm turned up;
+                       its box; `handCurl` overrides how far they close: the fish finger is pinched) and follow it, `handPose: 'palm'`
+                       (the basketball) carries it on the palm turned up; petting the cat with a free hand (#242) the palm
+                       strokes it (`cat.petHand()`, its own spare hand only while you hold something) and `player.kneel` crouches;
                        E (main.js `use`) reaches towards the target and back with the fingers opening. The detail culler (#189) looks again whenever the held thing changes (`refresh()`)
 src/beer.js            the big beer (BEER, #117), a Holdable: served on the lounge table when you sit in the lounge sofa,
                        click / "Drick" drinks a gulp (the level drops), back on the table = full; cups drink too

@@ -92,7 +92,8 @@ export class FishFinger {
     this.cap = new THREE.Mesh(new THREE.BoxGeometry(0.002, C.h * 0.8, C.w * 0.8).translate(0, C.h / 2, 0), fishMat); // the bitten end
     g.add(this.stick, this.cap);
     g.visible = false;
-    Object.assign(this, { name: 'fiskpinnen', placeVerb: 'lägga ner', isFish: true, pack, scene, camera, model: g, state: 'box', held: false, bites: 0, bite: 0,
+    Object.assign(this, { grip: [0.012, C.h / 2, 0], handCurl: 0.62, // pinched at the far end from the bites (#242)
+      name: 'fiskpinnen', placeVerb: 'lägga ner', isFish: true, pack, scene, camera, model: g, state: 'box', held: false, bites: 0, bite: 0,
       cook: 0, hot: 0, sizzleT: 0, clock: Math.random() * 3 });
     // steam while it is hot, smoke while it burns: a few sprites that rise from it
     this.puffs = [...Array(4)].map((_, i) => {

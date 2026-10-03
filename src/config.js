@@ -518,7 +518,7 @@ export const MARKS = {
 // texture (frozen = white). Times are our picks.
 export const FISH = { n: 15, len: 0.09, w: 0.025, h: 0.016, bites: 3, box: { w: 0.19, d: 0.13, h: 0.045 },
   fry: { seconds: 6, burnAt: 18, burnt: 22, slots: 5, steam: 30, golden: 0xd99a4a, dark: 0x3b2716 },
-  held: { x: 0.14, y: -0.15, z: -0.34 } };
+  held: { x: 0.13, y: -0.12, z: -0.42 } }; // held: a little further out so the hand round it (#242) does not fill the view
 // The cat and a fish finger on the floor (#163, cat.js): one within `reach` m in the open (a straight walk with no
 // wall or door in between, i.e. the same room) catches its eye; it looks for `notice` s, walks there at `speed` m/s,
 // stops `stop` m short (its head over it) and eats it in `eat` s. Taken away first: it looks after it for `look` s.
@@ -602,7 +602,7 @@ export const SECRET = {
 // isn't grey (cheap stand-in for light through skin); `cuff` = m from the wrist back to the sleeve's cuff; how far
 // the fingers close: 1 round a `grip`, `boxCurl` beside a thing without one, `palmCurl` under one carried on the palm.
 export const HAND = { skin: 0xe2b292, skinGlow: 0x2a0e06, sleeve: 0x4a5a6e, shoulder: [0.3, -0.5, 0.15], rest: [0.2, -0.26, -0.32],
-  reach: 0.4, reachTime: 0.4, size: 0.95, cuff: 0.085, boxCurl: 0.75, palmCurl: 0.2 };
+  reach: 0.4, reachTime: 0.4, size: 0.95, cuff: 0.085, boxCurl: 0.75, palmCurl: 0.2, petCurl: 0.15 }; // petCurl: stroking the cat (#242)
 
 // What is in the wardrobes and drawers (#228, src/stuff.js): shared colours, and per person (by room) the clothes:
 // `size` (1 adult, ~0.65 a child), garment colours, what hangs on the rod, folded colours, shoes, socks, underwear.
