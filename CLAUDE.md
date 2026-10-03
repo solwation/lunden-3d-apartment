@@ -54,7 +54,7 @@ game's clock and date (spooled / paused — only a new visit starts at the real 
 carries on along its path, parked with its doors, the music), open doors / lids / fronts / windows, room lamps + small lamps (on/off and the
 dusk state, not the pool), TV / PC / hob / hood / grill, the coffee in the jug, the Sonos, the parasol's hand choice, things put down and the
 one in the hand (cups with pattern and contents, glasses, the served beer), sitting / lying (`sitAt`), the cat. Fresh as before: the
-chicken / fish fingers, taps, a drawing in the hand, F5 (place only).
+chicken / fish fingers / fries in the air fryer (the bag itself is kept like the milk), taps, a drawing in the hand, F5 (place only).
 A record made mid-visit skips the start screen (#181, `continueAfterReload`): touch plays at once (sound/fullscreen on the
 first touch), mouse & keyboard gets the see-through `#arm` (the next click takes the mouse, #190); "Ny version laddad" fades out at the top after 3 s.
 F5 (#203): while visiting, the place (+ view, mode, mute, `BUILD`) is written to this tab's sessionStorage every 2 s and on
@@ -214,7 +214,15 @@ src/airfryer.js        the air fryer (AIRFRYER, #287): an OBH Nordica Easy Fry D
                        (200° + a game-time countdown, fan hum, glowing vents; basket out = paused; "End" + beeps); fish fingers go
                        in the open basket (`FishPack.airfryHeld`, a child of the basket; a look into the open basket takes the
                        nearest one), cook golden in one run, burn in a third (smoke from the vents → the smoke alarm); a loose
-                       item; F: off, in, emptied
+                       item; F: off, in, emptied. Fries (#301) go in instead of fish fingers (one kind at a time), see fries.js
+src/fries.js           Aviko frozen fries (#301, FRIES): a stand-up bag (canvas print, our own plain wordmark) leaning on the freezer's
+                       top shelf, a Holdable like the milk (not hidden with F, sent home); in the hand, E on the open air-fryer basket
+                       pours a portion (the bag tips, sfx.pourFries; FRIES.portions per bag, FRIES.max in the basket, not with fish
+                       fingers): a heap of sticks (one InstancedMesh, a child of the basket) that drop in, cook pale → golden in one
+                       run, burn in a third (smoke from the vents → the smoke alarm, a deduction); done and pulled out they steam
+                       (cups.js `Steam`) for FRIES.steam s; E with a free hand takes a bunch (FriesBunch: click / "Ät" eats one fry,
+                       put down / taken again); stats fries / friesCooked / friesBurnt; F: emptied, the bag full; `&fries` = a done
+                       basket out (screenshots)
 src/mirror.js          the one mirror material (gradient + glints; hall and bathroom mirrors)
 src/reflections.js     mirror images: a Reflector per mirror, only the nearest one in view (< 4 m) renders
 src/seasons.js         month → tree colours/leaf cover and snow on ground, roofs, hedges, paving (SEASON)
@@ -489,7 +497,9 @@ tools/grilltest.html   headless test: light the grill (flames, light, lid), F ke
 tools/cooktest.html    headless test: the induction hob on/off (glow), F switches it off; the pan: drawer → hob → drawer, F; the chicken:
                        fry, smoke, the fridge shut stops it, it stops by itself, F; fish fingers fried, eaten, burnt (#214); raw/golden, no hood → the alarm, the hood
                        on → quiet, break a leg off and eat it, eat it all, F whole again (#194); the air fryer: turned 45°, the basket out diagonally on the worktop (#296), three in, start,
-                       countdown, paused while out, golden + "End", one out and eaten, burnt in a third run (smoke, the alarm), F (#287)
+                       countdown, paused while out, golden + "End", one out and eaten, burnt in a third run (smoke, the alarm), F (#287);
+                       Aviko fries (#301): the bag from the freezer, two portions poured (a third does not fit, no fish finger with
+                       them), golden, "End", steam, a bunch and three bites, burnt + smoke + the alarm, F
 tools/postertest.html  headless test: take the drawing (blank sheet stays), back on the desk, tape it up in the hall and on
                        the fridge door (swings with it), none on the kitchen window, reload → both back; look at one (panel, no walking,
                        ×/E close), Släng → ball lands and vanishes, out of storage; Ta ner → taped up elsewhere; lying in each lower bunk:
@@ -781,6 +791,7 @@ URL parameters (debugging / screenshots):
   `&lights` turns every lamp on, ceiling lamps too, and keeps the small ones on (#234).
 - `&weather=rain|storm|snow|hail|clear` — force the weather (#248, #249).
 - `&blinds=0…1` — every pleated blind drawn up that far (#273; not saved).
+- `&fries` — golden, steaming fries in the open air-fryer basket (#301).
 - `&hoop` — the basketball hoop up out front. `&car` — our car parked in front of the house. `&water` — turn on every tap and shower. `&tv` — switch the TV on. `&laptop` — Tilly's laptop on. `&secret=i` — the secret drawer shows surprise i (SECRET.items, with `&open`).
 - `&phone` — the short touch-only start screen. `&install` — show the iPhone install sheet. `&note` — open the changelog note. `&pet` (with `&cat=`) — the cat is being petted.
 - `&clip=y` — clip everything above height y (cut-away plan view, e.g.

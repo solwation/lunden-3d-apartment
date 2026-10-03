@@ -755,6 +755,15 @@ export const FISH = { n: 15, len: 0.09, w: 0.025, h: 0.016, bites: 3, box: { w: 
 export const AIRFRYER = { x: 5.245, z: 5.229, rot: 45, w: 0.3, d: 0.38, h: 0.32,
   basket: { d: 0.25, h: 0.15, out: 0.2, in: 0.35 }, slots: 6, seconds: 20, clock: 24, temp: 200, beeps: 3,
   get rate() { return 1.2 * FISH.fry.seconds / this.seconds; }, socket: { x: 5.45, z: 5.434 } };
+// A bag of Aviko frozen fries (#301, src/fries.js): a stand-up bag `bag` W × H × D m (*guess* from the issue, ~1 kg), leaning
+// back on the freezer's top shelf; `portions` pours in a full bag, `portion` fries per pour, at most `max` portions in the
+// basket (its volume, *guess*). In the air fryer they go from frozen `raw` to `golden` after `golden` s of cooking (real
+// seconds while it runs: one AIRFRYER run of 20 s, a little before its end), and from `burnAt` s (the third run, "left far
+// too long") to `dark` by `burnt`; done, they steam for `steam` s (cooling, like a cup of coffee, #216). E on the basket
+// takes `bunch` of them into the hand; each bite eats one. Stick `len` × `t` m. Our picks.
+export const FRIES = { bag: { w: 0.24, h: 0.33, d: 0.055 }, portions: 6, portion: 18, max: 2, bunch: 4, len: 0.07, t: 0.009,
+  golden: 17, burnAt: 48, burnt: 58, steam: 60, pour: 0.9,
+  raw: 0xf2e9c4, goldenColor: 0xe2a447, dark: 0x4a2c12, held: { x: 0.2, y: -0.36, z: -0.58 }, bunchHeld: { x: 0.13, y: -0.12, z: -0.42 } };
 // The cat and a fish finger on the floor (#163, cat.js): one within `reach` m in the open (a straight walk with no
 // wall or door in between, i.e. the same room) catches its eye; it looks for `notice` s, walks there at `speed` m/s,
 // stops `stop` m short (its head over it) and eats it in `eat` s. Taken away first: it looks after it for `look` s.
@@ -899,6 +908,7 @@ export const SCORE = {
     turbo: 20,                                            // three cups of coffee in five minutes
     beer: 0.3, coffee: 0.3, wine: 0.3, champagne: 0.3, whisky: 0.3, milk: 0.3, kask: 0.6, // sips
     fish: 0.5, fried: 2, chicken: 1, cooked: 8, brews: 2, // cooked = a whole chicken fried golden (burnt: a deduction, #288)
+    fries: 0.2,                                           // per fry eaten (#301): a bunch is four
     posted: 3, thrown: 0.5, drawn: 2,
     secrets: 1, stairs: 0.3, steps: 0.01,
     shatterRange: 1,                                      // something shot to pieces from afar: per range point (#263)
@@ -914,13 +924,14 @@ export const SCORE = {
     pingpingHugs: 10, // hugging Pingping (#269)
     carMusic: 3, // per song played in the car (#268), like the speakers' songs
     airfried: 6, // a batch of fish fingers done in the air fryer (#287): the first time, then `again` per batch
+    friesCooked: 8, // a basket of Aviko fries cooked golden (#301): the first time, then `again` per batch
     clips: 2, // per kind of clip seen on Tilly's laptop (#283); no points for repeats (they come by themselves)
   },
   again: {
     doors: 0.1, lids: 0.1, flushes: 0.2, taps: 0.1, fridge: 0.1, appliances: 0.1, cabinets: 0.05, lights: 0.05,
     sat: 0.1, lay: 0.1, songs: 0.2, read: 0.5, car: 1, grill: 1, hood: 0.2, tv: 0.2, pc: 0.3, parasol: 0.2,
     clock: 0.1, calendar: 0.1, greets: 0.1, catButts: 1, walkRain: 2, walkSnow: 3, walkHail: 4, walkStorm: 3,
-    shattered: 0.3, carMusic: 0.2, pingpingHugs: 0.2, blinds: 0.05, airfried: 0.5,
+    shattered: 0.3, carMusic: 0.2, pingpingHugs: 0.2, blinds: 0.05, airfried: 0.5, friesCooked: 0.5,
   },
   breeds: { huskatt: 10, siames: 30, 'brittiskt korthår': 30, 'maine coon': 35, 'norsk skogkatt': 40, perser: 100, sphynx: 250 },
   secrets: { kinds: 10, rare: 40 },

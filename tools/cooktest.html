@@ -271,6 +271,71 @@ f.onload = async () => {
   pass &= check(smokeAlarm.ringing, 'the smoke alarm goes off');
   toggleFurniture(); toggleFurniture();
   pass &= check(!airFryer.running && !airFryer.open && !fish.inFryer.length && fish.left === 15 && !smokeAlarm.ringing && airFryer.shown === '', 'F: off, the basket in and empty, quiet');
+  // (7) #301: a bag of Aviko fries in the freezer — take it, pour two portions into the open basket (the bag counts down,
+  // a third does not fit), shut, start; golden, "End", steam; a bunch into the hand, three bites; far too long → burnt + smoke; F
+  const { fries } = w.__app, FR = { portion: 18, portions: 6, bunch: 4 };
+  const bag = fries?.bag;
+  const centre = (o) => { scene.updateMatrixWorld(true); const b = new (o.position.constructor)(); let n = 0; o.traverse((m) => { if (m.isMesh) { b.add(m.getWorldPosition(new V())); n++; } }); return b.divideScalar(n); };
+  pass &= check(!!bag && bag.left === FR.portions && bag.model.parent === scene && Math.abs(bag.model.position.x - fzr.inside.cx) < 0.1 && bag.model.position.y > fzr.shelves[1] - 0.01, `the bag on the freezer's top shelf (${bag?.model.position.toArray().map((v) => v.toFixed(2))})`);
+  if (!fzr.isOpen) fzr.toggle();
+  run(1);
+  const bagAt = centre(bag.model).add(new V(0, 0.03, 0));
+  label = aim(bagAt, [bagAt.x, bagAt.z - 0.75]);
+  pass &= check(/ta påsen med pommes frites/i.test(label), `the bag in the open freezer: "${label}"`);
+  btn.click(); step(1 / 60);
+  pass &= check(heldItem() === bag, 'taken');
+  fzr.toggle();
+  airFryer.setOpen(true); run(1);
+  label = aim(inBasket(0, 0.05, -0.12), afFrom);
+  pass &= check(/hälla pommes frites i airfryern/i.test(label), `the bag at the open basket: "${label}"`);
+  btn.click(); run(1.5);
+  pass &= check(fries.count === FR.portion && bag.left === FR.portions - 1 && fries.heap.count === FR.portion && fries.cook === 0, `a portion poured (${fries.count} fries, ${bag.left} left in the bag)`);
+  {
+    const m = new w.__app.camera.matrix.constructor(), p = new V();
+    fries.heap.getMatrixAt(0, m); p.setFromMatrixPosition(m);
+    pass &= check(p.y > 0.03 && p.y < 0.08, `they lie in the basket (y ${p.y.toFixed(3)} over its bottom)`);
+  }
+  label = aim(inBasket(0, 0.05, -0.12), afFrom); btn.click(); run(1.5);
+  pass &= check(fries.count === 2 * FR.portion && bag.left === FR.portions - 2, `a second portion (${fries.count})`);
+  label = aim(inBasket(0, 0.05, -0.12), afFrom);
+  pass &= check(/korgen är full/i.test(label), `a third does not fit: "${label}"`);
+  bag.putBack();
+  pass &= check(!heldItem() && bag.model.parent === scene && bag.model.position.distanceTo(bag.home.pos) < 1e-6, 'the bag back in the freezer');
+  fish.press(); // a fish finger in the hand does not go in with the fries
+  label = aim(inBasket(0, 0.05, -0.12), afFrom);
+  pass &= check(/korgen har pommes frites/i.test(label), `a fish finger at the basket: "${label}"`);
+  fish.putIn(heldItem());
+  label = aim(inBasket(0, 0.05, -0.12), afFrom);
+  pass &= check(/pommesen är frysta/i.test(label), `frozen ones can't be taken: "${label}"`);
+  airFryer.setOpen(false); run(1);
+  const fc0 = stats.friesCooked ?? 0, af1 = stats.airfried ?? 0;
+  airFryer.press(); run(AF.seconds / 2);
+  pass &= check(!fries.done && fries.mat.color.getHex() !== 0xf2e9c4, `half way: browning (#${fries.mat.color.getHex().toString(16)})`);
+  run(AF.seconds / 2 + 0.5);
+  pass &= check(!airFryer.running && airFryer.shown === 'End' && fries.done && !fries.burnt && stats.friesCooked === fc0 + 1 && stats.airfried === af1 + 1, `done: "End", golden (#${fries.mat.color.getHex().toString(16)}), counted`);
+  pass &= check(fries.steams.every((s) => !s.mesh.visible), 'no steam with the basket in');
+  airFryer.setOpen(true); run(1);
+  pass &= check(fries.steams.every((s) => s.mesh.visible && s.mesh.material.opacity > 0.1), `the basket out: they steam (${fries.steams[0].mesh.material.opacity.toFixed(2)})`);
+  label = aim(inBasket(0, 0.06, -0.07), afFrom);
+  pass &= check(/ta pommes frites/i.test(label), `a free hand at the basket: "${label}"`);
+  btn.click(); step(1 / 60);
+  const bunch = heldItem();
+  pass &= check(bunch?.isFries && bunch.n === FR.bunch && fries.count === 2 * FR.portion - FR.bunch && bunch.hot > 0, `a bunch in the hand (${bunch?.n}), ${fries.count} left in the basket`);
+  const fe0 = stats.fries ?? 0;
+  for (let b = 0; b < 3; b++) { bunch.use(); run(0.5); }
+  pass &= check(heldItem() === bunch && bunch.n === 1 && stats.fries === fe0 + 3 && bunch.sticks.filter((s) => s.visible).length === 1, `three bites: one left (${stats.fries - fe0} eaten)`);
+  run(70);
+  pass &= check(fries.steams.every((s) => !s.mesh.visible), 'cooled: no more steam');
+  // left far too long: two more runs → burnt, smoke out of the vents, the smoke alarm
+  airFryer.setOpen(false); run(0.5);
+  airFryer.press(); run(AF.seconds + 0.5);
+  pass &= check(fries.done && !fries.burnt, 'a second run: still golden');
+  airFryer.press(); run(11);
+  pass &= check(fries.burnt && fries.smoke && fries.puffs.some((sp) => sp.visible && sp.position.y > airFryer.object.position.y + 0.3), `burnt in the third run (#${fries.mat.color.getHex().toString(16)}), smoke out of the vents`);
+  run(6);
+  pass &= check(smokeAlarm.ringing, 'the smoke alarm goes off');
+  toggleFurniture(); toggleFurniture();
+  pass &= check(!fries.count && fries.heap.count === 0 && bag.left === FR.portions && !heldItem() && fries.bunches.every((b) => !b.model.visible) && !airFryer.running && !smokeAlarm.ringing && !fries.puffs.some((sp) => sp.visible), 'F: the basket empty, the bunch gone, a full bag, quiet');
   out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
 };
 </script>

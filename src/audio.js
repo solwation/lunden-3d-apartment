@@ -686,6 +686,13 @@ export const sfx = {
     for (let i = 0; i < 6; i++) noise(t + 0.03 + i * 0.012, 0.012, d, { type: 'highpass', freq: 2200, gain: 0.25 * Math.random(), attack: 0.001 });
     for (let i = 0; i < 3; i++) noise(t + 0.25 + i * 0.22, 0.09, d, { type: 'lowpass', freq: 500, gain: 0.18, attack: 0.02 });
   },
+  /** Frozen fries poured from their bag into the air fryer's basket (#301): a plastic crinkle, then a rattle of sticks. */
+  pourFries(pos) {
+    if (!ready()) return;
+    const t = ctx.currentTime, d = out(pos, 0.8);
+    noise(t, 0.7, d, { type: 'bandpass', freq: 3200, q: 0.6, gain: 0.08, attack: 0.05 });
+    for (let i = 0; i < 26; i++) noise(t + 0.15 + Math.random() * 0.6, 0.02, d, { type: 'bandpass', freq: 1400 + Math.random() * 1800, q: 2, gain: 0.08 + 0.12 * Math.random(), attack: 0.001 });
+  },
     /** A foam blaster: a springy thunk and a soft whoosh. */
   /** A rifle shot (#196): a sharp crack, a low thump and a short room tail — loud, not deafening. */
   gunshot(pos) {

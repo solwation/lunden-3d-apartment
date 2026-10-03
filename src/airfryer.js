@@ -115,6 +115,7 @@ export class AirFryer {
     g.add(bk);
     this.basket = bk;
     this.plateY = 0.037; // fish fingers lie on the plate (basket-local)
+    this.frontZ = frontZ; // the basket's front (local z): the fries' heap is laid out from it (#301)
     this.slotAt = (i) => { // 2 rows (front, back) of 3 across: lying along z, the stick's origin at its front end
       const col = i % 3, row = Math.floor(i / 3);
       return new THREE.Vector3((col - 1) * 0.06, this.plateY, frontZ + 0.03 + row * 0.1);

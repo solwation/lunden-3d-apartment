@@ -9,7 +9,7 @@ import { SONOS } from './config.js';
 // restoring: the clock and the date (a mid-visit update keeps the game's time, spooled or paused — a new visit still
 // starts at the real time, #143), the car, doors / lids / fronts, lamps, the TV / PC / hob / hood / grill, the coffee
 // in the jug, the music, the parasol, things put down and the one in the hand (cups with what is in them), sitting /
-// lying, the cat. Not kept (fresh as before): cooking (the chicken, fish fingers), taps, the drawing in the hand.
+// lying, the cat. Not kept (fresh as before): cooking (the chicken, fish fingers, the fries, #301), taps, the drawing in the hand.
 // `a` is the app: main.js hands over what the parts need.
 
 export const KEEP_VERSION = 1;

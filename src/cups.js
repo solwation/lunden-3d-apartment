@@ -95,7 +95,7 @@ const S = CUP_STEAM;
  * sways as it rises and drifts back when the cup moves. Rebuilt on the CPU each frame while it shows (a few dozen
  * vertices), turned towards the camera about the vertical.
  */
-class Steam {
+export class Steam {
   constructor() {
     wisp ??= wispTexture();
     const n = S.strips, m = S.segments, verts = n * (m + 1) * 2;

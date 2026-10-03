@@ -42,6 +42,7 @@ import { Milk } from './milk.js';
 import { buildCups } from './cups.js';
 import { buildFish } from './fishfingers.js';
 import { AirFryer } from './airfryer.js';
+import { buildFries } from './fries.js';
 import { Drawing } from './drawing.js';
 import { CatCalendar, CalendarPanel } from './calendar.js';
 import { heldItem } from './holdable.js';
@@ -298,7 +299,11 @@ const airFryer = new AirFryer(KITCHEN.baseTop + KITCHEN.worktop);
 scene.add(airFryer.object);
 world.looseItems.push(airFryer.object);
 if (fish) fish.fryer = airFryer;
-airFryer.onDone = () => { if (fish?.inFryer.length) bump('airfried', 1, 'airfryer'); }; // a batch done (#287)
+// Aviko fries in the freezer, poured into the air fryer (#301): golden → points the first time, burnt → a deduction
+const fries = buildFries(scene, camera, world, airFryer);
+if (fries) Object.assign(fries, { fishIn: () => !!fish?.inFryer.length, onGolden: () => bump('friesCooked', 1, 'fries'),
+  onBurnt: () => { bump('friesBurnt'); penalize('burnt'); }, onEaten: () => bump('fries') });
+airFryer.onDone = () => { if (fish?.inFryer.length || fries?.count) bump('airfried', 1, 'airfryer'); }; // a batch done (#287)
 const fridge = world.lids.find((l) => l.kind === 'fridge' && !l.freezer);
 const chicken = fridge ? new Chicken(scene, camera, fridge, pan, world.hob) : null; // the roast chicken: take it, fry it in the pan (#160)
 if (chicken) holdables.push(chicken);
@@ -568,6 +573,7 @@ if (params.has('turbo')) turbo.start(); // Kaffeturbo at once (screenshots, #217
 if (params.has('water')) for (const t of taps) t.toggle();
 if (params.has('open')) for (const d of [...world.doors, ...world.lids, ...world.furnitureTargets.filter((t) => t.kind === 'appliance' || t.kind === 'cabinet')]) { d.toggle(); for (let i = 0; i < 30; i++) d.update(0.1); } // + cabinet doors / drawers in the furniture
 if (params.has('open')) { airFryer.setOpen(true); airFryer.update(1); } // the air fryer's basket out too (#296 screenshots)
+if (params.has('fries') && fries) { airFryer.setOpen(true); airFryer.update(1); fries.cooked(); } // &fries: golden, steaming fries in the open basket (#301 screenshots)
 // ?cat=x,z[,yaw[,feetY]] puts the cat somewhere (screenshots)
 if (params.has('cat')) {
   const [x, z, yaw = 0, y = 0] = params.get('cat').split(',').map(Number);
@@ -822,6 +828,7 @@ function use(thing) {
   else if (thing.blocked) { const o = thing.overflow?.(); if (o) spill(o); else sfx.click(camera.position); } // put down what you hold first (#102); E on a full glass/cup anyway: it runs over (#288)
   else if (thing.kind === 'airfryer') { thing.toggle(); if (thing.isOpen) bump('appliances', 1, thing.id); } // the air fryer's basket / panel (#287)
   else if (thing.kind === 'airfry') thing.item.airfryHeld(); // a fish finger into the air fryer's basket (#287)
+  else if (thing.kind === 'pourfries') thing.toggle(); // fries from the bag into the air fryer's basket (#301)
   else if (thing.kind === 'saber' || thing.kind === 'holdable' || thing.kind === 'cup') thing.toggle();
   else if (thing.kind === 'place') thing.item.placeAt(thing.point);
   else if (thing.kind === 'fry') thing.item.intoPan(); // the chicken into the pan on the hob (#160)
@@ -989,6 +996,7 @@ function updateFocus() {
   const cupTargets = cups.cups.filter((c) => !c.held && c.state !== 'spare').map((c) => c.target.pickable);
   if (fish && world.furnitureOn) cupTargets.push(fish.target.pickable, ...fish.placed.map((f) => f.target.pickable), ...fish.inPan.map((f) => f.target.pickable)); // the carton + fish fingers lying out (#162) or in the pan (#214)
   if (fish && world.furnitureOn && airFryer.open) cupTargets.push(...fish.inFryer.map((f) => f.target.pickable)); // in the open air fryer basket (#287)
+  if (fries && world.furnitureOn) cupTargets.push(...fries.placed.map((b) => b.target.pickable)); // bunches of fries put down (#301)
   const hit = raycaster.intersectObjects([...pickables, ...extra, ...cupTargets], true)
     .find((h) => shown(h.object) && !(rest.active && (h.object.userData.door === rest.target || h.object.userData.door?.kind === 'rest')));
   focused = hit && !behindWall(hit.point) ? hit.object.userData.door : null;
@@ -1048,8 +1056,15 @@ function updateFocus() {
     const near = fish.inFryer.map((f) => [f, f.middle(new THREE.Vector3()).distanceTo(focusPoint)]).sort((a, b) => a[1] - b[1])[0][0];
     focused = near.target;
   }
+  // fries (#301): with a free hand, a look into the open basket takes a bunch; the bag in the hand pours a portion in;
+  // a fish finger does not go in with them (one kind at a time)
+  const atBasket = airFryer.open && (focused === airFryer.basketTarget || focused === airFryer.trayTarget || focused === airFryer.panelTarget
+    || focused === fries?.takeTarget || !!fish?.inFryer.some((f) => f.target === focused));
+  if (fries?.count && !item && focused === airFryer.trayTarget && airFryer.open) focused = fries.takeTarget;
+  if (fries && item === fries.bag && atBasket) { focused = fries.pourTarget; placeGhost.visible = false; }
+  if (fries?.count && item?.isFish && atBasket) { focused = { name: '', kind: 'airfry', blocked: true, blockedText: 'Korgen har pommes frites' }; placeGhost.visible = false; }
   // a fish finger in the hand, aimed at the open air fryer basket (or a fish finger in it): into the basket (#287)
-  if (item?.isFish && fish?.canAirfry() && (focused === airFryer.basketTarget || focused === airFryer.trayTarget || focused === airFryer.panelTarget || fish.inFryer.some((f) => f.target === focused))) {
+  if (item?.isFish && !fries?.count && fish?.canAirfry() && (focused === airFryer.basketTarget || focused === airFryer.trayTarget || focused === airFryer.panelTarget || fish.inFryer.some((f) => f.target === focused))) {
     focused = { name: 'fiskpinnen i airfryern', kind: 'airfry', verb: 'lägga', item: fish };
     placeGhost.visible = false;
   }
@@ -1091,6 +1106,7 @@ function toggleFurniture(on = !world.furnitureOn) {
     heldItem()?.putBack(); toys.darts.hide();
     fish?.reset(); // the fish fingers lying around are cleared away, the carton is full again (#162)
     airFryer.reset(); // off, the basket in and empty (#287)
+    fries?.reset(); // the fries out of the basket and the hand, a full bag (#301)
     for (const l of world.lids) if (l.kind === 'fridge' && l.isOpen) l.toggle(); // the fridge and freezer doors shut: no alarm (#288)
     rifle?.reset(); // the dropped magazines go, a full one in (#196)
     for (const h of holdables) if (h.placed) h.goHome();
@@ -1109,6 +1125,7 @@ function toggleFurniture(on = !world.furnitureOn) {
 world.looseItems.push(board.object, ...holdables.flatMap((h) => (h.homeParent ? [h.holder] : [h.holder, h.model])), ...toys.deco); // (the secretary's things go home into it with F, and the secret drawer shows one at a time, #183)
 const milk = fridge?.milkAt ? new Milk(scene, camera, fridge) : null; // the milk carton in the fridge (#168): not hidden with F, only sent home
 if (milk) holdables.push(milk);
+if (fries) holdables.push(fries.bag); // the bag of fries in the freezer (#301): like the milk, not hidden with F, only sent home
 world.looseItems.push(...cups.cups.map((c) => c.model), drawing.paper, calendar.object, ...posters.groups, ...(fish ? [fish.object] : [])); // the cups and the paper go with F too // the cat board and the toys go with the furniture (F)
 try { if (localStorage.getItem('lunden.furniture') === '0') toggleFurniture(false); } catch { /* ignore */ }
 document.getElementById('furniture-btn').addEventListener('click', () => toggleFurniture());
@@ -1190,13 +1207,14 @@ function step(dt) {
   grill.update(dt);
   airFryer.update(dt);
   if (fish) fish.freezer.paused = !noteEl.hidden; // reading the note on the freezer door counts as using it (#288)
-  smokeAlarm.update(dt, !!chicken?.freeSmoke || !!fish?.fryerSmoke); // smoke the hood does not draw away (#194); a burning air fryer (#287)
+  smokeAlarm.update(dt, !!chicken?.freeSmoke || !!fish?.fryerSmoke || !!fries?.smoke); // smoke the hood does not draw away (#194); a burning air fryer (#287)
   cat.ownHand = !!heldItem(); // petting with a thing in the hand: the cat shows a free hand of its own (#242)
   const petting = cat.ownHand ? null : cat.petHand(petAt);
   player.kneel = !!petting && petting.y < player.pos.y + 0.7; // down on your knees to stroke a cat on the floor (#242)
   hand.update(dt, heldItem(), petting); // the arm: holding something, petting the cat, or reaching for what E was used on (#195)
   cups.update(dt);
   fish?.update(dt);
+  fries?.update(dt);
   toys.update(dt);
   marks.update(dt);
   breaker.update(dt);
@@ -1458,4 +1476,4 @@ if (resumeOk && resumed.mode) continueAfterReload(resumed);
 document.documentElement.classList.remove('resuming'); // the page is ready: off with the "Laddar…" cover (#222)
 
 // handle for tests/debugging (tools/touchtest.html)
-window.__app = { keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };
+window.__app = { fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };
