@@ -59,6 +59,42 @@ f.onload = async () => {
     w.__app.scene.updateMatrixWorld(true);
     pass &= check(!fz.isOpen && note.object.getWorldPosition(new V()).distanceTo(p) < 0.005, 'freezer closed, the note back in place');
   }
+  // keyboard scrolling (#275): fake pointer lock so the real key handler runs
+  const canvas = d.querySelector('canvas');
+  Object.defineProperty(d, 'pointerLockElement', { get: () => canvas, configurable: true });
+  d.dispatchEvent(new w.Event('pointerlockchange'));
+  const key = (type, code, o = {}) => d.dispatchEvent(new w.KeyboardEvent(type, { code, bubbles: true, cancelable: true, ...o }));
+  const press = (code, o) => { key('keydown', code, o); key('keyup', code, o); };
+  const paper = d.querySelector('#note .paper');
+  key('keydown', 'KeyW'); // held while walking up to the note
+  w.__app.showNote(true);
+  const at = { x: player.pos.x, z: player.pos.z };
+  pass &= check(paper.scrollHeight > paper.clientHeight + 200, `a long list (${paper.scrollHeight} > ${paper.clientHeight} px)`);
+  const moves = [['ArrowDown', 1], ['KeyS', 1], ['PageDown', 1], ['Space', 1], ['End', 1], ['ArrowUp', -1], ['KeyW', -1], ['PageUp', -1], ['Space', -1, { shiftKey: true }], ['Home', -1]];
+  paper.scrollTop = 0;
+  for (const [code, dir, o] of moves) {
+    if (code === 'End') paper.scrollTop = 0;
+    if (dir < 0) paper.scrollTop = code === 'Home' ? paper.scrollHeight : 2000;
+    const s0 = paper.scrollTop;
+    press(code, o);
+    for (let i = 0; i < 3; i++) step(1 / 60);
+    const ok = Math.sign(paper.scrollTop - s0) === dir
+      && (code !== 'End' || paper.scrollTop >= paper.scrollHeight - paper.clientHeight - 1) && (code !== 'Home' || paper.scrollTop === 0);
+    pass &= check(ok, `${o?.shiftKey ? 'Shift+' : ''}${code}: scrollTop ${s0} → ${paper.scrollTop}`);
+  }
+  pass &= check(Math.hypot(player.pos.x - at.x, player.pos.z - at.z) < 0.01, 'the player does not move while scrolling');
+  // the W held from before: its auto-repeat does nothing until it is released
+  paper.scrollTop = 300;
+  key('keydown', 'KeyW', { repeat: true });
+  for (let i = 0; i < 10; i++) step(1 / 60);
+  pass &= check(paper.scrollTop === 300 && Math.hypot(player.pos.x - at.x, player.pos.z - at.z) < 0.01, `a held W ignored (scrollTop ${paper.scrollTop})`);
+  key('keyup', 'KeyW');
+  key('keydown', 'KeyW');
+  key('keydown', 'KeyW', { repeat: true });
+  pass &= check(paper.scrollTop < 300 - 60, `pressed again, W scrolls up and repeats (${paper.scrollTop})`);
+  key('keyup', 'KeyW');
+  press('KeyE');
+  pass &= check(d.getElementById('note').hidden, 'E still closes it');
   out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
 };
 </script>

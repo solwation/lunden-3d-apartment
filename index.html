@@ -133,7 +133,8 @@
     #note li.is-new { border-left-color: #d23a2a; }
     #note .meta { display: block; font: 12px/1.6 system-ui, sans-serif; color: #6a7c84; }
     #note .text { display: block; font: 16px/1.45 system-ui, sans-serif; color: #23324a; }
-    #note small { display: block; margin-top: 12px; color: #6a7c84; font: 13px system-ui, sans-serif; }
+    #note small { display: block; margin: -8px 0 14px; color: #6a7c84; font: 13px system-ui, sans-serif; }
+    body.phone #note .kbd, body.touch #note .kbd { display: none; } /* #275: the keys only for the keyboard */
     #board-view { position: fixed; inset: 0; z-index: 5; display: grid; place-items: center; background: rgba(20, 35, 45, 0.45); }
     #board-view[hidden] { display: none; }
     #board-view .cork { position: relative; width: min(980px, calc(100vw - 32px - var(--sl) - var(--sr))); max-height: calc(100vh - 32px - var(--st) - var(--sb)); overflow: auto; background: #c49a6c; border: 10px solid #b98d5c; border-radius: 4px; box-shadow: 0 14px 40px rgba(0,0,0,.4); padding: 56px 14px 14px; box-sizing: border-box; }
@@ -364,8 +365,8 @@
     <div class="paper">
       <button id="note-close" aria-label="Stäng">×</button>
       <h2>Ändringar</h2>
+      <small><span class="kbd">↑ ↓ / W S: bläddra · </span>E (eller ×): lägg tillbaka lappen.</small>
       <ul id="note-list"></ul>
-      <small>Tryck E (eller ×) för att lägga tillbaka lappen.</small>
     </div>
   </div>
   <div id="board-view" hidden role="dialog" aria-label="Anslagstavlan">

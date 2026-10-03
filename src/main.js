@@ -8,7 +8,7 @@ import { watchForUpdates, BUILD } from './version.js';
 import { CatSpawner, VARIANTS, BREEDS } from './cat.js';
 import { initAudio, sfx, toggleMuted, isMuted, updateListener } from './audio.js';
 import { stairHeight } from './stairs.js';
-import { loadChangelog, renderChangelog, buildNote } from './changelog.js';
+import { loadChangelog, renderChangelog, buildNote, scrollNote } from './changelog.js';
 import { setScoreElement, totalScore, setStatsExtra, stats, bump, badge, catFound, secretFound, renderStats, resetStats, visitRoom, setRoomTotal, setBadgeElement } from './stats.js';
 import { Minimap } from './minimap.js';
 import { Measure } from './measure.js';
@@ -167,6 +167,9 @@ function showNote(show) {
   if (show) sfx.paper(note.object.getWorldPosition(new THREE.Vector3()));
 }
 document.getElementById('note-close').addEventListener('click', () => showNote(false));
+const notePaper = noteEl.querySelector('.paper');
+// under pointer lock the wheel goes to the canvas: pass it on to the open note (#275)
+document.addEventListener('wheel', (e) => { if (locked && !noteEl.hidden) notePaper.scrollTop += e.deltaY * (e.deltaMode === 1 ? 40 : 1); }, { passive: true });
 
 const lights = new Lights(scene, world);
 // every visit starts at the browser's own time and date (#95), or ?time=HH (e.g. ?time=21.5) / ?month=1–12 /
@@ -855,6 +858,7 @@ document.addEventListener('keydown', (e) => {
     else if (viewing && e.code === 'KeyS') throwPoster(); // the drawing's panel (#177)
     else if (viewing && e.code === 'KeyT') takeDownPoster();
     else if (e.code === 'KeyE') showNote(false);
+    else if (!noteEl.hidden && scrollNote(notePaper, e.code, e.shiftKey)) e.preventDefault(); // #275
     return;
   }
   player.keys.add(e.code);

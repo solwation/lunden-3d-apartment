@@ -117,3 +117,15 @@ export function buildNote(entries) {
   paper.userData.door = magnet.userData.door = note;
   return note;
 }
+
+/** Keyboard scrolling of the open note's list (#275): ↑ ↓ / W S a line, PageUp / PageDown / (Shift+)Space a page,
+ *  Home / End the ends. Returns true when the key was used. Held keys repeat via the keyboard's own auto-repeat;
+ *  main.js already ignores the repeat of a key that was held before the note opened. */
+export function scrollNote(paper, code, shift = false) {
+  const line = CHANGELOG_NOTE.scrollLine, page = Math.max(line, paper.clientHeight - 2 * line);
+  const by = { ArrowDown: line, KeyS: line, ArrowUp: -line, KeyW: -line, PageDown: page, PageUp: -page,
+    Space: shift ? -page : page, Home: -paper.scrollHeight, End: paper.scrollHeight }[code];
+  if (by === undefined) return false;
+  paper.scrollTop += by;
+  return true;
+}

@@ -357,7 +357,8 @@ src/screens.js         TV programmes drawn on a canvas (PROGRAMS: space, underwa
 src/detail.js          DetailCuller (#189): far-away small meshes and things inside the flat hidden by its walls (seen from
                        outside) go to a layer the camera does not render; roots with `userData.moving` (our car, the cat,
                        darts, the basketball) are judged every update, not only when the camera moves (#267)
-src/changelog.js       changelog list + the note on the freezer (E to read)
+src/changelog.js       changelog list + the note on the freezer (E to read; `scrollNote`: ↑ ↓ / W S, PageUp/Down, Space,
+                       Home/End scroll it, the wheel is passed on under pointer lock, #275)
 src/install.js         iPhone "add to home screen" sheet (no fullscreen API there); install link
                        where the browser offers beforeinstallprompt
 manifest.webmanifest   web app manifest; icons/ = icon.svg rendered to PNG (192, 512, apple-touch 180)
@@ -376,7 +377,8 @@ tools/lighttest.html   headless test: aim at every light switch / floor lamp, to
 tools/pettest.html     headless test of petting the cat (eyes, hand, stats counter, the photo; then it walks off and is gone)
 tools/scoretest.html   headless test: points from 0, a door (again: a little), the grill, a fish finger the cat eats, cats by breed
                        (+ a new coat), 100 sips (no cap), a basket / a three, secret kinds (+ rare), the balance, reset
-tools/notetest.html    headless test of the changelog note ("Nytt", read/close, no walking, swings with the freezer door)
+tools/notetest.html    headless test of the changelog note ("Nytt", read/close, no walking, swings with the freezer door;
+                       scrolling keys, a W held from before ignored, #275)
 tools/patiotest.html   headless test of the patio seasons (parasol, beers, snowman) + sofa collision
 tools/cartest.html     headless test: our parked car — open the driver's / passenger's door, the seat only then, sit inside looking
                        ahead, out by the door; the key shuts the doors first, then it drives off (#250); music (#268): seated, the
