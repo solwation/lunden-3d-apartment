@@ -1,24 +1,20 @@
 import * as THREE from 'three';
-import { LEVELS, SOFFITS, STAIR, LIGHTING } from './config.js';
+import { LEVELS, LIGHTING } from './config.js';
 
-// The lit look of the small lamps (#276): the pool of point lights only lights the few lamps near the visitor, so a lit
-// room you had walked out of went dark around its glowing shade. Every small lamp also gets a soft additive wash on
-// the floor, ceiling and walls it can see — its visibility polygon in plan (rays to the walls, closed doors and the
-// façade line), the floor/ceiling as a fan and the wall faces it reaches as quads — shaded in the shader like a
-// shadowless point light (distance fall-off, angle to the surface) and faded with the lamp's `k`. All lamps share ONE
-// mesh and draw call; each lamp's k is a uniform. The wash is there whether the visitor is near or not, so the room
-// stays lit seen through a doorway, from the other floor or through the windows from outside; the pool lights add
-// real shading near the visitor on top.
-// Things hung on a wall hide its wash (#292: the meadow-grass picture over the bed stayed murky with the bedside lamps
-// on): a mesh with `userData.washMap` (a texture) gets the lamps that see it in a material of its own — the same
-// fall-off, times its texture — drawn additively on its surface; with no lamp in reach it stays hidden.
+// The lamps' light wherever the visitor is (#276, #294, #295). The pool of point lights only lights the few lamps that
+// matter to the visitor (constant light count), so a lit room you had walked out of went dark around its glowing
+// shade. So every lamp (the small ones and the ceiling lamps, every pool-light anchor) ALSO lights everything inside
+// the flat in the shaders of the lit materials themselves (onBeforeCompile on every MeshStandard/Lambert/Phong material,
+// no extra mesh or draw call): exactly as its pool light would (three's point-light fall-off with the same range,
+// Lambert on the surface's own diffuse colour, no specular), summed in linear with the rest of the lighting, and only
+// where the lamp sees the point: its visibility polygon in plan (rays to the walls, closed doors and the façade line,
+// built once) is one row of a float texture, the distance along each ray. Lamp data (position, range, colour ×
+// intensity, how much of it shows, its level) is a small float texture updated when it changes.
+// Per lamp this light shows k × (1 − pool) (k = how far on it is, pool = how much of its pool light it has now) and
+// the pool light k × pool, so a lit lamp lights its room the same whether the visitor stands next to it, across the
+// room, in another room, on the other floor or outside (#294). Only the pool light adds specular glints near it.
 
 const W = LIGHTING.wash;
-
-function ceilingAt(level, x, z) {
-  const s = SOFFITS.find((s) => s.level === level && x > s.x0 && x < s.x1 && z > s.z0 && z < s.z1);
-  return LEVELS[level].floor + (s ? s.height : LEVELS[level].ceiling);
-}
 
 /** Nearest hit of the ray (ox, oz) + t·(dx, dz) on a segment: { t, i } (i = the segment's index), t ≤ max. */
 function cast(segs, ox, oz, dx, dz, max) {
@@ -33,212 +29,131 @@ function cast(segs, ox, oz, dx, dz, max) {
   return best;
 }
 
-const vertex = /* glsl */ `
-  attribute vec3 lampPos;
-  attribute vec3 tint;
-  attribute vec2 fall;
-  attribute float idx;
-  uniform float uK[COUNT];
-  varying vec3 vW, vN, vL, vC;
-  varying vec2 vF;
-  varying float vK;
-  void main() {
-    vec4 w = modelMatrix * vec4(position, 1.0);
-    vW = w.xyz; vN = normal; vL = lampPos; vC = tint; vF = fall;
-    vK = uK[int(idx + 0.5)];
-    gl_Position = projectionMatrix * viewMatrix * w;
-  }`;
-
-const fragment = /* glsl */ `
-  uniform vec4 uCut[CUTS];   // x0 z0 x1 z1 of a plan rect where …
-  uniform vec3 uCutY[CUTS];  // … surfaces facing y (sign) between y0 and y1 get no wash (stair hole, soffits)
-  uniform float uWrap;
-  varying vec3 vW, vN, vL, vC;
-  varying vec2 vF;
-  varying float vK;
-  void main() {
-    if (vK < 0.002) discard;
-    for (int i = 0; i < CUTS; i++) {
-      vec4 r = uCut[i]; vec3 c = uCutY[i];
-      if (vW.x > r.x && vW.x < r.z && vW.z > r.y && vW.z < r.w && vW.y > c.x && vW.y < c.y && vN.y * c.z > 0.5) discard;
-    }
-    vec3 d = vL - vW;
-    float r = length(d);
-    float lambert = (max(dot(vN, d / r), 0.0) + uWrap) / (1.0 + uWrap);
-    float a = 1.0 / (1.0 + r * r / (vF.x * vF.x)) * (1.0 - smoothstep(vF.y * 0.5, vF.y, r));
-    gl_FragColor = vec4(vC * (vK * lambert * a), 1.0);
-    #include <colorspace_fragment>
-  }`;
-
-const litVertex = /* glsl */ `
-  varying vec3 vW;
-  varying vec2 vUv;
-  void main() {
-    vUv = uv;
-    vec4 w = modelMatrix * vec4(position, 1.0);
-    vW = w.xyz;
-    gl_Position = projectionMatrix * viewMatrix * w;
-  }`;
-
-const litFragment = /* glsl */ `
-  uniform sampler2D map;
-  uniform vec3 uN;
-  uniform float uWrap;
-  uniform float uK[COUNT];
-  uniform vec3 uPos[N];
-  uniform vec3 uTint[N];
-  uniform vec2 uFall[N];
-  uniform int uIdx[N];
-  varying vec3 vW;
-  varying vec2 vUv;
-  void main() {
-    vec3 sum = vec3(0.0);
-    for (int i = 0; i < N; i++) {
-      vec3 d = uPos[i] - vW;
-      float r = length(d);
-      float lambert = (max(dot(uN, d / r), 0.0) + uWrap) / (1.0 + uWrap);
-      float a = 1.0 / (1.0 + r * r / (uFall[i].x * uFall[i].x)) * (1.0 - smoothstep(uFall[i].y * 0.5, uFall[i].y, r));
-      sum += uTint[i] * (uK[uIdx[i]] * lambert * a);
-    }
-    if (max(sum.r, max(sum.g, sum.b)) < 0.002) discard;
-    gl_FragColor = vec4(sum * texture2D(map, vUv).rgb, 1.0);
-    #include <colorspace_fragment>
-  }`;
-
-/**
- * Build the washes for `lamps` (Lights.floorLamps) and add them to `scene`. Returns { mesh, lamps } where lamps[i]
- * is the FloorLamp whose k goes into uniform i (Lights.update sets them); lamps without a wash are left out.
- */
-export function buildLampWashes(scene, world, floorLamps) {
-  const pos = [], nrm = [], lampPos = [], tint = [], fall = [], idx = [];
-  const used = [], sources = []; // sources[i]: what wall-hung receivers need of lamp i
-  const { x: SX, z: SZ } = world.size, [zN, zS] = W.facade;
-  const levelOf = (d) => (d.object.position.y > LEVELS[0].floor + 1.6 ? 1 : 0);
-  for (const f of floorLamps) {
-    const s = f.spec;
-    const k = s.wash ?? (s.glows?.length || !f.auto ? 0 : 1); // lamps with washes of their own (bench, hood …) opt in
-    if (!k) continue;
-    const lamp = f.room.lamps[0], level = lamp.level, i = used.length;
-    used.push(f);
-    const walls = world.levels[level].wallSegments;
-    const segs = [...walls,
-      ...world.doors.filter((d) => levelOf(d) === level).map((d) => d.segment()), // closed doors stop it (no quads on them)
-      [0, zN, SX, zN], [SX, 0, SX, SZ], [SX, zS, 0, zS], [0, SZ, 0, 0]];       // the façades' inner faces (window gaps)
-    // a lamp on a window board stands in the window's niche: its rays start just inside the room
-    const ox = lamp.pos.x, oz = Math.min(Math.max(lamp.pos.z, zN + 0.05), zS - 0.05), y0 = LEVELS[level].floor, yC = y0 + LEVELS[level].ceiling;
-    const c = new THREE.Color(lamp.color).multiplyScalar(W.strength * k * (lamp.intensity / LIGHTING.floorLamp.intensity));
-    const range = Math.min(W.range, lamp.range ?? W.range);
-    const push = (x, y, z, n) => {
-      pos.push(x, y, z); nrm.push(...n); lampPos.push(lamp.pos.x, lamp.pos.y, lamp.pos.z);
-      tint.push(c.r, c.g, c.b); fall.push(W.near, range); idx.push(i);
-    };
-    sources.push({ x: ox, z: oz, pos: lamp.pos, tint: c, range, level, segs });
-    const hits = [];
-    for (let r = 0; r < W.rays; r++) {
-      const a = (r / W.rays) * Math.PI * 2, dx = Math.cos(a), dz = Math.sin(a);
-      const h = cast(segs, ox, oz, dx, dz, range);
-      hits.push({ x: ox + dx * h.t, z: oz + dz * h.t, wall: h.i >= 0 && h.i < walls.length ? h.i : -1 });
-    }
-    // floor and ceiling: fans from the lamp (the floor seen from above, the ceiling from below)
-    for (let r = 0; r < W.rays; r++) {
-      const p = hits[r], q = hits[(r + 1) % W.rays];
-      push(ox, y0 + 0.009, oz, [0, 1, 0]); push(q.x, y0 + 0.009, q.z, [0, 1, 0]); push(p.x, y0 + 0.009, p.z, [0, 1, 0]);
-      push(ox, yC - 0.009, oz, [0, -1, 0]); push(p.x, yC - 0.009, p.z, [0, -1, 0]); push(q.x, yC - 0.009, q.z, [0, -1, 0]);
-    }
-    // walls: a quad between neighbouring hits on the same wall face; where they land on two faces, each runs on to
-    // the corner they share (no dark slit in the corner)
-    const quad = (wi, ax, az, bx, bz) => {
-      const [sx, sz, ex, ez] = walls[wi], len = Math.hypot(ex - sx, ez - sz);
-      let nx = -(ez - sz) / len, nz = (ex - sx) / len;
-      if ((ox - sx) * nx + (oz - sz) * nz < 0) { nx = -nx; nz = -nz; } // the face towards the lamp
-      const e = 0.004, top = Math.min(ceilingAt(level, (ax + bx) / 2 + nx * 0.1, (az + bz) / 2 + nz * 0.1), yC) - 0.004;
-      const A = [ax + nx * e, az + nz * e], B = [bx + nx * e, bz + nz * e], n = [nx, 0, nz];
-      push(A[0], y0, A[1], n); push(B[0], y0, B[1], n); push(B[0], top, B[1], n);
-      push(A[0], y0, A[1], n); push(B[0], top, B[1], n); push(A[0], top, A[1], n);
-    };
-    const corner = (wi, p, q) => { // the end of wall wi nearest p, if it is close enough to be the shared corner
-      const [sx, sz, ex, ez] = walls[wi];
-      const ds = Math.hypot(sx - p.x, sz - p.z), de = Math.hypot(ex - p.x, ez - p.z);
-      const gap = Math.hypot(q.x - p.x, q.z - p.z) + 0.05;
-      return ds < de ? (ds < gap ? [sx, sz] : null) : (de < gap ? [ex, ez] : null);
-    };
-    for (let r = 0; r < W.rays; r++) {
-      const p = hits[r], q = hits[(r + 1) % W.rays];
-      if (p.wall >= 0 && p.wall === q.wall) { quad(p.wall, p.x, p.z, q.x, q.z); continue; }
-      if (p.wall >= 0) { const cp = corner(p.wall, p, q); if (cp) quad(p.wall, p.x, p.z, cp[0], cp[1]); }
-      if (q.wall >= 0) { const cq = corner(q.wall, q, p); if (cq) quad(q.wall, cq[0], cq[1], q.x, q.z); }
-    }
-  }
-  if (!used.length) return { mesh: null, lamps: used };
-  const g = new THREE.BufferGeometry();
-  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
-  g.setAttribute('normal', new THREE.Float32BufferAttribute(nrm, 3));
-  g.setAttribute('lampPos', new THREE.Float32BufferAttribute(lampPos, 3));
-  g.setAttribute('tint', new THREE.Float32BufferAttribute(tint, 3));
-  g.setAttribute('fall', new THREE.Float32BufferAttribute(fall, 2));
-  g.setAttribute('idx', new THREE.Float32BufferAttribute(idx, 1));
-  // where a fan would show in the air: the stair hole (Entréplan's ceiling, Övre plan's floor) and the soffits
-  // (the ceiling fan is at the room's full height; under a lowered ceiling it would float below it)
-  const h = STAIR.hole, f1 = LEVELS[1].floor;
-  const cuts = [[[h.x0, h.z0, h.x1, h.z1], [LEVELS[0].floor + 1, f1 + 0.5, -1]], [[h.x0, h.z0, h.x1, h.z1], [f1 - 0.5, f1 + 0.5, 1]],
-    ...SOFFITS.map((s) => [[s.x0, s.z0, s.x1, s.z1], [LEVELS[s.level].floor + s.height + 0.02, LEVELS[s.level].floor + LEVELS[s.level].ceiling + 0.5, -1]])];
-  const mat = new THREE.ShaderMaterial({
-    vertexShader: vertex, fragmentShader: fragment,
-    defines: { COUNT: used.length, CUTS: cuts.length },
-    uniforms: {
-      uK: { value: new Array(used.length).fill(0) },
-      uCut: { value: cuts.map(([r]) => new THREE.Vector4(...r)) },
-      uCutY: { value: cuts.map(([, y]) => new THREE.Vector3(...y)) },
-      uWrap: { value: W.wrap },
-    },
-    transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false, fog: false,
-    polygonOffset: true, polygonOffsetFactor: -3, polygonOffsetUnits: -3,
-  });
-  const mesh = new THREE.Mesh(g, mat);
-  mesh.name = 'lamp washes';
-  mesh.castShadow = mesh.receiveShadow = false;
-  mesh.raycast = () => {}; // never an E target or a surface for marks
-  mesh.renderOrder = 1;    // after the AO overlays (renderOrder 0): light on top of the darkening
-  scene.add(mesh);
-  litReceivers(scene, sources, mat.uniforms.uK);
-  return { mesh, lamps: used };
+/** The GLSL added to a lit material: declarations (after <common>) and the light (after <lights_fragment_end>). */
+function chunks(n, box) {
+  const head = /* glsl */ `
+    uniform highp sampler2D uLampData; // per lamp (x): row 0 x y z range, row 1 colour × intensity and how much shows, row 2 ray origin x z, level
+    uniform highp sampler2D uLampVis;  // per lamp (row): the distance along each of LW_RAYS rays to what stops it
+    #define LW_COUNT ${n}
+    #define LW_RAYS ${W.rays}.0
+    vec3 lampWash(vec3 viewPos, vec3 viewNormal) {
+      mat3 rt = transpose(mat3(viewMatrix));
+      vec3 p = rt * (viewPos - viewMatrix[3].xyz), nw = rt * viewNormal;
+      vec3 sum = vec3(0.0);
+      if (p.x < ${box.x0.toFixed(3)} || p.x > ${box.x1.toFixed(3)} || p.z < ${box.z0.toFixed(3)} || p.z > ${box.z1.toFixed(3)} || p.y < ${box.y0.toFixed(3)} || p.y > ${box.y1.toFixed(3)}) return sum;
+      float level = p.y > ${box.split.toFixed(3)} ? 1.0 : 0.0;
+      for (int i = 0; i < LW_COUNT; i++) {
+        vec4 b = texelFetch(uLampData, ivec2(i, 1), 0);
+        if (b.w < 0.002) continue;
+        vec4 c = texelFetch(uLampData, ivec2(i, 2), 0);
+        if (abs(c.z - level) > 0.5) continue;
+        vec4 a = texelFetch(uLampData, ivec2(i, 0), 0);
+        vec3 d = a.xyz - p;
+        float r2 = dot(d, d);
+        if (r2 > a.w * a.w) continue;
+        float r = sqrt(r2), cosT = dot(nw, d / r);
+        if (cosT <= 0.0) continue;
+        // inside the lamp's visibility polygon? (the distance along the ray towards this point, between two rays)
+        vec2 o = p.xz - c.xy;
+        float t = fract(atan(o.y, o.x) / 6.2831853 + 1.0) * LW_RAYS;
+        float t0 = min(floor(t), LW_RAYS - 1.0);
+        int r0 = int(t0), r1 = int(mod(t0 + 1.0, LW_RAYS));
+        float reach = mix(texelFetch(uLampVis, ivec2(r0, i), 0).r, texelFetch(uLampVis, ivec2(r1, i), 0).r, t - t0);
+        if (length(o) > reach + 0.05) continue;
+        float q = clamp(1.0 - pow(r / a.w, 4.0), 0.0, 1.0);
+        sum += b.rgb * (b.w * cosT * q * q / max(r2, 0.01));
+      }
+      return sum;
+    }`;
+  const body = /* glsl */ `
+    reflectedLight.directDiffuse += lampWash(-vViewPosition, normal) * BRDF_Lambert(material.diffuseColor);`;
+  return { head, body };
 }
 
-/** Give every `userData.washMap` mesh in `scene` the washes of the lamps that see it (see the top of the file). Its
- * uK uniform is the washes' own, so Lights.update fades them together. */
-function litReceivers(scene, sources, uK) {
-  scene.updateMatrixWorld(true);
-  const recv = [];
-  scene.traverse((m) => { if (m.isMesh && m.userData.washMap) recv.push(m); });
-  for (const m of recv) {
-    m.geometry.computeBoundingBox();
-    const centre = m.geometry.boundingBox.getCenter(new THREE.Vector3()).applyMatrix4(m.matrixWorld);
-    const n = new THREE.Vector3(0, 0, 1).transformDirection(m.matrixWorld);
-    const level = centre.y > LEVELS[1].floor - 0.2 ? 1 : 0;
-    const px = centre.x + n.x * 0.05, pz = centre.z + n.z * 0.05; // just in front of it, clear of its own wall
-    const lamps = [];
-    sources.forEach((s, i) => {
-      if (s.level !== level || centre.distanceTo(s.pos) > s.range) return;
-      const dx = px - s.x, dz = pz - s.z, len = Math.hypot(dx, dz);
-      if (len > 1e-3 && cast(s.segs, s.x, s.z, dx / len, dz / len, len).i >= 0) return; // a wall or a door between
-      if ((s.pos.x - centre.x) * n.x + (s.pos.y - centre.y) * n.y + (s.pos.z - centre.z) * n.z <= 0) return; // behind it
-      lamps.push([s, i]);
+/**
+ * Set up the lamps' light for `entries` ([{ owner, lamp, k }]: lamp = a pool-light anchor { pos, color, intensity, range,
+ * level }, k = how strong it is, 1 = like its pool light). Returns a LampWashes: entries[i]'s on-ness and pool share
+ * are set with set(i, k, pool) and commit() (Lights.update), patch(scene) adds the light to the scene's materials.
+ */
+export function buildLampWashes(scene, world, entries) {
+  const used = entries.filter((e) => e.k);
+  const n = Math.max(1, used.length), RAYS = W.rays;
+  const { x: SX, z: SZ } = world.size, [zN, zS] = W.facade;
+  const levelOf = (d) => (d.object.position.y > LEVELS[0].floor + 1.6 ? 1 : 0);
+  const vis = new Float32Array(n * RAYS), data = new Float32Array(n * 3 * 4);
+  used.forEach((e, i) => {
+    const { lamp, k } = e, level = lamp.level;
+    const segs = [...world.levels[level].wallSegments,
+      ...world.doors.filter((d) => levelOf(d) === level).map((d) => d.segment()), // closed doors stop it
+      [0, 0, SX, 0], [SX, 0, SX, SZ], [SX, SZ, 0, SZ], [0, SZ, 0, 0]];         // the outer faces: out through a window to its glass
+    // a lamp on a window board stands in the window's niche: its rays start just inside the room
+    const ox = lamp.pos.x, oz = Math.min(Math.max(lamp.pos.z, zN + 0.05), zS - 0.05);
+    for (let r = 0; r < RAYS; r++) {
+      const a = (r / RAYS) * Math.PI * 2;
+      vis[i * RAYS + r] = cast(segs, ox, oz, Math.cos(a), Math.sin(a), lamp.range).t;
+    }
+    const c = new THREE.Color(lamp.color).multiplyScalar(k * lamp.intensity); // what the pool light uploads (colour × intensity)
+    data.set([lamp.pos.x, lamp.pos.y, lamp.pos.z, lamp.range], (0 * n + i) * 4);
+    data.set([c.r, c.g, c.b, 0], (1 * n + i) * 4);
+    data.set([ox, oz, level, 0], (2 * n + i) * 4);
+  });
+  const tex = (arr, w, h, format) => {
+    const t = new THREE.DataTexture(arr, w, h, format, THREE.FloatType);
+    t.minFilter = t.magFilter = THREE.NearestFilter;
+    t.needsUpdate = true;
+    return t;
+  };
+  const top = LEVELS[1].floor + LEVELS[1].ceiling;
+  const box = { x0: -0.05, x1: SX + 0.05, z0: -0.05, z1: SZ + 0.05, y0: LEVELS[0].floor - 0.1, y1: top + 0.1, split: LEVELS[1].floor - 0.1 };
+  return new LampWashes(used, n, data, tex(data, n, 3, THREE.RGBAFormat), tex(vis, RAYS, n, THREE.RedFormat), chunks(n, box));
+}
+
+/** The lamps' light: per entry k (how far on) and pool (how much its pool light shows), the textures the shaders read. */
+class LampWashes {
+  constructor(entries, n, data, dataTex, visTex, glsl) {
+    Object.assign(this, { entries, n, data, glsl, patched: new WeakSet(), dirty: false });
+    this.uniforms = { uLampData: { value: dataTex }, uLampVis: { value: visTex } };
+    this.k = entries.map(() => 0);
+    this.pool = entries.map(() => 0);
+  }
+
+  /** How far lamp i is on and how much of it its pool light shows (the shaders show k × (1 − pool)). */
+  set(i, k, pool) {
+    this.k[i] = k; this.pool[i] = pool;
+    const w = k * (1 - pool), at = (this.n + i) * 4 + 3;
+    if (Math.abs(this.data[at] - w) > 1e-4 || (w === 0) !== (this.data[at] === 0)) { this.data[at] = w; this.dirty = true; }
+  }
+
+  /** After a frame's set() calls: upload what changed. */
+  commit() {
+    if (!this.dirty) return;
+    this.dirty = false;
+    this.uniforms.uLampData.value.needsUpdate = true;
+  }
+
+  /** What lamp i shows through the shaders now (tests). */
+  shown(i) { return this.data[(this.n + i) * 4 + 3]; }
+
+  /** Give every lit material under `root` the lamps' light (once per material; a compiled one is recompiled). */
+  patch(root) {
+    const { head, body } = this.glsl, uniforms = this.uniforms;
+    root.traverse((o) => {
+      if (!o.material) return;
+      for (const m of [o.material].flat()) {
+        if (!m || this.patched.has(m) || !(m.isMeshStandardMaterial || m.isMeshLambertMaterial || m.isMeshPhongMaterial)) continue;
+        this.patched.add(m);
+        const before = m.onBeforeCompile, key = m.customProgramCacheKey;
+        m.onBeforeCompile = function (shader, renderer) {
+          before.call(this, shader, renderer);
+          Object.assign(shader.uniforms, uniforms);
+          shader.fragmentShader = shader.fragmentShader
+            .replace('#include <common>', `#include <common>\n${head}`)
+            .replace('#include <lights_fragment_end>', `#include <lights_fragment_end>\n${body}`);
+        };
+        const base = key === THREE.Material.prototype.customProgramCacheKey ? () => before.toString() : key; // (the default keys on onBeforeCompile's source: now ours)
+        m.customProgramCacheKey = function () { return `${base.call(this)}|lampwash`; };
+        m.needsUpdate = true;
+      }
     });
-    if (!lamps.length) { m.visible = false; continue; }
-    m.material = new THREE.ShaderMaterial({
-      vertexShader: litVertex, fragmentShader: litFragment,
-      defines: { COUNT: uK.value.length, N: lamps.length },
-      uniforms: {
-        map: { value: m.userData.washMap }, uN: { value: n }, uWrap: { value: W.wrap }, uK,
-        uPos: { value: lamps.map(([s]) => s.pos.clone()) },
-        uTint: { value: lamps.map(([s]) => new THREE.Vector3(s.tint.r, s.tint.g, s.tint.b)) },
-        uFall: { value: lamps.map(([s]) => new THREE.Vector2(W.near, s.range)) },
-        uIdx: { value: lamps.map(([, i]) => i) },
-      },
-      transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false, fog: false,
-      polygonOffset: true, polygonOffsetFactor: -3, polygonOffsetUnits: -3,
-    });
-    m.renderOrder = 1;
-    m.visible = true;
   }
 }

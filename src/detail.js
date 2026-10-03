@@ -12,6 +12,8 @@ import { PERF } from './config.js';
 // Things that move by themselves while the visitor may stand still (the car driving in, the cat, darts in flight …)
 // mark their root with `userData.moving`: the meshes under it are judged again every update, not only when the
 // camera has moved (#267 — the car's wheels and rear windows stayed hidden from when it was far away).
+// The lit parts of the lamps (materials with `userData.lamp`, set by lights.js) are never culled for being small: a
+// glowing shade or bulb that vanished a few metres off made the lamp look off (#294); from outside, walls still hide them.
 
 const HIDDEN = 7; // the layer far-away details go to
 const D = PERF.detail;
@@ -40,7 +42,8 @@ export class DetailCuller {
       const s = o.geometry.boundingSphere;
       const r = s.radius * o.matrixWorld.getMaxScaleOnAxis();
       if (!(r > 0 && r < D.maxOcclude)) return;
-      const it = { o, r, center: s.center.clone(), cut: r < D.maxR ? Math.max(D.minDist, r / D.k) : Infinity, far: false };
+      const lamp = [o.material].flat().some((m) => m?.userData.lamp); // a lamp's lit parts: never too small to draw (#294)
+      const it = { o, r, center: s.center.clone(), cut: r < D.maxR && !lamp ? Math.max(D.minDist, r / D.k) : Infinity, far: false, lamp };
       this.items.push(it);
       if (moving) this.moving.push(it);
     };

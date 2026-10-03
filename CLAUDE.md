@@ -155,11 +155,13 @@ src/blinds.js          pleated blinds, bottom-up (BLINDS, #273): one per window 
                        rail / cords are baked; E opens #blind-panel (BlindPanel, reading mode like the clock's strip): W / S,
                        ↑ / ↓ or ▲ ▼ held; the visitor's room loses daylight (`DayCycle.dim`) by its blinds' cover; a white
                        one glows by day and warm from a lit room (`lights.roomLit`); localStorage 'lunden.blinds'; F keeps them
-src/lampwash.js        the small lamps' own lit look (#276, LIGHTING.wash): per lamp its visibility polygon (rays to walls, closed
-                       doors, the façades' inner faces) as additive fans on floor + ceiling and quads on the walls it sees, shaded
-                       like a shadowless point light; ONE mesh for all lamps, each lamp's k a uniform (Lights.update);
-                       a wall-hung mesh with `userData.washMap` (the `pictures` builder's overlay, #292) gets the lamps that see
-                       it times its texture, since it hides the wall's wash (none in reach: hidden)
+src/lampwash.js        every lamp's light wherever the visitor is (#276, #294, #295, LIGHTING.wash): each pool anchor (small lamps
+                       and ceiling lamps) lights the flat inside the lit materials' own shaders (`patch(scene)`: onBeforeCompile on
+                       every MeshStandard/Lambert/Phong material, re-scanned every 120 frames; no extra mesh or draw call) exactly
+                       like its pool light (same fall-off and range, Lambert on the surface's colour, no specular), only where it
+                       sees: its visibility polygon (rays to walls, closed doors, the façades' outer faces) is a row of a float
+                       texture; lamp data in a small float texture. It shows k × (1 − pool) and the pool light k × pool (cross-fade,
+                       Lights.update → `set(i, k, pool)`), so a lit room looks the same near, far, upstairs or from outside
 src/rooms.js           room detection: walls + door gaps rasterised, BFS from the room labels
 src/minimap.js         plan view with the visitor's arrow, current room highlighted (top right, under the HUD buttons); hidden, shown with the
                        stats (Tab / T / 📊, #85), K shows it alone
@@ -879,10 +881,13 @@ screenshots into the session scratchpad, not the repo.
   now, E on a spot — the bench light, the bathroom mirror LED) is a `FloorLamp`; unless its spec has `auto: false` (the
   cooker hood's light) it goes on below `LIGHTING.auto.on` daylight and off above `.off` with a `fade` (also when the clock
   is spooled); an E toggle holds until that state next changes (`updateAuto`). None of that depends on where the visitor
-  is, and since #276 neither does how a lit small lamp looks: its wash (`src/lampwash.js`) lights its room's floor, ceiling
-  and walls whether the visitor is near, in another room, on the other floor or outside (lit windows all night); lamps with
-  washes of their own (bench light, BESTÅ spots, the hood) get none unless their spec sets `wash`. The ceiling lamps start
-  off and follow only their switches. The pool (`update`) adds real shading near the visitor on top: candidates are scored by distance, × `poolPick.otherRoom` outside the visitor's room
+  is, and since #276/#294 neither does how a lit lamp looks: its light in the shaders (`src/lampwash.js`) lights its room
+  (furniture too) whether the visitor is near, in another room, on the other floor or outside (lit windows all night), and
+  cross-fades with its pool light; the ceiling lamps have it too (#295: a room lit by its switch is lit from anywhere). A
+  lamp spec's `wash` scales it. The lit parts of every lamp (materials tagged `userData.lamp` by lights.js) are never culled
+  as small detail (#294). lighttest checks every room switch: glow, a pool light standing in the room, its wash on/off.
+  The ceiling lamps start off and follow only their switches. The pool (`update`) gives the few lamps that matter real
+  point lights (specular glints) instead of their shader light: candidates are scored by distance, × `poolPick.otherRoom` outside the visitor's room
   (rooms.js), × `hidden` behind a wall/door leaf (a lamp behind a wall in another room gets none: it would only shine
   through the wall), × `behind` for one behind the look direction (#276), ÷ `stick` for the lamp already held; a pool light that moves fades out and in over `poolFade`
   (the old nearest-4 jump made a lit room go dark as you walked out of it).

@@ -2501,14 +2501,6 @@ function pictures(item) {
     const pic = new THREE.Mesh(geo, picMat);
     pic.position.set(cx, cy, f ? d - 0.006 : d + 0.0005);
     g.add(pic);
-    // the small lamps' wash on the picture (#292, lampwash.js): it hides the wall's own
-    const lit = new THREE.Mesh(geo.clone(), new THREE.MeshBasicMaterial({ visible: false }));
-    lit.position.copy(pic.position);
-    lit.userData.washMap = picMat.map;
-    lit.raycast = () => {};
-    lit.castShadow = lit.receiveShadow = false;
-    g.add(lit);
-    (g.userData.keep ??= []).push(lit);
     if (!f) { // unframed canvas: the stretcher with its black-painted edges
       const box = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), black);
       box.position.set(cx, cy, d / 2); box.castShadow = true;

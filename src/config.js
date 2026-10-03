@@ -1309,15 +1309,14 @@ export const LIGHTING = {
   auto: { on: 0.3, off: 0.4, fade: 1 },
   poolFade: 0.4,
   poolPick: { otherRoom: 3, hidden: 6, stick: 1.5, behind: 1.6, near: 1.5 },
-  // #276: each small lamp's own wash (src/lampwash.js), there wherever the visitor is: its visibility polygon (`rays`
-  // rays out to `range` m at most, stopped by walls, closed doors and the façade line) on the floor, ceiling and the
-  // walls it sees, additive, falling off as 1 / (1 + (d / near)²) and to nothing at `range`; `wrap` lets surfaces
-  // turned away from the lamp keep some. `strength` is for the floor lamp's 1.6; others scale by their pool
-  // intensity. A lamp spec's `wash` scales it (lamps with washes of their own get none unless they set it). By eye.
-  // The pool lights `behind` the visitor (and further than `near` m) count as that much further away.
-  // `facade` = the inner faces of the north/south façade walls (data/plan.json, both levels): the washes stop there,
-  // never out in a window's niche or on the outside.
-  wash: { rays: 192, range: 4.5, near: 1.4, strength: 0.18, wrap: 0.35, facade: [0.465, 12.234] },
+  // #276, #294, #295: every lamp's light wherever the visitor is (src/lampwash.js): each pool anchor of every small lamp
+  // and ceiling lamp lights the flat in the lit materials' shaders as its pool light would, where it sees: its visibility
+  // polygon (`rays` rays out to its range, stopped by walls, closed doors and the façades' outer faces, so through a
+  // window to the glass). It cross-fades with the lamp's pool light, so a lit lamp looks the same from anywhere. A lamp
+  // spec's `wash` scales it (default 1). The pool lights `behind` the visitor (and further than `near` m) count as that much further away.
+  // `facade` = the inner faces of the north/south façade walls (data/plan.json, both levels): a lamp on a window board
+  // casts its rays from just inside them.
+  wash: { rays: 192, facade: [0.465, 12.234] },
   wetRooms: ['Badrum', 'WC/dusch'],       // spots in the soffit instead of a ceiling lamp
   pendants: [
     { level: 0, room: 'Kök / matplats', x: 3.5, z: 1.41, drop: 1.25 }, // over the dining table (SKANSNAS.table)

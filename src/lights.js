@@ -345,7 +345,17 @@ export class Lights {
       this.addSwitch(room(m.level, m.room), m.x, LEVELS[m.level].floor + L.switchHeight, m.z, m.normal, scene);
     }
     this.floorLamps = world.lamps.map((spec) => new FloorLamp(spec));
-    this.wash = buildLampWashes(scene, world, this.floorLamps); // every small lamp's own lit look, wherever the visitor is (#276)
+    // every lamp's light in the materials' own shaders, wherever the visitor is (#276); the ceiling lamps too (#295); it
+    // cross-fades with the lamp's pool light, so a lit lamp lights its room the same from near and far (#294)
+    this.wash = buildLampWashes(scene, world, [
+      ...this.floorLamps.flatMap((f) => f.room.lamps.map((lamp) => ({ owner: f, lamp, k: f.spec.wash ?? 1 }))), // every pool anchor (the bench light has several)
+      ...[...this.rooms.values()].flatMap((R) => R.lamps.map((lamp) => ({ owner: R, lamp, k: 1 }))),
+    ]);
+    this.wash.lamps = this.wash.entries.map((e) => e.owner); // (tests)
+    this.scene = scene;
+    this.patchIn = 0; // frames to the next look for new materials to give the lamps' light
+    // the lit parts of every lamp are never culled as small far-away detail (#294, detail.js)
+    for (const m of [...[...this.rooms.values()].flatMap((R) => R.mats), ...this.floorLamps.flatMap((f) => [f.spec.shade, ...(f.spec.glows ?? [])])]) if (m) m.userData.lamp = true;
     this.extra = []; // self-switching lamps: { pos, intensity, range, color, level, k }
 
     // the light pool
@@ -415,7 +425,6 @@ export class Lights {
     const on = new Set(), cands = [];
     // small lamps hidden with the furniture (F) give no light
     const shown = (f) => { for (let p = f.spec.object.parent; p; p = p.parent) if (!p.visible) return false; return true; };
-    if (this.wash.mesh) { const u = this.wash.mesh.material.uniforms.uK.value; this.wash.lamps.forEach((f, i) => { u[i] = shown(f) ? f.k : 0; }); }
     for (const R of this.rooms.values()) if (R.on) for (const lamp of R.lamps) { on.add(lamp); if (lamp.level === level) cands.push([lamp, 1, R.name]); }
     for (const f of this.floorLamps) {
       if (f.k <= 0.001 || !shown(f)) continue;
@@ -465,5 +474,13 @@ export class Lights {
       l.color.setHex(lamp.color);
       l.distance = lamp.range;
     });
+    // the washes: how far on each lamp is (k) and how much of it its pool light shows now (the wash shows the rest)
+    this.wash.entries.forEach(({ owner, lamp }, i) => {
+      let f = 0;
+      for (const s of this.slots) if (s.lamp === lamp) f += s.f;
+      this.wash.set(i, owner instanceof FloorLamp ? (shown(owner) ? owner.k : 0) : owner.on ? 1 : 0, Math.min(1, f));
+    });
+    this.wash.commit();
+    if (--this.patchIn <= 0) { this.patchIn = 120; this.wash.patch(this.scene); } // (things built later: cups, cat coats …)
   }
 }

@@ -54,16 +54,25 @@ f.onload = async () => {
     if (!best) { lines.push(`FAIL ${t.name}: no place to stand`); pass = false; continue; }
     if (!/tända/i.test(label)) { lines.push(`FAIL ${t.name}: not offered from any spot ("${label}")`); pass = false; continue; }
     btn.click();
-    step(1 / 60);
+    for (let i = 0; i < 30; i++) step(1 / 60); // (the pool light fades in over LIGHTING.poolFade)
     // (a room behind a closed door from here — the Klk under the stair — gets no pool light through it, #234: then its fixture glows)
     const hidden = t.room.lamps.every((l) => !lights.scores.has(l));
-    const on = t.isOpen && (lights.pool.some((l) => l.intensity > 0) || (hidden && t.room.mats.some((m) => m.emissiveIntensity > 0.5)));
+    // #295: a room switch visibly lights its room: the fixture glows, a pool light sits on one of its lamps (standing in
+    // the room), its washes are on (k = 1) and wash + pool add up to the lamp
+    const glowing = (m) => (m.userData.lit ? m.emissiveIntensity > 0.2 : m.userData.glow ? m.visible && m.opacity > 0 : m.emissiveIntensity > 0.5);
+    const wash = lights.wash, uK = wash.k, uPool = wash.pool;
+    const mine = wash.entries.map((e, i) => [e, i]).filter(([e]) => e.owner === t.room || e.owner === t);
+    const pooled = (lamp) => lights.slots.some((s, i) => s.lamp === lamp && s.f === 1 && lights.pool[i].intensity > 0);
+    let washOn = true;
+    if (t.kind === 'switch') washOn = mine.length === t.room.lamps.length && mine.every(([, i]) => uK[i] === 1) && mine.every(([e, i]) => Math.abs(uPool[i] - (pooled(e.lamp) ? 1 : 0)) < 1e-6);
+    const lit = t.kind === 'switch' ? t.room.mats.length > 0 && t.room.mats.every(glowing) && (hidden || t.room.lamps.some(pooled)) : lights.pool.some((l) => l.intensity > 0) || (hidden && t.room.mats.some((m) => m.emissiveIntensity > 0.5));
+    const on = t.isOpen && lit && washOn;
     btn.click();
     step(1 / 60);
-    const off = !t.isOpen;
+    const off = !t.isOpen && (t.kind !== 'switch' || (t.room.mats.every((m) => !glowing(m)) && mine.every(([, i]) => uK[i] === 0) && t.room.lamps.every((l) => !lights.slots.some((s) => s.lamp === l))));
     const ok = /tända/i.test(label) && on && off;
     pass &&= ok;
-    lines.push(`${ok ? 'PASS' : 'FAIL'} ${t.name} @ (${target.x.toFixed(2)}, ${target.y.toFixed(2)}, ${target.z.toFixed(2)}) button "${label}" (${t.room.name ?? ''}) on=${on}${hidden ? ' (behind a door: no pool light)' : ''} off=${off}`);
+    lines.push(`${ok ? 'PASS' : 'FAIL'} ${t.name} @ (${target.x.toFixed(2)}, ${target.y.toFixed(2)}, ${target.z.toFixed(2)}) button "${label}" (${t.room.name ?? ''}) on=${on}${t.kind === 'switch' ? ` (glow, ${hidden ? 'behind a door: no pool light' : 'pool light'}, ${mine.length} washes ${washOn})` : ''} off=${off}`);
   }
   // #221: the kitchen's bench light and the hood's light are lamps of their own; their washes follow them
   for (const name of ['bänkbelysningen', 'lampan i köksfläkten']) {
@@ -207,18 +216,22 @@ async function nightTest(lines) {
   }
   const room = w.__app.world.roomAt(0, player.pos.x, player.pos.z);
   check(living.on && room === 'Kök / matplats' && jump < 0.15, `walked into ${room}: the living room still lit (${living.on}), the biggest pool step in one frame ${jump.toFixed(3)} at ${at}`);
-  // #276: a lit small lamp lights its surroundings wherever the visitor is: its on/off, its k and its wash (one
-  // additive mesh, a uniform per lamp) stay the same while the visitor goes through every room on both floors
-  const wash = lights.wash, uK = wash.mesh.material.uniforms.uK.value;
+  // #276: a lit small lamp lights its surroundings wherever the visitor is: its on/off, its k and its wash (in the lit
+  // materials' shaders, a texel per lamp, #294) stay the same while the visitor goes through every room on both floors
+  const wash = lights.wash, uK = wash.k;
   const auto = small.filter((f) => wash.lamps.includes(f));
-  check(wash.lamps.length >= 10 && auto.length >= 10 && wash.mesh.geometry.attributes.position.count > 1000,
-    `${wash.lamps.length} small lamps have a wash (${wash.mesh.geometry.attributes.position.count / 3} triangles, one mesh)`);
+  const mats = new Set();
+  w.__app.scene.traverse((o) => { for (const m of [o.material].flat()) if (m?.isMeshStandardMaterial) mats.add(m); });
+  const patched = [...mats].filter((m) => wash.patched.has(m)).length;
+  check(wash.lamps.length >= 20 && auto.length >= 10 && patched === mats.size,
+    `${wash.lamps.length} lamp anchors light the flat in the shaders (${auto.length} small lamps), ${patched} of ${mats.size} standard materials have it`);
   const pick = floor; pick.toggle(); // one switched off by hand: it stays off through the walk too
   spin(0.2);
   const snap = () => lights.floorLamps.map((f) => `${f.room.on}:${f.k.toFixed(3)}`).join() + '|' + uK.map((v) => v.toFixed(3)).join();
   const before = snap();
   const lit = wash.lamps.filter((f, i) => uK[i] === 1).length;
-  let same = true, where = '', visited = 0;
+  let same = true, where = '', visited = 0, sumOk = true, sumAt = '';
+  const uPool = wash.pool;
   const dirs = [[0, -1], [1, 0], [0, 1], [-1, 0]].map(([x, z]) => ({ x, y: 0, z }));
   w.__app.world.roomMaps.forEach((map, level) => {
     for (const r of map.regions()) {
@@ -228,15 +241,42 @@ async function nightTest(lines) {
         for (let i = 0; i < 30; i++) { lights.updateAuto(day.daylight, 1 / 60); lights.update(level, at, 1 / 60, dir); }
         visited++;
         if (snap() !== before && same) { same = false; where = `${level}:${r.name}`; }
+        // #294: wash and pool light cross-fade — what each lit lamp gives (its wash's share + its pool light's) is its k
+        wash.entries.forEach((e, i) => {
+          const pool = lights.slots.reduce((a, s, j) => a + (s.lamp === e.lamp ? lights.pool[j].intensity / e.lamp.intensity : 0), 0);
+          const sum = uK[i] * (1 - uPool[i]) + pool;
+          if (Math.abs(sum - uK[i]) > 1e-3) { sumOk = false; sumAt ||= `${e.owner.name} at ${level}:${r.name} (${sum.toFixed(3)} of ${uK[i]})`; }
+        });
       }
     }
   });
   check(same && lit >= 9 && !pick.room.on && uK[wash.lamps.indexOf(pick)] === 0,
     `through ${visited} room/view stops on both floors: every small lamp's on, k and wash unchanged (${lit} washes full, the floor lamp switched off by hand stays off)${same ? '' : ' — changed in ' + where}`);
   day.hour = 12; spin(1.5);
-  check(uK.every((v) => v === 0), 'at dawn every wash is gone');
+  check(sumOk, `#294: at every stop each lit lamp's wash + pool light add up to the lamp${sumOk ? '' : ' — not ' + sumAt}`);
+  // #294: walking away from the lit lamps in 1 m steps through the flat (the living room → the hall), no lamp's lit
+  // parts go to the detail culler's hidden layer; from outside only the walls hide them, never their size
+  {
+    const { camera } = w.__app, culler = w.__app.detail();
+    const lampMeshes = [];
+    w.__app.scene.traverse((o) => { if (o.isMesh && [o.material].flat().some((m) => m?.userData.lamp)) lampMeshes.push(o); });
+    const route = [[3.6, 10.5], [3.3, 7.4], [2.6, 5.0], [2.6, 2.5], [1.6, 1.2], [1.6, 0.8]];
+    let hiddenAt = '', stops = 0;
+    for (let i = 1; i < route.length; i++) {
+      const [x0, z0] = route[i - 1], [x1, z1] = route[i], n = Math.max(1, Math.round(Math.hypot(x1 - x0, z1 - z0)));
+      for (let j = 1; j <= n; j++) {
+        camera.position.set(x0 + (x1 - x0) * j / n, 1.6, z0 + (z1 - z0) * j / n); camera.updateMatrixWorld();
+        culler.update(camera); stops++;
+        const gone = lampMeshes.filter((m) => !m.layers.test(camera.layers));
+        if (gone.length && !hiddenAt) hiddenAt = `${gone.length} at (${camera.position.x.toFixed(1)}, ${camera.position.z.toFixed(1)})`;
+      }
+    }
+    const sized = culler.items.filter((it) => it.lamp && it.cut !== Infinity).length;
+    check(lampMeshes.length > 20 && !hiddenAt && !sized && culler.items.some((it) => it.lamp), `#294: ${lampMeshes.length} lit lamp parts stay drawn over ${stops} 1 m steps away, none culled for its size${hiddenAt ? ' — hidden: ' + hiddenAt : ''}`);
+  }
+  check(wash.lamps.every((o, i) => !(o.spec) || uK[i] === 0), 'at dawn every small lamp\'s wash is gone');
   day.hour = 22; spin(1.5);
-  check(pick.room.on && uK.every((v, i) => v === (wash.lamps[i].auto ? 1 : v)), '…and at the dusk they are all back, the hand-switched floor lamp too');
+  check(pick.room.on && uK.every((v, i) => v === (wash.lamps[i].auto ? 1 : v)) && uK[wash.lamps.indexOf(living)] === 1, '…and at the dusk they are all back, the hand-switched floor lamp too');
   g.remove();
   return pass;
 }
