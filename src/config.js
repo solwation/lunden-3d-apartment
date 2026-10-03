@@ -136,13 +136,14 @@ export const SITE = {
     // x1 (the road's far edge) the ground follows `profile` ([z, y] pairs, linear): level with the street at Hus L, 1.4 m
     // down at the foot of the stair, park level further south (the last point: guess); east of the road it blends into
     // the park level over `blend` m.
-    east: { x0: 9.42, x1: 28.96, blend: 2.5, profile: [[12.7, 0], [30.0, -1.4], [44, -3]] },
+    // (#261: x1 = the far pavement's edge, the long brick building's west face)
+    east: { x0: 9.42, x1: 31.3, blend: 2.5, profile: [[12.7, 0], [30.0, -1.4], [44, -3]] },
     // stairs from the courtyard (y 0) going south, `z` = the box edge they leave; `drop` m in `steps` (default: down to
     // the park level, ~0.17 m each, a `landing` halfway); `walk` = paving from the foot. #255: "TRAPPA NIVÅSKILLNAD CA
     // 1,4M" (våning 1: 9 risers x 11.6…13.5, z 27.25…30) from the landing at the walk along Hus A down to the walk east
     // to Sankt Lars väg (z 30…31.8). #254: "TRAPPA" between Hus C and Hus B (x −47.4…−45.9, from the level line at
     // z 52.5 down to z ≈ 59).
-    stairs: [{ x0: 11.6, x1: 13.5, z: 27.25, step: 0.3, drop: 1.4, steps: 9, walk: { x0: 11.6, x1: 18.8, z0: 29.95, z1: 31.8 } }, // the walk meets the pavement along Sankt Lars väg (SITE.roads)
+    stairs: [{ x0: 11.6, x1: 13.5, z: 27.25, step: 0.3, drop: 1.4, steps: 9, walk: { x0: 11.6, x1: 19.7, z0: 29.95, z1: 31.8 } }, // the walk meets the pavement along Sankt Lars väg (SITE.roads)
       { x0: -47.4, x1: -45.9, z: 52.5, step: 0.3, landing: 1.0 }],
   },
   bay: 3.0, storey: 3.0,  // façade texture of the other blocks: one window per 3 × 3 m
@@ -189,10 +190,14 @@ export const SITE = {
     // outside the plot (#47): the old S:t Lars hospital buildings, as on Peab's drone photo and aerial
     // render (docs/peab/): red brick with white trim, steep dark hip roofs, high storeys and tall
     // white windows. Storey counts and heights are read off those pictures — guesses, not surveyed.
-    { name: 'HepCat Store', x0: 31, x1: 39, z0: -9, z1: 7, base: 0, storeys: 1, roof: 'gable', style: 'hepcat', chimneys: [-5, 4] }, // #127
-    { name: 'HepCat Store, the white middle', x0: 30.6, x1: 39, z0: -2.2, z1: 2.2, base: 0, storeys: 1, roof: 'gable', style: 'hepcatWhite' },
-    { name: 'The long brick building', x0: 32, x1: 41, z0: 9, z1: 21, base: 0, storeys: 1, roof: 'gable', style: 'longhouse' },
-    { name: 'The long brick building (lower part)', x0: 32, x1: 41, z0: 21, z1: 46, base: -3, storeys: 1, roof: 'gable', style: 'longhouse' },
+    // #261: outlines from the situation plan (the user's photos agree: HepCat right by the road, the long building
+    // further south behind an open gap); the long building's east side and the annex's depth are off the sheet (guess)
+    { name: 'HepCat Store', x0: 28.2, x1: 36.4, z0: -10.8, z1: 10.0, base: 0, storeys: 1, roof: 'gable', style: 'hepcat', chimneys: [-5, 4] }, // #127
+    { name: 'HepCat Store, the white middle', x0: 27.9, x1: 36.4, z0: -2.6, z1: 1.8, base: 0, storeys: 1, roof: 'gable', style: 'hepcatWhite' },
+    // (the ground falls along the road, terrain.east: two parts, each standing on the highest ground under it)
+    { name: 'The long brick building', x0: 31.3, x1: 42, z0: 23, z1: 42, base: -0.85, storeys: 1, roof: 'gable', style: 'longhouse' },
+    { name: 'The long brick building (south part)', x0: 31.3, x1: 42, z0: 42, z1: 61.6, base: -2.7, storeys: 1, roof: 'gable', style: 'longhouse' },
+    { name: 'The long brick building (annex)', x0: 31.3, x1: 36, z0: 61.6, z1: 70.9, base: -3, storeys: 1, roof: 'gable', style: 'longhouse' },
     { name: 'Realgymnasiet', x0: 5, x1: 70, z0: -74, z1: -50, base: 0, storeys: 3, roof: 'hip', style: 'old' },
     // straight across the street from our kitchen (#126): a long two-storey school with end pavilions that stand
     // a little forward (the user's photos; position and length are guesses), behind a brick wall
@@ -201,7 +206,7 @@ export const SITE = {
     { name: 'Skolan, östra flygeln', x0: 17, x1: 26, z0: -48.4, z1: -37.4, base: 0, storeys: 1, roof: 'hip', style: 'school' },
     { name: 'S:t Lars (old hospital)', x0: -62, x1: -22, z0: -62, z1: -46, base: 0, storeys: 3, roof: 'hip', style: 'old' },
     { name: 'Montessorigrundskolan', x0: -78, x1: -60, z0: -115, z1: -70, base: 0, storeys: 2, roof: 'hip', style: 'old' },
-    { name: 'Villa', x0: -62.26, x1: -46.81, z0: 66.6, z1: 83.97, base: -3, storeys: 3, roof: 'hip', style: 'old' }, // brick house, hip roof
+    { name: 'Villa', x0: -63, x1: -47.3, z0: 67.7, z1: 84.1, base: -3, storeys: 3, roof: 'hip', style: 'old' }, // brick house, hip roof
   ],
   // The street details (#128, src/street.js; the user's photos in docs/foton/): granite curbs along Sankt Lars väg,
   // patched asphalt, slender street lamps with a curved arm (lit at night by emissive only), a zebra crossing,
@@ -213,7 +218,7 @@ export const SITE = {
     // street lamps in rows along a road (`road` = its name): from / to = the plan points nearest the first and last,
     // `off` m from the road's edge on `side` (1 = right of the path's direction, −1 = left), the arm over the road
     lamps: { h: 6.2, arm: 1.3, rows: [
-      { road: 'Sankt Lars väg', from: [-66, -27], to: [25.1, 8], step: 24, side: 1, off: 2.0 }, // our pavement, round the corner
+      { road: 'Sankt Lars väg', from: [-66, -27], to: [24.1, 8], step: 24, side: 1, off: 2.0 }, // our pavement, round the corner
       { road: 'Karpvägen', from: [-75.8, -12], to: [-78.5, 44], step: 26, side: -1, off: 0.8 },  // along Hus C (#257)
     ] },
     crossing: { x0: 9.5, x1: 12.5, z0: -30, z1: -24 },
@@ -222,7 +227,7 @@ export const SITE = {
     leaves: { n: 1400, months: [9, 10, 11], areas: [[-60, 12, -24, -18], [-30, 10, -32.1, -30.05], [19, 21, -12, 12]] },
     // signs (#129, the user's photos): the bus stop on the far pavement, the red "Flyttad" sign on ours by the curb,
     // a no-parking sign at the car park, HepCat's A-board on its pavement. [x, z, facing yaw°]
-    busStop: [2.5, -31.3, 0], moved: [6.5, -23.75, 0], noParking: [-6.5, -21.0, 0], aBoard: [30.0, -4.5, -90],
+    busStop: [2.5, -31.3, 0], moved: [6.5, -23.75, 0], noParking: [-6.5, -21.0, 0], aBoard: [28.4, -12.2, -60], // by HepCat's north corner (#261, photo)
   },
   // Life on the street (#113, src/streetlife.js; Peab's aerial docs/peab-flygbild-soder.png): the car park north
   // of Hus L marked out in two rows of stalls with parked cars (colours ours; the teal one is the electric car in
@@ -248,7 +253,8 @@ export const SITE = {
   // the sheet, and meets Sankt Lars väg in a sweeping curve on its west side (the plan's NW corner is under a photo:
   // guess) and a small rounding on the east.
   roads: [
-    { name: 'Sankt Lars väg', path: [[-150, -27], [25.1, -27, 13], [25.1, 10], [25.1, 200]], w: [6, 6, 7.73, 7.73],
+    // (#261: the east leg as on the plan: x ≈ 20.9…27.3 by HepCat, 22…29 by the long building)
+    { name: 'Sankt Lars väg', path: [[-150, -27], [24.3, -27, 13], [24.1, 0, 30], [25.5, 26, 30], [25.5, 200]], w: [6, 6, 6.4, 7, 7],
       walks: [{ side: 1, w: 2.5 }, { side: -1, w: 2 }] }, // our pavement; the far one along the school's wall (#126)
     { name: 'Karpvägen', path: [[-75.8, -27], [-75.8, 22, 30], [-79.9, 51, 20], [-84.5, 66, 8], [-200, 70]], w: 5.8 },
     { name: 'Karpvägen, hörnen', fillets: [{ x: -78.7, z: -24, sx: -1, sz: 1, r: 9 }, { x: -72.9, z: -24, sx: 1, sz: 1, r: 3 }] },
@@ -261,7 +267,7 @@ export const SITE = {
   // big old limes / chestnuts along the far pavement and in the school yard (#130, the user's photos): [x, z, size]
   bigTrees: [[-36, -34.5, 1.4], [-17, -35.2, 1.6], [-4, -34.8, 1.75], [9, -35.4, 1.45], [27.5, -34.2, 1.6], [33.5, -16, 1.35], [-58, -33.5, 1.5]],
   // a row of ornamental shrubs along our pavement, with gaps for the paths to the entrances (#130)
-  shrubs: { x0: -57.91, x1: 15.5, z: -20.6, step: 0.85, gaps: [[-46.33, -42.47], [-6, 8]] },
+  shrubs: { x0: -57.91, x1: 14.8, z: -20.6, step: 0.85, gaps: [[-46.33, -42.47], [-6, 8]] },
   // the narrow planting between Karpvägen and the plot line / Hus C's garage wall (#257, the situation plan: two trees)
   vergeTrees: [[-73.4, 37.5], [-74.4, 50]],
   birchShare: 0.3, // of the trees in the areas (not the young street maples): birches (#115)

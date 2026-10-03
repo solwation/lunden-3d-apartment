@@ -504,11 +504,12 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   court (not on the plan: guess), benches and tree squares; south of Hus C a second pergola, a sandbox and
   odlingslådor; the trees between A and B on the lower green. Walkable behind Hus L up to the main walk
   (`OUTDOOR` x −46…, z ≤ 29.5). **True north**: FOJAB's arrow puts it 58° left of plan-up, so the
-  plan's "north" (entrance) faces ENE (bearing 58°, `DAY.planNorth`) and the patio WSW. The schools,
-  HepCat and the villa outside the plot are placed from the Google Maps screenshot; straight across Sankt Lars väg
+  plan's "north" (entrance) faces ENE (bearing 58°, `DAY.planNorth`) and the patio WSW. The schools outside the
+  plot are placed from the Google Maps screenshot; HepCat, the long brick building and the villa follow the situation
+  plan's outlines (#261: HepCat z −10.8…10 right by the road, an open gap, the long building z 23…61.6 + an annex); straight across Sankt Lars väg
   stand a 2.3 m brick wall and a two-storey school with white quoins (`style: 'school'`, `SITE.school`, #126,
   the user's photos in `docs/foton/`); east of our row HepCat Store (brick, white pilasters and a white rendered
-  gable part) and the long brick building with dormers behind it (`hepcat`, `hepcatWhite`, `longhouse`, #127).
+  gable part) and the long brick building with dormers south of it (`hepcat`, `hepcatWhite`, `longhouse`, #127).
   The others are drawn in the old
   S:t Lars style (#47, `style: 'old'`: brick, white cornice and string courses, tall arched windows,
   steep dark hip roofs, 3.6 m storeys) after the drone photo/render — storey counts are guesses.
