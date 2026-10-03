@@ -114,8 +114,8 @@ export class Rifle extends Trinket {
     // hitscan from the eye along the view, with a little spread
     const cam = this.camera, from = cam.getWorldPosition(new THREE.Vector3());
     const dir = new THREE.Vector3((Math.random() - 0.5) * R.spread, (Math.random() - 0.5) * R.spread, -1).normalize().applyQuaternion(cam.getWorldQuaternion(new THREE.Quaternion()));
-    const h = this.marks?.hit(from, from.clone().addScaledVector(dir, R.range));
-    if (h) {
+    const h = this.marks?.hit(from, from.clone().addScaledVector(dir, R.range), { weapon: 'rifle', glass: true }); // a glass or bottle shatters (#263)
+    if (h && !h.broke) {
       if (h.cat) this.cat?.meowNow?.();
       else if (h.object.userData.target) { h.object.userData.target.hit(h.point, from); this.marks.add('hole', h, { force: true }); }
       else this.marks.add('hole', h, { force: true });

@@ -631,6 +631,29 @@ export const MARKS = {
   magic: { stars: 6, spread: 0.18, colors: [0xff7ad0, 0xb07bff, 0xffd34a, 0x40e0d0], flutter: { n: 12, life: 15, size: 0.09 } },
 };
 
+// Shooting things to pieces (#263, src/breaking.js): the glass and china Holdables standing somewhere (home or put
+// down, never in the hand) break when the AK-47's bullet, a Nerf dart (only `light` things), the lightsaber's blade or
+// a wand's magic reaches them first. Per kind: `shards` pieces of `glass` (see-through) or china, `color`, `size` (m),
+// `splash` = the size of the drink's splash mark when it held something. A broken thing is back home after `back` s
+// (cups: the next time the cabinet opens), or at once with F. Shards fly, bounce once, lie `lie` s and shrink away
+// over `fade` s; at most `max` of each sort. A cat within `catNear` m meows. Points (SCORE: shattered, shatterRange):
+// range points = floor(k × (distance − from)^pow) × weapon factor, at most `cap`; the saber gets `saberBonus`. Our picks.
+export const BREAK = {
+  back: 45, lie: 8, fade: 1.2, max: 120, catNear: 4,
+  kinds: {
+    glass: { name: 'glaset', shards: 14, glass: true, color: 0xdfeef0, size: 0.022, light: true, splash: 0.16 },
+    wine: { name: 'vinflaskan', shards: 18, glass: true, color: 0x1f4a2a, size: 0.03, splash: 0.3 },
+    champagne: { name: 'champagneflaskan', shards: 18, glass: true, color: 0x2c4d22, size: 0.03, splash: 0.3 },
+    whisky: { name: 'whiskyflaskan', shards: 18, glass: true, color: 0xd8e2e0, size: 0.03, splash: 0.28 },
+    beer: { name: 'ölen', shards: 16, glass: true, color: 0xe8f0f2, size: 0.028, splash: 0.28 },
+    jug: { name: 'kaffekannan', shards: 16, glass: true, color: 0xdfe6e8, size: 0.028, splash: 0.26 },
+    cup: { name: 'koppen', shards: 10, glass: false, color: 0xf3f1ec, size: 0.026, light: true, splash: 0.16 },
+  },
+  range: { from: 2, k: 0.8, pow: 1.5, cap: 60 }, // 8 m: 11, 15 m: 37
+  weapons: { rifle: 1, dart: 1.5, wand: 1, saber: 0 }, // a dart flies in an arc: harder from afar
+  saberBonus: 1,
+};
+
 // Coffee cups (#90, src/cups.js): three cups in the wall cabinet over the Moccamaster (its door opens with
 // E); taken out, a cup stands on the worktop south of the machine (`counter`), fills from the jug (each
 // cup takes `pour` of it), is held like a toy and can be put down on any table (furniture surfaces).
@@ -789,6 +812,7 @@ export const SCORE = {
     fish: 0.5, fried: 2, burnt: 0.2, chicken: 1, cooked: 8, brews: 2, // cooked = a whole chicken fried golden
     posted: 3, thrown: 0.5, drawn: 2,
     secrets: 1, stairs: 0.3, steps: 0.01,
+    shatterRange: 1,                                      // something shot to pieces from afar: per range point (#263)
   },
   first: {
     doors: 2, lids: 1, flushes: 2, taps: 1, fridge: 2, appliances: 2, cabinets: 1, lights: 1, sat: 2, lay: 2,
@@ -796,11 +820,13 @@ export const SCORE = {
     coats: 10, greets: 2, // greets: per person (#247)
     catButts: 15, // a cat's bum seen from behind with its tail up (#262): per cat, then `again` per tail-up
     walkRain: 15, walkSnow: 25, walkHail: 40, walkStorm: 30, // out in the weather (#249): the first time, then `again` per shower
+    shattered: 5, // per kind of thing shot to pieces (#263)
   },
   again: {
     doors: 0.1, lids: 0.1, flushes: 0.2, taps: 0.1, fridge: 0.1, appliances: 0.1, cabinets: 0.05, lights: 0.05,
     sat: 0.1, lay: 0.1, songs: 0.2, read: 0.5, car: 1, grill: 1, hood: 0.2, tv: 0.2, pc: 0.3, parasol: 0.2,
     clock: 0.1, calendar: 0.1, greets: 0.1, catButts: 1, walkRain: 2, walkSnow: 3, walkHail: 4, walkStorm: 3,
+    shattered: 0.3,
   },
   breeds: { huskatt: 10, siames: 30, 'brittiskt korthår': 30, 'maine coon': 35, 'norsk skogkatt': 40, perser: 100, sphynx: 250 },
   secrets: { kinds: 10, rare: 40 },

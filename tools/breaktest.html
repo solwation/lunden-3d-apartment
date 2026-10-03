@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Break test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+// Shooting things to pieces (#263): a glass on the dining table shot with the AK-47 from 2 m and from ~8 m breaks into
+// shards that land on the table (more points far away); the timer brings it back; a Nerf dart breaks a glass; the
+// lightsaber's blade breaks a wine bottle; a held glass is not hit; no break through a wall; a cup goes; F mends all.
+//   google-chrome --headless=new --dump-dom http://localhost:8137/tools/breaktest.html
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const lines = [];
+let pass = true;
+const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); pass &&= !!ok; return ok; };
+const f = document.createElement('iframe');
+f.width = 900; f.height = 600;
+document.body.append(f);
+f.src = `../index.html?v=${Math.random()}&shot&at=3.5,3.6,0,0`;
+f.onload = async () => { try {
+  while (!f.contentWindow.__app) await wait(100);
+  const w = f.contentWindow, d = f.contentDocument, app = w.__app;
+  const { things, step, heldItem, marks, breaker, toggleFurniture, player, camera, scene, stats, saber, toys, cups, totalScore } = app;
+  d.getElementById('start-touch').click(); await wait(50);
+  const C = await w.eval(`import('${new URL('../src/config.js', location.href)}')`); // the page's own instance
+  C.RIFLE.spread = 0; // aim true
+  const THREE = await w.eval("import('three')");
+  const run = (s) => { for (let t = 0; t < s; t += 1 / 30) step(1 / 30); };
+  const V = camera.position.constructor;
+  const centre = (o) => { o.updateMatrixWorld(true); const b = new THREE.Box3(); return b.setFromObject(o).getCenter(new V()); };
+  const aim = (p) => {
+    const c = camera.position;
+    camera.rotation.set(Math.atan2(p.y - c.y, Math.hypot(p.x - c.x, p.z - c.z)), Math.atan2(-(p.x - c.x), -(p.z - c.z)), 0, 'YXZ');
+    camera.updateMatrixWorld(true);
+  };
+  // a spot `dist` m (horizontally) from `p` with nothing but window panes between the eye and p
+  const clearSpot = (p, dist, level = 0) => {
+    for (let a = 0; a < 360; a += 5) {
+      const r = a * Math.PI / 180, x = p.x + Math.sin(r) * dist, z = p.z + Math.cos(r) * dist;
+      player.spawn(x, z, 0);
+      if (Math.abs(player.pos.y - [0, 3.25][level]) > 0.3) continue;
+      const eye = camera.position.clone();
+      const hits = marks.segment(eye, p, marks.meshes()).filter((h) => {
+        const o = h.object, m = Array.isArray(o.material) ? o.material[h.materialIndex ?? 0] : o.material;
+        let shown = true; for (let q = o; q; q = q.parent) if (!q.visible) shown = false;
+        return shown && m && !m.transparent && m.blending === 1 && !breaker.itemOf(o) && h.distance < eye.distanceTo(p) - 0.05;
+      });
+      if (!hits.length) return { x, z };
+    }
+    return null;
+  };
+  const glass = things.find((t) => t.kind === 'glass');
+  const wine = things.find((t) => t.kind === 'wine');
+  const rifle = things.find((t) => t.isRifle);
+  const TABLE = new V(3.5, 0.75, 1.6);
+  const putOnTable = (t, p = TABLE) => { heldItem()?.putBack(); t.take(); t.placeAt(p); step(1 / 60); };
+  const fire = () => { run(0.2); rifle.shoot(); };
+  check(glass && wine && rifle && breaker && breaker.items.length >= 10, `breakables registered (${breaker?.items.length})`);
+
+  // 1: the AK-47 from 2 m
+  putOnTable(glass);
+  glass.contents.set('wine', 0.4); glass.liquid.show(glass.contents);
+  rifle.take();
+  player.spawn(3.5, 3.6, 0); run(0.1);
+  const s0 = stats.shattered ?? 0, r0 = stats.shatterRange ?? 0, score0 = totalScore();
+  const splash0 = marks.live.filter((l) => l.kind === 'splash').length;
+  aim(centre(glass.model)); fire();
+  check(glass.broken && !glass.model.visible, 'a shot from 2 m breaks the glass on the dining table');
+  check(breaker.glass.live >= 10, `shards fly (${breaker.glass.live})`);
+  check(marks.live.filter((l) => l.kind === 'splash').length === splash0 + 1, 'the wine splashes on the table');
+  const near = (stats.shatterRange ?? 0) - r0;
+  check(stats.shattered === s0 + 1 && totalScore() > score0, `counted (+${totalScore() - score0} points, ${near} range points)`);
+  check(glass.target.kind === 'none', 'the broken glass is no E target');
+  run(1.5);
+  const down = breaker.glass.p.filter((s) => s.live && s.down);
+  check(down.length >= 5 && down.some((s) => Math.abs(s.pos.y - 0.75) < 0.03), `shards lie on the table (${down.filter((s) => Math.abs(s.pos.y - 0.75) < 0.03).length} of ${down.length})`);
+  run(C.BREAK.lie + C.BREAK.fade + 0.5);
+  check(breaker.glass.live === 0 && !breaker.glass.mesh.visible, 'the shards are gone after a while (no draw call)');
+  // the timer: back home
+  breaker.pending.forEach((p) => { p.t = 0.05; }); run(0.2);
+  check(!glass.broken && glass.model.visible && !glass.placed && glass.fill === 0, 'the timer brings it back home, empty');
+
+  // 2: from far away
+  putOnTable(glass);
+  const spot = clearSpot(centre(glass.model), 8);
+  check(!!spot, `a clear line from ~8 m (${spot ? `${spot.x.toFixed(1)}, ${spot.z.toFixed(1)}` : 'none'})`);
+  if (spot) {
+    rifle.take();
+    player.spawn(spot.x, spot.z, 0); run(0.1);
+    const r1 = stats.shatterRange ?? 0, sc1 = totalScore();
+    aim(centre(glass.model)); fire();
+    const far = (stats.shatterRange ?? 0) - r1;
+    check(glass.broken, 'a shot from ~8 m breaks it');
+    check(far > near && far >= 5, `more points from far away (${far} range points vs ${near}; +${totalScore() - sc1} in all)`);
+  }
+  breaker.reset();
+
+  // 3: a Nerf dart breaks a glass
+  putOnTable(glass);
+  const blaster = toys.blasters[1];
+  blaster.take();
+  player.spawn(3.5, 3.6, 0); run(0.1);
+  const gc = centre(glass.model), eye = camera.position.clone(), dir = gc.clone().setY(gc.y + 0.15).sub(eye).normalize(); // over it: the dart drops
+  toys.darts.fire(eye.clone().addScaledVector(dir, 0.3), dir);
+  run(1);
+  check(glass.broken, 'a Nerf dart breaks the glass');
+  breaker.reset();
+  // …but not a bottle (only light things)
+  putOnTable(wine);
+  blaster.take(); player.spawn(3.5, 3.6, 0); run(0.1);
+  { const wc = centre(wine.model), e = camera.position.clone(), dd = wc.clone().sub(e).normalize();
+    toys.darts.fire(e.clone().addScaledVector(dd, 0.3), dd.clone().add(new V(0, 0.08, 0)).normalize()); run(1); }
+  check(!wine.broken, 'a dart does not break a wine bottle');
+
+  // 4: the lightsaber breaks the bottle: stand it where the blade is seen
+  heldItem()?.putBack(); saber.take(); run(0.6);
+  const e4 = camera.getWorldPosition(new V()), tip = saber.tip();
+  const at = e4.clone().lerp(tip, 0.75);
+  putOnTable(wine, new V(at.x, at.y - 0.15, at.z)); // stood in the air where the blade is
+  saber.take(); run(0.6);
+  check(wine.broken, 'the lightsaber cuts the wine bottle to pieces');
+  breaker.reset();
+
+  // 5: a held glass is not hit
+  heldItem()?.putBack(); glass.take(); step(1 / 60);
+  { const e = camera.getWorldPosition(new V()), gp = centre(glass.model), to = gp.clone().sub(e).multiplyScalar(4).add(e);
+    const h = marks.hit(e, to, { weapon: 'rifle', glass: true });
+    check(!h?.broke && !glass.broken && heldItem() === glass, 'a glass in the hand is not hit'); }
+  glass.putBack();
+
+  // 6: no break through a wall (the Sovrum 1 west wall upstairs)
+  rifle.take();
+  player.spawn(4.6, 2.6, Math.PI / 2); player.pos.y = 3.25; player.eyeY = 3.25 + 1.62; run(0.3);
+  camera.rotation.set(0, Math.PI / 2, 0, 'YXZ'); camera.updateMatrixWorld(true);
+  { const e = camera.getWorldPosition(new V()), dir6 = new V(-1, 0, 0), wall = marks.hit(e, e.clone().addScaledVector(dir6, 10));
+    check(!!wall, `a wall west of Sovrum 1 (${wall ? e.distanceTo(wall.point).toFixed(2) : '–'} m)`);
+    if (wall) {
+      putOnTable(glass, wall.point.clone().addScaledVector(dir6, 0.6).setY(e.y - 0.08));
+      rifle.take(); camera.rotation.set(0, Math.PI / 2, 0, 'YXZ'); camera.updateMatrixWorld(true);
+      const holes0 = marks.live.filter((l) => l.kind === 'hole').length;
+      fire();
+      check(!glass.broken && marks.live.filter((l) => l.kind === 'hole').length > holes0, 'the bullet stops in the wall: the glass behind it is whole');
+    }
+  }
+  heldItem()?.putBack(); glass.take(); glass.putBack();
+
+  // 7: a cup put down breaks and is out of the scene; the cabinet gets a new one
+  const cup = cups.cups.find((c) => c.state === 'cabinet');
+  heldItem()?.putBack(); cup.take(); cup.placeAt(TABLE); step(1 / 60);
+  rifle.take(); player.spawn(3.5, 3.6, 0); run(0.1);
+  aim(centre(cup.model)); fire();
+  check(cup.state === 'spare' && !cup.model.parent && breaker.china.live > 0, 'a cup breaks into china shards and is gone');
+
+  // 8: F: everything whole and home
+  putOnTable(glass); rifle.take(); player.spawn(3.5, 3.6, 0); run(0.1); aim(centre(glass.model)); fire();
+  const broke = glass.broken;
+  toggleFurniture(false); toggleFurniture(true);
+  check(broke && !glass.broken && glass.model.visible && !glass.placed && breaker.glass.live === 0 && breaker.pending.length === 0, 'F: the broken glass is home and whole, no shards');
+  check(cups.cups.filter((c) => c.state === 'cabinet').length === 3, 'F: three cups in the cabinet');
+  out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
+} catch (e) { out.textContent = `SOME FAILED\n${lines.join('\n')}\nERROR ${e.stack}`; } };
+</script>
+</body>
+</html>

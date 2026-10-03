@@ -64,12 +64,16 @@ export class Beer extends Holdable {
 
   /** The visitor sat down in the lounge sofa: a full beer on the table, unless one is in the hand or put down. */
   serve() {
+    if (this.broken) this.broken = false; // shot to pieces (#263): a new one
     if (this.held || this.placed) { if (!this.out) this.show(true); return; }
     this.goHome();
     this.setLevel(1);
     if (!this.out) sfx.click(this.where());
     this.show(true);
   }
+
+  /** Whole again (#263): back on the table if it was served. */
+  mend() { this.broken = false; this.goHome(); this.model.visible = this.out; }
 
   goHome() {
     super.goHome();

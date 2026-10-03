@@ -119,14 +119,26 @@ export class Marks {
    * The first thing on the segment from → to: { point, normal, object } on a surface that takes marks,
    * { cat: true } for the cat, or null (nothing, or something that takes none: glass, a door, a lid …).
    * Overlays (the AO multiply layer, additive glows) and hidden things are looked through.
+   * opts (#263): `weapon` ('rifle', 'dart', 'saber', 'wand') — a breakable thing (breaking.js, `this.breaker`) it
+   * reaches first is smashed (seen from `eye`, for the points) and { broke: item, point } comes back; `glass` — see-through
+   * panes (windows, glazed doors) are passed through (the bullet).
    */
-  hit(from, to) {
-    const all = this.segment(from, to, this.cat?.visible ? [...this.meshes(), ...catMeshes(this.cat)] : this.meshes());
+  hit(from, to, { weapon = null, eye = from, glass = false } = {}) {
+    const brk = weapon ? this.breaker : null;
+    let list = this.cat?.visible ? [...this.meshes(), ...catMeshes(this.cat)] : this.meshes();
+    if (brk) { const near = brk.meshesNear(from, to); if (near.length) list = [...list, ...near]; }
+    const all = this.segment(from, to, list);
     for (const h of all) {
       const o = h.object;
       if (!shown(o)) continue;
       const m = Array.isArray(o.material) ? o.material[h.materialIndex ?? 0] : o.material;
       if (!m || m.blending === THREE.CustomBlending || m.blending === THREE.AdditiveBlending) continue;
+      const item = brk?.itemOf(o);
+      if (item) { // a glass, a bottle, a cup … (#263): it breaks, or (in the hand, or not in the scene) is looked past
+        if (brk.can(item, weapon)) { brk.smash(item, h.point.clone(), eye, weapon); return { broke: item, point: h.point.clone() }; }
+        if (!brk.standing(item)) continue;
+      }
+      if (glass && m.transparent && !(this.cat && isUnder(o, this.cat.object))) continue; // a bullet goes through window panes (#263)
       if (this.cat && isUnder(o, this.cat.object)) return { cat: true, point: h.point };
       if (o.isInstancedMesh || m.transparent || moving(o)) return null; // glass, plants, doors, lids, things that move
       const normal = h.normal.clone();

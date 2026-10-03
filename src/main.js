@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { COLORS, LEVELS, DAY, START, PLAYER, DRAWING, STAIR, HOLD, REMOTE, REST, DOOR_HEIGHT, TURBO, WEATHER } from './config.js';
+import { COLORS, LEVELS, DAY, START, PLAYER, DRAWING, STAIR, HOLD, REMOTE, REST, DOOR_HEIGHT, TURBO, WEATHER, BREAK } from './config.js';
 const DRAWING_COLORS = DRAWING.colors;
 import { buildWorld } from './world.js';
 import { Player } from './player.js';
@@ -47,6 +47,7 @@ import { CatBoard, BoardPanel, snapshot } from './catboard.js';
 import { Lights } from './lights.js';
 import { setupInstall } from './install.js';
 import { Marks } from './marks.js';
+import { Breaker } from './breaking.js';
 import { Target } from './target.js';
 import { Car } from './car.js';
 import { People } from './people.js';
@@ -319,6 +320,19 @@ weather.extraBoxes = () => car.box(); // no rain inside our parked car (#250)
 { const moving = world.movingSegments; world.movingSegments = (lvl) => [...moving(lvl), ...(lvl === 0 ? car.segments() : [])]; } // parked: in the way
 scene.add(target.object); // up only while something that can hit it is in the hand (#144, #179, step)
 const marks = new Marks(scene, camera, [world.object, patio.object, target.object], cat); // burn marks, stars, splashes on surfaces (#96)
+// glasses, bottles, cups, the jug and the beer can be shot to pieces (#263): more points from further away
+const breaker = new Breaker(scene, marks, cat);
+marks.breaker = breaker;
+for (const t of things) if (t.kind === 'glass' || t.drink) breaker.add(t, t.kind);
+for (const c of cups.cups) breaker.add(c, 'cup');
+breaker.add(cups.jug, 'jug');
+breaker.add(beer, 'beer');
+breaker.onBreak = (item, kind, d, weapon) => {
+  bump('shattered', 1, kind);
+  const pts = Breaker.points(d, weapon);
+  if (pts > 0) bump('shatterRange', pts);
+  badge(`💥 ${BREAK.kinds[kind].name[0].toUpperCase()}${BREAK.kinds[kind].name.slice(1)} krossad · ${d.toFixed(1).replace('.', ',')} m`, false);
+};
 const rifle = things.find((t) => t.isRifle) ?? null; // the AK-47 in the NORDLI chest (#196): bullet holes, the target, the cat
 if (rifle) Object.assign(rifle, { marks, cat, onShot: () => bump('shots') });
 saber.onBurn = () => bump('cuts'); // the lightsaber's marks (#96)
@@ -992,6 +1006,7 @@ function updateFocus() {
 // --- furniture on/off (F / 🛋) ---------------------------------------------
 function toggleFurniture(on = !world.furnitureOn) {
   if (rest.active) standUp(); // the seat is about to vanish
+  if (!on) breaker.reset(); // whatever was shot to pieces is whole and home again (#263)
   world.setFurniture(on);
   if (!on) beer.show(false); else beer.show(beer.out); // the beer only once served (setFurniture showed it)
   if (!on) { // whatever is in the hand, or put down somewhere, goes home first (#102)
@@ -1094,6 +1109,7 @@ function step(dt) {
   fish?.update(dt);
   toys.update(dt);
   marks.update(dt);
+  breaker.update(dt);
   balls.update(dt);
   target.update(dt, world.furnitureOn && !!heldItem()?.hitsTarget); // the target rises with a blaster, the saber or a wand in the hand (#144, #179)
   hoop.update(dt, world.furnitureOn && (ball.out || params0.has('hoop'))); // the hoop stands out front while the basketball is out of its holder
@@ -1301,4 +1317,4 @@ if (resumeOk && resumed.mode) continueAfterReload(resumed);
 document.documentElement.classList.remove('resuming'); // the page is ready: off with the "Laddar…" cover (#222)
 
 // handle for tests/debugging (tools/touchtest.html)
-window.__app = { weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };
+window.__app = { breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };

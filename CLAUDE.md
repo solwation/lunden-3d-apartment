@@ -239,6 +239,13 @@ src/marks.js           marks on surfaces (MARKS, #96): `hit(from, to)` = first s
                        → none; the cat → meow), `add(kind, hit)` / `burn(hit)`; one ring buffer, an InstancedMesh per
                        kind (burn, glow, star, butterfly, splash) with a per-instance fade, a Points puff of smoke;
                        `magic(hit, eye)` = the wands' stars + fluttering butterflies (#97); darts splash paint (#98)
+src/breaking.js        shooting things to pieces (#263, BREAK): glasses, bottles, cups, the jug and the beer are registered
+                       (`breaker.add(item, kind)`); Marks.hit with `{ weapon }` (rifle / dart / saber / wand; `glass: true` =
+                       the bullet goes through window panes) smashes one standing in the way (not held; darts only `light`
+                       kinds): `item.shatter()` (Holdable: hidden, no E target; a cup goes 'spare'), shards in two pooled
+                       InstancedMeshes (glass / china) that bounce once and fade, a 'splash' of what it held, sfx.shatter,
+                       a cat near meows; `mend()` after BREAK.back s or F. Stats shattered (first per kind) + shatterRange
+                       (`Breaker.points`: distance × weapon)
 src/trigrid.js         world-space triangle grid per big static mesh, so short segment hits skip three's full raycast
 src/remote.js          the TV remote on the coffee table (REMOTE), a Holdable: click = next programme (on if off),
                        right click / ⏻ (touch) = power, on the TV in the look direction (not through walls)
@@ -425,6 +432,9 @@ tools/baskettest.html  headless test: the daybed's drawers (shoes, hair things),
                        catch, a throw at the wall stays in the room, shots from 4 m (a basket) and 7.5 m (a three), a miss, F
 tools/rifletest.html   headless test: the AK-47 rides with its drawer, 30 shots of automatic fire leave bullet holes, reload,
                        the magazine on the floor, a click = one shot, a shot in the lawn target scores, F
+tools/breaktest.html   headless test: the AK-47 breaks a glass on the dining table from 2 m and ~8 m (shards on the table, a wine
+                       splash, more points far away), the timer mends it, a dart breaks a glass but not a bottle, the saber a
+                       bottle, a held glass is not hit, none through a wall, a cup goes, F mends all (#263)
 tools/turbotest.html   headless test: Kaffeturbo with an injected clock — three cups in five minutes (not spread out, not milk /
                        whisky), faster indoors, the text, more coffee adds time, over again; `walktest.html?turbo` walks at that pace
 tools/weathertest.html headless test: showers per season, thunderstorms only in late summer, a shower ramps in; with &weather=storm:

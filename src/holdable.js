@@ -42,6 +42,9 @@ export function restPose(model) {
   return { q, lift };
 }
 
+/** The target of a broken thing: an empty object no ray hits. */
+const NOTHING = { name: '', kind: 'none', pickable: new THREE.Object3D(), blocked: true };
+
 export class Holdable {
   /**
    * opts: { name, verb, backName, backVerb, model (Object3D), home: { pos, rot }, heldPose: { pos, rot },
@@ -65,8 +68,13 @@ export class Holdable {
     this.goHome();
   }
 
-  /** The E target now: the thing at home, or its empty home while it is held. */
-  get target() { return this.held ? this.backTarget : this.takeTarget; }
+  /** The E target now: the thing at home, or its empty home while it is held; nothing while it lies in pieces (#263). */
+  get target() { return this.broken ? NOTHING : this.held ? this.backTarget : this.takeTarget; }
+
+  /** Shot to pieces (#263, breaking.js): gone until mend(). */
+  shatter() { this.broken = true; this.placed = false; this.model.visible = false; }
+  /** Whole again, at home. */
+  mend() { this.broken = false; this.goHome(); this.model.visible = true; }
 
   goHome() {
     this.placed = false;

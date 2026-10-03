@@ -687,6 +687,18 @@ export const sfx = {
     const t = ctx.currentTime, d = out(pos, 0.6);
     for (const k of [0, 0.07, 0.12]) noise(t + k, 0.05, d, { type: 'bandpass', freq: 1800 + k * 4000, q: 2, gain: 0.25 - k });
   },
+  /** Glass (or china) shot to pieces (#263): a crack, then shards tinkling down. */
+  shatter(pos, glass = true) {
+    if (!ready()) return;
+    const t = ctx.currentTime, d = out(pos, 1);
+    noise(t, 0.09, d, { type: 'highpass', freq: glass ? 2500 : 1200, gain: 0.7, attack: 0.001 });
+    noise(t, 0.05, d, { type: 'lowpass', freq: glass ? 1200 : 700, gain: 0.35, attack: 0.001 });
+    for (let i = 0; i < 14; i++) {
+      const k = t + 0.02 + Math.random() * 0.45 * (i / 14 + 0.3);
+      if (glass) tone(k, 0.05 + Math.random() * 0.08, d, { type: 'sine', from: 2800 + Math.random() * 4500, to: 2600 + Math.random() * 4000, gain: 0.05 + Math.random() * 0.06 });
+      noise(k, 0.03, d, { type: 'bandpass', freq: (glass ? 4000 : 2200) + Math.random() * 3000, q: 4, gain: glass ? 0.2 : 0.3 });
+    }
+  },
   /** A basketball bouncing: a hollow thump, louder the harder (k 0..1). */
   bounce(pos, k = 1) {
     if (!ready() || k < 0.05) return;

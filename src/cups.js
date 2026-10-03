@@ -331,6 +331,10 @@ export class Cup {
     sfx.click(this.home);
   }
 
+  /** Shot to pieces (#263, breaking.js): out of the scene like a spare cup; the cabinet gets a new one when it opens. */
+  shatter() { this.held = false; this.state = 'spare'; this.slot = null; this.model.removeFromParent(); }
+  mend() {}
+
   /** Another thing was taken: the cup goes down on the worktop. */
   putBack() { if (this.held) this.placeAt(this.counter); }
 
