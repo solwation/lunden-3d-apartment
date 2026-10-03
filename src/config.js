@@ -1068,7 +1068,10 @@ export const KITCHEN = {
   // the worktop; weak, as it is close to the tiles (inverse square: 0.3 m away a strong one made blown-out spots); `wash` = the additive washes' opacity, `soft` = the metres at each end of a wash over which it fades out
   // (no hard edges where a run stops at the hood or a cabinet). Tuned on screenshots at 19:00 (the user's, #271)
   underLights: {
-    bench: { pool: { intensity: 0.3, range: 3 }, out: 0.3, y: 0.32, wash: 0.35 },
+    // #285: one continuous strip `strip` m behind the cabinets' front edge; a weak pool light over the middle of each run
+    // (two anchors: one light could not reach the sink), the even look from the washes; `spill` = how far the wash
+    // reaches under the hood from a cabinet end, `endSoft` = the fade at the tall unit / freezer (tuned on screenshots, 20:00)
+    bench: { pool: { intensity: 0.16, range: 2.5 }, out: 0.33, y: 0.45, wash: 0.45, strip: 0.05, spill: 0.12, endSoft: 0.06 },
     hood: { pool: { intensity: 0.25, range: 2.5 }, out: 0.3, y: 0.4, wash: 0.32 },
     soft: 0.18,
   },

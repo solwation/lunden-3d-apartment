@@ -148,8 +148,12 @@ class FloorLamp {
     Object.assign(this, { kind: 'lamp', name: spec.name ?? 'golvlampan', on: false, spec, auto: spec.auto !== false, k: 0 });
     this.room = { on: false, lamps: [], mats: [spec.shade] };
     const p = spec.object.getWorldPosition(new THREE.Vector3());
-    const [ox, oz] = spec.offset ?? [0, 0];
-    this.room.lamps.push({ pos: new THREE.Vector3(p.x + ox, p.y + spec.height, p.z + oz), ...L.floorLamp, ...(spec.light ?? {}), level: spec.level, owner: this });
+    // one pool-light anchor at `offset` / `height` from the object, or several (`anchors`: [{ offset, height, light }],
+    // the bench light's long strip, #285): each is a candidate of its own, the pool lights the ones that matter
+    for (const a of spec.anchors ?? [{ offset: spec.offset, height: spec.height, light: spec.light }]) {
+      const [ox, oz] = a.offset ?? [0, 0];
+      this.room.lamps.push({ pos: new THREE.Vector3(p.x + ox, p.y + a.height, p.z + oz), ...L.floorLamp, ...(a.light ?? {}), level: spec.level, owner: this });
+    }
     spec.object.traverse((m) => { m.userData.door = this; });
     this.pickable = spec.object;
     this.set(false);

@@ -544,16 +544,17 @@ function buildKitchen(B, group, floor, y0, yC, handled, taps, appliances) {
     return new THREE.CanvasTexture(c);
   })();
   const wash = (k) => { const m = new THREE.MeshBasicMaterial({ color: 0xffd9a0, map: washTex, vertexColors: true, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false }); m.userData.on = k; return m; };
-  const benchWash = wash(UL.bench.wash), hoodWash = wash(UL.hood.wash);
-  // a wash plane w × h; its ends (along w) fade out over UL.soft m (vertex colours, smoothstep), so a run that stops at the
-  // hood or a cabinet has no hard edge (#271)
-  const washGeometry = (w, h) => {
-    const s = Math.min(UL.soft, w / 2), n = 6, xs = [];
-    for (let i = 0; i <= n; i++) xs.push(-w / 2 + (s * i) / n);
-    for (let i = n; i >= 0; i--) xs.push(w / 2 - (s * i) / n);
+  const BL = UL.bench, benchWash = wash(BL.wash), hoodWash = wash(UL.hood.wash);
+  // a wash plane w × h; its ends (along w) fade out over s0 / s1 m (vertex colours, smoothstep; s0 at local −w/2), so a
+  // run that stops at the hood or a cabinet has no hard edge (#271); 0 = no fade (an end at a wall or a corner, #285)
+  const washGeometry = (w, h, s0 = UL.soft, s1 = UL.soft) => {
+    s0 = Math.min(s0, w / 2); s1 = Math.min(s1, w / 2);
+    const n = 6, xs = [];
+    for (let i = 0; i <= n; i++) xs.push(-w / 2 + (s0 * i) / n);
+    for (let i = n; i >= 0; i--) xs.push(w / 2 - (s1 * i) / n);
     const pos = [], uv = [], col = [], idx = [];
     for (const [j, x] of xs.entries()) {
-      const t = Math.min(1, Math.min(x + w / 2, w / 2 - x) / s), f = t * t * (3 - 2 * t);
+      const t = Math.min(1, s0 > 0 ? (x + w / 2) / s0 : 1, s1 > 0 ? (w / 2 - x) / s1 : 1), f = t * t * (3 - 2 * t);
       for (const v of [1, 0]) { pos.push(x, (v - 0.5) * h, 0); uv.push((x + w / 2) / w, v); col.push(f, f, f); }
       if (j) { const a = 2 * (j - 1); idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); }
     }
@@ -564,7 +565,7 @@ function buildKitchen(B, group, floor, y0, yC, handled, taps, appliances) {
     g.setIndex(idx);
     return g;
   };
-  const washPlane = (w, h, m, rotX, rotY, x, y, z) => { const p = new THREE.Mesh(washGeometry(w, h), m); p.rotation.set(rotX, rotY, 0, 'YXZ'); p.position.set(x, y, z); p.raycast = () => {}; p.renderOrder = 2; group.add(p); return p; };
+  const washPlane = (w, h, m, rotX, rotY, x, y, z, s0, s1) => { const p = new THREE.Mesh(washGeometry(w, h, s0, s1), m); p.rotation.set(rotX, rotY, 0, 'YXZ'); p.position.set(x, y, z); p.raycast = () => {}; p.renderOrder = 2; group.add(p); return p; };
   const wallX = eastWall - wd;
   const hob = hobCab ? [hobCab.z0, hobCab.z1] : null;
   const eastSpans = hob ? [[runZ0, hob[0]], [hob[1], southWall]] : [[runZ0, southWall]];
@@ -591,10 +592,10 @@ function buildKitchen(B, group, floor, y0, yC, handled, taps, appliances) {
     group.add(hood.object);
     appliances.push(hood);
     // the hood's light on the hob: the wash on the worktop under it and up the splashback under the hood (bright at the
-    // top), a pool light over the hob, well out from the tiles (#271)
+    // top), a pool light over the hob, well out from the tiles (#271); its ends cross-fade with the bench light's (#285)
     const hz = (hob[0] + hob[1]) / 2;
-    washPlane(hob[1] - hob[0] - 0.04, eastWall - eFront, hoodWash, -Math.PI / 2, -Math.PI / 2, (eFront + eastWall) / 2, top + 0.012, hz);
-    washPlane(hob[1] - hob[0] - 0.04, yHood - top, hoodWash, 0, -Math.PI / 2, eastWall - 0.008, (top + yHood) / 2, hz);
+    washPlane(hob[1] - hob[0] + 2 * BL.spill, eastWall - eFront, hoodWash, -Math.PI / 2, -Math.PI / 2, (eFront + eastWall) / 2, top + 0.012, hz);
+    washPlane(hob[1] - hob[0] + 2 * BL.spill, yHood - top, hoodWash, 0, -Math.PI / 2, eastWall - 0.008, (top + yHood) / 2, hz);
     const bp = hood.lampButton.getWorldPosition(new THREE.Vector3()); // the group sits at the origin
     mirrorLamps.push({ object: hood.lampButton, shade: hoodLamp, glows: [hoodWash], height: top + UL.hood.y - bp.y, offset: [eastWall - UL.hood.out - bp.x, hz - bp.z], level: K.level, name: 'lampan i köksfläkten', light: UL.hood.pool, auto: false }); // a work light: by hand only (#234)
     EW.box(hob[0], hob[1], -wd, 0, yTop, yC, M.white); // Lokal gipsinklädnad ovan spiskåpa
@@ -603,17 +604,25 @@ function buildKitchen(B, group, floor, y0, yC, handled, taps, appliances) {
   if (fridgeX1 < wallX) {
     const RW = frame(B, { x0: fridgeX1, x1: wallX, z0: southWall - wd, z1: southWall }, 'n');
     doorRow(RW, fridgeX1, wallX, yW, yTop, 0.5, { low: true, open: { ...wallOpen, corner: 'a1' }, fill: ['tea', 'plates', 'dry'] });
-    RW.box(fridgeX1 + 0.02, wallX, -wd + 0.02, -wd + 0.04, yW - 0.008, yW, benchLamp);
+    RW.box(fridgeX1 + 0.02, wallX + BL.strip + 0.01, -BL.strip - 0.01, -BL.strip, yW - 0.008, yW, benchLamp); // the strip runs on into the corner
   }
-  // under-cabinet LED (Belysning LED Linear) and the splashback tiles (10×20 half bond)
-  for (const [a, b] of eastSpans) EW.box(a + 0.02, b - 0.02, -wd + 0.02, -wd + 0.04, yW - 0.008, yW, benchLamp);
-  // the bench light's wash: on the worktop (bright by the wall) and up the splashback (bright at the top), under each run
+  // under-cabinet LED (Belysning LED Linear, #285): one continuous 1 cm strip just behind the front edge of every wall
+  // cabinet, from the cup cabinet past the sink and the hood (not under it: its own light) into the corner
+  for (const [a, b] of eastSpans) EW.box(a + 0.02, b - 0.02, -BL.strip - 0.01, -BL.strip, yW - 0.008, yW, benchLamp);
+  // the bench light's wash: on the worktop (bright by the wall) and up the splashback (bright at the top), one even band
+  // per run. An end by the hood reaches BL.spill under it and fades (soft, no hole between the runs); an end at the tall
+  // unit / freezer fades over BL.endSoft; the ends meeting in the corner do not fade (the two runs overlap there)
+  const soft = (z, inner) => (z === southWall ? 0 : hob && (z === hob[0] || z === hob[1]) ? UL.soft : inner ? BL.endSoft : UL.soft);
   for (const [a, b] of eastSpans) {
-    const len = b - a - 0.04, mz = (a + b) / 2;
-    washPlane(len, eastWall - eFront, benchWash, -Math.PI / 2, -Math.PI / 2, (eFront + eastWall) / 2, top + 0.011, mz);   // v = 1 by the wall
-    washPlane(len, yW - top, benchWash, 0, -Math.PI / 2, eastWall - 0.008, (top + yW) / 2, mz);                            // v = 1 at the top
+    const z0 = hob && a === hob[1] ? a - BL.spill : a, z1 = hob && b === hob[0] ? b + BL.spill : b;
+    const len = z1 - z0, mz = (z0 + z1) / 2, s0 = soft(a, a === runZ0), s1 = soft(b, false);
+    washPlane(len, eastWall - eFront, benchWash, -Math.PI / 2, -Math.PI / 2, (eFront + eastWall) / 2, top + 0.011, mz, s0, s1);   // v = 1 by the wall
+    washPlane(len, yW - top, benchWash, 0, -Math.PI / 2, eastWall - 0.008, (top + yW) / 2, mz, s0, s1);                            // v = 1 at the top
   }
-  if (fridgeX1 < wallX) washPlane(wallX - fridgeX1, yW - top, benchWash, 0, Math.PI, (fridgeX1 + wallX) / 2, (top + yW) / 2, southWall - 0.008);
+  if (fridgeX1 < wallX) { // the return over the corner unit: its worktop (bright by the south wall) and splashback, on to the east wall
+    washPlane(eastWall - fridgeX1, southWall - retFront, benchWash, -Math.PI / 2, Math.PI, (fridgeX1 + eastWall) / 2, top + 0.010, (retFront + southWall) / 2, 0, BL.endSoft);
+    washPlane(eastWall - fridgeX1, yW - top, benchWash, 0, Math.PI, (fridgeX1 + eastWall) / 2, (top + yW) / 2, southWall - 0.008, 0, BL.endSoft);
+  }
   // its switch: a small white rocker under the first wall cabinet after the cup cabinet, near its front edge
   const sw = new THREE.Group();
   sw.position.set(wallX + 0.035, yW - 0.006, runZ0 + cupW + 0.12);
@@ -622,8 +631,11 @@ function buildKitchen(B, group, floor, y0, yC, handled, taps, appliances) {
   swPick.visible = false;
   sw.add(rocker, swPick);
   group.add(sw);
-  // its pool light: mid-run, out at the cabinets' front edge and well over the worktop (#271: no hot spot on the tiles)
-  mirrorLamps.push({ object: sw, shade: benchLamp, glows: [benchWash], height: top + UL.bench.y - sw.position.y, offset: [eastWall - UL.bench.out - sw.position.x, (runZ0 + visEnd) / 2 - sw.position.z], level: K.level, name: 'bänkbelysningen', light: UL.bench.pool });
+  // its pool lights: one over the middle of each run, under the cabinets and well over the worktop, weak — the washes
+  // carry the even look (#271: no hot spot on the tiles; #285: one light could not reach the sink)
+  const anchors = (hob ? [[runZ0, hob[0]], [hob[1], visEnd]] : [[runZ0, (runZ0 + visEnd) / 2], [(runZ0 + visEnd) / 2, visEnd]])
+    .map(([a, b]) => ({ offset: [eastWall - BL.out - sw.position.x, (a + b) / 2 - sw.position.z], height: top + BL.y - sw.position.y, light: BL.pool }));
+  mirrorLamps.push({ object: sw, shade: benchLamp, glows: [benchWash], anchors, level: K.level, name: 'bänkbelysningen' });
   const o = [0, top, 0];
   B.box(eastWall - 0.006, eastWall, runZ0, southWall, top, yW, M.splash, o);
   if (hob) B.box(eastWall - 0.006, eastWall, hob[0], hob[1], yW, yHood, M.splash, o);
