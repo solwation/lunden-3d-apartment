@@ -405,7 +405,7 @@ export const TOYS = {
   // (the long one sits further from the bandolier). Shapes after Nerf Elite 2.0 / N-Strike, sizes ours.
   nerf: { level: 1, x: 2.752, face: 1, y: 1.35, z: 9.18, board: [0.9, 0.8], colors: [0xff7a1a, 0x1f8bff, 0xffd21a],
     models: ['pistol', 'drum', 'long'], accents: [0xf2f2f2, 0xf2f2f2, 0x2f3338], shift: [0, 0, -0.08],
-    dart: { speed: 9, gravity: 6, max: 8 }, held: { x: 0.2, y: -0.18, z: -0.42 } },
+    dart: { speed: 9, gravity: 6, max: 8 }, held: { x: 0.18, y: -0.15, z: -0.45 } },
   wands: { level: 1, x: 2.61, y: 1.45, z: [2.85, 3.2, 3.55], colors: [0xff7ad0, 0x9b7bff, 0x5fd7ff],
     held: { x: 0.2, y: -0.22, z: -0.42 }, headband: { z: 3.9 }, reach: 8 }, // reach: m to the surface the magic lands on (#97)
   flashlight: { level: 0, x: 0.58, y: 1.83, z: 2.08, held: { x: 0.2, y: -0.2, z: -0.38 },
@@ -455,7 +455,7 @@ export const CAR = {
 // Rim 3.05 m, Ø 45 cm, 15 cm in front of the board (regulation); board 112 × 72 cm, its bottom `below` the rim.
 // `assist`: looking within this many metres of the rim aims at the rim. A basket from beyond `three` m is a three.
 export const BASKET = {
-  ball: { r: 0.115, level: 1, x: 0.202, z: 10.0, y: 1.5, held: { x: 0.16, y: -0.25, z: -0.5 },
+  ball: { r: 0.115, level: 1, x: 0.202, z: 10.0, y: 1.5, held: { x: 0.17, y: -0.17, z: -0.5 },
     gravity: 9.81, entry: 0.85, flat: 0.25, maxSpeed: 13, jitter: 0.015, dribble: 4.6,
     bounce: 0.8, slip: 0.12, roll: 0.8, catch: 0.42 },
   hoop: { x: -4.5, z: -12, rim: 3.05, rimR: 0.23, rimTube: 0.01, rimZ: 0.38, board: [1.12, 0.72], below: 0.15,
@@ -594,7 +594,11 @@ export const SECRET = {
 // The visitor's arm and hand (#195, src/hand.js): colours, and points in camera space (x right, y up, −z ahead):
 // the shoulder the sleeve comes from (out of view), where a reach starts from, how far beyond that it reaches (m) and in
 // how long it goes out and back (s). Our numbers.
-export const HAND = { skin: 0xe2b292, sleeve: 0x4a5a6e, shoulder: [0.3, -0.5, 0.15], rest: [0.2, -0.26, -0.32], reach: 0.4, reachTime: 0.4 };
+// #238: `size` scales the modelled adult hand (palm 8 cm wide); `skinGlow` a faint warm emissive so the shaded side
+// isn't grey (cheap stand-in for light through skin); `cuff` = m from the wrist back to the sleeve's cuff; how far
+// the fingers close: 1 round a `grip`, `boxCurl` beside a thing without one, `palmCurl` under one carried on the palm.
+export const HAND = { skin: 0xe2b292, skinGlow: 0x2a0e06, sleeve: 0x4a5a6e, shoulder: [0.3, -0.5, 0.15], rest: [0.2, -0.26, -0.32],
+  reach: 0.4, reachTime: 0.4, size: 0.95, cuff: 0.085, boxCurl: 0.75, palmCurl: 0.2 };
 
 // What is in the wardrobes and drawers (#228, src/stuff.js): shared colours, and per person (by room) the clothes:
 // `size` (1 adult, ~0.65 a child), garment colours, what hangs on the rod, folded colours, shoes, socks, underwear.

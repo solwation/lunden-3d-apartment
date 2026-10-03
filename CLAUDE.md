@@ -163,9 +163,11 @@ src/holdable.js        things you take and hold (one at a time): home + pick box
                        use = click / touch button / fast look; E on the home puts it back, E on a table top /
                        worktop / the floor (HOLD.reach) puts it down (`placeAt`, lying by its shape — `restPose`;
                        cups stand). While something is held other things are `blocked` ("Lägg ifrån dig …")
-src/hand.js            the visitor's arm + hand (HAND, #195): two meshes in the camera, hidden when empty; holding a thing
-                       the palm sits at its `grip` (or beside its box) and follows it; E (main.js `use`) reaches towards the
-                       target and back. The detail culler (#189) looks again whenever the held thing changes (`refresh()`)
+src/hand.js            the visitor's arm + hand (HAND, #195, #238): three meshes in the camera (sleeve, cuff, the hand: palm,
+                       thumb, four three-joint fingers of capsules + the bare wrist, with morph targets relaxed | grip |
+                       spread), hidden when empty; holding a thing the fingers close round its `grip` (or the right edge of
+                       its box) and follow it, `handPose: 'palm'` (the basketball) carries it on the palm turned up;
+                       E (main.js `use`) reaches towards the target and back with the fingers opening. The detail culler (#189) looks again whenever the held thing changes (`refresh()`)
 src/beer.js            the big beer (BEER, #117), a Holdable: served on the lounge table when you sit in the lounge sofa,
                        click / "Drick" drinks a gulp (the level drops), back on the table = full; cups drink too
 src/book.js            the book on the side table by the armchair (BOOK, #140), a Holdable: click / "Läs" opens
@@ -210,7 +212,7 @@ src/marks.js           marks on surfaces (MARKS, #96): `hit(from, to)` = first s
 src/trigrid.js         world-space triangle grid per big static mesh, so short segment hits skip three's full raycast
 src/remote.js          the TV remote on the coffee table (REMOTE), a Holdable: click = next programme (on if off),
                        right click / ⏻ (touch) = power, on the TV in the look direction (not through walls)
-src/toys.js            Nerf blasters + darts (Sovrum 2), magic wands + sparkles (Sovrum 3), the flashlight
+src/toys.js            Nerf blasters (#236: pistol, drum, long — rounded profiles merged per material) + darts (Sovrum 2), magic wands + sparkles (Sovrum 3), the flashlight
                        (hall wardrobe; one always-present SpotLight), all Holdables (TOYS)
 src/cups.js            coffee cups (CUPS): the wall cabinet over the Moccamaster opens; a cup is taken straight into the
                        hand (empty, brewed or not, #141), put down on a table / worktop / floor, back in the open cabinet
