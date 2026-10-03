@@ -500,11 +500,14 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   Sankt Lars väg; east of the courtyard the ground follows `terrain.east.profile` (0 at Hus L, −1.4 at the stair's
   foot, the park level by z 44) instead of dropping a storey. The box edge pieces are collision too
   (`surroundings.userData.segments`, those near `OUTDOOR`), so the visitor never walks off it.
-  Courtyard (#80, `COURTYARD`, traced on the situation plan + info brochure p. 16): the Borggården between
-  Hus L, C and A with stone walks, gravel, the pergola with a dining table, a grill, a sandbox, a boule
+  Courtyard (#80, `COURTYARD`, re-measured on the calibrated situation plan in #259 — the transform is in its
+  comment): the Borggården between Hus L, C and A with stone walks (along the patios; the south walk along Hus B
+  to Hus A's west façade, a little square at the edge between B and A; along Hus A's north side to the east stair;
+  the walk between Hus C and the courtyard with a branch to C's entrance), lawns round the tree squares and gravel
+  only round the playground and the boule strip, the pergola with a dining table, a grill, a sandbox, a boule
   court (not on the plan: guess), benches and tree squares; south of Hus C a second pergola, a sandbox and
-  odlingslådor; the trees between A and B on the lower green. Walkable behind Hus L up to the main walk
-  (`OUTDOOR` x −46…, z ≤ 29.5). **True north**: FOJAB's arrow puts it 58° left of plan-up, so the
+  four odlingslådor; the trees between A and B on the lower green. Walkable behind Hus L to the south walk and
+  the edge between B and A (`OUTDOOR` x −44.6…, z ≤ 33.3; Hus A/B's walls and the box edge collide). **True north**: FOJAB's arrow puts it 58° left of plan-up, so the
   plan's "north" (entrance) faces ENE (bearing 58°, `DAY.planNorth`) and the patio WSW. The schools outside the
   plot are placed from the Google Maps screenshot; HepCat, the long brick building and the villa follow the situation
   plan's outlines (#261: HepCat z −10.8…10 right by the road, an open gap, the long building z 23…61.6 + an annex); straight across Sankt Lars väg

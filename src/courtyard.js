@@ -4,11 +4,12 @@ import { COURTYARD as C, COLORS } from './config.js';
 import { pavingTexture } from './patio.js';
 import { registerSnow, registerTrees } from './seasons.js';
 import { SEASON } from './config.js';
+import { groundY } from './surroundings.js';
 
-// The courtyard on the garage box (#80): stone walks, gravel round the beds, the Borggården's pergola
+// The courtyard on the garage box (#80): stone walks, gravel round the playground (lawn elsewhere, #259), the Borggården's pergola
 // with a dining table and benches (pale timber, vines, string lights and herringbone brick: #149), a grill, sandboxes, a boule court, benches, raised beds,
 // path bollards that light up at dusk, a playhouse and a bike rack (#112), and planted
-// shrubs (instanced). Everything at the courtyard level (y 0). One mesh per material; returns collision
+// shrubs (instanced). Everything at the courtyard level (y 0) but the shrubs on the green between A and B. One mesh per material; returns collision
 // segments for the things you can walk into.
 
 const box = (x0, x1, y0, y1, z0, z1) => new THREE.BoxGeometry(x1 - x0, y1 - y0, z1 - z0).translate((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2);
@@ -108,7 +109,7 @@ export function buildCourtyard() {
     geos.wood.push(box(b.x0, b.x1, 0, 0.1, b.z0, b.z0 + 0.08), box(b.x0, b.x1, 0, 0.1, b.z1 - 0.08, b.z1),
       box(b.x0, b.x0 + 0.08, 0, 0.1, b.z0, b.z1), box(b.x1 - 0.08, b.x1, 0, 0.1, b.z0, b.z1));
   }
-  for (const b of C.benches) { const r = bench(b, null, null); geos.wood.push(...r.wood); geos.metal.push(...r.metal); segments.push(...rectSegs(b.x - 0.8, b.x + 0.8, b.z - 0.3, b.z + 0.3)); }
+  for (const b of C.benches) { const r = bench(b, null, null); geos.wood.push(...r.wood); geos.metal.push(...r.metal); const [hx, hz] = Math.abs(b.rot % 180) === 90 ? [0.3, 0.8] : [0.8, 0.3]; segments.push(...rectSegs(b.x - hx, b.x + hx, b.z - hz, b.z + hz)); }
   for (const r of C.beds) { geos.wood.push(box(r.x0, r.x1, 0, 0.5, r.z0, r.z1)); geos.soil.push(plate({ x0: r.x0 + 0.05, x1: r.x1 - 0.05, z0: r.z0 + 0.05, z1: r.z1 - 0.05 }, 0.48)); }
 
   // #112: bollards along the walks (a glowing band under the cap), the playhouse, the bike rack
@@ -183,7 +184,7 @@ export function buildCourtyard() {
   const m = new THREE.Matrix4(), q = new THREE.Quaternion(), col = new THREE.Color();
   spots.forEach(([x, z], i) => {
     const s = 0.35 + rand() * 0.4;
-    m.compose(new THREE.Vector3(x, s * 0.7, z), q.setFromEuler(new THREE.Euler(0, rand() * 6, 0)), new THREE.Vector3(s, s * 0.8, s));
+    m.compose(new THREE.Vector3(x, groundY(x, z) + s * 0.7, z), q.setFromEuler(new THREE.Euler(0, rand() * 6, 0)), new THREE.Vector3(s, s * 0.8, s));
     shrubs.setMatrixAt(i, m);
     const flower = rand() < 0.3;
     col.setHSL(flower ? [0.9, 0.12, 0.75][Math.floor(rand() * 3)] : 0.27 + rand() * 0.06, flower ? 0.55 : 0.45, flower ? 0.6 : 0.26 + rand() * 0.08);

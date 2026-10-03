@@ -289,39 +289,54 @@ export const SITE = {
 export const GRILL = { flames: 16, height: 1.0, sparks: 40, light: 3.2, burnSeconds: 300 };
 
 export const COURTYARD = {
+  // #259: re-measured on the calibrated situation plan (docs/peab/kalibrerad/situationsplan-300dpi.jpg; x = (px − 1805) ×
+  // 0.06489 + 11.58, z = (py − 1117) × 0.06489, from Hus L's outline) — walks by their light paving, lawns vs gravel by colour
   // stone-paved walks
   paths: [
-    { x0: -44.4, x1: 11.58, z0: 17.8, z1: 19.1 },   // along the row-house patios (z: from the patios' hedges, our plan)
-    { x0: -48.26, x1: -41.5, z0: 29.15, z1: 30.6 },  // the main walk north of Hus B, only where the box reaches (#246: further east it lay in Hus A / over the park)
-    { x0: -12.55, x1: 11.6, z0: 24.71, z1: 26.35 },   // to the stair on the east edge
+    { x0: -44.6, x1: 11.6, z0: 17.8, z1: 19.2 },     // along the row-house patios
+    { x0: -44.6, x1: -9.76, z0: 29.7, z1: 31.3 },    // the south walk along Hus B's north side to Hus A's west façade
+    { x0: -19.4, x1: -12.8, z0: 31.3, z1: 33.3 },    // … widening into a little square at the edge between Hus B and A
+    { x0: -13.2, x1: 11.6, z0: 25.4, z1: 26.8 },     // along Hus A's north side to the stair on the east edge
+    { x0: 0.2, x1: 2.2, z0: 26.8, z1: 28.8 },        // to Hus A's entrance
     { x0: 11.6, x1: 13.4, z0: 12.7, z1: 27.25 },     // the ramp along Sankt Lars väg and its landing at the stair (#255)
-    { x0: -16.99, x1: -13.42, z0: 12.7, z1: 19.3 }, // from the portik
-    { x0: -48.45, x1: -45.56, z0: 7.72, z1: 52.5 },   // between Hus C and the Borggården, to the stair south (#254)
-    { x0: -69.5, x1: -45.56, z0: 47.59, z1: 48.84 }, // south of Hus C's yard
+    { x0: -15.8, x1: -14.1, z0: 12.7, z1: 19.0 },    // from the portik to the pergola
+    { x0: -47.2, x1: -44.6, z0: 7.72, z1: 52.5 },    // between Hus C and the Borggården, to the stair south (#254)
+    { x0: -51.4, x1: -47.2, z0: 21.7, z1: 24.6 },    // across to Hus C's entrance (its east façade)
+    { x0: -66.2, x1: -47.2, z0: 40.8, z1: 41.8 }, { x0: -66.2, x1: -47.2, z0: 48.7, z1: 49.8 }, { x0: -66.2, x1: -64.6, z0: 40.8, z1: 49.8 }, // round the yard south of Hus C
   ],
-  gravel: [{ x0: -44.4, x1: -13.42, z0: 19.1, z1: 29.15 }, { x0: -13.42, x1: 11.58, z0: 19.1, z1: 24.71 }], // grusgångar round the beds
+  // gravel (stenmjöl): the playground west of the pergola and the strip with the boule court; between them a lawn strip
+  // with three trees. Everything else on the box is lawn (the terrain's grass): round the tree squares, east of the pergola,
+  // in front of Hus A and Hus B
+  gravel: [{ x0: -30.4, x1: -19.9, z0: 19.2, z1: 29.7 }, { x0: -38.0, x1: -32.6, z0: 19.2, z1: 29.7 }],
   // the Borggården's pergola with a dining table (red-brown on the plan) and a second one south of Hus C
-  pergolas: [{ x0: -19.88, x1: -13.71, z0: 19.5, z1: 28.96 }, { x0: -63.22, x1: -57.91, z0: 39.77, z1: 45.94 }],
+  pergolas: [{ x0: -19.3, x1: -13.2, z0: 19.6, z1: 29.4 }, { x0: -63.2, x1: -57.7, z0: 42.1, z1: 48.5 }],
   grill: { x: -20.85, z: 20.27 },               // grillplats beside the pergola (spot: guess); it can be lit (GRILL)
-  sandboxes: [{ x0: -25.67, x1: -21.81, z0: 22.78, z1: 26.83 }, { x0: -54.05, x1: -49.42, z0: 40.35, z1: 45.17 }], // lekplats
-  boule: { x0: -11.97, x1: -2.51, z0: 20.66, z1: 23.74 }, // boulebana: not marked on the plan, a gravel court by the east beds (guess)
-  // backs to the nearest house (#207): the three by the main walk have Hus A / Hus B right behind them (south), the
-  // one in the gravel west of the sandbox has Hus B nearest (south) too — all face north, out over the courtyard
-  benches: [{ x: -30.89, z: 24.13, rot: 0 }, { x: -28.96, z: 28.38, rot: 0 }, { x: -5.79, z: 28.38, rot: 0 }, { x: 3.86, z: 28.38, rot: 0 }],
-  beds: [{ x0: -68.72, x1: -67.18, z0: 38.8, z1: 40.54 }, { x0: -68.72, x1: -67.18, z0: 41.12, z1: 42.86 }, { x0: -68.72, x1: -67.18, z0: 43.43, z1: 45.17 }], // odlingslådor
-  // planting beds with shrubs and perennials round the tree squares (guess where the plan only shows green)
-  plantings: [{ x0: -43.92, x1: -36.2, z0: 19.11, z1: 27.61, n: 26 }, { x0: -8.2, x1: -1.45, z0: 19.11, z1: 20.66, n: 10 },
-    { x0: 0.48, x1: 8.2, z0: 19.11, z1: 20.66, n: 10 }, { x0: -22.2, x1: -11.58, z0: 30.89, z1: 54.05, n: 30 }],
+  sandboxes: [{ x0: -25.6, x1: -22.2, z0: 23.9, z1: 27.4 }, { x0: -53.9, x1: -49.6, z0: 44.1, z1: 48.5 }], // lekplats
+  boule: { x0: -36.4, x1: -33.2, z0: 20.0, z1: 28.8 }, // boulebana: not marked on the plan; the gravel strip with benches facing it (guess)
+  // `rot` = the way the seat faces (0 north, −90 east, 90 west). Where the plan draws them: two by the boule court facing
+  // east, one by the sandbox facing it, two on the square by the south walk and two in front of Hus A with their backs to
+  // the house (#207), one by the second sandbox
+  benches: [{ x: -37.3, z: 22.2, rot: -90 }, { x: -37.3, z: 25.4, rot: -90 }, { x: -21.4, z: 26.4, rot: 90 }, { x: -18.0, z: 32.4, rot: 0 },
+    { x: -14.4, z: 32.4, rot: 0 }, { x: -6.9, z: 28.1, rot: 0 }, { x: 6.6, z: 28.1, rot: 0 }, { x: -55.5, z: 46.2, rot: -90 }],
+  beds: [{ x0: -68.9, x1: -67.1, z0: 41.4, z1: 42.6 }, { x0: -68.9, x1: -67.1, z0: 43.5, z1: 44.8 }, { x0: -68.9, x1: -67.1, z0: 45.7, z1: 46.9 },
+    { x0: -68.9, x1: -67.1, z0: 47.9, z1: 49.1 }], // odlingslådor
+  // shrubs and perennials on the green between Hus A and B (park level; the plan shows lawn on the box)
+  plantings: [{ x0: -22.2, x1: -10.2, z0: 34, z1: 56, n: 16 }],
   // #112 (after Peab's courtyard renders; places are guesses): low path bollards that light up at dusk along the
-  // patio walk and the main walk, a red wooden playhouse by the sandbox, a bike rack with bikes by the portik walk
-  bollards: { h: 0.8, r: 0.07, rows: [{ x0: -42.47, x1: 9.65, z: 17.85, step: 6 }, { x0: -44.4, x1: 9.65, z: 29, step: 7 }] },
-  playhouse: { x0: -29.15, x1: -27.03, z0: 23.17, z1: 25.1, h: 1.3, ridge: 1.9, color: 0x9c2f24, trim: 0xf2efe7 },
+  // patio walk, the south walk and the walk along Hus A, a red wooden playhouse by the sandbox, a bike rack with bikes
+  // by the portik walk
+  bollards: { h: 0.8, r: 0.07, rows: [{ x0: -42.47, x1: 9.65, z: 17.85, step: 6 }, { x0: -43.5, x1: -21.5, z: 29.75, step: 7 },
+    { x0: -12, x1: 10, z: 26.85, step: 6 }] },
+  playhouse: { x0: -29.9, x1: -27.8, z0: 23.8, z1: 25.7, h: 1.3, ridge: 1.9, color: 0x9c2f24, trim: 0xf2efe7 },
   bikeRack: { x: -12.16, z0: 13.4, n: 5, gap: 0.7, colors: [0x2f5d8c, 0xc23b32, 0x2e2e30, 0x5e8f4a, 0xe8e4da] },
-  trees: [ // tree squares and single trees as drawn
-    [-41.5, 20.27], [-38.61, 20.27], [-41.5, 23.65], [-38.61, 23.65], [-36.68, 27.99], [-31.85, 27.8], [-34.75, 21.72],
-    [-6.37, 20.85], [-3.28, 20.85], [-6.37, 23.74], [-3.28, 23.74], [2.51, 20.85], [5.6, 20.85], [2.51, 23.74], [5.6, 23.74],
-    [-19.3, 31.85], [-16.02, 31.85], [-19.3, 35.23], [-16.02, 35.23], [-19.3, 38.61], [-16.02, 38.61], [-19.3, 41.99], [-16.02, 41.99],
-    [-19.3, 48.26], [-16.02, 49.71], [-47.3, 15.44], [-44.4, 37.64], [-47.3, 42.47], [-59.84, 37.64], [-65.63, 37.16], [-44.88, 44.4],
+  trees: [ // tree squares and single trees as drawn (#259)
+    [-43.2, 20.5], [-39.6, 20.5], [-43.2, 24.1], [-39.6, 24.1], [-42.4, 27.9], [-39.7, 28.1], // the west lawn
+    [-31.4, 21.0], [-31.4, 22.9], [-31.4, 27.8], [-11.4, 21.2], [-11.4, 23.9],                 // lawn strips by the playground / pergola
+    [-7.1, 20.3], [-4.0, 20.3], [-7.1, 23.5], [-4.0, 23.5], [4.5, 20.3], [7.8, 20.3], [4.5, 23.5], [7.8, 23.5], // the east squares
+    [-18.5, 35.5], [-14.8, 35.5], [-18.5, 38.9], [-14.8, 38.9], [-18.5, 42.2], [-14.8, 42.2], [-18.5, 45.6], [-14.8, 45.6], // the green
+    [-18.5, 50.3], [-14.8, 50.3], [-18.5, 53.4], [-14.8, 53.4], [-21.0, 44.4], [-12.0, 45.8],                                // between A and B
+    [-49.3, 13.1], [-48.6, 18.2], [-49.2, 27.9], [-49.3, 33.4], [-43.3, 37.6], [-43.3, 44.4],  // by the walk along Hus C
+    [-67.9, 38.5], [-63.9, 38.4], [-58.4, 39.2], [-50.3, 39.4], [-48.9, 38.1],                 // south of Hus C
   ],
 };
 
@@ -423,19 +438,20 @@ export const START = { x: 2.875, z: -12, yawDeg: 180, pitchDeg: 8 };
 // `day`); the blanket only outside the snow months. Positions and colours are ours.
 export const PEOPLE = {
   day: 0.3,
-  // #244: none on the main walk at z 30.2–31.7 — past the garage box's edge it is outside the railing; the east walk instead,
-  // and a kid on the patio walk beside the other walker there (z 18.5 | 19.2, clear of the bollards at 18.05)
+  // a kid on the patio walk beside the other walker there (z 18.5 | 19.2, clear of the bollards at 17.85); since the box
+  // reaches Hus B again (#254) someone walks the south walk once more (#259, it was taken off in #244)
   walkers: [
     { a: [-70, -22.7], b: [12, -22.7], speed: 1.3, dog: true }, { a: [12, -22.9], b: [-60, -22.9], speed: 1.15 },
-    { a: [-44.4, -2.2], b: [14.48, -2.2], speed: 1.2 }, { a: [-12.55, 25.53], b: [11.58, 25.53], speed: 1.25 }, { a: [7.72, 18.2], b: [-38.61, 18.2], speed: 1.0, kid: true },
-    { a: [-42.47, 18.8], b: [9.65, 18.8], speed: 1.1 }, { a: [-47.01, 8.69], b: [-47.01, 47.3], speed: 1.3 },
+    { a: [-44.4, -2.2], b: [14.48, -2.2], speed: 1.2 }, { a: [-12.6, 26.1], b: [11.3, 26.1], speed: 1.25 }, { a: [7.72, 18.2], b: [-38.61, 18.2], speed: 1.0, kid: true },
+    { a: [-42.47, 18.8], b: [9.65, 18.8], speed: 1.1 }, { a: [-45.9, 8.7], b: [-45.9, 51.5], speed: 1.3 },
+    { a: [-43.8, 30.5], b: [-10.6, 30.5], speed: 1.15 },
   ],
   cyclists: [{ a: [-90, -26.4], b: [10, -26.4], speed: 4.5 }, { a: [10, -27.8], b: [-90, -27.8], speed: 5.2 }], // the straight (#257)
-  ball: [[-34.27, 19.88], [-29.44, 21.43]],          // two kids passing a ball (on the gravel by the sandbox)
-  sandbox: [[-24.32, 24.32], [-22.97, 25.48]],         // kids sitting in the sandbox
-  benches: [{ x: -5.79, z: 28.38, yaw: 180 }, { x: -30.89, z: 24.13, yaw: 180 }], // on COURTYARD.benches: yaw = the bench's rot − 180 (#207)
+  ball: [[-29.0, 20.4], [-24.0, 21.6]],              // two kids passing a ball (on the gravel by the sandbox)
+  sandbox: [[-24.6, 25.2], [-23.1, 26.4]],             // kids sitting in the sandbox
+  benches: [{ x: -6.9, z: 28.1, yaw: 180 }, { x: -37.3, z: 22.2, yaw: 90 }], // on COURTYARD.benches: yaw = the bench's rot − 180 (#207)
   seat: 0.52, // the sitters' hip height: the bench seat (0.46) + the thigh (#243)
-  blanket: { x: -9.17, z: 27.32 },
+  blanket: { x: 0.5, z: 22.4 },                       // on the lawn between the east tree squares (#259)
   loftgang: [[-29.44, 1.0], [-8.88, 1.1]],          // neighbours standing on the loftgång (våning 3)
   bellNear: 12,                                    // m: a cyclist rings the bell passing this close
   shirts: [0x2f5d8a, 0xc0392b, 0xe7d9b8, 0x3e7b4f, 0xf2f2f0, 0x7d4a8c, 0xe08a2a, 0x1f2a36, 0x9bb7d4, 0xd4577a],
@@ -480,7 +496,9 @@ export const GREET = {
   cyclists: ['Hej!', 'Hej hej!', 'Tjena!', 'Hej, akta dig!'],
 };
 
-export const OUTDOOR = { x0: -44.4, x1: 17.75, z0: -14, z1: 28.47 }; // behind Hus L: the patios and the Borggården (#80)
+// behind Hus L: the patios and the Borggården (#80) to the south walk and the edge between Hus B and A (#259); the box edge,
+// Hus A's and Hus B's walls stop the visitor inside it (surroundings.js `userData.segments`)
+export const OUTDOOR = { x0: -44.6, x1: 17.75, z0: -14, z1: 33.3 };
 
 // The lightsaber in Sovrum 2 (#78, src/saber.js): two hooks on the west wall (north of the gaming desk)
 // (wall face x 2.752), the saber lying across them along z. Hilt 30 cm, blade 90 cm; the blade colour is
