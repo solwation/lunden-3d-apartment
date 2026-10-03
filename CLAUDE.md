@@ -660,7 +660,10 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   PC; a sit spot in the lower bunk (`watch`, a spot `kind` can differ from its piece) swings the monitor arm round and plays a film;
   a lightsaber on hooks on the west wall north of the desk (#78) · Sovrum 4 (second left, ex Allrum) Tilly, IKEA HEMNES
   daybed with pink cushions, its three drawers open (basketball shoes | hair things | shoes), her basketball in a wall
-  holder over it (`src/basket.js`). Bunks: IKEA MYDAL, white, 97 × 207 × 157 (`MYDAL`, #227: posts, end boards, a two-board guard rail, a straight
+  holder over it (`src/basket.js`); a vanity on the east wall by the window (#282, `VANITY`, builders `vanity` / `vanitystool`):
+  an IKEA ALEX 100 × 48 with a drawer column (make-up, hair things, clothes), make-up on the top, a Hollywood mirror with
+  14 globe bulbs (a lamp of its own, `sminkspegelns lampor`, at dusk like #234; a Reflector) and a lilac stool (a seat
+  with an invisible pick box over it). Bunks: IKEA MYDAL, white, 97 × 207 × 157 (`MYDAL`, #227: posts, end boards, a two-board guard rail, a straight
   ladder on the room side at the foot end); long side to the side wall, head end to the façade; a white IKEA MALM chest of 6 drawers
   (80 × 124 × 50, `malm`, #235: 2 small + 4 big, clothes inside) with its back against each bunk's foot end on top (`MALM_DECO`, item `deco`) a themed lamp of its own (a Death Star in Sovrum 2, a unicorn in Sovrum 3) and
   a pot plant you can take (a cactus | a pink flower); an IKEA NYMÅNE wall/reading lamp at

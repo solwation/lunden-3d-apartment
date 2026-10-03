@@ -1415,6 +1415,18 @@ export const NYMANE_WALL = {
   ],
 };
 
+// Tilly's vanity (#282, the user): an IKEA ALEX desk, white, 100 × 48 × 76 cm (ikea.com; a column of five drawers at
+// one end, two legs at the other — drawer heights are guesses) against Sovrum 4's east wall (face x 2.632) south of the
+// door's swing, with make-up on it; a Hollywood mirror over it (glass 60 × 80 cm, thin white frame, globe LED bulbs
+// all round — size, bulb count and height are guesses) that is a lamp of its own (E on it; at dusk like the other small
+// lamps, #234), a mirror image (#50); a small round lilac velvet stool in front (a seat; 40 cm high, Ø 36, guess).
+export const VANITY = {
+  w: 1.0, d: 0.48, h: 0.76, drawers: { w: 0.36, n: 5 },
+  mirror: { w: 0.6, h: 0.8, frame: 0.018, depth: 0.03, bottom: 0.1, bulb: 0.026, top: 3, side: 4, bottomRow: 3 },
+  light: { intensity: 1.0, range: 3.5, color: 0xffe6c4 }, // its pool light, a little whiter than the shaded lamps
+  stool: { r: 0.18, h: 0.42, color: 0xc7a6e0 },
+};
+
 export const FURNITURE = [
   // Vardagsrum: sofa with its back to the window (south wall), chaise in the SE corner
   { type: 'sofa', level: 0, x: 5.5 - 2.82 / 2, z: 12.15 - 0.89 / 2, rot: 0, chaise: 'right' }, // sitter's right = east
@@ -1580,6 +1592,10 @@ export const FURNITURE = [
   // Sovrum 4 (Tilly): IKEA HEMNES dagbädd m 3 lådor, vit, 207 × 89 × 83 cm (ikea.com), back to the
   // west wall, with pink cushions. rot = the way the seat faces.
   { type: 'daybed', level: 1, x: 0.2 + 0.46, z: 10.0, rot: -90 },
+  // Tilly's vanity (#282, VANITY): against the east wall (face x 2.632) south of the door's swing, short of the window
+  // corner; the drawer column at the north end, the free end (the laptop, #283) towards the window; the stool in front
+  { type: 'vanity', level: 1, x: 2.632 - VANITY.d / 2 - 0.004, z: 11.45, rot: 90 },
+  { type: 'vanitystool', level: 1, x: 2.632 - VANITY.d - 0.2, z: 11.55, rot: -90 },
   // Matplats: IKEA SKANSNÄS (#62/#63), closed (150 cm), the short end to the kitchen window and a little
   // west of its centre so the east chairs clear the kitchen fronts (x 4.95); two chairs on each long
   // side, pushed in under the top (#57)

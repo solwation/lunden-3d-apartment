@@ -232,6 +232,23 @@ export function drawerFill(what, { w, depth, h, y }, who, seed = 1) {
     p.box(0.16, 0.004, 0.035, w / 2 - 0.12, y, zc + 0.08, 0x2b2b2b, 0.2);                          // a comb
     for (let i = 0; i < 2; i++) p.add(new THREE.TorusGeometry(0.07, 0.006, 5, 18, Math.PI).rotateX(Math.PI / 2).translate(0.03 + i * 0.02, y + 0.006 + i * 0.012, z0 + 0.12), i ? 0xff6fb5 : 0x9b5de5); // headbands
     p.box(0.08, 0.03, 0.05, 0.02, y, z1 - 0.04, 0xffe0ef);                                          // a little box of bobby pins
+  } else if (what === 'makeup') { // Tilly's vanity (#282): cotton pads, palettes, lipsticks, nail polish, a mascara or two
+    const bright = [0xff6fb5, 0xd6336c, 0x9b5de5, 0xff8fab, 0xc9184a, 0xf4a3c0, 0x7b2cbf];
+    p.cyl(0.03, 0.05, -w / 2 + 0.045, y, z0 + 0.045, 0xffffff, 'y', 12);                    // a tub of cotton pads
+    p.cyl(0.031, 0.01, -w / 2 + 0.045, y + 0.05, z0 + 0.045, 0xf7c6dc, 'y', 12);           // its lid
+    for (let i = 0; i < 2; i++) { // palettes, one on the other
+      p.box(Math.min(0.14, w - 0.12), 0.012, 0.09, w / 2 - 0.08 - Math.min(0.14, w - 0.12) / 2 + 0.06, y + i * 0.012, z0 + 0.06, i ? 0xf2c4d6 : 0x1d1d1f);
+    }
+    for (let i = 0; i < 5; i++) { // lipsticks and mascaras lying in a row
+      const x = -w / 2 + 0.03 + i * Math.min(0.03, (w - 0.06) / 5), z = zc + 0.03;
+      p.cyl(0.008, 0.07, x, y, z, i % 2 ? 0xd4af37 : 0x1d1d1f, 'z', 8);
+      p.cyl(0.0065, 0.025, x, y + 0.0015, z + 0.045, pick(R, bright), 'z', 8);
+    }
+    for (let i = 0; i < 4; i++) { // nail polish
+      const x = w / 2 - 0.03 - (i % 2) * 0.035, z = z1 - 0.03 - Math.floor(i / 2) * 0.04;
+      p.box(0.025, 0.035, 0.025, x, y, z, pick(R, bright));
+      p.cyl(0.006, 0.025, x, y + 0.035, z, 0x111111, 'y', 6);
+    }
   } else if (what === 'nightstand') { // books, a charger, a glasses case
     stack(p, 3, 0.15, 0.025, 0.21, -w / 2 + 0.1, y, zc, [0x6d597a, 0xb56576, 0x355070], R);
     p.box(0.16, 0.035, 0.06, w / 2 - 0.12, y, zc - 0.05, 0x222222);

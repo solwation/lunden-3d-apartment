@@ -3,7 +3,9 @@ import { sfx } from './audio.js';
 import { mergeStatic } from './merge.js';
 import { restTarget } from './rest.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
-import { FURNITURE, LANDSKRONA as L, LEVELS, SKANSNAS, IDANAS, PINGPING, MYDAL, OTTOMAN, SYMFONISK, SECRET, NYMANE_WALL, MALM_DECO, YUCCA, LANGLAMPA } from './config.js';
+import { FURNITURE, LANDSKRONA as L, LEVELS, SKANSNAS, IDANAS, PINGPING, MYDAL, OTTOMAN, SYMFONISK, SECRET, NYMANE_WALL, MALM_DECO, YUCCA, LANGLAMPA, VANITY } from './config.js';
+import { mirrorMaterial } from './mirror.js';
+import { addReflector } from './reflections.js';
 import { loungesofa, loungetable, parasol, planter } from './patio.js';
 import { Screen } from './screens.js';
 import { Openable } from './openables.js';
@@ -1763,6 +1765,139 @@ function kidchair() {
   return g;
 }
 
+/**
+ * Tilly's vanity (#282, VANITY): an IKEA ALEX desk (white top, a column of drawers at local −x with make-up, hair things
+ * and clothes inside, two legs at +x) with make-up on the top, and a Hollywood mirror on the wall behind it: a thin
+ * white frame round the glass, globe bulbs all round. The bulbs are a lamp of their own (lights.js FloorLamp: E on the
+ * mirror, and they come on at dusk like the other small lamps, #234); the glass gets a mirror image (#50). Faces local
+ * +z (the wall is −z).
+ */
+function vanity(item, lights) {
+  const V = VANITY, g = new THREE.Group();
+  const { w, d, h } = V, hw = w / 2, hd = d / 2, t = 0.025, D = V.drawers;
+  const white = new THREE.MeshStandardMaterial({ color: 0xf6f6f3, roughness: 0.45 });
+  const steel = new THREE.MeshStandardMaterial({ color: 0xf0f0ee, roughness: 0.35, metalness: 0.4 });
+  const dark = new THREE.MeshStandardMaterial({ color: 0x9a9a96, roughness: 0.8 });
+  g.add(rbox(w, t, d, 0, h - t / 2, 0, white, 0.004)); // the top
+  // the drawer column at −x: carcass (open at the front) and five drawers with cut-out grips
+  const cx = -hw + D.w / 2, ch = h - t, dh = (ch - 0.03) / D.n;
+  for (const s of [-1, 1]) g.add(rbox(0.015, ch, d - 0.01, cx + s * (D.w / 2 - 0.0075), ch / 2, -0.005, white, 0.003)); // sides
+  g.add(rbox(D.w, 0.03, d - 0.01, cx, 0.015, -0.005, white, 0.003), rbox(D.w, ch, 0.012, cx, ch / 2, -hd + 0.006, white, 0.003)); // plinth, back
+  const fills = ['makeup', 'makeup', 'hair', 'tees', 'socks'];
+  for (let i = 0; i < D.n; i++) {
+    addDrawer(g, 'lådan', { x: cx, y: 0.03 + (D.n - 1 - i) * dh + 0.003, zf: hd, w: D.w - 0.006, h: dh - 0.006, depth: d - 0.06, front: white,
+      grip: (o) => o.add(rbox(0.1, 0.012, 0.004, 0, dh - 0.02, 0.001, dark, 0.004)), fill: fills[i], who: 'Sovrum 4', seed: 280 + i });
+  }
+  for (const z of [-hd + 0.04, hd - 0.04]) g.add(rbox(0.035, ch, 0.035, hw - 0.04, ch / 2, z, steel, 0.003)); // the legs
+  g.add(rbox(0.035, 0.035, d - 0.08, hw - 0.04, 0.06, 0, steel, 0.003), rbox(w - D.w - 0.06, 0.03, 0.02, (cx + D.w / 2 + hw - 0.04) / 2, ch - 0.05, -hd + 0.02, steel, 0.003));
+  // make-up on the top (one vertex-coloured mesh): a bag, foundation, perfume, brushes in a cup, lipsticks, nail
+  // polish, two open palettes, a hair straightener; the right end (+x) is left free (for the laptop, #283)
+  const P = new Pack(), y = h, bright = [0xff6fb5, 0xd6336c, 0x9b5de5, 0xff8fab, 0xc9184a, 0x7b2cbf, 0x2ec4b6];
+  P.box(0.17, 0.08, 0.08, -hw + 0.11, y + 0.04, -hd + 0.1, 0xd9b8ef);                         // make-up bag
+  P.box(0.15, 0.006, 0.082, -hw + 0.11, y + 0.083, -hd + 0.1, 0xf2f2f2);                      // its zip
+  P.box(0.035, 0.09, 0.025, -hw + 0.25, y + 0.045, -hd + 0.07, 0xe3c2a4, { gloss: true });     // foundation
+  P.cyl(0.009, 0.009, 0.03, -hw + 0.25, y + 0.105, -hd + 0.07, 0x111111);
+  P.box(0.05, 0.065, 0.032, -hw + 0.33, y + 0.0325, -hd + 0.07, 0xf7b2cf, { gloss: true });     // perfume
+  P.cyl(0.013, 0.013, 0.025, -hw + 0.33, y + 0.0775, -hd + 0.07, 0xd4af37, { gloss: true });
+  P.cyl(0.032, 0.028, 0.09, -hw + 0.43, y + 0.045, -hd + 0.08, 0xffffff, { gloss: true });     // brush cup …
+  for (let i = 0; i < 7; i++) {                                                                // … and brushes
+    const a = (i / 7) * Math.PI * 2, bx = -hw + 0.43 + Math.cos(a) * 0.014, bz = -hd + 0.08 + Math.sin(a) * 0.014, tilt = [Math.sin(a) * 0.18, 0, -Math.cos(a) * 0.18];
+    P.cyl(0.004, 0.004, 0.15, bx, y + 0.11, bz, i % 2 ? 0x1d1d1f : 0xf2c4d6, { r: tilt });
+    P.cyl(0.008, 0.004, 0.03, bx + Math.cos(a) * 0.012, y + 0.19, bz + Math.sin(a) * 0.012, 0x3a2a24, { r: tilt });
+  }
+  for (let i = 0; i < 5; i++) {                                                                // lipsticks
+    const lx = -hw + 0.5 + i * 0.025;
+    P.cyl(0.008, 0.008, 0.045, lx, y + 0.0225, -hd + 0.06, i % 2 ? 0xd4af37 : 0x1d1d1f, { gloss: true });
+    P.cyl(0.006, 0.006, 0.02, lx, y + 0.055, -hd + 0.06, bright[i]);
+  }
+  for (let i = 0; i < 6; i++) {                                                                // nail polish
+    const nx = -hw + 0.5 + (i % 3) * 0.035, nz = -hd + 0.11 + Math.floor(i / 3) * 0.035;
+    P.box(0.024, 0.032, 0.024, nx, y + 0.016, nz, bright[(i + 2) % bright.length], { gloss: true });
+    P.cyl(0.006, 0.006, 0.026, nx, y + 0.045, nz, 0x111111);
+  }
+  for (const [px, pz, ry, cols] of [[-hw + 0.13, 0.05, 0.15, [0xf5d0c5, 0xe8a598, 0xc97b84, 0x8d5b4c, 0xf2b5d4, 0xb784a7, 0x6d4c41, 0x2b2b2b]],
+    [-hw + 0.33, 0.1, -0.2, [0xff6fb5, 0x9b5de5, 0x00bbf9, 0xfee440, 0xf15bb5, 0x00f5d4, 0xffd6a5, 0xcaffbf]]]) { // two open palettes
+    P.box(0.15, 0.012, 0.09, px, y + 0.006, pz, 0x1d1d1f, { r: [0, ry, 0] });
+    cols.forEach((c, k) => {
+      const lx = -0.0525 + (k % 4) * 0.035, lz = -0.02 + Math.floor(k / 4) * 0.04;
+      P.box(0.026, 0.004, 0.03, px + lx * Math.cos(ry) + lz * Math.sin(ry), y + 0.013, pz - lx * Math.sin(ry) + lz * Math.cos(ry), c, { r: [0, ry, 0] });
+    });
+  }
+  for (const s of [-1, 1]) P.box(0.2, 0.014, 0.024, -0.03, y + 0.007 + (s > 0 ? 0.014 : 0), 0.14 + s * 0.0, s > 0 ? 0x1d1d1f : 0x2b2b2b, { r: [0, 0.35, 0] }); // straightener (two arms)
+  P.box(0.03, 0.03, 0.03, -0.13, y + 0.015, 0.175, 0x1d1d1f, { r: [0, 0.35, 0] });                // its handle end
+  for (const m of P.meshes()) g.add(m);
+  // the Hollywood mirror (kept out of the piece's merge: a lamp and a mirror of its own)
+  const M = V.mirror, mirror = new THREE.Group();
+  const frameMat = new THREE.MeshStandardMaterial({ color: 0xfafaf8, roughness: 0.35 });
+  const chrome = new THREE.MeshStandardMaterial({ color: 0xd9dadc, roughness: 0.25, metalness: 0.8 });
+  const bulbMat = new THREE.MeshStandardMaterial({ color: 0xfffaf2, emissive: 0xfff0d8, emissiveIntensity: 0.04, roughness: 0.2 });
+  const W = M.w + 2 * M.frame, H = M.h + 2 * M.frame;
+  mirror.add(rbox(W, H, M.depth, 0, 0, M.depth / 2, frameMat, 0.006));
+  const glass = new THREE.Mesh(new THREE.PlaneGeometry(M.w, M.h), mirrorMaterial);
+  glass.position.z = M.depth + 0.0005;
+  mirror.add(glass);
+  const at = [];
+  const row = (n, yy, x0, x1) => { for (let i = 0; i < n; i++) at.push([x0 + (x1 - x0) * (n > 1 ? i / (n - 1) : 0.5), yy]); };
+  const bx = M.w / 2 - 0.05, by = M.h / 2 - 0.05;
+  row(M.top, by, -bx + 0.07, bx - 0.07);
+  row(M.bottomRow, -by, -bx + 0.07, bx - 0.07);
+  for (const s of [-1, 1]) for (let i = 0; i < M.side; i++) at.push([s * bx, -by + 0.12 + (2 * by - 0.24) * (M.side > 1 ? i / (M.side - 1) : 0.5)]);
+  for (const [x, yy] of at) {
+    const socket = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.014, 0.014, 12).rotateX(Math.PI / 2), chrome);
+    socket.position.set(x, yy, M.depth + 0.007);
+    const bulb = new THREE.Mesh(new THREE.SphereGeometry(M.bulb, 14, 10), bulbMat);
+    bulb.position.set(x, yy, M.depth + 0.012 + M.bulb);
+    mirror.add(socket, bulb);
+  }
+  mergeStatic(mirror);
+  addReflector(glass, new THREE.PlaneGeometry(M.w, M.h), { level: item.level, name: 'hollywood' }); // its mirror image (#50)
+  const my = h + M.bottom + H / 2;
+  mirror.position.set(0, my, -hd + 0.002);
+  g.add(mirror);
+  (g.userData.keep ??= []).push(mirror);
+  // the pool light a little way out from the glass (the group is turned by rot + π)
+  const yaw = THREE.MathUtils.degToRad(item.rot ?? 0) + Math.PI, out = 0.35;
+  lights.push({ object: mirror, shade: bulbMat, height: 0, level: item.level, name: 'sminkspegelns lampor', room: 'Sovrum 4', light: V.light,
+    offset: [Math.sin(yaw) * out, Math.cos(yaw) * out] });
+  g.userData.vanity = { mirror, glass };
+  g.userData.surfaces = [{ x0: 0.0, x1: hw - 0.03, z0: -hd + 0.04, z1: hd - 0.03, y: h }]; // the free right end
+  g.userData.footprint = [{ x0: -hw, x1: hw, z0: -hd, z1: hd }];
+  return g;
+}
+
+/** A small round velvet stool (#282): a padded drum with a domed top on short gold legs; a seat facing local +z. */
+function vanitystool() {
+  const S = VANITY.stool, g = new THREE.Group();
+  const velvet = new THREE.MeshStandardMaterial({ color: S.color, roughness: 0.85 });
+  const gold = new THREE.MeshStandardMaterial({ color: 0xd4af37, roughness: 0.3, metalness: 0.85 });
+  const legH = 0.06, bodyH = S.h - legH;
+  const prof = [];
+  for (let i = 0; i <= 8; i++) { const a = (i / 8) * Math.PI / 2; prof.push(new THREE.Vector2(S.r - 0.025 + Math.cos(a) * 0.025, bodyH - 0.035 + Math.sin(a) * 0.035)); } // rounded top edge
+  prof.unshift(new THREE.Vector2(0, 0), new THREE.Vector2(S.r, 0));
+  prof.push(new THREE.Vector2(0, bodyH));
+  const body = new THREE.Mesh(new THREE.LatheGeometry(prof, 32), velvet);
+  body.position.y = legH;
+  body.castShadow = body.receiveShadow = true;
+  g.add(body);
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(S.r - 0.004, 0.005, 6, 32).rotateX(Math.PI / 2), gold); // piping at the bottom
+  ring.position.y = legH + 0.005;
+  g.add(ring);
+  for (let k = 0; k < 4; k++) {
+    const a = Math.PI / 4 + (k * Math.PI) / 2, leg = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.008, legH, 10), gold);
+    leg.position.set(Math.cos(a) * (S.r - 0.04), legH / 2, Math.sin(a) * (S.r - 0.04));
+    leg.castShadow = true;
+    g.add(leg);
+  }
+  // an invisible pick box over the seat (a stool has no back to look at; the cat's ray skips invisible meshes)
+  const pick = new THREE.Mesh(new THREE.BoxGeometry(2 * S.r, 0.6, 2 * S.r), new THREE.MeshBasicMaterial());
+  pick.position.y = S.h + 0.3;
+  pick.visible = false;
+  g.add(pick);
+  g.userData.rest = { kind: 'sit', name: 'pallen', verb: 'sätta dig på', spots: [{ x: 0, y: S.h, z: 0 }] };
+  g.userData.footprint = [{ x0: -S.r, x1: S.r, z0: -S.r, z1: S.r }];
+  return g;
+}
+
 /** Woven rug texture: base colour, fine random weave, a thin border band (canvas, no image files). */
 /**
  * Sarah's rug (#171, docs/matta-vardagsrum-sarah.jpg): a dark olive ground with off-white stripes laid in square
@@ -2595,7 +2730,7 @@ function besta(item, lights) {
   return g;
 }
 
-const BUILDERS = { tubelamp, secretary, winerack, besta, painting, pictures, palm, sofa, armchair, ottoman, floorlamp, sidetable, coffeetable, loungesofa, loungetable, parasol, planter, bed, skansnasTable, skansnasChair, bunk, daybed, rug, ragrund, coatrack, shoerack, byas, tv, nordkisa, worklamp, walllamp, symfonisk, gamingdesk, gamingchair, nordli, malm, alex, kidchair };
+const BUILDERS = { tubelamp, secretary, winerack, besta, painting, pictures, palm, sofa, armchair, ottoman, floorlamp, sidetable, coffeetable, loungesofa, loungetable, parasol, planter, bed, skansnasTable, skansnasChair, bunk, daybed, rug, ragrund, coatrack, shoerack, byas, tv, nordkisa, worklamp, walllamp, symfonisk, gamingdesk, gamingchair, nordli, malm, alex, kidchair, vanity, vanitystool };
 
 /** An invisible thin box over a table top (raycast target for putting a cup down, #90). Local rect. */
 export function surfaceBox(r, list) {
