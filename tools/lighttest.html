@@ -207,6 +207,36 @@ async function nightTest(lines) {
   }
   const room = w.__app.world.roomAt(0, player.pos.x, player.pos.z);
   check(living.on && room === 'Kök / matplats' && jump < 0.15, `walked into ${room}: the living room still lit (${living.on}), the biggest pool step in one frame ${jump.toFixed(3)} at ${at}`);
+  // #276: a lit small lamp lights its surroundings wherever the visitor is: its on/off, its k and its wash (one
+  // additive mesh, a uniform per lamp) stay the same while the visitor goes through every room on both floors
+  const wash = lights.wash, uK = wash.mesh.material.uniforms.uK.value;
+  const auto = small.filter((f) => wash.lamps.includes(f));
+  check(wash.lamps.length >= 10 && auto.length >= 10 && wash.mesh.geometry.attributes.position.count > 1000,
+    `${wash.lamps.length} small lamps have a wash (${wash.mesh.geometry.attributes.position.count / 3} triangles, one mesh)`);
+  const pick = floor; pick.toggle(); // one switched off by hand: it stays off through the walk too
+  spin(0.2);
+  const snap = () => lights.floorLamps.map((f) => `${f.room.on}:${f.k.toFixed(3)}`).join() + '|' + uK.map((v) => v.toFixed(3)).join();
+  const before = snap();
+  const lit = wash.lamps.filter((f, i) => uK[i] === 1).length;
+  let same = true, where = '', visited = 0;
+  const dirs = [[0, -1], [1, 0], [0, 1], [-1, 0]].map(([x, z]) => ({ x, y: 0, z }));
+  w.__app.world.roomMaps.forEach((map, level) => {
+    for (const r of map.regions()) {
+      if (r.area < 0.6) continue;
+      for (const dir of dirs) {
+        const at = { x: r.x, y: level ? 3.25 + 1.6 : 1.6, z: r.z };
+        for (let i = 0; i < 30; i++) { lights.updateAuto(day.daylight, 1 / 60); lights.update(level, at, 1 / 60, dir); }
+        visited++;
+        if (snap() !== before && same) { same = false; where = `${level}:${r.name}`; }
+      }
+    }
+  });
+  check(same && lit >= 9 && !pick.room.on && uK[wash.lamps.indexOf(pick)] === 0,
+    `through ${visited} room/view stops on both floors: every small lamp's on, k and wash unchanged (${lit} washes full, the floor lamp switched off by hand stays off)${same ? '' : ' — changed in ' + where}`);
+  day.hour = 12; spin(1.5);
+  check(uK.every((v) => v === 0), 'at dawn every wash is gone');
+  day.hour = 22; spin(1.5);
+  check(pick.room.on && uK.every((v, i) => v === (wash.lamps[i].auto ? 1 : v)), '…and at the dusk they are all back, the hand-switched floor lamp too');
   g.remove();
   return pass;
 }

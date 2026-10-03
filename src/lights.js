@@ -3,6 +3,7 @@ import { LEVELS, SOFFITS, LIGHTING as L, DOOR_TRIM, STAIR } from './config.js';
 import { lampMaterials, lampGlows } from './interior.js';
 import { sfx } from './audio.js';
 import { stairHeight } from './stairs.js';
+import { buildLampWashes } from './lampwash.js';
 
 // Room lights: a switch by every room's door (E) turns the room's lamps on and off — a ceiling
 // lamp per room (spots / globe / LED strips where interior.js built those) — and floor lamps
@@ -340,6 +341,7 @@ export class Lights {
       this.addSwitch(room(m.level, m.room), m.x, LEVELS[m.level].floor + L.switchHeight, m.z, m.normal, scene);
     }
     this.floorLamps = world.lamps.map((spec) => new FloorLamp(spec));
+    this.wash = buildLampWashes(scene, world, this.floorLamps); // every small lamp's own lit look, wherever the visitor is (#276)
     this.extra = []; // self-switching lamps: { pos, intensity, range, color, level, k }
 
     // the light pool
@@ -400,14 +402,16 @@ export class Lights {
 
   /**
    * Hand the pool lights to the lit lamps on `level` that matter most to the visitor at `pos` (call every frame):
-   * the nearest, but lamps in the visitor's own room and in line of sight first (#234), and a lamp keeps its pool
+   * the nearest, but lamps in the visitor's own room and in line of sight first (#234), those in front of `dir` (the
+   * horizontal look direction) before those behind (#276), and a lamp keeps its pool
    * light until another is clearly nearer. A pool light that moves fades out and the next lamp fades in
    * (LIGHTING.poolFade) instead of jumping — a lit room no longer seems to go dark when you walk out of it.
    */
-  update(level, pos, dt = 1 / 60) {
+  update(level, pos, dt = 1 / 60, dir = null) {
     const on = new Set(), cands = [];
     // small lamps hidden with the furniture (F) give no light
     const shown = (f) => { for (let p = f.spec.object.parent; p; p = p.parent) if (!p.visible) return false; return true; };
+    if (this.wash.mesh) { const u = this.wash.mesh.material.uniforms.uK.value; this.wash.lamps.forEach((f, i) => { u[i] = shown(f) ? f.k : 0; }); }
     for (const R of this.rooms.values()) if (R.on) for (const lamp of R.lamps) { on.add(lamp); if (lamp.level === level) cands.push([lamp, 1, R.name]); }
     for (const f of this.floorLamps) {
       if (f.k <= 0.001 || !shown(f)) continue;
@@ -425,6 +429,8 @@ export class Lights {
       if (hidden && !own) continue; // a lamp in another room behind a wall: its light would only shine through the wall
       if (!own) d *= P.otherRoom;
       if (hidden) d *= P.hidden;
+      // one in front of the visitor (seen, e.g. through a doorway) before one behind them (#276)
+      if (dir && d > P.near && (lamp.pos.x - pos.x) * dir.x + (lamp.pos.z - pos.z) * dir.z < 0) d *= P.behind;
       if (held.has(lamp)) d /= P.stick;
       score.set(lamp, d);
     }

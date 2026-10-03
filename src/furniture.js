@@ -307,7 +307,7 @@ function tubelamp(item, lights) {
   plane(dx - 0.004, dz + S.wash.w / 2, -Math.PI / 2, false); // the east wall: from the corner southwards
   plane(dx - S.wash.w / 2, dz + 0.004, 0, true);             // the north wall: from the corner westwards
   // the pool light a little out from the corner, into the room
-  lights.push({ object: shade, shade: linen, glows: [washMat], height: 0, level: item.level, name: 'långlampan',
+  lights.push({ object: shade, shade: linen, glows: [washMat], wash: 1, height: 0, level: item.level, name: 'långlampan',
     light: S.light, offset: [-0.2, 0.2] });
   g.userData.keep = [shade];
   g.userData.footprint = [{ x0: -S.r, x1: S.r, z0: -S.r, z1: S.r }];

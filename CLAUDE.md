@@ -143,6 +143,9 @@ src/blinds.js          pleated blinds, bottom-up (BLINDS, #273): one per window 
                        rail / cords are baked; E opens #blind-panel (BlindPanel, reading mode like the clock's strip): W / S,
                        ↑ / ↓ or ▲ ▼ held; the visitor's room loses daylight (`DayCycle.dim`) by its blinds' cover; a white
                        one glows by day and warm from a lit room (`lights.roomLit`); localStorage 'lunden.blinds'; F keeps them
+src/lampwash.js        the small lamps' own lit look (#276, LIGHTING.wash): per lamp its visibility polygon (rays to walls, closed
+                       doors, the façades' inner faces) as additive fans on floor + ceiling and quads on the walls it sees, shaded
+                       like a shadowless point light; ONE mesh for all lamps, each lamp's k a uniform (Lights.update)
 src/rooms.js           room detection: walls + door gaps rasterised, BFS from the room labels
 src/minimap.js         plan view with the visitor's arrow, current room highlighted (top right, under the HUD buttons); hidden, shown with the
                        stats (Tab / T / 📊, #85), K shows it alone
@@ -805,10 +808,13 @@ screenshots into the session scratchpad, not the repo.
   lamp, the NYMÅNE work and bunk reading lamps, the SYMFONISK lamp, the BESTÅ spots with their washes — a lamp of their own
   now, E on a spot — the bench light, the bathroom mirror LED) is a `FloorLamp`; unless its spec has `auto: false` (the
   cooker hood's light) it goes on below `LIGHTING.auto.on` daylight and off above `.off` with a `fade` (also when the clock
-  is spooled); an E toggle holds until that state next changes (`updateAuto`). The ceiling lamps start off and follow only
-  their switches. The pool (`update`): candidates are scored by distance, × `poolPick.otherRoom` outside the visitor's room
+  is spooled); an E toggle holds until that state next changes (`updateAuto`). None of that depends on where the visitor
+  is, and since #276 neither does how a lit small lamp looks: its wash (`src/lampwash.js`) lights its room's floor, ceiling
+  and walls whether the visitor is near, in another room, on the other floor or outside (lit windows all night); lamps with
+  washes of their own (bench light, BESTÅ spots, the hood) get none unless their spec sets `wash`. The ceiling lamps start
+  off and follow only their switches. The pool (`update`) adds real shading near the visitor on top: candidates are scored by distance, × `poolPick.otherRoom` outside the visitor's room
   (rooms.js), × `hidden` behind a wall/door leaf (a lamp behind a wall in another room gets none: it would only shine
-  through the wall), ÷ `stick` for the lamp already held; a pool light that moves fades out and in over `poolFade`
+  through the wall), × `behind` for one behind the look direction (#276), ÷ `stick` for the lamp already held; a pool light that moves fades out and in over `poolFade`
   (the old nearest-4 jump made a lit room go dark as you walked out of it).
 - Day cycle: `DAY` in config. Every visit starts at the browser's own time and date (#95; `&time` /
   `&month` / `&day` override, `&month` alone = the 15th); the date rolls over at midnight. The sun

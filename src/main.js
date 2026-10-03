@@ -174,6 +174,7 @@ const notePaper = noteEl.querySelector('.paper');
 document.addEventListener('wheel', (e) => { if (locked && !noteEl.hidden) notePaper.scrollTop += e.deltaY * (e.deltaMode === 1 ? 40 : 1); }, { passive: true });
 
 const lights = new Lights(scene, world);
+const lookDir = new THREE.Vector3(); // (the light pool prefers lamps in front, #276)
 // every visit starts at the browser's own time and date (#95), or ?time=HH (e.g. ?time=21.5) / ?month=1–12 /
 // ?day=1–31 (with ?month alone the date is the 15th)
 const now = new Date();
@@ -1123,7 +1124,7 @@ function step(dt) {
   inShower = wet;
   animateWater(dt);
   lights.updateAuto(day.daylight * (1 - 0.6 * weather.overcast), dt); // under rain clouds the small lamps come on earlier (#248)
-  lights.update(Math.max(0, player.level), player.pos, dt);
+  lights.update(Math.max(0, player.level), player.pos, dt, camera.getWorldDirection(lookDir)); // (looking towards a lamp keeps its pool light, #276)
   day.dim = blinds.update(dt, { level: Math.max(0, player.level), room: player.outdoors ? null : world.roomAt(Math.max(0, player.level), player.pos.x, player.pos.z),
     outdoors: player.outdoors, daylight: day.daylight, sunDir: day.sunDir, overcast: weather.overcast, lit: (lv, name) => lights.roomLit(lv, name) }); // blinds drawn up: less daylight in the room (#273)
   if (blindPanel.open) blindPanel.render();
