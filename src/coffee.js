@@ -3,8 +3,9 @@ import { MOCCAMASTER as C } from './config.js';
 import { sfx } from './audio.js';
 
 // The Moccamaster on the kitchen worktop (#59): black base with the hot plate, the water tank
-// column at the back on the right, the arm with the filter basket over a glass jug with a black lid.
-// E starts brewing: the power switch glows red (own emissive material, no light), it sounds like
+// column at the back on the left (seen from the front, #315), the arm reaching right over the filter basket,
+// a glass jug with a black lid on the hot plate on the right.
+// E starts brewing: the power switch (base front, left, under the tank) glows red (own emissive material, no light), it sounds like
 // brewing and the jug fills if it stands on the plate (it can be taken, cups.js #141); after C.brewSeconds it clicks off. E while brewing switches it off.
 // Built facing −x (the east kitchen run, worktop top at `y0`).
 
@@ -28,16 +29,16 @@ export class Moccamaster {
     // local frame: x = depth (0 = front … d = back), z = width (−w/2 = viewer's left = north)
     const { w, d, h } = C;
     g.add(mesh(new THREE.BoxGeometry(d, 0.045, w), black, d / 2, 0.0225, 0));                       // base
-    g.add(mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.006, 24), steel, d * 0.45, 0.048, -w * 0.18)); // hot plate
-    g.add(mesh(new THREE.BoxGeometry(0.11, h - 0.045, 0.12), tankMat, d - 0.06, 0.045 + (h - 0.045) / 2, w * 0.27)); // tank
-    g.add(mesh(new THREE.BoxGeometry(0.115, 0.03, 0.125), black, d - 0.06, h - 0.015, w * 0.27));     // tank lid
-    g.add(mesh(new THREE.BoxGeometry(0.05, 0.025, w * 0.5), black, d - 0.07, h - 0.06, 0));          // arm
-    g.add(mesh(new THREE.CylinderGeometry(0.07, 0.035, 0.11, 24), black, d * 0.45, h - 0.12, -w * 0.18)); // filter basket
+    g.add(mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.006, 24), steel, d * 0.45, 0.048, w * 0.18)); // hot plate (right)
+    g.add(mesh(new THREE.BoxGeometry(0.11, h - 0.045, 0.12), tankMat, d - 0.06, 0.045 + (h - 0.045) / 2, -w * 0.27)); // tank (left)
+    g.add(mesh(new THREE.BoxGeometry(0.115, 0.03, 0.125), black, d - 0.06, h - 0.015, -w * 0.27));    // tank lid
+    g.add(mesh(new THREE.BoxGeometry(0.05, 0.025, w * 0.5), black, d - 0.07, h - 0.06, 0));          // arm from the tank over the basket
+    g.add(mesh(new THREE.CylinderGeometry(0.07, 0.035, 0.11, 24), black, d * 0.45, h - 0.12, w * 0.18)); // filter basket (right)
     // glass jug with coffee that rises while brewing, black lid and handle: its own group on the hot plate
     // (cups.js turns it into a Jug you can take, #141); local origin = the bottom centre of the jug
     const jugH = 0.15, jy = 0.0;
     const jug = new THREE.Group();
-    jug.position.set(d * 0.45, 0.051, -w * 0.18);
+    jug.position.set(d * 0.45, 0.051, w * 0.18);
     jug.add(mesh(new THREE.CylinderGeometry(0.066, 0.07, jugH, 28, 1, true), glass, 0, jugH / 2, 0));
     jug.add(mesh(new THREE.CircleGeometry(0.07, 28).rotateX(-Math.PI / 2), glass, 0, 0.002, 0));
     this.coffee = mesh(new THREE.CylinderGeometry(0.063, 0.067, 1, 24), coffee, 0, jy, 0);
@@ -49,9 +50,9 @@ export class Moccamaster {
     jug.add(mesh(new THREE.BoxGeometry(0.018, 0.016, 0.03), black, 0, jugH * 0.82, 0.075), mesh(new THREE.BoxGeometry(0.018, 0.016, 0.03), black, 0, jugH * 0.2, 0.075));
     g.add(jug);
     this.jug = jug; // replaced by the Jug (cups.js) once it exists; `jugHome` says whether it stands on the plate
-    // power switch on the front of the base, right side
+    // power switch on the front of the base, left side (under the tank, #315)
     this.led = new THREE.MeshStandardMaterial({ color: 0x5a1010, emissive: 0xff2010, emissiveIntensity: 0, roughness: 0.3 });
-    g.add(mesh(new THREE.BoxGeometry(0.006, 0.018, 0.03), this.led, -0.002, 0.024, w * 0.33));
+    g.add(mesh(new THREE.BoxGeometry(0.006, 0.018, 0.03), this.led, -0.002, 0.024, -w * 0.33));
     g.position.set(C.back - d, y0, C.z);
     g.rotation.y = 0; // front faces −x already
     g.traverse((m) => { m.userData.door = this; });
