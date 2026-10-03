@@ -403,3 +403,75 @@ export function laundrySink(P, { hw, y, zb, zf, h }) {
     P.box(0.011, 0.07, 0.009, tx + Math.cos(a) * tr * 0.6, ty + 0.05, bz + Math.sin(a) * tr * 0.6, [0xe74c3c, 0x3498db, 0xf1c40f, 0x2ecc71, 0xf4f4f2][i % 5], { r: [0, -a, 0], gloss: true });
   }
 }
+
+/** The HAVBÄCK tall cabinet in the Badrum (#293), after IKEA's open photo. Frame: x across (inner half-width hw), y up,
+ * z from the back zb to the front zf; `levels` = the six compartments bottom to top as [floor, ceiling] heights:
+ * toilet rolls and a cleaning spray | big bath towels | big towels and a rolled one | bottles with pumps, a jar of cream,
+ * a small bamboo box of toiletries | folded hand towels (glass shelf) | a bamboo storage box (glass shelf). */
+export function havbackContents(P, { hw, zb, zf, levels }) {
+  const rand = rng(293), zc = (zb + zf) / 2, d = zf - zb, white = 0xf3f2ee, bamboo = 0xd8bd8c;
+  const [l0, l1, l2, l3, l4, l5] = levels;
+  // bottom: toilet rolls, two by two, a second layer on the left; a cleaning spray on the right
+  for (const [x, z, k] of [[-hw + 0.06, zb + 0.07, 0], [-hw + 0.06, zb + 0.185, 0], [-hw + 0.175, zb + 0.07, 0], [-hw + 0.06, zb + 0.07, 1], [-hw + 0.06, zb + 0.185, 1]]) {
+    P.cyl(0.054, 0.054, 0.1, x, l0[0] + 0.05 + k * 0.1, z, white, { seg: 14 });
+    P.cyl(0.021, 0.021, 0.101, x, l0[0] + 0.05 + k * 0.1, z, 0xb59a7a, { seg: 8 }); // the cardboard core
+  }
+  const sx = hw - 0.06, sz = zc;
+  P.box(0.07, 0.2, 0.045, sx, l0[0] + 0.1, sz, 0x48c9b0, { gloss: true });            // the spray bottle
+  P.cyl(0.014, 0.016, 0.03, sx, l0[0] + 0.215, sz, 0xf4f4f2, { seg: 10 });            // its neck
+  P.box(0.03, 0.045, 0.075, sx, l0[0] + 0.25, sz + 0.012, 0xf4f4f2, { gloss: true });  // the trigger head
+  P.box(0.012, 0.035, 0.012, sx, l0[0] + 0.215, sz + 0.035, 0xf4f4f2);                // the trigger
+  P.box(0.071, 0.08, 0.002, sx, l0[0] + 0.1, sz + 0.023, 0xf4f4f2);                   // the label
+  // a folded bath towel: a flat block with a rounded fold at the front and fine ribs (a slightly darker line)
+  const towel = (x, y, w, h, colour) => {
+    const td = Math.min(0.28, d - 0.02);
+    P.box(w, h, td - h / 2, x, y + h / 2, zc - h / 4, colour);
+    P.cyl(h / 2, h / 2, w, x, y + h / 2, zc + td / 2 - h / 2, colour, { r: [0, 0, Math.PI / 2], seg: 8 });
+    P.box(w + 0.002, 0.003, 0.004, x, y + h / 2, zc + td / 2 - 0.001, 0xd9d7d0);
+  };
+  const stack = (lv, n, h, w = 2 * hw - 0.02) => {
+    for (let k = 0; k < n && lv[0] + (k + 1) * (h + 0.002) < lv[1] - 0.01; k++) {
+      towel((rand() - 0.5) * 0.012, lv[0] + k * (h + 0.002), w - rand() * 0.015, h, k % 4 === 2 ? 0xe9e7e0 : white);
+    }
+  };
+  stack(l1, 5, 0.075);
+  stack(l2, 3, 0.075);
+  // a rolled towel on top of the stack in l2
+  P.cyl(0.04, 0.04, 0.26, 0, l2[0] + 3 * 0.077 + 0.04, zc, white, { r: [0, 0, Math.PI / 2], seg: 12 });
+  // bottles with pumps (shampoo, conditioner, body lotion), a jar of cream, a small bamboo box with toiletries
+  [[0.026, 0.17, 0xe8c4b8], [0.026, 0.17, 0x2d2d2d], [0.03, 0.15, 0xf2f2ee]].forEach(([r, h, c], i) => {
+    const x = -hw + 0.035 + i * 0.062, z = zb + 0.06 + (i % 2) * 0.03, y = l3[0];
+    P.cyl(r, r, h, x, y + h / 2, z, c, { gloss: true, seg: 12 });
+    P.cyl(r * 0.45, r * 0.45, 0.02, x, y + h + 0.01, z, 0xf4f4f2, { seg: 8 });         // the collar
+    P.cyl(0.005, 0.005, 0.03, x, y + h + 0.035, z, 0xf4f4f2, { seg: 6 });               // the stem
+    P.box(0.018, 0.012, 0.045, x, y + h + 0.052, z + 0.012, 0xf4f4f2);                 // the pump head + nozzle
+    P.box(2 * r * 0.9, h * 0.4, 0.002, x, y + h * 0.45, z + r, i === 1 ? 0xd9d7d0 : 0x7f8c8d); // its label
+  });
+  P.cyl(0.035, 0.035, 0.065, -hw + 0.07, l3[0] + 0.0325, zf - 0.06, 0xe5e5e0, { gloss: true, seg: 14 }); // a jar of cream
+  P.cyl(0.036, 0.036, 0.015, -hw + 0.07, l3[0] + 0.072, zf - 0.06, 0x95a5a6, { seg: 14 });
+  { // the small bamboo box (open, toiletries poking up)
+    const bw = 0.15, bd = 0.13, bh = 0.13, x = hw - bw / 2 - 0.005, z = zc;
+    P.box(bw, 0.008, bd, x, l3[0] + 0.004, z, bamboo);
+    for (const s of [-1, 1]) {
+      P.box(0.008, bh, bd, x + s * (bw / 2 - 0.004), l3[0] + bh / 2, z, bamboo);
+      P.box(bw, bh, 0.008, x, l3[0] + bh / 2, z + s * (bd / 2 - 0.004), bamboo);
+    }
+    P.cyl(0.016, 0.016, 0.16, x - 0.04, l3[0] + 0.08, z - 0.02, 0x5dade2, { gloss: true, seg: 10 });  // a tube
+    P.cyl(0.02, 0.02, 0.15, x + 0.01, l3[0] + 0.075, z + 0.02, 0xf4f4f2, { gloss: true, seg: 10 });   // a deodorant
+    P.cyl(0.021, 0.021, 0.02, x + 0.01, l3[0] + 0.16, z + 0.02, 0x2c3e50, { seg: 10 });
+    P.box(0.04, 0.15, 0.03, x + 0.045, l3[0] + 0.075, z - 0.025, 0xc39bd3, { gloss: true });          // a box of cotton buds
+  }
+  // folded hand towels in two stacks on the lower glass shelf
+  const hwT = (2 * hw - 0.03) / 2;
+  for (const s of [-1, 1]) for (let k = 0; k < 4; k++) {
+    const h = 0.04;
+    if (l4[0] + (k + 1) * (h + 0.002) > l4[1] - 0.01) break;
+    P.box(hwT - rand() * 0.01, h, Math.min(0.22, d - 0.04), s * (hwT / 2 + 0.005), l4[0] + h / 2 + k * (h + 0.002), zc, white);
+  }
+  { // the bamboo storage box on the top glass shelf, a lid with a finger hole
+    const bh = Math.min(0.2, l5[1] - l5[0] - 0.01), bw = 2 * hw - 0.02, bd = Math.min(0.29, d - 0.02);
+    P.box(bw, bh - 0.012, bd, 0, l5[0] + (bh - 0.012) / 2, zc, bamboo);
+    P.box(bw + 0.004, 0.012, bd + 0.004, 0, l5[0] + bh - 0.006, zc, 0xcfb07a);
+    P.box(0.07, 0.002, 0.02, 0, l5[0] + bh + 0.0005, zc + bd / 2 - 0.04, 0x8a6d43);
+  }
+}

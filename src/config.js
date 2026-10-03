@@ -1021,6 +1021,15 @@ export const FINISH = {
   chrome: 0xd7dadc,       // Rt2 blandare, takdusch Tvm 7200, duschset Rt 105, Alnön beslag
 };
 
+// IKEA HAVBÄCK tall cabinet with a door, dark grey, 40 × 35 × 195 cm (#293, IKEA's photos in docs/havback-hogskap*.jpg):
+// wall-hung in the Badrum on the shower's short wall (south), its left-hand corner (SE) seen facing that wall, back to the
+// wall. `bottom` = above the floor (*guess* from the room photo); the door hinges on the side-wall side like the photo and
+// stops at `max`° (beyond that the brass knob would meet the side wall); `shelves` = heights above the cabinet's bottom
+// (grey | glass, *guess* from the open photo). Not upstairs: WC/dusch has 32 cm of north wall beside the shower and 32 cm
+// clear east of it — too little for 40 × 35 (the user: only "if it fits").
+export const HAVBACK = { w: 0.4, d: 0.35, h: 1.95, bottom: 0.22, color: 0x4a4a48, knob: 0xb48a4e, max: 83,
+  shelves: [[0.42, 'grey'], [0.84, 'grey'], [1.23, 'grey'], [1.48, 'glass'], [1.7, 'glass']] };
+
 // Golvsockel vitmålad NCS S 0500-N (Art 5002225): height × thickness (typical size — guess).
 export const SKIRTING = { h: 0.07, t: 0.012 };
 

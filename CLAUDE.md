@@ -170,8 +170,8 @@ src/cabinets.js        wall cabinets with side-hung doors that open with E (Open
                        Tvätt wall cabinet over the machines, none over the sink (LAUNDRY_CABINET, #138, #153)
 src/openables.js       Openable (#103): the shared helper for fronts that open with E — 'hinge' (with a `max` stop, never
                        through a neighbour), 'flap' (bottom- or top-hinged), 'drawer'; kind 'cabinet', in world.lids.
-                       interior.js builds the kitchen fronts, vanity drawers, the Stage 50 mirror cabinet, the laundry sink
-                       cabinet, the washer/dryer doors and the hall's EL/C cabinet (`buildElCabinet`: fuse box, router) with it
+                       interior.js builds the kitchen fronts, vanity drawers, the Stage 50 mirror cabinet, the Badrum's
+                       HAVBÄCK tall cabinet (`havback`, #293), the laundry sink cabinet, the washer/dryer doors and the hall's EL/C cabinet (`buildElCabinet`: fuse box, router) with it
                        (`openFront`, hollow `shell` carcasses); `contents` (a mesh): only drawn while the front is
                        (partly) open (#228)
                        furniture.js `addDrawer` / `addDoor` for furniture (NORDKISA, NORDLI, ALEX, IDANÄS foot end, BYÅS's two end drawers, #212)
@@ -712,6 +712,9 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   switches, the wall clock, the note on the freezer. Plants by a wall get `walls: { x0, x1, z0, z1 }` on their FURNITURE item (`keepInside` in furniture.js squeezes
   leaves short of those lines, #137). New loose things must join `world.looseItems`
   and be kept out of `mergeStatic`. Keep the Sovrum 1 bed clear of the Klk sliding door — the cat test needs floor there.
+- Badrum (#293, `HAVBACK`): an IKEA HAVBÄCK tall cabinet, dark grey 40 × 35 × 195, wall-hung 22 cm up in the SE corner
+  (the shower's short wall, its left-hand corner), hinged on the side-wall side (max 83°: the brass knob would meet the
+  wall), towels, bottles and toilet rolls inside (`havbackContents`). Not in WC/dusch: only 32 cm free beside its shower.
 - Toilets: the redrawn plan has them rotated; bofakta shows the tank against the wall, so
   `toiletAgainstWall` re-orients them. Modelled as Ifö Spira 6260 (`TOILET` in config,
   `src/toilet.js`); the lid opens/closes with E (`world.lids`, kept out of `world.doors` so the
