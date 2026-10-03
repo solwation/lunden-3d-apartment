@@ -3135,10 +3135,11 @@ export function surfaceBox(r, list) {
   return m;
 }
 
-/** Build all furniture; returns the scene group, collision segments per level and lamps. */
+/** Build all furniture; returns the scene group, collision segments per level (+ the footprint quads they
+ * outline, #302) and lamps. */
 export function buildFurniture() {
   const group = new THREE.Group();
-  const segments = [[], []];
+  const segments = [[], []], footprints = [[], []];
   const lights = [], interactives = [], surfaces = [], things = [];
   for (const item of FURNITURE) {
     const obj = BUILDERS[item.type](item, lights);
@@ -3170,7 +3171,8 @@ export function buildFurniture() {
     for (const r of obj.userData.footprint ?? []) {
       const pts = [toWorld(r.x0, r.z0), toWorld(r.x1, r.z0), toWorld(r.x1, r.z1), toWorld(r.x0, r.z1)];
       for (let i = 0; i < 4; i++) segments[item.level].push([...pts[i], ...pts[(i + 1) % 4]]);
+      footprints[item.level].push(pts);
     }
   }
-  return { object: group, segments, lights, interactives, surfaces, things };
+  return { object: group, segments, footprints, lights, interactives, surfaces, things };
 }

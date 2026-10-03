@@ -27,11 +27,14 @@ f.onload = async () => {
   const targets = world.furnitureTargets.filter((t) => t.kind === 'rest');
   let pass = check(targets.length >= 9, `${targets.length} seats/beds`);
   const segsOf = (lv) => world.levels[lv].segments;
-  const free = (lv, x, z) => segsOf(lv).every(([ax, az, bx, bz]) => {
+  const inQuad = (q, x, z) => { let p = 0, n = 0; for (let i = 0; i < 4; i++) { const [ax, az] = q[i], [bx, bz] = q[(i + 1) % 4], c = (bx - ax) * (z - az) - (bz - az) * (x - ax); if (c > 0) p++; else if (c < 0) n++; } return !(p && n); };
+  const feetOf = (lv) => world.levels[lv].footprints ?? []; // furniture footprints (#302): their middle is far from every edge
+  const free = (lv, x, z, loose = false) => (loose || !feetOf(lv).some((q) => inQuad(q, x, z))) && segsOf(lv).every(([ax, az, bx, bz]) => {
     const dx = bx - ax, dz = bz - az, t = Math.max(0, Math.min(1, ((x - ax) * dx + (z - az) * dz) / (dx * dx + dz * dz || 1)));
     return Math.hypot(x - ax - t * dx, z - az - t * dz) > 0.225; // PLAYER.radius 0.22
   });
   const standBtn = d.getElementById('stand-btn');
+  const { standUp } = w.__app;
   /** Sit down on spot `sp` of `t` from a free place near it (the button must name it); returns the label or null. */
   const sitOn = (t, sp) => {
       // stand on a free spot near it — in front first, then all round — from which the button names it
@@ -40,9 +43,9 @@ f.onload = async () => {
       for (const r of [0.9, 1.2, 1.5]) for (let k = 0; k < 8; k++) cands.push([sp.yaw + (k - 3.5) * 0.3, r]);
       for (const r of [0.5, 0.6, 0.8, 1.1, 1.4]) for (let k = 0; k < 24; k++) cands.push([sp.yaw + k * (Math.PI / 12), r]);
       let label = null;
-      for (const [a, r] of cands) {
+      for (const [a, r, loose] of [...cands, ...cands.map((c) => [...c, true])]) { // (loose: a chair reached only from over the desk)
         const x = sp.pos.x - Math.sin(a) * r, z = sp.pos.z - Math.cos(a) * r;
-        if (!free(t.level, x, z)) continue;
+        if (!free(t.level, x, z, loose)) continue;
         player.spawn(x, z, 0);
         if (t.level) { player.pos.y = floorY; player.eyeY = floorY + 1.62; }
         for (let i = 0; i < 3; i++) step(1 / 60);
@@ -113,8 +116,61 @@ f.onload = async () => {
     pass &= check(Math.abs(camera.rotation.y - y0) < 1e-6 && Math.abs(camera.rotation.x - x0) < 1e-6 && ahead > 0.3 && free(0, player.pos.x, player.pos.z),
       `head turned 0.5 rad in the sofa: up looking the same way (yaw ${camera.rotation.y.toFixed(2)}, pitch ${camera.rotation.x.toFixed(2)}), ${ahead.toFixed(2)} m in front`);
   }
+  // #302: getting up never puts you inside a piece of furniture (the dining table's middle) or across one: for every
+  // seat / bed spot, looking ahead and turned to both sides, coming from behind or from where you stood, you get up on the
+  // floor, clear of every collision segment, outside every footprint, not over a table, and can walk away
+  {
+    const { REST, LEVELS } = await w.eval("import('../src/config.js')");
+    const crosses = (lv, sx, sz, x, z) => { // the way from the seat goes through a wall / window, or enters a footprint the seat is
+      // not in, or one again after leaving
+      const through = (world.levels[lv].fixedSegments ?? []).some(([ax, az, bx, bz]) => {
+        const d = (x - sx) * (bz - az) - (z - sz) * (bx - ax);
+        if (Math.abs(d) < 1e-9) return false;
+        const t = ((ax - sx) * (bz - az) - (az - sz) * (bx - ax)) / d, u = ((ax - sx) * (z - sz) - (az - sz) * (x - sx)) / d;
+        return t > 0 && t < 1 && u >= 0 && u <= 1;
+      });
+      if (through) return true;
+      const own = feetOf(lv).filter((q) => inQuad(q, sx, sz)), n = Math.ceil(Math.hypot(x - sx, z - sz) / 0.05);
+      let out = false;
+      for (let i = 1; i < n; i++) {
+        const px = sx + (x - sx) * i / n, pz = sz + (z - sz) * i / n, hit = feetOf(lv).filter((q) => inQuad(q, px, pz));
+        if (!hit.length) out = true; else if (out || hit.some((q) => !own.includes(q))) return true;
+      }
+      return false;
+    };
+    let bad = 0, n = 0;
+    const dining = [];
+    pass &= check(feetOf(0).length > 10, `${feetOf(0).length} furniture footprints downstairs`);
+    for (const t of targets) for (const [si, sp] of t.spots.entries()) {
+      for (const turn of [0, 1, -1]) for (const came of ['stood', 'behind']) {
+        if (!sitOn(t, sp)) { bad++; lines.push(`FAIL #302 ${t.name} #${si}: could not sit`); continue; }
+        for (let i = 0; i < 60; i++) step(1 / 60);
+        const lim = REST[rest.kind], lv = t.level, floorY = LEVELS[lv].floor;
+        camera.rotation.y = rest.spot.yaw + turn * lim.yaw * 0.95; camera.rotation.x = 0; step(1 / 60);
+        const yaw = camera.rotation.y, seat = rest.spot.pos.clone();
+        if (came === 'behind') rest.standing = { ...rest.standing, x: seat.x + Math.sin(yaw) * 0.6, z: seat.z + Math.cos(yaw) * 0.6 };
+        const old = { ...rest.standing };
+        standUp(); for (let i = 0; i < 3; i++) step(1 / 60);
+        const { x, z, y } = player.pos;
+        const onFloor = Math.abs(y - floorY) < 0.01, clear = free(lv, x, z), outside = !feetOf(lv).some((q) => inQuad(q, x, z));
+        const direct = Math.hypot(x - old.x, z - old.z) < 0.01 || !crosses(lv, seat.x, seat.z, x, z);
+        let walks = false; // can walk away in some direction (not boxed in)
+        for (let k = 0; k < 8 && !walks; k++) {
+          player.spawn(x, z, k * Math.PI / 4); player.pos.y = floorY; player.eyeY = floorY + 1.62;
+          player.keys = new Set(['KeyW']); for (let i = 0; i < 30; i++) step(1 / 60); player.keys = new Set();
+          walks = Math.hypot(player.pos.x - x, player.pos.z - z) > 0.3 && !feetOf(lv).some((q) => inQuad(q, player.pos.x, player.pos.z));
+        }
+        n++;
+        const ok = !rest.active && onFloor && clear && outside && direct && walks;
+        if (t.name === 'stolen' && lv === 0) dining.push(ok); // (the kids' chair upstairs is 'stolen' too)
+        if (!ok) { bad++; lines.push(`FAIL #302 ${t.name} #${si} (turn ${turn}, ${came}): up at (${x.toFixed(2)}, ${z.toFixed(2)}, y ${y.toFixed(2)}) floor ${onFloor}, clear ${clear}, outside furniture ${outside}, not across ${direct}, walks away ${walks}`); }
+      }
+    }
+    pass &= check(dining.length >= 24 && dining.every(Boolean), `#302: ${dining.length} get-ups from the 4 dining chairs, all on free floor`);
+    pass &= check(bad === 0, `#302: ${n - bad} / ${n} get-ups (every seat and bed, ahead and turned, from behind) on free floor, able to walk away`);
+  }
   // #184: things within reach while sitting — the remote from the sofa, the book from the armchair
-  const { remote, book, heldItem, standUp } = w.__app;
+  const { remote, book, heldItem } = w.__app;
   const V = camera.position.constructor;
   const look = (p) => { const dx = p.x - camera.position.x, dz = p.z - camera.position.z; camera.rotation.set(Math.atan2(p.y - camera.position.y, Math.hypot(dx, dz)), Math.atan2(-dx, -dz), 0, 'YXZ'); step(1 / 60); return btn.hidden ? '(hidden)' : btn.textContent; };
   const sofa = targets.find((t) => t.name === 'soffan');

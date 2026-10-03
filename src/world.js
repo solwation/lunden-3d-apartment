@@ -766,6 +766,7 @@ export function buildWorld(plan) {
   // furniture can be switched off (F): keep its collision separate from the fixed segments
   const fixed = [l0.segments, l1.segments];
   const levels = [l0, l1];
+  levels.forEach((l, i) => { l.fixedSegments = fixed[i]; }); // walls, windows, fittings: no furniture (#302)
   // F (#75) shows the bare flat: everything we furnished and decorated is a loose item — furniture,
   // shelves and what is on them, the hall mirror + key cabinet + coat rack, door signs, the coffee
   // machine (main.js adds the cat board and hides the cat). Kept: Peab's kitchen, wet rooms, built-in
@@ -773,7 +774,10 @@ export function buildWorld(plan) {
   const looseItems = [furniture.object, sillPlants, shelves, hallWall.object, ...signs, ...interiorLoose];
   const setFurniture = (on) => {
     for (const o of looseItems) o.visible = on;
-    levels.forEach((l, i) => { l.segments = on ? [...fixed[i], ...furniture.segments[i]] : fixed[i]; });
+    levels.forEach((l, i) => {
+      l.segments = on ? [...fixed[i], ...furniture.segments[i]] : fixed[i];
+      l.footprints = on ? furniture.footprints[i] : []; // the furniture's floor rectangles: no getting up inside one (#302)
+    });
   };
   setFurniture(true);
 

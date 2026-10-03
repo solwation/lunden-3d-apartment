@@ -761,23 +761,69 @@ document.addEventListener('keydown', (e) => {
 
 /** Stand up again where you stood before sitting / lying down. */
 /**
- * Where to get up (#202): where you stood before, unless that is behind you as you look now; then a free spot
- * in front of the seat, as straight ahead as there is room (clear of walls and furniture, not through a wall), else the old one.
+ * Where to get up (#202, #302): where you stood before, unless that is behind you as you look now; then a free spot
+ * in front of the seat, as straight ahead as there is room. Free = clear of walls and furniture, not inside a piece's
+ * footprint (a table's middle is far from its edges) and reached from the seat without crossing furniture (not over the
+ * dining table to its far side), not through a wall. None in front (a chair pushed in under the table): the old spot if
+ * it is still free, else the nearest free spot all round (behind the chair), else the old one.
  */
 function standSpot(seat, yaw, old) {
-  if ((old.x - seat.x) * -Math.sin(yaw) + (old.z - seat.z) * -Math.cos(yaw) >= 0) return old;
-  const [stat, dyn] = player.segments();
-  const dist = (x, z, [ax, az, bx, bz]) => {
-    const vx = bx - ax, vz = bz - az, l = vx * vx + vz * vz || 1, t = Math.max(0, Math.min(1, ((x - ax) * vx + (z - az) * vz) / l));
-    return Math.hypot(x - ax - vx * t, z - az - vz * t);
+  const ahead = (old.x - seat.x) * -Math.sin(yaw) + (old.z - seat.z) * -Math.cos(yaw) >= 0;
+  if (ahead && standFree(seat, old.x, old.z, false)) return old;
+  const ring = (turns) => {
+    for (const turn of turns) for (const d of [0.55, 0.7, 0.85, 1.0, 1.2, 1.4]) {
+      const x = seat.x - Math.sin(yaw + turn) * d, z = seat.z - Math.cos(yaw + turn) * d;
+      if (standFree(seat, x, z, true)) return { x, z };
+    }
+    return null;
   };
-  for (const turn of [0, 0.3, -0.3, 0.6, -0.6, 0.9, -0.9]) for (const d of [0.55, 0.7, 0.85, 1.0, 1.2, 1.4]) { // straight ahead first
+  const front = ring([0, 0.3, -0.3, 0.6, -0.6, 0.9, -0.9]); // straight ahead first
+  if (front) return front;
+  if (standFree(seat, old.x, old.z, false)) return old;
+  // all round, nearest first, finer (a bunk between the wall and the desk leaves little floor)
+  const turns = Array.from({ length: 41 }, (_, i) => (i % 2 ? 1 : -1) * Math.ceil(i / 2) * (Math.PI / 20));
+  for (let d = 0.5; d < 2.05; d += 0.1) for (const turn of turns) {
     const x = seat.x - Math.sin(yaw + turn) * d, z = seat.z - Math.cos(yaw + turn) * d;
-    if ([...stat, ...dyn].some((sg) => dist(x, z, sg) < PLAYER.radius + 0.02)) continue;
-    if (behindWall({ x, z })) continue; // (the camera is still at the seat)
-    return { x, z };
+    if (standFree(seat, x, z, true)) return { x, z };
   }
   return old;
+}
+/** Can the visitor stand at (x, z) after getting up from `seat` (#302)? `path`: also the way there from the seat. */
+function standFree(seat, x, z, path) {
+  const [stat, dyn] = player.segments(), feet = world.levels[player.level]?.footprints ?? [];
+  const dist = (px, pz, [ax, az, bx, bz]) => {
+    const vx = bx - ax, vz = bz - az, l = vx * vx + vz * vz || 1, t = Math.max(0, Math.min(1, ((px - ax) * vx + (pz - az) * vz) / l));
+    return Math.hypot(px - ax - vx * t, pz - az - vz * t);
+  };
+  const inQuad = (q, px, pz) => { // convex, either winding
+    let pos = 0, neg = 0;
+    for (let i = 0; i < 4; i++) {
+      const [ax, az] = q[i], [bx, bz] = q[(i + 1) % 4], c = (bx - ax) * (pz - az) - (bz - az) * (px - ax);
+      if (c > 0) pos++; else if (c < 0) neg++;
+    }
+    return !(pos && neg);
+  };
+  if ([...stat, ...dyn].some((sg) => dist(x, z, sg) < PLAYER.radius + 0.02) || feet.some((q) => inQuad(q, x, z))) return false;
+  if (behindWall({ x, z })) return false; // (the camera is still at the seat)
+  if (path) { // through no wall or window (#302: behindWall knows no windows), and out of the seat's own piece(s) and
+    // never into another one: not over the table to its far side
+    const cross = ([ax, az, bx, bz]) => {
+      const d = (x - seat.x) * (bz - az) - (z - seat.z) * (bx - ax);
+      if (Math.abs(d) < 1e-9) return false;
+      const t = ((ax - seat.x) * (bz - az) - (az - seat.z) * (bx - ax)) / d, u = ((ax - seat.x) * (z - seat.z) - (az - seat.z) * (x - seat.x)) / d;
+      return t > 0 && t < 1 && u >= 0 && u <= 1;
+    };
+    if ((world.levels[player.level]?.fixedSegments ?? []).some(cross) || dyn.some(cross)) return false;
+    const own = feet.filter((q) => inQuad(q, seat.x, seat.z)), n = Math.ceil(Math.hypot(x - seat.x, z - seat.z) / 0.05);
+    let out = false;
+    for (let i = 1; i < n; i++) {
+      const px = seat.x + (x - seat.x) * i / n, pz = seat.z + (z - seat.z) * i / n;
+      const hit = feet.filter((q) => inQuad(q, px, pz));
+      if (hit.length === 0) out = true;
+      else if (out || hit.some((q) => !own.includes(q))) return false;
+    }
+  }
+  return true;
 }
 function standUp() {
   const film = rest.spot?.pc === 'film';
