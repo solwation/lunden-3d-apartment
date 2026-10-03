@@ -13,12 +13,12 @@ const mirrors = [];
 export const reflectors = () => mirrors;
 
 /** Put a reflector over a mirror. `geometry` lies in the parent's local frame facing +z. */
-export function addReflector(parent, geometry, { level = 0, offset = 0.0015 } = {}) {
-  const r = new Reflector(geometry, { textureWidth: RES, textureHeight: RES, color: 0xc6ccd0, clipBias: 0.003 });
+export function addReflector(parent, geometry, { level = 0, offset = 0.0015, color = 0xc6ccd0, name = '' } = {}) {
+  const r = new Reflector(geometry, { textureWidth: RES, textureHeight: RES, color, clipBias: 0.003 });
   r.position.z = offset;
   r.visible = false;
   parent.add(r);
-  mirrors.push({ r, level });
+  mirrors.push({ r, level, name });
   return r;
 }
 

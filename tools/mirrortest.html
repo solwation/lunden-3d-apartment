@@ -44,6 +44,26 @@ f.onload = async () => {
     pass &= check(active.length === 1 && active[0] === m, `mirror ${i} (level ${m.level}, ${p.toArray().map((v) => v.toFixed(2))}): active ${active.length === 1 && active[0] === m}`);
     pass &= check(!blocker, `mirror ${i}: nothing in front of the glass${blocker ? ` (hit at ${blocker.distance.toFixed(3)} m)` : ''}`);
   });
+  // SKOGSGRÄNSEN over the secretary (#265) and LINDBYN on the north wall hand over cleanly: from one spot in the
+  // living room, looking at either makes that one (and only that one) the active mirror
+  const byName = (n) => reflectors().find((m) => m.name === n);
+  const sk = byName('skogsgransen'), lb = byName('lindbyn');
+  pass &= check(!!(sk && lb), 'SKOGSGRÄNSEN and LINDBYN have reflectors');
+  if (sk && lb) {
+    for (const [m, other] of [[sk, lb], [lb, sk], [sk, lb]]) {
+      const p = m.r.getWorldPosition(new V());
+      camera.position.set(3.3, 1.6, 9.0);
+      camera.lookAt(p);
+      camera.updateMatrixWorld(true);
+      updateReflections(camera, 0, true);
+      pass &= check(m.r.visible && !other.r.visible && reflectors().filter((x) => x.r.visible).length === 1, `looking at ${m.name}: it is the one active mirror`);
+    }
+    // F hides it with the other loose things: no mirror image then
+    world.setFurniture(false);
+    updateReflections(camera, 0, true);
+    pass &= check(!sk.r.visible, 'F: SKOGSGRÄNSEN hidden, no mirror image');
+    world.setFurniture(true);
+  }
   out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
 };
 </script>

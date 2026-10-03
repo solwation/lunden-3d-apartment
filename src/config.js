@@ -1050,6 +1050,29 @@ export const HALL_WALL = {
   cabinet: { x: 1.935, z: 0.478, y: 1.5, rotY: 0, w: 0.169, h: 0.16, d: 0.055 },
 };
 
+// IKEA SKOGSGRÄNSEN decorative mirror, copper colour, Ø 50 cm (#265, docs/spegel-skogsgransen.png; ikea.com 505.380.79,
+// design Anki Gneib, "a sunset over a horizon"): a tinted glass (pale pink at the top, warm peach at the horizon) on a
+// copper-plated steel back, the lower `wave` of the diameter thin horizontal copper bars with the wall between them.
+// Hung horizontally (bars at the bottom) on the living room's east wall (x 5.5), centred over the secretary
+// (FURNITURE `secretary`, z 9.35); its centre `y` (*guess*: ~25 cm of wall over the secretary's top at 1.065 + its
+// raised back edge), the copper rim `rim` round the glass and `depth` off the wall are *guesses*. rotY −π/2 = facing west.
+export const SKOGSGRANSEN = {
+  x: 5.5, z: 9.35, y: 1.58, rotY: -Math.PI / 2, d: 0.5, rim: 0.004, depth: 0.016, panel: 0.003,
+  wave: 0.3, bars: 12, bar: 0.0035, copper: 0xc07a52,
+  // the glass's tint, top → horizon (rgba over the mirror image), and the Reflector's own colour
+  tint: [[0, 'rgba(250,228,226,0.30)'], [0.55, 'rgba(240,190,160,0.42)'], [1, 'rgba(222,140,96,0.62)']], reflect: 0xd6c2b6,
+};
+
+// A small yucca palm (Yucca elephantipes, #265) in a white pot on top of the secretary at its north end (on the left
+// seen from the room), some leaves in front of the mirror's edge; a Thing you can take (things.js, kind 'plant').
+// Pot, trunk and leaf sizes are *guesses* for a ~75 cm plant. x = along the secretary (local, + = south), z = from
+// the wall. North: from the sofa (the usual view, from the south-west) it hides only the mirror's edge.
+export const YUCCA = {
+  x: -0.22, z: 0.11, pot: { r: 0.07, h: 0.13 }, potColor: 0xeeece6,
+  trunks: [{ h: 0.36, r: 0.021, lean: [-0.04, 0.02] }, { h: 0.22, r: 0.017, lean: [0.035, 0.03] }],
+  leaves: 34, leaf: [0.2, 0.32], width: 0.024, wallGap: 0.045, green: 0x2f5f2c, seed: 7,
+};
+
 // Day cycle (src/daycycle.js): one day in `minutes` real minutes (60, the user #125). The sun follows the real solar
 // path for the date (declination, hour angle) at Kv. Lunden, Karpvägen / S:t Lars väg in Lund
 // (55.70° N, 13.17° E, docs/tomten-google-maps.jpg). planNorth = compass bearing of the plan's

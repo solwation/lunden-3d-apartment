@@ -295,7 +295,9 @@ src/catboard.js        cork board in the kitchen (under the wall clock): a real-
                        #board-view (BoardPanel, #170: keep 📌 = red pin, never pushed off; throw away 🗑 asks twice;
                        arrows/S/Delete; frees the mouse like drawing); a full board drops its oldest unkept photo
 src/shelves.js         kitchen wall shelves with portraits, flowers, books, candles (WALL_SHELVES)
-src/keycabinet.js      the IKEA LINDBYN mirror Ø 110 (living room since #205), the hall's IKEA NISSEDAL mirror (#226) + the hall's Solstickan key cabinet (E) with the Renault key (E → beep beep);
+src/keycabinet.js      the IKEA LINDBYN mirror Ø 110 (living room since #205), the hall's IKEA NISSEDAL mirror (#226), IKEA SKOGSGRÄNSEN
+                       over the secretary (#265, `SKOGSGRANSEN`: tinted glass + a tint overlay, copper bars below the horizon)
+                       + the hall's Solstickan key cabinet (E) with the Renault key (E → beep beep);
                        the cabinet is in world.lids, the key (world.carKey) a target only while it is open
 src/sillplants.js      flower pots on every inner window board (SILL_PLANTS, #136): five merged meshes, a loose item;
                        `userData.pots` / `rebuild(away)` / `potModel` let one pot be lifted out of the merge (#185)
@@ -556,6 +558,9 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   IKEA SYMFONISK speakers (#186, `SYMFONISK`, FURNITURE `symfonisk`): the black bookshelf speaker stands in Sovrum 1's window (#201; it lay on the TV bench),
   the white one stands at the south end of the kitchen worktop, the lamp speaker (frosted glass, its own lamp: E
   toggles it) on the window board behind the sofa, where a sill pot is skipped (`SILL_PLANTS.skip`, also for the black one).
+  Over the secretary "Bang" (#118) on the east wall: the IKEA SKOGSGRÄNSEN mirror Ø 50, copper (#265, `SKOGSGRANSEN`, hung with
+  the wavy bars at the bottom, centre 1.58 m up), and on the secretary's north end a small yucca palm (`YUCCA`, a Thing you can
+  take, kind 'plant') whose leaves cover the mirror's north edge; the owl and the cactus moved south.
 - Patio (user's wish): Plantagen Hörngrupp Oslo antracit (corner sofa 198 + 186 × 72 × 76, table
   120 × 60 × 40) with its back to the hedge and the east screen wall, a parasol (up Apr–Sep while
   the sun is up), two big planters (palm by the patio door, agave in the SE corner; the banana that blocked the

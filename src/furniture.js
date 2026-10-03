@@ -3,7 +3,7 @@ import { sfx } from './audio.js';
 import { mergeStatic } from './merge.js';
 import { restTarget } from './rest.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
-import { FURNITURE, LANDSKRONA as L, LEVELS, SKANSNAS, IDANAS, MYDAL, OTTOMAN, SYMFONISK, SECRET, NYMANE_WALL, MALM_DECO } from './config.js';
+import { FURNITURE, LANDSKRONA as L, LEVELS, SKANSNAS, IDANAS, MYDAL, OTTOMAN, SYMFONISK, SECRET, NYMANE_WALL, MALM_DECO, YUCCA } from './config.js';
 import { loungesofa, loungetable, parasol, planter } from './patio.js';
 import { Screen } from './screens.js';
 import { Openable } from './openables.js';
@@ -2050,6 +2050,70 @@ function trinket(key, parent, M, things, drawer, back, build = TRINKETS[key].bui
   return tg;
 }
 
+/** A small yucca palm (#265, YUCCA): a white pot, two ringed canes, a tuft of long, stiff, pointed leaves on each
+ * (one geometry, a shade of green per leaf in vertex colours). Origin = the pot's bottom centre; the leaves stay
+ * `wallGap` in front of local z = -Y.z (the wall behind it). */
+function yucca(Y = YUCCA) {
+  const g = new THREE.Group();
+  let seed = Y.seed;
+  const rnd = () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
+  const pot = new THREE.Mesh(new THREE.CylinderGeometry(Y.pot.r, Y.pot.r * 0.82, Y.pot.h, 24), new THREE.MeshStandardMaterial({ color: Y.potColor, roughness: 0.55 }));
+  pot.position.y = Y.pot.h / 2;
+  const soil = new THREE.Mesh(new THREE.CylinderGeometry(Y.pot.r * 0.93, Y.pot.r * 0.93, 0.005, 20), new THREE.MeshStandardMaterial({ color: 0x3b2a1e, roughness: 1 }));
+  soil.position.y = Y.pot.h - 0.012;
+  g.add(pot, soil);
+  // the canes: beige-brown bark with leaf-scar rings (a lathe with a little bulge every few cm)
+  const bark = new THREE.MeshStandardMaterial({ color: 0x8a7558, roughness: 0.95 });
+  const tops = [];
+  for (const t of Y.trunks) {
+    const pts = [];
+    for (let i = 0; i <= 24; i++) { const y = (i / 24) * t.h; pts.push(new THREE.Vector2(t.r * (1.15 - 0.25 * i / 24) * (1 + 0.08 * Math.max(0, Math.sin(i * 2.1))), y)); }
+    pts.push(new THREE.Vector2(0, t.h));
+    const cane = new THREE.Mesh(new THREE.LatheGeometry(pts, 10), bark);
+    const base = new THREE.Vector3(t.lean[0] * 0.4, Y.pot.h - 0.012, t.lean[1] * 0.4);
+    const dir = new THREE.Vector3(t.lean[0], t.h, t.lean[1]).normalize();
+    cane.position.copy(base);
+    cane.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir);
+    g.add(cane);
+    tops.push(base.clone().addScaledVector(dir, t.h * 0.97));
+  }
+  // the leaves: a tapering, slightly folded strap that bends down a little towards its tip
+  const pos = [], col = [], idx = [], green = new THREE.Color(Y.green), c = new THREE.Color();
+  const up = new THREE.Vector3(0, 1, 0), zMin = -Y.z + Y.wallGap, N = 6;
+  tops.forEach((top, ti) => {
+    const n = Math.round(Y.leaves * (ti === 0 ? 1 : 0.8));
+    for (let k = 0; k < n; k++) {
+      const f = k / n, el = THREE.MathUtils.lerp(1.45, -0.05, Math.sqrt(f)) + (rnd() - 0.5) * 0.25; // inner ones upright
+      const az = k * 2.39996 + rnd() * 0.5, L = THREE.MathUtils.lerp(Y.leaf[0], Y.leaf[1], 0.4 + 0.6 * f * rnd() + 0.2 * rnd()) * (ti === 0 ? 1 : 0.85);
+      const d = new THREE.Vector3(Math.cos(el) * Math.cos(az), Math.sin(el), Math.cos(el) * Math.sin(az));
+      if (top.z + d.z * L < zMin) { d.z = (zMin - top.z) / L; d.normalize(); } // never back through the wall / mirror
+      const side = new THREE.Vector3().crossVectors(d, up); if (side.lengthSq() < 1e-4) side.set(1, 0, 0); side.normalize();
+      const nrm = new THREE.Vector3().crossVectors(side, d).normalize();
+      const droop = 0.12 + 0.25 * (1 - Math.max(0, Math.sin(el)));
+      c.copy(green).offsetHSL((rnd() - 0.5) * 0.03, (rnd() - 0.5) * 0.1, (rnd() - 0.4) * 0.08);
+      const v0 = pos.length / 3;
+      for (let i = 0; i <= N; i++) {
+        const t = i / N, w = Y.width * (t < 0.3 ? 0.45 + 0.55 * t / 0.3 : (1 - t) / 0.7);
+        const p = top.clone().addScaledVector(d, L * t); p.y -= droop * L * t * t;
+        if (p.z < zMin) p.z = zMin;
+        for (const [a, b] of [[-1, 0], [0, 0.35], [1, 0]]) {
+          pos.push(p.x + side.x * a * w + nrm.x * b * w, p.y + side.y * a * w + nrm.y * b * w, p.z + side.z * a * w + nrm.z * b * w);
+          col.push(c.r, c.g, c.b);
+        }
+        if (i < N) { const r = v0 + i * 3; idx.push(r, r + 3, r + 1, r + 1, r + 3, r + 4, r + 1, r + 4, r + 2, r + 2, r + 4, r + 5); }
+      }
+    }
+  });
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  geo.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+  geo.setIndex(idx);
+  geo.computeVertexNormals();
+  g.add(new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.6, side: THREE.DoubleSide })));
+  g.traverse((m) => { if (m.isMesh) m.castShadow = true; });
+  return g;
+}
+
 /** The secretary "Bang" (IKEA, c. 1960, #118): teak veneer on black hairpin legs with X braces and a wire shelf;
  * a drawer under a sloping flap that folds down into a desk. Behind the flap: an open section with a shelf,
  * three small drawers on the right, three tiny ones under the shelf and a secret one behind it, and a little
@@ -2185,7 +2249,7 @@ function secretary(item) {
     const tuft = new THREE.Mesh(new THREE.ConeGeometry(0.01, 0.03, 5), stone); tuft.position.set(sx * 0.026, 0.162, 0); tuft.rotation.z = -sx * 0.4; owl.add(tuft);
   }
   const beak = new THREE.Mesh(new THREE.ConeGeometry(0.006, 0.016, 5), stone); beak.rotation.x = Math.PI; beak.position.set(0, 0.113, 0.036); owl.add(beak);
-  owl.position.set(-W / 2 + 0.13, yT + 0.02, topD / 2 + 0.01); owl.rotation.y = 0.25;
+  owl.position.set(W / 2 - 0.1, yT + 0.02, topD / 2 + 0.01); owl.rotation.y = -0.25;
   }, 'ugglan');
   const terracotta = new THREE.MeshStandardMaterial({ color: 0xb8643e, roughness: 0.85 });
   trinket('cactus', g, M, things, null, 'sekretären', (cactus) => {
@@ -2198,8 +2262,14 @@ function secretary(item) {
   const stem = new THREE.Mesh(cg, green); stem.position.y = 0.1; cactus.add(stem);
   const dome = new THREE.Mesh(new THREE.SphereGeometry(0.029, 12, 6, 0, Math.PI * 2, 0, Math.PI / 2), green); dome.position.y = 0.14; cactus.add(dome);
   const flower = new THREE.Mesh(new THREE.SphereGeometry(0.009, 8, 6), new THREE.MeshStandardMaterial({ color: 0xff5fa2, roughness: 0.5 })); flower.scale.y = 0.6; flower.position.set(0.006, 0.168, 0.004); cactus.add(flower);
-  cactus.position.set(W / 2 - 0.11, yT + 0.02, topD / 2);
+  cactus.position.set(0.1, yT + 0.02, topD / 2 + 0.01); // (the yucca has the north end since #265)
   }, 'kaktusen');
+  // a small yucca palm at the north end, its leaves partly in front of the SKOGSGRÄNSEN mirror (#265); a pot plant you can take
+  const palmY = yucca();
+  mergeStatic(palmY);
+  palmY.position.set(YUCCA.x, yT + 0.02, YUCCA.z);
+  g.add(palmY);
+  things.push({ model: palmY, kind: 'plant', name: 'yuccapalmen', back: 'sekretären', held: { pos: [0.2, -0.62, -0.62], rot: [0.05, 0, 0] } });
   g.traverse((m) => { if (m.isMesh) m.castShadow = true; });
   g.userData.targets = targets;
   g.userData.keep = [...moving, ...things.map((t) => t.model)];

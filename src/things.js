@@ -19,12 +19,12 @@ const HELD = {
 };
 
 export class Thing extends Holdable {
-  constructor(scene, camera, { model, kind, back, name: given }) {
+  constructor(scene, camera, { model, kind, back, name: given, held: own }) {
     model.updateWorldMatrix(true, true);
     const pos = model.getWorldPosition(new THREE.Vector3());
     const rot = new THREE.Euler().setFromQuaternion(model.getWorldQuaternion(new THREE.Quaternion()));
     const box = new THREE.Box3().setFromObject(model), size = box.getSize(new THREE.Vector3()), mid = box.getCenter(new THREE.Vector3());
-    const held = HELD[kind === 'glass' || kind === 'plant' ? kind : 'bottle'];
+    const held = own ?? HELD[kind === 'glass' || kind === 'plant' ? kind : 'bottle']; // (a tall plant is held lower, #265)
     const name = given ?? NAMES[kind] ?? 'flaskan';
     super(scene, camera, {
       name, verb: 'ta', backName: back, backVerb: kind === 'plant' ? `ställa tillbaka ${name} på` : kind === 'glass' ? `ställa tillbaka ${name} i` : `lägga tillbaka ${name} i`, placeVerb: 'ställa ner', model,
