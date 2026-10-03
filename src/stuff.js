@@ -77,18 +77,22 @@ const pick = (R, list) => list[Math.floor(R() * list.length)];
 
 /**
  * One garment on a hanger, in the frame of the rod: x along the rod, z across (front/back), y = the rod.
- * kind: shirt | tee | dress | trousers | jacket | coat; s = size (1 adult, ~0.65 child).
+ * kind: shirt | tee | dress | skirt | trousers | jacket | coat; s = size (1 adult, ~0.65 child).
  */
 export function garment(p, kind, hex, s = 1) {
   const W = 0.44 * Math.min(1, 0.35 + s * 0.65), t = 0.035;
   p.box(0.006, 0.006, W * 0.9, 0, -0.06, 0, S.hanger);                                     // the hanger's bar
   p.add(new THREE.TorusGeometry(0.018, 0.0025, 4, 8, Math.PI).rotateY(Math.PI / 2).translate(0, -0.012, 0), S.hook); // its hook over the rod
   const top = -0.055;
-  const L = { shirt: 0.72, tee: 0.62, dress: 1.0, trousers: 0.62, jacket: 0.8, coat: 1.05 }[kind] * s;
+  const L = { shirt: 0.72, tee: 0.62, dress: 1.0, skirt: 0.45, trousers: 0.62, jacket: 0.8, coat: 1.05 }[kind] * s;
   if (kind === 'trousers') { // folded over the bar: two layers hanging, the legs apart at the bottom
     p.rbox(t * 0.8, L / 2 - 0.08, W * 0.8, 0, top - L / 2 + 0.08, 0, hex, 0.012);
     for (const sz of [-1, 1]) p.rbox(t * 0.8, 0.1, W * 0.38, 0, top - L / 2, sz * W * 0.21, hex, 0.012);
     p.add(new THREE.CylinderGeometry(0.012, 0.012, W * 0.82, 8).rotateX(Math.PI / 2).translate(0, top - 0.004, 0), hex); // round over the bar
+    return;
+  }
+  if (kind === 'skirt') { // clipped to the bar: a flared skirt (#281)
+    p.add(new THREE.CylinderGeometry(W * 0.36, W * 0.58, L, 4, 1).rotateY(Math.PI / 4).scale(0.11, 1, 1.42).translate(0, top - 0.01 - L / 2, 0), hex);
     return;
   }
   if (kind === 'dress') { // a narrow bodice, a flared skirt

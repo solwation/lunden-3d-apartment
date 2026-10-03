@@ -852,10 +852,11 @@ export const STUFF = {
       colors: [0xffafcc, 0xcdb4db, 0xffe66d, 0x95e1d3, 0xffffff, 0xa2d2ff, 0xff70a6],
       folded: [0xffafcc, 0xcdb4db, 0xffe66d, 0x95e1d3, 0xa2d2ff, 0xffffff], shoes: [0xff70a6, 0xcdb4db, 0xffffff],
       socks: [0xffafcc, 0xffe66d, 0xcdb4db, 0xffffff, 0x95e1d3], under: [0xffffff, 0xffafcc, 0xcdb4db, 0xa2d2ff] },
-    { who: 'Tilly', rooms: ['Sovrum 4'], size: 0.76, hang: ['dress', 'shirt', 'tee', 'jacket'],
-      colors: [0xff6fb5, 0x9b5de5, 0x00bbf9, 0xfee440, 0xf15bb5, 0xffffff, 0x2ec4b6],
-      folded: [0xff6fb5, 0x9b5de5, 0x00bbf9, 0xfee440, 0xffffff, 0x2ec4b6], shoes: [0x9b5de5, 0xff6fb5, 0xffffff],
-      socks: [0xff6fb5, 0x9b5de5, 0xfee440, 0xffffff], under: [0xffffff, 0xff6fb5, 0x9b5de5] },
+    // Tilly (15, #281): black, lilac, denim, neon green, white, charcoal, a muted pink accent
+    { who: 'Tilly', rooms: ['Sovrum 4'], size: 0.76, hang: ['jacket', 'tee', 'shirt', 'trousers'],
+      colors: [0x18181b, 0xb79cff, 0x4a6fa5, 0xa3e635, 0xf2f0ec, 0x3a3a40, 0xd8a1b0],
+      folded: [0x18181b, 0xb79cff, 0x4a6fa5, 0xa3e635, 0xf2f0ec, 0x3a3a40], shoes: [0x18181b, 0xf2f0ec, 0xb79cff],
+      socks: [0x18181b, 0xf2f0ec, 0xb79cff, 0xa3e635], under: [0xf2f0ec, 0x18181b, 0xb79cff] },
   ],
 };
 
@@ -1456,6 +1457,19 @@ export const HEMNES_DAYBED = {
 // `wall`: 'west' (face x 0.202) or 'north' (face z 7.804) of Sovrum 4; `at` = z (west) or x (north) of the centre,
 // `y` = centre height over the floor. Over the daybed around the basketball holder (z 10, y 1.5) and on the north wall
 // west of the door's switch; not on the east wall (the vanity, #282) or the window wall.
+// Tilly's clothes rack (#281): IKEA MULIG klädställning, 99 × 46 × 151 cm (ikea.com), black (our pick, with the room's
+// charcoal theme). Steel tubes Ø `tube`; each side an inverted U (`bend` = its half width) on a foot tube the full depth;
+// the rail on top; two shelf tubes `shelf` m up at `shelfZ` (guesses from product photos). On it Tilly's clothes on
+// hangers (stuff.js `garment`, `size` ≈ a 15-year-old): an oversized black hoodie, an olive bomber, a plaid-red skirt,
+// cargo pants, a black band tee, a denim jacket, a lilac shirt, a neon green tee; three pairs of sneakers and a tote
+// bag on the shelf (our picks).
+export const MULIG = {
+  W: 0.99, D: 0.46, H: 1.51, tube: 0.02, bend: 0.05, shelf: 0.2, shelfZ: [-0.1, 0.1], color: 0x1e1f21, size: 0.92,
+  clothes: [['jacket', 0x18181b], ['jacket', 0x4b5440], ['skirt', 0x7a2633], ['trousers', 0x6b6b4e],
+    ['tee', 0x111111], ['jacket', 0x4a6fa5], ['shirt', 0xb79cff], ['tee', 0xa3e635]],
+  shoes: [0xf2f0ec, 0x18181b, 0xb79cff], tote: { size: [0.28, 0.32, 0.08], color: 0xe6dcc4 },
+};
+
 export const KPOP_POSTERS = [
   { art: 'nova', size: 'A2', wall: 'west', at: 9.27, y: 1.58 },
   { art: 'moon', size: 'A2', wall: 'west', at: 10.73, y: 1.58 },
@@ -1679,6 +1693,9 @@ export const FURNITURE = [
   // corner; the drawer column at the north end, the free end (the laptop, #283) towards the window; the stool in front
   { type: 'vanity', level: 1, x: 2.632 - VANITY.d / 2 - 0.004, z: 11.45, rot: 90 },
   { type: 'vanitystool', level: 1, x: 2.632 - VANITY.d - 0.2, z: 11.55, rot: -90 },
+  // her MULIG clothes rack (#281): along the east wall north of the vanity, clear of the door's swing (to z 8.62),
+  // facing the room (west)
+  { type: 'mulig', level: 1, x: 2.632 - MULIG.D / 2 - 0.02, z: 9.55, rot: 90 },
   // her K-pop posters (#280, KPOP_POSTERS): world coordinates, so the item sits at the origin unturned (rot 180 = yaw 0)
   { type: 'kposters', level: 1, x: 0, z: 0, rot: 180 },
   // Matplats: IKEA SKANSNÄS (#62/#63), closed (150 cm), the short end to the kitchen window and a little
