@@ -379,6 +379,8 @@ tools/cartest.html     headless test: our parked car — open the driver's / pas
                        centre screen on / ⏭ / off, plays on outside (muffled with the doors shut), no target from outside, off as it leaves
 tools/keytest.html     headless test of the hall key cabinet: open, car key reachable only then, beep; the car comes, parks, leaves
 tools/esctest.html     headless test of Esc on the start screen (click-to-start cover, ignored over the note)
+tools/crouchtest.html  headless test: C crouches (Ctrl too, other Ctrl shortcuts prevented), seated C stands up, leaving mid-visit
+                       asks (beforeunload), not on the start screen nor on a new-version reload (#274)
 tools/updatetest.html  headless test of the update notice on a phone-sized touch screen (on top, 44 px, touch works)
 tools/perfcount.html   draw calls / triangles at a few spots (compare before/after optimising)
 tools/toilettest.html  headless test: flush both toilets (counted, not again until refilled), the lid still opens
@@ -834,6 +836,12 @@ screenshots into the session scratchpad, not the repo.
 - Crouch (#70): hold Ctrl (or the 🧎 toggle on touch) → eye `PLAYER.crouchEye` 0.95 m at `crouchSpeed` (50 %),
   no sprint; you only stand up again where there is head room (`roomToStand`: not under the stair's
   upper flight). Released on blur / losing pointer lock so nobody gets stuck down.
+  #274: the documented key is **C** (seated, C gets you up instead; its auto-repeats don't crouch), because Ctrl + W
+  = the browser's close-tab, which a page cannot `preventDefault`. Ctrl still crouches, and while it is held other
+  Ctrl shortcuts are prevented. In fullscreen made by the page (Touch start) `navigator.keyboard.lock(GAME_KEYS)`
+  (Chromium) captures them, Ctrl+W too; released on leaving fullscreen. Mouse & keyboard is not forced fullscreen.
+  Fallback: a `beforeunload` guard while visiting (not on the start screen); the page's own reloads (autoReload,
+  "Ladda om") set `reloading` and pass.
 - Sit / lie (#71/#72, `src/rest.js`, `REST`): builders put `userData.rest = { kind: 'sit'|'lie', name, verb,
   spots }` (local x, seat/mattress y, z, optional dir); buildFurniture turns them into E targets
   (`world.furnitureTargets`). E picks the spot nearest the look ray (not one the cat sits on), the camera

@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Crouch key test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+// #274: crouch on C (Ctrl + W closes the tab), Ctrl still crouches and keeps the other Ctrl shortcuts from the
+// browser; seated, C gets you up and does not crouch; leaving the page mid-visit asks first (beforeunload), not
+// on the start screen and not when the page reloads itself for a new version.
+//   google-chrome --headless=new --dump-dom http://localhost:8137/tools/crouchtest.html
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const f = document.createElement('iframe');
+f.width = 900; f.height = 600;
+f.src = '../index.html?shot';
+document.body.append(f);
+f.onload = async () => {
+  const w = f.contentWindow, d = f.contentDocument;
+  while (!w.__app) await wait(100);
+  const { player, rest, world, step, autoReload, renderer } = w.__app;
+  const lines = [];
+  const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; };
+  const key = (type, code, extra = {}) => { const e = new w.KeyboardEvent(type, { code, bubbles: true, cancelable: true, ...extra }); d.dispatchEvent(e); return e; };
+  const leave = () => { const e = new w.Event('beforeunload', { cancelable: true }); w.dispatchEvent(e); return e.defaultPrevented; };
+  d.getElementById('install').hidden = true;
+  d.getElementById('overlay').hidden = false; // the start screen (&shot hides it)
+  let pass = check(!leave(), 'on the start screen: leaving does not ask');
+  // pretend the mouse is locked (headless refuses pointer lock)
+  Object.defineProperty(d, 'pointerLockElement', { get: () => renderer.domElement, configurable: true });
+  d.dispatchEvent(new w.Event('pointerlockchange'));
+  pass &= check(d.getElementById('overlay').hidden, 'mouse "locked": the game is up');
+  key('keydown', 'KeyC'); step(1 / 60);
+  pass &= check(player.crouch && player.crouched, 'C held: crouched');
+  key('keydown', 'KeyW'); step(1 / 60);
+  pass &= check(player.crouched, 'C + W: still crouched (and no Ctrl)');
+  key('keyup', 'KeyW'); key('keyup', 'KeyC'); for (let i = 0; i < 5; i++) step(1 / 60);
+  pass &= check(!player.crouch, 'C released: up');
+  key('keydown', 'ControlLeft', { ctrlKey: true });
+  const s = key('keydown', 'KeyS', { ctrlKey: true });
+  pass &= check(player.crouch && s.defaultPrevented, 'Ctrl still crouches; Ctrl+S is kept from the browser');
+  key('keyup', 'KeyS'); key('keyup', 'ControlLeft');
+  pass &= check(!player.crouch, 'Ctrl released: up');
+  const plain = key('keydown', 'KeyS'); key('keyup', 'KeyS');
+  pass &= check(!plain.defaultPrevented, 'a plain S is not prevented');
+  // seated: C stands you up, and its repeats do not crouch
+  const sofa = world.furnitureTargets.find((t) => t.name === 'soffan');
+  rest.begin(sofa, sofa.spots[0], { x: player.pos.x, z: player.pos.z, y: player.pos.y, yaw: 0 });
+  for (let i = 0; i < 30; i++) step(1 / 60);
+  const c = key('keydown', 'KeyC'); step(1 / 60);
+  key('keydown', 'KeyC', { repeat: true }); step(1 / 60);
+  pass &= check(c.defaultPrevented && !rest.active && !player.crouch, 'seated: C gets you up, held it does not crouch');
+  key('keyup', 'KeyC');
+  pass &= check(leave(), 'mid-visit: leaving (Ctrl+W, closing the tab) asks first');
+  pass &= check(/<kbd>C<\/kbd><\/span><span>håll inne för att huka dig/.test(d.querySelector('.keys').innerHTML), 'C in the start-screen key list');
+  // the page's own reload for a new version goes through
+  let went = null;
+  autoReload.go = (url) => { went = url; };
+  autoReload.version = 'abc'; autoReload.still = 10;
+  autoReload.update(0); autoReload.update(3); // (the first call notes where you stand)
+  await wait(800);
+  pass &= check(went && !leave(), 'a new version reloads the page without asking');
+  out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
+};
+</script>
+</body>
+</html>

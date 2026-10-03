@@ -839,6 +839,7 @@ for (const ev of ['pointerup', 'pointercancel', 'pointerleave']) actionBtn.addEv
 const powerBtn = document.getElementById('power-btn');
 powerBtn.addEventListener('click', () => heldItem()?.useAlt?.());
 const stripKeys = new Set(); // keys pressed while a strip / the note is open
+const isCtrl = (code) => code === 'ControlLeft' || code === 'ControlRight';
 document.addEventListener('keydown', (e) => {
   if (!locked) return;
   if (reading) {
@@ -855,10 +856,14 @@ document.addEventListener('keydown', (e) => {
     return;
   }
   player.keys.add(e.code);
-  if (e.code === 'ControlLeft' || e.code === 'ControlRight') player.crouch = true; // crouch while held (#70)
+  // crouch while held (#70): C, so crouching and walking is never Ctrl+W = close the tab (#274); Ctrl still works,
+  // and while it is held the browser's other Ctrl shortcuts (save, print, bookmark …) are kept from opening
+  if (isCtrl(e.code)) player.crouch = true;
+  else if (e.ctrlKey) e.preventDefault();
   if (e.code === 'KeyE' && focused) use(focused); // also while sitting: what is within reach (#184)
   else if (e.code === 'KeyE' && rest.active) standUp();
-  else if ((e.code === 'Space' || e.code === 'KeyC') && rest.active) { e.preventDefault(); standUp(); }
+  else if ((e.code === 'Space' || e.code === 'KeyC') && rest.active) { e.preventDefault(); standUp(); } // seated, C gets you up
+  else if (e.code === 'KeyC' && !e.repeat) player.crouch = true; // (the repeats of the C that just stood you up do not crouch)
   if (e.code === 'KeyM') updateMute(toggleMuted());
   if (e.code === 'KeyT') toggleStats();
   if (e.code === 'Tab') { e.preventDefault(); if (!e.repeat) holdStats(true); }
@@ -870,7 +875,7 @@ document.addEventListener('keydown', (e) => {
 document.addEventListener('keyup', (e) => {
   player.keys.delete(e.code);
   stripKeys.delete(e.code);
-  if (e.code === 'ControlLeft' || e.code === 'ControlRight') player.crouch = false;
+  if (isCtrl(e.code) || e.code === 'KeyC') player.crouch = ['KeyC', 'ControlLeft', 'ControlRight'].some((k) => player.keys.has(k));
   if (clockPanel.open && clockPanel.key(e.code, false)) e.preventDefault(); // no button click on Space
   if (e.code === 'Tab') holdStats(false);
 });
@@ -1243,7 +1248,23 @@ const keepSession = () => { if (played) saveSession(placeNow()); };
 setInterval(keepSession, 2000);
 window.addEventListener('pagehide', keepSession);
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') keepSession(); });
+// Ctrl+W by mistake (#274): the browser keeps Ctrl+W to itself, so while a visit runs (not on the start screen) leaving
+// the page asks first; the page's own reloads (a new version, "Ladda om") set `reloading` and go through
+let reloading = false;
+window.addEventListener('beforeunload', (e) => {
+  if (reloading || !played || !overlay.hidden) return;
+  e.preventDefault();
+  e.returnValue = '';
+});
+// In fullscreen made by the page (Touch start, a resumed fullscreen visit) Chromium lets it take the game keys, Ctrl+W too
+const GAME_KEYS = ['KeyW', 'KeyA', 'KeyS', 'KeyD', 'KeyC', 'KeyE', 'KeyQ', 'KeyF', 'KeyT', 'KeyM', 'KeyK', 'Space', 'Tab',
+  'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
+document.addEventListener('fullscreenchange', () => {
+  if (document.fullscreenElement) navigator.keyboard?.lock?.(GAME_KEYS).catch(() => {});
+  else navigator.keyboard?.unlock?.();
+});
 onTap(document.getElementById('update-reload'), () => {
+  reloading = true;
   saveResume({ ...placeNow(), build: null }); // a new version for sure
   const url = new URL(location.href);
   url.searchParams.set('v', latestVersion ?? Date.now());
@@ -1276,6 +1297,7 @@ const autoReload = {
     fadeEl.style.opacity = '1';
     setTimeout(() => {
       saveResume({ ...placeNow(), build: null }); // a new version for sure
+      reloading = true;
       const url = new URL(location.href);
       url.searchParams.set('v', this.version);
       this.go(url.href);
