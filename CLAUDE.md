@@ -159,7 +159,7 @@ src/lampwash.js        every lamp's light wherever the visitor is (#276, #294, #
                        and ceiling lamps) lights the flat inside the lit materials' own shaders (`patch(scene)`: onBeforeCompile on
                        every MeshStandard/Lambert/Phong material, re-scanned every 120 frames; no extra mesh or draw call) exactly
                        like its pool light (same fall-off and range, Lambert on the surface's colour, no specular), only where it
-                       sees: its visibility polygon (rays to walls, closed doors, the façades' outer faces) is a row of a float
+                       sees: its visibility polygon (rays to walls, closed doors but not wardrobe fronts (#297), the façades' outer faces) is a row of a float
                        texture; lamp data in a small float texture. It shows k × (1 − pool) and the pool light k × pool (cross-fade,
                        Lights.update → `set(i, k, pool)`), so a lit room looks the same near, far, upstairs or from outside
 src/rooms.js           room detection: walls + door gaps rasterised, BFS from the room labels

@@ -84,7 +84,9 @@ export function buildLampWashes(scene, world, entries) {
   used.forEach((e, i) => {
     const { lamp, k } = e, level = lamp.level;
     const segs = [...world.levels[level].wallSegments,
-      ...world.doors.filter((d) => levelOf(d) === level).map((d) => d.segment()), // closed doors stop it
+      // closed doors stop it; a wardrobe's sliding fronts do not (#297): they end short of the ceiling, so a lamp
+      // lights the wall and ceiling above the wardrobe (a front stopping its rays left a dark, jagged box there)
+      ...world.doors.filter((d) => d.kind !== 'wardrobe' && levelOf(d) === level).map((d) => d.segment()),
       [0, 0, SX, 0], [SX, 0, SX, SZ], [SX, SZ, 0, SZ], [0, SZ, 0, 0]];         // the outer faces: out through a window to its glass
     // a lamp on a window board stands in the window's niche: its rays start just inside the room
     const ox = lamp.pos.x, oz = Math.min(Math.max(lamp.pos.z, zN + 0.05), zS - 0.05);
