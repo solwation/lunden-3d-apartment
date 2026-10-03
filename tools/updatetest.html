@@ -9,6 +9,7 @@
 // (the reload button navigates away; it uses the same handler). The automatic reload (#192): not while walking,
 // after 2.5 s standing still "Uppdateras om 5 … 1" (#277) — a key, a mouse move, the stick or a touch cancels it, the
 // coffee brewing holds it back — then the picture fades out, the place and the world are saved and the new version loads.
+// Ghost reloads (#304): only a changed content hash in version.json is news, not a new SHA alone.
 //   google-chrome --headless=new --dump-dom http://localhost:8137/tools/updatetest.html
 const out = document.getElementById('out');
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -86,6 +87,25 @@ f.onload = async () => {
   pass &= check(rec && rec.mode === 'touch' && Math.abs(rec.x - app.player.pos.x) < 0.01 && rec.world?.v === 1 && !!rec.world.clock, 'the place and the world are saved for the new version');
   w.sessionStorage.removeItem('lunden.resume'); w.localStorage.removeItem('lunden.resume');
   pass &= check(d.getElementById('update').hidden, 'no button to press');
+  // ghost reloads (#304): a new SHA with the same content hash (docs, tests, reference images) is nothing new;
+  // a changed hash is; a version.json or page without a hash falls back to the SHA
+  const V = await import('../src/version.js');
+  const here = { version: 'aaa1111', content: 'c0ffee000001' };
+  const cases = [
+    [{ version: 'bbb2222', content: 'c0ffee000001' }, here, false, 'a new commit, the same content: no reload'],
+    [{ version: 'bbb2222', content: 'c0ffee000002' }, here, true, 'the content changed: reload'],
+    [{ version: 'aaa1111', content: 'c0ffee000001' }, here, false, 'the same version: no reload'],
+    [{ version: 'bbb2222' }, here, true, 'a version.json without a hash: by the SHA'],
+    [{ version: 'bbb2222', content: 'c0ffee000001' }, { version: 'aaa1111' }, true, 'a page without a hash: by the SHA'],
+    [{ content: 'c0ffee000002' }, here, false, 'no version: nothing'],
+  ];
+  for (const [remote, local, want, name] of cases) pass &= check(V.isNewer(remote, local) === want, name);
+  // on a stamped site (tools/stamp.sh) the page's own version.json is never news, whatever SHA it carries
+  if (V.BUILD !== 'dev') {
+    const vj = await (await fetch(`../version.json?t=${Date.now()}`, { cache: 'no-store' })).json();
+    pass &= check(V.CONTENT === vj.content ? !V.isNewer(vj) : V.isNewer(vj),
+      `stamped: CONTENT ${V.CONTENT}, version.json ${vj.version}/${vj.content} → ${V.isNewer(vj) ? 'reload' : 'stays'}`);
+  }
   out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
 };
 </script>

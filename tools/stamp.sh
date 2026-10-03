@@ -4,13 +4,19 @@
 set -eu
 OUT=${1:?output dir}
 V=${2:?version}
+# a hash of what the page loads (#304): open pages reload only when this changes, not on every commit (reference
+# images, docs, tests, CLAUDE.md …). tools/ (test pages), the PDF and README are not loaded by visitors; stamp.sh is
+# in it because it shapes what they load.
+C=$(find index.html manifest.webmanifest icons src data textures tools/stamp.sh -type f | LC_ALL=C sort \
+  | xargs sha256sum | sha256sum | cut -c1-12)
 rm -rf "$OUT"
 mkdir -p "$OUT"
 cp -r index.html manifest.webmanifest icons src data textures tools L1007_mattsatt_planritning.pdf README.md "$OUT"/
 # the running page knows which version it is …
-sed -i "s/^export const BUILD = 'dev';/export const BUILD = '$V';/" "$OUT/src/version.js"
+sed -i -e "s/^export const BUILD = 'dev';/export const BUILD = '$V';/" \
+  -e "s/^export const CONTENT = 'dev';/export const CONTENT = '$C';/" "$OUT/src/version.js"
 # … and the server says which version is current
-printf '{"version":"%s","built":"%s"}\n' "$V" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > "$OUT/version.json"
+printf '{"version":"%s","content":"%s","built":"%s"}\n' "$V" "$C" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > "$OUT/version.json"
 # cache-bust modules and data so a reload really fetches the new version
 sed -i -E "s#(from '\./[^']+\.js)'#\1?v=$V'#g" "$OUT"/src/*.js
 sed -i -E "s#src=\"src/main\.js\"#src=\"src/main.js?v=$V\"#" "$OUT/index.html"

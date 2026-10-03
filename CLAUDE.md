@@ -39,7 +39,12 @@ https://solwation.github.io/lunden-3d-apartment/ (public repo) via
 `.github/workflows/pages.yml`, which runs `tools/stamp.sh`: it copies the site to `_site`,
 writes the commit SHA into `src/version.js` (`BUILD`) and `version.json`, and appends
 `?v=SHA` to module imports / `data/plan.json` so a reload never mixes cached old modules.
-The page polls `version.json` every minute; when it differs from `BUILD` it reloads by itself (#192, `autoReload` in
+It also writes a **content hash** (`CONTENT` in version.js, `content` in version.json, #304) of what the page loads:
+index.html, the manifest, icons/, src/, data/, textures/ and stamp.sh — not tools/, docs/, the PDF or the .md files.
+Commits that only touch docs/, material/, cloudflare/, `*.md` or cloud.yml do not deploy at all (`paths-ignore`).
+The page polls `version.json` every minute; when its content hash differs from `CONTENT` (`isNewer`; a file without a
+hash falls back to the SHA) it reloads by itself — a new SHA with the same content (tests, reference images) is no
+reload, so a reload without a note entry means an invisible fix (#192, `autoReload` in
 main.js, `AUTO_RELOAD` in config): once the visitor has been still for 2.5 s (no keys/stick/mouse/touch, not walking, no panel,
 no music, nothing time-bound: coffee brewing, frying, the airfryer, the grill, Kaffeturbo, the car's music, a ball in the air) "Uppdateras om
 5 … 1" counts down at the top (#277, `#countdown`; any input or movement cancels it: "Uppdatering avbruten"), then the
@@ -447,6 +452,8 @@ tools/esctest.html     headless test of Esc on the start screen (click-to-start 
 tools/crouchtest.html  headless test: C crouches (Ctrl too, other Ctrl shortcuts prevented), seated C stands up, leaving mid-visit
                        asks (beforeunload), not on the start screen nor on a new-version reload (#274)
 tools/updatetest.html  headless test of the update notice on a phone-sized touch screen (on top, 44 px, touch works);
+                       `isNewer`: a new SHA with the same content hash is no reload, a changed hash is (#304; on a stamped
+                       site it also checks the page's own version.json);
                        the countdown 5 … 1, cancelled by a key / mouse move / the stick / a touch, held back by brewing (#277)
 tools/perfcount.html   draw calls / triangles at a few spots (compare before/after optimising)
 tools/toilettest.html  headless test: flush both toilets (counted, not again until refilled), the lid still opens
@@ -820,7 +827,8 @@ google-chrome --headless=new --use-angle=swiftshader --enable-unsafe-swiftshader
 module that hasn't changed for a while (heuristic caching) — give each run a fresh `--user-data-dir=$(mktemp -d)`.
 
 To test the update notice locally: `tools/stamp.sh /tmp/site abc1234`, edit
-`/tmp/site/version.json` to another version, serve `/tmp/site` and load it.
+`/tmp/site/version.json` to another version **and another `content` hash** (only a changed hash reloads, #304),
+serve `/tmp/site` and load it.
 
 Run the walk test after any change to walls, doors, stairs or player movement, and the touch
 test after input changes. Headless SwiftShader renders only a few frames per second, so tests

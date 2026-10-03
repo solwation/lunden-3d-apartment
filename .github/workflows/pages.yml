@@ -3,6 +3,14 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [main]
+    # commits that change nothing on the site do not deploy (#304); the page also reloads only when the content
+    # hash in version.json changes (tools/stamp.sh), so a deploy of the same content reloads nobody
+    paths-ignore:
+      - 'docs/**'
+      - 'material/**'
+      - 'cloudflare/**'
+      - '**.md'
+      - '.github/workflows/cloud.yml'
   workflow_dispatch:
 
 permissions:
