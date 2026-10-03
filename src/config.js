@@ -483,7 +483,17 @@ export const BASE_CABINET = 0.9;
 // WC-stol Ifö Spira 6260 (our choice in both bathrooms): approx. W 35.5 × D 65 cm, seat 42 cm,
 // tank top 84 cm (Ifö product sheet, rounded). Replaces the plan's schematic symbol (#14).
 export const TOILET = { width: 0.355, depth: 0.65, seatHeight: 0.42, tankHeight: 0.84, tankDepth: 0.17,
-  refill: 6 }; // s until the tank is full again after a flush (#155, our guess)
+  refill: 6, // s until the tank is full again after a flush (#155, our guess)
+  // #321 (guesses): the inside of the bowl as rings [m below the rim, scale of the rim's hole, m towards the front (−
+  // back)], top down: from under the rim to the outlet towards the back, ~28 cm deep; the water surface `waterDy`
+  // (≈ 14 cm under the rim's top) in toilet-block blue (`water`); flushing: the surface `drop`s, the water runs down the
+  // bowl for `run` s (streaks scroll at `runSpeed` per s), the swirl turns at `spin` rad/s and dies out over `swirl` s
+  bowl: {
+    profile: [[0.015, 1.03, 0], [-0.012, 0.99, 0], [-0.04, 0.93, -0.005], [-0.08, 0.8, -0.015], [-0.12, 0.62, -0.03],
+      [-0.15, 0.49, -0.045], [-0.19, 0.35, -0.06], [-0.23, 0.23, -0.07], [-0.26, 0.12, -0.075], [-0.275, 0, -0.075]],
+    waterDy: -0.115, water: 0x3fa7d6,
+    flush: { drop: 0.05, run: 2.2, runSpeed: 1.6, spin: 7, swirl: 4 },
+  } };
 export const SHELF_HEIGHT = 2.0; // unlabelled shelving in the upstairs Klk
 
 // Where a visit starts: out on the grass in front of the entrance façade, facing the house with the

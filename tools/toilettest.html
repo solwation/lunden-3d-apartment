@@ -5,7 +5,8 @@
 <pre id="out">running…</pre>
 <script>
 // Flushing the toilets (#155): aim at each toilet's flush button, flush (counted in the stats), it can't flush
-// again until the tank has refilled, then it can; the lid still opens and closes with E on the bowl.
+// again until the tank has refilled, then it can; the lid still opens and closes with E on the bowl. #321: mid-flush the
+// water has dropped, runs down the bowl and swirls; afterwards it is back and still.
 //   google-chrome --headless=new --dump-dom http://localhost:8137/tools/toilettest.html
 const out = document.getElementById('out');
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -45,11 +46,16 @@ f.onload = async () => {
     pass &= check(t.flush.count === 1 && (stats.flushes ?? 0) === n0 + 1 && !t.flush.ready, `${where}: it flushes (counted: ${stats.flushes})`);
     for (let i = 0; i < 6; i++) step(1 / 60);
     pass &= check(t.flush.button.position.y < t.flush.buttonY, `${where}: the button is pressed down`);
+    for (let i = 0; i < 40; i++) step(1 / 60); // ~0.8 s in (#321)
+    const drop = t.flush.poolY - t.flush.pool.position.y;
+    pass &= check(drop > 0.02 && t.flush.sheet.visible && t.flush.sheet.material.opacity > 0.5 && t.flush.pool.material.emissiveIntensity > 0.2,
+      `${where}: mid-flush the water has dropped ${(drop * 100).toFixed(1)} cm, runs down the bowl and swirls`);
     const label2 = look(button);
     btn.click(); step(1 / 60);
     pass &= check(t.flush.count === 1 && /cisternen fylls/.test(label2), `${where}: not again before the tank is full ("${label2}")`);
     for (let i = 0; i < 60 * 7; i++) step(1 / 60);
-    pass &= check(t.flush.ready && t.flush.button.position.y === t.flush.buttonY && Math.abs(t.flush.pool.position.y - t.flush.poolY) < 1e-6, `${where}: refilled, button up, water back`);
+    pass &= check(t.flush.ready && t.flush.button.position.y === t.flush.buttonY && Math.abs(t.flush.pool.position.y - t.flush.poolY) < 1e-6
+      && !t.flush.sheet.visible && t.flush.pool.material.emissiveIntensity === 0, `${where}: refilled, button up, water back, still (#321)`);
     look(button); btn.click(); step(1 / 60);
     pass &= check(t.flush.count === 2, `${where}: flushes again once full`);
     for (let i = 0; i < 60 * 7; i++) step(1 / 60);

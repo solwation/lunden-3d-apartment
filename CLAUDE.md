@@ -117,7 +117,9 @@ textures/              image textures the page loads (published by stamp.sh): st
 material/              screenshots of our choices in Peab's option portal (local, see below)
 src/audio.js           synthesised positional sound effects (Web Audio): doors, slides, meow, steps
 src/toilet.js          toilet (Ifö Spira 6260) with an animated lid and a flush button (`flush`, its own E target in
-                       world.lids: dips, sfx.flush, the water drains and returns, no flush until refilled, #155)
+                       world.lids: dips, sfx.flush, the water drains and returns, no flush until refilled, #155); #321: a deep
+                       bowl (rings `TOILET.bowl.profile`, all the porcelain one merged mesh), toilet-blue water (its own mesh);
+                       a flush runs streaks down an inset copy of the bowl and swirls the water (emissive spiral), idle = no work
 src/ao.js              baked ambient occlusion: distance field → multiply overlay on floor/ceiling (AO)
 src/courtyard.js       the courtyard on the garage box (COURTYARD): walks, pergolas, grill, sandboxes, boule,
                        benches, raised beds, instanced shrubs; collision for what you can walk into
@@ -471,7 +473,8 @@ tools/updatetest.html  headless test of the update notice on a phone-sized touch
                        site it also checks the page's own version.json);
                        the countdown 5 … 1, cancelled by a key / mouse move / the stick / a touch, held back by brewing (#277)
 tools/perfcount.html   draw calls / triangles at a few spots (compare before/after optimising)
-tools/toilettest.html  headless test: flush both toilets (counted, not again until refilled), the lid still opens
+tools/toilettest.html  headless test: flush both toilets (counted, not again until refilled), the lid still opens; mid-flush
+                       the water has dropped, runs down the bowl and swirls, after it is back and still (#321)
 tools/oventest.html    headless test: oven + microwave open/close (lamp inside), Moccamaster brews and clicks off
 tools/tvtest.html      headless test: TVs on/off (living room + Sovrum 3), new programme each time, the remote, F off
 tools/reloadtest.html  headless test: resume after "Ladda om", F5 starts at START, "Börja från start", bad record;
