@@ -1200,9 +1200,14 @@ export const FURNITURE = [
   { type: 'tv', level: 1, x: 2.61, z: 1.75, y: 1.2, rot: 90, w: 0.71, h: 0.41, fps: 12, px: 256, mount: 'wall', name: 'tv:n' },
   { type: 'alex', level: 1, x: 2.61 - 0.66 - 0.02, z: 0.465 + 0.29, rot: 180, w: 1.32, d: 0.58, h: 0.76 },
   { type: 'kidchair', level: 1, x: 2.61 - 0.66 - 0.02, z: 0.465 + 0.58 + 0.25, rot: 0 },
+  // IKEA MALM chests of 6 drawers, white, 80 × 124 × 50 cm (the user, #235, docs/malm-byra-6-lador.png), one per
+  // bunk room with its back against the bunk's free short end (MYDAL posts reach l/2 + post = 1.055 m from its
+  // centre), centred on the bunk, facing into the room. Sovrum 3 faces south, Sovrum 2 north.
+  { type: 'malm', level: 1, room: 'Sovrum 3', x: 0.2 + 0.5, z: 0.47 + 1.05 + 1.06 + 0.25, rot: 180, w: 0.8, h: 1.24, d: 0.5, seed: 70 },
   // Sovrum 2 (Walter & Kian). watch.z: a seat in the lower bunk (local z, level with the desk's monitor)
   // for watching films on the PC
   { type: 'bunk', level: 1, x: 5.55 - 0.5, z: 12.23 - 1.05, rot: 0, w: 0.9, l: 2.0, sheets: 'vader', watch: { z: -0.3 } },
+  { type: 'malm', level: 1, room: 'Sovrum 2', x: 5.55 - 0.5, z: 12.23 - 1.05 - 1.06 - 0.25, rot: 0, w: 0.8, h: 1.24, d: 0.5, seed: 90 }, // its MALM (#235)
   // Walter & Kian's gaming corner (#77, #84): a black desk 140 × 70 along the west wall (opposite the bunk),
   // its short end against the south window wall, facing east; curved 34" ultrawide on a monitor arm, RGB
   // tower at the window end (out of the bunk's line of sight), keyboard, mouse, headset, speakers (sizes

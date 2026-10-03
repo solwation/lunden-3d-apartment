@@ -1450,6 +1450,34 @@ function nordli(item) {
   return g;
 }
 
+// What lies in each MALM row (#235), top row first: the two small drawers, then the four big ones.
+const MALM_FILL = [['socks', 'underwear'], ['tees'], ['tees'], ['pyjamas'], ['jeans']];
+
+/** IKEA MALM chest of 6 drawers (white, #235): a top slab overhanging the carcass a little, a recessed plinth,
+ * five equal rows — two small drawers side by side at the top, four full-width ones — each front with MALM's
+ * rounded lip along its top edge as the grip. Faces +z. */
+function malm(item) {
+  const g = new THREE.Group();
+  const { w, h, d } = item, plinth = 0.06, top = 0.02, gap = 0.004, rowH = (h - plinth - top - 0.01) / 5;
+  const white = new THREE.MeshStandardMaterial({ color: 0xf4f4f1, roughness: 0.5 });
+  g.add(rbox(w, top, d, 0, h - top / 2, 0, white, 0.003));                                            // top
+  g.add(rbox(w - 0.004, h - top - plinth, d - 0.02, 0, plinth + (h - top - plinth) / 2, -0.01, white, 0.003)); // carcass
+  g.add(rbox(w - 0.03, plinth, d - 0.06, 0, plinth / 2, -0.02, new THREE.MeshStandardMaterial({ color: 0xe6e6e2, roughness: 0.6 }), 0.003));
+  MALM_FILL.forEach((fills, r) => {
+    const y0 = plinth + 0.005 + (4 - r) * rowH, n = fills.length;
+    fills.forEach((fill, i) => {
+      const x0 = -w / 2 + 0.006 + i * (w - 0.012) / n + gap, x1 = -w / 2 + 0.006 + (i + 1) * (w - 0.012) / n - gap, fh = rowH - 2 * gap;
+      addDrawer(g, 'lådan', { x: (x0 + x1) / 2, y: y0 + gap, zf: d / 2, w: x1 - x0, h: fh, depth: d - 0.08, front: white, inner: white,
+        out: 0.32, grip: (o) => { const lip = rbox(x1 - x0, 0.016, 0.02, 0, fh - 0.008, 0, white, 0.007); lip.castShadow = true; o.add(lip); },
+        fill, who: item.room, seed: item.seed + r * 3 + i });
+    });
+  });
+  g.traverse((m) => { if (m.isMesh) m.castShadow = m.receiveShadow = true; });
+  g.userData.surfaces = [{ x0: -w / 2 + 0.03, x1: w / 2 - 0.03, z0: -d / 2 + 0.03, z1: d / 2 - 0.03, y: h }];
+  g.userData.footprint = [{ x0: -w / 2, x1: w / 2, z0: -d / 2, z1: d / 2 + 0.02 }];
+  return g;
+}
+
 /** IKEA ALEX desk (white): top with a cable slot at the back, two wide drawers under the front edge with
  * half-round cut-out grips, square-tube legs joined by a low crossbar; crafts on the top. Faces local +z
  * (the user sits on +z; the wall is −z). */
@@ -2276,7 +2304,7 @@ function besta(item, lights) {
   return g;
 }
 
-const BUILDERS = { secretary, winerack, besta, painting, pictures, palm, sofa, armchair, ottoman, floorlamp, sidetable, coffeetable, loungesofa, loungetable, parasol, planter, bed, skansnasTable, skansnasChair, bunk, daybed, rug, ragrund, coatrack, shoerack, byas, tv, nordkisa, worklamp, walllamp, symfonisk, gamingdesk, gamingchair, nordli, alex, kidchair };
+const BUILDERS = { secretary, winerack, besta, painting, pictures, palm, sofa, armchair, ottoman, floorlamp, sidetable, coffeetable, loungesofa, loungetable, parasol, planter, bed, skansnasTable, skansnasChair, bunk, daybed, rug, ragrund, coatrack, shoerack, byas, tv, nordkisa, worklamp, walllamp, symfonisk, gamingdesk, gamingchair, nordli, malm, alex, kidchair };
 
 /** An invisible thin box over a table top (raycast target for putting a cup down, #90). Local rect. */
 export function surfaceBox(r, list) {

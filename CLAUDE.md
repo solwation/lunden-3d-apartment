@@ -510,7 +510,8 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   PC; a sit spot in the lower bunk (`watch`, a spot `kind` can differ from its piece) swings the monitor arm round and plays a film;
   a lightsaber on hooks on the west wall north of the desk (#78) · Sovrum 4 (second left, ex Allrum) Tilly, IKEA HEMNES
   daybed with pink cushions. Bunks: IKEA MYDAL, white, 97 × 207 × 157 (`MYDAL`, #227: posts, end boards, a two-board guard rail, a straight
-  ladder on the room side at the foot end); long side to the side wall, head end to the façade; an IKEA NYMÅNE wall/reading lamp at
+  ladder on the room side at the foot end); long side to the side wall, head end to the façade; a white IKEA MALM chest of 6 drawers
+  (80 × 124 × 50, `malm`, #235: 2 small + 4 big, clothes inside) with its back against each bunk's foot end; an IKEA NYMÅNE wall/reading lamp at
   every berth on the side wall by the pillow (#219, `NYMANE_WALL`, builder `walllamp`: white in Sovrum 3, black in Sovrum 2), each
   its own lamp (E, also lying there within `REST.reach`). Name signs: `DOOR_SIGNS` → `src/signs.js` (hall side of the door).
 - Hall (#49): the plan's "EL" cabinet is really the small EL/C (40 cm, `CABINET_FIXES`) plus the coat
