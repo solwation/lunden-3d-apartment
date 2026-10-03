@@ -98,7 +98,7 @@ const M = {
   frosted: new THREE.MeshStandardMaterial({
     color: 0xf1f5f6, transparent: true, opacity: 0.55, roughness: 0.3, depthWrite: false, side: THREE.DoubleSide,
   }),
-  splash: textured(tileTexture({ tw: T.splash.w, th: T.splash.h, nx: 2, ny: 2, bond: true, color: T.splash.color, vary: 0.03, grout: T.splash.grout, joint: 0.003, ppm: 800, seed: 3 }), { roughness: 0.6 }),
+  splash: textured(tileTexture({ tw: T.splash.w, th: T.splash.h, nx: 2, ny: 2, bond: true, color: T.splash.color, vary: 0.03, grout: T.splash.grout, joint: 0.003, ppm: 800, seed: 3 }), { roughness: T.splash.roughness }),
   wallTile: textured(tileTexture({ tw: T.wallTile.w, th: T.wallTile.h, nx: 2, ny: 3, color: T.wallTile.color, vary: 0.02, grout: T.grout, joint: 0.003, seed: 5 }), { roughness: 0.6 }),
   hallTile: textured(tileTexture({ tw: T.hallTile.w, th: T.hallTile.h, nx: 2, ny: 4, color: T.hallTile.color, vary: 0.12, mottle: 0.12, grout: 0x46484a, joint: 0.003, ppm: 300, seed: 11 }), { roughness: 0.7 }),
   wetTile: textured(tileTexture({ tw: T.wetTile.w, th: T.wetTile.h, nx: 4, ny: 4, color: T.wetTile.color, vary: 0.14, mottle: 0.14, grout: 0x45474a, joint: 0.003, ppm: 400, seed: 13 }), { roughness: 0.75 }),
@@ -535,16 +535,36 @@ function buildKitchen(B, group, floor, y0, yC, handled, taps, appliances) {
   // FloorLamp): own emissive materials, a warm additive wash on the worktop and splashback, their own switches
   const benchLamp = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xfff2dc, emissiveIntensity: 0.04 });
   const hoodLamp = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xfff2dc, emissiveIntensity: 0.04 });
-  const washTex = (() => { // bright along one edge (v = 1), fading out
+  const UL = K.underLights;
+  const washTex = (() => { // bright along one edge (v = 1), easing out (#271: no linear ramp ending in a line)
     const c = document.createElement('canvas'); c.width = 4; c.height = 64;
     const g = c.getContext('2d'), r = g.createLinearGradient(0, 0, 0, 64);
-    r.addColorStop(0, 'rgba(255,255,255,1)'); r.addColorStop(1, 'rgba(255,255,255,0)');
+    for (let i = 0; i <= 8; i++) r.addColorStop(i / 8, `rgba(255,255,255,${((1 - i / 8) ** 2).toFixed(3)})`);
     g.fillStyle = r; g.fillRect(0, 0, 4, 64);
     return new THREE.CanvasTexture(c);
   })();
-  const wash = (k) => { const m = new THREE.MeshBasicMaterial({ color: 0xffd9a0, map: washTex, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false }); m.userData.on = k; return m; };
-  const benchWash = wash(0.45), hoodWash = wash(0.6);
-  const washPlane = (w, h, m, rotX, rotY, x, y, z) => { const p = new THREE.Mesh(new THREE.PlaneGeometry(w, h), m); p.rotation.set(rotX, rotY, 0, 'YXZ'); p.position.set(x, y, z); p.raycast = () => {}; p.renderOrder = 2; group.add(p); return p; };
+  const wash = (k) => { const m = new THREE.MeshBasicMaterial({ color: 0xffd9a0, map: washTex, vertexColors: true, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false }); m.userData.on = k; return m; };
+  const benchWash = wash(UL.bench.wash), hoodWash = wash(UL.hood.wash);
+  // a wash plane w × h; its ends (along w) fade out over UL.soft m (vertex colours, smoothstep), so a run that stops at the
+  // hood or a cabinet has no hard edge (#271)
+  const washGeometry = (w, h) => {
+    const s = Math.min(UL.soft, w / 2), n = 6, xs = [];
+    for (let i = 0; i <= n; i++) xs.push(-w / 2 + (s * i) / n);
+    for (let i = n; i >= 0; i--) xs.push(w / 2 - (s * i) / n);
+    const pos = [], uv = [], col = [], idx = [];
+    for (const [j, x] of xs.entries()) {
+      const t = Math.min(1, Math.min(x + w / 2, w / 2 - x) / s), f = t * t * (3 - 2 * t);
+      for (const v of [1, 0]) { pos.push(x, (v - 0.5) * h, 0); uv.push((x + w / 2) / w, v); col.push(f, f, f); }
+      if (j) { const a = 2 * (j - 1); idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); }
+    }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+    g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+    g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+    g.setIndex(idx);
+    return g;
+  };
+  const washPlane = (w, h, m, rotX, rotY, x, y, z) => { const p = new THREE.Mesh(washGeometry(w, h), m); p.rotation.set(rotX, rotY, 0, 'YXZ'); p.position.set(x, y, z); p.raycast = () => {}; p.renderOrder = 2; group.add(p); return p; };
   const wallX = eastWall - wd;
   const hob = hobCab ? [hobCab.z0, hobCab.z1] : null;
   const eastSpans = hob ? [[runZ0, hob[0]], [hob[1], southWall]] : [[runZ0, southWall]];
@@ -570,9 +590,13 @@ function buildKitchen(B, group, floor, y0, yC, handled, taps, appliances) {
     const hood = new Hood({ x0: wallX, x1: eastWall, z0: hob[0] + 0.01, z1: hob[1] - 0.01, y0: yHood, y1: yH }); // E: the fan (#194); its light has its own button (#221)
     group.add(hood.object);
     appliances.push(hood);
-    // the hood's light on the hob: the wash on the worktop under it, a pool light over the hob
-    washPlane(hob[1] - hob[0] - 0.04, eastWall - eFront, hoodWash, -Math.PI / 2, -Math.PI / 2, (eFront + eastWall) / 2, top + 0.012, (hob[0] + hob[1]) / 2);
-    mirrorLamps.push({ object: hood.lampButton, shade: hoodLamp, glows: [hoodWash], height: -0.45, offset: [0.25, -0.12], level: K.level, name: 'lampan i köksfläkten', light: { intensity: 1.2, range: 3 }, auto: false }); // a work light: by hand only (#234)
+    // the hood's light on the hob: the wash on the worktop under it and up the splashback under the hood (bright at the
+    // top), a pool light over the hob, well out from the tiles (#271)
+    const hz = (hob[0] + hob[1]) / 2;
+    washPlane(hob[1] - hob[0] - 0.04, eastWall - eFront, hoodWash, -Math.PI / 2, -Math.PI / 2, (eFront + eastWall) / 2, top + 0.012, hz);
+    washPlane(hob[1] - hob[0] - 0.04, yHood - top, hoodWash, 0, -Math.PI / 2, eastWall - 0.008, (top + yHood) / 2, hz);
+    const bp = hood.lampButton.getWorldPosition(new THREE.Vector3()); // the group sits at the origin
+    mirrorLamps.push({ object: hood.lampButton, shade: hoodLamp, glows: [hoodWash], height: top + UL.hood.y - bp.y, offset: [eastWall - UL.hood.out - bp.x, hz - bp.z], level: K.level, name: 'lampan i köksfläkten', light: UL.hood.pool, auto: false }); // a work light: by hand only (#234)
     EW.box(hob[0], hob[1], -wd, 0, yTop, yC, M.white); // Lokal gipsinklädnad ovan spiskåpa
   }
   const fridgeX1 = fridges.length ? Math.max(...fridges.map((c) => c.x1)) : retX0;
@@ -598,7 +622,8 @@ function buildKitchen(B, group, floor, y0, yC, handled, taps, appliances) {
   swPick.visible = false;
   sw.add(rocker, swPick);
   group.add(sw);
-  mirrorLamps.push({ object: sw, shade: benchLamp, glows: [benchWash], height: -0.5, offset: [0.25, (visEnd - runZ0) / 2 - cupW - 0.12], level: K.level, name: 'bänkbelysningen', light: { intensity: 1.4, range: 4 } });
+  // its pool light: mid-run, out at the cabinets' front edge and well over the worktop (#271: no hot spot on the tiles)
+  mirrorLamps.push({ object: sw, shade: benchLamp, glows: [benchWash], height: top + UL.bench.y - sw.position.y, offset: [eastWall - UL.bench.out - sw.position.x, (runZ0 + visEnd) / 2 - sw.position.z], level: K.level, name: 'bänkbelysningen', light: UL.bench.pool });
   const o = [0, top, 0];
   B.box(eastWall - 0.006, eastWall, runZ0, southWall, top, yW, M.splash, o);
   if (hob) B.box(eastWall - 0.006, eastWall, hob[0], hob[1], yW, yHood, M.splash, o);

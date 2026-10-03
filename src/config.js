@@ -961,8 +961,8 @@ export const FINISH = {
   hallTile: { w: 0.6, h: 0.3, color: 0x7a7c7d },  // Granitkeramik City Amsterdam 30×60, rak
   wetTile: { w: 0.15, h: 0.15, color: 0x737577 }, // Granitkeramik City Amsterdam 15×15
   wallTile: { w: 0.4, h: 0.2, color: 0xf4f4f2 },  // Kakel vit matt 20×40, rak liggande
-  splash: { w: 0.2, h: 0.1, color: 0xf6f6f4, grout: 0xc9cdcc }, // Stänkskydd vit matt 10×20,
-  // halvt förband liggande, Kakelfog Sopro ljusgrå 16
+  splash: { w: 0.2, h: 0.1, color: 0xf6f6f4, grout: 0xc9cdcc, roughness: 0.82 }, // Stänkskydd vit matt 10×20,
+  // halvt förband liggande, Kakelfog Sopro ljusgrå 16; roughness: a matt glaze (0.6 gave glare spots, #271)
   grout: 0xb9bbbb,
   kitchenFront: 0x8d9886, // Kökslucka Form Tall (grey-green shaker)
   counter: 0xc2c1bb,      // Laminatbänkskiva Delaware stone (kitchen + Tvätt)
@@ -1018,6 +1018,15 @@ export const KITCHEN = {
   wallDepth: 0.35,
   hoodBottom: 1.6,       // underside of the hood (Spiskåpa Tango) under the hob cabinet
   hoodHeight: 0.08,
+  // the under-cabinet LED ("bänkbelysningen") and the hood's light (#221, #271): `pool` = the pool point light each
+  // borrows, `out` m out from the wall (still under the wall cabinets / hood, so their fronts are not lit) and `y` m over
+  // the worktop; weak, as it is close to the tiles (inverse square: 0.3 m away a strong one made blown-out spots); `wash` = the additive washes' opacity, `soft` = the metres at each end of a wash over which it fades out
+  // (no hard edges where a run stops at the hood or a cabinet). Tuned on screenshots at 19:00 (the user's, #271)
+  underLights: {
+    bench: { pool: { intensity: 0.3, range: 3 }, out: 0.3, y: 0.32, wash: 0.35 },
+    hood: { pool: { intensity: 0.25, range: 2.5 }, out: 0.3, y: 0.4, wash: 0.32 },
+    soft: 0.18,
+  },
   fridgeHeight: 1.86,    // Electrolux LRT7ME39X / LUS7ME28X: 186 cm
   grille: 0.06,          // ventilationsgaller rostfri (over fridge/freezer and microwave)
   sink: { w: 0.5, d: 0.4, depth: 0.19 }, // Diskho Intra Linea 5040, underlimmad; depth *guess* (typ. 18–20 cm, #122)

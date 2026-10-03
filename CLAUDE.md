@@ -770,7 +770,8 @@ screenshots into the session scratchpad, not the repo.
   hit line crosses a wall outline (`levels[i].wallSegments`) — no switching lamps through walls.
 - Kitchen (#221): the under-cabinet LED ("bänkbelysningen", a rocker under the first wall cabinet after the cup cabinet)
   and the hood's light (a button on the hood's front) are lamps of their own in `world.lamps` (lights.js FloorLamp with
-  `glows` = additive washes on the worktop/splashback, `light` = pool-light overrides), not the room's switch.
+  `glows` = additive washes on the worktop/splashback, `light` = pool-light overrides), not the room's switch. #271: their pool lights sit under the cabinets / hood, weak and away from the tiles, the washes ease
+  out and fade at the ends (`KITCHEN.underLights`), the splashback is matt (roughness 0.82) — no glare spots or hard edges.
 - Lights: switches are placed automatically by the latch side of each interior swing door (room
   side), snapped onto a wall outline segment that faces the room and covers the whole plate (`wallFace`,
   #76; lighttest checks every switch has a wall right behind it) plus `LIGHTING.manual` for open rooms and the downstairs Klk (door spans the whole wall).
