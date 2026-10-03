@@ -148,7 +148,9 @@ src/blinds.js          pleated blinds, bottom-up (BLINDS, #273): one per window 
                        one glows by day and warm from a lit room (`lights.roomLit`); localStorage 'lunden.blinds'; F keeps them
 src/lampwash.js        the small lamps' own lit look (#276, LIGHTING.wash): per lamp its visibility polygon (rays to walls, closed
                        doors, the façades' inner faces) as additive fans on floor + ceiling and quads on the walls it sees, shaded
-                       like a shadowless point light; ONE mesh for all lamps, each lamp's k a uniform (Lights.update)
+                       like a shadowless point light; ONE mesh for all lamps, each lamp's k a uniform (Lights.update);
+                       a wall-hung mesh with `userData.washMap` (the `pictures` builder's overlay, #292) gets the lamps that see
+                       it times its texture, since it hides the wall's wash (none in reach: hidden)
 src/rooms.js           room detection: walls + door gaps rasterised, BFS from the room labels
 src/minimap.js         plan view with the visitor's arrow, current room highlighted (top right, under the HUD buttons); hidden, shown with the
                        stats (Tab / T / 📊, #85), K shows it alone

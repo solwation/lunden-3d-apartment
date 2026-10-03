@@ -1677,7 +1677,8 @@ export const FURNITURE = [
   // thin flat black frame (~2 cm face, ~3 cm deep, *guess* from the photo). On the east wall (inner face x 5.551) centred
   // on the bed (z 2.3, spanning z 1.55–3.05, so its north part is under the RH 2.4 soffit, z < 1.96): the bottom edge
   // 12 cm over the headboard (IDANAS.headH 1.21) → 1.33–2.33 m, 7 cm under the soffit; above the NYMÅNE work lamps.
-  // textures/angsgras-sovrum1.jpg is the photo straightened, the glass's reflections painted out, a little brighter.
+  // textures/angsgras-sovrum1.jpg is the photo straightened, the glass's reflections painted out, re-graded towards the print
+  // in daylight (#292: levels lifted, a gentle S-curve, +20 % saturation, warm sky / olive grass; the photo was underexposed).
   { type: 'pictures', level: 1, x: 5.551, z: 2.3, y: 1.83, rot: 90, w: 1.5, h: 1.0, gap: 0, frame: 0.02, depth: 0.03,
     cols: 1, rows: 1, atlas: 'textures/angsgras-sovrum1.jpg', grid: [1, 1], order: [0] },
   // Bunks: long side against the side wall, head end against the façade (the user's wish);

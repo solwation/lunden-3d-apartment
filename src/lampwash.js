@@ -9,6 +9,9 @@ import { LEVELS, SOFFITS, STAIR, LIGHTING } from './config.js';
 // mesh and draw call; each lamp's k is a uniform. The wash is there whether the visitor is near or not, so the room
 // stays lit seen through a doorway, from the other floor or through the windows from outside; the pool lights add
 // real shading near the visitor on top.
+// Things hung on a wall hide its wash (#292: the meadow-grass picture over the bed stayed murky with the bedside lamps
+// on): a mesh with `userData.washMap` (a texture) gets the lamps that see it in a material of its own — the same
+// fall-off, times its texture — drawn additively on its surface; with no lamp in reach it stays hidden.
 
 const W = LIGHTING.wash;
 
@@ -67,13 +70,48 @@ const fragment = /* glsl */ `
     #include <colorspace_fragment>
   }`;
 
+const litVertex = /* glsl */ `
+  varying vec3 vW;
+  varying vec2 vUv;
+  void main() {
+    vUv = uv;
+    vec4 w = modelMatrix * vec4(position, 1.0);
+    vW = w.xyz;
+    gl_Position = projectionMatrix * viewMatrix * w;
+  }`;
+
+const litFragment = /* glsl */ `
+  uniform sampler2D map;
+  uniform vec3 uN;
+  uniform float uWrap;
+  uniform float uK[COUNT];
+  uniform vec3 uPos[N];
+  uniform vec3 uTint[N];
+  uniform vec2 uFall[N];
+  uniform int uIdx[N];
+  varying vec3 vW;
+  varying vec2 vUv;
+  void main() {
+    vec3 sum = vec3(0.0);
+    for (int i = 0; i < N; i++) {
+      vec3 d = uPos[i] - vW;
+      float r = length(d);
+      float lambert = (max(dot(uN, d / r), 0.0) + uWrap) / (1.0 + uWrap);
+      float a = 1.0 / (1.0 + r * r / (uFall[i].x * uFall[i].x)) * (1.0 - smoothstep(uFall[i].y * 0.5, uFall[i].y, r));
+      sum += uTint[i] * (uK[uIdx[i]] * lambert * a);
+    }
+    if (max(sum.r, max(sum.g, sum.b)) < 0.002) discard;
+    gl_FragColor = vec4(sum * texture2D(map, vUv).rgb, 1.0);
+    #include <colorspace_fragment>
+  }`;
+
 /**
  * Build the washes for `lamps` (Lights.floorLamps) and add them to `scene`. Returns { mesh, lamps } where lamps[i]
  * is the FloorLamp whose k goes into uniform i (Lights.update sets them); lamps without a wash are left out.
  */
 export function buildLampWashes(scene, world, floorLamps) {
   const pos = [], nrm = [], lampPos = [], tint = [], fall = [], idx = [];
-  const used = [];
+  const used = [], sources = []; // sources[i]: what wall-hung receivers need of lamp i
   const { x: SX, z: SZ } = world.size, [zN, zS] = W.facade;
   const levelOf = (d) => (d.object.position.y > LEVELS[0].floor + 1.6 ? 1 : 0);
   for (const f of floorLamps) {
@@ -94,6 +132,7 @@ export function buildLampWashes(scene, world, floorLamps) {
       pos.push(x, y, z); nrm.push(...n); lampPos.push(lamp.pos.x, lamp.pos.y, lamp.pos.z);
       tint.push(c.r, c.g, c.b); fall.push(W.near, range); idx.push(i);
     };
+    sources.push({ x: ox, z: oz, pos: lamp.pos, tint: c, range, level, segs });
     const hits = [];
     for (let r = 0; r < W.rays; r++) {
       const a = (r / W.rays) * Math.PI * 2, dx = Math.cos(a), dz = Math.sin(a);
@@ -161,5 +200,45 @@ export function buildLampWashes(scene, world, floorLamps) {
   mesh.raycast = () => {}; // never an E target or a surface for marks
   mesh.renderOrder = 1;    // after the AO overlays (renderOrder 0): light on top of the darkening
   scene.add(mesh);
+  litReceivers(scene, sources, mat.uniforms.uK);
   return { mesh, lamps: used };
+}
+
+/** Give every `userData.washMap` mesh in `scene` the washes of the lamps that see it (see the top of the file). Its
+ * uK uniform is the washes' own, so Lights.update fades them together. */
+function litReceivers(scene, sources, uK) {
+  scene.updateMatrixWorld(true);
+  const recv = [];
+  scene.traverse((m) => { if (m.isMesh && m.userData.washMap) recv.push(m); });
+  for (const m of recv) {
+    m.geometry.computeBoundingBox();
+    const centre = m.geometry.boundingBox.getCenter(new THREE.Vector3()).applyMatrix4(m.matrixWorld);
+    const n = new THREE.Vector3(0, 0, 1).transformDirection(m.matrixWorld);
+    const level = centre.y > LEVELS[1].floor - 0.2 ? 1 : 0;
+    const px = centre.x + n.x * 0.05, pz = centre.z + n.z * 0.05; // just in front of it, clear of its own wall
+    const lamps = [];
+    sources.forEach((s, i) => {
+      if (s.level !== level || centre.distanceTo(s.pos) > s.range) return;
+      const dx = px - s.x, dz = pz - s.z, len = Math.hypot(dx, dz);
+      if (len > 1e-3 && cast(s.segs, s.x, s.z, dx / len, dz / len, len).i >= 0) return; // a wall or a door between
+      if ((s.pos.x - centre.x) * n.x + (s.pos.y - centre.y) * n.y + (s.pos.z - centre.z) * n.z <= 0) return; // behind it
+      lamps.push([s, i]);
+    });
+    if (!lamps.length) { m.visible = false; continue; }
+    m.material = new THREE.ShaderMaterial({
+      vertexShader: litVertex, fragmentShader: litFragment,
+      defines: { COUNT: uK.value.length, N: lamps.length },
+      uniforms: {
+        map: { value: m.userData.washMap }, uN: { value: n }, uWrap: { value: W.wrap }, uK,
+        uPos: { value: lamps.map(([s]) => s.pos.clone()) },
+        uTint: { value: lamps.map(([s]) => new THREE.Vector3(s.tint.r, s.tint.g, s.tint.b)) },
+        uFall: { value: lamps.map(([s]) => new THREE.Vector2(W.near, s.range)) },
+        uIdx: { value: lamps.map(([, i]) => i) },
+      },
+      transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false, fog: false,
+      polygonOffset: true, polygonOffsetFactor: -3, polygonOffsetUnits: -3,
+    });
+    m.renderOrder = 1;
+    m.visible = true;
+  }
 }
