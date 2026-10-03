@@ -112,7 +112,7 @@ export const SITE = {
   // Terrain (#79). Kv. Lunden stands on a garage box: the courtyard ("den upphöjda gården", info brochure
   // p. 16) lies on the garage deck at our Entréplan / patio level (y 0; the lower row houses have their
   // patios "mot den gemensamma gården", and their entrances "direkt från gatan", so Sankt Lars väg north
-  // of Hus L is at y 0 too). Around the box the ground lies one storey lower: Å-husen A and B have a
+  // of Hus L is at y 0 too; #256: its east leg and Karpvägen slope down southwards, `east` / `west`). Around the box the ground lies one storey lower: Å-husen A and B have a
   // "Våning -1 (sutteräng)" (overview plans p. 24) and the green between A and B lies "utanför den
   // upphöjda gården och ner mot å-rummet". `park` = that level. `box` = the garage box (plan rects);
   // its edges (#254) are measured on the suterräng plan (våning −1) and the level lines on våning 1
@@ -127,17 +127,26 @@ export const SITE = {
     // west façade (z 33.3); the east part up to Hus A's north face. The green between A and B is outside it.
     // #255: the east part ends at x 11.6; beyond it a strip x 11.6…13.5 inside a wall along Sankt Lars väg holds the
     // ramp ("RAMP NIVÅSKILLNAD CA 0,9M", våning 1: from Hus L's east gable at z 11.5 to a landing at z 24.5…27.25 that
-    // opens onto the walk along Hus A). The 0.9 m is between the courtyard and the pavement east of Hus L's gable, which
-    // the model keeps at y 0 like the whole street side (#256 asks about that), so the ramp lies level for now.
+    // opens onto the walk along Hus A). #256: the landing is the box's last part; the `ramp` falls `drop` m from it (z1)
+    // northwards to the street level by the gable (z0), where the east leg lies 0.9 m below the courtyard.
     box: [{ x0: -70.5, x1: -41.7, z0: 12.1, z1: 52.5 }, { x0: -41.7, x1: -9.76, z0: 12.1, z1: 33.3 }, { x0: -9.76, x1: 11.6, z0: 12.1, z1: 28.8 },
-      { x0: 11.6, x1: 13.5, z0: 12.1, z1: 27.25 }],
+      { x0: 11.6, x1: 13.5, z0: 24.5, z1: 27.25 }],
+    ramp: { x0: 11.6, x1: 13.5, z0: 11.5, z1: 24.5, drop: 0.9 },
     garageDoor: { x: -70.5, z0: 41, z1: 47, h: 2.6, drive: -77.22 }, // `drive`: the asphalt reaches west to Karpvägen
     // East of the courtyard (#255) Sankt Lars väg lies only ~1 m below it, not a storey: from x0 (Hus A's east façade) to
-    // x1 (the road's far edge) the ground follows `profile` ([z, y] pairs, linear): level with the street at Hus L, 1.4 m
-    // down at the foot of the stair, park level further south (the last point: guess); east of the road it blends into
-    // the park level over `blend` m.
+    // x1 (the road's far edge) the ground follows `profile` ([z, y] pairs, linear); east of the road it blends into the
+    // park level over `blend` m (north of Hus L's back: back to the street level).
     // (#261: x1 = the far pavement's edge, the long brick building's west face)
-    east: { x0: 9.42, x1: 31.3, blend: 2.5, profile: [[12.7, 0], [30.0, -1.4], [44, -3]] },
+    // #256 (the user: the street towards HepCat Store slopes): the east leg is level with the entrances up to z −10 (HepCat's
+    // north end, guess), 0.9 m down by Hus L's east gable (the ramp's foot, våning 1), 1.4 m at the foot of the stair, park
+    // level further south (guess). The strip along the gable (x `gable`…) falls from the entrance path (z 0) to the ramp's
+    // foot; from `level` (the front yard's east edge) to `walk` (our pavement's inner edge) a grass bank meets the road.
+    east: { x0: 9.42, x1: 31.3, blend: 2.5, gable: 11.6, level: 13.5, walk: 18.4, profile: [[-10, 0], [11.6, -0.9], [30.0, -1.4], [44, -3]] },
+    // #256: Karpvägen also slopes south (våning 1: "NIVÅSKILLNAD CA 1M" at a "TRAPPA" by Hus C's NW corner). West of `x`
+    // (Hus C's west façade line) the ground follows `profile` (fitted to where the stair's risers end on the plan, then
+    // down to the park level by the garage drive: guess). The `stair`: `risers` lines from x0 (its foot) to x1 (the top),
+    // running from where the sloping verge meets each step south to z1; from z1 to Hus C a retaining wall.
+    west: { x: -70.5, profile: [[-2.8, 0], [11.25, -1.0], [44, -3]], stair: { x0: -70.5, x1: -68.69, z1: 10.6, risers: 7 } },
     // stairs from the courtyard (y 0) going south, `z` = the box edge they leave; `drop` m in `steps` (default: down to
     // the park level, ~0.17 m each, a `landing` halfway); `walk` = paving from the foot. #255: "TRAPPA NIVÅSKILLNAD CA
     // 1,4M" (våning 1: 9 risers x 11.6…13.5, z 27.25…30) from the landing at the walk along Hus A down to the walk east
@@ -195,7 +204,7 @@ export const SITE = {
     { name: 'HepCat Store', x0: 28.2, x1: 36.4, z0: -10.8, z1: 10.0, base: 0, storeys: 1, roof: 'gable', style: 'hepcat', chimneys: [-5, 4] }, // #127
     { name: 'HepCat Store, the white middle', x0: 27.9, x1: 36.4, z0: -2.6, z1: 1.8, base: 0, storeys: 1, roof: 'gable', style: 'hepcatWhite' },
     // (the ground falls along the road, terrain.east: two parts, each standing on the highest ground under it)
-    { name: 'The long brick building', x0: 31.3, x1: 42, z0: 23, z1: 42, base: -0.85, storeys: 1, roof: 'gable', style: 'longhouse' },
+    { name: 'The long brick building', x0: 31.3, x1: 42, z0: 23, z1: 42, base: -1.2, storeys: 1, roof: 'gable', style: 'longhouse' },
     { name: 'The long brick building (south part)', x0: 31.3, x1: 42, z0: 42, z1: 61.6, base: -2.7, storeys: 1, roof: 'gable', style: 'longhouse' },
     { name: 'The long brick building (annex)', x0: 31.3, x1: 36, z0: 61.6, z1: 70.9, base: -3, storeys: 1, roof: 'gable', style: 'longhouse' },
     { name: 'Realgymnasiet', x0: 5, x1: 70, z0: -74, z1: -50, base: 0, storeys: 3, roof: 'hip', style: 'old' },
@@ -305,7 +314,7 @@ export const COURTYARD = {
     { x0: -19.4, x1: -12.8, z0: 31.3, z1: 33.3 },    // … widening into a little square at the edge between Hus B and A
     { x0: -13.2, x1: 11.6, z0: 25.4, z1: 26.8 },     // along Hus A's north side to the stair on the east edge
     { x0: 0.2, x1: 2.2, z0: 26.8, z1: 28.8 },        // to Hus A's entrance
-    { x0: 11.6, x1: 13.4, z0: 12.7, z1: 27.25 },     // the ramp along Sankt Lars väg and its landing at the stair (#255)
+    { x0: 11.6, x1: 13.4, z0: 11.5, z1: 27.25 },     // the ramp along Sankt Lars väg and its landing at the stair (#255; sloped, #256)
     { x0: -15.8, x1: -14.1, z0: 12.7, z1: 19.0 },    // from the portik to the pergola
     { x0: -47.2, x1: -44.6, z0: 7.72, z1: 52.5 },    // between Hus C and the Borggården, to the stair south (#254)
     { x0: -51.4, x1: -47.2, z0: 21.7, z1: 24.6 },    // across to Hus C's entrance (its east façade)

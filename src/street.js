@@ -126,11 +126,11 @@ export function buildStreet(groundY) {
     const r = THREE.MathUtils.degToRad(yaw);
     for (const back of [0, Math.PI]) {
       const pl = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshStandardMaterial({ map: t, roughness: 0.6 }));
-      pl.position.set(x + Math.sin(r + back) * 0.012, y, z + Math.cos(r + back) * 0.012);
+      pl.position.set(x + Math.sin(r + back) * 0.012, y + groundY(x, z), z + Math.cos(r + back) * 0.012);
       pl.rotation.y = r + back;
       faces.push(pl);
     }
-    if (pole) poles.push(new THREE.CylinderGeometry(0.03, 0.03, y + h / 2, 8).translate(x, (y + h / 2) / 2, z));
+    if (pole) poles.push(new THREE.CylinderGeometry(0.03, 0.03, y + h / 2, 8).translate(x, groundY(x, z) + (y + h / 2) / 2, z));
   };
   sign((g, w, h) => { // the bus stop: a yellow-bordered blue sign with a bus, the stop's name below
     g.fillStyle = '#f6c21a'; g.fillRect(0, 0, w, h); g.fillStyle = '#1d4f91'; g.fillRect(10, 10, w - 20, h * 0.62);
@@ -155,7 +155,8 @@ export function buildStreet(groundY) {
   const per = S.leaves.n / S.leaves.areas.length, c = new THREE.Color();
   for (let i = 0; i < S.leaves.n; i++) {
     const [x0, x1, z0, z1] = S.leaves.areas[Math.floor(i / per)];
-    m.compose(new THREE.Vector3(x0 + rnd() * (x1 - x0), 0.02 + rnd() * 0.004, z0 + rnd() * (z1 - z0)), q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), rnd() * 6.3), one.set(0.7 + rnd() * 0.7, 1, 0.5 + rnd() * 0.5));
+    const lx = x0 + rnd() * (x1 - x0), ly = 0.02 + rnd() * 0.004, lz = z0 + rnd() * (z1 - z0); // on the ground (#256)
+    m.compose(new THREE.Vector3(lx, ly + groundY(lx, lz), lz), q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), rnd() * 6.3), one.set(0.7 + rnd() * 0.7, 1, 0.5 + rnd() * 0.5));
     leaf.setMatrixAt(i, m);
     leaf.setColorAt(i, c.setHSL(0.04 + rnd() * 0.1, 0.6 + rnd() * 0.3, 0.3 + rnd() * 0.2));
   }

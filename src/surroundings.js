@@ -13,35 +13,58 @@ import { onRoad, pathStrip, filletGeometry } from './roads.js';
 const T = S.terrain;
 /** On the garage box (the raised courtyard)? */
 const onBox = (x, z) => T.box.some((b) => x >= b.x0 && x <= b.x1 && z >= b.z0 && z <= b.z1);
-const E = T.east;
-/** The ground east of the courtyard along Sankt Lars väg (#255): T.east.profile, linear in z. */
-function eastY(z) {
-  const P = E.profile;
+const E = T.east, Wst = T.west, R = T.ramp;
+/** Linear in z through [z, y] pairs, flat beyond the ends. */
+function profileY(P, z) {
   if (z <= P[0][0]) return P[0][1];
   for (let i = 1; i < P.length; i++) if (z <= P[i][0]) return P[i - 1][1] + ((z - P[i - 1][0]) / (P[i][0] - P[i - 1][0])) * (P[i][1] - P[i - 1][1]);
   return P[P.length - 1][1];
 }
+/** The ground along Sankt Lars väg's east leg (#255, #256): T.east.profile, linear in z. */
+const eastY = (z) => profileY(E.profile, z);
+/** … along Karpvägen (#256): T.west.profile. */
+export const westY = (z) => profileY(Wst.profile, z);
+/** The ramp from the landing (R.z1, courtyard level) down north to the street by Hus L's gable (#256). */
+const onRamp = (x, z) => x >= R.x0 && x <= R.x1 && z >= R.z0 && z <= R.z1;
+const rampY = (z) => -R.drop * THREE.MathUtils.clamp((R.z1 - z) / (R.z1 - R.z0), 0, 1);
+/** West of here the ground follows Karpvägen: the NW stair's top line south to its end, then Hus C's west façade line. */
+const westEdge = (z) => (z < Wst.stair.z1 ? Wst.stair.x1 : Wst.x);
 /** Ground height at plan (x, z): the street / courtyard level north of Hus L and on the garage box,
- * the park level around the box (reached over T.slope m south of Hus L), east of it Sankt Lars väg's gentler slope. */
+ * the park level around the box, east of it Sankt Lars väg's gentler slope, west of it Karpvägen's (#256). */
 export function groundY(x, z) {
-  if (z <= T.north || onBox(x, z)) return 0;
-  const park = T.park * THREE.MathUtils.clamp((z - T.north) / T.slope, 0, 1);
-  if (x < E.x0) return park;
-  return THREE.MathUtils.lerp(eastY(z), park, THREE.MathUtils.clamp((x - E.x1) / E.blend, 0, 1));
+  if (onRamp(x, z)) return rampY(z);
+  if (onBox(x, z)) return 0;
+  const park = T.park * THREE.MathUtils.clamp((z - T.north) / T.slope, 0, 1); // 0 north of Hus L's back
+  if (x < westEdge(z)) return westY(z);
+  if (z <= T.north ? x <= E.gable : x < E.x0) return z <= T.north ? 0 : park;
+  // the east leg: the road's profile from our pavement on; west of it the front yard (level) or the strip along the
+  // gable (from the entrance path down to the ramp's foot), joined by a bank between `level` and `walk`
+  const road = eastY(z), near = road * THREE.MathUtils.clamp(z / R.z0, 0, 1);
+  const street = THREE.MathUtils.lerp(near, road, THREE.MathUtils.clamp((x - E.level) / (E.walk - E.level), 0, 1));
+  return THREE.MathUtils.lerp(street, Math.min(park, road), THREE.MathUtils.clamp((x - E.x1) / E.blend, 0, 1)); // never back up
 }
 
-/** Terrain south of Hus L: a grid with lines on every box edge, so the step at the edges is vertical. */
+/** Where the terrain starts north of Hus L's back (#256): the street side there is world.js's flat plate, except
+ * where Sankt Lars väg's east leg or Karpvägen slope (west of `westEdge`, east of Hus L's gable). */
+export const terrainNorth = Math.min(E.profile[0][0], Wst.profile[0][0]);
+/** Terrain south of Hus L and along the sloping streets: a grid with lines on every box edge, so the step at the edges
+ * is vertical. */
 function terrainGeometry() {
-  const xs = new Set([-200, 200, E.x0 - 0.01, E.x0 + 0.01, E.x1, E.x1 + E.blend]), zs = new Set([T.north, 260, T.north + T.slope, ...E.profile.map((p) => p[0])]);
+  const St = Wst.stair, z0 = terrainNorth;
+  const xs = new Set([-200, 200, E.x0 - 0.01, E.x0 + 0.01, E.x1, E.x1 + E.blend, E.gable, E.level, E.walk, R.x0 + 0.01, R.x1 - 0.01, R.x1 + 0.01,
+      Wst.x - 0.01, Wst.x + 0.01, St.x1 - 0.01, St.x1 + 0.01]),
+    zs = new Set([z0, 0, T.north, 260, T.north + T.slope, ...E.profile.map((p) => p[0]), ...Wst.profile.map((p) => p[0]), R.z0, R.z1, St.z1 - 0.01, St.z1 + 0.01]);
   for (let x = -200; x <= 200; x += 4) xs.add(x);
-  for (let z = T.north; z <= 260; z += 4) zs.add(z);
+  for (let z = z0; z <= 260; z += 4) zs.add(z);
   for (const b of T.box) { for (const x of [b.x0, b.x1]) { xs.add(x - 0.01); xs.add(x + 0.01); } for (const z of [b.z0, b.z1]) { zs.add(z - 0.01); zs.add(z + 0.01); } }
-  const X = [...xs].sort((a, b) => a - b), Z = [...zs].filter((z) => z >= T.north).sort((a, b) => a - b);
+  const X = [...xs].sort((a, b) => a - b), Z = [...zs].filter((z) => z >= z0).sort((a, b) => a - b);
   const pos = [], idx = [];
   for (const z of Z) for (const x of X) pos.push(x, groundY(x, z) - 0.01, z);
   const nx = X.length;
   for (let j = 0; j < Z.length - 1; j++) for (let i = 0; i < nx - 1; i++) {
     const a = j * nx + i, b = a + 1, c = a + nx, d = c + 1;
+    const mx = (X[i] + X[i + 1]) / 2, mz = (Z[j] + Z[j + 1]) / 2;
+    if (mz < T.north && mx > westEdge(mz) && mx < E.gable) continue; // world.js's flat plate
     idx.push(a, c, b, b, c, d);
   }
   const geo = new THREE.BufferGeometry();
@@ -68,6 +91,8 @@ function boxWalls() {
   const atStairs = (x0, x1, z) => T.stairs.some((St) => Math.abs(z - St.z) < 0.05 && Math.max(x0, x1) > St.x0 - 0.05 && Math.min(x0, x1) < St.x1 + 0.05);
   const edges = [];
   for (const b of T.box) edges.push([b.x0, b.z0, b.x1, b.z0, 0, -1], [b.x1, b.z0, b.x1, b.z1, 1, 0], [b.x1, b.z1, b.x0, b.z1, 0, 1], [b.x0, b.z1, b.x0, b.z0, -1, 0]);
+  const NW = T.west.stair; // #256: the forecourt's edge where the NW stair ends, and on to the box (Hus C's west façade line)
+  edges.push([NW.x1, NW.z1, NW.x0, NW.z1, 0, -1], [T.west.x, T.box[0].z0, T.west.x, NW.z1, -1, 0]);
   for (const [ax, az, bx, bz, ox, oz] of edges) {
     const len = Math.hypot(bx - ax, bz - az), n = Math.max(1, Math.ceil(len / 1));
     for (let k = 0; k < n; k++) {
@@ -97,8 +122,31 @@ function boxWalls() {
       rails.push(new THREE.BoxGeometry(Math.abs(x1 - x0) + 0.04, 0.04, Math.abs(z1 - z0) + 0.04).translate((x0 + x1) / 2 - ox * 0.08, 1.06, (z0 + z1) / 2 - oz * 0.08));
     }
   }
+  // #256: the ramp's wall along Sankt Lars väg (its top follows the ramp) with a railing, and a plinth under Hus L's east
+  // gable where the ground falls along it
+  const along = (ax, az, bx, bz, lo, hi, out) => { // a vertical strip from lo(x, z) up to hi(x, z), in ≤ 1 m pieces
+    const n = Math.max(1, Math.ceil(Math.hypot(bx - ax, bz - az)));
+    for (let k = 0; k < n; k++) {
+      const [x0, z0, x1, z1] = [ax + ((bx - ax) * k) / n, az + ((bz - az) * k) / n, ax + ((bx - ax) * (k + 1)) / n, az + ((bz - az) * (k + 1)) / n];
+      const g = new THREE.BufferGeometry(), y = [lo(x0, z0), lo(x1, z1), hi(x1, z1), hi(x0, z0)];
+      g.setAttribute('position', new THREE.Float32BufferAttribute([x0, y[0], z0, x1, y[1], z1, x1, y[2], z1, x0, y[0], z0, x1, y[2], z1, x0, y[3], z0], 3));
+      const ua = (Math.abs(bx - ax) > Math.abs(bz - az) ? x0 : z0) / 2, ub = (Math.abs(bx - ax) > Math.abs(bz - az) ? x1 : z1) / 2;
+      g.setAttribute('uv', new THREE.Float32BufferAttribute(out === slats ? [0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1] : [ua, y[0] / 2, ub, y[1] / 2, ub, y[2] / 2, ua, y[0] / 2, ub, y[2] / 2, ua, y[3] / 2], 2));
+      g.computeVertexNormals();
+      out.push(g);
+    }
+  };
+  const R = T.ramp, rx = R.x1, top = (x, z) => groundY(R.x1 - 0.05, z);
+  along(rx + 0.04, R.z0, rx + 0.04, R.z1, (x, z) => groundY(rx + 0.06, z), (x, z) => top(x, z) + 0.12, walls);
+  along(rx - 0.08, R.z0, rx - 0.08, R.z1, (x, z) => top(x, z) + 0.175, (x, z) => top(x, z) + 1.025, slats);
+  const tilt = Math.atan2(R.drop, R.z1 - R.z0), mid = (R.z0 + R.z1) / 2, rlen = Math.hypot(R.drop, R.z1 - R.z0);
+  rails.push(new THREE.BoxGeometry(0.3, 0.06, rlen).rotateX(-tilt).translate(rx, top(0, mid) + 0.15, mid),        // coping
+    new THREE.BoxGeometry(0.04, 0.04, rlen + 0.04).rotateX(-tilt).translate(rx - 0.08, top(0, mid) + 1.06, mid));  // top rail
+  for (let z = R.z0; z <= R.z1 + 1e-6; z += (R.z1 - R.z0) / Math.ceil(R.z1 - R.z0)) rails.push(new THREE.BoxGeometry(0.04, 0.95, 0.04).translate(rx - 0.08, top(0, z) + 0.6, z));
+  segments.push([rx, R.z0, rx, R.z1]);
+  along(T.east.gable + 0.01, 0, T.east.gable + 0.01, T.north, (x, z) => groundY(x + 0.05, z), () => 0.02, walls);
   const stairs = T.stairs.map(terraceStairs);
-  return { walls, rails, door, slats, segments, stairs: { solid: stairs.flatMap((s) => s.solid), rails: stairs.flatMap((s) => s.rails), ends: stairs.map((s) => s.end) } };
+  return { walls, rails, door, slats, segments, stairs: { solid: [...stairs.flatMap((s) => s.solid), ...nwStair()], rails: stairs.flatMap((s) => s.rails), ends: stairs.map((s) => s.end) } };
 }
 
 /** A stair from the courtyard going south, down `drop` m (default: to the park level) (#148, #254, #255): treads, a
@@ -119,6 +167,18 @@ function terraceStairs(St) {
     for (const [pz, py] of [[St.z + 0.1, 0], [z - 0.1, foot]]) rails.push(new THREE.BoxGeometry(0.04, 0.95, 0.04).translate(x, py + 0.47, pz));
   }
   return { solid, rails, end: z };
+}
+
+/** The wide stair by Hus C's NW corner down to Karpvägen (#256, våning 1): risers along z, each tread from where the
+ * sloping verge west of it comes up to its height south to the stair's end (the plan's stepped outline). */
+function nwStair() {
+  const St = T.west.stair, foot = westY(St.z1), rise = -foot / St.risers, run = (St.x1 - St.x0) / (St.risers - 1), out = [];
+  const reach = (h) => { let a = T.west.profile[0][0], b = St.z1; for (let i = 0; i < 30; i++) { const m = (a + b) / 2; if (westY(m) > h) a = m; else b = m; } return a; };
+  for (let k = 0; k < St.risers; k++) {
+    const h = foot + (k + 1) * rise, x0 = Math.min(St.x0 + k * run, St.x1 - 0.03), z0 = reach(h - 1e-3);
+    out.push(new THREE.BoxGeometry(St.x1 - x0, h - foot + 0.05, St.z1 - z0).translate((x0 + St.x1) / 2, (h + foot - 0.05) / 2, (z0 + St.z1) / 2));
+  }
+  return out;
 }
 
 function rng(seed) {

@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { LEVELS, PLAYER, STAIR } from './config.js';
 import { stairHeight } from './stairs.js';
+import { groundY } from './surroundings.js';
 
 const GRAVITY = 9.8;
 
@@ -58,7 +59,7 @@ export class Player {
     const inside = x > 0 && x < W && z > 0 && z < D;
     const h = STAIR.hole;
     const inHole = x > h.x0 && x < h.x1 && z > h.z0 && z < h.z1;
-    const cands = [LEVELS[0].floor];
+    const cands = [inside ? LEVELS[0].floor : groundY(x, z)]; // outdoors: the terrain (the ramp by Hus L's east gable, #256)
     if (inside && !inHole) cands.push(LEVELS[1].floor);
     const s = stairHeight(x, z);
     if (s !== null) cands.push(s);

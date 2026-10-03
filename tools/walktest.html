@@ -61,6 +61,9 @@ const routes = {
   'gården: rampen längs Sankt Lars väg, räcket mot gatan stoppar (#255)': {
     start: [5.0, 25.5], open: [], points: [[12.5, 25.5], [12.5, 15.0], [16.0, 15.0]], expectStuck: true,
   },
+  'gården: nerför rampen mot Hus L:s gavel, 0,9 m (#256)': {
+    start: [12.5, 25.5], open: [], points: [[12.5, 13.0]], expectLevel: 0, expectY: -0.9 * (24.5 - 13.0) / 13.0,
+  },
   'gården: inte ner för trappan mot Sankt Lars väg (#255)': {
     start: [12.5, 25.5], open: [], points: [[12.5, 26.5], [12.5, 30.5]], expectStuck: true,
   },
@@ -103,7 +106,8 @@ for (const [name, r] of Object.entries(routes)) {
   }
   player.keys = new Set();
   for (let i = 0; i < 60; i++) player.update(dt);
-  const ok = r.expectStuck ? stuck : !stuck && player.level === r.expectLevel;
+  const ok = (r.expectStuck ? stuck : !stuck && player.level === r.expectLevel)
+    && (r.expectY == null || Math.abs(player.pos.y - r.expectY) < 0.05); // feet height at the end (the ramp, #256)
   pass &&= ok;
   lines.unshift(`${ok ? 'PASS' : 'FAIL'} ${name}`);
   out.textContent = lines.join('\n');

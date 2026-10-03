@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { COURTYARD as C, COLORS } from './config.js';
+import { COURTYARD as C, COLORS, SITE } from './config.js';
 import { pavingTexture } from './patio.js';
 import { registerSnow, registerTrees } from './seasons.js';
 import { SEASON } from './config.js';
@@ -14,12 +14,17 @@ import { groundY } from './surroundings.js';
 
 const box = (x0, x1, y0, y1, z0, z1) => new THREE.BoxGeometry(x1 - x0, y1 - y0, z1 - z0).translate((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2);
 /** A flat plate at height y with UVs in metres. */
-function plate(r, y) {
-  const g = new THREE.PlaneGeometry(r.x1 - r.x0, r.z1 - r.z0).rotateX(-Math.PI / 2).translate((r.x0 + r.x1) / 2, y, (r.z0 + r.z1) / 2);
+function plate(r, y, follow = false) {
+  const g = new THREE.PlaneGeometry(r.x1 - r.x0, r.z1 - r.z0, 1, follow ? Math.ceil(r.z1 - r.z0) : 1).rotateX(-Math.PI / 2).translate((r.x0 + r.x1) / 2, y, (r.z0 + r.z1) / 2);
   const p = g.attributes.position, uv = g.attributes.uv;
-  for (let i = 0; i < p.count; i++) uv.setXY(i, p.getX(i), p.getZ(i));
+  for (let i = 0; i < p.count; i++) {
+    uv.setXY(i, p.getX(i), p.getZ(i));
+    if (follow) p.setY(i, y + groundY((r.x0 + r.x1) / 2, p.getZ(i))); // down the ramp (#256)
+  }
+  if (follow) g.computeVertexNormals();
   return g;
 }
+const R = SITE.terrain.ramp;
 const rectSegs = (x0, x1, z0, z1) => [[x0, z0, x1, z0], [x1, z0, x1, z1], [x1, z1, x0, z1], [x0, z1, x0, z0]];
 
 /** A bench (1.6 m) at (x, z), the seat facing `rot` degrees (0 = north). */
@@ -54,7 +59,7 @@ export function buildCourtyard() {
   const geos = { paving: [], gravel: [], sand: [], wood: [], metal: [], soil: [], pergola: [], brick: [] };
   const vines = [], bulbs = []; // climbing plants and string-light bulbs on the pergolas (#149)
   const segments = [];
-  for (const p of C.paths) geos.paving.push(plate(p, 0.006));
+  for (const p of C.paths) geos.paving.push(plate(p, 0.006, p.x0 < R.x1 && p.x1 > R.x0 && p.z0 < R.z1 && p.z1 > R.z0));
   for (const g of C.gravel) geos.gravel.push(plate(g, 0.003));
   // pergolas: posts, beams, cross slats; a dining table and two benches under them
   for (const p of C.pergolas) {

@@ -67,7 +67,7 @@ src/stairs.js          stair treads + walking height function (stairHeight)
 src/doors.js           SwingDoor / SlidingDoor (E to open/close, animated, dynamic collision)
 src/exterior.js        Hus L (HUS_L): brick row with the core/portik, neighbours' patios, rendered upper
                        units with pilasters, loftgång, spiral-stair drums, roof with solar panels
-src/player.js          WASD/arrow/joystick movement, circle-vs-segment collision, step-up, gravity
+src/player.js          WASD/arrow/joystick movement, circle-vs-segment collision, step-up, gravity; outdoors the terrain (`groundY`, #256)
 src/touch.js           on-screen joystick (left) + drag-to-look (right), multi-touch pointer events
 src/main.js            renderer, lights, input modes, door raycast prompt/button, loop (step)
 src/version.js         BUILD stamp + polling for a newer published version
@@ -508,11 +508,18 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   are y 0; around the box the ground is one storey lower (`park` −3, Å-husen A/B suterräng); retaining
   walls with a railing where the box meets it (none along a house's façade), the garage door in its west face
   south of Hus C (z 41…47) with an asphalt drive from Karpvägen, stairs down to the park level (`terrain.stairs`:
-  between Hus C and B, #254); the roads outside the box go down over `slope` m south of Hus L (guess).
-  East edge (#255): the box ends at x 11.6, a ramp strip x 11.6…13.5 (level for now: its 0.9 m is to the street side,
-  #256) runs from Hus L's gable to a landing by the walk along Hus A, where a stair goes 1.4 m down to a walk east to
-  Sankt Lars väg; east of the courtyard the ground follows `terrain.east.profile` (0 at Hus L, −1.4 at the stair's
-  foot, the park level by z 44) instead of dropping a storey. The box edge pieces are collision too
+  between Hus C and B, #254).
+  East edge (#255): the box ends at x 11.6; the `terrain.ramp` x 11.6…13.5 falls 0.9 m from a landing (the box's last
+  part, z 24.5…27.25) by the walk along Hus A north to the street by Hus L's gable (#256, walkable: outdoors
+  `player.groundAt` uses `groundY`), with a wall + railing along the street; from the landing a stair goes 1.4 m down
+  to a walk east to Sankt Lars väg. Sloping streets (#256, the user: the street towards HepCat slopes): Sankt Lars väg's
+  east leg follows `terrain.east.profile` (level with the entrances up to z −10, −0.9 by the gable, −1.4 at the stair's
+  foot, the park level by z 44), the strip along Hus L's gable falls from the entrance path to the ramp's foot (a
+  plinth under the gable), a grass bank (`east.level` → `east.walk`) joins the level front yard; Karpvägen west of
+  Hus C's façade line follows `terrain.west.profile` (−1 by Hus C, the park level by the garage drive), with the plan's
+  wide stair ("NIVÅSKILLNAD CA 1M", `west.stair`: treads ending where the sloping verge meets them) down from the bike
+  yard's west edge. world.js's flat plate covers the street side only where it is level (`terrainNorth`); HepCat and the
+  long building stand on plinths down the slope. The box edge pieces are collision too
   (`surroundings.userData.segments`, those near `OUTDOOR`), so the visitor never walks off it.
   Courtyard (#80, `COURTYARD`, re-measured on the calibrated situation plan in #259 — the transform is in its
   comment): the Borggården between Hus L, C and A with stone walks (along the patios; the south walk along Hus B

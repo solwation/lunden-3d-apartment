@@ -23,7 +23,7 @@ import { mirrorLamps, looseItems as interiorLoose, buildInterior, buildElCabinet
 import { Toilet } from './toilet.js';
 import { RoomMap } from './rooms.js';
 import { buildAO } from './ao.js';
-import { buildSurroundings } from './surroundings.js';
+import { buildSurroundings, terrainNorth } from './surroundings.js';
 import { addDoorSigns } from './signs.js';
 import { wardrobeFill, personFor } from './stuff.js';
 
@@ -673,8 +673,10 @@ export function buildWorld(plan) {
 
   // Site: ground, patio, hedge, fences
   const site = lower.site;
-  const ground = plate(-200, 200, -200, SITE.terrain.north, -0.01, M.grass); // the street side; south of it: surroundings.js (#79)
-  scene.add(ground);
+  // the street side; south of it and where the streets slope (#256): surroundings.js's terrain (#79)
+  const T = SITE.terrain;
+  scene.add(plate(-200, 200, -200, terrainNorth, -0.01, M.grass), plate(T.west.stair.x1, T.east.gable, terrainNorth, T.north, -0.01, M.grass),
+    plate(T.west.x, T.west.stair.x1, T.west.stair.z1, T.north, -0.01, M.grass));
   if (site.patio) scene.add(plate(site.patio.x0, site.patio.x1, D, site.patio.z1, 0.0, M.patio)); // UVs in metres
   const outdoor = [];
   if (site.hedge) {
