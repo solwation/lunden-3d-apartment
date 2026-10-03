@@ -371,6 +371,7 @@ export const PEOPLE = {
   ball: [[-35.5, 20.6], [-30.5, 22.2]],          // two kids passing a ball (on the gravel by the sandbox)
   sandbox: [[-25.2, 25.2], [-23.8, 26.4]],         // kids sitting in the sandbox
   benches: [{ x: -6, z: 29.4, yaw: 180 }, { x: -32, z: 25, yaw: 180 }], // on COURTYARD.benches: yaw = the bench's rot − 180 (#207)
+  seat: 0.52, // the sitters' hip height: the bench seat (0.46) + the thigh (#243)
   blanket: { x: -9.5, z: 28.3 },
   loftgang: [[-30.5, 1.0], [-9.2, 1.1]],          // neighbours standing on the loftgång (våning 3)
   bellNear: 12,                                    // m: a cyclist rings the bell passing this close

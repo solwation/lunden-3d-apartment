@@ -22,13 +22,14 @@ const geo = {
   arm: lathe([[0, 0.035], [0.035, 0.03], [0.05, -0.02], [0.047, -0.15], [0.041, -0.29], [0.04, -0.33], [0.033, -0.5],
     [0.028, -0.53], [0, -0.535]], 10),                                                            // from the shoulder
   hand: new THREE.SphereGeometry(0.04, 10, 8).scale(0.75, 1.3, 1.05).translate(0, -0.575, 0.004),
-  leg: lathe([[0, 0.04], [0.06, 0.03], [0.079, -0.04], [0.07, -0.3], [0.053, -0.46], [0.052, -0.55], [0.04, -0.8],
-    [0.034, -0.85], [0, -0.86]], 10),                                                             // from the hip
-  shoe: new RoundedBoxGeometry(0.095, 0.075, 0.25, 2, 0.032).translate(0, -0.85, 0.045),
+  leg: lathe([[0, 0.04], [0.06, 0.03], [0.079, -0.04], [0.07, -0.3], [0.056, -0.44], [0.04, -0.47], [0, -0.48]], 10), // the thigh, from the hip
+  shin: lathe([[0, 0.05], [0.042, 0.04], [0.054, -0.01], [0.052, -0.1], [0.04, -0.36], [0.034, -0.41], [0, -0.42]], 10), // from the knee (#243)
+  shoe: new RoundedBoxGeometry(0.095, 0.075, 0.25, 2, 0.032).translate(0, -0.41, 0.045),
   head: new THREE.SphereGeometry(0.11, 16, 12).scale(0.92, 1.08, 1),
   hair: new THREE.SphereGeometry(0.118, 16, 8, 0, Math.PI * 2, 0, Math.PI * 0.55).translate(0, 0.012, -0.008),
 };
-const PARTS = ['torso', 'armL', 'armR', 'handL', 'handR', 'legL', 'legR', 'shoeL', 'shoeR', 'head', 'hair'];
+const PARTS = ['torso', 'armL', 'armR', 'handL', 'handR', 'legL', 'legR', 'shinL', 'shinR', 'shoeL', 'shoeR', 'head', 'hair'];
+const KNEE = 0.44; // hip to knee (the thigh), m at size 1
 const geoOf = (p) => geo[p.replace(/[LR]$/, '')];
 
 export class People {
@@ -56,7 +57,7 @@ export class People {
     }
     figs.forEach((f, i) => {
       const shirt = pick(P.shirts), pants = pick(P.pants), skin = pick(P.skin), hair = pick(P.hair), shoes = pick(P.shoes);
-      for (const [p, c] of [['torso', shirt], ['armL', shirt], ['armR', shirt], ['handL', skin], ['handR', skin], ['legL', pants], ['legR', pants],
+      for (const [p, c] of [['torso', shirt], ['armL', shirt], ['armR', shirt], ['handL', skin], ['handR', skin], ['legL', pants], ['legR', pants], ['shinL', pants], ['shinR', pants],
         ['shoeL', shoes], ['shoeR', shoes], ['head', skin], ['hair', hair]]) this.parts[p].setColorAt(i, new THREE.Color(c));
     });
     // bikes under the cyclists, the ball, the dog, the blanket
@@ -90,8 +91,9 @@ export class People {
 
   get object() { return this.group; }
 
-  /** Pose figure i: root at (x, y, z) turned `yaw` (facing +z at 0), legs/arms swung, body tilted `lean` about x. */
-  pose(i, f, x, y, z, yaw, { legL = 0, legR = 0, armL = 0, armR = 0, lean = 0, hip = 0.9 } = {}) {
+  /** Pose figure i: root at (x, y, z) turned `yaw` (facing +z at 0), legs/arms swung, the knees bent back by `kneeL/R`,
+   * body tilted `lean` about x. */
+  pose(i, f, x, y, z, yaw, { legL = 0, legR = 0, kneeL = 0, kneeR = 0, armL = 0, armR = 0, lean = 0, hip = 0.9 } = {}) {
     const s = f.s, root = new THREE.Matrix4().compose(this.v.set(x, y, z), this.q.setFromAxisAngle(Y, yaw).multiply(this.q2.setFromAxisAngle(X, lean)), this.one.set(s, s, s));
     const put = (part, ox, oy, oz, rx) => {
       this.m4.compose(this.v.set(ox, oy, oz), this.q2.setFromAxisAngle(X, rx), this.one.set(1, 1, 1));
@@ -99,7 +101,11 @@ export class People {
     };
     put('torso', 0, hip, 0, 0);
     for (const [side, sx, a] of [['L', 1, armL], ['R', -1, armR]]) { put('arm' + side, sx * 0.21, hip + 0.56, 0, a); put('hand' + side, sx * 0.21, hip + 0.56, 0, a); }
-    for (const [side, sx, l] of [['L', 1, legL], ['R', -1, legR]]) { put('leg' + side, sx * 0.085, hip, 0, l); put('shoe' + side, sx * 0.085, hip, 0, l); }
+    for (const [side, sx, l, k] of [['L', 1, legL, kneeL], ['R', -1, legR, kneeR]]) {
+      put('leg' + side, sx * 0.085, hip, 0, l);
+      put('shin' + side, sx * 0.085, hip - Math.cos(l) * KNEE, -Math.sin(l) * KNEE, l + k); // from the knee at the thigh's end
+      put('shoe' + side, sx * 0.085, hip - Math.cos(l) * KNEE, -Math.sin(l) * KNEE, l + k);
+    }
     put('head', 0, hip + 0.74, 0.01, 0);
     put('hair', 0, hip + 0.74, 0.01, 0);
   }
@@ -128,7 +134,7 @@ export class People {
           if (f.t > 1 || f.t < 0) { f.t = Math.min(1, Math.max(0, f.t)); f.dir *= -1; f.pause = 1 + rnd() * 3; } // turn round at the end
         }
         const [x, z, yaw] = this.along(f), w = f.pause > 0 ? 0 : Math.sin(f.phase);
-        this.pose(i, f, x, 0, z, yaw, { legL: w * 0.45, legR: -w * 0.45, armL: -w * 0.35, armR: w * 0.35 });
+        this.pose(i, f, x, 0, z, yaw, { legL: w * 0.45, legR: -w * 0.45, kneeL: 0.05 + Math.max(0, w) * 0.7, kneeR: 0.05 + Math.max(0, -w) * 0.7, armL: -w * 0.35, armR: w * 0.35 });
         if (f.dog) { // trotting a little ahead and to the side
           const ax = Math.sin(yaw), az = Math.cos(yaw);
           this.dog.position.set(x + ax * 1.1 + az * 0.5, 0, z + az * 1.1 - ax * 0.5);
@@ -143,7 +149,7 @@ export class People {
         // the bike faces +x in its own frame: turn it so +x points along the way
         this.m4.compose(this.v.set(x, 0, z), this.q.setFromAxisAngle(Y, yaw - Math.PI / 2), this.one.set(1, 1, 1));
         this.bikes[0].setMatrixAt(k, this.m4); this.bikes[1].setMatrixAt(k, this.m4);
-        this.pose(i, f, x - Math.sin(yaw) * 0.12, 0.0, z - Math.cos(yaw) * 0.12, yaw, { hip: 0.78, legL: -0.9 + c * 0.45, legR: -0.9 - c * 0.45, armL: -1.1, armR: -1.1, lean: 0.25 });
+        this.pose(i, f, x - Math.sin(yaw) * 0.12, 0.0, z - Math.cos(yaw) * 0.12, yaw, { hip: 0.78, legL: -0.9 + c * 0.45, legR: -0.9 - c * 0.45, kneeL: 1.0 - c * 0.45, kneeR: 1.0 + c * 0.45, armL: -1.1, armR: -1.1, lean: 0.25 });
         if (player && !f.rang && player.pos.distanceTo(this.v.set(x, player.pos.y, z)) < P.bellNear) { f.rang = true; sfx.bell?.(this.v.set(x, 1, z)); }
         if (player && f.rang && player.pos.distanceTo(this.v.set(x, player.pos.y, z)) > P.bellNear * 2) f.rang = false;
       } else if (f.role === 'ball') {
@@ -159,7 +165,7 @@ export class People {
         const dig = Math.sin(this.clock * 2 + f.phase);
         this.pose(i, f, f.x, -0.32, f.z, f.yaw, { hip: 0.62, legL: -1.4, legR: -1.3, armL: -0.9 + dig * 0.4, armR: -0.6 });
       } else if (f.role === 'sit') {
-        this.pose(i, f, f.x, -0.42, f.z, THREE.MathUtils.degToRad(f.yaw), { legL: -1.45, legR: -1.35, armL: -0.3, armR: -0.25 });
+        this.pose(i, f, f.x, P.seat - 0.9 * f.s, f.z, THREE.MathUtils.degToRad(f.yaw), { legL: -1.5, legR: -1.42, kneeL: 1.4, kneeR: 1.25, armL: -0.3, armR: -0.25 }); // hips on the seat, shins down in front (#243)
       } else if (f.role === 'lie') {
         // on her back on the blanket, an arm behind the head (out of sight in winter, with the blanket)
         if (this.blanket.visible) this.pose(i, f, f.x, 0.12, f.z + 0.8, 0, { lean: -Math.PI / 2, armL: -2.8 + Math.sin(this.clock * 0.5) * 0.1, armR: 0.1 });
