@@ -3,7 +3,7 @@ import { sfx } from './audio.js';
 import { mergeStatic } from './merge.js';
 import { restTarget } from './rest.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
-import { FURNITURE, LANDSKRONA as L, LEVELS, SKANSNAS, IDANAS, MYDAL, OTTOMAN, SYMFONISK, SECRET, NYMANE_WALL, MALM_DECO, YUCCA } from './config.js';
+import { FURNITURE, LANDSKRONA as L, LEVELS, SKANSNAS, IDANAS, MYDAL, OTTOMAN, SYMFONISK, SECRET, NYMANE_WALL, MALM_DECO, YUCCA, LANGLAMPA } from './config.js';
 import { loungesofa, loungetable, parasol, planter } from './patio.js';
 import { Screen } from './screens.js';
 import { Openable } from './openables.js';
@@ -209,6 +209,104 @@ function floorlamp(item, lights) {
   lights.push({ object: g, shade: spotLens, height: item.h - 0.3, level: item.level, offset });
   const r = item.base / 2;
   g.userData.footprint = [{ x0: -r, x1: r, z0: -r, z1: r }];
+  return g;
+}
+
+/** Långlampan's shade textures (#270): the coarse linen weave with the spiral wire as dark wavy lines; `glow` = the
+ * emissive map (dimmer weave, the bulbs as bright soft spots round u = 0.5, the wire dark against them). */
+function linenTextures(S) {
+  const W = 256, H = 512, mk = () => { const c = document.createElement('canvas'); c.width = W; c.height = H; return c; };
+  const col = mk(), glow = mk(), a = col.getContext('2d'), b = glow.getContext('2d');
+  const base = new THREE.Color(S.linen);
+  a.fillStyle = `#${base.getHexString()}`; a.fillRect(0, 0, W, H);
+  b.fillStyle = '#4c4c4c'; b.fillRect(0, 0, W, H);
+  let seed = 7;
+  const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  // the weave: thin light and dark threads both ways, uneven
+  for (let i = 0; i < 900; i++) {
+    const across = rnd() < 0.5, p = rnd() * (across ? H : W), l = 0.5 + rnd() * 0.9, dark = rnd() < 0.5;
+    a.fillStyle = dark ? `rgba(70,52,30,${0.08 + rnd() * 0.12})` : `rgba(255,245,220,${0.06 + rnd() * 0.12})`;
+    b.fillStyle = dark ? `rgba(0,0,0,${0.12 + rnd() * 0.15})` : `rgba(255,255,255,${0.06 + rnd() * 0.1})`;
+    const s0 = rnd() * (across ? W : H), len = (0.2 + rnd() * 0.8) * (across ? W : H);
+    if (across) { a.fillRect(s0, p, len, l); b.fillRect(s0, p, len, l); } else { a.fillRect(p, s0, l, len); b.fillRect(p, s0, l, len); }
+  }
+  // the bulbs: soft bright spots, wide across so they read from the side too
+  for (const f of S.bulbs) {
+    const y = H * (1 - f);
+    b.save(); b.translate(W / 2, y); b.scale(1.8, 1);
+    const g = b.createRadialGradient(0, 0, 0, 0, 0, 34);
+    g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(0.25, 'rgba(255,255,255,0.75)'); g.addColorStop(1, 'rgba(255,255,255,0)');
+    b.fillStyle = g; b.fillRect(-60, -60, 120, 120); b.restore();
+  }
+  // the spiral wire: one turn per `pitch`, slightly wavy (continued across the seam)
+  const step = (S.pitch / S.h) * H;
+  for (const [ctx, style] of [[a, 'rgba(45,36,24,0.85)'], [b, 'rgba(0,0,0,0.9)']]) {
+    ctx.strokeStyle = style; ctx.lineWidth = 1.6;
+    for (let v0 = -step; v0 < H + step; v0 += step) {
+      ctx.beginPath();
+      for (let x = 0; x <= W; x += 8) {
+        const y = v0 + (x / W) * step + Math.sin(x * 0.05 + v0) * 2.2;
+        if (x === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    }
+  }
+  const tex = (c) => { const t = new THREE.CanvasTexture(c); t.anisotropy = 4; return t; };
+  const map = tex(col); map.colorSpace = THREE.SRGBColorSpace;
+  return { map, glow: tex(glow) };
+}
+
+/** An additive wash of light: a soft ellipse brightest at `f` across (u) and in the middle up (v). */
+function washTexture(f) {
+  const c = document.createElement('canvas'); c.width = 128; c.height = 256;
+  const x = c.getContext('2d');
+  x.save(); x.translate(128 * f, 128); x.scale(1, 2);
+  const g = x.createRadialGradient(0, 0, 0, 0, 0, 64);
+  g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(0.4, 'rgba(255,255,255,0.45)'); g.addColorStop(1, 'rgba(255,255,255,0)');
+  x.fillStyle = g; x.fillRect(-128, -64, 256, 128); x.restore();
+  return new THREE.CanvasTexture(c);
+}
+
+/** Långlampan (#270, LANGLAMPA): a round foot, a short stem, and a tall linen tube with a spiral wire round it and bulbs
+ * inside; lit, the shade glows warm and soft washes fall on the two corner walls (`item.corner` = their inner faces).
+ * Its own lamp (lights.js FloorLamp: dusk on/off, E on the shade, a pool light). Built world-aligned in `w`. */
+function tubelamp(item, lights) {
+  const S = LANGLAMPA, g = new THREE.Group(), w = new THREE.Group();
+  w.rotation.y = -(THREE.MathUtils.degToRad(item.rot ?? 0) + Math.PI); // undo the group's yaw: children in world axes
+  g.add(w);
+  const metal = new THREE.MeshStandardMaterial({ color: S.metal, roughness: 0.45, metalness: 0.5 });
+  const wire = new THREE.MeshStandardMaterial({ color: S.wire, roughness: 0.7 });
+  const add = (m, y) => { m.position.y = y; m.castShadow = true; w.add(m); return m; };
+  add(new THREE.Mesh(new THREE.CylinderGeometry(S.foot.r, S.foot.r, S.foot.h, 32), metal), S.foot.h / 2);
+  add(new THREE.Mesh(new THREE.CylinderGeometry(S.stem, S.stem, S.bottom + 0.05, 10), metal), (S.bottom + 0.05) / 2);
+  const { map, glow } = linenTextures(S);
+  const linen = new THREE.MeshStandardMaterial({ map, color: 0xffffff, roughness: 0.95, emissive: S.glow, emissiveMap: glow,
+    emissiveIntensity: 0.04, side: THREE.DoubleSide });
+  const shade = add(new THREE.Mesh(new THREE.CylinderGeometry(S.r, S.r, S.h, 40, 1, true), linen), S.bottom + S.h / 2);
+  // the bulbs (u = 0.5 of the texture) towards the sofa
+  shade.rotation.y = Math.atan2(4.1 - item.x, 11.7 - item.z) - Math.PI;
+  for (const y of [S.bottom, S.bottom + S.h]) add(new THREE.Mesh(new THREE.TorusGeometry(S.r, S.rim / 2, 6, 40).rotateX(Math.PI / 2), wire), y);
+  // a cross of thin wires inside the bottom rim carries the shade on the stem
+  for (const r of [0, Math.PI / 2]) add(new THREE.Mesh(new THREE.CylinderGeometry(0.003, 0.003, S.r * 2, 6).rotateZ(Math.PI / 2).rotateY(r), wire), S.bottom + 0.004);
+  // the washes on the corner walls, brightest level with the lamp
+  const washMat = new THREE.MeshBasicMaterial({ color: 0xffd9a0, map: washTexture(0.16 / S.wash.w), transparent: true, opacity: 0,
+    blending: THREE.AdditiveBlending, depthWrite: false });
+  washMat.visible = false;
+  washMat.userData.on = S.wash.opacity; // (lights.js fades it by opacity)
+  const [cx, cz] = item.corner, dx = cx - item.x, dz = cz - item.z;
+  const plane = (px, pz, ry, flip) => {
+    const o = new THREE.Mesh(new THREE.PlaneGeometry(S.wash.w, S.wash.h), washMat);
+    o.position.set(px, S.wash.y, pz); o.rotation.y = ry; if (flip) o.scale.x = -1;
+    o.raycast = () => {}; o.renderOrder = 2;
+    w.add(o);
+  };
+  plane(dx - 0.004, dz + S.wash.w / 2, -Math.PI / 2, false); // the east wall: from the corner southwards
+  plane(dx - S.wash.w / 2, dz + 0.004, 0, true);             // the north wall: from the corner westwards
+  // the pool light a little out from the corner, into the room
+  lights.push({ object: shade, shade: linen, glows: [washMat], height: 0, level: item.level, name: 'långlampan',
+    light: S.light, offset: [-0.2, 0.2] });
+  g.userData.keep = [shade];
+  g.userData.footprint = [{ x0: -S.r, x1: S.r, z0: -S.r, z1: S.r }];
   return g;
 }
 
@@ -2480,7 +2578,7 @@ function besta(item, lights) {
   return g;
 }
 
-const BUILDERS = { secretary, winerack, besta, painting, pictures, palm, sofa, armchair, ottoman, floorlamp, sidetable, coffeetable, loungesofa, loungetable, parasol, planter, bed, skansnasTable, skansnasChair, bunk, daybed, rug, ragrund, coatrack, shoerack, byas, tv, nordkisa, worklamp, walllamp, symfonisk, gamingdesk, gamingchair, nordli, malm, alex, kidchair };
+const BUILDERS = { tubelamp, secretary, winerack, besta, painting, pictures, palm, sofa, armchair, ottoman, floorlamp, sidetable, coffeetable, loungesofa, loungetable, parasol, planter, bed, skansnasTable, skansnasChair, bunk, daybed, rug, ragrund, coatrack, shoerack, byas, tv, nordkisa, worklamp, walllamp, symfonisk, gamingdesk, gamingchair, nordli, malm, alex, kidchair };
 
 /** An invisible thin box over a table top (raycast target for putting a cup down, #90). Local rect. */
 export function surfaceBox(r, list) {

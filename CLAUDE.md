@@ -587,6 +587,9 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   Opposite the sofa (the wall with the stair behind it): IKEA BYÅS TV bench 160 × 42 × 45, high-gloss
   white (#67; a drawer at each end, an open shelf between, #212), east of the living-room door, with the TV on it (#68: Philips 55", E toggles; an animated
   canvas picture ~12 fps + an additive Ambilight glow; furniture E targets are `world.furnitureTargets`).
+  In the NE corner right of the TV (seen from the sofa) stands "långlampan" (#270, `LANGLAMPA`, builder `tubelamp`,
+  docs/langlampan.jpg): a round foot, a ~20 cm stem, a tall linen tube with a spiral wire and bulbs inside; a small lamp
+  (dusk on/off, E on the shade), lit it glows warm with additive washes on the two corner walls and a dim pool light.
   IKEA SYMFONISK speakers (#186, `SYMFONISK`, FURNITURE `symfonisk`): the black bookshelf speaker stands in Sovrum 1's window (#201; it lay on the TV bench),
   the white one stands at the south end of the kitchen worktop, the lamp speaker (frosted glass, its own lamp: E
   toggles it) on the window board behind the sofa, where a sill pot is skipped (`SILL_PLANTS.skip`, also for the black one).

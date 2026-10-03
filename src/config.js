@@ -1333,6 +1333,19 @@ export const IDANAS = { L: 2.23, W: 1.9, frameH: 0.49, headH: 1.21, head: 0.2, l
 // each end at both bunks, a straight three-rung ladder on the room side by the foot end
 export const MYDAL = { W: 0.97, L: 2.07, H: 1.57, post: 0.055, base: [0.2, 1.1], mattress: 0.12, board: 0.09 };
 
+// Långlampan (#270, docs/langlampan.jpg): a tall slim tube of coarse natural linen with a spiral wire frame and several
+// bulbs inside, standing in the living room's NE corner right of the TV (FURNITURE `tubelamp`). The user: it stands on a
+// round foot with a ~20 cm stem, the shade starting ~0.2 m above the floor. Shade Ø, height, the wire's pitch, the foot
+// and the bulb heights are *guesses* from the photo (about 6–7 × its diameter). Lit it is a cosy, dimmed glow: weaker than
+// the NYMÅNE floor lamp (`light`), with soft warm washes on the two corner walls (`wash`: size, centre height, opacity; a look).
+export const LANGLAMPA = {
+  r: 0.125, h: 1.6, bottom: 0.2, foot: { r: 0.125, h: 0.015 }, stem: 0.01, rim: 0.012, pitch: 0.25,
+  bulbs: [0.3, 0.55, 0.8],                   // bulb heights as fractions of the shade (three visible in the photo)
+  linen: 0xc9b48a, glow: 0xffcf7a, wire: 0x3a3226, metal: 0x2a2a2c,
+  wash: { w: 1.1, h: 2.3, y: 1.15, opacity: 0.32 },
+  light: { intensity: 0.8, range: 3.5, color: 0xffc77a },
+};
+
 export const NYMANE_WALL = {
   plate: { w: 0.06, h: 0.11, d: 0.025 }, button: 0.012, arm: 0.07, shade: { r: 0.035, h: 0.08, tilt: 0.6 }, cord: 0.45,
   fromHead: 0.42, aboveMattress: 0.42, mattress: MYDAL.base.map((b) => b + MYDAL.mattress), // the bunks' mattress tops (#227)
@@ -1406,6 +1419,9 @@ export const FURNITURE = [
   // IKEA BYÅS TV bench, high-gloss white, 160 × 42 × 45 cm (ikea.com, #67): against the wall opposite the
   // sofa (the stair is behind it), east of the living-room door's architrave, near the sofa's centre line
   { type: 'byas', level: 0, x: 4.25, z: 7.8 + 0.21, rot: 180, w: 1.6, d: 0.42, h: 0.45 },
+  // Långlampan (#270, LANGLAMPA): in the corner right of the TV seen from the sofa, between the BYÅS's east end (x 5.05)
+  // and the secretary (z > 9.0); `corner` = the inner faces of the east and north walls there (data/plan.json)
+  { type: 'tubelamp', level: 0, x: 5.551 - 0.16, z: 7.804 + 0.16, corner: [5.551, 7.804] },
   // Philips 55" The One PUS8897 on the bench (#68): panel ~123 × 71 cm, thin black bezel, one central
   // anthracite pedestal; depth, stand size and the ~78 cm total height are guesses. E switches it on: a
   // slowly moving colourful demo picture (canvas, ~12 fps) and an Ambilight glow on the wall behind.
