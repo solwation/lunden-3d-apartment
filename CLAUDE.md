@@ -98,6 +98,10 @@ src/cat.js             the cat: random coat, washing animation, appears/moves/va
 src/miele.js           Miele (#328): `HeartFireworks` (heart shells that pop into small hearts) and `MieleHeld` (a Holdable with no
                        home: the cat object rides in it, hand.js 'hug'; click / "Krama" hugs; put down she walks off)
 src/furniture.js       loose furniture from FURNITURE in config (IKEA LANDSKRONA sofa/armchair …)
+src/cleaning.js        the Klk under the stair on Entréplan (#338, CLEANING in config): `cleaningFittings` (world.js, stay with F: a white
+                       wall shelf on the north wall, a tool rail on the east wall, the vacuum's dock) + the `cleaning` builder (a loose
+                       item: toilet paper, kitchen roll, labelled bins Städ / Tvål / Påsar, bottles, a mop bucket with its mop, broom,
+                       squeegee, dustpan, a step stool, a plain stick vacuum with a blue charging LED); kept under the stair's soffit
 src/closet.js          Sovrum 1's walk-in closet (#331, KLK in config): `klkFittings` (world.js, Peab's: white wall standards, a high
                        shelf on the side wall + the far wall, a chrome rail under the side one; stays with F) and the `klk` FURNITURE
                        builder (loose): clothes on the rail, things on the shelves, make-up on the NORDLI, an LED mirror over it (a
@@ -720,6 +724,9 @@ North = −z (the bedrooms Sovrum 1/3 face north).
 - U-shaped stair with winders at the east end: flight A (Entréplan, going east), 180° winders,
   flight B (going west) arriving in the upstairs hall. Upstairs slab opening = stair outline on
   Övre plan.
+- The Klk under the stair on Entréplan (#338, `CLEANING`): x 3.47–5.55, z 5.70–6.61 (east of x 4.67 it runs on under the
+  winders); head room slopes from the slab (3.0) over flight B's soffit (2.39–2.80) to the winders (1.58–2.19). Cleaning
+  things kept neatly: shelves on the north wall, the mop bucket + tool rail at the low east end, the stick vacuum on the south wall.
 - Foot of the stair (#286): coming down flight A (west) you face Badrum's east wall (x 2.152, passage side); an unframed
   black and white canvas ~80 × 80 cm (*guess*) hangs there centred on the wall between the Badrum door's architrave and the living room (#300: z 7.014, centre 1.55 m) — FURNITURE
   `pictures` with `frame: 0` (a black stretcher box, the picture on its face), textures/tavla-svartvit-trappan.jpg.

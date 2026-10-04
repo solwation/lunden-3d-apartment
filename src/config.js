@@ -533,6 +533,20 @@ export const KLK = {
     ['jacket', 0xeee6d3], ['shirt', 0xf5f5f0], ['shirt', 0x9fb7d0], ['shirt', 0xa4532f], ['shirt', 0xeee6d3], ['shirt', 0x1f1f1f]],
 };
 
+// The Klk under the stair on Entréplan (#338, src/cleaning.js): cleaning things, neatly kept. Inside x 3.471–5.551,
+// z 5.704–6.609 (plan.json; east of x 4.671 it runs on south under the winders). Head room slopes: the slab (3.0) west of
+// x 3.86, flight B's soffit (2.39–2.80) over x 3.86–4.645, the winders (1.58–2.19 over the Klk) east of that. All guesses:
+// a white wall shelf (four shelves on two standards) on the north wall under flight B (the floor west of it, outside
+// the stair, is where a cat can turn up: the shelf collides only from `solid`[0] east and `solid`[1] deep, so the way
+// in under flight B stays open), a tool rail on the east wall under the winders, a mop bucket in the SE corner with
+// the mop leaning on the east wall, a stick vacuum in a dock on the south wall.
+export const CLEANING = {
+  shelf: { x0: 3.87, x1: 4.63, z: 5.704, d: 0.30, t: 0.02, ys: [0.72, 1.12, 1.52, 1.92], standards: [3.95, 4.50], solid: [4.10, 0.2] },
+  rail: { x: 5.551, z0: 5.80, z1: 6.32, y: 1.30 },
+  bucket: { x: 5.24, z: 6.50, r: 0.155, h: 0.30 },
+  vacuum: { x: 4.20, z: 6.609, dock: 1.18 },
+};
+
 // Where a visit starts: out on the grass in front of the entrance façade, facing the house with the
 // gaze slightly up, so the whole unit (and Hus L above it) is in view (#35). yaw 180 = facing south.
 export const START = { x: 2.875, z: -12, yawDeg: 180, pitchDeg: 8 };
@@ -1956,6 +1970,7 @@ export const FURNITURE = [
     top: { x0: -0.395, x1: -0.03, z0: -0.015, z1: 0.205 } }, // + the AK-47 in the wide bottom drawer (#196); `top` = free of make-up (#331)
   // the Klk's clothes, shelves, make-up corner and LED mirror (#331, src/closet.js; x/z unused) and a soft round rug
   { type: 'klk', level: 1, x: 4.725, z: 4.88, rot: 0 },
+  { type: 'cleaning', level: 0, x: 4.5, z: 6.15, rot: 0 }, // what lies and stands in the Klk under the stair (#338, src/cleaning.js; x/z unused)
   { type: 'rug', shape: 'round', level: 1, x: KLK.westFace + KLK.chestGap + 0.6 + KLK.mirror.dx, z: 4.66, d: 0.72, h: 0.022, color: '#e9e1d2', seed: 33 },
   // the mattress centre: the headboard (IDANAS.head) against the east wall
   { type: 'bed', level: 1, x: 5.55 - IDANAS.head - 1.0, z: 2.3, rot: 90, w: 1.8, l: 2.0, model: 'idanas', sitUp: { tv: 'Sovrum 1' }, pingping: true, hotel: true, // Pingping between the pillows (#269), hotel pillows under the head pillows (#308)

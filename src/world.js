@@ -6,6 +6,7 @@ import {
 } from './config.js';
 import { buildStairs } from './stairs.js';
 import { klkFittings } from './closet.js';
+import { cleaningFittings } from './cleaning.js';
 import { Openable } from './openables.js';
 import { sfx } from './audio.js';
 import { SwingDoor, SlidingDoor, wardrobeDoors } from './doors.js';
@@ -563,6 +564,8 @@ function buildLevel(floor, li, group) {
     }
     segments.push(...rectSegments(cab));
   }
+
+  if (li === 0) for (const r of cleaningFittings(group, y0)) segments.push(...rectSegments(r)); // the Klk under the stair (#338)
 
   // Sanitary fixtures, sinks, hob, shower floor
   for (const f of floor.fixtures) {
