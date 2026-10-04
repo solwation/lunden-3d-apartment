@@ -889,7 +889,7 @@ export const PINGPING = { w: 0.4, h: 0.38, d: 0.22, navy: 0x34437a, white: '#ece
 
 // The big beer on the patio (#117, src/beer.js): a 50 cl tankard (Ø 9 × 16 cm, our pick) that turns up on the
 // lounge table (top at 0.40) when you sit down in the lounge sofa; each gulp drinks `gulp` of it.
-export const BEER = { x: 4.4, y: 0.4, z: 13.98, r: 0.045, h: 0.16, gulp: 0.2, held: { x: 0.2, y: -0.24, z: -0.45 } };
+export const BEER = { x: 4.46, y: 0.4, z: 14.3, r: 0.045, h: 0.16, gulp: 0.2, held: { x: 0.2, y: -0.24, z: -0.45 } };
 
 // The Nerf target (#99, src/target.js): a round archery-style board on a wooden stand on the lawn south of the
 // hedge, facing the patio (north), its centre over the hedge so you can shoot from the patio door (~7.5 m).
@@ -2018,13 +2018,20 @@ export const CUSHIONS = {
   weave: { cells: 16 }, stripe: { band: '#4b4d50' },
 };
 
-// Patio (src/patio.js). Cushion colour of the Oslo set and the parasol (Ø 3 m, centre pole,
+// Patio (src/patio.js). The lounge (Rusta Verona, #408) and the parasol (Ø 3 m, centre pole,
 // ecru) are guesses. Seasons (months 1–12): the parasol is up in `parasolMonths` while the sun
 // is up and folded otherwise; beers on the table in summer between `beerHours`; a snowman on
 // the lawn beyond the hedge in winter.
 export const PATIO = {
-  frame: 0x3b3e41, cushion: 0xbdbcb6, tableTop: 0x45484b,
-  seatHeight: 0.42, armHeight: 0.62, height: 0.76, depth: 0.72, long: 1.98, short: 1.86,
+  frame: 0x3b3e41, // the parasol's pole and base
+  // Rusta "Loungemodul Verona" (#408, docs/utesoffa-rusta-verona.jpg, the family's own: docs/utesoffa-verona-utan-dynor.jpg):
+  // one module 68.5 × 66 × 67 cm (W × D × H, rusta.se); the rest *guess* from the photos: a square steel tube `tube`, the
+  // seat frame's top `base`, seat cushions `seatT` thick, back cushions `backH` × `backT`, arm height `arm`, a divan
+  // (backless, no arms) `divanL` long; dark brown-black steel `frame`, wide flat slats, beige / sand `cushion`
+  verona: { W: 0.685, D: 0.66, H: 0.67, tube: 0.04, base: 0.3, seatT: 0.12, backH: 0.45, backT: 0.14, arm: 0.55, divanL: 1.3,
+    frame: 0x2b2522, cushion: 0xd8ccb0 },
+  // the small low table from the family's photo (#408): black steel frame, dark wooden slats; 60 × 45 × 40 cm *guess*
+  slatTable: { w: 0.6, d: 0.45, h: 0.4, slats: 5, frame: 0x221f1d, wood: 0x3d3029 },
   parasol: { radius: 1.5, height: 2.45, color: 0xe8e1d1, months: [4, 5, 6, 7, 8, 9] },
   pot: { r: 0.3, h: 0.62, color: 0x55595c }, // fibre-clay planter Ø 60 cm (guess)
   beerMonths: [6, 7, 8], beerHours: [12, 23],
@@ -2032,22 +2039,22 @@ export const PATIO = {
   // cm (*guess*, a common size), the lid `lid` thick hinged at the back, opening `max`° (on its stays, short of the screen
   // wall behind it), walls `wall` thick, slats every `slat` m
   dynbox: { L: 1.25, D: 0.58, H: 0.6, lid: 0.035, wall: 0.025, slat: 0.07, max: 88, color: 0x3d4043 },
-  // cosy outdoor cushions in the lounge sofa (#399, colours and places our pick; 45 × 45, the lumbar 50 × 30, *guess*):
-  // in the sofa's local frame before it is mirrored (`corner: 'left'`): the corner on −x, the long part's back front at
-  // z −0.16, the short part's back front at x −0.79 (the seats: long x 0.03 / 0.63, corner −0.63, short z 0.63 / 1.17).
-  // `yaw` turns the face (0 = +z, π/2 = +x), `lean` back; out on the sofa in the parasol's months unless it rains,
-  // else in the cushion box (Patio.update)
+  // cosy outdoor cushions in the lounge sofa (#399, colours and places our pick; 45 × 45, the lumbar 50 × 30, *guess*),
+  // since #408 on the Verona sofa, in its local frame: the back row along x centred on 0 (module centres ±0.3425,
+  // ±1.0275; the westernmost, −x, has no back), the back cushions' front at z −0.15, +z = south. `yaw` turns the face
+  // (0 = +z, π/2 = +x), `lean` back; `flat` = lying on the west divan. Out on the sofa in the parasol's months unless it
+  // rains, else in the cushion box (Patio.update)
   cushions: [
-    { x: -0.6, z: 0.03, yaw: Math.PI / 4, lean: 0.35, kind: 'weave', color: 0xc9952f, crumple: 0.45 },            // ochre, in the corner
-    { x: 0.33, z: -0.07, yaw: 0.06, lean: 0.4, kind: 'stripe', color: 0xf2ede2, crumple: 0.3 },                    // off-white striped, between the long part's seats
-    { x: 0.75, z: -0.08, yaw: -0.55, lean: 0.3, kind: 'weave', color: 0x8ea488, size: 0.3, w: 0.5, crumple: 0.3 }, // a sage lumbar by the arm
-    { x: -0.7, z: 0.9, yaw: Math.PI / 2 - 0.05, lean: 0.4, kind: 'weave', color: 0xb35a3c, crumple: 0.35 },        // terracotta, between the short part's seats
-    { x: -0.68, z: 1.25, yaw: Math.PI / 2 + 0.55, lean: 0.35, kind: 'stripe', color: 0xe7d8b8, crumple: 0.4 },      // a sand striped one by its arm
+    { x: 1.17, z: -0.06, yaw: -0.6, lean: 0.35, kind: 'weave', color: 0xc9952f, crumple: 0.45 },                  // ochre, in the corner by the east arm
+    { x: 0.0, z: -0.07, yaw: 0.05, lean: 0.4, kind: 'stripe', color: 0xf2ede2, crumple: 0.3 },                     // off-white striped, between two seats
+    { x: 0.685, z: -0.08, yaw: -0.05, lean: 0.3, kind: 'weave', color: 0x8ea488, size: 0.3, w: 0.5, crumple: 0.3 }, // a sage lumbar, between the next two
+    { x: -0.48, z: -0.06, yaw: 0.45, lean: 0.4, kind: 'weave', color: 0xb35a3c, crumple: 0.35 },                   // terracotta, at the backs' west end
+    { x: -1.03, z: 1.35, yaw: 0.3, flat: true, kind: 'stripe', color: 0xe7d8b8, crumple: 0.4 },                    // a sand striped one on the west divan
   ],
   // the snowman stands just beyond the gap in the hedge, in view from the patio door and the sofa (#73)
   snowman: { x: 1.4, z: 18.4, months: [12, 1, 2] },
-  // paving (#53): 40 × 40 cm light grey concrete slabs, rows in half bond, darker 8 mm joints (our pick,
-  // goes with the anthracite Oslo set); also on the neighbours' patios
+  // paving (#53): 40 × 40 cm light grey concrete slabs, rows in half bond, darker 8 mm joints (our pick);
+  // also on the neighbours' patios
   paving: { slab: 0.4, joint: 0.008, color: [184, 181, 175], jointColor: '#6f6b65' },
   // LED string lights on the patio side of each screen wall (#81; all guesses except the wall's height):
   // hooks 1.68 m up, a 6 cm sag between them, bulbs every 12 cm, warm white. They switch on below
@@ -2380,21 +2387,20 @@ export const FURNITURE = [
   // 300 × 200 (Sarah's own may differ)
   { type: 'rug', level: 0, x: 3.9, z: 10.6, w: 3.0, d: 2.0, h: 0.012, color: '#5a6150', stripe: '#e6e1d6', pitch: 0.062, white: 0.022,
     fields: ['ewn', 'nes'] },
-  // Uteplats (paved z 12.75–16.8 in front of the hedge, see PATIO): Plantagen Hörngrupp Oslo
-  // antracit (art. 558848): corner sofa 198 × 72 × 76 + 186 × 72 × 76 cm on an aluminium frame,
-  // table 120 × 60 × 40 cm (plantagen.se). #397 (the user: nobody with their back to the sun): the long part
-  // with its back to the façade under the living-room window (glass x 2.79–4.90; its opening sash is the west
-  // 35 %, x ≤ 3.53, so the sofa from x 3.68 never meets it; the back 0.76 covers the fixed pane's lowest 16 cm
-  // over BH 0.6), the short part along the east screen wall (inner face x 5.68), the corner in the NE corner
-  // on the sitter's left; seats face south and west (the patio faces WSW). 6 cm of air behind the backs.
-  { type: 'loungesofa', level: 0, x: 5.66 - 1.98 / 2, z: 12.76 + 0.72 / 2, rot: 180, corner: 'left' },
-  // the table inside the L (#407, the user): its long side facing the long part, 0.37 m from its seat front (z 13.48),
-  // 0.34 m from the short part's (x 4.94), so as far east under the long part's seats as that allows
-  { type: 'loungetable', level: 0, x: 4.0, z: 14.15, rot: 0, beers: true },
+  // Uteplats (paved z 12.75–16.8 in front of the hedge, see PATIO). The family's Rusta Verona lounge (#408, replacing the
+  // Plantagen Oslo set of #397 / #407), the user's layout: a U. Four modules in a row (x 2.92–5.66) with their backs to the
+  // façade under the living-room window (6 cm of air), the east end in the NE corner by the east screen wall (inner face
+  // x 5.68), seats facing south (the patio faces WSW); the westernmost module has no back (a pouf), so the window's
+  // opening sash (the west 35 %, x ≤ 3.53, bottom 0.65 m up) swings free over it. A divan in front of each end module,
+  // pointing south: the east one along the east screen wall, the west one free-standing. The arm only at the east end.
+  { type: 'veronasofa', level: 0, x: 5.66 - 2 * 0.685, z: 12.76 + 0.66 / 2, rot: 180 },
+  // the small slatted table in the middle of the U (0.39 m to each divan), 0.6 m in front of the row's seats: room to get up
+  // from the east end seat (behind the east divan) and step out west past the table's north side (#302)
+  { type: 'slattable', level: 0, x: 5.66 - 2 * 0.685, z: 12.76 + 0.66 + 0.605 + 0.45 / 2, rot: 180, beers: true },
   // the parasol shades the sofa corner from the afternoon / evening sun (#398): the sun reaches the patio from the
   // south-east of the plan at noon to the west-south-west in the evening (DAY.planNorth); the pole south of the table,
   // the canopy (radius 1.5) leaning `tilt`° towards the plan's south (= true WSW). Chosen with the computed sun in
-  // July: a ray from a seated eye towards the sun meets the canopy for 2 of the 5 seats at 15:00, all 5 at 16–17, 4 at 18 (patiotest)
+  // July: a ray from a seated eye towards the sun meets the canopy for 2 of the 6 seats at 15:00, 5 at 16, 4 at 17, 3 at 18 (patiotest)
   { type: 'parasol', level: 0, x: 4.5, z: 15.55, rot: 180, tilt: 12 },
   // large planters with exotic plants (the user's wish): by the patio door and in the SE corner. The
   // banana in the SW corner stood in the gap in the hedge (the way out to the lawn) and is gone (#52).

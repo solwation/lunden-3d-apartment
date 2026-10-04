@@ -24,7 +24,7 @@ f.onload = async () => {
   let pass = check(!beer.model.visible && !beer.out, 'no beer before sitting down');
   const sofa = world.furnitureTargets.find((t) => t.name === 'loungesoffan');
   const sp = sofa.pickable.getWorldPosition(new V());
-  player.spawn(sp.x - 1.2, sp.z + 1.0, 0); // #397: the sofa under the window, the table inside the L: stand south-west of it
+  player.spawn(sp.x - 0.35, sp.z + 2.3, 0); // #408: south of the U, looking in over the table
   for (let i = 0; i < 3; i++) step(1 / 60);
   scene.updateMatrixWorld(true);
   const dx = sp.x - camera.position.x, dz = sp.z - camera.position.z;

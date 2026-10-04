@@ -5,15 +5,17 @@ import { PATIO as P } from './config.js';
 import { addCushions, addFoldedThrow } from './cushions.js';
 import { Openable } from './openables.js';
 
-// The patio: Plantagen Oslo corner lounge set + table, a parasol, big planters with exotic
+// The patio: the Rusta Verona lounge (#408) + a slatted table, a parasol, a cushion box, big planters with exotic
 // plants (furniture builders, placed via FURNITURE in config so F and collision work as for the
 // indoor furniture) and the seasonal bits driven by the day cycle (Patio.update): the parasol
 // folds at night and in winter, beers on the table in summer, a snowman on the lawn in winter.
 // Local frame as in furniture.js: the sitter faces +z, x across, y up.
 
 const frameMat = new THREE.MeshStandardMaterial({ color: P.frame, roughness: 0.45, metalness: 0.5 });
-const cushionMat = new THREE.MeshStandardMaterial({ color: P.cushion, roughness: 0.95 });
-const topMat = new THREE.MeshStandardMaterial({ color: P.tableTop, roughness: 0.6, metalness: 0.2 });
+const steelMat = new THREE.MeshStandardMaterial({ color: P.verona.frame, roughness: 0.5, metalness: 0.45 }); // powder-coated steel
+const cushionMat = new THREE.MeshStandardMaterial({ color: P.verona.cushion, roughness: 0.95 });
+const tableSteel = new THREE.MeshStandardMaterial({ color: P.slatTable.frame, roughness: 0.5, metalness: 0.45 });
+const woodMat = new THREE.MeshStandardMaterial({ color: P.slatTable.wood, roughness: 0.75 });
 
 function rbox(w, h, d, x, y, z, material, r = 0.02) {
   const m = new THREE.Mesh(new RoundedBoxGeometry(w, h, d, 2, Math.min(r, w / 2, h / 2, d / 2)), material);
@@ -22,64 +24,72 @@ function rbox(w, h, d, x, y, z, material, r = 0.02) {
   return m;
 }
 
-/** Split [a, b] into n equal parts: [[a0, b0], …]. */
-const split = (a, b, n) => Array.from({ length: n }, (_, i) => [a + ((b - a) * i) / n, a + ((b - a) * (i + 1)) / n]);
+/** A square steel tube from (x0, y0, z0) to (x1, y1, z1) (an axis-aligned box `t` thick across). */
+function tube(x0, x1, y0, y1, z0, z1, material = steelMat, t = P.verona.tube) {
+  const w = Math.max(x1 - x0, t), h = Math.max(y1 - y0, t), d = Math.max(z1 - z0, t);
+  return rbox(w, h, d, (x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2, material, 0.004);
+}
 
 /**
- * Oslo corner sofa: the long part (P.long) along the back, the short part (P.short, measured
- * from the back) forward on the sitter's right (−x), or on the left (+x) with `item.corner: 'left'`
- * (#397: the long part under the living-room window, the short part along the east screen wall).
- * Origin = centre of the long part. 5 seats: corner + 2 on the long part, 2 on the short part.
+ * One Verona frame (#408): an open box of square tube (posts, rails at the top and at the floor, flat slats front to
+ * back) over x0…x1 × z0…z1 (the back at z0), with `back` (rear posts up to H, two rails and a middle post) and arms
+ * (`arms`: 'x0' | 'x1', a front post, two rails), plus its cushions: a seat cushion, and a back cushion with a back.
  */
-export function loungesofa(item = {}) {
+function veronaModule(g, x0, x1, z0, z1, { back = false, arms = [] } = {}) {
+  const V = P.verona, t = V.tube, y = V.base;
+  for (const x of [x0 + t / 2, x1 - t / 2]) for (const z of [z0 + t / 2, z1 - t / 2]) g.add(tube(x, x, 0, back && z < z0 + t ? V.H : y, z, z));
+  for (const yy of [t / 2 + 0.02, y - t / 2]) {
+    for (const z of [z0 + t / 2, z1 - t / 2]) g.add(tube(x0 + t, x1 - t, yy, yy, z, z));
+    for (const x of [x0 + t / 2, x1 - t / 2]) g.add(tube(x, x, yy, yy, z0 + t, z1 - t));
+  }
+  const n = 4, sw = (x1 - x0 - 2 * t) / n;
+  for (let i = 0; i < n; i++) g.add(tube(x0 + t + sw * (i + 0.15), x0 + t + sw * (i + 0.85), y - 0.012, y, z0 + t, z1 - t, steelMat, 0.012));
+  if (back) {
+    for (const yy of [V.H - t / 2, (y + V.H) / 2]) g.add(tube(x0 + t, x1 - t, yy, yy, z0 + t / 2, z0 + t / 2));
+    g.add(tube((x0 + x1) / 2, (x0 + x1) / 2, y, V.H - t, z0 + t / 2, z0 + t / 2));
+  }
+  for (const side of arms) {
+    const x = side === 'x0' ? x0 + t / 2 : x1 - t / 2;
+    g.add(tube(x, x, y, V.arm, z1 - t / 2, z1 - t / 2));
+    for (const yy of [V.arm - t / 2, (y + V.arm) / 2]) g.add(tube(x, x, yy, yy, z0 + t, z1 - t / 2));
+  }
+  // cushions: thick and soft, each module its own (the joints show)
+  const zf = back ? z0 + t + V.backT : z0;
+  g.add(rbox(x1 - x0 - 0.015, V.seatT, z1 - zf - 0.01, (x0 + x1) / 2, y + V.seatT / 2, (zf + z1) / 2, cushionMat, 0.045));
+  if (back) {
+    const c = rbox(x1 - x0 - 0.02, V.backH, V.backT, (x0 + x1) / 2, y + V.seatT + V.backH / 2 - 0.02, z0 + t + V.backT / 2, cushionMat, 0.06);
+    c.rotation.x = -0.12; // leaning back
+    g.add(c);
+  }
+}
+
+/**
+ * The family's Rusta Verona lounge (#408): a row of four modules along x, centred on the origin, backs at −z, seats
+ * facing +z; the −x module has no back (a pouf: the living-room window's sash swings over it), an arm at the +x end;
+ * a divan (backless, no arms, P.verona.divanL long) in front of each end module, pointing +z — a U. Six places: one per
+ * row module, one on each divan, all facing +z. The decorative cushions (#399) are one merged mesh, shown by the season.
+ */
+export function veronasofa() {
   const g = new THREE.Group();
-  const D = P.depth, L = P.long, S = P.short, t = 0.06, base = 0.28, seatT = P.seatHeight - base;
-  const x0 = -L / 2, x1 = L / 2, z0 = -D / 2, z1 = D / 2, zs = z0 + S; // short part ends at zs
-  // aluminium frame: seat boxes, back panels, armrests at the free ends, small feet
-  g.add(rbox(L, base - 0.05, D, 0, 0.05 + (base - 0.05) / 2, 0, frameMat));
-  g.add(rbox(D, base - 0.05, S - D, x0 + D / 2, 0.05 + (base - 0.05) / 2, z1 + (S - D) / 2, frameMat));
-  g.add(rbox(L, P.height - 0.05, t, 0, 0.05 + (P.height - 0.05) / 2, z0 + t / 2, frameMat));
-  g.add(rbox(t, P.height - 0.05, S, x0 + t / 2, 0.05 + (P.height - 0.05) / 2, z0 + S / 2, frameMat));
-  g.add(rbox(t, P.armHeight - 0.05, D, x1 - t / 2, 0.05 + (P.armHeight - 0.05) / 2, 0, frameMat));
-  g.add(rbox(D, P.armHeight - 0.05, t, x0 + D / 2, 0.05 + (P.armHeight - 0.05) / 2, zs - t / 2, frameMat));
-  for (const [x, z] of [[x0 + 0.04, z0 + 0.04], [x1 - 0.04, z0 + 0.04], [x1 - 0.04, z1 - 0.04], [x0 + 0.04, zs - 0.04], [x0 + D - 0.04, zs - 0.04], [x0 + D - 0.04, z1 - 0.04]]) {
-    g.add(rbox(0.05, 0.05, 0.05, x, 0.025, z, frameMat, 0.005));
+  const V = P.verona, W = V.W, D = V.D, X = 2 * W, z0 = -D / 2, z1 = D / 2, z2 = z1 + V.divanL;
+  for (let i = 0; i < 4; i++) {
+    const a = -X + i * W;
+    veronaModule(g, a, a + W, z0, z1, { back: i > 0, arms: i === 3 ? ['x1'] : [] });
   }
-  // seat cushions
-  const cy = base + seatT / 2, gap = 0.01;
-  const seat = (ax, bx, az, bz) => g.add(rbox(bx - ax - gap, seatT, bz - az - gap, (ax + bx) / 2, cy, (az + bz) / 2, cushionMat, 0.04));
-  seat(x0 + t, x0 + D, z0 + t, z1);
-  for (const [a, b] of split(x0 + D, x1 - t, 2)) seat(a, b, z0 + t, z1);
-  for (const [a, b] of split(z1, zs - t, 2)) seat(x0 + t, x0 + D, a, b);
-  // back cushions, leaning a little
-  const bt = 0.14, bh = 0.4, by = P.seatHeight + bh / 2 - 0.02;
-  for (const [a, b] of split(x0 + t + bt, x1 - t, 3)) {
-    const c = rbox(b - a - gap, bh, bt, (a + b) / 2, by, z0 + t + bt / 2, cushionMat, 0.05);
-    c.rotation.x = -0.12;
-    g.add(c);
-  }
-  for (const [a, b] of split(z0 + t, zs - t, 3)) {
-    const c = rbox(bt, bh, b - a - gap, x0 + t + bt / 2, by, (a + b) / 2, cushionMat, 0.05);
-    c.rotation.z = -0.12;
-    g.add(c);
-  }
-  // places: two along the long part and the corner, facing out (+z) (#71); two on the short part facing
-  // across into the L (+x) (#397)
-  const spots = split(x0 + D, x1 - t, 2).map(([a, b]) => ({ x: (a + b) / 2, y: P.seatHeight, z: 0 }))
-    .concat([{ x: x0 + D / 2, y: P.seatHeight, z: 0 }])
-    .concat(split(z1, zs - t, 2).map(([a, b]) => ({ x: x0 + D / 2, y: P.seatHeight, z: (a + b) / 2, dir: [1, 0] })));
-  let footprint = [{ x0, x1, z0, z1 }, { x0, x1: x0 + D, z0: z1, z1: zs }];
-  if (item.corner === 'left') { // the mirror image: the short part on the sitter's left (+x); the boxes are symmetric
-    for (const c of g.children) { c.position.x = -c.position.x; c.rotation.z = -c.rotation.z; }
-    for (const s of spots) { s.x = -s.x; if (s.dir) s.dir = [-s.dir[0], s.dir[1]]; }
-    footprint = footprint.map((f) => ({ x0: -f.x1, x1: -f.x0, z0: f.z0, z1: f.z1 }));
-  }
+  veronaModule(g, -X, -X + W, z1, z2); // the west divan, free-standing
+  veronaModule(g, X - W, X, z1, z2);   // the east divan, along the screen wall
+  const seatY = V.base + V.seatT, mid = (z1 + z2) / 2;
+  const spots = [0, 1, 2, 3].map((i) => ({ x: -X + W * (i + 0.5), y: seatY, z: i ? 0.04 : 0 }))
+    .concat([{ x: -X + W / 2, y: seatY, z: mid }, { x: X - W / 2, y: seatY, z: mid }]);
   g.userData.rest = { kind: 'sit', name: 'loungesoffan', verb: 'sätta dig i', spots };
-  g.userData.footprint = footprint;
-  // cosy cushions (#399): merged into one mesh (the shared cushion atlas), kept out of the sofa's merge, shown by the
-  // season and the weather (Patio.update)
-  const m = item.corner === 'left' ? -1 : 1, tmp = new THREE.Group();
-  const meshes = addCushions(tmp, P.cushions.map((c) => ({ ...c, x: c.x * m, yaw: c.yaw * m })), { backZ: 0, seatY: P.seatHeight });
+  g.userData.footprint = [{ x0: -X, x1: X, z0, z1 }, { x0: -X, x1: -X + W, z0: z1, z1: z2 }, { x0: X - W, x1: X, z0: z1, z1: z2 }];
+  // cosy cushions (#399): leaning against the backs, one lying on the west divan; merged into one mesh (the shared
+  // cushion atlas), kept out of the sofa's merge, shown by the season and the weather (Patio.update)
+  const tmp = new THREE.Group();
+  const meshes = [
+    ...addCushions(tmp, P.cushions.filter((c) => !c.flat), { backZ: 0, seatY }),
+    ...addCushions(tmp, P.cushions.filter((c) => c.flat).map((c) => ({ ...c, lean: Math.PI / 2 })), { backZ: 0, seatY: seatY + 0.09 }),
+  ];
   const geos = meshes.map((c) => { c.updateMatrix(); return c.geometry.applyMatrix4(c.matrix); });
   const cushions = new THREE.Mesh(mergeGeometries(geos), meshes[0].material);
   cushions.castShadow = cushions.receiveShadow = true;
@@ -179,13 +189,18 @@ function beerGlass() {
   return g;
 }
 
-/** Oslo lounge table 120 × 60 × 40, aluminium frame; `item.beers` puts two pints on it. */
-export function loungetable(item) {
+/** The small low table from the family's photo (#408, P.slatTable): a black steel frame (legs, rails at the top and the
+ * floor) with dark wooden slats on top; `item.beers` puts two pints on it in summer. */
+export function slattable(item) {
   const g = new THREE.Group();
-  const w = 1.2, d = 0.6, h = 0.4;
-  g.add(rbox(w, 0.03, d, 0, h - 0.015, 0, topMat, 0.008));
-  g.add(rbox(w - 0.04, 0.05, d - 0.04, 0, h - 0.055, 0, frameMat, 0.008));
-  for (const x of [-w / 2 + 0.04, w / 2 - 0.04]) for (const z of [-d / 2 + 0.04, d / 2 - 0.04]) g.add(rbox(0.04, h - 0.03, 0.04, x, (h - 0.03) / 2, z, frameMat, 0.006));
+  const { w, d, h, slats } = P.slatTable, t = 0.03, top = 0.02;
+  for (const x of [-w / 2 + t / 2, w / 2 - t / 2]) for (const z of [-d / 2 + t / 2, d / 2 - t / 2]) g.add(tube(x, x, 0, h - top, z, z, tableSteel, t));
+  for (const y of [t / 2 + 0.015, h - top - t / 2]) {
+    for (const z of [-d / 2 + t / 2, d / 2 - t / 2]) g.add(tube(-w / 2 + t, w / 2 - t, y, y, z, z, tableSteel, t));
+    for (const x of [-w / 2 + t / 2, w / 2 - t / 2]) g.add(tube(x, x, y, y, -d / 2 + t, d / 2 - t, tableSteel, t));
+  }
+  const sd = d / slats; // slats along the long side, small gaps between
+  for (let i = 0; i < slats; i++) g.add(rbox(w - 0.004, top, sd - 0.008, 0, h - top / 2, -d / 2 + sd * (i + 0.5), woodMat, 0.003));
   if (item.beers) {
     const beers = new THREE.Group();
     for (const [x, z] of [[-0.18, 0.08], [0.06, -0.1]]) {
@@ -197,7 +212,7 @@ export function loungetable(item) {
     seasonal.beers.push(beers);
     g.userData.keep = [beers]; // shown/hidden by the season (furniture.js leaves it unmerged)
   }
-  g.userData.surfaces = [{ x0: -w / 2 + 0.03, x1: w / 2 - 0.03, z0: -d / 2 + 0.03, z1: d / 2 - 0.03, y: h }];
+  g.userData.surfaces = [{ x0: -w / 2 + 0.02, x1: w / 2 - 0.02, z0: -d / 2 + 0.02, z1: d / 2 - 0.02, y: h }];
   g.userData.footprint = [{ x0: -w / 2, x1: w / 2, z0: -d / 2, z1: d / 2 }];
   return g;
 }

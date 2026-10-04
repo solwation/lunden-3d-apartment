@@ -248,7 +248,7 @@ src/people.js          people in the area (PEOPLE, #114): low-poly figures (one 
                        blanket (not in the snow months), neighbours on the loftgång; daytime only
 src/daycycle.js        60-minute day: real solar path for the month (55.7° N), sun → moon light, shader sky
                        (glow, stars, clouds), fog colour; paused / spooled by the wall clock
-src/patio.js           patio: Plantagen Oslo corner lounge set, parasol, planters with exotic plants
+src/patio.js           patio: Rusta Verona lounge + slatted table (#408), cushion box, parasol, planters with exotic plants
                        (furniture builders, FURNITURE + PATIO in config); seasons via Patio.update:
                        parasol folds at night/in winter, beers in summer, snowman in winter
 src/wallclock.js       analog kitchen clock (WALL_CLOCK) + the control strip: spool A D / ← →, pause
@@ -974,10 +974,7 @@ North = −z (the bedrooms Sovrum 1/3 face north).
 - Front (#406): a JYSK ABORG café set, mörk sand (`ABORG`, src/aborg.js, builders `aborgtable` / `aborgchair`), in front of the
   kitchen window: the 60 × 60 × 71 table close to the façade with a little flower (a Thing, back on 'cafébordet') and a
   put-down surface, the two chairs (seats) west and east of it, each turned 45° towards the street.
-- Patio (user's wish): Plantagen Hörngrupp Oslo antracit (corner sofa 198 + 186 × 72 × 76, table
-  120 × 60 × 40): since #397 the long part has its back to the façade under the living-room window (east of its sash) and
-  the short part runs along the east screen wall (`corner: 'left'`), so the five seats face south and west (towards the
-  sun); five outdoor cushions (ochre, off-white striped, a sage lumbar, terracotta, sand striped; `PATIO.cushions`, #399, one merged mesh) lie in it Apr–Sep unless it rains, else in the cushion box (#400, `dynbox` / `PATIO.dynbox`: anthracite slatted, 125 × 58 × 60 *guess*, back to the west screen wall right of the patio door; E opens the lid, an Openable flap, 88°; a blanket + the put-away cushions inside, drawn while open); the table stands inside the L, its long side facing the long part (#407). A parasol south of the table, its canopy tilted towards the plan south (true WSW, `tilt`) so it shades the seats in the afternoon / evening (#398; up Apr–Sep while
+- Patio (user's wish): the family's own Rusta "Loungemodul Verona" (#408, replacing the Plantagen Oslo set of #397 / #407; `PATIO.verona`, builder `veronasofa`; docs/utesoffa-rusta-verona.jpg, docs/utesoffa-verona-utan-dynor.jpg): a U — four 68.5 × 66 × 67 modules in a row, backs to the façade under the living-room window, the east end in the NE corner with an arm; the westernmost module has no back so the window's opening sash swings free; a divan in front of each end module pointing south (the east one along the screen wall, the west one free-standing); dark steel tube, beige / sand cushions; six seats facing south (towards the sun); the small low slatted table between the divans (`slattable`, `PATIO.slatTable`, 60 × 45 × 40 *guess*); five outdoor cushions (ochre, off-white striped, a sage lumbar, terracotta, sand striped; `PATIO.cushions`, #399, one merged mesh) lie in it Apr–Sep unless it rains, else in the cushion box (#400, `dynbox` / `PATIO.dynbox`: anthracite slatted, 125 × 58 × 60 *guess*, back to the west screen wall right of the patio door; E opens the lid, an Openable flap, 88°; a blanket + the put-away cushions inside, drawn while open). A parasol south of the table, its canopy tilted towards the plan south (true WSW, `tilt`) so it shades the seats in the afternoon / evening (#398; up Apr–Sep while
   the sun is up), two big planters (palm by the patio door, agave in the SE corner by the hedge; the banana that blocked the
   gap in the hedge is gone, #52), two beers on the table Jun–Aug
   12–23, a snowman on the lawn just beyond the gap in the hedge Dec–Feb (`PATIO` in config), on snow (#73). Floor: 40 × 40 light grey slabs in half
