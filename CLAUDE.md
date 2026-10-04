@@ -788,7 +788,7 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   Kian and Tuva, Sarah the mother of Walter and Livia. Text that mentions them must not make all five siblings.
 - Who sleeps where (the user's plan; "left/right" as you arrive upstairs walking west):
   Sovrum 1 (first right) Sarah & Olof, double bed IKEA IDANÄS 180 × 200 (`IDANAS`, #91; a white 70 × 100 hotel pillow under each chintz head pillow, `PILLOWS`, `hotel`, #308, docs/hotellkudde-70x100.jpg), under a 150 × 100 cm black-framed meadow-grass picture on the east wall, 1.33–2.33 m up, clear of the soffit (#284, `pictures` item, textures/angsgras-sovrum1.jpg from docs/tavla-sovrum1-angsgras.jpg), a NORDLI chest of
-  drawers in its Klk (an AK-47 in its wide bottom drawer, #196) (no wardrobe in Sovrum 1; the Klk is 1.65 × 1.20 inside, #94; fitted out in #331,
+  drawers in its Klk, against its west wall (#336, `KLK.westFace`) (an AK-47 in its wide bottom drawer, #196) (no wardrobe in Sovrum 1; the Klk is 1.65 × 1.20 inside, #94; fitted out in #331,
   `KLK`, src/closet.js: Peab's shelf + clothes rail on wall standards along the east wall and a shelf over the NORDLI per L1204's fittings
   sheet, docs/klk-sovrum1-inredning-*.png; Sarah's and Olof's clothes, make-up on the chest under a lit LED mirror, a round cream rug) (a sage green IKEA chintz bedding set from a Sellpy ad, #83) with IKEA NORDKISA bedside tables (#64) and white NYMÅNE work
   lamps on them (#65, each its own lamp like the floor lamp) + an IKEA RÅGRUND towel-rack chair in the corner left of

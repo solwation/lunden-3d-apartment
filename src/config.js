@@ -503,12 +503,13 @@ export const SHELF_HEIGHT = 2.0; // unlabelled shelving in the upstairs Klk
 // inredning-*.png): white wall standards, a high white shelf on the side wall with the plan's dashed strip (`side` 1 =
 // east, −1 = west) and on the far (south) wall, a chrome rail under it on the side wall only (ending clear of the NORDLI,
 // z ≥ 5.245). Heights, lengths and the LED mirror over the NORDLI are guesses; the mirror fits between its top (0.99)
-// and the shelf.
+// and the shelf. #336: the NORDLI stands against the west wall (`westFace`, plan.json's inner face; `chestGap` m off it);
+// the mirror, the make-up under it and the rug sit `mirror.dx` from the chest's centre (clear of the back standards).
 export const KLK = {
-  level: 1, x0: 3.90, x1: 5.55, z0: 4.28, z1: 5.48, side: 1,
+  level: 1, x0: 3.90, x1: 5.55, z0: 4.28, z1: 5.48, side: 1, westFace: 3.897, chestGap: 0.004,
   shelf: { y: 1.95, d: 0.30, t: 0.022 }, rail: { y: 1.78, out: 0.28, z0: 4.32, z1: 5.22, r: 0.0125 },
   standards: { side: [4.45, 5.10], back: [4.02, 4.98], y0: 0.95, y1: 2.25, w: 0.026, d: 0.014 },
-  mirror: { x: 4.45, w: 0.55, h: 0.72, bottom: 1.10, led: 0.022, light: { intensity: 0.8, range: 3.0, color: 0xfff1de } },
+  mirror: { dx: -0.1, w: 0.55, h: 0.72, bottom: 1.10, led: 0.022, light: { intensity: 0.8, range: 3.0, color: 0xfff1de } },
   clothes: [['coat', 0x1f1f1f], ['coat', 0xb08a66], ['dress', 0x24324a], ['dress', 0x8a9a7b], ['jacket', 0x2e3a4f],
     ['jacket', 0xeee6d3], ['shirt', 0xf5f5f0], ['shirt', 0x9fb7d0], ['shirt', 0xa4532f], ['shirt', 0xeee6d3], ['shirt', 0x1f1f1f]],
 };
@@ -1924,7 +1925,7 @@ export const FURNITURE = [
   // IKEA NORDLI chest of 8 drawers, white, 120 × 99 (#94; the 47 cm depth is a guess). Sovrum 1 has no
   // wardrobe, its storage is the Klk behind the sliding door: inside 1.65 × 1.20 m (x 3.90–5.55,
   // z 4.29–5.48), the door slides in the wall plane. The chest stands against its back (south) wall,
-  // centred, 73 cm of floor left in front of it; facing north (into the Klk)
+  // pushed against the west wall (#336), 73 cm of floor left in front of it; facing north (into the Klk)
   // the hook rail on the Klk's outside facing the room door, a dressing gown and a hoodie (#329, HOOKS); wall face x 3.80
   { type: 'hookrail', level: 1, x: 3.797, z: 4.51, rot: 90 },
   // the kids' hook rails on the wardrobe end by the door (#330, KID_HOOKS): Sovrum 2 on wardrobe L's side wall (face
@@ -1932,11 +1933,11 @@ export const FURNITURE = [
   // facing east; hook 3 = the front end)
   { type: 'hookrail', level: 1, x: 3.849, z: 8.15, rot: 90, set: 'sovrum2' },
   { type: 'hookrail', level: 1, x: 1.506, z: 4.57, rot: -90, set: 'sovrum3' },
-  { type: 'nordli', level: 1, x: (3.90 + 5.55) / 2, z: 5.48 - 0.235, rot: 0, w: 1.2, h: 0.99, d: 0.47, rifle: true,
-    top: { x0: -0.395, x1: 0.105, z0: -0.015, z1: 0.205 } }, // + the AK-47 in the wide bottom drawer (#196); `top` = free of make-up (#331)
+  { type: 'nordli', level: 1, x: KLK.westFace + KLK.chestGap + 1.2 / 2, z: 5.48 - 0.235, rot: 0, w: 1.2, h: 0.99, d: 0.47, rifle: true,
+    top: { x0: -0.395, x1: -0.03, z0: -0.015, z1: 0.205 } }, // + the AK-47 in the wide bottom drawer (#196); `top` = free of make-up (#331)
   // the Klk's clothes, shelves, make-up corner and LED mirror (#331, src/closet.js; x/z unused) and a soft round rug
   { type: 'klk', level: 1, x: 4.725, z: 4.88, rot: 0 },
-  { type: 'rug', shape: 'round', level: 1, x: 4.45, z: 4.66, d: 0.72, h: 0.022, color: '#e9e1d2', seed: 33 },
+  { type: 'rug', shape: 'round', level: 1, x: KLK.westFace + KLK.chestGap + 0.6 + KLK.mirror.dx, z: 4.66, d: 0.72, h: 0.022, color: '#e9e1d2', seed: 33 },
   // the mattress centre: the headboard (IDANAS.head) against the east wall
   { type: 'bed', level: 1, x: 5.55 - IDANAS.head - 1.0, z: 2.3, rot: 90, w: 1.8, l: 2.0, model: 'idanas', sitUp: { tv: 'Sovrum 1' }, pingping: true, hotel: true, // Pingping between the pillows (#269), hotel pillows under the head pillows (#308)
     // repeat = metres per texture tile (blooms ~8–15 cm)

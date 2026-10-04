@@ -92,7 +92,7 @@ export function klk(item, lights) {
 
   // the make-up corner on the NORDLI's top (under the mirror; its front east part stays free to put things down)
   const chest = FURNITURE.find((f) => f.type === 'nordli' && f.level === KLK.level);
-  const top = chest.h, zb = KLK.z1 - 0.08, zf = KLK.z1 - chest.d + 0.12, mxM = KLK.mirror.x;
+  const top = chest.h, zb = KLK.z1 - 0.08, zf = KLK.z1 - chest.d + 0.12, mxM = chest.x + KLK.mirror.dx;
   const P = new Pack(), gold = 0xd4af37;
   P.box(0.3, 0.012, 0.17, mxM, top + 0.006, zb, 0xeee6d3, { gloss: true });                        // a tray …
   P.box(0.05, 0.08, 0.035, mxM - 0.09, top + 0.052, zb, 0xf3d9c9, { gloss: true });                // … perfume,
@@ -153,7 +153,7 @@ export function klk(item, lights) {
   mergeStatic(mirror);
   addReflector(glass, new THREE.PlaneGeometry(M.w, M.h), { level: item.level, name: 'klk' }); // its mirror image (#50)
   mirror.rotation.y = Math.PI; // facing north, into the closet
-  mirror.position.set(M.x, M.bottom + M.h / 2, KLK.z1 - 0.002);
+  mirror.position.set(mxM, M.bottom + M.h / 2, KLK.z1 - 0.002);
   inner.add(mirror);
   keep.push(mirror);
   lights.push({ object: mirror, shade: led, height: 0, level: item.level, name: 'spegelns lampa', room: 'Klk', light: M.light, offset: [0, -0.35] });
