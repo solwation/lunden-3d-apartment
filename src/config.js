@@ -2625,6 +2625,14 @@ export const FURNITURE = [
   // for watching films on the PC
   { type: 'bunk', level: 1, x: 5.55 - 0.5, z: 12.23 - 1.05, rot: 0, w: 0.9, l: 2.0, sheets: 'vader', watch: { z: -0.3 } },
   { type: 'malm', level: 1, room: 'Sovrum 2', x: 5.55 - 0.5, z: 12.23 - 1.05 - 1.06 - 0.25, rot: 0, w: 0.8, h: 1.24, d: 0.5, seed: 90, deco: 'vader' }, // its MALM (#235)
+  // Walter & Kian's neon print "EAT SLEEP GAME REPEAT" (#430, docs/tavla-sovrum2-eat-sleep-game-repeat.webp): ~40 × 50 cm
+  // outside (*guess*, the user: "40x50 ca"), a thin black frame (~2 cm face, no passe-partout, *guess* from the photo), the
+  // print filling it. On the east wall (inner face x 5.551) centred between wardrobe L's south face (z 8.504, plan.json) and
+  // the MALM's front (z 9.87 − 0.25 = 9.62); centre 1.55 m up (*guess*, a little over the pineapple mirror's 1.45 of #412:
+  // the boys are older), so its bottom (1.30) clears the MALM top (1.24). textures/eat-sleep-game-repeat-sovrum2.jpg = the
+  // photo's print cropped inside the frame and straightened (720 × 920 px = 36 × 46 cm).
+  { type: 'pictures', level: 1, x: 5.551, z: (8.504 + 9.62) / 2, y: 1.55, rot: 90, w: 0.4, h: 0.5, gap: 0, frame: 0.02, depth: 0.025,
+    rough: 0.5, cols: 1, rows: 1, atlas: 'textures/eat-sleep-game-repeat-sovrum2.jpg', grid: [1, 1], order: [0] },
   // Walter & Kian's gaming corner (#77, #84): a black desk 140 × 70 along the west wall (opposite the bunk),
   // its short end against the south window wall, facing east; curved 34" ultrawide on a monitor arm, RGB
   // tower at the window end (out of the bunk's line of sight), keyboard, mouse, headset, speakers (sizes

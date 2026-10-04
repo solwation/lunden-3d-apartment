@@ -210,7 +210,9 @@ textures/              image textures the page loads (published by stamp.sh): st
                        of the stair pictures (#220), cropped/straightened from docs/tavla-trappa-*.jpg; angsgras-sovrum1.jpg = the picture over the
                        Sovrum 1 bed (#284), straightened, reflections painted out; miele.jpg = the cat photo in the window-board
                        frame (#322), cropped and straightened from docs/miele-foto-ram.jpg; linjeteckning-sovrum1.jpg = the line drawing over the RÅGRUND
-                       chair (#404), docs/tavla-sovrum1-linjeteckning.png on pale paper inside a white mount
+                       chair (#404), docs/tavla-sovrum1-linjeteckning.png on pale paper inside a white mount;
+                       eat-sleep-game-repeat-sovrum2.jpg = Sovrum 2's neon print (#430), cropped inside the frame and straightened
+                       from docs/tavla-sovrum2-eat-sleep-game-repeat.webp
 material/              screenshots of our choices in Peab's option portal (local, see below)
 src/audio.js           synthesised positional sound effects (Web Audio): doors, slides, meow, steps
 src/toilet.js          toilet (Ifö Spira 6260) with an animated lid and a flush button (`flush`, its own E target in
@@ -1119,7 +1121,8 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   PC; a sit spot in the lower bunk (`watch`, a spot `kind` can differ from its piece) swings the monitor arm round and plays a film;
   a 1.3 × 0.95 m pegboard on the west wall north of the desk: the lightsaber on its top row, three Nerf blasters, a
   bandolier and goggles (#78, #86, #324); a dark grey hook rail with black hooks on wardrobe L's side wall by the door: a charcoal
-  hoodie with a red print and a navy cap, two hooks empty (#330, `KID_HOOKS`) · Sovrum 4 (second left, ex Allrum) Tilly (15), IKEA HEMNES
+  hoodie with a red print and a navy cap, two hooks empty (#330, `KID_HOOKS`); on the east wall between wardrobe L and the MALM a
+  black-framed 40 × 50 neon print "EAT SLEEP GAME REPEAT" (*guess* size, centre 1.55 m up, #430, a `pictures` item) · Sovrum 4 (second left, ex Allrum) Tilly (15), IKEA HEMNES
   daybed along the west wall, its head end against the window wall short of the window board (#312, `DAYBED_Z`: more
   open floor; the holder and the posters follow it) (`HEMNES_DAYBED`, #280: beadboard back and ends, an arched apron, a quilted top mattress, the pull-out's below,
   round knobs; a charcoal bedspread with lilac bolts, black / holographic / graphic / faux-fur cushions), its three drawers
