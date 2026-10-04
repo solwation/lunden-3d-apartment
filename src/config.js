@@ -578,6 +578,12 @@ export const HUS_L = {
   // centre `z` in front of the façade, kept short of it) on the ground; no lights (src/groundglow.js)
   doorLamp: { dx: 0.28, y: 1.9, w: 0.12, h: 0.22, d: 0.1, color: 0xffd29a, on: 0.35, off: 0.3, fade: 1.5,
     wash: { w: 2.4, h: 2.6, y: 1.75, peak: 0.26 }, pool: { rx: 2.6, rz: 1.25, z: -1.3, peak: 0.45 } },
+  // #451: the portik's floor is paved like the courtyard walks (patio.js pavingTexture, no snow under the roof) and it
+  // has round, flat opal ceiling lamps (guess: `r` m, at `z` along the passage, clear of the stairwell door's z 8.5…9.4),
+  // lit with the front-door lights (doorLamp's on / off / fade): the discs glow, a pool on the paving and a wash on both
+  // brick walls (and the ceiling) per lamp join doorLamp's two additive meshes (no lights)
+  portikLamp: { z: [2.0, 6.35, 10.7], r: 0.17, lit: 0xfff1dc, off: 0xd9d8d3,
+    wash: { w: 2.0, h: 2.2, y: 1.9 }, pool: { ra: 1.7, rb: 0.95 } },
   // #337, the courtyard side of våning 3–4 (bofakta L1202–L1208 / L1205, 1:100 with the 0–5 m bar; x = metres from the
   // unit's west outer face, sill/head over that storey's floor): våning 3 is brick, flush with ours; våning 4 stands
   // `setback` behind it (its courtyard wall 9.21 m from the north wall vs våning 3's 11.11 m) with a roof terrace in

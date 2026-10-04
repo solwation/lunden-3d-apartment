@@ -5,6 +5,7 @@ import { registerSnow } from './seasons.js';
 import { wallLine, wallRect } from './roofs.js';
 import { groundY } from './surroundings.js';
 import { glowMaterial, poolGeometry, washGeometry, fadeGlow } from './groundglow.js';
+import { pavingTexture } from './patio.js';
 
 // Brick: 250 × 65 mm + 10 mm joints → 0.26 m per brick, 0.075 m per course.
 const TILE_W = 1.04, TILE_H = 0.6; // one texture tile = 4 bricks × 8 courses
@@ -483,6 +484,26 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
     doorWash.push(washGeometry(lx, DL.wash.y, -eps, 0, -1, DL.wash.w, DL.wash.h));
     doorPool.push(poolGeometry(lx - 0.3, DL.pool.z, 1, 0, DL.pool.rx, DL.pool.rz, groundY, { rings: 5, segs: 20 }));
   }
+  // #451: the portik — paved through (UVs in metres like the courtyard walks; its own material, so no snow) and its ceiling
+  // lamps (opal discs; their pools / washes join the door lights' meshes and fade with them)
+  const PL = H.portikLamp, [pk0, pk1] = H.core.portik.map((p) => coreX0 + p), pkx = (pk0 + pk1) / 2, pkh = H.core.portikHeight;
+  {
+    const g = new THREE.PlaneGeometry(pk1 - pk0, D, 1, 1).rotateX(-Math.PI / 2).translate(pkx, groundY(pkx, D / 2) + 0.006, D / 2);
+    const p = g.attributes.position, uv = g.attributes.uv;
+    for (let i = 0; i < p.count; i++) uv.setXY(i, p.getX(i), p.getZ(i));
+    const m = new THREE.Mesh(g, new THREE.MeshStandardMaterial({ map: pavingTexture(), roughness: 0.95 }));
+    m.receiveShadow = true; m.name = 'portikPaving';
+    group.add(m);
+  }
+  const portikDiscs = [];
+  for (const z of PL.z) {
+    portikDiscs.push(new THREE.CylinderGeometry(PL.r, PL.r, 0.05, 24).translate(pkx, pkh - 0.025, z));
+    doorPool.push(poolGeometry(pkx, z, 0, 1, PL.pool.ra, PL.pool.rb, groundY, { rings: 5, segs: 20 }),
+      poolGeometry(pkx, z, 0, 1, PL.pool.ra * 0.7, PL.pool.rb * 0.85, () => pkh, { lift: -0.012, rings: 4, segs: 20 })); // (+ a glow on the ceiling round the disc)
+    doorWash.push(washGeometry(pk0 + eps, PL.wash.y, z, 1, 0, PL.wash.w, PL.wash.h), washGeometry(pk1 - eps, PL.wash.y, z, -1, 0, PL.wash.w, PL.wash.h));
+  }
+  const portikMat = new THREE.MeshBasicMaterial({ color: PL.off, toneMapped: false }), portikLit = new THREE.Color(PL.lit), portikOff = new THREE.Color(PL.off);
+  add(portikDiscs, portikMat, false).name = 'portikLamps';
   const glows = doorWash.length ? [[doorWash, DL.wash.peak, THREE.FrontSide], [doorPool, DL.pool.peak, THREE.DoubleSide]].map(([geos, peak, side]) => {
     const m = new THREE.Mesh(mergeGeometries(geos), glowMaterial(DL.color));
     m.material.side = side; m.visible = false; m.renderOrder = 2; m.userData.peak = peak;
@@ -506,6 +527,7 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
     doorT = now;
     if (!doorLit && night > DL.on) doorLit = true; else if (doorLit && night < DL.off) doorLit = false;
     for (const m of glows) doorGlow = fadeGlow(m, doorGlow, doorLit, m === glows[0] ? dt : 0, DL.fade, m.userData.peak);
+    portikMat.color.lerpColors(portikOff, portikLit, doorGlow);
   };
   const roofMat = new THREE.MeshStandardMaterial({ color: 0x4b5157, roughness: 0.9 });
   registerSnow(roofMat, SEASON.snow.roof);
