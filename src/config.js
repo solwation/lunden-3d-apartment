@@ -1304,6 +1304,7 @@ export const SCORE = {
     nest: 4, // per smart speaker asked something (#325), then `again`
     flights: 25, // the first take-off with the jetpack (#359); no `again` (landing on each roof scores as `roofs`)
     roofs: 20, // per roof stood on (#360): the loftgång, each terrace, Hus L's roof, the loft, a drum, Hus A / B / C, a canopy; no `again`
+    toiletPaper: 3, // paper torn off a roll and flushed away (#426): the first time, then `again`
     handBrew: 10, // the first pot brewed by hand: water and coffee filled first (#334); no `again` (each brew has `each.brews`)
   },
   again: {
@@ -1313,6 +1314,7 @@ export const SCORE = {
     shattered: 0.3, carMusic: 0.2, pingpingHugs: 0.2, miele: 100, kittens: 120, mieleHugs: 0.5, blinds: 0.05, curtains: 0.05, airfried: 0.5, friesCooked: 0.5, toaster: 0.2,
     fruit: 0.3,
     nest: 0.2,
+    toiletPaper: 0.1,
   },
   breeds: { huskatt: 10, siames: 30, 'brittiskt korthår': 30, 'maine coon': 35, 'norsk skogkatt': 40, perser: 100, sphynx: 250 },
   secrets: { kinds: 10, rare: 40 },
@@ -1800,6 +1802,16 @@ export const TOWEL_HOOKS = { y: 1.4, gap: 0.17,
   hook: { rose: 0.027, roseT: 0.007, pin: 0.008, len: 0.032, end: 0.011, endT: 0.006, color: 0xd0d3d5, metalness: 0.45, roughness: 0.38 },
   towel: { color: 0x96807d, band: 0xa08986, w: 0.17, len: 0.48 },
   towels: [{ seed: 1.1 }, { seed: 2.7, len: 0.5 }] };
+// Toilet-paper holders (#426, src/toiletpaper.js): one beside each toilet, on the tank's wall in the toilet's own frame
+// (x along the wall from the toilet's middle, z out of it, y up): the plate `side` m along the wall (the side with free
+// wall in both bathrooms: towards the vanity downstairs, the shaft box upstairs), `y` up (*guess*, ~0.7 m in the issue),
+// `wall` = the tiles; a post `arm` out, a rod `rod` long running `dir` (away from the toilet, clear of its tank) with the
+// roll on it. Roll: `w` wide, radius `r` full → `core` (a standard roll ~10 × Ø 11 cm, *guess*), `sheets` sheets of
+// `sheet` m (*guess*: a short roll); a `tail` hangs at rest, E pulls one sheet out (`pullTime` s) up to `hang` sheets;
+// the wad in the hand: radius `wad` [1 sheet, `hang` sheets], `held` = camera space; flushed it swirls away in `swirl` s.
+export const TOILET_PAPER = { side: 0.24, y: 0.7, wall: 0.006, arm: 0.075, rod: 0.13, dir: 1, plate: 0.025,
+  roll: { w: 0.098, r: 0.055, core: 0.021 }, sheets: 120, sheet: 0.11, tail: 0.035, hang: 4, pullTime: 0.35,
+  wad: [0.022, 0.04], held: [0.17, -0.2, -0.42], swirl: 1.6 };
 
 // Day cycle (src/daycycle.js): one day in `minutes` real minutes (60, the user #125). The sun follows the real solar
 // path for the date (declination, hour angle) at Kv. Lunden, Karpvägen / S:t Lars väg in Lund

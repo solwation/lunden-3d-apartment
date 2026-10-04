@@ -52,6 +52,7 @@ import { Hand } from './hand.js';
 import { Milk } from './milk.js';
 import { buildCups } from './cups.js';
 import { buildFish } from './fishfingers.js';
+import { ToiletPaper } from './toiletpaper.js';
 import { AirFryer } from './airfryer.js';
 import { buildFries } from './fries.js';
 import { buildCoffeeJar } from './coffeejar.js';
@@ -325,6 +326,8 @@ const coffeeJar = buildCoffeeJar(scene, camera, world); // the coffee jar + scoo
 if (coffeeJar) { holdables.push(coffeeJar.scoop); world.looseItems.push(coffeeJar.object); }
 const fish = buildFish(scene, camera, world); // fish fingers in the freezer, one at a time (#162)
 if (fish) fish.onEaten = () => bump('fish');
+const toiletPaper = new ToiletPaper(scene, camera, world); // a holder with a roll by each toilet (#426)
+Object.assign(toiletPaper, { onFlush: (f) => bump('flushes', 1, idOf(f)), onThrown: () => bump('toiletPaper') });
 const pan = world.panDrawer ? new Pan(scene, camera, world.panDrawer, world.hob) : null; // the frying pan in the drawer under the hob (#159)
 if (pan) holdables.push(pan);
 const toaster = world.toasterDrawer ? new Toaster(scene, camera, world.toasterDrawer) : null; // the toaster in the drawer by the corner (#401)
@@ -1257,7 +1260,8 @@ function updateFocus() {
   if (fish && world.furnitureOn && airFryer.open) cupTargets.push(...fish.inFryer.map((f) => f.target.pickable)); // in the open air fryer basket (#287)
   if (fries && world.furnitureOn) cupTargets.push(...fries.placed.map((b) => b.target.pickable)); // bunches of fries put down (#301)
   if (world.furnitureOn) cupTargets.push(...fruit.targets()); // the fruit in the bowl / lying out, the bowl with something in the hand (#326)
-  cupTargets.push(...life.targets().map((t) => t.pickable)); // the life sim's things (#366; F hides the ones lying out: `shown`)
+  cupTargets.push(...life.targets().map((t) => t.pickable));
+  cupTargets.push(...toiletPaper.targets()); // the toilet-paper rolls and the strips hanging (#426) // the life sim's things (#366; F hides the ones lying out: `shown`)
   const hit = raycaster.intersectObjects([...pickables, ...extra, ...cupTargets], true)
     .find((h) => shown(h.object) && !(rest.active && (h.object.userData.door === rest.target || h.object.userData.door?.kind === 'rest')));
   focused = hit && !behindWall(hit.point) ? hit.object.userData.door : null;
@@ -1340,6 +1344,9 @@ function updateFocus() {
     focused = { name: 'fiskpinnen i airfryern', kind: 'airfry', verb: 'lägga', item: fish };
     placeGhost.visible = false;
   }
+  // the torn-off paper in the hand, aimed at a toilet: in it goes, flushed (#426)
+  const paperAim = toiletPaper.aim(focused);
+  if (paperAim) focused = paperAim;
   // the coffee ritual (#334): the jug at a running tap / with water at the Moccamaster, the full scoop at its filter
   const coffeeAim = coffeeJar && hit && focused === hit.object.userData.door ? coffeeJar.aim(item, focused) : null;
   if (coffeeAim) { focused = coffeeAim; placeGhost.visible = false; }
@@ -1396,6 +1403,7 @@ function toggleFurniture(on = !world.furnitureOn) {
   if (!on) beer.show(false); else beer.show(beer.out); // the beer only once served (setFurniture showed it)
   if (!on) { // whatever is in the hand, or put down somewhere, goes home first (#102)
     heldItem()?.putBack(); toys.darts.hide();
+    toiletPaper.reset(); // full rolls, the torn-off paper gone (#426)
     fish?.reset(); // the fish fingers lying around are cleared away, the carton is full again (#162)
     airFryer.reset(); // off, the basket in and empty (#287)
     fries?.reset(); // the fries out of the basket and the hand, a full bag (#301)
@@ -1515,6 +1523,7 @@ function step(dt) {
   hand.update(dt, heldItem(), petting); // the arm: holding something, petting the cat, or reaching for what E was used on (#195)
   cups.update(dt);
   fish?.update(dt);
+  toiletPaper.update(dt);
   fries?.update(dt);
   fruit.update(dt);
   life.update(dt);
@@ -1816,4 +1825,4 @@ if (lifeDev()) devScenario({ life, world, holdables, cups, things, milk, fish, f
 document.documentElement.classList.remove('resuming'); // the page is ready: off with the "Laddar…" cover (#222)
 
 // handle for tests/debugging (tools/touchtest.html)
-window.__app = { lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, toaster, life, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, coffeeJar, miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };
+window.__app = { toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, toaster, life, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, coffeeJar, miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };

@@ -213,6 +213,10 @@ src/toilet.js          toilet (Ifö Spira 6260) with an animated lid and a flush
                        world.lids: dips, sfx.flush, the water drains and returns, no flush until refilled, #155); #321: a deep
                        bowl (rings `TOILET.bowl.profile`, all the porcelain one merged mesh), toilet-blue water (its own mesh);
                        a flush runs streaks down an inset copy of the bowl and swirls the water (emissive spiral), idle = no work
+src/toiletpaper.js     toilet-paper holders (#426, TOILET_PAPER): brushed steel beside each toilet (on the tank's wall, the side away from it);
+                       E on the roll pulls out a sheet (it turns, sfx.paper, up to `hang`), E on the strip tears it off into the hand as a
+                       wad (no placeAt): E on a toilet (main.js `toiletPaper.aim`) opens the lid, drops it in and flushes, it swirls away
+                       (stats toiletPaper); the roll thins, F puts full rolls back; not loose, nothing saved
 src/ao.js              baked ambient occlusion: distance field → multiply overlay on floor/ceiling (AO)
 src/courtyard.js       the courtyard on the garage box (COURTYARD): walks, pergolas, grill, sandboxes, boule,
                        benches, raised beds, instanced shrubs; collision for what you can walk into
@@ -675,6 +679,8 @@ tools/updatetest.html  headless test of the update notice on a phone-sized touch
                        site it also checks the page's own version.json);
                        the countdown 5 … 1, cancelled by a key / mouse move / the stick / a touch, held back by brewing (#277)
 tools/perfcount.html   draw calls / triangles at a few spots (compare before/after optimising)
+tools/papertest.html   headless test: each toilet's paper holder — pull sheets out (the roll turns, max 4), tear the strip into the hand
+                       (pulling blocked), throw it in the toilet (the lid opens, it flushes, counted, swirls away), F refills (#426)
 tools/toilettest.html  headless test: flush both toilets (counted, not again until refilled), the lid still opens; mid-flush
                        the water has dropped, runs down the bowl and swirls, after it is back and still (#321)
 tools/oventest.html    headless test: oven + microwave open/close (lamp inside), Moccamaster brews and clicks off

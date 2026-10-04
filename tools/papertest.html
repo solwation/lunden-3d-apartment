@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Toilet paper test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+// Toilet-paper holders (#426): a holder beside each toilet; E on the roll pulls out a sheet at a time (the strip grows,
+// the roll turns), up to TOILET_PAPER.hang; E on the strip tears it off into the hand (other things blocked); E on the
+// toilet throws it in: the lid opens, it flushes (counted), the wad swirls away (stats toiletPaper); the roll got thinner;
+// F puts full rolls back and clears a wad in the hand away.
+//   google-chrome --headless=new --dump-dom http://localhost:8137/tools/papertest.html
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const f = document.createElement('iframe');
+f.width = 900; f.height = 600; f.src = '../index.html?time=12&freeze';
+document.body.append(f);
+f.onload = async () => {
+  const w = f.contentWindow, d = f.contentDocument;
+  while (!w.__app) await wait(100);
+  const { player, camera, step, stats, toiletPaper, heldItem, toggleFurniture } = w.__app;
+  const lines = [];
+  const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; };
+  d.getElementById('start-touch').click();
+  await wait(500);
+  const btn = d.getElementById('action');
+  const V = camera.position.constructor;
+  const H = toiletPaper.holders;
+  let pass = check(H.length === 2, `${H.length} holders (one per toilet)`);
+  const look = (p) => {
+    camera.rotation.y = Math.atan2(-(p.x - camera.position.x), -(p.z - camera.position.z));
+    camera.rotation.x = Math.atan2(p.y - camera.position.y, Math.hypot(p.x - camera.position.x, p.z - camera.position.z)); step(1 / 60);
+    return btn.hidden ? '' : btn.textContent;
+  };
+  const run = (s) => { for (let i = 0; i < s * 60; i++) step(1 / 60); };
+  for (const h of H) {
+    const t = h.toilet;
+    t.object.updateMatrixWorld(true);
+    const base = t.object.getWorldPosition(new V()), outv = new V(0, 0, 1).applyQuaternion(t.object.quaternion);
+    const upstairs = base.y > 1, where = upstairs ? 'Övre plan' : 'Entréplan';
+    player.spawn(base.x + outv.x * 0.95, base.z + outv.z * 0.95, 0);
+    if (upstairs) { player.pos.y = base.y; player.eyeY = base.y + 1.62; camera.position.y = player.eyeY; }
+    run(0.1);
+    const roll = h.spin.getWorldPosition(new V());
+    const r0 = h.r, left0 = h.left, a0 = h.spin.rotation.x;
+    const l1 = look(roll);
+    pass &= check(/dra ut toapappret/i.test(l1), `${where}: aiming at the roll says "${l1}"`);
+    btn.click(); run(0.6);
+    pass &= check(h.hang === 1 && Math.abs(h.len - 0.035 - 0.11) < 0.002 && h.spin.rotation.x > a0 + 1 && h.left === left0 - 1, `${where}: one sheet out (len ${h.len.toFixed(3)}, the roll turned ${(h.spin.rotation.x - a0).toFixed(2)} rad)`);
+    for (let i = 0; i < 5; i++) { look(roll); btn.click(); run(0.6); }
+    const l2 = look(roll);
+    pass &= check(h.hang === 4 && /riv av pappret först/i.test(l2), `${where}: up to 4 sheets, then "${l2}"`);
+    pass &= check(h.r < r0, `${where}: the roll got thinner (${(r0 * 1000).toFixed(1)} → ${(h.r * 1000).toFixed(1)} mm)`);
+    const strip = h.strip.localToWorld(new V(0, -0.6, 0));
+    const l3 = look(strip);
+    pass &= check(/^riv av pappret$/i.test(l3), `${where}: aiming at the strip says "${l3}"`);
+    btn.click(); run(0.2);
+    pass &= check(heldItem() === toiletPaper.wad && h.hang === 0 && h.len < 0.04, `${where}: torn off into the hand, a short tail left`);
+    const l4 = look(roll);
+    pass &= check(!/dra ut/i.test(l4), `${where}: no pulling with the paper in the hand ("${l4}")`);
+    if (t.isOpen) { t.toggle(); run(1); }
+    const n0 = stats.flushes ?? 0, p0 = stats.toiletPaper ?? 0, c0 = t.flush.count;
+    const l5 = look(t.object.localToWorld(new V(0, 0.42, 0.42)));
+    pass &= check(/^släng pappret i toaletten$/i.test(l5), `${where}: aiming at the toilet says "${l5}"`);
+    btn.click(); run(0.5);
+    pass &= check(t.isOpen && t.flush.count === c0 + 1 && (stats.flushes ?? 0) === n0 + 1 && !heldItem() && toiletPaper.wad.model.visible, `${where}: the lid opens, it flushes (counted), the wad in the bowl`);
+    run(2);
+    pass &= check(!toiletPaper.wad.model.visible && (stats.toiletPaper ?? 0) === p0 + 1, `${where}: the paper swirled away (stats.toiletPaper ${stats.toiletPaper})`);
+    run(7); // the tank refills
+    t.toggle(); run(1);
+  }
+  // F: full rolls, a wad in the hand cleared away
+  const h = H[0];
+  h.pull(); run(0.6); h.tear(); run(0.1);
+  const held = heldItem() === toiletPaper.wad;
+  toggleFurniture(); run(0.2);
+  pass &= check(held && !heldItem() && !toiletPaper.wad.model.visible && H.every((x) => x.left === 120 && x.hang === 0), 'F: full rolls, the paper in the hand gone');
+  toggleFurniture(); run(0.2);
+  out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
+};
+</script>
+</body>
+</html>
