@@ -656,6 +656,12 @@ src/cooking.js         the life sim's kitchen work (M1): actions judged by the t
                        stays. A thing with ITEMS `bites` is eaten with a click / the touch button ("Äta", LifeItem `useLabel` /
                        `onUse` → action 'eat', LIFE.eat): to the mouth, a bite off (the slice's outline rebuilt with bite marks),
                        sfx.chew; the last bite removes it; `life.emit` / `onEvent` domain events 'bite', 'ate'
+                       Butter and cheese (#378, LIFE.butter / LIFE.slice): 'dab' — the butter knife at the open pack takes LIFE.butter.g
+                       (the knife's `machine.load`, a yellow lump; the pack empty → pkg 'empty'); 'spread' — onto a slice of bread
+                       anywhere but the hand, the bread's first part { type: 'butter', amount } (a yellow film, lifemodels.js
+                       `sandwichLayers`); 'slice' — the cheese slicer at the block on the board / a worktop: a cheeseSlice of
+                       ITEMS `slice.g` (on a free board spot / beside the block), the last one is what is left and the block goes;
+                       the tools turn `clean: 'used'`
 src/actions.js         what you can do with a life-sim thing (#367): `ActionSet.define({ id, label, applies, check, run, consumes,
                        result, duration, interrupt, order, quiet })`, `list(ctx)` = the rows with a Swedish `reason` when blocked
                        ("Öppna kylen först", "Tallriken är full", "För långt bort"); life.js `baseActions`: putOn, take, open, close.
@@ -904,7 +910,8 @@ tools/lifetest.html    headless test of the life sim's M1, the sandwich flow (#3
                        back, the wrong tool's messages with nothing used (#374); no cut off a worktop, a full board, the board carrying
                        its slices, pushing them onto a plate (#375); one / three slices, the chop, the mass balance, fast presses,
                        slices taken one by one, the end, a reload (#376); the bread bag closed / opened, slices down to 0 and no
-                       further, the empty bag stays, a slice on a plate, one eaten plain in four bites (#377)
+                       further, the empty bag stays, a slice on a plate, one eaten plain in four bites (#377); a dab and spreading
+                       (exact grams, the layer, double presses), cheese slices on the board and the worktop, the last bits (#378)
 tools/inventorytest.html headless test (#365): the `&life` scenario's start state, the visitor's records untouched, the
                        integration points the inventory names; without &life the game starts at START
 tools/stamp.sh         build the published site with a version stamp (used by CI)

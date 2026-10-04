@@ -17,6 +17,7 @@ const M = {
   bag: new THREE.MeshStandardMaterial({ color: 0xf2efe6, roughness: 0.25, transparent: true, opacity: 0.55, depthWrite: false }),
   clip: std(0x2f6fc4, 0.5), crust: std(0x9a6332, 0.7), crumb: std(0xe8d3a8, 0.85),
   steel: std(0xc9cdd0, 0.25, { metalness: 0.7 }), handle: std(0x222222, 0.55), peasBag: std(0x2f7d32, 0.35),
+  cheeseSlice: std(0xf6dc7e, 0.5),
 };
 
 /** A printed label of our own (#373: no real brands): a canvas with a background, a wordmark and a small line under it. */
@@ -208,21 +209,60 @@ function breadSliceShape(bitten, bites) {
   const geo = new THREE.ExtrudeGeometry(s, { depth: 0.012, bevelEnabled: false, curveSegments: 6 }).rotateX(-Math.PI / 2); // (caps up/down = crumb, sides = crust)
   return { geo, xe };
 }
+/** The layers on a slice of bread (#378, #379), from its `parts` in order: butter = a thin yellow film, cheese = a pale
+ * yellow slice, cucumber = slices in a pattern; all of them cut back to the bitten edge `xe`. */
+function sandwichLayers(parts, bitten, bites, xe) {
+  const g = new THREE.Group();
+  let y = 0.012, nCuc = 0;
+  for (const p of parts) {
+    if (p.type === 'butter') {
+      const m = mesh(breadSliceShape(bitten, bites).geo.scale(0.92, 0.12, 0.9), M.butter);
+      m.position.y = y; m.castShadow = false; g.add(m); y += 0.0016;
+    } else if (p.type === 'cheeseSlice') {
+      const m = mesh(breadSliceShape(bitten, bites).geo.scale(0.86, 0.17, 0.84), M.cheeseSlice);
+      m.position.set(0.003 * (g.children.length % 2 ? 1 : -1), y, 0); g.add(m); y += 0.0022;
+    } else if (p.type === 'cucumberSlice') {
+      const spots = [[-0.03, -0.025], [0.012, -0.025], [-0.03, 0.022], [0.012, 0.022], [-0.009, 0], [0.032, 0]];
+      const [x, z] = spots[nCuc++ % spots.length];
+      if (x + 0.021 > xe) continue; // (bitten off)
+      const c = cucumberSlice().object;
+      c.position.set(x, y + (nCuc > spots.length ? 0.004 : 0), z);
+      g.add(c);
+      if (nCuc === spots.length || p === parts[parts.length - 1] || parts[parts.indexOf(p) + 1]?.type !== 'cucumberSlice') y += 0.004;
+    }
+  }
+  return g;
+}
 function breadSlice() {
   const g = new THREE.Group();
   const s = mesh(breadSliceShape(0, 4).geo, [M.crumb, M.crust]);
   g.add(s);
-  let shown = 0;
+  let shown = '0|', layers = null;
   return {
     object: g, grip: [-0.05, 0.006, 0.03],
     show(item, items) {
       const d = items.def(item), bites = d?.bites ?? 4, bitten = Math.max(0, Math.min(bites - 1, Math.round((1 - item.amount / (d?.amount ?? 1)) * bites)));
-      if (bitten === shown) return;
-      shown = bitten;
+      const key = `${bitten}|${(item.parts ?? []).map((p) => p.type).join(',')}`;
+      if (key === shown) return;
+      shown = key;
       s.geometry.dispose();
-      s.geometry = breadSliceShape(bitten, bites).geo;
+      const shape = breadSliceShape(bitten, bites);
+      s.geometry = shape.geo;
+      if (layers) { layers.traverse((o) => o.geometry?.dispose()); layers.removeFromParent(); }
+      layers = sandwichLayers(item.parts ?? [], bitten, bites, shape.xe);
+      layers.name = 'layers';
+      g.add(layers);
     },
   };
+}
+
+/** A slice of cheese (#378): 8.5 × 7.5 cm, 2 mm, pale yellow, one edge a little wavy from the slicer. */
+function cheeseSlice() {
+  const g = new THREE.Group();
+  const m = mesh(new RoundedBoxGeometry(0.085, 0.002, 0.075, 1, 0.0008), M.cheeseSlice);
+  m.position.y = 0.001;
+  g.add(m);
+  return { object: g };
 }
 
 /** A kitchen knife, 30 cm, along x (the handle at −x). */
@@ -245,8 +285,11 @@ function butterKnife() {
   blade.position.set(0.0, 0.007, 0);
   const handle = mesh(new RoundedBoxGeometry(0.11, 0.014, 0.02, 2, 0.006), M.wood);
   handle.position.set(-0.055, 0.007, 0);
-  g.add(blade, handle);
-  return { object: g, grip: [-0.06, 0.007, 0] };
+  const lump = mesh(new THREE.SphereGeometry(0.012, 10, 6).scale(1.4, 0.45, 1), M.butter); // a dab of butter on the blade (#378)
+  lump.position.set(0.06, 0.0095, 0);
+  lump.visible = false;
+  g.add(blade, handle, lump);
+  return { object: g, grip: [-0.06, 0.007, 0], show(item) { lump.visible = (item.machine?.load ?? 0) > 0; } };
 }
 
 /** A cheese slicer, 24 cm, along x: a flat steel paddle with its slot and a black handle (#374). */
@@ -265,7 +308,7 @@ function cheeseSlicer() {
   return { object: g, grip: [-0.06, 0.006, 0] };
 }
 
-const BUILDERS = { plate, board, cucumber, cucumberSlice, cheese, butter, breadBag, breadSlice, knife, peas, butterKnife, cheeseSlicer };
+const BUILDERS = { plate, board, cucumber, cucumberSlice, cheese, butter, breadBag, breadSlice, knife, peas, butterKnife, cheeseSlicer, cheeseSlice };
 
 /** The model of a type (its `model` builder; a grey box when there is none). */
 export function buildModel(def) {

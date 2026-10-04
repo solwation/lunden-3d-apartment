@@ -15,6 +15,8 @@
 //       slices taken one by one, the end (no slice, "gurkänden"), a reload keeps what is left.
 //  #377 the bread bag: closed → "Öppna brödpåsen först", opened (no clip), slices one at a time into the hand down to 0 and
 //       no further, the empty bag stays; a slice on a plate; a slice eaten plain in four bites.
+//  #378 butter (open the pack, a dab on the butter knife, spread: −8 g exactly, a yellow layer, a double press = one
+//       portion) and cheese (the slicer: −12 g exactly, a slice on the board / beside the block); the tools used; the last bits.
 //   chromium --headless=new --dump-dom http://localhost:8137/tools/lifetest.html
 import { LIFE_FOOD, LIFE_TOOLS } from '../src/config.js';
 const out = document.getElementById('out');
@@ -309,6 +311,72 @@ try {
   shut();
   f.remove();
 } catch (e) { pass = false; lines.push(`FAIL #377 error ${e.stack}`); }
+
+// --- #378: butter and cheese -----------------------------------------------------------------------------------
+try {
+  const f = await load('life&shot');
+  const { A, settle, aim, shut, life, I, step } = kit(f);
+  const V = A.camera.position.constructor;
+  const drawer = A.world.lids.find((l) => l.stock === 'utensils'), fridge = A.fridge;
+  const find = (type) => I.all().find((i) => i.type === type && i.home?.store);
+  const bknife = find('butterKnife'), slicer = find('cheeseSlicer'), board = find('board'), cheese = find('cheese');
+  const butter = I.ofType('butter').find((b) => b.place.at === 'world'); // (the &life scenario's, on the dining table)
+  const plate = I.ofType('plate')[0];
+  const bread = life.create('breadSlice', { at: 'on', parent: plate.id, slot: 0 });
+  const row = (id, it) => life.options({ item: life.view(it) }).find((o) => o.id === id);
+  const wait = (s) => { for (let i = 0; i < Math.ceil(s * 60); i++) step(1 / 60); };
+  drawer.toggle(); settle(drawer);
+  life.view(bknife).take(); step(1 / 60);
+  check(row('spread', bread)?.reason === 'Ta smör på smörkniven först', `the empty knife at the bread: "${row('spread', bread)?.reason}"`);
+  check(row('dab', butter)?.reason === 'Öppna smöret först', `at the closed butter: "${row('dab', butter)?.reason}"`);
+  life.view(butter).putBack !== undefined && I.set(butter, { pkg: 'open' }); step(1 / 60);
+  const p = life.view(butter).where(); p.y += 0.03;
+  const t1 = aim(p, /Ta smör på smörkniven/);
+  check(!!t1, `the knife at the open butter: "${t1}"`);
+  row('dab', butter).run(); row('dab', butter)?.run(); wait(0.6);
+  const lump = life.view(bknife).view.object.children[2];
+  check(butter.amount === 492 && bknife.machine.load === 8 && lump.visible && bknife.clean === 'used', `a dab: the butter ${butter.amount} g, ${bknife.machine.load} g on the knife (a lump), the knife used`);
+  check(row('dab', butter)?.reason === 'Det är redan smör på smörkniven', `again: "${row('dab', butter)?.reason}"`);
+  const t2 = aim(life.view(bread).where().setY(0.77), /Bre smöret på brödskivan/);
+  check(!!t2, `at the bread: "${t2}"`);
+  row('spread', bread).run(); row('spread', bread)?.run(); wait(1.2); row('spread', bread)?.run(); wait(1.2);
+  check(bread.parts.length === 1 && bread.parts[0].type === 'butter' && bread.parts[0].amount === 8 && bknife.machine.load === 0 && !lump.visible && butter.amount === 492, `spread (a double press): the bread's butter ${bread.parts[0]?.amount} g, the knife empty, the pack still ${butter.amount} g`);
+  const layer = life.view(bread).view.object.getObjectByName('layers');
+  check(layer?.children.length === 1 && layer.children[0].material.color.getHex() === 0xf7e39a, 'a yellow layer on the bread');
+  // the last bit of butter
+  I.setAmount(butter, 3); row('dab', butter).run(); wait(0.6);
+  check(butter.amount === 0 && butter.pkg === 'empty' && bknife.machine.load === 3, `3 g left: a 3 g dab, the pack empty (${butter.pkg})`);
+  check(row('dab', butter)?.reason === 'Smöret är slut', `then: "${row('dab', butter)?.reason}"`);
+  life.view(bknife).putBack(); step(1 / 60);
+  // cheese: not off the board / a worktop; on the board on the worktop: a 12 g slice on a free spot
+  life.view(board).take(); step(1 / 60); life.view(board).placeAt(new V(5.22, 0.93, 3.0), Math.PI / 2); step(1 / 60);
+  fridge.toggle(); settle(fridge);
+  life.view(slicer).take(); step(1 / 60);
+  check(row('slice', cheese)?.reason === 'Lägg osten på skärbrädan eller bänken först', `the cheese in the fridge: "${row('slice', cheese)?.reason}"`);
+  life.view(slicer).putBack(); step(1 / 60);
+  life.view(cheese).take(); step(1 / 60); row('putOn', board).run(); step(1 / 60);
+  life.view(slicer).take(); step(1 / 60);
+  const c0 = cheese.amount;
+  const t3 = aim(life.view(cheese).where().setY(1.0), /Hyvla en skiva av osten/, [[4.4, 3.0], [4.5, 2.9]]);
+  check(!!t3, `the slicer at the cheese on the board: "${t3}"`);
+  row('slice', cheese).run(); row('slice', cheese)?.run(); wait(0.9);
+  const cs = I.ofType('cheeseSlice');
+  check(cheese.amount === c0 - 12 && cs.length === 1 && cs[0].amount === 12 && cs[0].place.parent === board.id && slicer.clean === 'used', `one slice (a double press): the block ${cheese.amount} g, a ${cs[0]?.amount} g slice on the board, the slicer used`);
+  check(life.view(cheese).view.object.children[0].scale.x < 1, 'the block is shorter');
+  // on the worktop itself: the slice beside the block
+  life.view(slicer).putBack(); step(1 / 60);
+  life.view(cheese).take(); step(1 / 60); life.view(cheese).placeAt(new V(5.25, 0.93, 2.55), 0); step(1 / 60);
+  life.view(slicer).take(); step(1 / 60);
+  row('slice', cheese).run(); wait(0.9);
+  const cs2 = I.ofType('cheeseSlice').find((x) => x !== cs[0]);
+  check(cs2?.place.at === 'world' && Math.abs(cs2.place.pos[1] - cheese.place.pos[1]) < 1e-6 && cheese.amount === c0 - 24, `on the worktop: the slice beside the block (${cs2?.place.pos.map((v) => v.toFixed(2))})`);
+  // the last bit: a smaller slice, the block gone
+  I.setAmount(cheese, 5); row('slice', cheese).run(); wait(0.9);
+  check(!I.get(cheese.id) && I.ofType('cheeseSlice').some((x) => x.amount === 5), 'the last 5 g: a 5 g slice, the block gone');
+  check(I.audit().length === 0 && I.all().every((i) => i.amount >= 0), `audit: ${I.audit().join('; ') || 'ok'}`);
+  shut();
+  f.remove();
+} catch (e) { pass = false; lines.push(`FAIL #378 error ${e.stack}`); }
 
 // a new visit keeps the amounts (lunden.life, #371): not the &life scenario, the visitor's own home
 try {

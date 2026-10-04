@@ -12,6 +12,9 @@ import { sfx } from './audio.js';
 //   #376 cutting a cucumber: one slice or three, a chop each, exact grams; the last bit is the end (a scrap)
 //   #377 the bread bag: opened (its clip off), "Ta en brödskiva" one at a time into the hand, empty = an empty package;
 //        a slice is eaten in bites (a click / "Ät" with it in the hand)
+//   #378 butter and cheese: the butter knife takes a dab from the open pack (−8 g, a yellow lump on the knife) and spreads
+//        it on a slice of bread (a yellow layer, the bread's parts); the cheese slicer takes 12 g slices off the block on
+//        the board or a worktop (the block shorter); the tools become used; the last bit of either is what is left
 
 const cap = (s) => (s ? s[0].toUpperCase() + s.slice(1) : s);
 
@@ -153,6 +156,97 @@ export function cookingActions(life) {
     done: (c, job) => { if (job.base && c.heldView?.held) c.heldView.model.position.copy(job.base); },
     cancel: (c, job) => { if (job.base && c.heldView?.held) c.heldView.model.position.copy(job.base); },
     consumes: 'one bite (amount / bites)', result: 'less of it; the last bite: gone (an `ate` event)',
+  });
+
+  const knifeLoad = (k) => k?.machine?.load ?? 0;
+  // a dab of butter on the butter knife (#378): the open pack in reach (not in the hand), the knife empty
+  A.define({
+    id: 'dab', order: 1, duration: LIFE.butter.dab,
+    label: (c) => `ta smör på ${nm(c.held)}`,
+    applies: (c) => !!c.held && I.has(c.held, 'tool:spread') && !!c.target && I.has(c.target, 'spreadable') && c.target.place.at !== 'hand',
+    check: (c) => {
+      const shut = c.targetView?.shutReason();
+      if (shut) return shut;
+      if (c.target.pkg === 'closed') return `Öppna ${nm(c.target)} först`;
+      if (c.target.amount <= 1e-6) return `${cap(nm(c.target))} är slut`;
+      if (knifeLoad(c.held) > 0) return `Det är redan smör på ${nm(c.held)}`;
+      return null;
+    },
+    reserve: (c) => ({ inputs: [c.target, c.held] }),
+    animate: (c, k, job) => { const v = c.heldView; if (!v?.held) return; job.base ??= v.model.position.clone(); v.model.position.y = job.base.y - 0.05 * Math.sin(Math.PI * k); },
+    commit: (c) => {
+      const got = I.consume(c.target, LIFE.butter.g); // (the last bit: what there is)
+      I.set(c.held, { machine: { load: got, loadType: c.target.type }, clean: 'used' });
+      if (I.isEmpty(c.target)) I.set(c.target, { pkg: 'empty' });
+      sfx.scoop?.(c.targetView?.where(), true);
+      return got;
+    },
+    done: (c, job) => { if (job.base && c.heldView?.held) c.heldView.model.position.copy(job.base); },
+    cancel: (c, job) => { if (job.base && c.heldView?.held) c.heldView.model.position.copy(job.base); },
+    consumes: 'LIFE.butter.g of the butter (what is left, if less)', result: 'that much butter on the knife (machine.load); the knife used',
+  });
+  // spread it on a slice of bread (#378): the bread anywhere but the hand; the knife's dab becomes the bread's butter layer
+  A.define({
+    id: 'spread', order: 1, duration: LIFE.butter.spread,
+    label: (c) => `bre smöret på ${nm(c.target)}`,
+    applies: (c) => !!c.held && I.has(c.held, 'tool:spread') && !!c.target && I.has(c.target, 'base') && c.target.place.at !== 'hand',
+    check: (c) => {
+      if (knifeLoad(c.held) <= 0) return `Ta smör på ${nm(c.held)} först`;
+      if (c.target.parts.some((x) => x.type === 'butter')) return `Det är redan smör på ${nm(c.target)}`;
+      if ((c.target.parts?.length ?? 0) >= LIFE.sandwich.max) return 'Mackan rymmer inte mer';
+      if (c.target.parts.length) return 'Smöret ska ligga under pålägget';
+      return c.targetView?.shutReason() ?? null;
+    },
+    reserve: (c) => ({ inputs: [c.target, c.held] }),
+    animate: (c, k, job) => { const v = c.heldView; if (!v?.held) return; job.base ??= v.model.position.clone(); v.model.position.x = job.base.x + 0.05 * Math.sin(k * Math.PI * 4); v.model.position.y = job.base.y - 0.03 * Math.sin(Math.PI * k); },
+    commit: (c) => {
+      const g = knifeLoad(c.held);
+      I.set(c.target, { parts: [...c.target.parts, { type: c.held.machine.loadType ?? 'butter', amount: g }], prep: 'spread' });
+      I.set(c.held, { machine: { load: 0, loadType: null } });
+      return g;
+    },
+    done: (c, job) => { if (job.base && c.heldView?.held) c.heldView.model.position.copy(job.base); },
+    cancel: (c, job) => { if (job.base && c.heldView?.held) c.heldView.model.position.copy(job.base); },
+    consumes: 'the knife\'s dab (machine.load)', result: 'a butter part of exactly that much on the bread (prep spread); the knife empty',
+  });
+  // a slice of cheese with the slicer (#378): the block on the board (the slice on a free result spot) or on a worktop
+  // (the slice beside it); 12 g, the last slice is what is left and the block is gone
+  const slicePlace = (c, by) => {
+    const block = c.target, board = boardUnder(block);
+    if (board) { const k = I.freeSpot(board, { type: I.def(block).slice.into }, by); return k >= 0 ? { at: 'on', parent: board.id, slot: k } : null; }
+    if (block.place.at === 'world' && life.worktopAt(block.place.pos)) {
+      const [x, y, z] = block.place.pos, a = block.place.yaw ?? 0;
+      return { at: 'world', pos: [x + Math.sin(a) * 0.09, y, z + Math.cos(a) * 0.09], yaw: a };
+    }
+    return null;
+  };
+  A.define({
+    id: 'slice', order: 1, duration: LIFE.slice.seconds,
+    label: (c) => `hyvla en skiva av ${nm(c.target)}`,
+    applies: (c) => !!c.held && I.has(c.held, 'tool:slice') && !!I.def(c.target)?.slice && c.target.place.at !== 'hand',
+    check: (c) => {
+      const board = boardUnder(c.target);
+      if (!board && !(c.target.place.at === 'world' && life.worktopAt(c.target.place.pos))) return `Lägg ${nm(c.target)} på skärbrädan eller bänken först`;
+      if (board) { const st = stationReason(board); if (st) return st; }
+      if (c.target.amount <= 1e-6) return `${cap(nm(c.target))} är slut`;
+      if (!slicePlace(c)) return I.def(board).carrier.fullText ?? 'Brädan är full';
+      return null;
+    },
+    reserve: (c) => { const p = slicePlace(c); return { inputs: [c.target, c.held, ...(boardUnder(c.target) ? [boardUnder(c.target)] : [])], outputs: p.at === 'on' ? [p] : [] }; },
+    animate: (c, k, job) => { const v = c.heldView; if (!v?.held) return; job.base ??= v.model.position.clone(); v.model.position.z = job.base.z - 0.06 * Math.sin(Math.PI * k); v.model.position.y = job.base.y - 0.04 * Math.sin(Math.PI * k); },
+    commit: (c, job) => {
+      const block = c.target, sl = I.def(block).slice, place = job.outputs[0] ?? slicePlace(c);
+      const got = I.consume(block, sl.g);
+      const made = I.create(sl.into, place, { amount: got });
+      I.set(c.held, { clean: 'used' });
+      if (block.prep === 'whole') I.set(block, { prep: 'sliced' });
+      if (I.isEmpty(block)) I.remove(block); // (nothing left of it: gone; a fresh one in the fridge next time, #373)
+      sfx.chop(c.targetView?.where());
+      return made;
+    },
+    done: (c, job) => { if (job.base && c.heldView?.held) c.heldView.model.position.copy(job.base); },
+    cancel: (c, job) => { if (job.base && c.heldView?.held) c.heldView.model.position.copy(job.base); },
+    consumes: 'slice.g of the block (what is left, if less)', result: 'one cheese slice of that much on the board / beside the block; the slicer used',
   });
 
   // the wrong tool (#374): a tool in the hand, food that some other tool works on — a row that says why, nothing used
