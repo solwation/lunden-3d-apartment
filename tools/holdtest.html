@@ -56,6 +56,13 @@ f.onload = async () => {
   pass &= check(!heldItem() && cup.state === 'placed' && Math.abs(cup.model.position.y - 0.483) < 0.01, `the cup on the tray table (y ${cup.model.position.y.toFixed(3)})`);
   pass &= check(lookAt(cupAt(), /ta koppen/i, [[1.9, 9.0], [2.2, 8.6], [1.5, 9.1]]), `and taken again: "${btn.textContent}"`);
   btn.click(); step(1 / 60);
+  // on the ABORG café table outside the kitchen window (#406)
+  const cafe = { x: 3.98, y: 0.71, z: -0.45 };
+  pass &= check(lookAt(cafe, /ställa ner koppen här/i, [[3.9, -1.6], [3.4, -1.5], [4.4, -1.5]]), `the café table outside: "${btn.textContent}"`);
+  btn.click(); step(1 / 60);
+  pass &= check(!heldItem() && cup.state === 'placed' && Math.abs(cup.model.position.y - 0.71) < 0.01, `the cup on the café table (y ${cup.model.position.y.toFixed(3)})`);
+  pass &= check(lookAt(cupAt(), /ta koppen/i, [[3.9, -1.6], [3.4, -1.5], [4.4, -1.5]]), `and taken again: "${btn.textContent}"`);
+  btn.click(); step(1 / 60);
   const coffee = { x: 3.64, y: 0.47, z: 10.56 };
   pass &= check(lookAt(coffee, /ställa ner koppen här/i, [[3.6, 9.4], [3.0, 9.6], [4.4, 9.5]]), `coffee table: "${btn.textContent}"`);
   btn.click(); step(1 / 60);

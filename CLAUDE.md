@@ -501,6 +501,7 @@ src/sillplants.js      flower pots on every inner window board (SILL_PLANTS, #13
 src/plants.js          SillPot (#185): each window-board pot is a Holdable; its own model is invisible at home, shows (and
                        the merged meshes are rebuilt without it) once taken; the side-table flower and the kitchen shelf's
                        vase / pot plant are plain Things (kind 'plant'); window boards are put-down surfaces too
+src/aborg.js           the JYSK ABORG café set outside the kitchen window (#406, ABORG): a folding table + two folding chairs (seats)
 src/randers.js         the JYSK RANDERS tray table by the armchair (#405, RANDERS): tray, rails, straight legs, a low cross
 src/huego.js           the Philips Hue Go on Sovrum 1's window board (#409, HUE_GO): a lamp of its own + colour scenes on its handle loop
 src/laptop.js          Tilly's laptop on the vanity (#283, LAPTOP): an unbranded rose-gold laptop with stickers; `Feed` draws "Klipp",
@@ -953,6 +954,9 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   Over the secretary "Bang" (#118) on the east wall: the IKEA SKOGSGRÄNSEN mirror Ø 50, copper (#265, `SKOGSGRANSEN`, hung with
   the wavy bars at the bottom, centre 1.58 m up), and on the secretary's north end a small yucca palm (`YUCCA`, a Thing you can
   take, kind 'plant') whose leaves cover the mirror's north edge; the owl and the cactus moved south.
+- Front (#406): a JYSK ABORG café set, mörk sand (`ABORG`, src/aborg.js, builders `aborgtable` / `aborgchair`), in front of the
+  kitchen window: the 60 × 60 × 71 table close to the façade with a little flower (a Thing, back on 'cafébordet') and a
+  put-down surface, the two chairs (seats) west and east of it, each turned 45° towards the street.
 - Patio (user's wish): Plantagen Hörngrupp Oslo antracit (corner sofa 198 + 186 × 72 × 76, table
   120 × 60 × 40): since #397 the long part has its back to the façade under the living-room window (east of its sash) and
   the short part runs along the east screen wall (`corner: 'left'`), so the five seats face south and west (towards the

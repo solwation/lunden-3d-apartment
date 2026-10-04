@@ -91,6 +91,20 @@ f.onload = async () => {
   label = aim(face.where().add(new V(0, 0.06, 0)), [face.home.pos.x + 0.9, face.home.pos.z]);
   btn.click(); step(1 / 60);
   pass &= check(heldItem() === face, 'taken once more (F sends it home)');
+  // (5) the café table's flower outside (#406): taken, back on the table with E
+  if (heldItem()) { heldItem().putBack?.(); step(1 / 60); }
+  const cafe = things.find((t) => t.kind === 'plant' && /cafébordet/.test(t.backTarget.name));
+  pass &= check(!!cafe && cafe.home.pos.z < 0 && Math.abs(cafe.home.pos.y - 0.71) < 0.01, `the flower on the café table outside (y ${cafe?.home.pos.y.toFixed(3)}, z ${cafe?.home.pos.z.toFixed(2)})`);
+  label = aim(cafe.where().add(new V(0, 0.1, 0)), [cafe.home.pos.x, cafe.home.pos.z - 0.9]);
+  pass &= check(/ta blomkrukan/i.test(label), `at the café table: "${label}"`);
+  btn.click(); step(1 / 60);
+  pass &= check(heldItem() === cafe, 'the café flower in the hand');
+  label = aim(cafe.home.pos.clone().add(new V(0, 0.05, 0)), [cafe.home.pos.x, cafe.home.pos.z - 0.9]);
+  pass &= check(/tillbaka blomkrukan/i.test(label), `at its place: "${label}"`);
+  btn.click(); step(1 / 60);
+  pass &= check(!cafe.held && !cafe.placed && cafe.model.position.distanceTo(cafe.home.pos) < 0.001, 'back on the café table');
+  label = aim(face.where().add(new V(0, 0.06, 0)), [face.home.pos.x + 0.9, face.home.pos.z]);
+  btn.click(); step(1 / 60);
   // F: all home, the pot back in the merged meshes
   toggleFurniture(); toggleFurniture();
   pass &= check(!pot.placed && !pot.held && verts() === v0 && pot.model.children.every((m) => !m.visible), `F: the window pot home (${verts()} vertices)`);

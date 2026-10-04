@@ -16,6 +16,7 @@ import { nesthub, nestmini } from './nest.js';
 import { hookrail } from './hooks.js';
 import { huego } from './huego.js';
 import { randers } from './randers.js';
+import { aborgtable as aborgTableModel, aborgchair } from './aborg.js';
 import { klk } from './closet.js';
 import { cleaning } from './cleaning.js';
 import { registerRug, rugUnder } from './rugs.js';
@@ -3529,7 +3530,12 @@ function randerstable(item, lights) {
   return randers(item, lights, () => { const f = flower(); mergeStatic(f); return f; });
 }
 
-const BUILDERS = { randerstable, tubelamp, dani, secretary, winerack, besta, painting, pictures, palm, sofa, armchair, ottoman, floorlamp, sidetable, coffeetable, loungesofa, loungetable, parasol, planter, dynbox, bed, skansnasTable, skansnasChair, bunk, daybed, kposters, smastad, rug, ragrund, coatrack, shoerack, byas, tv, nordkisa, worklamp, walllamp, symfonisk, gamingdesk, gamingchair, nordli, malm, alex, kidchair, vanity, vanitystool, laptop, photoframe, huego, nesthub, nestmini, hookrail, klk, cleaning };
+/** The JYSK ABORG café table (#406, src/aborg.js) with a little flower. */
+function aborgtable(item, lights) {
+  return aborgTableModel(item, lights, () => { const f = flower(); mergeStatic(f); return f; });
+}
+
+const BUILDERS = { aborgtable, aborgchair, randerstable, tubelamp, dani, secretary, winerack, besta, painting, pictures, palm, sofa, armchair, ottoman, floorlamp, sidetable, coffeetable, loungesofa, loungetable, parasol, planter, dynbox, bed, skansnasTable, skansnasChair, bunk, daybed, kposters, smastad, rug, ragrund, coatrack, shoerack, byas, tv, nordkisa, worklamp, walllamp, symfonisk, gamingdesk, gamingchair, nordli, malm, alex, kidchair, vanity, vanitystool, laptop, photoframe, huego, nesthub, nestmini, hookrail, klk, cleaning };
 
 /** An invisible thin box over a table top (raycast target for putting a cup down, #90). Local rect. */
 export function surfaceBox(r, list) {

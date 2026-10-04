@@ -1895,6 +1895,14 @@ export const MALM_DECO = {
 export const RANDERS = { d: 0.47, h: 0.51, rim: 0.03, legs: 0.32, leg: 0.012, thin: 0.004, sheet: 0.003, rail: 0.012,
   cross: 0.1, cap: 0.012, color: 0x3b2240, caps: 0x1c1418, rough: 0.5, metal: 0.25 };
 
+// JYSK café set ABORG, mörk sand (#406, art. 3725144, docs/cafeset-jysk-aborg-*.jpg): the table 60 × 60 × 71 cm (JYSK);
+// the turned-down edge, tube Ø and the bars are *guesses* from the photo. The chairs' sizes are not given: 42 × 48 × 80,
+// seat 45 cm, a 40 cm deep seat of 7 slats, two 7.5 cm back slats (*guess*, a usual bistro chair). `color` read off the
+// photo (a warm grey-taupe), matte powder coat.
+export const ABORG = { color: 0x8f8a80, rough: 0.55, metal: 0.2, tube: 0.008,
+  table: { w: 0.6, h: 0.71, edge: 0.02 },
+  chair: { w: 0.42, d: 0.48, h: 0.8, seat: 0.45, seatD: 0.4, slats: 7, backSlats: [0.62, 0.72], backH: 0.075 } };
+
 export const HUE_GO = {
   d: 0.142, h: 0.22, split: 0.3, loop: 0.035, base: { r: 0.068, h: 0.012 }, body: 0xf3f2ef, handle: 0x4a4c50, name: 'Hue Go-lampan',
   light: { intensity: 0.7, range: 3, color: 0xffc98a },
@@ -2222,6 +2230,14 @@ export const FURNITURE = [
   // a JYSK RANDERS tray table (#405) in the side table's place by the armchair, turned so local = world axes: the flower
   // towards the NW (wall / armchair side), the book (BOOK) on the room side of the tray
   { type: 'randerstable', level: 0, x: 1.52, z: 8.12, rot: 180, flower: true, flowerAt: [-0.09, -0.09] },
+  // The ABORG café set (#406) outside our front, in front of the kitchen window (x 3.05–4.66; the front door x 0.80–1.81
+  // swings out to z −0.92): the table centred on the window, close to the façade (its top 0.71 stays under the top-hung
+  // sash's swing, which starts at the 0.8 sill), a little pot plant on it. The chairs west and east of it, each turned
+  // 45° away from the façade towards the street (rot 45 = facing NW, −45 = NE): you sit with the table at your side
+  // looking out over the car park. Clear of the car's stop (x 0.8–5.0, z −6.3…−4.5, CAR) and the green strip (z ≤ −2.9).
+  { type: 'aborgtable', level: 0, x: 3.85, z: -0.6, rot: 0, flower: true, flowerAt: [0.12, 0.1] },
+  { type: 'aborgchair', level: 0, x: 3.16, z: -0.78, rot: 45 },
+  { type: 'aborgchair', level: 0, x: 4.54, z: -0.78, rot: -45 },
   // IKEA BESTÅ display combination with glass doors, white / Lappviken walnut effect, 120 × 42 × 193 cm (#104, ikea.com
   // s79612224): two columns, three 64 cm sections each (walnut door, glass door, walnut door). Wall-hung on the west
   // wall (x 0.202) between the armchair/floor lamp (z < 9.1) and the palm (z > 11.5), 35 cm above the floor (the user:
