@@ -26,12 +26,17 @@ Andra `/orkester`-sessioner kör på egna VM:ar och kan inte nås med SendMessag
   har en egen statuskommentar. Ta inte issues som en annan session har reserverat där eller som har `in-progress`.
 - **Skapa din statuskommentar** i #420 (spara dess id) och **redigera den** (`gh api -X PATCH
   repos/solwation/lunden-3d-apartment/issues/comments/<id> -F body=@fil`) varje gång en agent startar eller blir klar:
-  sessionens namn/länk, område, en tabell med agenter, deras kedjor i ordning och vad de gör nu, tid för uppdateringen.
+  sessionens namn/länk, område, en tabell med agenter, deras kedjor i ordning, **vilka filer/moduler kedjan rör**
+  (t.ex. `stairs.js`, `STAIR` i config) och vad de gör nu, tid för uppdateringen.
 - **Reservera hela kedjan** när en agent får den: etiketten `in-progress` på varje issue i kedjan + en kort kommentar
   `Reserverad av orkester <session> (kedja: #a → #b → …). Se #420.` Agenten tar bort etiketten på varje issue när den är
   klar; avbryts kedjan tar du bort den på resten.
+- **Kapplöpning:** två sessioner kan reservera samma issue nästan samtidigt. Läs issuens kommentarer igen direkt efter
+  din reservation: finns en äldre `Reserverad av orkester …` från en annan session (och den har inte släppt den) är
+  issuen deras — ta bort din kommentar och din etikett (om den inte redan fanns före) och välj något annat.
 - En statuskommentar som inte uppdaterats på 3 timmar räknas som övergiven; dess issues får tas över efter en kommentar.
 - Rör ditt nästa val samma filer/område som en annan sessions pågående kedja? Välj något annat eller vänta.
+- Förbättringar av själva synken diskuteras som kommentarer i #420; den som ändrar `/orkester` säger det där.
 
 ## Orkestrering
 - Gruppera: issues som rör samma filer eller bygger på varandra ges till **en** agent som tar dem i tur och ordning
