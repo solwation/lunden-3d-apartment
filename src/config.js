@@ -1253,14 +1253,14 @@ export const FISH = { n: 15, len: 0.09, w: 0.025, h: 0.016, bites: 3, box: { w: 
 // `slots` fish fingers fit in it (2 rows of 3, *guess*). E on the panel with the basket in runs it for `seconds` real
 // seconds (the display counts down game time: × `clock` = 24, the 60-minute day, so 20 s shows 8:00) at `temp` °C; it
 // cooks fish fingers `rate` × as fast as the pan would, so one run makes them golden (FISH.fry.seconds, a little before
-// the end) and they burn early in a third run (FISH.fry.burnAt, "left far too long"). Basket out mid-run: paused. Done: `beeps` beeps. The cord runs to
-// the corner power box ("Hörnbox", interior.js) at `socket`.
+// the end) and they burn early in a third run (FISH.fry.burnAt, "left far too long"). Basket out mid-run: paused. Done: `beeps` beeps. The cord runs up
+// the splashback to the corner wall socket's south mouth (KITCHEN_SOCKETS, 'corner-s', #442).
 // #296 (the user): further into the corner and turned `rot`° (about y) so the front and basket face diagonally out of it,
 // away from both splashbacks (+45 = front towards north-west). `x`, `z` put its rounded footprint (±0.22 m along x and z
-// turned) 3.5 cm from the east and south splashbacks (5.50 / 5.484) and its flat back ~3 cm short of the power box.
+// turned) 3.5 cm from the east and south splashbacks (5.50 / 5.484), its flat back towards the corner.
 export const AIRFRYER = { x: 5.245, z: 5.229, rot: 45, w: 0.3, d: 0.38, h: 0.32,
   basket: { d: 0.25, h: 0.15, out: 0.2, in: 0.35 }, slots: 6, seconds: 20, clock: 24, temp: 200, beeps: 3,
-  get rate() { return 1.2 * FISH.fry.seconds / this.seconds; }, socket: { x: 5.45, z: 5.434 } };
+  get rate() { return 1.2 * FISH.fry.seconds / this.seconds; } };
 // A bag of Aviko frozen fries (#301, src/fries.js): a stand-up bag `bag` W × H × D m (*guess* from the issue, ~1 kg), leaning
 // back on the freezer's top shelf; `portions` pours in a full bag, `portion` fries per pour, at most `max` portions in the
 // basket (its volume, *guess*). In the air fryer they go from frozen `raw` to `golden` after `golden` s of cooking (real
@@ -1726,11 +1726,11 @@ export const PAN = { d: 0.28, h: 0.05, handle: 0.19, color: 0x1d1d1f, handleColo
 // The toaster (#401, src/toaster.js): the family's OBH Nordica Piano Black (type 2674, docs/brodrost-obh-piano-black.jpg), a
 // two-slice toaster kept standing in the bottom drawer of the drawer unit by the corner (the kitchen is cramped: not on the
 // worktop). w × d × h *guess* (no measure found; an estimate from the photo, docs/brodrost-matt-gissning.jpg: ~28 × 17 × 18
-// cm); `slot` = each slot's length × width (*guess*). `cord` = how far its cord reaches (*guess*), `socket` = the second
-// socket on the corner power box's north face (the air fryer has the first, AIRFRYER.socket). The browning dial stands at
+// cm); `slot` = each slot's length × width (*guess*). `cord` = how far its cord reaches (*guess*; 0.9 → 1.0 in #442: the sockets moved up the wall): it plugs into the nearest
+// free wall socket within it (KITCHEN_SOCKETS, #442; the air fryer and the Moccamaster keep theirs). The browning dial stands at
 // `dial` (1–7); a toast takes `seconds.base + seconds.step × dial` s (game-paced, like the air fryer's run; our pick).
 // `home` = its place in the drawer (drawer-local: in = metres back from the front, along = along the run); `held` = camera space.
-export const TOASTER = { w: 0.28, d: 0.17, h: 0.18, slot: { l: 0.13, w: 0.032 }, cord: 0.9, socket: { x: 5.52, z: 5.384 },
+export const TOASTER = { w: 0.28, d: 0.17, h: 0.18, slot: { l: 0.13, w: 0.032 }, cord: 1.0,
   dial: 4, seconds: { base: 6, step: 2 }, home: { in: 0.14, along: 0.1 }, held: { x: 0.19, y: -0.33, z: -0.62 } };
 
 // The roast chicken in the fridge (#160): it smokes after `cookSeconds` in the pan on a lit zone, for `smokeSeconds`
@@ -1779,6 +1779,16 @@ export const KITCHEN = {
     // fractions of the width); the first is the big front one that glows. A typical 4-zone layout (guess).
     zones: [[0.33, 0.3, 0.2], [0.33, 0.75, 0.15], [0.74, 0.3, 0.15], [0.74, 0.74, 0.17]] },
 };
+
+// Wall sockets on the kitchen splashback (#442, src/sockets.js; the user): white double sockets, the usual Swedish kind, at
+// the top of the splashback just under the wall cabinets (centre `below` m under KITCHEN.wallBottom, *guess*), on the east
+// wall's tiled face `wall` (x, read off the model) facing west: over the Moccamaster (its z), between the sink (z ≤ 2.31) and
+// the hob (z ≥ 3.39) and in the corner behind the air fryer (5.478 = the south splashback's face; it replaced the
+// "Hörnbox" power box on the worktop). Plate `plate` w (along the wall) × h × t (~15 × 8 cm, *guess*), two round cups `r`
+// `pitch` apart; `taken` = which mouth (n = north, s = south) a fixed appliance's cord uses. Merged into the kitchen.
+export const KITCHEN_SOCKETS = { wall: 5.545, below: 0.08, plate: { w: 0.15, h: 0.08, t: 0.007 }, r: 0.02, pitch: 0.074,
+  color: 0xf3f3f0, at: [{ id: 'coffee', z: 1.4 }, { id: 'hob', z: 2.86 }, { id: 'corner', z: 5.478 - 0.13 }],
+  taken: { 'coffee-s': 'kaffebryggaren', 'corner-s': 'airfryern' } };
 
 // Sink bowls (#122, src/interior.js): the inset steel sink in Tvätt (40 × 26 cm as drawn, depth *guess*)
 // and the basin in the bathroom vanities (Core Grip with a porcelain top, depth *guess*).

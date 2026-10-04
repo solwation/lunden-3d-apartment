@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { MOCCAMASTER as C, COFFEE, COFFEE_JAR } from './config.js';
 import { sfx } from './audio.js';
+import { mouths, cordToMouth, plugAt } from './sockets.js';
 
 // The Moccamaster on the kitchen worktop (#59): black base with the hot plate, the water tank
 // column at the back on the left (seen from the front, #315), the arm reaching right over the filter basket,
@@ -95,6 +96,14 @@ export class Moccamaster {
     this.fillTarget = { name: 'kannan med vatten', kind: 'mocca', verb: 'fylla', pickable: g, toggle: () => this.fillJug() };
     g.position.set(C.back - d, y0, C.z);
     g.rotation.y = 0; // front faces −x already
+    { // its cord (#442): from the back, low on the right, up the splashback to the wall socket over it
+      g.updateMatrixWorld(true);
+      const m = mouths().find((o) => o.id === 'coffee-s');
+      const pts = cordToMouth(g.localToWorld(new THREE.Vector3(d - 0.004, 0.025, w * 0.3)), m, y0).map((p) => g.worldToLocal(p));
+      const cord = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 32, 0.0032, 6), black);
+      cord.raycast = () => {};
+      g.add(cord, plugAt(g, m, black));
+    }
     g.traverse((m) => { m.userData.door = this; });
     this.object = g;
     this.pickable = g;

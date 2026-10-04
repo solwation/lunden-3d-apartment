@@ -356,11 +356,15 @@ src/hob.js             the induction hob (#158): E switches it on/off (the front
                        in world.lids, `world.hob` (`zone`, `on`) for the pan/chicken; stays with F but F switches it off
 src/pan.js             the frying pan (#159), a Holdable in the middle drawer under the hob (`world.panDrawer`, a child
                        of the drawer while at home); E on the hob with it in the hand stands it on the front zone (`onHob`)
+src/sockets.js         the kitchen's wall sockets (#442, KITCHEN_SOCKETS): white double sockets at the top of the splashback
+                       under the wall cabinets (over the Moccamaster, between the sink and the hob, in the corner; they replaced
+                       the "Hörnbox" on the worktop), merged into the kitchen (stay with F); `mouths()` (fixed: the Moccamaster's
+                       and the air fryer's, `taken`), `nearestFree`, `cordToMouth` (a cord along the worktop and up the wall), `plugAt`
 src/toaster.js         the toaster (#401, TOASTER): an OBH Nordica Piano Black (no logo; a canvas label with the dial and four buttons), a
                        Holdable standing in the bottom drawer of the drawer unit by the corner (`world.toasterDrawer`, rides with it, "Öppna
                        lådan först"); put down upright, its front to you (a worktop surface runs from the hob to the corner too); E on the plug
-                       beside it plugs it into the corner power box's second socket within TOASTER.cord ("För långt från uttaget"), the
-                       cord a curve to it; E on the lever / front toasts (glowing slots, tick + hum, pops with a pling after
+                       beside it plugs it into the nearest free wall socket within TOASTER.cord ("För långt från uttaget", sockets.js,
+                       #442), the cord along the worktop and up the splashback to it; E on the lever / front toasts (glowing slots, tick + hum, pops with a pling after
                        TOASTER.seconds; again = STOP; unplugged: "Brödrosten är inte inkopplad"); taking it unplugs it; F: home, unplugged;
                        keep.js keeps it plugged in (`keepState` / `loadKeep`, a hook any Holdable can use); empty toasting for now (#394)
 src/chicken.js         the roast chicken in the fridge (#160), a Holdable: E on the pan on the hob lays it in (a child of the
@@ -385,7 +389,7 @@ src/coffeejar.js       the coffee jar beside the Moccamaster (#334, COFFEE_JAR, 
                        the ritual's focus swaps (main.js updateFocus); stats `handBrew` = the first pot by hand
 src/airfryer.js        the air fryer (AIRFRYER, #287): an OBH Nordica Easy Fry Deluxe in the worktop corner left of the freezer, turned
                        `rot` 45° with its front diagonally out of the corner (#296; one group, so the basket's slide, the panel,
-                       the slots and the vents turn with it), its cord to the corner power box behind it; E on the handle pulls the basket out / in, E on the panel starts / stops a run
+                       the slots and the vents turn with it), its cord up the splashback to the corner wall socket (#442); E on the handle pulls the basket out / in, E on the panel starts / stops a run
                        (200° + a game-time countdown, fan hum, glowing vents; basket out = paused; "End" + beeps); fish fingers go
                        in the open basket (`FishPack.airfryHeld`, a child of the basket; a look into the open basket takes the
                        nearest one), cook golden in one run, burn in a third (smoke from the vents → the smoke alarm); a loose
@@ -882,7 +886,7 @@ tools/breaktest.html   headless test: the AK-47 breaks a glass on the dining tab
                        splash, more points far away), the timer mends it, a dart breaks a glass but not a bottle, the saber a
                        bottle, a held glass is not hit, none through a wall, a cup goes, F mends all (#263)
 tools/toastertest.html headless test (#401): the toaster in its shut drawer is blocked, open → take → on the worktop upright; unplugged
-                       refuses, plugged in at the power box, toasts (glow, the update waits, counted), pops, STOP, taking unplugs, too far
+                       refuses, plugged in at the corner wall socket (and the hob–sink one, #442), toasts (glow, the update waits, counted), pops, STOP, taking unplugs, too far
                        refuses, back in the drawer rides with it, F, a page-made reload keeps it plugged in
 tools/turbotest.html   headless test: Kaffeturbo with an injected clock — three cups in five minutes (not spread out, not milk /
                        whisky), faster indoors, the text, more coffee adds time, over again; `walktest.html?turbo` walks at that pace

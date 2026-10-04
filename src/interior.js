@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { FINISH, TILED_ROOMS, KITCHEN as K, SKIRTING, LAUNDRY_SINK, LAUNDRY_CABINET, VANITY_BASIN, HAVBACK, LIGHTING } from './config.js';
+import { FINISH, TILED_ROOMS, KITCHEN as K, SKIRTING, LAUNDRY_SINK, LAUNDRY_CABINET, VANITY_BASIN, HAVBACK, LIGHTING, KITCHEN_SOCKETS } from './config.js';
 import { wallCabinet } from './cabinets.js';
 import { Fridge } from './fridge.js';
 import { buildOvens } from './ovens.js';
@@ -10,6 +10,7 @@ import { attachContents, Pack, frameMatrix, mirrorCabinet, vanityDrawer, laundry
 import { fillKitchen } from './kitchenstuff.js';
 import { Openable, pivotAround } from './openables.js';
 import { Moccamaster } from './coffee.js';
+import { socketGeometry } from './sockets.js';
 import { mirrorMaterial, litMirrorMaterial, litEmissive, litReflect } from './mirror.js';
 import { addReflector } from './reflections.js';
 
@@ -144,6 +145,10 @@ function worldUV(geo, [ox, oy, oz]) {
     else uv.setXY(i, x, y);
   }
 }
+
+// the kitchen's wall sockets (#442): a white plate, light grey cups
+const socketMats = { plate: new THREE.MeshStandardMaterial({ color: KITCHEN_SOCKETS.color, roughness: 0.35 }),
+  cup: new THREE.MeshStandardMaterial({ color: 0xdedede, roughness: 0.5 }) };
 
 class Batch {
   constructor() { this.parts = new Map(); }
@@ -407,7 +412,7 @@ function buildKitchen(B, group, floor, y0, yC, handled, taps, appliances) {
   const east = cabs.filter((c) => dirOf(c) === 'w').sort((a, b) => a.z0 - b.z0);
   const ret = cabs.filter((c) => dirOf(c) === 'n' && !fridges.includes(c));
   const hobCab = hobF && cabs.find((c) => inside(hobF, c));
-  // the drawer unit nearest the corner power box: the toaster stands in its bottom drawer (#401, toaster.js)
+  // the drawer unit nearest the corner: the toaster stands in its bottom drawer (#401, toaster.js)
   const toasterCab = east.filter((c) => c !== tall && c !== hobCab && c.label !== 'DM' && !(sinkF && inside(sinkF, c))).at(-1);
 
   // the plan's cabinet rectangles overlap by a couple of cm along a run: meet in the middle, so neighbouring
@@ -536,8 +541,12 @@ function buildKitchen(B, group, floor, y0, yC, handled, taps, appliances) {
     group.add(hob.object);
     appliances.push(hob);
   }
-  // Corner power box (Hörnbox svart) on the worktop
-  B.box(eastWall - 0.1, eastWall, southWall - 0.1, southWall, top, top + 0.05, M.black);
+  // Wall sockets at the top of the splashback (#442, sockets.js): over the Moccamaster, between the sink and the hob, and in
+  // the corner (they replaced the "Hörnbox" power box on the worktop)
+  const sock = socketGeometry();
+  for (const g of sock.plate) B.add(g, socketMats.plate);
+  for (const g of sock.cup) B.add(g, socketMats.cup);
+  for (const g of sock.hole) B.add(g, M.black);
 
   // Wall cabinets along the east wall (from the tall unit to the corner) and along the
   // south wall over the corner unit; hood, a dummy front over it (#320) + gypsum boxing to the ceiling over the hob.
@@ -593,7 +602,7 @@ function buildKitchen(B, group, floor, y0, yC, handled, taps, appliances) {
   cupCabinet = { front: wallX, back: eastWall, z0: runZ0, z1: runZ0 + cupW, y0: yW, y1: yTop, material: M.front, handle: M.handle };
   // the worktop between the tall unit and the hob: somewhere to put a cup down
   cupSurfaces.push({ x0: eFront + 0.03, x1: eastWall - 0.03, z0: runZ0 + 0.03, z1: firstEnd - 0.03, y: top });
-  // and between the hob and the corner, where the toaster's cord reaches the power box (#401; the air fryer has the corner)
+  // and between the hob and the corner, where the toaster's cord reaches the corner wall socket (#401, #442; the air fryer has the corner)
   if (hob) cupSurfaces.push({ x0: eFront + 0.03, x1: eastWall - 0.03, z0: hob[1] + 0.03, z1: southWall - depth - 0.03, y: top });
   if (hob) {
     // its corner door hinges at the corner and opens to the right (the user, #319): handle away from the return row's

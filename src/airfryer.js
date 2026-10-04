@@ -1,9 +1,10 @@
 import * as THREE from 'three';
 import { AIRFRYER as A } from './config.js';
 import { sfx } from './audio.js';
+import { mouths, cordToMouth, plugAt } from './sockets.js';
 
 // The air fryer (#287): an OBH Nordica Easy Fry Deluxe in brushed stainless with a black top and base, on the worktop in
-// the corner left of the freezer, its cord to the corner power box. Two E targets:
+// the corner left of the freezer, its cord up to the corner wall socket (#442). Two E targets:
 //  - the basket (the black drawer with the long handle at the front): pulls out / pushes in. A fish finger in the hand
 //    goes into the open basket (main.js 'airfry' → FishPack.airfryHeld, up to AIRFRYER.slots), and lies there as a child
 //    of the basket, so it rides along; E on one in the open basket takes it out again;
@@ -69,7 +70,6 @@ export class AirFryer {
     g.rotation.y = THREE.MathUtils.degToRad(A.rot ?? 0);
     g.updateMatrixWorld(true);
     this.object = g;
-    const local = (wx, yy, wz) => g.worldToLocal(new THREE.Vector3(wx, y + yy, wz)); // a world (x, z) at yy over the worktop
     const base = 0.018, capY = h - 0.03, frontZ = -d / 2, basketBack = frontZ + B.d;
     // black base, the stainless body (above the basket all the way, behind it below), the black top cap
     const baseM = new THREE.Mesh(rounded(w, d, base, 0.05), black); baseM.receiveShadow = true;
@@ -120,16 +120,15 @@ export class AirFryer {
       const col = i % 3, row = Math.floor(i / 3);
       return new THREE.Vector3((col - 1) * 0.06, this.plateY, frontZ + 0.03 + row * 0.1);
     };
-    // the cord: from the back near the bottom, a short way along the worktop to a plug in the corner power box's north face
-    // (#296: the box sits right behind the turned back); the plug square to the walls, not to the fryer
-    const s = A.socket, wy = 0.006, plugAt = local(s.x - 0.025, 0.025, s.z - 0.05 - 0.01), cordEnd = local(s.x - 0.025, 0.022, s.z - 0.05 - 0.02);
-    const pts = [new THREE.Vector3(0.03, 0.03, d / 2 - 0.005), new THREE.Vector3(0.035, wy, d / 2 + 0.012),
-      new THREE.Vector3(cordEnd.x, wy, cordEnd.z - 0.01), cordEnd];
-    const cord = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 24, 0.0035, 6), cordMat);
+    // the cord: from the back near the bottom, along the worktop into the corner and up the splashback to the corner wall
+    // socket's south mouth (#442); the plug square to the walls, not to the fryer
+    const m = mouths().find((o) => o.id === 'corner-s');
+    const back = new THREE.Vector3(0, 0, 1).applyQuaternion(g.quaternion);
+    const start = g.localToWorld(new THREE.Vector3(0.03, 0.03, d / 2 - 0.005));
+    const pts = cordToMouth(start, m, y, back).map((p) => g.worldToLocal(p));
+    const cord = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 40, 0.0035, 6), cordMat);
     cord.raycast = () => {};
-    const plug = box(0.012, 0.022, 0.02, cordMat, plugAt.x, plugAt.y, plugAt.z);
-    plug.rotation.y = -g.rotation.y;
-    g.add(cord, plug);
+    g.add(cord, plugAt(g, m, cordMat));
     const self = this;
     this.basketTarget = { kind: 'airfryer', id: 'airfryer-basket', pickable: bk, toggle: () => this.setOpen(!this.open),
       get name() { return 'korgen i airfryern'; }, get verb() { return self.open ? 'skjuta in' : 'dra ut'; }, get isOpen() { return self.open; } };

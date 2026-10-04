@@ -4,6 +4,7 @@ import { Holdable, handBusy } from './holdable.js';
 import { roomEnv } from './lights.js';
 import { sfx } from './audio.js';
 import { TOASTER as T, KITCHEN } from './config.js';
+import { nearestFree, mouthPoint, cordToMouth } from './sockets.js';
 
 // The toaster (#401): the family's OBH Nordica Piano Black (docs/brodrost-obh-piano-black.jpg), a two-slice toaster in
 // glossy black with chrome ends and a chrome top plate, a browning dial and four buttons on the front (our own canvas
@@ -13,9 +14,9 @@ import { TOASTER as T, KITCHEN } from './config.js';
 // goes down) standing upright, its front to you; E on it with the drawer open puts it back.
 // Three E targets while it stands out:
 //  - the body: take it again (a plugged-in toaster is unplugged first: "dra ur sladden och ta");
-//  - the plug at the end of its cord: "Koppla in brödrosten" when the corner power box's second socket (TOASTER.socket) is
+//  - the plug at the end of its cord: "Koppla in brödrosten" when the nearest free wall socket (KITCHEN_SOCKETS, #442) is
 //    within TOASTER.cord of where the cord leaves its back, else "För långt från uttaget"; plugged in, "Dra ur sladden".
-//    The cord is then drawn as a soft curve along the worktop to the socket;
+//    The cord is then drawn along the worktop to the wall and up the splashback into that socket;
 //  - the lever and the front: plugged in, the lever goes down — the slots glow orange, a tick and a hum — and after
 //    TOASTER.seconds (by the dial) it pops up with a "pling"; E again (STOP) pops it early. Unplugged: "Brödrosten är inte
 //    inkopplad". It toasts empty for now; bread is #394 (LIFE-032). Nothing burns.
@@ -164,9 +165,15 @@ export class Toaster extends Holdable {
 
   /** Where the cord leaves its back (world). */
   cordStart(out = new THREE.Vector3()) { return this.model.localToWorld(out.set(T.w / 2 - 0.07, 0.022, T.d / 2)); }
-  /** The socket's mouth on the power box (world): its north face, 2.5 cm over the worktop. */
-  socket(out = new THREE.Vector3()) { return out.set(T.socket.x, KITCHEN.baseTop + KITCHEN.worktop + 0.025, T.socket.z); }
-  /** Standing out with the socket within the cord's reach. */
+  /** The wall socket it is plugged into, else the nearest free one (#442, sockets.js). */
+  mouth() {
+    if (this.plugged && this.plugMouth) return this.plugMouth;
+    this.model.updateMatrixWorld(true);
+    return nearestFree(this.cordStart());
+  }
+  /** That socket's mouth (world). */
+  socket(out = new THREE.Vector3()) { return mouthPoint(this.mouth(), out); }
+  /** Standing out with a free socket within the cord's reach. */
   inReach() {
     if (!this.placed) return false;
     this.model.updateMatrixWorld(true);
@@ -183,15 +190,12 @@ export class Toaster extends Holdable {
   buildCord() {
     const { w, d } = T, L = (x, y, z) => new THREE.Vector3(x, y, z);
     let pts, plugPos, plugQ = new THREE.Quaternion();
-    if (this.plugged && this.placed) {
+    if (this.plugged && this.placed) { // along the worktop to the wall and up the splashback to the socket (#442)
       this.model.updateMatrixWorld(true);
-      const s = this.socket(), y = s.y - 0.025 + 0.005, a = this.cordStart(), back = L(0, 0, 1).applyQuaternion(this.model.quaternion);
-      const foot = L(s.x, y, s.z - 0.09), p1 = a.clone().addScaledVector(back, 0.05).setY(y);
-      const mid = p1.clone().lerp(foot, 0.5), side = L(-(foot.z - p1.z), 0, foot.x - p1.x).normalize().multiplyScalar(0.04); // a little slack
-      const world = [a, a.clone().addScaledVector(back, 0.025).setY(y + 0.008), p1, mid.add(side), foot, L(s.x, y + 0.012, s.z - 0.055), L(s.x, s.y, s.z - 0.04)];
-      pts = world.map((p) => this.model.worldToLocal(p));
-      plugPos = this.model.worldToLocal(L(s.x, s.y, s.z - 0.02));
-      plugQ.copy(this.model.quaternion).invert(); // square to the walls
+      const m = this.mouth(), a = this.cordStart(), back = L(0, 0, 1).applyQuaternion(this.model.quaternion);
+      pts = cordToMouth(a, m, KITCHEN.baseTop + KITCHEN.worktop, back).map((p) => this.model.worldToLocal(p));
+      plugPos = this.model.worldToLocal(L(m.x - 0.019, m.y, m.z));
+      plugQ.copy(this.model.quaternion).invert().multiply(new THREE.Quaternion().setFromAxisAngle(L(0, 1, 0), Math.PI / 2)); // square to the wall, out of it
     } else {
       // round the back to its left end (seen from the front), the plug lying beside it where you see it
       pts = [L(w / 2 - 0.07, 0.022, d / 2), L(w / 2 - 0.06, 0.006, d / 2 + 0.03), L(w / 2 + 0.02, 0.006, d / 2 + 0.035), L(w / 2 + 0.045, 0.006, d / 2 - 0.03), L(w / 2 + 0.05, 0.008, 0.02)];
@@ -208,6 +212,7 @@ export class Toaster extends Holdable {
     on = !!on && this.placed && (this.plugged || this.inReach());
     if (on === this.plugged) return;
     if (!on) this.stopToast(false);
+    this.plugMouth = on ? this.mouth() : null;
     this.plugged = on;
     this.buildCord();
     if (!quiet) sfx.click(this.socket());
