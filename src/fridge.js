@@ -122,6 +122,7 @@ export class Fridge {
     this.door = new THREE.Group();
     this.door.position.set(hinge === 'x0' ? x0 : x1, y0, zFront);
     const dt = 0.055;
+    this.size = { w, h, dt }; // the door (the TODO post-its, todo.js, #340)
     this.door.add(box(w, h - 0.01, dt, s * w / 2, h / 2, -dt / 2, steel));
     this.door.add(box(w - 0.06, h - 0.1, 0.004, s * w / 2, h / 2, -0.002 + 0.002, liner)); // inner face
     this.door.add(box(0.02, 0.95, 0.03, s * (w - 0.05), 1.22, -dt - 0.015, steelDark));     // handle

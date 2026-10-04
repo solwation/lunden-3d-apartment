@@ -87,7 +87,7 @@ export class Posters {
    * the fridge/freezer (lids with a `door`); note: the changelog note (no poster over it).
    */
   constructor(scene, world, marks, note) {
-    Object.assign(this, { scene, world, marks, note, list: [], cache: null });
+    Object.assign(this, { scene, world, marks, note, list: [], cache: null, reserved: [] }); // reserved: more areas kept free (the TODO post-its, #340)
     this.group = new THREE.Group(); // the posters on walls (in world coordinates)
     scene.add(this.group);
     // fridge / freezer doors that open: a group on each door holds its posters
@@ -214,13 +214,16 @@ export class Posters {
     return true;
   }
 
-  /** Would a sheet at p cover the changelog note? */
+  /** Would a sheet at p cover the changelog note (or a `reserved` area: { object, area: { w, h } }, #340)? */
   overNote(p, n) {
-    if (!this.note) return false;
-    const np = this.note.object.getWorldPosition(new THREE.Vector3()), d = np.sub(p);
-    if (Math.abs(d.dot(n)) > 0.08) return false;
     const right = new THREE.Vector3().crossVectors(UP, n).normalize();
-    return Math.abs(d.dot(right)) < D.w / 2 + 0.1 && Math.abs(d.y) < D.h / 2 + 0.13;
+    return [this.note, ...this.reserved].some((o) => {
+      if (!o) return false;
+      const d = o.object.getWorldPosition(new THREE.Vector3()).sub(p);
+      if (Math.abs(d.dot(n)) > 0.08) return false;
+      const hw = o.area ? o.area.w / 2 : 0.1, hh = o.area ? o.area.h / 2 : 0.13;
+      return Math.abs(d.dot(right)) < D.w / 2 + hw && Math.abs(d.y) < D.h / 2 + hh;
+    });
   }
 
   /** Show the ghost of `image` (a texture) at a spot, or hide it (null). */

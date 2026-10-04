@@ -20,6 +20,9 @@ in Swedish. Code, comments and this file are in English; UI text is Swedish.
   in-progress`) when you stop without finishing, when you close the issue after implementing it
   (`Fixes #N` closes it, but does not remove the label — do that too), and when you **reopen** an
   issue. A reopened issue starts without the label until someone picks it up again.
+- **Every new issue gets a `Lapp: <text>` line** in its body (#340): 2–6 plain everyday Swedish words
+  ("Laga glitchiga kuddar", "Kaffeburk vid bryggaren") — the open issues are post-its on the fridge door; without
+  the line the title is cleaned up automatically (src/todo.js `cleanTitle`).
 - **Reference images** (screenshots, product photos, Peab renders) that the user sends in with a
   request are always committed to `docs/` (descriptive file names, e.g. `docs/sekretar-bang-oppen.png`)
   and linked from the issue as `https://github.com/solwation/lunden-3d-apartment/blob/main/docs/<file>`,
@@ -41,6 +44,9 @@ writes the commit SHA into `src/version.js` (`BUILD`) and `version.json`, and ap
 `?v=SHA` to module imports / `data/plan.json` so a reload never mixes cached old modules.
 It also writes a **content hash** (`CONTENT` in version.js, `content` in version.json, #304) of what the page loads:
 index.html, the manifest, icons/, src/, data/, textures/ and stamp.sh — not tools/, docs/, the PDF or the .md files.
+It also writes `data/todo.json` from the repo's open issues (`tools/todo.py`, REST API with the workflow's
+GITHUB_TOKEN, `[]` on any error) AFTER the hash and outside it (#340): a changed TODO list reloads nobody; the Pages
+workflow also runs once a day (schedule) so the post-its follow the issues. Locally `data/todo.sample.json` is used.
 Commits that only touch docs/, material/, cloudflare/, `*.md` or cloud.yml do not deploy at all (`paths-ignore`).
 The page polls `version.json` every minute; when its content hash differs from `CONTENT` (`isNewer`; a file without a
 hash falls back to the SHA) it reloads by itself — a new SHA with the same content (tests, reference images) is no
@@ -397,6 +403,11 @@ cloudflare/            the Worker (NOT published on Pages): worker.js (API, limi
                        dev.mjs (the same Worker on Node with an in-memory KV, for tests), README.md (Swedish, for the user);
                        .github/workflows/cloud.yml redeploys on cloudflare/** changes when the repo has Cloudflare secrets
 src/calendar.js        the cat calendar (CALENDAR): a cat per month, the days, the chosen date; #cal-panel picks it
+src/todo.js            the TODO post-its on the fridge door (#340, TODO_NOTES): loadTodo (data/todo.json, else
+                       todo.sample.json), `cleanTitle` (an issue title → a short phrase), one canvas atlas on one
+                       plane (a child of the door, kept clear of drawings via posters.reserved); E opens the #note
+                       panel as "Att göra" (`showNote(true, true)`, every issue + "Se på GitHub"); F keeps them
+tools/todo.py          the open issues → data/todo.json at publish time (stamp.sh); `Lapp:` line, kind, in-progress
 src/fridge.js          the fridge: hollow, lit, opens with E (in world.lids); `shelfSpot` = the chicken's place; the freezer is
                        the same class (`freezer: true`, #161): drawers + shelves, the changelog note rides on its door;
                        open past FRIDGE_ALARM.after s it beeps and a red LED blinks (`onAlarm` → a deduction, #288; the note
@@ -505,6 +516,8 @@ tools/scoretest.html   headless test: points from 0, a door (again: a little), t
                        (+ a new coat), 100 sips (no cap), a basket / a three, secret kinds (+ rare), the balance; deductions (#288):
                        the fridge alarm (+ longer, the note pauses the freezer), a burnt fish finger, the smoke alarm, a spill, the cat
                        shot (hiss, flight, once, no cat for a while), never below 0 / no debt, the red "−N"; reset
+tools/todotest.html    headless test of the TODO post-its (#340): the sample loads, on the fridge door (swing with it),
+                       E opens / closes "Att göra", no walking, no drawing over them, F keeps them, cleanTitle
 tools/notetest.html    headless test of the changelog note ("Nytt", read/close, no walking, swings with the freezer door;
                        scrolling keys, a W held from before ignored, #275)
 tools/patiotest.html   headless test of the patio seasons (parasol, beers, snowman) + sofa collision

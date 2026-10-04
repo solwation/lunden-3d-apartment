@@ -1,0 +1,9 @@
+[
+  { "n": 340, "text": "Att göra-lappar på kylen", "title": "TODO-lappar på kylskåpet: öppna issues som små post-its, hämtade vid publicering", "kind": "nytt", "inProgress": true },
+  { "n": 339, "text": "Dämpa speglarnas ljus", "title": "Speglar med belysning: dämpa ljuset och reflexerna (för starkt)", "kind": "nytt", "inProgress": true },
+  { "n": 335, "text": "Laga glitchiga kuddar", "title": "Bugg: en del kuddar ser glitchiga ut grafiskt sedan lakan och kuddar blev \"mjukare\" (#308/#309)", "kind": "bugg", "inProgress": false },
+  { "n": 334, "text": "Kaffeburk vid bryggaren", "title": "Kaffeburk med sked bredvid Moccamastern – fyll på vatten och kaffe innan man kan brygga", "kind": "nytt", "inProgress": false },
+  { "n": 331, "text": "", "title": "Sovrum 1: flytta NORDLI-byrån så långt till höger som möjligt (bort med glappet)", "kind": "nytt", "inProgress": false },
+  { "n": 327, "text": "Tak-terrasser på hus L", "title": "Hus L: takterrasser för de övre lägenheterna", "kind": "nytt", "inProgress": false },
+  { "n": 322, "text": "", "title": "Bugg: katten fastnar ibland bakom soffan", "kind": "bugg", "inProgress": false }
+]
