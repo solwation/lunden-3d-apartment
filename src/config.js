@@ -928,6 +928,14 @@ export const TARGET = {
 // of the eye.
 export const HOLD = { reach: 2.2 };
 
+// The life simulator (epic #364, src/life.js; docs/livssimulator-inventering.md). `dev` = the developer scenario
+// `&life` (#365): a reproducible start in the kitchen, never saved — the visitor's place (x, z, yaw°, pitch°), the
+// clock (noon, paused, unless &time is given) and the test things: an empty cup and the milk on the free worktop between
+// the sink and the hob (x 4.98…5.52 there), an empty wine glass on the dining table (SKANSNÄS, top 0.754). Our picks.
+export const LIFE = {
+  dev: { at: [4.35, 2.75, -90, -32], hour: 12, cup: [5.24, 2.62], milk: [5.26, 2.95], glass: [3.55, 1.45] },
+};
+
 // A new version loads by itself (#192, #277, main.js `autoReload`): after `still` s without input / movement / panel
 // / music (and nothing time-bound going on) "Uppdateras om N" counts down from `countdown` s, any input cancels it
 // ("Uppdatering avbruten" for `cancelled` s); then a `fade` s fade-out and the new version. Never still for `fallback`

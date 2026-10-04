@@ -25,6 +25,7 @@ import { updateReflections, reflectors } from './reflections.js';
 import { applySeason } from './seasons.js';
 import { saveResume, saveSession, takeResume } from './resume.js';
 import { saveWorld, loadWorld } from './keep.js';
+import { lifeDev, devScenario } from './life.js';
 import { clearLocalHome, takeResetDone } from './reset.js';
 import { Rest, chooseSpot } from './rest.js';
 import { Saber } from './saber.js';
@@ -1621,6 +1622,8 @@ const keepApp = { car, world, lights, day, grill, sonos, patio, holdables, cups,
 function keepWorld() { try { return saveWorld(keepApp); } catch (e) { console.warn('keep', e); return null; } }
 if (resumeOk && resumed.mode && resumed.world) loadWorld(keepApp, resumed.world); // mid-visit only: the game's clock too (a new visit: real time, #143)
 if (resumeOk && resumed.mode) continueAfterReload(resumed);
+// &life (#365): the life simulator's developer scenario — a cleared worktop, a few test things, never saved (life.js)
+if (lifeDev()) devScenario({ world, holdables, cups, things, milk, fish, fries, fruit, airFryer, beer, cat, day, player, camera, at: !!at, timeGiven: params0.has('time') });
 document.documentElement.classList.remove('resuming'); // the page is ready: off with the "Laddar…" cover (#222)
 
 // handle for tests/debugging (tools/touchtest.html)

@@ -8,14 +8,18 @@ const KEY = 'lunden.resume', MAX_AGE = 2 * 60 * 1000;
 // F5 (#203): the place is also written to this tab's sessionStorage every couple of seconds while visiting, so a
 // reload of the same tab carries on; a new tab / visit has none and starts as usual
 const SESSION = 'lunden.session', SESSION_AGE = 12 * 3600 * 1000;
+// The developer scenario `&life` (#365, life.js) neither reads nor writes these records: the visitor's own place stays.
+const DEV = /[?&]life(?:[=&]|$)/.test(location.search);
 
 /** Keep the place for an F5 in this tab (called every ~2 s and when the page is hidden). */
 export function saveSession(state) {
+  if (DEV) return;
   try { sessionStorage.setItem(SESSION, JSON.stringify({ ...state, ts: Date.now() })); } catch { /* blocked */ }
 }
 
 /** Store the place now (only called by the "Ladda om" button). */
 export function saveResume(state) {
+  if (DEV) return;
   const rec = JSON.stringify({ ...state, ts: Date.now() });
   try { sessionStorage.setItem(KEY, rec); } catch { /* blocked */ }
   try { localStorage.setItem(KEY, rec); } catch { /* blocked */ }
@@ -23,6 +27,7 @@ export function saveResume(state) {
 
 /** Read and delete the record; null when there is none, it is too old or it is broken. */
 export function takeResume() {
+  if (DEV) return null;
   let raw = null;
   for (const store of [() => sessionStorage, () => localStorage]) {
     try {

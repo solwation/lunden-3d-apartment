@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Life inventory test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+// The life simulator's starting point (#365, docs/livssimulator-inventering.md): the integration points the inventory
+// names exist as described, and the developer scenario `&life` gives the same start every time without touching the
+// visitor's own records (a resume record lying in storage is neither read nor removed, no F5 record is written).
+// Without &life the game starts as before (at START).
+//   chromium --headless=new --dump-dom http://localhost:8137/tools/inventorytest.html
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const lines = [];
+let pass = true;
+const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); pass &&= !!ok; return ok; };
+function load(src) {
+  return new Promise((res) => {
+    const f = document.createElement('iframe');
+    f.width = 700; f.height = 450; f.src = src;
+    document.body.append(f);
+    f.onload = async () => { while (!f.contentWindow.__app) await wait(100); res(f); };
+  });
+}
+(async () => {
+  // a resume record of the visitor's own (as if "Ladda om" had just been pressed) and no F5 record
+  const rec = JSON.stringify({ x: 1, z: 1, feetY: 0, yaw: 0, pitch: 0, mode: 'touch', ts: Date.now() });
+  sessionStorage.removeItem('lunden.session');
+  localStorage.setItem('lunden.resume', rec); sessionStorage.setItem('lunden.resume', rec);
+  const f = await load('../index.html?life&shot');
+  const w = f.contentWindow, A = w.__app;
+  const { world, cups, things, milk, player, day, cat, fridge, heldItem } = A;
+  const V = A.camera.position.constructor;
+  const near = (o, x, z, tol = 0.02) => { const p = o.getWorldPosition(new V()); return Math.hypot(p.x - x, p.z - z) < tol; };
+  // the scenario
+  const cup = cups.cups.find((c) => c.state === 'placed');
+  check(cup && near(cup.model, 5.24, 2.62) && Math.abs(cup.model.position.y - 0.93) < 0.01 && cup.fill === 0, 'an empty cup on the worktop');
+  check(milk?.placed && near(milk.model, 5.26, 2.95), 'the milk on the worktop');
+  const glass = things.find((t) => t.kind === 'glass' && t.name === 'vinglaset');
+  check(glass?.placed && near(glass.model, 3.55, 1.45) && Math.abs(glass.model.position.y - 0.754) < 0.01 && glass.fill === 0, 'an empty wine glass on the dining table');
+  check(!heldItem(), 'nothing in the hand');
+  check(world.lids.every((l) => !l.isOpen) && !fridge.isOpen, 'every front, the fridge and the freezer shut');
+  check(!cat.visible && cat.awayFor === Infinity, 'no cat, none turns up');
+  check(Math.abs(day.hour - 12) < 0.01 && day.paused, `noon, paused (${day.hour.toFixed(2)})`);
+  check(Math.hypot(player.pos.x - 4.35, player.pos.z - 2.75) < 0.05, `the visitor in the kitchen (${player.pos.x.toFixed(2)}, ${player.pos.z.toFixed(2)})`);
+  await wait(2500); // keepSession runs every 2 s (only once played, but never with &life)
+  check(localStorage.getItem('lunden.resume') === rec && sessionStorage.getItem('lunden.resume') === rec, 'the visitor\'s resume record untouched');
+  check(sessionStorage.getItem('lunden.session') === null, 'no F5 record written');
+  // the integration points in the inventory
+  const lid = (pred) => world.lids.find(pred);
+  const dw = lid((l) => l.name === 'diskmaskinen');
+  check(dw && dw.mode === 'flap' && dw.stock === 'own' && dw.kind === 'cabinet', 'the dishwasher: a flap Openable, its racks its own');
+  const sink = lid((l) => l.stock === 'sink'), bins = world.lids.filter((l) => l.stock === 'own' && l.mode === 'hinge');
+  check(sink && bins.length === 1 && Math.abs(bins[0].object.getWorldPosition(new V()).z - 2.58) < 0.05, 'under the sink: the sink cabinet + the bins front (stock own)');
+  const kinds = world.lids.filter((l) => l.stock).map((l) => l.stock);
+  check(['plates', 'glasses', 'mugs', 'dry', 'tea', 'cutlery', 'utensils', 'rolls', 'drawerPots', 'baking', 'serving', 'festive', 'corner'].every((k) => kinds.includes(k)), `kitchen fronts stocked (${[...new Set(kinds)].join(', ')})`);
+  check(lid((l) => l.panHome) && lid((l) => l.panHome).mode === 'drawer', 'the pan\'s drawer under the hob');
+  check(fridge.milkAt && fridge.shelfSpot && A.fish && A.world.lids.find((l) => l.kind === 'fridge' && l.freezer).shelves.length === 2, 'fridge: milkAt + shelfSpot; freezer: 2 shelves + the fish carton');
+  check(A.taps.some((t) => t.name === 'köksblandaren'), 'the kitchen tap');
+  const kept = A.keepWorld();
+  check(kept && kept.v === 1 && kept.things && kept.open !== undefined, `keep.js world record v${kept?.v} with ${Object.keys(kept ?? {}).join(', ')}`);
+  f.remove();
+  localStorage.removeItem('lunden.resume'); sessionStorage.removeItem('lunden.resume');
+  // without &life: the game as before
+  const g = await load('../index.html?shot&time=12&freeze');
+  const B = g.contentWindow.__app;
+  const START = { x: B.player.pos.x, z: B.player.pos.z };
+  check(B.player.pos.z < -5 && B.cups.cups.filter((c) => c.state === 'cabinet').length === 3 && !B.milk.placed, `no &life: outside at START (${START.x.toFixed(1)}, ${START.z.toFixed(1)}), cups in the cabinet, the milk in the fridge`);
+  lines.push(pass ? 'ALL PASS' : 'SOME FAILED');
+  out.textContent = lines.join('\n');
+})();
+</script>
+</body>
+</html>

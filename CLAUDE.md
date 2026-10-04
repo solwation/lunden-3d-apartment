@@ -538,6 +538,8 @@ src/screens.js         TV programmes drawn on a canvas (PROGRAMS: space, underwa
 src/detail.js          DetailCuller (#189): far-away small meshes and things inside the flat hidden by its walls (seen from
                        outside) go to a layer the camera does not render; roots with `userData.moving` (our car, the cat,
                        darts, the basketball) are judged every update, not only when the camera moves (#267)
+src/life.js            the life simulator (epic #364) glue; the `&life` developer scenario (#365). What it builds on:
+                       docs/livssimulator-inventering.md (the inventory: reuse / extend / missing per system)
 src/changelog.js       changelog list + the note on the freezer (newest `t` first, "Nytt" by the highest `t` seen, #341; E to read; `scrollNote`: ↑ ↓ / W S, PageUp/Down, Space,
                        Home/End scroll it, the wheel is passed on under pointer lock, #275)
 src/install.js         iPhone "add to home screen" sheet (no fullscreen API there); install link
@@ -701,6 +703,8 @@ tools/cloudtest.html   headless test of the shared world against `node cloudflar
                        taping, someone else's drawing appears, DELETE on throwing, thrown elsewhere → gone here, offline
                        queue, desk sheet, cat photos neither sent nor fetched (#211), a fresh visitor gets them, the
                        leaderboard (name, score, escaped list, a capped cheat), off without &cloud
+tools/inventorytest.html headless test (#365): the `&life` scenario's start state, the visitor's records untouched, the
+                       integration points the inventory names; without &life the game starts at START
 tools/stamp.sh         build the published site with a version stamp (used by CI)
 tools/changelog_stamp.py the published changelog.json (run by stamp.sh): `t` per entry from git history, newest first,
                        a warning on duplicate / out-of-order ids (#341)
@@ -1023,6 +1027,9 @@ URL parameters (debugging / screenshots):
 - `&weather=rain|storm|snow|hail|clear` — force the weather (#248, #249).
 - `&blinds=0…1` — every pleated blind drawn up that far (#273; not saved).
 - `&fries` — golden, steaming fries in the open air-fryer basket (#301).
+- `&life` — the life simulator's developer scenario (#365, `src/life.js` `devScenario`, `LIFE.dev`): everything at home and
+  shut, no cat, noon paused (unless `&time`), the visitor in the kitchen, an empty cup + the milk on the worktop, a wine glass
+  on the dining table. The resume / F5 records are neither read nor written (`resume.js`), so the visitor's own place stays.
 - `&fall=h` — drop from h m (default 5) above the ground where you start (#361; with `&at=`): over 3 m it hurts.
 - `&hoop` — the basketball hoop up out front. `&car` — our car parked in front of the house. `&water` — turn on every tap and shower. `&tv` — switch the TV on. `&laptop` — Tilly's laptop on. `&secret=i` — the secret drawer shows surprise i (SECRET.items, with `&open`).
 - `&phone` — the short touch-only start screen. `&install` — show the iPhone install sheet. `&note` — open the changelog note. `&pet` (with `&cat=`) — the cat is being petted.

@@ -9,7 +9,7 @@
     try {
       const ok = (raw, age) => { if (!raw) return false; const r = JSON.parse(raw); return !!r.mode && Date.now() - r.ts < age; };
       const once = sessionStorage.getItem('lunden.resume') ?? localStorage.getItem('lunden.resume');
-      if (!/[?&]at=/.test(location.search) && (once ? ok(once, 120000) : ok(sessionStorage.getItem('lunden.session'), 43200000))) document.documentElement.classList.add('resuming');
+      if (!/[?&](at=|life(?:[=&]|$))/.test(location.search) && (once ? ok(once, 120000) : ok(sessionStorage.getItem('lunden.session'), 43200000))) document.documentElement.classList.add('resuming');
     } catch { /* storage blocked: the start screen as usual */ }
   </script>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
