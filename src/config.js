@@ -926,6 +926,21 @@ export const GARAGE = {
   // `carLight`: the ambient light added while the visitor is down here with the tubes on (#440: the cars and our Renault
   // are lit materials; the baked shell is not), × how far in (DayCycle.lit)
   lights: { hold: 90, flicker: 0.7, amb: 0.22, r: 2.6, dim: 0.92, intensity: 2.2, range: 10, sensor: 8, spacing: 5.2, carLight: 4 },
+  // #452 (src/escape.js), all ASSUMPTION (placement, sizes; our own drawings, no real company's): the ways out are the garage
+  // door (rect 'doorway') and the stairwell (rect 'core', up to the portik). A distance field over the rectangles (minus
+  // partials, columns, förråd cages) gives each spot its way to the nearest. `hang`: green "Nödutgång" signs `w` × w/2
+  // m under the ceiling (centre `y` over the floor), double-sided, square across the way (its first `look` m): per face
+  // an arrow ahead / left / right or a U-turn, as the way goes for that face's reader — [x, z], or [x, z, face] = one face
+  // only; `wall`: flat over a doorway [x, z, face, y] ('ahead'); always lit. `plans`: framed A3 utrymningsplaner (`size` m) on a wall [x, z, face, y over the floor],
+  // drawn from the rectangles and turned the way the reader faces, "Du är här" at the plan; an extinguisher beside each.
+  escape: {
+    w: 0.44, y: 2.25, look: 5,
+    hang: [[-64.3, 44], [-53.1, 44], [-47.4, 42], [-68.6, 44, 'e'], [-46.2, 20.8], [-35.7, 20.8], [-25.1, 20.8], [-41, 27], [-30.4, 27], [-20, 27],
+      [-15, 18.6], [-4.8, 20.8], [4.35, 20.8], [-30.1, 9.95], [-24.7, 9.95], [-13, 8.6], [-8, 8.6], [-2.6, 8.6], [2.9, 8.6], [-28.7, 4.0], [-22, 4.0],
+      [-15, 6.9, 'n'], [-5.4, 4.0], [5.7, 4.0]],
+    wall: [[-19.25, 8.4, 'w', 2.35], [-16.33, 8.4, 'e', 2.35], [-16.1, 12.62, 's', 2.35], [-0.53, 7.5, 'n', 2.35]],
+    plans: [[-16.98, 9.95, 'n', 1.45], [-13.4, 12.62, 's', 1.5]], size: [0.42, 0.297],
+  },
 };
 
 // Hus L's stair core by the portik (#415, src/core.js): the stairwell and the lift from the garage (våning −1) to the

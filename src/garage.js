@@ -4,6 +4,7 @@ import { GARAGE as G, SITE, CORE } from './config.js';
 import { carGeometry, bikeGeometry } from './streetlife.js';
 import { groundY } from './surroundings.js';
 import { sfx } from './audio.js';
+import { escapeField, exitTexture, EXIT_CELLS, planTexture } from './escape.js';
 
 // The garage under the courtyard and Hus L's basement (#357, #417, GARAGE in config — the layout is the våning −1
 // plan's; heights, stalls, cages and lights are ours). The entrance hall behind the garage door (SITE.terrain.garageDoor)
@@ -196,7 +197,7 @@ export class Garage {
     this.rects = RECTS;
     this.roomNames = [...new Set(RECTS.map((r) => r.room))];
     // per area: the geometries per material, an own group (drawn or not), the sensor's state
-    this.areas = Object.fromEntries(AREAS.map((a) => [a, { name: a, group: new THREE.Group(), geos: { shell: [], mesh: [], signs: [], tubes: [] }, floors: [],
+    this.areas = Object.fromEntries(AREAS.map((a) => [a, { name: a, group: new THREE.Group(), geos: { shell: [], mesh: [], signs: [], tubes: [], exits: [], plans: [] }, floors: [],
       on: false, level: 0, hold: 0, flickT: 0 }]));
     for (const a of Object.values(this.areas)) group.add(a.group);
     const areaAt = (x, z) => this.areas[rectAt(x, z)?.area ?? 'entrance'] ?? this.areas.entrance;
@@ -340,6 +341,7 @@ export class Garage {
         inst(glass, new THREE.MeshStandardMaterial({ color: 0x33495c, roughness: 0.05, metalness: 0.55 })),
         inst(tyres2, new THREE.MeshStandardMaterial({ color: 0x141517, roughness: 0.85 })));
     }
+    this.escape(put, segs);
     // the meshes per area: their colour follows the area's tubes (setLevel)
     const meshTex = meshTexture();
     for (const a of Object.values(this.areas)) {
@@ -349,9 +351,11 @@ export class Garage {
         signs: new THREE.MeshBasicMaterial({ vertexColors: true, map: SIGN_TEX.v.tex }),
         tubes: new THREE.MeshBasicMaterial({ color: 0xffffff }),
         floors: a.floors.map((f) => new THREE.MeshBasicMaterial({ vertexColors: true, map: f.tex })),
+        exits: this.exitMat, // (always lit, #452)
+        plans: a.geos.plans.length ? new THREE.MeshBasicMaterial({ vertexColors: true, map: this.planTex }) : null,
       };
       const add = (geos, mat) => { if (!geos.length) return; const m = new THREE.Mesh(mergeGeometries(geos), mat); m.raycast = () => {}; a.group.add(m); };
-      for (const k of ['shell', 'mesh', 'signs', 'tubes']) add(a.geos[k], a.mats[k]);
+      for (const k of ['shell', 'mesh', 'signs', 'tubes', 'exits', 'plans']) add(a.geos[k], a.mats[k]);
       a.floors.forEach((f, i) => add([f.geo], a.mats.floors[i]));
       delete a.geos;
     }
@@ -407,6 +411,80 @@ export class Garage {
     this.door = new GarageDoor(this.areas.entrance.group); // #358
     this.targets.push(...this.door.targets);
     for (const a of Object.values(this.areas)) this.setLevel(a, 0);
+  }
+
+  /**
+   * The ways out (#452, GARAGE.escape): a distance field to the garage door and the stairwell, green "Nödutgång" signs
+   * under the ceiling pointing along it (and flat over the doorways towards them), framed utrymningsplaner with an
+   * extinguisher beside each. `this.exitWay(x, z)` = the way from there (tools/garagetest.html).
+   */
+  escape(put, segs) {
+    const E = G.escape, K = G.columns.size / 2 + 0.15;
+    const blocks = [...G.partials, ...COLUMNS.map(([x, z]) => [x - G.columns.size / 2, x + G.columns.size / 2, z - G.columns.size / 2, z + G.columns.size / 2])];
+    const field = escapeField(RECTS, (x, z) => {
+      const r = rectAt(x, z);
+      if (!r || (r.id === 'core' && z < CORE.south[0])) return false; // (not up the stair: the landing is the way out)
+      if (G.partials.some(([x0, x1, z0, z1]) => x > x0 - 0.15 && x < x1 + 0.15 && z > z0 - 0.15 && z < z1 + 0.15)) return false;
+      if (COLUMNS.some(([cx, cz]) => Math.abs(x - cx) < K && Math.abs(z - cz) < K)) return false;
+      return !CAGES.some((c) => x > c.x0 && x < c.x1 && z > c.z0 && z < c.z1);
+    }, (x, z) => rectAt(x, z)?.id === 'doorway' || rectAt(x, z)?.id === 'core');
+    this.exitWay = (x, z, len = 3) => { const p = field.path(x, z, len), [ax, az] = p[0], [bx, bz] = p[p.length - 1], l = Math.hypot(bx - ax, bz - az); return l < 1e-6 ? null : [(bx - ax) / l, (bz - az) / l]; };
+    this.exitDist = (x, z) => field.at(x, z);
+    // the signs: a white housing, the pictogram on each face (atlas rows: EXIT_CELLS), two rods up to the ceiling
+    this.exitMat ??= new THREE.MeshBasicMaterial({ map: exitTexture(), toneMapped: false });
+    const w = E.w, h = w / 2, y = F + E.y;
+    const face = (x, yy, z, n, cell) => {
+      const g = new THREE.PlaneGeometry(w, h).rotateY(facing(n[0], n[1])).translate(x + n[0] * 0.022, yy, z + n[1] * 0.022).toNonIndexed(), uv = g.attributes.uv, i = EXIT_CELLS.indexOf(cell);
+      for (let k = 0; k < uv.count; k++) uv.setXY(k, uv.getX(k), (EXIT_CELLS.length - 1 - i + uv.getY(k)) / EXIT_CELLS.length);
+      g.deleteAttribute('normal');
+      return g;
+    };
+    /** The arrow on a face with normal n (towards its reader) for the way `dir`: right of the reader = (n.z, −n.x). */
+    /** The cell on a face with normal n (towards its reader) for the way `dir`: ahead of the reader (f = −n), to the
+     * reader's right (n.z, −n.x) / left, or behind (a U-turn). */
+    const cellFor = (n, dir) => {
+      const a = -(n[0] * dir[0] + n[1] * dir[1]), l = n[1] * dir[0] - n[0] * dir[1];
+      return a >= 0.5 ? 'ahead' : a <= -0.3 ? 'back' : l > 0 ? 'right' : 'left';
+    };
+    this.exitSigns = [];
+    for (const [x, z, f] of E.hang) {
+      const dir = this.exitWay(x, z, E.look) ?? [1, 0];
+      // square across the way (seen by whoever walks along it): the plane along x when the way runs along z
+      const along = f ? Math.abs(FACES[f][1]) > 0.5 : Math.abs(dir[1]) > Math.abs(dir[0]);
+      put('shell', bake(along ? box(w + 0.03, h + 0.03, 0.04, x, y, z) : box(0.04, h + 0.03, w + 0.03, x, y, z), 0xe9eae6), x, z);
+      for (const s of [-1, 1]) put('shell', bake(box(0.012, C - y - h / 2, 0.012, x + (along ? s * w * 0.35 : 0), (C + y + h / 2) / 2, z + (along ? 0 : s * w * 0.35)), 0x9a9ea2), x, z);
+      const faces = (f ? [FACES[f]] : along ? [[0, 1], [0, -1]] : [[1, 0], [-1, 0]]).map((n) => [n, cellFor(n, dir)]);
+      for (const [n, cell] of faces) { put('exits', face(x, y, z, n, cell), x, z); this.exitSigns.push({ x, z, n, cell }); }
+    }
+    for (const [x, z, f, yy] of E.wall) {
+      const n = FACES[f], along = Math.abs(n[1]) > 0.5;
+      put('shell', bake(along ? box(w + 0.03, h + 0.03, 0.03, x, F + yy, z + n[1] * 0.015) : box(0.03, h + 0.03, w + 0.03, x + n[0] * 0.015, F + yy, z), 0xe9eae6), x + n[0], z + n[1]);
+      put('exits', face(x + n[0] * 0.01, F + yy, z + n[1] * 0.01, n, 'ahead'), x + n[0], z + n[1]);
+      this.exitSigns.push({ x, z, n, cell: 'ahead', wall: true });
+    }
+    // the plans: framed, turned the way the reader faces; the extinguisher to the reader's right of each
+    const plans = E.plans.map(([x, z, f, yy]) => {
+      const n = FACES[f], r = [n[1], -n[0]], ex = [x + r[0] * (E.size[0] / 2 + 0.16) + n[0] * 0.09, z + r[1] * (E.size[0] / 2 + 0.16) + n[1] * 0.09];
+      return { x, z, n, y: F + yy, here: [x + n[0] * 0.5, z + n[1] * 0.5], ext: [ex] };
+    });
+    const exits = [{ x: (GD.x + ENTR.x0) / 2 + 0.6, z: (GD.z0 + GD.z1) / 2, label: 'Garageport' }, { x: (CORE.x0 + CORE.x1) / 2, z: (CORE.south[0] + CORE.south[1]) / 2, label: 'Trapphus' }];
+    const rooms = [['GARAGE', -56, 49.5], ['GARAGE', -30, 15.2], ['GARAGE', 0, 25], ['MILJÖRUM', -66.3, 31.3], ['CYKELFÖRRÅD', -27.4, 6.2], ['CYKELFÖRRÅD', -2.6, 10.5],
+      ['ELRUM', -21.8, 1.4], ['FÖRRÅD', 0.2, 4.0]];
+    const P = planTexture(plans, { rects: RECTS, walls: wallLines(), blocks, cages: CAGES, core: { x0: CORE.x0, x1: CORE.x1, z0: R.core.z0, landing: CORE.south[0] }, lift: CORE.lift, exits, field, rooms });
+    this.planTex = P.tex; this.planCanvas = P.canvas;
+    this.plans = plans;
+    plans.forEach((p, i) => {
+      const c = P.cells[i], [pw, ph] = c.land ? E.size : [E.size[1], E.size[0]], along = Math.abs(p.n[1]) > 0.5;
+      const g = new THREE.PlaneGeometry(pw, ph).rotateY(facing(p.n[0], p.n[1])).translate(p.x + p.n[0] * 0.016, p.y, p.z + p.n[1] * 0.016), uv = g.attributes.uv;
+      for (let k = 0; k < uv.count; k++) uv.setXY(k, c.u0 + uv.getX(k) * (c.u1 - c.u0), c.v0 + uv.getY(k) * (c.v1 - c.v0));
+      put('plans', bake(g, 0xffffff, true), p.here[0], p.here[1]);
+      put('shell', bake(along ? box(pw + 0.03, ph + 0.03, 0.012, p.x, p.y, p.z + p.n[1] * 0.006) : box(0.012, ph + 0.03, pw + 0.03, p.x + p.n[0] * 0.006, p.y, p.z), 0xb9bdc1), p.here[0], p.here[1]);
+      // the extinguisher (6 kg powder, on a wall bracket): a red body, a black head and hose
+      const [ex, ez] = p.ext[0];
+      put('shell', bake(new THREE.CylinderGeometry(0.075, 0.075, 0.5, 14).translate(ex, F + 0.85, ez), 0xc62a20), p.here[0], p.here[1]);
+      put('shell', bake(new THREE.CylinderGeometry(0.03, 0.045, 0.1, 10).translate(ex, F + 1.15, ez), 0x1c1c1c), p.here[0], p.here[1]);
+      put('shell', bake(box(0.025, 0.4, 0.025, ex + p.n[0] * 0.08 + (along ? 0.05 : 0), F + 0.95, ez + p.n[1] * 0.08 + (along ? 0 : 0.05)), 0x1c1c1c), p.here[0], p.here[1]);
+    });
   }
 
   /** Things in the förråd: boxes, bikes, skis, a sled, tyres (baked into the shell). */
@@ -488,7 +566,7 @@ export class Garage {
   setLevel(a, k) {
     a.level = k;
     const v = 0.035 + 0.965 * k;
-    for (const m of [a.mats.shell, a.mats.mesh, a.mats.signs, ...a.mats.floors]) m.color.setScalar(v);
+    for (const m of [a.mats.shell, a.mats.mesh, a.mats.signs, ...a.mats.floors, a.mats.plans]) m?.color.setScalar(v);
     a.mats.tubes.color.setScalar(0.25 + 0.75 * k);
   }
 

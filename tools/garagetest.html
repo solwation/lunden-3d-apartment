@@ -183,6 +183,21 @@ async function run() {
   at(-20, 25);
   for (let i = 0; i < (G.lights.hold + 3) * 10; i++) step(1 / 10);
   check(!garage.on && garage.level < 0.05 && garage.under === 0, `gone: the tubes go out after ${G.lights.hold} s, daylight back`);
+  // #452: the ways out — every sign points down the distance field to the garage door / the stairwell, the plans
+  const E = G.escape, signs = garage.exitSigns, dist = (x, z) => garage.exitDist(x, z);
+  check(signs.length >= E.hang.length + E.wall.length && signs.every((s) => Number.isFinite(dist(s.x, s.z))), `${signs.length} exit-sign faces, every one with a way out (${signs.filter((s) => !Number.isFinite(dist(s.x, s.z))).map((s) => `${s.x},${s.z}`).join(' ')})`);
+  const wrong = signs.filter((s) => !s.wall).filter((s) => {
+    const f = [-s.n[0], -s.n[1]], r = [s.n[1], -s.n[0]], d0 = dist(s.x, s.z);
+    const toward = { ahead: f, back: s.n, right: r, left: [-r[0], -r[1]] }[s.cell];
+    return !(dist(s.x + toward[0] * 2, s.z + toward[1] * 2) < d0);
+  });
+  check(!wrong.length, `each face's arrow leads closer to an exit (${wrong.map((s) => `${s.x},${s.z} ${s.cell} n ${s.n} d ${f2(dist(s.x, s.z))} way ${garage.exitWay(s.x, s.z, E.look)?.map(f2)}`).join('; ')})`);
+  const wE = garage.exitWay(-60, 44), wB = garage.exitWay(-5, 8.6), wF = garage.exitWay(-5.4, 4.0);
+  check(wE[0] < -0.7 && wB[0] < -0.7 && wF[0] > 0.5, `the entrance hall's way runs west to the garage door (${f2(wE[0])}), the basement corridor's west to the stairwell (${f2(wB[0])}), the förråd's east along its passage to the door (${f2(wF[0])})`);
+  check(['ahead', 'left', 'right', 'back'].every((c) => signs.some((s) => s.cell === c)) || signs.some((s) => s.cell === 'ahead'), `the faces: ${['ahead', 'left', 'right', 'back'].map((c) => `${c} ${signs.filter((s) => s.cell === c).length}`).join(', ')}`);
+  check(garage.plans.length === E.plans.length && garage.plans.every((p) => garage.inside(p.here[0], p.here[1])) && dist(...garage.plans[0].here) < 2,
+    `${garage.plans.length} utrymningsplaner, "Du är här" on the floor in front of each, the lobby's by the stairwell (${f2(dist(...garage.plans[0].here))} m)`);
+  check(garage.planCanvas.width > 2000 && garage.exitMat.color.r === 1, 'the plans drawn on one canvas, the exit signs always lit');
   out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
 }
 </script>

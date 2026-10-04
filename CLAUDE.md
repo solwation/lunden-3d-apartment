@@ -115,7 +115,8 @@ src/doors.js           SwingDoor / SlidingDoor (E to open/close, animated, dynam
 src/exterior.js        Hus L (HUS_L): brick row with the core/portik, neighbours' patios, rendered upper
                        units with pilasters, loftgång, spiral-stair drums (a doorway `gap` onto the loftgång / landing; inside a visual-only
                        spiral stair, `HUS_L.spiral`, #444: column, open treads, wall handrail, top landing + guard, all *guess*),
-                       roof with solar panels; `husLLayout` gives each
+                       roof with solar panels; the portik paved through (its own material: no snow) with opal ceiling lamps
+                       lit with the front-door lights (`HUS_L.portikLamp`, #451); `husLLayout` gives each
                        strip its flat ids (`lower` L1001…, `upper` L1201…); the upper flats' street openings are their own
                        (`HUS_L.street` per type from bofakta, `floor` = the flat's own floor, not the building storey, #347)
                        `husLTerraces`: the roof terraces per flat (id, polygon, area vs the brochure's 10/11/12 m², #350)
@@ -156,6 +157,12 @@ src/garage.js          the garage under the courtyard + Hus L's basement (#357, 
                        while it moves, a wall while shut (also world.movingSegments), shuts by itself after `auto` s, never on
                        the visitor / the car (opens again); the box edge over the door is
                        `world.upperSegments` (only up on the courtyard); rooms Garage / Förråd / Hisshall (HUD, stats); no rain
+src/escape.js          the basement's ways out (#452, GARAGE.escape): `escapeField` = the distance to the nearest exit (the garage door,
+                       the stairwell's landing) over the garage rects minus partials / columns / cages, `path` down it; `drawExit`
+                       = our own green "Nödutgång" pictogram (running figure, door, arrow ahead / left / right / U-turn), and
+                       `planTexture` draws the utrymningsplaner from the same rects, turned the way each reader faces ("Du är här",
+                       arrows, exits, extinguishers, legend). garage.js `escape()` hangs the signs square across the way (each face
+                       its reader's arrow), flat ones over the doorways, the framed plans + extinguishers; always-lit sign material
 src/core.js            Hus L's stair core by the portik (#415, CORE in config): a walkable stairwell in the band beside the portik
                        (DRAWING: the band x −18.95 … −16.62, the lift shaft at its courtyard end; ASSUMPTION: the stair's form) —
                        doglegs (two flights side by side, floor landings at the lift end, mid-landings at the street end) from the
@@ -820,6 +827,8 @@ tools/garagetest.html  headless test (#357, #417): in from the drive (below, dra
                        förråd shut holds / E opens / walk in, the courtyard above stays at y 0 and its edge over the door holds;
                        #358: the door shut holds, the post's button opens it, it stays open while you stand in it, shuts by
                        itself, opens again if you step in, the inside button; our Renault in its stall (a box, its doors / seat)
+                       #452: every exit sign's arrow leads closer to an exit, the ways in the entrance hall / basement / förråd,
+                       the two plans with "Du är här" on the floor in front, the signs always lit
 tools/lifttest.html    headless test (#415): the portik's door holds shut / E opens, the stairwell on våning 1, the lift called, a ride
                        to −1 riding along (no way out while it moves), out into the basement, doors held open by someone in
                        the doorway, up to 3 and out onto the loftgång, the stairs 1 → 2 → 3 and 1 → −1 on foot without a fall,
