@@ -20,6 +20,13 @@ in Swedish. Code, comments and this file are in English; UI text is Swedish.
   in-progress`) when you stop without finishing, when you close the issue after implementing it
   (`Fixes #N` closes it, but does not remove the label — do that too), and when you **reopen** an
   issue. A reopened issue starts without the label until someone picks it up again.
+- **Priorities are labels.** Every issue carries exactly one of `priority: high`, `priority: medium`,
+  `priority: low` (set it when creating the issue; the user decides when unsure, default `priority: medium`).
+  When picking work, take the highest-priority open issue that is not `in-progress` (oldest first within a level;
+  `gh issue list --state open --label "priority: high"`); an issue without a priority label counts as medium. Change a
+  priority only when the user asks. Topic labels (e.g. `architecture`) are optional extras. Architecture issues whose
+  exact measurements are missing from Peab's material keep their geometry preliminary: centralise and mark the values as
+  assumptions (*guess*), never replace one guess with another and call it verified (docs/peab/arkitekturgranskning-2026-10-04.md).
 - **Every new issue gets a `Lapp: <text>` line** in its body (#340): 2–6 plain everyday Swedish words
   ("Laga glitchiga kuddar", "Kaffeburk vid bryggaren") — the open issues are post-its on the fridge door; without
   the line the title is cleaned up automatically (src/todo.js `cleanTitle`).

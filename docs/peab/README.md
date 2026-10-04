@@ -10,6 +10,7 @@ Offentligt försäljningsmaterial (Peab/FOJAB), inte bygghandlingar. Mått som l
 | `l1205-44.png` | Planritningsbroschyren 2024-12-18, tryckta sidor 44–45: L1205 (5 rok, plan 3–4 över kärnan) med takterrass 10 m² och "Loft ovan hisstopp" (#337). Tryckta sidor 34–37 = `l12xx-18.png` / `l12xx-19.png` (sid. 34 har Peabs egen render av gårdsfasaden) |
 | `info-s16-gardsfasad-parklangan.jpg`, `info-s16-render.jpg` | Informationsbroschyren 2024-09-11, sid. 16 (hela sidan, 200 dpi) och dess render av Parklängans gårdsfasad (originalbilden, 691 × 364): tegel på plan 1–3, indraget plan 4 med takterrasser och vita räcken, tegelkärnan högre (#337) |
 | `lunden-planritningsbroschyr-webb-2024-12-18.pdf`, `lunden_informationsbroschyr-webb-2024-09-11.pdf` | Originalen av plan- och informationsbroschyren (från användaren, #337). Sidbilderna ovan är utdrag ur dem; text i `text/` |
+| `arkitekturgranskning-2026-10-04.md` | ChatGPT:s (Astra) granskning av modellens tio största arkitekturavvikelser mot Peabs underlag, med källor, observerad kod, åtgärd och acceptans per punkt; underlag för issues med `architecture`-label |
 | `text/` | Textutdrag ur "Frågor och svar", informationsbroschyren och planritningsbroschyren (`planritningsbroschyr-2024-12-18.txt`, `pdftotext -layout`) (sökbara, kan ha enstaka felkodade tecken) |
 
 Ej inlagt: inredningsbroschyren och Å-husens lägenhetsblad.
