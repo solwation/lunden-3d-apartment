@@ -8,6 +8,9 @@
 //  #382 a drinking glass from the glass cabinet: water at the running tap (to the brim, no more), milk from the carton (it
 //       runs out; the empty carton goes in the bin and a full one is back next time the fridge is opened), sips lower the
 //       level, the glass becomes used, water and milk are not mixed, poured out at the tap; the carton's amount is saved.
+//  #383 food on a plate = used, eaten off = dirty (crumbs, a smear), refused in its cabinet; scraped into the bin (still
+//       dirty); washed up by hand at the running tap (half-way nothing, walking off stops it); the knife and the board dirtied
+//       by a cut and washed; the free-play switch; a glass's film; a coffee cup's ring and the cup cabinet; saved.
 //   chromium --headless=new --dump-dom http://localhost:8137/tools/life2test.html
 import { LIFE, MILK } from '../src/config.js';
 const out = document.getElementById('out');
@@ -92,7 +95,7 @@ try {
   life.view(g1).use(); secs(LIFE.drink.seconds + 0.2);
   check(g1.amount === 250 - LIFE.drink.sip && g1.clean === 'used' && (A.stats.water ?? 0) === w0 + 1, `a sip: ${g1.amount} ml left, ${g1.clean}, counted`);
   for (let k = 0; k < 10; k++) { life.view(g1).use(); secs(LIFE.drink.seconds + 0.2); }
-  check(g1.amount === 0 && g1.machine.drink === null && run('drink') === 'Dricksglaset är tomt', `drunk up: ${g1.amount} ml, "${row('drink')?.reason}"`);
+  check(g1.amount === 0 && !g1.machine.drink && run('drink') === 'Dricksglaset är tomt', `drunk up: ${g1.amount} ml, "${row('drink')?.reason}"`);
   // put down on the worktop; the milk (the scenario's, on the worktop) pours into it
   life.view(g1).placeAt(new V(5.25, 0.931, 2.4), 0); step(1 / 60);
   check(milk.ml === MILK.ml, `the carton full: ${milk.ml} ml`);
@@ -132,7 +135,7 @@ try {
   life.view(g1).take(); step(1 / 60);
   check(row('fillWater', tap)?.reason === 'Häll ut mjölken först', `milk in the glass at the tap: "${row('fillWater', tap)?.reason}"`);
   const po = run('pourOut', tap, 1);
-  check(po === true && g1.amount === 0 && g1.machine.drink === null, `poured out at the tap: ${g1.amount} ml`);
+  check(po === true && g1.amount === 0 && !g1.machine.drink, `poured out at the tap: ${g1.amount} ml`);
   check(run('fillWater', tap, LIFE.drink.fill + 0.2) === true && g1.amount === 250 && g1.machine.drink === 'water', 'then filled with water');
   tap.toggle();
   // the carton's amount is kept with the life sim's things
@@ -145,6 +148,120 @@ try {
   check(I.audit().length === 0, `audit: ${I.audit().join('; ') || 'ok'}`);
   f.remove();
 } catch (e) { pass = false; lines.push(`FAIL #382 error ${e.stack}`); }
+
+// --- #383: cleanliness, scraping plates, washing up by hand -----------------------------------------------------
+try {
+  const f = await load('life&shot');
+  const K = kit(f), { A, life, I, row, run, open, close, secs, lid, V, step } = K;
+  const tap = A.taps.find((t) => t.name === 'köksblandaren'), S = A.lifeStores.stores;
+  const putIn = (store) => row('putIn', S[store].target);
+  // a plate: food on it = used; eaten off it = crumbs, dirty (a smear shows)
+  open(lid((l) => l.stock === 'platesLife'));
+  const plate = I.all().filter((i) => i.type === 'plate' && i.place.store === 'plates').sort((a, b) => b.place.slot - a.place.slot)[0];
+  life.view(plate).take(); step(1 / 60); life.view(plate).placeAt(new V(5.25, 0.931, 2.4), 0); step(1 / 60);
+  const bread = life.create('breadSlice', { at: 'on', parent: plate.id, slot: 0 }); step(1 / 60);
+  check(plate.clean === 'used', `food on the plate: ${plate.clean}`);
+  life.view(bread).take(); step(1 / 60);
+  for (let k = 0; k < 4; k++) { life.view(bread).use(); secs(LIFE.eat.seconds + 0.2); }
+  const pobj = life.view(plate).view.object;
+  check(!I.get(bread.id) && plate.clean === 'dirty' && plate.machine.crumbs && pobj.getObjectByName('crumbs').visible && pobj.children.some((m) => m.isMesh && m.geometry.type === 'CircleGeometry' && m.visible), `eaten off it: ${plate.clean}, crumbs and a smear`);
+  life.create('cucumberSlice', { at: 'on', parent: plate.id, slot: 1 }); step(1 / 60);
+  life.view(plate).take(); step(1 / 60);
+  check(putIn('plates')?.reason === 'Diska den först', `a dirty plate into its cabinet: "${putIn('plates')?.reason}"`);
+  if (!tap.isOpen) tap.toggle();
+  check(row('wash', tap)?.reason === 'Skrapa av tallriken först', `washing it with food on: "${row('wash', tap)?.reason}"`);
+  // scraping: the food and the crumbs into the bin, still dirty
+  const bins = lid((l) => l.bin), bin = I.ofType('bin')[0];
+  check(row('scrape', bin)?.reason === 'Öppna skåpet under diskhon först', `the bin shut: "${row('scrape', bin)?.reason}"`);
+  open(bins);
+  const sc = row('scrape', bin);
+  check(sc?.label === 'skrapa av tallriken' && !sc.reason, `at the open bin: "${sc?.label}"`);
+  const b0 = bin.amount;
+  sc.run(); step(1 / 60);
+  check(I.children(plate).length === 0 && !plate.machine.crumbs && plate.clean === 'dirty' && bin.amount === b0 + 2 && I.held() === plate, `scraped: the slice and the crumbs in the bin (${bin.amount}), the plate still ${plate.clean}`);
+  check(row('scrape', bin)?.reason === 'Det finns inget att skrapa av', `again: "${row('scrape', bin)?.reason}"`);
+  close(bins);
+  // washing up by hand: the tap must run; a scrub, then clean
+  tap.toggle();
+  const rowsOff = tap.options();
+  check(rowsOff.find((r) => r.id === 'wash')?.reason === 'Sätt på kranen först' && rowsOff.find((r) => r.id === 'wash')?.quiet, 'the tap off: washing waits for the water (a quiet row)');
+  tap.toggle();
+  const w0 = A.stats.washed ?? 0;
+  const tp = tap.pickable.getWorldPosition(new V());
+  const tw = K.aim(tp, /Diska tallriken/, [[4.45, tp.z], [4.35, tp.z - 0.2], [4.35, tp.z + 0.2]]);
+  check(!!tw, `at the running tap: "${tw}"`);
+  run('wash', tap, LIFE.wash.seconds * 0.5);
+  check(plate.clean === 'dirty' && life.runner.busy, 'half-way: still dirty');
+  secs(LIFE.wash.seconds);
+  check(plate.clean === 'clean' && (A.stats.washed ?? 0) === w0 + 1 && !pobj.children.some((m) => m.isMesh && m.geometry.type === 'CircleGeometry' && m.visible), `washed: ${plate.clean}, counted, no smear`);
+  check(row('wash', tap)?.reason === 'Tallriken är redan ren', `again: "${row('wash', tap)?.reason}"`);
+  check(run('putIn', S.plates.target) === true && plate.place.at === 'slot' && plate.place.store === 'plates', 'the clean plate back in its cabinet');
+  // walking off mid-scrub stops it: nothing changes
+  I.set(plate, { clean: 'dirty' });
+  life.view(plate).take(); step(1 / 60);
+  row('wash', tap).run(); secs(0.3);
+  A.player.spawn(A.player.pos.x - 1.2, A.player.pos.z, A.camera.rotation.y); secs(LIFE.wash.seconds);
+  check(plate.clean === 'dirty' && !life.runner.busy, 'walked off mid-scrub: still dirty, nothing going on');
+  life.view(plate).placeAt(new V(5.25, 0.931, 2.4), 0); step(1 / 60);
+  // cutting dirties the knife and the board; the board is washed by hand too
+  const board = I.all().find((i) => i.type === 'board');
+  life.view(board).take(); step(1 / 60); life.view(board).placeAt(new V(5.22, 0.931, 3.0), Math.PI / 2); step(1 / 60);
+  open(A.fridge);
+  const cuc = I.all().find((i) => i.type === 'cucumber' && i.home?.store === 'fridge');
+  life.view(cuc).take(); step(1 / 60); run('putOn', board);
+  open(lid((l) => l.stock === 'utensils'));
+  const knife = I.all().find((i) => i.type === 'knife');
+  life.view(knife).take(); step(1 / 60);
+  const ct = run('cut', cuc, LIFE.cut.seconds + 0.2);
+  check(ct === true && knife.clean === 'dirty' && board.clean === 'dirty' && cuc.clean === null, `a cut: the knife ${knife.clean}, the board ${board.clean}, the cucumber has no cleanliness`);
+  check(putIn('utensils')?.reason === 'Diska den först', `the dirty knife into the drawer: "${putIn('utensils')?.reason}"`);
+  run('wash', tap, LIFE.wash.seconds + 0.2);
+  check(knife.clean === 'clean' && run('putIn', S.utensils.target) === true && knife.place.store === 'utensils', 'washed by hand, back in the drawer');
+  // the rule can be switched off (free play)
+  life.rules.washFirst = false;
+  life.view(knife).take(); step(1 / 60); I.set(knife, { clean: 'dirty' });
+  check(run('putIn', S.utensils.target) === true && knife.place.store === 'utensils', 'free play: a dirty knife goes in');
+  life.rules.washFirst = true;
+  I.set(knife, { clean: 'clean' });
+  // a glass: water uses it, milk leaves a film
+  const glass = I.ofType('glass')[0];
+  open(lid((l) => l.stock === 'glasses'));
+  life.view(glass).take(); step(1 / 60);
+  run('fillWater', tap, LIFE.drink.fill + 0.2); life.view(glass).use(); secs(LIFE.drink.seconds + 0.2);
+  check(glass.clean === 'used', `a sip of water: ${glass.clean}`);
+  run('pourOut', tap, 1);
+  I.set(glass, { machine: { drink: 'milk' } }); I.setAmount(glass, 100);
+  life.view(glass).use(); secs(LIFE.drink.seconds + 0.2);
+  const film = life.view(glass).view.object.children.find((m) => m.isMesh && m.material.opacity === 0.22);
+  check(glass.clean === 'dirty' && film?.visible, `a sip of milk: ${glass.clean}, a film`);
+  check(row('wash', tap)?.reason === 'Häll ut mjölken först', `washing it half full: "${row('wash', tap)?.reason}"`);
+  run('pourOut', tap, 1); run('wash', tap, LIFE.wash.seconds + 0.2);
+  check(glass.clean === 'clean' && !film.visible && run('putIn', S.glasses.target) === true, 'emptied, washed, back in the glass cabinet');
+  // a coffee cup: a ring once drunk from, refused in the cup cabinet until it is washed up
+  const cup = A.cups.cups.find((c) => c.state === 'placed');
+  cup.setFill(0.5); cup.take(); step(1 / 60);
+  cup.use(); secs(0.8);
+  const cab = A.cups.cabinet;
+  if (!cab.isOpen) cab.toggle();
+  const other = A.cups.cups.find((c) => c.state === 'cabinet'); // (opening refilled its spots: make room for this one)
+  Object.assign(other, { state: 'spare', slot: null }); other.model.removeFromParent();
+  check(cup.dirty && cab.blocked && cab.blockedText === 'Diska den först', `a sip from the cup: dirty, the cabinet says "${cab.blockedText}"`);
+  check(row('wash', tap)?.reason === 'Häll ut det som är i koppen först', `washing it with coffee in: "${row('wash', tap)?.reason}"`);
+  run('pourOut', tap, 1);
+  check(cup.fill < 0.01 && cup.ring.visible, 'poured out: a ring on its bottom');
+  run('wash', tap, LIFE.wash.seconds + 0.2);
+  check(!cup.dirty && !cup.ring.visible && !cab.blocked, 'washed: clean, the cabinet takes it');
+  cab.toggle(); step(1 / 60);
+  check(cup.state === 'cabinet', `back in the cabinet (${cup.state})`);
+  tap.toggle();
+  // saved: dirty things stay dirty through a record
+  I.set(plate, { clean: 'dirty', machine: { crumbs: 1 } });
+  const rec = life.serialize(); life.load(rec);
+  const p2 = I.get(plate.id);
+  check(p2.clean === 'dirty' && p2.machine.crumbs === 1, 'a record keeps the dirty plate and its crumbs');
+  check(I.audit().length === 0, `audit: ${I.audit().join('; ') || 'ok'}`);
+  f.remove();
+} catch (e) { pass = false; lines.push(`FAIL #383 error ${e.stack}`); }
 
 lines.push(pass ? 'ALL PASS' : 'SOME FAILED');
 out.textContent = lines.join('\n');

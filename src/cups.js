@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { CUPS as C, DRINKS as D, CUP_STEAM, COFFEE } from './config.js';
+import { CUPS as C, DRINKS as D, CUP_STEAM, COFFEE, LIFE } from './config.js';
 import { sfx } from './audio.js';
 import { heldItem, setHeld, handBusy, Holdable } from './holdable.js';
 import { Contents, pourAmount, drinkName } from './drinks.js';
@@ -53,10 +53,11 @@ export function cupCabinet(c) {
   const cab = {
     name: 'skåpet', kind: 'appliance', isOpen: false, z0: c.z0, width: W, t: 0, object: door, pickable: door, door, hinge: 'side', lamp: { emissiveIntensity: 0 },
     get verb() { return this.isOpen && heldItem()?.isCup ? 'ställa tillbaka koppen i' : this.isOpen ? 'stänga' : 'öppna'; },
-    get blocked() { return this.isOpen && !!heldItem()?.isCup && this.freeSlot?.() < 0; }, // all three spots taken (#215)
-    get blockedText() { return this.blocked ? 'Skåpet är fullt' : undefined; },
+    get unwashed() { return this.isOpen && !!heldItem()?.isCup && heldItem().dirty && LIFE.rules.washFirst; }, // (#383: a used cup is washed up first)
+    get blocked() { return this.isOpen && !!heldItem()?.isCup && (this.freeSlot?.() < 0 || this.unwashed); }, // all three spots taken (#215)
+    get blockedText() { return this.unwashed ? 'Diska den först' : this.blocked ? 'Skåpet är fullt' : undefined; },
     toggle() {
-      if (this.isOpen && heldItem()?.isCup) { if (this.freeSlot?.() >= 0) heldItem().goHome(); return; } // the held cup back on its shelf (#141)
+      if (this.isOpen && heldItem()?.isCup) { if (this.freeSlot?.() >= 0 && !this.unwashed) heldItem().goHome(); return; } // the held cup back on its shelf (#141)
       this.isOpen = !this.isOpen; sfx.click(door.getWorldPosition(new THREE.Vector3()));
       if (this.isOpen) this.onOpen?.(); // a new cup on every empty spot (#215)
     },
@@ -204,15 +205,18 @@ function mugModel() {
   handle.rotation.z = -Math.PI / 2; handle.position.set(C.r + 0.002, C.h * 0.55, 0);
   const coffee = new THREE.Mesh(new THREE.CircleGeometry(C.r * 0.94, 20).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ color: C.coffee, roughness: COFFEE.roughness }));
   coffee.visible = false;
-  g.add(body, inner, bottom, handle, coffee);
+  // a used cup (#383): a brown ring dried on its bottom once it is drunk from, until it is washed up
+  const ring = new THREE.Mesh(new THREE.RingGeometry(C.r * 0.5, C.r * 0.9, 20).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0x5a3a20, transparent: true, opacity: 0.45, depthWrite: false }));
+  ring.position.y = 0.0045; ring.visible = false; ring.raycast = () => {};
+  g.add(body, inner, bottom, handle, coffee, ring);
   g.traverse((m) => { if (m.isMesh) m.castShadow = true; });
-  return { g, coffee, body, plain, inner };
+  return { g, coffee, body, plain, inner, ring };
 }
 
 export class Cup {
   constructor(scene, camera, homePos, counter, design) {
-    const { g, coffee, body, plain, inner } = mugModel();
-    Object.assign(this, { name: 'koppen', placeVerb: 'ställa ner', isCup: true, scene, camera, model: g, coffee, counter, home: homePos.clone(), body, plain, inner, slot: null, placedAt: 0,
+    const { g, coffee, body, plain, inner, ring } = mugModel();
+    Object.assign(this, { name: 'koppen', placeVerb: 'ställa ner', isCup: true, scene, camera, model: g, coffee, counter, home: homePos.clone(), body, plain, inner, ring, dirty: false, slot: null, placedAt: 0,
       state: 'cabinet', contents: new Contents(), held: false, steamT: 0, heat: 0, coffeeWas: 0, milkWas: 0, grip: [C.r + 0.03, C.h * 0.45, 0] }); // grip: the hand on the handle (#195)
     const cup = this;
     this.target = { get name() { return cup.kask ? 'koppen med kaffekask' : 'koppen'; }, kind: 'cup', pickable: g, cup: this, item: this, get verb() { return cup.verb; },
@@ -276,6 +280,7 @@ export class Cup {
     this.coffee.visible = f > 0.01;
     this.coffee.position.y = 0.006 + (C.h - 0.02) * Math.min(1, f);
     this.contents.color(this.coffee.material.color);
+    this.ring.visible = this.dirty && f < 0.03;
   }
 
   press() {
@@ -361,8 +366,11 @@ export class Cup {
     this.onSip?.(this.kask ? 'kask' : this.contents.main, coffee); // coffee with whisky in it counts as kaffekask (#169)
     sfx.gulp(this.model.getWorldPosition(new THREE.Vector3()));
     this.contents.sip(C.sip);
+    this.dirty = true; // drunk from: it needs washing up before it goes back in the cabinet (#383)
     this.show();
   }
+  /** Washed up (#383, dishes.js): clean, the ring gone. */
+  wash() { this.dirty = false; this.show(); }
 
   update(dt) {
     if (this.held) { // a sip: up to the mouth, tipped, and down again
@@ -475,7 +483,7 @@ export function buildCups(scene, camera, world, cabinetBox) {
       let c = cups.find((x) => x.state === 'spare');
       if (!c) c = cups.filter((x) => x.state === 'placed').sort((a, b) => a.placedAt - b.placedAt)[0]; // the oldest out goes
       if (!c) return;
-      c.contents.clear(); c.heat = 0; c.coffeeWas = c.milkWas = 0; c.show();
+      c.contents.clear(); c.heat = 0; c.coffeeWas = c.milkWas = 0; c.dirty = false; c.show();
       c.setDesign(pick(inCab().map((x) => x.design)));
       c.goHome(i);
     }

@@ -10,6 +10,14 @@ import { drinkName } from './drinks.js';
 //        (a full glass says "Dricksglaset är fullt" — no spill, the deduction #288 stays with the old glasses and cups);
 //        one drink at a time (water and milk are not mixed: "Häll ut … först"); drunk from, the glass is used. What is
 //        left can be poured out at the tap. The carton (milk.js) loses what it pours and its empty one is a package.
+//   #383 cleanliness (items.js `clean`: 'clean' | 'used' | 'dirty'): food on a plate / the board makes it used; food eaten off
+//        a plate leaves crumbs and makes it dirty, cutting dirties the knife and the board, butter / cheese the butter knife and
+//        the slicer, a sip of water uses a glass and milk leaves a film (dirty), a sip from a coffee cup leaves a ring
+//        (cups.js `dirty`). Each shows (lifemodels.js smears, the film, the cup's ring). Scraping: a plate in the hand at the
+//        open bin — its food and crumbs go in, it stays dirty. Washing up by hand: something used / dirty in the hand at the
+//        running kitchen tap (LIFE.wash.taps) — "Diska …", a scrub of LIFE.wash.seconds with a splash, then clean (a plate
+//        with food on it is scraped first, a glass / cup emptied first). The wooden board is washed this way only. A used /
+//        dirty thing is refused in its cabinet or drawer ("Diska den först", stores with `cleanOnly`, LIFE.rules.washFirst).
 
 const cap = (s) => (s ? s[0].toUpperCase() + s.slice(1) : s);
 /** A drink's definite form ("vattnet", "mjölken"). */
@@ -24,6 +32,7 @@ export function dishActions(life) {
   const drinkIn = (it) => (it.amount > 0.5 ? it.machine?.drink ?? null : null);
   const isBasinTap = (t) => t?.kind === 'tap' && !t.spec?.shower;
   const level = (c, kind, ml) => c.heldView?.view?.level?.(kind, ml) ?? c.targetView?.view?.level?.(kind, ml);
+  const isWashTap = (t) => isBasinTap(t) && LIFE.wash.taps.includes(t.name);
   const restore = (v, job) => { if (job.base && v?.held) { v.model.position.copy(job.base); v.model.rotation.copy(v.heldPose.rot); } v?.refresh(); };
 
   // water from the running tap into the glass in the hand: up to the brim, never more
@@ -64,20 +73,96 @@ export function dishActions(life) {
   // what is left in the glass poured out at the tap (the sink under it)
   A.define({
     id: 'pourOut', order: 2, duration: LIFE.drink.pour * 0.6,
-    label: (c) => `hälla ut ${the(drinkIn(c.held))}`,
-    applies: (c) => isGlass(c.held) && isBasinTap(c.raw) && !!drinkIn(c.held),
-    reserve: (c) => ({ inputs: [c.held] }),
+    label: (c) => (c.held ? `hälla ut ${the(drinkIn(c.held))}` : 'hälla ut det som är i koppen'),
+    applies: (c) => isBasinTap(c.raw) && (isGlass(c.held) ? !!drinkIn(c.held) : !!c.heldView?.isCup && c.heldView.fill > 0.01), // (a coffee cup too, #383)
+    reserve: (c) => ({ inputs: c.held ? [c.held] : [] }),
     animate: (c, k, job) => {
       const v = c.heldView;
       if (!v?.held) return;
       job.base ??= v.model.position.clone();
-      if (!job.sound) { job.sound = true; sfx.pour(v.where(), job.duration); }
-      v.model.rotation.z = v.heldPose.rot.z + 1.6 * Math.sin(Math.PI * k);
+      if (!job.sound) { job.sound = true; sfx.pour(v.model.getWorldPosition(v.model.position.clone()), job.duration); }
+      if (v.heldPose) v.model.rotation.z = v.heldPose.rot.z + 1.6 * Math.sin(Math.PI * k);
     },
-    commit: (c) => { const kind = drinkIn(c.held), ml = c.held.amount; I.set(c.held, { machine: { drink: null } }); I.setAmount(c.held, 0); life.emit('pouredOut', { item: c.held, drink: kind, ml }); return ml; },
-    done: (c, job) => restore(c.heldView, job),
-    cancel: (c, job) => restore(c.heldView, job),
-    consumes: 'the drink in the glass', result: 'an empty glass',
+    commit: (c) => {
+      if (!c.held) { c.heldView.contents.clear(); c.heldView.heat = 0; c.heldView.show(); return 1; } // the cup
+      const kind = drinkIn(c.held), ml = c.held.amount; I.set(c.held, { machine: { drink: null } }); I.setAmount(c.held, 0); life.emit('pouredOut', { item: c.held, drink: kind, ml }); return ml; },
+    done: (c, job) => { if (c.held) restore(c.heldView, job); },
+    cancel: (c, job) => { if (c.held) restore(c.heldView, job); },
+    consumes: 'the drink in the glass / the cup', result: 'an empty glass / cup',
+  });
+
+  // washing up by hand (#383): something used / dirty in the hand at the running kitchen tap
+  const washable = (c) => (c.held ? (c.held.clean ?? null) !== null : !!c.heldView?.isCup);
+  const isClean = (c) => (c.held ? c.held.clean === 'clean' : !c.heldView.dirty);
+  const heldName = (c) => (c.held ? nm(c.held) : 'koppen');
+  A.define({
+    id: 'wash', order: 1, duration: LIFE.wash.seconds,
+    label: (c) => `diska ${heldName(c)}`,
+    applies: (c) => isWashTap(c.raw) && washable(c),
+    quiet: (c) => !c.raw.isOpen || isClean(c),
+    check: (c) => {
+      if (!c.raw.isOpen) return 'Sätt på kranen först';
+      const n = heldName(c);
+      if (isClean(c)) return `${cap(n)} är redan ${/et$/.test(n) ? 'rent' : 'ren'}`;
+      if (c.held && I.children(c.held).length) return `Skrapa av ${n} först`;
+      if (c.held && drinkIn(c.held)) return `Häll ut ${the(drinkIn(c.held))} först`;
+      if (!c.held && c.heldView.fill > 0.01) return 'Häll ut det som är i koppen först';
+      return null;
+    },
+    reserve: (c) => ({ inputs: c.held ? [c.held] : [] }),
+    animate: (c, k, job) => { // scrubbed under the stream: round and round, a splash
+      const v = c.heldView;
+      if (!v?.held) return;
+      job.base ??= v.model.position.clone();
+      job.rot ??= v.model.rotation.clone();
+      if (!job.sound) { job.sound = true; sfx.handwash(v.model.getWorldPosition(v.model.position.clone()), job.duration); }
+      const a = Math.sin(Math.PI * Math.min(1, k * 1.2)), w = k * Math.PI * 10;
+      v.model.position.set(job.base.x + 0.025 * Math.cos(w) * a, job.base.y - 0.07 * a + 0.012 * Math.sin(w) * a, job.base.z);
+      v.model.rotation.z = job.rot.z + 0.25 * Math.sin(w) * a;
+    },
+    commit: (c) => {
+      if (c.held) {
+        const m = {};
+        for (const k of ['crumbs', 'load', 'loadType']) if (c.held.machine[k] !== undefined) m[k] = null;
+        I.set(c.held, { clean: 'clean', machine: m });
+      } else c.heldView.wash();
+      life.bump('washed', 1);
+      life.emit('washed', { item: c.held, what: heldName(c), by: 'hand' });
+      return true;
+    },
+    done: (c, job) => { const v = c.heldView; if (job.base && v?.held) { v.model.position.copy(job.base); v.model.rotation.copy(job.rot); } },
+    cancel: (c, job) => { const v = c.heldView; if (job.base && v?.held) { v.model.position.copy(job.base); v.model.rotation.copy(job.rot); } },
+    consumes: 'nothing', result: 'the thing clean (its crumbs and butter gone)',
+  });
+
+  // scraping a plate into the open bin (#383): its food and crumbs go in, it stays dirty
+  const scraps = (p) => I.children(p).length + (p.machine?.crumbs ? 1 : 0);
+  A.define({
+    id: 'scrape', order: -1,
+    label: (c) => `skrapa av ${nm(c.held)}`,
+    applies: (c) => !!c.held && I.has(c.held, 'dish') && !!I.def(c.held).carrier && !!c.target && I.has(c.target, 'bin'),
+    check: (c) => {
+      const shut = c.targetView?.shutReason();
+      if (shut) return shut;
+      const n = scraps(c.held);
+      if (!n) return 'Det finns inget att skrapa av';
+      if (c.target.amount + n > (I.def(c.target).capacity ?? 10) + 1e-6) return `${cap(nm(c.target))} är full`;
+      return null;
+    },
+    run: (c) => {
+      const plate = c.held, bin = c.target, n = scraps(plate);
+      const kids = I.descendants(plate).filter((k) => k.place.parent === plate.id);
+      for (const k of kids) I.remove(k, { cascade: true });
+      const parts = bin.parts.map((p) => ({ ...p })), p = parts.find((x) => x.type === 'food');
+      if (p) p.amount += n; else parts.push({ type: 'food', amount: n });
+      I.add(bin, n);
+      I.set(bin, { parts });
+      I.set(plate, { clean: 'dirty', machine: { crumbs: null } });
+      life.bump('scraped', 1);
+      life.emit('thrown', { type: 'scraps', kind: 'food', into: bin.id, n });
+      sfx.rustle?.(c.targetView?.where());
+    },
+    consumes: 'the food on the plate and its crumbs', result: 'into the bin as food waste; the plate still dirty',
   });
 
   // something that pours (the milk carton) in the hand onto a glass standing out
@@ -135,7 +220,8 @@ export function dishActions(life) {
       const it = c.target, kind = drinkIn(it);
       const got = I.consume(it, LIFE.drink.sip);
       if (it.amount < 0.5) { I.setAmount(it, 0); I.set(it, { machine: { drink: null } }); }
-      if (it.clean === 'clean') I.set(it, { clean: 'used' });
+      if (kind === 'milk' && it.clean !== 'dirty') I.set(it, { clean: 'dirty' }); // a milky film (#383)
+      else if (it.clean === 'clean') I.set(it, { clean: 'used' });
       sfx.gulp(c.heldView?.where());
       life.bump(kind, 1);
       life.emit('drank', { item: it, drink: kind, ml: got });

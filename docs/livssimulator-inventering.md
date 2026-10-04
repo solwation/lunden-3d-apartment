@@ -116,3 +116,9 @@ Code in src/dishes.js (and cooking.js's bin), the test is `tools/life2test.html`
   package for the bin and a full one is back on its shelf after the fridge has been shut and opened). Rules: the fill stops
   at the brim (no spill for the drinking glass; the old glasses keep the spill deduction #288), one drink at a time, drunk
   from = used. The carton's amount is saved as a part of the life record (`x.milk`, `life.keepPart`).
+- **#383 clean and dirty**: items.js `clean` is now used everywhere (food on a plate = used; eaten off it, a cut, butter,
+  cheese, milk = dirty) and shows (smears, crumbs, a milky film); the coffee cups (cups.js): **extended** with `dirty` (a ring
+  after a sip, refused in the cup cabinet until washed). Scraping a plate at the open bin moves its food and crumbs into the
+  bin (still dirty). Washing up by hand at the running kitchen tap (water.js taps + the life sim's tap rows): a scrub, then
+  clean; the only way for the wooden board. Rule: a used / dirty thing is refused in its cabinet / drawer ("Diska den
+  först", `LIFE.rules.washFirst`, false = free play).

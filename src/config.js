@@ -1128,6 +1128,8 @@ export const LIFE = {
   slice: { seconds: 0.6 }, // one slice off the cheese with the slicer (#378)
   sandwich: { max: 6 }, // at most this many layers on a slice of bread, butter included (#378, #379): "Mackan rymmer inte mer"
   drink: { fill: 1.6, pour: 1, sip: 40, seconds: 0.6, pourMl: 200 }, // the drinking glass (#382): filled at the tap in `fill` s (to the brim, no more), milk poured `pourMl` ml at a time over `pour` s, a sip `sip` ml over `seconds` (game s; our picks)
+  wash: { seconds: 2.4, taps: ['köksblandaren'] }, // washing up by hand (#383): a scrub at the running tap of these sinks (game s; our pick)
+  rules: { washFirst: true }, // #383: a used / dirty thing is refused in its cabinet or drawer ("Diska den först"); false = free play
   eat: { seconds: 0.5 }, // a bite: to the mouth and back (#377, #380); the bite comes off half-way // a timed action (#372) stops when the eye has moved this far (m) from where it started // putting down (#368): snap grids (m), kept this far inside a table's edge, R turns this many degrees
 };
 
@@ -1478,6 +1480,7 @@ export const SCORE = {
     baskets: 6, threes: 6, dribbles: 0.1,                 // a three = a basket + a three (12)
     turbo: 20,                                            // three cups of coffee in five minutes
     beer: 0.3, coffee: 0.3, wine: 0.3, champagne: 0.3, whisky: 0.3, milk: 0.3, kask: 0.6, water: 0.2, // sips (water: the drinking glass, #382)
+    washed: 0.3, scraped: 0.2,                            // a thing washed up by hand, a plate scraped into the bin (#383)
     fish: 0.5, fried: 2, chicken: 1, cooked: 8, brews: 2, // cooked = a whole chicken fried golden (burnt: a deduction, #288)
     fries: 0.2,                                           // per fry eaten (#301): a bunch is four
     cucumberSlices: 0.2,                                  // a slice of cucumber cut (#376)

@@ -42,6 +42,18 @@ const LABELS = {};
 const labelOf = (k, make) => (LABELS[k] ??= make());
 
 function mesh(geo, mat) { const m = new THREE.Mesh(geo, mat); m.castShadow = true; m.receiveShadow = true; return m; }
+/** A dirty smear (#383): a soft translucent disc of radius r lying at height y, hidden until shown. */
+function smear(r, color, y) {
+  const m = new THREE.Mesh(new THREE.CircleGeometry(r, 18).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.35, depthWrite: false }));
+  m.position.y = y; m.visible = false; m.raycast = () => {}; m.renderOrder = 1;
+  return m;
+}
+/** A smear on a blade lying along x (#383): w × d at x, on its top at y. */
+function bladeSmear(w, d, color, x, y) {
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(w, d).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.55, depthWrite: false }));
+  m.position.set(x, y, 0); m.visible = false; m.raycast = () => {};
+  return m;
+}
 function anchor(parent, x, y, z, yaw = 0) { const a = new THREE.Object3D(); a.position.set(x, y, z); a.rotation.y = yaw; parent.add(a); return a; }
 
 /** A dinner plate Ø 26 cm (a lathe): six spots, one in the middle and five round it. */
@@ -62,7 +74,12 @@ function plate() {
   }
   crumbs.visible = false;
   g.add(crumbs);
-  return { object: g, anchors, grip: [0.12, 0.012, 0.03], show(item) { crumbs.visible = item.clean === 'used' || item.clean === 'dirty'; } };
+  const sm = smear(0.075, 0x8a6a3c, 0.0072); // a dirty plate (#383): a greasy smear on the well, also once it is scraped
+  g.add(sm);
+  return { object: g, anchors, grip: [0.12, 0.012, 0.03], show(item) {
+    crumbs.visible = !!(item.machine?.crumbs ?? item.clean === 'used'); // (a plate eaten from before #383 was 'used' with crumbs)
+    sm.visible = item.clean === 'dirty';
+  } };
 }
 
 /** A wooden cutting board 40 × 26 cm: spot 0 for what is being cut along the back half, eight result spots in two rows of
@@ -75,7 +92,11 @@ function board() {
   g.add(b);
   const anchors = [anchor(g, -0.03, t, -0.068)];
   for (let k = 0; k < 8; k++) anchors.push(anchor(g, -0.135 + (k % 4) * 0.075 + Math.floor(k / 4) * 0.035, t + 0.0005, 0.005 + Math.floor(k / 4) * 0.06));
-  return { object: g, anchors, grip: [0.19, t / 2, 0.08] };
+  const st = new THREE.Group(); // a dirty board (#383): juice stains where things were cut
+  for (const [x, z, r] of [[-0.05, -0.06, 0.05], [0.06, 0.03, 0.035], [-0.12, 0.05, 0.03]]) { const m = smear(r, 0x7a8a4a, t + 0.0007); m.position.x = x; m.position.z = z; st.add(m); }
+  st.visible = false;
+  g.add(st);
+  return { object: g, anchors, grip: [0.19, t / 2, 0.08], show(item) { st.visible = item.clean === 'dirty'; } };
 }
 
 /** A cucumber (full: 30 cm, Ø 4.4 cm), along x; shorter as it is cut, with a pale cut face at the +x end. */
@@ -286,7 +307,9 @@ function knife() {
   const handle = mesh(new RoundedBoxGeometry(0.12, 0.018, 0.024, 2, 0.006), M.handle);
   handle.position.set(-0.09, 0.009, 0);
   g.add(blade, handle);
-  return { object: g, grip: [-0.09, 0.009, 0] };
+  const sm = bladeSmear(0.15, 0.03, 0x9fbf6a, 0.06, 0.0103);
+  g.add(sm);
+  return { object: g, grip: [-0.09, 0.009, 0], show(item) { sm.visible = item.clean === 'dirty'; } };
 }
 
 /** A butter knife, 20 cm, along x: a short round-tipped steel blade and a pale wooden handle (#374). */
@@ -302,7 +325,9 @@ function butterKnife() {
   lump.position.set(0.06, 0.0095, 0);
   lump.visible = false;
   g.add(blade, handle, lump);
-  return { object: g, grip: [-0.06, 0.007, 0], show(item) { lump.visible = (item.machine?.load ?? 0) > 0; } };
+  const sm = bladeSmear(0.06, 0.016, 0xf2dc86, 0.04, 0.0078);
+  g.add(sm);
+  return { object: g, grip: [-0.06, 0.007, 0], show(item) { lump.visible = (item.machine?.load ?? 0) > 0; sm.visible = item.clean === 'dirty'; } };
 }
 
 /** A cheese slicer, 24 cm, along x: a flat steel paddle with its slot and a black handle (#374). */
@@ -318,7 +343,9 @@ function cheeseSlicer() {
   const handle = mesh(new RoundedBoxGeometry(0.115, 0.012, 0.022, 2, 0.005), M.handle);
   handle.position.set(-0.057, 0.006, 0);
   g.add(paddle, handle);
-  return { object: g, grip: [-0.06, 0.006, 0] };
+  const sm = bladeSmear(0.07, 0.05, 0xf0d070, 0.08, 0.0063);
+  g.add(sm);
+  return { object: g, grip: [-0.06, 0.006, 0], show(item) { sm.visible = item.clean === 'dirty'; } };
 }
 
 /** A waste bin's insides (#381), built 1 × 1 × 1 (its store's anchor is scaled to the bin it stands in): a black bag's
@@ -359,12 +386,16 @@ function glass() {
   m.renderOrder = 1;
   g.add(m);
   const liquid = new GlassLiquid(g, INNER), contents = new Contents();
+  // a dirty glass (#383): a milky film on the inside (a thin lathe just inside the glass)
+  const film = new THREE.Mesh(new THREE.LatheGeometry(INNER.map(([r, y]) => new THREE.Vector2(r - 0.0006, y)), 20), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.22, side: THREE.DoubleSide, depthWrite: false }));
+  film.visible = false; film.raycast = () => {}; film.renderOrder = 0;
+  g.add(film);
   // what is drawn: the instance's amount, or `level(kind, ml)` while a pour / sip is going on (#382)
   const draw = (kind, ml, cap) => { contents.set(kind ?? 'water', kind ? Math.min(1, ml / cap) : 0); liquid.show(contents); };
   let cap = 250;
   return {
     object: g, grip: [0.034, 0.05, 0],
-    show(item, items) { cap = items.def(item)?.capacity ?? 250; draw(item.machine?.drink, item.amount, cap); },
+    show(item, items) { cap = items.def(item)?.capacity ?? 250; draw(item.machine?.drink, item.amount, cap); film.visible = item.clean === 'dirty'; },
     level(kind, ml) { draw(kind, ml, cap); },
   };
 }

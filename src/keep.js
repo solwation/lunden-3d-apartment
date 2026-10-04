@@ -191,6 +191,7 @@ const PARTS = {
         if (c.state === 'cabinet') e.slot = c.slot;
         if (c.state === 'placed') { e.p = vec(c.model.position); e.ry = r3(c.model.rotation.y); }
         if (c.fill > 0) { e.a = c.contents.a; e.heat = r3(c.heat); }
+        if (c.dirty) e.u = 1; // (#383)
         return e;
       });
       return { items: out, held, cups };
@@ -230,7 +231,7 @@ const PARTS = {
         } else if (e.s === 'held') heldCup = c;
         c.contents.clear();
         if (e.a && typeof e.a === 'object') c.contents.a = { ...e.a };
-        c.heat = Number(e.heat) || 0; c.coffeeWas = c.contents.a.coffee ?? 0; c.milkWas = c.contents.a.milk ?? 0;
+        c.heat = Number(e.heat) || 0; c.coffeeWas = c.contents.a.coffee ?? 0; c.milkWas = c.contents.a.milk ?? 0; c.dirty = !!e.u; // (#383: drunk from, not washed up)
         c.show();
       }
       // the hand last (taking puts back anything else held)

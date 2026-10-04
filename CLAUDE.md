@@ -721,6 +721,15 @@ src/dishes.js          the life sim's drinks and dishes (M2): #382 the drinking 
                        LIFE.drink.fill, "Dricksglaset är fullt") and 'pourOut'; the milk carton in the hand on a glass standing out
                        'pourIn' (LIFE.drink.pourMl, never over the brim, "Häll ut vattnet först", "Mjölken är slut"); 'drink' = a
                        click / "Dricka" (LIFE.drink.sip ml, the glass used, stats water / milk); the level is drinks.js GlassLiquid
+                       #383 cleanliness (`clean` 'clean' | 'used' | 'dirty'; lifemodels smears, the glass's milky film, the cup's
+                       ring): food on a plate / the board = used, eaten off a plate = dirty + `machine.crumbs`, a cut dirties the
+                       knife and the board, butter / cheese the butter knife / slicer, milk drunk the glass, a sip the coffee cup
+                       (cups.js `dirty`, keep.js `u`); 'scrape' (a plate at the open bin: its food + crumbs in, still dirty);
+                       'wash' at the running kitchen tap (LIFE.wash.taps / seconds: a scrub + sfx.handwash, then clean; food on
+                       it / a drink in it first); stores with `cleanOnly` (utensils, plates, glasses, boardRack) and the cup
+                       cabinet refuse a used / dirty thing ("Diska den först") while LIFE.rules.washFirst (`life.rules`, free play
+                       = false); 'pourOut' empties a coffee cup too; stats washed / scraped. items.set: a machine field set to
+                       null is removed
 src/actions.js         what you can do with a life-sim thing (#367): `ActionSet.define({ id, label, applies, check, run, consumes,
                        result, duration, interrupt, order, quiet })`, `list(ctx)` = the rows with a Swedish `reason` when blocked
                        ("Öppna kylen först", "Tallriken är full", "För långt bort"); life.js `baseActions`: putOn, take, open, close.
@@ -989,7 +998,10 @@ tools/lifetest.html    headless test of the life sim's M1, the sandwich flow (#3
                        page-made reload in the middle (#381)
 tools/life2test.html   headless test of the life sim's M2, reset the kitchen: the drinking glass from its cabinet, filled at the
                        running tap to the brim (half-way nothing, double presses), sips, used, milk from the carton up to the brim,
-                       no mixing, the carton running out, thrown away and back full, poured out at the tap, the carton saved (#382)
+                       no mixing, the carton running out, thrown away and back full, poured out at the tap, the carton saved (#382);
+                       used / dirty plates (crumbs, smear), refused in the cabinet, scraped into the bin, washed up by hand
+                       (half-way nothing, walking off), the knife and board after a cut, free play, the glass's film, the coffee
+                       cup's ring and its cabinet, a record (#383)
 tools/inventorytest.html headless test (#365): the `&life` scenario's start state, the visitor's records untouched, the
                        integration points the inventory names; without &life the game starts at START
 tools/stamp.sh         build the published site with a version stamp (used by CI)

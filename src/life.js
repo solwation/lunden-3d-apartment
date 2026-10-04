@@ -126,6 +126,7 @@ export class Life {
   constructor({ scene, camera, defs = ITEMS, say = () => {}, feet = () => ({ at: 'world', pos: [0, 0, 0], yaw: 0 }), floorY = () => -Infinity, persist = null, debug = false }) {
     Object.assign(this, { scene, camera, say, feet, floorY, persist, debug, dirty: false, saveT: 0 });
     this.items = new Items(defs);
+    this.rules = LIFE.rules; // the game rules (#383 washFirst …): the same object, a free-play switch can change it
     this.views = new Map();
     this.lastWorld = new Map(); // id → the last world place (a putBack falls back to it)
     this.group = new THREE.Group(); // the things lying out (world.looseItems: F hides them)
@@ -150,6 +151,9 @@ export class Life {
       else if (kind === 'move') {
         if (item.place.at === 'hand' && extra?.at === 'on' && this.items.has(this.items.get(extra.parent), 'dish') && item.machine.plate !== extra.parent) this.items.set(item, { machine: { plate: extra.parent } }); // taken off a plate: its crumbs go there (#380)
         else if (item.place.at === 'on' && this.items.has(this.items.get(item.place.parent), 'dish') && item.machine.plate !== item.place.parent) this.items.set(item, { machine: { plate: item.place.parent } });
+      }
+      if ((kind === 'create' || kind === 'move') && item.place?.at === 'on' && this.items.has(item, 'food')) { const par = this.items.get(item.place.parent); if (par?.clean === 'clean') this.items.set(par, { clean: 'used' }); } // food on a plate / the board: used (#383)
+      if (kind === 'move') {
         if (item.place.at === 'world') this.lastWorld.set(item.id, { ...item.place, pos: [...item.place.pos] }); this.views.get(item.id)?.sync(); }
       else if (kind === 'change') this.views.get(item.id)?.refresh();
       else if (kind === 'remove') this.dropView(item);
@@ -353,6 +357,7 @@ function baseActions(life) {
     check: (c) => {
       const s = I.store(c.raw.store);
       if (s.isOpen && !s.isOpen()) return s.shutText;
+      if (s.cleanOnly && LIFE.rules.washFirst && c.held.clean && c.held.clean !== 'clean') return 'Diska den först'; // (#383)
       if (I.freeSlot(s.id, c.held) >= 0) return null;
       const fits = s.slots.some((sl) => I.size(c.held) <= (SIZES[sl.size ?? 'm'] ?? SIZES.m));
       return fits ? s.fullText : `${nm(c.held)[0].toUpperCase()}${nm(c.held).slice(1)} får inte plats i ${s.name}`;

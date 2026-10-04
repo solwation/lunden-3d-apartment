@@ -115,12 +115,13 @@ export function buildStores(life, world) {
   const plates = world.lids.find((l) => l.stock === 'platesLife');
   front('plates', plates, { name: 'skåpet', shutText: 'Öppna skåpet först', fullText: 'Där får inte plats fler tallrikar' },
     [0, 1, 2].map((k) => [0.5, (b) => (b.d0 + b.d1) / 2, () => 0.002 + k * S.plates.stack, 'm']));
+  for (const id of ['utensils', 'plates']) if (I.store(id)) I.store(id).cleanOnly = true; // washed up first (#383, LIFE.rules.washFirst)
   if (I.store('plates')) Object.assign(I.store('plates'), { accepts: ['plate'], putLabel: (held) => `ställa ${I.name(held)} i skåpet` });
   // the drinking glasses (#382): three at the front of the glass cabinet's lower shelf (its static glasses stand behind them)
   const glassCab = world.lids.find((l) => l.stock === 'glasses');
   front('glasses', glassCab, { name: 'glasskåpet', shutText: 'Öppna glasskåpet först', fullText: 'Där får inte plats fler glas' },
     S.glasses.map((k) => [k, (b) => b.d1 - 0.05, () => 0.002, 's']));
-  if (I.store('glasses')) Object.assign(I.store('glasses'), { accepts: ['glass'], putLabel: (held) => `ställa ${I.name(held)} i skåpet` });
+  if (I.store('glasses')) Object.assign(I.store('glasses'), { cleanOnly: true, accepts: ['glass'], putLabel: (held) => `ställa ${I.name(held)} i skåpet` });
   // the waste bin under the sink (#381): one slot in the grey bin behind the bins' door; its anchor is scaled to the bin, so
   // the bin item's model (lifemodels.js `bin`, built 1 × 1 × 1) fits it. Another bin elsewhere (a bathroom's) is the same:
   // a store with one slot for an ITEMS 'bin' and an entry in a stock list.
@@ -147,7 +148,7 @@ export function buildStores(life, world) {
     const holdingBoard = () => I.held()?.type === 'board';
     const pick = pickBox(life.scene, new THREE.Vector3(wall - 0.12, top, R.z - 0.24), new THREE.Vector3(wall, top + 0.3, R.z + 0.24), holdingBoard);
     add('boardRack', { name: 'sin plats', isOpen: () => true, fullText: 'Där står redan en skärbräda' }, [{ size: 'l', anchor }], pick);
-    Object.assign(I.store('boardRack'), { accepts: ['board'], putLabel: (held) => `ställa ${I.name(held)} på sin plats` });
+    Object.assign(I.store('boardRack'), { cleanOnly: true, accepts: ['board'], putLabel: (held) => `ställa ${I.name(held)} på sin plats` });
   }
   life.storeTargets = targets;
   return { stores: out, targets };

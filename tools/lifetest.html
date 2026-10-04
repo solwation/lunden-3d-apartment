@@ -342,7 +342,7 @@ try {
   check(!!t1, `the knife at the open butter: "${t1}"`);
   row('dab', butter).run(); row('dab', butter)?.run(); wait(0.6);
   const lump = life.view(bknife).view.object.children[2];
-  check(butter.amount === 492 && bknife.machine.load === 8 && lump.visible && bknife.clean === 'used', `a dab: the butter ${butter.amount} g, ${bknife.machine.load} g on the knife (a lump), the knife used`);
+  check(butter.amount === 492 && bknife.machine.load === 8 && lump.visible && bknife.clean === 'dirty', `a dab: the butter ${butter.amount} g, ${bknife.machine.load} g on the knife (a lump), the knife dirty (#383)`);
   check(row('dab', butter)?.reason === 'Det är redan smör på smörkniven', `again: "${row('dab', butter)?.reason}"`);
   const t2 = aim(life.view(bread).where().setY(0.77), /Bre smöret på brödskivan/);
   check(!!t2, `at the bread: "${t2}"`);
@@ -368,7 +368,7 @@ try {
   check(!!t3, `the slicer at the cheese on the board: "${t3}"`);
   row('slice', cheese).run(); row('slice', cheese)?.run(); wait(0.9);
   const cs = I.ofType('cheeseSlice');
-  check(cheese.amount === c0 - 12 && cs.length === 1 && cs[0].amount === 12 && cs[0].place.parent === board.id && slicer.clean === 'used', `one slice (a double press): the block ${cheese.amount} g, a ${cs[0]?.amount} g slice on the board, the slicer used`);
+  check(cheese.amount === c0 - 12 && cs.length === 1 && cs[0].amount === 12 && cs[0].place.parent === board.id && slicer.clean === 'dirty', `one slice (a double press): the block ${cheese.amount} g, a ${cs[0]?.amount} g slice on the board, the slicer dirty (#383)`);
   check(life.view(cheese).view.object.children[0].scale.x < 1, 'the block is shorter');
   // on the worktop itself: the slice beside the block
   life.view(slicer).putBack(); step(1 / 60);
@@ -467,7 +467,7 @@ try {
   check(A.heldItem() === v && sw.machine.plate === plate.id, 'taken off the plate (it knows its plate)');
   A.camera.rotation.set(0.6, A.camera.rotation.y, 0); step(1 / 60);
   v.use(); for (let i = 0; i < 40; i++) step(1 / 60);
-  check(Math.abs(sw.amount - 0.75) < 1e-6 && plate.clean === 'used' && life.view(plate).view.object.getObjectByName('crumbs').visible, `one bite: ${sw.amount} left, crumbs on the plate`);
+  check(Math.abs(sw.amount - 0.75) < 1e-6 && plate.clean === 'dirty' && life.view(plate).view.object.getObjectByName('crumbs').visible, `one bite: ${sw.amount} left, crumbs on the plate`);
   v.use(); for (let i = 0; i < 40; i++) step(1 / 60);
   check(Math.abs(sw.amount - 0.5) < 1e-6 && (A.stats.sandwiches ?? 0) === n0, `two bites: ${sw.amount} left, not counted yet`);
   // put back half eaten: it stays
@@ -479,7 +479,7 @@ try {
   life.view(sw2).take(); step(1 / 60);
   for (let k = 0; k < 2; k++) { life.view(sw2).use(); for (let i = 0; i < 40; i++) step(1 / 60); }
   const p2 = I.get(plate.id), ate = events.filter(([k]) => k === 'ate');
-  check(!I.get(sw.id) && !A.heldItem() && p2 && p2.clean === 'used' && I.children(p2).length === 0, 'the last bite: the sandwich gone, the used plate left');
+  check(!I.get(sw.id) && !A.heldItem() && p2 && p2.clean === 'dirty' && I.children(p2).length === 0, 'the last bite: the sandwich gone, the dirty plate left (#383)');
   check(ate.length === 1 && ate[0][1].name === 'ost- och gurkmackan' && ate[0][1].amount === 1 && ate[0][1].parts.length === 3, `the 'ate' event: ${JSON.stringify(ate[0]?.[1] && { name: ate[0][1].name, amount: ate[0][1].amount, parts: ate[0][1].parts.length })}`);
   check((A.stats.sandwiches ?? 0) === n0 + 1 && A.totalScore() > score0 + 30, `counted once: ${A.stats.sandwiches} sandwich(es), +${(A.totalScore() - score0).toFixed(0)} points`);
   // another of the same kind: counted, a little
@@ -610,7 +610,7 @@ try {
   const n0 = A.stats.sandwiches ?? 0;
   life.view(bread).take(); step(1 / 60);
   for (let k = 0; k < 4; k++) run(K, 'eat', null, 0.6);
-  check(!I.get(bread.id) && I.get(plate.id)?.clean === 'used' && (A.stats.sandwiches ?? 0) === n0 + 1, 'flow: eaten at the table, a used plate left, counted');
+  check(!I.get(bread.id) && I.get(plate.id)?.clean === 'dirty' && (A.stats.sandwiches ?? 0) === n0 + 1, 'flow: eaten at the table, a dirty plate left (#383), counted');
   // the cucumber's end and the empty bread bag into the bin
   open(A, lid(A, (l) => l.bin));
   const bin = I.ofType('bin')[0];

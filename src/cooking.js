@@ -81,6 +81,7 @@ export function cookingActions(life) {
         made.push(I.create(cut.into, place, { amount: got }));
       }
       if (food.prep === 'whole') I.set(food, { prep: 'sliced' });
+      for (const t of [c.held, boardUnder(food)]) if (t && t.clean !== 'dirty') I.set(t, { clean: 'dirty' }); // food on the knife and the board (#383)
       life.bump(cut.stat ?? 'slices', made.length);
       return made;
     },
@@ -159,7 +160,7 @@ export function cookingActions(life) {
       sfx.chew(c.heldView?.where(), 0.7);
       life.emit('bite', { item: it, amount: got });
       const plate = I.get(it.machine?.plate); // (the plate it was taken from, #380: crumbs on it)
-      if (plate && plate.clean === 'clean') I.set(plate, { clean: 'used' });
+      if (plate && (plate.clean !== 'dirty' || !plate.machine.crumbs)) I.set(plate, { clean: 'dirty', machine: { crumbs: 1 } }); // food eaten off it: crumbs, dirty (#383)
       if (plate || d.crumbs) life.emit('crumbs', { item: it, on: plate ?? null, pos: c.heldView?.where().toArray() }); // (for the crumbs on surfaces, LIFE-024)
       if (I.isEmpty(it)) {
         const parts = it.parts.map((p) => ({ ...p })), name = I.name({ ...it, amount: d.amount });
@@ -192,7 +193,7 @@ export function cookingActions(life) {
     animate: (c, k, job) => { const v = c.heldView; if (!v?.held) return; job.base ??= v.model.position.clone(); v.model.position.y = job.base.y - 0.05 * Math.sin(Math.PI * k); },
     commit: (c) => {
       const got = I.consume(c.target, LIFE.butter.g); // (the last bit: what there is)
-      I.set(c.held, { machine: { load: got, loadType: c.target.type }, clean: 'used' });
+      I.set(c.held, { machine: { load: got, loadType: c.target.type }, clean: 'dirty' }); // butter on it (#383)
       if (I.isEmpty(c.target)) I.set(c.target, { pkg: 'empty' });
       sfx.scoop?.(c.targetView?.where(), true);
       return got;
@@ -254,7 +255,9 @@ export function cookingActions(life) {
       const block = c.target, sl = I.def(block).slice, place = job.outputs[0] ?? slicePlace(c);
       const got = I.consume(block, sl.g);
       const made = I.create(sl.into, place, { amount: got });
-      I.set(c.held, { clean: 'used' });
+      I.set(c.held, { clean: 'dirty' }); // cheese on it (#383)
+      const bd = boardUnder(block);
+      if (bd && bd.clean !== 'dirty') I.set(bd, { clean: 'dirty' });
       if (block.prep === 'whole') I.set(block, { prep: 'sliced' });
       if (I.isEmpty(block)) I.remove(block); // (nothing left of it: gone; a fresh one in the fridge next time, #373)
       sfx.chop(c.targetView?.where());
@@ -314,6 +317,7 @@ export function cookingActions(life) {
     id: 'throwAway', order: 0,
     label: (c) => `slänga ${c.held ? nm(c.held) : c.heldView.name}`,
     applies: (c) => !!wasteIn(c) && !!c.target && I.has(c.target, 'bin') && c.held !== c.target,
+    quiet: (c) => !!c.held && I.has(c.held, 'dish'), // (a plate at the bin: scraping it is the row, #383)
     check: (c) => {
       const shut = c.targetView?.shutReason();
       if (shut) return shut;

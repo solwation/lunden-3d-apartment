@@ -214,7 +214,7 @@ export class Items {
     if (fields.pkg !== undefined && (fields.pkg === null || PKG.has(fields.pkg))) it.pkg = fields.pkg;
     if (fields.prep !== undefined && (fields.prep === null || PREP.has(fields.prep))) it.prep = fields.prep;
     if (fields.clean !== undefined && (fields.clean === null || CLEAN.has(fields.clean))) it.clean = fields.clean;
-    if (fields.machine) Object.assign(it.machine, fields.machine);
+    if (fields.machine) for (const [k, v] of Object.entries(fields.machine)) { if (v === null || v === undefined) delete it.machine[k]; else it.machine[k] = v; } // (null clears a field: nothing stale is saved)
     if (fields.home !== undefined) it.home = clonePlace(fields.home);
     if (Array.isArray(fields.parts)) it.parts = fields.parts.map((p) => ({ ...p }));
     this.emit('change', it);
