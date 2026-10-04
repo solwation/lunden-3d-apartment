@@ -569,8 +569,9 @@ export class GarageDoor {
     mk(new THREE.BoxGeometry(0.1, 0.12, 0.16), this.lampMat, inside, ENTR.x0 + 0.06, F + 2.35, GD.z1 + 0.5);
     const [px, pz] = D.post, [ix, iz] = D.inside;
     mk(new THREE.BoxGeometry(0.1, 1.1, 0.1), grey, this.object, px, westYAt(px, pz) + 0.55, pz);
-    mk(new THREE.BoxGeometry(0.06, 0.2, 0.16), grey, this.object, px + 0.05, westYAt(px, pz) + 1.05, pz);
-    const outBtn = mk(new THREE.BoxGeometry(0.03, 0.07, 0.07), btnMat, this.object, px + 0.09, westYAt(px, pz) + 1.06, pz);
+    // (#439: the housing and the button on the post's west face, towards whoever comes down the drive)
+    mk(new THREE.BoxGeometry(0.06, 0.2, 0.16), grey, this.object, px - 0.05, westYAt(px, pz) + 1.05, pz);
+    const outBtn = mk(new THREE.BoxGeometry(0.03, 0.07, 0.07), btnMat, this.object, px - 0.09, westYAt(px, pz) + 1.06, pz);
     mk(new THREE.BoxGeometry(0.03, 0.2, 0.14), grey, inside, ix + 0.015, F + 1.2, iz);
     const inBtn = mk(new THREE.BoxGeometry(0.03, 0.07, 0.07), btnMat, inside, ix + 0.04, F + 1.21, iz);
     const door = this;
