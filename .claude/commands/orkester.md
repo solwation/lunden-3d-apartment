@@ -18,6 +18,9 @@ issues inom området finns kvar. Nya issues dyker upp löpande — lista om varj
   och serverar sin egen worktree.
 - `gh issue …` fungerar inte (GraphQL blockerat): använd `gh api` REST, t.ex.
   `gh api 'repos/solwation/lunden-3d-apartment/issues?state=open&per_page=100'` (filtrera bort `pull_request`).
+- **Disk:** varje worktree är en hel kopia av repot och sessionens disk är begränsad. Ta bort en agents worktree när den
+  är klar (`git worktree remove --force .claude/worktrees/agent-<id>` + `git branch -D worktree-agent-<id>`, aldrig en
+  som fortfarande kör), och ge Chrome en tillfällig `--user-data-dir` som tas bort efter körningen (`rm -rf`).
 - VM:en har ~4 CPU:er: **högst 3 agenter samtidigt** — fler gör bara varje headless-test långsammare.
 
 ## Synkronisering med andra orkestrar (issue #420, etikett `orkester`)
