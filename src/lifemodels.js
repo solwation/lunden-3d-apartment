@@ -51,15 +51,16 @@ function plate() {
   return { object: g, anchors, grip: [0.12, 0.012, 0.03] };
 }
 
-/** A wooden cutting board 40 × 26 cm: spot 0 for what is being cut (the left half), eight result spots in a fan on the right. */
+/** A wooden cutting board 40 × 26 cm: spot 0 for what is being cut along the back half, eight result spots in two rows of
+ * four along the front half (#375: a cucumber never lies over a slice). */
 function board() {
   const g = new THREE.Group();
   const t = 0.022;
   const b = mesh(new RoundedBoxGeometry(0.4, t, 0.26, 2, 0.006), M.wood);
   b.position.y = t / 2;
   g.add(b);
-  const anchors = [anchor(g, -0.07, t, 0)];
-  for (let k = 0; k < 8; k++) anchors.push(anchor(g, 0.07 + (k % 2) * 0.055, t + 0.0005, -0.09 + Math.floor(k / 2) * 0.06));
+  const anchors = [anchor(g, -0.03, t, -0.068)];
+  for (let k = 0; k < 8; k++) anchors.push(anchor(g, -0.135 + (k % 4) * 0.075 + Math.floor(k / 4) * 0.035, t + 0.0005, 0.005 + Math.floor(k / 4) * 0.06));
   return { object: g, anchors, grip: [0.19, t / 2, 0.08] };
 }
 

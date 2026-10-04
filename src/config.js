@@ -1052,7 +1052,8 @@ export const LIFE = {
   place: { grid: 0.05, floorGrid: 0.1, margin: 0.04, turn: 45 },
   // saving (#371): localStorage `key` written `every` s after a change; a thing whose place is gone lands on the free worktop (`lost`)
   save: { key: 'lunden.life', every: 1, lost: [5.25, 0.931, 3.0] },
-  job: { walk: 0.6 }, // a timed action (#372) stops when the eye has moved this far (m) from where it started // putting down (#368): snap grids (m), kept this far inside a table's edge, R turns this many degrees
+  job: { walk: 0.6 },
+  cut: { seconds: 0.6 }, // one cut with the kitchen knife (#375, #376), game seconds // a timed action (#372) stops when the eye has moved this far (m) from where it started // putting down (#368): snap grids (m), kept this far inside a table's edge, R turns this many degrees
 };
 
 // The kitchen's food from the start (#373, LIFE-009; the user: no shop, no delivery, no budget — the food is simply there):
@@ -1094,7 +1095,8 @@ export const ITEMS = {
   board: { name: 'skärbrädan', tags: ['carrier', 'station'], unit: 'count', amount: 1, size: 'l', clean: 'clean', model: 'board',
     carrier: { slots: 9, size: 'm', accepts: ['food'], fullText: 'Brädan är full', // spot 0 = what is being cut, 1–8 = what was cut
       spots: [{ accepts: ['cuttable', 'sliceable', 'base', 'package'] }, ...Array(8).fill({ size: 's' })] } },
-  cucumber: { name: 'gurkan', noun: 'gurka', tags: ['food', 'cuttable'], unit: 'g', amount: LIFE_FOOD.amounts.cucumber, size: 'm', prep: 'whole', model: 'cucumber' },
+  cucumber: { name: 'gurkan', noun: 'gurka', tags: ['food', 'cuttable'], unit: 'g', amount: LIFE_FOOD.amounts.cucumber, size: 'm', prep: 'whole', model: 'cucumber',
+    cut: { into: 'cucumberSlice', g: 10 } }, // a cut gives one 10 g slice (the plan's example, #375 / #376)
   cucumberSlice: { name: 'gurkskivan', noun: 'gurka', tags: ['food', 'topping'], unit: 'g', amount: 10, size: 'xs', prep: 'sliced', model: 'cucumberSlice' },
   cheese: { name: 'osten', noun: 'ost', tags: ['food', 'sliceable'], unit: 'g', amount: LIFE_FOOD.amounts.cheese, size: 's', prep: 'whole', model: 'cheese' },
   butter: { name: 'smöret', noun: 'smör', tags: ['food', 'package', 'spreadable'], unit: 'g', amount: LIFE_FOOD.amounts.butter, size: 's', pkg: 'closed', model: 'butter' },

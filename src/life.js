@@ -122,6 +122,7 @@ export class Life {
     this.anchors = new Map(); // store id → (slot) => Object3D (#369)
     this.stock = [...LIFE_FOOD.stock, ...LIFE_TOOLS.stock]; // what the kitchen always has (#373, #374): [type, store, slot]
     this.wasOpen = new Map(); // store id → open at the last update (a refill on opening, #373)
+    this.worktopAt = () => false; // (pos [x, y, z]) → is it on a kitchen worktop (main.js sets it; the cutting board's station, #375)
     this.actions = new ActionSet(); // what you can do with a thing (#367): baseActions below, more per LIFE issue
     this.runner = new Runner(this.items); // actions that take a moment (#372): validate, reserve, animate, commit
     baseActions(this);

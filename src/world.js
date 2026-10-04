@@ -688,7 +688,7 @@ export function buildWorld(plan) {
   const furniture = buildFurniture();
   scene.add(furniture.object);
   // the kitchen worktop as cup surfaces (fitted, so they stay with F; the first one is where a fresh cup stands)
-  const kitchenSurfaces = cupSurfaces.map((r, i) => { const m = surfaceBox(r); if (i === 0) m.userData.counter = true; scene.add(m); return m; });
+  const kitchenSurfaces = cupSurfaces.map((r, i) => { const m = surfaceBox(r); if (i === 0) m.userData.counter = true; m.userData.worktop = true; scene.add(m); return m; }); // (worktop: the life sim's cutting board works there, #375)
   const sillPlants = buildSillPlants([...l0.sills, ...l1.sills]); // flower pots on every window board (#136)
   scene.add(sillPlants);
   const sillSurfaces = [...l0.sills, ...l1.sills].map((r) => { const m = surfaceBox(r); scene.add(m); return m; }); // things go down on window boards too (#185)

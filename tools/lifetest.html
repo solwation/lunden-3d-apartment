@@ -9,6 +9,8 @@
 //       used up is back on the next opening (never while the old one is out), a new visit keeps the amounts.
 //  #374 the tools in the utensil drawer and the board on the splashback: taken and put back with E; the wrong tool says so
 //       ("Osthyveln skär inte gurka") and nothing is used.
+//  #375 the cutting board as a station: no cut until it lies on a worktop, a full board blocks before anything is used,
+//       carried it carries the slices, held at a plate it pushes them over.
 //   chromium --headless=new --dump-dom http://localhost:8137/tools/lifetest.html
 import { LIFE_FOOD, LIFE_TOOLS } from '../src/config.js';
 const out = document.getElementById('out');
@@ -141,6 +143,64 @@ try {
   shut();
   f.remove();
 } catch (e) { pass = false; lines.push(`FAIL #374 error ${e.stack}`); }
+
+// --- #375: the cutting board as a station ----------------------------------------------------------------------
+try {
+  const f = await load('life&shot');
+  const { A, settle, aim, shut, life, I, step } = kit(f);
+  const V = A.camera.position.constructor;
+  const drawer = A.world.lids.find((l) => l.stock === 'utensils'), fridge = A.fridge;
+  const find = (type) => I.all().find((i) => i.type === type && i.home?.store);
+  const board = find('board'), knife = find('knife'), cuc = find('cucumber'), bv = life.view(board), kv = life.view(knife), cv = life.view(cuc);
+  const plate = I.ofType('plate')[0];
+  const row = (id, it) => life.options({ item: life.view(it) }).find((o) => o.id === id);
+  // the board onto the dining table, the cucumber onto it
+  bv.take(); step(1 / 60);
+  bv.placeAt(new V(3.5, 0.754, 1.65), 0); step(1 / 60);
+  fridge.toggle(); settle(fridge);
+  cv.take(); step(1 / 60);
+  const put = row('putOn', board);
+  check(put?.label === 'lägga gurkan på skärbrädan' && !put.reason && put.run() && cuc.place.parent === board.id && cuc.place.slot === 0, `"${put?.label}": on its spot 0`);
+  drawer.toggle(); settle(drawer);
+  kv.take(); step(1 / 60);
+  const c1 = row('cut', cuc), c1b = row('cut', board);
+  check(c1?.reason === 'Lägg skärbrädan på arbetsbänken först' && c1b?.reason === c1.reason && c1.run() === false && cuc.amount === 300, `on the dining table: "${c1?.reason}" (at the board too), nothing cut`);
+  // onto the worktop, carrying the cucumber along
+  kv.putBack(); step(1 / 60);
+  bv.take(); step(1 / 60);
+  check(cuc.place.parent === board.id && life.view(cuc).model.parent?.parent === bv.model, 'the board in the hand carries the cucumber');
+  bv.placeAt(new V(5.22, 0.93, 3.0), Math.PI / 2); step(1 / 60);
+  kv.take(); step(1 / 60);
+  const p = cv.where(); p.y += 0.02;
+  const text = aim(p, /^Skära en skiva/, [[4.4, 3.0], [4.5, 2.9], [4.5, 3.1]]);
+  check(!!text, `on the worktop, the knife at the cucumber: "${text}"`);
+  row('cut', cuc).run(); row('cut', cuc).run();
+  for (let i = 0; i < 50; i++) step(1 / 60);
+  const slices = () => I.children(board).filter((k) => k.place.slot > 0);
+  check(!life.runner.busy && cuc.amount === 290 && slices().length === 1 && slices()[0].amount === 10, `one cut (a double press): the cucumber ${cuc.amount} g, ${slices().length} slice of ${slices()[0]?.amount} g`);
+  // a full board blocks before anything is used
+  while (I.freeSpot(board, { type: 'cucumberSlice' }) >= 0) life.create('cucumberSlice', { at: 'on', parent: board.id, slot: I.freeSpot(board, { type: 'cucumberSlice' }) });
+  const full = row('cut', cuc);
+  check(full?.reason === 'Brädan är full' && full.run() === false && cuc.amount === 290 && slices().length === 8, `a full board: "${full?.reason}", the cucumber still ${cuc.amount} g`);
+  // carried with what is on it
+  kv.putBack(); step(1 / 60);
+  const rel = () => slices().map((k) => life.view(k).where().sub(bv.where()).length());
+  const r0 = rel();
+  bv.take(); step(1 / 60);
+  bv.placeAt(new V(5.25, 0.93, 2.7), 0); step(1 / 60);
+  const r1 = rel();
+  check(slices().length === 8 && r0.every((d, i) => Math.abs(d - r1[i]) < 1e-4) && life.view(slices()[0]).where().distanceTo(bv.where()) < 0.25, 'put down elsewhere: the eight slices came along, in their spots');
+  // the board in the hand at a plate: the slices pushed over (as many as fit)
+  bv.take(); step(1 / 60);
+  const push = row('pushSlices', plate);
+  check(push?.label === 'skjuta över skivorna på tallriken' && !push.reason && push.run(), `at the plate: "${push?.label}"`);
+  check(I.children(plate).length === 6 && slices().length === 2 && cuc.place.parent === board.id, `on the plate: ${I.children(plate).length} (full), on the board: ${slices().length} slices + the cucumber`);
+  check(row('pushSlices', plate)?.reason === 'Tallriken är full', 'a full plate says so');
+  check(I.audit().length === 0, `audit: ${I.audit().join('; ') || 'ok'}`);
+  bv.placeAt(new V(5.25, 0.93, 2.7), 0); step(1 / 60);
+  shut();
+  f.remove();
+} catch (e) { pass = false; lines.push(`FAIL #375 error ${e.stack}`); }
 
 // a new visit keeps the amounts (lunden.life, #371): not the &life scenario, the visitor's own home
 try {
