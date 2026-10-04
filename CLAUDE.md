@@ -576,6 +576,12 @@ src/life.js            the life simulator (epic #364) glue; the `&life` develope
                        whose model follows the instance's place (world → `life.group`, a loose item; hand; a store slot's or a
                        carrier's anchor) and state (`view.show`); take / placeAt / putBack move the instance (never lost: home,
                        else where it last lay, else at your feet)
+src/actions.js         what you can do with a life-sim thing (#367): `ActionSet.define({ id, label, applies, check, run, consumes,
+                       result, duration, interrupt, order, quiet })`, `list(ctx)` = the rows with a Swedish `reason` when blocked
+                       ("Öppna kylen först", "Tallriken är full", "För långt bort"); life.js `baseActions`: putOn, take, open, close.
+                       main.js: a life target (kind 'life', `options()`) with one row = the usual prompt / button; several = #choices
+                       (mouse & keyboard: a list under the crosshair, E = the marked row, 1–4 pick, the wheel moves the mark; touch:
+                       a big button per row instead of #action); a life thing up to LIFE.tooFar past reach says "För långt bort"
 src/items.js           the life sim's things as data (#366, ITEMS in config), no three.js: instances with a stable id
                        ('cucumber#3'), exactly one place (world | hand | slot of a store | on a carrier), an amount in g / ml /
                        count never below 0, pkg / prep / clean / machine fields; `check(item, place)` = the Swedish reason it
@@ -593,7 +599,8 @@ data/plan.json         GENERATED — do not edit by hand
 data/changelog.json    what changed, for visitors (see Workflow rules)
 tools/extract_plan.py  PDF → data/plan.json (stdlib only)
 tools/walktest.html    headless movement test (+ #355: round the block, the stairs, the recess, the portik, sprint, nearestFree)
-tools/touchtest.html   headless touch-input test (synthetic pointer events)
+tools/touchtest.html   headless touch-input test (synthetic pointer events); the choice menu (#367, &life): the butter's two rows as
+                       buttons, a tap opens it without turning the view, a number / E pick, one action = the usual button, slice → plate
 tools/cattest.html     headless test of cat placement behind every door/wardrobe; up on seats, beds and tables (#200)
 tools/roomtest.html    headless test of room detection at known points (+ a picture of the fill)
 tools/measuretest.html headless test of the tape measure (wall to wall in the living room)

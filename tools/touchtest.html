@@ -32,7 +32,56 @@ f.onload = async () => {
   ev('pointerup', 2, 120, 400); ev('pointerup', 3, 640, 300);
   const overlayHidden = d.getElementById('overlay').hidden;
   const ok = overlayHidden && moved > 0.5 && turned > 0.2;
-  out.textContent = `${ok ? 'PASS' : 'FAIL'} touch: overlayHidden=${overlayHidden} moved=${moved.toFixed(2)}m turned=${turned.toFixed(2)}rad analogY=${analogY.toFixed(2)} pos=${player.pos.x.toFixed(2)},${player.pos.z.toFixed(2)}`;
+  const lines = [`${ok ? 'PASS' : 'FAIL'} touch: overlayHidden=${overlayHidden} moved=${moved.toFixed(2)}m turned=${turned.toFixed(2)}rad analogY=${analogY.toFixed(2)} pos=${player.pos.x.toFixed(2)},${player.pos.z.toFixed(2)}`];
+  let pass = ok;
+  const check = (c, name) => { lines.push(`${c ? 'PASS' : 'FAIL'} ${name}`); pass &&= !!c; };
+  // a choice of actions (#367), &life: the butter on the dining table can be taken or opened — a button each; a tap on
+  // "Öppna smöret" opens it (and does not turn the view); the same with E / a number on the keyboard side
+  try {
+    try { if (d.fullscreenElement) await d.exitFullscreen(); } catch { /* none */ }
+    f.remove(); // (one game at a time: two would starve the software renderer)
+    const g = document.createElement('iframe');
+    g.width = 900; g.height = 600; g.src = '../index.html?life&shot';
+    document.body.append(g);
+    out.textContent = lines.join('\n') + '\nloading &life…';
+    for (let i = 0; i < 1200 && !g.contentWindow?.__app; i++) { await wait(100); if (i % 50 === 0) out.textContent = lines.join('\n') + `\nloading &life… ${i} ${g.contentDocument?.readyState}`; }
+    const W = g.contentWindow, D = g.contentDocument;
+    out.textContent = lines.join('\n') + '\n&life loaded';
+    const A = W.__app, { life, step } = A, cam = A.camera;
+    D.getElementById('start-touch').click();
+    await wait(100);
+    const butter = life.items.ofType('butter')[0], bv = life.view(butter);
+    const aim = (p, x, z) => { A.player.spawn(x, z, 0); for (let i = 0; i < 3; i++) step(1 / 60); const dx = p.x - cam.position.x, dz = p.z - cam.position.z; cam.rotation.y = Math.atan2(-dx, -dz); cam.rotation.x = Math.atan2(p.y + 0.03 - cam.position.y, Math.hypot(dx, dz)); step(1 / 60); };
+    const bp = bv.where();
+    aim(bp, 2.7, 1.75);
+    const box = D.getElementById('choices'), btns = () => [...box.querySelectorAll('button')];
+    check(!box.hidden && btns().length === 2 && /Ta smöret/.test(btns()[0].textContent) && /Öppna smöret/.test(btns()[1].textContent), `two choices as buttons: ${btns().map((b) => b.textContent).join(' | ')} (button "${D.getElementById('action').textContent}" hidden ${D.getElementById('action').hidden}, at ${A.player.pos.x.toFixed(2)},${A.player.pos.z.toFixed(2)}, butter ${bp.x.toFixed(2)},${bp.y.toFixed(2)},${bp.z.toFixed(2)}, touch ${A.touch.enabled}, targets ${life.targets().length}, cam ${cam.position.x.toFixed(2)},${cam.position.y.toFixed(2)},${cam.position.z.toFixed(2)} rot ${cam.rotation.x.toFixed(2)},${cam.rotation.y.toFixed(2)}, prompt "${D.getElementById('prompt').textContent}", focused ${A.focus().focused?.kind}/${A.focus().focused?.name}, hits ${(() => { const rc = A.focus().raycaster; rc.setFromCamera({ x: 0, y: 0 }, cam); rc.far = 3; return rc.intersectObjects(life.targets().map((t) => t.pickable), true).map((h) => h.distance.toFixed(2) + ':' + h.object.userData.door?.name).join(',') + ' layers ' + rc.layers.mask; })()})`);
+    check(D.getElementById('action').hidden, 'the single action button gives way to them');
+    const yaw0 = cam.rotation.y, b1 = btns()[1], r = b1.getBoundingClientRect();
+    const tev = (type) => b1.dispatchEvent(new W.PointerEvent(type, { pointerId: 9, pointerType: 'touch', clientX: r.x + 5, clientY: r.y + 5, bubbles: true, cancelable: true }));
+    tev('pointerdown'); tev('pointermove'); tev('pointerup'); b1.click(); step(1 / 60);
+    check(butter.pkg === 'open' && Math.abs(cam.rotation.y - yaw0) < 1e-9, `a tap on "Öppna smöret": open (${butter.pkg}), the view did not turn`);
+    check(/Stänga smöret/.test(btns()[1]?.textContent ?? ''), `the menu follows the state: ${btns().map((b) => b.textContent).join(' | ')}`);
+    // the same with the keyboard's way in: E = the marked row (the first allowed: take), a number picks
+    A.runChoice(1); step(1 / 60);
+    check(butter.pkg === 'closed', 'row 2 by number: closed again');
+    A.use(A.choices.target); step(1 / 60);
+    check(A.heldItem() === bv && butter.place.at === 'hand', 'E: the first row, "Ta smöret": in the hand');
+    // a single action looks as before: the prompt / one button
+    const cuc = life.items.ofType('cucumber')[0];
+    bv.placeAt(new W.__app.camera.position.constructor(3.35, 0.755, 1.75), 0); step(1 / 60);
+    aim(life.view(cuc).where(), 2.7, 1.05);
+    check(box.hidden && !D.getElementById('action').hidden && D.getElementById('action').textContent === 'Ta gurkan', `one action: the usual button "${D.getElementById('action').textContent}"`);
+    // holding something: the slice onto the plate is offered, "Ta tallriken" is left out (quiet), with its reason when alone
+    const slice = life.items.ofType('cucumberSlice')[0], plate = life.items.ofType('plate')[0];
+    life.view(slice).take(); step(1 / 60);
+    aim(life.view(plate).where(), 2.7, 1.0);
+    check(D.getElementById('action').textContent === 'Lägga gurkskivan på tallriken', `with the slice in the hand at the plate: "${D.getElementById('action').textContent}"`);
+    A.use(life.view(plate).target); step(1 / 60);
+    check(slice.place.at === 'on' && slice.place.parent === plate.id && !A.heldItem(), 'E: the slice lies on the plate');
+  } catch (e) { pass = false; lines.push(`FAIL menu error ${e.stack}`); }
+  lines.push(pass ? 'ALL PASS' : 'SOME FAILED');
+  out.textContent = lines.join('\n');
 };
 </script>
 </body>

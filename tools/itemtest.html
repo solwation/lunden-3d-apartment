@@ -78,7 +78,7 @@ try {
   const A = f.contentWindow.__app, { life, heldItem, camera, step, scene, cups } = A;
   const cuc = life.items.ofType('cucumber')[0], v = life.view(cuc);
   check(cuc && v && v.model.parent === life.group && Math.abs(v.model.position.y - 0.755) < 0.01, `&life: a cucumber on the dining table (y ${v?.model.position.y.toFixed(3)})`);
-  check(life.targets().includes(v.target) && v.target.name === 'gurkan' && v.target.kind === 'holdable', 'it is an E target: "ta gurkan"');
+  check(life.targets().includes(v.target) && v.target.name === 'gurkan' && v.target.kind === 'life' && v.target.options()[0].label === 'ta gurkan', 'it is an E target: "ta gurkan"');
   v.target.toggle(); step(1 / 60);
   check(heldItem() === v && cuc.place.at === 'hand' && v.model.parent === camera, 'taken: the instance is in the hand, its model in the view');
   check(!life.targets().includes(v.target), 'not a target while held');

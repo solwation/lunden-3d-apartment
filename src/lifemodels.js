@@ -68,7 +68,9 @@ function cucumber() {
 /** A cucumber slice: Ø 4.2 cm, 4 mm thick, pale inside, a dark rim. */
 function cucumberSlice() {
   const g = new THREE.Group(), r = 0.021, h = 0.004;
-  g.add(Object.assign(mesh(new THREE.CylinderGeometry(r, r, h, 20, 1, true), M.cucumberRim), { position: new THREE.Vector3(0, h / 2, 0) }));
+  const rim = mesh(new THREE.CylinderGeometry(r, r, h, 20, 1, true), M.cucumberRim);
+  rim.position.y = h / 2;
+  g.add(rim);
   for (const y of [0, h]) { const c = mesh(new THREE.CircleGeometry(r, 20).rotateX(y ? -Math.PI / 2 : Math.PI / 2), M.cucumberIn); c.position.y = y; g.add(c); }
   return { object: g };
 }

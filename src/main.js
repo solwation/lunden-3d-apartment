@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { UNIT_TOP, COLORS, LEVELS, DAY, START, PLAYER, DRAWING, STAIR, HOLD, REMOTE, REST, DOOR_HEIGHT, TURBO, WEATHER, BREAK, CAR, KITCHEN, LAPTOP, NEST, AUTO_RELOAD, MIELE, CUPS } from './config.js';
+import { UNIT_TOP, COLORS, LEVELS, DAY, START, PLAYER, DRAWING, STAIR, HOLD, LIFE, REMOTE, REST, DOOR_HEIGHT, TURBO, WEATHER, BREAK, CAR, KITCHEN, LAPTOP, NEST, AUTO_RELOAD, MIELE, CUPS } from './config.js';
 import { MieleHeld, HeartFireworks } from './miele.js';
 const DRAWING_COLORS = DRAWING.colors;
 import { buildWorld } from './world.js';
@@ -26,6 +26,7 @@ import { applySeason } from './seasons.js';
 import { saveResume, saveSession, takeResume } from './resume.js';
 import { saveWorld, loadWorld } from './keep.js';
 import { lifeDev, devScenario, Life } from './life.js';
+import { shownRows } from './actions.js';
 import { clearLocalHome, takeResetDone } from './reset.js';
 import { Rest, chooseSpot } from './rest.js';
 import { Saber } from './saber.js';
@@ -933,6 +934,53 @@ function spill(o) {
   if (h?.object) marks.add('splash', h, { color: o.color, force: true, size: 0.08 });
   penalize('spill');
 }
+// --- a choice of actions (#367): a life-sim thing with several things to do. Mouse & keyboard: a list under the
+// crosshair, E = the marked row, 1–4 pick, the wheel moves the mark; touch: a big button per row by the action button
+// (buttons: touch.js never takes them for looking). Blocked rows say why in words.
+const choicesEl = document.getElementById('choices');
+const choices = { rows: null, target: null, sel: 0, key: '' };
+function showChoices(rows, target) {
+  const key = rows ? rows.map((r) => `${r.id}:${r.label}:${r.reason ?? ''}`).join('|') : '';
+  if (target !== choices.target || key !== choices.key) {
+    const keepSel = target === choices.target && rows && choices.rows && rows.length === choices.rows.length;
+    Object.assign(choices, { rows, target, key, sel: keepSel ? choices.sel : Math.max(0, rows?.findIndex((r) => !r.reason) ?? 0) });
+    renderChoices();
+  } else choices.rows = rows; // (fresh closures for run)
+  choicesEl.hidden = !rows;
+}
+function renderChoices() {
+  choicesEl.replaceChildren();
+  if (!choices.rows) return;
+  choices.rows.forEach((r, i) => {
+    const b = document.createElement('button');
+    const text = `${r.label[0].toUpperCase()}${r.label.slice(1)}`;
+    b.textContent = touch.enabled ? (r.reason ? `${text} – ${r.reason}` : text) : `${i + 1}  ${text}${r.reason ? ` – ${r.reason}` : ''}${i === choices.sel ? '  ◀ E' : ''}`;
+    b.className = `${i === choices.sel ? 'sel' : ''} ${r.reason ? 'no' : ''}`;
+    b.dataset.i = i;
+    b.addEventListener('click', (e) => { e.stopPropagation(); runChoice(i); });
+    choicesEl.append(b);
+  });
+  if (!touch.enabled) { const h = document.createElement('div'); h.className = 'hint'; h.textContent = `E eller 1–${choices.rows.length} väljer · hjulet flyttar`; choicesEl.append(h); }
+}
+/** Do row `i` of the menu (a blocked one only clicks: its reason is on screen). */
+function runChoice(i) {
+  const r = choices.rows?.[i];
+  if (!r) return false;
+  if (r.reason) { sfx.click(camera.position); return false; }
+  if (!heldItem() && focusPoint) hand.reach(focusPoint);
+  shadowState.hold = 1.5;
+  r.run();
+  choices.key = ''; // (re-render with the new state)
+  return true;
+}
+function moveChoice(d) {
+  if (!choices.rows) return false;
+  choices.sel = (choices.sel + d + choices.rows.length) % choices.rows.length;
+  renderChoices();
+  return true;
+}
+document.addEventListener('wheel', (e) => { if (locked && !reading && choices.rows && moveChoice(Math.sign(e.deltaY))) e.preventDefault(); }, { passive: false });
+
 /** E / the action button on what you look at: doors toggle, the note opens. */
 function use(thing) {
   shadowState.hold = 1.5; // whatever moves now casts a moving shadow
@@ -956,6 +1004,10 @@ function use(thing) {
   else if (thing.kind === 'cabinet') { thing.toggle(); if (thing.isOpen) bump('cabinets', 1, idOf(thing)); } // wall cabinets that open (#138)
   else if (thing.kind === 'target') thing.toggle(); // clear the score (#99)
   else if (thing.kind === 'rest') sitOrLie(thing);
+  else if (thing.kind === 'life' && !thing.tooFar) { // a life-sim thing (#367): the chosen row of the menu, else its first allowed action
+    const row = choices.rows && choices.target === thing ? choices.rows[choices.sel] : null;
+    if (row) runChoice(choices.sel); else life.run(thing);
+  }
   else if (thing.blocked) { const o = thing.overflow?.(); if (o) spill(o); else sfx.click(camera.position); } // put down what you hold first (#102); E on a full glass/cup anyway: it runs over (#288)
   else if (thing.kind === 'airfryer') { thing.toggle(); if (thing.isOpen) bump('appliances', 1, thing.id); } // the air fryer's basket / panel (#287)
   else if (thing.kind === 'airfry') thing.item.airfryHeld(); // a fish finger into the air fryer's basket (#287)
@@ -1058,6 +1110,7 @@ document.addEventListener('keydown', (e) => {
   // and while it is held the browser's other Ctrl shortcuts (save, print, bookmark …) are kept from opening
   if (isCtrl(e.code)) player.crouch = true;
   else if (e.ctrlKey) e.preventDefault();
+  if (choices.rows && /^Digit[1-9]$/.test(e.code) && runChoice(Number(e.code.slice(5)) - 1)) e.preventDefault(); // a menu row (#367)
   if (e.code === 'KeyE' && focused) use(focused); // also while sitting: what is within reach (#184)
   else if (e.code === 'KeyE' && rest.active) standUp();
   else if ((e.code === 'Space' || e.code === 'KeyC') && rest.active) { e.preventDefault(); standUp(); } // seated, C gets you up
@@ -1138,6 +1191,12 @@ function updateFocus() {
   focused = hit && !behindWall(hit.point) ? hit.object.userData.door : null;
   focusPoint = focused ? hit.point.clone() : null; // where the hand reaches on E (#195)
   focused?.aimAt?.(focusPoint); // the car's screen: which of its buttons (#268)
+  if (!focused) { // a life-sim thing just out of reach (#367): say so instead of nothing
+    raycaster.far = reach + LIFE.tooFar;
+    const far = raycaster.intersectObjects(life.targets().map((t) => t.pickable), true).find((h) => shown(h.object));
+    raycaster.far = reach;
+    if (far && far.distance > reach && !behindWall(far.point)) { focused = { name: '', kind: 'life', blocked: true, blockedText: 'För långt bort', tooFar: true }; focusPoint = far.point.clone(); }
+  }
   if (!focused && !rest.active) { // nothing in reach: a person outside further off to say hello to (#247)
     const g = greet.target(raycaster.ray);
     if (g) { focused = g; focusPoint = g.point; }
@@ -1165,7 +1224,8 @@ function updateFocus() {
       if (!hit || spot.distance <= hit.distance + 0.05) focused = { name: '', kind: 'place', blocked: true, blockedText: 'Miele får inte vara på bordet' };
       spot = null;
     } else if (!spot) { const f = floorSpot(); if (f && f.distance < reach && !behindWall(f.point)) spot = f; } // a table top is always above (before) the floor
-    if (spot && (!hit || spot.distance <= hit.distance + 0.05)) {
+    const lifeAim = focused?.kind === 'life' && !!focused.options?.().some((a) => !a.reason); // a plate it can go on (#367): that, not the table under it
+    if (spot && !lifeAim && (!hit || spot.distance <= hit.distance + 0.05)) {
       placeTarget = { name: `${item.name} här`, kind: 'place', verb: item.placeVerb ?? 'lägga ner', item, point: spot.point };
       focused = placeTarget;
       placeGhost.position.copy(spot.point).y += 0.003;
@@ -1215,13 +1275,22 @@ function updateFocus() {
   if (remoteAim) focused = null;
   // a bed with a seat in it: the verb of the spot the look ray picks
   const spot = focused?.kind === 'rest' ? chooseSpot(focused, raycaster.ray, null) : null;
-  const verb = !focused ? '' : spot?.verb ?? focused.verb ?? (focused.isOpen ? 'stänga' : 'öppna');
-  if (focused?.blocked) {
+  let verb = !focused ? '' : spot?.verb ?? focused.verb ?? (focused.isOpen ? 'stänga' : 'öppna');
+  // a life-sim thing (#367): its actions; one = the usual prompt, several = the choice menu
+  const rows = focused?.options ? shownRows(focused.options()) : null;
+  showChoices(rows && rows.length > 1 && !reading ? rows : null, focused);
+  const one = rows?.length === 1 ? rows[0] : null;
+  if (one && !one.reason) verb = one.label;
+  const named = one ? '' : ` ${focused?.name ?? ''}`; // (an action's label names its thing)
+  if (choices.rows) { promptEl.textContent = ''; }
+  else if (one?.reason) {
+    actionBtn.textContent = promptEl.textContent = one.reason;
+  } else if (focused?.blocked) {
     actionBtn.textContent = promptEl.textContent = focused.blockedText ?? 'Lägg ifrån dig det du håller först'; // or: the glass / cup is full (#167)
   } else if (focused && touch.enabled) {
-    actionBtn.textContent = `${verb[0].toUpperCase()}${verb.slice(1)} ${focused.name}`;
+    actionBtn.textContent = `${verb[0].toUpperCase()}${verb.slice(1)}${named}`;
   } else if (focused) {
-    promptEl.textContent = `Tryck E för att ${verb} ${focused.name}`;
+    promptEl.textContent = `Tryck E för att ${verb}${named}`;
   }
   const holding = !focused && heldItem()?.useLabel ? heldItem() : null; // touch: the button uses what you hold (fire, wave, light); a cup or the jug has no use of its own
   if (holding && touch.enabled) actionBtn.textContent = holding.useLabel;
@@ -1230,10 +1299,10 @@ function updateFocus() {
   if (seated && !touch.enabled) promptEl.textContent = focused && !focused.blocked ? `${promptEl.textContent} · Mellanslag – res dig` : focused?.blocked ? promptEl.textContent : 'Tryck E för att resa dig';
   standBtn.hidden = !touch.enabled || !seated || (!focused && !holding);
   if (reading && touch.enabled) actionBtn.textContent = boardPanel.open ? 'Stäng tavlan' : 'Stäng lappen';
-  promptEl.hidden = (!focused && !seated) || touch.enabled || reading;
+  promptEl.hidden = (!focused && !seated) || touch.enabled || reading || (!!choices.rows && !seated);
   if (remoteAim && !touch.enabled && !reading) { promptEl.textContent = 'Klicka för att byta kanal · högerklick: av/på'; promptEl.hidden = false; }
   if (heldItem() === ball && !focused && !touch.enabled && !reading) { promptEl.textContent = 'Klicka för att skjuta · högerklick: studsa bollen'; promptEl.hidden = false; }
-  actionBtn.hidden = !(focused || reading || holding || seated) || !touch.enabled || clockPanel.open || calPanel.open || blindPanel.open || sonos.open || !!viewing; // the strips have their own ×
+  actionBtn.hidden = !(focused || reading || holding || seated) || !touch.enabled || (!!choices.rows && !reading) || clockPanel.open || calPanel.open || blindPanel.open || sonos.open || !!viewing; // the strips have their own ×
   powerBtn.hidden = !touch.enabled || !heldItem()?.useAlt || reading;
   if (!powerBtn.hidden) { const icon = heldItem().altIcon ?? '⏻'; if (powerBtn.textContent !== icon) { powerBtn.textContent = icon; powerBtn.setAttribute('aria-label', heldItem().altLabel ?? 'Stäng av / slå på TV:n'); } }
 }
@@ -1663,4 +1732,4 @@ if (lifeDev()) devScenario({ life, world, holdables, cups, things, milk, fish, f
 document.documentElement.classList.remove('resuming'); // the page is ready: off with the "Laddar…" cover (#222)
 
 // handle for tests/debugging (tools/touchtest.html)
-window.__app = { toaster, life, fall, todo, coffeeJar, miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };
+window.__app = { toaster, life, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, coffeeJar, miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };

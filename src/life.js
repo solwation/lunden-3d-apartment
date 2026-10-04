@@ -4,6 +4,7 @@ import { Items } from './items.js';
 import { Holdable, heldItem, setHeld, handBusy } from './holdable.js';
 import { buildModel } from './lifemodels.js';
 import { sfx } from './audio.js';
+import { ActionSet, firstAllowed } from './actions.js';
 
 const DEFAULT_HELD = { pos: [0.17, -0.22, -0.42], rot: [0.35, -0.6, 0] };
 const tmpQ = new THREE.Quaternion(), UP = new THREE.Vector3(0, 1, 0);
@@ -25,10 +26,14 @@ export class LifeItem extends Holdable {
     this.backTarget.pickable.raycast = () => {}; // (an item goes back into its store / onto a carrier through their own targets)
     Object.assign(this, { life, item, view, lifeItem: true, anchors: view.anchors ?? [], grip: view.grip, rest: { q: new THREE.Quaternion(), lift: 0 } });
     const self = this;
+    // the target is a choice of actions (#367): what the hand and the thing allow (life.options)
+    this.takeTarget.kind = 'life';
+    this.takeTarget.options = () => self.life.options(self.takeTarget);
+    this.takeTarget.toggle = () => self.life.run(self.takeTarget);
     Object.defineProperties(this.takeTarget, {
       name: { get: () => self.life.items.name(self.item), configurable: true },
-      blocked: { get: () => handBusy(self) || !!self.shutReason(), configurable: true },
-      blockedText: { get: () => self.shutReason() ?? null, configurable: true },
+      blocked: { get: () => !firstAllowed(self.takeTarget.options()), configurable: true },
+      blockedText: { get: () => { const l = self.takeTarget.options(); return (l.find((a) => a.reason && !a.quiet) ?? l[0])?.reason ?? null; }, configurable: true },
     });
     this.sync();
   }
@@ -65,6 +70,7 @@ export class LifeItem extends Holdable {
     }
     m.visible = true;
     this.refresh();
+    m.updateMatrixWorld(true); // (a raycast before the next render finds it where it is)
   }
 
   /** The model shows the instance's state (amount, package …). */
@@ -109,6 +115,8 @@ export class Life {
     this.group.name = 'life';
     scene.add(this.group);
     this.anchors = new Map(); // store id → (slot) => Object3D (#369)
+    this.actions = new ActionSet(); // what you can do with a thing (#367): baseActions below, more per LIFE issue
+    baseActions(this);
     this.items.on((kind, item) => {
       if (kind === 'create') this.views.set(item.id, new LifeItem(this, item));
       else if (kind === 'move') { if (item.place.at === 'world') this.lastWorld.set(item.id, { ...item.place, pos: [...item.place.pos] }); this.views.get(item.id)?.sync(); }
@@ -140,6 +148,20 @@ export class Life {
     if (p.at === 'on') return this.view(p.parent)?.anchors[p.slot] ?? null;
     if (p.at === 'slot') return this.anchors.get(p.store)?.(p.slot) ?? null;
     return null;
+  }
+
+  /** The context an action is judged in (#367): the hand, the target (`target.item` = an instance), the rules. */
+  context(target, extra = {}) {
+    const view = target.item?.lifeItem ? target.item : target.view ?? null; // (a Holdable's target carries its Holdable as `item`)
+    return { life: this, items: this.items, held: this.items.held(), heldView: heldItem(), target: view?.item ?? target.instance ?? null, targetView: view, raw: target, ...extra };
+  }
+  /** The actions for an E target, in order (actions.js): the menu's rows. Blocked ones carry their reason. */
+  options(target, extra) { return this.actions.list(this.context(target, extra)); }
+  /** Do action `i` of the target's list (default: the first allowed one); false when it is blocked (the prompt says why). */
+  run(target, i = null) {
+    const list = this.options(target), a = i === null ? firstAllowed(list) ?? list[0] : list[i];
+    if (!a || a.reason) { sfx.click(this.camera.position); return false; }
+    return a.run();
   }
 
   /** The E targets: every item not in the hand. */
@@ -198,4 +220,41 @@ export function devScenario(a) {
     a.camera.rotation.x = THREE.MathUtils.degToRad(pitch);
   }
   return { cup, glass, milk: a.milk, ...made };
+}
+
+/** The actions every thing shares (#367). Each says what it needs, uses up and makes (actions.js). */
+function baseActions(life) {
+  const A = life.actions, I = life.items, nm = (it) => I.name(it);
+  A.define({
+    id: 'putOn', order: 10, label: (c) => `lägga ${nm(c.held)} på ${nm(c.target)}`,
+    applies: (c) => !!c.held && !!c.target && !!I.def(c.target)?.carrier && c.held !== c.target,
+    check: (c) => (I.freeSpot(c.target, c.held) >= 0 ? null : I.check(c.held, { at: 'on', parent: c.target.id, slot: 0 }) ?? I.def(c.target).carrier.fullText ?? `${nm(c.target)} är full`),
+    run: (c) => { I.move(c.held, { at: 'on', parent: c.target.id, slot: I.freeSpot(c.target, c.held) }); sfx.click(c.targetView?.where()); },
+    consumes: 'nothing', result: 'the held thing lies on the carrier (a free spot), its own place left',
+  });
+  A.define({
+    id: 'take', order: 20, label: (c) => `ta ${nm(c.target)}`,
+    applies: (c) => !!c.target && c.target.place.at !== 'hand',
+    check: (c) => {
+      if (c.heldView && c.heldView !== c.targetView) return `Lägg ifrån dig ${c.heldView.name ?? 'det du håller'} först`;
+      return c.targetView?.shutReason() ?? I.check(c.target, { at: 'hand' });
+    },
+    quiet: (c) => !!c.heldView, // (holding something: not worth a row of its own when there is something else to do)
+    run: (c) => c.targetView.take(),
+    consumes: 'nothing', result: 'the thing (and what lies on it) in the hand',
+  });
+  A.define({
+    id: 'open', order: 30, label: (c) => `öppna ${nm(c.target)}`,
+    applies: (c) => c.target?.pkg === 'closed',
+    check: (c) => c.targetView?.shutReason() ?? null,
+    run: (c) => { I.set(c.target, { pkg: 'open' }); sfx.click(c.targetView?.where()); },
+    consumes: 'nothing', result: 'the package is open (pkg open)',
+  });
+  A.define({
+    id: 'close', order: 31, label: (c) => `stänga ${nm(c.target)}`,
+    applies: (c) => c.target?.pkg === 'open',
+    check: (c) => c.targetView?.shutReason() ?? null,
+    run: (c) => { I.set(c.target, { pkg: 'closed' }); sfx.click(c.targetView?.where()); },
+    consumes: 'nothing', result: 'the package is closed again',
+  });
 }
