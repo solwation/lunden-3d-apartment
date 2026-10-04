@@ -25,7 +25,7 @@ import { updateReflections, reflectors } from './reflections.js';
 import { applySeason } from './seasons.js';
 import { saveResume, saveSession, takeResume } from './resume.js';
 import { saveWorld, loadWorld } from './keep.js';
-import { lifeDev, devScenario } from './life.js';
+import { lifeDev, devScenario, Life } from './life.js';
 import { clearLocalHome, takeResetDone } from './reset.js';
 import { Rest, chooseSpot } from './rest.js';
 import { Saber } from './saber.js';
@@ -325,6 +325,8 @@ const fries = buildFries(scene, camera, world, airFryer);
 if (fries) Object.assign(fries, { fishIn: () => !!fish?.inFryer.length, onGolden: () => bump('friesCooked', 1, 'fries'),
   onBurnt: () => { bump('friesBurnt'); penalize('burnt'); }, onEaten: () => bump('fries') });
 const fruit = new FruitBowl(scene, camera); // the copper fruit bowl on the coffee table (#326)
+// the life simulator's things (#364, #366): item instances (items.js) shown as Holdables (life.js); a refusal pops up as a badge
+const life = new Life({ scene, camera, say: (t) => badge(t, false), feet: () => ({ at: 'world', pos: [player.pos.x, player.pos.y, player.pos.z], yaw: camera.rotation.y }) });
 fruit.onEaten = (f) => bump('fruit', 1, f.kind);
 airFryer.onDone = () => { if (fish?.inFryer.length || fries?.count) bump('airfried', 1, 'airfryer'); }; // a batch done (#287)
 const fridge = world.lids.find((l) => l.kind === 'fridge' && !l.freezer);
@@ -1121,6 +1123,7 @@ function updateFocus() {
   if (fish && world.furnitureOn && airFryer.open) cupTargets.push(...fish.inFryer.map((f) => f.target.pickable)); // in the open air fryer basket (#287)
   if (fries && world.furnitureOn) cupTargets.push(...fries.placed.map((b) => b.target.pickable)); // bunches of fries put down (#301)
   if (world.furnitureOn) cupTargets.push(...fruit.targets()); // the fruit in the bowl / lying out, the bowl with something in the hand (#326)
+  cupTargets.push(...life.targets().map((t) => t.pickable)); // the life sim's things (#366; F hides the ones lying out: `shown`)
   const hit = raycaster.intersectObjects([...pickables, ...extra, ...cupTargets], true)
     .find((h) => shown(h.object) && !(rest.active && (h.object.userData.door === rest.target || h.object.userData.door?.kind === 'rest')));
   focused = hit && !behindWall(hit.point) ? hit.object.userData.door : null;
@@ -1260,7 +1263,7 @@ const milk = fridge?.milkAt ? new Milk(scene, camera, fridge) : null; // the mil
 if (milk) holdables.push(milk);
 holdables.push(miele); // Miele in your arms (#328): not a loose item (she is the cat)
 if (fries) holdables.push(fries.bag); // the bag of fries in the freezer (#301): like the milk, not hidden with F, only sent home
-world.looseItems.push(fruit.group, ...cups.cups.map((c) => c.model), drawing.paper, calendar.object, ...posters.groups, ...(fish ? [fish.object] : [])); // the cups and the paper go with F too // the cat board and the toys go with the furniture (F)
+world.looseItems.push(life.group, fruit.group, ...cups.cups.map((c) => c.model), drawing.paper, calendar.object, ...posters.groups, ...(fish ? [fish.object] : [])); // the cups and the paper go with F too // the cat board and the toys go with the furniture (F)
 try { if (localStorage.getItem('lunden.furniture') === '0') toggleFurniture(false); } catch { /* ignore */ }
 document.getElementById('furniture-btn').addEventListener('click', () => toggleFurniture());
 
@@ -1352,6 +1355,7 @@ function step(dt) {
   fish?.update(dt);
   fries?.update(dt);
   fruit.update(dt);
+  life.update(dt);
   toys.update(dt);
   marks.update(dt);
   breaker.update(dt);
@@ -1642,8 +1646,8 @@ function keepWorld() { try { return saveWorld(keepApp); } catch (e) { console.wa
 if (resumeOk && resumed.mode && resumed.world) loadWorld(keepApp, resumed.world); // mid-visit only: the game's clock too (a new visit: real time, #143)
 if (resumeOk && resumed.mode) continueAfterReload(resumed);
 // &life (#365): the life simulator's developer scenario — a cleared worktop, a few test things, never saved (life.js)
-if (lifeDev()) devScenario({ world, holdables, cups, things, milk, fish, fries, fruit, airFryer, beer, cat, day, player, camera, at: !!at, timeGiven: params0.has('time') });
+if (lifeDev()) devScenario({ life, world, holdables, cups, things, milk, fish, fries, fruit, airFryer, beer, cat, day, player, camera, at: !!at, timeGiven: params0.has('time') });
 document.documentElement.classList.remove('resuming'); // the page is ready: off with the "Laddar…" cover (#222)
 
 // handle for tests/debugging (tools/touchtest.html)
-window.__app = { fall, todo, coffeeJar, miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };
+window.__app = { life, fall, todo, coffeeJar, miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };

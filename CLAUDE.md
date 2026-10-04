@@ -544,7 +544,17 @@ src/detail.js          DetailCuller (#189): far-away small meshes and things ins
                        outside) go to a layer the camera does not render; roots with `userData.moving` (our car, the cat,
                        darts, the basketball) are judged every update, not only when the camera moves (#267)
 src/life.js            the life simulator (epic #364) glue; the `&life` developer scenario (#365). What it builds on:
-                       docs/livssimulator-inventering.md (the inventory: reuse / extend / missing per system)
+                       docs/livssimulator-inventering.md (the inventory: reuse / extend / missing per system).
+                       `Life` (__app.life): the instances (`life.items`) + a view per instance, `LifeItem` (#366) = a Holdable
+                       whose model follows the instance's place (world → `life.group`, a loose item; hand; a store slot's or a
+                       carrier's anchor) and state (`view.show`); take / placeAt / putBack move the instance (never lost: home,
+                       else where it last lay, else at your feet)
+src/items.js           the life sim's things as data (#366, ITEMS in config), no three.js: instances with a stable id
+                       ('cucumber#3'), exactly one place (world | hand | slot of a store | on a carrier), an amount in g / ml /
+                       count never below 0, pkg / prep / clean / machine fields; `check(item, place)` = the Swedish reason it
+                       can't go there (a shut store, too big, taken, a carrier on itself); `move`, `consume`, `remove`, `audit`
+src/lifemodels.js      the life sim's models (#366): plate, cutting board, cucumber, slice, cheese, butter, bread bag, bread slice,
+                       knife — own shapes; `show(item)` shows the amount / package; carriers have `anchors` (their spots)
 src/changelog.js       changelog list + the note on the freezer (newest `t` first, "Nytt" by the highest `t` seen, #341; E to read; `scrollNote`: ↑ ↓ / W S, PageUp/Down, Space,
                        Home/End scroll it, the wheel is passed on under pointer lock, #275)
 src/install.js         iPhone "add to home screen" sheet (no fullscreen API there); install link
@@ -711,6 +721,8 @@ tools/cloudtest.html   headless test of the shared world against `node cloudflar
                        taping, someone else's drawing appears, DELETE on throwing, thrown elsewhere → gone here, offline
                        queue, desk sheet, cat photos neither sent nor fetched (#211), a fresh visitor gets them, the
                        leaderboard (name, score, escaped list, a capped cheat), off without &cloud
+tools/itemtest.html    headless test (#366): items.js with plain asserts (two instances, amounts never < 0, one place, carriers,
+                       stores, events) and the view in the game (&life: take the cucumber, half used = half as long, down, F)
 tools/inventorytest.html headless test (#365): the `&life` scenario's start state, the visitor's records untouched, the
                        integration points the inventory names; without &life the game starts at START
 tools/stamp.sh         build the published site with a version stamp (used by CI)

@@ -930,10 +930,31 @@ export const HOLD = { reach: 2.2 };
 
 // The life simulator (epic #364, src/life.js; docs/livssimulator-inventering.md). `dev` = the developer scenario
 // `&life` (#365): a reproducible start in the kitchen, never saved — the visitor's place (x, z, yaw°, pitch°), the
-// clock (noon, paused, unless &time is given) and the test things: an empty cup and the milk on the free worktop between
+// clock (noon, paused, unless &time is given) and the test things (`items`: life-sim instances, #366): an empty cup and the milk on the free worktop between
 // the sink and the hob (x 4.98…5.52 there), an empty wine glass on the dining table (SKANSNÄS, top 0.754). Our picks.
 export const LIFE = {
-  dev: { at: [4.35, 2.75, -90, -32], hour: 12, cup: [5.24, 2.62], milk: [5.26, 2.95], glass: [3.55, 1.45] },
+  dev: { at: [4.35, 2.75, -90, -32], hour: 12, cup: [5.24, 2.62], milk: [5.26, 2.95], glass: [3.55, 1.45],
+    items: { plate: [3.45, 1.0, 0], cucumber: [3.72, 1.05, 20] } }, // life items (#366) on the dining table: [x, z, yaw°]
+};
+
+// The life simulator's item types (#366, src/items.js): name (Swedish, definite form as in the prompts), tags (what it
+// is and what it can do: 'food', 'tool:cut' / 'tool:spread' / 'tool:slice', 'carrier', 'dishwasherSafe' …), unit
+// ('g' | 'ml' | 'count'), the starting amount, a size class (xs … xl: a slot / carrier takes up to its own size),
+// `pkg` / `prep` / `clean` = the starting state, `carrier` = what it can hold (slots, the biggest size, accepted tags),
+// `model` = the builder in lifemodels.js, `held` = its pose in the hand (camera space). Amounts are game parameters from
+// the plan (docs/livssimulator-plan-2026-10-04.md: a cucumber 300 g, a slice 10 g), not product measures.
+export const ITEMS = {
+  plate: { name: 'tallriken', tags: ['dish', 'carrier', 'dishwasherSafe'], unit: 'count', amount: 1, size: 'm', clean: 'clean', model: 'plate',
+    carrier: { slots: 6, size: 's', accepts: ['food'], fullText: 'Tallriken är full' } },
+  board: { name: 'skärbrädan', tags: ['carrier', 'station'], unit: 'count', amount: 1, size: 'l', clean: 'clean', model: 'board',
+    carrier: { slots: 9, size: 'm', accepts: ['food'], fullText: 'Brädan är full' } },
+  cucumber: { name: 'gurkan', tags: ['food', 'cuttable'], unit: 'g', amount: 300, size: 'm', prep: 'whole', model: 'cucumber' },
+  cucumberSlice: { name: 'gurkskivan', tags: ['food', 'topping'], unit: 'g', amount: 10, size: 'xs', prep: 'sliced', model: 'cucumberSlice' },
+  cheese: { name: 'osten', tags: ['food', 'sliceable'], unit: 'g', amount: 500, size: 's', prep: 'whole', model: 'cheese' },
+  butter: { name: 'smöret', tags: ['food', 'package', 'spreadable'], unit: 'g', amount: 500, size: 's', pkg: 'closed', model: 'butter' },
+  breadBag: { name: 'brödpåsen', tags: ['food', 'package'], unit: 'count', amount: 12, size: 'm', pkg: 'closed', model: 'breadBag' },
+  breadSlice: { name: 'brödskivan', tags: ['food', 'base'], unit: 'count', amount: 1, size: 's', model: 'breadSlice' },
+  knife: { name: 'kökskniven', tags: ['tool:cut', 'dishwasherSafe'], unit: 'count', amount: 1, size: 's', clean: 'clean', model: 'knife' },
 };
 
 // A new version loads by itself (#192, #277, main.js `autoReload`): after `still` s without input / movement / panel

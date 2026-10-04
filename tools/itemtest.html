@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Item test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script type="module">
+// The life simulator's item layer (#366, src/items.js): plain asserts without rendering — two cucumbers are two
+// instances, amounts never go below 0, an item has exactly one place, carriers / stores follow the rules. Then the view
+// adapter in the game (`&life`, life.js): the cucumber is a Holdable whose model follows the instance (taken into the
+// hand, shorter when its amount drops, down on the worktop), the existing holdables untouched.
+//   chromium --headless=new --dump-dom http://localhost:8137/tools/itemtest.html
+import { Items, SIZES } from '../src/items.js';
+import { ITEMS } from '../src/config.js';
+const out = document.getElementById('out');
+const lines = [];
+let pass = true;
+const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); pass &&= !!ok; return ok; };
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+try {
+  // --- the domain, no rendering -------------------------------------------------------------
+  const I = new Items(ITEMS);
+  const at = (x) => ({ at: 'world', pos: [x, 0.93, 2], yaw: 0 });
+  const c1 = I.create('cucumber', at(5.2)), c2 = I.create('cucumber', at(5.3));
+  check(c1 && c2 && c1 !== c2 && c1.id !== c2.id && c1.id === 'cucumber#1' && c2.id === 'cucumber#2', `two cucumbers, two instances (${c1?.id}, ${c2?.id})`);
+  check(c1.amount === 300 && c1.unit === 'g' && c1.prep === 'whole' && c1.pkg === null && c1.clean === null, 'the type\'s defaults: 300 g, whole, no package, no cleanliness');
+  check(I.consume(c1, 10) === 10 && c1.amount === 290 && c2.amount === 300, 'taking 10 g from one leaves the other');
+  check(I.consume(c1, 1000) === 290 && c1.amount === 0 && I.isEmpty(c1), 'taking more than there is: only what there is, 0 left');
+  check(I.consume(c1, 5) === 0 && c1.amount === 0 && I.consume(c2, -5) === 0 && c2.amount === 300, 'never below 0, a negative take does nothing');
+  I.setAmount(c2, -40);
+  check(c2.amount === 0, 'setAmount clamps at 0');
+  check(I.create('nonsense', at(1)) === null && /Okänd/.test(I.lastReason), 'an unknown type is refused');
+  check(I.create('cucumber', { at: 'world', pos: [1, NaN, 2] }) === null && I.all().length === 2, 'a bad place creates nothing');
+  // one place at a time
+  const butter = I.create('butter', at(5), { amount: 185, pkg: 'open' });
+  check(butter.amount === 185 && butter.pkg === 'open', 'an opened butter pack with 185 g left (the plan\'s example)');
+  check(I.move(butter, { at: 'hand' }) === null && I.held() === butter && butter.place.at === 'hand', 'into the hand');
+  check(/Lägg ifrån dig smöret först/.test(I.move(c2, { at: 'hand' })) && c2.place.at === 'world', 'a second thing for the hand: refused, it stays');
+  check(I.move(butter, at(4.9)) === null && I.held() === null, 'down again: the hand is empty');
+  check(I.audit().length === 0, `audit: ${I.audit().join('; ') || 'ok'}`);
+  // carriers (#370 builds on these rules)
+  const plate = I.create('plate', at(3.5)), slice = I.create('cucumberSlice', at(3.6));
+  check(I.move(slice, { at: 'on', parent: plate.id, slot: 0 }) === null && I.children(plate)[0] === slice && I.root(slice) === plate, 'a slice on the plate');
+  const plate2 = I.create('plate', at(3.7));
+  check(I.move(plate2, { at: 'on', parent: plate.id, slot: 1 }) !== null && plate2.place.at === 'world', 'no plate on a plate');
+  check(/sig själv/.test(I.check(plate, { at: 'on', parent: plate.id, slot: 2 }) ?? ''), 'a plate is never on itself');
+  const s2 = I.create('cucumberSlice', at(3.6));
+  check(/full/i.test(I.move(s2, { at: 'on', parent: plate.id, slot: 0 }) ?? '') && s2.place.at === 'world', 'a taken spot: refused, nothing moves');
+  check(I.remove(plate) === false && I.get(plate) && I.get(slice), 'a plate with something on it is not removed (nothing silently lost)');
+  // the plan's examples: a plate carrying half a sandwich that is also dirty; a used glass with 80 ml
+  I.set(plate, { clean: 'dirty' });
+  check(plate.clean === 'dirty' && I.children(plate).length === 1, 'a dirty plate still carrying its food');
+  I.set(plate, { clean: 'sparkly' });
+  check(plate.clean === 'dirty', 'an unknown state is ignored');
+  check(SIZES.xs < SIZES.s && SIZES.s < SIZES.m && I.size(slice) === SIZES.xs, 'size classes');
+  // stores (#369 builds on these rules)
+  let open = false;
+  I.addStore({ id: 'test', name: 'lådan', slots: [{ size: 's' }, { size: 'm' }], isOpen: () => open });
+  const cheese = I.create('cheese', at(2));
+  check(/Öppna lådan först/.test(I.move(cheese, { at: 'slot', store: 'test', slot: 0 }) ?? '') && cheese.place.at === 'world', 'a shut store: open it first');
+  open = true;
+  check(I.move(cheese, { at: 'slot', store: 'test', slot: 0 }) === null && cheese.place.store === 'test', 'open: in it goes');
+  check(/får inte plats/.test(I.move(I.create('board', at(1)), { at: 'slot', store: 'test', slot: 1 }) ?? ''), 'too big for the slot: refused');
+  check(I.audit().length === 0, `audit at the end: ${I.audit().join('; ') || 'ok'}`);
+  // events: the 3D side follows
+  const seen = [];
+  const off = I.on((kind, it) => seen.push(`${kind}:${it.id}`));
+  I.consume(cheese, 12); I.move(cheese, at(2.2)); off(); I.consume(cheese, 1);
+  check(seen.join(',') === 'change:cheese#1,move:cheese#1', `events: ${seen.join(',')}`);
+} catch (e) { pass = false; lines.push(`FAIL error ${e.stack}`); }
+
+// --- the view adapter in the game ---------------------------------------------------------------
+try {
+  const f = document.createElement('iframe');
+  f.width = 800; f.height = 500; f.src = '../index.html?life&shot';
+  document.body.append(f);
+  await new Promise((r) => { f.onload = r; });
+  while (!f.contentWindow.__app) await wait(100);
+  const A = f.contentWindow.__app, { life, heldItem, camera, step, scene, cups } = A;
+  const cuc = life.items.ofType('cucumber')[0], v = life.view(cuc);
+  check(cuc && v && v.model.parent === life.group && Math.abs(v.model.position.y - 0.755) < 0.01, `&life: a cucumber on the dining table (y ${v?.model.position.y.toFixed(3)})`);
+  check(life.targets().includes(v.target) && v.target.name === 'gurkan' && v.target.kind === 'holdable', 'it is an E target: "ta gurkan"');
+  v.target.toggle(); step(1 / 60);
+  check(heldItem() === v && cuc.place.at === 'hand' && v.model.parent === camera, 'taken: the instance is in the hand, its model in the view');
+  check(!life.targets().includes(v.target), 'not a target while held');
+  const cup = cups.cups.find((c) => c.state === 'placed');
+  check(cup.target.blocked, 'the cup is blocked while the cucumber is held (one thing at a time)');
+  const sx0 = v.view.object.children[0].scale.x;
+  life.items.consume(cuc, 150);
+  check(cuc.amount === 150 && Math.abs(v.view.object.children[0].scale.x - 0.5) < 0.01 && sx0 === 1, 'half used: the model is half as long');
+  v.placeAt(new (camera.position.constructor)(5.25, 0.93, 3.1), 0); step(1 / 60);
+  check(!heldItem() && cuc.place.at === 'world' && Math.abs(cuc.place.pos[1] - 0.931) < 0.002 && v.model.parent === life.group && Math.abs(v.model.position.z - 3.1) < 1e-6, 'down on the worktop: data and model agree');
+  // something else taken while it is held: it goes back where it lay (never lost)
+  v.take(); step(1 / 60);
+  A.toggleFurniture(false); step(1 / 60);
+  check(!heldItem() && cuc.place.at === 'world' && Math.abs(cuc.place.pos[2] - 3.1) < 1e-6 && !life.group.visible, 'F with it in the hand: back down where it lay (never lost), hidden with the loose things');
+  A.toggleFurniture(true); step(1 / 60);
+  check(life.group.visible && v.model.parent === life.group, 'F again: it is there');
+  check(life.items.audit().length === 0, `audit in the game: ${life.items.audit().join('; ') || 'ok'}`);
+} catch (e) { pass = false; lines.push(`FAIL view error ${e.stack}`); }
+lines.push(pass ? 'ALL PASS' : 'SOME FAILED');
+out.textContent = lines.join('\n');
+</script>
+</body>
+</html>
