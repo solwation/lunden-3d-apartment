@@ -259,14 +259,14 @@ const PARTS = {
       const o = cat.object, b = BREEDS.indexOf(cat.breed), coats = cat.breed.name === 'huskatt' ? VARIANTS : cat.breed.coats;
       const doorKeys = keys(world.doors, openKey), di = world.doors.indexOf(cat.door);
       return { p: vec(o.position), ry: r3(o.rotation.y), b, c: coats.indexOf(cat.variant), n: cat.catName, on: cat.on ?? null,
-        door: di >= 0 ? doorKeys[di] : null, shut: cat.closedSince ? 1 : 0, seen: cat.seen ? 1 : 0 };
+        door: di >= 0 ? doorKeys[di] : null, shut: cat.closedSince ? 1 : 0, seen: cat.seen ? 1 : 0, ...(cat.kitten ? { k: 1 } : {}) }; // k: a kitten (#363)
     },
     load({ cat, world, BREEDS, VARIANTS }, s) {
       const breed = BREEDS[s.b];
       if (!breed || !isVec(s.p)) return;
       const coats = breed.name === 'huskatt' ? VARIANTS : breed.coats, coat = coats[s.c];
       if (!coat) return;
-      cat.setCat(breed, coat);
+      cat.setCat(breed, coat, !!s.k);
       if (typeof s.n === 'string') cat.catName = s.n;
       cat.object.position.set(...s.p);
       cat.object.rotation.y = Number(s.ry) || 0;

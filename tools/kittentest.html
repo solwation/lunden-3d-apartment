@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Kitten test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+// Kittens (#363): a seeded draw gives kittens at about KITTEN.chance and never a Miele kitten; a kitten is found (stats,
+// points, the "Kattunge!" badge), is smaller than a grown cat with paws on the floor, squeaks; petting it counts kittenPets
+// and gives more than a grown cat's pat, its photo is marked; it plays on the spot (pounce, tail chase, batting) without
+// moving; after a pat it may pounce first, then scampers off faster than a grown cat; a cup on its floor is batted over
+// (emptied, no deduction); hurt it runs faster still and the deduction is bigger.
+//   google-chrome --headless=new --dump-dom http://localhost:8137/tools/kittentest.html
+const out = document.getElementById('out');
+addEventListener('unhandledrejection', (e) => { out.textContent = `ERROR ${e.reason?.message ?? e.reason}\n${e.reason?.stack ?? ''}`; });
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+localStorage.removeItem('lunden.stats');
+const f = document.createElement('iframe');
+f.width = 900; f.height = 600; f.src = '../index.html';
+document.body.append(f);
+f.onload = async () => {
+  const w = f.contentWindow, d = f.contentDocument;
+  while (!w.__app) await wait(100);
+  const { player, camera, cat, step, world, stats, cups, useDoor, board } = w.__app;
+  const { KITTEN, SCORE, CAT_LEAVE, CAT_HURT } = await w.eval(`import('${new URL('src/config.js', w.location.href)}')`);
+  const { BREEDS, VARIANTS } = await w.eval(`import('${new URL('src/cat.js', w.location.href)}')`);
+  const { rawScore } = await w.eval(`import('${new URL('src/stats.js', w.location.href)}')`);
+  const V = camera.position.constructor;
+  const lines = [];
+  const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; };
+  w.confirm = () => true;
+  d.getElementById('stats-reset').click();
+  d.getElementById('start-touch').click();
+  await wait(50);
+  let pass = true;
+
+  // 1. the seeded draw: a second spawner (the same class) opening a door again and again
+  let seed = 2024;
+  const rand = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+  const door = world.doors.find((x) => x.kind === 'swing' && x.name !== 'ytterdörren');
+  const { center, normal } = door.opening();
+  const from = { x: center[0] + normal[0] * 0.8, z: center[1] + normal[1] * 0.8 };
+  const sp = new cat.constructor(world, rand);
+  sp.chance = { appear: 1, steal: 0, vanish: 1 };
+  let n = 0, kits = 0, mieles = 0, mieleKits = 0, badNames = 0;
+  for (let i = 0; i < 3000; i++) {
+    sp.hide(); sp.mieleLock = false;
+    sp.onOpen(door, from);
+    if (!sp.visible) continue;
+    n++;
+    if (sp.kitten) { kits++; if (!(sp.catName.startsWith('Lilla ') || KITTEN.names.includes(sp.catName))) badNames++; }
+    if (sp.isMiele) { mieles++; if (sp.kitten) mieleKits++; }
+  }
+  const rate = kits / n;
+  pass &= check(n > 2500 && rate > KITTEN.chance * 0.6 && rate < KITTEN.chance * 1.5 && mieleKits === 0 && mieles > 0 && rate > mieles / n && badNames === 0,
+    `seeded draw: ${kits} kittens of ${n} cats (${(rate * 100).toFixed(1)} %, KITTEN.chance ${(KITTEN.chance * 100).toFixed(1)} %), Miele ${mieles} (never a kitten: ${mieleKits}), names ok`);
+  cat.setCat(cat.breed, cat.variant, cat.kitten); // (the spawners share the fur materials)
+
+  // 2. found behind a door: counted, points, the badge
+  cat.chance.appear = 1; cat.forceKitten = true;
+  player.spawn(center[0] + normal[0] * 0.8, center[1] + normal[1] * 0.8, 0);
+  let t = rawScore();
+  if (door.isOpen) useDoor(door);
+  useDoor(door);
+  const badge = d.getElementById('badges').textContent;
+  pass &= check(cat.visible && cat.kitten && stats.kittens === 1 && rawScore() - t >= SCORE.first.kittens && /Kattunge!/.test(badge) && cat.voice === 'kitten',
+    `a kitten behind ${door.name}: "${cat.catName}" (${cat.breed.name}), kittens ${stats.kittens}, +${(rawScore() - t).toFixed(1)}, badge "${badge.slice(0, 60)}", voice ${cat.voice}`);
+  cat.chance.appear = 0; cat.chance.steal = 0;
+  useDoor(door);
+
+  // 3. smaller: the drawn meshes' box (not the hand, stars, X)
+  const box = () => {
+    let lo = [1e9, 1e9, 1e9], hi = [-1e9, -1e9, -1e9], low = '';
+    cat.object.updateMatrixWorld(true);
+    cat.object.traverse((o) => {
+      if (!o.isMesh) return;
+      for (let p = o; p; p = p.parent) { if (!p.visible && p !== cat.object) return; if (p === cat.object) break; }
+      o.geometry.computeBoundingBox();
+      const bb = o.geometry.boundingBox.clone().applyMatrix4(o.matrixWorld);
+      if (bb.min.y < lo[1]) low = `${o.geometry.type}@${o.parent === cat.object ? 'root' : o.parent?.type}`;
+      for (let k = 0; k < 3; k++) { lo[k] = Math.min(lo[k], bb.min.getComponent(k)); hi[k] = Math.max(hi[k], bb.max.getComponent(k)); }
+    });
+    return { lo, hi, h: hi[1] - lo[1], w: hi[0] - lo[0], low };
+  };
+  const place = (kitten, x = 2.8, z = 9.8) => {
+    cat.hide();
+    cat.setCat(BREEDS[0], VARIANTS[0], kitten);
+    cat.object.position.set(x, 0, z); cat.object.rotation.y = Math.PI; cat.object.visible = true; cat.on = null; cat.rugY = 0;
+    cat.nextMeow = 1e9; cat.tailWait = 1e9; cat.playWait = 1e9; cat.toyScan = 1e9; cat.t = 1.5;
+    cat.update(0); cat.object.updateMatrixWorld(true);
+  };
+  player.spawn(2.8, 9.0, Math.PI);
+  place(false); const grown = box();
+  place(true); const small = box();
+  pass &= check(small.h < grown.h * 0.62 && small.h > grown.h * 0.4 && small.lo[1] > grown.lo[1] * KITTEN.shape.size - 0.003 && small.lo[1] < 0.02, // (sitting, the grown body sinks a little into the floor too)
+    `a kitten is smaller: ${(small.h * 100).toFixed(1)} cm tall vs ${(grown.h * 100).toFixed(1)} cm (${(small.h / grown.h).toFixed(2)} ×), lowest point ${(small.lo[1] * 100).toFixed(1)} cm (${small.low}; a grown cat ${(grown.lo[1] * 100).toFixed(1)} cm)`);
+  // standing too (the short legs reach the floor)
+  cat.stand = 1; cat.wantStand = 1; cat.pose(0); const st = box();
+  pass &= check(st.lo[1] > -0.012 && st.lo[1] < 0.02, `standing, its paws on the floor (lowest ${(st.lo[1] * 100).toFixed(1)} cm)`);
+
+  // 4. it plays on the spot: each kind, no move in x/z
+  for (const kind of ['pounce', 'spin', 'bat']) {
+    place(true);
+    const p0 = cat.object.position.clone();
+    cat.playKind = kind; cat.playWait = 0;
+    let saw = false, hop = 0, moved = 0, turn = 0;
+    for (let i = 0; i < 30 * 3; i++) {
+      step(1 / 30);
+      if (cat.play?.kind === kind) saw = true;
+      hop = Math.max(hop, cat.hopY ?? 0);
+      turn = Math.max(turn, Math.abs(Math.atan2(Math.sin(cat.object.rotation.y - Math.PI), Math.cos(cat.object.rotation.y - Math.PI))));
+      moved = Math.max(moved, Math.hypot(cat.object.position.x - p0.x, cat.object.position.z - p0.z));
+    }
+    const shows = kind === 'pounce' ? hop > 0.05 : kind === 'spin' ? turn > 2.5 : true;
+    pass &= check(saw && shows && moved < 1e-6 && !cat.play, `plays "${kind}" on the spot (hop ${hop.toFixed(3)}, turned ${turn.toFixed(2)} rad, moved ${moved.toFixed(4)} m)`);
+    cat.playKind = null;
+  }
+
+  // 5. petting a kitten: kittenPets, more points than a grown cat, the photo marked; then a pounce and a fast scamper
+  place(true);
+  camera.rotation.x = Math.atan2(0.15 - player.eyeY, 0.8);
+  for (let i = 0; i < 5; i++) step(1 / 60);
+  await board.load();
+  const btn = d.getElementById('action');
+  pass &= check(!btn.hidden && /klappa katten/i.test(btn.textContent), `action button "${btn.textContent}"`);
+  t = rawScore();
+  btn.click();
+  for (let i = 0; i < 40; i++) step(1 / 60);
+  const gain = rawScore() - t;
+  pass &= check(cat.petting && stats.kittenPets === 1 && gain >= SCORE.each.petted + SCORE.each.kittenPets && gain > SCORE.each.petted,
+    `petted: kittenPets ${stats.kittenPets}, +${gain.toFixed(1)} (a grown cat's pat +${SCORE.each.petted})`);
+  const r0 = cat.rand; cat.rand = () => 0; // it pounces
+  const p0 = cat.object.position.clone();
+  for (let i = 0; i < 6 * 60 && cat.petting; i++) step(1 / 60);
+  cat.rand = r0;
+  const pounced = cat.leaving?.pounce != null;
+  let still = true;
+  while (cat.leaving?.pounce != null) { step(1 / 30); if (Math.hypot(cat.object.position.x - p0.x, cat.object.position.z - p0.z) > 1e-6) still = false; }
+  pass &= check(pounced && still && Math.abs(cat.leaving.speed - CAT_LEAVE.speed * KITTEN.run) < 1e-9 && KITTEN.run > 1,
+    `after the pat: a pounce on the spot, then off at ${cat.leaving?.speed.toFixed(2)} m/s (a grown cat ${CAT_LEAVE.speed})`);
+  for (let i = 0; i < 150 && cat.visible; i++) step(0.1);
+  pass &= check(!cat.visible, 'and it is gone');
+  for (let i = 0; i < 100 && !board.photos.at(-1)?.kitten; i++) await wait(100);
+  pass &= check(!!board.photos.at(-1)?.kitten, `its photo is marked "kattunge" ("${board.photos.at(-1)?.name}")`);
+
+  // 6. a cup with coffee on the floor: the kitten walks to it and bats it over; emptied, no deduction
+  place(true, 2.8, 9.8);
+  const cup = cups.cups.find((c) => c.state === 'cabinet') ?? cups.cups[0];
+  cup.take(); cup.setFill(0.8); cup.placeAt(new V(2.1, 0, 10.4));
+  const pen = stats.penaltyPoints ?? 0, start = cat.object.position.clone();
+  cat.toyScan = 0;
+  const up = new V(0, 1, 0);
+  for (let i = 0; i < 30 * 12 && up.set(0, 1, 0).applyQuaternion(cup.model.quaternion).y > 0.5; i++) step(1 / 30);
+  const segs = cat.obstacles(), crossed = segs.some(([ax, az, bx, bz]) => {
+    const p = cat.object.position, dd = (p.x - start.x) * (bz - az) - (p.z - start.z) * (bx - ax);
+    if (Math.abs(dd) < 1e-9) return false;
+    const tt = ((ax - start.x) * (bz - az) - (az - start.z) * (bx - ax)) / dd, uu = ((ax - start.x) * (p.z - start.z) - (az - start.z) * (p.x - start.x)) / dd;
+    return tt > 0 && tt < 1 && uu > 0 && uu < 1;
+  });
+  pass &= check(up.y < 0.2 && cup.fill < 0.01 && (stats.penaltyPoints ?? 0) === pen && !crossed && cat.object.position.distanceTo(start) > 0.3,
+    `a cup on the floor batted over (up ${up.y.toFixed(2)}, fill ${cup.fill.toFixed(2)}), no deduction (${pen} → ${stats.penaltyPoints ?? 0}), walked ${cat.object.position.distanceTo(start).toFixed(2)} m through no wall`);
+  for (let i = 0; i < 30 * 3; i++) step(1 / 30);
+  pass &= check(!cat.toy, 'it leaves the cup alone afterwards');
+  cup.take(); cup.goHome();
+
+  // 7. hurt: faster than a hurt grown cat, a bigger deduction
+  place(true);
+  const before = stats.penaltyPoints ?? 0;
+  cat.hurt('rifle', player.pos);
+  const took = (stats.penaltyPoints ?? 0) - before;
+  pass &= check(Math.abs(cat.leaving.speed - CAT_LEAVE.speed * CAT_HURT.speed * KITTEN.run) < 1e-9 && took === SCORE.penalties.kittenShot.rifle && took > SCORE.penalties.catShot.rifle,
+    `shot: it runs at ${cat.leaving.speed.toFixed(2)} m/s, −${took} (a grown cat −${SCORE.penalties.catShot.rifle})`);
+  cat.hide();
+  // a grown cat is no kitten, Miele never
+  place(false);
+  cat.setCat(BREEDS.find((b) => b.superRare), BREEDS.find((b) => b.superRare).coats[0], true);
+  pass &= check(!cat.kitten && cat.voice !== 'kitten', 'Miele is never a kitten');
+  cat.hide();
+  out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
+};
+</script>
+</body>
+</html>

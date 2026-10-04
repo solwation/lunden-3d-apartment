@@ -83,13 +83,13 @@ export class CatBoard {
 
   /** Pin a new photo (JPEG data URL) of `name`; a full board drops its oldest photo that isn't kept, and when
    * every one is kept the new photo doesn't go up (returns false). */
-  async add(name, data) {
+  async add(name, data, { kitten = false } = {}) {
     if (this.photos.length >= MAX) {
       const old = this.photos.find((p) => !p.kept);
       if (!old) { badge('📌 Tavlan är full med sparade bilder, släng en först', false); return false; }
       await this.discard(old.id ?? old.time, false);
     }
-    const photo = { time: Date.now(), name, data, kept: false, uid: uid() };
+    const photo = { time: Date.now(), name, data, kept: false, uid: uid(), ...(kitten ? { kitten: true } : {}) }; // a kitten's: marked (#363)
     try {
       photo.id = await withStore('readwrite', (s) => s.add(photo));
     } catch { photo.id = photo.time; } // no IndexedDB (private mode): keep it for this visit
@@ -149,6 +149,14 @@ export class CatBoard {
       g.fillText(p.name, 0, bottom + rest * 0.46, pw - 2 * side);
       g.font = `${Math.round(rest * 0.27)}px ${hand}`;
       g.fillText(fmt(p.time), 0, bottom + rest * 0.82, pw - 2 * side);
+      if (p.kitten) { // a small "kattunge" tag in the picture's top corner (#363)
+        const fs = Math.round(img * 0.085), tw = fs * 4.6, th = fs * 1.35, tx = img / 2 - tw - img * 0.03, ty = y0 + img * 0.03;
+        g.fillStyle = 'rgba(255,236,244,0.92)';
+        g.fillRect(tx, ty, tw, th);
+        g.fillStyle = '#b0306a';
+        g.font = `bold ${fs}px ${hand}`;
+        g.fillText('kattunge', tx + tw / 2, ty + th * 0.74, tw * 0.94);
+      }
       g.restore();
       // the pin at the top: a big red one on the photos that are kept (#170), small other colours on the rest
       const py = cy - ph / 2 + side * 0.9, pr = k * (p.kept ? 0.0045 : 0.003);
@@ -226,7 +234,7 @@ export class BoardPanel {
         <button data-act="keep" data-i="${i}" aria-pressed="${!!p.kept}">${p.kept ? '📌 Sparad' : '📌 Spara'}</button>
         <button data-act="discard" data-i="${i}">${this.confirm === id ? 'Säker? 🗑' : '🗑 Släng'}</button></div>`;
       card.querySelector('img').src = p.data;
-      card.querySelector('b').textContent = p.name;
+      card.querySelector('b').textContent = p.kitten ? `${p.name} 🐾 kattunge` : p.name;
       this.grid.append(card);
     });
     this.grid.querySelector('.sel')?.scrollIntoView?.({ block: 'nearest' });

@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { UNIT_TOP, COLORS, LEVELS, DAY, START, PLAYER, DRAWING, STAIR, HOLD, REMOTE, REST, DOOR_HEIGHT, TURBO, WEATHER, BREAK, CAR, KITCHEN, LAPTOP, NEST, AUTO_RELOAD, MIELE } from './config.js';
+import { UNIT_TOP, COLORS, LEVELS, DAY, START, PLAYER, DRAWING, STAIR, HOLD, REMOTE, REST, DOOR_HEIGHT, TURBO, WEATHER, BREAK, CAR, KITCHEN, LAPTOP, NEST, AUTO_RELOAD, MIELE, CUPS } from './config.js';
 import { MieleHeld, HeartFireworks } from './miele.js';
 const DRAWING_COLORS = DRAWING.colors;
 import { buildWorld } from './world.js';
@@ -8,7 +8,7 @@ import { Player, inPoly, crosses } from './player.js';
 import { Fall } from './fall.js';
 import { setupTouch } from './touch.js';
 import { watchForUpdates, BUILD } from './version.js';
-import { CatSpawner, VARIANTS, BREEDS } from './cat.js';
+import { CatSpawner, VARIANTS, BREEDS, kittenName } from './cat.js';
 import { initAudio, sfx, toggleMuted, isMuted, updateListener } from './audio.js';
 import { stairHeight } from './stairs.js';
 import { rugLift } from './rugs.js';
@@ -466,7 +466,24 @@ if (fish) {
   fish.onCatEaten = () => bump('catFish');
   cat.watchPoint = () => camera.position;
 }
-cat.onFound = (label, rare, breed) => catFound(label, rare, breed);
+cat.onFound = (label, rare, breed, kitten) => { catFound(label, rare, breed); if (kitten) bump('kittens', 1, 'kattunge'); }; // a kitten (#363): more points
+// a kitten bats a cup standing on its floor over (#363): it falls away from the kitten, what it held splashes out (the
+// kitten's fault: no deduction); put down again, it may be knocked over again
+const tippedCups = new Map(); // cup → its placedAt when it was knocked over
+cat.toySource = () => cups.cups.filter((c) => c.state === 'placed' && tippedCups.get(c) !== c.placedAt).map((c) => ({ thing: c, at: c.model.position }));
+cat.onTip = (c) => {
+  tippedCups.set(c, c.placedAt);
+  const at = c.model.position, k = cat.object.position, yaw = Math.atan2(at.x - k.x, at.z - k.z);
+  if (c.fill > 0.01) {
+    const col = c.contents.color(new THREE.Color()), ahead = new THREE.Vector3(Math.sin(yaw), 0, Math.cos(yaw)).multiplyScalar(0.12).add(at);
+    const h = marks.hit(ahead.clone().setY(at.y + 0.12), ahead.clone().setY(at.y - 0.3));
+    if (h?.object) marks.add('splash', h, { color: col.getHex(), force: true, size: 0.09 });
+  }
+  c.contents.clear(); c.heat = 0; c.show();
+  c.model.quaternion.setFromEuler(new THREE.Euler(Math.PI / 2, yaw, 0, 'YXZ')); // on its side, the rim away from the kitten
+  c.model.position.y += CUPS.r;
+  sfx.click(at);
+};
 // a photo of every cat you pet goes up on the board, once its eyes are shut and the hand is there
 const board = new CatBoard();
 boardPanel = new BoardPanel(board, boardEl);
@@ -479,12 +496,12 @@ const cloud = new Cloud({ posters, drawing, holding: () => heldItem() === heldDr
 const leaderboard = new Leaderboard(cloud.url, totalScore, { nameRow: document.getElementById('lb-name'), input: document.getElementById('player-name'), list: document.getElementById('lb-start') });
 setStatsExtra(() => leaderboard.html());
 cloud.ready = cloud.on ? Promise.all([postersLoaded, boardLoaded]).then(() => cloud.sync()) : Promise.resolve(); // (tests wait on it)
-cat.onPet = () => bump('petted');
-cat.onHurt = (weapon) => penalize('catShot', weapon); // shot, cut or hit: it hisses and flees (#288)
+cat.onPet = () => { bump('petted'); if (cat.kitten) bump('kittenPets'); }; // a kitten's pat is worth more (#363)
+cat.onHurt = (weapon) => penalize(cat.kitten ? 'kittenShot' : 'catShot', weapon); // a kitten: extra bad (#363) // shot, cut or hit: it hisses and flees (#288)
 cat.onPhoto = () => { // 0.7 s into the pat (cat.js), before it walks off (#206)
   bump('catPhotos');
   const head = cat.head.getWorldPosition(new THREE.Vector3());
-  board.add(cat.catName, snapshot(renderer, scene, camera, head));
+  board.add(cat.catName, snapshot(renderer, scene, camera, head), { kitten: cat.kitten }); // a kitten's photo is marked (#363)
 };
 
 // a cat's bum (the X) seen from behind with its tail up (#262): once per tail-up, the first time per cat counts the most
@@ -519,6 +536,7 @@ const miePhoto = () => { // her photo on the cat board: the first time she is he
 };
 miele.onPickUp = miePhoto;
 miele.onHug = () => { bump('mieleHugs'); miePhoto(); };
+if (params0.has('kitten')) cat.forceKitten = true; // &kitten: the next cat to turn up is a kitten (#363)
 if (params0.has('miele')) cat.forceMiele = true; // &miele: the next cat to turn up is her (tests, screenshots)
 const mieleFrustum = new THREE.Frustum(), mieleAt = new THREE.Vector3();
 function checkMiele() {
@@ -652,7 +670,8 @@ if (params.has('cat')) {
   const ordinary = BREEDS.filter((b) => !b.superRare); // Miele only with &miele (#328)
   const breed = params.has('miele') ? BREEDS.find((b) => b.superRare) : ordinary[Number(params.get('catb') ?? 0) % ordinary.length];
   const coats = breed.name === 'huskatt' ? VARIANTS : breed.coats;
-  cat.setCat(breed, coats[Number(params.get('catv') ?? 0) % coats.length]);
+  cat.setCat(breed, coats[Number(params.get('catv') ?? 0) % coats.length], params.has('kitten')); // &kitten: a kitten (#363)
+  if (cat.kitten) { cat.catName = kittenName(); cat.forceKitten = false; }
   if (breed.superRare) cat.forceMiele = false; // she is here already
   cat.t = Number(params.get('catt') ?? 1.5);
   cat.nextMeow = 1e9;

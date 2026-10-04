@@ -97,6 +97,14 @@ f.onload = async () => {
   const sph = rawScore() - t;
   pass &= check(near(hus, SCORE.breeds.huskatt + SCORE.first.coats) && near(again, SCORE.breeds.huskatt) && near(sph, SCORE.breeds.sphynx + SCORE.first.coats) && sph > 10 * again,
     `cats: a new huskatt +${hus.toFixed(1)}, the same coat again +${again.toFixed(1)}, a sphynx +${sph.toFixed(1)}`);
+  // a kitten (#363): a huskatt kitten found (as main.js counts it: the cat + SCORE.first.kittens) beats a rare breed; a second
+  // kitten still gives more than a perser; its pat more than a grown cat's
+  t = rawScore(); catFound('huskatt grå', false, 'huskatt'); bump('kittens', 1, 'kattunge');
+  const kit = rawScore() - t;
+  t = rawScore(); catFound('huskatt grå', false, 'huskatt'); bump('kittens', 1, 'kattunge');
+  const kit2 = rawScore() - t;
+  pass &= check(near(kit, SCORE.breeds.huskatt + SCORE.first.kittens) && kit > SCORE.breeds.sphynx && kit > SCORE.breeds.perser && kit2 > SCORE.breeds.perser
+    && SCORE.each.kittenPets > 0, `a kitten +${kit.toFixed(1)} > a sphynx ${SCORE.breeds.sphynx} / a perser ${SCORE.breeds.perser}; another kitten +${kit2.toFixed(1)}; its pat +${SCORE.each.petted + SCORE.each.kittenPets} (a cat's ${SCORE.each.petted})`);
   // sips count only up to their cap
   t = rawScore(); for (let i = 0; i < 100; i++) bump('beer');
   pass &= check(near(rawScore() - t, 100 * SCORE.each.beer) && stats.beer === 100, `100 sips of beer: +${(rawScore() - t).toFixed(1)} (no cap, little each)`);

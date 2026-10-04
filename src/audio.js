@@ -138,12 +138,13 @@ export const sfx = {
   },
   /** "Mi-aa-ow": sawtooth voice through moving formants. pitch ~1 = average cat. */
   /** Meow. `voice` (rare breeds): 'trill' = soft rolling mrrrp that rises at the end (perser),
-   * 'rasp' = long, loud, hoarse and insistent (sphynx); null = the ordinary meow. */
+   * 'rasp' = long, loud, hoarse and insistent (sphynx); 'kitten' (#363) = a short, high, thin squeak; null = the ordinary meow. */
   meow(pos, pitch = 1, voice = null) {
     if (!ready()) return;
-    const t = ctx.currentTime, d = out(pos, voice === 'rasp' ? 1.15 : voice === 'trill' ? 0.75 : 0.9);
-    const dur = voice === 'rasp' ? 0.95 + Math.random() * 0.35 : 0.55 + Math.random() * 0.35;
-    const f0 = 480 * pitch;
+    const kit = voice === 'kitten';
+    const t = ctx.currentTime, d = out(pos, voice === 'rasp' ? 1.15 : voice === 'trill' ? 0.75 : kit ? 0.6 : 0.9);
+    const dur = voice === 'rasp' ? 0.95 + Math.random() * 0.35 : kit ? 0.28 + Math.random() * 0.14 : 0.55 + Math.random() * 0.35;
+    const f0 = 480 * pitch * (kit ? 1.75 : 1);
     const o = ctx.createOscillator();
     o.type = voice === 'trill' ? 'triangle' : 'sawtooth';
     if (voice === 'trill') { // low rolling start, then a questioning rise
@@ -176,12 +177,13 @@ export const sfx = {
     src.connect(env);
     if (voice === 'rasp') noise(t, dur, d, { type: 'bandpass', freq: 2600, q: 1.5, gain: 0.12, attack: 0.05 }); // hoarse
     // formants i → a → o
+    const fk = kit ? 1.6 : 1; // a kitten's small mouth: the formants higher too
     for (const [a, b, c, q, gain] of [[350, 900, 550, 6, 1], [2300, 1400, 900, 8, 0.6], [3200, 2800, 2500, 10, 0.25]]) {
       const bp = ctx.createBiquadFilter();
       bp.type = 'bandpass'; bp.Q.value = q;
-      bp.frequency.setValueAtTime(a, t);
-      bp.frequency.linearRampToValueAtTime(b, t + dur * 0.35);
-      bp.frequency.linearRampToValueAtTime(c, t + dur);
+      bp.frequency.setValueAtTime(a * fk, t);
+      bp.frequency.linearRampToValueAtTime(b * fk, t + dur * 0.35);
+      bp.frequency.linearRampToValueAtTime(c * fk, t + dur);
       const g = ctx.createGain(); g.gain.value = gain;
       env.connect(bp).connect(g).connect(d);
     }
@@ -196,10 +198,12 @@ export const sfx = {
     tone(t, 0.06, d, { from: 900, to: 600, gain: opening ? 0.08 : 0.14 });
   },
   /** Purring for `dur` seconds: a ~26 Hz pulse train through a low formant, breathing in and out.
-   * `voice` 'trill' (perser) adds little mrrp chirps, 'rasp' (sphynx) purrs deeper, rougher, louder. */
+   * `voice` 'trill' (perser) adds little mrrp chirps, 'rasp' (sphynx) purrs deeper, rougher, louder, 'kitten' (#363)
+   * purrs quieter, faster and higher. */
   purr(pos, dur = 4, pitch = 1, voice = null) {
     if (!ready()) return;
-    const t = ctx.currentTime, d = out(pos, voice === 'rasp' ? 1.4 : 1.1);
+    if (voice === 'kitten') pitch *= 1.45;
+    const t = ctx.currentTime, d = out(pos, voice === 'rasp' ? 1.4 : voice === 'kitten' ? 0.7 : 1.1);
     if (voice === 'trill') {
       for (let c = 0.6; c < dur - 0.3; c += 1.1 + Math.random() * 0.5) {
         tone(t + c, 0.14, d, { type: 'triangle', from: 560 * pitch, to: 880 * pitch, gain: 0.07 });

@@ -1208,6 +1208,7 @@ export const CLOUD_URL = '';
 export const SCORE = {
   each: {
     petted: 8, catPhotos: 2, catFish: 25,                 // a pat (a cat to find first), its photo; feeding one takes a plan
+    kittenPets: 12,                                       // a kitten's pat on top of `petted` (#363)
     target: 1, splashes: 0.2, cuts: 0.1, magic: 0.3,      // Nerf target: per target point (rings × distance = skill)
     baskets: 6, threes: 6, dribbles: 0.1,                 // a three = a basket + a three (12)
     turbo: 20,                                            // three cups of coffee in five minutes
@@ -1228,6 +1229,7 @@ export const SCORE = {
     walkRain: 15, walkSnow: 25, walkHail: 40, walkStorm: 30, // out in the weather (#249): the first time, then `again` per shower
     shattered: 5, // per kind of thing shot to pieces (#263)
     pingpingHugs: 10, // hugging Pingping (#269)
+    kittens: 300, // a kitten found (#363): the first one, then `again` per kitten (on top of its breed's points)
     miele: 1000, mieleHugs: 20, // Miele found (#328): the rarest find there is (4 × a sphynx), then `again` per find; a hug
     carMusic: 3, // per song played in the car (#268), like the speakers' songs
     airfried: 6, // a batch of fish fingers done in the air fryer (#287): the first time, then `again` per batch
@@ -1242,7 +1244,7 @@ export const SCORE = {
     doors: 0.1, lids: 0.1, flushes: 0.2, taps: 0.1, fridge: 0.1, appliances: 0.1, cabinets: 0.05, lights: 0.05,
     sat: 0.1, lay: 0.1, songs: 0.2, read: 0.5, car: 1, grill: 1, hood: 0.2, tv: 0.2, pc: 0.3, parasol: 0.2,
     clock: 0.1, calendar: 0.1, greets: 0.1, catButts: 1, walkRain: 2, walkSnow: 3, walkHail: 4, walkStorm: 3,
-    shattered: 0.3, carMusic: 0.2, pingpingHugs: 0.2, miele: 100, mieleHugs: 0.5, blinds: 0.05, curtains: 0.05, airfried: 0.5, friesCooked: 0.5,
+    shattered: 0.3, carMusic: 0.2, pingpingHugs: 0.2, miele: 100, kittens: 120, mieleHugs: 0.5, blinds: 0.05, curtains: 0.05, airfried: 0.5, friesCooked: 0.5,
     fruit: 0.3,
     nest: 0.2,
   },
@@ -1255,7 +1257,7 @@ export const SCORE = {
   // (a pat 8, a cat 10–250), big enough to notice. Never below 0: a deduction takes at most what the score has (no debt).
   // `fall`: hurt by falling more than FALL.hurt (#361)
   penalties: { fridgeOpen: 5, fridgeLonger: 2, fridgeMax: 3, burnt: 3, smokeAlarm: 5, spill: 2, fall: 10,
-    catShot: { rifle: 20, saber: 10, dart: 5, wand: 3 } },
+    catShot: { rifle: 20, saber: 10, dart: 5, wand: 3 }, kittenShot: { rifle: 30, saber: 15, dart: 8, wand: 5 } }, // a kitten: extra bad (#363)
 };
 // The fridge and freezer door alarm (#288, fridge.js): open for `after` s (game time) it beeps every `every` s and a red
 // LED blinks on the door until it is shut (a real one waits ~1–2 min; ours 60 s). The freezer's timer stands still while
@@ -1264,6 +1266,18 @@ export const FRIDGE_ALARM = { after: 60, every: 2 };
 // A cat that is shot, cut or hit (#288, cat.js `hurt`): it hisses and runs off (CAT_LEAVE, `speed` × as fast) and fades;
 // no cat turns up behind a door for `away` s. Nothing graphic.
 export const CAT_HURT = { speed: 2.2, away: 90 };
+// Kittens (#363, cat.js): now and then a cat turning up (any breed and coat, never Miele) is a kitten, drawn with `chance`
+// (~1 in 30 cats: rarer than an ordinary cat, more common than Miele's ~1 in 180; *guess*, to tune with the user). Built from
+// the same parts as a grown cat (`shape`: × the breed's own factors): `size` of a grown one, a bigger head, eyes and ears, a
+// shorter muzzle, shorter `legs`, a thin short tail (`tail` thickness, `tailLen`), fluffier. Up on the furniture `furniture`
+// of the time (CAT_FURNITURE.chance for a grown cat). It plays on the spot every `every` [min, max] s: a pounce (a hop with
+// the front paws up), chasing its tail (a turn round) or batting at something, each `play` s; after a pat it pounces at you
+// `pounce` of the time and then scampers off `run` × as fast as a grown cat (hurt: that × CAT_HURT.speed too). A light thing
+// standing on its floor within CAT_FISH.reach (a cup) catches its eye: it walks there, stops `stop` m short and bats it
+// over (main.js: emptied, a splash, no deduction). Its name: one of `names`, or "Lilla" + a cat name (`lilla` of the time).
+export const KITTEN = { chance: 1 / 30, furniture: 0.65, every: [3, 7], play: 1.3, pounce: 0.5, run: 1.6, stop: 0.12, look: 8,
+  shape: { size: 0.5, head: 1.38, eyes: 1.45, ears: 1.3, muzzle: 0.6, legs: 0.72, tail: 0.55, tailLen: 0.7, fluff: 1.15 },
+  lilla: 0.5, names: ['Pyttan', 'Smulis', 'Tussi', 'Lillsnorre', 'Knyttet', 'Pippi', 'Fjutten', 'Nusse', 'Mini', 'Bus', 'Pysen', 'Tofsen'] };
 // Miele (#328, cat.js / src/miele.js): the family's own cat (the photo on the Sovrum 1 window board, #322) as a super-rare
 // find. `weight` = her draw weight among BREEDS (whose weights add up to 100): ~1 in 180 cats (*guess*, the issue's
 // 1 in 150–200); at most once until she has walked off. Seen within `see` m (on screen, no wall between) she counts:

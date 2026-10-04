@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { LEVELS, CAT_FISH, CAT_LEAVE, CAT_FURNITURE, CAT_WALK, CAT_TAIL_UP, CAT_HURT, REST, MIELE } from './config.js';
+import { LEVELS, CAT_FISH, CAT_LEAVE, CAT_FURNITURE, CAT_WALK, CAT_TAIL_UP, CAT_HURT, REST, MIELE, KITTEN } from './config.js';
 import { stairHeight } from './stairs.js';
 import { rugLift } from './rugs.js';
 import { sfx } from './audio.js';
@@ -64,6 +64,19 @@ export function pickCat(rand = Math.random) {
   let r = rand() * total;
   const breed = BREEDS.find((b) => (r -= b.weight) < 0) ?? BREEDS[0];
   return { breed, coat: breed.coats[Math.floor(rand() * breed.coats.length)] };
+}
+
+/** A kitten's name (#363): one of KITTEN.names, or "Lilla" + a grown cat's name. */
+export function kittenName(rand = Math.random) {
+  if (rand() < KITTEN.lilla) return `Lilla ${CAT_NAMES[Math.floor(rand() * CAT_NAMES.length)]}`;
+  return KITTEN.names[Math.floor(rand() * KITTEN.names.length)];
+}
+
+/** The shape factors a cat is built with: its breed's, × KITTEN.shape for a kitten (#363). */
+export function shapeOf(breed, kitten = false) {
+  const k = kitten ? KITTEN.shape : {}, f = (key, d = 1) => (breed[key] ?? d) * (k[key] ?? 1);
+  return { size: f('size'), fluff: f('fluff'), head: f('head'), ears: f('ears'), muzzle: f('muzzle'), tail: f('tail'),
+    eyes: k.eyes ?? 1, legs: k.legs ?? 1, tailLen: k.tailLen ?? 1 };
 }
 
 /** Name for the statistics: "svartvit" for a huskatt, otherwise "maine coon (grå)". */
@@ -354,15 +367,15 @@ function buildCat() {
   return { cat, head, shoulder, leftShoulder, hips, tailGroup, tip, eyes, hand, torso, body, bib, muzzle, ears, tail, butt, blaze };
 }
 
-/** Shape the cat for a breed (see BREEDS). */
-function applyBreed(p, b) {
-  const size = b.size ?? 1, fluff = b.fluff ?? 1;
-  p.cat.scale.setScalar(size);
-  p.hand.scale.setScalar(1 / size); // the visitor's hand stays the same size
-  p.head.scale.setScalar(b.head ?? 1);
-  for (const e of p.ears) e.scale.setScalar(b.ears ?? 1);
-  p.muzzle.scale.set(0.042, 0.032, 0.035 * (b.muzzle ?? 1));
-  p.muzzle.position.z = 0.05 - 0.035 * (1 - (b.muzzle ?? 1)) * 0.6;
+/** Shape the cat for a breed (see BREEDS), `sh` = shapeOf(breed, kitten) (#363: a kitten is the same cat, re-proportioned). */
+function applyBreed(p, b, sh = shapeOf(b)) {
+  p.cat.scale.setScalar(sh.size);
+  p.hand.scale.setScalar(1 / sh.size); // the visitor's hand stays the same size
+  p.head.scale.setScalar(sh.head);
+  for (const e of p.ears) e.scale.setScalar(sh.ears);
+  for (const e of p.eyes) { e.eye.scale.setScalar(sh.eyes); e.shut.scale.set(0.013 * sh.eyes, 0.0018, 0.004); }
+  p.muzzle.scale.set(0.042, 0.032, 0.035 * sh.muzzle);
+  p.muzzle.position.z = 0.05 - 0.035 * (1 - sh.muzzle) * 0.6;
   for (const m of Object.values(ROLE)) m.roughness = b.name === 'sphynx' ? 0.55 : 0.8;
 }
 
@@ -459,24 +472,29 @@ export class CatSpawner {
     this.tailUp = false;
     this.leave();
     this.leaving.hurt = true;
-    this.leaving.speed = CAT_LEAVE.speed * CAT_HURT.speed;
+    this.leaving.speed = CAT_LEAVE.speed * CAT_HURT.speed * (this.kitten ? KITTEN.run : 1); // a kitten is quicker still (#363)
     this.awayFor = CAT_HURT.away;
     this.onHurt?.(weapon);
     return true;
   }
 
   /** Rare breeds have their own voice (meow + purr in audio.js); null = the ordinary cat. */
-  get voice() { return this.breed.rare || this.breed.superRare ? this.breed.voice ?? null : null; }
+  get voice() { return this.kitten ? 'kitten' : this.breed.rare || this.breed.superRare ? this.breed.voice ?? null : null; } // a kitten squeaks (#363)
 
   /** Is this Miele (#328)? */
   get isMiele() { return !!this.breed.superRare; }
 
-  setCat(breed, coat) {
+  /** Make it this breed and coat; `kitten` (#363) = a kitten of it (never Miele). */
+  setCat(breed, coat, kitten = false) {
     if (breed.superRare) { this.mieleLock = true; this.catName = 'Miele'; } // always her own name
     this.breed = breed;
     this.variant = coat;
+    this.kitten = !!kitten && !breed.superRare;
+    this.shape = shapeOf(breed, this.kitten);
+    this.play = null; this.toy = null;
+    this.playWait = KITTEN.every[0]; // (no draw here: setCat must not use up the seeded rand)
     applyVariant(coat);
-    applyBreed(this.parts, breed);
+    applyBreed(this.parts, breed, this.shape);
     const bl = coat.blaze3 ?? [0.016, 0.03, 0.01, 0.03]; // Miele: a short narrow stripe, the tip of her painted V (#328)
     this.parts.blaze.scale.set(bl[0], bl[1], bl[2]);
     this.parts.blaze.position.y = bl[3];
@@ -553,6 +571,8 @@ export class CatSpawner {
   }
 
   placeBehind(door, from) {
+    // a new cat is a kitten now and then (#363; decided first: kittens go up on the furniture more often)
+    this.kittenNext = this.visible ? this.kitten : this.forceKitten || this.rand() < (this.chance.kitten ?? KITTEN.chance);
     const spot = door.kind === 'wardrobe' ? this.wardrobeSpot(door) : this.roomSpot(door, from);
     if (!spot) return;
     // a cat turning up from nowhere is a new cat; one that just moved keeps its coat
@@ -562,10 +582,12 @@ export class CatSpawner {
       else if (breed.superRare && this.mieleLock) breed = BREEDS[0]; // she is only out once until she has walked off (#328)
       if (breed.coats.indexOf(coat) < 0) coat = breed.coats[Math.floor(this.rand() * breed.coats.length)];
       this.forceMiele = false;
-      this.catName = CAT_NAMES[Math.floor(this.rand() * CAT_NAMES.length)];
-      this.setCat(breed, coat);
+      const kitten = this.kittenNext && !breed.superRare; // Miele is always grown
+      this.forceKitten = false;
+      this.catName = kitten ? kittenName(this.rand) : CAT_NAMES[Math.floor(this.rand() * CAT_NAMES.length)];
+      this.setCat(breed, coat, kitten);
       if (breed.superRare) { this.seen = false; this.photoDone = false; } // counted when first seen (main.js checkMiele)
-      else this.onFound?.(catLabel(breed, coat), !!breed.rare, breed.name);
+      else this.onFound?.(catLabel(breed, coat), !!breed.rare, breed.name, kitten);
     }
     this.stopPetting();
     this.dropFish();
@@ -609,7 +631,8 @@ export class CatSpawner {
     const nx = -side * normal[0], nz = -side * normal[1];
     const sx = center[0] + nx * 0.35, sz = center[1] + nz * 0.35;
     // sometimes up on a bed, a sofa, a chair or a table in that room instead (#200)
-    if (this.rand() < (this.chance.furniture ?? 0)) {
+    const up = this.chance.furniture ? (this.kittenNext ? Math.max(this.chance.furniture, KITTEN.furniture) : this.chance.furniture) : 0;
+    if (this.rand() < up) {
       const up = this.furnitureSpot(level, y0, [sx, sz], [nx, nz], door);
       if (up) return up;
     }
@@ -682,6 +705,7 @@ export class CatSpawner {
     if (!this.visible) return;
     this.wantStand = 0;
     this.walked = false;
+    this.hopY = 0;
     if (this.held) this.heldBehave(dt); // in the visitor's arms (#328)
     else if (this.released) this.releasedBehave(dt);
     else this.behave(dt);
@@ -729,7 +753,7 @@ export class CatSpawner {
 
   /** Walked `m` metres this frame (#224): the legs move on in the gait. */
   stride(m) {
-    this.gaitPhase = (this.gaitPhase + (m / (CAT_WALK.stride * (this.breed.size ?? 1))) * 2 * Math.PI) % (2 * Math.PI);
+    this.gaitPhase = (this.gaitPhase + (m / (CAT_WALK.stride * this.shape.size)) * 2 * Math.PI) % (2 * Math.PI);
     this.walked = true;
   }
 
@@ -750,30 +774,36 @@ export class CatSpawner {
    * forward, the body bobs twice per cycle and the head nods with it.
    */
   pose(dt) {
-    const W = CAT_WALK, p = this.parts, fluff = this.breed.fluff ?? 1;
+    const W = CAT_WALK, p = this.parts, sh = this.shape, fluff = sh.fluff;
     const d = this.wantStand - this.stand;
     this.stand += Math.sign(d) * Math.min(Math.abs(d), dt / W.rise);
     const da = (this.walked ? 1 : 0) - this.gaitAmp;
     this.gaitAmp += Math.sign(da) * Math.min(Math.abs(da), dt / 0.2);
     const S = POSE.sit, T = POSE.stand, k = smooth(0, 1, this.stand), a = this.gaitAmp, ph = this.gaitPhase;
-    const bob = a * W.bob * Math.cos(2 * ph);
+    const bob = a * W.bob * Math.cos(2 * ph) + (this.hopY ?? 0); // (+ a kitten's hop, #363)
+    // short legs (a kitten, #363): the front legs shortened by `dropF`, the hind ones by `dropH` (folded sitting, so less);
+    // the body, head and shoulders come down with them, sitting the body gets squatter so it still sits on the floor
+    const L = sh.legs, dropF = (1 - L) * 0.17, dropH = (1 - L) * mix(0.057, 0.158, k);
+    this.legDrop = dropF;
     // standing, the fluff makes it taller rather than longer
     p.torso.scale.set(fluff, mix(1, fluff, k), mix(fluff, 1, k));
     p.torso.position.y = bob;
-    mix3(p.body.position, S.body, T.body, k);
-    mix3(p.body.scale, S.bodyScale, T.bodyScale, k);
+    mix3(p.body.position, S.body, T.body, k).y -= dropF;
+    mix3(p.body.scale, S.bodyScale, T.bodyScale, k).y -= dropF * (1 - k);
     p.body.rotation.x = mix(S.bodyTilt, T.bodyTilt, k);
-    mix3(p.bib.position, S.bib, T.bib, k);
+    mix3(p.bib.position, S.bib, T.bib, k).y -= dropF;
     mix3(p.bib.scale, S.bibScale, T.bibScale, k);
-    mix3(this.shoulder.position, S.shoulder, T.shoulder, k).y += bob;
-    mix3(this.leftShoulder.position, S.shoulder, T.shoulder, k, -1).y += bob;
+    mix3(this.shoulder.position, S.shoulder, T.shoulder, k).y += bob - dropF;
+    mix3(this.leftShoulder.position, S.shoulder, T.shoulder, k, -1).y += bob - dropF;
+    this.shoulder.scale.set(1, L, 1); this.leftShoulder.scale.set(1, L, 1);
     if (a > 1e-3) {
       this.shoulder.rotation.set(a * W.swing * Math.sin(ph), 0, 0);
       this.leftShoulder.rotation.set(a * W.swing * Math.sin(ph + Math.PI), 0, 0);
     }
     for (const h of p.hips) {
       const phi = h.side < 0 ? ph : ph + Math.PI; // diagonal to the front leg on the other side
-      mix3(h.hip.position, S.hip, T.hip, k, h.side * fluff).y += bob;
+      mix3(h.hip.position, S.hip, T.hip, k, h.side * fluff).y += bob - dropH;
+      h.hip.scale.set(1, L, 1);
       h.hip.rotation.x = a * W.swing * Math.sin(phi);
       mix3(h.thigh.position, S.thigh, T.thigh, k);
       mix3(h.thigh.scale, S.thighScale, T.thighScale, k);
@@ -783,9 +813,9 @@ export class CatSpawner {
       mix3(h.foot.scale, S.footScale, T.footScale, k);
       h.foot.rotation.x = -(h.hip.rotation.x + h.hock.rotation.x); // the paw stays flat
     }
-    mix3(this.head.position, S.head, T.head, k).add(this.headOff).y += bob;
+    mix3(this.head.position, S.head, T.head, k).add(this.headOff).y += bob - dropF;
     if (a > 1e-3) this.head.rotation.x += a * 0.06 * Math.sin(2 * ph + 0.6);
-    mix3(this.tailGroup.position, S.tailRoot, T.tailRoot, k).y += bob;
+    mix3(this.tailGroup.position, S.tailRoot, T.tailRoot, k).y += bob - k * (1 - L) * 0.158;
     const u = smooth(0, 1, this.tailU);
     // the X under the tail root while the tail is up (#262); a fluffy coat sitting covers a little of it
     const butt = p.butt;
@@ -796,11 +826,11 @@ export class CatSpawner {
     }
     if (Math.abs(k - this.tailK) > 0.004 || Math.abs(u - this.tailUK) > 0.004) { // rebuilt only while the pose or the tail changes
       this.tailK = k; this.tailUK = u;
-      const pts = S.tail.map((q, i) => mix3(new THREE.Vector3(), q, T.tail[i], k).lerp(new THREE.Vector3(...TAIL_UP[i]), u));
+      const pts = S.tail.map((q, i) => mix3(new THREE.Vector3(), q, T.tail[i], k).lerp(new THREE.Vector3(...TAIL_UP[i]), u).multiplyScalar(sh.tailLen));
       p.tail.geometry.dispose();
-      p.tail.geometry = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 24, 0.017 * (this.breed.tail ?? 1), 8);
+      p.tail.geometry = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 24, 0.017 * sh.tail, 8);
       p.tip.position.copy(pts[pts.length - 1]);
-      const r = this.breed.tail ?? 1; // a thick tail gets a thick tip (it shows once the tail is up)
+      const r = sh.tail; // a thick tail gets a thick tip (it shows once the tail is up)
       p.tip.scale.set(0.02 * r, 0.018 * r, mix(mix(0.03, 0.02, k), 0.02, u) * r);
     }
   }
@@ -821,6 +851,7 @@ export class CatSpawner {
     }
     if (this.leaving) { this.updateLeaving(dt); return; } // after a pat it walks off and is gone (#206)
     if (!this.on && this.updateFish(dt)) return; // after a fish finger on the floor (#163; not while up on the furniture)
+    if (this.kitten && !this.on && this.updateToy(dt)) return; // a kitten: after a cup on the floor, to bat it over (#363)
     // meow when found, then now and then
     this.nextMeow -= dt;
     if (this.nextMeow <= 0) {
@@ -830,6 +861,7 @@ export class CatSpawner {
     }
     if (this.tailUp) { this.tailIdle(dt); return; } // up on its feet with the tail up (#262)
     this.tailTurn = null;
+    if (this.kitten && this.updatePlay(dt)) return; // a kitten plays on the spot now and then (#363)
     // washing cycle: lift paw, lick it a few times, wipe over the face, lower, pause
     const c = this.t % 6;
     const up = smooth(0.0, 0.5, c) * (1 - smooth(3.2, 3.7, c));
@@ -858,11 +890,129 @@ export class CatSpawner {
       const before = T.t;
       T.t = Math.min(1, T.t + dt / CAT_TAIL_UP.turn);
       const e = (x) => x * x * (3 - 2 * x), yaw = T.from + T.by * e(T.t);
-      this.stride(Math.abs(T.by * (e(T.t) - e(before))) * 0.15 * (this.breed.size ?? 1));
+      this.stride(Math.abs(T.by * (e(T.t) - e(before))) * 0.15 * this.shape.size);
       o.rotation.y = yaw;
     }
     this.head.rotation.set(0.05, 0.4 * Math.sin(this.t * 0.7), 0);
     this.tailGroup.rotation.y = 0.12 * Math.sin(this.t * 2.3);
+  }
+
+  // --- a kitten at play (#363) ---------------------------------------------------------------------------------
+  nextPlayWait() { const [a, b] = KITTEN.every; return a + this.rand() * (b - a); }
+
+  /**
+   * Now and then a kitten plays, always on the spot (it never moves, so never through a wall or a piece of furniture), for
+   * KITTEN.play s: 'pounce' (up, a wiggle, a hop with the front paws up), 'spin' (chasing its tail: once round, the head
+   * after it) or 'bat' (sitting, a front paw swiping at something). True while it plays (the washing waits).
+   */
+  updatePlay(dt) {
+    if (!this.play) {
+      this.playWait -= dt;
+      if (this.playWait > 0) return false;
+      const kinds = ['pounce', 'spin', 'bat'];
+      this.play = { kind: this.playKind ?? kinds[Math.floor(this.rand() * kinds.length)], t: 0, from: this.object.rotation.y };
+      this.shoulder.rotation.set(0, 0, 0); this.leftShoulder.rotation.set(0, 0, 0);
+    }
+    const P = this.play;
+    if (P.kind !== 'bat' && !this.standing) { this.wantStand = 1; return true; } // up on its feet first
+    P.t += dt;
+    const u = Math.min(1, P.t / KITTEN.play);
+    if (P.kind === 'pounce') this.pounceAnim(u);
+    else if (P.kind === 'spin') {
+      this.wantStand = 1;
+      const e = (x) => x * x * (3 - 2 * x), yaw = P.from + 2 * Math.PI * e(u), before = this.object.rotation.y;
+      this.object.rotation.y = yaw;
+      this.stride(Math.abs(yaw - before) * 0.15 * this.shape.size);
+      this.head.rotation.set(0.15, 0.9 * Math.sin(Math.PI * u), 0); // looking round after its tail
+      this.tailGroup.rotation.y = -0.6 * Math.sin(Math.PI * u);
+    } else { // bat: sitting, the left front paw swipes, the head down watching it
+      const w = Math.sin(Math.PI * u);
+      this.leftShoulder.rotation.set(-1.3 * w - 0.35 * w * Math.sin(P.t * 13), 0, -0.4 * w * Math.sin(P.t * 9));
+      this.head.rotation.set(0.35 * w, -0.3 * w, 0);
+      this.tailGroup.rotation.y = 0.3 * Math.sin(P.t * 7);
+    }
+    if (u >= 1) {
+      if (P.kind === 'spin') this.object.rotation.y = P.from;
+      this.play = null;
+      this.playWait = this.nextPlayWait();
+      this.shoulder.rotation.set(0, 0, 0); this.leftShoulder.rotation.set(0, 0, 0);
+      this.t = 3.7; // back to washing at the start of a pause
+    }
+    return true;
+  }
+
+  /** A pounce at `u` (0 … 1): on its feet, a crouch and a bottom wiggle, a hop with both front paws up, landing. */
+  pounceAnim(u) {
+    this.wantStand = 1;
+    const crouch = smooth(0, 0.3, u) * (1 - smooth(0.4, 0.45, u)), hop = u > 0.42 && u < 0.78 ? Math.sin(Math.PI * (u - 0.42) / 0.36) : 0;
+    this.headOff.set(0, -0.03 * crouch, 0.01 * crouch);
+    this.hopY = 0.09 * hop;
+    this.tailGroup.rotation.y = 0.5 * crouch * Math.sin(u * 60);
+    this.shoulder.rotation.set(-1.4 * hop, 0, 0.15 * hop);
+    this.leftShoulder.rotation.set(-1.4 * hop, 0, -0.15 * hop);
+    this.head.rotation.set(0.25 * crouch - 0.2 * hop, 0, 0);
+    if (u >= 1) this.headOff.set(0, 0, 0);
+  }
+
+  /**
+   * A kitten and a light thing standing on its floor (#363): `toySource()` (main.js) = [{ thing, at }] standing out; one
+   * within CAT_FISH.reach in the open catches its eye, it walks there and bats it over: `onTip(thing)` (main.js: a cup
+   * falls over, what it held splashes out, no deduction). Then it leaves things alone for KITTEN.look s.
+   */
+  updateToy(dt) {
+    if (!this.toy) {
+      this.toyScan = (this.toyScan ?? 0) - dt;
+      if (this.toyScan > 0 || !this.toySource) return false;
+      this.toyScan = 0.5;
+      const p = this.object.position;
+      let best = null, bestD = CAT_FISH.reach;
+      for (const c of this.toySource()) {
+        if (Math.abs(c.at.y - p.y) > 0.06) continue; // on a table, or on another floor
+        const d = Math.hypot(c.at.x - p.x, c.at.z - p.z);
+        if (d < bestD && this.clearPath(c.at.x, c.at.z)) { best = c; bestD = d; }
+      }
+      if (!best) return false;
+      this.toy = { ...best, phase: 'notice', t: 0 };
+      this.play = null;
+      this.shoulder.rotation.set(0, 0, 0); this.leftShoulder.rotation.set(0, 0, 0);
+    }
+    const T = this.toy, o = this.object;
+    T.t += dt;
+    if (!(this.toySource?.() ?? []).some((c) => c.thing === T.thing)) { this.toyDone(); return false; } // taken away
+    if (T.phase === 'notice') {
+      this.lookTowards(T.at, Math.min(1, T.t * 3));
+      if (T.t > 0.6) { T.phase = 'walk'; T.t = 0; }
+      return true;
+    }
+    if (T.phase === 'walk') {
+      this.wantStand = 1;
+      const dx = T.at.x - o.position.x, dz = T.at.z - o.position.z, dist = Math.hypot(dx, dz);
+      const stop = KITTEN.stop + 0.15 * this.shape.size; // its paw reaches it
+      o.rotation.y = Math.atan2(dx, dz);
+      const go = this.standing ? Math.min(CAT_FISH.speed * KITTEN.run * dt, Math.max(0, dist - stop)) : 0;
+      const nx = o.position.x + (dx / (dist || 1)) * go, nz = o.position.z + (dz / (dist || 1)) * go;
+      if (go > 0 && this.obstacles().some((s) => distToSeg(nx, nz, s) < 0.08)) { this.toyDone(); return false; } // blocked: gives up
+      o.position.x = nx; o.position.z = nz;
+      this.followRug();
+      if (go > 0) this.stride(go);
+      this.head.rotation.set(0.2, 0, 0);
+      this.tailGroup.rotation.y = 0.3 * Math.sin(T.t * 6);
+      if (this.standing && dist - stop < 0.01) { T.phase = 'bat'; T.t = 0; }
+      return true;
+    }
+    // bat: it sits, the front paw swipes; at the top of the second swipe the thing goes over
+    const w = Math.min(1, T.t / 0.2);
+    this.leftShoulder.rotation.set(-1.2 * w - 0.4 * w * Math.sin(T.t * 12), 0, -0.35 * Math.sin(T.t * 12));
+    this.head.rotation.set(0.35, 0, 0);
+    if (!T.tipped && T.t > 0.7) { T.tipped = true; this.onTip?.(T.thing); }
+    if (T.t > 1.1) { this.toyDone(); this.t = 3.7; }
+    return true;
+  }
+
+  toyDone() {
+    this.toy = null;
+    this.toyScan = KITTEN.look;
+    this.leftShoulder.rotation.set(0, 0, 0);
   }
 
   // --- walking off after a pat (#206) -------------------------------------------------------------------------
@@ -887,7 +1037,7 @@ export class CatSpawner {
       if (!best || d > best.d + 0.3) best = { yaw, d };
     }
     this.leaveY = p.y;
-    this.leaving = { t: 0, yaw: best.yaw, d: best.d, gone: 0, from: o.rotation.y };
+    this.leaving = { t: 0, yaw: best.yaw, d: best.d, gone: 0, from: o.rotation.y, speed: CAT_LEAVE.speed * (this.kitten ? KITTEN.run : 1) }; // a kitten scampers (#363)
     this.shoulder.rotation.set(0, 0, 0);
     if (this.rand() < CAT_TAIL_UP.leave) this.raiseTail(best.d / CAT_LEAVE.speed + 2); // off it goes, tail up (#262)
   }
@@ -902,6 +1052,14 @@ export class CatSpawner {
 
   updateLeaving(dt) {
     const L = this.leaving, o = this.object;
+    if (L.pounce != null) { // a kitten after a pat (#363): a pounce at the visitor's hand / feet, then it turns and runs
+      L.pounce += dt;
+      const f = this.petFrom ?? { x: o.position.x, z: o.position.z + 1 };
+      o.rotation.y = Math.atan2(f.x - o.position.x, f.z - o.position.z);
+      this.pounceAnim(L.pounce / KITTEN.play);
+      if (L.pounce >= KITTEN.play) { L.pounce = null; L.from = o.rotation.y; this.shoulder.rotation.set(0, 0, 0); this.leftShoulder.rotation.set(0, 0, 0); }
+      return;
+    }
     L.t += dt;
     // get up and turn round (0.5 s, stepping round on the spot), then walk off on all four (#224); fade out over the last
     // CAT_LEAVE.fade s of the walk (or in place if boxed in)
@@ -909,7 +1067,7 @@ export class CatSpawner {
     const turn = Math.min(1, L.t / 0.5);
     let dy = L.yaw - L.from; dy = Math.atan2(Math.sin(dy), Math.cos(dy));
     const yaw = L.from + dy * turn * turn * (3 - 2 * turn);
-    if (this.stand > 0.5) this.stride(Math.abs(yaw - o.rotation.y) * 0.15 * (this.breed.size ?? 1));
+    if (this.stand > 0.5) this.stride(Math.abs(yaw - o.rotation.y) * 0.15 * this.shape.size);
     o.rotation.y = yaw;
     this.head.rotation.set(0.1, 0, 0);
     if (turn >= 1 && this.standing) {
@@ -1014,6 +1172,7 @@ export class CatSpawner {
   dropFish() {
     if (this.fish?.phase === 'eat') this.fish.f.model.scale.setScalar(1); // interrupted: the fish finger is whole again
     this.fish = null;
+    this.toy = null; this.play = null; // a kitten's game stops too (#363)
     this.headOff.set(0, 0, 0);
     this.leftShoulder.rotation.set(0, 0, 0);
   }
@@ -1038,7 +1197,7 @@ export class CatSpawner {
       this.nextMeow = 0; // a meow at once: "is that for me?"
       this.shoulder.rotation.set(0, 0, 0);
     }
-    const F = this.fish, o = this.object, size = this.breed.size ?? 1;
+    const F = this.fish, o = this.object, size = this.shape.size;
     F.t += dt;
     this.nextMeow -= dt;
     if (this.nextMeow <= 0) {
@@ -1113,10 +1272,14 @@ export class CatSpawner {
     // the hand strokes from the forehead back along the neck, following the rub
     const s = (Math.sin(this.petPhase * 2.6 - Math.PI / 2) + 1) / 2; // 0 = head, 1 = back
     this.hand.visible = this.petT > 0.15 && this.ownHand; // else the visitor's own hand strokes it (#242, petHand)
-    this.hand.position.set(0.02 * rub, 0.42 - 0.07 * s, 0.07 - 0.17 * s);
+    this.hand.position.set(0.02 * rub, 0.42 - (this.legDrop ?? 0) - 0.07 * s, 0.07 - 0.17 * s);
     this.hand.rotation.set(0.25 - 0.35 * s, Math.PI, 0);
     if (this.breed.rare) this.updateStars(k);
-    if (this.petT <= 0) { this.stopPetting(); this.leave(); }
+    if (this.petT <= 0) {
+      this.stopPetting();
+      this.leave();
+      if (this.kitten && this.rand() < KITTEN.pounce) this.leaving.pounce = 0; // a kitten pounces at you first (#363)
+    }
   }
 
   /** Stars rise in a slow spiral around the cat and fade, faded in/out with the pat (`k`). */
