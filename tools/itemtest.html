@@ -61,6 +61,20 @@ try {
   check(I.move(cheese, { at: 'slot', store: 'test', slot: 0 }) === null && cheese.place.store === 'test', 'open: in it goes');
   check(/får inte plats/.test(I.move(I.create('board', at(1)), { at: 'slot', store: 'test', slot: 1 }) ?? ''), 'too big for the slot: refused');
   check(I.audit().length === 0, `audit at the end: ${I.audit().join('; ') || 'ok'}`);
+  // carriers (#370): no circular nesting, with carriers that take carriers (a tray takes boxes, a box takes boxes)
+  const T = new Items({ tray: { name: 'brickan', tags: ['carrier'], size: 'l', carrier: { slots: 2, size: 'm', accepts: ['box'] } },
+    box: { name: 'lådan', tags: ['box'], size: 'm', carrier: { slots: 2, size: 'm', accepts: ['box'] } } });
+  const tray = T.create('tray', at(1)), bA = T.create('box', at(1)), bB = T.create('box', at(1));
+  check(T.move(bA, { at: 'on', parent: tray.id, slot: 0 }) === null && T.move(bB, { at: 'on', parent: bA.id, slot: 0 }) === null, 'a box on the tray, a box on that box');
+  check(/sig själv/.test(T.move(bA, { at: 'on', parent: bB.id, slot: 0 }) ?? '') && bA.place.parent === tray.id, 'a box never goes onto a box lying on it (no cycle)');
+  check(/sig själv/.test(T.move(bA, { at: 'on', parent: bA.id, slot: 1 }) ?? ''), 'nor onto itself');
+  check(T.root(bB) === tray && T.ancestors(bB).length === 2 && T.descendants(tray).length === 2, 'root / ancestors / descendants');
+  check(!!T.move(tray, { at: 'on', parent: bB.id, slot: 1 }) && tray.place.at === 'world' && T.audit().length === 0, 'the tray onto a box on it: refused; audit ok');
+  // the plate takes food only, the board's spot 0 is for what is being cut
+  const P = new Items(ITEMS), pl = P.create('plate', at(3)), bd = P.create('board', at(4)), cu = P.create('cucumber', at(4)), sl = P.create('cucumberSlice', at(4));
+  check(/ska inte ligga/.test(P.move(P.create('knife', at(3)), { at: 'on', parent: pl.id, slot: 0 }) ?? ''), 'a knife is not put on the plate');
+  check(P.freeSpot(bd, cu) === 0 && P.freeSpot(bd, sl) === 1, `the board: the cucumber's spot is 0 (${P.freeSpot(bd, cu)}), a slice's the first of the others (${P.freeSpot(bd, sl)})`);
+  check(!!P.move(bd, { at: 'on', parent: pl.id, slot: 0 }) && bd.place.at === 'world', 'the board does not go on a plate');
   // events: the 3D side follows
   const seen = [];
   const off = I.on((kind, it) => seen.push(`${kind}:${it.id}`));
@@ -100,6 +114,33 @@ try {
   v.placeAt(new (camera.position.constructor)(4.3, -0.5, 2.7), 0); step(1 / 60);
   check(heldItem() === v && cuc.place.at === 'hand', 'a spot under the floor: refused, still in the hand');
   v.placeAt(new (camera.position.constructor)(5.25, 0.93, 3.1), 0); step(1 / 60);
+  // a plate carrying a bread slice and two cucumber slices (#370): carried, put down, into the fridge and out, all along
+  const I2 = life.items, plate = I2.ofType('plate')[0], pv = life.view(plate);
+  const food = [life.create('breadSlice', { at: 'world', pos: [3.6, 0.755, 0.9], yaw: 0 }), life.create('cucumberSlice', { at: 'world', pos: [3.62, 0.755, 0.85], yaw: 0 }), life.create('cucumberSlice', { at: 'world', pos: [3.64, 0.755, 0.8], yaw: 0 })];
+  pv.take(); step(1 / 60);
+  const loadRow = (it) => life.options({ item: life.view(it) }).find((r) => r.id === 'loadOnto');
+  check(loadRow(food[0])?.label === 'lägga brödskivan på tallriken' && !loadRow(food[0]).reason, `holding the plate at the bread: "${loadRow(food[0])?.label}"`);
+  for (const it of food) loadRow(it).run();
+  check(I2.children(plate).length === 3 && food.every((it) => it.place.parent === plate.id) && food[0].place.slot === 0, 'all three on the plate, the bread in the middle');
+  const rel = () => food.map((it) => life.view(it).where().sub(pv.where()));
+  const r0 = rel();
+  check(food.every((it) => { let p = life.view(it).model; while (p && p !== pv.model) p = p.parent; return p === pv.model; }), 'their models ride on the plate\'s (children of its spots)');
+  pv.placeAt(new (camera.position.constructor)(3.5, 0.754, 1.7), 1.2); step(1 / 60);
+  const r1 = rel();
+  check(plate.place.at === 'world' && I2.children(plate).length === 3 && r1.every((v, i) => Math.abs(v.length() - r0[i].length()) < 1e-4), 'put down turned: still on it, in the same spots');
+  // into the fridge with them (a carrier with food goes in, #370)
+  const fr = A.fridge; fr.toggle(); for (let i = 0; i < 40; i++) fr.update(0.1);
+  pv.take(); step(1 / 60);
+  const slotK = I2.freeSlot('fridge', plate);
+  check(slotK >= 0 && I2.move(plate, { at: 'slot', store: 'fridge', slot: slotK }) === null && I2.children(plate).length === 3, 'the plate with its food into the fridge');
+  pv.take(); step(1 / 60);
+  check(heldItem() === pv && food.every((it) => it.place.parent === plate.id), 'and out again in the hand, the food still on it');
+  // taking one off leaves the rest
+  pv.placeAt(new (camera.position.constructor)(3.5, 0.754, 1.7), 0); step(1 / 60);
+  life.view(food[1]).take(); step(1 / 60);
+  check(food[1].place.at === 'hand' && I2.children(plate).length === 2, 'one slice taken off: two left on the plate');
+  life.view(food[1]).placeAt(new (camera.position.constructor)(3.3, 0.754, 1.7), 0); step(1 / 60);
+  fr.toggle(); for (let i = 0; i < 40; i++) fr.update(0.1);
   check(life.items.audit().length === 0, `audit in the game: ${life.items.audit().join('; ') || 'ok'}`);
 } catch (e) { pass = false; lines.push(`FAIL view error ${e.stack}`); }
 lines.push(pass ? 'ALL PASS' : 'SOME FAILED');

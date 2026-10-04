@@ -49,7 +49,7 @@ export function buildStores(life, world) {
   const holding = () => !!I.held();
   function add(id, spec, slots, box) {
     const anchors = slots.map((s) => s.anchor);
-    I.addStore({ id, name: spec.name, shutText: spec.shutText, fullText: spec.fullText, isOpen: spec.isOpen, slots: slots.map((s) => ({ size: s.size })) });
+    I.addStore({ id, name: spec.name, shutText: spec.shutText, fullText: spec.fullText, isOpen: spec.isOpen, carriers: !!spec.carriers, slots: slots.map((s) => ({ size: s.size })) });
     life.anchors.set(id, (k) => anchors[k] ?? null);
     const target = { name: spec.name, kind: 'life', store: id, pickable: box };
     target.options = () => life.options(target);
@@ -76,7 +76,7 @@ export function buildStores(life, world) {
       slots.push({ size: 's', anchor: a });
     }
     const box = pickBox(fridge.object, new THREE.Vector3(cx - iw / 2, y0 + 0.1, cz - depth / 2), new THREE.Vector3(cx + iw / 2, y0 + 1.7, cz + depth / 2), () => holding() && fridge.isOpen);
-    add('fridge', { name: 'kylskåpet', shutText: 'Öppna kylen först', fullText: 'Kylskåpet är fullt', isOpen: () => fridge.isOpen }, slots, box);
+    add('fridge', { name: 'kylskåpet', shutText: 'Öppna kylen först', fullText: 'Kylskåpet är fullt', isOpen: () => fridge.isOpen, carriers: true }, slots, box); // (a plate with food on it goes in too, #370)
   }
   // the freezer: on the frozen bags in the top basket
   const freezer = world.lids.find((l) => l.kind === 'fridge' && l.freezer);

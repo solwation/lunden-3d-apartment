@@ -251,6 +251,14 @@ function baseActions(life) {
     consumes: 'nothing', result: 'the held thing in the store\'s first free slot that takes it (its size class)',
   });
   A.define({
+    id: 'loadOnto', order: 12, label: (c) => `lägga ${nm(c.target)} på ${nm(c.held)}`, // a plate in the hand, a slice on the table (#370)
+    applies: (c) => !!c.held && !!c.target && !!I.def(c.held)?.carrier && c.target.place.at !== 'hand' && !I.ancestors(c.held).includes(c.target)
+      && !!I.def(c.held).carrier.accepts?.some((t) => I.has(c.target, t)) && !I.def(c.target)?.carrier,
+    check: (c) => c.targetView?.shutReason() ?? (I.freeSpot(c.held, c.target) >= 0 ? null : I.def(c.held).carrier.fullText ?? `${nm(c.held)} är full`),
+    run: (c) => { I.move(c.target, { at: 'on', parent: c.held.id, slot: I.freeSpot(c.held, c.target) }); sfx.click(c.life.camera.position); },
+    consumes: 'nothing', result: 'the target lies on the carrier in the hand (rides along from now on)',
+  });
+  A.define({
     id: 'take', order: 20, label: (c) => `ta ${nm(c.target)}`,
     applies: (c) => !!c.target && c.target.place.at !== 'hand',
     check: (c) => {

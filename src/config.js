@@ -984,9 +984,10 @@ export const LIFE = {
 // the plan (docs/livssimulator-plan-2026-10-04.md: a cucumber 300 g, a slice 10 g), not product measures.
 export const ITEMS = {
   plate: { name: 'tallriken', tags: ['dish', 'carrier', 'dishwasherSafe'], unit: 'count', amount: 1, size: 'm', clean: 'clean', model: 'plate',
-    carrier: { slots: 6, size: 's', accepts: ['food'], fullText: 'Tallriken är full' } },
+    carrier: { slots: 6, size: 's', accepts: ['food'], fullText: 'Tallriken är full', order: [0, 1, 2, 3, 4, 5] } }, // the middle first, then round it
   board: { name: 'skärbrädan', tags: ['carrier', 'station'], unit: 'count', amount: 1, size: 'l', clean: 'clean', model: 'board',
-    carrier: { slots: 9, size: 'm', accepts: ['food'], fullText: 'Brädan är full' } },
+    carrier: { slots: 9, size: 'm', accepts: ['food'], fullText: 'Brädan är full', // spot 0 = what is being cut, 1–8 = what was cut
+      spots: [{ accepts: ['cuttable', 'sliceable', 'base', 'package'] }, ...Array(8).fill({ size: 's' })] } },
   cucumber: { name: 'gurkan', tags: ['food', 'cuttable'], unit: 'g', amount: 300, size: 'm', prep: 'whole', model: 'cucumber' },
   cucumberSlice: { name: 'gurkskivan', tags: ['food', 'topping'], unit: 'g', amount: 10, size: 'xs', prep: 'sliced', model: 'cucumberSlice' },
   cheese: { name: 'osten', tags: ['food', 'sliceable'], unit: 'g', amount: 500, size: 's', prep: 'whole', model: 'cheese' },

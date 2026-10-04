@@ -129,11 +129,12 @@ export class Items {
     for (let k = 0; k < s.slots.length; k++) if (!this.check(item, { at: 'slot', store: storeId, slot: k }, { ignoreShut: true })) return k;
     return -1;
   }
-  /** The first free spot on a carrier for `item`, or -1. */
+  /** The first free spot on a carrier for `item`, or -1 (spots in the carrier's `order`, else 0, 1, 2 …). */
   freeSpot(parent, item) {
     const d = this.def(parent)?.carrier;
     if (!d) return -1;
-    for (let k = 0; k < d.slots; k++) if (!this.check(item, { at: 'on', parent: parent.id ?? parent, slot: k })) return k;
+    const order = d.order ?? [...Array(d.slots).keys()];
+    for (const k of order) if (!this.check(item, { at: 'on', parent: parent.id ?? parent, slot: k })) return k;
     return -1;
   }
 
@@ -173,6 +174,9 @@ export class Items {
         if (!Number.isInteger(place.slot) || place.slot < 0 || place.slot >= c.slots) return 'Platsen finns inte';
         if (c.accepts && !c.accepts.some((t) => this.has(item, t) || item.type === t)) return `${what} ska inte ligga på ${this.name(parent)}`;
         if (this.size(item) > (SIZES[c.size ?? 'm'] ?? SIZES.m)) return `${what} får inte plats på ${this.name(parent)}`;
+        const spot = c.spots?.[place.slot]; // a spot of its own (the board's: what is being cut | the slices)
+        if (spot?.accepts && !spot.accepts.some((t) => this.has(item, t) || item.type === t)) return `${what} ska inte ligga där`;
+        if (spot?.size && this.size(item) > (SIZES[spot.size] ?? SIZES.m)) return `${what} får inte plats där`;
         if (this.occupant(place, item)) return c.fullText ?? `${cap(this.name(parent))} är full`;
         return null;
       }

@@ -35,10 +35,11 @@ f.onload = async () => {
     // shut: open it first, nothing moves
     const cheese = life.create('cheese', { at: 'world', pos: [5.25, 0.931, 3.0], yaw: 0 });
     life.view(cheese).take();
-    const why = I.move(cheese, { at: 'slot', store: 'fridge', slot: 0 });
+    const k0f = I.freeSlot('fridge', cheese); // (the &life scenario keeps a cheese in slot 0)
+    const why = I.move(cheese, { at: 'slot', store: 'fridge', slot: k0f });
     check(why === 'Öppna kylen först' && cheese.place.at === 'hand', `the shut fridge: "${why}", the cheese still in the hand`);
     fridge.toggle(); settle(fridge);
-    check(I.move(cheese, { at: 'slot', store: 'fridge', slot: 0 }) === null && cheese.place.store === 'fridge' && !heldItem(), 'open: the cheese on a fridge shelf');
+    check(I.move(cheese, { at: 'slot', store: 'fridge', slot: k0f }) === null && cheese.place.store === 'fridge' && !heldItem(), 'open: the cheese on a fridge shelf');
     const cv = life.view(cheese), cp = cv.where();
     check(cp.x > 3.1 && cp.x < 4.1 && cp.z > 4.9 && cp.y > 0.3 && cp.y < 0.7, `it lies inside the fridge (${cp.x.toFixed(2)}, ${cp.y.toFixed(2)}, ${cp.z.toFixed(2)})`);
     // take it in the game: aim at it through the open door
@@ -52,7 +53,7 @@ f.onload = async () => {
       return false;
     };
     const stands = [[cp.x, 3.9], [cp.x - 0.2, 3.8], [cp.x + 0.2, 3.8], [cp.x, 3.6]];
-    check(aim(cp.clone().setY(cp.y + 0.03), stands) && btn.textContent === 'Ta osten', `the open fridge: "${btn.textContent}"`);
+    check(aim(cp.clone().setY(cp.y + 0.03), stands) && /^Ta osten/.test(btn.textContent), `the open fridge: "${btn.textContent}"`);
     btn.click(); step(1 / 60);
     check(heldItem() === cv && cheese.place.at === 'hand', 'taken out with E');
     // put back in with E: the box inside the open fridge
@@ -77,7 +78,7 @@ f.onload = async () => {
     check(/får inte plats/.test(I.check(life.create('board', { at: 'world', pos: [3.5, 0.755, 1.6], yaw: 0 }), { at: 'slot', store: 'utensils', slot: 0 }, { ignoreShut: true }) ?? ''), 'the cutting board does not fit in the drawer');
     // rides with the drawer, hidden while it is shut
     life.view(extra).placeAt(new V(5.25, 0.93, 3.2), 0);
-    const knife = life.create('knife', { at: 'slot', store: 'utensils', slot: 0 }), kv = life.view(knife);
+    const knife = I.ofType('knife').find((k) => k.place.store === 'utensils'), kv = life.view(knife); // (the &life scenario's)
     scene.updateMatrixWorld(true);
     const k0 = kv.where(), seen0 = shown(kv.model);
     drawer.toggle(); settle(drawer);
@@ -97,7 +98,7 @@ f.onload = async () => {
     check(knife.place.at === 'slot' && knife.place.store === 'utensils' && knife.place.slot === 0, 'F with the knife in the hand: back in its drawer slot');
     // the pantry: something on its shelf, inside the wall cabinet
     pantry.toggle(); settle(pantry);
-    const bag = life.create('breadBag', { at: 'slot', store: 'pantry', slot: 0 });
+    const bag = I.ofType('breadBag').find((b) => b.place.store === 'pantry');
     const bp = life.view(bag).where(), pp = pantry.object.getWorldPosition(new V());
     check(bag && bp.y > 1.3 && Math.abs(bp.z - pp.z) < 0.6 && bp.x > 5.0, `the bread bag in the pantry (${bp.x.toFixed(2)}, ${bp.y.toFixed(2)}, ${bp.z.toFixed(2)})`);
   } catch (e) { pass = false; lines.push(`FAIL error ${e.stack}`); }

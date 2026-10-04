@@ -610,6 +610,11 @@ src/stores.js          the life sim's storage places (#369, LIFE.stores): slots 
                        front's contents group (contents.js: ride with a drawer, hidden while shut). A pick box per store is the target
                        "Lägga … i kylskåpet" (action putIn) while a life item is held; shut: "Öppna kylen först", full: "Fryslådan är
                        full" — nothing moves. interior.js `stock()` leaves `o.stockFrame` (the contents box, `at(u, d, y)`, `yaw`)
+                       Carriers (#370): an item type with `carrier` { slots, size, accepts, spots (per-spot accepts / size: the
+                       board's spot 0 = what is being cut, 1–8 = slices), order, fullText } holds others ('on' places, models on its
+                       anchors: they ride when it is carried, put down or put in the fridge — `carriers: true` stores only); never on
+                       itself or on what lies on it; actions putOn (the held thing onto a carrier) and loadOnto (a plate in the hand,
+                       E on a slice: onto the plate)
 src/lifemodels.js      the life sim's models (#366): plate, cutting board, cucumber, slice, cheese, butter, bread bag, bread slice,
                        knife — own shapes; `show(item)` shows the amount / package; carriers have `anchors` (their spots)
 src/changelog.js       changelog list + the note on the freezer (newest `t` first, "Nytt" by the highest `t` seen, #341; E to read; `scrollNote`: ↑ ↓ / W S, PageUp/Down, Space,
@@ -797,7 +802,8 @@ tools/storetest.html   headless test (#369): the stores' slots; the shut fridge 
                        and back in with "Lägga osten i kylskåpet", not through the shut door; a full freezer keeps the thing in the hand;
                        the knife rides with the drawer, hidden while shut; reopening never duplicates; F → its home slot; the pantry
 tools/itemtest.html    headless test (#366): items.js with plain asserts (two instances, amounts never < 0, one place, carriers,
-                       stores, events) and the view in the game (&life: take the cucumber, half used = half as long, down, F)
+                       stores, events, carriers without cycles) and the view in the game (&life: take the cucumber, half used = half as long,
+                       down, F; a plate loaded with bread + two slices: carried, put down turned, in and out of the fridge, one taken off)
 tools/inventorytest.html headless test (#365): the `&life` scenario's start state, the visitor's records untouched, the
                        integration points the inventory names; without &life the game starts at START
 tools/stamp.sh         build the published site with a version stamp (used by CI)
