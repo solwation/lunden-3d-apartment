@@ -1,13 +1,26 @@
 import * as THREE from 'three';
-import { CAR as C, REST, SONOS } from './config.js';
+import { CAR as C, REST, SONOS, SITE } from './config.js';
+import { along, nearestS } from './roads.js';
 import { buildCar, MEGANE, drawScreen, SCREEN_BUTTONS } from './carmodel.js';
 import { sfx } from './audio.js';
 import { CarRadio } from './sonos.js';
 
 // Our car (#173): a white Renault Megane E-Tech, called by the key in the hall. State 'gone' → press → 'arriving'
-// (east along our lane, in through the gap in the shrubs, slowing to a stop right outside our door, #208) →
+// (east along our lane of Sankt Lars väg, in by the car park's drive through the gap in the hedge, #356, slowing to a stop right outside our door, #208) →
 // 'parked' (a collision box) → press → 'leaving' (round in the yard, out the same gap, west out of sight) → 'gone'. A press while it drives is
 // ignored. It waits rather than drive into the visitor. Built facing local +x; y = 0 is the road.
+
+/** A route (CAR.arrive / CAR.leave, #356) → waypoints: a leg is a plan point [x, z] or a stretch of a road
+ * { road, from, to } in the right-hand lane (CAR.lane × its width right of the centre line) going from → to, every 3 m. */
+export function waypoints(legs) {
+  return legs.flatMap((leg) => {
+    if (Array.isArray(leg)) return [leg];
+    const road = SITE.roads.find((r) => r.name === leg.road);
+    const dir = Math.sign(nearestS(road, ...leg.to) - nearestS(road, ...leg.from)) || 1; // along the road's path, or against it
+    const pts = along(road, leg.from, leg.to, 3, (w) => dir * w * C.lane).map((p) => [p.x, p.z]);
+    return dir > 0 ? pts : pts.reverse();
+  });
+}
 
 /** Waypoints → a polyline with the corners rounded off (Chaikin, the ends kept) + cumulative lengths. */
 function smooth(wp) {
@@ -154,8 +167,8 @@ export class Car {
   /** Parked in front of the house at once (&car, screenshots). */
   park() { this.path = this.arrival(); this.d = this.total(); this.state = 'parked'; this.object.visible = true; this.place(); }
 
-  arrival() { return smooth(C.arrive); }
-  departure() { return smooth(C.leave); }
+  arrival() { return smooth(waypoints(C.arrive)); }
+  departure() { return smooth(waypoints(C.leave)); }
 
   total() { return this.path.len.at(-1); }
 

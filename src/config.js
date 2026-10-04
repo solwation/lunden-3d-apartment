@@ -441,6 +441,11 @@ export const SITE = {
     { name: 'Karpvägen', path: [[-75.8, -27], [-75.8, 22, 30], [-79.9, 51, 20], [-84.5, 66, 8], [-200, 70]], w: 5.8 },
     { name: 'Karpvägen, hörnen', fillets: [{ x: -78.7, z: -24, sx: -1, sz: 1, r: 9 }, { x: -72.9, z: -24, sx: 1, sz: 1, r: 3 }] },
     { name: 'Gården framför Hus L', x0: -70.5, x1: 13.5, z0: -16.3, z1: -3.5 }, // the car park up to the green strip (#260)
+    // the car park's drive (#356): asphalt from Sankt Lars väg over our pavement and the planting strip through the gap in
+    // the hedge (SITE.shrubs gaps, x −13…−7.5) into the car park, with rounded mouth corners (the situation plan's photo
+    // covers it: guess, like the gap itself, #260)
+    { name: 'Infarten', path: [[-10.25, -24.5], [-10.25, -16.1]], w: 5.5 },
+    { name: 'Infarten, hörnen', fillets: [{ x: -13, z: -24, sx: -1, sz: 1, r: 2 }, { x: -7.5, z: -24, sx: 1, sz: 1, r: 2 }] },
   ],
   paving: [
     { x0: -46.33, x1: 13.5, z0: -3.5, z1: 0 },  // path along Hus L's entrances (under the green strip too, #260)
@@ -861,16 +866,23 @@ export const BEER = { x: 3.85, y: 0.4, z: 15.4, r: 0.045, h: 0.16, gulp: 0.2, he
 // [up to m, ×]). Our picks.
 // Our car (#173): a white Renault Megane E-Tech Electric 2024 (4.20 × 1.78 × 1.50 m per Renault), plate FGZ 56D.
 // The key in the hall calls it: it comes east along Sankt Lars väg (our lane, right side to our curb at z −24),
-// stops in front of our entrance; called again it drives on, U-turns before the zebra crossing and leaves west.
-// Path and speeds are ours.
+// stops in front of our entrance; called again it leaves west in the far lane. Path and speeds are ours.
 // #208: it turns into the car park and stops right outside our door (heading east, passenger side to the house);
 // leaving, it swings round at the east end and goes out the same way, west in the far lane. #260: the way in is the
 // car park's drive through the hedge in front of the portik (x −13…−7.5). Paths = waypoints (x, z), rounded off at the
 // corners (car.js).
 export const CAR = {
   l: 4.2, w: 1.78, h: 1.5, color: 0xf2f2ee, plate: 'FGZ 56D',
-  arrive: [[-95, -25.2], [-14.5, -25.2], [-10.25, -21.5], [-10.25, -15], [-7.5, -9.5], [-2, -5.6], [2.9, -5.4]], // ends at our door
-  leave: [[2.9, -5.4], [6.5, -5.6], [8.4, -8], [7, -10.6], [3, -11.2], [-4, -11.2], [-8.5, -13.5], [-10.25, -16.3], [-10.25, -22], [-12.5, -27.6], [-18, -27.8], [-95, -27.8]],
+  // #356: the routes are data — legs of either a waypoint [x, z] or a stretch of a road
+  // { road: <SITE.roads name>, from: [x, z], to: [x, z] } driven in the right-hand lane in the direction from → to
+  // (car.js `route` samples it with roads.js `along`, so the car follows the road if the road moves), then rounded off.
+  // In by the drive through the hedge, over the car park's aisle, out by a loop at the car park's east end (not the
+  // pavement) and the same drive. A garage start (#358) is a route in front of these.
+  arrive: [{ road: 'Sankt Lars väg', from: [-95, -27], to: [-17, -27] }, [-12.6, -25.1], [-10.6, -22], [-10.25, -15],
+    [-7.5, -9.5], [-2, -5.6], [2.9, -5.4]], // ends at our door
+  leave: [[2.9, -5.4], [6.5, -5.6], [8.4, -8], [7, -10.6], [3, -11.2], [-4, -11.2], [-8.5, -13.5], [-10.25, -16.3],
+    [-10.1, -22], [-11.4, -26.3], { road: 'Sankt Lars väg', from: [-16, -27], to: [-95, -27] }],
+  lane: 0.25,                      // of the road's width right of its centre line: the middle of the right-hand lane
   speed: 8, brake: 2,              // m/s cruising, m/s² slowing down to the stop
   doorOpen: 1.1,                   // rad: how far a door opens (#250)
   // Music in the car (#268, CarRadio in sonos.js): the SYMFONISK channels from the dashboard (`dash`, local metres).

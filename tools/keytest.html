@@ -59,7 +59,12 @@ f.onload = async () => {
   let culled = 0, checked = 0;
   const drawn = () => { car.object.updateMatrixWorld(true); /* as a render would */ for (const it of items) { c.copy(it.center).applyMatrix4(it.o.matrixWorld); if (c.distanceTo(eye) > it.cut * 0.95) continue; checked++; if (!it.o.layers.isEnabled(0)) culled++; } };
   pass &= check(car.state === 'arriving' && car.object.visible, `the car is on its way (${car.state})`);
-  for (let i = 0; i < 60 * 30 && car.state === 'arriving'; i++) { step(1 / 60); drawn(); }
+  // #356: as it drives, it stays on asphalt (the road, the drive, the car park); cartest checks the whole body
+  const { onRoad } = await w.eval(`import('${new URL('../src/roads.js', location.href)}')`);
+  let offRoad = 0, driven = 0;
+  const onAsphalt = () => { driven++; if (!onRoad(car.object.position.x, car.object.position.z)) offRoad++; };
+  for (let i = 0; i < 60 * 30 && car.state === 'arriving'; i++) { step(1 / 60); drawn(); onAsphalt(); }
+  pass &= check(driven > 100 && offRoad === 0, `arriving on asphalt all the way (#356; ${offRoad} of ${driven} frames off it)`);
   pass &= check(items.length > 20 && checked > 0 && culled === 0, `arriving with the camera still: every car mesh near enough is drawn (#267; ${items.length} meshes, ${culled} of ${checked} checks hidden)`);
   culled = checked = 0;
   const p = car.object.position;
@@ -68,7 +73,9 @@ f.onload = async () => {
   aim(key.object.children[1]); btn.click(); step(1 / 60);
   pass &= check(car.state === 'leaving' && key.presses === 2, 'beep beep again: it drives off');
   let turned = false;
-  for (let i = 0; i < 60 * 40 && car.state === 'leaving'; i++) { step(1 / 60); drawn(); if (Math.abs(car.object.rotation.y - Math.PI) < 0.01) turned = true; }
+  offRoad = driven = 0;
+  for (let i = 0; i < 60 * 40 && car.state === 'leaving'; i++) { step(1 / 60); drawn(); if (car.object.visible) onAsphalt(); if (Math.abs(car.object.rotation.y - Math.PI) < 0.01) turned = true; }
+  pass &= check(driven > 100 && offRoad === 0, `leaving on asphalt all the way (#356; ${offRoad} of ${driven} frames off it)`);
   pass &= check(checked > 0 && culled === 0, `leaving: every car mesh near enough is drawn (#267; ${culled} of ${checked} checks hidden)`);
   pass &= check(car.state === 'gone' && !car.object.visible && turned && car.segments().length === 0, `it U-turned and is gone (${car.state})`);
   // #267 again: the visitor walked out onto the street while the car was gone far away (its small parts were judged

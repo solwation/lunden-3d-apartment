@@ -491,7 +491,9 @@ src/car.js             our white Renault Megane E-Tech (CAR, #173; the model fro
                        shuts it (kind 'cardoor', `car.targets()`), E on a front seat whose door is open sits you in it (rest.js,
                        looking ahead; getting up puts you back by the door); not drivable; the key shuts open doors before it
                        leaves; the screens wake while a door is open / someone sits; `car.box()` keeps the rain out; the hall key calls it in through the car park's drive
-                       (in front of the portik, #260) to stop right outside our door (#208; waypoint paths rounded off) (blinks, a collision box while parked, waits for the visitor), pressed again it U-turns and
+                       (in front of the portik, #260; asphalt of its own, SITE.roads 'Infarten', #356) to stop right outside our door (#208; routes =
+                       data: waypoints and road legs `{ road, from, to }` in the right-hand lane via roads.js `along`, rounded off,
+                       `waypoints`; a garage start can go in front; cartest checks the whole car stays on asphalt) (blinks, a collision box while parked, waits for the visitor), pressed again it U-turns and
                        leaves; sfx.evHum follows it; `&car` = parked (screenshots). Music (#268, `CAR.music`): sitting in a front
                        seat the centre screen is a target (kind 'carmusic', `musicTarget.aimAt` picks its ⏮ ⏯ ⏭ row; a click works
                        like E): `car.radio` (CarRadio in sonos.js) plays the SYMFONISK channels from the dashboard, clear inside,
@@ -558,7 +560,8 @@ tools/notetest.html    headless test of the changelog note ("Nytt", read/close, 
 tools/patiotest.html   headless test of the patio seasons (parasol, beers, snowman) + sofa collision
 tools/cartest.html     headless test: our parked car — open the driver's / passenger's door, the seat only then, sit inside looking
                        ahead, out by the door; the key shuts the doors first, then it drives off (#250); music (#268): seated, the
-                       centre screen on / ⏭ / off, plays on outside (muffled with the doors shut), no target from outside, off as it leaves
+                       centre screen on / ⏭ / off, plays on outside (muffled with the doors shut), no target from outside, off as it leaves;
+                       both routes keep the whole car on asphalt, clear of the bus stop and the stalls (#356)
 tools/keytest.html     headless test of the hall key cabinet: open, car key reachable only then, beep; the car comes, parks, leaves
 tools/esctest.html     headless test of Esc on the start screen (click-to-start cover, ignored over the note)
 tools/crouchtest.html  headless test: C crouches (Ctrl too, other Ctrl shortcuts prevented), seated C stands up, leaving mid-visit

@@ -8,6 +8,7 @@
 // looking ahead), get out by the door; the passenger side likewise; the seat is no target while its door is shut;
 // the key sends it away — the open doors shut first, then it drives off. Music (#268): seated, the centre screen puts it
 // on, ⏭, off; it plays on outside (muffled with the doors shut), not a target from outside; it stops as the car leaves.
+// #356: both routes keep the car on asphalt (the road, the drive, the car park), clear of the bus stop and the stalls.
 //   google-chrome --headless=new --dump-dom http://localhost:8137/tools/cartest.html
 const out = document.getElementById('out');
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -88,6 +89,28 @@ f.onload = async () => {
   for (let i = 0; i < 90; i++) step(1 / 60);
   pass &= check(car.state === 'leaving', `then it drives off (${car.state})`);
   pass &= check(!car.radio.playing && car.shown === 'map', 'the music stops as it leaves (#268)');
+  // #356: both routes keep the whole car on asphalt — a road or the car park, never a pavement, curb, lawn or the hedge —
+  // clear of the bus stop and of the parked cars' stalls. Every 0.5 m of each path: the body's corners and side middles.
+  const mod = (f) => w.eval(`import('${new URL(`../src/${f}`, location.href)}')`); // the page's own instances
+  const roads = await mod('roads.js'), cfg = await mod('config.js');
+  const S = cfg.SITE, L = cfg.CAR.l / 2, H = cfg.CAR.w / 2, [bx, bz] = S.street.busStop, lot = S.life.lot;
+  for (const [name, path] of [['in', car.arrival()], ['out', car.departure()]]) {
+    const saved = car.path; car.path = path;
+    const total = car.total(), bad = [];
+    let nearBus = Infinity, n = 0;
+    for (let s = 0; s <= total; s += 0.5, n++) {
+      const p = car.at(s), fx = Math.cos(p.yaw), fz = -Math.sin(p.yaw); // the car's +x along the way
+      for (const [a, b] of [[L, H], [L, -H], [-L, H], [-L, -H], [0, H], [0, -H], [0, 0]]) {
+        const x = p.x + fx * a - fz * b, z = p.z + fz * a + fx * b;
+        nearBus = Math.min(nearBus, Math.hypot(x - bx, z - bz));
+        const stall = x > lot.x0 && x < lot.x1 && z > lot.z0 && z < lot.z0 + lot.depth;
+        if (!roads.onRoad(x, z) || stall) bad.push(`(${x.toFixed(1)}, ${z.toFixed(1)})${stall ? ' stall' : ''}`);
+      }
+    }
+    car.path = saved;
+    pass &= check(bad.length === 0, `route ${name}: the whole car on asphalt at ${n} points, ${total.toFixed(0)} m${bad.length ? ` — off at ${bad.length}: ${bad.slice(0, 8).join(' ')}` : ''}`);
+    pass &= check(nearBus > 1.5, `route ${name}: clear of the bus stop (${nearBus.toFixed(1)} m)`);
+  }
   out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
 };
 </script>
