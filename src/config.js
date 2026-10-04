@@ -1129,7 +1129,7 @@ export const LIFE = {
   sandwich: { max: 6 }, // at most this many layers on a slice of bread, butter included (#378, #379): "Mackan rymmer inte mer"
   drink: { fill: 1.6, pour: 1, sip: 40, seconds: 0.6, pourMl: 200 }, // the drinking glass (#382): filled at the tap in `fill` s (to the brim, no more), milk poured `pourMl` ml at a time over `pour` s, a sip `sip` ml over `seconds` (game s; our picks)
   wash: { seconds: 2.4, taps: ['köksblandaren'] }, // washing up by hand (#383): a scrub at the running tap of these sinks (game s; our pick)
-  rules: { washFirst: true }, // #383: a used / dirty thing is refused in its cabinet or drawer ("Diska den först"); false = free play
+  rules: { washFirst: true, strictSorting: true }, // strictSorting (#386): the wrong bin keeps the waste in the hand (false: in it goes, with a note); #383: a used / dirty thing is refused in its cabinet or drawer ("Diska den först"); false = free play
   eat: { seconds: 0.5 }, // a bite: to the mouth and back (#377, #380); the bite comes off half-way // a timed action (#372) stops when the eye has moved this far (m) from where it started // putting down (#368): snap grids (m), kept this far inside a table's edge, R turns this many degrees
 };
 
@@ -1158,7 +1158,8 @@ export const LIFE_FOOD = {
 export const LIFE_TOOLS = {
   stock: [['knife', 'utensils', 0], ['butterKnife', 'utensils', 1], ['cheeseSlicer', 'utensils', 2], ['board', 'boardRack', 0],
     ['plate', 'plates', 0], ['plate', 'plates', 1], ['plate', 'plates', 2], // three plates in the wall cabinet over the free worktop (#379)
-    ['bin', 'sinkBins', 0], // the waste bin under the sink (#381)
+    ['bin', 'sinkBins', 0], // the waste bin under the sink (#381): since #386 the grey one, Restavfall
+    ['binFood', 'binsFood', 0], ['binPack', 'binsPack', 0], // #386: the green one (Matavfall) and the small blue one (Förpackningar)
     ['glass', 'glasses', 0], ['glass', 'glasses', 1], ['glass', 'glasses', 2]], // three drinking glasses at the front of the glass cabinet (#382)
   // what a tool tag does to a food tag (life.js tool actions): `label` = the action, `not` = the wrong tool's message
   // ("Osthyveln skär inte gurka"); a new tool is an ITEMS entry with one of these tags, nothing else
@@ -1195,7 +1196,13 @@ export const ITEMS = {
   // thrown is kept as `parts` per kind ('food' | 'package') for the sorting later (LIFE-022). A thing is waste when it is an
   // empty package, the end of something cut, or leftover food (a slice, a half-eaten sandwich); ITEMS `binVolume` = its
   // units (else 1 for food, 2 for a package). Game parameters, our picks.
-  bin: { name: 'avfallshinken', tags: ['bin', 'fixed'], unit: 'count', amount: 0, size: 'xl', model: 'bin', capacity: 12 },
+  // #386: three bins (game categories, not a claim about the property's real waste system): `sort` = the waste kind it takes
+  // (life.wasteKind), `label` its category, `bag` the bag's look; a bin without a bag (tied up and taken out) has machine.nobag
+  bin: { name: 'restavfallet', label: 'Restavfall', sort: 'rest', bag: 'black', fullText: 'Restavfallspåsen är full', tags: ['bin', 'fixed'], unit: 'count', amount: 0, size: 'xl', model: 'bin', capacity: 12 },
+  binFood: { name: 'matavfallet', label: 'Matavfall', sort: 'food', bag: 'paper', fullText: 'Matavfallspåsen är full', tags: ['bin', 'fixed'], unit: 'count', amount: 0, size: 'xl', model: 'bin', capacity: 8 },
+  binPack: { name: 'förpackningarna', label: 'Förpackningar', sort: 'package', bag: 'clear', fullText: 'Förpackningspåsen är full', tags: ['bin', 'fixed'], unit: 'count', amount: 0, size: 'xl', model: 'bin', capacity: 12 },
+  // a tied rubbish bag (#386): its amount and parts are what was in the bin (moved, not copied), machine.sort its category
+  rubbishBag: { name: 'soppåsen', tags: ['rubbishBag'], unit: 'count', amount: 0, size: 'l', model: 'rubbishBag', held: { pos: [0.2, -0.42, -0.45], rot: [0, 0.3, 0] } },
   breadSlice: { name: 'brödskivan', noun: 'bröd', tags: ['food', 'base'], unit: 'count', amount: 1, size: 's', model: 'breadSlice', bites: 4 }, // eaten in four bites (#377, like the fruit #326)
   knife: { name: 'kökskniven', tags: ['tool', 'tool:cut', 'dishwasherSafe'], unit: 'count', amount: 1, size: 's', clean: 'clean', model: 'knife' },
   butterKnife: { name: 'smörkniven', tags: ['tool', 'tool:spread', 'dishwasherSafe'], unit: 'count', amount: 1, size: 's', clean: 'clean', model: 'butterKnife' }, // (#374)

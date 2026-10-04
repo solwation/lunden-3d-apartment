@@ -305,6 +305,7 @@ export function cookingActions(life) {
     if (!d || I.has(it, 'bin')) return null;
     if (d.pkg && (it.pkg === 'empty' || it.amount <= 1e-6)) return 'package';
     if (life.isEnd?.(it)) return 'food';
+    if (I.has(it, 'rubbishBag')) return null; // (#386: carried out, #387)
     if (I.has(it, 'topping') || I.has(it, 'base')) return 'food';
     return null;
   };
@@ -315,7 +316,7 @@ export function cookingActions(life) {
   const wasteOf = (c) => (c.held ? life.wasteKind(c.held) : c.heldView?.wasteKind ?? null);
   A.define({
     id: 'throwAway', order: 0,
-    label: (c) => `slänga ${c.held ? nm(c.held) : c.heldView.name}`,
+    label: (c) => `slänga ${c.held ? nm(c.held) : c.heldView.name} i ${nm(c.target)}`, // (#386: which bin)
     applies: (c) => !!wasteIn(c) && !!c.target && I.has(c.target, 'bin') && c.held !== c.target,
     quiet: (c) => !!c.held && I.has(c.held, 'dish'), // (a plate at the bin: scraping it is the row, #383)
     check: (c) => {
@@ -323,8 +324,11 @@ export function cookingActions(life) {
       if (shut) return shut;
       const kind = wasteOf(c);
       if (!kind || (c.held && I.children(c.held).length)) return 'Det där ska inte slängas';
+      if (c.target.machine?.nobag) return 'Sätt i en ny påse först'; // (#386)
+      const sort = I.def(c.target).sort;
+      if (sort && sort !== kind && LIFE.rules.strictSorting) return `${cap(c.held ? nm(c.held) : c.heldView.name)} → ${life.binLabel(kind)}`; // the right bin (#386)
       const v = c.held ? volume(c.held, kind) : 2;
-      if (c.target.amount + v > (I.def(c.target).capacity ?? 10) + 1e-6) return `${cap(nm(c.target))} är full`;
+      if (c.target.amount + v > (I.def(c.target).capacity ?? 10) + 1e-6) return I.def(c.target).fullText ?? `${cap(nm(c.target))} är full`;
       return null;
     },
     run: (c) => {
@@ -336,6 +340,8 @@ export function cookingActions(life) {
       I.add(bin, v);
       I.set(bin, { parts });
       life.emit('thrown', { type: it?.type ?? c.heldView.drinkKind ?? 'thing', kind, into: bin.id });
+      const sort = I.def(bin).sort;
+      if (sort && sort !== kind) life.say(`Det där hör hemma i ${life.binLabel(kind).toLowerCase()}`); // (free sorting: in it went, a note)
       sfx.rustle?.(c.targetView?.where());
     },
     consumes: 'the waste in the hand (removed)', result: 'the bin fuller by its volume; its parts count the kind',

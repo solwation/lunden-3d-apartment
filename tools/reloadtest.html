@@ -218,7 +218,7 @@ const KEY = 'lunden.resume', SESSION = 'lunden.session';
       `a new tab: at the start, the real time (${app.day.clock}), the car in the garage (#358), empty hands, the fridge shut`);
     // the life sim's stock is kept between visits (lunden.life, #371): the last page wrote it; empty-handed now
     const LS = JSON.parse(localStorage.getItem('lunden.life') ?? 'null');
-    pass &= check(LS?.v === 1 && Array.isArray(LS.items), `lunden.life is written (v ${LS?.v}, ${LS?.items?.length} things)`);
+    pass &= check(LS?.v >= 1 && Array.isArray(LS.items), `lunden.life is written (v ${LS?.v}, ${LS?.items?.length} things)`);
   }
   f.remove();
   out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;

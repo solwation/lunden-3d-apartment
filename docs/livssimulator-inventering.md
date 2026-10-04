@@ -130,3 +130,7 @@ Code in src/dishes.js (and cooking.js's bin), the test is `tools/life2test.html`
   left, the door pauses it, a floor spot, hum, a chime). Only what was in it at the start is washed; nothing can be added
   mid-run (refused). Its state is a part of the life record (`x.dishwasher`) and it counts as time-bound for the
   auto-update.
+- **#386 sorting**: the bins under the sink: **extended** (all three are life-sim bins now: Matavfall, Förpackningar,
+  Restavfall — game categories). The prompt names the right bin, the wrong one keeps the waste in the hand (or, in free
+  sorting, takes it with a note). A bin with something in it is tied up into a rubbish bag that carries its fill; a new bag
+  comes off the roll (no item of its own). A saved single bin is migrated (items.js v2).

@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { LIFE, ITEMS, LIFE_FOOD, LIFE_TOOLS } from './config.js';
 import { cookingActions } from './cooking.js';
 import { dishActions } from './dishes.js';
+import { wasteActions } from './waste.js';
 import { Items, SIZES } from './items.js';
 import { Holdable, heldItem, setHeld, handBusy } from './holdable.js';
 import { buildModel } from './lifemodels.js';
@@ -145,6 +146,7 @@ export class Life {
     this.extras = new Map(); // name → { save() → JSON | null, load(v) }: home state outside the items (the milk carton, #382 …)
     this.loadedX = {}; this.xSig = '';
     dishActions(this); // drinks and dishes (#382 …)
+    wasteActions(this); // sorting the rubbish, tying the bag, carrying it out (#386, #387)
     this.items.on((kind, item, extra) => {
       this.dirty = true;
       if (kind === 'create') this.views.set(item.id, new LifeItem(this, item));
@@ -233,7 +235,7 @@ export class Life {
   interrupt(why) { this.runner.interrupt(why); }
 
   /** The E targets: every item not in the hand. */
-  targets() { const out = [...(this.storeTargets ?? [])], holding = !!this.items.held() || !!heldItem()?.wasteKind; for (const v of this.views.values()) if (!v.held && (holding || !this.items.has(v.item, 'fixed'))) out.push(v.target); return out; } // + the stores' boxes (#369; they raycast only while a life item is held); a bin only with something in the hand (#381)
+  targets() { const out = [...(this.storeTargets ?? [])], holding = !!this.items.held() || !!heldItem()?.wasteKind; for (const v of this.views.values()) if (!v.held && (holding || !this.items.has(v.item, 'fixed') || v.item.amount > 0 || v.item.machine.nobag)) out.push(v.target); return out; } // (#386: a bin with something in it / no bag: tie it up, a new bag) // + the stores' boxes (#369; they raycast only while a life item is held); a bin only with something in the hand (#381)
 
   update(dt) {
     for (const v of this.views.values()) v.update(dt);

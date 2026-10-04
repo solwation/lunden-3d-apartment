@@ -19,8 +19,24 @@
 // over to an instance each (docs/livssimulator-inventering.md).
 
 /** The record's version (#371); MIGRATIONS[v](record) turns a v record into v + 1. */
-export const ITEMS_VERSION = 1;
-export const MIGRATIONS = {};
+export const ITEMS_VERSION = 2;
+export const MIGRATIONS = {
+  // v1 → v2 (#386): the one waste bin under the sink (LIFE-017, store sinkBins) became three sorted ones — the old bin is now
+  // Restavfall, emptied, and what its parts counted moves on: the food into a Matavfall bin, the packages into a Förpackningar
+  // bin (its amount less the food; volumes were 1 per food, 2–3 per package)
+  1: (r) => {
+    const items = r.items.map((e) => (e && typeof e === 'object' ? { ...e } : e));
+    for (const e of items) {
+      if (!e || e.type !== 'bin' || e.place?.store !== 'sinkBins') continue;
+      const count = (k) => (Array.isArray(e.parts) ? e.parts.find((p) => p?.type === k)?.amount ?? 0 : 0);
+      const food = count('food'), pkgs = count('package'), packed = Math.max(0, (Number(e.amount) || 0) - food);
+      if (food) items.push({ id: 'binFood#1', type: 'binFood', place: { at: 'slot', store: 'binsFood', slot: 0 }, amount: food, parts: [{ type: 'food', amount: food }] });
+      if (pkgs) items.push({ id: 'binPack#1', type: 'binPack', place: { at: 'slot', store: 'binsPack', slot: 0 }, amount: packed, parts: [{ type: 'package', amount: pkgs }] });
+      e.amount = 0; e.parts = [];
+    }
+    return { ...r, v: 2, items };
+  },
+};
 
 /** Size classes, smallest first: a slot or a carrier takes things up to its own size. */
 export const SIZES = { xs: 0, s: 1, m: 2, l: 3, xl: 4 };

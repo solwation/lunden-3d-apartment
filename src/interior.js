@@ -499,8 +499,12 @@ function buildKitchen(B, group, floor, y0, yC, handled, taps, appliances) {
         binAt.push({ pos: new THREE.Vector3(x, yb + 0.016, z), w: uw, d: d1 - d0, h });
       });
       const sinkTop = top - K.sink.depth - 0.02;
-      stock(open, F, openFront(open, F, u0, (u0 + u1) / 2, yb, yt, M.front, 'v-hi', {}, { mode: 'hinge', name: 'skåpet' }), 'sink', u0, u1, yb, sinkTop, F.depth, { shelf: false });
-      Object.assign(openFront(open, F, (u0 + u1) / 2, u1, yb, yt, M.front, 'v-lo', {}, { mode: 'hinge', name: 'skåpet' }), { stock: 'own', bin: { ...binAt[2], yaw: F.dir === 'w' ? -Math.PI / 2 : F.dir === 'e' ? Math.PI / 2 : 0 } }); // the bins (`bin`: the grey one's bottom centre and size, #381)
+      const leftDoor = openFront(open, F, u0, (u0 + u1) / 2, yb, yt, M.front, 'v-hi', {}, { mode: 'hinge', name: 'skåpet' });
+      stock(open, F, leftDoor, 'sink', u0, u1, yb, sinkTop, F.depth, { shelf: false });
+      const yaw = F.dir === 'w' ? -Math.PI / 2 : F.dir === 'e' ? Math.PI / 2 : 0;
+      // the bins (`bin`: the grey one's bottom centre and size, #381; `bins`: all three with the door(s) in front of each, #386)
+      Object.assign(openFront(open, F, (u0 + u1) / 2, u1, yb, yt, M.front, 'v-lo', {}, { mode: 'hinge', name: 'skåpet' }), { stock: 'own', bin: { ...binAt[2], yaw },
+        bins: binAt.map((b, k) => ({ ...b, yaw, door: ['left', 'either', 'right'][k] })), leftDoor });
     } else if (ret.includes(c)) {
       // corner unit: only the part beside the east run is a visible door
       const vis = Math.min(u1, east[0] ? east[0].x0 : u1);

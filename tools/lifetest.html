@@ -498,8 +498,9 @@ try {
   const f = await load('life&shot');
   const { A, aim, settle, shut, life, I, step } = kit(f);
   const V = A.camera.position.constructor;
-  const bins = A.world.lids.find((l) => l.bin), bin = I.ofType('bin')[0], binv = life.view(bin);
-  check(bin && bin.place.store === 'sinkBins' && bin.amount === 0 && !life.targets().includes(binv.target), 'the bin in its place under the sink, empty; no target with an empty hand');
+  // (#386: three bins since then — the end goes in Matavfall, the bread bag in Förpackningar; the grey one is Restavfall)
+  const bins = A.world.lids.find((l) => l.bin), rest = I.ofType('bin')[0], bin = I.ofType('binFood')[0], binv = life.view(bin), binP = I.ofType('binPack')[0];
+  check(rest && rest.place.store === 'sinkBins' && bin && bin.place.store === 'binsFood' && bin.amount === 0 && !life.targets().includes(binv.target), 'the bins in their places under the sink, empty; no target with an empty hand');
   const row = (it = bin) => life.options({ item: life.view(it) }).find((o) => o.id === 'throwAway');
   const end = life.create('cucumber', { at: 'world', pos: [5.25, 0.93, 2.7], yaw: 0 }, { amount: 15 });
   check(life.isEnd(end) && life.wasteKind(end) === 'food', 'a 15 g cucumber: the end, food waste');
@@ -511,11 +512,12 @@ try {
   check(!!t1, `the front open: "${t1}"`);
   const heap = binv.view.object.children[2];
   row().run(); step(1 / 60);
-  check(!I.get(end.id) && !A.heldItem() && bin.amount === 1 && heap.visible && bin.parts.find((p) => p.type === 'food')?.amount === 1, `thrown: gone from the hand, the bin at ${bin.amount}/12 (a heap shows)`);
+  check(!I.get(end.id) && !A.heldItem() && bin.amount === 1 && heap.visible && bin.parts.find((p) => p.type === 'food')?.amount === 1, `thrown: gone from the hand, Matavfall at ${bin.amount}/8 (a heap shows)`);
   // an empty bread bag (a package) goes in too, the heap rises
   const bag = life.create('breadBag', { at: 'hand' }, { amount: 0, pkg: 'empty' }); step(1 / 60);
-  const h0 = heap.scale.y;
-  check(row()?.label === 'slänga brödpåsen' && row().run() !== false && !I.get(bag.id) && bin.amount === 4 && heap.scale.y > h0, `the empty bread bag: the bin at ${bin.amount}/12, the heap higher`);
+  bins.leftDoor.toggle(); settle(bins.leftDoor); // (the blue one is behind the left door)
+  const heapP = life.view(binP).view.object.children[2], h0 = heapP.scale.y;
+  check(row(binP)?.label === 'slänga brödpåsen i förpackningarna' && row(binP).run() !== false && !I.get(bag.id) && binP.amount === 3 && heapP.scale.y > h0, `the empty bread bag: Förpackningar at ${binP.amount}/12, the heap higher`);
   // not waste: a knife, a plate, a whole cucumber
   const knife = I.all().find((i) => i.type === 'knife'), plate = I.ofType('plate')[0];
   for (const it of [knife, plate]) {
@@ -526,9 +528,9 @@ try {
     life.view(it).putBack(); step(1 / 60);
   }
   // full: the waste stays in the hand
-  I.setAmount(bin, 11.5);
+  I.setAmount(bin, 7.5);
   const sl = life.create('cucumberSlice', { at: 'hand' }); step(1 / 60);
-  check(row()?.reason === 'Avfallshinken är full' && row().run() === false && sl.place.at === 'hand', `full: "${row()?.reason}", the slice still in the hand`);
+  check(row()?.reason === 'Matavfallspåsen är full' && row().run() === false && sl.place.at === 'hand', `full: "${row()?.reason}", the slice still in the hand`);
   check(I.audit().length === 0, `audit: ${I.audit().join('; ') || 'ok'}`);
   life.view(sl).placeAt(new V(5.25, 0.93, 2.7), 0); step(1 / 60);
   shut();
@@ -612,15 +614,15 @@ try {
   for (let k = 0; k < 4; k++) run(K, 'eat', null, 0.6);
   check(!I.get(bread.id) && I.get(plate.id)?.clean === 'dirty' && (A.stats.sandwiches ?? 0) === n0 + 1, 'flow: eaten at the table, a dirty plate left (#383), counted');
   // the cucumber's end and the empty bread bag into the bin
-  open(A, lid(A, (l) => l.bin));
-  const bin = I.ofType('bin')[0];
+  open(A, lid(A, (l) => l.bin)); open(A, lid(A, (l) => l.bin).leftDoor);
+  const bin = I.ofType('binFood')[0], binP = I.ofType('binPack')[0]; // (#386: sorted)
   life.view(I.get(ids.cuc)).take(); step(1 / 60);
   const t1 = run(K, 'throwAway', bin);
   I.setAmount(bag, 1); run(K, 'dispense', bag, 0.4);
   run(K, 'eat', null, 0.6); for (let k = 0; k < 3; k++) run(K, 'eat', null, 0.6); // (the last slice eaten plain)
   life.view(bag).take(); step(1 / 60);
-  const t2 = run(K, 'throwAway', bin);
-  check(t1 === true && t2 === true && !I.get(ids.cuc) && !I.get(bag.id) && bin.amount === 4 && !A.heldItem(), `flow: the end and the empty bag in the bin (${t1}, ${t2}; ${bin.amount}/12)`);
+  const t2 = run(K, 'throwAway', binP);
+  check(t1 === true && t2 === true && !I.get(ids.cuc) && !I.get(bag.id) && bin.amount === 1 && binP.amount === 3 && !A.heldItem(), `flow: the end in Matavfall, the empty bag in Förpackningar (${t1}, ${t2}; ${bin.amount}, ${binP.amount})`);
   // and the kitchen restocks what was used up, on the next opening
   for (const o of [A.fridge, lid(A, (l) => l.stock === 'pantry')]) { o.toggle(); for (let i = 0; i < 40; i++) o.update(0.1); step(1 / 60); o.toggle(); for (let i = 0; i < 40; i++) o.update(0.1); step(1 / 60); }
   check(home(K, 'cucumber', 'fridge')?.amount === 300 && home(K, 'breadBag', 'pantry')?.amount === 12, 'flow: a fresh cucumber and bread bag next time');

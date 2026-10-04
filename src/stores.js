@@ -145,6 +145,17 @@ export function buildStores(life, world) {
     const never = pickBox(life.scene, B.pos.clone(), B.pos.clone().addScalar(0.01), () => false); // (nobody puts a bin in)
     add('sinkBins', { name: 'skåpet', shutText: 'Öppna skåpet under diskhon först', fullText: 'Där står redan en hink', isOpen: () => bins.isOpen }, [{ size: 'xl', anchor: a }], never);
     I.store('sinkBins').accepts = ['bin'];
+    // #386: the green bin (Matavfall, behind both doors: either opens it) and the small blue one (Förpackningar, the left door)
+    for (const [id, k, type] of [['binsPack', 0, 'binPack'], ['binsFood', 1, 'binFood']]) {
+      const b = bins.bins?.[k];
+      if (!b) continue;
+      const an = new THREE.Object3D();
+      an.position.copy(b.pos); an.rotation.y = b.yaw; an.scale.set(b.w, b.h, b.d);
+      life.scene.add(an);
+      const open = b.door === 'left' ? () => !!bins.leftDoor?.isOpen : () => bins.isOpen || !!bins.leftDoor?.isOpen;
+      add(id, { name: 'skåpet', shutText: 'Öppna skåpet under diskhon först', fullText: 'Där står redan en hink', isOpen: open }, [{ size: 'xl', anchor: an }], pickBox(life.scene, b.pos.clone(), b.pos.clone().addScalar(0.01), () => false));
+      I.store(id).accepts = [type];
+    }
   }
   // the dishwasher's racks (#384, dishwasher.js): the lower rack's plates, the upper rack's glasses, the cutlery tray's tools;
   // reached only with the door down and that rack rolled out; the wrong rack says which is right; not what is washed by hand

@@ -17,6 +17,8 @@
 //  #385 the programme: empty / door down refused, the panel, running with the floor spot and the time left, paused with
 //       the door down, nothing added mid-run, a glass taken out stays dirty, a reload keeps it, done = clean + counted,
 //       unloading into the cabinet, F stops it.
+//  #386 three bins: the wrong one names the right one and keeps the waste, the right one named, free sorting; the bag tied
+//       up (the fill moved, the bin empty without a bag), a new bag, an old single bin migrated.
 //   chromium --headless=new --dump-dom http://localhost:8137/tools/life2test.html
 import { LIFE, MILK } from '../src/config.js';
 const out = document.getElementById('out');
@@ -129,14 +131,14 @@ if (want(382)) try {
   const cup = A.cups.cups.find((c) => c.state === 'placed');
   check(cup && !cup.pourable, 'the old cup: nothing pours from the empty carton');
   // into the bin; the fridge opened again: a full carton on its shelf
-  const bins = lid((l) => l.bin), bin = I.ofType('bin')[0];
-  open(bins);
+  const bins = lid((l) => l.bin), bin = I.ofType('binPack')[0]; // (#386: a package, Förpackningar behind the left door)
+  open(bins); open(bins.leftDoor);
   const tr = row('throwAway', bin);
-  check(tr?.label === 'slänga den tomma mjölkkartongen' && !tr.reason, `the empty carton at the bin: "${tr?.label}" ${tr?.reason ?? ''}`);
+  check(tr?.label === 'slänga den tomma mjölkkartongen i förpackningarna' && !tr.reason, `the empty carton at the bin: "${tr?.label}" ${tr?.reason ?? ''}`);
   tr.run(); step(1 / 60);
   check(!A.heldItem() && milk.away && !milk.model.visible && bin.amount === 2 && bin.parts.find((p) => p.type === 'package')?.amount === 1, `thrown: the bin ${bin.amount}/12, the carton gone`);
   check(milk.target.kind === 'none', 'no target while it is gone');
-  close(bins);
+  close(bins); close(bins.leftDoor);
   close(A.fridge); step(1 / 60); open(A.fridge); step(1 / 60);
   check(!milk.away && milk.model.visible && milk.ml === MILK.ml && !milk.held && !milk.placed, `the fridge opened again: a full carton at home (${milk.ml} ml)`);
   // what is left in a glass is poured out at the tap
@@ -179,7 +181,7 @@ if (want(383)) try {
   if (!tap.isOpen) tap.toggle();
   check(row('wash', tap)?.reason === 'Skrapa av tallriken först', `washing it with food on: "${row('wash', tap)?.reason}"`);
   // scraping: the food and the crumbs into the bin, still dirty
-  const bins = lid((l) => l.bin), bin = I.ofType('bin')[0];
+  const bins = lid((l) => l.bin), bin = I.ofType('binFood')[0]; // (#386: scraps go in Matavfall)
   check(row('scrape', bin)?.reason === 'Öppna skåpet under diskhon först', `the bin shut: "${row('scrape', bin)?.reason}"`);
   open(bins);
   const sc = row('scrape', bin);
@@ -395,6 +397,51 @@ if (want(385)) try {
   check(I.audit().length === 0, `audit: ${I.audit().join('; ') || 'ok'}`);
   f.remove();
 } catch (e) { pass = false; lines.push(`FAIL #385 error ${e.stack}`); }
+
+// --- #386: sorting the rubbish, tying a full bag -------------------------------------------------------------------
+if (want(386)) try {
+  const f = await load('life&shot');
+  const K = kit(f), { A, life, I, row, run, open, close, secs, lid, V, step } = K;
+  const bins = lid((l) => l.bin), rest = I.ofType('bin')[0], food = I.ofType('binFood')[0], pack = I.ofType('binPack')[0];
+  check(rest?.place.store === 'sinkBins' && food?.place.store === 'binsFood' && pack?.place.store === 'binsPack', 'three bins under the sink: Restavfall, Matavfall, Förpackningar');
+  open(bins); open(bins.leftDoor);
+  const end = life.create('cucumber', { at: 'hand' }, { amount: 12 }); step(1 / 60);
+  check(row('throwAway', pack)?.reason === 'Gurkänden → Matavfall' && row('throwAway', rest)?.reason === 'Gurkänden → Matavfall', `the wrong bins: "${row('throwAway', pack)?.reason}"`);
+  check(row('throwAway', pack).run() === false && end.place.at === 'hand', 'refused: the end still in the hand');
+  const fp = life.view(food).where(); fp.y += 0.25;
+  const t1 = K.aim(fp, /Slänga gurkänden i matavfallet/, [[4.3, fp.z], [4.4, fp.z - 0.2], [4.4, fp.z + 0.2]]);
+  check(!!t1, `the right bin named: "${t1}"`);
+  check(run('throwAway', food) === true && food.amount === 1 && !I.get(end.id), 'in Matavfall');
+  // free sorting: in it goes, with a note
+  life.rules.strictSorting = false;
+  const sl = life.create('cucumberSlice', { at: 'hand' }); step(1 / 60);
+  check(run('throwAway', rest) === true && rest.amount === 1, 'free sorting: a slice in Restavfall');
+  life.rules.strictSorting = true;
+  // tie up the bag: the fill moves into it, the bin empty and without a bag
+  for (let k = 0; k < 3; k++) { life.create('cucumberSlice', { at: 'hand' }); step(1 / 60); run('throwAway', food); }
+  const before = food.amount, parts = JSON.stringify(food.parts);
+  check(!A.heldItem() && life.targets().includes(life.view(food).target) && row('tieBag', food)?.label === 'knyta ihop påsen', `a free hand at the bin: "${row('tieBag', food)?.label}"`);
+  check(run('tieBag', food) === true, 'tied');
+  const bag = I.held();
+  check(bag?.type === 'rubbishBag' && bag.amount === before && JSON.stringify(bag.parts) === parts && food.amount === 0 && food.parts.length === 0 && food.machine.nobag && I.name(bag) === 'matavfallspåsen',
+    `the bag in the hand: ${I.name(bag)} ${bag?.amount} (${JSON.stringify(bag?.parts)}), the bin ${food.amount}`);
+  check(!life.view(food).view.object.children[0].visible, 'no bag rim in the bin');
+  check(row('throwAway', food) === undefined || !!row('throwAway', food)?.reason, 'the bag is no waste for the bin');
+  check(row('newBag', food)?.reason === 'Lägg ifrån dig matavfallspåsen först', `a new bag with the hand full: "${row('newBag', food)?.reason}"`);
+  life.view(bag).placeAt(new V(4.5, 0.001, 2.2), 0); step(1 / 60);
+  const sl2 = life.create('cucumberSlice', { at: 'hand' }); step(1 / 60);
+  check(row('throwAway', food)?.reason === 'Sätt i en ny påse först', `no bag: "${row('throwAway', food)?.reason}"`);
+  life.view(sl2).placeAt(new V(5.25, 0.931, 2.5), 0); step(1 / 60);
+  check(run('newBag', food) === true && !food.machine.nobag && life.view(food).view.object.children[0].visible, 'a new bag off the roll');
+  check(I.audit().length === 0, `audit: ${I.audit().join('; ') || 'ok'}`);
+  // an old single bin (LIFE-017) is migrated: its food and packages move to their bins
+  const old = { v: 1, counters: {}, items: [{ id: 'bin#1', type: 'bin', place: { at: 'slot', store: 'sinkBins', slot: 0 }, amount: 5, parts: [{ type: 'food', amount: 1 }, { type: 'package', amount: 2 }] }] };
+  life.load(old); life.restock();
+  const r2 = I.ofType('bin')[0], f2 = I.ofType('binFood')[0], p2 = I.ofType('binPack')[0];
+  check(r2?.amount === 0 && f2?.amount === 1 && p2?.amount === 4 && I.ofType('binFood').length === 1 && I.ofType('binPack').length === 1, `migrated: Restavfall ${r2?.amount}, Matavfall ${f2?.amount}, Förpackningar ${p2?.amount}`);
+  check(life.serialize().v === 2, 'saved as v2');
+  f.remove();
+} catch (e) { pass = false; lines.push(`FAIL #386 error ${e.stack}`); }
 
 lines.push(pass ? 'ALL PASS' : 'SOME FAILED');
 out.textContent = lines.join('\n');

@@ -351,15 +351,18 @@ function cheeseSlicer() {
 /** A waste bin's insides (#381), built 1 × 1 × 1 (its store's anchor is scaled to the bin it stands in): a black bag's
  * rim, the label "Avfall" on its front (+z), a heap that rises with how full it is, an invisible box over the opening to
  * aim at. */
-function bin() {
+const BAGS = { black: M.binBag, paper: std(0xb48a58, 0.85), clear: new THREE.MeshStandardMaterial({ color: 0xdfe8ee, roughness: 0.3, transparent: true, opacity: 0.55 }) };
+const HEAPS = { rest: M.binHeap, food: std(0x6b4a2a, 0.8), package: std(0xc9d3da, 0.5) };
+function bin(def = {}) {
   const g = new THREE.Group();
-  const rim = mesh(new THREE.BoxGeometry(1.02, 0.04, 1.02), M.binBag);
+  const rim = mesh(new THREE.BoxGeometry(1.02, 0.04, 1.02), BAGS[def.bag] ?? M.binBag); // its bag's rim (#386: none once tied up and taken out)
   rim.position.y = 0.985; rim.castShadow = false;
-  const tag = mesh(new THREE.PlaneGeometry(0.62, 0.22), labelOf('bin', () => label('Avfall', { bg: '#f2f2ee', fg: '#333333', sub: 'restavfall', font: 'bold 60px sans-serif' })));
+  const word = def.label ?? 'Avfall', sub = def.label ? '' : 'restavfall';
+  const tag = mesh(new THREE.PlaneGeometry(0.62, 0.22), labelOf(`bin-${word}`, () => label(word, { bg: '#f2f2ee', fg: '#333333', sub, font: `bold ${word.length > 9 ? 40 : 60}px sans-serif` })));
   tag.position.set(0, 0.62, 0.502); tag.castShadow = false;
-  const heap = mesh(new THREE.BoxGeometry(0.9, 1, 0.9).translate(0, 0.5, 0), M.binHeap);
+  const heap = mesh(new THREE.BoxGeometry(0.9, 1, 0.9).translate(0, 0.5, 0), HEAPS[def.sort] ?? M.binHeap);
   heap.position.y = 0.01; heap.castShadow = false;
-  const top = mesh(new THREE.SphereGeometry(0.45, 12, 6, 0, Math.PI * 2, 0, Math.PI / 2).scale(1, 0.25, 1), M.binHeap);
+  const top = mesh(new THREE.SphereGeometry(0.45, 12, 6, 0, Math.PI * 2, 0, Math.PI / 2).scale(1, 0.25, 1), HEAPS[def.sort] ?? M.binHeap);
   top.castShadow = false;
   const pick = new THREE.Mesh(new THREE.BoxGeometry(1, 0.3, 1), new THREE.MeshBasicMaterial());
   pick.position.y = 0.88; pick.visible = false;
@@ -369,6 +372,7 @@ function bin() {
     show(item, items) {
       const k = Math.min(1, item.amount / (items.def(item)?.capacity ?? 10));
       heap.visible = top.visible = k > 0.001;
+      rim.visible = !item.machine?.nobag;
       heap.scale.y = Math.max(0.001, k * 0.85);
       top.position.y = 0.01 + k * 0.85;
     },
@@ -400,12 +404,25 @@ function glass() {
   };
 }
 
-const BUILDERS = { glass, plate, board, cucumber, cucumberSlice, cheese, butter, breadBag, breadSlice, knife, peas, butterKnife, cheeseSlicer, cheeseSlice, bin };
+/** A tied rubbish bag (#386), ~30 cm: a full bag with a knot and two ears on top, its look by `machine.sort`. */
+function rubbishBag() {
+  const g = new THREE.Group();
+  const mats = { food: BAGS.paper, package: BAGS.clear, rest: BAGS.black };
+  const body = mesh(new THREE.SphereGeometry(0.13, 16, 12).scale(1, 1.05, 0.9), BAGS.black);
+  body.position.y = 0.135;
+  const neck = mesh(new THREE.CylinderGeometry(0.018, 0.05, 0.06, 10), BAGS.black);
+  neck.position.y = 0.29;
+  const ears = [-1, 1].map((s) => { const e = mesh(new THREE.SphereGeometry(0.03, 8, 6).scale(1.4, 0.6, 0.5), BAGS.black); e.position.set(s * 0.035, 0.33, 0); e.rotation.z = s * 0.5; return e; });
+  g.add(body, neck, ...ears);
+  return { object: g, grip: [0, 0.31, 0], show(item) { const m = mats[item.machine?.sort] ?? BAGS.black; for (const o of [body, neck, ...ears]) o.material = m; body.scale.setScalar(0.75 + 0.25 * Math.min(1, (item.amount ?? 0) / 8)); } };
+}
+
+const BUILDERS = { rubbishBag, glass, plate, board, cucumber, cucumberSlice, cheese, butter, breadBag, breadSlice, knife, peas, butterKnife, cheeseSlicer, cheeseSlice, bin };
 
 /** The model of a type (its `model` builder; a grey box when there is none). */
 export function buildModel(def) {
   const b = BUILDERS[def?.model];
-  if (b) return b();
+  if (b) return b(def);
   const g = new THREE.Group();
   const m = mesh(new THREE.BoxGeometry(0.08, 0.05, 0.08), std(0x999999));
   m.position.y = 0.025;

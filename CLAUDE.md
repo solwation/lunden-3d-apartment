@@ -714,6 +714,15 @@ src/cooking.js         the life sim's kitchen work (M1): actions judged by the t
                        där ska inte slängas"; amount += ITEMS `binVolume` (else 1 / 2) up to `capacity` ("Avfallshinken är full",
                        the waste stays in the hand); `parts` count the kinds (for LIFE-022). Another bin = a store slot + a stock entry
                        A non-life holdable is waste too when it has `wasteKind` + `discard()` (the empty milk carton, #382)
+src/waste.js           the life sim's rubbish (M2). #386: three bins under the sink (game categories): ITEMS 'binFood' Matavfall
+                       (green, store 'binsFood', behind either door), 'binPack' Förpackningar (small blue, 'binsPack', the left
+                       door, `leftDoor` on the bins' front), 'bin' Restavfall (grey, 'sinkBins'); ITEMS `sort` / `label` / `bag` /
+                       `fullText`. 'throwAway' names the bin ("slänga gurkänden i matavfallet"); the wrong one: "Gurkänden →
+                       Matavfall", the waste stays in the hand (LIFE.rules.strictSorting; false = in it goes with a note);
+                       scraps only into Matavfall. A bin with something in it is a target with a free hand: 'tieBag' "Knyta ihop
+                       påsen" → an ITEMS 'rubbishBag' in the hand with the bin's amount + parts (moved), the bin empty with
+                       `machine.nobag`; 'newBag' "Sätta i en ny påse" (off the roll: no item). items.js ITEMS_VERSION 2:
+                       MIGRATIONS[1] splits a saved single bin's food / packages into the new bins
 src/dishes.js          the life sim's drinks and dishes (M2): #382 the drinking glass (ITEMS 'glass', amount = ml of drink up to
                        `capacity`, `machine.drink` 'water' | 'milk', one at a time): three at the front of the glass cabinet's lower
                        shelf (store 'glasses', LIFE_TOOLS.stock; kitchenstuff 'glasses' keeps its front row free); held at a running
@@ -1020,7 +1029,8 @@ tools/life2test.html   headless test of the life sim's M2, reset the kitchen: th
                        cup's ring and its cabinet, a record (#383); the dishwasher's racks: door / rack blocking, the right rack,
                        scrape / pour out first, the board by hand, riding along, a full rack, a shut door blocks taking (#384);
                        the programme: refused empty / door down, the panel, the time left, paused, nothing added mid-run, a
-                       glass taken out stays dirty, a record, done = clean, unloading, F (#385). `?only=383,385` runs sections
+                       glass taken out stays dirty, a record, done = clean, unloading, F (#385); three bins: the wrong one names
+                       the right one, free sorting, tying the bag (moved, not copied), a new bag, an old single bin migrated (#386). `?only=383,385` runs sections
 tools/inventorytest.html headless test (#365): the `&life` scenario's start state, the visitor's records untouched, the
                        integration points the inventory names; without &life the game starts at START
 tools/stamp.sh         build the published site with a version stamp (used by CI)

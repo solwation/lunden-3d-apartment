@@ -146,6 +146,9 @@ export function dishActions(life) {
       if (shut) return shut;
       const n = scraps(c.held);
       if (!n) return 'Det finns inget att skrapa av';
+      if (c.target.machine?.nobag) return 'Sätt i en ny påse först';
+      const sort = I.def(c.target).sort;
+      if (sort && sort !== 'food' && LIFE.rules.strictSorting) return `Matrester → ${life.binLabel('food')}`; // (#386)
       if (c.target.amount + n > (I.def(c.target).capacity ?? 10) + 1e-6) return `${cap(nm(c.target))} är full`;
       return null;
     },
