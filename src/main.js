@@ -1641,10 +1641,37 @@ function showPerf() {
 }
 const frontDoor = world.doors.find((d) => d.name === 'ytterdörren' && Math.abs(d.object.getWorldPosition(new THREE.Vector3()).z) < 0.5);
 detail = new DetailCuller(scene, { W: world.size.x, D: world.size.z, roof: world.openings.roof, floor1: LEVELS[1].floor, doorHeight: DOOR_HEIGHT }, world.openings, () => frontDoor.t > 0.02); // everything is built by now (the holdables too); the open front door shows the hall (#210)
+// Warm-up (#432): the first time the inside of the flat is drawn (opening the front door after a fresh start shows
+// what the detail culler kept on its hidden layer) three compiled the shadow-depth programs and uploaded the geometry
+// and textures of everything in it in one frame — a freeze of a couple of seconds. So a few frames in (after
+// lampwash has patched the materials: the programs compiled are the final ones), while the start screen / "Laddar…"
+// is up, every material's program is compiled (compileAsync: in parallel where the GPU can) and then ONE frame is
+// drawn with every layer and no frustum culling, shadows included, which uploads the rest; the next frame draws
+// over it. Headless test browsers skip it (minutes of SwiftShader, nobody looks), `&warm` forces it.
+let warmIn = (/HeadlessChrome/.test(navigator.userAgent) && !params.has('warm')) ? -1 : 3, warmDraw = false;
+function warmUp() {
+  const t = performance.now();
+  renderer.compileAsync(scene, camera).catch(() => {}).then(() => { warmDraw = true; if (perfEl) console.log(`warm-up: programs ${Math.round(performance.now() - t)} ms`); });
+  clock.getDelta(); // (a slow frame here is no reason to lower the resolution)
+}
+function warmRender() {
+  const t = performance.now(), culled = [];
+  scene.traverse((o) => { if (o.frustumCulled) { o.frustumCulled = false; culled.push(o); } });
+  camera.layers.enableAll();
+  renderer.shadowMap.needsUpdate = true;
+  renderer.render(scene, camera);
+  camera.layers.set(0);
+  for (const o of culled) o.frustumCulled = true;
+  renderer.shadowMap.needsUpdate = true; // the real view's shadows next
+  clock.getDelta();
+  if (perfEl) console.log(`warm-up: first draw of everything ${Math.round(performance.now() - t)} ms`);
+}
 renderer.setAnimationLoop(() => {
   const raw = clock.getDelta(), dt = Math.min(raw, 0.05);
   if (!overlay.hidden || document.hidden || shotMode) dynRes.slow = dynRes.fast = 0; // only while playing (not &shot)
   else adaptResolution(raw);
+  if (warmIn > 0 && --warmIn === 0) warmUp();
+  if (warmDraw) { warmDraw = false; warmRender(); }
   step(dt);
   updateShadows(dt);
   // one mirror image at a time, and none once the frame rate has made us lower the resolution

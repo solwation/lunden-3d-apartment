@@ -1244,6 +1244,7 @@ URL parameters (debugging / screenshots):
 - `&life` — the life simulator's developer scenario (#365, `src/life.js` `devScenario`, `LIFE.dev`): everything at home and
   shut (not with `&open`), no cat, noon paused (unless `&time`), the visitor in the kitchen, an empty cup + the milk on the worktop, a wine glass
   on the dining table; life items on the dining table and in the drawer (`LIFE.dev.items` / `stored`) + the kitchen's stock, fresh (LIFE_FOOD, #373). The resume / F5 records are neither read nor written (`resume.js`), so the visitor's own place stays.
+- `&warm` — run the start's shader / upload warm-up (#432) in headless Chrome too (it skips it otherwise).
 - `&fall=h` — drop from h m (default 5) above the ground where you start (#361; with `&at=`): over 3 m it hurts.
 - `&hoop` — the basketball hoop up out front. `&car` — our car parked in front of the house. `&water` — turn on every tap and shower. `&tv` — switch the TV on. `&laptop` — Tilly's laptop on. `&secret=i` — the secret drawer shows surprise i (SECRET.items, with `&open`).
 - `&phone` — the short touch-only start screen. `&install` — show the iPhone install sheet. `&note` — open the changelog note. `&pet` (with `&cat=`) — the cat is being petted.
@@ -1493,6 +1494,12 @@ suite every time):
   1210 → ~410 calls, the other spots a little lower; screenshots differ by a few dozen pixels. Anything new that
   raycasts at small things far away must allow for layer 7. Anything new that moves by itself (while the visitor may
   stand still) and exists when the culler is built needs `userData.moving` on its root (#267).
+- Warm-up (#432, `warmUp` / `warmRender` in main.js): the first time the flat's inside was drawn (the front door opened
+  after a fresh start) three compiled the shadow-depth programs and uploaded the geometry / textures in one frame — a
+  freeze of seconds. Three frames in (after lampwash's patch) `renderer.compileAsync` compiles every material's program,
+  then one frame is drawn with every layer and no frustum culling (shadows too), behind the start screen. SwiftShader
+  320 × 200: the door's first frame 5680 → 28 ms. Skipped in headless Chrome (`HeadlessChrome` UA) unless `&warm`;
+  `&perf` logs its times. Materials made later (cups, cat coats) still compile when first drawn.
 - Shadows: `shadowMap.autoUpdate = false`; redrawn when the sun moved > 0.2°, for 1.5 s after any E
   action (doors swing), and at least twice a second (`updateShadows` in main.js).
 - Mirror images (#50): one Reflector (512²) per mirror, at most ONE active per frame (nearest in view
