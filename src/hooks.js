@@ -225,7 +225,7 @@ export function hookrail(item) {
   }
   // the garments: the loop / hood sits in the hook's bend
   const hang = (o, i, dz) => { o.position.set(xs[i], hy - 0.014, dz); g.add(o); };
-  hang(gown(c.gown, tipZ), c.gown.on, 0.012); // clear of the Klk door's architrave beside it
+  hang(gown(c.gown, tipZ), c.gown.on, 0.012);
   hang(hoodie(c.hoodie, tipZ), c.hoodie.on, 0.006);
   return g;
 }

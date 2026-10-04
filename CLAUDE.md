@@ -789,9 +789,9 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   "sätta dig upp i sängen" (look at the bed's foot half; `aim` on a rest spot) puts it on, getting up puts it off; Pingping, a navy
   penguin cushion, sits between the pillows (#269, docs/pingping-pingvinkudde.jpg); a framed photo of Miele, the family's cat, stands on the window
   board east of the speaker (#322, `PHOTO_FRAME`, builder `photoframe`, textures/miele.jpg from docs/miele-foto-ram.jpg; a Thing, kind
-  'photo': "Titta på Miele" brings it up close); an oak hook rail with five black hooks on the Klk wall east of the Klk door (#329, `HOOKS`,
-  `src/hooks.js`): a sage waffle dressing gown and a navy hoodie (hung by its hood), three hooks empty; for it the Klk's sliding
-  panel runs inside the Klk (`SLIDE_FLIP`, the plan's arrow is on the room side) · Sovrum 3 (second right) Livia & Tuva, bunk (unicorn sheets), an IKEA ALEX desk under the window
+  'photo': "Titta på Miele" brings it up close); an oak hook rail with five black hooks on the Klk's outside facing the room door (its west wall in the alcove
+  by the door, #329, `HOOKS`, `src/hooks.js`): a sage waffle dressing gown and a navy hoodie (hung by its hood), three hooks empty,
+  clear of the switch · Sovrum 3 (second right) Livia & Tuva, bunk (unicorn sheets), an IKEA ALEX desk under the window
   with crafts and a kids' chair (#92), a round dusty-pink short-pile rug Ø 160 (guess) out in the room under the bunk's ladder (#318)
   (#310, `shape: 'round'` on a `rug` item; `src/rugs.js` `rugLift`: the cat's floor spots and things put on the floor stand on a rug) ·
   Sovrum 2 (first left) Walter & Kian, bunk (Darth Vader sheets), a gaming desk with a PC along the west wall, short end to the window (#77, #84): sitting in its chair starts the
