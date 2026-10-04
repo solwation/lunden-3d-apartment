@@ -603,6 +603,13 @@ src/items.js           the life sim's things as data (#366, ITEMS in config), no
                        ('cucumber#3'), exactly one place (world | hand | slot of a store | on a carrier), an amount in g / ml /
                        count never below 0, pkg / prep / clean / machine fields; `check(item, place)` = the Swedish reason it
                        can't go there (a shut store, too big, taken, a carrier on itself); `move`, `consume`, `remove`, `audit`
+src/stores.js          the life sim's storage places (#369, LIFE.stores): slots with a size class registered with items.js (`addStore`)
+                       + an anchor per slot (life.anchors) — the fridge's free glass shelves and door bins (on the door), the freezer
+                       (on the frozen bags of its top basket), the pantry (the wall cabinet beyond the hob, interior.js stock
+                       'pantry': boxes / jars at the back, slots in front) and the utensil drawer (on its towels). Anchors sit in the
+                       front's contents group (contents.js: ride with a drawer, hidden while shut). A pick box per store is the target
+                       "Lägga … i kylskåpet" (action putIn) while a life item is held; shut: "Öppna kylen först", full: "Fryslådan är
+                       full" — nothing moves. interior.js `stock()` leaves `o.stockFrame` (the contents box, `at(u, d, y)`, `yaw`)
 src/lifemodels.js      the life sim's models (#366): plate, cutting board, cucumber, slice, cheese, butter, bread bag, bread slice,
                        knife — own shapes; `show(item)` shows the amount / package; carriers have `anchors` (their spots)
 src/changelog.js       changelog list + the note on the freezer (newest `t` first, "Nytt" by the highest `t` seen, #341; E to read; `scrollNote`: ↑ ↓ / W S, PageUp/Down, Space,
@@ -786,6 +793,9 @@ tools/cloudtest.html   headless test of the shared world against `node cloudflar
                        taping, someone else's drawing appears, DELETE on throwing, thrown elsewhere → gone here, offline
                        queue, desk sheet, cat photos neither sent nor fetched (#211), a fresh visitor gets them, the
                        leaderboard (name, score, escaped list, a capped cheat), off without &cloud
+tools/storetest.html   headless test (#369): the stores' slots; the shut fridge refuses ("Öppna kylen först"), open: in, taken out with E
+                       and back in with "Lägga osten i kylskåpet", not through the shut door; a full freezer keeps the thing in the hand;
+                       the knife rides with the drawer, hidden while shut; reopening never duplicates; F → its home slot; the pantry
 tools/itemtest.html    headless test (#366): items.js with plain asserts (two instances, amounts never < 0, one place, carriers,
                        stores, events) and the view in the game (&life: take the cucumber, half used = half as long, down, F)
 tools/inventorytest.html headless test (#365): the `&life` scenario's start state, the visitor's records untouched, the
@@ -1127,8 +1137,8 @@ URL parameters (debugging / screenshots):
 - `&fries` — golden, steaming fries in the open air-fryer basket (#301).
 - `&toaster` — the toaster out on the worktop by the corner, plugged in and toasting (#401).
 - `&life` — the life simulator's developer scenario (#365, `src/life.js` `devScenario`, `LIFE.dev`): everything at home and
-  shut, no cat, noon paused (unless `&time`), the visitor in the kitchen, an empty cup + the milk on the worktop, a wine glass
-  on the dining table. The resume / F5 records are neither read nor written (`resume.js`), so the visitor's own place stays.
+  shut (not with `&open`), no cat, noon paused (unless `&time`), the visitor in the kitchen, an empty cup + the milk on the worktop, a wine glass
+  on the dining table; life items on the dining table and in the fridge / drawer / pantry (`LIFE.dev.items` / `stored`). The resume / F5 records are neither read nor written (`resume.js`), so the visitor's own place stays.
 - `&fall=h` — drop from h m (default 5) above the ground where you start (#361; with `&at=`): over 3 m it hurts.
 - `&hoop` — the basketball hoop up out front. `&car` — our car parked in front of the house. `&water` — turn on every tap and shower. `&tv` — switch the TV on. `&laptop` — Tilly's laptop on. `&secret=i` — the secret drawer shows surprise i (SECRET.items, with `&open`).
 - `&phone` — the short touch-only start screen. `&install` — show the iPhone install sheet. `&note` — open the changelog note. `&pet` (with `&cat=`) — the cat is being petted.

@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { LIFE, ITEMS } from './config.js';
-import { Items } from './items.js';
+import { Items, SIZES } from './items.js';
 import { Holdable, heldItem, setHeld, handBusy } from './holdable.js';
 import { buildModel } from './lifemodels.js';
 import { sfx } from './audio.js';
@@ -169,7 +169,7 @@ export class Life {
   }
 
   /** The E targets: every item not in the hand. */
-  targets() { const out = []; for (const v of this.views.values()) if (!v.held) out.push(v.target); return out; }
+  targets() { const out = [...(this.storeTargets ?? [])]; for (const v of this.views.values()) if (!v.held) out.push(v.target); return out; } // + the stores' boxes (#369; they raycast only while a life item is held)
 
   update(dt) { for (const v of this.views.values()) v.update(dt); }
 }
@@ -200,7 +200,7 @@ export function devScenario(a) {
   a.fries?.reset();
   a.fruit?.reset();
   a.airFryer?.reset();
-  for (const l of a.world.lids) if (l.isOpen && l.kind !== 'flush') { l.toggle(); for (let i = 0; i < 40; i++) l.update?.(0.1); }
+  if (!a.keepOpen) for (const l of a.world.lids) if (l.isOpen && l.kind !== 'flush') // (&open: left open, for screenshots) { l.toggle(); for (let i = 0; i < 40; i++) l.update?.(0.1); }
   // no cat turns up (the scenario stays the same every time)
   if (a.cat.visible) a.cat.hide();
   a.cat.awayFor = Infinity;
@@ -217,6 +217,7 @@ export function devScenario(a) {
   // the life sim's things (#366): a plate and a cucumber on the dining table
   const made = {};
   for (const [type, [x, z, yaw]] of Object.entries(D.items ?? {})) made[type] = a.life.create(type, { at: 'world', pos: [x, table, z], yaw: THREE.MathUtils.degToRad(yaw) });
+  for (const [type, store, slot] of D.stored ?? []) a.life.create(type, { at: 'slot', store, slot }); // in the fridge, the drawer, the pantry (#369)
   // the visitor in the kitchen, facing the worktop (unless &at= says otherwise)
   if (!a.at) {
     const [x, z, yaw, pitch] = D.at;
@@ -235,6 +236,19 @@ function baseActions(life) {
     check: (c) => (I.freeSpot(c.target, c.held) >= 0 ? null : I.check(c.held, { at: 'on', parent: c.target.id, slot: 0 }) ?? I.def(c.target).carrier.fullText ?? `${nm(c.target)} är full`),
     run: (c) => { I.move(c.held, { at: 'on', parent: c.target.id, slot: I.freeSpot(c.target, c.held) }); sfx.click(c.targetView?.where()); },
     consumes: 'nothing', result: 'the held thing lies on the carrier (a free spot), its own place left',
+  });
+  A.define({
+    id: 'putIn', order: 5, label: (c) => `lägga ${nm(c.held)} i ${I.store(c.raw.store)?.name ?? ''}`,
+    applies: (c) => !!c.held && !!c.raw?.store,
+    check: (c) => {
+      const s = I.store(c.raw.store);
+      if (s.isOpen && !s.isOpen()) return s.shutText;
+      if (I.freeSlot(s.id, c.held) >= 0) return null;
+      const fits = s.slots.some((sl) => I.size(c.held) <= (SIZES[sl.size ?? 'm'] ?? SIZES.m));
+      return fits ? s.fullText : `${nm(c.held)[0].toUpperCase()}${nm(c.held).slice(1)} får inte plats i ${s.name}`;
+    },
+    run: (c) => { I.move(c.held, { at: 'slot', store: c.raw.store, slot: I.freeSlot(c.raw.store, c.held) }); sfx.click(c.life.camera.position); },
+    consumes: 'nothing', result: 'the held thing in the store\'s first free slot that takes it (its size class)',
   });
   A.define({
     id: 'take', order: 20, label: (c) => `ta ${nm(c.target)}`,

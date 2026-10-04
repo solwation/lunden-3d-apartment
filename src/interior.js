@@ -318,6 +318,9 @@ function stock(ctx, F, o, kind, a0, a1, y0, y1, depth, { drawer = false, shelf =
   const b = drawer
     ? { a0: a0 + 0.04, a1: a1 - 0.04, d0: -FT - depth + 0.02, d1: -FT - 0.01, y0: y0 + 0.029, y1: y1 - 0.045, shelf: null }
     : { a0: a0 + t + 0.006, a1: a1 - t - 0.006, d0: -depth + 0.015, d1: -FT - 0.03, y0: y0 + t + 0.002, y1: y1 - t - 0.004, shelf: shelf && y1 - y0 > 0.45 ? (y0 + y1) / 2 + 0.009 : null };
+  // where the life sim's slots go (#369, stores.js): a world point at (u along the front, d in front of its plane, y), and the
+  // turn that lays a thing's long side (x) along the front
+  o.stockFrame = { b, drawer, at: (u, d, y) => { const [x, z] = F.at(u, d); return new THREE.Vector3(x, y, z); }, yaw: F.dir === 'w' ? -Math.PI / 2 : F.dir === 'e' ? Math.PI / 2 : 0 };
   fillKitchen(P, kind, b);
   if (!CB.parts.size) return;
   const g = attachContents(CB.meshes(), o, { carry: drawer });
@@ -594,7 +597,7 @@ function buildKitchen(B, group, floor, y0, yC, handled, taps, appliances) {
   if (hob) cupSurfaces.push({ x0: eFront + 0.03, x1: eastWall - 0.03, z0: hob[1] + 0.03, z1: southWall - depth - 0.03, y: top });
   if (hob) {
     // its corner door hinges at the corner and opens to the right (the user, #319): handle away from the return row's
-    doorRow(EW, hob[1], visEnd, yW, yTop, 0.5, { low: true, open: { ...wallOpen, corner: 'a1', cornerMax: K.cornerDoorMax }, fill: ['dry', 'tea'] });
+    doorRow(EW, hob[1], visEnd, yW, yTop, 0.5, { low: true, open: { ...wallOpen, corner: 'a1', cornerMax: K.cornerDoorMax }, fill: ['pantry', 'tea'] }); // the first one is the life sim's pantry (#369): dry goods at the back, slots in front
     const yH = yHood + K.hoodHeight;
     // over the hood: a dummy front (#320), the duct runs there — no handle, no E target, no Openable; a solid carcass
     // behind it (baked into the static merge) so no gap shows between the gypsum boxing above and the hood below

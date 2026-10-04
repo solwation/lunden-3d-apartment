@@ -68,10 +68,11 @@ function packets(P, b, y, top) { // dry goods: tall cereal boxes at the back, fl
   for (const u of row(b.a0, b.a1, fit(b.a0, b.a1, 0.07, 0.012), 0.07)) bx(P, u - 0.035, u + 0.035, b.d0 + 0.01, b.d0 + 0.2, y, y + hT * (0.8 + 0.2 * (i % 2)), COLORS[i++ % COLORS.length]);
   for (const u of row(b.a0, b.a1, fit(b.a0, b.a1, 0.1, 0.02), 0.1)) bx(P, u - 0.05, u + 0.05, b.d1 - 0.11, b.d1 - 0.04, y, y + Math.min(0.17, hT), ['cream', 'yellow', 'blue'][i++ % 3]);
 }
-function spices(P, b, y, top) { // jars in two rows, coloured lids
+function spices(P, b, y, top) { spicesRows(P, b, y, top, [b.d1 - 0.05, b.d1 - 0.12, b.d0 + 0.08]); }
+function spicesRows(P, b, y, top, rows) { // jars in rows, coloured lids
   const h = Math.min(0.09, top - y - 0.03);
   let i = 0;
-  for (const d of [b.d1 - 0.05, b.d1 - 0.12, b.d0 + 0.08]) for (const u of row(b.a0, b.a1, fit(b.a0, b.a1, 0.05, 0.012), 0.05)) {
+  for (const d of rows) for (const u of row(b.a0, b.a1, fit(b.a0, b.a1, 0.05, 0.012), 0.05)) {
     cyl(P, u, d, 0.023, y, h, 'glass', 10);
     cyl(P, u, d, 0.024, y + h, 0.015, ['red', 'green', 'black', 'yellow'][i++ % 4], 10);
     cyl(P, u, d, 0.02, y, h * 0.7, ['brown', 'red', 'green', 'yellow', 'cream'][i % 5], 8); // what is in them
@@ -168,13 +169,21 @@ function rolls(P, b, y, top) { // foil, cling film and baking paper rolls, plast
     }
   }
 }
+function pantryPackets(P, b, y, top) { // the pantry (#369): the tall boxes at the back only, the front half left for real food
+  const hT = Math.min(0.28, top - y - 0.02);
+  let i = 0;
+  for (const u of row(b.a0, b.a1, fit(b.a0, b.a1, 0.07, 0.012), 0.07)) bx(P, u - 0.035, u + 0.035, b.d0 + 0.01, b.d0 + 0.13, y, y + hT * (0.8 + 0.2 * (i % 2)), COLORS[i++ % COLORS.length]);
+}
+function pantrySpices(P, b, y, top) { // the pantry's shelf (#369): one row of spice jars at the back
+  spicesRows(P, b, y, top, [b.d0 + 0.05]);
+}
 function backPots(P, b, y, top) { // the toaster's drawer (#401): the pots kept to the back half, the front left free for it
   pots(P, { ...b, d1: b.d0 + 0.26 }, y, top);
 }
 
 // a cabinet: one kind per shelf level (lower, upper), or one for the whole thing
 const KINDS = {
-  glasses: [glasses, glasses], plates: [plates, bowls], mugs: [mugs, glasses], dry: [packets, spices], tea: [tea, spices],
+  glasses: [glasses, glasses], plates: [plates, bowls], mugs: [mugs, glasses], dry: [packets, spices], pantry: [pantryPackets, pantrySpices], tea: [tea, spices],
   pots: [pots, pots], baking: [baking, baking], serving: [serving, festive], festive: [festive, serving], corner: [corner, corner],
   sink: [sinkExtras], cutlery: [cutlery], utensils: [utensils], rolls: [rolls], drawerPots: [pots], drawerToaster: [backPots],
 };

@@ -79,10 +79,10 @@ export class Items {
       prep: PREP.has(props.prep) ? props.prep : d.prep ?? null,
       clean: CLEAN.has(props.clean) ? props.clean : d.clean ?? null,
       machine: { ...(d.machine ?? {}), ...(props.machine ?? {}) },
-      home: clonePlace(props.home) ?? null,
+      home: clonePlace(props.home) ?? (place?.at === 'slot' ? clonePlace(place) : null), // made in a store: that slot is its home
       parts: Array.isArray(props.parts) ? props.parts.map((p) => ({ ...p })) : [], // what it is made of (a sandwich's layers, #379)
     };
-    const why = this.check(item, place);
+    const why = this.check(item, place, { ignoreShut: true }); // (stocking a shut store is fine: nobody reaches in)
     if (why) { this.lastReason = why; return null; }
     item.place = clonePlace(place);
     this.items.set(id, item);

@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Store test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+// The life simulator's storage places (#369, src/stores.js): the fridge, the freezer, the pantry and the utensil drawer have
+// slots with size classes; a shut store says "Öppna … först" and nothing moves; a full one says so and the thing stays in
+// the hand; what lies in the drawer rides with it and is hidden while it is shut; reopening never makes a second one; in
+// the game the open fridge is a "Lägga … i kylskåpet" target and a thing in it is taken with E — never through the shut door.
+//   chromium --headless=new --dump-dom http://localhost:8137/tools/storetest.html
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const lines = [];
+let pass = true;
+const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); pass &&= !!ok; return ok; };
+const f = document.createElement('iframe');
+f.width = 900; f.height = 600; f.src = '../index.html?life&shot';
+document.body.append(f);
+f.onload = async () => {
+  const w = f.contentWindow, d = f.contentDocument;
+  while (!w.__app) await wait(100);
+  try {
+    const A = w.__app, { life, world, step, camera, player, heldItem, scene } = A, I = life.items;
+    d.getElementById('start-touch').click();
+    await wait(50);
+    const btn = d.getElementById('action');
+    const V = camera.position.constructor;
+    const settle = (o) => { for (let i = 0; i < 40; i++) o.update(0.1); scene.updateMatrixWorld(true); };
+    const fridge = world.lids.find((l) => l.kind === 'fridge' && !l.freezer), freezer = world.lids.find((l) => l.kind === 'fridge' && l.freezer);
+    const drawer = world.lids.find((l) => l.stock === 'utensils'), pantry = world.lids.find((l) => l.stock === 'pantry');
+    const n = (id) => I.store(id)?.slots.length ?? 0;
+    check(n('fridge') >= 6 && n('freezer') === 3 && n('pantry') === 3 && n('utensils') === 3, `stores with slots: fridge ${n('fridge')}, freezer ${n('freezer')}, pantry ${n('pantry')}, utensils ${n('utensils')}`);
+    const shown = (o) => { for (let p = o; p; p = p.parent) if (!p.visible) return false; return true; };
+    // shut: open it first, nothing moves
+    const cheese = life.create('cheese', { at: 'world', pos: [5.25, 0.931, 3.0], yaw: 0 });
+    life.view(cheese).take();
+    const why = I.move(cheese, { at: 'slot', store: 'fridge', slot: 0 });
+    check(why === 'Öppna kylen först' && cheese.place.at === 'hand', `the shut fridge: "${why}", the cheese still in the hand`);
+    fridge.toggle(); settle(fridge);
+    check(I.move(cheese, { at: 'slot', store: 'fridge', slot: 0 }) === null && cheese.place.store === 'fridge' && !heldItem(), 'open: the cheese on a fridge shelf');
+    const cv = life.view(cheese), cp = cv.where();
+    check(cp.x > 3.1 && cp.x < 4.1 && cp.z > 4.9 && cp.y > 0.3 && cp.y < 0.7, `it lies inside the fridge (${cp.x.toFixed(2)}, ${cp.y.toFixed(2)}, ${cp.z.toFixed(2)})`);
+    // take it in the game: aim at it through the open door
+    const aim = (p, stands) => {
+      for (const [x, z] of stands) {
+        player.spawn(x, z, 0); for (let i = 0; i < 3; i++) step(1 / 60);
+        const dx = p.x - camera.position.x, dz = p.z - camera.position.z;
+        camera.rotation.y = Math.atan2(-dx, -dz); camera.rotation.x = Math.atan2(p.y - camera.position.y, Math.hypot(dx, dz)); step(1 / 60);
+        if (!btn.hidden && /ost/.test(btn.textContent)) return true;
+      }
+      return false;
+    };
+    const stands = [[cp.x, 3.9], [cp.x - 0.2, 3.8], [cp.x + 0.2, 3.8], [cp.x, 3.6]];
+    check(aim(cp.clone().setY(cp.y + 0.03), stands) && btn.textContent === 'Ta osten', `the open fridge: "${btn.textContent}"`);
+    btn.click(); step(1 / 60);
+    check(heldItem() === cv && cheese.place.at === 'hand', 'taken out with E');
+    // put back in with E: the box inside the open fridge
+    const inside = new V(fridge.inside.cx, fridge.inside.y0 + 1.0, fridge.inside.cz);
+    let ok = false;
+    for (const [x, z] of stands) { player.spawn(x, z, 0); for (let i = 0; i < 3; i++) step(1 / 60); const dx = inside.x - camera.position.x, dz = inside.z - camera.position.z; camera.rotation.y = Math.atan2(-dx, -dz); camera.rotation.x = Math.atan2(inside.y - camera.position.y, Math.hypot(dx, dz)); step(1 / 60); if (/i kylskåpet/.test(btn.textContent)) { ok = true; break; } }
+    check(ok && btn.textContent === 'Lägga osten i kylskåpet', `holding it at the open fridge: "${btn.textContent}"`);
+    btn.click(); step(1 / 60);
+    check(cheese.place.at === 'slot' && cheese.place.store === 'fridge' && !heldItem(), 'E: back in the fridge (the first free slot)');
+    // never through the shut door
+    fridge.toggle(); settle(fridge);
+    aim(cp.clone().setY(cp.y + 0.03), stands);
+    check(!/osten/.test(btn.textContent) && cv.target.blocked && cv.target.blockedText === 'Öppna kylen först', `the shut fridge: "${btn.textContent}" (the cheese's own target: "${cv.target.blockedText}")`);
+    // full: the freezer's three slots, a fourth stays in the hand
+    freezer.toggle(); settle(freezer);
+    const frozen = [0, 1, 2].map((k) => life.create('breadBag', { at: 'slot', store: 'freezer', slot: k }));
+    const extra = life.create('butter', { at: 'world', pos: [5.25, 0.931, 3.2], yaw: 0 });
+    life.view(extra).take();
+    const full = life.options(lifeStores().freezer.target);
+    check(frozen.every(Boolean) && full[0]?.reason === 'Fryslådan är full' && extra.place.at === 'hand', `a full freezer: "${full[0]?.reason}", the butter still in the hand`);
+    check(I.move(extra, { at: 'slot', store: 'freezer', slot: 1 }) && extra.place.at === 'hand', 'moving it into a taken slot changes nothing');
+    check(/får inte plats/.test(I.check(life.create('board', { at: 'world', pos: [3.5, 0.755, 1.6], yaw: 0 }), { at: 'slot', store: 'utensils', slot: 0 }, { ignoreShut: true }) ?? ''), 'the cutting board does not fit in the drawer');
+    // rides with the drawer, hidden while it is shut
+    life.view(extra).placeAt(new V(5.25, 0.93, 3.2), 0);
+    const knife = life.create('knife', { at: 'slot', store: 'utensils', slot: 0 }), kv = life.view(knife);
+    scene.updateMatrixWorld(true);
+    const k0 = kv.where(), seen0 = shown(kv.model);
+    drawer.toggle(); settle(drawer);
+    const k1 = kv.where(), moved = k1.clone().sub(k0), out1 = drawer.out.clone();
+    check(!seen0 && shown(kv.model) && moved.distanceTo(out1) < 0.01, `the knife rides out with the drawer (${moved.toArray().map((v) => v.toFixed(2))}) and shows only while it is open`);
+    check(knife.home?.store === 'utensils' && knife.home.slot === 0, 'made in its slot: that is its home');
+    // reopening never duplicates
+    const count = () => I.all().length, views = () => life.views.size;
+    const c0 = count(), v0 = views();
+    for (const o of [drawer, fridge, freezer, pantry]) for (let k = 0; k < 3; k++) { o.toggle(); settle(o); }
+    check(count() === c0 && views() === v0 && I.audit().length === 0, `opening and shutting three times: still ${count()} things, ${views()} views (${I.audit().join('; ') || 'audit ok'})`);
+    // F with something taken from a store in the hand: back to its home slot
+    for (const o of [fridge, freezer, drawer, pantry]) if (o.isOpen) { o.toggle(); settle(o); }
+    drawer.toggle(); settle(drawer);
+    kv.take(); step(1 / 60);
+    A.toggleFurniture(false); A.toggleFurniture(true);
+    check(knife.place.at === 'slot' && knife.place.store === 'utensils' && knife.place.slot === 0, 'F with the knife in the hand: back in its drawer slot');
+    // the pantry: something on its shelf, inside the wall cabinet
+    pantry.toggle(); settle(pantry);
+    const bag = life.create('breadBag', { at: 'slot', store: 'pantry', slot: 0 });
+    const bp = life.view(bag).where(), pp = pantry.object.getWorldPosition(new V());
+    check(bag && bp.y > 1.3 && Math.abs(bp.z - pp.z) < 0.6 && bp.x > 5.0, `the bread bag in the pantry (${bp.x.toFixed(2)}, ${bp.y.toFixed(2)}, ${bp.z.toFixed(2)})`);
+  } catch (e) { pass = false; lines.push(`FAIL error ${e.stack}`); }
+  lines.push(pass ? 'ALL PASS' : 'SOME FAILED');
+  out.textContent = lines.join('\n');
+  function lifeStores() { return w.__app.lifeStores.stores; }
+};
+</script>
+</body>
+</html>

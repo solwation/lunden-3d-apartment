@@ -53,7 +53,7 @@ function load(src) {
   const sink = lid((l) => l.stock === 'sink'), bins = world.lids.filter((l) => l.stock === 'own' && l.mode === 'hinge');
   check(sink && bins.length === 1 && Math.abs(bins[0].object.getWorldPosition(new V()).z - 2.58) < 0.05, 'under the sink: the sink cabinet + the bins front (stock own)');
   const kinds = world.lids.filter((l) => l.stock).map((l) => l.stock);
-  check(['plates', 'glasses', 'mugs', 'dry', 'tea', 'cutlery', 'utensils', 'rolls', 'drawerPots', 'baking', 'serving', 'festive', 'corner'].every((k) => kinds.includes(k)), `kitchen fronts stocked (${[...new Set(kinds)].join(', ')})`);
+  check(['plates', 'glasses', 'mugs', 'pantry', 'tea', 'cutlery', 'utensils', 'rolls', 'drawerPots', 'baking', 'serving', 'festive', 'corner'].every((k) => kinds.includes(k)), `kitchen fronts stocked (${[...new Set(kinds)].join(', ')})`);
   check(lid((l) => l.panHome) && lid((l) => l.panHome).mode === 'drawer', 'the pan\'s drawer under the hob');
   check(fridge.milkAt && fridge.shelfSpot && A.fish && A.world.lids.find((l) => l.kind === 'fridge' && l.freezer).shelves.length === 2, 'fridge: milkAt + shelfSpot; freezer: 2 shelves + the fish carton');
   check(A.taps.some((t) => t.name === 'köksblandaren'), 'the kitchen tap');

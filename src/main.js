@@ -28,6 +28,7 @@ import { saveResume, saveSession, takeResume } from './resume.js';
 import { saveWorld, loadWorld } from './keep.js';
 import { lifeDev, devScenario, Life } from './life.js';
 import { shownRows } from './actions.js';
+import { buildStores } from './stores.js';
 import { clearLocalHome, takeResetDone } from './reset.js';
 import { Rest, chooseSpot } from './rest.js';
 import { Saber } from './saber.js';
@@ -342,6 +343,7 @@ const fruit = new FruitBowl(scene, camera); // the copper fruit bowl on the coff
 // the life simulator's things (#364, #366): item instances (items.js) shown as Holdables (life.js); a refusal pops up as a badge
 const life = new Life({ scene, camera, say: (t) => badge(t, false), feet: () => ({ at: 'world', pos: [player.pos.x, player.pos.y, player.pos.z], yaw: camera.rotation.y }),
   floorY: () => (player.level >= 0 ? LEVELS[player.level].floor : -Infinity) }); // (nothing goes down under the floor, #368)
+const lifeStores = buildStores(life, world); // the fridge, the freezer, the pantry, the utensil drawer as slots (#369)
 fruit.onEaten = (f) => bump('fruit', 1, f.kind);
 airFryer.onDone = () => { if (fish?.inFryer.length || fries?.count) bump('airfried', 1, 'airfryer'); }; // a batch done (#287)
 const fridge = world.lids.find((l) => l.kind === 'fridge' && !l.freezer);
@@ -1803,8 +1805,8 @@ function keepWorld() { try { return saveWorld(keepApp); } catch (e) { console.wa
 if (resumeOk && resumed.mode && resumed.world) loadWorld(keepApp, resumed.world); // mid-visit only: the game's clock too (a new visit: real time, #143)
 if (resumeOk && resumed.mode) continueAfterReload(resumed);
 // &life (#365): the life simulator's developer scenario — a cleared worktop, a few test things, never saved (life.js)
-if (lifeDev()) devScenario({ life, world, holdables, cups, things, milk, fish, fries, fruit, airFryer, beer, cat, day, player, camera, at: !!at, timeGiven: params0.has('time') });
+if (lifeDev()) devScenario({ life, world, holdables, cups, things, milk, fish, fries, fruit, airFryer, beer, cat, day, player, camera, at: !!at, timeGiven: params0.has('time'), keepOpen: params0.has('open') });
 document.documentElement.classList.remove('resuming'); // the page is ready: off with the "Laddar…" cover (#222)
 
 // handle for tests/debugging (tools/touchtest.html)
-window.__app = { placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, toaster, life, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, coffeeJar, miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };
+window.__app = { lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, toaster, life, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, coffeeJar, miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };
