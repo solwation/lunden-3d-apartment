@@ -189,6 +189,7 @@ src/bedding.js         bedding shapes shared by every bed: `pillow(w, d, h, opts
                        sheet) / `addDuvet` (+ the fold turned back at the head end) build every bed with them (BEDDING)
 src/hooks.js           hook rails (#329, HOOKS): Sovrum 1's oak board, black hooks, a terry dressing gown and a hoodie (soft `drape` tubes);
                        #330 the kids' rails (KID_HOOKS, item `set`): `garments` list of gown | hoodie (zip, print) | cap | tote
+                       #424 `towelhooks` (TOWEL_HOOKS): two round brushed-steel hooks on a bathroom wall, a mauve terry hand towel on each
 src/cushions.js        decorative cushions (one atlas material: leaf print | bobble knit | geometric | corduroy | outdoor weave | striped weave (#399), vertex-colour
                        tint, #313) and the ribbed fleece throws (plum folded on the chaise, grey draped over the armchair's
                        arm; one material per colour) for the LANDSKRONA pieces (CUSHIONS, #278)
@@ -1100,6 +1101,9 @@ North = −z (the bedrooms Sovrum 1/3 face north).
 - Badrum (#293, `HAVBACK`): an IKEA HAVBÄCK tall cabinet, dark grey 40 × 35 × 195, wall-hung 22 cm up in the SE corner
   (the shower's short wall, its left-hand corner), hinged on the side-wall side (max 83°: the brass knob would meet the
   wall), towels, bottles and toilet rolls inside (`havbackContents`). Not in WC/dusch: only 32 cm free beside its shower.
+- Towel hooks (#424, `TOWEL_HOOKS`, FURNITURE 'towelhooks', the user's marks): two round brushed-steel hooks 1.4 m up (*guess*)
+  with dusty mauve terry hand towels — WC/dusch on the shaft box's north face between the toilet and the vanity (z 7.054),
+  Badrum on the wall stub's south face right of the vanity towards the Tvätt doorway (z 5.134). Loose items, no collision.
 - Toilets: the redrawn plan has them rotated; bofakta shows the tank against the wall, so
   `toiletAgainstWall` re-orients them. Modelled as Ifö Spira 6260 (`TOILET` in config,
   `src/toilet.js`); the lid opens/closes with E (`world.lids`, kept out of `world.doors` so the

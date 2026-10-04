@@ -1787,6 +1787,17 @@ export const KID_HOOKS = {
       { kind: 'tote', on: 0, w: 0.28, h: 0.3, handle: 0.2, color: 0xefe6d2, rainbow: [0xe0524f, 0xf2b33d, 0x5fb36a, 0x4f8fe0] }] },
 };
 
+// Towel hooks in both bathrooms (#424, src/hooks.js `towelhooks`, the user's marks in docs/handdukskrok-wc-uppe-markering.jpg
+// and docs/handdukskrok-badrum-nere-pil.jpg): two round single hooks like docs/handdukar-krokar-referens.jpg (a round rose,
+// a short pin with a flat end) but brushed steel (the user); sizes *guess* from the photo. `y` = the hooks over the floor
+// (*guess*, 1.3–1.5 m in the issue), `gap` between them (*guess*). A dusty mauve / taupe terry hand towel on each by its
+// loop (colour read off the photo, *guess*; ~30 × 50 cm, hung by the loop it falls ~0.48 m), a woven border band
+// near the top and the hem. FURNITURE items 'towelhooks' (loose, no collision).
+export const TOWEL_HOOKS = { y: 1.4, gap: 0.17,
+  hook: { rose: 0.027, roseT: 0.007, pin: 0.008, len: 0.032, end: 0.011, endT: 0.006, color: 0xd0d3d5, metalness: 0.45, roughness: 0.38 },
+  towel: { color: 0x96807d, band: 0xa08986, w: 0.17, len: 0.48 },
+  towels: [{ seed: 1.1 }, { seed: 2.7, len: 0.5 }] };
+
 // Day cycle (src/daycycle.js): one day in `minutes` real minutes (60, the user #125). The sun follows the real solar
 // path for the date (declination, hour angle) at Kv. Lunden, Karpvägen / S:t Lars väg in Lund
 // (55.70° N, 13.17° E, docs/tomten-google-maps.jpg). planNorth = compass bearing of the plan's
@@ -2471,6 +2482,11 @@ export const FURNITURE = [
   // z 4.29–5.48), the door slides in the wall plane. The chest stands against its back (south) wall,
   // pushed against the west wall (#336), 73 cm of floor left in front of it; facing north (into the Klk)
   // the hook rail on the Klk's outside facing the room door, a dressing gown and a hoodie (#329, HOOKS); wall face x 3.80
+  // the towel hooks (#424, TOWEL_HOOKS): WC/dusch on the north face of the shaft box between the toilet and the vanity
+  // (z 7.054, x 0.202–0.587, facing north), Badrum on the south face of the wall stub right of the vanity towards the Tvätt
+  // doorway (z 5.134, x 0.202–0.987, facing south; the vanity starts at z 5.25); + the 6 mm tiles
+  { type: 'towelhooks', level: 1, x: 0.395, z: 7.054 - 0.006, rot: 0 },
+  { type: 'towelhooks', level: 0, x: 0.75, z: 5.134 + 0.006, rot: 180 },
   { type: 'hookrail', level: 1, x: 3.797, z: 4.51, rot: 90 },
   // the kids' hook rails on the wardrobe end by the door (#330, KID_HOOKS): Sovrum 2 on wardrobe L's side wall (face
   // x 3.8516, z 7.80–8.50, facing west; hook 3 = the room end), Sovrum 3 on wardrobe G's end panel (x 1.5037, z 4.21–4.91,

@@ -4,7 +4,7 @@
 // red print and a cap, Sovrum 3 a pink zip hoodie and a tote bag with a rainbow. Built by furniture.js (FURNITURE type
 // 'hookrail'), merged per material there; a loose item (hidden with F), no collision.
 import * as THREE from 'three';
-import { HOOKS, KID_HOOKS } from './config.js';
+import { HOOKS, KID_HOOKS, TOWEL_HOOKS } from './config.js';
 
 /** A small tileable cloth texture (grey levels, multiplied by the material colour): `kind` 'waffle' (terry waffle
  * cells) or 'rib' (fine vertical ribs). Also the bump map. */
@@ -17,6 +17,9 @@ function clothTexture(kind) {
       const a = Math.abs(((i + 0.5) / n) * 2 - 1), b = Math.abs(((j + 0.5) / n) * 2 - 1);
       const ridge = Math.max(Math.pow(a, 6), Math.pow(b, 6)); // raised ridges round a sunken cell
       v = 0.8 + 0.2 * ridge;
+    } else if (kind === 'terry') { // loop pile: speckled light / dark fuzz in tiny clumps
+      const h = (a, b) => { const q = Math.sin(a * 12.9898 + b * 78.233) * 43758.5453; return q - Math.floor(q); };
+      v = 0.8 + 0.12 * h(i, j) + 0.08 * h(i >> 1, j >> 1);
     } else v = 0.86 + 0.14 * Math.pow(Math.abs(Math.sin(((i + 0.5) / n) * Math.PI * 4)), 0.6);
     v *= 0.94 + 0.06 * Math.sin(i * 12.9898 + j * 78.233) ** 2; // a little fibre noise
     const k = (j * n + i) * 4;
@@ -291,7 +294,50 @@ function tote(spec, hookZ) {
   return g;
 }
 
-const GARMENTS = { gown, hoodie, cap, tote };
+const towelMats = new Map(); // one material per colour for every towel (and bath mat), both bathrooms
+function towelCloth(color, kind, cell) {
+  const k = `${color}|${kind}|${cell}`;
+  if (!towelMats.has(k)) towelMats.set(k, cloth(color, kind, cell));
+  return towelMats.get(k);
+}
+
+/** A terry hand towel hung by its loop from (0, 0, hookZ) (#424): pinched at the loop, widening and falling in soft
+ * folds, a smoother woven border band across it near the top and the hem, the hem a little uneven. */
+function towel(spec, hookZ) {
+  const g = new THREE.Group();
+  const m = towelCloth(spec.color, 'terry', 0.03), band = towelCloth(spec.band ?? spec.color, 'rib', 0.006);
+  const len = spec.len, W = spec.w / 2, sd = spec.seed ?? 1;
+  const hw = (v) => 0.022 + (W - 0.022) * smooth(0, 0.22, v) + 0.01 * smooth(0.6, 1, v);
+  const hd = (v) => 0.007 + 0.012 * smooth(0, 0.2, v) + 0.005 * Math.sin(v * 7 + sd);
+  const out = (v) => (hookZ - 0.012) * (1 - smooth(0, 0.2, v));
+  const folds = (v) => 0.004 + 0.008 * smooth(0.1, 1, v);
+  // hung by a corner loop: the cloth sways a little sideways down its length and the hem runs on the slant
+  const slant = spec.slant ?? 0.35, sway = 0.012;
+  const bend = (geo, dy) => {
+    const p = geo.attributes.position;
+    for (let i = 0; i < p.count; i++) {
+      const x = p.getX(i), v = Math.min(1, Math.max(0, -(p.getY(i) + dy) / len));
+      p.setX(i, x + sway * Math.sin(v * 4 + sd) * v);
+      p.setY(i, p.getY(i) + slant * x * smooth(0.45, 1, v));
+    }
+    geo.computeVertexNormals();
+    return geo;
+  };
+  g.add(mesh(bend(drape(len, { hw, hd, out, folds, seed: sd, nu: 32, nv: 30 }), 0), m));
+  // the woven border bands: thin sleeves just over the terry
+  for (const vb of spec.bands ?? [0.24, 0.9]) {
+    const dy = -vb * len + 0.011;
+    const bb = drape(0.022, { hw: () => hw(vb) + 0.0015, hd: () => hd(vb) + 0.0015, out: () => out(vb), folds: () => folds(vb), seed: sd, nu: 32, nv: 1 });
+    g.add(mesh(bend(bb, dy), band, 0, dy, -0.0015));
+  }
+  // the hanging loop over the hook
+  const loop = mesh(new THREE.TorusGeometry(0.016, 0.0035, 6, 14), band, 0, 0.004, hookZ - 0.008);
+  loop.rotation.y = Math.PI / 2; loop.scale.set(1, 1.4, 1);
+  g.add(loop);
+  return g;
+}
+
+const GARMENTS = { gown, hoodie, cap, tote, towel };
 
 /** The rail (local −z = the wall, the board's back at z 0): a board, `hooks` single hooks and the garments
  * (`garments`: [{ kind, on, scale?, dz?, ... }], `on` = the hook, 0 = local −x; the other hooks stay empty). */
@@ -322,5 +368,27 @@ export function hookrail(item) {
     o.scale.setScalar(k);
     hang(o, gm.on, gm.dz ?? 0.006); // the gown 0.012
   }
+  return g;
+}
+
+/** Round single towel hooks straight on the (tiled) wall (#424, TOWEL_HOOKS; local −z = the wall, z 0 its face): a
+ * round rose, a short cylindrical pin with a flat end, brushed steel; a hand towel on each (`towels`, one per hook). */
+export function towelhooks(item) {
+  const c = { ...TOWEL_HOOKS, ...item }, H = c.hook;
+  const g = new THREE.Group();
+  const steel = new THREE.MeshStandardMaterial({ color: H.color, metalness: H.metalness, roughness: H.roughness });
+  const xs = c.towels.map((_, i) => (i - (c.towels.length - 1) / 2) * c.gap);
+  for (const x of xs) {
+    const rose = mesh(new THREE.CylinderGeometry(H.rose, H.rose, H.roseT, 24), steel, x, c.y, H.roseT / 2);
+    const pin = mesh(new THREE.CylinderGeometry(H.pin, H.pin, H.len, 16), steel, x, c.y, H.roseT + H.len / 2);
+    const end = mesh(new THREE.CylinderGeometry(H.end, H.end, H.endT, 20), steel, x, c.y, H.roseT + H.len + H.endT / 2);
+    for (const o of [rose, pin, end]) o.rotation.x = Math.PI / 2;
+    g.add(rose, pin, end);
+  }
+  c.towels.forEach((t, i) => {
+    const o = towel({ ...c.towel, ...t }, H.roseT + H.len * 0.6);
+    o.position.set(xs[i], c.y - H.pin - 0.002, 0.002);
+    g.add(o);
+  });
   return g;
 }
