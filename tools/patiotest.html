@@ -92,9 +92,11 @@ f.onload = async () => {
   pass &= check(p.z > 14.6 && p.z < 15.2, `the short part blocks walking north (stopped at z ${p.z.toFixed(2)})`);
   p = walk(5.2, 15.6, 0, 4, false);
   pass &= check(p.z < 13.5, `F off: walks on to the façade (z ${p.z.toFixed(2)})`);
-  p = walk(3.0, 14.4, -Math.PI / 2, 4);
-  pass &= check(p.x > 3.4 && p.x < 4.0, `the table blocks walking east (stopped at x ${p.x.toFixed(2)})`);
-  p = walk(3.3, 15.6, 0, 4);
+  p = walk(2.5, 14.15, -Math.PI / 2, 4);
+  pass &= check(p.x > 2.9 && p.x < 3.4, `the table blocks walking east (stopped at x ${p.x.toFixed(2)})`);
+  p = walk(4.0, 15.6, 0, 4);
+  pass &= check(p.z > 14.45 && p.z < 15.0, `the table blocks walking north (#407: its long side to the long part; stopped at z ${p.z.toFixed(2)})`);
+  p = walk(3.0, 15.6, 0, 4);
   pass &= check(p.z < 13.5, `west of the table you walk up to the long part and the window (z ${p.z.toFixed(2)})`);
   // the sofa (#397): the long part under the living-room window, the short part along the east screen wall,
   // the seats face south and west; the patio door's swing and the way to the gap in the hedge stay free

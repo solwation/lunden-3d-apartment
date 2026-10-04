@@ -889,7 +889,7 @@ export const PINGPING = { w: 0.4, h: 0.38, d: 0.22, navy: 0x34437a, white: '#ece
 
 // The big beer on the patio (#117, src/beer.js): a 50 cl tankard (Ø 9 × 16 cm, our pick) that turns up on the
 // lounge table (top at 0.40) when you sit down in the lounge sofa; each gulp drinks `gulp` of it.
-export const BEER = { x: 4.45, y: 0.4, z: 14.0, r: 0.045, h: 0.16, gulp: 0.2, held: { x: 0.2, y: -0.24, z: -0.45 } };
+export const BEER = { x: 4.4, y: 0.4, z: 13.98, r: 0.045, h: 0.16, gulp: 0.2, held: { x: 0.2, y: -0.24, z: -0.45 } };
 
 // The Nerf target (#99, src/target.js): a round archery-style board on a wooden stand on the lawn south of the
 // hedge, facing the patio (north), its centre over the hedge so you can shoot from the patio door (~7.5 m).
@@ -2358,8 +2358,9 @@ export const FURNITURE = [
   // over BH 0.6), the short part along the east screen wall (inner face x 5.68), the corner in the NE corner
   // on the sitter's left; seats face south and west (the patio faces WSW). 6 cm of air behind the backs.
   { type: 'loungesofa', level: 0, x: 5.66 - 1.98 / 2, z: 12.76 + 0.72 / 2, rot: 180, corner: 'left' },
-  // the table inside the L, its long side along the short part: 0.34 m to its seats, 0.38 m to the long part's
-  { type: 'loungetable', level: 0, x: 4.3, z: 14.45, rot: 90, beers: true },
+  // the table inside the L (#407, the user): its long side facing the long part, 0.37 m from its seat front (z 13.48),
+  // 0.34 m from the short part's (x 4.94), so as far east under the long part's seats as that allows
+  { type: 'loungetable', level: 0, x: 4.0, z: 14.15, rot: 0, beers: true },
   // the parasol shades the sofa corner from the afternoon / evening sun (#398): the sun reaches the patio from the
   // south-east of the plan at noon to the west-south-west in the evening (DAY.planNorth); the pole south of the table,
   // the canopy (radius 1.5) leaning `tilt`° towards the plan's south (= true WSW). Chosen with the computed sun in
