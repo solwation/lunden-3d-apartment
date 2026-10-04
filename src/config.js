@@ -89,8 +89,13 @@ export const WINDOWS = [
   { level: 1, facade: 'north', x: 1.80, sill: 0.9, head: 2.25, transom: 0, blind: 'dark' },   // Sovrum 3
   { level: 1, facade: 'north', x: 3.85, sill: 0.7, head: 2.25, transom: 0, blind: 'dark' },   // Sovrum 1
   { level: 1, facade: 'south', x: 1.45, sill: 0.7, head: 2.4, transom: 0.4, blind: 'dark' },  // Allrum = Sovrum 4 (Tilly)
-  // Sovrum 2 has a smaller window than Sovrum 4 (the user, #107) — like Sovrum 3 vs Sovrum 1 on the north
-  // side. The PDF draws it 1.41 m; `width` (narrows the opening around its centre) and sill/head are *guess*.
+  // Sovrum 2 — source conflict, unresolved (#353, architecture review Issue 10). Governing source: the user (#107):
+  // the window is SMALLER than Sovrum 4's, like Sovrum 3 vs Sovrum 1 on the north side. That is the only verified
+  // fact; the numbers below are PRELIMINARY *guesses* that merely make it smaller (width 1.2, BH 0.9, head 2.25,
+  // no transom), not measured. Reference, the original L1007 sheet (L1007_mattsatt_planritning.pdf, data/plan.json):
+  // BH 0.7 for both south bedrooms, and a drawing-read opening of ~1.41 m (x 3.142…4.552) — already narrower than
+  // Sovrum 4's ~1.61 m (x 0.652…2.262); a reading off the drawing, not a product size. Verified only once a measurement,
+  // a photo or a dimensioned (newer) drawing revision backs it. `width` narrows the opening around its centre.
   { level: 1, facade: 'south', x: 3.85, sill: 0.9, head: 2.25, transom: 0, width: 1.2, blind: 'dark' }, // Sovrum 2
 ];
 
