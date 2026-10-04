@@ -223,9 +223,11 @@ src/blinds.js          pleated blinds, bottom-up (BLINDS, #273): one per window 
                        ↑ / ↓ or ▲ ▼ held; the visitor's room loses daylight (`DayCycle.dim`) by its blinds' cover; a white
                        one glows by day and warm from a lit room (`lights.roomLit`); localStorage 'lunden.blinds'; F keeps them
 src/curtains.js        Sovrum 1's curtains (#342, CURTAINS): two floor-length teal jungle-print panels (our own canvas print) on a white
-                       double ceiling track under the soffit, both stacking east (RÅGRUND fills the NW corner); wave folds rebuilt
-                       only while they move (count fixed, spacing shrinks); part of Blinds (`blinds.curtains`): E opens #blind-panel
-                       sideways (A / D, ← / →, ◀ ▶ held: shut / open), the daylight cut (`dim`, less than blackout), a teal glow by
+                       ceiling track under the soffit from the west wall; a split (#362): they meet at the window's middle and part
+                       to either side, the same share of their way (the west one to an end stop at the RÅGRUND chair's seat edge —
+                       the chair keeps the NW corner, so its stack covers the glass's westmost ~0.2 m; the east one clear of the
+                       glass); wave folds rebuilt only while they move (count fixed, spacing shrinks); part of Blinds
+                       (`blinds.curtains`): E opens #blind-panel sideways (A / D, ← / →, ◀ ▶ held: together / apart), the daylight cut (`dim`, less than blackout), a teal glow by
                        day, saved in 'lunden.blinds'; fittings: F keeps them; stats `curtains`; `&curtains=0…1`
 src/lampwash.js        every lamp's light wherever the visitor is (#276, #294, #295, LIGHTING.wash): each pool anchor (small lamps
                        and ceiling lamps) lights the flat inside the lit materials' own shaders (`patch(scene)`: onBeforeCompile on
@@ -650,8 +652,9 @@ tools/gabletest.html  Hus L's gables (#351): each opening tagged with side / sto
                        slab), its wall's extent and clear of the spiral-stair drums; no overlaps; the special cases kept
 tools/greettest.html   headless test: "Hälsa på grannen" on the bench sitter, your line, the answer, the wave, counted, not through
                        Hus A, a walker stops and turns to you (#247)
-tools/curtaintest.html headless test (#342): Sovrum 1's curtains open at the start (glass free), E opens the sideways strip, no walking,
-                       ◀ shuts both panels to x0 and no further, D opens, A at `speed`, scores once, the daylight cut, the teal glow, a reload
+tools/curtaintest.html headless test (#342, #362): Sovrum 1's curtains open at the start, one stack each side (the west one clear of the
+                       RÅGRUND chair, the east one off the glass), E opens the sideways strip, no walking, ◀ draws both together
+                       symmetrically until they meet in the middle and no further, D parts them, A at `speed`, scores once, the daylight cut, the teal glow, a reload
 tools/blindtest.html   headless test: a blind in every window, folded at the start, dark upstairs / light downstairs; E opens the
                        mode (no walking), ▲ up to the head and no further, S down to folded, W at BLINDS.speed, the first pull
                        scores, the room's daylight cut (blackout > white), white glows, × / E close, the sash opens behind it,
@@ -893,7 +896,8 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   the window (#60), the user's grey shag rug 240 × 340 with a white zig-zag under the bed (#317, `pattern: 'zigzag'`, 2.8 cm;
   across the bed, z 0.6–4.0, from the head wall to 18 cm past the foot), and a Philips 43" PQS7801 on the west wall across from the bed (#213, black frame, Ambilight #223):
   "sätta dig upp i sängen" (look at the bed's foot half; `aim` on a rest spot) puts it on, getting up puts it off; Pingping, a navy
-  penguin cushion, sits between the pillows (#269, docs/pingping-pingvinkudde.jpg); teal jungle-animal print curtains on a ceiling track under the soffit in front of the window (#342, `CURTAINS`, docs/gardiner-sovrum1-turkos-djurmonster.jpg; open by default, parked east of the glass); a framed photo of Miele, the family's cat, stands on the window
+  penguin cushion, sits between the pillows (#269, docs/pingping-pingvinkudde.jpg); teal jungle-animal print curtains on a ceiling track under the soffit in front of the window (#342, `CURTAINS`, docs/gardiner-sovrum1-turkos-djurmonster.jpg; two-part, meeting in the middle, #362; open by default, parked at
+  the sides — the west stack at the RÅGRUND chair's edge, since no chair spot clears the corner and keeps the gap at the bed's foot); a framed photo of Miele, the family's cat, stands on the window
   board east of the speaker (#322, `PHOTO_FRAME`, builder `photoframe`, textures/miele.jpg from docs/miele-foto-ram.jpg; a Thing, kind
   'photo': "Titta på Miele" brings it up close); an oak hook rail with five black hooks on the Klk's outside facing the room door (its west wall in the alcove
   by the door, #329, `HOOKS`, `src/hooks.js`): a sage waffle dressing gown and a navy hoodie (hung by its hood), three hooks empty,

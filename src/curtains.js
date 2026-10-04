@@ -2,8 +2,9 @@ import * as THREE from 'three';
 import { LEVELS, SOFFITS } from './config.js';
 import { sfx } from './audio.js';
 
-// Curtains on a ceiling track (#342, CURTAINS in config): Sovrum 1's two teal jungle-print panels. A double track under
-// the soffit; both panels stack to the east (the RÅGRUND chair fills the NW corner). Each panel is one wave-folded mesh
+// Curtains on a ceiling track (#342, CURTAINS in config): Sovrum 1's two teal jungle-print panels. One track under the
+// soffit from the west wall to the east; a split (#362): the panels meet at the window's middle and part to either side
+// (the west one up to its end stop at the RÅGRUND chair, the east one to the track's end). Each panel is one wave-folded mesh
 // rebuilt only while it moves: the fold count stays, the spacing shrinks and the folds deepen as it gathers; the print
 // (our own canvas, tileable) rides with the cloth. They share the blinds' control strip (#blind-panel, src/blinds.js):
 // A / D, ← / → or ◀ ▶ held draw them shut / open, and the blinds' daylight cut and saved state.
@@ -110,9 +111,9 @@ function printTexture(ground) {
 const lerp = (a, b, t) => a + (b - a) * t;
 const ROWS = 5, SEG = 4; // rows of vertices down the drop; segments per wave fold
 
-/** One panel: a wave-folded sheet from x a..b at the rail's z, `fabric` m of cloth in `n` folds. */
+/** One panel: a wave-folded sheet from x a..b at the rail's z, `fabric` m of cloth in `n` folds; xa..xb = its reach. */
 class Panel {
-  constructor(spec, zc, fabric, mat, y0, y1) {
+  constructor(spec, zc, fabric, mat, y0, y1, xa, xb) {
     Object.assign(this, { zc, fabric, y0, y1, amp: spec.amp });
     this.n = Math.max(6, Math.round(fabric / 0.105));
     const cols = this.n * SEG + 1;
@@ -130,7 +131,7 @@ class Panel {
     g.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(cols * ROWS * 3), 3).setUsage(THREE.DynamicDrawUsage));
     g.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
     // fixed bounds over the whole track: culling, raycasts and the detail culler need no recompute
-    g.boundingBox = new THREE.Box3(new THREE.Vector3(spec.x0 - 0.05, y0, zc - 0.05), new THREE.Vector3(spec.east + 0.05, y1, zc + 0.05));
+    g.boundingBox = new THREE.Box3(new THREE.Vector3(xa - 0.05, y0, zc - 0.05), new THREE.Vector3(xb + 0.05, y1, zc + 0.05));
     g.boundingSphere = g.boundingBox.getBoundingSphere(new THREE.Sphere());
     this.mesh = new THREE.Mesh(g, mat);
     this.mesh.castShadow = this.mesh.receiveShadow = true;
@@ -162,52 +163,60 @@ export class Curtain {
   /** spec: a CURTAINS entry; `statics` gets the track (baked with the fittings). */
   constructor(spec, id, statics) {
     Object.assign(this, { spec, id, kind: 'curtain', name: 'gardinerna', verb: 'dra i', level: spec.level, room: null, t: 0, moved: false, dark: false, out: -1 });
-    this.x0 = spec.glass[0]; this.x1 = spec.glass[1]; this.z = spec.z[0]; // the room lookup (Blinds.init)
+    this.x0 = spec.glass[0]; this.x1 = spec.glass[1]; this.z = spec.z; // the room lookup (Blinds.init)
     this.speed = spec.speed;
-    this.travel = spec.park - spec.x0; // the leading edge's way
     const fl = LEVELS[spec.level].floor;
     const y0 = fl + spec.drop, y1 = fl + spec.top;
     this.tex = printTexture(spec.colors.ground);
     this.mat = new THREE.MeshStandardMaterial({ map: this.tex, emissiveMap: this.tex, emissive: 0x000000, roughness: 0.93, side: THREE.DoubleSide });
-    // shut: the front panel from x0 to the middle, the back one from the middle to the track's east end
-    const half = spec.overlap / 2, sw = (spec.east - spec.park) / 2;
+    // a split on one track: shut, both meet at `meet` (the folds end on the rail's line, so the two join seamlessly);
+    // open, each is gathered against its outer end (the west one's end stop, the track's east end)
+    const fw = spec.fullness * (spec.meet - spec.stop), fe = spec.fullness * (spec.east - spec.meet);
     this.ends = {
-      front: { open: [spec.park, spec.park + sw], shut: [spec.x0, spec.meet + half] },
-      back: { open: [spec.park + sw, spec.east], shut: [spec.meet - half, spec.east] },
+      west: { open: [spec.stop, spec.stop + spec.stack * fw], shut: [spec.stop, spec.meet] },
+      east: { open: [spec.east - spec.stack * fe, spec.east], shut: [spec.meet, spec.east] },
     };
-    this.front = new Panel(spec, spec.z[1], spec.fullness * (spec.meet + half - spec.x0), this.mat, y0, y1);
-    this.back = new Panel(spec, spec.z[0], spec.fullness * (spec.east - spec.meet + half), this.mat, y0, y1);
+    this.travel = this.ends.east.open[0] - spec.meet; // the east panel's leading edge (the west one keeps the same share)
+    this.west = new Panel(spec, spec.z, fw, this.mat, y0, y1, spec.stop, spec.meet);
+    this.east = new Panel(spec, spec.z, fe, this.mat, y0, y1, spec.meet, spec.east);
     this.object = new THREE.Group();
-    this.object.add(this.front.mesh, this.back.mesh);
-    for (const m of [this.front.mesh, this.back.mesh]) m.userData.door = this; // E targets, kept out of the merge
+    this.object.add(this.west.mesh, this.east.mesh);
+    for (const m of [this.west.mesh, this.east.mesh]) m.userData.door = this; // E targets, kept out of the merge
     this.pickable = this.object;
-    // the track: two slim white rails on the soffit's underside + a mounting strip, end caps
+    // the track: a slim white rail on the soffit's underside from the west wall + a mounting strip, the west end stop
     const trackMat = new THREE.MeshStandardMaterial({ color: spec.colors.track, roughness: 0.4, metalness: 0.1 });
-    const sof = SOFFITS.find((o) => o.level === spec.level && spec.z[0] > o.z0 && spec.z[1] < o.z1 && spec.x0 > o.x0 && spec.east < o.x1);
+    const sof = SOFFITS.find((o) => o.level === spec.level && spec.z > o.z0 && spec.z < o.z1 && spec.meet > o.x0 && spec.meet < o.x1);
     const yc = fl + (sof?.height ?? LEVELS[spec.level].ceiling); // the soffit's underside (RH 2.4)
     const box = (x0, x1, ya, yb, z0, z1) => { const m = new THREE.Mesh(new THREE.BoxGeometry(x1 - x0, yb - ya, z1 - z0), trackMat); m.position.set((x0 + x1) / 2, (ya + yb) / 2, (z0 + z1) / 2); return m; };
-    const tx0 = spec.x0 - 0.04, tx1 = spec.east + 0.02;
-    for (const z of spec.z) statics.add(box(tx0, tx1, yc - 0.018, yc, z - 0.012, z + 0.012));
-    statics.add(box(tx0, tx1, yc - 0.004, yc, spec.z[0] - 0.012, spec.z[1] + 0.012));
+    const tx0 = spec.west, tx1 = spec.east + 0.02;
+    statics.add(box(tx0, tx1, yc - 0.018, yc, spec.z - 0.012, spec.z + 0.012));
+    statics.add(box(tx0, tx1, yc - 0.004, yc, spec.z - 0.02, spec.z + 0.02));
+    statics.add(box(spec.stop - 0.012, spec.stop, yc - 0.03, yc - 0.018, spec.z - 0.01, spec.z + 0.01)); // end stop
     this.yTop = y1;
     this.built = -1;
     this.sound = 0;
     this.set(0);
   }
 
-  /** How much of the glass is covered, 0 (open) … 1 (shut). */
+  /** The glass left free between the two leading edges. */
+  freeGlass(wb, ea) {
+    const [g0, g1] = this.spec.glass;
+    return Math.max(0, Math.min(ea, g1) - Math.max(wb, g0));
+  }
+
+  /** How much of the glass is covered, 0 (open: the parked west stack's sliver does not count) … 1 (shut). */
   get cover() {
-    const g1 = this.spec.glass[1], g0 = Math.max(this.spec.glass[0], this.spec.x0); // shut = all of it (x0 is over the sash's frame)
-    return Math.min(1, Math.max(0, (g1 - this.front.a) / (g1 - g0)));
+    const open = this.freeGlass(this.ends.west.open[1], this.ends.east.open[0]);
+    return Math.min(1, Math.max(0, 1 - this.freeGlass(this.west.b, this.east.a) / open));
   }
   get isOpen() { return this.t > 0.01; }
 
-  /** 0 open (parked east) … 1 drawn shut. */
+  /** 0 open (parked at both sides) … 1 drawn shut (meeting in the middle). */
   set(t) {
     this.t = Math.min(1, Math.max(0, t));
     if (Math.abs(this.t - this.built) < 1e-5) return;
     this.built = this.t;
-    for (const k of ['front', 'back']) {
+    for (const k of ['west', 'east']) {
       const e = this.ends[k];
       this[k].build(lerp(e.open[0], e.shut[0], this.t), lerp(e.open[1], e.shut[1], this.t));
     }
@@ -218,7 +227,7 @@ export class Curtain {
     this.sound -= dt;
     if (this.sound > 0) return;
     this.sound = 0.42;
-    sfx.slide(new THREE.Vector3(this.front.a, this.yTop, this.spec.z[1]), { dur: 0.4, wardrobe: true });
+    sfx.slide(new THREE.Vector3(this.east.a, this.yTop, this.spec.z), { dur: 0.4, wardrobe: true });
   }
 
   /** The cotton lets a little daylight through (teal), warm from a lit room at night. */

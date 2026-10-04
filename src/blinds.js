@@ -227,7 +227,7 @@ export class BlindPanel {
   get open() { return !this.el.hidden; }
 
   show(blind) {
-    // the curtains (#342) use the same strip sideways: ◀ draws them shut (towards the west), ▶ open
+    // the curtains (#342) use the same strip sideways: ◀ draws them together (shut, #362: they meet in the middle), ▶ apart
     const c = blind?.kind === 'curtain';
     if (blind) {
       this.el.classList.toggle('curtain', c);

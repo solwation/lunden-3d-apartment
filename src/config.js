@@ -161,19 +161,22 @@ export const BLINDS = {
 
 // Curtains in Sovrum 1 (#342, the user; docs/gardiner-sovrum1-turkos-djurmonster.jpg, src/curtains.js): two floor-length
 // teal panels with a jungle-animal print (drawn on a canvas by us: no brand) on a slim white ceiling track under the
-// soffit (RH 2.4), in the room in front of the blind. The RÅGRUND chair (#60) fills the NW corner right up to the glass,
-// so there is no room to park a panel west of the window: a double track (two rails, `z` back / front) where both panels
-// stack to the EAST (a one-way draw, the free wall x 4.66 … NORDKISA's corner). Shut: the front panel's leading edge
-// at `x0` (just past the chair's seat, over the sash frame: the glass begins ~3.15) meets the back panel in the middle
-// (`meet`, overlapping `overlap`); open: both stacks east of the glass (`park`). `east` = the track's east end (clear of
-// the east wall). `drop` = hem over the floor, `top` = the fabric's top under the soffit; fullness 1.4 × the shut width
-// (*guess*), `folds` wave folds per panel (their count stays; the spacing shrinks as a panel gathers), `amp` = the folds'
-// largest half-depth (deeper as it gathers), `tile` = m of fabric per pattern repeat. Our picks / *guess* unless noted.
-// `dim` = the room's daylight a fully drawn pair takes (less than the blackout blind); `glow` = the teal emissive by day
-// (a little light through the cotton), lamp = from a lit room. `speed` m/s of the leading edge while A / D are held.
+// soffit (RH 2.4), in the room in front of the blind. #362 (the user: "hela vägen bort till andra sidan, och tvådelade"):
+// a classic split on ONE track (`z`) from the west wall (`west`, the room's west face x 2.70) to `east` (clear of the east
+// wall): the panels meet at the window's centre (`meet`, WINDOWS x 3.85 / the glass's middle) and part to either side.
+// The RÅGRUND chair (#60, x 2.71–3.15, z 0.475–0.865) fills the NW corner, and no chair spot both clears the west stack's
+// corner (z 0.47–0.70) and keeps the gap at the double bed's foot passable (moved south past z 0.70 the gap to the bed's
+// corner shrinks from 0.51 to ~0.31 m, the visitor needs 0.44): so the chair stays, and the west panel's outer end is held
+// by an end stop at the chair's seat edge (`stop`); parked, its stack covers the glass's westmost ~0.2 m. The east panel
+// runs to the track's east end and parks clear of the glass. `stack` = a parked stack's width as a share of its cloth
+// (*guess*, wave pleats); `drop` = hem over the floor, `top` = the fabric's top under the soffit; fullness 1.4 × the shut
+// width (*guess*), `amp` = the folds' largest half-depth (deeper as it gathers; the fold count stays, the spacing shrinks),
+// `tile` = m of fabric per pattern repeat. Our picks / *guess* unless noted. `dim` = the room's daylight a fully drawn
+// pair takes (less than the blackout blind); `glow` = the teal emissive by day (a little light through the cotton), lamp =
+// from a lit room. `speed` m/s of the east panel's leading edge while A / D are held (the west one keeps pace: same share).
 export const CURTAINS = [
-  { level: 1, room: 'Sovrum 1', x0: 3.17, meet: 4.0, overlap: 0.12, park: 4.72, east: 5.32, z: [0.56, 0.64], glass: [3.15, 4.56],
-    top: 2.36, drop: 0.015, fullness: 1.4, folds: 12, amp: 0.028, tile: 0.7, speed: 0.38, dim: 0.4,
+  { level: 1, room: 'Sovrum 1', west: 2.71, stop: 3.16, meet: 3.855, east: 5.32, z: 0.6, glass: [3.15, 4.56], stack: 0.22,
+    top: 2.36, drop: 0.015, fullness: 1.4, amp: 0.028, tile: 0.7, speed: 0.38, dim: 0.4,
     colors: { ground: '#2f7c86', track: 0xf3f2ee, glow: 0x3fa3ad, warm: 0xffc27a }, glow: { day: 0.18, lamp: 0.08 } },
 ];
 
