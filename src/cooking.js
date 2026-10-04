@@ -10,6 +10,8 @@ import { sfx } from './audio.js';
 //        spot 0, the result goes onto its free spots (none free: "Brädan är full", nothing used); held, it carries all of
 //        it, and E on a plate pushes the slices over
 //   #376 cutting a cucumber: one slice or three, a chop each, exact grams; the last bit is the end (a scrap)
+//   #377 the bread bag: opened (its clip off), "Ta en brödskiva" one at a time into the hand, empty = an empty package;
+//        a slice is eaten in bites (a click / "Ät" with it in the hand)
 
 const cap = (s) => (s ? s[0].toUpperCase() + s.slice(1) : s);
 
@@ -100,6 +102,57 @@ export function cookingActions(life) {
       sfx.click(c.targetView?.where());
     },
     consumes: 'nothing', result: 'the board\'s slices on the plate (as many as fit; the rest stay on the board)',
+  });
+
+  // one out of a package into the free hand (#377): a slice of bread out of the bag; the bag empty = an empty package
+  A.define({
+    id: 'dispense', order: 3, duration: LIFE.dispense.seconds,
+    label: (c) => I.def(c.target).dispenseLabel ?? `ta ${I.name({ type: I.def(c.target).dispense })}`,
+    applies: (c) => !!I.def(c.target)?.dispense && c.target.place.at !== 'hand',
+    check: (c) => {
+      if (c.heldView) return `Lägg ifrån dig ${c.heldView.name ?? 'det du håller'} först`;
+      const shut = c.targetView?.shutReason();
+      if (shut) return shut;
+      if (c.target.pkg === 'closed') return `Öppna ${nm(c.target)} först`;
+      if (c.target.amount < 1 - 1e-6) return `${cap(nm(c.target))} är tom`;
+      return null;
+    },
+    reserve: (c) => ({ inputs: [c.target] }),
+    commit: (c) => {
+      I.consume(c.target, 1);
+      const got = I.create(I.def(c.target).dispense, { at: 'hand' });
+      if (I.isEmpty(c.target)) I.set(c.target, { pkg: 'empty' });
+      sfx.rustle?.(c.targetView?.where());
+      return got;
+    },
+    consumes: 'one (count) out of the package', result: 'one new thing of its `dispense` type in the hand; an empty package stays (pkg empty)',
+  });
+
+  // a bite (#377; the sandwich's in #380): the thing in the hand to the mouth, a bite off half-way, the last one eats it up
+  A.define({
+    id: 'eat', order: 0, duration: LIFE.eat.seconds, commitAt: 0.5,
+    label: 'äta',
+    applies: (c) => !!c.target && c.target === c.held && !!I.def(c.target)?.bites,
+    check: (c) => (c.target.amount > 1e-6 ? null : 'Det finns inget kvar'),
+    reserve: (c) => ({ inputs: [c.target] }),
+    animate: (c, k, job) => { // to the mouth and back
+      const v = c.heldView;
+      if (!v?.held) return;
+      job.base ??= v.model.position.clone();
+      const a = Math.sin(Math.PI * k);
+      v.model.position.set(job.base.x - 0.12 * a, job.base.y + 0.13 * a, job.base.z + 0.2 * a);
+    },
+    commit: (c) => {
+      const it = c.target, d = I.def(it), bite = d.amount / d.bites;
+      const got = I.consume(it, bite);
+      sfx.chew(c.heldView?.where(), 0.7);
+      life.emit('bite', { item: it, amount: got });
+      if (I.isEmpty(it)) { life.emit('ate', { item: it }); I.remove(it, { cascade: true }); }
+      return got;
+    },
+    done: (c, job) => { if (job.base && c.heldView?.held) c.heldView.model.position.copy(job.base); },
+    cancel: (c, job) => { if (job.base && c.heldView?.held) c.heldView.model.position.copy(job.base); },
+    consumes: 'one bite (amount / bites)', result: 'less of it; the last bite: gone (an `ate` event)',
   });
 
   // the wrong tool (#374): a tool in the hand, food that some other tool works on — a row that says why, nothing used

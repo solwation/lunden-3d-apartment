@@ -1080,7 +1080,9 @@ export const LIFE = {
   // saving (#371): localStorage `key` written `every` s after a change; a thing whose place is gone lands on the free worktop (`lost`)
   save: { key: 'lunden.life', every: 1, lost: [5.25, 0.931, 3.0] },
   job: { walk: 0.6 },
-  cut: { seconds: 0.6 }, // one cut with the kitchen knife (#375, #376), game seconds // a timed action (#372) stops when the eye has moved this far (m) from where it started // putting down (#368): snap grids (m), kept this far inside a table's edge, R turns this many degrees
+  cut: { seconds: 0.6 }, // one cut with the kitchen knife (#375, #376), game seconds
+  dispense: { seconds: 0.35 }, // a slice taken out of the bread bag (#377)
+  eat: { seconds: 0.5 }, // a bite: to the mouth and back (#377, #380); the bite comes off half-way // a timed action (#372) stops when the eye has moved this far (m) from where it started // putting down (#368): snap grids (m), kept this far inside a table's edge, R turns this many degrees
 };
 
 // The kitchen's food from the start (#373, LIFE-009; the user: no shop, no delivery, no budget — the food is simply there):
@@ -1127,9 +1129,9 @@ export const ITEMS = {
   cucumberSlice: { name: 'gurkskivan', noun: 'gurka', tags: ['food', 'topping'], unit: 'g', amount: 10, size: 'xs', prep: 'sliced', model: 'cucumberSlice' },
   cheese: { name: 'osten', noun: 'ost', tags: ['food', 'sliceable'], unit: 'g', amount: LIFE_FOOD.amounts.cheese, size: 's', prep: 'whole', model: 'cheese' },
   butter: { name: 'smöret', noun: 'smör', tags: ['food', 'package', 'spreadable'], unit: 'g', amount: LIFE_FOOD.amounts.butter, size: 's', pkg: 'closed', model: 'butter' },
-  breadBag: { name: 'brödpåsen', noun: 'bröd', tags: ['food', 'package'], unit: 'count', amount: LIFE_FOOD.amounts.breadBag, size: 'm', pkg: 'closed', model: 'breadBag' },
+  breadBag: { name: 'brödpåsen', noun: 'bröd', tags: ['food', 'package'], unit: 'count', amount: LIFE_FOOD.amounts.breadBag, size: 'm', pkg: 'closed', model: 'breadBag', dispense: 'breadSlice', dispenseLabel: 'ta en brödskiva' }, // "Ta en brödskiva": one slice at a time into the hand (#377)
   peas: { name: 'ärtpåsen', noun: 'ärter', tags: ['food', 'frozen', 'package'], unit: 'g', amount: LIFE_FOOD.amounts.peas, size: 'm', pkg: 'closed', model: 'peas' }, // (#373; cooking them comes later)
-  breadSlice: { name: 'brödskivan', noun: 'bröd', tags: ['food', 'base'], unit: 'count', amount: 1, size: 's', model: 'breadSlice' },
+  breadSlice: { name: 'brödskivan', noun: 'bröd', tags: ['food', 'base'], unit: 'count', amount: 1, size: 's', model: 'breadSlice', bites: 4 }, // eaten in four bites (#377, like the fruit #326)
   knife: { name: 'kökskniven', tags: ['tool', 'tool:cut', 'dishwasherSafe'], unit: 'count', amount: 1, size: 's', clean: 'clean', model: 'knife' },
   butterKnife: { name: 'smörkniven', tags: ['tool', 'tool:spread', 'dishwasherSafe'], unit: 'count', amount: 1, size: 's', clean: 'clean', model: 'butterKnife' }, // (#374)
   cheeseSlicer: { name: 'osthyveln', tags: ['tool', 'tool:slice', 'dishwasherSafe'], unit: 'count', amount: 1, size: 's', clean: 'clean', model: 'cheeseSlicer' }, // (#374)

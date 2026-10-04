@@ -163,6 +163,7 @@ function breadBag() {
   bag.position.set(0.02, 0.053, 0);
   const clip = mesh(new THREE.BoxGeometry(0.012, 0.03, 0.04), M.clip);
   clip.position.set(L / 2 + 0.05, 0.05, 0);
+  loaf.name = 'loaf'; clip.name = 'clip';
   // the bag's print on both long sides (our own: "Lantlimpa", #373)
   const print = labelOf('bread', () => { const m = label('Lantlimpa', { bg: '#fbf3e2', fg: '#8a3b12', sub: 'skivad · 12 skivor', band: '#c98a3a', font: 'italic bold 50px Georgia, serif' }); m.transparent = true; m.opacity = 0.92; return m; });
   for (const z of [1, -1]) { const p = mesh(new THREE.PlaneGeometry(0.14, 0.06), print); p.position.set(-0.04, 0.055, z * 0.0585); if (z < 0) p.rotation.y = Math.PI; g.add(p); }
@@ -189,13 +190,39 @@ function peas() {
   return { object: g, grip: [0.08, 0.02, 0.04] };
 }
 
-/** A slice of bread (11 × 10 cm, 1.2 cm). */
+/** A slice of bread (11 × 10 cm, 1.2 cm), along x; bitten (#377) from the +x end: each bite takes an arc-shaped piece out
+ * (two overlapping bite marks), the geometry rebuilt from an outline. */
+function breadSliceShape(bitten, bites) {
+  const L = 0.11, W = 0.1, r = 0.012, x0 = -L / 2, xe = L / 2 - (L * 0.85) * (bitten / bites);
+  const s = new THREE.Shape();
+  s.moveTo(x0 + r, -W / 2);
+  if (bitten === 0) {
+    s.lineTo(xe - r, -W / 2); s.quadraticCurveTo(xe, -W / 2, xe, -W / 2 + r); s.lineTo(xe, W / 2 - r); s.quadraticCurveTo(xe, W / 2, xe - r, W / 2);
+  } else { // a bitten edge: two arcs bowing in (teeth marks)
+    const d = 0.022;
+    s.lineTo(xe, -W / 2);
+    s.quadraticCurveTo(xe - d, -W / 4, xe, 0);
+    s.quadraticCurveTo(xe - d, W / 4, xe, W / 2);
+  }
+  s.lineTo(x0 + r, W / 2); s.quadraticCurveTo(x0, W / 2, x0, W / 2 - r); s.lineTo(x0, -W / 2 + r); s.quadraticCurveTo(x0, -W / 2, x0 + r, -W / 2);
+  const geo = new THREE.ExtrudeGeometry(s, { depth: 0.012, bevelEnabled: false, curveSegments: 6 }).rotateX(-Math.PI / 2); // (caps up/down = crumb, sides = crust)
+  return { geo, xe };
+}
 function breadSlice() {
   const g = new THREE.Group();
-  const s = mesh(new RoundedBoxGeometry(0.11, 0.012, 0.1, 2, 0.004), [M.crust, M.crust, M.crumb, M.crumb, M.crust, M.crust]);
-  s.position.y = 0.006;
+  const s = mesh(breadSliceShape(0, 4).geo, [M.crumb, M.crust]);
   g.add(s);
-  return { object: g };
+  let shown = 0;
+  return {
+    object: g, grip: [-0.05, 0.006, 0.03],
+    show(item, items) {
+      const d = items.def(item), bites = d?.bites ?? 4, bitten = Math.max(0, Math.min(bites - 1, Math.round((1 - item.amount / (d?.amount ?? 1)) * bites)));
+      if (bitten === shown) return;
+      shown = bitten;
+      s.geometry.dispose();
+      s.geometry = breadSliceShape(bitten, bites).geo;
+    },
+  };
 }
 
 /** A kitchen knife, 30 cm, along x (the handle at −x). */

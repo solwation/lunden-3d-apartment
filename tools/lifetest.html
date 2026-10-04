@@ -13,6 +13,8 @@
 //       carried it carries the slices, held at a plate it pushes them over.
 //  #376 cutting the cucumber: one slice / three (the knife chops), an exact mass balance, fast presses give nothing extra,
 //       slices taken one by one, the end (no slice, "gurkänden"), a reload keeps what is left.
+//  #377 the bread bag: closed → "Öppna brödpåsen först", opened (no clip), slices one at a time into the hand down to 0 and
+//       no further, the empty bag stays; a slice on a plate; a slice eaten plain in four bites.
 //   chromium --headless=new --dump-dom http://localhost:8137/tools/lifetest.html
 import { LIFE_FOOD, LIFE_TOOLS } from '../src/config.js';
 const out = document.getElementById('out');
@@ -256,6 +258,57 @@ try {
   shut();
   f.remove();
 } catch (e) { pass = false; lines.push(`FAIL #376 error ${e.stack}`); }
+
+// --- #377: the bread bag and a slice of bread -----------------------------------------------------------------
+try {
+  const f = await load('life&shot');
+  const { A, d, btn, settle, aim, shut, life, I, step } = kit(f);
+  const pantry = A.world.lids.find((l) => l.stock === 'pantry');
+  const bag = I.all().find((i) => i.type === 'breadBag' && i.home?.store === 'pantry'), bagv = life.view(bag);
+  const row = (id, it = bag) => life.options({ item: life.view(it) }).find((o) => o.id === id);
+  pantry.toggle(); settle(pantry);
+  check(row('dispense')?.reason === 'Öppna brödpåsen först', `the closed bag: "${row('dispense')?.reason}"`);
+  const p = bagv.where(); p.y += 0.06;
+  const t0 = aim(p, /Öppna brödpåsen/, [[4.6, p.z], [4.5, p.z - 0.3], [4.5, p.z + 0.3]]);
+  check(!!t0, `in the open pantry: "${t0}"`);
+  row('open').run(); step(1 / 60);
+  const clip = bagv.view.object.getObjectByName('clip');
+  check(bag.pkg === 'open' && !clip.visible, 'opened: the clip is off');
+  const t1 = aim(p, /Ta en brödskiva/, [[4.6, p.z], [4.5, p.z - 0.3], [4.5, p.z + 0.3]]);
+  check(!!t1, `then: "${t1}"`);
+  row('dispense').run(); row('dispense').run(); // a double press
+  for (let i = 0; i < 30; i++) step(1 / 60);
+  const slice = I.held();
+  check(slice?.type === 'breadSlice' && bag.amount === 11 && I.ofType('breadSlice').length === 1 && A.heldItem() === life.view(slice), `a slice in the hand, ${bag.amount} left in the bag (a double press: one)`);
+  check(row('dispense')?.reason === 'Lägg ifrån dig brödskivan först', `the hand full: "${row('dispense')?.reason}"`);
+  // onto the plate
+  const plate = I.ofType('plate')[0];
+  const put = life.options({ item: life.view(plate) }).find((o) => o.id === 'putOn');
+  check(put?.label === 'lägga brödskivan på tallriken' && put.run() && slice.place.parent === plate.id && slice.place.slot === 0, `"${put?.label}": in the middle of the plate`);
+  // another one, eaten plain: four bites (a click / the touch button "Äta")
+  row('dispense').run(); for (let i = 0; i < 30; i++) step(1 / 60);
+  const s2 = I.held(), v2 = life.view(s2);
+  A.player.spawn(2.6, 9.6, Math.PI / 2); for (let i = 0; i < 3; i++) step(1 / 60);
+  A.camera.rotation.set(0.25, Math.PI / 2, 0); step(1 / 60); // (the living room, looking west a little up: nothing in focus, the button uses what is in the hand)
+  check(v2.useLabel === 'Äta' && btn.textContent === 'Äta', `in the hand: the button says "${btn.textContent}"`);
+  const geo0 = v2.view.object.children[0].geometry;
+  v2.use(); v2.use(); step(1 / 60); btn.click(); // fast clicks: one bite
+  for (let i = 0; i < 45; i++) step(1 / 60);
+  check(Math.abs(s2.amount - 0.75) < 1e-6 && v2.view.object.children[0].geometry !== geo0, `one bite: ${s2.amount} left, a bite out of it`);
+  for (let k = 0; k < 3; k++) { v2.use(); for (let i = 0; i < 45; i++) step(1 / 60); }
+  check(!I.get(s2.id) && !A.heldItem() && !life.views.has(s2.id), 'four bites: eaten up, the hand empty');
+  // the bag down to 0 and no further, the empty bag stays
+  I.setAmount(bag, 1);
+  row('dispense').run(); for (let i = 0; i < 30; i++) step(1 / 60);
+  const last = I.held();
+  life.view(last).placeAt(new (A.camera.position.constructor)(5.25, 0.93, 3.0), 0); step(1 / 60);
+  check(bag.amount === 0 && bag.pkg === 'empty' && I.get(bag.id) && bagv.view.object.getObjectByName('loaf').visible === false, 'the last slice: the bag empty (no loaf), still there');
+  row('dispense')?.run(); for (let i = 0; i < 30; i++) step(1 / 60);
+  check(row('dispense')?.reason === 'Brödpåsen är tom' && bag.amount === 0 && !I.held(), `then: "${row('dispense')?.reason}", nothing more`);
+  check(I.audit().length === 0 && I.all().every((i) => i.amount >= 0), `audit: ${I.audit().join('; ') || 'ok'}`);
+  shut();
+  f.remove();
+} catch (e) { pass = false; lines.push(`FAIL #377 error ${e.stack}`); }
 
 // a new visit keeps the amounts (lunden.life, #371): not the &life scenario, the visitor's own home
 try {

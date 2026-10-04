@@ -39,6 +39,14 @@ export class LifeItem extends Holdable {
     this.sync();
   }
 
+  /** A click / the touch button with it in the hand (#377): what it does on its own ("Ät"), or nothing. */
+  get useLabel() {
+    if (!this.held || !this.life) return undefined;
+    const a = firstAllowed(this.life.options({ instance: this.item }));
+    return a ? `${a.label[0].toUpperCase()}${a.label.slice(1)}` : undefined;
+  }
+  onUse() { if (this.held) this.life.run({ instance: this.item }); }
+
   /** In a shut store: why it can't be taken ("Öppna kylen först"), else null. */
   shutReason() {
     const p = this.item?.place, s = p?.at === 'slot' ? this.life.items.store(p.store) : null;
@@ -123,6 +131,7 @@ export class Life {
     this.stock = [...LIFE_FOOD.stock, ...LIFE_TOOLS.stock]; // what the kitchen always has (#373, #374): [type, store, slot]
     this.wasOpen = new Map(); // store id → open at the last update (a refill on opening, #373)
     this.bump = () => {}; // (key, n, id) → the stats / score (main.js sets it)
+    this.events = []; // domain events (#377, #380): fn(kind, data) — 'bite', 'ate' … for the stats and the guided tasks (LIFE-030)
     this.worktopAt = () => false; // (pos [x, y, z]) → is it on a kitchen worktop (main.js sets it; the cutting board's station, #375)
     this.actions = new ActionSet(); // what you can do with a thing (#367): baseActions below, more per LIFE issue
     this.runner = new Runner(this.items); // actions that take a moment (#372): validate, reserve, animate, commit
@@ -136,6 +145,10 @@ export class Life {
       else if (kind === 'remove') this.dropView(item);
     });
   }
+
+  /** Listen to the life sim's domain events: fn(kind, data); returns an unsubscribe function. */
+  onEvent(fn) { this.events.push(fn); return () => { this.events = this.events.filter((f) => f !== fn); }; }
+  emit(kind, data) { for (const f of this.events) f(kind, data); }
 
   /** A new instance with its view (null + `items.lastReason` when the place is not allowed). */
   create(type, place, props) {
