@@ -17,13 +17,15 @@ export function restTarget(obj, item, levelFloor) {
       ...p,
       kind: p.kind ?? R.kind, // a spot can differ from the piece (sitting up in a bed)
       pos: new THREE.Vector3(item.x + ox, levelFloor + p.y + ((p.kind ?? R.kind) === 'lie' ? REST.lieEye : REST.sitEye), item.z + oz),
-      // `aim` (local x, z): where to look to pick this spot, when it is not the spot itself (sitting up in a bed, #213)
-      aimPos: p.aim ? new THREE.Vector3(item.x + toWorld(...p.aim)[0], levelFloor + p.y, item.z + toWorld(...p.aim)[1]) : null,
+      // `aim` (local x, z[, y]): where to look to pick this spot, when it is not the spot itself (sitting up in a bed, #213;
+      // the front of the cushion box, #445)
+      aimPos: p.aim ? new THREE.Vector3(item.x + toWorld(p.aim[0], p.aim[1])[0], levelFloor + (p.aim[2] ?? p.y), item.z + toWorld(p.aim[0], p.aim[1])[1]) : null,
       yaw: Math.atan2(-dx, -dz), // camera yaw facing that way
     };
   });
   return { kind: 'rest', rest: R.kind, name: R.name, verbText: R.verb, pickable: obj, spots, level: item.level,
-    get verb() { return this.verbText; } };
+    get verb() { return this.verbText; },
+    get blocked() { return spots.every((sp) => sp.taken?.()); }, blockedText: R.blockedText ?? 'Upptaget' }; // every spot taken (#445: the cushion box's lid open)
 }
 
 /** The spot a look ray points at (nearest to the ray), skipping ones the cat sits on (or someone else, `taken`, #438). */

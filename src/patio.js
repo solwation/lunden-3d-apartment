@@ -332,6 +332,12 @@ export function dynbox() {
   lid.top = true; // a lid on top: what is inside stays below it (opentest)
   seasonal.boxes.push(stack);
   g.userData.targets = [lid];
+  // #445: you can sit on the shut lid (two places, facing out); not while it is open, and it does not open under you.
+  // Looking at the lid opens it; looking at the box's front / ends (the body) sits you down
+  const open = () => lid.isOpen || lid.t > 0.01;
+  g.userData.rest = { kind: 'sit', name: 'dynboxen', verb: 'sätta dig på', blockedText: 'Stäng locket först',
+    spots: [-0.3, 0.3].map((x) => ({ x, y: H, z: 0.02, aim: [x, D / 2 + 0.01, hb / 2], taken: open })) };
+  lid.seat = g; // (main.js: no opening it while sitting on it)
   g.userData.keep = [pivot, contents];
   g.traverse((m) => { if (m.isMesh) m.castShadow = m.receiveShadow = true; });
   g.userData.footprint = [{ x0: -L / 2, x1: L / 2, z0: -D / 2, z1: D / 2 }];

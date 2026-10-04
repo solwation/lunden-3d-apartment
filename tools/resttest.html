@@ -249,6 +249,27 @@ f.onload = async () => {
     pass &= check(sitters.length >= 1, `#438: ${sitters.length} bench sitters`);
     people.seatTaken = () => false;
   }
+  // #445: the ottoman is a seat; the cushion box's shut lid too — open, its spots are taken ("Stäng locket först"), and
+  // sitting on it the lid is no target (it does not open under you)
+  {
+    pass &= check(targets.some((t) => t.name === 'pallen' && t.spots.length === 1 && t.spots[0].pos.y < 1.3), '#445: the ottoman is a seat');
+    const box = targets.find((t) => t.name === 'dynboxen'), lid = world.furnitureTargets.find((t) => t.seat === box?.pickable);
+    let ok = !!box && !!lid && !lid.isOpen && !box.blocked;
+    if (ok) {
+      lid.toggle(); for (let i = 0; i < 60; i++) lid.update(1 / 30);
+      const blocked = box.blocked && box.blockedText === 'Stäng locket först';
+      lid.toggle(); for (let i = 0; i < 60; i++) lid.update(1 / 30);
+      const label = sitOn(box, box.spots[0]); for (let i = 0; i < 60; i++) step(1 / 60);
+      const V = camera.position.constructor, l = lid.pickable.getWorldPosition(new V()).add(new V(0, 0.05, 0)), n = box.spots[1].pos;
+      const at = new V(n.x, l.y, n.z), dx = at.x - camera.position.x, dz = at.z - camera.position.z; // the lid beside you
+      camera.rotation.set(Math.max(-1.05, Math.atan2(at.y - camera.position.y, Math.hypot(dx, dz))), Math.atan2(-dx, -dz), 0, 'YXZ'); step(1 / 60);
+      const { focus } = w.__app, f = focus().focused;
+      const noLid = f !== lid;
+      standUp(); for (let i = 0; i < 3; i++) step(1 / 60);
+      ok = blocked && !!label && noLid && !lid.isOpen;
+      pass &= check(ok, `#445: the cushion box: open = taken ${blocked}, sat on the shut lid "${label}", the lid no target then ${noLid}`);
+    } else pass &= check(false, '#445: the cushion box is a seat with its lid');
+  }
   // #184: things within reach while sitting — the remote from the sofa, the book from the armchair
   const { remote, book, heldItem } = w.__app;
   const V = camera.position.constructor;

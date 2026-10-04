@@ -1313,7 +1313,7 @@ function updateFocus() {
   cupTargets.push(...life.targets().map((t) => t.pickable));
   cupTargets.push(...toiletPaper.targets()); // the toilet-paper rolls and the strips hanging (#426) // the life sim's things (#366; F hides the ones lying out: `shown`)
   const hit = raycaster.intersectObjects([...pickables, ...extra, ...cupTargets], true)
-    .find((h) => shown(h.object) && !(rest.active && (h.object.userData.door === rest.target || h.object.userData.door?.kind === 'rest')));
+    .find((h) => shown(h.object) && !(rest.active && (h.object.userData.door === rest.target || h.object.userData.door?.kind === 'rest' || h.object.userData.door?.seat === rest.target.pickable))); // (not the lid you sit on, #445)
   focused = hit && !behindWall(hit.point) ? hit.object.userData.door : null;
   focusPoint = focused ? hit.point.clone() : null; // where the hand reaches on E (#195)
   focused?.aimAt?.(focusPoint); // the car's screen: which of its buttons (#268)

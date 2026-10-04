@@ -202,6 +202,7 @@ function ottoman(item) {
     m.position.set(x, legH / 2, z); m.castShadow = true; g.add(m);
   }
   g.userData.footprint = [{ x0: -cw / 2, x1: cw / 2, z0: -cd / 2, z1: cd / 2 }];
+  g.userData.rest = { kind: 'sit', name: 'pallen', verb: 'sätta dig på', spots: [{ x: 0, y: h, z: 0, aim: [0, 0] }] }; // a seat too (#445), facing like the armchair; picked by looking at its top
   return g;
 }
 
