@@ -2489,6 +2489,12 @@ export const FURNITURE = [
   // doorway (z 5.134, x 0.202–0.987, facing south; the vanity starts at z 5.25); + the 6 mm tiles
   { type: 'towelhooks', level: 1, x: 0.395, z: 7.054 - 0.006, rot: 0 },
   { type: 'towelhooks', level: 0, x: 0.75, z: 5.134 + 0.006, rot: 180 },
+  // bobble bath mats in the towels' colour (#425, docs/duschmatta-referens.jpg): 50 × 80 (*guess*), `knob` = the bobble
+  // pitch (*guess* from the photo), rounded `corner`s; rugs (rugLift: the cat and things put down stand on them), no
+  // collision. WC/dusch: across the floor in front of the shower's glass (z 6.034), east of the vanity (x 0.565);
+  // Badrum: along the shower corner's east glass (x 1.10), clear of the toilet, the door (it swings out) and the HAVBÄCK
+  { type: 'rug', pattern: 'bobble', level: 1, x: 1.0, z: 6.33, w: 0.8, d: 0.5, h: 0.016, corner: 0.035, knob: 0.016, color: 0xb59e9a },
+  { type: 'rug', pattern: 'bobble', level: 0, x: 1.4, z: 7.13, w: 0.5, d: 0.8, h: 0.016, corner: 0.035, knob: 0.016, color: 0xb59e9a },
   { type: 'hookrail', level: 1, x: 3.797, z: 4.51, rot: 90 },
   // the kids' hook rails on the wardrobe end by the door (#330, KID_HOOKS): Sovrum 2 on wardrobe L's side wall (face
   // x 3.8516, z 7.80–8.50, facing west; hook 3 = the room end), Sovrum 3 on wardrobe G's end panel (x 1.5037, z 4.21–4.91,

@@ -2646,9 +2646,56 @@ function roundRug(item) {
   return g;
 }
 
+/** The bobble bath mats' material (#425): rows of small soft knobs (a tileable canvas, grey shading under the
+ * material's colour; the same canvas as the bump map), one material per colour for every mat. UVs in metres. */
+const bobbleMats = new Map();
+function bobbleMaterial(item) {
+  if (bobbleMats.has(item.color)) return bobbleMats.get(item.color);
+  const k = 8, px = 32, n = k * px, c = document.createElement('canvas'); c.width = c.height = n;
+  const g = c.getContext('2d');
+  g.fillStyle = '#bcbcbc'; g.fillRect(0, 0, n, n); // the gaps between the knobs
+  let seed = 7;
+  const rand = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+  for (let j = 0; j < k; j++) for (let i = 0; i < k; i++) {
+    const x = (i + 0.5 + (j & 1) * 0.5) * px + (rand() - 0.5) * 3, y = (j + 0.5) * px + (rand() - 0.5) * 3, r = px * (0.56 + rand() * 0.08);
+    const top = Math.round(238 + rand() * 17);
+    for (const [dx, dy] of [[0, 0], [n, 0], [-n, 0], [0, n], [0, -n]]) { // wrapped round the edges: it tiles
+      const gr = g.createRadialGradient(x + dx - r * 0.2, y + dy - r * 0.2, 0, x + dx, y + dy, r);
+      gr.addColorStop(0, `rgb(${top},${top},${top})`); gr.addColorStop(0.7, `rgb(${top - 25},${top - 25},${top - 25})`); gr.addColorStop(1, 'rgba(188,188,188,0)');
+      g.fillStyle = gr; g.beginPath(); g.arc(x + dx, y + dy, r, 0, Math.PI * 2); g.fill();
+    }
+  }
+  const tex = new THREE.CanvasTexture(c);
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 8;
+  tex.repeat.set(1 / (k * item.knob), 1 / (k * item.knob));
+  const m = new THREE.MeshStandardMaterial({ color: item.color, map: tex, bumpMap: tex, bumpScale: 0.5, roughness: 1 });
+  bobbleMats.set(item.color, m);
+  return m;
+}
+
+/** A bobble bath mat (#425): a thin slab with rounded corners (`corner`) and soft edges, w along local x, d along z. */
+function bobbleRug(item) {
+  const g = new THREE.Group(), w = item.w / 2, d = item.d / 2, r = item.corner, b = Math.min(0.004, item.h / 3);
+  const s = new THREE.Shape(), iw = w - b, id = d - b, ir = Math.max(0.002, r - b);
+  s.moveTo(-iw + ir, -id); s.lineTo(iw - ir, -id); s.quadraticCurveTo(iw, -id, iw, -id + ir);
+  s.lineTo(iw, id - ir); s.quadraticCurveTo(iw, id, iw - ir, id); s.lineTo(-iw + ir, id);
+  s.quadraticCurveTo(-iw, id, -iw, id - ir); s.lineTo(-iw, -id + ir); s.quadraticCurveTo(-iw, -id, -iw + ir, -id);
+  const geo = new THREE.ExtrudeGeometry(s, { depth: item.h - 2 * b, bevelEnabled: true, bevelThickness: b, bevelSize: b, bevelSegments: 2, curveSegments: 6 });
+  geo.rotateX(-Math.PI / 2); // the shape's y → −z, the extrusion up
+  const m = new THREE.Mesh(geo, bobbleMaterial(item));
+  m.position.y = b + 0.002; // above the floor and its AO overlay
+  m.receiveShadow = true;
+  g.add(m);
+  registerRug(item, g);
+  return g;
+}
+
 /** Big rug: a thin slab (w along local x, d along z), walked over (no footprint). */
 function rug(item) {
   if (item.shape === 'round') return roundRug(item);
+  if (item.pattern === 'bobble') return bobbleRug(item);
   const g = new THREE.Group();
   const geo = item.edge ? new RoundedBoxGeometry(item.w, item.h, item.d, 2, item.edge) : new THREE.BoxGeometry(item.w, item.h, item.d);
   const m = new THREE.Mesh(geo, new THREE.MeshStandardMaterial(item.pattern === 'zigzag' ? { ...zigzagRugTextures(item), roughness: 1 }

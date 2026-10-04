@@ -1113,6 +1113,9 @@ North = −z (the bedrooms Sovrum 1/3 face north).
 - Towel hooks (#424, `TOWEL_HOOKS`, FURNITURE 'towelhooks', the user's marks): two round brushed-steel hooks 1.4 m up (*guess*)
   with dusty mauve terry hand towels — WC/dusch on the shaft box's north face between the toilet and the vanity (z 7.054),
   Badrum on the wall stub's south face right of the vanity towards the Tvätt doorway (z 5.134). Loose items, no collision.
+  Bath mats (#425): a bobble mat 50 × 80 (*guess*) in the same colour in each — FURNITURE `rug` with `pattern: 'bobble'`
+  (furniture.js `bobbleRug`: rounded corners, a knob canvas as map + bump, one material), in front of the WC/dusch shower and
+  along the Badrum shower corner's east glass; rugs, so `rugLift` puts the cat and things on them.
 - Toilets: the redrawn plan has them rotated; bofakta shows the tank against the wall, so
   `toiletAgainstWall` re-orients them. Modelled as Ifö Spira 6260 (`TOILET` in config,
   `src/toilet.js`); the lid opens/closes with E (`world.lids`, kept out of `world.doors` so the
