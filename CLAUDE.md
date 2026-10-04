@@ -981,10 +981,12 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   "sätta dig upp i sängen" (look at the bed's foot half; `aim` on a rest spot) puts it on, getting up puts it off; Pingping, a navy
   penguin cushion, sits between the pillows (#269, docs/pingping-pingvinkudde.jpg); teal jungle-animal print curtains on a ceiling track under the soffit in front of the window (#342, `CURTAINS`, docs/gardiner-sovrum1-turkos-djurmonster.jpg; two-part, meeting in the middle, #362; open by default, parked at
   the sides, both stacks off the glass — the west one in the NW corner by the wall, #403); a framed photo of Miele, the family's cat, stands on the window
-  board east of the speaker (#322, `PHOTO_FRAME`, builder `photoframe`, textures/miele.jpg from docs/miele-foto-ram.jpg; a Thing, kind
-  'photo': "Titta på Miele" brings it up close); on that board from the west (#409): the speaker lying on its side, fabric to the room,
-  a Philips Hue Go (`HUE_GO`, src/huego.js: a lamp of its own; E on its handle loop = "byta färg på", kind 'huecolor', steps
-  through `scenes` — FloorLamp.recolor: glow, pool light and shader wash), the photo, the fern; an oak hook rail with five black hooks on the Klk's outside facing the room door (its west wall in the alcove
+  board (#322, `PHOTO_FRAME`, builder `photoframe`, textures/miele.jpg from docs/miele-foto-ram.jpg; a Thing, kind
+  'photo': "Titta på Miele" brings it up close); on that board from the west (#409, #418): a Philips Hue Go
+  (`HUE_GO`, src/huego.js: a lamp of its own; E on its handle loop = "byta färg på", kind 'huecolor', steps
+  through `scenes` — FloorLamp.recolor: glow, pool light and shader wash), the photo, the fern (the middle pot slot), the speaker
+  standing upright at the east end, its light grey fabric front to the room with the − ⏯ + strip low on it (`controls: 'front'`,
+  docs/symfonisk-bokhylla-staende.jpg); an oak hook rail with five black hooks on the Klk's outside facing the room door (its west wall in the alcove
   by the door, #329, `HOOKS`, `src/hooks.js`): a sage waffle dressing gown and a navy hoodie (hung by its hood), three hooks empty,
   clear of the switch · Sovrum 3 (second right) Livia & Tuva, bunk (unicorn sheets), an IKEA ALEX desk under the window
   with crafts and a kids' chair (#92), a birch hook rail with white hooks on wardrobe G's end by the door: a pink zip hoodie and a rainbow

@@ -1765,11 +1765,21 @@ function symfonisk(item, lights) {
     const { w, d, h } = S.speaker;
     const [W, Hh, D] = item.lying ? [h, w, d] : [w, h, d]; // lying on its side: 31 wide, 15 high, still 10 deep
     add(rbox(W, Hh, D - 0.006, 0, 0, 0, shell, 0.008), 0, Hh / 2, -0.003);
-    add(rbox(W - 0.004, Hh - 0.004, 0.008, 0, 0, 0, fabric, 0.004), 0, Hh / 2, D / 2 - 0.004); // the fabric front
-    // play/pause and volume ± on top towards the back, a small white status light
-    const top = Hh + 0.0015, by = -D / 2 + 0.03;
-    [-0.022, 0, 0.022].forEach((dx, i) => add(new THREE.Mesh(new THREE.CylinderGeometry(i === 1 ? 0.007 : 0.005, i === 1 ? 0.007 : 0.005, 0.003, 12), btnMat), dx, top, by));
-    add(new THREE.Mesh(new THREE.SphereGeometry(0.0025, 8, 6), sonosLed), 0.04, top, by);
+    const front = item.controls === 'front' ? new THREE.MeshStandardMaterial({ color: S.front[item.color] ?? col, roughness: 0.95 }) : fabric;
+    add(rbox(W - 0.004, Hh - 0.004, 0.008, 0, 0, 0, front, 0.004), 0, Hh / 2, D / 2 - 0.004); // the fabric front
+    if (item.controls === 'front') {
+      // #418 (docs/symfonisk-bokhylla-staende.jpg): standing, the − ⏯ + strip low on the fabric front, the IKEA tab on top
+      const C = S.controls, fz = D / 2 + 0.0005;
+      add(rbox(C.w, C.h, 0.004, 0, 0, 0, shell, C.h / 2 - 0.0005), 0, C.y, fz);
+      [-C.w * 0.32, 0, C.w * 0.32].forEach((dx, i) => add(new THREE.Mesh(new THREE.CylinderGeometry(i === 1 ? 0.0045 : 0.0035, i === 1 ? 0.0045 : 0.0035, 0.002, 12).rotateX(Math.PI / 2), btnMat), dx, C.y, fz + 0.002));
+      add(new THREE.Mesh(new THREE.SphereGeometry(0.0015, 8, 6), sonosLed), -C.w * 0.14, C.y, fz + 0.002);
+      add(rbox(C.tab, 0.008, 0.004, 0, 0, 0, btnMat, 0.0015), 0, Hh - 0.012, fz);
+    } else {
+      // play/pause and volume ± on top towards the back, a small white status light
+      const top = Hh + 0.0015, by = -D / 2 + 0.03;
+      [-0.022, 0, 0.022].forEach((dx, i) => add(new THREE.Mesh(new THREE.CylinderGeometry(i === 1 ? 0.007 : 0.005, i === 1 ? 0.007 : 0.005, 0.003, 12), btnMat), dx, top, by));
+      add(new THREE.Mesh(new THREE.SphereGeometry(0.0025, 8, 6), sonosLed), 0.04, top, by);
+    }
   }
   g.position.y = item.y ?? 0;
   g.userData.footprint = [];
