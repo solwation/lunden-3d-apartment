@@ -569,11 +569,12 @@ export const GREET = {
 // Hus A's and Hus B's walls stop the visitor inside it (surroundings.js `userData.segments`)
 export const OUTDOOR = { x0: -44.6, x1: 17.75, z0: -14, z1: 33.3 };
 
-// The lightsaber in Sovrum 2 (#78, src/saber.js): two hooks on the west wall (north of the gaming desk)
-// (wall face x 2.752), the saber lying across them along z. Hilt 30 cm, blade 90 cm; the blade colour is
-// picked from `colors` each time it is taken down. `held` = where it sits in the view (camera space).
+// The lightsaber in Sovrum 2 (#78, src/saber.js): since #324 on two pegboard hooks on the Nerf board's top row (the
+// board's front face x 2.772, see TOYS.nerf: an armoury), the switched-off saber (its hilt) lying across them along z.
+// Hilt 30 cm, blade 90 cm; the blade colour is picked from `colors` each time it is taken down. `held` = where it sits
+// in the view (camera space).
 export const SABER = {
-  level: 1, x: 2.752, y: 1.62, z: 9.85, hilt: 0.3, blade: 0.9,
+  level: 1, x: 2.772, y: 1.72, z: 9.4, hilt: 0.3, blade: 0.9,
   colors: [0x3aa0ff, 0x44ff66, 0xff3030],
   held: { x: 0.26, y: -0.3, z: -0.5 },
   swingSpeed: 4, // rad/s of looking that counts as a swing
@@ -581,8 +582,9 @@ export const SABER = {
 };
 
 // Toys you can take and use (src/toys.js, Holdables like the saber; sizes and spots are our picks).
-// Nerf (#86): a pegboard on Sovrum 2's west wall beside the lightsaber, north of it and clear of the door leaf
-// (open, it lies along the wall up to z 8.61; on the east wall the MALM chest hid it) with three foam blasters
+// Nerf (#86): a pegboard on Sovrum 2's west wall north of the gaming desk (z ≥ 10.83) and clear of the door leaf
+// (open, it lies along the wall up to z 8.61; on the east wall the MALM chest hid it); #324: 1.3 × 0.95 m (*guess*), the
+// lightsaber (SABER) on its top row, the blasters `spread` m apart below it (an armoury), with three foam blasters
 // (click = fire a dart that flies and lands), a dart bandolier and goggles. Wands (#87): three star wands
 // and a unicorn headband on hooks on Sovrum 3's east wall, clear of the door's swing (click / waving =
 // sparkles + a pling). Flashlight (#89): on the hat shelf of the hall wardrobe by the front door (open
@@ -592,7 +594,7 @@ export const TOYS = {
   // #236: three different models (`models`: a pistol, a drum blaster, a long one with a clip and a stock), each in its
   // colour with side panels in `accents`, grey details and an orange muzzle; `shift` = m along the board per blaster
   // (the long one sits further from the bandolier). Shapes after Nerf Elite 2.0 / N-Strike, sizes ours.
-  nerf: { level: 1, x: 2.752, face: 1, y: 1.35, z: 9.18, board: [0.9, 0.8], colors: [0xff7a1a, 0x1f8bff, 0xffd21a],
+  nerf: { level: 1, x: 2.752, face: 1, y: 1.35, z: 9.38, board: [1.3, 0.95], spread: 0.32, colors: [0xff7a1a, 0x1f8bff, 0xffd21a],
     models: ['pistol', 'drum', 'long'], accents: [0xf2f2f2, 0xf2f2f2, 0x2f3338], shift: [0, 0, -0.08],
     dart: { speed: 9, gravity: 6, max: 8 }, held: { x: 0.18, y: -0.15, z: -0.45 } },
   wands: { level: 1, x: 2.61, y: 1.45, z: [2.85, 3.2, 3.55], colors: [0xff7ad0, 0x9b7bff, 0x5fd7ff],

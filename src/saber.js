@@ -3,7 +3,7 @@ import { SABER as S, LEVELS } from './config.js';
 import { sfx } from './audio.js';
 import { Holdable } from './holdable.js';
 
-// The lightsaber in Sovrum 2 (#78), a Holdable (holdable.js). It hangs on two hooks on the wall; E takes
+// The lightsaber in Sovrum 2 (#78), a Holdable (holdable.js). It hangs on two pegboard hooks on the Nerf board (#324); E takes
 // it down: it ignites (snap-hiss), hums, and is held low on the right of the view. Looking around fast or
 // clicking swings it with a whoosh that follows the speed. E on the empty hooks hangs it back (off). The
 // blade glows with emissive and additive materials only (no lights). When the blade cuts into a wall, the
@@ -40,8 +40,9 @@ function buildSaber() {
 export class Saber extends Holdable {
   constructor(scene, camera) {
     const y0 = LEVELS[S.level].floor + S.y;
-    // the holder: two black hooks on the wall (the switched-off saber is just its 30 cm hilt)
-    const hook = new THREE.MeshStandardMaterial({ color: 0x151515, roughness: 0.5 });
+    // the holder: two pegboard hooks (the blasters' peg colour) on the Nerf board's top row (#324; the switched-off
+    // saber is just its 30 cm hilt)
+    const hook = new THREE.MeshStandardMaterial({ color: 0x2f3338, roughness: 0.5 });
     const parts = [];
     for (const dz of [-0.1, 0.1]) {
       const h = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.03, 0.02), hook);

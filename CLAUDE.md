@@ -766,7 +766,8 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   (#310, `shape: 'round'` on a `rug` item; `src/rugs.js` `rugLift`: the cat's floor spots and things put on the floor stand on a rug) ·
   Sovrum 2 (first left) Walter & Kian, bunk (Darth Vader sheets), a gaming desk with a PC along the west wall, short end to the window (#77, #84): sitting in its chair starts the
   PC; a sit spot in the lower bunk (`watch`, a spot `kind` can differ from its piece) swings the monitor arm round and plays a film;
-  a lightsaber on hooks on the west wall north of the desk (#78) · Sovrum 4 (second left, ex Allrum) Tilly (15), IKEA HEMNES
+  a 1.3 × 0.95 m pegboard on the west wall north of the desk: the lightsaber on its top row, three Nerf blasters, a
+  bandolier and goggles (#78, #86, #324) · Sovrum 4 (second left, ex Allrum) Tilly (15), IKEA HEMNES
   daybed along the west wall, its head end against the window wall short of the window board (#312, `DAYBED_Z`: more
   open floor; the holder and the posters follow it) (`HEMNES_DAYBED`, #280: beadboard back and ends, an arched apron, a quilted top mattress, the pull-out's below,
   round knobs; a charcoal bedspread with lilac bolts, black / holographic / graphic / faux-fur cushions), its three drawers
