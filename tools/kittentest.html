@@ -67,17 +67,20 @@ f.onload = async () => {
   cat.chance.appear = 0; cat.chance.steal = 0;
   useDoor(door);
 
-  // 3. smaller: the drawn meshes' box (not the hand, stars, X)
+  // 3. smaller: the drawn meshes' box (not the hand, stars, X), from their vertices (#414: a rotated mesh's transformed
+  // bounding box reaches lower than the mesh — the tilted body's box put the cat ~2.7 cm "into" the floor)
   const box = () => {
     let lo = [1e9, 1e9, 1e9], hi = [-1e9, -1e9, -1e9], low = '';
     cat.object.updateMatrixWorld(true);
     cat.object.traverse((o) => {
       if (!o.isMesh) return;
       for (let p = o; p; p = p.parent) { if (!p.visible && p !== cat.object) return; if (p === cat.object) break; }
-      o.geometry.computeBoundingBox();
-      const bb = o.geometry.boundingBox.clone().applyMatrix4(o.matrixWorld);
-      if (bb.min.y < lo[1]) low = `${o.geometry.type}@${o.parent === cat.object ? 'root' : o.parent?.type}`;
-      for (let k = 0; k < 3; k++) { lo[k] = Math.min(lo[k], bb.min.getComponent(k)); hi[k] = Math.max(hi[k], bb.max.getComponent(k)); }
+      const v = new V(), pos = o.geometry.attributes.position;
+      for (let i = 0; i < pos.count; i++) {
+        v.fromBufferAttribute(pos, i).applyMatrix4(o.matrixWorld);
+        if (v.y < lo[1]) low = `${o.geometry.type}@${o.parent === cat.object ? 'root' : o.parent?.type}`;
+        for (let k = 0; k < 3; k++) { lo[k] = Math.min(lo[k], v.getComponent(k)); hi[k] = Math.max(hi[k], v.getComponent(k)); }
+      }
     });
     return { lo, hi, h: hi[1] - lo[1], w: hi[0] - lo[0], low };
   };
@@ -91,11 +94,11 @@ f.onload = async () => {
   player.spawn(2.8, 9.0, Math.PI);
   place(false); const grown = box();
   place(true); const small = box();
-  pass &= check(small.h < grown.h * 0.62 && small.h > grown.h * 0.4 && small.lo[1] > grown.lo[1] * KITTEN.shape.size - 0.003 && small.lo[1] < 0.02, // (sitting, the grown body sinks a little into the floor too)
+  pass &= check(small.h < grown.h * 0.62 && small.h > grown.h * 0.4 && Math.abs(small.lo[1]) < 0.005 && Math.abs(grown.lo[1]) < 0.005, // both rest on the floor, not in it (#414)
     `a kitten is smaller: ${(small.h * 100).toFixed(1)} cm tall vs ${(grown.h * 100).toFixed(1)} cm (${(small.h / grown.h).toFixed(2)} ×), lowest point ${(small.lo[1] * 100).toFixed(1)} cm (${small.low}; a grown cat ${(grown.lo[1] * 100).toFixed(1)} cm)`);
   // standing too (the short legs reach the floor)
   cat.stand = 1; cat.wantStand = 1; cat.pose(0); const st = box();
-  pass &= check(st.lo[1] > -0.012 && st.lo[1] < 0.02, `standing, its paws on the floor (lowest ${(st.lo[1] * 100).toFixed(1)} cm)`);
+  pass &= check(Math.abs(st.lo[1]) < 0.005, `standing, its paws on the floor (lowest ${(st.lo[1] * 100).toFixed(1)} cm)`);
 
   // 4. it plays on the spot: each kind, no move in x/z
   for (const kind of ['pounce', 'spin', 'bat']) {

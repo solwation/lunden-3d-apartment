@@ -18,11 +18,34 @@
 //   google-chrome --headless=new --dump-dom http://localhost:8137/tools/cattest.html
 import { buildWorld } from '../src/world.js';
 import { CatSpawner } from '../src/cat.js';
+import { rugLift } from '../src/rugs.js';
+import * as THREE from 'three';
 
 const plan = await fetch('../data/plan.json').then((r) => r.json());
 const world = buildWorld(plan);
 const lines = [];
 let pass = true;
+// #414: the cat rests on what it is on — its lowest vertex (not a bounding box: the tilted body's box reaches lower) within
+// 0.5 cm of its root, and on the floor the root is the floor + a rug under it
+const lowest = (cat) => {
+  let lo = Infinity; const v = new THREE.Vector3();
+  cat.object.updateMatrixWorld(true);
+  cat.object.traverse((o) => {
+    if (!o.isMesh) return;
+    for (let q = o; q !== cat.object; q = q.parent) if (!q.visible) return;
+    const pos = o.geometry.attributes.position;
+    for (let i = 0; i < pos.count; i++) lo = Math.min(lo, v.fromBufferAttribute(pos, i).applyMatrix4(o.matrixWorld).y);
+  });
+  return lo;
+};
+let rests = 0, restBad = [], onRug = 0;
+const rests_ = (cat, where) => {
+  cat.update(0);
+  const p = cat.object.position, floor = p.y < 1.6 ? 0 : 3.25, lift = cat.on ? 0 : rugLift(p.y < 1.6 ? 0 : 1, p.x, p.z);
+  const dLow = lowest(cat) - p.y, dRoot = cat.on || where.kind === 'wardrobe' ? 0 : p.y - floor - lift; // (in a wardrobe: on its raised floor)
+  rests++; if (lift > 0) onRug++;
+  if (Math.abs(dLow) > 0.005 || Math.abs(dRoot) > 0.002) restBad.push(`${where.name} (${cat.on ?? 'floor'}${lift ? `, rug ${(lift * 100).toFixed(1)} cm` : ''}): lowest ${(dLow * 100).toFixed(2)} cm, root ${(dRoot * 100).toFixed(2)} cm`);
+};
 for (const door of world.doors) {
   if (door.name === 'ytterdörren') continue;
   let seed = 12345;
@@ -33,6 +56,7 @@ for (const door of world.doors) {
   cat.onOpen(door, from);
   const p = cat.object.position;
   let ok = cat.visible;
+  if (ok) rests_(cat, door);
   if (ok && door.kind !== 'wardrobe') {
     // must be on the far side of the doorway
     const side = (p.x - center[0]) * normal[0] + (p.z - center[1]) * normal[1];
@@ -59,6 +83,7 @@ for (const door of world.doors) {
   cat.hide();
   cat.onOpen(door, from);
   if (!cat.visible) { pass = false; lines.push(`FAIL furniture: no cat behind ${door.name}`); continue; }
+  rests_(cat, door);
   const p = cat.object.position, floor = p.y < 1.6 ? 0 : 3.25;
   const side = sgn * ((p.x - center[0]) * normal[0] + (p.z - center[1]) * normal[1]);
   if (cat.on) {
@@ -72,6 +97,8 @@ for (const door of world.doors) {
 const okUps = ups.length >= 4 && ups.includes('lie') && ups.includes('sit');
 pass &&= okUps;
 lines.push(`${okUps ? 'PASS' : 'FAIL'} cats up on furniture behind ${ups.length} doors (${[...new Set(ups)].join(', ')})`);
+pass &&= !restBad.length;
+lines.push(`${restBad.length ? 'FAIL' : 'PASS'} the cat rests on its floor / rug / furniture, not in it (#414): ${rests} cats, ${onRug} on a rug${restBad.length ? '\n  ' + restBad.join('\n  ') : ''}`);
 document.getElementById('out').textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
 </script>
 </body>

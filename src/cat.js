@@ -246,16 +246,16 @@ const POSE = {
     bib: [0, 0.19, 0.085], bibScale: [0.07, 0.12, 0.05],
     shoulder: [0.04, 0.17, 0.085], head: [0, 0.325, 0.05],
     hip: [0.07, 0.075, -0.03], thigh: [0, 0, 0], thighScale: [0.075, 0.075, 0.11],
-    hock: [0, -0.057, 0], hockAngle: -Math.PI / 2, footScale: [0.035, 0.02, 0.055],
+    hock: [0, -0.052, 0], hockAngle: -Math.PI / 2, footScale: [0.035, 0.02, 0.055],
     tailRoot: [0, 0.04, -0.13],
     tail: [[0, 0, 0], [0.09, -0.015, 0.01], [0.14, -0.02, 0.11], [0.12, -0.02, 0.21], [0.06, -0.02, 0.26]],
   },
   stand: {
     body: [0, 0.2, -0.03], bodyScale: [0.095, 0.072, 0.19], bodyTilt: 0,
     bib: [0, 0.18, 0.13], bibScale: [0.062, 0.08, 0.06],
-    shoulder: [0.04, 0.175, 0.1], head: [0, 0.27, 0.19],
+    shoulder: [0.04, 0.17, 0.1], head: [0, 0.27, 0.19],
     hip: [0.045, 0.175, -0.16], thigh: [0, -0.03, 0.005], thighScale: [0.048, 0.07, 0.062],
-    hock: [0, -0.068, 0], hockAngle: 0.15, footScale: [0.028, 0.017, 0.04],
+    hock: [0, -0.0668, 0], hockAngle: 0.15, footScale: [0.028, 0.017, 0.04],
     tailRoot: [0, 0.215, -0.21],
     tail: [[0, 0, 0], [0, 0.03, -0.07], [0, 0.11, -0.12], [0, 0.2, -0.12], [0, 0.26, -0.08]],
   },
@@ -293,11 +293,11 @@ function buildCat() {
 
   // front legs, each on a shoulder pivot: the right one lifts to the face, all four swing when it walks (#163, #224)
   const leftShoulder = new THREE.Group();
-  leftShoulder.add(limb(ROLE.paw, 0.021, 0.17, 0, 0, 0), blob(ROLE.paw, 0.026, 0.017, 0.035, 0, -0.158, 0.015));
+  leftShoulder.add(limb(ROLE.paw, 0.021, 0.17, 0, 0, 0), blob(ROLE.paw, 0.026, 0.017, 0.035, 0, -0.153, 0.015));
   cat.add(leftShoulder);
   const shoulder = new THREE.Group();
   shoulder.add(limb(ROLE.paw, 0.021, 0.17, 0, 0, 0));
-  const paw = blob(ROLE.paw, 0.026, 0.017, 0.035, 0, -0.158, 0.015);
+  const paw = blob(ROLE.paw, 0.026, 0.017, 0.035, 0, -0.153, 0.015);
   shoulder.add(paw);
   cat.add(shoulder);
 
@@ -783,7 +783,7 @@ export class CatSpawner {
     const bob = a * W.bob * Math.cos(2 * ph) + (this.hopY ?? 0); // (+ a kitten's hop, #363)
     // short legs (a kitten, #363): the front legs shortened by `dropF`, the hind ones by `dropH` (folded sitting, so less);
     // the body, head and shoulders come down with them, sitting the body gets squatter so it still sits on the floor
-    const L = sh.legs, dropF = (1 - L) * 0.17, dropH = (1 - L) * mix(0.057, 0.158, k);
+    const L = sh.legs, dropF = (1 - L) * 0.17, dropH = (1 - L) * mix(0.075, 0.158, k);
     this.legDrop = dropF;
     // standing, the fluff makes it taller rather than longer
     p.torso.scale.set(fluff, mix(1, fluff, k), mix(fluff, 1, k));
@@ -827,6 +827,9 @@ export class CatSpawner {
     if (Math.abs(k - this.tailK) > 0.004 || Math.abs(u - this.tailUK) > 0.004) { // rebuilt only while the pose or the tail changes
       this.tailK = k; this.tailUK = u;
       const pts = S.tail.map((q, i) => mix3(new THREE.Vector3(), q, T.tail[i], k).lerp(new THREE.Vector3(...TAIL_UP[i]), u).multiplyScalar(sh.tailLen));
+      // lying on the floor, a thick tail (and its tip) rests on it rather than in it (#414)
+      const rootY = mix(S.tailRoot[1], T.tailRoot[1], k) - k * (1 - L) * 0.158, tube = 0.017 * sh.tail;
+      pts.forEach((q, i) => { q.y = Math.max(q.y, (i === pts.length - 1 ? Math.max(tube, 0.018 * sh.tail) : tube) + 0.0005 - rootY); });
       p.tail.geometry.dispose();
       p.tail.geometry = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 24, 0.017 * sh.tail, 8);
       p.tip.position.copy(pts[pts.length - 1]);
