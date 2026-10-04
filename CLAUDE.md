@@ -494,6 +494,7 @@ src/sillplants.js      flower pots on every inner window board (SILL_PLANTS, #13
 src/plants.js          SillPot (#185): each window-board pot is a Holdable; its own model is invisible at home, shows (and
                        the merged meshes are rebuilt without it) once taken; the side-table flower and the kitchen shelf's
                        vase / pot plant are plain Things (kind 'plant'); window boards are put-down surfaces too
+src/randers.js         the JYSK RANDERS tray table by the armchair (#405, RANDERS): tray, rails, straight legs, a low cross
 src/huego.js           the Philips Hue Go on Sovrum 1's window board (#409, HUE_GO): a lamp of its own + colour scenes on its handle loop
 src/laptop.js          Tilly's laptop on the vanity (#283, LAPTOP): an unbranded rose-gold laptop with stickers; `Feed` draws "Klipp",
                        an invented short-video app (no real brand / people) on a canvas — eight canvas clips (`CLIPS`) in a phone
@@ -914,7 +915,7 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   the leaf print and the bobble knit with a dark grey fleece throw draped over its right arm (`CUSHIONS`, #278; the
   sofa's sit spots keep clear of the corner cushion); matching armchair and, in front of it, a dark red upholstered stool (#180, `OTTOMAN`, guessed from the user's photo) in
   the NW corner with a floor lamp (IKEA NYMÅNE, 3 spots aimed at the seat, on the sitter's right, #56)
-  and a side table with a small flower. Dimensions in
+  and a dark purple JYSK RANDERS tray table (#405, `RANDERS`, src/randers.js, Ø 47 × 51) with a small flower and the book. Dimensions in
   `LANDSKRONA` (config) — the chaise/armchair numbers are series estimates. In front
   of the sofa: coffee table ILVA Woodstock, oiled oak veneer top, 120 × 60 × 47 cm (#410, `COFFEE_TABLE`: a soft rounded top, splayed tapered legs, a shelf of round dowels).
   Under both: a 300 × 200 cm rug (#55, no collision) in Sarah's pattern (#171, `archRugTexture`: dark olive with

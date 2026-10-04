@@ -875,8 +875,8 @@ export const REMOTE = { w: 0.04, l: 0.18, h: 0.015, x: 3.98, y: 0.47, z: 10.72, 
   held: { x: 0.17, y: -0.19, z: -0.36 } };
 
 // The book on the side table by the armchair (#140, src/book.js): a hardback 15 × 22 × 3 cm lying beside the
-// flower (side table at 1.52, 8.12, top at 0.5325). `held` = where it sits in the view (camera space).
-export const BOOK = { w: 0.15, l: 0.22, h: 0.03, x: 1.6, y: 0.5325, z: 8.2, turn: 28,
+// flower (side table at 1.52, 8.12; since #405 the RANDERS tray's floor at 0.483, the book well inside its rim). `held` = where it sits in the view (camera space).
+export const BOOK = { w: 0.15, l: 0.22, h: 0.03, x: 1.57, y: 0.483, z: 8.17, turn: 28,
   held: { x: 0.17, y: -0.24, z: -0.56 } };
 
 // Pingping (#269, src/pingping.js): the penguin cushion between the pillows in Sarah and Olof's bed (the user's photo
@@ -1878,6 +1878,13 @@ export const MALM_DECO = {
 // the height), the handle loop's height (`loop`), the base and the colours are *guesses* from product photos; no logo.
 // `scenes` = what E on the handle loop steps through (our picks: warm white, soft pink, teal like the curtains, sunset
 // orange); `light` = its pool light (by eye: a soft glow on the board, the reveal and the ceiling).
+// JYSK "Hörnbord RANDERS" (#405, docs/sidobord-jysk-randers-*.jpg): JYSK gives Ø 47 cm, height 51 cm, 32 cm between
+// the legs both ways, the tray 3 cm high flat-packed (`rim`); steel, powder-coated. Leg Ø 1.2 cm, the thin rails, the
+// tray sheet, the rail square's drop under the tray, the cross's height and the caps are *guesses* from the photo. The
+// legs stand straight (the photo), not splayed. Colour: dark purple instead of JYSK's black (the user), `color` our pick.
+export const RANDERS = { d: 0.47, h: 0.51, rim: 0.03, legs: 0.32, leg: 0.012, thin: 0.004, sheet: 0.003, rail: 0.012,
+  cross: 0.1, cap: 0.012, color: 0x3b2240, caps: 0x1c1418, rough: 0.5, metal: 0.25 };
+
 export const HUE_GO = {
   d: 0.142, h: 0.22, split: 0.3, loop: 0.035, base: { r: 0.068, h: 0.012 }, body: 0xf3f2ef, handle: 0x4a4c50, name: 'Hue Go-lampan',
   light: { intensity: 0.7, range: 3, color: 0xffc98a },
@@ -2174,7 +2181,9 @@ export const FURNITURE = [
   // sizes are guesses): beside the armchair on the sitter's right (the side table is on the left),
   // the spots aimed at the seat; `aim` = plan point they point at
   { type: 'floorlamp', level: 0, x: 0.36, z: 8.86, aim: [0.78, 8.38], h: 1.6, base: 0.25 },
-  { type: 'sidetable', level: 0, x: 1.52, z: 8.12, flower: true },
+  // a JYSK RANDERS tray table (#405) in the side table's place by the armchair, turned so local = world axes: the flower
+  // towards the NW (wall / armchair side), the book (BOOK) on the room side of the tray
+  { type: 'randerstable', level: 0, x: 1.52, z: 8.12, rot: 180, flower: true, flowerAt: [-0.09, -0.09] },
   // IKEA BESTÅ display combination with glass doors, white / Lappviken walnut effect, 120 × 42 × 193 cm (#104, ikea.com
   // s79612224): two columns, three 64 cm sections each (walnut door, glass door, walnut door). Wall-hung on the west
   // wall (x 0.202) between the armchair/floor lamp (z < 9.1) and the palm (z > 11.5), 35 cm above the floor (the user:

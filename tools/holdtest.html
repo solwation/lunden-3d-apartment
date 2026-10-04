@@ -49,6 +49,13 @@ f.onload = async () => {
   pass &= check(lookAt(cupAt(), /ta koppen/i, [[4.4, 1.7], [4.3, 1.4], [4.5, 2.0]]), `take the cup: "${btn.textContent}"`);
   btn.click(); step(1 / 60);
   pass &= check(heldItem() === cup, 'cup in the hand');
+  // on the RANDERS tray table by the armchair (#405): it stands on the tray's floor, beside the flower and the book
+  const tray = { x: 1.40, y: 0.483, z: 8.22 };
+  pass &= check(lookAt(tray, /ställa ner koppen här/i, [[1.9, 9.0], [2.2, 8.6], [1.5, 9.1]]), `the tray table: "${btn.textContent}"`);
+  btn.click(); step(1 / 60);
+  pass &= check(!heldItem() && cup.state === 'placed' && Math.abs(cup.model.position.y - 0.483) < 0.01, `the cup on the tray table (y ${cup.model.position.y.toFixed(3)})`);
+  pass &= check(lookAt(cupAt(), /ta koppen/i, [[1.9, 9.0], [2.2, 8.6], [1.5, 9.1]]), `and taken again: "${btn.textContent}"`);
+  btn.click(); step(1 / 60);
   const coffee = { x: 3.64, y: 0.47, z: 10.56 };
   pass &= check(lookAt(coffee, /ställa ner koppen här/i, [[3.6, 9.4], [3.0, 9.6], [4.4, 9.5]]), `coffee table: "${btn.textContent}"`);
   btn.click(); step(1 / 60);
