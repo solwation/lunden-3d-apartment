@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { LIFE, ITEMS } from './config.js';
+import { LIFE, ITEMS, LIFE_FOOD } from './config.js';
 import { Items, SIZES } from './items.js';
 import { Holdable, heldItem, setHeld, handBusy } from './holdable.js';
 import { buildModel } from './lifemodels.js';
@@ -119,6 +119,8 @@ export class Life {
     this.group.name = 'life';
     scene.add(this.group);
     this.anchors = new Map(); // store id → (slot) => Object3D (#369)
+    this.stock = [...LIFE_FOOD.stock]; // what the kitchen always has (#373): [type, store, slot]
+    this.wasOpen = new Map(); // store id → open at the last update (a refill on opening, #373)
     this.actions = new ActionSet(); // what you can do with a thing (#367): baseActions below, more per LIFE issue
     this.runner = new Runner(this.items); // actions that take a moment (#372): validate, reserve, animate, commit
     baseActions(this);
@@ -170,6 +172,27 @@ export class Life {
     return a.run();
   }
 
+  /**
+   * The kitchen's stock (#373, LIFE_FOOD.stock): every [type, store, slot] that has no thing of its own anywhere (nothing of
+   * that type with that home: not in the hand, not lying out, not half used) gets a fresh one in its home slot (or the
+   * store's first free one). `store` = only that store's entries (the one just opened); null = all (a new visit). Never a
+   * second one while the old one exists: a thing is "used up" only once it is gone (eaten, thrown away). Returns what it made.
+   */
+  restock(store = null) {
+    const I = this.items, made = [];
+    for (const [type, st, slot] of this.stock) {
+      if (store && st !== store) continue;
+      if (!I.store(st) || !I.def(type)) continue;
+      if (I.all().some((i) => i.type === type && i.home?.at === 'slot' && i.home.store === st && i.home.slot === slot)) continue;
+      const home = { at: 'slot', store: st, slot };
+      let place = home;
+      if (I.check({ type }, home, { ignoreShut: true })) { const k = I.freeSlot(st, { type }); if (k < 0) continue; place = { at: 'slot', store: st, slot: k }; }
+      const it = this.create(type, place, { home });
+      if (it) made.push(it);
+    }
+    return made;
+  }
+
   /** Stop a timed action (F, sitting down …): before its commit nothing is used (#372). */
   interrupt(why) { this.runner.interrupt(why); }
 
@@ -178,6 +201,11 @@ export class Life {
 
   update(dt) {
     for (const v of this.views.values()) v.update(dt);
+    for (const st of this.items.stores.values()) { // a store opened after being shut: what was used up is back (#373)
+      const open = !st.isOpen || !!st.isOpen();
+      if (open && this.wasOpen.get(st.id) === false) this.restock(st.id);
+      this.wasOpen.set(st.id, open);
+    }
     const job = this.runner.job;
     if (job) { // a timed action stops when the hand changes or the visitor walks off (#372); else it moves on in game time
       const c = job.ctx, from = (job.from ??= this.camera.position.clone());
@@ -255,10 +283,12 @@ export function devScenario(a) {
   const glass = a.things.find((t) => t.kind === 'glass' && t.name === 'vinglaset');
   const table = a.world.cupSurfaces.find((s) => Math.abs(s.userData.surface - 0.754) < 0.01)?.userData.surface ?? 0.754;
   if (glass) { glass.take(); glass.placeAt(new THREE.Vector3(D.glass[0], table, D.glass[1])); glass.model.rotation.set(0, 0, 0); }
-  // the life sim's things (#366): a plate and a cucumber on the dining table
+  // the life sim's things (#366): a plate and a cucumber on the dining table; then the kitchen's stock, fresh (#373)
+  for (const i of a.life.items.all()) a.life.items.remove(i, { cascade: true });
   const made = {};
   for (const [type, [x, z, yaw]] of Object.entries(D.items ?? {})) made[type] = a.life.create(type, { at: 'world', pos: [x, table, z], yaw: THREE.MathUtils.degToRad(yaw) });
-  for (const [type, store, slot] of D.stored ?? []) a.life.create(type, { at: 'slot', store, slot }); // in the fridge, the drawer, the pantry (#369)
+  for (const [type, store, slot] of D.stored ?? []) a.life.create(type, { at: 'slot', store, slot }); // in the drawer (#369)
+  a.life.restock();
   // the visitor in the kitchen, facing the worktop (unless &at= says otherwise)
   if (!a.at) {
     const [x, z, yaw, pitch] = D.at;

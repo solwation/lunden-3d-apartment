@@ -6,7 +6,7 @@ import { LIFE } from './config.js';
 // gets one anchor per slot in the scene (life.anchors): what lies in a slot is a child of its anchor, so it rides with a
 // drawer or a door and is hidden with the front's static contents (contents.js) while that is shut.
 //   fridge    the glass shelves (the chicken's and the milk's places stay free) + the door bins (on the door: they swing)
-//   freezer   on top of the frozen bags in its top basket
+//   freezer   on top of the frozen bags in its top basket; slot 3 on the lower open shelf beside the fish fingers (#373)
 //   pantry    the wall cabinet beyond the hob (interior.js stock 'pantry'): the front of its bottom and its shelf
 //   utensils  the top drawer under the hob: on the folded towels at its front (LIFE-010 puts the knives there)
 // A pick box inside each store is the E target "Lägga … i …" while a life item is held (and only then, so it never covers
@@ -83,6 +83,7 @@ export function buildStores(life, world) {
   if (freezer?.inside) {
     const { cx, cz, iw, depth, y0 } = freezer.inside, y = y0 + S.freezer.y;
     const slots = [-0.15, 0, 0.15].map((dx) => ({ size: 'm', anchor: anchorIn(freezer.object, new THREE.Vector3(cx + dx * iw / 0.55, y, cz + 0.02), -Math.PI / 2) }));
+    if (freezer.shelves) slots.push({ size: 'm', anchor: anchorIn(freezer.object, new THREE.Vector3(cx + S.freezer.peas * iw / 0.55, freezer.shelves[0] + 0.002, cz - 0.03), -Math.PI / 2) }); // slot 3: the lower open shelf beside the fish fingers (#373)
     const box = pickBox(freezer.object, new THREE.Vector3(cx - iw / 2, y0 + 0.1, cz - depth / 2), new THREE.Vector3(cx + iw / 2, y0 + 1.75, cz + depth / 2), () => holding() && freezer.isOpen);
     add('freezer', { name: 'frysen', shutText: 'Öppna frysen först', fullText: 'Fryslådan är full', isOpen: () => freezer.isOpen }, slots, box);
   }

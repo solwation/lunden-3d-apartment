@@ -30,7 +30,7 @@ f.onload = async () => {
     const fridge = world.lids.find((l) => l.kind === 'fridge' && !l.freezer), freezer = world.lids.find((l) => l.kind === 'fridge' && l.freezer);
     const drawer = world.lids.find((l) => l.stock === 'utensils'), pantry = world.lids.find((l) => l.stock === 'pantry');
     const n = (id) => I.store(id)?.slots.length ?? 0;
-    check(n('fridge') >= 6 && n('freezer') === 3 && n('pantry') === 3 && n('utensils') === 3, `stores with slots: fridge ${n('fridge')}, freezer ${n('freezer')}, pantry ${n('pantry')}, utensils ${n('utensils')}`);
+    check(n('fridge') >= 6 && n('freezer') === 4 && n('pantry') === 3 && n('utensils') === 3, `stores with slots: fridge ${n('fridge')}, freezer ${n('freezer')}, pantry ${n('pantry')}, utensils ${n('utensils')}`);
     const shown = (o) => { for (let p = o; p; p = p.parent) if (!p.visible) return false; return true; };
     // shut: open it first, nothing moves
     const cheese = life.create('cheese', { at: 'world', pos: [5.25, 0.931, 3.0], yaw: 0 });
@@ -67,7 +67,7 @@ f.onload = async () => {
     fridge.toggle(); settle(fridge);
     aim(cp.clone().setY(cp.y + 0.03), stands);
     check(!/osten/.test(btn.textContent) && cv.target.blocked && cv.target.blockedText === 'Öppna kylen först', `the shut fridge: "${btn.textContent}" (the cheese's own target: "${cv.target.blockedText}")`);
-    // full: the freezer's three slots, a fourth stays in the hand
+    // full: the freezer's top basket (three slots; the fourth, on the shelf, holds the peas, #373), another stays in the hand
     freezer.toggle(); settle(freezer);
     const frozen = [0, 1, 2].map((k) => life.create('breadBag', { at: 'slot', store: 'freezer', slot: k }));
     const extra = life.create('butter', { at: 'world', pos: [5.25, 0.931, 3.2], yaw: 0 });

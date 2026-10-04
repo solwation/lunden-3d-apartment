@@ -608,6 +608,11 @@ src/life.js            the life simulator (epic #364) glue; the `&life` develope
                        whose model follows the instance's place (world → `life.group`, a loose item; hand; a store slot's or a
                        carrier's anchor) and state (`view.show`); take / placeAt / putBack move the instance (never lost: home,
                        else where it last lay, else at your feet)
+                       The kitchen's food (#373, LIFE_FOOD: `stock` [type, store, slot] + `amounts`): a cheese, a cucumber and a
+                       butter in the fridge, frozen peas on the freezer's lower shelf beside the fish fingers, a bread bag in the
+                       pantry, labels of our own (lifemodels.js `label`). `life.restock(store)` gives every stock entry with no thing
+                       of that type and home left anywhere a fresh one in its home: at the start of a visit (after `restore()`) and
+                       whenever a store is opened after being shut (life.update) — never while the old one is in the hand / out / half used
 src/actions.js         what you can do with a life-sim thing (#367): `ActionSet.define({ id, label, applies, check, run, consumes,
                        result, duration, interrupt, order, quiet })`, `list(ctx)` = the rows with a Swedish `reason` when blocked
                        ("Öppna kylen först", "Tallriken är full", "För långt bort"); life.js `baseActions`: putOn, take, open, close.
@@ -843,6 +848,9 @@ tools/storetest.html   headless test (#369): the stores' slots; the shut fridge 
 tools/itemtest.html    headless test (#366): items.js with plain asserts (two instances, amounts never < 0, one place, carriers,
                        stores, events, carriers without cycles) and the view in the game (&life: take the cucumber, half used = half as long,
                        down, F; a plate loaded with bread + two slices: carried, put down turned, in and out of the fridge, one taken off)
+tools/lifetest.html    headless test of the life sim's M1, the sandwich flow (#373 …): the stock in its places named in the prompt, the
+                       cucumber out and back, used up → a fresh one on the next opening (never while the old one is out), a new
+                       visit keeps the amounts (lunden.life)
 tools/inventorytest.html headless test (#365): the `&life` scenario's start state, the visitor's records untouched, the
                        integration points the inventory names; without &life the game starts at START
 tools/stamp.sh         build the published site with a version stamp (used by CI)
@@ -1189,7 +1197,7 @@ URL parameters (debugging / screenshots):
 - `&toaster` — the toaster out on the worktop by the corner, plugged in and toasting (#401).
 - `&life` — the life simulator's developer scenario (#365, `src/life.js` `devScenario`, `LIFE.dev`): everything at home and
   shut (not with `&open`), no cat, noon paused (unless `&time`), the visitor in the kitchen, an empty cup + the milk on the worktop, a wine glass
-  on the dining table; life items on the dining table and in the fridge / drawer / pantry (`LIFE.dev.items` / `stored`). The resume / F5 records are neither read nor written (`resume.js`), so the visitor's own place stays.
+  on the dining table; life items on the dining table and in the drawer (`LIFE.dev.items` / `stored`) + the kitchen's stock, fresh (LIFE_FOOD, #373). The resume / F5 records are neither read nor written (`resume.js`), so the visitor's own place stays.
 - `&fall=h` — drop from h m (default 5) above the ground where you start (#361; with `&at=`): over 3 m it hurts.
 - `&hoop` — the basketball hoop up out front. `&car` — our car parked in front of the house. `&water` — turn on every tap and shower. `&tv` — switch the TV on. `&laptop` — Tilly's laptop on. `&secret=i` — the secret drawer shows surprise i (SECRET.items, with `&open`).
 - `&phone` — the short touch-only start screen. `&install` — show the iPhone install sheet. `&note` — open the changelog note. `&pet` (with `&cat=`) — the cat is being petted.

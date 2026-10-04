@@ -16,8 +16,27 @@ const M = {
   foil: std(0xe9c75b, 0.35, { metalness: 0.35 }), butter: std(0xf7e39a, 0.5), lid: std(0xf4f1e6, 0.5),
   bag: new THREE.MeshStandardMaterial({ color: 0xf2efe6, roughness: 0.25, transparent: true, opacity: 0.55, depthWrite: false }),
   clip: std(0x2f6fc4, 0.5), crust: std(0x9a6332, 0.7), crumb: std(0xe8d3a8, 0.85),
-  steel: std(0xc9cdd0, 0.25, { metalness: 0.7 }), handle: std(0x222222, 0.55),
+  steel: std(0xc9cdd0, 0.25, { metalness: 0.7 }), handle: std(0x222222, 0.55), peasBag: std(0x2f7d32, 0.35),
 };
+
+/** A printed label of our own (#373: no real brands): a canvas with a background, a wordmark and a small line under it. */
+function label(text, { w = 256, h = 128, bg = '#f4f1e6', fg = '#2b2b2b', sub = '', subColor = fg, band = null, font = 'bold 54px Georgia, serif' } = {}) {
+  const c = document.createElement('canvas');
+  c.width = w; c.height = h;
+  const g = c.getContext('2d');
+  g.fillStyle = bg; g.fillRect(0, 0, w, h);
+  if (band) { g.fillStyle = band; g.fillRect(0, h * 0.72, w, h * 0.28); }
+  g.fillStyle = fg; g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.font = font; g.fillText(text, w / 2, h * (sub ? 0.4 : 0.5));
+  if (sub) { g.fillStyle = subColor; g.font = `${Math.round(h * 0.16)}px sans-serif`; g.fillText(sub, w / 2, h * 0.86); }
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.anisotropy = 4;
+  return new THREE.MeshStandardMaterial({ map: t, roughness: 0.5 });
+}
+const LABELS = {};
+/** One material per label kind, made the first time it is needed (canvas work only for things that exist). */
+const labelOf = (k, make) => (LABELS[k] ??= make());
 
 function mesh(geo, mat) { const m = new THREE.Mesh(geo, mat); m.castShadow = true; m.receiveShadow = true; return m; }
 function anchor(parent, x, y, z, yaw = 0) { const a = new THREE.Object3D(); a.position.set(x, y, z); a.rotation.y = yaw; parent.add(a); return a; }
@@ -80,8 +99,12 @@ function cheese() {
   const g = new THREE.Group(), L = 0.12;
   const b = mesh(new THREE.BoxGeometry(L, 0.06, 0.07), [M.cheese, M.rind, M.rind, M.rind, M.rind, M.rind]);
   b.position.y = 0.03;
-  g.add(b);
-  return { object: g, show(item, items) { const k = Math.max(0.05, item.amount / (items.def(item)?.amount ?? 500)); b.scale.x = k; b.position.x = -(1 - k) * L / 2; } };
+  // a label on the rind's long side (our own: "Gårdsost", #373), stays at the uncut end
+  const tag = mesh(new THREE.PlaneGeometry(0.06, 0.03), labelOf('cheese', () => label('Gårdsost', { bg: '#fff6d8', fg: '#7a4a12', sub: 'mellanlagrad 28 %', band: '#e2b33c' })));
+  tag.position.set(-0.025, 0.03, 0.0352);
+  const tag2 = tag.clone(); tag2.rotation.y = Math.PI; tag2.position.z = -0.0352;
+  g.add(b, tag, tag2);
+  return { object: g, show(item, items) { const k = Math.max(0.05, item.amount / (items.def(item)?.amount ?? 500)); b.scale.x = k; b.position.x = -(1 - k) * L / 2; tag.visible = tag2.visible = k > 0.55; } };
 }
 
 /** A pack of butter (12 × 7 × 5 cm) in gold paper; open: the lid off, the butter inside shorter as it is used. */
@@ -94,6 +117,9 @@ function butter() {
   const fat = mesh(new THREE.BoxGeometry(0.11, 0.004, 0.062), M.butter);
   fat.position.y = 0.046;
   fat.visible = false;
+  const top = mesh(new THREE.PlaneGeometry(0.11, 0.06).rotateX(-Math.PI / 2), labelOf('butter', () => label('Smör', { bg: '#f6e7a6', fg: '#3c5a1e', sub: 'normalsaltat · 500 g', band: '#d9b13f' })));
+  top.position.y = 0.0042;
+  lid.add(top);
   g.add(tub, lid, fat);
   return {
     object: g,
@@ -115,6 +141,9 @@ function breadBag() {
   bag.position.set(0.02, 0.053, 0);
   const clip = mesh(new THREE.BoxGeometry(0.012, 0.03, 0.04), M.clip);
   clip.position.set(L / 2 + 0.05, 0.05, 0);
+  // the bag's print on both long sides (our own: "Lantlimpa", #373)
+  const print = labelOf('bread', () => { const m = label('Lantlimpa', { bg: '#fbf3e2', fg: '#8a3b12', sub: 'skivad · 12 skivor', band: '#c98a3a', font: 'italic bold 50px Georgia, serif' }); m.transparent = true; m.opacity = 0.92; return m; });
+  for (const z of [1, -1]) { const p = mesh(new THREE.PlaneGeometry(0.14, 0.06), print); p.position.set(-0.04, 0.055, z * 0.0585); if (z < 0) p.rotation.y = Math.PI; g.add(p); }
   g.add(loaf, bag, clip);
   return {
     object: g,
@@ -125,6 +154,17 @@ function breadBag() {
       clip.visible = item.pkg === 'closed';
     },
   };
+}
+
+/** A bag of frozen peas (20 × 14 cm, lying flat, ~4 cm), its print on top (our own: "Gröna ärter", #373). */
+function peas() {
+  const g = new THREE.Group();
+  const bag = mesh(new RoundedBoxGeometry(0.2, 0.04, 0.14, 3, 0.016), M.peasBag);
+  bag.position.y = 0.02;
+  const top = mesh(new THREE.PlaneGeometry(0.17, 0.115).rotateX(-Math.PI / 2), labelOf('peas', () => label('Gröna ärter', { bg: '#2f7d32', fg: '#ffffff', sub: 'djupfrysta · 500 g', subColor: '#e8f5c8', band: '#1d5a22', font: 'bold 42px sans-serif' })));
+  top.position.y = 0.0405;
+  g.add(bag, top);
+  return { object: g, grip: [0.08, 0.02, 0.04] };
 }
 
 /** A slice of bread (11 × 10 cm, 1.2 cm). */
@@ -147,7 +187,7 @@ function knife() {
   return { object: g, grip: [-0.09, 0.009, 0] };
 }
 
-const BUILDERS = { plate, board, cucumber, cucumberSlice, cheese, butter, breadBag, breadSlice, knife };
+const BUILDERS = { plate, board, cucumber, cucumberSlice, cheese, butter, breadBag, breadSlice, knife, peas };
 
 /** The model of a type (its `model` builder; a grey box when there is none). */
 export function buildModel(def) {

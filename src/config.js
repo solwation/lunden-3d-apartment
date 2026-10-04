@@ -985,16 +985,28 @@ export const HOLD = { reach: 2.2 };
 export const LIFE = {
   dev: { at: [4.35, 2.75, -90, -32], hour: 12, cup: [5.24, 2.62], milk: [5.26, 2.95], glass: [3.55, 1.45],
     items: { plate: [3.45, 1.0, 0], cucumber: [3.72, 1.05, 20], butter: [3.35, 1.75, 0], cucumberSlice: [3.75, 1.8, 0] },
-    stored: [['cheese', 'fridge', 0], ['butter', 'fridge', 6], ['knife', 'utensils', 0], ['breadBag', 'pantry', 0]] }, // in their stores (#369): [type, store, slot] // life items (#366) on the dining table: [x, z, yaw°]
+    stored: [['knife', 'utensils', 0]] }, // in their stores (#369): [type, store, slot] (+ the kitchen's stock, LIFE_FOOD) // life items (#366) on the dining table: [x, z, yaw°]
   tooFar: 1.5, // a life-sim thing up to this much past HOLD.reach says "För långt bort" (#367)
   // storage slots (#369, stores.js): the fridge's free glass shelves (m over its floor; 0.82 = the chicken's, 1.2 = the milk's stay
   // as they are) and its door bins [y on the door, spots as fractions of the door's width]; the freezer: the top of the frozen
   // bags in its top basket (1.02 + the bags' 0.35 × 0.26 m). Our picks, from fridge.js's own shelf heights.
-  stores: { fridge: { shelves: [0.45, 1.52], bins: [[0.85, [0.3, 0.7]], [1.3, [0.3, 0.7]], [0.4, [0.7]]] }, freezer: { y: 1.117 } },
+  stores: { fridge: { shelves: [0.45, 1.52], bins: [[0.85, [0.3, 0.7]], [1.3, [0.3, 0.7]], [0.4, [0.7]]] }, freezer: { y: 1.117, peas: 0.15 } }, // peas: the lower open shelf's spot east of the fish-finger carton (x from the middle, #373)
   place: { grid: 0.05, floorGrid: 0.1, margin: 0.04, turn: 45 },
   // saving (#371): localStorage `key` written `every` s after a change; a thing whose place is gone lands on the free worktop (`lost`)
   save: { key: 'lunden.life', every: 1, lost: [5.25, 0.931, 3.0] },
   job: { walk: 0.6 }, // a timed action (#372) stops when the eye has moved this far (m) from where it started // putting down (#368): snap grids (m), kept this far inside a table's edge, R turns this many degrees
+};
+
+// The kitchen's food from the start (#373, LIFE-009; the user: no shop, no delivery, no budget — the food is simply there):
+// `stock` = [type, store, slot] — where each thing lives (its home); `amounts` = what a fresh one holds, game parameters from
+// the plan (docs/livssimulator-plan-2026-10-04.md section 3), not product measures. A thing used up and thrown away is back
+// in its home the next time its store is opened after being shut (life.js `restock`), never while the old one is still
+// anywhere (in the hand, lying out, half used). The milk is milk.js's carton (#168), the fish fingers fishfingers.js's.
+export const LIFE_FOOD = {
+  amounts: { cucumber: 300, cheese: 500, butter: 500, peas: 500, breadBag: 12 }, // g, g, g, g, slices
+  stock: [['cheese', 'fridge', 0], ['cucumber', 'fridge', 1], ['butter', 'fridge', 6], // the bottom shelf; the butter in the door's top bin
+    ['peas', 'freezer', 3], // on the lower open shelf beside the fish-finger carton
+    ['breadBag', 'pantry', 0]], // the bottom of the pantry cabinet
 };
 
 // The life simulator's item types (#366, src/items.js): name (Swedish, definite form as in the prompts), tags (what it
@@ -1009,11 +1021,12 @@ export const ITEMS = {
   board: { name: 'skärbrädan', tags: ['carrier', 'station'], unit: 'count', amount: 1, size: 'l', clean: 'clean', model: 'board',
     carrier: { slots: 9, size: 'm', accepts: ['food'], fullText: 'Brädan är full', // spot 0 = what is being cut, 1–8 = what was cut
       spots: [{ accepts: ['cuttable', 'sliceable', 'base', 'package'] }, ...Array(8).fill({ size: 's' })] } },
-  cucumber: { name: 'gurkan', tags: ['food', 'cuttable'], unit: 'g', amount: 300, size: 'm', prep: 'whole', model: 'cucumber' },
+  cucumber: { name: 'gurkan', tags: ['food', 'cuttable'], unit: 'g', amount: LIFE_FOOD.amounts.cucumber, size: 'm', prep: 'whole', model: 'cucumber' },
   cucumberSlice: { name: 'gurkskivan', tags: ['food', 'topping'], unit: 'g', amount: 10, size: 'xs', prep: 'sliced', model: 'cucumberSlice' },
-  cheese: { name: 'osten', tags: ['food', 'sliceable'], unit: 'g', amount: 500, size: 's', prep: 'whole', model: 'cheese' },
-  butter: { name: 'smöret', tags: ['food', 'package', 'spreadable'], unit: 'g', amount: 500, size: 's', pkg: 'closed', model: 'butter' },
-  breadBag: { name: 'brödpåsen', tags: ['food', 'package'], unit: 'count', amount: 12, size: 'm', pkg: 'closed', model: 'breadBag' },
+  cheese: { name: 'osten', tags: ['food', 'sliceable'], unit: 'g', amount: LIFE_FOOD.amounts.cheese, size: 's', prep: 'whole', model: 'cheese' },
+  butter: { name: 'smöret', tags: ['food', 'package', 'spreadable'], unit: 'g', amount: LIFE_FOOD.amounts.butter, size: 's', pkg: 'closed', model: 'butter' },
+  breadBag: { name: 'brödpåsen', tags: ['food', 'package'], unit: 'count', amount: LIFE_FOOD.amounts.breadBag, size: 'm', pkg: 'closed', model: 'breadBag' },
+  peas: { name: 'ärtpåsen', tags: ['food', 'frozen', 'package'], unit: 'g', amount: LIFE_FOOD.amounts.peas, size: 'm', pkg: 'closed', model: 'peas' }, // (#373; cooking them comes later)
   breadSlice: { name: 'brödskivan', tags: ['food', 'base'], unit: 'count', amount: 1, size: 's', model: 'breadSlice' },
   knife: { name: 'kökskniven', tags: ['tool:cut', 'dishwasherSafe'], unit: 'count', amount: 1, size: 's', clean: 'clean', model: 'knife' },
 };

@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Life test (M1)</title></head>
+<body>
+<pre id="out">running…</pre>
+<script type="module">
+// The life simulator's first milestone, M1 (epic #364): the sandwich flow, one section per issue.
+//  #373 the kitchen's food in its places from the start (named in the prompt), the cucumber taken out and put back, a thing
+//       used up is back on the next opening (never while the old one is out), a new visit keeps the amounts.
+//   chromium --headless=new --dump-dom http://localhost:8137/tools/lifetest.html
+import { LIFE_FOOD } from '../src/config.js';
+const out = document.getElementById('out');
+const lines = [];
+let pass = true;
+const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); pass &&= !!ok; return ok; };
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+async function load(q) {
+  const f = document.createElement('iframe');
+  f.width = 900; f.height = 600; f.src = `../index.html?${q}`;
+  document.body.append(f);
+  await new Promise((r) => { f.onload = r; });
+  while (!f.contentWindow.__app) await wait(100);
+  f.contentDocument.getElementById('start-touch').click();
+  await wait(50);
+  return f;
+}
+/** The test's tools for one page: aim the eye at a world point from a few stands until the action button matches. */
+function kit(f) {
+  const A = f.contentWindow.__app, d = f.contentDocument, btn = d.getElementById('action');
+  const { player, camera, step, scene } = A;
+  const settle = (o) => { for (let i = 0; i < 40; i++) o.update(0.1); scene.updateMatrixWorld(true); };
+  const ring = (p) => [...Array(16)].map((_, i) => [p.x + Math.sin(i / 16 * 6.283) * (0.75 + (i % 2) * 0.3), p.z + Math.cos(i / 16 * 6.283) * (0.75 + (i % 2) * 0.3)]);
+  const aim = (p, re, stands = []) => {
+    for (const [x, z] of [...stands, ...ring(p)]) {
+      player.spawn(x, z, 0); for (let i = 0; i < 3; i++) step(1 / 60);
+      const dx = p.x - camera.position.x, dz = p.z - camera.position.z;
+      camera.rotation.y = Math.atan2(-dx, -dz); camera.rotation.x = Math.atan2(p.y - camera.position.y, Math.hypot(dx, dz)); step(1 / 60);
+      const text = btn.hidden ? [...d.querySelectorAll('#choices button')].map((b) => b.textContent).join(' | ') : btn.textContent;
+      if (re.test(text)) return text;
+    }
+    return null;
+  };
+  const shut = () => { for (const o of A.world.lids) if (o.isOpen && o.kind !== 'flush') { o.toggle(); settle(o); } };
+  return { A, d, btn, settle, aim, shut, life: A.life, I: A.life.items, step };
+}
+
+// --- #373: the food from the start, taken out and put back, refilled, kept ---------------------------------------
+try {
+  const f = await load('life&shot');
+  const { A, settle, aim, shut, life, I, step } = kit(f);
+  const lid = (k) => A.world.lids.find(k);
+  const fridge = lid((l) => l.kind === 'fridge' && !l.freezer), freezer = lid((l) => l.kind === 'fridge' && l.freezer), pantry = lid((l) => l.stock === 'pantry');
+  const opener = { fridge, freezer, pantry };
+  const home = (type) => I.all().find((i) => i.type === type && i.home?.at === 'slot' && LIFE_FOOD.stock.some(([t, s, k]) => t === type && i.home.store === s && i.home.slot === k));
+  // every starting thing in its home slot, named in the prompt once its store is open
+  for (const [type, store, slot] of LIFE_FOOD.stock) {
+    const it = home(type), v = life.view(it);
+    check(it && it.place.at === 'slot' && it.place.store === store && it.place.slot === slot && it.amount === LIFE_FOOD.amounts[type], `${type}: in ${store} slot ${slot}, ${it?.amount} ${it?.unit}`);
+    const o = opener[store]; o.toggle(); settle(o);
+    const p = v.where(); p.y += 0.02;
+    const name = I.name(it), stands = store === 'pantry' ? [[4.6, p.z], [4.5, p.z - 0.3], [4.5, p.z + 0.3]] : [[p.x, 3.9], [p.x - 0.2, 3.8], [p.x + 0.2, 3.75], [p.x, 4.15]];
+    const text = aim(p, new RegExp(`Ta ${name}`), stands);
+    check(!!text, `${type} in the open ${store}: "${text}"`);
+    o.toggle(); settle(o);
+  }
+  // the cucumber out of the fridge and back
+  fridge.toggle(); settle(fridge);
+  const cuc = home('cucumber'), cv = life.view(cuc);
+  cv.take(); step(1 / 60);
+  check(A.heldItem() === cv && cuc.place.at === 'hand', 'the cucumber taken out of the fridge');
+  const n0 = I.all().length;
+  fridge.toggle(); settle(fridge); fridge.toggle(); settle(fridge); step(1 / 60);
+  check(I.all().length === n0 && I.ofType('cucumber').filter((c) => c.home?.store === 'fridge').length === 1, 'shut and opened with it in the hand: no second cucumber');
+  check(I.move(cuc, { at: 'slot', store: 'fridge', slot: 1 }) === null && cuc.place.slot === 1 && !A.heldItem(), 'and back on its shelf');
+  // used up and thrown away: a fresh one on the next opening, not before
+  cv.take(); step(1 / 60);
+  cv.placeAt(new (A.camera.position.constructor)(5.25, 0.93, 3.0), 0); step(1 / 60);
+  I.setAmount(cuc, 0);
+  fridge.toggle(); settle(fridge); fridge.toggle(); settle(fridge); step(1 / 60);
+  check(I.ofType('cucumber').filter((c) => c.home?.store === 'fridge').length === 1, 'an empty one still lying out: no new one');
+  I.remove(cuc); step(1 / 60);
+  check(!I.ofType('cucumber').some((c) => c.home?.store === 'fridge' && c.place.at === 'slot'), 'thrown away while the fridge is open: nothing yet');
+  fridge.toggle(); settle(fridge); step(1 / 60); fridge.toggle(); settle(fridge); step(1 / 60);
+  const fresh = home('cucumber');
+  check(fresh && fresh !== cuc && fresh.place.store === 'fridge' && fresh.place.slot === 1 && fresh.amount === 300, `shut and opened again: a fresh cucumber on its shelf (${fresh?.id})`);
+  for (let k = 0; k < 3; k++) { fridge.toggle(); settle(fridge); step(1 / 60); }
+  check(I.ofType('cucumber').filter((c) => c.home?.store === 'fridge').length === 1 && I.audit().length === 0, 'more openings: still one');
+  shut(); step(1 / 60);
+  f.remove();
+} catch (e) { pass = false; lines.push(`FAIL #373 error ${e.stack}`); }
+
+// a new visit keeps the amounts (lunden.life, #371): not the &life scenario, the visitor's own home
+try {
+  localStorage.removeItem('lunden.life');
+  let f = await load('shot');
+  let { life, I } = kit(f);
+  const cheese = I.all().find((i) => i.type === 'cheese' && i.home?.store === 'fridge');
+  const bread = I.all().find((i) => i.type === 'breadBag' && i.home?.store === 'pantry');
+  check(cheese && bread && LIFE_FOOD.stock.every(([t, s]) => I.all().some((i) => i.type === t && i.home?.store === s)), `a fresh home: the whole stock (${I.all().length} things)`);
+  I.consume(cheese, 120); I.consume(bread, 3); I.set(bread, { pkg: 'open' });
+  life.flush();
+  f.remove();
+  f = await load('shot');
+  ({ life, I } = kit(f));
+  const c2 = I.get(cheese.id), b2 = I.get(bread.id);
+  check(c2?.amount === 380 && b2?.amount === 9 && b2.pkg === 'open', `a new visit: the cheese ${c2?.amount} g, the bread ${b2?.amount} slices, open`);
+  check(LIFE_FOOD.stock.every(([t, s]) => I.all().filter((i) => i.type === t && i.home?.store === s).length === 1), 'no second of anything');
+  f.remove();
+  localStorage.removeItem('lunden.life');
+} catch (e) { pass = false; lines.push(`FAIL #373 visit error ${e.stack}`); }
+
+lines.push(pass ? 'ALL PASS' : 'SOME FAILED');
+out.textContent = lines.join('\n');
+</script>
+</body>
+</html>

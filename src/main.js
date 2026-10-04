@@ -349,6 +349,7 @@ const life = new Life({ scene, camera, say: (t) => badge(t, false), feet: () => 
   persist: lifeDev() ? null : { key: LIFE.save.key, canSave: () => { try { return !resetHome.going; } catch { return false; } } }, debug: params0.has('debug') }); // the home's stock kept between visits (#371; never with &life)
 const lifeStores = buildStores(life, world); // the fridge, the freezer, the pantry, the utensil drawer as slots (#369)
 life.restore(); // a new visit: the stock as it was left, empty-handed (#371; a page-made reload's `life` part replaces it below)
+life.restock(); // whatever the kitchen always has and is missing (#373): a fresh home, or something used up and thrown away
 fruit.onEaten = (f) => bump('fruit', 1, f.kind);
 airFryer.onDone = () => { if (fish?.inFryer.length || fries?.count) bump('airfried', 1, 'airfryer'); }; // a batch done (#287)
 const fridge = world.lids.find((l) => l.kind === 'fridge' && !l.freezer);
