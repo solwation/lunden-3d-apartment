@@ -37,10 +37,20 @@ f.onload = async () => {
     // on a window board the target is outside the room map: the room in front of it
     const want = w.__app.world.roomMaps[level].at(target.x, target.z) ?? ring.map(([x, z]) => w.__app.world.roomMaps[level].exact(x, z)).find(Boolean);
     // the first spot in that room from where the button offers the lamp (not, say, the bunk a lamp on a chest stands by)
+    // (#421) a small lamp: stand on free floor. A spot inside a piece of furniture (the SYMFONISK lamp's ring runs through
+    // the sofa) is glided out of by player.unstick (#314) while the light fades in, and the second press would aim at the
+    // sofa: the free spots first, then the nearest free floor to each spot (where a visitor ends up, e.g. by the sofa)
+    const passes = t.kind === 'lamp' ? ['free', 'nearest'] : ['any'];
     let best = null, label = '';
-    for (let a = 0; a < 16; a++) {
-      const ang = (a / 16) * Math.PI * 2, x = target.x + Math.sin(ang) * 0.7, z = target.z + Math.cos(ang) * 0.7;
+    for (let a = 0; a < passes.length * 16; a++) {
+      const mode = passes[Math.floor(a / 16)], ang = ((a % 16) / 16) * Math.PI * 2;
+      let x = target.x + Math.sin(ang) * 0.7, z = target.z + Math.cos(ang) * 0.7;
       if (w.__app.world.roomMaps[level].exact(x, z) !== want) continue;
+      if (mode !== 'any' && !player.isFree(x, z, level)) {
+        const n = mode === 'nearest' && player.nearestFree(x, z, level);
+        if (!n || w.__app.world.roomMaps[level].exact(n.x, n.z) !== want) continue;
+        ({ x, z } = n);
+      }
       best ??= { x, z };
       if (w.__app.rest.active) w.__app.standUp(); // a spot tried for an earlier lamp may have sat us down (#331)
       player.spawn(x, z, Math.atan2(-(target.x - x), -(target.z - z)));
@@ -73,7 +83,7 @@ f.onload = async () => {
     const off = !t.isOpen && (t.kind !== 'switch' || (t.room.mats.every((m) => !glowing(m)) && mine.every(([, i]) => uK[i] === 0) && t.room.lamps.every((l) => !lights.slots.some((s) => s.lamp === l))));
     const ok = /tända/i.test(label) && on && off;
     pass &&= ok;
-    lines.push(`${ok ? 'PASS' : 'FAIL'} ${t.name} @ (${target.x.toFixed(2)}, ${target.y.toFixed(2)}, ${target.z.toFixed(2)}) button "${label}" (${t.room.name ?? ''}) on=${on}${t.kind === 'switch' ? ` (glow, ${hidden ? 'behind a door: no pool light' : 'pool light'}, ${mine.length} washes ${washOn})` : ''} off=${off}`);
+    lines.push(`${ok ? 'PASS' : 'FAIL'} ${t.name} @ (${target.x.toFixed(2)}, ${target.y.toFixed(2)}, ${target.z.toFixed(2)}) from (${camera.position.x.toFixed(2)}, ${camera.position.z.toFixed(2)}) button "${label}" (${t.room.name ?? ''}) on=${on}${t.kind === 'switch' ? ` (glow, ${hidden ? 'behind a door: no pool light' : 'pool light'}, ${mine.length} washes ${washOn})` : ''} off=${off}`);
   }
   // #409: the Hue Go's handle loop steps through its colour scenes: off → on in the next colour, the glow, the pool
   // light's colour and the shader wash's colour follow; round to the start again
@@ -144,7 +154,7 @@ f.onload = async () => {
   // the window board behind the sofa
   const sym = {};
   w.__app.scene.traverse((o) => { if (o.userData.symfonisk) sym[o.userData.symfonisk] = o.getWorldPosition(o.position.clone()); });
-  const roomOf = (p) => p && [[0, 0], [0, 0.4], [0, -0.4], [-0.4, 0]].map(([dx, dz]) => w.__app.world.roomMaps[0].at(p.x + dx, p.z + dz)).find(Boolean);
+  const roomOf = (p) => p && [[0, 0], [0, 0.4], [0, -0.4], [-0.4, 0]].map(([dx, dz]) => w.__app.world.roomMaps[p.y > 3 ? 1 : 0].at(p.x + dx, p.z + dz)).find(Boolean); // (the level from the height, #421)
   const symOk = roomOf(sym['speaker black']) === 'Kök / matplats' && w.__app.world.roomMaps[1].at(sym['speaker white'].x, sym['speaker white'].z + 0.4) === 'Sovrum 1' && sym['lamp white']?.z > 12.2;
   pass &&= symOk;
   lines.push(`${symOk ? 'PASS' : 'FAIL'} SYMFONISK: ${Object.entries(sym).map(([k, p]) => `${k} (${p.x.toFixed(2)}, ${p.z.toFixed(2)}) ${roomOf(p)}`).join(', ')}`);
