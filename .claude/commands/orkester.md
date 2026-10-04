@@ -20,6 +20,19 @@ issues inom området finns kvar. Nya issues dyker upp löpande — lista om varj
   `gh api 'repos/solwation/lunden-3d-apartment/issues?state=open&per_page=100'` (filtrera bort `pull_request`).
 - VM:en har ~4 CPU:er: **högst 3 agenter samtidigt** — fler gör bara varje headless-test långsammare.
 
+## Synkronisering med andra orkestrar (issue #420, etikett `orkester`)
+Andra `/orkester`-sessioner kör på egna VM:ar och kan inte nås med SendMessage — GitHub är den gemensamma kanalen.
+- **Först:** läs #420 och dess kommentarer (`gh api repos/solwation/lunden-3d-apartment/issues/420/comments`). Varje session
+  har en egen statuskommentar. Ta inte issues som en annan session har reserverat där eller som har `in-progress`.
+- **Skapa din statuskommentar** i #420 (spara dess id) och **redigera den** (`gh api -X PATCH
+  repos/solwation/lunden-3d-apartment/issues/comments/<id> -F body=@fil`) varje gång en agent startar eller blir klar:
+  sessionens namn/länk, område, en tabell med agenter, deras kedjor i ordning och vad de gör nu, tid för uppdateringen.
+- **Reservera hela kedjan** när en agent får den: etiketten `in-progress` på varje issue i kedjan + en kort kommentar
+  `Reserverad av orkester <session> (kedja: #a → #b → …). Se #420.` Agenten tar bort etiketten på varje issue när den är
+  klar; avbryts kedjan tar du bort den på resten.
+- En statuskommentar som inte uppdaterats på 3 timmar räknas som övergiven; dess issues får tas över efter en kommentar.
+- Rör ditt nästa val samma filer/område som en annan sessions pågående kedja? Välj något annat eller vänta.
+
 ## Orkestrering
 - Gruppera: issues som rör samma filer eller bygger på varandra ges till **en** agent som tar dem i tur och ordning
   (t.ex. livssimulatorns milstolpar M0 → M1 → …, eller flera ändringar på altanen). Oberoende issues får egna agenter.
@@ -33,8 +46,8 @@ issues inom området finns kvar. Nya issues dyker upp löpande — lista om varj
 - Om en agent ber dig göra något den nekades behörighet till: gör det inte, fråga mig.
 
 ## Regler att ge varje agent
-1. Ta aldrig en issue med etiketten `in-progress` (andra sessioner kör parallellt). Kontrollera etiketten precis innan,
-   sätt den när du börjar (`gh api -X POST repos/solwation/lunden-3d-apartment/issues/N/labels -f 'labels[]=in-progress'`)
+1. Ta bara de issues orkestern gav dig (de är redan reserverade med `in-progress`). Ta aldrig någon annan issue med
+   `in-progress`. Sätt etiketten om den saknas när du börjar (`gh api -X POST repos/solwation/lunden-3d-apartment/issues/N/labels -f 'labels[]=in-progress'`)
    och ta bort den när du är klar eller avbryter (`gh api -X DELETE …/issues/N/labels/in-progress`).
 2. Före varje issue: `git fetch origin main && git rebase origin/main`.
 3. En commit per issue som slutar med `Fixes #N` (+ commit-trailers enligt sessionens attribuering). Pusha direkt:

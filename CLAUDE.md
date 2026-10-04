@@ -1110,6 +1110,8 @@ the checkout with three.js from the npm tarball (cached in ~/.cache), and Chrome
 `/opt/pw-browsers/chromium --no-sandbox` (same flags as below). Such a VM has ~4 CPUs: run at most ~3 headless test
 runs (agents) at a time, more only slows every one down. `/orkester [område]` (.claude/commands/orkester.md) runs a
 session as an orchestrator that works through the open issues with subagents under these rules.
+Several orchestrators (separate VMs) sync through issue #420 (label `orkester`, kept off the fridge notes): each keeps
+one status comment there and reserves whole chains with `in-progress` + a comment on each issue.
 
 `python3 -m http.server` sends no Cache-Control, so a headless Chrome reusing a profile may serve an *old* copy of a
 module that hasn't changed for a while (heuristic caching) — give each run a fresh `--user-data-dir=$(mktemp -d)`.

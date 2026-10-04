@@ -36,6 +36,8 @@ def main(out):
                 if 'pull_request' in i:
                     continue
                 labels = [l['name'] for l in i.get('labels', [])]
+                if 'orkester' in labels:  # the orchestrators' shared status issue, not a todo
+                    continue
                 m = LAPP.search(i.get('body') or '')
                 items.append({
                     'n': i['number'],
