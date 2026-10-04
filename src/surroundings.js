@@ -431,6 +431,35 @@ function facadeTexture(plain = false) {
   return tex;
 }
 
+/** The Å-husen's listed façade openings (#345) as decals: one atlas — the window of the old grid tile (white frame,
+ * mullion, transom, the reveal's shadow) over v WIN…1, a soldier course of upright bricks over v 0…SOLD. */
+const WIN = 0.2, SOLD = 0.16;
+function openingTexture() {
+  const W = 256, H = 320, c = document.createElement('canvas');
+  c.width = W; c.height = H;
+  const g = c.getContext('2d'), wh = H * (1 - WIN), rand = rng(12), base = new THREE.Color(COLORS.brick);
+  const glass = g.createLinearGradient(0, 0, 0, wh);
+  glass.addColorStop(0, '#6b8293');
+  glass.addColorStop(1, '#2c3a45');
+  g.fillStyle = '#f4f4f1'; g.fillRect(0, 0, W, wh);                     // the white frame
+  const f = W * 0.05 / 1.3;
+  g.fillStyle = glass; g.fillRect(f, f, W - 2 * f, wh - 2 * f);
+  g.fillStyle = '#f4f4f1';
+  g.fillRect(W * 0.62 - 3, 0, 6, wh);                                   // mullion (a wide and a narrow light)
+  g.fillRect(0, wh * 0.22, W * 0.62, 5);                                // transom over the wide light
+  g.fillStyle = 'rgba(0,0,0,0.28)';                                     // the deep reveal's shadow
+  g.fillRect(0, 0, W, W * 0.07 / 1.3); g.fillRect(0, 0, W * 0.06 / 1.3, wh);
+  const sy = H * (1 - SOLD);
+  g.fillStyle = '#cfc6b8'; g.fillRect(0, sy, W, H - sy);                // mortar behind the soldiers
+  for (let x = 0; x < W; x += W / 20) {
+    g.fillStyle = base.clone().offsetHSL(0, 0, -0.06 + (rand() - 0.5) * 0.06).getStyle();
+    g.fillRect(x + 1, sy + 2, W / 20 - 2, H - sy - 4);
+  }
+  const tex = canvasTex(c);
+  tex.wrapS = tex.wrapT = THREE.ClampToEdgeWrapping;
+  return tex;
+}
+
 /** Light slatted balcony railing (#108): vertical slats under a handrail, transparent between (alphaTest). */
 function railTexture() {
   const c = document.createElement('canvas'); c.width = 128; c.height = 64;
@@ -454,7 +483,8 @@ function cuts(b, face, st = -1) {
   return [[lo, lo + first[i]], [hi - last[i], hi], ...(b.recesses ?? []).filter((r) => r.face === face && onStorey(r, st)).map((r) => [r.a0, r.a1])];
 }
 /** Does [a0, a1] along a face overlap a loggia or recess there? */
-const inCut = (b, face, a0, a1, st = -1) => cuts(b, face, st).some(([c0, c1]) => a1 > c0 && a0 < c1);
+const inCut = (b, face, a0, a1, st = -1) => cuts(b, face, st).some(([c0, c1]) => a1 > c0 && a0 < c1)
+  || (st < 0 && (S.facades?.[b.name]?.[face] ?? []).some(([o0, o1]) => a1 > o0 - 0.1 && a0 < o1 + 0.1)); // a listed opening (#345)
 
 /** An Å-hus's plan outline on storey `st`: the rectangle with its corner loggias and the recesses of that storey. */
 function outline(b, st) {
@@ -471,8 +501,90 @@ function outline(b, st) {
   return pts;
 }
 
+/** An Å-hus face's outer line: [the plan coordinate across it, +1 / −1 = it looks towards +z|+x / −z|−x]. */
+const faceLine = (b, f) => ({ n: [b.z0, -1], s: [b.z1, 1], w: [b.x0, -1], e: [b.x1, 1] })[f];
+
+/** An Å-hus's façade openings from SITE.facades (#345), one per storey and opening above the ground there:
+ * { face, kind, st, a0, a1, x0, z0, x1, z1 (a line on the façade), n (facing [x, z]), y0, y1 }. */
+function facadeOpenings(b) {
+  const F = S.facades?.[b.name], Z = S.openingSize, out = [];
+  for (const [f, list] of Object.entries(F ?? {})) {
+    const [c, s] = faceLine(b, f), alongX = f === 'n' || f === 's';
+    for (const [a0, a1, from, to, kind = 'window'] of list) {
+      for (let st = from; st <= Math.min(to, b.storeys - 1); st++) {
+        const fl = b.base + st * S.storey, door = kind === 'door', y0 = fl + (door ? 0 : Z.sill), y1 = fl + (door ? Z.door : Z.head);
+        const am = (a0 + a1) / 2, g = alongX ? groundY(am, c + s * 0.6) : groundY(c + s * 0.6, am);
+        if (y1 < g + 0.3) continue; // below the ground outside
+        out.push({ face: f, kind, st, a0, a1, y0, y1, n: alongX ? [0, s] : [s, 0], ...(alongX ? { x0: a0, z0: c, x1: a1, z1: c } : { x0: c, z0: a0, x1: c, z1: a1 }) });
+      }
+    }
+  }
+  return out;
+}
+
+/** The listed openings as decals (#345) on the openingTexture() atlas, 15 mm proud of the brick (the lit-window quads 5 cm): the window (or glazed
+ * door) and a soldier course over it (and under a window, as the sill). */
+function openingDecals(b) {
+  const geos = [];
+  const quad2 = (o, a0, a1, y0, y1, v0, v1) => {
+    const [nx, nz] = o.n, len = a1 - a0, alongX = nz !== 0, am = (a0 + a1) / 2;
+    const g = new THREE.PlaneGeometry(len, y1 - y0).rotateY(Math.atan2(nx, nz));
+    g.translate(alongX ? am : o.x0 + nx * 0.015, (y0 + y1) / 2, alongX ? o.z0 + nz * 0.015 : am);
+    const uv = g.attributes.uv;
+    for (let i = 0; i < uv.count; i++) uv.setY(i, v0 + uv.getY(i) * (v1 - v0));
+    geos.push(g);
+  };
+  for (const o of facadeOpenings(b)) {
+    quad2(o, o.a0, o.a1, o.y0, o.y1, WIN + 0.01, 1);
+    quad2(o, o.a0 - 0.06, o.a1 + 0.06, o.y1 + 0.01, o.y1 + 0.19, 0, SOLD);   // the lintel
+    if (o.kind !== 'door') quad2(o, o.a0 - 0.06, o.a1 + 0.06, o.y0 - 0.19, o.y0 - 0.01, 0, SOLD); // the sill
+  }
+  return geos;
+}
+
+/** Split a non-indexed geometry's triangles by `pick(nx, nz, x, z)` → [picked, rest] (either may be null). */
+function splitTris(geo, pick) {
+  const p = geo.attributes.position, n = geo.attributes.normal, uv = geo.attributes.uv, sets = [[], []];
+  for (let t = 0; t < p.count; t += 3) {
+    const cx = (p.getX(t) + p.getX(t + 1) + p.getX(t + 2)) / 3, cz = (p.getZ(t) + p.getZ(t + 1) + p.getZ(t + 2)) / 3;
+    sets[pick(n.getX(t), n.getZ(t), cx, cz) ? 0 : 1].push(t);
+  }
+  return sets.map((ts) => {
+    if (!ts.length) return null;
+    const g = new THREE.BufferGeometry();
+    for (const [name, a] of [['position', p], ['normal', n], ['uv', uv]]) {
+      const arr = new Float32Array(ts.length * 3 * a.itemSize);
+      ts.forEach((t, i) => { for (let k = 0; k < 3 * a.itemSize; k++) arr[i * 3 * a.itemSize + k] = a.array[t * a.itemSize + k]; });
+      g.setAttribute(name, new THREE.BufferAttribute(arr, a.itemSize));
+    }
+    return g;
+  });
+}
+
+/** Is the triangle (normal nx, nz, centre x, z) on an outer face of `b` that has no opening list (#345: the grid)? */
+function onGridFace(b, nx, nz, x, z) {
+  const F = S.facades?.[b.name] ?? {}, e = 0.02;
+  if (nz < -0.9 && Math.abs(z - b.z0) < e) return !F.n;
+  if (nz > 0.9 && Math.abs(z - b.z1) < e) return !F.s;
+  if (nx < -0.9 && Math.abs(x - b.x0) < e) return !F.w;
+  if (nx > 0.9 && Math.abs(x - b.x1) < e) return !F.e;
+  return false; // the loggias' and recesses' walls (covered by the white render), the caps
+}
+
 /** An Å-hus's brick body (#145, #258): its outline extruded band by band (a band = a run of storeys with the same
- * recesses), with the façade UVs of block(). */
+ * recesses), with the façade UVs of block(). #345: split into { grid } (outer faces without an opening list: the old
+ * window grid texture) and { plain } (plain brick; the listed openings are decals). */
+function aHouseParts(b) {
+  const grid = [], plain = [];
+  for (const g of aHouse(b)) {
+    const [a, r] = splitTris(g.index ? g.toNonIndexed() : g, (nx, nz, x, z) => onGridFace(b, nx, nz, x, z));
+    if (a) grid.push(a);
+    if (r) plain.push(r);
+  }
+  return { grid, plain };
+}
+
+/** The bands of an Å-hus's outline, extruded (see aHouseParts). */
 function aHouse(b) {
   const geos = [], key = (st) => (b.recesses ?? []).map((r) => +onStorey(r, st)).join();
   for (let st = 0; st < b.storeys;) {
@@ -876,6 +988,7 @@ export function buildWindowLights() {
       { along: 'z', c: b.x0 - 0.03, a0: b.z0, a1: b.z1, n: [-1, 0], f: 'w' }, { along: 'z', c: b.x1 + 0.03, a0: b.z0, a1: b.z1, n: [1, 0], f: 'e' },
     ];
     for (const f of faces) {
+      if (S.facades?.[b.name]?.[f.f]) continue; // listed openings (#345): below
       // window centres sit mid-bay in the façade texture (u = along / bay)
       const { bay, storey } = dims(b), old = b.style === 'old';
       // window rows: one per storey (the old windows are narrow and tall), or the school's own two (#126)
@@ -894,8 +1007,13 @@ export function buildWindowLights() {
       }
     }
   }
-  // the loggias' windows and the lit stair halls behind the entrance doors (#266)
+  // the loggias' windows and the lit stair halls behind the entrance doors (#266); the listed façade openings (#345)
   for (const b of S.blocks.filter((o) => o.corners)) {
+    for (const o of facadeOpenings(b)) {
+      const len = o.a1 - o.a0, h = o.y1 - o.y0 - 0.1;
+      if (o.y0 + h / 2 < (o.n[1] ? groundY((o.a0 + o.a1) / 2, o.z0 + o.n[1] * 0.6) : groundY(o.x0 + o.n[0] * 0.6, (o.a0 + o.a1) / 2)) + 0.8) continue;
+      spots.push({ x: (o.x0 + o.x1) / 2 + o.n[0] * 0.05, y: o.y0 + 0.05 + h / 2, z: (o.z0 + o.z1) / 2 + o.n[1] * 0.05, n: o.n, s: [(len - 0.1) / 1.25, h / 1.45, 1] });
+    }
     const glazed = [...loggiaOpenings(b).filter((o) => o.kind === 'window'), ...(b.recesses ?? []).filter((r) => r.door != null).flatMap((r) => entranceOpenings(b, r))];
     for (const o of glazed) {
       const len = Math.hypot(o.x1 - o.x0, o.z1 - o.z0), h = o.y1 - o.y0 - 0.12;
@@ -1004,8 +1122,10 @@ export function buildSurroundings({ grass }) {
     group.add(m);
   };
   const lg = loggias(modern); // corner loggias and entrances (#145, #258, #266)
-  mesh(modern.flatMap(aHouse), new THREE.MeshStandardMaterial({ map: facadeTexture(), roughness: 0.95 }));
-  mesh(lg.bricks, new THREE.MeshStandardMaterial({ map: facadeTexture(true), roughness: 0.95 })); // piers + parapets: no windows (#266)
+  const bodies = modern.map(aHouseParts), grid = bodies.flatMap((p) => p.grid); // #345: listed faces plain, the rest the old grid
+  if (grid.length) mesh(grid, new THREE.MeshStandardMaterial({ map: facadeTexture(), roughness: 0.95 }));
+  mesh([...bodies.flatMap((p) => p.plain), ...lg.bricks.map((g) => g.index ? g.toNonIndexed() : g)], new THREE.MeshStandardMaterial({ map: facadeTexture(true), roughness: 0.95 })); // + piers, parapets (#266)
+  mesh(modern.flatMap(openingDecals), new THREE.MeshStandardMaterial({ map: openingTexture(), roughness: 0.6, polygonOffset: true, polygonOffsetFactor: -0.5, polygonOffsetUnits: -1 })); // the listed windows (#345)
   const white = new THREE.MeshStandardMaterial({ color: 0xf0efeb, roughness: 0.85, side: THREE.DoubleSide });
   mesh([...lg.slabs.map((g) => g.toNonIndexed()), ...lg.walls.map((g) => g.toNonIndexed())].map((g) => { g.deleteAttribute('uv'); return g; }), white);
   const railMesh = new THREE.Mesh(mergeGeometries(lg.rails.map((g) => g.toNonIndexed())), new THREE.MeshStandardMaterial({ map: railTexture(), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.6 }));

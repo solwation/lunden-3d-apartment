@@ -735,6 +735,11 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   ground just outside its front (`frontGround`) gets a brick parapet with a coping and an opening next to the flat's wall,
   the ones above the slatted railing; the entrances have a glazed door + sidelight (lit stair hall at night), a canopy
   and a house letter plate (A/B/C).
+  #345: the outer façades' windows are no longer a 3 × 3 m grid: `SITE.facades` lists the openings per house, face and
+  storey as read off the calibrated overview plans (våning −1…5; count and horizontal placement sourced, heights and the
+  mullion/transom guessed, `openingSize`); `aHouseParts` makes those faces plain brick and `openingDecals` puts each
+  opening on as a decal (one atlas, `openingTexture`), lit at night by `buildWindowLights`. A face without a list keeps
+  the old grid texture as the fallback (none of A/B/C's faces now).
   Terrain (#79, `SITE.terrain`, `groundY(x, z)` in surroundings.js): the street north of Hus L, our Entréplan
   and the raised courtyard on the garage box (`terrain.box`, #254: edges from våning −1 and the level lines on
   våning 1 — west part x −70.5…−41.7 to z 52.5, between B and A to z 33.3, east of that to Hus A's north face)

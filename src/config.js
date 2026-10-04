@@ -293,6 +293,38 @@ export const SITE = {
   // their roof: a low hip roof with the ridge along the long side (N–S), roofing felt ("papp", Peab's Q&A); the 0.3 m
   // lines round the houses on the plans = the eaves. `rise` read off Peab's aerial render (guess).
   hipRoof: { rise: 1.5, overhang: 0.32 },
+  // #345: the Å-husen's façade openings per house and face (n|e|s|w = the outer façade line between the corner
+  // loggias), read off the calibrated overview plans (docs/peab/kalibrerad/vaning-m1…4-300dpi.png; våning 5 for Hus C
+  // from page 26 of the plan brochure, same calibration) where the plans draw a window or door in the outer wall:
+  // [a0, a1 (plan x on n/s, z on e/w), from, to (storeys counted from the block's `base`), kind ('door'; else a window)].
+  // The loggias' and entrance recesses' own openings are not here (#258, #266); the park-level doors under the
+  // courtyard deck (into the garage) are left out. Only the horizontal placement and the count are sourced: the plans give
+  // no heights or frame division, so `openingSize` (sill / head over the storey floor) and the window's mullion and
+  // transom are the old grid tile's guess. A face missing here falls back to the old 3 × 3 m window grid
+  // (`bay`, `storey`); fallback faces of Hus A/B/C now: none.
+  openingSize: { sill: 0.8, head: 2.3, door: 2.3 },
+  facades: {
+    'Hus A': {
+      n: [[-5.04, -3.2, 1, 4], [-2.02, -0.62, 1, 4], [2.94, 4.76, 1, 4], [0.3, 1.74, 2, 4]], // våning 1: the entrance recess
+      e: [[31.84, 33.5, 1, 4], [35.82, 37.44, 1, 4], [39.08, 40.74, 1, 4], [42.38, 43.78, 1, 4], [44.98, 46.36, 1, 4], [48.02, 49.84, 1, 4]],
+      s: [[-2.62, -0.8, 0, 4], [0.52, 2.34, 0, 4]],
+      w: [[33.96, 34.76, 0, 0, 'door'], [35.82, 37.44, 0, 4], [39.08, 40.74, 0, 4], [44.98, 46.36, 0, 4], [48.02, 49.84, 0, 4],
+        [31.84, 33.5, 1, 4], [42.38, 43.78, 1, 4]],
+    },
+    'Hus B': {
+      n: [[-37.22, -35.4, 1, 3], [-31.72, -30.28, 1, 3], [-28.96, -27.14, 1, 3], [-34.0, -32.6, 2, 3]],
+      e: [[36.24, 36.76, 0, 0], [37.06, 37.86, 0, 0, 'door'], [40.32, 41.96, 0, 3], [43.62, 45.22, 0, 3], [49.46, 50.9, 0, 3],
+        [52.64, 54.46, 0, 3], [36.38, 37.98, 1, 3], [46.88, 48.28, 1, 3]],
+      s: [[-34.6, -32.78, 0, 3], [-31.46, -29.64, 0, 3]],
+      w: [[36.38, 37.98, 1, 3], [40.32, 41.96, 1, 3], [43.62, 45.22, 1, 3], [46.88, 48.28, 1, 3], [49.46, 50.9, 1, 3], [52.64, 54.46, 1, 3]], // våning −1: against the garage
+    },
+    'Hus C': {
+      n: [[-63.82, -62.22, 0, 4], [-60.72, -58.94, 0, 4], [-57.34, -55.52, 0, 4]],
+      e: [[18.11, 20.31, 0, 4], [25.53, 26.97, 0, 4], [28.97, 30.79, 0, 4]],
+      s: [[-63.02, -61.4, 0, 4], [-59.76, -58.14, 0, 4]],
+      w: [[18.58, 20.4, 0, 4], [21.98, 23.58, 0, 4], [25.4, 27.06, 0, 4], [28.88, 30.32, 0, 4]],
+    },
+  },
   old: { bay: 2.6, storey: 3.6, roofPitch: 0.6 }, // the old S:t Lars buildings (style: 'old'): rise = pitch × half depth
   // the school straight across Sankt Lars väg (#126, docs/foton/rakt-over-gatan-tegelmur-skolbyggnad.jpg): two high
   // storeys of brick with white quoins, trim and plinth, arched windows below, square ones above, a dark metal
