@@ -2,9 +2,11 @@
 """The repo's open issues → the TODO post-its on the fridge (#340): tools/todo.py OUT.json
 
 Called by tools/stamp.sh when the site is published (stdlib only). Uses GITHUB_TOKEN when set (the Pages workflow),
-else the public REST API (the repo is public). Writes [{ n, text, title, kind, inProgress }]: `text` = the issue's
-"Lapp: …" line (src/todo.js cleans the title when it is empty), kind 'bugg' for a title starting with "Bugg" or a
-`bug` label, else 'nytt'; pull requests are skipped. On any error it writes [] (no notes) and exits 0 so a
+else the public REST API (the repo is public). Writes [{ n, text, title, kind, inProgress, prio }]: `text` = the
+issue's "Lapp: …" line (src/todo.js cleans the title when it is empty), kind 'bugg' for a title starting with "Bugg"
+or a `bug` label, else 'nytt'; `prio` from the `priority: high|medium|low` label, none = 'low' (#431: for the post-its
+only — picking work still counts a missing label as medium); sorted high → medium → low, oldest first within a
+level, so the door shows the high ones; pull requests are skipped. On any error it writes [] (no notes) and exits 0 so a
 deploy never fails over it.
 """
 import json
@@ -14,6 +16,7 @@ import sys
 import urllib.request
 
 REPO = os.environ.get('TODO_REPO', 'solwation/lunden-3d-apartment')
+PRIO = {'high': 0, 'medium': 1, 'low': 2}
 LAPP = re.compile(r'^\s*(?:\*\*)?Lapp:(?:\*\*)?\s*(.+?)\s*$', re.M | re.I)
 
 
@@ -24,6 +27,13 @@ def fetch(url):
         req.add_header('Authorization', f'Bearer {token}')
     with urllib.request.urlopen(req, timeout=20) as r:
         return json.load(r), r.headers.get('Link', '')
+
+
+def prio(labels):
+    for p in PRIO:
+        if f'priority: {p}' in labels:
+            return p
+    return 'low'
 
 
 def main(out):
@@ -45,13 +55,14 @@ def main(out):
                     'title': i['title'],
                     'kind': 'bugg' if re.match(r'\s*bugg', i['title'], re.I) or 'bug' in labels else 'nytt',
                     'inProgress': 'in-progress' in labels,
+                    'prio': prio(labels),
                 })
             nxt = re.search(r'<([^>]+)>;\s*rel="next"', link)
             url = nxt.group(1) if nxt else None
     except Exception as e:  # no network, rate limit …: no notes rather than a failed deploy
         print(f'todo.py: {e}; writing no notes', file=sys.stderr)
         items = []
-    items.sort(key=lambda t: -t['n'])
+    items.sort(key=lambda t: (PRIO[t['prio']], t['n']))
     with open(out, 'w', encoding='utf-8') as f:
         json.dump(items, f, ensure_ascii=False, indent=0)
         f.write('\n')

@@ -4,9 +4,9 @@
 <body>
 <pre id="out">running…</pre>
 <script>
-// The TODO post-its on the fridge door (#340): the sample list loads (locally there is no data/todo.json), the
-// notes ride on the fridge door, E opens the "Att göra" panel (no walking while it is open), E closes it, a
-// drawing is not taped over them, and the title-cleaning fallback makes long issue titles short.
+// The TODO post-its on the fridge door (#340): the sample list loads (locally there is no data/todo.json), sorted by
+// priority (#431), the notes ride on the fridge door, they are no E target and open no panel (#431), a drawing is
+// not taped over them, F keeps them, and the title-cleaning fallback makes long issue titles short.
 //   /root/bin/runtest http://localhost:8166/tools/todotest.html
 const out = document.getElementById('out');
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -36,33 +36,33 @@ async function run() {
   const fridge = world.lids.find((l) => l.kind === 'fridge' && !l.freezer);
   pass &= check(!!todo && todo.items.length >= 3, `the sample list loads (${todo?.items.length} notes)`);
   pass &= check(!!todo && todo.object.parent === fridge?.door, 'the notes are on the fridge door');
-  const rows = d.querySelectorAll('#todo-list li').length;
-  pass &= check(rows === todo.items.length, `the list has every note (${rows})`);
+  // sorted by priority (#431): high → medium → low, oldest first within a level, no label = low (the sample: 327)
+  const order = todo.items.map((t) => t.n).join(',');
+  pass &= check(order === '335,339,322,331,340,327,334' && todo.items.find((t) => t.n === 327)?.prio === 'low',
+    `sorted by priority (${order})`);
+  const { byPriority } = await w.eval(`import('${new URL('../src/todo.js', location.href).href}')`);
+  const sorted = [{ n: 5 }, { n: 9, prio: 'high' }, { n: 2, prio: 'low' }, { n: 7, prio: 'medium' }, { n: 3, prio: 'high' }]
+    .sort(byPriority).map((t) => t.n).join(',');
+  pass &= check(sorted === '3,9,7,2,5', `byPriority, a missing prio = low (${sorted})`);
+  pass &= check(!d.getElementById('todo-list'), 'no "Att göra" list in the page');
   d.getElementById('start-touch').click();
   await wait(50);
   w.__app.scene.updateMatrixWorld(true);
   const V = todo.object.position.constructor;
   const p = todo.object.getWorldPosition(new V());
-  // stand 0.9 m in front of them (the door faces −z), looking at them
+  // stand 0.9 m in front of them (the door faces −z), looking at them: no post-it target, E opens no panel
   player.spawn(p.x, p.z - 0.9, Math.PI);
   camera.rotation.x = Math.atan2(p.y - player.eyeY, 0.9);
   for (let i = 0; i < 5; i++) step(1 / 60);
   const btn = d.getElementById('action');
-  pass &= check(!btn.hidden && /läsa att göra-lapparna/i.test(btn.textContent), `action button "${btn.textContent}"`);
-  btn.click();
   const noteEl = d.getElementById('note');
-  pass &= check(!noteEl.hidden && noteEl.classList.contains('todo') && d.querySelector('#note h2').textContent === 'Att göra'
-    && d.getElementById('todo-list').offsetHeight > 0 && d.getElementById('note-list').offsetHeight === 0, 'the "Att göra" panel opens');
-  const before = { x: player.pos.x, z: player.pos.z };
-  w.__app.touch.analog.y = 1;
-  for (let i = 0; i < 30; i++) step(1 / 60);
-  w.__app.touch.analog.y = 0;
-  pass &= check(Math.hypot(player.pos.x - before.x, player.pos.z - before.z) < 0.01, 'no walking while reading');
-  btn.click();
-  pass &= check(noteEl.hidden, 'it closes');
+  const { focused } = w.__app.focus();
+  pass &= check(focused?.kind !== 'note' && !/att göra/i.test(btn.textContent),
+    `no post-it target (focus: ${focused?.name ?? 'none'}, button: "${btn.hidden ? '' : btn.textContent}")`);
+  pass &= check(noteEl.hidden, 'no panel open');
   // the changelog note still shows its own list
   w.__app.showNote(true);
-  pass &= check(!noteEl.classList.contains('todo') && d.querySelector('#note h2').textContent === 'Ändringar' && d.getElementById('note-list').offsetHeight > 0, 'the freezer note still shows the changelog');
+  pass &= check(!noteEl.hidden && d.querySelector('#note h2').textContent === 'Ändringar' && d.getElementById('note-list').offsetHeight > 0, 'the freezer note still shows the changelog');
   w.__app.showNote(false);
   // no drawing over the notes: the spot right on them is refused, lower down on the door it is fine
   const ray = (y) => { const o = new V(p.x, y, p.z - 0.6); return { origin: o, direction: new V(0, 0, 1) }; };

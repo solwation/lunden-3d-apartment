@@ -1696,7 +1696,7 @@ export const CHANGELOG_NOTE = { x: 4.38, y: 1.42, z: 4.8844 - 0.04 - 0.002, rotY
 // `top` = the block's top over the door's foot, `fromHinge` = its hinge-side edge from the hinge (the handle side
 // stays free); `ppm` = canvas px per metre; `maxChars` = a cleaned-up issue title's length.
 export const TODO_NOTES = { size: 0.076, cols: 3, rows: 4, gap: 0.012, margin: 0.008, tilt: 6, top: 1.66, fromHinge: 0.1,
-  ppm: 2600, maxChars: 40, repo: 'solwation/lunden-3d-apartment' };
+  ppm: 2600, maxChars: 40 };
 
 // Baked ambient occlusion (src/ao.js): darkening at a wall = strength, falling off over
 // `radius` metres. Tuned by eye on screenshots.

@@ -497,10 +497,13 @@ cloudflare/            the Worker (NOT published on Pages): worker.js (API, limi
                        .github/workflows/cloud.yml redeploys on cloudflare/** changes when the repo has Cloudflare secrets
 src/calendar.js        the cat calendar (CALENDAR): a cat per month, the days, the chosen date; #cal-panel picks it
 src/todo.js            the TODO post-its on the fridge door (#340, TODO_NOTES): loadTodo (data/todo.json, else
-                       todo.sample.json), `cleanTitle` (an issue title → a short phrase), one canvas atlas on one
-                       plane (a child of the door, kept clear of drawings via posters.reserved); E opens the #note
-                       panel as "Att göra" (`showNote(true, true)`, every issue + "Se på GitHub"); F keeps them
-tools/todo.py          the open issues → data/todo.json at publish time (stamp.sh); `Lapp:` line, kind, in-progress
+                       todo.sample.json), sorted by `byPriority` (high → medium → low, oldest first; no `prio` = low,
+                       #431), `cleanTitle` (an issue title → a short phrase), one canvas atlas on one plane (a child of
+                       the door, kept clear of drawings via posters.reserved); each note: the text, `#N` small top right,
+                       a muted "pågår ✓", 🐞 / ★. Only a teaser (#431): no E target (the plane is out of raycasts), no
+                       list to read; F keeps them
+tools/todo.py          the open issues → data/todo.json at publish time (stamp.sh); `Lapp:` line, kind, in-progress,
+                       `prio` from the `priority: …` label (none = low, for the post-its only), sorted like loadTodo
 src/fridge.js          the fridge: hollow, lit, opens with E (in world.lids); `shelfSpot` = the chicken's place; the freezer is
                        the same class (`freezer: true`, #161): drawers + shelves, the changelog note rides on its door;
                        open past FRIDGE_ALARM.after s it beeps and a red LED blinks (`onAlarm` → a deduction, #288; the note
@@ -677,8 +680,9 @@ tools/scoretest.html   headless test: points from 0, a door (again: a little), t
                        (+ a new coat), 100 sips (no cap), a basket / a three, secret kinds (+ rare), the balance; deductions (#288):
                        the fridge alarm (+ longer, the note pauses the freezer), a burnt fish finger, the smoke alarm, a spill, the cat
                        shot (hiss, flight, once, no cat for a while), never below 0 / no debt, the red "−N"; reset
-tools/todotest.html    headless test of the TODO post-its (#340): the sample loads, on the fridge door (swing with it),
-                       E opens / closes "Att göra", no walking, no drawing over them, F keeps them, cleanTitle
+tools/todotest.html    headless test of the TODO post-its (#340): the sample loads, sorted by priority (no label = low,
+                       #431), on the fridge door (swing with it), no E target / no panel, no drawing over them, F keeps
+                       them, cleanTitle
 tools/notetest.html    headless test of the changelog note ("Nytt", read/close, no walking, swings with the freezer door;
                        scrolling keys, a W held from before ignored, #275)
 tools/patiotest.html   headless test of the patio seasons (parasol, beers, snowman) + sofa collision

@@ -13,7 +13,7 @@ import { initAudio, sfx, toggleMuted, isMuted, updateListener } from './audio.js
 import { stairHeight } from './stairs.js';
 import { rugLift } from './rugs.js';
 import { loadChangelog, renderChangelog, buildNote, scrollNote } from './changelog.js';
-import { loadTodo, buildTodoNotes, renderTodo } from './todo.js';
+import { loadTodo, buildTodoNotes } from './todo.js';
 import { setScoreElement, totalScore, setStatsExtra, stats, bump, badge, catFound, secretFound, renderStats, resetStats, visitRoom, setRoomTotal, setBadgeElement, penalize } from './stats.js';
 import { Minimap } from './minimap.js';
 import { Measure } from './measure.js';
@@ -155,9 +155,8 @@ const freezer = world.lids.find((l) => l.kind === 'fridge' && l.freezer);
 if (freezer) { freezer.door.updateWorldMatrix(true, false); freezer.door.attach(note.object); }
 const noteEl = document.getElementById('note');
 renderChangelog(document.getElementById('note-list'), changelog);
-// the open issues as post-its on the fridge door (#340); E on them opens the same panel as "Att göra"
+// the open issues as post-its on the fridge door (#340); only a teaser, nothing to read up close (#431)
 const todo = buildTodoNotes(await loadTodo(), world.lids.find((l) => l.kind === 'fridge' && !l.freezer));
-if (todo) renderTodo(document.getElementById('todo-list'), todo.items);
 const boardEl = document.getElementById('board-view');
 let reading = false;
 let boardPanel = null, boardFreed = false; // the panel (#170) frees the mouse to click its buttons
@@ -179,7 +178,7 @@ document.addEventListener('keydown', (e) => { // the board panel's keys, with or
   else if (boardPanel.key(e.code)) e.preventDefault();
   e.stopImmediatePropagation();
 }, true);
-function showNote(show, todoList = false) {
+function showNote(show) {
   if (!show && !boardEl.hidden) { showBoard(false); return; }
   if (!show && clockPanel.open) { showClock(false); return; }
   if (!show && sonos.open) { showSonos(false); return; }
@@ -188,10 +187,10 @@ function showNote(show, todoList = false) {
   if (!show && book.reading) { showBook(false); return; }
   if (!show && viewing) { showPoster(null); return; }
   reading = show;
-  if (show) { noteEl.classList.toggle('todo', todoList); noteEl.querySelector('h2').textContent = todoList ? 'Att göra' : 'Ändringar'; notePaper.scrollTop = 0; }
+  if (show) notePaper.scrollTop = 0;
   noteEl.hidden = !show;
   player.keys.clear();
-  if (show) sfx.paper((todoList ? todo : note).object.getWorldPosition(new THREE.Vector3()));
+  if (show) sfx.paper(note.object.getWorldPosition(new THREE.Vector3()));
 }
 document.getElementById('note-close').addEventListener('click', () => showNote(false));
 const notePaper = noteEl.querySelector('.paper');
@@ -1063,7 +1062,7 @@ function use(thing) {
   if (thing.options && thing.kind !== 'life' && choices.rows && choices.target === thing) { // a lamp with a choice (#428): the marked row
     runChoice(choices.sel);
     if (thing.kind === 'lamp' && thing.isOpen) bump('lights', 1, idOf(thing));
-  } else if (thing.kind === 'note') showNote(true, !!thing.todo);
+  } else if (thing.kind === 'note') showNote(true);
   else if (thing.kind === 'clock') { showClock(true); bump('clock'); }
   else if (thing.kind === 'calendar') { showCalendar(true); bump('calendar'); }
   else if (thing.kind === 'blind' || thing.kind === 'curtain') showBlind(thing); // a pleated blind (#273), the curtains (#342)
@@ -1231,7 +1230,7 @@ window.addEventListener('resize', () => {
 // --- door interaction: look at a door within reach, press E ----------------
 const raycaster = new THREE.Raycaster();
 raycaster.far = 2.2;
-const pickables = [...garage.targets.map((t) => t.pickable), airFryer.basketTarget.pickable, airFryer.panelTarget.pickable, ...world.doors.map((d) => d.pickable), ...world.lids.map((l) => l.pickable), ...taps.map((t) => t.pickable), note.pickable, ...(todo ? [todo.pickable] : []), board.pickable, ...(coffeeJar ? [coffeeJar.target.pickable] : []), wallClock.pickable, calendar.pickable, ...lights.targets.map((t) => t.pickable), grill.pickable, blinds.object];
+const pickables = [...garage.targets.map((t) => t.pickable), airFryer.basketTarget.pickable, airFryer.panelTarget.pickable, ...world.doors.map((d) => d.pickable), ...world.lids.map((l) => l.pickable), ...taps.map((t) => t.pickable), note.pickable, board.pickable, ...(coffeeJar ? [coffeeJar.target.pickable] : []), wallClock.pickable, calendar.pickable, ...lights.targets.map((t) => t.pickable), grill.pickable, blinds.object];
 const center = new THREE.Vector2(0, 0);
 const keyCabinet = world.lids.find((l) => l.kind === 'keybox');
 let focused = null, focusPoint = null;
@@ -1524,7 +1523,7 @@ function step(dt) {
   for (const h of holdables) h.update(dt);
   grill.update(dt);
   airFryer.update(dt);
-  if (fish) fish.freezer.paused = !noteEl.hidden && !noteEl.classList.contains('todo'); // reading the note on the freezer door counts as using it (#288)
+  if (fish) fish.freezer.paused = !noteEl.hidden; // reading the note on the freezer door counts as using it (#288)
   smokeAlarm.update(dt, !!chicken?.freeSmoke || !!fish?.fryerSmoke || !!fries?.smoke); // smoke the hood does not draw away (#194); a burning air fryer (#287)
   cat.ownHand = !!heldItem(); // petting with a thing in the hand: the cat shows a free hand of its own (#242)
   const petting = cat.ownHand ? null : cat.petHand(petAt);

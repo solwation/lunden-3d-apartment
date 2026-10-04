@@ -4,8 +4,14 @@ import { TODO_NOTES } from './config.js';
 // The TODO post-its on the fridge door (#340): the repo's open GitHub issues as small sticky notes. No live sync:
 // tools/stamp.sh (tools/todo.py) writes data/todo.json from the issues when the site is published, outside the
 // content hash (#304), so a changed list never makes open pages reload. Locally there is no such file and the
-// committed data/todo.sample.json is used. Each item: { n, text, title, kind: 'bugg' | 'nytt', inProgress };
-// `text` is the issue's "Lapp: …" line, else the title cleaned up here (cleanTitle).
+// committed data/todo.sample.json is used. Each item: { n, text, title, kind: 'bugg' | 'nytt', inProgress, prio };
+// `text` is the issue's "Lapp: …" line, else the title cleaned up here (cleanTitle). `prio` is 'high' | 'medium' |
+// 'low' from the priority label, a missing one = low (#431, the post-its only). The notes are only a teaser on the
+// door: no E target, no list to read (#431).
+
+const PRIO = { high: 0, medium: 1, low: 2 };
+/** high → medium → low (missing = low), oldest (lowest number) first within a level (#431). */
+export const byPriority = (a, b) => (PRIO[a.prio] ?? 2) - (PRIO[b.prio] ?? 2) || a.n - b.n;
 
 export async function loadTodo() {
   for (const url of ['data/todo.json', 'data/todo.sample.json']) {
@@ -14,8 +20,8 @@ export async function loadTodo() {
       if (!r.ok) continue;
       const list = await r.json();
       if (!Array.isArray(list)) continue;
-      return list.map((t) => ({ ...t, text: t.text || cleanTitle(t.title ?? ''), kind: t.kind ?? (/^bugg/i.test(t.title ?? '') ? 'bugg' : 'nytt') }))
-        .sort((a, b) => b.n - a.n);
+      return list.map((t) => ({ ...t, prio: t.prio in PRIO ? t.prio : 'low', text: t.text || cleanTitle(t.title ?? ''), kind: t.kind ?? (/^bugg/i.test(t.title ?? '') ? 'bugg' : 'nytt') }))
+        .sort(byPriority);
     } catch { /* try the next one; the page works without notes */ }
   }
   return [];
@@ -39,6 +45,7 @@ export function cleanTitle(title) {
 
 const HAND = "'Segoe Print', 'Bradley Hand', 'Comic Sans MS', 'Comic Neue', 'Chalkboard SE', cursive";
 const INK = '#1d2633';
+const INK_SOFT = '#4c5866'; // the "pågår" tick (#431)
 const COLORS = ['#fff17a', '#ffa8cf', '#b9f0a2', '#a6dcff']; // yellow, pink, green, blue
 
 // a small seeded random so every issue keeps its own tilt / colour
@@ -106,14 +113,24 @@ function postIt(g, cx, cy, s, item, rand) {
   // the text in dark marker, as big as fits in four lines
   g.fillStyle = INK;
   g.textBaseline = 'alphabetic';
-  const pad = s * 0.1, maxW = s - 2 * pad, room = s - pad * 2.6;
+  const pad = s * 0.1, maxW = s - 2 * pad, room = s * 0.63; // the text ends above the bottom row (pågår, the doodle)
+  // the issue number, small, top right (#431); the text starts under it
+  const num = item.n ? `#${item.n}` : '', numSize = s * 0.1, numH = num ? numSize * 1.15 : 0;
+  if (num) {
+    g.font = `bold ${Math.round(numSize)}px ${HAND}`;
+    g.globalAlpha = 0.85;
+    g.textAlign = 'right';
+    g.fillText(num, h - pad * 0.7, -h + pad * 0.55 + numSize * 0.8);
+    g.textAlign = 'left';
+    g.globalAlpha = 1;
+  }
   let size = s * 0.2, lines;
   for (; size > s * 0.1; size *= 0.92) {
     g.font = `bold ${Math.round(size)}px ${HAND}`;
     lines = wrap(g, item.text, maxW);
-    if (lines.length * size * 1.12 <= room && lines.every((l) => g.measureText(l).width <= maxW)) break;
+    if (numH + size + (lines.length - 1) * size * 1.12 <= room && lines.every((l) => g.measureText(l).width <= maxW)) break;
   }
-  const lh = size * 1.12, top = -h + pad * 0.9 + size;
+  const lh = size * 1.12, top = -h + pad * 0.9 + numH + size;
   lines.slice(0, 5).forEach((l, i) => {
     g.save();
     g.translate(-h + pad + (rand() - 0.5) * s * 0.02, top + i * lh);
@@ -121,11 +138,12 @@ function postIt(g, cx, cy, s, item, rand) {
     g.fillText(l, 0, 0);
     g.restore();
   });
-  // bottom right: 🐞 for a bug, ★ for something new; bottom left: "pågår ✓" when someone works on it
+  // bottom right: 🐞 for a bug, ★ for something new; bottom left: "pågår ✓" when someone works on it, in a muted
+  // ink (#431: red on many notes made the door look angry)
   if (item.kind === 'bugg') ladybug(g, h - s * 0.13, h - s * 0.14, s * 0.065);
   else if (item.kind === 'nytt') star(g, h - s * 0.13, h - s * 0.14, s * 0.08);
   if (item.inProgress) {
-    g.strokeStyle = '#c0392b'; g.fillStyle = '#c0392b'; g.lineWidth = s * 0.025; g.lineCap = 'round';
+    g.strokeStyle = INK_SOFT; g.fillStyle = INK_SOFT; g.lineWidth = s * 0.025; g.lineCap = 'round';
     g.beginPath(); g.moveTo(-h + pad, h - s * 0.15); g.lineTo(-h + pad + s * 0.04, h - s * 0.1); g.lineTo(-h + pad + s * 0.11, h - s * 0.21); g.stroke();
     g.font = `bold ${Math.round(s * 0.1)}px ${HAND}`;
     g.fillText('pågår', -h + pad + s * 0.14, h - s * 0.1);
@@ -134,9 +152,9 @@ function postIt(g, cx, cy, s, item, rand) {
 }
 
 /**
- * The post-its for `items` (loadTodo), as ONE plane with one canvas texture, built in the fridge door's own frame
- * (child of `fridge.door`, so they swing with it). Returns an E target like the changelog note (kind 'note',
- * `todo: true`: main.js opens the "Att göra" list) with `area` = the plane's size, which posters.js keeps free.
+ * The post-its for `items` (loadTodo, already sorted by priority), as ONE plane with one canvas texture, built in the
+ * fridge door's own frame (child of `fridge.door`, so they swing with it). Not an E target (#431): the plane is left
+ * out of raycasts. Returns { object, area, items }, `area` = the plane's size, which posters.js keeps free.
  */
 export function buildTodoNotes(items, fridge) {
   const T = TODO_NOTES;
@@ -169,38 +187,7 @@ export function buildTodoNotes(items, fridge) {
   mesh.rotation.y = Math.PI;
   mesh.position.set(sg * (T.fromHinge + W / 2), T.top - H / 2, -dt - 0.0015); // y from the door's foot (≈ the floor)
   if (Math.abs(mesh.position.x) + W / 2 > w - 0.1) mesh.position.x = sg * (w - 0.1 - W / 2); // never over the handle
+  mesh.raycast = () => {}; // only a teaser: aiming at them is aiming at the fridge door (#431)
   fridge.door.add(mesh);
-  const todo = { name: 'att göra-lapparna', kind: 'note', todo: true, verb: 'läsa', object: mesh, pickable: mesh, isOpen: false, area: { w: W, h: H }, items };
-  mesh.userData.door = todo;
-  return todo;
-}
-
-/** Fill the "Att göra" list: every open issue (not only those on the door), its number, a link to it. */
-export function renderTodo(ul, items, repo = TODO_NOTES.repo) {
-  ul.replaceChildren(...items.map((t) => {
-    const li = document.createElement('li');
-    li.className = t.kind === 'bugg' ? 'bug' : 'new';
-    const meta = document.createElement('span');
-    meta.className = 'meta';
-    meta.textContent = `${t.kind === 'bugg' ? '🐞 Bugg' : '★ Nytt'} · #${t.n}`;
-    if (t.inProgress) {
-      const b = document.createElement('span');
-      b.className = 'new';
-      b.textContent = 'pågår';
-      meta.append(' ', b);
-    }
-    const text = document.createElement('span');
-    text.className = 'text';
-    text.textContent = t.text;
-    li.append(meta, text);
-    if (repo) {
-      const a = document.createElement('a');
-      a.href = `https://github.com/${repo}/issues/${t.n}`;
-      a.target = '_blank'; a.rel = 'noopener';
-      a.className = 'gh';
-      a.textContent = 'Se på GitHub';
-      li.append(a);
-    }
-    return li;
-  }));
+  return { name: 'att göra-lapparna', object: mesh, area: { w: W, h: H }, items };
 }
