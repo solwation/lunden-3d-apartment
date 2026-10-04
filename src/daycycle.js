@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { DAY, WEATHER } from './config.js';
+import { DAY, WEATHER, GARAGE } from './config.js';
 
 // Day and night: a whole day passes in DAY.minutes real minutes. The sun follows its real path
 // for the date at Kv. Lunden (rises north-east in summer, south-east in winter; the house is
@@ -113,7 +113,7 @@ const SUN_LOW = new THREE.Color(0xffb070), SUN_HIGH = new THREE.Color(0xfff1dc),
 export class DayCycle {
   /** lights: { sun, hemi, ambient, fill } from main.js; clouds: canvas texture with alpha. */
   constructor({ scene, camera, lights, clouds, startHour, month, date = 15, year = new Date().getFullYear() }) {
-    Object.assign(this, { scene, camera, lights, hour: startHour, month, date, year, paused: false, spool: 0, overcast: 0, flash: 0, dim: 0, under: 0 }); // overcast, flash: weather.js (#248); dim: the blinds (#273)
+    Object.assign(this, { scene, camera, lights, hour: startHour, month, date, year, paused: false, spool: 0, overcast: 0, flash: 0, dim: 0, under: 0, lit: 0 }); // overcast, flash: weather.js (#248); dim: the blinds (#273)
     this.fogFar = scene.fog.far;
     this.base = { hemi: lights.hemi.intensity, ambient: lights.ambient.intensity, fill: lights.fill.intensity, sun: lights.sun.intensity };
     this.uniforms = {
@@ -184,7 +184,7 @@ export class DayCycle {
     const inDay = day * (1 - this.dim) * (1 - this.under); // under: the garage under the courtyard (#357)
     hemi.intensity = (this.base.hemi * inDay + DAY.nightAmbient) * (1 - 0.3 * oc) + WEATHER.flash.light * this.flash;
     hemi.color.setHex(0xeaf3ff).lerp(new THREE.Color(0x6b7da8), night);
-    ambient.intensity = (this.base.ambient * inDay + DAY.nightAmbient * 0.5) * (1 - 0.25 * oc) + WEATHER.flash.light * 0.4 * this.flash;
+    ambient.intensity = (this.base.ambient * inDay + DAY.nightAmbient * 0.5) * (1 - 0.25 * oc) + WEATHER.flash.light * 0.4 * this.flash + this.lit * GARAGE.lights.carLight; // lit: the garage's tubes while the visitor is down there (#440)
     fill.intensity = this.base.fill * inDay;
   }
 

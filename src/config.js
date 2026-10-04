@@ -916,7 +916,9 @@ export const GARAGE = {
   // fluorescent tubes (ASSUMPTION): a grid over every room (`spacing` m); a motion sensor per area (`area` above) puts
   // them on while the visitor is in it or within `sensor` m of it and `hold` s after; `flicker` s of starting up.
   // `dim`: the daylight left down here (DayCycle.under); each area lends one spot a pool light (lights.extra).
-  lights: { hold: 90, flicker: 0.7, amb: 0.22, r: 2.6, dim: 0.92, intensity: 2.2, range: 10, sensor: 8, spacing: 5.2 },
+  // `carLight`: the ambient light added while the visitor is down here with the tubes on (#440: the cars and our Renault
+  // are lit materials; the baked shell is not), × how far in (DayCycle.lit)
+  lights: { hold: 90, flicker: 0.7, amb: 0.22, r: 2.6, dim: 0.92, intensity: 2.2, range: 10, sensor: 8, spacing: 5.2, carLight: 4 },
 };
 
 // Hus L's stair core by the portik (#415, src/core.js): the stairwell and the lift from the garage (våning −1) to the

@@ -403,7 +403,7 @@ export class Garage {
       const rs = RECTS.filter((r) => r.area === a).sort((p, q) => (q.x1 - q.x0) * (q.z1 - q.z0) - (p.x1 - p.x0) * (p.z1 - p.z0)), r = rs[0];
       return { pos: new THREE.Vector3((r.x0 + r.x1) / 2, C - 0.4, (r.z0 + r.z1) / 2), intensity: LI.intensity, range: LI.range * 1.6, color: 0xeef3ff, level: 0, k: 0, area: a };
     });
-    Object.assign(this, { under: 0, present: false });
+    Object.assign(this, { under: 0, lit: 0, present: false });
     this.door = new GarageDoor(this.areas.entrance.group); // #358
     this.targets.push(...this.door.targets);
     for (const a of Object.values(this.areas)) this.setLevel(a, 0);
@@ -529,6 +529,9 @@ export class Garage {
     const want = below ? LI.dim * THREE.MathUtils.clamp((p.x - GD.x) / 7, 0, 1) : 0;
     this.under += (want - this.under) * Math.min(1, dt * 4);
     if (Math.abs(want - this.under) < 1e-3) this.under = want;
+    // the tubes' light on the lit materials (the cars, #440): the visitor's area's tubes, as far in as the daylight is cut
+    const here = below ? this.areas[this.areaAt(p.x, p.z) ?? 'entrance'] : null;
+    this.lit = here ? here.level * (this.under / LI.dim) : 0;
   }
 }
 

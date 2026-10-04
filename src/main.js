@@ -1585,6 +1585,7 @@ function step(dt) {
   core.update(dt, player, camera); // the stairwell's doors, the lift, drawn only near (#415)
   garage.update(dt, player, camera, car); // its door (#358), the förråd doors, the tubes' motion sensor, drawn only near (#357)
   day.under = garage.under; // down there no daylight
+  day.lit = garage.lit; // … but the tubes' light on the cars (#440)
   day.update(dt);
   wallClock.update(day.hour);
   calendar.update(); // redraws only when the page or the date changed
