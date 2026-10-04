@@ -49,6 +49,7 @@ import { Beer } from './beer.js';
 import { buildThings } from './things.js';
 import { buildSecret } from './secret.js';
 import { Hand } from './hand.js';
+import { HandWash } from './handwash.js';
 import { Milk } from './milk.js';
 import { buildCups } from './cups.js';
 import { buildFish } from './fishfingers.js';
@@ -330,6 +331,12 @@ const fish = buildFish(scene, camera, world); // fish fingers in the freezer, on
 if (fish) fish.onEaten = () => bump('fish');
 const toiletPaper = new ToiletPaper(scene, camera, world); // a holder with a roll by each toilet (#426)
 Object.assign(toiletPaper, { onFlush: (f) => bump('flushes', 1, idOf(f)), onThrown: () => bump('toiletPaper') });
+// washing the hands at a running basin tap and drying them on a towel (#437)
+const handWash = new HandWash({ hand, held: () => heldItem(), bump });
+for (const t of taps) if (!t.spec.shower) t.options = () => handWash.tapRows(t);
+for (const t of world.furnitureTargets) if (t.kind === 'towel') handWash.addTowel(t);
+const ovenDoor = world.lids.find((l) => l.name === 'ugnen');
+if (ovenDoor?.handle) world.looseItems.push(handWash.kitchenTowel(ovenDoor).object);
 const pan = world.panDrawer ? new Pan(scene, camera, world.panDrawer, world.hob) : null; // the frying pan in the drawer under the hob (#159)
 if (pan) holdables.push(pan);
 const toaster = world.toasterDrawer ? new Toaster(scene, camera, world.toasterDrawer) : null; // the toaster in the drawer by the corner (#401)
@@ -1136,6 +1143,7 @@ function use(thing) {
     sfx.lid(thing.object.position, thing.isOpen);
   } else if (thing.kind === 'cat') { if (cat.isMiele && !heldItem()) miele.take(); else cat.pet(player.pos); } // Miele: into your arms (#328)
   else if (thing.kind === 'greet') { greet.greet(thing.fig); bump('greets', 1, `fig${people.figs.indexOf(thing.fig)}`); } // hello (#247)
+  else if (thing.kind === 'towel') handWash.dry(thing, focusPoint); // dry the hands (#437)
   else if (thing.kind === 'tap') {
     thing.toggle();
     if (thing.isOpen) bump('taps', 1, idOf(thing));
@@ -1455,6 +1463,7 @@ function toggleFurniture(on = !world.furnitureOn) {
   if (!on) { // whatever is in the hand, or put down somewhere, goes home first (#102)
     heldItem()?.putBack(); toys.darts.hide();
     toiletPaper.reset(); // full rolls, the torn-off paper gone (#426)
+    handWash.reset(); // (the kitchen towel goes with the loose items)
     fish?.reset(); // the fish fingers lying around are cleared away, the carton is full again (#162)
     airFryer.reset(); // off, the basket in and empty (#287)
     fries?.reset(); // the fries out of the basket and the hand, a full bag (#301)
@@ -1572,6 +1581,7 @@ function step(dt) {
   cat.ownHand = !!heldItem(); // petting with a thing in the hand: the cat shows a free hand of its own (#242)
   const petting = cat.ownHand ? null : cat.petHand(petAt);
   player.kneel = !!petting && petting.y < player.pos.y + 0.7; // down on your knees to stroke a cat on the floor (#242)
+  handWash.update(dt); // washing / drying the hands, wet hands drying by themselves (#437)
   hand.update(dt, heldItem(), petting); // the arm: holding something, petting the cat, or reaching for what E was used on (#195)
   cups.update(dt);
   fish?.update(dt);
@@ -1905,4 +1915,4 @@ if (lifeDev()) devScenario({ life, world, holdables, cups, things, milk, fish, f
 document.documentElement.classList.remove('resuming'); // the page is ready: off with the "Laddar…" cover (#222)
 
 // handle for tests/debugging (tools/touchtest.html)
-window.__app = { click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, toaster, life, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, coffeeJar, miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };
+window.__app = { handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, toaster, life, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, coffeeJar, miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };

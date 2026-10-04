@@ -606,6 +606,12 @@ src/pineapple.js       Livia's pineapple mirror in Sovrum 3 (#412, PINEAPPLE_MIR
                        a crown of leaves with a herringbone bump, an oval glass with its own Reflector ('ananas')
 src/signs.js           hand-lettered name signs on the bedroom doors (DOOR_SIGNS)
 src/water.js           running water: E on a tap/shower (world.taps from interior.js) → stream + hiss
+src/handwash.js        washing the hands (#437, HANDWASH): a running basin tap (not a shower) with a free hand offers a menu
+                       ("Tvätta händerna" | "Stänga av …", main.js `tap.options`): both hands rub under the stream (hand.js
+                       `rub`, sfx.handwash) and are wet (`setWet`: glossier skin + drops) until dried or after `wetFor` s;
+                       E on a towel ("Torka händerna på …", kind 'towel': the bathrooms' and Tvätt's `towelhooks` towels,
+                       hooks.js `towelTarget`, and the kitchen towel on the oven's handle bar, built here) dries them, the
+                       towel swings; stats handwash / handdry; F: dry. Not saved
 src/turbo.js           Kaffeturbo (#217, TURBO): TURBO.cups cups' worth of coffee (cups.js passes the coffee per sip) within
                        TURBO.window real seconds → `player.boost` = TURBO.speed (indoors too) for TURBO.seconds, the fov wider,
                        #turbo ("Kaffeturbo!" pops, then a small label with a bar) + #turbo-edge rainbow glow, our own
@@ -728,7 +734,8 @@ tools/touchtest.html   headless touch-input test (synthetic pointer events); the
 tools/cattest.html     headless test of cat placement behind every door/wardrobe; up on seats, beds and tables (#200)
 tools/roomtest.html    headless test of room detection at known points (+ a picture of the fill)
 tools/measuretest.html headless test of the tape measure (wall to wall in the living room)
-tools/watertest.html   headless test: aim at every tap/shower, turn it on and off
+tools/watertest.html   headless test: aim at every tap/shower, turn it on and off; at every basin wash the hands (#437: the menu,
+                       rubbing, wet), the tap off next, dry them on the nearest towel (it swings), counted once; drying by itself
 tools/lighttest.html   headless test: aim at every light switch / floor lamp, toggle it
 tools/pettest.html     headless test of petting the cat (eyes, hand, stats counter, the photo; then it walks off and is gone)
 tools/mieletest.html   headless test of Miele (#328, &miele): her coat, first sight (fireworks, +1000, once), taken up (both hands, not

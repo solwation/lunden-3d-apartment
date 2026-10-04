@@ -70,6 +70,7 @@ export function buildOvens({ f, z0, z1, yOven, yMicro, yGrille, microW }) {
     box(0.03, 0.012, 0.012, -0.015, ovenH - 0.06, (ovenW - 0.16) / 2, steel),
   );
   oven.tag();
+  oven.handle = new THREE.Vector3(-0.03, ovenH - 0.06, 0); // the handle bar in the door's frame (a kitchen towel hangs on it, #437)
 
   // microwave: side-hinged door on the left (north, −z) as you face it, control panel on the right
   const microH = yGrille - yMicro - 0.01, doorW = microW;

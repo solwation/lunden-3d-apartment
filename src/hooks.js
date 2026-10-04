@@ -303,7 +303,7 @@ function towelCloth(color, kind, cell) {
 
 /** A terry hand towel hung by its loop from (0, 0, hookZ) (#424): pinched at the loop, widening and falling in soft
  * folds, a smoother woven border band across it near the top and the hem, the hem a little uneven. */
-function towel(spec, hookZ) {
+export function towel(spec, hookZ) {
   const g = new THREE.Group();
   const m = towelCloth(spec.color, 'terry', 0.03), band = towelCloth(spec.band ?? spec.color, 'rib', 0.006);
   const len = spec.len, W = spec.w / 2, sd = spec.seed ?? 1;
@@ -389,6 +389,17 @@ export function towelhooks(item) {
     const o = towel({ ...c.towel, ...t }, H.roseT + H.len * 0.6);
     o.position.set(xs[i], c.y - H.pin - 0.002, 0.002);
     g.add(o);
+    // dry your hands on it (#437, handwash.js): its own E target, kept out of the merge so it can swing
+    (g.userData.keep ??= []).push(o);
+    (g.userData.targets ??= []).push(towelTarget(o));
   });
   return g;
+}
+
+/** A towel `o` (hung from its origin) as an E target to dry the hands on (#437); main.js / handwash.js give it its
+ * verb, `blocked` and what E does (`handWash.addTowel`). */
+export function towelTarget(o, name = 'handduken') {
+  const t = { kind: 'towel', name, object: o, pickable: o, isOpen: false, swing: 0, t: 0 };
+  o.traverse((m) => { m.userData.door = t; });
+  return t;
 }

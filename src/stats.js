@@ -25,7 +25,7 @@ let dirty = false;
 
 // Badge text per counter; counters missing here (metres, seconds) never get a badge
 const BADGES = {
-  petted: '✋ Klappat katt', doors: '🚪 Dörr öppnad', lids: '🚽 Toalettlock', flushes: '🌊 Spolat', toiletPaper: '🧻 Toapapper slängt', taps: '💧 Kran påslagen',
+  petted: '✋ Klappat katt', doors: '🚪 Dörr öppnad', lids: '🚽 Toalettlock', flushes: '🌊 Spolat', toiletPaper: '🧻 Toapapper slängt', handwash: '🧼 Tvättat händerna', handdry: '🧺 Torkat händerna', taps: '💧 Kran påslagen',
   fridge: '🍗 Kylskåpet öppnat', appliances: '🍳 Ugn/mikro öppnad', cabinets: '🗄 Skåp öppnat', beer: '🍺 Klunk öl', coffee: '☕ Klunk kaffe', turbo: '⚡ Kaffeturbo!', fish: '🐟 Fiskpinne uppäten', fruit: '🍎 Frukt uppäten', fried: '🍳 Fiskpinne stekt', airfried: '🍟 Airfryern klar', toaster: '🍞 Brödrosten rostar', fries: '🍟 Pommes uppäten', friesCooked: '🍟 Pommes frites klara', friesBurnt: '🔥 Pommes brända', burnt: '🔥 Fiskpinne bränd', catFish: '🐈 Katten åt en fiskpinne', catButts: '🍑 Kattens rumpa', chicken: '🍗 Kycklingbit uppäten', wine: '🍷 Klunk vin', champagne: '🥂 Klunk champagne', whisky: '🥃 Klunk whisky', milk: '🥛 Klunk mjölk', kask: '☕ Klunk kaffekask', lights: '💡 Lampa tänd', stairs: '🪜 Trapptur',
   greets: '👋 Hälsat', sat: '🪑 Satt ner', lay: '🛏 Lagt sig', posted: '📌 Teckning uppsatt', thrown: '🗑 Teckning slängd',
   catPhotos: '📸 Kattfoto', cooked: '🍗 Kycklingen är klar', brews: '☕ Kaffet är klart', tv: '📺 Tv på', pc: '🎮 Datorn på', parasol: '⛱ Parasollet', clock: '🕰 Väggklockan', calendar: '📅 Kattkalendern', grill: '🔥 Grillen tänd', hood: '🌀 Fläkten på', songs: '🎵 Musik på', carMusic: '🚗 Musik i bilen', read: '📖 Läste boken', pingpingHugs: '🐧 Kramat Pingping', mieleHugs: '💖 Kramat Miele', car: '🚗 Bilen kallad', magic: '✨ Trolleri', blinds: '🪟 Plisségardin', curtains: '🦓 Gardinerna', clips: '📱 Nytt klipp', nest: '🔊 Smart högtalare', roofs: '🏠 Uppe på taket', liftFloors: '🛗 Hissen', flights: '🚀 Jetpacken lyfter',
@@ -222,6 +222,7 @@ export function statRows() {
     ['🪟 Gardiner dragna', `${(stats.blinds ?? 0) + (stats.curtains ?? 0)}`],
     ['🌊 Spolningar', `${stats.flushes}`],
     ...(stats.toiletPaper ? [['🧻 Toapapper slängt', `${stats.toiletPaper}`]] : []), // (#426)
+    ...(stats.handwash ? [['🧼 Tvättat händerna', `${stats.handwash}`]] : []), // (#437)
     ['👋 Hälsat', `${stats.greets ?? 0}`],
     ['🌦 Ute i vädret', `${['walkRain', 'walkSnow', 'walkHail', 'walkStorm'].reduce((n, k) => n + (stats[k] ?? 0), 0)}`,
       [['regn', 'walkRain'], ['snö', 'walkSnow'], ['hagel', 'walkHail'], ['åska', 'walkStorm']].filter(([, k]) => stats[k]).map(([t, k]) => `${t} ${stats[k]}`).join(', ')],

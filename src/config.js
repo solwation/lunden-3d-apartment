@@ -1467,6 +1467,7 @@ export const SCORE = {
     liftFloors: 10, // per floor reached by lift (#415): the first ride, then each storey once; no `again`
     roofs: 20, // per roof stood on (#360): the loftgång, each terrace, Hus L's roof, the loft, a drum, Hus A / B / C, a canopy; no `again`
     toiletPaper: 3, // paper torn off a roll and flushed away (#426): the first time, then `again`
+    handwash: 4, handdry: 2, // hands washed at a basin / dried on a towel afterwards (#437): the first time, then `again`
     handBrew: 10, // the first pot brewed by hand: water and coffee filled first (#334); no `again` (each brew has `each.brews`)
   },
   again: {
@@ -1477,6 +1478,7 @@ export const SCORE = {
     fruit: 0.3,
     nest: 0.2,
     toiletPaper: 0.1,
+    handwash: 0.05, handdry: 0.05,
   },
   breeds: { huskatt: 10, siames: 30, 'brittiskt korthår': 30, 'maine coon': 35, 'norsk skogkatt': 40, perser: 100, sphynx: 250 },
   secrets: { kinds: 10, rare: 40 },
@@ -1964,6 +1966,13 @@ export const TOWEL_HOOKS = { y: 1.4, gap: 0.17,
   hook: { rose: 0.027, roseT: 0.007, pin: 0.008, len: 0.032, end: 0.011, endT: 0.006, color: 0xd0d3d5, metalness: 0.45, roughness: 0.38 },
   towel: { color: 0x96807d, band: 0xa08986, w: 0.17, len: 0.48 },
   towels: [{ seed: 1.1 }, { seed: 2.7, len: 0.5 }] };
+// Washing the hands (#437, src/handwash.js): at a running basin tap with a free hand, "Tvätta händerna" rubs them under
+// the stream for `wash` s; wet they show drops and a glossier skin and dry by themselves after `wetFor` s (the last
+// `fade` s fading); E on a towel ("Torka händerna") takes `dry` s and swings it `swing` rad. A kitchen towel hangs on the
+// oven's handle (`kitchenTowel`: linen with a blue band, ~20 × 42 cm, *guess*), `kitchenTowelAt` m along the handle from its
+// middle (towards the worktop), so aiming at the oven door's middle still opens the oven. All our picks.
+export const HANDWASH = { wash: 2.2, dry: 1.6, wetFor: 60, fade: 20, swing: 0.12, kitchenTowelAt: 0.14,
+  kitchenTowel: { color: 0xe6dfd2, band: 0x4b6683, w: 0.2, len: 0.42, seed: 3.3, slant: 0.2 } };
 // Toilet-paper holders (#426, src/toiletpaper.js): one beside each toilet, on the tank's wall in the toilet's own frame
 // (x along the wall from the toilet's middle, z out of it, y up): the plate `side` m along the wall (the side with free
 // wall in both bathrooms: towards the vanity downstairs, the shaft box upstairs), `y` up (*guess*, ~0.7 m in the issue),
@@ -2676,6 +2685,10 @@ export const FURNITURE = [
   // doorway (z 5.134, x 0.202–0.987, facing south; the vanity starts at z 5.25); + the 6 mm tiles
   { type: 'towelhooks', level: 1, x: 0.395, z: 7.054 - 0.006, rot: 0 },
   { type: 'towelhooks', level: 0, x: 0.75, z: 5.134 + 0.006, rot: 180 },
+  // Tvätt (#437): one hook with a white hand towel on the wall stub south of the laundry sink (its face z 4.845, read off
+  // the model; x 0.2–0.99 up to the Badrum doorway), facing north, high enough to hang clear of the worktop (*guess*)
+  { type: 'towelhooks', level: 0, x: 0.78, z: 4.845, rot: 0, y: 1.58, towels: [{ seed: 4.2, len: 0.46 }],
+    towel: { color: 0xe9e6df, band: 0xd6d1c7, w: 0.17, len: 0.46 } },
   // bobble bath mats in the towels' colour (#425, docs/duschmatta-referens.jpg): 50 × 80 (*guess*), `knob` = the bobble
   // pitch (*guess* from the photo), rounded `corner`s; rugs (rugLift: the cat and things put down stand on them), no
   // collision. WC/dusch: across the floor in front of the shower's glass (z 6.034), east of the vanity (x 0.565);

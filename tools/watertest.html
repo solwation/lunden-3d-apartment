@@ -6,6 +6,8 @@
 <script>
 // Running water test: every tap/shower can be aimed at and turned on/off with the action
 // button (touch mode); the stream shows while it runs.
+// #437: at every running basin tap the menu offers "Tvätta händerna": the hands are wet after it, the tap turns off
+// next, the nearest towel ("Torka händerna") dries them; the washing counts (first-time points once).
 //   google-chrome --headless=new --dump-dom http://localhost:8137/tools/watertest.html
 const out = document.getElementById('out');
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -13,45 +15,113 @@ const f = document.createElement('iframe');
 f.width = 900; f.height = 600;
 f.src = '../index.html';
 document.body.append(f);
-f.onload = async () => {
+f.onload = () => run().catch((e) => { out.textContent = `SOME FAILED\nFAIL ${e?.stack ?? e}`; });
+async function run() {
   const w = f.contentWindow, d = f.contentDocument;
   while (!w.__app) await wait(100);
-  const { player, camera, taps, step } = w.__app;
+  const THREE = await w.eval("import('three')");
+  const { player, camera, taps, step, handWash, world, stats } = w.__app;
   d.getElementById('start-touch').click();
   await wait(50);
   const btn = d.getElementById('action');
   const lines = [];
   let pass = taps.length >= 6;
   lines.push(`${pass ? 'PASS' : 'FAIL'} ${taps.length} taps/showers`);
-  for (const t of taps) {
-    t.object.updateMatrixWorld(true);
-    // stand 0.7 m from the pick target, on the side facing the room, and look at it
-    const target = t.pickable.getWorldPosition(t.pickable.position.clone());
+  /** Stand ~0.7 m from `target` (a world point) in its own room and look at it. */
+  const aimAt = (target, dist = 0.7, facing = null) => {
     const level = target.y > 3 ? 1 : 0;
     const floorY = level ? 3.25 : 0;
-    const want = w.__app.world.roomMaps[level].at(target.x, target.z);
+    const want = world.roomMaps[level].at(target.x, target.z);
     let best = null;
-    for (let a = 0; a < 16; a++) {
-      const ang = (a / 16) * Math.PI * 2, x = target.x + Math.sin(ang) * 0.7, z = target.z + Math.cos(ang) * 0.7;
-      if (w.__app.world.roomMaps[level].exact(x, z) === want) { best = { x, z }; break; }
+    if (facing) { // straight in front of it first
+      for (const r of [dist, 0.45, 0.4, dist * 1.3, dist * 1.6]) {
+        const x = target.x + facing.x * r, z = target.z + facing.z * r;
+        if (!best && world.roomMaps[level].exact(x, z) === want && player.isFree(x, z, level)) best = { x, z };
+      }
     }
-    if (!best) { lines.push(`FAIL ${t.name}: no place to stand`); pass = false; continue; }
+    for (const r of [dist, dist * 0.8, dist * 1.2, dist * 0.65]) {
+      if (best) break;
+      for (let a = 0; a < 32 && !best; a++) {
+        const ang = (a / 32) * Math.PI * 2, x = target.x + Math.sin(ang) * r, z = target.z + Math.cos(ang) * r;
+        if (world.roomMaps[level].exact(x, z) === want && player.isFree(x, z, level)) best = { x, z };
+      }
+      if (best) break;
+    }
+    if (!best) return false;
     player.spawn(best.x, best.z, Math.atan2(-(target.x - best.x), -(target.z - best.z)));
     player.pos.y = floorY; player.eyeY = floorY + 1.62;
     for (let i = 0; i < 3; i++) step(1 / 60);
     camera.rotation.y = Math.atan2(-(target.x - camera.position.x), -(target.z - camera.position.z));
     camera.rotation.x = Math.atan2(target.y - camera.position.y, Math.hypot(target.x - camera.position.x, target.z - camera.position.z));
     step(1 / 60);
+    return true;
+  };
+  const choiceBtn = (re) => [...d.querySelectorAll('#choices button')].find((b) => re.test(b.textContent));
+  const towels = [...world.furnitureTargets.filter((t) => t.kind === 'towel'), handWash.kitchen].filter(Boolean);
+  const towelAt = (t) => new THREE.Box3().setFromObject(t.object).getCenter(new THREE.Vector3());
+  let washed = 0;
+  for (const t of taps) {
+    t.object.updateMatrixWorld(true);
+    const target = t.pickable.getWorldPosition(t.pickable.position.clone());
+    if (!aimAt(target)) { lines.push(`FAIL ${t.name}: no place to stand`); pass = false; continue; }
     const label = btn.textContent;
     btn.click();
     const on = t.isOpen && t.stream.visible;
     step(1 / 60);
+    if (!t.spec.shower) { // a basin (#437): wash the hands, then turn it off, then dry them on the nearest towel
+      const wash = choiceBtn(/tvätta händerna/i), offRow = choiceBtn(/stänga av/i);
+      wash?.click();
+      for (let i = 0; i < 20; i++) step(0.05);
+      const mid = handWash.busy && w.__app.hand.rubT > 0 && w.__app.hand.left.hand.visible;
+      for (let i = 0; i < 40; i++) step(0.05);
+      const wet = handWash.isWet && w.__app.hand.wet > 0.9;
+      step(1 / 60);
+      const offLabel = btn.textContent;
+      btn.click();
+      const off = !t.isOpen && !t.stream.visible;
+      const ok = /sätta på/i.test(label) && on && !!wash && !!offRow && mid && wet && /stänga av/i.test(offLabel) && off;
+      pass &&= ok;
+      lines.push(`${ok ? 'PASS' : 'FAIL'} ${t.name} (${world.roomMaps[target.y > 3 ? 1 : 0].at(target.x, target.z)}) "${label}" on=${on}, menu wash=${!!wash} off=${!!offRow}, rubbing=${mid}, wet=${wet}, then "${offLabel}" off=${off}`);
+      // the nearest towel on the same floor
+      const near = towels.map((tw) => ({ tw, p: towelAt(tw) })).filter((o) => (o.p.y > 3) === (target.y > 3))
+        .sort((a, b) => a.p.distanceTo(target) - b.p.distanceTo(target))[0];
+      if (!near || !aimAt(near.p, 0.6, near.tw.object.getWorldDirection(new THREE.Vector3()))) { lines.push(`FAIL ${t.name}: no towel to aim at`); pass = false; continue; }
+      const dryLabel = btn.textContent;
+      btn.click();
+      for (let i = 0; i < 10; i++) step(0.05);
+      const swinging = Math.abs(near.tw.object.rotation.z) > 1e-4 || near.tw.swing > 0;
+      for (let i = 0; i < 40; i++) step(0.05);
+      step(1 / 60);
+      const dry = !handWash.isWet && w.__app.hand.wet === 0, after = btn.textContent;
+      const okDry = /torka händerna på/i.test(dryLabel) && swinging && dry && /redan torra/i.test(after);
+      pass &&= okDry;
+      washed++;
+      lines.push(`${okDry ? 'PASS' : 'FAIL'}   dried on ${near.tw.name} (${near.p.toArray().map((v) => v.toFixed(2))}) from (${player.pos.x.toFixed(2)}, ${player.pos.z.toFixed(2)}) "${dryLabel}" swung=${swinging} dry=${dry}, then "${after}"`);
+      continue;
+    }
     btn.click();
     const off = !t.isOpen && !t.stream.visible;
     const ok = /sätta på/i.test(label) && on && off;
     pass &&= ok;
     lines.push(`${ok ? 'PASS' : 'FAIL'} ${t.name} @ (${target.x.toFixed(2)}, ${target.y.toFixed(2)}, ${target.z.toFixed(2)}) button "${label}" on=${on} off=${off}`);
   }
+  // counted: every wash, the first-time points once
+  const okCount = washed === 4 && stats.handwash === 4 && stats.handdry === 4 && Object.keys(stats.seen.handwash ?? {}).length === 1;
+  pass &&= okCount;
+  lines.push(`${okCount ? 'PASS' : 'FAIL'} counted: ${stats.handwash} washes, ${stats.handdry} dried, first-time ids ${Object.keys(stats.seen.handwash ?? {}).length}`);
+  // wet hands dry by themselves; a full hand gets no washing row
+  const kt = taps.find((t) => t.name === 'köksblandaren');
+  handWash.reset();
+  kt.toggle();
+  const rows = kt.options().map((r) => r.id).join(',');
+  handWash.wash(kt);
+  for (let i = 0; i < 60; i++) step(0.05);
+  const wetNow = handWash.isWet;
+  for (let i = 0; i < 70; i++) step(1);
+  kt.toggle();
+  const okSelf = rows === 'wash,off' && wetNow && !handWash.isWet;
+  pass &&= okSelf;
+  lines.push(`${okSelf ? 'PASS' : 'FAIL'} rows ${rows}; wet hands dry by themselves after a minute (${wetNow} → ${handWash.isWet})`);
   // cold shower: standing in the running ceiling shower is detected
   const sh = taps.find((t) => t.name === 'takduschen');
   sh.toggle();
@@ -62,7 +132,7 @@ f.onload = async () => {
   pass &&= okShower;
   lines.push(`${okShower ? 'PASS' : 'FAIL'} standing in the shower is detected (in=${inside} beside=${outside})`);
   out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
-};
+}
 </script>
 </body>
 </html>

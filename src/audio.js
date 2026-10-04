@@ -298,6 +298,21 @@ export const sfx = {
       },
     };
   },
+  /** Hands rubbed under a running tap (#437): wet splashy swishes for `dur` s, a little irregular. */
+  handwash(pos, dur = 2) {
+    if (!ready()) return;
+    const t = ctx.currentTime, d = out(pos, 0.9);
+    for (let s = 0; s < dur - 0.1; s += 0.16 + Math.random() * 0.08) {
+      noise(t + s, 0.14, d, { type: 'bandpass', freq: 1700 + Math.random() * 1600, q: 1.2, gain: 0.16 + Math.random() * 0.08, attack: 0.02 });
+      if (Math.random() < 0.35) noise(t + s + 0.05, 0.05, d, { type: 'highpass', freq: 4200, gain: 0.08 }); // a splash
+    }
+  },
+  /** Hands dried on a towel (#437): soft cloth rubs for `dur` s. */
+  towelRub(pos, dur = 1.5) {
+    if (!ready()) return;
+    const t = ctx.currentTime, d = out(pos, 0.8);
+    for (let s = 0; s < dur - 0.1; s += 0.22 + Math.random() * 0.06) noise(t + s, 0.2, d, { type: 'bandpass', freq: 700 + Math.random() * 300, q: 0.8, gain: 0.14, attack: 0.06 });
+  },
   /** A toilet flush (#155): a rushing gurgle that drains away, then the tank refilling (a thin hiss) for `refill` s. */
   flush(pos, refill = 6) {
     if (!ready()) return;

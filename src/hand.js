@@ -15,6 +15,22 @@ import { HAND as H } from './config.js';
 // The sleeve is a tapering tube from the shoulder with a cuff at the wrist. Three meshes, no shadows.
 
 const skin = new THREE.MeshStandardMaterial({ color: H.skin, roughness: 0.62, emissive: H.skinGlow, emissiveIntensity: 1 });
+const SKIN = { color: new THREE.Color(H.skin), wet: new THREE.Color(H.skin).multiplyScalar(0.88), rough: 0.62, wetRough: 0.24 };
+// water drops on wet hands (#437): little flattened beads on the back of the hand and the fingers
+const dropMat = new THREE.MeshStandardMaterial({ color: 0xf2f8fc, roughness: 0.03, metalness: 0.1, transparent: true, opacity: 0.85, depthWrite: false });
+function dropsGeometry() {
+  const parts = [], rnd = (k) => ((Math.sin(k * 91.7) * 43758.5) % 1 + 1) % 1;
+  for (let i = 0; i < 14; i++) {
+    const r = 0.0028 + rnd(i + 1) * 0.0022, onFinger = i >= 7, f = FINGERS[i % 4];
+    const y = onFinger ? f.y : -0.03 + rnd(i + 7) * 0.06, z = onFinger ? f.z + 0.012 + rnd(i + 3) * 0.035 : 0.025 + rnd(i + 5) * 0.065;
+    for (const side of [-1, 1]) { // the back of the hand and the palm
+      const g = new THREE.SphereGeometry(r, 8, 5).scale(0.55, 1, 1).translate(side * (onFinger ? 0.0085 : 0.0155), y + side * 0.004, z - side * 0.006);
+      g.deleteAttribute('uv');
+      parts.push(g);
+    }
+  }
+  return mergeGeometries(parts).scale(H.size, H.size, H.size);
+}
 const sleeve = new THREE.MeshStandardMaterial({ color: H.sleeve, roughness: 0.85 });
 
 // The hand's frame: the wrist at the origin, the fingers towards +z, the palm facing +x, the thumb on top (+y) —
@@ -122,6 +138,34 @@ export class Hand {
     this.reachT = 1;
     this.reachTo = new THREE.Vector3();
     this.grips = new WeakMap();
+    // washing / drying the hands (#437): both hands rub at a world point for a while; wet ones glisten with drops
+    this.rubT = 0; this.rubDur = 0; this.rubAt = new THREE.Vector3(); this.rubBoth = false;
+    const dropsGeo = dropsGeometry();
+    this.drops = [this.hand, this.left.hand].map((h) => {
+      const d = new THREE.Mesh(dropsGeo, dropMat);
+      Object.assign(d, { visible: false, castShadow: false, renderOrder: 2, frustumCulled: false });
+      d.raycast = () => {};
+      h.add(d);
+      return d;
+    });
+    this.wet = 0;
+  }
+
+  /** Rub the hands at world point `p` for `secs` s (#437): under a tap (`both` hands) or against a towel. */
+  rub(p, secs, both = true) {
+    this.rubAt.copy(p);
+    this.rubT = this.rubDur = secs;
+    this.rubBoth = both;
+    this.reachT = 1;
+  }
+
+  /** How wet the hands look, 0…1 (#437): a glossier, a little darker skin and drops. */
+  setWet(k) {
+    if (k === this.wet) return;
+    this.wet = k;
+    skin.color.copy(SKIN.color).lerp(SKIN.wet, k);
+    skin.roughness = SKIN.rough + (SKIN.wetRough - SKIN.rough) * k;
+    for (const d of this.drops) { d.visible = k > 0.02; d.scale.setScalar(0.4 + 0.6 * k); }
   }
 
   get visible() { return this.hand.visible; }
@@ -202,6 +246,28 @@ export class Hand {
       grip = H.petCurl;
       show = true;
       this.reachT = 1;
+    } else if (this.rubT > 0) { // washing / drying (#437): out from below, a quick circling rub at the point, back
+      this.rubT = Math.max(0, this.rubT - dt);
+      const t = this.rubDur - this.rubT, ease = Math.min(1, t / 0.3, this.rubT / 0.3);
+      this.camera.updateMatrixWorld();
+      // towards the point, but kept in the lower part of the view (the stream is often further off and lower down)
+      const at = this.camera.worldToLocal(this.rubAt.clone());
+      at.setLength(Math.min(at.length(), 0.46));
+      const fz = Math.max(0.3, -at.z);
+      at.z = -fz;
+      at.y = Math.min(-0.08, Math.max(at.y, -0.42 * fz));
+      at.x = Math.min(0.32 * fz, Math.max(at.x, -0.32 * fz));
+      const wob = new THREE.Vector3(Math.sin(t * 15) * 0.022, Math.cos(t * 11) * 0.008, Math.sin(t * 7.5) * 0.008);
+      const right = at.clone().add(new THREE.Vector3(this.rubBoth ? 0.025 : 0, 0, 0)).add(wob);
+      this.pose(this.low.clone().lerp(right, ease), 'pet');
+      if (this.rubBoth) { // the left hand mirrored, rubbing against the right one
+        const l = at.clone().add(new THREE.Vector3(-0.035, -0.012, 0)).sub(wob);
+        l.x = -l.x;
+        this.pose(this.low.clone().lerp(l, ease), 'reach', this.left);
+        hug = true;
+      }
+      grip = 0.3;
+      show = true;
     } else if (this.reachT < 1) {
       this.reachT = Math.min(1, this.reachT + dt / H.reachTime);
       const k = Math.sin(Math.PI * this.reachT);
