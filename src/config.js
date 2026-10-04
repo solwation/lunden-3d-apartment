@@ -122,7 +122,7 @@ export const BLINDS = {
 export const SILL_PLANTS = {
   kinds: ['pelargon', 'orchid', 'violet', 'cactus', 'ivy', 'basil', 'monstera', 'pothos', 'fern', 'olive'],
   byWindow: [['basil', 'pelargon', 'basil'], ['orchid', 'monstera', 'fern'], ['pothos', 'violet'], ['orchid', 'violet', 'fern'], ['olive', 'cactus', 'pelargon'], ['cactus', 'ivy']],
-  skip: [[0, 2], [1, 2], [3, 1]], // [sill, pot]: no pot there (the black SYMFONISK speaker in the kitchen window, #289, #298; the lamp on the window board behind the sofa, #186; the white speaker in Sovrum 1's window, #201, #298)
+  skip: [[0, 2], [0, 1], [1, 2], [3, 1]], // [sill, pot]: no pot there (the black SYMFONISK speaker in the kitchen window, #289, #298, the smart display beside it, #325; the lamp on the window board behind the sofa, #186; the white speaker in Sovrum 1's window, #201, #298)
   pot: { r: [0.062, 0.072], h: [0.115, 0.14] },
   clear: 0.03, side: 0.015, trail: 0.11,
   // a colour (or a list: one picked per pot); orchids: [petals, lip] pairs
@@ -983,6 +983,7 @@ export const SCORE = {
     friesCooked: 8, // a basket of Aviko fries cooked golden (#301): the first time, then `again` per batch
     clips: 2, // per kind of clip seen on Tilly's laptop (#283); no points for repeats (they come by themselves)
     fruit: 3, // a piece of fruit from the bowl eaten up (#326): per kind (apple, pear, orange, clementine, banana), then `again`
+    nest: 4, // per smart speaker asked something (#325), then `again`
   },
   again: {
     doors: 0.1, lids: 0.1, flushes: 0.2, taps: 0.1, fridge: 0.1, appliances: 0.1, cabinets: 0.05, lights: 0.05,
@@ -990,6 +991,7 @@ export const SCORE = {
     clock: 0.1, calendar: 0.1, greets: 0.1, catButts: 1, walkRain: 2, walkSnow: 3, walkHail: 4, walkStorm: 3,
     shattered: 0.3, carMusic: 0.2, pingpingHugs: 0.2, blinds: 0.05, airfried: 0.5, friesCooked: 0.5,
     fruit: 0.3,
+    nest: 0.2,
   },
   breeds: { huskatt: 10, siames: 30, 'brittiskt korthår': 30, 'maine coon': 35, 'norsk skogkatt': 40, perser: 100, sphynx: 250 },
   secrets: { kinds: 10, rare: 40 },
@@ -1701,6 +1703,21 @@ export const VANITY = {
 export const LAPTOP = { w: 0.3, d: 0.21, base: 0.014, lid: 0.006, open: 110, px: [400, 250], fps: 12, swipe: 7, slide: 0.45,
   gain: 0.1, duck: 0.6, near: 3.5 };
 
+// Smart speakers (#325, src/nest.js): a smart display with a screen on the kitchen window board and two round speakers in
+// wall mounts (living room by the patio door, the upstairs hall). Our own plain look: no logo, no wordmark. Sizes after
+// the 2nd-gen display (screen 17.8 × 11.8 cm) and the round mini speaker (Ø 9.8 × 4.2 cm) — *guess*; chalk fabric.
+// E on one: four white dots wake (the display lights up), a chime, then a made-up answer in Swedish (Web Speech sv-SE,
+// silent when muted; a bubble over it, a caption card on the display). The house speakers are ducked to `duck` while one
+// talks within `near` m. Display idle: a clock + the weather, now and then Miele's photo (`photoEvery` / `photoFor` s);
+// dimmed by night to `night`. `talk`: how long a caption stays (`min` s, + `perChar` s a character); `chime` s before it talks.
+export const NEST = {
+  fabric: 0xd6d3cd, shell: 0xecebe7, dots: 0xffffff,
+  hub: { w: 0.178, h: 0.118, d: 0.009, screen: [0.152, 0.088], lean: 14, lift: 0.03, base: { w: 0.168, d: 0.07, h: 0.06 }, px: [480, 280] },
+  mini: { r: 0.049, h: 0.042, mount: 0.008 },
+  chime: 0.7, talk: { min: 2.5, perChar: 0.06 }, duck: 0.45, near: 6,
+  photoEvery: 40, photoFor: 10, night: 0.35, photo: 'textures/miele.jpg',
+};
+
 export const FURNITURE = [
   // Vardagsrum: sofa with its back to the window (south wall), chaise in the SE corner
   { type: 'sofa', level: 0, x: 5.5 - 2.82 / 2, z: 12.15 - 0.89 / 2, rot: 0, chaise: 'right' }, // sitter's right = east
@@ -1789,6 +1806,12 @@ export const FURNITURE = [
   // the black one on the kitchen window's inner board (#289, the user; it stood at the south end of the worktop): the east
   // end, in the third pot's place (SILL_PLANTS.skip), facing the room, clear of the blind's folded pack (z 0.16)
   { type: 'symfonisk', kind: 'speaker', color: 'black', level: 0, x: 4.48, z: 0.33, y: 0.8, rot: 180 },
+  // smart speakers (#325, NEST): the display in the middle pot's place on the kitchen window board (SILL_PLANTS.skip), clear of
+  // the blind's pack (z 0.16), turned 15° towards the dining table; a round one in a wall mount on the living room's south
+  // wall between the patio door and the west corner (over the palm), one on the upstairs hall's west wall
+  { type: 'nesthub', level: 0, x: 3.82, z: 0.35, y: 0.8, rot: 165 },
+  { type: 'nestmini', level: 0, x: 0.56, z: 12.2337, y: 1.68, rot: 0, room: 'vardagsrummet' },
+  { type: 'nestmini', level: 1, x: 1.5418, z: 5.62, y: 1.6, rot: -90, room: 'hallen' },
   { type: 'symfonisk', kind: 'lamp', color: 'white', level: 0, x: 4.55, z: 12.3, y: 0.6, rot: 0 },
   // big rug under the sofa's front legs and the coffee table (#55): 300 × 200 × 1.2 cm (size and
   // colours are our pick), light oatmeal with a soft weave and a thin border; no collision

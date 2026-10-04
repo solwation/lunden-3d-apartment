@@ -778,6 +778,23 @@ export const sfx = {
     const t = ctx.currentTime, d = out(pos, 0.8);
     [1, 1.26, 1.5, 2].forEach((m, i) => tone(t + i * 0.05, 0.35, d, { type: 'sine', from: 880 * pitch * m, gain: 0.06 }));
   },
+  /** A smart speaker (#325): 'wake' = two soft rising notes, 'sleep' = the same falling; 'fanfare', 'drumroll', 'boop' =
+   * its answers without words. */
+  nest(pos, kind = 'wake') {
+    if (!ready()) return;
+    const t = ctx.currentTime, d = out(pos, 0.8);
+    if (kind === 'wake' || kind === 'sleep') {
+      const [a, b] = kind === 'wake' ? [659, 988] : [784, 523];
+      tone(t, 0.25, d, { from: a, gain: 0.08 }); tone(t + 0.13, 0.4, d, { from: b, gain: 0.08 });
+    } else if (kind === 'fanfare') {
+      [[523, 0, 0.14], [523, 0.15, 0.14], [523, 0.3, 0.14], [659, 0.45, 0.3], [523, 0.78, 0.16], [784, 0.96, 0.7]].forEach(([f, dt, len]) => {
+        tone(t + dt, len, d, { type: 'sawtooth', from: f, gain: 0.05 }); tone(t + dt, len, d, { type: 'square', from: f * 2, gain: 0.015 });
+      });
+    } else if (kind === 'drumroll') {
+      for (let i = 0; i < 34; i++) noise(t + i * 0.045, 0.06, d, { type: 'bandpass', freq: 1700, q: 0.7, gain: 0.12 + 0.25 * (i / 34) });
+      noise(t + 1.6, 0.5, d, { type: 'highpass', freq: 5000, gain: 0.35 }); tone(t + 1.6, 0.25, d, { from: 150, to: 50, gain: 0.6 }); // the cymbal + kick
+    } else tone(t, 0.22, d, { from: 520, to: 260, gain: 0.12 }); // boop
+  },
     /** Pouring into a cup or a glass: a trickle that rises in pitch as it fills (`secs` long). */
   pour(pos, secs = 1.2) {
     if (!ready()) return;

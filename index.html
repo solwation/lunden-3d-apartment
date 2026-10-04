@@ -73,6 +73,8 @@
     #speech .say.mine { left: 50%; top: auto; bottom: calc(110px + var(--sb)); transform: translateX(-50%); background: #ffe9a8; }
     #speech .say.mine::after { border-top-color: #ffe9a8; }
     #speech .say[hidden] { display: none; }
+    #speech .say.nest { white-space: normal; width: max-content; max-width: 300px; background: #eef3f7; } /* a smart speaker's answer (#325) */
+    #speech .say.nest::after { border-top-color: #eef3f7; }
     .card { max-height: calc(100vh - 32px); overflow: auto; margin: 16px; }
     .touch-help { display: none; }
     @media (any-pointer: coarse) { .touch-help { display: grid; } }

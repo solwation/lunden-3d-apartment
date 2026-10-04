@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Smart speaker test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+// The smart speakers (#325): the display on the kitchen window board and the two round ones on the walls. Aim at each and
+// press: an answer is chosen, the wake light shows (the round ones' dots, the display's caption card) and the speech call
+// is made (a mocked speechSynthesis); never the same answer twice in a row; the time answer follows the game clock; muted =
+// no speech; the Sonos is ducked while one talks; not through a wall; F hides them (no target, quiet).
+//   google-chrome --headless=new --dump-dom http://localhost:8137/tools/nesttest.html
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const f = document.createElement('iframe');
+f.width = 900; f.height = 600;
+f.src = '../index.html?time=12&weather=rain';
+document.body.append(f);
+f.onload = async () => {
+  const w = f.contentWindow, d = f.contentDocument;
+  while (!w.__app) await wait(100);
+  const { player, camera, world, step, stats, toggleFurniture, nests, day } = w.__app;
+  const lines = [];
+  const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; };
+  d.getElementById('start-touch').click();
+  await wait(50);
+  world.object.updateMatrixWorld(true);
+  const spoken = [];
+  nests.synth = { speak(u) { spoken.push(u.text); }, cancel() {} }; // the mock
+  const answers = [];
+  nests.onAnswer = (sp, a) => answers.push(a);
+  const sps = nests.speakers;
+  const hub = sps.find((s) => s.type === 'hub'), minis = sps.filter((s) => s.type === 'mini');
+  let pass = check(sps.length === 3 && hub && minis.length === 2, `three speakers: ${sps.map((s) => s.type).join(', ')}`);
+  const V = camera.position.constructor;
+  const btn = d.getElementById('action');
+  /** Stand at (x, z) on `level` and look at world point p. */
+  const lookAt = (x, z, level, p) => {
+    player.spawn(x, z, 0);
+    if (level === 1) { player.pos.y = 3.25; player.eyeY = 3.25 + 1.62; }
+    for (let i = 0; i < 3; i++) step(1 / 60);
+    const dx = p.x - camera.position.x, dz = p.z - camera.position.z;
+    camera.rotation.y = Math.atan2(-dx, -dz); camera.rotation.x = Math.atan2(p.y - camera.position.y, Math.hypot(dx, dz));
+    step(1 / 60);
+  };
+  const run = (secs) => { for (let i = 0; i < secs * 30; i++) step(1 / 30); };
+  // where to stand for each: in front of it, ~1 m out
+  const spots = new Map([[hub, [3.6, 1.2, 0]], [minis.find((m) => m.pos().y < 3), [1.3, 11.3, 0]], [minis.find((m) => m.pos().y > 3), [2.4, 5.9, 1]]]);
+  for (const [sp, [x, z, lv]] of spots) {
+    const p = sp.pos(new V());
+    if (sp.type === 'hub') p.y += 0.06;
+    lookAt(x, z, lv, p);
+    pass &= check(!btn.hidden && /prata med den smarta (skärmen|högtalaren)/i.test(btn.textContent), `${sp.type} @${p.x.toFixed(2)},${p.z.toFixed(2)}: "${btn.textContent}"`);
+    const n0 = answers.length, s0 = spoken.length, c0 = stats.nest ?? 0;
+    btn.click();
+    run(0.3);
+    const lit = sp.type === 'hub' ? /^wake/.test(sp.stamp) : sp.dots.every((m) => m.material.opacity > 0.5);
+    pass &= check(answers.length === n0 + 1 && lit, `${sp.type}: an answer chosen (${answers.at(-1)?.key}), the wake light on`);
+    run(1.0);
+    const a = answers.at(-1);
+    if (a.sound) pass &= check(spoken.length === s0, `${sp.type}: a sound (${a.sound}), no words`);
+    else pass &= check(spoken.length === s0 + 1 && spoken.at(-1) === a.text, `${sp.type}: spoke "${spoken.at(-1)}"`);
+    if (sp.type === 'hub') pass &= check(/^talk/.test(sp.stamp) && sp.texture.version > 1, `hub: the caption card (stamp ${sp.stamp.slice(0, 40)}…)`);
+    else pass &= check(!nests.bubble.hidden && nests.bubble.textContent === a.text, `${sp.type}: the bubble "${nests.bubble.textContent}"`);
+    pass &= check(stats.nest === c0 + 1, `counted (${c0} → ${stats.nest})`);
+    pass &= check(nests.talkingNear(camera.position), 'the Sonos is ducked while it talks');
+    run(12);
+    pass &= check(!sp.talking && (sp.type === 'hub' || sp.dots.every((m) => m.material.opacity < 0.05)), `${sp.type}: quiet again, the light out`);
+  }
+  // never the same twice in a row
+  let repeats = 0, prev = nests.last;
+  const keys = new Set();
+  for (let i = 0; i < 300; i++) { const a = nests.press(sps[i % 3]); if (a.key === prev) repeats++; prev = a.key; keys.add(a.key); }
+  nests.hush();
+  pass &= check(repeats === 0 && keys.size > 20, `300 presses: ${repeats} repeats, ${keys.size} different answers`);
+  // the time from the game clock, the weather from weather.js
+  day.paused = true;
+  day.hour = 19.25;
+  let a = nests.press(hub, 'time');
+  pass &= check(a.text === 'Klockan är kvart över sju på kvällen.', `19:15 → "${a.text}"`);
+  day.hour = 7.5;
+  a = nests.press(hub, 'time');
+  pass &= check(a.text === 'Klockan är halv åtta på morgonen.', `07:30 → "${a.text}"`);
+  day.hour = 12.12;
+  a = nests.press(hub, 'time');
+  pass &= check(a.text === 'Klockan är ungefär fem över tolv på eftermiddagen.', `12:07 → "${a.text}"`);
+  step(1 / 30);
+  a = nests.press(hub, 'weather');
+  pass &= check(/regnar/.test(a.text), `&weather=rain → "${a.text}"`);
+  nests.hush();
+  // muted: no speech
+  d.getElementById('mute').click();
+  const s1 = spoken.length;
+  nests.press(minis[0], 'joke-wall'); run(1.5);
+  pass &= check(spoken.length === s1 && !nests.bubble.hidden, `muted: no speech (${spoken.length - s1} calls), the bubble still shows`);
+  d.getElementById('mute').click();
+  nests.hush();
+  // not through a wall: the hall's round one from the room west of it
+  const hall = [...spots].find(([, s]) => s[2] === 1)[0], hp = hall.pos(new V());
+  lookAt(hp.x - 0.7, hp.z, 1, hp);
+  pass &= check(btn.hidden || !/smarta/i.test(btn.textContent), `not through the wall ("${btn.hidden ? '' : btn.textContent}")`);
+  // F: hidden, no target, quiet
+  const [x0, z0] = spots.get(hub);
+  const p0 = hub.pos(new V()); p0.y += 0.06;
+  lookAt(x0, z0, 0, p0);
+  btn.click(); run(0.2);
+  toggleFurniture(false);
+  lookAt(x0, z0, 0, p0);
+  const shown = (o) => { for (; o; o = o.parent) if (!o.visible) return false; return true; };
+  pass &= check(sps.every((s) => !shown(s.object)), 'F: all three hidden');
+  pass &= check((btn.hidden || !/smarta/i.test(btn.textContent)) && !nests.talking, `F: no target, quiet ("${btn.hidden ? '' : btn.textContent}")`);
+  toggleFurniture(true);
+  out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
+};
+</script>
+</body>
+</html>

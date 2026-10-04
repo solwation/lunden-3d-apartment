@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { COLORS, LEVELS, DAY, START, PLAYER, DRAWING, STAIR, HOLD, REMOTE, REST, DOOR_HEIGHT, TURBO, WEATHER, BREAK, CAR, KITCHEN, LAPTOP, AUTO_RELOAD } from './config.js';
+import { COLORS, LEVELS, DAY, START, PLAYER, DRAWING, STAIR, HOLD, REMOTE, REST, DOOR_HEIGHT, TURBO, WEATHER, BREAK, CAR, KITCHEN, LAPTOP, NEST, AUTO_RELOAD } from './config.js';
 const DRAWING_COLORS = DRAWING.colors;
 import { buildWorld } from './world.js';
 import { photoGlow } from './furniture.js';
@@ -60,6 +60,7 @@ import { Target } from './target.js';
 import { Car } from './car.js';
 import { People } from './people.js';
 import { Greetings } from './greet.js';
+import { Nests } from './nest.js';
 import { Weather } from './weather.js';
 import { Posters, HeldDrawing, paperOnly } from './posters.js';
 import { PaperBalls } from './paperball.js';
@@ -576,6 +577,8 @@ if (params.has('tv')) for (const t of world.furnitureTargets) if (t.kind === 'tv
 const laptops = [...new Set(world.furnitureTargets.filter((t) => t.kind === 'laptop').map((t) => t.laptop))];
 for (const l of laptops) l.onClip = (key) => bump('clips', 1, key);
 if (params.has('laptop')) for (const l of laptops) l.set(true);
+// the smart speakers (#325): E wakes one, it answers (the time, the weather, the coffee, jokes …)
+const nests = new Nests(world.furnitureTargets.filter((t) => t.kind === 'nest'), { day, weather, coffee: world.lids.find((l) => l.kind === 'coffee'), camera, layer: document.getElementById('speech') });
 if (params.has('turbo')) turbo.start(); // Kaffeturbo at once (screenshots, #217)
 // ?open opens every door (screenshots of open doors/wardrobes)
 // &water turns every tap on (screenshots)
@@ -877,6 +880,7 @@ function use(thing) {
   else if (thing.kind === 'paper') { if (heldItem() === heldDrawing) heldDrawing.putBack(); else beginDraw(); } // holding the drawing: back on the desk (#176)
   else if (thing.kind === 'tape') { posters.tape(heldDrawing.image, thing.spot, heldDrawing.meta ?? {}); heldDrawing.release(); drawing.save(); bump('posted'); } // tape the drawing up (#176)
   else if (thing.kind === 'pc') { const on = thing.toggle(); if (on) bump('pc', 1, idOf(thing)); sfx.tvClick(thing.pickable.getWorldPosition(new THREE.Vector3()), on); }
+  else if (thing.kind === 'nest') { thing.toggle(); bump('nest', 1, idOf(thing)); } // a smart speaker answers (#325)
   else if (thing.kind === 'laptop') { // the screen: on, then the next clip; the keyboard: on / off (#283)
     const was = thing.isOpen;
     thing.toggle();
@@ -1158,6 +1162,7 @@ function toggleFurniture(on = !world.furnitureOn) {
   if (!on && cat.visible) cat.hide(); // the cat goes too (and stops purring); none turn up until F is back
   if (!on) for (const t of world.furnitureTargets) if ((t.kind === 'tv' || t.kind === 'pc') && t.isOpen) t.toggle(); // screens off
   if (!on) for (const l of laptops) l.set(false); // Tilly's laptop too (#283)
+  if (!on) nests.hush(); // the smart speakers stop talking (#325)
   if (!on) world.hob?.set(false); // the hob stays (Peab's kitchen), but off
   if (!on) chicken?.reset(); // home to the fridge, no smoke
   if (!on) { world.hood?.set(false); smokeAlarm.reset(); } // the fan off, the alarm quiet (#194)
@@ -1225,7 +1230,7 @@ function step(dt) {
   const fov = 72 + TURBO.fov * turbo.k;
   if (Math.abs(camera.fov - fov) > 0.01) { camera.fov = fov; camera.updateProjectionMatrix(); }
   const clipsNear = laptops.some((l) => l.on && l.screen.getWorldPosition(tmpV).distanceTo(camera.position) < LAPTOP.near); // Tilly's clips playing near (#283)
-  sonos.setDuck(turbo.active ? 0.3 : car.radio.playing && car.occupied ? CAR.music.duckHouse : clipsNear ? LAPTOP.duck : 1); // (sitting in the car with its music on, #268)
+  sonos.setDuck(turbo.active ? 0.3 : car.radio.playing && car.occupied ? CAR.music.duckHouse : clipsNear ? LAPTOP.duck : nests.talkingNear(camera.position) ? NEST.duck : 1); // (sitting in the car with its music on, #268)
   car.radio.setDuck(turbo.active ? 0.3 : 1);
   for (const d of world.doors) d.update(dt);
   for (const l of world.lids) l.update(dt);
@@ -1247,6 +1252,7 @@ function step(dt) {
   patio.update(day, dt);
   applySeason(day.month); // tree colours, snow (only does work when the month changes)
   for (const t of world.furnitureTargets) t.update?.(dt);
+  nests.update(dt); // the smart speakers: talk, wake lights, the display (#325)
   for (const h of holdables) h.update(dt);
   grill.update(dt);
   airFryer.update(dt);
@@ -1465,7 +1471,7 @@ const autoReload = {
   /** Something time-bound that a reload would cut short (and keep.js does not keep): wait for it to end. */
   get waiting() {
     return !!(world.lids.find((l) => l.kind === 'coffee')?.isOpen || chicken?.smoking || (world.hob?.on && pan?.onHob)
-      || airFryer.running || grill.on || turbo.active || car.radio.playing || ball.flying);
+      || airFryer.running || grill.on || turbo.active || car.radio.playing || ball.flying || nests.talking);
   },
   update(dt) {
     if (!this.version || this.going) return;
@@ -1543,4 +1549,4 @@ if (resumeOk && resumed.mode) continueAfterReload(resumed);
 document.documentElement.classList.remove('resuming'); // the page is ready: off with the "Laddar…" cover (#222)
 
 // handle for tests/debugging (tools/touchtest.html)
-window.__app = { fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };
+window.__app = { nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };

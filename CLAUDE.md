@@ -405,6 +405,14 @@ src/laptop.js          Tilly's laptop on the vanity (#283, LAPTOP): an unbranded
                        column, user, caption, likes, progress bar — swiping up every `swipe` s; two E targets (kind 'laptop'): the
                        screen (on, then the next clip) and the keyboard (on / off); a quiet beat per clip (sfx.beat), the Sonos
                        ducked within `near` m; each clip kind counts once (stats `clips`); F / toggleFurniture switches it off
+src/nest.js            smart speakers (#325, NEST): a smart display (screen + fabric base) on the kitchen window board and two round
+                       ones in wall mounts (living room by the patio door, the upstairs hall), our own plain look (no logo); builders
+                       `nesthub` / `nestmini`, E target kind 'nest'. `Nests` (main.js): E wakes one (four white dots / the screen),
+                       sfx.nest chime, then a random answer never the same twice in a row (`choose`): the game's time (`timePhrase`),
+                       date, weather, the coffee, jokes, Lund / Höje å / cat facts, pep, silliness, or a sound (fanfare, drum roll,
+                       boop); speech = Web Speech sv-SE (silent when muted), a bubble over a round one, a caption card on the display;
+                       the display idles with a clock + weather icon, Miele's photo now and then, dimmed by night (canvas redrawn on
+                       change); the Sonos ducked while one talks near; stats `nest` (first per speaker); F hushes / hides them
 src/carmodel.js        car bodies from a side profile (#250, MEGANE: `top` / `belt` / `bot` lines, wheel arches, plan rounding, a
                        shoulder, the glasshouse leaning in): `buildCar(spec, { doors })` — with doors: four hinged doors (lower
                        panel, black frame + glass, handle, mirror), the cabin (dashboard, OpenR screens, steering wheel on the
@@ -574,6 +582,9 @@ tools/blindtest.html   headless test: a blind in every window, folded at the sta
                        the state survives a reload
 tools/laptoptest.html  headless test: Tilly's laptop (#283) on with E on the screen, swipes by itself and with E, every clip kind
                        counted once, off with the keyboard, not through the wall from Sovrum 2, F
+tools/nesttest.html    headless test (#325): aim at the display and both round speakers, press: an answer, the wake light, the
+                       caption / bubble, the (mocked) speech call, counted, the Sonos ducked, quiet after; 300 presses never repeat;
+                       the time answer follows the game clock; the weather; muted = no speech; not through a wall; F hides them
 tools/clocktest.html   headless test of the wall clock (?time=7, spool, pause, sun height by month)
 tools/calendartest.html headless test: today's date at the start, pick a date on the calendar, the sun follows
 tools/resettest.html   headless test of "Återställ" (#303) against `node cloudflare/dev.mjs 8144`: Avbryt / Esc change nothing; the
@@ -735,6 +746,9 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   the black one at the east end of the kitchen window's inner board (#289, #298; that spot was the worktop's, left free), the lamp
   speaker (frosted glass, its own lamp: E toggles it) on the window board behind the sofa; a sill pot is skipped where each
   stands (`SILL_PLANTS.skip`).
+  Smart speakers (#325, `NEST`, src/nest.js): a smart display in the middle pot's place on the kitchen window board (turned 15°
+  towards the dining table), a round one in a wall mount 1.68 m up on the living room's south wall between the patio door and
+  the west corner (over the palm), one 1.6 m up on the upstairs hall's west wall (x 1.54, between the corner and the door).
   Over the secretary "Bang" (#118) on the east wall: the IKEA SKOGSGRÄNSEN mirror Ø 50, copper (#265, `SKOGSGRANSEN`, hung with
   the wavy bars at the bottom, centre 1.58 m up), and on the secretary's north end a small yucca palm (`YUCCA`, a Thing you can
   take, kind 'plant') whose leaves cover the mirror's north edge; the owl and the cactus moved south.
