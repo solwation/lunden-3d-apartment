@@ -126,6 +126,13 @@ class LampWashes {
     if (Math.abs(this.data[at] - w) > 1e-4 || (w === 0) !== (this.data[at] === 0)) { this.data[at] = w; this.dirty = true; }
   }
 
+  /** Entry i's lamp changed colour (#409): its colour × intensity again, as built. */
+  recolor(i) {
+    const { lamp, k } = this.entries[i], c = new THREE.Color(lamp.color).multiplyScalar(k * lamp.intensity), at = (this.n + i) * 4;
+    this.data[at] = c.r; this.data[at + 1] = c.g; this.data[at + 2] = c.b;
+    this.dirty = true;
+  }
+
   /** After a frame's set() calls: upload what changed. */
   commit() {
     if (!this.dirty) return;

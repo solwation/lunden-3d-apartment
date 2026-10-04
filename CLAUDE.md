@@ -494,6 +494,7 @@ src/sillplants.js      flower pots on every inner window board (SILL_PLANTS, #13
 src/plants.js          SillPot (#185): each window-board pot is a Holdable; its own model is invisible at home, shows (and
                        the merged meshes are rebuilt without it) once taken; the side-table flower and the kitchen shelf's
                        vase / pot plant are plain Things (kind 'plant'); window boards are put-down surfaces too
+src/huego.js           the Philips Hue Go on Sovrum 1's window board (#409, HUE_GO): a lamp of its own + colour scenes on its handle loop
 src/laptop.js          Tilly's laptop on the vanity (#283, LAPTOP): an unbranded rose-gold laptop with stickers; `Feed` draws "Klipp",
                        an invented short-video app (no real brand / people) on a canvas — eight canvas clips (`CLIPS`) in a phone
                        column, user, caption, likes, progress bar — swiping up every `swipe` s; two E targets (kind 'laptop'): the
@@ -970,7 +971,9 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   penguin cushion, sits between the pillows (#269, docs/pingping-pingvinkudde.jpg); teal jungle-animal print curtains on a ceiling track under the soffit in front of the window (#342, `CURTAINS`, docs/gardiner-sovrum1-turkos-djurmonster.jpg; two-part, meeting in the middle, #362; open by default, parked at
   the sides, both stacks off the glass — the west one in the NW corner by the wall, #403); a framed photo of Miele, the family's cat, stands on the window
   board east of the speaker (#322, `PHOTO_FRAME`, builder `photoframe`, textures/miele.jpg from docs/miele-foto-ram.jpg; a Thing, kind
-  'photo': "Titta på Miele" brings it up close); an oak hook rail with five black hooks on the Klk's outside facing the room door (its west wall in the alcove
+  'photo': "Titta på Miele" brings it up close); on that board from the west (#409): the speaker lying on its side, fabric to the room,
+  a Philips Hue Go (`HUE_GO`, src/huego.js: a lamp of its own; E on its handle loop = "byta färg på", kind 'huecolor', steps
+  through `scenes` — FloorLamp.recolor: glow, pool light and shader wash), the photo, the fern; an oak hook rail with five black hooks on the Klk's outside facing the room door (its west wall in the alcove
   by the door, #329, `HOOKS`, `src/hooks.js`): a sage waffle dressing gown and a navy hoodie (hung by its hood), three hooks empty,
   clear of the switch · Sovrum 3 (second right) Livia & Tuva, bunk (unicorn sheets), an IKEA ALEX desk under the window
   with crafts and a kids' chair (#92), a birch hook rail with white hooks on wardrobe G's end by the door: a pink zip hoodie and a rainbow

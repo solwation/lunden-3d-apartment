@@ -939,6 +939,7 @@ function use(thing) {
   else if (thing.kind === 'blind' || thing.kind === 'curtain') showBlind(thing); // a pleated blind (#273), the curtains (#342)
   else if (thing.kind === 'board') showBoard(true);
   else if (thing.kind === 'poster') showPoster(thing); // a taped-up drawing (#177)
+  else if (thing.kind === 'huecolor') thing.toggle(); // the Hue Go's next colour scene (#409)
   else if (thing.kind === 'switch' || thing.kind === 'lamp') { thing.toggle(); if (thing.isOpen) bump('lights', 1, idOf(thing)); }
   else if (thing.kind === 'fridge') { thing.toggle(); if (thing.isOpen) bump('fridge', 1, idOf(thing)); }
   else if (thing.kind === 'keybox') { thing.toggle(); if (thing.isOpen) bump('cabinets', 1, idOf(thing)); }

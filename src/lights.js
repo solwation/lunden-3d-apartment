@@ -179,6 +179,7 @@ class FloorLamp {
     }
     spec.object.traverse((m) => { m.userData.door = this; });
     this.pickable = spec.object;
+    spec.lamp = this; // (a builder's other targets reach the lamp: the Hue Go's colour scenes, #409)
     this.set(false);
   }
 
@@ -209,6 +210,13 @@ class FloorLamp {
   toggle() {
     this.set(!this.room.on);
     sfx.click(this.room.lamps[0].pos);
+  }
+
+  /** Another light colour (#409, the Hue Go's scenes): the glow, the pool light and the shader wash (Lights.update). */
+  recolor(hex) {
+    for (const l of this.room.lamps) l.color = hex;
+    this.spec.shade.emissive?.setHex(hex);
+    this.recolored = true;
   }
 }
 
@@ -563,10 +571,12 @@ export class Lights {
     });
     // the washes: how far on each lamp is (k) and how much of it its pool light shows now (the wash shows the rest)
     this.wash.entries.forEach(({ owner, lamp }, i) => {
+      if (owner.recolored) this.wash.recolor(i);
       let f = 0;
       for (const s of this.slots) if (s.lamp === lamp) f += s.f;
       this.wash.set(i, owner instanceof FloorLamp ? (shown(owner) ? owner.k : 0) : owner.on ? 1 : 0, Math.min(1, f));
     });
+    for (const f of this.floorLamps) f.recolored = false;
     this.wash.commit();
     if (--this.patchIn <= 0) { this.patchIn = 120; this.wash.patch(this.scene); } // (things built later: cups, cat coats …)
   }

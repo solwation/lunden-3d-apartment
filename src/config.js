@@ -188,7 +188,7 @@ export const CURTAINS = [
 export const SILL_PLANTS = {
   kinds: ['pelargon', 'orchid', 'violet', 'cactus', 'ivy', 'basil', 'monstera', 'pothos', 'fern', 'olive'],
   byWindow: [['basil', 'pelargon', 'basil'], ['orchid', 'monstera', 'fern'], ['pothos', 'violet'], ['orchid', 'violet', 'fern'], ['olive', 'cactus', 'pelargon'], ['cactus', 'ivy']],
-  skip: [[0, 2], [0, 1], [1, 2], [3, 1]], // [sill, pot]: no pot there (the black SYMFONISK speaker in the kitchen window, #289, #298, the smart display beside it, #325; the lamp on the window board behind the sofa, #186; the white speaker in Sovrum 1's window, #201, #298)
+  skip: [[0, 2], [0, 1], [1, 2], [3, 1], [3, 0]], // [sill, pot]: no pot there (the black SYMFONISK speaker in the kitchen window, #289, #298, the smart display beside it, #325; the lamp on the window board behind the sofa, #186; Sovrum 1's window: the white speaker and the Hue Go at the west end, the middle slot left empty, #201, #298, #409)
   pot: { r: [0.062, 0.072], h: [0.115, 0.14] },
   clear: 0.03, side: 0.015, trail: 0.11,
   // a colour (or a list: one picked per pot); orchids: [petals, lip] pairs
@@ -1873,6 +1873,17 @@ export const MALM_DECO = {
     plant: { x: -0.24, z: -0.04, name: 'blomkrukan' } },
 };
 
+// Philips Hue Go (2023, White and Color Ambiance; #409) on Sovrum 1's window board: Ø 14.2 cm, ~22 cm high (galaxus.nl
+// retailer data; the charging base not counted). The split between the white body and the frosted diffuser (`split` of
+// the height), the handle loop's height (`loop`), the base and the colours are *guesses* from product photos; no logo.
+// `scenes` = what E on the handle loop steps through (our picks: warm white, soft pink, teal like the curtains, sunset
+// orange); `light` = its pool light (by eye: a soft glow on the board, the reveal and the ceiling).
+export const HUE_GO = {
+  d: 0.142, h: 0.22, split: 0.3, loop: 0.035, base: { r: 0.068, h: 0.012 }, body: 0xf3f2ef, handle: 0x4a4c50, name: 'Hue Go-lampan',
+  light: { intensity: 0.7, range: 3, color: 0xffc98a },
+  scenes: [{ name: 'varmvitt', color: 0xffc98a }, { name: 'rosa', color: 0xff9fc6 }, { name: 'turkos', color: 0x4fc3c8 }, { name: 'solnedgång', color: 0xff7a35 }],
+};
+
 export const SYMFONISK = {
   speaker: { w: 0.15, d: 0.1, h: 0.31 },
   lamp: { baseR: 0.075, baseH: 0.2, stem: 0.04, shadeR: 0.1, shadeH: 0.16 },
@@ -2236,11 +2247,16 @@ export const FURNITURE = [
   { type: 'tv', level: 0, x: 4.25, z: 7.8 + 0.2, y: 0.45, rot: 180, w: 1.23, h: 0.715, fps: 12 },
   // IKEA SYMFONISK (Sonos) speakers (#186, SYMFONISK below): two bookshelf speakers and the lamp speaker (frosted glass
   // shade) on the window board behind the sofa. #298 (the user): the white and the black bookshelf speakers swapped places.
-  // the white one stands in Sovrum 1's window (#201, the user), in the middle pot's place on the window board (SILL_PLANTS.skip)
-  { type: 'symfonisk', kind: 'speaker', color: 'white', level: 1, x: 3.85, z: 0.32, y: 0.7, rot: 180 },
-  // the framed photo of Miele (#322): east of the speaker, between it and the fern, near the board's front edge (z 0.495)
-  // and clear of the blind's folded pack (z 0.19), turned 15° towards the bed (*guess*)
-  { type: 'photoframe', level: 1, x: 4.08, z: 0.43, y: 0.7, rot: 195 },
+  // the white one stands in Sovrum 1's window (#201, the user). #409 (the user): at the far left (west end) of the board,
+  // turned 90° to lie on its side, the wide 31 × 15 fabric front facing the room (it stood upright, 15 wide); 1.5 cm in
+  // from the reveal (x 3.047), clear of the blind's folded pack (z ≈ 0.19) and the board's front edge (z 0.465).
+  // From the west: the speaker, the Hue Go, Miele's photo, the fern (the third pot slot, ~4.39), evenly spaced; the
+  // orchid and the middle pot are gone (SILL_PLANTS.skip)
+  { type: 'symfonisk', kind: 'speaker', color: 'white', level: 1, x: 3.047 + 0.015 + 0.155, z: 0.33, y: 0.7, rot: 180, lying: true },
+  { type: 'huego', level: 1, x: 3.6, z: 0.35, y: 0.7, rot: 180 },
+  // the framed photo of Miele (#322): between the Hue Go and the fern, near the board's front edge (z 0.465) and clear of
+  // the blind's folded pack (z 0.19), turned 15° towards the bed (*guess*)
+  { type: 'photoframe', level: 1, x: 3.99, z: 0.43, y: 0.7, rot: 195 },
   // the black one on the kitchen window's inner board (#289, the user; it stood at the south end of the worktop): the east
   // end, in the third pot's place (SILL_PLANTS.skip), facing the room, clear of the blind's folded pack (z 0.16)
   { type: 'symfonisk', kind: 'speaker', color: 'black', level: 0, x: 4.48, z: 0.33, y: 0.8, rot: 180 },

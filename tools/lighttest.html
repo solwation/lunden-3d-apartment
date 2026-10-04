@@ -75,6 +75,27 @@ f.onload = async () => {
     pass &&= ok;
     lines.push(`${ok ? 'PASS' : 'FAIL'} ${t.name} @ (${target.x.toFixed(2)}, ${target.y.toFixed(2)}, ${target.z.toFixed(2)}) button "${label}" (${t.room.name ?? ''}) on=${on}${t.kind === 'switch' ? ` (glow, ${hidden ? 'behind a door: no pool light' : 'pool light'}, ${mine.length} washes ${washOn})` : ''} off=${off}`);
   }
+  // #409: the Hue Go's handle loop steps through its colour scenes: off → on in the next colour, the glow, the pool
+  // light's colour and the shader wash's colour follow; round to the start again
+  {
+    const hue = lights.floorLamps.find((x) => x.name === 'Hue Go-lampan');
+    const loop = w.__app.world.furnitureTargets.find((t) => t.kind === 'huecolor');
+    if (!hue || !loop) { pass = false; lines.push('FAIL the Hue Go or its colour target missing'); }
+    else {
+      const wash = lights.wash, i = wash.entries.findIndex((e) => e.owner === hue), at = (wash.n + i) * 4;
+      hue.set(false); step(1 / 60);
+      const before = [...wash.data.slice(at, at + 3)];
+      loop.toggle(); step(1 / 60);
+      const after = [...wash.data.slice(at, at + 3)], c = hue.room.lamps[0].color;
+      const ok1 = hue.isOpen && c !== 0xffc98a && hue.spec.shade.emissive.getHex() === c && i >= 0 && after.some((v, k) => Math.abs(v - before[k]) > 1e-3);
+      for (let k = 0; k < 3; k++) loop.toggle();
+      step(1 / 60);
+      const ok2 = hue.room.lamps[0].color === 0xffc98a && Math.abs(wash.data[at] - before[0]) < 1e-4;
+      hue.set(false);
+      pass &&= ok1 && ok2;
+      lines.push(`${ok1 && ok2 ? 'PASS' : 'FAIL'} the Hue Go's colour scenes: on in #${c.toString(16)}, glow + wash follow (${ok1}), round to warm white (${ok2})`);
+    }
+  }
   // #221: the kitchen's bench light and the hood's light are lamps of their own; their washes follow them
   for (const name of ['bänkbelysningen', 'lampan i köksfläkten']) {
     const l = lights.floorLamps.find((x) => x.name === name);

@@ -35,7 +35,8 @@ f.onload = async () => {
   };
   const sill = world.sillPlants;
   const verts = () => sill.children.reduce((n, m) => n + m.geometry.attributes.position.count, 0);
-  let pass = check(sillPots.length >= 12, `${sillPots.length} pots on the window boards, ${sill.children.length} merged meshes`);
+  let pass = check(sillPots.length >= 11, // (#409: the Sovrum 1 orchid made way for the Hue Go)
+    `${sillPots.length} pots on the window boards, ${sill.children.length} merged meshes`);
   // (1) a pot from the kitchen window (z < 0.6, Entréplan) onto the dining table
   const pot = sillPots.find((p) => p.home.pos.z < 0.6 && p.home.pos.y < 1);
   const v0 = verts();
