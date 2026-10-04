@@ -46,6 +46,7 @@ import { buildCups } from './cups.js';
 import { buildFish } from './fishfingers.js';
 import { AirFryer } from './airfryer.js';
 import { buildFries } from './fries.js';
+import { FruitBowl } from './fruit.js';
 import { Drawing } from './drawing.js';
 import { CatCalendar, CalendarPanel } from './calendar.js';
 import { heldItem } from './holdable.js';
@@ -306,6 +307,8 @@ if (fish) fish.fryer = airFryer;
 const fries = buildFries(scene, camera, world, airFryer);
 if (fries) Object.assign(fries, { fishIn: () => !!fish?.inFryer.length, onGolden: () => bump('friesCooked', 1, 'fries'),
   onBurnt: () => { bump('friesBurnt'); penalize('burnt'); }, onEaten: () => bump('fries') });
+const fruit = new FruitBowl(scene, camera); // the copper fruit bowl on the coffee table (#326)
+fruit.onEaten = (f) => bump('fruit', 1, f.kind);
 airFryer.onDone = () => { if (fish?.inFryer.length || fries?.count) bump('airfried', 1, 'airfryer'); }; // a batch done (#287)
 const fridge = world.lids.find((l) => l.kind === 'fridge' && !l.freezer);
 const chicken = fridge ? new Chicken(scene, camera, fridge, pan, world.hob) : null; // the roast chicken: take it, fry it in the pan (#160)
@@ -1035,6 +1038,7 @@ function updateFocus() {
   if (fish && world.furnitureOn) cupTargets.push(fish.target.pickable, ...fish.placed.map((f) => f.target.pickable), ...fish.inPan.map((f) => f.target.pickable)); // the carton + fish fingers lying out (#162) or in the pan (#214)
   if (fish && world.furnitureOn && airFryer.open) cupTargets.push(...fish.inFryer.map((f) => f.target.pickable)); // in the open air fryer basket (#287)
   if (fries && world.furnitureOn) cupTargets.push(...fries.placed.map((b) => b.target.pickable)); // bunches of fries put down (#301)
+  if (world.furnitureOn) cupTargets.push(...fruit.targets()); // the fruit in the bowl / lying out, the bowl with something in the hand (#326)
   const hit = raycaster.intersectObjects([...pickables, ...extra, ...cupTargets], true)
     .find((h) => shown(h.object) && !(rest.active && (h.object.userData.door === rest.target || h.object.userData.door?.kind === 'rest')));
   focused = hit && !behindWall(hit.point) ? hit.object.userData.door : null;
@@ -1145,6 +1149,7 @@ function toggleFurniture(on = !world.furnitureOn) {
     fish?.reset(); // the fish fingers lying around are cleared away, the carton is full again (#162)
     airFryer.reset(); // off, the basket in and empty (#287)
     fries?.reset(); // the fries out of the basket and the hand, a full bag (#301)
+    fruit.reset(); // every piece of fruit back in the bowl, whole (#326)
     for (const l of world.lids) if (l.kind === 'fridge' && l.isOpen) l.toggle(); // the fridge and freezer doors shut: no alarm (#288)
     rifle?.reset(); // the dropped magazines go, a full one in (#196)
     for (const h of holdables) if (h.placed) h.goHome();
@@ -1164,7 +1169,7 @@ world.looseItems.push(board.object, ...holdables.flatMap((h) => (h.homeParent ? 
 const milk = fridge?.milkAt ? new Milk(scene, camera, fridge) : null; // the milk carton in the fridge (#168): not hidden with F, only sent home
 if (milk) holdables.push(milk);
 if (fries) holdables.push(fries.bag); // the bag of fries in the freezer (#301): like the milk, not hidden with F, only sent home
-world.looseItems.push(...cups.cups.map((c) => c.model), drawing.paper, calendar.object, ...posters.groups, ...(fish ? [fish.object] : [])); // the cups and the paper go with F too // the cat board and the toys go with the furniture (F)
+world.looseItems.push(fruit.group, ...cups.cups.map((c) => c.model), drawing.paper, calendar.object, ...posters.groups, ...(fish ? [fish.object] : [])); // the cups and the paper go with F too // the cat board and the toys go with the furniture (F)
 try { if (localStorage.getItem('lunden.furniture') === '0') toggleFurniture(false); } catch { /* ignore */ }
 document.getElementById('furniture-btn').addEventListener('click', () => toggleFurniture());
 
@@ -1254,6 +1259,7 @@ function step(dt) {
   cups.update(dt);
   fish?.update(dt);
   fries?.update(dt);
+  fruit.update(dt);
   toys.update(dt);
   marks.update(dt);
   breaker.update(dt);
@@ -1537,4 +1543,4 @@ if (resumeOk && resumed.mode) continueAfterReload(resumed);
 document.documentElement.classList.remove('resuming'); // the page is ready: off with the "Laddar…" cover (#222)
 
 // handle for tests/debugging (tools/touchtest.html)
-window.__app = { resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };
+window.__app = { fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };

@@ -178,6 +178,54 @@ f.onload = async () => {
   pass &= check(!photo.placed && photo.model.position.distanceTo(M) < 1e-6, 'F: back in its place');
   w.__app.toggleFurniture(true);
   } catch (e) { pass = false; lines.push(`FAIL error ${e.stack}`); }
+  // the fruit bowl on the coffee table (#326): take an apple, three bites (scooped out, counted), the fourth eats it; a
+  // pear onto the dining table, an orange back in the bowl, a cup not into the bowl, F refills it; the remote still there
+  try {
+  const { fruit, remote } = w.__app;
+  const bowlAt = at(fruit.group);
+  pass &= check(fruit.fruit.length >= 8 && fruit.inBowl.length === fruit.fruit.length && Math.abs(bowlAt.y - 0.47) < 0.01 && bowlAt.x < 3.5, `the bowl on the coffee table's west half (${bowlAt.x.toFixed(2)}, ${bowlAt.z.toFixed(2)}), ${fruit.fruit.length} pieces`);
+  pass &= check(Math.hypot(remote.home.pos.x - bowlAt.x, remote.home.pos.z - bowlAt.z) > 0.3, 'clear of the remote');
+  const bowlStands = [[3.33, 9.7], [3.0, 9.8], [3.7, 9.8], [3.33, 9.5]];
+  const apple = fruit.fruit.find((p) => p.kind === 'apple' && p.spec.y > 0.03); // the one on top
+  pass &= check(lookAt(at(apple.model).add(new V(0, 0.04, 0)), /ta äpplet/i, bowlStands), `take the apple: "${btn.textContent}"`);
+  btn.click(); step(1 / 60);
+  pass &= check(heldItem()?.isFruit, `a fruit in the hand (${heldItem()?.kind})`);
+  const held = heldItem();
+  // how close to its middle the skin comes (a bite scoops in), and the sum of all vertices' distances (whole again = the same)
+  const dists = () => { const p = held.model.geometry.attributes.position; let mn = Infinity, sum = 0; for (let i = 0; i < p.count; i++) { const d = Math.hypot(p.getX(i) - held.mid.x, p.getY(i) - held.mid.y, p.getZ(i) - held.mid.z); sum += d; if (Math.abs(p.getY(i) - held.mid.y) < 0.012) mn = Math.min(mn, d); } return [mn, sum]; };
+  const size = () => dists()[1];
+  const s0 = size(), m0 = dists()[0];
+  camera.rotation.x = 1.3; step(1 / 60);
+  pass &= check(btn.textContent === 'Ät', `the touch button: "${btn.textContent}"`);
+  for (let b = 0; b < 3; b++) { btn.click(); for (let i = 0; i < 30; i++) step(1 / 60); }
+  const m3 = dists()[0];
+  pass &= check(held.bites === 3 && held.scoops.length === 3 && heldItem() === held && m3 < m0 * 0.7, `three bites: still in the hand, bitten into (skin ${(m0 * 100).toFixed(1)} → ${(m3 * 100).toFixed(1)} cm from its middle)`);
+  const n0 = stats.fruit ?? 0;
+  while (heldItem() === held) { held.use(); for (let i = 0; i < 30; i++) step(1 / 60); }
+  pass &= check(held.state === 'eaten' && !held.model.visible && stats.fruit === n0 + 1 && !heldItem(), `eaten up after ${held.bites} bites, counted (${stats.fruit})`);
+  // a pear onto the dining table
+  const pear = fruit.fruit.find((p) => p.kind === 'pear');
+  pear.take(); step(1 / 60);
+  pass &= check(lookAt(table, /lägga ner päronet här/i, [[2.6, 2.2], [2.5, 1.6], [3.5, 2.6]]), `dining table: "${btn.textContent}"`);
+  btn.click(); step(1 / 60);
+  pass &= check(pear.state === 'placed' && Math.abs(pear.model.position.y - 0.75) < 0.01, `the pear on the dining table (y ${pear.model.position.y.toFixed(3)})`);
+  // an orange back in the bowl
+  const orange = fruit.fruit.find((p) => p.kind === 'orange'), home = orange.model.position.clone();
+  orange.take(); step(1 / 60);
+  pass &= check(lookAt(bowlAt.clone().setY(0.6), /lägga tillbaka apelsinen i fruktskålen/i, bowlStands), `the bowl: "${btn.textContent}"`);
+  btn.click(); step(1 / 60);
+  pass &= check(orange.state === 'bowl' && orange.model.position.distanceTo(home) < 1e-6 && !heldItem(), 'the orange back in its place in the bowl');
+  // a cup does not go into the bowl
+  const cup3 = cups.cups.find((c) => c.state === 'cabinet') ?? cups.cups[2];
+  cup3.take(); step(1 / 60);
+  pass &= check(lookAt(bowlAt.clone().setY(0.6), /inte i fruktskålen/i, bowlStands), `a cup at the bowl: "${btn.textContent}"`);
+  cup3.putBack(); step(1 / 60);
+  // F: back in the bowl, whole
+  w.__app.toggleFurniture(false);
+  pass &= check(!fruit.group.visible || !world.furnitureOn, 'F: the bowl goes with the furniture');
+  w.__app.toggleFurniture(true);
+  pass &= check(fruit.inBowl.length === fruit.fruit.length && fruit.fruit.every((p) => p.bites === 0 && p.model.visible) && Math.abs(size() - s0) < 1e-4, 'F: every piece back in the bowl, whole');
+  } catch (e) { pass = false; lines.push(`FAIL fruit error ${e.stack}`); }
   out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
 };
 </script>

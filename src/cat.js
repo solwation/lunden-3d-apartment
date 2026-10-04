@@ -557,7 +557,7 @@ export class CatSpawner {
       // what is really there: the first visible surface under the spot must be about where we expect it
       ray.set(o.set(c.x, c.y + 0.6, c.z), down); ray.far = 1.0;
       const hit = ray.intersectObjects(furniture, true).find((h) => h.object.isMesh && this.shownMesh(h.object));
-      if (!hit || hit.point.y < c.y - 0.12 || hit.point.y > c.y + 0.3) continue; // cushions, pillows and duvets stand a little proud
+      if (!hit || hit.object.userData.noCat || hit.point.y < c.y - 0.12 || hit.point.y > c.y + 0.3) continue; // (not in the fruit bowl, #326) cushions, pillows and duvets stand a little proud
       const yaw = Math.atan2(sx - c.x, sz - c.z) + (this.rand() - 0.5) * 0.8; // facing the doorway, more or less
       return { x: c.x, y: hit.point.y, z: c.z, yaw, on: c.kind };
     }

@@ -794,6 +794,28 @@ export const AIRFRYER = { x: 5.245, z: 5.229, rot: 45, w: 0.3, d: 0.38, h: 0.32,
 export const FRIES = { bag: { w: 0.24, h: 0.33, d: 0.055 }, portions: 6, portion: 18, max: 2, bunch: 4, len: 0.07, t: 0.009,
   golden: 17, burnAt: 48, burnt: 58, steam: 60, pour: 0.9,
   raw: 0xf2e9c4, goldenColor: 0xe2a447, dark: 0x4a2c12, held: { x: 0.2, y: -0.36, z: -0.58 }, bunchHeld: { x: 0.13, y: -0.12, z: -0.42 } };
+// The fruit bowl on the coffee table (#326, src/fruit.js, docs/fruktskal-dorre-koppar.jpg): a Dorre wire bowl in polished
+// copper, an open shallow bowl Ø `r` × 2 at the band, `bottom` = the radius of its base ring, `h` high, a flat band `band`
+// high round the top, `hooks` zig-zag wires hanging from it down to the base ring, `spokes` in the base wheel, wire Ø
+// `wire` × 2 (all *guesses*). On the coffee table's west half (ILVA Woodstock, x 3.04…4.24, z 10.26…10.86), clear of the
+// remote (x 3.98) and the middle where the cups go. Fruit (`pieces`, *guess*): `kind` + its spot in the bowl (local
+// x, y, z of its bottom, a turn and a tilt); `bites` per kind (an orange and a banana are peeled with the first one),
+// `held` = where it sits in the view (camera space).
+export const FRUIT = { x: 3.33, y: 0.47, z: 10.52, r: 0.14, bottom: 0.06, h: 0.12, band: 0.015, hooks: 16, spokes: 12, wire: 0.0017,
+  copper: 0xc8845e,
+  bites: { apple: 4, pear: 4, orange: 4, clementine: 3, banana: 4 },
+  pieces: [
+    { kind: 'apple', color: 0xb3221c, x: 0.065, y: 0.006, z: 0, turn: 0.3, tilt: 0.25 },
+    { kind: 'orange', x: 0.02, y: 0.006, z: 0.062, turn: 1, tilt: 0.2 },
+    { kind: 'apple', color: 0x8fbf3a, x: -0.053, y: 0.006, z: 0.038, turn: 2, tilt: 0.25 },
+    { kind: 'pear', x: -0.053, y: 0.008, z: -0.038, turn: 0.5, tilt: 0.42 },
+    { kind: 'clementine', x: 0.02, y: 0.006, z: -0.062, turn: 2.5, tilt: 0.2 },
+    { kind: 'apple', color: 0xc8361f, x: 0.012, y: 0.05, z: 0.004, turn: 4, tilt: 0.1 },
+    { kind: 'banana', x: -0.035, y: 0.072, z: 0.025, turn: 0.35, tilt: -0.25 },
+    { kind: 'banana', x: -0.05, y: 0.06, z: 0.0, turn: 0.45, tilt: -0.3 },
+    { kind: 'banana', x: -0.06, y: 0.05, z: -0.03, turn: 0.55, tilt: -0.35 },
+  ],
+  held: { x: 0.13, y: -0.12, z: -0.42 } };
 // The cat and a fish finger on the floor (#163, cat.js): one within `reach` m in the open (a straight walk with no
 // wall or door in between, i.e. the same room) catches its eye; it looks for `notice` s, walks there at `speed` m/s,
 // stops `stop` m short (its head over it) and eats it in `eat` s. Taken away first: it looks after it for `look` s.
@@ -960,12 +982,14 @@ export const SCORE = {
     airfried: 6, // a batch of fish fingers done in the air fryer (#287): the first time, then `again` per batch
     friesCooked: 8, // a basket of Aviko fries cooked golden (#301): the first time, then `again` per batch
     clips: 2, // per kind of clip seen on Tilly's laptop (#283); no points for repeats (they come by themselves)
+    fruit: 3, // a piece of fruit from the bowl eaten up (#326): per kind (apple, pear, orange, clementine, banana), then `again`
   },
   again: {
     doors: 0.1, lids: 0.1, flushes: 0.2, taps: 0.1, fridge: 0.1, appliances: 0.1, cabinets: 0.05, lights: 0.05,
     sat: 0.1, lay: 0.1, songs: 0.2, read: 0.5, car: 1, grill: 1, hood: 0.2, tv: 0.2, pc: 0.3, parasol: 0.2,
     clock: 0.1, calendar: 0.1, greets: 0.1, catButts: 1, walkRain: 2, walkSnow: 3, walkHail: 4, walkStorm: 3,
     shattered: 0.3, carMusic: 0.2, pingpingHugs: 0.2, blinds: 0.05, airfried: 0.5, friesCooked: 0.5,
+    fruit: 0.3,
   },
   breeds: { huskatt: 10, siames: 30, 'brittiskt korthår': 30, 'maine coon': 35, 'norsk skogkatt': 40, perser: 100, sphynx: 250 },
   secrets: { kinds: 10, rare: 40 },

@@ -22,7 +22,7 @@ function ceilingAt(level, x, z) {
 /** A little painted room for glossy metal to reflect (#307; the scene has no environment map): an equirectangular
  * canvas — a pale ceiling, cream walls with two bright windows, a light oak floor. Made once. */
 let envTex = null;
-function roomEnv() {
+export function roomEnv() {
   if (envTex) return envTex;
   const c = document.createElement('canvas');
   c.width = 256; c.height = 128;

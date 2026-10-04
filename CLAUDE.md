@@ -245,6 +245,12 @@ src/airfryer.js        the air fryer (AIRFRYER, #287): an OBH Nordica Easy Fry D
                        in the open basket (`FishPack.airfryHeld`, a child of the basket; a look into the open basket takes the
                        nearest one), cook golden in one run, burn in a third (smoke from the vents → the smoke alarm); a loose
                        item; F: off, in, emptied. Fries (#301) go in instead of fish fingers (one kind at a time), see fries.js
+src/fruit.js           the copper fruit bowl on the coffee table (#326, FRUIT, docs/fruktskal-dorre-koppar.jpg): a Dorre wire bowl (band,
+                       zig-zag wires, base wheel; one merged mesh, roomEnv copper) with apples, a pear, an orange, a clementine and
+                       bananas; each piece a holdable like the fish finger: E takes it, click / "Ät" bites (a scoop out of it in the
+                       flesh colour; an orange / a banana is peeled first, a banana bitten off from the tip), eaten after
+                       FRUIT.bites; put down anywhere, E on the bowl puts it back in its spot (anything else: "Inte i fruktskålen");
+                       stats fruit (SCORE.first per kind); a loose item, F puts every piece back whole; the cat never sits in it
 src/fries.js           Aviko frozen fries (#301, FRIES): a stand-up bag (canvas print, our own plain wordmark) leaning on the freezer's
                        top shelf, a Holdable like the milk (not hidden with F, sent home); in the hand, E on the open air-fryer basket
                        pours a portion (the bag tips, sfx.pourFries; FRIES.portions per bag, FRIES.max in the basket, not with fish
@@ -521,6 +527,8 @@ tools/bestatest.html   headless test: the BESTÅ display cabinet's six doors ope
 tools/holdtest.html    headless test: put things down (coffee table, dining table, floor), one at a time, F → home;
                        the hand (#195): hidden when empty, at the saber's grip, a reach out and back; Pingping (#269): take him
                        (both hands on his sides), a hug (squashed, counted), onto the sofa (not a cup), back in the bed, F
+                       the fruit bowl (#326): an apple bitten three times then eaten (counted), a pear on the dining table, an
+                       orange back in the bowl, a cup not into it, F refills it
 tools/cuptest.html     headless test: an empty cup out without brewing, onto the worktop, brew, take the jug, pour, jug back,
                        carry the cup to the dining and coffee tables, a cup back into the cabinet; whisky in a cup of
                        coffee (#169): a splash, a warmer colour, never over full, drunk up as kaffekask
