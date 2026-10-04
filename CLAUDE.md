@@ -40,6 +40,13 @@ in Swedish. Code, comments and this file are in English; UI text is Swedish.
   next `id`), in the same commit — **one short sentence**, no digressions. It is shown only on the
   note on the freezer (the start screen says nothing about news; visitors find the note themselves);
   entries newer than the visitor's last visit are marked "Nytt".
+  **The id is picked last:** after your final `git pull --rebase`, right before pushing, renumber your entry to
+  the file's max id + 1 and keep it on top — never an id chosen when the work started (parallel agents push in
+  between). The ids must stay unique and strictly descending in file order; `tools/stamp.sh` warns (`::warning::`
+  in the Pages run) when they are not. The published order and "Nytt" do not rely on the id (#341):
+  `tools/changelog_stamp.py` gives each entry `t` = the committer time of the commit that added its id line
+  (rewording an entry later keeps its `t`; needs full history, `fetch-depth: 0`) and sorts by it; the page keeps the
+  highest `t` seen (`lunden.changelogSeenT`, migrated from the old id key) and falls back to file order + id without `t`.
 - Keep this file and `README.md` up to date when behaviour, structure or known facts change.
 
 ## Architecture
@@ -498,7 +505,7 @@ src/screens.js         TV programmes drawn on a canvas (PROGRAMS: space, underwa
 src/detail.js          DetailCuller (#189): far-away small meshes and things inside the flat hidden by its walls (seen from
                        outside) go to a layer the camera does not render; roots with `userData.moving` (our car, the cat,
                        darts, the basketball) are judged every update, not only when the camera moves (#267)
-src/changelog.js       changelog list + the note on the freezer (E to read; `scrollNote`: ↑ ↓ / W S, PageUp/Down, Space,
+src/changelog.js       changelog list + the note on the freezer (newest `t` first, "Nytt" by the highest `t` seen, #341; E to read; `scrollNote`: ↑ ↓ / W S, PageUp/Down, Space,
                        Home/End scroll it, the wheel is passed on under pointer lock, #275)
 src/install.js         iPhone "add to home screen" sheet (no fullscreen API there); install link
                        where the browser offers beforeinstallprompt
@@ -640,6 +647,8 @@ tools/cloudtest.html   headless test of the shared world against `node cloudflar
                        queue, desk sheet, cat photos neither sent nor fetched (#211), a fresh visitor gets them, the
                        leaderboard (name, score, escaped list, a capped cheat), off without &cloud
 tools/stamp.sh         build the published site with a version stamp (used by CI)
+tools/changelog_stamp.py the published changelog.json (run by stamp.sh): `t` per entry from git history, newest first,
+                       a warning on duplicate / out-of-order ids (#341)
 ```
 
 ### Geometry pipeline

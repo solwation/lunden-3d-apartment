@@ -9,6 +9,7 @@
 //   google-chrome --headless=new --dump-dom http://localhost:8137/tools/notetest.html
 const out = document.getElementById('out');
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+window.addEventListener('unhandledrejection', (e) => { out.textContent = `SOME FAILED\nFAIL error: ${e.reason?.stack || e.reason}`; });
 localStorage.setItem('lunden.changelogSeen', '1');
 const f = document.createElement('iframe');
 f.width = 900; f.height = 600;
@@ -22,8 +23,40 @@ f.onload = async () => {
   const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; };
   const total = d.querySelectorAll('#note-list li').length;
   const fresh = d.querySelectorAll('#note-list .new').length;
-  let pass = check(total > 1 && fresh === total - 1, `"Nytt" on ${fresh} of ${total} entries since seen=1`);
+  const data = await fetch('../data/changelog.json').then((r) => r.json());
+  const stamped = data.every((e) => Number.isFinite(e.t));
+  let pass = true;
+  if (stamped) {
+    // a stamped build (#341): newest published first; seen=1 migrates to the t of entry 1
+    const t1 = data.find((e) => e.id === 1)?.t || Math.max(...data.filter((e) => e.id <= 1).map((e) => e.t));
+    const want = data.filter((e) => e.t > t1).length;
+    pass &= check(data.every((e, i) => i === 0 || data[i - 1].t >= e.t), 'stamped changelog.json is newest t first');
+    pass &= check(total === data.length && fresh === want, `"Nytt" on ${fresh} of ${total} entries since seen=1 (want ${want})`);
+    pass &= check(Number(localStorage.getItem('lunden.changelogSeenT')) === Math.max(...data.map((e) => e.t)), 'last seen t stored');
+  } else {
+    pass &= check(total > 1 && fresh === total - 1, `"Nytt" on ${fresh} of ${total} entries since seen=1`);
+  }
   pass &= check(localStorage.getItem('lunden.changelogSeen') !== '1', 'last seen id updated');
+  // markNew (#341) on made-up entries: id 4 was pushed last with a too low id
+  const { markNew } = await w.eval(`import('${new URL('../src/changelog.js', location.href)}')`); // the iframe has the import map
+  const mem = (o = {}) => ({ o, getItem: (k) => (k in o ? o[k] : null), setItem: (k, v) => { o[k] = v; } });
+  const E = [{ id: 7, t: 300 }, { id: 6, t: 200 }, { id: 4, t: 400 }, { id: 3, t: 100 }];
+  const fmt = (r) => r.map((e) => `${e.id}${e.isNew ? '*' : ''}`).join(' ');
+  let s = mem({ 'lunden.changelogSeenT': '250' });
+  let r = markNew(E, s);
+  pass &= check(fmt(r) === '4* 7* 6 3' && s.o['lunden.changelogSeenT'] === '400' && s.o['lunden.changelogSeen'] === '7',
+    `seenT 250: ordered by t, only the later ones new (${fmt(r)})`);
+  s = mem({ 'lunden.changelogSeen': '7' });
+  r = markNew(E, s);
+  pass &= check(fmt(r) === '4* 7 6 3' && s.o['lunden.changelogSeenT'] === '400', `old id key 7 migrates: only the late id 4 new (${fmt(r)})`);
+  r = markNew(E, s);
+  pass &= check(fmt(r) === '4 7 6 3', `seen again: nothing new (${fmt(r)})`);
+  r = markNew(E, mem());
+  pass &= check(fmt(r) === '4 7 6 3', `first visit: nothing new (${fmt(r)})`);
+  const D = E.map(({ id }) => ({ id }));
+  s = mem({ 'lunden.changelogSeen': '5' });
+  r = markNew(D, s);
+  pass &= check(fmt(r) === '7* 6* 4 3' && !('lunden.changelogSeenT' in s.o), `without t: file order, by id as before (${fmt(r)})`);
   d.getElementById('start-touch').click();
   await wait(50);
   // stand 1 m north of the note, facing south (yaw 180), eye level with it

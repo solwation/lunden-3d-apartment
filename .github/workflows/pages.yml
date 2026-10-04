@@ -35,6 +35,8 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # full history: stamp.sh dates each changelog entry from git history (#341)
       - name: Build site with version stamp
         run: tools/stamp.sh _site "${GITHUB_SHA::7}"
         env:

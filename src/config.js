@@ -753,7 +753,7 @@ export const AUTO_RELOAD = { still: 2.5, countdown: 5, cancelled: 1.5, fade: 0.4
 export const RESET_KEEP = [
   'lunden.cloud.queue', 'lunden.cloud.seenCats', 'lunden.drawing', 'lunden.drawing.updated', // the shared world
   'lunden.stats', 'lunden.name', 'lunden.playerId', // the score and the leaderboard
-  'lunden.changelogSeen', 'lunden.installSkipped', 'lunden.mapShown', // conveniences
+  'lunden.changelogSeen', 'lunden.changelogSeenT', 'lunden.installSkipped', 'lunden.mapShown', // conveniences
 ];
 
 // Performance (#189): small meshes (radius < maxR m) are not drawn once they would look smaller than `k`

@@ -1,21 +1,43 @@
 import * as THREE from 'three';
 import { CHANGELOG_NOTE } from './config.js';
 
-// What has changed (data/changelog.json, newest first). Entries newer than the last visit
-// are marked "Nytt": the highest id seen is kept in localStorage (per browser).
+// What has changed (data/changelog.json, newest first). Entries newer than the last visit are marked "Nytt".
+// On the published site (#341) every entry has `t` = when it reached main (tools/changelog_stamp.py): the list
+// is ordered by it and the highest `t` seen is kept (KEY_T), since a hand-picked id can be too low when agents
+// push in parallel. Without `t` (locally, BUILD 'dev') the file order and the highest id seen (KEY) as before.
 const KEY = 'lunden.changelogSeen';
+const KEY_T = 'lunden.changelogSeenT';
+
+/** Mark the new entries and remember what was seen in `store` (localStorage-like). Returns the entries in
+ *  display order with `isNew`. */
+export function markNew(entries, store) {
+  const get = (k) => { try { return Number(store.getItem(k)) || 0; } catch { return 0; } };
+  const set = (k, v) => { try { store.setItem(k, String(v)); } catch { /* private mode etc. */ } };
+  const seen = get(KEY);
+  set(KEY, Math.max(0, ...entries.map((e) => e.id)));
+  if (!entries.length || !entries.every((e) => Number.isFinite(e.t))) {
+    // first visit: everything is new, so nothing gets the badge
+    return entries.map((e) => ({ ...e, isNew: seen > 0 && e.id > seen }));
+  }
+  const sorted = [...entries].sort((a, b) => b.t - a.t || b.id - a.id);
+  let seenT = get(KEY_T);
+  // an old id-only visitor: from the t of the entry with that id (else the newest up to it), so not everything turns
+  // new — while an entry that got a lower id but was published after it still does
+  if (!seenT && seen > 0) {
+    seenT = entries.find((e) => e.id === seen)?.t || Math.max(0, ...entries.filter((e) => e.id <= seen).map((e) => e.t));
+  }
+  set(KEY_T, Math.max(seenT, ...entries.map((e) => e.t)));
+  return sorted.map((e) => ({ ...e, isNew: seenT > 0 && e.t > seenT }));
+}
 
 export async function loadChangelog() {
   let entries = [];
   try {
     entries = await fetch('data/changelog.json').then((r) => r.json());
   } catch { /* page still works without it */ }
-  let seen = 0;
-  try { seen = Number(localStorage.getItem(KEY)) || 0; } catch { /* private mode etc. */ }
-  const max = Math.max(0, ...entries.map((e) => e.id));
-  try { localStorage.setItem(KEY, String(max)); } catch { /* ignore */ }
-  // first visit: everything is new, so nothing gets the badge
-  return entries.map((e) => ({ ...e, isNew: seen > 0 && e.id > seen }));
+  let store = null;
+  try { store = localStorage; } catch { /* private mode etc. */ }
+  return markNew(entries, store || { getItem: () => null, setItem: () => {} });
 }
 
 const fmtDate = (d) => new Date(`${d}T12:00:00`).toLocaleDateString('sv-SE', { day: 'numeric', month: 'short' });
