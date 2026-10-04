@@ -104,3 +104,15 @@ station on the worktop, cutting the cucumber (exact grams, the end), the bread b
 slice of bread with parts, eating in bites with a used plate and the `ate` event, and the bin under the sink. The bins'
 row: **extended** (the grey one is the game's "Avfall" bin); the plate cabinet over the free worktop: **extended** (a stack
 of three real plates); the utensil drawer: **extended**; the milk carton never empties (milk.js), so it is no waste yet.
+
+## M2 – reset the kitchen (#382 – #387)
+
+Code in src/dishes.js (and cooking.js's bin), the test is `tools/life2test.html`.
+
+- **#382 drinks**: the glass cabinet: **extended** (three real drinking glasses at the front of its lower shelf, store
+  `glasses`); the taps: **extended** (a basin tap's rows are the life sim's actions — fill the glass, pour it out — plus
+  washing the hands, #437); drinks.js `Contents` / `GlassLiquid`: **reused** for the glass's level; the milk carton:
+  **extended** (it holds 1000 ml and runs out — also when it pours into the old glasses and cups —, the empty carton is a
+  package for the bin and a full one is back on its shelf after the fridge has been shut and opened). Rules: the fill stops
+  at the brim (no spill for the drinking glass; the old glasses keep the spill deduction #288), one drink at a time, drunk
+  from = used. The carton's amount is saved as a part of the life record (`x.milk`, `life.keepPart`).

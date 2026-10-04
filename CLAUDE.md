@@ -464,6 +464,9 @@ src/secret.js           the secret drawer (SECRET, #183): all surprises (SECRETS
                        at most `keep` left lying around (older ones go home hidden); `&secret=i` picks the first one
 src/milk.js            the milk carton in the fridge (MILK, #168), a Holdable at `fridge.milkAt`: E with the fridge open
                        takes it, it pours milk into glasses and cups (DRINKS.pour); not hidden with F, only sent home
+                       #382: it holds MILK.ml and loses what it pours (a vessel's share of DRINKS.ml); empty ("den tomma
+                       mjölkkartongen", `drink` null) it is a package for the bin (`discard`: gone until the fridge is opened
+                       again after being shut, then full at home); its amount is kept with the life sim (`life.keepPart('milk')`)
 src/saber.js           the lightsaber in Sovrum 2 (SABER), a Holdable; the blade burns marks where it cuts in (#96)
 src/rifle.js           the AK-47 (#196, RIFLE): a folding-stock AKMS lying in NORDLI's wide bottom drawer (a Trinket, KINDS.rifle,
                        rides with the drawer); click = a shot, held (`trigger`: mouse button / the touch button) = automatic;
@@ -710,6 +713,14 @@ src/cooking.js         the life sim's kitchen work (M1): actions judged by the t
                        the front open: `life.wasteKind` = 'package' (an empty one) / 'food' (the end, slices, leftovers) — else "Det
                        där ska inte slängas"; amount += ITEMS `binVolume` (else 1 / 2) up to `capacity` ("Avfallshinken är full",
                        the waste stays in the hand); `parts` count the kinds (for LIFE-022). Another bin = a store slot + a stock entry
+                       A non-life holdable is waste too when it has `wasteKind` + `discard()` (the empty milk carton, #382)
+src/dishes.js          the life sim's drinks and dishes (M2): #382 the drinking glass (ITEMS 'glass', amount = ml of drink up to
+                       `capacity`, `machine.drink` 'water' | 'milk', one at a time): three at the front of the glass cabinet's lower
+                       shelf (store 'glasses', LIFE_TOOLS.stock; kitchenstuff 'glasses' keeps its front row free); held at a running
+                       basin tap the tap's rows (main.js wraps `tap.options`: life rows + handWash's) offer 'fillWater' (to the brim,
+                       LIFE.drink.fill, "Dricksglaset är fullt") and 'pourOut'; the milk carton in the hand on a glass standing out
+                       'pourIn' (LIFE.drink.pourMl, never over the brim, "Häll ut vattnet först", "Mjölken är slut"); 'drink' = a
+                       click / "Dricka" (LIFE.drink.sip ml, the glass used, stats water / milk); the level is drinks.js GlassLiquid
 src/actions.js         what you can do with a life-sim thing (#367): `ActionSet.define({ id, label, applies, check, run, consumes,
                        result, duration, interrupt, order, quiet })`, `list(ctx)` = the rows with a Swedish `reason` when blocked
                        ("Öppna kylen först", "Tallriken är full", "För långt bort"); life.js `baseActions`: putOn, take, open, close.
@@ -746,7 +757,7 @@ src/stores.js          the life sim's storage places (#369, LIFE.stores): slots 
                        handed — the home's stock is kept between visits, nothing is used up or goes bad while away). Never with &life
                        (`persist: null`); "Återställ" clears it (not in RESET_KEEP) and blocks the last write (`resetHome.going`)
 src/lifemodels.js      the life sim's models (#366): plate, cutting board, cucumber, slice, cheese, butter, bread bag, bread slice,
-                       knife, frozen peas (#373), butter knife, cheese slicer (#374) — own shapes, labels of our own (`label`); `show(item)` shows the amount / package; carriers have `anchors` (their spots)
+                       knife, frozen peas (#373), butter knife, cheese slicer (#374), drinking glass (#382: `level(kind, ml)`) — own shapes, labels of our own (`label`); `show(item)` shows the amount / package; carriers have `anchors` (their spots)
 src/changelog.js       changelog list + the note on the freezer (newest `t` first, "Nytt" by the highest `t` seen, #341; E to read; `scrollNote`: ↑ ↓ / W S, PageUp/Down, Space,
                        Home/End scroll it, the wheel is passed on under pointer lock, #275)
 src/install.js         iPhone "add to home screen" sheet (no fullscreen API there); install link
@@ -976,6 +987,9 @@ tools/lifetest.html    headless test of the life sim's M1, the sandwich flow (#3
                        seated at the dining table: taken in reach, bites, put back half eaten, the used plate, 'ate', points once (#380);
                        the bin (front first, it fills, full, no knife / plate) and the whole M1 flow in the visitor's own home with a
                        page-made reload in the middle (#381)
+tools/life2test.html   headless test of the life sim's M2, reset the kitchen: the drinking glass from its cabinet, filled at the
+                       running tap to the brim (half-way nothing, double presses), sips, used, milk from the carton up to the brim,
+                       no mixing, the carton running out, thrown away and back full, poured out at the tap, the carton saved (#382)
 tools/inventorytest.html headless test (#365): the `&life` scenario's start state, the visitor's records untouched, the
                        integration points the inventory names; without &life the game starts at START
 tools/stamp.sh         build the published site with a version stamp (used by CI)

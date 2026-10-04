@@ -298,10 +298,11 @@ export class Cup {
       sfx.pour(at);
       return;
     }
-    const amount = pourAmount('cup', src.drink, this.fill);
+    let amount = pourAmount('cup', src.drink, this.fill);
     if (!amount) return;
+    if (src.ml !== undefined) amount = Math.min(amount, src.ml / D.ml.cup); // the milk carton: what is left in it (#382)
     this.contents.pour(src.drink, amount, D.secs);
-    src.pour?.(D.secs);
+    src.pour?.(D.secs, amount * D.ml.cup); // (what went in comes out of the carton, #382)
     sfx.pour(at, D.secs);
   }
 

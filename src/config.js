@@ -1117,7 +1117,7 @@ export const LIFE = {
   // as they are) and its door bins [y on the door, spots as fractions of the door's width]; the freezer: the top of the frozen
   // bags in its top basket (1.02 + the bags' 0.35 × 0.26 m). Our picks, from fridge.js's own shelf heights.
   stores: { fridge: { shelves: [0.45, 1.52], bins: [[0.85, [0.3, 0.7]], [1.3, [0.3, 0.7]], [0.4, [0.7]]] }, freezer: { y: 1.117, peas: 0.15 },
-    boardRack: { z: 2.95, lean: 10 }, plates: { stack: 0.019 } }, // plates: the height of one plate in the stack (#379) // the cutting board on its long edge against the splashback (#374): its middle's z, leaning ° off upright // peas: the lower open shelf's spot east of the fish-finger carton (x from the middle, #373)
+    boardRack: { z: 2.95, lean: 10 }, plates: { stack: 0.019 }, glasses: [0.25, 0.5, 0.75] }, // glasses: the drinking glasses' spots across the glass cabinet's lower shelf (fractions, #382) // plates: the height of one plate in the stack (#379) // the cutting board on its long edge against the splashback (#374): its middle's z, leaning ° off upright // peas: the lower open shelf's spot east of the fish-finger carton (x from the middle, #373)
   place: { grid: 0.05, floorGrid: 0.1, margin: 0.04, turn: 45 },
   // saving (#371): localStorage `key` written `every` s after a change; a thing whose place is gone lands on the free worktop (`lost`)
   save: { key: 'lunden.life', every: 1, lost: [5.25, 0.931, 3.0] },
@@ -1127,6 +1127,7 @@ export const LIFE = {
   butter: { g: 8, dab: 0.4, spread: 0.9 }, // butter per slice of bread (g, the plan's 8 g) and the dab / the spreading (game s) (#378)
   slice: { seconds: 0.6 }, // one slice off the cheese with the slicer (#378)
   sandwich: { max: 6 }, // at most this many layers on a slice of bread, butter included (#378, #379): "Mackan rymmer inte mer"
+  drink: { fill: 1.6, pour: 1, sip: 40, seconds: 0.6, pourMl: 200 }, // the drinking glass (#382): filled at the tap in `fill` s (to the brim, no more), milk poured `pourMl` ml at a time over `pour` s, a sip `sip` ml over `seconds` (game s; our picks)
   eat: { seconds: 0.5 }, // a bite: to the mouth and back (#377, #380); the bite comes off half-way // a timed action (#372) stops when the eye has moved this far (m) from where it started // putting down (#368): snap grids (m), kept this far inside a table's edge, R turns this many degrees
 };
 
@@ -1148,7 +1149,8 @@ export const LIFE_FOOD = {
 export const LIFE_TOOLS = {
   stock: [['knife', 'utensils', 0], ['butterKnife', 'utensils', 1], ['cheeseSlicer', 'utensils', 2], ['board', 'boardRack', 0],
     ['plate', 'plates', 0], ['plate', 'plates', 1], ['plate', 'plates', 2], // three plates in the wall cabinet over the free worktop (#379)
-    ['bin', 'sinkBins', 0]], // the waste bin under the sink (#381) // three plates in the wall cabinet over the free worktop (#379)
+    ['bin', 'sinkBins', 0], // the waste bin under the sink (#381)
+    ['glass', 'glasses', 0], ['glass', 'glasses', 1], ['glass', 'glasses', 2]], // three drinking glasses at the front of the glass cabinet (#382)
   // what a tool tag does to a food tag (life.js tool actions): `label` = the action, `not` = the wrong tool's message
   // ("Osthyveln skär inte gurka"); a new tool is an ITEMS entry with one of these tags, nothing else
   uses: [
@@ -1188,6 +1190,10 @@ export const ITEMS = {
   breadSlice: { name: 'brödskivan', noun: 'bröd', tags: ['food', 'base'], unit: 'count', amount: 1, size: 's', model: 'breadSlice', bites: 4 }, // eaten in four bites (#377, like the fruit #326)
   knife: { name: 'kökskniven', tags: ['tool', 'tool:cut', 'dishwasherSafe'], unit: 'count', amount: 1, size: 's', clean: 'clean', model: 'knife' },
   butterKnife: { name: 'smörkniven', tags: ['tool', 'tool:spread', 'dishwasherSafe'], unit: 'count', amount: 1, size: 's', clean: 'clean', model: 'butterKnife' }, // (#374)
+  // the drinking glass (#382): its amount = the drink in it (ml, up to `capacity`), `machine.drink` = what it is ('water' |
+  // 'milk', one at a time: no mixing in this first version); `drinks` = what may go in. 25 cl, our pick.
+  glass: { name: 'dricksglaset', noun: 'glas', tags: ['dish', 'glass', 'dishwasherSafe'], unit: 'ml', amount: 0, size: 's', clean: 'clean', model: 'glass', capacity: 250, drinks: ['water', 'milk'],
+    held: { pos: [0.16, -0.21, -0.4], rot: [0, 0, 0] } },
   cheeseSlicer: { name: 'osthyveln', tags: ['tool', 'tool:slice', 'dishwasherSafe'], unit: 'count', amount: 1, size: 's', clean: 'clean', model: 'cheeseSlicer' }, // (#374)
 };
 
@@ -1373,11 +1379,13 @@ export const DRINKS = {
   whisky: { color: 0xb8651c, opacity: 0.82, tint: 1, name: 'whisky' },
   milk: { color: 0xf7f5ef, opacity: 1, tint: 2.5, name: 'mjölk', withCoffee: 0xc39a6b }, // withCoffee: its colour in a mix with coffee (café au lait, #168); tint 2 → 2.5 with the darker coffee (#316) so a splash lightens it as much as before
   coffee: { color: COFFEE.color, opacity: 1, tint: 1, name: 'kaffe' }, // #316: dark roast
+  water: { color: 0xd8ecf6, opacity: 0.35, tint: 0.2, name: 'vatten' }, // tap water in the life sim's drinking glass (#382): clear, a light tint
   pour: {
     glass: { wine: { to: 0.45 }, champagne: { to: 0.85 }, whisky: { add: 0.2 }, milk: { to: 0.75 } },
     cup: { milk: { empty: 0.8, add: 0.15 }, whisky: { add: 0.12 } }, // milk: a cup of it or a splash in the coffee (#168); whisky: a splash (#169)
   },
   sip: 0.15, secs: 1, tilt: 1.5,
+  ml: { glass: 250, cup: 200 }, // a full vessel's volume, for what a pour takes out of the milk carton (#382; our picks)
 };
 
 // The secret drawer in the secretary (#183, src/secret.js): every time it is opened a new little thing lies in it,
@@ -1445,7 +1453,9 @@ export const STUFF = {
 };
 
 // The milk carton in the fridge (#168, src/milk.js): 1 l, 7 × 7 × 19.5 cm with a 3 cm gable (a standard carton).
-export const MILK = { w: 0.07, h: 0.195, gable: 0.03, blue: '#2f6fc4', held: { x: 0.2, y: -0.3, z: -0.46 } };
+// #382: it holds `ml` (the label's 1 liter) and runs out: every pour takes what went in (a vessel's share of DRINKS.ml);
+// empty, it is a package for the bin, and a full one is back on its shelf the next time the fridge is opened after that.
+export const MILK = { w: 0.07, h: 0.195, gable: 0.03, blue: '#2f6fc4', held: { x: 0.2, y: -0.3, z: -0.46 }, ml: 1000 };
 
 // The shared world (#178, #119, src/cloud.js): the address of the Cloudflare Worker in cloudflare/ (taped-up
 // drawings, the desk sheet, a feed of cat photos). Empty = off: everything stays in this browser only. Written by
@@ -1467,7 +1477,7 @@ export const SCORE = {
     target: 1, splashes: 0.2, cuts: 0.1, magic: 0.3,      // Nerf target: per target point (rings × distance = skill)
     baskets: 6, threes: 6, dribbles: 0.1,                 // a three = a basket + a three (12)
     turbo: 20,                                            // three cups of coffee in five minutes
-    beer: 0.3, coffee: 0.3, wine: 0.3, champagne: 0.3, whisky: 0.3, milk: 0.3, kask: 0.6, // sips
+    beer: 0.3, coffee: 0.3, wine: 0.3, champagne: 0.3, whisky: 0.3, milk: 0.3, kask: 0.6, water: 0.2, // sips (water: the drinking glass, #382)
     fish: 0.5, fried: 2, chicken: 1, cooked: 8, brews: 2, // cooked = a whole chicken fried golden (burnt: a deduction, #288)
     fries: 0.2,                                           // per fry eaten (#301): a bunch is four
     cucumberSlices: 0.2,                                  // a slice of cucumber cut (#376)

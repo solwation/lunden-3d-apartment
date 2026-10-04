@@ -306,26 +306,32 @@ export function cookingActions(life) {
     return null;
   };
   const volume = (it, kind) => I.def(it).binVolume ?? (kind === 'package' ? 2 : 1);
+  /** The waste in the hand: a life item, or another holdable that says what kind of waste it is (the empty milk carton,
+   * `wasteKind` + `discard()`, #382), or null. */
+  const wasteIn = (c) => c.held ?? (c.heldView && c.heldView.wasteKind !== undefined ? c.heldView : null);
+  const wasteOf = (c) => (c.held ? life.wasteKind(c.held) : c.heldView?.wasteKind ?? null);
   A.define({
     id: 'throwAway', order: 0,
-    label: (c) => `slänga ${nm(c.held)}`,
-    applies: (c) => !!c.held && !!c.target && I.has(c.target, 'bin') && c.held !== c.target,
+    label: (c) => `slänga ${c.held ? nm(c.held) : c.heldView.name}`,
+    applies: (c) => !!wasteIn(c) && !!c.target && I.has(c.target, 'bin') && c.held !== c.target,
     check: (c) => {
       const shut = c.targetView?.shutReason();
       if (shut) return shut;
-      const kind = life.wasteKind(c.held);
-      if (!kind || I.children(c.held).length) return 'Det där ska inte slängas';
-      if (c.target.amount + volume(c.held, kind) > (I.def(c.target).capacity ?? 10) + 1e-6) return `${cap(nm(c.target))} är full`;
+      const kind = wasteOf(c);
+      if (!kind || (c.held && I.children(c.held).length)) return 'Det där ska inte slängas';
+      const v = c.held ? volume(c.held, kind) : 2;
+      if (c.target.amount + v > (I.def(c.target).capacity ?? 10) + 1e-6) return `${cap(nm(c.target))} är full`;
       return null;
     },
     run: (c) => {
-      const it = c.held, bin = c.target, kind = life.wasteKind(it), v = volume(it, kind);
+      const it = c.held, bin = c.target, kind = wasteOf(c), v = it ? volume(it, kind) : 2;
       const parts = bin.parts.map((p) => ({ ...p })), p = parts.find((x) => x.type === kind);
       if (p) p.amount += 1; else parts.push({ type: kind, amount: 1 });
-      if (!I.remove(it, { cascade: true })) return; // (out of the hand first; nothing added if it could not)
+      if (it) { if (!I.remove(it, { cascade: true })) return; } // (out of the hand first; nothing added if it could not)
+      else c.heldView.discard(); // (the milk carton: gone until the fridge is opened again)
       I.add(bin, v);
       I.set(bin, { parts });
-      life.emit('thrown', { type: it.type, kind, into: bin.id });
+      life.emit('thrown', { type: it?.type ?? c.heldView.drinkKind ?? 'thing', kind, into: bin.id });
       sfx.rustle?.(c.targetView?.where());
     },
     consumes: 'the waste in the hand (removed)', result: 'the bin fuller by its volume; its parts count the kind',

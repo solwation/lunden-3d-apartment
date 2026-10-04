@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { LIFE, ITEMS, LIFE_FOOD, LIFE_TOOLS } from './config.js';
 import { cookingActions } from './cooking.js';
+import { dishActions } from './dishes.js';
 import { Items, SIZES } from './items.js';
 import { Holdable, heldItem, setHeld, handBusy } from './holdable.js';
 import { buildModel } from './lifemodels.js';
@@ -140,6 +141,9 @@ export class Life {
     this.runner = new Runner(this.items); // actions that take a moment (#372): validate, reserve, animate, commit
     baseActions(this);
     cookingActions(this); // the kitchen work: tools on food (#374 …)
+    this.extras = new Map(); // name → { save() → JSON | null, load(v) }: home state outside the items (the milk carton, #382 …)
+    this.loadedX = {}; this.xSig = '';
+    dishActions(this); // drinks and dishes (#382 …)
     this.items.on((kind, item, extra) => {
       this.dirty = true;
       if (kind === 'create') this.views.set(item.id, new LifeItem(this, item));
@@ -216,11 +220,16 @@ export class Life {
     return made;
   }
 
+  /** A part of the home's state that is no item (the milk carton's amount, #382; the dishwasher …): saved with the items
+   * (`x.<name>` in the record, only when save() gives something) and loaded with them, also when it registers late. */
+  keepPart(name, part) { this.extras.set(name, part); if (this.loadedX[name] !== undefined) part.load(this.loadedX[name]); }
+  extrasRecord() { const x = {}; for (const [k, p] of this.extras) { const v = p.save(); if (v !== null && v !== undefined) x[k] = v; } return x; }
+
   /** Stop a timed action (F, sitting down …): before its commit nothing is used (#372). */
   interrupt(why) { this.runner.interrupt(why); }
 
   /** The E targets: every item not in the hand. */
-  targets() { const out = [...(this.storeTargets ?? [])], holding = !!this.items.held(); for (const v of this.views.values()) if (!v.held && (holding || !this.items.has(v.item, 'fixed'))) out.push(v.target); return out; } // + the stores' boxes (#369; they raycast only while a life item is held); a bin only with something in the hand (#381)
+  targets() { const out = [...(this.storeTargets ?? [])], holding = !!this.items.held() || !!heldItem()?.wasteKind; for (const v of this.views.values()) if (!v.held && (holding || !this.items.has(v.item, 'fixed'))) out.push(v.target); return out; } // + the stores' boxes (#369; they raycast only while a life item is held); a bin only with something in the hand (#381)
 
   update(dt) {
     for (const v of this.views.values()) v.update(dt);
@@ -236,18 +245,25 @@ export class Life {
       else if (this.camera.position.distanceTo(from) > LIFE.job.walk) this.runner.interrupt('gick iväg');
       else this.runner.update(dt);
     }
+    if (!this.dirty && this.extras.size && (this.xT = (this.xT ?? 0) + dt) > LIFE.save.every) { // (a part changed: save it too)
+      this.xT = 0; const sig = JSON.stringify(this.extrasRecord());
+      if (sig !== this.xSig) { this.xSig = sig; this.dirty = true; }
+    }
     if (this.dirty && (this.saveT += dt) > LIFE.save.every) this.flush(); // (written a moment after a change, not every frame)
   }
 
   // --- saving (#371) ---------------------------------------------------------------------------------
   /** The record of every instance (keep.js's `life` part, the `lunden.life` key). */
-  serialize() { return this.items.serialize(); }
+  serialize() { const r = this.items.serialize(), x = this.extrasRecord(); if (Object.keys(x).length) r.x = x; return r; }
   /** Replace everything with a record (items.js load: versioned, tolerant). opts.hand: false = a new visit, nothing in the
    * hand. A thing whose place is gone goes home, else onto the free worktop (LIFE.save.lost). */
   load(rec, { hand = true } = {}) {
     if (heldItem()?.lifeItem) { heldItem().held = false; setHeld(null); }
     const L = LIFE.save.lost;
     const res = this.items.load(rec, { hand, log: (...m) => { if (this.debug) console.log(...m); }, fallback: () => ({ at: 'world', pos: [...L], yaw: 0 }) });
+    this.loadedX = rec?.x && typeof rec.x === 'object' ? rec.x : {};
+    for (const [k, p] of this.extras) if (this.loadedX[k] !== undefined) p.load(this.loadedX[k]);
+    this.xSig = JSON.stringify(this.extrasRecord());
     this.dirty = false;
     return res;
   }
@@ -302,7 +318,7 @@ export function devScenario(a) {
   const top = a.world.cupSurfaces.find((s) => s.userData.counter)?.userData.surface ?? 0.93;
   const cup = a.cups.cups.find((c) => c.state === 'cabinet');
   if (cup) { cup.take(); cup.placeAt(new THREE.Vector3(D.cup[0], top, D.cup[1])); cup.model.rotation.set(0, 0, 0); }
-  if (a.milk) { a.milk.take(); a.milk.placeAt(new THREE.Vector3(D.milk[0], top, D.milk[1])); a.milk.model.rotation.set(0, Math.PI / 2, 0); }
+  if (a.milk) { a.milk.refill?.(); a.milk.take(); a.milk.placeAt(new THREE.Vector3(D.milk[0], top, D.milk[1])); a.milk.model.rotation.set(0, Math.PI / 2, 0); }
   const glass = a.things.find((t) => t.kind === 'glass' && t.name === 'vinglaset');
   const table = a.world.cupSurfaces.find((s) => Math.abs(s.userData.surface - 0.754) < 0.01)?.userData.surface ?? 0.754;
   if (glass) { glass.take(); glass.placeAt(new THREE.Vector3(D.glass[0], table, D.glass[1])); glass.model.rotation.set(0, 0, 0); }

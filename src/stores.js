@@ -10,6 +10,7 @@ import { LIFE } from './config.js';
 //   pantry    the wall cabinet beyond the hob (interior.js stock 'pantry'): the front of its bottom and its shelf
 //   utensils  the top drawer under the hob: on the folded towels at its front (the kitchen knife, butter knife, cheese slicer, #374)
 //   plates    a stack of three plates in the wall cabinet over the free worktop (#379)
+//   glasses   three drinking glasses at the front of the glass cabinet next to it (#382)
 //   sinkBins  the grey bin under the sink, "Avfall" (#381): the life sim's waste bin
 //   boardRack the cutting board's place: on its long edge against the splashback between the sink and the hob (#374)
 // A pick box inside each store is the E target "Lägga … i …" while a life item is held (and only then, so it never covers
@@ -115,6 +116,11 @@ export function buildStores(life, world) {
   front('plates', plates, { name: 'skåpet', shutText: 'Öppna skåpet först', fullText: 'Där får inte plats fler tallrikar' },
     [0, 1, 2].map((k) => [0.5, (b) => (b.d0 + b.d1) / 2, () => 0.002 + k * S.plates.stack, 'm']));
   if (I.store('plates')) Object.assign(I.store('plates'), { accepts: ['plate'], putLabel: (held) => `ställa ${I.name(held)} i skåpet` });
+  // the drinking glasses (#382): three at the front of the glass cabinet's lower shelf (its static glasses stand behind them)
+  const glassCab = world.lids.find((l) => l.stock === 'glasses');
+  front('glasses', glassCab, { name: 'glasskåpet', shutText: 'Öppna glasskåpet först', fullText: 'Där får inte plats fler glas' },
+    S.glasses.map((k) => [k, (b) => b.d1 - 0.05, () => 0.002, 's']));
+  if (I.store('glasses')) Object.assign(I.store('glasses'), { accepts: ['glass'], putLabel: (held) => `ställa ${I.name(held)} i skåpet` });
   // the waste bin under the sink (#381): one slot in the grey bin behind the bins' door; its anchor is scaled to the bin, so
   // the bin item's model (lifemodels.js `bin`, built 1 × 1 × 1) fits it. Another bin elsewhere (a bathroom's) is the same:
   // a store with one slot for an ITEMS 'bin' and an entry in a stock list.

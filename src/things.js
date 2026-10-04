@@ -102,10 +102,11 @@ export class Glass extends Thing {
 
   /** Pour from the held bottle (or milk): up to the drink's level in a glass (DRINKS.pour.glass). */
   pourFrom(src) {
-    const amount = pourAmount('glass', src.drink, this.fill);
+    let amount = pourAmount('glass', src.drink, this.fill);
     if (!amount) return;
+    if (src.ml !== undefined) amount = Math.min(amount, src.ml / D.ml.glass); // the milk carton: what is left in it (#382)
     this.contents.pour(src.drink, amount, D.secs);
-    src.pour?.(D.secs);
+    src.pour?.(D.secs, amount * D.ml.glass); // (what went in comes out of the carton, #382)
     sfx.pour(this.where(), D.secs);
   }
 

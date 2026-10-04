@@ -52,11 +52,12 @@ function bowls(P, b, y, top) {
     for (let k = 0; k < 4 && y + 0.05 * (k + 1) < top; k++) { const [x, z] = P.at(u, dm); P.add(new THREE.CylinderGeometry(0.075, 0.05, 0.06, 16, 1, true).translate(x, y + 0.03 + k * 0.035, z), KM.porcelain); }
   }
 }
-function glasses(P, b, y, top) {
+function glasses(P, b, y, top, rows = [b.d1 - 0.05, b.d1 - 0.14, b.d0 + 0.06]) {
   const h = Math.min(0.12, top - y - 0.02), r = 0.034;
-  for (const d of [b.d1 - 0.05, b.d1 - 0.14, b.d0 + 0.06].filter((d) => d > b.d0 + r && d < b.d1 - r))
+  for (const d of rows.filter((d) => d > b.d0 + r && d < b.d1 - r))
     for (const u of row(b.a0, b.a1, fit(b.a0, b.a1, 2 * r, 0.02), 2 * r)) cyl(P, u, d, r, y, h, 'glass', 12, true);
 }
+function backGlasses(P, b, y, top) { glasses(P, b, y, top, [b.d1 - 0.14, b.d0 + 0.06]); } // (#382: the front row left free for the life sim's glasses)
 function mugs(P, b, y, top) {
   const h = Math.min(0.095, top - y - 0.02);
   for (const d of [b.d1 - 0.06, b.d0 + 0.07]) for (const [i, u] of row(b.a0, b.a1, fit(b.a0, b.a1, 0.085, 0.02), 0.085).entries())
@@ -183,7 +184,8 @@ function backPots(P, b, y, top) { // the toaster's drawer (#401): the pots kept 
 
 // a cabinet: one kind per shelf level (lower, upper), or one for the whole thing
 const KINDS = {
-  glasses: [glasses, glasses], plates: [plates, bowls], platesLife: [() => {}, bowls], // platesLife: the plate stack is the life sim's plates (#379, stores.js) mugs: [mugs, glasses], dry: [packets, spices], pantry: [pantryPackets, pantrySpices], tea: [tea, spices],
+  glasses: [backGlasses, glasses], plates: [plates, bowls], platesLife: [() => {}, bowls], // platesLife: the plate stack is the life sim's plates (#379, stores.js); glasses: the lower shelf's front row is the life sim's drinking glasses (#382)
+  mugs: [mugs, glasses], dry: [packets, spices], pantry: [pantryPackets, pantrySpices], tea: [tea, spices],
   pots: [pots, pots], baking: [baking, baking], serving: [serving, festive], festive: [festive, serving], corner: [corner, corner],
   sink: [sinkExtras], cutlery: [cutlery], utensils: [utensils], rolls: [rolls], drawerPots: [pots], drawerToaster: [backPots],
 };

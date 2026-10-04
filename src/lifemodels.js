@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { Contents, GlassLiquid } from './drinks.js';
 
 // Models for the life simulator's things (#366): plain shapes of our own, no brands. Each builder returns
 // { object, show(item, items), anchors?, grip? }: `object` has its origin at the bottom centre and lies the way it rests
@@ -17,6 +18,7 @@ const M = {
   bag: new THREE.MeshStandardMaterial({ color: 0xf2efe6, roughness: 0.25, transparent: true, opacity: 0.55, depthWrite: false }),
   clip: std(0x2f6fc4, 0.5), crust: std(0x9a6332, 0.7), crumb: std(0xe8d3a8, 0.85),
   steel: std(0xc9cdd0, 0.25, { metalness: 0.7 }), handle: std(0x222222, 0.55), peasBag: std(0x2f7d32, 0.35),
+  glass: new THREE.MeshPhysicalMaterial({ color: 0xffffff, roughness: 0.05, transparent: true, opacity: 0.28, depthWrite: false }),
   cheeseSlice: std(0xf6dc7e, 0.5), binBag: std(0x1d1d1f, 0.6), binHeap: std(0x2a2a2c, 0.75),
 };
 
@@ -346,7 +348,28 @@ function bin() {
   };
 }
 
-const BUILDERS = { plate, board, cucumber, cucumberSlice, cheese, butter, breadBag, breadSlice, knife, peas, butterKnife, cheeseSlicer, cheeseSlice, bin };
+/** A drinking glass (#382): a plain tumbler 25 cl, Ø 7 cm, 11 cm high (a lathe, see-through), the drink in it a level that
+ * follows its amount (drinks.js GlassLiquid, the drink's colour from DRINKS). */
+const INNER = [[0.029, 0.007], [0.0325, 0.104]];
+function glass() {
+  const g = new THREE.Group();
+  const prof = [[0.0001, 0], [0.03, 0], [0.0345, 0.11], [0.0325, 0.11], [0.029, 0.007], [0.0001, 0.007]].map(([r, y]) => new THREE.Vector2(r, y));
+  const m = mesh(new THREE.LatheGeometry(prof, 24), M.glass);
+  m.castShadow = false;
+  m.renderOrder = 1;
+  g.add(m);
+  const liquid = new GlassLiquid(g, INNER), contents = new Contents();
+  // what is drawn: the instance's amount, or `level(kind, ml)` while a pour / sip is going on (#382)
+  const draw = (kind, ml, cap) => { contents.set(kind ?? 'water', kind ? Math.min(1, ml / cap) : 0); liquid.show(contents); };
+  let cap = 250;
+  return {
+    object: g, grip: [0.034, 0.05, 0],
+    show(item, items) { cap = items.def(item)?.capacity ?? 250; draw(item.machine?.drink, item.amount, cap); },
+    level(kind, ml) { draw(kind, ml, cap); },
+  };
+}
+
+const BUILDERS = { glass, plate, board, cucumber, cucumberSlice, cheese, butter, breadBag, breadSlice, knife, peas, butterKnife, cheeseSlicer, cheeseSlice, bin };
 
 /** The model of a type (its `model` builder; a grey box when there is none). */
 export function buildModel(def) {

@@ -363,6 +363,7 @@ life.bump = (key, n, id) => bump(key, n, id); // the life sim's counts (#376 …
   const tops = world.cupSurfaces.filter((m) => m.userData.worktop).map((m) => ({ box: new THREE.Box3().setFromObject(m), y: m.userData.surface }));
   life.worktopAt = (p) => tops.some((t) => p[0] >= t.box.min.x - 0.01 && p[0] <= t.box.max.x + 0.01 && p[2] >= t.box.min.z - 0.01 && p[2] <= t.box.max.z + 0.01 && Math.abs(p[1] - t.y) < 0.03);
 }
+for (const t of taps) if (t.options) { const own = t.options; t.options = () => [...life.options(t), ...own()]; } // a glass in the hand at a basin tap: fill it, pour it out (#382)
 life.restore(); // a new visit: the stock as it was left, empty-handed (#371; a page-made reload's `life` part replaces it below)
 life.restock(); // whatever the kitchen always has and is missing (#373): a fresh home, or something used up and thrown away
 fruit.onEaten = (f) => bump('fruit', 1, f.kind);
@@ -1383,7 +1384,7 @@ function updateFocus() {
       if (!hit || spot.distance <= hit.distance + 0.05) focused = { name: '', kind: 'place', blocked: true, blockedText: 'Miele får inte vara på bordet' };
       spot = null;
     } else if (!spot) { const f = floorSpot(); if (f && f.distance < reach && !behindWall(f.point)) spot = f; } // a table top is always above (before) the floor
-    const lifeAim = focused?.kind === 'life' && !!focused.options?.().some((a) => !a.reason); // a plate it can go on (#367): that, not the table under it
+    const lifeAim = (focused?.kind === 'life' || (focused?.kind === 'tap' && life.items.held())) && !!focused.options?.().some((a) => !a.reason); // (#382: a glass at the tap) // a plate it can go on (#367): that, not the table under it
     if (spot && !lifeAim && (!hit || spot.distance <= hit.distance + 0.05)) {
       snapSpot(spot, top && spot.point.y > LEVELS[Math.max(0, player.level)].floor + 0.05 ? top.object : null); // on a grid (#368)
       placeTarget = { name: `${item.name} här`, kind: 'place', verb: item.placeVerb ?? 'lägga ner', item, point: spot.point, yaw: placeYaw() };
@@ -1513,7 +1514,7 @@ function toggleFurniture(on = !world.furnitureOn) {
 }
 world.looseItems.push(board.object, ...holdables.flatMap((h) => (h.homeParent ? [h.holder] : [h.holder, h.model])), ...toys.deco); // (the secretary's things go home into it with F, and the secret drawer shows one at a time, #183)
 const milk = fridge?.milkAt ? new Milk(scene, camera, fridge) : null; // the milk carton in the fridge (#168): not hidden with F, only sent home
-if (milk) holdables.push(milk);
+if (milk) { holdables.push(milk); life.keepPart('milk', { save: () => milk.keepState(), load: (v) => milk.loadKeep(v) }); } // what is left in it is kept with the life sim's things (#382)
 holdables.push(miele); // Miele in your arms (#328): not a loose item (she is the cat)
 if (fries) holdables.push(fries.bag); // the bag of fries in the freezer (#301): like the milk, not hidden with F, only sent home
 world.looseItems.push(life.group, fruit.group, ...cups.cups.map((c) => c.model), drawing.paper, calendar.object, ...posters.groups, ...(fish ? [fish.object] : [])); // the cups and the paper go with F too // the cat board and the toys go with the furniture (F)
