@@ -633,6 +633,9 @@ tools/breaktest.html   headless test: the AK-47 breaks a glass on the dining tab
                        bottle, a held glass is not hit, none through a wall, a cup goes, F mends all (#263)
 tools/turbotest.html   headless test: Kaffeturbo with an injected clock — three cups in five minutes (not spread out, not milk /
                        whisky), faster indoors, the text, more coffee adds time, over again; `walktest.html?turbo` walks at that pace
+tools/terraintest.html headless test (#346): the courtyard = the reference level, S2's level differences kept, the ramp's
+                       ends / the stairs' feet / the garage drive meet their ground, no ground rises past a retaining wall,
+                       every plinth reaches the ground, no unguarded step > 5 cm in OUTDOOR (5 cm grid)
 tools/weathertest.html headless test: showers per season, thunderstorms only in late summer, a shower ramps in; with &weather=storm:
                        drops (none inside Hus L), grey sky, a flash and back, ⛈ in the HUD, people in; snow only in winter, hail in
                        spring / storms, snowflakes not in Hus L, walking 20 m out in it counts once, not indoors; clear = no rain
@@ -733,7 +736,11 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   Terrain (#79, `SITE.terrain`, `groundY(x, z)` in surroundings.js): the street north of Hus L, our Entréplan
   and the raised courtyard on the garage box (`terrain.box`, #254: edges from våning −1 and the level lines on
   våning 1 — west part x −70.5…−41.7 to z 52.5, between B and A to z 33.3, east of that to Hus A's north face)
-  are y 0; around the box the ground is one storey lower (`park` −3, Å-husen A/B suterräng); retaining
+  are y 0 (#346: `terrain.ref` — every terrain height is relative to the courtyard = Entréplan's floor, no real plushöjd
+  is known (`ref.plus` null); `terrain.documented` = S2's only level differences (~3 m park, ramp ~0.9, east stair ~1.4,
+  NW stair ~1 m), local conditions, never summed; slopes / break points between them are guesses; the garage drive is
+  level with the garage floor; `tools/terraintest.html` checks the joins, plinths and that walkable ground has no
+  unguarded step); around the box the ground is one storey lower (`park` −3, Å-husen A/B suterräng); retaining
   walls with a railing where the box meets it (none along a house's façade), the garage door in its west face
   south of Hus C (z 41…47) with an asphalt drive from Karpvägen, stairs down to the park level (`terrain.stairs`:
   between Hus C and B, #254).

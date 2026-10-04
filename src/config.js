@@ -219,6 +219,17 @@ export const SITE = {
   // (guess). The garage entrance ("INFART GARAGE", våning −1; "NEDFART TILL GARAGE UNDER KVARTERET", situation
   // plan) is in the box's west wall south of Hus C, reached from Karpvägen over a short asphalt drive.
   terrain: {
+    // #346 (docs/peab/arkitekturgranskning-2026-10-04.md, issue 03): every terrain height here is RELATIVE, in metres to
+    // `ref`: the courtyard on the garage box = our Entréplan's finished floor = model y 0 (LEVELS[0].floor). Peab's material
+    // gives no plushöjd (RH 2000) for it, so `ref.plus` stays null — no height in the model is a surveyed level.
+    // `documented` = the plans' only level differences (overview plans S2 / våning 1), each a LOCAL condition at its own
+    // place, never summed into one site-wide fall: the courtyard ~3 m above the park / å-rum (`park`, taken by the box's
+    // retaining walls), the east ramp ~0.9 m (`ramp.drop`), the east stair ~1.4 m (`stairs[0].drop`), the NW stair by
+    // Hus C ~1 m (`west.profile` at the stair). Everything between (slopes, break points, wall heights) is a guess until
+    // a grading plan or section turns up (tools/terraintest.html checks the joins, not the terrain's truth).
+    ref: { y: 0, plus: null }, documented: { park: 3, ramp: 0.9, eastStair: 1.4, nwStair: 1.0 },
+    // `slope` (guess): only east of Sankt Lars väg, outside the plot, does the ground ease down to the park level over
+    // that many metres south of Hus L's back; round the courtyard the 3 m is a vertical retaining wall (no slope crosses it)
     park: -3, north: 12.7, slope: 8,
     // the box (#254): the west part from Hus C's west façade (the garage's outer wall towards Karpvägen) to Hus B's
     // west façade and south to the level line at z 52.5 (the yard south of Hus C: second pergola, sandbox,
@@ -243,9 +254,10 @@ export const SITE = {
     east: { x0: 9.42, x1: 31.3, blend: 2.5, gable: 11.6, level: 13.5, walk: 18.4, profile: [[-10, 0], [11.6, -0.9], [30.0, -1.4], [44, -3]] },
     // #256: Karpvägen also slopes south (våning 1: "NIVÅSKILLNAD CA 1M" at a "TRAPPA" by Hus C's NW corner). West of `x`
     // (Hus C's west façade line) the ground follows `profile` (fitted to where the stair's risers end on the plan, then
-    // down to the park level by the garage drive: guess). The `stair`: `risers` lines from x0 (its foot) to x1 (the top),
+    // down to the park level where the garage drive starts, z 40.5 = garageDoor.z0 − 0.5, so the drive in front of the
+    // door is level with the garage floor (#346; the slope in between: guess). The `stair`: `risers` lines from x0 (its foot) to x1 (the top),
     // running from where the sloping verge meets each step south to z1; from z1 to Hus C a retaining wall.
-    west: { x: -70.5, profile: [[-2.8, 0], [11.25, -1.0], [44, -3]], stair: { x0: -70.5, x1: -68.69, z1: 10.6, risers: 7 } },
+    west: { x: -70.5, profile: [[-2.8, 0], [11.25, -1.0], [40.5, -3]], stair: { x0: -70.5, x1: -68.69, z1: 10.6, risers: 7 } },
     // stairs from the courtyard (y 0) going south, `z` = the box edge they leave; `drop` m in `steps` (default: down to
     // the park level, ~0.17 m each, a `landing` halfway); `walk` = paving from the foot. #255: "TRAPPA NIVÅSKILLNAD CA
     // 1,4M" (våning 1: 9 risers x 11.6…13.5, z 27.25…30) from the landing at the walk along Hus A down to the walk east

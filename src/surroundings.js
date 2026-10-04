@@ -95,8 +95,16 @@ function boxWalls() {
   edges.push([NW.x1, NW.z1, NW.x0, NW.z1, 0, -1], [T.west.x, T.box[0].z0, T.west.x, NW.z1, -1, 0]);
   for (const [ax, az, bx, bz, ox, oz] of edges) {
     const len = Math.hypot(bx - ax, bz - az), n = Math.max(1, Math.ceil(len / 1));
-    for (let k = 0; k < n; k++) {
-      const t0 = k / n, t1 = (k + 1) / n;
+    // ≤ 1 m pieces, also cut where a house's side meets the edge, so the piece beside a façade is guarded right up to
+    // it (#346: Hus A's NE corner left a 4 cm unguarded gap on the 1.4 m drop)
+    const ts = new Set(Array.from({ length: n + 1 }, (_, k) => k / n));
+    const touch = (b) => (oz ? az > b.z0 - 0.2 && az < b.z1 + 0.2 : ax > b.x0 - 0.2 && ax < b.x1 + 0.2); // a house on this edge's line
+    for (const b of S.blocks.filter(touch)) for (const t of oz ? [(b.x0 - ax) / (bx - ax), (b.x1 - ax) / (bx - ax)] : [(b.z0 - az) / (bz - az), (b.z1 - az) / (bz - az)])
+      if (t > 1e-4 && t < 1 - 1e-4) ts.add(t);
+    const tl = [...ts].sort((a, b) => a - b);
+    for (let k = 0; k < tl.length - 1; k++) {
+      const t0 = tl[k], t1 = tl[k + 1];
+      if (t1 - t0 < 1e-4) continue;
       const x0 = ax + (bx - ax) * t0, z0 = az + (bz - az) * t0, x1 = ax + (bx - ax) * t1, z1 = az + (bz - az) * t1;
       const mx = (x0 + x1) / 2 + ox * 0.05, mz = (z0 + z1) / 2 + oz * 0.05; // just outside
       if (onBox(mx, mz)) continue; // an inner edge between two box parts
