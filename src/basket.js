@@ -170,7 +170,7 @@ export class Basketball extends Holdable {
       pick: { pos: home.clone(), size: [0.3, 0.3, 0.3] },
       cooldown: 0.4, useLabel: 'Skjut', grip: [b.r * 0.45, -b.r * 0.85, 0.02], handPose: 'palm', // carried on the open palm (#238)
     });
-    Object.assign(this, { marks, hoop, world, hitsTarget: false, flying: false, v: new THREE.Vector3(), air: 0, dribbling: false, armed: true });
+    Object.assign(this, { marks, hoop, world, clickIsUse: true, hitsTarget: false, flying: false, v: new THREE.Vector3(), air: 0, dribbling: false, armed: true });
     this.altIcon = '🏀'; this.altLabel = 'Studsa bollen';
     this.lastCam = new THREE.Vector3(); this.camV = new THREE.Vector3();
     this.rest = { q: new THREE.Quaternion(), lift: b.r }; // put down: it lies on its round side

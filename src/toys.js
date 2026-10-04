@@ -236,7 +236,7 @@ export class Blaster extends Holdable {
     });
     this.darts = darts;
     this.shoots = true; // fires projectiles
-    this.hitsTarget = true; // the target on the lawn comes up (#144, #179)
+    this.hitsTarget = this.clickIsUse = true; // the target on the lawn comes up (#144, #179); a click always fires (#443)
     this.i = i;
     this.kick = 0;
   }
@@ -356,7 +356,7 @@ export class Wand extends Holdable {
       pick: { pos: new THREE.Vector3(W.x - 0.05, y0, z), size: [0.1, 0.45, 0.12] },
       swing: 5, cooldown: 0.25, useLabel: 'Trolla',
     });
-    Object.assign(this, { sparkles, color: W.colors[i], wave: 0, hitsTarget: true }); // the lawn target comes up (#179)
+    Object.assign(this, { sparkles, color: W.colors[i], wave: 0, hitsTarget: true, clickIsUse: true }); // the lawn target comes up (#179)
   }
 
   onTake() { sfx.pling(this.where(), 1.4); }

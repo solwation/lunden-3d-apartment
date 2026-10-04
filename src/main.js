@@ -1042,7 +1042,7 @@ function renderChoices() {
     b.addEventListener('click', (e) => { e.stopPropagation(); runChoice(i); });
     choicesEl.append(b);
   });
-  if (!touch.enabled) { const h = document.createElement('div'); h.className = 'hint'; h.textContent = `E eller 1–${choices.rows.length} väljer · hjulet flyttar`; choicesEl.append(h); }
+  if (!touch.enabled) { const h = document.createElement('div'); h.className = 'hint'; h.textContent = `${heldItem()?.clickIsUse ? 'E' : 'Klicka (E)'} eller 1–${choices.rows.length} väljer · hjulet flyttar`; choicesEl.append(h); }
 }
 /** Do row `i` of the menu (a blocked one only clicks: its reason is on screen). */
 function runChoice(i) {
@@ -1159,11 +1159,39 @@ document.addEventListener('pointerlockchange', () => {
 document.addEventListener('mousemove', (e) => {
   if (locked) look(e.movementX * PLAYER.mouseSens, e.movementY * PLAYER.mouseSens);
 });
-document.addEventListener('mousedown', (e) => {
-  if (locked && e.button === 0 && heldItem()?.trigger) { heldItem().trigger(true); return; } // the rifle: automatic fire while held (#196)
-  if (locked && e.button === 0) { if (book.reading) book.turn(1); else if (!heldItem() && focused?.kind === 'carmusic') use(focused); else heldItem()?.use(); } // (a click on the car's screen works like E, #268) // a click: swing, fire, toggle the flashlight, change channel, read / turn the page
-  if (locked && e.button === 2) heldItem()?.useAlt?.(); // right click: the remote's power button (#101)
-});
+/**
+ * A mouse click (#443), the one rule for mouse & keyboard (touch has its own buttons):
+ *  - left, reading the book: the next page; in another panel / strip: nothing (they have their own keys and buttons)
+ *  - left, holding a weapon or the ball (`clickIsUse`): always fire / throw (automatic while held: the rifle, #196)
+ *  - left, something in focus: E on it (open, take, put down where the ghost shows, pour, sit, pet, greet, a menu row …);
+ *    a blocked target ("Lägg ifrån dig …", "Glaset är fullt"): nothing — spilling is E's only (#288)
+ *  - left, nothing in focus: use what you hold (eat, drink, hug, read, light …); empty-handed, seated or not: nothing
+ *  - right: the held thing's own alternative (`useAlt`: the remote's power, the ball's dribble), else its use (eat …)
+ * Returns what it did (tools/clicktest.html).
+ */
+function click(button) {
+  const held = heldItem(), focused = clickTarget();
+  if (button === 2) {
+    if (reading) return 'none';
+    if (held?.useAlt) { held.useAlt(); return 'alt'; }
+    if (held) { held.use(); return 'use'; }
+    return 'none';
+  }
+  if (book.reading) { book.turn(1); return 'page'; }
+  if (reading) return 'none';
+  if (held?.clickIsUse || !focused) {
+    if (held?.trigger) held.trigger(true); else held?.use();
+    return held ? 'use' : 'none';
+  }
+  if (focused.blocked) return 'blocked';
+  use(focused);
+  return 'e';
+}
+/** What a left click may do E on: the focus, but not the jetpack's "stand it down" (E's fallback with nothing in focus). */
+const clickTarget = () => (focused === jetpack.dropTarget ? null : focused);
+/** Does a left click do E on what is in focus now (the prompt says "Klicka (E)")? */
+const clickIsE = () => !!clickTarget() && !focused.blocked && !heldItem()?.clickIsUse;
+document.addEventListener('mousedown', (e) => { if (locked && (e.button === 0 || e.button === 2)) click(e.button); });
 document.addEventListener('contextmenu', (e) => { if (locked) e.preventDefault(); });
 document.addEventListener('mouseup', (e) => { if (e.button === 0) heldItem()?.trigger?.(false); });
 // touch: holding the action button keeps the rifle firing (#196)
@@ -1391,7 +1419,8 @@ function updateFocus() {
   } else if (focused && touch.enabled) {
     actionBtn.textContent = `${verb[0].toUpperCase()}${verb.slice(1)}${named}`;
   } else if (focused) {
-    promptEl.textContent = `Tryck E för att ${verb}${named}`;
+    const own = heldItem()?.useLabel && !heldItem().useAlt && !heldItem().clickIsUse ? ` · högerklick: ${heldItem().useLabel.toLowerCase()}` : ''; // (#443)
+    promptEl.textContent = clickIsE() ? `Klicka (E) för att ${verb}${named}${own}` : `Tryck E för att ${verb}${named}`;
   }
   const holding = !focused && heldItem()?.useLabel ? heldItem() : null; // touch: the button uses what you hold (fire, wave, light); a cup or the jug has no use of its own
   if (holding && touch.enabled) actionBtn.textContent = holding.useLabel;
@@ -1869,4 +1898,4 @@ if (lifeDev()) devScenario({ life, world, holdables, cups, things, milk, fish, f
 document.documentElement.classList.remove('resuming'); // the page is ready: off with the "Laddar…" cover (#222)
 
 // handle for tests/debugging (tools/touchtest.html)
-window.__app = { toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, toaster, life, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, coffeeJar, miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };
+window.__app = { click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, toaster, life, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, coffeeJar, miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };

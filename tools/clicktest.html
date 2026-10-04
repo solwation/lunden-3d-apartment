@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Click test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+// Left click as E (#443), mouse & keyboard: the mousedown under #arm (no pointer lock yet) does nothing; an empty-handed
+// click opens the freezer and takes a fish finger, a click on the dining table puts it down where the ghost shows, a
+// blocked target does nothing, a click with nothing in focus eats, a right click eats too; the rifle still shoots at
+// the freezer door (which stays as it is); seated, a click with nothing in focus does not stand you up; the remote's
+// right click is still its power button. The prompt says "Klicka (E)".
+//   google-chrome --headless=new --dump-dom http://localhost:8137/tools/clicktest.html
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const f = document.createElement('iframe');
+f.width = 900; f.height = 600; f.src = `../index.html?v=${Math.random()}&shot`;
+document.body.append(f);
+f.onload = async () => { const lines = []; let pass = true; try {
+  const w = f.contentWindow, d = f.contentDocument;
+  while (!w.__app) await wait(100);
+  const app = w.__app, { player, camera, step, fish, world, heldItem, scene, things, click, rest, remote, touch } = app;
+  const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); pass &&= !!ok; return ok; };
+  const prompt = d.getElementById('prompt');
+  const V = camera.position.constructor;
+  const run = (n = 1) => { for (let i = 0; i < n; i++) step(1 / 60); };
+  const aim = (p) => {
+    const dx = p.x - camera.position.x, dz = p.z - camera.position.z;
+    camera.rotation.set(Math.atan2(p.y - camera.position.y, Math.hypot(dx, dz)), Math.atan2(-dx, -dz), 0, 'YXZ');
+    run(); scene.updateMatrixWorld(true); run();
+  };
+  const lookAt = (p, stands, re) => {
+    for (const [x, z] of stands) {
+      player.spawn(x, z, 0); run(3);
+      aim(p);
+      if (!prompt.hidden && re.test(prompt.textContent)) return true;
+    }
+    return false;
+  };
+  const kitchen = [[4.3, 4.1], [4.1, 4.0], [4.4, 3.9], [4.0, 3.8]];
+  check(!touch.enabled, 'mouse & keyboard (no touch)');
+  const fz = fish.freezer;
+  const doorAt = () => fz.door.children[0].getWorldPosition(new V()).setY(1.0);
+  // under #arm (the pointer is not locked yet): a mousedown, facing the freezer, takes the mouse and nothing else
+  player.spawn(...kitchen[0], 0); run(3); aim(doorAt());
+  const arm = d.getElementById('arm'); arm.hidden = false;
+  arm.dispatchEvent(new w.MouseEvent('mousedown', { bubbles: true, button: 0 })); run(60);
+  check(!fz.isOpen && !heldItem(), 'a mousedown under #arm opens nothing');
+  arm.hidden = true;
+  // pretend the mouse is locked now (headless refuses pointer lock)
+  Object.defineProperty(d, 'pointerLockElement', { get: () => app.renderer.domElement, configurable: true });
+  d.dispatchEvent(new w.Event('pointerlockchange'));
+  check(lookAt(doorAt(), kitchen, /^Klicka \(E\) för att öppna frysen/), `the freezer: "${prompt.textContent}"`);
+  check(click(0) === 'e', 'an empty-handed click is E'); run(90);
+  check(fz.isOpen, 'the freezer is open');
+  const boxAt = () => fish.object.getWorldPosition(new V()).add(new V(0, 0.03, 0));
+  check(lookAt(boxAt(), kitchen, /^Klicka \(E\) för att ta en fiskpinne ur paketet/), `the carton: "${prompt.textContent}"`);
+  click(0); run();
+  const one = heldItem();
+  check(one?.isFish, 'a click takes a fish finger');
+  const table = { x: 3.5, y: 0.75, z: 1.6 }, tableStands = [[2.6, 2.2], [2.5, 1.6], [3.5, 2.6]];
+  check(lookAt(table, tableStands, /^Klicka \(E\) för att lägga ner fiskpinnen.* · högerklick: ät$/), `the table: "${prompt.textContent}"`);
+  const spot = app.placement.target()?.point.clone();
+  check(click(0) === 'e', 'a click on the table is E'); run();
+  const mid = one.middle(new V());
+  check(one.state === 'placed' && !heldItem() && spot && Math.hypot(mid.x - spot.x, mid.z - spot.z) < 0.12 && Math.abs(mid.y - 0.75) < 0.03,
+    `put down where the ghost showed (${mid.x.toFixed(2)}, ${mid.y.toFixed(2)}, ${mid.z.toFixed(2)} vs ${spot?.x.toFixed(2)}, ${spot?.z.toFixed(2)})`);
+  // a second one from the carton; the first one on the table is then a blocked target
+  check(lookAt(boxAt(), kitchen, /ta en fiskpinne ur paketet/), 'the carton again');
+  click(0); run();
+  const two = heldItem();
+  check(two?.isFish && two !== one, 'a second fish finger in the hand');
+  // up in Sovrum 2, the lightsaber on its hooks is a blocked target (a fish finger in the hand)
+  const hilt = app.saber.model.getWorldPosition(new V());
+  player.spawn(hilt.x + 1.0, hilt.z, 0); player.pos.y = 3.25; player.eyeY = 3.25 + 1.62; run(3);
+  aim(hilt);
+  check(/Lägg ifrån dig/.test(prompt.textContent) && !prompt.hidden, `the lightsaber, blocked: "${prompt.textContent}"`);
+  const bites0 = two.bites, eaten0 = fish.eatenCount;
+  check(click(0) === 'blocked' && heldItem() === two && two.bites === bites0 && !app.saber.held, 'a click on a blocked target does nothing');
+  // nothing in focus (looking up): a click eats; a right click eats too
+  camera.rotation.set(1.2, 0, 0, 'YXZ'); run(2);
+  check(!app.focus().focused, `nothing in focus looking up (${app.focus().focused?.name ?? ''})`);
+  check(click(0) === 'use', 'a click with nothing in focus uses it'); run(40);
+  check(click(2) === 'use', 'a right click uses it'); run(40);
+  check(click(0) === 'use', 'and a click again'); run(40);
+  check(!heldItem() && fish.eatenCount === eaten0 + 1, `eaten in three bites (${fish.eatenCount - eaten0})`);
+  // the rifle: a click always shoots, even at the freezer door (open: E would shut it)
+  const rifle = things.find((t) => t.isRifle);
+  rifle.take(); run(10);
+  check(heldItem() === rifle, 'the rifle in the hand');
+  check(lookAt(doorAt(), kitchen, /^Tryck E för att stänga frysen/), `the freezer with the rifle: "${prompt.textContent}"`);
+  await wait(450);
+  const shots0 = rifle.shots ?? 0;
+  check(click(0) === 'use', 'a click with the rifle uses it'); run(6);
+  rifle.trigger(false); run(30);
+  check((rifle.shots ?? 0) > shots0 && fz.isOpen, `it shot (${(rifle.shots ?? 0) - shots0}) and the freezer is still open`);
+  rifle.putBack(); run(10);
+  // seated with nothing in focus: a click does not stand you up
+  const chair = world.furnitureTargets.find((t) => t.kind === 'rest' && t.name === 'stolen' && (t.level ?? 0) === 0);
+  player.spawn(2.6, 2.2, 0); run(3);
+  aim(chair.pickable.getWorldPosition(new V()));
+  app.use(chair); run(90);
+  check(rest.active, 'sitting on a dining chair');
+  camera.rotation.set(1.2, camera.rotation.y, 0, 'YXZ'); run(2);
+  check(click(0) === 'none' && rest.active, 'a click with nothing in focus does not stand you up');
+  app.standUp(); run(5);
+  // the remote: its right click is still the power button
+  remote.take(); run(5);
+  let alt = 0; const was = remote.useAlt.bind(remote); remote.useAlt = () => { alt++; was(); };
+  check(click(2) === 'alt' && alt === 1, 'the remote: a right click is its power button');
+  remote.useAlt = was; remote.putBack(); run(5);
+} catch (e) { lines.push(`FAIL ${e}\n${e.stack}`); pass = false; }
+  out.textContent = lines.join('\n') + `\n${pass ? 'ALL PASS' : 'SOME FAILED'}`;
+};
+</script>
+</body>
+</html>

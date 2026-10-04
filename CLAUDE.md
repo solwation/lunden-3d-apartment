@@ -739,6 +739,9 @@ tools/cartest.html     headless test: our parked car — open the driver's / pas
                        (#358) too, in the garage clear of its parked cars and columns
 tools/keytest.html     headless test of the hall key cabinet: open, car key reachable only then, beep; the car starts in its stall (#358),
                        comes out through the opened garage door, parks, leaves back into its stall, the door shuts
+tools/clicktest.html   headless test of left click as E (#443): nothing under #arm, the freezer and a fish finger by click, put down on
+                       the table where the ghost showed, a blocked target nothing, eaten by click / right click with nothing in focus,
+                       the rifle still shoots at the freezer, seated a click does not stand you up, the remote's right click = power
 tools/esctest.html     headless test of Esc on the start screen (click-to-start cover, ignored over the note)
 tools/crouchtest.html  headless test: C crouches (Ctrl too, other Ctrl shortcuts prevented), seated C stands up, leaving mid-visit
                        asks (beforeunload), not on the start screen nor on a new-version reload (#274)
@@ -1490,6 +1493,15 @@ suite every time):
   touch "Res dig" button (#stand-btn) get you up, keeping what is in the hand. Seats: the
   sofa (3 + the chaise), armchair, 4 dining chairs, the lounge sofa (3), RÅGRUND; beds: the double bed (2
   sides), both bunks (lower/upper), the daybed. F stands you up first.
+- Left click as E (#443, main.js `click`, the only place it is decided; touch keeps its buttons): reading the book, the
+  next page; in another panel nothing. Holding a weapon or the ball (`clickIsUse` on the class: the rifle, blasters, the
+  saber, wands, the basketball) a click always fires / throws. Otherwise, with something in focus a click is E on it (open,
+  take, put down where the ghost shows, pour, sit, pet, greet, the menu's marked row) — a blocked target: nothing (spilling
+  is E's only); with nothing in focus it uses what you hold (eat, drink, hug, read, light), empty-handed or seated nothing
+  (E / Space / C get you up). The jetpack's "stand it down" fallback is E's only. Right click = the held thing's `useAlt`
+  (the remote's power, the ball's dribble) if it has one, else its use (eat, drink …). The prompt says "Klicka (E) för att
+  …" when a click does it (+ " · högerklick: ät" from `useLabel`), "Tryck E …" while a weapon is held. The mousedown that
+  takes the pointer lock (#arm, a click on the page) does nothing else: `locked` is still false then (tools/clicktest.html).
 - GNOME's "disable touchpad while typing" (on by default) blocks touchpad look while a WASD key
   is held — not a bug in the app. Arrow keys ← → turn as a keyboard-only fallback.
 

@@ -59,7 +59,7 @@ export class Saber extends Holdable {
       pick: { pos: new THREE.Vector3(S.x + 0.06, y0, S.z), size: [0.12, 0.2, 0.4] },
       swing: S.swingSpeed, cooldown: 0.3, useLabel: 'Svinga',
     });
-    Object.assign(this, { saber: g, blade, glowMat, hum: null, swingT: 0, marks: null, cat: null, touchT: 0, meowT: 0, hitsTarget: true }); // the lawn target comes up (#179)
+    Object.assign(this, { saber: g, blade, glowMat, hum: null, swingT: 0, marks: null, cat: null, touchT: 0, meowT: 0, hitsTarget: true, clickIsUse: true }); // the lawn target comes up (#179)
   }
 
   get swings() { return this.uses; }

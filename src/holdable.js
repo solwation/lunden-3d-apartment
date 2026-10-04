@@ -50,6 +50,8 @@ export class Holdable {
    * opts: { name, verb, backName, backVerb, model (Object3D), home: { pos, rot }, heldPose: { pos, rot },
    *   pick: { pos, size } (the home's E box, world), parts (Object3D[] of the home: hooks …), swing
    *   (rad/s of looking that counts as a use, or 0), cooldown (s), useLabel (touch button text) }
+   * A subclass with `clickIsUse` (weapons, the ball) fires on every left click; the others give a left click to E while
+   * something is in focus and use themselves on a right click (main.js `click`, #443).
    */
   constructor(scene, camera, opts) {
     Object.assign(this, { scene, camera, held: false, t: 0, uses: 0, cool: 0, lastYaw: 0, lastPitch: 0, ...opts });
