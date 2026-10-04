@@ -1105,6 +1105,11 @@ google-chrome --headless=new --use-angle=swiftshader --enable-unsafe-swiftshader
   --virtual-time-budget=30000 --dump-dom http://localhost:8137/tools/touchtest.html
 ```
 
+In a cloud session (no `google-chrome`, cdn.jsdelivr.net blocked): `python3 tools/devserve.py [port] [root]` serves
+the checkout with three.js from the npm tarball (cached in ~/.cache), and Chrome is Playwright's
+`/opt/pw-browsers/chromium --no-sandbox` (same flags as below). Such a VM has ~4 CPUs: run at most ~3 headless test
+runs (agents) at a time, more only slows every one down.
+
 `python3 -m http.server` sends no Cache-Control, so a headless Chrome reusing a profile may serve an *old* copy of a
 module that hasn't changed for a while (heuristic caching) — give each run a fresh `--user-data-dir=$(mktemp -d)`.
 
