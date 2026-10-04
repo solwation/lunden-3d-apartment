@@ -120,6 +120,23 @@ f.onload = async () => {
       const gap = hit ? hit.distance - 0.25 : Infinity;
       pass &= check(gap > 0.04, `${t.name} #${si} (${sp.kind ?? t.rest}): the eye ${gap === Infinity ? 'over nothing within 35 cm' : `${(gap * 100).toFixed(0)} cm over ${hit.object.name || hit.object.material?.name || 'a surface'}`}`);
     }
+    // #335: no two bedding surfaces lie on each other (they flicker on a real GPU): seen from above, the two uppermost
+    // up-facing surfaces of a bed are more than 1.5 mm apart nearly everywhere (where they cross, a ray or two may not be)
+    const beds = [];
+    scene.traverse((o) => { const r = o.userData?.rest; if (r && (r.kind === 'lie' || r.spots?.some((s) => s.kind === 'lie'))) beds.push(o); });
+    for (const bed of beds) {
+      const box = new THREE.Box3().setFromObject(bed), meshes = [], down = new THREE.Vector3(0, -1, 0), n = new THREE.Vector3();
+      bed.traverse((o) => { if (o.isMesh && o.visible) meshes.push(o); });
+      let rays = 0, close = 0;
+      for (let x = box.min.x; x <= box.max.x; x += 0.025) for (let z = box.min.z; z <= box.max.z; z += 0.025) {
+        ray.set(new THREE.Vector3(x, box.max.y + 0.1, z), down); ray.far = 5;
+        const hits = ray.intersectObjects(meshes, false).filter((h) => h.face && n.copy(h.face.normal).transformDirection(h.object.matrixWorld).y > 0);
+        if (hits.length < 2) continue;
+        rays++;
+        if (hits[1].distance - hits[0].distance < 0.0015) close++;
+      }
+      pass &= check(close <= rays * 0.01, `${bed.userData.rest.name} at (${box.getCenter(new THREE.Vector3()).x.toFixed(1)}, ${box.getCenter(new THREE.Vector3()).z.toFixed(1)}): ${close} of ${rays} rays meet two surfaces within 1.5 mm`);
+    }
   }
   // #202: turn your head while seated, get up: you look the same way; the old spot behind you → a spot in front
   {

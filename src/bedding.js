@@ -10,7 +10,7 @@ import * as THREE from 'three';
  * pillow onto something that is not flat (a pillow on a pillow, the edge drooping over the mattress); `dent` =
  * { x, z, r, depth } a hollow where a head has been. UVs are planar metres (x, z), so a print keeps its scale.
  * `uv` = metres per texture repeat; `unitUV`: UVs 0…1 over the face instead (a cushion with a picture on it; v up towards −z).
- * `geo.userData.top(x, z)` gives the top's height at a local point (no pinch), for stacking things on it.
+ * `geo.userData.top(x, z)` gives the top's height at a local point (where the pinched mesh really is), for stacking things on it.
  */
 export function pillow(w, d, h, o = {}) {
   const n = o.seg ?? 14, p = o.p ?? 3.2, pinch = o.pinch ?? 0.05, under = o.under ?? 0.3;
@@ -25,10 +25,18 @@ export function pillow(w, d, h, o = {}) {
     if (dent) y -= dent.depth * Math.exp(-((x - dent.x) ** 2 + (z - dent.z) ** 2) / (dent.r * dent.r));
     return (h * (1 - under) + y) * f;
   };
-  const top = (x, z) => {
-    const u = Math.max(-1, Math.min(1, x / (w / 2))), v = Math.max(-1, Math.min(1, z / (d / 2)));
-    return base(x, z) + rise(x, z, fill(u, v));
+  // (u, v) of the point that the pinch moved to (x, z): what the mesh really has there (#335: stacking on the unpinched
+  // shape put the top pillow's seam into the lower one)
+  const unpinch = (x, z) => {
+    let u = x / (w / 2), v = z / (d / 2);
+    for (let k = 0; k < 6; k++) {
+      const cu = Math.max(-1, Math.min(1, u)), cv = Math.max(-1, Math.min(1, v));
+      u = x / ((w / 2) * (1 - pinch * (1 - cv * cv)));
+      v = z / ((d / 2) * (1 - pinch * 0.7 * (1 - cu * cu)));
+    }
+    return [Math.max(-1, Math.min(1, u)), Math.max(-1, Math.min(1, v))];
   };
+  const top = (x, z) => base(x, z) + rise(x, z, fill(...unpinch(x, z)));
   // vertices bunched towards the seams, where the shape bends most
   const t = (k) => Math.sin((-1 + (2 * k) / n) * Math.PI / 2);
   const pos = [], uv = [], idx = [], topI = [], botI = [];

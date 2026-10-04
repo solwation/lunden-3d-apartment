@@ -109,8 +109,8 @@ f.onload = async () => {
   // counted, hearts), put him on the sofa (a cup can't go there), back in the bed, and F sends him home from the floor
   const { pingping, stats } = w.__app;
   const P = pingping.home.pos.clone();
-  // the mattress top 3.25 + 0.61, the rug under the bed 0.028 (#317), the hotel pillows' meeting edges ~0.04 (#308)
-  pass &= check(Math.abs(P.y - 3.93) < 0.03 && P.x > 5 && P.z > 2 && P.z < 2.6, `Pingping on the hotel pillows between the head pillows (${P.x.toFixed(2)}, ${P.y.toFixed(2)}, ${P.z.toFixed(2)})`);
+  // the mattress top 3.25 + 0.61, the rug under the bed 0.028 (#317), the hotel pillows' meeting edges, the second lying over the first's ~0.08 (#308, #335)
+  pass &= check(Math.abs(P.y - 3.97) < 0.03 && P.x > 5 && P.z > 2 && P.z < 2.6, `Pingping on the hotel pillows between the head pillows (${P.x.toFixed(2)}, ${P.y.toFixed(2)}, ${P.z.toFixed(2)})`);
   const bedStands = [[3.3, 2.3], [3.1, 2.0], [3.3, 2.6]];
   pass &= check(lookAt(P.clone().setY(P.y + 0.2), /ta pingping/i, bedStands), `take him: "${btn.textContent}"`);
   btn.click(); step(1 / 60);

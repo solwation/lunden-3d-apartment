@@ -555,7 +555,7 @@ tools/reloadtest.html  headless test: resume after "Ladda om", F5 starts at STAR
                        the world kept (#277): the car still arriving then parks, a cup of coffee in the hand, the fridge open, lamps,
                        sitting, a bottle put down, the TV, the cat, the game's clock; a new tab fresh at the real time
 tools/resttest.html    headless test: sit on every seat and lie in every bed (spot, no walking, up again looking the same way;
-                       head turned, old spot behind: up in front, #202; every spot ahead / turned, from behind: free floor, #302; in every bed the eye clear of the bedding, #308)
+                       head turned, old spot behind: up in front, #202; every spot ahead / turned, from behind: free floor, #302; in every bed the eye clear of the bedding, #308; no two bedding surfaces within 1.5 mm, #335)
 tools/stucktest.html   headless test (#314): a 5 cm scan of both floors (doors open; the free floor in one piece, pockets out of
                        reach listed), getting up from every seat / bed with the old spot inside it, F putting the sofa / bed back
                        round you, the car parking on you, the hoop rising under you, a door shut on you, a resume record in the bed

@@ -554,7 +554,8 @@ const fittedSheet = (kind) => (fittedMats[kind] ??= new THREE.MeshStandardMateri
  * the ticking). `y` = its top. */
 function addMattress(g, w, h, l, x, y, z, sheet) {
   const r = Math.min(BEDDING.mattressR, h / 2 - 0.005), sh = h * BEDDING.sheetH;
-  g.add(rbox(w - 0.008, h, l - 0.008, x, y - h / 2, z, ticking, r));
+  // the ticking's top 4 mm under the sheet's: level with it, the two flickered through each other (#335)
+  g.add(rbox(w - 0.008, h - 0.004, l - 0.008, x, y - 0.004 - (h - 0.004) / 2, z, ticking, r));
   g.add(rbox(w, sh, l, x, y - sh / 2, z, sheet, r));
 }
 
@@ -606,8 +607,11 @@ function bed(item) {
       let base = () => 0.002;
       if (item.hotel) {
         const P = PILLOWS.hotel, hx = Math.sign(px) * (w / 2 + 0.05 - P.w / 2), hz = z0 + P.d / 2 + 0.005;
-        // its outer edge drapes over the side of the mattress
-        const hg = pillow(P.w, P.d, P.h, { seed: 11 + k, p: 4, under: 0.12, pinch: 0.035, base: (x) => 0.003 - 12 * Math.max(0, Math.abs(hx + x) - w / 2) ** 2 });
+        // its outer edge drapes over the side of the mattress; two 100 cm pillows overlap on a 180 bed, so the second
+        // one's inner edge lies on the first (#335: side by side at the same height their edges cut through each other)
+        const below = hotelTops[0], onSheet = (x) => 0.003 - 12 * Math.max(0, Math.abs(hx + x) - w / 2) ** 2;
+        const hg = pillow(P.w, P.d, P.h, { seed: 11 + k, p: 4, under: 0.12, pinch: 0.035,
+          base: below ? (x, z) => Math.max(onSheet(x), below(x + hx, z + hz) + 0.006) : onSheet });
         const hot = new THREE.Mesh(hg, linen);
         hot.position.set(hx, top, hz);
         hot.castShadow = hot.receiveShadow = true;
@@ -635,7 +639,7 @@ function bed(item) {
     addDuvet(g, duvet, w, 0.52, z0 + 0.6, l - 0.6, BEDDING.double, { seed: 4 });
     for (const px of w > 1.2 ? [-w / 4, w / 4] : [0]) {
       const pil = new THREE.Mesh(pillow(PILLOWS.head.w, PILLOWS.head.d, PILLOWS.head.h, { seed: 5 }), linen);
-      pil.position.set(px, 0.52, z0 + 0.3);
+      pil.position.set(px, 0.523, z0 + 0.3);
       pil.castShadow = pil.receiveShadow = true;
       g.add(pil);
     }
@@ -869,7 +873,7 @@ function bunk(item) {
     addMattress(g, w - 0.02, M.mattress, l - 0.02, 0, mt, 0, fittedSheet(item.sheets ?? 'plain'));
     addDuvet(g, duvet, w - 0.02, mt, -l / 2 + 0.5, l - 0.52, BEDDING.bunk, { seed: 7 + k * 4, uv: 0.8 });
     const pil = new THREE.Mesh(pillow(P.w, P.d, P.h, { seed: 13 + k, uv: 0.8, dent: { x: 0, z: 0.03, r: 0.13, depth: PILLOWS.head.dent } }), item.sheets ? duvet : linen);
-    pil.position.set(0, mt, -l / 2 + 0.01 + P.d / 2);
+    pil.position.set(0, mt + 0.003, -l / 2 + 0.01 + P.d / 2); // its seam 3 mm over the sheet, not in its plane (#335)
     pil.castShadow = pil.receiveShadow = true;
     g.add(pil);
   });
