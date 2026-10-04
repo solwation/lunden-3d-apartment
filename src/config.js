@@ -512,9 +512,10 @@ export const COURTYARD = {
   boule: { x0: -36.4, x1: -33.2, z0: 20.0, z1: 28.8 }, // boulebana: not marked on the plan; the gravel strip with benches facing it (guess)
   // `rot` = the way the seat faces (0 north, −90 east, 90 west). Where the plan draws them: two by the boule court facing
   // east, one by the sandbox facing it, two on the square by the south walk and two in front of Hus A with their backs to
-  // the house (#207), one by the second sandbox
+  // the house (#207), one by the second sandbox. #453: the two in front of Hus A moved along the façade off its north loggias'
+  // parapet openings (the plan's places stood right in front of them), between each loggia and the entrance (guess)
   benches: [{ x: -37.3, z: 22.2, rot: -90 }, { x: -37.3, z: 25.4, rot: -90 }, { x: -21.4, z: 26.4, rot: 90 }, { x: -18.0, z: 32.4, rot: 0 },
-    { x: -14.4, z: 32.4, rot: 0 }, { x: -6.9, z: 28.1, rot: 0 }, { x: 6.6, z: 28.1, rot: 0 }, { x: -55.5, z: 46.2, rot: -90 }],
+    { x: -14.4, z: 32.4, rot: 0 }, { x: -3.4, z: 28.1, rot: 0 }, { x: 4.1, z: 28.1, rot: 0 }, { x: -55.5, z: 46.2, rot: -90 }],
   // #438: sitting on every bench and putting things on every table. `bench`: the spots along a free bench (m from its
   // middle; it is 1.6 long); `pitch`: m between the spots along a pergola bench (the table is 0.7 of the pergola long);
   // `grillTable`: the grill's side table west of the kettle (dx from its middle, size, top height: guess)
@@ -781,7 +782,7 @@ export const PEOPLE = {
   cyclists: [{ a: [-90, -26.4], b: [10, -26.4], speed: 4.5 }, { a: [10, -27.8], b: [-90, -27.8], speed: 5.2 }], // the straight (#257)
   ball: [[-29.0, 20.4], [-24.0, 21.6]],              // two kids passing a ball (on the gravel by the sandbox)
   sandbox: [[-24.6, 25.2], [-23.1, 26.4]],             // kids sitting in the sandbox
-  benches: [{ x: -6.9, z: 28.1, yaw: 180 }, { x: -37.3, z: 22.2, yaw: 90 }], // on COURTYARD.benches: yaw = the bench's rot − 180 (#207)
+  benches: [{ x: -3.4, z: 28.1, yaw: 180 }, { x: -37.3, z: 22.2, yaw: 90 }], // on COURTYARD.benches: yaw = the bench's rot − 180 (#207)
   seatTaken: 0.4, // m: a courtyard bench spot this near a sitter is not offered to the visitor (#438)
   seat: 0.52, // the sitters' hip height: the bench seat (0.46) + the thigh (#243)
   blanket: { x: 0.5, z: 22.4 },                       // on the lawn between the east tree squares (#259)

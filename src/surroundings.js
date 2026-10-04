@@ -718,6 +718,30 @@ function loggiaOpenings(b) {
   return out;
 }
 
+/** The ways in at the ground (#453): each ground-level loggia's parapet opening (next to the flat's wall, #266) and each
+ * entrance recess's mouth at the ground, as lines { kind: 'loggia' | 'entrance', name, x0, z0, x1, z1, n (outwards) } —
+ * nothing outside (the courtyard's benches) may stand in front of them (tools/resttest.html). */
+export function groundWaysIn(blocks = S.blocks.filter((b) => !b.style && b.corners)) {
+  const out = [], P = S.loggia.parapet;
+  for (const b of blocks) {
+    for (const l of cornerLoggias(b)) {
+      const g = frontGround(l);
+      if (!Array.from({ length: b.storeys }, (_, st) => loggiaKind(b, st, b.base + st * S.storey, g)).includes('ground')) continue;
+      out.push(l.lx >= l.lz ? { kind: 'loggia', name: b.name, x0: l.ix - l.sx * P.open, z0: l.cz, x1: l.ix, z1: l.cz, n: [0, -l.sz] }
+        : { kind: 'loggia', name: b.name, x0: l.cx, z0: l.iz - l.sz * P.open, x1: l.cx, z1: l.iz, n: [-l.sx, 0] });
+    }
+    for (const r of b.recesses ?? []) {
+      if (r.door == null) continue;
+      const nz = r.face === 'n' || r.face === 's', o = r.face === 's' || r.face === 'e' ? 1 : -1, line = { n: b.z0, s: b.z1, w: b.x0, e: b.x1 }[r.face];
+      const y = b.base + r.door * S.storey, mid = (r.a0 + r.a1) / 2, g = nz ? groundY(mid, line + o * 0.6) : groundY(line + o * 0.6, mid);
+      if (Math.abs(y - g) > 1.2) continue; // (a door up on a storey over the ground)
+      out.push(nz ? { kind: 'entrance', name: b.name, x0: r.a0, z0: line, x1: r.a1, z1: line, n: [0, o] }
+        : { kind: 'entrance', name: b.name, x0: line, z0: r.a0, x1: line, z1: r.a1, n: [o, 0] });
+    }
+  }
+  return out;
+}
+
 /** A box from the line (xa, za)–(xb, zb), `t` thick towards (nx, nz), y0…y1 — UVs in façade bays / storeys from
  * `base` (for the plain brick tile, #266). */
 function brickBox(xa, za, xb, zb, nx, nz, t, y0, y1, base) {

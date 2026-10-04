@@ -23,10 +23,10 @@ f.onload = async () => {
   await wait(50);
   const V = camera.position.constructor;
   for (let i = 0; i < 3; i++) step(1 / 60);
-  const sitter = people.figs.filter((g) => g.role === 'sit').sort((a, b) => Math.hypot(a.x + 6, a.z - 28.4) - Math.hypot(b.x + 6, b.z - 28.4))[0]; // the bench sitter by the main walk
+  const sitter = people.figs.filter((g) => g.role === 'sit').sort((a, b) => Math.hypot(a.x + 3.4, a.z - 28.4) - Math.hypot(b.x + 3.4, b.z - 28.4))[0]; // the bench sitter in front of Hus A (#453)
   const btn = d.getElementById('action');
   const lookAt = (p) => { const dx = p.x - camera.position.x, dz = p.z - camera.position.z; camera.rotation.set(Math.atan2(p.y - camera.position.y, Math.hypot(dx, dz)), Math.atan2(-dx, -dz), 0, 'YXZ'); };
-  player.spawn(-6, 24.5, 0);
+  player.spawn(-3.4, 24.5, 0);
   for (let i = 0; i < 3; i++) step(1 / 60);
   lookAt(sitter.head.clone().add(new V(0, -0.3, 0)));
   step(1 / 60);

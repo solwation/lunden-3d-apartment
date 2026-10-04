@@ -252,6 +252,8 @@ src/courtyard.js       the courtyard on the garage box (COURTYARD): walks, pergo
                        people.js bench sitter is on is `taken`, and a sitter is away while you sit on its spot), the pergola tables
                        and the grill's side table are put-down surfaces (`surfaces` → world.cupSurfaces); the benches' / tables'
                        collision is `seats` (segments + footprints outside `fixedSegments`, so getting up works as for furniture)
+                       #453: no bench within 1 m of a way in at the ground (surroundings.js `groundWaysIn`: the loggias' parapet
+                       openings, the entrance recesses; resttest checks); Hus A's two north benches stand between loggia and entrance
 src/grill.js           the courtyard's kettle grill (GRILL, #204): E lights it — the lid swings open, flame sprites, glowing coals,
                        sparks, smoke, crackle + roar, a pool light (lights.extra); out by itself after burnSeconds; F keeps it
 src/surroundings.js    the site (SITE): Hus A/B/C + buildings around, roads, paving, the 3 m drop to the park,

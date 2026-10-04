@@ -28,6 +28,23 @@ f.onload = async () => {
   const targets = [...world.furnitureTargets.filter((t) => t.kind === 'rest'), ...court];
   let pass = check(targets.length >= 9, `${targets.length} seats/beds`);
   pass &= check(court.length >= 12 && court.every((t) => t.spots.length >= 3), `#438: ${court.length} courtyard benches, ${court.reduce((n, t) => n + t.spots.length, 0)} spots`);
+  { // #453: no courtyard bench stands in front of a loggia's parapet opening or an entrance at the ground (≥ 1 m clear)
+    const { groundWaysIn } = await w.eval(`import('${new URL('../src/surroundings.js', location)}')`);
+    const { COURTYARD } = await w.eval(`import('${new URL('../src/config.js', location)}')`);
+    const ways = groundWaysIn(), bad = [];
+    for (const b of COURTYARD.benches) {
+      const [hx, hz] = Math.abs(b.rot % 180) === 90 ? [0.3, 0.8] : [0.8, 0.3]; // (as courtyard.js)
+      for (const o of ways) {
+        let dmin = Infinity;
+        for (let t = 0; t <= 1.0001; t += 0.05) {
+          const x = o.x0 + (o.x1 - o.x0) * t, z = o.z0 + (o.z1 - o.z0) * t;
+          dmin = Math.min(dmin, Math.hypot(Math.max(0, Math.abs(x - b.x) - hx), Math.max(0, Math.abs(z - b.z) - hz)));
+        }
+        if (dmin < 1.0) bad.push(`(${b.x}, ${b.z}) ${dmin.toFixed(2)} m from ${o.name}'s ${o.kind} at (${o.x0.toFixed(1)}, ${o.z0.toFixed(1)})`);
+      }
+    }
+    pass &= check(ways.filter((o) => o.kind === 'loggia').length >= 2 && !bad.length, `#453: ${COURTYARD.benches.length} benches clear of ${ways.length} ways in${bad.length ? ': ' + bad.join('; ') : ''}`);
+  }
   const { people } = w.__app, seatTaken = people.seatTaken;
   people.seatTaken = () => false; // (the bench sitters are out by day: every spot first, the sitters at the end)
   const segsOf = (lv) => world.levels[lv].segments;
