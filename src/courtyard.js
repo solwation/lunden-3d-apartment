@@ -5,6 +5,8 @@ import { pavingTexture } from './patio.js';
 import { registerSnow, registerTrees } from './seasons.js';
 import { SEASON } from './config.js';
 import { groundY } from './surroundings.js';
+import { restTarget } from './rest.js';
+import { surfaceBox } from './furniture.js';
 
 // The courtyard on the garage box (#80): stone walks, gravel round the playground (lawn elsewhere, #259), the Borggården's pergola
 // with a dining table and benches (pale timber, vines, string lights and herringbone brick: #149), a grill, sandboxes, a boule court, benches, raised beds,
@@ -26,12 +28,31 @@ function plate(r, y, follow = false) {
 }
 const R = SITE.terrain.ramp;
 const rectSegs = (x0, x1, z0, z1) => [[x0, z0, x1, z0], [x1, z0, x1, z1], [x1, z1, x0, z1], [x0, z1, x0, z0]];
+const rectQuad = (x0, x1, z0, z1) => [[x0, z0], [x1, z0], [x1, z1], [x0, z1]];
+const SEAT_Y = 0.46; // the benches' seat top (the boxes below)
+
+/**
+ * A bench you can sit on (#438): an invisible pick box (the merged mesh can't be the target) turned so local +z is the
+ * way the sitter faces, with rest.js's sit spots (`along` = world points on the seat). Courtyard furniture: F keeps it.
+ */
+function seat(x, z, yaw, size, along, pickY = SEAT_Y) {
+  const o = new THREE.Mesh(new THREE.BoxGeometry(size[0], pickY, size[1]).translate(0, pickY / 2, 0), new THREE.MeshBasicMaterial());
+  o.visible = false;
+  o.position.set(x, 0, z);
+  o.rotation.y = yaw;
+  const c = Math.cos(yaw), s = Math.sin(yaw);
+  o.userData.rest = { kind: 'sit', name: 'bänken', verb: 'sätta dig på',
+    spots: along.map(([wx, wz]) => ({ x: c * (wx - x) - s * (wz - z), y: SEAT_Y, z: s * (wx - x) + c * (wz - z) })) }; // world → local
+  const t = restTarget(o, { x, z, level: 0 }, 0);
+  o.userData.door = t;
+  return o;
+}
 
 /** A bench (1.6 m) at (x, z), the seat facing `rot` degrees (0 = north). */
-function bench(b, wood, metal) {
+function bench(b) {
   const g = [], m = [];
   const L = 1.6, D = 0.42;
-  g.push(box(-L / 2, L / 2, 0.42, 0.46, -D / 2, D / 2), box(-L / 2, L / 2, 0.55, 0.85, -D / 2 - 0.02, -D / 2 + 0.02));
+  g.push(box(-L / 2, L / 2, 0.42, SEAT_Y, -D / 2, D / 2), box(-L / 2, L / 2, 0.55, 0.85, -D / 2 - 0.02, -D / 2 + 0.02));
   for (const x of [-L / 2 + 0.1, L / 2 - 0.1]) m.push(box(x - 0.03, x + 0.03, 0, 0.44, -D / 2, D / 2), box(x - 0.03, x + 0.03, 0.44, 0.85, -D / 2 - 0.03, -D / 2 + 0.01));
   const t = new THREE.Matrix4().makeRotationY(THREE.MathUtils.degToRad(b.rot + 180)).setPosition(b.x, 0, b.z);
   return { wood: g.map((q) => q.applyMatrix4(t)), metal: m.map((q) => q.applyMatrix4(t)) };
@@ -59,6 +80,8 @@ export function buildCourtyard() {
   const geos = { paving: [], gravel: [], sand: [], wood: [], metal: [], soil: [], pergola: [], brick: [] };
   const vines = [], bulbs = []; // climbing plants and string-light bulbs on the pergolas (#149)
   const segments = [];
+  const seats = { segments: [], footprints: [] }, targets = [], surfaces = []; // #438: kept apart from the fixed segments (getting up off a bench)
+  const solid = (x0, x1, z0, z1) => { seats.segments.push(...rectSegs(x0, x1, z0, z1)); seats.footprints.push(rectQuad(x0, x1, z0, z1)); };
   for (const p of C.paths) geos.paving.push(plate(p, 0.006, p.x0 < R.x1 && p.x1 > R.x0 && p.z0 < R.z1 && p.z1 > R.z0));
   for (const g of C.gravel) geos.gravel.push(plate(g, 0.003));
   // pergolas: posts, beams, cross slats; a dining table and two benches under them
@@ -86,12 +109,20 @@ export function buildCourtyard() {
     }
     const cx = (p.x0 + p.x1) / 2, tl = (p.z1 - p.z0) * 0.7, z0 = (p.z0 + p.z1) / 2 - tl / 2;
     geos.wood.push(box(cx - 0.45, cx + 0.45, 0.72, 0.76, z0, z0 + tl)); // a long table
-    for (const s of [-1, 1]) geos.wood.push(box(cx + s * 0.75 - 0.18, cx + s * 0.75 + 0.18, 0.42, 0.46, z0, z0 + tl)); // benches
+    for (const s of [-1, 1]) geos.wood.push(box(cx + s * 0.75 - 0.18, cx + s * 0.75 + 0.18, 0.42, SEAT_Y, z0, z0 + tl)); // benches
     for (const z of [z0 + 0.2, z0 + tl - 0.2]) {
       geos.metal.push(box(cx - 0.4, cx + 0.4, 0, 0.72, z - 0.03, z + 0.03));
       for (const s of [-1, 1]) geos.metal.push(box(cx + s * 0.75 - 0.15, cx + s * 0.75 + 0.15, 0, 0.42, z - 0.03, z + 0.03));
     }
-    segments.push(...rectSegs(cx - 0.95, cx + 0.95, z0, z0 + tl));
+    solid(cx - 0.95, cx + 0.95, z0, z0 + tl);
+    // #438: sit along both benches facing the table, put things on it
+    const n = Math.max(2, Math.round(tl / C.sit.pitch)), along = [...Array(n)].map((_, k) => z0 + (k + 0.5) * tl / n);
+    for (const s of [-1, 1]) {
+      const bx = cx + s * 0.75;
+      const o = seat(bx, z0 + tl / 2, -s * Math.PI / 2, [tl, 0.36], along.map((z) => [bx, z]));
+      group.add(o); targets.push(o.userData.door);
+    }
+    group.add(surfaceBox({ x0: cx - 0.41, x1: cx + 0.41, z0: z0 + 0.04, z1: z0 + tl - 0.04, y: 0.76 }, surfaces));
   }
   // the grill: a black kettle on three legs and a side table
   {
@@ -100,6 +131,13 @@ export function buildCourtyard() {
     geos.metal.push(kettle); // the lid is grill.js's own (it opens when the grill is lit, #204)
     for (let k = 0; k < 3; k++) { const a = (k / 3) * Math.PI * 2; geos.metal.push(box(x + Math.cos(a) * 0.2 - 0.02, x + Math.cos(a) * 0.2 + 0.02, 0, 0.6, z + Math.sin(a) * 0.2 - 0.02, z + Math.sin(a) * 0.2 + 0.02)); }
     segments.push(...rectSegs(x - 0.35, x + 0.35, z - 0.35, z + 0.35));
+    // its side table (#438): slats on a black frame, a place to put things down
+    const T = C.grillTable, tx = x + T.dx, hw = T.w / 2, hd = T.d / 2;
+    for (let k = 0; k < 5; k++) { const sz = z - hd + (k + 0.5) * T.d / 5; geos.wood.push(box(tx - hw, tx + hw, T.h - 0.03, T.h, sz - T.d / 12, sz + T.d / 12)); }
+    for (const [lx, lz] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) geos.metal.push(box(tx + lx * (hw - 0.04) - 0.015, tx + lx * (hw - 0.04) + 0.015, 0, T.h - 0.03, z + lz * (hd - 0.04) - 0.015, z + lz * (hd - 0.04) + 0.015));
+    geos.metal.push(box(tx - hw + 0.03, tx + hw - 0.03, 0.25, 0.27, z - hd + 0.03, z + hd - 0.03)); // a low shelf
+    segments.push(...rectSegs(tx - hw, tx + hw, z - hd, z + hd));
+    group.add(surfaceBox({ x0: tx - hw + 0.03, x1: tx + hw - 0.03, z0: z - hd + 0.03, z1: z + hd - 0.03, y: T.h }, surfaces));
   }
   // sandboxes with a wooden frame, a few toys of colour
   for (const s of C.sandboxes) {
@@ -114,7 +152,14 @@ export function buildCourtyard() {
     geos.wood.push(box(b.x0, b.x1, 0, 0.1, b.z0, b.z0 + 0.08), box(b.x0, b.x1, 0, 0.1, b.z1 - 0.08, b.z1),
       box(b.x0, b.x0 + 0.08, 0, 0.1, b.z0, b.z1), box(b.x1 - 0.08, b.x1, 0, 0.1, b.z0, b.z1));
   }
-  for (const b of C.benches) { const r = bench(b, null, null); geos.wood.push(...r.wood); geos.metal.push(...r.metal); const [hx, hz] = Math.abs(b.rot % 180) === 90 ? [0.3, 0.8] : [0.8, 0.3]; segments.push(...rectSegs(b.x - hx, b.x + hx, b.z - hz, b.z + hz)); }
+  for (const b of C.benches) {
+    const r = bench(b); geos.wood.push(...r.wood); geos.metal.push(...r.metal);
+    const [hx, hz] = Math.abs(b.rot % 180) === 90 ? [0.3, 0.8] : [0.8, 0.3];
+    solid(b.x - hx, b.x + hx, b.z - hz, b.z + hz);
+    const yaw = THREE.MathUtils.degToRad(b.rot + 180), c = Math.cos(yaw), s = Math.sin(yaw); // (as bench(): local +z = the way it faces)
+    const o = seat(b.x, b.z, yaw, [1.6, 0.42], C.sit.bench.map((u) => [b.x + c * u + s * 0.02, b.z - s * u + c * 0.02]), 0.85); // (the pick box up to the back's top)
+    group.add(o); targets.push(o.userData.door);
+  }
   for (const r of C.beds) { geos.wood.push(box(r.x0, r.x1, 0, 0.5, r.z0, r.z1)); geos.soil.push(plate({ x0: r.x0 + 0.05, x1: r.x1 - 0.05, z0: r.z0 + 0.05, z1: r.z1 - 0.05 }, 0.48)); }
 
   // #112: bollards along the walks (a glowing band under the cap), the playhouse, the bike rack
@@ -209,7 +254,7 @@ export function buildCourtyard() {
   bulbs.forEach(([x, y, z], i) => bulb.setMatrixAt(i, m.makeTranslation(x, y, z)));
   group.add(vine, bulb);
   const lit = new THREE.Color(0xffd08a), off = new THREE.Color(0x2a2620); const bollardOff = new THREE.Color(0x8d8b84);
-  return { object: group, segments,
+  return { object: group, segments, seats, targets, surfaces,
     /** night 0 … 1 (with the window lights): the pergola's bulbs glow after dusk (no lights, colour only). */
     update(night) { bulbMat.color.copy(night > 0.35 ? lit : off); bollardGlow.color.copy(night > 0.35 ? lit : bollardOff); } }; // the bollards too (#112)
 }

@@ -454,6 +454,9 @@ scene.add(car.object);
 try { localStorage.removeItem('lunden.bygge'); } catch { /* the removed building-site mode's setting (#209) */ }
 const people = new People(); // walkers, cyclists, kids, neighbours (#114)
 scene.add(people.object);
+// the courtyard's benches (#438): a spot someone sits on is not offered, and nobody turns up on the visitor's own spot
+for (const t of world.courtyardTargets) for (const sp of t.spots) sp.taken = () => people.seatTaken(sp.pos.x, sp.pos.z);
+people.visitorSeat = () => (rest.active ? rest.spot.pos : null);
 const greet = new Greetings(people, camera, document.getElementById('speech'), (p) => behindWall(p)); // say hello to them (#247)
 car.garage = garage; // it lives in the garage, its door opens for it (#358)
 car.ground = (x, z) => (garage.inside(x, z) ? GARAGE.floor : groundY(x, z)); // the drive and Karpvägen slope, the garage's floor
@@ -1266,6 +1269,7 @@ function updateFocus() {
   // the car key only while its cabinet is open
   const extra = [...(cat.visible && !cat.held ? [cat.object] : []), ...(keyCabinet?.keyReachable ? [world.carKey.pickable] : []), ...car.targets(rest.target).map((t) => t.pickable), // our car's doors and front seats (#250)
     ...jetpack.targets(), // the jetpack on its hook / where it was stood down (#359)
+    ...world.courtyardTargets.map((t) => t.pickable), // the courtyard's benches (#438): F keeps them
     ...(world.furnitureOn ? [...(target.object.visible ? [target.target] : []), ...patio.targets, ...world.furnitureTargets, ...holdables.map((h) => h.target), drawing.target, ...posters.targets].map((t) => t.pickable) : [])]; // parasol, TV, seats, beds, toys — unless F hid the furniture
   // the nearest hit on something actually shown (F hides the loose items, the raycaster doesn't care)
   const cupTargets = cups.cups.filter((c) => !c.held && c.state !== 'spare').map((c) => c.target.pickable);

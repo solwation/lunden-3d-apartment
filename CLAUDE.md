@@ -234,7 +234,11 @@ src/toiletpaper.js     toilet-paper holders (#426, TOILET_PAPER): brushed steel 
                        (stats toiletPaper); the roll thins, F puts full rolls back; not loose, nothing saved
 src/ao.js              baked ambient occlusion: distance field → multiply overlay on floor/ceiling (AO)
 src/courtyard.js       the courtyard on the garage box (COURTYARD): walks, pergolas, grill, sandboxes, boule,
-                       benches, raised beds, instanced shrubs; collision for what you can walk into
+                       benches, raised beds, instanced shrubs; collision for what you can walk into. #438: every bench is a seat
+                       (`targets`: invisible pick boxes with rest.js spots, `world.courtyardTargets`, kept with F; a spot a
+                       people.js bench sitter is on is `taken`, and a sitter is away while you sit on its spot), the pergola tables
+                       and the grill's side table are put-down surfaces (`surfaces` → world.cupSurfaces); the benches' / tables'
+                       collision is `seats` (segments + footprints outside `fixedSegments`, so getting up works as for furniture)
 src/grill.js           the courtyard's kettle grill (GRILL, #204): E lights it — the lid swings open, flame sprites, glowing coals,
                        sparks, smoke, crackle + roar, a pool light (lights.extra); out by itself after burnSeconds; F keeps it
 src/surroundings.js    the site (SITE): Hus A/B/C + buildings around, roads, paving, the 3 m drop to the park,

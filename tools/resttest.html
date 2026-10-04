@@ -24,8 +24,12 @@ f.onload = async () => {
   await wait(50);
   const btn = d.getElementById('action');
   world.object.updateMatrixWorld(true); // no render has run yet in headless
-  const targets = world.furnitureTargets.filter((t) => t.kind === 'rest');
+  const court = world.courtyardTargets ?? []; // the courtyard's benches (#438): sat on and got up from like the furniture
+  const targets = [...world.furnitureTargets.filter((t) => t.kind === 'rest'), ...court];
   let pass = check(targets.length >= 9, `${targets.length} seats/beds`);
+  pass &= check(court.length >= 12 && court.every((t) => t.spots.length >= 3), `#438: ${court.length} courtyard benches, ${court.reduce((n, t) => n + t.spots.length, 0)} spots`);
+  const { people } = w.__app, seatTaken = people.seatTaken;
+  people.seatTaken = () => false; // (the bench sitters are out by day: every spot first, the sitters at the end)
   const segsOf = (lv) => world.levels[lv].segments;
   const inQuad = (q, x, z) => { let p = 0, n = 0; for (let i = 0; i < 4; i++) { const [ax, az] = q[i], [bx, bz] = q[(i + 1) % 4], c = (bx - ax) * (z - az) - (bz - az) * (x - ax); if (c > 0) p++; else if (c < 0) n++; } return !(p && n); };
   const feetOf = (lv) => world.levels[lv].footprints ?? []; // furniture footprints (#302): their middle is far from every edge
@@ -224,6 +228,26 @@ f.onload = async () => {
     }
     pass &= check(dining.length >= 24 && dining.every(Boolean), `#302: ${dining.length} get-ups from the 4 dining chairs, all on free floor`);
     pass &= check(bad === 0, `#302: ${n - bad} / ${n} get-ups (every seat and bed, ahead and turned, from behind) on free floor, able to walk away`);
+  }
+  // #438: a spot a bench sitter is on is not offered (the next one along is), and nobody turns up on the visitor's spot
+  {
+    const THREE = await w.eval("import('three')"), { chooseSpot } = await w.eval("import('../src/rest.js')");
+    const near = (sp, f) => Math.hypot(sp.pos.x - f.x, sp.pos.z - f.z) < 0.1;
+    const sitters = people.figs.filter((f) => f.role === 'sit');
+    for (const f of sitters) {
+      const t = court.find((x) => x.spots.some((sp) => near(sp, f))), sp = t?.spots.find((s) => near(s, f));
+      people.seatTaken = () => false;
+      const label = t && sitOn(t, sp); for (let i = 0; i < 60; i++) step(1 / 60);
+      people.update(1 / 60, 1, 6, player); // by day
+      const away = !!f.away && rest.spot === sp;
+      standUp(); for (let i = 0; i < 3; i++) step(1 / 60);
+      people.seatTaken = seatTaken; people.update(1 / 60, 1, 6, player); // by day, the visitor up again: the sitter is back
+      const ray = new THREE.Ray(sp.pos.clone().setY(sp.pos.y + 1), new THREE.Vector3(0, -1, 0));
+      const other = chooseSpot(t, ray, null);
+      pass &= check(!!label && away && sp.taken() && other && other !== sp, `#438: the sitter at (${f.x}, ${f.z}): sat there with nobody on the lap ${away}, then taken ${sp?.taken()}, the look picks the spot beside it ${other && other !== sp}`);
+    }
+    pass &= check(sitters.length >= 1, `#438: ${sitters.length} bench sitters`);
+    people.seatTaken = () => false;
   }
   // #184: things within reach while sitting — the remote from the sofa, the book from the armchair
   const { remote, book, heldItem } = w.__app;

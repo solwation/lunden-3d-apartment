@@ -26,10 +26,11 @@ export function restTarget(obj, item, levelFloor) {
     get verb() { return this.verbText; } };
 }
 
-/** The spot a look ray points at (nearest to the ray), skipping ones the cat sits on. */
+/** The spot a look ray points at (nearest to the ray), skipping ones the cat sits on (or someone else, `taken`, #438). */
 export function chooseSpot(target, ray, catPos) {
   let best = null, bestD = Infinity;
   for (const sp of target.spots) {
+    if (sp.taken?.()) continue;
     if (catPos && Math.hypot(catPos.x - sp.pos.x, catPos.z - sp.pos.z) < 0.35 && Math.abs(catPos.y - (sp.pos.y - 0.6)) < 0.6) continue;
     const d = ray.distanceSqToPoint(sp.aimPos ?? sp.pos);
     if (d < bestD) { bestD = d; best = sp; }

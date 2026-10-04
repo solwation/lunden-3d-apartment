@@ -118,6 +118,11 @@ export class People {
   /** The figures that can be greeted now (#247): daytime, shown. */
   get greetable() { return this.group.visible ? this.figs.filter((f) => f.shown && f.head) : []; }
 
+  /** Is someone sitting at (x, z) (#438: the courtyard's bench spots)? Only while the people are out. */
+  seatTaken(x, z) {
+    return this.group.visible && this.figs.some((f) => f.role === 'sit' && !f.away && Math.hypot(f.x - x, f.z - z) < P.seatTaken);
+  }
+
   /** Figure `f` answers a greeting from (x, z) (#247): it waves for `secs`; a walker stops and turns to face you. */
   answer(f, x, z, secs) {
     f.greetT = secs;
@@ -182,7 +187,10 @@ export class People {
         const dig = Math.sin(this.clock * 2 + f.phase);
         this.pose(i, f, f.x, -0.32, f.z, f.yaw, { hip: 0.62, legL: -1.4, legR: -1.3, armL: -0.9 + dig * 0.4, armR: -0.6 });
       } else if (f.role === 'sit') {
-        this.pose(i, f, f.x, P.seat - 0.9 * f.s, f.z, THREE.MathUtils.degToRad(f.yaw), { legL: -1.5, legR: -1.42, kneeL: 1.4, kneeR: 1.25, armL: -0.3, armR: -0.25 }); // hips on the seat, shins down in front (#243)
+        const v = this.visitorSeat?.(); // the visitor sits there (#438): nobody turns up on their lap
+        f.away = !!v && Math.hypot(v.x - f.x, v.z - f.z) < P.seatTaken;
+        if (f.away) this.pose(i, f, f.x, -5, f.z, 0, {});
+        else this.pose(i, f, f.x, P.seat - 0.9 * f.s, f.z, THREE.MathUtils.degToRad(f.yaw), { legL: -1.5, legR: -1.42, kneeL: 1.4, kneeR: 1.25, armL: -0.3, armR: -0.25 }); // hips on the seat, shins down in front (#243)
       } else if (f.role === 'lie') {
         // on her back on the blanket, an arm behind the head (out of sight in winter, with the blanket)
         if (this.blanket.visible) this.pose(i, f, f.x, 0.12, f.z + 0.8, 0, { lean: -Math.PI / 2, armL: -2.8 + Math.sin(this.clock * 0.5) * 0.1, armR: 0.1 });

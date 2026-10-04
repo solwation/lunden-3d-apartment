@@ -801,8 +801,9 @@ export function buildWorld(plan) {
   const setFurniture = (on) => {
     for (const o of looseItems) o.visible = on;
     levels.forEach((l, i) => {
-      l.segments = on ? [...fixed[i], ...furniture.segments[i]] : fixed[i];
-      l.footprints = on ? furniture.footprints[i] : []; // the furniture's floor rectangles: no getting up inside one (#302)
+      const court = i === 0 ? courtyard.seats : { segments: [], footprints: [] }; // the courtyard's benches + tables (#438): F keeps them
+      l.segments = [...fixed[i], ...court.segments, ...(on ? furniture.segments[i] : [])];
+      l.footprints = [...court.footprints, ...(on ? furniture.footprints[i] : [])]; // the furniture's floor rectangles: no getting up inside one (#302)
     });
   };
   setFurniture(true);
@@ -811,10 +812,11 @@ export function buildWorld(plan) {
     object: scene,
     setFurniture,
     looseItems, // hidden by F (main.js may add more)
-    cupSurfaces: [...furniture.surfaces, ...kitchenSurfaces, ...sillSurfaces], // table tops a cup can be put on (#90), the window boards (#185)
+    cupSurfaces: [...furniture.surfaces, ...kitchenSurfaces, ...sillSurfaces, ...courtyard.surfaces], // table tops a cup can be put on (#90), the window boards (#185)
     cupCabinet,
     things: [...furniture.things, ...shelves.userData.plants], // bottles, glasses, pot plants main.js turns into Holdables (#152, #185)
     sillPlants, // the window boards' pots (main.js makes each one a Holdable, #185)
+    courtyardTargets: courtyard.targets, // the courtyard's benches to sit on (#438): kept with F
     furnitureTargets: furniture.interactives, // E targets among the furniture (the TV), hidden with F
     /** Collision of moving furniture parts (the secretary's open flap, #118) on `level`. */
     movingSegments(level) {

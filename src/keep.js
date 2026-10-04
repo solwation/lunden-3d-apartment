@@ -249,7 +249,7 @@ const PARTS = {
       const stand = st && [st.x, st.y, st.z, st.yaw].every(Number.isFinite) ? [r3(st.x), r3(st.y), r3(st.z), r3(st.yaw)] : null;
       const seat = car.seats.indexOf(rest.target);
       if (seat >= 0) return { car: seat, stand };
-      const list = world.furnitureTargets.filter((t) => t.kind === 'rest');
+      const list = [...world.furnitureTargets, ...(world.courtyardTargets ?? [])].filter((t) => t.kind === 'rest'); // + the courtyard's benches (#438)
       const i = list.indexOf(rest.target);
       if (i < 0) return null;
       return { t: keys(list, restKey)[i], spot: rest.target.spots.indexOf(rest.spot), stand };
@@ -258,7 +258,7 @@ const PARTS = {
       if (!Array.isArray(s.stand) || s.stand.length !== 4 || !s.stand.every(Number.isFinite)) return;
       let target = null;
       if (Number.isInteger(s.car)) { target = a.car.seats[s.car]; if (!target || !a.car.parked) return; }
-      else target = byKey(a.world.furnitureTargets.filter((t) => t.kind === 'rest'), restKey).get(s.t);
+      else target = byKey([...a.world.furnitureTargets, ...(a.world.courtyardTargets ?? [])].filter((t) => t.kind === 'rest'), restKey).get(s.t);
       const spot = target?.spots[Number.isInteger(s.car) ? 0 : s.spot];
       if (!spot) return;
       const [x, y, z, yaw] = s.stand;

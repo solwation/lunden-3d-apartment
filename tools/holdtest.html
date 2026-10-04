@@ -63,6 +63,15 @@ f.onload = async () => {
   pass &= check(!heldItem() && cup.state === 'placed' && Math.abs(cup.model.position.y - 0.71) < 0.01, `the cup on the café table (y ${cup.model.position.y.toFixed(3)})`);
   pass &= check(lookAt(cupAt(), /ta koppen/i, [[3.9, -1.6], [3.4, -1.5], [4.4, -1.5]]), `and taken again: "${btn.textContent}"`);
   btn.click(); step(1 / 60);
+  // on the courtyard's long table under the pergola and the grill's side table (#438)
+  for (const [name, top, stands] of [['the pergola table', { x: -16.45, y: 0.76, z: 24.5 }, [[-17.6, 24.5], [-17.6, 24.0], [-17.6, 25.0]]],
+    ['the grill\'s side table', { x: -21.47, y: 0.8, z: 20.27 }, [[-22.3, 20.27], [-22.2, 20.7], [-22.2, 19.8]]]]) {
+    pass &= check(lookAt(top, /ställa ner koppen här/i, stands), `${name}: "${btn.textContent}"`);
+    btn.click(); step(1 / 60);
+    pass &= check(!heldItem() && cup.state === 'placed' && Math.abs(cup.model.position.y - top.y) < 0.01, `the cup on ${name} (y ${cup.model.position.y.toFixed(3)})`);
+    pass &= check(lookAt(cupAt(), /ta koppen/i, stands), `and taken again: "${btn.textContent}"`);
+    btn.click(); step(1 / 60);
+  }
   const coffee = { x: 3.64, y: 0.47, z: 10.56 };
   pass &= check(lookAt(coffee, /ställa ner koppen här/i, [[3.6, 9.4], [3.0, 9.6], [4.4, 9.5]]), `coffee table: "${btn.textContent}"`);
   btn.click(); step(1 / 60);

@@ -515,6 +515,11 @@ export const COURTYARD = {
   // the house (#207), one by the second sandbox
   benches: [{ x: -37.3, z: 22.2, rot: -90 }, { x: -37.3, z: 25.4, rot: -90 }, { x: -21.4, z: 26.4, rot: 90 }, { x: -18.0, z: 32.4, rot: 0 },
     { x: -14.4, z: 32.4, rot: 0 }, { x: -6.9, z: 28.1, rot: 0 }, { x: 6.6, z: 28.1, rot: 0 }, { x: -55.5, z: 46.2, rot: -90 }],
+  // #438: sitting on every bench and putting things on every table. `bench`: the spots along a free bench (m from its
+  // middle; it is 1.6 long); `pitch`: m between the spots along a pergola bench (the table is 0.7 of the pergola long);
+  // `grillTable`: the grill's side table west of the kettle (dx from its middle, size, top height: guess)
+  sit: { bench: [-0.5, 0, 0.5], pitch: 0.7 },
+  grillTable: { dx: -0.62, w: 0.5, d: 0.45, h: 0.8 },
   beds: [{ x0: -68.9, x1: -67.1, z0: 41.4, z1: 42.6 }, { x0: -68.9, x1: -67.1, z0: 43.5, z1: 44.8 }, { x0: -68.9, x1: -67.1, z0: 45.7, z1: 46.9 },
     { x0: -68.9, x1: -67.1, z0: 47.9, z1: 49.1 }], // odlingslådor
   // shrubs and perennials on the green between Hus A and B (park level; the plan shows lawn on the box)
@@ -777,6 +782,7 @@ export const PEOPLE = {
   ball: [[-29.0, 20.4], [-24.0, 21.6]],              // two kids passing a ball (on the gravel by the sandbox)
   sandbox: [[-24.6, 25.2], [-23.1, 26.4]],             // kids sitting in the sandbox
   benches: [{ x: -6.9, z: 28.1, yaw: 180 }, { x: -37.3, z: 22.2, yaw: 90 }], // on COURTYARD.benches: yaw = the bench's rot − 180 (#207)
+  seatTaken: 0.4, // m: a courtyard bench spot this near a sitter is not offered to the visitor (#438)
   seat: 0.52, // the sitters' hip height: the bench seat (0.46) + the thigh (#243)
   blanket: { x: 0.5, z: 22.4 },                       // on the lawn between the east tree squares (#259)
   loftgang: [[-29.44, 1.0], [-8.88, 1.1]],          // neighbours standing on the loftgång (våning 3)
