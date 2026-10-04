@@ -91,6 +91,22 @@ export function onRoad(x, z, margin = 0, skip = null) {
   return false;
 }
 
+/** Is (x, z) on a path road's pavement (`walks`), widened by `margin`? (#435: the trees keep off them.) */
+export function onWalk(x, z, margin = 0) {
+  for (const r of SITE.roads) {
+    if (!r.path || !r.walks) continue;
+    const S = samples(r);
+    for (let k = 1; k < S.length; k++) {
+      const a = S[k - 1], b = S[k], dx = b.x - a.x, dz = b.z - a.z, l = Math.hypot(dx, dz) || 1;
+      const t = ((x - a.x) * dx + (z - a.z) * dz) / (l * l);
+      if (t < 0 || t > 1) continue;
+      const d = ((x - a.x) * -dz + (z - a.z) * dx) / l, half = (a.w + (b.w - a.w) * t) / 2; // + = right of the direction
+      if (r.walks.some((wk) => d * wk.side > half - margin && d * wk.side < half + wk.w + margin)) return true;
+    }
+  }
+  return false;
+}
+
 /** The point on a path road nearest (x, z): its distance along the road. */
 export function nearestS(road, x, z) {
   let best = Infinity, s = 0;

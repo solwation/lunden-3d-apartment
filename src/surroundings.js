@@ -3,7 +3,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { SITE as S, COLORS, SEASON, COURTYARD } from './config.js';
 import { registerTrees, registerSnow } from './seasons.js';
 import { buildStreet } from './street.js';
-import { onRoad, pathStrip, filletGeometry } from './roads.js';
+import { onRoad, onWalk, pathStrip, filletGeometry } from './roads.js';
 import { wallRect } from './roofs.js';
 
 // The rest of Kv. Lunden and its neighbourhood (SITE in config): the brick point blocks Hus A, B, C
@@ -916,6 +916,9 @@ function roof(b) {
   return geo; // ExtrudeGeometry is already non-indexed
 }
 
+/** Every tree's foot as built: [{ x, z, kind }] (tools/terraintest.html: none on asphalt or paving, #435). */
+export const treeFeet = [];
+
 function trees(rand) {
   // the trees the situation plan draws in the courtyard and the green (COURTYARD.trees), then the areas;
   // young street maples are slim, the big old trees by the school have broad crowns of several lobes (#130)
@@ -924,7 +927,7 @@ function trees(rand) {
     for (let i = 0; i < area.n; i++) {
       const x = area.x0 + rand() * (area.x1 - area.x0), z = area.z0 + rand() * (area.z1 - area.z0);
       if (S.blocks.some((b) => x > b.x0 - 2 && x < b.x1 + 2 && z > b.z0 - 2 && z < b.z1 + 2)) continue;
-      if (onRoad(x, z, 1)) continue;
+      if (onRoad(x, z, 1) || onWalk(x, z, 0.5)) continue; // nor on a pavement (#435)
       if (area.skip?.some(([a, b]) => x > a && x < b)) continue; // a drive (#260)
       if (z > S.river.z0 - 2 && z < S.river.z1 + 2) continue;
       if (T.box.some((b) => Math.min(Math.abs(x - b.x0), Math.abs(x - b.x1)) < 1.5 && z > b.z0 && z < b.z1)) continue; // not on a retaining wall
@@ -934,7 +937,9 @@ function trees(rand) {
   }
   for (const [x, z, s] of S.bigTrees) spots.push({ x, z, y: groundY(x, z), s, kind: 'big' });
   for (const [x, z] of S.vergeTrees) spots.push({ x, z, y: groundY(x, z), s: 0.8 + rand() * 0.3, kind: 'tree' }); // by Karpvägen (#257)
-  for (const [x, z, s] of S.life.trees) spots.push({ x, z, y: groundY(x, z), s, kind: 'tree' }); // the bike yard's, by Hus L's east end (#260)
+  for (const [x, z, s] of S.life.trees) spots.push({ x, z, y: groundY(x, z), s, kind: 'tree' }); // the bike yard's + one by the road (#260, #435)
+  treeFeet.length = 0;
+  treeFeet.push(...spots.map(({ x, z, kind }) => ({ x, z, kind })));
   // crowns: one per tree, three to five lobes per big tree, an ellipsoid per young maple
   const lobes = [];
   const trunkM = [], birchM = [], m = new THREE.Matrix4(), q = new THREE.Quaternion();

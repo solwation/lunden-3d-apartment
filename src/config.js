@@ -422,7 +422,8 @@ export const SITE = {
     bikePlace: { x0: -59.1, x1: -53, z0: 1.2, z1: 8.5 },                              // lighter paving
     // racks along z at x, the bikes along x pointing `dir` (front wheel in the rack), `n` from z0 at `gap` m
     racks: [{ x: -58.7, z0: 1.6, n: 9, gap: 0.75, dir: -1 }, { x: -53.4, z0: 1.6, n: 9, gap: 0.75, dir: 1 }],
-    trees: [[-62.5, 3.4, 0.75], [-63.3, 6.0, 0.4], [-61.4, 7.6, 0.45], [9.9, -7.4, 0.45]], // [x, z, size]; the last by Hus L's east end
+    trees: [[-62.5, 3.4, 0.75], [-63.3, 6.0, 0.4], [-61.4, 7.6, 0.45], [15.2, -19.6, 0.45]], // [x, z, size]; the last in the planting strip
+    // by the road past the hedge's east end (#435: it stood on the car park's asphalt in front of Hus L's east end)
   },
   // asphalt (y follows the ground: the street level north of Hus L and on the garage box, park level around it).
   // src/roads.js: a rectangle, a centre line (`path`: [x, z, r] — the corner at that point rounded to radius r; `w` = the

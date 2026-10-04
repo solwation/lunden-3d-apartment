@@ -133,6 +133,16 @@ async function run() {
   check(jumps === 0, `walkable ground in OUTDOOR is continuous (${pairs} pairs 5 cm apart): ${jumps} unguarded steps ${jumpAt}`);
   check(PLAYER.stepUp > 0.05, 'the 5 cm tolerance is below the visitor\'s step-up');
 
+  // #435: no tree stands on asphalt or paving (roads, their pavements, the paved rectangles, the bike yard outside its lawns)
+  const { treeFeet } = await w.eval(`import('${new URL('../src/surroundings.js', location)}')`);
+  const { onRoad, onWalk } = await w.eval(`import('${new URL('../src/roads.js', location)}')`);
+  const inRect = (r, x, z, m = 0) => x > r.x0 - m && x < r.x1 + m && z > r.z0 - m && z < r.z1 + m;
+  const L = SITE.life;
+  const paved = (x, z) => onRoad(x, z, 0.3) || onWalk(x, z, 0.3) || SITE.paving.some((r) => inRect(r, x, z, 0.3))
+    || (inRect(L.yard, x, z) && !L.lawns.some(([x0, x1, z0, z1]) => inRect({ x0, x1, z0, z1 }, x, z)));
+  const onHard = treeFeet.filter((t) => paved(t.x, t.z));
+  check(treeFeet.length > 50 && onHard.length === 0, `no tree on asphalt or paving (${treeFeet.length} trees): ${onHard.map((t) => `${t.kind} (${t.x.toFixed(1)}, ${t.z.toFixed(1)})`).join(' ')}`);
+
   out.textContent = lines.join('\n') + `\n${pass ? 'ALL PASS' : 'SOME FAILED'}`;
 }
 </script>
