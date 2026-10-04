@@ -289,7 +289,7 @@ function toiletAgainstWall(tank, bowl, wallBoxes) {
  * sash opens outwards with E (#103, #272): hinged along its head, the bottom swings out; `out` = ±1 the way out along
  * z. `split` (the living room): an off-centre mullion, the sash takes that share of the width on side `opens`
  * ('a' = x0, 'b' = x1), the other side is a fixed pane. Returns the Openables. */
-function addWindowFrame(group, x0, x1, fz, y0, y1, transom, out = -1, opens = true, { split = 0, opens: side = 'a' } = {}) {
+function addWindowFrame(group, x0, x1, fz, y0, y1, transom, out = -1, opens = true, { split = 0, opens: side = 'a', max = WINDOW_TOP_HUNG_MAX } = {}) {
   const ft = 0.06, d = 0.05;
   const z0 = fz - d, z1 = fz + d;
   group.add(box(x0, x1, z0, z1, y0, y0 + ft, M.frame));
@@ -323,7 +323,7 @@ function addWindowFrame(group, x0, x1, fz, y0, y1, transom, out = -1, opens = tr
   pivot.add(sash, pane);
   group.add(pivot);
   // top-hung: turning +y about +x sends the bottom towards −z
-  const o = new Openable({ name: 'fönstret', object: pivot, mode: 'flap', axis: [1, 0, 0], sign: -out, max: WINDOW_TOP_HUNG_MAX, speed: 1.6 });
+  const o = new Openable({ name: 'fönstret', object: pivot, mode: 'flap', axis: [1, 0, 0], sign: -out, max, speed: 1.6 }); // (`max`: a per-window stop, #429)
   o.normal = new THREE.Vector3(0, 0, -out); // the room side (tests stand there)
   const toggle = o.toggle.bind(o), at = new THREE.Vector3((a + b) / 2, (lo + hi) / 2, zo);
   o.toggle = () => { toggle(); o.wind?.stop(); o.wind = o.isOpen ? sfx.wind(at) : null; }; // the wind blows in while it is open

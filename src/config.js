@@ -126,7 +126,9 @@ export const EXT_DOOR_HEAD = 2.6;
 export const WINDOW_TOP_HUNG_MAX = 40;
 export const WINDOWS = [
   { level: 0, facade: 'north', x: 3.85, sill: 0.8, head: 2.6, transom: 0.45, blind: 'light' }, // Kök/matplats
-  { level: 0, facade: 'south', x: 3.85, sill: 0.6, head: 2.6, transom: 0.45, split: 0.35, opens: 'a', blind: 'light' }, // Vardagsrum
+  // #429 (the user's choice): the Verona sofa's westernmost back stands 6 cm out from the façade under the sash, so the
+  // sash opens only `max`° (its bottom then ~1 cm short of the back's top rail at z 12.76, patiotest checks it)
+  { level: 0, facade: 'south', x: 3.85, sill: 0.6, head: 2.6, transom: 0.45, split: 0.35, opens: 'a', max: 4, blind: 'light' }, // Vardagsrum
   { level: 1, facade: 'north', x: 1.80, sill: 0.9, head: 2.25, transom: 0, blind: 'dark' },   // Sovrum 3
   { level: 1, facade: 'north', x: 3.85, sill: 0.7, head: 2.25, transom: 0, blind: 'dark' },   // Sovrum 1
   { level: 1, facade: 'south', x: 1.45, sill: 0.7, head: 2.4, transom: 0.4, blind: 'dark' },  // Allrum = Sovrum 4 (Tilly)
@@ -2130,9 +2132,10 @@ export const PATIO = {
   // Rusta "Loungemodul Verona" (#408, docs/utesoffa-rusta-verona.jpg, the family's own: docs/utesoffa-verona-utan-dynor.jpg):
   // one module 68.5 × 66 × 67 cm (W × D × H, rusta.se); the rest *guess* from the photos: a square steel tube `tube`, the
   // seat frame's top `base`, seat cushions `seatT` thick, back cushions `backH` × `backT`, arm height `arm`, a divan
-  // (backless, no arms) `divanL` long; dark brown-black steel `frame`, wide flat slats, beige / sand `cushion`
+  // (backless, no arms) `divanL` long; dark brown-black steel `frame`, wide flat slats, beige / sand `cushion`. #429: the two
+  // divans end to end make one long bench; its seats at `bench` (fractions of its length from the north end, our pick)
   verona: { W: 0.685, D: 0.66, H: 0.67, tube: 0.04, base: 0.3, seatT: 0.12, backH: 0.45, backT: 0.14, arm: 0.55, divanL: 1.3,
-    frame: 0x2b2522, cushion: 0xd8ccb0 },
+    bench: [0.17, 0.5, 0.83], frame: 0x2b2522, cushion: 0xd8ccb0 },
   // the small low table from the family's photo (#408): black steel frame, dark wooden slats; 60 × 45 × 40 cm *guess*
   slatTable: { w: 0.6, d: 0.45, h: 0.4, slats: 5, frame: 0x221f1d, wood: 0x3d3029 },
   parasol: { radius: 1.5, height: 2.45, color: 0xe8e1d1, months: [4, 5, 6, 7, 8, 9] },
@@ -2144,15 +2147,20 @@ export const PATIO = {
   dynbox: { L: 1.25, D: 0.58, H: 0.6, lid: 0.035, wall: 0.025, slat: 0.07, max: 88, color: 0x3d4043 },
   // cosy outdoor cushions in the lounge sofa (#399, colours and places our pick; 45 × 45, the lumbar 50 × 30, *guess*),
   // since #408 on the Verona sofa, in its local frame: the back row along x centred on 0 (module centres ±0.3425,
-  // ±1.0275; the westernmost, −x, has no back), the back cushions' front at z −0.15, +z = south. `yaw` turns the face
-  // (0 = +z, π/2 = +x), `lean` back; `flat` = lying on the west divan. Out on the sofa in the parasol's months unless it
+  // ±1.0275; since #429 every module has its back), the back cushions' front at z −0.15, +z = south. `yaw` turns the face
+  // (0 = +z, π/2 = +x), `lean` back. Out on the sofa in the parasol's months unless it
   // rains, else in the cushion box (Patio.update)
   cushions: [
     { x: 1.17, z: -0.06, yaw: -0.6, lean: 0.35, kind: 'weave', color: 0xc9952f, crumple: 0.45 },                  // ochre, in the corner by the east arm
     { x: 0.0, z: -0.07, yaw: 0.05, lean: 0.4, kind: 'stripe', color: 0xf2ede2, crumple: 0.3 },                     // off-white striped, between two seats
     { x: 0.685, z: -0.08, yaw: -0.05, lean: 0.3, kind: 'weave', color: 0x8ea488, size: 0.3, w: 0.5, crumple: 0.3 }, // a sage lumbar, between the next two
     { x: -0.48, z: -0.06, yaw: 0.45, lean: 0.4, kind: 'weave', color: 0xb35a3c, crumple: 0.35 },                   // terracotta, at the backs' west end
-    { x: -1.03, z: 1.35, yaw: 0.3, flat: true, kind: 'stripe', color: 0xe7d8b8, crumple: 0.4 },                    // a sand striped one on the west divan
+    // #429: standing on the long bench against the east screen wall (`wall`): `x` along the bench from its north end
+    // (0…2.6, +z), `z` out from the bench's outer edge (the screen-wall side), `yaw` 0 = facing west (into the seat)
+    { wall: true, x: 0.3, z: 0.12, yaw: 0.35, lean: 0.35, kind: 'stripe', color: 0xe7d8b8, crumple: 0.4 },          // sand striped, in the corner
+    { wall: true, x: 0.95, z: 0.11, yaw: -0.05, lean: 0.3, kind: 'weave', color: 0x6f8a96, crumple: 0.35 },         // dusty blue
+    { wall: true, x: 1.65, z: 0.1, yaw: 0.05, lean: 0.3, kind: 'weave', color: 0x8ea488, size: 0.3, w: 0.5, crumple: 0.3 }, // a sage lumbar
+    { wall: true, x: 2.3, z: 0.11, yaw: -0.3, lean: 0.35, kind: 'weave', color: 0xc9952f, crumple: 0.45 },          // ochre, at the south end
   ],
   // the snowman stands just beyond the gap in the hedge, in view from the patio door and the sofa (#73)
   snowman: { x: 1.4, z: 18.4, months: [12, 1, 2] },
@@ -2492,19 +2500,19 @@ export const FURNITURE = [
   { type: 'rug', level: 0, x: 3.9, z: 10.6, w: 3.0, d: 2.0, h: 0.012, color: '#5a6150', stripe: '#e6e1d6', pitch: 0.062, white: 0.022,
     fields: ['ewn', 'nes'] },
   // Uteplats (paved z 12.75–16.8 in front of the hedge, see PATIO). The family's Rusta Verona lounge (#408, replacing the
-  // Plantagen Oslo set of #397 / #407), the user's layout: a U. Four modules in a row (x 2.92–5.66) with their backs to the
-  // façade under the living-room window (6 cm of air), the east end in the NE corner by the east screen wall (inner face
-  // x 5.68), seats facing south (the patio faces WSW); the westernmost module has no back (a pouf), so the window's
-  // opening sash (the west 35 %, x ≤ 3.53, bottom 0.65 m up) swings free over it. A divan in front of each end module,
-  // pointing south: the east one along the east screen wall, the west one free-standing. The arm only at the east end.
+  // Plantagen Oslo set of #397 / #407), the user's layout (#429): an L. Four modules in a row (x 2.92–5.66) with their backs
+  // to the façade under the living-room window (6 cm of air), the east end in the NE corner by the east screen wall (inner
+  // face x 5.68), seats facing south (the patio faces WSW), an arm at each end; every module has its back, so the window's
+  // opening sash (the west 35 %, x ≤ 3.53) stops against the westernmost back (WINDOWS `max`). Both divans end to end
+  // along the east screen wall from the row's east module (z 13.42–16.02): one long bench, cushions against the wall.
   { type: 'veronasofa', level: 0, x: 5.66 - 2 * 0.685, z: 12.76 + 0.66 / 2, rot: 180 },
-  // the small slatted table in the middle of the U (0.39 m to each divan), 0.6 m in front of the row's seats: room to get up
-  // from the east end seat (behind the east divan) and step out west past the table's north side (#302)
-  { type: 'slattable', level: 0, x: 5.66 - 2 * 0.685, z: 12.76 + 0.66 + 0.605 + 0.45 / 2, rot: 180, beers: true },
+  // the small slatted table in the L's corner: 0.6 m in front of the row's seats, 0.475 m from the bench's seat front (x 4.975):
+  // room to get up from every seat and step out past it (#302)
+  { type: 'slattable', level: 0, x: 4.2, z: 12.76 + 0.66 + 0.605 + 0.45 / 2, rot: 180, beers: true },
   // the parasol shades the sofa corner from the afternoon / evening sun (#398): the sun reaches the patio from the
   // south-east of the plan at noon to the west-south-west in the evening (DAY.planNorth); the pole south of the table,
   // the canopy (radius 1.5) leaning `tilt`° towards the plan's south (= true WSW). Chosen with the computed sun in
-  // July: a ray from a seated eye towards the sun meets the canopy for 2 of the 6 seats at 15:00, 5 at 16, 4 at 17, 3 at 18 (patiotest)
+  // July: a ray from a seated eye towards the sun meets the canopy for 3 of the 7 seats at 15:00, 6 at 16, 6 at 17, 5 at 18 (#429, patiotest)
   { type: 'parasol', level: 0, x: 4.5, z: 15.55, rot: 180, tilt: 12 },
   // large planters with exotic plants (the user's wish): by the patio door and in the SE corner. The
   // banana in the SW corner stood in the gap in the hedge (the way out to the lawn) and is gone (#52).
@@ -2514,7 +2522,7 @@ export const FURNITURE = [
   // swing (x ≥ 0.95) and well north of the gap in the hedge (z 16.8); the lid opens towards the patio
   { type: 'dynbox', level: 0, x: 0.105 + 0.29, z: 13.7 + 0.625, rot: -90 },
   { type: 'planter', level: 0, x: 0.45, z: 13.25, plant: 'palm', walls: { x0: 0.065, z0: 12.7 } }, // fronds clear of the façade + screen wall (#137)
-  { type: 'planter', level: 0, x: 5.3, z: 16.35, plant: 'agave' }, // SE corner by the hedge (#397: the sofa's corner took its old spot)
+  { type: 'planter', level: 0, x: 5.3, z: 16.45, plant: 'agave' }, // SE corner by the hedge (#397: the sofa's corner took its old spot; #429: south of the bench's end)
   // Upstairs bedrooms (the user's plan). Beds: rot = direction from the head to the foot end.
   // IKEA NORDKISA bedside tables, bamboo, 40 × 40 cm (ikea.com, #64; the 55 cm height is a guess, about the
   // mattress top): one each side of the double bed's head end (east wall), clear of the Klk door

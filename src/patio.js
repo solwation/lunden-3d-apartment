@@ -64,33 +64,40 @@ function veronaModule(g, x0, x1, z0, z1, { back = false, arms = [] } = {}) {
 }
 
 /**
- * The family's Rusta Verona lounge (#408): a row of four modules along x, centred on the origin, backs at −z, seats
- * facing +z; the −x module has no back (a pouf: the living-room window's sash swings over it), an arm at the +x end;
- * a divan (backless, no arms, P.verona.divanL long) in front of each end module, pointing +z — a U. Six places: one per
- * row module, one on each divan, all facing +z. The decorative cushions (#399) are one merged mesh, shown by the season.
+ * The family's Rusta Verona lounge (#408, #429): a row of four modules along x, centred on the origin, backs at −z, seats
+ * facing +z, an arm at each end; in front of the +x end module the two divans (backless, no arms, P.verona.divanL long)
+ * end to end along +z — one long bench along the east screen wall, an L. Seven places: one per row module facing +z,
+ * the bench's (P.verona.bench) facing −x, towards the table. The decorative cushions (#399) — along the backs, and
+ * standing against the screen wall on the bench (`wall: true`) — are one merged mesh, shown by the season.
  */
 export function veronasofa() {
   const g = new THREE.Group();
-  const V = P.verona, W = V.W, D = V.D, X = 2 * W, z0 = -D / 2, z1 = D / 2, z2 = z1 + V.divanL;
+  const V = P.verona, W = V.W, D = V.D, X = 2 * W, z0 = -D / 2, z1 = D / 2, z3 = z1 + 2 * V.divanL;
   for (let i = 0; i < 4; i++) {
     const a = -X + i * W;
-    veronaModule(g, a, a + W, z0, z1, { back: i > 0, arms: i === 3 ? ['x1'] : [] });
+    veronaModule(g, a, a + W, z0, z1, { back: true, arms: i === 0 ? ['x0'] : i === 3 ? ['x1'] : [] });
   }
-  veronaModule(g, -X, -X + W, z1, z2); // the west divan, free-standing
-  veronaModule(g, X - W, X, z1, z2);   // the east divan, along the screen wall
-  const seatY = V.base + V.seatT, mid = (z1 + z2) / 2;
-  const spots = [0, 1, 2, 3].map((i) => ({ x: -X + W * (i + 0.5), y: seatY, z: i ? 0.04 : 0 }))
-    .concat([{ x: -X + W / 2, y: seatY, z: mid }, { x: X - W / 2, y: seatY, z: mid }]);
+  for (let k = 0; k < 2; k++) veronaModule(g, X - W, X, z1 + k * V.divanL, z1 + (k + 1) * V.divanL); // the bench
+  const seatY = V.base + V.seatT, benchX = X - W / 2 - 0.06; // (the wall cushions take the back of the bench's seat)
+  const spots = [0, 1, 2, 3].map((i) => ({ x: -X + W * (i + 0.5), y: seatY, z: 0.04 }))
+    .concat(V.bench.map((u) => ({ x: benchX, y: seatY, z: z1 + u * (z3 - z1), dir: [-1, 0] })));
   g.userData.rest = { kind: 'sit', name: 'loungesoffan', verb: 'sätta dig i', spots };
-  g.userData.footprint = [{ x0: -X, x1: X, z0, z1 }, { x0: -X, x1: -X + W, z0: z1, z1: z2 }, { x0: X - W, x1: X, z0: z1, z1: z2 }];
-  // cosy cushions (#399): leaning against the backs, one lying on the west divan; merged into one mesh (the shared
-  // cushion atlas), kept out of the sofa's merge, shown by the season and the weather (Patio.update)
-  const tmp = new THREE.Group();
-  const meshes = [
-    ...addCushions(tmp, P.cushions.filter((c) => !c.flat), { backZ: 0, seatY }),
-    ...addCushions(tmp, P.cushions.filter((c) => c.flat).map((c) => ({ ...c, lean: Math.PI / 2 })), { backZ: 0, seatY: seatY + 0.09 }),
-  ];
-  const geos = meshes.map((c) => { c.updateMatrix(); return c.geometry.applyMatrix4(c.matrix); });
+  g.userData.footprint = [{ x0: -X, x1: X, z0, z1 }, { x0: X - W, x1: X, z0: z1, z1: z3 }];
+  // cosy cushions (#399): leaning against the backs, and against the screen wall along the bench (in a frame turned to
+  // face −x: its x runs along the bench from its north end, its z out from the bench's outer edge); merged into one mesh
+  // (the shared cushion atlas), kept out of the sofa's merge, shown by the season and the weather (Patio.update)
+  const tmp = new THREE.Group(), wall = new THREE.Group();
+  wall.position.set(X, 0, z1);
+  wall.rotation.y = -Math.PI / 2;
+  wall.updateMatrix();
+  const rowC = addCushions(tmp, P.cushions.filter((c) => !c.wall), { backZ: 0, seatY });
+  const benchC = addCushions(tmp, P.cushions.filter((c) => c.wall), { backZ: 0, seatY });
+  const meshes = rowC.concat(benchC);
+  const geos = meshes.map((c) => {
+    c.updateMatrix();
+    const geo = c.geometry.applyMatrix4(c.matrix);
+    return benchC.includes(c) ? geo.applyMatrix4(wall.matrix) : geo;
+  });
   const cushions = new THREE.Mesh(mergeGeometries(geos), meshes[0].material);
   cushions.castShadow = cushions.receiveShadow = true;
   cushions.userData.cushion = true;
