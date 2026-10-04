@@ -1,8 +1,10 @@
-// Sovrum 1's hook rail (#329, HOOKS in config): an oak board with black single hooks on the Klk wall, a sage terry
-// dressing gown hanging by its loop, a navy hoodie hanging by its hood, the other hooks empty. Built by furniture.js
-// (FURNITURE type 'hookrail'), merged per material there; a loose item (hidden with F), no collision.
+// Hook rails (#329, HOOKS in config): Sovrum 1's oak board with black single hooks on the Klk wall, a sage terry
+// dressing gown hanging by its loop, a navy hoodie hanging by its hood, the other hooks empty. #330: the kids' rooms get
+// one each on the wardrobe's end by the door (KID_HOOKS, `set` on the FURNITURE item): Sovrum 2 a charcoal hoodie with a
+// red print and a cap, Sovrum 3 a pink zip hoodie and a tote bag with a rainbow. Built by furniture.js (FURNITURE type
+// 'hookrail'), merged per material there; a loose item (hidden with F), no collision.
 import * as THREE from 'three';
-import { HOOKS } from './config.js';
+import { HOOKS, KID_HOOKS } from './config.js';
 
 /** A small tileable cloth texture (grey levels, multiplied by the material colour): `kind` 'waffle' (terry waffle
  * cells) or 'rib' (fine vertical ribs). Also the bump map. */
@@ -177,11 +179,30 @@ function hoodie(spec, hookZ) {
   const ps = new THREE.Shape();
   ps.moveTo(-0.12, 0); ps.lineTo(0.12, 0); ps.lineTo(0.08, 0.15); ps.lineTo(-0.08, 0.15); ps.closePath();
   const pg = new THREE.ExtrudeGeometry(ps, { depth: 0.008, bevelEnabled: true, bevelThickness: 0.004, bevelSize: 0.006, bevelSegments: 1 });
-  body.add(mesh(pg, m, 0, -0.86 * len, zp - 0.006));
-  for (const s of [-1, 1]) {
-    const slit = mesh(new THREE.BoxGeometry(0.008, 0.12, 0.004), dark, s * 0.105, -0.86 * len + 0.07, zp + 0.009);
-    slit.rotation.z = s * 0.3;
-    body.add(slit);
+  if (spec.zip) {
+    // a zip hoodie: split pocket halves either side of the zip, a zip tape from the neck to the hem, a pull at the top
+    const tape = new THREE.MeshStandardMaterial({ color: spec.zip, roughness: 0.5, metalness: 0.3 });
+    for (const s of [-1, 1]) body.add(mesh(new THREE.BoxGeometry(0.09, 0.13, 0.01), m, s * 0.065, -0.79 * len, zp - 0.002));
+    for (let k = 0; k < 6; k++) {
+      const v0 = 0.02 + k * 0.16, v1 = Math.min(0.97, v0 + 0.16), y = -((v0 + v1) / 2) * len;
+      const zz = (frontZ(hd, out, v0) + frontZ(hd, out, v1)) / 2 + (v0 > 0.6 ? 0.012 : 0.002);
+      body.add(mesh(new THREE.BoxGeometry(0.009, (v1 - v0) * len + 0.004, 0.004), tape, 0, y, zz));
+    }
+    body.add(mesh(new THREE.BoxGeometry(0.014, 0.035, 0.005), tape, 0, -0.04, frontZ(hd, out, 0.04) + 0.006));
+  } else {
+    body.add(mesh(pg, m, 0, -0.86 * len, zp - 0.006));
+    for (const s of [-1, 1]) {
+      const slit = mesh(new THREE.BoxGeometry(0.008, 0.12, 0.004), dark, s * 0.105, -0.86 * len + 0.07, zp + 0.009);
+      slit.rotation.z = s * 0.3;
+      body.add(slit);
+    }
+  }
+  if (spec.print) {
+    // a small chest print on the left breast (the wearer's left = our right): a ring round a dot
+    const ink = new THREE.MeshStandardMaterial({ color: spec.print, roughness: 0.7 });
+    const zc = frontZ(hd, out, 0.24) + 0.001, px = spec.zip ? 0.08 : 0.07;
+    body.add(mesh(new THREE.TorusGeometry(0.024, 0.006, 6, 20), ink, px, -0.24 * len, zc));
+    body.add(mesh(new THREE.CircleGeometry(0.01, 14), ink, px, -0.24 * len, zc + 0.002));
   }
   // sleeves with ribbed cuffs
   for (const s of [-1, 1]) {
@@ -202,12 +223,83 @@ function hoodie(spec, hookZ) {
   return g;
 }
 
-/** The rail (local −z = the wall, the board's back at z 0): an oak board, `hooks` black hooks, the gown and the hoodie. */
+/** A cap hung by its back strap from (0, 0, hookZ): the crown's opening against the wall, its top (with the button)
+ * facing out, the peak sticking out and down from the crown's lower edge, a small round badge on the front panel just
+ * above it. */
+function cap(spec, hookZ) {
+  const g = new THREE.Group();
+  const m = cloth(spec.color, 'rib', 0.006);
+  const r = spec.r, cy = -r - 0.02, dz = 0.82; // the crown's centre; squashed out from the wall (a cap is shallow)
+  const crown = mesh(new THREE.SphereGeometry(r, 20, 10, 0, Math.PI * 2, 0, Math.PI / 2), m, 0, cy, 0.006);
+  crown.rotation.x = Math.PI / 2; crown.scale.set(1, dz, 1); // local y = out from the wall
+  g.add(crown);
+  // the button at the top of the crown (now its outermost point)
+  g.add(mesh(new THREE.SphereGeometry(0.008, 8, 6), m, 0, cy, 0.006 + r * dz + 0.002));
+  // the peak: a flattened half disc on the crown's lower edge, pointing out and down
+  const pg = new THREE.CylinderGeometry(r * 0.95, r * 0.95, 0.007, 20, 1, false, -Math.PI / 2, Math.PI);
+  const pp = pg.attributes.position;
+  for (let i = 0; i < pp.count; i++) pp.setY(i, pp.getY(i) - 2.2 * pp.getX(i) ** 2); // curved across, like a real peak
+  pg.computeVertexNormals();
+  const peak = mesh(pg, m);
+  peak.scale.set(1, 1, 0.8);
+  const pivot = new THREE.Group();
+  pivot.add(peak);
+  pivot.position.set(0, cy - r * 0.82, 0.015); pivot.rotation.x = 0.95; // its base inside the crown, hanging down-out
+  g.add(pivot);
+  // the back strap's loop on the hook
+  const strap = mesh(new THREE.TorusGeometry(0.014, 0.004, 6, 12), m, 0, -0.008, hookZ - 0.006);
+  strap.rotation.y = Math.PI / 2;
+  g.add(strap);
+  if (spec.badge) {
+    const badge = new THREE.MeshStandardMaterial({ color: spec.badge, roughness: 0.6 });
+    const a = 0.42, b = mesh(new THREE.CircleGeometry(0.016, 16), badge, 0, cy - r * Math.sin(a) * 0.98, 0.006 + r * dz * Math.cos(a) + 0.004);
+    b.rotation.x = a * 0.8;
+    g.add(b);
+  }
+  return g;
+}
+
+/** A canvas tote bag hung by both handles from (0, 0, hookZ): a soft flat bag (bulging a little), the handles meeting on
+ * the hook, a rainbow print (arcs and two clouds) on the front. */
+function tote(spec, hookZ) {
+  const g = new THREE.Group();
+  const m = cloth(spec.color, 'rib', 0.008);
+  const H = spec.h, hw = spec.w / 2, top = -spec.handle;
+  const hd = (v) => 0.01 + 0.025 * Math.sin(Math.PI * Math.min(1, v * 1.1));
+  g.add(mesh(drape(H, { hw: (v) => hw * (0.96 + 0.04 * smooth(0, 0.3, v)), hd, out: () => 0.002,
+    folds: (v) => 0.002 * smooth(0.5, 1, v), nu: 28, nv: 18, seed: 2.2 }), m, 0, top, 0));
+  // the handles: a strap from each top corner up to the hook
+  for (const s of [-1, 1]) {
+    const a = new THREE.Vector3(s * hw * 0.55, top + 0.005, 0.02), b = new THREE.Vector3(0, -0.006, hookZ - 0.004);
+    const strap = mesh(new THREE.BoxGeometry(0.022, a.distanceTo(b), 0.004), m, (a.x + b.x) / 2, (a.y + b.y) / 2, (a.z + b.z) / 2);
+    strap.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), b.clone().sub(a).normalize());
+    g.add(strap);
+  }
+  if (spec.rainbow) {
+    const v = 0.55, zc = hd(v) * 1.15 + 0.002 + 0.004 + 0.002, yc = top - H * v;
+    spec.rainbow.forEach((c, k) => {
+      const ink = new THREE.MeshStandardMaterial({ color: c, roughness: 0.8 });
+      g.add(mesh(new THREE.TorusGeometry(0.07 - k * 0.013, 0.006, 6, 24, Math.PI), ink, 0, yc, zc));
+    });
+    const white = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.8 });
+    for (const s of [-1, 1]) {
+      const cl = mesh(new THREE.SphereGeometry(0.018, 10, 6), white, s * 0.062, yc - 0.002, zc);
+      cl.scale.set(1.5, 0.8, 0.3);
+      g.add(cl);
+    }
+  }
+  return g;
+}
+
+const GARMENTS = { gown, hoodie, cap, tote };
+
+/** The rail (local −z = the wall, the board's back at z 0): a board, `hooks` single hooks and the garments
+ * (`garments`: [{ kind, on, scale?, dz?, ... }], `on` = the hook, 0 = local −x; the other hooks stay empty). */
 export function hookrail(item) {
-  const c = { ...HOOKS, ...item };
+  const c = { ...HOOKS, ...(item.set ? KID_HOOKS[item.set] : {}), ...item };
   const g = new THREE.Group();
   const oak = new THREE.MeshStandardMaterial({ color: c.board, roughness: 0.6 });
-  const black = new THREE.MeshStandardMaterial({ color: 0x1c1c1e, roughness: 0.45, metalness: 0.5 });
+  const black = new THREE.MeshStandardMaterial({ color: c.hook ?? 0x1c1c1e, roughness: 0.45, metalness: c.hookMetal ?? 0.5 });
   const t = 0.018;
   g.add(mesh(new THREE.BoxGeometry(c.w, c.h, t), oak, 0, c.y, t / 2));
   const xs = [];
@@ -225,7 +317,10 @@ export function hookrail(item) {
   }
   // the garments: the loop / hood sits in the hook's bend
   const hang = (o, i, dz) => { o.position.set(xs[i], hy - 0.014, dz); g.add(o); };
-  hang(gown(c.gown, tipZ), c.gown.on, 0.012);
-  hang(hoodie(c.hoodie, tipZ), c.hoodie.on, 0.006);
+  for (const gm of c.garments) {
+    const k = gm.scale ?? 1, o = GARMENTS[gm.kind](gm, tipZ / k);
+    o.scale.setScalar(k);
+    hang(o, gm.on, gm.dz ?? 0.006); // the gown 0.012
+  }
   return g;
 }

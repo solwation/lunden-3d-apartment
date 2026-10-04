@@ -108,7 +108,8 @@ src/bedding.js         bedding shapes shared by every bed: `pillow(w, d, h, opts
                        the sides with a flare, low bumps (crumpled near the head), rounded seams, `quilt` channels, `extentL`
                        (a throw ending on top); UVs in metres along the cloth. furniture.js `addMattress` (ticking + a fitted
                        sheet) / `addDuvet` (+ the fold turned back at the head end) build every bed with them (BEDDING)
-src/hooks.js           Sovrum 1's hook rail (#329, HOOKS): oak board, black hooks, a terry dressing gown and a hoodie (soft `drape` tubes)
+src/hooks.js           hook rails (#329, HOOKS): Sovrum 1's oak board, black hooks, a terry dressing gown and a hoodie (soft `drape` tubes);
+                       #330 the kids' rails (KID_HOOKS, item `set`): `garments` list of gown | hoodie (zip, print) | cap | tote
 src/cushions.js        decorative cushions (one atlas material: leaf print | bobble knit | geometric | corduroy, vertex-colour
                        tint, #313) and the ribbed fleece throws (plum folded on the chaise, grey draped over the armchair's
                        arm; one material per colour) for the LANDSKRONA pieces (CUSHIONS, #278)
@@ -792,12 +793,14 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   'photo': "Titta på Miele" brings it up close); an oak hook rail with five black hooks on the Klk's outside facing the room door (its west wall in the alcove
   by the door, #329, `HOOKS`, `src/hooks.js`): a sage waffle dressing gown and a navy hoodie (hung by its hood), three hooks empty,
   clear of the switch · Sovrum 3 (second right) Livia & Tuva, bunk (unicorn sheets), an IKEA ALEX desk under the window
-  with crafts and a kids' chair (#92), a round dusty-pink short-pile rug Ø 160 (guess) out in the room under the bunk's ladder (#318)
+  with crafts and a kids' chair (#92), a birch hook rail with white hooks on wardrobe G's end by the door: a pink zip hoodie and a rainbow
+  tote, two hooks empty (#330, `KID_HOOKS`), a round dusty-pink short-pile rug Ø 160 (guess) out in the room under the bunk's ladder (#318)
   (#310, `shape: 'round'` on a `rug` item; `src/rugs.js` `rugLift`: the cat's floor spots and things put on the floor stand on a rug) ·
   Sovrum 2 (first left) Walter & Kian, bunk (Darth Vader sheets), a gaming desk with a PC along the west wall, short end to the window (#77, #84): sitting in its chair starts the
   PC; a sit spot in the lower bunk (`watch`, a spot `kind` can differ from its piece) swings the monitor arm round and plays a film;
   a 1.3 × 0.95 m pegboard on the west wall north of the desk: the lightsaber on its top row, three Nerf blasters, a
-  bandolier and goggles (#78, #86, #324) · Sovrum 4 (second left, ex Allrum) Tilly (15), IKEA HEMNES
+  bandolier and goggles (#78, #86, #324); a dark grey hook rail with black hooks on wardrobe L's side wall by the door: a charcoal
+  hoodie with a red print and a navy cap, two hooks empty (#330, `KID_HOOKS`) · Sovrum 4 (second left, ex Allrum) Tilly (15), IKEA HEMNES
   daybed along the west wall, its head end against the window wall short of the window board (#312, `DAYBED_Z`: more
   open floor; the holder and the posters follow it) (`HEMNES_DAYBED`, #280: beadboard back and ends, an arched apron, a quilted top mattress, the pull-out's below,
   round knobs; a charcoal bedspread with lilac bolts, black / holographic / graphic / faux-fur cushions), its three drawers

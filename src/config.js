@@ -1353,7 +1353,21 @@ export const PHOTO_FRAME = { w: 0.21, h: 0.16, border: 0.012, depth: 0.012, lean
 // single hooks, `y` = the board's centre (*guess*); a sage terry dressing gown (`gown`: `len` from the hook, the hem ~0.5 m
 // over the floor) and a navy hoodie hung by its hood (`hoodie`) on hooks `on` (0 = north, the board faces west; the room switch by the door wall stays clear); the 3 others empty. No collision.
 export const HOOKS = { w: 0.62, h: 0.075, y: 1.72, hooks: 5, board: 0xc9a77c,
-  gown: { on: 1, len: 1.12, color: 0xbfc8b8, belt: 0.36 }, hoodie: { on: 3, len: 0.68, hood: 0.27, color: 0x283247 } };
+  garments: [{ kind: 'gown', on: 1, len: 1.12, color: 0xbfc8b8, belt: 0.36, dz: 0.012 }, { kind: 'hoodie', on: 3, len: 0.68, hood: 0.27, color: 0x283247 }] };
+// The kids' hook rails (#330, the same builder; a FURNITURE item's `set` picks one, merged over HOOKS): on the wardrobe's
+// exposed end by the room door — the strips of wall between door and wardrobe are too narrow (~13 / 17 cm past the
+// architrave and switch). Four hooks at kid height (`y`, *guess*), two left empty; kids' garments `scale`d down (*guess*).
+// Sovrum 2 (Walter & Kian): a dark grey board, black hooks (the room's black lamps), a charcoal hoodie with a small red
+// print and a navy cap with a white badge. Sovrum 3 (Livia & Tuva): a pale birch board, white hooks (its white lamps), a
+// pink zip hoodie with a white zip and a lilac print, a cream tote with a rainbow.
+export const KID_HOOKS = {
+  sovrum2: { w: 0.5, y: 1.45, hooks: 4, board: 0x3a3b3e, hook: 0x141416,
+    garments: [{ kind: 'hoodie', on: 3, len: 0.68, hood: 0.27, color: 0x484a50, print: 0xc0282c, scale: 0.85 },
+      { kind: 'cap', on: 0, r: 0.085, color: 0x1d2a44, badge: 0xf2f2f2 }] },
+  sovrum3: { w: 0.5, y: 1.45, hooks: 4, board: 0xdcc8a6, hook: 0xf4f3ef, hookMetal: 0.05,
+    garments: [{ kind: 'hoodie', on: 3, len: 0.68, hood: 0.27, color: 0xeea6c4, zip: 0xffffff, print: 0x9b7bff, scale: 0.8 },
+      { kind: 'tote', on: 0, w: 0.28, h: 0.3, handle: 0.2, color: 0xefe6d2, rainbow: [0xe0524f, 0xf2b33d, 0x5fb36a, 0x4f8fe0] }] },
+};
 
 // Day cycle (src/daycycle.js): one day in `minutes` real minutes (60, the user #125). The sun follows the real solar
 // path for the date (declination, hour angle) at Kv. Lunden, Karpvägen / S:t Lars väg in Lund
@@ -1883,6 +1897,11 @@ export const FURNITURE = [
   // centred, 73 cm of floor left in front of it; facing north (into the Klk)
   // the hook rail on the Klk's outside facing the room door, a dressing gown and a hoodie (#329, HOOKS); wall face x 3.80
   { type: 'hookrail', level: 1, x: 3.797, z: 4.51, rot: 90 },
+  // the kids' hook rails on the wardrobe end by the door (#330, KID_HOOKS): Sovrum 2 on wardrobe L's side wall (face
+  // x 3.8516, z 7.80–8.50, facing west; hook 3 = the room end), Sovrum 3 on wardrobe G's end panel (x 1.5037, z 4.21–4.91,
+  // facing east; hook 3 = the front end)
+  { type: 'hookrail', level: 1, x: 3.849, z: 8.15, rot: 90, set: 'sovrum2' },
+  { type: 'hookrail', level: 1, x: 1.506, z: 4.57, rot: -90, set: 'sovrum3' },
   { type: 'nordli', level: 1, x: (3.90 + 5.55) / 2, z: 5.48 - 0.235, rot: 0, w: 1.2, h: 0.99, d: 0.47, rifle: true }, // + the AK-47 in the wide bottom drawer (#196)
   // the mattress centre: the headboard (IDANAS.head) against the east wall
   { type: 'bed', level: 1, x: 5.55 - IDANAS.head - 1.0, z: 2.3, rot: 90, w: 1.8, l: 2.0, model: 'idanas', sitUp: { tv: 'Sovrum 1' }, pingping: true, hotel: true, // Pingping between the pillows (#269), hotel pillows under the head pillows (#308)
