@@ -96,8 +96,8 @@ f.onload = async () => {
       lines.push(`${ok1 && ok2 ? 'PASS' : 'FAIL'} the Hue Go's colour scenes: on in #${c.toString(16)}, glow + wash follow (${ok1}), round to warm white (${ok2})`);
     }
   }
-  // #221: the kitchen's bench light and the hood's light are lamps of their own; their washes follow them
-  for (const name of ['bänkbelysningen', 'lampan i köksfläkten']) {
+  // #221: the kitchen's bench light and the hood's light are lamps of their own; their washes follow them (the DANI's too)
+  for (const name of ['bänkbelysningen', 'lampan i köksfläkten', 'rottinglampan']) { // + the DANI's wall / ceiling washes (#411)
     const l = lights.floorLamps.find((x) => x.name === name);
     if (!l) { pass = false; lines.push(`FAIL ${name}: missing`); continue; }
     l.set(true); const onOk = l.spec.shade.emissiveIntensity > 0.5 && l.spec.glows.every((g) => g.visible && g.opacity > 0.1);

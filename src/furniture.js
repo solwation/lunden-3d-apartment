@@ -4,7 +4,7 @@ import { mergeStatic } from './merge.js';
 import { restTarget } from './rest.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { addCushions, addFoldedThrow, addDrapedThrow } from './cushions.js';
-import { CUSHIONS, FURNITURE, LANDSKRONA as L, LEVELS, SKANSNAS, IDANAS, PILLOWS, BEDDING, PINGPING, MYDAL, OTTOMAN, SYMFONISK, SECRET, NYMANE_WALL, MALM_DECO, YUCCA, LANGLAMPA, VANITY, HEMNES_DAYBED, KPOP_POSTERS, SMASTAD, PHOTO_FRAME, COFFEE_TABLE } from './config.js';
+import { CUSHIONS, FURNITURE, LANDSKRONA as L, LEVELS, SKANSNAS, IDANAS, PILLOWS, BEDDING, PINGPING, MYDAL, OTTOMAN, SYMFONISK, SECRET, NYMANE_WALL, MALM_DECO, YUCCA, LANGLAMPA, VANITY, HEMNES_DAYBED, KPOP_POSTERS, SMASTAD, PHOTO_FRAME, COFFEE_TABLE, DANI } from './config.js';
 import { litMirrorMaterial, litEmissive, litReflect } from './mirror.js';
 import { addReflector } from './reflections.js';
 import { loungesofa, loungetable, parasol, planter, dynbox } from './patio.js';
@@ -338,6 +338,107 @@ function tubelamp(item, lights) {
     light: S.light, offset: [-0.2, 0.2] });
   g.userData.keep = [shade];
   g.userData.footprint = [{ x0: -S.r, x1: S.r, z0: -S.r, z1: S.r }];
+  return g;
+}
+
+/** A soft additive light pattern for the DANI (#411): brightest at (cu, cv), fading out by `fall` (of the width), with
+ * `stripes` light rays fanning out between the rods' shadows (0 = a plain round spot). */
+function daniWashTexture(cu, cv, fall, stripes, aspect) {
+  const W = 128, H = Math.round(128 * aspect), c = document.createElement('canvas');
+  c.width = W; c.height = H;
+  const x = c.getContext('2d'), img = x.createImageData(W, H);
+  for (let j = 0; j < H; j++) for (let i = 0; i < W; i++) {
+    const dx = i / W - cu, dy = ((H - 1 - j) / H - cv) * aspect, r = Math.hypot(dx, dy) / fall;
+    const f = Math.max(0, 1 - r) ** 1.6;
+    const s = stripes ? 0.35 + 0.65 * (0.5 + 0.5 * Math.cos(Math.atan2(dy, dx) * stripes)) ** 2 : 1;
+    const v = Math.round(255 * f * s), k = (j * W + i) * 4;
+    img.data[k] = img.data[k + 1] = img.data[k + 2] = v; img.data[k + 3] = 255;
+  }
+  x.putImageData(img, 0, 0);
+  return new THREE.CanvasTexture(c);
+}
+
+/** JYSK DANI (#411, DANI): a low floor lantern — three splayed light wooden legs, an upright teardrop cage of round rattan
+ * rods with a wrapped collar at the top and thin rings round it, a white fabric cylinder inside that glows when it is lit.
+ * Its own small lamp (lights.js FloorLamp: dusk on / off, E on it, a weak warm pool light), with a striped wash on the wall
+ * beside it and a soft spot on the ceiling over its open top. Built with `rot: 180`, so local axes = world axes;
+ * `item.corner` = [x of the wall face east of it, z of the wall face north of it]. */
+function dani(item, lights) {
+  const S = DANI, g = new THREE.Group(), Hc = S.h - S.legH, y0 = S.legH;
+  const rattan = new THREE.MeshStandardMaterial({ color: S.rattan, roughness: 0.75 });
+  const wood = new THREE.MeshStandardMaterial({ color: S.wood, roughness: 0.6 });
+  const add = (m) => { m.castShadow = true; g.add(m); return m; };
+  // the cage's profile: a smooth curve through S.profile, radius at a fraction t of the cage height
+  const prof = new THREE.CatmullRomCurve3(S.profile.map(([t, r]) => new THREE.Vector3(r, t, 0)));
+  const samples = prof.getPoints(60);
+  const rAt = (t) => {
+    for (let i = 1; i < samples.length; i++) {
+      const a = samples[i - 1], b = samples[i];
+      if (t <= b.y) return a.x + (b.x - a.x) * ((t - a.y) / Math.max(1e-6, b.y - a.y));
+    }
+    return samples[samples.length - 1].x;
+  };
+  // the rods: tubes along the profile, evenly round
+  for (let i = 0; i < S.rods; i++) {
+    const a = (i / S.rods) * Math.PI * 2, c = Math.cos(a), s = Math.sin(a);
+    const pts = samples.filter((_, k) => k % 3 === 0).map((p) => new THREE.Vector3(c * p.x, y0 + p.y * Hc, s * p.x));
+    add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 20, S.rod, 5, false), rattan));
+  }
+  // thin rings tied to the inside of the rods
+  for (const t of S.rings) {
+    const ring = add(new THREE.Mesh(new THREE.TorusGeometry(rAt(t) - S.rod * 1.5, S.rod * 0.7, 5, 48).rotateX(Math.PI / 2), rattan));
+    ring.position.y = y0 + t * Hc;
+  }
+  // the wrapped collar at the top: several turns of rattan
+  for (let k = 0; k < 5; k++) {
+    const t = 1 - (k / 4) * (S.collar / Hc);
+    const turn = add(new THREE.Mesh(new THREE.TorusGeometry(rAt(t) + 0.002, 0.0055, 6, 48).rotateX(Math.PI / 2), rattan));
+    turn.position.y = y0 + t * Hc - 0.004;
+  }
+  // the base disc the rods end on, and three splayed legs under it
+  const base = add(new THREE.Mesh(new THREE.CylinderGeometry(S.profile[0][1] + 0.004, S.profile[0][1] + 0.004, 0.012, 32), wood));
+  base.position.y = y0 + 0.002;
+  const up = new THREE.Vector3(0, 1, 0);
+  for (let i = 0; i < 3; i++) {
+    const a = Math.PI / 6 + (i / 3) * Math.PI * 2;
+    const top = new THREE.Vector3(Math.cos(a) * 0.055, y0, Math.sin(a) * 0.055), foot = new THREE.Vector3(Math.cos(a) * S.legR, 0, Math.sin(a) * S.legR);
+    const dir = top.clone().sub(foot), len = dir.length();
+    const leg = add(new THREE.Mesh(new THREE.CylinderGeometry(S.leg[0], S.leg[1], len, 10), wood));
+    leg.quaternion.setFromUnitVectors(up, dir.normalize());
+    leg.position.copy(top).add(foot).multiplyScalar(0.5);
+  }
+  // the white fabric cylinder inside (the lamp's glow) + a disc at its foot; an invisible pick cylinder round the cage
+  const fabric = new THREE.MeshStandardMaterial({ color: S.fabric, roughness: 0.95, emissive: S.glow, emissiveIntensity: 0.04, side: THREE.DoubleSide });
+  const lamp = new THREE.Group(), iy0 = y0 + S.inner.y0 * Hc, iy1 = y0 + S.inner.y1 * Hc;
+  lamp.position.y = (iy0 + iy1) / 2;
+  const inner = new THREE.Mesh(new THREE.CylinderGeometry(S.inner.r, S.inner.r, iy1 - iy0, 32, 1, true), fabric);
+  const cap = new THREE.Mesh(new THREE.CircleGeometry(S.inner.r, 32).rotateX(-Math.PI / 2), fabric);
+  cap.position.y = -(iy1 - iy0) / 2 + 0.002;
+  const pick = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.12, Hc, 16), new THREE.MeshBasicMaterial());
+  pick.position.y = y0 + Hc / 2 - lamp.position.y;
+  pick.visible = false;
+  lamp.add(inner, cap, pick);
+  g.add(lamp);
+  // the light through the rods: a striped wash on the wall face east of it, a soft spot on the ceiling over the open top
+  const [cx, cz] = item.corner, dx = cx - item.x, dz = cz - item.z;
+  const wallZ0 = dz, wallW = S.wash.w, wallMid = y0 + Hc * 0.4;
+  const wallMat = new THREE.MeshBasicMaterial({ color: S.glow, map: daniWashTexture(-wallZ0 / wallW, (wallMid - 0.02) / S.wash.h, 0.75, 13, S.wash.h / wallW),
+    transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false });
+  const ceilMat = new THREE.MeshBasicMaterial({ color: S.glow, map: daniWashTexture(0.5, 0.5, 0.5, 0, 1),
+    transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false });
+  wallMat.userData.on = S.wash.opacity; ceilMat.userData.on = S.ceilingSpot.opacity; // (lights.js fades them by opacity)
+  const wall = new THREE.Mesh(new THREE.PlaneGeometry(wallW, S.wash.h), wallMat);
+  wall.rotation.y = -Math.PI / 2; // facing west, its u along +z
+  wall.position.set(dx - 0.004, 0.02 + S.wash.h / 2, wallZ0 + wallW / 2);
+  // the ceiling spot nudged south-west into the hall, so it never reaches over the wall into Sovrum 1
+  const r = S.ceilingSpot.r, ceil = new THREE.Mesh(new THREE.PlaneGeometry(2 * r, 2 * r), ceilMat);
+  ceil.rotation.x = Math.PI / 2; // facing down
+  ceil.position.set(-0.05, LEVELS[item.level].ceiling - 0.003, Math.max(0, dz + r + 0.005));
+  for (const m of [wall, ceil]) { m.raycast = () => {}; m.renderOrder = 2; m.material.visible = false; g.add(m); }
+  lights.push({ object: lamp, shade: fabric, glows: [wallMat, ceilMat], wash: 1, height: 0, level: item.level, name: 'rottinglampan',
+    light: S.light, offset: [-0.08, 0.08] });
+  g.userData.keep = [lamp, wall, ceil];
+  g.userData.footprint = [{ x0: -0.15, x1: 0.15, z0: -0.15, z1: 0.15 }];
   return g;
 }
 
@@ -3428,7 +3529,7 @@ function randerstable(item, lights) {
   return randers(item, lights, () => { const f = flower(); mergeStatic(f); return f; });
 }
 
-const BUILDERS = { randerstable, tubelamp, secretary, winerack, besta, painting, pictures, palm, sofa, armchair, ottoman, floorlamp, sidetable, coffeetable, loungesofa, loungetable, parasol, planter, dynbox, bed, skansnasTable, skansnasChair, bunk, daybed, kposters, smastad, rug, ragrund, coatrack, shoerack, byas, tv, nordkisa, worklamp, walllamp, symfonisk, gamingdesk, gamingchair, nordli, malm, alex, kidchair, vanity, vanitystool, laptop, photoframe, huego, nesthub, nestmini, hookrail, klk, cleaning };
+const BUILDERS = { randerstable, tubelamp, dani, secretary, winerack, besta, painting, pictures, palm, sofa, armchair, ottoman, floorlamp, sidetable, coffeetable, loungesofa, loungetable, parasol, planter, dynbox, bed, skansnasTable, skansnasChair, bunk, daybed, kposters, smastad, rug, ragrund, coatrack, shoerack, byas, tv, nordkisa, worklamp, walllamp, symfonisk, gamingdesk, gamingchair, nordli, malm, alex, kidchair, vanity, vanitystool, laptop, photoframe, huego, nesthub, nestmini, hookrail, klk, cleaning };
 
 /** An invisible thin box over a table top (raycast target for putting a cup down, #90). Local rect. */
 export function surfaceBox(r, list) {

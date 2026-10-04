@@ -2144,6 +2144,21 @@ export const LANGLAMPA = {
   light: { intensity: 0.8, range: 3.5, color: 0xffc77a },
 };
 
+// JYSK DANI floor lamp (#411, docs/golvlampa-jysk-dani-produkt.jpg + golvlampa-jysk-dani.jpg; FURNITURE `dani`): JYSK gives
+// Ø 33 × H 54 cm, bamboo / eucalyptus / rattan, E27 max 40 W. The rest is *guess* from the photos: three light wooden legs
+// (`legH` of the height, splayed out to `legR`), an upright teardrop cage of `rods` round rattan rods following `profile`
+// ([fraction of the cage height, radius] from the bottom ring to the top), a wrapped collar `collar` high at the top, thin
+// rings at `rings` (fractions), and a white fabric cylinder inside (`inner`: radius, bottom and top as fractions). Lit it
+// is warm and dim (40 W): `light` (the pool light), a striped wash on the wall beside it and a soft spot on the ceiling.
+export const DANI = {
+  h: 0.54, legH: 0.16, legR: 0.15, leg: [0.011, 0.007], rods: 30, rod: 0.005,
+  profile: [[0, 0.085], [0.08, 0.13], [0.2, 0.157], [0.33, 0.165], [0.5, 0.158], [0.7, 0.135], [0.88, 0.105], [1, 0.092]],
+  collar: 0.045, rings: [0.06, 0.33, 0.66], inner: { r: 0.08, y0: 0.05, y1: 0.68 },
+  rattan: 0xb48a58, wood: 0xcfa678, fabric: 0xf3efe6, glow: 0xffc27a,
+  wash: { w: 0.57, h: 1.1, opacity: 0.28 }, ceilingSpot: { r: 0.45, opacity: 0.22 },
+  light: { intensity: 0.55, range: 3.2, color: 0xffbf78 },
+};
+
 export const NYMANE_WALL = {
   plate: { w: 0.06, h: 0.11, d: 0.025 }, button: 0.012, arm: 0.07, shade: { r: 0.035, h: 0.08, tilt: 0.6 }, cord: 0.45,
   fromHead: 0.42, aboveMattress: 0.42, mattress: MYDAL.base.map((b) => b + MYDAL.mattress), // the bunks' mattress tops (#227)
@@ -2277,6 +2292,10 @@ export const FURNITURE = [
   // Långlampan (#270, LANGLAMPA): in the corner right of the TV seen from the sofa, between the BYÅS's east end (x 5.05)
   // and the secretary (z > 9.0); `corner` = the inner faces of the east and north walls there (data/plan.json)
   { type: 'tubelamp', level: 0, x: 5.551 - 0.16, z: 7.804 + 0.16, corner: [5.551, 7.804] },
+  // JYSK DANI (#411, DANI): upstairs hall, in the nook between Sovrum 1's door (its east jamb, hall face z 5.135, x 3.562–3.802)
+  // and the stair's top (the wall end x 3.802, z 5.135–5.704; the top step from z 5.77): 5 mm off both faces (data/plan.json),
+  // so it stands 9 cm in front of the door opening's east end and 30 cm north of the stair top. `corner` = those faces.
+  { type: 'dani', level: 1, x: 3.802 - 0.165 - 0.005, z: 5.135 + 0.165 + 0.015, rot: 180, corner: [3.802, 5.135] },
   // Philips 55" The One PUS8897 on the bench (#68): panel ~123 × 71 cm, thin black bezel, one central
   // anthracite pedestal; depth, stand size and the ~78 cm total height are guesses. E switches it on: a
   // slowly moving colourful demo picture (canvas, ~12 fps) and an Ambilight glow on the wall behind.
