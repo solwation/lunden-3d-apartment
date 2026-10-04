@@ -1579,15 +1579,17 @@ export const FALL = { hurt: 3, soft: 1, free: 1, wake: { x: 1.3, z: -4.0, yawDeg
 // top, UNIT_TOP) = up there — the roofs' own walls collide instead of the ground's. Our choice (above every outdoor
 // step, below the lowest canopy).
 export const ROOFS = { aloft: 2.0 };
-// The jetpack (#359, src/jetpack.js): our own unbranded model on a wall hook on the garage box's west face beside the
-// garage door (terrain.garageDoor, z 41…47), `hook` = its spot (x on the face, z, the hook's height over the ground there).
+// The jetpack (#359, src/jetpack.js): our own unbranded model on a wall hook beside the garage door (terrain.garageDoor,
+// z 41…47) — since #441 inside the garage — `hook` = its spot (x on the wall, z, the hook's height over the floor there).
 // Worn on the back (hands free). Every number is a game choice, not a real jetpack's: `thrust` m/s² up while Space / ⬆ is
 // held (gravity 9.8: about 60 % of the time to hover), `down` m/s² extra with C / Ctrl / ⬇, `climb` / `sink` m/s caps,
 // `speed` m/s flying across, `accel` 1/s how fast it gets there (inertia), `ceiling` m (model y) and OUTDOOR's edge as the
 // bounds; `heat` rises `up` per s of thrust, falls `cool` per s in the air and `ground` per s standing, `warn` beeps,
 // at 1 the thrust cuts out until it is down to `resume` (a cut high up = a fall, fall.js).
 export const JETPACK = {
-  hook: { x: -70.5, z: 39.7, h: 1.45 },
+  // #441: inside the garage on the entrance hall's west wall (GARAGE.rects entrance x0), between the north stalls and the
+  // door's opening, facing east (`face`), `h` over the garage floor; the sign `over` m above the hook, `w` m wide
+  hook: { x: -69.95, z: 40.45, h: 1.45, face: 1, floor: GARAGE.floor }, sign: { w: 0.9, over: 0.75 },
   thrust: 16, down: 9, climb: 6, sink: 12, speed: 9, accel: 2.2, ceiling: 40,
   heat: { up: 1 / 45, cool: 1 / 20, ground: 1 / 5, warn: 0.8, resume: 0.35 }, // (hovering just about holds; 45 s of steady thrust)
   drop: 0.55, // m in front of the feet where "Ta av jetpacken" stands it

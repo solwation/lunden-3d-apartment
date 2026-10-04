@@ -23,7 +23,7 @@ async function run() {
   while (!w.__app) await wait(100);
   const { player, fall, world, step, stats, camera, renderer, jetpack, toggleFurniture, touch, keepWorld } = w.__app;
   const mod = (p) => w.eval(`import('${new URL(p, location.href).href}')`);
-  const { FALL, PLAYER, JETPACK, OUTDOOR, SITE } = await mod('../src/config.js');
+  const { FALL, PLAYER, JETPACK, OUTDOOR, SITE, GARAGE } = await mod('../src/config.js');
   const lines = [];
   let pass = true;
   const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); pass &&= !!ok; return ok; };
@@ -72,10 +72,11 @@ async function run() {
     player.keys = new Set();
   };
 
-  // (1) on its hook on the garage box's west face beside the garage door
-  const H = JETPACK.hook, gd = SITE.terrain.garageDoor, m = jetpack.model.position;
-  check(jetpack.state === 'hook' && Math.abs(m.x - H.x) < 0.1 && Math.abs(m.z - H.z) < 0.01 && H.z < gd.z0, `on its hook at (${f2(m.x)}, ${f2(m.y)}, ${f2(m.z)}), beside the garage door (z ${gd.z0}…${gd.z1})`);
-  place(H.x - 1.0, H.z, undefined, -90, -15);
+  // (1) on its hook inside the garage beside the garage door, under its sign (#441)
+  const H = JETPACK.hook, gd = SITE.terrain.garageDoor, m = jetpack.model.position, garage = world.garage;
+  check(jetpack.state === 'hook' && Math.abs(m.x - H.x) < 0.1 && Math.abs(m.z - H.z) < 0.01 && garage.inside(m.x, m.z) && m.y < GARAGE.ceiling && jetpack.sign.position.y > m.y,
+    `on its hook in the garage at (${f2(m.x)}, ${f2(m.y)}, ${f2(m.z)}), beside the garage door (z ${gd.z0}…${gd.z1}), the sign over it`);
+  place(H.x + 1.0, H.z, GARAGE.floor, 90, -15);
   check(/ta på dig jetpacken/.test(prompt()), `facing it: "${prompt()}"`);
   const flights0 = stats.flights ?? 0, seen0 = !!stats.seen.flights?.jetpack;
   key('KeyE'); key('KeyE', false);
@@ -83,6 +84,18 @@ async function run() {
   check(jetpack.worn && player.jet === jetpack && !jetpack.model.visible && !d.getElementById('jetpack').hidden && !w.__app.heldItem(), 'E: worn on the back (hands free, the heat bar shows)');
   check(/ta av dig jetpacken/.test(prompt()), `standing with it on: "${prompt()}"`);
 
+  // (#441) under the garage's ceiling Space does nothing; out through the garage door, then it lifts
+  const yg = player.pos.y;
+  key('Space'); for (let i = 0; i < 60; i++) step(dt); key('Space', false);
+  check(jetpack.worn && Math.abs(player.pos.y - yg) < 0.01 && !jetpack.flames.visible, `in the garage: no thrust under the ceiling (y ${f2(player.pos.y)})`);
+  garage.door.open(); for (let i = 0; i < (GARAGE.door.seconds + 1) * 10; i++) step(0.1);
+  const walkTo = (x, z, secs = 8) => { for (let t = 0; t < secs && Math.hypot(player.pos.x - x, player.pos.z - z) > 0.15; t += dt) { camera.rotation.y = Math.atan2(-(x - player.pos.x), -(z - player.pos.z)); player.keys = new Set(['KeyW']); step(dt); } player.keys = new Set(); };
+  walkTo(-68, 44); walkTo(-74.5, 44);
+  check(jetpack.worn && !player.below && player.pos.x < gd.x - 3, `out through the garage door with it on (x ${f2(player.pos.x)})`);
+  walkTo(-66, 44);
+  check(jetpack.worn && player.below, 'back into the garage: still worn');
+  walkTo(-74.5, 44);
+  camera.rotation.x = 0;
   // (2) Space lifts, letting go falls; flames, heat, the first flight counted
   const y0 = player.pos.y;
   key('Space'); for (let i = 0; i < 90; i++) step(dt);
@@ -188,7 +201,7 @@ async function run() {
 
   // (11) F sends it home
   toggleFurniture(false); toggleFurniture(true);
-  check(jetpack.state === 'hook' && Math.abs(m.z - H.z) < 0.01, 'F: back on its hook');
+  check(jetpack.state === 'hook' && Math.abs(m.z - H.z) < 0.01 && garage.inside(m.x, m.z), 'F: back on its hook in the garage');
 
   // (12) touch: ⬆ / ⬇ while it is worn; "Ta av dig jetpacken" on the action button
   place(-20, -6, 0, 180); jetpack.putOn();

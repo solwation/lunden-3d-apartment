@@ -245,7 +245,7 @@ export class Garage {
     duct(-51, 19.4, 8.5, 19.4, C - 0.32, 0.22, 0xa7abae); duct(-51, 26.4, -10, 26.4, C - 0.32, 0.22, 0xa7abae);
     duct(-69.6, 45.6, -42, 45.6, C - 0.12, 0.035, 0xb3261e); duct(-51, 22.2, 8.5, 22.2, C - 0.12, 0.035, 0xb3261e);
     // signs: the way out, over the doors to the rooms
-    put('signs', plate('UTFART', ENTR.x0 + 0.03, F + 2.25, GD.z0 - 0.75, facing(1, 0), 0.8), ENTR.x0 + 1, 40);
+    put('signs', plate('UTFART', ENTR.x0 + 0.03, F + 2.25, GD.z1 + 0.75, facing(1, 0), 0.8), ENTR.x0 + 1, 48); // (south of the door: the jetpack's sign is north of it, #441)
     put('signs', plate('GARAGE', -45, F + 2.35, 34.6, facing(0, 1), 0.8), -45, 35);
     put('signs', plate('KÄLLARE · HISS', -15.0, F + 2.35, 12.65, facing(0, 1), 0.9), -15, 13);
     put('signs', plate('MILJÖRUM', -64.5, F + 2.35, 34.55, facing(0, 1), 0.7), -64.5, 35);

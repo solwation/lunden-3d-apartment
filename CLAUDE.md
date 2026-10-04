@@ -174,8 +174,10 @@ src/fall.js            falling (#361, FALL): player.js keeps `fall` (the highest
                        place is reset (`onWake` hooks, e.g. the jetpack of #359 going home), a deduction `fall` + stats `falls`. Over
                        FALL.soft: a soft thud and a knee-bend. Off a roof's edge (#360) or the jetpack's thrust cut high up (#359; with
                        it on, the drop = the landing speed v² / 2g); `&fall=h` drops you from h m (falltest.html)
-src/jetpack.js         the jetpack (#359, JETPACK): our own unbranded pack (one vertex-coloured mesh) on a wall hook on the garage box's
-                       west face beside the garage door (`hook`, z < terrain.garageDoor.z0); E puts it on (hands free; outdoors only),
+src/jetpack.js         the jetpack (#359, JETPACK): our own unbranded pack (one vertex-coloured mesh) on a wall hook inside the garage
+                       beside the garage door (#441: `hook` on the entrance hall's west wall, `face`, `floor`) under the yellow sign
+                       "Låna Jetpack på eget ansvar. Se upp för fiskmåsar." (`sign`); E puts it on (hands free; outdoors and in the
+                       garage — under its / the stairwell's ceiling no thrust, "Inte inomhus", walking back in keeps it on),
                        `player.jet` = it: Space / ⬆ (#jet-up) thrust, C / Ctrl / ⬇ down faster, WASD / the stick steer at `speed` with
                        inertia (`player.flying`, `player.jv`), no thrust = falling; `ceiling`, OUTDOOR's edge and the roofs' walls
                        hold (+ `roofs.blocks` / `above`: a roof edge or canopy in the way of the body); the landing hurts by the speed

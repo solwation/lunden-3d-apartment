@@ -1,12 +1,14 @@
 // The jetpack (#359, JETPACK in config): a chunky backpack with two nozzles, straps and a small control grip (our own
-// look, no brand) on a wall hook on the garage box's west face beside the garage door. E on it puts it on: worn on the
+// look, no brand) on a wall hook inside the garage beside the garage door (#441), under the sign "Låna Jetpack på eget
+// ansvar. Se upp för fiskmåsar." E on it puts it on: worn on the
 // back, the hands stay free (not a Holdable). Space / ⬆ held = thrust up, C / Ctrl / ⬇ = down faster, WASD / the stick
 // steer across at a flying speed with some inertia (player.js does the flying: `player.jet` = this), no thrust = falling.
 // The thrust heats it (the HUD's bar): too hot and it cuts out until it has cooled (a cut high up is a fall, fall.js).
 // Landing: on whatever roof is under you (roofs.js, #360), else the ground; as hard as the speed you came down at.
 // E with nothing else to do (touch: the action button "Ta av jetpacken") stands it down where you stand — the ground, a
 // roof, a terrace, the loftgång — and it stays there (keep.js keeps the spot across a page-made reload); E on it again.
-// Not indoors: walking in through a door (or into the garage) with it on stands it down outside. F sends it home to its hook, and
+// Not indoors: walking in through a door with it on stands it down outside; in the garage (and Hus L's stairwell) it stays
+// on but gives no thrust under the ceiling ("Inte inomhus"). F sends it home to its hook, and
 // so does waking up after a bad fall (fall.onWake). Flames + smoke from the nozzles, an orange glow at the bottom of the
 // view and a roar (sfx.jetRoar) while it thrusts. Draw calls: the model (1), the hook (1), flames (1), smoke (1).
 import * as THREE from 'three';
@@ -87,13 +89,27 @@ export class Jetpack {
     this.onFlight = null; // a take-off (stats)
     const mat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.45, metalness: 0.35 });
     // the hook on the wall: a plate on the face, a bar out and up
-    const H = J.hook, hy = groundY(H.x - 0.3, H.z) + H.h;
-    this.home = { x: H.x - 0.045, y: hy - HEIGHT + 0.03, z: H.z, yaw: -Math.PI / 2 }; // its back plate against the wall, facing west
-    const hook = mergeGeometries([paint(new THREE.BoxGeometry(0.015, 0.12, 0.09).translate(H.x - 0.0075, hy, H.z), 0x34383c),
-      paint(new THREE.BoxGeometry(0.07, 0.018, 0.018).translate(H.x - 0.035, hy - 0.02, H.z), 0x34383c),
-      paint(new THREE.BoxGeometry(0.018, 0.045, 0.018).translate(H.x - 0.07, hy, H.z), 0x34383c)]);
+    // (#441: `face` = the way the wall faces, ±1 along x; `floor` = the floor under it, else the terrain)
+    const H = J.hook, s = H.face ?? -1, hy = (H.floor ?? groundY(H.x + s * 0.3, H.z)) + H.h;
+    this.home = { x: H.x + s * 0.045, y: hy - HEIGHT + 0.03, z: H.z, yaw: s < 0 ? -Math.PI / 2 : Math.PI / 2 }; // its back plate against the wall
+    const hook = mergeGeometries([paint(new THREE.BoxGeometry(0.015, 0.12, 0.09).translate(H.x + s * 0.0075, hy, H.z), 0x34383c),
+      paint(new THREE.BoxGeometry(0.07, 0.018, 0.018).translate(H.x + s * 0.035, hy - 0.02, H.z), 0x34383c),
+      paint(new THREE.BoxGeometry(0.018, 0.045, 0.018).translate(H.x + s * 0.07, hy, H.z), 0x34383c)]);
     this.hook = new THREE.Mesh(hook, mat);
     scene.add(this.hook);
+    // the sign over it (#441, the user's words), our own drawing: a yellow plate, black text, a gull
+    const c = document.createElement('canvas'); c.width = 512; c.height = 256;
+    const g = c.getContext('2d');
+    g.fillStyle = '#f3cf2a'; g.fillRect(0, 0, 512, 256); g.strokeStyle = '#111'; g.lineWidth = 10; g.strokeRect(5, 5, 502, 246);
+    g.fillStyle = '#111'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.font = 'bold 44px sans-serif'; g.fillText('Låna Jetpack', 300, 62); g.font = 'bold 36px sans-serif'; g.fillText('på eget ansvar.', 300, 112);
+    g.font = 'bold 30px sans-serif'; g.fillText('Se upp för', 300, 168); g.fillText('fiskmåsar.', 300, 206);
+    g.lineWidth = 9; g.lineCap = 'round'; g.beginPath(); g.moveTo(30, 150); g.quadraticCurveTo(62, 104, 92, 146); g.quadraticCurveTo(122, 104, 154, 150); g.stroke(); // the gull
+    const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 4;
+    const sign = new THREE.Mesh(new THREE.PlaneGeometry(J.sign.w, J.sign.w / 2), new THREE.MeshBasicMaterial({ map: tex }));
+    sign.position.set(H.x + s * 0.01, hy + J.sign.over, H.z); sign.rotation.y = s * Math.PI / 2; sign.raycast = () => {};
+    scene.add(sign);
+    this.sign = sign;
 
     this.model = new THREE.Group();
     this.model.userData.moving = true; // (it moves while you may stand still, detail.js #267)
@@ -162,7 +178,7 @@ export class Jetpack {
   }
 
   putOn() {
-    if (!this.player.outdoors || this.player.below) return; // (never indoors, nor down in the garage)
+    if (!this.player.outdoors) return; // (never indoors; in the garage yes, #441)
     this.state = 'worn';
     this.model.visible = false;
     this.heat = 0; this.cut = false;
@@ -213,7 +229,10 @@ export class Jetpack {
     const up = k.has('Space') || this.touchUp;
     const down = k.has('KeyC') || k.has('ControlLeft') || k.has('ControlRight') || this.touchDown;
     if (this.cut && this.heat <= J.heat.resume) this.cut = false;
-    const on = up && !this.cut;
+    const roofed = this.player.below || this.player.inCore; // under the garage's / the stairwell's ceiling: no thrust (#441)
+    if (up && roofed && !this.roofedHint) this.onRoofed?.();
+    this.roofedHint = up && roofed;
+    const on = up && !this.cut && !roofed;
     this.heat = THREE.MathUtils.clamp(this.heat + (on ? J.heat.up : -(grounded ? J.heat.ground : J.heat.cool)) * dt, 0, 1);
     if (on && this.heat >= 1) { this.cut = true; sfx.hiss(null, 1.6); } // too hot: off until it has cooled
     if (on && grounded && !this.lifting) { this.lifting = true; this.onFlight?.(); } // lifting off (once per take-off)
@@ -228,7 +247,7 @@ export class Jetpack {
     const p = this.player;
     if (this.worn) {
       // not indoors: walking in through a door stands it down outside it
-      const inside = !p.outdoors || p.below; // (the flat, the garage under the courtyard)
+      const inside = !p.outdoors; // (the flat; the garage keeps it on, #441)
       if (inside && this.lastOut) { this.takeOff(this.lastOut); this.onLeftAtDoor?.(); }
       else if (!inside && !p.flying && !p.fall) this.lastOut = { x: p.pos.x, y: p.pos.y, z: p.pos.z };
     }

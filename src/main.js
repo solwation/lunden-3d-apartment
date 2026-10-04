@@ -289,6 +289,7 @@ const jetpack = new Jetpack({ scene, camera, player, groundY, hud: { el: documen
   up: document.getElementById('jet-up'), down: document.getElementById('jet-down') } });
 jetpack.onFlight = () => bump('flights', 1, 'jetpack'); // each take-off; the first one scores (SCORE.first.flights)
 jetpack.onLeftAtDoor = () => badge('🚀 Jetpacken står kvar utanför', false);
+jetpack.onRoofed = () => badge('🚀 Inte inomhus', false); // Space under the garage's ceiling (#441)
 fall.onWake.push(() => jetpack.goHome());
 const rest = new Rest(camera); // sitting / lying down (#71/#72)
 const saber = new Saber(scene, camera); // the lightsaber in Sovrum 2 (#78)
