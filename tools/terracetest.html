@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Terrace test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+// Hus L's roof terraces in front of våning 4 (#350): one per upper flat (L1201–L1209 with L1205 over the core), each a
+// polygon with its flat id; the area check against the brochure (std 11, L1201 / L1209 12, L1204 / L1205 10 m²), the
+// types differ, the screens stand only where two terraces meet, L1204 and L1205 meet the loft's walls, the railing's top
+// is `rail` over the finished deck (not parapet + rail), the terrace door's threshold is on the deck.
+//   google-chrome --headless=new --dump-dom http://localhost:8137/tools/terracetest.html
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const f = document.createElement('iframe');
+f.width = 400; f.height = 300; f.src = '../index.html?time=12&month=6';
+document.body.append(f);
+f.onload = () => run().catch((e) => { out.textContent = `FAIL ${e}\n${e.stack}\nSOME FAILED`; });
+async function run() {
+  const w = f.contentWindow;
+  while (!w.__app) await wait(100);
+  const { scene } = w.__app;
+  const { husLTerraces, husLLayout } = await w.eval(`import('${new URL('../src/exterior.js', location)}')`);
+  const { HUS_L } = await w.eval(`import('${new URL('../src/config.js', location)}')`);
+  const C = HUS_L.court, L = C.core.loft;
+  const lines = [];
+  let pass = true;
+  const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); pass &&= !!ok; return ok; };
+  const near = (a, b, tol) => Math.abs(a - b) <= tol;
+
+  const T = husLTerraces();
+  const ids = T.map((t) => t.id);
+  check(ids.join() === 'L1201,L1202,L1203,L1204,L1205,L1206,L1207,L1208,L1209', `one terrace per upper flat, west → east: ${ids.join(' ')}`);
+  // the area check (logged): the model's polygon to the parapet's outer face vs the brochure's rounded figure
+  for (const t of T) {
+    const r = t.area / t.target;
+    check(r > 0.9 && r < 1.05, `${t.id}: ${(t.x1 - t.x0).toFixed(2)} × ${C.setback} m = ${t.area.toFixed(2)} m² vs ${t.target} m² (${(100 * (r - 1)).toFixed(1)} %)`);
+    check(t.poly.length === 4 && t.poly.every(([x, z]) => Number.isFinite(x) && Number.isFinite(z)), `${t.id}: a closed polygon`);
+  }
+  // the types differ (not one generic width): the end flats biggest, L1204 / L1205 smallest
+  const by = Object.fromEntries(T.map((t) => [t.id, t.area]));
+  const std = ['L1202', 'L1203', 'L1206', 'L1207', 'L1208'].map((id) => by[id]);
+  check(std.every((a) => near(a, std[0], 1e-6)), `the std group's terraces are alike (${std.map((a) => a.toFixed(2)).join(', ')})`);
+  check(by.L1201 > std[0] && by.L1209 > std[0] && by.L1204 < std[0] && by.L1205 < std[0],
+    `12 > 11 > 10: L1201 ${by.L1201.toFixed(2)}, L1209 ${by.L1209.toFixed(2)} > std ${std[0].toFixed(2)} > L1204 ${by.L1204.toFixed(2)}, L1205 ${by.L1205.toFixed(2)}`);
+  // the joins: consecutive terraces share their boundary, except across the loft
+  const { core: [cx0], xw, xe } = husLLayout();
+  const loftX0 = cx0 - HUS_L.wall - L.west, loftX1 = cx0 - HUS_L.wall + L.w;
+  for (let i = 0; i + 1 < T.length; i++) {
+    const a = T[i], b = T[i + 1];
+    if (a.id === 'L1204') check(near(a.x1, loftX0, 1e-6) && near(b.x0, loftX1, 1e-6), `L1204 ends at the loft's west wall (${a.x1.toFixed(2)}), L1205 starts at its east wall (${b.x0.toFixed(2)})`);
+    else check(near(a.x1, b.x0, 1e-6), `${a.id} | ${b.id} meet at x ${a.x1.toFixed(3)}`);
+  }
+  check(near(T[0].x0, xw, 1e-6) && near(T[T.length - 1].x1, xe, 1e-6), `L1201 / L1209 reach the gables (${xw.toFixed(2)} / ${xe.toFixed(2)})`);
+
+  // the built geometry: the railings' top over the deck, the screens
+  let ext = null;
+  scene.traverse((o) => { if (o.userData.terraces) ext = o; });
+  check(ext, 'the exterior carries its terrace data');
+  const U = ext.userData.terraces;
+  check(near(U.deck - U.y3, C.deck, 1e-6) && near(U.parapet - U.y3, C.parapet, 1e-6), `deck ${C.deck} and parapet ${C.parapet} over våning 4's floor`);
+  const rails = ext.getObjectByName('terraceRails');
+  rails.geometry.computeBoundingBox();
+  const top = rails.geometry.boundingBox.max.y;
+  check(near(top - U.deck, C.rail, 0.005), `the railing's top is ${(top - U.deck).toFixed(3)} m over the finished deck (rail ${C.rail}; not parapet + rail = ${(C.parapet + C.rail).toFixed(2)})`);
+  lines.push(`\n${pass ? 'ALL PASS' : 'SOME FAILED'}`);
+  out.textContent = lines.join('\n');
+}
+</script>
+</body>
+</html>

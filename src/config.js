@@ -549,8 +549,19 @@ export const HUS_L = {
   // front (10–12 m² = ~2.0 m deep to the railing), skärmväggar h 1.8 between the units (bofakta). Heads 2.3 m,
   // `parapet`, `rail` (over the deck), `deck` and the core's `rise` are assumptions; the set-back wall is white render
   // (the illustration docs/peab/hus-l-gardsfasad-illustration.png, not measured)
+  // #350, the terraces per flat (exterior.js `husLTerraces`: a polygon + its flat id each; tools/terracetest.html checks
+  // the areas). Heights over våning 4's structural floor y3: the deck's finished top `deck`, the parapet `parapet`; the
+  // railing's top is `rail` over the FINISHED DECK (not parapet + rail). parapet, deck and rail are assumptions; the
+  // terrace door's threshold sits on the deck. `screen` 1.8 = "Skärmvägg h= 1,8 m" drawn on each terrace's bofakta sheet
+  // (L1201–L1209, L1205), on the boundaries between two terraces only (not at the gables, not at L1205's loft).
+  // `areas` (m², the plan brochure pp. 34–37 / 44 and bofakta; S2): the std group 11, L1201 and L1209 12 (wider: the
+  // gable), L1204 10 (its east end is the loft's wall, `core.loft.west`), L1205 10. On the sheets each terrace reaches
+  // 1.99 m from the set-back wall to its drawn outer line (here: `setback` 1.9 to the parapet's outer face, the walls'
+  // measured faces 11.13 − 9.25 m) and runs between the screens' centre lines / the gable / the loft's wall — so the
+  // model's areas come out 0–6 % under the brochure's rounded figures; the outlines' exact edges are not dimensioned
   court: {
     setback: 1.9, parapet: 0.3, rail: 1.1, deck: 0.06, screen: 1.8,
+    areas: { std: 11, L1201: 12, L1204: 10, L1205: 10, L1209: 12 },
     lower: [{ x0: 0.86, x1: 2.04, sill: 0.8, head: 2.3 }, { x0: 3.05, x1: 4.63, sill: 0.6, head: 2.3 }], // våning 3 (BH 0.8 / 0.6)
     upper: [{ x0: 0.66, x1: 1.64, sill: 1.2, head: 2.3 }, { x0: 3.05, x1: 4.03, sill: 0, head: 2.3 }],  // våning 4: window BH 1.2, terrace door
     // L1205 over the core (x from the core's west outer face): its west part, "Loft ovan hisstopp", is the brick section
@@ -560,6 +571,8 @@ export const HUS_L = {
     core: {
       loft: {
         w: 3.0,      // SOURCED: the loft's east wall's outer face 3.00 m from the upper floor's west outer face
+        west: 0.26,  // SOURCED (#350, bofakta-l1204.pdf): the loft's west wall bounds L1204's terrace 0.44 m thick, its
+                     // face 0.26 m west of the core's west outer face (L1205's own sheet only draws the 0.2 m party wall)
         face: 0,     // SOURCED: m behind våning 3's courtyard face — 0 = flush (its wall's face 11.12 m from the north
                      // face, våning 3's 11.13 m)
         back: 1.5,   // GUESS: m of the raised part north of the set-back line. Not drawn: the plan only shows the loft

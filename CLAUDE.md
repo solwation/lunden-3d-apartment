@@ -110,6 +110,7 @@ src/exterior.js        Hus L (HUS_L): brick row with the core/portik, neighbours
                        units with pilasters, loftgång, spiral-stair drums, roof with solar panels; `husLLayout` gives each
                        strip its flat ids (`lower` L1001…, `upper` L1201…); the upper flats' street openings are their own
                        (`HUS_L.street` per type from bofakta, `floor` = the flat's own floor, not the building storey, #347)
+                       `husLTerraces`: the roof terraces per flat (id, polygon, area vs the brochure's 10/11/12 m², #350)
 src/player.js          WASD/arrow/joystick movement, circle-vs-segment collision, step-up, gravity; outdoors the terrain (`groundY`, #256);
                        `isFree` / `obstacles` / `nearestFree` / `unstick` (#314, see Input notes)
 src/touch.js           on-screen joystick (left) + drag-to-look (right), multi-touch pointer events
@@ -635,6 +636,8 @@ tools/breaktest.html   headless test: the AK-47 breaks a glass on the dining tab
                        bottle, a held glass is not hit, none through a wall, a cup goes, F mends all (#263)
 tools/turbotest.html   headless test: Kaffeturbo with an injected clock — three cups in five minutes (not spread out, not milk /
                        whisky), faster indoors, the text, more coffee adds time, over again; `walktest.html?turbo` walks at that pace
+tools/terracetest.html Hus L's roof terraces (#350): one per upper flat, areas vs 10/11/12 m², the joins at the loft and
+                       the gables, the railing's top over the finished deck
 tools/terraintest.html headless test (#346): the courtyard = the reference level, S2's level differences kept, the ramp's
                        ends / the stairs' feet / the garage drive meet their ground, no ground rises past a retaining wall,
                        every plinth reaches the ground, no unguarded step > 5 cm in OUTDOOR (5 cm grid)

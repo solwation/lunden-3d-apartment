@@ -201,7 +201,7 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
 
   // våning 3–4: the upper units (L1201–L1209), one over each lower unit and one (L1205) over the core
   const C = H.court, y3 = roofTop + H.storeyHeight, zs = D - C.setback, par = y3 + C.parapet, deckY = y3 + C.deck;
-  const LT = C.core.loft, coreW = coreX0 - H.wall, loftX1 = coreW + LT.w, loftTop = upperTop + LT.rise, zt = zs - LT.back, zf = D - LT.face;
+  const LT = C.core.loft, coreW = coreX0 - H.wall, loftX0 = coreW - LT.west, loftX1 = coreW + LT.w, loftTop = upperTop + LT.rise, zt = zs - LT.back, zf = D - LT.face;
   const uppers = [...units.map((u) => [u.x0, u.x1, u.ox, u.upper]), [coreX0, coreX1, null, 'L1205']];
   const Lf = H.loft, doors = [], lampBox = [], lampGlow = [], balc = [], litGlass = [];
   let seed = 337;
@@ -216,7 +216,7 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
     const base = storeyFloor(S.storey + o.floor), ox = o.east ? east - 5.75 : west;
     return { x0: ox + o.x0, x1: ox + o.x1, y0: base + (o.door ? 0 : o.sill), y1: base + (o.door ? S.doorHead : S.head), door: !!o.door };
   });
-  const terraces = []; // [x0, x1] of each terrace strip (railing along the edge, the deck)
+  const terraces = husLTerraces(W, D); // each flat's terrace: id, x0, x1 (#350)
   for (const [x0, x1, ox, id] of uppers) {
     const core = ox == null;
     // street side (#347): both storeys in render behind the loftgång, each flat type with its own openings
@@ -240,28 +240,28 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
     low.forEach((o) => courtWindow(o, D + eps));
     solids.push(boxGeo(x0 + 0.001, x1 - 0.001, roofTop, y3, loftD, D));
     // våning 4, set back behind the terrace: white render with the window and the terrace door
-    const ta = core ? loftX1 : x0, up = core ? open(C.core.upper, coreW, y3) : open(C.upper, ox, y3);
+    // the terrace door's threshold sits on the finished deck (#350)
+    const ta = core ? loftX1 : x0, up = (core ? open(C.core.upper, coreW, y3) : open(C.upper, ox, y3)).map((o) => ({ ...o, y0: Math.max(o.y0, deckY) }));
     facade(renders, ta, x1, y3, upperTop, zs + eps, false, up, false);
     up.forEach((o) => courtWindow(o, zs + eps));
     solids.push(boxGeo(x0 + 0.001, x1 - 0.001, y3, upperTop, loftD, zs));
-    terraces.push([ta, x1]);
     if (!core) continue;
     // L1205's loft over the lift (#337, #349): its courtyard face `face` behind våning 3's (0: flush), in brick, rising
     // `rise` over the roof and reaching `back` north of the set-back line — breaks the terrace row
     const lw = open([LT.win], coreW, y3);
-    facade(bricks, x0, loftX1, par, loftTop, zf + eps, false, lw, false);
+    facade(bricks, loftX0, loftX1, par, loftTop, zf + eps, false, lw, false);
     lw.forEach((o) => courtWindow(o, zf + eps));
-    for (const [x, west] of [[x0, true], [loftX1, false]]) {
+    for (const [x, west] of [[loftX0, true], [loftX1, false]]) {
       bricks.push(quadX(zs, zf, y3, loftTop, x + (west ? -eps : eps), west), quadX(zt, zs, upperTop, loftTop, x + (west ? -eps : eps), west));
     }
-    bricks.push(quadZ(x0, loftX1, upperTop, loftTop, zt - eps, true));
-    solids.push(boxGeo(x0, loftX1, y3, loftTop, zs, zf), boxGeo(x0, loftX1, upperTop, loftTop, zt, zs));
-    roofs.push(boxGeo(x0 - 0.03, loftX1 + 0.03, loftTop, loftTop + 0.05, zt - 0.03, zf + 0.03));
+    bricks.push(quadZ(loftX0, loftX1, upperTop, loftTop, zt - eps, true));
+    solids.push(boxGeo(loftX0, loftX1, y3, loftTop, zs, zf), boxGeo(loftX0, loftX1, upperTop, loftTop, zt, zs));
+    roofs.push(boxGeo(loftX0 - 0.03, loftX1 + 0.03, loftTop, loftTop + 0.05, zt - 0.03, zf + 0.03));
   }
   // the roof terraces (#337): a slab deck, the parapet's inner face + coping, a white railing on it (top rail, bottom
-  // rail, bars every 11 cm), skärmväggar between the units
+  // rail, bars every 11 cm; its top `rail` over the finished deck), skärmväggar between the units
   const zp = D - 0.25, trz = D - 0.1, capY = par + 0.05;
-  for (const [a, b] of terraces) {
+  for (const { x0: a, x1: b } of terraces) {
     const pg = boxGeo(a, b, y3, deckY, zs, zp);
     const pp = pg.attributes.position, uv = pg.attributes.uv;
     for (let i = 0; i < pp.count; i++) uv.setXY(i, pp.getX(i), pp.getZ(i));
@@ -277,9 +277,9 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
     balc.push(boxGeo(rx - 0.03, rx + 0.03, deckY + C.rail - 0.04, deckY + C.rail, zs, D - 0.07));
     for (let z = zs + 0.08; z < D - 0.12; z += 0.11) balc.push(boxGeo(rx - 0.01, rx + 0.01, capY, deckY + C.rail - 0.04, z - 0.01, z + 0.01));
   }
-  for (const [, x] of terraces.slice(0, -1)) { // skärmvägg h 1.8 on each boundary between two terraces (not at the loft)
-    if (Math.abs(x - coreX0) < 1e-3) continue;
-    fences.push(boxGeo(x - 0.03, x + 0.03, deckY, deckY + C.screen, zs, zp));
+  for (let i = 0; i + 1 < terraces.length; i++) { // skärmvägg h 1.8 where two terraces meet (not at the loft, the gables)
+    const x = terraces[i].x1;
+    if (Math.abs(terraces[i + 1].x0 - x) < 1e-3) fences.push(boxGeo(x - 0.03, x + 0.03, deckY, deckY + C.screen, zs, zp));
   }
   const edges = [...new Set(uppers.flatMap(([a, b]) => [a, b]).map((x) => +x.toFixed(3)))];
   const pw = H.pilaster / 2;
@@ -336,6 +336,7 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
     mesh.castShadow = shadow;
     mesh.receiveShadow = true;
     group.add(mesh);
+    return mesh;
   };
   add(bricks, brickMat());
   add(renders, new THREE.MeshStandardMaterial({ color: H.render, roughness: 0.95 }));
@@ -345,7 +346,9 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
   add(glassGeo, new THREE.MeshStandardMaterial({ color: 0x33434d, roughness: 0.1, metalness: 0.4 }), false);
   add(rails, new THREE.MeshStandardMaterial({ color: COLORS.balcony, roughness: 0.5, metalness: 0.3 }));
   add([...fascia, ...capping], new THREE.MeshStandardMaterial({ color: Lf.fascia, roughness: 0.4, metalness: 0.4 }));
-  add(balc, new THREE.MeshStandardMaterial({ color: Lf.door, roughness: 0.45, metalness: 0.2 }));
+  const railMesh = add(balc, new THREE.MeshStandardMaterial({ color: Lf.door, roughness: 0.45, metalness: 0.2 }));
+  if (railMesh) railMesh.name = 'terraceRails'; // the terraces' railings (tools/terracetest.html)
+  group.userData.terraces = { list: terraces, y3, deck: deckY, parapet: par }; // #350
   add(doors, new THREE.MeshStandardMaterial({ color: Lf.door, roughness: 0.4 }));
   add(lampBox, new THREE.MeshStandardMaterial({ color: 0x2b2d30, roughness: 0.5, metalness: 0.4 }));
   const glowMat = new THREE.MeshBasicMaterial({ color: 0x55534d, toneMapped: false }), lit = new THREE.Color(0xffd9a0), off = new THREE.Color(0x8d8b84);
@@ -367,6 +370,27 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
   add(fences, mats.fence);
   group.userData.segments = segments;
   return group;
+}
+
+/**
+ * The roof terraces in front of våning 4 (#350), west → east: one per upper flat with its id, the strip [x0, x1] from
+ * party-wall centre to party-wall centre (the end flats out to the gable; L1204 to the loft's west wall, L1205 from its
+ * east wall), z from the set-back wall (D − setback) to the parapet's outer face (D); `poly` (plan x/z), `area` (m²) and
+ * `target` = the brochure's figure (HUS_L.court.areas).
+ */
+export function husLTerraces(W = 5.75, D = 12.7) {
+  const C = H.court, { units, core: [cx0, cx1] } = husLLayout(W), coreW = cx0 - H.wall, zs = D - C.setback;
+  // between the party-wall centres (not the façade strips, which keep our own unit's full 5.75 m: W)
+  const list = units.map((u, i) => ({ id: u.upper, x0: i === 0 ? u.x0 : u.ox + H.wall, x1: i === units.length - 1 ? u.x1 : u.ox + H.wall + H.pitch }));
+  list.find((t) => Math.abs(t.x1 - cx0) < 1e-6).x1 = coreW - C.core.loft.west; // L1204: up to the loft's west wall
+  list.push({ id: 'L1205', x0: coreW + C.core.loft.w, x1: cx1 });
+  list.sort((a, b) => a.x0 - b.x0);
+  for (const t of list) {
+    t.poly = [[t.x0, zs], [t.x1, zs], [t.x1, D], [t.x0, D]];
+    t.area = Math.abs(t.poly.reduce((s, [x, z], i, p) => s + x * p[(i + 1) % p.length][1] - p[(i + 1) % p.length][0] * z, 0)) / 2;
+    t.target = C.areas[t.id] ?? C.areas.std;
+  }
+  return list;
 }
 
 /**
