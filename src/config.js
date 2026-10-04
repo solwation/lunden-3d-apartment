@@ -424,7 +424,26 @@ export const HUS_L = {
   // a round handrail on the balusters, the upper units' white front doors set back in a recess, a wall lantern
   // beside each door that lights up at dusk (no lights: colour only, like the pergola's bulbs)
   loft: { fascia: 0xd5d8d4, handrailR: 0.022, door: 0xf4f4f1, recess: 0.14, lamp: { dx: 0.25, y: 2.1, w: 0.12, h: 0.22 } },
-  pilaster: 0.4,          // brick pilaster width at each unit boundary (render)
+  pilaster: 0.4,          // brick pilaster width at each unit boundary (render, street side)
+  // #337, the courtyard side of våning 3–4 (bofakta L1202–L1208 / L1205, 1:100 with the 0–5 m bar; x = metres from the
+  // unit's west outer face, sill/head over that storey's floor): våning 3 is brick, flush with ours; våning 4 stands
+  // `setback` behind it (its courtyard wall 9.21 m from the north wall vs våning 3's 11.11 m) with a roof terrace in
+  // front (10–12 m² = ~2.0 m deep to the railing), skärmväggar h 1.8 between the units (bofakta). Heads 2.3 m,
+  // `parapet`, `rail` (over the deck), `deck` and the core's `rise` are assumptions; the set-back wall is white render
+  // (the illustration docs/peab/hus-l-gardsfasad-illustration.png, not measured)
+  court: {
+    setback: 1.9, parapet: 0.3, rail: 1.1, deck: 0.06, screen: 1.8,
+    lower: [{ x0: 0.86, x1: 2.04, sill: 0.8, head: 2.3 }, { x0: 3.05, x1: 4.63, sill: 0.6, head: 2.3 }], // våning 3 (BH 0.8 / 0.6)
+    upper: [{ x0: 0.66, x1: 1.64, sill: 1.2, head: 2.3 }, { x0: 3.05, x1: 4.03, sill: 0, head: 2.3 }],  // våning 4: window BH 1.2, terrace door
+    // L1205 over the core (x from the core's west outer face): the west `loft` m ("Loft ovan hisstopp", BH 0.15 window)
+    // is flush with våning 3 in brick and rises `rise` over the roof (assumption) as the brick section breaking the terrace
+    // row (`back` m of it north of the set-back line: assumption); the terrace east of it. Våning 3 there: L1205's 6.55 m
+    // wide lower floor at the core's east end (BH 0.8 / 0.6, x from its west face)
+    core: { loft: 3.0, rise: 0.9, back: 1.5, loftWin: { x0: 0.62, x1: 2.0, sill: 0.15, head: 2.3 },
+      upper: [{ x0: 3.29, x1: 4.26, sill: 1.2, head: 2.3 }, { x0: 5.67, x1: 6.65, sill: 0, head: 2.3 }],
+      lowerW: 6.55, lower: [{ x0: 1.68, x1: 2.85, sill: 0.8, head: 2.3 }, { x0: 3.86, x1: 5.44, sill: 0.6, head: 2.3 }] },
+    lit: 0.45, // share of the upper units' courtyard windows lit at night (window light, not measured)
+  },
   // spiral stairs in brick drums at both ends (våning 1/3 plans): centre, radius
   // (#42: the east one, L1008's escape stair, stands right against the house, per the user; #172: so does
   // the west one, against the west gable — `gable: 'west'` = its x is worked out in exterior.js, gable − r)

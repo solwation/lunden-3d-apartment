@@ -95,13 +95,14 @@ function drum(x, z, r, h) {
  *    the other units get our façade openings as glass, and our patio/hedge/screen walls
  *  - våning 3–4: the stacked two-storey units, white render with brick pilasters, set back behind
  *    the loftgång (grey-green railing, a light metal fascia, recessed white doors with a lantern each, #111) on the
- *    north side; spiral stairs in brick drums at both ends
- *  - flat roof with solar panels and a light metal capping; French balconies at the upper units' courtyard doors (#110)
+ *    north side; on the courtyard side (#337, HUS_L.court) våning 3 in brick, våning 4 set back behind roof terraces,
+ *    the core's brick loft rising through them; spiral stairs in brick drums at both ends
+ *  - flat roof with solar panels and a light metal capping
  */
 export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, mats }) {
   const group = new THREE.Group();
   const bricks = [], renders = [], glassGeo = [], frames = [], solids = [], rails = [], roofs = [], pilasters = [], panels = [];
-  const patios = [], hedges = [], fences = [];
+  const patios = [], hedges = [], fences = [], copings = [];
   const segments = []; // collision for the neighbours' screen walls and hedges (lawn side)
   const loftD = H.loftgangDepth;
   const upperTop = roofTop + H.upperStoreys * H.storeyHeight;
@@ -110,9 +111,9 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
   // the units along x: west row | core | east row (ours: ox = 0); each neighbour spans its own façade strip
   const { units, core: [coreX0, coreX1], xw, xe } = husLLayout(W);
 
-  const fakeWindow = (o, z, northSide) => {
+  const fakeWindow = (o, z, northSide, glassOut = glassGeo) => {
     const s = northSide ? -1 : 1;
-    glassGeo.push(quadZ(o.x0, o.x1, o.y0, o.y1, z + s * 0.002, northSide));
+    glassOut.push(quadZ(o.x0, o.x1, o.y0, o.y1, z + s * 0.002, northSide));
     const f = 0.06;
     frames.push(
       boxGeo(o.x0, o.x1, o.y0, o.y0 + f, z - 0.02, z + 0.02),
@@ -198,12 +199,22 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
     bricks.push(quadX(0, D, 0, ph, p0 + eps, false), quadX(0, D, 0, ph, p1 - eps, true));
   }
 
-  // våning 3–4: the upper units (L1201–L1209), one over each lower unit and one over the core
-  const uppers = [...units.map((u) => [u.x0, u.x1, u.ox]), [coreX0, coreX1]];
-  const Lf = H.loft, doors = [], lampBox = [], lampGlow = [], balc = [];
+  // våning 3–4: the upper units (L1201–L1209), one over each lower unit and one (L1205) over the core
+  const C = H.court, y3 = roofTop + H.storeyHeight, zs = D - C.setback, par = y3 + C.parapet, deckY = y3 + C.deck;
+  const coreW = coreX0 - H.wall, loftX1 = coreW + C.core.loft, loftTop = upperTop + C.core.rise, zt = zs - C.core.back;
+  const uppers = [...units.map((u) => [u.x0, u.x1, u.ox]), [coreX0, coreX1, null]];
+  const Lf = H.loft, doors = [], lampBox = [], lampGlow = [], balc = [], litGlass = [];
+  let seed = 337;
+  const isLit = () => ((seed = (seed * 16807) % 2147483647) / 2147483647) < C.lit;
+  const open = (list, ox, base) => list.map((o) => ({ x0: ox + o.x0, x1: ox + o.x1, y0: base + o.sill, y1: base + o.head }));
+  /** Courtyard window/door: glass + frame, a share of them lit at night (litGlass). */
+  const courtWindow = (o, z) => fakeWindow(o, z, false, isLit() ? litGlass : glassGeo);
   const isDoor = (o) => o.y0 - roofTop < 0.05 && o.x1 - o.x0 < 1.4; // our front door among the (shifted) north openings
-  for (const [x0, x1, ox = x0] of uppers) {
-    const holes = shift(north, ox, roofTop);
+  const terraces = []; // [x0, x1] of each terrace strip (railing along the edge, the deck)
+  for (const [x0, x1, ox] of uppers) {
+    const core = ox == null;
+    // street side (unchanged): both storeys in render behind the loftgång
+    const holes = shift(north, core ? x0 : ox, roofTop);
     facade(renders, x0, x1, roofTop, upperTop, loftD - eps, true, holes, false);
     for (const o of holes) {
       if (!isDoor(o)) { fakeWindow(o, loftD - eps, true); continue; }
@@ -217,40 +228,75 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
       lampBox.push(boxGeo(lx - lw / 2, lx + lw / 2, ly + lh / 2, ly + lh / 2 + 0.03, loftD - 0.12, loftD), boxGeo(lx - 0.03, lx + 0.03, ly - lh / 2, ly + lh / 2, loftD - 0.02, loftD));
       lampGlow.push(boxGeo(lx - lw / 2 + 0.01, lx + lw / 2 - 0.01, ly - lh / 2, ly + lh / 2, loftD - 0.11, loftD - 0.02));
     }
-    const southHoles = shift(south, ox, roofTop);
-    facade(renders, x0, x1, roofTop, upperTop, D + eps, false, southHoles);
-    // a French balcony in front of the tall door to the courtyard (#110): white top rail, bottom rail, balusters
-    for (const o of southHoles.filter((h) => h.y0 - roofTop < 0.05)) {
-      const zf = D + 0.09, yb = o.y0 + 0.05, yt = o.y0 + 1.0;
-      balc.push(boxGeo(o.x0 - 0.05, o.x1 + 0.05, yt - 0.04, yt, zf - 0.03, zf + 0.03), boxGeo(o.x0 - 0.05, o.x1 + 0.05, yb, yb + 0.03, zf - 0.02, zf + 0.02));
-      for (let x = o.x0 + 0.06; x < o.x1 - 0.02; x += 0.11) balc.push(boxGeo(x - 0.008, x + 0.008, yb, yt, zf - 0.008, zf + 0.008));
-      for (const x of [o.x0 - 0.05, o.x1 + 0.03]) balc.push(boxGeo(x, x + 0.02, yb, yt, D, zf)); // fixed to the reveals
+    // courtyard side, våning 3 (#337): brick flush with ours, up to the terrace parapet
+    const low = core ? open(C.core.lower, x1 + H.wall - C.core.lowerW, roofTop) : open(C.lower, ox, roofTop);
+    facade(bricks, x0, x1, roofTop, par, D + eps, false, low, false);
+    low.forEach((o) => courtWindow(o, D + eps));
+    solids.push(boxGeo(x0 + 0.001, x1 - 0.001, roofTop, y3, loftD, D));
+    // våning 4, set back behind the terrace: white render with the window and the terrace door
+    const ta = core ? loftX1 : x0, up = core ? open(C.core.upper, coreW, y3) : open(C.upper, ox, y3);
+    facade(renders, ta, x1, y3, upperTop, zs + eps, false, up, false);
+    up.forEach((o) => courtWindow(o, zs + eps));
+    solids.push(boxGeo(x0 + 0.001, x1 - 0.001, y3, upperTop, loftD, zs));
+    terraces.push([ta, x1]);
+    if (!core) continue;
+    // L1205's loft over the lift (#337): flush with våning 3 in brick, rising over the roof — breaks the terrace row
+    const lw = open([C.core.loftWin], coreW, y3);
+    facade(bricks, x0, loftX1, par, loftTop, D + eps, false, lw, false);
+    lw.forEach((o) => courtWindow(o, D + eps));
+    for (const [x, west] of [[x0, true], [loftX1, false]]) {
+      bricks.push(quadX(zs, D, y3, loftTop, x + (west ? -eps : eps), west), quadX(zt, zs, upperTop, loftTop, x + (west ? -eps : eps), west));
     }
-    solids.push(boxGeo(x0 + 0.001, x1 - 0.001, roofTop, upperTop, loftD, D));
+    bricks.push(quadZ(x0, loftX1, upperTop, loftTop, zt - eps, true));
+    solids.push(boxGeo(x0, loftX1, y3, loftTop, zs, D), boxGeo(x0, loftX1, upperTop, loftTop, zt, zs));
+    roofs.push(boxGeo(x0 - 0.03, loftX1 + 0.03, loftTop, loftTop + 0.05, zt - 0.03, D + 0.03));
   }
-  const edges = [...new Set(uppers.flat().map((x) => +x.toFixed(3)))];
+  // the roof terraces (#337): a slab deck, the parapet's inner face + coping, a white railing on it (top rail, bottom
+  // rail, bars every 11 cm), skärmväggar between the units
+  const zp = D - 0.25, trz = D - 0.1, capY = par + 0.05;
+  for (const [a, b] of terraces) {
+    const pg = boxGeo(a, b, y3, deckY, zs, zp);
+    const pp = pg.attributes.position, uv = pg.attributes.uv;
+    for (let i = 0; i < pp.count; i++) uv.setXY(i, pp.getX(i), pp.getZ(i));
+    patios.push(pg);
+    bricks.push(quadZ(a, b, deckY, par, zp - eps, true));
+    copings.push(boxGeo(a - 0.02, b + 0.02, par, capY, zp - 0.02, D + 0.04));
+    balc.push(boxGeo(a + 0.03, b - 0.03, deckY + C.rail - 0.04, deckY + C.rail, trz - 0.03, trz + 0.03), boxGeo(a + 0.03, b - 0.03, capY + 0.06, capY + 0.09, trz - 0.015, trz + 0.015));
+    for (let x = a + 0.08; x < b - 0.05; x += 0.11) balc.push(boxGeo(x - 0.01, x + 0.01, capY, deckY + C.rail - 0.04, trz - 0.01, trz + 0.01));
+  }
+  for (const [x, s] of [[xw, 1], [xe, -1]]) { // along the gables: the parapet and a railing from the set-back wall to the edge
+    copings.push(boxGeo(Math.min(x - 0.04 * s, x + 0.25 * s), Math.max(x - 0.04 * s, x + 0.25 * s), par, capY, zs, D + 0.04));
+    const rx = x + 0.1 * s;
+    balc.push(boxGeo(rx - 0.03, rx + 0.03, deckY + C.rail - 0.04, deckY + C.rail, zs, D - 0.07));
+    for (let z = zs + 0.08; z < D - 0.12; z += 0.11) balc.push(boxGeo(rx - 0.01, rx + 0.01, capY, deckY + C.rail - 0.04, z - 0.01, z + 0.01));
+  }
+  for (const [, x] of terraces.slice(0, -1)) { // skärmvägg h 1.8 on each boundary between two terraces (not at the loft)
+    if (Math.abs(x - coreX0) < 1e-3) continue;
+    fences.push(boxGeo(x - 0.03, x + 0.03, deckY, deckY + C.screen, zs, zp));
+  }
+  const edges = [...new Set(uppers.flatMap(([a, b]) => [a, b]).map((x) => +x.toFixed(3)))];
   const pw = H.pilaster / 2;
-  for (const x of edges) {
-    pilasters.push(boxGeo(x - pw, x + pw, roofTop, upperTop + 0.5, loftD - 0.1, loftD));
-    pilasters.push(boxGeo(x - pw, x + pw, roofTop, upperTop + 0.5, D, D + 0.1));
-  }
+  for (const x of edges) pilasters.push(boxGeo(x - pw, x + pw, roofTop, upperTop + 0.5, loftD - 0.1, loftD)); // street side only
 
-  // gable ends (L1008's east gable has windows)
-  bricks.push(quadX(0, D, 0, roofTop, xw - eps, true));
-  const sh = [0, roofTop / 2, roofTop, roofTop + H.storeyHeight];
+  // gable ends (L1008's east gable has windows): brick up to the terrace parapet, våning 4 in render
+  bricks.push(quadX(0, D, 0, roofTop, xw - eps, true), quadX(loftD, D, roofTop, par, xw - eps, true));
+  const sh = [0, roofTop / 2, roofTop, y3];
   const gw = H.gableWindows.map((g) => ({ z0: g.z0, z1: g.z1, y0: sh[g.storey] + g.sill, y1: sh[g.storey] + g.head, storey: g.storey }));
   for (const [za, zb, ya, yb] of complement(0, D, 0, roofTop, gw.filter((g) => g.storey < 2).map((g) => ({ x0: g.z0, x1: g.z1, y0: g.y0, y1: g.y1 })))) {
     bricks.push(quadX(za, zb, ya, yb, xe + eps, false));
   }
-  renders.push(quadX(loftD, D, roofTop, upperTop, xw - eps, true));
-  for (const [za, zb, ya, yb] of complement(loftD, D, roofTop, upperTop, gw.filter((g) => g.storey >= 2).map((g) => ({ x0: g.z0, x1: g.z1, y0: g.y0, y1: g.y1 })))) {
+  for (const [za, zb, ya, yb] of complement(loftD, D, roofTop, par, gw.filter((g) => g.storey === 2).map((g) => ({ x0: g.z0, x1: g.z1, y0: g.y0, y1: g.y1 })))) {
+    bricks.push(quadX(za, zb, ya, yb, xe + eps, false));
+  }
+  renders.push(quadX(loftD, zs, y3, upperTop, xw - eps, true));
+  for (const [za, zb, ya, yb] of complement(loftD, zs, y3, upperTop, gw.filter((g) => g.storey === 3).map((g) => ({ x0: g.z0, x1: g.z1, y0: g.y0, y1: g.y1 })))) {
     renders.push(quadX(za, zb, ya, yb, xe + eps, false));
   }
   gw.forEach((g) => fakeWindowX(g, xe + eps, false));
 
-  // flat roof with a parapet, solar panels
-  roofs.push(boxGeo(xw - 0.1, xe + 0.1, upperTop, upperTop + 0.3, loftD - 0.1, D + 0.1));
-  const capping = [boxGeo(xw - 0.13, xe + 0.13, upperTop + 0.3, upperTop + 0.35, loftD - 0.13, D + 0.13)]; // light sheet-metal capping on the parapet (#110)
+  // flat roof over våning 4 with a parapet, solar panels
+  roofs.push(boxGeo(xw - 0.1, xe + 0.1, upperTop, upperTop + 0.3, loftD - 0.1, zs + 0.1));
+  const capping = [boxGeo(xw - 0.13, xe + 0.13, upperTop + 0.3, upperTop + 0.35, loftD - 0.13, zs + 0.13), ...copings]; // light sheet-metal capping on the parapets (#110)
   for (const [xa, xb] of H.solar.x) for (const [za, zb] of H.solar.z) panels.push(boxGeo(xa, xb, upperTop + 0.35, upperTop + 0.42, za, zb));
 
   // loftgång deck from the west drum to the east end, plus the landing to the east drum
@@ -297,7 +343,13 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
   const glowMat = new THREE.MeshBasicMaterial({ color: 0x55534d, toneMapped: false }), lit = new THREE.Color(0xffd9a0), off = new THREE.Color(0x8d8b84);
   add(lampGlow, glowMat, false);
   /** night 0 … 1 (with the window lights): the lanterns by the loftgång doors glow after dusk. */
-  group.userData.update = (night) => glowMat.color.copy(night > 0.35 ? lit : off);
+  // the upper units' courtyard windows (#337): a share of them lit after dusk (one material, its emissive switched)
+  const litMat = new THREE.MeshStandardMaterial({ color: 0x33434d, roughness: 0.1, metalness: 0.4, emissive: 0xffc98a, emissiveIntensity: 0 });
+  add(litGlass, litMat, false);
+  group.userData.update = (night) => {
+    glowMat.color.copy(night > 0.35 ? lit : off);
+    litMat.emissiveIntensity = night > 0.35 ? 0.6 : 0;
+  };
   const roofMat = new THREE.MeshStandardMaterial({ color: 0x4b5157, roughness: 0.9 });
   registerSnow(roofMat, SEASON.snow.roof);
   add(roofs, roofMat);
