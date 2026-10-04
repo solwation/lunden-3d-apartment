@@ -690,6 +690,11 @@ src/cooking.js         the life sim's kitchen work (M1): actions judged by the t
                        its amount (moved, never copied); named from its parts (`items.namers.breadSlice`: "ost- och gurkmackan",
                        "ostmackan", "gurkmackan", "smörgåsen"); three plates (LIFE_TOOLS.stock) stand in the wall cabinet over the free
                        worktop (store 'plates', interior.js stock 'platesLife': its static stack left out)
+                       Eating it (#380): taken off a plate it remembers it (`machine.plate`); each bite gives that plate crumbs (clean
+                       'used', the plate's `crumbs` shown) and a 'crumbs' event; the last bite emits 'ate' { name, parts, amount } and,
+                       with anything on it, bump('sandwiches', 1, name) — SCORE.first per combination ("Du gjorde en macka!"), then
+                       `again`; put back half eaten it stays (and is saved). A LifeItem's meshes a `show()` builds later (layers) get
+                       its E target too (`refresh`)
 src/actions.js         what you can do with a life-sim thing (#367): `ActionSet.define({ id, label, applies, check, run, consumes,
                        result, duration, interrupt, order, quiet })`, `list(ctx)` = the rows with a Swedish `reason` when blocked
                        ("Öppna kylen först", "Tallriken är full", "För långt bort"); life.js `baseActions`: putOn, take, open, close.
@@ -949,7 +954,8 @@ tools/lifetest.html    headless test of the life sim's M1, the sandwich flow (#3
                        slices taken one by one, the end, a reload (#376); the bread bag closed / opened, slices down to 0 and no
                        further, the empty bag stays, a slice on a plate, one eaten plain in four bites (#377); a dab and spreading
                        (exact grams, the layer, double presses), cheese slices on the board and the worktop, the last bits (#378); a
-                       plate from the cabinet, toppings moved exactly once, names, the layer limit, carried to the table, a reload (#379)
+                       plate from the cabinet, toppings moved exactly once, names, the layer limit, carried to the table, a reload (#379);
+                       seated at the dining table: taken in reach, bites, put back half eaten, the used plate, 'ate', points once (#380)
 tools/inventorytest.html headless test (#365): the `&life` scenario's start state, the visitor's records untouched, the
                        integration points the inventory names; without &life the game starts at START
 tools/stamp.sh         build the published site with a version stamp (used by CI)

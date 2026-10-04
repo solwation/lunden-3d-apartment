@@ -19,6 +19,8 @@
 //       portion) and cheese (the slicer: −12 g exactly, a slice on the board / beside the block); the tools used; the last bits.
 //  #379 a sandwich: a plate from the plate cabinet, toppings onto the bread move exactly once, free combinations named from
 //       what is on them, the layer limit, carried on the plate to the dining table, a half-built one through a reload.
+//  #380 eating it: sitting at the dining table, taken off the plate in reach, bites step by step, put back half eaten (it
+//       stays), the last bite leaves a used plate (crumbs), the 'ate' event, counted once per sandwich.
 //   chromium --headless=new --dump-dom http://localhost:8137/tools/lifetest.html
 import { LIFE_FOOD, LIFE_TOOLS } from '../src/config.js';
 const out = document.getElementById('out');
@@ -436,6 +438,57 @@ try {
   shut();
   f.remove();
 } catch (e) { pass = false; lines.push(`FAIL #379 error ${e.stack}`); }
+
+// --- #380: eating the sandwich at the table -------------------------------------------------------------------
+try {
+  const f = await load('life&shot');
+  const { A, d, btn, shut, life, I, step } = kit(f);
+  const V = A.camera.position.constructor;
+  const plate = I.ofType('plate')[0]; // (the &life scenario's, on the dining table)
+  for (const k of I.children(plate)) I.remove(k, { cascade: true });
+  const sw = life.create('breadSlice', { at: 'on', parent: plate.id, slot: 0 }, { parts: [{ type: 'butter', amount: 8 }, { type: 'cheeseSlice', amount: 12 }, { type: 'cucumberSlice', amount: 10 }] });
+  const events = []; life.onEvent((k, x) => events.push([k, x]));
+  const n0 = A.stats.sandwiches ?? 0, score0 = A.totalScore();
+  // sit down on the dining chair nearest the plate
+  const pp = life.view(plate).where();
+  const chairs = A.world.furnitureTargets.filter((t) => t.kind === 'rest' && t.name === 'stolen').map((t) => [t, t.pickable.getWorldPosition(new V()).distanceTo(pp)]).sort((a, b) => a[1] - b[1]);
+  A.use(chairs[0][0]); for (let i = 0; i < 90; i++) step(1 / 60);
+  check(A.rest.active, `sitting on a dining chair ${chairs[0][1].toFixed(2)} m from the plate`);
+  const look = (p) => { const c = A.camera.position, dx = p.x - c.x, dz = p.z - c.z; A.camera.rotation.set(Math.atan2(p.y - c.y, Math.hypot(dx, dz)), Math.atan2(-dx, -dz), 0, 'YXZ'); step(1 / 60); };
+  const swp = life.view(sw).where(); swp.y += 0.015;
+  look(swp);
+  const fo = A.focus().focused;
+  check(fo?.kind === 'life' && /ost- och gurkmackan/.test(btn.textContent + d.getElementById('prompt').textContent), `seated, in reach: "${btn.textContent}"`);
+  if (fo) A.use(fo); step(1 / 60);
+  const v = life.view(sw);
+  check(A.heldItem() === v && sw.machine.plate === plate.id, 'taken off the plate (it knows its plate)');
+  A.camera.rotation.set(0.6, A.camera.rotation.y, 0); step(1 / 60);
+  v.use(); for (let i = 0; i < 40; i++) step(1 / 60);
+  check(Math.abs(sw.amount - 0.75) < 1e-6 && plate.clean === 'used' && life.view(plate).view.object.getObjectByName('crumbs').visible, `one bite: ${sw.amount} left, crumbs on the plate`);
+  v.use(); for (let i = 0; i < 40; i++) step(1 / 60);
+  check(Math.abs(sw.amount - 0.5) < 1e-6 && (A.stats.sandwiches ?? 0) === n0, `two bites: ${sw.amount} left, not counted yet`);
+  // put back half eaten: it stays
+  const back = life.options({ item: life.view(plate) }).find((o) => o.id === 'putOn');
+  check(back?.label === 'lägga ost- och gurkmackan på tallriken' && back.run() && sw.place.parent === plate.id && Math.abs(sw.amount - 0.5) < 1e-6, `"${back?.label}": half a sandwich on the plate`);
+  const rec = A.keepWorld().life; life.load(rec);
+  const sw2 = I.get(sw.id);
+  check(sw2 && Math.abs(sw2.amount - 0.5) < 1e-6 && sw2.parts.length === 3 && sw2.place.parent === plate.id, 'after a reload: still half a sandwich on the plate');
+  life.view(sw2).take(); step(1 / 60);
+  for (let k = 0; k < 2; k++) { life.view(sw2).use(); for (let i = 0; i < 40; i++) step(1 / 60); }
+  const p2 = I.get(plate.id), ate = events.filter(([k]) => k === 'ate');
+  check(!I.get(sw.id) && !A.heldItem() && p2 && p2.clean === 'used' && I.children(p2).length === 0, 'the last bite: the sandwich gone, the used plate left');
+  check(ate.length === 1 && ate[0][1].name === 'ost- och gurkmackan' && ate[0][1].amount === 1 && ate[0][1].parts.length === 3, `the 'ate' event: ${JSON.stringify(ate[0]?.[1] && { name: ate[0][1].name, amount: ate[0][1].amount, parts: ate[0][1].parts.length })}`);
+  check((A.stats.sandwiches ?? 0) === n0 + 1 && A.totalScore() > score0 + 30, `counted once: ${A.stats.sandwiches} sandwich(es), +${(A.totalScore() - score0).toFixed(0)} points`);
+  // another of the same kind: counted, a little
+  const s3 = life.create('breadSlice', { at: 'hand' }, { parts: [{ type: 'cheeseSlice', amount: 12 }, { type: 'cucumberSlice', amount: 10 }] }); step(1 / 60);
+  const sc1 = A.totalScore();
+  for (let k = 0; k < 4; k++) { life.view(s3).use(); for (let i = 0; i < 40; i++) step(1 / 60); }
+  check(!I.get(s3.id) && (A.stats.sandwiches ?? 0) === n0 + 2 && A.totalScore() - sc1 < 10 && A.totalScore() > sc1, `a second one: counted (${A.stats.sandwiches}), +${(A.totalScore() - sc1).toFixed(1)} points`);
+  check(I.audit().length === 0, `audit: ${I.audit().join('; ') || 'ok'}`);
+  A.standUp(); step(1 / 60);
+  shut();
+  f.remove();
+} catch (e) { pass = false; lines.push(`FAIL #380 error ${e.stack}`); }
 
 // a new visit keeps the amounts (lunden.life, #371): not the &life scenario, the visitor's own home
 try {

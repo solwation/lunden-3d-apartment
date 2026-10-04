@@ -83,7 +83,10 @@ export class LifeItem extends Holdable {
   }
 
   /** The model shows the instance's state (amount, package …). */
-  refresh() { this.view.show?.(this.item, this.life.items); }
+  refresh() {
+    this.view.show?.(this.item, this.life.items);
+    this.model.traverse((m) => { m.userData.door ??= this.takeTarget; }); // (meshes a show() built — a sandwich's layers — are part of it too; what lies on it keeps its own)
+  }
 
   take() {
     if (handBusy(this)) return;
@@ -137,10 +140,13 @@ export class Life {
     this.runner = new Runner(this.items); // actions that take a moment (#372): validate, reserve, animate, commit
     baseActions(this);
     cookingActions(this); // the kitchen work: tools on food (#374 …)
-    this.items.on((kind, item) => {
+    this.items.on((kind, item, extra) => {
       this.dirty = true;
       if (kind === 'create') this.views.set(item.id, new LifeItem(this, item));
-      else if (kind === 'move') { if (item.place.at === 'world') this.lastWorld.set(item.id, { ...item.place, pos: [...item.place.pos] }); this.views.get(item.id)?.sync(); }
+      else if (kind === 'move') {
+        if (item.place.at === 'hand' && extra?.at === 'on' && this.items.has(this.items.get(extra.parent), 'dish') && item.machine.plate !== extra.parent) this.items.set(item, { machine: { plate: extra.parent } }); // taken off a plate: its crumbs go there (#380)
+        else if (item.place.at === 'on' && this.items.has(this.items.get(item.place.parent), 'dish') && item.machine.plate !== item.place.parent) this.items.set(item, { machine: { plate: item.place.parent } });
+        if (item.place.at === 'world') this.lastWorld.set(item.id, { ...item.place, pos: [...item.place.pos] }); this.views.get(item.id)?.sync(); }
       else if (kind === 'change') this.views.get(item.id)?.refresh();
       else if (kind === 'remove') this.dropView(item);
     });

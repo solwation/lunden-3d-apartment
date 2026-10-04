@@ -49,7 +49,18 @@ function plate() {
   g.add(mesh(new THREE.LatheGeometry(prof, 40), M.porcelain));
   const anchors = [anchor(g, 0, 0.007, 0)];
   for (let k = 0; k < 5; k++) { const a = (k / 5) * Math.PI * 2; anchors.push(anchor(g, Math.cos(a) * 0.065, 0.008, Math.sin(a) * 0.065, -a)); }
-  return { object: g, anchors, grip: [0.12, 0.012, 0.03] };
+  // crumbs once it has been eaten from (#380): a few small bits of crust and crumb on the well
+  const crumbs = new THREE.Group();
+  crumbs.name = 'crumbs';
+  for (let k = 0; k < 14; k++) {
+    const a = k * 2.4, r = 0.012 + (k * 37 % 60) / 1000, sz = 0.002 + (k % 3) * 0.0012;
+    const c = new THREE.Mesh(new THREE.BoxGeometry(sz, sz * 0.7, sz * 1.2), k % 3 ? M.crumb : M.crust);
+    c.position.set(Math.cos(a) * r, 0.0075, Math.sin(a) * r); c.rotation.y = a;
+    crumbs.add(c);
+  }
+  crumbs.visible = false;
+  g.add(crumbs);
+  return { object: g, anchors, grip: [0.12, 0.012, 0.03], show(item) { crumbs.visible = item.clean === 'used' || item.clean === 'dirty'; } };
 }
 
 /** A wooden cutting board 40 × 26 cm: spot 0 for what is being cut along the back half, eight result spots in two rows of

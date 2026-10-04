@@ -18,6 +18,9 @@ import { sfx } from './audio.js';
 //   #379 a sandwich: a slice of bread with layers (its `parts`: butter, cheese, cucumber — any combination); a slice of
 //        cheese / cucumber in the hand onto the bread leaves its own place exactly once; LIFE.sandwich.max layers; named
 //        from what is on it ("ost- och gurkmackan"); it rides on a plate like anything else
+//   #380 eating a sandwich: taken from a plate, four bites (its layers bitten too), the plate it came from gets crumbs
+//        (clean 'used', a 'crumbs' event); the last bite: the 'ate' event (what, how much) and the points — once per
+//        sandwich, the first of each combination a lot ("Du gjorde en macka!"); put back half eaten, it stays
 
 const cap = (s) => (s ? s[0].toUpperCase() + s.slice(1) : s);
 
@@ -153,7 +156,15 @@ export function cookingActions(life) {
       const got = I.consume(it, bite);
       sfx.chew(c.heldView?.where(), 0.7);
       life.emit('bite', { item: it, amount: got });
-      if (I.isEmpty(it)) { life.emit('ate', { item: it }); I.remove(it, { cascade: true }); }
+      const plate = I.get(it.machine?.plate); // (the plate it was taken from, #380: crumbs on it)
+      if (plate && plate.clean === 'clean') I.set(plate, { clean: 'used' });
+      if (plate || d.crumbs) life.emit('crumbs', { item: it, on: plate ?? null, pos: c.heldView?.where().toArray() }); // (for the crumbs on surfaces, LIFE-024)
+      if (I.isEmpty(it)) {
+        const parts = it.parts.map((p) => ({ ...p })), name = I.name({ ...it, amount: d.amount });
+        life.emit('ate', { item: it, type: it.type, name, parts, amount: d.amount });
+        if (parts.some((p) => p.type !== 'butter')) life.bump('sandwiches', 1, name); // a sandwich with something on it: once per sandwich, SCORE.first per combination
+        I.remove(it, { cascade: true });
+      }
       return got;
     },
     done: (c, job) => { if (job.base && c.heldView?.held) c.heldView.model.position.copy(job.base); },
