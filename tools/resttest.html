@@ -70,12 +70,21 @@ f.onload = async () => {
         player.spawn(x, z, 0);
         if (t.level) { player.pos.y = floorY; player.eyeY = floorY + 1.62; }
         for (let i = 0; i < 3; i++) step(1 / 60);
-        const aim = sp.aimPos ?? sp.pos.clone().setY(sp.pos.y - 0.25); // a spot picked by looking elsewhere (sitting up in bed, #213)
-        const dx = aim.x - camera.position.x, dz = aim.z - camera.position.z;
-        camera.rotation.y = Math.atan2(-dx, -dz);
-        camera.rotation.x = Math.atan2(aim.y - camera.position.y, Math.hypot(dx, dz));
-        step(1 / 60);
-        if (btn.hidden || !btn.textContent.includes(t.name)) continue;
+        // (#454) only from the piece's own floor: a place inside furniture keeps the camera where spawn() put it (on
+        // Entréplan), and the chair upstairs used to be "reached" from the kitchen through the ceiling (#446)
+        if (Math.abs(camera.position.y - player.eyeY) > 0.3) continue;
+        // where to look: a little under the eye, else the seat itself (#454: the low kids' chair, seen from behind, is
+        // only its back rest under that line)
+        const aims = sp.aimPos ? [sp.aimPos] : [sp.pos.clone().setY(sp.pos.y - 0.25), sp.pos.clone().setY(sp.pos.y - ((sp.kind ?? t.rest) === 'lie' ? 0.22 : 0.72) + 0.03)];
+        let named = false;
+        for (const aim of aims) { // a spot picked by looking elsewhere (sitting up in bed, #213)
+          const dx = aim.x - camera.position.x, dz = aim.z - camera.position.z;
+          camera.rotation.y = Math.atan2(-dx, -dz);
+          camera.rotation.x = Math.atan2(aim.y - camera.position.y, Math.hypot(dx, dz));
+          step(1 / 60);
+          if ((named = !btn.hidden && btn.textContent.includes(t.name))) break;
+        }
+        if (!named) continue;
         btn.click();
         if (rest.target === t) { label = btn.textContent; break; }
         w.__app.standUp(); for (let i = 0; i < 3; i++) step(1 / 60); // another chair of the same name: up again, go on

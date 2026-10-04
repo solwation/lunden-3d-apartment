@@ -1310,7 +1310,9 @@ function throughSlab(a, b) {
  * raycast (it only tests pickables), so check the line against the level's wall outlines. */
 function behindWall(p) {
   if (player.aloft && p.y < UNIT_TOP && p.x > 0 && p.x < world.size.x && p.z > 0 && p.z < world.size.z) return true; // up on the roof: the flat is under it (#360)
-  if (throughSlab(camera.position, p)) return true; // a floor / ceiling between (#446: the bed upstairs through the kitchen ceiling)
+  // a floor / ceiling between (#446: the bed upstairs through the kitchen ceiling); a plan point without y (standFree's
+  // floor spot on the visitor's own level) has no slab between: NaN would read as "through" (#454)
+  if (p.y !== undefined && throughSlab(camera.position, p)) return true;
   const segs = world.levels[Math.max(0, player.level)]?.wallSegments ?? [];
   const ax = camera.position.x, az = camera.position.z, bx = p.x, bz = p.z;
   return segs.some(([cx, cz, dx, dz]) => {
