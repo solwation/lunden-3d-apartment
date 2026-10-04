@@ -94,7 +94,15 @@ f.onload = async () => {
   const mod = (f) => w.eval(`import('${new URL(`../src/${f}`, location.href)}')`); // the page's own instances
   const roads = await mod('roads.js'), cfg = await mod('config.js');
   const S = cfg.SITE, L = cfg.CAR.l / 2, H = cfg.CAR.w / 2, [bx, bz] = S.street.busStop, lot = S.life.lot;
-  for (const [name, path] of [['in', car.arrival()], ['out', car.departure()]]) {
+  // #358: both ways — the street's (via 'street', &car) and the garage's (the stall ↔ our door): also in the garage and
+  // on its drive, never through a parked car or a column there
+  const garage = w.__app.world.garage, GD = S.terrain.garageDoor, GG = cfg.GARAGE, K = GG.columns;
+  const inPoly = (q, x, z) => { let pos = 0, neg = 0; for (let i = 0; i < q.length; i++) { const [ax, az] = q[i], [bx, bz] = q[(i + 1) % q.length], c = (bx - ax) * (z - az) - (bz - az) * (x - ax); if (c > 0) pos++; else if (c < 0) neg++; } return !(pos && neg); };
+  const column = (x, z) => K.xs.some((cx) => K.zs.some((cz) => { const zc = cz < 44 ? cz - K.size / 2 : cz + K.size / 2; return Math.abs(x - cx) < K.size / 2 + 0.05 && Math.abs(z - zc) < K.size / 2 + 0.05; }));
+  const routes = [];
+  for (const via of ['street', 'garage']) { car.via = via; routes.push([`in (${via})`, car.arrival()], [`out (${via})`, car.departure()]); }
+  car.via = 'garage';
+  for (const [name, path] of routes) {
     const saved = car.path; car.path = path;
     const total = car.total(), bad = [];
     let nearBus = Infinity, n = 0;
@@ -104,7 +112,9 @@ f.onload = async () => {
         const x = p.x + fx * a - fz * b, z = p.z + fz * a + fx * b;
         nearBus = Math.min(nearBus, Math.hypot(x - bx, z - bz));
         const stall = x > lot.x0 && x < lot.x1 && z > lot.z0 && z < lot.z0 + lot.depth;
-        if (!roads.onRoad(x, z) || stall) bad.push(`(${x.toFixed(1)}, ${z.toFixed(1)})${stall ? ' stall' : ''}`);
+        const drive = x >= GD.drive && x <= GD.x + 0.1 && z >= GD.z0 - 0.5 && z <= GD.z1 + 0.5, inG = garage.inside(x, z);
+        const hit = inG && (garage.carPolys.some((q) => inPoly(q, x, z)) || column(x, z));
+        if ((!roads.onRoad(x, z) && !inG && !drive) || stall || hit) bad.push(`(${x.toFixed(1)}, ${z.toFixed(1)})${stall ? ' stall' : ''}${hit ? ' garage car/column' : ''}`);
       }
     }
     car.path = saved;

@@ -169,6 +169,7 @@ const KEY = 'lunden.resume', SESSION = 'lunden.session';
     d = f.contentDocument; app = f.contentWindow.__app;
     const a2 = app;
     pass &= check(a2.car.state === 'arriving' && Math.abs(a2.car.d - d0) < 0.1 && a2.car.object.visible, `after: the car still arriving (${a2.car.state}, ${a2.car.d.toFixed(1)} m)`);
+    pass &= check(a2.world.garage.door.target === 1 && a2.world.garage.door.t > 0, `after: the garage door still opening for it (#358, t ${a2.world.garage.door.t.toFixed(2)})`);
     pass &= check(a2.heldItem() === a2.cups.cups[cupI] && Math.abs(a2.cups.cups[cupI].fill - 0.8) < 0.01, `after: the cup of coffee in the hand (${a2.heldItem()?.name}, ${a2.heldItem()?.fill?.toFixed(2)})`);
     pass &= check(a2.fridge.isOpen && a2.fridge.t > 0.9, 'after: the fridge open');
     const sw2 = a2.lights.rooms.get(`${swRoom.level}:${swRoom.name}`), lamp2 = a2.lights.floorLamps.find((l) => l.name === lampName);
@@ -187,7 +188,7 @@ const KEY = 'lunden.resume', SESSION = 'lunden.session';
       pass &= check(L2.audit().length === 0 && a2.life.views.size === L2.all().length, `after: ${L2.all().length} things, one view each`);
     }
     pass &= check(a2.cat.visible && a2.cat.catName === 'Testkatt' && Math.abs(a2.cat.object.position.x - (stood.x - 0.4)) < 0.01, `after: the cat still there (${a2.cat.catName})`);
-    for (let i = 0; i < 60 * 30 && a2.car.state === 'arriving'; i++) a2.step(1 / 60);
+    for (let i = 0; i < 60 * 120 && a2.car.state === 'arriving'; i++) a2.step(1 / 60);
     pass &= check(a2.car.state === 'parked' && !lamp2.isOpen && a2.rest.active, `the car parks (${a2.car.state}); the lamp stays off, still sitting`);
     // the plate with half a slice in the hand across another page-made reload (#371)
     a2.standUp(); a2.cups.cups[cupI].placeAt(new a2.camera.position.constructor(3.6, 0.754, 0.9)); a2.step(1 / 60);
@@ -213,8 +214,8 @@ const KEY = 'lunden.resume', SESSION = 'lunden.session';
   app = f.contentWindow.__app;
   {
     const n = new Date(), h = n.getHours() + n.getMinutes() / 60;
-    pass &= check(app.player.pos.z < -5 && Math.abs(app.day.hour - h) < 0.1 && app.car.state === 'gone' && !app.heldItem() && !app.fridge.isOpen && !app.rest.active,
-      `a new tab: at the start, the real time (${app.day.clock}), no car, empty hands, the fridge shut`);
+    pass &= check(app.player.pos.z < -5 && Math.abs(app.day.hour - h) < 0.1 && app.car.state === 'garage' && !app.heldItem() && !app.fridge.isOpen && !app.rest.active,
+      `a new tab: at the start, the real time (${app.day.clock}), the car in the garage (#358), empty hands, the fridge shut`);
     // the life sim's stock is kept between visits (lunden.life, #371): the last page wrote it; empty-handed now
     const LS = JSON.parse(localStorage.getItem('lunden.life') ?? 'null');
     pass &= check(LS?.v === 1 && Array.isArray(LS.items), `lunden.life is written (v ${LS?.v}, ${LS?.items?.length} things)`);

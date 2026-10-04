@@ -832,6 +832,11 @@ export const GARAGE = {
   // fluorescent tubes (our pick): rows over the aisle and the stall rows, along the corridor; a motion sensor puts them
   // on while the visitor is down here (or at the door) and `hold` s after; `flicker` s of starting up. `dim`: the
   // daylight that is left down here (DayCycle.under). `pool`: the few spots that borrow a pool light (lights.extra).
+  // #358: a sectional (overhead) door in `sections` panels rising on tracks and running in under the ceiling in `seconds`
+  // s; it shuts by itself `auto` s after it opened unless someone / our car is in the opening (it opens again if one
+  // comes in while it shuts). A button on a post outside south of the drive (`post`) and on the wall inside (`inside`);
+  // an amber warning light blinks while it moves. All ours (guess).
+  door: { sections: 5, seconds: 9, auto: 25, passable: 0.8, post: [-71.4, 47.9], inside: [-70.22, 48.0] },
   lights: { hold: 90, flicker: 0.7, amb: 0.22, r: 2.6, dim: 0.92, intensity: 2.2, range: 10, sensor: 9 },
 };
 
@@ -913,6 +918,19 @@ export const CAR = {
     [-7.5, -9.5], [-2, -5.6], [2.9, -5.4]], // ends at our door
   leave: [[2.9, -5.4], [6.5, -5.6], [8.4, -8], [7, -10.6], [3, -11.2], [-4, -11.2], [-8.5, -13.5], [-10.25, -16.3],
     [-10.1, -22], [-11.4, -26.3], { road: 'Sankt Lars väg', from: [-16, -27], to: [-95, -27] }],
+  // #358: it lives in its stall in the garage (GARAGE.stalls.ours = 7, centre −51.25, 39.35 nose to the north wall). The
+  // key calls it OUT: it backs out of the stall (`reverse`), drives out through the garage door (which opens for it), up
+  // the drive, right onto Karpvägen northbound, right onto Sankt Lars väg and on as `arrive` (from its second leg) to our
+  // door. Sent away it goes `leave` (but its last leg), west in the far lane, left down Karpvägen, left into the drive and
+  // nose-in to the stall; the door shuts behind it. Waypoints are ours (no garage plan); `slow` m/s in the garage.
+  garage: {
+    reverse: [[-51.25, 39.35], [-51.25, 42.4], [-49.6, 44.4], [-47.6, 44.4]],
+    out: [[-47.6, 44.4], [-58, 44.4], [-67, 44.2], [-72, 44.0], [-76.6, 43.6], { road: 'Karpvägen', from: [-78.3, 38.5], to: [-75.8, -22] },
+      { road: 'Sankt Lars väg', from: [-73, -27], to: [-17, -27] }],
+    in: [{ road: 'Sankt Lars väg', from: [-16, -27], to: [-66, -27] }, [-70.5, -27.4], { road: 'Karpvägen', from: [-75.8, -19], to: [-78.6, 40.5] },
+      [-76.5, 44.6], [-72, 44.6], [-66, 44.6], [-58, 44.6], [-54.5, 44.3], [-51.6, 42.2], [-51.25, 40.6], [-51.25, 39.35]],
+    slow: 3,
+  },
   lane: 0.25,                      // of the road's width right of its centre line: the middle of the right-hand lane
   speed: 8, brake: 2,              // m/s cruising, m/s² slowing down to the stop
   doorOpen: 1.1,                   // rad: how far a door opens (#250)

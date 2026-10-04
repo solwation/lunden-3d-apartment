@@ -141,7 +141,11 @@ src/garage.js          the garage + förråd under the courtyard (#357, GARAGE i
                        baked into vertex colours (material colour = on/off, a motion sensor + flicker); the group is drawn only
                        from inside / west of the door (`near`, else `blackout`); a few `lamps` borrow pool lights (lights.extra)
                        and `under` cuts the daylight (DayCycle.under). player.js `below` (in its rects at the floor's height):
-                       its `segments` / `dynamic()` / `obstacles()` instead of the level's; the box edge over the door is
+                       its `segments` / `dynamic()` / `obstacles()` instead of the level's (+ our car in its stall, `extra`); #358:
+                       `GarageDoor` (GARAGE.door): sectional panels (one InstancedMesh) up the tracks and in under the ceiling, a
+                       button on a post outside + one inside (kind 'garagebutton'), an amber light blinking + sfx.garageMotor
+                       while it moves, a wall while shut (also world.movingSegments), shuts by itself after `auto` s, never on
+                       the visitor / the car (opens again); the box edge over the door is
                        `world.upperSegments` (only up on the courtyard); rooms Garage / Förråd / Hisshall (HUD, stats); no rain
 src/fall.js            falling (#361, FALL): player.js keeps `fall` (the highest feet since leaving the ground + the deepest free gap
                        under them) and calls `onLand(drop, gap)`; only a gap over FALL.free counts (the stair's risers, the ramp never).
@@ -545,13 +549,19 @@ src/carmodel.js        car bodies from a side profile (#250, MEGANE: `top` / `be
                        left, console, front seats, rear bench); without: a closed body as per-material geometries (`parts`);
                        `lite` (#251) = coarser (~5k triangles) for the parked cars (streetlife.js: paint / trim in vertex
                        colours / glass / tyres, instanced, a little variety in size)
-src/car.js             our white Renault Megane E-Tech (CAR, #173; the model from carmodel.js, #250): parked, E on a door opens /
+src/car.js             our white Renault Megane E-Tech (CAR, #173; the model from carmodel.js, #250). #358: it lives in its stall (7) in the
+                       garage (state 'garage', `toGarage`; doors / seats work there too, `parked`); the key sends it OUT — it backs
+                       out (`CAR.garage.reverse`, a cusp: `route` pieces, `revEnd`), the garage door opens for it (it waits / stops
+                       short), up the drive, Karpvägen north, Sankt Lars väg east and on as before to our door; sent away it goes
+                       back the same way round into the stall nose-in (`CAR.garage.in`) and the door shuts by itself; `via` 'street'
+                       = the old route (&car, a 'gone' car); `car.ground` (main.js) = the terrain / the garage floor, pitched on
+                       slopes; its save record carries the garage door (`gd`). Parked, E on a door opens /
                        shuts it (kind 'cardoor', `car.targets()`), E on a front seat whose door is open sits you in it (rest.js,
                        looking ahead; getting up puts you back by the door); not drivable; the key shuts open doors before it
                        leaves; the screens wake while a door is open / someone sits; `car.box()` keeps the rain out; the hall key calls it in through the car park's drive
                        (in front of the portik, #260; asphalt of its own, SITE.roads 'Infarten', #356) to stop right outside our door (#208; routes =
                        data: waypoints and road legs `{ road, from, to }` in the right-hand lane via roads.js `along`, rounded off,
-                       `waypoints`; a garage start can go in front; cartest checks the whole car stays on asphalt) (blinks, a collision box while parked, waits for the visitor), pressed again it U-turns and
+                       `waypoints`; cartest checks the whole car stays on asphalt) (blinks, a collision box while parked, waits for the visitor), pressed again it U-turns and
                        leaves; sfx.evHum follows it; `&car` = parked (screenshots). Music (#268, `CAR.music`): sitting in a front
                        seat the centre screen is a target (kind 'carmusic', `musicTarget.aimAt` picks its ⏮ ⏯ ⏭ row; a click works
                        like E): `car.radio` (CarRadio in sonos.js) plays the SYMFONISK channels from the dashboard, clear inside,
@@ -669,8 +679,10 @@ tools/patiotest.html   headless test of the patio seasons (parasol, beers, snowm
 tools/cartest.html     headless test: our parked car — open the driver's / passenger's door, the seat only then, sit inside looking
                        ahead, out by the door; the key shuts the doors first, then it drives off (#250); music (#268): seated, the
                        centre screen on / ⏭ / off, plays on outside (muffled with the doors shut), no target from outside, off as it leaves;
-                       both routes keep the whole car on asphalt, clear of the bus stop and the stalls (#356)
-tools/keytest.html     headless test of the hall key cabinet: open, car key reachable only then, beep; the car comes, parks, leaves
+                       both routes keep the whole car on asphalt, clear of the bus stop and the stalls (#356); the garage's routes
+                       (#358) too, in the garage clear of its parked cars and columns
+tools/keytest.html     headless test of the hall key cabinet: open, car key reachable only then, beep; the car starts in its stall (#358),
+                       comes out through the opened garage door, parks, leaves back into its stall, the door shuts
 tools/esctest.html     headless test of Esc on the start screen (click-to-start cover, ignored over the note)
 tools/crouchtest.html  headless test: C crouches (Ctrl too, other Ctrl shortcuts prevented), seated C stands up, leaving mid-visit
                        asks (beforeunload), not on the start screen nor on a new-version reload (#274)
@@ -701,7 +713,9 @@ tools/stucktest.html   headless test (#314): a 5 cm scan of both floors (doors o
                        round you, the car parking on you, the hoop rising under you, a door shut on you, a resume record in the bed
 tools/garagetest.html  headless test (#357): in from the drive (below, drawn, "Garage"), the tubes on, daylight cut, no rain inside,
                        walls / a column / a parked car hold, out of a car (#314), our stall free, the corridor to the lobby, a
-                       förråd shut holds / E opens / walk in, the courtyard above stays at y 0 and its edge over the door holds
+                       förråd shut holds / E opens / walk in, the courtyard above stays at y 0 and its edge over the door holds;
+                       #358: the door shut holds, the post's button opens it, it stays open while you stand in it, shuts by
+                       itself, opens again if you step in, the inside button; our Renault in its stall (a box, its doors / seat)
 tools/falltest.html    headless test (#361): a 2.5 m drop is soft, a 5 m drop hurts (red, black, no walking, awake at the front door,
                        counted + a deduction); the stair up / down (also crouched), the ramp,
                        the outdoor stairs (#355), out of the top bunk, a resume record: no free fall

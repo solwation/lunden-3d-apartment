@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { GARAGE as G, SITE } from './config.js';
 import { carGeometry, bikeGeometry } from './streetlife.js';
+import { groundY } from './surroundings.js';
 import { sfx } from './audio.js';
 
 // The garage and the storage rooms under the courtyard (#357, GARAGE in config — every number there is a guess: Peab has
@@ -16,6 +17,7 @@ import { sfx } from './audio.js';
 // (DayCycle.under).
 
 const T = SITE.terrain, GD = T.garageDoor, F = G.floor, C = G.ceiling, S = G.stalls, ST = G.storage, LI = G.lights;
+const westYAt = (x, z) => groundY(x, z);
 const HALL = G.hall, DOORWAY = { x0: G.doorway.x0, x1: G.doorway.x1, z0: GD.z0, z1: GD.z1 };
 
 /** The förråd: { n, x0, x1, z0, z1, front: 'n' | 'e', ours } — `e` along legE's south side, `n` along legN's west side. */
@@ -226,7 +228,7 @@ export class Garage {
     const lyBtn = bake(box(0.04, 0.04, 0.02, L.lift + 0.85, F + 1.12, ly + 0.03), 0xff9a2a); shell.push(lyBtn);
     signs.push(this.plate(SIGNS.indexOf('HISS'), L.lift, F + 2.45, ly + 0.03, 0, 0.6), this.plate(SIGNS.indexOf('TRAPPHUS L'), L.stair, F + 2.35, ly + 0.03, 0, 0.6),
       this.plate(SIGNS.indexOf('FÖRRÅD · HISS'), (N.x0 + N.x1) / 2, F + 2.45, H.z0 + 0.03, 0, 0.9),
-      this.plate(SIGNS.indexOf('UTFART'), H.x0 + 0.03, F + GD.h + 0.12, (GD.z0 + GD.z1) / 2, Math.PI / 2, 0.8),
+      this.plate(SIGNS.indexOf('UTFART'), H.x0 + 0.03, F + 2.25, GD.z0 - 0.75, Math.PI / 2, 0.8),
       this.plate(SIGNS.indexOf('GARAGE'), (N.x0 + N.x1) / 2, F + 2.45, H.z0 - 0.03, Math.PI, 0.7));
     // the tubes: housings (shell) and the tubes themselves (lit)
     for (const t of TUBES) {
@@ -302,12 +304,14 @@ export class Garage {
     this.walls = segs; // walls, förråd, columns (what a way out must not cross, #314)
     this.segments = [...segs, ...carSegs]; // + the parked cars
     // seen from outside while the group is not drawn: a dark opening
-    this.blackout = new THREE.Mesh(new THREE.PlaneGeometry(GD.z1 - GD.z0, GD.h).rotateY(Math.PI / 2).translate(GD.x + 0.1, F + GD.h / 2, (GD.z0 + GD.z1) / 2),
+    this.blackout = new THREE.Mesh(new THREE.PlaneGeometry(GD.z1 - GD.z0, GD.h).rotateY(Math.PI / 2).translate(GD.x + 0.3, F + GD.h / 2, (GD.z0 + GD.z1) / 2),
       new THREE.MeshBasicMaterial({ color: 0x141618 }));
     this.blackout.raycast = () => {};
     // the pool lights' spots (lights.extra; k: on while the visitor is down here)
     this.lamps = [[-65, 44], [-55.5, 44], [-46, 44], [-43.5, 26], [-32, 14], [-17, 15.2]].map(([x, z]) => ({ pos: new THREE.Vector3(x, C - 0.4, z), intensity: LI.intensity, range: LI.range, color: 0xeef3ff, level: 0, k: 0 }));
     Object.assign(this, { on: false, level: 0, hold: 0, flickT: 0, under: 0, present: false });
+    this.door = new GarageDoor(group); // #358
+    this.targets.push(...this.door.targets);
     this.setLevel(0);
   }
 
@@ -368,16 +372,16 @@ export class Garage {
   /** Room name at (x, z) ('Garage', 'Förråd', 'Hisshall') or null. */
   roomAt(x, z) { return this.rooms.find(([r]) => x > r.x0 && x < r.x1 && z > r.z0 && z < r.z1)?.[1] ?? null; }
 
-  /** The förråd doors' collision now (their leaves). */
+  /** The förråd doors' collision now (their leaves), the garage door while shut, our car in its stall (#358). */
   dynamic() {
-    return this.cageDoors.map((d) => {
+    return [...(this.door?.segments() ?? []), ...(this.extra?.() ?? []), ...this.cageDoors.map((d) => {
       const a = d.angle, dx = d.dir[0] * Math.cos(a) + d.out[0] * Math.sin(a), dz = d.dir[1] * Math.cos(a) + d.out[1] * Math.sin(a);
       return [d.hx, d.hz, d.hx + dx * ST.door, d.hz + dz * ST.door];
-    });
+    })];
   }
 
-  /** Closed boxes down here (#314): the parked cars. */
-  obstacles() { return this.carPolys; }
+  /** Closed boxes down here (#314): the parked cars (+ ours, `extraPolys`). */
+  obstacles() { return [...this.carPolys, ...(this.extraPolys?.() ?? [])]; }
 
   place(d) {
     const a = d.angle, dx = d.dir[0] * Math.cos(a) + d.out[0] * Math.sin(a), dz = d.dir[1] * Math.cos(a) + d.out[1] * Math.sin(a), yaw = Math.atan2(-dz, dx);
@@ -403,7 +407,8 @@ export class Garage {
   }
 
   /** Each frame: the förråd doors swing, the motion sensor, what is drawn, how much daylight is left (`under`). */
-  update(dt, player, camera) {
+  update(dt, player, camera, car = null) {
+    this.door.update(dt, player, car);
     for (const d of this.cageDoors) {
       if (Math.abs(d.target - d.angle) < 1e-4) continue;
       d.angle += Math.sign(d.target - d.angle) * Math.min(Math.abs(d.target - d.angle), ST.speed * dt);
@@ -430,5 +435,112 @@ export class Garage {
     const want = below ? LI.dim * THREE.MathUtils.clamp((p.x - GD.x) / 7, 0, 1) : 0;
     this.under += (want - this.under) * Math.min(1, dt * 4);
     if (Math.abs(want - this.under) < 1e-3) this.under = want;
+  }
+}
+
+/** The ribbed panels of the garage door. */
+function ribTexture() {
+  const c = document.createElement('canvas'); c.width = 16; c.height = 64;
+  const g = c.getContext('2d');
+  g.fillStyle = '#e4e5e2'; g.fillRect(0, 0, 16, 64);
+  g.fillStyle = '#b9bcbc'; for (let y = 0; y < 64; y += 16) g.fillRect(0, y, 16, 2);
+  g.fillStyle = '#9a9d9e'; g.fillRect(0, 62, 16, 2);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+}
+
+/**
+ * The garage door (#358, GARAGE.door): a sectional door in the opening (terrain.garageDoor). Its panels run up on
+ * tracks and in under the ceiling (one InstancedMesh); a button on a post outside and one inside (E), an amber
+ * warning light that blinks while it moves, the motor's sound. `t` 0 shut … 1 open; it shuts by itself after `auto` s
+ * unless the visitor or our car is in the opening, and opens again if one comes into it while it shuts. While shut
+ * (below `passable`) it is a wall (`segments`).
+ */
+export class GarageDoor {
+  constructor(inside) {
+    const D = G.door, N = D.sections, w = GD.z1 - GD.z0;
+    this.object = new THREE.Group();
+    this.sh = GD.h / N; this.xd = GD.x + 0.1;
+    const panel = new THREE.BoxGeometry(0.045, this.sh - 0.004, w - 0.02).translate(0, this.sh / 2, 0);
+    { const uv = panel.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i), uv.getY(i)); }
+    this.panels = new THREE.InstancedMesh(panel, new THREE.MeshStandardMaterial({ map: ribTexture(), roughness: 0.55, metalness: 0.25 }), N);
+    this.panels.castShadow = this.panels.receiveShadow = true;
+    this.object.add(this.panels);
+    // the warning lights (outside over the door's north corner, inside the same) and the buttons
+    this.lampMat = new THREE.MeshStandardMaterial({ color: 0x8a5a10, emissive: 0xffa21a, emissiveIntensity: 0, roughness: 0.4 });
+    const grey = new THREE.MeshStandardMaterial({ color: 0x5d6266, roughness: 0.6, metalness: 0.3 });
+    const btnMat = new THREE.MeshStandardMaterial({ color: 0xf2c230, roughness: 0.5 });
+    const mk = (geo, mat, parent, x, y, z) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); parent.add(m); return m; };
+    mk(new THREE.BoxGeometry(0.1, 0.12, 0.16), this.lampMat, this.object, GD.x - 0.09, F + GD.h + 0.18, GD.z0 - 0.35);
+    mk(new THREE.BoxGeometry(0.1, 0.12, 0.16), this.lampMat, inside, G.hall.x0 + 0.06, F + 2.35, GD.z1 + 0.5);
+    const [px, pz] = D.post, [ix, iz] = D.inside;
+    mk(new THREE.BoxGeometry(0.1, 1.1, 0.1), grey, this.object, px, westYAt(px, pz) + 0.55, pz);
+    mk(new THREE.BoxGeometry(0.06, 0.2, 0.16), grey, this.object, px + 0.05, westYAt(px, pz) + 1.05, pz);
+    const outBtn = mk(new THREE.BoxGeometry(0.03, 0.07, 0.07), btnMat, this.object, px + 0.09, westYAt(px, pz) + 1.06, pz);
+    mk(new THREE.BoxGeometry(0.03, 0.2, 0.14), grey, inside, ix + 0.015, F + 1.2, iz);
+    const inBtn = mk(new THREE.BoxGeometry(0.03, 0.07, 0.07), btnMat, inside, ix + 0.04, F + 1.21, iz);
+    const door = this;
+    this.targets = [outBtn, inBtn].map((pick) => {
+      const t = { kind: 'garagebutton', name: 'knappen till garageporten', verb: 'trycka på', pickable: pick, press() { door.toggle(); } };
+      pick.userData.door = t;
+      return t;
+    });
+    Object.assign(this, { t: 0, target: 0, autoT: 0, blinkT: 0, motor: null, presses: 0 });
+    this.place();
+  }
+
+  get isOpen() { return this.t >= 1 - 1e-6; }
+  get moving() { return this.t !== this.target; }
+
+  open() { if (this.target !== 1) { this.target = 1; this.start(); } this.autoT = G.door.auto; }
+  close() { if (this.target !== 0) { this.target = 0; this.start(); } }
+  toggle() { this.presses++; sfx.click({ x: GD.x, y: F + 1.2, z: GD.z1 }); if (this.target > 0) this.close(); else this.open(); }
+  start() { if (!this.motor) this.motor = sfx.garageMotor?.({ x: GD.x, y: F + GD.h, z: (GD.z0 + GD.z1) / 2 }) ?? null; }
+
+  /** In the way while it is too low to walk / drive under. */
+  segments() { return this.t < G.door.passable ? [[GD.x, GD.z0, GD.x, GD.z1]] : []; }
+
+  /** Where along the track a point `u` m from the sill is: the vertical run, then in under the ceiling. */
+  track(u) { return u <= GD.h ? [this.xd, F + u] : [this.xd + (u - GD.h), F + GD.h + 0.02]; }
+
+  place() {
+    const m = new THREE.Matrix4(), q = new THREE.Quaternion(), zc = (GD.z0 + GD.z1) / 2, one = new THREE.Vector3(1, 1, 1);
+    for (let i = 0; i < G.door.sections; i++) {
+      const u = i * this.sh + this.t * GD.h, [ax, ay] = this.track(u), [bx, by] = this.track(u + this.sh);
+      q.setFromAxisAngle(new THREE.Vector3(0, 0, 1), Math.atan2(-(bx - ax), by - ay));
+      this.panels.setMatrixAt(i, m.compose(new THREE.Vector3(ax, ay, zc), q, one));
+    }
+    this.panels.instanceMatrix.needsUpdate = true;
+  }
+
+  /** Someone / something in the opening (a strip either side of the door line)? */
+  inOpening(x, z, y, r = 0.6) { return Math.abs(x - GD.x) < r + 0.3 && z > GD.z0 - 0.2 && z < GD.z1 + 0.2 && y < F + GD.h; }
+
+  update(dt, player, car) {
+    const p = player.pos;
+    const busy = this.inOpening(p.x, p.z, p.y) || (car && car.inOpening?.());
+    if (this.target === 0 && this.t > 0 && busy) this.open(); // never down on the visitor or the car (#314)
+    if (this.isOpen && this.target === 1) {
+      if (busy || car?.wantsDoor?.()) this.autoT = G.door.auto;
+      else if ((this.autoT -= dt) <= 0) this.close();
+    }
+    if (this.moving) {
+      const step = dt / G.door.seconds;
+      this.t = this.target > this.t ? Math.min(this.target, this.t + step) : Math.max(this.target, this.t - step);
+      this.place();
+      this.blinkT += dt;
+      if (!this.moving) { this.motor?.stop(); this.motor = null; sfx.click({ x: GD.x, y: F + GD.h, z: (GD.z0 + GD.z1) / 2 }); }
+    }
+    this.lampMat.emissiveIntensity = this.moving && Math.floor(this.blinkT * 2.5) % 2 === 0 ? 2.2 : 0;
+  }
+
+  /** For a reload record: > 0 opening / open (at t), < 0 shutting (at −t), 0 shut. */
+  saveState() { const t = Math.round(this.t * 1000) / 1000; return this.target > 0 ? Math.max(0.001, t) : t > 0 ? -t : 0; }
+  /** Back as saved: `v` > 0 opening / open at |v|, < 0 shutting at |v|. */
+  loadState(v) {
+    if (!Number.isFinite(v) || v === 0) return;
+    this.t = Math.min(1, Math.abs(v)); this.target = v > 0 ? 1 : 0;
+    if (this.target === 1) this.autoT = G.door.auto;
+    this.place();
   }
 }

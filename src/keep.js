@@ -252,7 +252,7 @@ const PARTS = {
     load(a, s) {
       if (!Array.isArray(s.stand) || s.stand.length !== 4 || !s.stand.every(Number.isFinite)) return;
       let target = null;
-      if (Number.isInteger(s.car)) { target = a.car.seats[s.car]; if (!target || a.car.state !== 'parked') return; }
+      if (Number.isInteger(s.car)) { target = a.car.seats[s.car]; if (!target || !a.car.parked) return; }
       else target = byKey(a.world.furnitureTargets.filter((t) => t.kind === 'rest'), restKey).get(s.t);
       const spot = target?.spots[Number.isInteger(s.car) ? 0 : s.spot];
       if (!spot) return;

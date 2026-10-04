@@ -38,6 +38,22 @@ async function run() {
   // the drive → in through the door (yaw −90 = east)
   at(GD.drive + 1.5, 44);
   check(Math.abs(player.pos.y - G.floor) < 0.01 && !player.below, `on the drive at the floor's height (${f2(player.pos.y)})`);
+  // #358: the door is shut: in the way; the button on the post opens it
+  const door = garage.door;
+  check(door.t === 0 && door.segments().length === 1, 'the garage door is shut');
+  walk(-90, 6);
+  check(player.pos.x < GD.x - 0.15 && !player.below, `the shut door holds (x ${f2(player.pos.x)})`);
+  const btnT = door.targets[0], bp = btnT.pickable.getWorldPosition(new camera.position.constructor());
+  at(bp.x - 0.8, bp.z);
+  const look = (p) => { const dx = p.x - camera.position.x, dz = p.z - camera.position.z; camera.rotation.set(Math.atan2(p.y - camera.position.y, Math.hypot(dx, dz)), Math.atan2(-dx, -dz), 0, 'YXZ'); step(1 / 60); };
+  look(bp);
+  check(/trycka på knappen till garageporten/i.test(d.getElementById('action').textContent), `the button outside: "${d.getElementById('action').textContent}"`);
+  d.getElementById('action').click();
+  for (let i = 0; i < 60; i++) step(1 / 60);
+  check(door.target === 1 && door.t > 0 && door.t < 0.5 && door.moving && door.lampMat.emissiveIntensity >= 0, `it opens (t ${f2(door.t)}), slowly`);
+  for (let i = 0; i < 60 * G.door.seconds; i++) step(1 / 60);
+  check(door.isOpen && door.segments().length === 0, 'open: no longer in the way');
+  at(GD.drive + 1.5, 44);
   walk(-90, 6);
   check(player.below && Math.abs(player.pos.y - G.floor) < 0.01 && player.pos.x > GD.x + 2, `walked in through the door: below, y ${f2(player.pos.y)}, x ${f2(player.pos.x)}`);
   check(garage.object.visible && garage.roomAt(player.pos.x, player.pos.z) === 'Garage' && /Garage/.test(d.getElementById('level').textContent), `drawn, the room is "Garage" (HUD "${d.getElementById('level').textContent}")`);
@@ -69,9 +85,16 @@ async function run() {
   at(cx, cz, G.floor);
   for (let i = 0; i < 120; i++) step(1 / 60);
   check(!garage.carPolys.some((p) => Math.abs(player.pos.x - (p[0][0] + p[1][0]) / 2) < 0.9 && Math.abs(player.pos.z - (p[0][1] + p[2][1]) / 2) < 2.15) && player.below, `put inside a parked car: moved out to (${f2(player.pos.x)}, ${f2(player.pos.z)})`);
-  // our stall is free
-  const ours = STALLS.find((s) => s.ours);
-  check(ours && !garage.carPolys.some((p) => (p[0][0] + p[1][0]) / 2 > ours.x0 && (p[0][0] + p[1][0]) / 2 < ours.x1 && (p[0][1] + p[2][1]) / 2 > ours.z0 && (p[0][1] + p[2][1]) / 2 < ours.z1), `our stall ${ours?.n} is free for the Renault`);
+  // our stall: no other car, our Renault in it (#358), in the way down here
+  const ours = STALLS.find((s) => s.ours), car = w.__app.car, cp = car.object.position;
+  check(ours && !garage.carPolys.some((p) => (p[0][0] + p[1][0]) / 2 > ours.x0 && (p[0][0] + p[1][0]) / 2 < ours.x1 && (p[0][1] + p[2][1]) / 2 > ours.z0 && (p[0][1] + p[2][1]) / 2 < ours.z1), `our stall ${ours?.n} has no other car`);
+  check(car.state === 'garage' && cp.x > ours.x0 && cp.x < ours.x1 && cp.z > ours.z0 && cp.z < ours.z1 && Math.abs(cp.y - G.floor) < 0.01 && garage.obstacles().length === garage.carPolys.length + 1,
+    `our Renault stands in it (${f2(cp.x)}, ${f2(cp.y)}, ${f2(cp.z)}), a box in the way`);
+  const drv = car.doors.find((x) => x.front && x.side === -1);
+  check(car.targets().length === 4 && !car.targets().includes(car.seats[0]), 'in its stall its doors are targets, the seats not while shut');
+  drv.toggle();
+  check(car.targets().some((t) => t.kind === 'rest'), 'the driver\'s door open: the seat is a target (sit in the car down here)');
+  drv.toggle(); for (let i = 0; i < 60; i++) step(1 / 60);
   // the corridor: north through the opening, then east to the lobby
   at((G.legN.x0 + G.legN.x1) / 2, 44, G.floor);
   walk(0, 6);
@@ -105,6 +128,25 @@ async function run() {
   t.toggle();
   for (let i = 0; i < 60; i++) step(1 / 60);
   check(!t.isOpen && dd.angle < 0.01, 'and shut again');
+  // the door: it waits for nobody in the opening, then shuts by itself; never on the visitor
+  door.open(); for (let i = 0; i < (G.door.seconds + 1) * 10; i++) step(1 / 10);
+  at(GD.x + 0.2, 44, G.floor);
+  for (let i = 0; i < (G.door.auto + 5) * 10; i++) step(1 / 10);
+  check(door.isOpen, `someone in the opening: it stays open`);
+  at(GD.x + 6, 44, G.floor);
+  for (let i = 0; i < (G.door.auto + 2) * 10; i++) step(1 / 10);
+  check(door.target === 0 && door.t < 1, `away from it: it starts to shut by itself (t ${f2(door.t)})`);
+  at(GD.x + 0.2, 44, G.floor);
+  step(1 / 10);
+  check(door.target === 1, 'stepping into the opening while it shuts: it opens again');
+  at(GD.x + 6, 44, G.floor);
+  for (let i = 0; i < (G.door.auto + G.door.seconds + 3) * 10; i++) step(1 / 10);
+  check(door.t === 0, 'then it is shut');
+  // the button inside opens it too
+  const ib = door.targets[1].pickable.getWorldPosition(new camera.position.constructor());
+  at(ib.x + 0.8, ib.z, G.floor); look(ib);
+  d.getElementById('action').click(); step(1 / 60);
+  check(door.target === 1 && door.presses === 2, `the button inside opens it (${door.presses} presses)`);
   // up on the courtyard over the garage: the ground is the courtyard, not the garage floor
   at(-60, 44);
   check(Math.abs(player.pos.y) < 0.01 && !player.below, `on the courtyard over the hall: y ${f2(player.pos.y)}, not below`);

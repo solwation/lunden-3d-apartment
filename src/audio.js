@@ -519,6 +519,20 @@ export const sfx = {
       stop() { const t1 = ctx.currentTime; g.gain.cancelScheduledValues(t1); g.gain.setValueAtTime(g.gain.value, t1); g.gain.linearRampToValueAtTime(0, t1 + 0.6); whine.stop(t1 + 0.7); src.stop(t1 + 0.7); },
     };
   },
+  /** The garage door's motor (#358): a low drone with a chain rattle while it runs. */
+  garageMotor(pos) {
+    if (!ready()) return null;
+    const t = ctx.currentTime, d = out(pos, 0.9);
+    const o = ctx.createOscillator(); o.type = 'sawtooth'; o.frequency.value = 62;
+    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 260;
+    const src = ctx.createBufferSource(); src.buffer = noiseBuf; src.loop = true;
+    const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 1800; bp.Q.value = 3;
+    const g = ctx.createGain(); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.12, t + 0.3);
+    const gn = ctx.createGain(); gn.gain.value = 0.25;
+    o.connect(lp).connect(g); src.connect(bp).connect(gn).connect(g); g.connect(d);
+    o.start(t); src.start(t, Math.random());
+    return { stop() { const t1 = ctx.currentTime; g.gain.cancelScheduledValues(t1); g.gain.setValueAtTime(g.gain.value, t1); g.gain.linearRampToValueAtTime(0, t1 + 0.25); o.stop(t1 + 0.3); src.stop(t1 + 0.3); } };
+  },
   pcFan(pos) {
     if (!ready()) return null;
     const t = ctx.currentTime, d = out(pos, 0.5);

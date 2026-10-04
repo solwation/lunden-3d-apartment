@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { UNIT_TOP, COLORS, LEVELS, DAY, START, PLAYER, DRAWING, STAIR, HOLD, LIFE, REMOTE, REST, DOOR_HEIGHT, TURBO, WEATHER, BREAK, CAR, KITCHEN, LAPTOP, NEST, AUTO_RELOAD, MIELE, CUPS } from './config.js';
+import { UNIT_TOP, COLORS, LEVELS, DAY, START, PLAYER, DRAWING, STAIR, HOLD, LIFE, REMOTE, REST, DOOR_HEIGHT, TURBO, WEATHER, BREAK, CAR, KITCHEN, LAPTOP, NEST, AUTO_RELOAD, MIELE, CUPS, GARAGE } from './config.js';
 import { MieleHeld, HeartFireworks } from './miele.js';
 const DRAWING_COLORS = DRAWING.colors;
 import { buildWorld } from './world.js';
@@ -118,7 +118,7 @@ const plan = await fetch('data/plan.json').then((r) => r.json());
 const world = buildWorld(plan);
 scene.add(world.object);
 const garage = world.garage = new Garage(); // the garage and the förråd under the courtyard (#357)
-scene.add(garage.object, garage.blackout);
+scene.add(garage.object, garage.blackout, garage.door.object); // (+ its door, #358)
 
 // Sun from the south-west (north = the entrance side, −z). Shadows cover the house + patio.
 const sun = new THREE.DirectionalLight(0xfff1dc, 2.2);
@@ -450,9 +450,14 @@ try { localStorage.removeItem('lunden.bygge'); } catch { /* the removed building
 const people = new People(); // walkers, cyclists, kids, neighbours (#114)
 scene.add(people.object);
 const greet = new Greetings(people, camera, document.getElementById('speech'), (p) => behindWall(p)); // say hello to them (#247)
+car.garage = garage; // it lives in the garage, its door opens for it (#358)
+car.ground = (x, z) => (garage.inside(x, z) ? GARAGE.floor : groundY(x, z)); // the drive and Karpvägen slope, the garage's floor
 if (params0.has('car')) car.park(); // &car: parked out front (screenshots)
+else car.toGarage(); // in its stall (#358)
+garage.extra = () => car.segments('garage'); // in its stall it is in the way down there
+garage.extraPolys = () => (car.state === 'garage' ? [car.poly()] : []);
 weather.extraBoxes = () => car.box(); // no rain inside our parked car (#250)
-{ const moving = world.movingSegments; world.movingSegments = (lvl) => [...moving(lvl), ...(lvl === 0 ? car.segments() : [])]; } // parked: in the way
+{ const moving = world.movingSegments; world.movingSegments = (lvl) => [...moving(lvl), ...(lvl === 0 ? [...car.segments(), ...garage.door.segments()] : [])]; } // parked: in the way; the garage door while shut (#358)
 scene.add(target.object); // up only while something that can hit it is in the hand (#144, #179, step)
 const marks = new Marks(scene, camera, [world.object, patio.object, target.object], cat); // burn marks, stars, splashes on surfaces (#96)
 // glasses, bottles, cups, the jug and the beer can be shot to pieces (#263): more points from further away
@@ -1107,6 +1112,7 @@ function use(thing) {
   else if (thing.kind === 'cardoor') thing.toggle(); // open / shut a door of our car (#250)
   else if (thing.kind === 'carmusic') thing.toggle(); // music in the car: on / off, ⏮ ⏭ (#268)
   else if (thing.kind === 'jetpack') thing.toggle(); // put the jetpack on / stand it down (#359)
+  else if (thing.kind === 'garagebutton') { thing.press(); bump('garageDoor'); } // the garage door's buttons (#358)
   else if (thing.kind === 'carkey') { thing.press(); car.call(); bump('car'); } // beep beep: the car comes, or leaves (#173)
   else if (thing.kind === 'flush') { if (thing.toggle()) bump('flushes', 1, idOf(thing)); } // the toilet's flush button (#155)
   else if (thing.kind === 'lid') {
@@ -1503,7 +1509,7 @@ function step(dt) {
     outdoors: player.outdoors, daylight: day.daylight, sunDir: day.sunDir, overcast: weather.overcast, lit: (lv, name) => lights.roomLit(lv, name) }); // blinds drawn up: less daylight in the room (#273)
   if (blindPanel.open) blindPanel.render();
   photoGlow(day.daylight * (1 - 0.5 * weather.overcast), lights.roomLit(1, 'Sovrum 1')); // Miele's photo reads like a lit print (#327)
-  garage.update(dt, player, camera); // the förråd doors, the tubes' motion sensor, drawn only near (#357)
+  garage.update(dt, player, camera, car); // its door (#358), the förråd doors, the tubes' motion sensor, drawn only near (#357)
   day.under = garage.under; // down there no daylight
   day.update(dt);
   wallClock.update(day.hour);

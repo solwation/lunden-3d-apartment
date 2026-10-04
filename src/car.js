@@ -22,6 +22,22 @@ export function waypoints(legs) {
   });
 }
 
+/** Pieces [{ wp, rev }] → one path: each piece rounded off on its own (so a reversing piece meets the next at a cusp);
+ * `revEnd` = where driving backwards ends (#358: out of the stall), `door` = where it crosses the garage door's line. */
+function route(pieces) {
+  const pts = [], len = [0];
+  let revEnd = 0;
+  for (const { wp, rev } of pieces) {
+    const sm = smooth(wp).pts;
+    for (const p of pts.length ? sm.slice(1) : sm) { if (pts.length) len.push(len.at(-1) + Math.hypot(p[0] - pts.at(-1)[0], p[1] - pts.at(-1)[1])); pts.push(p); }
+    if (rev) revEnd = len.at(-1);
+  }
+  let door = null;
+  const gx = SITE.terrain.garageDoor.x;
+  for (let i = 1; i < pts.length && door === null; i++) if ((pts[i - 1][0] - gx) * (pts[i][0] - gx) <= 0 && pts[i][1] > 38 && pts[i][1] < 50) door = len[i];
+  return { pts, len, revEnd, door };
+}
+
 /** Waypoints → a polyline with the corners rounded off (Chaikin, the ends kept) + cumulative lengths. */
 function smooth(wp) {
   let pts = wp.map((p) => [...p]);
@@ -114,9 +130,12 @@ export class Car {
     half.userData.door = this.musicTarget;
     this.screenT = 0; this.shown = null;
     g.visible = false;
+    g.rotation.order = 'YZX'; // yaw, then the pitch on a slope (#358: the drive, Karpvägen)
     g.userData.moving = true; // it drives while the visitor stands still: the detail culler judges it every update (#267)
     this.object = g;
-    Object.assign(this, { state: 'gone', d: 0, speed: 0, blinkT: 0, hum: null, path: null, plateText: C.plate, leaveWhenShut: false, awake: 0 });
+    Object.assign(this, { state: 'gone', d: 0, speed: 0, blinkT: 0, hum: null, path: null, plateText: C.plate, leaveWhenShut: false, awake: 0, via: 'street' });
+    this.ground = () => 0; // the road's height under (x, z) (main.js: the terrain, the garage's floor)
+    this.garage = null;    // the garage (#358, main.js): its door opens for the car
   }
 
   /** The rest spot of seat `s` (world): eye over the cushion, looking forward along the car. */
@@ -130,7 +149,7 @@ export class Car {
   /** E targets while parked: the doors, and the front seats whose door is open (`seated`: the target sat in now);
    * sitting in a front seat, the centre screen (music, #268). */
   targets(seated = null) {
-    if (this.state !== 'parked') return [];
+    if (!this.parked) return [];
     return [...this.doors, ...this.seats.filter((t) => t.door.isOpen || t === seated), ...(seated?.car === this ? [this.musicTarget] : [])];
   }
 
@@ -143,8 +162,11 @@ export class Car {
     this.screenTex.needsUpdate = true;
   }
 
+  /** Standing still with its doors usable: outside our door or in its stall (#358). */
+  get parked() { return this.state === 'parked' || this.state === 'garage'; }
+
   toggleDoor(door) {
-    if (this.state !== 'parked') return;
+    if (!this.parked) return;
     const open = door.target === 0;
     door.target = open ? C.doorOpen : 0;
     sfx.carDoor(door.pivot.getWorldPosition(new THREE.Vector3()), open);
@@ -154,21 +176,51 @@ export class Car {
 
   /** The key was pressed. */
   call() {
-    if (this.state === 'gone') { this.path = this.arrival(); this.d = 0; this.state = 'arriving'; this.speed = C.speed; this.object.visible = true; this.hum = sfx.evHum(this.object.position); }
-    else if (this.state === 'parked') {
+    if (this.state === 'gone') { this.via = 'street'; this.path = this.arrival(); this.d = 0; this.state = 'arriving'; this.speed = C.speed; this.object.visible = true; this.hum = sfx.evHum(this.object.position); }
+    else if (this.parked) {
       if (!this.doorsShut) { for (const d of this.doors) if (d.target > 0) this.toggleDoor(d); this.leaveWhenShut = true; return; } // shut the doors first
       this.leave();
     }
     this.place();
   }
 
-  leave() { this.radio.stop(); this.path = this.departure(); this.d = 0; this.state = 'leaving'; this.speed = 0; this.blinkT = 1.2; this.hum = sfx.evHum(this.object.position); this.place(); }
+  /** Off: from the stall out to our door (#358), or from our door back to the stall. */
+  leave() {
+    this.radio.stop();
+    if (this.state === 'garage') { this.via = 'garage'; this.path = this.arrival(); this.state = 'arriving'; this.garage?.door.open(); }
+    else { this.via = this.garage ? 'garage' : 'street'; this.path = this.departure(); this.state = 'leaving'; }
+    this.d = 0; this.speed = 0; this.blinkT = 1.2; this.hum = sfx.evHum(this.object.position); this.place();
+  }
 
   /** Parked in front of the house at once (&car, screenshots). */
-  park() { this.path = this.arrival(); this.d = this.total(); this.state = 'parked'; this.object.visible = true; this.place(); }
+  park() { this.via = 'street'; this.path = this.arrival(); this.d = this.total(); this.state = 'parked'; this.object.visible = true; this.place(); }
 
-  arrival() { return smooth(waypoints(C.arrive)); }
-  departure() { return smooth(waypoints(C.leave)); }
+  /** In its stall in the garage (#358: where it lives). */
+  toGarage() { this.via = 'garage'; this.path = this.departure(); this.d = this.total(); this.state = 'garage'; this.speed = 0; this.object.visible = true; this.place(); }
+
+  /** To our door: from the street (`via` 'street') or out of the garage (#358). */
+  arrival() {
+    if (this.via !== 'garage') return route([{ wp: waypoints(C.arrive) }]);
+    return route([{ wp: C.garage.reverse, rev: true }, { wp: waypoints([...C.garage.out, ...C.arrive.slice(1)]) }]);
+  }
+  /** Away from our door: west out of sight, or back into the garage (#358). */
+  departure() {
+    if (this.via !== 'garage') return route([{ wp: waypoints(C.leave) }]);
+    return route([{ wp: waypoints([...C.leave.slice(0, -1), ...C.garage.in]) }]);
+  }
+
+  /** On its way and near the garage door's line (the door must stay open for it). */
+  inOpening() {
+    if (!this.object.visible || this.parked) return false;
+    const { x, z } = this.object.position, gd = SITE.terrain.garageDoor;
+    return Math.abs(x - gd.x) < C.l / 2 + 0.8 && z > gd.z0 - 1 && z < gd.z1 + 1;
+  }
+  /** It still has to pass the garage door soon (or just did): keep it open. */
+  wantsDoor() {
+    if (!this.path || this.path.door == null || this.parked || this.state === 'gone') return false;
+    const ahead = this.path.door - this.d;
+    return ahead > -C.l && ahead < 90;
+  }
 
   total() { return this.path.len.at(-1); }
 
@@ -178,18 +230,20 @@ export class Car {
     let k = 1;
     while (k < pts.length - 1 && len[k] < d) k++;
     const [ax, az] = pts[k - 1], [bx, bz] = pts[k], u = Math.min(1, Math.max(0, (d - len[k - 1]) / (len[k] - len[k - 1] || 1)));
-    return { x: ax + (bx - ax) * u, z: az + (bz - az) * u, yaw: Math.atan2(-(bz - az), bx - ax) }; // local +x along the way
+    return { x: ax + (bx - ax) * u, z: az + (bz - az) * u, yaw: Math.atan2(-(bz - az), bx - ax) + (d < (this.path.revEnd ?? 0) ? Math.PI : 0) }; // local +x along the way (backing out: the other way, #358)
   }
 
   place() {
-    const p = this.at(this.d);
-    this.object.position.set(p.x, 0, p.z);
+    const p = this.at(this.d), fx = Math.cos(p.yaw), fz = -Math.sin(p.yaw), a = 1.3;
+    const yf = this.ground(p.x + fx * a, p.z + fz * a), yb = this.ground(p.x - fx * a, p.z - fz * a); // the axles' ground (#358: slopes)
+    this.object.position.set(p.x, (yf + yb) / 2, p.z);
     this.object.rotation.y = p.yaw;
+    this.object.rotation.z = Math.atan2(yf - yb, 2 * a);
   }
 
   /** Is the visitor standing in the way just ahead? */
   blocked(player) {
-    if (!player) return false;
+    if (!player || Math.abs(player.pos.y - this.object.position.y) > 2) return false; // (one of them up on the courtyard, #358)
     const yaw = this.object.rotation.y, fx = Math.cos(yaw), fz = -Math.sin(yaw);
     const dx = player.pos.x - this.object.position.x, dz = player.pos.z - this.object.position.z;
     const ahead = dx * fx + dz * fz, side = Math.abs(-dx * fz + dz * fx);
@@ -222,9 +276,19 @@ export class Car {
     const left = this.total() - this.d;
     let want = C.speed;
     if (this.state === 'arriving') want = Math.min(C.speed, Math.max(0.4, Math.sqrt(2 * C.brake * left)));
+    const P = this.path, rev = this.d < P.revEnd;
+    if (rev) want = Math.min(C.garage.slow * 0.6, Math.max(0.3, Math.sqrt(2 * C.brake * (P.revEnd - this.d)))); // backing out, to a stop
+    else if (this.garage?.inside(this.object.position.x, this.object.position.z) || (P.door != null && Math.abs(P.door - this.d) < 14)) want = Math.min(want, C.garage.slow); // slow in the garage and by its door
+    if (P.door != null && this.garage) { // the door: open it ahead of time, wait for it
+      const ahead = P.door - this.d;
+      if (ahead > 0 && ahead < 90) this.garage.door.open(); // (in time: the door takes GARAGE.door.seconds)
+      if (ahead > 0 && ahead < C.l / 2 + 1.5 + this.speed ** 2 / (3 * C.brake) && this.garage.door.t < 0.97) want = 0; // stops short of it
+    }
     if (this.blocked(player)) want = 0; // never into the visitor
     this.speed += Math.sign(want - this.speed) * Math.min(Math.abs(want - this.speed), C.brake * 1.5 * dt);
+    const was = this.d;
     this.d = Math.min(this.total(), this.d + this.speed * dt);
+    if (was < P.revEnd && this.d > P.revEnd) { this.d = P.revEnd; this.speed = 0; } // stop at the cusp before driving off forwards
     for (const w of this.wheels) w.rotation.z -= (this.speed * dt) / MEGANE.wheelR;
     this.place();
     if (!this.hum) this.hum = sfx.evHum(this.object.position); // (driving on after a reload: the sound once the audio runs, #277)
@@ -232,22 +296,28 @@ export class Car {
     if (this.d >= this.total() - 1e-6) {
       this.hum?.stop(); this.hum = null; this.speed = 0;
       if (this.state === 'arriving') { this.state = 'parked'; this.blinkT = 1.2; } // blinks twice as it stops
+      else if (this.via === 'garage') { this.state = 'garage'; this.blinkT = 1.2; } // back in its stall (#358); the door shuts behind it
       else { this.state = 'gone'; this.object.visible = false; }
     }
   }
 
   /** The car for a reload record (#277): where it is on its way, its doors, its music; null when it is gone and silent. */
   saveState() {
-    if (this.state === 'gone' && !this.radio.playing) return null;
-    return { s: this.state, d: Math.round(this.d * 100) / 100, v: Math.round(this.speed * 100) / 100, doors: this.doors.map((d) => (d.target > 0 ? 1 : 0)),
-      music: this.radio.playing ? 1 : 0, ch: this.radio.channel, shut: this.leaveWhenShut ? 1 : 0 };
+    const gd = this.garage?.door.saveState() ?? 0; // the garage door (#358)
+    if ((this.state === 'gone' || (this.state === 'garage' && this.doorsShut)) && !this.radio.playing && !gd) return null;
+    return { s: this.state, via: this.via, d: Math.round(this.d * 100) / 100, v: Math.round(this.speed * 100) / 100, doors: this.doors.map((d) => (d.target > 0 ? 1 : 0)),
+      music: this.radio.playing ? 1 : 0, ch: this.radio.channel, shut: this.leaveWhenShut ? 1 : 0, gd };
   }
 
   /** Back as saved (tolerant of anything missing): arriving / leaving carries on from the same point of its path. */
   loadState(s) {
-    if (!s || !['arriving', 'parked', 'leaving'].includes(s.s)) return;
+    if (!s) return;
+    this.garage?.door.loadState(s.gd);
+    if (!['arriving', 'parked', 'leaving', 'garage'].includes(s.s)) return;
     if (s.s === 'parked') this.park();
+    else if (s.s === 'garage') this.toGarage();
     else {
+      this.via = s.via === 'street' || !this.garage ? 'street' : 'garage';
       this.path = s.s === 'arriving' ? this.arrival() : this.departure();
       this.state = s.s;
       this.d = Math.min(this.total(), Math.max(0, Number(s.d) || 0));
@@ -255,7 +325,7 @@ export class Car {
       this.object.visible = true;
       this.place();
     }
-    if (this.state === 'parked') {
+    if (this.parked) {
       (s.doors ?? []).forEach((o, i) => { const d = this.doors[i]; if (d) { d.target = d.angle = o ? C.doorOpen : 0; d.pivot.rotation.y = d.side * d.angle; } });
       this.leaveWhenShut = !!s.shut;
     }
@@ -265,16 +335,21 @@ export class Car {
 
   /** Its box while parked (plan x/z, roof height y1) — weather.js keeps the rain out of it. */
   box() {
-    if (this.state !== 'parked') return [];
-    const { x, z } = this.object.position;
-    return [{ x0: x - C.l / 2, x1: x + C.l / 2, z0: z - C.w / 2, z1: z + C.w / 2, y1: C.h }];
+    if (!this.parked) return [];
+    const { x, y, z } = this.object.position, turned = Math.abs(Math.sin(this.object.rotation.y)) > 0.7, hx = turned ? C.w / 2 : C.l / 2, hz = turned ? C.l / 2 : C.w / 2;
+    return [{ x0: x - hx, x1: x + hx, z0: z - hz, z1: z + hz, y1: y + C.h }];
   }
 
   /** Collision while parked (world segments, plan x/z). */
-  segments() {
-    if (this.state !== 'parked') return [];
-    const { x, z } = this.object.position, hx = C.l / 2, hz = C.w / 2;
-    const c = [[x - hx, z - hz], [x + hx, z - hz], [x + hx, z + hz], [x - hx, z + hz]];
+  segments(where = 'out') {
+    if (this.state !== (where === 'garage' ? 'garage' : 'parked')) return []; // in its stall only in the way down there (#358)
+    const c = this.poly();
     return c.map((p, i) => [...p, ...c[(i + 1) % 4]]);
+  }
+
+  /** Its footprint (plan corners) where it stands. */
+  poly() {
+    const { x, z } = this.object.position, yaw = this.object.rotation.y, fx = Math.cos(yaw), fz = -Math.sin(yaw), hx = C.l / 2, hz = C.w / 2;
+    return [[hx, hz], [-hx, hz], [-hx, -hz], [hx, -hz]].map(([a, b]) => [x + fx * a - fz * b, z + fz * a + fx * b]);
   }
 }
