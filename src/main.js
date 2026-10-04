@@ -843,6 +843,7 @@ function shown(o) {
 }
 /** Sit down / lie down on the furniture you look at (the seat or side nearest the look ray). */
 function sitOrLie(target) {
+  life.interrupt('satte sig'); // (#372)
   raycaster.setFromCamera(center, camera);
   const spot = chooseSpot(target, raycaster.ray, cat.visible ? cat.object.position : null);
   if (!spot) return;
@@ -1376,6 +1377,8 @@ function updateFocus() {
   standBtn.hidden = !touch.enabled || !seated || (!focused && !holding);
   if (reading && touch.enabled) actionBtn.textContent = boardPanel.open ? 'Stäng tavlan' : 'Stäng lappen';
   promptEl.hidden = (!focused && !seated) || touch.enabled || reading || (!!choices.rows && !seated);
+  const job = life.runner.job; // a timed life action going on (#372): what and how far
+  if (job && !reading) { promptEl.textContent = `${job.label[0].toUpperCase()}${job.label.slice(1)} … ${Math.round(Math.min(1, job.t / Math.max(job.duration, 1e-6)) * 100)} %`; promptEl.hidden = false; }
   if (remoteAim && !touch.enabled && !reading) { promptEl.textContent = 'Klicka för att byta kanal · högerklick: av/på'; promptEl.hidden = false; }
   if (heldItem() === ball && !focused && !touch.enabled && !reading) { promptEl.textContent = 'Klicka för att skjuta · högerklick: studsa bollen'; promptEl.hidden = false; }
   actionBtn.hidden = !(focused || reading || holding || seated) || !touch.enabled || (!!choices.rows && !reading) || clockPanel.open || calPanel.open || blindPanel.open || sonos.open || !!viewing; // the strips have their own ×
@@ -1386,6 +1389,7 @@ function updateFocus() {
 
 // --- furniture on/off (F / 🛋) ---------------------------------------------
 function toggleFurniture(on = !world.furnitureOn) {
+  life.interrupt('F'); // a timed life action stops (#372): nothing used before its commit
   if (rest.active) standUp(); // the seat is about to vanish
   if (!on) breaker.reset(); // whatever was shot to pieces is whole and home again (#263)
   world.setFurniture(on);
@@ -1732,7 +1736,7 @@ const autoReload = {
   /** Something time-bound that a reload would cut short (and keep.js does not keep): wait for it to end. */
   get waiting() {
     return !!(jetpack.flying || world.lids.find((l) => l.kind === 'coffee')?.isOpen || chicken?.smoking || (world.hob?.on && pan?.onHob)
-      || airFryer.running || toaster?.toasting || grill.on || turbo.active || car.radio.playing || ball.flying || nests.talking);
+      || airFryer.running || toaster?.toasting || life.runner.busy || grill.on || turbo.active || car.radio.playing || ball.flying || nests.talking);
   },
   update(dt) {
     if (!this.version || this.going) return;

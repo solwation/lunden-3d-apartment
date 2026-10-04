@@ -4,7 +4,7 @@ import { Items, SIZES } from './items.js';
 import { Holdable, heldItem, setHeld, handBusy } from './holdable.js';
 import { buildModel } from './lifemodels.js';
 import { sfx } from './audio.js';
-import { ActionSet, firstAllowed } from './actions.js';
+import { ActionSet, firstAllowed, Runner } from './actions.js';
 
 const DEFAULT_HELD = { pos: [0.17, -0.22, -0.42], rot: [0.35, -0.6, 0] };
 const tmpQ = new THREE.Quaternion(), UP = new THREE.Vector3(0, 1, 0);
@@ -120,6 +120,7 @@ export class Life {
     scene.add(this.group);
     this.anchors = new Map(); // store id → (slot) => Object3D (#369)
     this.actions = new ActionSet(); // what you can do with a thing (#367): baseActions below, more per LIFE issue
+    this.runner = new Runner(this.items); // actions that take a moment (#372): validate, reserve, animate, commit
     baseActions(this);
     this.items.on((kind, item) => {
       this.dirty = true;
@@ -169,11 +170,21 @@ export class Life {
     return a.run();
   }
 
+  /** Stop a timed action (F, sitting down …): before its commit nothing is used (#372). */
+  interrupt(why) { this.runner.interrupt(why); }
+
   /** The E targets: every item not in the hand. */
   targets() { const out = [...(this.storeTargets ?? [])]; for (const v of this.views.values()) if (!v.held) out.push(v.target); return out; } // + the stores' boxes (#369; they raycast only while a life item is held)
 
   update(dt) {
     for (const v of this.views.values()) v.update(dt);
+    const job = this.runner.job;
+    if (job) { // a timed action stops when the hand changes or the visitor walks off (#372); else it moves on in game time
+      const c = job.ctx, from = (job.from ??= this.camera.position.clone());
+      if (c.heldView !== heldItem()) this.runner.interrupt('handen');
+      else if (this.camera.position.distanceTo(from) > LIFE.job.walk) this.runner.interrupt('gick iväg');
+      else this.runner.update(dt);
+    }
     if (this.dirty && (this.saveT += dt) > LIFE.save.every) this.flush(); // (written a moment after a change, not every frame)
   }
 

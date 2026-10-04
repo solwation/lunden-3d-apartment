@@ -600,6 +600,12 @@ src/actions.js         what you can do with a life-sim thing (#367): `ActionSet.
                        main.js: a life target (kind 'life', `options()`) with one row = the usual prompt / button; several = #choices
                        (mouse & keyboard: a list under the crosshair, E = the marked row, 1–4 pick, the wheel moves the mark; touch:
                        a big button per row instead of #action); a life thing up to LIFE.tooFar past reach says "För långt bort"
+                       Timed actions (#372, `Runner`, life.runner): an action with `duration` > 0 runs validate (check) → reserve (its
+                       inputs `lock`ed, its output places promised in `items.reserved`) → animate (game time: step's dt) → commit at
+                       `commitAt` (the check again, then consume + create in one step) → done; an interruption before the commit uses
+                       nothing, after it the result stays. life.update interrupts on a hand change or walking LIFE.job.walk m off;
+                       main.js on F and sitting down; locks / promises are never saved; the prompt shows "Skära en skiva … 40 %";
+                       a running job holds the automatic update back
 src/items.js           the life sim's things as data (#366, ITEMS in config), no three.js: instances with a stable id
                        ('cucumber#3'), exactly one place (world | hand | slot of a store | on a carrier), an amount in g / ml /
                        count never below 0, pkg / prep / clean / machine fields; `check(item, place)` = the Swedish reason it
@@ -808,6 +814,9 @@ tools/cloudtest.html   headless test of the shared world against `node cloudflar
                        taping, someone else's drawing appears, DELETE on throwing, thrown elsewhere → gone here, offline
                        queue, desk sheet, cat photos neither sent nor fetched (#211), a fresh visitor gets them, the
                        leaderboard (name, score, escaped list, a capped cheat), off without &cloud
+tools/actiontest.html  headless test (#372): the plan's cutting action through the Runner — a double press consumes once (−10 g,
+                       one 10 g slice), interrupted before the commit nothing is used, after it the slice stays, a save mid-action has
+                       no locks, the last 4 g, a full board; in &life: the menu, F / walking off / the hand changing stop it, keepWorld
 tools/storetest.html   headless test (#369): the stores' slots; the shut fridge refuses ("Öppna kylen först"), open: in, taken out with E
                        and back in with "Lägga osten i kylskåpet", not through the shut door; a full freezer keeps the thing in the hand;
                        the knife rides with the drawer, hidden while shut; reopening never duplicates; F → its home slot; the pantry

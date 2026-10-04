@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Action test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script type="module">
+// Timed actions (#372, src/actions.js Runner): the plan's atomic cutting action — validate, reserve, animate, commit —
+// with plain asserts first (a double press consumes exactly once, an interruption before the commit loses nothing, one
+// after it keeps the result, a save mid-action leaves nothing locked, no negative amounts), then in the game (&life): the
+// same action through the menu, interrupted by F, by walking off and by the hand changing, and a keep record mid-action.
+//   chromium --headless=new --dump-dom http://localhost:8137/tools/actiontest.html
+import { Items } from '../src/items.js';
+import { ActionSet, Runner } from '../src/actions.js';
+import { ITEMS } from '../src/config.js';
+const out = document.getElementById('out');
+const lines = [];
+let pass = true;
+const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); pass &&= !!ok; return ok; };
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const SLICE = 10;
+/** The plan's cutting example as an action: the knife in the hand, the cucumber on the board → −10 g, one 10 g slice. */
+const cutAction = (I) => ({
+  id: 'testCut', label: 'skära en skiva', duration: 0.6,
+  applies: (c) => !!c.held && I.has(c.held, 'tool:cut') && c.target?.type === 'cucumber',
+  check: (c) => {
+    if (!c.held || !I.has(c.held, 'tool:cut')) return 'Fel verktyg';
+    const board = c.target.place.at === 'on' ? I.get(c.target.place.parent) : null;
+    if (!board || board.type !== 'board') return 'Lägg gurkan på skärbrädan först';
+    if (c.target.amount <= 0) return 'Gurkan är slut';
+    if (I.freeSpot(board, { type: 'cucumberSlice' }) < 0) return 'Brädan är full';
+    return null;
+  },
+  reserve: (c) => { const board = I.get(c.target.place.parent); return { inputs: [c.target], outputs: [{ at: 'on', parent: board.id, slot: I.freeSpot(board, { type: 'cucumberSlice' }) }] }; },
+  commit: (c, job) => { const got = I.consume(c.target, SLICE); return I.create('cucumberSlice', job.outputs[0], { amount: got }); },
+});
+try {
+  const I = new Items(ITEMS), R = new Runner(I), A = new ActionSet();
+  const said = [];
+  const life = { runner: R, say: (t) => said.push(t) };
+  A.define(cutAction(I));
+  const at = (x) => ({ at: 'world', pos: [x, 0.93, 3], yaw: 0 });
+  const board = I.create('board', at(5)), cuc = I.create('cucumber', { at: 'on', parent: board.id, slot: 0 }), knife = I.create('knife', { at: 'hand' });
+  const ctx = () => ({ life, items: I, held: knife, heldView: 'kniven', target: cuc });
+  const row = () => A.list(ctx())[0];
+  const slices = () => I.ofType('cucumberSlice');
+  check(row()?.label === 'skära en skiva' && !row().reason, `the action is offered: "${row()?.label}"`);
+  // a double press: one job, one slice, 10 g
+  check(row().run() === true, 'pressed: a job starts');
+  check(row().run() === false && /redan/.test(said.at(-1) ?? ''), `pressed again at once: "${said.at(-1)}", no second job`);
+  check(cuc.lock && I.move(cuc, at(4)) !== null && cuc.place.at === 'on', 'the cucumber is locked while it is cut (no moving it)');
+  const spot = R.job.outputs[0];
+  const other = I.create('cucumberSlice', at(4.5));
+  check(I.move(other, spot) !== null && other.place.at === 'world', 'the slice\'s spot is promised: nothing else gets it');
+  R.update(0.3);
+  check(cuc.amount === 300 && slices().length === 1, 'half way: nothing used yet');
+  R.update(0.4);
+  check(!R.busy && cuc.amount === 290 && slices().length === 2 && slices().find((s) => s !== other).amount === 10 && !cuc.lock && I.reserved.size === 0, 'done: −10 g, exactly one 10 g slice, nothing locked');
+  check(R.log.filter((l) => l === 'commit testCut').length === 1, 'committed exactly once');
+  // an interruption before the commit loses nothing
+  row().run(); R.update(0.3); R.interrupt('test');
+  check(cuc.amount === 290 && slices().length === 2 && !cuc.lock && I.reserved.size === 0 && !R.busy, 'interrupted before the commit: nothing used, nothing locked');
+  // after the commit (commitAt 0.5) the result stays
+  A.define({ ...cutAction(I), id: 'testCutEarly', commitAt: 0.5 });
+  const early = A.list(ctx()).find((r) => r.id === 'testCutEarly');
+  early.run(); R.update(0.4); R.interrupt('test');
+  check(cuc.amount === 280 && slices().length === 3 && !cuc.lock, 'interrupted after the commit: the slice stays');
+  // a save mid-action stores the stable state: no locks, no promises; loading gives free things
+  row().run(); R.update(0.2);
+  const rec = JSON.parse(JSON.stringify(I.serialize()));
+  check(!JSON.stringify(rec).includes('lock') && rec.items.find((e) => e.id === cuc.id).amount === 280, 'a save mid-action: the amount before the cut, no lock in it');
+  const J = new Items(ITEMS); J.load(rec);
+  check(!J.get(cuc.id).lock && J.reserved.size === 0 && J.move(J.get(cuc.id), at(1)) === null, 'loaded: nothing locked, the cucumber can be moved');
+  R.interrupt('reload');
+  // the check runs again at the commit: used up meanwhile → cancelled, nothing made
+  row().run(); I.setAmount(cuc, 0); R.update(1);
+  check(slices().length === 3 && cuc.amount === 0 && !R.busy && R.log.at(-1).startsWith('cancel'), `gone by the commit: cancelled (${R.log.at(-1)})`);
+  // the last bit: less than 10 g gives a smaller slice, never a negative amount
+  I.setAmount(cuc, 4);
+  row().run(); R.update(1);
+  const last = slices().at(-1);
+  check(cuc.amount === 0 && last.amount === 4, `the last 4 g: a 4 g slice, the cucumber at 0 (${cuc.amount})`);
+  check(row().reason === 'Gurkan är slut' && row().run() === false, 'then: "Gurkan är slut", nothing more');
+  // a full board blocks before anything is used
+  I.setAmount(cuc, 100);
+  while (I.freeSpot(board, { type: 'cucumberSlice' }) >= 0) I.create('cucumberSlice', { at: 'on', parent: board.id, slot: I.freeSpot(board, { type: 'cucumberSlice' }) });
+  check(row().reason === 'Brädan är full' && cuc.amount === 100, 'a full board: "Brädan är full", the cucumber untouched');
+  check(I.audit().length === 0 && I.all().every((i) => i.amount >= 0), 'audit ok, no negative amounts');
+} catch (e) { pass = false; lines.push(`FAIL error ${e.stack}`); }
+
+// --- in the game (&life) ------------------------------------------------------------------------------
+try {
+  const f = document.createElement('iframe');
+  f.width = 800; f.height = 500; f.src = '../index.html?life&shot';
+  document.body.append(f);
+  await new Promise((r) => { f.onload = r; });
+  while (!f.contentWindow.__app) await wait(100);
+  const A = f.contentWindow.__app, { life, step, player, heldItem } = A, I = life.items;
+  f.contentDocument.getElementById('start-touch').click(); await wait(50);
+  life.actions.define(cutAction(I));
+  const knife = I.ofType('knife')[0], kv = life.view(knife);
+  const board = life.create('board', { at: 'world', pos: [5.25, 0.931, 3.05], yaw: Math.PI / 2 });
+  const cuc = I.ofType('cucumber')[0];
+  I.move(cuc, { at: 'on', parent: board.id, slot: 0 });
+  // take the knife (out of its drawer: open it first)
+  const drawer = A.world.lids.find((l) => l.stock === 'utensils'); drawer.toggle(); for (let i = 0; i < 40; i++) drawer.update(0.1);
+  kv.take(); step(1 / 60);
+  const row = () => life.options({ item: life.view(cuc) }).find((r) => r.id === 'testCut');
+  check(heldItem() === kv && row() && !row().reason, `the knife in the hand, at the cucumber on the board: "${row()?.label}"`);
+  const n0 = I.ofType('cucumberSlice').length, g0 = cuc.amount;
+  row().run(); row().run(); // a double press
+  for (let i = 0; i < 20; i++) step(1 / 60);
+  check(life.runner.busy && /Skära en skiva … \d+ %/.test(f.contentDocument.getElementById('prompt').textContent), `going on: "${f.contentDocument.getElementById('prompt').textContent}"`);
+  for (let i = 0; i < 40; i++) step(1 / 60);
+  check(!life.runner.busy && cuc.amount === g0 - 10 && I.ofType('cucumberSlice').length === n0 + 1, 'a double press in the game: one slice, −10 g');
+  // F interrupts: nothing used, nothing locked
+  row().run(); for (let i = 0; i < 10; i++) step(1 / 60);
+  A.toggleFurniture(false); A.toggleFurniture(true);
+  check(!life.runner.busy && cuc.amount === g0 - 10 && !cuc.lock && I.reserved.size === 0, 'F mid-cut: stopped, nothing used, nothing locked');
+  // walking off interrupts
+  kv.take(); step(1 / 60);
+  row().run(); step(1 / 60);
+  player.spawn(player.pos.x - 1.2, player.pos.z, player.yaw ?? 0); for (let i = 0; i < 3; i++) step(1 / 60);
+  check(!life.runner.busy && cuc.amount === g0 - 10 && !cuc.lock, 'walking off mid-cut: stopped, nothing used');
+  // the hand changes: interrupts
+  row().run(); step(1 / 60);
+  kv.putBack(); for (let i = 0; i < 3; i++) step(1 / 60);
+  check(!life.runner.busy && cuc.amount === g0 - 10 && !cuc.lock && I.reserved.size === 0, 'the knife put away mid-cut: stopped, nothing locked');
+  // a keep record mid-action: nothing locked in it
+  kv.take(); step(1 / 60); row().run(); step(1 / 60);
+  const w = A.keepWorld();
+  check(life.runner.busy && w.life && !JSON.stringify(w.life).includes('lock') && w.life.items.find((e) => e.id === cuc.id).amount === g0 - 10, 'a reload record mid-cut: the state before it, no lock');
+  for (let i = 0; i < 60; i++) step(1 / 60);
+  check(I.audit().length === 0, `audit: ${I.audit().join('; ') || 'ok'}`);
+} catch (e) { pass = false; lines.push(`FAIL game error ${e.stack}`); }
+lines.push(pass ? 'ALL PASS' : 'SOME FAILED');
+out.textContent = lines.join('\n');
+</script>
+</body>
+</html>

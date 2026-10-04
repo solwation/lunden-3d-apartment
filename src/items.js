@@ -49,6 +49,7 @@ export class Items {
     this.counters = {};       // type → the last number given out
     this.stores = new Map();  // id → store (#369)
     this.listeners = [];
+    this.reserved = new Map(); // place key → job id: a slot / spot promised to a timed action's result (#372)
   }
 
   // --- definitions -----------------------------------------------------------
@@ -105,6 +106,10 @@ export class Items {
     for (const i of this.items.values()) if (i !== except && samePlace(i.place, place)) return i;
     return null;
   }
+  /** A place's key (reservations, #372). */
+  placeKey(p) { return p.at === 'slot' ? `slot:${p.store}:${p.slot}` : p.at === 'on' ? `on:${p.parent}:${p.slot}` : null; }
+  /** Is `place` promised to a timed action other than `by`? */
+  isReserved(place, by = null) { const j = this.reserved.get(this.placeKey(place)); return j !== undefined && j !== by; }
   /** The things lying on a carrier, by slot. */
   children(item) {
     const id = typeof item === 'string' ? item : item.id;
@@ -127,18 +132,18 @@ export class Items {
   addStore(store) { this.stores.set(store.id, store); return store; }
   store(id) { return this.stores.get(id) ?? null; }
   /** The first free slot of `storeId` that takes `item`, or -1. */
-  freeSlot(storeId, item) {
+  freeSlot(storeId, item, by = null) {
     const s = this.store(storeId);
     if (!s) return -1;
-    for (let k = 0; k < s.slots.length; k++) if (!this.check(item, { at: 'slot', store: storeId, slot: k }, { ignoreShut: true })) return k;
+    for (let k = 0; k < s.slots.length; k++) if (!this.check(item, { at: 'slot', store: storeId, slot: k }, { ignoreShut: true, by })) return k;
     return -1;
   }
   /** The first free spot on a carrier for `item`, or -1 (spots in the carrier's `order`, else 0, 1, 2 …). */
-  freeSpot(parent, item) {
+  freeSpot(parent, item, by = null) {
     const d = this.def(parent)?.carrier;
     if (!d) return -1;
     const order = d.order ?? [...Array(d.slots).keys()];
-    for (const k of order) if (!this.check(item, { at: 'on', parent: parent.id ?? parent, slot: k })) return k;
+    for (const k of order) if (!this.check(item, { at: 'on', parent: parent.id ?? parent, slot: k }, { by })) return k;
     return -1;
   }
 
@@ -165,7 +170,7 @@ export class Items {
         const accepts = slot.accepts ?? s.accepts;
         if (accepts && !accepts.some((t) => this.has(item, t) || item.type === t)) return `${what} hör inte hemma i ${s.name}`;
         if (this.size(item) > (SIZES[slot.size ?? 'm'] ?? SIZES.m)) return `${what} får inte plats i ${s.name}`;
-        if (this.occupant(place, item)) return s.fullText ?? `Platsen i ${s.name} är upptagen`;
+        if (this.occupant(place, item) || this.isReserved(place, opts.by)) return s.fullText ?? `Platsen i ${s.name} är upptagen`;
         if (this.children(item).length && !s.carriers) return `Ta av det som ligger på ${this.name(item)} först`;
         return null;
       }
@@ -181,7 +186,7 @@ export class Items {
         const spot = c.spots?.[place.slot]; // a spot of its own (the board's: what is being cut | the slices)
         if (spot?.accepts && !spot.accepts.some((t) => this.has(item, t) || item.type === t)) return `${what} ska inte ligga där`;
         if (spot?.size && this.size(item) > (SIZES[spot.size] ?? SIZES.m)) return `${what} får inte plats där`;
-        if (this.occupant(place, item)) return c.fullText ?? `${cap(this.name(parent))} är full`;
+        if (this.occupant(place, item) || this.isReserved(place, opts.by)) return c.fullText ?? `${cap(this.name(parent))} är full`;
         return null;
       }
       default: return 'Ingen plats';
