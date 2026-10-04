@@ -393,7 +393,8 @@ src/catboard.js        cork board in the kitchen (under the wall clock): a real-
                        CAT_BOARD.max of them in IndexedDB 'lunden'/'catPhotos', captioned with name + time; E opens
                        #board-view (BoardPanel, #170: keep 📌 = red pin, never pushed off; throw away 🗑 asks twice;
                        arrows/S/Delete; frees the mouse like drawing); a full board drops its oldest unkept photo
-src/shelves.js         kitchen wall shelves (WALL_SHELVES, #291): cookbooks, glass jars, lathe-turned stoneware (speckle map),
+src/shelves.js         kitchen wall shelves (WALL_SHELVES, #291; raised to 1.85 / 2.25 m in #333 for the framed print "THIS KITCHEN IS FOR
+                       DANCING" 40 × 50 under them, a FURNITURE `pictures` item drawn on a canvas: `paint` / `print`): cookbooks, glass jars, lathe-turned stoneware (speckle map),
                        brass candlesticks, a mortar, a cutting board, framed prints (one canvas atlas); merged per material;
                        the eucalyptus vase ('vasen') and the trailing pothos are Things (kind 'plant', #185)
 src/keycabinet.js      the IKEA LINDBYN mirror Ø 110 (living room since #205), the hall's IKEA NISSEDAL mirror (#226; a second upstairs, #332), IKEA SKOGSGRÄNSEN

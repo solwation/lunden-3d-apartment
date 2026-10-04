@@ -1290,13 +1290,13 @@ export const AO = {
 export const MOCCAMASTER = { back: 5.53, z: 1.4, w: 0.32, d: 0.17, h: 0.36, brewSeconds: 18 };
 
 // Wall shelves in the kitchen (src/shelves.js) where the cat board used to hang: the kitchen face of
-// the hall/kitchen partition (x 2.15, z 0.46–1.76), above the light switch (1.05 m). Two oak shelves
+// the hall/kitchen partition (x 2.15, z 0.46–1.76), above the light switch (1.05 m) and the framed print (#333). Two oak shelves
 // 100 × 20 cm on black brackets (#38). Dressed like a Scandinavian kitchen shelf (#291): cookbooks, glass jars of dry
 // goods, stoneware (a speckled jug, plates, a bowl, vases), a mortar, brass candlesticks, a cutting board, three framed
 // prints; a vase of dried eucalyptus and a trailing pothos can be taken. Sizes are everyday-object guesses; `colors`
 // are soft, muted glazes and materials (guess).
 export const WALL_SHELVES = {
-  x: 2.15, z0: 0.56, z1: 1.56, depth: 0.2, thick: 0.025, heights: [1.35, 1.75],
+  x: 2.15, z0: 0.56, z1: 1.56, depth: 0.2, thick: 0.025, heights: [1.85, 2.25], // raised for the print under them (#333, guess)
   colors: {
     oak: 0xd2b48c, bracket: 0x2a2a2a, black: 0x262524, pages: 0xf1ead9,
     books: [0x5d6448, 0xa9674c, 0xd8cbb0, 0x55657a], // olive, terracotta, oat, slate blue
@@ -1822,6 +1822,17 @@ export const FURNITURE = [
   // with a 7 cm gap. The atlas (textures/stair-pictures.jpg, cropped and straightened from the photos, 720 × 920 px
   // per frame inside) holds fikus, akvarell | peace, solros; `order` = which atlas cell hangs in each slot, top left
   // → bottom right.
+  // The framed print "THIS KITCHEN IS FOR DANCING" (#333, docs/tavla-kitchen-is-for-dancing.jpg), 40 × 50 cm, a thin black
+  // frame, no passe-partout, under the kitchen wall shelves (WALL_SHELVES, x 2.15, z 0.56–1.56) on the kitchen face of the
+  // hall/kitchen partition, centred under them (z 1.06; the switch at z 1.65 stays free); centre 1.45 m up (*guess*: eye
+  // height from the dining table). Drawn on a canvas (`print`, furniture.js paintedPicture): the paper colour and the
+  // gold are *guesses* from the photo (cool light, glass reflections); `block` / `width` / `top` = the text's share of
+  // the height / the widest line's share of the width / where it starts, measured on the photo.
+  { type: 'pictures', level: 0, x: 2.15, z: 1.06, y: 1.45, rot: -90, w: 0.4, h: 0.5, gap: 0, frame: 0.02, depth: 0.025,
+    rough: 0.22, cols: 1, rows: 1, grid: [1, 1], order: [0], paint: 'dancing',
+    print: { paper: '#c9d3cb', lines: ['THIS', 'KITCHEN', 'IS FOR', 'DANCING'], block: 0.68, width: 0.6, top: 0.17,
+      font: "'Bebas Neue', 'Oswald', 'Arial Narrow', 'Liberation Sans Narrow', 'DejaVu Sans Condensed', Impact, sans-serif",
+      stem: 0.2, gold: [[0, '#d9b45a'], [0.5, '#a87a2a'], [1, '#6b4a18']] } },
   { type: 'pictures', level: 1, x: 5.551, z: 6.654, y: 1.57, rot: 90, w: 0.4, h: 0.5, gap: 0.07, frame: 0.02, depth: 0.03,
     cols: 2, rows: 2, atlas: 'textures/stair-pictures.jpg', grid: [2, 2], order: [0, 1, 2, 3] },
   // Areca / golden cane palm (#106, the user's Amazon pick: "Gold Palm 130 cm", nursery pot Ø 24) in a big anthracite

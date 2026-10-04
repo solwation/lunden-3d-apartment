@@ -2642,18 +2642,67 @@ function painting(item) {
  * for the glass. `frame: 0` = an unframed stretched canvas (#286): a black box `depth` deep (the wrapped, painted
  * edges) with the picture on its front face; `rough` overrides the picture's roughness (matte paint). */
 const pictureAtlases = new Map();
+
+/** A picture drawn on a canvas instead of loaded (`paint` = its cache key, `print` = how, on a `pictures` item with
+ * one cell). The kitchen's text print (#333,
+ * docs/tavla-kitchen-is-for-dancing.jpg): gold foil lettering THIS / KITCHEN / IS FOR / DANCING on pale sage paper,
+ * a tall condensed bold sans squeezed so the widest line is 60 % of the width, the block ~68 % of the paper's height a little
+ * above the centre; the foil a light gold → bronze gradient with a fine grain, plus a faint diagonal glare of the glass. */
+function paintedPicture(P) {
+  const W = 720, H = 920, cv = document.createElement('canvas');
+  cv.width = W; cv.height = H;
+  const c = cv.getContext('2d');
+  c.fillStyle = P.paper; c.fillRect(0, 0, W, H);
+  const lines = P.lines, n = lines.length, pitch = H * P.block / n, cap = pitch * 0.81, top = H * P.top;
+  c.font = `bold ${Math.round(cap / 0.72)}px ${P.font}`;
+  c.textAlign = 'center'; c.textBaseline = 'alphabetic';
+  // a system font squeezed to the width has thin stems: smear each line sideways by what the squeeze took (`stem` =
+  // the stem width of a bold sans, in caps) so it reads as a heavy condensed face whatever font the visitor has
+  const wide = Math.max(...lines.map((t) => c.measureText(t).width));
+  let sx = Math.min(1, W * P.width / wide);
+  const smear = cap * P.stem * (1 - sx);
+  sx = Math.min(1, (W * P.width - smear) / wide);
+  const foil = document.createElement('canvas'); foil.width = W; foil.height = H;
+  const f = foil.getContext('2d');
+  lines.forEach((t, i) => {
+    const base = top + pitch * i + cap, g = f.createLinearGradient(0, base - cap, 0, base);
+    P.gold.forEach(([o, col]) => g.addColorStop(o, col));
+    f.save(); f.translate(W / 2, base); f.scale(sx, 1);
+    f.font = c.font; f.textAlign = 'center'; f.fillStyle = g;
+    for (let dx = -smear / 2; dx <= smear / 2 + 0.01; dx += 1) f.fillText(t, dx / sx, 0);
+    f.restore();
+  });
+  f.globalCompositeOperation = 'source-atop'; // the foil's grain and a soft sheen, only on the letters
+  for (let i = 0; i < 2600; i++) {
+    f.fillStyle = Math.random() < 0.5 ? 'rgba(255,244,200,0.22)' : 'rgba(90,60,20,0.18)';
+    f.fillRect(Math.random() * W, Math.random() * H, 2, 2);
+  }
+  const sheen = f.createLinearGradient(0, H * 0.25, W, H * 0.65);
+  sheen.addColorStop(0.35, 'rgba(255,250,220,0)'); sheen.addColorStop(0.5, 'rgba(255,250,220,0.35)'); sheen.addColorStop(0.65, 'rgba(255,250,220,0)');
+  f.fillStyle = sheen; f.fillRect(0, 0, W, H);
+  c.drawImage(foil, 0, 0);
+  const glare = c.createLinearGradient(0, 0, W, H); // the glass
+  glare.addColorStop(0.1, 'rgba(255,255,255,0)'); glare.addColorStop(0.22, 'rgba(255,255,255,0.10)');
+  glare.addColorStop(0.3, 'rgba(255,255,255,0)'); glare.addColorStop(0.7, 'rgba(255,255,255,0)');
+  glare.addColorStop(0.78, 'rgba(255,255,255,0.06)'); glare.addColorStop(0.86, 'rgba(255,255,255,0)');
+  c.fillStyle = glare; c.fillRect(0, 0, W, H);
+  const tex = new THREE.CanvasTexture(cv);
+  tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 4;
+  return tex;
+}
 function pictures(item) {
   const g = new THREE.Group();
   const { w, h, gap, frame: f, depth: d, cols, rows, order } = item;
   const [gc, gr] = item.grid;
-  if (!pictureAtlases.has(item.atlas)) {
+  if (item.paint && !pictureAtlases.has(item.paint)) pictureAtlases.set(item.paint, paintedPicture(item.print));
+  if (!item.paint && !pictureAtlases.has(item.atlas)) {
     const tex = new THREE.TextureLoader().load(new URL(`../${item.atlas}`, import.meta.url).href);
     tex.colorSpace = THREE.SRGBColorSpace;
     tex.anisotropy = 4;
     pictureAtlases.set(item.atlas, tex);
   }
   const black = new THREE.MeshStandardMaterial({ color: 0x111113, roughness: 0.45 });
-  const picMat = new THREE.MeshStandardMaterial({ map: pictureAtlases.get(item.atlas), roughness: item.rough ?? 0.32 });
+  const picMat = new THREE.MeshStandardMaterial({ map: pictureAtlases.get(item.paint || item.atlas), roughness: item.rough ?? 0.32 });
   const iw = w - 2 * f, ih = h - 2 * f;
   for (let i = 0; i < cols * rows; i++) {
     const col = i % cols, row = Math.floor(i / cols);
