@@ -2179,7 +2179,11 @@ export const FURNITURE = [
   { type: 'loungesofa', level: 0, x: 5.66 - 1.98 / 2, z: 12.76 + 0.72 / 2, rot: 180, corner: 'left' },
   // the table inside the L, its long side along the short part: 0.34 m to its seats, 0.38 m to the long part's
   { type: 'loungetable', level: 0, x: 4.3, z: 14.45, rot: 90, beers: true },
-  { type: 'parasol', level: 0, x: 3.05, z: 15.7 },
+  // the parasol shades the sofa corner from the afternoon / evening sun (#398): the sun reaches the patio from the
+  // south-east of the plan at noon to the west-south-west in the evening (DAY.planNorth); the pole south of the table,
+  // the canopy (radius 1.5) leaning `tilt`° towards the plan's south (= true WSW). Chosen with the computed sun in
+  // July: a ray from a seated eye towards the sun meets the canopy for 2 of the 5 seats at 15:00, all 5 at 16–17, 4 at 18 (patiotest)
+  { type: 'parasol', level: 0, x: 4.5, z: 15.55, rot: 180, tilt: 12 },
   // large planters with exotic plants (the user's wish): by the patio door and in the SE corner. The
   // banana in the SW corner stood in the gap in the hedge (the way out to the lawn) and is gone (#52).
   // by the hedge, and beside the living-room window

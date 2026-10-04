@@ -192,7 +192,7 @@ export function loungetable(item) {
 // --- parasol ----------------------------------------------------------------
 /** Parasol on a cross base. The canopy is an open cone hanging from the top of the pole:
  * flat and wide when up, narrow and long when folded. */
-export function parasol() {
+export function parasol(item = {}) {
   const g = new THREE.Group();
   const { radius, height, color } = P.parasol;
   const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, height, 12), frameMat);
@@ -213,7 +213,7 @@ export function parasol() {
   finial.position.y = height + 0.02;
   g.add(canopy, finial);
   g.traverse((m) => { m.castShadow = true; });
-  const p = { canopy, open: 0, radius, manual: null, manualAuto: null, auto: 0 };
+  const p = { canopy, open: 0, radius, manual: null, manualAuto: null, auto: 0, tilt: THREE.MathUtils.degToRad(item.tilt ?? 0) };
   // E on the parasol folds/unfolds it by hand (#51); see Patio.update for how long that choice holds
   p.interact = {
     name: 'parasollet', kind: 'parasol', pickable: g,
@@ -237,6 +237,7 @@ function setParasol(p, f) {
   const e = f * f * (3 - 2 * f); // smoothstep
   const r = THREE.MathUtils.lerp(0.09, p.radius, e), h = THREE.MathUtils.lerp(1.15, 0.38, e);
   p.canopy.scale.set(r, h, r);
+  p.canopy.rotation.x = p.tilt * e; // open, the canopy leans its local +z side down (towards the sun, #398); folded it hangs straight
 }
 
 // --- planters with exotic plants ------------------------------------------------

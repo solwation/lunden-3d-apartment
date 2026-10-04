@@ -76,11 +76,31 @@ f.onload = async () => {
   }
   // E on the parasol (#51): fold it by hand on a summer day, it stays folded while the automatic
   // state stays the same, and the automatic one takes over again after sunset
-  s = at(7, 14);
+  // the parasol shades the sofa (#398): in July at 15–18 a ray from a seated eye towards the sun hits the canopy
   const par = patio.targets[0];
+  {
+    const THREE = await w.eval("import('three')");
+    const ray = new THREE.Raycaster();
+    ray.layers.enableAll();
+    const sofa = world.furnitureTargets.find((t) => t.name === 'loungesoffan');
+    const shade = {};
+    for (const h of [15, 16, 17, 18]) {
+      at(7, h, 2);
+      par.pickable.updateMatrixWorld(true);
+      const canopy = [];
+      par.pickable.traverse((m) => { if (m.isMesh && m.geometry.type === 'ConeGeometry') canopy.push(m); });
+      shade[h] = sofa.spots.filter((sp) => { ray.set(sp.pos, day.sunDir.clone().normalize()); return ray.intersectObjects(canopy, false).length > 0; }).length;
+    }
+    pass &= check(shade[15] >= 1 && shade[16] >= 3 && shade[17] >= 3 && shade[18] >= 3,
+      `July: the canopy shades the seats (of ${sofa.spots.length}: ${Object.entries(shade).map(([h, n]) => `${h}:00 ${n}`).join(', ')})`);
+    const pole = par.pickable.getWorldPosition(new THREE.Vector3());
+    const doorSwing = Math.hypot(pole.x - 0.95, pole.z - 12.7) > 0.92 + 0.5;
+    pass &= check(doorSwing && player.isFree(1.0, 15.0, 0), `the pole (${pole.x.toFixed(2)}, ${pole.z.toFixed(2)}) is clear of the patio door's swing`);
+  }
+  s = at(7, 14);
   const pp = par.pickable.getWorldPosition(new par.pickable.position.constructor());
   w.__app.touch.enabled = true;
-  player.spawn(pp.x, pp.z - 1.2, Math.PI); // 1.2 m north of the pole, facing south
+  player.spawn(pp.x - 1.2, pp.z, -Math.PI / 2); // 1.2 m west of the pole, facing east (#398: the table is north of it)
   camera.rotation.x = Math.atan2(1.6 - player.eyeY, 1.2);
   for (let i = 0; i < 3; i++) step(1 / 60);
   const btn = w.document.getElementById('action');
