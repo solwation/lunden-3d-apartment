@@ -62,7 +62,9 @@ f.onload = async () => {
   // Sovrum 1 (#213): the 43" on the west wall across from the bed, faces east; on/off, a new programme each time
   const tv1 = world.furnitureTargets.find((t) => t.kind === 'tv' && t.room === 'Sovrum 1');
   const p1 = at(tv1);
-  player.spawn(p1.x + 1.5, p1.z, Math.PI / 2); player.pos.y = 3.25; player.eyeY = 3.25 + 1.62;
+  // in the 0.5 m between the TV wall and the bed's foot (the bed is at BED1_Z, #403): from further east the look line
+  // crosses the bed's "sätta dig upp" target first (#413)
+  player.spawn(p1.x + 0.45, p1.z, Math.PI / 2); player.pos.y = 3.25; player.eyeY = 3.25 + 1.62;
   for (let i = 0; i < 3; i++) step(1 / 60);
   camera.rotation.y = Math.PI / 2; camera.rotation.x = Math.atan2(p1.y - camera.position.y, camera.position.x - p1.x); step(1 / 60); // facing west
   const l1 = btn.textContent;
