@@ -287,9 +287,17 @@ export const SITE = {
     door: { w: 0.9, h: 2.3, gap: 0.08 }, window: { from: 0.9, max: 2.2, gap: 0.5, sill: 0.8, head: 2.3 },
     parapet: { h: 1.05, t: 0.2, open: 0.85, coping: 0.04 },
     entrance: { w: 1.1, side: 0.55, h: 2.35, canopy: { out: 0.7, at: 2.85, t: 0.14 }, sign: 0.42 } },
-  // their roof: a low hip roof with the ridge along the long side (N–S), roofing felt ("papp", Peab's Q&A); the 0.3 m
-  // lines round the houses on the plans = the eaves. `rise` read off Peab's aerial render (guess).
-  hipRoof: { rise: 1.5, overhang: 0.32 },
+  // their roof: a low hip roof with the ridge along the long side (N–S), roofing felt ("papp", Peab's Q&A). #348: each
+  // house's own shape = these defaults with the block's `hip` over them (`roofSpec` in surroundings.js), its eaves at its
+  // own wall top (base + storeys × storey: A over våning 4, B over våning 3, C over våning 5). Roof plans: Hus B's on the
+  // våning 4 sheet, Hus A's on våning 5 (page 26 of the plan brochure, same calibration as docs/peab/kalibrerad/): both draw
+  // the eave line 0.13–0.21 m outside the façade (`overhang` 0.18) and the hips at 45° in plan meeting a N–S ridge
+  // (= the same pitch on all four sides, as modelled), with a roof box near the north end of the ridge (`box`: plan
+  // rectangle, read off; its height `h` over the roof is a guess — Peab's aerial render shows a light box there). There is
+  // no roof plan for Hus C (våning 5 is its top storey and no sheet shows its roof): it keeps the defaults and no box,
+  // though the render shows one. `rise` (ridge over the eave line) and `edge` (the metal edge's top over the wall top) are
+  // guesses from the aerial render: no section or elevation gives the pitch or heights. The vent hoods are illustrative.
+  hipRoof: { rise: 1.5, overhang: 0.18, edge: 0.32 },
   // #345: the Å-husen's façade openings per house and face (n|e|s|w = the outer façade line between the corner
   // loggias), read off the calibrated overview plans (docs/peab/kalibrerad/vaning-m1…4-300dpi.png; våning 5 for Hus C
   // from page 26 of the plan brochure, same calibration) where the plans draw a window or door in the outer wall:
@@ -340,14 +348,16 @@ export const SITE = {
   blocks: [
     // Kv. Lunden, Å-husen (overview plans): storeys counted from `base`; red brick, low hip roof
     { name: 'Hus A', x0: -9.76, x1: 9.42, z0: 28.8, z1: 52.86, base: -3, storeys: 5, roof: 'hip', // våning -1…4; north face on the box edge (#246)
+      hip: { box: { x0: -1.64, x1: 1.28, z0: 33.49, z1: 37.39, h: 1.0 } }, // roof plan on the våning 5 sheet (#348)
       corners: { nw: [3.4, 2.0], ne: [3.4, 2.0], se: [5.9, 2.05], sw: [5.9, 2.05] },
       recesses: [{ face: 'n', a0: 0.23, a1: 2.22, depth: 2.1, from: 1, to: 1, door: 1 },   // the main entrance from the courtyard (våning 1)
         { face: 'w', a0: 41.4, a1: 43.4, depth: 1.0, from: 0, to: 0, door: 0 }] },     // towards the green, park level (våning -1)
     { name: 'Hus B', x0: -41.74, x1: -22.6, z0: 33.3, z1: 57.35, base: -3, storeys: 4, roof: 'hip', // våning -1…3
+      hip: { box: { x0: -33.59, x1: -30.67, z0: 38.01, z1: 41.91, h: 1.0 } }, // roof plan on the våning 4 sheet (#348)
       corners: { nw: [3.4, 2.0], ne: [3.4, 2.0], se: [5.9, 2.05], sw: [5.9, 2.05] },
       recesses: [{ face: 'n', a0: -34.58, a1: -32.5, depth: 2.1, from: 1, to: 1, door: 1 }, // mirrored: west of the middle
         { face: 'e', a0: 46.1, a1: 48.1, depth: 1.0, from: 0, to: 0, door: 0 }] },
-    { name: 'Hus C', x0: -70.6, x1: -51.4, z0: 12.6, z1: 36.68, base: 0, storeys: 5, roof: 'hip', // våning 1…5
+    { name: 'Hus C', x0: -70.6, x1: -51.4, z0: 12.6, z1: 36.68, base: 0, storeys: 5, roof: 'hip', hip: {}, // våning 1…5; no roof plan: the defaults (#348)
       corners: { nw: [5.5, 2.1], ne: [2.0, 4.15], se: [5.4, 2.0], sw: [6.1, 2.0] },
       recesses: [{ face: 'e', a0: 21.5, a1: 24.8, depth: 2.0, door: 0 }] },                // the entrance, loggias above it
     // outside the plot (#47): the old S:t Lars hospital buildings, as on Peab's drone photo and aerial

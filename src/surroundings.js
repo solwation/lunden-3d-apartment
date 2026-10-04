@@ -808,13 +808,20 @@ function block(b) {
   return geo;
 }
 
-/** Low hip roof (Å-husen: flat-looking, the plans draw the hips). */
+/** An Å-hus's own roof (#348): SITE.hipRoof's defaults with the block's `hip` over them, and where its eaves are:
+ * { rise, overhang, edge (the metal edge's top over the wall top), box?, eave (y), top (the wall top, y) }. */
+function roofSpec(b) {
+  const R = { ...S.hipRoof, ...b.hip }, top = b.base + b.storeys * S.storey;
+  return { ...R, top, eave: top + R.edge };
+}
+
+/** Low hip roof (Å-husen: flat-looking, the plans draw the hips, #348: per house). */
 function hipRoof(b) {
-  const ah = !b.style, o = ah ? S.hipRoof.overhang : 0.3; // the Å-husen's eaves sit on the metal edge (#258)
-  const h = b.base + b.storeys * dims(b).storey + (ah ? 0.32 : 0);
+  const ah = !b.style, R = ah ? roofSpec(b) : null, o = ah ? R.overhang : 0.3; // the Å-husen's eaves sit on the metal edge (#258)
+  const h = ah ? R.eave : b.base + b.storeys * dims(b).storey;
   const x0 = b.x0 - o, x1 = b.x1 + o, z0 = b.z0 - o, z1 = b.z1 + o;
   const r = Math.min(x1 - x0, z1 - z0) / 2;
-  const rise = ah ? S.hipRoof.rise : dims(b).roofPitch * r; // the Å-husen look nearly flat, the old ones are steep
+  const rise = ah ? R.rise : dims(b).roofPitch * r; // the Å-husen look nearly flat, the old ones are steep
   const cx = (x0 + x1) / 2, cz = (z0 + z1) / 2;
   const [ra0, ra1] = x1 - x0 >= z1 - z0 ? [[x0 + r, cz], [x1 - r, cz]] : [[cx, z0 + r], [cx, z1 - r]];
   const v = (x, y, z) => [x, y, z];
@@ -1135,11 +1142,17 @@ export function buildSurroundings({ grass }) {
   mesh(bare(lg.frames), new THREE.MeshStandardMaterial({ color: 0x4a5056, roughness: 0.5, metalness: 0.3 })); // anthracite frames (#266)
   mesh(bare(lg.glass), new THREE.MeshStandardMaterial({ color: 0x4f6574, roughness: 0.12, metalness: 0.25 })); // glazing: loggia doors, windows, entrances
   mesh(lg.signs, new THREE.MeshStandardMaterial({ map: letterTexture(lg.letters), roughness: 0.6 })); // the house letters
-  // low hip roofs of roofing felt (#258; Peab's aerial render, Q&A) over the light metal edge, a few vent hoods along the ridge
+  // low hip roofs of roofing felt (#258; Peab's aerial render, Q&A) over the light metal edge, a few vent hoods along the ridge;
+  // #348: each house its own (roofSpec), with the roof box the roof plans draw (in the sheet metal below)
+  const roofBoxes = [];
   mesh(modern.flatMap((b) => {
-    const o = S.hipRoof.overhang, eave = b.base + b.storeys * S.storey + 0.32, cx = (b.x0 + b.x1) / 2, cz = (b.z0 + b.z1) / 2, r = rng(Math.round(b.x0 * 7 + b.z0 * 13));
-    const hx = (b.x1 - b.x0) / 2 + o, hz = (b.z1 - b.z0) / 2 + o, k = S.hipRoof.rise / Math.min(hx, hz);
+    const R = roofSpec(b), o = R.overhang, eave = R.eave, cx = (b.x0 + b.x1) / 2, cz = (b.z0 + b.z1) / 2, r = rng(Math.round(b.x0 * 7 + b.z0 * 13));
+    const hx = (b.x1 - b.x0) / 2 + o, hz = (b.z1 - b.z0) / 2 + o, k = R.rise / Math.min(hx, hz);
     const roofY = (x, z) => eave + k * Math.min(hx - Math.abs(x - cx), hz - Math.abs(z - cz)); // on the hip roof
+    if (R.box) { // from the eave line up to `h` over the highest point of the roof under it
+      const B = R.box, hi = roofY(THREE.MathUtils.clamp(cx, B.x0, B.x1), THREE.MathUtils.clamp(cz, B.z0, B.z1)); // its point nearest the ridge
+      roofBoxes.push(new THREE.BoxGeometry(B.x1 - B.x0, hi + B.h - eave, B.z1 - B.z0).translate((B.x0 + B.x1) / 2, (eave + hi + B.h) / 2, (B.z0 + B.z1) / 2));
+    }
     const geos = [hipRoof(b)];
     for (let i = 0; i < 5; i++) {
       const s2 = 0.6 + r() * 0.9, hgt = 0.5 + r() * 0.7, x = cx + (r() - 0.5) * 3, z = cz + (r() - 0.5) * Math.max(2, 2 * (hz - hx) + 2);
@@ -1148,10 +1161,10 @@ export function buildSurroundings({ grass }) {
     return geos.map((g) => { g.deleteAttribute('uv'); return g; });
   }), new THREE.MeshStandardMaterial({ color: 0x6d7175, roughness: 0.9, side: THREE.DoubleSide }), SEASON.snow.roof);
   // details (#109, #146): a light grey metal edge round the flat roofs, grey downpipes at the corners and every ~12 m
-  mesh(modern.map((b) => {
-    const h = b.base + b.storeys * S.storey, o = 0.32;
-    return new THREE.BoxGeometry(b.x1 - b.x0 + 2 * o, 0.42, b.z1 - b.z0 + 2 * o).translate((b.x0 + b.x1) / 2, h + 0.1, (b.z0 + b.z1) / 2);
-  }).concat(lg.metal), new THREE.MeshStandardMaterial({ color: 0xc7cacb, roughness: 0.45, metalness: 0.2 })); // light grey sheet metal (#146)
+  mesh(modern.map((b) => { // #348: as far out as the house's eaves, its top at the eave line
+    const R = roofSpec(b), o = R.overhang, d = R.edge + 0.1;
+    return new THREE.BoxGeometry(b.x1 - b.x0 + 2 * o, d, b.z1 - b.z0 + 2 * o).translate((b.x0 + b.x1) / 2, R.eave - 0.01 - d / 2, (b.z0 + b.z1) / 2);
+  }).concat(lg.metal, roofBoxes), new THREE.MeshStandardMaterial({ color: 0xc7cacb, roughness: 0.45, metalness: 0.2 })); // light grey sheet metal (#146)
   const pipes = [];
   for (const b of modern) {
     const h = b.storeys * S.storey, y = b.base + h / 2;

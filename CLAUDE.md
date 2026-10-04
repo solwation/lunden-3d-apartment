@@ -730,6 +730,9 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   surroundings.js): an outline extruded per storey band — corner loggias of their own size (A/B: north 3.4 × 2.0, south
   5.9 × 2.05 with a mid pier; Hus C turned, its NE one opening east), white-rendered entrance recesses with a dark glazed
   door (A/B north on våning 1, A west / B east on the park level, Hus C east with loggias above), a low hip roof (ridge N–S).
+  #348: each house has its own roof (`roofSpec`: `SITE.hipRoof` defaults + the block's `hip`), its eaves on its own wall
+  top; A's and B's roof plans (våning 5 / våning 4 sheets) give the eave line (overhang 0.18), the 45° hips and a roof box
+  (`hip.box`); the rise, the box height and everything of Hus C's roof (no roof plan) are guesses.
   #266: every loggia storey has a glazed door (inner corner) + a window on its longer inner wall (`loggiaOpenings`, lit at
   night with the window lights); piers and parapets are plain brick (`facadeTexture(true)`); a loggia whose floor is at the
   ground just outside its front (`frontGround`) gets a brick parapet with a coping and an opening next to the flat's wall,
