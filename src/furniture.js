@@ -4,7 +4,7 @@ import { mergeStatic } from './merge.js';
 import { restTarget } from './rest.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { addCushions, addFoldedThrow, addDrapedThrow } from './cushions.js';
-import { CUSHIONS, FURNITURE, LANDSKRONA as L, LEVELS, SKANSNAS, IDANAS, PILLOWS, BEDDING, PINGPING, MYDAL, OTTOMAN, SYMFONISK, SECRET, NYMANE_WALL, MALM_DECO, YUCCA, LANGLAMPA, VANITY, HEMNES_DAYBED, KPOP_POSTERS, SMASTAD, PHOTO_FRAME } from './config.js';
+import { CUSHIONS, FURNITURE, LANDSKRONA as L, LEVELS, SKANSNAS, IDANAS, PILLOWS, BEDDING, PINGPING, MYDAL, OTTOMAN, SYMFONISK, SECRET, NYMANE_WALL, MALM_DECO, YUCCA, LANGLAMPA, VANITY, HEMNES_DAYBED, KPOP_POSTERS, SMASTAD, PHOTO_FRAME, COFFEE_TABLE } from './config.js';
 import { litMirrorMaterial, litEmissive, litReflect } from './mirror.js';
 import { addReflector } from './reflections.js';
 import { loungesofa, loungetable, parasol, planter } from './patio.js';
@@ -406,22 +406,59 @@ function sidetable(item) {
 
 const oiledOak = new THREE.MeshStandardMaterial({ color: 0xc69c6d, roughness: 0.5 }); // oljebehandlad ek
 
-/** ILVA Woodstock coffee table: 1950s/60s style — veneered top with softened edges, tapered
- * solid oak legs set in from the corners, a fixed shelf between them. Local x = w, z = d. */
+/** ILVA Woodstock coffee table (#410, docs/soffbord-ilva-woodstock.jpg, COFFEE_TABLE): a soft rounded oak top (big corner
+ * radii, long sides bulging a little, edges rounded so it looks thin), a thin apron set back under it, four round tapered
+ * legs set in from the corners and splayed outwards both ways, and a see-through shelf of round dowels along the length
+ * between two end rails. One material, so the piece merges into one mesh. Local x = w, z = d. */
 function coffeetable(item) {
   const g = new THREE.Group();
-  const { w, d, h } = item, t = 0.025, legH = h - t;
-  g.userData.surfaces = [{ x0: -w / 2 + 0.03, x1: w / 2 - 0.03, z0: -d / 2 + 0.03, z1: d / 2 - 0.03, y: h }];
-  g.add(rbox(w, t, d, 0, h - t / 2, 0, oiledOak, 0.008));
-  const lx = w / 2 - 0.09, lz = d / 2 - 0.07;
-  for (const x of [-lx, lx]) for (const z of [-lz, lz]) {
-    const l = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.013, legH, 12), oiledOak);
-    l.position.set(x, legH / 2, z);
+  const C = COFFEE_TABLE, { w, d, h } = item, t = C.top, legH = h - t;
+  const e = C.bulge / 2, a = w / 2 - e / 2, b = d / 2 - C.bulge, r = C.radius, bt = Math.min(0.009, t / 3);
+  // the top: a rounded rectangle whose long sides bulge out by C.bulge (the ends by half that); quadratic control points
+  // at twice the bulge put the curve's middle at the bulge
+  const sh = new THREE.Shape();
+  sh.moveTo(-a + r, -b);
+  sh.quadraticCurveTo(0, -b - 2 * C.bulge, a - r, -b);
+  sh.absarc(a - r, -b + r, r, -Math.PI / 2, 0, false);
+  sh.quadraticCurveTo(a + e, 0, a, b - r);
+  sh.absarc(a - r, b - r, r, 0, Math.PI / 2, false);
+  sh.quadraticCurveTo(0, b + 2 * C.bulge, -a + r, b);
+  sh.absarc(-a + r, b - r, r, Math.PI / 2, Math.PI, false);
+  sh.quadraticCurveTo(-a - e, 0, -a, -b + r);
+  sh.absarc(-a + r, -b + r, r, Math.PI, Math.PI * 1.5, false);
+  // rounded edges (a bevel at the top and bottom), so the edge looks thinner than the top
+  const topGeo = new THREE.ExtrudeGeometry(sh, { depth: t - 2 * bt, bevelEnabled: true, bevelThickness: bt, bevelSize: bt * 0.9, bevelSegments: 3, curveSegments: 10 });
+  topGeo.rotateX(-Math.PI / 2); // the shape's y → −z, the extrusion → up: y −bt … t − bt
+  topGeo.translate(0, h - t + bt, 0);
+  g.add(new THREE.Mesh(topGeo, oiledOak));
+  // the put-down surface: kept inside the rounded corners
+  g.userData.surfaces = [{ x0: -a + 0.06, x1: a - 0.06, z0: -b + 0.05, z1: b - 0.05, y: h }];
+  // legs: from under the top (set in by C.legIn) splayed out by C.splay (at the floor, x and z)
+  const lx = w / 2 - C.legIn[0], lz = d / 2 - C.legIn[1], [sx, sz] = C.splay;
+  const legAt = (y) => [lx + sx * (1 - y / legH), lz + sz * (1 - y / legH)]; // a leg's centre |x|, |z| at height y
+  const up = new THREE.Vector3(0, 1, 0);
+  for (const kx of [-1, 1]) for (const kz of [-1, 1]) {
+    const top = new THREE.Vector3(kx * lx, legH, kz * lz), foot = new THREE.Vector3(kx * (lx + sx), 0, kz * (lz + sz));
+    const dir = top.clone().sub(foot), len = dir.length();
+    const l = new THREE.Mesh(new THREE.CylinderGeometry(C.leg[0], C.leg[1], len, 14), oiledOak);
+    l.quaternion.setFromUnitVectors(up, dir.normalize());
+    l.position.copy(top).add(foot).multiplyScalar(0.5);
     g.add(l);
   }
-  // shelf between the legs, ~15 cm above the floor; short rails under the top along the ends
-  g.add(rbox(2 * lx - 0.02, 0.018, 2 * lz + 0.02, 0, 0.15, 0, oiledOak, 0.005));
-  for (const x of [-lx, lx]) g.add(rbox(0.03, 0.05, 2 * lz, x, h - t - 0.025, 0, oiledOak, 0.005));
+  // the apron: thin rails between the leg tops, set back under the top
+  const ay = legH - C.apron / 2, [ax, az] = legAt(ay);
+  for (const z of [-az, az]) g.add(rbox(2 * ax, C.apron, 0.018, 0, ay, z, oiledOak, 0.004));
+  for (const x of [-ax, ax]) g.add(rbox(0.018, C.apron, 2 * az, x, ay, 0, oiledOak, 0.004));
+  // the shelf: two end rails across the depth joining the legs, round dowels along the length resting on them
+  const sy = C.shelfY, [ex, ez] = legAt(sy);
+  for (const x of [-ex, ex]) g.add(rbox(0.024, 0.04, 2 * ez, x, sy, 0, oiledOak, 0.005));
+  for (let i = 0; i < C.slats; i++) {
+    const z = -ez + 0.04 + (i / (C.slats - 1)) * (2 * ez - 0.08);
+    const dowel = new THREE.Mesh(new THREE.CylinderGeometry(C.slat / 2, C.slat / 2, 2 * ex, 10), oiledOak);
+    dowel.rotation.z = Math.PI / 2;
+    dowel.position.set(0, sy + 0.02 + C.slat / 2, z);
+    g.add(dowel);
+  }
   g.traverse((m) => { m.castShadow = m.receiveShadow = true; });
   g.userData.footprint = [{ x0: -w / 2, x1: w / 2, z0: -d / 2, z1: d / 2 }];
   return g;

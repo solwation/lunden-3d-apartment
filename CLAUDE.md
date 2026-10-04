@@ -916,7 +916,7 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   the NW corner with a floor lamp (IKEA NYMÅNE, 3 spots aimed at the seat, on the sitter's right, #56)
   and a side table with a small flower. Dimensions in
   `LANDSKRONA` (config) — the chaise/armchair numbers are series estimates. In front
-  of the sofa: coffee table ILVA Woodstock, oiled oak veneer top, 120 × 60 × 47 cm, with a shelf.
+  of the sofa: coffee table ILVA Woodstock, oiled oak veneer top, 120 × 60 × 47 cm (#410, `COFFEE_TABLE`: a soft rounded top, splayed tapered legs, a shelf of round dowels).
   Under both: a 300 × 200 cm rug (#55, no collision) in Sarah's pattern (#171, `archRugTexture`: dark olive with
   off-white stripes bending in U arches, square fields per `fields` in its FURNITURE item).
   Opposite the sofa (the wall with the stair behind it): IKEA BYÅS TV bench 160 × 42 × 45, high-gloss

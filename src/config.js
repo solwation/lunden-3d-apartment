@@ -1905,6 +1905,14 @@ export const SONOS = {
   steps: 10, start: 5, gain: 0.5, wall: 0.45, floor: 0.2, lookahead: 0.6,
 };
 
+// The ILVA Woodstock coffee table's shape (#410, furniture.js `coffeetable`, read off ILVA's product photo
+// docs/soffbord-ilva-woodstock.jpg; only 120 × 60 × 47 is ILVA's, the rest is *guess*): `top` thickness, corner `radius`,
+// how far the long sides `bulge` out past straight (the ends half that), the leg tops set in `legIn` [x, z] from the edges,
+// `splay` [x, z] = how much further out the feet stand, `leg` = radius at the top / foot, a thin `apron` rail (height)
+// between the leg tops, a shelf of `slats` round dowels Ø `slat` along the length, `shelfY` up, between two end rails.
+export const COFFEE_TABLE = { top: 0.025, radius: 0.11, bulge: 0.012, legIn: [0.16, 0.1], splay: [0.06, 0.035], leg: [0.0175, 0.01],
+  apron: 0.035, slats: 5, slat: 0.016, shelfY: 0.16 };
+
 export const LANDSKRONA = {
   fabric: 0xa7b39a, // Gunnared ljusgrön
   oak: 0xc9a67a,
@@ -2228,7 +2236,7 @@ export const FURNITURE = [
     walls: { x0: 0.2, z1: 12.23 } },
   // Soffbord ILVA Woodstock, top i oljebehandlad ekfaner (art. 1055729): 120 × 60 × 47 cm, legs in
   // oiled solid oak, a fixed shelf below (ilva.dk product page). Centred on the three seats
-  // (x 2.68–4.60), 40 cm in front of the sofa (front at z 11.26).
+  // (x 2.68–4.60), 40 cm in front of the sofa (front at z 11.26). Its shape: COFFEE_TABLE (#410).
   // Hall, right as you come in, between the EL cabinet and the wardrobes (#49, "KL" on the plan; sizes
   // are our pick): a wall coat rack with a hat shelf and hooks (jackets, a cap) above a two-tier
   // black shoe rack with a few pairs on it
