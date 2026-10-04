@@ -944,8 +944,8 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   passe-partout and frame (*guess*). FURNITURE `pictures` (one atlas texture, 720 × 920 px per frame, `order` swaps
   them; two merged meshes), a loose item.
 - Upstairs hall (#411): a JYSK DANI rattan floor lantern (Ø 33 × 54, `DANI`, builder `dani`; shape from
-  docs/golvlampa-jysk-dani*.jpg, *guess*) in the nook between Sovrum 1's door and the stair top, a small lamp of its own
-  ('rottinglampan', dusk on/off) with a striped wash on the wall beside it and a spot on the ceiling.
+  docs/golvlampa-jysk-dani*.jpg, *guess*) on the floor in front of the stair railing's west run by the corner post (#423, not by Sovrum 1's door), a small lamp of its own
+  ('rottinglampan', dusk on/off) with a striped pool on the floor (cut at the stair hole) and a spot on the ceiling.
 - Doors: Badrum and Klk on Entréplan swing into the passage by the stair, so all swing doors
   start closed. The dashed door to Allrum is a tillval that **we have chosen** (`OPTIONS.allrumDoor`
   + a short extra wall in `EXTRA_WALLS`) → Allrum becomes **Sovrum 4** (four bedrooms upstairs).

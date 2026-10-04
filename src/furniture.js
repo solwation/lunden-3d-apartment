@@ -362,9 +362,9 @@ function daniWashTexture(cu, cv, fall, stripes, aspect) {
 
 /** JYSK DANI (#411, DANI): a low floor lantern — three splayed light wooden legs, an upright teardrop cage of round rattan
  * rods with a wrapped collar at the top and thin rings round it, a white fabric cylinder inside that glows when it is lit.
- * Its own small lamp (lights.js FloorLamp: dusk on / off, E on it, a weak warm pool light), with a striped wash on the wall
- * beside it and a soft spot on the ceiling over its open top. Built with `rot: 180`, so local axes = world axes;
- * `item.corner` = [x of the wall face east of it, z of the wall face north of it]. */
+ * Its own small lamp (lights.js FloorLamp: dusk on / off, E on it, a weak warm pool light), with a striped pool of light on
+ * the floor round it and a soft spot on the ceiling over its open top. Built with `rot: 180`, so local axes = world axes;
+ * `item.edge` = the x where the floor ends east of it (the stair hole). */
 function dani(item, lights) {
   const S = DANI, g = new THREE.Group(), Hc = S.h - S.legH, y0 = S.legH;
   const rattan = new THREE.MeshStandardMaterial({ color: S.rattan, roughness: 0.75 });
@@ -421,25 +421,24 @@ function dani(item, lights) {
   pick.visible = false;
   lamp.add(inner, cap, pick);
   g.add(lamp);
-  // the light through the rods: a striped wash on the wall face east of it, a soft spot on the ceiling over the open top
-  const [cx, cz] = item.corner, dx = cx - item.x, dz = cz - item.z;
-  const wallZ0 = dz, wallW = S.wash.w, wallMid = y0 + Hc * 0.4;
-  const wallMat = new THREE.MeshBasicMaterial({ color: S.glow, map: daniWashTexture(-wallZ0 / wallW, (wallMid - 0.02) / S.wash.h, 0.75, 13, S.wash.h / wallW),
+  // the light through the rods: a striped pool on the floor round it (cut off at `item.edge`, the stair hole's edge east of
+  // it, so none floats over the stair) and a soft spot on the ceiling over the open top
+  const F = S.floorWash, fx0 = -F.r, fx1 = Math.min(F.r, item.edge - item.x - 0.002), fw = fx1 - fx0;
+  const floorMat = new THREE.MeshBasicMaterial({ color: S.glow, map: daniWashTexture(-fx0 / fw, 0.5, F.r / fw, 30, 2 * F.r / fw),
     transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false });
   const ceilMat = new THREE.MeshBasicMaterial({ color: S.glow, map: daniWashTexture(0.5, 0.5, 0.5, 0, 1),
     transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false });
-  wallMat.userData.on = S.wash.opacity; ceilMat.userData.on = S.ceilingSpot.opacity; // (lights.js fades them by opacity)
-  const wall = new THREE.Mesh(new THREE.PlaneGeometry(wallW, S.wash.h), wallMat);
-  wall.rotation.y = -Math.PI / 2; // facing west, its u along +z
-  wall.position.set(dx - 0.004, 0.02 + S.wash.h / 2, wallZ0 + wallW / 2);
-  // the ceiling spot nudged south-west into the hall, so it never reaches over the wall into Sovrum 1
+  floorMat.userData.on = F.opacity; ceilMat.userData.on = S.ceilingSpot.opacity; // (lights.js fades them by opacity)
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(fw, 2 * F.r), floorMat);
+  floor.rotation.x = -Math.PI / 2; // facing up, its u along +x
+  floor.position.set((fx0 + fx1) / 2, 0.003, 0);
   const r = S.ceilingSpot.r, ceil = new THREE.Mesh(new THREE.PlaneGeometry(2 * r, 2 * r), ceilMat);
   ceil.rotation.x = Math.PI / 2; // facing down
-  ceil.position.set(-0.05, LEVELS[item.level].ceiling - 0.003, Math.max(0, dz + r + 0.005));
-  for (const m of [wall, ceil]) { m.raycast = () => {}; m.renderOrder = 2; m.material.visible = false; g.add(m); }
-  lights.push({ object: lamp, shade: fabric, glows: [wallMat, ceilMat], wash: 1, height: 0, level: item.level, name: 'rottinglampan',
+  ceil.position.set(0, LEVELS[item.level].ceiling - 0.003, 0);
+  for (const m of [floor, ceil]) { m.raycast = () => {}; m.renderOrder = 2; m.material.visible = false; g.add(m); }
+  lights.push({ object: lamp, shade: fabric, glows: [floorMat, ceilMat], wash: 1, height: 0, level: item.level, name: 'rottinglampan',
     light: S.light, offset: [-0.08, 0.08] });
-  g.userData.keep = [lamp, wall, ceil];
+  g.userData.keep = [lamp, floor, ceil];
   g.userData.footprint = [{ x0: -0.15, x1: 0.15, z0: -0.15, z1: 0.15 }];
   return g;
 }

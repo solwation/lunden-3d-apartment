@@ -107,7 +107,7 @@ f.onload = async () => {
     }
   }
   // #221: the kitchen's bench light and the hood's light are lamps of their own; their washes follow them (the DANI's too)
-  for (const name of ['bänkbelysningen', 'lampan i köksfläkten', 'rottinglampan']) { // + the DANI's wall / ceiling washes (#411)
+  for (const name of ['bänkbelysningen', 'lampan i köksfläkten', 'rottinglampan']) { // + the DANI's floor / ceiling washes (#411, #423)
     const l = lights.floorLamps.find((x) => x.name === name);
     if (!l) { pass = false; lines.push(`FAIL ${name}: missing`); continue; }
     l.set(true); const onOk = l.spec.shade.emissiveIntensity > 0.5 && l.spec.glows.every((g) => g.visible && g.opacity > 0.1);

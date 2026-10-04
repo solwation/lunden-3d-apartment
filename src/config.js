@@ -2203,13 +2203,13 @@ export const LANGLAMPA = {
 // (`legH` of the height, splayed out to `legR`), an upright teardrop cage of `rods` round rattan rods following `profile`
 // ([fraction of the cage height, radius] from the bottom ring to the top), a wrapped collar `collar` high at the top, thin
 // rings at `rings` (fractions), and a white fabric cylinder inside (`inner`: radius, bottom and top as fractions). Lit it
-// is warm and dim (40 W): `light` (the pool light), a striped wash on the wall beside it and a soft spot on the ceiling.
+// is warm and dim (40 W): `light` (the pool light), a striped pool on the floor round it and a soft spot on the ceiling.
 export const DANI = {
   h: 0.54, legH: 0.16, legR: 0.15, leg: [0.011, 0.007], rods: 30, rod: 0.005,
   profile: [[0, 0.085], [0.08, 0.13], [0.2, 0.157], [0.33, 0.165], [0.5, 0.158], [0.7, 0.135], [0.88, 0.105], [1, 0.092]],
   collar: 0.045, rings: [0.06, 0.33, 0.66], inner: { r: 0.08, y0: 0.05, y1: 0.68 },
   rattan: 0xb48a58, wood: 0xcfa678, fabric: 0xf3efe6, glow: 0xffc27a,
-  wash: { w: 0.57, h: 1.1, opacity: 0.28 }, ceilingSpot: { r: 0.45, opacity: 0.22 },
+  floorWash: { r: 0.6, opacity: 0.3 }, ceilingSpot: { r: 0.4, opacity: 0.22 },
   light: { intensity: 0.55, range: 3.2, color: 0xffbf78 },
 };
 
@@ -2363,10 +2363,11 @@ export const FURNITURE = [
   // Långlampan (#270, LANGLAMPA): in the corner right of the TV seen from the sofa, between the BYÅS's east end (x 5.05)
   // and the secretary (z > 9.0); `corner` = the inner faces of the east and north walls there (data/plan.json)
   { type: 'tubelamp', level: 0, x: 5.551 - 0.16, z: 7.804 + 0.16, corner: [5.551, 7.804] },
-  // JYSK DANI (#411, DANI): upstairs hall, in the nook between Sovrum 1's door (its east jamb, hall face z 5.135, x 3.562–3.802)
-  // and the stair's top (the wall end x 3.802, z 5.135–5.704; the top step from z 5.77): 5 mm off both faces (data/plan.json),
-  // so it stands 9 cm in front of the door opening's east end and 30 cm north of the stair top. `corner` = those faces.
-  { type: 'dani', level: 1, x: 3.802 - 0.165 - 0.005, z: 5.135 + 0.165 + 0.015, rot: 180, corner: [3.802, 5.135] },
+  // JYSK DANI (#411, DANI): upstairs hall, on the floor in front of the stair railing (#423, the user: not by Sovrum 1's
+  // door): the railing's run along the hole's west edge x 3.86 from the middle wall (z ~6.66) to z 7.54, the lamp by its north end
+  // (2 cm past the corner newel post), 2 cm clear of the handrail — out of the walk from the stair top (z 5.77–6.60) to the doors and of the WC door's
+  // swing (to x 2.35). `edge` = the hole's edge (STAIR.hole.x0).
+  { type: 'dani', level: 1, x: 3.86 - 0.02 - 0.165 - 0.02, z: (STAIR.aZ[0] + STAIR.bZ[1]) / 2 + STAIR.newel / 2 + 0.02 + 0.165, rot: 180, edge: 3.86 },
   // Philips 55" The One PUS8897 on the bench (#68): panel ~123 × 71 cm, thin black bezel, one central
   // anthracite pedestal; depth, stand size and the ~78 cm total height are guesses. E switches it on: a
   // slowly moving colourful demo picture (canvas, ~12 fps) and an Ambilight glow on the wall behind.
