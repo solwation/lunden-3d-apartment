@@ -113,7 +113,9 @@ src/stairs.js          stair treads + walking height function (stairHeight) and 
                        over the nosings (eased through the winders), returns into the wall; merged with the M.rail parts
 src/doors.js           SwingDoor / SlidingDoor (E to open/close, animated, dynamic collision)
 src/exterior.js        Hus L (HUS_L): brick row with the core/portik, neighbours' patios, rendered upper
-                       units with pilasters, loftgång, spiral-stair drums, roof with solar panels; `husLLayout` gives each
+                       units with pilasters, loftgång, spiral-stair drums (a doorway `gap` onto the loftgång / landing; inside a visual-only
+                       spiral stair, `HUS_L.spiral`, #444: column, open treads, wall handrail, top landing + guard, all *guess*),
+                       roof with solar panels; `husLLayout` gives each
                        strip its flat ids (`lower` L1001…, `upper` L1201…); the upper flats' street openings are their own
                        (`HUS_L.street` per type from bofakta, `floor` = the flat's own floor, not the building storey, #347)
                        `husLTerraces`: the roof terraces per flat (id, polygon, area vs the brochure's 10/11/12 m², #350)

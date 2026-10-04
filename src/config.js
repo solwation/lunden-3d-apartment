@@ -633,7 +633,16 @@ export const HUS_L = {
   // spiral stairs in brick drums at both ends (våning 1/3 plans): centre, radius
   // (#42: the east one, L1008's escape stair, stands right against the house, per the user; #172: so does
   // the west one, against the west gable — `gable: 'west'` = its x is worked out in exterior.js, gable − r)
-  towers: [{ gable: 'west', z: 1.5, r: 1.6 }, { x: 10.0, z: -2.0, r: 1.6 }], // centres per våning 1 (#252)
+  // `door` / `gap`: the plan angle (deg from +x towards +z) and width (deg) of the drum's open doorway above the
+  // loftgång / the east landing (#444; as the drum walls' opening in roofs.js' walk data, exterior.js)
+  towers: [{ gable: 'west', z: 1.5, r: 1.6, door: -25, gap: 55 }, { x: 10.0, z: -2.0, r: 1.6, door: 90, gap: 96 }], // centres per våning 1 (#252)
+  // the spiral stair inside each drum (#444, visual only, not walkable): *guess* — there is no stair drawing. A steel
+  // column, wedge treads `turn`° each (~`rise` m, evened out to the loftgång's floor) round it up to a top landing
+  // (`landing`° of the circle round `door`, a `slab` thick) with a guard on its open edge, a handrail `wall` m in
+  // from the drum along its wall, a floor at the bottom. Painted like the loftgång railing. `overlap` < 0: open gaps
+  // between the treads, so the turn below shows through and it reads as a stair from above.
+  spiral: { column: 0.075, rise: 0.185, turn: 30, tread: 0.05, overlap: -6, wall: 0.04, landing: 110, slab: 0.2,
+    handrail: { h: 0.9, r: 0.022 } },
   // L1008 (the east end unit, our neighbour on the left seen from the street) is not a copy of ours
   // (#42, plan p. 43): no window beside the front door (its kitchen window is on the gable), and
   // upstairs no window where the escape stair stands. Façade openings whose centre x (unit

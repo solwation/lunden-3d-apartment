@@ -83,13 +83,65 @@ function boxGeo(x0, x1, y0, y1, z0, z1) {
   return geo;
 }
 
-/** Open brick drum (spiral stair tower) with world-space brick UVs. */
-function drum(x, z, r, h) {
-  const geo = new THREE.CylinderGeometry(r, r, h, 28, 1, true);
-  geo.translate(x, h / 2, z);
-  const uv = geo.attributes.uv;
-  for (let i = 0; i < uv.count; i++) uv.setXY(i, (uv.getX(i) * 2 * Math.PI * r) / TILE_W, (uv.getY(i) * h) / TILE_H);
-  return geo;
+/** Open brick drum (spiral stair tower) with world-space brick UVs; `gap` = { at, deg, y }: open above y over deg°
+ * round the plan angle `at` (deg from +x towards +z) — the doorway onto the loftgång / landing (#444). */
+function drum(x, z, r, h, gap) {
+  const part = (y0, y1, a0 = 0, len = 2 * Math.PI) => { // a0 / len: CylinderGeometry's theta (x = r sin θ, z = r cos θ)
+    const geo = new THREE.CylinderGeometry(r, r, y1 - y0, Math.max(3, Math.round((28 * len) / (2 * Math.PI))), 1, true, a0, len);
+    geo.translate(x, (y0 + y1) / 2, z);
+    const uv = geo.attributes.uv;
+    for (let i = 0; i < uv.count; i++) uv.setXY(i, ((a0 + uv.getX(i) * len) * r) / TILE_W, (y0 + uv.getY(i) * (y1 - y0)) / TILE_H);
+    return geo;
+  };
+  if (!gap) return [part(0, h)];
+  const w = (gap.deg * Math.PI) / 180, a = (gap.at * Math.PI) / 180;
+  return [part(0, gap.y), part(gap.y, h, Math.PI / 2 - (a + 2 * Math.PI - w / 2), 2 * Math.PI - w)];
+}
+
+/** A plan polygon ([x, z][]) extruded from y0 to y1. */
+function prism(pts, y0, y1) {
+  const shape = new THREE.Shape(pts.map(([x, z]) => new THREE.Vector2(x, -z)));
+  const geo = new THREE.ExtrudeGeometry(shape, { depth: y1 - y0, bevelEnabled: false, curveSegments: 1 });
+  return geo.rotateX(-Math.PI / 2).translate(0, y0, 0);
+}
+
+/** A ring sector round (cx, cz) from radius r0 to r1, angles a0 … a1 (rad, plan: from +x towards +z). */
+function sector(cx, cz, r0, r1, a0, a1, n) {
+  const pts = [];
+  for (let i = 0; i <= n; i++) { const a = a0 + ((a1 - a0) * i) / n; pts.push([cx + r1 * Math.cos(a), cz + r1 * Math.sin(a)]); }
+  if (r0 <= 0) pts.push([cx, cz]);
+  else for (let i = n; i >= 0; i--) { const a = a0 + ((a1 - a0) * i) / n; pts.push([cx + r0 * Math.cos(a), cz + r0 * Math.sin(a)]); }
+  return pts;
+}
+
+/**
+ * The spiral stair inside a drum (#444, HUS_L.spiral; visual only): steel parts into `steel`, the floor and the top
+ * landing into `slabs`. It climbs with the angle and arrives at the landing's near edge at `top`.
+ */
+function spiralStair(t, top, steel, slabs) {
+  const S = H.spiral, deg = Math.PI / 180, rc = S.column, ro = t.r - S.wall;
+  const rises = Math.max(2, Math.round(top / S.rise)), rise = top / rises, n = rises - 1; // the landing is the last step
+  const step = S.turn * deg, half = (S.landing * deg) / 2, door = t.door * deg, aEnd = door - half;
+  steel.push(new THREE.CylinderGeometry(rc, rc, top + H.railHeight, 10).translate(t.x, (top + H.railHeight) / 2, t.z));
+  for (let i = 0; i < n; i++) {
+    const a1 = aEnd - (n - 1 - i) * step, a0 = a1 - step - S.overlap * deg, y = (i + 1) * rise;
+    steel.push(prism(sector(t.x, t.z, rc, ro, a0, a1, 3), y - S.tread, y));
+  }
+  // the handrail along the drum wall, rising with the treads' nosings
+  const hr = S.handrail, rr = t.r - 0.08, a00 = aEnd - (n - 1) * step - step;
+  const helix = new THREE.Curve();
+  helix.getPoint = (u, out = new THREE.Vector3()) => {
+    const a = a00 + u * (aEnd - a00);
+    return out.set(t.x + rr * Math.cos(a), Math.min(top, u * n * rise + rise * 0.5) + hr.h, t.z + rr * Math.sin(a));
+  };
+  steel.push(new THREE.TubeGeometry(helix, Math.ceil(n * 2.5), hr.r, 6, false));
+  // the floor at the bottom, the top landing (a sector round the door) and a guard on its edge over the stairwell
+  slabs.push(prism(sector(t.x, t.z, 0, t.r - 0.01, 0, 2 * Math.PI, 28), 0, 0.02));
+  slabs.push(prism(sector(t.x, t.z, 0, t.r - 0.01, door - half, door + half, 10), top - S.slab, top));
+  const ae = door + half, ca = Math.cos(ae), sa = Math.sin(ae), len = t.r - rc;
+  const mid = (rc + t.r) / 2;
+  steel.push(new THREE.CylinderGeometry(hr.r, hr.r, len, 6).rotateZ(Math.PI / 2).rotateY(-ae).translate(t.x + mid * ca, top + H.railHeight - hr.r, t.z + mid * sa));
+  for (let d = rc + 0.12; d < t.r - 0.05; d += 0.12) steel.push(new THREE.CylinderGeometry(0.01, 0.01, H.railHeight, 4).translate(t.x + d * ca, top + H.railHeight / 2, t.z + d * sa));
 }
 
 /**
@@ -312,7 +364,8 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
   solids.push(boxGeo(deckX0, xe, roofTop - 0.25, roofTop, -0.05, loftD));
   solids.push(boxGeo(te.x - 1.2, te.x + 1.2, roofTop - 0.25, roofTop, te.z + te.r * 0.7, 0));
   for (const t of towers) {
-    bricks.push(drum(t.x, t.z, t.r, roofTop + H.railHeight));
+    bricks.push(...drum(t.x, t.z, t.r, roofTop + H.railHeight, { at: t.door, deg: t.gap, y: roofTop }));
+    spiralStair(t, roofTop, rails, solids); // its stair inside (#444)
     for (let i = 0; i < 16; i++) { // collision: a 16-gon round the drum
       const a0 = (i / 16) * Math.PI * 2, a1 = ((i + 1) / 16) * Math.PI * 2;
       segments.push([t.x + t.r * Math.cos(a0), t.z + t.r * Math.sin(a0), t.x + t.r * Math.cos(a1), t.z + t.r * Math.sin(a1)]);
