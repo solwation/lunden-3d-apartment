@@ -116,6 +116,24 @@ export const BLINDS = {
   fade: 1.2,
 };
 
+// Curtains in Sovrum 1 (#342, the user; docs/gardiner-sovrum1-turkos-djurmonster.jpg, src/curtains.js): two floor-length
+// teal panels with a jungle-animal print (drawn on a canvas by us: no brand) on a slim white ceiling track under the
+// soffit (RH 2.4), in the room in front of the blind. The RÅGRUND chair (#60) fills the NW corner right up to the glass,
+// so there is no room to park a panel west of the window: a double track (two rails, `z` back / front) where both panels
+// stack to the EAST (a one-way draw, the free wall x 4.66 … NORDKISA's corner). Shut: the front panel's leading edge
+// at `x0` (just past the chair's seat, over the sash frame: the glass begins ~3.15) meets the back panel in the middle
+// (`meet`, overlapping `overlap`); open: both stacks east of the glass (`park`). `east` = the track's east end (clear of
+// the east wall). `drop` = hem over the floor, `top` = the fabric's top under the soffit; fullness 1.4 × the shut width
+// (*guess*), `folds` wave folds per panel (their count stays; the spacing shrinks as a panel gathers), `amp` = the folds'
+// largest half-depth (deeper as it gathers), `tile` = m of fabric per pattern repeat. Our picks / *guess* unless noted.
+// `dim` = the room's daylight a fully drawn pair takes (less than the blackout blind); `glow` = the teal emissive by day
+// (a little light through the cotton), lamp = from a lit room. `speed` m/s of the leading edge while A / D are held.
+export const CURTAINS = [
+  { level: 1, room: 'Sovrum 1', x0: 3.17, meet: 4.0, overlap: 0.12, park: 4.72, east: 5.32, z: [0.56, 0.64], glass: [3.15, 4.56],
+    top: 2.36, drop: 0.015, fullness: 1.4, folds: 12, amp: 0.028, tile: 0.7, speed: 0.38, dim: 0.4,
+    colors: { ground: '#2f7c86', track: 0xf3f2ee, glow: 0x3fa3ad, warm: 0xffc27a }, glow: { day: 0.18, lamp: 0.08 } },
+];
+
 // Flower pots on the inner window boards (#136, the user: "blomkrukor med blommor i alla fönsterkarmar";
 // src/sillplants.js). Plants per window in plan order (Entréplan kitchen, living room; Övre plan Sovrum 3, 1, 4, 2),
 // 2–3 pots each, one kind per pot slot. Our picks. #290 (the user: bigger and lusher, in every window): pots `pot.r` /
@@ -1024,6 +1042,7 @@ export const SCORE = {
     doors: 2, lids: 1, flushes: 2, taps: 1, fridge: 2, appliances: 2, cabinets: 1, lights: 1, sat: 2, lay: 2,
     visited: 5, songs: 3, read: 5, car: 15, grill: 10, hood: 3, tv: 3, pc: 5, parasol: 3, clock: 3, calendar: 3,
     blinds: 2, // per window's blind, the first time it is drawn up or down (#273)
+    curtains: 2, // Sovrum 1's curtains drawn (#342), like a blind
     coats: 10, greets: 2, // greets: per person (#247)
     catButts: 15, // a cat's bum seen from behind with its tail up (#262): per cat, then `again` per tail-up
     walkRain: 15, walkSnow: 25, walkHail: 40, walkStorm: 30, // out in the weather (#249): the first time, then `again` per shower
@@ -1042,7 +1061,7 @@ export const SCORE = {
     doors: 0.1, lids: 0.1, flushes: 0.2, taps: 0.1, fridge: 0.1, appliances: 0.1, cabinets: 0.05, lights: 0.05,
     sat: 0.1, lay: 0.1, songs: 0.2, read: 0.5, car: 1, grill: 1, hood: 0.2, tv: 0.2, pc: 0.3, parasol: 0.2,
     clock: 0.1, calendar: 0.1, greets: 0.1, catButts: 1, walkRain: 2, walkSnow: 3, walkHail: 4, walkStorm: 3,
-    shattered: 0.3, carMusic: 0.2, pingpingHugs: 0.2, miele: 100, mieleHugs: 0.5, blinds: 0.05, airfried: 0.5, friesCooked: 0.5,
+    shattered: 0.3, carMusic: 0.2, pingpingHugs: 0.2, miele: 100, mieleHugs: 0.5, blinds: 0.05, curtains: 0.05, airfried: 0.5, friesCooked: 0.5,
     fruit: 0.3,
     nest: 0.2,
   },

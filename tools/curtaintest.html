@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Curtain test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+// Curtains test (#342): Sovrum 1's two panels on the ceiling track start open, parked east of the glass; E on one opens
+// the strip (#blind-panel, sideways); no walking then; ◀ held draws both panels shut (they meet over the glass, the
+// front one's edge at x0) and no further, D / ▶ opens them back to the parked spots; A moves the leading edge at
+// speed; the first draw scores; drawn shut they cut some of the room's daylight (less than the blackout blind) and
+// glow teal by day; × / E close the strip; the state survives a reload.
+//   /root/bin/runtest http://localhost:8168/tools/curtaintest.html
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+try { localStorage.removeItem('lunden.blinds'); } catch { /* */ }
+const lines = [];
+let pass = true;
+const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); pass &&= !!ok; return ok; };
+const f = document.createElement('iframe');
+f.width = 900; f.height = 600;
+const URL0 = '../index.html?time=12&month=6&day=21&freeze&weather=clear';
+f.src = URL0;
+document.body.append(f);
+const loaded = () => new Promise((r) => { f.onload = r; });
+
+async function run() {
+  await loaded();
+  let w = f.contentWindow, d = f.contentDocument;
+  while (!w.__app) await wait(100);
+  const { CURTAINS, BLINDS, LEVELS } = await import('../src/config.js');
+  let app = w.__app;
+  const { player, camera, step, blinds, blindPanel, day, stats } = app;
+  const S = CURTAINS[0];
+  const c = blinds.curtains[0];
+  check(blinds.curtains.length === CURTAINS.length && c, `curtains built (${blinds.curtains.length})`);
+  check(c.room === 'Sovrum 1', `in Sovrum 1 (${c.room})`);
+  check(c.t === 0, 'open at the start');
+  const [g0, g1] = S.glass;
+  const clear = () => Math.min(c.front.a, c.back.a) >= g1 - 1e-6;
+  check(clear() && c.cover === 0, `parked clear of the glass (front ${c.front.a.toFixed(2)}–${c.front.b.toFixed(2)}, back ${c.back.a.toFixed(2)}–${c.back.b.toFixed(2)}; glass ${g0}–${g1})`);
+  const fl = LEVELS[1].floor;
+  const pos = c.front.mesh.geometry.attributes.position.array;
+  let ymin = Infinity, ymax = -Infinity;
+  for (let i = 1; i < pos.length; i += 3) { ymin = Math.min(ymin, pos[i]); ymax = Math.max(ymax, pos[i]); }
+  check(ymin - fl > 0.005 && ymin - fl < 0.05 && ymax - fl < 2.4, `floor-length under the soffit (${(ymin - fl).toFixed(3)} … ${(ymax - fl).toFixed(3)} m)`);
+  check(c.front.mesh.castShadow, 'the fabric casts the sun\'s shadow');
+
+  d.getElementById('start-touch').click();
+  await wait(50);
+  // stand in front of the parked stacks and look at them
+  const up = fl;
+  let px = 4.6, pz = 1.1;
+  for (const [x, z] of [[4.6, 1.1], [4.4, 1.0], [4.8, 1.05], [4.3, 1.2], [4.6, 0.95]]) if (player.isFree(x, z, 1)) { px = x; pz = z; break; }
+  const tx = (c.front.a + c.back.b) / 2, ty = fl + 1.4, tz = S.z[1];
+  player.spawn(px, pz, 0); player.pos.y = up; player.eyeY = up + 1.62;
+  const aim = () => {
+    for (let i = 0; i < 3; i++) step(1 / 60);
+    const e = camera.position;
+    camera.rotation.order = 'YXZ';
+    camera.rotation.y = Math.atan2(-(tx - e.x), -(tz - e.z));
+    camera.rotation.x = Math.atan2(ty - e.y, Math.hypot(tx - e.x, tz - e.z));
+    player.yaw = camera.rotation.y; player.pitch = camera.rotation.x;
+    app.world.object.updateMatrixWorld(true);
+    for (let i = 0; i < 3; i++) step(1 / 60);
+  };
+  aim();
+  const btn = d.getElementById('action');
+  check(!btn.hidden && /gardinerna/i.test(btn.textContent), `action button "${btn.textContent}" (at ${player.pos.x.toFixed(2)}, ${player.pos.z.toFixed(2)})`);
+  const seen0 = stats.seen?.curtains ? Object.keys(stats.seen.curtains).length : 0;
+  btn.click();
+  const panel = d.getElementById('blind-panel');
+  check(!panel.hidden && blinds.active === c && panel.classList.contains('curtain'), 'E opens the strip, sideways (#blind-panel.curtain)');
+  check(panel.querySelector('[data-act=up]').textContent === '◀', 'the buttons are ◀ ▶');
+  const before = { x: player.pos.x, z: player.pos.z };
+  app.touch.analog.y = 1;
+  for (let i = 0; i < 30; i++) step(1 / 60);
+  app.touch.analog.y = 0;
+  check(Math.hypot(player.pos.x - before.x, player.pos.z - before.z) < 0.01, 'no walking in the curtain mode');
+  const press = (act, type) => d.querySelector(`#blind-panel [data-act=${act}]`).dispatchEvent(new w.PointerEvent(type, { bubbles: true, pointerId: 1 }));
+  press('up', 'pointerdown');
+  for (let i = 0; i < 30; i++) step(1 / 30);
+  const t1 = c.t, fa1 = c.front.a, ba1 = c.back.a;
+  const secs = c.travel / S.speed;
+  for (let i = 0; i < Math.ceil(secs * 30) + 30; i++) step(1 / 30);
+  check(t1 > 0.05 && t1 < 1 && fa1 < S.park && ba1 < S.park + (S.east - S.park) / 2, `◀ draws both panels (${(t1 * 100).toFixed(0)} % after 1 s)`);
+  check(c.t === 1 && Math.abs(c.front.a - S.x0) < 1e-6, `shut and no further (front edge ${c.front.a.toFixed(3)} = x0 ${S.x0})`);
+  check(c.front.b > c.back.a && c.cover === 1, `they meet over the glass (front to ${c.front.b.toFixed(2)}, back from ${c.back.a.toFixed(2)}), cover ${c.cover}`);
+  check(S.x0 >= 3.15, 'shut, the front panel stays clear of the RÅGRUND chair (x ≥ 3.15)');
+  press('up', 'pointerup');
+  check(blinds.dir === 0, '◀ released: they stop');
+  check(/fördragna/.test(panel.querySelector('.pct').textContent), `the panel says "${panel.querySelector('.pct').textContent}"`);
+  const seen1 = stats.seen?.curtains ? Object.keys(stats.seen.curtains).length : 0;
+  check(seen1 === seen0 + 1 && stats.curtains >= 1, `the first draw scores (${seen1})`);
+  // gathered vs spread: the fold spacing shrinks as a panel is pushed to its end
+  // daylight: the room loses some, less than with the blackout blind
+  for (let i = 0; i < 120; i++) step(1 / 30);
+  const dimC = day.dim;
+  check(dimC > S.dim * 0.85 && dimC < BLINDS.dim.dark, `Sovrum 1 with the curtains drawn: daylight cut ${dimC.toFixed(2)} (blackout ${BLINDS.dim.dark})`);
+  check(c.mat.emissive.g > 0.04 && c.mat.emissive.b > c.mat.emissive.r, `they glow teal by day (${c.mat.emissive.toArray().map((v) => v.toFixed(2)).join(', ')})`);
+  // D opens them again, back to the parked spots
+  blindPanel.key('KeyD', true);
+  for (let i = 0; i < Math.ceil(secs * 30) + 30; i++) step(1 / 30);
+  blindPanel.key('KeyD', false);
+  check(c.t === 0 && clear(), `D opens them back to the parked spots, the glass free (${c.front.a.toFixed(2)})`);
+  for (let i = 0; i < 120; i++) step(1 / 30);
+  check(day.dim < 0.02, `open: no cut (${day.dim.toFixed(3)})`);
+  blindPanel.key('KeyA', true);
+  for (let i = 0; i < 30; i++) step(1 / 30);
+  blindPanel.key('KeyA', false);
+  const moved = c.t * c.travel;
+  check(Math.abs(moved - S.speed) < 0.03, `A held 1 s: the edge moves ${(moved * 100).toFixed(0)} cm (speed ${S.speed} m/s)`);
+  check(!blindPanel.key('KeyW', true), 'W does nothing for the curtains');
+  d.getElementById('blind-close').click();
+  check(panel.hidden && !blinds.active, '× leaves the mode');
+  // a blind afterwards gets its own upright strip back
+  const b = blinds.list.find((x) => x.room === 'Sovrum 1');
+  app.showBlind(b);
+  check(!panel.classList.contains('curtain') && panel.querySelector('[data-act=up]').textContent === '▲', 'the blind keeps its ▲ ▼ strip');
+  app.showNote(false);
+  check(panel.hidden, 'E leaves the mode');
+  // remembered over a reload
+  c.set(0.6); blinds.save();
+  f.src = URL0 + '&r=1';
+  await loaded();
+  w = f.contentWindow; d = f.contentDocument;
+  while (!w.__app) await wait(100);
+  app = w.__app;
+  const c2 = app.blinds.curtains[0];
+  check(Math.abs(c2.t - 0.6) < 0.002 && Math.abs(c2.front.a - (S.park + (S.x0 - S.park) * 0.6)) < 1e-3, `the state survives a reload (${c2.t})`);
+  try { localStorage.removeItem('lunden.blinds'); } catch { /* */ }
+}
+run().catch((e) => check(false, `ERROR ${e.message}\n${e.stack}`)).finally(() => {
+  out.textContent = `${lines.join('\n')}\n${pass ? 'ALL PASS' : 'SOME FAILED'}`;
+});
+</script>
+</body>
+</html>

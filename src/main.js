@@ -243,8 +243,9 @@ function showBlind(b) {
   player.keys.clear();
 }
 document.getElementById('blind-close').addEventListener('click', () => showBlind(null));
-blinds.onMove = (b, first) => { shadowState.hold = Math.max(shadowState.hold, 0.3); if (first) bump('blinds', 1, b.id); }; // its shadow moves; the first pull each time scores
+blinds.onMove = (b, first) => { shadowState.hold = Math.max(shadowState.hold, 0.3); if (first) bump(b.kind === 'curtain' ? 'curtains' : 'blinds', 1, b.id); }; // its shadow moves; the first pull each time scores
 if (params0.has('blinds')) for (const b of blinds.list) b.set(Number(params0.get('blinds')) || 0); // &blinds=0…1 (screenshots; not saved)
+if (params0.has('curtains')) for (const c of blinds.curtains) c.set(Number(params0.get('curtains')) || 0); // &curtains=0…1 drawn shut (#342; not saved)
 // the small lamps switch themselves with the dusk, the ceiling lamps are by hand only (#234); &lights: everything on
 lights.forced = params0.has('lights');
 if (lights.forced) lights.setAll(true);
@@ -903,7 +904,7 @@ function use(thing) {
   if (thing.kind === 'note') showNote(true, !!thing.todo);
   else if (thing.kind === 'clock') { showClock(true); bump('clock'); }
   else if (thing.kind === 'calendar') { showCalendar(true); bump('calendar'); }
-  else if (thing.kind === 'blind') showBlind(thing); // a pleated blind (#273)
+  else if (thing.kind === 'blind' || thing.kind === 'curtain') showBlind(thing); // a pleated blind (#273), the curtains (#342)
   else if (thing.kind === 'board') showBoard(true);
   else if (thing.kind === 'poster') showPoster(thing); // a taped-up drawing (#177)
   else if (thing.kind === 'switch' || thing.kind === 'lamp') { thing.toggle(); if (thing.isOpen) bump('lights', 1, idOf(thing)); }

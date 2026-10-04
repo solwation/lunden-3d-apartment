@@ -692,6 +692,7 @@ export function buildWorld(plan) {
   // pleated blinds in every window (#273): fittings (F keeps them); the rails and cords are baked below
   const blinds = new Blinds();
   for (const sp of [...l0.blindSpecs, ...l1.blindSpecs]) blinds.add(sp);
+  blinds.addCurtains(); // Sovrum 1's curtains on a ceiling track (#342): fittings too, the track baked with the rails
   scene.add(blinds.object, blinds.statics);
   const shelves = buildWallShelves(); // kitchen wall shelves (WALL_SHELVES)
   scene.add(shelves);

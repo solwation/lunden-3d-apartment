@@ -1,5 +1,6 @@
 import * as THREE from 'three';
-import { BLINDS } from './config.js';
+import { BLINDS, CURTAINS } from './config.js';
+import { Curtain } from './curtains.js';
 
 // Pleated blinds, bottom-up (#273, BLINDS in config): a folded pack on the window board, a top rail drawn up to the
 // window's head. Each blind is two meshes (the pleated fabric, rebuilt only while it moves, and the top rail); the
@@ -101,6 +102,7 @@ export class Blind {
 export class Blinds {
   constructor() {
     this.list = [];
+    this.curtains = []; // Sovrum 1's curtains on their ceiling track (#342, src/curtains.js): same strip, cut and state
     this.object = new THREE.Group();
     this.statics = new THREE.Group(); // merged with the fittings
     this.active = null;
@@ -117,17 +119,26 @@ export class Blinds {
     return b;
   }
 
+  /** The curtains (#342, CURTAINS). */
+  addCurtains() {
+    for (const spec of CURTAINS) {
+      const c = new Curtain(spec, `curtain${this.curtains.length}`, this.statics);
+      this.curtains.push(c);
+      this.object.add(c.object);
+    }
+  }
+
   /** After the room maps exist: which room each blind is in; and the state of the last visit. */
   init(roomAt) {
     const saved = loadState();
-    for (const b of this.list) {
+    for (const b of [...this.list, ...this.curtains]) {
       b.room = roomAt(b.level, (b.x0 + b.x1) / 2, b.z - b.out * 0.6);
       if (typeof saved[b.id] === 'number') b.set(saved[b.id]);
     }
   }
 
   save() {
-    try { localStorage.setItem(KEY, JSON.stringify(Object.fromEntries(this.list.map((b) => [b.id, Math.round(b.t * 1000) / 1000])))); } catch { /* private mode */ }
+    try { localStorage.setItem(KEY, JSON.stringify(Object.fromEntries([...this.list, ...this.curtains].map((b) => [b.id, Math.round(b.t * 1000) / 1000])))); } catch { /* private mode */ }
   }
 
   /** Enter (a blind) / leave (null) the blind mode. */
@@ -147,8 +158,9 @@ export class Blinds {
     const b = this.active;
     if (b && this.dir) {
       const before = b.t;
-      b.set(b.t + (this.dir * B.speed * dt) / (b.hMax - b.hMin));
+      b.set(b.t + (this.dir * (b.speed ?? B.speed) * dt) / (b.travel ?? b.hMax - b.hMin));
       if (b.t !== before) {
+        b.step?.(dt);
         const first = !b.moved;
         b.moved = true;
         this.onMove?.(b, first);
@@ -168,6 +180,7 @@ export class Blinds {
         e.setHex(B.colors.day).multiplyScalar(dg).add(tmp.setHex(B.colors.warm).multiplyScalar(lg));
       }
     }
+    for (const c of this.curtains) c.glow(day, c.room && env.lit(c.level, c.room));
     // the visitor's room: how much of its glass is covered, by blackout or white fabric (weighted by width)
     let goal = 0;
     if (!env.outdoors && env.room) {
@@ -179,6 +192,10 @@ export class Blinds {
         cut += ww * x.cover * (x.dark ? B.dim.dark : B.dim.light);
       }
       goal = w ? cut / w : 0;
+      // drawn curtains take their share on top (a cotton print: less than the blackout blind)
+      let cc = 0;
+      for (const c of this.curtains) if (c.level === env.level && c.room === env.room) cc += c.cover * c.spec.dim * (c.spec.glass[1] - c.spec.glass[0]) / (w || 1);
+      goal = 1 - (1 - goal) * (1 - Math.min(1, cc));
     }
     this.dim += (goal - this.dim) * (this.started ? Math.min(1, dt / B.fade * 3) : 1); // the first frame: at once (a reload, screenshots)
     this.started = true;
@@ -210,6 +227,18 @@ export class BlindPanel {
   get open() { return !this.el.hidden; }
 
   show(blind) {
+    // the curtains (#342) use the same strip sideways: ◀ draws them shut (towards the west), ▶ open
+    const c = blind?.kind === 'curtain';
+    if (blind) {
+      this.el.classList.toggle('curtain', c);
+      this.el.setAttribute('aria-label', c ? 'Gardinerna' : 'Plisségardinen');
+      const [u, dn] = ['up', 'down'].map((a) => this.el.querySelector(`[data-act=${a}]`));
+      u.textContent = c ? '◀' : '▲'; dn.textContent = c ? '▶' : '▼';
+      u.setAttribute('aria-label', c ? 'Dra för (håll inne)' : 'Dra upp (håll inne)');
+      dn.setAttribute('aria-label', c ? 'Dra ifrån (håll inne)' : 'Dra ner (håll inne)');
+      const hint = this.el.querySelector('small');
+      if (hint) hint.textContent = c ? 'A/D: dra för/ifrån · E: klar' : 'W/S: dra upp/ner · E: klar';
+    }
     this.el.hidden = !blind;
     this.held.clear();
     this.blinds.open(blind);
@@ -223,7 +252,7 @@ export class BlindPanel {
 
   /** Keyboard while the strip is open; returns true when the key was used. */
   key(code, down) {
-    const dir = { KeyW: 1, ArrowUp: 1, KeyS: -1, ArrowDown: -1 }[code];
+    const dir = (this.blinds.active?.kind === 'curtain' ? { KeyA: 1, ArrowLeft: 1, KeyD: -1, ArrowRight: -1 } : { KeyW: 1, ArrowUp: 1, KeyS: -1, ArrowDown: -1 })[code];
     if (!dir) return false;
     this.hold(code, down ? dir : 0);
     return true;
@@ -233,6 +262,12 @@ export class BlindPanel {
     const b = this.blinds.active;
     if (!b) return;
     const p = Math.round(b.t * 100);
+    if (b.kind === 'curtain') {
+      this.bar.style.height = '100%'; this.bar.style.width = `${p}%`;
+      this.pct.textContent = p <= 0 ? 'ifrådragna' : p >= 100 ? 'fördragna' : `${p} % fördragna`;
+      return;
+    }
+    this.bar.style.width = '';
     this.bar.style.height = `${p}%`;
     this.pct.textContent = p <= 0 ? 'nedfälld' : p >= 100 ? 'helt uppdragen' : `${p} % uppdragen`;
   }
