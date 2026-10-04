@@ -107,7 +107,9 @@ src/stairs.js          stair treads + walking height function (stairHeight) and 
                        collision, the Klk under it); the rise is LEVELS[1].floor − LEVELS[0].floor in equal risers (#352)
 src/doors.js           SwingDoor / SlidingDoor (E to open/close, animated, dynamic collision)
 src/exterior.js        Hus L (HUS_L): brick row with the core/portik, neighbours' patios, rendered upper
-                       units with pilasters, loftgång, spiral-stair drums, roof with solar panels
+                       units with pilasters, loftgång, spiral-stair drums, roof with solar panels; `husLLayout` gives each
+                       strip its flat ids (`lower` L1001…, `upper` L1201…); the upper flats' street openings are their own
+                       (`HUS_L.street` per type from bofakta, `floor` = the flat's own floor, not the building storey, #347)
 src/player.js          WASD/arrow/joystick movement, circle-vs-segment collision, step-up, gravity; outdoors the terrain (`groundY`, #256);
                        `isFree` / `obstacles` / `nearestFree` / `unstick` (#314, see Input notes)
 src/touch.js           on-screen joystick (left) + drag-to-look (right), multi-touch pointer events

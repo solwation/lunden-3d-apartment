@@ -94,7 +94,7 @@ function drum(x, z, r, h) {
  *  - våning 1–2: brick, a row of units like ours on both sides of the stair core with the portik;
  *    the other units get our façade openings as glass, and our patio/hedge/screen walls
  *  - våning 3–4: the stacked two-storey units, white render with brick pilasters, set back behind
- *    the loftgång (grey-green railing, a light metal fascia, recessed white doors with a lantern each, #111) on the
+ *    the loftgång (their own street openings per flat type, HUS_L.street, #347) (grey-green railing, a light metal fascia, recessed white doors with a lantern each, #111) on the
  *    north side; on the courtyard side (#337, HUS_L.court) våning 3 in brick, våning 4 set back behind roof terraces,
  *    the core's brick loft rising through them; spiral stairs in brick drums at both ends
  *  - flat roof with solar panels and a light metal capping
@@ -202,22 +202,30 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
   // våning 3–4: the upper units (L1201–L1209), one over each lower unit and one (L1205) over the core
   const C = H.court, y3 = roofTop + H.storeyHeight, zs = D - C.setback, par = y3 + C.parapet, deckY = y3 + C.deck;
   const coreW = coreX0 - H.wall, loftX1 = coreW + C.core.loft, loftTop = upperTop + C.core.rise, zt = zs - C.core.back;
-  const uppers = [...units.map((u) => [u.x0, u.x1, u.ox]), [coreX0, coreX1, null]];
+  const uppers = [...units.map((u) => [u.x0, u.x1, u.ox, u.upper]), [coreX0, coreX1, null, 'L1205']];
   const Lf = H.loft, doors = [], lampBox = [], lampGlow = [], balc = [], litGlass = [];
   let seed = 337;
   const isLit = () => ((seed = (seed * 16807) % 2147483647) / 2147483647) < C.lit;
   const open = (list, ox, base) => list.map((o) => ({ x0: ox + o.x0, x1: ox + o.x1, y0: base + o.sill, y1: base + o.head }));
   /** Courtyard window/door: glass + frame, a share of them lit at night (litGlass). */
   const courtWindow = (o, z) => fakeWindow(o, z, false, isLit() ? litGlass : glassGeo);
-  const isDoor = (o) => o.y0 - roofTop < 0.05 && o.x1 - o.x0 < 1.4; // our front door among the (shifted) north openings
+  const S = H.street;
+  /** Building storey n (1…4) → its floor height: våning 1–2 are our two levels, våning 3–4 the upper flats (#347). */
+  const storeyY = (n) => (n >= 3 ? roofTop + (n - 3) * H.storeyHeight : n === 2 ? roofTop / 2 : 0);
+  /** An upper flat's street openings (HUS_L.street, #347): its own type's list, its flat-internal floor index mapped
+   * to the building storey, x from the flat's west outer face `west` (L1205's entrance floor: from `east` − 5.75). */
+  const streetOpenings = (type, west, east) => (S[type] ?? S.std).map((o) => {
+    const base = storeyY(S.storey + o.floor), ox = o.east ? east - 5.75 : west;
+    return { x0: ox + o.x0, x1: ox + o.x1, y0: base + (o.door ? 0 : o.sill), y1: base + (o.door ? S.doorHead : S.head), door: !!o.door };
+  });
   const terraces = []; // [x0, x1] of each terrace strip (railing along the edge, the deck)
-  for (const [x0, x1, ox] of uppers) {
+  for (const [x0, x1, ox, id] of uppers) {
     const core = ox == null;
-    // street side (unchanged): both storeys in render behind the loftgång
-    const holes = shift(north, core ? x0 : ox, roofTop);
+    // street side (#347): both storeys in render behind the loftgång, each flat type with its own openings
+    const holes = core ? streetOpenings(id, coreW, coreX1 + H.wall) : streetOpenings(id, ox);
     facade(renders, x0, x1, roofTop, upperTop, loftD - eps, true, holes, false);
     for (const o of holes) {
-      if (!isDoor(o)) { fakeWindow(o, loftD - eps, true); continue; }
+      if (!o.door) { fakeWindow(o, loftD - eps, true); continue; }
       // the entrance (#111): set back, a white door with a narrow glass light, render reveals, a lantern beside it
       const zr = loftD + Lf.recess;
       renders.push(boxGeo(o.x0, o.x0 + 0.01, o.y0, o.y1, loftD, zr), boxGeo(o.x1 - 0.01, o.x1, o.y0, o.y1, loftD, zr), boxGeo(o.x0, o.x1, o.y1 - 0.01, o.y1, loftD, zr));
@@ -367,7 +375,8 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
  * HUS_L.pitch between the wall centres (our own plan draws both 0.2 m walls in full: W = 5.75). Unit k's openings
  * sit at ox = k × pitch, like ours at 0; its façade strip runs between its wall centres (ox + wall … ox + wall +
  * pitch), clipped against our unit [0, W]; the end units reach `gableExtra` past their last wall centre (thicker
- * gables). The core lies between the wall centres either side of it. Returns the units (ox, x0, x1; west → east),
+ * gables). The core lies between the wall centres either side of it. Returns the units (ox, x0, x1, the flat ids
+ * `lower` (våning 1–2) / `upper` (våning 3–4); west → east),
  * the core [x0, x1] and the gables xw / xe.
  */
 export function husLLayout(W = 5.75) {
@@ -377,6 +386,10 @@ export function husLLayout(W = 5.75) {
   const coreX1 = -H.before * P, coreX0 = coreX1 - H.core.w;
   for (let k = H.west; k >= 1; k--) units.push(span(coreX0 - k * P));
   for (let k = -H.before; k <= H.after; k++) units.push(span(k * P));
+  // the flats' numbers (våningsöversikterna): våning 1–2 L1001… west → east (L1101 over the portik), våning 3–4 L1201…
+  // with L1205 over the core
+  const id = (n) => `L1${String(n).padStart(3, '0')}`;
+  units.forEach((u, i) => Object.assign(u, { lower: id(i + 1), upper: id(200 + i + (i < H.west ? 1 : 2)) }));
   units[0].x0 -= H.gableExtra;
   units[units.length - 1].x1 += H.gableExtra;
   return { units, core: [coreX0 + c, coreX1 + c], xw: units[0].x0, xe: units[units.length - 1].x1 };

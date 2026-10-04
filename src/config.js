@@ -523,6 +523,27 @@ export const HUS_L = {
       lowerW: 6.55, lower: [{ x0: 1.68, x1: 2.85, sill: 0.8, head: 2.3 }, { x0: 3.86, x1: 5.44, sill: 0.6, head: 2.3 }] },
     lit: 0.45, // share of the upper units' courtyard windows lit at night (window light, not measured)
   },
+  // #347, the street (loftgång) side of the upper units L1201–L1209: their own openings, not L1007's. Measured on the
+  // bofakta sheets (docs/peab/bostader/, 1:100, "1 cm = 1 meter (A4)"; 600 dpi, 236.2 px/m): x = metres from the flat's
+  // west outer face as drawn (L1201: from its east outer face − 5.75, its gable is thicker; the same as `std` then),
+  // `floor` = the FLAT's own floor (0 = its entrance floor on building storey `storey`, 1 = its upper floor on the
+  // next storey) — not the building's storey number. `sill` = the sheet's BH. Heads are not on the sheets: `head` and
+  // `doorHead` are guesses (as `court`'s 2.3). Types per flat: `types` (default `std`).
+  street: {
+    storey: 3, head: 2.3, doorHead: 2.3,
+    std: [ // L1202/03/06/07/08 (bofakta-l1202-…-l1208.pdf), also L1201 (bofakta-l1201.pdf, same from its east face) and L1204
+      { floor: 0, door: true, x0: 0.87, x1: 1.74 }, { floor: 0, x0: 3.07, x1: 4.64, sill: 0.7 },  // entrance, kitchen
+      { floor: 1, x0: 0.81, x1: 2.38, sill: 0.7 }, { floor: 1, x0: 3.35, x1: 4.53, sill: 0.7 }], // Sovrum 1, Sovrum 2
+    L1209: [ // bofakta-l1209.pdf: the entrance floor's door and window sit 0.23 m further east than std's
+      { floor: 0, door: true, x0: 1.10, x1: 1.98 }, { floor: 0, x0: 3.30, x1: 4.87, sill: 0.7 },
+      { floor: 1, x0: 0.81, x1: 2.38, sill: 0.7 }, { floor: 1, x0: 3.35, x1: 4.53, sill: 0.7 }], // the second one a "ljudruta"
+    // L1205 over the core (bofakta-l1205.pdf): its entrance floor is a 5.75 m wide north part at the core's east end
+    // (x from the core's EAST outer face − 5.75, as drawn), entered from the stair core through its west wall (not seen
+    // from the street); the rest of våning 3 there is the stair core (render, no openings: no drawing). Its upper floor
+    // spans the core (x from the core's west outer face, like `court.core.upper`)
+    L1205: [{ floor: 0, x0: 1.03, x1: 2.20, sill: 0.8, east: true }, { floor: 0, x0: 2.96, x1: 4.54, sill: 0.7, east: true },
+      { floor: 1, x0: 1.02, x1: 2.20, sill: 0.7 }, { floor: 1, x0: 3.44, x1: 5.01, sill: 0.7 }, { floor: 1, x0: 5.98, x1: 7.15, sill: 0.7 }],
+  },
   // spiral stairs in brick drums at both ends (våning 1/3 plans): centre, radius
   // (#42: the east one, L1008's escape stair, stands right against the house, per the user; #172: so does
   // the west one, against the west gable — `gable: 'west'` = its x is worked out in exterior.js, gable − r)
