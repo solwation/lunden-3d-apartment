@@ -132,15 +132,19 @@ src/roofs.js           the walkable roofs (#360, `world.roofs`): surfaces (rect 
                        −1 (no pool light for the flat's lamps: the lampwash shows them), `behindWall` hides the flat under the roof,
                        the rain stops on the surface (`weather.surfaceAt`), the HUD says "Utomhus · <roof>", stats `roofs` (first
                        per roof, SCORE.first.roofs). Not walkable: the old S:t Lars houses, the school, HepCat, pergolas, parapet tops
-src/garage.js          the garage + förråd under the courtyard (#357, GARAGE in config — no garage plan exists: every number but the
-                       door, the floor (park level) and the count of 15 förråd is a guess): a hall south of Hus C behind
-                       `terrain.garageDoor` (aisle, stalls with painted lines/numbers on one canvas floor, columns, parked `lite`
-                       cars instanced, our stall 7 "L1007"), a corridor north then east with 15 wire-mesh förråd (doors: one
-                       InstancedMesh + invisible pick boxes, kind 'cabinet', E opens; things inside baked in) to a lift / stairwell
-                       lobby under Hus L's core (doors only). Shell, floor, mesh, signs, tubes are MeshBasic with the tubes' light
-                       baked into vertex colours (material colour = on/off, a motion sensor + flicker); the group is drawn only
-                       from inside / west of the door (`near`, else `blackout`); a few `lamps` borrow pool lights (lights.extra)
-                       and `under` cuts the daylight (DayCycle.under). player.js `below` (in its rects at the floor's height):
+src/garage.js          the garage under the courtyard + Hus L's basement (#357, #417, GARAGE in config): the våning −1 plan's layout
+                       (DRAWING, measured on docs/peab/kalibrerad/vaning-m1-300dpi.png with the #253 transform; heights, stalls,
+                       cages, lights = ASSUMPTION): `GARAGE.rects` = walkable rooms (room name + sensor area; doorways are thin
+                       rects, some with a steel door), walls stand on every rect edge touching no other rect (`wallLines`). The
+                       entrance hall behind `terrain.garageDoor`, the turn into the big hall under the courtyard (the plan's
+                       column grid, painted stalls / numbers on canvas floors, parked `lite` cars instanced, the car pool's two,
+                       bike racks), our stall straight under our patio (charger, "L1007"), Hus L's basement through a steel door
+                       (bike rooms, Elrum, the core's Hisshall — #415 — and the 15 wire-mesh förråd in LGHFÖRRÅD: cage doors one
+                       InstancedMesh + invisible pick boxes, kind 'cabinet'), the Miljörum under Hus C (bins), fake doors on the
+                       neighbours' walls. Per sensor area MeshBasic materials with the tubes' light baked into vertex colours
+                       (colour = on/off, motion sensor + flicker); nothing drawn unless the camera is down here (or just the
+                       entrance from west of the door, `near`, else `blackout`); one pool-light spot per area (lights.extra),
+                       `under` cuts the daylight (DayCycle.under). player.js `below` (in its rects at the floor's height):
                        its `segments` / `dynamic()` / `obstacles()` instead of the level's (+ our car in its stall, `extra`); #358:
                        `GarageDoor` (GARAGE.door): sectional panels (one InstancedMesh) up the tracks and in under the ceiling, a
                        button on a post outside + one inside (kind 'garagebutton'), an amber light blinking + sfx.garageMotor
@@ -675,7 +679,8 @@ manifest.webmanifest   web app manifest; icons/ = icon.svg rendered to PNG (192,
 data/plan.json         GENERATED — do not edit by hand
 data/changelog.json    what changed, for visitors (see Workflow rules)
 tools/extract_plan.py  PDF → data/plan.json (stdlib only)
-tools/walktest.html    headless movement test (+ #355: round the block, the stairs, the recess, the portik, sprint, nearestFree)
+tools/walktest.html    headless movement test (+ #355: round the block, the stairs, the recess, the portik, sprint, nearestFree; #417: garage door → the
+                       turn → the big hall → our stall → the basement door → the Hisshall)
 tools/touchtest.html   headless touch-input test (synthetic pointer events); the choice menu (#367, &life): the butter's two rows as
                        buttons, a tap opens it without turning the view, a number / E pick, one action = the usual button, slice → plate
 tools/cattest.html     headless test of cat placement behind every door/wardrobe; up on seats, beds and tables (#200)
@@ -732,8 +737,10 @@ tools/stairtest.html   headless test (#352): equal risers from floor to floor, n
 tools/stucktest.html   headless test (#314): a 5 cm scan of both floors (doors open; the free floor in one piece, pockets out of
                        reach listed), getting up from every seat / bed with the old spot inside it, F putting the sofa / bed back
                        round you, the car parking on you, the hoop rising under you, a door shut on you, a resume record in the bed
-tools/garagetest.html  headless test (#357): in from the drive (below, drawn, "Garage"), the tubes on, daylight cut, no rain inside,
-                       walls / a column / a parked car hold, out of a car (#314), our stall free, the corridor to the lobby, a
+tools/garagetest.html  headless test (#357, #417): in from the drive (below, drawn, "Garage"), the tubes on, daylight cut, no rain inside,
+                       walls / the turn / the big hall to its east wall / a column / a parked car hold, out of a car (#314), our
+                       stall under the patio, the basement's steel door to the bike room and the Hisshall, the Miljörum, 15
+                       förråd, per-area sensors, a
                        förråd shut holds / E opens / walk in, the courtyard above stays at y 0 and its edge over the door holds;
                        #358: the door shut holds, the post's button opens it, it stays open while you stand in it, shuts by
                        itself, opens again if you step in, the inside button; our Renault in its stall (a box, its doors / seat)

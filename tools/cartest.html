@@ -98,7 +98,7 @@ f.onload = async () => {
   // on its drive, never through a parked car or a column there
   const garage = w.__app.world.garage, GD = S.terrain.garageDoor, GG = cfg.GARAGE, K = GG.columns;
   const inPoly = (q, x, z) => { let pos = 0, neg = 0; for (let i = 0; i < q.length; i++) { const [ax, az] = q[i], [bx, bz] = q[(i + 1) % q.length], c = (bx - ax) * (z - az) - (bz - az) * (x - ax); if (c > 0) pos++; else if (c < 0) neg++; } return !(pos && neg); };
-  const column = (x, z) => K.xs.some((cx) => K.zs.some((cz) => { const zc = cz < 44 ? cz - K.size / 2 : cz + K.size / 2; return Math.abs(x - cx) < K.size / 2 + 0.05 && Math.abs(z - zc) < K.size / 2 + 0.05; }));
+  const column = (x, z) => garage.columns.some(([cx, cz]) => Math.abs(x - cx) < K.size / 2 + 0.05 && Math.abs(z - cz) < K.size / 2 + 0.05); // (#417: the plan's grid)
   const routes = [];
   for (const via of ['street', 'garage']) { car.via = via; routes.push([`in (${via})`, car.arrival()], [`out (${via})`, car.departure()]); }
   car.via = 'garage';

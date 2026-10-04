@@ -851,7 +851,17 @@ function lowestGround(b) {
 function plinth(b) {
   const foot = lowestGround(b);
   if (foot > b.base - 0.05) return null;
-  return new THREE.BoxGeometry(b.x1 - b.x0, b.base - foot + 0.05, b.z1 - b.z0).translate((b.x0 + b.x1) / 2, (foot + b.base) / 2, (b.z0 + b.z1) / 2);
+  // #417: a skirt on each face down to the lowest ground just outside it, not a solid box — a house standing on the garage
+  // box (Hus C) would otherwise fill the garage's rooms under it with brick
+  const faces = [], n = 12;
+  for (const [ax, az, bx, bz, ox, oz] of [[b.x0, b.z0, b.x1, b.z0, 0, -1], [b.x1, b.z0, b.x1, b.z1, 1, 0], [b.x0, b.z1, b.x1, b.z1, 0, 1], [b.x0, b.z0, b.x0, b.z1, -1, 0]]) {
+    let lo = Infinity;
+    for (let i = 1; i < n; i++) lo = Math.min(lo, groundY(ax + (bx - ax) * i / n + ox * 0.1, az + (bz - az) * i / n + oz * 0.1)); // (not at the corners: the next face)
+    if (lo > b.base - 0.05) continue;
+    const len = Math.hypot(bx - ax, bz - az), h = b.base - lo + 0.05;
+    faces.push(new THREE.BoxGeometry(oz ? len : 0.3, h, oz ? 0.3 : len).translate((ax + bx) / 2 - ox * 0.15, (lo + b.base) / 2, (az + bz) / 2 - oz * 0.15));
+  }
+  return faces.length ? mergeGeometries(faces.map((g) => g.toNonIndexed())) : null;
 }
 
 /** Box with façade UVs: u along the wall in bays, v in storeys from the ground. */

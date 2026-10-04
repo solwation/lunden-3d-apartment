@@ -21,8 +21,8 @@ async function run() {
   while (!w.__app) await wait(100);
   const { player, camera, step, world, weather, day } = w.__app;
   const { GARAGE: G, SITE } = await w.eval(`import('${new URL('../src/config.js', location)}')`);
-  const { CAGES, STALLS } = await w.eval(`import('${new URL('../src/garage.js', location)}')`);
-  const garage = world.garage, GD = SITE.terrain.garageDoor;
+  const { CAGES, STALLS, COLUMNS } = await w.eval(`import('${new URL('../src/garage.js', location)}')`);
+  const garage = world.garage, GD = SITE.terrain.garageDoor, R = Object.fromEntries(G.rects.map((r) => [r.id, r]));
   const lines = [];
   let pass = true;
   const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); pass &&= !!ok; return ok; };
@@ -68,17 +68,24 @@ async function run() {
   let wet = 0;
   for (let i = 0; i < pos.length; i += 6) if (pos[i + 1] > -999 && garage.inside(pos[i], pos[i + 2]) && Math.min(pos[i + 1], pos[i + 4]) < G.ceiling) wet++;
   check(wet === 0, `no rain falls inside the garage (${wet} streaks under its ceiling)`);
-  // the walls hold: east along the aisle to the far wall
-  walk(-90, 20);
-  check(player.pos.x < G.hall.x1 && player.pos.x > G.hall.x1 - 0.6 && player.below, `the east wall stops the visitor (x ${f2(player.pos.x)})`);
+  // #417: the entrance hall's south wall holds
+  walk(180, 8);
+  check(player.pos.z < R.entrance.z1 && player.pos.z > R.entrance.z1 - 0.6 && player.below, `the entrance hall's south wall stops the visitor (z ${f2(player.pos.z)})`);
+  // the turn: north-east through the link into the big hall, then east along it past L1007 to its east wall
+  at(-46.6, 44, G.floor);
+  walk(0, 15);
+  check(player.below && garage.roomAt(player.pos.x, player.pos.z) === 'Garage' && player.pos.z < R.hallW.z1 - 5, `through the turn into the big hall (z ${f2(player.pos.z)})`);
+  at(-46.6, 21, G.floor);
+  walk(-90, 40);
+  check(player.pos.x < R.hallE.x1 && player.pos.x > R.hallE.x1 - 0.6 && player.below, `along the big hall to its east wall beyond L1007 (x ${f2(player.pos.x)})`);
   // a column, a parked car
-  const K = G.columns;
-  at(K.xs[0] - 1, K.zs[0] - 0.2, G.floor);
+  const [kx, kz] = COLUMNS[0], K = G.columns.size;
+  at(kx - 1.2, kz, G.floor);
   walk(-90, 2);
-  check(player.pos.x < K.xs[0] - K.size / 2 && player.below, `a column is in the way (x ${f2(player.pos.x)})`);
-  const q = garage.carPolys[0], cx = (q[0][0] + q[1][0]) / 2, cz = (q[0][1] + q[2][1]) / 2;
-  at(cx, 44, G.floor);
-  camera.rotation.set(0, cz < 44 ? 0 : Math.PI, 0, 'YXZ');
+  check(player.pos.x < kx - K / 2 && player.below, `a column is in the way (x ${f2(player.pos.x)})`);
+  const q = garage.carPolys.find((p) => (p[0][1] + p[2][1]) / 2 < 20), cx = (q[0][0] + q[1][0]) / 2, cz = (q[0][1] + q[2][1]) / 2;
+  at(cx, 21, G.floor);
+  camera.rotation.set(0, 0, 0, 'YXZ');
   player.keys.add('KeyW'); for (let i = 0; i < 180; i++) step(1 / 60); player.keys.delete('KeyW');
   check(Math.abs(player.pos.z - cz) > 2.1, `a parked car is in the way (z ${f2(player.pos.z)}, car ${f2(cz)})`);
   // put inside a parked car: moved out (#314)
@@ -95,14 +102,30 @@ async function run() {
   drv.toggle();
   check(car.targets().some((t) => t.kind === 'rest'), 'the driver\'s door open: the seat is a target (sit in the car down here)');
   drv.toggle(); for (let i = 0; i < 60; i++) step(1 / 60);
-  // the corridor: north through the opening, then east to the lobby
-  at((G.legN.x0 + G.legN.x1) / 2, 44, G.floor);
-  walk(0, 6);
-  check(player.below && player.pos.z < G.hall.z0 && garage.roomAt(player.pos.x, player.pos.z) === 'Förråd', `north into the förråd corridor (z ${f2(player.pos.z)}, ${garage.roomAt(player.pos.x, player.pos.z)})`);
-  walk(0, 16);
-  check(player.pos.z < G.legE.z1 + 0.1 && player.pos.z > G.legE.z0, `to its north end (z ${f2(player.pos.z)})`);
-  walk(-90, 20);
-  check(garage.roomAt(player.pos.x, player.pos.z) === 'Hisshall' && player.pos.x < G.lobby.x1, `east to the lift lobby (x ${f2(player.pos.x)}, ${garage.roomAt(player.pos.x, player.pos.z)})`);
+  check(ours.x0 > 0 && ours.x1 < 5.75 && ours.z0 < 13, `our stall is straight under our patio (x ${f2(ours.x0)} … ${f2(ours.x1)}, z ${f2(ours.z0)})`);
+  // #417: Hus L's basement through the steel door by the core: shut it holds, E opens it, into the bike room, the lobby
+  const bd = garage.targets.find((x) => x.door.rect?.id === 'garageDoorL'), bdx = (R.garageDoorL.x0 + R.garageDoorL.x1) / 2;
+  at(bdx, 14.0, G.floor);
+  walk(0, 2);
+  check(player.pos.z > (R.garageDoorL.z0 + R.garageDoorL.z1) / 2 + 0.15, `the shut basement door holds (z ${f2(player.pos.z)})`);
+  at(bdx, 13.6, G.floor);
+  camera.rotation.set(-0.3, 0, 0, 'YXZ'); step(1 / 60);
+  check(/öppna dörren till källaren/i.test(d.getElementById('action').textContent), `E target: "${d.getElementById('action').textContent}"`);
+  d.getElementById('action').click(); for (let i = 0; i < 60; i++) step(1 / 60);
+  at(bdx - 0.2, 13.4, G.floor);
+  walk(0, 2.5);
+  check(garage.roomAt(player.pos.x, player.pos.z) === 'Cykelförråd', `through it into the bike room (${garage.roomAt(player.pos.x, player.pos.z)}, z ${f2(player.pos.z)})`);
+  at(-15.5, 8.4, G.floor);
+  walk(90, 1.1);
+  check(garage.roomAt(player.pos.x, player.pos.z) === 'Hisshall', `west into the lift lobby (${garage.roomAt(player.pos.x, player.pos.z)}, x ${f2(player.pos.x)})`);
+  // the miljörum: its door opens, bins inside
+  const md = garage.targets.find((x) => x.door.rect?.id === 'miljoDoor');
+  md.toggle(); for (let i = 0; i < 60; i++) step(1 / 60);
+  at((R.miljoDoor.x0 + R.miljoDoor.x1) / 2 + 0.15, 35.3, G.floor);
+  walk(0, 2.5);
+  check(garage.roomAt(player.pos.x, player.pos.z) === 'Miljörum', `into the miljörum (${garage.roomAt(player.pos.x, player.pos.z)})`);
+  check(['Garage', 'Cykelförråd', 'Förråd', 'Miljörum', 'Elrum', 'Hisshall'].every((n) => garage.roomNames.includes(n)), `rooms: ${garage.roomNames.join(', ')}`);
+  check(CAGES.length === 15 && CAGES.every((k) => k.x0 >= R.forrad.x0 - 0.01 && k.x1 <= R.forrad.x1 + 0.01), `15 förråd in Hus L's LGHFÖRRÅD (${CAGES.length})`);
   // a förråd: its front holds while shut; E opens it; in; shut again
   const c = CAGES.find((k) => k.ours), t = garage.targets.find((x) => x.door.cage === c), dd = t.door;
   const mid = dd.hx + dd.dir[0] * 0.45, midz = dd.hz + dd.dir[1] * 0.45;
@@ -147,6 +170,10 @@ async function run() {
   at(ib.x + 0.8, ib.z, G.floor); look(ib);
   d.getElementById('action').click(); step(1 / 60);
   check(door.target === 1 && door.presses === 2, `the button inside opens it (${door.presses} presses)`);
+  // the sensors: only the area you are in (and near) lights up
+  at(-60, 44, G.floor);
+  for (let i = 0; i < (G.lights.hold + 3) * 10; i++) step(1 / 10);
+  check(garage.areas.entrance.on && !garage.areas.basementE.on && !garage.areas.hallE.on, `per-area sensors: in the entrance hall the basement's east part and the far hall stay dark`);
   // up on the courtyard over the garage: the ground is the courtyard, not the garage floor
   at(-60, 44);
   check(Math.abs(player.pos.y) < 0.01 && !player.below, `on the courtyard over the hall: y ${f2(player.pos.y)}, not below`);
@@ -156,7 +183,6 @@ async function run() {
   at(-20, 25);
   for (let i = 0; i < (G.lights.hold + 3) * 10; i++) step(1 / 10);
   check(!garage.on && garage.level < 0.05 && garage.under === 0, `gone: the tubes go out after ${G.lights.hold} s, daylight back`);
-  check(garage.roomNames.length === 3, `rooms: ${garage.roomNames.join(', ')}`);
   out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
 }
 </script>

@@ -809,41 +809,90 @@ export const GREET = {
 // ramp's wall stop the visitor (world.js; surroundings.js `userData.segments`). The bounds are a choice, not a plot line.
 export const OUTDOOR = { x0: -78.5, x1: 27.5, z0: -14, z1: 64 };
 
-// The garage and the storage rooms under the courtyard (#357, src/garage.js). Peab's material has NO garage plan: the
-// only sourced facts are the box (SITE.terrain.box), the door in its west face (SITE.terrain.garageDoor, "INFART
-// GARAGE" on våning −1), the floor at the park level (terrain.park, the drive in front of the door) and "15 extra
-// lägenhetsförråd" (plan brochure p. 24). EVERYTHING ELSE HERE IS A GUESS (assumption, not measured): the hall south of
-// Hus C between the door and Hus B's west façade, one aisle from the door with a row of stalls each side, the columns,
-// the ceiling height, a corridor of mesh-walled storage rooms north and then east under the courtyard to a lift / stair
-// lobby under Hus L's stair core (by the portik, husLLayout), the tubes. Rectangles are plan x/z, inner faces of the walls.
+// The garage under the courtyard and Hus L's basement (#357, #417, src/garage.js), per the våning −1 overview plan
+// (plan brochure p. 46; docs/peab/garage-vaning-m1.jpg, measured on docs/peab/kalibrerad/vaning-m1-300dpi.png with the
+// #253 transform x = (px − 1909.5) × 0.042356, z = (py − 1073) × 0.042356 — it fits Hus L's outline on this sheet:
+// x −41.6 … 11.6, z 0 … 12.6). DRAWING = read off that plan (inner faces of the drawn walls, ±0.1 m); everything
+// marked ASSUMPTION is ours (heights, stall sizes / count / numbers, column size, door widths, the förråd cages' split,
+// the tubes). Rectangles are walkable floor (plan x/z); walls stand on every rectangle edge that does not touch another
+// rectangle (garage.js), so a doorway is a small rectangle through the wall.
 export const GARAGE = {
   floor: -3,          // = SITE.terrain.park: the drive is level with the door (#346)
-  ceiling: -0.35,     // guess: the deck + the courtyard's soil over it; 2.65 m clear (the door is 2.6)
-  wall: 0.25,         // guess
-  hall: { x0: -70.25, x1: -41.95, z0: 36.95, z1: 52.0 }, // guess: the box's west part south of Hus C (its south face 36.7); east wall = Hus B's west façade line
-  doorway: { x0: -70.5, x1: -70.25 },                   // the opening through the west wall: terrain.garageDoor's z0…z1
-  // stalls (guess: 2.5 m wide, `d` = [north row, south row] deep — the north row is short of Hus C; the aisle between
-  // them in line with the door): `north` / `south` stalls from x0 eastwards, numbered 1… along the north row then the
-  // south row; `ours` = L1007's (our pick: 7). `cars`: the share of the others taken.
-  stalls: { x0: -67.5, w: 2.5, d: [4.8, 5], north: 9, south: 10, ours: 7, cars: 0.6, seed: 23 },
-  columns: { size: 0.4, xs: [-62.5, -55, -47.5], zs: [41.75, 47] }, // guess: on the stall lines at the aisle's edges
-  // the corridor (2 m wide, guess): north from the hall's NE corner, then east under the courtyard to the lobby
-  legN: { x0: -44.5, x1: -42.5, z0: 15, z1: 36.95 },
-  legE: { x0: -44.5, x1: -20, z0: 13, z1: 15 },
-  lobby: { x0: -20, x1: -14, z0: 13, z1: 17.5, lift: -18.5, stair: -15.6 }, // the lift door's / stairwell door's centre x (guess)
-  // 15 förråd (the brochure's count): `e` along legE's south side, `n` along legN's west side; each `w` wide, `d` deep,
-  // a door `door` m wide next to its `hinge` end, opening into the corridor up to `max` rad. Numbers 1… east then north.
-  // `ours`: L1007's (our pick).
-  storage: { e: { x0: -42.5, n: 10, z0: 15 }, n: { z0: 18, n: 5, x1: -44.5 }, w: 2.25, d: 2.2, door: 0.9, max: 1.5, speed: 3, ours: 7, seed: 41 },
-  // fluorescent tubes (our pick): rows over the aisle and the stall rows, along the corridor; a motion sensor puts them
-  // on while the visitor is down here (or at the door) and `hold` s after; `flicker` s of starting up. `dim`: the
-  // daylight that is left down here (DayCycle.under). `pool`: the few spots that borrow a pool light (lights.extra).
+  ceiling: -0.35,     // ASSUMPTION: the deck + the courtyard's soil over it; 2.65 m clear (the door is 2.6)
+  // DRAWING: each walkable rectangle → [room name, sensor area]. The entrance hall south of Hus C's rooms (INFART GARAGE),
+  // open north-east into the big hall (BILPARKERING / CYKELPARKERING) under the courtyard, which runs east between Hus
+  // L's basement and Hus B / Hus A to x 8.9 (past L1007); Hus L's basement: its north rooms (CYKEL, EL, the stair + lift
+  // core, CYKEL, LGHFÖRRÅD) and its south band (CYKEL, the two corridors with bike racks); the MILJÖRUM under Hus C.
+  rects: [
+    { id: 'doorway', x0: -70.5, x1: -69.95, z0: 41, z1: 47, room: 'Garage', area: 'entrance' }, // terrain.garageDoor's opening through the 0.55 m wall
+    // (the east wall: the plan's inner face is x −41.61, the model's Hus B west façade −41.7 (SITE.blocks): kept just inside it)
+    { id: 'entrance', x0: -69.95, x1: -41.8, z0: 34.52, z1: 51.8, room: 'Garage', area: 'entrance' },
+    { id: 'hallW', x0: -51.4, x1: -9.38, z0: 12.62, z1: 33.16, room: 'Garage', area: 'hallW' },
+    { id: 'link', x0: -51.4, x1: -41.8, z0: 33.16, z1: 34.52, room: 'Garage', area: 'hallW' }, // the turn: the entrance hall opens into the big hall
+    { id: 'hallE', x0: -9.38, x1: 8.92, z0: 12.62, z1: 28.76, room: 'Garage', area: 'hallE' },
+    { id: 'miljo', x0: -69.95, x1: -62.75, z0: 28.55, z1: 34.01, room: 'Miljörum', area: 'entrance' },
+    { id: 'miljoDoor', x0: -64.95, x1: -64.05, z0: 34.01, z1: 34.52, room: 'Miljörum', area: 'entrance', door: { kind: 'steel', hinge: 'x0', open: -1, name: 'dörren till miljörummet' } },
+    { id: 'bandW', x0: -35.6, x1: -19.25, z0: 7.79, z1: 12.11, room: 'Cykelförråd', area: 'basementW' },
+    { id: 'bikeN', x0: -35.6, x1: -19.25, z0: 2.67, z1: 7.5, room: 'Cykelförråd', area: 'basementW' },
+    { id: 'bikeNW', x0: -35.6, x1: -24.8, z0: 0.47, z1: 2.67, room: 'Cykelförråd', area: 'basementW' },
+    { id: 'bikeGap', x0: -33.6, x1: -32.4, z0: 7.5, z1: 7.79, room: 'Cykelförråd', area: 'basementW' },
+    { id: 'el', x0: -24.46, x1: -19.25, z0: 0.47, z1: 2.33, room: 'Elrum', area: 'basementW' },
+    { id: 'elDoor', x0: -24.0, x1: -23.1, z0: 2.33, z1: 2.67, room: 'Elrum', area: 'basementW', door: { kind: 'steel', hinge: 'x0', open: 1, name: 'dörren till elrummet' } },
+    { id: 'core', x0: -18.95, x1: -16.62, z0: 4.49, z1: 9.95, room: 'Hisshall', area: 'basementW' }, // the stair + lift core (#415 builds the stair and the lift)
+    { id: 'coreW', x0: -19.25, x1: -18.95, z0: 7.95, z1: 8.85, room: 'Hisshall', area: 'basementW' },
+    { id: 'coreE', x0: -16.62, x1: -16.33, z0: 7.95, z1: 8.85, room: 'Hisshall', area: 'basementW' },
+    { id: 'bandE', x0: -16.33, x1: 11.12, z0: 7.79, z1: 12.11, room: 'Cykelförråd', area: 'basementE' },
+    { id: 'bikeNE', x0: -16.33, x1: -11.08, z0: 0.47, z1: 7.5, room: 'Cykelförråd', area: 'basementE' },
+    { id: 'bikeNEDoor', x0: -15.45, x1: -14.55, z0: 7.5, z1: 7.79, room: 'Cykelförråd', area: 'basementE' },
+    { id: 'forrad', x0: -10.78, x1: 11.12, z0: 0.47, z1: 7.5, room: 'Förråd', area: 'basementE' }, // LGHFÖRRÅD: "15 extra lägenhetsförråd"
+    { id: 'forradDoor', x0: -0.98, x1: -0.08, z0: 7.5, z1: 7.79, room: 'Förråd', area: 'basementE' },
+    { id: 'garageDoorL', x0: -15.45, x1: -14.55, z0: 12.11, z1: 12.62, room: 'Garage', area: 'hallW', door: { kind: 'steel', hinge: 'x0', open: 1, name: 'dörren till källaren' } }, // from the basement out into the garage
+  ],
+  // DRAWING: free-standing / partial walls inside the rectangles [x0, x1, z0, z1]: the förråd room's partitions and the
+  // bike rooms' half walls (z 3.2 … 4.8 open between them); the core's lift shaft south of the lobby
+  partials: [[-30.35, -30.05, 0.47, 3.2], [-30.35, -30.05, 4.8, 7.5], [-24.8, -24.46, 2.67, 3.2], [-24.8, -24.46, 4.8, 7.5],
+    [-5.53, -5.23, 0.47, 3.2], [-5.53, -5.23, 4.8, 7.5], [0.02, 0.32, 0.47, 3.2], [0.02, 0.32, 4.8, 7.5], [5.57, 5.87, 0.47, 3.2], [5.57, 5.87, 4.8, 7.5],
+    [-11.08, -10.78, 9.4, 12.11], [-5.53, -5.23, 9.4, 12.11], [0.02, 0.32, 9.4, 12.11], [5.57, 5.87, 9.4, 12.11]],
+  // DRAWING: the columns (0.42 m squares, centres) — the big hall's grid (7.9 m) and the entrance hall's; the entrance
+  // hall's line at x −58.2 is a row of short walls on the plan, drawn as columns here
+  columns: { size: 0.42, grid: { xs: [-41.55, -33.67, -25.75, -17.85, -9.95, -2.05, 5.85], zs: [16.94, 24.44] },
+    south: { xs: [-41.55, -33.67, -25.75, -17.85], z: 30.44 }, entrance: { xs: [-64.15, -58.22, -51.7], zs: [36.2, 40.26, 47.56] } },
+  // ASSUMPTION (the plan draws no stalls): rows nose to a wall, `w` wide (the big hall: 3 per 7.9 m bay), `d` deep;
+  // [x0, x1, z0, z1, nose 'n' | 's'] per row, cut into stalls of ~w; `skip` = stalls left free (the basement door);
+  // numbered 1… in this order. `ours` (L1007): straight under our patio (x 0 … 5.75), the user's wish — a charging post
+  // and "L1007" on the wall. `pool`: the car pool's two stalls ("bilpool med 2 bilar och laddplatser", plan p. 46),
+  // `cars`: the share of the other stalls taken.
+  stalls: {
+    rows: [[-49.44, 8.92, 12.62, 17.62, 'n', 2.63], [-41.55, -9.95, 28.16, 33.16, 's', 2.63],
+      [-69.95, -51.9, 34.52, 39.9, 'n', 2.9], [-69.95, -42.6, 47.8, 51.8, 's', 2.9]],
+    skip: [[-17.85, -12.59]], ours: [0.58, 3.21], pool: [[-49.44, -44.18]], cars: 0.55, seed: 23,
+  },
+  // ASSUMPTION: bike racks in the big hall (CYKELPARKERING) along the middle column row, and in the basement's bike rooms
+  // along their walls (the plan draws racks there): [x0, x1, z, facing ±1 (towards +z / −z)]
+  bikes: [[-33.2, -26.2, 24.9, 1], [-33.2, -26.2, 24.0, -1], [-35.3, -19.6, 11.6, -1], [-14.2, -11.4, 11.6, -1], [-10.6, -5.8, 11.6, -1],
+    [-5.0, -0.2, 11.6, -1], [0.55, 5.3, 11.6, -1], [6.1, 10.8, 11.6, -1], [-35.3, -30.6, 0.95, 1], [-29.8, -25.1, 0.95, 1], [-24.2, -19.6, 7.0, -1],
+    [-16.0, -11.4, 0.95, 1]],
+  // DRAWING: the 15 förråd (LGHFÖRRÅD) in Hus L's north-east room, four bays between its partitions with a passage
+  // through them (z 3.2 … 4.8); ASSUMPTION: two wire-mesh cages per bay each side of it, but one where the room's door
+  // comes in, a door `door` m wide in each cage's front, opening into the passage up to `max` rad. `ours` (L1007).
+  storage: { bays: [[-10.78, -5.53], [-5.23, 0.02], [0.32, 5.57], [5.87, 11.12]], north: [0.47, 3.2], south: [4.8, 7.5], skipSouth: 1,
+    door: 0.9, max: 1.5, speed: 3, ours: 7, seed: 41 },
+  // the lobby in the core (DRAWING: the lift shaft south of it, the stair along its west side): the lift's door (centre x,
+  // in the shaft's north wall z 9.95) and the stairwell's door (ASSUMPTION: in the lobby's north wall) — #415 makes them work
+  lobby: { lift: -18.2, stair: -17.8 },
+  // walls with a door we cannot open (the rooms under Hus C, Hus B / A's basements): [x, z, face n|s|e|w, label] — the
+  // face the door is seen from (DRAWING: where the plan draws a door on the garage's walls; ASSUMPTION: the labels' text)
+  fakeDoors: [[-56.2, 34.52, 's', 'LGHFÖRRÅD'], [-51.4, 23.1, 'e', 'TRAPPHUS C'], [-36.6, 33.16, 'n', 'LGHFÖRRÅD'], [-29.5, 33.16, 'n', 'TRAPPHUS B'],
+    [-3.5, 28.76, 'n', 'TRAPPHUS A'], [4.5, 28.76, 'n', 'LGHFÖRRÅD'], [-41.8, 44.4, 'w', 'EL']],
   // #358: a sectional (overhead) door in `sections` panels rising on tracks and running in under the ceiling in `seconds`
   // s; it shuts by itself `auto` s after it opened unless someone / our car is in the opening (it opens again if one
   // comes in while it shuts). A button on a post outside south of the drive (`post`) and on the wall inside (`inside`);
-  // an amber warning light blinks while it moves. All ours (guess).
-  door: { sections: 5, seconds: 9, auto: 25, passable: 0.8, post: [-71.4, 47.9], inside: [-70.22, 48.0] },
-  lights: { hold: 90, flicker: 0.7, amb: 0.22, r: 2.6, dim: 0.92, intensity: 2.2, range: 10, sensor: 9 },
+  // an amber warning light blinks while it moves. All ours (ASSUMPTION).
+  door: { sections: 5, seconds: 9, auto: 25, passable: 0.8, post: [-71.4, 47.9], inside: [-69.92, 48.4] },
+  // fluorescent tubes (ASSUMPTION): a grid over every room (`spacing` m); a motion sensor per area (`area` above) puts
+  // them on while the visitor is in it or within `sensor` m of it and `hold` s after; `flicker` s of starting up.
+  // `dim`: the daylight left down here (DayCycle.under); each area lends one spot a pool light (lights.extra).
+  lights: { hold: 90, flicker: 0.7, amb: 0.22, r: 2.6, dim: 0.92, intensity: 2.2, range: 10, sensor: 8, spacing: 5.2 },
 };
 
 // The lightsaber in Sovrum 2 (#78, src/saber.js): since #324 on two pegboard hooks on the Nerf board's top row (the
@@ -924,17 +973,19 @@ export const CAR = {
     [-7.5, -9.5], [-2, -5.6], [2.9, -5.4]], // ends at our door
   leave: [[2.9, -5.4], [6.5, -5.6], [8.4, -8], [7, -10.6], [3, -11.2], [-4, -11.2], [-8.5, -13.5], [-10.25, -16.3],
     [-10.1, -22], [-11.4, -26.3], { road: 'Sankt Lars väg', from: [-16, -27], to: [-95, -27] }],
-  // #358: it lives in its stall in the garage (GARAGE.stalls.ours = 7, centre −51.25, 39.35 nose to the north wall). The
-  // key calls it OUT: it backs out of the stall (`reverse`), drives out through the garage door (which opens for it), up
+  // #358: it lives in its stall in the garage (#417: straight under our patio, GARAGE.stalls.ours, nose to Hus L's
+  // basement wall). The key calls it OUT: it backs out of the stall (`reverse`), drives west through the big hall, round
+  // the turn into the entrance hall and out through the garage door (which opens for it), up
   // the drive, right onto Karpvägen northbound, right onto Sankt Lars väg and on as `arrive` (from its second leg) to our
   // door. Sent away it goes `leave` (but its last leg), west in the far lane, left down Karpvägen, left into the drive and
-  // nose-in to the stall; the door shuts behind it. Waypoints are ours (no garage plan); `slow` m/s in the garage.
+  // nose-in to the stall; the door shuts behind it. Waypoints are ours (ASSUMPTION); `slow` m/s in the garage.
   garage: {
-    reverse: [[-51.25, 39.35], [-51.25, 42.4], [-49.6, 44.4], [-47.6, 44.4]],
-    out: [[-47.6, 44.4], [-58, 44.4], [-67, 44.2], [-72, 44.0], [-76.6, 43.6], { road: 'Karpvägen', from: [-78.3, 38.5], to: [-75.8, -22] },
-      { road: 'Sankt Lars väg', from: [-73, -27], to: [-17, -27] }],
+    reverse: [[1.895, 14.82], [1.895, 18.4], [3.2, 20.4], [5.2, 21.0]],
+    out: [[5.2, 21.0], [-20, 21.0], [-44, 21.0], [-46.6, 23.5], [-46.6, 36.0], [-48.2, 41.6], [-52.5, 43.7], [-60, 43.8], [-67, 43.9], [-72, 44.0],
+      [-76.6, 43.6], { road: 'Karpvägen', from: [-78.3, 38.5], to: [-75.8, -22] }, { road: 'Sankt Lars väg', from: [-73, -27], to: [-17, -27] }],
     in: [{ road: 'Sankt Lars väg', from: [-16, -27], to: [-66, -27] }, [-70.5, -27.4], { road: 'Karpvägen', from: [-75.8, -19], to: [-78.6, 40.5] },
-      [-76.5, 44.6], [-72, 44.6], [-66, 44.6], [-58, 44.6], [-54.5, 44.3], [-51.6, 42.2], [-51.25, 40.6], [-51.25, 39.35]],
+      [-76.5, 44.6], [-72, 44.6], [-62, 44.4], [-53, 44.0], [-48.5, 42.4], [-45.8, 38.0], [-45.8, 26], [-43.5, 22.2], [-36, 21.6], [-4, 21.6], [-1.2, 21.3],
+      [1.0, 19.6], [1.895, 17.4], [1.895, 14.82]],
     slow: 3,
   },
   lane: 0.25,                      // of the road's width right of its centre line: the middle of the right-hand lane
