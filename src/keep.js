@@ -9,7 +9,7 @@ import { SONOS, MOCCAMASTER } from './config.js';
 // restoring: the clock and the date (a mid-visit update keeps the game's time, spooled or paused — a new visit still
 // starts at the real time, #143), the car, doors / lids / fronts, lamps, the TV / PC / hob / hood / grill, the coffee
 // in the jug, the music, the parasol, things put down and the one in the hand (cups with what is in them), sitting /
-// lying, the cat. Not kept (fresh as before): cooking (the chicken, fish fingers, the fries, #301), taps, the drawing in the hand.
+// lying, the cat (a thing's own state: `keepState()` / `loadKeep(s)`, e.g. the toaster plugged in, #401). Not kept (fresh as before): cooking (the chicken, fish fingers, the fries, #301), taps, the drawing in the hand.
 // `a` is the app: main.js hands over what the parts need.
 
 export const KEEP_VERSION = 1;
@@ -173,6 +173,8 @@ const PARTS = {
         }
         if (h.contents?.total > 0) e.a = h.contents.a;
         if (h === a.beer && h.out) { e.out = 1; e.lv = r3(h.level); }
+        const x = h.keepState?.(); // a thing's own state (the toaster plugged in, #401)
+        if (x) e.x = x;
         if (Object.keys(e).length) out[k[i]] = e;
       });
       const cups = a.cups.cups.map((c) => {
@@ -200,6 +202,7 @@ const PARTS = {
         }
         if (h === a.beer && e.out) { h.show(true); if (Number.isFinite(e.lv)) h.setLevel(Math.max(0, Math.min(1, e.lv))); }
         if (h.contents && e.a && typeof e.a === 'object') { h.contents.a = { ...e.a }; h.liquid?.show(h.contents); }
+        if (e.x && typeof e.x === 'object') h.loadKeep?.(e.x);
       }
       // cups: first the ones on their shelf (their slots), then the rest
       const cups = Array.isArray(s.cups) ? s.cups : [];

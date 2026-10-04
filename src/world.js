@@ -831,6 +831,7 @@ export function buildWorld(plan) {
     hob: [...l0.appliances, ...l1.appliances].find((a) => a.kind === 'hob') ?? null, // the induction hob (#158)
     hood: [...l0.appliances, ...l1.appliances].find((a) => a.kind === 'hood') ?? null, // the cooker hood's fan (#194)
     panDrawer: [...l0.appliances, ...l1.appliances].find((a) => a.panHome) ?? null, // the drawer under the hob (#159)
+    toasterDrawer: [...l0.appliances, ...l1.appliances].find((a) => a.toasterHome) ?? null, // the toaster's drawer (#401)
     openings: { north, south, roof: UNIT_TOP }, // the façade openings (plan x, absolute y) and the roof height: what the flat can be seen through from outside (#189)
     blinds, // the pleated blinds (#273, src/blinds.js)
     carKey: hallWall.key, // only a target while the key cabinet is open (main.js)

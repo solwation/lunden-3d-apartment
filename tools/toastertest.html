@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Toaster test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+// The toaster (#401): it stands in the bottom drawer by the corner; the drawer shut blocks taking it ("Öppna lådan först");
+// open → take → down on the worktop, upright, its front to you; unplugged the lever refuses ("inte inkopplad"); plugged in
+// at the corner power box (the cord a curve to the socket); too far away it refuses ("För långt från uttaget"); the lever
+// down → the slots glow, it waits for it (autoReload), pops after TOASTER.seconds, counted; STOP pops it early; taking it
+// unplugs it; back in the drawer it rides with it; F sends it home, unplugged; a page-made reload keeps it plugged in.
+//   google-chrome --headless=new --dump-dom http://localhost:8137/tools/toastertest.html
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const lines = [];
+const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); out.textContent = `running…\n${lines.join('\n')}`; return ok; };
+const load = () => new Promise((resolve) => {
+  const f = document.createElement('iframe');
+  f.width = 900; f.height = 600; f.src = '../index.html';
+  document.body.append(f);
+  f.onload = async () => { while (!f.contentWindow.__app) await wait(100); resolve(f); };
+});
+(async () => {
+  let f = await load();
+  let w = f.contentWindow, d = f.contentDocument, app = w.__app;
+  const { player, camera, step, world, scene, toggleFurniture, heldItem, toaster, stats, autoReload } = app;
+  d.getElementById('start-touch').click();
+  await wait(50);
+  const btn = d.getElementById('action');
+  const V = camera.position.constructor;
+  const aim = (p, from) => {
+    player.spawn(from[0], from[1], 0);
+    for (let i = 0; i < 3; i++) step(1 / 60);
+    scene.updateMatrixWorld(true);
+    const dx = p.x - camera.position.x, dz = p.z - camera.position.z;
+    camera.rotation.set(Math.atan2(p.y - camera.position.y, Math.hypot(dx, dz)), Math.atan2(-dx, -dz), 0, 'YXZ');
+    step(1 / 60);
+    return btn.hidden ? '(hidden)' : btn.textContent;
+  };
+  const run = (s) => { for (let i = 0; i < s * 60; i++) step(1 / 60); };
+  const drawer = world.toasterDrawer;
+  let pass = check(!!toaster && !!drawer && toaster.model.parent === drawer.object, 'the toaster stands in its drawer');
+  const top = 0.93;
+  // (1) the drawer shut: the front is in the way; the toaster's own target is blocked
+  const dpos = () => drawer.object.getWorldPosition(new V());
+  const from = [dpos().x - 0.85, dpos().z];
+  pass &= check(toaster.takeTarget.blocked && toaster.takeTarget.blockedText === 'Öppna lådan först', 'shut: "Öppna lådan först"');
+  let label = aim(dpos().add(new V(0, 0.15, 0)), from);
+  pass &= check(/öppna lådan/i.test(label), `the drawer: "${label}"`);
+  btn.click(); run(1);
+  const home = toaster.where();
+  pass &= check(drawer.isOpen && home.x < dpos().x + 0.3 && home.y < 0.35, `open: it slid out with the drawer (${home.toArray().map((v) => v.toFixed(2))})`);
+  // (2) take it
+  label = aim(toaster.where().add(new V(0, 0.12, 0)), [home.x - 0.7, home.z]);
+  pass &= check(/ta brödrosten/i.test(label) && !toaster.takeTarget.blocked, `in the open drawer: "${label}"`);
+  btn.click(); step(1 / 60);
+  pass &= check(heldItem() === toaster && toaster.model.parent === camera, 'in the hand');
+  // (3) down on the worktop near the corner (within the cord's reach)
+  const spot = new V(5.24, top, 4.62);
+  label = aim(spot, [4.4, 4.62]);
+  pass &= check(/ställa ner brödrosten här/i.test(label), `at the worktop by the corner: "${label}"`);
+  btn.click(); step(1 / 60);
+  const up = new V(0, 1, 0).applyQuaternion(toaster.model.quaternion), front = new V(0, 0, -1).applyQuaternion(toaster.model.quaternion);
+  pass &= check(toaster.placed && Math.abs(toaster.where().y - top) < 0.01 && up.y > 0.999 && front.x < -0.99, `standing on the worktop, upright, its front to the room (front ${front.toArray().map((v) => v.toFixed(2))})`);
+  // (4) unplugged: the lever refuses
+  const leverAt = () => toaster.parts.lever.getWorldPosition(new V()).add(new V(-0.01, 0, 0));
+  label = aim(toaster.parts.label.getWorldPosition(new V()).add(new V(0, 0.08, 0)), [4.45, 4.62]);
+  pass &= check(/inte inkopplad/i.test(label), `the front, unplugged: "${label}"`);
+  toaster.press(); run(0.5);
+  pass &= check(!toaster.toasting, 'it does not toast unplugged');
+  // (5) plug it in
+  label = aim(toaster.plug.getWorldPosition(new V()), [4.55, 4.4]);
+  pass &= check(/koppla in brödrosten/i.test(label), `the plug: "${label}"`);
+  btn.click(); step(1 / 60);
+  const cord = toaster.cord.geometry; cord.computeBoundingBox();
+  const plugW = toaster.plug.getWorldPosition(new V()), sock = toaster.socket();
+  pass &= check(toaster.plugged && plugW.distanceTo(sock) < 0.04, `plugged in at the power box (the plug ${plugW.distanceTo(sock).toFixed(3)} m from the socket)`);
+  // (6) toast
+  label = aim(toaster.parts.label.getWorldPosition(new V()).add(new V(0, 0.08, 0)), [4.45, 4.62]);
+  pass &= check(/trycka ner spaken på brödrosten/i.test(label), `the front: "${label}"`);
+  const before = stats.toaster ?? 0;
+  btn.click(); run(1.5);
+  pass &= check(toaster.toasting && toaster.parts.glowMat.opacity > 0.3 && toaster.parts.lever.position.y < toaster.parts.up - 0.08, `toasting: the slots glow (${toaster.parts.glowMat.opacity.toFixed(2)}), the lever down`);
+  pass &= check(autoReload.waiting, 'an update waits for it');
+  pass &= check((stats.toaster ?? 0) === before + 1, 'counted');
+  run(16);
+  pass &= check(!toaster.toasting && toaster.parts.lever.position.y > toaster.parts.up - 0.005, `popped by itself after the time (lever ${toaster.parts.lever.position.y.toFixed(3)})`);
+  run(3);
+  pass &= check(toaster.parts.glowMat.opacity < 0.01, 'the glow fades');
+  // (7) STOP early
+  toaster.press(); run(1);
+  label = aim(toaster.parts.label.getWorldPosition(new V()).add(new V(0, 0.08, 0)), [4.45, 4.62]);
+  pass &= check(/stoppa brödrosten/i.test(label), `toasting, the front: "${label}"`);
+  btn.click(); run(0.3);
+  pass &= check(!toaster.toasting, 'STOP pops it early');
+  // (8) taking it unplugs it; too far away refuses
+  label = aim(toaster.where().add(new V(0.04, 0.17, 0)), [4.45, 4.62]);
+  pass &= check(/dra ur sladden och ta brödrosten/i.test(label), `the body, plugged in: "${label}"`);
+  btn.click(); step(1 / 60);
+  pass &= check(heldItem() === toaster && !toaster.plugged, 'taken, unplugged');
+  const far = new V(5.25, top, 1.35);
+  label = aim(far, [4.45, 1.35]);
+  btn.click(); step(1 / 60);
+  pass &= check(toaster.placed && toaster.where().distanceTo(far) < 0.02, `down on the worktop by the tall unit ("${label}")`);
+  label = aim(toaster.plug.getWorldPosition(new V()), [4.55, 1.25]);
+  pass &= check(/för långt från uttaget/i.test(label) && !toaster.inReach(), `the plug far away: "${label}"`);
+  toaster.setPlugged(true);
+  pass &= check(!toaster.plugged, 'not plugged in from there');
+  // (9) back into its drawer; it rides with it
+  toaster.take();
+  label = aim(toaster.holder.children.at(-1).getWorldPosition(new V()), [home.x - 0.7, home.z]);
+  pass &= check(/ställa tillbaka brödrosten i lådan/i.test(label), `its place in the drawer: "${label}"`);
+  btn.click(); step(1 / 60);
+  pass &= check(!toaster.held && toaster.model.parent === drawer.object, 'back in the drawer');
+  const outX = toaster.where().x;
+  drawer.toggle(); run(1);
+  pass &= check(!drawer.isOpen && toaster.where().x > outX + 0.2 && toaster.takeTarget.blocked, `it rides in with the drawer (x ${outX.toFixed(2)} → ${toaster.where().x.toFixed(2)}), blocked again`);
+  // (10) F: home, unplugged
+  toaster.take(); toaster.placeAt(spot); toaster.setPlugged(true); toaster.press();
+  pass &= check(toaster.plugged && toaster.toasting, 'out again, plugged in and toasting');
+  toggleFurniture(); step(1 / 60);
+  pass &= check(toaster.model.parent === drawer.object && !toaster.placed && !toaster.plugged && !toaster.toasting, 'F: home in its drawer, unplugged, off');
+  toggleFurniture(); step(1 / 60);
+  // (11) a page-made reload keeps it standing out, plugged in
+  toaster.take(); toaster.placeAt(spot); toaster.setPlugged(true);
+  const at0 = toaster.where();
+  const rec = { x: 4.4, z: 4.6, feetY: 0, yaw: -Math.PI / 2, pitch: 0, mode: 'touch', build: null, world: app.keepWorld(), ts: Date.now() };
+  sessionStorage.setItem('lunden.resume', JSON.stringify(rec));
+  f.remove();
+  f = await load();
+  app = f.contentWindow.__app;
+  const t2 = app.toaster;
+  pass &= check(t2.placed && t2.where().distanceTo(at0) < 0.01 && t2.plugged && t2.plug.getWorldPosition(new V()).distanceTo(t2.socket()) < 0.04, `after a reload: on the worktop, plugged in (${t2.where().toArray().map((v) => v.toFixed(2))})`);
+  f.remove();
+  sessionStorage.removeItem('lunden.resume'); sessionStorage.removeItem('lunden.session');
+  out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
+})().catch((e) => { out.textContent = `ERROR ${e.stack}\n${lines.join('\n')}`; });
+</script>
+</body>
+</html>

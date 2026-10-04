@@ -33,6 +33,7 @@ import { buildToys } from './toys.js';
 import { Remote } from './remote.js';
 import { Book } from './book.js';
 import { Pan } from './pan.js';
+import { Toaster } from './toaster.js';
 import { buildSillPots } from './plants.js';
 import { Chicken } from './chicken.js';
 import { SmokeAlarm } from './hood.js';
@@ -317,6 +318,8 @@ const fish = buildFish(scene, camera, world); // fish fingers in the freezer, on
 if (fish) fish.onEaten = () => bump('fish');
 const pan = world.panDrawer ? new Pan(scene, camera, world.panDrawer, world.hob) : null; // the frying pan in the drawer under the hob (#159)
 if (pan) holdables.push(pan);
+const toaster = world.toasterDrawer ? new Toaster(scene, camera, world.toasterDrawer) : null; // the toaster in the drawer by the corner (#401)
+if (toaster) { holdables.push(toaster); toaster.onToast = () => bump('toaster', 1, 'toaster'); }
 if (fish) Object.assign(fish, { pan, hob: world.hob, onFried: () => bump('fried'), onBurnt: () => { bump('burnt'); penalize('burnt'); } }); // fish fingers fry in the pan too (#214); burnt: a deduction (#288)
 // the air fryer on the worktop in the corner left of the freezer (#287): a loose thing (F hides it)
 const airFryer = new AirFryer(KITCHEN.baseTop + KITCHEN.worktop);
@@ -665,6 +668,7 @@ if (params.has('turbo')) turbo.start(); // Kaffeturbo at once (screenshots, #217
 if (params.has('water')) for (const t of taps) t.toggle();
 if (params.has('open')) for (const d of [...world.doors, ...world.lids, ...world.furnitureTargets.filter((t) => t.kind === 'appliance' || t.kind === 'cabinet')]) { d.toggle(); for (let i = 0; i < 30; i++) d.update(0.1); } // + cabinet doors / drawers in the furniture
 if (params.has('open')) { airFryer.setOpen(true); airFryer.update(1); } // the air fryer's basket out too (#296 screenshots)
+if (params.has('toaster') && toaster) { toaster.take(); toaster.placeAt(new THREE.Vector3(5.24, KITCHEN.baseTop + KITCHEN.worktop, 4.62)); toaster.model.rotation.set(0, Math.PI / 2, 0); toaster.setPlugged(true, true); toaster.press(); toaster.left = 600; toaster.update(2); } // &toaster: out on the worktop, plugged in, toasting (for a long while) (#401 screenshots)
 if (params.has('fries') && fries) { airFryer.setOpen(true); airFryer.update(1); fries.cooked(); } // &fries: golden, steaming fries in the open basket (#301 screenshots)
 // ?cat=x,z[,yaw[,feetY]] puts the cat somewhere (screenshots)
 if (params.has('cat')) {
@@ -1579,7 +1583,7 @@ const autoReload = {
   /** Something time-bound that a reload would cut short (and keep.js does not keep): wait for it to end. */
   get waiting() {
     return !!(world.lids.find((l) => l.kind === 'coffee')?.isOpen || chicken?.smoking || (world.hob?.on && pan?.onHob)
-      || airFryer.running || grill.on || turbo.active || car.radio.playing || ball.flying || nests.talking);
+      || airFryer.running || toaster?.toasting || grill.on || turbo.active || car.radio.playing || ball.flying || nests.talking);
   },
   update(dt) {
     if (!this.version || this.going) return;
@@ -1659,4 +1663,4 @@ if (lifeDev()) devScenario({ life, world, holdables, cups, things, milk, fish, f
 document.documentElement.classList.remove('resuming'); // the page is ready: off with the "Laddar…" cover (#222)
 
 // handle for tests/debugging (tools/touchtest.html)
-window.__app = { life, fall, todo, coffeeJar, miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };
+window.__app = { toaster, life, fall, todo, coffeeJar, miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };

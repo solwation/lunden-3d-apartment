@@ -1287,6 +1287,7 @@ export const SCORE = {
     carMusic: 3, // per song played in the car (#268), like the speakers' songs
     airfried: 6, // a batch of fish fingers done in the air fryer (#287): the first time, then `again` per batch
     friesCooked: 8, // a basket of Aviko fries cooked golden (#301): the first time, then `again` per batch
+    toaster: 5, // the toaster's lever pushed down, plugged in (#401): the first time, then `again` per toast
     clips: 2, // per kind of clip seen on Tilly's laptop (#283); no points for repeats (they come by themselves)
     fruit: 3, // a piece of fruit from the bowl eaten up (#326): per kind (apple, pear, orange, clementine, banana), then `again`
     nest: 4, // per smart speaker asked something (#325), then `again`
@@ -1297,7 +1298,7 @@ export const SCORE = {
     doors: 0.1, lids: 0.1, flushes: 0.2, taps: 0.1, fridge: 0.1, appliances: 0.1, cabinets: 0.05, lights: 0.05,
     sat: 0.1, lay: 0.1, songs: 0.2, read: 0.5, car: 1, grill: 1, hood: 0.2, tv: 0.2, pc: 0.3, parasol: 0.2,
     clock: 0.1, calendar: 0.1, greets: 0.1, catButts: 1, walkRain: 2, walkSnow: 3, walkHail: 4, walkStorm: 3,
-    shattered: 0.3, carMusic: 0.2, pingpingHugs: 0.2, miele: 100, kittens: 120, mieleHugs: 0.5, blinds: 0.05, curtains: 0.05, airfried: 0.5, friesCooked: 0.5,
+    shattered: 0.3, carMusic: 0.2, pingpingHugs: 0.2, miele: 100, kittens: 120, mieleHugs: 0.5, blinds: 0.05, curtains: 0.05, airfried: 0.5, friesCooked: 0.5, toaster: 0.2,
     fruit: 0.3,
     nest: 0.2,
   },
@@ -1508,6 +1509,15 @@ export const TILED_ROOMS = [
 // `held` = camera space, the handle towards you.
 export const PAN = { d: 0.28, h: 0.05, handle: 0.19, color: 0x1d1d1f, handleColor: 0x2a2522,
   home: { in: 0.27, along: -0.06 }, held: { x: 0.2, y: -0.3, z: -0.72 } };
+// The toaster (#401, src/toaster.js): the family's OBH Nordica Piano Black (type 2674, docs/brodrost-obh-piano-black.jpg), a
+// two-slice toaster kept standing in the bottom drawer of the drawer unit by the corner (the kitchen is cramped: not on the
+// worktop). w × d × h *guess* (no measure found; an estimate from the photo, docs/brodrost-matt-gissning.jpg: ~28 × 17 × 18
+// cm); `slot` = each slot's length × width (*guess*). `cord` = how far its cord reaches (*guess*), `socket` = the second
+// socket on the corner power box's north face (the air fryer has the first, AIRFRYER.socket). The browning dial stands at
+// `dial` (1–7); a toast takes `seconds.base + seconds.step × dial` s (game-paced, like the air fryer's run; our pick).
+// `home` = its place in the drawer (drawer-local: in = metres back from the front, along = along the run); `held` = camera space.
+export const TOASTER = { w: 0.28, d: 0.17, h: 0.18, slot: { l: 0.13, w: 0.032 }, cord: 0.9, socket: { x: 5.52, z: 5.384 },
+  dial: 4, seconds: { base: 6, step: 2 }, home: { in: 0.14, along: 0.1 }, held: { x: 0.19, y: -0.33, z: -0.62 } };
 
 // The roast chicken in the fridge (#160): it smokes after `cookSeconds` in the pan on a lit zone, for `smokeSeconds`
 // after it leaves the heat (or until it is back in the fridge with the door shut); `darken` = how much browner it

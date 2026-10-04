@@ -682,6 +682,34 @@ export const sfx = {
     const t = ctx.currentTime, d = out(pos, 0.7);
     for (let i = 0; i < n; i++) tone(t + i * 0.32, 0.18, d, { type: 'square', from: 2350, gain: 0.07 });
   },
+  /** The toaster (#401): the lever pushed down and caught by its latch — a springy clack. */
+  toasterDown(pos) {
+    if (!ready()) return;
+    const t = ctx.currentTime, d = out(pos, 0.8);
+    noise(t, 0.06, d, { type: 'bandpass', freq: 1800, q: 1.5, gain: 0.25 });
+    tone(t, 0.08, d, { type: 'triangle', from: 700, to: 300, gain: 0.08 });
+    latch(t + 0.07, d, 0.35);
+  },
+  /** The toaster heating (#401): a quiet tick of its timer over a faint element hum, until stop(). */
+  toasterHum(pos) {
+    if (!ready()) return null;
+    const t = ctx.currentTime, d = out(pos, 0.5);
+    const src = ctx.createBufferSource(); src.buffer = noiseBuf; src.loop = true;
+    const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 180; bp.Q.value = 3;
+    const g = ctx.createGain(); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.05, t + 0.6);
+    src.connect(bp).connect(g).connect(d); src.start(t, Math.random());
+    const tick = setInterval(() => { if (ready()) noise(ctx.currentTime, 0.012, d, { type: 'highpass', freq: 4000, gain: 0.07, attack: 0.001 }); }, 500);
+    return { stop() { clearInterval(tick); const t1 = ctx.currentTime; g.gain.cancelScheduledValues(t1); g.gain.setValueAtTime(g.gain.value, t1); g.gain.linearRampToValueAtTime(0, t1 + 0.15); src.stop(t1 + 0.2); } };
+  },
+  /** The toaster done (#401): the spring lets go with a pop, then a small "pling". */
+  toasterPop(pos) {
+    if (!ready()) return;
+    const t = ctx.currentTime, d = out(pos, 0.9);
+    noise(t, 0.05, d, { type: 'bandpass', freq: 1200, q: 1, gain: 0.35, attack: 0.002 });
+    tone(t, 0.12, d, { type: 'triangle', from: 260, to: 520, gain: 0.12 });
+    tone(t + 0.08, 0.6, d, { type: 'sine', from: 1760, gain: 0.06 });
+    tone(t + 0.08, 0.5, d, { type: 'sine', from: 2640, gain: 0.025 });
+  },
   /** A bite of something crispy (a fish finger, #162): a crunch, then a few soft chews. `k` = loudness. */
   chew(pos, k = 1) {
     if (!ready()) return;

@@ -404,6 +404,8 @@ function buildKitchen(B, group, floor, y0, yC, handled, taps, appliances) {
   const east = cabs.filter((c) => dirOf(c) === 'w').sort((a, b) => a.z0 - b.z0);
   const ret = cabs.filter((c) => dirOf(c) === 'n' && !fridges.includes(c));
   const hobCab = hobF && cabs.find((c) => inside(hobF, c));
+  // the drawer unit nearest the corner power box: the toaster stands in its bottom drawer (#401, toaster.js)
+  const toasterCab = east.filter((c) => c !== tall && c !== hobCab && c.label !== 'DM' && !(sinkF && inside(sinkF, c))).at(-1);
 
   // the plan's cabinet rectangles overlap by a couple of cm along a run: meet in the middle, so neighbouring
   // fronts (and doors swung open beside them) don't run into each other (#103)
@@ -498,6 +500,7 @@ function buildKitchen(B, group, floor, y0, yC, handled, taps, appliances) {
       hs.forEach((dh, k) => {
         const d = openFront(open, F, u0, u1, y - dh, y, M.front, 'top', {}, { mode: 'drawer', depth: F.depth - 0.08, name: 'lådan' });
         if (c === hobCab && k === 1) { d.panHome = true; d.stock = 'own'; } // the frying pan's place (#159, pan.js)
+        else if (c === toasterCab && k === 2) { d.toasterHome = true; stock(open, F, d, 'drawerToaster', u0, u1, y - dh, y, F.depth - 0.08, { drawer: true }); } // pots at the back, the toaster in front (#401)
         else stock(open, F, d, [c === hobCab ? 'utensils' : 'cutlery', 'rolls', 'drawerPots'][k], u0, u1, y - dh, y, F.depth - 0.08, { drawer: true }); // #229
         y -= dh;
       });
@@ -587,6 +590,8 @@ function buildKitchen(B, group, floor, y0, yC, handled, taps, appliances) {
   cupCabinet = { front: wallX, back: eastWall, z0: runZ0, z1: runZ0 + cupW, y0: yW, y1: yTop, material: M.front, handle: M.handle };
   // the worktop between the tall unit and the hob: somewhere to put a cup down
   cupSurfaces.push({ x0: eFront + 0.03, x1: eastWall - 0.03, z0: runZ0 + 0.03, z1: firstEnd - 0.03, y: top });
+  // and between the hob and the corner, where the toaster's cord reaches the power box (#401; the air fryer has the corner)
+  if (hob) cupSurfaces.push({ x0: eFront + 0.03, x1: eastWall - 0.03, z0: hob[1] + 0.03, z1: southWall - depth - 0.03, y: top });
   if (hob) {
     // its corner door hinges at the corner and opens to the right (the user, #319): handle away from the return row's
     doorRow(EW, hob[1], visEnd, yW, yTop, 0.5, { low: true, open: { ...wallOpen, corner: 'a1', cornerMax: K.cornerDoorMax }, fill: ['dry', 'tea'] });

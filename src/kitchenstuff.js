@@ -168,12 +168,15 @@ function rolls(P, b, y, top) { // foil, cling film and baking paper rolls, plast
     }
   }
 }
+function backPots(P, b, y, top) { // the toaster's drawer (#401): the pots kept to the back half, the front left free for it
+  pots(P, { ...b, d1: b.d0 + 0.26 }, y, top);
+}
 
 // a cabinet: one kind per shelf level (lower, upper), or one for the whole thing
 const KINDS = {
   glasses: [glasses, glasses], plates: [plates, bowls], mugs: [mugs, glasses], dry: [packets, spices], tea: [tea, spices],
   pots: [pots, pots], baking: [baking, baking], serving: [serving, festive], festive: [festive, serving], corner: [corner, corner],
-  sink: [sinkExtras], cutlery: [cutlery], utensils: [utensils], rolls: [rolls], drawerPots: [pots],
+  sink: [sinkExtras], cutlery: [cutlery], utensils: [utensils], rolls: [rolls], drawerPots: [pots], drawerToaster: [backPots],
 };
 export const KITCHEN_KINDS = Object.keys(KINDS);
 

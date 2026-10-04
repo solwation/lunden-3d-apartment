@@ -305,6 +305,13 @@ src/hob.js             the induction hob (#158): E switches it on/off (the front
                        in world.lids, `world.hob` (`zone`, `on`) for the pan/chicken; stays with F but F switches it off
 src/pan.js             the frying pan (#159), a Holdable in the middle drawer under the hob (`world.panDrawer`, a child
                        of the drawer while at home); E on the hob with it in the hand stands it on the front zone (`onHob`)
+src/toaster.js         the toaster (#401, TOASTER): an OBH Nordica Piano Black (no logo; a canvas label with the dial and four buttons), a
+                       Holdable standing in the bottom drawer of the drawer unit by the corner (`world.toasterDrawer`, rides with it, "Öppna
+                       lådan först"); put down upright, its front to you (a worktop surface runs from the hob to the corner too); E on the plug
+                       beside it plugs it into the corner power box's second socket within TOASTER.cord ("För långt från uttaget"), the
+                       cord a curve to it; E on the lever / front toasts (glowing slots, tick + hum, pops with a pling after
+                       TOASTER.seconds; again = STOP; unplugged: "Brödrosten är inte inkopplad"); taking it unplugs it; F: home, unplugged;
+                       keep.js keeps it plugged in (`keepState` / `loadKeep`, a hook any Holdable can use); empty toasting for now (#394)
 src/chicken.js         the roast chicken in the fridge (#160), a Holdable: E on the pan on the hob lays it in (a child of the
                        pan); fried on a lit zone for CHICKEN.cookSeconds it sizzles, browns and smokes (the smoke follows it)
                        until smokeSeconds after the heat, or at once back in the fridge with the door shut
@@ -698,6 +705,9 @@ tools/rifletest.html   headless test: the AK-47 rides with its drawer, 30 shots 
 tools/breaktest.html   headless test: the AK-47 breaks a glass on the dining table from 2 m and ~8 m (shards on the table, a wine
                        splash, more points far away), the timer mends it, a dart breaks a glass but not a bottle, the saber a
                        bottle, a held glass is not hit, none through a wall, a cup goes, F mends all (#263)
+tools/toastertest.html headless test (#401): the toaster in its shut drawer is blocked, open → take → on the worktop upright; unplugged
+                       refuses, plugged in at the power box, toasts (glow, the update waits, counted), pops, STOP, taking unplugs, too far
+                       refuses, back in the drawer rides with it, F, a page-made reload keeps it plugged in
 tools/turbotest.html   headless test: Kaffeturbo with an injected clock — three cups in five minutes (not spread out, not milk /
                        whisky), faster indoors, the text, more coffee adds time, over again; `walktest.html?turbo` walks at that pace
 tools/terracetest.html Hus L's roof terraces (#350): one per upper flat, areas vs 10/11/12 m², the joins at the loft and
@@ -1066,6 +1076,7 @@ URL parameters (debugging / screenshots):
 - `&weather=rain|storm|snow|hail|clear` — force the weather (#248, #249).
 - `&blinds=0…1` — every pleated blind drawn up that far (#273; not saved).
 - `&fries` — golden, steaming fries in the open air-fryer basket (#301).
+- `&toaster` — the toaster out on the worktop by the corner, plugged in and toasting (#401).
 - `&life` — the life simulator's developer scenario (#365, `src/life.js` `devScenario`, `LIFE.dev`): everything at home and
   shut, no cat, noon paused (unless `&time`), the visitor in the kitchen, an empty cup + the milk on the worktop, a wine glass
   on the dining table. The resume / F5 records are neither read nor written (`resume.js`), so the visitor's own place stays.
