@@ -973,7 +973,9 @@ export const LIFE = {
   // as they are) and its door bins [y on the door, spots as fractions of the door's width]; the freezer: the top of the frozen
   // bags in its top basket (1.02 + the bags' 0.35 × 0.26 m). Our picks, from fridge.js's own shelf heights.
   stores: { fridge: { shelves: [0.45, 1.52], bins: [[0.85, [0.3, 0.7]], [1.3, [0.3, 0.7]], [0.4, [0.7]]] }, freezer: { y: 1.117 } },
-  place: { grid: 0.05, floorGrid: 0.1, margin: 0.04, turn: 45 }, // putting down (#368): snap grids (m), kept this far inside a table's edge, R turns this many degrees
+  place: { grid: 0.05, floorGrid: 0.1, margin: 0.04, turn: 45 },
+  // saving (#371): localStorage `key` written `every` s after a change; a thing whose place is gone lands on the free worktop (`lost`)
+  save: { key: 'lunden.life', every: 1, lost: [5.25, 0.931, 3.0] }, // putting down (#368): snap grids (m), kept this far inside a table's edge, R turns this many degrees
 };
 
 // The life simulator's item types (#366, src/items.js): name (Swedish, definite form as in the prompts), tags (what it

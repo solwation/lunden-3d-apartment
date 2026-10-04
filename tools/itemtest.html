@@ -10,7 +10,7 @@
 // hand, shorter when its amount drops, down on the worktop), the existing holdables untouched.
 //   chromium --headless=new --dump-dom http://localhost:8137/tools/itemtest.html
 import { Items, SIZES } from '../src/items.js';
-import { ITEMS } from '../src/config.js';
+import { ITEMS, RESET_KEEP, LIFE } from '../src/config.js';
 const out = document.getElementById('out');
 const lines = [];
 let pass = true;
@@ -75,6 +75,36 @@ try {
   check(/ska inte ligga/.test(P.move(P.create('knife', at(3)), { at: 'on', parent: pl.id, slot: 0 }) ?? ''), 'a knife is not put on the plate');
   check(P.freeSpot(bd, cu) === 0 && P.freeSpot(bd, sl) === 1, `the board: the cucumber's spot is 0 (${P.freeSpot(bd, cu)}), a slice's the first of the others (${P.freeSpot(bd, sl)})`);
   check(!!P.move(bd, { at: 'on', parent: pl.id, slot: 0 }) && bd.place.at === 'world', 'the board does not go on a plate');
+  // saving (#371): a round trip, an old / broken record, unknown types, a missing carrier
+  {
+    const S = new Items(ITEMS);
+    S.addStore({ id: 'fr', name: 'kylskåpet', slots: [{ size: 'm' }, { size: 'm' }], isOpen: () => false });
+    const pl = S.create('plate', at(3), { clean: 'used' }), half = S.create('breadSlice', { at: 'on', parent: pl.id, slot: 0 }, { amount: 0.5 });
+    const bu = S.create('butter', { at: 'slot', store: 'fr', slot: 0 }, { amount: 185, pkg: 'open' });
+    S.move(pl, { at: 'hand' });
+    const rec = JSON.parse(JSON.stringify(S.serialize()));
+    const L = new Items(ITEMS);
+    L.addStore({ id: 'fr', name: 'kylskåpet', slots: [{ size: 'm' }, { size: 'm' }], isOpen: () => false });
+    const res = L.load(rec);
+    const p2 = L.get(pl.id), h2 = L.get(half.id), b2 = L.get(bu.id);
+    check(res.loaded === 3 && p2.place.at === 'hand' && p2.clean === 'used' && h2.place.parent === pl.id && h2.amount === 0.5 && b2.amount === 185 && b2.pkg === 'open' && b2.place.store === 'fr' && b2.home?.store === 'fr',
+      'round trip: the plate in the hand with half a slice on it, the opened butter (185 g) in its slot');
+    const c2 = L.create('plate', at(1));
+    check(c2.id === 'plate#2', `ids go on after the saved ones (${c2.id})`);
+    // a new visit: nothing in the hand, it goes home / to the fallback; what lay on it stays on it
+    const N = new Items(ITEMS); const logs = [];
+    N.load(rec, { hand: false, fallback: () => ({ at: 'world', pos: [5, 0.93, 3], yaw: 0 }), log: (m) => logs.push(m) });
+    check(!N.held() && N.get(pl.id).place.at === 'world' && N.get(half.id).place.parent === pl.id, 'a new visit: empty-handed, the plate on the worktop with its slice');
+    check(N.get(bu.id).place.at === 'world' && logs.some((m) => /could not go back/.test(m)), 'its store missing: the butter goes to the fallback (logged), not lost');
+    // broken / old / unknown
+    const before = N.all().length;
+    check(N.load(null) === null && N.load({ v: 'x', items: 3 }) === null && N.all().length === before, 'an unreadable record changes nothing');
+    const odd = N.load({ v: 1, items: [{ id: 'unicorn#1', type: 'unicorn', place: at(1) }, null, { id: 'cheese#9', type: 'cheese', place: { at: 'on', parent: 'nothing#1', slot: 0 }, amount: -4 }] }, { log: (m) => logs.push(m) });
+    const ch = N.get('cheese#9');
+    check(odd.skipped.includes('unicorn#1') && logs.some((m) => /unknown type unicorn/.test(m)) && ch && ch.place.at === 'world' && ch.amount === 0, 'an unknown type is skipped (logged); a missing carrier: to the fallback; a negative amount: 0');
+    check(N.audit().length === 0 && L.audit().length === 0, 'audits ok after loading');
+    check(LIFE.save.key === 'lunden.life' && !RESET_KEEP.includes(LIFE.save.key), '"Återställ" clears lunden.life (not in RESET_KEEP)');
+  }
   // events: the 3D side follows
   const seen = [];
   const off = I.on((kind, it) => seen.push(`${kind}:${it.id}`));

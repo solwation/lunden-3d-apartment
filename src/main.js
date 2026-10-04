@@ -342,8 +342,10 @@ if (fries) Object.assign(fries, { fishIn: () => !!fish?.inFryer.length, onGolden
 const fruit = new FruitBowl(scene, camera); // the copper fruit bowl on the coffee table (#326)
 // the life simulator's things (#364, #366): item instances (items.js) shown as Holdables (life.js); a refusal pops up as a badge
 const life = new Life({ scene, camera, say: (t) => badge(t, false), feet: () => ({ at: 'world', pos: [player.pos.x, player.pos.y, player.pos.z], yaw: camera.rotation.y }),
-  floorY: () => (player.level >= 0 ? LEVELS[player.level].floor : -Infinity) }); // (nothing goes down under the floor, #368)
+  floorY: () => (player.level >= 0 ? LEVELS[player.level].floor : -Infinity), // (nothing goes down under the floor, #368)
+  persist: lifeDev() ? null : { key: LIFE.save.key, canSave: () => { try { return !resetHome.going; } catch { return false; } } }, debug: params0.has('debug') }); // the home's stock kept between visits (#371; never with &life)
 const lifeStores = buildStores(life, world); // the fridge, the freezer, the pantry, the utensil drawer as slots (#369)
+life.restore(); // a new visit: the stock as it was left, empty-handed (#371; a page-made reload's `life` part replaces it below)
 fruit.onEaten = (f) => bump('fruit', 1, f.kind);
 airFryer.onDone = () => { if (fish?.inFryer.length || fries?.count) bump('airfried', 1, 'airfryer'); }; // a batch done (#287)
 const fridge = world.lids.find((l) => l.kind === 'fridge' && !l.freezer);
@@ -1654,6 +1656,7 @@ const placeNow = () => ({ x: player.pos.x, z: player.pos.z, feetY: player.pos.y,
 const keepSession = () => { if (played && !resetHome.going) saveSession(placeNow()); };
 setInterval(keepSession, 2000);
 window.addEventListener('pagehide', keepSession);
+window.addEventListener('pagehide', () => { if (life.dirty) life.flush(); }); // the life sim's stock (#371)
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') keepSession(); });
 // Ctrl+W by mistake (#274): the browser keeps Ctrl+W to itself, so while a visit runs (not on the start screen) leaving
 // the page asks first; the page's own reloads (a new version, "Ladda om") set `reloading` and go through
@@ -1799,7 +1802,7 @@ function continueAfterReload(r) {
   setTimeout(() => { reloadedEl.hidden = true; }, RELOAD_NOTE_S * 1000 + 700);
 }
 // the world's state for a reload made by the page (#277, keep.js): what each part needs
-const keepApp = { jetpack, car, world, lights, day, grill, sonos, patio, holdables, cups, beer, chicken, scene, rest, cat, BREEDS, VARIANTS,
+const keepApp = { life, jetpack, car, world, lights, day, grill, sonos, patio, holdables, cups, beer, chicken, scene, rest, cat, BREEDS, VARIANTS,
   sitAt: (target, spot, stand) => sitAt(target, spot, stand, true) };
 function keepWorld() { try { return saveWorld(keepApp); } catch (e) { console.warn('keep', e); return null; } }
 if (resumeOk && resumed.mode && resumed.world) loadWorld(keepApp, resumed.world); // mid-visit only: the game's clock too (a new visit: real time, #143)

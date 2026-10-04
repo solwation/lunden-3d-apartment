@@ -18,6 +18,10 @@
 // that hold an amount (drinks.js Contents, fishfingers.js `left` / `bite`, fruit.js bites, fries.js portions) could move
 // over to an instance each (docs/livssimulator-inventering.md).
 
+/** The record's version (#371); MIGRATIONS[v](record) turns a v record into v + 1. */
+export const ITEMS_VERSION = 1;
+export const MIGRATIONS = {};
+
 /** Size classes, smallest first: a slot or a carrier takes things up to its own size. */
 export const SIZES = { xs: 0, s: 1, m: 2, l: 3, xl: 4 };
 const UNITS = new Set(['g', 'ml', 'count']);
@@ -246,6 +250,60 @@ export class Items {
     this.items.delete(it.id);
     this.emit('remove', it);
     return true;
+  }
+
+  // --- saving (#371): versioned plain JSON, read tolerantly -----------------------------------------------
+  /** Everything as plain JSON: { v, counters, items: [{ id, type, place, amount, pkg, prep, clean, machine, home, parts }] }. */
+  serialize() {
+    const items = this.all().map((i) => {
+      const e = { id: i.id, type: i.type, place: clonePlace(i.place), amount: i.amount };
+      for (const k of ['pkg', 'prep', 'clean']) if (i[k] !== null && i[k] !== undefined) e[k] = i[k];
+      if (Object.keys(i.machine).length) e.machine = { ...i.machine };
+      if (i.home) e.home = clonePlace(i.home);
+      if (i.parts.length) e.parts = i.parts.map((x) => ({ ...x }));
+      return e;
+    });
+    return { v: ITEMS_VERSION, counters: { ...this.counters }, items };
+  }
+
+  /**
+   * Replace everything with a saved record (made by serialize, any older version: MIGRATIONS bring it up to date).
+   * Tolerant: a broken record changes nothing; an unknown type is skipped (logged with `log`); an item whose place is
+   * gone (a missing store or carrier, a taken slot) goes to its home, else to `fallback()` (a world place) — never
+   * silently lost. opts: { hand: false } = what was in the hand goes home too (a new visit starts empty-handed).
+   * Returns { loaded, skipped: [ids], rehomed: [ids] } or null for a record it cannot read.
+   */
+  load(rec, { log = () => {}, fallback = () => ({ at: 'world', pos: [0, 0, 0], yaw: 0 }), hand = true } = {}) {
+    if (!rec || typeof rec !== 'object' || !Number.isFinite(rec.v) || !Array.isArray(rec.items)) { log('life: unreadable record', rec); return null; }
+    let r = rec;
+    for (let v = r.v; v < ITEMS_VERSION; v++) { const m = MIGRATIONS[v]; if (!m) break; r = m(r); }
+    const out = { loaded: 0, skipped: [], rehomed: [] };
+    const valid = r.items.filter((e) => {
+      if (!e || typeof e !== 'object' || typeof e.type !== 'string') { out.skipped.push(String(e?.id)); return false; }
+      if (!this.defs[e.type]) { log(`life: unknown type ${e.type} (${e.id}) skipped`); out.skipped.push(e.id); return false; }
+      return true;
+    });
+    if (!valid.length && r.items.length) { log('life: nothing readable in the record, the current things kept'); return out; } // (never trade what is there for nothing)
+    for (const i of this.all()) this.remove(i, { cascade: true });
+    this.counters = {};
+    for (const [t, n] of Object.entries(r.counters ?? {})) if (Number.isFinite(n)) this.counters[t] = n;
+    // carriers before what lies on them (a plate in the hand with its food: the plate first)
+    const byId = new Map(valid.map((e) => [e.id, e]));
+    const depth = (e, n = 0) => (e.place?.at === 'on' && byId.has(e.place.parent) && n < 32 ? depth(byId.get(e.place.parent), n + 1) + 1 : 0);
+    valid.sort((a, b) => depth(a) - depth(b));
+    for (const e of valid) {
+      const props = { id: e.id, amount: e.amount, pkg: e.pkg, prep: e.prep, clean: e.clean, machine: e.machine, home: e.home, parts: e.parts };
+      let place = clonePlace(e.place);
+      if (place?.at === 'hand' && !hand) place = null;
+      let it = place ? this.create(e.type, place, props) : null;
+      if (!it) {
+        const why = place ? this.lastReason : 'not in the hand at a new visit';
+        for (const p of [e.home, fallback(e)]) { if (p && (it = this.create(e.type, p, props))) break; }
+        if (it && place) { out.rehomed.push(it.id); log(`life: ${e.id} could not go back (${why}): ${it.place.at}`); }
+      }
+      if (it) out.loaded++; else { out.skipped.push(e.id); log(`life: ${e.id} lost?`); }
+    }
+    return out;
   }
 
   // --- sanity ----------------------------------------------------------------------------------------

@@ -616,6 +616,13 @@ src/stores.js          the life sim's storage places (#369, LIFE.stores): slots 
                        anchors: they ride when it is carried, put down or put in the fridge — `carriers: true` stores only); never on
                        itself or on what lies on it; actions putOn (the held thing onto a carrier) and loadOnto (a plate in the hand,
                        E on a slice: onto the plate)
+                       Saving (#371): `items.serialize()` / `load(rec)` — versioned (`ITEMS_VERSION`, `MIGRATIONS[v]`), tolerant: an
+                       unknown type is skipped (logged with &debug), a thing whose store / carrier / slot is gone goes home, else onto
+                       the free worktop (LIFE.save.lost), a record with nothing readable keeps what is there. It lives in two places:
+                       keep.js's `life` part (page-made reloads: everything, the hand too) and the persistent `lunden.life` key
+                       (life.js `flush`, LIFE.save.every s after a change and on pagehide; `restore()` at the start of a visit, empty-
+                       handed — the home's stock is kept between visits, nothing is used up or goes bad while away). Never with &life
+                       (`persist: null`); "Återställ" clears it (not in RESET_KEEP) and blocks the last write (`resetHome.going`)
 src/lifemodels.js      the life sim's models (#366): plate, cutting board, cucumber, slice, cheese, butter, bread bag, bread slice,
                        knife — own shapes; `show(item)` shows the amount / package; carriers have `anchors` (their spots)
 src/changelog.js       changelog list + the note on the freezer (newest `t` first, "Nytt" by the highest `t` seen, #341; E to read; `scrollNote`: ↑ ↓ / W S, PageUp/Down, Space,
@@ -669,6 +676,8 @@ tools/tvtest.html      headless test: TVs on/off (living room + Sovrum 3), new p
 tools/reloadtest.html  headless test: resume after "Ladda om", F5 starts at START, "Börja från start", bad record;
                        the world kept (#277): the car still arriving then parks, a cup of coffee in the hand, the fridge open, lamps,
                        sitting, a bottle put down, the TV, the cat, the game's clock; a new tab fresh at the real time
+                       the life sim (#371): an opened butter with 185 g, a cut cucumber + slices on the board, a used plate with half a
+                       slice, then that plate in the hand across a reload; a broken life part harms nothing; lunden.life is written
 tools/resttest.html    headless test: sit on every seat and lie in every bed (spot, no walking, up again looking the same way;
                        head turned, old spot behind: up in front, #202; every spot ahead / turned, from behind: free floor, #302; in every bed the eye clear of the bedding, #308; no two bedding surfaces within 1.5 mm, #335)
 tools/stairtest.html   headless test (#352): equal risers from floor to floor, no jump along the walking line, the top tread at the

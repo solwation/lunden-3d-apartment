@@ -110,8 +110,8 @@ export class LifeItem extends Holdable {
 
 /** The life simulator's things (#366): the instances (items.js) and their views. */
 export class Life {
-  constructor({ scene, camera, defs = ITEMS, say = () => {}, feet = () => ({ at: 'world', pos: [0, 0, 0], yaw: 0 }), floorY = () => -Infinity }) {
-    Object.assign(this, { scene, camera, say, feet, floorY });
+  constructor({ scene, camera, defs = ITEMS, say = () => {}, feet = () => ({ at: 'world', pos: [0, 0, 0], yaw: 0 }), floorY = () => -Infinity, persist = null, debug = false }) {
+    Object.assign(this, { scene, camera, say, feet, floorY, persist, debug, dirty: false, saveT: 0 });
     this.items = new Items(defs);
     this.views = new Map();
     this.lastWorld = new Map(); // id → the last world place (a putBack falls back to it)
@@ -122,6 +122,7 @@ export class Life {
     this.actions = new ActionSet(); // what you can do with a thing (#367): baseActions below, more per LIFE issue
     baseActions(this);
     this.items.on((kind, item) => {
+      this.dirty = true;
       if (kind === 'create') this.views.set(item.id, new LifeItem(this, item));
       else if (kind === 'move') { if (item.place.at === 'world') this.lastWorld.set(item.id, { ...item.place, pos: [...item.place.pos] }); this.views.get(item.id)?.sync(); }
       else if (kind === 'change') this.views.get(item.id)?.refresh();
@@ -171,7 +172,36 @@ export class Life {
   /** The E targets: every item not in the hand. */
   targets() { const out = [...(this.storeTargets ?? [])]; for (const v of this.views.values()) if (!v.held) out.push(v.target); return out; } // + the stores' boxes (#369; they raycast only while a life item is held)
 
-  update(dt) { for (const v of this.views.values()) v.update(dt); }
+  update(dt) {
+    for (const v of this.views.values()) v.update(dt);
+    if (this.dirty && (this.saveT += dt) > LIFE.save.every) this.flush(); // (written a moment after a change, not every frame)
+  }
+
+  // --- saving (#371) ---------------------------------------------------------------------------------
+  /** The record of every instance (keep.js's `life` part, the `lunden.life` key). */
+  serialize() { return this.items.serialize(); }
+  /** Replace everything with a record (items.js load: versioned, tolerant). opts.hand: false = a new visit, nothing in the
+   * hand. A thing whose place is gone goes home, else onto the free worktop (LIFE.save.lost). */
+  load(rec, { hand = true } = {}) {
+    if (heldItem()?.lifeItem) { heldItem().held = false; setHeld(null); }
+    const L = LIFE.save.lost;
+    const res = this.items.load(rec, { hand, log: (...m) => { if (this.debug) console.log(...m); }, fallback: () => ({ at: 'world', pos: [...L], yaw: 0 }) });
+    this.dirty = false;
+    return res;
+  }
+  /** Write the home's stock to localStorage now (`persist` = { key, canSave() }; never with &life). */
+  flush() {
+    this.dirty = false; this.saveT = 0;
+    if (!this.persist || !this.persist.canSave()) return false;
+    try { localStorage.setItem(this.persist.key, JSON.stringify(this.serialize())); return true; } catch { return false; }
+  }
+  /** At the start of a visit: the stock as it was left (nothing used up meanwhile), empty-handed. */
+  restore() {
+    if (!this.persist) return null;
+    let rec = null;
+    try { rec = JSON.parse(localStorage.getItem(this.persist.key) ?? 'null'); } catch { rec = null; }
+    return rec ? this.load(rec, { hand: false }) : null;
+  }
 }
 
 // The life simulator (epic #364): making, eating and cleaning up with real things in the flat. This module glues the

@@ -261,6 +261,11 @@ const PARTS = {
     },
   },
 
+  life: { // the life simulator's things (#371): every instance, the one in the hand too (life.js / items.js, versioned)
+    save: ({ life }) => (life && life.items.all().length ? life.serialize() : null),
+    load: ({ life }, s) => { life?.load(s, { hand: true }); },
+  },
+
   cat: {
     save({ cat, world, BREEDS, VARIANTS }) {
       if (!cat.visible || cat.leaving || cat.released || cat.held) return null; // (Miele held or just put down: not kept, #328)
@@ -294,7 +299,7 @@ const restKey = (t) => `${t.name}|${t.spots[0] ? vec(t.spots[0].pos).join(',') :
 
 // the order things come back in: the clock before the lamps (dusk), the car before its seat, fronts before what
 // lies in them, the TV before sitting in front of it
-const ORDER = ['clock', 'car', 'open', 'lamps', 'on', 'grill', 'coffee', 'sonos', 'parasol', 'things', 'jetpack', 'rest', 'cat'];
+const ORDER = ['clock', 'car', 'open', 'lamps', 'on', 'grill', 'coffee', 'sonos', 'parasol', 'things', 'jetpack', 'life', 'rest', 'cat'];
 
 /** The world part of a reload record. */
 export function saveWorld(a) {
