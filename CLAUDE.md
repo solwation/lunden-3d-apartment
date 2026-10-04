@@ -785,8 +785,8 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   The living-room window is three-part (the L1004 render): the transom over the whole width, an off-centre mullion,
   a wide fixed pane on the left and a narrow sash on the right seen from inside (`split` / `opens` in `WINDOWS`).
   The neighbours' / upper units' fake windows (exterior.js) copy the transom bar, mullion and sash rails (`win`).
-  Sovrum 2's south window (#353, unresolved): the user's word (#107) that it is smaller than Sovrum 4's governs; its
-  numbers in `WINDOWS` are preliminary guesses. The original sheet (BH 0.7, ~1.41 m read off the drawing) is the reference.
+  Sovrum 2's south window (#353): smaller than Sovrum 4's (the user, #107), as the original sheet already draws it, so the
+  drawing governs: the PDF opening (~1.41 m, read off the drawing, not verified) and BH 0.7; head 2.25 / no transom are guesses.
   Pleated blinds (#273, `BLINDS`, src/blinds.js): bottom-up plissé in every window (dark blackout in the bedrooms,
   white on Entréplan), folded by default on the window board, drawn up to the head (over the transom too); the sash opens
   outwards behind a drawn blind. Blackout blinds up = the room gets dark by day (sun shadow + `DayCycle.dim`).

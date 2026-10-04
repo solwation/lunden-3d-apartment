@@ -130,14 +130,11 @@ export const WINDOWS = [
   { level: 1, facade: 'north', x: 1.80, sill: 0.9, head: 2.25, transom: 0, blind: 'dark' },   // Sovrum 3
   { level: 1, facade: 'north', x: 3.85, sill: 0.7, head: 2.25, transom: 0, blind: 'dark' },   // Sovrum 1
   { level: 1, facade: 'south', x: 1.45, sill: 0.7, head: 2.4, transom: 0.4, blind: 'dark' },  // Allrum = Sovrum 4 (Tilly)
-  // Sovrum 2 — source conflict, unresolved (#353, architecture review Issue 10). Governing source: the user (#107):
-  // the window is SMALLER than Sovrum 4's, like Sovrum 3 vs Sovrum 1 on the north side. That is the only verified
-  // fact; the numbers below are PRELIMINARY *guesses* that merely make it smaller (width 1.2, BH 0.9, head 2.25,
-  // no transom), not measured. Reference, the original L1007 sheet (L1007_mattsatt_planritning.pdf, data/plan.json):
-  // BH 0.7 for both south bedrooms, and a drawing-read opening of ~1.41 m (x 3.142…4.552) — already narrower than
-  // Sovrum 4's ~1.61 m (x 0.652…2.262); a reading off the drawing, not a product size. Verified only once a measurement,
-  // a photo or a dimensioned (newer) drawing revision backs it. `width` narrows the opening around its centre.
-  { level: 1, facade: 'south', x: 3.85, sill: 0.9, head: 2.25, transom: 0, width: 1.2, blind: 'dark' }, // Sovrum 2
+  // Sovrum 2 (#353, architecture review Issue 10): the user's word (#107) is that it is SMALLER than Sovrum 4's; the
+  // original L1007 sheet already draws it so — its opening ~1.41 m (x 3.142…4.552, data/plan.json) against Sovrum 4's
+  // ~1.61 m — so the drawing governs (the user, #353): the PDF opening and the sheet's BH 0.7. The width is read off the
+  // drawing, not a verified product size; head 2.25 and no transom stay *guesses* (no source gives the head).
+  { level: 1, facade: 'south', x: 3.85, sill: 0.7, head: 2.25, transom: 0, blind: 'dark' }, // Sovrum 2
 ];
 
 // Pleated blinds (plissé) in every window (#273, the user; docs/plisse-gardin-nerifran-upp.jpg, Hemtex), bottom-up:
