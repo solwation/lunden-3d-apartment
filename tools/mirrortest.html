@@ -47,6 +47,10 @@ f.onload = async () => {
   // the upstairs hall's NISSEDAL (#332): a level-1 mirror of its own, on the west wall right of the WC door
   const up = reflectors().find((m) => m.name === 'nissedal-uppe');
   pass &= check(!!up && up.level === 1 && Math.abs(up.r.getWorldPosition(new V()).x - 1.57) < 0.05, 'the upstairs NISSEDAL has a level-1 reflector on the hall\'s west wall');
+  // Livia's pineapple mirror (#412): a level-1 reflector on Sovrum 3's west wall between the MALM and wardrobe G
+  const ananas = reflectors().find((m) => m.name === 'ananas'), ap = ananas?.r.getWorldPosition(new V());
+  pass &= check(!!ananas && ananas.level === 1 && Math.abs(ap.x - 0.2) < 0.05 && ap.z > 3.3 && ap.z < 4.0 && Math.abs(ap.y - 3.25 - 1.45) < 0.05,
+    `the pineapple mirror has a level-1 reflector on Sovrum 3's west wall${ap ? ` (${ap.toArray().map((v) => v.toFixed(2))})` : ''}`);
   // SKOGSGRÄNSEN over the secretary (#265) and LINDBYN on the north wall hand over cleanly: from one spot in the
   // living room, looking at either makes that one (and only that one) the active mirror
   const byName = (n) => reflectors().find((m) => m.name === n);

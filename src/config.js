@@ -2192,6 +2192,15 @@ export const DANI = {
   light: { intensity: 0.55, range: 3.2, color: 0xffbf78 },
 };
 
+// Livia's pineapple mirror (#412, docs/spegel-ananas-livia.jpg; src/pineapple.js). No sizes given: read off the photo with a
+// hand for scale (*guess*): the oval frame `oval` (half-widths x, y) ~34 × 43 cm, the glass ~19 × 29 (`glass`), `depth` 2.2 cm,
+// the crown's collar (w, h) and `leaf.n` leaves fanning `spread` rad each side, the middle one `l` long → ~62 cm in all.
+// Colour read off the photo (matte mustard yellow); `scale` = one bump tile (2 scales × 2 rows, m), `bump` = its strength.
+export const PINEAPPLE_MIRROR = {
+  oval: [0.17, 0.215], glass: [0.095, 0.145], depth: 0.022, collar: [0.085, 0.035],
+  leaf: { n: 9, l: 0.18, w: 0.056, spread: 1.15 }, color: 0xe8b52a, scale: [0.075, 0.066], bump: 3,
+};
+
 export const NYMANE_WALL = {
   plate: { w: 0.06, h: 0.11, d: 0.025 }, button: 0.012, arm: 0.07, shade: { r: 0.035, h: 0.08, tilt: 0.6 }, cord: 0.45,
   fromHead: 0.42, aboveMattress: 0.42, mattress: MYDAL.base.map((b) => b + MYDAL.mattress), // the bunks' mattress tops (#227)
@@ -2488,6 +2497,9 @@ export const FURNITURE = [
   // bunk room with its back against the bunk's free short end (MYDAL posts reach l/2 + post = 1.055 m from its
   // centre), centred on the bunk, facing into the room. Sovrum 3 faces south, Sovrum 2 north.
   { type: 'malm', level: 1, room: 'Sovrum 3', x: 0.2 + 0.5, z: 0.47 + 1.05 + 1.06 + 0.25, rot: 180, w: 0.8, h: 1.24, d: 0.5, seed: 70, deco: 'unicorn' },
+  // Livia's pineapple mirror (#412, PINEAPPLE_MIRROR): centred on the west wall (inner face x 0.202) between the MALM's
+  // front (z 3.08) and wardrobe G (z 4.21); the oval's centre 1.45 m up (*guess*, child height)
+  { type: 'pineapple', level: 1, x: 0.202, z: (3.08 + 4.21) / 2, y: 1.45, rot: -90 },
   // Sovrum 2 (Walter & Kian). watch.z: a seat in the lower bunk (local z, level with the desk's monitor)
   // for watching films on the PC
   { type: 'bunk', level: 1, x: 5.55 - 0.5, z: 12.23 - 1.05, rot: 0, w: 0.9, l: 2.0, sheets: 'vader', watch: { z: -0.3 } },

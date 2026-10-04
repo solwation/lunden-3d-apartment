@@ -538,6 +538,8 @@ src/car.js             our white Renault Megane E-Tech (CAR, #173; the model fro
                        quieter through an open door, low and dull through shut ones; the screen (its own canvas, carmodel.js
                        `drawScreen`) shows now playing; it plays on after you get out, stops when the key sends the car away or on F;
                        the house speakers are ducked while you sit with it on; stats carMusic (per song)
+src/pineapple.js       Livia's pineapple mirror in Sovrum 3 (#412, PINEAPPLE_MIRROR): an extruded oval frame with a scale bump map,
+                       a crown of leaves with a herringbone bump, an oval glass with its own Reflector ('ananas')
 src/signs.js           hand-lettered name signs on the bedroom doors (DOOR_SIGNS)
 src/water.js           running water: E on a tap/shower (world.taps from interior.js) → stream + hiss
 src/turbo.js           Kaffeturbo (#217, TURBO): TURBO.cups cups' worth of coffee (cups.js passes the coffee per sip) within
