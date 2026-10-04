@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { LEVELS, PLAYER, STAIR } from './config.js';
+import { LEVELS, PLAYER, STAIR, UNIT_TOP, ROOFS } from './config.js';
 import { stairHeight, stairUnderside } from './stairs.js';
 import { groundY } from './surroundings.js';
 
@@ -69,13 +69,27 @@ export class Player {
     this.camera.rotation.set(0, yaw, 0, 'YXZ');
   }
 
-  /** Outside the flat's footprint (street, lawn, patio): the only place to sprint. */
-  get outdoors() {
-    const { x: W, z: D } = this.world.size, p = this.pos;
-    return !(p.x > 0 && p.x < W && p.z > 0 && p.z < D);
+  /** Is (x, z) inside the flat's footprint (plan)? */
+  inFootprint(x = this.pos.x, z = this.pos.z) {
+    const { x: W, z: D } = this.world.size;
+    return x > 0 && x < W && z > 0 && z < D;
   }
 
+  /** Up on a roof, the loftgång or a terrace, or in the air outdoors (#360): over our flat above its top (the
+   * loftgång and the upper units sit on it), elsewhere ROOFS.aloft m over the ground. Then the roofs' walls collide. */
+  get aloft() {
+    const p = this.pos;
+    return this.inFootprint(p.x, p.z) ? p.y > UNIT_TOP - 0.3 : p.y > groundY(p.x, p.z) + ROOFS.aloft;
+  }
+
+  /** Outside the flat (street, lawn, patio, up on the roofs): the only place to sprint. */
+  get outdoors() {
+    return !this.inFootprint() || this.aloft;
+  }
+
+  /** The flat's level the visitor is on (0 outdoors, up on the roofs too). */
   get level() {
+    if (!this.inFootprint() || this.aloft) return 0;
     return this.pos.y > LEVELS[0].floor + 1.6 ? 1 : 0;
   }
 
@@ -89,6 +103,8 @@ export class Player {
     if (inside && !inHole) cands.push(LEVELS[1].floor);
     const s = stairHeight(x, z);
     if (s !== null) cands.push(s);
+    const r = this.world.roofs?.under(x, z, feet, PLAYER.stepUp); // a roof, the loftgång, a terrace (#360)
+    if (r) cands.push(r.y);
     let best = -Infinity;
     for (const c of cands) if (c <= feet + PLAYER.stepUp && c > best) best = c;
     return best;
@@ -109,6 +125,10 @@ export class Player {
   }
 
   segments() {
+    if (this.aloft) { // up on the roofs (#360): the walls that stand in the way of the body, feet + step … head
+      const y = this.pos.y;
+      return [this.world.roofs?.walls(y + PLAYER.stepUp, y + PLAYER.headroom) ?? [], []];
+    }
     const lvl = this.world.levels[this.level];
     const doorSegs = this.world.doors
       .filter((d) => (d.object.position.y < LEVELS[0].floor + 1.6 ? 0 : 1) === this.level)
@@ -122,6 +142,7 @@ export class Player {
    * furniture back, a resume record, the car parking on you) could never get out.
    */
   obstacles(level = this.level) {
+    if (this.aloft) return []; // (the flat's furniture and the car are far below, #360)
     return [...(this.world.levels[level]?.footprints ?? []), ...(this.world.movingPolys?.(level) ?? [])];
   }
 

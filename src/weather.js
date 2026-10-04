@@ -122,6 +122,11 @@ export class Weather {
   roofAt(x, z) {
     let top = -Infinity;
     for (const b of this.boxes) if (x > b.x0 && x < b.x1 && z > b.z0 && z < b.z1 && b.y1 > top) top = b.y1;
+    // a roof you can stand on (#360, main.js: world.roofs) is its real top — the boxes are coarse (a hip roof's box
+    // ends 1 m over its eaves, Hus L's at the slab under the roofing) and the rain would stop over the visitor's head
+    // up there; a house standing well over it (a canopy in its entrance recess) still keeps it dry
+    const s = this.surfaceAt?.(x, z) ?? -Infinity;
+    if (s > -Infinity && top - s < 2) top = s; else top = Math.max(top, s);
     for (const b of this.extraBoxes?.() ?? []) if (x > b.x0 && x < b.x1 && z > b.z0 && z < b.z1 && b.y1 > top) top = b.y1; // our parked car (#250)
     return top;
   }

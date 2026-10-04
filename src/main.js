@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { COLORS, LEVELS, DAY, START, PLAYER, DRAWING, STAIR, HOLD, REMOTE, REST, DOOR_HEIGHT, TURBO, WEATHER, BREAK, CAR, KITCHEN, LAPTOP, NEST, AUTO_RELOAD, MIELE } from './config.js';
+import { UNIT_TOP, COLORS, LEVELS, DAY, START, PLAYER, DRAWING, STAIR, HOLD, REMOTE, REST, DOOR_HEIGHT, TURBO, WEATHER, BREAK, CAR, KITCHEN, LAPTOP, NEST, AUTO_RELOAD, MIELE } from './config.js';
 import { MieleHeld, HeartFireworks } from './miele.js';
 const DRAWING_COLORS = DRAWING.colors;
 import { buildWorld } from './world.js';
@@ -199,6 +199,7 @@ const month = params0.has('month') ? Number(params0.get('month')) : now.getMonth
 const date = params0.has('day') ? Number(params0.get('day')) : params0.has('month') ? 15 : now.getDate();
 const day = new DayCycle({ scene, camera, lights: { sun, hemi, ambient, fill }, clouds: cloudTexture(), startHour, month, date, year: now.getFullYear() });
 const weather = new Weather(scene, camera, day, params0.get('weather')); // rain in spring and autumn, thunder in late summer (#248)
+weather.surfaceAt = (x, z) => world.roofs.topAt(x, z); // the rain falls on the roofs you can stand on, and on you up there (#360)
 const lastWeatherPos = new THREE.Vector3();
 // out in it (#249): walking about outdoors in rain / snow / hail / a thunderstorm counts once per shower
 const WEATHER_WALKS = { rain: ['walkRain', '🌧 Ute i regnet'], snow: ['walkSnow', '❄️ Ute i snön'], hail: ['walkHail', '🧊 Ute i haglet'], storm: ['walkStorm', '⛈ Ute i åskvädret'] };
@@ -572,8 +573,7 @@ function footsteps() {
   stride = 0;
   bump('steps');
   const { x, z } = player.pos;
-  const inside = x > 0 && x < world.size.x && z > 0 && z < world.size.z;
-  sfx.step(stairHeight(x, z) !== null ? 'stair' : inside ? 'wood' : 'outside');
+  sfx.step(player.outdoors ? 'outside' : stairHeight(x, z) !== null ? 'stair' : 'wood'); // (the loftgång over the flat: outside, #360)
 }
 function spawnAtStart() {
   player.spawn(START.x, START.z, THREE.MathUtils.degToRad(START.yawDeg));
@@ -1072,6 +1072,7 @@ let focused = null, focusPoint = null;
 /** Is there a wall between the eye and `p` (plan view)? Pickables aren't occluded by walls in the
  * raycast (it only tests pickables), so check the line against the level's wall outlines. */
 function behindWall(p) {
+  if (player.aloft && p.y < UNIT_TOP && p.x > 0 && p.x < world.size.x && p.z > 0 && p.z < world.size.z) return true; // up on the roof: the flat is under it (#360)
   const segs = world.levels[Math.max(0, player.level)]?.wallSegments ?? [];
   const ax = camera.position.x, az = camera.position.z, bx = p.x, bz = p.z;
   return segs.some(([cx, cz, dx, dz]) => {
@@ -1275,7 +1276,7 @@ setInterval(() => { if (!statsEl.hidden) renderStats(statsBody); }, 250);
 
 // --- loop ----------------------------------------------------------------
 const clock = new THREE.Clock();
-let lastLevel = -1, lastRoom = null, mapTimer = 0;
+let lastLevel = -1, lastRoom = null, mapTimer = 0, lastRoof = null, roofName = null;
 const mapEl = document.getElementById('minimap');
 const minimap = new Minimap(mapEl, world.roomMaps);
 setRoomTotal(world.roomMaps.reduce((n, m) => n + new Set(m.rooms.map((r) => r.name)).size, 0));
@@ -1306,7 +1307,7 @@ function step(dt) {
   inShower = wet;
   animateWater(dt);
   lights.updateAuto(day.daylight * (1 - 0.6 * weather.overcast), dt); // under rain clouds the small lamps come on earlier (#248)
-  lights.update(Math.max(0, player.level), player.pos, dt, camera.getWorldDirection(lookDir)); // (looking towards a lamp keeps its pool light, #276)
+  lights.update(player.aloft ? -1 : Math.max(0, player.level), player.pos, dt, camera.getWorldDirection(lookDir)); // (looking towards a lamp keeps its pool light, #276)
   day.dim = blinds.update(dt, { level: Math.max(0, player.level), room: player.outdoors ? null : world.roomAt(Math.max(0, player.level), player.pos.x, player.pos.z),
     outdoors: player.outdoors, daylight: day.daylight, sunDir: day.sunDir, overcast: weather.overcast, lit: (lv, name) => lights.roomLit(lv, name) }); // blinds drawn up: less daylight in the room (#273)
   if (blindPanel.open) blindPanel.render();
@@ -1338,7 +1339,7 @@ function step(dt) {
   target.update(dt, world.furnitureOn && !!heldItem()?.hitsTarget); // the target rises with a blaster, the saber or a wand in the hand (#144, #179)
   hoop.update(dt, world.furnitureOn && (ball.out || params0.has('hoop'))); // the hoop stands out front while the basketball is out of its holder
   if (clockPanel.open) clockPanel.render();
-  sonos.update(player.level, (p) => behindWall(p)); // music: schedule ahead, walls muffle (#187)
+  sonos.update(player.aloft ? -1 : player.level, (p) => behindWall(p)); // (up on the roof: muffled as from outside, #360) // music: schedule ahead, walls muffle (#187)
   world.windowLights.update(day.hour, 1 - day.daylight);
   car.occupied = !!rest.target?.car; // sitting in it: the screens stay awake (#250)
   car.update(dt, day.daylight < 0.35, player);
@@ -1365,7 +1366,12 @@ function step(dt) {
     footsteps();
     updateFocus();
   }
-  const outside = player.pos.x <= 0 || player.pos.x >= world.size.x || player.pos.z <= 0 || player.pos.z >= world.size.z;
+  const outside = player.outdoors; // (the loftgång and the terraces over the flat too, #360)
+  // up on a roof (#360): the first time on each one counts; the HUD names it
+  const roof = outside && player.aloft && !player.fall ? world.roofs.standingOn(player.pos.x, player.pos.z, player.pos.y) : null;
+  if (roof && roof.id !== lastRoof && active()) bump('roofs', 1, roof.id);
+  if (roof || !player.fall) lastRoof = roof?.id ?? null;
+  if (roof) roofName = roof.name; else if (!player.aloft) roofName = null;
   const lvl = outside ? -1 : player.level;
   const room = lvl < 0 ? null : world.roomAt(lvl, player.pos.x, player.pos.z);
   if (room && active()) visitRoom(`${lvl}:${room}`);
@@ -1378,7 +1384,7 @@ function step(dt) {
   if (active() && !outside) bump('seconds', dt);
   if (lvl !== lastLevel && lvl >= 0 && lastLevel >= 0) bump('stairs');
   if (lvl < 0) lastRoom = null;
-  const label = `${lvl < 0 ? 'Utomhus' : `${LEVELS[lvl].name}${lastRoom ? ` · ${lastRoom}` : ''}`} · ${day.clock}${weather.icon}`;
+  const label = `${lvl < 0 ? `Utomhus${roofName ? ` · ${roofName}` : ''}` : `${LEVELS[lvl].name}${lastRoom ? ` · ${lastRoom}` : ''}`} · ${day.clock}${weather.icon}`;
   if (lvl !== lastLevel || label !== levelEl.textContent) {
     levelEl.textContent = label;
     lastLevel = lvl;
@@ -1431,7 +1437,7 @@ renderer.setAnimationLoop(() => {
   step(dt);
   updateShadows(dt);
   // one mirror image at a time, and none once the frame rate has made us lower the resolution
-  updateReflections(camera, Math.max(0, player.level), dynRes.ratio >= MAX_PIXEL_RATIO * 0.99);
+  updateReflections(camera, player.aloft ? -1 : Math.max(0, player.level), dynRes.ratio >= MAX_PIXEL_RATIO * 0.99);
   updateListener(camera);
   renderer.render(scene, camera);
   if (perfEl) showPerf();

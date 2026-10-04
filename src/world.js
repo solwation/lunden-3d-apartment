@@ -29,6 +29,7 @@ import { buildSurroundings, terrainNorth } from './surroundings.js';
 import { addDoorSigns } from './signs.js';
 import { wardrobeFill, personFor } from './stuff.js';
 import { Blinds } from './blinds.js';
+import { Roofs, wallRect } from './roofs.js';
 
 const mat = (color, extra = {}) => new THREE.MeshStandardMaterial({ color, roughness: 0.85, ...extra });
 
@@ -747,6 +748,11 @@ export function buildWorld(plan) {
       && Math.max(s[1], s[3]) > o.z0 - 1 && Math.min(s[1], s[3]) < o.z1 + 1), // the box's edge, Hus A / B / C (#255, #259)
   );
   l0.segments.push(...outdoor);
+  // up on the roofs (#360, src/roofs.js): Hus L's loftgång, terraces, roof, loft and drums, the Å-husen's roofs and
+  // canopies; OUTDOOR's edge is a wall at every height
+  const walkable = [exterior.userData.walk, surroundings.userData.walk], roofWalls = walkable.flatMap((w) => w.walls);
+  wallRect(roofWalls, o.x0, o.x1, o.z0, o.z1, -100, 1000);
+  const roofs = new Roofs(walkable.flatMap((w) => w.surfaces), roofWalls);
 
   const rooms = plan.floors.map((f, li) => [...f.rooms, ...EXTRA_ROOMS.filter((r) => r.level === li)].map((r) => {
     const re = ROOM_RENAMES.find((x) => x.level === li && x.from === r.name && OPTIONS[x.option]);
@@ -818,6 +824,7 @@ export function buildWorld(plan) {
     get furnitureOn() { return furniture.object.visible; },
     size: { x: W, z: D },
     levels,
+    roofs, // the walkable roofs outdoors (#360)
     doors: [...l0.doors, ...l1.doors],
     lids: [...l0.lids, ...l1.lids, ...l0.appliances, ...l1.appliances, hallWall.cabinet], // toggled with E, not doors
     hob: [...l0.appliances, ...l1.appliances].find((a) => a.kind === 'hob') ?? null, // the induction hob (#158)

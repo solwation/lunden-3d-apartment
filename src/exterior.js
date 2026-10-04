@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { HUS_L as H, COLORS, FENCE_HEIGHT, SEASON, VERTICAL, storeyFloor } from './config.js';
 import { registerSnow } from './seasons.js';
+import { wallLine, wallRect } from './roofs.js';
 
 // Brick: 250 × 65 mm + 10 mm joints → 0.26 m per brick, 0.075 m per course.
 const TILE_W = 1.04, TILE_H = 0.6; // one texture tile = 4 bricks × 8 courses
@@ -324,6 +325,45 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
     rails.push(boxGeo(ra, rb, roofTop + 0.08, roofTop + 0.12, rz - 0.02, rz + 0.02));
     for (let x = ra + 0.06; x < rb; x += 0.12) rails.push(boxGeo(x - 0.01, x + 0.01, roofTop, roofTop + rh, rz - 0.01, rz + 0.01));
   }
+
+  // walking up there (#360, src/roofs.js): the surfaces and the walls standing on them, from the same measures as the
+  // meshes above. Walls start under the ground (−10) where they are the building's own faces, so nobody falls into it.
+  const surfaces = [], walls = [], low = -10, roofY = upperTop + rc, loftY = loftTop + 0.05;
+  const surf = (id, name, x0, x1, z0, z1, y) => surfaces.push({ id, name, x0, x1, z0, z1, y });
+  surf('L-loftgang', 'Loftgången', deckX0, xe, -0.05, loftD, roofTop);
+  surf('L-loftgang', 'Loftgången', te.x - 1.2, te.x + 1.2, te.z + te.r * 0.7, 0, roofTop); // the landing to the east drum
+  for (const t of terraces) surf(`L-terrace-${t.id}`, `Takterrassen ${t.id}`, t.x0, t.x1, zs, D - 0.1, deckY);
+  surf('L-roof', 'Hus L:s tak', xw - 0.13, xe + 0.13, loftD - 0.13, zs + 0.13, roofY);
+  for (const [xa, xb] of H.solar.x) for (const [za, zb] of H.solar.z) surf('L-roof', 'Hus L:s tak', xa, xb, za, zb, roofY + 0.07); // step over them
+  surf('L-loft', 'Loftet över hisstoppet', loftX0 - 0.03, loftX1 + 0.03, zt - 0.03, zf + 0.03, loftY);
+  wallRect(walls, xw, xe, 0, D, low, roofTop); // våning 1–2 (a fall past the façades stays outside)
+  wallLine(walls, xw, loftD, xe, loftD, roofTop, roofY); // the upper units' street face, over the loftgång (no way in)
+  for (const [ra, rb2] of [[deckX0, te.x - 1.2], [te.x + 1.2, xe]]) wallLine(walls, ra, rz, rb2, rz, roofTop - 0.3, roofTop + rh); // the loftgång railing
+  wallLine(walls, xw, D - 0.1, xe, D - 0.1, roofTop, deckY + C.rail); // våning 3's courtyard face + the terraces' parapet and railing
+  for (const [x, s] of [[xw, 1], [xe, -1]]) {
+    wallLine(walls, x, loftD, x, zs, roofTop, roofY); // the gables
+    wallLine(walls, x, zs, x, D, roofTop, par);
+    wallLine(walls, x + 0.1 * s, zs, x + 0.1 * s, D, deckY, deckY + C.rail); // the railing along the gable
+  }
+  wallLine(walls, xw, zs, loftX0, zs, y3, roofY); // våning 4's set-back wall behind the terraces
+  wallLine(walls, loftX1, zs, xe, zs, y3, roofY);
+  for (const x of [loftX0, loftX1]) { wallLine(walls, x, zs, x, zf, y3, loftY); wallLine(walls, x, zt, x, zs, upperTop, loftY); } // the loft
+  wallLine(walls, loftX0, zf, loftX1, zf, y3, loftY);
+  wallLine(walls, loftX0, zt, loftX1, zt, upperTop, loftY);
+  for (let i = 0; i + 1 < terraces.length; i++) { // skärmväggar h 1.8
+    const x = terraces[i].x1;
+    if (Math.abs(terraces[i + 1].x0 - x) < 1e-3) wallLine(walls, x, zs, x, zp, deckY, deckY + C.screen);
+  }
+  for (const [t, name] of [[tw, 'west'], [te, 'east']]) { // the drums: their wall, open where the loftgång / landing goes in; a top landing inside
+    surfaces.push({ id: `L-drum-${name}`, name: 'Spiraltrappans torn', cx: t.x, cz: t.z, r: t.r - 0.05, y: roofTop });
+    for (let i = 0; i < 16; i++) {
+      const a0 = (i / 16) * Math.PI * 2, a1 = ((i + 1) / 16) * Math.PI * 2;
+      const s = [t.x + t.r * Math.cos(a0), t.z + t.r * Math.sin(a0), t.x + t.r * Math.cos(a1), t.z + t.r * Math.sin(a1)], mx = (s[0] + s[2]) / 2, mz = (s[1] + s[3]) / 2;
+      const door = t === tw ? mx > deckX0 - 0.3 && mz > -0.05 && mz < loftD : mz > t.z + t.r * 0.6 && Math.abs(mx - t.x) < 1.2;
+      walls.push({ s, y0: low, y1: door ? roofTop : roofTop + rh });
+    }
+  }
+  group.userData.walk = { surfaces, walls };
 
   const add = (geos, material, shadow = true) => {
     if (!geos.length) return;

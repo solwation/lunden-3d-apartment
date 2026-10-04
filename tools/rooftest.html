@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Roof test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+// #360: standing and walking on the roofs (placed there like `?at=x,z,yaw,pitch,feetY`, until the jetpack #359):
+// Hus L's loftgång (the railing, the upper units' façade: no way in, the drum's top landing), our terrace (the set-back
+// wall, the railing, the skärmvägg), Hus L's roof (over a solar panel, the loft over the lift in the way), Hus A's hip
+// roof (standing on the slope), a canopy; walking off an edge falls and hurts (fall.js); up there the visitor is
+// outdoors on level 0, the flat's lamps get no pool light, its speakers and E targets are behind the roof, the detail
+// culler hides the flat's inside, the rain falls on the roof (not over the head), the first visit per roof counts.
+//   google-chrome --headless=new --dump-dom http://localhost:8137/tools/rooftest.html
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const f = document.createElement('iframe');
+f.width = 900; f.height = 600;
+f.src = '../index.html?shot&time=12&month=6&freeze';
+document.body.append(f);
+f.onload = () => run().catch((e) => { out.textContent = `FAIL ${e}\n${e.stack}\nSOME FAILED`; });
+async function run() {
+  const w = f.contentWindow, d = f.contentDocument;
+  while (!w.__app) await wait(100);
+  const { player, fall, world, step, stats, camera, renderer, weather, lights, detail } = w.__app;
+  const mod = (p) => w.eval(`import('${new URL(p, location.href).href}')`); // the page's own module instances
+  const { FALL, PLAYER, HUS_L, VERTICAL, UNIT_TOP, SITE } = await mod('../src/config.js');
+  const { husLLayout, husLTerraces } = await mod('../src/exterior.js');
+  const lines = [];
+  let pass = true;
+  const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); pass &&= !!ok; return ok; };
+  const f2 = (v) => v.toFixed(2);
+  d.getElementById('install').hidden = true;
+  Object.defineProperty(d, 'pointerLockElement', { get: () => renderer.domElement, configurable: true });
+  d.dispatchEvent(new w.Event('pointerlockchange'));
+  const landings = [];
+  const land0 = player.onLand;
+  player.onLand = (drop, gap) => { const r = land0(drop, gap); landings.push({ drop, gap, r }); return r; };
+  const dt = 1 / 60;
+  const D = 12.7, C = HUS_L.court, loftD = HUS_L.loftgangDepth, roofTop = UNIT_TOP, y3 = roofTop + HUS_L.storeyHeight;
+  const deckY = y3 + C.deck, zs = D - C.setback, upperTop = roofTop + HUS_L.upperStoreys * HUS_L.storeyHeight;
+  const roofY = upperTop + VERTICAL.roof.buildUp + VERTICAL.roof.capping, { xw, xe, core: [cx0] } = husLLayout();
+  const loftX0 = cx0 - HUS_L.wall - C.core.loft.west, loftX1 = cx0 - HUS_L.wall + C.core.loft.w;
+
+  const settle = async () => { while (fall.t >= 0) step(dt); };
+  const place = (x, z, feet, yawDeg = 180) => {
+    player.spawn(x, z, yawDeg * Math.PI / 180);
+    player.pos.y = feet; player.eyeY = feet + PLAYER.eye;
+    landings.length = 0;
+    for (let i = 0; i < 20; i++) step(dt);
+  };
+  /** Walk with W towards yaw `yawDeg` for `secs`. */
+  const push = (yawDeg, secs, keys = ['KeyW']) => {
+    camera.rotation.y = yawDeg * Math.PI / 180;
+    player.keys = new Set(keys);
+    for (let t = 0; t < secs; t += dt) { step(dt); if (fall.active) break; }
+    player.keys = new Set();
+    for (let i = 0; i < 10 && !fall.active; i++) step(dt);
+  };
+  /** Walk to (x, z) on foot; the lowest and highest feet on the way. */
+  const walkTo = (x, z, max = 20) => {
+    let t = 0, lo = Infinity, hi = -Infinity;
+    while (Math.hypot(player.pos.x - x, player.pos.z - z) > 0.1 && t < max && !fall.active) {
+      camera.rotation.y = Math.atan2(-(x - player.pos.x), -(z - player.pos.z));
+      player.keys = new Set(['KeyW']);
+      step(dt); t += dt;
+      lo = Math.min(lo, player.pos.y); hi = Math.max(hi, player.pos.y);
+    }
+    player.keys = new Set();
+    return { ok: t < max && !fall.active, lo, hi };
+  };
+  const roofs0 = Object.keys(stats.seen.roofs ?? {}).length;
+
+  // (1) the loftgång over our bedrooms: standing on it, outdoors, level 0
+  place(3, 0.8, roofTop, -90);
+  check(Math.abs(player.pos.y - roofTop) < 0.01 && player.aloft && player.outdoors && player.level === 0 && !landings.length,
+    `on the loftgång at ${f2(player.pos.y)} m (aloft ${player.aloft}, outdoors ${player.outdoors}, level ${player.level})`);
+  check(world.roofs.standingOn(player.pos.x, player.pos.z, player.pos.y)?.id === 'L-loftgang' && /Utomhus · Loftgången/.test(d.getElementById('level').textContent),
+    'the surface is the loftgång (the HUD says so)');
+  check(Object.keys(stats.seen.roofs ?? {}).length === roofs0 + 1 || stats.seen.roofs?.['L-loftgang'], 'the first visit counted');
+  // along it east: level all the way
+  let r = walkTo(7.5, 0.8);
+  check(r.ok && Math.abs(r.lo - roofTop) < 0.01 && Math.abs(r.hi - roofTop) < 0.01, `walked 4.5 m east along it, level (${f2(r.lo)}–${f2(r.hi)} m)`);
+  // the railing to the street
+  push(0, 2);
+  check(Math.abs(player.pos.y - roofTop) < 0.01 && player.pos.z > 0.04 + PLAYER.radius - 0.02, `the railing holds (z ${f2(player.pos.z)})`);
+  // the upper units' façade: no way in
+  push(180, 3);
+  check(player.pos.z < loftD - PLAYER.radius + 0.02 && Math.abs(player.pos.y - roofTop) < 0.01, `no way into the upper units (z ${f2(player.pos.z)} < ${f2(loftD)})`);
+  // the flat under the feet: no pool light for its lamps, its things behind the roof, the culler hides its inside
+  lights.setAll(true);
+  place(2.8, 0.8, roofTop, 180);
+  for (let i = 0; i < 30; i++) step(dt);
+  check(lights.slots.every((s) => !s.lamp), `no pool light goes to the flat's lamps (${lights.slots.filter((s) => s.lamp).length} used)`);
+  const cull = detail();
+  const inside = cull.items.filter((it) => { const p = it.center.clone().applyMatrix4(it.o.matrixWorld); return p.x > 0.3 && p.x < 5.4 && p.z > 0.3 && p.z < 12.4 && p.y < UNIT_TOP - 0.3 && p.y > 0.2; });
+  const hidden = inside.filter((it) => it.far).length;
+  check(inside.length > 50 && hidden / inside.length > 0.95, `the detail culler hides the flat's inside from up here (${hidden} of ${inside.length})`);
+  lights.setAll(false);
+  // walking off the loftgång's east end: a fall that hurts
+  place(xe - 0.6, 0.8, roofTop, -90);
+  push(-90, 3);
+  check(landings.some((l) => l.r === 'hurt' && l.drop > FALL.hurt), `off the loftgång's east end: hurt (drop ${f2(Math.max(...landings.map((l) => l.drop)))} m)`);
+  await settle();
+  // the west drum's top landing from the loftgång
+  const tw = HUS_L.towers[0], twx = xw - tw.r;
+  place(xw + 1.0, 0.7, roofTop, 90);
+  r = walkTo(twx, tw.z);
+  check(r.ok && Math.abs(player.pos.y - roofTop) < 0.01, `into the west drum's top landing (${f2(player.pos.x)}, ${f2(player.pos.z)}) at ${f2(player.pos.y)} m`);
+  push(90, 3);
+  check(Math.hypot(player.pos.x - twx, player.pos.z - tw.z) < tw.r - PLAYER.radius + 0.03 && !landings.length, 'its wall holds');
+
+  // (2) our terrace (L1208): the set-back wall, the railing, the skärmvägg
+  const T = husLTerraces().find((t) => t.id === 'L1208');
+  place((T.x0 + T.x1) / 2, (zs + D) / 2, deckY, 180);
+  check(Math.abs(player.pos.y - deckY) < 0.01 && world.roofs.standingOn(player.pos.x, player.pos.z, player.pos.y)?.id === 'L-terrace-L1208', `on L1208's terrace at ${f2(player.pos.y)} m`);
+  push(180, 2);
+  check(player.pos.z < D - 0.1 - PLAYER.radius + 0.02 && Math.abs(player.pos.y - deckY) < 0.01, `the railing holds (z ${f2(player.pos.z)})`);
+  push(0, 3);
+  check(player.pos.z > zs + PLAYER.radius - 0.02, `the set-back wall holds: no way in (z ${f2(player.pos.z)})`);
+  push(-90, 6);
+  check(player.pos.x < T.x1 - PLAYER.radius + 0.02 && !landings.length, `the skärmvägg holds (x ${f2(player.pos.x)} < ${f2(T.x1)})`);
+
+  // (3) Hus L's roof: over a solar panel, the loft in the way, off the edge
+  place(3, 5.0, roofY, 0);
+  check(Math.abs(player.pos.y - roofY) < 0.01 && world.roofs.standingOn(player.pos.x, player.pos.z, player.pos.y)?.id === 'L-roof', `on Hus L's roof at ${f2(player.pos.y)} m`);
+  r = walkTo(3, 3.0);
+  check(r.ok && r.hi > roofY + 0.05 && r.hi < roofY + 0.1 && !landings.some((l) => l.r), `stepped over a row of solar panels (up to ${f2(r.hi)} m)`);
+  place(loftX1 + 1.5, 10.6, roofY, 90); // (between the last row of panels and the set-back line)
+  push(90, 4);
+  check(player.pos.x > loftX1 + PLAYER.radius - 0.02 && Math.abs(player.pos.y - roofY) < 0.01, `the loft over the lift stands in the way (x ${f2(player.pos.x)}, its wall ${f2(loftX1)}, feet ${f2(player.pos.y)})`);
+  place(3, 1.8, roofY, 0);
+  push(0, 0.5); // a step over the edge, then let go: the fall lands on the loftgång (walking on would carry you over its railing)
+  for (let i = 0; i < 150 && !fall.active; i++) step(dt);
+  const hurt = () => landings.find((l) => l.r === 'hurt');
+  check(hurt() && Math.abs(hurt().drop - (roofY - roofTop)) < 0.1, `off the roof's north edge onto the loftgång: a fall that hurts (drop ${f2(hurt()?.drop ?? 0)} m)`);
+  await settle();
+
+  // (4) Hus A's hip roof: the slope; off the eaves
+  const A = SITE.blocks.find((b) => b.name === 'Hus A'), ax = (A.x0 + A.x1) / 2, az = (A.z0 + A.z1) / 2;
+  const top = world.roofs.topAt(ax, az);
+  place(ax, az, top, -90);
+  check(Math.abs(player.pos.y - top) < 0.02 && world.roofs.standingOn(ax, az, player.pos.y)?.id === 'roof-Hus A', `on Hus A's roof at ${f2(player.pos.y)} m`);
+  r = walkTo(A.x1 - 1.5, az);
+  check(r.ok && r.lo < top - 0.1 && Math.abs(player.pos.y - world.roofs.topAt(player.pos.x, player.pos.z)) < 0.05 && !landings.some((l) => l.r),
+    `walked down the slope to ${f2(player.pos.y)} m (the roof there ${f2(world.roofs.topAt(player.pos.x, player.pos.z))})`);
+  push(-90, 4);
+  check(hurt(), `off the eaves: hurt (drop ${f2(hurt()?.drop ?? 0)} m)`);
+  await settle();
+
+  // (5) a canopy over an entrance
+  const can = world.roofs.surfaces.find((s) => s.id.startsWith('canopy-'));
+  place((can.x0 + can.x1) / 2, (can.z0 + can.z1) / 2, can.y, 0);
+  check(can && Math.abs(player.pos.y - can.y) < 0.01 && player.aloft, `on ${can.name} at ${f2(player.pos.y)} m`);
+
+  // (6) the rain falls on the roof and on the visitor up there
+  weather.force = 'rain';
+  place(3, 5.0, roofY, 0);
+  for (let i = 0; i < 90; i++) step(dt);
+  const near = [], p = weather.pos;
+  for (let i = 0; i < weather.floor.length; i++) {
+    const o = i * 6, dx = p[o + 3] - player.pos.x, dz = p[o + 5] - player.pos.z;
+    if (dx * dx + dz * dz < 4) near.push({ y: p[o + 4], floor: weather.floor[i] });
+  }
+  const onRoof = near.filter((n) => Math.abs(n.floor - roofY) < 0.12);
+  check(near.length > 5 && onRoof.length / near.length > 0.9, `rain within 2 m ends on the roof (${onRoof.length} of ${near.length} at ${f2(roofY)} m)`);
+  check(near.some((n) => n.y > roofY + 0.2 && n.y < roofY + PLAYER.eye), 'some of it falls past the visitor');
+  for (const [x, z, y, what] of [[3, 0.8, roofTop, 'the loftgång'], [(T.x0 + T.x1) / 2, 11.5, deckY, 'the terrace'], [3, 5.0, roofY, "Hus L's roof"], [ax, az, top, "Hus A's roof"]])
+    check(Math.abs(weather.roofAt(x, z) - y) < 0.12, `${what}: the rain stops at ${f2(weather.roofAt(x, z))} m (the surface ${f2(y)})`);
+  weather.force = 'clear';
+  for (let i = 0; i < 5; i++) step(dt);
+
+  // (7) back on the ground: the usual
+  place(1.3, -4, 0, 180);
+  check(!player.aloft && player.level === 0 && player.outdoors && Math.abs(player.pos.y) < 0.01, 'back on the street: not up there');
+  const n = Object.keys(stats.seen.roofs ?? {}).length - roofs0;
+  check(n >= 5, `${n} roofs counted for the first time (${Object.keys(stats.seen.roofs ?? {}).join(', ')})`);
+
+  out.textContent = lines.join('\n') + `\n${pass ? 'ALL PASS' : 'SOME FAILED'}`;
+}
+</script>
+</body>
+</html>

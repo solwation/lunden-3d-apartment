@@ -4,6 +4,7 @@ import { SITE as S, COLORS, SEASON, COURTYARD } from './config.js';
 import { registerTrees, registerSnow } from './seasons.js';
 import { buildStreet } from './street.js';
 import { onRoad, pathStrip, filletGeometry } from './roads.js';
+import { wallRect } from './roofs.js';
 
 // The rest of Kv. Lunden and its neighbourhood (SITE in config): the brick point blocks Hus A, B, C
 // with low hip roofs, the schools and buildings around the plot, Sankt Lars väg and Karpvägen,
@@ -763,7 +764,7 @@ function entranceOpenings(b, r) {
  * entrance doors with a sidelight, a canopy and the house letter. */
 function loggias(blocks) {
   const L = S.loggia, p = L.pier, P = L.parapet, E = L.entrance;
-  const slabs = [], walls = [], bricks = [], rails = [], plants = [], frames = [], glass = [], metal = [], signs = [];
+  const slabs = [], walls = [], bricks = [], rails = [], plants = [], frames = [], glass = [], metal = [], signs = [], canopies = [];
   const letters = blocks.map((b) => b.name.slice(-1));
   const rand = rng(43);
   const pier = (b, x0, x1, z0, z1) => bricks.push(brickBox(x0, z0, x1, z0, 0, Math.sign(z1 - z0), Math.abs(z1 - z0), b.base, b.base + b.storeys * S.storey, b.base));
@@ -822,6 +823,7 @@ function loggias(blocks) {
         for (const o of entranceOpenings(b, r)) glazing(o, frames, glass);
         const [kx, kz] = at((r.a0 + r.a1) / 2, line + out * (C.out - 0.3) / 2), [kw, kd] = nz ? [r.a1 - r.a0 + 0.4, C.out + 0.3] : [C.out + 0.3, r.a1 - r.a0 + 0.4];
         metal.push(new THREE.BoxGeometry(kw, C.t, kd).translate(kx, y + C.at + C.t / 2, kz)); // the canopy over the mouth
+        canopies.push({ id: `canopy-${b.name}-${canopies.length}`, name: `Entrétaket, ${b.name}`, x0: kx - kw / 2, x1: kx + kw / 2, z0: kz - kd / 2, z1: kz + kd / 2, y: y + C.at + C.t }); // walkable (#360)
         const [lx2, lz2] = at(r.a1 + 0.5, line + out * 0.012), u = letters.indexOf(b.name.slice(-1)); // the letter beside the mouth
         const plate = new THREE.PlaneGeometry(E.sign, E.sign).rotateY(Math.atan2(...nrm(out))).translate(lx2, y + 2.3, lz2);
         const uv = plate.attributes.uv;
@@ -830,7 +832,7 @@ function loggias(blocks) {
       }
     }
   }
-  return { slabs, walls, bricks, rails, plants, frames, glass, metal, signs, letters };
+  return { slabs, walls, bricks, rails, plants, frames, glass, metal, signs, letters, canopies };
 }
 
 /** The lowest ground under a block's footprint (sampled every 2 m). */
@@ -1201,19 +1203,26 @@ export function buildSurroundings({ grass }) {
   mesh(lg.signs, new THREE.MeshStandardMaterial({ map: letterTexture(lg.letters), roughness: 0.6 })); // the house letters
   // low hip roofs of roofing felt (#258; Peab's aerial render, Q&A) over the light metal edge, a few vent hoods along the ridge;
   // #348: each house its own (roofSpec), with the roof box the roof plans draw (in the sheet metal below)
-  const roofBoxes = [];
+  const roofBoxes = [], walk = { surfaces: [...lg.canopies], walls: [] }; // walking up there (#360, src/roofs.js)
   mesh(modern.flatMap((b) => {
     const R = roofSpec(b), o = R.overhang, eave = R.eave, cx = (b.x0 + b.x1) / 2, cz = (b.z0 + b.z1) / 2, r = rng(Math.round(b.x0 * 7 + b.z0 * 13));
     const hx = (b.x1 - b.x0) / 2 + o, hz = (b.z1 - b.z0) / 2 + o, k = R.rise / Math.min(hx, hz);
     const roofY = (x, z) => eave + k * Math.min(hx - Math.abs(x - cx), hz - Math.abs(z - cz)); // on the hip roof
+    walk.surfaces.push({ id: `roof-${b.name}`, name: `${b.name}s tak`, x0: b.x0 - o, x1: b.x1 + o, z0: b.z0 - o, z1: b.z1 + o, y: roofY }); // you stand on the slope
+    wallRect(walk.walls, b.x0, b.x1, b.z0, b.z1, -10, eave); // its façades: a fall past them stays outside (loggias, recesses: no way in)
     if (R.box) { // from the eave line up to `h` over the highest point of the roof under it
       const B = R.box, hi = roofY(THREE.MathUtils.clamp(cx, B.x0, B.x1), THREE.MathUtils.clamp(cz, B.z0, B.z1)); // its point nearest the ridge
       roofBoxes.push(new THREE.BoxGeometry(B.x1 - B.x0, hi + B.h - eave, B.z1 - B.z0).translate((B.x0 + B.x1) / 2, (eave + hi + B.h) / 2, (B.z0 + B.z1) / 2));
+      walk.surfaces.push({ id: `roof-${b.name}`, name: `${b.name}s tak`, x0: B.x0, x1: B.x1, z0: B.z0, z1: B.z1, y: hi + B.h });
+      wallRect(walk.walls, B.x0, B.x1, B.z0, B.z1, eave, hi + B.h);
     }
     const geos = [hipRoof(b)];
     for (let i = 0; i < 5; i++) {
       const s2 = 0.6 + r() * 0.9, hgt = 0.5 + r() * 0.7, x = cx + (r() - 0.5) * 3, z = cz + (r() - 0.5) * Math.max(2, 2 * (hz - hx) + 2);
-      geos.push(new THREE.BoxGeometry(s2, hgt, s2 * (0.7 + r() * 0.6)).translate(x, roofY(x, z) - 0.15 + hgt / 2, z).toNonIndexed());
+      const d2 = s2 * (0.7 + r() * 0.6), vy = roofY(x, z) - 0.15 + hgt;
+      geos.push(new THREE.BoxGeometry(s2, hgt, d2).translate(x, vy - hgt / 2, z).toNonIndexed());
+      walk.surfaces.push({ id: `roof-${b.name}`, name: `${b.name}s tak`, x0: x - s2 / 2, x1: x + s2 / 2, z0: z - d2 / 2, z1: z + d2 / 2, y: vy }); // a vent hood: in the way, or climbed
+      wallRect(walk.walls, x - s2 / 2, x + s2 / 2, z - d2 / 2, z + d2 / 2, eave, vy);
     }
     return geos.map((g) => { g.deleteAttribute('uv'); return g; });
   }), new THREE.MeshStandardMaterial({ color: 0x6d7175, roughness: 0.9, side: THREE.DoubleSide }), SEASON.snow.roof);
@@ -1222,6 +1231,7 @@ export function buildSurroundings({ grass }) {
     const R = roofSpec(b), o = R.overhang, d = R.edge + 0.1;
     return new THREE.BoxGeometry(b.x1 - b.x0 + 2 * o, d, b.z1 - b.z0 + 2 * o).translate((b.x0 + b.x1) / 2, R.eave - 0.01 - d / 2, (b.z0 + b.z1) / 2);
   }).concat(lg.metal, roofBoxes), new THREE.MeshStandardMaterial({ color: 0xc7cacb, roughness: 0.45, metalness: 0.2 })); // light grey sheet metal (#146)
+  group.userData.walk = walk;
   const pipes = [];
   for (const b of modern) {
     const h = b.storeys * S.storey, y = b.base + h / 2;

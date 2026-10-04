@@ -114,7 +114,18 @@ src/exterior.js        Hus L (HUS_L): brick row with the core/portik, neighbours
                        `HUS_L.gableWindows`: every gable opening tagged gable / building storey / flat from the end flats'
                        bofakta (L1001 west, L1008 + L1209 east; none for L1201 or on våning 4; no flat is mirrored, #351)
 src/player.js          WASD/arrow/joystick movement, circle-vs-segment collision, step-up, gravity; outdoors the terrain (`groundY`, #256);
-                       `isFree` / `obstacles` / `nearestFree` / `unstick` (#314, see Input notes)
+                       `isFree` / `obstacles` / `nearestFree` / `unstick` (#314, see Input notes); up on the roofs (#360): `aloft`
+                       (outdoors > ROOFS.aloft m over the ground, over our flat above UNIT_TOP − 0.3) = `outdoors`, level 0, the
+                       roofs' walls instead of a level's segments, no obstacles; `groundAt` takes the highest roof ≤ feet + stepUp
+src/roofs.js           the walkable roofs (#360, `world.roofs`): surfaces (rect or disk, flat `y` or a slope function, an `id` per roof)
+                       and walls with a height range, listed by the builders (`userData.walk`: exterior.js — the loftgång + the east
+                       drum's landing, each terrace, Hus L's roof + solar panels (step over), the loft over the lift, the drums' top
+                       landings; the façades, railings, set-back wall, skärmväggar; surroundings.js — the Å-husen's hip roofs (on
+                       the slope), roof boxes, vent hoods, entrance canopies) + OUTDOOR's edge. `under` / `standingOn` / `topAt` /
+                       `walls(y0, y1)`. Walking off an edge falls (fall.js). Up there: lights.update / sonos / reflections get level
+                       −1 (no pool light for the flat's lamps: the lampwash shows them), `behindWall` hides the flat under the roof,
+                       the rain stops on the surface (`weather.surfaceAt`), the HUD says "Utomhus · <roof>", stats `roofs` (first
+                       per roof, SCORE.first.roofs). Not walkable: the old S:t Lars houses, the school, HepCat, pergolas, parapet tops
 src/fall.js            falling (#361, FALL): player.js keeps `fall` (the highest feet since leaving the ground + the deepest free gap
                        under them) and calls `onLand(drop, gap)`; only a gap over FALL.free counts (the stair's risers, the ramp never).
                        Over FALL.hurt (3 m): sfx.landing + sfx.ouch ("aj"), the view jolts, #fall goes red then black, no walking, the
@@ -186,7 +197,7 @@ src/lights.js          room switches (E), ceiling lamps/pendant/spots/LED (by ha
 src/weather.js         weather (WEATHER, #248): a seeded draw per date (`showersOn`, `rainAt`): showers in spring/autumn (a little
                        in summer, none Dec–Feb), thunderstorms 20 Jul – 31 Aug; follows the clock/calendar. Rain = one
                        LineSegments of streaks around the eye ending on the ground or a roof (`roofAt`: the house boxes of
-                       greet.js `occluders` + our unit), DayCycle `overcast` (grey sky, fog, weaker sun) and `flash`
+                       greet.js `occluders` + our unit; a walkable roof's real top where there is one, #360), DayCycle `overcast` (grey sky, fog, weaker sun) and `flash`
                        (lightning), sfx.rain (muffled indoors) / sfx.thunder after distance / 343; the small lamps come on
                        earlier, the people go in, the parasol folds; 🌧 / ⛈ in the HUD; `&weather=rain|storm|snow|hail|clear`.
                        #249: each shower has a `kind`: snow (mostly Dec–Feb; slow swaying Points, a lighter sky, silent),
@@ -587,6 +598,10 @@ tools/stucktest.html   headless test (#314): a 5 cm scan of both floors (doors o
 tools/falltest.html    headless test (#361): a 2.5 m drop is soft, a 5 m drop hurts (red, black, no walking, awake at the front door,
                        counted + a deduction); the stair up / down (also crouched), the ramp,
                        the outdoor stairs (#355), out of the top bunk, a resume record: no free fall
+tools/rooftest.html    headless test (#360): placed on the loftgång (level, the railing, no way into the upper units, no pool light for
+                       the flat's lamps, the culler hides its inside, off the east end = hurt, into the west drum), our terrace (railing,
+                       set-back wall, skärmvägg), Hus L's roof (a panel row, the loft in the way, off the edge onto the loftgång), Hus A's
+                       slope and eaves, a canopy; the rain ends on each roof; the first visits counted
 tools/pctest.html      headless test: switch the gaming PC on/off (game moves, RGB cycles), the chair is a seat and
                        starts the PC, the bunk seat swings the monitor round (film)
 tools/sabertest.html   headless test: take the lightsaber, swing it, hang it back
@@ -997,7 +1012,8 @@ python3 -m http.server 8137    # in the repo root → http://localhost:8137/
 URL parameters (debugging / screenshots):
 
 - `?at=x,z,yawDeg[,pitchDeg[,feetY]]` — place the camera. yaw 0 = north (−z), 90 = west,
-  180 = south, −90 = east. `feetY` = 3.25 for Övre plan.
+  180 = south, −90 = east. `feetY` = 3.25 for Övre plan; on the roofs (#360): 6.4 the loftgång (`?at=3,0.8,-90,0,6.4`),
+  9.46 a terrace (`?at=3,11.5,180,0,9.46`), 12.75 Hus L's roof between the panel rows (`?at=3,5,0,0,12.75`).
 - `&shot` — hide the start overlay.
 - `&open` — open every door, cabinet door and drawer (screenshots of open doors / wardrobes / furniture).
 - `&cat=x,z[,yawDeg[,y]]` — show the cat there; `&miele` — Miele instead (with `&cat=`), else the next cat to turn up is her (#328); `&catv=i` coat variant, `&catt=s` animation time, `&catwalk` walking (#224), `&cattail` its tail up (#262).

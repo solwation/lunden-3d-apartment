@@ -1227,6 +1227,7 @@ export const SCORE = {
     clips: 2, // per kind of clip seen on Tilly's laptop (#283); no points for repeats (they come by themselves)
     fruit: 3, // a piece of fruit from the bowl eaten up (#326): per kind (apple, pear, orange, clementine, banana), then `again`
     nest: 4, // per smart speaker asked something (#325), then `again`
+    roofs: 20, // per roof stood on (#360): the loftgång, each terrace, Hus L's roof, the loft, a drum, Hus A / B / C, a canopy; no `again`
     handBrew: 10, // the first pot brewed by hand: water and coffee filled first (#334); no `again` (each brew has `each.brews`)
   },
   again: {
@@ -1317,6 +1318,10 @@ export const PLAYER = {
 // are at most ~two risers, 0.43 m, over a tread; the ramp 0). Timings in seconds; all our own choices.
 export const FALL = { hurt: 3, soft: 1, free: 1, wake: { x: 1.3, z: -4.0, yawDeg: 180 },
   red: 0.3, black: 1.0, hold: 0.8, back: 1.2, text: 3.5, jolt: 0.9, dip: 0.3 };
+// Up on the roofs (#360, src/roofs.js): outdoors, feet more than `aloft` m over the ground (over our flat: above its
+// top, UNIT_TOP) = up there — the roofs' own walls collide instead of the ground's. Our choice (above every outdoor
+// step, below the lowest canopy).
+export const ROOFS = { aloft: 2.0 };
 
 // Two flights with winders between them (from the stair outline on both plans).
 // Flight A runs east along the south half, winders turn 180° at the east end,
