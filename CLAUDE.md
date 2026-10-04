@@ -1067,6 +1067,15 @@ test after input changes. Headless SwiftShader renders only a few frames per sec
 drive `window.__app.step(dt)` / `Player.update` directly instead of waiting on frames. Take
 screenshots into the session scratchpad, not the repo.
 
+**Scope the tests to what the change can reasonably affect** (the user: save time and tokens, don't run the whole
+suite every time):
+- the test(s) for the feature you touched, plus a new or extended test for new behaviour;
+- every test that refers to what you moved or renamed: `grep -l` tools/*.html for the config key, builder, module or
+  the old coordinates (e.g. moving the Sovrum 1 bed must run tvtest, which aims at the bed's TV);
+- walktest / stucktest only when walls, doors, collision, furniture footprints, terrain or player movement changed;
+  touchtest only for input changes; perfcount only for geometry that adds meshes / materials.
+- Not the whole list "to be safe"; a pre-existing failure you happen to see goes into an issue, not into your change.
+
 ## Cat and sound
 
 - Opening an interior door/wardrobe: 30 % chance a cat appears on the far side (random free
