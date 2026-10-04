@@ -59,12 +59,15 @@ f.onload = async () => {
       camera.rotation.y = Math.atan2(-(target.x - camera.position.x), -(target.z - camera.position.z));
       camera.rotation.x = Math.atan2(target.y - camera.position.y, Math.hypot(target.x - camera.position.x, target.z - camera.position.z));
       step(1 / 60);
-      label = btn.textContent;
+      // a lamp with a choice of actions (#428, the Hue Go): its "Tända …" row in the menu instead of the action button
+      const row = [...d.querySelectorAll('#choices:not([hidden]) button')].find((b) => /tända|släcka/i.test(b.textContent));
+      label = row ? row.textContent : btn.textContent;
       if (/tända/i.test(label)) break;
     }
     if (!best) { lines.push(`FAIL ${t.name}: no place to stand`); pass = false; continue; }
     if (!/tända/i.test(label)) { lines.push(`FAIL ${t.name}: not offered from any spot ("${label}")`); pass = false; continue; }
-    btn.click();
+    const press = () => ([...d.querySelectorAll('#choices:not([hidden]) button')].find((b) => /tända|släcka/i.test(b.textContent)) ?? btn).click();
+    press();
     for (let i = 0; i < 30; i++) step(1 / 60); // (the pool light fades in over LIGHTING.poolFade)
     // (a room behind a closed door from here — the Klk under the stair — gets no pool light through it, #234: then its fixture glows)
     const hidden = t.room.lamps.every((l) => !lights.scores.has(l));
@@ -78,32 +81,47 @@ f.onload = async () => {
     if (t.kind === 'switch') washOn = mine.length === t.room.lamps.length && mine.every(([, i]) => uK[i] === 1) && mine.every(([e, i]) => Math.abs(uPool[i] - (pooled(e.lamp) ? 1 : 0)) < 1e-6);
     const lit = t.kind === 'switch' ? t.room.mats.length > 0 && t.room.mats.every(glowing) && (hidden || t.room.lamps.some(pooled)) : lights.pool.some((l) => l.intensity > 0) || (hidden && t.room.mats.some((m) => m.emissiveIntensity > 0.5));
     const on = t.isOpen && lit && washOn;
-    btn.click();
+    press();
     step(1 / 60);
     const off = !t.isOpen && (t.kind !== 'switch' || (t.room.mats.every((m) => !glowing(m)) && mine.every(([, i]) => uK[i] === 0) && t.room.lamps.every((l) => !lights.slots.some((s) => s.lamp === l))));
     const ok = /tända/i.test(label) && on && off;
     pass &&= ok;
     lines.push(`${ok ? 'PASS' : 'FAIL'} ${t.name} @ (${target.x.toFixed(2)}, ${target.y.toFixed(2)}, ${target.z.toFixed(2)}) from (${camera.position.x.toFixed(2)}, ${camera.position.z.toFixed(2)}) button "${label}" (${t.room.name ?? ''}) on=${on}${t.kind === 'switch' ? ` (glow, ${hidden ? 'behind a door: no pool light' : 'pool light'}, ${mine.length} washes ${washOn})` : ''} off=${off}`);
   }
-  // #409: the Hue Go's handle loop steps through its colour scenes: off → on in the next colour, the glow, the pool
-  // light's colour and the shader wash's colour follow; round to the start again
+  // #409, #428: the Hue Go's colour scenes through the shared action menu: off → "Byt färg" puts it on in the next colour,
+  // the glow, the pool light's colour and the shader wash's colour follow; round to the start again; E = the marked row
   {
     const hue = lights.floorLamps.find((x) => x.name === 'Hue Go-lampan');
-    const loop = w.__app.world.furnitureTargets.find((t) => t.kind === 'huecolor');
-    if (!hue || !loop) { pass = false; lines.push('FAIL the Hue Go or its colour target missing'); }
+    // (the page's own modules: a module script in the page, so its import map and module instances are used)
+    const sc = d.createElement('script');
+    sc.type = 'module';
+    sc.textContent = "import { loadWorld } from './src/keep.js'; import { HUE_GO } from './src/config.js'; window.__lt = { loadWorld, HUE_GO };";
+    d.head.append(sc);
+    while (!w.__lt) await wait(50);
+    const { HUE_GO, loadWorld } = w.__lt;
+    const rows = hue?.options?.() ?? [];
+    if (!hue || rows.length !== 2 || w.__app.world.furnitureTargets.some((t) => t.kind === 'huecolor')) { pass = false; lines.push(`FAIL the Hue Go or its menu missing (${rows.map((r) => r.label)})`); }
     else {
       const wash = lights.wash, i = wash.entries.findIndex((e) => e.owner === hue), at = (wash.n + i) * 4;
+      const colour = () => hue.options().find((r) => r.id === 'lampColour');
       hue.set(false); step(1 / 60);
       const before = [...wash.data.slice(at, at + 3)];
-      loop.toggle(); step(1 / 60);
+      colour().run(); step(1 / 60);
       const after = [...wash.data.slice(at, at + 3)], c = hue.room.lamps[0].color;
-      const ok1 = hue.isOpen && c !== 0xffc98a && hue.spec.shade.emissive.getHex() === c && i >= 0 && after.some((v, k) => Math.abs(v - before[k]) > 1e-3);
-      for (let k = 0; k < 3; k++) loop.toggle();
+      const ok1 = hue.isOpen && c === HUE_GO.scenes[1].color && hue.spec.shade.emissive.getHex() === c && i >= 0 && after.some((v, k) => Math.abs(v - before[k]) > 1e-3)
+        && /rosa/.test(colour().label) && /släcka/.test(hue.options()[0].label);
+      for (let k = 1; k < HUE_GO.scenes.length; k++) colour().run();
       step(1 / 60);
       const ok2 = hue.room.lamps[0].color === 0xffc98a && Math.abs(wash.data[at] - before[0]) < 1e-4;
+      // the keep record (#277) carries the colour
+      colour().run();
+      const keep = w.__app.keepWorld();
+      hue.recolor(0xffc98a);
+      loadWorld({ lights }, { v: keep.v, lamps: keep.lamps });
+      const ok3 = hue.color === HUE_GO.scenes[1].color && hue.isOpen;
       hue.set(false);
-      pass &&= ok1 && ok2;
-      lines.push(`${ok1 && ok2 ? 'PASS' : 'FAIL'} the Hue Go's colour scenes: on in #${c.toString(16)}, glow + wash follow (${ok1}), round to warm white (${ok2})`);
+      pass &&= ok1 && ok2 && ok3;
+      lines.push(`${ok1 && ok2 && ok3 ? 'PASS' : 'FAIL'} the Hue Go's colour scenes (menu): on in #${c.toString(16)}, glow + wash follow (${ok1}), round to warm white (${ok2}), kept over a reload (${ok3})`);
     }
   }
   // #221: the kitchen's bench light and the hood's light are lamps of their own; their washes follow them (the DANI's too)

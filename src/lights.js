@@ -179,7 +179,8 @@ class FloorLamp {
     }
     spec.object.traverse((m) => { m.userData.door = this; });
     this.pickable = spec.object;
-    spec.lamp = this; // (a builder's other targets reach the lamp: the Hue Go's colour scenes, #409)
+    spec.lamp = this; // (a builder's other targets reach the lamp)
+    if (spec.options) this.options = () => spec.options(this); // a choice of actions (#367, the Hue Go's colours, #428)
     this.set(false);
   }
 
@@ -216,6 +217,7 @@ class FloorLamp {
   recolor(hex) {
     for (const l of this.room.lamps) l.color = hex;
     this.spec.shade.emissive?.setHex(hex);
+    this.color = hex; // (keep.js)
     this.recolored = true;
   }
 }

@@ -529,7 +529,8 @@ src/plants.js          SillPot (#185): each window-board pot is a Holdable; its 
                        vase / pot plant are plain Things (kind 'plant'); window boards are put-down surfaces too
 src/aborg.js           the JYSK ABORG café set outside the kitchen window (#406, ABORG): a folding table + two folding chairs (seats)
 src/randers.js         the JYSK RANDERS tray table by the armchair (#405, RANDERS): tray, rails, straight legs, a low cross
-src/huego.js           the Philips Hue Go on Sovrum 1's window board (#409, HUE_GO): a lamp of its own + colour scenes on its handle loop
+src/huego.js           the Philips Hue Go on Sovrum 1's window board (#409, #428, HUE_GO): the classic frosted bowl, a lamp of its own; its
+                       action menu (#367, an ActionSet; FloorLamp `options`) = Tänd/Släck + Byt färg (scenes), the colour kept by keep.js
 src/laptop.js          Tilly's laptop on the vanity (#283, LAPTOP): an unbranded rose-gold laptop with stickers; `Feed` draws "Klipp",
                        an invented short-video app (no real brand / people) on a canvas — eight canvas clips (`CLIPS`) in a phone
                        column, user, caption, likes, progress bar — swiping up every `swipe` s; two E targets (kind 'laptop'): the
@@ -1092,8 +1093,9 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   the sides, both stacks off the glass — the west one in the NW corner by the wall, #403); a framed photo of Miele, the family's cat, stands on the window
   board (#322, `PHOTO_FRAME`, builder `photoframe`, textures/miele.jpg from docs/miele-foto-ram.jpg; a Thing, kind
   'photo': "Titta på Miele" brings it up close); on that board from the west (#409, #418): a Philips Hue Go
-  (`HUE_GO`, src/huego.js: a lamp of its own; E on its handle loop = "byta färg på", kind 'huecolor', steps
-  through `scenes` — FloorLamp.recolor: glow, pool light and shader wash), the photo, the fern (the middle pot slot), the speaker
+  (#428, docs/hue-go-produktbild.jpg: the classic frosted hemisphere on its curve, the flat face tilted to the room; `HUE_GO`,
+  src/huego.js: a lamp of its own; looked at, the shared action menu (#367) offers "Tänd/Släck" and "Byt färg", which steps
+  through `scenes` — FloorLamp.recolor: glow, pool light and shader wash; the colour is kept over a reload, keep.js `lamps.colors`), the photo, the fern (the middle pot slot), the speaker
   standing upright at the east end, its light grey fabric front to the room with the − ⏯ + strip low on it (`controls: 'front'`,
   docs/symfonisk-bokhylla-staende.jpg); an oak hook rail with five black hooks on the Klk's outside facing the room door (its west wall in the alcove
   by the door, #329, `HOOKS`, `src/hooks.js`): a sage waffle dressing gown and a navy hoodie (hung by its hood), three hooks empty,

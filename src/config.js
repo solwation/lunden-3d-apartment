@@ -2002,10 +2002,16 @@ export const ABORG = { color: 0x8f8a80, rough: 0.55, metal: 0.2, tube: 0.008,
   table: { w: 0.6, h: 0.71, edge: 0.02 },
   chair: { w: 0.42, d: 0.48, h: 0.8, seat: 0.45, seatD: 0.4, slats: 7, backSlats: [0.62, 0.72], backH: 0.075 } };
 
+// The Philips Hue Go (#409, #428: the classic model, docs/hue-go-produktbild.jpg, src/huego.js): a frosted hemisphere
+// lying on its curve, the flat face `tilt`° from straight up towards the room. Ø `d` across the face (*guess*, the classic
+// Hue Go ~15 cm), a clear `rimW` rim, the flat `foot` (r, h, how far the sphere is `cut` by it) and the tilt read off the
+// photo (*guess*). `scenes` = what "Byt färg" steps through (the box's warm white and rainbow colours, our picks).
 export const HUE_GO = {
-  d: 0.142, h: 0.22, split: 0.3, loop: 0.035, base: { r: 0.068, h: 0.012 }, body: 0xf3f2ef, handle: 0x4a4c50, name: 'Hue Go-lampan',
+  d: 0.15, tilt: 45, rimW: 0.004, foot: { r: 0.026, h: 0.004, cut: 0.004 }, body: 0xf6f4f0, rim: 0xe4e6e8, name: 'Hue Go-lampan',
   light: { intensity: 0.7, range: 3, color: 0xffc98a },
-  scenes: [{ name: 'varmvitt', color: 0xffc98a }, { name: 'rosa', color: 0xff9fc6 }, { name: 'turkos', color: 0x4fc3c8 }, { name: 'solnedgång', color: 0xff7a35 }],
+  scenes: [{ name: 'varmvitt', color: 0xffc98a }, { name: 'rosa', color: 0xff9fc6 }, { name: 'lila', color: 0xb46cff },
+    { name: 'blått', color: 0x4a7dff }, { name: 'turkos', color: 0x4fc3c8 }, { name: 'grönt', color: 0x5fdc6a },
+    { name: 'solnedgång', color: 0xff7a35 }],
 };
 
 export const SYMFONISK = {
@@ -2444,7 +2450,7 @@ export const FURNITURE = [
   // edge (z 0.465). From the west: the Hue Go (where the speaker lay, #409), Miele's photo, the fern (the middle pot slot,
   // ~3.85), the speaker; the other two pot slots are skipped (SILL_PLANTS.skip)
   { type: 'symfonisk', kind: 'speaker', color: 'white', level: 1, x: 4.6565 - 0.015 - 0.075, z: 0.33, y: 0.7, rot: 180, controls: 'front' },
-  { type: 'huego', level: 1, x: 3.047 + 0.015 + 0.071, z: 0.33, y: 0.7, rot: 180 },
+  { type: 'huego', level: 1, x: 3.047 + 0.015 + 0.075, z: 0.33, y: 0.7, rot: 180 },
   // the framed photo of Miele (#322): between the Hue Go and the fern (#418), near the board's front edge (z 0.465) and clear of
   // the blind's folded pack (z 0.19), turned 15° towards the bed (*guess*)
   { type: 'photoframe', level: 1, x: 3.5, z: 0.43, y: 0.7, rot: 195 },

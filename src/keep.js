@@ -85,6 +85,7 @@ const PARTS = {
         rooms: [...lights.rooms.entries()].filter(([, R]) => R.on).map(([k]) => k),
         small: Object.fromEntries(keys(lights.floorLamps, (f) => f.name).map((k, i) => [k, lights.floorLamps[i].room.on ? 1 : 0])),
         dark: lights.dark === undefined ? null : lights.dark ? 1 : 0,
+        colors: Object.fromEntries(keys(lights.floorLamps, (f) => f.name).map((k, i) => [k, lights.floorLamps[i].color]).filter(([, c]) => Number.isFinite(c))), // (the Hue Go's colour, #428)
       };
     },
     load({ lights }, s) {
@@ -97,6 +98,10 @@ const PARTS = {
       if (s.small && typeof s.small === 'object') {
         const map = byKey(lights.floorLamps, (f) => f.name);
         for (const [k, on] of Object.entries(s.small)) map.get(k)?.set(!!on);
+      }
+      if (s.colors && typeof s.colors === 'object') {
+        const map = byKey(lights.floorLamps, (f) => f.name);
+        for (const [k, c] of Object.entries(s.colors)) if (Number.isFinite(c)) map.get(k)?.recolor(c);
       }
     },
   },
