@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { COLORS, LEVELS, DAY, START, PLAYER, DRAWING, STAIR, HOLD, REMOTE, REST, DOOR_HEIGHT, TURBO, WEATHER, BREAK, CAR, KITCHEN, LAPTOP, AUTO_RELOAD } from './config.js';
 const DRAWING_COLORS = DRAWING.colors;
 import { buildWorld } from './world.js';
+import { photoGlow } from './furniture.js';
 import { Player, inPoly, crosses } from './player.js';
 import { setupTouch } from './touch.js';
 import { watchForUpdates, BUILD } from './version.js';
@@ -1234,6 +1235,7 @@ function step(dt) {
   day.dim = blinds.update(dt, { level: Math.max(0, player.level), room: player.outdoors ? null : world.roomAt(Math.max(0, player.level), player.pos.x, player.pos.z),
     outdoors: player.outdoors, daylight: day.daylight, sunDir: day.sunDir, overcast: weather.overcast, lit: (lv, name) => lights.roomLit(lv, name) }); // blinds drawn up: less daylight in the room (#273)
   if (blindPanel.open) blindPanel.render();
+  photoGlow(day.daylight * (1 - 0.5 * weather.overcast), lights.roomLit(1, 'Sovrum 1')); // Miele's photo reads like a lit print (#327)
   day.update(dt);
   wallClock.update(day.hour);
   calendar.update(); // redraws only when the page or the date changed

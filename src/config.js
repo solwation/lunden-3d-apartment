@@ -1299,8 +1299,10 @@ export const YUCCA = {
 // frame in landscape, `w` × `h` outside with a `border` wide, `depth` deep moulding and no passe-partout (*guess*: an A5 /
 // 13 × 18 frame), leaning back `lean` rad on a folding stand; the photo is textures/miele.jpg (cropped and straightened
 // from the reference, the frame trimmed). A Thing (things.js, kind 'photo'): taken into the hand; click / "Titta på Miele"
-// brings it up close (`look`: its place in the view, camera space) and back.
-export const PHOTO_FRAME = { w: 0.21, h: 0.16, border: 0.012, depth: 0.012, lean: 0.2, texture: 'textures/miele.jpg',
+// brings it up close (`look`: its place in the view, camera space) and back. #327: the photo re-exported brighter (gamma
+// 0.75, +10 % exposure with a soft shoulder, a little more contrast and colour) and `glow` × daylight emissive (the room's
+// lamp counts as `glowLamp` at night) — it faces the room with the window behind it, so it was in its own shadow.
+export const PHOTO_FRAME = { w: 0.21, h: 0.16, border: 0.012, depth: 0.012, lean: 0.2, texture: 'textures/miele.jpg', glow: 0.22, glowLamp: 0.6,
   held: { pos: [0.15, -0.22, -0.45], rot: [0.3, -0.15, 0] }, look: { pos: [0, -0.02, -0.3], rot: [0.2, 0, 0] } };
 
 // Day cycle (src/daycycle.js): one day in `minutes` real minutes (60, the user #125). The sun follows the real solar

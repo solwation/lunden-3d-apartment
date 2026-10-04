@@ -3064,6 +3064,10 @@ function secretary(item) {
  * Local: origin at the bottom centre of the frame's front edge, facing +z. The frame + stand merge into one mesh, the photo
  * is the other; the whole model is a Thing you can take (kind 'photo'). */
 let mieleTex = null;
+/** The print's material (shared, one photo): a little `glow` (emissive = the photo itself, #327) so it reads like a lit print
+ * on the bright window board; main.js scales it every frame by `photoGlow` (daylight, or the room's lamp at night). */
+export const mieleMat = new THREE.MeshStandardMaterial({ roughness: 0.22, emissive: 0xffffff, emissiveIntensity: 0 }); // a little gloss for the glass
+export function photoGlow(daylight, roomLit) { mieleMat.emissiveIntensity = PHOTO_FRAME.glow * Math.max(daylight, roomLit ? PHOTO_FRAME.glowLamp : 0); }
 function photoframe(item, _lights, P = PHOTO_FRAME) {
   const g = new THREE.Group(), model = new THREE.Group(), tilt = new THREE.Group();
   const { w, h, border: b, depth: d, lean } = P;
@@ -3071,9 +3075,10 @@ function photoframe(item, _lights, P = PHOTO_FRAME) {
     mieleTex = new THREE.TextureLoader().load(new URL(`../${P.texture}`, import.meta.url).href);
     mieleTex.colorSpace = THREE.SRGBColorSpace;
     mieleTex.anisotropy = 4;
+    mieleMat.map = mieleMat.emissiveMap = mieleTex;
   }
   const black = new THREE.MeshStandardMaterial({ color: 0x141416, roughness: 0.4 });
-  const photo = new THREE.MeshStandardMaterial({ map: mieleTex, roughness: 0.22 }); // a little gloss for the glass
+  const photo = mieleMat;
   const box = (sx, sy, sz, x, y, z, parent = tilt) => { const m = new THREE.Mesh(new THREE.BoxGeometry(sx, sy, sz), black); m.position.set(x, y, z); parent.add(m); return m; };
   // the frame leans back about its bottom front edge: in `tilt`, y = up the frame, z = 0 its front face
   box(w, b, d, 0, b / 2, -d / 2); box(w, b, d, 0, h - b / 2, -d / 2);
