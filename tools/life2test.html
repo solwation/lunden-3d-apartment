@@ -14,12 +14,17 @@
 //  #384 the dishwasher: the racks only with the door down, the door not up over a rack; plates in the lower rack (scraped
 //       first), riding along, glasses (emptied) in the upper, the knife on the tray, the board by hand, a full rack, the
 //       door shut blocks taking.
+//  #385 the programme: empty / door down refused, the panel, running with the floor spot and the time left, paused with
+//       the door down, nothing added mid-run, a glass taken out stays dirty, a reload keeps it, done = clean + counted,
+//       unloading into the cabinet, F stops it.
 //   chromium --headless=new --dump-dom http://localhost:8137/tools/life2test.html
 import { LIFE, MILK } from '../src/config.js';
 const out = document.getElementById('out');
 const lines = [];
 let pass = true;
 const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); pass &&= !!ok; return ok; };
+const only = new URLSearchParams(location.search).get('only'); // ?only=383,385: just those sections
+const want = (n) => !only || only.split(',').includes(String(n));
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 async function load(q) {
   const f = document.createElement('iframe');
@@ -61,7 +66,7 @@ function kit(f) {
 }
 
 // --- #382: water and milk in a drinking glass --------------------------------------------------------------------
-try {
+if (want(382)) try {
   const f = await load('life&shot');
   const K = kit(f), { A, life, I, row, run, open, close, secs, aim, lid, V, step } = K;
   const cab = lid((l) => l.stock === 'glasses'), tap = A.taps.find((t) => t.name === 'köksblandaren'), milk = A.milk;
@@ -153,7 +158,7 @@ try {
 } catch (e) { pass = false; lines.push(`FAIL #382 error ${e.stack}`); }
 
 // --- #383: cleanliness, scraping plates, washing up by hand -----------------------------------------------------
-try {
+if (want(383)) try {
   const f = await load('life&shot');
   const K = kit(f), { A, life, I, row, run, open, close, secs, lid, V, step } = K;
   const tap = A.taps.find((t) => t.name === 'köksblandaren'), S = A.lifeStores.stores;
@@ -267,7 +272,7 @@ try {
 } catch (e) { pass = false; lines.push(`FAIL #383 error ${e.stack}`); }
 
 // --- #384: loading the dishwasher's racks -------------------------------------------------------------------------
-try {
+if (want(384)) try {
   const f = await load('life&shot');
   const K = kit(f), { A, life, I, row, run, open, close, secs, lid, V, step } = K;
   const S = A.lifeStores.stores, door = A.world.lids.find((l) => l.name === 'diskmaskinen'), [lower, upper] = door.racks;
@@ -326,6 +331,70 @@ try {
   check(I.audit().length === 0, `audit: ${I.audit().join('; ') || 'ok'}`);
   f.remove();
 } catch (e) { pass = false; lines.push(`FAIL #384 error ${e.stack}`); }
+
+// --- #385: the dishwasher's programme -----------------------------------------------------------------------------
+if (want(385)) try {
+  const f = await load('life&shot');
+  const K = kit(f), { A, life, I, row, run, open, close, secs, lid, V, step } = K;
+  const S = A.lifeStores.stores, P = A.dishProg, door = P.door, [lower, upper] = door.racks;
+  const sec = (await import('../src/config.js')).DISHWASHER.seconds;
+  const T = P.target, st = (id) => life.options(T).find((o) => o.id === id);
+  check(P.state === 'idle' && st('dwStart')?.reason === 'Diskmaskinen är tom', `idle, empty: "${st('dwStart')?.reason}"`);
+  // load: a dirty plate with crumbs, a dirty glass, a used knife
+  const plate = I.all().find((i) => i.type === 'plate' && i.place.store === 'plates'); // (one of the cabinet's: it goes back there)
+  I.set(plate, { clean: 'dirty', machine: { crumbs: 1 } }); I.move(plate, { at: 'slot', store: 'dwLower', slot: 0 }, { ignoreShut: true });
+  const glass = life.create('glass', { at: 'slot', store: 'dwUpper', slot: 0 }, { clean: 'dirty' });
+  const knife = I.all().find((i) => i.type === 'knife');
+  I.set(knife, { clean: 'dirty' }); I.move(knife, { at: 'slot', store: 'dwTray', slot: 0 }, { ignoreShut: true });
+  open(door);
+  check(st('dwStart')?.reason === 'Stäng luckan först', `the door down: "${st('dwStart')?.reason}"`);
+  close(door);
+  const pp = T.pickable.getWorldPosition(new V());
+  const t0 = K.aim(pp, /Starta diskmaskinen/, [[4.25, pp.z], [4.15, pp.z - 0.25], [4.15, pp.z + 0.25]]);
+  check(!!t0, `its panel: "${t0}"`);
+  check(run('dwStart', T) === true && P.state === 'running' && P.spot.visible && A.dishProg.running, 'started: running, the spot on the floor');
+  secs(10);
+  check(Math.abs(P.left - (sec - 10)) < 0.5 && /^Diskar – 0:5\d kvar$/.test(st('dwStatus')?.reason ?? ''), `10 s in: ${P.left.toFixed(1)} s left, "${st('dwStatus')?.reason}"`);
+  // the door opened: paused, the time stands still; nothing can be added; one glass taken out mid-run
+  open(door);
+  const l0 = P.left; secs(5);
+  check(P.state === 'paused' && P.left === l0 && !P.spot.visible && /^Pausad/.test(st('dwStatus')?.reason ?? ''), `the door down: paused at ${P.left.toFixed(1)} s, "${st('dwStatus')?.reason}"`);
+  open(lower); open(upper);
+  const late = life.create('plate', { at: 'hand' }, { clean: 'dirty' }); step(1 / 60);
+  check(row('putIn', S.dwLower.target)?.reason === 'Diskmaskinen är igång – vänta tills den är klar' && late.place.at === 'hand', `added mid-run: "${row('putIn', S.dwLower.target)?.reason}"`);
+  life.view(late).placeAt(new V(5.25, 0.931, 2.4), 0); step(1 / 60);
+  life.view(glass).take(); step(1 / 60);
+  life.view(glass).placeAt(new V(5.25, 0.931, 2.7), 0); step(1 / 60);
+  close(lower); close(upper); close(door); step(1 / 60);
+  check(P.state === 'running', 'the door shut: running again');
+  // a reload mid-run keeps the state and the time left
+  const rec = life.serialize();
+  check(rec.x?.dishwasher?.s === 'running' && Math.abs(rec.x.dishwasher.left - P.left) < 0.2 && rec.x.dishwasher.ids.includes(plate.id), `saved: ${JSON.stringify(rec.x?.dishwasher)}`);
+  const left1 = P.left;
+  P.cancel(); life.load(rec);
+  check(P.state === 'running' && Math.abs(P.left - left1) < 0.2 && P.sound !== undefined, `loaded: ${P.state}, ${P.left.toFixed(1)} s left`);
+  // done: only what was in it from the start and still is becomes clean; a chime
+  const n0 = A.stats.dishwasher ?? 0;
+  secs(P.left + 0.5);
+  const p2 = I.get(plate.id), k2 = I.get(knife.id), g2 = I.get(glass.id);
+  check(P.state === 'done' && p2.clean === 'clean' && !p2.machine.crumbs && k2.clean === 'clean' && !P.spot.visible && (A.stats.dishwasher ?? 0) === n0 + 1, `done: the plate ${p2.clean} (no crumbs), the knife ${k2.clean}, counted`);
+  check(g2.clean === 'dirty', `the glass taken out mid-run: still ${g2.clean}`);
+  check(st('dwStart')?.label === 'starta diskmaskinen igen' && st('dwStart')?.reason === 'Allt i maskinen är redan rent', `done: "${st('dwStart')?.label}" – "${st('dwStart')?.reason}"`);
+  // unloading: the clean plate into its cabinet
+  open(door); open(lower);
+  life.view(p2).take(); step(1 / 60);
+  open(lid((l) => l.stock === 'platesLife'));
+  check(row('putIn', S.plates.target)?.reason === undefined || !row('putIn', S.plates.target)?.reason, `the clean plate at its cabinet: "${row('putIn', S.plates.target)?.reason ?? 'ok'}"`);
+  check(run('putIn', S.plates.target) === true && p2.place.store === 'plates', 'unloaded into the plate cabinet');
+  // F stops a programme: nothing washed
+  close(lower); close(door);
+  I.set(k2, { clean: 'dirty' });
+  run('dwStart', T); secs(2);
+  P.cancel();
+  check(P.state === 'idle' && !P.sound && !P.spot.visible && I.get(knife.id).clean === 'dirty', 'stopped (F): idle, silent, the knife still dirty');
+  check(I.audit().length === 0, `audit: ${I.audit().join('; ') || 'ok'}`);
+  f.remove();
+} catch (e) { pass = false; lines.push(`FAIL #385 error ${e.stack}`); }
 
 lines.push(pass ? 'ALL PASS' : 'SOME FAILED');
 out.textContent = lines.join('\n');

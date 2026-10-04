@@ -1136,7 +1136,9 @@ export const LIFE = {
 // The dishwasher (#384, src/dishwasher.js; the integrated KEZA9310W of the plan, no product drawing — our picks): its racks roll
 // `out` m when the door is down; the lower rack (`y` over the tub's bottom, `h` high) holds `plates` plates on edge, the upper
 // one `glasses` glasses upside down, the cutlery tray on top of it `tray` tools.
-export const DISHWASHER = { out: 0.38, lower: { y: 0.05, h: 0.13, plates: 6 }, upper: { y: 0.36, h: 0.11, glasses: 6 }, tray: 4 };
+// #385: a programme takes `seconds` of game time (a short game programme, adjustable); `plinth` = the tub's bottom over the
+// floor (the floor spot's height).
+export const DISHWASHER = { out: 0.38, lower: { y: 0.05, h: 0.13, plates: 6 }, upper: { y: 0.36, h: 0.11, glasses: 6 }, tray: 4, seconds: 60, plinth: 0.097 };
 
 // The kitchen's food from the start (#373, LIFE-009; the user: no shop, no delivery, no budget — the food is simply there):
 // `stock` = [type, store, slot] — where each thing lives (its home); `amounts` = what a fresh one holds, game parameters from
@@ -1485,7 +1487,7 @@ export const SCORE = {
     baskets: 6, threes: 6, dribbles: 0.1,                 // a three = a basket + a three (12)
     turbo: 20,                                            // three cups of coffee in five minutes
     beer: 0.3, coffee: 0.3, wine: 0.3, champagne: 0.3, whisky: 0.3, milk: 0.3, kask: 0.6, water: 0.2, // sips (water: the drinking glass, #382)
-    washed: 0.3, scraped: 0.2,                            // a thing washed up by hand, a plate scraped into the bin (#383)
+    washed: 0.3, scraped: 0.2, dishwasher: 3,             // … and a dishwasher programme run to the end (#385)                            // a thing washed up by hand, a plate scraped into the bin (#383)
     fish: 0.5, fried: 2, chicken: 1, cooked: 8, brews: 2, // cooked = a whole chicken fried golden (burnt: a deduction, #288)
     fries: 0.2,                                           // per fry eaten (#301): a bunch is four
     cucumberSlices: 0.2,                                  // a slice of cucumber cut (#376)

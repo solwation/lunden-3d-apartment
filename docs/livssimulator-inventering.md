@@ -126,3 +126,7 @@ Code in src/dishes.js (and cooking.js's bin), the test is `tools/life2test.html`
   with the door down) carrying slots (stores `dwLower` / `dwUpper` / `dwTray`). Rule for leftovers: refused (scrape the
   plate / pour out the glass first). `dishwasherSafe` decides: the wooden board is washed by hand. The coffee cups
   (cups.js) are not life items, so they stay hand-wash only for now.
+- **#385 the programme**: the dishwasher gets a panel and a short game programme (idle / running / paused / done, the time
+  left, the door pauses it, a floor spot, hum, a chime). Only what was in it at the start is washed; nothing can be added
+  mid-run (refused). Its state is a part of the life record (`x.dishwasher`) and it counts as time-bound for the
+  auto-update.

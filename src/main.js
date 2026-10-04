@@ -27,6 +27,7 @@ import { applySeason } from './seasons.js';
 import { saveResume, saveSession, takeResume } from './resume.js';
 import { saveWorld, loadWorld } from './keep.js';
 import { lifeDev, devScenario, Life } from './life.js';
+import { DishProgramme } from './dishwasher.js';
 import { shownRows } from './actions.js';
 import { buildStores } from './stores.js';
 import { clearLocalHome, takeResetDone } from './reset.js';
@@ -358,6 +359,8 @@ const life = new Life({ scene, camera, say: (t) => badge(t, false), feet: () => 
   floorY: () => (player.level >= 0 ? LEVELS[player.level].floor : -Infinity), // (nothing goes down under the floor, #368)
   persist: lifeDev() ? null : { key: LIFE.save.key, canSave: () => { try { return !resetHome.going; } catch { return false; } } }, debug: params0.has('debug') }); // the home's stock kept between visits (#371; never with &life)
 const lifeStores = buildStores(life, world); // the fridge, the freezer, the pantry, the utensil drawer as slots (#369)
+const dwDoor = world.lids.find((l) => l.name === 'diskmaskinen' && l.panelAt);
+const dishProg = dwDoor ? new DishProgramme(life, dwDoor, { sfx, say: (t) => badge(t, false) }) : null; // the dishwasher's programme (#385)
 life.bump = (key, n, id) => bump(key, n, id); // the life sim's counts (#376 …)
 { // a worktop under a world point (#375: the cutting board is a station only there)
   const tops = world.cupSurfaces.filter((m) => m.userData.worktop).map((m) => ({ box: new THREE.Box3().setFromObject(m), y: m.userData.surface }));
@@ -1482,6 +1485,7 @@ function updateFocus() {
 // --- furniture on/off (F / 🛋) ---------------------------------------------
 function toggleFurniture(on = !world.furnitureOn) {
   life.interrupt('F'); // a timed life action stops (#372): nothing used before its commit
+  dishProg?.cancel(); // the dishwasher stops, nothing washed (#385)
   if (rest.active) standUp(); // the seat is about to vanish
   if (!on) breaker.reset(); // whatever was shot to pieces is whole and home again (#263)
   world.setFurniture(on);
@@ -1616,6 +1620,7 @@ function step(dt) {
   fries?.update(dt);
   fruit.update(dt);
   life.update(dt);
+  dishProg?.update(dt); // (#385)
   toys.update(dt);
   marks.update(dt);
   breaker.update(dt);
@@ -1862,7 +1867,7 @@ const autoReload = {
   /** Something time-bound that a reload would cut short (and keep.js does not keep): wait for it to end. */
   get waiting() {
     return !!(jetpack.flying || world.lids.find((l) => l.kind === 'coffee')?.isOpen || chicken?.smoking || (world.hob?.on && pan?.onHob)
-      || airFryer.running || toaster?.toasting || life.runner.busy || grill.on || turbo.active || car.radio.playing || ball.flying || nests.talking);
+      || airFryer.running || toaster?.toasting || life.runner.busy || dishProg?.running || grill.on || turbo.active || car.radio.playing || ball.flying || nests.talking);
   },
   update(dt) {
     if (!this.version || this.going) return;
@@ -1942,4 +1947,4 @@ if (lifeDev()) devScenario({ life, world, holdables, cups, things, milk, fish, f
 document.documentElement.classList.remove('resuming'); // the page is ready: off with the "Laddar…" cover (#222)
 
 // handle for tests/debugging (tools/touchtest.html)
-window.__app = { handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, toaster, life, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, coffeeJar, miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };
+window.__app = { dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, toaster, life, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, coffeeJar, miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };

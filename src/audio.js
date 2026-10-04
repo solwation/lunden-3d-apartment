@@ -572,6 +572,24 @@ export const sfx = {
     o.start(t); src.start(t, Math.random());
     return { stop() { const t1 = ctx.currentTime; g.gain.cancelScheduledValues(t1); g.gain.setValueAtTime(g.gain.value, t1); g.gain.linearRampToValueAtTime(0, t1 + 0.3); o.stop(t1 + 0.35); src.stop(t1 + 0.35); } };
   },
+  /** The dishwasher running (#385) until stop(): a low motor hum and water swishing round in slow waves. */
+  dishwasher(pos) {
+    if (!ready()) return null;
+    const t = ctx.currentTime, d = out(pos, 0.6);
+    const hum = ctx.createOscillator(); hum.type = 'sawtooth'; hum.frequency.value = 96;
+    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 260;
+    const src = ctx.createBufferSource(); src.buffer = noiseBuf; src.loop = true;
+    const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 900; bp.Q.value = 0.6;
+    const swish = ctx.createGain(); swish.gain.value = 0.07;
+    const lfo = ctx.createOscillator(); lfo.frequency.value = 0.35; // the spray arm's waves
+    const depth = ctx.createGain(); depth.gain.value = 0.05;
+    lfo.connect(depth).connect(swish.gain);
+    const hg = ctx.createGain(); hg.gain.value = 0.05;
+    const g = ctx.createGain(); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(1, t + 1.2);
+    hum.connect(lp).connect(hg).connect(g); src.connect(bp).connect(swish).connect(g); g.connect(d);
+    hum.start(t); src.start(t, Math.random()); lfo.start(t);
+    return { stop() { const t1 = ctx.currentTime; g.gain.cancelScheduledValues(t1); g.gain.setValueAtTime(g.gain.value, t1); g.gain.linearRampToValueAtTime(0, t1 + 0.5); for (const n of [hum, src, lfo]) n.stop(t1 + 0.55); } };
+  },
   /** Game sounds from the PC speakers: a laser 'pew' or an explosion 'boom'. */
   game(pos, kind) {
     if (!ready()) return;

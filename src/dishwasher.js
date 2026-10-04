@@ -14,7 +14,7 @@ const UP = new THREE.Vector3(0, 1, 0);
  * Build the racks inside the machine. ctx: { F (interior.js frame), u0, u1, yb (the tub's bottom), door (its flap
  * Openable), open ({ group, list }), batch () → a Batch, onBatch, chrome (material), FT }. Returns the racks.
  */
-export function buildRacks({ F, u0, u1, yb, door, open, batch, onBatch, chrome, FT }) {
+export function buildRacks({ F, u0, u1, yb, yt, door, open, batch, onBatch, chrome, FT }) {
   const d0 = -F.depth + 0.05, d1 = -FT - 0.035, w = 0.003; // the racks' depth range (in front of the plane = 0); wire thickness
   const world = (u, d, y) => { const [x, z] = F.at(u, d); return new THREE.Vector3(x, y, z); };
   const out = new THREE.Vector3().subVectors(world(u0, 1, 0), world(u0, 0, 0)).normalize(); // the way the front faces
@@ -85,5 +85,139 @@ export function buildRacks({ F, u0, u1, yb, door, open, batch, onBatch, chrome, 
     blockedText: { get: () => 'Skjut in korgarna först', configurable: true },
   });
   door.racks = racks;
+  // where the programme's panel is (#385): the door's top band (world, door shut), its LED, the spot on the floor in front
+  const um = (u0 + u1) / 2, span = new THREE.Vector3().subVectors(world(u1 - 0.03, 0, 0), world(u0 + 0.03, 0, 0));
+  door.panelAt = { pos: world(um, 0.006, yt - 0.03), size: [Math.max(0.012, Math.abs(span.x)), 0.05, Math.max(0.012, Math.abs(span.z))],
+    led: world(u1 - 0.06, 0.003, yt - 0.015), floor: world(um, 0.07, yb - D.plinth) };
   return racks;
+}
+
+// The programme (#385, LIFE-021): E on the panel on the door's top band starts a short game programme of DISHWASHER.seconds
+// (game time, main.js step). States idle / running / paused / done: opening the door pauses it, shutting it carries on with
+// the time left; running it hums and swishes (sfx.dishwasher) and a red spot glows on the floor in front of it ("time on
+// floor"); done: a chime and "Disken är klar". Only what was in it at the start and is still in it becomes clean. While it
+// runs or is paused nothing can be added (one rule: refused, "Diskmaskinen är igång"); taking something out mid-run leaves
+// it dirty. The state and the time left are kept with the life sim (`life.keepPart('dishwasher')`). F stops it (nothing
+// washed). Stats `dishwasher`.
+
+const STORES = ['dwLower', 'dwUpper', 'dwTray'];
+const mmss = (s) => { const t = Math.max(0, Math.ceil(s)); return `${Math.floor(t / 60)}:${String(t % 60).padStart(2, '0')}`; };
+
+export class DishProgramme {
+  /** life: life.js Life; door: the dishwasher's flap (buildRacks gave it `racks`, `panelAt`); sfx: audio.js; say(text). */
+  constructor(life, door, { sfx, say = () => {} } = {}) {
+    Object.assign(this, { life, door, sfx, say, state: 'idle', left: 0, ids: [], sound: null });
+    const I = life.items, P = door.panelAt;
+    // the panel: an invisible pick box over the door's top band (it rides with the door), a small LED on it, the floor spot
+    const pick = new THREE.Mesh(new THREE.BoxGeometry(...P.size), new THREE.MeshBasicMaterial());
+    pick.visible = false;
+    door.object.updateMatrixWorld(true);
+    pick.position.copy(door.object.worldToLocal(P.pos.clone()));
+    door.object.add(pick);
+    this.led = new THREE.Mesh(new THREE.SphereGeometry(0.004, 8, 6), new THREE.MeshBasicMaterial({ color: 0x331111 }));
+    this.led.position.copy(door.object.worldToLocal(P.led.clone()));
+    this.led.raycast = () => {};
+    door.object.add(this.led);
+    this.spot = new THREE.Mesh(new THREE.CircleGeometry(0.035, 20).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0xff2a1a, transparent: true, opacity: 0.85, blending: THREE.AdditiveBlending, depthWrite: false }));
+    this.spot.position.copy(P.floor); this.spot.visible = false; this.spot.raycast = () => {};
+    door.object.parent.add(this.spot);
+    const self = this;
+    this.target = { name: 'diskmaskinen', kind: 'life', dishpanel: true, pickable: pick };
+    this.target.options = () => life.options(this.target);
+    this.target.toggle = () => life.run(this.target);
+    Object.defineProperties(this.target, {
+      blocked: { get: () => !self.target.options().some((a) => !a.reason) },
+      blockedText: { get: () => self.target.options()[0]?.reason ?? null },
+    });
+    pick.userData.door = this.target;
+    (life.storeTargets ??= []).push(this.target);
+    // nothing goes in while it runs (or is paused)
+    for (const id of STORES) {
+      const st = I.store(id);
+      if (!st) continue;
+      const own = st.refuse;
+      st.refuse = (it) => (self.busy ? 'Diskmaskinen är igång – vänta tills den är klar' : own?.(it) ?? null);
+    }
+    const dirtyInside = () => this.inside().filter((it) => it.clean && it.clean !== 'clean');
+    life.actions.define({
+      id: 'dwStart', order: 0,
+      label: () => (self.state === 'done' ? 'starta diskmaskinen igen' : 'starta diskmaskinen'),
+      applies: (c) => !!c.raw?.dishpanel && !self.busy,
+      check: () => (door.isOpen ? 'Stäng luckan först' : dirtyInside().length ? null : self.inside().length ? 'Allt i maskinen är redan rent' : 'Diskmaskinen är tom'),
+      run: () => self.start(),
+      consumes: 'nothing', result: 'a programme of DISHWASHER.seconds game s; what is in it now is clean at the end',
+    });
+    life.actions.define({
+      id: 'dwStatus', order: 0,
+      label: 'diskmaskinen',
+      applies: (c) => !!c.raw?.dishpanel && self.busy,
+      check: () => (self.state === 'paused' ? `Pausad – stäng luckan (${mmss(self.left)} kvar)` : `Diskar – ${mmss(self.left)} kvar`),
+      run: () => {},
+      consumes: 'nothing', result: 'nothing: the time left is shown',
+    });
+    life.keepPart('dishwasher', { save: () => self.save(), load: (v) => self.load(v) });
+  }
+
+  get busy() { return this.state === 'running' || this.state === 'paused'; }
+  get running() { return this.state === 'running'; }
+  /** The life items in its racks. */
+  inside() { return this.life.items.all().filter((it) => it.place.at === 'slot' && STORES.includes(it.place.store)); }
+
+  start() {
+    if (this.busy || this.door.isOpen) return false;
+    this.ids = this.inside().map((it) => it.id);
+    this.left = D.seconds;
+    this.state = 'running';
+    this.sfx.click(this.where());
+    this.life.dirty = true;
+    this.sounds();
+    return true;
+  }
+
+  where() { return this.spot.position.clone().setY(0.5); }
+
+  finish() {
+    const I = this.life.items, washed = [];
+    for (const it of this.inside()) {
+      if (!this.ids.includes(it.id)) continue; // (put in after the start: not washed)
+      const m = {};
+      for (const k of ['crumbs', 'load', 'loadType']) if (it.machine[k] !== undefined) m[k] = null;
+      if (it.clean !== 'clean') washed.push(it.id);
+      I.set(it, { clean: 'clean', machine: m });
+    }
+    this.state = 'done'; this.left = 0; this.ids = [];
+    this.sfx.pling(this.where(), 0.8);
+    this.say('Disken är klar');
+    this.life.bump('dishwasher', 1);
+    this.life.emit('dishwasher', { washed });
+    this.life.dirty = true;
+  }
+
+  /** F: stopped, nothing washed. */
+  cancel() { if (this.busy) { this.state = 'idle'; this.left = 0; this.ids = []; this.life.dirty = true; } this.sounds(); }
+
+  sounds() {
+    const on = this.state === 'running';
+    if (on && !this.sound) this.sound = this.sfx.dishwasher?.(this.where()) ?? null;
+    if (!on && this.sound) { this.sound.stop(); this.sound = null; }
+    this.spot.visible = on;
+    this.led.material.color.setHex(on ? 0xff3322 : this.state === 'paused' ? 0xffaa22 : this.state === 'done' ? 0x33dd55 : 0x331111);
+  }
+
+  update(dt) {
+    if (this.state === 'running' && this.door.isOpen) this.state = 'paused'; // the door opened: it waits
+    else if (this.state === 'paused' && !this.door.isOpen && this.door.t === 0) this.state = 'running'; // shut again: on with the time left
+    if (this.state === 'running') { this.left -= dt; if (this.left <= 0) this.finish(); }
+    this.sounds();
+  }
+
+  save() { return this.state === 'idle' ? null : { s: this.state, ...(this.busy ? { left: Math.round(this.left * 10) / 10, ids: this.ids } : {}) }; }
+  load(v) {
+    if (!v || typeof v !== 'object' || !['running', 'paused', 'done'].includes(v.s)) { this.state = 'idle'; this.left = 0; this.ids = []; this.sounds(); return; }
+    this.state = v.s;
+    this.left = Number.isFinite(v.left) ? Math.max(0, Math.min(D.seconds, v.left)) : 0;
+    this.ids = Array.isArray(v.ids) ? v.ids.filter((x) => typeof x === 'string') : [];
+    if (this.busy && this.left <= 0) this.left = 0.01;
+    this.sounds();
+  }
 }

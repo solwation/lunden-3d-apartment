@@ -70,7 +70,7 @@ The page polls `version.json` every minute; when its content hash differs from `
 hash falls back to the SHA) it reloads by itself — a new SHA with the same content (tests, reference images) is no
 reload, so a reload without a note entry means an invisible fix (#192, `autoReload` in
 main.js, `AUTO_RELOAD` in config): once the visitor has been still for 2.5 s (no keys/stick/mouse/touch, not walking, no panel,
-no music, nothing time-bound: coffee brewing, frying, the airfryer, the grill, Kaffeturbo, the car's music, a ball in the air) "Uppdateras om
+no music, nothing time-bound: coffee brewing, frying, the airfryer, the dishwasher (#385), the grill, Kaffeturbo, the car's music, a ball in the air) "Uppdateras om
 5 … 1" counts down at the top (#277, `#countdown`; any input or movement cancels it: "Uppdatering avbruten"), then the
 picture fades out, the place and the world are saved (resume record) and `?v=<new SHA>` loads, fading back in with "Ny version laddad";
 only if they are never still for 5 min does the old "new version" notice (top centre) appear. Its buttons react to a lifted touch as well as a click (`onTap`,
@@ -738,7 +738,14 @@ src/dishwasher.js      the dishwasher (#384, DISHWASHER): `buildRacks` (interior
                        ("Skärbrädan diskas för hand"), the wrong rack ("Tallrikar i underkorgen", "Glas i överkorgen", "Bestick i
                        bestickkorgen"), food / a drink left (refused: "Skrapa av … först", "Häll ut … först"); taking needs the door
                        down and the rack out ("Öppna diskmaskinen först", "Dra ut … först"). The coffee cups are not life items and
-                       are washed by hand only
+                       are washed by hand only (#455)
+                       `DishProgramme` (#385, __app.dishProg): E on the panel (a pick box on the door's top band, `door.panelAt`)
+                       "Starta diskmaskinen" (door shut, something used / dirty in it) → running for DISHWASHER.seconds of game
+                       time: sfx.dishwasher (hum + swishes), a red spot on the floor, an LED; the door opened = paused, shut = on
+                       with the time left (the panel's row shows "Diskar – 0:42 kvar"); done: sfx.pling + "Disken är klar", stats
+                       dishwasher; only what was in it at the start and still is becomes clean; nothing added while it runs /
+                       is paused (refused); kept with the life sim (`x.dishwasher`: state, time left, the ids); a running one
+                       holds back the auto-update (main.js); F stops it (nothing washed)
 src/actions.js         what you can do with a life-sim thing (#367): `ActionSet.define({ id, label, applies, check, run, consumes,
                        result, duration, interrupt, order, quiet })`, `list(ctx)` = the rows with a Swedish `reason` when blocked
                        ("Öppna kylen först", "Tallriken är full", "För långt bort"); life.js `baseActions`: putOn, take, open, close.
@@ -1011,7 +1018,9 @@ tools/life2test.html   headless test of the life sim's M2, reset the kitchen: th
                        used / dirty plates (crumbs, smear), refused in the cabinet, scraped into the bin, washed up by hand
                        (half-way nothing, walking off), the knife and board after a cut, free play, the glass's film, the coffee
                        cup's ring and its cabinet, a record (#383); the dishwasher's racks: door / rack blocking, the right rack,
-                       scrape / pour out first, the board by hand, riding along, a full rack, a shut door blocks taking (#384)
+                       scrape / pour out first, the board by hand, riding along, a full rack, a shut door blocks taking (#384);
+                       the programme: refused empty / door down, the panel, the time left, paused, nothing added mid-run, a
+                       glass taken out stays dirty, a record, done = clean, unloading, F (#385). `?only=383,385` runs sections
 tools/inventorytest.html headless test (#365): the `&life` scenario's start state, the visitor's records untouched, the
                        integration points the inventory names; without &life the game starts at START
 tools/stamp.sh         build the published site with a version stamp (used by CI)

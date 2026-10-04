@@ -484,7 +484,7 @@ function buildKitchen(B, group, floor, y0, yC, handled, taps, appliances) {
       shell(F, u0, u1, yb, yt, F.depth, { shelf: false, inner: M.dishwasher });
       const dwDoor = openFront(open, F, u0, u1, yb, yt, M.front, 'top', {}, { mode: 'flap', name: 'diskmaskinen', max: 88 });
       dwDoor.stock = 'own'; // its racks: two that roll out with E while the door is down, slots for the life sim (#384, dishwasher.js)
-      buildRacks({ F, u0, u1, yb, door: dwDoor, open, batch: () => new Batch(), onBatch, chrome: M.chrome, FT });
+      buildRacks({ F, u0, u1, yb, yt, door: dwDoor, open, batch: () => new Batch(), onBatch, chrome: M.chrome, FT });
     } else if (sinkUnit) {
       shell(F, u0, u1, yb, top - K.sink.depth - 0.02, F.depth, { shelf: false });
       // waste sorting under the sink (#103): a grey bin, a green one for food waste, a small blue one for paper

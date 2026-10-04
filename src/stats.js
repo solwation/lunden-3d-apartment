@@ -29,7 +29,7 @@ const BADGES = {
   fridge: '🍗 Kylskåpet öppnat', appliances: '🍳 Ugn/mikro öppnad', cabinets: '🗄 Skåp öppnat', beer: '🍺 Klunk öl', coffee: '☕ Klunk kaffe', turbo: '⚡ Kaffeturbo!', fish: '🐟 Fiskpinne uppäten', fruit: '🍎 Frukt uppäten', fried: '🍳 Fiskpinne stekt', airfried: '🍟 Airfryern klar', toaster: '🍞 Brödrosten rostar', fries: '🍟 Pommes uppäten', sandwiches: '🥪 Du gjorde en macka!', friesCooked: '🍟 Pommes frites klara', friesBurnt: '🔥 Pommes brända', burnt: '🔥 Fiskpinne bränd', catFish: '🐈 Katten åt en fiskpinne', catButts: '🍑 Kattens rumpa', chicken: '🍗 Kycklingbit uppäten', wine: '🍷 Klunk vin', champagne: '🥂 Klunk champagne', whisky: '🥃 Klunk whisky', milk: '🥛 Klunk mjölk', kask: '☕ Klunk kaffekask', lights: '💡 Lampa tänd', stairs: '🪜 Trapptur',
   greets: '👋 Hälsat', sat: '🪑 Satt ner', lay: '🛏 Lagt sig', posted: '📌 Teckning uppsatt', thrown: '🗑 Teckning slängd',
   catPhotos: '📸 Kattfoto', cooked: '🍗 Kycklingen är klar', brews: '☕ Kaffet är klart', tv: '📺 Tv på', pc: '🎮 Datorn på', parasol: '⛱ Parasollet', clock: '🕰 Väggklockan', calendar: '📅 Kattkalendern', grill: '🔥 Grillen tänd', hood: '🌀 Fläkten på', songs: '🎵 Musik på', carMusic: '🚗 Musik i bilen', read: '📖 Läste boken', pingpingHugs: '🐧 Kramat Pingping', mieleHugs: '💖 Kramat Miele', car: '🚗 Bilen kallad', magic: '✨ Trolleri', blinds: '🪟 Plisségardin', curtains: '🦓 Gardinerna', clips: '📱 Nytt klipp', nest: '🔊 Smart högtalare', roofs: '🏠 Uppe på taket', liftFloors: '🛗 Hissen', flights: '🚀 Jetpacken lyfter',
-  kittens: '🐾 Kattunge!',
+  kittens: '🐾 Kattunge!', washed: '🧽 Diskat', dishwasher: '🍽 Disken är klar',
 };
 const STEP_BADGE = 100; // a badge every 100 steps
 
@@ -241,6 +241,7 @@ export function statRows() {
     ['🍞 Rostningar i brödrosten', `${stats.toaster ?? 0}`],
     ['🍟 Pommes frites uppätna', `${stats.fries ?? 0}`, stats.friesBurnt ? `${stats.friesBurnt} brända omgångar` : ''],
     ['🥪 Mackor', `${stats.sandwiches ?? 0}`, stats.cucumberSlices ? `${stats.cucumberSlices} gurkskivor` : ''],
+    ['🧽 Diskat för hand', `${stats.washed ?? 0}`, stats.dishwasher ? `${stats.dishwasher} omgångar i diskmaskinen` : ''], // (#383, #385)
     ['🐈 Fiskpinnar katten ätit', `${stats.catFish}`],
     ['🍗 Kycklingbitar uppätna', `${stats.chicken}`],
     ['💡 Lampor tända', `${stats.lights}`],
