@@ -858,7 +858,7 @@ export const PINGPING = { w: 0.4, h: 0.38, d: 0.22, navy: 0x34437a, white: '#ece
 
 // The big beer on the patio (#117, src/beer.js): a 50 cl tankard (Ø 9 × 16 cm, our pick) that turns up on the
 // lounge table (top at 0.40) when you sit down in the lounge sofa; each gulp drinks `gulp` of it.
-export const BEER = { x: 3.85, y: 0.4, z: 15.4, r: 0.045, h: 0.16, gulp: 0.2, held: { x: 0.2, y: -0.24, z: -0.45 } };
+export const BEER = { x: 4.45, y: 0.4, z: 14.0, r: 0.045, h: 0.16, gulp: 0.2, held: { x: 0.2, y: -0.24, z: -0.45 } };
 
 // The Nerf target (#99, src/target.js): a round archery-style board on a wooden stand on the lawn south of the
 // hedge, facing the patio (north), its centre over the hedge so you can shoot from the patio door (~7.5 m).
@@ -2163,16 +2163,20 @@ export const FURNITURE = [
     fields: ['ewn', 'nes'] },
   // Uteplats (paved z 12.75–16.8 in front of the hedge, see PATIO): Plantagen Hörngrupp Oslo
   // antracit (art. 558848): corner sofa 198 × 72 × 76 + 186 × 72 × 76 cm on an aluminium frame,
-  // table 120 × 60 × 40 cm (plantagen.se). Backs to the hedge and the east screen wall,
-  // seats facing north-west; the corner is on the sitter's right (east).
-  { type: 'loungesofa', level: 0, x: 5.66 - 1.98 / 2, z: 16.79 - 0.72 / 2, rot: 0 },
-  { type: 'loungetable', level: 0, x: 4.15, z: 15.45, beers: true },
+  // table 120 × 60 × 40 cm (plantagen.se). #397 (the user: nobody with their back to the sun): the long part
+  // with its back to the façade under the living-room window (glass x 2.79–4.90; its opening sash is the west
+  // 35 %, x ≤ 3.53, so the sofa from x 3.68 never meets it; the back 0.76 covers the fixed pane's lowest 16 cm
+  // over BH 0.6), the short part along the east screen wall (inner face x 5.68), the corner in the NE corner
+  // on the sitter's left; seats face south and west (the patio faces WSW). 6 cm of air behind the backs.
+  { type: 'loungesofa', level: 0, x: 5.66 - 1.98 / 2, z: 12.76 + 0.72 / 2, rot: 180, corner: 'left' },
+  // the table inside the L, its long side along the short part: 0.34 m to its seats, 0.38 m to the long part's
+  { type: 'loungetable', level: 0, x: 4.3, z: 14.45, rot: 90, beers: true },
   { type: 'parasol', level: 0, x: 3.05, z: 15.7 },
   // large planters with exotic plants (the user's wish): by the patio door and in the SE corner. The
   // banana in the SW corner stood in the gap in the hedge (the way out to the lawn) and is gone (#52).
   // by the hedge, and beside the living-room window
   { type: 'planter', level: 0, x: 0.45, z: 13.25, plant: 'palm', walls: { x0: 0.065, z0: 12.7 } }, // fronds clear of the façade + screen wall (#137)
-  { type: 'planter', level: 0, x: 5.3, z: 13.2, plant: 'agave' },
+  { type: 'planter', level: 0, x: 5.3, z: 16.35, plant: 'agave' }, // SE corner by the hedge (#397: the sofa's corner took its old spot)
   // Upstairs bedrooms (the user's plan). Beds: rot = direction from the head to the foot end.
   // IKEA NORDKISA bedside tables, bamboo, 40 × 40 cm (ikea.com, #64; the 55 cm height is a guess, about the
   // mattress top): one each side of the double bed's head end (east wall), clear of the Klk door

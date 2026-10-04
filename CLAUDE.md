@@ -883,8 +883,10 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   the wavy bars at the bottom, centre 1.58 m up), and on the secretary's north end a small yucca palm (`YUCCA`, a Thing you can
   take, kind 'plant') whose leaves cover the mirror's north edge; the owl and the cactus moved south.
 - Patio (user's wish): Plantagen Hörngrupp Oslo antracit (corner sofa 198 + 186 × 72 × 76, table
-  120 × 60 × 40) with its back to the hedge and the east screen wall, a parasol (up Apr–Sep while
-  the sun is up), two big planters (palm by the patio door, agave in the SE corner; the banana that blocked the
+  120 × 60 × 40): since #397 the long part has its back to the façade under the living-room window (east of its sash) and
+  the short part runs along the east screen wall (`corner: 'left'`), so the five seats face south and west (towards the
+  sun); the table stands inside the L. A parasol (up Apr–Sep while
+  the sun is up), two big planters (palm by the patio door, agave in the SE corner by the hedge; the banana that blocked the
   gap in the hedge is gone, #52), two beers on the table Jun–Aug
   12–23, a snowman on the lawn just beyond the gap in the hedge Dec–Feb (`PATIO` in config), on snow (#73). Floor: 40 × 40 light grey slabs in half
   bond (`PATIO.paving`, `pavingTexture` in patio.js, UVs in metres), also on the neighbours' patios.

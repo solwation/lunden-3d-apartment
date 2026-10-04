@@ -25,10 +25,11 @@ const split = (a, b, n) => Array.from({ length: n }, (_, i) => [a + ((b - a) * i
 
 /**
  * Oslo corner sofa: the long part (P.long) along the back, the short part (P.short, measured
- * from the back) forward on the sitter's right (−x). Origin = centre of the long part.
- * 5 seats: corner + 2 on the long part, 2 on the short part.
+ * from the back) forward on the sitter's right (−x), or on the left (+x) with `item.corner: 'left'`
+ * (#397: the long part under the living-room window, the short part along the east screen wall).
+ * Origin = centre of the long part. 5 seats: corner + 2 on the long part, 2 on the short part.
  */
-export function loungesofa() {
+export function loungesofa(item = {}) {
   const g = new THREE.Group();
   const D = P.depth, L = P.long, S = P.short, t = 0.06, base = 0.28, seatT = P.seatHeight - base;
   const x0 = -L / 2, x1 = L / 2, z0 = -D / 2, z1 = D / 2, zs = z0 + S; // short part ends at zs
@@ -60,11 +61,19 @@ export function loungesofa() {
     c.rotation.z = -0.12;
     g.add(c);
   }
-  // three places along the long part, facing out (+z) (#71)
-  g.userData.rest = { kind: 'sit', name: 'loungesoffan', verb: 'sätta dig i',
-    spots: split(x0 + D, x1 - t, 2).map(([a, b]) => ({ x: (a + b) / 2, y: P.seatHeight, z: 0 }))
-      .concat([{ x: x0 + D / 2, y: P.seatHeight, z: 0 }]) };
-  g.userData.footprint = [{ x0, x1, z0, z1 }, { x0, x1: x0 + D, z0: z1, z1: zs }];
+  // places: two along the long part and the corner, facing out (+z) (#71); two on the short part facing
+  // across into the L (+x) (#397)
+  const spots = split(x0 + D, x1 - t, 2).map(([a, b]) => ({ x: (a + b) / 2, y: P.seatHeight, z: 0 }))
+    .concat([{ x: x0 + D / 2, y: P.seatHeight, z: 0 }])
+    .concat(split(z1, zs - t, 2).map(([a, b]) => ({ x: x0 + D / 2, y: P.seatHeight, z: (a + b) / 2, dir: [1, 0] })));
+  let footprint = [{ x0, x1, z0, z1 }, { x0, x1: x0 + D, z0: z1, z1: zs }];
+  if (item.corner === 'left') { // the mirror image: the short part on the sitter's left (+x); the boxes are symmetric
+    for (const c of g.children) { c.position.x = -c.position.x; c.rotation.z = -c.rotation.z; }
+    for (const s of spots) { s.x = -s.x; if (s.dir) s.dir = [-s.dir[0], s.dir[1]]; }
+    footprint = footprint.map((f) => ({ x0: -f.x1, x1: -f.x0, z0: f.z0, z1: f.z1 }));
+  }
+  g.userData.rest = { kind: 'sit', name: 'loungesoffan', verb: 'sätta dig i', spots };
+  g.userData.footprint = footprint;
   return g;
 }
 

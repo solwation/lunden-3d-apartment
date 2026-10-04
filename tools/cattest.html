@@ -46,9 +46,11 @@ for (const door of world.doors) {
 }
 // #200: with chance.furniture = 1 the cat goes up on a seat, bed or table in the room when there is one in view
 const ups = [];
+// two seeds: the candidates are shuffled together, so one seed alone hangs on how many seats there are anywhere (#397)
+for (const seed0 of [777, 4242])
 for (const door of world.doors) {
   if (door.name === 'ytterdörren' || door.kind === 'wardrobe') continue;
-  let seed = 777;
+  let seed = seed0;
   const cat = new CatSpawner(world, () => ((seed = (seed * 16807) % 2147483647) / 2147483647));
   cat.chance = { appear: 1, steal: 1, vanish: 1, furniture: 1 };
   const { center, normal } = door.opening();

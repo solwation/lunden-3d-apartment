@@ -32,18 +32,43 @@ f.onload = async () => {
   pass &= check(s.parasols[0] === 0 && !s.beers[0] && s.snowman, `January 13:00: folded, snowman ${JSON.stringify(s)}`);
   s = at(4, 9);
   pass &= check(s.parasols[0] === 1 && !s.beers[0] && !s.snowman, `April 09:00: parasol up, no beers ${JSON.stringify(s)}`);
-  // walk from the patio door towards the lounge sofa: stopped before its seat
-  player.spawn(4.3, 14.2, Math.PI);
-  player.keys.add('KeyW');
-  for (let i = 0; i < 120; i++) player.update(1 / 30);
-  player.keys.clear();
-  pass &= check(player.pos.z < 15.2, `sofa/table block walking (stopped at z ${player.pos.z.toFixed(2)})`);
-  world.setFurniture(false);
-  player.keys.add('KeyW');
-  for (let i = 0; i < 60; i++) player.update(1 / 30);
-  player.keys.clear();
-  world.setFurniture(true);
-  pass &= check(player.pos.z > 15.6, `F off: walks on (z ${player.pos.z.toFixed(2)})`);
+  // walk north towards the lounge sofa's short part (#397: along the east screen wall): stopped before its end
+  const walk = (x, z, yaw, secs, furniture = true) => {
+    world.setFurniture(furniture);
+    player.spawn(x, z, yaw);
+    player.keys.add('KeyW');
+    for (let i = 0; i < secs * 30; i++) player.update(1 / 30);
+    player.keys.clear();
+    world.setFurniture(true);
+    return player.pos;
+  };
+  let p = walk(5.2, 15.6, 0, 4);
+  pass &= check(p.z > 14.6 && p.z < 15.2, `the short part blocks walking north (stopped at z ${p.z.toFixed(2)})`);
+  p = walk(5.2, 15.6, 0, 4, false);
+  pass &= check(p.z < 13.5, `F off: walks on to the façade (z ${p.z.toFixed(2)})`);
+  p = walk(3.0, 14.4, -Math.PI / 2, 4);
+  pass &= check(p.x > 3.4 && p.x < 4.0, `the table blocks walking east (stopped at x ${p.x.toFixed(2)})`);
+  p = walk(3.3, 15.6, 0, 4);
+  pass &= check(p.z < 13.5, `west of the table you walk up to the long part and the window (z ${p.z.toFixed(2)})`);
+  // the sofa (#397): the long part under the living-room window, the short part along the east screen wall,
+  // the seats face south and west; the patio door's swing and the way to the gap in the hedge stay free
+  const sofa = world.furnitureTargets.find((t) => t.name === 'loungesoffan');
+  const facing = (yaw) => Math.abs(Math.cos(yaw)) > 0.99 ? (Math.cos(yaw) < 0 ? 'south' : 'north') : (Math.sin(yaw) > 0.99 ? 'west' : Math.sin(yaw) < -0.99 ? 'east' : yaw.toFixed(2));
+  const faces = sofa.spots.map((sp) => facing(sp.yaw));
+  pass &= check(sofa.spots.length === 5 && faces.filter((f) => f === 'south').length === 3 && faces.filter((f) => f === 'west').length === 2,
+    `5 seats: 3 facing south, 2 facing west (${faces.join(', ')})`);
+  pass &= check(sofa.spots.every((sp) => sp.pos.z < 14.7 && sp.pos.x > 3.6), `every seat in the NE corner (${sofa.spots.map((sp) => `${sp.pos.x.toFixed(2)},${sp.pos.z.toFixed(2)}`).join(' ')})`);
+  const swing = [];
+  for (let a = 0; a <= 90; a += 15) for (const r of [0.3, 0.6, 0.92]) swing.push([0.95 + r * Math.cos(a * Math.PI / 180), 12.72 + r * Math.sin(a * Math.PI / 180)]);
+  const blockedSwing = swing.filter(([x, z]) => w.__app.world.levels[0].footprints.some((poly) => {
+    const xs = poly.map((q) => q[0]), zs = poly.map((q) => q[1]);
+    return x > Math.min(...xs) && x < Math.max(...xs) && z > Math.min(...zs) && z < Math.max(...zs);
+  }));
+  pass &= check(!blockedSwing.length, `nothing stands in the patio door's swing (${blockedSwing.length} points)`);
+  const route = [];
+  for (let k = 0; k <= 20; k++) route.push([1.4 - 0.75 * k / 20, 13.75 + 3.4 * k / 20]); // door → the gap in the hedge
+  const stuck = route.filter(([x, z]) => !player.isFree(x, z, 0));
+  pass &= check(!stuck.length, `the way from the patio door to the gap in the hedge is free (${stuck.map((q) => q.map((v) => v.toFixed(2))).join(' ')})`);
   // the LED string lights (#81): off at noon, on at 22, off again after dawn; June and December
   for (const [mon, hours] of [[6, [12, 23.5, 6]], [12, [12, 20, 10]]]) {
     const st = hours.map((h) => at(mon, h, 3).strings);
