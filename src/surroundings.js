@@ -86,7 +86,7 @@ function terrainGeometry() {
   const St = Wst.stair, z0 = terrainNorth;
   const xs = new Set([-200, 200, E.x0 - 0.01, E.x0 + 0.01, E.x1, E.x1 + E.blend, E.gable, E.level, E.walk, R.x0 + 0.01, R.x1 - 0.01, R.x1 + 0.01,
       Wst.x - 0.01, Wst.x + 0.01, St.x1 - 0.01, St.x1 + 0.01]),
-    zs = new Set([z0, 0, T.north, 260, T.north + T.slope, ...E.profile.map((p) => p[0]), ...Wst.profile.map((p) => p[0]), R.z0, R.z1, St.z1 - 0.01, St.z1 + 0.01]);
+    zs = new Set([z0, 0, T.north, 260, T.north + T.slope, ...E.profile.map((p) => p[0]), ...Wst.profile.map((p) => p[0]), R.z0, R.z1, St.z1 - 0.01, St.z1 + 0.01, T.garageDoor.z0, T.garageDoor.z1]);
   for (let x = -200; x <= 200; x += 4) xs.add(x);
   for (let z = z0; z <= 260; z += 4) zs.add(z);
   for (const b of T.box) { for (const x of [b.x0, b.x1]) { xs.add(x - 0.01); xs.add(x + 0.01); } for (const z of [b.z0, b.z1]) { zs.add(z - 0.01); zs.add(z + 0.01); } }
@@ -98,6 +98,7 @@ function terrainGeometry() {
     const a = j * nx + i, b = a + 1, c = a + nx, d = c + 1;
     const mx = (X[i] + X[i + 1]) / 2, mz = (Z[j] + Z[j + 1]) / 2;
     if (mz < T.north && mx > westEdge(mz) && mx < E.gable) continue; // world.js's flat plate
+    if (Math.abs(mx - T.garageDoor.x) < 0.02 && mz > T.garageDoor.z0 && mz < T.garageDoor.z1) continue; // the box edge's face: the garage door's opening (#357)
     idx.push(a, c, b, b, c, d);
   }
   const geo = new THREE.BufferGeometry();
@@ -111,7 +112,7 @@ function terrainGeometry() {
 /** Retaining walls of the garage box where the ground outside is lower, a coping and a railing on top,
  * and the garage door in the west face. */
 function boxWalls() {
-  const walls = [], rails = [], door = [];
+  const walls = [], rails = [];
   const quad = (ax, az, bx, bz, ya0, yb0, top = 0.12) => { // vertical quad from the outside ground up to y 0
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.Float32BufferAttribute([ax, ya0, az, bx, yb0, bz, bx, top, bz, ax, ya0, az, bx, top, bz, ax, top, az], 3));
@@ -120,7 +121,7 @@ function boxWalls() {
     g.computeVertexNormals();
     return g;
   };
-  const slats = [], segments = [];
+  const slats = [], segments = [], upper = [];
   const atStairs = (x0, x1, z) => T.stairs.some((St) => Math.abs(z - St.z) < 0.05 && (x0 + x1) / 2 > St.x0 && (x0 + x1) / 2 < St.x1); // (the edge is cut at its sides, #355)
   const edges = [];
   for (const b of T.box) edges.push([b.x0, b.z0, b.x1, b.z0, 0, -1], [b.x1, b.z0, b.x1, b.z1, 1, 0], [b.x1, b.z1, b.x0, b.z1, 0, 1], [b.x0, b.z1, b.x0, b.z0, -1, 0]);
@@ -136,6 +137,8 @@ function boxWalls() {
       if (t > 1e-4 && t < 1 - 1e-4) ts.add(t);
     if (oz) for (const St of T.stairs) if (Math.abs(az - St.z) < 0.05) for (const t of [(St.x0 - ax) / (bx - ax), (St.x1 - ax) / (bx - ax)])
       if (t > 1e-4 && t < 1 - 1e-4) ts.add(t); // … and where a stair leaves it (#355)
+    if (ox < 0 && Math.abs(ax - T.garageDoor.x) < 0.1) for (const t of [(T.garageDoor.z0 - az) / (bz - az), (T.garageDoor.z1 - az) / (bz - az)])
+      if (t > 1e-4 && t < 1 - 1e-4) ts.add(t); // … and at the garage door's sides (#357)
     const tl = [...ts].sort((a, b) => a - b);
     for (let k = 0; k < tl.length - 1; k++) {
       const t0 = tl[k], t1 = tl[k + 1];
@@ -146,13 +149,14 @@ function boxWalls() {
       const y0 = groundY(x0 + ox * 0.05, z0 + oz * 0.05), y1 = groundY(x1 + ox * 0.05, z1 + oz * 0.05);
       if (y0 > -0.005 && y1 > -0.005) continue; // no step here
       if (S.blocks.some((b) => mx > b.x0 && mx < b.x1 && mz > b.z0 && mz < b.z1)) continue; // a house's façade is the edge here (#246)
-      if (!(oz && atStairs(x0, x1, z0))) segments.push([x0, z0, x1, z1]); // the visitor stays on the courtyard (#255), except down a stair (#355)
+      const atDoor = ox < 0 && Math.abs(x0 - T.garageDoor.x) < 0.1 && (z0 + z1) / 2 > T.garageDoor.z0 && (z0 + z1) / 2 < T.garageDoor.z1;
+      // the visitor stays on the courtyard (#255), except down a stair (#355); over the garage door only up there (#357:
+      // `upper`, player.js — the drive goes in under it)
+      if (!(oz && atStairs(x0, x1, z0))) (atDoor ? upper : segments).push([x0, z0, x1, z1]);
       if (y0 > -0.05 && y1 > -0.05) continue; // too small a step for a wall
       // the walls stand 4 cm outside the box edge, in front of the terrain's own (grass) step
       const wx0 = x0 + ox * 0.04, wz0 = z0 + oz * 0.04, wx1 = x1 + ox * 0.04, wz1 = z1 + oz * 0.04;
-      const atDoor = ox < 0 && Math.abs(x0 - T.garageDoor.x) < 0.1 && (z0 + z1) / 2 > T.garageDoor.z0 && (z0 + z1) / 2 < T.garageDoor.z1;
-      if (atDoor) { // the garage door: a dark opening with a grey roller door frame
-        door.push(quad(wx0 + ox * 0.01, wz0, wx1 + ox * 0.01, wz1, y0, y1));
+      if (atDoor) { // the garage door's opening (#357: garage.js draws the inside, or a dark plane while it is not drawn)
         walls.push(quad(wx0 + ox * 0.02, wz0, wx1 + ox * 0.02, wz1, y0 + T.garageDoor.h, y1 + T.garageDoor.h));
       } else walls.push(quad(wx0, wz0, wx1, wz1, y0, y1, oz && atStairs(x0, x1, z0) ? 0 : 0.12)); // the stair's top riser: no coping lip (#355)
       if (atStairs(x0, x1, z0)) continue; // the stair goes down here: no railing
@@ -193,7 +197,7 @@ function boxWalls() {
   }
   along(T.east.gable + 0.01, 0, T.east.gable + 0.01, T.north, (x, z) => groundY(x + 0.05, z), () => 0.02, walls);
   const stairs = T.stairs.map(terraceStairs);
-  return { walls, rails, door, slats, segments, stairs: { solid: [...stairs.flatMap((s) => s.solid), ...nwStair()], rails: stairs.flatMap((s) => s.rails), ends: stairs.map((s) => s.end) } };
+  return { walls, rails, slats, segments, upper, stairs: { solid: [...stairs.flatMap((s) => s.solid), ...nwStair()], rails: stairs.flatMap((s) => s.rails), ends: stairs.map((s) => s.end) } };
 }
 
 /** A stair from the courtyard going south, down `drop` m (default: to the park level) (#148, #254, #255): treads, a
@@ -1165,7 +1169,7 @@ export function buildSurroundings({ grass }) {
     const pts = groundOutline(b);
     return pts.map((p, i) => [...p, ...pts[(i + 1) % pts.length]]);
   })];
-  flat(bw.door, new THREE.MeshStandardMaterial({ color: 0x1c1e21, roughness: 0.8, side: THREE.DoubleSide }));
+  group.userData.upper = bw.upper; // the box's edge over the garage door: only for those up on the courtyard (#357)
   // roads (#257, src/roads.js): rectangles, centre lines with rounded corners, fillets at the junctions
   const gd = T.garageDoor; // + the drive from Karpvägen to the garage door (#254)
   const asphalt = [...S.roads, { x0: gd.drive, x1: gd.x + 0.05, z0: gd.z0 - 0.5, z1: gd.z1 + 0.5 }].flatMap((r) => r.path ? [pathStrip(r, (w) => -w / 2, (w) => w / 2, 0.012, groundY)]

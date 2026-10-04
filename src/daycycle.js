@@ -113,7 +113,7 @@ const SUN_LOW = new THREE.Color(0xffb070), SUN_HIGH = new THREE.Color(0xfff1dc),
 export class DayCycle {
   /** lights: { sun, hemi, ambient, fill } from main.js; clouds: canvas texture with alpha. */
   constructor({ scene, camera, lights, clouds, startHour, month, date = 15, year = new Date().getFullYear() }) {
-    Object.assign(this, { scene, camera, lights, hour: startHour, month, date, year, paused: false, spool: 0, overcast: 0, flash: 0, dim: 0 }); // overcast, flash: weather.js (#248); dim: the blinds (#273)
+    Object.assign(this, { scene, camera, lights, hour: startHour, month, date, year, paused: false, spool: 0, overcast: 0, flash: 0, dim: 0, under: 0 }); // overcast, flash: weather.js (#248); dim: the blinds (#273)
     this.fogFar = scene.fog.far;
     this.base = { hemi: lights.hemi.intensity, ambient: lights.ambient.intensity, fill: lights.fill.intensity, sun: lights.sun.intensity };
     this.uniforms = {
@@ -177,11 +177,11 @@ export class DayCycle {
     const useMoon = this.sunDir.y < -0.02;
     const dir = useMoon ? this.moonDir : this.sunDir;
     sun.position.copy(sun.target.position).addScaledVector(dir, 30);
-    sun.intensity = (useMoon ? DAY.moonlight * smooth(0.0, 0.2, this.moonDir.y) : this.base.sun * smooth(-0.02, 0.12, this.sunDir.y)) * (1 - WEATHER.sunCut * oc);
+    sun.intensity = (useMoon ? DAY.moonlight * smooth(0.0, 0.2, this.moonDir.y) : this.base.sun * smooth(-0.02, 0.12, this.sunDir.y)) * (1 - WEATHER.sunCut * oc) * (1 - this.under); // (under the courtyard: none, #357)
     if (useMoon) sun.color.copy(MOON);
     else sun.color.copy(SUN_LOW).lerp(SUN_HIGH, smooth(0.05, 0.4, this.sunDir.y));
     // the visitor's room's blinds (#273) take away a share of the daylight that reaches it (not the night's)
-    const inDay = day * (1 - this.dim);
+    const inDay = day * (1 - this.dim) * (1 - this.under); // under: the garage under the courtyard (#357)
     hemi.intensity = (this.base.hemi * inDay + DAY.nightAmbient) * (1 - 0.3 * oc) + WEATHER.flash.light * this.flash;
     hemi.color.setHex(0xeaf3ff).lerp(new THREE.Color(0x6b7da8), night);
     ambient.intensity = (this.base.ambient * inDay + DAY.nightAmbient * 0.5) * (1 - 0.25 * oc) + WEATHER.flash.light * 0.4 * this.flash;

@@ -825,6 +825,7 @@ export function buildWorld(plan) {
     size: { x: W, z: D },
     levels,
     roofs, // the walkable roofs outdoors (#360)
+    upperSegments: surroundings.userData.upper, // the box's edge over the garage door: in the way only up on the courtyard (#357)
     doors: [...l0.doors, ...l1.doors],
     lids: [...l0.lids, ...l1.lids, ...l0.appliances, ...l1.appliances, hallWall.cabinet], // toggled with E, not doors
     hob: [...l0.appliances, ...l1.appliances].find((a) => a.kind === 'hob') ?? null, // the induction hob (#158)

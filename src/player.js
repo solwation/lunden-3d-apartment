@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { LEVELS, PLAYER, STAIR, UNIT_TOP, ROOFS } from './config.js';
+import { LEVELS, PLAYER, STAIR, UNIT_TOP, ROOFS, GARAGE } from './config.js';
 import { stairHeight, stairUnderside } from './stairs.js';
 import { groundY } from './surroundings.js';
 
@@ -82,6 +82,12 @@ export class Player {
     return this.inFootprint(p.x, p.z) ? p.y > UNIT_TOP - 0.3 : p.y > groundY(p.x, p.z) + ROOFS.aloft;
   }
 
+  /** Down in the garage, the förråd corridor or the lift lobby under the courtyard (#357, garage.js): its walls collide. */
+  get below() {
+    const p = this.pos;
+    return !!this.world.garage?.inside(p.x, p.z) && p.y < GARAGE.floor + 1.5;
+  }
+
   /** Outside the flat (street, lawn, patio, up on the roofs): the only place to sprint. */
   get outdoors() {
     return !this.inFootprint() || this.aloft;
@@ -103,6 +109,7 @@ export class Player {
     if (inside && !inHole) cands.push(LEVELS[1].floor);
     const s = stairHeight(x, z);
     if (s !== null) cands.push(s);
+    if (!inside && this.world.garage?.inside(x, z)) cands.push(GARAGE.floor); // the garage under the courtyard (#357)
     const r = this.world.roofs?.under(x, z, feet, PLAYER.stepUp); // a roof, the loftgång, a terrace (#360)
     if (r) cands.push(r.y);
     let best = -Infinity;
@@ -129,11 +136,13 @@ export class Player {
       const y = this.pos.y;
       return [this.world.roofs?.walls(y + PLAYER.stepUp, y + PLAYER.headroom) ?? [], []];
     }
+    if (this.below) return [this.world.garage.segments, this.world.garage.dynamic()]; // (#357)
     const lvl = this.world.levels[this.level];
+    const up = this.level === 0 && this.pos.y > GARAGE.floor + 1.5 ? this.world.upperSegments ?? [] : []; // over the garage door (#357)
     const doorSegs = this.world.doors
       .filter((d) => (d.object.position.y < LEVELS[0].floor + 1.6 ? 0 : 1) === this.level)
       .map((d) => d.segment());
-    return [lvl.segments, [...doorSegs, ...(this.world.movingSegments?.(this.level) ?? [])]]; // + open furniture flaps (#118)
+    return [lvl.segments, [...doorSegs, ...up, ...(this.world.movingSegments?.(this.level) ?? [])]]; // + open furniture flaps (#118)
   }
 
   /**
@@ -143,11 +152,16 @@ export class Player {
    */
   obstacles(level = this.level) {
     if (this.aloft) return []; // (the flat's furniture and the car are far below, #360)
+    if (this.below) return this.world.garage.obstacles(); // the cars parked down there (#357)
     return [...(this.world.levels[level]?.footprints ?? []), ...(this.world.movingPolys?.(level) ?? [])];
   }
 
   /** Can the visitor stand at (x, z) on `level` (#314)? Clear of every segment by the radius + `margin`, inside no obstacle. */
   isFree(x, z, level = this.level, margin = 0.02) {
+    if (this.below) { // in the garage (#357): its walls, the förråd doors, the cars
+      const g = this.world.garage;
+      return g.inside(x, z) && ![...g.segments, ...g.dynamic()].some((sg) => segDist(x, z, sg) < PLAYER.radius + margin) && !g.obstacles().some((q) => inPoly(q, x, z));
+    }
     const lvl = this.world.levels[level];
     const doorSegs = this.world.doors.filter((d) => (d.object.position.y < LEVELS[0].floor + 1.6 ? 0 : 1) === level).map((d) => d.segment());
     const segs = [...lvl.segments, ...doorSegs, ...(this.world.movingSegments?.(level) ?? [])];
@@ -159,7 +173,7 @@ export class Player {
 
   /** The nearest free spot to (x, z) reached through no wall, window or door (a spiral search), or null (#314). */
   nearestFree(x, z, level = this.level) {
-    const walls = [...(this.world.levels[level]?.fixedSegments ?? this.world.levels[level].segments),
+    const walls = this.below ? this.world.garage.walls : [...(this.world.levels[level]?.fixedSegments ?? this.world.levels[level].segments),
       ...this.world.doors.filter((d) => (d.object.position.y < LEVELS[0].floor + 1.6 ? 0 : 1) === level).map((d) => d.segment())];
     for (let r = 0.05; r < 3.01; r += 0.05) {
       const n = Math.max(8, Math.round(2 * Math.PI * r / 0.05));

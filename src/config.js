@@ -803,6 +803,38 @@ export const GREET = {
 // ramp's wall stop the visitor (world.js; surroundings.js `userData.segments`). The bounds are a choice, not a plot line.
 export const OUTDOOR = { x0: -78.5, x1: 27.5, z0: -14, z1: 64 };
 
+// The garage and the storage rooms under the courtyard (#357, src/garage.js). Peab's material has NO garage plan: the
+// only sourced facts are the box (SITE.terrain.box), the door in its west face (SITE.terrain.garageDoor, "INFART
+// GARAGE" on våning −1), the floor at the park level (terrain.park, the drive in front of the door) and "15 extra
+// lägenhetsförråd" (plan brochure p. 24). EVERYTHING ELSE HERE IS A GUESS (assumption, not measured): the hall south of
+// Hus C between the door and Hus B's west façade, one aisle from the door with a row of stalls each side, the columns,
+// the ceiling height, a corridor of mesh-walled storage rooms north and then east under the courtyard to a lift / stair
+// lobby under Hus L's stair core (by the portik, husLLayout), the tubes. Rectangles are plan x/z, inner faces of the walls.
+export const GARAGE = {
+  floor: -3,          // = SITE.terrain.park: the drive is level with the door (#346)
+  ceiling: -0.35,     // guess: the deck + the courtyard's soil over it; 2.65 m clear (the door is 2.6)
+  wall: 0.25,         // guess
+  hall: { x0: -70.25, x1: -41.95, z0: 36.95, z1: 52.0 }, // guess: the box's west part south of Hus C (its south face 36.7); east wall = Hus B's west façade line
+  doorway: { x0: -70.5, x1: -70.25 },                   // the opening through the west wall: terrain.garageDoor's z0…z1
+  // stalls (guess: 2.5 m wide, `d` = [north row, south row] deep — the north row is short of Hus C; the aisle between
+  // them in line with the door): `north` / `south` stalls from x0 eastwards, numbered 1… along the north row then the
+  // south row; `ours` = L1007's (our pick: 7). `cars`: the share of the others taken.
+  stalls: { x0: -67.5, w: 2.5, d: [4.8, 5], north: 9, south: 10, ours: 7, cars: 0.6, seed: 23 },
+  columns: { size: 0.4, xs: [-62.5, -55, -47.5], zs: [41.75, 47] }, // guess: on the stall lines at the aisle's edges
+  // the corridor (2 m wide, guess): north from the hall's NE corner, then east under the courtyard to the lobby
+  legN: { x0: -44.5, x1: -42.5, z0: 15, z1: 36.95 },
+  legE: { x0: -44.5, x1: -20, z0: 13, z1: 15 },
+  lobby: { x0: -20, x1: -14, z0: 13, z1: 17.5, lift: -18.5, stair: -15.6 }, // the lift door's / stairwell door's centre x (guess)
+  // 15 förråd (the brochure's count): `e` along legE's south side, `n` along legN's west side; each `w` wide, `d` deep,
+  // a door `door` m wide next to its `hinge` end, opening into the corridor up to `max` rad. Numbers 1… east then north.
+  // `ours`: L1007's (our pick).
+  storage: { e: { x0: -42.5, n: 10, z0: 15 }, n: { z0: 18, n: 5, x1: -44.5 }, w: 2.25, d: 2.2, door: 0.9, max: 1.5, speed: 3, ours: 7, seed: 41 },
+  // fluorescent tubes (our pick): rows over the aisle and the stall rows, along the corridor; a motion sensor puts them
+  // on while the visitor is down here (or at the door) and `hold` s after; `flicker` s of starting up. `dim`: the
+  // daylight that is left down here (DayCycle.under). `pool`: the few spots that borrow a pool light (lights.extra).
+  lights: { hold: 90, flicker: 0.7, amb: 0.22, r: 2.6, dim: 0.92, intensity: 2.2, range: 10, sensor: 9 },
+};
+
 // The lightsaber in Sovrum 2 (#78, src/saber.js): since #324 on two pegboard hooks on the Nerf board's top row (the
 // board's front face x 2.772, see TOYS.nerf: an armoury), the switched-off saber (its hilt) lying across them along z.
 // Hilt 30 cm, blade 90 cm; the blade colour is picked from `colors` each time it is taken down. `held` = where it sits

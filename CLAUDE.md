@@ -130,6 +130,17 @@ src/roofs.js           the walkable roofs (#360, `world.roofs`): surfaces (rect 
                        −1 (no pool light for the flat's lamps: the lampwash shows them), `behindWall` hides the flat under the roof,
                        the rain stops on the surface (`weather.surfaceAt`), the HUD says "Utomhus · <roof>", stats `roofs` (first
                        per roof, SCORE.first.roofs). Not walkable: the old S:t Lars houses, the school, HepCat, pergolas, parapet tops
+src/garage.js          the garage + förråd under the courtyard (#357, GARAGE in config — no garage plan exists: every number but the
+                       door, the floor (park level) and the count of 15 förråd is a guess): a hall south of Hus C behind
+                       `terrain.garageDoor` (aisle, stalls with painted lines/numbers on one canvas floor, columns, parked `lite`
+                       cars instanced, our stall 7 "L1007"), a corridor north then east with 15 wire-mesh förråd (doors: one
+                       InstancedMesh + invisible pick boxes, kind 'cabinet', E opens; things inside baked in) to a lift / stairwell
+                       lobby under Hus L's core (doors only). Shell, floor, mesh, signs, tubes are MeshBasic with the tubes' light
+                       baked into vertex colours (material colour = on/off, a motion sensor + flicker); the group is drawn only
+                       from inside / west of the door (`near`, else `blackout`); a few `lamps` borrow pool lights (lights.extra)
+                       and `under` cuts the daylight (DayCycle.under). player.js `below` (in its rects at the floor's height):
+                       its `segments` / `dynamic()` / `obstacles()` instead of the level's; the box edge over the door is
+                       `world.upperSegments` (only up on the courtyard); rooms Garage / Förråd / Hisshall (HUD, stats); no rain
 src/fall.js            falling (#361, FALL): player.js keeps `fall` (the highest feet since leaving the ground + the deepest free gap
                        under them) and calls `onLand(drop, gap)`; only a gap over FALL.free counts (the stair's risers, the ramp never).
                        Over FALL.hurt (3 m): sfx.landing + sfx.ouch ("aj"), the view jolts, #fall goes red then black, no walking, the
@@ -612,6 +623,9 @@ tools/stairtest.html   headless test (#352): equal risers from floor to floor, n
 tools/stucktest.html   headless test (#314): a 5 cm scan of both floors (doors open; the free floor in one piece, pockets out of
                        reach listed), getting up from every seat / bed with the old spot inside it, F putting the sofa / bed back
                        round you, the car parking on you, the hoop rising under you, a door shut on you, a resume record in the bed
+tools/garagetest.html  headless test (#357): in from the drive (below, drawn, "Garage"), the tubes on, daylight cut, no rain inside,
+                       walls / a column / a parked car hold, out of a car (#314), our stall free, the corridor to the lobby, a
+                       förråd shut holds / E opens / walk in, the courtyard above stays at y 0 and its edge over the door holds
 tools/falltest.html    headless test (#361): a 2.5 m drop is soft, a 5 m drop hurts (red, black, no walking, awake at the front door,
                        counted + a deduction); the stair up / down (also crouched), the ramp,
                        the outdoor stairs (#355), out of the top bunk, a resume record: no free fall
@@ -814,7 +828,7 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   level with the garage floor; `tools/terraintest.html` checks the joins, plinths and that walkable ground has no
   unguarded step); around the box the ground is one storey lower (`park` −3, Å-husen A/B suterräng); retaining
   walls with a railing where the box meets it (none along a house's façade), the garage door in its west face
-  south of Hus C (z 41…47) with an asphalt drive from Karpvägen, stairs down to the park level (`terrain.stairs`:
+  south of Hus C (z 41…47) with an asphalt drive from Karpvägen (#357: walkable inside, src/garage.js — layout guessed), stairs down to the park level (`terrain.stairs`:
   between Hus C and B, #254).
   East edge (#255): the box ends at x 11.6; the `terrain.ramp` x 11.6…13.5 falls 0.9 m from a landing (the box's last
   part, z 24.5…27.25) by the walk along Hus A north to the street by Hus L's gable (#256, walkable: outdoors

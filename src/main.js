@@ -63,6 +63,7 @@ import { Marks } from './marks.js';
 import { Breaker } from './breaking.js';
 import { Target } from './target.js';
 import { Car } from './car.js';
+import { Garage } from './garage.js';
 import { People } from './people.js';
 import { Greetings } from './greet.js';
 import { Nests } from './nest.js';
@@ -111,6 +112,8 @@ const params0 = new URLSearchParams(location.search);
 const plan = await fetch('data/plan.json').then((r) => r.json());
 const world = buildWorld(plan);
 scene.add(world.object);
+const garage = world.garage = new Garage(); // the garage and the förråd under the courtyard (#357)
+scene.add(garage.object, garage.blackout);
 
 // Sun from the south-west (north = the entrance side, −z). Shadows cover the house + patio.
 const sun = new THREE.DirectionalLight(0xfff1dc, 2.2);
@@ -337,6 +340,7 @@ const smokeAlarm = new SmokeAlarm();
 const grill = new Grill(); // the courtyard's kettle grill: E lights it (#204)
 scene.add(grill.object);
 lights.extra.push(grill.lamp);
+lights.extra.push(...garage.lamps); // the garage's tubes light the cars down there (#357)
 scene.add(smokeAlarm.object);
 smokeAlarm.onRing = () => penalize('smokeAlarm'); // a deduction (#288)
 // the fridge and freezer beep when left open too long: a deduction when it starts, a little more while it goes on (#288)
@@ -1086,7 +1090,7 @@ window.addEventListener('resize', () => {
 // --- door interaction: look at a door within reach, press E ----------------
 const raycaster = new THREE.Raycaster();
 raycaster.far = 2.2;
-const pickables = [airFryer.basketTarget.pickable, airFryer.panelTarget.pickable, ...world.doors.map((d) => d.pickable), ...world.lids.map((l) => l.pickable), ...taps.map((t) => t.pickable), note.pickable, ...(todo ? [todo.pickable] : []), board.pickable, ...(coffeeJar ? [coffeeJar.target.pickable] : []), wallClock.pickable, calendar.pickable, ...lights.targets.map((t) => t.pickable), grill.pickable, blinds.object];
+const pickables = [...garage.targets.map((t) => t.pickable), airFryer.basketTarget.pickable, airFryer.panelTarget.pickable, ...world.doors.map((d) => d.pickable), ...world.lids.map((l) => l.pickable), ...taps.map((t) => t.pickable), note.pickable, ...(todo ? [todo.pickable] : []), board.pickable, ...(coffeeJar ? [coffeeJar.target.pickable] : []), wallClock.pickable, calendar.pickable, ...lights.targets.map((t) => t.pickable), grill.pickable, blinds.object];
 const center = new THREE.Vector2(0, 0);
 const keyCabinet = world.lids.find((l) => l.kind === 'keybox');
 let focused = null, focusPoint = null;
@@ -1302,7 +1306,7 @@ const clock = new THREE.Clock();
 let lastLevel = -1, lastRoom = null, mapTimer = 0, lastRoof = null, roofName = null;
 const mapEl = document.getElementById('minimap');
 const minimap = new Minimap(mapEl, world.roomMaps);
-setRoomTotal(world.roomMaps.reduce((n, m) => n + new Set(m.rooms.map((r) => r.name)).size, 0));
+setRoomTotal(world.roomMaps.reduce((n, m) => n + new Set(m.rooms.map((r) => r.name)).size, 0) + garage.roomNames.length); // + the garage's (#357)
 function toggleMap() { // K: the map alone (Tab / T / 📊 show it with the stats)
   mapPinned = !mapPinned;
   mapEl.hidden = !(mapPinned || !statsEl.hidden);
@@ -1335,6 +1339,8 @@ function step(dt) {
     outdoors: player.outdoors, daylight: day.daylight, sunDir: day.sunDir, overcast: weather.overcast, lit: (lv, name) => lights.roomLit(lv, name) }); // blinds drawn up: less daylight in the room (#273)
   if (blindPanel.open) blindPanel.render();
   photoGlow(day.daylight * (1 - 0.5 * weather.overcast), lights.roomLit(1, 'Sovrum 1')); // Miele's photo reads like a lit print (#327)
+  garage.update(dt, player, camera); // the förråd doors, the tubes' motion sensor, drawn only near (#357)
+  day.under = garage.under; // down there no daylight
   day.update(dt);
   wallClock.update(day.hour);
   calendar.update(); // redraws only when the page or the date changed
@@ -1369,7 +1375,7 @@ function step(dt) {
   car.update(dt, day.daylight < 0.35, player);
   const moved = Math.hypot(player.pos.x - lastWeatherPos.x, player.pos.z - lastWeatherPos.z); // on foot (not a jump / spawn)
   lastWeatherPos.copy(player.pos);
-  weather.update(dt, !player.outdoors, moved < 1 ? moved : 0); // after the day: it sets the overcast / flash the next day.update applies (#248)
+  weather.update(dt, !player.outdoors || player.below, moved < 1 ? moved : 0); // (the garage: dry and muffled, #357) // after the day: it sets the overcast / flash the next day.update applies (#248)
   people.update(dt, weather.rain > WEATHER.people ? 0 : day.daylight, day.month, player); // they go in when it pours
   greet.update(dt); // greetings and answers (#247)
   cat.update(dt);
@@ -1399,6 +1405,8 @@ function step(dt) {
   const lvl = outside ? -1 : player.level;
   const room = lvl < 0 ? null : world.roomAt(lvl, player.pos.x, player.pos.z);
   if (room && active()) visitRoom(`${lvl}:${room}`);
+  const under = outside && player.below ? garage.roomAt(player.pos.x, player.pos.z) : null; // the garage, the förråd, the lobby (#357)
+  if (under && active()) visitRoom(`g:${under}`);
   if (room !== lastRoom && room) lastRoom = room; // keep the last name while inside a doorway
   mapTimer -= dt;
   if (mapTimer <= 0 && !mapEl.hidden) {
@@ -1408,7 +1416,7 @@ function step(dt) {
   if (active() && !outside) bump('seconds', dt);
   if (lvl !== lastLevel && lvl >= 0 && lastLevel >= 0) bump('stairs');
   if (lvl < 0) lastRoom = null;
-  const label = `${lvl < 0 ? `Utomhus${roofName ? ` · ${roofName}` : ''}` : `${LEVELS[lvl].name}${lastRoom ? ` · ${lastRoom}` : ''}`} · ${day.clock}${weather.icon}`;
+  const label = `${lvl < 0 ? under ? `Under gården · ${under}` : `Utomhus${roofName ? ` · ${roofName}` : ''}` : `${LEVELS[lvl].name}${lastRoom ? ` · ${lastRoom}` : ''}`} · ${day.clock}${weather.icon}`;
   if (lvl !== lastLevel || label !== levelEl.textContent) {
     levelEl.textContent = label;
     lastLevel = lvl;

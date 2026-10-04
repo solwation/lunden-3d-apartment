@@ -21,7 +21,7 @@ function rng(seed) { let s = seed; return () => ((s = (s * 16807) % 2147483647) 
 /** One parked car, facing +x (#251): the body from carmodel.js (lite), as [paint, trim (vertex colours: black, lights,
  * chrome, rims), glass, tyres] geometries for instancing. */
 const TRIM = { black: 0x0c0d0f, roof: 0x0b0c0e, lens: 0x15181c, led: 0xdfe4ea, blink: 0xc87a10, tail: 0x8a0f12, chrome: 0xd9dde0, rim: 0x8e949a };
-function carGeometry() {
+export function carGeometry() {
   const { parts } = buildCar(MEGANE, { lite: true });
   const trim = Object.entries(TRIM).filter(([k]) => parts[k]).map(([k, hex]) => {
     const g = keep(parts[k]), c = new THREE.Color(hex), n = g.attributes.position.count, col = new Float32Array(n * 3);

@@ -98,7 +98,7 @@ async function run() {
 
   // walkable continuity: in OUTDOOR (outside Hus L's row and the flat), two points 5 cm apart never differ by more than
   // 5 cm unless a collision segment lies between them
-  const segs = world.levels[0].segments;
+  const segs = [...world.levels[0].segments, ...(world.upperSegments ?? [])]; // (#357: over the garage door only up on the courtyard; the garage's floor goes on below)
   const cross = (ax, az, bx, bz) => segs.some((s) => {
     const d = (s[2] - s[0]) * (bz - az) - (s[3] - s[1]) * (bx - ax);
     if (Math.abs(d) < 1e-12) return false;
