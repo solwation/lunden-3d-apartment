@@ -679,6 +679,11 @@ src/cooking.js         the life sim's kitchen work (M1): actions judged by the t
                        `sandwichLayers`); 'slice' — the cheese slicer at the block on the board / a worktop: a cheeseSlice of
                        ITEMS `slice.g` (on a free board spot / beside the block), the last one is what is left and the block goes;
                        the tools turn `clean: 'used'`
+                       A sandwich (#379) = a slice of bread with `parts` (butter, cheeseSlice, cucumberSlice in order, any mix, at most
+                       LIFE.sandwich.max): 'addTopping' — a slice in the hand onto the bread is removed and becomes a part of exactly
+                       its amount (moved, never copied); named from its parts (`items.namers.breadSlice`: "ost- och gurkmackan",
+                       "ostmackan", "gurkmackan", "smörgåsen"); three plates (LIFE_TOOLS.stock) stand in the wall cabinet over the free
+                       worktop (store 'plates', interior.js stock 'platesLife': its static stack left out)
 src/actions.js         what you can do with a life-sim thing (#367): `ActionSet.define({ id, label, applies, check, run, consumes,
                        result, duration, interrupt, order, quiet })`, `list(ctx)` = the rows with a Swedish `reason` when blocked
                        ("Öppna kylen först", "Tallriken är full", "För långt bort"); life.js `baseActions`: putOn, take, open, close.
@@ -937,7 +942,8 @@ tools/lifetest.html    headless test of the life sim's M1, the sandwich flow (#3
                        its slices, pushing them onto a plate (#375); one / three slices, the chop, the mass balance, fast presses,
                        slices taken one by one, the end, a reload (#376); the bread bag closed / opened, slices down to 0 and no
                        further, the empty bag stays, a slice on a plate, one eaten plain in four bites (#377); a dab and spreading
-                       (exact grams, the layer, double presses), cheese slices on the board and the worktop, the last bits (#378)
+                       (exact grams, the layer, double presses), cheese slices on the board and the worktop, the last bits (#378); a
+                       plate from the cabinet, toppings moved exactly once, names, the layer limit, carried to the table, a reload (#379)
 tools/inventorytest.html headless test (#365): the `&life` scenario's start state, the visitor's records untouched, the
                        integration points the inventory names; without &life the game starts at START
 tools/stamp.sh         build the published site with a version stamp (used by CI)

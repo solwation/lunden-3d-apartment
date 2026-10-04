@@ -589,7 +589,7 @@ function buildKitchen(B, group, floor, y0, yC, handled, taps, appliances) {
   const visEnd = southWall - wd;
   for (const [a, b] of eastSpans) if (b > visEnd) EW.box(visEnd, b, -wd, -FT, yW, yTop, M.front);
   const wallOpen = { ...open, depth: wd };
-  doorRow(EW, runZ0 + cupW, hob ? hob[0] : visEnd, yW, yTop, 0.5, { low: true, open: hob ? wallOpen : { ...wallOpen, corner: 'a1' }, fill: ['plates', 'glasses', 'mugs'] });
+  doorRow(EW, runZ0 + cupW, hob ? hob[0] : visEnd, yW, yTop, 0.5, { low: true, open: hob ? wallOpen : { ...wallOpen, corner: 'a1' }, fill: ['plates', 'glasses', 'mugs', 'platesLife'] }); // (the one over the free worktop: the life sim's plates, #379)
   cupCabinet = { front: wallX, back: eastWall, z0: runZ0, z1: runZ0 + cupW, y0: yW, y1: yTop, material: M.front, handle: M.handle };
   // the worktop between the tall unit and the hob: somewhere to put a cup down
   cupSurfaces.push({ x0: eFront + 0.03, x1: eastWall - 0.03, z0: runZ0 + 0.03, z1: firstEnd - 0.03, y: top });

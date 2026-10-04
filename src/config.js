@@ -1093,7 +1093,7 @@ export const LIFE = {
   // as they are) and its door bins [y on the door, spots as fractions of the door's width]; the freezer: the top of the frozen
   // bags in its top basket (1.02 + the bags' 0.35 × 0.26 m). Our picks, from fridge.js's own shelf heights.
   stores: { fridge: { shelves: [0.45, 1.52], bins: [[0.85, [0.3, 0.7]], [1.3, [0.3, 0.7]], [0.4, [0.7]]] }, freezer: { y: 1.117, peas: 0.15 },
-    boardRack: { z: 2.95, lean: 10 } }, // the cutting board on its long edge against the splashback (#374): its middle's z, leaning ° off upright // peas: the lower open shelf's spot east of the fish-finger carton (x from the middle, #373)
+    boardRack: { z: 2.95, lean: 10 }, plates: { stack: 0.019 } }, // plates: the height of one plate in the stack (#379) // the cutting board on its long edge against the splashback (#374): its middle's z, leaning ° off upright // peas: the lower open shelf's spot east of the fish-finger carton (x from the middle, #373)
   place: { grid: 0.05, floorGrid: 0.1, margin: 0.04, turn: 45 },
   // saving (#371): localStorage `key` written `every` s after a change; a thing whose place is gone lands on the free worktop (`lost`)
   save: { key: 'lunden.life', every: 1, lost: [5.25, 0.931, 3.0] },
@@ -1122,7 +1122,8 @@ export const LIFE_FOOD = {
 // cheese slicer in the utensil drawer under the hob, the cutting board leaning on the splashback between the sink and the
 // hob (`boardRack`: off the worktop's free space, the user finds the kitchen cramped). Our picks.
 export const LIFE_TOOLS = {
-  stock: [['knife', 'utensils', 0], ['butterKnife', 'utensils', 1], ['cheeseSlicer', 'utensils', 2], ['board', 'boardRack', 0]],
+  stock: [['knife', 'utensils', 0], ['butterKnife', 'utensils', 1], ['cheeseSlicer', 'utensils', 2], ['board', 'boardRack', 0],
+    ['plate', 'plates', 0], ['plate', 'plates', 1], ['plate', 'plates', 2]], // three plates in the wall cabinet over the free worktop (#379)
   // what a tool tag does to a food tag (life.js tool actions): `label` = the action, `not` = the wrong tool's message
   // ("Osthyveln skär inte gurka"); a new tool is an ITEMS entry with one of these tags, nothing else
   uses: [

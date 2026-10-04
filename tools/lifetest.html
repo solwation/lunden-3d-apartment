@@ -17,6 +17,8 @@
 //       no further, the empty bag stays; a slice on a plate; a slice eaten plain in four bites.
 //  #378 butter (open the pack, a dab on the butter knife, spread: −8 g exactly, a yellow layer, a double press = one
 //       portion) and cheese (the slicer: −12 g exactly, a slice on the board / beside the block); the tools used; the last bits.
+//  #379 a sandwich: a plate from the plate cabinet, toppings onto the bread move exactly once, free combinations named from
+//       what is on them, the layer limit, carried on the plate to the dining table, a half-built one through a reload.
 //   chromium --headless=new --dump-dom http://localhost:8137/tools/lifetest.html
 import { LIFE_FOOD, LIFE_TOOLS } from '../src/config.js';
 const out = document.getElementById('out');
@@ -106,7 +108,7 @@ try {
   const drawer = A.world.lids.find((l) => l.stock === 'utensils'), fridge = A.fridge;
   const tool = (type) => I.all().find((i) => i.type === type && i.home?.store);
   const [knife, bknife, slicer, board] = ['knife', 'butterKnife', 'cheeseSlicer', 'board'].map(tool);
-  check(LIFE_TOOLS.stock.every(([t, s, k]) => { const it = tool(t); return it && it.place.at === 'slot' && it.place.store === s && it.place.slot === k; }), 'the knife, the butter knife and the cheese slicer in the drawer, the board on the splashback');
+  check(LIFE_TOOLS.stock.every(([t, s, k]) => I.all().some((it) => it.type === t && it.home?.store === s && it.home.slot === k && it.place.at === 'slot' && it.place.store === s && it.place.slot === k)), 'the knife, the butter knife and the cheese slicer in the drawer, the board on the splashback (the plates in their cabinet)');
   // shut drawer: no tool; open: each taken with E and put back with E (the drawer's box)
   const kp = life.view(knife).where();
   check(life.view(knife).target.blockedText === 'Öppna lådan först', `the shut drawer: "${life.view(knife).target.blockedText}"`);
@@ -377,6 +379,63 @@ try {
   shut();
   f.remove();
 } catch (e) { pass = false; lines.push(`FAIL #378 error ${e.stack}`); }
+
+// --- #379: building a sandwich and carrying it on a plate --------------------------------------------------------
+try {
+  const f = await load('life&shot');
+  const { A, settle, aim, shut, life, I, step, btn } = kit(f);
+  const V = A.camera.position.constructor;
+  const cab = A.world.lids.find((l) => l.stock === 'platesLife');
+  const stocked = I.all().filter((i) => i.type === 'plate' && i.home?.store === 'plates');
+  check(stocked.length === 3 && stocked.every((p) => p.place.store === 'plates'), `three plates in the plate cabinet (${stocked.map((p) => p.place.slot).join(', ')})`);
+  cab.toggle(); settle(cab);
+  const top = stocked.find((p) => p.place.slot === 2), tp = life.view(top).where(); tp.y += 0.01;
+  const t1 = aim(tp, /^Ta tallriken/, [[4.4, tp.z], [4.5, tp.z - 0.2], [4.5, tp.z + 0.2]]);
+  if (t1) { btn.click(); step(1 / 60); }
+  const plate = I.held();
+  check(t1 && plate?.type === 'plate' && plate.home?.store === 'plates', `"${t1}": a plate in the hand`);
+  life.view(plate).placeAt(new V(5.25, 0.93, 2.6), 0); step(1 / 60);
+  const bread = life.create('breadSlice', { at: 'hand' }); step(1 / 60);
+  life.options({ item: life.view(plate) }).find((o) => o.id === 'putOn').run(); step(1 / 60);
+  I.set(bread, { parts: [{ type: 'butter', amount: 8 }], prep: 'spread' });
+  check(I.name(bread) === 'smörgåsen' && bread.place.parent === plate.id, `butter only: "${I.name(bread)}" on the plate`);
+  // a cheese slice and two cucumber slices from where they lie: each leaves its place exactly once
+  const cs = life.create('cheeseSlice', { at: 'world', pos: [5.25, 0.93, 2.9], yaw: 0 });
+  const cucs = [0, 1].map((k) => life.create('cucumberSlice', { at: 'world', pos: [5.2 + k * 0.05, 0.93, 3.1], yaw: 0 }));
+  const add = (it, onto = bread) => { life.view(it).take(); step(1 / 60); const r = life.options({ item: life.view(onto) }).find((o) => o.id === 'addTopping'); const ok = r && !r.reason && r.run(); step(1 / 60); return [r, ok]; };
+  const [r1] = add(cs);
+  check(r1?.label === 'lägga ostskivan på smörgåsen' && !I.get(cs.id) && !life.views.has(cs.id) && bread.parts.length === 2 && bread.parts[1].type === 'cheeseSlice' && bread.parts[1].amount === 12 && !A.heldItem(), `"${r1?.label}": the slice gone, one 12 g cheese layer`);
+  check(I.name(bread) === 'ostmackan', `now: "${I.name(bread)}"`);
+  const nC = I.ofType('cucumberSlice').length;
+  for (const k of cucs) add(k);
+  check(I.ofType('cucumberSlice').length === nC - 2 && bread.parts.filter((x) => x.type === 'cucumberSlice').length === 2 && I.name(bread) === 'ost- och gurkmackan', `two cucumber slices on: "${I.name(bread)}", ${bread.parts.length} layers`);
+  // a cucumber-only sandwich is fine too
+  const plain = life.create('breadSlice', { at: 'world', pos: [5.25, 0.93, 3.25], yaw: 0 });
+  add(life.create('cucumberSlice', { at: 'world', pos: [5.3, 0.93, 3.1], yaw: 0 }), plain);
+  check(I.name(plain) === 'gurkmackan' && plain.parts.length === 1, `cucumber only: "${I.name(plain)}"`);
+  // the layer limit
+  const extra = [0, 1].map(() => life.create('cucumberSlice', { at: 'world', pos: [5.3, 0.93, 3.0], yaw: 0 }));
+  add(extra[0]); add(extra[1]);
+  const over = life.create('cheeseSlice', { at: 'world', pos: [5.3, 0.93, 2.95], yaw: 0 });
+  const [r6] = add(over);
+  check(bread.parts.length === 6 && r6?.reason === 'Mackan rymmer inte mer' && over.place.at === 'hand', `full: "${r6?.reason}", the slice still in the hand (${bread.parts.length} layers)`);
+  life.view(over).placeAt(new V(5.3, 0.93, 2.95), 0); step(1 / 60);
+  // carried on the plate to the dining table
+  life.view(plate).take(); step(1 / 60);
+  check(bread.place.parent === plate.id && life.view(bread).model.parent?.parent === life.view(plate).model, 'the plate in the hand: the sandwich rides on it');
+  life.view(plate).placeAt(new V(3.5, 0.754, 1.3), 0.4); step(1 / 60);
+  const bw = life.view(bread).where();
+  check(Math.abs(bw.x - 3.5) < 0.1 && Math.abs(bw.z - 1.3) < 0.1 && bw.y > 0.75, `on the dining table (${bw.x.toFixed(2)}, ${bw.y.toFixed(2)}, ${bw.z.toFixed(2)})`);
+  // a half-built sandwich through a reload
+  I.set(plain, {}); const rec = A.keepWorld().life;
+  life.load(rec);
+  const b2 = I.get(bread.id), p2 = I.get(plate.id), q2 = I.get(plain.id);
+  check(b2?.parts.length === 6 && b2.place.parent === p2?.id && I.name(b2) === 'ost- och gurkmackan' && q2?.parts.length === 1, `after a reload: "${I.name(b2)}" with ${b2?.parts.length} layers still on its plate; "${I.name(q2)}" too`);
+  check(life.view(b2).view.object.getObjectByName('layers')?.children.length >= 4, 'its layers are drawn');
+  check(I.audit().length === 0, `audit: ${I.audit().join('; ') || 'ok'}`);
+  shut();
+  f.remove();
+} catch (e) { pass = false; lines.push(`FAIL #379 error ${e.stack}`); }
 
 // a new visit keeps the amounts (lunden.life, #371): not the &life scenario, the visitor's own home
 try {

@@ -15,6 +15,9 @@ import { sfx } from './audio.js';
 //   #378 butter and cheese: the butter knife takes a dab from the open pack (−8 g, a yellow lump on the knife) and spreads
 //        it on a slice of bread (a yellow layer, the bread's parts); the cheese slicer takes 12 g slices off the block on
 //        the board or a worktop (the block shorter); the tools become used; the last bit of either is what is left
+//   #379 a sandwich: a slice of bread with layers (its `parts`: butter, cheese, cucumber — any combination); a slice of
+//        cheese / cucumber in the hand onto the bread leaves its own place exactly once; LIFE.sandwich.max layers; named
+//        from what is on it ("ost- och gurkmackan"); it rides on a plate like anything else
 
 const cap = (s) => (s ? s[0].toUpperCase() + s.slice(1) : s);
 
@@ -248,6 +251,37 @@ export function cookingActions(life) {
     cancel: (c, job) => { if (job.base && c.heldView?.held) c.heldView.model.position.copy(job.base); },
     consumes: 'slice.g of the block (what is left, if less)', result: 'one cheese slice of that much on the board / beside the block; the slicer used',
   });
+
+  // a topping in the hand onto a slice of bread (#379): moved into the bread's parts (the slice itself is gone), never copied
+  A.define({
+    id: 'addTopping', order: 1,
+    label: (c) => `lägga ${nm(c.held)} på ${nm(c.target)}`,
+    applies: (c) => !!c.held && I.has(c.held, 'topping') && !!c.target && I.has(c.target, 'base') && c.target !== c.held,
+    check: (c) => {
+      if (c.target.place.at === 'hand') return 'Lägg ner brödet först';
+      if (c.target.parts.length >= LIFE.sandwich.max) return 'Mackan rymmer inte mer';
+      if (c.target.lock || c.held.lock) return 'Vänta lite';
+      return c.targetView?.shutReason() ?? null;
+    },
+    run: (c) => {
+      const top = c.held, bread = c.target;
+      const part = { type: top.type, amount: top.amount };
+      if (!I.remove(top)) return; // (it leaves its place first; nothing is added if it could not)
+      I.set(bread, { parts: [...bread.parts, part], prep: 'assembled' });
+      sfx.click(c.targetView?.where());
+    },
+    consumes: 'the topping in the hand (removed)', result: 'one more part on the bread: { type, amount } exactly as the topping was',
+  });
+  /** A sandwich's name from what is on it (#379): "ost- och gurkmackan", "ostmackan", "smörgåsen med smör" … */
+  I.namers.breadSlice = (it) => {
+    const has = (t) => it.parts?.some((p) => p.type === t);
+    const cheese = has('cheeseSlice'), cuc = has('cucumberSlice');
+    if (cheese && cuc) return 'ost- och gurkmackan';
+    if (cheese) return 'ostmackan';
+    if (cuc) return 'gurkmackan';
+    if (has('butter')) return 'smörgåsen';
+    return null;
+  };
 
   // the wrong tool (#374): a tool in the hand, food that some other tool works on — a row that says why, nothing used
   A.define({
