@@ -125,7 +125,7 @@ export class Marks {
    */
   hit(from, to, { weapon = null, eye = from, glass = false } = {}) {
     const brk = weapon ? this.breaker : null;
-    let list = this.cat?.visible ? [...this.meshes(), ...catMeshes(this.cat)] : this.meshes();
+    let list = this.cat?.visible && !this.cat.held ? [...this.meshes(), ...catMeshes(this.cat)] : this.meshes(); // (not Miele in your arms, #328)
     if (brk) { const near = brk.meshesNear(from, to); if (near.length) list = [...list, ...near]; }
     const all = this.segment(from, to, list);
     for (const h of all) {

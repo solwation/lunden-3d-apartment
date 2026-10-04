@@ -43,7 +43,7 @@ function holdKey(h) {
   const p = h.local?.pos ?? h.home?.pos;
   return `${h.name}|${p ? vec(p).join(',') : ''}`;
 }
-const keepable = (a, h) => h !== a.chicken && !h.broken && !h.flying; // the chicken cooks: fresh (and a ball in the air)
+const keepable = (a, h) => h !== a.chicken && !h.broken && !h.flying && !h.isMiele; // the chicken cooks: fresh (and a ball in the air); Miele in your arms is the cat's (#328)
 
 const PARTS = {
   clock: {
@@ -239,11 +239,11 @@ const PARTS = {
 
   cat: {
     save({ cat, world, BREEDS, VARIANTS }) {
-      if (!cat.visible || cat.leaving) return null;
+      if (!cat.visible || cat.leaving || cat.released || cat.held) return null; // (Miele held or just put down: not kept, #328)
       const o = cat.object, b = BREEDS.indexOf(cat.breed), coats = cat.breed.name === 'huskatt' ? VARIANTS : cat.breed.coats;
       const doorKeys = keys(world.doors, openKey), di = world.doors.indexOf(cat.door);
       return { p: vec(o.position), ry: r3(o.rotation.y), b, c: coats.indexOf(cat.variant), n: cat.catName, on: cat.on ?? null,
-        door: di >= 0 ? doorKeys[di] : null, shut: cat.closedSince ? 1 : 0 };
+        door: di >= 0 ? doorKeys[di] : null, shut: cat.closedSince ? 1 : 0, seen: cat.seen ? 1 : 0 };
     },
     load({ cat, world, BREEDS, VARIANTS }, s) {
       const breed = BREEDS[s.b];
@@ -257,6 +257,7 @@ const PARTS = {
       cat.on = s.on ?? null;
       cat.door = s.door ? byKey(world.doors, openKey).get(s.door) ?? null : null;
       cat.closedSince = !!s.shut;
+      cat.seen = !!s.seen; cat.photoDone = cat.seen; // Miele (#328): found already, not again
       cat.leaving = null;
       cat.setOpacity(1);
       cat.nextMeow = 2 + Math.random() * 3;

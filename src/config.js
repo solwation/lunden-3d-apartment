@@ -981,6 +981,7 @@ export const SCORE = {
     walkRain: 15, walkSnow: 25, walkHail: 40, walkStorm: 30, // out in the weather (#249): the first time, then `again` per shower
     shattered: 5, // per kind of thing shot to pieces (#263)
     pingpingHugs: 10, // hugging Pingping (#269)
+    miele: 1000, mieleHugs: 20, // Miele found (#328): the rarest find there is (4 × a sphynx), then `again` per find; a hug
     carMusic: 3, // per song played in the car (#268), like the speakers' songs
     airfried: 6, // a batch of fish fingers done in the air fryer (#287): the first time, then `again` per batch
     friesCooked: 8, // a basket of Aviko fries cooked golden (#301): the first time, then `again` per batch
@@ -992,7 +993,7 @@ export const SCORE = {
     doors: 0.1, lids: 0.1, flushes: 0.2, taps: 0.1, fridge: 0.1, appliances: 0.1, cabinets: 0.05, lights: 0.05,
     sat: 0.1, lay: 0.1, songs: 0.2, read: 0.5, car: 1, grill: 1, hood: 0.2, tv: 0.2, pc: 0.3, parasol: 0.2,
     clock: 0.1, calendar: 0.1, greets: 0.1, catButts: 1, walkRain: 2, walkSnow: 3, walkHail: 4, walkStorm: 3,
-    shattered: 0.3, carMusic: 0.2, pingpingHugs: 0.2, blinds: 0.05, airfried: 0.5, friesCooked: 0.5,
+    shattered: 0.3, carMusic: 0.2, pingpingHugs: 0.2, miele: 100, mieleHugs: 0.5, blinds: 0.05, airfried: 0.5, friesCooked: 0.5,
     fruit: 0.3,
     nest: 0.2,
   },
@@ -1013,6 +1014,17 @@ export const FRIDGE_ALARM = { after: 60, every: 2 };
 // A cat that is shot, cut or hit (#288, cat.js `hurt`): it hisses and runs off (CAT_LEAVE, `speed` × as fast) and fades;
 // no cat turns up behind a door for `away` s. Nothing graphic.
 export const CAT_HURT = { speed: 2.2, away: 90 };
+// Miele (#328, cat.js / src/miele.js): the family's own cat (the photo on the Sovrum 1 window board, #322) as a super-rare
+// find. `weight` = her draw weight among BREEDS (whose weights add up to 100): ~1 in 180 cats (*guess*, the issue's
+// 1 in 150–200); at most once until she has walked off. Seen within `see` m (on screen, no wall between) she counts:
+// heart fireworks (`fireworks` shells that pop into `sparks` small hearts each over ~`life` s), SCORE.first.miele.
+// E takes her into your arms like Pingping: `held` = where she sits (camera space, her feet), `tilt` back (rad), the
+// hands round her sides at `grips` (her frame); a hug (click / "Krama") pulls her in `pull` m, squeezed by `squash`,
+// over `hugTime` s. Put down she looks at you for `linger` s, then walks off. Coat colours read off docs/miele-foto-ram.jpg.
+export const MIELE = { weight: 0.56, see: 7, fireworks: 7, sparks: 12, life: 3,
+  held: { x: 0.0, y: -0.43, z: -0.5, tilt: -0.3 }, grips: [[0.095, 0.16, 0.02], [-0.095, 0.16, 0.02]],
+  pull: 0.08, squash: 0.12, hugTime: 0.8, linger: 2,
+  colors: { base: '#857461', light: '#a8977f', stripe: '#2a231e', white: 0xf3f1ec, ear: 0x6b5a48, tip: 0x241e1a, eye: 0xe0a62a } };
 // The leaderboard: how many rows are shown, how often a changed score is sent (s).
 export const LEADERBOARD = { show: 10, every: 30, nameMax: 20 };
 

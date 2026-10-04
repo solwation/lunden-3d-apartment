@@ -1,5 +1,6 @@
 import * as THREE from 'three';
-import { COLORS, LEVELS, DAY, START, PLAYER, DRAWING, STAIR, HOLD, REMOTE, REST, DOOR_HEIGHT, TURBO, WEATHER, BREAK, CAR, KITCHEN, LAPTOP, NEST, AUTO_RELOAD } from './config.js';
+import { COLORS, LEVELS, DAY, START, PLAYER, DRAWING, STAIR, HOLD, REMOTE, REST, DOOR_HEIGHT, TURBO, WEATHER, BREAK, CAR, KITCHEN, LAPTOP, NEST, AUTO_RELOAD, MIELE } from './config.js';
+import { MieleHeld, HeartFireworks } from './miele.js';
 const DRAWING_COLORS = DRAWING.colors;
 import { buildWorld } from './world.js';
 import { photoGlow } from './furniture.js';
@@ -483,6 +484,43 @@ function checkCatButt() {
   bump('catButts', 1, key);
 }
 
+// Miele (#328): the family's cat, super-rare. Seen (on screen, within MIELE.see, no wall between) she counts once per
+// time she turns up: heart fireworks, a trill and a pling, a big score; E takes her into your arms (miele.js)
+const miele = new MieleHeld(scene, camera, cat);
+const fireworks = new HeartFireworks(scene);
+cat.canHold = () => !heldItem();
+cat.watchPoint ??= () => camera.position;
+miele.dropSpot = () => { // at your feet, a little in front
+  const f = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion).setY(0).normalize().multiplyScalar(0.45);
+  const x = player.pos.x + f.x, z = player.pos.z + f.z;
+  return new THREE.Vector3(x, player.pos.y + rugLift(Math.max(0, player.level), x, z), z);
+};
+const miePhoto = () => { // her photo on the cat board: the first time she is held or hugged, each time she turns up
+  if (cat.photoDone) return;
+  cat.photoDone = true;
+  bump('catPhotos');
+  board.add('Miele', snapshot(renderer, scene, camera, cat.head.getWorldPosition(new THREE.Vector3())));
+};
+miele.onPickUp = miePhoto;
+miele.onHug = () => { bump('mieleHugs'); miePhoto(); };
+if (params0.has('miele')) cat.forceMiele = true; // &miele: the next cat to turn up is her (tests, screenshots)
+const mieleFrustum = new THREE.Frustum(), mieleAt = new THREE.Vector3();
+function checkMiele() {
+  if (!cat.visible || !cat.isMiele || cat.seen || cat.held || cat.leaving?.hurt) return;
+  const head = cat.head.getWorldPosition(mieleAt);
+  if (head.distanceTo(camera.position) > MIELE.see) return;
+  camera.updateMatrixWorld();
+  mieleFrustum.setFromProjectionMatrix(buttMat.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse));
+  if (!mieleFrustum.containsPoint(head) || behindWall(head)) return;
+  cat.seen = true;
+  const again = !!stats.seen?.miele?.Miele;
+  bump('miele', 1, 'Miele');
+  badge(again ? '💖 Miele igen!' : '💖 Du hittade Miele!', false);
+  fireworks.burst(head.clone());
+  sfx.meow(head, cat.variant.pitch * (cat.breed.pitch ?? 1), cat.voice);
+  sfx.pling(head, 1.2);
+}
+
 /** A stable name for a thing you use (its name and where it is), for the points that come once per thing (#197). */
 function idOf(t) {
   const o = t.pickable ?? t.object;
@@ -594,9 +632,11 @@ if (params.has('cat')) {
   cat.object.rotation.y = THREE.MathUtils.degToRad(yaw);
   cat.object.visible = true;
   // &catb=i breed, &catv=i coat (of that breed, or of all coats for a huskatt)
-  const breed = BREEDS[Number(params.get('catb') ?? 0)];
+  const ordinary = BREEDS.filter((b) => !b.superRare); // Miele only with &miele (#328)
+  const breed = params.has('miele') ? BREEDS.find((b) => b.superRare) : ordinary[Number(params.get('catb') ?? 0) % ordinary.length];
   const coats = breed.name === 'huskatt' ? VARIANTS : breed.coats;
   cat.setCat(breed, coats[Number(params.get('catv') ?? 0) % coats.length]);
+  if (breed.superRare) cat.forceMiele = false; // she is here already
   cat.t = Number(params.get('catt') ?? 1.5);
   cat.nextMeow = 1e9;
   // &catwalk: up on all four, walking on the spot (#224; &catt = the moment in the gait)
@@ -903,7 +943,7 @@ function use(thing) {
     thing.toggle();
     if (thing.isOpen) bump('lids', 1, idOf(thing));
     sfx.lid(thing.object.position, thing.isOpen);
-  } else if (thing.kind === 'cat') cat.pet(player.pos);
+  } else if (thing.kind === 'cat') { if (cat.isMiele && !heldItem()) miele.take(); else cat.pet(player.pos); } // Miele: into your arms (#328)
   else if (thing.kind === 'greet') { greet.greet(thing.fig); bump('greets', 1, `fig${people.figs.indexOf(thing.fig)}`); } // hello (#247)
   else if (thing.kind === 'tap') {
     thing.toggle();
@@ -1035,7 +1075,7 @@ function updateFocus() {
   raycaster.far = reach;
   // (the raycaster ignores visibility, so the cat is only a target while it is there)
   // the car key only while its cabinet is open
-  const extra = [...(cat.visible ? [cat.object] : []), ...(keyCabinet?.keyReachable ? [world.carKey.pickable] : []), ...car.targets(rest.target).map((t) => t.pickable), // our car's doors and front seats (#250)
+  const extra = [...(cat.visible && !cat.held ? [cat.object] : []), ...(keyCabinet?.keyReachable ? [world.carKey.pickable] : []), ...car.targets(rest.target).map((t) => t.pickable), // our car's doors and front seats (#250)
     ...(world.furnitureOn ? [...(target.object.visible ? [target.target] : []), ...patio.targets, ...world.furnitureTargets, ...holdables.map((h) => h.target), drawing.target, ...posters.targets].map((t) => t.pickable) : [])]; // parasol, TV, seats, beds, toys — unless F hid the furniture
   // the nearest hit on something actually shown (F hides the loose items, the raycaster doesn't care)
   const cupTargets = cups.cups.filter((c) => !c.held && c.state !== 'spare').map((c) => c.target.pickable);
@@ -1071,7 +1111,10 @@ function updateFocus() {
   if (item?.placeAt) {
     const top = raycaster.intersectObjects(world.cupSurfaces, false).find((h) => shown(h.object) && h.point.y >= h.object.userData.surface - 0.02 && (item.soft || !h.object.userData.soft)); // a bed / a sofa only for a plush toy (#269)
     let spot = top && top.distance < reach && !behindWall(top.point) ? { point: top.point.clone().setY(top.object.userData.surface), distance: top.distance } : null;
-    if (!spot) { const f = floorSpot(); if (f && f.distance < reach && !behindWall(f.point)) spot = f; } // a table top is always above (before) the floor
+    if (spot && item.softOnly && !top.object.userData.soft) { // Miele: not on a table or a worktop (#328)
+      if (!hit || spot.distance <= hit.distance + 0.05) focused = { name: '', kind: 'place', blocked: true, blockedText: 'Miele får inte vara på bordet' };
+      spot = null;
+    } else if (!spot) { const f = floorSpot(); if (f && f.distance < reach && !behindWall(f.point)) spot = f; } // a table top is always above (before) the floor
     if (spot && (!hit || spot.distance <= hit.distance + 0.05)) {
       placeTarget = { name: `${item.name} här`, kind: 'place', verb: item.placeVerb ?? 'lägga ner', item, point: spot.point };
       focused = placeTarget;
@@ -1159,7 +1202,7 @@ function toggleFurniture(on = !world.furnitureOn) {
     for (const h of holdables) if (h.placed) h.goHome();
     cups.reset(); // the cups standing out go, the cabinet is full again (#215)
   }
-  if (!on && cat.visible) cat.hide(); // the cat goes too (and stops purring); none turn up until F is back
+  if (!on && cat.visible && !(cat.isMiele && (cat.released || cat.leaving))) cat.hide(); // (Miele, just put down, walks off, #328) // the cat goes too (and stops purring); none turn up until F is back
   if (!on) for (const t of world.furnitureTargets) if ((t.kind === 'tv' || t.kind === 'pc') && t.isOpen) t.toggle(); // screens off
   if (!on) for (const l of laptops) l.set(false); // Tilly's laptop too (#283)
   if (!on) nests.hush(); // the smart speakers stop talking (#325)
@@ -1173,6 +1216,7 @@ function toggleFurniture(on = !world.furnitureOn) {
 world.looseItems.push(board.object, ...holdables.flatMap((h) => (h.homeParent ? [h.holder] : [h.holder, h.model])), ...toys.deco); // (the secretary's things go home into it with F, and the secret drawer shows one at a time, #183)
 const milk = fridge?.milkAt ? new Milk(scene, camera, fridge) : null; // the milk carton in the fridge (#168): not hidden with F, only sent home
 if (milk) holdables.push(milk);
+holdables.push(miele); // Miele in your arms (#328): not a loose item (she is the cat)
 if (fries) holdables.push(fries.bag); // the bag of fries in the freezer (#301): like the milk, not hidden with F, only sent home
 world.looseItems.push(fruit.group, ...cups.cups.map((c) => c.model), drawing.paper, calendar.object, ...posters.groups, ...(fish ? [fish.object] : [])); // the cups and the paper go with F too // the cat board and the toys go with the furniture (F)
 try { if (localStorage.getItem('lunden.furniture') === '0') toggleFurniture(false); } catch { /* ignore */ }
@@ -1284,6 +1328,8 @@ function step(dt) {
   greet.update(dt); // greetings and answers (#247)
   cat.update(dt);
   checkCatButt();
+  checkMiele();
+  fireworks.update(dt);
   measure.update(dt, window.innerWidth, window.innerHeight);
   if (active() && reading) updateFocus();
   else if (drawing.active) drawing.update(dt); // drawing: the camera over the paper, nothing else moves you
@@ -1549,4 +1595,4 @@ if (resumeOk && resumed.mode) continueAfterReload(resumed);
 document.documentElement.classList.remove('resuming'); // the page is ready: off with the "Laddar…" cover (#222)
 
 // handle for tests/debugging (tools/touchtest.html)
-window.__app = { nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };
+window.__app = { miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };

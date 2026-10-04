@@ -89,7 +89,7 @@ export function pingpingModel() {
 }
 
 /** A soft pink heart with a glow (the hearts that rise when he is hugged). */
-function heartTexture() {
+export function heartTexture() {
   const c = document.createElement('canvas');
   c.width = c.height = 64;
   const g = c.getContext('2d');
@@ -106,7 +106,7 @@ function heartTexture() {
 }
 
 /** Hearts rising from a point in the world: a burst per hug, each lives `life` s. */
-class Hearts {
+export class Hearts {
   constructor(scene, n) {
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(n * 3), 3));

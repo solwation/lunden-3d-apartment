@@ -95,6 +95,8 @@ src/version.js         BUILD stamp + polling for a newer published version
 src/keep.js            the world's state across a page-made reload (#277): saveWorld / loadWorld, one part per module
 src/reset.js           "Återställ" on the start screen (#303): clears every local 'lunden.*' key except RESET_KEEP (config)
 src/cat.js             the cat: random coat, washing animation, appears/moves/vanishes behind doors
+src/miele.js           Miele (#328): `HeartFireworks` (heart shells that pop into small hearts) and `MieleHeld` (a Holdable with no
+                       home: the cat object rides in it, hand.js 'hug'; click / "Krama" hugs; put down she walks off)
 src/furniture.js       loose furniture from FURNITURE in config (IKEA LANDSKRONA sofa/armchair …)
 src/rugs.js            the rugs furniture.js built (#55, #310, #317): `rugLift(level, x, z)` = a shown rug's top over the floor there
                        (the cat follows it as it walks); `rugUnder` from config: a piece whose whole footprint is on a rug
@@ -477,6 +479,9 @@ tools/measuretest.html headless test of the tape measure (wall to wall in the li
 tools/watertest.html   headless test: aim at every tap/shower, turn it on and off
 tools/lighttest.html   headless test: aim at every light switch / floor lamp, toggle it
 tools/pettest.html     headless test of petting the cat (eyes, hand, stats counter, the photo; then it walks off and is gone)
+tools/mieletest.html   headless test of Miele (#328, &miele): her coat, first sight (fireworks, +1000, once), taken up (both hands, not
+                       hit by a shot), the board photo "Miele", a hug, not on a table, down on the floor → walks off, found again
+                       (+100), F while held, the rarity (seeded draws, ~1 in 180) and the lock
 tools/scoretest.html   headless test: points from 0, a door (again: a little), the grill, a fish finger the cat eats, cats by breed
                        (+ a new coat), 100 sips (no cap), a basket / a three, secret kinds (+ rare), the balance; deductions (#288):
                        the fridge alarm (+ longer, the note pauses the freezer), a burnt fish finger, the smoke alarm, a spill, the cat
@@ -864,7 +869,7 @@ URL parameters (debugging / screenshots):
   180 = south, −90 = east. `feetY` = 3.25 for Övre plan.
 - `&shot` — hide the start overlay.
 - `&open` — open every door, cabinet door and drawer (screenshots of open doors / wardrobes / furniture).
-- `&cat=x,z[,yawDeg[,y]]` — show the cat there; `&catv=i` coat variant, `&catt=s` animation time, `&catwalk` walking (#224), `&cattail` its tail up (#262).
+- `&cat=x,z[,yawDeg[,y]]` — show the cat there; `&miele` — Miele instead (with `&cat=`), else the next cat to turn up is her (#328); `&catv=i` coat variant, `&catt=s` animation time, `&catwalk` walking (#224), `&cattail` its tail up (#262).
 - `&time=HH[.h]` — start at that hour (default: the browser's time), `&month=1–12`, `&day=1–31` (default: today), `&freeze` pauses the clock,
   `&clock` opens the wall clock's strip,
   `&lights` turns every lamp on, ceiling lamps too, and keeps the small ones on (#234).
@@ -932,6 +937,18 @@ screenshots into the session scratchpad, not the repo.
   pose; the tube is rebuilt while `tailU` changes), turns round on the spot and a small dark X (`parts.butt`) shows under the
   tail root; sitting it never does, a pat lowers it. Seen from behind (`buttFacing`: within `cone`° and `dist` m, main.js
   `checkCatButt`: on screen, not `behindWall`) it counts once per tail-up (`tailPeriod`): stats `catButts`, SCORE.first per cat.
+- Miele (#328, `MIELE` in config, `MIELE_COAT` + the BREEDS entry 'Miele' with `superRare` in cat.js, src/miele.js): the family's
+  own cat (the photo on the Sovrum 1 window board, #322), a brown mackerel tabby and white (docs/miele-foto-ram.jpg): the tabby
+  is painted on canvases (`tabbyTextures`: the coat material's map — white below the middle, stripes, a white V up the face —
+  and rings on the tail), the rest plain colours; amber eyes. Drawn by her BREEDS `weight` (~1 in 180 cats), never through
+  `&catb`; `mieleLock` keeps a second one out until she has walked off. Named "Miele" always. First seen (main.js
+  `checkMiele`: within `see` m, on screen, not `behindWall`) once per time she turns up: heart fireworks, a trill + pling,
+  stats `miele` (SCORE.first 1000, again 100), "💖 Du hittade Miele!"; not counted as a found cat / breed. E takes her up
+  (`cat.pickUp` into `MieleHeld.model` in the camera; pet only with the hand busy): held she sits, paws forward, looking up,
+  no fish fingers / leaving / tail-up, out of the E and weapon raycasts (`cat.held`); click / "Krama" hugs (stats
+  `mieleHugs`); her board photo the first time she is held or hugged. E on the floor / a bed / a sofa (`softOnly`: a table
+  says "Miele får inte vara på bordet") puts her down (`putDown`): she looks at you, meows, then `leave`s; F or another
+  thing in the hand puts her down at your feet. Not kept across a reload while held / walking off.
 - Every new cat gets a name (`CAT_NAMES`); petting it puts a photo on the kitchen board 0.7 s in
   (`CAT_BOARD` in config: under the wall clock on the Tvätt/Badrum wall, kitchen face; it and the calendar are
   positioned together, centred under the clock).

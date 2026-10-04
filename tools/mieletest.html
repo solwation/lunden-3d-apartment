@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Miele test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+// Miele (#328), the family's super-rare cat (&miele forces her): her coat (white chest and paws, tabby back and tail,
+// amber eyes); first sight gives heart fireworks and the big score, once; E takes her into your arms (both hands), a
+// hug (squeezed, eyes shut, hearts, counted), her board photo captioned Miele; not on a table; down on the floor she
+// looks, walks off and fades; found again: the smaller bonus; F while holding her; never hurt while held; the rarity
+// (seeded draws), and no second Miele while she is out.
+//   google-chrome --headless=new --dump-dom http://localhost:8137/tools/mieletest.html
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+localStorage.removeItem('lunden.stats');
+const f = document.createElement('iframe');
+f.width = 900; f.height = 600;
+f.src = '../index.html?time=12&freeze&miele&cat=4.7,10.0,180';
+document.body.append(f);
+f.onload = async () => {
+  const w = f.contentWindow, d = f.contentDocument;
+  while (!w.__app) await wait(100);
+  const { player, camera, cat, step, hand, miele, fireworks, stats, heldItem, totalScore, scene, world, board, marks } = w.__app;
+  const V = camera.position.constructor;
+  const lines = [];
+  const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return !!ok; };
+  let pass = true;
+  try {
+  d.getElementById('start-touch').click();
+  await wait(50);
+  const btn = d.getElementById('action');
+  await board.load();
+  const lookAt = (p) => { const dx = p.x - camera.position.x, dz = p.z - camera.position.z; camera.rotation.y = Math.atan2(-dx, -dz); camera.rotation.x = Math.atan2(p.y - camera.position.y, Math.hypot(dx, dz)); };
+  // her coat
+  const P = cat.parts, col = (m) => m.color, hex = (m) => m.color.getHex();
+  const isWhite = (c) => c.r > 0.85 && c.g > 0.85 && c.b > 0.8;
+  pass &= check(cat.isMiele && cat.catName === 'Miele' && cat.visible, `Miele is here, named "${cat.catName}"`);
+  pass &= check(isWhite(col(P.bib.material)) && isWhite(col(P.shoulder.children[0].material)) && isWhite(col(P.muzzle.material)), 'white chest, front legs and paws, muzzle');
+  const map = P.body.material.map, tmap = P.tail.material.map;
+  let tabby = false;
+  if (map) {
+    const g = map.image.getContext('2d'), W = map.image.width, H = map.image.height;
+    const px = (x, y) => g.getImageData(x, y, 1, 1).data;
+    const top = px(W * 0.6, 4), bottom = px(W * 0.6, H - 4);
+    tabby = top[0] < 120 && bottom[0] > 220 && bottom[2] > 210; // dark spine line above, white belly below
+  }
+  pass &= check(tabby && tmap && P.body.material.color.getHex() === 0xffffff, 'a painted tabby back over a white belly, a striped tail');
+  const eye = cat.eyes[0].eye.children[0].material.color;
+  pass &= check(eye.r > 0.6 && eye.r > eye.g && eye.g > eye.b * 1.5, `amber eyes (${eye.getHexString()})`);
+  // first sight: fireworks, the big score, once
+  player.spawn(4.7, 8.9, Math.PI);
+  for (let i = 0; i < 3; i++) step(1 / 60);
+  cat.object.updateMatrixWorld(true);
+  const score0 = totalScore();
+  lookAt(cat.head.getWorldPosition(new V()));
+  for (let i = 0; i < 5; i++) step(1 / 60);
+  const gain = totalScore() - score0;
+  const badges = d.getElementById('badges').textContent;
+  pass &= check(cat.seen && stats.miele === 1 && gain >= 1000 && fireworks.active && /hittade Miele/.test(badges), `found: fireworks, +${gain} points, "${badges}"`);
+  for (let i = 0; i < 90; i++) step(1 / 30);
+  const popped = fireworks.small.geometry.attributes.color.array.some((c) => c > 0.05);
+  pass &= check(stats.miele === 1 && totalScore() - score0 === gain && popped, 'counted once; the hearts have popped into small ones');
+  for (let i = 0; i < 60; i++) step(1 / 30);
+  pass &= check(!fireworks.active, 'the fireworks are over after a few seconds');
+  // E takes her up
+  lookAt(cat.head.getWorldPosition(new V()));
+  step(1 / 60);
+  pass &= check(/ta upp miele/i.test(btn.textContent), `the button: "${btn.textContent}"`);
+  const photos0 = board.photos.length;
+  btn.click(); step(1 / 60); step(1 / 60);
+  scene.updateMatrixWorld(true);
+  pass &= check(heldItem() === miele && cat.held && cat.object.parent === miele.model && miele.model.parent === camera, 'Miele in your arms');
+  const rG = miele.model.localToWorld(new V(...miele.hugGrips[0])), lG = miele.model.localToWorld(new V(...miele.hugGrips[1]));
+  pass &= check(hand.visible && hand.left.hand.visible && hand.hand.getWorldPosition(new V()).distanceTo(rG) < 0.1 && hand.left.hand.getWorldPosition(new V()).distanceTo(lG) < 0.1, 'both hands round her sides');
+  const local = cat.head.getWorldPosition(new V()).applyMatrix4(camera.matrixWorldInverse);
+  pass &= check(local.z < -0.2 && local.z > -0.6 && Math.abs(local.x) < 0.1 && local.y < 0, `her head close in front of you, low (${local.x.toFixed(2)}, ${local.y.toFixed(2)}, ${local.z.toFixed(2)})`);
+  // never hurt while held: a shot straight ahead passes her by
+  const eyeP = camera.getWorldPosition(new V()), fwd = new V(0, 0, -1).applyQuaternion(camera.quaternion);
+  camera.rotation.x = -0.6; camera.updateMatrixWorld(); scene.updateMatrixWorld(true);
+  const down = new V(0, 0, -1).applyQuaternion(camera.quaternion);
+  const h = marks.hit(eyeP, eyeP.clone().addScaledVector(down, 2));
+  pass &= check(!h?.cat && !cat.hurt('rifle', eyeP) && cat.held, 'a shot does not hit her in your arms');
+  for (let i = 0; i < 100 && board.photos.length === photos0 && photos0 < 10; i++) await wait(100);
+  pass &= check(board.photos.at(-1)?.name === 'Miele', `her photo on the board, captioned "${board.photos.at(-1)?.name}"`);
+  // a hug
+  camera.rotation.x = 0.5; step(1 / 60);
+  pass &= check(/krama/i.test(btn.textContent), `the touch button: "${btn.textContent}"`);
+  const z0 = miele.model.position.z;
+  btn.click(); for (let i = 0; i < 12; i++) step(1 / 60);
+  pass &= check(stats.mieleHugs === 1 && miele.model.scale.z < 0.97 && miele.model.position.z > z0 + 0.02 && cat.eyes.every((e) => e.shut.visible) && miele.hearts.points.visible,
+    `a hug: squeezed to ${miele.model.scale.z.toFixed(3)}, eyes shut, hearts, counted`);
+  for (let i = 0; i < 150; i++) step(1 / 60);
+  pass &= check(Math.abs(miele.model.scale.z - 1) < 1e-6 && cat.held, 'back to her shape, still held');
+  // not on a table
+  const table = { x: 3.5, y: 0.75, z: 1.6 };
+  let blocked = false;
+  for (const [x, z] of [[2.6, 2.2], [2.5, 1.6], [3.5, 2.6]]) {
+    player.spawn(x, z, 0); for (let i = 0; i < 3; i++) step(1 / 60);
+    lookAt(table); step(1 / 60);
+    if (/miele får inte vara på bordet/i.test(btn.textContent)) { blocked = true; break; }
+  }
+  btn.click(); step(1 / 60);
+  pass &= check(blocked && heldItem() === miele, `not on the dining table: "${btn.textContent}"`);
+  // down on the floor: she looks at you, then walks off and is gone
+  player.spawn(4.7, 8.9, Math.PI); for (let i = 0; i < 3; i++) step(1 / 60);
+  camera.rotation.y = Math.PI; camera.rotation.x = -0.9; step(1 / 60);
+  pass &= check(/sätta ner miele här/i.test(btn.textContent), `the floor: "${btn.textContent}"`);
+  btn.click(); step(1 / 60);
+  const at = cat.object.position.clone();
+  pass &= check(!heldItem() && !cat.held && cat.released && cat.object.parent === scene && cat.visible && Math.abs(at.y - 0.03) < 0.05, `on the floor (y ${at.y.toFixed(3)}), looking at you`);
+  for (let i = 0; i < 40; i++) step(1 / 20);
+  pass &= check(!!cat.leaving, 'then she walks off');
+  for (let i = 0; i < 200 && cat.visible; i++) step(1 / 20);
+  pass &= check(!cat.visible && !cat.mieleLock, 'and is gone (she may come again)');
+  // found again: the smaller bonus
+  const door = world.doors.find((dd) => dd.kind !== 'wardrobe' && dd.name !== 'ytterdörren' && dd.object.position.y < 1);
+  const { center, normal } = door.opening();
+  const from = { x: center[0] + normal[0] * 0.8, z: center[1] + normal[1] * 0.8 };
+  cat.forceMiele = true;
+  for (let k = 0; k < 10 && !cat.visible; k++) cat.placeBehind(door, k % 2 ? from : { x: center[0] - normal[0] * 0.8, z: center[1] - normal[1] * 0.8 });
+  pass &= check(cat.visible && cat.isMiele && !cat.seen, `Miele again behind ${door.name}`);
+  cat.on = null; cat.object.position.set(4.7, 0, 10.0); cat.object.updateMatrixWorld(true);
+  player.spawn(4.7, 8.9, Math.PI); for (let i = 0; i < 3; i++) step(1 / 60);
+  const score1 = totalScore();
+  lookAt(cat.head.getWorldPosition(new V())); for (let i = 0; i < 5; i++) step(1 / 60);
+  const gain2 = totalScore() - score1;
+  pass &= check(stats.miele === 2 && gain2 >= 100 && gain2 < 300 && fireworks.active, `found again: +${gain2} points, fireworks`);
+  // F while holding her: put down, she walks off
+  lookAt(cat.head.getWorldPosition(new V())); step(1 / 60);
+  btn.click(); step(1 / 60);
+  const held2 = heldItem() === miele;
+  w.__app.toggleFurniture(false);
+  step(1 / 60);
+  pass &= check(held2 && !heldItem() && !cat.held && cat.visible && (cat.released || cat.leaving), 'F: she is put down and walks off');
+  for (let i = 0; i < 300 && cat.visible; i++) step(1 / 20);
+  pass &= check(!cat.visible, 'gone');
+  w.__app.toggleFurniture(true);
+  // the rarity: seeded draws
+  let s = 12345;
+  const rand = () => (s = (s * 16807) % 2147483647) / 2147483647;
+  const rand0 = cat.rand;
+  cat.rand = rand;
+  player.spawn(from.x, from.z, 0);
+  let n = 0, mieles = 0;
+  for (let i = 0; i < 4000; i++) {
+    cat.hide(); cat.mieleLock = false;
+    cat.placeBehind(door, from);
+    if (!cat.visible) continue;
+    n++;
+    if (cat.isMiele) mieles++;
+  }
+  const rate = mieles / n;
+  pass &= check(n > 3000 && rate > 1 / 400 && rate < 1 / 100, `rare: ${mieles} of ${n} cats (1 in ${Math.round(1 / rate)})`);
+  // no second Miele while she is out (or until she has walked off)
+  let again = 0;
+  cat.hide(); cat.mieleLock = true;
+  for (let i = 0; i < 2000; i++) { cat.hide(); cat.placeBehind(door, from); if (cat.isMiele && cat.visible) again++; }
+  pass &= check(again === 0, `locked: no Miele in 2000 cats (${again})`);
+  cat.rand = rand0;
+  } catch (e) { pass = false; lines.push(`FAIL exception ${e.stack}`); }
+  out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
+};
+</script>
+</body>
+</html>

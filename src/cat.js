@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { LEVELS, CAT_FISH, CAT_LEAVE, CAT_FURNITURE, CAT_WALK, CAT_TAIL_UP, CAT_HURT, REST } from './config.js';
+import { LEVELS, CAT_FISH, CAT_LEAVE, CAT_FURNITURE, CAT_WALK, CAT_TAIL_UP, CAT_HURT, REST, MIELE } from './config.js';
 import { stairHeight } from './stairs.js';
 import { rugLift } from './rugs.js';
 import { sfx } from './audio.js';
@@ -29,6 +29,11 @@ const solid = (name, coat, eye, extra = {}) => ({
   name, coat, bib: coat, paw: coat, face: coat, blaze: coat, ear: coat, tail: coat, tip: coat, eye, pitch: 1, ...extra,
 });
 const coat = (name) => VARIANTS.find((v) => v.name === name);
+// Miele (#328): the family's cat (docs/miele-foto-ram.jpg), a brown mackerel tabby and white; the tabby parts are painted
+// textures (`maps`, see tabbyTextures) over a white colour, the rest plain colours like the other coats
+const MC = MIELE.colors;
+export const MIELE_COAT = { name: 'Miele', coat: 0xffffff, bib: MC.white, paw: MC.white, face: MC.white, blaze: MC.white, ear: MC.ear,
+  tail: 0xffffff, tip: MC.tip, eye: MC.eye, pitch: 1.15, maps: { coat: 'body', tail: 'tail' }, blaze3: [0.009, 0.016, 0.008, 0.02] };
 export const BREEDS = [
   { name: 'huskatt', weight: 70, coats: VARIANTS.filter((v) => v.name !== 'siames') },
   { name: 'siames', weight: 8, coats: [coat('siames')], ears: 1.35, fluff: 0.88, pitch: 1.1 },
@@ -41,6 +46,8 @@ export const BREEDS = [
     coats: [coat('vit'), solid('gräddvit', 0xe8d8b8, 0xd08a2a), coat('grå')] },
   { name: 'sphynx', weight: 1, rare: true, voice: 'rasp', fluff: 0.82, ears: 1.7, tail: 0.6, head: 0.95, pitch: 1.25,
     coats: [solid('naken', 0xd8b0a4, 0x7fb3e6, { ear: 0xcf9f95, tip: 0xc99b90 })] },
+  // super-rare (#328): drawn by `weight` only while she is not out (CatSpawner `mieleLock`), never through &catb
+  { name: 'Miele', weight: MIELE.weight, superRare: true, voice: 'trill', coats: [MIELE_COAT], ears: 1.15, fluff: 0.92, pitch: 1.1 },
 ];
 
 // Names for the cats you meet (one is picked when a new cat turns up).
@@ -114,8 +121,85 @@ function buildStars() {
   return pts;
 }
 
+/**
+ * Miele's tabby (#328), painted on canvases. 'body' for the coat material (body, haunches, head: unit spheres, u round the
+ * vertical axis, v up): white below the middle (belly, lower face and cheeks) with a wavy edge, mackerel stripes running
+ * down from a dark spine line above it, and a white inverted V up the front (u 0.25: the blaze between the eyes; on the
+ * body it is under the white bib). 'tail' for the tail tube (u along it): rings, darker towards the tip.
+ */
+let tabbyMaps = null;
+function tabbyTextures() {
+  if (tabbyMaps) return tabbyMaps;
+  const make = (w, h, draw) => {
+    const c = document.createElement('canvas');
+    c.width = w; c.height = h;
+    draw(c.getContext('2d'), w, h);
+    const t = new THREE.CanvasTexture(c);
+    t.colorSpace = THREE.SRGBColorSpace;
+    t.wrapS = THREE.RepeatWrapping;
+    t.anisotropy = 4;
+    return t;
+  };
+  let seed = 7;
+  const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+  const white = `#${new THREE.Color(MC.white).getHexString()}`;
+  const body = make(512, 256, (g, W, H) => {
+    const Y = (v) => (1 - v) * H;
+    g.fillStyle = MC.base; g.fillRect(0, 0, W, H);
+    for (let i = 0; i < 900; i++) { // ticked fur: light and dark flecks
+      g.fillStyle = rnd() < 0.5 ? MC.light : '#6a5a4a';
+      g.globalAlpha = 0.35;
+      g.fillRect(rnd() * W, rnd() * H, 2 + rnd() * 3, 1 + rnd() * 6);
+    }
+    g.globalAlpha = 1;
+    // mackerel stripes: dark bands down the sides, wavy, broken now and then
+    g.fillStyle = MC.stripe;
+    const n = 16;
+    for (let k = 0; k < n; k++) {
+      const u0 = (k + 0.5) / n, wid = W / n * (0.32 + rnd() * 0.12);
+      g.beginPath();
+      for (let j = 0; j <= 20; j++) {
+        const v = 0.95 - j * 0.026, x = u0 * W + Math.sin(j * 0.9 + k) * W * 0.008;
+        if (j === 0) g.moveTo(x - wid / 2, Y(v)); else g.lineTo(x - wid / 2 * (1 - j / 26), Y(v));
+      }
+      for (let j = 20; j >= 0; j--) {
+        const v = 0.95 - j * 0.026, x = u0 * W + Math.sin(j * 0.9 + k) * W * 0.008;
+        g.lineTo(x + wid / 2 * (1 - j / 26), Y(v));
+      }
+      g.fill();
+    }
+    g.fillRect(0, 0, W, Y(0.86)); // the dark spine line / crown
+    // white below the middle, with a wavy edge
+    g.fillStyle = white;
+    g.beginPath();
+    g.moveTo(0, H);
+    for (let x = 0; x <= W; x += 8) g.lineTo(x, Y(0.44 + 0.04 * Math.sin(x / W * Math.PI * 6) + 0.02 * Math.sin(x / W * Math.PI * 17)));
+    g.lineTo(W, H);
+    g.fill();
+    // the white inverted V up the front (blaze between the eyes; muzzle and cheeks below it)
+    const u = 0.25 * W;
+    g.beginPath();
+    g.moveTo(u - W * 0.075, Y(0.4)); g.lineTo(u - W * 0.006, Y(0.64)); g.lineTo(u + W * 0.006, Y(0.64)); g.lineTo(u + W * 0.075, Y(0.4));
+    g.fill();
+  });
+  const tail = make(256, 32, (g, W, H) => {
+    const grad = g.createLinearGradient(0, 0, W, 0);
+    grad.addColorStop(0, MC.base); grad.addColorStop(1, '#5d5042');
+    g.fillStyle = grad; g.fillRect(0, 0, W, H);
+    g.fillStyle = MC.stripe;
+    for (let k = 0; k < 9; k++) { const x = (0.08 + k * 0.105) * W; g.fillRect(x, 0, W * (0.035 + k * 0.004), H); } // rings
+    g.fillRect(0.9 * W, 0, 0.1 * W, H); // the dark end before the tip
+  });
+  tabbyMaps = { body, tail };
+  return tabbyMaps;
+}
+
 export function applyVariant(v) {
-  for (const [role, m] of Object.entries(ROLE)) m.color.setHex(v[role]);
+  for (const [role, m] of Object.entries(ROLE)) {
+    m.color.setHex(v[role]);
+    const map = v.maps?.[role] ? tabbyTextures()[v.maps[role]] : null;
+    if (m.map !== map) { if (!m.map !== !map) m.needsUpdate = true; m.map = map; } // (a map on or off: a new shader once)
+  }
   eyeMat.color.setHex(v.eye);
   eyeMat.emissive.setHex(v.eye);
 }
@@ -210,7 +294,8 @@ function buildCat() {
   const muzzle = blob(ROLE.face, 0.042, 0.032, 0.035, 0, -0.022, 0.05);
   head.add(muzzle);
   head.add(blob(pink, 0.009, 0.007, 0.006, 0, -0.008, 0.083));           // nose
-  head.add(blob(ROLE.blaze, 0.016, 0.03, 0.01, 0, 0.03, 0.058));              // blaze
+  const blaze = blob(ROLE.blaze, 0.016, 0.03, 0.01, 0, 0.03, 0.058);         // blaze
+  head.add(blaze);
   const eyes = [], ears = [];
   for (const s of [-1, 1]) {
     const ear = new THREE.Mesh(new THREE.ConeGeometry(0.03, 0.055, 4), ROLE.ear);
@@ -266,7 +351,7 @@ function buildCat() {
   hand.visible = false;
   cat.add(hand);
 
-  return { cat, head, shoulder, leftShoulder, hips, tailGroup, tip, eyes, hand, torso, body, bib, muzzle, ears, tail, butt };
+  return { cat, head, shoulder, leftShoulder, hips, tailGroup, tip, eyes, hand, torso, body, bib, muzzle, ears, tail, butt, blaze };
 }
 
 /** Shape the cat for a breed (see BREEDS). */
@@ -327,8 +412,14 @@ export class CatSpawner {
     this.onFishEaten = null;   // (fishFinger) => {} when it has eaten one
     this.watchPoint = null;    // () => where the visitor's eyes are (it looks after a fish finger taken away)
     this.fishScan = 0;
-    // look at the cat + E pets it (main.js treats this like a door target)
-    this.interact = { name: 'katten', kind: 'cat', verb: 'klappa', pickable: cat };
+    // look at the cat + E pets it (main.js treats this like a door target); Miele is taken up instead (#328)
+    const self = this;
+    this.interact = { get name() { return self.isMiele ? 'Miele' : 'katten'; }, kind: 'cat', get verb() { return self.isMiele && self.canHold() ? 'ta upp' : 'klappa'; }, pickable: cat };
+    this.canHold = () => false; // main.js: the hand is free
+    // Miele (#328): `mieleLock` = she is out (or was, and did not walk off): no second Miele; `forceMiele` (&miele) = the
+    // next new cat is her; `seen` = found this time (main.js checkMiele); `held` = in the visitor's arms (miele.js);
+    // `released` = just put down: she looks at you, then walks off
+    Object.assign(this, { mieleLock: false, forceMiele: false, seen: false, held: false, released: null, hugging: false });
     cat.traverse((o) => { o.userData.door = this.interact; });
     this.stars = buildStars(); // only for rare cats while they are petted
     cat.add(this.stars);
@@ -358,7 +449,8 @@ export class CatSpawner {
    * hits while it runs do nothing. `onHurt(weapon)` (main.js: a deduction). True if it counted.
    */
   hurt(weapon, from = null) {
-    if (!this.visible || this.leaving?.hurt) return false;
+    if (!this.visible || this.leaving?.hurt || this.held) return false; // Miele in your arms is never hurt (#328)
+    this.released = null;
     const p = this.object.position;
     this.stopPetting();
     this.dropFish();
@@ -374,13 +466,20 @@ export class CatSpawner {
   }
 
   /** Rare breeds have their own voice (meow + purr in audio.js); null = the ordinary cat. */
-  get voice() { return this.breed.rare ? this.breed.voice ?? null : null; }
+  get voice() { return this.breed.rare || this.breed.superRare ? this.breed.voice ?? null : null; }
+
+  /** Is this Miele (#328)? */
+  get isMiele() { return !!this.breed.superRare; }
 
   setCat(breed, coat) {
+    if (breed.superRare) { this.mieleLock = true; this.catName = 'Miele'; } // always her own name
     this.breed = breed;
     this.variant = coat;
     applyVariant(coat);
     applyBreed(this.parts, breed);
+    const bl = coat.blaze3 ?? [0.016, 0.03, 0.01, 0.03]; // Miele: a short narrow stripe, the tip of her painted V (#328)
+    this.parts.blaze.scale.set(bl[0], bl[1], bl[2]);
+    this.parts.blaze.position.y = bl[3];
     this.tailK = -1; // new tail thickness
     this.pose(0);
   }
@@ -406,6 +505,8 @@ export class CatSpawner {
   hide() {
     this.object.visible = false;
     this.door = null;
+    this.released = null;
+    if (this.held) { this.held = false; this.hugging = false; this.root?.add(this.object); this.onDropped?.(); } // (miele.js lets go)
     this.stopPetting();
     this.dropFish();
     this.leaving = null;
@@ -424,6 +525,7 @@ export class CatSpawner {
     this.dropFish(); // petting beats a fish finger
     if (this.tailUp && !this.forceTail) { this.tailUp = false; this.tailWait = this.nextTailWait(); } // it sits for the pat
     if (this.leaving?.hurt) return; // running from being hurt: no pat (#288)
+    this.released = null;
     if (this.leaving) { this.leaving = null; this.setOpacity(1); if (this.rugY == null) this.object.position.y = this.leaveY ?? this.object.position.y; } // petted again on its way: it stays
     if (!this.petting) {
       this.petPhase = 0;
@@ -455,10 +557,15 @@ export class CatSpawner {
     if (!spot) return;
     // a cat turning up from nowhere is a new cat; one that just moved keeps its coat
     if (!this.visible) {
-      const { breed, coat } = pickCat(this.rand);
-      this.setCat(breed, coat);
+      let { breed, coat } = pickCat(this.rand);
+      if (this.forceMiele) breed = BREEDS.find((b) => b.superRare);
+      else if (breed.superRare && this.mieleLock) breed = BREEDS[0]; // she is only out once until she has walked off (#328)
+      if (breed.coats.indexOf(coat) < 0) coat = breed.coats[Math.floor(this.rand() * breed.coats.length)];
+      this.forceMiele = false;
       this.catName = CAT_NAMES[Math.floor(this.rand() * CAT_NAMES.length)];
-      this.onFound?.(catLabel(breed, coat), !!breed.rare, breed.name);
+      this.setCat(breed, coat);
+      if (breed.superRare) { this.seen = false; this.photoDone = false; } // counted when first seen (main.js checkMiele)
+      else this.onFound?.(catLabel(breed, coat), !!breed.rare, breed.name);
     }
     this.stopPetting();
     this.dropFish();
@@ -575,7 +682,9 @@ export class CatSpawner {
     if (!this.visible) return;
     this.wantStand = 0;
     this.walked = false;
-    this.behave(dt);
+    if (this.held) this.heldBehave(dt); // in the visitor's arms (#328)
+    else if (this.released) this.releasedBehave(dt);
+    else this.behave(dt);
     this.updateTail(dt);
     this.pose(dt);
   }
@@ -814,7 +923,62 @@ export class CatSpawner {
     const walkTime = L.d / (L.speed ?? CAT_LEAVE.speed) + 0.5 + CAT_WALK.rise, fadeFrom = Math.max(0.5, walkTime - CAT_LEAVE.fade);
     const a = 1 - THREE.MathUtils.clamp((L.t - fadeFrom) / CAT_LEAVE.fade, 0, 1);
     this.setOpacity(a);
-    if (a <= 0) { this.hide(); this.onLeft?.(); }
+    if (a <= 0) { if (this.isMiele) this.mieleLock = false; this.hide(); this.onLeft?.(); } // Miele walked off: she may come again (#328)
+  }
+
+  // --- Miele in the visitor's arms (#328, miele.js) ---------------------------------------------------------
+  /** Taken up: she becomes a child of `holder` (in the camera), sitting, nothing else going on. */
+  pickUp(holder) {
+    this.stopPetting();
+    this.dropFish();
+    this.leaving = null;
+    this.released = null;
+    this.setOpacity(1);
+    this.tailUp = false; this.tailU = 0; this.tailWait = this.nextTailWait();
+    this.root ??= this.object.parent;
+    this.on = null; this.rugY = null; this.door = null;
+    this.held = true;
+    holder.add(this.object);
+    this.object.position.set(0, 0, 0);
+    this.object.rotation.set(0, 0, 0);
+    this.t = 0;
+  }
+
+  /** Put down at world point `p` (the floor, a bed, a sofa), facing `face` (the visitor's eye): she looks, then walks off. */
+  putDown(p, face) {
+    this.held = false;
+    this.hugging = false;
+    (this.root ?? this.object.parent).add(this.object);
+    const o = this.object, floor = p.y > LEVELS[0].floor + 1.6 ? LEVELS[1].floor : LEVELS[0].floor;
+    o.position.set(p.x, p.y, p.z);
+    o.rotation.set(0, Math.atan2(face.x - p.x, face.z - p.z), 0);
+    this.on = p.y - floor > 0.1 ? 'sit' : null; // on a bed / sofa: she fades out there (`leave`)
+    this.rugY = this.on ? null : rugLift(p.y > LEVELS[0].floor + 1.6 ? 1 : 0, p.x, p.z);
+    this.petFrom = { x: face.x, z: face.z };
+    for (const e of this.eyes) { e.eye.visible = true; e.shut.visible = false; }
+    this.released = { t: 0, meowed: false };
+    this.shoulder.rotation.set(0, 0, 0); this.leftShoulder.rotation.set(0, 0, 0);
+  }
+
+  /** Held: sitting in the arms, the front paws over your arm, looking up at you; eyes shut while hugged. */
+  heldBehave(dt) {
+    this.t += dt;
+    this.head.rotation.set(-0.4 + 0.05 * Math.sin(this.t * 0.9), 0.18 * Math.sin(this.t * 0.5), 0.08 * Math.sin(this.t * 0.7));
+    this.shoulder.rotation.set(-1.15, 0, 0.12);
+    this.leftShoulder.rotation.set(-1.15, 0, -0.12);
+    this.tailGroup.rotation.y = 0.15 * Math.sin(this.t * 1.7);
+    const blink = this.t % 4 < 0.15, shut = this.hugging || blink;
+    for (const e of this.eyes) { e.eye.visible = !shut; e.shut.visible = shut; }
+  }
+
+  /** Just put down: up on her feet (on the floor), a look and a meow at you, then off she goes (`leave`). */
+  releasedBehave(dt) {
+    const R = this.released, p = this.object.position;
+    R.t += dt;
+    this.wantStand = this.on ? 0 : 1;
+    if (this.watchPoint) this.lookTowards(this.watchPoint(), Math.min(1, R.t * 3));
+    if (!R.meowed && R.t > 0.5) { R.meowed = true; sfx.meow({ x: p.x, y: p.y + 0.3, z: p.z }, this.variant.pitch * (this.breed.pitch ?? 1), this.voice); }
+    if (R.t >= MIELE.linger) { this.released = null; this.leave(); }
   }
 
   // --- a fish finger on the floor (#163) ---------------------------------------------------------------
