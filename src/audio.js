@@ -876,6 +876,14 @@ export const sfx = {
     noise(t, secs, d, { type: 'bandpass', freq: 1300, q: 1.5, gain: 0.12, attack: 0.08 });
     tone(t, secs, d, { type: 'sine', from: 420, to: 900, gain: 0.03 });
   },
+  /** A knife through a cucumber onto a wooden board (#376): a crisp snap and a dull knock. */
+  chop(pos) {
+    if (!ready()) return;
+    const t = ctx.currentTime, d = out(pos, 0.7);
+    noise(t, 0.025, d, { type: 'bandpass', freq: 3200, q: 1.2, gain: 0.18, attack: 0.001 });
+    noise(t + 0.02, 0.06, d, { type: 'lowpass', freq: 700, gain: 0.3, attack: 0.002 });
+    tone(t + 0.02, 0.07, d, { type: 'sine', from: 210, to: 130, gain: 0.12 });
+  },
   /** Ground coffee off a wooden scoop (#334): a soft dry hiss with a few grains (`fill` = into the jar: shorter). */
   scoop(pos, fill = false) {
     if (!ready()) return;

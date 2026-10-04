@@ -11,6 +11,8 @@
 //       ("Osthyveln skär inte gurka") and nothing is used.
 //  #375 the cutting board as a station: no cut until it lies on a worktop, a full board blocks before anything is used,
 //       carried it carries the slices, held at a plate it pushes them over.
+//  #376 cutting the cucumber: one slice / three (the knife chops), an exact mass balance, fast presses give nothing extra,
+//       slices taken one by one, the end (no slice, "gurkänden"), a reload keeps what is left.
 //   chromium --headless=new --dump-dom http://localhost:8137/tools/lifetest.html
 import { LIFE_FOOD, LIFE_TOOLS } from '../src/config.js';
 const out = document.getElementById('out');
@@ -201,6 +203,59 @@ try {
   shut();
   f.remove();
 } catch (e) { pass = false; lines.push(`FAIL #375 error ${e.stack}`); }
+
+// --- #376: cutting a cucumber into slices ----------------------------------------------------------------------
+try {
+  const f = await load('life&shot');
+  const { A, settle, shut, life, I, step } = kit(f);
+  const V = A.camera.position.constructor;
+  const drawer = A.world.lids.find((l) => l.stock === 'utensils'), fridge = A.fridge;
+  const find = (type) => I.all().find((i) => i.type === type && i.home?.store);
+  const board = find('board'), knife = find('knife'), cuc = find('cucumber'), bv = life.view(board), kv = life.view(knife);
+  const row = (id, it = cuc) => life.options({ item: life.view(it) }).find((o) => o.id === id);
+  bv.take(); step(1 / 60); bv.placeAt(new V(5.22, 0.93, 3.0), Math.PI / 2); step(1 / 60);
+  fridge.toggle(); settle(fridge); drawer.toggle(); settle(drawer);
+  life.view(cuc).take(); step(1 / 60); row('putOn', board).run();
+  kv.take(); step(1 / 60);
+  const cut = () => I.ofType('cucumberSlice').filter((k) => k.place.at === 'on' && (k.place.parent === board.id || I.get(k.place.parent)?.type === 'plate') || k.place.at === 'hand' || k.place.at === 'world');
+  const balance = () => cuc.amount + I.ofType('cucumberSlice').filter((k) => !k.preexisting).reduce((a, k) => a + k.amount, 0);
+  for (const k of I.ofType('cucumberSlice')) k.preexisting = true; // (the &life scenario's own slice on the table)
+  const s0 = A.stats.cucumberSlices ?? 0;
+  const three = row('cut3');
+  check(three?.label === 'skära tre skivor' && !three.reason && row('cut')?.label === 'skära en skiva', `two actions: "${row('cut')?.label}", "${three?.label}"`);
+  const y0 = kv.model.position.y;
+  three.run(); for (let k = 0; k < 4; k++) row('cut3')?.run(); row('cut')?.run(); // fast presses
+  let dip = 0;
+  for (let i = 0; i < 40; i++) { step(1 / 60); dip = Math.max(dip, y0 - kv.model.position.y); }
+  check(life.runner.busy && dip > 0.03, `the knife chops down (${(dip * 100).toFixed(1)} cm)`);
+  for (let i = 0; i < 120; i++) step(1 / 60);
+  const new3 = I.ofType('cucumberSlice').filter((k) => !k.preexisting);
+  check(!life.runner.busy && Math.abs(kv.model.position.y - y0) < 1e-6 && cuc.amount === 270 && new3.length === 3 && new3.every((k) => k.amount === 10 && k.place.parent === board.id), `three slices of 10 g on the board, the cucumber 270 g, the knife back up (${new3.length} slices; fast presses: nothing extra)`);
+  check(balance() === 300 && (A.stats.cucumberSlices ?? 0) - s0 === 3, `the mass balance: ${balance()} g; counted ${(A.stats.cucumberSlices ?? 0) - s0}`);
+  check(life.view(cuc).view.object.children[0].scale.x < 0.95 && life.view(cuc).view.object.children[1].visible, 'the cucumber is shorter, its cut face shows');
+  // one slice more, taken up one by one onto the plate
+  row('cut').run(); for (let i = 0; i < 60; i++) step(1 / 60);
+  kv.putBack(); step(1 / 60);
+  const plate = I.ofType('plate')[0], slices = I.children(board).filter((k) => k.place.slot > 0);
+  for (const k of slices.slice(0, 3)) { life.view(k).take(); step(1 / 60); life.options({ item: life.view(plate) }).find((o) => o.id === 'putOn').run(); step(1 / 60); }
+  check(slices.length === 4 && I.children(plate).filter((k) => k.type === 'cucumberSlice').length === 3 && I.children(board).length === 2 && balance() === 300, `taken one by one: 3 on the plate, 1 left on the board; still ${balance()} g in all`);
+  // the end: too little for a slice
+  kv.take(); step(1 / 60);
+  I.setAmount(cuc, 25); for (const k of I.ofType('cucumberSlice')) k.preexisting = true;
+  check(row('cut3')?.reason === 'Det räcker bara till en skiva', `25 g: three slices? "${row('cut3')?.reason}"`);
+  row('cut').run(); for (let i = 0; i < 60; i++) step(1 / 60);
+  check(cuc.amount === 15 && life.isEnd(cuc) && I.name(cuc) === 'gurkänden', `one more cut: ${cuc.amount} g left — "${I.name(cuc)}"`);
+  check(row('cut')?.reason === 'Bara gurkänden är kvar – släng den' && row('cut').run() === false && cuc.amount === 15, `then: "${row('cut')?.reason}", nothing cut`);
+  // a reload keeps what is left (keep.js's life part)
+  I.setAmount(cuc, 180);
+  const rec = A.keepWorld().life;
+  life.load(rec);
+  const c2 = I.get(cuc.id);
+  check(c2?.amount === 180 && c2.place.parent === board.id && I.children(I.get(board.id)).filter((k) => k.type === 'cucumberSlice').length === 2 && I.children(I.get(plate.id)).length >= 3, `after a reload: the cucumber ${c2?.amount} g on the board, its slices where they were`);
+  check(I.audit().length === 0, `audit: ${I.audit().join('; ') || 'ok'}`);
+  shut();
+  f.remove();
+} catch (e) { pass = false; lines.push(`FAIL #376 error ${e.stack}`); }
 
 // a new visit keeps the amounts (lunden.life, #371): not the &life scenario, the visitor's own home
 try {

@@ -69,7 +69,7 @@ function cucumber() {
   const g = new THREE.Group(), r = 0.022, L = 0.3;
   const body = mesh(new THREE.CapsuleGeometry(r, L - 2 * r, 6, 16).rotateZ(Math.PI / 2), M.cucumber);
   body.position.y = r;
-  const face = mesh(new THREE.CircleGeometry(r * 0.97, 20).rotateY(Math.PI / 2), M.cucumberIn);
+  const face = mesh(new THREE.CircleGeometry(r * 0.97, 20).rotateY(Math.PI / 2), labelOf('cucumberFace', cucumberFace));
   face.position.set(L / 2, r, 0);
   face.visible = false;
   g.add(body, face);
@@ -85,13 +85,34 @@ function cucumber() {
   };
 }
 
-/** A cucumber slice: Ø 4.2 cm, 4 mm thick, pale inside, a dark rim. */
+/** The cut face of a cucumber (#376): pale green flesh, a darker green skin ring, a star of three seed lobes with seeds. */
+function cucumberFace() {
+  const c = document.createElement('canvas');
+  c.width = c.height = 128;
+  const g = c.getContext('2d'), m = 64;
+  g.fillStyle = '#2f5d2a'; g.beginPath(); g.arc(m, m, 64, 0, Math.PI * 2); g.fill();          // skin
+  g.fillStyle = '#9fc46e'; g.beginPath(); g.arc(m, m, 59, 0, Math.PI * 2); g.fill();          // the green under the skin
+  const fl = g.createRadialGradient(m, m, 6, m, m, 56); fl.addColorStop(0, '#e9f3c8'); fl.addColorStop(1, '#cfe3a6');
+  g.fillStyle = fl; g.beginPath(); g.arc(m, m, 55, 0, Math.PI * 2); g.fill();                // flesh
+  for (let k = 0; k < 3; k++) {                                                               // the seed lobes
+    const a = k * Math.PI * 2 / 3 - Math.PI / 2;
+    g.fillStyle = 'rgba(214,232,170,0.95)'; g.beginPath(); g.ellipse(m + Math.cos(a) * 18, m + Math.sin(a) * 18, 20, 12, a, 0, Math.PI * 2); g.fill();
+    g.fillStyle = '#f4f7df';
+    for (let j = -2; j <= 2; j++) { const b = a + j * 0.22; g.beginPath(); g.ellipse(m + Math.cos(b) * 24, m + Math.sin(b) * 24, 3.4, 1.8, b, 0, Math.PI * 2); g.fill(); }
+  }
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  return new THREE.MeshStandardMaterial({ map: t, roughness: 0.45 });
+}
+
+/** A cucumber slice: Ø 4.2 cm, 4 mm thick, the seeds face on both sides, a dark rim (#376). */
 function cucumberSlice() {
   const g = new THREE.Group(), r = 0.021, h = 0.004;
   const rim = mesh(new THREE.CylinderGeometry(r, r, h, 20, 1, true), M.cucumberRim);
   rim.position.y = h / 2;
   g.add(rim);
-  for (const y of [0, h]) { const c = mesh(new THREE.CircleGeometry(r, 20).rotateX(y ? -Math.PI / 2 : Math.PI / 2), M.cucumberIn); c.position.y = y; g.add(c); }
+  const face = labelOf('cucumberFace', cucumberFace);
+  for (const y of [0, h]) { const c = mesh(new THREE.CircleGeometry(r, 20).rotateX(y ? -Math.PI / 2 : Math.PI / 2), face); c.position.y = y; g.add(c); }
   return { object: g };
 }
 

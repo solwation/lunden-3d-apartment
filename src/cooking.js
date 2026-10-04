@@ -9,6 +9,7 @@ import { sfx } from './audio.js';
 //   #375 the cutting board as a station: it must lie on a worktop before anything is cut on it; what is cut lies on its
 //        spot 0, the result goes onto its free spots (none free: "Brädan är full", nothing used); held, it carries all of
 //        it, and E on a plate pushes the slices over
+//   #376 cutting a cucumber: one slice or three, a chop each, exact grams; the last bit is the end (a scrap)
 
 const cap = (s) => (s ? s[0].toUpperCase() + s.slice(1) : s);
 
@@ -27,31 +28,58 @@ export function cookingActions(life) {
   const workpiece = (c) => (c.target && I.has(c.target, 'station') ? I.children(c.target).find((k) => k.place.slot === 0) ?? null : c.target);
   const resultSpot = (board, type, by) => I.freeSpot(board, { type }, by);
 
-  // cutting (#375 the station's rules; #376 the slices): the kitchen knife in the hand, a cuttable thing on the board
-  A.define({
-    id: 'cut', order: 1, duration: LIFE.cut.seconds,
-    label: 'skära en skiva',
+  // cutting (#375 the station's rules; #376 the slices): the kitchen knife in the hand, a cuttable thing on the board;
+  // "Skär en skiva" / "Skär tre skivor". Each cut takes exactly `cut.g` off and makes one slice of exactly that much (the
+  // mass balance); the last `cut.end` g are the end — no slice from it, a scrap for the bin (#381). The knife chops down
+  // once per slice (animate), a chop sound each time; a double press starts one job (the Runner).
+  const order = (board) => I.def(board).carrier.order ?? [...Array(I.def(board).carrier.slots).keys()];
+  const cutsLeft = (food) => { const cut = I.def(food).cut; return Math.max(0, Math.floor((food.amount - (cut.end ?? 0) + 1e-6) / cut.g)); };
+  const spotsFor = (board, type, n = Infinity, by = null) => { const out = []; for (const k of order(board)) { if (out.length >= n) break; if (!I.check({ type }, { at: 'on', parent: board.id, slot: k }, { by })) out.push(k); } return out; };
+  const cutAction = (n, id, label, rank) => A.define({
+    id, order: rank, duration: LIFE.cut.seconds * n, label,
     applies: (c) => !!c.held && I.has(c.held, 'tool:cut') && !!I.def(workpiece(c))?.cut,
-    check: (c) => {
+    check: (c, opts = {}) => {
       const food = workpiece(c), cut = I.def(food).cut, board = boardUnder(food);
       if (!board) return `Lägg ${nm(food)} på skärbrädan först`;
       const st = stationReason(board);
       if (st) return st;
-      if (food.amount <= 0) return `${cap(nm(food))} är slut`;
-      if (resultSpot(board, cut.into) < 0) return I.def(board).carrier.fullText ?? 'Brädan är full';
+      const left = cutsLeft(food);
+      if (left === 0) return food.amount > 0 ? `Bara ${nm(food)} är kvar – släng den` : `${cap(nm(food))} är slut`;
+      if (left < n) return `Det räcker bara till ${left === 1 ? 'en skiva' : `${left} skivor`}`;
+      const free = spotsFor(board, cut.into, n, opts.job?.id).length;
+      if (free === 0) return I.def(board).carrier.fullText ?? 'Brädan är full';
+      if (free < n) return `Brädan rymmer bara ${free === 1 ? 'en skiva' : `${free} skivor`} till`;
       return null;
     },
-    reserve: (c) => { const food = workpiece(c), board = boardUnder(food); return { inputs: [food, board], outputs: [{ at: 'on', parent: board.id, slot: resultSpot(board, I.def(food).cut.into) }] }; },
-    commit: (c, job) => {
-      const food = workpiece(c), cut = I.def(food).cut;
-      const got = I.consume(food, cut.g); // (the last bit: what there is, never below 0)
-      const slice = I.create(cut.into, job.outputs[0], { amount: got });
-      if (I.def(food).prep === 'whole' && food.prep === 'whole') I.set(food, { prep: 'sliced' });
-      sfx.click(c.targetView?.where());
-      return slice;
+    reserve: (c) => {
+      const food = workpiece(c), board = boardUnder(food);
+      return { inputs: [food, board], outputs: spotsFor(board, I.def(food).cut.into, n).map((slot) => ({ at: 'on', parent: board.id, slot })) };
     },
-    consumes: 'the food\'s cut.g (g)', result: 'exactly one slice of that amount on a free spot of the board',
+    animate: (c, k, job) => { // the knife chops down n times, a chop sound as it meets the board
+      const v = c.heldView, base = (job.base ??= v.model.position.y), ph = Math.min(n - 1e-6, k * n), f = ph - Math.floor(ph);
+      v.model.position.y = base - 0.07 * Math.sin(Math.PI * Math.min(1, f * 1.15));
+      const chops = Math.min(n, Math.floor(k * n + 0.55));
+      while ((job.chops ?? 0) < chops) { job.chops = (job.chops ?? 0) + 1; sfx.chop(c.targetView?.where() ?? v.where()); }
+    },
+    commit: (c, job) => {
+      const food = workpiece(c), cut = I.def(food).cut, made = [];
+      for (const place of job.outputs) {
+        const got = I.consume(food, cut.g); // (the check made sure there is at least cut.g + end per slice)
+        made.push(I.create(cut.into, place, { amount: got }));
+      }
+      if (food.prep === 'whole') I.set(food, { prep: 'sliced' });
+      life.bump(cut.stat ?? 'slices', made.length);
+      return made;
+    },
+    done: (c, job) => { if (job.base !== undefined && c.heldView.held) c.heldView.model.position.y = job.base; }, // (put away meanwhile: its slot placed it)
+    cancel: (c, job) => { if (job.base !== undefined && c.heldView.held) c.heldView.model.position.y = job.base; },
+    consumes: `the food's cut.g (g) × ${n}`, result: `exactly ${n} slice(s) of cut.g on free spots of the board`,
   });
+  cutAction(1, 'cut', 'skära en skiva', 1);
+  cutAction(3, 'cut3', 'skära tre skivor', 1.5);
+  /** Is it the end of something cut (#376): too little left for a slice — a scrap for the bin. */
+  life.isEnd = (it) => !!I.def(it)?.cut && it.amount > 0 && cutsLeft(it) === 0;
+  I.namers.cucumber = (it) => (life.isEnd(it) ? 'gurkänden' : null);
 
   // the board in the hand, E on a plate: the slices onto the plate's free spots (#375)
   A.define({

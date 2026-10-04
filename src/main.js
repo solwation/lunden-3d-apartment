@@ -347,6 +347,7 @@ const life = new Life({ scene, camera, say: (t) => badge(t, false), feet: () => 
   floorY: () => (player.level >= 0 ? LEVELS[player.level].floor : -Infinity), // (nothing goes down under the floor, #368)
   persist: lifeDev() ? null : { key: LIFE.save.key, canSave: () => { try { return !resetHome.going; } catch { return false; } } }, debug: params0.has('debug') }); // the home's stock kept between visits (#371; never with &life)
 const lifeStores = buildStores(life, world); // the fridge, the freezer, the pantry, the utensil drawer as slots (#369)
+life.bump = (key, n, id) => bump(key, n, id); // the life sim's counts (#376 …)
 { // a worktop under a world point (#375: the cutting board is a station only there)
   const tops = world.cupSurfaces.filter((m) => m.userData.worktop).map((m) => ({ box: new THREE.Box3().setFromObject(m), y: m.userData.surface }));
   life.worktopAt = (p) => tops.some((t) => p[0] >= t.box.min.x - 0.01 && p[0] <= t.box.max.x + 0.01 && p[2] >= t.box.min.z - 0.01 && p[2] <= t.box.max.z + 0.01 && Math.abs(p[1] - t.y) < 0.03);

@@ -640,6 +640,10 @@ src/cooking.js         the life sim's kitchen work (M1): actions judged by the t
                        arbetsbänken först"), the food on its spot 0 (along the back) and a free result spot (two rows of four in front;
                        none: "Brädan är full", nothing used); a food's ITEMS `cut: { into, g }`; held at a plate, 'pushSlices' moves
                        the board's slices over (as many as fit)
+                       Cutting (#376): 'cut' / 'cut3' ("Skära en skiva" / "tre skivor", LIFE.cut.seconds each): the knife chops down
+                       per slice (sfx.chop), each cut exactly `cut.g` off and one slice of exactly that (the mass balance); the last
+                       `cut.end` g are the end ("gurkänden", `items.namers`, `life.isEnd`: no slice, a scrap); stats cucumberSlices;
+                       the slices' faces show the seeds (a canvas texture)
 src/actions.js         what you can do with a life-sim thing (#367): `ActionSet.define({ id, label, applies, check, run, consumes,
                        result, duration, interrupt, order, quiet })`, `list(ctx)` = the rows with a Swedish `reason` when blocked
                        ("Öppna kylen först", "Tallriken är full", "För långt bort"); life.js `baseActions`: putOn, take, open, close.
@@ -886,7 +890,8 @@ tools/lifetest.html    headless test of the life sim's M1, the sandwich flow (#3
                        cucumber out and back, used up → a fresh one on the next opening (never while the old one is out), a new
                        visit keeps the amounts (lunden.life); each tool taken and put back with E, the board off its place and
                        back, the wrong tool's messages with nothing used (#374); no cut off a worktop, a full board, the board carrying
-                       its slices, pushing them onto a plate (#375)
+                       its slices, pushing them onto a plate (#375); one / three slices, the chop, the mass balance, fast presses,
+                       slices taken one by one, the end, a reload (#376)
 tools/inventorytest.html headless test (#365): the `&life` scenario's start state, the visitor's records untouched, the
                        integration points the inventory names; without &life the game starts at START
 tools/stamp.sh         build the published site with a version stamp (used by CI)

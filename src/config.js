@@ -1104,7 +1104,7 @@ export const ITEMS = {
     carrier: { slots: 9, size: 'm', accepts: ['food'], fullText: 'Brädan är full', // spot 0 = what is being cut, 1–8 = what was cut
       spots: [{ accepts: ['cuttable', 'sliceable', 'base', 'package'] }, ...Array(8).fill({ size: 's' })] } },
   cucumber: { name: 'gurkan', noun: 'gurka', tags: ['food', 'cuttable'], unit: 'g', amount: LIFE_FOOD.amounts.cucumber, size: 'm', prep: 'whole', model: 'cucumber',
-    cut: { into: 'cucumberSlice', g: 10 } }, // a cut gives one 10 g slice (the plan's example, #375 / #376)
+    cut: { into: 'cucumberSlice', g: 10, end: 10, stat: 'cucumberSlices' } }, // a cut gives one 10 g slice (the plan's example, #375 / #376); the last 10 g = the end
   cucumberSlice: { name: 'gurkskivan', noun: 'gurka', tags: ['food', 'topping'], unit: 'g', amount: 10, size: 'xs', prep: 'sliced', model: 'cucumberSlice' },
   cheese: { name: 'osten', noun: 'ost', tags: ['food', 'sliceable'], unit: 'g', amount: LIFE_FOOD.amounts.cheese, size: 's', prep: 'whole', model: 'cheese' },
   butter: { name: 'smöret', noun: 'smör', tags: ['food', 'package', 'spreadable'], unit: 'g', amount: LIFE_FOOD.amounts.butter, size: 's', pkg: 'closed', model: 'butter' },
@@ -1395,6 +1395,7 @@ export const SCORE = {
     beer: 0.3, coffee: 0.3, wine: 0.3, champagne: 0.3, whisky: 0.3, milk: 0.3, kask: 0.6, // sips
     fish: 0.5, fried: 2, chicken: 1, cooked: 8, brews: 2, // cooked = a whole chicken fried golden (burnt: a deduction, #288)
     fries: 0.2,                                           // per fry eaten (#301): a bunch is four
+    cucumberSlices: 0.2,                                  // a slice of cucumber cut (#376)
     posted: 3, thrown: 0.5, drawn: 2,
     secrets: 1, stairs: 0.3, steps: 0.01,
     shatterRange: 1,                                      // something shot to pieces from afar: per range point (#263)

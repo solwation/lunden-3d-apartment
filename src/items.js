@@ -50,12 +50,13 @@ export class Items {
     this.stores = new Map();  // id → store (#369)
     this.listeners = [];
     this.reserved = new Map(); // place key → job id: a slot / spot promised to a timed action's result (#372)
+    this.namers = {}; // type → (item) => a name from its state, or null for the type's own (#376)
   }
 
   // --- definitions -----------------------------------------------------------
   def(x) { return this.defs[typeof x === 'string' ? x : x?.type] ?? null; }
   has(item, tag) { return !!this.def(item)?.tags?.includes(tag); }
-  name(item) { return this.def(item)?.name ?? item?.type ?? ''; }
+  name(item) { const n = item && typeof item === 'object' ? this.namers[item.type]?.(item) : null; return n ?? this.def(item)?.name ?? item?.type ?? ''; } // (a namer: a name from the state, "gurkänden", #376)
   unit(item) { return this.def(item)?.unit ?? 'count'; }
   size(item) { return SIZES[this.def(item)?.size ?? 'm'] ?? SIZES.m; }
 
