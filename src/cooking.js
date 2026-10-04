@@ -21,6 +21,8 @@ import { sfx } from './audio.js';
 //   #380 eating a sandwich: taken from a plate, four bites (its layers bitten too), the plate it came from gets crumbs
 //        (clean 'used', a 'crumbs' event); the last bite: the 'ate' event (what, how much) and the points — once per
 //        sandwich, the first of each combination a lot ("Du gjorde en macka!"); put back half eaten, it stays
+//   #381 the bin under the sink: waste in the hand (an empty package, the cucumber's end, leftovers) goes in while its
+//        front is open; it fills up visibly; full, the waste stays in the hand; a plate or a knife is never thrown
 
 const cap = (s) => (s ? s[0].toUpperCase() + s.slice(1) : s);
 
@@ -293,6 +295,41 @@ export function cookingActions(life) {
     if (has('butter')) return 'smörgåsen';
     return null;
   };
+
+  /** What kind of waste a thing is (#381): 'package' (an empty one), 'food' (an end, leftovers), or null (not waste). */
+  life.wasteKind = (it) => {
+    const d = I.def(it);
+    if (!d || I.has(it, 'bin')) return null;
+    if (d.pkg && (it.pkg === 'empty' || it.amount <= 1e-6)) return 'package';
+    if (life.isEnd?.(it)) return 'food';
+    if (I.has(it, 'topping') || I.has(it, 'base')) return 'food';
+    return null;
+  };
+  const volume = (it, kind) => I.def(it).binVolume ?? (kind === 'package' ? 2 : 1);
+  A.define({
+    id: 'throwAway', order: 0,
+    label: (c) => `slänga ${nm(c.held)}`,
+    applies: (c) => !!c.held && !!c.target && I.has(c.target, 'bin') && c.held !== c.target,
+    check: (c) => {
+      const shut = c.targetView?.shutReason();
+      if (shut) return shut;
+      const kind = life.wasteKind(c.held);
+      if (!kind || I.children(c.held).length) return 'Det där ska inte slängas';
+      if (c.target.amount + volume(c.held, kind) > (I.def(c.target).capacity ?? 10) + 1e-6) return `${cap(nm(c.target))} är full`;
+      return null;
+    },
+    run: (c) => {
+      const it = c.held, bin = c.target, kind = life.wasteKind(it), v = volume(it, kind);
+      const parts = bin.parts.map((p) => ({ ...p })), p = parts.find((x) => x.type === kind);
+      if (p) p.amount += 1; else parts.push({ type: kind, amount: 1 });
+      if (!I.remove(it, { cascade: true })) return; // (out of the hand first; nothing added if it could not)
+      I.add(bin, v);
+      I.set(bin, { parts });
+      life.emit('thrown', { type: it.type, kind, into: bin.id });
+      sfx.rustle?.(c.targetView?.where());
+    },
+    consumes: 'the waste in the hand (removed)', result: 'the bin fuller by its volume; its parts count the kind',
+  });
 
   // the wrong tool (#374): a tool in the hand, food that some other tool works on — a row that says why, nothing used
   A.define({

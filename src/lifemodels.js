@@ -17,7 +17,7 @@ const M = {
   bag: new THREE.MeshStandardMaterial({ color: 0xf2efe6, roughness: 0.25, transparent: true, opacity: 0.55, depthWrite: false }),
   clip: std(0x2f6fc4, 0.5), crust: std(0x9a6332, 0.7), crumb: std(0xe8d3a8, 0.85),
   steel: std(0xc9cdd0, 0.25, { metalness: 0.7 }), handle: std(0x222222, 0.55), peasBag: std(0x2f7d32, 0.35),
-  cheeseSlice: std(0xf6dc7e, 0.5),
+  cheeseSlice: std(0xf6dc7e, 0.5), binBag: std(0x1d1d1f, 0.6), binHeap: std(0x2a2a2c, 0.75),
 };
 
 /** A printed label of our own (#373: no real brands): a canvas with a background, a wordmark and a small line under it. */
@@ -319,7 +319,34 @@ function cheeseSlicer() {
   return { object: g, grip: [-0.06, 0.006, 0] };
 }
 
-const BUILDERS = { plate, board, cucumber, cucumberSlice, cheese, butter, breadBag, breadSlice, knife, peas, butterKnife, cheeseSlicer, cheeseSlice };
+/** A waste bin's insides (#381), built 1 × 1 × 1 (its store's anchor is scaled to the bin it stands in): a black bag's
+ * rim, the label "Avfall" on its front (+z), a heap that rises with how full it is, an invisible box over the opening to
+ * aim at. */
+function bin() {
+  const g = new THREE.Group();
+  const rim = mesh(new THREE.BoxGeometry(1.02, 0.04, 1.02), M.binBag);
+  rim.position.y = 0.985; rim.castShadow = false;
+  const tag = mesh(new THREE.PlaneGeometry(0.62, 0.22), labelOf('bin', () => label('Avfall', { bg: '#f2f2ee', fg: '#333333', sub: 'restavfall', font: 'bold 60px sans-serif' })));
+  tag.position.set(0, 0.62, 0.502); tag.castShadow = false;
+  const heap = mesh(new THREE.BoxGeometry(0.9, 1, 0.9).translate(0, 0.5, 0), M.binHeap);
+  heap.position.y = 0.01; heap.castShadow = false;
+  const top = mesh(new THREE.SphereGeometry(0.45, 12, 6, 0, Math.PI * 2, 0, Math.PI / 2).scale(1, 0.25, 1), M.binHeap);
+  top.castShadow = false;
+  const pick = new THREE.Mesh(new THREE.BoxGeometry(1, 0.3, 1), new THREE.MeshBasicMaterial());
+  pick.position.y = 0.88; pick.visible = false;
+  g.add(rim, tag, heap, top, pick);
+  return {
+    object: g,
+    show(item, items) {
+      const k = Math.min(1, item.amount / (items.def(item)?.capacity ?? 10));
+      heap.visible = top.visible = k > 0.001;
+      heap.scale.y = Math.max(0.001, k * 0.85);
+      top.position.y = 0.01 + k * 0.85;
+    },
+  };
+}
+
+const BUILDERS = { plate, board, cucumber, cucumberSlice, cheese, butter, breadBag, breadSlice, knife, peas, butterKnife, cheeseSlicer, cheeseSlice, bin };
 
 /** The model of a type (its `model` builder; a grey box when there is none). */
 export function buildModel(def) {

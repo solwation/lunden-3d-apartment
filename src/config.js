@@ -1126,7 +1126,8 @@ export const LIFE_FOOD = {
 // hob (`boardRack`: off the worktop's free space, the user finds the kitchen cramped). Our picks.
 export const LIFE_TOOLS = {
   stock: [['knife', 'utensils', 0], ['butterKnife', 'utensils', 1], ['cheeseSlicer', 'utensils', 2], ['board', 'boardRack', 0],
-    ['plate', 'plates', 0], ['plate', 'plates', 1], ['plate', 'plates', 2]], // three plates in the wall cabinet over the free worktop (#379)
+    ['plate', 'plates', 0], ['plate', 'plates', 1], ['plate', 'plates', 2], // three plates in the wall cabinet over the free worktop (#379)
+    ['bin', 'sinkBins', 0]], // the waste bin under the sink (#381) // three plates in the wall cabinet over the free worktop (#379)
   // what a tool tag does to a food tag (life.js tool actions): `label` = the action, `not` = the wrong tool's message
   // ("Osthyveln skär inte gurka"); a new tool is an ITEMS entry with one of these tags, nothing else
   uses: [
@@ -1155,9 +1156,14 @@ export const ITEMS = {
   cheese: { name: 'osten', noun: 'ost', tags: ['food', 'sliceable'], unit: 'g', amount: LIFE_FOOD.amounts.cheese, size: 's', prep: 'whole', model: 'cheese',
     slice: { into: 'cheeseSlice', g: 12 } }, // the slicer takes one 12 g slice (#378); the last one is what is left
   butter: { name: 'smöret', noun: 'smör', tags: ['food', 'package', 'spreadable'], unit: 'g', amount: LIFE_FOOD.amounts.butter, size: 's', pkg: 'closed', model: 'butter' },
-  breadBag: { name: 'brödpåsen', noun: 'bröd', tags: ['food', 'package'], unit: 'count', amount: LIFE_FOOD.amounts.breadBag, size: 'm', pkg: 'closed', model: 'breadBag', dispense: 'breadSlice', dispenseLabel: 'ta en brödskiva' }, // "Ta en brödskiva": one slice at a time into the hand (#377)
+  breadBag: { name: 'brödpåsen', noun: 'bröd', tags: ['food', 'package'], unit: 'count', amount: LIFE_FOOD.amounts.breadBag, size: 'm', pkg: 'closed', model: 'breadBag', dispense: 'breadSlice', dispenseLabel: 'ta en brödskiva', binVolume: 3 }, // "Ta en brödskiva": one slice at a time into the hand (#377)
   peas: { name: 'ärtpåsen', noun: 'ärter', tags: ['food', 'frozen', 'package'], unit: 'g', amount: LIFE_FOOD.amounts.peas, size: 'm', pkg: 'closed', model: 'peas' }, // (#373; cooking them comes later)
   cheeseSlice: { name: 'ostskivan', noun: 'ost', tags: ['food', 'topping'], unit: 'g', amount: 12, size: 'xs', prep: 'sliced', model: 'cheeseSlice' }, // (#378)
+  // a waste bin (#381): `fixed` (it stays in its place: no "Ta"), its amount = how full (count units), `capacity`; what is
+  // thrown is kept as `parts` per kind ('food' | 'package') for the sorting later (LIFE-022). A thing is waste when it is an
+  // empty package, the end of something cut, or leftover food (a slice, a half-eaten sandwich); ITEMS `binVolume` = its
+  // units (else 1 for food, 2 for a package). Game parameters, our picks.
+  bin: { name: 'avfallshinken', tags: ['bin', 'fixed'], unit: 'count', amount: 0, size: 'xl', model: 'bin', capacity: 12 },
   breadSlice: { name: 'brödskivan', noun: 'bröd', tags: ['food', 'base'], unit: 'count', amount: 1, size: 's', model: 'breadSlice', bites: 4 }, // eaten in four bites (#377, like the fruit #326)
   knife: { name: 'kökskniven', tags: ['tool', 'tool:cut', 'dishwasherSafe'], unit: 'count', amount: 1, size: 's', clean: 'clean', model: 'knife' },
   butterKnife: { name: 'smörkniven', tags: ['tool', 'tool:spread', 'dishwasherSafe'], unit: 'count', amount: 1, size: 's', clean: 'clean', model: 'butterKnife' }, // (#374)

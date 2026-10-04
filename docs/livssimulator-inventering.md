@@ -94,3 +94,13 @@ notes which could move over.
   the visitor's own place is untouched (test). Stats and the score still count as usual.
 
 Later LIFE issues add their things to the scenario (the board, the knife, the cucumber …).
+
+## M1 – the sandwich flow (done: #373 – #381)
+
+What M1 added on top of the above (code in src/life.js, src/cooking.js, src/stores.js, src/lifemodels.js; the test is
+`tools/lifetest.html`): the kitchen's food and tools in their places from the start and restocked on the next opening
+(`LIFE_FOOD`, `LIFE_TOOLS`), the utensil drawer's three tools and the board's place on the splashback, the board as a
+station on the worktop, cutting the cucumber (exact grams, the end), the bread bag, butter and cheese, a sandwich as a
+slice of bread with parts, eating in bites with a used plate and the `ate` event, and the bin under the sink. The bins'
+row: **extended** (the grey one is the game's "Avfall" bin); the plate cabinet over the free worktop: **extended** (a stack
+of three real plates); the utensil drawer: **extended**; the milk carton never empties (milk.js), so it is no waste yet.

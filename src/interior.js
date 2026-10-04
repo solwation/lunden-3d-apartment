@@ -487,14 +487,18 @@ function buildKitchen(B, group, floor, y0, yC, handled, taps, appliances) {
       shell(F, u0, u1, yb, top - K.sink.depth - 0.02, F.depth, { shelf: false });
       // waste sorting under the sink (#103): a grey bin, a green one for food waste, a small blue one for paper
       const d0 = -F.depth + 0.06, d1 = -FT - 0.05, uw = (u1 - u0 - 0.06) / 3;
-      [[M.bin, 0.3], [M.binGreen, 0.24], [M.binBlue, 0.2]].forEach(([m, h], k) => {
+      // (the grey one behind the bins' own door: the life sim's waste bin "Avfall", #381)
+      const binAt = [];
+      [[M.binBlue, 0.2], [M.binGreen, 0.24], [M.bin, 0.3]].forEach(([m, h], k) => {
         const a = u0 + 0.025 + k * (uw + 0.005);
         F.box(a, a + uw, d0, d1, yb + 0.016, yb + 0.016 + h, m);
         F.box(a + 0.01, a + uw - 0.01, d0 + 0.01, d1 - 0.01, yb + 0.016 + h - 0.002, yb + 0.018 + h, M.black); // its opening
+        const [x, z] = F.at(a + uw / 2, (d0 + d1) / 2);
+        binAt.push({ pos: new THREE.Vector3(x, yb + 0.016, z), w: uw, d: d1 - d0, h });
       });
       const sinkTop = top - K.sink.depth - 0.02;
       stock(open, F, openFront(open, F, u0, (u0 + u1) / 2, yb, yt, M.front, 'v-hi', {}, { mode: 'hinge', name: 'skåpet' }), 'sink', u0, u1, yb, sinkTop, F.depth, { shelf: false });
-      openFront(open, F, (u0 + u1) / 2, u1, yb, yt, M.front, 'v-lo', {}, { mode: 'hinge', name: 'skåpet' }).stock = 'own'; // the bins
+      Object.assign(openFront(open, F, (u0 + u1) / 2, u1, yb, yt, M.front, 'v-lo', {}, { mode: 'hinge', name: 'skåpet' }), { stock: 'own', bin: { ...binAt[2], yaw: F.dir === 'w' ? -Math.PI / 2 : F.dir === 'e' ? Math.PI / 2 : 0 } }); // the bins (`bin`: the grey one's bottom centre and size, #381)
     } else if (ret.includes(c)) {
       // corner unit: only the part beside the east run is a visible door
       const vis = Math.min(u1, east[0] ? east[0].x0 : u1);

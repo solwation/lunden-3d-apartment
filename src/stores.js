@@ -10,6 +10,7 @@ import { LIFE } from './config.js';
 //   pantry    the wall cabinet beyond the hob (interior.js stock 'pantry'): the front of its bottom and its shelf
 //   utensils  the top drawer under the hob: on the folded towels at its front (the kitchen knife, butter knife, cheese slicer, #374)
 //   plates    a stack of three plates in the wall cabinet over the free worktop (#379)
+//   sinkBins  the grey bin under the sink, "Avfall" (#381): the life sim's waste bin
 //   boardRack the cutting board's place: on its long edge against the splashback between the sink and the hob (#374)
 // A pick box inside each store is the E target "Lägga … i …" while a life item is held (and only then, so it never covers
 // the things inside). Opening and shutting never makes or loses a thing: the slots are data.
@@ -114,6 +115,18 @@ export function buildStores(life, world) {
   front('plates', plates, { name: 'skåpet', shutText: 'Öppna skåpet först', fullText: 'Där får inte plats fler tallrikar' },
     [0, 1, 2].map((k) => [0.5, (b) => (b.d0 + b.d1) / 2, () => 0.002 + k * S.plates.stack, 'm']));
   if (I.store('plates')) Object.assign(I.store('plates'), { accepts: ['plate'], putLabel: (held) => `ställa ${I.name(held)} i skåpet` });
+  // the waste bin under the sink (#381): one slot in the grey bin behind the bins' door; its anchor is scaled to the bin, so
+  // the bin item's model (lifemodels.js `bin`, built 1 × 1 × 1) fits it. Another bin elsewhere (a bathroom's) is the same:
+  // a store with one slot for an ITEMS 'bin' and an entry in a stock list.
+  const bins = world.lids.find((l) => l.bin);
+  if (bins) {
+    const B = bins.bin, a = new THREE.Object3D();
+    a.position.copy(B.pos); a.rotation.y = B.yaw; a.scale.set(B.w, B.h, B.d);
+    life.scene.add(a); // (fitted like the bins: F keeps it)
+    const never = pickBox(life.scene, B.pos.clone(), B.pos.clone().addScalar(0.01), () => false); // (nobody puts a bin in)
+    add('sinkBins', { name: 'skåpet', shutText: 'Öppna skåpet under diskhon först', fullText: 'Där står redan en hink', isOpen: () => bins.isOpen }, [{ size: 'xl', anchor: a }], never);
+    I.store('sinkBins').accepts = ['bin'];
+  }
   // the cutting board's place (#374): on its long edge on the worktop, leaning on the splashback between the sink and the hob
   const counter = world.cupSurfaces?.find((m) => m.userData.counter);
   if (counter) {

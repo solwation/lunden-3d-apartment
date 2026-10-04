@@ -220,7 +220,7 @@ export class Life {
   interrupt(why) { this.runner.interrupt(why); }
 
   /** The E targets: every item not in the hand. */
-  targets() { const out = [...(this.storeTargets ?? [])]; for (const v of this.views.values()) if (!v.held) out.push(v.target); return out; } // + the stores' boxes (#369; they raycast only while a life item is held)
+  targets() { const out = [...(this.storeTargets ?? [])], holding = !!this.items.held(); for (const v of this.views.values()) if (!v.held && (holding || !this.items.has(v.item, 'fixed'))) out.push(v.target); return out; } // + the stores' boxes (#369; they raycast only while a life item is held); a bin only with something in the hand (#381)
 
   update(dt) {
     for (const v of this.views.values()) v.update(dt);
@@ -354,7 +354,7 @@ function baseActions(life) {
   });
   A.define({
     id: 'take', order: 20, label: (c) => `ta ${nm(c.target)}`,
-    applies: (c) => !!c.target && c.target.place.at !== 'hand',
+    applies: (c) => !!c.target && c.target.place.at !== 'hand' && !I.has(c.target, 'fixed'), // (a bin stays in its place, #381)
     check: (c) => {
       if (c.heldView && c.heldView !== c.targetView) return `Lägg ifrån dig ${c.heldView.name ?? 'det du håller'} först`;
       return c.targetView?.shutReason() ?? I.check(c.target, { at: 'hand' });
