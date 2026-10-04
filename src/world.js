@@ -10,7 +10,7 @@ import { cleaningFittings } from './cleaning.js';
 import { Openable } from './openables.js';
 import { sfx } from './audio.js';
 import { SwingDoor, SlidingDoor, wardrobeDoors } from './doors.js';
-import { buildExterior } from './exterior.js';
+import { buildExterior, husLLayout } from './exterior.js';
 import { buildFurniture, surfaceBox } from './furniture.js';
 import { buildWallShelves } from './shelves.js';
 import { buildHallWall } from './keycabinet.js';
@@ -734,15 +734,17 @@ export function buildWorld(plan) {
   registerSnow(M.hedge, SEASON.snow.hedge);
   registerSnow(M.patio, SEASON.snow.paving);
   scene.add(surroundings);
-  // keep the visitor near the house: the area in front of Hus L's north façade and the strip behind
-  // it (patios + lawn), each closed off by the façade line beside our unit; the neighbours' screen
-  // walls and hedges block like ours
-  const o = OUTDOOR;
+  // the walkable block (#355): OUTDOOR's rectangle round Kv. Lunden; Hus L's row is a wall all round except our own
+  // façades (the flat's walls take over there) and the portik through the stair core; the neighbours' screen walls and
+  // hedges block like ours, the Å-husen's outlines and the garage box's edge (except down its stairs) like walls
+  const o = OUTDOOR, { xw, xe, portik: [p0, p1] } = husLLayout(W);
   outdoor.push(
-    [o.x0, o.z0, o.x1, o.z0], [o.x0, o.z0, o.x0, 0], [o.x1, o.z0, o.x1, 0], [o.x0, 0, 0, 0], [W, 0, o.x1, 0],
-    [o.x0, D, 0, D], [W, D, o.x1, D], [o.x0, D, o.x0, o.z1], [o.x1, D, o.x1, o.z1], [o.x0, o.z1, o.x1, o.z1],
+    [o.x0, o.z0, o.x1, o.z0], [o.x1, o.z0, o.x1, o.z1], [o.x1, o.z1, o.x0, o.z1], [o.x0, o.z1, o.x0, o.z0],
+    [xw, 0, p0, 0], [p1, 0, 0, 0], [W, 0, xe, 0], [xe, 0, xe, D], [xw, D, p0, D], [p1, D, 0, D], [W, D, xe, D], [xw, D, xw, 0],
+    [p0, 0, p0, D], [p1, 0, p1, D], // the portik's sides
     ...exterior.userData.segments,
-    ...surroundings.userData.segments.filter((s) => Math.max(s[0], s[2]) > o.x0 - 1 && Math.min(s[0], s[2]) < o.x1 + 1 && Math.min(s[1], s[3]) < o.z1 + 1), // the courtyard's edge, Hus A / B (#255, #259)
+    ...surroundings.userData.segments.filter((s) => Math.max(s[0], s[2]) > o.x0 - 1 && Math.min(s[0], s[2]) < o.x1 + 1
+      && Math.max(s[1], s[3]) > o.z0 - 1 && Math.min(s[1], s[3]) < o.z1 + 1), // the box's edge, Hus A / B / C (#255, #259)
   );
   l0.segments.push(...outdoor);
 

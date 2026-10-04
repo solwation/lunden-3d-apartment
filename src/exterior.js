@@ -416,5 +416,5 @@ export function husLLayout(W = 5.75) {
   units.forEach((u, i) => Object.assign(u, { lower: id(i + 1), upper: id(200 + i + (i < H.west ? 1 : 2)) }));
   units[0].x0 -= H.gableExtra;
   units[units.length - 1].x1 += H.gableExtra;
-  return { units, core: [coreX0 + c, coreX1 + c], xw: units[0].x0, xe: units[units.length - 1].x1 };
+  return { units, core: [coreX0 + c, coreX1 + c], portik: H.core.portik.map((p) => coreX0 + c + p), xw: units[0].x0, xe: units[units.length - 1].x1 };
 }

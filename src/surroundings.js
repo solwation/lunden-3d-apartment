@@ -29,9 +29,41 @@ const onRamp = (x, z) => x >= R.x0 && x <= R.x1 && z >= R.z0 && z <= R.z1;
 const rampY = (z) => -R.drop * THREE.MathUtils.clamp((R.z1 - z) / (R.z1 - R.z0), 0, 1);
 /** West of here the ground follows Karpvägen: the NW stair's top line south to its end, then Hus C's west façade line. */
 const westEdge = (z) => (z < Wst.stair.z1 ? Wst.stair.x1 : Wst.x);
+/** The Å-husen's entrance recesses as walkable floors (#355): a rectangle inside the house at the recess's lowest
+ * storey's floor (the courtyard's level for Hus A's / B's north entrances, the park level for their side doors). */
+export const recessFloors = S.blocks.flatMap((b) => (b.recesses ?? []).map((r) => {
+  const nz = r.face === 'n' || r.face === 's', line = { n: b.z0, s: b.z1, w: b.x0, e: b.x1 }[r.face], out = r.face === 's' || r.face === 'e' ? 1 : -1;
+  const [c0, c1] = [Math.min(line, line - out * r.depth), Math.max(line, line - out * r.depth)];
+  return { block: b, r, y: b.base + (r.from ?? 0) * S.storey, ...(nz ? { x0: r.a0, x1: r.a1, z0: c0, z1: c1 } : { x0: c0, x1: c1, z0: r.a0, z1: r.a1 }) };
+}));
+/** The stairs down from the courtyard (T.stairs, terraceStairs below): [x0, x1, z0, z1, y] per tread (#355: walkable). */
+const stairTreads = T.stairs.flatMap((St) => {
+  const drop = St.drop ?? -T.park, steps = St.steps ?? Math.round(drop / 0.17), rise = drop / steps, half = St.landing ? Math.floor(steps / 2) : -1;
+  const out = [];
+  let z = St.z;
+  for (let k = 0; k < steps; k++) { const run = k === half - 1 ? St.landing : St.step; out.push([St.x0, St.x1, z, z + run, -rise * (k + 1)]); z += run; }
+  return out;
+});
+/** The NW stair's tread height at x (nwStair below: tread k from x0 + k·run to x1 at foot + (k + 1)·rise), or −∞. */
+function nwTread(x) {
+  const St = Wst.stair;
+  if (x < St.x0 || x > St.x1) return -Infinity;
+  const foot = westY(St.z1), rise = -foot / St.risers, run = (St.x1 - St.x0) / (St.risers - 1);
+  let k = Math.min(St.risers - 1, Math.floor((x - St.x0) / run + 1e-9));
+  if (x < Math.min(St.x0 + k * run, St.x1 - 0.03)) k--;
+  return foot + (k + 1) * rise;
+}
 /** Ground height at plan (x, z): the street / courtyard level north of Hus L and on the garage box,
- * the park level around the box, east of it Sankt Lars väg's gentler slope, west of it Karpvägen's (#256). */
+ * the park level around the box, east of it Sankt Lars väg's gentler slope, west of it Karpvägen's (#256).
+ * #355: also the stairs' treads and the Å-husen's entrance recesses, so the visitor walks the whole block. */
 export function groundY(x, z) {
+  for (const [x0, x1, z0, z1, y] of stairTreads) if (x >= x0 && x <= x1 && z > z0 && z <= z1) return y;
+  for (const f of recessFloors) if (x > f.x0 && x < f.x1 && z > f.z0 && z < f.z1) return f.y;
+  if (z <= Wst.stair.z1) return Math.max(terrainY(x, z), nwTread(x)); // the NW stair's treads over the verge
+  return terrainY(x, z);
+}
+/** The terrain itself (the grass / asphalt surface; groundY without the stairs' treads and the recesses' floors). */
+function terrainY(x, z) {
   if (onRamp(x, z)) return rampY(z);
   if (onBox(x, z)) return 0;
   const park = T.park * THREE.MathUtils.clamp((z - T.north) / T.slope, 0, 1); // 0 north of Hus L's back
@@ -59,7 +91,7 @@ function terrainGeometry() {
   for (const b of T.box) { for (const x of [b.x0, b.x1]) { xs.add(x - 0.01); xs.add(x + 0.01); } for (const z of [b.z0, b.z1]) { zs.add(z - 0.01); zs.add(z + 0.01); } }
   const X = [...xs].sort((a, b) => a - b), Z = [...zs].filter((z) => z >= z0).sort((a, b) => a - b);
   const pos = [], idx = [];
-  for (const z of Z) for (const x of X) pos.push(x, groundY(x, z) - 0.01, z);
+  for (const z of Z) for (const x of X) pos.push(x, terrainY(x, z) - 0.01, z);
   const nx = X.length;
   for (let j = 0; j < Z.length - 1; j++) for (let i = 0; i < nx - 1; i++) {
     const a = j * nx + i, b = a + 1, c = a + nx, d = c + 1;
@@ -79,16 +111,16 @@ function terrainGeometry() {
  * and the garage door in the west face. */
 function boxWalls() {
   const walls = [], rails = [], door = [];
-  const quad = (ax, az, bx, bz, ya0, yb0) => { // vertical quad from the outside ground up to y 0
+  const quad = (ax, az, bx, bz, ya0, yb0, top = 0.12) => { // vertical quad from the outside ground up to y 0
     const g = new THREE.BufferGeometry();
-    g.setAttribute('position', new THREE.Float32BufferAttribute([ax, ya0, az, bx, yb0, bz, bx, 0.12, bz, ax, ya0, az, bx, 0.12, bz, ax, 0.12, az], 3));
+    g.setAttribute('position', new THREE.Float32BufferAttribute([ax, ya0, az, bx, yb0, bz, bx, top, bz, ax, ya0, az, bx, top, bz, ax, top, az], 3));
     const ua = (Math.abs(bx - ax) > Math.abs(bz - az) ? ax : az) / 2, ub = (Math.abs(bx - ax) > Math.abs(bz - az) ? bx : bz) / 2; // brick, 2 m per tile (#148)
     g.setAttribute('uv', new THREE.Float32BufferAttribute([ua, ya0 / 2, ub, yb0 / 2, ub, 0.06, ua, ya0 / 2, ub, 0.06, ua, 0.06], 2));
     g.computeVertexNormals();
     return g;
   };
   const slats = [], segments = [];
-  const atStairs = (x0, x1, z) => T.stairs.some((St) => Math.abs(z - St.z) < 0.05 && Math.max(x0, x1) > St.x0 - 0.05 && Math.min(x0, x1) < St.x1 + 0.05);
+  const atStairs = (x0, x1, z) => T.stairs.some((St) => Math.abs(z - St.z) < 0.05 && (x0 + x1) / 2 > St.x0 && (x0 + x1) / 2 < St.x1); // (the edge is cut at its sides, #355)
   const edges = [];
   for (const b of T.box) edges.push([b.x0, b.z0, b.x1, b.z0, 0, -1], [b.x1, b.z0, b.x1, b.z1, 1, 0], [b.x1, b.z1, b.x0, b.z1, 0, 1], [b.x0, b.z1, b.x0, b.z0, -1, 0]);
   const NW = T.west.stair; // #256: the forecourt's edge where the NW stair ends, and on to the box (Hus C's west façade line)
@@ -101,6 +133,8 @@ function boxWalls() {
     const touch = (b) => (oz ? az > b.z0 - 0.2 && az < b.z1 + 0.2 : ax > b.x0 - 0.2 && ax < b.x1 + 0.2); // a house on this edge's line
     for (const b of S.blocks.filter(touch)) for (const t of oz ? [(b.x0 - ax) / (bx - ax), (b.x1 - ax) / (bx - ax)] : [(b.z0 - az) / (bz - az), (b.z1 - az) / (bz - az)])
       if (t > 1e-4 && t < 1 - 1e-4) ts.add(t);
+    if (oz) for (const St of T.stairs) if (Math.abs(az - St.z) < 0.05) for (const t of [(St.x0 - ax) / (bx - ax), (St.x1 - ax) / (bx - ax)])
+      if (t > 1e-4 && t < 1 - 1e-4) ts.add(t); // … and where a stair leaves it (#355)
     const tl = [...ts].sort((a, b) => a - b);
     for (let k = 0; k < tl.length - 1; k++) {
       const t0 = tl[k], t1 = tl[k + 1];
@@ -111,7 +145,7 @@ function boxWalls() {
       const y0 = groundY(x0 + ox * 0.05, z0 + oz * 0.05), y1 = groundY(x1 + ox * 0.05, z1 + oz * 0.05);
       if (y0 > -0.005 && y1 > -0.005) continue; // no step here
       if (S.blocks.some((b) => mx > b.x0 && mx < b.x1 && mz > b.z0 && mz < b.z1)) continue; // a house's façade is the edge here (#246)
-      segments.push([x0, z0, x1, z1]); // the visitor stays on the courtyard (#255), across the stairs' tops too
+      if (!(oz && atStairs(x0, x1, z0))) segments.push([x0, z0, x1, z1]); // the visitor stays on the courtyard (#255), except down a stair (#355)
       if (y0 > -0.05 && y1 > -0.05) continue; // too small a step for a wall
       // the walls stand 4 cm outside the box edge, in front of the terrain's own (grass) step
       const wx0 = x0 + ox * 0.04, wz0 = z0 + oz * 0.04, wx1 = x1 + ox * 0.04, wz1 = z1 + oz * 0.04;
@@ -119,7 +153,7 @@ function boxWalls() {
       if (atDoor) { // the garage door: a dark opening with a grey roller door frame
         door.push(quad(wx0 + ox * 0.01, wz0, wx1 + ox * 0.01, wz1, y0, y1));
         walls.push(quad(wx0 + ox * 0.02, wz0, wx1 + ox * 0.02, wz1, y0 + T.garageDoor.h, y1 + T.garageDoor.h));
-      } else walls.push(quad(wx0, wz0, wx1, wz1, y0, y1));
+      } else walls.push(quad(wx0, wz0, wx1, wz1, y0, y1, oz && atStairs(x0, x1, z0) ? 0 : 0.12)); // the stair's top riser: no coping lip (#355)
       if (atStairs(x0, x1, z0)) continue; // the stair goes down here: no railing
       // coping + a light slatted railing (posts every metre, a top rail) on the courtyard side
       const sl = new THREE.PlaneGeometry(Math.hypot(x1 - x0, z1 - z0), 0.85).rotateY(Math.abs(ox) > 0 ? Math.PI / 2 : 0).translate((x0 + x1) / 2 - ox * 0.08, 0.6, (z0 + z1) / 2 - oz * 0.08);
@@ -152,6 +186,10 @@ function boxWalls() {
     new THREE.BoxGeometry(0.04, 0.04, rlen + 0.04).rotateX(-tilt).translate(rx - 0.08, top(0, mid) + 1.06, mid));  // top rail
   for (let z = R.z0; z <= R.z1 + 1e-6; z += (R.z1 - R.z0) / Math.ceil(R.z1 - R.z0)) rails.push(new THREE.BoxGeometry(0.04, 0.95, 0.04).translate(rx - 0.08, top(0, z) + 0.6, z));
   segments.push([rx, R.z0, rx, R.z1]);
+  for (const St of T.stairs) { // #355: down the stairs, their handrails on both sides
+    const end = stairTreads.filter((t) => t[0] === St.x0 && t[1] === St.x1).reduce((m, t) => Math.max(m, t[3]), St.z);
+    segments.push([St.x0, St.z, St.x0, end], [St.x1, St.z, St.x1, end]);
+  }
   along(T.east.gable + 0.01, 0, T.east.gable + 0.01, T.north, (x, z) => groundY(x + 0.05, z), () => 0.02, walls);
   const stairs = T.stairs.map(terraceStairs);
   return { walls, rails, door, slats, segments, stairs: { solid: [...stairs.flatMap((s) => s.solid), ...nwStair()], rails: stairs.flatMap((s) => s.rails), ends: stairs.map((s) => s.end) } };
@@ -497,6 +535,21 @@ function outline(b, st) {
   pts.push([b.x1, b.z1 - se[1]], [b.x1 - se[0], b.z1 - se[1]], [b.x1 - se[0], b.z1]);
   for (const r of rs('s', true)) pts.push([r.a1, b.z1], [r.a1, b.z1 - r.depth], [r.a0, b.z1 - r.depth], [r.a0, b.z1]);
   pts.push([b.x0 + sw[0], b.z1], [b.x0 + sw[0], b.z1 - sw[1]], [b.x0, b.z1 - sw[1]]);
+  for (const r of rs('w', true)) pts.push([b.x0, r.a1], [b.x0 + r.depth, r.a1], [b.x0 + r.depth, r.a0], [b.x0, r.a0]);
+  return pts;
+}
+
+/** An Å-hus's outline where the visitor walks (#355): the rectangle (the corner loggias are closed by their parapets and
+ * railings in the façade line) with every entrance recess cut in. */
+function groundOutline(b) {
+  const rs = (f, desc) => (b.recesses ?? []).filter((r) => r.face === f).sort((p, q) => (desc ? q.a0 - p.a0 : p.a0 - q.a0));
+  const pts = [[b.x0, b.z0]];
+  for (const r of rs('n')) pts.push([r.a0, b.z0], [r.a0, b.z0 + r.depth], [r.a1, b.z0 + r.depth], [r.a1, b.z0]);
+  pts.push([b.x1, b.z0]);
+  for (const r of rs('e')) pts.push([b.x1, r.a0], [b.x1 - r.depth, r.a0], [b.x1 - r.depth, r.a1], [b.x1, r.a1]);
+  pts.push([b.x1, b.z1]);
+  for (const r of rs('s', true)) pts.push([r.a1, b.z1], [r.a1, b.z1 - r.depth], [r.a0, b.z1 - r.depth], [r.a0, b.z1]);
+  pts.push([b.x0, b.z1]);
   for (const r of rs('w', true)) pts.push([b.x0, r.a1], [b.x0 + r.depth, r.a1], [b.x0 + r.depth, r.a0], [b.x0, r.a0]);
   return pts;
 }
@@ -1104,8 +1157,12 @@ export function buildSurroundings({ grass }) {
   flat(bw.stairs.solid, concrete, SEASON.snow.paving); // the stairs down to the park level (#148, #254)
   flat(T.stairs.filter((St) => St.walk).map((St) => groundStrip(St.walk.x0, St.walk.x1, St.walk.z0, St.walk.z1, 0.01)), COLORS.paving); // from a stair's foot on
   // collision for the courtyard (world.js keeps those near OUTDOOR): the box edge, and the Å-husen's outer walls (#259)
-  group.userData.segments = [...bw.segments, ...S.blocks.filter((b) => !b.style)
-    .flatMap((b) => [[b.x0, b.z0, b.x1, b.z0], [b.x1, b.z0, b.x1, b.z1], [b.x1, b.z1, b.x0, b.z1], [b.x0, b.z1, b.x0, b.z0]])];
+  // (#355: the outline at the ground — the loggias' parapets / railings stand in the façade line, the entrance recesses
+  // are walked into; `recessFloors` gives their floors)
+  group.userData.segments = [...bw.segments, ...S.blocks.filter((b) => !b.style).flatMap((b) => {
+    const pts = groundOutline(b);
+    return pts.map((p, i) => [...p, ...pts[(i + 1) % pts.length]]);
+  })];
   flat(bw.door, new THREE.MeshStandardMaterial({ color: 0x1c1e21, roughness: 0.8, side: THREE.DoubleSide }));
   // roads (#257, src/roads.js): rectangles, centre lines with rounded corners, fillets at the junctions
   const gd = T.garageDoor; // + the drive from Karpvägen to the garage door (#254)

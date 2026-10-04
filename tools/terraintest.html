@@ -105,16 +105,29 @@ async function run() {
     const t = ((ax - s[0]) * (bz - az) - (az - s[1]) * (bx - ax)) / d, u = ((ax - s[0]) * (s[3] - s[1]) - (az - s[1]) * (s[2] - s[0])) / d;
     return t >= -1e-6 && t <= 1 + 1e-6 && u >= -1e-6 && u <= 1 + 1e-6;
   });
-  const inRow = (x, z) => x < E.gable && z > -0.05 && z < T.north + 0.05; // Hus L's row (its façades are the segments)
+  const { husLLayout } = await w.eval(`import('${new URL('../src/exterior.js', location)}')`);
+  const { xw, xe } = husLLayout();
+  const { recessFloors } = await w.eval(`import('${new URL('../src/surroundings.js', location)}')`);
+  const inHouse = (x, z) => SITE.blocks.some((b) => !b.style && x > b.x0 && x < b.x1 && z > b.z0 && z < b.z1)
+    && !recessFloors.some((r) => x >= r.x0 - 0.05 && x <= r.x1 + 0.05 && z >= r.z0 - 0.05 && z <= r.z1 + 0.05); // inside an Å-hus: not walked (#355)
+  const inRow0 = (x, z) => x > xw - 0.05 && x < xe + 0.05 && z > -0.05 && z < T.north + 0.05; // Hus L's row (its façades are the segments)
+  const inRow = (x, z) => inRow0(x, z) || inHouse(x, z);
+  // #355: on the stairs a riser is a step the visitor walks (≤ PLAYER.stepUp), not a drop
+  const stairEnd = (St) => { const drop = St.drop ?? -T.park, steps = St.steps ?? Math.round(drop / 0.17); let z = St.z; for (let k = 0; k < steps; k++) z += (St.landing && k === Math.floor(steps / 2) - 1) ? St.landing : St.step; return z; };
+  const onStair = (x, z) => T.stairs.some((St) => x >= St.x0 - 0.06 && x <= St.x1 + 0.06 && z >= St.z - 0.06 && z <= stairEnd(St) + 0.06)
+    || (x >= Wst.stair.x0 - 0.06 && x <= Wst.stair.x1 + 0.06 && z <= Wst.stair.z1 + 0.06);
+  const riser = (x, z, x1, z1, dy) => dy <= 0.25 && dy < PLAYER.stepUp && (onStair(x, z) || onStair(x1, z1));
   const h = 0.05;
   let jumps = 0, jumpAt = '', pairs = 0;
+  const cells = new Set(); // one example per metre cell
   for (let x = OUTDOOR.x0; x < OUTDOOR.x1; x += h) for (let z = OUTDOOR.z0; z < OUTDOOR.z1; z += h) {
     if (inRow(x, z)) continue;
     const y = groundY(x, z);
     for (const [x1, z1] of [[x + h, z], [x, z + h]]) {
       if (x1 > OUTDOOR.x1 || z1 > OUTDOOR.z1 || inRow(x1, z1)) continue;
       pairs++;
-      if (Math.abs(groundY(x1, z1) - y) > 0.05 && !cross(x, z, x1, z1)) { jumps++; jumpAt ||= `(${x.toFixed(2)}, ${z.toFixed(2)}) ${f3(y)} → ${f3(groundY(x1, z1))}`; }
+      const dy = Math.abs(groundY(x1, z1) - y);
+      if (dy > 0.05 && !riser(x, z, x1, z1, dy) && !cross(x, z, x1, z1)) { jumps++; const c = `(${Math.round(x)}, ${Math.round(z)})`; if (!cells.has(c) && cells.size < 30) { cells.add(c); jumpAt += ` (${x.toFixed(2)}, ${z.toFixed(2)}) ${f3(y)} → ${f3(groundY(x1, z1))};`; } }
     }
   }
   check(jumps === 0, `walkable ground in OUTDOOR is continuous (${pairs} pairs 5 cm apart): ${jumps} unguarded steps ${jumpAt}`);

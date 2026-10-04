@@ -792,9 +792,12 @@ export const GREET = {
   cyclists: ['Hej!', 'Hej hej!', 'Tjena!', 'Hej, akta dig!'],
 };
 
-// behind Hus L: the patios and the Borggården (#80) to the south walk and the edge between Hus B and A (#259); the box edge,
-// Hus A's and Hus B's walls stop the visitor inside it (surroundings.js `userData.segments`)
-export const OUTDOOR = { x0: -44.6, x1: 17.75, z0: -14, z1: 33.3 };
+// The walkable area outdoors (#355): the whole block Kv. Lunden — the car park in front of Hus L (z0, as before), Karpvägen
+// with the garage drive (x0: its far kerb, Karpvägen's `w` 5.8 about x −75.8), the park level south of the box (z1: short of
+// the park's woods, SITE.treeAreas) and Sankt Lars väg's east leg (x1: short of HepCat Store's west face, 27.9). Inside it
+// Hus L's row (but the portik), the Å-husen's outlines, the box's edge (not down its stairs, `SITE.terrain.stairs`) and the
+// ramp's wall stop the visitor (world.js; surroundings.js `userData.segments`). The bounds are a choice, not a plot line.
+export const OUTDOOR = { x0: -78.5, x1: 27.5, z0: -14, z1: 64 };
 
 // The lightsaber in Sovrum 2 (#78, src/saber.js): since #324 on two pegboard hooks on the Nerf board's top row (the
 // board's front face x 2.772, see TOYS.nerf: an armoury), the switched-off saber (its hilt) lying across them along z.

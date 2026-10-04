@@ -529,7 +529,7 @@ manifest.webmanifest   web app manifest; icons/ = icon.svg rendered to PNG (192,
 data/plan.json         GENERATED — do not edit by hand
 data/changelog.json    what changed, for visitors (see Workflow rules)
 tools/extract_plan.py  PDF → data/plan.json (stdlib only)
-tools/walktest.html    headless movement test
+tools/walktest.html    headless movement test (+ #355: round the block, the stairs, the recess, the portik, sprint, nearestFree)
 tools/touchtest.html   headless touch-input test (synthetic pointer events)
 tools/cattest.html     headless test of cat placement behind every door/wardrobe; up on seats, beds and tables (#200)
 tools/roomtest.html    headless test of room detection at known points (+ a picture of the fill)
@@ -644,7 +644,8 @@ tools/terracetest.html Hus L's roof terraces (#350): one per upper flat, areas v
                        the gables, the railing's top over the finished deck
 tools/terraintest.html headless test (#346): the courtyard = the reference level, S2's level differences kept, the ramp's
                        ends / the stairs' feet / the garage drive meet their ground, no ground rises past a retaining wall,
-                       every plinth reaches the ground, no unguarded step > 5 cm in OUTDOOR (5 cm grid)
+                       every plinth reaches the ground, no unguarded step > 5 cm in OUTDOOR (5 cm grid; a stair's riser
+                       is a step, the inside of an Å-hus is skipped, #355)
 tools/weathertest.html headless test: showers per season, thunderstorms only in late summer, a shower ramps in; with &weather=storm:
                        drops (none inside Hus L), grey sky, a flash and back, ⛈ in the HUD, people in; snow only in winter, hail in
                        spring / storms, snowflakes not in Hus L, walking 20 m out in it counts once, not indoors; clear = no rain
@@ -775,15 +776,18 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   wide stair ("NIVÅSKILLNAD CA 1M", `west.stair`: treads ending where the sloping verge meets them) down from the bike
   yard's west edge. world.js's flat plate covers the street side only where it is level (`terrainNorth`); HepCat and the
   long building stand on plinths down the slope. The box edge pieces are collision too
-  (`surroundings.userData.segments`, those near `OUTDOOR`), so the visitor never walks off it.
+  (`surroundings.userData.segments`, those in `OUTDOOR`), so the visitor never walks off it — except down a stair (#355:
+  `groundY` has the `terrain.stairs`' treads and the NW stair's, the edge is open at a stair's top, its sides collide).
   Courtyard (#80, `COURTYARD`, re-measured on the calibrated situation plan in #259 — the transform is in its
   comment): the Borggården between Hus L, C and A with stone walks (along the patios; the south walk along Hus B
   to Hus A's west façade, a little square at the edge between B and A; along Hus A's north side to the east stair;
   the walk between Hus C and the courtyard with a branch to C's entrance), lawns round the tree squares and gravel
   only round the playground and the boule strip, the pergola with a dining table, a grill, a sandbox, a boule
   court (not on the plan: guess), benches and tree squares; south of Hus C a second pergola, a sandbox and
-  four odlingslådor; the trees between A and B on the lower green. Walkable behind Hus L to the south walk and
-  the edge between B and A (`OUTDOOR` x −44.6…, z ≤ 33.3; Hus A/B's walls and the box edge collide). **True north**: FOJAB's arrow puts it 58° left of plan-up, so the
+  four odlingslådor; the trees between A and B on the lower green. #355: the whole block is walkable (`OUTDOOR`
+  x −78.5…27.5, z −14…64: the car park, Karpvägen and the garage drive, the park level round Hus B / A, Sankt Lars väg's
+  east leg, through the portik); Hus L's row (`husLLayout`, open at the portik), the Å-husen's outlines with their
+  entrance recesses walked into (`recessFloors`: the floor at the recess's storey) and the box edge collide. **True north**: FOJAB's arrow puts it 58° left of plan-up, so the
   plan's "north" (entrance) faces ENE (bearing 58°, `DAY.planNorth`) and the patio WSW. The schools outside the
   plot are placed from the Google Maps screenshot; HepCat, the long brick building and the villa follow the situation
   plan's outlines (#261: HepCat z −10.8…10 right by the road, an open gap, the long building z 23…61.6 + an annex); straight across Sankt Lars väg
@@ -1135,9 +1139,10 @@ screenshots into the session scratchpad, not the repo.
 ## Input notes
 
 - A visit starts outside, ~12 m in front of the entrance façade facing the house (`START` in config);
-  the walkable outdoor area is `OUTDOOR`: in front of Hus L and behind it (our patio, out through the
-  gap in the hedge to the lawn up to `z1`), each closed off by the façade line beside our unit; the
-  neighbours' screen walls and hedges collide (`exterior.userData.segments`). walktest walks from `START` in through the front door.
+  the walkable outdoor area is `OUTDOOR` (#355): the whole block — in front of Hus L, behind it (our patio, out through
+  the gap in the hedge), through the portik, round Hus A, B and C and down the stairs to the park level and the garage
+  drive; Hus L's row is a wall except our façades; the neighbours' screen walls and hedges collide
+  (`exterior.userData.segments`). walktest walks from `START` in through the front door and round the block.
 
 - Start screen has two buttons: *Mus & tangentbord* (pointer lock) and *Touch* (joystick).
   A Surface has both, so the visitor chooses. Touch-only devices (`(pointer: coarse) and
