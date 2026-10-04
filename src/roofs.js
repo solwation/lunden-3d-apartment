@@ -48,6 +48,23 @@ export class Roofs {
     return u && u.y > feet - eps ? u.surface : null;
   }
 
+  /** Is a surface at (x, z) between y0 and y1 (a roof's edge in the way of a body flying in, the jetpack #359)? */
+  blocks(x, z, y0, y1) {
+    for (const s of this.surfaces) {
+      if (!Roofs.on(s, x, z)) continue;
+      const y = Roofs.height(s, x, z);
+      if (y > y0 && y < y1) return true;
+    }
+    return false;
+  }
+
+  /** The lowest surface at (x, z) above `y` (a canopy over the head while flying up, #359), or +∞. */
+  above(x, z, y) {
+    let lo = Infinity;
+    for (const s of this.surfaces) if (Roofs.on(s, x, z)) { const h = Roofs.height(s, x, z); if (h > y && h < lo) lo = h; }
+    return lo;
+  }
+
   /** The walls in the way of a body from y0 to y1 (collision segments). */
   walls(y0, y1) {
     const out = [];

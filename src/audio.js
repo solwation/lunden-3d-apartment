@@ -663,6 +663,34 @@ export const sfx = {
     return { stop() { const t1 = ctx.currentTime + 0.05; o.stop(t1); lfo.stop(t1); bias.stop(t1); } };
   },
   /** The fridge/freezer door alarm (#288): two short soft beeps. */
+  /** The jetpack's roar (#359): low rumble + hiss; `set(k)` follows the thrust (0…1). On your own back: `pos` null =
+   * right at the listener (a world position for one heard from afar). */
+  jetRoar(pos = null) {
+    if (!ready()) return null;
+    const t = ctx.currentTime, d = out(pos, 1);
+    const src = ctx.createBufferSource(); src.buffer = noiseBuf; src.loop = true;
+    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 900;
+    const hp = ctx.createBiquadFilter(); hp.type = 'bandpass'; hp.frequency.value = 2400; hp.Q.value = 0.7;
+    const g = ctx.createGain(), gh = ctx.createGain(); g.gain.value = 0; gh.gain.value = 0;
+    src.connect(lp).connect(g).connect(d); src.connect(hp).connect(gh).connect(d);
+    const rum = ctx.createOscillator(), rg = ctx.createGain(); rum.type = 'sawtooth'; rum.frequency.value = 48; rg.gain.value = 0;
+    rum.connect(rg).connect(d);
+    src.start(t, Math.random()); rum.start(t);
+    return {
+      set(k) {
+        const now = ctx.currentTime;
+        g.gain.setTargetAtTime(0.32 * k, now, 0.06); gh.gain.setTargetAtTime(0.07 * k, now, 0.06); rg.gain.setTargetAtTime(0.05 * k, now, 0.08);
+        lp.frequency.setTargetAtTime(500 + 900 * k, now, 0.1);
+      },
+      stop() { const t1 = ctx.currentTime; for (const x of [g, gh, rg]) { x.gain.cancelScheduledValues(t1); x.gain.setTargetAtTime(0, t1, 0.08); } src.stop(t1 + 0.6); rum.stop(t1 + 0.6); },
+    };
+  },
+  /** The jetpack running hot (#359): a quick high double beep. */
+  jetWarn() {
+    if (!ready()) return;
+    const t = ctx.currentTime, d = out(null, 0.5);
+    for (let i = 0; i < 2; i++) tone(t + i * 0.12, 0.08, d, { type: 'square', from: 2100, gain: 0.04 });
+  },
   fridgeBeep(pos) {
     if (!ready()) return;
     const t = ctx.currentTime, d = out(pos, 0.6);

@@ -148,8 +148,18 @@ src/fall.js            falling (#361, FALL): player.js keeps `fall` (the highest
                        Over FALL.hurt (3 m): sfx.landing + sfx.ouch ("aj"), the view jolts, #fall goes red then black, no walking, the
                        visitor wakes at FALL.wake outside the front door facing the house, "Du slog dig …" while it fades in; only the
                        place is reset (`onWake` hooks, e.g. the jetpack of #359 going home), a deduction `fall` + stats `falls`. Over
-                       FALL.soft: a soft thud and a knee-bend. Nothing gives a 3 m drop yet (#359 / #360 will): `&fall=h` drops you
-                       from h m (falltest.html)
+                       FALL.soft: a soft thud and a knee-bend. Off a roof's edge (#360) or the jetpack's thrust cut high up (#359; with
+                       it on, the drop = the landing speed v² / 2g); `&fall=h` drops you from h m (falltest.html)
+src/jetpack.js         the jetpack (#359, JETPACK): our own unbranded pack (one vertex-coloured mesh) on a wall hook on the garage box's
+                       west face beside the garage door (`hook`, z < terrain.garageDoor.z0); E puts it on (hands free; outdoors only),
+                       `player.jet` = it: Space / ⬆ (#jet-up) thrust, C / Ctrl / ⬇ down faster, WASD / the stick steer at `speed` with
+                       inertia (`player.flying`, `player.jv`), no thrust = falling; `ceiling`, OUTDOOR's edge and the roofs' walls
+                       hold (+ `roofs.blocks` / `above`: a roof edge or canopy in the way of the body); the landing hurts by the speed
+                       it came down at (v² / 2g as the drop, fall.js); heat (#jetpack bar, `heat`) cuts the thrust when full.
+                       E with nothing else (`dropTarget`, touch: "Ta av dig jetpacken") stands it down in front of you; walking in
+                       through a door with it on stands it down outside; F / waking after a fall (`fall.onWake`) send it home; keep.js
+                       part `jetpack`; flames (rig on your back) + smoke (one Points) + #jet-glow + sfx.jetRoar; stats `flights`
+                       (SCORE.first: the first take-off); `&jetpack` = on from the start (tools/jetpacktest.html)
 src/touch.js           on-screen joystick (left) + drag-to-look (right), multi-touch pointer events
 src/main.js            renderer, lights, input modes, door raycast prompt/button, loop (step)
 src/version.js         BUILD stamp + polling for a newer published version
@@ -660,6 +670,11 @@ tools/rooftest.html    headless test (#360): placed on the loftgång (level, the
                        the flat's lamps, the culler hides its inside, off the east end = hurt, into the west drum), our terrace (railing,
                        set-back wall, skärmvägg), Hus L's roof (a panel row, the loft in the way, off the edge onto the loftgång), Hus A's
                        slope and eaves, a canopy; the rain ends on each roof; the first visits counted
+tools/jetpacktest.html headless test (#359): the jetpack on its hook beside the garage door, E puts it on (hands free, HUD), Space lifts
+                       (the climb cap, flames, heat, the first flight counted), letting go falls, a soft landing, the ceiling, C down faster,
+                       OUTDOOR's edge, onto Hus C's roof (counted), stood down there and on again, keep.js round trip, Hus L / Hus A hold,
+                       overheating cuts out, a cut high up hurts (home on its hook), in through the front door = stood down outside,
+                       F home, touch ⬆ and "Ta av dig jetpacken"
 tools/pctest.html      headless test: switch the gaming PC on/off (game moves, RGB cycles), the chair is a seat and
                        starts the PC, the bunk seat swings the monitor round (film)
 tools/sabertest.html   headless test: take the lightsaber, swing it, hang it back
@@ -1100,6 +1115,7 @@ URL parameters (debugging / screenshots):
 - `&time=HH[.h]` — start at that hour (default: the browser's time), `&month=1–12`, `&day=1–31` (default: today), `&freeze` pauses the clock,
   `&clock` opens the wall clock's strip,
   `&lights` turns every lamp on, ceiling lamps too, and keeps the small ones on (#234).
+- `&jetpack` — the jetpack on your back (outdoors, #359).
 - `&weather=rain|storm|snow|hail|clear` — force the weather (#248, #249).
 - `&blinds=0…1` — every pleated blind drawn up that far (#273; not saved).
 - `&fries` — golden, steaming fries in the open air-fryer basket (#301).

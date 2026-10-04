@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { LEVELS, PLAYER, STAIR, UNIT_TOP, ROOFS, GARAGE } from './config.js';
+import { LEVELS, PLAYER, STAIR, UNIT_TOP, ROOFS, GARAGE, JETPACK } from './config.js';
 import { stairHeight, stairUnderside } from './stairs.js';
 import { groundY } from './surroundings.js';
 
@@ -57,6 +57,9 @@ export class Player {
     this.kneel = false;    // down to pet a cat on the floor (#242), set by main.js
     this.fall = null;      // in the air (#361): { top, gap } = the highest feet and the deepest free drop under them
     this.onLand = null;    // (drop, gap) on landing — main.js → fall.js
+    this.jet = null;       // the jetpack (#359, jetpack.js): `worn`, `lift(dt, grounded)` = m/s² of thrust (− = down faster)
+    this.flying = false;   // in the air with the jetpack on
+    this.jv = { x: 0, z: 0 }; // flying: the horizontal velocity (inertia)
   }
 
   spawn(x, z, yaw) {
@@ -64,6 +67,7 @@ export class Player {
     this.vy = 0;
     this.glide = null; // (an unstick under way is for the old place, #314)
     this.fall = null; // (a teleport is no fall, #361)
+    this.flying = false; this.jv.x = this.jv.z = 0;
     this.eyeY = this.pos.y + PLAYER.eye;
     this.camera.position.set(x, this.eyeY, z);
     this.camera.rotation.set(0, yaw, 0, 'YXZ');
@@ -218,7 +222,12 @@ export class Player {
     const amount = keyFwd || keySide ? 1 : Math.min(1, Math.hypot(this.analog.x, this.analog.y));
     const wantsRun = k.has('ShiftLeft') || k.has('ShiftRight') || (!keyFwd && !keySide && amount > PLAYER.sprintStick);
     // crouch (#70): down at once, up only where there is head room (under the stair there may be none)
-    this.crouched = this.crouch || this.kneel || (this.crouched && !this.roomToStand());
+    // the jetpack (#359): its thrust first (Space / ⬆; C / Ctrl / ⬇ down faster); off the ground it flies
+    const jet = this.jet?.worn ? this.jet : null;
+    const g0 = jet ? this.groundAt(this.pos.x, this.pos.z, this.pos.y) : 0;
+    const lift = jet ? jet.lift(dt, this.pos.y <= g0 + 0.02) : 0;
+    this.flying = !!jet && (this.pos.y > g0 + 0.02 || lift > GRAVITY);
+    this.crouched = !this.flying && (this.crouch || this.kneel || (this.crouched && !this.roomToStand()));
     this.sprinting = wantsRun && this.outdoors && !this.crouched && (keyFwd || keySide || amount > 0);
     const speed = (this.sprinting ? PLAYER.run : PLAYER.walk * amount) * (this.crouched ? PLAYER.crouchSpeed : 1) * (this.boost ?? 1); // boost: Kaffeturbo (#217)
 
@@ -229,6 +238,13 @@ export class Player {
     let mz = fz * fwd - Math.sin(yaw) * side;
     const m = Math.hypot(mx, mz);
     if (m > 0) { mx = (mx / m) * speed * dt; mz = (mz / m) * speed * dt; }
+    const x0 = this.pos.x, z0 = this.pos.z;
+    if (this.flying) { // flying across (#359): towards JETPACK.speed in the steered direction, with some inertia
+      const v = JETPACK.speed * Math.min(1, keyFwd || keySide ? 1 : amount), k = Math.min(1, JETPACK.accel * dt);
+      const tx = m > 0 ? (mx / (Math.hypot(mx, mz) || 1)) * v : 0, tz = m > 0 ? (mz / (Math.hypot(mx, mz) || 1)) * v : 0;
+      this.jv.x += (tx - this.jv.x) * k; this.jv.z += (tz - this.jv.z) * k;
+      mx = this.jv.x * dt; mz = this.jv.z * dt;
+    }
 
     // move in small sub-steps so fast movement can't tunnel through thin walls
     const steps = Math.max(1, Math.ceil(Math.hypot(mx, mz) / 0.05));
@@ -251,20 +267,43 @@ export class Player {
         else if (!this.blockedByStair(tryZ.x, tryZ.z, prev.y)) this.pos.copy(tryZ);
         else this.pos.copy(prev);
       }
+      if (jet && this.aloft && this.world.roofs) { // flying into a roof's edge / a canopy: in the way of the body (#359)
+        const R = this.world.roofs, y0 = prev.y + PLAYER.stepUp, y1 = prev.y + PLAYER.headroom;
+        if (R.blocks(this.pos.x, this.pos.z, y0, y1)) {
+          if (!R.blocks(this.pos.x, prev.z, y0, y1)) this.pos.z = prev.z;
+          else if (!R.blocks(prev.x, this.pos.z, y0, y1)) this.pos.x = prev.x;
+          else { this.pos.x = prev.x; this.pos.z = prev.z; }
+        }
+      }
       const g = this.groundAt(this.pos.x, this.pos.z, this.pos.y);
       if (g >= this.pos.y) { this.pos.y = g; this.vy = 0; }
     }
 
-    // gravity
+    if (this.flying) { this.jv.x = (this.pos.x - x0) / dt; this.jv.z = (this.pos.z - z0) / dt; } // (a wall takes the speed)
+
+    // gravity (and the jetpack's thrust, #359)
     const g = this.groundAt(this.pos.x, this.pos.z, this.pos.y);
-    if (this.pos.y > g) {
+    let impact = 0;
+    if (this.pos.y > g || lift > GRAVITY) {
       const f = (this.fall ??= { top: this.pos.y, gap: 0 }); // falls (#361)
       f.top = Math.max(f.top, this.pos.y); f.gap = Math.max(f.gap, this.pos.y - g);
-      this.vy -= GRAVITY * dt;
+      const y0 = this.pos.y;
+      this.vy += (lift - GRAVITY) * dt;
+      if (jet) {
+        if (lift > 0) this.vy = Math.min(this.vy, JETPACK.climb);
+        else if (lift < 0) this.vy = Math.max(this.vy, Math.min(-JETPACK.sink, this.vy - lift * dt)); // (no faster than `sink` by the push)
+      }
       this.pos.y = Math.max(g, this.pos.y + this.vy * dt);
-      if (this.pos.y === g) this.vy = 0;
+      if (jet) { // the ceiling, and a canopy / roof over the head on the way up
+        const top = Math.min(JETPACK.ceiling, (this.world.roofs?.above(this.pos.x, this.pos.z, y0 + PLAYER.stepUp) ?? Infinity) - PLAYER.headroom);
+        if (this.pos.y > top) { this.pos.y = Math.max(Math.min(y0, top), g); this.vy = Math.min(0, this.vy); }
+      }
+      if (this.pos.y === g) { impact = -this.vy; this.vy = 0; }
     }
-    if (this.fall && this.pos.y <= g) { const f = this.fall; this.fall = null; this.onLand?.(f.top - this.pos.y, f.gap); } // landed
+    if (this.fall && this.pos.y <= g) { // landed: with the jetpack on, as hard as the speed it came down at (a soft landing on thrust)
+      const f = this.fall; this.fall = null;
+      this.onLand?.(jet ? Math.max(0, impact) ** 2 / (2 * GRAVITY) : f.top - this.pos.y, f.gap);
+    }
 
     // smooth the eye height over stair steps
     const target = this.pos.y + (this.crouched ? PLAYER.crouchEye : PLAYER.eye);

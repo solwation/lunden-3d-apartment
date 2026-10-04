@@ -1292,6 +1292,7 @@ export const SCORE = {
     clips: 2, // per kind of clip seen on Tilly's laptop (#283); no points for repeats (they come by themselves)
     fruit: 3, // a piece of fruit from the bowl eaten up (#326): per kind (apple, pear, orange, clementine, banana), then `again`
     nest: 4, // per smart speaker asked something (#325), then `again`
+    flights: 25, // the first take-off with the jetpack (#359); no `again` (landing on each roof scores as `roofs`)
     roofs: 20, // per roof stood on (#360): the loftgång, each terrace, Hus L's roof, the loft, a drum, Hus A / B / C, a canopy; no `again`
     handBrew: 10, // the first pot brewed by hand: water and coffee filled first (#334); no `again` (each brew has `each.brews`)
   },
@@ -1399,6 +1400,19 @@ export const FALL = { hurt: 3, soft: 1, free: 1, wake: { x: 1.3, z: -4.0, yawDeg
 // top, UNIT_TOP) = up there — the roofs' own walls collide instead of the ground's. Our choice (above every outdoor
 // step, below the lowest canopy).
 export const ROOFS = { aloft: 2.0 };
+// The jetpack (#359, src/jetpack.js): our own unbranded model on a wall hook on the garage box's west face beside the
+// garage door (terrain.garageDoor, z 41…47), `hook` = its spot (x on the face, z, the hook's height over the ground there).
+// Worn on the back (hands free). Every number is a game choice, not a real jetpack's: `thrust` m/s² up while Space / ⬆ is
+// held (gravity 9.8: about 60 % of the time to hover), `down` m/s² extra with C / Ctrl / ⬇, `climb` / `sink` m/s caps,
+// `speed` m/s flying across, `accel` 1/s how fast it gets there (inertia), `ceiling` m (model y) and OUTDOOR's edge as the
+// bounds; `heat` rises `up` per s of thrust, falls `cool` per s in the air and `ground` per s standing, `warn` beeps,
+// at 1 the thrust cuts out until it is down to `resume` (a cut high up = a fall, fall.js).
+export const JETPACK = {
+  hook: { x: -70.5, z: 39.7, h: 1.45 },
+  thrust: 16, down: 9, climb: 6, sink: 12, speed: 9, accel: 2.2, ceiling: 40,
+  heat: { up: 1 / 45, cool: 1 / 20, ground: 1 / 5, warn: 0.8, resume: 0.35 }, // (hovering just about holds; 45 s of steady thrust)
+  drop: 0.55, // m in front of the feet where "Ta av jetpacken" stands it
+};
 
 // Two flights with winders between them (from the stair outline on both plans).
 // Flight A runs east along the south half, winders turn 180° at the east end,
