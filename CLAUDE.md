@@ -181,7 +181,8 @@ docs/                  reference images in git (site map screenshot; docs/peab/ 
 textures/              image textures the page loads (published by stamp.sh): stair-pictures.jpg = the 2 × 2 atlas
                        of the stair pictures (#220), cropped/straightened from docs/tavla-trappa-*.jpg; angsgras-sovrum1.jpg = the picture over the
                        Sovrum 1 bed (#284), straightened, reflections painted out; miele.jpg = the cat photo in the window-board
-                       frame (#322), cropped and straightened from docs/miele-foto-ram.jpg
+                       frame (#322), cropped and straightened from docs/miele-foto-ram.jpg; linjeteckning-sovrum1.jpg = the line drawing over the RÅGRUND
+                       chair (#404), docs/tavla-sovrum1-linjeteckning.png on pale paper inside a white mount
 material/              screenshots of our choices in Peab's option portal (local, see below)
 src/audio.js           synthesised positional sound effects (Web Audio): doors, slides, meow, steps
 src/toilet.js          toilet (Ifö Spira 6260) with an animated lid and a flush button (`flush`, its own E target in
@@ -934,7 +935,7 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   `KLK`, src/closet.js: Peab's shelf + clothes rail on wall standards along the east wall and a shelf over the NORDLI per L1204's fittings
   sheet, docs/klk-sovrum1-inredning-*.png; Sarah's and Olof's clothes, make-up on the chest under a lit LED mirror, a round cream rug) (a sage green IKEA chintz bedding set from a Sellpy ad, #83) with IKEA NORDKISA bedside tables (#64) and white NYMÅNE work
   lamps on them (#65, each its own lamp like the floor lamp) + an IKEA RÅGRUND towel-rack chair against the west wall left of
-  the window, just south of the curtain's west stack (#60, #403: z 0.725–1.115), the user's grey shag rug 240 × 340 with a white zig-zag under the bed (#317, `pattern: 'zigzag'`, 2.8 cm;
+  the window, just south of the curtain's west stack (#60, #403: z 0.725–1.115), under an A4 black-framed line drawing (#404, a `pictures` item with a moulded `step`, centre 1.65 m up), the user's grey shag rug 240 × 340 with a white zig-zag under the bed (#317, `pattern: 'zigzag'`, 2.8 cm;
   across the bed, z 0.74–4.14, from the head wall to 18 cm past the foot), and a Philips 43" PQS7801 on the west wall across from the bed (#213, black frame, Ambilight #223):
   "sätta dig upp i sängen" (look at the bed's foot half; `aim` on a rest spot) puts it on, getting up puts it off; Pingping, a navy
   penguin cushion, sits between the pillows (#269, docs/pingping-pingvinkudde.jpg); teal jungle-animal print curtains on a ceiling track under the soffit in front of the window (#342, `CURTAINS`, docs/gardiner-sovrum1-turkos-djurmonster.jpg; two-part, meeting in the middle, #362; open by default, parked at

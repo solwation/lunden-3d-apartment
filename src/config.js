@@ -2205,6 +2205,14 @@ export const FURNITURE = [
   // IKEA NYMÅNE work lamps with wireless charging, white (#65; base Ø ~20 cm, arms and head guessed from the
   // product photo), one on each bedside table, the head reaching over towards the bed; E on each one
   ...[[BED1_Z - 1.17, 180], [BED1_Z + 1.17, 0]].map(([z, rot]) => ({ type: 'worklamp', level: 1, x: 5.55 - 0.25, z, y: 0.55, rot, onRug: true })), // their tables stand on the rug (#317)
+  // The line drawing over the RÅGRUND chair (#404, the user: "about A4 with the frame"): 21 × 30 cm outside, a 2 cm black
+  // moulded frame (its inner 0.8 cm a lower step, `step`, *guess* from the photo), a white mount showing ~2 cm beside an
+  // 11.5 × 18 cm print (*guess*: the issue's ~2 cm mount inside an A4 frame) of pale warm grey paper. textures/linjeteckning-sovrum1.jpg = docs/tavla-sovrum1-linjeteckning.png
+  // (the motif traced off the user's photo) laid on the paper and mount (40 px/cm, made with PIL). On Sovrum 1's west wall
+  // (face x 2.71) centred on the chair (z 0.92, #403), clear of the parked west curtain stack (z 0.47–0.70, CURTAINS) and
+  // the TV (z ≥ 2.07); the bottom edge 10 cm over the chair's towel rack (1.40 m) → centre 1.65 m (*guess*), under the soffit (2.4)
+  { type: 'pictures', level: 1, x: 2.711, z: 0.725 + 0.195, y: 1.65, rot: -90, w: 0.21, h: 0.3, gap: 0, frame: 0.02, step: 0.008,
+    depth: 0.025, rough: 0.3, cols: 1, rows: 1, atlas: 'textures/linjeteckning-sovrum1.jpg', grid: [1, 1], order: [0] },
   // IKEA RÅGRUND chair with towel rack, bamboo (#60; H 140, W 39, D 44, seat 48 cm per IKEA/dimensions.com):
   // Sovrum 1, the corner left of the window seen from inside (NW), back and towel rack against the
   // west wall, seat facing into the room (east); the seat is below the window sill (BH 0.7). #403: moved south out of the

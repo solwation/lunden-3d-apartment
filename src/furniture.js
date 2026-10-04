@@ -2725,10 +2725,21 @@ function pictures(item) {
       g.add(box);
       continue;
     }
-    for (const [sx, sy, x, y] of [[w, f, 0, h / 2 - f / 2], [w, f, 0, -h / 2 + f / 2], [f, h - 2 * f, -w / 2 + f / 2, 0], [f, h - 2 * f, w / 2 - f / 2, 0]]) {
+    // `step` (#404) = a moulded profile: the outer f − step stands the full depth, the inner `step` is a lower step in
+    const o = item.step ? f - item.step : f, ds = d * 0.6;
+    for (const [sx, sy, x, y] of [[w, o, 0, h / 2 - o / 2], [w, o, 0, -h / 2 + o / 2], [o, h - 2 * o, -w / 2 + o / 2, 0], [o, h - 2 * o, w / 2 - o / 2, 0]]) {
       const b = new THREE.Mesh(new THREE.BoxGeometry(sx, sy, d), black);
       b.position.set(cx + x, cy + y, d / 2); b.castShadow = true;
       g.add(b);
+    }
+    if (item.step) {
+      const s = item.step, ow = w - 2 * o, oh = h - 2 * o;
+      for (const [sx, sy, x, y] of [[ow, s, 0, oh / 2 - s / 2], [ow, s, 0, -oh / 2 + s / 2], [s, oh - 2 * s, -ow / 2 + s / 2, 0], [s, oh - 2 * s, ow / 2 - s / 2, 0]]) {
+        const b = new THREE.Mesh(new THREE.BoxGeometry(sx, sy, ds), black);
+        b.position.set(cx + x, cy + y, ds / 2);
+        g.add(b);
+      }
+      pic.position.z = ds - 0.004;
     }
     const back = new THREE.Mesh(new THREE.BoxGeometry(iw, ih, 0.004), black);
     back.position.set(cx, cy, 0.002); back.castShadow = true;
