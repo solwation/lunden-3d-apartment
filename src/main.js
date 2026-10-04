@@ -5,6 +5,7 @@ const DRAWING_COLORS = DRAWING.colors;
 import { buildWorld } from './world.js';
 import { photoGlow } from './furniture.js';
 import { Player, inPoly, crosses } from './player.js';
+import { Fall } from './fall.js';
 import { setupTouch } from './touch.js';
 import { watchForUpdates, BUILD } from './version.js';
 import { CatSpawner, VARIANTS, BREEDS } from './cat.js';
@@ -267,6 +268,9 @@ let inShower = false, shriekAt = 0;
 for (const t of taps) scene.add(t.object);
 
 const player = new Player(world, camera);
+// falling more than FALL.hurt hurts (#361): black-out, awake outside the front door; a deduction
+const fall = new Fall({ el: document.getElementById('fall'), player, camera, onHurt: () => { bump('falls'); penalize('fall'); } });
+player.onLand = (drop, gap) => fall.land(drop, gap);
 const rest = new Rest(camera); // sitting / lying down (#71/#72)
 const saber = new Saber(scene, camera); // the lightsaber in Sovrum 2 (#78)
 const toys = buildToys(scene, camera); // Nerf blasters, magic wands, the flashlight (#86, #87, #89)
@@ -602,6 +606,8 @@ if (at) {
   camera.position.y = player.eyeY;
   camera.rotation.x = THREE.MathUtils.degToRad(pitch);
 }
+// &fall=h (#361): drop from h m above the ground here (a test of falling until the jetpack / roofs can give one)
+if (params0.has('fall')) player.pos.y += Number(params0.get('fall') || 5);
 // the resumed place (not with ?at=): back to the same spot and view (the clock is real, #143); the start screen then
 // says so and offers "Börja från start" instead
 const resumeEl = document.getElementById('resume');
@@ -1349,7 +1355,9 @@ function step(dt) {
   if (active() && reading) updateFocus();
   else if (drawing.active) drawing.update(dt); // drawing: the camera over the paper, nothing else moves you
   else if (active() && rest.active) { rest.update(dt); updateFocus(); } // sitting / lying: look, no walking
+  else if (fall.active) fall.update(dt); // hurt by a fall (#361): no walking until awake outside the door
   else if (active()) {
+    fall.update(dt); // (the fade back in)
     player.analog.x = touch.analog.x;
     player.analog.y = touch.analog.y;
     player.update(dt);
@@ -1610,4 +1618,4 @@ if (resumeOk && resumed.mode) continueAfterReload(resumed);
 document.documentElement.classList.remove('resuming'); // the page is ready: off with the "Laddar…" cover (#222)
 
 // handle for tests/debugging (tools/touchtest.html)
-window.__app = { todo, coffeeJar, miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };
+window.__app = { fall, todo, coffeeJar, miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };

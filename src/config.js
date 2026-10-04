@@ -1233,7 +1233,8 @@ export const SCORE = {
   // `fridgeMax` of those per time), food burnt (per item), the smoke alarm going off, a drink spilt (poured over a full
   // glass/cup), a cat shot / cut / hit (`catShot` by weapon, the rifle the most). Small next to what normal play gives
   // (a pat 8, a cat 10–250), big enough to notice. Never below 0: a deduction takes at most what the score has (no debt).
-  penalties: { fridgeOpen: 5, fridgeLonger: 2, fridgeMax: 3, burnt: 3, smokeAlarm: 5, spill: 2,
+  // `fall`: hurt by falling more than FALL.hurt (#361)
+  penalties: { fridgeOpen: 5, fridgeLonger: 2, fridgeMax: 3, burnt: 3, smokeAlarm: 5, spill: 2, fall: 10,
     catShot: { rifle: 20, saber: 10, dart: 5, wand: 3 } },
 };
 // The fridge and freezer door alarm (#288, fridge.js): open for `after` s (game time) it beeps every `every` s and a red
@@ -1297,6 +1298,14 @@ export const PLAYER = {
   stepUp: 0.45,
   headroom: 1.85,
 };
+// Falling (#361, src/fall.js; player.js tracks `fall`: the highest feet since leaving the ground and the deepest free
+// drop under them). A drop of more than `hurt` m hurts (the issue's 3 m): a thud + "aj", the view jolts down, red, then
+// black, and the visitor wakes outside our front door (`wake`: 4 m north of the door at x ≈ 1.3 m, the walk test's way
+// in; facing the house) — only the place is reset, not the home. Over `soft` m: a soft thud and a knee-bend. Only a
+// real free fall counts: the gap under the feet must once have been more than `free` m (going down the stair the feet
+// are at most ~two risers, 0.43 m, over a tread; the ramp 0). Timings in seconds; all our own choices.
+export const FALL = { hurt: 3, soft: 1, free: 1, wake: { x: 1.3, z: -4.0, yawDeg: 180 },
+  red: 0.3, black: 1.0, hold: 0.8, back: 1.2, text: 3.5, jolt: 0.9, dip: 0.3 };
 
 // Two flights with winders between them (from the stair outline on both plans).
 // Flight A runs east along the south half, winders turn 180° at the east end,

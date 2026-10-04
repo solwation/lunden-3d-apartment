@@ -846,6 +846,42 @@ export const sfx = {
     const t = ctx.currentTime, d = out(pos, 0.6);
     noise(t, 0.04, d, { freq: 1500, q: 0.7, gain: 0.08 * k });
   },
+  /** Landing after a fall (#361): a body thud, `k` 0..1 (soft knee-bend … a hard fall). */
+  landing(k = 1) {
+    if (!ready()) return;
+    const t = ctx.currentTime, d = out(null, 0.4 + 0.6 * k);
+    tone(t, 0.12 + 0.2 * k, d, { from: 90 + 30 * (1 - k), to: 35, gain: 0.5 + 0.5 * k });
+    noise(t, 0.08 + 0.15 * k, d, { type: 'lowpass', freq: 500 + 400 * k, gain: 0.3 + 0.5 * k });
+    if (k > 0.5) noise(t + 0.02, 0.25, d, { freq: 1800, q: 0.6, gain: 0.12 * k }); // gravel / clothes
+  },
+  /** "Aj!" — hurt (#361): a voiced sawtooth gliding from the formants of [a] to [j] ([i]), falling in pitch. */
+  ouch() {
+    if (!ready()) return;
+    const t = ctx.currentTime + 0.12, d = out(null, 0.9), dur = 0.55;
+    const o = ctx.createOscillator();
+    o.type = 'sawtooth';
+    o.frequency.setValueAtTime(260, t);
+    o.frequency.linearRampToValueAtTime(330, t + 0.07);
+    o.frequency.exponentialRampToValueAtTime(190, t + dur);
+    const env = ctx.createGain();
+    env.gain.setValueAtTime(0, t);
+    env.gain.linearRampToValueAtTime(0.45, t + 0.03);
+    env.gain.setValueAtTime(0.4, t + dur * 0.55);
+    env.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(env);
+    // [a] (F1 ~800, F2 ~1300) → [j] (F1 ~300, F2 ~2300)
+    for (const [f0, f1, q, gain] of [[800, 300, 5, 1], [1300, 2300, 8, 0.8], [2600, 3000, 10, 0.35]]) {
+      const bp = ctx.createBiquadFilter();
+      bp.type = 'bandpass'; bp.Q.value = q;
+      bp.frequency.setValueAtTime(f0, t);
+      bp.frequency.setValueAtTime(f0, t + dur * 0.4);
+      bp.frequency.linearRampToValueAtTime(f1, t + dur * 0.75);
+      const g = ctx.createGain(); g.gain.value = gain;
+      env.connect(bp).connect(g).connect(d);
+    }
+    o.start(t);
+    o.stop(t + dur + 0.05);
+  },
   /** A soft footstep; `surface` 'wood' | 'stair' | 'outside'. */
   step(surface = 'wood') {
     if (!ready()) return;

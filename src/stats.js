@@ -130,9 +130,9 @@ export function bump(key, n = 1, id = key) {
 // what the deductions are called (#288): the red "−N" next to the score, and the stats panel
 const PENALTY_TEXT = { fridgeOpen: 'Kylen stod öppen', freezerOpen: 'Frysen stod öppen', fridgeLonger: 'Kylen står fortfarande öppen',
   freezerLonger: 'Frysen står fortfarande öppen', burnt: 'Bränt!', smokeAlarm: 'Brandlarmet!', spill: 'Spill',
-  catShot: 'Stackars katten!' };
+  catShot: 'Stackars katten!', fall: 'Du slog dig' };
 const PENALTY_ROWS = [['Kyl/frys öppen', ['fridgeOpen', 'freezerOpen', 'fridgeLonger', 'freezerLonger']], ['bränt', ['burnt']],
-  ['brandlarm', ['smokeAlarm']], ['spill', ['spill']], ['katten', ['catShot']]];
+  ['brandlarm', ['smokeAlarm']], ['spill', ['spill']], ['katten', ['catShot']], ['fall', ['fall']]];
 
 /** A deduction (#288, SCORE.penalties): `key` (+ `sub`, the weapon for catShot); the freezer's keys use the fridge's
  * points. Counted in stats.penalties; takes at most what the score has, so it never goes below 0 (and leaves no debt). */
@@ -261,6 +261,7 @@ export function statRows() {
     ['🔊 Frågat de smarta högtalarna', `${stats.nest ?? 0}`],
     ['👣 Steg', `${stats.steps}`, `${Math.round(stats.metres)} m`],
     ['🪜 Trappturer', `${stats.stairs}`],
+    ['🤕 Fall', `${stats.falls ?? 0}`],
     ['🏠 Rum besökta', `${Object.keys(stats.visited).length}${roomTotal ? ` av ${roomTotal}` : ''}`],
     ['⏱ Tid i lägenheten', fmtTime(stats.seconds)],
     ['😬 Avdrag', `−${Math.round(stats.penaltyPoints ?? 0)}`, PENALTY_ROWS.map(([t, keys]) => [t, Object.entries(stats.penalties ?? {})

@@ -55,12 +55,15 @@ export class Player {
     this.crouch = false;   // wanted (Ctrl held / touch toggle)
     this.crouched = false; // actually down (stays down where there is no room to stand)
     this.kneel = false;    // down to pet a cat on the floor (#242), set by main.js
+    this.fall = null;      // in the air (#361): { top, gap } = the highest feet and the deepest free drop under them
+    this.onLand = null;    // (drop, gap) on landing — main.js → fall.js
   }
 
   spawn(x, z, yaw) {
     this.pos.set(x, this.groundAt(x, z, 0) ?? 0, z);
     this.vy = 0;
     this.glide = null; // (an unstick under way is for the old place, #314)
+    this.fall = null; // (a teleport is no fall, #361)
     this.eyeY = this.pos.y + PLAYER.eye;
     this.camera.position.set(x, this.eyeY, z);
     this.camera.rotation.set(0, yaw, 0, 'YXZ');
@@ -220,10 +223,13 @@ export class Player {
     // gravity
     const g = this.groundAt(this.pos.x, this.pos.z, this.pos.y);
     if (this.pos.y > g) {
+      const f = (this.fall ??= { top: this.pos.y, gap: 0 }); // falls (#361)
+      f.top = Math.max(f.top, this.pos.y); f.gap = Math.max(f.gap, this.pos.y - g);
       this.vy -= GRAVITY * dt;
       this.pos.y = Math.max(g, this.pos.y + this.vy * dt);
       if (this.pos.y === g) this.vy = 0;
     }
+    if (this.fall && this.pos.y <= g) { const f = this.fall; this.fall = null; this.onLand?.(f.top - this.pos.y, f.gap); } // landed
 
     // smooth the eye height over stair steps
     const target = this.pos.y + (this.crouched ? PLAYER.crouchEye : PLAYER.eye);

@@ -105,6 +105,10 @@
     #update[hidden] { display: none; }
     #reloaded, #countdown { position: fixed; top: calc(16px + var(--st)); left: 50%; transform: translateX(-50%); z-index: 10; pointer-events: none; background: var(--ink); color: #fff; padding: 10px 16px; border-radius: 10px; box-shadow: 0 8px 30px rgba(0,0,0,.3); font-size: 15px; opacity: 1; transition: opacity .6s; }
     #reloaded[hidden], #countdown[hidden] { display: none; }
+    #fall { position: fixed; inset: 0; z-index: 9; pointer-events: none; display: flex; align-items: flex-end; justify-content: center; }
+    #fall[hidden], #fall p[hidden] { display: none; }
+    #fall p { margin: 0 0 calc(22vh + var(--sb)); color: #fff; font-size: 22px; text-shadow: 0 2px 10px rgba(0,0,0,.8); text-align: center; }
+    #fall small { display: block; font-size: 14px; opacity: .8; margin-top: 4px; }
     /* Kaffeturbo (#217): a big bouncy word, then a small label with the time left; a rainbow glow round the edge */
     #turbo { position: fixed; left: 50%; top: 42%; transform: translate(-50%, -50%); z-index: 9; pointer-events: none; text-align: center; color: #fff; font: 900 64px system-ui, sans-serif; letter-spacing: .02em; text-shadow: 0 3px 0 #b8432e, 0 6px 18px rgba(0,0,0,.45); transition: top .6s, font-size .6s; }
     #turbo[hidden] { display: none; }
@@ -393,6 +397,7 @@
   <div id="fade" hidden></div>
   <div id="reloaded" hidden role="status">Ny version laddad</div>
   <div id="countdown" hidden role="status" aria-live="polite"></div>
+  <div id="fall" hidden><p role="status">Du slog dig …<small>och vaknar utanför ytterdörren</small></p></div>
   <div id="turbo" hidden role="status">Kaffeturbo!<span class="bar"><i></i></span></div>
   <div id="turbo-edge" hidden></div>
   <div id="update" hidden role="status">

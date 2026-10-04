@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Fall test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+// #361: falling more than FALL.hurt (3 m) hurts — the view jolts, red, black, the visitor wakes outside our front door
+// facing the house with "Du slog dig …", a deduction and stats.falls. A 2.5 m drop does not hurt (a soft knee-bend).
+// Walking the stair up and down (also crouched), the ramp and the outdoor stairs, getting up from the top bunk, a resume
+// record: never a fall. (Nothing in the world can drop you 3 m yet — the jetpack #359 and the roofs #360 will; the test
+// lifts the feet, like `&fall=h`.) The outdoor stairs are walkable since #355.
+//   google-chrome --headless=new --dump-dom http://localhost:8137/tools/falltest.html
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const f = document.createElement('iframe');
+f.width = 900; f.height = 600;
+f.src = '../index.html?shot';
+document.body.append(f);
+f.onload = async () => {
+  const w = f.contentWindow, d = f.contentDocument;
+  while (!w.__app) await wait(100);
+  const { player, fall, world, step, stats, camera, rest, standUp, renderer } = w.__app;
+  const mod = (p) => w.eval(`import('${new URL(p, location.href).href}')`); // the page's own module instances
+  const { FALL, START, SITE, STAIR, LEVELS, PLAYER } = await mod('../src/config.js');
+  const lines = [];
+  let pass = true;
+  const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); pass &&= !!ok; return ok; };
+  const f2 = (v) => v.toFixed(2);
+  d.getElementById('install').hidden = true;
+  // pretend the mouse is locked (headless refuses pointer lock): step() then runs the player
+  Object.defineProperty(d, 'pointerLockElement', { get: () => renderer.domElement, configurable: true });
+  d.dispatchEvent(new w.Event('pointerlockchange'));
+  // every landing is recorded (and still handled)
+  const landings = [];
+  const land0 = player.onLand;
+  player.onLand = (drop, gap) => { const r = land0(drop, gap); landings.push({ drop, gap, r, at: [player.pos.x, player.pos.y, player.pos.z] }); return r; };
+  const dt = 1 / 60;
+  const falls0 = stats.falls ?? 0, pen0 = stats.penalties.fall ?? 0;
+
+  // (1) a 2.5 m drop outdoors on the street: no hurt, a soft landing
+  player.spawn(START.x, -8, Math.PI);
+  player.pos.y += 2.5;
+  landings.length = 0;
+  for (let i = 0; i < 120; i++) step(dt);
+  check(landings.length === 1 && Math.abs(landings[0].drop - 2.5) < 0.05 && landings[0].r === 'soft' && fall.t < 0 && d.getElementById('fall').hidden
+    && (stats.falls ?? 0) === falls0, `2.5 m: a soft landing (drop ${f2(landings[0]?.drop ?? 0)} m), not hurt`);
+
+  // (2) a 5 m drop: hurt, black-out, awake at the front door
+  player.spawn(START.x, -8, Math.PI / 2);
+  player.pos.y += 5;
+  landings.length = 0;
+  let t = 0;
+  while (fall.t < 0 && t < 3) { step(dt); t += dt; }
+  check(landings.length === 1 && landings[0].r === 'hurt' && Math.abs(landings[0].drop - 5) < 0.05, `5 m: hurt (drop ${f2(landings[0]?.drop ?? 0)} m, after ${f2(t)} s)`);
+  check((stats.falls ?? 0) === falls0 + 1 && (stats.penalties.fall ?? 0) === pen0 + 1, 'counted: stats.falls + 1, a "fall" deduction');
+  const el = d.getElementById('fall');
+  for (let i = 0; i < 9; i++) step(dt);
+  const jolt = camera.position.y - player.pos.y;
+  check(!el.hidden && /rgba\(1[0-9]{2}, 0, 0/.test(el.style.background), `red cover (${el.style.background}), the eye jolted down to ${f2(jolt)} m`);
+  check(jolt < PLAYER.eye - FALL.jolt * 0.7, 'the view jolts down');
+  // walking does nothing while blacked out
+  const x0 = player.pos.x;
+  player.keys = new Set(['KeyW']);
+  for (let i = 0; i < 30; i++) step(dt);
+  player.keys = new Set();
+  check(Math.abs(player.pos.x - x0) < 1e-6 && fall.active, 'no walking during the black-out');
+  while (fall.t < FALL.red + FALL.black + FALL.hold - 0.05) step(dt);
+  check(/^rgba?\(0, 0, 0(, 1)?\)$/.test(el.style.background), `black (${el.style.background})`);
+  for (let i = 0; i < 10; i++) step(dt);
+  const yaw = ((camera.rotation.y * 180 / Math.PI) % 360 + 360) % 360;
+  check(Math.hypot(player.pos.x - FALL.wake.x, player.pos.z - FALL.wake.z) < 0.3 && Math.abs(player.pos.y) < 0.01 && Math.abs(yaw - FALL.wake.yawDeg) < 1,
+    `awake at the front door (${f2(player.pos.x)}, ${f2(player.pos.z)}), facing the house (yaw ${yaw.toFixed(0)}°)`);
+  check(!el.hidden && !el.querySelector('p').hidden && /Du slog dig/.test(el.textContent), `"${el.querySelector('p').textContent}" shown`);
+  for (let i = 0; i < (FALL.back + 0.1) * 60; i++) step(dt);
+  check(!fall.active && /, 0\)$|, 0.000\)$/.test(el.style.background) || /0\)$/.test(el.style.background), `faded back in (${el.style.background})`);
+  for (let i = 0; i < FALL.text * 60; i++) step(dt);
+  check(el.hidden && fall.t < 0, 'the cover and text gone');
+  player.keys = new Set(['KeyW']);
+  const z0 = player.pos.z;
+  for (let i = 0; i < 20; i++) step(dt);
+  player.keys = new Set();
+  check(Math.abs(player.pos.z - z0) > 0.1, 'walking again');
+
+  // walking: never hurt, never even a free fall
+  const walk = (name, start, pts, { crouch = false } = {}) => {
+    if (start) { player.spawn(start[0], start[1], Math.PI); if (start[2] !== undefined) { player.pos.y = start[2]; player.eyeY = start[2] + PLAYER.eye; } }
+    player.crouch = crouch;
+    landings.length = 0;
+    const y0 = player.pos.y;
+    let stuck = false;
+    for (const [x, z] of pts) {
+      let t = 0;
+      while (Math.hypot(player.pos.x - x, player.pos.z - z) > 0.12) {
+        camera.rotation.y = Math.atan2(-(x - player.pos.x), -(z - player.pos.z));
+        player.keys = new Set(['KeyW']);
+        step(dt);
+        if ((t += dt) > 30) { stuck = true; break; }
+      }
+      if (stuck) break;
+    }
+    player.keys = new Set();
+    for (let i = 0; i < 30; i++) step(dt);
+    player.crouch = false;
+    const worst = landings.reduce((m, l) => Math.max(m, l.gap), 0), hurt = landings.some((l) => l.r === 'hurt');
+    const at = landings.find((l) => l.gap === worst)?.at.map(f2).join(', ');
+    check(!stuck && !hurt && worst < FALL.free && fall.t < 0, `${name}: ${f2(y0)} → ${f2(player.pos.y)} m, ${landings.length} small drops, deepest gap ${f2(worst)} m${at ? ` (landing at ${at})` : ''}${stuck ? ' STUCK' : ''}`);
+    return !stuck;
+  };
+  // the walk test's doors: the front door, Sovrum 1, the patio door (Badrum / Klk swing into the passage: shut)
+  const want = [[0.80, 0.0], [2.75, 5.01], [0.95, 12.70]];
+  for (const dr of world.doors) {
+    const open = dr.kind === 'swing' && want.some(([x, z]) => Math.hypot(dr.hinge[0] - x, dr.hinge[1] - z) < 0.05);
+    if (open !== dr.isOpen) dr.toggle();
+    for (let i = 0; i < 120; i++) dr.update(dt);
+  }
+  const up = [[1.3, -0.5], [1.3, 2.4], [2.4, 2.4], [2.4, 4.6], [2.7, 7.13], [4.3, 7.13], [5.1, 7.0], [5.15, 6.2], [4.3, 6.2], [3.0, 6.2], [3.15, 5.5]];
+  const down = [[3.0, 6.2], [4.3, 6.2], [5.15, 6.2], [5.1, 7.0], [4.3, 7.13], [2.7, 7.13], [2.7, 9.0], [1.4, 12.0], [1.4, 13.5]];
+  walk('up the stair', [1.26, -1.6], up);
+  walk('down the stair and out on the patio', null, down);
+  walk('up the stair crouched', [1.26, -1.6], up, { crouch: true });
+  walk('down the stair crouched', null, down, { crouch: true });
+  const A = SITE.terrain.stairs[0];
+  walk('down the ramp by Hus L\'s gable', [12.5, 25.5], [[12.5, 13.0]]);
+  walk('up the ramp', null, [[12.5, 25.0]]);
+  if (walk('down the east stair to Sankt Lars väg', [(A.x0 + A.x1) / 2, A.z - 0.5], [[(A.x0 + A.x1) / 2, A.walk.z1 - 0.3]]))
+    walk('up the east stair', null, [[(A.x0 + A.x1) / 2, A.z - 0.5]]);
+  const B = SITE.terrain.stairs[1];
+  if (walk('down the stair between Hus C and B to the park', [(B.x0 + B.x1) / 2, B.z - 0.5], [[(B.x0 + B.x1) / 2, B.z + 6]]))
+    walk('up it again', null, [[(B.x0 + B.x1) / 2, B.z - 0.5]]);
+  const Wst = SITE.terrain.west?.stair;
+  if (Wst) {
+    const zm = Wst.z1 - 1.5;
+    if (walk('down the NW stair to Karpvägen', [Wst.x1 + 0.5, zm], [[Wst.x0 - 1.5, zm]]))
+      walk('up it again', null, [[Wst.x1 + 0.5, zm]]);
+  }
+  // sitting / lying: getting up out of the top bunk is no fall
+  const bunk = world.furnitureTargets.filter((t) => t.rest === 'lie' && t.spots?.length).flatMap((t) => t.spots.map((s) => [t, s]))
+    .sort((a, b) => b[1].pos.y - a[1].pos.y)[0];
+  if (bunk) {
+    const [tg, sp] = bunk;
+    player.spawn(sp.pos.x, sp.pos.z + 0.6, 0); player.pos.y = LEVELS[1].floor; player.eyeY = LEVELS[1].floor + PLAYER.eye;
+    landings.length = 0;
+    rest.begin(tg, sp, { x: player.pos.x, z: player.pos.z, y: player.pos.y, yaw: 0 });
+    for (let i = 0; i < 60; i++) step(dt);
+    standUp();
+    for (let i = 0; i < 60; i++) step(dt);
+    check(!landings.some((l) => l.gap >= FALL.free) && fall.t < 0, `up from ${tg.name} (spot y ${f2(sp.pos.y)}): no fall (${landings.length} landings)`);
+  } else check(false, 'a bunk to lie in');
+  // a resume record (#277) with the feet a little over the floor: no fall
+  player.spawn(1.3, 2.4, 0); player.pos.y = 0.25; landings.length = 0;
+  for (let i = 0; i < 60; i++) step(dt);
+  check(!landings.some((l) => l.r) && fall.t < 0, `feet 0.25 m over the hall floor (a resume record): no fall (gap ${f2(landings[0]?.gap ?? 0)})`);
+  check((stats.falls ?? 0) === falls0 + 1, `in all only the one hurting fall (stats.falls ${stats.falls})`);
+  out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
+};
+</script>
+</body>
+</html>

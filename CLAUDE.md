@@ -115,6 +115,13 @@ src/exterior.js        Hus L (HUS_L): brick row with the core/portik, neighbours
                        bofakta (L1001 west, L1008 + L1209 east; none for L1201 or on våning 4; no flat is mirrored, #351)
 src/player.js          WASD/arrow/joystick movement, circle-vs-segment collision, step-up, gravity; outdoors the terrain (`groundY`, #256);
                        `isFree` / `obstacles` / `nearestFree` / `unstick` (#314, see Input notes)
+src/fall.js            falling (#361, FALL): player.js keeps `fall` (the highest feet since leaving the ground + the deepest free gap
+                       under them) and calls `onLand(drop, gap)`; only a gap over FALL.free counts (the stair's risers, the ramp never).
+                       Over FALL.hurt (3 m): sfx.landing + sfx.ouch ("aj"), the view jolts, #fall goes red then black, no walking, the
+                       visitor wakes at FALL.wake outside the front door facing the house, "Du slog dig …" while it fades in; only the
+                       place is reset (`onWake` hooks, e.g. the jetpack of #359 going home), a deduction `fall` + stats `falls`. Over
+                       FALL.soft: a soft thud and a knee-bend. Nothing gives a 3 m drop yet (#359 / #360 will): `&fall=h` drops you
+                       from h m (falltest.html)
 src/touch.js           on-screen joystick (left) + drag-to-look (right), multi-touch pointer events
 src/main.js            renderer, lights, input modes, door raycast prompt/button, loop (step)
 src/version.js         BUILD stamp + polling for a newer published version
@@ -575,6 +582,9 @@ tools/stairtest.html   headless test (#352): equal risers from floor to floor, n
 tools/stucktest.html   headless test (#314): a 5 cm scan of both floors (doors open; the free floor in one piece, pockets out of
                        reach listed), getting up from every seat / bed with the old spot inside it, F putting the sofa / bed back
                        round you, the car parking on you, the hoop rising under you, a door shut on you, a resume record in the bed
+tools/falltest.html    headless test (#361): a 2.5 m drop is soft, a 5 m drop hurts (red, black, no walking, awake at the front door,
+                       counted + a deduction); the stair up / down (also crouched), the ramp,
+                       the outdoor stairs (#355), out of the top bunk, a resume record: no free fall
 tools/pctest.html      headless test: switch the gaming PC on/off (game moves, RGB cycles), the chair is a seat and
                        starts the PC, the bunk seat swings the monitor round (film)
 tools/sabertest.html   headless test: take the lightsaber, swing it, hang it back
@@ -993,6 +1003,7 @@ URL parameters (debugging / screenshots):
 - `&weather=rain|storm|snow|hail|clear` — force the weather (#248, #249).
 - `&blinds=0…1` — every pleated blind drawn up that far (#273; not saved).
 - `&fries` — golden, steaming fries in the open air-fryer basket (#301).
+- `&fall=h` — drop from h m (default 5) above the ground where you start (#361; with `&at=`): over 3 m it hurts.
 - `&hoop` — the basketball hoop up out front. `&car` — our car parked in front of the house. `&water` — turn on every tap and shower. `&tv` — switch the TV on. `&laptop` — Tilly's laptop on. `&secret=i` — the secret drawer shows surprise i (SECRET.items, with `&open`).
 - `&phone` — the short touch-only start screen. `&install` — show the iPhone install sheet. `&note` — open the changelog note. `&pet` (with `&cat=`) — the cat is being petted.
 - `&clip=y` — clip everything above height y (cut-away plan view, e.g.
