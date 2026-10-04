@@ -285,21 +285,16 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
   const pw = H.pilaster / 2;
   for (const x of edges) pilasters.push(boxGeo(x - pw, x + pw, roofTop, upperTop + 0.5, loftD - 0.1, loftD)); // street side only
 
-  // gable ends (L1008's east gable has windows): brick up to the terrace parapet, våning 4 in render
-  bricks.push(quadX(0, D, 0, roofTop, xw - eps, true), quadX(loftD, D, roofTop, par, xw - eps, true));
-  const sh = [1, 2, 3, 4].map(storeyFloor); // each storey's finished floor (VERTICAL, #344)
-  const gw = H.gableWindows.map((g) => ({ z0: g.z0, z1: g.z1, y0: sh[g.storey] + g.sill, y1: sh[g.storey] + g.head, storey: g.storey }));
-  for (const [za, zb, ya, yb] of complement(0, D, 0, roofTop, gw.filter((g) => g.storey < 2).map((g) => ({ x0: g.z0, x1: g.z1, y0: g.y0, y1: g.y1 })))) {
-    bricks.push(quadX(za, zb, ya, yb, xe + eps, false));
+  // gable ends (#351): each gable's openings from HUS_L.gableWindows by side and building storey — brick for våning 1–2
+  // (the whole depth) and våning 3 (behind the loftgång, up to the terrace parapet), våning 4 in render behind the terrace
+  const gw = gableOpenings(H.gableWindows, storeyFloor);
+  for (const [gable, x, west] of [['west', xw, true], ['east', xe, false]]) {
+    const xx = x + (west ? -eps : eps), on = (st) => gw.filter((g) => g.gable === gable && st.includes(g.storey)).map((g) => ({ x0: g.z0, x1: g.z1, y0: g.y0, y1: g.y1 }));
+    for (const [za, zb, ya, yb] of complement(0, D, 0, roofTop, on([1, 2]))) bricks.push(quadX(za, zb, ya, yb, xx, west));
+    for (const [za, zb, ya, yb] of complement(loftD, D, roofTop, par, on([3]))) bricks.push(quadX(za, zb, ya, yb, xx, west));
+    for (const [za, zb, ya, yb] of complement(loftD, zs, y3, upperTop, on([4]))) renders.push(quadX(za, zb, ya, yb, xx, west));
+    gw.filter((g) => g.gable === gable).forEach((g) => fakeWindowX(g, xx, west));
   }
-  for (const [za, zb, ya, yb] of complement(loftD, D, roofTop, par, gw.filter((g) => g.storey === 2).map((g) => ({ x0: g.z0, x1: g.z1, y0: g.y0, y1: g.y1 })))) {
-    bricks.push(quadX(za, zb, ya, yb, xe + eps, false));
-  }
-  renders.push(quadX(loftD, zs, y3, upperTop, xw - eps, true));
-  for (const [za, zb, ya, yb] of complement(loftD, zs, y3, upperTop, gw.filter((g) => g.storey === 3).map((g) => ({ x0: g.z0, x1: g.z1, y0: g.y0, y1: g.y1 })))) {
-    renders.push(quadX(za, zb, ya, yb, xe + eps, false));
-  }
-  gw.forEach((g) => fakeWindowX(g, xe + eps, false));
 
   // flat roof over våning 4 with a parapet, solar panels
   const rb = VERTICAL.roof.buildUp, rc = rb + VERTICAL.roof.capping; // roof build-up + capping (assumption, #344)
@@ -370,6 +365,12 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
   add(fences, mats.fence);
   group.userData.segments = segments;
   return group;
+}
+
+/** HUS_L.gableWindows (#351) with absolute heights: y0 / y1 over their building storey's floor (`floorOf` = config's
+ * storeyFloor). */
+export function gableOpenings(list, floorOf) {
+  return list.map((g) => ({ ...g, y0: floorOf(g.storey) + g.sill, y1: floorOf(g.storey) + g.head }));
 }
 
 /**

@@ -614,12 +614,20 @@ export const HUS_L = {
   // upstairs no window where the escape stair stands. Façade openings whose centre x (unit
   // coordinates) lies in these ranges are left out on its north façade.
   endUnitNorthHidden: [[3.0, 4.7]],
-  // L1008's east gable (plan p. 43): windows as plan z ranges, sill/head per storey (guess)
+  // #351, every gable opening tagged with its gable, the BUILDING storey (1–4) and the flat (its type): z = plan z (m from
+  // the north face of våning 1–2), sill = the sheet's BH over that storey's floor. Read on the bofakta sheets (1:100,
+  // 600 dpi, docs/peab/bostader/): L1008 bofakta-l1008.pdf, L1001 bofakta-l1001.pdf, L1209 bofakta-l1209.pdf (its z from
+  // its courtyard face, flush with våning 1–3's at D: the sheet's 11.12 m deep entrance floor — it lands right over
+  // L1008's). L1201 (bofakta-l1201.pdf) and L1008 / L1001 / L1201 / L1209's upper floors have NO gable openings. Heads
+  // are not on the sheets: guesses. No flat in Hus L is mirrored (all four end sheets: the entrance at the west end of
+  // the street side, the stair at the east, like L1007), so `gable` is simply the side the flat ends on.
   gableWindows: [
-    { storey: 0, z0: 2.8, z1: 4.1, sill: 0.7, head: 2.6 }, { storey: 0, z0: 8.5, z1: 9.8, sill: 0.7, head: 2.6 },
-    { storey: 1, z0: 2.8, z1: 4.1, sill: 0.6, head: 2.25 },
-    { storey: 2, z0: 4.0, z1: 5.2, sill: 0.8, head: 2.3 }, { storey: 2, z0: 8.0, z1: 9.2, sill: 0.8, head: 2.3 },
-    { storey: 3, z0: 4.0, z1: 5.2, sill: 0.8, head: 2.3 }, { storey: 3, z0: 8.0, z1: 9.2, sill: 0.8, head: 2.3 },
+    { gable: 'east', storey: 1, flat: 'L1008', z0: 2.71, z1: 4.47, sill: 0.7, head: 2.6 },  // Kök/matplats
+    { gable: 'east', storey: 1, flat: 'L1008', z0: 8.27, z1: 10.03, sill: 0.7, head: 2.6 }, // Vardagsrum
+    { gable: 'east', storey: 2, flat: 'L1008', z0: 2.71, z1: 4.47, sill: 0.6, head: 2.25 }, // Sovrum 1 ("Ljudruta")
+    { gable: 'west', storey: 1, flat: 'L1001', z0: 8.03, z1: 9.79, sill: 0.8, head: 2.6 },  // Vardagsrum
+    { gable: 'east', storey: 3, flat: 'L1209', z0: 2.69, z1: 4.45, sill: 0.7, head: 2.3 },  // Kök/matplats
+    { gable: 'east', storey: 3, flat: 'L1209', z0: 8.24, z1: 10.0, sill: 0.7, head: 2.3 },  // Vardagsrum
   ],
   // solar panel fields on the roof (situation plan): x ranges × rows of z ranges
   solar: { x: [[-39.96, -25.77], [-24.13, -6.37], [-4.83, 9.56]], z: [[3.5, 4.5], [5.4, 6.4], [7.4, 8.4], [9.4, 10.4]] },

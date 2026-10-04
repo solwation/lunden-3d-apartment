@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Gable test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+// Hus L's gables (#351): every gable opening is tagged with its side, building storey and flat, and the flat is the end
+// flat on that side at that storey (L1001 / L1201 west, L1008 / L1209 east); no opening lands in a slab (it stays
+// within its storey's finished floor and ceiling), outside its storey's walls (våning 3–4 start behind the loftgång,
+// våning 4 ends at the set-back wall), in another opening or in a spiral-stair drum; the special cases are kept
+// (L1008's hidden north openings, the escape stairs right against the gables).
+//   google-chrome --headless=new --dump-dom http://localhost:8137/tools/gabletest.html
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const f = document.createElement('iframe');
+f.width = 400; f.height = 300; f.src = '../index.html?time=12&month=6';
+document.body.append(f);
+f.onload = () => run().catch((e) => { out.textContent = `FAIL ${e}\n${e.stack}\nSOME FAILED`; });
+async function run() {
+  const w = f.contentWindow;
+  while (!w.__app) await wait(100);
+  const { husLLayout, gableOpenings } = await w.eval(`import('${new URL('../src/exterior.js', location)}')`);
+  const { HUS_L, LEVELS, storeyFloor, UNIT_TOP } = await w.eval(`import('${new URL('../src/config.js', location)}')`);
+  const lines = [];
+  let pass = true;
+  const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); pass &&= !!ok; return ok; };
+  const D = 12.7, loftD = HUS_L.loftgangDepth, zs = D - HUS_L.court.setback;
+  const { units, xw, xe } = husLLayout();
+  const endFlat = { west: [units[0].lower, units[0].upper], east: [units[units.length - 1].lower, units[units.length - 1].upper] };
+  check(endFlat.west.join() === 'L1001,L1201' && endFlat.east.join() === 'L1008,L1209', `the end flats: west ${endFlat.west.join(' / ')}, east ${endFlat.east.join(' / ')}`);
+  // each storey's clear height (finished floor → finished ceiling): våning 1–2 = our levels' RH, våning 3–4 up to the next floor
+  const ceilingOf = (n) => (n <= LEVELS.length ? LEVELS[n - 1].floor + LEVELS[n - 1].ceiling : storeyFloor(n + 1));
+  const extent = (n) => (n <= 2 ? [0, D] : n === 3 ? [loftD, D] : [loftD, zs]);
+  const G = gableOpenings(HUS_L.gableWindows, storeyFloor);
+  for (const g of G) {
+    const tag = `${g.flat} ${g.gable} gable våning ${g.storey} z ${g.z0}–${g.z1}`;
+    check(['west', 'east'].includes(g.gable) && g.storey >= 1 && g.storey <= 4 && /^L1\d{3}$/.test(g.flat), `${tag}: tagged with side, storey and flat`);
+    check(g.flat === endFlat[g.gable][g.storey <= 2 ? 0 : 1], `${tag}: belongs to the end flat on that side at that storey`);
+    check(g.y0 >= storeyFloor(g.storey) && g.y1 <= ceilingOf(g.storey), `${tag}: y ${g.y0.toFixed(2)}–${g.y1.toFixed(2)} inside the storey (floor ${storeyFloor(g.storey).toFixed(2)}, ceiling ${ceilingOf(g.storey).toFixed(2)}): not in a slab`);
+    const [a, b] = extent(g.storey);
+    check(g.z0 >= a + 0.2 && g.z1 <= b - 0.2, `${tag}: inside the storey's gable wall z ${a.toFixed(2)}–${b.toFixed(2)} (0.2 m clear of its corners)`);
+    for (const t of HUS_L.towers) { // a drum: its circle must not reach the opening's stretch of the gable
+      const tx = t.gable === 'west' ? xw - t.r : t.x, gx = g.gable === 'west' ? xw : xe;
+      const dz = Math.max(g.z0 - t.z, 0, t.z - g.z1), d = Math.hypot(gx - tx, dz);
+      check(d > t.r + 0.1 || g.y0 > UNIT_TOP + HUS_L.railHeight, `${tag}: clear of the drum at (${tx.toFixed(2)}, ${t.z}) (${d.toFixed(2)} m > r ${t.r})`);
+    }
+  }
+  for (let i = 0; i < G.length; i++) for (let j = i + 1; j < G.length; j++) {
+    const a = G[i], b = G[j];
+    const hit = a.gable === b.gable && a.z0 < b.z1 && b.z0 < a.z1 && a.y0 < b.y1 && b.y0 < a.y1;
+    if (hit) check(false, `${a.flat} / ${b.flat}: two openings overlap`);
+  }
+  check(G.some((g) => g.flat === 'L1001') && G.some((g) => g.flat === 'L1008') && G.some((g) => g.flat === 'L1209'), 'both gables have their own openings (L1001 west; L1008, L1209 east)');
+  check(!G.some((g) => g.flat === 'L1201') && !G.some((g) => g.storey === 4), 'no gable openings for L1201 or on våning 4 (none on the bofakta sheets)');
+  // today's special cases are kept
+  check(HUS_L.endUnitNorthHidden.length > 0 && HUS_L.towers.some((t) => t.gable === 'west'), 'L1008\'s hidden north openings and the west drum against the gable are kept');
+  lines.push(`\n${pass ? 'ALL PASS' : 'SOME FAILED'}`);
+  out.textContent = lines.join('\n');
+}
+</script>
+</body>
+</html>

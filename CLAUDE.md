@@ -111,6 +111,8 @@ src/exterior.js        Hus L (HUS_L): brick row with the core/portik, neighbours
                        strip its flat ids (`lower` L1001…, `upper` L1201…); the upper flats' street openings are their own
                        (`HUS_L.street` per type from bofakta, `floor` = the flat's own floor, not the building storey, #347)
                        `husLTerraces`: the roof terraces per flat (id, polygon, area vs the brochure's 10/11/12 m², #350)
+                       `HUS_L.gableWindows`: every gable opening tagged gable / building storey / flat from the end flats'
+                       bofakta (L1001 west, L1008 + L1209 east; none for L1201 or on våning 4; no flat is mirrored, #351)
 src/player.js          WASD/arrow/joystick movement, circle-vs-segment collision, step-up, gravity; outdoors the terrain (`groundY`, #256);
                        `isFree` / `obstacles` / `nearestFree` / `unstick` (#314, see Input notes)
 src/touch.js           on-screen joystick (left) + drag-to-look (right), multi-touch pointer events
@@ -644,6 +646,8 @@ tools/terraintest.html headless test (#346): the courtyard = the reference level
 tools/weathertest.html headless test: showers per season, thunderstorms only in late summer, a shower ramps in; with &weather=storm:
                        drops (none inside Hus L), grey sky, a flash and back, ⛈ in the HUD, people in; snow only in winter, hail in
                        spring / storms, snowflakes not in Hus L, walking 20 m out in it counts once, not indoors; clear = no rain
+tools/gabletest.html  Hus L's gables (#351): each opening tagged with side / storey / end flat, inside its storey (not in a
+                       slab), its wall's extent and clear of the spiral-stair drums; no overlaps; the special cases kept
 tools/greettest.html   headless test: "Hälsa på grannen" on the bench sitter, your line, the answer, the wave, counted, not through
                        Hus A, a walker stops and turns to you (#247)
 tools/curtaintest.html headless test (#342): Sovrum 1's curtains open at the start (glass free), E opens the sideways strip, no walking,
