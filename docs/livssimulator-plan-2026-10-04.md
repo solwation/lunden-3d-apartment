@@ -1,5 +1,8 @@
 # Lunden – plan för en spelbar livssimulator
 
+> **Scope decided by the user afterwards (2026-10-04), overrides this plan:** not a whole Sims — this person and this flat only. No shop / ordering / delivery / grocery bag / budget (the food is in the fridge, freezer and pantry and is refilled by itself), no hunger / thirst, no food going bad, no disasters or illness, no family figures. LIFE-028, -029, -033 and -036 are dropped. The issues are tracked in epic #364.
+
+
 Datum: 2026-10-04. Projekt: `solwation/lunden-3d-apartment`.
 
 ## Till Claude Code: uppdrag och avgränsning
