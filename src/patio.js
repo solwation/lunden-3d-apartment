@@ -338,6 +338,14 @@ export function dynbox() {
   g.userData.rest = { kind: 'sit', name: 'dynboxen', verb: 'sätta dig på', blockedText: 'Stäng locket först',
     spots: [-0.3, 0.3].map((x) => ({ x, y: H, z: 0.02, aim: [x, D / 2 + 0.01, hb / 2], taken: open })) };
   lid.seat = g; // (main.js: no opening it while sitting on it)
+  // #447: the shut lid is a put-down surface (cups too); it does not open while something stands on it
+  const top = new THREE.Group(); g.add(top);
+  const lidTop = { x0: -L / 2 + 0.04, x1: L / 2 - 0.04, z0: -D / 2 + 0.04, z1: D / 2 - 0.04, y: H + 0.004, gate: top, door: lid };
+  g.userData.surfaces = [lidTop];
+  const lidUpdate = lid.update;
+  lid.update = (dt) => { lidUpdate.call(lid, dt); top.visible = !lid.isOpen && lid.t === 0; };
+  Object.defineProperty(lid, 'blocked', { get() { return !lid.isOpen && !!lidTop.mesh?.userData.occupied(); } });
+  lid.blockedText = 'Ta bort det som står på locket först';
   g.userData.keep = [pivot, contents];
   g.traverse((m) => { if (m.isMesh) m.castShadow = m.receiveShadow = true; });
   g.userData.footprint = [{ x0: -L / 2, x1: L / 2, z0: -D / 2, z1: D / 2 }];

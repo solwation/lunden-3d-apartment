@@ -187,6 +187,42 @@ f.onload = async () => {
   s = at(7, 23.5, 2);
   s = at(7, 10, 4);
   pass &= check(s.parasols[0] === 1, `after the night the automatic state is back: up next morning (${s.parasols[0]})`);
+  // #447: the shut cushion box lid is a put-down surface (a cup too); the lid does not open while something stands on it;
+  // open, it is no surface; the seats on it (#445) still work
+  try {
+    const { cups, focus, scene, rest } = w.__app;
+    const V = camera.position.constructor;
+    const lid = world.furnitureTargets.find((t) => t.name === 'dynboxens lock');
+    const lidTop = world.cupSurfaces.find((m) => m.userData.gate && lid.object.parent.getObjectById(m.id));
+    if (lid.isOpen) { lid.toggle(); for (let i = 0; i < 40; i++) step(0.05); }
+    scene.updateMatrixWorld(true);
+    const mid = lidTop.getWorldPosition(new V()); mid.y = lidTop.userData.surface;
+    const lookAt = (p) => {
+      player.spawn(p.x + 0.8, p.z + 0.25, Math.PI / 2); for (let i = 0; i < 3; i++) step(1 / 60);
+      camera.rotation.y = Math.atan2(-(p.x - camera.position.x), -(p.z - camera.position.z));
+      camera.rotation.x = Math.atan2(p.y - camera.position.y, Math.hypot(p.x - camera.position.x, p.z - camera.position.z));
+      step(1 / 60); return btn.textContent;
+    };
+    const cup = cups.cups.find((c) => c.state === 'cabinet') ?? cups.cups[0];
+    cup.take(); step(1 / 60);
+    const label = lookAt(mid), pt = focus().focused?.point?.clone();
+    pass &= check(/ställa ner koppen här/i.test(label) && Math.abs(pt.y - mid.y) < 0.005, `the shut lid: "${label}" at y ${pt?.y.toFixed(3)} (${mid.y.toFixed(3)})`);
+    btn.click(); step(1 / 60); scene.updateMatrixWorld(true);
+    pass &= check(cup.state === 'placed' && Math.abs(cup.model.getWorldPosition(new V()).y - mid.y) < 0.01, 'the cup stands on the lid');
+    if (new URLSearchParams(location.search).has('shot')) { lookAt(mid); out.textContent = 'SHOT'; return; }
+    const blockedLabel = lookAt(mid.clone().add(new V(0, 0.01, -0.25))); // the lid beside the cup
+    use(lid); for (let i = 0; i < 40; i++) step(0.05);
+    pass &= check(!lid.isOpen && lid.blocked && /ta bort det som står på locket först/i.test(blockedLabel), `the lid does not open under the cup: "${blockedLabel}"`);
+    const seat = world.furnitureTargets.find((t) => t.kind === 'rest' && t.name === 'dynboxen');
+    pass &= check(seat && !seat.blocked, 'a cup on the lid: you can still sit on it');
+    cup.take(); step(1 / 60); scene.updateMatrixWorld(true);
+    use(lid); for (let i = 0; i < 40; i++) step(0.05);
+    pass &= check(!lid.blocked && lid.isOpen, 'the cup taken: the lid opens');
+    lookAt(mid);
+    pass &= check(!(focus().focused?.kind === 'place' && Math.abs(focus().focused.point.y - mid.y) < 0.02), `open: no surface on top ("${btn.textContent}")`);
+    use(lid); for (let i = 0; i < 40; i++) step(0.05);
+    cup.putBack(); step(1 / 60);
+  } catch (e) { pass = false; lines.push(`FAIL cushion box surface error ${e.stack}`); }
   out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
 };
 </script>

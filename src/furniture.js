@@ -3288,6 +3288,15 @@ function secretary(item) {
   pivot.rotation.x = -slope;
   pivot.traverse((m) => { m.userData.door = flap; });
   g.add(pivot); targets.push(flap); moving.push(pivot);
+  // #447: fully open, the flap is a put-down surface (a group shown only then: main.js `shown`); it does not close
+  // while something stands on it
+  const desk = new THREE.Group(); desk.visible = false; g.add(desk);
+  const deskTop = { x0: -(W - 0.04) / 2 + 0.03, x1: (W - 0.04) / 2 - 0.03, z0: D + 0.03, z1: D + flapL - 0.03, y: yF, gate: desk, door: flap };
+  (g.userData.surfaces ??= []).push(deskTop);
+  const flapUpdate = flap.update;
+  flap.update = function (dt) { flapUpdate.call(this, dt); desk.visible = this.isOpen && this.t >= 1; };
+  Object.defineProperty(flap, 'blocked', { get() { return this.isOpen && !!deskTop.mesh?.userData.occupied(); } });
+  flap.blockedText = 'Ta bort det som står på skivan först';
   // on top: a little stone owl and a cactus in a terracotta pot
   const stone = new THREE.MeshStandardMaterial({ color: 0xb7afa2, roughness: 0.9, flatShading: true });
   trinket('owl', g, M, things, null, 'sekretären', (owl) => {
@@ -3596,6 +3605,32 @@ export function surfaceBox(r, list) {
   return m;
 }
 
+/**
+ * Does anything stand on surface box `m` (#447)? A visible mesh outside `skip` (the piece itself) and the camera (what
+ * is in the hand) whose bottom is at the surface's height and whose middle is over it: a cup, a bottle, a fish finger,
+ * fruit, a life-sim thing — whatever kind it is, without a register of them all. Cheap enough for every frame: only a
+ * mesh whose origin is near the surface gets its box measured (a thing's meshes sit at its spot; merged ones at 0).
+ */
+export function standingOn(m, skip) {
+  let root = m; while (root.parent) root = root.parent;
+  const area = new THREE.Box3().setFromObject(m), b = new THREE.Box3(), c = new THREE.Vector3(), y = m.userData.surface;
+  const near = area.clone().expandByVector(new THREE.Vector3(0.3, 0, 0.3)); near.min.y = y - 0.3; near.max.y = y + 0.5;
+  let found = false;
+  const look = (o) => {
+    if (found || !o.visible || o === skip || o.isCamera || o.userData.ghost) return; // (not the put-down preview)
+    if (o.isMesh && !o.userData.surface && near.containsPoint(c.setFromMatrixPosition(o.matrixWorld))) {
+      b.setFromObject(o, false);
+      if (!b.isEmpty() && b.min.y > y - 0.025 && b.min.y < y + 0.03 && b.max.y - b.min.y < 0.8) {
+        b.getCenter(c);
+        if (c.x > area.min.x - 0.02 && c.x < area.max.x + 0.02 && c.z > area.min.z - 0.02 && c.z < area.max.z + 0.02) { found = true; return; }
+      }
+    }
+    for (const k of o.children) look(k);
+  };
+  look(root);
+  return found;
+}
+
 /** Build all furniture; returns the scene group, collision segments per level (+ the footprint quads they
  * outline, #302) and lamps. */
 /**
@@ -3634,7 +3669,8 @@ export function buildFurniture() {
     for (const r of obj.userData.surfaces ?? []) { // tables a cup can stand on (#90)
       const m = surfaceBox(r, surfaces);
       m.userData.surface += obj.position.y; // its height in the world (upstairs too, #269)
-      obj.add(m);
+      (r.gate ?? obj).add(m); // `gate`: a group the piece shows only while the surface is there (the secretary's open flap, #447)
+      if (r.gate) { m.userData.gate = true; r.mesh = m; m.userData.occupied = () => standingOn(m, obj); m.userData.door = r.door; } // (E on it = on the flap / lid it lies on)
     }
     if (obj.userData.rest) obj.userData.interact = restTarget(obj, item, floor); // sit / lie (#71/#72)
     if (obj.userData.interact) { // E targets among the furniture (the TV, seats, beds)

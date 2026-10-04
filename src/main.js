@@ -389,6 +389,7 @@ let placeTarget = null; // while something is held: the table top / floor spot i
 const placeGhost = new THREE.Mesh(new THREE.RingGeometry(0.035, 0.05, 24).rotateX(-Math.PI / 2),
   new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.45, depthWrite: false }));
 placeGhost.visible = false;
+placeGhost.userData.ghost = true; // (not a thing standing there, furniture.js standingOn, #447)
 scene.add(placeGhost);
 const floorPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), floorHit = new THREE.Vector3();
 /** Where the look ray meets the floor the visitor stands on, within reach — or null (stairs, the stair opening). */
@@ -409,6 +410,7 @@ let placeTurn = 0, ghostOf = null, ghostItem = null;
 const ghostMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.35, depthWrite: false });
 const itemGhost = new THREE.Group();
 itemGhost.visible = false;
+itemGhost.userData.ghost = true;
 scene.add(itemGhost);
 const snapBox = new THREE.Box3(), snapQ = new THREE.Quaternion();
 /** Snap `spot.point` to the grid; on a surface (a cupSurfaces box) inside its edges. */
@@ -1082,7 +1084,8 @@ function use(thing) {
   if (thing.options && thing.kind !== 'life' && choices.rows && choices.target === thing) { // a lamp with a choice (#428): the marked row
     runChoice(choices.sel);
     if (thing.kind === 'lamp' && thing.isOpen) bump('lights', 1, idOf(thing));
-  } else if (thing.kind === 'note') showNote(true);
+  } else if (thing.blocked && (thing.kind === 'appliance' || thing.kind === 'cabinet')) sfx.click(camera.position); // something stands on the secretary's flap / the cushion box's lid (#447)
+  else if (thing.kind === 'note') showNote(true);
   else if (thing.kind === 'clock') { showClock(true); bump('clock'); }
   else if (thing.kind === 'calendar') { showCalendar(true); bump('calendar'); }
   else if (thing.kind === 'blind' || thing.kind === 'curtain') showBlind(thing); // a pleated blind (#273), the curtains (#342)

@@ -669,7 +669,7 @@ export class CatSpawner {
     }
     const box = new THREE.Box3();
     for (const m of W.cupSurfaces ?? []) {
-      if (m.userData.soft) continue; // a bed / sofa seat (#269): those are rest spots already
+      if (m.userData.soft || m.userData.gate) continue; // a bed / sofa seat (#269): those are rest spots already; not a flap / lid that moves (#447)
       box.setFromObject(m);
       const sy = m.userData.surface;
       if (Math.abs(sy - (y0 + 0.75)) > 0.6 || box.max.x - box.min.x < 0.4 || box.max.z - box.min.z < 0.4) continue;
