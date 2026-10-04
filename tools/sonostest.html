@@ -80,6 +80,53 @@ f.onload = async () => {
   toggleFurniture();
   pass &= check(!sonos.playing && panel.hidden && !world.furnitureOn, 'F stops the music');
   toggleFurniture();
+  // real music files (#416): picked by type, fetched only when the channel plays, a missing file falls back to the
+  // generated music, a playable one streams into the channel's sub-mix (no bars composed) with its title in the panel
+  const M = await w.eval(`import('${new URL('../src/sonos.js', location.href).href}')`);
+  const { SONOS } = await w.eval(`import('${new URL('../src/config.js', location.href).href}')`);
+  const pick = M.trackSrc({ files: ['music/a.ogg', 'music/a.mp3'] }, (t) => (t === 'audio/mpeg' ? 'maybe' : ''));
+  pass &= check(pick === 'music/a.mp3' && M.trackSrc({ files: ['music/a.ogg'] }, () => '') === null, `the file this browser plays: ${pick}`);
+  const fetched = () => w.performance.getEntriesByType('resource').filter((e) => /\/music\//.test(e.name)).map((e) => e.name.replace(/.*\//, ''));
+  pass &= check(fetched().length === 0, `no music downloaded before a channel with files plays (${fetched().join(', ') || 'none'})`);
+  const ch0 = SONOS.channels[0];
+  ch0.tracks = [{ title: 'Saknas', artist: 'Test', files: ['music/finns-inte-416.ogg'] }];
+  sonos.channel = 0; sonos.play();
+  for (let i = 0; i < 40 && sonos.file; i++) { step(0.05); await wait(100); }
+  step(0.1);
+  // without a real gesture the browser refuses play() (no error, no failed file): the generated music then (run with
+  // --autoplay-policy=no-user-gesture-required to test the files themselves)
+  const autoplay = M.failedFiles.has('music/finns-inte-416.ogg');
+  pass &= check(!sonos.file && sonos.playing && sonos.barNo > 0 && panel.querySelector('.name').textContent === ch0.name,
+    `a missing file${autoplay ? '' : ' (play refused: no gesture)'} falls back to the generated music (${sonos.barNo} bars, "${panel.querySelector('.name').textContent}")`);
+  pass &= check(fetched().length <= 1, `only the channel's own file was asked for (${fetched().join(', ') || 'none'})`);
+  // a 3 s tone as a WAV blob stands in for a real track
+  const sr = 22050, n = sr * 3, wav = new DataView(new ArrayBuffer(44 + n * 2));
+  const str = (o, s) => [...s].forEach((c, i) => wav.setUint8(o + i, c.charCodeAt(0)));
+  str(0, 'RIFF'); wav.setUint32(4, 36 + n * 2, true); str(8, 'WAVEfmt '); wav.setUint32(16, 16, true); wav.setUint16(20, 1, true);
+  wav.setUint16(22, 1, true); wav.setUint32(24, sr, true); wav.setUint32(28, sr * 2, true); wav.setUint16(32, 2, true); wav.setUint16(34, 16, true);
+  str(36, 'data'); wav.setUint32(40, n * 2, true);
+  for (let i = 0; i < n; i++) wav.setInt16(44 + i * 2, Math.sin(2 * Math.PI * 440 * i / sr) * 8000, true);
+  const url = w.URL.createObjectURL(new w.Blob([wav.buffer], { type: 'audio/wav' }));
+  ch0.tracks = [{ title: 'Testton', artist: 'Testaren', files: [url] }];
+  sonos.next(1); sonos.next(-1); // restart channel 0 with the file
+  const el = sonos.file?.el;
+  if (autoplay) {
+    // (headless with the game's WebGL running, the media pipeline may not decode within virtual time: the element is
+    // checked to be attached, playing and unerrored)
+    for (let i = 0; i < 20 && el && el.readyState < 2; i++) { step(0.05); await wait(100); }
+    const bars = sonos.barNo; for (let i = 0; i < 10; i++) step(0.1);
+    const state = el ? `readyState ${el.readyState}, ${el.paused ? 'paused' : 'playing'}, error ${el.error?.code ?? 'none'}` : 'no element';
+    pass &= check(!!el && sonos.file?.el === el && !el.paused && !el.error && sonos.barNo === bars && panel.querySelector('.name').textContent === 'Testton – Testaren',
+      `a playable file streams in, nothing composed, its title shown (${state}, "${panel.querySelector('.name').textContent}")`);
+    sonos.pause();
+    pass &= check(!sonos.file && !el.getAttribute('src'), 'paused: the file stopped and let go');
+  } else {
+    for (let i = 0; i < 10; i++) { step(0.05); await wait(50); }
+    pass &= check(!sonos.file && sonos.barNo > 0 && panel.querySelector('.name').textContent === ch0.name, 'play refused (no gesture): the generated music, never silence');
+    lines.push('SKIP the file itself: run with --autoplay-policy=no-user-gesture-required');
+    sonos.pause();
+  }
+  delete ch0.tracks; sonos.channel = 0;
   // each channel rendered offline for 6 s: audible, not clipping
   const { CHANNELS } = await w.eval(`import('${new URL('../src/sonos.js', location.href).href}')`);
   for (const [id, c] of Object.entries(CHANNELS)) {

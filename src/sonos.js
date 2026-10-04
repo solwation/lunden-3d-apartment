@@ -9,6 +9,10 @@ import { SONOS as S, CAR } from './config.js';
 // feeds a panner per speaker, so it is loudest close to one; main.js passes how muffled each one is (walls, the
 // other floor). E on a speaker starts the music and opens #sonos-panel (⏮ ⏭ songs, ⏯, volume); E / Esc closes the
 // panel and the music plays on. F (the bare flat) stops it. The status lights glow white while it plays.
+// Real music (#416): a channel with `tracks` in SONOS.channels plays those files instead, loaded only when the channel
+// starts (an <audio> element through a MediaElementAudioSourceNode into the channel's sub-mix, so the panners, the
+// muffling, the ducking and mute work as before), one track after another; a file that fails to load or play falls
+// back to the channel's generated music — never silence. The panel / the car's screen show "title – artist".
 
 const midi = (n) => 440 * 2 ** ((n - 69) / 12);
 
@@ -119,10 +123,25 @@ export const CHANNELS = { // exported for the offline render in tools/sonostest.
   } },
 };
 
+/** A track's file this browser can play (#416): the first of `files` whose extension it knows (.ogg / Opus for most,
+ * the .mp3 / .m4a for Safari); a file without a known extension (a blob: URL in a test) is taken as it is. */
+const TYPES = { ogg: 'audio/ogg; codecs="opus"', opus: 'audio/ogg; codecs="opus"', mp3: 'audio/mpeg', m4a: 'audio/mp4', wav: 'audio/wav' };
+export function trackSrc(track, canPlay = (type) => new Audio().canPlayType(type)) {
+  for (const f of track.files ?? []) {
+    const type = TYPES[/\.(\w+)(?:[?#].*)?$/.exec(f)?.[1]?.toLowerCase()];
+    if (!type || canPlay(type)) return f;
+  }
+  return null;
+}
+export const failedFiles = new Set(); // files that would not load or play (the speakers and the car share it): not tried again
+
 /** What the SYMFONISK speakers and the car's radio (#268) share: a channel's sub-mix into `this.bus.mix`, and composing
- * a bar at a time ahead. */
+ * a bar at a time ahead — or, for a channel with `tracks` (#416), streaming its files into that sub-mix. */
 class Composer {
-  get name() { return S.channels[this.channel].name; }
+  get name() {
+    const t = this.file?.track;
+    return t ? `${t.title} – ${t.artist}` : S.channels[this.channel].name;
+  }
 
   /** A fresh sub-mix for the channel (the old one fades out with what it had scheduled). */
   startChannel(A) {
@@ -131,22 +150,73 @@ class Composer {
     this.ch = g;
     this.barNo = 0; this.nextBar = A.ctx.currentTime + 0.08;
     this.songStart = performance.now();
+    this.trackNo = 0;
+    if (!this.startTrack(A)) this.startGenerated(A);
+  }
+
+  /** The channel's generated music (also the fallback when its files fail). */
+  startGenerated(A) {
+    this.nextBar = Math.max(this.nextBar, A.ctx.currentTime + 0.05);
     const c = CHANNELS[S.channels[this.channel].id];
-    this.stopCont = c.continuous?.(A, g) ?? null;
+    this.stopCont = c.continuous?.(A, this.ch) ?? null;
+  }
+
+  /** Start the channel's next playable track (from `trackNo`) into its sub-mix; false when it has none left. */
+  startTrack(A) {
+    const tracks = S.channels[this.channel].tracks ?? [];
+    for (let n = 0; n < tracks.length; n++) {
+      const k = (this.trackNo + n) % tracks.length, track = tracks[k], src = trackSrc(track);
+      if (!src || failedFiles.has(src)) continue;
+      this.trackNo = k;
+      const el = new Audio(); // made only now: nothing is downloaded before the channel plays
+      el.preload = 'auto';
+      const node = A.ctx.createMediaElementSource(el);
+      node.connect(this.ch);
+      const file = { el, node, track, src };
+      const after = (bad) => { // the file failed / ended: the next track, else the generated music
+        if (this.file !== file) return;
+        if (bad) failedFiles.add(src);
+        this.dropFile();
+        this.trackNo = k + 1;
+        if (!this.startTrack(A)) this.startGenerated(A);
+        this.onTrack?.();
+      };
+      el.addEventListener('error', () => after(true));
+      el.addEventListener('ended', () => after(false));
+      el.src = src;
+      this.file = file;
+      this.songStart = performance.now();
+      el.play()?.catch((e) => {
+        if (e?.name !== 'NotAllowedError') { after(true); return; }
+        // refused (no user gesture, e.g. resumed after a reload): the generated music this time, the file stays allowed
+        if (this.file === file) { this.dropFile(); this.startGenerated(A); this.onTrack?.(); }
+      });
+      return true;
+    }
+    return false;
+  }
+
+  dropFile() {
+    const f = this.file;
+    if (!f) return;
+    this.file = null;
+    f.el.pause(); f.el.removeAttribute('src'); f.el.load(); // stops the download too
+    f.node.disconnect();
   }
 
   stopChannel() {
     const A = audioParts();
     if (this.ch && A) { const g = this.ch, t = A.ctx.currentTime; g.gain.setTargetAtTime(0, t, 0.05); setTimeout(() => g.disconnect(), 1500); }
+    this.dropFile();
     this.stopCont?.(); this.stopCont = null;
     this.ch = null;
   }
 
-  /** Schedule the bars up to `lookahead` ahead (not while muted: the master is silent). */
+  /** Schedule the bars up to `lookahead` ahead (not while muted: the master is silent; not while a file plays). */
   compose(A) {
     if (!this.ch) this.startChannel(A); // the context came up after play()
     const t = A.ctx.currentTime;
-    if (isMuted()) { this.nextBar = Math.max(this.nextBar, t); return; } // the master is silent: don't compose
+    if (isMuted() || this.file) { this.nextBar = Math.max(this.nextBar, t); return; } // silent master / a file plays
     const c = CHANNELS[S.channels[this.channel].id], len = c.bar * c.beat;
     if (this.nextBar < t - 1) this.nextBar = t + 0.05; // a long stall (a hidden tab): start afresh
     while (this.nextBar < t + S.lookahead) { c.play(A, this.ch, this.nextBar, this.barNo++); this.nextBar += len; }
@@ -163,6 +233,7 @@ export class Sonos extends Composer {
     this.nameEl = panel.querySelector('.name');
     this.volEl = panel.querySelector('.vol');
     this.playBtn = panel.querySelector('[data-act=play]');
+    this.onTrack = () => this.render(); // a file started, ended or fell back (#416): its name in the panel
     const act = { prev: () => this.next(-1), next: () => this.next(1), play: () => this.toggle(), down: () => this.setVolume(this.volume - 1), up: () => this.setVolume(this.volume + 1) };
     for (const [k, fn] of Object.entries(act)) panel.querySelector(`[data-act=${k}]`)?.addEventListener('click', fn);
     this.render();
@@ -325,7 +396,9 @@ export class CarRadio extends Composer {
 
   /** For the screen: song, progress through a nominal song length, the time. */
   get nowPlaying() {
-    const L = CAR.music.songLength, e = ((performance.now() - this.songStart) / 1000) % L;
+    const d = this.file?.el.duration, real = Number.isFinite(d) && d > 0; // a real track: its own length (#416)
+    const L = real ? d : CAR.music.songLength;
+    const e = real ? Math.min(this.file.el.currentTime, d) : ((performance.now() - this.songStart) / 1000) % L;
     const mmss = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
     return { name: this.name, playing: this.playing, progress: e / L, time: `${mmss(e)} / ${mmss(L)}` };
   }

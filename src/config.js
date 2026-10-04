@@ -1915,6 +1915,10 @@ export const SYMFONISK = {
 // Music in the SYMFONISK speakers (#187, src/sonos.js): generated in Web Audio, no files. `channels` = the "songs"
 // (⏮ ⏭ step through them), volume in `steps` (start at `start`), `gain` at full volume. Through a wall a speaker
 // is `wall` as loud, from the other floor `floor` (on top of the panner's distance fall-off).
+// Real music (#416): a channel may list `tracks: [{ title, artist, files: ['music/x.ogg', 'music/x.mp3'] }]` — files in
+// music/ with a licence that allows a public website, each one in music/CREDITS.md. They are fetched only when the
+// channel plays (the first file this browser can play) and fall back to the generated music if they fail. None yet:
+// the download sites are blocked from the cloud sessions, so the user adds them (the candidates are in #416).
 export const SONOS = {
   channels: [
     { id: 'lofi', name: 'Lugn lofi' },

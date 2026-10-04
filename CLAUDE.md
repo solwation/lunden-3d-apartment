@@ -61,7 +61,7 @@ https://solwation.github.io/lunden-3d-apartment/ (public repo) via
 writes the commit SHA into `src/version.js` (`BUILD`) and `version.json`, and appends
 `?v=SHA` to module imports / `data/plan.json` so a reload never mixes cached old modules.
 It also writes a **content hash** (`CONTENT` in version.js, `content` in version.json, #304) of what the page loads:
-index.html, the manifest, icons/, src/, data/, textures/ and stamp.sh — not tools/, docs/, the PDF or the .md files.
+index.html, the manifest, icons/, src/, data/, textures/, music/ and stamp.sh — not tools/, docs/, the PDF or the .md files.
 It also writes `data/todo.json` from the repo's open issues (`tools/todo.py`, REST API with the workflow's
 GITHUB_TOKEN, `[]` on any error) AFTER the hash and outside it (#340): a changed TODO list reloads nobody; the Pages
 workflow also runs once a day (schedule) so the post-its follow the issues. Locally `data/todo.sample.json` is used.
@@ -543,7 +543,11 @@ src/turbo.js           Kaffeturbo (#217, TURBO): TURBO.cups cups' worth of coffe
                        chiptune (square/pulse lead, bass, noise hat; Sonos ducked meanwhile); real time (`turbo.now`), `&turbo`
 src/sonos.js           music in the SYMFONISK speakers (#187, SONOS): six generated channels (Web Audio, no files), one mix
                        → a panner per speaker (walls / the other floor muffle), #sonos-panel (⏮ ⏭ ⏯ volume, reading mode);
-                       `Composer` (channel sub-mix + scheduling) is shared with the car's `CarRadio` (#268)
+                       `Composer` (channel sub-mix + scheduling) is shared with the car's `CarRadio` (#268).
+                       Real music (#416): a channel's `tracks` (files in music/, licences in music/CREDITS.md) stream through
+                       an <audio> + MediaElementAudioSourceNode into its sub-mix, fetched only when it plays (`trackSrc`
+                       picks .ogg / .mp3 by canPlayType); a failed / refused file falls back to the generated music; the
+                       panel / car screen show "title – artist". No files yet (the download sites are blocked from the cloud)
 src/stats.js           visitor statistics (localStorage), "+1" badges per event, the HUD panel
                        (hidden; Tab held / T / 📊 shows it; touch, #245: narrower than the right-hand controls, scrolls with a
                        finger — touch.js ignores #stats — ⤢ full screen in columns, ✕ closes; rows go into #stats-body)
