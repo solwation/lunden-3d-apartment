@@ -498,6 +498,20 @@ export const TOILET = { width: 0.355, depth: 0.65, seatHeight: 0.42, tankHeight:
     flush: { drop: 0.05, run: 2.2, runSpeed: 1.6, spin: 7, swirl: 4 },
   } };
 export const SHELF_HEIGHT = 2.0; // unlabelled shelving in the upstairs Klk
+// Sovrum 1's walk-in closet (#331, src/closet.js), inside x 3.90–5.55, z 4.28–5.48. Peab's fittings sheet for L1204 in
+// the same house gives its upstairs Klk "hylla och klädstång på bärlister" (a Marbodal-type system, docs/klk-sovrum1-
+// inredning-*.png): white wall standards, a high white shelf on the side wall with the plan's dashed strip (`side` 1 =
+// east, −1 = west) and on the far (south) wall, a chrome rail under it on the side wall only (ending clear of the NORDLI,
+// z ≥ 5.245). Heights, lengths and the LED mirror over the NORDLI are guesses; the mirror fits between its top (0.99)
+// and the shelf.
+export const KLK = {
+  level: 1, x0: 3.90, x1: 5.55, z0: 4.28, z1: 5.48, side: 1,
+  shelf: { y: 1.95, d: 0.30, t: 0.022 }, rail: { y: 1.78, out: 0.28, z0: 4.32, z1: 5.22, r: 0.0125 },
+  standards: { side: [4.45, 5.10], back: [4.02, 4.98], y0: 0.95, y1: 2.25, w: 0.026, d: 0.014 },
+  mirror: { x: 4.45, w: 0.55, h: 0.72, bottom: 1.10, led: 0.022, light: { intensity: 0.8, range: 3.0, color: 0xfff1de } },
+  clothes: [['coat', 0x1f1f1f], ['coat', 0xb08a66], ['dress', 0x24324a], ['dress', 0x8a9a7b], ['jacket', 0x2e3a4f],
+    ['jacket', 0xeee6d3], ['shirt', 0xf5f5f0], ['shirt', 0x9fb7d0], ['shirt', 0xa4532f], ['shirt', 0xeee6d3], ['shirt', 0x1f1f1f]],
+};
 
 // Where a visit starts: out on the grass in front of the entrance façade, facing the house with the
 // gaze slightly up, so the whole unit (and Hus L above it) is in view (#35). yaw 180 = facing south.
@@ -1902,7 +1916,11 @@ export const FURNITURE = [
   // facing east; hook 3 = the front end)
   { type: 'hookrail', level: 1, x: 3.849, z: 8.15, rot: 90, set: 'sovrum2' },
   { type: 'hookrail', level: 1, x: 1.506, z: 4.57, rot: -90, set: 'sovrum3' },
-  { type: 'nordli', level: 1, x: (3.90 + 5.55) / 2, z: 5.48 - 0.235, rot: 0, w: 1.2, h: 0.99, d: 0.47, rifle: true }, // + the AK-47 in the wide bottom drawer (#196)
+  { type: 'nordli', level: 1, x: (3.90 + 5.55) / 2, z: 5.48 - 0.235, rot: 0, w: 1.2, h: 0.99, d: 0.47, rifle: true,
+    top: { x0: -0.395, x1: 0.105, z0: -0.015, z1: 0.205 } }, // + the AK-47 in the wide bottom drawer (#196); `top` = free of make-up (#331)
+  // the Klk's clothes, shelves, make-up corner and LED mirror (#331, src/closet.js; x/z unused) and a soft round rug
+  { type: 'klk', level: 1, x: 4.725, z: 4.88, rot: 0 },
+  { type: 'rug', shape: 'round', level: 1, x: 4.45, z: 4.66, d: 0.72, h: 0.022, color: '#e9e1d2', seed: 33 },
   // the mattress centre: the headboard (IDANAS.head) against the east wall
   { type: 'bed', level: 1, x: 5.55 - IDANAS.head - 1.0, z: 2.3, rot: 90, w: 1.8, l: 2.0, model: 'idanas', sitUp: { tv: 'Sovrum 1' }, pingping: true, hotel: true, // Pingping between the pillows (#269), hotel pillows under the head pillows (#308)
     // repeat = metres per texture tile (blooms ~8–15 cm)

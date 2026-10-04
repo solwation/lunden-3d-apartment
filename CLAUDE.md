@@ -98,6 +98,10 @@ src/cat.js             the cat: random coat, washing animation, appears/moves/va
 src/miele.js           Miele (#328): `HeartFireworks` (heart shells that pop into small hearts) and `MieleHeld` (a Holdable with no
                        home: the cat object rides in it, hand.js 'hug'; click / "Krama" hugs; put down she walks off)
 src/furniture.js       loose furniture from FURNITURE in config (IKEA LANDSKRONA sofa/armchair …)
+src/closet.js          Sovrum 1's walk-in closet (#331, KLK in config): `klkFittings` (world.js, Peab's: white wall standards, a high
+                       shelf on the side wall + the far wall, a chrome rail under the side one; stays with F) and the `klk` FURNITURE
+                       builder (loose): clothes on the rail, things on the shelves, make-up on the NORDLI, an LED mirror over it (a
+                       lamp of its own, 'spegelns lampa', + a Reflector)
 src/rugs.js            the rugs furniture.js built (#55, #310, #317): `rugLift(level, x, z)` = a shown rug's top over the floor there
                        (the cat follows it as it walks); `rugUnder` from config: a piece whose whole footprint is on a rug
                        (or `onRug`) is built standing on top of it
@@ -783,7 +787,9 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   Kian and Tuva, Sarah the mother of Walter and Livia. Text that mentions them must not make all five siblings.
 - Who sleeps where (the user's plan; "left/right" as you arrive upstairs walking west):
   Sovrum 1 (first right) Sarah & Olof, double bed IKEA IDANÄS 180 × 200 (`IDANAS`, #91; a white 70 × 100 hotel pillow under each chintz head pillow, `PILLOWS`, `hotel`, #308, docs/hotellkudde-70x100.jpg), under a 150 × 100 cm black-framed meadow-grass picture on the east wall, 1.33–2.33 m up, clear of the soffit (#284, `pictures` item, textures/angsgras-sovrum1.jpg from docs/tavla-sovrum1-angsgras.jpg), a NORDLI chest of
-  drawers in its Klk (an AK-47 in its wide bottom drawer, #196) (no wardrobe in Sovrum 1; the Klk is 1.65 × 1.20 inside, #94) (a sage green IKEA chintz bedding set from a Sellpy ad, #83) with IKEA NORDKISA bedside tables (#64) and white NYMÅNE work
+  drawers in its Klk (an AK-47 in its wide bottom drawer, #196) (no wardrobe in Sovrum 1; the Klk is 1.65 × 1.20 inside, #94; fitted out in #331,
+  `KLK`, src/closet.js: Peab's shelf + clothes rail on wall standards along the east wall and a shelf over the NORDLI per L1204's fittings
+  sheet, docs/klk-sovrum1-inredning-*.png; Sarah's and Olof's clothes, make-up on the chest under a lit LED mirror, a round cream rug) (a sage green IKEA chintz bedding set from a Sellpy ad, #83) with IKEA NORDKISA bedside tables (#64) and white NYMÅNE work
   lamps on them (#65, each its own lamp like the floor lamp) + an IKEA RÅGRUND towel-rack chair in the corner left of
   the window (#60), the user's grey shag rug 240 × 340 with a white zig-zag under the bed (#317, `pattern: 'zigzag'`, 2.8 cm;
   across the bed, z 0.6–4.0, from the head wall to 18 cm past the foot), and a Philips 43" PQS7801 on the west wall across from the bed (#213, black frame, Ambilight #223):

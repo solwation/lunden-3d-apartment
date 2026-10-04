@@ -14,6 +14,7 @@ import { rifleModel } from './rifle.js';
 import { laptop } from './laptop.js';
 import { nesthub, nestmini } from './nest.js';
 import { hookrail } from './hooks.js';
+import { klk } from './closet.js';
 import { registerRug, rugUnder } from './rugs.js';
 import { pingpingModel } from './pingping.js';
 import { pillow, duvet as duvetShape } from './bedding.js';
@@ -1993,7 +1994,7 @@ function nordli(item) {
     }
   }
   g.traverse((m) => { if (m.isMesh) m.castShadow = m.receiveShadow = true; });
-  g.userData.surfaces = [{ x0: -w / 2 + 0.03, x1: w / 2 - 0.03, z0: -d / 2 + 0.03, z1: d / 2 - 0.03, y: h }];
+  g.userData.surfaces = [item.top ? { ...item.top, y: h } : { x0: -w / 2 + 0.03, x1: w / 2 - 0.03, z0: -d / 2 + 0.03, z1: d / 2 - 0.03, y: h }]; // the make-up's free part (#331)
   g.userData.footprint = [{ x0: -w / 2, x1: w / 2, z0: -d / 2, z1: d / 2 }];
   return g;
 }
@@ -3307,7 +3308,7 @@ function besta(item, lights) {
   return g;
 }
 
-const BUILDERS = { tubelamp, secretary, winerack, besta, painting, pictures, palm, sofa, armchair, ottoman, floorlamp, sidetable, coffeetable, loungesofa, loungetable, parasol, planter, bed, skansnasTable, skansnasChair, bunk, daybed, kposters, smastad, rug, ragrund, coatrack, shoerack, byas, tv, nordkisa, worklamp, walllamp, symfonisk, gamingdesk, gamingchair, nordli, malm, alex, kidchair, vanity, vanitystool, laptop, photoframe, nesthub, nestmini, hookrail };
+const BUILDERS = { tubelamp, secretary, winerack, besta, painting, pictures, palm, sofa, armchair, ottoman, floorlamp, sidetable, coffeetable, loungesofa, loungetable, parasol, planter, bed, skansnasTable, skansnasChair, bunk, daybed, kposters, smastad, rug, ragrund, coatrack, shoerack, byas, tv, nordkisa, worklamp, walllamp, symfonisk, gamingdesk, gamingchair, nordli, malm, alex, kidchair, vanity, vanitystool, laptop, photoframe, nesthub, nestmini, hookrail, klk };
 
 /** An invisible thin box over a table top (raycast target for putting a cup down, #90). Local rect. */
 export function surfaceBox(r, list) {

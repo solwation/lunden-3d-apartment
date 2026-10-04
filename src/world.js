@@ -2,9 +2,10 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import {
   LEVELS, SOFFITS, DOOR_HEIGHT, DOOR_TRIM, EXT_DOOR_HEAD, WINDOWS, WINDOW_TOP_HUNG_MAX, BLINDS, CABINET_HEIGHT, BASE_CABINET, SHELF_HEIGHT, TOILET,
-  STAIR, COLORS, FENCE_HEIGHT, SITE, OUTDOOR, CABINET_FIXES, SEASON, FINISH, OPTIONS, EXTRA_WALLS, SLIDE_FLIP, ROOM_RENAMES, EXTRA_ROOMS, ROOM_DIVIDERS,
+  STAIR, COLORS, FENCE_HEIGHT, SITE, OUTDOOR, CABINET_FIXES, KLK, SEASON, FINISH, OPTIONS, EXTRA_WALLS, SLIDE_FLIP, ROOM_RENAMES, EXTRA_ROOMS, ROOM_DIVIDERS,
 } from './config.js';
 import { buildStairs } from './stairs.js';
+import { klkFittings } from './closet.js';
 import { Openable } from './openables.js';
 import { sfx } from './audio.js';
 import { SwingDoor, SlidingDoor, wardrobeDoors } from './doors.js';
@@ -541,6 +542,11 @@ function buildLevel(floor, li, group) {
   for (const cab of floor.cabinets) {
     const label = cab.label;
     if (WARDROBE_LABELS.includes(label) || handled.has(cab)) continue;
+    if (li === KLK.level && cab.x0 > KLK.x0 - 0.05 && cab.x1 < KLK.x1 + 0.05 && cab.z0 > KLK.z0 - 0.05 && cab.z1 < KLK.z1 + 0.05) {
+      klkFittings(group, y0); // the plan's dashed strip in Sovrum 1's Klk: Peab's shelf + rail on wall standards (#331)
+      segments.push(...rectSegments(cab));
+      continue;
+    }
     const h = label ? CABINET_HEIGHT[label] ?? BASE_CABINET
       : (cab.x1 - cab.x0 < 0.3 || cab.z1 - cab.z0 < 0.3) ? SHELF_HEIGHT : BASE_CABINET;
     if (label === 'EL' && li === 0) { // the hall's EL/C cabinet opens (#103)

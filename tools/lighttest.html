@@ -42,6 +42,7 @@ f.onload = async () => {
       const ang = (a / 16) * Math.PI * 2, x = target.x + Math.sin(ang) * 0.7, z = target.z + Math.cos(ang) * 0.7;
       if (w.__app.world.roomMaps[level].exact(x, z) !== want) continue;
       best ??= { x, z };
+      if (w.__app.rest.active) w.__app.standUp(); // a spot tried for an earlier lamp may have sat us down (#331)
       player.spawn(x, z, Math.atan2(-(target.x - x), -(target.z - z)));
       player.pos.y = floorY; player.eyeY = floorY + 1.62;
       for (let i = 0; i < 3; i++) step(1 / 60);
