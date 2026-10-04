@@ -7,8 +7,10 @@
 // The life simulator's first milestone, M1 (epic #364): the sandwich flow, one section per issue.
 //  #373 the kitchen's food in its places from the start (named in the prompt), the cucumber taken out and put back, a thing
 //       used up is back on the next opening (never while the old one is out), a new visit keeps the amounts.
+//  #374 the tools in the utensil drawer and the board on the splashback: taken and put back with E; the wrong tool says so
+//       ("Osthyveln skär inte gurka") and nothing is used.
 //   chromium --headless=new --dump-dom http://localhost:8137/tools/lifetest.html
-import { LIFE_FOOD } from '../src/config.js';
+import { LIFE_FOOD, LIFE_TOOLS } from '../src/config.js';
 const out = document.getElementById('out');
 const lines = [];
 let pass = true;
@@ -88,6 +90,57 @@ try {
   shut(); step(1 / 60);
   f.remove();
 } catch (e) { pass = false; lines.push(`FAIL #373 error ${e.stack}`); }
+
+// --- #374: the utensil drawer, the board's place, the right tool ------------------------------------------------
+try {
+  const f = await load('life&shot');
+  const { A, settle, aim, shut, life, I, step } = kit(f);
+  const drawer = A.world.lids.find((l) => l.stock === 'utensils'), fridge = A.fridge;
+  const tool = (type) => I.all().find((i) => i.type === type && i.home?.store);
+  const [knife, bknife, slicer, board] = ['knife', 'butterKnife', 'cheeseSlicer', 'board'].map(tool);
+  check(LIFE_TOOLS.stock.every(([t, s, k]) => { const it = tool(t); return it && it.place.at === 'slot' && it.place.store === s && it.place.slot === k; }), 'the knife, the butter knife and the cheese slicer in the drawer, the board on the splashback');
+  // shut drawer: no tool; open: each taken with E and put back with E (the drawer's box)
+  const kp = life.view(knife).where();
+  check(life.view(knife).target.blockedText === 'Öppna lådan först', `the shut drawer: "${life.view(knife).target.blockedText}"`);
+  drawer.toggle(); settle(drawer);
+  for (const it of [knife, bknife, slicer]) {
+    const v = life.view(it), p = v.where(); p.y += 0.01;
+    const name = I.name(it);
+    const t1 = aim(p, new RegExp(`^Ta ${name}`), [[4.35, p.z], [4.45, p.z - 0.15], [4.45, p.z + 0.15]]);
+    if (t1) { f.contentDocument.getElementById('action').click(); step(1 / 60); }
+    check(t1 && A.heldItem() === v && it.place.at === 'hand', `${name}: "${t1}", in the hand`);
+    const box = A.lifeStores.stores.utensils.box; box.updateWorldMatrix(true, false);
+    const bp = box.getWorldPosition(new (A.camera.position.constructor)()); bp.y += 0.02;
+    const t2 = aim(bp, new RegExp(`^Lägga ${name} i lådan`), [[4.35, bp.z], [4.4, bp.z - 0.1], [4.4, bp.z + 0.1]]);
+    if (t2) { f.contentDocument.getElementById('action').click(); step(1 / 60); }
+    check(t2 && it.place.at === 'slot' && it.place.store === 'utensils' && !A.heldItem(), `back with E: "${t2}" → slot ${it.place.slot}`);
+  }
+  // the wrong tool: the reason, nothing used
+  fridge.toggle(); settle(fridge);
+  const cuc = I.all().find((i) => i.type === 'cucumber' && i.home?.store === 'fridge'), cheese = I.all().find((i) => i.type === 'cheese' && i.home?.store === 'fridge');
+  const butter = I.all().find((i) => i.type === 'butter' && i.home?.store === 'fridge');
+  const why = (held, target) => { life.view(held).take(); step(1 / 60); const r = life.options({ item: life.view(target) }).find((o) => o.id === 'wrongTool'); const ran = r ? r.run() : null; life.view(held).putBack(); step(1 / 60); return [r?.reason, ran]; };
+  const g0 = [cuc.amount, cheese.amount, butter.amount];
+  const [r1, ran1] = why(slicer, cuc), [r2] = why(knife, cheese), [r3] = why(slicer, butter), [r4] = why(knife, butter);
+  check(r1 === 'Osthyveln skär inte gurka' && ran1 === false, `the cheese slicer at the cucumber: "${r1}"`);
+  check(r2 === 'Kökskniven hyvlar inte ost' && r3 === 'Osthyveln kan inte bre smör' && r4 === 'Kökskniven kan inte bre smör', `the knife at the cheese: "${r2}"; the slicer / knife at the butter: "${r3}" / "${r4}"`);
+  check([cuc.amount, cheese.amount, butter.amount].join() === g0.join() && [knife, bknife, slicer].every((t) => t.place.store === 'utensils' && t.clean === 'clean'), 'nothing used, the tools back and clean');
+  check(!life.options({ item: life.view(cuc) }).some((o) => o.id === 'wrongTool') && (life.view(knife).take(), step(1 / 60), !life.options({ item: life.view(cuc) }).some((o) => o.id === 'wrongTool')), 'the knife at the cucumber: no wrong-tool row (it is the right tool)');
+  life.view(knife).putBack(); step(1 / 60);
+  // the board: off its place and back (only the board goes there)
+  const bv = life.view(board), bp0 = bv.where();
+  check(bp0.x > 5.3 && bp0.y > 0.95 && bp0.y < 1.2, `the board stands against the splashback (${bp0.x.toFixed(2)}, ${bp0.y.toFixed(2)}, ${bp0.z.toFixed(2)})`);
+  const tb = aim(bp0.clone().setY(bp0.y + 0.05), /^Ta skärbrädan/, [[4.4, bp0.z], [4.5, bp0.z + 0.2]]);
+  if (tb) { f.contentDocument.getElementById('action').click(); step(1 / 60); }
+  check(tb && board.place.at === 'hand', `"${tb}": in the hand`);
+  const tb2 = aim(bp0.clone().setY(bp0.y + 0.05), /^Ställa skärbrädan på sin plats/, [[4.4, bp0.z], [4.5, bp0.z + 0.2]]);
+  if (tb2) { f.contentDocument.getElementById('action').click(); step(1 / 60); }
+  check(tb2 && board.place.at === 'slot' && board.place.store === 'boardRack', `"${tb2}": back on its place`);
+  check(/inte hemma|får inte plats/.test(I.check(cuc, { at: 'slot', store: 'boardRack', slot: 0 }, { ignoreShut: true }) ?? ''), 'nothing else goes on the board\'s place');
+  check(I.audit().length === 0, `audit: ${I.audit().join('; ') || 'ok'}`);
+  shut();
+  f.remove();
+} catch (e) { pass = false; lines.push(`FAIL #374 error ${e.stack}`); }
 
 // a new visit keeps the amounts (lunden.life, #371): not the &life scenario, the visitor's own home
 try {

@@ -617,6 +617,12 @@ src/life.js            the life simulator (epic #364) glue; the `&life` develope
                        pantry, labels of our own (lifemodels.js `label`). `life.restock(store)` gives every stock entry with no thing
                        of that type and home left anywhere a fresh one in its home: at the start of a visit (after `restore()`) and
                        whenever a store is opened after being shut (life.update) — never while the old one is in the hand / out / half used
+                       The tools (#374, LIFE_TOOLS.stock, same restock): the kitchen knife, butter knife and cheese slicer on the
+                       utensil drawer's towels, the cutting board on its long edge against the splashback between sink and hob
+                       (store 'boardRack', only the board, "Ställa skärbrädan på sin plats")
+src/cooking.js         the life sim's kitchen work (M1): actions judged by the tags of the held tool and the food (LIFE_TOOLS.uses:
+                       tool tag → food tag, `label`, `not`): the wrong tool is a blocked row "Osthyveln skär inte gurka", nothing used;
+                       a new tool = an ITEMS entry with a 'tool:…' tag (ITEMS `noun` = the indefinite form in messages)
 src/actions.js         what you can do with a life-sim thing (#367): `ActionSet.define({ id, label, applies, check, run, consumes,
                        result, duration, interrupt, order, quiet })`, `list(ctx)` = the rows with a Swedish `reason` when blocked
                        ("Öppna kylen först", "Tallriken är full", "För långt bort"); life.js `baseActions`: putOn, take, open, close.
@@ -653,7 +659,7 @@ src/stores.js          the life sim's storage places (#369, LIFE.stores): slots 
                        handed — the home's stock is kept between visits, nothing is used up or goes bad while away). Never with &life
                        (`persist: null`); "Återställ" clears it (not in RESET_KEEP) and blocks the last write (`resetHome.going`)
 src/lifemodels.js      the life sim's models (#366): plate, cutting board, cucumber, slice, cheese, butter, bread bag, bread slice,
-                       knife — own shapes; `show(item)` shows the amount / package; carriers have `anchors` (their spots)
+                       knife, frozen peas (#373), butter knife, cheese slicer (#374) — own shapes, labels of our own (`label`); `show(item)` shows the amount / package; carriers have `anchors` (their spots)
 src/changelog.js       changelog list + the note on the freezer (newest `t` first, "Nytt" by the highest `t` seen, #341; E to read; `scrollNote`: ↑ ↓ / W S, PageUp/Down, Space,
                        Home/End scroll it, the wheel is passed on under pointer lock, #275)
 src/install.js         iPhone "add to home screen" sheet (no fullscreen API there); install link
@@ -855,7 +861,8 @@ tools/itemtest.html    headless test (#366): items.js with plain asserts (two in
                        down, F; a plate loaded with bread + two slices: carried, put down turned, in and out of the fridge, one taken off)
 tools/lifetest.html    headless test of the life sim's M1, the sandwich flow (#373 …): the stock in its places named in the prompt, the
                        cucumber out and back, used up → a fresh one on the next opening (never while the old one is out), a new
-                       visit keeps the amounts (lunden.life)
+                       visit keeps the amounts (lunden.life); each tool taken and put back with E, the board off its place and
+                       back, the wrong tool's messages with nothing used (#374)
 tools/inventorytest.html headless test (#365): the `&life` scenario's start state, the visitor's records untouched, the
                        integration points the inventory names; without &life the game starts at START
 tools/stamp.sh         build the published site with a version stamp (used by CI)

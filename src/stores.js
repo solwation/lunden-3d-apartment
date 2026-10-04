@@ -8,7 +8,8 @@ import { LIFE } from './config.js';
 //   fridge    the glass shelves (the chicken's and the milk's places stay free) + the door bins (on the door: they swing)
 //   freezer   on top of the frozen bags in its top basket; slot 3 on the lower open shelf beside the fish fingers (#373)
 //   pantry    the wall cabinet beyond the hob (interior.js stock 'pantry'): the front of its bottom and its shelf
-//   utensils  the top drawer under the hob: on the folded towels at its front (LIFE-010 puts the knives there)
+//   utensils  the top drawer under the hob: on the folded towels at its front (the kitchen knife, butter knife, cheese slicer, #374)
+//   boardRack the cutting board's place: on its long edge against the splashback between the sink and the hob (#374)
 // A pick box inside each store is the E target "Lägga … i …" while a life item is held (and only then, so it never covers
 // the things inside). Opening and shutting never makes or loses a thing: the slots are data.
 
@@ -106,7 +107,23 @@ export function buildStores(life, world) {
     [0.73, (b) => b.d1 - 0.07, (b) => (b.shelf ?? b.y0) - b.y0 + 0.002, 's'],
   ]);
   const drawer = world.lids.find((l) => l.stock === 'utensils');
-  front('utensils', drawer, { name: 'lådan', shutText: 'Öppna lådan först', fullText: 'Lådan är full' }, [0.035, 0.07, 0.105].map((dd) => [0.5, (b) => b.d1 - dd, () => 0.046, 's']));
+  front('utensils', drawer, { name: 'lådan', shutText: 'Öppna lådan först', fullText: 'Lådan är full' }, [0.03, 0.06, 0.105].map((dd) => [0.5, (b) => b.d1 - dd, () => 0.046, 's'])); // the kitchen knife, the butter knife, the cheese slicer (#374)
+  // the cutting board's place (#374): on its long edge on the worktop, leaning on the splashback between the sink and the hob
+  const counter = world.cupSurfaces?.find((m) => m.userData.counter);
+  if (counter) {
+    const box = new THREE.Box3().setFromObject(counter), R = S.boardRack, a = THREE.MathUtils.degToRad(R.lean);
+    const wall = box.max.x + 0.02, top = counter.userData.surface ?? box.max.y; // (the splashback's face: the worktop's free area ends 3 cm short of the wall)
+    const ex = new THREE.Vector3(0, 0, 1), ez = new THREE.Vector3(Math.sin(a), Math.cos(a), 0), ey = new THREE.Vector3().crossVectors(ez, ex);
+    const B = new THREE.Vector3(wall - 0.26 * Math.sin(a) - 0.022 * Math.cos(a), top, R.z); // the bottom edge, its top against the tiles
+    const anchor = new THREE.Object3D();
+    anchor.position.copy(B).addScaledVector(ez, 0.13); // (the board's origin is the middle of its 26 cm width)
+    anchor.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(ex, ey, ez));
+    life.scene.add(anchor);
+    const holdingBoard = () => I.held()?.type === 'board';
+    const pick = pickBox(life.scene, new THREE.Vector3(wall - 0.12, top, R.z - 0.24), new THREE.Vector3(wall, top + 0.3, R.z + 0.24), holdingBoard);
+    add('boardRack', { name: 'sin plats', isOpen: () => true, fullText: 'Där står redan en skärbräda' }, [{ size: 'l', anchor }], pick);
+    Object.assign(I.store('boardRack'), { accepts: ['board'], putLabel: (held) => `ställa ${I.name(held)} på sin plats` });
+  }
   life.storeTargets = targets;
   return { stores: out, targets };
 }

@@ -1,5 +1,6 @@
 import * as THREE from 'three';
-import { LIFE, ITEMS, LIFE_FOOD } from './config.js';
+import { LIFE, ITEMS, LIFE_FOOD, LIFE_TOOLS } from './config.js';
+import { cookingActions } from './cooking.js';
 import { Items, SIZES } from './items.js';
 import { Holdable, heldItem, setHeld, handBusy } from './holdable.js';
 import { buildModel } from './lifemodels.js';
@@ -119,11 +120,12 @@ export class Life {
     this.group.name = 'life';
     scene.add(this.group);
     this.anchors = new Map(); // store id → (slot) => Object3D (#369)
-    this.stock = [...LIFE_FOOD.stock]; // what the kitchen always has (#373): [type, store, slot]
+    this.stock = [...LIFE_FOOD.stock, ...LIFE_TOOLS.stock]; // what the kitchen always has (#373, #374): [type, store, slot]
     this.wasOpen = new Map(); // store id → open at the last update (a refill on opening, #373)
     this.actions = new ActionSet(); // what you can do with a thing (#367): baseActions below, more per LIFE issue
     this.runner = new Runner(this.items); // actions that take a moment (#372): validate, reserve, animate, commit
     baseActions(this);
+    cookingActions(this); // the kitchen work: tools on food (#374 …)
     this.items.on((kind, item) => {
       this.dirty = true;
       if (kind === 'create') this.views.set(item.id, new LifeItem(this, item));
@@ -309,7 +311,7 @@ function baseActions(life) {
     consumes: 'nothing', result: 'the held thing lies on the carrier (a free spot), its own place left',
   });
   A.define({
-    id: 'putIn', order: 5, label: (c) => `lägga ${nm(c.held)} i ${I.store(c.raw.store)?.name ?? ''}`,
+    id: 'putIn', order: 5, label: (c) => I.store(c.raw.store)?.putLabel?.(c.held) ?? `lägga ${nm(c.held)} i ${I.store(c.raw.store)?.name ?? ''}`,
     applies: (c) => !!c.held && !!c.raw?.store,
     check: (c) => {
       const s = I.store(c.raw.store);

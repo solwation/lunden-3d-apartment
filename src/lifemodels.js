@@ -187,7 +187,36 @@ function knife() {
   return { object: g, grip: [-0.09, 0.009, 0] };
 }
 
-const BUILDERS = { plate, board, cucumber, cucumberSlice, cheese, butter, breadBag, breadSlice, knife, peas };
+/** A butter knife, 20 cm, along x: a short round-tipped steel blade and a pale wooden handle (#374). */
+function butterKnife() {
+  const g = new THREE.Group();
+  const shape = new THREE.Shape();
+  shape.moveTo(0, -0.01); shape.lineTo(0.07, -0.011); shape.absarc(0.07, 0, 0.011, -Math.PI / 2, Math.PI / 2, false); shape.lineTo(0, 0.01); shape.closePath();
+  const blade = mesh(new THREE.ExtrudeGeometry(shape, { depth: 0.0015, bevelEnabled: false }).rotateX(Math.PI / 2), M.steel);
+  blade.position.set(0.0, 0.007, 0);
+  const handle = mesh(new RoundedBoxGeometry(0.11, 0.014, 0.02, 2, 0.006), M.wood);
+  handle.position.set(-0.055, 0.007, 0);
+  g.add(blade, handle);
+  return { object: g, grip: [-0.06, 0.007, 0] };
+}
+
+/** A cheese slicer, 24 cm, along x: a flat steel paddle with its slot and a black handle (#374). */
+function cheeseSlicer() {
+  const g = new THREE.Group();
+  const shape = new THREE.Shape();
+  shape.moveTo(0, -0.012); shape.lineTo(0.04, -0.032); shape.lineTo(0.11, -0.032); shape.quadraticCurveTo(0.125, -0.032, 0.125, -0.017);
+  shape.lineTo(0.125, 0.017); shape.quadraticCurveTo(0.125, 0.032, 0.11, 0.032); shape.lineTo(0.04, 0.032); shape.lineTo(0, 0.012); shape.closePath();
+  const slot = new THREE.Path(); slot.moveTo(0.05, -0.02); slot.lineTo(0.056, -0.02); slot.lineTo(0.056, 0.02); slot.lineTo(0.05, 0.02); slot.closePath();
+  shape.holes.push(slot);
+  const paddle = mesh(new THREE.ExtrudeGeometry(shape, { depth: 0.0015, bevelEnabled: false }).rotateX(Math.PI / 2), M.steel);
+  paddle.position.y = 0.005;
+  const handle = mesh(new RoundedBoxGeometry(0.115, 0.012, 0.022, 2, 0.005), M.handle);
+  handle.position.set(-0.057, 0.006, 0);
+  g.add(paddle, handle);
+  return { object: g, grip: [-0.06, 0.006, 0] };
+}
+
+const BUILDERS = { plate, board, cucumber, cucumberSlice, cheese, butter, breadBag, breadSlice, knife, peas, butterKnife, cheeseSlicer };
 
 /** The model of a type (its `model` builder; a grey box when there is none). */
 export function buildModel(def) {
