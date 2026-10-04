@@ -103,7 +103,8 @@ Use relative paths only.
 index.html             page shell, HUD, start overlay, import map (three from jsDelivr, pinned)
 src/config.js          everything NOT in the PDF: heights, soffits, stair layout, colours
 src/world.js           builds meshes + per-level collision segments from data/plan.json
-src/stairs.js          stair treads + walking height function (stairHeight)
+src/stairs.js          stair treads + walking height function (stairHeight) and the treads' underside (stairUnderside: head room,
+                       collision, the Klk under it); the rise is LEVELS[1].floor − LEVELS[0].floor in equal risers (#352)
 src/doors.js           SwingDoor / SlidingDoor (E to open/close, animated, dynamic collision)
 src/exterior.js        Hus L (HUS_L): brick row with the core/portik, neighbours' patios, rendered upper
                        units with pilasters, loftgång, spiral-stair drums, roof with solar panels
@@ -562,6 +563,8 @@ tools/reloadtest.html  headless test: resume after "Ladda om", F5 starts at STAR
                        sitting, a bottle put down, the TV, the cat, the game's clock; a new tab fresh at the real time
 tools/resttest.html    headless test: sit on every seat and lie in every bed (spot, no walking, up again looking the same way;
                        head turned, old spot behind: up in front, #202; every spot ahead / turned, from behind: free floor, #302; in every bed the eye clear of the bedding, #308; no two bedding surfaces within 1.5 mm, #335)
+tools/stairtest.html   headless test (#352): equal risers from floor to floor, no jump along the walking line, the top tread at the
+                       slab edge, head room, collisions by the treads' top / underside, the soffits, the Klk's things under the treads
 tools/stucktest.html   headless test (#314): a 5 cm scan of both floors (doors open; the free floor in one piece, pockets out of
                        reach listed), getting up from every seat / bed with the old spot inside it, F putting the sofa / bed back
                        round you, the car parking on you, the hoop rising under you, a door shut on you, a resume record in the bed
@@ -779,7 +782,11 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   the flights, carried up to the upstairs floor (no slab in the hole), with newel posts (`STAIR.newel`) at its corner and ends (#232).
 - U-shaped stair with winders at the east end: flight A (Entréplan, going east), 180° winders,
   flight B (going west) arriving in the upstairs hall. Upstairs slab opening = stair outline on
-  Övre plan.
+  Övre plan. #352: the total rise is the floor levels' (`stairRise`), 15 treads (4 + 8 + 3) + 1 = 16 equal risers
+  (3.25 / 16 ≈ 0.203 m: a model calculation, not a measured riser; don't change the count to get a usual riser).
+  No stair drawing or section exists in our material — the list of values waiting for one is in the comment over
+  `STAIR` in config. `SOFFITS[i].extent` says how sure each box is ('rooms' = the named rooms' outline, 'guess').
+  tools/stairtest.html checks the geometry.
 - The Klk under the stair on Entréplan (#338, `CLEANING`): x 3.47–5.55, z 5.70–6.61 (east of x 4.67 it runs on under the
   winders); head room slopes from the slab (3.0) over flight B's soffit (2.39–2.80) to the winders (1.58–2.19). Cleaning
   things kept neatly: shelves on the north wall, the mop bucket + tool rail at the low east end, the stick vacuum on the south wall.

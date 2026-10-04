@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { LEVELS, PLAYER, STAIR } from './config.js';
-import { stairHeight } from './stairs.js';
+import { stairHeight, stairUnderside } from './stairs.js';
 import { groundY } from './surroundings.js';
 
 const GRAVITY = 9.8;
@@ -94,14 +94,15 @@ export class Player {
   /** Can the visitor stand up here? (Not under the underside of the upper flight / winders.) */
   roomToStand() {
     const { x, z, y } = this.pos;
-    const s = stairHeight(x, z);
-    return !(s !== null && s > y + PLAYER.crouchEye + 0.25 && s - 0.25 < y + PLAYER.headroom);
+    const u = stairUnderside(x, z);
+    return !(u !== null && u > y + PLAYER.crouchEye && u < y + PLAYER.headroom);
   }
 
-  /** True when a stair surface at (x, z) is a wall for someone standing at `feet`. */
+  /** True when the stair at (x, z) is a wall for someone standing at `feet`: its tread is too high to step up on and
+   * its underside (not its top, #352) is lower than the head. */
   blockedByStair(x, z, feet) {
     const s = stairHeight(x, z);
-    return s !== null && s > feet + PLAYER.stepUp && s < feet + PLAYER.headroom;
+    return s !== null && s > feet + PLAYER.stepUp && stairUnderside(x, z) < feet + PLAYER.headroom;
   }
 
   segments() {

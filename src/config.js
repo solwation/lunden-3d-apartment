@@ -50,14 +50,19 @@ export const storeyFloor = (n) => (n <= LEVELS.length ? LEVELS[n - 1].floor
 
 // Lowered ceilings (soffits), in plan metres relative to the level's floor.
 // x/z ranges are clipped to the interior by the walls anyway.
+// Sources kept apart (#352): `height` is the documented RH (bofakta); `extent` says how sure the box is:
+// 'rooms' = the rooms bofakta names, outlined by the plan's walls (model coordinates, not a drawn soffit);
+// 'guess' = the depth itself is estimated. Waiting for a section / ceiling plan: every soffit's real outline.
 export const SOFFITS = [
   // bofakta: "RH: 2,5m" over Tvätt + Badrum
-  { level: 0, x0: 0.2, x1: 2.06, z0: 3.05, z1: 7.6, height: 2.5 },
+  { level: 0, x0: 0.2, x1: 2.06, z0: 3.05, z1: 7.6, height: 2.5, extent: 'rooms' },
   // bofakta: "RH: 2,4m" in Sovrum 3 + Sovrum 1, boxed-in ceiling (inklädnad) ~1.5 m deep
-  // from the north façade — the access balcony (loftgång) for the units above runs here.
-  { level: 1, x0: 0.2, x1: 5.55, z0: 0.46, z1: 0.46 + 1.5, height: 2.4 },
+  // from the north façade — the access balcony (loftgång) for the units above runs here. The RH 2.4 is local, at
+  // the windows ("Lokalt ca 2,4 m vid sovrummens fönster"), not the room height of the whole bedroom; the 1.5 m
+  // depth is a guess.
+  { level: 1, x0: 0.2, x1: 5.55, z0: 0.46, z1: 0.46 + 1.5, height: 2.4, extent: 'guess' },
   // bofakta: "RH: 2,5m" in WC/dusch
-  { level: 1, x0: 0.2, x1: 1.42, z0: 5.05, z1: 7.6, height: 2.5 },
+  { level: 1, x0: 0.2, x1: 1.42, z0: 5.05, z1: 7.6, height: 2.5, extent: 'rooms' },
 ];
 
 // Peab options (tillval) we have chosen, material/Generella_val_hall_och_entre.jpg:
@@ -1184,15 +1189,28 @@ export const PLAYER = {
 // Two flights with winders between them (from the stair outline on both plans).
 // Flight A runs east along the south half, winders turn 180° at the east end,
 // flight B runs west along the north half and arrives in the upstairs hall.
+// The total rise is not a stair number: it is LEVELS[1].floor − LEVELS[0].floor (stairs.js `stairRise`, #352), split in
+// treads + 1 equal risers (3.25 / 16 ≈ 0.203 m today: a model calculation, not a measured or required riser).
+// There is no stair drawing or section in the material we have (the plan PDF draws the stair schematically:
+// "Fast inredning är schematiskt återgiven"). Waiting for one (all model values now):
+//   - the tread split 4 + 8 + 3 and the winders' angles (equal 22.5° about `center`); do not change the count just
+//     to get a more usual riser (#352);
+//   - the going of each tread and the winder layout; the pivot `center` (taken from the Övre plan outline);
+//   - the tread slab thickness under flight B and the winders (`treadSlab`), and that flight A is solid to the floor;
+//   - the slab opening `hole` (= the Övre plan stair outline) and the slab zone itself (VERTICAL / SLAB, #344);
+//   - flight A's width aZ (Entréplan outline z 6.758–7.552, the model 6.72–7.54).
+// tools/stairtest.html checks the geometry: equal risers, no jump along the walking line, the top tread meets the
+// upper floor, head room, the collisions, and the Klk under the stair (#338) clears the treads' undersides.
 export const STAIR = {
   aX0: 3.50,                 // bottom step (Entréplan plan)
   aZ: [6.72, 7.54],
   center: [4.645, 6.654],    // winder pivot (Övre plan plan)
   winderX1: 5.49,
   winderZ: [5.77, 7.54],
-  bX1: 3.86,                 // top step (Övre plan stair outline)
+  bX1: 3.86,                 // top step (Övre plan stair outline) = hole.x0: the last riser is the slab edge
   bZ: [5.77, 6.60],
-  treads: { a: 4, w: 8, b: 3 },
+  treads: { a: 4, w: 8, b: 3 }, // guess (no stair drawing)
+  treadSlab: 0.25,           // thickness of each tread under flight B and the winders (guess; flight A is solid)
   // Upstairs slab opening = stair outline on Övre plan.
   hole: { x0: 3.86, x1: 5.49, z0: 5.77, z1: 7.54 },
   railHeight: 1.1, // bofakta: H 1,1 m

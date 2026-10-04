@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Stair test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+// #352: the stair and the soffits against the floor levels. The total rise = LEVELS[1].floor − LEVELS[0].floor in
+// treads + 1 equal risers; along the walking line there is no jump, the bottom tread starts one riser over the
+// Entréplan floor and the top one meets the Övre plan floor at the slab edge; head room over the walking line; the
+// collisions follow the treads (top to step on, underside to bump the head on); the soffits keep their RH and stay
+// clear of the stair; the Klk under the stair (#338) clears the treads' undersides. Prints the numbers (a model
+// calculation, not measured stair dimensions).
+//   google-chrome --headless=new --dump-dom http://localhost:8137/tools/stairtest.html
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const f = document.createElement('iframe');
+f.width = 640; f.height = 400;
+f.src = '../index.html?shot';
+document.body.append(f);
+f.onload = async () => {
+  const w = f.contentWindow;
+  while (!w.__app) await wait(100);
+  const { player } = w.__app;
+  const mod = (p) => w.eval(`import('${new URL(p, location.href).href}')`); // the page's own module instances
+  const { LEVELS, STAIR, SOFFITS, PLAYER, FURNITURE } = await mod('../src/config.js');
+  const S = await mod('../src/stairs.js');
+  const { cleaning, cleaningFittings } = await mod('../src/cleaning.js');
+  const lines = [];
+  let pass = true;
+  const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); pass &&= !!ok; return ok; };
+  const info = (s) => lines.push(`     ${s}`);
+  const eps = 1e-6, f3 = (v) => v.toFixed(3);
+
+  // (1) the rise is the floor levels'
+  const rise = LEVELS[1].floor - LEVELS[0].floor, R = S.stairRiser();
+  check(Math.abs(S.stairRise() - rise) < eps && Math.abs(R * (S.N_TREADS + 1) - rise) < eps,
+    `total rise = LEVELS[1].floor − LEVELS[0].floor = ${f3(rise)} m in ${S.N_TREADS} treads + 1 = ${S.N_TREADS + 1} risers of ${f3(R)} m`);
+  info(`treads ${STAIR.treads.a} + ${STAIR.treads.w} + ${STAIR.treads.b} (model, no stair drawing), tread slab ${STAIR.treadSlab} m (guess)`);
+
+  // (2) the walking line: flight A's middle, the winders on that radius, flight B's middle
+  const [CX, CZ] = STAIR.center, zA = (STAIR.aZ[0] + STAIR.aZ[1]) / 2, zB = (STAIR.bZ[0] + STAIR.bZ[1]) / 2;
+  const path = [];
+  for (let x = STAIR.aX0 - 0.4; x < CX; x += 0.01) path.push([x, zA]);
+  const rA = zA - CZ, rB = CZ - zB;
+  for (let a = 0; a <= Math.PI; a += 0.005) { const r = rA + (rB - rA) * a / Math.PI; path.push([CX + Math.sin(a) * r, CZ + Math.cos(a) * r]); }
+  for (let x = CX - 0.001; x > STAIR.bX1 - 0.4; x -= 0.01) path.push([x, zB]);
+  const h = path.map(([x, z], i) => S.stairHeight(x, z) ?? (i < path.length / 2 ? LEVELS[0].floor : LEVELS[1].floor));
+  const jumps = [];
+  let down = 0;
+  for (let i = 1; i < h.length; i++) { const d = h[i] - h[i - 1]; if (d > eps) jumps.push(d); if (d < -eps) down++; }
+  check(down === 0 && jumps.length === S.N_TREADS + 1 && jumps.every((d) => Math.abs(d - R) < 1e-4),
+    `walking line: ${jumps.length} equal steps up of ${f3(R)} m, none down, max ${f3(Math.max(...jumps))} m`);
+  check(Math.abs(h[0] - LEVELS[0].floor) < eps && Math.abs(h.at(-1) - LEVELS[1].floor) < eps, 'walking line: from the Entréplan floor to the Övre plan floor');
+  // the player's own ground function climbs it from feet to feet
+  let feet = LEVELS[0].floor, okG = true;
+  for (let i = 0; i < path.length; i++) { const g = player.groundAt(path[i][0], path[i][1], feet); if (Math.abs(g - h[i]) > eps) okG = false; feet = g; }
+  check(okG && Math.abs(feet - LEVELS[1].floor) < eps, `player.groundAt follows the walking line to the upper floor (${f3(feet)})`);
+
+  // (3) the joins: the bottom tread one riser up, the top tread meets the slab edge
+  check(Math.abs(S.stairHeight(STAIR.aX0 + 0.01, zA) - (LEVELS[0].floor + R)) < eps, 'the bottom tread is one riser over the Entréplan floor');
+  check(Math.abs(STAIR.bX1 - STAIR.hole.x0) < eps, `the top tread ends at the slab edge (bX1 ${STAIR.bX1} = hole.x0 ${STAIR.hole.x0})`);
+  check(Math.abs(LEVELS[1].floor - S.stairHeight(STAIR.bX1 + 0.01, zB) - R) < eps, 'the top tread is one riser under the Övre plan floor');
+  check(STAIR.bZ[0] >= STAIR.hole.z0 - eps && STAIR.winderZ[1] <= STAIR.hole.z1 + eps && STAIR.winderX1 <= STAIR.hole.x1 + eps,
+    'flight B and the winders lie inside the slab opening');
+
+  // (4) head room over the walking line: the slab's underside outside the opening, the upstairs ceiling in it
+  const slabUnder = LEVELS[0].floor + LEVELS[0].ceiling, roof = LEVELS[1].floor + LEVELS[1].ceiling, H = STAIR.hole;
+  const over = (x, z) => {
+    if (x > H.x0 && x < H.x1 && z > H.z0 && z < H.z1) {
+      const s = SOFFITS.find((o) => o.level === 1 && x > o.x0 && x < o.x1 && z > o.z0 && z < o.z1);
+      return LEVELS[1].floor + (s ? s.height : LEVELS[1].ceiling);
+    }
+    if (h0(x, z) < LEVELS[1].floor - eps) { const s = SOFFITS.find((o) => o.level === 0 && x > o.x0 && x < o.x1 && z > o.z0 && z < o.z1); return s ? LEVELS[0].floor + s.height : slabUnder; }
+    return roof;
+  };
+  const h0 = (x, z) => S.stairHeight(x, z) ?? LEVELS[0].floor;
+  let minHead = Infinity, at = null;
+  path.forEach(([x, z], i) => { if (S.stairHeight(x, z) === null) return; const c = over(x, z) - h[i]; if (c < minHead) { minHead = c; at = [x, z]; } });
+  check(minHead >= PLAYER.headroom, `head room over the treads ≥ ${PLAYER.headroom} m: least ${f3(minHead)} m at (${f3(at[0])}, ${f3(at[1])})`);
+  // standing on any tread: room to stand (no crouch forced)
+  let okStand = true;
+  for (let x = STAIR.aX0 + 0.02; x < STAIR.winderX1; x += 0.04) for (let z = STAIR.winderZ[0] + 0.02; z < STAIR.winderZ[1]; z += 0.04) {
+    const s = S.stairHeight(x, z); if (s === null) continue;
+    player.pos.set(x, s, z); if (!player.roomToStand()) okStand = false;
+  }
+  check(okStand, 'standing on every tread there is room to stand');
+
+  // (5) collisions from the Entréplan floor follow the treads: a tread too high to step on and with its underside under
+  // the head is a wall; under flight B's soffit you can stand (the Klk), under the low winders you cannot
+  let okBlock = true, nBlocked = 0, nUnder = 0;
+  for (let x = STAIR.aX0 + 0.02; x < STAIR.winderX1; x += 0.03) for (let z = STAIR.winderZ[0] + 0.02; z < STAIR.winderZ[1]; z += 0.03) {
+    const s = S.stairHeight(x, z), u = S.stairUnderside(x, z); if (s === null) continue;
+    const want = s > LEVELS[0].floor + PLAYER.stepUp && u < LEVELS[0].floor + PLAYER.headroom;
+    if (player.blockedByStair(x, z, LEVELS[0].floor) !== want) okBlock = false;
+    if (want) nBlocked++; else if (s > LEVELS[0].floor + PLAYER.stepUp) nUnder++;
+    if (u > s - eps || (STAIR.treads.a > S.treadIndex(x, z) ? u !== LEVELS[0].floor : Math.abs(u - Math.max(LEVELS[0].floor, s - STAIR.treadSlab)) > eps)) okBlock = false;
+  }
+  check(okBlock && nBlocked > 0 && nUnder > 0, `from the Entréplan floor: ${nBlocked} probes blocked, ${nUnder} walkable under the treads`);
+  player.pos.set(4.25, LEVELS[0].floor, 6.2);
+  check(player.roomToStand() && !player.blockedByStair(4.25, 6.2, LEVELS[0].floor), `under flight B (the Klk): room to stand, underside ${f3(S.stairUnderside(4.25, 6.2))} m`);
+  player.pos.set(5.2, LEVELS[0].floor, 6.5);
+  check(player.blockedByStair(5.2, 6.5, LEVELS[0].floor), `under the low winders by the bucket: blocked, underside ${f3(S.stairUnderside(5.2, 6.5))} m`);
+
+  // (6) the soffits: RH kept, under the ceiling, over the head, clear of the stair and its opening
+  for (const s of SOFFITS) {
+    const lv = LEVELS[s.level];
+    const clear = s.level === 1 ? (s.x1 <= H.x0 || s.x0 >= H.x1 || s.z1 <= H.z0 || s.z0 >= H.z1)
+      : (s.x1 <= STAIR.aX0 || s.z1 <= STAIR.winderZ[0] || s.z0 >= STAIR.winderZ[1]);
+    check(s.height < lv.ceiling && s.height >= PLAYER.headroom && clear && ['rooms', 'guess'].includes(s.extent),
+      `soffit ${lv.name} x ${s.x0}–${s.x1} z ${f3(s.z0)}–${f3(s.z1)}: RH ${s.height} < ${lv.ceiling}, clear of the stair, extent '${s.extent}'`);
+  }
+
+  // (7) the Klk under the stair (#338): nothing goes into the treads (every vertex under the underside nearby)
+  const item = FURNITURE.find((i) => i.type === 'cleaning');
+  const loose = cleaning(item);
+  loose.rotation.y = (item.rot ?? 0) * Math.PI / 180 + Math.PI;
+  loose.position.set(item.x, LEVELS[item.level].floor + loose.position.y, item.z);
+  const fit = new loose.constructor(); cleaningFittings(fit, LEVELS[0].floor);
+  let worst = Infinity, where = null, nv = 0;
+  for (const g of [loose, fit]) {
+    g.updateMatrixWorld(true);
+    g.traverse((m) => {
+      const pos = m.geometry?.attributes?.position; if (!pos) return;
+      const v = new m.position.constructor();
+      for (let k = 0; k < pos.count; k++) {
+        v.fromBufferAttribute(pos, k).applyMatrix4(m.matrixWorld);
+        let u = Infinity;
+        for (const dx of [-0.01, 0, 0.01]) for (const dz of [-0.01, 0, 0.01]) { const q = S.stairUnderside(v.x + dx, v.z + dz); if (q !== null) u = Math.min(u, q); }
+        if (u === Infinity) continue;
+        nv++;
+        if (u - v.y < worst) { worst = u - v.y; where = [v.x, v.y, v.z]; }
+      }
+    });
+  }
+  check(nv > 0 && worst > 0, `the Klk's things under the stair (${nv} vertices) clear the treads' undersides: least ${f3(worst)} m at (${where.map(f3).join(', ')})`);
+
+  out.textContent = (pass ? 'ALL PASS\n' : 'SOME FAILED\n') + lines.join('\n');
+};
+</script>
+</body>
+</html>
