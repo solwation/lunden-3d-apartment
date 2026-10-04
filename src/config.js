@@ -386,7 +386,7 @@ export const SITE = {
     { name: 'Villa', x0: -63, x1: -47.3, z0: 67.7, z1: 84.1, base: -3, storeys: 3, roof: 'hip', style: 'old' }, // brick house, hip roof
   ],
   // The street details (#128, src/street.js; the user's photos in docs/foton/): granite curbs along Sankt Lars väg,
-  // patched asphalt, slender street lamps with a curved arm (lit at night by emissive only), a zebra crossing,
+  // patched asphalt, slender street lamps with a curved arm (lit at night: emissive heads + ground pools, #434), a zebra crossing,
   // a temporary yellow traffic light and warning signs for the building site, a cobbled corner and fallen leaves
   // in the autumn months. Positions are our picks.
   street: {
@@ -397,7 +397,10 @@ export const SITE = {
     lamps: { h: 6.2, arm: 1.3, rows: [
       { road: 'Sankt Lars väg', from: [-66, -27], to: [24.1, 8], step: 24, side: 1, off: 2.0 }, // our pavement, round the corner
       { road: 'Karpvägen', from: [-75.8, -12], to: [-78.5, 44], step: 26, side: -1, off: 0.8 },  // along Hus C (#257)
-    ] },
+    ],
+    // #434: the pool of light on the ground under each head (an additive decal, street.js): `along` / `across` the road
+    // m (radii, guess), warm `color` at `peak` opacity; lit above `on` night (1 − daylight), out below `off`, `fade` s
+    pool: { along: 8, across: 6.5, color: 0xffc887, peak: 0.55, on: 0.35, off: 0.3, fade: 1.5 } },
     crossing: { x0: 9.5, x1: 12.5, z0: -30, z1: -24 },
     trafficLight: { x: 8.6, z: -23.5 }, warnings: [[13.2, -23.0], [10.6, -23.2]],
     cobbles: { x0: 17.2, x1: 19.5, z0: -17.5, z1: -12.5 }, // inside the corner, by the end of our car park

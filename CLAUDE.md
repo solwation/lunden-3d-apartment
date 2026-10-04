@@ -255,8 +255,11 @@ src/roads.js           the roads' shapes (SITE.roads, #257): rectangles, centre 
                        Sankt Lars väg turns south round the plot's NE corner in a curve; Karpvägen runs along Hus C, bends
                        west into the park and meets Sankt Lars väg with rounded corners
 src/street.js          Sankt Lars väg's details (SITE.street, #128): curbs (along every `path` road and fillet, not across
-                       another road), asphalt patches, street lamps in rows along a road (emissive at night), zebra crossing, the site's temporary traffic light + warning signs, cobbles, autumn leaves; the bus stop,
+                       another road), asphalt patches, street lamps in rows along a road (emissive at night; #434: a warm pool on
+                       the ground under each head, `lamps.pool`, one merged additive mesh from groundglow.js, fading with dusk), zebra crossing, the site's temporary traffic light + warning signs, cobbles, autumn leaves; the bus stop,
                        the red "Flyttad" sign, a no-parking sign and HepCat's A-board (#129)
+src/groundglow.js      light without lights (#434): additive fall-off decals — `poolGeometry` (an ellipse draped over `groundY`),
+                       `washGeometry` (an upright one on a wall), `glowMaterial` (one per set, opacity = the level), `fadeGlow`
 src/streetlife.js      life on the street (SITE.life, #113): the car park as on the situation plan (#260): asphalt from the hedge (SITE.shrubs,
                        z −16.3; the drive through it in front of the portik) to a low green strip along Hus L's entrances (z −3.5…−2.9, open
                        at the portik, no collision), one row of stalls nose to the hedge west of the drive with parked cars (instanced, a colour
@@ -817,10 +820,12 @@ tools/turbotest.html   headless test: Kaffeturbo with an injected clock — thre
                        whisky), faster indoors, the text, more coffee adds time, over again; `walktest.html?turbo` walks at that pace
 tools/terracetest.html Hus L's roof terraces (#350): one per upper flat, areas vs 10/11/12 m², the joins at the loft and
                        the gables, the railing's top over the finished deck
+tools/streetlighttest.html headless test (#434): the street lamps' ground pools hidden by day, lit at night (on the ground),
+                       no flicker just under the switching level, out in the morning
 tools/terraintest.html headless test (#346): the courtyard = the reference level, S2's level differences kept, the ramp's
                        ends / the stairs' feet / the garage drive meet their ground, no ground rises past a retaining wall,
                        every plinth reaches the ground, no unguarded step > 5 cm in OUTDOOR (5 cm grid; a stair's riser
-                       is a step, the inside of an Å-hus is skipped, #355)
+                       is a step, the inside of an Å-hus is skipped, #355); no tree on asphalt or paving (#435)
 tools/weathertest.html headless test: showers per season, thunderstorms only in late summer, a shower ramps in; with &weather=storm:
                        drops (none inside Hus L), grey sky, a flash and back, ⛈ in the HUD, people in; snow only in winter, hail in
                        spring / storms, snowflakes not in Hus L, walking 20 m out in it counts once, not indoors; clear = no rain

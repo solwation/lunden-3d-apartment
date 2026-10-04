@@ -3,10 +3,11 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { SITE } from './config.js';
 import { registerSeasonal } from './seasons.js';
 import { samples, onRoad, along, filletOutline } from './roads.js';
+import { glowMaterial, poolGeometry, fadeGlow } from './groundglow.js';
 
 // Sankt Lars väg's details (#128, SITE.street; the user's photos in docs/foton/): granite curbs, darker patches
-// in the asphalt, slender street lamps with a curved arm (their heads glow at night: emissive only, no
-// lights), a zebra crossing, a temporary yellow traffic light and warning signs for the building site, a
+// in the asphalt, slender street lamps with a curved arm (their heads glow at night, and a soft pool of light lies on
+// the ground under each, #434: additive decals, no lights), a zebra crossing, a temporary yellow traffic light and warning signs for the building site, a
 // cobbled corner, and fallen leaves on the pavements in the autumn months. A handful of draw calls.
 
 const S = SITE.street;
@@ -104,6 +105,17 @@ export function buildStreet(groundY) {
   });
   body.castShadow = true;
   group.add(body, head);
+  // #434: a warm pool on the ground under each head (one merged additive mesh), a little longer along the road
+  const P = S.lamps.pool;
+  const pools = new THREE.Mesh(mergeGeometries(spots.map(([x, z, yaw]) => {
+    const ax = Math.sin(yaw), az = Math.cos(yaw); // the arm's direction (across the road)
+    return poolGeometry(x + ax * S.lamps.arm, z + az * S.lamps.arm, -az, ax, P.along, P.across, groundY);
+  })), glowMaterial(P.color));
+  pools.name = 'streetLampPools';
+  pools.visible = false;
+  pools.renderOrder = 2;
+  group.add(pools);
+  let lit = false, glow = 0;
   // the building site's temporary traffic light (yellow case on a trolley) and warning triangles on stands
   const tl = S.trafficLight, yellow = [], black = [], lamps = [];
   yellow.push(new THREE.BoxGeometry(0.5, 0.35, 0.4).translate(tl.x, 0.25, tl.z), new THREE.CylinderGeometry(0.04, 0.04, 1.9, 8).translate(tl.x, 1.3, tl.z));
@@ -166,11 +178,13 @@ export function buildStreet(groundY) {
   let phase = 0, last = performance.now();
   return {
     object: group,
-    /** night 0 (day) … 1: the lamp heads glow; the traffic light cycles (called with the window lights). */
+    /** night 0 (day) … 1: the lamp heads glow and their pools fade in; the traffic light cycles (called with the window lights). */
     update(night) {
-      const now = performance.now();
-      headMat.emissiveIntensity = night > 0.35 ? 1.6 : 0;
-      phase = (phase + Math.min(1, (now - last) / 1000)) % 30;
+      const now = performance.now(), dt = Math.min(1, (now - last) / 1000);
+      if (!lit && night > P.on) lit = true; else if (lit && night < P.off) lit = false; // hysteresis: no flicker at dusk
+      glow = fadeGlow(pools, glow, lit, dt, P.fade, P.peak);
+      headMat.emissiveIntensity = 1.6 * glow;
+      phase = (phase + dt) % 30;
       last = now;
       const state = phase < 12 ? 0 : phase < 14 ? 1 : phase < 28 ? 2 : 1; // red, yellow, green, yellow
       signalMats.forEach((mat, i) => { mat.emissiveIntensity = i === state ? 1.4 : 0.05; });
