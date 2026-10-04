@@ -4,6 +4,8 @@ import { SITE, SEASON } from './config.js';
 import { pavingTexture } from './patio.js';
 import { registerSnow } from './seasons.js';
 import { buildCar, MEGANE } from './carmodel.js';
+import { groundY } from './surroundings.js';
+import { onRoad, onWalk } from './roads.js';
 
 // Life on the street (#113, SITE.life): the car park (one row along the hedge, #208, #260) with parked cars (instanced: a body with a
 // colour per car, trim, glass, tyres — four draw calls; the bodies from carmodel.js, #251), its white stall lines, the low green strip
@@ -101,6 +103,40 @@ export function buildStreetLife() {
   registerSnow(clumpMat, SEASON.snow.hedge);
   group.add(new THREE.Mesh(merge(edge), new THREE.MeshStandardMaterial({ color: 0xbdb8ae, roughness: 0.85 })),
     new THREE.Mesh(merge(grass), lawnMat), new THREE.Mesh(merge(clumps), clumpMat));
+  // #436: concrete edges between the car park's asphalt and the grass, and round the yard's lawns (one merged mesh)
+  const E = L.edges, curbs = [], inR = (r, x, z) => x > r.x0 && x < r.x1 && z > r.z0 && z < r.z1;
+  const Wst = SITE.terrain.west.stair;
+  const hard = (x, z) => onRoad(x, z) || onWalk(x, z) || SITE.paving.some((r) => inR(r, x, z)) || inR(L.yard, x, z)
+    || (x > Wst.x0 - 0.5 && x < Wst.x1 + 0.5 && z > -3.6); // the NW stair down to Karpvägen (#256)
+  const edgeRun = (ax, az, bx, bz, ox, oz, check) => { // a straight edge from a to b, (ox, oz) = out of the asphalt / lawn
+    const len = Math.hypot(bx - ax, bz - az), n = Math.max(1, Math.round(len / 0.25)), per = Math.max(1, Math.round(E.step / 0.25));
+    const at = (k) => [ax + ((bx - ax) * k) / n, az + ((bz - az) * k) / n];
+    const box = (k0, k1) => { // sub-pieces k0 … k1 − 1 as one block, its top on the highest ground under it
+      const [x0, z0] = at(k0), [x1, z1] = at(k1), mx = (x0 + x1) / 2, mz = (z0 + z1) / 2;
+      const y = Math.max(groundY(x0, z0), groundY(x1, z1), groundY(mx, mz)), l = Math.hypot(x1 - x0, z1 - z0) + 0.002;
+      curbs.push(new THREE.BoxGeometry(E.w, E.h + 0.08, l).rotateY(Math.atan2(bx - ax, bz - az)).translate(mx, y + (E.h - 0.08) / 2, mz));
+    };
+    let start = -1;
+    for (let k = 0; k <= n; k++) {
+      const [mx, mz] = k < n ? at(k + 0.5) : [0, 0];
+      const on = k < n && !(check && hard(mx + ox * 0.3, mz + oz * 0.3));
+      if (on && start < 0) start = k;
+      if (start >= 0 && (!on || k - start === per)) { box(start, k); start = on ? k : -1; }
+    }
+  };
+  const lotR = SITE.roads.find((r) => r.name === E.road);
+  if (lotR) {
+    const { x0, x1, z0, z1 } = lotR;
+    edgeRun(x0, z0, x1, z0, 0, -1, true); edgeRun(x1, z0, x1, z1, 1, 0, true); edgeRun(x1, z1, x0, z1, 0, 1, true); edgeRun(x0, z1, x0, z0, -1, 0, true);
+  }
+  for (const [x0, x1, z0, z1] of L.lawns) { edgeRun(x0, z0, x1, z0); edgeRun(x1, z0, x1, z1); edgeRun(x1, z1, x0, z1); edgeRun(x0, z1, x0, z0); }
+  if (curbs.length) {
+    const curbMat = new THREE.MeshStandardMaterial({ color: E.color, roughness: 0.85 });
+    registerSnow(curbMat, SEASON.snow.paving);
+    const cm = new THREE.Mesh(merge(curbs), curbMat);
+    cm.name = 'concreteEdges'; cm.receiveShadow = true;
+    group.add(cm);
+  }
   // bikes: leaning by the entrances (along the façade), and in the yard's racks (front wheel in the rack)
   const bikes = [], bikeColors = [], cols = [0x1d3c6e, 0xb02a2a, 0x2a2a2a, 0xe2e2dc, 0x3c7a4a, 0x8a8f96, 0xd8a020];
   const put = (x, z, yaw, lean) => { bikes.push(new THREE.Matrix4().compose(new THREE.Vector3(x, 0, z), new THREE.Quaternion().setFromEuler(new THREE.Euler(lean, yaw, 0, 'YXZ')), new THREE.Vector3(1, 1, 1))); bikeColors.push(cols[Math.floor(R() * cols.length)]); };

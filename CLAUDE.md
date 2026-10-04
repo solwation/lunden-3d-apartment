@@ -273,7 +273,8 @@ src/streetlife.js      life on the street (SITE.life, #113): the car park as on 
                        z −16.3; the drive through it in front of the portik) to a low green strip along Hus L's entrances (z −3.5…−2.9, open
                        at the portik, no collision), one row of stalls nose to the hedge west of the drive with parked cars (instanced, a colour
                        each, collision); bikes by Hus L's entrances; the bike yard NW of Hus L / north of Hus C (lawns, a tree, two rows of
-                       racks; west of x −66 is left for #256's stair down to Karpvägen)
+                       racks; west of x −66 is left for #256's stair down to Karpvägen); #436: low concrete edges (`life.edges`, one
+                       merged mesh, 5 cm, no collision) where the car park's asphalt meets grass and round the yard's lawns
 src/people.js          people in the area (PEOPLE, #114): low-poly figures (one InstancedMesh per body part, a colour each; #239:
                        lathe-turned torso/arms/legs, knees (#243: thigh + shin, `kneeL/R`), hands and shoes ride the arm / shin; a rounded dog;
                        posed every frame): walkers to and fro on the paths (a dog with one), cyclists on Sankt Lars väg

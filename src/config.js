@@ -427,6 +427,10 @@ export const SITE = {
     bikePlace: { x0: -59.1, x1: -53, z0: 1.2, z1: 8.5 },                              // lighter paving
     // racks along z at x, the bikes along x pointing `dir` (front wheel in the rack), `n` from z0 at `gap` m
     racks: [{ x: -58.7, z0: 1.6, n: 9, gap: 0.75, dir: -1 }, { x: -53.4, z0: 1.6, n: 9, gap: 0.75, dir: 1 }],
+    // #436: low concrete edges where the car park's asphalt (`road`) meets grass (not along the paving, the drive's or the
+    // street's granite curbs, the stair), and round the bike yard's lawns: `w` wide, `h` over the ground (≤ 5 cm: no step),
+    // light grey concrete — sizes are guesses; visual only (no collision, the ground's height is unchanged)
+    edges: { road: 'Gården framför Hus L', w: 0.1, h: 0.05, step: 1.0, color: 0xc9c5bc },
     trees: [[-62.5, 3.4, 0.75], [-63.3, 6.0, 0.4], [-61.4, 7.6, 0.45], [15.2, -19.6, 0.45]], // [x, z, size]; the last in the planting strip
     // by the road past the hedge's east end (#435: it stood on the car park's asphalt in front of Hus L's east end)
   },
