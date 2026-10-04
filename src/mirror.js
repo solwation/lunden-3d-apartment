@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { LIGHTING } from './config.js';
 
 // One material for every mirror surface (hall LINDBYN, bathroom mirrors): no real reflection (that
 // costs a render per mirror), but a soft light gradient with two diagonal glints reads as a mirror.
@@ -27,3 +28,12 @@ function mirrorTexture() {
 
 const map = mirrorTexture();
 export const mirrorMaterial = new THREE.MeshStandardMaterial({ map, emissiveMap: map, emissive: 0x4a4a4a, roughness: 0.05, metalness: 0.1 });
+
+// The lit mirrors (#339, LIGHTING.mirror): dimmer glints and a softer hotspot from their own lamp's pool light, and their
+// LEDs / bulbs glow at `shade` of a small lamp's strength.
+const LM = LIGHTING.mirror;
+export const litMirrorMaterial = new THREE.MeshStandardMaterial({ map, emissiveMap: map, emissive: LM.glass.emissive, roughness: LM.glass.roughness, metalness: 0.1 });
+/** A lit mirror's LED / bulb emissive colour. */
+export const litEmissive = (hex) => new THREE.Color(hex).multiplyScalar(LM.shade);
+/** A lit mirror's Reflector options (its image dimmed). */
+export const litReflect = { dim: LM.reflect };

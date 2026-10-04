@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { FINISH, TILED_ROOMS, KITCHEN as K, SKIRTING, LAUNDRY_SINK, LAUNDRY_CABINET, VANITY_BASIN, HAVBACK } from './config.js';
+import { FINISH, TILED_ROOMS, KITCHEN as K, SKIRTING, LAUNDRY_SINK, LAUNDRY_CABINET, VANITY_BASIN, HAVBACK, LIGHTING } from './config.js';
 import { wallCabinet } from './cabinets.js';
 import { Fridge } from './fridge.js';
 import { buildOvens } from './ovens.js';
@@ -10,7 +10,7 @@ import { attachContents, Pack, frameMatrix, mirrorCabinet, vanityDrawer, laundry
 import { fillKitchen } from './kitchenstuff.js';
 import { Openable, pivotAround } from './openables.js';
 import { Moccamaster } from './coffee.js';
-import { mirrorMaterial } from './mirror.js';
+import { mirrorMaterial, litMirrorMaterial, litEmissive, litReflect } from './mirror.js';
 import { addReflector } from './reflections.js';
 
 // Fixed interior from our material choices: fitted kitchen, laundry, bathroom fittings,
@@ -786,7 +786,7 @@ function ovalMirror(B, wallX, cz, y0, w, h, led) {
     p.absarc(0, -l, r, Math.PI, 2 * Math.PI, false);
     return p;
   };
-  for (const [s, d, m] of [[1.04, 0.012, led], [1, 0.018, M.mirror]]) {
+  for (const [s, d, m] of [[1.04, 0.012, led], [1, 0.018, litMirrorMaterial]]) {
     const geo = new THREE.ShapeGeometry(shape(s), 24);
     geo.rotateY(Math.PI / 2);
     geo.translate(wallX + d, y0, cz);
@@ -796,12 +796,12 @@ function ovalMirror(B, wallX, cz, y0, w, h, led) {
 }
 
 /** Mirror image over a mirror lying in the plane x = const, facing +x (shape in its own y/z). */
-function mirrorReflector(group, geo, x, y, z, level) {
+function mirrorReflector(group, geo, x, y, z, level, opts = {}) {
   const holder = new THREE.Group();
   holder.position.set(x, y, z);
   holder.rotation.y = Math.PI / 2; // local +z → world +x
   group.add(holder);
-  addReflector(holder, geo, { level });
+  addReflector(holder, geo, { level, ...opts });
   return holder;
 }
 
@@ -964,14 +964,14 @@ function buildBathroom(B, group, floor, room, y0, handled, taps, appliances) {
       holder.traverse((o) => { o.userData.door = door; }); // the (invisible) mirror image is part of the door's E target
     } else {
       // Slot 50 with its LED backlight on a switch of its own (E on the mirror, #50)
-      const led = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xfff2dc, emissiveIntensity: 0.04 });
+      const led = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: litEmissive(0xfff2dc), emissiveIntensity: 0.04 }); // dimmed (#339)
       const om = ovalMirror(B, room.x0, cz, y0 + 1.5, 0.5, 0.9, led);
-      mirrorReflector(group, new THREE.ShapeGeometry(om.shape, 24), om.x, om.y, om.z, room.level);
+      mirrorReflector(group, new THREE.ShapeGeometry(om.shape, 24), om.x, om.y, om.z, room.level, litReflect);
       const pick = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.95, 0.56), new THREE.MeshBasicMaterial());
       pick.position.set(room.x0 + 0.03, y0 + 1.5, cz);
       pick.visible = false; // raycasts ignore visibility: the E target for the LED strip
       group.add(pick);
-      mirrorLamps.push({ object: pick, shade: led, height: 0, level: room.level, name: 'spegelbelysningen', offset: [0.35, 0] });
+      mirrorLamps.push({ object: pick, shade: led, height: 0, level: room.level, name: 'spegelbelysningen', offset: [0.35, 0], light: LIGHTING.mirror.light });
     }
   }
   if (shower) {

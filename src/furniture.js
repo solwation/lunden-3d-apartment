@@ -5,7 +5,7 @@ import { restTarget } from './rest.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { addCushions, addFoldedThrow, addDrapedThrow } from './cushions.js';
 import { CUSHIONS, FURNITURE, LANDSKRONA as L, LEVELS, SKANSNAS, IDANAS, PILLOWS, BEDDING, PINGPING, MYDAL, OTTOMAN, SYMFONISK, SECRET, NYMANE_WALL, MALM_DECO, YUCCA, LANGLAMPA, VANITY, HEMNES_DAYBED, KPOP_POSTERS, SMASTAD, PHOTO_FRAME } from './config.js';
-import { mirrorMaterial } from './mirror.js';
+import { litMirrorMaterial, litEmissive, litReflect } from './mirror.js';
 import { addReflector } from './reflections.js';
 import { loungesofa, loungetable, parasol, planter } from './patio.js';
 import { Screen } from './screens.js';
@@ -2260,10 +2260,10 @@ function vanity(item, lights) {
   const M = V.mirror, mirror = new THREE.Group();
   const frameMat = new THREE.MeshStandardMaterial({ color: 0xfafaf8, roughness: 0.35 });
   const chrome = new THREE.MeshStandardMaterial({ color: 0xd9dadc, roughness: 0.25, metalness: 0.8 });
-  const bulbMat = new THREE.MeshStandardMaterial({ color: 0xfffaf2, emissive: 0xfff0d8, emissiveIntensity: 0.04, roughness: 0.2 });
+  const bulbMat = new THREE.MeshStandardMaterial({ color: 0xfffaf2, emissive: litEmissive(0xfff0d8), emissiveIntensity: 0.04, roughness: 0.2 });
   const W = M.w + 2 * M.frame, H = M.h + 2 * M.frame;
   mirror.add(rbox(W, H, M.depth, 0, 0, M.depth / 2, frameMat, 0.006));
-  const glass = new THREE.Mesh(new THREE.PlaneGeometry(M.w, M.h), mirrorMaterial);
+  const glass = new THREE.Mesh(new THREE.PlaneGeometry(M.w, M.h), litMirrorMaterial);
   glass.position.z = M.depth + 0.0005;
   mirror.add(glass);
   const at = [];
@@ -2280,7 +2280,7 @@ function vanity(item, lights) {
     mirror.add(socket, bulb);
   }
   mergeStatic(mirror);
-  addReflector(glass, new THREE.PlaneGeometry(M.w, M.h), { level: item.level, name: 'hollywood' }); // its mirror image (#50)
+  addReflector(glass, new THREE.PlaneGeometry(M.w, M.h), { level: item.level, name: 'hollywood', ...litReflect }); // its mirror image (#50)
   const my = h + M.bottom + H / 2;
   mirror.position.set(0, my, -hd + 0.002);
   g.add(mirror);

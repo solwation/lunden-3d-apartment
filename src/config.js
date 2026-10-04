@@ -528,7 +528,7 @@ export const KLK = {
   level: 1, x0: 3.90, x1: 5.55, z0: 4.28, z1: 5.48, side: 1, westFace: 3.897, chestGap: 0.004,
   shelf: { y: 1.95, d: 0.30, t: 0.022 }, rail: { y: 1.78, out: 0.28, z0: 4.32, z1: 5.22, r: 0.0125 },
   standards: { side: [4.45, 5.10], back: [4.02, 4.98], y0: 0.95, y1: 2.25, w: 0.026, d: 0.014 },
-  mirror: { dx: -0.1, w: 0.55, h: 0.72, bottom: 1.10, led: 0.022, light: { intensity: 0.8, range: 3.0, color: 0xfff1de } },
+  mirror: { dx: -0.1, w: 0.55, h: 0.72, bottom: 1.10, led: 0.022, light: { intensity: 0.4, range: 2.5, color: 0xfff1de } }, // light halved (#339)
   clothes: [['coat', 0x1f1f1f], ['coat', 0xb08a66], ['dress', 0x24324a], ['dress', 0x8a9a7b], ['jacket', 0x2e3a4f],
     ['jacket', 0xeee6d3], ['shirt', 0xf5f5f0], ['shirt', 0x9fb7d0], ['shirt', 0xa4532f], ['shirt', 0xeee6d3], ['shirt', 0x1f1f1f]],
 };
@@ -1495,6 +1495,12 @@ export const LIGHTING = {
   spots: { intensity: 2.0, range: 4, color: 0xfff0dc },
   pendant: { intensity: 2.2, range: 5, color: 0xffd9a8 },
   floorLamp: { intensity: 1.6, range: 5, color: 0xffd59a },
+  // Lit mirrors (#339, the user: their light and mirror images were too strong): the Badrum's Slot 50 LED, Tilly's
+  // Hollywood mirror (VANITY) and the Klk's LED mirror (KLK). `shade` scales the LED / bulbs' emissive colour (they
+  // stay a lamp of their own, at dusk too), `reflect` = their mirror image's brightness (×, the Reflector), `glass` = the
+  // glints material on their glass (emissive, roughness: a softer hotspot from the pool light), `light` = the Badrum
+  // LED's pool light (the shader wash follows it; VANITY.light / KLK.mirror.light for the others). By eye, ~50 %.
+  mirror: { shade: 0.3, reflect: 0.85, glass: { emissive: 0x262626, roughness: 0.3 }, light: { intensity: 0.9, range: 3, color: 0xfff1de } },
   // Small lamps (#234: every lamp lights.js gets from world.lamps — floor/work/reading lamps, the SYMFONISK lamp, the
   // BESTÅ spots, the kitchen bench light, the bathroom mirror LED — except those whose spec says `auto: false`, the
   // cooker hood's light) switch themselves on below daylight `on` and off above `off` (hysteresis, like the patio's
@@ -1800,7 +1806,7 @@ export const NYMANE_WALL = {
 export const VANITY = {
   w: 1.0, d: 0.48, h: 0.76, drawers: { w: 0.36, n: 5 },
   mirror: { w: 0.6, h: 0.8, frame: 0.018, depth: 0.03, bottom: 0.1, bulb: 0.026, top: 3, side: 4, bottomRow: 3 },
-  light: { intensity: 1.0, range: 3.5, color: 0xffe6c4 }, // its pool light, a little whiter than the shaded lamps
+  light: { intensity: 0.5, range: 2.5, color: 0xffe6c4 }, // its pool light, a little whiter than the shaded lamps; halved (#339)
   stool: { r: 0.18, h: 0.42, color: 0xc7a6e0 },
 };
 

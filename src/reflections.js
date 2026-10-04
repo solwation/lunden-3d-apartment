@@ -13,8 +13,14 @@ const mirrors = [];
 export const reflectors = () => mirrors;
 
 /** Put a reflector over a mirror. `geometry` lies in the parent's local frame facing +z. */
-export function addReflector(parent, geometry, { level = 0, offset = 0.0015, color = 0xc6ccd0, name = '' } = {}) {
+export function addReflector(parent, geometry, { level = 0, offset = 0.0015, color = 0xc6ccd0, name = '', dim = 1 } = {}) {
   const r = new Reflector(geometry, { textureWidth: RES, textureHeight: RES, color, clipBias: 0.003 });
+  if (dim !== 1) { // a lit mirror's image (#339): scaled down after the overlay tint (the overlay cannot dim highlights)
+    const m = r.material;
+    m.uniforms.dim = { value: dim };
+    m.fragmentShader = m.fragmentShader.replace('uniform vec3 color;', 'uniform vec3 color;\nuniform float dim;')
+      .replace('gl_FragColor = vec4( blendOverlay( base.rgb, color ), 1.0 );', 'gl_FragColor = vec4( blendOverlay( base.rgb, color ) * dim, 1.0 );');
+  }
   r.position.z = offset;
   r.visible = false;
   parent.add(r);

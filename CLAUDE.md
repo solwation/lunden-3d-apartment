@@ -300,8 +300,8 @@ src/fries.js           Aviko frozen fries (#301, FRIES): a stand-up bag (canvas 
                        (cups.js `Steam`) for FRIES.steam s; E with a free hand takes a bunch (FriesBunch: click / "Ät" eats one fry,
                        put down / taken again); stats fries / friesCooked / friesBurnt; F: emptied, the bag full; `&fries` = a done
                        basket out (screenshots)
-src/mirror.js          the one mirror material (gradient + glints; hall and bathroom mirrors)
-src/reflections.js     mirror images: a Reflector per mirror, only the nearest one in view (< 4 m) renders
+src/mirror.js          the one mirror material (gradient + glints; hall and bathroom mirrors); the lit mirrors (Badrum LED, Hollywood, Klk) use `litMirrorMaterial` + `litEmissive` + `litReflect` (LIGHTING.mirror, #339)
+src/reflections.js     mirror images: a Reflector per mirror, only the nearest one in view (< 4 m) renders; `dim` scales a lit mirror's image (#339)
 src/seasons.js         month → tree colours/leaf cover and snow on ground, roofs, hedges, paving (SEASON)
 src/rest.js            sitting / lying down (REST): seat & bed spots from furniture userData.rest, look clamp
 src/holdable.js        things you take and hold (one at a time): home + pick box, held pose in camera space,

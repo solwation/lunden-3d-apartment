@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { KLK, FURNITURE } from './config.js';
 import { mergeStatic } from './merge.js';
-import { mirrorMaterial } from './mirror.js';
+import { litMirrorMaterial, litEmissive, litReflect } from './mirror.js';
 import { addReflector } from './reflections.js';
 import { Pack as StuffPack, garment, stack, rng } from './stuff.js';
 import { Pack } from './contents.js';
@@ -138,9 +138,9 @@ export function klk(item, lights) {
   // the LED mirror over the chest: a thin aluminium frame, the glass, a frosted LED band round it (the lamp)
   const M = KLK.mirror, mirror = new THREE.Group();
   const frame = new THREE.MeshStandardMaterial({ color: 0xc8c8c6, roughness: 0.35, metalness: 0.6 });
-  const led = new THREE.MeshStandardMaterial({ color: 0xf6f3ee, emissive: 0xfff3e0, emissiveIntensity: 0.04, roughness: 0.3 });
+  const led = new THREE.MeshStandardMaterial({ color: 0xf6f3ee, emissive: litEmissive(0xfff3e0), emissiveIntensity: 0.04, roughness: 0.3 });
   mirror.add(new THREE.Mesh(new RoundedBoxGeometry(M.w + 0.024, M.h + 0.024, 0.024, 2, 0.008).translate(0, 0, 0.012), frame));
-  const glass = new THREE.Mesh(new THREE.PlaneGeometry(M.w, M.h), mirrorMaterial);
+  const glass = new THREE.Mesh(new THREE.PlaneGeometry(M.w, M.h), litMirrorMaterial);
   glass.position.z = 0.0245;
   mirror.add(glass);
   const e = 0.035, L = M.led; // the band, inset from the glass's edge
@@ -151,7 +151,7 @@ export function klk(item, lights) {
     mirror.add(s);
   }
   mergeStatic(mirror);
-  addReflector(glass, new THREE.PlaneGeometry(M.w, M.h), { level: item.level, name: 'klk' }); // its mirror image (#50)
+  addReflector(glass, new THREE.PlaneGeometry(M.w, M.h), { level: item.level, name: 'klk', ...litReflect }); // its mirror image (#50)
   mirror.rotation.y = Math.PI; // facing north, into the closet
   mirror.position.set(mxM, M.bottom + M.h / 2, KLK.z1 - 0.002);
   inner.add(mirror);
