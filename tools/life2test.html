@@ -19,6 +19,8 @@
 //       unloading into the cabinet, F stops it.
 //  #386 three bins: the wrong one names the right one and keeps the waste, the right one named, free sorting; the bag tied
 //       up (the fill moved, the bin empty without a bag), a new bag, an old single bin migrated.
+//  #387 the drop-off: the cycle (tie, carry out, drop in its container), the wrong container, one emptying per bag, only
+//       rubbish bags, a new bag at home and again, the containers collide.
 //   chromium --headless=new --dump-dom http://localhost:8137/tools/life2test.html
 import { LIFE, MILK } from '../src/config.js';
 const out = document.getElementById('out');
@@ -442,6 +444,46 @@ if (want(386)) try {
   check(life.serialize().v === 2, 'saved as v2');
   f.remove();
 } catch (e) { pass = false; lines.push(`FAIL #386 error ${e.stack}`); }
+
+// --- #387: carrying the rubbish out ------------------------------------------------------------------------------
+if (want(387)) try {
+  const f = await load('life&shot');
+  const K = kit(f), { A, life, I, row, run, open, close, secs, lid, V, step } = K;
+  const D = A.dropoff, [cFood, cPack, cRest] = D.targets;
+  check(D.targets.length === 3 && D.segments.length === 4, 'the drop-off: three containers, a collision outline');
+  // the whole cycle: food in Matavfall, the bag tied up, carried out of the front door, dropped in its container
+  const bins = lid((l) => l.bin), food = I.ofType('binFood')[0];
+  open(bins);
+  for (let k = 0; k < 2; k++) { life.create('cucumberSlice', { at: 'hand' }); step(1 / 60); run('throwAway', food); }
+  run('tieBag', food);
+  const bag = I.held();
+  check(bag?.type === 'rubbishBag' && bag.amount === 2, `a bag in the hand (${I.name(bag)}, ${bag?.amount})`);
+  A.player.spawn(2.875, -3, Math.PI); step(1 / 60); // (out on the pavement: the bag rides in the hand like any thing)
+  const p = cFood.pickable.getWorldPosition(new V()); p.y += 0.03;
+  const t1 = K.aim(p, /Slänga matavfallspåsen i matavfallsbehållaren/, [[p.x, p.z + 1.1], [p.x - 0.4, p.z + 1.1], [p.x + 0.4, p.z + 1.2]]);
+  check(!!t1 && I.held() === bag, `at the drop-off with the bag: "${t1}"`);
+  check(row('dropBag', cPack)?.reason === 'Matavfallspåsen → Matavfall', `the wrong container: "${row('dropBag', cPack)?.reason}"`);
+  const n0 = A.stats.rubbishOut ?? 0, s0 = A.totalScore();
+  const r = row('dropBag', cFood);
+  check(r.run() === true && !I.get(bag.id) && !A.heldItem() && (A.stats.rubbishOut ?? 0) === n0 + 1 && A.totalScore() > s0, `dropped in: gone, counted (${A.stats.rubbishOut}), +${(A.totalScore() - s0).toFixed(1)} points`);
+  check(!row('dropBag', cFood) && (A.stats.rubbishOut ?? 0) === n0 + 1, 'a second press: nothing more to drop (one emptying, one reward)');
+  secs(1);
+  check(row('dropInfo', cFood)?.reason === 'Här lämnar du soppåsarna', `empty-handed: "${row('dropInfo', cFood)?.reason}"`);
+  // only rubbish bags
+  const sl = life.create('cucumberSlice', { at: 'hand' }); step(1 / 60);
+  check(row('dropBag', cRest)?.reason === 'Bara soppåsar här' && row('dropBag', cRest).run() === false && sl.place.at === 'hand', `a slice: "${row('dropBag', cRest)?.reason}"`);
+  I.remove(sl); step(1 / 60);
+  // back home: a new bag in the bin, and the cycle again
+  check(row('newBag', food) && run('newBag', food) === true && !food.machine.nobag, 'home again: a new bag in Matavfall');
+  life.create('cucumberSlice', { at: 'hand' }); step(1 / 60); run('throwAway', food); run('tieBag', food);
+  const bag2 = I.held();
+  check(bag2 && bag2.id !== bag.id && row('dropBag', cFood)?.run() === true && (A.stats.rubbishOut ?? 0) === n0 + 2, 'a second bag: carried out, counted again');
+  // the containers block the way
+  const c = D.object.position;
+  check(A.player.isFree(c.x, c.z + 1.2, 0) && !A.player.isFree(c.x, c.z + 0.45, 0) && !A.player.isFree(c.x, c.z, 0), 'the containers are no walk-through');
+  check(I.audit().length === 0, `audit: ${I.audit().join('; ') || 'ok'}`);
+  f.remove();
+} catch (e) { pass = false; lines.push(`FAIL #387 error ${e.stack}`); }
 
 lines.push(pass ? 'ALL PASS' : 'SOME FAILED');
 out.textContent = lines.join('\n');

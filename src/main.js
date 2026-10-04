@@ -28,6 +28,7 @@ import { saveResume, saveSession, takeResume } from './resume.js';
 import { saveWorld, loadWorld } from './keep.js';
 import { lifeDev, devScenario, Life } from './life.js';
 import { DishProgramme } from './dishwasher.js';
+import { buildDropoff } from './waste.js';
 import { shownRows } from './actions.js';
 import { buildStores } from './stores.js';
 import { clearLocalHome, takeResetDone } from './reset.js';
@@ -360,6 +361,10 @@ const life = new Life({ scene, camera, say: (t) => badge(t, false), feet: () => 
   persist: lifeDev() ? null : { key: LIFE.save.key, canSave: () => { try { return !resetHome.going; } catch { return false; } } }, debug: params0.has('debug') }); // the home's stock kept between visits (#371; never with &life)
 const lifeStores = buildStores(life, world); // the fridge, the freezer, the pantry, the utensil drawer as slots (#369)
 const dwDoor = world.lids.find((l) => l.name === 'diskmaskinen' && l.panelAt);
+const dropoff = buildDropoff(life); // the rubbish bags' drop-off by the car park (#387, a game spot)
+scene.add(dropoff.object);
+(life.storeTargets ??= []).push(...dropoff.targets);
+for (const l of [world.levels[0].segments, world.levels[0].fixedSegments]) if (l && !l.includes(dropoff.segments[0])) l.push(...dropoff.segments);
 const dishProg = dwDoor ? new DishProgramme(life, dwDoor, { sfx, say: (t) => badge(t, false) }) : null; // the dishwasher's programme (#385)
 life.bump = (key, n, id) => bump(key, n, id); // the life sim's counts (#376 …)
 { // a worktop under a world point (#375: the cutting board is a station only there)
@@ -514,7 +519,7 @@ ball.onDribble = () => bump('dribbles');
 holdables.push(ball);
 { const moving = world.movingSegments; world.movingSegments = (lvl) => [...moving(lvl), ...(lvl === 0 ? hoop.segments() : [])]; } // its base is in the way
 // the parked car and the hoop's base as closed boxes: one that appears round the visitor pushes them out (#314)
-world.movingPolys = (lvl) => lvl === 0 ? [car.segments(), hoop.segments()].filter((sg) => sg.length).map((sg) => sg.map(([x, z]) => [x, z])) : [];
+world.movingPolys = (lvl) => lvl === 0 ? [car.segments(), hoop.segments()].filter((sg) => sg.length).map((sg) => sg.map(([x, z]) => [x, z])).concat([dropoff.poly]) : []; // + the rubbish containers (#387)
 player.debug = new URLSearchParams(location.search).has('debug'); // log every unstick (#314)
 // drawings taped up on walls and the fridge (#176); the one in the hand
 const posters = new Posters(scene, world, marks, note);
@@ -1621,6 +1626,7 @@ function step(dt) {
   fruit.update(dt);
   life.update(dt);
   dishProg?.update(dt); // (#385)
+  dropoff.update(dt); // a lid (#387)
   toys.update(dt);
   marks.update(dt);
   breaker.update(dt);
@@ -1947,4 +1953,4 @@ if (lifeDev()) devScenario({ life, world, holdables, cups, things, milk, fish, f
 document.documentElement.classList.remove('resuming'); // the page is ready: off with the "Laddar…" cover (#222)
 
 // handle for tests/debugging (tools/touchtest.html)
-window.__app = { dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, toaster, life, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, coffeeJar, miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };
+window.__app = { dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, toaster, life, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, coffeeJar, miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };

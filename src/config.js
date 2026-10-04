@@ -1133,6 +1133,12 @@ export const LIFE = {
   eat: { seconds: 0.5 }, // a bite: to the mouth and back (#377, #380); the bite comes off half-way // a timed action (#372) stops when the eye has moved this far (m) from where it started // putting down (#368): snap grids (m), kept this far inside a table's edge, R turns this many degrees
 };
 
+// The drop-off for full rubbish bags (#387, src/waste.js `buildDropoff`): a *guess* — our real waste room is not verified in
+// Peab's material, so this is a game spot: three underground containers (Matavfall, Förpackningar, Restavfall) in a row by
+// the east end of the car park in front of Hus L, clear of the car's loop. x, z = the middle one, `gap` between them, `size`
+// / `h` their tops over the ground (m; our picks).
+export const LIFE_WASTE = { dropoff: { x: 10.9, z: -12.4, yaw: 0, gap: 1.1, size: 0.8, h: 1.05 } };
+
 // The dishwasher (#384, src/dishwasher.js; the integrated KEZA9310W of the plan, no product drawing — our picks): its racks roll
 // `out` m when the door is down; the lower rack (`y` over the tub's bottom, `h` high) holds `plates` plates on edge, the upper
 // one `glasses` glasses upside down, the cutlery tray on top of it `tray` tools.
@@ -1494,7 +1500,8 @@ export const SCORE = {
     baskets: 6, threes: 6, dribbles: 0.1,                 // a three = a basket + a three (12)
     turbo: 20,                                            // three cups of coffee in five minutes
     beer: 0.3, coffee: 0.3, wine: 0.3, champagne: 0.3, whisky: 0.3, milk: 0.3, kask: 0.6, water: 0.2, // sips (water: the drinking glass, #382)
-    washed: 0.3, scraped: 0.2, dishwasher: 3,             // … and a dishwasher programme run to the end (#385)                            // a thing washed up by hand, a plate scraped into the bin (#383)
+    washed: 0.3, scraped: 0.2, dishwasher: 3, rubbishOut: 3, // … a rubbish bag carried out to the drop-off (#387)
+                // … and a dishwasher programme run to the end (#385)                            // a thing washed up by hand, a plate scraped into the bin (#383)
     fish: 0.5, fried: 2, chicken: 1, cooked: 8, brews: 2, // cooked = a whole chicken fried golden (burnt: a deduction, #288)
     fries: 0.2,                                           // per fry eaten (#301): a bunch is four
     cucumberSlices: 0.2,                                  // a slice of cucumber cut (#376)

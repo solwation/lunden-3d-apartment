@@ -134,3 +134,7 @@ Code in src/dishes.js (and cooking.js's bin), the test is `tools/life2test.html`
   Restavfall — game categories). The prompt names the right bin, the wrong one keeps the waste in the hand (or, in free
   sorting, takes it with a note). A bin with something in it is tied up into a rubbish bag that carries its fill; a new bag
   comes off the roll (no item of its own). A saved single bin is migrated (items.js v2).
+- **#387 carried out**: **new**: a drop-off by the car park's east end (a game spot — the real waste room is not in Peab's
+  material): three containers, one per category, only rubbish bags, each bag counted once (stats `rubbishOut`). Then a new
+  bag goes in under the sink and the cycle repeats. The saved records were made smaller (a default amount and a home that is
+  the slot itself are left out).

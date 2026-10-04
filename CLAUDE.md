@@ -723,6 +723,13 @@ src/waste.js           the life sim's rubbish (M2). #386: three bins under the s
                        påsen" → an ITEMS 'rubbishBag' in the hand with the bin's amount + parts (moved), the bin empty with
                        `machine.nobag`; 'newBag' "Sätta i en ny påse" (off the roll: no item). items.js ITEMS_VERSION 2:
                        MIGRATIONS[1] splits a saved single bin's food / packages into the new bins
+                       #387 `buildDropoff` (__app.dropoff): the drop-off by the car park's east end (LIFE_WASTE.dropoff, a game
+                       spot, *guess*): three underground containers with a lid per category (life targets, `dropoff` = the
+                       sort; their outline is collision + an obstacle polygon); 'dropBag' "Slänga matavfallspåsen i
+                       matavfallsbehållaren" — only a rubbish bag ("Bara soppåsar här"), its own category while sorting is strict;
+                       the bag is removed (one emptying, one reward: stats rubbishOut), the lid lifts and lands with a thud.
+                       items.js `serialize` leaves out a default amount and a home that is the slot it is in (#387: the reload
+                       record stays under reloadtest's limit; `create` gives both back)
 src/dishes.js          the life sim's drinks and dishes (M2): #382 the drinking glass (ITEMS 'glass', amount = ml of drink up to
                        `capacity`, `machine.drink` 'water' | 'milk', one at a time): three at the front of the glass cabinet's lower
                        shelf (store 'glasses', LIFE_TOOLS.stock; kitchenstuff 'glasses' keeps its front row free); held at a running
@@ -1030,7 +1037,9 @@ tools/life2test.html   headless test of the life sim's M2, reset the kitchen: th
                        scrape / pour out first, the board by hand, riding along, a full rack, a shut door blocks taking (#384);
                        the programme: refused empty / door down, the panel, the time left, paused, nothing added mid-run, a
                        glass taken out stays dirty, a record, done = clean, unloading, F (#385); three bins: the wrong one names
-                       the right one, free sorting, tying the bag (moved, not copied), a new bag, an old single bin migrated (#386). `?only=383,385` runs sections
+                       the right one, free sorting, tying the bag (moved, not copied), a new bag, an old single bin migrated (#386);
+                       the drop-off: the whole cycle out through the front door, the wrong container, one emptying per bag, only
+                       rubbish bags, again with a new bag, the containers collide (#387). `?only=383,385` runs sections
 tools/inventorytest.html headless test (#365): the `&life` scenario's start state, the visitor's records untouched, the
                        integration points the inventory names; without &life the game starts at START
 tools/stamp.sh         build the published site with a version stamp (used by CI)

@@ -278,10 +278,11 @@ export class Items {
   /** Everything as plain JSON: { v, counters, items: [{ id, type, place, amount, pkg, prep, clean, machine, home, parts }] }. */
   serialize() {
     const items = this.all().map((i) => {
-      const e = { id: i.id, type: i.type, place: clonePlace(i.place), amount: i.amount };
+      const e = { id: i.id, type: i.type, place: clonePlace(i.place) };
+      if (i.amount !== (this.defs[i.type]?.amount ?? 1)) e.amount = i.amount; // (#387: compact — a default amount and a home that is the place are left out; create() gives them back)
       for (const k of ['pkg', 'prep', 'clean']) if (i[k] !== null && i[k] !== undefined) e[k] = i[k];
       if (Object.keys(i.machine).length) e.machine = { ...i.machine };
-      if (i.home) e.home = clonePlace(i.home);
+      if (i.home && !(i.place?.at === 'slot' && samePlace(i.home, i.place))) e.home = clonePlace(i.home);
       if (i.parts.length) e.parts = i.parts.map((x) => ({ ...x }));
       return e;
     });
