@@ -32,6 +32,27 @@ f.onload = async () => {
   pass &= check(s.parasols[0] === 0 && !s.beers[0] && s.snowman, `January 13:00: folded, snowman ${JSON.stringify(s)}`);
   s = at(4, 9);
   pass &= check(s.parasols[0] === 1 && !s.beers[0] && !s.snowman, `April 09:00: parasol up, no beers ${JSON.stringify(s)}`);
+  // the cushions (#399): on the sofa in July, put away in January and while it rains; F hides them with the sofa
+  {
+    const { weather } = w.__app;
+    weather.force = 'clear';
+    const july = at(7, 15, 2).cushions, jan = at(1, 13, 2).cushions;
+    weather.force = 'rain';
+    const rain = at(7, 15, 2).cushions;
+    weather.force = 'clear';
+    at(7, 15, 2);
+    const sofa = world.furnitureTargets.find((t) => t.name === 'loungesoffan');
+    let cushion = null;
+    sofa.pickable.traverse((m) => { if (m.isMesh && m.userData.cushion) cushion = m; });
+    const shown = (m) => { for (let o = m; o; o = o.parent) if (!o.visible) return false; return true; };
+    const before = shown(cushion);
+    world.setFurniture(false);
+    const hidden = !shown(cushion);
+    world.setFurniture(true);
+    weather.force = null;
+    pass &= check(july.length === 1 && july[0] && !jan[0] && !rain[0] && before && hidden,
+      `cushions: July ${july}, January ${jan}, rain ${rain}, shown ${before}, hidden with F ${hidden}`);
+  }
   // walk north towards the lounge sofa's short part (#397: along the east screen wall): stopped before its end
   const walk = (x, z, yaw, secs, furniture = true) => {
     world.setFurniture(furniture);

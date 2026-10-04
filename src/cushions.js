@@ -2,11 +2,11 @@ import * as THREE from 'three';
 import { CUSHIONS as C } from './config.js';
 
 // Decorative cushions and the ribbed fleece throws (#278, #313). All cushions share one material: an atlas texture
-// (leaf print | bobble knit | geometric patchwork | corduroy) tinted by vertex colours, so a sofa's cushions merge into
-// one mesh (one draw call). Each throw colour has its own fleece material that repeats in metres.
+// (leaf print | bobble knit | geometric patchwork | corduroy | the patio's outdoor weave and striped weave, #399)
+// tinted by vertex colours, so a sofa's cushions merge into one mesh (one draw call). Each throw colour has its own fleece material that repeats in metres.
 
-const COLS = 4; // atlas columns: 0 = leaf print, 1 = bobble knit, 2 = geometric, 3 = corduroy
-const COL = { print: 0, knit: 1, geo: 2, cord: 3 };
+const COLS = 6; // atlas columns: 0 = leaf print, 1 = bobble knit, 2 = geometric, 3 = corduroy, 4 = outdoor weave, 5 = striped weave
+const COL = { print: 0, knit: 1, geo: 2, cord: 3, weave: 4, stripe: 5 };
 
 function rng(seed) {
   let s = seed >>> 0 || 1;
@@ -85,6 +85,38 @@ function fuzz(ctx, x0, n, seed, alpha) {
   }
 }
 
+/** A coarse outdoor fabric (#399): a basket weave of thick yarns, pairs of threads turning every cell, light grey (the
+ * vertex colour tints it) or, as a bump, its relief. */
+function drawWeave(ctx, x0, n, cells, bump, seed) {
+  const c = n / cells, r = rng(seed);
+  ctx.fillStyle = bump ? '#303030' : '#b8b8b8';
+  ctx.fillRect(x0, 0, n, n);
+  for (let i = 0; i < cells; i++) for (let j = 0; j < cells; j++) {
+    const x = x0 + i * c, y = j * c, across = (i + j) % 2 === 0;
+    for (let k = 0; k < 2; k++) { // two yarns side by side per cell
+      const v = bump ? 200 + r() * 40 : 225 + r() * 25;
+      const g = across ? ctx.createLinearGradient(0, y + k * c / 2, 0, y + (k + 1) * c / 2) : ctx.createLinearGradient(x + k * c / 2, 0, x + (k + 1) * c / 2, 0);
+      g.addColorStop(0, `rgb(${v * 0.75},${v * 0.75},${v * 0.75})`); g.addColorStop(0.5, `rgb(${v},${v},${v})`); g.addColorStop(1, `rgb(${v * 0.75},${v * 0.75},${v * 0.75})`);
+      ctx.fillStyle = g;
+      if (across) ctx.fillRect(x + 0.5, y + k * c / 2 + 0.5, c - 1, c / 2 - 1); else ctx.fillRect(x + k * c / 2 + 0.5, y + 0.5, c / 2 - 1, c - 1);
+    }
+  }
+}
+
+/** The striped outdoor cushion (#399): the weave on an off-white ground with our own simple stripe — a broad charcoal
+ * band between two thin ones, twice across the cushion (the vertex colour is a near-white, so the stripes stay dark). */
+function drawStripes(ctx, x0, n) {
+  ctx.save();
+  ctx.globalCompositeOperation = 'multiply';
+  for (const base of [0.12, 0.62]) {
+    for (const [o, w] of [[0, 0.025], [0.06, 0.09], [0.185, 0.025]]) {
+      ctx.fillStyle = C.stripe.band;
+      ctx.fillRect(x0, (base + o) * n, n, w * n);
+    }
+  }
+  ctx.restore();
+}
+
 let atlas = null;
 function cushionMaterial() {
   if (atlas) return atlas;
@@ -118,6 +150,9 @@ function cushionMaterial() {
   drawRibs(ctx, 3 * n, n, C.cord.ribs, { crest: '#ffffff', furrow: '#cdc6c4' });
   fuzz(ctx, 3 * n, n, 5, 0.05);
   drawRibs(bx, 3 * n, n, C.cord.ribs, { crest: '#ffffff', furrow: '#202020' });
+  // the patio's outdoor fabrics (#399): a coarse weave, plain and striped
+  for (const k of [4, 5]) { drawWeave(ctx, k * n, n, C.weave.cells, false, 3 + k); drawWeave(bx, k * n, n, C.weave.cells, true, 3 + k); }
+  drawStripes(ctx, 5 * n, n);
   const map = new THREE.CanvasTexture(cv);
   map.colorSpace = THREE.SRGBColorSpace; map.anisotropy = 4;
   atlas = new THREE.MeshStandardMaterial({ map, bumpMap: new THREE.CanvasTexture(bv), bumpScale: 1.5, vertexColors: true, roughness: 0.96 });
@@ -147,7 +182,7 @@ const RIB_TILE = () => 2 * C.fleece.rib;
  * A plump cushion `s` × `s`, `t` thick at the middle, facing ±z: a subdivided box whose faces puff out and whose edges
  * close to a seam, the edge middles drawn in so the corners stick out; `crumple` dents it a little.
  */
-function cushionGeometry(s, t, kind, crumple, seed) {
+function cushionGeometry(s, t, kind, crumple, seed, w = s, color) {
   const g = new THREE.BoxGeometry(2, 2, 2, 12, 12, 2);
   const p = g.attributes.position, uv = g.attributes.uv, r = rng(seed);
   const ph = [r() * 6, r() * 6, r() * 6, r() * 6];
@@ -156,12 +191,12 @@ function cushionGeometry(s, t, kind, crumple, seed) {
     const f = Math.sqrt(Math.max(0, (1 - a * a) * (1 - b * b)));          // 0 at the seam, 1 in the middle
     const dent = crumple * f * 0.35 * (Math.sin(a * 3.1 + ph[0]) * Math.sin(b * 2.7 + ph[1]) + 0.5 * Math.sin(a * 5.3 + b * 4.1 + ph[2]));
     const sag = crumple * 0.04 * Math.sin(a * 4 + b * 3 + ph[3]);       // the edges wave a little
-    p.setXYZ(i, a * s / 2 * (1 - 0.08 * (1 - b * b)), b * s / 2 * (1 - 0.08 * (1 - a * a)), (c * f * (1 + dent) * t) / 2 + sag * s * (1 - f));
+    p.setXYZ(i, a * w / 2 * (1 - 0.08 * (1 - b * b)), b * s / 2 * (1 - 0.08 * (1 - a * a)), (c * f * (1 + dent) * t) / 2 + sag * s * (1 - f));
   }
   // atlas column, and a tint per vertex
   const col = COL[kind] ?? 0;
   for (let i = 0; i < uv.count; i++) uv.setX(i, (col + 0.02 + uv.getX(i) * 0.96) / COLS);
-  const tint = new THREE.Color(C[kind]?.color ?? 0xffffff); // print and geo carry their own colours
+  const tint = new THREE.Color(color ?? C[kind]?.color ?? 0xffffff); // print and geo carry their own colours; `color` = per cushion
   const cols = new Float32Array(p.count * 3);
   for (let i = 0; i < p.count; i++) { cols[i * 3] = tint.r; cols[i * 3 + 1] = tint.g; cols[i * 3 + 2] = tint.b; }
   g.setAttribute('color', new THREE.BufferAttribute(cols, 3));
@@ -171,19 +206,21 @@ function cushionGeometry(s, t, kind, crumple, seed) {
 
 /**
  * Cushions leaning against a seat's back (#278): `list` from CUSHIONS, `backZ` = local z of the back cushion's front at
- * seat level, `seatY` = the seat's top. Added to `g` as plain meshes (merged per material with the rest of the piece).
+ * seat level, `seatY` = the seat's top. Added to `g` as plain meshes (merged per material with the rest of the piece);
+ * returns them. A cushion may have its own `color` (the vertex tint) and a width `w` ≠ its height `size` (a lumbar, #399).
  */
 export function addCushions(g, list, { backZ, seatY }) {
   const mat = cushionMaterial();
-  list.forEach((c, i) => {
+  return list.map((c, i) => {
     const s = c.size ?? C.size, t = C.thick * (c.size ? c.size / C.size : 1);
-    const m = new THREE.Mesh(cushionGeometry(s, t, c.kind, c.crumple ?? 0.3, 11 + i * 17), mat);
+    const m = new THREE.Mesh(cushionGeometry(s, t, c.kind, c.crumple ?? 0.3, 11 + i * 17, c.w ?? s, c.color), mat);
     // stand it up, lean it back, turn it; its bottom edge on the seat, its back against the back cushion
     m.rotation.set(-c.lean, c.yaw, 0, 'YXZ');
     m.position.set(c.x, seatY - 0.02 + (s / 2) * Math.cos(c.lean) * 0.96, backZ + c.z);
     m.castShadow = m.receiveShadow = true;
     m.userData.cushion = true;
     g.add(m);
+    return m;
   });
 }
 

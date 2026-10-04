@@ -166,7 +166,7 @@ src/bedding.js         bedding shapes shared by every bed: `pillow(w, d, h, opts
                        sheet) / `addDuvet` (+ the fold turned back at the head end) build every bed with them (BEDDING)
 src/hooks.js           hook rails (#329, HOOKS): Sovrum 1's oak board, black hooks, a terry dressing gown and a hoodie (soft `drape` tubes);
                        #330 the kids' rails (KID_HOOKS, item `set`): `garments` list of gown | hoodie (zip, print) | cap | tote
-src/cushions.js        decorative cushions (one atlas material: leaf print | bobble knit | geometric | corduroy, vertex-colour
+src/cushions.js        decorative cushions (one atlas material: leaf print | bobble knit | geometric | corduroy | outdoor weave | striped weave (#399), vertex-colour
                        tint, #313) and the ribbed fleece throws (plum folded on the chaise, grey draped over the armchair's
                        arm; one material per colour) for the LANDSKRONA pieces (CUSHIONS, #278)
 src/interior.js        fitted kitchen, laundry, bathroom fittings, tiled floors/walls (FINISH, KITCHEN,
@@ -908,7 +908,7 @@ North = −z (the bedrooms Sovrum 1/3 face north).
 - Patio (user's wish): Plantagen Hörngrupp Oslo antracit (corner sofa 198 + 186 × 72 × 76, table
   120 × 60 × 40): since #397 the long part has its back to the façade under the living-room window (east of its sash) and
   the short part runs along the east screen wall (`corner: 'left'`), so the five seats face south and west (towards the
-  sun); the table stands inside the L. A parasol south of the table, its canopy tilted towards the plan south (true WSW, `tilt`) so it shades the seats in the afternoon / evening (#398; up Apr–Sep while
+  sun); five outdoor cushions (ochre, off-white striped, a sage lumbar, terracotta, sand striped; `PATIO.cushions`, #399, one merged mesh) lie in it Apr–Sep unless it rains (else put away); the table stands inside the L. A parasol south of the table, its canopy tilted towards the plan south (true WSW, `tilt`) so it shades the seats in the afternoon / evening (#398; up Apr–Sep while
   the sun is up), two big planters (palm by the patio door, agave in the SE corner by the hedge; the banana that blocked the
   gap in the hedge is gone, #52), two beers on the table Jun–Aug
   12–23, a snowman on the lawn just beyond the gap in the hedge Dec–Feb (`PATIO` in config), on snow (#73). Floor: 40 × 40 light grey slabs in half

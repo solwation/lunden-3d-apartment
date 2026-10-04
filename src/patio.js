@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { PATIO as P } from './config.js';
+import { addCushions } from './cushions.js';
 
 // The patio: Plantagen Oslo corner lounge set + table, a parasol, big planters with exotic
 // plants (furniture builders, placed via FURNITURE in config so F and collision work as for the
@@ -74,6 +75,17 @@ export function loungesofa(item = {}) {
   }
   g.userData.rest = { kind: 'sit', name: 'loungesoffan', verb: 'sätta dig i', spots };
   g.userData.footprint = footprint;
+  // cosy cushions (#399): merged into one mesh (the shared cushion atlas), kept out of the sofa's merge, shown by the
+  // season and the weather (Patio.update)
+  const m = item.corner === 'left' ? -1 : 1, tmp = new THREE.Group();
+  const meshes = addCushions(tmp, P.cushions.map((c) => ({ ...c, x: c.x * m, yaw: c.yaw * m })), { backZ: 0, seatY: P.seatHeight });
+  const geos = meshes.map((c) => { c.updateMatrix(); return c.geometry.applyMatrix4(c.matrix); });
+  const cushions = new THREE.Mesh(mergeGeometries(geos), meshes[0].material);
+  cushions.castShadow = cushions.receiveShadow = true;
+  cushions.userData.cushion = true;
+  g.add(cushions);
+  g.userData.keep = [cushions];
+  seasonal.cushions.push(cushions);
   return g;
 }
 
@@ -145,7 +157,7 @@ const beerMat = new THREE.MeshStandardMaterial({ color: 0xd88a1c, roughness: 0.2
 const foamMat = new THREE.MeshStandardMaterial({ color: 0xfbf6ea, roughness: 0.9 });
 const bubbleMat = new THREE.MeshStandardMaterial({ color: 0xfff4d6, roughness: 0.2, transparent: true, opacity: 0.8 });
 const BUBBLES = 14, BEER_H = 0.12;
-const seasonal = { parasols: [], beers: [] };
+const seasonal = { parasols: [], beers: [], cushions: [] };
 
 /** A pint of lager with rising bubbles; base at the origin. */
 function beerGlass() {
@@ -390,7 +402,7 @@ export class Patio {
 
   /** For tests: parasol open fractions, beers shown, snowman shown. */
   get state() {
-    return { strings: this.strings?.glow ?? null, parasols: seasonal.parasols.map((p) => p.open), beers: seasonal.beers.map((b) => b.visible), snowman: this.snowman.visible };
+    return { strings: this.strings?.glow ?? null, parasols: seasonal.parasols.map((p) => p.open), beers: seasonal.beers.map((b) => b.visible), snowman: this.snowman.visible, cushions: seasonal.cushions.map((c) => c.visible) };
   }
 
   /** E targets: the parasols (folded/unfolded by hand). */
@@ -436,6 +448,9 @@ export class Patio {
       if (beers) b.traverse((m) => { if (m.userData.seeds) bubbleUpdate(m, this.t); });
     }
     this.snowman.visible = P.snowman.months.includes(day.month);
+    // the cushions (#399): out in the parasol's months, in the cushion box in winter and under rain clouds (#248)
+    const cushions = P.parasol.months.includes(day.month) && !(day.overcast > 0.6);
+    for (const c of seasonal.cushions) c.visible = cushions;
     this.first = false;
   }
 }

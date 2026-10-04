@@ -1872,6 +1872,9 @@ export const CUSHIONS = {
   ],
   // the throw draped over the armchair's right arm (the sitter's; left seen from the front) and onto the seat
   chairThrow: { z0: -0.12, z1: 0.34, hang: 0.25, spill: 0.2, color: 'grey' },
+  // the patio's outdoor fabrics (#399, our own): a coarse basket weave `cells` yarn pairs across, tinted per cushion;
+  // the striped one has a charcoal `band` stripe on the weave
+  weave: { cells: 16 }, stripe: { band: '#4b4d50' },
 };
 
 // Patio (src/patio.js). Cushion colour of the Oslo set and the parasol (Ø 3 m, centre pole,
@@ -1884,6 +1887,18 @@ export const PATIO = {
   parasol: { radius: 1.5, height: 2.45, color: 0xe8e1d1, months: [4, 5, 6, 7, 8, 9] },
   pot: { r: 0.3, h: 0.62, color: 0x55595c }, // fibre-clay planter Ø 60 cm (guess)
   beerMonths: [6, 7, 8], beerHours: [12, 23],
+  // cosy outdoor cushions in the lounge sofa (#399, colours and places our pick; 45 × 45, the lumbar 50 × 30, *guess*):
+  // in the sofa's local frame before it is mirrored (`corner: 'left'`): the corner on −x, the long part's back front at
+  // z −0.16, the short part's back front at x −0.79 (the seats: long x 0.03 / 0.63, corner −0.63, short z 0.63 / 1.17).
+  // `yaw` turns the face (0 = +z, π/2 = +x), `lean` back; out on the sofa in the parasol's months unless it rains,
+  // else in the cushion box (Patio.update)
+  cushions: [
+    { x: -0.6, z: 0.03, yaw: Math.PI / 4, lean: 0.35, kind: 'weave', color: 0xc9952f, crumple: 0.45 },            // ochre, in the corner
+    { x: 0.33, z: -0.07, yaw: 0.06, lean: 0.4, kind: 'stripe', color: 0xf2ede2, crumple: 0.3 },                    // off-white striped, between the long part's seats
+    { x: 0.75, z: -0.08, yaw: -0.55, lean: 0.3, kind: 'weave', color: 0x8ea488, size: 0.3, w: 0.5, crumple: 0.3 }, // a sage lumbar by the arm
+    { x: -0.7, z: 0.9, yaw: Math.PI / 2 - 0.05, lean: 0.4, kind: 'weave', color: 0xb35a3c, crumple: 0.35 },        // terracotta, between the short part's seats
+    { x: -0.68, z: 1.25, yaw: Math.PI / 2 + 0.55, lean: 0.35, kind: 'stripe', color: 0xe7d8b8, crumple: 0.4 },      // a sand striped one by its arm
+  ],
   // the snowman stands just beyond the gap in the hedge, in view from the patio door and the sofa (#73)
   snowman: { x: 1.4, z: 18.4, months: [12, 1, 2] },
   // paving (#53): 40 × 40 cm light grey concrete slabs, rows in half bond, darker 8 mm joints (our pick,
