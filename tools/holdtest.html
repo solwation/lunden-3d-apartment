@@ -173,8 +173,10 @@ f.onload = async () => {
   // board elsewhere, F home
   try {
   const photo = w.__app.things.find((t) => t.kind === 'photo'), M = photo.home.pos.clone();
-  pass &= check(Math.abs(M.y - 3.95) < 0.01 && M.z > 0.2 && M.z < 0.495 && Math.abs(M.x - 3.99) < 0.01, `Miele's photo on the window board (${M.x.toFixed(2)}, ${M.y.toFixed(2)}, ${M.z.toFixed(2)})`);
-  const sillStands = [[3.99, 1.2], [3.8, 1.1], [4.2, 1.3], [3.99, 1.5]];
+  // where config puts it (#427: it moved in #418), not a hard-coded x
+  const frame = (await import('../src/config.js')).FURNITURE.find((it) => it.type === 'photoframe');
+  pass &= check(Math.abs(M.y - 3.95) < 0.01 && M.z > 0.2 && M.z < 0.495 && Math.abs(M.x - frame.x) < 0.01, `Miele's photo on the window board (${M.x.toFixed(2)}, ${M.y.toFixed(2)}, ${M.z.toFixed(2)})`);
+  const sillStands = [[M.x, 1.2], [M.x - 0.2, 1.1], [M.x + 0.2, 1.3], [M.x, 1.5]];
   pass &= check(lookAt(M.clone().setY(M.y + 0.07), /ta fotot av miele/i, sillStands), `take it: "${btn.textContent}"`);
   btn.click(); step(1 / 60);
   camera.rotation.x = 1.3; step(1 / 60); // at the ceiling: nothing in focus, the button uses what you hold
@@ -185,7 +187,7 @@ f.onload = async () => {
   photo.use(); for (let i = 0; i < 40; i++) step(1 / 60);
   pass &= check(!photo.looking && Math.abs(photo.model.position.z - far) < 0.01, 'and back down');
   const spot = new V(3.78, 3.955, 0.42);
-  pass &= check(lookAt(spot, /ställa ner fotot av miele här/i, [[3.78, 1.1], [3.6, 1.2], [3.9, 1.0]]), `next to the Hue Go (#409): "${btn.textContent}"`);
+  pass &= check(lookAt(spot, /ställa ner fotot av miele här/i, [[3.78, 1.1], [3.6, 1.2], [3.9, 1.0]]), `elsewhere on the board: "${btn.textContent}"`);
   btn.click(); step(1 / 60);
   pass &= check(photo.placed && Math.abs(photo.model.position.y - 3.95) < 0.01, `it stands on the board (y ${photo.model.position.y.toFixed(3)})`);
   w.__app.toggleFurniture(false);
