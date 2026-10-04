@@ -43,7 +43,7 @@ f.onload = async () => {
   let pass = true;
   // a full cup on the worktop (brew, take out, pour — cuptest covers those steps)
   const cup = cups.cups[0], mocca = world.lids.find((l) => l.kind === 'coffee');
-  mocca.toggle(); for (let i = 0; i < 20 * 30; i++) mocca.update(1 / 30);
+  mocca.prime(); mocca.toggle(); for (let i = 0; i < 20 * 30; i++) mocca.update(1 / 30); // (water + coffee first, #334)
   cup.take(); cup.placeAt(cup.counter); cup.setFill(1); for (let i = 0; i < 10; i++) step(1 / 60); // a full cup on the worktop (#141)
   const cupAt = () => at(cup.model).add(new V(0, 0.05, 0));
   pass &= check(lookAt(cupAt(), /ta koppen/i, [[4.4, 1.7], [4.3, 1.4], [4.5, 2.0]]), `take the cup: "${btn.textContent}"`);

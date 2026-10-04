@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { SONOS } from './config.js';
+import { SONOS, MOCCAMASTER } from './config.js';
 
 // The world's state across a reload made by the page (#277): the automatic update (#192) and "Ladda om" put a
 // `world` part into the resume record (resume.js) next to the place; the new page reads it back once everything is
@@ -121,9 +121,25 @@ const PARTS = {
     load({ grill }, s) { if (!grill || !(s.burn > 0)) return; grill.set(true); grill.burn = s.burn; },
   },
 
-  coffee: { // the coffee in the jug (a brew going on holds the update back, main.js)
-    save: (a) => { const m = a.world.lids.find((l) => l.kind === 'coffee'); return m && m.fill > 0 ? r3(m.fill) : null; },
-    load: (a, s) => { const m = a.world.lids.find((l) => l.kind === 'coffee'); if (m && s > 0) m.setFill(Math.min(1, s)); },
+  coffee: { // the coffee in the jug (a brew going on holds the update back, main.js); #334: the tank, the filter, the jug's
+    // water, the scoop's coffee (where the scoop is: `things`). An old record is the jug's level alone.
+    save(a) {
+      const m = a.world.lids.find((l) => l.kind === 'coffee');
+      if (!m) return null;
+      const e = { f: r3(m.fill), w: r3(m.water), g: m.grounds, s: m.spent ? 1 : 0, j: r3(m.jugWater), sc: m.scoop?.full ? 1 : 0 };
+      return Object.values(e).some((v) => v > 0) ? e : null;
+    },
+    load(a, s) {
+      const m = a.world.lids.find((l) => l.kind === 'coffee');
+      if (!m) return;
+      const n = (v, max = 1) => (Number.isFinite(v) ? Math.max(0, Math.min(max, v)) : 0);
+      if (typeof s === 'number') { if (s > 0) m.setFill(n(s)); return; }
+      if (!s || typeof s !== 'object') return;
+      m.setFill(n(s.f));
+      Object.assign(m, { water: n(s.w), grounds: Math.round(n(s.g, MOCCAMASTER.maxScoops)), spent: !!s.s, jugWater: n(s.j) });
+      m.snap?.();
+      if (m.scoop) m.scoop.full = !!s.sc; // (`things` puts it in the hand / down: taking does not fill it)
+    },
   },
 
   sonos: {

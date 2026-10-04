@@ -47,6 +47,7 @@ import { buildCups } from './cups.js';
 import { buildFish } from './fishfingers.js';
 import { AirFryer } from './airfryer.js';
 import { buildFries } from './fries.js';
+import { buildCoffeeJar } from './coffeejar.js';
 import { FruitBowl } from './fruit.js';
 import { Drawing } from './drawing.js';
 import { CatCalendar, CalendarPanel } from './calendar.js';
@@ -295,6 +296,8 @@ const cups = buildCups(scene, camera, world, world.cupCabinet); // coffee cups i
 const hand = new Hand(camera, scene); // the visitor's arm and hand: holding things, reaching for doors (#195)
 const petAt = new THREE.Vector3();
 holdables.push(cups.jug);
+const coffeeJar = buildCoffeeJar(scene, camera, world); // the coffee jar + scoop beside the Moccamaster: water and coffee before a pot (#334)
+if (coffeeJar) { holdables.push(coffeeJar.scoop); world.looseItems.push(coffeeJar.object); }
 const fish = buildFish(scene, camera, world); // fish fingers in the freezer, one at a time (#162)
 if (fish) fish.onEaten = () => bump('fish');
 const pan = world.panDrawer ? new Pan(scene, camera, world.panDrawer, world.hob) : null; // the frying pan in the drawer under the hob (#159)
@@ -381,7 +384,7 @@ if (rifle) Object.assign(rifle, { marks, cat, onShot: () => bump('shots') });
 saber.onBurn = () => bump('cuts'); // the lightsaber's marks (#96)
 toys.darts.onSplash = () => bump('splashes'); // a Nerf dart's paint splash (#98)
 drawing.onDrawn = () => bump('drawn'); // a drawing changed and kept (#93)
-{ const mocca = world.lids.find((l) => l.kind === 'coffee'); if (mocca) mocca.onBrewed = () => bump('brews'); } // a full jug brewed
+{ const mocca = world.lids.find((l) => l.kind === 'coffee'); if (mocca) mocca.onBrewed = () => { bump('brews'); bump('handBrew'); }; } // a full jug brewed; handBrew: the first pot by hand (#334)
 // Tilly's basketball over her daybed; the hoop out front rises while it is out of its holder (basket.js)
 const hoop = new Hoop();
 scene.add(hoop.object);
@@ -913,6 +916,7 @@ function use(thing) {
   else if (thing.kind === 'airfryer') { thing.toggle(); if (thing.isOpen) bump('appliances', 1, thing.id); } // the air fryer's basket / panel (#287)
   else if (thing.kind === 'airfry') thing.item.airfryHeld(); // a fish finger into the air fryer's basket (#287)
   else if (thing.kind === 'pourfries') thing.toggle(); // fries from the bag into the air fryer's basket (#301)
+  else if (thing.kind === 'coffeejar' || thing.kind === 'mocca') thing.toggle(); // the coffee jar's scoop, the jug's water, the filter (#334)
   else if (thing.kind === 'saber' || thing.kind === 'holdable' || thing.kind === 'cup') thing.toggle();
   else if (thing.kind === 'place') thing.item.placeAt(thing.point);
   else if (thing.kind === 'fry') thing.item.intoPan(); // the chicken into the pan on the hob (#160)
@@ -1047,7 +1051,7 @@ window.addEventListener('resize', () => {
 // --- door interaction: look at a door within reach, press E ----------------
 const raycaster = new THREE.Raycaster();
 raycaster.far = 2.2;
-const pickables = [airFryer.basketTarget.pickable, airFryer.panelTarget.pickable, ...world.doors.map((d) => d.pickable), ...world.lids.map((l) => l.pickable), ...taps.map((t) => t.pickable), note.pickable, board.pickable, wallClock.pickable, calendar.pickable, ...lights.targets.map((t) => t.pickable), grill.pickable, blinds.object];
+const pickables = [airFryer.basketTarget.pickable, airFryer.panelTarget.pickable, ...world.doors.map((d) => d.pickable), ...world.lids.map((l) => l.pickable), ...taps.map((t) => t.pickable), note.pickable, board.pickable, ...(coffeeJar ? [coffeeJar.target.pickable] : []), wallClock.pickable, calendar.pickable, ...lights.targets.map((t) => t.pickable), grill.pickable, blinds.object];
 const center = new THREE.Vector2(0, 0);
 const keyCabinet = world.lids.find((l) => l.kind === 'keybox');
 let focused = null, focusPoint = null;
@@ -1157,6 +1161,9 @@ function updateFocus() {
     focused = { name: 'fiskpinnen i airfryern', kind: 'airfry', verb: 'lägga', item: fish };
     placeGhost.visible = false;
   }
+  // the coffee ritual (#334): the jug at a running tap / with water at the Moccamaster, the full scoop at its filter
+  const coffeeAim = coffeeJar && hit && focused === hit.object.userData.door ? coffeeJar.aim(item, focused) : null;
+  if (coffeeAim) { focused = coffeeAim; placeGhost.visible = false; }
   // the remote in the hand, aimed at a TV: the click / the touch button are the remote's (#101)
   const remoteAim = heldItem() === remote && focused?.kind === 'tv';
   if (remoteAim) focused = null;
@@ -1201,6 +1208,7 @@ function toggleFurniture(on = !world.furnitureOn) {
     rifle?.reset(); // the dropped magazines go, a full one in (#196)
     for (const h of holdables) if (h.placed) h.goHome();
     cups.reset(); // the cups standing out go, the cabinet is full again (#215)
+    coffeeJar?.reset(); // the scoop in its loop, the Moccamaster's tank and filter empty (#334)
   }
   if (!on && cat.visible && !(cat.isMiele && (cat.released || cat.leaving))) cat.hide(); // (Miele, just put down, walks off, #328) // the cat goes too (and stops purring); none turn up until F is back
   if (!on) for (const t of world.furnitureTargets) if ((t.kind === 'tv' || t.kind === 'pc') && t.isOpen) t.toggle(); // screens off
@@ -1595,4 +1603,4 @@ if (resumeOk && resumed.mode) continueAfterReload(resumed);
 document.documentElement.classList.remove('resuming'); // the page is ready: off with the "Laddar…" cover (#222)
 
 // handle for tests/debugging (tools/touchtest.html)
-window.__app = { miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };
+window.__app = { coffeeJar, miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };

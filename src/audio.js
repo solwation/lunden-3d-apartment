@@ -802,6 +802,13 @@ export const sfx = {
     noise(t, secs, d, { type: 'bandpass', freq: 1300, q: 1.5, gain: 0.12, attack: 0.08 });
     tone(t, secs, d, { type: 'sine', from: 420, to: 900, gain: 0.03 });
   },
+  /** Ground coffee off a wooden scoop (#334): a soft dry hiss with a few grains (`fill` = into the jar: shorter). */
+  scoop(pos, fill = false) {
+    if (!ready()) return;
+    const t = ctx.currentTime, d = out(pos, 0.6), len = fill ? 0.25 : 0.45;
+    noise(t, len, d, { type: 'bandpass', freq: 2400, q: 0.7, gain: 0.07, attack: 0.04 });
+    for (let i = 0; i < 10; i++) noise(t + Math.random() * len, 0.015, d, { type: 'highpass', freq: 3000, gain: 0.05 * Math.random(), attack: 0.001 });
+  },
     /** A crayon on paper: a short dry scratch, louder with the speed (0…1). */
   crayon(pos, k = 0.5) {
     if (!ready()) return;

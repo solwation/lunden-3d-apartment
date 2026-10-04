@@ -1036,6 +1036,7 @@ export const SCORE = {
     clips: 2, // per kind of clip seen on Tilly's laptop (#283); no points for repeats (they come by themselves)
     fruit: 3, // a piece of fruit from the bowl eaten up (#326): per kind (apple, pear, orange, clementine, banana), then `again`
     nest: 4, // per smart speaker asked something (#325), then `again`
+    handBrew: 10, // the first pot brewed by hand: water and coffee filled first (#334); no `again` (each brew has `each.brews`)
   },
   again: {
     doors: 0.1, lids: 0.1, flushes: 0.2, taps: 0.1, fridge: 0.1, appliances: 0.1, cabinets: 0.05, lights: 0.05,
@@ -1321,7 +1322,15 @@ export const AO = {
 // sink, against the splashback (#59). Size ~32 × 17 × 36 cm (guess, after the KBG series). `z` = centre
 // along the east run, `back` = x of its back. E brews for `brewSeconds`: red power light, sound,
 // the jug fills.
-export const MOCCAMASTER = { back: 5.53, z: 1.4, w: 0.32, d: 0.17, h: 0.36, brewSeconds: 18 };
+// #334: brewing needs water in the tank (the jug filled at a tap, poured in) and coffee in the filter (scoops from the jar);
+// `scoops` = a full pot (guess), `maxScoops` = what the filter holds.
+export const MOCCAMASTER = { back: 5.53, z: 1.4, w: 0.32, d: 0.17, h: 0.36, brewSeconds: 18, scoops: 4, maxScoops: 6 };
+// The coffee jar beside it (#334, docs/kaffeburk-sked-*.jpg, src/coffeejar.js): a square glass jar with rounded corners
+// ~10 × 10 × 18 cm (guess), a bamboo lid, a beech scoop hanging in a glass loop on its side. `gap` = from the
+// Moccamaster's side and from the splashback; `fill` = how high the ground coffee lies (of the height), `slant` = its tilt (m).
+export const COFFEE_JAR = { w: 0.1, h: 0.18, r: 0.016, lid: 0.02, gap: 0.03, fill: 0.33, slant: 0.03,
+  ground: 0x2a170c, bamboo: 0xd9bc8e, bambooEdge: 0xa7835a, beech: 0xdcc39a, stain: 0x7a5434,
+  held: { x: 0.1, y: -0.12, z: -0.42 } };
 
 // Wall shelves in the kitchen (src/shelves.js) where the cat board used to hang: the kitchen face of
 // the hall/kitchen partition (x 2.15, z 0.46–1.76), above the light switch (1.05 m) and the framed print (#333). Two oak shelves

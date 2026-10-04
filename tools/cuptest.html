@@ -6,7 +6,9 @@
 <script>
 // Coffee cups (#90): before brewing a cup in the opened cabinet says "koka kaffe först"; brew; take a cup
 // out (it stands on the worktop), pour (the cup fills, the jug drops), take it, put it down on the dining
-// table and, picked up again, on the coffee table.
+// table and, picked up again, on the coffee table. #334: the ritual first — the switch refuses with no water / no coffee;
+// the jug filled at the running kitchen tap, poured into the tank (it rises); scoops from the jar (the lid opens) into the
+// filter, the scoop back in its loop (the lid shuts); brewing drains the tank and leaves wet grounds; F empties them.
 //   google-chrome --headless=new --dump-dom http://localhost:8137/tools/cuptest.html
 const out = document.getElementById('out');
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -16,7 +18,7 @@ document.body.append(f);
 f.onload = async () => {
   const w = f.contentWindow, d = f.contentDocument;
   while (!w.__app) await wait(100);
-  const { player, camera, step, cups, world, heldItem, scene } = w.__app;
+  const { player, camera, step, cups, world, heldItem, scene, stats } = w.__app;
   const lines = [];
   const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; };
   d.getElementById('start-touch').click();
@@ -63,10 +65,63 @@ f.onload = async () => {
   pass &= check(lookAt(counter, kitchen, /ställa ner koppen/i), `the worktop: "${btn.textContent}"`);
   btn.click(); step(1 / 60);
   pass &= check(cup.state === 'placed' && Math.abs(cup.model.position.y - counter.y) < 0.02, `on the worktop (y ${cup.model.position.y.toFixed(3)})`);
-  mocca.toggle(); for (let i = 0; i < 20 * 30; i++) mocca.update(1 / 30);
-  pass &= check(mocca.done > 0 && mocca.fill === 1, 'brewed');
+  // the ritual before a pot (#334): no water and no coffee → it will not start
+  const jug = cups.jug, jugAt = () => jug.where().add(new V(0, 0.08, 0)), jar = w.__app.coffeeJar, scoop = jar.scoop;
+  const switchAt = () => mocca.object.localToWorld(new V(0, 0.03, -0.1)); // the base front by the switch
+  const tankAt = () => mocca.object.children[2].getWorldPosition(new V()).add(new V(0, 0.05, 0));
+  const basketAt = () => mocca.object.localToWorld(new V(mocca.basket.x, mocca.basket.y0 + mocca.basket.H - 0.01, mocca.basket.z));
+  const jarAt = () => jar.object.localToWorld(new V(-0.02, 0.1, -0.02));
+  const tap = w.__app.taps.find((t) => t.name === 'köksblandaren'), tapAt = () => tap.pickable.getWorldPosition(new V());
+  const sink = [[4.6, 2.1], [4.5, 1.9], [4.7, 2.3], [4.4, 1.7]];
+  pass &= check(lookAt(switchAt(), kitchen, /Fyll på vatten och kaffe/), `the switch, nothing in it: "${btn.textContent}"`);
+  btn.click(); step(1 / 60);
+  pass &= check(!mocca.isOpen, 'it does not start');
+  // water: the jug to the kitchen tap, turned on, filled, turned off, into the tank
+  pass &= check(lookAt(jugAt(), kitchen, /ta kannan/i), `the jug: "${btn.textContent}"`);
+  btn.click(); step(1 / 60);
+  pass &= check(lookAt(tapAt(), sink, /sätta på köksblandaren/i), `the tap with the jug: "${btn.textContent}"`);
+  btn.click(); step(1 / 60);
+  pass &= check(tap.isOpen && lookAt(tapAt(), sink, /fylla kannan med vatten/i), `the running tap: "${btn.textContent}"`);
+  btn.click(); for (let i = 0; i < 90; i++) step(1 / 30);
+  pass &= check(mocca.jugWater === 1 && mocca.jugWaterMesh.visible && mocca.jugWaterMesh.scale.y > 0.1, `the jug full of water (${mocca.jugWaterMesh.scale.y.toFixed(3)} m)`);
+  pass &= check(lookAt(tapAt(), sink, /stänga av köksblandaren/i), `the tap again: "${btn.textContent}"`);
+  btn.click(); step(1 / 60);
+  pass &= check(lookAt(tankAt(), kitchen, /hälla vattnet i vattentanken/i), `the tank: "${btn.textContent}"`);
+  const tank0 = mocca.tankWater.visible ? mocca.tankWater.scale.y : 0;
+  btn.click(); step(1 / 30);
+  const tankMid = mocca.tankWater.scale.y;
+  for (let i = 0; i < 90; i++) step(1 / 30);
+  pass &= check(mocca.water === 1 && mocca.jugWater === 0 && tank0 === 0 && tankMid < mocca.tankWater.scale.y && mocca.tankWater.scale.y > 0.2, `the tank fills (${tankMid.toFixed(3)} → ${mocca.tankWater.scale.y.toFixed(3)} m), the jug empty`);
+  pass &= check(lookAt(jug.holder.children[0].getWorldPosition(new V()), kitchen, /ställa tillbaka kannan/i), `the hot plate, the jug empty: "${btn.textContent}"`);
+  btn.click(); step(1 / 60);
+  pass &= check(lookAt(switchAt(), kitchen, /Häll i kaffe först/), `the switch, water only: "${btn.textContent}"`);
+  btn.click(); step(1 / 60);
+  pass &= check(!mocca.isOpen, 'still not');
+  // coffee: the scoop from the jar (the lid opens), into the filter, again, back in its loop (the lid shuts)
+  pass &= check(lookAt(jarAt(), kitchen, /ta en skopa kaffe ur kaffeburken/i), `the jar: "${btn.textContent}"`);
+  btn.click(); for (let i = 0; i < 30; i++) step(1 / 30);
+  pass &= check(heldItem() === scoop && scoop.full && scoop.heap.visible && jar.lid.rotation.z < -1.3, `the scoop in the hand, full; the lid up (${jar.lid.rotation.z.toFixed(2)})`);
+  for (let n = 1; n <= 4; n++) {
+    if (n > 1) {
+      pass &= check(lookAt(jarAt(), kitchen, /fylla skopan ur kaffeburken/i), `scoop ${n}: "${btn.textContent}"`);
+      btn.click(); step(1 / 60);
+    }
+    pass &= check(lookAt(basketAt(), kitchen, /hälla kaffet i filtret/i), `the filter: "${btn.textContent}"`);
+    btn.click(); for (let i = 0; i < 30; i++) step(1 / 30);
+    pass &= check(mocca.grounds === n && !scoop.full && mocca.groundsMesh.visible, `${n} scoop(s) in the filter (y ${mocca.groundsMesh.position.y.toFixed(3)})`);
+  }
+  pass &= check(lookAt(jarAt(), kitchen, /fylla skopan/i), 'filled once more'); btn.click(); step(1 / 60);
+  pass &= check(lookAt(jarAt(), kitchen, /hänga tillbaka skopan i kaffeburken/i), `the full scoop at the jar: "${btn.textContent}"`);
+  btn.click(); for (let i = 0; i < 30; i++) step(1 / 30);
+  pass &= check(!heldItem() && scoop.atHome && !scoop.full && jar.lid.rotation.z === 0, 'the scoop back in its loop, the lid shut');
+  pass &= check(lookAt(switchAt(), kitchen, /sätta på kaffebryggaren/i), `ready: "${btn.textContent}"`);
+  const brews0 = stats.brews;
+  btn.click(); for (let i = 0; i < 9 * 30; i++) step(1 / 30);
+  pass &= check(mocca.isOpen && mocca.water > 0.3 && mocca.water < 0.7, `brewing: the tank drains (${mocca.water.toFixed(2)})`);
+  for (let i = 0; i < 11 * 30; i++) step(1 / 30);
+  pass &= check(mocca.done > 0 && mocca.fill === 1 && mocca.water === 0 && mocca.spent && stats.brews === brews0 + 1 && !!stats.seen.handBrew, 'brewed: the jug full, the tank empty, wet grounds; counted (+ the first by hand)');
+  pass &= check(lookAt(switchAt(), kitchen, /Fyll på vatten och kaffe/), `the next pot needs both again: "${btn.textContent}"`);
   // the jug: take it, pour, put it back on the hot plate
-  const jug = cups.jug, jugAt = () => jug.where().add(new V(0, 0.08, 0));
   pass &= check(lookAt(jugAt(), kitchen, /ta kannan/i), `the jug: "${btn.textContent}"`);
   btn.click(); step(1 / 60);
   pass &= check(heldItem() === jug && !jug.atHome, 'the jug in the hand');
@@ -97,7 +152,7 @@ f.onload = async () => {
   btn.click(); step(1 / 60);
   pass &= check(cup2.state === 'cabinet' && !heldItem() && cup2.model.position.distanceTo(cup2.home) < 0.001, 'back on its shelf');
   // whisky in the coffee (#169): a cup of coffee on the worktop, a sip, a splash of whisky, drink it up
-  const { use, things, stats } = w.__app, steps = (s) => { for (let t = 0; t < s; t += 1 / 30) step(1 / 30); };
+  const { use, things } = w.__app, steps = (s) => { for (let t = 0; t < s; t += 1 / 30) step(1 / 30); };
   const spot = cup2.counter.clone().add(new V(0, 0, -0.15)), whisky = things.find((t) => t.kind === 'whisky');
   use(cup2.target); step(1 / 60); cup2.placeAt(spot);
   use(jug.target); step(1 / 60); use(cup2.target); steps(1.5); use(jug.backTarget); step(1 / 60);
@@ -160,8 +215,13 @@ f.onload = async () => {
   fresh.use(); steps(1);
   pass &= check(Math.abs(fresh.fill - 0.4) < 1e-6, `a refilled cup drinks (${fresh.fill.toFixed(2)})`);
   fresh.putBack();
+  // #334: F puts the scoop back in its loop (the lid shuts) and empties the tank and the filter
+  w.__app.coffeeJar.press(); mocca.water = 0.6; mocca.grounds = 2; step(1 / 60);
+  const scoopOut = heldItem() === w.__app.coffeeJar.scoop;
   w.__app.toggleFurniture(false);
   pass &= check(inCab().length === 3 && !outside().length, 'F: none left out, three in the cabinet');
+  pass &= check(scoopOut && w.__app.coffeeJar.scoop.atHome && !heldItem() && w.__app.coffeeJar.lid.rotation.z === 0 && mocca.water === 0 && mocca.grounds === 0 && !mocca.tankWater.visible && !mocca.groundsMesh.visible,
+    'F: the scoop in its loop, the lid shut, the tank and the filter empty');
   w.__app.toggleFurniture(true);
   } catch (e) { pass = false; lines.push(`FAIL error ${e.stack}`); }
   out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;

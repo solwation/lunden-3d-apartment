@@ -6,7 +6,8 @@
 <script>
 // Kitchen oven + microwave (#58): aim at each door, open it with the action button (the oven door
 // drops, the microwave door swings out, the lamp inside lights), close it again. The Moccamaster
-// (#59): switch it on (red light), it brews for MOCCAMASTER.brewSeconds, fills the jug, clicks off.
+// (#59): switch it on (red light), it brews for MOCCAMASTER.brewSeconds, fills the jug, clicks off. #334: only with
+// water in the tank and coffee in the filter (it says which is missing); brewing drains the tank, leaves wet grounds.
 //   google-chrome --headless=new --dump-dom http://localhost:8137/tools/oventest.html
 const out = document.getElementById('out');
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -66,12 +67,26 @@ f.onload = async () => {
     camera.rotation.y = Math.atan2(-(p.x - player.pos.x), -(p.z - player.pos.z));
     camera.rotation.x = Math.atan2(p.y - player.eyeY, Math.hypot(p.x - player.pos.x, p.z - player.pos.z));
     for (let i = 0; i < 3; i++) step(1 / 60);
+    // #334: no water, no coffee → it says so and does not start; then one of them only; then both (`prime`)
+    pass &= check(/Fyll på vatten och kaffe/.test(btn.textContent), `empty: "${btn.textContent}"`);
+    btn.click(); step(1 / 60);
+    pass &= check(!mc.isOpen && mc.led.emissiveIntensity === 0, 'empty: it does not start');
+    mc.water = 1; step(1 / 60);
+    pass &= check(/Häll i kaffe först/.test(btn.textContent), `water only: "${btn.textContent}"`);
+    btn.click(); step(1 / 60);
+    mc.water = 0; mc.grounds = 2; step(1 / 60);
+    const coffeeOnly = btn.textContent;
+    btn.click(); step(1 / 60);
+    pass &= check(/Fyll på vatten först/.test(coffeeOnly) && !mc.isOpen, `coffee only: "${coffeeOnly}", not started`);
+    mc.prime(); step(1 / 60);
     pass &= check(/sätta på kaffebryggaren/i.test(btn.textContent), `button "${btn.textContent}"`);
     btn.click();
     for (let i = 0; i < 10 * 60; i++) step(1 / 60);
     pass &= check(mc.isOpen && mc.led.emissiveIntensity > 0 && mc.fill > 0.2 && mc.fill < 0.9, `brewing: red light, jug filling (${mc.fill.toFixed(2)})`);
     for (let i = 0; i < 10 * 60; i++) step(1 / 60);
     pass &= check(!mc.isOpen && mc.led.emissiveIntensity === 0 && mc.fill === 1 && mc.done === 1, `done: light off, jug full (${mc.fill.toFixed(2)})`);
+    step(1 / 60);
+    pass &= check(mc.water === 0 && mc.spent && /Fyll på vatten och kaffe/.test(btn.textContent), `used up: the tank empty, wet grounds, "${btn.textContent}"`);
   }
   out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
 };

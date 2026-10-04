@@ -70,7 +70,7 @@ f.onload = async () => {
   }
   // something time-bound holds it back: the coffee brewing
   const mocca = app.world.lids.find((l) => l.kind === 'coffee');
-  mocca.toggle();
+  mocca.prime(); mocca.toggle(); // (water + coffee first, #334)
   steps(4);
   pass &= check(cd.hidden || !/Uppdateras/.test(cd.textContent), 'the coffee brewing: no countdown');
   mocca.toggle();

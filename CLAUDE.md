@@ -249,7 +249,16 @@ src/hood.js            the cooker hood (#194, `world.hood`, in world.lids): E ru
                        draws the chicken's smoke up into it; the smoke alarm in the kitchen ceiling (SMOKE_ALARM) beeps
                        and blinks red after `delay` s of smoke the hood does not take (`chicken.freeSmoke`); F: fan off
 src/coffee.js          Moccamaster on the worktop (MOCCAMASTER): E brews (red light, sound, the jug fills); tank + switch on the left, jug
-                       on the right (#315); the coffee colour (jug, cups, mixes) is COFFEE in config, a dark Scanian roast (#316)
+                       on the right (#315); the coffee colour (jug, cups, mixes) is COFFEE in config, a dark Scanian roast (#316).
+                       #334: it only brews with water in the see-through tank and coffee in the open filter basket, else the switch
+                       says what is missing (`blockedText`); the jug held at a running tap fills with water (`fillTarget`), at the
+                       machine pours it into the tank (`tankTarget`); brewing drains the tank and leaves wet grounds (`spent`), so
+                       every pot needs both again; `prime()` fills both (tests), `reset()` (F) empties them; keep.js keeps them
+src/coffeejar.js       the coffee jar beside the Moccamaster (#334, COFFEE_JAR, docs/kaffeburk-sked-*.jpg): rounded square glass, ground
+                       coffee on a slant, dust on the glass, a bamboo lid that flips up while the beech scoop (a Holdable, `Scoop`)
+                       is out of its glass loop; E on the jar takes the scoop full / fills it again / (full) hangs it back; the
+                       full scoop at the Moccamaster tips into the filter (`filterTarget`, a puff, sfx.scoop); `aim(item, door)` =
+                       the ritual's focus swaps (main.js updateFocus); stats `handBrew` = the first pot by hand
 src/airfryer.js        the air fryer (AIRFRYER, #287): an OBH Nordica Easy Fry Deluxe in the worktop corner left of the freezer, turned
                        `rot` 45° with its front diagonally out of the corner (#296; one group, so the basket's slide, the panel,
                        the slots and the vents turn with it), its cord to the corner power box behind it; E on the handle pulls the basket out / in, E on the panel starts / stops a run
