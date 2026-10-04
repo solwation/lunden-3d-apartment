@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { GREET as G, SITE, HUS_L } from './config.js';
+import { GREET as G, SITE, HUS_L, UNIT_TOP } from './config.js';
 import { isMuted } from './audio.js';
 import { husLLayout } from './exterior.js';
 
@@ -17,11 +17,11 @@ const tmp = new THREE.Vector3(), dir = new THREE.Vector3();
  * behind the loftgång, våning 4 also behind the courtyard terraces. */
 export function occluders() {
   const boxes = SITE.blocks.map((b) => ({ x0: b.x0, x1: b.x1, z0: b.z0, z1: b.z1, y0: b.base, y1: b.base + b.storeys * (b.style === 'old' ? SITE.old.storey : SITE.storey) + 1 }));
-  const w = 5.75, { xw: west, xe: east } = husLLayout(w), low = 2 * HUS_L.storeyHeight;
+  const w = 5.75, { xw: west, xe: east } = husLLayout(w), low = UNIT_TOP, up = low + HUS_L.storeyHeight; // våning 3's / 4's floor (VERTICAL, #344)
   boxes.push({ x0: west, x1: 0, z0: 0.05, z1: 12.65, y0: 0, y1: low }, { x0: w, x1: east, z0: 0.05, z1: 12.65, y0: 0, y1: low },
-    { x0: west, x1: east, z0: HUS_L.loftgangDepth, z1: 12.65, y0: low + 0.3, y1: low + 0.3 + HUS_L.storeyHeight },
+    { x0: west, x1: east, z0: HUS_L.loftgangDepth, z1: 12.65, y0: low, y1: up },
     // våning 4 set back behind the roof terraces (#337): rain falls on the terraces
-    { x0: west, x1: east, z0: HUS_L.loftgangDepth, z1: 12.7 - HUS_L.court.setback, y0: low + 0.3 + HUS_L.storeyHeight, y1: low * 2 + 0.3 });
+    { x0: west, x1: east, z0: HUS_L.loftgangDepth, z1: 12.7 - HUS_L.court.setback, y0: up, y1: low + HUS_L.upperStoreys * HUS_L.storeyHeight });
   return boxes;
 }
 

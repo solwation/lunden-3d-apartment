@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import {
-  LEVELS, SOFFITS, DOOR_HEIGHT, DOOR_TRIM, EXT_DOOR_HEAD, WINDOWS, WINDOW_TOP_HUNG_MAX, BLINDS, CABINET_HEIGHT, BASE_CABINET, SHELF_HEIGHT, TOILET,
+  LEVELS, UNIT_TOP, SOFFITS, DOOR_HEIGHT, DOOR_TRIM, EXT_DOOR_HEAD, WINDOWS, WINDOW_TOP_HUNG_MAX, BLINDS, CABINET_HEIGHT, BASE_CABINET, SHELF_HEIGHT, TOILET,
   STAIR, COLORS, FENCE_HEIGHT, SITE, OUTDOOR, CABINET_FIXES, KLK, SEASON, FINISH, OPTIONS, EXTRA_WALLS, SLIDE_FLIP, ROOM_RENAMES, EXTRA_ROOMS, ROOM_DIVIDERS,
 } from './config.js';
 import { buildStairs } from './stairs.js';
@@ -646,7 +646,7 @@ export function buildWorld(plan) {
     scene.add(box(x0, x1, z0, z1, slabY0, slabY1, M.wall));
   }
   const roofY = LEVELS[1].floor + LEVELS[1].ceiling;
-  scene.add(box(0, W, 0, D, roofY, roofY + 0.35, M.wall));
+  scene.add(box(0, W, 0, D, roofY, UNIT_TOP, M.wall)); // our roof zone = våning 3's floor (VERTICAL, #344)
 
   // Stairs + upstairs railing around the opening above flight A
   // treads: the very same Ek Chalk parquet material as the floors (our Peab choice, #54); white risers
@@ -720,7 +720,7 @@ export function buildWorld(plan) {
   // Hus L: brick façades, the neighbouring units, the stacked units above and the loftgång
   const north = [...l0.openings.north, ...l1.openings.north];
   const south = [...l0.openings.south, ...l1.openings.south];
-  const exterior = buildExterior({ W, D, roofTop: roofY + 0.35, north, south, frame: M.frame, wall: M.wall, site, mats: M });
+  const exterior = buildExterior({ W, D, roofTop: UNIT_TOP, north, south, frame: M.frame, wall: M.wall, site, mats: M });
   scene.add(exterior);
   const surroundings = buildSurroundings({ grass: M.grass });
   const courtyard = buildCourtyard(); // walks, pergola, grill, sandboxes, boule, benches, beds (#80)
@@ -821,7 +821,7 @@ export function buildWorld(plan) {
     hob: [...l0.appliances, ...l1.appliances].find((a) => a.kind === 'hob') ?? null, // the induction hob (#158)
     hood: [...l0.appliances, ...l1.appliances].find((a) => a.kind === 'hood') ?? null, // the cooker hood's fan (#194)
     panDrawer: [...l0.appliances, ...l1.appliances].find((a) => a.panHome) ?? null, // the drawer under the hob (#159)
-    openings: { north, south, roof: roofY + 0.35 }, // the façade openings (plan x, absolute y) and the roof height: what the flat can be seen through from outside (#189)
+    openings: { north, south, roof: UNIT_TOP }, // the façade openings (plan x, absolute y) and the roof height: what the flat can be seen through from outside (#189)
     blinds, // the pleated blinds (#273, src/blinds.js)
     carKey: hallWall.key, // only a target while the key cabinet is open (main.js)
     taps: [...l0.taps, ...l1.taps],

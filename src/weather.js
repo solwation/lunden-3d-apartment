@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { WEATHER as W, HUS_L } from './config.js';
+import { WEATHER as W, UNIT_TOP } from './config.js';
 import { groundY } from './surroundings.js';
 import { occluders } from './greet.js';
 import { sfx, audioParts } from './audio.js';
@@ -93,7 +93,7 @@ export class Weather {
     Object.assign(this, { scene, camera, day, force, rain: 0, overcast: 0, storm: false, kind: null, id: null, flashT: 9, flash: 0, flashK: 0,
       strikes: 0, sound: null, walked: {}, done: {} });
     // the houses (greet.js) and our own unit, which greet.js leaves to the flat's walls: nothing falls inside them
-    this.boxes = [...occluders(), { x0: 0, x1: 5.75, z0: 0.05, z1: 12.65, y0: 0, y1: 2 * HUS_L.storeyHeight }];
+    this.boxes = [...occluders(), { x0: 0, x1: 5.75, z0: 0.05, z1: 12.65, y0: 0, y1: UNIT_TOP }];
     // rain: streaks (one LineSegments)
     const n = W.drops;
     this.pos = new Float32Array(n * 6);

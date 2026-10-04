@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { HUS_L as H, COLORS, FENCE_HEIGHT, SEASON } from './config.js';
+import { HUS_L as H, COLORS, FENCE_HEIGHT, SEASON, VERTICAL, storeyFloor } from './config.js';
 import { registerSnow } from './seasons.js';
 
 // Brick: 250 × 65 mm + 10 mm joints → 0.26 m per brick, 0.075 m per course.
@@ -189,7 +189,7 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
   // stair core with the portik through the ground floor, a flat (L1101) on våning 2
   {
     const [p0, p1] = H.core.portik.map((p) => coreX0 + p), ph = H.core.portikHeight;
-    const y2 = roofTop / 2;
+    const y2 = storeyFloor(2); // våning 2's floor (VERTICAL, #344)
     const win = (xa) => ({ x0: coreX0 + xa, x1: coreX0 + xa + 1.2, y0: y2 + 0.8, y1: y2 + 2.4 });
     const holes = [{ x0: p0, x1: p1, y0: 0, y1: ph }, win(1.0), win(6.4)];
     facade(bricks, coreX0, coreX1, 0, roofTop, -eps, true, holes, false);
@@ -280,7 +280,7 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
 
   // gable ends (L1008's east gable has windows): brick up to the terrace parapet, våning 4 in render
   bricks.push(quadX(0, D, 0, roofTop, xw - eps, true), quadX(loftD, D, roofTop, par, xw - eps, true));
-  const sh = [0, roofTop / 2, roofTop, y3];
+  const sh = [1, 2, 3, 4].map(storeyFloor); // each storey's finished floor (VERTICAL, #344)
   const gw = H.gableWindows.map((g) => ({ z0: g.z0, z1: g.z1, y0: sh[g.storey] + g.sill, y1: sh[g.storey] + g.head, storey: g.storey }));
   for (const [za, zb, ya, yb] of complement(0, D, 0, roofTop, gw.filter((g) => g.storey < 2).map((g) => ({ x0: g.z0, x1: g.z1, y0: g.y0, y1: g.y1 })))) {
     bricks.push(quadX(za, zb, ya, yb, xe + eps, false));
@@ -295,9 +295,10 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
   gw.forEach((g) => fakeWindowX(g, xe + eps, false));
 
   // flat roof over våning 4 with a parapet, solar panels
-  roofs.push(boxGeo(xw - 0.1, xe + 0.1, upperTop, upperTop + 0.3, loftD - 0.1, zs + 0.1));
-  const capping = [boxGeo(xw - 0.13, xe + 0.13, upperTop + 0.3, upperTop + 0.35, loftD - 0.13, zs + 0.13), ...copings]; // light sheet-metal capping on the parapets (#110)
-  for (const [xa, xb] of H.solar.x) for (const [za, zb] of H.solar.z) panels.push(boxGeo(xa, xb, upperTop + 0.35, upperTop + 0.42, za, zb));
+  const rb = VERTICAL.roof.buildUp, rc = rb + VERTICAL.roof.capping; // roof build-up + capping (assumption, #344)
+  roofs.push(boxGeo(xw - 0.1, xe + 0.1, upperTop, upperTop + rb, loftD - 0.1, zs + 0.1));
+  const capping = [boxGeo(xw - 0.13, xe + 0.13, upperTop + rb, upperTop + rc, loftD - 0.13, zs + 0.13), ...copings]; // light sheet-metal capping on the parapets (#110)
+  for (const [xa, xb] of H.solar.x) for (const [za, zb] of H.solar.z) panels.push(boxGeo(xa, xb, upperTop + rc, upperTop + rc + 0.07, za, zb));
 
   // loftgång deck from the west drum to the east end, plus the landing to the east drum
   const towers = H.towers.map((t) => (t.gable === 'west' ? { ...t, x: xw - t.r } : t)); // right against the gable (#172)

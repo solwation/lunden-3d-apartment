@@ -3,14 +3,50 @@
 // "bofakta" = Peab's fact sheet for L1002–L1007 (2024-11-08, FOJAB): BH = sill height,
 // RH = room height, from https://peabbostad.se/projekt/skane/kv.-lunden/l1007/
 
-export const SLAB = 0.25; // floor slab thickness between the levels (guess)
-
-export const LEVELS = [
-  // Entréplan: "Takhöjd ca 3,0 m. Lokalt lägre över tvätt."
-  { name: 'Entréplan', floor: 0, ceiling: 3.0 },
-  // Övre plan: "Takhöjd ca 2,8 m. Lokalt ca 2,4 m vid sovrummens fönster."
-  { name: 'Övre plan', floor: 3.0 + SLAB, ceiling: 2.8 },
-];
+// Vertical reference (#344, architecture review 01). The model keeps four things apart per level: the finished floor
+// level (FFL, absolute y), the clear room height (RH, finished floor -> finished ceiling, bofakta), the slab zone above
+// it (finished ceiling -> the next finished floor: structure + floor build-up + ceiling) and, on top, the roof / deck
+// build-up. RH is NOT the floor-to-floor distance; window BH (`WINDOWS` sill) is measured from the level's finished
+// floor. Each value says where it comes from: 'drawing' (stated on a Peab drawing / bofakta), 'read' (read off one,
+// e.g. with the scale bar) or 'assumption' (none of Peab's material gives it). Do not swap an assumption for another
+// "normal" value: it needs a section with levels (plushöjder), which we do not have. Every floor and ceiling level in
+// the code is derived from this, once.
+export const VERTICAL = {
+  // y 0 = the finished floor of L1007's Entréplan (våning 1), which is also the street / courtyard level here
+  // (SITE.terrain); everything is relative to it. No absolute height (RH2000) is known.
+  datum: { y: 0, what: 'FFL L1007 Entréplan (våning 1)', source: 'assumption' },
+  levels: [
+    // Entréplan = våning 1. bofakta: "Takhöjd ca 3,0 m. Lokalt lägre över tvätt." `slab` = the zone from its finished
+    // ceiling to Övre plan's finished floor (assumption)
+    { name: 'Entréplan', storey: 1, rh: 3.0, rhSource: 'drawing', slab: 0.25, slabSource: 'assumption' },
+    // Övre plan = våning 2. bofakta: "Takhöjd ca 2,8 m. Lokalt ca 2,4 m vid sovrummens fönster." `slab` = our roof
+    // zone up to våning 3's finished floor = the upper unit's floor and the loftgång deck (assumption)
+    { name: 'Övre plan', storey: 2, rh: 2.8, rhSource: 'drawing', slab: 0.35, slabSource: 'assumption' },
+  ],
+  // Hus L våning 3–4 (L1201–L1209): floor-to-floor per storey; no RH or section for them here (assumption)
+  upper: { storeys: 2, floorToFloor: 3.0, source: 'assumption' },
+  // the flat roof over våning 4: its build-up over våning 4's structure top + the sheet-metal capping (assumption)
+  roof: { buildUp: 0.3, capping: 0.05, source: 'assumption' },
+};
+// Derived: read these, do not redefine them. The FFL of each level = the FFL below + its RH + its slab zone (each slab
+// counted once): Entréplan 0, Övre plan 0 + 3.0 + 0.25 = 3.25, våning 3 (the top of our unit, the loftgång deck)
+// 3.25 + 2.8 + 0.35 = 6.4, våning 4 at 9.4, the roof over it at 12.4 (+ 0.3 build-up + 0.05 capping). What hangs on the
+// assumed values: the stair's total rise (stairs.js: LEVELS[1].floor - LEVELS[0].floor, #09), the façade band between
+// the window rows, the loftgång / upper units / roof heights (exterior.js, greet.js, weather.js, people.js) and so the
+// sight lines from outside.
+export const SLAB = VERTICAL.levels[0].slab; // slab zone between Entréplan and Övre plan (assumption)
+// `floor` = FFL (absolute y), `ceiling` = RH (relative to its floor, as always), `top` = the next level's FFL
+export const LEVELS = [];
+for (let i = 0, y = VERTICAL.datum.y; i < VERTICAL.levels.length; i++) {
+  const v = VERTICAL.levels[i];
+  LEVELS.push({ name: v.name, storey: v.storey, floor: y, ceiling: v.rh, top: y + v.rh + v.slab });
+  y += v.rh + v.slab;
+}
+/** FFL of våning 3 = the top of our two-storey unit (its roof is the upper unit's floor and the loftgång deck). */
+export const UNIT_TOP = LEVELS[LEVELS.length - 1].top;
+/** FFL of Hus L's våning n (1-based: 1–2 = our levels, 3–4 the upper units; n = 5 = the top of våning 4's structure). */
+export const storeyFloor = (n) => (n <= LEVELS.length ? LEVELS[n - 1].floor
+  : UNIT_TOP + (n - LEVELS.length - 1) * VERTICAL.upper.floorToFloor);
 
 // Lowered ceilings (soffits), in plan metres relative to the level's floor.
 // x/z ranges are clipped to the interior by the walls anyway.
@@ -213,7 +249,10 @@ export const SITE = {
     stairs: [{ x0: 11.6, x1: 13.5, z: 27.25, step: 0.3, drop: 1.4, steps: 9, walk: { x0: 11.6, x1: 19.7, z0: 29.95, z1: 31.8 } }, // the walk meets the pavement along Sankt Lars väg (SITE.roads)
       { x0: -47.4, x1: -45.9, z: 52.5, step: 0.3, landing: 1.0 }],
   },
-  bay: 3.0, storey: 3.0,  // façade texture of the other blocks: one window per 3 × 3 m
+  // façade texture of the other blocks: one window per 3 × 3 m. `storey` = one generic floor-to-floor height for Hus A, B
+  // and C (assumption, #344): plan brochure S2 gives only their storey counts (A suterräng + 1–4, B suterräng + 1–3,
+  // C 1–5 = `storeys` from `base` in `blocks`), not equal or known heights; it sets their eaves, window rows and loggias
+  bay: 3.0, storey: 3.0,
   // the Å-husen's shape (#145, #258), measured on the calibrated overview plans (docs/peab/kalibrerad/vaning-1/2-300dpi.png):
   // each corner is a loggia over the full height, `corners` per block = [length along x, depth along z] in m (A and B: the
   // north ones 3.4 × 2.0, the south ones 5.9 × 2.05 with the middle 7.5 m standing out; Hus C is turned: its NE one opens
@@ -438,8 +477,8 @@ export const HUS_L = {
   // Hus L 53.3 m gable to gable (exterior.js husLLayout).
   pitch: 5.55, wall: 0.1, gableExtra: 0.38,
   core: { w: 8.175, portik: [3.4, 5.1], portikHeight: 3.0 }, // stair core
-  upperStoreys: 2,
-  storeyHeight: 3.0,
+  upperStoreys: VERTICAL.upper.storeys,        // våning 3–4 (plan brochure S2: Hus L = våning 1–4)
+  storeyHeight: VERTICAL.upper.floorToFloor,   // våning 3–4 floor-to-floor (assumption, #344), not våning 1–2's
   loftgangDepth: 1.96,    // walkway over our north bedrooms: z 0 → façade of the upper unit
   railHeight: 1.1,
   render: 0xf2efe7,       // white render, våning 3–4
@@ -504,9 +543,9 @@ export const SEASON = {
 
 export const FENCE_HEIGHT = 1.8; // bofakta: Skärmvägg H = 1,8 m
 
-export const BUILDING = {
-  upperStoreys: 2,        // the stacked unit above (two storeys)
-  storeyHeight: 3.0,
+export const BUILDING = { // unused (HUS_L replaced it); kept in step with VERTICAL
+  upperStoreys: VERTICAL.upper.storeys,   // the stacked unit above (two storeys)
+  storeyHeight: VERTICAL.upper.floorToFloor,
   loftgangDepth: 1.96,    // walkway over our north bedrooms: z 0 → façade of the upper unit
   neighbours: 2,          // identical units on each side (row)
   railHeight: 1.1,

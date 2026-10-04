@@ -681,6 +681,13 @@ North = −z (the bedrooms Sovrum 1/3 face north).
 - Two levels, 5.75 × 12.70 m outside, 63 m² boarea. Row house; side walls are party walls.
 - Ceiling height: **Entréplan ~3.0 m**, **Övre plan ~2.8 m**. Peab's fact sheet ("bofakta",
   linked from the project page) gives RH 2.5 m over Tvätt/Badrum and in WC/dusch.
+- Vertical reference (#344, `VERTICAL` in config): y 0 = the finished floor (FFL) of our Entréplan = våning 1 = street /
+  courtyard level. Per level: FFL, RH (bofakta: 3.0 / 2.8 — *drawing*), the slab zone above it (0.25 between our floors,
+  0.35 from Övre plan's ceiling to våning 3's floor = the loftgång deck — *assumption*); våning 3–4 floor-to-floor 3.0, the
+  roof build-up 0.3 + 0.05 capping and `SITE.storey` 3.0 for Hus A/B/C — all *assumption* (plan brochure S2 gives only
+  storey counts). `LEVELS` (floor, ceiling = RH, top), `SLAB`, `UNIT_TOP` (6.4), `storeyFloor(n)` and
+  `HUS_L.storeyHeight` are derived from it; each slab is counted once. RH is not floor-to-floor; BH is from the FFL.
+  Missing: a section with levels (plushöjder) — the stair's total rise, façade band, loftgång and roof heights hang on it.
 - **Sovrum 1 and Sovrum 3 (north) have a lowered ceiling, RH 2.4 m**, a boxed-in ceiling ~1.5 m
   deep from the façade, because the access balcony (*loftgång*) for the units above runs there.
 - Window sill heights (BH) per window are from bofakta; head heights are estimated from Peab's

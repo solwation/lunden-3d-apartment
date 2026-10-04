@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { PEOPLE as P, LEVELS, SEASON } from './config.js';
+import { PEOPLE as P, UNIT_TOP, SEASON } from './config.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { bikeGeometry } from './streetlife.js';
 import { sfx } from './audio.js';
@@ -43,7 +43,7 @@ export class People {
     for (const [x, z] of P.sandbox) fig('sandbox', { x, z, kid: true, yaw: rnd() * 6 });
     for (const b of P.benches) fig('sit', { ...b });
     fig('lie', { ...P.blanket });
-    const top = LEVELS[1].floor + LEVELS[1].ceiling + 0.35; // the loftgång deck
+    const top = UNIT_TOP; // the loftgång deck = våning 3's floor
     for (const [x, z] of P.loftgang) fig('stand', { x, z, y: top, yaw: Math.PI });
     this.figs = figs;
     const mat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.85 });
