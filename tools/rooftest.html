@@ -96,11 +96,27 @@ async function run() {
   const hidden = inside.filter((it) => it.far).length;
   check(inside.length > 50 && hidden / inside.length > 0.95, `the detail culler hides the flat's inside from up here (${hidden} of ${inside.length})`);
   lights.setAll(false);
-  // walking off the loftgång's east end: a fall that hurts
+  // the loftgång's east end and the east drum's landing have a railing (#449): no walking off them
+  const aloftOk = () => Math.abs(player.pos.y - roofTop) < 0.01 && !landings.some((l) => l.r || l.drop > 0.05) && !fall.active; // (a 0 m "landing" over the deck | drum seam is no fall)
   place(xe - 0.6, 0.8, roofTop, -90);
   push(-90, 3);
-  check(landings.some((l) => l.r === 'hurt' && l.drop > FALL.hurt), `off the loftgång's east end: hurt (drop ${f2(Math.max(...landings.map((l) => l.drop)))} m)`);
-  await settle();
+  check(aloftOk() && player.pos.x < xe - 0.04 - PLAYER.radius + 0.03, `the loftgång's east end: stopped by the railing (x ${f2(player.pos.x)}, end ${f2(xe)})`);
+  push(0, 3); // along the end railing towards the street
+  check(aloftOk() && player.pos.z > 0.04 + PLAYER.radius - 0.03, `the street railing holds at the east end (z ${f2(player.pos.z)})`);
+  const te = HUS_L.towers[1];
+  for (const [side, s] of [['west', -1], ['east', 1]]) { // onto the landing, then sideways off it
+    place(te.x, 0.8, roofTop, 0);
+    r = walkTo(te.x + s * 0.7, -0.45);
+    push(s < 0 ? 90 : -90, 3);
+    const edge = te.x + s * 1.2;
+    check(r.ok && aloftOk() && Math.abs(player.pos.x - edge) > PLAYER.radius - 0.05 && Math.abs(player.pos.x - te.x) < 1.2,
+      `the east drum's landing: its ${side} side's railing holds (x ${f2(player.pos.x)}, edge ${f2(edge)})`);
+  }
+  place(te.x, 0.8, roofTop, 0);
+  r = walkTo(te.x, te.z);
+  check(r.ok && aloftOk() && Math.hypot(player.pos.x - te.x, player.pos.z - te.z) < 0.15, `the east drum's doorway is open: into its top landing (${f2(player.pos.x)}, ${f2(player.pos.z)})`);
+  push(0, 3);
+  check(aloftOk() && Math.hypot(player.pos.x - te.x, player.pos.z - te.z) < te.r - PLAYER.radius + 0.03, 'its wall holds');
   // the west drum's top landing from the loftgång
   const tw = HUS_L.towers[0], twx = xw - tw.r;
   place(xw + 1.0, 0.7, roofTop, 90);
@@ -108,6 +124,12 @@ async function run() {
   check(r.ok && Math.abs(player.pos.y - roofTop) < 0.01, `into the west drum's top landing (${f2(player.pos.x)}, ${f2(player.pos.z)}) at ${f2(player.pos.y)} m`);
   push(90, 3);
   check(Math.hypot(player.pos.x - twx, player.pos.z - tw.z) < tw.r - PLAYER.radius + 0.03 && !landings.length, 'its wall holds');
+  // the corner between the west drum's doorway and the deck's street corner (#449): no way off to the street
+  for (const yaw of [0, 30, 60, -30]) {
+    place(xw - 0.1, 0.6, roofTop, 0);
+    push(yaw, 3);
+    check(aloftOk(), `the west drum's landing corner holds (yaw ${yaw}: ${f2(player.pos.x)}, ${f2(player.pos.z)})`);
+  }
 
   // (2) our terrace (L1208): the set-back wall, the railing, the skärmvägg
   const T = husLTerraces().find((t) => t.id === 'L1208');

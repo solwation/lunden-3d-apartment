@@ -815,7 +815,7 @@ tools/falltest.html    headless test (#361): a 2.5 m drop is soft, a 5 m drop hu
                        counted + a deduction); the stair up / down (also crouched), the ramp,
                        the outdoor stairs (#355), out of the top bunk, a resume record: no free fall
 tools/rooftest.html    headless test (#360): placed on the loftgång (level, the railing, no way into the upper units, no pool light for
-                       the flat's lamps, the culler hides its inside, off the east end = hurt, into the west drum), our terrace (railing,
+                       the flat's lamps, the culler hides its inside, the railing at the east end, both sides of the east drum's landing and by the west drum's doorway holds (#449), into both drums), our terrace (railing,
                        set-back wall, skärmvägg), Hus L's roof (a panel row, the loft in the way, off the edge onto the loftgång), Hus A's
                        slope and eaves, a canopy; the rain ends on each roof; the first visits counted
 tools/jetpacktest.html headless test (#359): the jetpack on its hook beside the garage door, E puts it on (hands free, HUD), Space lifts

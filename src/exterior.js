@@ -381,7 +381,7 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
     }
   }
 
-  // loftgång railing: a round handrail + bottom rail + balusters every 12 cm (gap at the east drum's landing)
+  // loftgång railing: a round handrail + bottom rail + balusters every 12 cm (open at the east drum's landing)
   const rz = 0.04, rh = H.railHeight;
   const fascia = [boxGeo(deckX0, xe, roofTop - 0.27, roofTop + 0.02, -0.075, -0.05)]; // sheet-metal edge of the deck (#111)
   for (const [ra, rb] of [[deckX0, te.x - 1.2], [te.x + 1.2, xe]]) {
@@ -389,6 +389,25 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
     rails.push(boxGeo(ra, rb, roofTop + 0.08, roofTop + 0.12, rz - 0.02, rz + 0.02));
     for (let x = ra + 0.06; x < rb; x += 0.12) rails.push(boxGeo(x - 0.01, x + 0.01, roofTop, roofTop + rh, rz - 0.01, rz + 0.01));
   }
+  // the same railing on the loftgång's other open edges (#449): the east end, the east drum's landing's two sides from
+  // the drum wall's doorway edges to the street railing, and the gap between the west drum's doorway and the deck's corner
+  const railRun = (ax, az, bx, bz) => {
+    const L = Math.hypot(bx - ax, bz - az), ang = Math.atan2(bz - az, bx - ax), mx = (ax + bx) / 2, mz = (az + bz) / 2;
+    rails.push(new THREE.CylinderGeometry(Lf.handrailR, Lf.handrailR, L, 10).rotateZ(Math.PI / 2).rotateY(-ang).translate(mx, roofTop + rh - Lf.handrailR, mz));
+    rails.push(new THREE.BoxGeometry(L, 0.04, 0.04).rotateY(-ang).translate(mx, roofTop + 0.1, mz));
+    for (let d = 0.06; d < L - 0.02; d += 0.12) {
+      const u = d / L;
+      rails.push(new THREE.BoxGeometry(0.02, rh, 0.02).rotateY(-ang).translate(ax + (bx - ax) * u, roofTop + rh / 2, az + (bz - az) * u));
+    }
+  };
+  const gapEdge = (t, s) => { const a = ((t.door + (s * t.gap) / 2) * Math.PI) / 180; return [t.x + t.r * Math.cos(a), t.z + t.r * Math.sin(a)]; };
+  const loftRails = [
+    [xe - rz, rz, xe - rz, loftD],                    // the east end, up to the upper unit's gable
+    [...gapEdge(te, -1), te.x + 1.2, rz],             // the east drum's landing: its east side …
+    [...gapEdge(te, 1), te.x - 1.2, rz],              // … and its west side
+    [...gapEdge(tw, -1), deckX0 + rz, rz],            // the west drum's doorway to the deck's street corner
+  ];
+  for (const r of loftRails) railRun(...r);
 
   // walking up there (#360, src/roofs.js): the surfaces and the walls standing on them, from the same measures as the
   // meshes above. Walls start under the ground (−10) where they are the building's own faces, so nobody falls into it.
@@ -405,6 +424,7 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
   wallLine(walls, CORE.loftDoor.x[1], loftD, xe, loftD, roofTop, roofY);
   wallLine(walls, CORE.loftDoor.x[0], loftD, CORE.loftDoor.x[1], loftD, roofTop + 2.2, roofY); // … but the stairwell's door (#415: its leaf is core.js's)
   for (const [ra, rb2] of [[deckX0, te.x - 1.2], [te.x + 1.2, xe]]) wallLine(walls, ra, rz, rb2, rz, roofTop - 0.3, roofTop + rh); // the loftgång railing
+  for (const [ax, az, bx, bz] of loftRails) wallLine(walls, ax, az, bx, bz, roofTop - 0.3, roofTop + rh); // its other edges (#449)
   wallLine(walls, xw, D - 0.1, xe, D - 0.1, roofTop, deckY + C.rail); // våning 3's courtyard face + the terraces' parapet and railing
   for (const [x, s] of [[xw, 1], [xe, -1]]) {
     wallLine(walls, x, loftD, x, zs, roofTop, roofY); // the gables
