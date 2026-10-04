@@ -1428,6 +1428,26 @@ export const STAIR = {
   hole: { x0: 3.86, x1: 5.49, z0: 5.77, z1: 7.54 },
   railHeight: 1.1, // bofakta: H 1,1 m
   newel: 0.08,     // newel post at the railing's corner and ends, square (guess, Peab 3D plan shows heavier posts)
+  // Handrails along the flights (#419, stairs.js `handrailRuns` / `buildHandrails`; no handrail detail for L1007 exists,
+  // so every number is a *guess*; Peab's render of L1209's stair, docs/peab/trappa-ledstang-render-l1209.png, shows a
+  // slim plain rail following the pitch). White like the railing (COLORS.rail, the light render), one merged mesh with
+  // the railing's material. `outer` = one continuous rail on the wall side: the living-room wall along flight A, the
+  // east party wall round the winders, the north wall along flight B (the wall faces from plan.json; `from` / `to` =
+  // where the bottom / top wall ends: the living-room doorway, the upstairs hall's corner — the 0.3 m extensions are
+  // cut short there). The railing's top round the opening is 1.3 m+ over flight B's nosings and none stands by flight A,
+  // so the inner side gets one per flight too (the issue's rule): `innerA` on the Klk wall, `innerB` on the balusters
+  // between the newels. In a dwelling one side would do (BBR 8:232); the second side is our choice.
+  handrail: {
+    h: 0.9,      // over the nosings, vertically (usual Swedish practice, guess)
+    r: 0.02,     // Ø 4 cm round rail (guess)
+    gap: 0.05,   // clear gap rail → wall (guess)
+    ext: 0.3,    // horizontal extension past the bottom / top nosing (guess), less where the wall ends
+    smooth: 0.15, // ± m the pitch line is eased over (the winders' outer goings differ from the flights')
+    bend: 0.06,  // ± m the plan corners and the returns to the wall are rounded over
+    bracket: { every: 1.0, drop: 0.06, r: 0.006, rose: 0.028, roseT: 0.008 }, // brackets ~1 m apart (guess)
+    outer: { south: 7.604, east: 5.551, north: 5.704, from: 3.252, to: 3.802 },
+    innerA: { face: 6.704, from: 3.352, to: 4.671 },
+  },
 };
 
 export const COLORS = {

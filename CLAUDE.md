@@ -109,6 +109,8 @@ src/config.js          everything NOT in the PDF: heights, soffits, stair layout
 src/world.js           builds meshes + per-level collision segments from data/plan.json
 src/stairs.js          stair treads + walking height function (stairHeight) and the treads' underside (stairUnderside: head room,
                        collision, the Klk under it); the rise is LEVELS[1].floor − LEVELS[0].floor in equal risers (#352)
+                       handrails (#419, `handrailRuns` / `buildHandrails`, STAIR.handrail): white Ø 4 cm rails on brackets, 0.9 m
+                       over the nosings (eased through the winders), returns into the wall; merged with the M.rail parts
 src/doors.js           SwingDoor / SlidingDoor (E to open/close, animated, dynamic collision)
 src/exterior.js        Hus L (HUS_L): brick row with the core/portik, neighbours' patios, rendered upper
                        units with pilasters, loftgång, spiral-stair drums, roof with solar panels; `husLLayout` gives each
@@ -633,7 +635,9 @@ tools/reloadtest.html  headless test: resume after "Ladda om", F5 starts at STAR
 tools/resttest.html    headless test: sit on every seat and lie in every bed (spot, no walking, up again looking the same way;
                        head turned, old spot behind: up in front, #202; every spot ahead / turned, from behind: free floor, #302; in every bed the eye clear of the bedding, #308; no two bedding surfaces within 1.5 mm, #335)
 tools/stairtest.html   headless test (#352): equal risers from floor to floor, no jump along the walking line, the top tread at the
-                       slab edge, head room, collisions by the treads' top / underside, the soffits, the Klk's things under the treads
+                       slab edge, head room, collisions by the treads' top / underside, the soffits, the Klk's things under the treads; the handrails
+                       (#419): h over the nosings / the pitch, level extensions, returns, inside the walls' clearance, clear of
+                       the walking line, switches, pictures and door swings
 tools/stucktest.html   headless test (#314): a 5 cm scan of both floors (doors open; the free floor in one piece, pockets out of
                        reach listed), getting up from every seat / bed with the old spot inside it, F putting the sofa / bed back
                        round you, the car parking on you, the hoop rising under you, a door shut on you, a resume record in the bed
@@ -893,6 +897,10 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   flap (`letterFlap`, an Openable in world.lids riding on the leaf, kept out of the door's merge via `door.keep`).
 - Skärmvägg by the patio H 1.8 m, stair railing H 1.1 m (bofakta). The railing's middle run stands on Entréplan's wall between
   the flights, carried up to the upstairs floor (no slab in the hole), with newel posts (`STAIR.newel`) at its corner and ends (#232).
+  Handrails (#419, `STAIR.handrail`, all sizes *guess*): one continuous wall-side rail (living-room wall along flight A,
+  the east party wall round the winders, the north wall along flight B) and one per flight on the inner side (the Klk wall
+  along flight A, on the balusters along flight B — the railing's top is 1.3–1.7 m over flight B's nosings); the bottom
+  extensions are cut short by the living-room doorway, the top ones by the upstairs hall's wall corner and the newels.
 - U-shaped stair with winders at the east end: flight A (Entréplan, going east), 180° winders,
   flight B (going west) arriving in the upstairs hall. Upstairs slab opening = stair outline on
   Övre plan. #352: the total rise is the floor levels' (`stairRise`), 15 treads (4 + 8 + 3) + 1 = 16 equal risers

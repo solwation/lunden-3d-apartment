@@ -4,7 +4,7 @@ import {
   LEVELS, UNIT_TOP, SOFFITS, DOOR_HEIGHT, DOOR_TRIM, EXT_DOOR_HEAD, WINDOWS, WINDOW_TOP_HUNG_MAX, BLINDS, CABINET_HEIGHT, BASE_CABINET, SHELF_HEIGHT, TOILET,
   STAIR, COLORS, FENCE_HEIGHT, SITE, OUTDOOR, CABINET_FIXES, KLK, SEASON, FINISH, OPTIONS, EXTRA_WALLS, SLIDE_FLIP, ROOM_RENAMES, EXTRA_ROOMS, ROOM_DIVIDERS,
 } from './config.js';
-import { buildStairs } from './stairs.js';
+import { buildStairs, buildHandrails } from './stairs.js';
 import { klkFittings } from './closet.js';
 import { cleaningFittings } from './cleaning.js';
 import { Openable } from './openables.js';
@@ -681,6 +681,8 @@ export function buildWorld(plan) {
     scene.add(box(x - np, x + np, z - np, z + np, y1 - 0.01, y1 + rail + 0.03, M.rail));
   }
   l1.segments.push(...railSegs);
+  // handrails: the wall side along the flights and round the winders, one per flight on the inner side (#419)
+  for (const m of [...buildHandrails(M.rail).children]) scene.add(m);
 
   // Loose furniture (IKEA LANDSKRONA etc., see FURNITURE in config)
   const furniture = buildFurniture();

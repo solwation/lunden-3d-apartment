@@ -134,6 +134,68 @@ f.onload = async () => {
   }
   check(nv > 0 && worst > 0, `the Klk's things under the stair (${nv} vertices) clear the treads' undersides: least ${f3(worst)} m at (${where.map(f3).join(', ')})`);
 
+  // (8) the handrails (#419): h over the nosings along the pitch, horizontal ends returning into the wall, inside the
+  // walls' clearance (never in the walking circle), clear of the walking line, the pictures, the switches and the doors
+  const HR = STAIR.handrail, runs = S.handrailRuns(), { world, lights } = w.__app;
+  const segDist = (x, z, [ax, az, bx, bz]) => {
+    const dx = bx - ax, dz = bz - az, L2 = dx * dx + dz * dz || 1e-12;
+    const t = Math.max(0, Math.min(1, ((x - ax) * dx + (z - az) * dz) / L2));
+    return Math.hypot(ax + dx * t - x, az + dz * t - z);
+  };
+  const allSegs = [...world.levels[0].segments, ...world.levels[1].segments];
+  const nearWall = (x, z) => Math.min(...allSegs.map((sg) => segDist(x, z, sg)));
+  const railAt = (run, s) => run.points[Math.max(0, Math.min(run.points.length - 1, Math.round(s / 0.01)))];
+  const built = S.buildHandrails(new (await w.eval("import('three')")).MeshBasicMaterial()).children;
+  check(runs.length === 3 && built.length === 3 && built.every((m) => m.geometry.attributes.position.count > 1000),
+    `handrails: ${runs.map((r) => r.name).join(', ')} (${built.map((m) => m.geometry.attributes.position.count / 3).join(' + ')} triangles)`);
+  const walkLine = path.filter(([x, z]) => S.stairHeight(x, z) !== null);
+  for (const run of runs) {
+    const [s0, s1] = run.main;
+    // over each nosing on the main path
+    const on = run.nosings.filter((n) => n.s >= s0 - eps && n.s <= s1 + eps);
+    const over = on.map((n) => railAt(run, n.s)[1] - n.y);
+    check(on.length >= 3 && over.every((d) => Math.abs(d - HR.h) <= 0.05),
+      `${run.name}: over its ${on.length} nosings ${f3(Math.min(...over))}–${f3(Math.max(...over))} m (h ${HR.h} ± 0.05)`);
+    // along the pitch line everywhere on the main path
+    let worstP = 0;
+    run.s.forEach((s, i) => { if (s < s0 || s > s1) return; const d = run.points[i][1] - run.pitch(s) - HR.h; if (Math.abs(d) > Math.abs(worstP)) worstP = d; });
+    check(Math.abs(worstP) <= 0.06, `${run.name}: follows the pitch line + ${HR.h} within ${f3(Math.abs(worstP))} m`);
+    // the ends: level, then into the wall / the balusters
+    const ends = [[run.points[0], railAt(run, s0), railAt(run, s0 + 0.05)], [run.points.at(-1), railAt(run, s1), railAt(run, s1 - 0.05)]];
+    // an end with room for an extension past its outermost nosing is level; where a wall end / a newel leaves none
+    // (the top of the outer rail, inner A's top, inner B) it just returns
+    const room = [run.nosings[0].s - s0, s1 - run.nosings.at(-1).s];
+    const flat = ends.every(([, a, b], k) => room[k] < 0.1 || Math.abs(a[1] - b[1]) < 0.015);
+    const into = ends.map(([e]) => nearWall(e[0], e[2]));
+    check(flat && into.every((d) => d < 0.035), `${run.name}: extensions ${room.map(f3).join(' / ')} m (level where ≥ 0.1: ${ends.map(([, a, b]) => f3(Math.abs(a[1] - b[1]))).join(', ')}), both ends return to the wall (${into.map(f3).join(', ')} m)`);
+    // inside the walls' clearance: a wall segment nearer than PLAYER.radius − the rail's own radius
+    let worstC = 0, whereC = null;
+    for (const [x, , z] of run.points) { const d = nearWall(x, z) + HR.r; if (d > worstC) { worstC = d; whereC = [x, z]; } }
+    check(worstC <= PLAYER.radius - 0.02, `${run.name}: its outer edge at most ${f3(worstC)} m from a wall / railing segment (< radius ${PLAYER.radius}) at (${whereC.map(f3).join(', ')})`);
+    // the walking line
+    const dWalk = Math.min(...walkLine.map(([x, z]) => Math.min(...run.points.filter((_, i) => i % 3 === 0).map(([px, , pz]) => Math.hypot(px - x, pz - z)))));
+    check(dWalk > PLAYER.radius + HR.r, `${run.name}: ${f3(dWalk)} m from the walking line (> ${PLAYER.radius} + ${HR.r})`);
+    // the switches, the pictures, the doors
+    const pts = run.points.filter((_, i) => i % 2 === 0);
+    const dSw = Math.min(...lights.switches.map((sw) => Math.min(...pts.map(([x, y, z]) => Math.hypot(x - sw.object.position.x, y - sw.object.position.y, z - sw.object.position.z)))));
+    const pics = FURNITURE.filter((it) => it.type === 'pictures' || it.type === 'painting').map((it) => {
+      const cols = it.cols ?? 1, rows = it.rows ?? 1, hw = (cols * it.w + (cols - 1) * (it.gap ?? 0)) / 2, hh = (rows * it.h + (rows - 1) * (it.gap ?? 0)) / 2;
+      const cy = LEVELS[it.level].floor + it.y, along = Math.abs(it.rot) === 90; // on an x = const wall the picture spans z
+      return (x, y, z) => {
+        const du = along ? Math.max(0, Math.abs(z - it.z) - hw) : Math.max(0, Math.abs(x - it.x) - hw);
+        const dn = along ? Math.abs(x - it.x) : Math.abs(z - it.z);
+        return Math.hypot(du, Math.max(0, Math.abs(y - cy) - hh), dn);
+      };
+    });
+    const dPic = Math.min(...pics.map((p) => Math.min(...pts.map(([x, y, z]) => p(x, y, z)))));
+    const doors = world.doors.filter((d) => d.hinge && d.len);
+    const dDoor = Math.min(...doors.map((d) => Math.min(...pts.filter(([, y]) => y > d.object.position.y && y < d.object.position.y + 2.3)
+      .map(([x, , z]) => Math.hypot(x - d.hinge[0], z - d.hinge[1]) - d.len)), Infinity));
+    check(dSw > 0.1 && dPic > 0.1 && dDoor > 0.02, `${run.name}: clear of the switches (${f3(dSw)} m), the pictures (${f3(dPic)} m) and the door leaves' swing (${f3(dDoor)} m)`);
+  }
+  // the top of the stair: the railing's own handrail is not reachable as one (the issue's rule for the inner side)
+  info(`the railing's top over flight B's nosings: ${f3(LEVELS[1].floor + STAIR.railHeight - S.stairHeight(STAIR.bX1 + 0.01, zB))}–${f3(LEVELS[1].floor + STAIR.railHeight - S.stairHeight(CX - 0.01, zB))} m (so flight B gets an inner rail too)`);
+
   out.textContent = (pass ? 'ALL PASS\n' : 'SOME FAILED\n') + lines.join('\n');
 };
 </script>
