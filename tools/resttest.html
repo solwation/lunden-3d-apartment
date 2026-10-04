@@ -137,6 +137,28 @@ f.onload = async () => {
       }
       pass &= check(close <= rays * 0.01, `${bed.userData.rest.name} at (${box.getCenter(new THREE.Vector3()).x.toFixed(1)}, ${box.getCenter(new THREE.Vector3()).z.toFixed(1)}): ${close} of ${rays} rays meet two surfaces within 1.5 mm`);
     }
+    // #402: the same from the side over the IDANÄS frame (its drawer fronts and shadow-line panels): rays level with the
+    // floor into all four sides, the two nearest faces turned towards the ray more than 4 mm apart nearly everywhere
+    const { IDANAS } = await w.eval("import('../src/config.js')");
+    for (const bed of beds.filter((b) => b.userData.rest.name === 'sängen')) {
+      const meshes = [], n = new THREE.Vector3(), m = bed.matrixWorld, rot = new THREE.Matrix3().setFromMatrix4(m);
+      bed.traverse((o) => { if (o.isMesh && o.visible) meshes.push(o); });
+      const hw = IDANAS.W / 2, hl = 1.0; // the frame's half width; the mattress is 2.0 long
+      let rays = 0, close = 0;
+      for (const [ax, sg] of [['x', 1], ['x', -1], ['z', 1], ['z', -1]]) {
+        const span = ax === 'x' ? hl : hw;
+        for (let u = -span; u <= span; u += 0.01) for (let y = IDANAS.legH + 0.02; y <= IDANAS.frameH - 0.02; y += 0.01) {
+          const o = ax === 'x' ? new THREE.Vector3(sg * (hw + 0.3), y, u) : new THREE.Vector3(u, y, sg * (hl + 0.3));
+          const d = ax === 'x' ? new THREE.Vector3(-sg, 0, 0) : new THREE.Vector3(0, 0, -sg);
+          ray.set(o.applyMatrix4(m), d.applyMatrix3(rot).normalize()); ray.far = 1;
+          const hits = ray.intersectObjects(meshes, false).filter((h) => h.face && n.copy(h.face.normal).transformDirection(h.object.matrixWorld).dot(ray.ray.direction) < -0.9); // faces square to the ray (a rounded edge grazed is no pair)
+          if (hits.length < 2) continue;
+          rays++;
+          if (hits[1].distance - hits[0].distance < 0.004) close++;
+        }
+      }
+      pass &= check(rays > 1000 && close <= rays * 0.01, `the IDANÄS frame's sides: ${close} of ${rays} rays meet two faces within 4 mm (drawer fronts, shadow lines, #402)`);
+    }
   }
   // #202: turn your head while seated, get up: you look the same way; the old spot behind you → a spot in front
   {

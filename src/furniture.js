@@ -521,12 +521,13 @@ function idanasFrame(g, item) {
   const fabric = new THREE.MeshStandardMaterial({ color: 0xffffff, map: melangeTexture(I.color), roughness: 0.95 });
   const sideW = (I.W - w) / 2, frameL = l + 0.03, fy = (I.legH + I.frameH) / 2, fh = I.frameH - I.legH;
   g.add(rbox(I.W, fh, frameL, 0, fy, 0.015, fabric, 0.03));
-  // drawer fronts (two each side), a slim shadow line round each
+  // drawer fronts (two each side), a slim shadow line round each. #402: every face stands ≥ 5 mm off the one behind it
+  // (the frame's side) — 1–2 mm apart they flickered through each other on a real GPU at a distance
   const line = new THREE.MeshStandardMaterial({ color: 0x2a2c2f, roughness: 0.9 });
   for (const s of [-1, 1]) {
-    g.add(rbox(0.004, fh - 0.12, l * 0.42, s * (I.W / 2 + 0.001), fy, -l * 0.23, line, 0.002));
+    g.add(rbox(0.008, fh - 0.12, l * 0.42, s * (I.W / 2 + 0.001), fy, -l * 0.23, line, 0.002)); // outer face 5 mm out
     // the foot-end drawers open (#103); the head-end ones stay shut behind the bedside tables
-    addDrawer(g, 'sänglådan', { x: s * (I.W / 2 + 0.002), y: fy - (fh - 0.12) / 2, zf: l * 0.23, w: l * 0.42, h: fh - 0.12, depth: sideW + w / 2 - 0.1,
+    addDrawer(g, 'sänglådan', { x: s * (I.W / 2 + 0.005), y: fy - (fh - 0.12) / 2, zf: l * 0.23, w: l * 0.42, h: fh - 0.12, depth: sideW + w / 2 - 0.1,
       front: fabric, inner: new THREE.MeshStandardMaterial({ color: 0xf2f0ea, roughness: 0.8 }), rot: s * Math.PI / 2, out: 0.45,
       fill: 'pyjamas', who: 'Sovrum 1', seed: 30 + s }); // pyjamas and spare bedding (#230)
   }
@@ -1530,7 +1531,7 @@ function tv(item) {
     g.add(rbox(w, h, 0.02, 0, 0, zf - 0.01, bezel, 0.006));                      // thin silver bezel / panel
     if (item.frame === 'black') {
       g.add(rbox(w - 0.02, 0.006, 0.022, 0, -h / 2 + 0.002, zf - 0.01, silver, 0.002)); // the thin silver edge along the bottom
-      g.add(rbox(0.05, 0.007, 0.002, 0, -h / 2 + 0.012, zf + 0.001, silver, 0.001));   // Philips on the bottom edge
+      g.add(rbox(0.05, 0.007, 0.002, 0, -h / 2 + 0.012, zf + 0.003, silver, 0.001));   // Philips on the bottom edge (#402: 3 mm proud)
     }
   } else {
     y0 = 0.075; zf = -0.03 + 0.0125; glowZ = -0.19;                              // just off the wall behind the bench
@@ -1544,11 +1545,11 @@ function tv(item) {
   const offMat = new THREE.MeshStandardMaterial({ color: 0x07080a, roughness: 0.12, metalness: 0.4 });
   const inset = wall ? 0.016 : 0.012;
   const screen = new THREE.Mesh(new THREE.PlaneGeometry(w - inset, h - inset), offMat);
-  screen.position.set(0, y0 + h / 2, zf + 0.0015);
+  screen.position.set(0, y0 + h / 2, zf + 0.004); // #402: 4 mm off the panel (1.5 mm could flicker through it)
   g.add(screen);
   // power LED under the screen: red on standby, white while on
   const led = new THREE.Mesh(new THREE.CircleGeometry(0.003, 8), new THREE.MeshBasicMaterial({ color: 0xff2a2a, toneMapped: false }));
-  led.position.set(w * 0.42, y0 + 0.004, zf + 0.002);
+  led.position.set(w * 0.42, y0 + 0.004, zf + 0.007); // 3 mm in front of the screen it may touch
   g.add(led);
   // Ambilight: a soft additive glow on the wall behind
   const gc = document.createElement('canvas');
@@ -2264,7 +2265,7 @@ function vanity(item, lights) {
   const W = M.w + 2 * M.frame, H = M.h + 2 * M.frame;
   mirror.add(rbox(W, H, M.depth, 0, 0, M.depth / 2, frameMat, 0.006));
   const glass = new THREE.Mesh(new THREE.PlaneGeometry(M.w, M.h), litMirrorMaterial);
-  glass.position.z = M.depth + 0.0005;
+  glass.position.z = M.depth + 0.003; // #402: 3 mm off the frame (0.5 mm could flicker through it)
   mirror.add(glass);
   const at = [];
   const row = (n, yy, x0, x1) => { for (let i = 0; i < n; i++) at.push([x0 + (x1 - x0) * (n > 1 ? i / (n - 1) : 0.5), yy]); };

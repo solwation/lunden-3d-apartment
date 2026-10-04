@@ -261,14 +261,16 @@ export function laptop(item) {
   lid.add(bezel);
   const sw = w - 0.026, shh = sw * L.px[1] / L.px[0];
   const feed = new Feed(item.seed ?? 11);
-  const onMat = new THREE.MeshBasicMaterial({ map: feed.texture, toneMapped: false });
-  const offMat = new THREE.MeshStandardMaterial({ color: 0x07080a, roughness: 0.1, metalness: 0.5 });
+  // #402: the screen and the stickers lie < 1 mm off the lid: pulled forward in depth so they never flicker through it
+  const decal = { polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -4 };
+  const onMat = new THREE.MeshBasicMaterial({ map: feed.texture, toneMapped: false, ...decal });
+  const offMat = new THREE.MeshStandardMaterial({ color: 0x07080a, roughness: 0.1, metalness: 0.5, ...decal });
   const screen = new THREE.Mesh(new THREE.PlaneGeometry(sw, shh), offMat);
   screen.position.set(0, lh / 2 + 0.006, 0.0008);
   lid.add(screen);
   // stickers on the back of the lid: a yellow star and a pink heart (no logo)
   for (const [kind, x, y, s, col, rz] of [['star', -0.07, 0.13, 0.022, 0xffd23f, 0.2], ['heart', 0.06, 0.07, 0.02, 0xff6fb5, -0.25]]) {
-    const st = new THREE.Mesh(stickerShape(kind, s).rotateZ(rz).rotateY(Math.PI), new THREE.MeshStandardMaterial({ color: col, roughness: 0.5 }));
+    const st = new THREE.Mesh(stickerShape(kind, s).rotateZ(rz).rotateY(Math.PI), new THREE.MeshStandardMaterial({ color: col, roughness: 0.5, ...decal }));
     st.position.set(x, y, -L.lid - 0.0006);
     lid.add(st);
   }

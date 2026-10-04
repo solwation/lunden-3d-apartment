@@ -141,13 +141,13 @@ export function klk(item, lights) {
   const led = new THREE.MeshStandardMaterial({ color: 0xf6f3ee, emissive: litEmissive(0xfff3e0), emissiveIntensity: 0.04, roughness: 0.3 });
   mirror.add(new THREE.Mesh(new RoundedBoxGeometry(M.w + 0.024, M.h + 0.024, 0.024, 2, 0.008).translate(0, 0, 0.012), frame));
   const glass = new THREE.Mesh(new THREE.PlaneGeometry(M.w, M.h), litMirrorMaterial);
-  glass.position.z = 0.0245;
+  glass.position.z = 0.027; // #402: 3 mm off the frame's face (0.5 mm could flicker through it)
   mirror.add(glass);
   const e = 0.035, L = M.led; // the band, inset from the glass's edge
   for (const [w, h, x, y] of [[M.w - 2 * e, L, 0, M.h / 2 - e], [M.w - 2 * e, L, 0, -M.h / 2 + e],
     [L, M.h - 2 * e - L, M.w / 2 - e, 0], [L, M.h - 2 * e - L, -M.w / 2 + e, 0]]) {
     const s = new THREE.Mesh(new THREE.BoxGeometry(w, h, 0.002), led);
-    s.position.set(x, y, 0.0265);
+    s.position.set(x, y, 0.03); // on the glass, its face 4 mm off it
     mirror.add(s);
   }
   mergeStatic(mirror);
