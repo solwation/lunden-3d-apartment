@@ -33,6 +33,9 @@ export const OPTIONS = { allrumDoor: true };
 export const EXTRA_WALLS = [
   { level: 1, option: 'allrumDoor', x0: 1.54, x1: 1.77, z0: 7.6, z1: 7.8 },
 ];
+// Sliding doors whose panel runs on the far side of the wall from the plan's arrow (#329): Sovrum 1's Klk door runs inside
+// the Klk along its north wall, so the bedroom face east of it is free for the hook rail (HOOKS). [level, x, z] in the gap.
+export const SLIDE_FLIP = [[1, 4.34, 4.22]];
 export const ROOM_RENAMES = [{ level: 1, from: 'Allrum', to: 'Sovrum 4', option: 'allrumDoor' }];
 // Room labels the extractor doesn't find in the PDF (used for room detection / minimap).
 export const EXTRA_ROOMS = [
@@ -1333,6 +1336,13 @@ export const YUCCA = {
 export const PHOTO_FRAME = { w: 0.21, h: 0.16, border: 0.012, depth: 0.012, lean: 0.2, texture: 'textures/miele.jpg', glow: 0.22, glowLamp: 0.6,
   held: { pos: [0.15, -0.22, -0.45], rot: [0.3, -0.15, 0] }, look: { pos: [0, -0.02, -0.3], rot: [0.2, 0, 0] } };
 
+// Sovrum 1's hook rail (#329, src/hooks.js): on the Klk wall's bedroom face east of the Klk door (its panel runs inside the
+// Klk, SLIDE_FLIP), between the architrave (x 4.81) and the east wall (x 5.55). An oak board `w` long with `hooks` black
+// single hooks, `y` = the board's centre (*guess*); a sage terry dressing gown (`gown`: `len` from the hook, the hem ~0.5 m
+// over the floor) and a navy hoodie hung by its hood (`hoodie`) on hooks `on` (0 = east, the board faces north); the 3 others empty. No collision.
+export const HOOKS = { w: 0.62, h: 0.075, y: 1.72, hooks: 5, board: 0xc9a77c,
+  gown: { on: 4, len: 1.12, color: 0xbfc8b8, belt: 0.36 }, hoodie: { on: 1, len: 0.68, hood: 0.27, color: 0x283247 } };
+
 // Day cycle (src/daycycle.js): one day in `minutes` real minutes (60, the user #125). The sun follows the real solar
 // path for the date (declination, hour angle) at Kv. Lunden, Karpvägen / S:t Lars väg in Lund
 // (55.70° N, 13.17° E, docs/tomten-google-maps.jpg). planNorth = compass bearing of the plan's
@@ -1859,6 +1869,8 @@ export const FURNITURE = [
   // wardrobe, its storage is the Klk behind the sliding door: inside 1.65 × 1.20 m (x 3.90–5.55,
   // z 4.29–5.48), the door slides in the wall plane. The chest stands against its back (south) wall,
   // centred, 73 cm of floor left in front of it; facing north (into the Klk)
+  // the hook rail on the Klk wall with a dressing gown and a hoodie (#329, HOOKS); wall face z 4.165
+  { type: 'hookrail', level: 1, x: 5.2, z: 4.163, rot: 0 },
   { type: 'nordli', level: 1, x: (3.90 + 5.55) / 2, z: 5.48 - 0.235, rot: 0, w: 1.2, h: 0.99, d: 0.47, rifle: true }, // + the AK-47 in the wide bottom drawer (#196)
   // the mattress centre: the headboard (IDANAS.head) against the east wall
   { type: 'bed', level: 1, x: 5.55 - IDANAS.head - 1.0, z: 2.3, rot: 90, w: 1.8, l: 2.0, model: 'idanas', sitUp: { tv: 'Sovrum 1' }, pingping: true, hotel: true, // Pingping between the pillows (#269), hotel pillows under the head pillows (#308)

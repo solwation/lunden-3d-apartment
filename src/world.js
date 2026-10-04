@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import {
   LEVELS, SOFFITS, DOOR_HEIGHT, DOOR_TRIM, EXT_DOOR_HEAD, WINDOWS, WINDOW_TOP_HUNG_MAX, BLINDS, CABINET_HEIGHT, BASE_CABINET, SHELF_HEIGHT, TOILET,
-  STAIR, COLORS, FENCE_HEIGHT, SITE, OUTDOOR, CABINET_FIXES, SEASON, FINISH, OPTIONS, EXTRA_WALLS, ROOM_RENAMES, EXTRA_ROOMS, ROOM_DIVIDERS,
+  STAIR, COLORS, FENCE_HEIGHT, SITE, OUTDOOR, CABINET_FIXES, SEASON, FINISH, OPTIONS, EXTRA_WALLS, SLIDE_FLIP, ROOM_RENAMES, EXTRA_ROOMS, ROOM_DIVIDERS,
 } from './config.js';
 import { buildStairs } from './stairs.js';
 import { Openable } from './openables.js';
@@ -497,7 +497,10 @@ function buildLevel(floor, li, group) {
     // don't run past the first wall piece (e.g. into the exterior wall)
     const first = onLine.find((w) => (dir > 0 ? Math.abs(w[along[0]] - gap.hi) < 0.03 : Math.abs(w[along[1]] - gap.lo) < 0.03));
     const travel = first ? first[along[1]] - first[along[0]] - 0.02 : undefined;
-    const door = new SlidingDoor(gap, s.arrow, y0, M.door, false, dir, travel);
+    // SLIDE_FLIP (#329): the panel runs on the other face (the arrow mirrored across the wall)
+    const flip = s.arrow && SLIDE_FLIP.some(([l, x, z]) => l === li && Math.abs((axis === 'x' ? z : x) - c) < 0.2 && (axis === 'x' ? x : z) > a && (axis === 'x' ? x : z) < b);
+    const arrow = flip ? { head: axis === 'x' ? [s.arrow.head[0], 2 * c - s.arrow.head[1]] : [2 * c - s.arrow.head[0], s.arrow.head[1]], tail: s.arrow.tail } : s.arrow;
+    const door = new SlidingDoor(gap, arrow, y0, M.door, false, dir, travel);
     trims.push(...architraves(gap, y0, y0 + DOOR_HEIGHT, door.face));
     doorways.push({ gap, c, exterior: false });
     door.name = 'skjutdörren';
