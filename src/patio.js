@@ -2,7 +2,8 @@ import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { PATIO as P } from './config.js';
-import { addCushions } from './cushions.js';
+import { addCushions, addFoldedThrow } from './cushions.js';
+import { Openable } from './openables.js';
 
 // The patio: Plantagen Oslo corner lounge set + table, a parasol, big planters with exotic
 // plants (furniture builders, placed via FURNITURE in config so F and collision work as for the
@@ -157,7 +158,7 @@ const beerMat = new THREE.MeshStandardMaterial({ color: 0xd88a1c, roughness: 0.2
 const foamMat = new THREE.MeshStandardMaterial({ color: 0xfbf6ea, roughness: 0.9 });
 const bubbleMat = new THREE.MeshStandardMaterial({ color: 0xfff4d6, roughness: 0.2, transparent: true, opacity: 0.8 });
 const BUBBLES = 14, BEER_H = 0.12;
-const seasonal = { parasols: [], beers: [], cushions: [] };
+const seasonal = { parasols: [], beers: [], cushions: [], boxes: [] };
 
 /** A pint of lager with rising bubbles; base at the origin. */
 function beerGlass() {
@@ -250,6 +251,69 @@ function setParasol(p, f) {
   const r = THREE.MathUtils.lerp(0.09, p.radius, e), h = THREE.MathUtils.lerp(1.15, 0.38, e);
   p.canopy.scale.set(r, h, r);
   p.canopy.rotation.x = p.tilt * e; // open, the canopy leans its local +z side down (towards the sun, #398); folded it hangs straight
+}
+
+// --- cushion box (dynbox, #400) -------------------------------------------------
+/**
+ * An outdoor cushion box (P.dynbox): an anthracite slatted wood-look box, `L` long (local x), `D` deep (z: the back
+ * at −z against the wall, the front +z), `H` high; the lid is hinged at the back (an Openable flap, E), two handles on
+ * the ends. Inside (drawn only while the lid is open, #228): a folded blanket, and the patio cushions while they are put
+ * away (Patio.update). Not a seat: E on it is the lid (#400).
+ */
+export function dynbox() {
+  const g = new THREE.Group();
+  const { L, D, H, lid: lt, wall: t, color, slat } = P.dynbox;
+  const mat = new THREE.MeshStandardMaterial({ color, roughness: 0.8 });
+  const dark = new THREE.MeshStandardMaterial({ color: new THREE.Color(color).multiplyScalar(0.55), roughness: 0.85 });
+  const hb = H - lt; // the body's height under the lid
+  // the body: a bottom and four walls (hollow, so the contents show), little feet
+  g.add(rbox(L - 2 * t, 0.02, D - 2 * t, 0, 0.04, 0, dark, 0.004));
+  g.add(rbox(L, hb - 0.03, t, 0, 0.03 + (hb - 0.03) / 2, D / 2 - t / 2, mat, 0.006));
+  g.add(rbox(L, hb - 0.03, t, 0, 0.03 + (hb - 0.03) / 2, -D / 2 + t / 2, mat, 0.006));
+  for (const s of [-1, 1]) g.add(rbox(t, hb - 0.03, D - 2 * t, s * (L / 2 - t / 2), 0.03 + (hb - 0.03) / 2, 0, mat, 0.006));
+  for (const [x, z] of [[-1, -1], [-1, 1], [1, -1], [1, 1]]) g.add(rbox(0.05, 0.03, 0.05, x * (L / 2 - 0.04), 0.015, z * (D / 2 - 0.04), dark, 0.004));
+  // vertical slats on the front and the ends (the wood look), a frame rail at top and bottom
+  for (let x = -L / 2 + slat; x < L / 2 - slat / 2; x += slat) g.add(rbox(0.012, hb - 0.11, 0.006, x, 0.03 + (hb - 0.03) / 2, D / 2 + 0.002, dark, 0.002));
+  for (const s of [-1, 1]) for (let z = -D / 2 + slat; z < D / 2 - slat / 2; z += slat) g.add(rbox(0.006, hb - 0.11, 0.012, s * (L / 2 + 0.002), 0.03 + (hb - 0.03) / 2, z, dark, 0.002));
+  for (const y of [0.06, hb - 0.03]) { // a frame rail round the outside (a ring: the box stays open inside)
+    for (const s of [-1, 1]) {
+      g.add(rbox(L + 0.008, 0.05, 0.012, 0, y, s * (D / 2 + 0.004), mat, 0.004));
+      g.add(rbox(0.012, 0.05, D + 0.008, s * (L / 2 + 0.004), y, 0, mat, 0.004));
+    }
+  }
+  // handles on the ends
+  for (const s of [-1, 1]) g.add(rbox(0.025, 0.03, 0.16, s * (L / 2 + 0.02), hb - 0.12, 0, dark, 0.008));
+  // the lid on a pivot at the back top edge, its planks running along the box
+  const pivot = new THREE.Group();
+  pivot.position.set(0, hb, -D / 2);
+  pivot.add(rbox(L + 0.02, lt, D + 0.02, 0, lt / 2, D / 2, mat, 0.01));
+  for (let z = slat; z < D; z += slat) pivot.add(rbox(L, 0.004, 0.008, 0, lt + 0.001, z, dark, 0.001));
+  g.add(pivot);
+  const lid = new Openable({ name: 'dynboxens lock', object: pivot, mode: 'flap', axis: [1, 0, 0], sign: -1, max: P.dynbox.max, speed: 1.6 });
+  // inside: a folded blanket at one end, the patio cushions in two piles while they are put away
+  const contents = new THREE.Group();
+  addFoldedThrow(contents, { w: 0.4, d: 0.42, layer: 0.025, layers: 4, x: L / 2 - t - 0.24, z: 0, y: 0.05, yaw: 0.05, color: 'grey' });
+  const tmp = new THREE.Group();
+  const piles = addCushions(tmp, P.cushions.map((c) => ({ ...c, yaw: 0.1 * Math.sin(c.x * 7), lean: Math.PI / 2 })), { backZ: 0, seatY: 0 });
+  piles.forEach((m, i) => {
+    const s = m.geometry.boundingBox ?? (m.geometry.computeBoundingBox(), m.geometry.boundingBox);
+    const th = (s.max.z - s.min.z) * 0.8, pile = i % 2, k = Math.floor(i / 2);
+    m.position.set(-L / 2 + t + 0.26 + pile * 0.47, 0.05 + th * (k + 0.5), 0.02 * (k % 2 ? 1 : -1));
+    m.updateMatrix();
+  });
+  const stack = new THREE.Mesh(mergeGeometries(piles.map((m) => m.geometry.applyMatrix4(m.matrix))), piles[0].material);
+  stack.visible = false;
+  contents.add(stack);
+  contents.visible = false;
+  g.add(contents);
+  lid.contents = contents;
+  lid.top = true; // a lid on top: what is inside stays below it (opentest)
+  seasonal.boxes.push(stack);
+  g.userData.targets = [lid];
+  g.userData.keep = [pivot, contents];
+  g.traverse((m) => { if (m.isMesh) m.castShadow = m.receiveShadow = true; });
+  g.userData.footprint = [{ x0: -L / 2, x1: L / 2, z0: -D / 2, z1: D / 2 }];
+  return g;
 }
 
 // --- planters with exotic plants ------------------------------------------------
@@ -451,6 +515,7 @@ export class Patio {
     // the cushions (#399): out in the parasol's months, in the cushion box in winter and under rain clouds (#248)
     const cushions = P.parasol.months.includes(day.month) && !(day.overcast > 0.6);
     for (const c of seasonal.cushions) c.visible = cushions;
+    for (const s of seasonal.boxes) s.visible = !cushions; // … and then they lie in the cushion box (#400)
     this.first = false;
   }
 }

@@ -53,6 +53,31 @@ f.onload = async () => {
     pass &= check(july.length === 1 && july[0] && !jan[0] && !rain[0] && before && hidden,
       `cushions: July ${july}, January ${jan}, rain ${rain}, shown ${before}, hidden with F ${hidden}`);
   }
+  // the cushion box (#400): west of the patio door by the west screen wall; E opens / shuts its lid; in January the
+  // cushions lie in it (drawn while the lid is open), in July only the blanket
+  {
+    const lid = world.furnitureTargets.find((t) => t.name === 'dynboxens lock');
+    const bp = lid.object.parent.getWorldPosition(new camera.position.constructor());
+    pass &= check(bp.x < 0.95 && bp.x > 0.07 && bp.z > 13.55 && bp.z < 16.0, `the cushion box stands west of the door, by the west screen wall (${bp.x.toFixed(2)}, ${bp.z.toFixed(2)})`);
+    w.__app.weather.force = 'clear';
+    at(1, 13, 1);
+    const opened = (lid.toggle(), lid.isOpen);
+    for (let i = 0; i < 40; i++) step(0.05);
+    let stack = null;
+    lid.contents.traverse((m) => { if (m.isMesh && m.material.vertexColors) stack = m; });
+    const inJan = lid.contents.visible && stack?.visible;
+    const pivot = lid.object.getWorldPosition(new camera.position.constructor());
+    const top = new camera.position.constructor(0, 0.035, 0.6); // the lid's outer front edge, local to its pivot
+    lid.object.localToWorld(top);
+    const clearWall = top.x > 0.07;
+    at(7, 13, 1);
+    const inJul = stack.visible;
+    lid.toggle();
+    for (let i = 0; i < 40; i++) step(0.05);
+    w.__app.weather.force = null;
+    pass &= check(opened && inJan && !inJul && !lid.isOpen && !lid.contents.visible && clearWall,
+      `the lid opens (${opened}), the cushions in the box in January (${inJan}), not in July (${!inJul}), shut again (${!lid.isOpen}), the open lid clear of the screen wall (x ${top.x.toFixed(3)}, pivot ${pivot.x.toFixed(3)})`);
+  }
   // walk north towards the lounge sofa's short part (#397: along the east screen wall): stopped before its end
   const walk = (x, z, yaw, secs, furniture = true) => {
     world.setFurniture(furniture);

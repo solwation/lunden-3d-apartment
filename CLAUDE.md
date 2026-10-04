@@ -939,7 +939,7 @@ North = −z (the bedrooms Sovrum 1/3 face north).
 - Patio (user's wish): Plantagen Hörngrupp Oslo antracit (corner sofa 198 + 186 × 72 × 76, table
   120 × 60 × 40): since #397 the long part has its back to the façade under the living-room window (east of its sash) and
   the short part runs along the east screen wall (`corner: 'left'`), so the five seats face south and west (towards the
-  sun); five outdoor cushions (ochre, off-white striped, a sage lumbar, terracotta, sand striped; `PATIO.cushions`, #399, one merged mesh) lie in it Apr–Sep unless it rains (else put away); the table stands inside the L. A parasol south of the table, its canopy tilted towards the plan south (true WSW, `tilt`) so it shades the seats in the afternoon / evening (#398; up Apr–Sep while
+  sun); five outdoor cushions (ochre, off-white striped, a sage lumbar, terracotta, sand striped; `PATIO.cushions`, #399, one merged mesh) lie in it Apr–Sep unless it rains, else in the cushion box (#400, `dynbox` / `PATIO.dynbox`: anthracite slatted, 125 × 58 × 60 *guess*, back to the west screen wall right of the patio door; E opens the lid, an Openable flap, 88°; a blanket + the put-away cushions inside, drawn while open); the table stands inside the L. A parasol south of the table, its canopy tilted towards the plan south (true WSW, `tilt`) so it shades the seats in the afternoon / evening (#398; up Apr–Sep while
   the sun is up), two big planters (palm by the patio door, agave in the SE corner by the hedge; the banana that blocked the
   gap in the hedge is gone, #52), two beers on the table Jun–Aug
   12–23, a snowman on the lawn just beyond the gap in the hedge Dec–Feb (`PATIO` in config), on snow (#73). Floor: 40 × 40 light grey slabs in half

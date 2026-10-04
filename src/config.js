@@ -1980,6 +1980,10 @@ export const PATIO = {
   parasol: { radius: 1.5, height: 2.45, color: 0xe8e1d1, months: [4, 5, 6, 7, 8, 9] },
   pot: { r: 0.3, h: 0.62, color: 0x55595c }, // fibre-clay planter Ø 60 cm (guess)
   beerMonths: [6, 7, 8], beerHours: [12, 23],
+  // the cushion box (#400, src/patio.js `dynbox`, our own look): an anthracite slatted wood-look outdoor box, 125 × 58 × 60
+  // cm (*guess*, a common size), the lid `lid` thick hinged at the back, opening `max`° (on its stays, short of the screen
+  // wall behind it), walls `wall` thick, slats every `slat` m
+  dynbox: { L: 1.25, D: 0.58, H: 0.6, lid: 0.035, wall: 0.025, slat: 0.07, max: 88, color: 0x3d4043 },
   // cosy outdoor cushions in the lounge sofa (#399, colours and places our pick; 45 × 45, the lumbar 50 × 30, *guess*):
   // in the sofa's local frame before it is mirrored (`corner: 'left'`): the corner on −x, the long part's back front at
   // z −0.16, the short part's back front at x −0.79 (the seats: long x 0.03 / 0.63, corner −0.63, short z 0.63 / 1.17).
@@ -2310,6 +2314,10 @@ export const FURNITURE = [
   // large planters with exotic plants (the user's wish): by the patio door and in the SE corner. The
   // banana in the SW corner stood in the gap in the hedge (the way out to the lawn) and is gone (#52).
   // by the hedge, and beside the living-room window
+  // the cushion box (#400): on the right as you come out of the patio door, its back to the west screen wall (face
+  // x 0.065, 4 cm of air: the lid stops at 88°, its outer face still short of it), south of the palm (z ≥ 13.55), clear of the door's
+  // swing (x ≥ 0.95) and well north of the gap in the hedge (z 16.8); the lid opens towards the patio
+  { type: 'dynbox', level: 0, x: 0.105 + 0.29, z: 13.7 + 0.625, rot: -90 },
   { type: 'planter', level: 0, x: 0.45, z: 13.25, plant: 'palm', walls: { x0: 0.065, z0: 12.7 } }, // fronds clear of the façade + screen wall (#137)
   { type: 'planter', level: 0, x: 5.3, z: 16.35, plant: 'agave' }, // SE corner by the hedge (#397: the sofa's corner took its old spot)
   // Upstairs bedrooms (the user's plan). Beds: rot = direction from the head to the foot end.
