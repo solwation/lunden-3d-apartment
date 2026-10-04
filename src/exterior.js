@@ -201,7 +201,7 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
 
   // våning 3–4: the upper units (L1201–L1209), one over each lower unit and one (L1205) over the core
   const C = H.court, y3 = roofTop + H.storeyHeight, zs = D - C.setback, par = y3 + C.parapet, deckY = y3 + C.deck;
-  const coreW = coreX0 - H.wall, loftX1 = coreW + C.core.loft, loftTop = upperTop + C.core.rise, zt = zs - C.core.back;
+  const LT = C.core.loft, coreW = coreX0 - H.wall, loftX1 = coreW + LT.w, loftTop = upperTop + LT.rise, zt = zs - LT.back, zf = D - LT.face;
   const uppers = [...units.map((u) => [u.x0, u.x1, u.ox, u.upper]), [coreX0, coreX1, null, 'L1205']];
   const Lf = H.loft, doors = [], lampBox = [], lampGlow = [], balc = [], litGlass = [];
   let seed = 337;
@@ -210,12 +210,10 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
   /** Courtyard window/door: glass + frame, a share of them lit at night (litGlass). */
   const courtWindow = (o, z) => fakeWindow(o, z, false, isLit() ? litGlass : glassGeo);
   const S = H.street;
-  /** Building storey n (1…4) → its floor height: våning 1–2 are our two levels, våning 3–4 the upper flats (#347). */
-  const storeyY = (n) => (n >= 3 ? roofTop + (n - 3) * H.storeyHeight : n === 2 ? roofTop / 2 : 0);
   /** An upper flat's street openings (HUS_L.street, #347): its own type's list, its flat-internal floor index mapped
-   * to the building storey, x from the flat's west outer face `west` (L1205's entrance floor: from `east` − 5.75). */
+   * to the building storey (storeyFloor, VERTICAL #344), x from the flat's west outer face `west` (L1205's entrance floor: from `east` − 5.75). */
   const streetOpenings = (type, west, east) => (S[type] ?? S.std).map((o) => {
-    const base = storeyY(S.storey + o.floor), ox = o.east ? east - 5.75 : west;
+    const base = storeyFloor(S.storey + o.floor), ox = o.east ? east - 5.75 : west;
     return { x0: ox + o.x0, x1: ox + o.x1, y0: base + (o.door ? 0 : o.sill), y1: base + (o.door ? S.doorHead : S.head), door: !!o.door };
   });
   const terraces = []; // [x0, x1] of each terrace strip (railing along the edge, the deck)
@@ -248,16 +246,17 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
     solids.push(boxGeo(x0 + 0.001, x1 - 0.001, y3, upperTop, loftD, zs));
     terraces.push([ta, x1]);
     if (!core) continue;
-    // L1205's loft over the lift (#337): flush with våning 3 in brick, rising over the roof — breaks the terrace row
-    const lw = open([C.core.loftWin], coreW, y3);
-    facade(bricks, x0, loftX1, par, loftTop, D + eps, false, lw, false);
-    lw.forEach((o) => courtWindow(o, D + eps));
+    // L1205's loft over the lift (#337, #349): its courtyard face `face` behind våning 3's (0: flush), in brick, rising
+    // `rise` over the roof and reaching `back` north of the set-back line — breaks the terrace row
+    const lw = open([LT.win], coreW, y3);
+    facade(bricks, x0, loftX1, par, loftTop, zf + eps, false, lw, false);
+    lw.forEach((o) => courtWindow(o, zf + eps));
     for (const [x, west] of [[x0, true], [loftX1, false]]) {
-      bricks.push(quadX(zs, D, y3, loftTop, x + (west ? -eps : eps), west), quadX(zt, zs, upperTop, loftTop, x + (west ? -eps : eps), west));
+      bricks.push(quadX(zs, zf, y3, loftTop, x + (west ? -eps : eps), west), quadX(zt, zs, upperTop, loftTop, x + (west ? -eps : eps), west));
     }
     bricks.push(quadZ(x0, loftX1, upperTop, loftTop, zt - eps, true));
-    solids.push(boxGeo(x0, loftX1, y3, loftTop, zs, D), boxGeo(x0, loftX1, upperTop, loftTop, zt, zs));
-    roofs.push(boxGeo(x0 - 0.03, loftX1 + 0.03, loftTop, loftTop + 0.05, zt - 0.03, D + 0.03));
+    solids.push(boxGeo(x0, loftX1, y3, loftTop, zs, zf), boxGeo(x0, loftX1, upperTop, loftTop, zt, zs));
+    roofs.push(boxGeo(x0 - 0.03, loftX1 + 0.03, loftTop, loftTop + 0.05, zt - 0.03, zf + 0.03));
   }
   // the roof terraces (#337): a slab deck, the parapet's inner face + coping, a white railing on it (top rail, bottom
   // rail, bars every 11 cm), skärmväggar between the units

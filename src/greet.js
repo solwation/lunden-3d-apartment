@@ -22,6 +22,10 @@ export function occluders() {
     { x0: west, x1: east, z0: HUS_L.loftgangDepth, z1: 12.65, y0: low, y1: up },
     // våning 4 set back behind the roof terraces (#337): rain falls on the terraces
     { x0: west, x1: east, z0: HUS_L.loftgangDepth, z1: 12.7 - HUS_L.court.setback, y0: up, y1: low + HUS_L.upperStoreys * HUS_L.storeyHeight });
+  // L1205's brick loft (#349): out to the courtyard face and over the roof
+  const L = HUS_L.court.core.loft, loftX0 = husLLayout(w).core[0] - HUS_L.wall;
+  boxes.push({ x0: loftX0, x1: loftX0 + L.w, z0: 12.7 - HUS_L.court.setback - L.back, z1: 12.7 - L.face,
+    y0: up, y1: low + HUS_L.upperStoreys * HUS_L.storeyHeight + L.rise });
   return boxes;
 }
 

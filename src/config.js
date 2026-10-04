@@ -553,11 +553,20 @@ export const HUS_L = {
     setback: 1.9, parapet: 0.3, rail: 1.1, deck: 0.06, screen: 1.8,
     lower: [{ x0: 0.86, x1: 2.04, sill: 0.8, head: 2.3 }, { x0: 3.05, x1: 4.63, sill: 0.6, head: 2.3 }], // våning 3 (BH 0.8 / 0.6)
     upper: [{ x0: 0.66, x1: 1.64, sill: 1.2, head: 2.3 }, { x0: 3.05, x1: 4.03, sill: 0, head: 2.3 }],  // våning 4: window BH 1.2, terrace door
-    // L1205 over the core (x from the core's west outer face): the west `loft` m ("Loft ovan hisstopp", BH 0.15 window)
-    // is flush with våning 3 in brick and rises `rise` over the roof (assumption) as the brick section breaking the terrace
-    // row (`back` m of it north of the set-back line: assumption); the terrace east of it. Våning 3 there: L1205's 6.55 m
-    // wide lower floor at the core's east end (BH 0.8 / 0.6, x from its west face)
-    core: { loft: 3.0, rise: 0.9, back: 1.5, loftWin: { x0: 0.62, x1: 2.0, sill: 0.15, head: 2.3 },
+    // L1205 over the core (x from the core's west outer face): its west part, "Loft ovan hisstopp", is the brick section
+    // breaking the terrace row (info brochure p. 16, docs/peab/info-s16-render.jpg: the principle only, no measures); the
+    // terrace east of it. Våning 3 there: L1205's 6.55 m wide lower floor at the core's east end (BH 0.8 / 0.6, x from its
+    // west face). #349: the loft's five measures, each on its own (bofakta-l1205.pdf 1:100, read at 600 dpi):
+    core: {
+      loft: {
+        w: 3.0,      // SOURCED: the loft's east wall's outer face 3.00 m from the upper floor's west outer face
+        face: 0,     // SOURCED: m behind våning 3's courtyard face — 0 = flush (its wall's face 11.12 m from the north
+                     // face, våning 3's 11.13 m)
+        back: 1.5,   // GUESS: m of the raised part north of the set-back line. Not drawn: the plan only shows the loft
+                     // room's north wall 1.18 m north of it (RH 1.56 m there), which says nothing of the roof above
+        rise: 0.9,   // GUESS: its roof over the main roof. No section or façade; not derived from the loft's RH or BH
+        win: { x0: 0.62, x1: 2.0, sill: 0.15, head: 2.3 }, // x0/x1 and BH 0.15 SOURCED; the head is a GUESS
+      },
       upper: [{ x0: 3.29, x1: 4.26, sill: 1.2, head: 2.3 }, { x0: 5.67, x1: 6.65, sill: 0, head: 2.3 }],
       lowerW: 6.55, lower: [{ x0: 1.68, x1: 2.85, sill: 0.8, head: 2.3 }, { x0: 3.86, x1: 5.44, sill: 0.6, head: 2.3 }] },
     lit: 0.45, // share of the upper units' courtyard windows lit at night (window light, not measured)
