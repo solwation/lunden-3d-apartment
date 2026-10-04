@@ -1326,6 +1326,10 @@ export const HALL_WALL = {
   // replacing Rusta "Staffan", #218), a flat black frame ~2.5 cm wide and ~3 cm deep (guess), hung upright and centred
   // on the wall, bottom ~0.4 m / top ~1.9 m up (guess: a full-length mirror)
   tall: { x: 2.057, z: 1.115, rotY: -Math.PI / 2, y: 1.15, w: 0.4, h: 1.5, frame: 0.025, depth: 0.03 },
+  // a second NISSEDAL in the upstairs hall (#332, the user): on the west wall (face x 1.5418) right of the WC/dusch door seen
+  // from the hall, centred on the free stretch from the north wall stub's face (z 5.1345) to the door's 70 mm
+  // architrave (door 6.2444 → 6.1744): z 5.654; the same height over the Övre plan floor as downstairs; facing east
+  tallUp: { x: 1.5418, z: 5.654, rotY: Math.PI / 2, y: LEVELS[1].floor + 1.15, w: 0.4, h: 1.5, frame: 0.025, depth: 0.03, level: 1 },
   cabinet: { x: 1.935, z: 0.478, y: 1.5, rotY: 0, w: 0.169, h: 0.16, d: 0.055 },
 };
 
@@ -1861,7 +1865,8 @@ export const FURNITURE = [
   // wall between the patio door and the west corner (over the palm), one on the upstairs hall's west wall
   { type: 'nesthub', level: 0, x: 3.82, z: 0.35, y: 0.8, rot: 165 },
   { type: 'nestmini', level: 0, x: 0.56, z: 12.2337, y: 1.68, rot: 0, room: 'vardagsrummet' },
-  { type: 'nestmini', level: 1, x: 1.5418, z: 5.62, y: 1.6, rot: -90, room: 'hallen' },
+  // #332: the upstairs one moved south of the hall's NISSEDAL (HALL_WALL.tallUp, z 5.454–5.854), midway to the WC door's architrave (6.174)
+  { type: 'nestmini', level: 1, x: 1.5418, z: 6.014, y: 1.6, rot: -90, room: 'hallen' },
   { type: 'symfonisk', kind: 'lamp', color: 'white', level: 0, x: 4.55, z: 12.3, y: 0.6, rot: 0 },
   // big rug under the sofa's front legs and the coffee table (#55): 300 × 200 × 1.2 cm (size and
   // colours are our pick), light oatmeal with a soft weave and a thin border; no collision

@@ -396,7 +396,7 @@ src/catboard.js        cork board in the kitchen (under the wall clock): a real-
 src/shelves.js         kitchen wall shelves (WALL_SHELVES, #291): cookbooks, glass jars, lathe-turned stoneware (speckle map),
                        brass candlesticks, a mortar, a cutting board, framed prints (one canvas atlas); merged per material;
                        the eucalyptus vase ('vasen') and the trailing pothos are Things (kind 'plant', #185)
-src/keycabinet.js      the IKEA LINDBYN mirror Ø 110 (living room since #205), the hall's IKEA NISSEDAL mirror (#226), IKEA SKOGSGRÄNSEN
+src/keycabinet.js      the IKEA LINDBYN mirror Ø 110 (living room since #205), the hall's IKEA NISSEDAL mirror (#226; a second upstairs, #332), IKEA SKOGSGRÄNSEN
                        over the secretary (#265, `SKOGSGRANSEN`: tinted glass + a tint overlay, copper bars below the horizon)
                        + the hall's Solstickan key cabinet (E) with the Renault key (E → beep beep);
                        the cabinet is in world.lids, the key (world.carKey) a target only while it is open
@@ -759,7 +759,7 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   stands (`SILL_PLANTS.skip`).
   Smart speakers (#325, `NEST`, src/nest.js): a smart display in the middle pot's place on the kitchen window board (turned 15°
   towards the dining table), a round one in a wall mount 1.68 m up on the living room's south wall between the patio door and
-  the west corner (over the palm), one 1.6 m up on the upstairs hall's west wall (x 1.54, between the corner and the door).
+  the west corner (over the palm), one 1.6 m up on the upstairs hall's west wall (x 1.54, z 6.01: left of the NISSEDAL mirror, by the WC door, #332).
   Over the secretary "Bang" (#118) on the east wall: the IKEA SKOGSGRÄNSEN mirror Ø 50, copper (#265, `SKOGSGRANSEN`, hung with
   the wavy bars at the bottom, centre 1.58 m up), and on the secretary's north end a small yucca palm (`YUCCA`, a Thing you can
   take, kind 'plant') whose leaves cover the mirror's north edge; the owl and the cactus moved south.
@@ -829,7 +829,8 @@ North = −z (the bedrooms Sovrum 1/3 face north).
 - Hall (#49): the plan's "EL" cabinet is really the small EL/C (40 cm, `CABINET_FIXES`) plus the coat
   rack "KL" beside it, which the extractor merged; on that wall (right as you come in) a coat rack with
   jackets and a shoe rack (FURNITURE `coatrack`/`shoerack`). The key cabinet hangs centred on the narrow wall right of the entrance door, above the switch (#123, #135). The round LINDBYN mirror that hung on the left wall now hangs in the living room, centred on the wall behind the armchair on its right (the north wall west of the living-room door, #205); in its place
-  hangs an IKEA NISSEDAL mirror, black 40 × 150, upright (`HALL_WALL.tall`, #226; Rusta "Staffan" before, #218).
+  hangs an IKEA NISSEDAL mirror, black 40 × 150, upright (`HALL_WALL.tall`, #226; Rusta "Staffan" before, #218). A second one hangs in the upstairs hall on the
+  west wall right of the WC/dusch door, centred between the corner and the architrave (`HALL_WALL.tallUp`, z 5.654, #332).
 - Dining set (user's choice, #62/#57/#63): IKEA SKANSNÄS table and 4 chairs, brown beech (`SKANSNAS`, one
   frame colour for both; light woven paper-cord seats): the table rectangular 150 × 90 (closed; 205
   extended is not modelled), short end to the kitchen window; 2 + 2 chairs on the long sides, pushed

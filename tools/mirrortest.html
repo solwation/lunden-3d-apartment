@@ -44,6 +44,9 @@ f.onload = async () => {
     pass &= check(active.length === 1 && active[0] === m, `mirror ${i} (level ${m.level}, ${p.toArray().map((v) => v.toFixed(2))}): active ${active.length === 1 && active[0] === m}`);
     pass &= check(!blocker, `mirror ${i}: nothing in front of the glass${blocker ? ` (hit at ${blocker.distance.toFixed(3)} m)` : ''}`);
   });
+  // the upstairs hall's NISSEDAL (#332): a level-1 mirror of its own, on the west wall right of the WC door
+  const up = reflectors().find((m) => m.name === 'nissedal-uppe');
+  pass &= check(!!up && up.level === 1 && Math.abs(up.r.getWorldPosition(new V()).x - 1.57) < 0.05, 'the upstairs NISSEDAL has a level-1 reflector on the hall\'s west wall');
   // SKOGSGRÄNSEN over the secretary (#265) and LINDBYN on the north wall hand over cleanly: from one spot in the
   // living room, looking at either makes that one (and only that one) the active mirror
   const byName = (n) => reflectors().find((m) => m.name === n);
