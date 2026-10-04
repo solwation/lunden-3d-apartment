@@ -67,10 +67,34 @@ f.onload = async () => {
   label = aim(shelfPot.where().add(new V(0, 0.05, 0)), [shelfPot.home.pos.x + 0.9, shelfPot.home.pos.z]);
   btn.click(); step(1 / 60);
   pass &= check(heldItem() === shelfPot, `the shelf's pot plant ("${label}")`);
+  // (4) the face pot with glasses (#343): off the lower shelf, onto the dining table, back on the shelf with E, then off again for F
+  if (heldItem()) { heldItem().putBack?.(); step(1 / 60); }
+  const face = things.find((t) => t.kind === 'plant' && /glasögonen/.test(t.name));
+  pass &= check(!!face && Math.abs(face.home.pos.y - 1.85) < 0.01, `the face pot on the lower shelf (y ${face?.home.pos.y.toFixed(3)})`);
+  label = aim(face.where().add(new V(0, 0.06, 0)), [face.home.pos.x + 0.9, face.home.pos.z]);
+  pass &= check(/ta krukan med glasögonen/i.test(label), `at the shelf: "${label}"`);
+  btn.click(); step(1 / 60);
+  pass &= check(heldItem() === face, 'the face pot in the hand');
+  const tp2 = tp.clone().add(new V(0, 0, 0.35));
+  label = aim(tp2, [tp2.x - 0.9, tp2.z + 0.3]);
+  pass &= check(/ställa ner krukan med glasögonen/i.test(label), `at the dining table: "${label}"`);
+  btn.click(); step(1 / 60);
+  pass &= check(face.placed && Math.abs(face.model.position.y - table.userData.surface) < 0.01, `the face pot on the table (y ${face.model.position.y.toFixed(3)})`);
+  label = aim(face.where().add(new V(0, 0.06, 0)), [tp2.x + 0.9, tp2.z]);
+  btn.click(); step(1 / 60);
+  pass &= check(heldItem() === face, `taken again ("${label}")`);
+  label = aim(face.home.pos.clone().add(new V(0, 0.06, 0)), [face.home.pos.x + 0.9, face.home.pos.z]);
+  pass &= check(/ställa tillbaka krukan med glasögonen/i.test(label), `at its place: "${label}"`);
+  btn.click(); step(1 / 60);
+  pass &= check(!face.held && !face.placed && face.model.position.distanceTo(face.home.pos) < 0.001, 'back on the shelf');
+  label = aim(face.where().add(new V(0, 0.06, 0)), [face.home.pos.x + 0.9, face.home.pos.z]);
+  btn.click(); step(1 / 60);
+  pass &= check(heldItem() === face, 'taken once more (F sends it home)');
   // F: all home, the pot back in the merged meshes
   toggleFurniture(); toggleFurniture();
   pass &= check(!pot.placed && !pot.held && verts() === v0 && pot.model.children.every((m) => !m.visible), `F: the window pot home (${verts()} vertices)`);
   pass &= check(!flower.placed && flower.model.position.distanceTo(flower.home.pos) < 0.001 && !shelfPot.held && shelfPot.model.position.distanceTo(shelfPot.home.pos) < 0.001, 'F: the flower and the shelf plant home');
+  pass &= check(!face.held && !face.placed && face.model.position.distanceTo(face.home.pos) < 0.001, 'F: the face pot home');
   out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
 };
 </script>

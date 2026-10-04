@@ -33,7 +33,7 @@ const strip = (geo) => { const g = geo.index ? geo.toNonIndexed() : geo; for (co
 /** A leaf along +x from its stalk end (in the xz plane, face up): length L, width W; `prof(t)` = the width along it
  * (0…1), `fold` lifts the edges (a cupped leaf), `bend` = how far the tip droops, `lobes` = slits from the edge in to
  * `inner` of the half width (monstera). Non-indexed, with normals. */
-function leafShape(L, W, { prof = (t) => Math.sin(Math.PI * Math.pow(t, 0.8)), fold = 0.3, bend = 0, seg = 5, lobes = 0, inner = 0.45 } = {}) {
+export function leafShape(L, W, { prof = (t) => Math.sin(Math.PI * Math.pow(t, 0.8)), fold = 0.3, bend = 0, seg = 5, lobes = 0, inner = 0.45 } = {}) {
   const pos = [];
   const P = (t, s) => { const w = (prof(t) * W) / 2 * s; return [t * L, -bend * t * t + fold * Math.abs(w), w]; };
   const quad = (a, b, c, d) => pos.push(...a, ...b, ...c, ...a, ...c, ...d);
@@ -61,7 +61,7 @@ function leafShape(L, W, { prof = (t) => Math.sin(Math.PI * Math.pow(t, 0.8)), f
   g.computeVertexNormals();
   return g;
 }
-const ROUND = (t) => Math.pow(Math.sin(Math.PI * t), 0.6);
+export const ROUND = (t) => Math.pow(Math.sin(Math.PI * t), 0.6);
 const HEART = (t) => Math.sin(Math.PI * Math.pow(t, 0.6));
 const IVY = (t) => Math.pow(Math.sin(Math.PI * t), 0.7) * (0.85 + 0.25 * Math.sin(3 * Math.PI * t));
 

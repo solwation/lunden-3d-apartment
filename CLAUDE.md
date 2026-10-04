@@ -434,7 +434,8 @@ src/catboard.js        cork board in the kitchen (under the wall clock): a real-
 src/shelves.js         kitchen wall shelves (WALL_SHELVES, #291; raised to 1.85 / 2.25 m in #333 for the framed print "THIS KITCHEN IS FOR
                        DANCING" 40 × 50 under them, a FURNITURE `pictures` item drawn on a canvas: `paint` / `print`): cookbooks, glass jars, lathe-turned stoneware (speckle map),
                        brass candlesticks, a mortar, a cutting board, framed prints (one canvas atlas); merged per material;
-                       the eucalyptus vase ('vasen') and the trailing pothos are Things (kind 'plant', #185)
+                       the white face pot with wire glasses and faux baby eucalyptus hair (#343, `WALL_SHELVES.facePot`, lower
+                       shelf, 'krukan med glasögonen'; it replaced the eucalyptus vase) and the trailing pothos are Things (kind 'plant', #185)
 src/keycabinet.js      the IKEA LINDBYN mirror Ø 110 (living room since #205), the hall's IKEA NISSEDAL mirror (#226; a second upstairs, #332), IKEA SKOGSGRÄNSEN
                        over the secretary (#265, `SKOGSGRANSEN`: tinted glass + a tint overlay, copper bars below the horizon)
                        + the hall's Solstickan key cabinet (E) with the Renault key (E → beep beep);
@@ -613,7 +614,8 @@ tools/sonostest.html   headless test: music in all three speakers, songs, volume
 tools/boardtest.html   headless test: keep / throw away cat photos, a full board, the panel (needs a big virtual-time budget)
 tools/detailtest.html  headless test: from the doorstep through the open front door the hall's doors are drawn (#210); inside
                        every Entréplan door is on a drawn layer, open or shut; outside the culler still works
-tools/planttest.html   headless test: lift pot plants (window board → table, side table → window board, the shelf), F home
+tools/planttest.html   headless test: lift pot plants (window board → table, side table → window board, the shelf; the face pot to the
+                       dining table and back on its shelf, #343), F home
 tools/baskettest.html  headless test: the daybed's drawers (shoes, hair things), take the ball → the hoop rises, dribble and
                        catch, a throw at the wall stays in the room, shots from 4 m (a basket) and 7.5 m (a three), a miss, F
 tools/rifletest.html   headless test: the AK-47 rides with its drawer, 30 shots of automatic fire leave bullet holes, reload,

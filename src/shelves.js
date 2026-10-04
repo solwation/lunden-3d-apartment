@@ -1,14 +1,15 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { WALL_SHELVES as S } from './config.js';
+import { leafShape, ROUND } from './sillplants.js';
 
 // Two oak wall shelves in the kitchen dressed like a Scandinavian kitchen shelf (#291): cookbooks, glass jars of
 // dry goods, a speckled stoneware jug, plates and a bowl, small vases, a mortar on a book lying flat, tapered
 // candles in brass holders, a cutting board and three framed prints (passe-partout) leaning on the wall. Turned
 // (lathe) profiles in soft glazes rather than blocks. Merged per material: matte things (oak, books, frames,
 // candles, stone; vertex colours), glazed stoneware (vertex colours × a speckle map), brass, glass and the prints
-// (one canvas atlas). The vase of dried eucalyptus and the trailing pothos are groups of their own so they can be
-// taken (#185, `userData.plants`).
+// (one canvas atlas). The face pot with glasses and faux eucalyptus (#343, in the dried-eucalyptus vase's place) and
+// the trailing pothos are groups of their own so they can be taken (#185, `userData.plants`).
 
 const C = S.colors;
 
@@ -308,36 +309,89 @@ export function buildWallShelves() {
     group.add(g);
     return g;
   };
-  // a sage stoneware vase with dried eucalyptus and bunny-tail grass (lower shelf)
-  const vGlaze = [], vDry = [];
+  // a white face pot with round wire glasses and a mop of faux baby eucalyptus for hair (lower shelf, #343)
+  const F = S.facePot;
+  const fPot = [], fDark = [], fLeaf = [];
   {
-    const out = [[0.03, 0], [0.036, 0.008], [0.042, 0.05], [0.04, 0.09], [0.028, 0.13], [0.024, 0.15], [0.026, 0.155]];
-    const g = vessel(out, 0.0035, 0.012, 32);
-    const n = g.attributes.position.count / 33;
-    vGlaze.push(tint(g, Array.from({ length: n }, (_, j) => (j < 1 ? C.clay : C.sage))));
-    const R = rng(5);
-    for (let s = 0; s < 6; s++) {
-      const a = (s / 6) * Math.PI * 2 + R() * 0.5, lean = 0.12 + R() * 0.2, len = 0.15 + R() * 0.06;
-      const dir = new THREE.Vector3(Math.cos(a) * lean, 1, Math.sin(a) * lean * 0.6).normalize();
-      const end = new THREE.Vector3(0, 0.03, 0).addScaledVector(dir, len + 0.12);
-      const curve = new THREE.QuadraticBezierCurve3(new THREE.Vector3(0, 0.03, 0), new THREE.Vector3(0, 0.03, 0).addScaledVector(dir, 0.13), end.clone().add(new THREE.Vector3(Math.cos(a) * 0.02, -0.01, 0)));
-      vDry.push(tint(new THREE.TubeGeometry(curve, 8, 0.0015, 4), s % 3 === 2 ? C.straw : C.euStem));
-      if (s % 3 === 2) { // bunny tail: a soft oval head
-        const p = curve.getPoint(1);
-        vDry.push(tint(new THREE.SphereGeometry(0.009, 8, 6).scale(1, 1.7, 1), C.straw2).translate(p.x, p.y + 0.01, p.z));
-        continue;
-      }
-      for (let k = 0; k < 7; k++) { // round, paired eucalyptus leaves along the top of the stem
-        const t = 0.45 + k * 0.08, p = curve.getPoint(Math.min(1, t)), r = 0.012 - k * 0.0008;
-        for (const side of [-1, 1]) {
-          const leaf = new THREE.CylinderGeometry(r, r, 0.0012, 10).rotateZ(Math.PI / 2 - 0.3 * side).translate(0, 0, side * r * 0.9);
-          leaf.rotateY(a + k * 1.1);
-          vDry.push(tint(leaf, k % 2 ? C.eucalyptus : C.eucalyptus2).translate(p.x, p.y, p.z));
+    const r = F.r, h = F.h;
+    // a straight cylinder with a slightly rounded bottom; the face looks along +x (into the room)
+    fPot.push(tint(vessel([[r * 0.78, 0], [r * 0.93, 0.004], [r * 0.99, 0.013], [r, 0.024], [r, h]], 0.004, 0.012, 40), C.porcelain));
+    fDark.push(tint(cyl(r - 0.005, r - 0.005, 0.004, 24), C.foam).translate(0, h - 0.012, 0)); // the foam under the plant
+    const onPot = (th, y, out = 0) => new THREE.Vector3(Math.cos(th) * (r + out), y, Math.sin(th) * (r + out)); // th: 0 = front
+    { // the nose: a narrow wedge from the brow (y 0.08) down to a tip standing ~13 mm out (y 0.04)
+      const T = [r - 0.002, 0.082, 0], L = [r - 0.002, 0.039, -0.0105], Rr = [r - 0.002, 0.039, 0.0105], P = [r + 0.013, 0.041, 0];
+      const M = [r + 0.004, 0.066, 0]; // the ridge, so it rounds off towards the brow
+      const g = new THREE.BufferGeometry();
+      g.setAttribute('position', new THREE.Float32BufferAttribute([...T, ...Rr, ...M, ...M, ...Rr, ...P, ...T, ...M, ...L, ...M, ...P, ...L, ...L, ...P, ...Rr], 3));
+      g.computeVertexNormals();
+      fPot.push(tint(g, C.porcelain));
+    }
+    for (const s of [-1, 1]) { // the eyes: small black dots
+      const p = onPot(s * 0.5, 0.077);
+      fDark.push(tint(new THREE.SphereGeometry(0.0034, 8, 6).scale(0.5, 1, 1).rotateY(-s * 0.5), C.wire).translate(p.x, p.y, p.z));
+    }
+    { // the smile: a thin engraved line that curves up at both ends, reaching round towards the cheeks
+      const pts = [];
+      for (let i = 0; i <= 16; i++) { const t = i / 8 - 1; pts.push(onPot(t * 0.95, 0.014 + 0.011 * Math.pow(Math.abs(t), 2.2), 0.0004)); }
+      fDark.push(tint(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 40, 0.0011, 4), C.smile));
+    }
+    // the glasses: two flat wire rings turned a little to follow the face, a bridge over the nose, temples back into the pot
+    const ring = F.ring, wire = 0.0011, yG = 0.07, yaw = 0.4;
+    for (const s of [-1, 1]) {
+      const cx = 0.05, cz = s * 0.042, a = -s * yaw; // (0, y, u) → (u sin a, y, u cos a): the outer edge leans back
+      const at = (u, v) => new THREE.Vector3(cx + u * s * Math.sin(a), yG + v, cz + u * s * Math.cos(a)); // u > 0 = outwards
+      fDark.push(tint(new THREE.TorusGeometry(ring, wire, 5, 44).rotateY(Math.PI / 2 + a), C.wire).translate(cx, yG, cz));
+      const o = at(ring, 0), back = [o, new THREE.Vector3(0.018, yG, s * (r + 0.004)), new THREE.Vector3(-0.012, yG, s * (r + 0.002)), new THREE.Vector3(-0.02, yG, s * (r - 0.003))];
+      fDark.push(tint(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(back), 12, wire, 4), C.wire));
+    }
+    { // the bridge, from ring to ring just above the nose's top
+      const u = Math.sqrt(ring * ring - 0.006 * 0.006);
+      const end = (s) => new THREE.Vector3(0.05 + u * Math.sin(yaw), yG + 0.006, s * (0.042 - u * Math.cos(yaw)));
+      const curve = new THREE.QuadraticBezierCurve3(end(-1), new THREE.Vector3(r + 0.006, yG + 0.011, 0), end(1));
+      fDark.push(tint(new THREE.TubeGeometry(curve, 10, wire, 4), C.wire));
+    }
+    // the plant: short branches out of the foam in every direction (the back ones short of the wall), pairs of small
+    // round leaves along them, the new ones at the tips yellow-green; a few droop over the brow and the glasses
+    const R = rng(F.seed), up = new THREE.Vector3(0, 1, 0);
+    const leafGeo = (L) => leafShape(L, L * 0.95, { prof: ROUND, fold: 0.18, bend: L * 0.12, seg: 4 });
+    const stemPts = [];
+    for (let i = 0; i < F.branches; i++) {
+      const a = (i / F.branches) * Math.PI * 2 + (R() - 0.5) * 0.5;
+      const front = Math.cos(a) > 0.45 && Math.abs(Math.sin(a)) > 0.35 && i % 2 === 0; // beside the face, not over the eyes
+      const el = front ? -0.05 - R() * 0.2 : 0.3 + R() * 1.15, dirH = new THREE.Vector3(Math.cos(a), 0, Math.sin(a));
+      let len = F.spread * (0.65 + R() * 0.45) * (front ? 0.7 : 1);
+      const s0 = dirH.clone().multiplyScalar(0.012 + R() * 0.03).setY(h - 0.008);
+      const dir = dirH.clone().multiplyScalar(Math.cos(el)).setY(Math.sin(el));
+      if (dir.x < 0) len = Math.min(len, (F.back - Math.abs(s0.x)) / -dir.x); // keep off the wall behind the shelf
+      const e = s0.clone().addScaledVector(dir, len);
+      const c = s0.clone().addScaledVector(dir, len * 0.45).add(new THREE.Vector3(0, 0.035 + R() * 0.03, 0));
+      const curve = new THREE.QuadraticBezierCurve3(s0, c, e);
+      stemPts.push(curve);
+      const nodes = 4 + Math.floor(R() * 3);
+      for (let k = 0; k < nodes; k++) {
+        const t = 0.25 + (0.75 * k) / (nodes - 1), p = curve.getPoint(t), tan = curve.getTangent(t);
+        const side0 = new THREE.Vector3().crossVectors(tan, up);
+        if (side0.lengthSq() < 1e-4) side0.set(0, 0, 1);
+        side0.normalize().applyAxisAngle(tan, k * Math.PI / 2 + (R() - 0.5) * 0.6); // pairs crossing along the stem
+        const tip = k === nodes - 1, L = (tip ? 0.016 : 0.022 + R() * 0.008);
+        for (const sd of [-1, 1]) {
+          const d = side0.clone().multiplyScalar(sd).addScaledVector(tan, 0.6).normalize();
+          let n = new THREE.Vector3().crossVectors(tan, d);
+          if (n.y + n.dot(dirH) * 0.5 < 0) n.negate(); // the faces turned up / out
+          n.addScaledVector(d, -n.dot(d)).normalize();
+          const m = new THREE.Matrix4().makeBasis(d, n, new THREE.Vector3().crossVectors(d, n)).setPosition(p);
+          const hex = tip && R() < 0.7 ? C.euTip : C.euLeaves[Math.floor(R() * C.euLeaves.length)];
+          const g = leafGeo(L).applyMatrix4(m);
+          g.computeBoundingBox();
+          if (g.boundingBox.min.x < -F.back - 0.01) continue; // nothing through the wall
+          fLeaf.push(tint(g, hex));
         }
       }
     }
+    for (const curve of stemPts) fLeaf.push(tint(new THREE.TubeGeometry(curve, 6, 0.0012, 3), C.euStem));
   }
-  const vase = holdable([[vGlaze, glazeMat], [vDry, leafMat]], xc, y1, 0.975);
+  const porcelainMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.16 });
+  const facePot = holdable([[fPot, porcelainMat], [fDark, matteMat], [fLeaf, leafMat]], xc, y1, F.z);
   // a golden pothos in an off-white pot, its vines trailing over the front edge (upper shelf)
   const pGlaze = [], pLeaf = [];
   {
@@ -379,7 +433,7 @@ export function buildWallShelves() {
   }
   const pothos = holdable([[pGlaze, glazeMat], [pLeaf, leafMat]], xc, y2, 1.455);
   group.userData.plants = [
-    { model: vase, kind: 'plant', back: 'hyllan', name: 'vasen' },
+    { model: facePot, kind: 'plant', back: 'hyllan', name: 'krukan med glasögonen' },
     { model: pothos, kind: 'plant', back: 'hyllan' },
   ];
   return group;

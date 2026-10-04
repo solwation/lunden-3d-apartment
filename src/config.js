@@ -1342,17 +1342,23 @@ export const COFFEE_JAR = { w: 0.1, h: 0.18, r: 0.016, lid: 0.02, gap: 0.03, fil
 // the hall/kitchen partition (x 2.15, z 0.46–1.76), above the light switch (1.05 m) and the framed print (#333). Two oak shelves
 // 100 × 20 cm on black brackets (#38). Dressed like a Scandinavian kitchen shelf (#291): cookbooks, glass jars of dry
 // goods, stoneware (a speckled jug, plates, a bowl, vases), a mortar, brass candlesticks, a cutting board, three framed
-// prints; a vase of dried eucalyptus and a trailing pothos can be taken. Sizes are everyday-object guesses; `colors`
+// prints; a face pot with wire glasses and faux baby eucalyptus (#343, it replaced a vase of dried eucalyptus) and a trailing pothos can be taken. Sizes are everyday-object guesses; `colors`
 // are soft, muted glazes and materials (guess).
 export const WALL_SHELVES = {
   x: 2.15, z0: 0.56, z1: 1.56, depth: 0.2, thick: 0.025, heights: [1.85, 2.25], // raised for the print under them (#333, guess)
+  // the face pot on the lower shelf (#343, docs/kruka-ansikte-glasogon-eukalyptus-*.jpg): Ø 11.5 × 11 cm (*guess*), glasses
+  // rings Ø 5.2 cm, the plant ~22 cm wide and ~15 cm over the rim (*guess*, measured on the photo against the pot)
+  facePot: { z: 0.975, r: 0.0575, h: 0.11, ring: 0.026, branches: 50, spread: 0.1, back: 0.085, seed: 13 },
   colors: {
     oak: 0xd2b48c, bracket: 0x2a2a2a, black: 0x262524, pages: 0xf1ead9,
     books: [0x5d6448, 0xa9674c, 0xd8cbb0, 0x55657a], // olive, terracotta, oat, slate blue
     offwhite: 0xebe6da, sand: 0xcdb89a, sage: 0xa3ae96, clay: 0x9a7258, // stoneware glazes + the bare clay foot / rim
     stone: 0x8f8b84, stone2: 0x7d7973, brass: 0xc9a25a, tin: 0x5f7d78, wax: 0xf3ecdc, wax2: 0xe9dccb,
     pasta: 0xe3c47e, lentils: 0xb0573a, cork: 0xb89a72, olive: 0x6e7a55,
-    eucalyptus: 0x8fa39a, eucalyptus2: 0x7d948c, euStem: 0x6b5a4a, straw: 0xcbb790, straw2: 0xe9dfc8,
+    // the face pot (#343): white gloss, black wire glasses, dots, the engraved smile; the faux eucalyptus' sage / grey-green
+    // leaves with yellow-green new tips, its stems and the foam in the pot
+    porcelain: 0xf6f4ef, wire: 0x1c1c1c, smile: 0x55514d, euLeaves: [0x6f8a6c, 0x7f9a7c, 0x8ea38d, 0x62795f], euTip: 0xa9bd74,
+    euStem: 0x6f7f55, foam: 0x2b2a24,
     pothos: 0x4c7a2f, pothos2: 0x93a845, pothos3: 0x3e6a2a, vine: 0x5a7a3a, soil: 0x3b2c22,
   },
 };
