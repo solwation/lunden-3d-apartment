@@ -560,6 +560,14 @@ export const HUS_L = {
   // beside each door that lights up at dusk (no lights: colour only, like the pergola's bulbs)
   loft: { fascia: 0xd5d8d4, handrailR: 0.022, door: 0xf4f4f1, recess: 0.14, lamp: { dx: 0.25, y: 2.1, w: 0.12, h: 0.22 } },
   pilaster: 0.4,          // brick pilaster width at each unit boundary (render, street side)
+  // #433: an outdoor wall light by every street-side front door of våning 1 (L1001–L1008, ours too; the units are not
+  // mirrored, so the latch is on each door's east side — plan.json's front-door hinge is at its west jamb): a dark box
+  // with a frosted glass front, `dx` m east of the door opening to its centre, centre `y` m up, `w` × `h` × `d` (all
+  // guesses). Lit after dusk like the street lamps (`on` / `off` night, `fade` s): the glass glows, an additive `wash`
+  // (an upright ellipse w × h, centre `y`) on the brick round it and a `pool` (radii rx along the façade, rz out, its
+  // centre `z` in front of the façade, kept short of it) on the ground; no lights (src/groundglow.js)
+  doorLamp: { dx: 0.28, y: 1.9, w: 0.12, h: 0.22, d: 0.1, color: 0xffd29a, on: 0.35, off: 0.3, fade: 1.5,
+    wash: { w: 2.4, h: 2.6, y: 1.75, peak: 0.26 }, pool: { rx: 2.6, rz: 1.25, z: -1.3, peak: 0.45 } },
   // #337, the courtyard side of våning 3–4 (bofakta L1202–L1208 / L1205, 1:100 with the 0–5 m bar; x = metres from the
   // unit's west outer face, sill/head over that storey's floor): våning 3 is brick, flush with ours; våning 4 stands
   // `setback` behind it (its courtyard wall 9.21 m from the north wall vs våning 3's 11.11 m) with a roof terrace in

@@ -3,6 +3,8 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { HUS_L as H, COLORS, FENCE_HEIGHT, SEASON, VERTICAL, storeyFloor } from './config.js';
 import { registerSnow } from './seasons.js';
 import { wallLine, wallRect } from './roofs.js';
+import { groundY } from './surroundings.js';
+import { glowMaterial, poolGeometry, washGeometry, fadeGlow } from './groundglow.js';
 
 // Brick: 250 × 65 mm + 10 mm joints → 0.26 m per brick, 0.075 m per course.
 const TILE_W = 1.04, TILE_H = 0.6; // one texture tile = 4 bricks × 8 courses
@@ -385,6 +387,25 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
   if (railMesh) railMesh.name = 'terraceRails'; // the terraces' railings (tools/terracetest.html)
   group.userData.terraces = { list: terraces, y3, deck: deckY, parapet: par }; // #350
   add(doors, new THREE.MeshStandardMaterial({ color: Lf.door, roughness: 0.4 }));
+  // #433: a wall light by every street-side front door on våning 1 (ours too): the box joins the lanterns' housings,
+  // the glass their glow; the façade wash and the ground pool are two additive meshes for the whole row
+  const DL = H.doorLamp, frontDoor = north.find((o) => o.y0 < 0.05 && o.y1 > 2);
+  const doorWash = [], doorPool = [];
+  if (frontDoor) for (const { ox } of units) {
+    const lx = ox + frontDoor.x1 + DL.dx, { w: lw, h: lh, d: ld, y: ly } = DL;
+    lampBox.push(boxGeo(lx - lw / 2, lx + lw / 2, ly - lh / 2, ly + lh / 2, -ld, -eps), boxGeo(lx - lw / 2 - 0.015, lx + lw / 2 + 0.015, ly + lh / 2, ly + lh / 2 + 0.02, -ld - 0.015, -eps));
+    lampGlow.push(boxGeo(lx - lw / 2 + 0.015, lx + lw / 2 - 0.015, ly - lh / 2 + 0.02, ly + lh / 2 - 0.02, -ld - 0.004, -ld + 0.01));
+    doorWash.push(washGeometry(lx, DL.wash.y, -eps, 0, -1, DL.wash.w, DL.wash.h));
+    doorPool.push(poolGeometry(lx - 0.3, DL.pool.z, 1, 0, DL.pool.rx, DL.pool.rz, groundY, { rings: 5, segs: 20 }));
+  }
+  const glows = doorWash.length ? [[doorWash, DL.wash.peak, THREE.FrontSide], [doorPool, DL.pool.peak, THREE.DoubleSide]].map(([geos, peak, side]) => {
+    const m = new THREE.Mesh(mergeGeometries(geos), glowMaterial(DL.color));
+    m.material.side = side; m.visible = false; m.renderOrder = 2; m.userData.peak = peak;
+    group.add(m);
+    return m;
+  }) : [];
+  if (glows.length) { glows[0].name = 'doorLampWash'; glows[1].name = 'doorLampPools'; }
+  let doorLit = false, doorGlow = 0, doorT = performance.now();
   add(lampBox, new THREE.MeshStandardMaterial({ color: 0x2b2d30, roughness: 0.5, metalness: 0.4 }));
   const glowMat = new THREE.MeshBasicMaterial({ color: 0x55534d, toneMapped: false }), lit = new THREE.Color(0xffd9a0), off = new THREE.Color(0x8d8b84);
   add(lampGlow, glowMat, false);
@@ -395,6 +416,11 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
   group.userData.update = (night) => {
     glowMat.color.copy(night > 0.35 ? lit : off);
     litMat.emissiveIntensity = night > 0.35 ? 0.6 : 0;
+    // the front-door lights (#433): on after dusk with a short fade (hysteresis: no flicker)
+    const now = performance.now(), dt = Math.min(1, (now - doorT) / 1000);
+    doorT = now;
+    if (!doorLit && night > DL.on) doorLit = true; else if (doorLit && night < DL.off) doorLit = false;
+    for (const m of glows) doorGlow = fadeGlow(m, doorGlow, doorLit, m === glows[0] ? dt : 0, DL.fade, m.userData.peak);
   };
   const roofMat = new THREE.MeshStandardMaterial({ color: 0x4b5157, roughness: 0.9 });
   registerSnow(roofMat, SEASON.snow.roof);

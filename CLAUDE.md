@@ -117,6 +117,9 @@ src/exterior.js        Hus L (HUS_L): brick row with the core/portik, neighbours
                        strip its flat ids (`lower` L1001…, `upper` L1201…); the upper flats' street openings are their own
                        (`HUS_L.street` per type from bofakta, `floor` = the flat's own floor, not the building storey, #347)
                        `husLTerraces`: the roof terraces per flat (id, polygon, area vs the brochure's 10/11/12 m², #350)
+                       `HUS_L.doorLamp` (#433): a wall light on the latch side of every street-side front door of våning 1
+                       (L1001–L1008), lit after dusk: the glass glows, an additive wash on the brick + a pool on the ground
+                       (groundglow.js, two meshes for the row)
                        `HUS_L.gableWindows`: every gable opening tagged gable / building storey / flat from the end flats'
                        bofakta (L1001 west, L1008 + L1209 east; none for L1201 or on våning 4; no flat is mirrored, #351)
 src/player.js          WASD/arrow/joystick movement, circle-vs-segment collision, step-up, gravity; outdoors the terrain (`groundY`, #256);
@@ -262,7 +265,7 @@ src/street.js          Sankt Lars väg's details (SITE.street, #128): curbs (alo
                        another road), asphalt patches, street lamps in rows along a road (emissive at night; #434: a warm pool on
                        the ground under each head, `lamps.pool`, one merged additive mesh from groundglow.js, fading with dusk), zebra crossing, the site's temporary traffic light + warning signs, cobbles, autumn leaves; the bus stop,
                        the red "Flyttad" sign, a no-parking sign and HepCat's A-board (#129)
-src/groundglow.js      light without lights (#434): additive fall-off decals — `poolGeometry` (an ellipse draped over `groundY`),
+src/groundglow.js      light without lights (#434, #433): additive fall-off decals — `poolGeometry` (an ellipse draped over `groundY`),
                        `washGeometry` (an upright one on a wall), `glowMaterial` (one per set, opacity = the level), `fadeGlow`
 src/streetlife.js      life on the street (SITE.life, #113): the car park as on the situation plan (#260): asphalt from the hedge (SITE.shrubs,
                        z −16.3; the drive through it in front of the portik) to a low green strip along Hus L's entrances (z −3.5…−2.9, open
@@ -833,7 +836,8 @@ tools/turbotest.html   headless test: Kaffeturbo with an injected clock — thre
 tools/terracetest.html Hus L's roof terraces (#350): one per upper flat, areas vs 10/11/12 m², the joins at the loft and
                        the gables, the railing's top over the finished deck
 tools/streetlighttest.html headless test (#434): the street lamps' ground pools hidden by day, lit at night (on the ground),
-                       no flicker just under the switching level, out in the morning
+                       no flicker just under the switching level, out in the morning; #433: eight front-door lights, off by
+                       day, lit after dusk, their pools outside the house
 tools/terraintest.html headless test (#346): the courtyard = the reference level, S2's level differences kept, the ramp's
                        ends / the stairs' feet / the garage drive meet their ground, no ground rises past a retaining wall,
                        every plinth reaches the ground, no unguarded step > 5 cm in OUTDOOR (5 cm grid; a stair's riser

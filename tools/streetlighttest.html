@@ -5,7 +5,9 @@
 <pre id="out">running…</pre>
 <script>
 // The front's outdoor light at night (#434): the street lamps' pools on the ground are hidden by day, fade in after
-// dusk with the lamp heads, lie on the ground under each head and fade out again in the morning.
+// dusk with the lamp heads, lie on the ground under each head and fade out again in the morning. #433: a wall light by
+// each of Hus L's eight street-side front doors (on the latch side), its wash on the façade and pool on the ground, the
+// same way; the pools stay outside the house.
 //   chromium --headless=new --virtual-time-budget=30000 --dump-dom http://localhost:8137/tools/streetlighttest.html
 const out = document.getElementById('out');
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -29,10 +31,20 @@ async function run() {
   world.windowLights.update = (h) => orig(h, forced);
   const run = async (night, secs) => { forced = night; for (let t = 0; t < secs; t += 0.1) { world.windowLights.update(12); await wait(100); } };
   const pools = scene.getObjectByName('streetLampPools');
+  const wash = scene.getObjectByName('doorLampWash'), doorPools = scene.getObjectByName('doorLampPools');
   check(!!pools, 'the street lamps\' pools exist');
+  check(wash && doorPools && wash.geometry.attributes.position.count === 8 * 6, `a door light by each of the eight front doors (${wash ? wash.geometry.attributes.position.count / 6 : 0} washes)`);
   await run(0, 1);
   check(!pools.visible, 'by day the pools are hidden');
+  check(!wash.visible && !doorPools.visible, 'by day the door lights are off');
   await run(1, 2.5);
+  const DL = (await w.eval(`import('${new URL('../src/config.js', location)}')`)).HUS_L.doorLamp;
+  check(wash.visible && doorPools.visible && Math.abs(wash.material.opacity - DL.wash.peak) < 1e-6 && Math.abs(doorPools.material.opacity - DL.pool.peak) < 1e-6,
+    `after dusk the door lights are lit (wash ${wash.material.opacity.toFixed(2)}, pool ${doorPools.material.opacity.toFixed(2)})`);
+  const dp = doorPools.geometry.attributes.position;
+  let inside = 0;
+  for (let i = 0; i < dp.count; i++) if (dp.getZ(i) > -0.01) inside++;
+  check(inside === 0, `the door pools stay in front of the façade (${inside} vertices behind it)`);
   const P = SITE.street.lamps.pool;
   check(pools.visible && Math.abs(pools.material.opacity - P.peak) < 1e-6, `at night they are lit (opacity ${pools.material.opacity.toFixed(2)} of ${P.peak})`);
   // every pool vertex lies just over the ground
@@ -44,6 +56,7 @@ async function run() {
   check(pools.visible, 'just under the switching level they stay on (no flicker at dusk)');
   await run(0, 2);
   check(!pools.visible, 'in the morning they fade out');
+  check(!wash.visible && !doorPools.visible, 'and the door lights too');
   out.textContent = lines.join('\n') + `\n${pass ? 'ALL PASS' : 'SOME FAILED'}`;
 }
 </script>
