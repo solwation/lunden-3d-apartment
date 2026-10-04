@@ -1056,9 +1056,10 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   Over the secretary "Bang" (#118) on the east wall: the IKEA SKOGSGRÄNSEN mirror Ø 50, copper (#265, `SKOGSGRANSEN`, hung with
   the wavy bars at the bottom, centre 1.58 m up), and on the secretary's north end a small yucca palm (`YUCCA`, a Thing you can
   take, kind 'plant') whose leaves cover the mirror's north edge; the owl and the cactus moved south.
-- Front (#406): a JYSK ABORG café set, mörk sand (`ABORG`, src/aborg.js, builders `aborgtable` / `aborgchair`), in front of the
-  kitchen window: the 60 × 60 × 71 table close to the façade with a little flower (a Thing, back on 'cafébordet') and a
-  put-down surface, the two chairs (seats) west and east of it, each turned 45° towards the street.
+- Front (#406, #422): a JYSK ABORG café set, mörk sand (`ABORG`, src/aborg.js, builders `aborgtable` / `aborgchair`), in front of
+  the kitchen window: the 60 × 60 × 71 table 3 cm off the façade under the sill (the top-hung sash swings out over it; the little
+  flower — a Thing, back on 'cafébordet' — on its street half, out of the sash's sweep) and a put-down surface, the two chairs
+  (seats) west and east of it, both facing straight out to the street, backs to the house.
 - Patio (user's wish): the family's own Rusta "Loungemodul Verona" (#408, replacing the Plantagen Oslo set of #397 / #407; `PATIO.verona`, builder `veronasofa`; docs/utesoffa-rusta-verona.jpg, docs/utesoffa-verona-utan-dynor.jpg): a U — four 68.5 × 66 × 67 modules in a row, backs to the façade under the living-room window, the east end in the NE corner with an arm; the westernmost module has no back so the window's opening sash swings free; a divan in front of each end module pointing south (the east one along the screen wall, the west one free-standing); dark steel tube, beige / sand cushions; six seats facing south (towards the sun); the small low slatted table between the divans (`slattable`, `PATIO.slatTable`, 60 × 45 × 40 *guess*); five outdoor cushions (ochre, off-white striped, a sage lumbar, terracotta, sand striped; `PATIO.cushions`, #399, one merged mesh) lie in it Apr–Sep unless it rains, else in the cushion box (#400, `dynbox` / `PATIO.dynbox`: anthracite slatted, 125 × 58 × 60 *guess*, back to the west screen wall right of the patio door; E opens the lid, an Openable flap, 88°; a blanket + the put-away cushions inside, drawn while open). A parasol south of the table, its canopy tilted towards the plan south (true WSW, `tilt`) so it shades the seats in the afternoon / evening (#398; up Apr–Sep while
   the sun is up), two big planters (palm by the patio door, agave in the SE corner by the hedge; the banana that blocked the
   gap in the hedge is gone, #52), two beers on the table Jun–Aug
