@@ -5,8 +5,8 @@
 <pre id="out">running…</pre>
 <script>
 // Curtains test (#342, #362): Sovrum 1's two panels on one ceiling track (from the west wall) start open, parked one at
-// each side: the west stack against its end stop at the RÅGRUND chair's seat edge (clear of the chair, only a sliver of
-// the glass), the east one clear of the glass; E on one opens the strip (#blind-panel, sideways); no walking then; ◀ held
+// each side: the west stack against its end stop by the west wall (#403: the RÅGRUND chair moved south out of its way),
+// the east one at the track's end, both clear of the glass; E on one opens the strip (#blind-panel, sideways); no walking then; ◀ held
 // draws both together symmetrically (the same share of their way) until they meet in the middle and no further, D / ▶
 // parts them back to the parked spots; A moves the east leading edge at speed; the first draw scores; drawn shut they
 // cut some of the room's daylight (less than the blackout blind) and glow teal by day; × / E close the strip; the state
@@ -40,16 +40,16 @@ async function run() {
   check(c.t === 0, 'open at the start');
   const [g0, g1] = S.glass;
   const glassFree = () => c.freeGlass(c.west.b, c.east.a);
-  const clear = () => c.east.a >= g1 - 1e-6 && c.west.b - g0 < 0.25;
-  check(clear() && c.cover === 0, `parked one each side (west ${c.west.a.toFixed(2)}–${c.west.b.toFixed(2)}, east ${c.east.a.toFixed(2)}–${c.east.b.toFixed(2)}; glass ${g0}–${g1}, ${glassFree().toFixed(2)} m of it free)`);
+  const clear = () => c.east.a >= g1 - 1e-6 && c.west.b <= g0 + 1e-6;
+  check(clear() && c.cover === 0 && glassFree() >= g1 - g0 - 1e-6, `parked one each side (west ${c.west.a.toFixed(2)}–${c.west.b.toFixed(2)}, east ${c.east.a.toFixed(2)}–${c.east.b.toFixed(2)}; glass ${g0}–${g1}, ${glassFree().toFixed(2)} m of it free)`);
   check(S.west <= 2.72 && c.spec.z > 0.5, `one track from the west wall (x ${S.west}) to ${S.east}`);
-  // the west stack clear of the RÅGRUND chair (its footprint), the stop at the chair's seat edge
+  // the west stack clear of the RÅGRUND chair (it stands south of the stack's strip, #403), the stop by the west wall
   const chair = app.world.furnitureTargets.find((t) => t.kind === 'rest' && t.name === 'stolen' && t.level === 1 && t.spots[0].pos.x < 3.3 && t.spots[0].pos.z < 1.2);
   const cb = new THREE.Box3().setFromObject(chair.object ?? chair.pickable ?? chair.mesh);
   const pw = c.west.mesh.geometry.attributes.position.array;
   let wx0 = Infinity, wz0 = Infinity, wz1 = -Infinity;
   for (let i = 0; i < pw.length; i += 3) { wx0 = Math.min(wx0, pw[i]); wz0 = Math.min(wz0, pw[i + 2]); wz1 = Math.max(wz1, pw[i + 2]); }
-  check(wx0 >= cb.max.x - 0.005 || wz0 >= cb.max.z, `the west stack clear of the RÅGRUND chair (cloth from x ${wx0.toFixed(3)}, chair to x ${cb.max.x.toFixed(3)} / z ${cb.min.z.toFixed(2)}–${cb.max.z.toFixed(2)})`);
+  check(wz1 <= cb.min.z - 0.005 && S.stop - S.west < 0.03, `the west stack parks by the west wall (stop x ${S.stop}), clear of the RÅGRUND chair (cloth z ${wz0.toFixed(3)}–${wz1.toFixed(3)}, chair z ${cb.min.z.toFixed(3)}–${cb.max.z.toFixed(3)})`);
   const fl = LEVELS[1].floor;
   const pos = c.west.mesh.geometry.attributes.position.array;
   let ymin = Infinity, ymax = -Infinity;
@@ -99,7 +99,7 @@ async function run() {
   for (let i = 0; i < Math.ceil(secs * 30) + 30; i++) step(1 / 30);
   check(c.t === 1 && Math.abs(c.west.b - S.meet) < 1e-6 && Math.abs(c.east.a - S.meet) < 1e-6, `shut, meeting in the middle and no further (${c.west.b.toFixed(3)} | ${c.east.a.toFixed(3)}, meet ${S.meet})`);
   check(Math.abs(S.meet - (g0 + g1) / 2) < 0.01 && c.cover === 1 && glassFree() === 0, `they meet at the window's middle, the glass covered (cover ${c.cover})`);
-  check(c.west.a === S.stop && S.stop >= cb.max.x, `shut, the west panel's end stays at its stop (x ${c.west.a.toFixed(3)}), clear of the chair`);
+  check(c.west.a === S.stop, `shut, the west panel's end stays at its stop by the wall (x ${c.west.a.toFixed(3)})`);
   press('up', 'pointerup');
   check(blinds.dir === 0, '◀ released: they stop');
   check(/fördragna/.test(panel.querySelector('.pct').textContent), `the panel says "${panel.querySelector('.pct').textContent}"`);

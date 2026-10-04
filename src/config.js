@@ -164,10 +164,9 @@ export const BLINDS = {
 // soffit (RH 2.4), in the room in front of the blind. #362 (the user: "hela vägen bort till andra sidan, och tvådelade"):
 // a classic split on ONE track (`z`) from the west wall (`west`, the room's west face x 2.70) to `east` (clear of the east
 // wall): the panels meet at the window's centre (`meet`, WINDOWS x 3.85 / the glass's middle) and part to either side.
-// The RÅGRUND chair (#60, x 2.71–3.15, z 0.475–0.865) fills the NW corner, and no chair spot both clears the west stack's
-// corner (z 0.47–0.70) and keeps the gap at the double bed's foot passable (moved south past z 0.70 the gap to the bed's
-// corner shrinks from 0.51 to ~0.31 m, the visitor needs 0.44): so the chair stays, and the west panel's outer end is held
-// by an end stop at the chair's seat edge (`stop`); parked, its stack covers the glass's westmost ~0.2 m. The east panel
+// #403 (the user): the double bed moved 0.25 m south (towards the Klk), so the RÅGRUND chair (#60) could move south out of
+// the corner strip the west stack hangs in (z 0.47–0.70; the chair now z 0.725–1.115) and the west panel's outer end
+// (`stop`, an end stop at the wall) parks by the west wall: parked, both stacks are clear of the glass. The east panel
 // runs to the track's east end and parks clear of the glass. `stack` = a parked stack's width as a share of its cloth
 // (*guess*, wave pleats); `drop` = hem over the floor, `top` = the fabric's top under the soffit; fullness 1.4 × the shut
 // width (*guess*), `amp` = the folds' largest half-depth (deeper as it gathers; the fold count stays, the spacing shrinks),
@@ -175,7 +174,7 @@ export const BLINDS = {
 // pair takes (less than the blackout blind); `glow` = the teal emissive by day (a little light through the cotton), lamp =
 // from a lit room. `speed` m/s of the east panel's leading edge while A / D are held (the west one keeps pace: same share).
 export const CURTAINS = [
-  { level: 1, room: 'Sovrum 1', west: 2.71, stop: 3.16, meet: 3.855, east: 5.32, z: 0.6, glass: [3.15, 4.56], stack: 0.22,
+  { level: 1, room: 'Sovrum 1', west: 2.71, stop: 2.72, meet: 3.855, east: 5.32, z: 0.6, glass: [3.15, 4.56], stack: 0.22,
     top: 2.36, drop: 0.015, fullness: 1.4, amp: 0.028, tile: 0.7, speed: 0.38, dim: 0.4,
     colors: { ground: '#2f7c86', track: 0xf3f2ee, glow: 0x3fa3ad, warm: 0xffc27a }, glow: { day: 0.18, lamp: 0.08 } },
 ];
@@ -1902,6 +1901,10 @@ export const SKANSNAS = {
 // headboard height 121, footboard/frame height 49). Headboard thickness, leg height, drawer sizes and the
 // 22 cm mattress are guesses. `head` = depth behind the mattress taken by the sloping headboard.
 export const IDANAS = { L: 2.23, W: 1.9, frameH: 0.49, headH: 1.21, head: 0.2, legH: 0.1, mattressH: 0.22, color: 0x5f6266 };
+// The Sovrum 1 double bed's centre line (z): 2.3 until #403, when the user moved it 0.25 m south towards the Klk so the
+// RÅGRUND chair could leave the curtain's corner (CURTAINS). Its bedside tables, work lamps, the picture over it, the TV
+// across from it and the rug under it follow. Frame z 1.60–3.50: 0.66 m of floor left before the Klk wall (z 4.16).
+export const BED1_Z = 2.55;
 
 // Pillows (#308, src/bedding.js `pillow`): `head` = the ordinary pillow in its case (~50 × 60, the chintz set's case,
 // 60 across the bed), `hotel` = Hemtex "Hotellkudde" 70 × 100 in a white case (docs/hotellkudde-70x100.jpg), one under
@@ -2180,22 +2183,24 @@ export const FURNITURE = [
   // Upstairs bedrooms (the user's plan). Beds: rot = direction from the head to the foot end.
   // IKEA NORDKISA bedside tables, bamboo, 40 × 40 cm (ikea.com, #64; the 55 cm height is a guess, about the
   // mattress top): one each side of the double bed's head end (east wall), clear of the Klk door
-  // either side of the IDANÄS bed (190 wide, centred at z 2.3): z 1.35 − 0.22 and 3.25 + 0.22
-  ...[1.13, 3.47].map((z) => ({ type: 'nordkisa', level: 1, x: 5.55 - 0.23, z, rot: 90, w: 0.4, h: 0.55 })),
+  // either side of the IDANÄS bed (190 wide, centred at BED1_Z): its sides ∓ 0.95 ∓ 0.22
+  ...[BED1_Z - 1.17, BED1_Z + 1.17].map((z) => ({ type: 'nordkisa', level: 1, x: 5.55 - 0.23, z, rot: 90, w: 0.4, h: 0.55 })),
   // IKEA NYMÅNE work lamps with wireless charging, white (#65; base Ø ~20 cm, arms and head guessed from the
   // product photo), one on each bedside table, the head reaching over towards the bed; E on each one
-  ...[[1.13, 180], [3.47, 0]].map(([z, rot]) => ({ type: 'worklamp', level: 1, x: 5.55 - 0.25, z, y: 0.55, rot, onRug: true })), // their tables stand on the rug (#317)
+  ...[[BED1_Z - 1.17, 180], [BED1_Z + 1.17, 0]].map(([z, rot]) => ({ type: 'worklamp', level: 1, x: 5.55 - 0.25, z, y: 0.55, rot, onRug: true })), // their tables stand on the rug (#317)
   // IKEA RÅGRUND chair with towel rack, bamboo (#60; H 140, W 39, D 44, seat 48 cm per IKEA/dimensions.com):
   // Sovrum 1, the corner left of the window seen from inside (NW), back and towel rack against the
-  // west wall, seat facing into the room (east); the seat is below the window sill (BH 0.7)
-  { type: 'ragrund', level: 1, x: 2.70 + 0.23, z: 0.465 + 0.205, rot: -90, towel: 0x9fb8c9 },
+  // west wall, seat facing into the room (east); the seat is below the window sill (BH 0.7). #403: moved south out of the
+  // corner (z 0.725–1.115, the west curtain stack hangs in z 0.47–0.70) and 1 cm west (x 2.70–3.14, clear of the rug);
+  // with the bed moved south (BED1_Z) the gap from it to the bed's foot corner stays ~0.52 m
+  { type: 'ragrund', level: 1, x: 2.70 + 0.22, z: 0.725 + 0.195, rot: -90, towel: 0x9fb8c9 },
   // the user's big grey shag rug (#317, docs/matta-gra-sicksack-sovrum1.jpg, from under their sofa today) under the double
-  // bed: 240 × 340 cm (the user), the long side across the bed so it sticks out ~0.75 m on each side (z 0.6–4.0, centred
-  // on the bed; clear of the north wall z 0.47 and the Klk wall + sliding door track z 4.16). Along the bed it runs from
+  // bed: 240 × 340 cm (the user), the long side across the bed so it sticks out on each side (z 0.74–4.14 since #403: as
+  // near the bed's centre BED1_Z as fits; clear of the north wall z 0.47 and the Klk wall + sliding door track z 4.16). Along the bed it runs from
   // the head wall (x 5.54, under the NORDKISA tables) 18 cm past the foot (x 3.14) — limited by the room: further west it
-  // would run under the RÅGRUND chair (x ≤ 3.15). ~2.8 cm thick, soft rounded edge, no fringe. Colour, line width and
+  // would run under the RÅGRUND chair (x ≤ 3.14). ~2.8 cm thick, soft rounded edge, no fringe. Colour, line width and
   // pitch *guess* from the warm-lit photo (a neutral grey); pieces standing wholly on it stand on top (rugs.js `rugUnder`)
-  { type: 'rug', level: 1, x: 5.54 - 1.2, z: 2.3, w: 2.4, d: 3.4, h: 0.028, edge: 0.012, pattern: 'zigzag', color: '#5c5b59', stripe: '#e8e4dc',
+  { type: 'rug', level: 1, x: 5.54 - 1.2, z: 2.44, w: 2.4, d: 3.4, h: 0.028, edge: 0.012, pattern: 'zigzag', color: '#5c5b59', stripe: '#e8e4dc',
     line: 0.012, pitch: 0.14, seed: 17 },
   // Sovrum 1 (Sarah & Olof), head east, clear of the Klk. Bedding (#83, an IKEA set from a Sellpy ad):
   // sage green with a dense chintz of coral and pink peonies, ochre, slate-blue leaves and grey-green
@@ -2218,17 +2223,17 @@ export const FURNITURE = [
   { type: 'cleaning', level: 0, x: 4.5, z: 6.15, rot: 0 }, // what lies and stands in the Klk under the stair (#338, src/cleaning.js; x/z unused)
   { type: 'rug', shape: 'round', level: 1, x: KLK.westFace + KLK.chestGap + 0.6 + KLK.mirror.dx, z: 4.66, d: 0.72, h: 0.022, color: '#e9e1d2', seed: 33 },
   // the mattress centre: the headboard (IDANAS.head) against the east wall
-  { type: 'bed', level: 1, x: 5.55 - IDANAS.head - 1.0, z: 2.3, rot: 90, w: 1.8, l: 2.0, model: 'idanas', sitUp: { tv: 'Sovrum 1' }, pingping: true, hotel: true, // Pingping between the pillows (#269), hotel pillows under the head pillows (#308)
+  { type: 'bed', level: 1, x: 5.55 - IDANAS.head - 1.0, z: BED1_Z, rot: 90, w: 1.8, l: 2.0, model: 'idanas', sitUp: { tv: 'Sovrum 1' }, pingping: true, hotel: true, // Pingping between the pillows (#269), hotel pillows under the head pillows (#308)
     // repeat = metres per texture tile (blooms ~8–15 cm)
     bedding: { pattern: 'chintz', ground: '#adc2b1', repeat: 0.9, flowers: ['#d0696b', '#c9505a', '#e9b7bd', '#d4b45a'],
       leaves: ['#6f7b86', '#8a96a0', '#7f9a83'], throw: 0xdcdcd8, cushion: 0xe2a3ab } },
   // The meadow-grass picture over the bed (#284, docs/tavla-sovrum1-angsgras.jpg): 150 × 100 cm outside (the user), a
   // thin flat black frame (~2 cm face, ~3 cm deep, *guess* from the photo). On the east wall (inner face x 5.551) centred
-  // on the bed (z 2.3, spanning z 1.55–3.05, so its north part is under the RH 2.4 soffit, z < 1.96): the bottom edge
+  // on the bed (BED1_Z 2.55 since #403, spanning z 1.80–3.30, so its north end is under the RH 2.4 soffit, z < 1.96): the bottom edge
   // 12 cm over the headboard (IDANAS.headH 1.21) → 1.33–2.33 m, 7 cm under the soffit; above the NYMÅNE work lamps.
   // textures/angsgras-sovrum1.jpg is the photo straightened, the glass's reflections painted out, re-graded towards the print
   // in daylight (#292: levels lifted, a gentle S-curve, +20 % saturation, warm sky / olive grass; the photo was underexposed).
-  { type: 'pictures', level: 1, x: 5.551, z: 2.3, y: 1.83, rot: 90, w: 1.5, h: 1.0, gap: 0, frame: 0.02, depth: 0.03,
+  { type: 'pictures', level: 1, x: 5.551, z: BED1_Z, y: 1.83, rot: 90, w: 1.5, h: 1.0, gap: 0, frame: 0.02, depth: 0.03,
     cols: 1, rows: 1, atlas: 'textures/angsgras-sovrum1.jpg', grid: [1, 1], order: [0] },
   // Bunks: long side against the side wall, head end against the façade (the user's wish);
   // the ladder ends up on the room side at the foot end.
@@ -2243,9 +2248,9 @@ export const FURNITURE = [
   // Sovrum 3's east wall (x 2.61) straight across from the bunk (z 0.47–2.57), clear of the desk (z < 1.04) and the
   // wands' hooks (z ≥ 2.85); centre 1.2 m up (the user: watchable from both bunks; tunable). Faces west.
   // Sovrum 1 (#213, docs/tv-philips-43-pqs7801.png): Philips 43" PQS7801 QLED (~96 × 56 cm; slim black frame, a silver
-  // edge below; Ambilight, the user #223) on the west wall straight across from the double bed (z 2.3), centre 1.3 m up for
+  // edge below; Ambilight, the user #223) on the west wall straight across from the double bed (BED1_Z), centre 1.3 m up for
   // sitting up in bed (guess). Faces east.
-  { type: 'tv', level: 1, room: 'Sovrum 1', x: 2.752, z: 2.3, y: 1.3, rot: -90, w: 0.96, h: 0.56, fps: 12, px: 320, mount: 'wall', frame: 'black', name: 'tv:n' }, // with Ambilight (#223)
+  { type: 'tv', level: 1, room: 'Sovrum 1', x: 2.752, z: BED1_Z, y: 1.3, rot: -90, w: 0.96, h: 0.56, fps: 12, px: 320, mount: 'wall', frame: 'black', name: 'tv:n' }, // with Ambilight (#223)
   { type: 'tv', level: 1, x: 2.61, z: 1.75, y: 1.2, rot: 90, w: 0.71, h: 0.41, fps: 12, px: 256, mount: 'wall', name: 'tv:n' },
   { type: 'alex', level: 1, x: 2.61 - 0.66 - 0.02, z: 0.465 + 0.29, rot: 180, w: 1.32, d: 0.58, h: 0.76 },
   { type: 'kidchair', level: 1, x: 2.61 - 0.66 - 0.02, z: 0.465 + 0.58 + 0.25, rot: 0 },

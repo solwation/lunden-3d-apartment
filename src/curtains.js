@@ -4,7 +4,7 @@ import { sfx } from './audio.js';
 
 // Curtains on a ceiling track (#342, CURTAINS in config): Sovrum 1's two teal jungle-print panels. One track under the
 // soffit from the west wall to the east; a split (#362): the panels meet at the window's middle and part to either side
-// (the west one up to its end stop at the RÅGRUND chair, the east one to the track's end). Each panel is one wave-folded mesh
+// (the west one to its end stop by the west wall, #403; the east one to the track's end). Each panel is one wave-folded mesh
 // rebuilt only while it moves: the fold count stays, the spacing shrinks and the folds deepen as it gathers; the print
 // (our own canvas, tileable) rides with the cloth. They share the blinds' control strip (#blind-panel, src/blinds.js):
 // A / D, ← / → or ◀ ▶ held draw them shut / open, and the blinds' daylight cut and saved state.
