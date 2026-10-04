@@ -254,8 +254,9 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
     // from the mid-landings' line to the lift shaft; on våning 3 from the upper units' street face) and the passage from
     // the portik's door (z CORE.portikDoor.z, 2.2 m high); the portik's west wall has the door's opening
     const [dz0, dz1] = CORE.portikDoor.z, dh = 2.2;
-    solids.push(boxGeo(coreX0, CORE.x0, 0, roofTop, 0, D), boxGeo(CORE.x1, p0, 0, roofTop, 0, dz0), boxGeo(CORE.x1, p0, 0, roofTop, dz1, D),
-      boxGeo(CORE.x1, p0, dh, roofTop, dz0, dz1), boxGeo(CORE.x0, CORE.x1, 0, roofTop - 0.2, 0, CORE.mid[0]), boxGeo(CORE.x0, CORE.x1, roofTop - 0.2, roofTop, 0, CORE.top[0]),
+    const g = 0.03; // (#448: kept a few cm off the stairwell's own walls — coplanar faces flickered)
+    solids.push(boxGeo(coreX0, CORE.x0 - g, 0, roofTop, 0, D), boxGeo(CORE.x1 + g, p0, 0, roofTop, 0, dz0 - g), boxGeo(CORE.x1 + g, p0, 0, roofTop, dz1 + g, D),
+      boxGeo(CORE.x1 + g, p0, dh + g, roofTop, dz0, dz1), boxGeo(CORE.x0, CORE.x1, 0, roofTop - 0.2, 0, CORE.mid[0] - g), boxGeo(CORE.x0, CORE.x1, roofTop - 0.2, roofTop, 0, CORE.top[0] - g),
       boxGeo(p1, coreX1, 0, roofTop, 0, D), boxGeo(p0, p1, ph, roofTop, 0, D));
     bricks.push(quadX(0, dz0, 0, ph, p0 + eps, false), quadX(dz1, D, 0, ph, p0 + eps, false), quadX(dz0, dz1, dh, ph, p0 + eps, false), quadX(0, D, 0, ph, p1 - eps, true));
   }
@@ -301,7 +302,7 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
     const low = core ? open(C.core.lower, x1 + H.wall - C.core.lowerW, roofTop) : open(C.lower, ox, roofTop);
     facade(bricks, x0, x1, roofTop, par, D + eps, false, low, false);
     low.forEach((o) => courtWindow(o, D + eps));
-    if (core) solids.push(boxGeo(x0 + 0.001, CORE.x0, roofTop, y3, loftD, D), boxGeo(CORE.x1, x1 - 0.001, roofTop, y3, loftD, D), boxGeo(CORE.x0, CORE.x1, roofTop + 2.6, y3, loftD, D)); // (the stairwell's top storey, #415)
+    if (core) solids.push(boxGeo(x0 + 0.001, CORE.x0 - 0.03, roofTop, y3, loftD, D), boxGeo(CORE.x1 + 0.03, x1 - 0.001, roofTop, y3, loftD, D), boxGeo(CORE.x0, CORE.x1, roofTop + 2.68, y3, loftD, D)); // (the stairwell's top storey, #415)
     else solids.push(boxGeo(x0 + 0.001, x1 - 0.001, roofTop, y3, loftD, D));
     // våning 4, set back behind the terrace: white render with the window and the terrace door
     // the terrace door's threshold sits on the finished deck (#350)

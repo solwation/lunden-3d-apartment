@@ -42,11 +42,16 @@ function light(x, y, z) {
   for (const [lx, ly, lz] of LIGHTS) s += 0.75 / (1 + ((x - lx) ** 2 + ((y - ly) * 1.2) ** 2 + (z - lz) ** 2) / 5);
   return Math.min(1.15, s);
 }
+/** Shading by which way a face looks (#448: the steps' treads, risers and soffits must read): up full, down dark. */
+const shade = (nx, ny, nz) => (ny > 0.5 ? 1 : ny < -0.5 ? 0.62 : Math.abs(nz) > Math.abs(nx) ? 0.8 : 0.9);
 function bake(geo, hex) {
   const g = geo.index ? geo.toNonIndexed() : geo;
-  for (const k of Object.keys(g.attributes)) if (k !== 'position') g.deleteAttribute(k);
+  if (!g.attributes.normal) g.computeVertexNormals();
+  const n = g.attributes.normal;
+  for (const k of Object.keys(g.attributes)) if (k !== 'position' && k !== 'normal') g.deleteAttribute(k);
   const p = g.attributes.position, c = new THREE.Color(hex), col = new Float32Array(p.count * 3);
-  for (let i = 0; i < p.count; i++) { const l = light(p.getX(i), p.getY(i), p.getZ(i)); col.set([c.r * l, c.g * l, c.b * l], i * 3); }
+  for (let i = 0; i < p.count; i++) { const l = light(p.getX(i), p.getY(i), p.getZ(i)) * shade(n.getX(i), n.getY(i), n.getZ(i)); col.set([c.r * l, c.g * l, c.b * l], i * 3); }
+  g.deleteAttribute('normal');
   g.setAttribute('color', new THREE.BufferAttribute(col, 3));
   return g;
 }
@@ -248,8 +253,12 @@ export class Core {
     this.walls.push({ s: [X1, DZ0, P0, DZ0], y0: -0.6, y1: 2.6 }, { s: [X1, DZ1, P0, DZ1], y0: -0.6, y1: 2.6 });
     geo.wall.push(bake(box(X1, P0, Y[1] + 2.2, Y[1] + 2.25, DZ0, DZ1), WALL), bake(box(X1, P0, Y[1] - 0.05, Y[1] + 0.003, DZ0, DZ1), STAIR));
     // a painted band low on the walls of each landing
-    for (const y of Y) geo.low.push(bake(panelX(X0 + 0.005, S0, S1, y, y + 1.0), LOW), bake(panelX(X1 - 0.005, S0, S1, y, y + 1.0), LOW));
-    geo.low.push(bake(panelX(X0 + 0.005, T0, T1, Y[3], Y[3] + 1.0), LOW), bake(panelX(X1 - 0.005, T0, T1, Y[3], Y[3] + 1.0), LOW));
+    for (const [k, y] of Y.entries()) { // (#448: 2 cm off the wall, not over the openings: the basement's, the portik passage)
+      const hole = k === 0 ? [{ a0: 7.95, a1: 8.85, y0: y, y1: y + 2.1 }] : k === 1 ? [{ a0: DZ0, a1: DZ1, y0: y, y1: y + 2.2 }] : [];
+      for (const [a, b, ya, yb] of complement(S0, S1, y, y + 1.0, k === 0 ? hole : [])) geo.low.push(bake(panelX(X0 + 0.02, a, b, ya, yb), LOW));
+      for (const [a, b, ya, yb] of complement(S0, S1, y, y + 1.0, hole)) geo.low.push(bake(panelX(X1 - 0.02, a, b, ya, yb), LOW));
+    }
+    geo.low.push(bake(panelX(X0 + 0.02, T0, T1, Y[3], Y[3] + 1.0), LOW), bake(panelX(X1 - 0.02, T0, T1, Y[3], Y[3] + 1.0), LOW));
     // the landings (slabs) and the flights (solid steps)
     const slab = (x0, x1, z0, z1, y) => geo.stair.push(bake(box(x0, x1, y - 0.2, y, z0, z1), STAIR));
     for (let k = 1; k < 4; k++) slab(X0, X1, S0, S1, Y[k]);
@@ -259,10 +268,15 @@ export class Core {
     geo.stair.push(bake(box(X0, X1, CEIL, CEIL + 0.05, T0, S1), 0xdedcd6)); // the ceiling over våning 3
     const flight = (x0, x1, zHi, zLo, yLo, yHi, north) => { // steps from (zLo side, yLo) to (zHi side, yHi)
       const n = Math.max(2, Math.round((yHi - yLo) / 0.18)), run = Math.abs(zHi - zLo) / n, rise = (yHi - yLo) / n;
-      for (let i = 0; i < n; i++) {
+      for (let i = 0; i < n; i++) { // the steps reach down into the slab under them (#448: no sawtooth underneath)
         const top = yLo + (i + 1) * rise, za = north ? zLo - (i + 1) * run : zLo + i * run, zb = za + run;
-        geo.stair.push(bake(box(x0, x1, top - rise - 0.22, top, za, zb), STAIR));
+        geo.stair.push(bake(box(x0, x1, top - 2 * rise - 0.02, top, za, zb), STAIR));
       }
+      // one sloped slab under the flight: its top on the line a riser below the nosings, a smooth soffit
+      const slen = Math.hypot(zHi - zLo, yHi - yLo), ang = Math.atan2(yHi - yLo, Math.abs(zHi - zLo)), t = 0.26;
+      const sl = new THREE.BoxGeometry(x1 - x0, t, slen).rotateX(north ? ang : -ang)
+        .translate((x0 + x1) / 2, (yLo + yHi) / 2 - rise - (t / 2) / Math.cos(ang), (zLo + zHi) / 2);
+      geo.stair.push(bake(sl, STAIR));
       // a steel handrail along the wall side, 0.9 m over the pitch line
       const len = Math.hypot(zHi - zLo, yHi - yLo), mz = (zHi + zLo) / 2, my = (yHi + yLo) / 2 + 0.9, xr = x0 < XS - 0.1 ? x0 + 0.05 : x1 - 0.05;
       geo.rail.push(bake(new THREE.CylinderGeometry(0.02, 0.02, len, 6).rotateX(Math.PI / 2).rotateX((north ? 1 : -1) * Math.atan2(yHi - yLo, Math.abs(zHi - zLo))).translate(xr, my, mz), RAIL));
@@ -287,7 +301,7 @@ export class Core {
     // floor numbers on the wall facing the stair at each landing, signs over the doors
     const nums = labelTexture(512, 128, (g) => { g.fillStyle = '#eeeeea'; g.fillRect(0, 0, 512, 128); g.fillStyle = '#1d4f8c'; g.font = 'bold 96px sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; LABELS.forEach((l, i) => g.fillText(l, 64 + i * 128, 68)); });
     const numGeos = Y.map((y, k) => {
-      const g = new THREE.PlaneGeometry(0.5, 0.5).rotateY(-Math.PI / 2).translate(X1 - 0.01, y + 1.7, (S0 + S1) / 2 - 0.2), uv = g.attributes.uv;
+      const g = new THREE.PlaneGeometry(0.5, 0.5).rotateY(Math.PI / 2).translate(X0 + 0.025, y + 1.7, S1 - 0.5), uv = g.attributes.uv; // (#448: on the west wall, clear of every door)
       for (let i = 0; i < uv.count; i++) uv.setXY(i, (k + uv.getX(i)) / 4, uv.getY(i));
       return g;
     });

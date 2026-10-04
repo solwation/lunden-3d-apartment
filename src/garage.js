@@ -499,7 +499,7 @@ export class Garage {
       d.angle += Math.sign(d.target - d.angle) * Math.min(Math.abs(d.target - d.angle), ST.speed * dt);
       this.place(d);
     }
-    const p = player.pos, below = !!player.below;
+    const p = player.pos, below = !!player.below || (!!player.inCore && p.y < F + 1.5); // (the stairwell's foot is the basement too, #448)
     const atDoor = p.y < F + 1.5 && Math.hypot(p.x - GD.x, p.z - (GD.z0 + GD.z1) / 2) < LI.sensor;
     this.present = below || atDoor;
     // each area's sensor: the visitor in it or within `sensor` m of one of its rooms (the entrance: also at the door)
