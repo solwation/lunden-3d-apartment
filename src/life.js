@@ -88,10 +88,14 @@ export class LifeItem extends Holdable {
   /** Down at world point `p` (a worktop, a table, the floor), turned `yaw` (radians; a random turn without). */
   placeAt(p, yaw = Math.random() * Math.PI * 2) {
     if (!this.held) return;
+    if (!(p.y >= this.life.floorY(p) - 0.02)) { this.life.say('Där kan den inte ligga'); return; } // never under the floor (#368): it stays in the hand
     const why = this.life.items.move(this.item, { at: 'world', pos: [p.x, p.y + 0.001, p.z], yaw });
     if (why) { this.life.say(why); return; }
     sfx.click(p);
   }
+
+  /** How it lies put down at `p` turned `yaw` (main.js's ghost, #368): as sync() puts a world place. */
+  poseAt(obj, p, yaw = 0) { obj.position.set(p.x, p.y + 0.001, p.z); obj.quaternion.setFromAxisAngle(UP, yaw); }
 
   /** The hand is needed for something else (or F): back to its home (a store's slot) if that is free, else down where
    * it last lay, else at the visitor's feet. Never lost. */
@@ -106,8 +110,8 @@ export class LifeItem extends Holdable {
 
 /** The life simulator's things (#366): the instances (items.js) and their views. */
 export class Life {
-  constructor({ scene, camera, defs = ITEMS, say = () => {}, feet = () => ({ at: 'world', pos: [0, 0, 0], yaw: 0 }) }) {
-    Object.assign(this, { scene, camera, say, feet });
+  constructor({ scene, camera, defs = ITEMS, say = () => {}, feet = () => ({ at: 'world', pos: [0, 0, 0], yaw: 0 }), floorY = () => -Infinity }) {
+    Object.assign(this, { scene, camera, say, feet, floorY });
     this.items = new Items(defs);
     this.views = new Map();
     this.lastWorld = new Map(); // id → the last world place (a putBack falls back to it)

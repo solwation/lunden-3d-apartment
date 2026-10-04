@@ -319,16 +319,17 @@ export class Cup {
   }
 
   /** Put it down at a world point on a table top / the floor (`y` = the surface's height), standing. */
-  placeAt(p) {
+  placeAt(p, yaw = Math.random() * 6) {
     this.held = false;
     if (heldItem() === this) setHeld(null);
     this.state = 'placed';
     this.placedAt = performance.now();
     this.scene.add(this.model);
-    this.model.position.set(p.x, p.y, p.z);
-    this.model.rotation.set(0, Math.random() * 6, 0);
+    this.poseAt(this.model, p, yaw);
     sfx.click(this.model.position);
   }
+  /** Standing at `p`, turned `yaw` (the model or main.js's ghost, #368). */
+  poseAt(obj, p, yaw = 0) { obj.position.set(p.x, p.y, p.z); obj.rotation.set(0, yaw, 0); }
 
   /** Back on a shelf spot in the cabinet (#141): `slot`, or the first free one (cups.js buildCups sets `freeSlot`). */
   goHome(slot = this.slot ?? Math.max(0, this.freeSlot?.() ?? 0)) {

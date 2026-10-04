@@ -167,11 +167,11 @@ export class Pingping extends Thing {
   onPut() { this.hugT = 1; this.model.scale.set(1, 1, 1); sfx.plush(this.where()); }
 
   /** Put down sitting up, facing the visitor. */
-  placeAt(p) {
-    super.placeAt(p);
-    if (!this.placed) return;
-    this.model.rotation.set(0, Math.atan2(this.camera.position.x - p.x, this.camera.position.z - p.z), 0);
+  placeAt(p, yaw) {
+    super.placeAt(p, yaw);
   }
+  /** Sitting up, facing the visitor (the ghost the same, #368). */
+  poseAt(obj, p) { super.poseAt(obj, p, 0); obj.rotation.set(0, Math.atan2(this.camera.position.x - p.x, this.camera.position.z - p.z), 0); }
 
   /** A hug. */
   onUse() {

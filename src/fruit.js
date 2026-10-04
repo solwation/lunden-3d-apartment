@@ -238,16 +238,17 @@ export class Fruit {
   }
 
   /** Put it down on a table top / the floor at world point p, a random turn. */
-  placeAt(p) {
+  placeAt(p, yaw = Math.random() * Math.PI * 2) {
     this.held = false;
     if (heldItem() === this) setHeld(null);
     this.state = 'placed';
     this.scene.add(this.model);
     this.model.visible = true;
-    this.model.rotation.set(0, Math.random() * Math.PI * 2, 0);
-    this.model.position.set(p.x, p.y + 0.001, p.z);
+    this.poseAt(this.model, p, yaw);
     sfx.click(this.model.position);
   }
+  /** Lying at `p` turned `yaw` (the model or main.js's ghost, #368). */
+  poseAt(obj, p, yaw = 0) { obj.rotation.set(0, yaw, 0); obj.position.set(p.x, p.y + 0.001, p.z); }
 
   /** Something else was taken / F: back in the bowl. */
   putBack() { if (this.held) this.home(); }

@@ -373,6 +373,11 @@ src/holdable.js        things you take and hold (one at a time): home + pick box
                        use = click / touch button / fast look; E on the home puts it back, E on a table top /
                        worktop / the floor (HOLD.reach) puts it down (`placeAt`, lying by its shape — `restPose`;
                        cups stand). While something is held other things are `blocked` ("Lägg ifrån dig …")
+                       #368: `placeAt(p, yaw)` + `poseAt(obj, p, yaw)` (every class that puts down its own way has one; Miele
+                       none): main.js snaps the spot (LIFE.place: a 5 cm grid inside a table's / worktop's edges, 10 cm on the
+                       floor), the turn = the view in 45° steps + R / the ⟳ button (#turn-btn), and a faint ghost of the thing
+                       (`itemGhost`, its meshes with one see-through material) stands exactly where E will put it; without
+                       `poseAt` the ring as before. Looking away cancels (still in the hand); a life item never goes under the floor
 src/hand.js            the visitor's arm + hand (HAND, #195, #238): three meshes in the camera (sleeve, cuff, the hand: palm,
                        thumb, four three-joint fingers of capsules + the bare wrist, with morph targets relaxed | grip |
                        spread), hidden when empty; holding a thing the fingers close round its `grip` (or the right edge of
@@ -700,7 +705,8 @@ tools/opentest.html    headless test: every Openable front (kitchen + furniture)
                        other front with contents (#230, #231)
 tools/bestatest.html   headless test: the BESTÅ display cabinet's six doors open/close, its spots (down over the front) and the
                        lit glass section switch with the room (#191)
-tools/holdtest.html    headless test: put things down (coffee table, dining table, floor), one at a time, F → home;
+tools/holdtest.html    headless test: put things down (coffee table, dining table, floor), one at a time, F → home; the preview
+                       (#368): the cup's ghost on the grid inside the table, ⟳ / R turn 45°, looking away cancels, down as the ghost;
                        the hand (#195): hidden when empty, at the saber's grip, a reach out and back; Pingping (#269): take him
                        (both hands on his sides), a hug (squashed, counted), onto the sofa (not a cup), back in the bed, F
                        the fruit bowl (#326): an apple bitten three times then eaten (counted), a pear on the dining table, an

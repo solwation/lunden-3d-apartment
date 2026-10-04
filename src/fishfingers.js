@@ -180,17 +180,21 @@ export class FishFinger {
   }
 
   /** Put it down at a world point on a table top / the floor, lying flat with a random turn. */
-  placeAt(p) {
+  placeAt(p, yaw = Math.random() * Math.PI * 2) {
     this.held = false;
     if (heldItem() === this) setHeld(null);
     this.state = 'placed';
     this.scene.add(this.model);
     this.model.visible = true;
-    const a = Math.random() * Math.PI * 2; // a random turn about its middle, which lands on p
-    this.model.rotation.set(0, a, 0);
-    this.model.position.set(p.x - Math.cos(a) * C.len / 2, p.y + 0.001, p.z + Math.sin(a) * C.len / 2);
+    this.poseAt(this.model, p, yaw);
     sfx.click(this.model.position);
     this.pack.onPlaced?.(this);
+  }
+
+  /** Lying flat at `p` turned `yaw` about its middle (the model or main.js's ghost, #368). */
+  poseAt(obj, p, a = 0) {
+    obj.rotation.set(0, a, 0);
+    obj.position.set(p.x - Math.cos(a) * C.len / 2, p.y + 0.001, p.z + Math.sin(a) * C.len / 2);
   }
 
   /** Where it lies: the middle of the stick (world). */

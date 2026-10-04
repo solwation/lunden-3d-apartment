@@ -95,6 +95,11 @@ try {
   check(!heldItem() && cuc.place.at === 'world' && Math.abs(cuc.place.pos[2] - 3.1) < 1e-6 && !life.group.visible, 'F with it in the hand: back down where it lay (never lost), hidden with the loose things');
   A.toggleFurniture(true); step(1 / 60);
   check(life.group.visible && v.model.parent === life.group, 'F again: it is there');
+  // under the floor (#368): refused, it stays in the hand
+  v.take(); step(1 / 60);
+  v.placeAt(new (camera.position.constructor)(4.3, -0.5, 2.7), 0); step(1 / 60);
+  check(heldItem() === v && cuc.place.at === 'hand', 'a spot under the floor: refused, still in the hand');
+  v.placeAt(new (camera.position.constructor)(5.25, 0.93, 3.1), 0); step(1 / 60);
   check(life.items.audit().length === 0, `audit in the game: ${life.items.audit().join('; ') || 'ok'}`);
 } catch (e) { pass = false; lines.push(`FAIL view error ${e.stack}`); }
 lines.push(pass ? 'ALL PASS' : 'SOME FAILED');

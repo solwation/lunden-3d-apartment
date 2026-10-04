@@ -261,14 +261,18 @@ export class Toaster extends Holdable {
   placeAt(p) {
     if (!this.held) return;
     super.placeAt(p);
-    const c = this.camera.getWorldPosition(new THREE.Vector3());
-    const yaw = Math.round(Math.atan2(-(c.x - p.x), -(c.z - p.z)) / (Math.PI / 2)) * (Math.PI / 2);
-    this.model.quaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
-    this.model.position.set(p.x, p.y + 0.0005, p.z);
     this.model.updateMatrixWorld(true);
     this.buildCord();
     this.setTargets();
     sfx.cupboard(p, false);
+  }
+
+  /** Standing at `p`, its front towards you, square to the room (the model or main.js's ghost, #368). */
+  poseAt(obj, p) {
+    const c = this.camera.getWorldPosition(new THREE.Vector3());
+    const yaw = Math.round(Math.atan2(-(c.x - p.x), -(c.z - p.z)) / (Math.PI / 2)) * (Math.PI / 2);
+    obj.quaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
+    obj.position.set(p.x, p.y + 0.0005, p.z);
   }
 
   /** keep.js (#277): plugged in or not (where it stands is the `things` part's). */

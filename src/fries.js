@@ -205,16 +205,19 @@ export class FriesBunch {
     this.model.rotation.set(0.25 - 0.2 * k, 1.9 + 0.5 * k, 0.15);
   }
 
-  placeAt(p) {
+  placeAt(p, yaw = Math.random() * Math.PI * 2) {
     this.held = false;
     if (heldItem() === this) setHeld(null);
     this.state = 'placed';
     this.scene.add(this.model);
     this.model.visible = true;
-    const a = Math.random() * Math.PI * 2;
-    this.model.rotation.set(0, a, 0);
-    this.model.position.set(p.x - Math.cos(a) * FR.len / 2, p.y + 0.001, p.z + Math.sin(a) * FR.len / 2);
+    this.poseAt(this.model, p, yaw);
     sfx.click(this.model.position);
+  }
+  /** Lying at `p` turned `a` about its middle (the model or main.js's ghost, #368). */
+  poseAt(obj, p, a = 0) {
+    obj.rotation.set(0, a, 0);
+    obj.position.set(p.x - Math.cos(a) * FR.len / 2, p.y + 0.001, p.z + Math.sin(a) * FR.len / 2);
   }
 
   /** Gone (eaten, cleared away). */

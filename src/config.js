@@ -968,6 +968,7 @@ export const LIFE = {
   dev: { at: [4.35, 2.75, -90, -32], hour: 12, cup: [5.24, 2.62], milk: [5.26, 2.95], glass: [3.55, 1.45],
     items: { plate: [3.45, 1.0, 0], cucumber: [3.72, 1.05, 20], butter: [3.35, 1.75, 0], cucumberSlice: [3.75, 1.8, 0] } }, // life items (#366) on the dining table: [x, z, yaw°]
   tooFar: 1.5, // a life-sim thing up to this much past HOLD.reach says "För långt bort" (#367)
+  place: { grid: 0.05, floorGrid: 0.1, margin: 0.04, turn: 45 }, // putting down (#368): snap grids (m), kept this far inside a table's edge, R turns this many degrees
 };
 
 // The life simulator's item types (#366, src/items.js): name (Swedish, definite form as in the prompts), tags (what it

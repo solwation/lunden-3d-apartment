@@ -34,7 +34,7 @@ export class SillPot extends Holdable {
 
   goHome() { super.goHome(); this.setAway(false); }
   take() { super.take(); if (this.held) { this.setAway(true); sfx.click(this.where()); } }
-  placeAt(p) { super.placeAt(p); sfx.click(p); }
+  placeAt(p, yaw) { super.placeAt(p, yaw); sfx.click(p); }
 }
 
 /** A SillPot for every pot on the window boards (world.sillPlants). */

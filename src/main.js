@@ -340,7 +340,8 @@ if (fries) Object.assign(fries, { fishIn: () => !!fish?.inFryer.length, onGolden
   onBurnt: () => { bump('friesBurnt'); penalize('burnt'); }, onEaten: () => bump('fries') });
 const fruit = new FruitBowl(scene, camera); // the copper fruit bowl on the coffee table (#326)
 // the life simulator's things (#364, #366): item instances (items.js) shown as Holdables (life.js); a refusal pops up as a badge
-const life = new Life({ scene, camera, say: (t) => badge(t, false), feet: () => ({ at: 'world', pos: [player.pos.x, player.pos.y, player.pos.z], yaw: camera.rotation.y }) });
+const life = new Life({ scene, camera, say: (t) => badge(t, false), feet: () => ({ at: 'world', pos: [player.pos.x, player.pos.y, player.pos.z], yaw: camera.rotation.y }),
+  floorY: () => (player.level >= 0 ? LEVELS[player.level].floor : -Infinity) }); // (nothing goes down under the floor, #368)
 fruit.onEaten = (f) => bump('fruit', 1, f.kind);
 airFryer.onDone = () => { if (fish?.inFryer.length || fries?.count) bump('airfried', 1, 'airfryer'); }; // a batch done (#287)
 const fridge = world.lids.find((l) => l.kind === 'fridge' && !l.freezer);
@@ -377,6 +378,58 @@ function floorSpot() {
   const h = STAIR.hole;
   if (d > HOLD.reach || (lv === 1 && floorHit.x > h.x0 && floorHit.x < h.x1 && floorHit.z > h.z0 && floorHit.z < h.z1)) return null;
   return { point: floorHit.clone().setY(y + rugLift(lv, floorHit.x, floorHit.z)), distance: d }; // on a rug: on top of it (#310)
+}
+// Putting things down (#368): the spot snaps to a grid (LIFE.place: a table top / worktop clamped inside its edges, the
+// floor coarser), the thing turns in steps (R / the ⟳ button) from the way you look, and a faint ghost of the thing itself
+// stands where it will land (`poseAt` of its class; without one the ring as before). E puts it down exactly like that.
+let placeTurn = 0, ghostOf = null, ghostItem = null;
+const ghostMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.35, depthWrite: false });
+const itemGhost = new THREE.Group();
+itemGhost.visible = false;
+scene.add(itemGhost);
+const snapBox = new THREE.Box3(), snapQ = new THREE.Quaternion();
+/** Snap `spot.point` to the grid; on a surface (a cupSurfaces box) inside its edges. */
+function snapSpot(spot, surface) {
+  const P = LIFE.place, g = surface ? P.grid : P.floorGrid, p = spot.point;
+  p.x = Math.round(p.x / g) * g; p.z = Math.round(p.z / g) * g;
+  if (surface) {
+    snapBox.setFromObject(surface);
+    const mx = Math.min(P.margin, (snapBox.max.x - snapBox.min.x) / 2), mz = Math.min(P.margin, (snapBox.max.z - snapBox.min.z) / 2);
+    p.x = THREE.MathUtils.clamp(p.x, snapBox.min.x + mx, snapBox.max.x - mx);
+    p.z = THREE.MathUtils.clamp(p.z, snapBox.min.z + mz, snapBox.max.z - mz);
+  }
+  return spot;
+}
+/** The turn a thing goes down with: the view's direction in steps of LIFE.place.turn°, plus the R turns. */
+function placeYaw() {
+  const st = THREE.MathUtils.degToRad(LIFE.place.turn);
+  return Math.round(camera.rotation.y / st) * st + placeTurn * st;
+}
+/** R / ⟳: turn what is about to be put down one step. */
+function turnPlacement() { placeTurn = (placeTurn + 1) % Math.round(360 / LIFE.place.turn); if (focused?.kind === 'place') focused.yaw = placeYaw(); }
+/** A see-through copy of the held thing's meshes (lights, particles left out), rebuilt when the hand changes. */
+function buildGhost(item) {
+  itemGhost.clear();
+  const m = item.model;
+  m.updateMatrixWorld(true);
+  const inv = m.matrixWorld.clone().invert();
+  m.traverse((o) => {
+    if (!o.isMesh || o.isInstancedMesh || o.isSkinnedMesh || !o.visible || !o.geometry) return;
+    const g = new THREE.Mesh(o.geometry, ghostMat);
+    g.matrixAutoUpdate = false;
+    g.matrix.multiplyMatrices(inv, o.matrixWorld);
+    g.raycast = () => {};
+    itemGhost.add(g);
+  });
+}
+function showItemGhost(item) {
+  if (item !== ghostItem) { ghostItem = item; placeTurn = 0; ghostOf = null; }
+  const t = focused?.kind === 'place' && !focused.blocked && focused.item === item && placeGhost.visible ? focused : null;
+  if (!t || !item?.poseAt) { itemGhost.visible = false; return; }
+  if (ghostOf !== item) { buildGhost(item); ghostOf = item; }
+  item.poseAt(itemGhost, t.point, t.yaw ?? placeYaw());
+  itemGhost.visible = true;
+  placeGhost.visible = false; // (the ring only for things without a ghost)
 }
 const drawing = new Drawing(scene, camera); // crayons on the paper on the desk in Sovrum 3 (#93)
 const measure = new Measure(scene, camera, [world.object], document.getElementById('measure'));
@@ -1022,7 +1075,7 @@ function use(thing) {
   else if (thing.kind === 'pourfries') thing.toggle(); // fries from the bag into the air fryer's basket (#301)
   else if (thing.kind === 'coffeejar' || thing.kind === 'mocca') thing.toggle(); // the coffee jar's scoop, the jug's water, the filter (#334)
   else if (thing.kind === 'saber' || thing.kind === 'holdable' || thing.kind === 'cup') thing.toggle();
-  else if (thing.kind === 'place') thing.item.placeAt(thing.point);
+  else if (thing.kind === 'place') thing.item.placeAt(thing.point, thing.yaw); // (as the ghost showed it, #368)
   else if (thing.kind === 'fry') thing.item.intoPan(); // the chicken into the pan on the hob (#160)
   else if (thing.kind === 'fryfish') thing.item.fryHeld(); // a fish finger into the pan (#214)
   else if (thing.kind === 'paper') { if (heldItem() === heldDrawing) heldDrawing.putBack(); else beginDraw(); } // holding the drawing: back on the desk (#176)
@@ -1094,6 +1147,8 @@ actionBtn.addEventListener('pointerdown', () => { if (!focused && heldItem()?.tr
 for (const ev of ['pointerup', 'pointercancel', 'pointerleave']) actionBtn.addEventListener(ev, () => heldItem()?.trigger?.(false));
 // touch: the remote's power button beside the action button while it is held
 const powerBtn = document.getElementById('power-btn');
+const turnBtn = document.getElementById('turn-btn');
+turnBtn.addEventListener('click', () => turnPlacement());
 powerBtn.addEventListener('click', () => heldItem()?.useAlt?.());
 const stripKeys = new Set(); // keys pressed while a strip / the note is open
 const isCtrl = (code) => code === 'ControlLeft' || code === 'ControlRight';
@@ -1130,6 +1185,7 @@ document.addEventListener('keydown', (e) => {
   if (e.code === 'Tab') { e.preventDefault(); if (!e.repeat) holdStats(true); }
   if (e.code === 'KeyK') toggleMap();
   if (e.code === 'KeyQ') measure.press();
+  if (e.code === 'KeyR' && !e.ctrlKey && !e.metaKey && focused?.kind === 'place') turnPlacement(); // turn what you put down (#368)
   if (e.code === 'KeyF') toggleFurniture();
   if (e.code.startsWith('Arrow')) e.preventDefault();
 });
@@ -1237,7 +1293,8 @@ function updateFocus() {
     } else if (!spot) { const f = floorSpot(); if (f && f.distance < reach && !behindWall(f.point)) spot = f; } // a table top is always above (before) the floor
     const lifeAim = focused?.kind === 'life' && !!focused.options?.().some((a) => !a.reason); // a plate it can go on (#367): that, not the table under it
     if (spot && !lifeAim && (!hit || spot.distance <= hit.distance + 0.05)) {
-      placeTarget = { name: `${item.name} här`, kind: 'place', verb: item.placeVerb ?? 'lägga ner', item, point: spot.point };
+      snapSpot(spot, top && spot.point.y > LEVELS[Math.max(0, player.level)].floor + 0.05 ? top.object : null); // on a grid (#368)
+      placeTarget = { name: `${item.name} här`, kind: 'place', verb: item.placeVerb ?? 'lägga ner', item, point: spot.point, yaw: placeYaw() };
       focused = placeTarget;
       placeGhost.position.copy(spot.point).y += 0.003;
       placeGhost.visible = true;
@@ -1287,6 +1344,7 @@ function updateFocus() {
   // the remote in the hand, aimed at a TV: the click / the touch button are the remote's (#101)
   const remoteAim = heldItem() === remote && focused?.kind === 'tv';
   if (remoteAim) focused = null;
+  showItemGhost(item); // the thing's own ghost where it would land (#368)
   // a bed with a seat in it: the verb of the spot the look ray picks
   const spot = focused?.kind === 'rest' ? chooseSpot(focused, raycaster.ray, null) : null;
   let verb = !focused ? '' : spot?.verb ?? focused.verb ?? (focused.isOpen ? 'stänga' : 'öppna');
@@ -1318,6 +1376,7 @@ function updateFocus() {
   if (heldItem() === ball && !focused && !touch.enabled && !reading) { promptEl.textContent = 'Klicka för att skjuta · högerklick: studsa bollen'; promptEl.hidden = false; }
   actionBtn.hidden = !(focused || reading || holding || seated) || !touch.enabled || (!!choices.rows && !reading) || clockPanel.open || calPanel.open || blindPanel.open || sonos.open || !!viewing; // the strips have their own ×
   powerBtn.hidden = !touch.enabled || !heldItem()?.useAlt || reading;
+  turnBtn.hidden = !touch.enabled || reading || focused?.kind !== 'place' || !!focused.blocked || !itemGhost.visible; // ⟳ (#368)
   if (!powerBtn.hidden) { const icon = heldItem().altIcon ?? '⏻'; if (powerBtn.textContent !== icon) { powerBtn.textContent = icon; powerBtn.setAttribute('aria-label', heldItem().altLabel ?? 'Stäng av / slå på TV:n'); } }
 }
 
@@ -1748,4 +1807,4 @@ if (lifeDev()) devScenario({ life, world, holdables, cups, things, milk, fish, f
 document.documentElement.classList.remove('resuming'); // the page is ready: off with the "Laddar…" cover (#222)
 
 // handle for tests/debugging (tools/touchtest.html)
-window.__app = { jetpack, toaster, life, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, coffeeJar, miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };
+window.__app = { placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, toaster, life, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, coffeeJar, miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };

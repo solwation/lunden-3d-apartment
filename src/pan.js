@@ -48,13 +48,15 @@ export class Pan extends Holdable {
     this.model.rotation.copy(this.home.rot);
   }
 
-  placeAt(p) {
+  placeAt(p, yaw) {
     if (!this.held) return;
-    super.placeAt(p);
-    this.model.quaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI); // upright, the handle towards the room (−x)
+    super.placeAt(p, yaw);
     this.onHob = !!this.hob && p.distanceTo(this.hob.zone) < 0.05;
     sfx.cupboard(p, false);
   }
+
+  /** Upright, the handle towards the room (−x), whatever the turn (#368: the ghost the same). */
+  poseAt(obj, p) { super.poseAt(obj, p, 0); obj.quaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI); }
 
   take() { super.take(); this.onHob = false; }
 

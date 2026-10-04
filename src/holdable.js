@@ -83,17 +83,23 @@ export class Holdable {
     this.model.rotation.copy(this.home.rot);
   }
 
-  /** Put it down at world point `p` on a horizontal surface (#102): lying on its side, a random turn. */
-  placeAt(p) {
+  /** Put it down at world point `p` on a horizontal surface (#102): lying on its side, turned `yaw` (radians; the ghost's
+   * turn, #368 — a random one without). */
+  placeAt(p, yaw = Math.random() * Math.PI * 2) {
     if (!this.held) return;
     this.held = false;
     if (current === this) current = null;
     this.onPut?.();
-    this.rest ??= restPose(this.model);
     this.scene.add(this.model);
-    this.model.quaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.random() * Math.PI * 2).multiply(this.rest.q);
-    this.model.position.set(p.x, p.y + this.rest.lift + 0.001, p.z);
+    this.poseAt(this.model, p, yaw);
     this.placed = true;
+  }
+
+  /** How it lies put down at `p` turned `yaw`, applied to `obj` (its model, or main.js's ghost of it, #368). */
+  poseAt(obj, p, yaw = 0) {
+    this.rest ??= restPose(this.model);
+    obj.quaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), yaw).multiply(this.rest.q);
+    obj.position.set(p.x, p.y + this.rest.lift + 0.001, p.z);
   }
 
   take() {

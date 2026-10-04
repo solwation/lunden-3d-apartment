@@ -111,6 +111,8 @@ export class MieleHeld extends Holdable {
     this.onPickUp?.();
   }
 
+  get poseAt() { return null; } // (no ghost of the cat: the ring shows where she goes, #368)
+
   /** Down at world point `p` (main.js: the floor, a bed or a sofa), facing you. */
   placeAt(p) {
     if (!this.held) return;

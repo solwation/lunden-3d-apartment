@@ -240,6 +240,40 @@ f.onload = async () => {
   w.__app.toggleFurniture(true);
   pass &= check(fruit.inBowl.length === fruit.fruit.length && fruit.fruit.every((p) => p.bites === 0 && p.model.visible) && Math.abs(size() - s0) < 1e-4, 'F: every piece back in the bowl, whole');
   } catch (e) { pass = false; lines.push(`FAIL fruit error ${e.stack}`); }
+  // putting down with a preview (#368): a ghost of the thing itself where it lands, on a 5 cm grid inside the table's edge,
+  // R / ⟳ turns it 45°, looking away cancels (still in the hand), E puts it down exactly as the ghost showed
+  try {
+  const { placement } = w.__app;
+  const turnBtn = d.getElementById('turn-btn');
+  const cup4 = cups.cups.find((c) => c.state === 'cabinet') ?? cups.cups[0];
+  cup4.take(); step(1 / 60);
+  pass &= check(lookAt(table, /ställa ner koppen här/i, [[2.6, 2.2], [2.5, 1.6], [3.5, 2.6]]), `the cup at the dining table: "${btn.textContent}"`);
+  const t = placement.target(), g = placement.ghost;
+  const onGrid = (v) => Math.abs(v / 0.05 - Math.round(v / 0.05)) < 1e-6;
+  pass &= check(g.visible && !placement.ring.visible && g.children.length > 0 && g.position.distanceTo(t.point) < 1e-6, `the cup's ghost stands where it will land (${g.children.length} meshes)`);
+  pass &= check(onGrid(t.point.x) && onGrid(t.point.z) && t.point.x > 3.09 && t.point.x < 3.91 && t.point.z > 0.7 && t.point.z < 2.12, `snapped to the grid on the table (${t.point.x.toFixed(3)}, ${t.point.z.toFixed(3)})`);
+  pass &= check(!turnBtn.hidden, 'touch: the ⟳ button is there');
+  const y0 = t.yaw;
+  turnBtn.click(); step(1 / 60);
+  const t2 = placement.target();
+  pass &= check(Math.abs(t2.yaw - y0 - Math.PI / 4) < 1e-6 && g.quaternion.angleTo(new camera.quaternion.constructor().setFromAxisAngle(new V(0, 1, 0), t2.yaw)) < 1e-4, `⟳ turns it 45° (${(y0 * 57.3).toFixed(0)}° → ${(t2.yaw * 57.3).toFixed(0)}°), the ghost too`);
+  placement.turn(); step(1 / 60);
+  pass &= check(Math.abs(placement.target().yaw - y0 - Math.PI / 2) < 1e-6, 'R (the same turn): another 45°');
+  // cancel: look up — no ghost, still in the hand
+  camera.rotation.x = 1.3; step(1 / 60);
+  pass &= check(!g.visible && !placement.target() && heldItem() === cup4 && turnBtn.hidden, 'looking away: no ghost, the cup still in the hand');
+  pass &= check(lookAt(table, /ställa ner koppen här/i, [[2.6, 2.2], [2.5, 1.6], [3.5, 2.6]]), 'back at the table');
+  const t3 = placement.target(), gp = g.position.clone(), gq = g.quaternion.clone();
+  btn.click(); step(1 / 60);
+  pass &= check(!heldItem() && cup4.model.position.distanceTo(gp) < 1e-6 && cup4.model.quaternion.angleTo(gq) < 1e-4 && !g.visible, `down exactly as the ghost showed (yaw ${(t3.yaw * 57.3).toFixed(0)}°)`);
+  // a thing lying on its side (the saber): the ghost lies the same way
+  saber.take(); step(1 / 60);
+  pass &= check(lookAt(table, /lägga ner lightsabern här/i, [[2.6, 2.2], [2.5, 1.6], [3.5, 2.6]]), 'the saber at the table');
+  const sq = g.quaternion.clone(), sp2 = g.position.clone();
+  btn.click(); step(1 / 60);
+  pass &= check(saber.placed && saber.model.quaternion.angleTo(sq) < 1e-4 && saber.model.position.distanceTo(sp2) < 1e-6, 'the saber lies as its ghost did');
+  w.__app.toggleFurniture(false); w.__app.toggleFurniture(true);
+  } catch (e) { pass = false; lines.push(`FAIL placement error ${e.stack}`); }
   out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
 };
 </script>

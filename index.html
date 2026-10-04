@@ -228,6 +228,8 @@
     #crouch-btn.on { background: var(--accent); }
     #power-btn { position: fixed; right: calc(24px + var(--sr)); bottom: calc(100px + var(--sb)); width: 48px; height: 48px; border: 0; border-radius: 50%; background: #c8202a; color: #fff; font-size: 22px; touch-action: manipulation; }
     #power-btn[hidden] { display: none; }
+    #turn-btn { position: fixed; right: calc(24px + var(--sr)); bottom: calc(160px + var(--sb)); width: 48px; height: 48px; border: 0; border-radius: 50%; background: var(--panel); font-size: 22px; touch-action: manipulation; } /* turn what you put down (#368) */
+    #turn-btn[hidden] { display: none; }
     #stand-btn { position: fixed; right: calc(24px + var(--sr)); bottom: calc(160px + var(--sb)); touch-action: manipulation; padding: 12px 18px; border: 0; border-radius: 40px; background: rgba(255,255,255,.92); color: var(--ink); font: 600 15px system-ui, sans-serif; box-shadow: 0 4px 14px rgba(0,0,0,.3); }
     #stand-btn[hidden] { display: none; }
     /* the jetpack (#359): its heat bar under the score, the nozzles' glow at the bottom, ⬆ ⬇ on touch left of 🧎 */
@@ -526,6 +528,7 @@
     <div id="stick" hidden><div class="knob"></div></div>
     <button id="action" class="touch-only" hidden></button>
     <button id="power-btn" class="touch-only" hidden aria-label="Stäng av / slå på TV:n">⏻</button>
+    <button id="turn-btn" class="touch-only" hidden aria-label="Vrid">⟳</button>
     <button id="stand-btn" class="touch-only" hidden>Res dig</button>
     <div id="jetpack" hidden title="Jetpacken: värme">🚀<span class="bar"><i></i></span></div>
     <div id="jet-glow" aria-hidden="true"></div>
