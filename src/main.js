@@ -1284,10 +1284,29 @@ const center = new THREE.Vector2(0, 0);
 const keyCabinet = world.lids.find((l) => l.kind === 'keybox');
 let focused = null, focusPoint = null;
 
+/** Does the line a → b pass through one of the flat's slabs (a level's ceiling .. the next floor, the roof too) inside
+ * its footprint, other than through the stair hole (#446)? Both faces of the slab are tested; a line grazing the hole's
+ * edge by up to 5 cm still passes (the rattan lamp at the edge, seen from the stair). */
+function throughSlab(a, b) {
+  for (let i = 0; i < LEVELS.length; i++) {
+    const L = LEVELS[i];
+    for (const y of [L.floor + L.ceiling, L.top]) {
+      if ((a.y - y) * (b.y - y) >= 0) continue; // both on one side of this face
+      const t = (y - a.y) / (b.y - a.y), x = a.x + (b.x - a.x) * t, z = a.z + (b.z - a.z) * t;
+      if (x <= 0 || x >= world.size.x || z <= 0 || z >= world.size.z) continue; // outside the flat
+      const h = i === 0 ? STAIR.hole : null; // only the slab between our two levels has an opening
+      if (h && x > h.x0 - 0.05 && x < h.x1 + 0.05 && z > h.z0 - 0.05 && z < h.z1 + 0.05) continue;
+      return true;
+    }
+  }
+  return false;
+}
+
 /** Is there a wall between the eye and `p` (plan view)? Pickables aren't occluded by walls in the
  * raycast (it only tests pickables), so check the line against the level's wall outlines. */
 function behindWall(p) {
   if (player.aloft && p.y < UNIT_TOP && p.x > 0 && p.x < world.size.x && p.z > 0 && p.z < world.size.z) return true; // up on the roof: the flat is under it (#360)
+  if (throughSlab(camera.position, p)) return true; // a floor / ceiling between (#446: the bed upstairs through the kitchen ceiling)
   const segs = world.levels[Math.max(0, player.level)]?.wallSegments ?? [];
   const ax = camera.position.x, az = camera.position.z, bx = p.x, bz = p.z;
   return segs.some(([cx, cz, dx, dz]) => {

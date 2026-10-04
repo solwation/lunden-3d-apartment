@@ -1408,7 +1408,8 @@ suite every time):
   `sfx.chew`, then a purr) and washes again; taken up first → it looks at the visitor. Petting, hide and a new spot
   cancel it. Counted as `catFish` in the stats.
 - Interaction raycasts only test pickables, so `behindWall` in main.js rejects hits whose eye →
-  hit line crosses a wall outline (`levels[i].wallSegments`) — no switching lamps through walls.
+  hit line crosses a wall outline (`levels[i].wallSegments`) or a slab / ceiling outside the stair hole (`throughSlab`, #446) — no
+  switching lamps through walls, no bed upstairs through the kitchen ceiling.
 - Kitchen (#221): the under-cabinet LED ("bänkbelysningen", a rocker under the first wall cabinet after the cup cabinet)
   and the hood's light (a button on the hood's front) are lamps of their own in `world.lamps` (lights.js FloorLamp with
   `glows` = additive washes on the worktop/splashback, `light` = pool-light overrides), not the room's switch. #271: their pool lights sit under the cabinets / hood, weak and away from the tiles, the washes ease

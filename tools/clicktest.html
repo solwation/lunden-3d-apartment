@@ -108,6 +108,19 @@ f.onload = async () => { const lines = []; let pass = true; try {
   let alt = 0; const was = remote.useAlt.bind(remote); remote.useAlt = () => { alt++; was(); };
   check(click(2) === 'alt' && alt === 1, 'the remote: a right click is its power button');
   remote.useAlt = was; remote.putBack(); run(5);
+  // nothing through a floor / ceiling (#446): the Sovrum 1 bed upstairs is not reached through the kitchen ceiling,
+  // a click there does not sit you in it; through the stair hole the other level still counts (the rattan floor lamp
+  // by the hole's west edge, seen from flight A)
+  player.spawn(4.3, 3.0, 0); run(3);
+  camera.rotation.set(1.3, 0, 0, 'YXZ'); run(2);
+  check(app.focus().focused?.kind !== 'rest', `the bed upstairs not through the kitchen ceiling (${app.focus().focused?.name ?? ''})`);
+  check(click(0) !== 'e' && !rest.active, 'a click there does not sit you in the bed');
+  player.spawn(3.5, 2.0, 0); run(3);
+  aim(new V(3.67, 3.38, 1.99)); // (the bed's foot end, 2.1 m from the eye)
+  check(app.focus().focused?.kind !== 'rest', `nor aimed at it from the dining side (${app.focus().focused?.name ?? ''})`);
+  player.spawn(4.5, 7.4, 0); player.pos.y = app.stairHeight(4.5, 7.4); player.eyeY = player.pos.y + 1.62; run(3);
+  aim(new V(3.76, 3.51, 6.96));
+  check(app.focus().focused?.name === 'rottinglampan', `from the stair, the floor lamp upstairs through the hole (${app.focus().focused?.name ?? ''})`);
 } catch (e) { lines.push(`FAIL ${e}\n${e.stack}`); pass = false; }
   out.textContent = lines.join('\n') + `\n${pass ? 'ALL PASS' : 'SOME FAILED'}`;
 };
