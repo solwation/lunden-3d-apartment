@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { GARAGE as G, SITE } from './config.js';
+import { GARAGE as G, SITE, CORE } from './config.js';
 import { carGeometry, bikeGeometry } from './streetlife.js';
 import { groundY } from './surroundings.js';
 import { sfx } from './audio.js';
@@ -481,6 +481,7 @@ export class Garage {
   near(cam) {
     const p = cam.position;
     if (p.y < C && this.inside(p.x, p.z)) return true;
+    if (p.y < C + 1 && p.x > CORE.x0 - 0.1 && p.x < CORE.x1 + 0.1 && p.z > CORE.mid[0] && p.z < CORE.lift.z1) return true; // the stairwell's foot, the lift at its basement stop (#450)
     return p.x < GD.x + 0.5 && p.x > GD.x - 60 && Math.abs(p.z - (GD.z0 + GD.z1) / 2) < 25 && p.y < F + 6 ? 'outside' : false;
   }
 

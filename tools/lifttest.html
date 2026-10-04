@@ -87,6 +87,14 @@ async function run() {
   walkTo(-17.2, 5.2); walkTo(-18.4, 4.6); walkTo(-18.4, 9.0);
   check(Math.abs(player.pos.y - Y[0]) < 0.05, `down the stairs to våning −1 (y ${f2(player.pos.y)})`);
   check((stats.falls ?? 0) === falls0 && !player.fall, `no fall on the stairs (${stats.falls ?? 0})`);
+  // #450: from the stairwell's foot out through its east opening, the bike room, the steel door, into the garage hall
+  const gd = world.garage.targets.find((t) => t.door.rect?.id === 'garageDoorL');
+  if (!gd.isOpen) gd.toggle();
+  for (let i = 0; i < 60; i++) step(1 / 60);
+  walkTo(-17.2, 8.4); walkTo(-15.5, 8.4); walkTo(-15.2, 11.6); walkTo(-15.0, 15.0);
+  check(world.garage.object.visible && player.below && world.garage.roomAt(player.pos.x, player.pos.z) === 'Garage', `from the stair's foot out into the garage hall (${world.garage.roomAt(player.pos.x, player.pos.z)}, z ${f2(player.pos.z)})`);
+  walkTo(-15.2, 11.6); walkTo(-15.5, 8.4); walkTo(-17.6, 8.6);
+  check(player.inCore && Math.abs(player.pos.y - Y[0]) < 0.05, 'and back to the stairwell');
   // a reload record mid-ride: it carries on to its stop
   lift.loadState({ at: null, y: 1.0, target: 3, open: 0 });
   for (let i = 0; i < 60 * 20 && lift.at !== 3; i++) step(1 / 60);

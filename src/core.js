@@ -296,6 +296,20 @@ export class Core {
     this.walls.push({ s: [XS, M1, XS, S0], y0: Y[0], y1: Y[3] + 1.1 }, { s: [XS, M0, XS, M1], y0: 4.0, y1: Y[3] + 1.1 },
       { s: [X0, S0, XS, S0], y0: Y[3] + 0.2, y1: Y[3] + 1.1 }, { s: [XS, S0, X1, S0], y0: Y[0], y1: Y[0] + 1.3 }); // (the last: no walking under the basement's flight)
     geo.stair.push(bake(box(XS, X1, Y[0], Y[0] + 1.3, S0 - 0.06, S0), WALL));
+    // the ways out at the stairwell's foot (#450): steel frames round the two openings into the basement's bike rooms and
+    // signs over them (the garage is through the east one, then the steel door south)
+    for (const [x, sx] of [[X0, 1], [X1, -1]]) {
+      const fx = x + sx * 0.02;
+      geo.rail.push(bake(box(fx - 0.03, fx + 0.03, Y[0], Y[0] + 2.15, 7.9, 7.98), 0x5e6266), bake(box(fx - 0.03, fx + 0.03, Y[0], Y[0] + 2.15, 8.82, 8.9), 0x5e6266),
+        bake(box(fx - 0.03, fx + 0.03, Y[0] + 2.1, Y[0] + 2.16, 7.9, 8.9), 0x5e6266));
+    }
+    const exits = labelTexture(512, 128, (g) => { g.fillStyle = '#1d7a3a'; g.fillRect(0, 0, 512, 128); g.strokeStyle = '#f4f4f0'; g.lineWidth = 6; g.strokeRect(6, 6, 244, 116); g.strokeRect(262, 6, 244, 116);
+      g.fillStyle = '#f4f4f0'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = 'bold 22px sans-serif'; g.fillText('← CYKELFÖRRÅD', 128, 64); g.fillText('GARAGE · FÖRRÅD →', 384, 64); });
+    const exitGeos = [[X0 + 0.03, Math.PI / 2, 0], [X1 - 0.03, -Math.PI / 2, 1]].map(([x, ry, k]) => {
+      const g = new THREE.PlaneGeometry(0.9, 0.225).rotateY(ry).translate(x, Y[0] + 2.4, 8.4), uv = g.attributes.uv;
+      for (let i = 0; i < uv.count; i++) uv.setXY(i, (k + uv.getX(i)) / 2, uv.getY(i));
+      return g;
+    });
     // the lights: a round ceiling light over each landing (lit = white)
     for (const [x, y, z] of LIGHTS) geo.light.push(new THREE.CylinderGeometry(0.16, 0.16, 0.05, 16).translate(x, y + 0.02, z));
     // floor numbers on the wall facing the stair at each landing, signs over the doors
@@ -310,6 +324,7 @@ export class Core {
     add([...geo.wall, ...geo.low, ...geo.stair, ...geo.rail], this.mats.wall);
     add(geo.light, this.mats.light);
     add(numGeos, new THREE.MeshBasicMaterial({ map: nums.t }));
+    add(exitGeos, new THREE.MeshBasicMaterial({ map: exits.t }));
     // the doors: from the portik (glazed, opening out into the portik), out onto the loftgång; fakes to L1101 / L1205
     this.doors = [
       makeDoor(group, { hx: P0, hz: DZ0, dir: [0, 1], out: [1, 0], w: DZ1 - DZ0, y: Y[1], name: 'porten till trapphuset', glazed: true }),
