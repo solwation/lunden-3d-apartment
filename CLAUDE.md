@@ -10,6 +10,10 @@ in Swedish. Code, comments and this file are in English; UI text is Swedish.
 - **Basic function first.** Work that isn't needed right now goes into a GitHub issue
   (`gh issue create`) instead of being done on the side. Keep issues small and concrete;
   reference the issue number in the commit that resolves it (`Fixes #N`).
+- **Problems found along the way become bug issues, not fixes on the fly** (the user): a failing test or bug outside
+  your issue's scope (pre-existing, or caused by someone else's change) gets its own issue titled `Bugg: …` with a
+  `Lapp:` line, what fails, how to reproduce and the suspected cause/commit — then carry on and finish your own issue.
+  Only fix it in your change if your change caused it.
 - **Several agents work in parallel (other computers push to `main` too).** Never take an issue that
   is labelled `in-progress` (`gh issue list --state open --json number,title,labels`). Before starting
   **each** new issue: `git pull --rebase origin main`, then `git status` must be clean and
