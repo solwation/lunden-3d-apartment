@@ -20,12 +20,14 @@ import * as THREE from 'three';
 import { buildWorld } from '../src/world.js';
 import { Player } from '../src/player.js';
 import { Garage } from '../src/garage.js';
+import { Core } from '../src/core.js';
 import { START } from '../src/config.js';
 
 const out = document.getElementById('out');
 const plan = await fetch('../data/plan.json').then((r) => r.json());
 const world = buildWorld(plan);
 world.garage = new Garage(); // the garage and Hus L's basement (#357, #417; main.js builds it the same way)
+world.core = new Core(); // Hus L's stairwell and lift (#415)
 const camera = new THREE.PerspectiveCamera();
 camera.rotation.order = 'YXZ';
 const player = new Player(world, camera);
@@ -78,6 +80,12 @@ const routes = {
     start: [-73.5, 44], open: [], garage: true, points: [[-60, 44], [-46.6, 42], [-46.6, 21], [1.9, 20.5], [1.9, 18.0], [-15.0, 18.0], [-15.0, 13.4],
       [-15.0, 10.5], [-17.8, 8.4]], expectLevel: 0, expectY: -3,
   },
+  'trapphuset: portiken → trappan ner → garagets hisshall → upp igen → trappan till våning 3 → loftgången (#415)': {
+    start: [-14.9, 8.95], open: [], core: true, points: [[-16.2, 8.95], [-17.2, 8.9], [-17.2, 5.2], [-18.4, 4.6], [-18.4, 9.0], [-17.6, 8.4], [-15.5, 8.4],
+      [-17.6, 8.4], [-18.4, 8.6], [-18.4, 6.0], [-18.0, 4.6], [-17.2, 5.2], [-17.2, 9.0], [-18.4, 8.6], [-18.4, 6.0], [-18.0, 4.6], [-17.2, 5.2],
+      [-17.2, 9.0], [-18.4, 8.2], [-18.4, 2.6], [-18.3, 0.8]],
+    expectLevel: 0, expectY: 6.4,
+  },
   'kvarteret: gården → trappan mellan Hus C och B → runt Hus B och A → uppför rampen → START (#355)': {
     start: [-44.2, 18.5], open: [], points: [[-46.6, 50], [-46.6, 52.3], [-46.6, 59.5], [-30, 60], [-16, 60], [0, 56], [11.2, 56], [11.2, 33],
       [12.5, 30.6], [12.5, 26], [12.5, 11], [12.5, -2], [6, -6], [START.x, START.z]],
@@ -123,6 +131,7 @@ let pass = true;
 const dt = 1 / 60;
 for (const [name, r] of Object.entries(routes)) {
   if (r.start) player.spawn(r.start[0], r.start[1], Math.PI);
+  if (r.core) for (const t of world.core.doors) { t.door.angle = t.door.target = t.door.max; world.core.placeDoor(t.door); } // the portik's and the loftgång's doors open (#415)
   if (r.garage) { // the garage door and the basement's steel door open (#358, #417)
     const g = world.garage; g.door.t = g.door.target = 1; g.door.place();
     for (const t of g.targets) if (t.door?.rect?.id === 'garageDoorL') { t.door.angle = t.door.target = t.door.max; g.place(t.door); }

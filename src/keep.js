@@ -59,6 +59,10 @@ const PARTS = {
     save: ({ car }) => car.saveState(),
     load: ({ car }, s) => car.loadState(s),
   },
+  lift: { // Hus L's lift (#415): where it is, its doors
+    save: ({ world }) => world.core?.lift.saveState() ?? null,
+    load: ({ world }, s) => world.core?.lift.loadState(s),
+  },
 
   open: {
     save(a) {
@@ -304,7 +308,7 @@ const restKey = (t) => `${t.name}|${t.spots[0] ? vec(t.spots[0].pos).join(',') :
 
 // the order things come back in: the clock before the lamps (dusk), the car before its seat, fronts before what
 // lies in them, the TV before sitting in front of it
-const ORDER = ['clock', 'car', 'open', 'lamps', 'on', 'grill', 'coffee', 'sonos', 'parasol', 'things', 'jetpack', 'life', 'rest', 'cat'];
+const ORDER = ['clock', 'car', 'lift', 'open', 'lamps', 'on', 'grill', 'coffee', 'sonos', 'parasol', 'things', 'jetpack', 'life', 'rest', 'cat'];
 
 /** The world part of a reload record. */
 export function saveWorld(a) {

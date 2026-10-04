@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { HUS_L as H, COLORS, FENCE_HEIGHT, SEASON, VERTICAL, storeyFloor } from './config.js';
+import { HUS_L as H, COLORS, FENCE_HEIGHT, SEASON, VERTICAL, storeyFloor, CORE } from './config.js';
 import { registerSnow } from './seasons.js';
 import { wallLine, wallRect } from './roofs.js';
 import { groundY } from './surroundings.js';
@@ -250,8 +250,14 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
     facade(bricks, coreX0, coreX1, 0, roofTop, -eps, true, holes, false);
     facade(bricks, coreX0, coreX1, 0, roofTop, D + eps, false, holes, false);
     [win(1.0), win(6.4)].forEach((o) => { fakeWindow(o, -eps, true); fakeWindow(o, D + eps, false); });
-    solids.push(boxGeo(coreX0, p0, 0, roofTop, 0, D), boxGeo(p1, coreX1, 0, roofTop, 0, D), boxGeo(p0, p1, ph, roofTop, 0, D));
-    bricks.push(quadX(0, D, 0, ph, p0 + eps, false), quadX(0, D, 0, ph, p1 - eps, true));
+    // #415: the stairwell (src/core.js) is hollow — the solid west of the portik leaves out the stair band (x CORE.x0 … x1,
+    // from the mid-landings' line to the lift shaft; on våning 3 from the upper units' street face) and the passage from
+    // the portik's door (z CORE.portikDoor.z, 2.2 m high); the portik's west wall has the door's opening
+    const [dz0, dz1] = CORE.portikDoor.z, dh = 2.2;
+    solids.push(boxGeo(coreX0, CORE.x0, 0, roofTop, 0, D), boxGeo(CORE.x1, p0, 0, roofTop, 0, dz0), boxGeo(CORE.x1, p0, 0, roofTop, dz1, D),
+      boxGeo(CORE.x1, p0, dh, roofTop, dz0, dz1), boxGeo(CORE.x0, CORE.x1, 0, roofTop - 0.2, 0, CORE.mid[0]), boxGeo(CORE.x0, CORE.x1, roofTop - 0.2, roofTop, 0, CORE.top[0]),
+      boxGeo(p1, coreX1, 0, roofTop, 0, D), boxGeo(p0, p1, ph, roofTop, 0, D));
+    bricks.push(quadX(0, dz0, 0, ph, p0 + eps, false), quadX(dz1, D, 0, ph, p0 + eps, false), quadX(dz0, dz1, dh, ph, p0 + eps, false), quadX(0, D, 0, ph, p1 - eps, true));
   }
 
   // våning 3–4: the upper units (L1201–L1209), one over each lower unit and one (L1205) over the core
@@ -275,10 +281,12 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
   for (const [x0, x1, ox, id] of uppers) {
     const core = ox == null;
     // street side (#347): both storeys in render behind the loftgång, each flat type with its own openings
-    const holes = core ? streetOpenings(id, coreW, coreX1 + H.wall) : streetOpenings(id, ox);
+    const holes = core ? [...streetOpenings(id, coreW, coreX1 + H.wall), { x0: CORE.loftDoor.x[0], x1: CORE.loftDoor.x[1], y0: roofTop, y1: roofTop + 2.2, door: true, hole: true }] // + the stairwell's door (#415, core.js draws it)
+      : streetOpenings(id, ox);
     facade(renders, x0, x1, roofTop, upperTop, loftD - eps, true, holes, false);
     for (const o of holes) {
       if (!o.door) { fakeWindow(o, loftD - eps, true); continue; }
+      if (o.hole) continue;
       // the entrance (#111): set back, a white door with a narrow glass light, render reveals, a lantern beside it
       const zr = loftD + Lf.recess;
       renders.push(boxGeo(o.x0, o.x0 + 0.01, o.y0, o.y1, loftD, zr), boxGeo(o.x1 - 0.01, o.x1, o.y0, o.y1, loftD, zr), boxGeo(o.x0, o.x1, o.y1 - 0.01, o.y1, loftD, zr));
@@ -293,7 +301,8 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
     const low = core ? open(C.core.lower, x1 + H.wall - C.core.lowerW, roofTop) : open(C.lower, ox, roofTop);
     facade(bricks, x0, x1, roofTop, par, D + eps, false, low, false);
     low.forEach((o) => courtWindow(o, D + eps));
-    solids.push(boxGeo(x0 + 0.001, x1 - 0.001, roofTop, y3, loftD, D));
+    if (core) solids.push(boxGeo(x0 + 0.001, CORE.x0, roofTop, y3, loftD, D), boxGeo(CORE.x1, x1 - 0.001, roofTop, y3, loftD, D), boxGeo(CORE.x0, CORE.x1, roofTop + 2.6, y3, loftD, D)); // (the stairwell's top storey, #415)
+    else solids.push(boxGeo(x0 + 0.001, x1 - 0.001, roofTop, y3, loftD, D));
     // våning 4, set back behind the terrace: white render with the window and the terrace door
     // the terrace door's threshold sits on the finished deck (#350)
     const ta = core ? loftX1 : x0, up = (core ? open(C.core.upper, coreW, y3) : open(C.upper, ox, y3)).map((o) => ({ ...o, y0: Math.max(o.y0, deckY) }));
@@ -392,7 +401,9 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
   for (const [xa, xb] of H.solar.x) for (const [za, zb] of H.solar.z) surf('L-roof', 'Hus L:s tak', xa, xb, za, zb, roofY + 0.07); // step over them
   surf('L-loft', 'Loftet över hisstoppet', loftX0 - 0.03, loftX1 + 0.03, zt - 0.03, zf + 0.03, loftY);
   wallRect(walls, xw, xe, 0, D, low, roofTop); // våning 1–2 (a fall past the façades stays outside)
-  wallLine(walls, xw, loftD, xe, loftD, roofTop, roofY); // the upper units' street face, over the loftgång (no way in)
+  wallLine(walls, xw, loftD, CORE.loftDoor.x[0], loftD, roofTop, roofY); // the upper units' street face, over the loftgång (no way in) …
+  wallLine(walls, CORE.loftDoor.x[1], loftD, xe, loftD, roofTop, roofY);
+  wallLine(walls, CORE.loftDoor.x[0], loftD, CORE.loftDoor.x[1], loftD, roofTop + 2.2, roofY); // … but the stairwell's door (#415: its leaf is core.js's)
   for (const [ra, rb2] of [[deckX0, te.x - 1.2], [te.x + 1.2, xe]]) wallLine(walls, ra, rz, rb2, rz, roofTop - 0.3, roofTop + rh); // the loftgång railing
   wallLine(walls, xw, D - 0.1, xe, D - 0.1, roofTop, deckY + C.rail); // våning 3's courtyard face + the terraces' parapet and railing
   for (const [x, s] of [[xw, 1], [xe, -1]]) {

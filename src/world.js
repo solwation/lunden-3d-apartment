@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import {
   LEVELS, UNIT_TOP, SOFFITS, DOOR_HEIGHT, DOOR_TRIM, EXT_DOOR_HEAD, WINDOWS, WINDOW_TOP_HUNG_MAX, BLINDS, CABINET_HEIGHT, BASE_CABINET, SHELF_HEIGHT, TOILET,
-  STAIR, COLORS, FENCE_HEIGHT, SITE, OUTDOOR, CABINET_FIXES, KLK, SEASON, FINISH, OPTIONS, EXTRA_WALLS, SLIDE_FLIP, ROOM_RENAMES, EXTRA_ROOMS, ROOM_DIVIDERS,
+  STAIR, COLORS, FENCE_HEIGHT, SITE, OUTDOOR, CABINET_FIXES, KLK, SEASON, FINISH, OPTIONS, EXTRA_WALLS, SLIDE_FLIP, ROOM_RENAMES, EXTRA_ROOMS, ROOM_DIVIDERS, CORE,
 } from './config.js';
 import { buildStairs, buildHandrails } from './stairs.js';
 import { klkFittings } from './closet.js';
@@ -707,8 +707,10 @@ export function buildWorld(plan) {
   const site = lower.site;
   // the street side; south of it and where the streets slope (#256): surroundings.js's terrain (#79)
   const T = SITE.terrain;
-  scene.add(plate(-200, 200, -200, terrainNorth, -0.01, M.grass), plate(T.west.stair.x1, T.east.gable, terrainNorth, T.north, -0.01, M.grass),
-    plate(T.west.x, T.west.stair.x1, T.west.stair.z1, T.north, -0.01, M.grass));
+  // (#415: with a hole over Hus L's stairwell, which goes down to the garage — CORE)
+  scene.add(plate(-200, 200, -200, terrainNorth, -0.01, M.grass), plate(T.west.stair.x1, CORE.x0, terrainNorth, T.north, -0.01, M.grass),
+    plate(CORE.x1, T.east.gable, terrainNorth, T.north, -0.01, M.grass), plate(CORE.x0, CORE.x1, terrainNorth, CORE.mid[0], -0.01, M.grass),
+    plate(CORE.x0, CORE.x1, CORE.south[1], T.north, -0.01, M.grass), plate(T.west.x, T.west.stair.x1, T.west.stair.z1, T.north, -0.01, M.grass));
   if (site.patio) scene.add(plate(site.patio.x0, site.patio.x1, D, site.patio.z1, 0.0, M.patio)); // UVs in metres
   const outdoor = [];
   if (site.hedge) {
@@ -744,7 +746,7 @@ export function buildWorld(plan) {
   outdoor.push(
     [o.x0, o.z0, o.x1, o.z0], [o.x1, o.z0, o.x1, o.z1], [o.x1, o.z1, o.x0, o.z1], [o.x0, o.z1, o.x0, o.z0],
     [xw, 0, p0, 0], [p1, 0, 0, 0], [W, 0, xe, 0], [xe, 0, xe, D], [xw, D, p0, D], [p1, D, 0, D], [W, D, xe, D], [xw, D, xw, 0],
-    [p0, 0, p0, D], [p1, 0, p1, D], // the portik's sides
+    [p0, 0, p0, CORE.portikDoor.z[0]], [p0, CORE.portikDoor.z[1], p0, D], [p1, 0, p1, D], // the portik's sides (the stairwell's door: core.js, #415)
     ...exterior.userData.segments,
     ...surroundings.userData.segments.filter((s) => Math.max(s[0], s[2]) > o.x0 - 1 && Math.min(s[0], s[2]) < o.x1 + 1
       && Math.max(s[1], s[3]) > o.z0 - 1 && Math.min(s[1], s[3]) < o.z1 + 1), // the box's edge, Hus A / B / C (#255, #259)

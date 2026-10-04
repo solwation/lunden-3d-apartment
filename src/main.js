@@ -69,6 +69,7 @@ import { Breaker } from './breaking.js';
 import { Target } from './target.js';
 import { Car } from './car.js';
 import { Garage } from './garage.js';
+import { Core } from './core.js';
 import { People } from './people.js';
 import { Greetings } from './greet.js';
 import { Nests } from './nest.js';
@@ -119,6 +120,8 @@ const world = buildWorld(plan);
 scene.add(world.object);
 const garage = world.garage = new Garage(); // the garage and the förråd under the courtyard (#357)
 scene.add(garage.object, garage.blackout, garage.door.object); // (+ its door, #358)
+const core = world.core = new Core(); // Hus L's stairwell and lift by the portik (#415)
+scene.add(core.object);
 
 // Sun from the south-west (north = the entrance side, −z). Shadows cover the house + patio.
 const sun = new THREE.DirectionalLight(0xfff1dc, 2.2);
@@ -465,7 +468,7 @@ else car.toGarage(); // in its stall (#358)
 garage.extra = () => car.segments('garage'); // in its stall it is in the way down there
 garage.extraPolys = () => (car.state === 'garage' ? [car.poly()] : []);
 weather.extraBoxes = () => car.box(); // no rain inside our parked car (#250)
-{ const moving = world.movingSegments; world.movingSegments = (lvl) => [...moving(lvl), ...(lvl === 0 ? [...car.segments(), ...garage.door.segments()] : [])]; } // parked: in the way; the garage door while shut (#358)
+{ const moving = world.movingSegments; world.movingSegments = (lvl) => [...moving(lvl), ...(lvl === 0 ? [...car.segments(), ...garage.door.segments(), ...core.dynamic(0)] : [])]; } // parked: in the way; the garage door while shut (#358)
 scene.add(target.object); // up only while something that can hit it is in the hand (#144, #179, step)
 const marks = new Marks(scene, camera, [world.object, patio.object, target.object], cat); // burn marks, stars, splashes on surfaces (#96)
 // glasses, bottles, cups, the jug and the beer can be shot to pieces (#263): more points from further away
@@ -548,6 +551,7 @@ for (const h of [saber, ...toys.wands, toys.darts]) Object.assign(h, { marks, ca
 for (const wd of toys.wands) wd.onMagic = () => bump('magic'); // statistics and points (#197)
 target.onHit = (pts) => bump('target', pts);
 car.radio.onPlay = (ch) => bump('carMusic', 1, ch); // each song in the car once (#268)
+core.lift.onArrive = (k) => bump('liftFloors', 1, `v${k}`); // each storey reached by lift once (#415)
 sonos.onPlay = (ch) => bump('songs', 1, ch); // each song (channel) once // the saber burns, the wands do magic (#97), darts splash (#98)
 // the cat goes for a fish finger lying on the floor near it and eats it (#163)
 if (fish) {
@@ -1122,6 +1126,7 @@ function use(thing) {
   else if (thing.kind === 'cardoor') thing.toggle(); // open / shut a door of our car (#250)
   else if (thing.kind === 'carmusic') thing.toggle(); // music in the car: on / off, ⏮ ⏭ (#268)
   else if (thing.kind === 'jetpack') thing.toggle(); // put the jetpack on / stand it down (#359)
+  else if (thing.kind === 'liftcall' || thing.kind === 'liftbtn') thing.press(); // the lift (#415)
   else if (thing.kind === 'garagebutton') { thing.press(); bump('garageDoor'); } // the garage door's buttons (#358)
   else if (thing.kind === 'carkey') { thing.press(); car.call(); bump('car'); } // beep beep: the car comes, or leaves (#173)
   else if (thing.kind === 'flush') { if (thing.toggle()) bump('flushes', 1, idOf(thing)); } // the toilet's flush button (#155)
@@ -1266,7 +1271,7 @@ window.addEventListener('resize', () => {
 // --- door interaction: look at a door within reach, press E ----------------
 const raycaster = new THREE.Raycaster();
 raycaster.far = 2.2;
-const pickables = [...garage.targets.map((t) => t.pickable), airFryer.basketTarget.pickable, airFryer.panelTarget.pickable, ...world.doors.map((d) => d.pickable), ...world.lids.map((l) => l.pickable), ...taps.map((t) => t.pickable), note.pickable, board.pickable, ...(coffeeJar ? [coffeeJar.target.pickable] : []), wallClock.pickable, calendar.pickable, ...lights.targets.map((t) => t.pickable), grill.pickable, blinds.object];
+const pickables = [...garage.targets.map((t) => t.pickable), ...core.targets.map((t) => t.pickable), airFryer.basketTarget.pickable, airFryer.panelTarget.pickable, ...world.doors.map((d) => d.pickable), ...world.lids.map((l) => l.pickable), ...taps.map((t) => t.pickable), note.pickable, board.pickable, ...(coffeeJar ? [coffeeJar.target.pickable] : []), wallClock.pickable, calendar.pickable, ...lights.targets.map((t) => t.pickable), grill.pickable, blinds.object];
 const center = new THREE.Vector2(0, 0);
 const keyCabinet = world.lids.find((l) => l.kind === 'keybox');
 let focused = null, focusPoint = null;
@@ -1516,7 +1521,7 @@ const clock = new THREE.Clock();
 let lastLevel = -1, lastRoom = null, mapTimer = 0, lastRoof = null, roofName = null;
 const mapEl = document.getElementById('minimap');
 const minimap = new Minimap(mapEl, world.roomMaps);
-setRoomTotal(world.roomMaps.reduce((n, m) => n + new Set(m.rooms.map((r) => r.name)).size, 0) + garage.roomNames.length); // + the garage's (#357)
+setRoomTotal(world.roomMaps.reduce((n, m) => n + new Set(m.rooms.map((r) => r.name)).size, 0) + garage.roomNames.length + 2); // + the garage's (#357), Trapphus and Hiss (#415)
 function toggleMap() { // K: the map alone (Tab / T / 📊 show it with the stats)
   mapPinned = !mapPinned;
   mapEl.hidden = !(mapPinned || !statsEl.hidden);
@@ -1549,6 +1554,7 @@ function step(dt) {
     outdoors: player.outdoors, daylight: day.daylight, sunDir: day.sunDir, overcast: weather.overcast, lit: (lv, name) => lights.roomLit(lv, name) }); // blinds drawn up: less daylight in the room (#273)
   if (blindPanel.open) blindPanel.render();
   photoGlow(day.daylight * (1 - 0.5 * weather.overcast), lights.roomLit(1, 'Sovrum 1')); // Miele's photo reads like a lit print (#327)
+  core.update(dt, player, camera); // the stairwell's doors, the lift, drawn only near (#415)
   garage.update(dt, player, camera, car); // its door (#358), the förråd doors, the tubes' motion sensor, drawn only near (#357)
   day.under = garage.under; // down there no daylight
   day.update(dt);
@@ -1586,7 +1592,7 @@ function step(dt) {
   car.update(dt, day.daylight < 0.35, player);
   const moved = Math.hypot(player.pos.x - lastWeatherPos.x, player.pos.z - lastWeatherPos.z); // on foot (not a jump / spawn)
   lastWeatherPos.copy(player.pos);
-  weather.update(dt, !player.outdoors || player.below, moved < 1 ? moved : 0); // (the garage: dry and muffled, #357) // after the day: it sets the overcast / flash the next day.update applies (#248)
+  weather.update(dt, !player.outdoors || player.below || player.inCore, moved < 1 ? moved : 0); // (the garage: dry and muffled, #357) // after the day: it sets the overcast / flash the next day.update applies (#248)
   people.update(dt, weather.rain > WEATHER.people ? 0 : day.daylight, day.month, player); // they go in when it pours
   greet.update(dt); // greetings and answers (#247)
   cat.update(dt);
@@ -1617,8 +1623,9 @@ function step(dt) {
   const lvl = outside ? -1 : player.level;
   const room = lvl < 0 ? null : world.roomAt(lvl, player.pos.x, player.pos.z);
   if (room && active()) visitRoom(`${lvl}:${room}`);
-  const under = outside && player.below ? garage.roomAt(player.pos.x, player.pos.z) : null; // the garage, the förråd, the lobby (#357)
-  if (under && active()) visitRoom(`g:${under}`);
+  const under = !outside ? null : player.inCore ? `Hus L · ${core.roomAt(player.pos.x, player.pos.z, player.pos.y)}` // the stairwell, the lift (#415)
+    : player.below ? `Under gården · ${garage.roomAt(player.pos.x, player.pos.z)}` : null; // the garage, the förråd, the lobby (#357)
+  if (under && active()) visitRoom(`g:${under.split(' · ')[1]}`);
   if (room !== lastRoom && room) lastRoom = room; // keep the last name while inside a doorway
   mapTimer -= dt;
   if (mapTimer <= 0 && !mapEl.hidden) {
@@ -1628,7 +1635,7 @@ function step(dt) {
   if (active() && !outside) bump('seconds', dt);
   if (lvl !== lastLevel && lvl >= 0 && lastLevel >= 0) bump('stairs');
   if (lvl < 0) lastRoom = null;
-  const label = `${lvl < 0 ? under ? `Under gården · ${under}` : `Utomhus${roofName ? ` · ${roofName}` : ''}` : `${LEVELS[lvl].name}${lastRoom ? ` · ${lastRoom}` : ''}`} · ${day.clock}${weather.icon}`;
+  const label = `${lvl < 0 ? under ? under : `Utomhus${roofName ? ` · ${roofName}` : ''}` : `${LEVELS[lvl].name}${lastRoom ? ` · ${lastRoom}` : ''}`} · ${day.clock}${weather.icon}`;
   if (lvl !== lastLevel || label !== levelEl.textContent) {
     levelEl.textContent = label;
     lastLevel = lvl;

@@ -865,7 +865,7 @@ export const GARAGE = {
     { id: 'bikeGap', x0: -33.6, x1: -32.4, z0: 7.5, z1: 7.79, room: 'Cykelförråd', area: 'basementW' },
     { id: 'el', x0: -24.46, x1: -19.25, z0: 0.47, z1: 2.33, room: 'Elrum', area: 'basementW' },
     { id: 'elDoor', x0: -24.0, x1: -23.1, z0: 2.33, z1: 2.67, room: 'Elrum', area: 'basementW', door: { kind: 'steel', hinge: 'x0', open: 1, name: 'dörren till elrummet' } },
-    { id: 'core', x0: -18.95, x1: -16.62, z0: 4.49, z1: 9.95, room: 'Hisshall', area: 'basementW' }, // the stair + lift core (#415 builds the stair and the lift)
+    { id: 'core', x0: -18.95, x1: -16.62, z0: 3.63, z1: 9.95, room: 'Hisshall', area: 'basementW' }, // the stair + lift core: its walls, stair and lift are core.js's (#415, CORE)
     { id: 'coreW', x0: -19.25, x1: -18.95, z0: 7.95, z1: 8.85, room: 'Hisshall', area: 'basementW' },
     { id: 'coreE', x0: -16.62, x1: -16.33, z0: 7.95, z1: 8.85, room: 'Hisshall', area: 'basementW' },
     { id: 'bandE', x0: -16.33, x1: 11.12, z0: 7.79, z1: 12.11, room: 'Cykelförråd', area: 'basementE' },
@@ -904,9 +904,6 @@ export const GARAGE = {
   // comes in, a door `door` m wide in each cage's front, opening into the passage up to `max` rad. `ours` (L1007).
   storage: { bays: [[-10.78, -5.53], [-5.23, 0.02], [0.32, 5.57], [5.87, 11.12]], north: [0.47, 3.2], south: [4.8, 7.5], skipSouth: 1,
     door: 0.9, max: 1.5, speed: 3, ours: 7, seed: 41 },
-  // the lobby in the core (DRAWING: the lift shaft south of it, the stair along its west side): the lift's door (centre x,
-  // in the shaft's north wall z 9.95) and the stairwell's door (ASSUMPTION: in the lobby's north wall) — #415 makes them work
-  lobby: { lift: -18.2, stair: -17.8 },
   // walls with a door we cannot open (the rooms under Hus C, Hus B / A's basements): [x, z, face n|s|e|w, label] — the
   // face the door is seen from (DRAWING: where the plan draws a door on the garage's walls; ASSUMPTION: the labels' text)
   fakeDoors: [[-56.2, 34.52, 's', 'LGHFÖRRÅD'], [-51.4, 23.1, 'e', 'TRAPPHUS C'], [-36.6, 33.16, 'n', 'LGHFÖRRÅD'], [-29.5, 33.16, 'n', 'TRAPPHUS B'],
@@ -920,6 +917,27 @@ export const GARAGE = {
   // them on while the visitor is in it or within `sensor` m of it and `hold` s after; `flicker` s of starting up.
   // `dim`: the daylight left down here (DayCycle.under); each area lends one spot a pool light (lights.extra).
   lights: { hold: 90, flicker: 0.7, amb: 0.22, r: 2.6, dim: 0.92, intensity: 2.2, range: 10, sensor: 8, spacing: 5.2 },
+};
+
+// Hus L's stair core by the portik (#415, src/core.js): the stairwell and the lift from the garage (våning −1) to the
+// loftgång (våning 3). DRAWING (våning −1 … 3 overview plans, docs/peab/hus-l-vaningsplaner-karnan.jpg /
+// hus-l-trapphus-zoom.png, measured on kalibrerad/vaning-m1-300dpi.png like GARAGE): the core's stair band between
+// L1004's party wall and the portik, its inner faces x −18.95 … −16.62, the lift shaft at its courtyard end (z 9.95 …
+// 12.11, the door on its north side) and the stair along the band; the loftgång door at its street end on våning 3
+// ("Samtliga våningsplan nås med hiss från markplan", "Garaget nås med hiss från alla trapphus"). ASSUMPTION: the stair's
+// form (a dogleg — two 1.15 m flights side by side, landings at the lift end and mid-landings at the street end — and one
+// straight flight up to våning 3's street-end landing, since the drawings show only "a stair"), its run, the doors'
+// widths and places, the lift's car, speed and doors, the lights. Heights: storeyFloor (VERTICAL, #344) and GARAGE.floor.
+export const CORE = {
+  x0: -18.95, x1: -16.62, split: -17.8,         // the band's inner faces; the flights' dividing rail
+  south: [7.95, 9.95],                          // the floor landings (lift doors, the ways in) on våning −1, 1, 2 and 3
+  mid: [3.63, 5.79],                            // the mid-landings of the doglegs
+  top: [1.59, 3.63],                            // våning 3's street-end landing (HUS_L.loftgangDepth ≈ 1.59: the upper units' north face)
+  // the ways in: from the basement's bike rooms (GARAGE coreW / coreE), from the portik (a glazed door in its west wall,
+  // a short passage to the landing; `z` its span), to the loftgång (a door in the core's street face on våning 3, `x`)
+  portikDoor: { z: [8.5, 9.4] }, loftDoor: { x: [-18.75, -17.85] },
+  lift: { x0: -18.95, x1: -17.47, z0: 9.95, z1: 12.11, door: [-18.65, -17.75], speed: 1.0, accel: 0.6, doorTime: 1.4, wait: 6 },
+  light: { hold: 60 },
 };
 
 // The lightsaber in Sovrum 2 (#78, src/saber.js): since #324 on two pegboard hooks on the Nerf board's top row (the
@@ -1446,6 +1464,7 @@ export const SCORE = {
     fruit: 3, // a piece of fruit from the bowl eaten up (#326): per kind (apple, pear, orange, clementine, banana), then `again`
     nest: 4, // per smart speaker asked something (#325), then `again`
     flights: 25, // the first take-off with the jetpack (#359); no `again` (landing on each roof scores as `roofs`)
+    liftFloors: 10, // per floor reached by lift (#415): the first ride, then each storey once; no `again`
     roofs: 20, // per roof stood on (#360): the loftgång, each terrace, Hus L's roof, the loft, a drum, Hus A / B / C, a canopy; no `again`
     toiletPaper: 3, // paper torn off a roll and flushed away (#426): the first time, then `again`
     handBrew: 10, // the first pot brewed by hand: water and coffee filled first (#334); no `again` (each brew has `each.brews`)

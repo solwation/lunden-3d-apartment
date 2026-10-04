@@ -89,7 +89,13 @@ export class Player {
   /** Down in the garage, the förråd corridor or the lift lobby under the courtyard (#357, garage.js): its walls collide. */
   get below() {
     const p = this.pos;
-    return !!this.world.garage?.inside(p.x, p.z) && p.y < GARAGE.floor + 1.5;
+    return !this.inCore && !!this.world.garage?.inside(p.x, p.z) && p.y < GARAGE.floor + 1.5;
+  }
+
+  /** In Hus L's stairwell, its lift or the passage from the portik (#415, core.js): its walls collide. */
+  get inCore() {
+    const p = this.pos;
+    return !!this.world.core?.contains(p.x, p.z, p.y);
   }
 
   /** Outside the flat (street, lawn, patio, up on the roofs): the only place to sprint. */
@@ -109,7 +115,9 @@ export class Player {
     const inside = x > 0 && x < W && z > 0 && z < D;
     const h = STAIR.hole;
     const inHole = x > h.x0 && x < h.x1 && z > h.z0 && z < h.z1;
-    const cands = [inside ? LEVELS[0].floor : groundY(x, z)]; // outdoors: the terrain (the ramp by Hus L's east gable, #256)
+    const core = this.world.core, inCore = !inside && !!core?.covers(x, z);
+    const cands = [inside ? LEVELS[0].floor : inCore ? -Infinity : groundY(x, z)]; // outdoors: the terrain (the ramp by Hus L's east gable, #256)
+    if (inCore) cands.push(...core.heights(x, z)); // the stairwell's floors and flights, the lift's car (#415)
     if (inside && !inHole) cands.push(LEVELS[1].floor);
     const s = stairHeight(x, z);
     if (s !== null) cands.push(s);
@@ -138,8 +146,9 @@ export class Player {
   segments() {
     if (this.aloft) { // up on the roofs (#360): the walls that stand in the way of the body, feet + step … head
       const y = this.pos.y;
-      return [this.world.roofs?.walls(y + PLAYER.stepUp, y + PLAYER.headroom) ?? [], []];
+      return [this.world.roofs?.walls(y + PLAYER.stepUp, y + PLAYER.headroom) ?? [], this.world.core?.dynamic(y) ?? []]; // (+ the stairwell's door onto the loftgång, #415)
     }
+    if (this.inCore) return this.world.core.segments(this.pos.y); // the stairwell (#415)
     if (this.below) return [this.world.garage.segments, this.world.garage.dynamic()]; // (#357)
     const lvl = this.world.levels[this.level];
     const up = this.level === 0 && this.pos.y > GARAGE.floor + 1.5 ? this.world.upperSegments ?? [] : []; // over the garage door (#357)
@@ -155,13 +164,14 @@ export class Player {
    * furniture back, a resume record, the car parking on you) could never get out.
    */
   obstacles(level = this.level) {
-    if (this.aloft) return []; // (the flat's furniture and the car are far below, #360)
+    if (this.aloft || this.inCore) return []; // (the flat's furniture and the car are far below, #360; the stairwell, #415)
     if (this.below) return this.world.garage.obstacles(); // the cars parked down there (#357)
     return [...(this.world.levels[level]?.footprints ?? []), ...(this.world.movingPolys?.(level) ?? [])];
   }
 
   /** Can the visitor stand at (x, z) on `level` (#314)? Clear of every segment by the radius + `margin`, inside no obstacle. */
   isFree(x, z, level = this.level, margin = 0.02) {
+    if (this.inCore) { const [a, b] = this.world.core.segments(this.pos.y); return this.world.core.covers(x, z) && ![...a, ...b].some((sg) => segDist(x, z, sg) < PLAYER.radius + margin); } // (#415)
     if (this.below) { // in the garage (#357): its walls, the förråd doors, the cars
       const g = this.world.garage;
       return g.inside(x, z) && ![...g.segments, ...g.dynamic()].some((sg) => segDist(x, z, sg) < PLAYER.radius + margin) && !g.obstacles().some((q) => inPoly(q, x, z));
@@ -177,7 +187,7 @@ export class Player {
 
   /** The nearest free spot to (x, z) reached through no wall, window or door (a spiral search), or null (#314). */
   nearestFree(x, z, level = this.level) {
-    const walls = this.below ? this.world.garage.walls : [...(this.world.levels[level]?.fixedSegments ?? this.world.levels[level].segments),
+    const walls = this.inCore ? this.world.core.segments(this.pos.y)[0] : this.below ? this.world.garage.walls : [...(this.world.levels[level]?.fixedSegments ?? this.world.levels[level].segments),
       ...this.world.doors.filter((d) => (d.object.position.y < LEVELS[0].floor + 1.6 ? 0 : 1) === level).map((d) => d.segment())];
     for (let r = 0.05; r < 3.01; r += 0.05) {
       const n = Math.max(8, Math.round(2 * Math.PI * r / 0.05));
@@ -305,6 +315,7 @@ export class Player {
       this.onLand?.(jet ? Math.max(0, impact) ** 2 / (2 * GRAVITY) : f.top - this.pos.y, f.gap);
     }
 
+    this.world.core?.snap(this); // riding the lift (#415)
     // smooth the eye height over stair steps
     const target = this.pos.y + (this.crouched ? PLAYER.crouchEye : PLAYER.eye);
     this.eyeY += (target - this.eyeY) * Math.min(1, dt * 14);

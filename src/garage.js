@@ -101,6 +101,7 @@ function wallLines() {
   const out = [], h = 0.05;
   for (const r of RECTS) for (const [ax, az, bx, bz, ox, oz] of [[r.x0, r.z0, r.x1, r.z0, 0, -1], [r.x1, r.z0, r.x1, r.z1, 1, 0], [r.x0, r.z1, r.x1, r.z1, 0, 1], [r.x0, r.z0, r.x0, r.z1, -1, 0]]) {
     if (r.id === 'doorway' && ox < 0) continue; // the garage door's opening: GarageDoor
+    if (r.id === 'core') continue; // the stair core's walls: core.js (#415)
     const len = Math.hypot(bx - ax, bz - az), n = Math.max(1, Math.round(len / h));
     let start = null;
     const open = (t) => { const x = ax + (bx - ax) * t + ox * 0.03, z = az + (bz - az) * t + oz * 0.03; return !!rectAt(x, z); };
@@ -227,7 +228,7 @@ export class Garage {
       const mx = (r.x0 + r.x1) / 2, mz = (r.z0 + r.z1) / 2;
       if (canvasRooms[r.id]) this.areas[r.area].floors.push({ geo: bake(flat(r.x0, r.x1, r.z0, r.z1, F + 0.003, 1.0), 0xffffff, true), tex: floorTexture(r, canvasRooms[r.id]) });
       else put('shell', bake(flat(r.x0, r.x1, r.z0, r.z1, F + 0.003), FLOOR), mx, mz);
-      put('shell', bake(flat(r.x0, r.x1, r.z0, r.z1, C), CEIL), mx, mz);
+      if (r.id !== 'core') put('shell', bake(flat(r.x0, r.x1, r.z0, r.z1, C), CEIL), mx, mz); // (the stairwell goes on up, #415)
     }
     // wheel stops, our stall's and the car pool's charging posts, ducts and a sprinkler main under the big hall's ceiling
     for (const s of STALLS) {
@@ -243,15 +244,6 @@ export class Garage {
     duct(-69.6, 37.5, -42, 37.5, C - 0.32, 0.22, 0xa7abae);
     duct(-51, 19.4, 8.5, 19.4, C - 0.32, 0.22, 0xa7abae); duct(-51, 26.4, -10, 26.4, C - 0.32, 0.22, 0xa7abae);
     duct(-69.6, 45.6, -42, 45.6, C - 0.12, 0.035, 0xb3261e); duct(-51, 22.2, 8.5, 22.2, C - 0.12, 0.035, 0xb3261e);
-    // the lobby in the core: the lift's steel doors in the shaft's north wall, the stairwell's door (#415 makes them work)
-    const L = R.core, ly = L.z1 - 0.03, lx = G.lobby.lift, sz = L.z0 + 0.03, sx = G.lobby.stair;
-    put('shell', bake(box(1.2, 2.25, 0.04, lx, F + 1.125, ly), 0x6d7378), lx, ly - 0.5); put('shell', bake(box(0.9, 2.05, 0.05, lx, F + 1.03, ly - 0.01), 0xb9bec2), lx, ly - 0.5);
-    put('shell', bake(box(0.012, 2.05, 0.06, lx, F + 1.03, ly - 0.012), 0x55595d), lx, ly - 0.5);
-    put('shell', bake(box(0.04, 0.04, 0.02, lx + 0.75, F + 1.12, ly - 0.03), 0xff9a2a), lx, ly - 0.5);
-    put('shell', bake(box(1.0, 2.12, 0.04, sx, F + 1.06, sz), 0x5e6266), sx, sz + 0.5); put('shell', bake(box(0.9, 2.06, 0.05, sx, F + 1.03, sz + 0.01), 0x8a6f4d), sx, sz + 0.5);
-    put('shell', bake(box(0.14, 0.03, 0.06, sx + 0.33, F + 1.05, sz + 0.05), 0xc8cccf), sx, sz + 0.5);
-    put('signs', plate('HISS', lx, F + 2.45, ly - 0.03, facing(0, -1), 0.6), lx, ly - 0.5);
-    put('signs', plate('TRAPPHUS L', sx, F + 2.35, sz + 0.03, facing(0, 1), 0.6), sx, sz + 0.5);
     // signs: the way out, over the doors to the rooms
     put('signs', plate('UTFART', ENTR.x0 + 0.03, F + 2.25, GD.z0 - 0.75, facing(1, 0), 0.8), ENTR.x0 + 1, 40);
     put('signs', plate('GARAGE', -45, F + 2.35, 34.6, facing(0, 1), 0.8), -45, 35);
