@@ -357,6 +357,8 @@ function baseActions(life) {
     check: (c) => {
       const s = I.store(c.raw.store);
       if (s.isOpen && !s.isOpen()) return s.shutText;
+      const no = s.refuse?.(c.held); // (a store's own rule: the dishwasher's racks, #384)
+      if (no) return no;
       if (s.cleanOnly && LIFE.rules.washFirst && c.held.clean && c.held.clean !== 'clean') return 'Diska den först'; // (#383)
       if (I.freeSlot(s.id, c.held) >= 0) return null;
       const fits = s.slots.some((sl) => I.size(c.held) <= (SIZES[sl.size ?? 'm'] ?? SIZES.m));

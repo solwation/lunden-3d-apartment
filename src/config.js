@@ -1133,6 +1133,11 @@ export const LIFE = {
   eat: { seconds: 0.5 }, // a bite: to the mouth and back (#377, #380); the bite comes off half-way // a timed action (#372) stops when the eye has moved this far (m) from where it started // putting down (#368): snap grids (m), kept this far inside a table's edge, R turns this many degrees
 };
 
+// The dishwasher (#384, src/dishwasher.js; the integrated KEZA9310W of the plan, no product drawing — our picks): its racks roll
+// `out` m when the door is down; the lower rack (`y` over the tub's bottom, `h` high) holds `plates` plates on edge, the upper
+// one `glasses` glasses upside down, the cutlery tray on top of it `tray` tools.
+export const DISHWASHER = { out: 0.38, lower: { y: 0.05, h: 0.13, plates: 6 }, upper: { y: 0.36, h: 0.11, glasses: 6 }, tray: 4 };
+
 // The kitchen's food from the start (#373, LIFE-009; the user: no shop, no delivery, no budget — the food is simply there):
 // `stock` = [type, store, slot] — where each thing lives (its home); `amounts` = what a fresh one holds, game parameters from
 // the plan (docs/livssimulator-plan-2026-10-04.md section 3), not product measures. A thing used up and thrown away is back

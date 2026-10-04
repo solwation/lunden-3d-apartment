@@ -730,6 +730,15 @@ src/dishes.js          the life sim's drinks and dishes (M2): #382 the drinking 
                        cabinet refuse a used / dirty thing ("Diska den först") while LIFE.rules.washFirst (`life.rules`, free play
                        = false); 'pourOut' empties a coffee cup too; stats washed / scraped. items.set: a machine field set to
                        null is removed
+src/dishwasher.js      the dishwasher (#384, DISHWASHER): `buildRacks` (interior.js's DM unit) — two wire racks, Openable 'drawer's
+                       in world.lids ("Dra ut / Skjuta in underkorgen"), `blocked` while the door is up ("Fäll ner luckan först");
+                       the door is blocked while a rack is out ("Skjut in korgarna först"); a cutlery tray rides on the upper rack.
+                       Each rack's `slots` (world pose, size, accepts) become stores.js 'dwLower' (6 plates on edge), 'dwUpper' (6
+                       glasses upside down), 'dwTray' (4 tools); a store's `refuse(item)` (life.js putIn): not `dishwasherSafe`
+                       ("Skärbrädan diskas för hand"), the wrong rack ("Tallrikar i underkorgen", "Glas i överkorgen", "Bestick i
+                       bestickkorgen"), food / a drink left (refused: "Skrapa av … först", "Häll ut … först"); taking needs the door
+                       down and the rack out ("Öppna diskmaskinen först", "Dra ut … först"). The coffee cups are not life items and
+                       are washed by hand only
 src/actions.js         what you can do with a life-sim thing (#367): `ActionSet.define({ id, label, applies, check, run, consumes,
                        result, duration, interrupt, order, quiet })`, `list(ctx)` = the rows with a Swedish `reason` when blocked
                        ("Öppna kylen först", "Tallriken är full", "För långt bort"); life.js `baseActions`: putOn, take, open, close.
@@ -885,7 +894,7 @@ tools/secretarytest.html headless test: the secretary's flap (desk) and its 8 dr
                        its place blocked while the drawer is closed, the crayons, the owl, F sends them home;
                        the secret drawer (#183): 10 seeded opens never repeat, a surprise left on the table stays, SECRET.keep
                        #447: a cup down on the open desk (none on the shut flap), the flap does not close under it
-tools/opentest.html    headless test: every Openable front (kitchen + furniture) opens/closes with the button; open, none
+tools/opentest.html    headless test (#384: the dishwasher's racks with their door down, behind the front while in): every Openable front (kitchen + furniture) opens/closes with the button; open, none
                        overlaps a closed neighbour or goes through a wall (#154); every kitchen front is stocked (or own/empty)
                        and its contents are hidden when shut and never out through the front (#229); the same for every
                        other front with contents (#230, #231)
@@ -1001,7 +1010,8 @@ tools/life2test.html   headless test of the life sim's M2, reset the kitchen: th
                        no mixing, the carton running out, thrown away and back full, poured out at the tap, the carton saved (#382);
                        used / dirty plates (crumbs, smear), refused in the cabinet, scraped into the bin, washed up by hand
                        (half-way nothing, walking off), the knife and board after a cut, free play, the glass's film, the coffee
-                       cup's ring and its cabinet, a record (#383)
+                       cup's ring and its cabinet, a record (#383); the dishwasher's racks: door / rack blocking, the right rack,
+                       scrape / pour out first, the board by hand, riding along, a full rack, a shut door blocks taking (#384)
 tools/inventorytest.html headless test (#365): the `&life` scenario's start state, the visitor's records untouched, the
                        integration points the inventory names; without &life the game starts at START
 tools/stamp.sh         build the published site with a version stamp (used by CI)

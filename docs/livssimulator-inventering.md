@@ -122,3 +122,7 @@ Code in src/dishes.js (and cooking.js's bin), the test is `tools/life2test.html`
   bin (still dirty). Washing up by hand at the running kitchen tap (water.js taps + the life sim's tap rows): a scrub, then
   clean; the only way for the wooden board. Rule: a used / dirty thing is refused in its cabinet / drawer ("Diska den
   först", `LIFE.rules.washFirst`, false = free play).
+- **#384 the dishwasher's racks**: the static rack wires: **replaced** by two racks that roll out (Openable drawers, only
+  with the door down) carrying slots (stores `dwLower` / `dwUpper` / `dwTray`). Rule for leftovers: refused (scrape the
+  plate / pour out the glass first). `dishwasherSafe` decides: the wooden board is washed by hand. The coffee cups
+  (cups.js) are not life items, so they stay hand-wash only for now.

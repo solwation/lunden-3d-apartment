@@ -11,6 +11,9 @@
 //  #383 food on a plate = used, eaten off = dirty (crumbs, a smear), refused in its cabinet; scraped into the bin (still
 //       dirty); washed up by hand at the running tap (half-way nothing, walking off stops it); the knife and the board dirtied
 //       by a cut and washed; the free-play switch; a glass's film; a coffee cup's ring and the cup cabinet; saved.
+//  #384 the dishwasher: the racks only with the door down, the door not up over a rack; plates in the lower rack (scraped
+//       first), riding along, glasses (emptied) in the upper, the knife on the tray, the board by hand, a full rack, the
+//       door shut blocks taking.
 //   chromium --headless=new --dump-dom http://localhost:8137/tools/life2test.html
 import { LIFE, MILK } from '../src/config.js';
 const out = document.getElementById('out');
@@ -262,6 +265,67 @@ try {
   check(I.audit().length === 0, `audit: ${I.audit().join('; ') || 'ok'}`);
   f.remove();
 } catch (e) { pass = false; lines.push(`FAIL #383 error ${e.stack}`); }
+
+// --- #384: loading the dishwasher's racks -------------------------------------------------------------------------
+try {
+  const f = await load('life&shot');
+  const K = kit(f), { A, life, I, row, run, open, close, secs, lid, V, step } = K;
+  const S = A.lifeStores.stores, door = A.world.lids.find((l) => l.name === 'diskmaskinen'), [lower, upper] = door.racks;
+  const putIn = (id) => row('putIn', S[id].target);
+  check(lower && upper && lower.blocked && lower.blockedText === 'Fäll ner luckan först', `the door up: the racks say "${lower?.blockedText}"`);
+  open(door);
+  check(!lower.blocked && !door.blocked, 'the door down: a rack can come out, the door can go up');
+  open(lower); open(upper);
+  check(door.blocked && door.blockedText === 'Skjut in korgarna först', `a rack out: the door says "${door.blockedText}"`);
+  // a dirty plate with food on it: scrape first; then it goes in and rides with the rack
+  open(lid((l) => l.stock === 'platesLife'));
+  const plate = I.all().filter((i) => i.type === 'plate' && i.place.store === 'plates').sort((a, b) => b.place.slot - a.place.slot)[0];
+  life.view(plate).take(); step(1 / 60);
+  I.set(plate, { clean: 'dirty' });
+  const sl = life.create('cucumberSlice', { at: 'on', parent: plate.id, slot: 0 }); step(1 / 60);
+  check(putIn('dwLower')?.reason === 'Skrapa av tallriken först', `food on it: "${putIn('dwLower')?.reason}"`);
+  I.remove(sl); step(1 / 60);
+  check(putIn('dwUpper')?.reason === 'Tallrikar i underkorgen', `a plate at the upper rack: "${putIn('dwUpper')?.reason}"`);
+  check(putIn('dwLower')?.label === 'ställa tallriken i underkorgen' && run('putIn', S.dwLower.target) === true && plate.place.store === 'dwLower', 'in the lower rack');
+  const p0 = life.view(plate).where();
+  close(lower); A.scene.updateMatrixWorld(true);
+  const p1 = life.view(plate).where();
+  check(p0.distanceTo(p1) > 0.3, `it rides with the rack (${p0.distanceTo(p1).toFixed(2)} m)`);
+  check(row('take', plate)?.reason === 'Dra ut underkorgen först', `the rack in: "${row('take', plate)?.reason}"`);
+  open(lower);
+  // a glass: the upper rack, empty
+  open(lid((l) => l.stock === 'glasses'));
+  const glass = I.ofType('glass')[0];
+  life.view(glass).take(); step(1 / 60);
+  I.set(glass, { machine: { drink: 'water' }, clean: 'used' }); I.setAmount(glass, 120);
+  check(putIn('dwLower')?.reason === 'Glas i överkorgen', `a glass at the lower rack: "${putIn('dwLower')?.reason}"`);
+  check(putIn('dwUpper')?.reason === 'Häll ut vattnet först', `with water in it: "${putIn('dwUpper')?.reason}"`);
+  I.set(glass, { machine: { drink: null } }); I.setAmount(glass, 0);
+  check(run('putIn', S.dwUpper.target) === true && glass.place.store === 'dwUpper', 'the empty glass in the upper rack');
+  // the wooden board is washed by hand; the knife goes on the cutlery tray
+  const board = I.all().find((i) => i.type === 'board');
+  life.view(board).take(); step(1 / 60);
+  check(putIn('dwLower')?.reason === 'Skärbrädan diskas för hand', `the board: "${putIn('dwLower')?.reason}"`);
+  life.view(board).putBack(); step(1 / 60);
+  open(lid((l) => l.stock === 'utensils'));
+  const knife = I.all().find((i) => i.type === 'knife');
+  life.view(knife).take(); step(1 / 60);
+  check(putIn('dwUpper')?.reason === 'Bestick i bestickkorgen', `the knife at the glasses: "${putIn('dwUpper')?.reason}"`);
+  check(run('putIn', S.dwTray.target) === true && knife.place.store === 'dwTray', 'the knife on the cutlery tray');
+  // a full rack blocks
+  const free = [];
+  for (let k = 0; k < S.dwLower.anchors.length; k++) if (!I.occupant({ at: 'slot', store: 'dwLower', slot: k })) free.push(life.create('plate', { at: 'slot', store: 'dwLower', slot: k }));
+  const extra = life.create('plate', { at: 'hand' }); step(1 / 60);
+  check(putIn('dwLower')?.reason === 'Underkorgen är full' && extra.place.at === 'hand', `full: "${putIn('dwLower')?.reason}", the plate still in the hand`);
+  life.view(extra).placeAt(new V(5.25, 0.931, 2.4), 0); step(1 / 60);
+  // a shut door blocks taking things out
+  close(lower); close(upper); close(door);
+  check(row('take', glass)?.reason === 'Öppna diskmaskinen först' && row('take', knife)?.reason === 'Öppna diskmaskinen först', `the door shut: "${row('take', glass)?.reason}"`);
+  open(door); open(upper);
+  check(!row('take', glass)?.reason, 'the door down and the rack out: the glass can be taken');
+  check(I.audit().length === 0, `audit: ${I.audit().join('; ') || 'ok'}`);
+  f.remove();
+} catch (e) { pass = false; lines.push(`FAIL #384 error ${e.stack}`); }
 
 lines.push(pass ? 'ALL PASS' : 'SOME FAILED');
 out.textContent = lines.join('\n');

@@ -9,6 +9,7 @@ import { Hood } from './hood.js';
 import { attachContents, Pack, frameMatrix, mirrorCabinet, vanityDrawer, laundrySink, havbackContents } from './contents.js';
 import { fillKitchen } from './kitchenstuff.js';
 import { Openable, pivotAround } from './openables.js';
+import { buildRacks } from './dishwasher.js';
 import { Moccamaster } from './coffee.js';
 import { socketGeometry } from './sockets.js';
 import { mirrorMaterial, litMirrorMaterial, litEmissive, litReflect } from './mirror.js';
@@ -481,8 +482,9 @@ function buildKitchen(B, group, floor, y0, yC, handled, taps, appliances) {
     if (c.label === 'DM') {
       // integrated dishwasher (KEZA9310W): its door folds down onto a steel tub with two racks
       shell(F, u0, u1, yb, yt, F.depth, { shelf: false, inner: M.dishwasher });
-      for (const y of [yb + 0.12, yb + 0.42]) for (let k = 0; k < 9; k++) { const a = u0 + 0.04 + k * (u1 - u0 - 0.08) / 8; F.box(a - 0.002, a + 0.002, -F.depth + 0.04, -FT - 0.04, y, y + 0.004, M.chrome); }
-      openFront(open, F, u0, u1, yb, yt, M.front, 'top', {}, { mode: 'flap', name: 'diskmaskinen', max: 88 }).stock = 'own'; // its racks
+      const dwDoor = openFront(open, F, u0, u1, yb, yt, M.front, 'top', {}, { mode: 'flap', name: 'diskmaskinen', max: 88 });
+      dwDoor.stock = 'own'; // its racks: two that roll out with E while the door is down, slots for the life sim (#384, dishwasher.js)
+      buildRacks({ F, u0, u1, yb, door: dwDoor, open, batch: () => new Batch(), onBatch, chrome: M.chrome, FT });
     } else if (sinkUnit) {
       shell(F, u0, u1, yb, top - K.sink.depth - 0.02, F.depth, { shelf: false });
       // waste sorting under the sink (#103): a grey bin, a green one for food waste, a small blue one for paper

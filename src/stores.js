@@ -12,6 +12,7 @@ import { LIFE } from './config.js';
 //   plates    a stack of three plates in the wall cabinet over the free worktop (#379)
 //   glasses   three drinking glasses at the front of the glass cabinet next to it (#382)
 //   sinkBins  the grey bin under the sink, "Avfall" (#381): the life sim's waste bin
+//   dwLower / dwUpper / dwTray  the dishwasher's racks (#384): plates on edge, glasses upside down, the tools on the tray
 //   boardRack the cutting board's place: on its long edge against the splashback between the sink and the hob (#374)
 // A pick box inside each store is the E target "Lägga … i …" while a life item is held (and only then, so it never covers
 // the things inside). Opening and shutting never makes or loses a thing: the slots are data.
@@ -30,6 +31,17 @@ function anchorIn(parent, p, yaw) {
   parent.add(a);
   return a;
 }
+
+/** An anchor at world point `p` with the world turn `q`, as a child of `parent` (#384: a plate on edge, a glass upside down). */
+function anchorQ(parent, p, q) {
+  const a = new THREE.Object3D();
+  parent.updateWorldMatrix(true, false);
+  a.position.copy(p).applyMatrix4(parent.matrixWorld.clone().invert());
+  a.quaternion.copy(parent.getWorldQuaternion(new THREE.Quaternion()).invert().multiply(q));
+  parent.add(a);
+  return a;
+}
+const cap = (s) => (s ? s[0].toUpperCase() + s.slice(1) : s);
 
 /** A pick box (invisible) at world box `[min, max]` under `parent`; it only raycasts while `when()`. */
 function pickBox(parent, min, max, when) {
@@ -133,6 +145,39 @@ export function buildStores(life, world) {
     const never = pickBox(life.scene, B.pos.clone(), B.pos.clone().addScalar(0.01), () => false); // (nobody puts a bin in)
     add('sinkBins', { name: 'skåpet', shutText: 'Öppna skåpet under diskhon först', fullText: 'Där står redan en hink', isOpen: () => bins.isOpen }, [{ size: 'xl', anchor: a }], never);
     I.store('sinkBins').accepts = ['bin'];
+  }
+  // the dishwasher's racks (#384, dishwasher.js): the lower rack's plates, the upper rack's glasses, the cutlery tray's tools;
+  // reached only with the door down and that rack rolled out; the wrong rack says which is right; not what is washed by hand
+  // (the wooden board), not with food or a drink left in it (one rule: refused, scrape / pour out first)
+  const dwDoor = world.lids.find((l) => l.name === 'diskmaskinen' && l.racks);
+  if (dwDoor) {
+    const [lower, upper] = dwDoor.racks;
+    const right = { plate: 'Tallrikar i underkorgen', glass: 'Glas i överkorgen', tool: 'Bestick i bestickkorgen' };
+    const rightText = (it) => Object.entries(right).find(([t]) => I.has(it, t) || it.type === t)?.[1] ?? `${cap(I.name(it))} ska inte i diskmaskinen`;
+    const the = (k) => ({ water: 'vattnet', milk: 'mjölken' })[k] ?? 'det';
+    for (const [id, rack, accept, name, full] of [['dwLower', lower, 'plate', 'underkorgen', 'Underkorgen är full'], ['dwUpper', upper, 'glass', 'överkorgen', 'Överkorgen är full'], ['dwTray', upper, 'tool', 'bestickkorgen', 'Bestickkorgen är full']]) {
+      const list = rack.slots.filter((s) => s.accepts.includes(accept));
+      const slots = list.map((s) => ({ size: s.size, anchor: anchorQ(rack.object, s.pos, s.quat) }));
+      const bb = new THREE.Box3();
+      for (const s of list) bb.expandByPoint(s.pos);
+      bb.expandByVector(new THREE.Vector3(0.09, 0.08, 0.09));
+      const box = pickBox(rack.object, bb.min, bb.max, () => holding() && rack.isOpen && dwDoor.isOpen);
+      add(id, { name, fullText: full, isOpen: () => dwDoor.isOpen && rack.isOpen }, slots, box);
+      const st = I.store(id);
+      Object.defineProperty(st, 'shutText', { get: () => (dwDoor.isOpen ? `Dra ut ${rack.name} först` : 'Öppna diskmaskinen först'), configurable: true });
+      Object.assign(st, {
+        dishwasher: true,
+        putLabel: (held) => `ställa ${I.name(held)} i ${name}`,
+        refuse: (it) => { // why it may not go in here, or null
+          if (!I.has(it, 'dishwasherSafe')) return `${cap(I.name(it))} diskas för hand`;
+          if (!(I.has(it, accept) || it.type === accept)) return rightText(it);
+          if (I.children(it).length) return `Skrapa av ${I.name(it)} först`;
+          if (it.amount > 0.5 && it.machine?.drink) return `Häll ut ${the(it.machine.drink)} först`;
+          return null;
+        },
+      });
+      st.slots.forEach((s) => { s.accepts = [accept]; });
+    }
   }
   // the cutting board's place (#374): on its long edge on the worktop, leaning on the splashback between the sink and the hob
   const counter = world.cupSurfaces?.find((m) => m.userData.counter);
