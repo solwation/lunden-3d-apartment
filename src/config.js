@@ -535,7 +535,11 @@ export const HUS_L = {
   core: { w: 8.175, portik: [3.4, 5.1], portikHeight: 3.0 }, // stair core
   upperStoreys: VERTICAL.upper.storeys,        // våning 3–4 (plan brochure S2: Hus L = våning 1–4)
   storeyHeight: VERTICAL.upper.floorToFloor,   // våning 3–4 floor-to-floor (assumption, #344), not våning 1–2's
-  loftgangDepth: 1.96,    // walkway over our north bedrooms: z 0 → façade of the upper unit
+  // walkway over our north bedrooms: z 0 → the upper flats' north outer face (#354). READ on Peab's drawings, not
+  // measured on site: the upper flats' entrance floor is 11.13 m deep on bofakta (L1201–L1209, L1205; 1:100, 600 dpi) vs
+  // L1007's 12.70 with the courtyard faces flush (#337) → 1.57; the overview plans (docs/peab/kalibrerad/, 1:500, the
+  // 0–25 m bar, 0.042356 m/px) agree: våning 3's / 4's north face 1.59 / 1.57 m south of våning 1–2's (1.96 before)
+  loftgangDepth: 1.57,
   railHeight: 1.1,
   render: 0xf2efe7,       // white render, våning 3–4
   // the loftgång's details (#111, after Peab's renders; sizes are guesses): a light sheet-metal fascia on the deck edge,
@@ -653,7 +657,7 @@ export const FENCE_HEIGHT = 1.8; // bofakta: Skärmvägg H = 1,8 m
 export const BUILDING = { // unused (HUS_L replaced it); kept in step with VERTICAL
   upperStoreys: VERTICAL.upper.storeys,   // the stacked unit above (two storeys)
   storeyHeight: VERTICAL.upper.floorToFloor,
-  loftgangDepth: 1.96,    // walkway over our north bedrooms: z 0 → façade of the upper unit
+  loftgangDepth: HUS_L.loftgangDepth, // the loftgång (#354)
   neighbours: 2,          // identical units on each side (row)
   railHeight: 1.1,
 };

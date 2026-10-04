@@ -722,7 +722,7 @@ North = −z (the bedrooms Sovrum 1/3 face north).
   upstairs, the escape spiral stair right against the house (`HUS_L.endUnitNorthHidden`, towers). Våning 3–4: L1201–L1209 on the same grid (L1208 above us, L1205 over the
   core). The units share their party walls (#252): 5.55 m between wall centres (`HUS_L.pitch`; our plan.json
   draws both 0.2 m walls in full, W = 5.75), core 8.175 m, end units 0.38 m wider; 53.3 m gable to gable —
-  `husLLayout` in exterior.js gives the units' façade strips (greet.js uses it too), white render with brick pilasters on the street side, entered from the loftgång on våning 3. Courtyard side (#337, `HUS_L.court`,
+  `husLLayout` in exterior.js gives the units' façade strips (greet.js uses it too), white render with brick pilasters on the street side, entered from the loftgång on våning 3 (their north face 1.57 m behind ours, `HUS_L.loftgangDepth`: bofakta + the overview plans, #354). Courtyard side (#337, `HUS_L.court`,
   bofakta L12xx 1:100 + Peab's render `docs/peab/info-s16-render.jpg`): våning 3 brick, flush with ours (measured windows); våning 4 set
   back 1.9 m in white render (window BH 1.2 + terrace door) behind roof terraces (slab deck, parapet + coping, white railing,
   skärmväggar h 1.8 between units); over the core L1205's 3 m loft over the lift stays flush in brick and rises over the roof,
