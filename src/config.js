@@ -872,7 +872,7 @@ export const GARAGE = {
     { id: 'bikeGap', x0: -33.6, x1: -32.4, z0: 7.5, z1: 7.79, room: 'Cykelförråd', area: 'basementW' },
     { id: 'el', x0: -24.46, x1: -19.25, z0: 0.47, z1: 2.33, room: 'Elrum', area: 'basementW' },
     { id: 'elDoor', x0: -24.0, x1: -23.1, z0: 2.33, z1: 2.67, room: 'Elrum', area: 'basementW', door: { kind: 'steel', hinge: 'x0', open: 1, name: 'dörren till elrummet' } },
-    { id: 'core', x0: -18.95, x1: -16.62, z0: 3.63, z1: 9.95, room: 'Hisshall', area: 'basementW' }, // the stair + lift core: its walls, stair and lift are core.js's (#415, CORE)
+    { id: 'core', x0: -18.95, x1: -16.62, z0: 4.42, z1: 9.58, room: 'Hisshall', area: 'basementW' }, // the stair + lift core (#456: its cross wall north, the lift wall south): its walls, stair and lift are core.js's (#415, CORE)
     { id: 'coreW', x0: -19.25, x1: -18.95, z0: 7.95, z1: 8.85, room: 'Hisshall', area: 'basementW' },
     { id: 'coreE', x0: -16.62, x1: -16.33, z0: 7.95, z1: 8.85, room: 'Hisshall', area: 'basementW' },
     { id: 'bandE', x0: -16.33, x1: 11.12, z0: 7.79, z1: 12.11, room: 'Cykelförråd', area: 'basementE' },
@@ -944,23 +944,40 @@ export const GARAGE = {
 };
 
 // Hus L's stair core by the portik (#415, src/core.js): the stairwell and the lift from the garage (våning −1) to the
-// loftgång (våning 3). DRAWING (våning −1 … 3 overview plans, docs/peab/hus-l-vaningsplaner-karnan.jpg /
-// hus-l-trapphus-zoom.png, measured on kalibrerad/vaning-m1-300dpi.png like GARAGE): the core's stair band between
-// L1004's party wall and the portik, its inner faces x −18.95 … −16.62, the lift shaft at its courtyard end (z 9.95 …
-// 12.11, the door on its north side) and the stair along the band; the loftgång door at its street end on våning 3
-// ("Samtliga våningsplan nås med hiss från markplan", "Garaget nås med hiss från alla trapphus"). ASSUMPTION: the stair's
-// form (a dogleg — two 1.15 m flights side by side, landings at the lift end and mid-landings at the street end — and one
-// straight flight up to våning 3's street-end landing, since the drawings show only "a stair"), its run, the doors'
-// widths and places, the lift's car, speed and doors, the lights. Heights: storeyFloor (VERTICAL, #344) and GARAGE.floor.
+// loftgång (våning 3). #456: read off the vector overview plans in the plan brochure (docs/peab/lunden-planritningsbroschyr-
+// webb-2024-12-18.pdf pp. 46–50 = kalibrerad/vaning-m1 … 4-300dpi.png; the #253 transform x = (px − 1909.5) × 0.042356,
+// z = (py − 1073) × 0.042356). Våning 1–3's sheets share one frame (Hus L's street face at z 0.04; våning 3's sits 0.04 m
+// east, shifted here); våning −1's sheet sits ~0.05 m east / 0.11 m north of it, so its values (and GARAGE's) are its own
+// frame (±0.1 m). DRAWING: one straight flight per storey, all stacked in the same footprint along the band's WEST wall
+// (1.0 m wide with its rail line: the hole x −19.04 … −18.04), each rising NORTH from the landing at the courtyard end
+// (bottom step z 7.61; 7.50 on −1's sheet) towards the street, 0.25 m between tread lines: −1 → 1 16 treads (below the cut
+// on våning 1's sheet, dashed on −1's), 1 → 2 17 (våning 2's), 2 → 3 16 (våning 3's, whole: the top storey, no break line);
+// none on våning 4 (the band is L1205's there, the lift's loft at its courtyard end). On every storey a 1.4 m passage
+// along the flights' east side joins the street-end floor (våning 1–2 from the street wall's inner face 0.51, a window in
+// it; våning 3 from the loftgång wall's 2.02, with the door out — hinged at its east jamb, opening out — and a glazed
+// sidelight west of it) to the landing (the lift door, the ways in); a shaft in the street-end east corner; the lift
+// shaft x −19.04 … −17.44, z 9.78 … 12.28 behind the landing's 0.2 m wall (z 9.58), its door x −18.84 … −17.94; in the east
+// wall: våning 1 the portik's glazed screen (a door hinged at its south jamb opening out into the portik + a fixed
+// sidelight north of it), våning 2 L1101's door, våning 3 L1205's; våning −1: the stairwell bounded north by a cross wall
+// (z 4.42; the basement's corridor beyond it, under the flight's top), openings west / east to the bike rooms (GARAGE coreW
+// / coreE). The sheets' band is x −19.04 … −16.62; the model keeps −18.95 (L1004's wall, GARAGE). ASSUMPTION: every height
+// (storeyFloor / GARAGE.floor, #344 — so the risers 17 × 0.176, 18 × 0.181, 17 × 0.185 m: even, which fits the drawn tread
+// counts, but no section gives them), the railings and handrails, the slabs, the window's size (the façade's, exterior.js),
+// the doors' leaves, the lift's car, speed and doors, the lights. Not modelled: the portik's inside (wider than its mouths
+// on the sheet): its door stays in the portik's west wall with a short passage to the stairwell.
 export const CORE = {
-  x0: -18.95, x1: -16.62, split: -17.8,         // the band's inner faces; the flights' dividing rail
-  south: [7.95, 9.95],                          // the floor landings (lift doors, the ways in) on våning −1, 1, 2 and 3
-  mid: [3.63, 5.79],                            // the mid-landings of the doglegs
-  top: [1.59, 3.63],                            // våning 3's street-end landing (HUS_L.loftgangDepth ≈ 1.59: the upper units' north face)
-  // the ways in: from the basement's bike rooms (GARAGE coreW / coreE), from the portik (a glazed door in its west wall,
-  // a short passage to the landing; `z` its span), to the loftgång (a door in the core's street face on våning 3, `x`)
-  portikDoor: { z: [8.5, 9.4] }, loftDoor: { x: [-18.75, -17.85] },
-  lift: { x0: -18.95, x1: -17.47, z0: 9.95, z1: 12.11, door: [-18.65, -17.75], speed: 1.0, accel: 0.6, doorTime: 1.4, wait: 6 },
+  x0: -18.95, x1: -16.62, split: -17.95,         // the band's inner faces; the flights' open (east) side
+  foot: 7.61, tread: 0.25, treads: [16, 17, 16], // every flight's bottom step (its south end); per flight −1→1, 1→2, 2→3
+  north: [4.42, 0.51, 0.51, 2.02],               // the stairwell's street-end inner face on våning −1, 1, 2, 3
+  loftFace: 1.59,                                // våning 3's street face (HUS_L.loftgangDepth ≈): the loftgång wall 1.59 … 2.02
+  south: [7.61, 9.58],                           // the landing: the flights' foot … the lift wall's north face
+  shaft: { x0: -16.92, z1: [3.36, 3.36, 3.62] }, // the street-end east corner's shaft on våning 1, 2, 3
+  // the ways in: the portik's screen (the door's z, its fixed sidelight `side`, the wall's `opening`), the loftgång door
+  // (x; its sidelight `side`); the flats' doors in the east wall [storey, z0, z1] (we cannot open them)
+  portikDoor: { z: [8.45, 9.48], side: [7.66, 8.4], opening: [7.61, 9.53] },
+  loftDoor: { x: [-18.11, -17.07], side: [-18.58, -18.16] },
+  flatDoors: [[2, 6.73, 7.74], [3, 6.29, 7.3]],
+  lift: { x0: -18.95, x1: -17.44, z0: 9.78, z1: 12.28, door: [-18.84, -17.94], speed: 1.0, accel: 0.6, doorTime: 1.4, wait: 6 },
   light: { hold: 60 },
 };
 

@@ -252,12 +252,13 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
     facade(bricks, coreX0, coreX1, 0, roofTop, D + eps, false, holes, false);
     [win(1.0), win(6.4)].forEach((o) => { fakeWindow(o, -eps, true); fakeWindow(o, D + eps, false); });
     // #415: the stairwell (src/core.js) is hollow — the solid west of the portik leaves out the stair band (x CORE.x0 … x1,
-    // from the mid-landings' line to the lift shaft; on våning 3 from the upper units' street face) and the passage from
-    // the portik's door (z CORE.portikDoor.z, 2.2 m high); the portik's west wall has the door's opening
-    const [dz0, dz1] = CORE.portikDoor.z, dh = 2.2;
+    // from the street wall's inner face to the lift shaft, #456; on våning 3 from the upper units' street face) and the
+    // passage from the portik's door (z CORE.portikDoor.opening: the door + its sidelight, 2.2 m high); the portik's west
+    // wall has that opening
+    const [dz0, dz1] = CORE.portikDoor.opening, dh = 2.2; // (#456: the door + its sidelight)
     const g = 0.03; // (#448: kept a few cm off the stairwell's own walls — coplanar faces flickered)
     solids.push(boxGeo(coreX0, CORE.x0 - g, 0, roofTop, 0, D), boxGeo(CORE.x1 + g, p0, 0, roofTop, 0, dz0 - g), boxGeo(CORE.x1 + g, p0, 0, roofTop, dz1 + g, D),
-      boxGeo(CORE.x1 + g, p0, dh + g, roofTop, dz0, dz1), boxGeo(CORE.x0, CORE.x1, 0, roofTop - 0.2, 0, CORE.mid[0] - g), boxGeo(CORE.x0, CORE.x1, roofTop - 0.2, roofTop, 0, CORE.top[0] - g),
+      boxGeo(CORE.x1 + g, p0, dh + g, roofTop, dz0, dz1), boxGeo(CORE.x0, CORE.x1, 0, roofTop - 0.2, 0, CORE.north[1] - g), boxGeo(CORE.x0, CORE.x1, roofTop - 0.2, roofTop, 0, CORE.loftFace - g),
       boxGeo(p1, coreX1, 0, roofTop, 0, D), boxGeo(p0, p1, ph, roofTop, 0, D));
     bricks.push(quadX(0, dz0, 0, ph, p0 + eps, false), quadX(dz1, D, 0, ph, p0 + eps, false), quadX(dz0, dz1, dh, ph, p0 + eps, false), quadX(0, D, 0, ph, p1 - eps, true));
   }
@@ -283,7 +284,8 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
   for (const [x0, x1, ox, id] of uppers) {
     const core = ox == null;
     // street side (#347): both storeys in render behind the loftgång, each flat type with its own openings
-    const holes = core ? [...streetOpenings(id, coreW, coreX1 + H.wall), { x0: CORE.loftDoor.x[0], x1: CORE.loftDoor.x[1], y0: roofTop, y1: roofTop + 2.2, door: true, hole: true }] // + the stairwell's door (#415, core.js draws it)
+    const holes = core ? [...streetOpenings(id, coreW, coreX1 + H.wall), { x0: CORE.loftDoor.x[0], x1: CORE.loftDoor.x[1], y0: roofTop, y1: roofTop + 2.2, door: true, hole: true },
+      { x0: CORE.loftDoor.side[0], x1: CORE.loftDoor.side[1], y0: roofTop, y1: roofTop + 2.2, door: true, hole: true }] // + the stairwell's door (#415, core.js draws it)
       : streetOpenings(id, ox);
     facade(renders, x0, x1, roofTop, upperTop, loftD - eps, true, holes, false);
     for (const o of holes) {

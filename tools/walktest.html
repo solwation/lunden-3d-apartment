@@ -81,9 +81,10 @@ const routes = {
       [-15.0, 10.5], [-17.8, 8.4]], expectLevel: 0, expectY: -3,
   },
   'trapphuset: portiken → trappan ner → garagets hisshall → upp igen → trappan till våning 3 → loftgången (#415)': {
-    start: [-14.9, 8.95], open: [], core: true, points: [[-16.2, 8.95], [-17.2, 8.9], [-17.2, 5.2], [-18.4, 4.6], [-18.4, 9.0], [-17.6, 8.4], [-15.5, 8.4],
-      [-17.6, 8.4], [-18.4, 8.6], [-18.4, 6.0], [-18.0, 4.6], [-17.2, 5.2], [-17.2, 9.0], [-18.4, 8.6], [-18.4, 6.0], [-18.0, 4.6], [-17.2, 5.2],
-      [-17.2, 9.0], [-18.4, 8.2], [-18.4, 2.6], [-18.3, 0.8]],
+    // #456: one straight flight per storey along the west wall, rising north; the passage beside it back to the landing
+    start: [-14.9, 8.95], open: [], core: true, points: [[-16.2, 8.95], [-17.3, 9.0], [-17.3, 3.0], [-18.45, 3.2], [-18.45, 9.0], [-17.6, 8.4], [-15.5, 8.4],
+      [-17.6, 8.4], [-18.45, 8.4], [-18.45, 3.0], [-17.3, 3.0], [-17.3, 8.6], [-18.45, 8.2], [-18.45, 3.0], [-17.3, 3.0], [-17.3, 8.6],
+      [-18.45, 8.2], [-18.45, 3.2], [-17.6, 2.4], [-17.6, 0.8]],
     expectLevel: 0, expectY: 6.4,
   },
   'kvarteret: gården → trappan mellan Hus C och B → runt Hus B och A → uppför rampen → START (#355)': {

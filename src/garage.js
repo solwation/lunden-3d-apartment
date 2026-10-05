@@ -470,7 +470,7 @@ export class Garage {
     const exits = [{ x: (GD.x + ENTR.x0) / 2 + 0.6, z: (GD.z0 + GD.z1) / 2, label: 'Garageport' }, { x: (CORE.x0 + CORE.x1) / 2, z: (CORE.south[0] + CORE.south[1]) / 2, label: 'Trapphus' }];
     const rooms = [['GARAGE', -56, 49.5], ['GARAGE', -30, 15.2], ['GARAGE', 0, 25], ['MILJÖRUM', -66.3, 31.3], ['CYKELFÖRRÅD', -27.4, 6.2], ['CYKELFÖRRÅD', -2.6, 10.5],
       ['ELRUM', -21.8, 1.4], ['FÖRRÅD', 0.2, 4.0]];
-    const P = planTexture(plans, { rects: RECTS, walls: wallLines(), blocks, cages: CAGES, core: { x0: CORE.x0, x1: CORE.x1, z0: R.core.z0, landing: CORE.south[0] }, lift: CORE.lift, exits, field, rooms });
+    const P = planTexture(plans, { rects: RECTS, walls: wallLines(), blocks, cages: CAGES, core: { x0: CORE.x0, x1: CORE.split, z0: R.core.z0, landing: CORE.south[0] }, lift: CORE.lift, exits, field, rooms });
     this.planTex = P.tex; this.planCanvas = P.canvas;
     this.plans = plans;
     plans.forEach((p, i) => {
@@ -559,7 +559,7 @@ export class Garage {
   near(cam) {
     const p = cam.position;
     if (p.y < C && this.inside(p.x, p.z)) return true;
-    if (p.y < C + 1 && p.x > CORE.x0 - 0.1 && p.x < CORE.x1 + 0.1 && p.z > CORE.mid[0] && p.z < CORE.lift.z1) return true; // the stairwell's foot, the lift at its basement stop (#450)
+    if (p.y < C + 1 && p.x > CORE.x0 - 0.1 && p.x < CORE.x1 + 0.1 && p.z > CORE.north[1] && p.z < CORE.lift.z1) return true; // the stairwell's foot, the lift at its basement stop (#450)
     return p.x < GD.x + 0.5 && p.x > GD.x - 60 && Math.abs(p.z - (GD.z0 + GD.z1) / 2) < 25 && p.y < F + 6 ? 'outside' : false;
   }
 

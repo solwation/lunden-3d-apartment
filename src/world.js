@@ -709,7 +709,7 @@ export function buildWorld(plan) {
   const T = SITE.terrain;
   // (#415: with a hole over Hus L's stairwell, which goes down to the garage — CORE)
   scene.add(plate(-200, 200, -200, terrainNorth, -0.01, M.grass), plate(T.west.stair.x1, CORE.x0, terrainNorth, T.north, -0.01, M.grass),
-    plate(CORE.x1, T.east.gable, terrainNorth, T.north, -0.01, M.grass), plate(CORE.x0, CORE.x1, terrainNorth, CORE.mid[0], -0.01, M.grass),
+    plate(CORE.x1, T.east.gable, terrainNorth, T.north, -0.01, M.grass), plate(CORE.x0, CORE.x1, terrainNorth, CORE.north[1], -0.01, M.grass),
     plate(CORE.x0, CORE.x1, CORE.south[1], T.north, -0.01, M.grass), plate(T.west.x, T.west.stair.x1, T.west.stair.z1, T.north, -0.01, M.grass));
   if (site.patio) scene.add(plate(site.patio.x0, site.patio.x1, D, site.patio.z1, 0.0, M.patio)); // UVs in metres
   const outdoor = [];

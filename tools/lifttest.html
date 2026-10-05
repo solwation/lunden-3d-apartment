@@ -51,7 +51,7 @@ async function run() {
   check(/kalla på hissen/i.test(btn.textContent), `E: "${btn.textContent}"`);
   btn.click(); for (let i = 0; i < 120; i++) step(1 / 60);
   check(lift.at === 1 && lift.doors >= 1, `the doors open (${f2(lift.doors)})`);
-  walkTo(-18.2, 9.6); walkTo(-18.2, 11.0);
+  walkTo(-18.39, 9.5); walkTo(-18.39, 11.0);
   check(lift.carHas(player.pos), `into the car (${f2(player.pos.x)}, ${f2(player.pos.z)})`);
   lift.targets.find((t) => t.kind === 'liftbtn' && t.stop === 0).press();
   for (let i = 0; i < 60 * 4; i++) step(1 / 60);
@@ -60,31 +60,32 @@ async function run() {
   check(lift.moving && Math.abs(player.pos.y - lift.y) < 0.02 && midY < Y[1] - 0.2 && lift.carHas(player.pos), `riding down (y ${f2(player.pos.y)} = the car's), no way out while it moves`);
   for (let i = 0; i < 60 * 20 && !(lift.at === 0 && lift.doors >= 1); i++) step(1 / 60);
   check(lift.at === 0 && Math.abs(player.pos.y - Y[0]) < 0.02 && lift.doors >= 1, `arrived on våning −1, the doors open (y ${f2(player.pos.y)})`);
-  walkTo(-18.2, 9.4); walkTo(-17.2, 8.4); walkTo(-15.5, 8.4);
+  walkTo(-18.39, 9.3); walkTo(-17.2, 8.4); walkTo(-15.5, 8.4);
   check(player.below && world.garage.roomAt(player.pos.x, player.pos.z) === 'Cykelförråd', `out through the lobby into the basement (${world.garage.roomAt(player.pos.x, player.pos.z)})`);
   // the doors never close on someone in the doorway
   lift.targets.find((t) => t.kind === 'liftcall' && t.stop === 0).press(); for (let i = 0; i < 60 * 3; i++) step(1 / 60);
-  at(-18.2, 9.95, Y[0]);
+  at(-18.39, 9.7, Y[0]);
   for (let i = 0; i < (K.lift.wait + 6) * 30; i++) step(1 / 30);
   check(lift.doors >= 1, `someone in the doorway: they stay open (${f2(lift.doors)})`);
   // up to våning 3 and out onto the loftgång
-  walkTo(-18.2, 11.0);
+  walkTo(-18.39, 11.0);
   ride(3);
   check(lift.at === 3 && Math.abs(player.pos.y - Y[3]) < 0.02, `up to våning 3 (y ${f2(player.pos.y)})`);
-  walkTo(-18.2, 9.4); walkTo(-17.2, 8.8); walkTo(-17.2, 3.0); walkTo(-18.3, 2.2);
-  check(near(-18.3, 2.2) && Math.abs(player.pos.y - Y[3]) < 0.05, `along våning 3 to the street-end landing (y ${f2(player.pos.y)})`);
+  walkTo(-18.39, 9.3); walkTo(-17.3, 8.8); walkTo(-17.3, 2.8); walkTo(-17.6, 2.3);
+  check(near(-17.6, 2.3) && Math.abs(player.pos.y - Y[3]) < 0.05, `along våning 3 to the street-end landing (y ${f2(player.pos.y)})`);
   const ld = core.doors[1];
   look(ld.pickable); btn.click(); for (let i = 0; i < 60; i++) step(1 / 60);
-  walkTo(-18.3, 0.8);
-  check(near(-18.3, 0.8) && !player.inCore && player.aloft && Math.abs(player.pos.y - Y[3]) < 0.1, `out onto the loftgång (y ${f2(player.pos.y)}, aloft ${player.aloft})`);
+  walkTo(-17.6, 0.8);
+  check(near(-17.6, 0.8) && !player.inCore && player.aloft && Math.abs(player.pos.y - Y[3]) < 0.1, `out onto the loftgång (y ${f2(player.pos.y)}, aloft ${player.aloft})`);
   // the stairs on foot: våning 1 → 2 → 3, and from 1 down to −1, without a fall
-  at(-18.4, 9.0, Y[1]);
-  walkTo(-18.4, 6.0); walkTo(-18.0, 4.6); walkTo(-17.2, 5.2); walkTo(-17.2, 9.0);
+  // (#456: one straight flight per storey along the west wall, rising north; the passage beside it back to the landing)
+  at(-17.3, 9.0, Y[1]);
+  walkTo(-18.45, 8.0); walkTo(-18.45, 3.1);
   check(Math.abs(player.pos.y - Y[2]) < 0.05, `up the stairs to våning 2 (y ${f2(player.pos.y)})`);
-  walkTo(-18.4, 8.2); walkTo(-18.4, 3.0);
+  walkTo(-17.3, 3.0); walkTo(-17.3, 8.6); walkTo(-18.45, 8.0); walkTo(-18.45, 3.2);
   check(Math.abs(player.pos.y - Y[3]) < 0.05, `on up to våning 3 (y ${f2(player.pos.y)})`);
-  at(-17.2, 9.0, Y[1]);
-  walkTo(-17.2, 5.2); walkTo(-18.4, 4.6); walkTo(-18.4, 9.0);
+  at(-17.3, 9.0, Y[1]);
+  walkTo(-17.3, 3.0); walkTo(-18.45, 3.2); walkTo(-18.45, 9.0);
   check(Math.abs(player.pos.y - Y[0]) < 0.05, `down the stairs to våning −1 (y ${f2(player.pos.y)})`);
   check((stats.falls ?? 0) === falls0 && !player.fall, `no fall on the stairs (${stats.falls ?? 0})`);
   // #450: from the stairwell's foot out through its east opening, the bike room, the steel door, into the garage hall
@@ -95,6 +96,9 @@ async function run() {
   check(world.garage.object.visible && player.below && world.garage.roomAt(player.pos.x, player.pos.z) === 'Garage', `from the stair's foot out into the garage hall (${world.garage.roomAt(player.pos.x, player.pos.z)}, z ${f2(player.pos.z)})`);
   walkTo(-15.2, 11.6); walkTo(-15.5, 8.4); walkTo(-17.6, 8.6);
   check(player.inCore && Math.abs(player.pos.y - Y[0]) < 0.05, 'and back to the stairwell');
+  // #456: the passage's guard holds — from våning 2's passage no step sideways into the stair hole
+  at(-17.3, 5.5, Y[2]); walkTo(-18.6, 5.5, 2);
+  check(player.pos.x > K.split && Math.abs(player.pos.y - Y[2]) < 0.05, `the guard by the flights holds on våning 2 (x ${f2(player.pos.x)}, y ${f2(player.pos.y)})`);
   // a reload record mid-ride: it carries on to its stop
   lift.loadState({ at: null, y: 1.0, target: 3, open: 0 });
   for (let i = 0; i < 60 * 20 && lift.at !== 3; i++) step(1 / 60);

@@ -164,10 +164,12 @@ src/escape.js          the basement's ways out (#452, GARAGE.escape): `escapeFie
                        arrows, exits, extinguishers, legend). garage.js `escape()` hangs the signs square across the way (each face
                        its reader's arrow), flat ones over the doorways, the framed plans + extinguishers; always-lit sign material
 src/core.js            Hus L's stair core by the portik (#415, CORE in config): a walkable stairwell in the band beside the portik
-                       (DRAWING: the band x −18.95 … −16.62, the lift shaft at its courtyard end; ASSUMPTION: the stair's form) —
-                       doglegs (two flights side by side, floor landings at the lift end, mid-landings at the street end) from the
-                       garage lobby (våning −1) to 1 and 2, a straight flight up to våning 3's street-end landing; a glazed door
-                       from the portik (a passage to the landing), a door out onto the loftgång; walls with height ranges
+                       (#456, DRAWING: read off the vector overview plans of every storey, see CORE's comment — one straight
+                       flight per storey (16 / 17 / 16 treads of 0.25), all stacked along the band's west wall, each rising
+                       north from the landing at the courtyard end (the lift, the ways in) to the street-end floor; a passage
+                       along the flights' east side back to the next landing; none on våning 4; heights = ASSUMPTION) from the
+                       garage lobby (våning −1, a cross wall north) to våning 3; the portik's glazed screen (door + sidelight,
+                       a passage to the landing), våning 3's door out onto the loftgång (+ sidelight); walls with height ranges
                        (`segments(feet)`), `heights(x, z)` = every floor / flight there (player.js `inCore`, `groundAt`). `Lift`:
                        four stops (Y −3, 0, 3.25, 6.4), call buttons + a car panel (kinds 'liftcall' / 'liftbtn'), sliding
                        two-panel doors that never close on someone in the doorway (#314), the visitor rides (`snap`), a hum, a

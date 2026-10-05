@@ -83,6 +83,7 @@ export class Player {
    * loftgång and the upper units sit on it), elsewhere ROOFS.aloft m over the ground. Then the roofs' walls collide. */
   get aloft() {
     const p = this.pos;
+    if (this.inCore) return false; // (Hus L's stairwell: its own walls, on every storey, #456)
     return this.inFootprint(p.x, p.z) ? p.y > UNIT_TOP - 0.3 : p.y > groundY(p.x, p.z) + ROOFS.aloft;
   }
 
