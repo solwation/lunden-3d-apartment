@@ -63,7 +63,7 @@ let scoreEl = null, plusEl = null, plusTimer = 0, plusSum = 0, lastScore = null;
 /** Where the score goes: a container in the HUD. */
 export function setScoreElement(el) {
   scoreEl = el;
-  el.innerHTML = '<span class="label">Poäng</span> <b></b><span class="plus"></span>';
+  el.innerHTML = '<span class="label">Poäng</span> <b></b><span class="plus"></span><span id="presence" aria-label="Besökare online"></span>';
   plusEl = el.querySelector('.plus');
   renderScore();
 }
