@@ -11,7 +11,7 @@ import { BUILD } from './version.js';
 // &sync=debug logs what happens to the console.
 
 const QKEY = 'lunden.cloud.queue', PAPER_T = 'lunden.drawing.updated';
-const POLL = 60_000;
+const POLL = 10_000;
 const params = new URLSearchParams(location.search);
 const debug = params.get('sync') === 'debug';
 const log = (...a) => { if (debug) console.log('[cloud]', ...a); };
@@ -37,8 +37,8 @@ class Retry extends Error {}
 
 export class Cloud {
   /** posters (posters.js), drawing (drawing.js), holding(): is the desk sheet in the hand? */
-  constructor({ posters, drawing, holding = () => false }, url = cloudUrl()) {
-    Object.assign(this, { url, posters, drawing, holding, busy: false, pulling: false });
+  constructor({ posters, drawing, holding = () => false, heldId = () => null }, url = cloudUrl()) {
+    Object.assign(this, { url, posters, drawing, holding, heldId, busy: false, pulling: false });
     // cat photos queued by an older version are never sent (#211)
     this.queue = readJSON(QKEY, []).filter((q) => q.type !== 'cat');
     try { localStorage.removeItem('lunden.cloud.seenCats'); } catch { /* blocked */ }
@@ -95,7 +95,20 @@ export class Cloud {
       if (!p) return; // gone again before it was sent
       const { image, synced, ...meta } = p.rec;
       const r = await this.req('PUT', `/drawings/${op.id}`, { ...meta, image });
-      if (r.ok) this.posters.markSynced(op.id);
+      if (r.ok) {
+        const accepted = await r.json();
+        const current = this.posters.byId(op.id);
+        // An older request must not acknowledge a move made while it was in flight.
+        if (current && current.rec.updated === meta.updated) {
+          if (accepted.updated > meta.updated) {
+            await this.posters.drop(current);
+            await this.posters.addRemote({ ...current.rec, ...accepted, synced: true });
+          } else {
+            current.rec.revision = accepted.revision;
+            await this.posters.markSynced(op.id, meta.updated);
+          }
+        }
+      }
       log('put drawing', op.id, r.status);
     } else if (op.type === 'undraw') {
       const r = await this.req('DELETE', `/drawings/${op.id}`);
@@ -134,14 +147,14 @@ export class Cloud {
     const pending = new Set(this.queue.map((q) => q.key));
     for (const p of [...this.posters.list]) {
       const id = p.rec.id, rm = remote.get(id);
-      if (pending.has(`d:${id}`)) continue;
+      if (pending.has(`d:${id}`) || this.heldId() === id) continue;
       if (!rm) { if (p.rec.synced && (p.rec.synced === true || p.rec.synced < t0)) { log('gone on the server', id); await this.posters.drop(p); } }
-      else if (rm.updated > p.rec.updated) { log('newer on the server', id); await this.posters.drop(p); await this.posters.addRemote({ ...p.rec, ...rm, synced: true }); }
+      else if (rm.updated > p.rec.updated || (rm.updated === p.rec.updated && (rm.revision ?? 0) > (p.rec.revision ?? 0))) { log('newer on the server', id); await this.posters.drop(p); await this.posters.addRemote({ ...p.rec, ...rm, synced: true }); }
     }
     for (const rm of list) {
-      if (this.posters.byId(rm.id) || pending.has(`d:${rm.id}`) || this.posters.full) continue;
+      if (this.posters.byId(rm.id) || pending.has(`d:${rm.id}`) || this.heldId() === rm.id || this.posters.full) continue;
       const image = await this.image(`/drawings/${rm.id}`);
-      if (image && !this.posters.byId(rm.id)) { log('new from the server', rm.id); await this.posters.addRemote({ ...rm, image, synced: true }); }
+      if (image && !this.posters.byId(rm.id) && this.heldId() !== rm.id && !this.queue.some((q) => q.key === `d:${rm.id}`)) { log('new from the server', rm.id); await this.posters.addRemote({ ...rm, image, synced: true }); }
     }
   }
 

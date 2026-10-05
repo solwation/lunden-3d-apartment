@@ -568,7 +568,7 @@ function takeDownPoster() {
   const p = viewing;
   if (!p) return;
   showPoster(null);
-  posters.remove(p);
+  posters.remove(p, false, true); // moving: keep the shared record until it is placed again
   heldDrawing.take(p.rec.image, { id: p.rec.id, time: p.rec.time, rec: p.rec });
 }
 posterPanel.querySelector('[data-act=throw]').addEventListener('click', throwPoster);
@@ -613,7 +613,9 @@ scene.add(board.object);
 const boardLoaded = board.load();
 // the shared world (#178, #119): inert unless CLOUD_URL (or &cloud=) is set — then drawings, the desk sheet and
 // cat photos sync silently with the Cloudflare Worker (cloud.js)
-const cloud = new Cloud({ posters, drawing, holding: () => heldItem() === heldDrawing });
+const cloud = new Cloud({ posters, drawing, holding: () => heldItem() === heldDrawing,
+  heldId: () => heldDrawing.held ? heldDrawing.meta?.id : null });
+heldDrawing.onDesk = (id) => posters.onDelete?.(id);
 // the global leaderboard (#198): the name on the start screen (optional), the top list there and under the stats
 const leaderboard = new Leaderboard(cloud.url, totalScore, { nameRow: document.getElementById('lb-name'), input: document.getElementById('player-name'), list: document.getElementById('lb-start') });
 setStatsExtra(() => leaderboard.html());

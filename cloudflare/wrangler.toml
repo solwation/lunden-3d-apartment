@@ -5,6 +5,14 @@ main = "worker.js"
 compatibility_date = "2025-09-01"
 workers_dev = true
 
+[[durable_objects.bindings]]
+name = "DRAWINGS"
+class_name = "DrawingRoom"
+
+[[migrations]]
+tag = "drawing-room-v1"
+new_sqlite_classes = ["DrawingRoom"]
+
 [[kv_namespaces]]
 binding = "LUNDEN"
 id = "838d93b9358b42418f6f89fff6634ae1"

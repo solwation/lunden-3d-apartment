@@ -270,9 +270,9 @@ export class Posters {
   byId(id) { return this.list.find((p) => p.rec.id === id) ?? null; }
 
   /** The server has it now (cloud.js): a drawing gone from the server later was thrown away elsewhere. */
-  async markSynced(id) {
+  async markSynced(id, updated) {
     const p = this.byId(id);
-    if (!p) return;
+    if (!p || (updated !== undefined && p.rec.updated !== updated)) return;
     p.rec.synced = Date.now(); // when: a list fetched before then may not have it yet (cloud.js)
     await this.save(p.rec);
   }
@@ -345,6 +345,7 @@ export class HeldDrawing {
     this.release();
     // a poster taken down goes back up where it was if there is a drawing on the desk already (#177)
     if (this.meta?.rec && !this.drawing.blank) { this.rehang?.(this.meta.rec); return; }
+    if (this.meta?.id) this.onDesk?.(this.meta.id);
     this.drawing.restore(this.image);
     sfx.paper(this.drawing.paper.position);
   }

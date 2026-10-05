@@ -82,13 +82,17 @@ async function image(env, key, h) {
   return new Response(value, { headers: { ...h, 'Content-Type': metadata?.type ?? 'image/jpeg', 'Cache-Control': 'public, max-age=300' } });
 }
 
-export default {
+const worker = {
   async fetch(request, env) {
     const h = cors(request.headers.get('Origin'));
     if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: h });
     const url = new URL(request.url), parts = url.pathname.split('/').filter(Boolean), [what, id] = parts;
     const m = request.method;
     if (parts.length > 2 || (id !== undefined && !ID.test(id) && what !== 'admin')) return fail(404, 'not found', h);
+    // One authority for drawing metadata: KV read/modify/write loses concurrent moves.
+    if (env.DRAWINGS && (what === 'drawings' || (what === 'admin' && (id === 'all' || id === 'drawings')))) {
+      return env.DRAWINGS.get(env.DRAWINGS.idFromName('shared')).fetch(request);
+    }
     if (m === 'PUT' || m === 'DELETE' || m === 'POST') {
       if (await limited(request, env)) return fail(429, 'too many writes', h);
     }
@@ -126,7 +130,8 @@ export default {
         const list = await getList(env, 'drawings'), old = list.find((d) => d.id === id);
         if (!old && list.length >= MAX_DRAWINGS) return fail(409, 'full', h);
         if (old && old.updated > meta.updated) return json(old, 200, h); // older news: the newer one stays
-        if (body.image !== undefined || !old) {
+        meta.revision = (old?.revision ?? 0) + 1; // distinguish moves in the same millisecond
+        if (!old) {
           const img = decodeImage(body.image);
           if (!img) return fail(400, 'bad image', h);
           await env.LUNDEN.put(`drawing:${id}`, img.bytes, { metadata: { type: img.type } });
@@ -183,3 +188,27 @@ export default {
     return fail(404, 'not found', h);
   },
 };
+
+export default worker;
+
+// Import the existing metadata once; images remain in LUNDEN KV. All clients,
+// including old builds and admin requests, use this same serialized authority.
+export class DrawingRoom {
+  constructor(ctx, env) { this.ctx = ctx; this.env = env; }
+
+  fetch(request) {
+    return this.ctx.blockConcurrencyWhile(async () => {
+      const storage = this.ctx.storage, kv = this.env.LUNDEN;
+      if (await storage.get('drawings') === undefined) {
+        await storage.put('drawings', await kv.get('drawings', 'json') ?? []);
+      }
+      const LUNDEN = {
+        get: async (key, type) => key === 'drawings' ? await storage.get(key) : kv.get(key, type),
+        put: async (key, value, options) => key === 'drawings' ? storage.put(key, JSON.parse(value)) : kv.put(key, value, options),
+        delete: async (key) => key === 'drawings' ? storage.put(key, []) : kv.delete(key),
+        getWithMetadata: (...args) => kv.getWithMetadata(...args),
+      };
+      return worker.fetch(request, { ...this.env, DRAWINGS: undefined, LUNDEN });
+    });
+  }
+}

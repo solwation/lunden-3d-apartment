@@ -19,6 +19,16 @@ den är pushad. Skriptet går att köra om hur många gånger som helst – det 
 
 ## Bra att veta
 
+- **Flytt av teckningar:** samma tecknings-id behålls. Flytten visas direkt lokalt och andra klienter
+  hämtar positionerna var tionde sekund. Senaste `updated` vinner; vid samma millisekund vinner
+  den sist behandlade uppdateringen. Klienternas klockor bör vara rätt inställda.
+  `DrawingRoom` (SQLite Durable Object) ordnar ändringarna och lagrar metadata så att samtidiga
+  flyttar inte skriver över andra teckningar. Befintlig metadata importeras automatiskt från KV
+  vid första anropet; bilderna ligger kvar i KV. Medan en teckning hålls kvar i handen visas
+  dess förra position på andra klienter tills den sätts upp eller läggs på skrivbordet.
+  Publicera Workern med den nya `DRAWINGS`-bindningen före klienten.
+  Regressionstest: `node cloudflare/drawing-sync.test.mjs`.
+
 - **Inga hemligheter i repot.** KV-id:t i `wrangler.toml` och adressen i `src/config.js` är inte hemliga.
   Nödbromsnyckeln (`ADMIN_TOKEN`) ligger som Worker-secret i Cloudflare och lokalt i
   `~/.config/lunden-l1007/admin-token`.
