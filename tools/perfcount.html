@@ -27,6 +27,16 @@ f.onload = async () => {
     const i = r.info;
     lines.push(`${name}: calls ${i.render.calls} tris ${i.render.triangles} geoms ${i.memory.geometries} tex ${i.memory.textures}`);
   }
+  // the mess's cap (#388): far more crumbs and dust than it draws — one call per kind with any, the instances at the cap
+  const mess = w.__app.life.mess;
+  if (mess) {
+    const at = () => { player.spawn(2.6, 9, Math.PI); camera.rotation.x = -0.5; step(1 / 60); r.render(w.__app.scene, camera); return r.info.render.calls; };
+    mess.clear(); const c0 = at();
+    for (let i = 0; i < 400; i++) mess.add(i % 2 ? 'crumb' : 'dust', 0.6 + Math.random() * 4.5, 0, 7.3 + Math.random() * 5, { amt: 0.4 });
+    const c1 = at(), M = mess.meshes;
+    lines.push(`mess cap: calls ${c0} → ${c1} with 400 added, drawn crumb ${M.crumb.count}/${M.crumb.instanceMatrix.count} dust ${M.dust.count}/${M.dust.instanceMatrix.count} spots ${mess.spots.length}`);
+    mess.clear();
+  }
   out.textContent = lines.join('\n');
 };
 </script></body></html>

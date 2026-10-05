@@ -1129,8 +1129,23 @@ export const LIFE = {
   sandwich: { max: 6 }, // at most this many layers on a slice of bread, butter included (#378, #379): "Mackan rymmer inte mer"
   drink: { fill: 1.6, pour: 1, sip: 40, seconds: 0.6, pourMl: 200 }, // the drinking glass (#382): filled at the tap in `fill` s (to the brim, no more), milk poured `pourMl` ml at a time over `pour` s, a sip `sip` ml over `seconds` (game s; our picks)
   wash: { seconds: 2.4, taps: ['köksblandaren'] }, // washing up by hand (#383): a scrub at the running tap of these sinks (game s; our pick)
-  rules: { washFirst: true, strictSorting: true }, // strictSorting (#386): the wrong bin keeps the waste in the hand (false: in it goes, with a note); #383: a used / dirty thing is refused in its cabinet or drawer ("Diska den först"); false = free play
+  rules: { washFirst: true, strictSorting: true, mess: true }, // mess (#388): crumbs and dust come by themselves (false = free play: no automatic mess; `&mess=0`)
+  // strictSorting (#386): the wrong bin keeps the waste in the hand (false: in it goes, with a note); #383: a used / dirty thing is refused in its cabinet or drawer ("Diska den först"); false = free play
   eat: { seconds: 0.5 }, // a bite: to the mouth and back (#377, #380); the bite comes off half-way // a timed action (#372) stops when the eye has moved this far (m) from where it started // putting down (#368): snap grids (m), kept this far inside a table's edge, R turns this many degrees
+};
+
+// Crumbs and dust (#388, LIFE-024, src/mess.js): spots on a worktop, a table or the floor, each with an amount 0…1 (a spot
+// near another of its kind on the same surface grows instead of a new one: within `merge` m). Crumbs come from eating
+// (`per.bite` a bite, on the surface under the food or the floor at the eater's feet), from cutting on the board (`per.cut`,
+// on the worktop beside it) and from the bread bag (`per.bag`); dust gathers slowly on the floors (one bit every `dust.every`
+// game s, at most `dust.perRoom` spots a room, near the walls: within `dust.wall` m of one). `max` per kind = what is
+// ever drawn (one InstancedMesh each): a new spot past it grows the nearest one instead, so it never grows without bound.
+// `size` = a full spot's width (m); a floor spot must be where the visitor could reach (player.js isFree with `margin`, so
+// a little nearer a wall than the body). All our picks.
+export const LIFE_MESS = {
+  max: { crumb: 48, dust: 32, smear: 16 }, merge: 0.16, per: { bite: 0.25, cut: 0.2, bag: 0.15, spread: 0.5 },
+  size: { crumb: 0.16, dust: 0.24, smear: 0.13 }, margin: -0.14,
+  dust: { every: 150, perRoom: 3, amount: 0.35, wall: 0.45 },
 };
 
 // The drop-off for full rubbish bags (#387, src/waste.js `buildDropoff`): a *guess* — our real waste room is not verified in
@@ -1209,7 +1224,7 @@ export const ITEMS = {
   binPack: { name: 'förpackningarna', label: 'Förpackningar', sort: 'package', bag: 'clear', fullText: 'Förpackningspåsen är full', tags: ['bin', 'fixed'], unit: 'count', amount: 0, size: 'xl', model: 'bin', capacity: 12 },
   // a tied rubbish bag (#386): its amount and parts are what was in the bin (moved, not copied), machine.sort its category
   rubbishBag: { name: 'soppåsen', tags: ['rubbishBag'], unit: 'count', amount: 0, size: 'l', model: 'rubbishBag', held: { pos: [0.2, -0.42, -0.45], rot: [0, 0.3, 0] } },
-  breadSlice: { name: 'brödskivan', noun: 'bröd', tags: ['food', 'base'], unit: 'count', amount: 1, size: 's', model: 'breadSlice', bites: 4 }, // eaten in four bites (#377, like the fruit #326)
+  breadSlice: { name: 'brödskivan', noun: 'bröd', tags: ['food', 'base'], unit: 'count', amount: 1, size: 's', model: 'breadSlice', bites: 4, crumbs: true }, // eaten in four bites (#377, like the fruit #326); crumbs: every bite drops some (#388)
   knife: { name: 'kökskniven', tags: ['tool', 'tool:cut', 'dishwasherSafe'], unit: 'count', amount: 1, size: 's', clean: 'clean', model: 'knife' },
   butterKnife: { name: 'smörkniven', tags: ['tool', 'tool:spread', 'dishwasherSafe'], unit: 'count', amount: 1, size: 's', clean: 'clean', model: 'butterKnife' }, // (#374)
   // the drinking glass (#382): its amount = the drink in it (ml, up to `capacity`), `machine.drink` = what it is ('water' |

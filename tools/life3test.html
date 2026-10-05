@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Life test (M3)</title></head>
+<body>
+<pre id="out">running…</pre>
+<script type="module">
+import { LIFE, LIFE_MESS, LEVELS } from '../src/config.js';
+const out = document.getElementById('out');
+const lines = [];
+let pass = true;
+const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); pass &&= !!ok; return ok; };
+const only = new URLSearchParams(location.search).get('only'); // ?only=383,385: just those sections
+const want = (n) => !only || only.split(',').includes(String(n));
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+async function load(q) {
+  const f = document.createElement('iframe');
+  f.width = 900; f.height = 600; f.src = `../index.html?${q}`;
+  document.body.append(f);
+  await new Promise((r) => { f.onload = r; });
+  while (!f.contentWindow.__app) await wait(100);
+  f.contentDocument.getElementById('start-touch').click();
+  await wait(50);
+  return f;
+}
+/** The test's tools for one page. */
+function kit(f) {
+  const A = f.contentWindow.__app, d = f.contentDocument, btn = d.getElementById('action');
+  const { player, camera, step, scene } = A;
+  const settle = (o) => { for (let i = 0; i < 40; i++) o.update(0.1); scene.updateMatrixWorld(true); };
+  const open = (o) => { if (o && !o.isOpen) { o.toggle(); settle(o); } };
+  const close = (o) => { if (o && o.isOpen) { o.toggle(); settle(o); } };
+  const secs = (s) => { for (let i = 0; i < Math.ceil(s * 60); i++) step(1 / 60); };
+  const ring = (p) => [...Array(16)].map((_, i) => [p.x + Math.sin(i / 16 * 6.283) * (0.75 + (i % 2) * 0.3), p.z + Math.cos(i / 16 * 6.283) * (0.75 + (i % 2) * 0.3)]);
+  /** Aim the eye at world point p from a few stands until the action button / the menu matches `re`. */
+  const aim = (p, re, stands = []) => {
+    for (const [x, z] of [...stands, ...ring(p)]) {
+      player.spawn(x, z, 0); for (let i = 0; i < 3; i++) step(1 / 60);
+      const dx = p.x - camera.position.x, dz = p.z - camera.position.z;
+      camera.rotation.y = Math.atan2(-dx, -dz); camera.rotation.x = Math.atan2(p.y - camera.position.y, Math.hypot(dx, dz)); step(1 / 60);
+      const text = btn.hidden ? [...d.querySelectorAll('#choices button')].map((b) => b.textContent).join(' | ') : btn.textContent;
+      if (re.test(text)) return text;
+    }
+    return null;
+  };
+  const life = A.life, I = life.items;
+  /** Row `id` of a target's actions (an instance, or a raw target such as a tap). */
+  const row = (id, target) => life.options(target?.id ? { item: life.view(target) } : target ?? { instance: I.held() }).find((o) => o.id === id);
+  /** Run row `id` and let it finish: true, or the reason. */
+  const run = (id, target, s = 0) => { const r = row(id, target); const ok = !!r && !r.reason && r.run(); secs(s + 0.1); return ok ? true : r?.reason ?? `no ${id}`; };
+  const lid = (k) => A.world.lids.find(k);
+  return { A, d, btn, settle, open, close, secs, aim, life, I, row, run, lid, step, V: camera.position.constructor };
+}
+
+const box = (m) => { m.geometry.computeBoundingBox(); return m.geometry.boundingBox.clone().applyMatrix4(m.matrixWorld); };
+
+// --- #388: crumbs and dust ----------------------------------------------------------------------------------------
+if (want(388)) try {
+  const f = await load('life&shot');
+  const K = kit(f), { A, life, I, run, secs, step, V } = K, mess = life.mess, P = A.player;
+  check(mess && mess.spots.length === 0, `&life starts without mess (${mess?.spots.length})`);
+  // a slice of bread eaten in the kitchen, standing on the floor: crumbs at the feet
+  P.spawn(4.3, 2.6, Math.PI / 2); A.camera.rotation.x = 0; step(1 / 60);
+  life.create('breadSlice', { at: 'hand' }); step(1 / 60);
+  for (let k = 0; k < 4; k++) run('eat', null, 0.6);
+  const fl = mess.spots.filter((s) => s.kind === 'crumb' && s.surf === 'floor');
+  check(!I.held() && fl.length >= 1 && fl.every((s) => s.y === LEVELS[0].floor && Math.hypot(s.x - P.pos.x, s.z - P.pos.z) < 0.6 && P.isFree(s.x, s.z, 0, LIFE_MESS.margin)),
+    `eating a slice drops crumbs on the floor at the feet (${fl.map((s) => `${s.x},${s.z} ${s.amt}`).join(' | ')})`);
+  check(Math.abs(mess.total() - 4 * LIFE_MESS.per.bite) < 1e-6 && fl.length === 1, `four bites, one spot that grew (${mess.total()})`);
+  check(/^Kök/.test(fl[0]?.room ?? ''), `the spot knows its room (${fl[0]?.room})`);
+  // a bite over the dining table: on the table
+  const table = A.world.cupSurfaces.find((s) => Math.abs(s.userData.surface - 0.754) < 0.01), tb = box(table).getCenter(new V());
+  const t = mess.fromEvent({ from: 'bite', pos: [tb.x, 1.3, tb.z], feet: [tb.x + 0.6, 0, tb.z] });
+  check(t && t.surf === 'table' && Math.abs(t.y - 0.754) < 0.01, `a bite over the dining table: crumbs on the table (${t?.surf} ${t?.y})`);
+  // a cut on the board on the worktop: beside the board, on the worktop
+  const top = A.world.cupSurfaces.find((s) => s.userData.counter), wc = box(top).getCenter(new V());
+  const c = mess.fromEvent({ from: 'cut', pos: [wc.x, top.userData.surface, wc.z] });
+  check(c && c.surf === 'worktop' && Math.abs(c.y - top.userData.surface) < 0.01 && life.worktopAt([c.x, c.y, c.z]), `a cut: crumbs beside the board on the worktop (${c?.surf} ${c?.x?.toFixed(2)},${c?.z?.toFixed(2)})`);
+  // a real cut: the cucumber on the board on the worktop, the knife in the hand
+  const board = I.ofType('board')[0], cuc = I.ofType('cucumber')[0], knife = I.ofType('knife')[0];
+  I.move(board, { at: 'world', pos: [wc.x, top.userData.surface + 0.001, wc.z], yaw: 0 }, { ignoreShut: true });
+  I.move(cuc, { at: 'on', parent: board.id, slot: 0 }, { ignoreShut: true });
+  I.move(knife, { at: 'hand' }, { ignoreShut: true }); step(1 / 60);
+  const before = mess.total({ kind: 'crumb' });
+  const cutOk = run('cut', cuc, 1);
+  check(cutOk === true && mess.total({ kind: 'crumb' }) > before, `cutting the cucumber leaves crumbs (${cutOk}, ${before} → ${mess.total({ kind: 'crumb' })})`);
+  I.move(knife, { at: 'world', pos: [wc.x, top.userData.surface + 0.001, wc.z + 0.3], yaw: 0 }); step(1 / 60);
+  // saved by amount
+  const sig = (m) => m.spots.map((s) => `${s.kind}:${s.surf}:${s.x},${s.z}:${s.amt.toFixed(3)}`).sort().join(' ');
+  const was = sig(mess), rec = JSON.parse(JSON.stringify(life.serialize()));
+  check(rec.x?.mess?.s?.length === mess.spots.length, `the record has every spot (${rec.x?.mess?.s?.length})`);
+  mess.clear(); life.load(rec);
+  check(sig(mess) === was && mess.meshes.crumb.count === mess.count('crumb'), 'loaded again: the same spots, the same amounts, drawn');
+  // dust: near a wall, on a floor the visitor reaches, at most perRoom spots a room
+  for (let i = 0; i < 120; i++) mess.dust();
+  const dust = mess.spots.filter((s) => s.kind === 'dust'), perRoom = {};
+  for (const s of dust) perRoom[`${s.level}:${s.room}`] = (perRoom[`${s.level}:${s.room}`] ?? 0) + 1;
+  const near = (s) => A.world.levels[s.level].wallSegments.some(([ax, az, bx, bz]) => { const dx = bx - ax, dz = bz - az, l = dx * dx + dz * dz || 1, k = Math.max(0, Math.min(1, ((s.x - ax) * dx + (s.z - az) * dz) / l)); return Math.hypot(s.x - ax - dx * k, s.z - az - dz * k) < LIFE_MESS.dust.wall + 1e-6; });
+  check(dust.length > 6 && dust.every((s) => s.y === LEVELS[s.level].floor && s.room && P.isFree(s.x, s.z, s.level, LIFE_MESS.margin) && near(s)),
+    `dust on the floors near the walls, where you reach (${dust.length} spots on ${new Set(dust.map((s) => s.level)).size} floors)`);
+  check(Object.values(perRoom).every((n) => n <= LIFE_MESS.dust.perRoom) && dust.every((s) => s.amt <= 1), `at most ${LIFE_MESS.dust.perRoom} dust spots a room, none over full (${JSON.stringify(perRoom)})`);
+  // the cap: far more than it draws
+  for (let i = 0; i < 300; i++) mess.add('crumb', 0.5 + Math.random() * 4.5, 0, 7.2 + Math.random() * 5.2, { amt: 0.3 });
+  check(mess.count('crumb') <= LIFE_MESS.max.crumb && mess.meshes.crumb.count === mess.count('crumb') && mess.meshes.crumb.instanceMatrix.count === LIFE_MESS.max.crumb,
+    `300 more crumbs: still at most ${LIFE_MESS.max.crumb} spots (${mess.count('crumb')}), one mesh`);
+  check(mess.spots.every((s) => s.amt <= 1), 'no spot over full: the mess never grows without bound');
+  // off: nothing by itself
+  mess.clear(); life.rules.mess = false;
+  life.create('breadSlice', { at: 'hand' }); step(1 / 60); run('eat', null, 0.6);
+  mess.dustT = 1e9; mess.update(1);
+  check(mess.spots.length === 0, 'the automatic mess off: no crumbs, no dust');
+  life.rules.mess = true;
+  f.remove();
+  const g = await load('life&shot&mess=0');
+  check(g.contentWindow.__app.life.rules.mess === false, '&mess=0 switches it off');
+  g.remove();
+} catch (e) { pass = false; lines.push(`FAIL #388 error ${e.stack}`); }
+
+lines.push(pass ? 'ALL PASS' : 'SOME FAILED');
+out.textContent = lines.join('\n');
+</script>
+</body>
+</html>

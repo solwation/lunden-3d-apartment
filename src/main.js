@@ -82,6 +82,7 @@ import { PaperBalls } from './paperball.js';
 import { Cloud } from './cloud.js';
 import { Leaderboard } from './leaderboard.js';
 import { Basketball, Hoop } from './basket.js';
+import { Mess } from './mess.js';
 
 const overlay = document.getElementById('overlay');
 const hud = document.getElementById('hud');
@@ -372,6 +373,13 @@ life.bump = (key, n, id) => bump(key, n, id); // the life sim's counts (#376 …
   life.worktopAt = (p) => tops.some((t) => p[0] >= t.box.min.x - 0.01 && p[0] <= t.box.max.x + 0.01 && p[2] >= t.box.min.z - 0.01 && p[2] <= t.box.max.z + 0.01 && Math.abs(p[1] - t.y) < 0.03);
 }
 for (const t of taps) if (t.options) { const own = t.options; t.options = () => [...life.options(t), ...own()]; } // a glass in the hand at a basin tap: fill it, pour it out (#382)
+// crumbs and dust (#388): spots on the worktops, tables and the flat's floors, saved with the life sim's things
+const inFlatPlay = () => !player.below && !player.inCore && !player.aloft;
+const mess = life.mess = new Mess({ group: life.group, surfaces: world.cupSurfaces, roomAt: world.roomAt, walls: (l) => world.levels[l]?.wallSegments ?? [],
+  isFree: (x, z, l, m) => inFlatPlay() && player.isFree(x, z, l, m), nearestFree: (x, z, l) => (inFlatPlay() ? player.nearestFree(x, z, l) : null) });
+if (params0.get('mess') === '0') LIFE.rules.mess = false; // free play: no automatic mess
+life.onEvent((kind, d) => { if (kind === 'crumbs') mess.fromEvent(d); });
+life.keepPart('mess', { save: () => mess.save(), load: (v) => mess.load(v) });
 life.restore(); // a new visit: the stock as it was left, empty-handed (#371; a page-made reload's `life` part replaces it below)
 life.restock(); // whatever the kitchen always has and is missing (#373): a fresh home, or something used up and thrown away
 fruit.onEaten = (f) => bump('fruit', 1, f.kind);
@@ -1625,6 +1633,7 @@ function step(dt) {
   fries?.update(dt);
   fruit.update(dt);
   life.update(dt);
+  mess.update(dt); // dust now and then (#388)
   dishProg?.update(dt); // (#385)
   dropoff.update(dt); // a lid (#387)
   toys.update(dt);

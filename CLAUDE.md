@@ -799,6 +799,16 @@ src/stores.js          the life sim's storage places (#369, LIFE.stores): slots 
                        (`persist: null`); "Återställ" clears it (not in RESET_KEEP) and blocks the last write (`resetHome.going`)
 src/lifemodels.js      the life sim's models (#366): plate, cutting board, cucumber, slice, cheese, butter, bread bag, bread slice,
                        knife, frozen peas (#373), butter knife, cheese slicer (#374), drinking glass (#382: `level(kind, ml)`) — own shapes, labels of our own (`label`); `show(item)` shows the amount / package; carriers have `anchors` (their spots)
+src/mess.js            crumbs and dust (#388, LIFE-024, M3; LIFE_MESS): spots { kind crumb | dust | smear, level, x y z, surf worktop |
+                       table | floor, room, amt 0…1 } drawn as one InstancedMesh per kind (flat canvas decals in life.group, a fuller
+                       spot bigger; never a raycast target). Crumbs from the life sim's 'crumbs' event (`fromEvent`): a bite (on the
+                       table / worktop under the food, else the floor at the eater's feet — the flat's floors only, where player.js
+                       `isFree` with LIFE_MESS.margin says the visitor reaches, else `nearestFree`), a cut on the board (beside it on
+                       the worktop), a slice out of the bread bag; dust now and then (`update`: one bit every dust.every s near a
+                       wall, at most dust.perRoom spots a room). A spot near another of its kind grows (merge); past `max` the
+                       nearest grows instead: never unbounded, the draw calls fixed (perfcount's "mess cap" line). `take(x, z, r,
+                       { level, y, rate, kinds, ok })` removes it (the vacuum, the cloth), events 'add' / 'take'. Saved by amount as
+                       the life record's `x.mess` (keepPart). Off: LIFE.rules.mess = false or `&mess=0`; &life starts clean
 src/changelog.js       changelog list + the note on the freezer (newest `t` first, "Nytt" by the highest `t` seen, #341; E to read; `scrollNote`: ↑ ↓ / W S, PageUp/Down, Space,
                        Home/End scroll it, the wheel is passed on under pointer lock, #275)
 src/install.js         iPhone "add to home screen" sheet (no fullscreen API there); install link
@@ -1028,6 +1038,9 @@ tools/lifetest.html    headless test of the life sim's M1, the sandwich flow (#3
                        seated at the dining table: taken in reach, bites, put back half eaten, the used plate, 'ate', points once (#380);
                        the bin (front first, it fills, full, no knife / plate) and the whole M1 flow in the visitor's own home with a
                        page-made reload in the middle (#381)
+tools/life3test.html   headless test of the life sim's M3, clean the home: crumbs from bites on the floor at the feet (one spot that
+                       grows, its room), over the table, beside the board after a cut, saved and loaded by amount, dust near the
+                       walls where you reach (per room), the cap, the automatic mess off / &mess=0 (#388). `?only=388` runs sections
 tools/life2test.html   headless test of the life sim's M2, reset the kitchen: the drinking glass from its cabinet, filled at the
                        running tap to the brim (half-way nothing, double presses), sips, used, milk from the carton up to the brim,
                        no mixing, the carton running out, thrown away and back full, poured out at the tap, the carton saved (#382);
@@ -1390,6 +1403,7 @@ URL parameters (debugging / screenshots):
 - `&blinds=0…1` — every pleated blind drawn up that far (#273; not saved).
 - `&fries` — golden, steaming fries in the open air-fryer basket (#301).
 - `&toaster` — the toaster out on the worktop by the corner, plugged in and toasting (#401).
+- `&mess=0` — no automatic crumbs or dust (#388, LIFE.rules.mess).
 - `&life` — the life simulator's developer scenario (#365, `src/life.js` `devScenario`, `LIFE.dev`): everything at home and
   shut (not with `&open`), no cat, noon paused (unless `&time`), the visitor in the kitchen, an empty cup + the milk on the worktop, a wine glass
   on the dining table; life items on the dining table and in the drawer (`LIFE.dev.items` / `stored`) + the kitchen's stock, fresh (LIFE_FOOD, #373). The resume / F5 records are neither read nor written (`resume.js`), so the visitor's own place stays.

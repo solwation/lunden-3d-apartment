@@ -83,6 +83,8 @@ export function cookingActions(life) {
       if (food.prep === 'whole') I.set(food, { prep: 'sliced' });
       for (const t of [c.held, boardUnder(food)]) if (t && t.clean !== 'dirty') I.set(t, { clean: 'dirty' }); // food on the knife and the board (#383)
       life.bump(cut.stat ?? 'slices', made.length);
+      const bv = life.view(boardUnder(food));
+      if (bv) life.emit('crumbs', { from: 'cut', item: food, pos: bv.where().toArray() }); // (bits beside the board, #388)
       return made;
     },
     done: (c, job) => { if (job.base !== undefined && c.heldView.held) c.heldView.model.position.y = job.base; }, // (put away meanwhile: its slot placed it)
@@ -135,6 +137,7 @@ export function cookingActions(life) {
       const got = I.create(I.def(c.target).dispense, { at: 'hand' });
       if (I.isEmpty(c.target)) I.set(c.target, { pkg: 'empty' });
       sfx.rustle?.(c.targetView?.where());
+      if (c.targetView) life.emit('crumbs', { from: 'bag', item: c.target, pos: c.targetView.where().toArray() }); // (#388)
       return got;
     },
     consumes: 'one (count) out of the package', result: 'one new thing of its `dispense` type in the hand; an empty package stays (pkg empty)',
@@ -161,7 +164,7 @@ export function cookingActions(life) {
       life.emit('bite', { item: it, amount: got });
       const plate = I.get(it.machine?.plate); // (the plate it was taken from, #380: crumbs on it)
       if (plate && (plate.clean !== 'dirty' || !plate.machine.crumbs)) I.set(plate, { clean: 'dirty', machine: { crumbs: 1 } }); // food eaten off it: crumbs, dirty (#383)
-      if (plate || d.crumbs) life.emit('crumbs', { item: it, on: plate ?? null, pos: c.heldView?.where().toArray() }); // (for the crumbs on surfaces, LIFE-024)
+      if (plate || d.crumbs) life.emit('crumbs', { from: 'bite', item: it, on: plate ?? null, pos: c.heldView?.where().toArray(), feet: life.feet()?.pos }); // (crumbs on the surface under it / the floor, #388)
       if (I.isEmpty(it)) {
         const parts = it.parts.map((p) => ({ ...p })), name = I.name({ ...it, amount: d.amount });
         life.emit('ate', { item: it, type: it.type, name, parts, amount: d.amount });

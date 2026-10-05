@@ -138,3 +138,13 @@ Code in src/dishes.js (and cooking.js's bin), the test is `tools/life2test.html`
   material): three containers, one per category, only rubbish bags, each bag counted once (stats `rubbishOut`). Then a new
   bag goes in under the sink and the cycle repeats. The saved records were made smaller (a default amount and a home that is
   the slot itself are left out).
+
+## M3 – clean the home (#388 – #391)
+
+Code in src/mess.js (and the vacuum / the cloth below), the test is `tools/life3test.html`.
+
+- **#388 crumbs and dust**: **new** (src/mess.js): spots of mess with an amount on a worktop, a table or a floor, drawn as
+  one instanced decal mesh per kind with a cap (marks.js' pattern, **reused** as an idea, not its code: mess is saved).
+  Crumbs come from the life sim's existing `crumbs` event (#380, **extended**: a bite says where the eater stands; cutting
+  and the bread bag emit it too), dust gathers slowly near the walls. Reachable floor = player.js `isFree` / `nearestFree`
+  (#314, **reused**). Saved as a part of the life record (`x.mess`, `life.keepPart`). `LIFE.rules.mess` / `&mess=0` = off.

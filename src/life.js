@@ -330,6 +330,7 @@ export function devScenario(a) {
   if (glass) { glass.take(); glass.placeAt(new THREE.Vector3(D.glass[0], table, D.glass[1])); glass.model.rotation.set(0, 0, 0); }
   // the life sim's things (#366): a plate and a cucumber on the dining table; then the kitchen's stock, fresh (#373)
   for (const i of a.life.items.all()) a.life.items.remove(i, { cascade: true });
+  a.life.mess?.clear(); if (a.life.mess) a.life.mess.dustT = 0; // no crumbs or dust (#388)
   const made = {};
   for (const [type, [x, z, yaw]] of Object.entries(D.items ?? {})) made[type] = a.life.create(type, { at: 'world', pos: [x, table, z], yaw: THREE.MathUtils.degToRad(yaw) });
   for (const [type, store, slot] of D.stored ?? []) a.life.create(type, { at: 'slot', store, slot }); // in the drawer (#369)
