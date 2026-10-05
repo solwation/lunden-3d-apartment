@@ -1,7 +1,7 @@
 # Delad värld (Cloudflare Worker)
 
-Uppsatta teckningar och teckningen på skrivbordet i Sovrum 3 delas mellan alla besökare via en liten
-Cloudflare Worker med KV-lagring (#178, #119). Kattfotona är personliga och skickas aldrig (#211). Samma worker håller
+Uppsatta teckningar delas mellan besökare via en Cloudflare Worker med Durable Object-metadata och bilder i KV.
+Skrivbordsteckningen delas också; kattfoton är personliga. Samma worker håller
 en global topplista (#198): startskärmen frågar efter ett namn (valfritt) och poängen skickas. Utan den fungerar allt som förut, bara lokalt i webbläsaren.
 
 ## Slå på det
@@ -18,6 +18,15 @@ adress i `src/config.js` (`CLOUD_URL`) och frågar om ändringen ska committas o
 den är pushad. Skriptet går att köra om hur många gånger som helst – det som redan finns återanvänds.
 
 ## Bra att veta
+
+- **Privat hem:** mat, gurkor, smulor och möbler skickas inte till Workern.
+  Hemmets lokala lagring delas av flikar i samma webbläsarprofil; olika profiler/enheter har egna hem.
+  Uppsatta teckningar, skrivbordsteckningen, spelarantal och den separata topplistan är gemensamma.
+- **Teckningarnas livslängd:** 24 timmar från senaste accepterade uppsättning/flytt (servertid).
+  Läsning och återförsök av samma uppdatering förlänger inte tiden. Ett Durable Object-alarm rensar
+  utgångna poster och deras bilder; nästa synkning tar ner dem i klienterna. Befintliga teckningar
+  utan sluttid får 24 timmar när regeln först aktiveras. Gamla återförsök får HTTP 410 och kan inte
+  återuppliva en utgången teckning.
 
 - **Flytt av teckningar:** samma tecknings-id behålls. Flytten visas direkt lokalt och andra klienter
   hämtar positionerna var tionde sekund. Senaste `updated` vinner; vid samma millisekund vinner
@@ -57,7 +66,7 @@ den är pushad. Skriptet går att köra om hur många gånger som helst – det 
 | `GET /drawings/:id` | bilden |
 | `PUT /drawings/:id` | metadata + `image` (data-URL); senaste `updated` vinner |
 | `DELETE /drawings/:id` | slängd |
-| `GET` / `PUT /paper` | teckningen på skrivbordet `{ image, updated }` |
+| `GET` / `PUT /paper` | teckningen på skrivbordet `{ image, updated }` (ingen 24h-gräns) |
 | `GET /scores` | topp 20 `[{ name, score }]` |
 | `POST /scores` | `{ id, name, score }` (text/plain eller JSON) |
 | `DELETE /admin/:what` | nödbroms, kräver `ADMIN_TOKEN` |

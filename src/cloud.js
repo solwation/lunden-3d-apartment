@@ -5,9 +5,10 @@ import { BUILD } from './version.js';
 // to the Cloudflare Worker in cloudflare/ (when CLOUD_URL is set), so visitors find things others made. Silent:
 // no icon, no message — things are just there. Everything is saved locally first (posters.js, drawing.js)
 // and works without the Worker; changes go into a queue (localStorage) that is sent in order and
-// kept while offline. A pull at the start, every minute and when the tab comes back merges the server in:
+// kept while offline. A pull at the start, every ten seconds and when the tab comes back merges the server in:
 // drawings — the newer `updated` wins, a drawing gone from the server (thrown away elsewhere) comes down here
-// too; the desk sheet — the newer one wins. Cat photos are personal and never leave the browser (#211).
+// too; the desk sheet — the newer one wins. Food, mess and cat photos stay local.
+// Taped-up drawings expire on the server after 24 hours; the desk sheet does not.
 // &sync=debug logs what happens to the console.
 
 const QKEY = 'lunden.cloud.queue', PAPER_T = 'lunden.drawing.updated';
@@ -105,10 +106,12 @@ export class Cloud {
             await this.posters.addRemote({ ...current.rec, ...accepted, synced: true });
           } else {
             current.rec.revision = accepted.revision;
+            current.rec.expiresAt = accepted.expiresAt;
             await this.posters.markSynced(op.id, meta.updated);
           }
         }
       }
+      if (r.status === 410 && this.posters.byId(op.id)?.rec.updated === meta.updated) await this.posters.drop(p);
       log('put drawing', op.id, r.status);
     } else if (op.type === 'undraw') {
       const r = await this.req('DELETE', `/drawings/${op.id}`);

@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { DrawingRoom } from './worker.js';
+import worker, { DrawingRoom } from './worker.js';
 
 const original = { id: 'drawing-one', surface: 'wall', level: 0, pos: [1, 2, 3], normal: [0, 0, 1], rot: 0, time: 1791000000000, updated: 1791000000000 };
 
@@ -9,7 +9,7 @@ test('serialized drawing moves preserve latest timestamps and independent drawin
   const data = new Map();
   let gate = Promise.resolve(), imports = 0;
   const ctx = {
-    storage: { get: async (k) => structuredClone(data.get(k)), put: async (k, v) => data.set(k, structuredClone(v)) },
+    storage: { get: async (k) => structuredClone(data.get(k)), put: async (k, v) => data.set(k, structuredClone(v)), setAlarm: async () => {}, deleteAlarm: async () => {} },
     blockConcurrencyWhile(fn) { const result = gate.then(fn); gate = result.catch(() => {}); return result; },
   };
   const env = { LUNDEN: {
@@ -33,6 +33,61 @@ test('serialized drawing moves preserve latest timestamps and independent drawin
   const restarted = new DrawingRoom(ctx, env);
   await restarted.fetch(new Request('https://test/drawings'));
   assert.equal(imports, 1);
+});
+
+test('24-hour expiry is renewed by a move, not reads, retries or stale writes; alarm removes images and rejects replay', async () => {
+  const day = 86400000, realNow = Date.now;
+  let now = original.updated, alarm;
+  Date.now = () => now;
+  try {
+    const data = new Map([['drawings', [{ ...original }]]]), removed = [];
+    const ctx = { storage: {
+      get: async (k) => structuredClone(data.get(k)), put: async (k, v) => data.set(k, structuredClone(v)),
+      setAlarm: async (t) => { alarm = t; }, deleteAlarm: async () => { alarm = null; },
+    }, blockConcurrencyWhile: (fn) => fn() };
+    const room = new DrawingRoom(ctx, { LUNDEN: { delete: async (k) => removed.push(k) } });
+    const read = () => room.fetch(new Request('https://test/drawings'));
+    const move = (body) => room.fetch(new Request(`https://test/drawings/${original.id}`, { method: 'PUT', body: JSON.stringify(body) }));
+    await read(); assert.equal(alarm, now + day);
+    now += 3600000;
+    await read(); assert.equal(alarm, original.updated + day);
+    const moved = { ...original, pos: [8, 2, 3], updated: now };
+    const result = await (await move(moved)).json();
+    assert.equal(result.expiresAt, now + day);
+    const deadline = result.expiresAt;
+    now += 3600000;
+    await move(moved); await move(original);
+    assert.equal(alarm, deadline);
+    now = deadline - 1; await room.alarm(); assert.equal(data.get('drawings').length, 1);
+    now = deadline; await room.alarm();
+    assert.deepEqual(data.get('drawings'), []);
+    assert.deepEqual(removed, [`drawing:${original.id}`]);
+    assert.equal(alarm, null);
+    assert.equal((await move(moved)).status, 410);
+    assert.equal((await room.fetch(new Request(`https://test/drawings/${original.id}`))).status, 404);
+  } finally { Date.now = realNow; }
+});
+
+test('private world data has no public sync endpoint', async () => {
+  for (const path of ['life', 'mess', 'items']) {
+    for (const method of ['GET', 'PUT']) {
+      const r = await worker.fetch(new Request(`https://test/${path}`, { method, ...(method === 'PUT' ? { body: '{}' } : {}) }), {});
+      assert.ok([404, 410].includes(r.status));
+    }
+  }
+});
+
+test('desk paper still syncs and has no wall drawing TTL', async () => {
+  const data = new Map();
+  const env = { LUNDEN: {
+    get: async (k) => data.has(k) ? JSON.parse(data.get(k)) : null,
+    put: async (k, v) => data.set(k, v),
+  } };
+  const paper = { image: 'data:image/png;base64,iVBORw0KGgo=', updated: Date.now() };
+  const put = await worker.fetch(new Request('https://test/paper', { method: 'PUT', body: JSON.stringify(paper) }), env);
+  assert.equal(put.status, 200);
+  const read = await worker.fetch(new Request('https://test/paper'), env);
+  assert.deepEqual(await read.json(), paper);
 });
 
 test('two clients converge; held drawing is not duplicated; stale acknowledgement cannot mark a later move synced', async () => {

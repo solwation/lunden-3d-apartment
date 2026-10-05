@@ -23,6 +23,7 @@
 const ORIGINS = [/^https:\/\/solwation\.github\.io$/, /^http:\/\/localhost(:\d+)?$/, /^http:\/\/127\.0\.0\.1(:\d+)?$/];
 const MAX_IMAGE = 300 * 1024;  // bytes per image
 const MAX_DRAWINGS = 100;
+const DRAWING_TTL = 24 * 60 * 60 * 1000;
 const WRITES_PER_MINUTE = 30;  // per IP (per Worker instance; add a LIMITER rate-limit binding for a global one)
 const SURFACES = ['wall', 'fridge', 'freezer'];
 const SCORE_TOP = 10, MAX_SCORES = 500, SCORE_RATE = 600, SCORE_START = 3000; // points per minute / a new row's first post
@@ -123,13 +124,21 @@ const worker = {
 
     if (what === 'drawings') {
       if (m === 'GET' && !id) return json(await getList(env, 'drawings'), 200, h);
-      if (m === 'GET') return image(env, `drawing:${id}`, h);
+      if (m === 'GET') {
+        if (!(await getList(env, 'drawings')).some((d) => d.id === id)) return fail(404, 'not found', h);
+        return image(env, `drawing:${id}`, h);
+      }
       if (m === 'PUT' && id) {
         const meta = drawingMeta(id, body);
         if (!meta) return fail(400, 'bad drawing', h);
         const list = await getList(env, 'drawings'), old = list.find((d) => d.id === id);
+        const expired = !old && await env.expiredDrawing?.(id);
+        if (expired && meta.updated <= expired.updated) return fail(410, 'drawing expired', h);
         if (!old && list.length >= MAX_DRAWINGS) return fail(409, 'full', h);
         if (old && old.updated > meta.updated) return json(old, 200, h); // older news: the newer one stays
+        // Replaying an acknowledged request must not extend its lifetime.
+        if (old && old.updated === meta.updated && ['surface', 'level', 'pos', 'normal', 'rot', 'up'].every((k) => JSON.stringify(old[k]) === JSON.stringify(meta[k]))) return json(old, 200, h);
+        meta.expiresAt = Date.now() + DRAWING_TTL;
         meta.revision = (old?.revision ?? 0) + 1; // distinguish moves in the same millisecond
         if (!old) {
           const img = decodeImage(body.image);
@@ -196,19 +205,53 @@ export default worker;
 export class DrawingRoom {
   constructor(ctx, env) { this.ctx = ctx; this.env = env; }
 
+  async expire() {
+    const storage = this.ctx.storage, now = Date.now();
+    const list = await storage.get('drawings') ?? [];
+    const next = [];
+    let changed = false;
+    for (const d of list) {
+      // Existing drawings get a full day when this policy is first enabled.
+      if (!Number.isFinite(d.expiresAt)) { d.expiresAt = now + DRAWING_TTL; changed = true; }
+      if (d.expiresAt <= now) {
+        await storage.put(`expired:${d.id}`, { updated: d.updated });
+        await this.env.LUNDEN.delete(`drawing:${d.id}`);
+        changed = true;
+      } else next.push(d);
+    }
+    if (changed) await storage.put('drawings', next);
+  }
+
+  async scheduleExpiry() {
+    const list = await this.ctx.storage.get('drawings') ?? [];
+    if (list.length) await this.ctx.storage.setAlarm(Math.min(...list.map((d) => d.expiresAt)));
+    else await this.ctx.storage.deleteAlarm();
+  }
+
+  alarm() {
+    return this.ctx.blockConcurrencyWhile(async () => {
+      await this.expire();
+      await this.scheduleExpiry();
+    });
+  }
+
   fetch(request) {
     return this.ctx.blockConcurrencyWhile(async () => {
       const storage = this.ctx.storage, kv = this.env.LUNDEN;
       if (await storage.get('drawings') === undefined) {
         await storage.put('drawings', await kv.get('drawings', 'json') ?? []);
       }
+      await this.expire();
       const LUNDEN = {
         get: async (key, type) => key === 'drawings' ? await storage.get(key) : kv.get(key, type),
         put: async (key, value, options) => key === 'drawings' ? storage.put(key, JSON.parse(value)) : kv.put(key, value, options),
         delete: async (key) => key === 'drawings' ? storage.put(key, []) : kv.delete(key),
         getWithMetadata: (...args) => kv.getWithMetadata(...args),
       };
-      return worker.fetch(request, { ...this.env, DRAWINGS: undefined, LUNDEN });
+      const response = await worker.fetch(request, { ...this.env, DRAWINGS: undefined, LUNDEN,
+        expiredDrawing: (id) => storage.get(`expired:${id}`) });
+      await this.scheduleExpiry();
+      return response;
     });
   }
 }
