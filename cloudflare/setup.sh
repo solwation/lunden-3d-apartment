@@ -27,11 +27,10 @@ command -v node >/dev/null 2>&1 || die "Node.js saknas. Installera det från htt
 wr() { (cd "$HERE" && $WRANGLER "$@"); }
 
 say "Kollar inloggningen i Cloudflare"
-if wr whoami 2>&1 | grep -qiE "not authenticated|not logged in|wrangler login"; then
+if ! wr whoami; then
   echo "Du är inte inloggad – webbläsaren öppnas så att du kan logga in och godkänna wrangler."
   wr login
 fi
-wr whoami 2>&1 | grep -iE "email|account" | head -3 || true
 
 say "KV-lagringen ($KV_NAME)"
 # the id of a namespace titled $KV_NAME (some wrangler versions prefix the title with the worker name)
