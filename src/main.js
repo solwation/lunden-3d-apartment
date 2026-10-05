@@ -617,7 +617,15 @@ const cloud = new Cloud({ posters, drawing, holding: () => heldItem() === heldDr
   heldId: () => heldDrawing.held ? heldDrawing.meta?.id : null });
 heldDrawing.onDesk = (id) => posters.onDelete?.(id);
 // the global leaderboard (#198): the name on the start screen (optional), the top list there and under the stats
-const leaderboard = new Leaderboard(cloud.url, totalScore, { nameRow: document.getElementById('lb-name'), input: document.getElementById('player-name'), list: document.getElementById('lb-start') });
+const leaderboard = new Leaderboard(cloud.url, totalScore, { nameRow: document.getElementById('lb-name'), input: document.getElementById('player-name'), list: document.getElementById('lb-start'),
+  ok: document.getElementById('player-ok'), newPlayer: document.getElementById('player-new'), onNewPlayer: () => {
+    resetHome.going = true;
+    reloading = true;
+    resetStats();
+    clearLocalHome();
+    try { sessionStorage.removeItem('lunden.resetDone'); } catch { /* unavailable */ }
+    resetHome.go(location.href);
+  } });
 setStatsExtra(() => leaderboard.html());
 cloud.ready = cloud.on ? Promise.all([postersLoaded, boardLoaded]).then(() => cloud.sync()) : Promise.resolve(); // (tests wait on it)
 cat.onPet = () => { bump('petted'); if (cat.kitten) bump('kittenPets'); }; // a kitten's pat is worth more (#363)

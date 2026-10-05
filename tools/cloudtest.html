@@ -103,6 +103,8 @@ const sheet = (color) => { const c = document.createElement('canvas'); c.width =
   check(!nameRow.hidden, 'the name field is on the start screen');
   check(!d.getElementById('start-mouse').disabled && !d.getElementById('start-touch').disabled, 'starting does not need a name');
   nameIn.value = "Tilly O'Test"; nameIn.dispatchEvent(new w.Event('input'));
+  d.getElementById('player-ok').click();
+  check(nameIn.disabled && !d.getElementById('player-new').hidden, 'OK locks the name and exposes New player');
   app.stats.doors += 7;
   const myScore = app.totalScore();
   await app.leaderboard.send();

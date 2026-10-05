@@ -192,6 +192,11 @@
     #lb-name[hidden], #lb-start[hidden] { display: none; }
     #lb-name label { display: grid; gap: 4px; font-size: 13px; font-weight: 600; }
     #lb-name input { font: 15px system-ui, sans-serif; padding: 8px 10px; border: 1px solid #c8ced3; border-radius: 6px; }
+    #lb-name .player-controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    #lb-name input { flex: 1; min-width: 100px; width: 0; }
+    #lb-name input:disabled { opacity: 1; color: var(--ink); background: #e8f2f6; }
+    #lb-name button { border: 0; border-radius: 6px; padding: 10px 12px; min-height: 44px; cursor: pointer; background: var(--accent); color: #fff; font: 600 14px system-ui, sans-serif; }
+    #lb-name button[hidden] { display: none; }
     ol.lb { list-style: none; margin: 6px 0 10px; padding: 0; font-size: 13px; }
     ol.lb li { display: flex; justify-content: space-between; gap: 10px; padding: 1px 0; }
     ol.lb li.me { font-weight: 700; }
@@ -387,7 +392,14 @@
       </div>
       <p class="resume" id="resume" hidden>Du fortsätter där du var.
         <button id="restart" class="linkish">Börja från start</button></p>
-      <div id="lb-name" hidden><label>Ditt namn på topplistan <input id="player-name" type="text" placeholder="valfritt" autocomplete="nickname" spellcheck="false"></label></div>
+      <div id="lb-name" hidden>
+        <label for="player-name">Ditt namn på topplistan</label>
+        <div class="player-controls">
+          <input id="player-name" type="text" placeholder="valfritt" autocomplete="nickname" spellcheck="false">
+          <button id="player-ok" type="button">OK</button>
+          <button id="player-new" type="button" hidden title="Avsluta spelaren och börja en ny session med 0 poäng">Ny spelare</button>
+        </div>
+      </div>
       <ol id="lb-start" class="lb" hidden></ol>
       <div class="start">
         <button id="start-mouse" class="go">Mus &amp; tangentbord</button>
