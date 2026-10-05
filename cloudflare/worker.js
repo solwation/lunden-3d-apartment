@@ -17,7 +17,7 @@
 //                                  — the emergency brake; ADMIN_TOKEN is a Worker secret (cloudflare/setup.sh sets one)
 //
 // KV keys: 'drawings' (the metadata list), 'drawing:<id>' (image bytes, metadata { type }), 'paper' (JSON),
-// 'scores' (all rows { id, name, score, updated }, the best MAX_SCORES).
+// 'scores' (all rows { id, name, score, updated }, the best MAX_SCORES), 'presence:<id>' (short-lived visitors).
 // Cat photos are personal and stay in each visitor's browser (#211).
 
 const ORIGINS = [/^https:\/\/solwation\.github\.io$/, /^http:\/\/localhost(:\d+)?$/, /^http:\/\/127\.0\.0\.1(:\d+)?$/];
@@ -25,7 +25,7 @@ const MAX_IMAGE = 300 * 1024;  // bytes per image
 const MAX_DRAWINGS = 100;
 const WRITES_PER_MINUTE = 30;  // per IP (per Worker instance; add a LIMITER rate-limit binding for a global one)
 const SURFACES = ['wall', 'fridge', 'freezer'];
-const SCORE_TOP = 20, MAX_SCORES = 500, SCORE_RATE = 600, SCORE_START = 3000; // points per minute / a new row's first post
+const SCORE_TOP = 10, MAX_SCORES = 500, SCORE_RATE = 600, SCORE_START = 3000; // points per minute / a new row's first post
 const ID = /^[A-Za-z0-9-]{6,64}$/;
 
 const recent = new Map(); // ip → [timestamps] (this isolate only)
@@ -93,11 +93,28 @@ export default {
       if (await limited(request, env)) return fail(429, 'too many writes', h);
     }
     let body = null;
-    if (m === 'PUT' || m === 'POST') {
+    if ((m === 'PUT' || m === 'POST') && !(what === 'presence' && id)) {
       const len = Number(request.headers.get('Content-Length') ?? 0);
       if (len > MAX_IMAGE * 1.5) return fail(413, 'too big', h);
       try { body = await request.json(); } catch { return fail(400, 'bad json', h); }
       if (!body || typeof body !== 'object') return fail(400, 'bad body', h);
+    }
+
+    if (what === 'presence') {
+      if (m === 'GET' && !id) {
+        let count = 0, cursor;
+        do {
+          const page = await env.LUNDEN.list({ prefix: 'presence:', ...(cursor ? { cursor } : {}) });
+          count += page.keys.length;
+          cursor = page.list_complete ? '' : page.cursor;
+        } while (cursor);
+        return json({ count }, 200, h);
+      }
+      if (m === 'PUT' && id) {
+        await env.LUNDEN.put(`presence:${id}`, '', { expirationTtl: 120 });
+        const page = await env.LUNDEN.list({ prefix: 'presence:' });
+        return json({ count: page.keys.length }, 200, h);
+      }
     }
 
     if (what === 'drawings') {
@@ -137,7 +154,7 @@ export default {
     }
 
     if (what === 'scores' && !id) {
-      const top = (l) => l.sort((a, b) => b.score - a.score).slice(0, SCORE_TOP).map(({ name, score }) => ({ name, score }));
+      const top = (l) => l.sort((a, b) => b.score - a.score).slice(0, SCORE_TOP).map(({ name, score, updated }) => ({ name, score, updated }));
       if (m === 'GET') return json(top(await getList(env, 'scores')), 200, h);
       if (m === 'POST') {
         const name = typeof body.name === 'string' ? body.name.replace(/[\u0000-\u001f<>&"]/g, '').trim().slice(0, 20) : '';

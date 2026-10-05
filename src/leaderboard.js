@@ -69,7 +69,10 @@ export class Leaderboard {
 
   rows() {
     const me = this.name;
-    return this.top.map((r, i) => `<li${r.name === me ? ' class="me"' : ''}><span>${i + 1}. ${esc(r.name)}</span><b>${Number(r.score) | 0}</b></li>`).join('');
+    return this.top.map((r, i) => {
+      const date = Number.isFinite(r.updated) ? new Date(r.updated).toLocaleDateString('sv-SE') : '';
+      return `<li${r.name === me ? ' class="me"' : ''}><span>${i + 1}. ${esc(r.name)}${date ? ` <small>${date}</small>` : ''}</span><b>${Number(r.score) | 0}</b></li>`;
+    }).join('');
   }
 
   /** The statistics panel's part (stats.js renders it under its rows). */
