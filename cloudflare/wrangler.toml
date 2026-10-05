@@ -7,7 +7,7 @@ workers_dev = true
 
 [[kv_namespaces]]
 binding = "LUNDEN"
-id = "SET_BY_SETUP_SH"
+id = "838d93b9358b42418f6f89fff6634ae1"
 
 # Optional: a global per-IP write limit (otherwise the Worker counts per instance). Uncomment to use
 # Cloudflare's rate-limiting binding:

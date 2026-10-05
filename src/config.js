@@ -1514,7 +1514,7 @@ export const MILK = { w: 0.07, h: 0.195, gable: 0.03, blue: '#2f6fc4', held: { x
 // The shared world (#178, #119, src/cloud.js): the address of the Cloudflare Worker in cloudflare/ (taped-up
 // drawings, the desk sheet, a feed of cat photos). Empty = off: everything stays in this browser only. Written by
 // cloudflare/setup.sh; keep it on one line. Locally (BUILD 'dev') it is off unless the page has &cloud=<url>.
-export const CLOUD_URL = '';
+export const CLOUD_URL = 'https://lunden-l1007.olw.workers.dev';
 
 // The score (#198, the global leaderboard; #197 shows it in the HUD), balanced (the user): you can grind for ever, but
 // what is easy to repeat gives little and what is rare or hard gives a lot. Our picks.
