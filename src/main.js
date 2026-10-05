@@ -616,7 +616,6 @@ const boardLoaded = board.load();
 const cloud = new Cloud({ posters, drawing, holding: () => heldItem() === heldDrawing });
 // the global leaderboard (#198): the name on the start screen (optional), the top list there and under the stats
 const leaderboard = new Leaderboard(cloud.url, totalScore, { nameRow: document.getElementById('lb-name'), input: document.getElementById('player-name'), list: document.getElementById('lb-start') });
-const presence = new Presence(cloud.url, document.getElementById('presence'));
 setStatsExtra(() => leaderboard.html());
 cloud.ready = cloud.on ? Promise.all([postersLoaded, boardLoaded]).then(() => cloud.sync()) : Promise.resolve(); // (tests wait on it)
 cat.onPet = () => { bump('petted'); if (cat.kitten) bump('kittenPets'); }; // a kitten's pat is worth more (#363)
@@ -1545,6 +1544,7 @@ document.getElementById('furniture-btn').addEventListener('click', () => toggleF
 const statsEl = document.getElementById('stats'), statsBody = document.getElementById('stats-body');
 setBadgeElement(document.getElementById('badges'));
 setScoreElement(document.getElementById('score')); // points, top left (#197)
+const presence = new Presence(cloud.url, document.getElementById('presence'));
 let statsPinned = false;
 // the minimap is part of the same "extra HUD" (#85): shown with the stats; K shows the map on its own
 let mapPinned = false;
