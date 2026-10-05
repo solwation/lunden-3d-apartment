@@ -35,6 +35,8 @@ dyker upp för att öppna och stänga dörrar. 📊 visar statistiken.
 <kbd>E</kbd> så får du klappa den. 🐈 Statistiken (katter, dörrar, steg …) sparas i webbläsaren; varje
 sak du gör visas som en liten bricka ("✋ Klappat katt +1").
 
+*Avsluta* på Escape-menyn försöker stänga fönstret. Om webbläsaren blockerar det visas hjälp för att stänga manuellt.
+
 *Återställ* på startskärmen ställer tillbaka hela hemmet som vid första besöket (dörrar, lampor, saker,
 gardiner, möblerna, klockan) — uppsatta teckningar, poängen, namnet på topplistan och kattfotona finns kvar.
 

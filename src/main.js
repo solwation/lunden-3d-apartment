@@ -1857,6 +1857,14 @@ const resetHome = {
     this.go(location.href);
   },
 };
+// Call close directly in the user gesture. Ordinary browser tabs may refuse it;
+// keep the menu usable and explain how to close manually in that case.
+onTap(document.getElementById('quit'), () => {
+  keepSession();
+  if (life.dirty) life.flush();
+  window.close();
+  setTimeout(() => { if (!window.closed) document.getElementById('quit-help').hidden = false; }, 300);
+});
 onTap(document.getElementById('reset-home'), () => resetHome.ask());
 onTap(document.getElementById('reset-no'), () => resetHome.cancel());
 onTap(document.getElementById('reset-yes'), () => resetHome.confirm());
