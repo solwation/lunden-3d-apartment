@@ -1,4 +1,9 @@
 [
+  {"id": 438, "date": "2026-10-05", "text": "Spelarnamnet låses när du trycker OK, och Ny spelare sparar det förra resultatet och börjar om med noll poäng i ett återställt hem."},
+  {"id": 437, "date": "2026-10-05", "text": "Uppsatta teckningar försvinner efter ett dygn om ingen flyttar dem."},
+  {"id": 436, "date": "2026-10-05", "text": "Teckningar delas nu mellan besökare, och när någon flyttar en teckning uppdateras platsen även hos de andra."},
+  {"id": 435, "date": "2026-10-05", "text": "Topplistan visar de tio bästa resultaten med datum."},
+  {"id": 434, "date": "2026-10-05", "text": "Vid poängen ser du nu hur många som besöker lägenheten just nu."},
   {"id": 433, "date": "2026-10-05", "text": "Escape-menyn har nu en Avsluta-knapp som försöker stänga fönstret och visar hjälp om webbläsaren blockerar det."},
   {"id": 432, "date": "2026-10-05", "text": "Trapphuset vid portiken följer nu ritningarna: en rak trappa per våning längs väggen och en gång tillbaka till hissen."},
   {"id": 431, "date": "2026-10-05", "text": "Det blir smulor där man äter och skär, och lite damm samlas längs väggarna med tiden."},
