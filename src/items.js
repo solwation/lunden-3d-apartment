@@ -120,6 +120,11 @@ export class Items {
 
   /** What occupies a slot / carrier spot (`place` of kind 'slot' or 'on'), other than `except`. */
   occupant(place, except = null) {
+    if (place.at === 'slot') {
+      const s = this.store(place.store);
+      const occ = s?.occupant?.(place.slot, except);
+      if (occ) return occ;
+    }
     for (const i of this.items.values()) if (i !== except && samePlace(i.place, place)) return i;
     return null;
   }

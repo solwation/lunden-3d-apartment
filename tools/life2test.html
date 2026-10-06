@@ -332,6 +332,27 @@ if (want(384)) try {
   check(row('take', glass)?.reason === 'Öppna diskmaskinen först' && row('take', knife)?.reason === 'Öppna diskmaskinen först', `the door shut: "${row('take', glass)?.reason}"`);
   open(door); open(upper);
   check(!row('take', glass)?.reason, 'the door down and the rack out: the glass can be taken');
+  // a coffee cup in the upper rack (#455, LIFE-020b)
+  const cup = A.cups.cups.find((c) => c.state === 'cabinet');
+  cup.take(); step(1 / 60);
+  cup.dirty = true; cup.show();
+  cup.contents.set('coffee', 0.5);
+  open(lower);
+  check(row('putIn', S.dwLower.target)?.reason === 'Glas och koppar i överkorgen', `a cup at the lower rack: "${row('putIn', S.dwLower.target)?.reason}"`);
+  check(row('putIn', S.dwUpper.target)?.reason === 'Häll ut det som är i koppen först', `a cup with coffee: "${row('putIn', S.dwUpper.target)?.reason}"`);
+  cup.contents.clear();
+  check(run('putIn', S.dwUpper.target) === true && cup.state === 'dishwasher', 'the dirty cup in the upper rack');
+  close(upper); A.scene.updateMatrixWorld(true);
+  check(cup.blocked && cup.blockedText === 'Dra ut överkorgen först', `upper rack shut: "${cup.blockedText}"`);
+  close(door);
+  check(cup.blocked && cup.blockedText === 'Öppna diskmaskinen först', `door shut: "${cup.blockedText}"`);
+  open(door); open(upper);
+  check(!cup.blocked, 'open: the cup can be taken');
+  cup.take(); step(1 / 60);
+  check(cup.held && cup.dirty, 'cup taken into hand, still dirty');
+  const cab = A.cups.cabinet;
+  if (!cab.isOpen) cab.toggle();
+  check(cab.blocked && cab.blockedText === 'Diska den först', `cabinet refuses dirty cup: "${cab.blockedText}"`);
   check(I.audit().length === 0, `audit: ${I.audit().join('; ') || 'ok'}`);
   f.remove();
 } catch (e) { pass = false; lines.push(`FAIL #384 error ${e.stack}`); }
@@ -350,6 +371,9 @@ if (want(385)) try {
   const glass = life.create('glass', { at: 'slot', store: 'dwUpper', slot: 0 }, { clean: 'dirty' });
   const knife = I.all().find((i) => i.type === 'knife');
   I.set(knife, { clean: 'dirty' }); I.move(knife, { at: 'slot', store: 'dwTray', slot: 0 }, { ignoreShut: true });
+  const cup = A.cups.cups.find((c) => c.state === 'cabinet');
+  cup.dirty = true; cup.show();
+  S.dwUpper.parkCup(cup, 1);
   open(door);
   check(st('dwStart')?.reason === 'Stäng luckan först', `the door down: "${st('dwStart')?.reason}"`);
   close(door);
@@ -383,13 +407,24 @@ if (want(385)) try {
   const p2 = I.get(plate.id), k2 = I.get(knife.id), g2 = I.get(glass.id);
   check(P.state === 'done' && p2.clean === 'clean' && !p2.machine.crumbs && k2.clean === 'clean' && !P.spot.visible && (A.stats.dishwasher ?? 0) === n0 + 1, `done: the plate ${p2.clean} (no crumbs), the knife ${k2.clean}, counted`);
   check(g2.clean === 'dirty', `the glass taken out mid-run: still ${g2.clean}`);
+  check(!cup.dirty, 'the cup in the upper rack is clean after the programme');
   check(st('dwStart')?.label === 'starta diskmaskinen igen' && st('dwStart')?.reason === 'Allt i maskinen är redan rent', `done: "${st('dwStart')?.label}" – "${st('dwStart')?.reason}"`);
-  // unloading: the clean plate into its cabinet
-  open(door); open(lower);
+  // unloading: the clean plate into its cabinet, the clean cup into the cup cabinet
+  open(door); open(lower); open(upper);
   life.view(p2).take(); step(1 / 60);
   open(lid((l) => l.stock === 'platesLife'));
   check(row('putIn', S.plates.target)?.reason === undefined || !row('putIn', S.plates.target)?.reason, `the clean plate at its cabinet: "${row('putIn', S.plates.target)?.reason ?? 'ok'}"`);
   check(run('putIn', S.plates.target) === true && p2.place.store === 'plates', 'unloaded into the plate cabinet');
+  cup.take(); step(1 / 60);
+  const cupCab = A.cups.cabinet;
+  if (!cupCab.isOpen) cupCab.toggle();
+  const other = A.cups.cups.find((c) => c !== cup && c.state === 'cabinet');
+  if (other) { Object.assign(other, { state: 'spare', slot: null }); other.model.removeFromParent(); }
+  check(!cupCab.blocked, 'cabinet accepts clean cup');
+  cup.goHome();
+  check(cup.state === 'cabinet' && !cup.dirty, 'unloaded clean cup into cabinet');
+  if (cupCab.isOpen) cupCab.toggle();
+  close(upper);
   // F stops a programme: nothing washed
   close(lower); close(door);
   I.set(k2, { clean: 'dirty' });

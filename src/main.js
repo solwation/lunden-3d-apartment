@@ -1481,7 +1481,7 @@ function updateFocus() {
       if (!hit || spot.distance <= hit.distance + 0.05) focused = { name: '', kind: 'place', blocked: true, blockedText: 'Miele får inte vara på bordet' };
       spot = null;
     } else if (!spot) { const f = floorSpot(); if (f && f.distance < reach && !behindWall(f.point)) spot = f; } // a table top is always above (before) the floor
-    const lifeAim = (focused?.kind === 'life' || (focused?.kind === 'tap' && life.items.held())) && !!focused.options?.().some((a) => !a.reason); // (#382: a glass at the tap) // a plate it can go on (#367): that, not the table under it
+    const lifeAim = (focused?.kind === 'life' || (focused?.kind === 'tap' && (life.items.held() || heldItem()?.isCup))) && (!!focused.options?.().some((a) => !a.reason) || !!focused.store); // (#382: a glass at the tap) // a plate it can go on (#367): that, not the table under it
     if (spot && !lifeAim && (!hit || spot.distance <= hit.distance + 0.05)) {
       snapSpot(spot, top && spot.point.y > LEVELS[Math.max(0, player.level)].floor + 0.05 ? top.object : null); // on a grid (#368)
       placeTarget = { name: `${item.name} här`, kind: 'place', verb: item.placeVerb ?? 'lägga ner', item, point: spot.point, yaw: placeYaw() };

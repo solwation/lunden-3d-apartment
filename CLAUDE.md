@@ -756,8 +756,8 @@ src/dishwasher.js      the dishwasher (#384, DISHWASHER): `buildRacks` (interior
                        glasses upside down), 'dwTray' (4 tools); a store's `refuse(item)` (life.js putIn): not `dishwasherSafe`
                        ("Skärbrädan diskas för hand"), the wrong rack ("Tallrikar i underkorgen", "Glas i överkorgen", "Bestick i
                        bestickkorgen"), food / a drink left (refused: "Skrapa av … först", "Häll ut … först"); taking needs the door
-                       down and the rack out ("Öppna diskmaskinen först", "Dra ut … först"). The coffee cups are not life items and
-                       are washed by hand only (#455)
+                       down and the rack out ("Öppna diskmaskinen först", "Dra ut … först"). Coffee cups (src/cups.js, #455)
+                       can also be parked in the upper rack ('dwUpper', upside down) and come out clean after a programme.
                        `DishProgramme` (#385, __app.dishProg): E on the panel (a pick box on the door's top band, `door.panelAt`)
                        "Starta diskmaskinen" (door shut, something used / dirty in it) → running for DISHWASHER.seconds of game
                        time: sfx.dishwasher (hum + swishes), a red spot on the floor, an LED; the door opened = paused, shut = on

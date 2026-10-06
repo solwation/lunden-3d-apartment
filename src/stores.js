@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { LIFE } from './config.js';
+import { heldItem } from './holdable.js';
 
 // The life simulator's storage places (#369, LIFE-005): explicit slots with a size class, no packing physics. Each store is
 // registered with the item rules (items.js addStore: name, slots, isOpen, the Swedish "Öppna … först" / "… är full") and
@@ -164,7 +165,7 @@ export function buildStores(life, world) {
   if (dwDoor) {
     const [lower, upper] = dwDoor.racks;
     const right = { plate: 'Tallrikar i underkorgen', glass: 'Glas i överkorgen', tool: 'Bestick i bestickkorgen' };
-    const rightText = (it) => Object.entries(right).find(([t]) => I.has(it, t) || it.type === t)?.[1] ?? `${cap(I.name(it))} ska inte i diskmaskinen`;
+    const rightText = (it) => (it.isCup ? 'Glas och koppar i överkorgen' : Object.entries(right).find(([t]) => I.has(it, t) || it.type === t)?.[1] ?? `${cap(I.name(it))} ska inte i diskmaskinen`);
     const the = (k) => ({ water: 'vattnet', milk: 'mjölken' })[k] ?? 'det';
     for (const [id, rack, accept, name, full] of [['dwLower', lower, 'plate', 'underkorgen', 'Underkorgen är full'], ['dwUpper', upper, 'glass', 'överkorgen', 'Överkorgen är full'], ['dwTray', upper, 'tool', 'bestickkorgen', 'Bestickkorgen är full']]) {
       const list = rack.slots.filter((s) => s.accepts.includes(accept));
@@ -172,14 +173,19 @@ export function buildStores(life, world) {
       const bb = new THREE.Box3();
       for (const s of list) bb.expandByPoint(s.pos);
       bb.expandByVector(new THREE.Vector3(0.09, 0.08, 0.09));
-      const box = pickBox(rack.object, bb.min, bb.max, () => holding() && rack.isOpen && dwDoor.isOpen);
+      const box = pickBox(rack.object, bb.min, bb.max, () => (holding() || !!heldItem()?.isCup) && rack.isOpen && dwDoor.isOpen);
       add(id, { name, fullText: full, isOpen: () => dwDoor.isOpen && rack.isOpen }, slots, box);
       const st = I.store(id);
       Object.defineProperty(st, 'shutText', { get: () => (dwDoor.isOpen ? `Dra ut ${rack.name} först` : 'Öppna diskmaskinen först'), configurable: true });
       Object.assign(st, {
         dishwasher: true,
-        putLabel: (held) => `ställa ${I.name(held)} i ${name}`,
+        putLabel: (held) => `ställa ${held?.isCup ? 'koppen' : I.name(held)} i ${name}`,
         refuse: (it) => { // why it may not go in here, or null
+          if (it.isCup) {
+            if (accept !== 'glass') return rightText(it);
+            if (it.fill > 0.01) return 'Häll ut det som är i koppen först';
+            return null;
+          }
           if (!I.has(it, 'dishwasherSafe')) return `${cap(I.name(it))} diskas för hand`;
           if (!(I.has(it, accept) || it.type === accept)) return rightText(it);
           if (I.children(it).length) return `Skrapa av ${I.name(it)} först`;
@@ -187,6 +193,32 @@ export function buildStores(life, world) {
           return null;
         },
       });
+      if (id === 'dwUpper') {
+        const parkedCups = new Map();
+        st.parkedCups = parkedCups;
+        st.occupant = (slot) => parkedCups.get(slot) ?? null;
+        st.freeSlot = () => {
+          for (let k = 0; k < slots.length; k++) {
+            if (!parkedCups.has(k) && !I.occupant({ at: 'slot', store: 'dwUpper', slot: k })) return k;
+          }
+          return -1;
+        };
+        st.parkCup = (cup, slot) => {
+          parkedCups.set(slot, cup);
+          cup.parkInRack?.(rack, slot, life.anchors.get('dwUpper')(slot), st);
+        };
+        st.unparkCup = (cup) => {
+          for (const [slot, c] of parkedCups.entries()) {
+            if (c === cup) {
+              parkedCups.delete(slot);
+              break;
+            }
+          }
+        };
+        out[id].parkCup = st.parkCup;
+        out[id].unparkCup = st.unparkCup;
+        out[id].parkedCups = parkedCups;
+      }
       st.slots.forEach((s) => { s.accepts = [accept]; });
     }
   }

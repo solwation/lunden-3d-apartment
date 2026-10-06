@@ -355,19 +355,43 @@ function baseActions(life) {
     consumes: 'nothing', result: 'the held thing lies on the carrier (a free spot), its own place left',
   });
   A.define({
-    id: 'putIn', order: 5, label: (c) => I.store(c.raw.store)?.putLabel?.(c.held) ?? `lägga ${nm(c.held)} i ${I.store(c.raw.store)?.name ?? ''}`,
-    applies: (c) => !!c.held && !!c.raw?.store,
+    id: 'putIn', order: 5,
+    label: (c) => {
+      const held = c.held ?? c.heldView;
+      return I.store(c.raw.store)?.putLabel?.(held) ?? `lägga ${nm(c.held)} i ${I.store(c.raw.store)?.name ?? ''}`;
+    },
+    applies: (c) => (!!c.held || !!c.heldView?.isCup) && !!c.raw?.store,
     check: (c) => {
       const s = I.store(c.raw.store);
       if (s.isOpen && !s.isOpen()) return s.shutText;
-      const no = s.refuse?.(c.held); // (a store's own rule: the dishwasher's racks, #384)
+      const held = c.held ?? c.heldView;
+      const no = s.refuse?.(held); // (a store's own rule: the dishwasher's racks, #384)
       if (no) return no;
-      if (s.cleanOnly && LIFE.rules.washFirst && c.held.clean && c.held.clean !== 'clean') return 'Diska den först'; // (#383)
+      if (s.cleanOnly && LIFE.rules.washFirst && c.held?.clean && c.held.clean !== 'clean') return 'Diska den först'; // (#383)
+      if (c.heldView?.isCup) {
+        if (s.id !== 'dwUpper') return `${held.name ? cap(held.name) : 'Koppen'} ska inte i ${s.name}`;
+        const slot = s.freeSlot ? s.freeSlot(held) : -1;
+        return slot >= 0 ? null : s.fullText;
+      }
       if (I.freeSlot(s.id, c.held) >= 0) return null;
       const fits = s.slots.some((sl) => I.size(c.held) <= (SIZES[sl.size ?? 'm'] ?? SIZES.m));
       return fits ? s.fullText : `${nm(c.held)[0].toUpperCase()}${nm(c.held).slice(1)} får inte plats i ${s.name}`;
     },
-    run: (c) => { I.move(c.held, { at: 'slot', store: c.raw.store, slot: I.freeSlot(c.raw.store, c.held) }); sfx.click(c.life.camera.position); },
+    run: (c) => {
+      if (c.heldView?.isCup) {
+        const s = I.store(c.raw.store);
+        const slot = s.freeSlot ? s.freeSlot(c.heldView) : -1;
+        if (slot >= 0) {
+          s.parkCup?.(c.heldView, slot);
+          sfx.click(c.life.camera.position);
+          return true;
+        }
+        return false;
+      }
+      I.move(c.held, { at: 'slot', store: c.raw.store, slot: I.freeSlot(c.raw.store, c.held) });
+      sfx.click(c.life.camera.position);
+      return true;
+    },
     consumes: 'nothing', result: 'the held thing in the store\'s first free slot that takes it (its size class)',
   });
   A.define({

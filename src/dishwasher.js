@@ -143,7 +143,7 @@ export class DishProgramme {
       id: 'dwStart', order: 0,
       label: () => (self.state === 'done' ? 'starta diskmaskinen igen' : 'starta diskmaskinen'),
       applies: (c) => !!c.raw?.dishpanel && !self.busy,
-      check: () => (door.isOpen ? 'Stäng luckan först' : dirtyInside().length ? null : self.inside().length ? 'Allt i maskinen är redan rent' : 'Diskmaskinen är tom'),
+      check: () => (door.isOpen ? 'Stäng luckan först' : (dirtyInside().length + self.dirtyCupsInside().length) ? null : (self.inside().length + self.cupsInside().length) ? 'Allt i maskinen är redan rent' : 'Diskmaskinen är tom'),
       run: () => self.start(),
       consumes: 'nothing', result: 'a programme of DISHWASHER.seconds game s; what is in it now is clean at the end',
     });
@@ -162,10 +162,14 @@ export class DishProgramme {
   get running() { return this.state === 'running'; }
   /** The life items in its racks. */
   inside() { return this.life.items.all().filter((it) => it.place.at === 'slot' && STORES.includes(it.place.store)); }
+  /** The coffee cups in its upper rack. */
+  cupsInside() { const st = this.life.items.store('dwUpper'); return st?.parkedCups ? [...st.parkedCups.values()] : []; }
+  dirtyCupsInside() { return this.cupsInside().filter((c) => c.dirty); }
 
   start() {
     if (this.busy || this.door.isOpen) return false;
     this.ids = this.inside().map((it) => it.id);
+    this.cupsAtStart = this.cupsInside().slice();
     this.left = D.seconds;
     this.state = 'running';
     this.sfx.click(this.where());
@@ -185,7 +189,14 @@ export class DishProgramme {
       if (it.clean !== 'clean') washed.push(it.id);
       I.set(it, { clean: 'clean', machine: m });
     }
-    this.state = 'done'; this.left = 0; this.ids = [];
+    for (const c of this.cupsInside()) {
+      if (!this.cupsAtStart?.includes(c)) continue;
+      if (c.dirty) {
+        washed.push('cup');
+        c.wash();
+      }
+    }
+    this.state = 'done'; this.left = 0; this.ids = []; this.cupsAtStart = [];
     this.sfx.pling(this.where(), 0.8);
     this.say('Disken är klar');
     this.life.bump('dishwasher', 1);
@@ -194,7 +205,7 @@ export class DishProgramme {
   }
 
   /** F: stopped, nothing washed. */
-  cancel() { if (this.busy) { this.state = 'idle'; this.left = 0; this.ids = []; this.life.dirty = true; } this.sounds(); }
+  cancel() { if (this.busy) { this.state = 'idle'; this.left = 0; this.ids = []; this.cupsAtStart = []; this.life.dirty = true; } this.sounds(); }
 
   sounds() {
     const on = this.state === 'running';
@@ -213,10 +224,11 @@ export class DishProgramme {
 
   save() { return this.state === 'idle' ? null : { s: this.state, ...(this.busy ? { left: Math.round(this.left * 10) / 10, ids: this.ids } : {}) }; }
   load(v) {
-    if (!v || typeof v !== 'object' || !['running', 'paused', 'done'].includes(v.s)) { this.state = 'idle'; this.left = 0; this.ids = []; this.sounds(); return; }
+    if (!v || typeof v !== 'object' || !['running', 'paused', 'done'].includes(v.s)) { this.state = 'idle'; this.left = 0; this.ids = []; this.cupsAtStart = []; this.sounds(); return; }
     this.state = v.s;
     this.left = Number.isFinite(v.left) ? Math.max(0, Math.min(D.seconds, v.left)) : 0;
     this.ids = Array.isArray(v.ids) ? v.ids.filter((x) => typeof x === 'string') : [];
+    this.cupsAtStart = this.busy ? this.cupsInside().slice() : [];
     if (this.busy && this.left <= 0) this.left = 0.01;
     this.sounds();
   }

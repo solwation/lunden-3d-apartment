@@ -249,10 +249,23 @@ export class Cup {
   /** Pouring is possible: a source in the hand and the cup standing out (not in the cabinet, not in the hand). */
   get pourable() { return !!this.source && this.state === 'placed'; }
   get blocked() {
+    if (this.state === 'dishwasher') {
+      const s = this.rackStore;
+      if (s?.isOpen && !s.isOpen()) return true;
+      return handBusy(this);
+    }
     if (!this.pourable) return handBusy(this);
     return this.jug ? this.fill >= 0.99 : pourAmount('cup', this.source.drink, this.fill) <= 0;
   }
-  get blockedText() { return this.pourable ? 'Koppen är full' : null; }
+  get blockedText() {
+    if (this.state === 'dishwasher') {
+      const s = this.rackStore;
+      if (s?.isOpen && !s.isOpen()) return s.shutText;
+      if (handBusy(this)) return 'Lägg ifrån dig det du håller först';
+      return null;
+    }
+    return this.pourable ? 'Koppen är full' : null;
+  }
   get verb() {
     if (this.pourable && this.jug) return this.jug.fill > 0.05 ? 'hälla kaffe i' : 'koka kaffe först, sedan hälla i';
     if (this.pourable) return `hälla ${drinkName(this.source.drink)} i`;
@@ -311,8 +324,34 @@ export class Cup {
     sfx.pour(at, D.secs);
   }
 
+  parkInRack(rack, slot, anchor, rackStore) {
+    this.held = false;
+    if (heldItem() === this) setHeld(null);
+    this.state = 'dishwasher';
+    this.rack = rack;
+    this.rackSlot = slot;
+    this.rackStore = rackStore;
+    anchor.add(this.model);
+    this.model.position.set(0, 0.02, 0);
+    this.model.rotation.set(0, 0, 0);
+  }
+
+  unpark() {
+    if (this.state === 'dishwasher') {
+      this.rackStore?.unparkCup?.(this);
+      this.rack = null;
+      this.rackSlot = null;
+      this.rackStore = null;
+      this.state = 'placed';
+    }
+  }
+
   take() {
     if (handBusy(this)) return; // put down what you hold first (#102)
+    if (this.state === 'dishwasher') {
+      if (this.blocked) return;
+      this.unpark();
+    }
     setHeld(this);
     this.held = true;
     this.state = 'held';
@@ -326,6 +365,7 @@ export class Cup {
 
   /** Put it down at a world point on a table top / the floor (`y` = the surface's height), standing. */
   placeAt(p, yaw = Math.random() * 6) {
+    if (this.state === 'dishwasher') this.unpark();
     this.held = false;
     if (heldItem() === this) setHeld(null);
     this.state = 'placed';
@@ -339,6 +379,7 @@ export class Cup {
 
   /** Back on a shelf spot in the cabinet (#141): `slot`, or the first free one (cups.js buildCups sets `freeSlot`). */
   goHome(slot = this.slot ?? Math.max(0, this.freeSlot?.() ?? 0)) {
+    if (this.state === 'dishwasher') this.unpark();
     this.held = false;
     if (heldItem() === this) setHeld(null);
     this.state = 'cabinet';
@@ -351,7 +392,10 @@ export class Cup {
   }
 
   /** Shot to pieces (#263, breaking.js): out of the scene like a spare cup; the cabinet gets a new one when it opens. */
-  shatter() { this.held = false; this.state = 'spare'; this.slot = null; this.model.removeFromParent(); }
+  shatter() {
+    if (this.state === 'dishwasher') this.unpark();
+    this.held = false; this.state = 'spare'; this.slot = null; this.model.removeFromParent();
+  }
   mend() {}
 
   /** Another thing was taken: the cup goes down on the worktop. */
@@ -490,7 +534,13 @@ export function buildCups(scene, camera, world, cabinetBox) {
   }
   /** F: every cup outside the cabinet goes, the cabinet is full. */
   function reset() {
-    for (const c of cups) if (c.state === 'placed') { c.state = 'spare'; c.model.removeFromParent(); }
+    for (const c of cups) {
+      if (c.state === 'placed' || c.state === 'dishwasher') {
+        c.unpark?.();
+        c.state = 'spare';
+        c.model.removeFromParent();
+      }
+    }
     refill();
   }
   cab.cab.onOpen = refill;
