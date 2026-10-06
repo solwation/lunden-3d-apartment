@@ -211,15 +211,16 @@
     #stats { position: fixed; inset: 0; z-index: 30; background: rgba(20, 35, 45, 0.94); color: #fff;
       padding: calc(16px + var(--st)) calc(24px + var(--sr)) calc(20px + var(--sb)) calc(24px + var(--sl));
       font-size: 14px; line-height: 1.5; pointer-events: auto; backdrop-filter: blur(4px);
-      display: flex; flex-direction: column; overflow: hidden; box-sizing: border-box; }
+      display: flex; flex-direction: column; height: 100vh; height: 100dvh; max-height: 100vh; max-height: 100dvh;
+      overflow: hidden; box-sizing: border-box; }
     #stats[hidden] { display: none; }
-    #stats .stats-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,.2); }
+    #stats .stats-header { flex: none; display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,.2); }
     #stats .stats-header h2 { margin: 0; font-size: 20px; font-weight: 700; color: #fff; }
     #stats .stats-header-acts { display: flex; align-items: center; gap: 10px; }
     #stats .stats-header button { border: 0; border-radius: 6px; padding: 6px 14px; min-height: 38px; cursor: pointer; font: 600 13px system-ui, sans-serif; background: rgba(255,255,255,.15); color: #fff; }
     #stats .stats-header button:hover { background: rgba(255,255,255,.25); }
     #stats .stats-header button#stats-close { width: 38px; height: 38px; padding: 0; border-radius: 50%; font-size: 18px; }
-    #stats-body { flex: 1; overflow-y: auto; overscroll-behavior: contain; column-width: 290px; column-gap: 36px; padding-right: 4px; }
+    #stats-body { flex: 1 1 0; min-height: 0; height: 100%; overflow-y: auto; overscroll-behavior: contain; column-width: 290px; column-gap: 36px; padding-right: 4px; }
     #stats-body > div { break-inside: avoid; margin-bottom: 6px; }
     #score { position: fixed; left: calc(16px + var(--sl)); top: calc(16px + var(--st)); background: rgba(20, 35, 45, 0.45); color: #fff; padding: 4px 10px; border-radius: 8px; font-size: 13px; pointer-events: none; backdrop-filter: blur(2px); }
     #score b { font-size: 16px; font-variant-numeric: tabular-nums; }
@@ -272,9 +273,12 @@
     ol.lb b { font-variant-numeric: tabular-nums; }
     ol.lb small { margin-left: 4px; opacity: .65; font-size: 11px; }
     .lb-head { margin-top: 10px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,.25); display: flex; justify-content: space-between; font-weight: 700; }
-    .lb-presence { margin-top: 12px; padding: 8px 10px; background: rgba(255,255,255,.08); border-radius: 6px; break-inside: avoid; }
-    .lb-presence h3 { margin: 0 0 4px; font-size: 13px; font-weight: 700; opacity: .9; text-transform: uppercase; letter-spacing: .03em; }
-    .lb-presence p { margin: 0; font-size: 13px; opacity: .85; line-height: 1.4; word-break: break-word; }
+    .menu-presence { margin: 12px 0 6px; display: flex; align-items: flex-start; gap: 10px; background: #eaf1f5; border: 1px solid #c8d6df; border-radius: 8px; padding: 10px 12px; }
+    .menu-presence[hidden] { display: none; }
+    .menu-presence .presence-icon { font-size: 18px; line-height: 1.2; flex: none; }
+    .menu-presence .presence-info { display: flex; flex-direction: column; gap: 3px; min-width: 0; flex: 1; }
+    .menu-presence .presence-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: #6a7c84; }
+    .menu-presence .presence-list { font-size: 14px; font-weight: 600; color: var(--ink); line-height: 1.4; word-break: break-word; }
     #stats small { flex-basis: 100%; opacity: .7; font-size: 11px; line-height: 1.2; margin: -2px 0 2px 20px; }
     /* top right under the HUD buttons, on every device: bottom left the long stats panel ran over it */
     #minimap { position: fixed; right: calc(16px + var(--sr)); top: calc(72px + var(--st)); width: 92px; height: auto; image-rendering: pixelated; border-radius: 6px; background: rgba(20, 35, 45, 0.25); pointer-events: none; }
@@ -446,6 +450,14 @@
         <button id="start-mouse" class="go">Mus &amp; tangentbord</button>
         <button id="start-touch" class="go alt">Touch</button>
         <button id="start-go" class="go">Börja</button>
+      </div>
+
+      <div id="menu-presence" class="menu-presence" hidden>
+        <span class="presence-icon" aria-hidden="true">👥</span>
+        <div class="presence-info">
+          <div class="presence-title">Spelar just nu</div>
+          <div id="menu-presence-list" class="presence-list"></div>
+        </div>
       </div>
 
       <div class="menu-options">

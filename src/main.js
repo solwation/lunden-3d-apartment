@@ -886,6 +886,10 @@ function showOverlay(show) {
   hud.hidden = show;
   const cornerQr = document.getElementById('corner-qr');
   if (cornerQr) cornerQr.hidden = !show;
+  if (show && typeof presence !== 'undefined') {
+    presence.beat();
+    renderMenuPresence(presence);
+  }
   document.body.classList.toggle('touch', touch.enabled);
   const kicker = document.getElementById('menu-kicker');
   const title = document.getElementById('menu-title');
@@ -1620,7 +1624,29 @@ document.getElementById('furniture-btn').addEventListener('click', () => toggleF
 const statsEl = document.getElementById('stats'), statsBody = document.getElementById('stats-body');
 setBadgeElement(document.getElementById('badges'));
 setScoreElement(document.getElementById('score')); // points, top left (#197)
-const presence = new Presence(cloud.url, document.getElementById('presence'), { getName: () => leaderboard.name });
+
+const menuPresenceEl = document.getElementById('menu-presence');
+const menuPresenceListEl = document.getElementById('menu-presence-list');
+function renderMenuPresence(p) {
+  if (!menuPresenceEl || !menuPresenceListEl) return;
+  const players = p.players && p.players.length ? p.players
+    : (p.names && p.names.length ? p.names.map((n) => ({ name: n, score: 0 })) : []);
+  if (!players.length) {
+    menuPresenceEl.hidden = true;
+    return;
+  }
+  menuPresenceEl.hidden = false;
+  menuPresenceListEl.textContent = players.map((pl) => {
+    const s = Number(pl.score) | 0;
+    return `${pl.name} (${s}p)`;
+  }).join(', ');
+}
+
+const presence = new Presence(cloud.url, document.getElementById('presence'), {
+  getName: () => leaderboard.name,
+  getScore: () => totalScore(),
+  onUpdate: (p) => renderMenuPresence(p)
+});
 leaderboard.activePlayers = () => presence.names;
 let statsPinned = false;
 // the minimap is part of the same "extra HUD" (#85): shown with the stats; K shows the map on its own

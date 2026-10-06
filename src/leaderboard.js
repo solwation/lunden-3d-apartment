@@ -237,6 +237,6 @@ export class Leaderboard {
   /** The statistics panel's part (stats.js renders it under its rows). */
   html() {
     if (!this.on) return '';
-    return `<div class="lb-head"><span>⭐ Din poäng</span><b>${this.score()}</b></div>${this.top.length ? `<ol class="lb">${this.rows()}</ol>` : ''}${this.activePlayersHtml()}`;
+    return `<div class="lb-head"><span>⭐ Din poäng</span><b>${this.score()}</b></div>${this.top.length ? `<ol class="lb">${this.rows()}</ol>` : ''}`;
   }
 }

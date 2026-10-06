@@ -109,6 +109,7 @@ const worker = {
       if (m === 'GET' && !id) {
         let count = 0, cursor;
         const names = [];
+        const players = [];
         do {
           const page = await env.LUNDEN.list({ prefix: 'presence:', ...(cursor ? { cursor } : {}) });
           count += page.keys.length;
@@ -117,25 +118,36 @@ const worker = {
             if (raw) {
               try {
                 const parsed = JSON.parse(raw);
-                if (parsed?.name && !names.includes(parsed.name)) names.push(parsed.name);
+                if (parsed?.name) {
+                  if (!names.includes(parsed.name)) names.push(parsed.name);
+                  const pEntry = players.find((p) => p.name === parsed.name);
+                  const s = Number.isFinite(parsed.score) ? Number(parsed.score) : 0;
+                  if (!pEntry) players.push({ name: parsed.name, score: s });
+                  else if (s > pEntry.score) pEntry.score = s;
+                }
               } catch {
-                if (typeof raw === 'string' && raw.trim() && !names.includes(raw.trim())) names.push(raw.trim());
+                if (typeof raw === 'string' && raw.trim() && !names.includes(raw.trim())) {
+                  names.push(raw.trim());
+                  players.push({ name: raw.trim(), score: 0 });
+                }
               }
             }
           }
           cursor = page.list_complete ? '' : page.cursor;
         } while (cursor);
-        return json({ count, names }, 200, h);
+        return json({ count, names, players }, 200, h);
       }
       if (m === 'PUT' && id) {
-        let name = '';
+        let name = '', score = 0;
         try {
           const b = await request.json();
           if (b?.name && typeof b.name === 'string') name = b.name.trim().slice(0, 30);
+          if (Number.isFinite(b?.score)) score = Math.max(0, Math.min(3000, Number(b.score) | 0));
         } catch { /* empty body or non-json */ }
-        await env.LUNDEN.put(`presence:${id}`, JSON.stringify({ name, t: Date.now() }), { expirationTtl: 120 });
+        await env.LUNDEN.put(`presence:${id}`, JSON.stringify({ name, score, t: Date.now() }), { expirationTtl: 120 });
         let count = 0, cursor;
         const names = [];
+        const players = [];
         do {
           const page = await env.LUNDEN.list({ prefix: 'presence:', ...(cursor ? { cursor } : {}) });
           count += page.keys.length;
@@ -144,15 +156,24 @@ const worker = {
             if (raw) {
               try {
                 const parsed = JSON.parse(raw);
-                if (parsed?.name && !names.includes(parsed.name)) names.push(parsed.name);
+                if (parsed?.name) {
+                  if (!names.includes(parsed.name)) names.push(parsed.name);
+                  const pEntry = players.find((p) => p.name === parsed.name);
+                  const s = Number.isFinite(parsed.score) ? Number(parsed.score) : 0;
+                  if (!pEntry) players.push({ name: parsed.name, score: s });
+                  else if (s > pEntry.score) pEntry.score = s;
+                }
               } catch {
-                if (typeof raw === 'string' && raw.trim() && !names.includes(raw.trim())) names.push(raw.trim());
+                if (typeof raw === 'string' && raw.trim() && !names.includes(raw.trim())) {
+                  names.push(raw.trim());
+                  players.push({ name: raw.trim(), score: 0 });
+                }
               }
             }
           }
           cursor = page.list_complete ? '' : page.cursor;
         } while (cursor);
-        return json({ count, names }, 200, h);
+        return json({ count, names, players }, 200, h);
       }
     }
 

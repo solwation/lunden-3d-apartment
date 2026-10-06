@@ -10,8 +10,8 @@ const visitorId = () => {
 };
 
 export class Presence {
-  constructor(url, el, { getName = () => '' } = {}) {
-    Object.assign(this, { url, el, getName, id: visitorId(), timer: null, count: 0, names: [] });
+  constructor(url, el, { getName = () => '', getScore = () => 0, onUpdate = () => {} } = {}) {
+    Object.assign(this, { url, el, getName, getScore, onUpdate, id: visitorId(), timer: null, count: 0, names: [], players: [] });
     if (!this.on) return;
     this.beat();
     this.timer = setInterval(() => this.beat(), EVERY);
@@ -23,7 +23,8 @@ export class Presence {
   async beat() {
     try {
       const name = this.getName?.() ?? '';
-      const body = name ? JSON.stringify({ name }) : undefined;
+      const score = Number(this.getScore?.() ?? 0) | 0;
+      const body = name ? JSON.stringify({ name, score }) : undefined;
       const headers = body ? { 'Content-Type': 'application/json' } : undefined;
       const r = await fetch(`${this.url}/presence/${this.id}`, { method: 'PUT', headers, body, cache: 'no-store' });
       if (r.ok) {
@@ -35,6 +36,12 @@ export class Presence {
         if (Array.isArray(data.names)) {
           this.names = data.names;
         }
+        if (Array.isArray(data.players)) {
+          this.players = data.players;
+        } else if (Array.isArray(data.names)) {
+          this.players = data.names.map((n) => ({ name: n, score: 0 }));
+        }
+        this.onUpdate?.(this);
       }
     } catch { /* offline: the next heartbeat will try again */ }
   }
