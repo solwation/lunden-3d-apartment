@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Pause and start menu options test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+// Menu test:
+//   - Verify menu buttons are present with descriptive text (to-start, reset-home, stats-reset, quit)
+//   - Verify instructions toggle expands and collapses #instructions
+//   google-chrome --headless=new --dump-dom http://localhost:8137/tools/menutest.html
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const lines = [];
+const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; };
+
+(async () => {
+  let pass = true;
+
+  const f = document.createElement('iframe');
+  f.width = 900; f.height = 600;
+  f.src = '../index.html';
+  document.body.append(f);
+
+  while (!f.contentWindow?.__app) await wait(50);
+  const d = f.contentDocument;
+
+  // 1. Check menu buttons
+  const toStart = d.getElementById('to-start');
+  const resetHome = d.getElementById('reset-home');
+  const statsReset = d.getElementById('stats-reset');
+  const quit = d.getElementById('quit');
+  const toggleInst = d.getElementById('toggle-instructions');
+  const instructions = d.getElementById('instructions');
+
+  pass &= check(toStart && !toStart.hidden && /startplatsen/.test(toStart.textContent), 'to-start button exists with description');
+  pass &= check(resetHome && !resetHome.hidden && /Återställ/.test(resetHome.textContent), 'reset-home button exists with description');
+  pass &= check(statsReset && !statsReset.hidden && /statistiken/.test(statsReset.textContent), 'stats-reset button exists with description');
+  pass &= check(quit && !quit.hidden && /Avsluta/.test(quit.textContent), 'quit button exists');
+
+  // 2. Instructions toggle
+  pass &= check(toggleInst && instructions && instructions.hidden, 'instructions collapsed by default');
+  toggleInst.click();
+  pass &= check(!instructions.hidden && /Dölj instruktioner/.test(toggleInst.textContent), 'clicking toggle expands instructions');
+  toggleInst.click();
+  pass &= check(instructions.hidden && /Visa instruktioner/.test(toggleInst.textContent), 'clicking toggle again collapses instructions');
+
+  // 3. Test to-start action feedback
+  toStart.click();
+  const toStartDone = d.getElementById('to-start-done');
+  pass &= check(toStartDone && !toStartDone.hidden, 'to-start shows feedback notice');
+
+  f.remove();
+  out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
+})();
+</script>
+</body>
+</html>

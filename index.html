@@ -55,9 +55,31 @@
     .card h1 { margin: 0 0 2px; font-size: 26px; }
     .card .kicker { color: var(--accent); font-weight: 700; font-size: 13px; letter-spacing: .05em; }
     .card p { margin: 12px 0; line-height: 1.45; }
-    .start { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 6px; }
-    .card .go { border: 0; cursor: pointer; background: var(--accent); color: #fff; padding: 12px 18px; border-radius: 6px; font: 600 15px system-ui, sans-serif; }
+    .start { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+    .card .go { flex: 1; min-width: 140px; border: 0; cursor: pointer; background: var(--accent); color: #fff; padding: 12px 18px; border-radius: 8px; font: 600 15px system-ui, sans-serif; text-align: center; }
     .card .go.alt { background: #fff; color: var(--accent); box-shadow: inset 0 0 0 2px var(--accent); }
+    .menu-options { display: flex; flex-direction: column; gap: 6px; margin-top: 14px; }
+    .menu-section-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #6a7c84; margin: 12px 0 2px; }
+    .menu-btn {
+      display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; box-sizing: border-box;
+      background: #f0f4f7; color: var(--ink); border: 1px solid #c8d6df; border-radius: 8px; padding: 10px 14px;
+      font: inherit; cursor: pointer; text-align: left; transition: background .15s, border-color .15s; touch-action: manipulation;
+    }
+    .menu-btn:hover { background: #e2ecf2; border-color: #b0c6d3; }
+    .menu-btn:active { background: #d4e3eb; }
+    .menu-btn .btn-text { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+    .menu-btn .btn-text b { font-size: 14px; font-weight: 600; color: var(--ink); }
+    .menu-btn .btn-desc { font-size: 12px; font-weight: 400; color: #556c75; line-height: 1.3; }
+    .menu-btn .btn-icon { font-size: 16px; opacity: .8; flex: none; }
+    .menu-btn.danger .btn-text b { color: #b82828; }
+    .menu-btn.danger:hover { background: #faeded; border-color: #e8b0b0; }
+    .menu-btn[hidden] { display: none; }
+    #instructions {
+      background: #eef3f6; border: 1px solid #cddae1; border-radius: 8px; padding: 12px 14px; margin: 4px 0 8px;
+      max-height: 280px; overflow-y: auto; overscroll-behavior: contain;
+    }
+    #instructions[hidden] { display: none; }
+    #instructions .keys { margin: 0; }
     kbd { background: #eef2f4; border: 1px solid #c5d4dc; border-bottom-width: 2px; border-radius: 4px; padding: 1px 6px; font-size: 13px; }
     .keys { display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; font-size: 14px; margin: 14px 0; }
     #hud[hidden] { display: none; }
@@ -90,10 +112,11 @@
     .touch-help { display: none; }
     @media (any-pointer: coarse) { .touch-help { display: grid; } }
     @media (pointer: coarse) { #start-touch { order: -1; } }
-    /* phones/tablets (touch only, no mouse): no key list, one "Börja" button */
+    /* phones/tablets (touch only, no mouse): one "Börja" button, touch help in instructions */
     #start-go { display: none; }
-    body.phone .keys, body.phone #start-mouse, body.phone #start-touch { display: none; }
-    body.phone #start-go { display: block; }
+    body.phone .keys:not(.touch-help), body.phone #start-mouse, body.phone #start-touch { display: none; }
+    body.phone #start-go { display: block; width: 100%; }
+    body.phone .touch-help { display: grid; }
     html.resuming #overlay { display: none !important; }
     html.resuming #loading { display: none !important; }
     html.resuming body::after { content: 'Laddar…'; position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; background: #14232d; color: rgba(255,255,255,.7); font: 500 14px system-ui, sans-serif; }
@@ -386,37 +409,13 @@
   </div>
   <div id="overlay">
     <div class="card">
-      <div class="kicker">KV. LUNDEN / L1007</div>
-      <h1>Gå runt i lägenheten</h1>
-      <p>Byggd direkt från den måttsatta planritningen: entréplan och övre plan, förbundna med trappan.</p>
-      <div class="keys">
-        <span><kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd></span><span>gå</span>
-        <span><kbd>Mus</kbd></span><span>titta</span>
-        <span><kbd>Shift</kbd></span><span>spring (utomhus)</span>
-        <span><kbd>C</kbd></span><span>håll inne för att huka dig (sittande: res dig)</span>
-        <span><kbd>Mellanslag</kbd></span><span>med jetpacken på: lyft (<kbd>C</kbd> ner fortare)</span>
-        <span><kbd>←</kbd> <kbd>→</kbd></span><span>vrid (om pekplattan är spärrad medan du skriver)</span>
-        <span><kbd>E</kbd></span><span>öppna, stäng och använd det du tittar på</span>
-        <span><kbd>Klick</kbd></span><span>som <kbd>E</kbd> — inget framför dig: använd det du håller; vapen och bollen: skjut / kasta</span>
-        <span><kbd>Högerklick</kbd></span><span>använd det du håller (ät, drick, krama, läs …)</span>
-        <span><kbd>M</kbd></span><span>ljud av/på</span>
-        <span><kbd>F</kbd></span><span>möbler och prylar av/på (visa den tomma lägenheten)</span>
-        <span><kbd>Q</kbd></span><span>mät: sätt en punkt, sedan nästa (Q en tredje gång rensar)</span>
-        <span><kbd>Tab</kbd></span><span>håll inne för att se statistiken och kartan (<kbd>T</kbd> låter dem ligga kvar)</span>
-        <span><kbd>K</kbd></span><span>visa/dölj bara kartan</span>
-        <span><kbd>Esc</kbd></span><span>släpp musen — här på startskärmen: börja med mus &amp; tangentbord</span>
-      </div>
-      <div class="keys touch-help">
-        <span>Vänster tumme</span><span>joystick — gå (tryck ut helt för att springa utomhus)</span>
-        <span>Höger tumme</span><span>dra för att titta</span>
-        <span>Knapp</span><span>öppna, stäng och använd det du tittar på</span>
-        <span>🧎</span><span>huka dig / res dig</span>
-        <span>⬆ ⬇</span><span>med jetpacken på: upp / ner</span>
-        <span>📏</span><span>mät: sätt en punkt där krysset pekar, sedan nästa</span>
-        <span>📊</span><span>visa/dölj statistiken och kartan</span>
-      </div>
+      <div class="kicker" id="menu-kicker">KV. LUNDEN / L1007</div>
+      <h1 id="menu-title">Gå runt i lägenheten</h1>
+      <p id="menu-desc">Byggd direkt från den måttsatta planritningen: entréplan och övre plan, förbundna med trappan.</p>
       <p class="resume" id="resume" hidden>Du fortsätter där du var.
         <button id="restart" class="linkish">Börja från start</button></p>
+      <p class="resume" id="reset-done" hidden role="status">Hemmet är återställt.</p>
+      <p class="resume" id="to-start-done" hidden role="status">Platsen har återställts till startplatsen.</p>
       <div id="lb-name" hidden>
         <label for="player-name">Ditt namn på topplistan</label>
         <div class="player-controls">
@@ -431,13 +430,85 @@
         <button id="start-touch" class="go alt">Touch</button>
         <button id="start-go" class="go">Börja</button>
       </div>
-      <button id="install-btn" class="linkish" hidden>Installera som app</button>
-      <p class="resume" id="reset-done" hidden role="status">Hemmet är återställt.</p>
-      <button id="to-start" class="linkish">Gå till startplatsen</button>
-      <button id="reset-home" class="linkish">Återställ</button>
-      <button id="stats-reset" class="linkish">Nollställ statistiken</button>
-      <button id="quit" class="linkish">Avsluta</button>
-      <p class="resume" id="quit-help" hidden role="status">Webbläsaren tillåter inte att sidan stänger fönstret. Stäng fliken eller fönstret med webbläsarens stängknapp.</p>
+
+      <div class="menu-options">
+        <div class="menu-section-title">Navigering &amp; kontroller</div>
+        <button id="to-start" class="menu-btn" type="button">
+          <span class="btn-text">
+            <b>Gå till startplatsen</b>
+            <span class="btn-desc">Flytta till entrén och återställ klockan till nutid</span>
+          </span>
+          <span class="btn-icon" aria-hidden="true">🚪</span>
+        </button>
+        <button id="toggle-instructions" class="menu-btn" type="button" aria-expanded="false" aria-controls="instructions">
+          <span class="btn-text">
+            <b class="inst-btn-label">Visa instruktioner</b>
+            <span class="btn-desc">Kontroller för tangentbord, mus och touch</span>
+          </span>
+          <span class="btn-icon" aria-hidden="true">⌨️</span>
+        </button>
+        <div id="instructions" hidden>
+          <div class="keys">
+            <span><kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd></span><span>gå</span>
+            <span><kbd>Mus</kbd></span><span>titta</span>
+            <span><kbd>Shift</kbd></span><span>spring (utomhus)</span>
+            <span><kbd>C</kbd></span><span>håll inne för att huka dig (sittande: res dig)</span>
+            <span><kbd>Mellanslag</kbd></span><span>med jetpacken på: lyft (<kbd>C</kbd> ner fortare)</span>
+            <span><kbd>←</kbd> <kbd>→</kbd></span><span>vrid (om pekplattan är spärrad medan du skriver)</span>
+            <span><kbd>E</kbd></span><span>öppna, stäng och använd det du tittar på</span>
+            <span><kbd>Klick</kbd></span><span>som <kbd>E</kbd> — inget framför dig: använd det du håller; vapen och bollen: skjut / kasta</span>
+            <span><kbd>Högerklick</kbd></span><span>använd det du håller (ät, drick, krama, läs …)</span>
+            <span><kbd>M</kbd></span><span>ljud av/på</span>
+            <span><kbd>F</kbd></span><span>möbler och prylar av/på (visa den tomma lägenheten)</span>
+            <span><kbd>Q</kbd></span><span>mät: sätt en punkt, sedan nästa (Q en tredje gång rensar)</span>
+            <span><kbd>Tab</kbd></span><span>håll inne för att se statistiken och kartan (<kbd>T</kbd> låter dem ligga kvar)</span>
+            <span><kbd>K</kbd></span><span>visa/dölj bara kartan</span>
+            <span><kbd>Esc</kbd></span><span>släpp musen — här på startskärmen: börja med mus &amp; tangentbord</span>
+          </div>
+          <div class="keys touch-help">
+            <span>Vänster tumme</span><span>joystick — gå (tryck ut helt för att springa utomhus)</span>
+            <span>Höger tumme</span><span>dra för att titta</span>
+            <span>Knapp</span><span>öppna, stäng och använd det du tittar på</span>
+            <span>🧎</span><span>huka dig / res dig</span>
+            <span>⬆ ⬇</span><span>med jetpacken på: upp / ner</span>
+            <span>📏</span><span>mät: sätt en punkt där krysset pekar, sedan nästa</span>
+            <span>📊</span><span>visa/dölj statistiken och kartan</span>
+          </div>
+        </div>
+
+        <div class="menu-section-title">Återställning &amp; data</div>
+        <button id="reset-home" class="menu-btn" type="button">
+          <span class="btn-text">
+            <b>Återställ hemmet</b>
+            <span class="btn-desc">Återställ dörrar, möbler och prylar till ursprungsläget</span>
+          </span>
+          <span class="btn-icon" aria-hidden="true">🔄</span>
+        </button>
+        <button id="stats-reset" class="menu-btn" type="button">
+          <span class="btn-text">
+            <b>Nollställ statistiken</b>
+            <span class="btn-desc">Nollställ poäng, besökta rum och upptäckter</span>
+          </span>
+          <span class="btn-icon" aria-hidden="true">📊</span>
+        </button>
+
+        <div class="menu-section-title">App &amp; fönster</div>
+        <button id="install-btn" class="menu-btn" hidden type="button">
+          <span class="btn-text">
+            <b>Installera som app</b>
+            <span class="btn-desc">Lägg till på hemskärmen för att spela i helskärm</span>
+          </span>
+          <span class="btn-icon" aria-hidden="true">📱</span>
+        </button>
+        <button id="quit" class="menu-btn danger" type="button">
+          <span class="btn-text">
+            <b>Avsluta</b>
+            <span class="btn-desc">Stäng webbläsarfliken eller fönstret</span>
+          </span>
+          <span class="btn-icon" aria-hidden="true">✕</span>
+        </button>
+        <p class="resume" id="quit-help" hidden role="status">Webbläsaren tillåter inte att sidan stänger fönstret. Stäng fliken eller fönstret med webbläsarens stängknapp.</p>
+      </div>
       <figure class="qr"><img src="icons/qr-site.svg" alt="QR-kod till solwation.github.io/lunden-3d-apartment" width="111" height="111"><figcaption>Skanna för att öppna på en annan enhet</figcaption></figure>
     </div>
   </div>

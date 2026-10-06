@@ -779,8 +779,28 @@ function realNow() {
   const n = new Date();
   Object.assign(day, { hour: n.getHours() + n.getMinutes() / 60 + n.getSeconds() / 3600, year: n.getFullYear(), month: n.getMonth() + 1, date: n.getDate(), paused: false, spool: 0 });
 }
+const toStartDone = document.getElementById('to-start-done');
 for (const id of ['restart', 'to-start']) { // also on the start screen shown when the mouse is freed (pause)
-  document.getElementById(id).addEventListener('click', () => { spawnAtStart(); realNow(); resumeEl.hidden = true; });
+  document.getElementById(id).addEventListener('click', () => {
+    spawnAtStart();
+    realNow();
+    resumeEl.hidden = true;
+    if (toStartDone && id === 'to-start') {
+      toStartDone.hidden = false;
+      setTimeout(() => { toStartDone.hidden = true; }, 3000);
+    }
+  });
+}
+const toggleInst = document.getElementById('toggle-instructions');
+const instEl = document.getElementById('instructions');
+if (toggleInst && instEl) {
+  toggleInst.addEventListener('click', () => {
+    const closed = instEl.hidden;
+    instEl.hidden = !closed;
+    const label = toggleInst.querySelector('.inst-btn-label');
+    if (label) label.textContent = closed ? 'Dölj instruktioner' : 'Visa instruktioner';
+    toggleInst.setAttribute('aria-expanded', closed ? 'true' : 'false');
+  });
 }
 const params = new URLSearchParams(location.search);
 if (params.has('shot')) { overlay.hidden = true; if (loadingEl) loadingEl.hidden = true; }
@@ -851,6 +871,27 @@ function showOverlay(show) {
   overlay.hidden = !show;
   hud.hidden = show;
   document.body.classList.toggle('touch', touch.enabled);
+  const kicker = document.getElementById('menu-kicker');
+  const title = document.getElementById('menu-title');
+  const desc = document.getElementById('menu-desc');
+  const mouseBtn = document.getElementById('start-mouse');
+  const touchBtn = document.getElementById('start-touch');
+  const goBtn = document.getElementById('start-go');
+  if (show && played) {
+    if (kicker) kicker.textContent = 'KV. LUNDEN / L1007 · PAUS';
+    if (title) title.textContent = 'Pausmeny';
+    if (desc) desc.textContent = 'Spelet är pausat. Välj Fortsätt för att återgå till lägenheten, eller välj en åtgärd nedan.';
+    if (mouseBtn) mouseBtn.textContent = 'Fortsätt spela';
+    if (touchBtn) touchBtn.textContent = 'Fortsätt spela';
+    if (goBtn) goBtn.textContent = 'Fortsätt';
+  } else if (show) {
+    if (kicker) kicker.textContent = 'KV. LUNDEN / L1007';
+    if (title) title.textContent = 'Gå runt i lägenheten';
+    if (desc) desc.textContent = 'Byggd direkt från den måttsatta planritningen: entréplan och övre plan, förbundna med trappan.';
+    if (mouseBtn) mouseBtn.textContent = 'Mus & tangentbord';
+    if (touchBtn) touchBtn.textContent = 'Touch';
+    if (goBtn) goBtn.textContent = 'Börja';
+  }
 }
 
 // Explicit choice on the start screen — a Surface has both a touchscreen and a keyboard.
