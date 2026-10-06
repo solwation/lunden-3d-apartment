@@ -227,14 +227,26 @@
     body.touch #badges { top: calc(70px + var(--st)); }
     #stats-body div { display: flex; flex-wrap: wrap; gap: 0 10px; justify-content: space-between; }
     #stats b { font-variant-numeric: tabular-nums; }
+    #player-dialog { position: fixed; inset: 0; z-index: 45; display: grid; place-items: center; background: rgba(20, 35, 45, 0.7); }
+    #player-dialog[hidden] { display: none; }
+    #player-dialog .card { width: min(380px, calc(100vw - 32px)); }
+    #player-badge { margin: 8px 0 10px; display: flex; align-items: center; justify-content: space-between; gap: 10px; background: #eaf1f5; border: 1px solid #c8d6df; border-radius: 8px; padding: 8px 12px; }
+    #player-badge[hidden] { display: none; }
+    #player-badge .badge-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+    #player-badge .badge-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: #6a7c84; }
+    #player-badge #player-display { font-size: 15px; font-weight: 700; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    #player-badge button { border: 0; border-radius: 6px; padding: 6px 12px; min-height: 38px; cursor: pointer; background: #fff; color: var(--accent); font: 600 13px system-ui, sans-serif; box-shadow: inset 0 0 0 1.5px var(--accent); white-space: nowrap; }
+    #player-badge button:hover { background: #f0f7fa; }
+    #player-badge button[hidden] { display: none; }
     #lb-name { margin: 10px 0 4px; }
     #lb-name[hidden], #lb-start[hidden] { display: none; }
     #lb-name label { display: grid; gap: 4px; font-size: 13px; font-weight: 600; }
-    #lb-name input { font: 15px system-ui, sans-serif; padding: 8px 10px; border: 1px solid #c8ced3; border-radius: 6px; }
-    #lb-name .player-controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-    #lb-name input { flex: 1; min-width: 100px; width: 0; }
+    #lb-name input { font: 15px system-ui, sans-serif; padding: 10px 12px; border: 1px solid #c8ced3; border-radius: 6px; width: 100%; box-sizing: border-box; }
+    #lb-name .player-controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 10px; }
     #lb-name input:disabled { opacity: 1; color: var(--ink); background: #e8f2f6; }
-    #lb-name button { border: 0; border-radius: 6px; padding: 10px 12px; min-height: 44px; cursor: pointer; background: var(--accent); color: #fff; font: 600 14px system-ui, sans-serif; }
+    #lb-name button { border: 0; border-radius: 6px; padding: 10px 14px; min-height: 44px; cursor: pointer; font: 600 14px system-ui, sans-serif; }
+    #lb-name button.go { background: var(--accent); color: #fff; flex: 1; }
+    #lb-name button.alt { background: #fff; color: var(--accent); box-shadow: inset 0 0 0 2px var(--accent); }
     #lb-name button[hidden] { display: none; }
     ol.lb { list-style: none; margin: 6px 0 10px; padding: 0; font-size: 13px; }
     ol.lb li { display: flex; justify-content: space-between; gap: 10px; padding: 1px 0; }
@@ -416,13 +428,12 @@
         <button id="restart" class="linkish">Börja från start</button></p>
       <p class="resume" id="reset-done" hidden role="status">Hemmet är återställt.</p>
       <p class="resume" id="to-start-done" hidden role="status">Platsen har återställts till startplatsen.</p>
-      <div id="lb-name" hidden>
-        <label for="player-name">Ditt namn på topplistan</label>
-        <div class="player-controls">
-          <input id="player-name" type="text" placeholder="valfritt" autocomplete="nickname" spellcheck="false">
-          <button id="player-ok" type="button">OK</button>
-          <button id="player-new" type="button" hidden title="Avsluta spelaren och börja en ny session med 0 poäng">Ny spelare</button>
+      <div id="player-badge" hidden>
+        <div class="badge-info">
+          <span class="badge-label">Spelare</span>
+          <span id="player-display"></span>
         </div>
+        <button id="player-new" type="button" hidden title="Byt spelare eller starta ny session">Byt spelare</button>
       </div>
       <ol id="lb-start" class="lb" hidden></ol>
       <div class="start">
@@ -528,6 +539,21 @@
       <div class="start">
         <button id="reset-yes" class="go">Återställ</button>
         <button id="reset-no" class="go alt">Avbryt</button>
+      </div>
+    </div>
+  </div>
+  <div id="player-dialog" hidden role="dialog" aria-label="Spelarnamn">
+    <div class="card">
+      <div class="kicker">TOPPLISTAN</div>
+      <h1 id="player-dialog-title">Välj spelarnamn</h1>
+      <p id="player-dialog-desc">Skriv in ett namn om du vill synas på topplistan. Du kan även hoppa över och spela anonymt.</p>
+      <div id="lb-name" hidden>
+        <label for="player-name">Ditt namn på topplistan</label>
+        <input id="player-name" type="text" placeholder="valfritt namn" autocomplete="nickname" spellcheck="false">
+        <div class="player-controls">
+          <button id="player-ok" class="go" type="button">OK</button>
+          <button id="player-skip" class="go alt" type="button">Hoppa över</button>
+        </div>
       </div>
     </div>
   </div>

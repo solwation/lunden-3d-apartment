@@ -622,16 +622,26 @@ const boardLoaded = board.load();
 const cloud = new Cloud({ posters, drawing, holding: () => heldItem() === heldDrawing,
   heldId: () => heldDrawing.held ? heldDrawing.meta?.id : null });
 heldDrawing.onDesk = (id) => posters.onDelete?.(id);
-// the global leaderboard (#198): the name on the start screen (optional), the top list there and under the stats
-const leaderboard = new Leaderboard(cloud.url, totalScore, { nameRow: document.getElementById('lb-name'), input: document.getElementById('player-name'), list: document.getElementById('lb-start'),
-  ok: document.getElementById('player-ok'), newPlayer: document.getElementById('player-new'), onNewPlayer: () => {
+// the global leaderboard (#198): the name in a modal dialog before start (optional), the badge and top list on the start screen
+const leaderboard = new Leaderboard(cloud.url, totalScore, {
+  dialog: document.getElementById('player-dialog'),
+  badge: document.getElementById('player-badge'),
+  display: document.getElementById('player-display'),
+  nameRow: document.getElementById('lb-name'),
+  input: document.getElementById('player-name'),
+  list: document.getElementById('lb-start'),
+  ok: document.getElementById('player-ok'),
+  skip: document.getElementById('player-skip'),
+  newPlayer: document.getElementById('player-new'),
+  onNewPlayer: () => {
     resetHome.going = true;
     reloading = true;
     resetStats();
     clearLocalHome();
     try { sessionStorage.removeItem('lunden.resetDone'); } catch { /* unavailable */ }
     resetHome.go(location.href);
-  } });
+  }
+});
 setStatsExtra(() => leaderboard.html());
 cloud.ready = cloud.on ? Promise.all([postersLoaded, boardLoaded]).then(() => cloud.sync()) : Promise.resolve(); // (tests wait on it)
 cat.onPet = () => { bump('petted'); if (cat.kitten) bump('kittenPets'); }; // a kitten's pat is worth more (#363)
@@ -908,7 +918,7 @@ document.getElementById('start-mouse').addEventListener('click', startMouse);
 // line at the bottom, no box (#190). Esc in the game still just frees the mouse.
 const armEl = document.getElementById('arm');
 let unlockedAt = -1e9;
-const otherOverlay = () => ['loading', 'install', 'reset-confirm', 'note', 'board-view', 'poster-panel'].some((id) => {
+const otherOverlay = () => ['loading', 'install', 'reset-confirm', 'player-dialog', 'note', 'board-view', 'poster-panel'].some((id) => {
   const el = document.getElementById(id);
   return el && !el.hidden && !el.classList.contains('done');
 })
@@ -1918,7 +1928,10 @@ onTap(document.getElementById('quit'), () => {
 onTap(document.getElementById('reset-home'), () => resetHome.ask());
 onTap(document.getElementById('reset-no'), () => resetHome.cancel());
 onTap(document.getElementById('reset-yes'), () => resetHome.confirm());
-document.addEventListener('keydown', (e) => { if (e.code === 'Escape' && !resetEl.hidden) { e.preventDefault(); resetHome.cancel(); } });
+document.addEventListener('keydown', (e) => {
+  if (e.code === 'Escape' && !resetEl.hidden) { e.preventDefault(); resetHome.cancel(); }
+  else if (e.code === 'Escape' && leaderboard?.dialog && !leaderboard.dialog.hidden) { e.preventDefault(); leaderboard.handleSkip(); }
+});
 if (takeResetDone()) document.getElementById('reset-done').hidden = false;
 onTap(document.getElementById('update-reload'), () => {
   reloading = true;

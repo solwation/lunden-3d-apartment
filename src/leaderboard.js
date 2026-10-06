@@ -16,24 +16,35 @@ const uid = () => crypto.randomUUID?.() ?? `${Date.now().toString(36)}-${Math.ra
 const pending = () => { try { const q = JSON.parse(get(QUEUE) ?? '[]'); return Array.isArray(q) ? q : []; } catch { return []; } };
 const esc = (t) => String(t).replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 
+const SKIP = 'lunden.nameSkipped';
+const getSession = (k) => { try { return sessionStorage.getItem(k); } catch { return null; } };
+const setSession = (k, v) => { try { sessionStorage.setItem(k, v); } catch { /* blocked */ } };
+
 export class Leaderboard {
-  /** url: the Worker ('' = off); score(): the current score; nameRow / input / list: start-screen elements. */
-  constructor(url, score, { nameRow, input, list, ok, newPlayer, onNewPlayer = () => {} }) {
-    Object.assign(this, { url, score, input, list, ok, newPlayer, onNewPlayer, top: [], sent: null, switching: false });
+  /** url: the Worker ('' = off); score(): the current score; elements: dialog, badge, input, list, etc. */
+  constructor(url, score, { dialog, badge, display, nameRow, input, list, ok, skip, newPlayer, onNewPlayer = () => {} }) {
+    Object.assign(this, { url, score, dialog, badge, display, nameRow, input, list, ok, skip, newPlayer, onNewPlayer,
+      top: [], sent: null, switching: false, dialogMode: 'initial' });
     if (!this.on) return;
     this.confirmedName = cleanName(get(NAME));
     this.id = get(PID) || (this.confirmedName ? uid() : null);
     if (this.id) set(PID, this.id);
-    nameRow.hidden = false;
+    if (nameRow) nameRow.hidden = false;
     input.maxLength = L.nameMax;
     input.value = this.confirmedName;
     this.renderIdentity();
     ok?.addEventListener('click', () => this.confirmName());
-    newPlayer?.addEventListener('click', () => this.startNewPlayer());
+    skip?.addEventListener('click', () => this.handleSkip());
+    newPlayer?.addEventListener('click', () => this.openDialog('new'));
     input.addEventListener('keydown', (e) => {
       e.stopPropagation();
       if (e.key === 'Enter') { e.preventDefault(); this.confirmName(); }
+      else if (e.key === 'Escape') { e.preventDefault(); this.handleSkip(); }
     });
+    // On start screen: if player hasn't confirmed name and hasn't skipped this session, open dialog
+    if (!this.confirmedName && getSession(SKIP) !== '1') {
+      this.openDialog('initial');
+    }
     this.refresh();
     this.flush(); // upload results saved by the previous player, even before a new name is entered
     this.timer = setInterval(() => this.send(), L.every * 1000);
@@ -49,27 +60,80 @@ export class Leaderboard {
     this.input.disabled = !!this.name;
     if (this.ok) this.ok.hidden = !!this.name;
     if (this.newPlayer) this.newPlayer.hidden = !this.name;
+    if (this.badge) this.badge.hidden = !this.name;
+    if (this.display) this.display.textContent = this.name || 'Anonym';
+  }
+
+  openDialog(mode = 'initial') {
+    if (!this.dialog) return;
+    this.dialogMode = mode;
+    const title = this.dialog.querySelector('#player-dialog-title');
+    const desc = this.dialog.querySelector('#player-dialog-desc');
+    if (mode === 'new') {
+      if (title) title.textContent = 'Byt spelare';
+      if (desc) desc.textContent = 'Starta en ny spelsession med noll poäng och ett nytt namn. Det tidigare resultatet sparas på topplistan.';
+      if (this.skip) this.skip.textContent = 'Avbryt';
+      this.input.disabled = false;
+      this.input.value = '';
+      if (this.ok) this.ok.hidden = false;
+    } else {
+      if (title) title.textContent = 'Välj spelarnamn';
+      if (desc) desc.textContent = 'Skriv in ett namn om du vill synas på topplistan. Du kan även hoppa över och spela anonymt.';
+      if (this.skip) this.skip.textContent = 'Hoppa över';
+      this.input.disabled = !!this.name;
+      this.input.value = this.name;
+      if (this.ok) this.ok.hidden = !!this.name;
+    }
+    this.dialog.hidden = false;
+    setTimeout(() => { this.input.focus(); }, 50);
+  }
+
+  closeDialog() {
+    if (this.dialog) this.dialog.hidden = true;
+  }
+
+  handleSkip() {
+    if (!this.dialog || this.dialog.hidden) return;
+    if (this.dialogMode === 'initial') {
+      setSession(SKIP, '1');
+    }
+    this.renderIdentity();
+    this.closeDialog();
   }
 
   confirmName() {
-    if (this.name || this.switching) return;
+    if (this.switching) return;
     const name = cleanName(this.input.value);
     if (!name) { this.input.focus(); return; }
+    if (this.dialogMode === 'new') {
+      // Switching to a new player
+      this.closeDialog();
+      this.startNewPlayer(name);
+      return;
+    }
+    if (this.name) { this.closeDialog(); return; }
     this.confirmedName = name;
     this.id = uid();
     set(NAME, name); set(PID, this.id);
     this.input.value = name;
     this.renderIdentity();
     this.input.blur();
+    this.closeDialog();
     this.send();
   }
 
-  startNewPlayer() {
-    if (this.switching || !this.name) return;
+  startNewPlayer(newName = null) {
+    if (this.switching) return;
     this.beacon(); // captures the old id/name/score before anything is reset; queue survives reload
     this.switching = true;
     clearInterval(this.timer);
-    remove(NAME); remove(PID);
+    if (newName) {
+      set(NAME, newName);
+      set(PID, uid());
+    } else {
+      remove(NAME);
+      remove(PID);
+    }
     this.onNewPlayer();
   }
 

@@ -1,4 +1,5 @@
 [
+  {"id": 441, "date": "2026-10-06", "text": "Spelarnamnet skrivs nu in i en separat dialog innan startskärmen, och knappen Byt spelare i menyn öppnar dialogen igen."},
   {"id": 440, "date": "2026-10-06", "text": "Paus- och startmenyn har nu ordentliga menyknappar med tydliga beskrivningar och en separat knapp för att fälla ut instruktionerna."},
   {"id": 439, "date": "2026-10-06", "text": "En laddningsskärm visas nu medan lägenheten laddas in innan startskärmen dyker upp."},
   {"id": 438, "date": "2026-10-05", "text": "Spelarnamnet låses när du trycker OK, och Ny spelare sparar det förra resultatet och börjar om med noll poäng i ett återställt hem."},
