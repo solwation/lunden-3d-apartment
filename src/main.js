@@ -897,8 +897,8 @@ function showOverlay(show) {
     if (kicker) kicker.textContent = 'KV. LUNDEN / L1007 · PAUS';
     if (title) title.textContent = 'Pausmeny';
     if (desc) desc.textContent = 'Spelet är pausat. Välj Fortsätt för att återgå till lägenheten, eller välj en åtgärd nedan.';
-    if (mouseBtn) mouseBtn.textContent = 'Fortsätt spela';
-    if (touchBtn) touchBtn.textContent = 'Fortsätt spela';
+    if (mouseBtn) mouseBtn.textContent = 'Fortsätt (Mus & tangentbord)';
+    if (touchBtn) touchBtn.textContent = 'Fortsätt (Touch)';
     if (goBtn) goBtn.textContent = 'Fortsätt';
   } else if (show) {
     if (kicker) kicker.textContent = 'KV. LUNDEN / L1007';
