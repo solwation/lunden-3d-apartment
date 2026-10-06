@@ -11,6 +11,11 @@ const LUNDEN = {
   async getWithMetadata(k) { const e = store.get(k); return { value: e ? e.v : null, metadata: e?.meta ?? null }; },
   async put(k, v, opts = {}) { store.set(k, { v: typeof v === 'string' ? v : v.buffer.slice(v.byteOffset, v.byteOffset + v.byteLength), meta: opts.metadata }); },
   async delete(k) { store.delete(k); },
+  async list(opts = {}) {
+    const prefix = opts.prefix ?? '';
+    const keys = [...store.keys()].filter((k) => k.startsWith(prefix)).map((name) => ({ name }));
+    return { keys, list_complete: true };
+  },
 };
 const env = { LUNDEN, ADMIN_TOKEN: process.argv[3] };
 

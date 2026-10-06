@@ -22,9 +22,9 @@ const setSession = (k, v) => { try { sessionStorage.setItem(k, v); } catch { /* 
 
 export class Leaderboard {
   /** url: the Worker ('' = off); score(): the current score; elements: dialog, badge, input, list, etc. */
-  constructor(url, score, { dialog, badge, display, nameRow, input, list, ok, skip, newPlayer, onNewPlayer = () => {} }) {
-    Object.assign(this, { url, score, dialog, badge, display, nameRow, input, list, ok, skip, newPlayer, onNewPlayer,
-      top: [], sent: null, switching: false, dialogMode: 'initial' });
+  constructor(url, score, { dialog, badge, display, nameRow, input, list, ok, skip, newPlayer, lbDialog, dialogList, onNewPlayer = () => {} }) {
+    Object.assign(this, { url, score, dialog, badge, display, nameRow, input, list, ok, skip, newPlayer, lbDialog, dialogList, onNewPlayer,
+      top: [], sent: null, switching: false, dialogMode: 'initial', activePlayers: null });
     if (!this.on) return;
     this.confirmedName = cleanName(get(NAME));
     this.id = get(PID) || (this.confirmedName ? uid() : null);
@@ -90,6 +90,23 @@ export class Leaderboard {
 
   closeDialog() {
     if (this.dialog) this.dialog.hidden = true;
+  }
+
+  openLeaderboardDialog() {
+    if (!this.lbDialog) return;
+    this.refresh();
+    this.renderDialogList();
+    this.lbDialog.hidden = false;
+  }
+
+  closeLeaderboardDialog() {
+    if (this.lbDialog) this.lbDialog.hidden = true;
+  }
+
+  renderDialogList() {
+    if (!this.dialogList) return;
+    const r = this.rows();
+    this.dialogList.innerHTML = r || '<li><span>Inga resultat ännu</span></li>';
   }
 
   handleSkip() {
@@ -195,6 +212,7 @@ export class Leaderboard {
     this.top = Array.isArray(top) ? top.slice(0, L.show) : [];
     this.list.hidden = !this.top.length;
     this.list.innerHTML = this.rows();
+    this.renderDialogList();
   }
 
   rows() {
@@ -205,9 +223,20 @@ export class Leaderboard {
     }).join('');
   }
 
+  getActiveNames() {
+    return typeof this.activePlayers === 'function' ? this.activePlayers() : (this.activePlayers || []);
+  }
+
+  activePlayersHtml() {
+    const list = this.getActiveNames();
+    if (!list || !list.length) return '';
+    const namesText = list.map((n) => esc(n)).join(', ');
+    return `<div class="lb-presence"><h3>Aktiva spelare just nu (${list.length})</h3><p>${namesText}</p></div>`;
+  }
+
   /** The statistics panel's part (stats.js renders it under its rows). */
   html() {
     if (!this.on) return '';
-    return `<div class="lb-head"><span>⭐ Din poäng</span><b>${this.score()}</b></div>${this.top.length ? `<ol class="lb">${this.rows()}</ol>` : ''}`;
+    return `<div class="lb-head"><span>⭐ Din poäng</span><b>${this.score()}</b></div>${this.top.length ? `<ol class="lb">${this.rows()}</ol>` : ''}${this.activePlayersHtml()}`;
   }
 }

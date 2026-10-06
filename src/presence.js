@@ -10,8 +10,8 @@ const visitorId = () => {
 };
 
 export class Presence {
-  constructor(url, el) {
-    Object.assign(this, { url, el, id: visitorId(), timer: null });
+  constructor(url, el, { getName = () => '' } = {}) {
+    Object.assign(this, { url, el, getName, id: visitorId(), timer: null, count: 0, names: [] });
     if (!this.on) return;
     this.beat();
     this.timer = setInterval(() => this.beat(), EVERY);
@@ -22,10 +22,19 @@ export class Presence {
 
   async beat() {
     try {
-      const r = await fetch(`${this.url}/presence/${this.id}`, { method: 'PUT', cache: 'no-store' });
+      const name = this.getName?.() ?? '';
+      const body = name ? JSON.stringify({ name }) : undefined;
+      const headers = body ? { 'Content-Type': 'application/json' } : undefined;
+      const r = await fetch(`${this.url}/presence/${this.id}`, { method: 'PUT', headers, body, cache: 'no-store' });
       if (r.ok) {
-        const { count } = await r.json();
-        if (Number.isInteger(count)) this.el.textContent = `👥 ${count}`;
+        const data = await r.json();
+        if (Number.isInteger(data.count)) {
+          this.count = data.count;
+          if (this.el) this.el.textContent = `👥 ${data.count}`;
+        }
+        if (Array.isArray(data.names)) {
+          this.names = data.names;
+        }
       }
     } catch { /* offline: the next heartbeat will try again */ }
   }

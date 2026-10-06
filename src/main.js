@@ -633,6 +633,8 @@ const leaderboard = new Leaderboard(cloud.url, totalScore, {
   ok: document.getElementById('player-ok'),
   skip: document.getElementById('player-skip'),
   newPlayer: document.getElementById('player-new'),
+  lbDialog: document.getElementById('leaderboard-dialog'),
+  dialogList: document.getElementById('lb-dialog-list'),
   onNewPlayer: () => {
     resetHome.going = true;
     reloading = true;
@@ -642,6 +644,8 @@ const leaderboard = new Leaderboard(cloud.url, totalScore, {
     resetHome.go(location.href);
   }
 });
+document.getElementById('menu-leaderboard')?.addEventListener('click', () => leaderboard.openLeaderboardDialog());
+document.getElementById('leaderboard-dialog-close')?.addEventListener('click', () => leaderboard.closeLeaderboardDialog());
 setStatsExtra(() => leaderboard.html());
 cloud.ready = cloud.on ? Promise.all([postersLoaded, boardLoaded]).then(() => cloud.sync()) : Promise.resolve(); // (tests wait on it)
 cat.onPet = () => { bump('petted'); if (cat.kitten) bump('kittenPets'); }; // a kitten's pat is worth more (#363)
@@ -880,6 +884,8 @@ function showOverlay(show) {
   if (!show) { played = true; document.getElementById('reset-done').hidden = true; if (loadingEl) loadingEl.hidden = true; } // "Hemmet är återställt" only until the visit starts (#303)
   overlay.hidden = !show;
   hud.hidden = show;
+  const cornerQr = document.getElementById('corner-qr');
+  if (cornerQr) cornerQr.hidden = !show;
   document.body.classList.toggle('touch', touch.enabled);
   const kicker = document.getElementById('menu-kicker');
   const title = document.getElementById('menu-title');
@@ -918,7 +924,7 @@ document.getElementById('start-mouse').addEventListener('click', startMouse);
 // line at the bottom, no box (#190). Esc in the game still just frees the mouse.
 const armEl = document.getElementById('arm');
 let unlockedAt = -1e9;
-const otherOverlay = () => ['loading', 'install', 'reset-confirm', 'player-dialog', 'note', 'board-view', 'poster-panel'].some((id) => {
+const otherOverlay = () => ['loading', 'install', 'reset-confirm', 'player-dialog', 'leaderboard-dialog', 'note', 'board-view', 'poster-panel'].some((id) => {
   const el = document.getElementById(id);
   return el && !el.hidden && !el.classList.contains('done');
 })
@@ -1614,25 +1620,19 @@ document.getElementById('furniture-btn').addEventListener('click', () => toggleF
 const statsEl = document.getElementById('stats'), statsBody = document.getElementById('stats-body');
 setBadgeElement(document.getElementById('badges'));
 setScoreElement(document.getElementById('score')); // points, top left (#197)
-const presence = new Presence(cloud.url, document.getElementById('presence'));
+const presence = new Presence(cloud.url, document.getElementById('presence'), { getName: () => leaderboard.name });
+leaderboard.activePlayers = () => presence.names;
 let statsPinned = false;
 // the minimap is part of the same "extra HUD" (#85): shown with the stats; K shows the map on its own
 let mapPinned = false;
 function showStats(show) {
   if (show && statsEl.hidden) renderStats(statsBody);
   statsEl.hidden = !show;
-  if (!show) { statsEl.classList.remove('full'); document.getElementById('stats-full').textContent = '⤢'; } // full screen (#245) only until it is closed
   document.getElementById('minimap').hidden = !(show || mapPinned);
 }
 function toggleStats() { statsPinned = !statsPinned; showStats(statsPinned); }
 const holdStats = (down) => showStats(down || statsPinned);
 document.getElementById('stats-btn').addEventListener('click', () => toggleStats());
-// touch (#245): ⤢ full screen and back, ✕ closes (the same as 📊 again)
-document.getElementById('stats-full').addEventListener('click', () => {
-  const full = statsEl.classList.toggle('full');
-  document.getElementById('stats-full').textContent = full ? '⤡' : '⤢';
-  statsEl.scrollTop = 0;
-});
 document.getElementById('stats-close').addEventListener('click', () => { statsPinned = false; showStats(false); });
 document.getElementById('stats-reset').addEventListener('click', () => {
   if (confirm('Nollställa statistiken?')) { resetStats(); renderStats(statsBody); }
@@ -1930,7 +1930,9 @@ onTap(document.getElementById('reset-no'), () => resetHome.cancel());
 onTap(document.getElementById('reset-yes'), () => resetHome.confirm());
 document.addEventListener('keydown', (e) => {
   if (e.code === 'Escape' && !resetEl.hidden) { e.preventDefault(); resetHome.cancel(); }
+  else if (e.code === 'Escape' && leaderboard?.lbDialog && !leaderboard.lbDialog.hidden) { e.preventDefault(); leaderboard.closeLeaderboardDialog(); }
   else if (e.code === 'Escape' && leaderboard?.dialog && !leaderboard.dialog.hidden) { e.preventDefault(); leaderboard.handleSkip(); }
+  else if (e.code === 'Escape' && !statsEl.hidden) { e.preventDefault(); showStats(false); statsPinned = false; }
 });
 if (takeResetDone()) document.getElementById('reset-done').hidden = false;
 onTap(document.getElementById('update-reload'), () => {

@@ -108,17 +108,51 @@ const worker = {
     if (what === 'presence') {
       if (m === 'GET' && !id) {
         let count = 0, cursor;
+        const names = [];
         do {
           const page = await env.LUNDEN.list({ prefix: 'presence:', ...(cursor ? { cursor } : {}) });
           count += page.keys.length;
+          for (const k of page.keys) {
+            const raw = await env.LUNDEN.get(k.name);
+            if (raw) {
+              try {
+                const parsed = JSON.parse(raw);
+                if (parsed?.name && !names.includes(parsed.name)) names.push(parsed.name);
+              } catch {
+                if (typeof raw === 'string' && raw.trim() && !names.includes(raw.trim())) names.push(raw.trim());
+              }
+            }
+          }
           cursor = page.list_complete ? '' : page.cursor;
         } while (cursor);
-        return json({ count }, 200, h);
+        return json({ count, names }, 200, h);
       }
       if (m === 'PUT' && id) {
-        await env.LUNDEN.put(`presence:${id}`, '', { expirationTtl: 120 });
-        const page = await env.LUNDEN.list({ prefix: 'presence:' });
-        return json({ count: page.keys.length }, 200, h);
+        let name = '';
+        try {
+          const b = await request.json();
+          if (b?.name && typeof b.name === 'string') name = b.name.trim().slice(0, 30);
+        } catch { /* empty body or non-json */ }
+        await env.LUNDEN.put(`presence:${id}`, JSON.stringify({ name, t: Date.now() }), { expirationTtl: 120 });
+        let count = 0, cursor;
+        const names = [];
+        do {
+          const page = await env.LUNDEN.list({ prefix: 'presence:', ...(cursor ? { cursor } : {}) });
+          count += page.keys.length;
+          for (const k of page.keys) {
+            const raw = await env.LUNDEN.get(k.name);
+            if (raw) {
+              try {
+                const parsed = JSON.parse(raw);
+                if (parsed?.name && !names.includes(parsed.name)) names.push(parsed.name);
+              } catch {
+                if (typeof raw === 'string' && raw.trim() && !names.includes(raw.trim())) names.push(raw.trim());
+              }
+            }
+          }
+          cursor = page.list_complete ? '' : page.cursor;
+        } while (cursor);
+        return json({ count, names }, 200, h);
       }
     }
 

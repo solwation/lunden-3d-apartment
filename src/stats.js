@@ -286,6 +286,6 @@ export const setStatsExtra = (fn) => { extra = fn; };
 
 export function renderStats(el) {
   const html = statRows().map(([label, value, sub]) =>
-    `<div><span>${label}</span><b>${value}</b>${sub ? `<small>${sub}</small>` : ''}</div>`).join('') + extra();
+    `<div class="stat-row"><span>${label}</span><b>${value}</b>${sub ? `<small>${sub}</small>` : ''}</div>`).join('') + extra();
   if (el.innerHTML !== html) el.innerHTML = html;
 }
