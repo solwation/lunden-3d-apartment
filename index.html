@@ -144,7 +144,10 @@
     #stick.sprint { border-color: #7fd18b; }
     #stick.sprint .knob { background: #5cc06b; } /* sprinting (stick all the way out, outdoors) */
     .touch-only { display: none; }
-    body.touch .touch-only { display: block; }
+    body.touch .touch-only { display: block; opacity: 0.55; backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px); }
+    body.touch .touch-only:active, body.touch #choices button:active, body.touch #mute:active { opacity: 0.9; }
+    body.touch #choices button { opacity: 0.65; backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px); }
+    body.touch #mute { opacity: 0.55; backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px); }
     body.touch #level { bottom: auto; top: calc(16px + var(--st)); }
     #action { position: fixed; right: calc(24px + var(--sr)); bottom: calc(32px + var(--sb)); touch-action: manipulation; padding: 16px 22px; border: 0; border-radius: 40px; background: var(--accent); color: #fff; font: 600 16px system-ui, sans-serif; box-shadow: 0 4px 14px rgba(0,0,0,.3); }
     #action[hidden] { display: none; }

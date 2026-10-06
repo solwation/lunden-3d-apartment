@@ -1,4 +1,5 @@
 [
+  {"id": 447, "date": "2026-10-06", "text": "Knapparna på skärmen vid touch-styrning är nu halvt genomskinliga för att inte skymma spelet."},
   {"id": 446, "date": "2026-10-06", "text": "Trapphuset vid portiken har nu fönster mot gatan på våning 1 och 2 enligt ritningarna."},
   {"id": 445, "date": "2026-10-06", "text": "Statistikpanelen anpassar sig nu dynamiskt till fönstrets fulla höjd, och aktiva spelare samt deras poäng visas i start- och pausmenyn."},
   {"id": 444, "date": "2026-10-06", "text": "Topplistans rader döljs nu från paus- och startmenyn och visas uteslutande via popupen Topplistan samt i helskärmsstatistiken."},
