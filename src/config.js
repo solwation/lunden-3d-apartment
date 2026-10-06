@@ -555,7 +555,11 @@ export const HUS_L = {
   // (thicker gables); the core is `w` between the wall centres either side, the portik x from its west wall centre.
   // Hus L 53.3 m gable to gable (exterior.js husLLayout).
   pitch: 5.55, wall: 0.1, gableExtra: 0.38,
-  core: { w: 8.175, portik: [3.4, 5.1], portikHeight: 3.0 }, // stair core
+  core: {
+    w: 8.175, portik: [3.4, 5.1], portikHeight: 3.0,
+    // L1101 street openings on våning 2 (#457, DRAWING overview plan p. 48; sill/head ASSUMPTION)
+    l1101: [{ x0: 3.67, x1: 4.98, sill: 0.8, head: 2.4 }, { x0: 6.51, x1: 7.31, sill: 0.8, head: 2.4 }],
+  }, // stair core
   upperStoreys: VERTICAL.upper.storeys,        // våning 3–4 (plan brochure S2: Hus L = våning 1–4)
   storeyHeight: VERTICAL.upper.floorToFloor,   // våning 3–4 floor-to-floor (assumption, #344), not våning 1–2's
   // walkway over our north bedrooms: z 0 → the upper flats' north outer face (#354). READ on Peab's drawings, not
@@ -977,6 +981,9 @@ export const CORE = {
   portikDoor: { z: [8.45, 9.48], side: [7.66, 8.4], opening: [7.61, 9.53] },
   loftDoor: { x: [-18.11, -17.07], side: [-18.58, -18.16] },
   flatDoors: [[2, 6.73, 7.74], [3, 6.29, 7.3]],
+  // street-façade window on våning 1 and 2 (#457, DRAWING overview plans pp. 47–48): x ≈ −18.55 … −17.15;
+  // sill and head heights are an ASSUMPTION
+  window: { x: [-18.55, -17.15], sill: 0.8, head: 2.4 },
   lift: { x0: -18.95, x1: -17.44, z0: 9.78, z1: 12.28, door: [-18.84, -17.94], speed: 1.0, accel: 0.6, doorTime: 1.4, wait: 6 },
   light: { hold: 60 },
 };

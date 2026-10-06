@@ -78,6 +78,16 @@ function quadX(za, zb, ya, yb, x, west) {
   return geo;
 }
 
+/** Horizontal quad in the plane y (facing −y if `down`). */
+function quadY(xa, xb, za, zb, y, down) {
+  const geo = new THREE.PlaneGeometry(xb - xa, zb - za);
+  geo.rotateX(down ? Math.PI / 2 : -Math.PI / 2);
+  geo.translate((xa + xb) / 2, y, (za + zb) / 2);
+  const pos = geo.attributes.position, uv = geo.attributes.uv;
+  for (let i = 0; i < pos.count; i++) uv.setXY(i, pos.getX(i) / TILE_W, pos.getZ(i) / TILE_H);
+  return geo;
+}
+
 function boxGeo(x0, x1, y0, y1, z0, z1) {
   const geo = new THREE.BoxGeometry(x1 - x0, y1 - y0, z1 - z0);
   geo.translate((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2);
@@ -245,20 +255,44 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
   // stair core with the portik through the ground floor, a flat (L1101) on våning 2
   {
     const [p0, p1] = H.core.portik.map((p) => coreX0 + p), ph = H.core.portikHeight;
-    const y2 = storeyFloor(2); // våning 2's floor (VERTICAL, #344)
-    const win = (xa) => ({ x0: coreX0 + xa, x1: coreX0 + xa + 1.2, y0: y2 + 0.8, y1: y2 + 2.4 });
-    const holes = [{ x0: p0, x1: p1, y0: 0, y1: ph }, win(1.0), win(6.4)];
-    facade(bricks, coreX0, coreX1, 0, roofTop, -eps, true, holes, false);
-    facade(bricks, coreX0, coreX1, 0, roofTop, D + eps, false, holes, false);
-    [win(1.0), win(6.4)].forEach((o) => { fakeWindow(o, -eps, true); fakeWindow(o, D + eps, false); });
+    const y1 = storeyFloor(1), y2 = storeyFloor(2); // våning 1 and 2 floors (VERTICAL, #344)
+    // #457: stairwell street windows on våning 1 and 2 (CORE.window)
+    const win1 = { x0: CORE.window.x[0], x1: CORE.window.x[1], y0: y1 + CORE.window.sill, y1: y1 + CORE.window.head };
+    const win2 = { x0: CORE.window.x[0], x1: CORE.window.x[1], y0: y2 + CORE.window.sill, y1: y2 + CORE.window.head };
+    const l1101Wins = (H.core.l1101 ?? []).map((o) => ({ x0: coreX0 + o.x0, x1: coreX0 + o.x1, y0: y2 + o.sill, y1: y2 + o.head }));
+    const streetHoles = [{ x0: p0, x1: p1, y0: 0, y1: ph }, win1, win2, ...l1101Wins];
+    facade(bricks, coreX0, coreX1, 0, roofTop, -eps, true, streetHoles, false);
+    const courtWin = (xa) => ({ x0: coreX0 + xa, x1: coreX0 + xa + 1.2, y0: y2 + 0.8, y1: y2 + 2.4 });
+    const courtHoles = [courtWin(1.0), courtWin(6.4)];
+    facade(bricks, coreX0, coreX1, 0, roofTop, D + eps, false, courtHoles, false);
+    l1101Wins.forEach((o) => fakeWindow(o, -eps, true));
+    courtHoles.forEach((o) => fakeWindow(o, D + eps, false));
+    // Brick reveals for the real stairwell windows between the street face (-eps) and the inner face CORE.north[1]
+    const nz0 = -eps, nz1 = CORE.north[1];
+    for (const w of [win1, win2]) {
+      bricks.push(
+        quadX(nz0, nz1, w.y0, w.y1, w.x0, false), // west jamb (facing east)
+        quadX(nz0, nz1, w.y0, w.y1, w.x1, true),  // east jamb (facing west)
+        quadY(w.x0, w.x1, nz0, nz1, w.y1, true),  // head / lintel (facing down)
+        quadY(w.x0, w.x1, nz0, nz1, w.y0, false)  // sill (facing up)
+      );
+    }
     // #415: the stairwell (src/core.js) is hollow — the solid west of the portik leaves out the stair band (x CORE.x0 … x1,
     // from the street wall's inner face to the lift shaft, #456; on våning 3 from the upper units' street face) and the
     // passage from the portik's door (z CORE.portikDoor.opening: the door + its sidelight, 2.2 m high); the portik's west
     // wall has that opening
     const [dz0, dz1] = CORE.portikDoor.opening, dh = 2.2; // (#456: the door + its sidelight)
     const g = 0.03; // (#448: kept a few cm off the stairwell's own walls — coplanar faces flickered)
+    const nz = CORE.north[1] - g;
     solids.push(boxGeo(coreX0, CORE.x0 - g, 0, roofTop, 0, D), boxGeo(CORE.x1 + g, p0, 0, roofTop, 0, dz0 - g), boxGeo(CORE.x1 + g, p0, 0, roofTop, dz1 + g, D),
-      boxGeo(CORE.x1 + g, p0, dh + g, roofTop, dz0, dz1), boxGeo(CORE.x0, CORE.x1, 0, roofTop - 0.2, 0, CORE.north[1] - g), boxGeo(CORE.x0, CORE.x1, roofTop - 0.2, roofTop, 0, CORE.loftFace - g),
+      boxGeo(CORE.x1 + g, p0, dh + g, roofTop, dz0, dz1),
+      // solids in the stairwell north wall around the two windows (#457)
+      boxGeo(CORE.x0, CORE.x1, 0, win1.y0, 0, nz),
+      boxGeo(CORE.x0, win1.x0, win1.y0, win1.y1, 0, nz), boxGeo(win1.x1, CORE.x1, win1.y0, win1.y1, 0, nz),
+      boxGeo(CORE.x0, CORE.x1, win1.y1, win2.y0, 0, nz),
+      boxGeo(CORE.x0, win2.x0, win2.y0, win2.y1, 0, nz), boxGeo(win2.x1, CORE.x1, win2.y0, win2.y1, 0, nz),
+      boxGeo(CORE.x0, CORE.x1, win2.y1, roofTop - 0.2, 0, nz),
+      boxGeo(CORE.x0, CORE.x1, roofTop - 0.2, roofTop, 0, CORE.loftFace - g),
       boxGeo(p1, coreX1, 0, roofTop, 0, D), boxGeo(p0, p1, ph, roofTop, 0, D));
     bricks.push(quadX(0, dz0, 0, ph, p0 + eps, false), quadX(dz1, D, 0, ph, p0 + eps, false), quadX(dz0, dz1, dh, ph, p0 + eps, false), quadX(0, D, 0, ph, p1 - eps, true));
   }

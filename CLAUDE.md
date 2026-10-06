@@ -168,8 +168,9 @@ src/core.js            Hus L's stair core by the portik (#415, CORE in config): 
                        flight per storey (16 / 17 / 16 treads of 0.25), all stacked along the band's west wall, each rising
                        north from the landing at the courtyard end (the lift, the ways in) to the street-end floor; a passage
                        along the flights' east side back to the next landing; none on våning 4; heights = ASSUMPTION) from the
-                       garage lobby (våning −1, a cross wall north) to våning 3; the portik's glazed screen (door + sidelight,
-                       a passage to the landing), våning 3's door out onto the loftgång (+ sidelight); walls with height ranges
+                       garage lobby (våning −1, a cross wall north) to våning 3; windows out to the street on våning 1 and 2
+                       (#457); the portik's glazed screen (door + sidelight, a passage to the landing), våning 3's door out
+                       onto the loftgång (+ sidelight); walls with height ranges
                        (`segments(feet)`), `heights(x, z)` = every floor / flight there (player.js `inCore`, `groundAt`). `Lift`:
                        four stops (Y −3, 0, 3.25, 6.4), call buttons + a car panel (kinds 'liftcall' / 'liftbtn'), sliding
                        two-panel doors that never close on someone in the doorway (#314), the visitor rides (`snap`), a hum, a
