@@ -86,6 +86,12 @@ import { Basketball, Hoop } from './basket.js';
 import { Mess } from './mess.js';
 
 const overlay = document.getElementById('overlay');
+const loadingEl = document.getElementById('loading');
+function hideLoading() {
+  if (!loadingEl || loadingEl.hidden) return;
+  loadingEl.classList.add('done');
+  setTimeout(() => { loadingEl.hidden = true; }, 400);
+}
 const hud = document.getElementById('hud');
 const levelEl = document.getElementById('level');
 const promptEl = document.getElementById('prompt');
@@ -777,7 +783,7 @@ for (const id of ['restart', 'to-start']) { // also on the start screen shown wh
   document.getElementById(id).addEventListener('click', () => { spawnAtStart(); realNow(); resumeEl.hidden = true; });
 }
 const params = new URLSearchParams(location.search);
-if (params.has('shot')) overlay.hidden = true;
+if (params.has('shot')) { overlay.hidden = true; if (loadingEl) loadingEl.hidden = true; }
 if (params.has('tv')) for (const t of world.furnitureTargets) if (t.kind === 'tv') t.toggle();
 // Tilly's laptop (#283): every clip kind seen counts once (stats `clips`); &laptop switches it on (screenshots)
 const laptops = [...new Set(world.furnitureTargets.filter((t) => t.kind === 'laptop').map((t) => t.laptop))];
@@ -841,7 +847,7 @@ function look(dyaw, dpitch) {
 
 let played = false; // left the start screen at least once this visit (an F5 then carries on, #203)
 function showOverlay(show) {
-  if (!show) { played = true; document.getElementById('reset-done').hidden = true; } // "Hemmet är återställt" only until the visit starts (#303)
+  if (!show) { played = true; document.getElementById('reset-done').hidden = true; if (loadingEl) loadingEl.hidden = true; } // "Hemmet är återställt" only until the visit starts (#303)
   overlay.hidden = !show;
   hud.hidden = show;
   document.body.classList.toggle('touch', touch.enabled);
@@ -861,7 +867,10 @@ document.getElementById('start-mouse').addEventListener('click', startMouse);
 // line at the bottom, no box (#190). Esc in the game still just frees the mouse.
 const armEl = document.getElementById('arm');
 let unlockedAt = -1e9;
-const otherOverlay = () => ['install', 'reset-confirm', 'note', 'board-view', 'poster-panel'].some((id) => !document.getElementById(id)?.hidden)
+const otherOverlay = () => ['loading', 'install', 'reset-confirm', 'note', 'board-view', 'poster-panel'].some((id) => {
+  const el = document.getElementById(id);
+  return el && !el.hidden && !el.classList.contains('done');
+})
   || getComputedStyle(document.getElementById('rotate')).display !== 'none';
 document.addEventListener('keydown', (e) => {
   if (e.code !== 'Escape' || locked || overlay.hidden || otherOverlay()) return;
@@ -1980,6 +1989,7 @@ if (resumeOk && resumed.mode) continueAfterReload(resumed);
 // &life (#365): the life simulator's developer scenario — a cleared worktop, a few test things, never saved (life.js)
 if (lifeDev()) devScenario({ life, world, holdables, cups, things, milk, fish, fries, fruit, airFryer, beer, cat, day, player, camera, at: !!at, timeGiven: params0.has('time'), keepOpen: params0.has('open') });
 document.documentElement.classList.remove('resuming'); // the page is ready: off with the "Laddar…" cover (#222)
+hideLoading();
 
 // handle for tests/debugging (tools/touchtest.html)
-window.__app = { dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, toaster, life, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, coffeeJar, miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };
+window.__app = { loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, toaster, life, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, coffeeJar, miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio };

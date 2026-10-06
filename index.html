@@ -95,7 +95,23 @@
     body.phone .keys, body.phone #start-mouse, body.phone #start-touch { display: none; }
     body.phone #start-go { display: block; }
     html.resuming #overlay { display: none !important; }
+    html.resuming #loading { display: none !important; }
     html.resuming body::after { content: 'Laddar…'; position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; background: #14232d; color: rgba(255,255,255,.7); font: 500 14px system-ui, sans-serif; }
+    #loading {
+      position: fixed; inset: 0; z-index: 50; display: grid; place-items: center;
+      background: #14232d;
+      transition: opacity .4s ease-out;
+    }
+    #loading[hidden] { display: none; }
+    #loading.done { opacity: 0; pointer-events: none; }
+    .loading-card { text-align: center; max-width: 340px; }
+    .loading-icon { width: 64px; height: 64px; border-radius: 14px; margin: 0 auto 12px; display: block; box-shadow: 0 4px 14px rgba(0,0,0,.25); }
+    .loading-bar { width: 100%; height: 5px; background: #dce7ed; border-radius: 3px; overflow: hidden; margin-top: 16px; position: relative; }
+    .loading-bar i { display: block; position: absolute; top: 0; bottom: 0; left: 0; width: 35%; background: var(--accent); border-radius: 3px; animation: load-slide 1.3s cubic-bezier(.45, 0, .55, 1) infinite; }
+    @keyframes load-slide {
+      0% { left: -35%; }
+      100% { left: 100%; }
+    }
     .card .qr { display: flex; align-items: center; gap: 10px; margin: 12px 0 0; font-size: 12px; opacity: .85; }
     .card .qr img { width: 111px; height: 111px; border-radius: 4px; image-rendering: pixelated; }
     body.phone .card .qr { display: none; } /* already on a phone (#193) */
@@ -255,7 +271,7 @@
     .resume[hidden] { display: none; }
     .resume .linkish { margin: 0 0 0 6px; }
     .linkish { border: 0; background: none; color: #6a7c84; font: 13px system-ui, sans-serif; text-decoration: underline; cursor: pointer; padding: 0; margin-top: 12px; }
-    #rotate { display: none; position: fixed; inset: 0; z-index: 20; background: var(--ink); color: #fff; place-items: center; text-align: center; font-size: 18px; padding: 24px; }
+    #rotate { display: none; position: fixed; inset: 0; z-index: 70; background: var(--ink); color: #fff; place-items: center; text-align: center; font-size: 18px; padding: 24px; }
     #rotate .ico { display: inline-block; font-size: 54px; animation: tilt 2s ease-in-out infinite; }
     @keyframes tilt { 0%, 30% { transform: rotate(0); } 60%, 100% { transform: rotate(-90deg); } }
     /* phones/tablets held upright: ask for landscape (the lock above only works on some browsers) */
@@ -359,6 +375,15 @@
     // touch-only device (phone, tablet): a short start screen (&phone forces it for screenshots)
     if (matchMedia('(pointer: coarse) and (hover: none)').matches || /[?&]phone\b/.test(location.search)) document.body.classList.add('phone');
   </script>
+  <div id="loading" role="status" aria-live="polite">
+    <div class="card loading-card">
+      <img class="loading-icon" src="icons/icon-192.png" alt="" width="64" height="64">
+      <div class="kicker">KV. LUNDEN / L1007</div>
+      <h1>Laddar lägenheten…</h1>
+      <p>Förbereder 3D-modellen och planritningen.</p>
+      <div class="loading-bar"><i></i></div>
+    </div>
+  </div>
   <div id="overlay">
     <div class="card">
       <div class="kicker">KV. LUNDEN / L1007</div>

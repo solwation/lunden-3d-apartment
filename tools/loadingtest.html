@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Loading screen test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+// Loading screen before the splash screen:
+//   - On first start (fresh load): #loading is displayed while the 3D model and modules load
+//   - Once ready (__app): #loading fades out (.done / hidden) and #overlay (start screen) is shown
+//   - On reload (html.resuming): #loading is suppressed so the dark resume cover shows directly
+//   google-chrome --headless=new --dump-dom http://localhost:8137/tools/loadingtest.html
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const lines = [];
+const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; };
+
+(async () => {
+  let pass = true;
+
+  // 1. Fresh start: loading screen is visible early before __app, and gone after
+  const f = document.createElement('iframe');
+  f.width = 900; f.height = 600;
+  f.src = '../index.html';
+  document.body.append(f);
+
+  let earlyLoading = null;
+  for (let i = 0; i < 4000 && earlyLoading === null; i++) {
+    const d = f.contentDocument, l = d?.getElementById('loading');
+    if (l && d.location.href !== 'about:blank') {
+      earlyLoading = getComputedStyle(l).display !== 'none';
+    } else {
+      await wait(2);
+    }
+  }
+  pass &= check(earlyLoading === true, `fresh start: loading screen displayed early (earlyLoading=${earlyLoading})`);
+
+  while (!f.contentWindow?.__app) await wait(50);
+  const d = f.contentDocument;
+  const l = d.getElementById('loading');
+  const o = d.getElementById('overlay');
+  pass &= check(l && (l.classList.contains('done') || l.hidden), 'fresh start: loading screen dismissed after ready');
+  pass &= check(o && !o.hidden, 'fresh start: splash screen (overlay) visible after ready');
+  f.remove();
+
+  // 2. Reload: loading screen is hidden when html.resuming is present
+  sessionStorage.setItem('lunden.resume', JSON.stringify({ mode: 'touch', ts: Date.now() }));
+  const f2 = document.createElement('iframe');
+  f2.width = 900; f2.height = 600;
+  f2.src = '../index.html';
+  document.body.append(f2);
+
+  let resumingLoading = null;
+  for (let i = 0; i < 4000 && resumingLoading === null; i++) {
+    const d2 = f2.contentDocument, l2 = d2?.getElementById('loading');
+    if (l2 && d2.location.href !== 'about:blank' && d2.documentElement.classList.contains('resuming')) {
+      resumingLoading = getComputedStyle(l2).display;
+    } else {
+      await wait(2);
+    }
+  }
+  pass &= check(resumingLoading === 'none', `resuming: loading screen suppressed by html.resuming (display=${resumingLoading})`);
+  sessionStorage.removeItem('lunden.resume');
+  f2.remove();
+
+  out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
+})();
+</script>
+</body>
+</html>
