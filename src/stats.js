@@ -63,7 +63,7 @@ let scoreEl = null, plusEl = null, plusTimer = 0, plusSum = 0, lastScore = null;
 /** Where the score goes: a container in the HUD. */
 export function setScoreElement(el) {
   scoreEl = el;
-  el.innerHTML = '<span class="label">Poäng</span> <b></b><span class="plus"></span><span id="presence" aria-label="Besökare online"></span>';
+  el.innerHTML = '<span class="score-main"><span class="label">Poäng</span> <b class="score-val"></b><span class="plus"></span></span><span id="presence" aria-label="Besökare online"></span>';
   plusEl = el.querySelector('.plus');
   renderScore();
 }
@@ -71,7 +71,8 @@ export function setScoreElement(el) {
 export function renderScore() {
   if (!scoreEl) return;
   const t = totalScore();
-  scoreEl.querySelector('b').textContent = t.toLocaleString('sv-SE');
+  const valEl = scoreEl.querySelector('.score-val') || scoreEl.querySelector('b');
+  if (valEl) valEl.textContent = t.toLocaleString('sv-SE');
   if (lastScore !== null && t > lastScore) {
     plusSum = (plusTimer ? plusSum : 0) + (t - lastScore);
     plusEl.textContent = `+${plusSum}`;
