@@ -188,30 +188,8 @@ export function cleaning(item) {
   P.box(0.025, 0.22, 0.035, C.rail.x - 0.1, 1.15, 6.29, 0x2f6fae, { gloss: true }); // hand brush
   P.box(0.03, 0.06, 0.04, C.rail.x - 0.1, 1.01, 6.29, 0x3b3f42);                    // its bristles
 
-  // the stick vacuum in its dock (a plain model): nickel and purple, a clear bin, the wand down to the floor head
-  const V = C.vacuum, out = (d) => V.z - d, vy = V.dock, purple = 0x7a4fa0, nickel = 0xa8abb0;
-  P.cyl(0.05, 0.05, 0.13, V.x, vy - 0.06, out(0.13), nickel, { gloss: true, seg: 18 });         // cyclones
-  P.cyl(0.02, 0.05, 0.05, V.x, vy + 0.03, out(0.13), purple, { gloss: true, seg: 18 });          // their cone
-  P.cyl(0.042, 0.042, 0.12, V.x, vy - 0.03, out(0.055), purple, { gloss: true, seg: 16 });      // the motor
-  P.box(0.03, 0.16, 0.035, V.x, vy - 0.16, out(0.04), 0x3b3f42, { r: [0.25, 0, 0] });          // the handle
-  P.box(0.05, 0.09, 0.06, V.x, vy - 0.27, out(0.07), 0x3b3f42, { gloss: true });                // the battery
-  P.box(0.012, 0.03, 0.008, V.x, vy - 0.07, out(0.12), 0xd9822b);                               // the trigger
-  P.cyl(0.018, 0.018, 0.08, V.x, vy - 0.32, out(0.13), purple, { gloss: true });                 // the wand's socket
-  P.cyl(0.016, 0.016, vy - 0.43, V.x, 0.06 + (vy - 0.43) / 2, out(0.13), purple, { gloss: true }); // the wand
-  P.cyl(0.02, 0.02, 0.06, V.x, 0.08, out(0.13), 0x3b3f42);                                      // the neck
-  P.box(0.25, 0.045, 0.08, V.x, 0.035, out(0.15), 0x3b3f42, { gloss: true });                   // the floor head
-  P.cyl(0.026, 0.026, 0.24, V.x, 0.028, out(0.19), 0xb08ad0, { r: [0, 0, Math.PI / 2], seg: 14 }); // its roller
-  P.cyl(0.012, 0.012, 0.16, V.x - 0.075, vy - 0.08, out(0.03), 0x3b3f42);                       // a crevice tool
-  P.box(0.05, 0.05, 0.04, V.x + 0.075, vy - 0.1, out(0.035), 0x3b3f42);                         // a brush tool
-  for (const m of P.meshes()) { m.castShadow = true; inner.add(m); }
-
-  // the vacuum's clear bin, the charging LED, the bins' labels
-  const glass = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.055, 0.15, 20).translate(V.x, vy - 0.2, out(0.13)),
-    new THREE.MeshStandardMaterial({ color: 0xdfe6ea, roughness: 0.1, transparent: true, opacity: 0.4, depthWrite: false }));
-  inner.add(glass);
-  const led = new THREE.Mesh(new THREE.SphereGeometry(0.004, 8, 6).translate(V.x, vy - 0.25, out(0.101)),
-    new THREE.MeshStandardMaterial({ color: 0x2a6bff, emissive: 0x3a8cff, emissiveIntensity: 2.5 }));
-  inner.add(led);
+  // the stick vacuum in its dock is managed by Vacuum holdable (vacuum.js, #389)
+  const V = C.vacuum;
   const words = ['Städ', 'Tvål', 'Påsar'], tex = labelTexture(words);
   const labels = bx.map((x, i) => {
     const p = new THREE.PlaneGeometry(0.12, 0.03), uv = p.attributes.uv;

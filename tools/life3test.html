@@ -115,6 +115,63 @@ if (want(388)) try {
   g.remove();
 } catch (e) { pass = false; lines.push(`FAIL #388 error ${e.stack}`); }
 
+// --- #389: stick vacuum take out and dock -------------------------------------------------------------------------
+if (want(389)) try {
+  const f = await load('life&shot');
+  const K = kit(f), { A, step, V, settle } = K;
+  const vac = A.vacuum, kd = A.world.klkDoor;
+  check(vac && vac.isAtDock && vac.led.visible, `vacuum starts docked with charging LED visible (${vac?.isAtDock})`);
+  check(kd && !kd.isOpen, `storage door starts shut (${kd?.isOpen})`);
+
+  // Closed door blocks taking from dock
+  check(vac.takeTarget.blocked && vac.takeTarget.blockedText === 'Öppna förrådsdörren först',
+    `taking is blocked with hint when door shut (${vac.takeTarget.blockedText})`);
+  vac.take();
+  check(vac.isAtDock && !vac.held, 'taking with shut door refused');
+
+  // Open storage door
+  kd.toggle(); settle(kd);
+  check(kd.isOpen && !vac.takeTarget.blocked, `storage door open, taking unblocked (${vac.takeTarget.blocked})`);
+
+  // Take vacuum into hand (vacuum mode)
+  vac.take();
+  check(vac.held && !vac.isAtDock && !vac.led.visible, 'vacuum in hand, charging LED off');
+  check(vac.model.parent === A.camera && vac.model.position.y < -1.4, `held in vacuum mode with head on floor (${vac.model.position.y.toFixed(2)})`);
+
+  // Place on floor
+  const floorSpot = new V(3.8, LEVELS[0].floor, 5.0);
+  vac.placeAt(floorSpot, 0);
+  check(!vac.held && vac.placed && !vac.isAtDock && !vac.led.visible, 'vacuum placed on floor');
+  check(!vac.takeTarget.blocked, 'taking placed vacuum on floor is not blocked by storage door');
+
+  // Take again from floor
+  vac.take();
+  check(vac.held && !vac.placed, 'taken again from floor');
+
+  // Shut storage door while holding
+  kd.toggle(); settle(kd);
+  check(!kd.isOpen && vac.backTarget.blocked && vac.backTarget.blockedText === 'Öppna förrådsdörren först',
+    `docking blocked with hint when door shut (${vac.backTarget.blockedText})`);
+  vac.putBack();
+  check(vac.held && !vac.isAtDock, 'docking attempt refused while door is shut');
+
+  // Open door again and dock
+  kd.toggle(); settle(kd);
+  check(kd.isOpen && !vac.backTarget.blocked, 'docking unblocked with door open');
+  vac.putBack();
+  check(!vac.held && !vac.placed && vac.isAtDock && vac.led.visible, 'vacuum docked, charging LED on');
+
+  // Shut storage door
+  kd.toggle(); settle(kd);
+  check(!kd.isOpen && kd.t < 0.05, 'storage door shut after returning vacuum');
+
+  // Headroom check at dock under stair
+  const u = A.stairUnderside(vac.home.pos.x, 6.55);
+  check(u !== null && u > 2.0 && vac.home.pos.y + 1.25 < u, `vacuum at dock clears stair underside (u ${u?.toFixed(3)} m > top)`);
+
+  f.remove();
+} catch (e) { pass = false; lines.push(`FAIL #389 error ${e.stack}`); }
+
 lines.push(pass ? 'ALL PASS' : 'SOME FAILED');
 out.textContent = lines.join('\n');
 </script>
