@@ -402,7 +402,7 @@ function printTexture(theme, ground) {
     for (let y = 0; y < S; y += 5) { g.beginPath(); g.moveTo(0, y); g.lineTo(S, y); g.stroke(); }
     for (let x = 0; x < S; x += 5) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, S); g.stroke(); }
 
-    const ochre = '#c49a45', terra = '#b86b53', taupe = '#8f8073', softWhite = '#f4efe6';
+    const ochre = '#e2ad46', terra = '#ce7152', taupe = '#344b2d', softWhite = '#e6e1d6';
     // Modern abstract arch
     const arch = (w, h, col) => {
       g.strokeStyle = col; g.lineWidth = 3;
@@ -514,19 +514,25 @@ export class Curtain {
     const y0 = fl + spec.drop, y1 = fl + spec.top;
     this.tex = printTexture(spec.theme, spec.colors.ground);
     this.mat = new THREE.MeshStandardMaterial({ map: this.tex, emissiveMap: this.tex, emissive: 0x000000, roughness: 0.93, side: THREE.DoubleSide });
-    // a split on one track: shut, both meet at `meet` (the folds end on the rail's line, so the two join seamlessly);
-    // open, each is gathered against its outer end (the west one's end stop, the track's east end)
-    const fw = spec.fullness * (spec.meet - spec.stop), fe = spec.fullness * (spec.east - spec.meet);
-    this.ends = {
-      west: { open: [spec.stop, spec.stop + spec.stack * fw], shut: [spec.stop, spec.meet] },
-      east: { open: [spec.east - spec.stack * fe, spec.east], shut: [spec.meet, spec.east] },
-    };
-    this.travel = this.ends.east.open[0] - spec.meet; // the east panel's leading edge (the west one keeps the same share)
-    this.west = new Panel(spec, spec.z, fw, this.mat, y0, y1, spec.stop, spec.meet);
-    this.east = new Panel(spec, spec.z, fe, this.mat, y0, y1, spec.meet, spec.east);
+    // Each cloth panel has a closed span and parks at one end of that span. Ordinary pairs retain their ids.
+    const spans = spec.panels ?? [{ id: 'west', from: spec.stop, to: spec.meet, park: 'left' },
+      { id: 'east', from: spec.meet, to: spec.east, park: 'right' }];
+    this.ends = {};
+    this.panels = [];
     this.object = new THREE.Group();
-    this.object.add(this.west.mesh, this.east.mesh);
-    for (const m of [this.west.mesh, this.east.mesh]) m.userData.door = this; // E targets, kept out of the merge
+    this.travel = 0;
+    for (const { id: key, from, to, park } of spans) {
+      const fabric = spec.fullness * (to - from), stack = spec.stack * fabric;
+      const open = park === 'left' ? [from, from + stack] : [to - stack, to];
+      this.ends[key] = { open, shut: [from, to] };
+      this.travel = Math.max(this.travel, Math.abs(open[0] - from), Math.abs(open[1] - to));
+      const panel = this[key] = new Panel(spec, spec.z, fabric, this.mat, y0, y1, from, to);
+      panel.id = key;
+      this.panels.push(panel);
+      this.object.add(panel.mesh);
+      panel.mesh.userData.door = this;
+    }
+    if (!spec.panels) this.travel = this.ends.east.open[0] - spec.meet;
     this.pickable = this.object;
     // the track: a slim white rail on the soffit's underside from the west wall + a mounting strip, the west and east end stops
     const trackMat = new THREE.MeshStandardMaterial({ color: spec.colors.track, roughness: 0.4, metalness: 0.1 });
@@ -552,8 +558,11 @@ export class Curtain {
 
   /** How much of the glass is covered, 0 (open: the parked west stack's sliver does not count) … 1 (shut). */
   get cover() {
-    const open = this.freeGlass(this.ends.west.open[1], this.ends.east.open[0]);
-    return Math.min(1, Math.max(0, 1 - this.freeGlass(this.west.b, this.east.a) / open));
+    const [g0, g1] = this.spec.glass;
+    const covered = (spans) => spans.reduce((sum, [a, b]) => sum + Math.max(0, Math.min(b, g1) - Math.max(a, g0)), 0);
+    const parked = covered(Object.values(this.ends).map((e) => e.open));
+    const now = covered(this.panels.map((p) => [p.a, p.b]));
+    return Math.min(1, Math.max(0, (now - parked) / Math.max(0.001, g1 - g0 - parked)));
   }
   get isOpen() { return this.t > 0.01; }
 
@@ -562,9 +571,9 @@ export class Curtain {
     this.t = Math.min(1, Math.max(0, t));
     if (Math.abs(this.t - this.built) < 1e-5) return;
     this.built = this.t;
-    for (const k of ['west', 'east']) {
-      const e = this.ends[k];
-      this[k].build(lerp(e.open[0], e.shut[0], this.t), lerp(e.open[1], e.shut[1], this.t));
+    for (const panel of this.panels) {
+      const e = this.ends[panel.id];
+      panel.build(lerp(e.open[0], e.shut[0], this.t), lerp(e.open[1], e.shut[1], this.t));
     }
   }
 
@@ -573,7 +582,7 @@ export class Curtain {
     this.sound -= dt;
     if (this.sound > 0) return;
     this.sound = 0.42;
-    sfx.slide(new THREE.Vector3(this.east.a, this.yTop, this.spec.z), { dur: 0.4, wardrobe: true });
+    sfx.slide(new THREE.Vector3(this.panels.at(-1).a, this.yTop, this.spec.z), { dur: 0.4, wardrobe: true });
   }
 
   /** The cotton lets a little daylight through (teal), warm from a lit room at night. */

@@ -152,10 +152,23 @@ async function run() {
   }
   for (const curt of app.blinds.curtains) {
     curt.set(1);
-    check(curt.t === 1 && Math.abs(curt.west.b - curt.spec.meet) < 1e-6 && Math.abs(curt.east.a - curt.spec.meet) < 1e-6, `${curt.room} closes cleanly at meet ${curt.spec.meet}`);
+    check(curt.t === 1 && curt.panels.every((p, i, ps) => !i || Math.abs(ps[i - 1].b - p.a) < 1e-6), `${curt.room} closes cleanly at meet ${curt.spec.meet}`);
     curt.set(0);
     check(curt.t === 0, `${curt.room} opens cleanly`);
   }
+  const living = app.blinds.curtains.find((c) => c.room === 'Vardagsrum');
+  check(living.panels.length === 3 && living.spec.west <= 0.21 && living.spec.east + 0.02 >= 5.55, 'living room: three panels on a wall-to-wall track');
+  for (const t of [0, 0.5, 1]) {
+    living.set(t);
+    check(living.panels.every((p) => p.a >= 0.20 && p.b <= 5.55 && p.a < p.b) && Math.abs(living.cover - t) < 0.2, `living room: valid fabric and daylight at ${t}`);
+  }
+  living.set(0);
+  check(living.panels.every((p) => p.b <= 0.9517 || p.a >= 1.9616), 'parked cloth leaves patio doorway clear');
+  check(living.panels.every((p) => p.b <= 2.88 || p.a >= 4.81), 'parked cloth leaves living-room window clear');
+  check(living.panels.every((p) => {
+    const a = p.mesh.geometry.attributes.position.array;
+    return Array.from({ length: a.length / 3 }, (_, i) => a[i * 3 + 2]).every((z) => z > 12.06 && z < 12.2337);
+  }), 'cloth folds stay between sofa back and window wall');
   try { localStorage.removeItem('lunden.blinds'); } catch { /* */ }
 }
 run().catch((e) => check(false, `ERROR ${e.message}\n${e.stack}`)).finally(() => {

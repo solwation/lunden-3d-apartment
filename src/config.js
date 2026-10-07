@@ -196,10 +196,12 @@ export const CURTAINS = [
   { level: 0, room: 'Kök / matplats', facade: 'north', theme: 'linen_kitchen', west: 2.50, stop: 2.52, meet: 3.85, east: 4.90, z: 0.58, glass: [3.15, 4.56], stack: 0.22,
     top: 2.96, drop: 0.02, fullness: 1.4, amp: 0.028, tile: 0.6, speed: 0.38, dim: 0.35,
     colors: { ground: '#ede7dc', track: 0xf3f2ee, glow: 0xf8f4ec, warm: 0xffc27a }, glow: { day: 0.22, lamp: 0.08 } },
-  // Vardagsrum (Entréplan South): Scandinavian living room Jacquard weave in warm sand
-  { level: 0, room: 'Vardagsrum', facade: 'south', theme: 'linen_living', west: 2.25, stop: 2.26, meet: 3.85, east: 5.48, z: 12.10, glass: [2.88, 4.81], stack: 0.22,
+  // Vardagsrum (#463): three olive panels, parked clear of door/window; rail spans the plan's inner faces x .2018–5.5512.
+  // Splits/stack/fullness and colours are visual choices (*guess*), matching the olive/cream rug.
+  { level: 0, room: 'Vardagsrum', facade: 'south', theme: 'linen_living', west: 0.202, stop: 0.22, meet: 3.855, east: 5.531, z: 12.10, glass: [2.88, 4.81], stack: 0.22,
     top: 2.96, drop: 0.02, fullness: 1.4, amp: 0.028, tile: 0.7, speed: 0.38, dim: 0.35,
-    colors: { ground: '#ded6c9', track: 0xf3f2ee, glow: 0xeee6d9, warm: 0xffc27a }, glow: { day: 0.20, lamp: 0.08 } },
+    panels: [{ id: 'west', from: 0.22, to: 2.15, park: 'left' }, { id: 'middle', from: 2.15, to: 3.855, park: 'left' }, { id: 'east', from: 3.855, to: 5.531, park: 'right' }],
+    colors: { ground: '#657a38', track: 0xf3f2ee, glow: 0x91a85d, warm: 0xffc27a }, glow: { day: 0.20, lamp: 0.08 } },
 ];
 
 // Flower pots on the inner window boards (#136, the user: "blomkrukor med blommor i alla fönsterkarmar";
