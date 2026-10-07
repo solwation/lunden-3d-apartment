@@ -23,6 +23,7 @@ import { klk } from './closet.js';
 import { cleaning } from './cleaning.js';
 import { registerRug, rugUnder } from './rugs.js';
 import { pingpingModel } from './pingping.js';
+import { buildWhiskyBottle, buildWineBottle } from './bottles.js';
 import { pineappleMirror } from './pineapple.js';
 import { pillow, duvet as duvetShape } from './bedding.js';
 import { drawerFill, personFor, Pack as StuffPack, garment, shoes, stack, rolls, rng } from './stuff.js';
@@ -3467,31 +3468,19 @@ function winerack(item) {
   for (const y of [0, h]) bar(w + 0.02, 0.02, 0.005, 0, y, fz);
   for (const x of [-w / 2, w / 2]) { bar(0.012, 0.012, fz, x, h - 0.03, fz / 2); bar(0.012, 0.012, fz, x, 0.03, fz / 2); }
   for (const x of [-w / 2 + 0.04, w / 2 - 0.04]) { const eye = new THREE.Mesh(new THREE.TorusGeometry(0.01, 0.002, 6, 12), black); eye.position.set(x, h + 0.02, fz); g.add(eye); }
-  const glass = [new THREE.MeshStandardMaterial({ color: 0x1d2b1c, roughness: 0.15, metalness: 0.2 }), new THREE.MeshStandardMaterial({ color: 0x101210, roughness: 0.15, metalness: 0.2 })];
-  const labels = [new THREE.MeshStandardMaterial({ color: 0xf1ead8, roughness: 0.8 }), new THREE.MeshStandardMaterial({ color: 0xd8c7a3, roughness: 0.8 })];
-  const gold = new THREE.MeshStandardMaterial({ color: 0xc9a33a, roughness: 0.3, metalness: 0.8 });
-  const corkMat = new THREE.MeshStandardMaterial({ color: 0xb8925f, roughness: 0.9 });
-  const profile = [[0, 0], [0.037, 0], [0.038, 0.2], [0.03, 0.24], [0.014, 0.27], [0.013, 0.33], [0.015, 0.335], [0, 0.335]].map(([r, y]) => new THREE.Vector2(r, y));
-  const bottleGeo = new THREE.LatheGeometry(profile, 16);
   const tilt = THREE.MathUtils.degToRad(item.tilt), things = [];
   for (let i = 0; i < n; i++) {
-    const y = 0.07 + (i * (h - 0.2)) / (n - 1), champagne = item.champagne.includes(i); // the top neck stays inside the frame
+    const y = 0.07 + (i * (h - 0.2)) / (n - 1);
     // the cradle: a bar out from the frame and a ring under each end of the bottle
     bar(0.006, 0.006, depth, 0, y - 0.045, fz + depth / 2);
     for (const x of [-0.11, 0.1]) { const ring = new THREE.Mesh(new THREE.TorusGeometry(0.04, 0.0025, 6, 18, Math.PI), black); ring.rotation.set(0, Math.PI / 2, Math.PI); ring.position.set(x, y - 0.005 + x * Math.tan(-tilt) * -1, fz + depth - 0.01); g.add(ring); }
     // the bottle, lying level in the cradle (#151), neck to −x
-    const b = new THREE.Group();
-    b.add(new THREE.Mesh(bottleGeo, glass[i % 2]));
-    const label = new THREE.Mesh(new THREE.CylinderGeometry(0.0385, 0.0385, 0.09, 16, 1, true, -Math.PI / 3, (2 * Math.PI) / 3), labels[i % 2]);
-    label.position.y = 0.1;
-    b.add(label);
-    if (champagne) { const foil = new THREE.Mesh(new THREE.CylinderGeometry(0.0165, 0.02, 0.09, 12), gold); foil.position.y = 0.29; b.add(foil); }
-    else { const cork = new THREE.Mesh(new THREE.CylinderGeometry(0.0115, 0.0115, 0.012, 10), corkMat); cork.position.y = 0.338; b.add(cork); } // the cork in the neck (#151)
+    const bottleObj = buildWineBottle(i);
+    const b = bottleObj.model;
     b.rotation.z = Math.PI / 2 - tilt;
     b.position.set(0.16, y + 0.03, fz + depth - 0.01);
-    b.traverse((m) => { if (m.isMesh) m.castShadow = true; });
     g.add(b);
-    things.push({ model: b, kind: champagne ? 'champagne' : 'wine', back: 'vinhyllan' }); // can be taken out (#152)
+    things.push({ model: b, kind: bottleObj.kind, name: bottleObj.name, fullName: bottleObj.fullName, back: 'vinhyllan' }); // can be taken out (#152)
   }
   g.userData.keep = things.map((t) => t.model);
   g.userData.things = things;
@@ -3550,19 +3539,11 @@ function besta(item, lights) {
   const inner = new Map([[wine, [[0.004, 0.086], [0.018, 0.102], [0.029, 0.14], [0.027, 0.185]]], [flute, [[0.003, 0.106], [0.01, 0.122], [0.019, 0.205]]], [tumbler, [[0.032, 0.006], [0.034, 0.088]]]]);
   const glassAt = (geo, x, y, z) => { const o = new THREE.Mesh(geo, crystal); o.position.set(x, y, z); o.castShadow = true; g.add(o); things.push({ model: o, kind: 'glass', name: geo === wine ? 'vinglaset' : geo === flute ? 'champagneglaset' : 'whiskyglaset', inner: inner.get(geo) }); };
   const bottle = (x, y, z, k) => {
-    const hue = [0xb5651d, 0x7a3b12, 0xd08a2c, 0x3b2a1a, 0x9c5a1a, 0x5a2e0e][k % 6];
-    const gm = new THREE.MeshStandardMaterial({ color: hue, roughness: 0.15, metalness: 0.1 });
-    const shape = k % 3, bg = new THREE.Group(); // one bottle, its origin at the bottom centre
+    const bottleObj = buildWhiskyBottle(k);
+    const bg = bottleObj.model;
     bg.position.set(x, y, z);
-    const body = shape === 1 ? new THREE.BoxGeometry(0.08, 0.17, 0.05) : new THREE.CylinderGeometry(shape ? 0.036 : 0.04, 0.04, 0.18, 14);
-    const b = new THREE.Mesh(body, gm); b.position.set(0, 0.09, 0); bg.add(b);
-    const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.016, 0.06, 10), gm); neck.position.set(0, 0.21, 0); bg.add(neck);
-    const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.014, 0.014, 0.022, 10), k % 2 ? walnut : handle); cap.position.set(0, 0.25, 0); bg.add(cap);
-    const label = new THREE.Mesh(new THREE.PlaneGeometry(0.05, 0.06), new THREE.MeshStandardMaterial({ color: k % 2 ? 0xf1e7cf : 0xd9b453, roughness: 0.7 }));
-    label.position.set(0, 0.085, shape === 1 ? 0.0255 : 0.0405); bg.add(label);
-    bg.traverse((m) => { if (m.isMesh) m.castShadow = true; });
     g.add(bg);
-    things.push({ model: bg, kind: 'whisky' });
+    things.push({ model: bg, kind: 'whisky', name: bottleObj.name, fullName: bottleObj.fullName, back: 'vitrinskåpet' });
   };
   // left column: glasses on the shelf, bottles below; right column: bottles on the shelf, glasses below
   const zc = fd / 2 + 0.02;

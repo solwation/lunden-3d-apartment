@@ -19,7 +19,7 @@ const HELD = {
 };
 
 export class Thing extends Holdable {
-  constructor(scene, camera, { model, kind, back, name: given, held: own }) {
+  constructor(scene, camera, { model, kind, back, name: given, fullName, held: own }) {
     const furnitureHome = model.parent; // retain the support before Holdable moves the model into the scene (#475)
     model.updateWorldMatrix(true, true);
     const pos = model.getWorldPosition(new THREE.Vector3());
@@ -27,12 +27,17 @@ export class Thing extends Holdable {
     const box = new THREE.Box3().setFromObject(model), size = box.getSize(new THREE.Vector3()), mid = box.getCenter(new THREE.Vector3());
     const held = own ?? HELD[kind === 'glass' || kind === 'plant' ? kind : 'bottle']; // (a tall plant is held lower, #265)
     const name = given ?? NAMES[kind] ?? 'flaskan';
+    const backVerb = (kind === 'plant' || kind === 'photo')
+      ? `ställa tillbaka ${name} på`
+      : (kind === 'glass' || kind === 'whisky')
+        ? `ställa tillbaka ${name} i`
+        : `lägga tillbaka ${name} i`;
     super(scene, camera, {
-      name, verb: 'ta', backName: back, backVerb: kind === 'plant' || kind === 'photo' ? `ställa tillbaka ${name} på` : kind === 'glass' ? `ställa tillbaka ${name} i` : `lägga tillbaka ${name} i`, placeVerb: 'ställa ner', model,
+      name, verb: 'ta', backName: back, backVerb, placeVerb: 'ställa ner', model,
       home: { pos, rot }, heldPose: { pos: new THREE.Vector3(...held.pos), rot: new THREE.Euler(...held.rot) },
       pick: { pos: mid, size: [size.x + 0.03, size.y + 0.03, size.z + 0.03] }, cooldown: kind === 'glass' ? 0.6 : 0.3,
     });
-    Object.assign(this, { kind, furnitureHome });
+    Object.assign(this, { kind, furnitureHome, fullName: fullName ?? name });
     this.rest = { q: new THREE.Quaternion(), lift: 0 }; // its origin is the bottom centre: put down standing
   }
 

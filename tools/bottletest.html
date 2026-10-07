@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8">
+  <title>Premium whisky and wine bottles test (#471)</title>
+</head>
+<body>
+<pre id="out">running…</pre>
+<script>
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const f = document.createElement('iframe');
+f.width = 900; f.height = 600; f.src = '../index.html';
+document.body.append(f);
+
+f.onload = async () => {
+  const w = f.contentWindow, d = f.contentDocument;
+  while (!w.__app) await wait(100);
+  const { things, use, heldItem, step, toggleFurniture, camera } = w.__app;
+  const V = camera.position.constructor;
+  const lines = [];
+  const check = (ok, desc) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${desc}`); return ok; };
+
+  d.getElementById('start-touch').click();
+  await wait(50);
+
+  let pass = true;
+
+  // 1. Whisky bottles count and specific products
+  const whiskies = things.filter(t => t.kind === 'whisky');
+  pass &= check(whiskies.length === 6, `6 whisky bottles present in BESTÅ (got ${whiskies.length})`);
+
+  const tullamore = whiskies.find(t => t.name.includes('Tullamore'));
+  pass &= check(!!tullamore, 'Tullamore D.E.W. is present among whiskies (#471)');
+  pass &= check(tullamore?.fullName?.includes('Tullamore D.E.W. 12'), `Tullamore 12 Years variant verified (${tullamore?.fullName})`);
+
+  const whiskyNames = whiskies.map(t => t.name);
+  pass &= check(
+    whiskyNames.includes('Lagavulin 16') &&
+    whiskyNames.includes('The Macallan 12') &&
+    whiskyNames.includes('Glenfiddich 18') &&
+    whiskyNames.includes('Ardbeg Uigeadail') &&
+    whiskyNames.includes('The Balvenie 12'),
+    `all 6 premium whiskies identified: ${whiskyNames.join(', ')}`
+  );
+
+  // 2. Wine and Champagne bottles count and specific products
+  const rackBottles = things.filter(t => t.kind === 'wine' || t.kind === 'champagne');
+  pass &= check(rackBottles.length === 8, `8 bottles in wine rack (got ${rackBottles.length})`);
+
+  const champagnes = things.filter(t => t.kind === 'champagne');
+  pass &= check(champagnes.length === 2, `2 champagne bottles present (got ${champagnes.length})`);
+  const champNames = champagnes.map(t => t.name);
+  pass &= check(
+    champNames.includes('Dom Pérignon') && champNames.includes('Krug Grande Cuvée'),
+    `champagne brands verified: ${champNames.join(', ')}`
+  );
+
+  const wines = things.filter(t => t.kind === 'wine');
+  pass &= check(wines.length === 6, `6 wine bottles present (got ${wines.length})`);
+  const wineNames = wines.map(t => t.name);
+  pass &= check(
+    wineNames.includes('Tignanello') &&
+    wineNames.includes('Sassicaia') &&
+    wineNames.includes('Barolo Ornato') &&
+    wineNames.includes('Penfolds Grange') &&
+    wineNames.includes('Masi Costasera Amarone') &&
+    wineNames.includes('Châteauneuf-du-Pape'),
+    `wine brands verified: ${wineNames.join(', ')}`
+  );
+
+  // 3. Interactions: take Tullamore D.E.W. and check verb and backVerb
+  pass &= check(tullamore.target.verb === 'ta' && tullamore.target.name === 'Tullamore D.E.W.', `take target: "${tullamore.target.verb} ${tullamore.target.name}"`);
+  use(tullamore.target); step(1 / 60);
+  pass &= check(heldItem() === tullamore, 'Tullamore D.E.W. is held in hand');
+  pass &= check(tullamore.backTarget.name === 'vitrinskåpet' && tullamore.backTarget.verb.includes('ställa tillbaka'), `cabinet return interaction: "${tullamore.backTarget.verb} ${tullamore.backTarget.name}"`);
+
+  // Place on table and pick up again
+  tullamore.placeAt(new V(3.6, 0.47, 10.4)); step(1 / 60);
+  pass &= check(tullamore.placed, 'Tullamore D.E.W. placed standing on coffee table');
+  use(tullamore.target); step(1 / 60);
+  pass &= check(heldItem() === tullamore, 'Tullamore taken back from coffee table');
+  use(tullamore.backTarget); step(1 / 60);
+  pass &= check(!tullamore.held && !tullamore.placed, 'Tullamore put back in BESTÅ cabinet');
+
+  // 4. Wine rack interaction: Dom Pérignon
+  const dom = champagnes.find(t => t.name === 'Dom Pérignon');
+  pass &= check(dom.target.name === 'Dom Pérignon', `Dom Pérignon target: "${dom.target.verb} ${dom.target.name}"`);
+  use(dom.target); step(1 / 60);
+  pass &= check(heldItem() === dom, 'Dom Pérignon held in hand');
+  pass &= check(dom.backTarget.name === 'vinhyllan' && dom.backTarget.verb.includes('lägga tillbaka'), `rack return interaction: "${dom.backTarget.verb} ${dom.backTarget.name}"`);
+  use(dom.backTarget); step(1 / 60);
+  pass &= check(!dom.held && !dom.placed, 'Dom Pérignon back in wine rack');
+
+  // 5. Pouring functionality preserved
+  const steps = (s) => { for (let t = 0; t < s; t += 1 / 30) step(1 / 30); };
+  const tumbler = things.find((t) => t.name === 'whiskyglaset');
+  use(tumbler.target); step(1 / 60); tumbler.placeAt(new V(3.3, 0.47, 10.3)); step(1 / 60);
+  use(tullamore.target); step(1 / 60);
+  pass &= check(tumbler.target.verb === 'hälla whisky i', `pour verb: "${tumbler.target.verb}"`);
+  use(tumbler.target); steps(1.5);
+  pass &= check(tumbler.fill > 0.1 && tumbler.contents.main === 'whisky', `tumbler poured with whisky (${tumbler.fill.toFixed(2)})`);
+  use(tullamore.backTarget); step(1 / 60);
+  use(tumbler.backTarget); step(1 / 60);
+
+  toggleFurniture(false); step(1 / 60);
+  pass &= check(!heldItem(), 'reset sends all bottles and glasses home');
+  toggleFurniture(true); step(1 / 60);
+
+  out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
+};
+</script>
+</body>
+</html>
