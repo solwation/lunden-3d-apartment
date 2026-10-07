@@ -198,12 +198,12 @@ export const CURTAINS = [
     top: 2.96, drop: 2.45, fullness: 1.4, amp: 0.028, tile: 0.6, speed: 0.38, dim: 0.03,
     panels: [{ id: 'valance', from: 2.17, to: 5.5312, park: 'left' }],
     colors: { ground: '#ede7dc', track: 0xf3f2ee, glow: 0xf8f4ec, warm: 0xffc27a }, glow: { day: 0.22, lamp: 0.08 } },
-  // Vardagsrum (#463): three olive panels, parked clear of door/window; rail spans the plan's inner faces x .2018–5.5512.
+  // Vardagsrum (#463, #468): three botanical linen panels matching the kitchen, parked clear of door/window; rail spans the plan's inner faces x .2018–5.5512.
   // Splits/stack/fullness and colours are visual choices (*guess*), matching the olive/cream rug.
   { level: 0, room: 'Vardagsrum', facade: 'south', theme: 'linen_kitchen', rail: [0.2018, 5.5512], west: 0.202, stop: 0.22, meet: 3.855, east: 5.531, z: 12.10, glass: [2.88, 4.81], stack: 0.22,
     top: 2.96, drop: 0.02, fullness: 1.4, amp: 0.028, tile: 0.7, speed: 0.38, dim: 0.35,
     panels: [{ id: 'west', from: 0.22, to: 2.15, park: 'left' }, { id: 'middle', from: 2.15, to: 3.855, park: 'left' }, { id: 'east', from: 3.855, to: 5.531, park: 'right' }],
-    colors: { ground: '#657a38', track: 0xf3f2ee, glow: 0x91a85d, warm: 0xffc27a }, glow: { day: 0.20, lamp: 0.08 } },
+    colors: { ground: '#ede7dc', track: 0xf3f2ee, glow: 0xf8f4ec, warm: 0xffc27a }, glow: { day: 0.20, lamp: 0.08 } },
 ];
 
 // Flower pots on the inner window boards (#136, the user: "blomkrukor med blommor i alla fönsterkarmar";
@@ -2955,3 +2955,6 @@ export const FURNITURE = [
 
 // Optional everyday task card beside the sink (#392), position/size are visual choices (*guess*).
 export const TASK_NOTE = { pos: [5.35, 0.932, 1.48], w: 0.18, h: 0.22, tilt: 0.15 };
+
+// Furniture cheat (#465): interaction distance and support tolerance are gameplay choices, not surveyed dimensions.
+export const REARRANGE = { reach: 6, supportGap: 0.06, poll: 3000 };

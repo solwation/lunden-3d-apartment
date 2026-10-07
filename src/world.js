@@ -813,6 +813,8 @@ export function buildWorld(plan) {
   return {
     object: scene,
     setFurniture,
+    furniture, // movable scene roots and collision data (#465)
+    refreshFurniture: () => setFurniture(furniture.object.visible),
     looseItems, // hidden by F (main.js may add more)
     cupSurfaces: [...furniture.surfaces, ...kitchenSurfaces, ...sillSurfaces, ...courtyard.surfaces], // table tops a cup can be put on (#90), the window boards (#185)
     cupCabinet,

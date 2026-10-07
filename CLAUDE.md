@@ -327,11 +327,20 @@ src/curtains.js        Sovrum 1's curtains (#342, CURTAINS): two floor-length te
                        chair moved south out of the corner; both stacks clear of the glass); wave folds rebuilt only while they move (count fixed, spacing shrinks); part of Blinds
                        (`blinds.curtains`): E opens #blind-panel sideways (A / D, ← / →, ◀ ▶ held: together / apart), the daylight cut (`dim`, less than blackout), a teal glow by
                        day, saved in 'lunden.blinds'; fittings: F keeps them; stats `curtains`; `&curtains=0…1`
-                       #463: Vardagsrum has three olive panels on a wall-to-wall rail over the patio door too. Optional
+                       #463: Vardagsrum has three botanical linen panels on a wall-to-wall rail over the patio door too. Optional
                        CURTAINS.panels defines each closed span and parking side; cover sums the window overlap.
                        #464: kitchen valance is one short panel (hem 2.45 m), initially spread along the existing rail, dim 0.03.
-                       #468: every rail spans the room's side-wall faces (CURTAINS.rail, plan.json); kitchen cloth spans the full width too. Living-room fabric uses the kitchen's botanical motif on olive green.
+                       #468: every rail spans the room's side-wall faces (CURTAINS.rail, plan.json); kitchen cloth spans the full width too. Living-room fabric matches both the kitchen's botanical motif and its light background.
                        Its '-valance' state id avoids inheriting the removed long curtains' position; subsequent positions save normally.
+src/rearrange.js       furniture cheat (#465): Enter / >_ opens a terminal; either exact code "olof is the goat" or "sarah is the goat" unlocks rearrangement.
+                       buildFurniture exposes stable movable ids and separates framed pictures before per-frame merging.
+                       E/click selects and confirms, R/turn rotates, X/cancel abandons the local 35%-opacity ghost. Rugs never
+                       carry things above them; support surfaces identify carried furniture and local Holdables/life items.
+                       Confirmed world poses update footprints, seat targets, surface heights, light anchors/washes, rug data
+                       and Marks caches. Local cached authoritative layout is lunden.furniture.layout; unlock is a convenience.
+                       GET/PUT /furniture uses DrawingRoom's serialized durable storage, revision-checked atomic batches;
+                       conflicts cancel and pull the winning layout, previews never sync. Browser tests: tools/rearrangetest.html;
+                       Worker tests: cloudflare/layout.test.mjs. Development: cloudflare/dev.mjs and ?cloud=http://localhost:8145.
 src/lampwash.js        every lamp's light wherever the visitor is (#276, #294, #295, LIGHTING.wash): each pool anchor (small lamps
                        and ceiling lamps) lights the flat inside the lit materials' own shaders (`patch(scene)`: onBeforeCompile on
                        every MeshStandard/Lambert/Phong material, re-scanned every 120 frames; no extra mesh or draw call) exactly

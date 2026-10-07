@@ -1,3 +1,4 @@
+import { layoutFetch } from './layout.js';
 // Kv. Lunden L1007 — the shared world (#178, #119): a small Cloudflare Worker with one KV namespace (binding
 // LUNDEN). It keeps the drawings taped up in the flat, and the sheet on the Sovrum 3 desk,
 // so visitors find things they didn't make themselves. Writing is open (there is no secret a public page could
@@ -91,8 +92,13 @@ const worker = {
     const m = request.method;
     if (parts.length > 2 || (id !== undefined && !ID.test(id) && what !== 'admin')) return fail(404, 'not found', h);
     // One authority for drawing metadata: KV read/modify/write loses concurrent moves.
-    if (env.DRAWINGS && (what === 'drawings' || (what === 'admin' && (id === 'all' || id === 'drawings')))) {
+    if (env.DRAWINGS && (what === 'furniture' || what === 'drawings' || (what === 'admin' && (id === 'all' || id === 'drawings')))) {
       return env.DRAWINGS.get(env.DRAWINGS.idFromName('shared')).fetch(request);
+    }
+    if (what === 'furniture') {
+      if (m === 'PUT' && await limited(request, env)) return fail(429, 'too many writes', h);
+      if (!env.layoutStorage) return fail(503, 'layout storage unavailable', h);
+      return layoutFetch(request, env.layoutStorage, h);
     }
     if (m === 'PUT' || m === 'DELETE' || m === 'POST') {
       if (await limited(request, env)) return fail(429, 'too many writes', h);
@@ -293,6 +299,9 @@ export class DrawingRoom {
   fetch(request) {
     return this.ctx.blockConcurrencyWhile(async () => {
       const storage = this.ctx.storage, kv = this.env.LUNDEN;
+      if (new URL(request.url).pathname === '/furniture') {
+        return worker.fetch(request, { ...this.env, DRAWINGS: undefined, layoutStorage: storage });
+      }
       if (await storage.get('drawings') === undefined) {
         await storage.put('drawings', await kv.get('drawings', 'json') ?? []);
       }

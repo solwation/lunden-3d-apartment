@@ -1,0 +1,59 @@
+<!doctype html><html><meta charset="utf-8"><title>Furniture rearrangement (#465)</title><pre id="out">running…</pre><script type="module">
+const lines=[];let pass=true;const check=(ok,s)=>{lines.push(`${ok?'PASS':'FAIL'} ${s}`);pass&&=!!ok;};
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+try {
+ localStorage.removeItem('lunden.furniture.layout');localStorage.removeItem('lunden.furniture.unlocked');
+ const f=document.createElement('iframe');f.width=480;f.height=300;f.src='../index.html?life&shot';document.body.append(f);
+ await new Promise(r=>f.onload=r);while(!f.contentWindow.__app)await wait(100);
+ const w=f.contentWindow,d=f.contentDocument,A=w.__app,R=A.rearrange,T=await w.eval("import('three')");
+ d.documentElement.requestFullscreen=undefined;d.getElementById('start-touch').click();
+ d.dispatchEvent(new w.KeyboardEvent('keydown',{code:'Enter',bubbles:true}));
+ check(!d.getElementById('terminal').hidden,'Enter opens terminal');
+ const form=d.getElementById('terminal-form'),input=d.getElementById('terminal-code');
+ input.value='wrong';form.requestSubmit();check(!R.unlocked&&!R.enabled,'wrong cheat does not unlock');
+ input.value='olof is the goat';form.requestSubmit();check(R.enabled&&R.unlocked&&d.getElementById('terminal').hidden,'exact cheat unlocks and returns to play');
+ R.enable(false);R.unlocked=false;A.showTerminal(true);
+ input.value='sarah is the goat';form.requestSubmit();check(R.enabled&&R.unlocked&&d.getElementById('terminal').hidden,'Sarah cheat also unlocks and returns to play');
+ check(new Set(R.pieces.map(p=>p.id)).size===R.pieces.length,'unique stable ids');
+ const sofa=R.pieces.find(p=>p.item.type==='sofa'),rug=R.pieces.find(p=>p.item.type==='rug'&&p.level===0),pictures=R.pieces.filter(p=>p.picture);
+ check(pictures.length>10&&pictures.filter(p=>p.item.type==='pictures').every(p=>p.object.parent.userData.frames?.includes(p.object)),'individual framed pictures are selectable');
+ A.player.spawn(3,9.2,0);A.step(1/60);
+ const aim=new T.Box3().setFromObject(sofa.object).getCenter(new T.Vector3()),eye=A.camera.position;
+ A.camera.rotation.set(Math.atan2(aim.y-eye.y,Math.hypot(aim.x-eye.x,aim.z-eye.z)),Math.atan2(-(aim.x-eye.x),-(aim.z-eye.z)),0,'YXZ');A.step(1/60);
+ check(A.focus().focused?.piece===sofa,'real look ray selects the sofa');A.click(0);check(R.selected?.piece===sofa,'normal left click starts furniture move');R.cancel();
+ const before=sofa.object.matrixWorld.clone(),seat=sofa.object.userData.interact.spots[0].pos.clone();
+ const segments=A.world.furniture.segments[0].map(s=>s.join(',')).join('|');
+ check(R.begin(sofa)&&!sofa.object.visible&&R.ghost.visible&&R.ghostMat.opacity===.35,'moving sofa shows transparent preview, hides original');
+ R.cancel();check(sofa.object.visible&&sofa.object.matrixWorld.equals(before)&&R.state.revision===0,'cancel restores sofa and writes nothing');
+ R.begin(sofa);R.candidate=new T.Matrix4().makeTranslation(-.3,0,-.4).multiply(before);R.valid=true;
+ check(await R.confirm(),'confirm move');
+ check(sofa.object.userData.interact.spots[0].pos.distanceTo(seat.clone().add(new T.Vector3(-.3,0,-.4)))<.001,'seat interaction follows sofa');
+ check(A.world.furniture.segments[0].map(s=>s.join(',')).join('|')!==segments,'collision segments follow movement');
+ check(sofa.object.matrixWorld.elements[12]===before.elements[12]-.3,'sofa pose updated');
+ const sofaAt=sofa.object.matrixWorld.clone();R.begin(rug);
+ check(R.selected.group.length===1&&R.selected.loose.length===0,'rug never carries furniture or things above it');
+ R.candidate=new T.Matrix4().makeTranslation(.1,0,0).multiply(rug.object.matrixWorld);R.valid=true;await R.confirm();
+ check(sofa.object.matrixWorld.equals(sofaAt),'moving rug leaves sofa unchanged');
+ const pic=pictures[0],sibling=pictures.find(p=>p!==pic&&p.object.parent===pic.object.parent),siblingAt=sibling?.object.matrixWorld.clone();
+ R.begin(pic);
+ const picAt=new T.Vector3().setFromMatrixPosition(pic.object.matrixWorld),normal=new T.Vector3(0,0,1).transformDirection(pic.object.matrixWorld);
+ A.camera.position.copy(picAt).addScaledVector(normal,1.5);A.camera.lookAt(picAt);R.update();
+ check(R.valid&&R.ghost.visible,'picture can be previewed on its actual wall');
+ R.candidate=new T.Matrix4().makeTranslation(0,.1,0).multiply(pic.object.matrixWorld);R.valid=true;await R.confirm();
+ check(!sibling||sibling.object.matrixWorld.equals(siblingAt),'moving one picture leaves neighbouring pictures in place');
+ // Real floor targeting and rotation, then cancel.
+ A.player.spawn(3,8.8,0);A.step(1/60);A.camera.rotation.set(-.6,Math.PI,0);R.begin(rug);R.update();const q0=R.candidate?.clone();R.rotate();R.update();
+ check(R.valid&&q0&&!R.candidate.equals(q0),'aim at floor produces a rotated placement preview');R.cancel();
+ // A real life-sim plate placed on the dining table travels with its support, including persisted coordinates.
+ const table=R.pieces.find(p=>p.item.type==='skansnasTable'&&p.level===0);
+ check(!!table,'dining table available for support test');
+ if(table){const surface=R.supports(table)[0];const pos=surface.getCenter(new T.Vector3());pos.y=surface.max.y;
+ const it=A.life.create('plate',{at:'world',pos:pos.toArray(),yaw:0});A.scene.updateMatrixWorld(true);
+ R.begin(table);check(R.selected.loose.some(h=>h.item===it),'plate recognized on table');
+ R.candidate=new T.Matrix4().makeTranslation(.2,0,0).multiply(table.object.matrixWorld);R.valid=true;await R.confirm();
+ check(Math.abs(it.place.pos[0]-pos.x-.2)<.001,'plate and its persistent position follow table');}
+ const stored=JSON.parse(w.localStorage.getItem('lunden.furniture.layout'));check(stored.revision>=3,'confirmed layout persists locally');
+ R.enable(false);check(!R.enabled,'mode can be exited');
+ document.getElementById('out').textContent=lines.join('\n')+'\n'+(pass?'ALL PASS':'SOME FAILED');
+}catch(e){document.getElementById('out').textContent=lines.join('\n')+'\nFAIL '+e.stack;}
+</script></html>

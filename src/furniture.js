@@ -2974,9 +2974,12 @@ function pictures(item) {
   const black = new THREE.MeshStandardMaterial({ color: 0x111113, roughness: 0.45 });
   const picMat = new THREE.MeshStandardMaterial({ map: pictureAtlases.get(item.paint || item.atlas), roughness: item.rough ?? 0.32 });
   const iw = w - 2 * f, ih = h - 2 * f;
+  const root = g;
   for (let i = 0; i < cols * rows; i++) {
+    const g = new THREE.Group(); root.add(g);
     const col = i % cols, row = Math.floor(i / cols);
-    const cx = (col - (cols - 1) / 2) * (w + gap), cy = ((rows - 1) / 2 - row) * (h + gap);
+    g.position.set((col - (cols - 1) / 2) * (w + gap), ((rows - 1) / 2 - row) * (h + gap), 0);
+    const cx = 0, cy = 0;
     const cell = order[i], u0 = (cell % gc) / gc, v1 = 1 - Math.floor(cell / gc) / gr;
     const geo = new THREE.PlaneGeometry(iw, ih);
     const uv = geo.attributes.uv; // PlaneGeometry: (0,1) (1,1) (0,0) (1,0)
@@ -3010,6 +3013,9 @@ function pictures(item) {
     back.position.set(cx, cy, 0.002); back.castShadow = true;
     g.add(back);
   }
+  for (const frame of root.children) mergeStatic(frame);
+  root.userData.keep = [...root.children];
+  root.userData.frames = [...root.children];
   g.position.y = item.y;
   return g;
 }
@@ -3715,7 +3721,8 @@ function rugLiftFor(item, obj, toWorld) {
 export function buildFurniture() {
   const group = new THREE.Group();
   const segments = [[], []], footprints = [[], []];
-  const lights = [], interactives = [], surfaces = [], things = [];
+  const lights = [], interactives = [], surfaces = [], things = [], movable = [];
+  const ids = new Map();
   for (const item of FURNITURE) {
     const obj = BUILDERS[item.type](item, lights);
     // one mesh per material per piece (#48); the parasol folds and the beers come and go
@@ -3744,6 +3751,12 @@ export function buildFurniture() {
     }
     for (const t of obj.userData.targets ?? []) { t.level = item.level; interactives.push(t); } // several E targets of their own (cabinet doors, #104)
     group.add(obj);
+    const baseId = `f-${item.type}-${item.level}-${item.x}-${item.z}`;
+    const serial = ids.get(baseId) ?? 0; ids.set(baseId, serial + 1);
+    for (const [i, object] of (obj.userData.frames ?? [obj]).entries()) {
+      movable.push({ id: `${baseId}-${serial}-${i}`, item, object, level: item.level,
+        picture: ['pictures', 'painting', 'kposters'].includes(item.type), name: item.type === 'pictures' ? 'tavlan' : obj.userData.interact?.name ?? item.type });
+    }
     things.push(...(obj.userData.things ?? [])); // small things you can take (bottles, glasses, #152)
     // footprint rectangles → world-space collision segments
     for (const r of obj.userData.footprint ?? []) {
@@ -3752,5 +3765,5 @@ export function buildFurniture() {
       footprints[item.level].push(pts);
     }
   }
-  return { object: group, segments, footprints, lights, interactives, surfaces, things };
+  return { object: group, segments, footprints, lights, interactives, surfaces, things, movable };
 }

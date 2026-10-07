@@ -70,3 +70,9 @@ den är pushad. Skriptet går att köra om hur många gånger som helst – det 
 | `GET /scores` | topp 20 `[{ name, score }]` |
 | `POST /scores` | `{ id, name, score }` (text/plain eller JSON) |
 | `DELETE /admin/:what` | nödbroms, kräver `ADMIN_TOKEN` |
+
+## Shared furniture arrangement (#465)
+
+`GET /furniture` returns `{revision, pieces}`. `PUT /furniture` accepts `{code, moves}` with the public game code and an atomic batch of `{id, base, pos, quat}` world poses. The existing `DrawingRoom` Durable Object serializes layout writes in persistent storage (`furniture-layout`), independently of expiring drawings. Each piece has a server revision: stale writes return HTTP 409 and the current state. No client clock is trusted; previews are never uploaded. The code unlocks a game mechanic, not secure authentication.
+
+The client polls every three seconds and on returning online/to the tab. Local development uses `node cloudflare/dev.mjs 8145`; open the game with `?cloud=http://localhost:8145`. `node --test cloudflare/*.test.mjs` covers concurrency, invalid inputs, persistence and existing drawing/identity behavior.

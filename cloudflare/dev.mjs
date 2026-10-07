@@ -17,14 +17,21 @@ const LUNDEN = {
     return { keys, list_complete: true };
   },
 };
-const env = { LUNDEN, ADMIN_TOKEN: process.argv[3] };
+const layouts = new Map();
+let layoutGate = Promise.resolve();
+const layoutStorage = { get: async (k) => structuredClone(layouts.get(k)), put: async (k,v) => layouts.set(k, structuredClone(v)) };
+const env = { LUNDEN, layoutStorage, ADMIN_TOKEN: process.argv[3] };
 
 http.createServer(async (req, res) => {
   const chunks = [];
   for await (const c of req) chunks.push(c);
   const body = chunks.length ? Buffer.concat(chunks) : undefined;
   const request = new Request(`http://localhost:${port}${req.url}`, { method: req.method, headers: req.headers, body: req.method === 'GET' || req.method === 'HEAD' ? undefined : body });
-  const r = await worker.fetch(request, env);
+  let r;
+  if (req.url === '/furniture') {
+    const pending = layoutGate.then(() => worker.fetch(request, env));
+    layoutGate = pending.catch(() => {}); r = await pending;
+  } else r = await worker.fetch(request, env);
   res.writeHead(r.status, Object.fromEntries(r.headers));
   res.end(Buffer.from(await r.arrayBuffer()));
 }).listen(port, () => console.log(`lunden worker on http://localhost:${port}`));

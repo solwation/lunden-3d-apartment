@@ -81,7 +81,7 @@ export function buildLampWashes(scene, world, entries) {
   const { x: SX, z: SZ } = world.size, [zN, zS] = W.facade;
   const levelOf = (d) => (d.object.position.y > LEVELS[0].floor + 1.6 ? 1 : 0);
   const vis = new Float32Array(n * RAYS), data = new Float32Array(n * 3 * 4);
-  used.forEach((e, i) => {
+  const bake = (e, i) => {
     const { lamp, k } = e, level = lamp.level;
     const segs = [...world.levels[level].wallSegments,
       // closed doors stop it; a wardrobe's sliding fronts do not (#297): they end short of the ceiling, so a lamp
@@ -98,7 +98,8 @@ export function buildLampWashes(scene, world, entries) {
     data.set([lamp.pos.x, lamp.pos.y, lamp.pos.z, lamp.range], (0 * n + i) * 4);
     data.set([c.r, c.g, c.b, 0], (1 * n + i) * 4);
     data.set([ox, oz, level, 0], (2 * n + i) * 4);
-  });
+  };
+  used.forEach(bake);
   const tex = (arr, w, h, format) => {
     const t = new THREE.DataTexture(arr, w, h, format, THREE.FloatType);
     t.minFilter = t.magFilter = THREE.NearestFilter;
@@ -107,7 +108,13 @@ export function buildLampWashes(scene, world, entries) {
   };
   const top = LEVELS[1].floor + LEVELS[1].ceiling;
   const box = { x0: -0.05, x1: SX + 0.05, z0: -0.05, z1: SZ + 0.05, y0: LEVELS[0].floor - 0.1, y1: top + 0.1, split: LEVELS[1].floor - 0.1 };
-  return new LampWashes(used, n, data, tex(data, n, 3, THREE.RGBAFormat), tex(vis, RAYS, n, THREE.RedFormat), chunks(n, box));
+  const wash = new LampWashes(used, n, data, tex(data, n, 3, THREE.RGBAFormat), tex(vis, RAYS, n, THREE.RedFormat), chunks(n, box));
+  wash.relocate = (lamps) => {
+    used.forEach((e, i) => { if (lamps.has(e.lamp)) { bake(e, i); wash.set(i, wash.k[i], wash.pool[i]); } });
+    wash.uniforms.uLampData.value.needsUpdate = true;
+    wash.uniforms.uLampVis.value.needsUpdate = true;
+  };
+  return wash;
 }
 
 /** The lamps' light: per entry k (how far on) and pool (how much its pool light shows), the textures the shaders read. */

@@ -8,6 +8,8 @@ Gå runt i lägenheten L1007 (Kv. Lunden, Peab) i webbläsaren som i ett FPS-spe
 
 På köksbänken ligger en **uppdragslapp** med tre frivilliga vardagsuppdrag: gör en macka, återställ köket och städa efter mellanmålet. Delarna kan göras i valfri ordning och framstegen sparas. Tips går att stänga av; ett klart uppdrag ger 30 poäng första gången och 5 poäng när du väljer **Gör igen**. Tomma sopkärl behöver inte tömmas.
 
+Tryck **Enter** (eller **>_** på touch) för att öppna terminalen. Fuskkoderna `olof is the goat` och `sarah is the goat` låser upp **Möblera om**: sikta på en möbel eller tavla, välj med E/klick, sikta på golvet eller väggen och placera med E igen. **R/⟳** roterar och **X/Avbryt** avbryter. Föremål på möbler följer med; mattor flyttas för sig. Bekräftade placeringar delas via Cloudflare och sparas till nästa besök. Terminalen har också en knapp för att avsluta läget.
+
 ## Styrning
 
 | Tangent | |
@@ -49,7 +51,7 @@ I alla fönster sitter plisségardiner som dras upp nerifrån: gå fram och tryc
 
 Alla gardinskenor i taket går från vägg till vägg. I köket hänger även den korta, ljust botaniskt mönstrade kappan över hela bredden, med fönstret fritt under sig.
 
-Vardagsrummet har tre olivgröna gardinlängder med samma botaniska mönster som kökskappan, på en takskena från vägg till vägg, även över balkongdörren. Dra dem åt sidan med <kbd>A</kbd>/<kbd>D</kbd> eller ◀/▶ så att dörren och fönstret lämnas fria.
+Vardagsrummet har tre ljusa gardinlängder med samma botaniska mönster och bottenfärg som kökskappan, på en takskena från vägg till vägg, även över balkongdörren. Dra dem åt sidan med <kbd>A</kbd>/<kbd>D</kbd> eller ◀/▶ så att dörren och fönstret lämnas fria.
 
 Högtalarna och bilradion har sex musikkanaler med två låtar var. Även datorn, laptopen och Kaffeturbo spelar
 inspelad musik. Under *Om musiken* i menyn finns musiker och källor; alla inspelningar har CC0-licens.

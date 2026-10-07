@@ -4,6 +4,7 @@ import { MieleHeld, HeartFireworks } from './miele.js';
 const DRAWING_COLORS = DRAWING.colors;
 import { buildWorld } from './world.js';
 import { photoGlow } from './furniture.js';
+import { Rearrange } from './rearrange.js';
 import { Player, inPoly, crosses } from './player.js';
 import { Fall } from './fall.js';
 import { setupTouch } from './touch.js';
@@ -500,7 +501,7 @@ function placeYaw() {
   return Math.round(camera.rotation.y / st) * st + placeTurn * st;
 }
 /** R / ⟳: turn what is about to be put down one step. */
-function turnPlacement() { placeTurn = (placeTurn + 1) % Math.round(360 / LIFE.place.turn); if (focused?.kind === 'place') focused.yaw = placeYaw(); }
+function turnPlacement() { if (rearrange.enabled) { rearrange.rotate(); return; } placeTurn = (placeTurn + 1) % Math.round(360 / LIFE.place.turn); if (focused?.kind === 'place') focused.yaw = placeYaw(); }
 /** A see-through copy of the held thing's meshes (lights, particles left out), rebuilt when the hand changes. */
 function buildGhost(item) {
   itemGhost.clear();
@@ -974,7 +975,7 @@ document.getElementById('start-mouse').addEventListener('click', startMouse);
 // line at the bottom, no box (#190). Esc in the game still just frees the mouse.
 const armEl = document.getElementById('arm');
 let unlockedAt = -1e9;
-const otherOverlay = () => ['loading', 'install', 'reset-confirm', 'player-dialog', 'leaderboard-dialog', 'note', 'task-note', 'board-view', 'poster-panel'].some((id) => {
+const otherOverlay = () => ['loading', 'install', 'reset-confirm', 'player-dialog', 'leaderboard-dialog', 'note', 'task-note', 'terminal', 'board-view', 'poster-panel'].some((id) => {
   const el = document.getElementById(id);
   return el && !el.hidden && !el.classList.contains('done');
 })
@@ -1223,6 +1224,7 @@ document.addEventListener('wheel', (e) => { if (locked && !reading && choices.ro
 
 /** E / the action button on what you look at: doors toggle, the note opens. */
 function use(thing) {
+  if (thing.kind === 'rearrange') { rearrange.act(thing); return; }
   shadowState.hold = 1.5; // whatever moves now casts a moving shadow
   if (!heldItem() && !['rest', 'place', 'note', 'taskNote', 'clock', 'calendar', 'board', 'poster', 'paper'].includes(thing.kind) && focusPoint && thing === focused) hand.reach(focusPoint); // the arm reaches out (#195)
   if (thing.options && thing.kind !== 'life' && choices.rows && choices.target === thing) { // a lamp with a choice (#428): the marked row
@@ -1472,6 +1474,15 @@ function behindWall(p) {
 }
 
 function updateFocus() {
+  if (rearrange.enabled && !reading) {
+    rearrange.update(); focused = rearrange.target; focusPoint = null;
+    showChoices(null, null); placeGhost.visible = itemGhost.visible = false;
+    const text = focused ? (focused.blockedText ?? `${focused.verb === 'flytta' ? 'Flytta' : 'Placera'} ${focused.name}`) : 'Sikta på en möbel eller tavla';
+    actionBtn.textContent = text; actionBtn.hidden = !touch.enabled || !focused;
+    promptEl.textContent = `${text} · E / klick · R: vrid · X: avbryt`;
+    promptEl.hidden = touch.enabled; powerBtn.hidden = true;
+    turnBtn.hidden = !touch.enabled || !rearrange.selected; return;
+  }
   // sitting / lying (#184): what is within arm's reach can be used as usual (not the seat itself, nothing to sit on);
   // E with nothing in reach, Space / C or the "Res dig" button get you up
   const reach = rest.active ? REST.reach[rest.spot.kind === 'lie' ? 'lie' : 'sit'] : HOLD.reach;
@@ -1687,6 +1698,45 @@ if (fries) holdables.push(fries.bag); // the bag of fries in the freezer (#301):
 world.looseItems.push(life.group, fruit.group, ...cups.cups.map((c) => c.model), drawing.paper, calendar.object, ...posters.groups, ...(fish ? [fish.object] : [])); // the cups and the paper go with F too // the cat board and the toys go with the furniture (F)
 try { if (localStorage.getItem('lunden.furniture') === '0') toggleFurniture(false); } catch { /* ignore */ }
 document.getElementById('furniture-btn').addEventListener('click', () => toggleFurniture());
+
+const rearrange = new Rearrange({ scene, camera, world, player, life, marks,
+  carryables: () => [...holdables, ...cups.cups, ...life.views.values()],
+  busy: () => !!heldItem() || rest.active || drawing.active || !world.furnitureOn,
+  changed: (changes) => {
+    if (rest.active && changes.some(({ p }) => p.object === rest.target?.pickable)) standUp();
+    shadowState.hold = 1.5;
+    lights.wash.relocate(new Set(world.lamps.flatMap((s) => s.lamp?.room.lamps ?? [])));
+    document.dispatchEvent(new Event('furniture-moved'));
+  },
+  status: (text) => { document.getElementById('rearrange-status').textContent = text; },
+});
+const terminal = document.getElementById('terminal'), terminalInput = document.getElementById('terminal-code');
+const editHelp = document.getElementById('rearrange-help'), editToggle = document.getElementById('rearrange-toggle');
+function editUI() { editHelp.hidden = !rearrange.enabled; editToggle.hidden = !rearrange.unlocked; editToggle.textContent = rearrange.enabled ? 'Avsluta ommöblering' : 'Möblera om'; }
+function showTerminal(show, byKey = 'button') {
+  if (show && (reading || drawing.active)) return;
+  terminal.hidden = !show; reading = show; player.keys.clear(); touch.analog.x = touch.analog.y = 0;
+  if (show) { if (locked) { boardFreed = true; document.exitPointerLock(); } editUI(); terminalInput.focus(); }
+  else if (boardFreed) { boardFreed = false; if (byKey === 'Escape') { overlay.hidden = true; armEl.hidden = false; } else canvas.requestPointerLock()?.catch(() => { armEl.hidden = false; }); }
+}
+document.getElementById('terminal-btn').addEventListener('click', () => showTerminal(true));
+document.getElementById('terminal-close').addEventListener('click', () => showTerminal(false));
+document.getElementById('terminal-form').addEventListener('submit', (e) => {
+  e.preventDefault();
+  if (rearrange.unlock(terminalInput.value)) { document.getElementById('terminal-message').textContent = 'Superkraft upplåst: möblera om!'; terminalInput.value = ''; editUI(); showTerminal(false); }
+  else document.getElementById('terminal-message').textContent = 'Okänd kod.';
+});
+editToggle.addEventListener('click', () => { rearrange.enable(!rearrange.enabled); editUI(); showTerminal(false); });
+document.getElementById('rearrange-cancel').addEventListener('click', () => { if (rearrange.selected) rearrange.cancel(); else rearrange.enable(false); editUI(); });
+document.addEventListener('keydown', (e) => {
+  if (!terminal.hidden) { if (e.code === 'Escape') { e.preventDefault(); showTerminal(false, 'Escape'); } e.stopImmediatePropagation(); return; }
+  if (e.code === 'Enter' && active() && !reading && !drawing.active && !e.repeat) { e.preventDefault(); e.stopImmediatePropagation(); showTerminal(true); return; }
+  if (rearrange.enabled && !reading && ['KeyR', 'KeyX', 'KeyF'].includes(e.code)) {
+    e.preventDefault(); e.stopImmediatePropagation();
+    if (!e.repeat && e.code === 'KeyR') rearrange.rotate();
+    if (!e.repeat && e.code === 'KeyX') { if (rearrange.selected) rearrange.cancel(); else rearrange.enable(false); editUI(); }
+  }
+}, true);
 
 // --- statistics panel: hidden; Tab held (like a scoreboard), T / 📊 toggle -------
 // Counted events pop up as small badges instead.
@@ -1944,6 +1994,7 @@ function showPerf() {
 }
 const frontDoor = world.doors.find((d) => d.name === 'ytterdörren' && Math.abs(d.object.getWorldPosition(new THREE.Vector3()).z) < 0.5);
 detail = new DetailCuller(scene, { W: world.size.x, D: world.size.z, roof: world.openings.roof, floor1: LEVELS[1].floor, doorHeight: DOOR_HEIGHT }, world.openings, () => frontDoor.t > 0.02); // everything is built by now (the holdables too); the open front door shows the hall (#210)
+document.addEventListener('furniture-moved', () => detail?.last.set(1e9, 0, 0));
 // Warm-up (#432): the first time the inside of the flat is drawn (opening the front door after a fresh start shows
 // what the detail culler kept on its hidden layer) three compiled the shadow-depth programs and uploaded the geometry
 // and textures of everything in it in one frame — a freeze of a couple of seconds. So a few frames in (after
@@ -2107,7 +2158,7 @@ const autoReload = {
     if (!this.version || this.going) return;
     const moved = player.pos.distanceTo(this.last) > 0.01;
     this.last.copy(player.pos);
-    const busy = moved || player.keys.size || touch.analog.x || touch.analog.y || reading || drawing.active || sonos.playing || this.waiting;
+    const busy = rearrange.selected || rearrange.saving || moved || player.keys.size || touch.analog.x || touch.analog.y || reading || drawing.active || sonos.playing || this.waiting;
     if (busy) { if (this.count !== null) this.cancel(); this.still = 0; } else this.still += dt;
     if ((performance.now() - this.since) / 1000 > AUTO_RELOAD.fallback && updateEl.hidden) showUpdate(this.version);
     if (this.count === null) {
@@ -2182,4 +2233,4 @@ document.documentElement.classList.remove('resuming'); // the page is ready: off
 hideLoading();
 
 // handle for tests/debugging (tools/touchtest.html, tools/perfcount.html)
-window.__app = { dynRes, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, toaster, life, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS };
+window.__app = { rearrange, showTerminal, dynRes, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, toaster, life, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS };

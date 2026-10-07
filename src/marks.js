@@ -115,6 +115,9 @@ export class Marks {
   /** How many marks there are now (glows included). */
   get count() { return this.live.length; }
 
+  /** Furniture was moved: its cached world-space acceleration data is no longer valid (#465). */
+  invalidate(root) { root.traverse((o) => { grids.delete(o); boxes.delete(o); }); }
+
   /**
    * The first thing on the segment from → to: { point, normal, object } on a surface that takes marks,
    * { cat: true } for the cat, or null (nothing, or something that takes none: glass, a door, a lid …).
