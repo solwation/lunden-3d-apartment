@@ -62,9 +62,36 @@ export class Beer extends Holdable {
     this.holder.visible = v;
   }
 
+  /** Position the beer on the lounge table directly in front of the seated visitor (#472). */
+  placeForSpot(spot) {
+    if (!spot?.pos) return;
+    let x, z;
+    if (spot.dir?.[0] === -1 || spot.pos.x > 5.0) {
+      // Seated on the bench along the east screen wall, facing west (-x) towards the table
+      x = 4.42;
+      z = Math.max(14.10, Math.min(14.40, spot.pos.z));
+      if (Math.hypot(x - 4.38, z - 14.17) < 0.12) {
+        z = z < 14.17 ? 14.06 : 14.28;
+      }
+    } else {
+      // Seated in the sofa row facing south (+z) towards the table
+      z = 14.10;
+      x = Math.max(3.98, Math.min(4.42, spot.pos.x));
+      if (Math.hypot(x - 4.38, z - 14.17) < 0.12) {
+        x = 4.26;
+      }
+    }
+    const y = B.y;
+    this.home.pos.set(x, y, z);
+    if (this.holder?.children?.[0]) {
+      this.holder.children[0].position.set(x, y + B.h / 2, z);
+    }
+  }
+
   /** The visitor sat down in the lounge sofa: a full beer on the table, unless one is in the hand or put down. */
-  serve() {
+  serve(spot = null) {
     if (this.broken) this.broken = false; // shot to pieces (#263): a new one
+    if (spot) this.placeForSpot(spot);
     if (this.held || this.placed) { if (!this.out) this.show(true); return; }
     this.goHome();
     this.setLevel(1);
@@ -77,6 +104,7 @@ export class Beer extends Holdable {
 
   goHome() {
     super.goHome();
+    this.model.updateMatrixWorld(true);
     if (this.out) this.setLevel(1); // back on the table: a fresh one
   }
 

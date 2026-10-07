@@ -1065,13 +1065,14 @@ function sitOrLie(target) {
   sitAt(target, spot, { x: player.pos.x, z: player.pos.z, y: player.pos.y, yaw: camera.rotation.y });
   bump(spot.kind === 'lie' ? 'lay' : 'sat', 1, `${target.name}@${spot.pos.x.toFixed(1)},${spot.pos.y.toFixed(1)},${spot.pos.z.toFixed(1)}`); // each seat / side of a bed once
   sfx.rustle(spot.pos);
-  if (target.name === 'loungesoffan') beer.serve(); // a big beer on the table (#117)
+  if (target.name === 'loungesoffan') beer.serve(spot); // a big beer on the table (#117, #472)
 }
 /** Down on `spot` of `target`; `stand` = where to get up again. `now`: already there (a reload putting you back, #277). */
 function sitAt(target, spot, stand, now = false) {
   player.crouch = false;
   rest.begin(target, spot, stand);
   if (now) { rest.t = 1; camera.position.copy(spot.pos); rest.clampLook(camera); }
+  if (target.name === 'loungesoffan' && now && beer.out) beer.serve(spot);
   if (spot.pc) usePc(spot);
   if (spot.tv) { // sitting up in bed puts the room's TV on (#213), and getting up puts it off again
     const tv = world.furnitureTargets.find((t) => t.kind === 'tv' && t.room === spot.tv);

@@ -1679,7 +1679,7 @@ export const REST = {
   sitEye: 0.72, lieEye: 0.22, move: 0.5,
   sit: { yaw: 1.7, pitch: [-1.1, 0.8] },
   lie: { yaw: 1.3, pitch: [0.15, 1.45], startPitch: 1.45 }, // lying on your back, looking at the ceiling
-  reach: { sit: 1.3, lie: 0.8 }, // how far from the eye you can reach things while sitting (leaning forward) / lying (#184)
+  reach: { sit: 1.7, lie: 0.8 }, // how far from the eye you can reach things while sitting (leaning forward) / lying (#184, #472)
 };
 
 export const PLAYER = {
