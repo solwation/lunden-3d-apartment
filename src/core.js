@@ -273,11 +273,16 @@ export class Core {
     const WINS = [1, 2].map((j) => ({ a0: winX0, a1: winX1, y0: Y[j] + K.window.sill, y1: Y[j] + K.window.head }));
     wallZ(N[1], X0, X1, Y[1] - 0.25, Y[3] - 0.2, WINS);
     for (const WIN of WINS) {
-      geo.glass.push(panelZ(N[1] + 0.06, WIN.a0, WIN.a1, WIN.y0, WIN.y1));
-      this.walls.push({ s: [WIN.a0, N[1] + 0.06, WIN.a1, N[1] + 0.06], y0: WIN.y0, y1: WIN.y1 });
-      for (const [a, b, c, d] of [[WIN.a0, WIN.a0 + 0.05, WIN.y0, WIN.y1], [WIN.a1 - 0.05, WIN.a1, WIN.y0, WIN.y1], [WIN.a0, WIN.a1, WIN.y0, WIN.y0 + 0.05], [WIN.a0, WIN.a1, WIN.y1 - 0.05, WIN.y1]])
-        geo.rail.push(bake(box(a, b, c, d, N[1] + 0.02, N[1] + 0.08), FRAME));
-      geo.wall.push(bake(box(WIN.a0, WIN.a1, WIN.y0 - 0.03, WIN.y0, N[1], N[1] + 0.18), WALL)); // the window board
+      geo.glass.push(panelZ(N[1] + 0.03, WIN.a0 + 0.05, WIN.a1 - 0.05, WIN.y0 + 0.05, WIN.y1 - 0.05));
+      this.walls.push({ s: [WIN.a0, N[1] + 0.03, WIN.a1, N[1] + 0.03], y0: WIN.y0, y1: WIN.y1 });
+      for (const [a, b, c, d] of [
+        [WIN.a0, WIN.a0 + 0.05, WIN.y0, WIN.y1],
+        [WIN.a1 - 0.05, WIN.a1, WIN.y0, WIN.y1],
+        [WIN.a0 + 0.05, WIN.a1 - 0.05, WIN.y0, WIN.y0 + 0.05],
+        [WIN.a0 + 0.05, WIN.a1 - 0.05, WIN.y1 - 0.05, WIN.y1]
+      ])
+        geo.rail.push(bake(box(a, b, c, d, N[1], N[1] + 0.06), FRAME));
+      geo.wall.push(bake(box(WIN.a0 - 0.02, WIN.a1 + 0.02, WIN.y0 - 0.03, WIN.y0, N[1] + 0.06, N[1] + 0.22), WALL)); // the window board
     }
     geo.wall.push(bake(box(X0, X1, Y[3] - 0.22, Y[3] - 0.2, N[1], LOFT), 0xdedcd6)); // våning 2's ceiling under the loftgång's deck
     // våning 3's loftgång wall (1.59 … 2.02): the door and the glazed sidelight through it
