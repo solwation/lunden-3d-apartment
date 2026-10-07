@@ -53,6 +53,8 @@ try {
  R.candidate=new T.Matrix4().makeTranslation(.2,0,0).multiply(table.object.matrixWorld);R.valid=true;await R.confirm();
  check(Math.abs(it.place.pos[0]-pos.x-.2)<.001,'plate and its persistent position follow table');}
  const stored=JSON.parse(w.localStorage.getItem('lunden.furniture.layout'));check(stored.revision>=3,'confirmed layout persists locally');
+ R.begin(rug);d.dispatchEvent(new w.KeyboardEvent('keydown',{code:'Home',bubbles:true}));await wait(100);
+ check(rug.object.matrixWorld.elements.every((v,i)=>Math.abs(v-rug.home.elements[i])<.0001),'Home key restores original position without leaving keyboard controls');
  R.enable(false);check(!R.enabled,'mode can be exited');
  document.getElementById('out').textContent=lines.join('\n')+'\n'+(pass?'ALL PASS':'SOME FAILED');
 }catch(e){document.getElementById('out').textContent=lines.join('\n')+'\nFAIL '+e.stack;}

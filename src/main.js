@@ -1734,9 +1734,10 @@ document.getElementById('rearrange-cancel').addEventListener('click', () => { if
 document.addEventListener('keydown', (e) => {
   if (!terminal.hidden) { if (e.code === 'Escape') { e.preventDefault(); showTerminal(false, 'Escape'); } e.stopImmediatePropagation(); return; }
   if (e.code === 'Enter' && active() && !reading && !drawing.active && !e.repeat) { e.preventDefault(); e.stopImmediatePropagation(); showTerminal(true); return; }
-  if (rearrange.enabled && !reading && ['KeyR', 'KeyX', 'KeyF'].includes(e.code)) {
+  if (rearrange.enabled && !reading && ['KeyR', 'KeyX', 'KeyF', 'Home'].includes(e.code)) {
     e.preventDefault(); e.stopImmediatePropagation();
     if (!e.repeat && e.code === 'KeyR') rearrange.rotate();
+    if (!e.repeat && e.code === 'Home') rearrange.restoreOriginal();
     if (!e.repeat && e.code === 'KeyX') { if (rearrange.selected) rearrange.cancel(); else rearrange.enable(false); editUI(); }
   }
 }, true);
