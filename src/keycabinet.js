@@ -219,6 +219,12 @@ export function buildHallWall() {
   cabinet.object.position.set(H.cabinet.x, H.cabinet.y, H.cabinet.z);
   cabinet.object.rotation.y = H.cabinet.rotY;
   const secretaryMirror = skogsgransen();
-  group.add(mirror, nissedal(H.tall), nissedal(H.tallUp), secretaryMirror, cabinet.object); // (+ SKOGSGRÄNSEN over the secretary, #265)
-  return { object: group, cabinet, key: cabinet.key, secretaryMirror };
+  const mirrors = [
+    { object: mirror, key: 'lindbyn', level: 0, name: 'den runda spegeln' },
+    { object: nissedal(H.tall), key: 'nissedal', level: 0, name: 'entréspegeln' },
+    { object: nissedal(H.tallUp), key: 'nissedal', level: 1, name: 'spegeln i övre hallen' },
+    { object: secretaryMirror, key: 'skogsgransen', level: 0, name: 'spegeln' },
+  ];
+  group.add(...mirrors.map(m => m.object), cabinet.object); // (+ SKOGSGRÄNSEN over the secretary, #265)
+  return { object: group, cabinet, key: cabinet.key, secretaryMirror, mirrors };
 }

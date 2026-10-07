@@ -344,7 +344,10 @@ src/rearrange.js       furniture cheat (#465): Enter / >_ opens a terminal; eith
                        Confirmed world poses update footprints, seat targets, surface heights, light anchors/washes, rug data
                        and Marks caches. Local cached authoritative layout is lunden.furniture.layout; unlock is a convenience.
                        GET/PUT /furniture uses DrawingRoom's serialized durable storage, revision-checked atomic batches;
-                       conflicts cancel and pull the winning layout, previews never sync. The SKOGSGRÄNSEN mirror above the secretary is an independent wall piece, including its reflector (tools/rearrangemirrortest.html verifies independent placement, rotation, restoration and reload).
+                       conflicts cancel and pull the winning layout, previews never sync. Decorative mirrors (LINDBYN, both NISSEDAL, SKOGSGRÄNSEN, pineapple, vanity and closet) are independent
+                       wall pieces with their reflectors; furniture builders expose wallMirrors, detached before layout restoration.
+                       Bathroom mirrors/cabinets remain fixed. tools/rearrangemirrortest.html and tools/loosemirrorstest.html verify
+                       independent movement, reflection, restoration, reload and fixed-mirror exclusion.
                        Enter opens clickable rearrangement controls with a free cursor; Esc exits the mode and cancels the preview,
                        including native pointer-unlock events. Touch keeps its input mode when leaving the menu.
                        Original-position reset (button / Home) uses the same atomic move; detached Thing supports and the fruit bowl follow

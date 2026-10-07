@@ -1,0 +1,35 @@
+<!doctype html><html><meta charset="utf-8"><title>Movable decorative mirrors (#479)</title><pre id="out">running…</pre><script type="module">
+const lines=[];let pass=true;const check=(ok,s)=>{lines.push(`${ok?'PASS':'FAIL'} ${s}`);pass&&=!!ok;};
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+try {
+ localStorage.removeItem('lunden.furniture.layout');localStorage.removeItem('lunden.furniture.unlocked');
+ const f=document.createElement('iframe');f.width=480;f.height=300;f.src='../index.html?life&shot';document.body.append(f);
+ await new Promise(r=>f.onload=r);while(!f.contentWindow.__app)await wait(100);
+ const w=f.contentWindow,d=f.contentDocument,A=w.__app,R=A.rearrange,T=await w.eval("import('three')");
+ d.documentElement.requestFullscreen=undefined;d.getElementById('start-touch').click();R.unlock('sarah is the goat');
+ const inside=(o,root)=>{for(;o;o=o.parent)if(o===root)return true;return false;};
+ const same=(a,b)=>a.elements.every((v,i)=>Math.abs(v-b.elements[i])<.001);
+ const names=['lindbyn','nissedal','nissedal-uppe','skogsgransen','ananas','hollywood','klk'];
+ const all=A.reflectors(),fixed=all.filter(m=>!names.includes(m.name));
+ check(fixed.length>0&&fixed.every(m=>!R.pieces.some(p=>inside(m.r,p.object))),'fixed bathroom mirrors have no movable furniture identity');
+ const fixedAt=fixed.map(m=>m.r.matrixWorld.clone());
+ for(const name of names){
+  const reflector=all.find(m=>m.name===name),piece=reflector&&R.pieces.find(p=>inside(reflector.r,p.object));
+  check(piece?.picture,`${name}: independently registered wall mirror`);if(!piece)continue;
+  const others=R.pieces.filter(p=>p!==piece).map(p=>[p,p.object.matrixWorld.clone()]),before=piece.object.matrixWorld.clone(),reflection=reflector.r.matrixWorld.clone();
+  R.begin(piece);check(R.selected?.group.length===1,`${name}: independent preview`);
+  const delta=new T.Matrix4().makeTranslation(0,.08,0);R.candidate=delta.clone().multiply(before);R.valid=true;await R.confirm();A.scene.updateMatrixWorld(true);
+  check(same(reflector.r.matrixWorld,delta.clone().multiply(reflection))&&others.every(([p,m])=>same(p.object.matrixWorld,m)),`${name}: reflection moves, other furniture stays`);
+  check(await R.restoreOriginal(piece)&&same(piece.object.matrixWorld,before),`${name}: independent original-position reset`);
+ }
+ check(fixed.every((m,i)=>same(m.r.matrixWorld,fixedAt[i])),'all fixed bathroom mirrors stayed in place');
+ // Furniture below a wall mirror cannot drag it away.
+ for(const type of ['vanity','klk']){
+  const p=R.pieces.find(p=>p.item.type===type),mirror=p.object.userData.wallMirrors[0].object,before=mirror.matrixWorld.clone();
+  R.begin(p);R.candidate=new T.Matrix4().makeTranslation(.1,0,0).multiply(p.object.matrixWorld);R.valid=true;await R.confirm();
+  check(same(mirror.matrixWorld,before),`${type}: furniture move leaves wall mirror alone`);await R.restoreOriginal(p);
+ }
+ A.renderer.render(A.scene,A.camera);
+ document.getElementById('out').textContent=lines.join('\n')+'\n'+(pass?'ALL PASS':'SOME FAILED');
+}catch(e){document.getElementById('out').textContent=lines.join('\n')+'\nFAIL '+e.stack;}
+</script></html>

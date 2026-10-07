@@ -709,8 +709,8 @@ export function buildWorld(plan) {
   shelves.updateMatrixWorld(true);
   const hallWall = buildHallWall(); // mirror + Solstickan key cabinet (HALL_WALL)
   scene.add(hallWall.object);
-  furniture.movable.push({ id: 'f-mirror-skogsgransen-0', item: { type: 'mirror', level: 0 },
-    object: hallWall.secretaryMirror, level: 0, picture: true, name: 'spegeln' }); // independent wall decoration, not a secretary attachment
+  for (const m of hallWall.mirrors) furniture.movable.push({ id: `f-mirror-${m.key}-${m.level}`,
+    item: { type: 'mirror', level: m.level }, object: m.object, level: m.level, picture: true, name: m.name });
 
   // Site: ground, patio, hedge, fences
   const site = lower.site;

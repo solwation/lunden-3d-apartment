@@ -2508,6 +2508,7 @@ function vanity(item, lights) {
   lights.push({ object: mirror, shade: bulbMat, height: 0, level: item.level, name: 'sminkspegelns lampor', room: 'Sovrum 4', light: V.light,
     offset: [Math.sin(yaw) * out, Math.cos(yaw) * out] });
   g.userData.vanity = { mirror, glass };
+  g.userData.wallMirrors = [{ object: mirror, name: 'sminkspegeln' }];
   g.userData.surfaces = [{ x0: 0.0, x1: 0.13, z0: -hd + 0.2, z1: hd - 0.03, y: h }]; // in front of the stool, beside the laptop (#283)
   g.userData.footprint = [{ x0: -hw, x1: hw, z0: -hd, z1: hd }];
   return g;
@@ -3756,7 +3757,13 @@ export function buildFurniture() {
     const serial = ids.get(baseId) ?? 0; ids.set(baseId, serial + 1);
     for (const [i, object] of (obj.userData.frames ?? [obj]).entries()) {
       movable.push({ id: `${baseId}-${serial}-${i}`, item, object, level: item.level,
-        picture: ['pictures', 'painting', 'kposters'].includes(item.type), name: item.type === 'pictures' ? 'tavlan' : obj.userData.interact?.name ?? item.type });
+        picture: ['pictures', 'painting', 'kposters', 'pineapple'].includes(item.type), name: item.type === 'pictures' ? 'tavlan' : obj.userData.interact?.name ?? item.type });
+    }
+    // Decorative wall mirrors are independent of the furniture below them (#479).
+    for (const [i, m] of (obj.userData.wallMirrors ?? []).entries()) {
+      group.attach(m.object);
+      movable.push({ id: `${baseId}-${serial}-mirror-${i}`, item: { type: 'mirror', level: item.level },
+        object: m.object, level: item.level, picture: true, name: m.name });
     }
     things.push(...(obj.userData.things ?? [])); // small things you can take (bottles, glasses, #152)
     // footprint rectangles → world-space collision segments

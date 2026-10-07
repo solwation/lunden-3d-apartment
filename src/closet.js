@@ -158,5 +158,6 @@ export function klk(item, lights) {
   keep.push(mirror);
   lights.push({ object: mirror, shade: led, height: 0, level: item.level, name: 'spegelns lampa', room: 'Klk', light: M.light, offset: [0, -0.35] });
   g.userData.keep = keep;
+  g.userData.wallMirrors = [{ object: mirror, name: 'spegeln i klädkammaren' }];
   return g;
 }
