@@ -106,6 +106,11 @@ Use relative paths only.
 ```
 index.html             page shell, HUD, start overlay, import map (three from jsDelivr, pinned)
 src/config.js          everything NOT in the PDF: heights, soffits, stair layout, colours
+src/architectureedges.js sharp architectural edges (#474), captured before loose furniture/decor is added;
+                       excludes transparent overlays, cabinet contents and explicit loose roots. One static batch per floor,
+                       one per moving door/fitting/lift anchor; 30° creases, no triangle diagonals, 1 mm depth bias with depth testing.
+                       world.js and core.js build them once; furniture and loose things have no outlines. tools/architecturetest.html
+                       verifies batching, exclusions, moving doors/lift, no box diagonals and real WebGL occlusion.
 src/world.js           builds meshes + per-level collision segments from data/plan.json
 src/stairs.js          stair treads + walking height function (stairHeight) and the treads' underside (stairUnderside: head room,
                        collision, the Klk under it); the rise is LEVELS[1].floor − LEVELS[0].floor in equal risers (#352)

@@ -10,6 +10,8 @@ På köksbänken ligger en **uppdragslapp** med tre frivilliga vardagsuppdrag: g
 
 Tryck **Enter** (eller **>_** på touch) för att öppna terminalen. Fuskkoderna `olof is the goat` och `sarah is the goat` låser upp **Möblera om**: sikta på en möbel eller tavla, välj med E/klick, sikta på golvet eller väggen och placera med E igen. **R/⟳** roterar och **X/Avbryt** avbryter. Föremål på möbler följer med; mattor flyttas för sig. Bekräftade placeringar delas via Cloudflare och sparas till nästa besök. Terminalen har också en knapp för att avsluta läget.
 
+Diskreta kantlinjer på väggar, dörrar och fast inredning gör hörn och rumsgeometri lättare att urskilja, även i trapphuset och hissen.
+
 ## Styrning
 
 | Tangent | |

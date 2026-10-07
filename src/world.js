@@ -15,6 +15,7 @@ import { buildFurniture, surfaceBox } from './furniture.js';
 import { buildWallShelves } from './shelves.js';
 import { buildHallWall } from './keycabinet.js';
 import { mergeStatic } from './merge.js';
+import { architectureEdges } from './architectureedges.js';
 import { Pack, frameMatrix, hallWardrobe } from './contents.js';
 import { buildSillPlants } from './sillplants.js';
 import { registerSnow } from './seasons.js';
@@ -250,7 +251,7 @@ function hallWardrobeContents(group, w) {
   const origin = w.along ? new THREE.Vector3(m, w.y0, w.back) : new THREE.Vector3(w.back, w.y0, m);
   const P = new Pack();
   hallWardrobe(P, { hl: (w.b - w.a) / 2 - w.t, depth: Math.abs(w.front - w.back), rodY: 1.712, rodZ: Math.abs(w.front - w.back) / 2, shelfY: 1.8, topY: w.y1 - w.y0 - w.t });
-  group.add(...P.meshes(frameMatrix(dir, origin)));
+  for (const m of P.meshes(frameMatrix(dir, origin))) { m.userData.noArchitectureEdges = true; group.add(m); }
 }
 
 /**
@@ -684,6 +685,12 @@ export function buildWorld(plan) {
   // handrails: the wall side along the flights and round the winders, one per flight on the inner side (#419)
   for (const m of [...buildHandrails(M.rail).children]) scene.add(m);
 
+  // Capture only architecture, before adding loose furniture, plants, curtains and cabinet contents.
+  const edgeLines = architectureEdges(scene, {
+    moving: [...l0.doors, ...l1.doors, ...l0.lids, ...l1.lids, ...l0.appliances, ...l1.appliances].map(d => d.object),
+    exclude: interiorLoose, floor: LEVELS[1].floor,
+  });
+
   // Loose furniture (IKEA LANDSKRONA etc., see FURNITURE in config)
   const furniture = buildFurniture();
   scene.add(furniture.object);
@@ -812,6 +819,7 @@ export function buildWorld(plan) {
 
   return {
     object: scene,
+    edgeLines,
     setFurniture,
     furniture, // movable scene roots and collision data (#465)
     refreshFurniture: () => setFurniture(furniture.object.visible),

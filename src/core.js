@@ -1,3 +1,4 @@
+import { architectureEdges } from './architectureedges.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { CORE as K, GARAGE, HUS_L, PLAYER, storeyFloor } from './config.js';
@@ -382,6 +383,9 @@ export class Core {
     // the lift
     this.lift = new Lift(group);
     this.targets = [...this.doors, ...this.lift.targets];
+    this.edgeLines = architectureEdges(group, {
+      moving: [...this.doors.map(t => t.door.pivot), this.lift.car, ...this.lift.carDoors, ...this.lift.landing.flat()],
+    });
   }
 
   placeDoor(d) {
