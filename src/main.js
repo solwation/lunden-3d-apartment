@@ -154,7 +154,8 @@ function updateShadows(dt) {
   const dir = new THREE.Vector3().subVectors(sun.position, sun.target.position).normalize();
   shadowState.hold -= dt;
   shadowState.age += dt;
-  if (shadowState.hold > 0 || shadowState.age > 0.5 || dir.angleTo(shadowState.dir) > 0.0035) {
+  const maxAge = dynRes?.shadowInterval ?? 0.5;
+  if (shadowState.hold > 0 || shadowState.age > maxAge || dir.angleTo(shadowState.dir) > 0.0035) {
     renderer.shadowMap.needsUpdate = true;
     shadowState.dir.copy(dir);
     shadowState.age = 0;
@@ -1815,22 +1816,61 @@ if (perfEl) {
   document.body.append(perfEl);
 }
 let perfFrames = 0, perfT = performance.now();
-// Dynamic resolution (#48): if the frame rate stays under ~30 fps for 2 s, render at a lower pixel
-// ratio (steps of 0.85×, not below 0.6 of the full ratio); back up again after 4 s above ~50 fps.
-const dynRes = { ratio: MAX_PIXEL_RATIO, slow: 0, fast: 0 };
+// Dynamic graphics adaptation (#48, #460): adjusts rendering resolution, shadow cadence,
+// reflections and small-detail culling distance dynamically based on measured frame time.
+// Tier 0 (low): 0.65× resolution, detailScale 0.7, shadows throttled, reflections off.
+// Tier 1 (medium): 0.85× resolution, detailScale 0.85, normal shadows, reflections off.
+// Tier 2 (high): full 1.0× resolution, detailScale 1.0, full shadows, reflections allowed.
+const isMobileDevice = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+const dynRes = {
+  ratio: isMobileDevice ? Math.min(MAX_PIXEL_RATIO, 1.0) : MAX_PIXEL_RATIO,
+  targetRatio: isMobileDevice ? Math.min(MAX_PIXEL_RATIO, 1.0) : MAX_PIXEL_RATIO,
+  tier: isMobileDevice ? 1 : 2,
+  slow: 0,
+  fast: 0,
+  shadowInterval: 0.5,
+  detailScale: 1.0,
+};
+if (isMobileDevice) {
+  renderer.setPixelRatio(dynRes.ratio);
+}
 const shotMode = new URLSearchParams(location.search).has('shot'); // screenshots: always full resolution
 function adaptResolution(dt) {
-  if (dt <= 0) return;
+  if (dt <= 0 || dt > 0.25) return; // ignore huge pause/tab switches
   const fps = 1 / dt;
-  dynRes.slow = fps < 30 ? dynRes.slow + dt : 0;
-  dynRes.fast = fps > 50 ? dynRes.fast + dt : 0;
-  let next = dynRes.ratio;
-  if (dynRes.slow > 2) next = Math.max(MAX_PIXEL_RATIO * 0.6, dynRes.ratio * 0.85);
-  else if (dynRes.fast > 4) next = Math.min(MAX_PIXEL_RATIO, dynRes.ratio / 0.85);
-  if (Math.abs(next - dynRes.ratio) > 1e-3) {
-    dynRes.ratio = next;
-    renderer.setPixelRatio(next);
-    dynRes.slow = dynRes.fast = 0;
+  dynRes.slow = fps < 32 ? dynRes.slow + dt : Math.max(0, dynRes.slow - dt * 0.5);
+  dynRes.fast = fps > 52 ? dynRes.fast + dt : Math.max(0, dynRes.fast - dt * 0.5);
+
+  let targetTier = dynRes.tier;
+  if (dynRes.slow > 1.8) {
+    if (dynRes.tier > 0) targetTier = dynRes.tier - 1;
+    dynRes.slow = 0;
+  } else if (dynRes.fast > 4.0) {
+    if (dynRes.tier < 2) targetTier = dynRes.tier + 1;
+    dynRes.fast = 0;
+  }
+
+  if (targetTier !== dynRes.tier) {
+    dynRes.tier = targetTier;
+    if (dynRes.tier === 0) {
+      dynRes.targetRatio = Math.max(0.75, MAX_PIXEL_RATIO * 0.65);
+      dynRes.shadowInterval = 1.0;
+      dynRes.detailScale = 0.7;
+    } else if (dynRes.tier === 1) {
+      dynRes.targetRatio = Math.max(0.85, MAX_PIXEL_RATIO * 0.85);
+      dynRes.shadowInterval = 0.6;
+      dynRes.detailScale = 0.85;
+    } else {
+      dynRes.targetRatio = MAX_PIXEL_RATIO;
+      dynRes.shadowInterval = 0.4;
+      dynRes.detailScale = 1.0;
+    }
+    detail?.setQuality?.(dynRes.detailScale);
+  }
+
+  if (Math.abs(dynRes.targetRatio - dynRes.ratio) > 1e-3) {
+    dynRes.ratio = dynRes.targetRatio;
+    renderer.setPixelRatio(dynRes.ratio);
   }
 }
 function showPerf() {
@@ -2080,5 +2120,5 @@ if (lifeDev()) devScenario({ life, world, holdables, cups, things, milk, fish, f
 document.documentElement.classList.remove('resuming'); // the page is ready: off with the "Laddar…" cover (#222)
 hideLoading();
 
-// handle for tests/debugging (tools/touchtest.html)
-window.__app = { loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, toaster, life, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, coffeeJar, miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio, vacuum };
+// handle for tests/debugging (tools/touchtest.html, tools/perfcount.html)
+window.__app = { dynRes, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, toaster, life, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, coffeeJar, miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio, vacuum };

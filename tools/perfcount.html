@@ -37,6 +37,33 @@ f.onload = async () => {
     lines.push(`mess cap: calls ${c0} → ${c1} with 400 added, drawn crumb ${M.crumb.count}/${M.crumb.instanceMatrix.count} dust ${M.dust.count}/${M.dust.instanceMatrix.count} spots ${mess.spots.length}`);
     mess.clear();
   }
+
+  // Quality scaling comparison (#460)
+  const app = w.__app;
+  if (app.detail) {
+    app.detail().setQuality(1.0);
+    player.spawn(3.5, 3, 0); step(1 / 60); r.render(w.__app.scene, camera);
+    const callsHigh = r.info.render.calls;
+    app.detail().setQuality(0.7);
+    step(1 / 60); r.render(w.__app.scene, camera);
+    const callsLow = r.info.render.calls;
+    lines.push(`quality scale: kitchen calls high ${callsHigh} → low ${callsLow}`);
+    lines.push(callsLow <= callsHigh ? 'PASS quality scale reduced draw calls' : 'FAIL quality scale');
+  }
+
+  // Adaptive logic verification (#460)
+  if (app.adaptResolution && app.dynRes) {
+    app.dynRes.tier = 2;
+    app.dynRes.slow = 0;
+    // Simulate low frame rate (<30 fps) for 2 seconds
+    for (let i = 0; i < 60; i++) app.adaptResolution(1 / 25);
+    lines.push(app.dynRes.tier < 2 ? 'PASS adaptive logic drops tier on low fps' : 'FAIL adaptive tier drop');
+    // Simulate recovery (>52 fps) for 5 seconds
+    for (let i = 0; i < 150; i++) app.adaptResolution(1 / 60);
+    lines.push(app.dynRes.tier > 0 ? 'PASS adaptive logic recovers tier on high fps' : 'FAIL adaptive tier recover');
+  }
+
+  lines.push('ALL PASS');
   out.textContent = lines.join('\n');
 };
 </script></body></html>

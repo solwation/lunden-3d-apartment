@@ -43,11 +43,23 @@ export class DetailCuller {
       const r = s.radius * o.matrixWorld.getMaxScaleOnAxis();
       if (!(r > 0 && r < D.maxOcclude)) return;
       const lamp = [o.material].flat().some((m) => m?.userData.lamp); // a lamp's lit parts: never too small to draw (#294)
-      const it = { o, r, center: s.center.clone(), cut: r < D.maxR && !lamp ? Math.max(D.minDist, r / D.k) : Infinity, far: false, lamp };
+      const baseCut = r < D.maxR && !lamp ? Math.max(D.minDist, r / D.k) : Infinity;
+      const it = { o, r, center: s.center.clone(), cut: baseCut, baseCut, far: false, lamp };
       this.items.push(it);
       if (moving) this.moving.push(it);
     };
     walk(root, false);
+    this.qualityScale = 1.0;
+  }
+
+  /** Set quality distance scaling factor (1.0 = high, 0.7 = medium/low) (#460). */
+  setQuality(scale = 1.0) {
+    if (Math.abs(this.qualityScale - scale) < 1e-3) return;
+    this.qualityScale = scale;
+    for (const it of this.items) {
+      if (it.baseCut !== Infinity) it.cut = Math.max(D.minDist * 0.8, it.baseCut * scale);
+    }
+    this.refresh();
   }
 
   update(camera) {
