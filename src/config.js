@@ -2330,11 +2330,11 @@ export const MUSIC = {
 // Volume in steps; wall/floor attenuation on top of positional distance falloff.
 export const SONOS = {
   channels: [
-    { id: 'lofi', name: 'Lugn lofi', tracks: MUSIC.lofi },
+    { id: 'lofi', name: 'Lofi', tracks: MUSIC.lofi },
     { id: 'jazz', name: 'Jazz', tracks: MUSIC.jazz },
-    { id: 'kids', name: 'Barnens melodier', tracks: MUSIC.kids },
-    { id: 'synth', name: 'Chiptune och spel', tracks: MUSIC.game },
-    { id: 'bach', name: 'Akustiskt och piano', tracks: MUSIC.acoustic },
+    { id: 'kids', name: 'Barnmusik', tracks: MUSIC.kids },
+    { id: 'synth', name: 'Chiptune', tracks: MUSIC.game },
+    { id: 'bach', name: 'Akustiskt', tracks: MUSIC.acoustic },
     { id: 'rain', name: 'Ambient', tracks: MUSIC.ambient },
   ],
   steps: 10, start: 5, gain: 0.5, wall: 0.45, floor: 0.2, lookahead: 0.6,

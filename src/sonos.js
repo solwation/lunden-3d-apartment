@@ -128,9 +128,15 @@ export const CHANNELS = { // exported for the offline render in tools/sonostest.
 /** What the SYMFONISK speakers and the car's radio (#268) share: a channel's sub-mix into `this.bus.mix`, and composing
  * a bar at a time ahead — or, for a channel with `tracks` (#416), streaming its files into that sub-mix. */
 class Composer {
+  /** The channel's stable genre name (#462). */
   get name() {
+    return S.channels[this.channel].name;
+  }
+
+  /** The currently playing track and artist, or null if generated (#462). */
+  get trackName() {
     const t = this.file?.track;
-    return t ? `${t.title} – ${t.artist}` : S.channels[this.channel].name;
+    return t ? `${t.title} – ${t.artist}` : null;
   }
 
   /** A fresh sub-mix for the channel (the old one fades out with what it had scheduled). */
@@ -202,6 +208,7 @@ export class Sonos extends Composer {
     const self = this;
     for (const t of speakers) Object.defineProperty(t, 'verb', { get: () => (self.playing ? 'styra musiken på' : 'spela musik på') });
     this.nameEl = panel.querySelector('.name');
+    this.trackEl = panel.querySelector('.track');
     this.volEl = panel.querySelector('.vol');
     this.playBtn = panel.querySelector('[data-act=play]');
     this.onTrack = () => this.render(); // a file started, ended or fell back (#416): its name in the panel
@@ -300,6 +307,11 @@ export class Sonos extends Composer {
 
   render() {
     this.nameEl.textContent = this.name;
+    if (this.trackEl) {
+      const t = this.trackName;
+      this.trackEl.textContent = t ? `Spelas nu: ${t}` : '';
+      this.trackEl.hidden = !t;
+    }
     this.volEl.style.setProperty('--v', `${(this.volume / S.steps) * 100}%`);
     this.volEl.setAttribute('aria-label', `Volym ${this.volume} av ${S.steps}`);
     this.playBtn.textContent = this.playing ? '⏸' : '▶';
@@ -371,7 +383,7 @@ export class CarRadio extends Composer {
     const L = real ? d : CAR.music.songLength;
     const e = real ? Math.min(this.file.el.currentTime, d) : ((performance.now() - this.songStart) / 1000) % L;
     const mmss = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
-    return { name: this.name, playing: this.playing, progress: e / L, time: `${mmss(e)} / ${mmss(L)}` };
+    return { name: this.name, track: this.trackName, playing: this.playing, progress: e / L, time: `${mmss(e)} / ${mmss(L)}` };
   }
 
   /** Each frame: where the dashboard is, and how the visitor hears it: `inside` (sitting in the car), else through the

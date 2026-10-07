@@ -426,6 +426,8 @@
     #sonos-panel button:active { background: #fff3d6; }
     #sonos-panel .name { font: 700 18px system-ui, sans-serif; min-width: 190px; }
     #sonos-panel .vol { --v: 50%; width: 90px; height: 8px; border-radius: 4px; background: linear-gradient(90deg, #fff var(--v), rgba(255,255,255,.25) var(--v)); }
+    #sonos-panel .track { font: 500 13px system-ui, sans-serif; color: rgba(255,255,255,.85); margin-top: 6px; }
+    #sonos-panel .track[hidden] { display: none; }
     #sonos-panel small { display: block; margin-top: 6px; opacity: .85; }
     #clock-panel small { display: block; font-size: 11px; opacity: .65; margin-top: 3px; }
     body.touch #clock-panel small { display: none; }
@@ -748,7 +750,8 @@
       <button data-act="up" aria-label="Höj volymen">🔊</button>
       <button id="sonos-close" aria-label="Stäng">×</button>
     </div>
-    <small>A D byter låt · W S volym · Mellanslag spelar/pausar · E stänger (musiken spelar vidare)</small>
+    <div class="track" hidden></div>
+    <small>A D byter kanal · W S volym · Mellanslag spelar/pausar · E stänger (musiken spelar vidare)</small>
   </div>
   <div id="terminal" hidden role="dialog" aria-modal="true" aria-labelledby="terminal-title">
     <form id="terminal-form"><h2 id="terminal-title">Terminal</h2>

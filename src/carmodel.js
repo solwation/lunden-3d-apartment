@@ -115,12 +115,15 @@ export function drawScreen(g, music = null) {
     const grad = g.createLinearGradient(272, 12, 312, 52); grad.addColorStop(0, '#ff7a3d'); grad.addColorStop(1, '#8a3dff');
     g.fillStyle = grad; g.fillRect(272, 12, 40, 40); // the "cover"
     g.fillStyle = '#ffffff'; g.font = 'bold 26px sans-serif'; g.textAlign = 'center'; g.fillText('♪', 292, 42);
-    g.textAlign = 'left'; g.fillStyle = '#8fa3b8'; g.font = '12px sans-serif'; g.fillText(music.playing ? 'Spelas nu' : 'Pausad', 322, 25);
-    g.textAlign = 'right'; g.fillText(music.time, 496, 25);
-    g.textAlign = 'left'; g.fillStyle = '#f2f5f9'; g.font = 'bold 17px sans-serif';
-    let name = music.name;
-    while (g.measureText(name).width > 174 && name.length > 4) name = `${name.slice(0, name.endsWith('…') ? -2 : -1)}…`;
-    g.fillText(name, 322, 46);
+    g.textAlign = 'left'; g.fillStyle = '#f2f5f9'; g.font = 'bold 16px sans-serif';
+    g.fillText(music.name, 322, 28);
+    g.textAlign = 'right'; g.fillStyle = '#8fa3b8'; g.font = '12px sans-serif';
+    g.fillText(music.time, 496, 28);
+    g.textAlign = 'left'; g.fillStyle = '#8fa3b8'; g.font = '12px sans-serif';
+    let sub = music.track ? `Spelas nu: ${music.track}` : (music.playing ? 'Spelas nu' : 'Pausad');
+    if (!music.playing && music.track) sub = `Pausad · ${music.track}`;
+    while (g.measureText(sub).width > 174 && sub.length > 4) sub = `${sub.slice(0, sub.endsWith('…') ? -2 : -1)}…`;
+    g.fillText(sub, 322, 47);
     g.fillStyle = '#2c3a48'; g.fillRect(272, 60, 224, 4);
     g.fillStyle = '#4aa3ff'; g.fillRect(272, 60, 224 * music.progress, 4);
     g.textAlign = 'center'; g.fillStyle = '#e9eef5'; g.font = '24px sans-serif';

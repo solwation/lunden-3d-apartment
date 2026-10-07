@@ -59,11 +59,11 @@ f.onload = async () => {
     for (let i = 0; i < 200 && sonos.file && !(sonos.file.el?.currentTime > 0); i++) await wait(100);
     const el = sonos.file?.el;
     pass &= check(!!el && el.currentTime > 0 && !el.error && sonos.barNo === 0, `channel ${k}: real music (${el?.currentTime.toFixed(2)} s)`);
-    const firstName = sonos.name;
+    const genre = sonos.name, firstTrack = sonos.trackName;
     el?.dispatchEvent(new w.Event('ended')); await wait(20);
-    pass &= check(sonos.trackNo === 1 && sonos.name !== firstName && panel.querySelector('.name').textContent === sonos.name, `channel ${k}: next recording and title after ended`);
+    pass &= check(sonos.trackNo === 1 && sonos.name === genre && sonos.trackName !== firstTrack && panel.querySelector('.name').textContent === genre && panel.querySelector('.track').textContent.includes(sonos.trackName), `channel ${k}: next recording with stable genre (${genre}) and updated track`);
     sonos.file?.el?.dispatchEvent(new w.Event('ended')); await wait(20);
-    pass &= check(sonos.trackNo === 0 && sonos.name === firstName, `channel ${k}: rotation returns to first recording`);
+    pass &= check(sonos.trackNo === 0 && sonos.name === genre && sonos.trackName === firstTrack, `channel ${k}: rotation returns to first recording`);
   }
   const g0 = sonos.gain;
   panel.querySelector('[data-act=up]').click();
@@ -127,8 +127,8 @@ f.onload = async () => {
     for (let i = 0; i < 20 && el && el.readyState < 2; i++) { step(0.05); await wait(100); }
     const bars = sonos.barNo; for (let i = 0; i < 10; i++) step(0.1);
     const state = el ? `readyState ${el.readyState}, ${el.paused ? 'paused' : 'playing'}, error ${el.error?.code ?? 'none'}` : 'no element';
-    pass &= check(!!el && sonos.file?.el === el && !el.paused && !el.error && sonos.barNo === bars && panel.querySelector('.name').textContent === 'Testton – Testaren',
-      `a playable file streams in, nothing composed, its title shown (${state}, "${panel.querySelector('.name').textContent}")`);
+    pass &= check(!!el && sonos.file?.el === el && !el.paused && !el.error && sonos.barNo === bars && panel.querySelector('.name').textContent === ch0.name && panel.querySelector('.track').textContent.includes('Testton – Testaren'),
+      `a playable file streams in, nothing composed, its title shown (${state}, "${panel.querySelector('.name').textContent}", "${panel.querySelector('.track')?.textContent}")`);
     sonos.pause();
     pass &= check(!sonos.file && !el.getAttribute('src'), 'paused: the file stopped and let go');
   } else {

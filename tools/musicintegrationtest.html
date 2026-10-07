@@ -22,10 +22,10 @@ frame.onload = async () => {
     const radio = app.car.radio; radio.play();
     const radioReady = await until(() => radio.file?.el?.currentTime > .1);
     check(radioReady, `car streams before rotation (context ${audio.audioParts().ctx.state}, ${radio.file?.src ?? 'generated fallback'})`);
-    const title = radio.name; radio.file?.el?.dispatchEvent(new w.Event('ended')); await wait(20);
-    check(radio.trackNo === 1 && radio.name !== title, 'car radio rotates to the next recording');
+    const genre = radio.name, title = radio.trackName; radio.file?.el?.dispatchEvent(new w.Event('ended')); await wait(20);
+    check(radio.trackNo === 1 && radio.name === genre && radio.trackName !== title, 'car radio rotates to the next recording with stable genre');
     radio.file?.el?.dispatchEvent(new w.Event('ended')); await wait(20);
-    check(radio.trackNo === 0 && radio.name === title, 'car radio rotation wraps to the first recording'); radio.stop();
+    check(radio.trackNo === 0 && radio.name === genre && radio.trackName === title, 'car radio rotation wraps to the first recording'); radio.stop();
     const pc = app.world.furnitureTargets.find((t) => t.kind === 'pc');
     const laptop = app.world.furnitureTargets.find((t) => t.kind === 'laptop').laptop;
     const audible = async (loop) => await until(() => loop.file?.el?.currentTime > .1);

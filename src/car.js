@@ -155,7 +155,7 @@ export class Car {
 
   /** The centre screen: "now playing" while the music is on, else the map (only redrawn when something changed). */
   drawScreen() {
-    const np = this.radio.playing ? this.radio.nowPlaying : null, key = np ? `${np.name}|${np.time}` : 'map';
+    const np = this.radio.playing ? this.radio.nowPlaying : null, key = np ? `${np.name}|${np.track ?? ''}|${np.time}` : 'map';
     if (key === this.shown) return;
     this.shown = key;
     drawScreen(this.screenCanvas.getContext('2d'), np);
