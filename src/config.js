@@ -192,9 +192,10 @@ export const CURTAINS = [
   { level: 1, room: 'Sovrum 4', facade: 'south', theme: 'kpop', west: 0.22, stop: 0.23, meet: 1.45, east: 2.61, z: 12.12, glass: [0.72, 2.19], stack: 0.22,
     top: 2.76, drop: 0.02, fullness: 1.4, amp: 0.028, tile: 0.6, speed: 0.38, dim: 0.4,
     colors: { ground: '#201826', track: 0xf3f2ee, glow: 0x3d2b4c, warm: 0xffc27a }, glow: { day: 0.15, lamp: 0.07 } },
-  // Kök / matplats (Entréplan North): Scandinavian kitchen / dining botanical linen
-  { level: 0, room: 'Kök / matplats', facade: 'north', theme: 'linen_kitchen', west: 2.50, stop: 2.52, meet: 3.85, east: 4.90, z: 0.58, glass: [3.15, 4.56], stack: 0.22,
-    top: 2.96, drop: 0.02, fullness: 1.4, amp: 0.028, tile: 0.6, speed: 0.38, dim: 0.35,
+  // Kök / matplats (#464): one 51 cm valance on the existing ceiling rail; length is a visual choice (*guess*).
+  { level: 0, room: 'Kök / matplats', facade: 'north', theme: 'linen_kitchen', style: 'valance', name: 'gardinkappan', initial: 1, west: 2.50, stop: 2.52, meet: 3.85, east: 4.90, z: 0.58, glass: [3.15, 4.56], stack: 0.22,
+    top: 2.96, drop: 2.45, fullness: 1.4, amp: 0.028, tile: 0.6, speed: 0.38, dim: 0.03,
+    panels: [{ id: 'valance', from: 2.52, to: 4.90, park: 'left' }],
     colors: { ground: '#ede7dc', track: 0xf3f2ee, glow: 0xf8f4ec, warm: 0xffc27a }, glow: { day: 0.22, lamp: 0.08 } },
   // Vardagsrum (#463): three olive panels, parked clear of door/window; rail spans the plan's inner faces x .2018–5.5512.
   // Splits/stack/fullness and colours are visual choices (*guess*), matching the olive/cream rug.

@@ -329,6 +329,8 @@ src/curtains.js        Sovrum 1's curtains (#342, CURTAINS): two floor-length te
                        day, saved in 'lunden.blinds'; fittings: F keeps them; stats `curtains`; `&curtains=0…1`
                        #463: Vardagsrum has three olive panels on a wall-to-wall rail over the patio door too. Optional
                        CURTAINS.panels defines each closed span and parking side; cover sums the window overlap.
+                       #464: kitchen valance is one short panel (hem 2.45 m), initially spread along the existing rail, dim 0.03.
+                       Its '-valance' state id avoids inheriting the removed long curtains' position; subsequent positions save normally.
 src/lampwash.js        every lamp's light wherever the visitor is (#276, #294, #295, LIGHTING.wash): each pool anchor (small lamps
                        and ceiling lamps) lights the flat inside the lit materials' own shaders (`patch(scene)`: onBeforeCompile on
                        every MeshStandard/Lambert/Phong material, re-scanned every 120 frames; no extra mesh or draw call) exactly

@@ -38,6 +38,7 @@ async function run() {
   check(blinds.curtains.length === CURTAINS.length && c, `curtains built (${blinds.curtains.length})`);
   check(c.room === 'Sovrum 1', `in Sovrum 1 (${c.room})`);
   check(c.t === 0, 'open at the start');
+  check(blinds.curtains.find((c) => c.spec.style === 'valance')?.t === 1, 'kitchen valance starts spread across the rail');
   const [g0, g1] = S.glass;
   const glassFree = () => c.freeGlass(c.west.b, c.east.a);
   const clear = () => c.east.a >= g1 - 1e-6 && c.west.b <= g0 + 1e-6;
@@ -156,6 +157,14 @@ async function run() {
     curt.set(0);
     check(curt.t === 0, `${curt.room} opens cleanly`);
   }
+  const kitchen = app.blinds.curtains.find((c) => c.room === 'Kök / matplats');
+  check(kitchen.panels.length === 1 && kitchen.name === 'gardinkappan', 'kitchen has one continuous valance');
+  const hem = kitchen.panels[0].y0, top = kitchen.panels[0].y1;
+  check(hem >= 2.4 && top - hem < 0.6 && Math.abs(top - 2.96) < 0.001, 'short valance hangs from original ceiling rail; window below stays free');
+  kitchen.set(1);
+  check(kitchen.panels[0].a === kitchen.spec.stop && kitchen.panels[0].b === kitchen.spec.east && kitchen.spec.dim < 0.05, 'spread valance covers rail width with only a small daylight cut');
+  kitchen.set(0.4); app.blinds.save();
+  check(JSON.parse(w.localStorage.getItem('lunden.blinds'))[kitchen.id] === 0.4 && kitchen.id.endsWith('-valance'), 'valance position saves under its own key, independent of old long curtains');
   const living = app.blinds.curtains.find((c) => c.room === 'Vardagsrum');
   check(living.panels.length === 3 && living.spec.west <= 0.21 && living.spec.east + 0.02 >= 5.55, 'living room: three panels on a wall-to-wall track');
   for (const t of [0, 0.5, 1]) {

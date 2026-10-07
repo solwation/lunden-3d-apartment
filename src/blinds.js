@@ -122,7 +122,7 @@ export class Blinds {
   /** The curtains (#342, CURTAINS). */
   addCurtains() {
     for (const spec of CURTAINS) {
-      const c = new Curtain(spec, `curtain${this.curtains.length}`, this.statics);
+      const c = new Curtain(spec, `curtain${this.curtains.length}${spec.style === 'valance' ? '-valance' : ''}`, this.statics);
       this.curtains.push(c);
       this.object.add(c.object);
     }

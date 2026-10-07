@@ -507,7 +507,7 @@ export class Curtain {
   /** spec: a CURTAINS entry; `statics` gets the track (baked with the fittings). */
   constructor(spec, id, statics) {
     const out = spec.out ?? (spec.facade === 'south' ? 1 : -1);
-    Object.assign(this, { spec, id, kind: 'curtain', name: 'gardinerna', verb: 'dra i', level: spec.level, room: null, t: 0, moved: false, dark: false, out });
+    Object.assign(this, { spec, id, kind: 'curtain', name: spec.name ?? 'gardinerna', verb: 'dra i', level: spec.level, room: null, t: 0, moved: false, dark: false, out });
     this.x0 = spec.glass[0]; this.x1 = spec.glass[1]; this.z = spec.z; // the room lookup (Blinds.init)
     this.speed = spec.speed;
     const fl = LEVELS[spec.level].floor;
@@ -547,7 +547,7 @@ export class Curtain {
     this.yTop = y1;
     this.built = -1;
     this.sound = 0;
-    this.set(0);
+    this.set(spec.initial ?? 0);
   }
 
   /** The glass left free between the two leading edges. */
