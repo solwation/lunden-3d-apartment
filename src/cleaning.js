@@ -124,8 +124,14 @@ export function cleaning(item) {
   for (const x of bx) bin(P, bw, bh, bd, x, by, bz, binCol);
   const sp = [0xf2c94c, 0x7bbf6a, 0xf2c94c, 0x7bbf6a];
   for (let i = 0; i < 4; i++) {                                                      // sponges (yellow, a green scourer)
-    P.box(0.08, 0.025, 0.06, bx[0] - 0.06 + (i % 2) * 0.095, by + 0.13 + Math.floor(i / 2) * 0.03, bz - 0.06, sp[i]);
-    P.box(0.08, 0.01, 0.06, bx[0] - 0.06 + (i % 2) * 0.095, by + 0.118 + Math.floor(i / 2) * 0.03, bz - 0.06, i % 2 ? 0x2f6b3a : 0xf2c94c);
+    const stack = Math.floor(i / 2);
+    const baseX = bx[0] - 0.06 + (i % 2) * 0.095;
+    const baseZ = bz - 0.06;
+    // scourer pad on bottom (0.008m thick), sponge on top (0.025m thick), perfectly stacked without overlap
+    const padY = by + 0.114 + stack * 0.035;
+    const spongeY = padY + 0.004 + 0.0125;
+    P.box(0.08, 0.008, 0.06, baseX, padY, baseZ, i % 2 ? 0x2f6b3a : 0xf2c94c);
+    P.box(0.08, 0.025, 0.06, baseX, spongeY, baseZ, sp[i]);
   }
   [0x5b8fd6, 0xe58fb0, 0xf0f0ec].forEach((c, i) => P.box(0.1, 0.03, 0.09, bx[0] + 0.045, by + 0.1 + i * 0.03, bz + 0.06, c)); // folded cloths
   for (let i = 0; i < 3; i++) P.box(0.06, 0.16, 0.04, bx[1] - 0.07 + i * 0.07, by + 0.09, bz + 0.03, [0xc9b5e0, 0x9fd2c4, 0xc9b5e0][i], { gloss: true, r: [-0.15, 0, 0] }); // refill pouches
