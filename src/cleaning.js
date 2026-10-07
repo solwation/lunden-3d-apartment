@@ -196,6 +196,7 @@ export function cleaning(item) {
 
   // the stick vacuum in its dock is managed by Vacuum holdable (vacuum.js, #389)
   const V = C.vacuum;
+  for (const m of P.meshes()) { m.castShadow = true; inner.add(m); }
   const words = ['Städ', 'Tvål', 'Påsar'], tex = labelTexture(words);
   const labels = bx.map((x, i) => {
     const p = new THREE.PlaneGeometry(0.12, 0.03), uv = p.attributes.uv;
