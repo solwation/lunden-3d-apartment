@@ -44,7 +44,7 @@ export class Rearrange {
   }
   enable(on) {
     if (on && (!this.unlocked || this.busy())) { this.say('Lägg ifrån dig det du håller och res dig först.'); return false; }
-    if (this.saving) return false;
+    if (this.saving) { if (!on) this.enabled = false; return !on; } // a confirmed write finishes even if the user exits
     this.cancel(); this.enabled = !!on; this.say(on ? 'Välj en möbel, tavla eller spegel · E: välj · R: vrid · X: avbryt' : 'Ommöblering avslutad'); return true;
   }
   say(text) { this.message = text; this.status?.(text); }

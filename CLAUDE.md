@@ -345,6 +345,8 @@ src/rearrange.js       furniture cheat (#465): Enter / >_ opens a terminal; eith
                        and Marks caches. Local cached authoritative layout is lunden.furniture.layout; unlock is a convenience.
                        GET/PUT /furniture uses DrawingRoom's serialized durable storage, revision-checked atomic batches;
                        conflicts cancel and pull the winning layout, previews never sync. The SKOGSGRÄNSEN mirror above the secretary is an independent wall piece, including its reflector (tools/rearrangemirrortest.html verifies independent placement, rotation, restoration and reload).
+                       Enter opens clickable rearrangement controls with a free cursor; Esc exits the mode and cancels the preview,
+                       including native pointer-unlock events. Touch keeps its input mode when leaving the menu.
                        Original-position reset (button / Home) uses the same atomic move; detached Thing supports and the fruit bowl follow
                        furniture, including layouts saved before #475. Browser tests: tools/rearrangetest.html, tools/rearrangefollowtest.html;
                        Worker tests: cloudflare/layout.test.mjs. Development: cloudflare/dev.mjs and ?cloud=http://localhost:8145.

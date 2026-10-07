@@ -745,15 +745,21 @@
   </div>
   <div id="terminal" hidden role="dialog" aria-modal="true" aria-labelledby="terminal-title">
     <form id="terminal-form"><h2 id="terminal-title">Terminal</h2>
-      <label for="terminal-code">Fuskkod</label><input id="terminal-code" autocomplete="off" autocapitalize="off" spellcheck="false">
+      <div id="terminal-unlock"><label for="terminal-code">Fuskkod</label><input id="terminal-code" autocomplete="off" autocapitalize="off" spellcheck="false">
       <p id="terminal-message" aria-live="polite">Skriv en kod och tryck Enter.</p>
-      <button type="submit">Kör</button><button id="terminal-close" type="button">Stäng</button>
+      <button type="submit">Kör</button></div>
+      <div id="terminal-edit" hidden>
+        <p id="terminal-edit-status" aria-live="polite"></p>
+        <button id="terminal-restore" type="button">Återställ originalposition</button>
+        <button id="terminal-cancel-move" type="button">Avbryt flytten</button>
+      </div>
+      <button id="terminal-close" type="button">Stäng</button>
       <button id="rearrange-toggle" type="button" hidden>Möblera om</button>
     </form>
   </div>
   <div id="hud" hidden>
     <button id="terminal-btn" aria-label="Öppna terminalen">&gt;_</button>
-    <div id="rearrange-help" hidden><span id="rearrange-status"></span> <button id="rearrange-reset" title="Återställ originalposition (Home)" hidden>Återställ originalposition · Home</button> <button id="rearrange-cancel">Avbryt / avsluta</button></div>
+    <div id="rearrange-help" hidden><span id="rearrange-status"></span><div>Enter: meny · Esc: avsluta · X: avbryt flytt</div> <button id="rearrange-reset" title="Återställ originalposition (Home)" hidden>Återställ originalposition · Home</button> <button id="rearrange-cancel">Avbryt / avsluta</button></div>
     <div id="crosshair"></div>
     <div id="level"></div>
     <div id="stats" aria-live="off" hidden>

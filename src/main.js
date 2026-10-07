@@ -178,6 +178,7 @@ renderChangelog(document.getElementById('note-list'), changelog);
 const todo = buildTodoNotes(await loadTodo(), world.lids.find((l) => l.kind === 'fridge' && !l.freezer));
 const boardEl = document.getElementById('board-view');
 let reading = false;
+let onEditPointerUnlock = null;
 let boardPanel = null, boardFreed = false; // the panel (#170) frees the mouse to click its buttons
 function showBoard(show, byKey = 'E') {
   reading = show;
@@ -1313,8 +1314,10 @@ function updateMute(m = isMuted()) {
 muteBtn.addEventListener('click', () => updateMute(toggleMuted()));
 updateMute();
 document.addEventListener('pointerlockchange', () => {
+  const wasLocked = locked;
   locked = document.pointerLockElement === canvas;
   if (!locked) unlockedAt = performance.now();
+  if (wasLocked && !locked && !boardFreed && !reading) onEditPointerUnlock?.();
   armEl.hidden = true;
   if (locked) touch.enabled = false;
   if (!drawing.active && !boardFreed) showOverlay(!locked); // drawing and the board panel free the mouse on purpose: no start screen
@@ -1714,11 +1717,28 @@ const rearrange = new Rearrange({ scene, camera, world, player, life, marks,
 });
 const terminal = document.getElementById('terminal'), terminalInput = document.getElementById('terminal-code');
 const editHelp = document.getElementById('rearrange-help'), editToggle = document.getElementById('rearrange-toggle');
-function editUI() { editHelp.hidden = !rearrange.enabled; editToggle.hidden = !rearrange.unlocked; editToggle.textContent = rearrange.enabled ? 'Avsluta ommöblering' : 'Möblera om'; }
+let editMenuPiece = null;
+function editUI() {
+  editHelp.hidden = !rearrange.enabled; editToggle.hidden = !rearrange.unlocked;
+  editToggle.textContent = rearrange.enabled ? 'Avsluta ommöblering' : 'Möblera om';
+  editToggle.disabled = rearrange.saving;
+  document.getElementById('terminal-unlock').hidden = rearrange.enabled;
+  document.getElementById('terminal-edit').hidden = !rearrange.enabled;
+  document.getElementById('terminal-title').textContent = rearrange.enabled ? 'Möblera om' : 'Terminal';
+  document.getElementById('terminal-close').textContent = rearrange.enabled ? 'Fortsätt möblera' : 'Stäng';
+  document.getElementById('terminal-restore').disabled = !editMenuPiece || rearrange.saving;
+  document.getElementById('terminal-cancel-move').disabled = !rearrange.selected || rearrange.saving;
+  document.getElementById('terminal-edit-status').textContent = rearrange.message;
+}
+function exitRearranging() {
+  if (!rearrange.enabled) return;
+  rearrange.enable(false); editMenuPiece = null; editUI();
+}
+onEditPointerUnlock = exitRearranging; // Esc can be consumed by the browser; pointer unlock is the fallback.
 function showTerminal(show, byKey = 'button') {
   if (show && (reading || drawing.active)) return;
   terminal.hidden = !show; reading = show; player.keys.clear(); touch.analog.x = touch.analog.y = 0;
-  if (show) { if (locked) { boardFreed = true; document.exitPointerLock(); } editUI(); terminalInput.focus(); }
+  if (show) { editMenuPiece = rearrange.selected?.piece ?? rearrange.target?.piece ?? null; if (locked) { boardFreed = true; document.exitPointerLock(); } editUI(); (rearrange.enabled ? document.getElementById('terminal-close') : terminalInput).focus(); }
   else if (boardFreed) { boardFreed = false; if (byKey === 'Escape') { overlay.hidden = true; armEl.hidden = false; } else canvas.requestPointerLock()?.catch(() => { armEl.hidden = false; }); }
 }
 document.getElementById('terminal-btn').addEventListener('click', () => showTerminal(true));
@@ -1729,10 +1749,15 @@ document.getElementById('terminal-form').addEventListener('submit', (e) => {
   else document.getElementById('terminal-message').textContent = 'Okänd kod.';
 });
 editToggle.addEventListener('click', () => { rearrange.enable(!rearrange.enabled); editUI(); showTerminal(false); });
+document.getElementById('terminal-restore').addEventListener('click', async () => {
+  const saved = rearrange.restoreOriginal(editMenuPiece); editUI(); await saved; editUI();
+});
+document.getElementById('terminal-cancel-move').addEventListener('click', () => { rearrange.cancel(); rearrange.say('Flytten avbröts.'); editUI(); });
 document.getElementById('rearrange-reset').addEventListener('click', () => rearrange.restoreOriginal());
 document.getElementById('rearrange-cancel').addEventListener('click', () => { if (rearrange.selected) rearrange.cancel(); else rearrange.enable(false); editUI(); });
 document.addEventListener('keydown', (e) => {
-  if (!terminal.hidden) { if (e.code === 'Escape') { e.preventDefault(); showTerminal(false, 'Escape'); } e.stopImmediatePropagation(); return; }
+  if (!terminal.hidden) { if (e.code === 'Escape') { e.preventDefault(); exitRearranging(); showTerminal(false, 'Escape'); } e.stopImmediatePropagation(); return; }
+  if (e.code === 'Escape' && rearrange.enabled && !reading) { e.preventDefault(); e.stopImmediatePropagation(); exitRearranging(); if (locked) document.exitPointerLock(); return; }
   if (e.code === 'Enter' && active() && !reading && !drawing.active && !e.repeat) { e.preventDefault(); e.stopImmediatePropagation(); showTerminal(true); return; }
   if (rearrange.enabled && !reading && ['KeyR', 'KeyX', 'KeyF', 'Home'].includes(e.code)) {
     e.preventDefault(); e.stopImmediatePropagation();
