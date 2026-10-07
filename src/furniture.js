@@ -1,3 +1,5 @@
+import { MusicLoop } from './music.js';
+import { MUSIC } from './config.js';
 import * as THREE from 'three';
 import { sfx } from './audio.js';
 import { mergeStatic } from './merge.js';
@@ -2043,7 +2045,10 @@ function gamingdesk(item) {
   g.add(arm);
   const turn = { to: 0, out: 0 }; // monitor arm: target yaw, how far it is pulled out from the wall (0–1)
   const where = () => g.getWorldPosition(new THREE.Vector3()).setY(g.getWorldPosition(new THREE.Vector3()).y + 1);
+  const music = new MusicLoop(MUSIC.pcGain);
+  let musicBeat = 0;
   const interact = {
+    music,
     name: 'datorn', kind: 'pc', pickable: g,
     get isOpen() { return on; },
     get verb() { return on ? 'stänga av' : 'starta'; },
@@ -2053,6 +2058,7 @@ function gamingdesk(item) {
       power.color.setHex(on ? 0x44ff66 : 0x103018);
       if (!on) { rgb.forEach((m) => m.color.setHex(0x111111)); keysMat.color.setHex(0x111111); glowMat.color.setHex(0); }
       if (on) { (watching ? drawFilm : draw)(); this.fan = sfx.pcFan(where()); } else { this.fan?.stop(); this.fan = null; }
+      if (!on) music.stop();
       return on;
     },
     /** Swing the monitor towards `pos` (world) and play the film, or back to the desk (null). */
@@ -2077,6 +2083,10 @@ function gamingdesk(item) {
       mon.position.z = pz + 0.3 * turn.out;
       arm.scale.z = Math.max(0.001, 0.3 * turn.out);
       if (!on) return;
+      if (!music.update(watching ? MUSIC.ambient[0] : MUSIC.game[1], where())) {
+        musicBeat += dt;
+        if (musicBeat >= 0.25) { musicBeat %= 0.25; sfx.beat(where(), 'blip', MUSIC.pcGain * 0.5, [220, 330, 440, 330][Math.floor(t * 4) % 4]); }
+      }
       t += dt; acc += dt;
       const hue = (t * 0.15) % 1; // RGB cycling (cheap: only colours change)
       rgb.forEach((m, i) => m.color.setHSL((hue + i * 0.12) % 1, 1, 0.55));

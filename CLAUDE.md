@@ -636,14 +636,23 @@ src/handwash.js        washing the hands (#437, HANDWASH): a running basin tap (
 src/turbo.js           Kaffeturbo (#217, TURBO): TURBO.cups cups' worth of coffee (cups.js passes the coffee per sip) within
                        TURBO.window real seconds → `player.boost` = TURBO.speed (indoors too) for TURBO.seconds, the fov wider,
                        #turbo ("Kaffeturbo!" pops, then a small label with a bar) + #turbo-edge rainbow glow, our own
-                       chiptune (square/pulse lead, bass, noise hat; Sonos ducked meanwhile); real time (`turbo.now`), `&turbo`
-src/sonos.js           music in the SYMFONISK speakers (#187, SONOS): six generated channels (Web Audio, no files), one mix
+                       CC0 chiptune (generated fallback; Sonos ducked meanwhile); real time (`turbo.now`), `&turbo`
+src/sonos.js           music in the SYMFONISK speakers (#187, SONOS): six CC0 channels, two recordings each, one mix
                        → a panner per speaker (walls / the other floor muffle), #sonos-panel (⏮ ⏭ ⏯ volume, reading mode);
                        `Composer` (channel sub-mix + scheduling) is shared with the car's `CarRadio` (#268).
                        Real music (#416): a channel's `tracks` (files in music/, licences in music/CREDITS.md) stream through
                        an <audio> + MediaElementAudioSourceNode into its sub-mix, fetched only when it plays (`trackSrc`
                        picks .ogg / .mp3 by canPlayType); a failed / refused file falls back to the generated music; the
-                       panel / car screen show "title – artist". No files yet (the download sites are blocked from the cloud)
+                       panel / car screen show "title – artist". Twelve CC0 recordings (under 20 MB, 64 kbps Opus + MP3, mono; ten full tracks, two 120 s excerpts),
+                       checked/downloaded 2026-10-07. Titles/artists/source links/licences/edits in music/CREDITS.md and
+                       music/index.html ("Om musiken" in the start/pause menu); original hashes in music/sources.json.
+src/music.js           shared lazy MusicFile transport: format fallback, 8 s stall timeout, release media on stop;
+                       MusicLoop for the positional PC/laptop and non-positional Kaffeturbo (faster near the end).
+                       MUSIC in config selects tracks; the original sound effects stay synthesised. PC game/film gets
+                       game/ambient music; TVs have no programme audio and remain silent. tools/musictest.html checks
+                       every real Opus/MP3, audible samples, lazy loading, failed formats, mute and loop cleanup;
+                       tools/musicintegrationtest.html covers appliance playback, radio rotation, shutdown and fallback
+                       (click its Starta musiktest button with a real browser/Playwright click to activate iframe media)
 src/stats.js           visitor statistics (localStorage), "+1" badges per event, the HUD panel
                        (hidden; Tab held / T / 📊 shows it; touch, #245: narrower than the right-hand controls, scrolls with a
                        finger — touch.js ignores #stats — ⤢ full screen in columns, ✕ closes; rows go into #stats-body)
@@ -1578,7 +1587,7 @@ suite every time):
   change, once per month change (`applySeason` in the loop).
 - Statistics (`src/stats.js`): cats found per coat, cats petted, doors, toilet lids, steps/metres,
   stair trips, time inside; reset on the start screen.
-- Sounds are synthesised (no audio files) and positional — the speakers' music too (`src/sonos.js`); the AudioContext is started by the
+- Sound effects are synthesised and positional; music uses lazy CC0 recordings with generated fallbacks (#416). The AudioContext is started by the
   start-screen buttons (browser autoplay rules). M / the speaker button mutes.
 
 ## Input notes

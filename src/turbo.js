@@ -1,10 +1,11 @@
-import { TURBO as T } from './config.js';
+import { MusicLoop } from './music.js';
+import { TURBO as T, MUSIC } from './config.js';
 import { audioParts, isMuted } from './audio.js';
 
 // "Kaffeturbo!" (#217): drink TURBO.cups cups' worth of coffee (only the coffee in a cup counts, not the milk or the
 // whisky) within TURBO.window real seconds and you move TURBO.speed times faster for TURBO.seconds — indoors too —
-// with a wider view, a rainbow glow round the screen edge, a big "Kaffeturbo!" and a bouncy chiptune of our own
-// (square + pulse waves, a bass line and a noise hi-hat, generated here; no file, no borrowed melody). More coffee
+// with a wider view, a rainbow glow round the screen edge, a big "Kaffeturbo!" and a fast chiptune
+// (a CC0 recording; the original generated square-wave tune is the offline fallback). More coffee
 // meanwhile adds time, up to TURBO.max. Real time throughout (`now`), so spooling the wall clock changes nothing.
 
 // The tune: one bar of eighths per row, as semitones above A3 (null = rest); a happy I–V–vi–IV in C major
@@ -52,7 +53,7 @@ export class Turbo {
     }
   }
 
-  stop() { this.until = 0; }
+  stop() { this.until = 0; this.recording?.stop(); }
 
   /** Each frame: speed, HUD, music. dt = frame seconds. */
   update(dt) {
@@ -75,12 +76,15 @@ export class Turbo {
   /** The chiptune: scheduled ~0.3 s ahead; faster for the last seconds; fades out at the end. */
   music(on, ending) {
     const A = audioParts();
+    if (!on) this.recording?.stop();
     if (!A) return;
     const { ctx, master, noiseBuf } = A;
     if (!on) {
       if (this.bus) { const b = this.bus; b.gain.setTargetAtTime(0, ctx.currentTime, 0.15); setTimeout(() => b.disconnect(), 1200); this.bus = null; }
       return;
     }
+    this.recording ??= new MusicLoop(T.volume);
+    if (this.recording.update(MUSIC.game[0], null, ending ? 1.25 : 1)) return;
     if (!this.bus) {
       this.bus = ctx.createGain();
       this.bus.gain.value = T.volume;

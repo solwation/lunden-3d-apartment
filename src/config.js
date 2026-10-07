@@ -2284,21 +2284,28 @@ export const SYMFONISK = {
   controls: { w: 0.07, h: 0.017, y: 0.026, tab: 0.034 },
 };
 
-// Music in the SYMFONISK speakers (#187, src/sonos.js): generated in Web Audio, no files. `channels` = the "songs"
-// (⏮ ⏭ step through them), volume in `steps` (start at `start`), `gain` at full volume. Through a wall a speaker
-// is `wall` as loud, from the other floor `floor` (on top of the panner's distance fall-off).
-// Real music (#416): a channel may list `tracks: [{ title, artist, files: ['music/x.ogg', 'music/x.mp3'] }]` — files in
-// music/ with a licence that allows a public website, each one in music/CREDITS.md. They are fetched only when the
-// channel plays (the first file this browser can play) and fall back to the generated music if they fail. None yet:
-// the download sites are blocked from the cloud sessions, so the user adds them (the candidates are in #416).
+// CC0 recordings (#416), fetched only when played. Sources and edits: music/CREDITS.md.
+// Stable channel ids retain saved settings and the original generated fallback.
+const track = (id, title, artist) => ({ title, artist, files: [`music/${id}.ogg`, `music/${id}.mp3`] });
+export const MUSIC = {
+  loadTimeout: 8000, // a stalled recording must not suppress the generated fallback forever
+  lofi: [track('lofi-hip-hop', 'lofi hip hop', 'omfgdude'), track('lofi-again', 'Lofi again', 'omfgdude')],
+  jazz: [track('basically-not-fusion-jazz', '(Basically not) Fusion Jazz', 'Spring Spring'), track('wild-jazz', 'Wild Jazz', 'Alex McCulloch')],
+  kids: [track('happy', 'Happy', 'Alex McCulloch'), track('happy-lullaby-song17', 'Happy Lullaby', 'cynicmusic')],
+  game: [track('as-fast-as-you-can', 'As fast as you can', 'Centurion_of_war'), track('face-the-facts', 'Face The Facts', 'Zane Little Music')],
+  acoustic: [track('revelation', 'Revelation', 'Indieteur'), track('happy-moments', 'Happy moments', 'Centurion_of_war')],
+  ambient: [track('background-space-track', 'My Very Own Dead Ship', 'yd'), track('from-here-to-where', 'From Here to Where?', 'Écrivain')],
+  pcGain: 0.12, // quiet background under the game's existing sound effects
+};
+// Volume in steps; wall/floor attenuation on top of positional distance falloff.
 export const SONOS = {
   channels: [
-    { id: 'lofi', name: 'Lugn lofi' },
-    { id: 'jazz', name: 'Jazzig pianotrio' },
-    { id: 'kids', name: 'Barnvisor' },
-    { id: 'synth', name: 'Synthwave' },
-    { id: 'bach', name: 'Bach: Preludium i C-dur' },
-    { id: 'rain', name: 'Regn och brasa' },
+    { id: 'lofi', name: 'Lugn lofi', tracks: MUSIC.lofi },
+    { id: 'jazz', name: 'Jazz', tracks: MUSIC.jazz },
+    { id: 'kids', name: 'Barnens melodier', tracks: MUSIC.kids },
+    { id: 'synth', name: 'Chiptune och spel', tracks: MUSIC.game },
+    { id: 'bach', name: 'Akustiskt och piano', tracks: MUSIC.acoustic },
+    { id: 'rain', name: 'Ambient', tracks: MUSIC.ambient },
   ],
   steps: 10, start: 5, gain: 0.5, wall: 0.45, floor: 0.2, lookahead: 0.6,
 };
@@ -2584,7 +2591,7 @@ export const VANITY = {
 // two stickers on the lid. E on the screen: on, then the next clip; E on the keyboard: on / off. On, it shows an invented
 // short-video app ("Klipp": no real brand, no real people) — a phone-shaped column of canvas-drawn clips that swipes up
 // to the next one every `swipe` s (the slide takes `slide` s), redrawn at `fps`; each clip has a quiet beat (`bpm`,
-// sfx.beat at `gain`) and the house speakers are turned down to `duck` while it plays within `near` m. Sizes are guesses.
+// recorded loops at `gain`, with sfx.beat as fallback) and the house speakers are turned down to `duck` while it plays within `near` m. Sizes are guesses.
 export const LAPTOP = { w: 0.3, d: 0.21, base: 0.014, lid: 0.006, open: 110, px: [400, 250], fps: 12, swipe: 7, slide: 0.45,
   gain: 0.1, duck: 0.6, near: 3.5 };
 

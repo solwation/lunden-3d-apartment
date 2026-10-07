@@ -15,9 +15,11 @@ const f = document.createElement('iframe');
 f.width = 900; f.height = 600; f.src = '../index.html';
 document.body.append(f);
 f.onload = async () => {
+  if (document.readyState !== 'complete') await new Promise((r) => window.addEventListener('load', r, { once: true })); // media loads after the outer test document
   const w = f.contentWindow, d = f.contentDocument;
   while (!w.__app) await wait(100);
   const { player, camera, step, world, scene, sonos, toggleFurniture } = w.__app;
+  w.__app.renderer.setAnimationLoop(null); // drive steps below; give the media decoder time without software rendering
   const lines = [];
   const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; };
   d.getElementById('start-touch').click();
@@ -39,21 +41,30 @@ f.onload = async () => {
   const p = kitchen.object.getWorldPosition(new V()).add(new V(0, 0.15, 0));
   let label = aim(p, [p.x, p.z + 0.9]); // from the room: it stands on the kitchen window board (#289)
   pass &= check(/spela musik på högtalaren/i.test(label), `the black speaker (kitchen): "${label}"`);
+  pass &= check(!w.performance.getEntriesByType('resource').some((e) => /\/music\/.*\.(ogg|mp3)/.test(e.name)), 'no music downloaded before play');
   btn.click();
   for (let i = 0; i < 30; i++) step(1 / 30);
   await wait(300);
   const bus = sonos.bus;
   pass &= check(sonos.playing && !panel.hidden && !!bus && bus.outs.length === 3 && bus.outs.every((o) => o.pan.positionX.value !== 0), `playing in 3 panners, the panel open (${bus?.outs.map((o) => o.pos.toArray().map((v) => v.toFixed(1)).join(',')).join(' | ')})`);
   const ctx = bus.mix.context; // headless Chrome may keep the context suspended (no real gesture): its clock stands still
-  pass &= check(sonos.gain > 0.05 && sonos.barNo > 0, `the mix is up (${sonos.gain.toFixed(3)}), ${sonos.barNo} bars scheduled (context ${ctx.state})`);
+  pass &= check(sonos.gain > 0.05 && (!!sonos.file || sonos.barNo > 0), `the mix is up (${sonos.gain.toFixed(3)}), ${sonos.barNo} bars scheduled (context ${ctx.state})`);
   const name0 = panel.querySelector('.name').textContent;
   panel.querySelector('[data-act=next]').click();
   const name1 = panel.querySelector('.name').textContent;
   pass &= check(name1 !== name0, `next: "${name0}" → "${name1}"`);
-  // every channel composes without errors
-  let errs = 0;
-  for (let k = 0; k < 6; k++) { try { sonos.next(1); for (let i = 0; i < 10; i++) step(0.1); } catch (e) { errs++; lines.push(`  ${e}`); } }
-  pass &= check(errs === 0, 'all six channels play');
+  // Every configured channel streams a real recording, with an advancing media clock.
+  for (let k = 0; k < 6; k++) {
+    sonos.channel = k; sonos.play();
+    for (let i = 0; i < 200 && sonos.file && !(sonos.file.el?.currentTime > 0); i++) await wait(100);
+    const el = sonos.file?.el;
+    pass &= check(!!el && el.currentTime > 0 && !el.error && sonos.barNo === 0, `channel ${k}: real music (${el?.currentTime.toFixed(2)} s)`);
+    const firstName = sonos.name;
+    el?.dispatchEvent(new w.Event('ended')); await wait(20);
+    pass &= check(sonos.trackNo === 1 && sonos.name !== firstName && panel.querySelector('.name').textContent === sonos.name, `channel ${k}: next recording and title after ended`);
+    sonos.file?.el?.dispatchEvent(new w.Event('ended')); await wait(20);
+    pass &= check(sonos.trackNo === 0 && sonos.name === firstName, `channel ${k}: rotation returns to first recording`);
+  }
   const g0 = sonos.gain;
   panel.querySelector('[data-act=up]').click();
   const g1 = sonos.gain;
@@ -75,7 +86,7 @@ f.onload = async () => {
   // upstairs the ones downstairs are softer; the one in Sovrum 1 is up there
   player.spawn(2.9, 6.3, 0); player.pos.y = 3.25; player.eyeY = 3.25 + 1.62; for (let i = 0; i < 20; i++) step(0.1);
   const up = (o) => o.level === 1; // the white one in Sovrum 1 (#201, #298)
-  pass &= check(player.level === 1 && bus.outs.some(up) && bus.outs.every((o) => (up(o) ? o.k > 0.5 : o.k < 0.5)), `upstairs: the speakers below are muffled, the one in Sovrum 1 is not (${bus.outs.map((o) => `${o.level}:${o.k.toFixed(2)}`)})`);
+  pass &= check(player.level === 1 && bus.outs.some(up) && bus.outs.every((o) => (up(o) ? o.k >= 0.45 : o.k <= 0.2)), `upstairs: the speakers below are floor-muffled, Sovrum 1 is only wall-muffled from the hall (${bus.outs.map((o) => `${o.level}:${o.k.toFixed(2)}`)})`);
   // F: music off, speakers hidden
   toggleFurniture();
   pass &= check(!sonos.playing && panel.hidden && !world.furnitureOn, 'F stops the music');
@@ -87,8 +98,8 @@ f.onload = async () => {
   const pick = M.trackSrc({ files: ['music/a.ogg', 'music/a.mp3'] }, (t) => (t === 'audio/mpeg' ? 'maybe' : ''));
   pass &= check(pick === 'music/a.mp3' && M.trackSrc({ files: ['music/a.ogg'] }, () => '') === null, `the file this browser plays: ${pick}`);
   const fetched = () => w.performance.getEntriesByType('resource').filter((e) => /\/music\//.test(e.name)).map((e) => e.name.replace(/.*\//, ''));
-  pass &= check(fetched().length === 0, `no music downloaded before a channel with files plays (${fetched().join(', ') || 'none'})`);
-  const ch0 = SONOS.channels[0];
+  const beforeMissing = new Set(fetched());
+  const ch0 = SONOS.channels[0], originalTracks = ch0.tracks;
   ch0.tracks = [{ title: 'Saknas', artist: 'Test', files: ['music/finns-inte-416.ogg'] }];
   sonos.channel = 0; sonos.play();
   for (let i = 0; i < 40 && sonos.file; i++) { step(0.05); await wait(100); }
@@ -98,7 +109,7 @@ f.onload = async () => {
   const autoplay = M.failedFiles.has('music/finns-inte-416.ogg');
   pass &= check(!sonos.file && sonos.playing && sonos.barNo > 0 && panel.querySelector('.name').textContent === ch0.name,
     `a missing file${autoplay ? '' : ' (play refused: no gesture)'} falls back to the generated music (${sonos.barNo} bars, "${panel.querySelector('.name').textContent}")`);
-  pass &= check(fetched().length <= 1, `only the channel's own file was asked for (${fetched().join(', ') || 'none'})`);
+  pass &= check(fetched().filter((f) => !beforeMissing.has(f)).length <= 1, `only the channel's own file was asked for (${fetched().join(', ') || 'none'})`);
   // a 3 s tone as a WAV blob stands in for a real track
   const sr = 22050, n = sr * 3, wav = new DataView(new ArrayBuffer(44 + n * 2));
   const str = (o, s) => [...s].forEach((c, i) => wav.setUint8(o + i, c.charCodeAt(0)));
@@ -126,7 +137,7 @@ f.onload = async () => {
     lines.push('SKIP the file itself: run with --autoplay-policy=no-user-gesture-required');
     sonos.pause();
   }
-  delete ch0.tracks; sonos.channel = 0;
+  ch0.tracks = originalTracks; sonos.channel = 0;
   // each channel rendered offline for 6 s: audible, not clipping
   const { CHANNELS } = await w.eval(`import('${new URL('../src/sonos.js', location.href).href}')`);
   for (const [id, c] of Object.entries(CHANNELS)) {

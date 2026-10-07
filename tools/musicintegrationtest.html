@@ -1,0 +1,64 @@
+<!doctype html><meta charset="utf-8"><title>Music appliance integration test</title><pre id="out">running…</pre>
+<script>
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const frame = document.createElement('iframe'); frame.src = '../index.html'; document.body.append(frame);
+frame.onload = async () => {
+  if (document.readyState !== 'complete') await new Promise((r) => window.addEventListener('load', r, { once: true })); // media loads after the outer test document
+  const w = frame.contentWindow, lines = [], check = (v, s) => lines.push(`${v ? 'PASS' : 'FAIL'} ${s}`);
+  const until = async (fn) => { for (let i = 0; i < 400 && !fn(); i++) await wait(50); return fn(); };
+  try {
+    await until(() => w.__app); const app = w.__app;
+    app.renderer.setAnimationLoop(null);
+    // Real activation, as in a visit: Chromium may defer the first media pipeline in an unactivated iframe.
+    // Click this button in a browser (or via Playwright); synthetic .click() is not a user gesture.
+    await new Promise((resolve) => {
+      const button = frame.contentDocument.createElement('button'); button.id = 'music-test-start';
+      button.textContent = 'Starta musiktest'; button.style.cssText = 'position:fixed;top:0;left:0;z-index:999999';
+      button.onclick = () => { frame.contentDocument.querySelector('#start-touch').click(); button.remove(); resolve(); };
+      frame.contentDocument.body.append(button);
+    });
+    const audio = await w.eval(`import("${new URL('../src/audio.js', location.href)}")`);
+    await audio.audioParts().ctx.resume();
+    const radio = app.car.radio; radio.play();
+    const radioReady = await until(() => radio.file?.el?.currentTime > .1);
+    check(radioReady, `car streams before rotation (context ${audio.audioParts().ctx.state}, ${radio.file?.src ?? 'generated fallback'})`);
+    const title = radio.name; radio.file?.el?.dispatchEvent(new w.Event('ended')); await wait(20);
+    check(radio.trackNo === 1 && radio.name !== title, 'car radio rotates to the next recording');
+    radio.file?.el?.dispatchEvent(new w.Event('ended')); await wait(20);
+    check(radio.trackNo === 0 && radio.name === title, 'car radio rotation wraps to the first recording'); radio.stop();
+    const pc = app.world.furnitureTargets.find((t) => t.kind === 'pc');
+    const laptop = app.world.furnitureTargets.find((t) => t.kind === 'laptop').laptop;
+    const audible = async (loop) => await until(() => loop.file?.el?.currentTime > .1);
+    pc.toggle(); pc.update(.1);
+    check(await audible(pc.music), 'PC game streams a recording');
+    const game = pc.music.file.track;
+    pc.watch(app.player.pos.clone()); pc.update(.1);
+    check(await audible(pc.music) && pc.music.file.track !== game, 'PC film switches to ambient recording');
+    const pcEl = pc.music.file.el; pc.toggle();
+    check(pcEl.paused && !pcEl.getAttribute('src'), 'PC power off releases the recording');
+    laptop.set(true); laptop.update(.1);
+    check(await audible(laptop.music), 'laptop clip streams a recording');
+    let clock = 0; app.turbo.now = () => clock; app.turbo.start(); app.turbo.update(.1);
+    check(await audible(app.turbo.recording) && app.turbo.step === 0, 'Kaffeturbo streams instead of scheduling generated notes');
+    clock = app.turbo.until - 1; app.turbo.update(.1);
+    check(app.turbo.recording.file.el.playbackRate === 1.25, 'Kaffeturbo music speeds up at the end');
+    clock += 2; const turboEl = app.turbo.recording.file.el; app.turbo.update(.1);
+    check(turboEl.paused && !turboEl.getAttribute('src'), 'Kaffeturbo expiry releases the recording');
+    pc.toggle(); pc.update(.1); const laptopEl = laptop.music.file.el;
+    app.toggleFurniture(false);
+    check(!pc.music.file && !laptop.music.file && laptopEl.paused, 'F stops PC and laptop media');
+    const { MUSIC } = await w.eval(`import("${new URL('../src/config.js', location.href)}")`);
+    const { failedFiles } = await w.eval(`import("${new URL('../src/music.js', location.href)}")`);
+    for (const list of Object.values(MUSIC)) if (Array.isArray(list)) for (const t of list) for (const f of t.files) failedFiles.add(f);
+    app.turbo.start(); app.turbo.update(.1);
+    check(app.turbo.recording.bad && app.turbo.step > 0, 'unavailable Kaffeturbo files fall back to generated notes');
+    app.turbo.stop(); app.turbo.update(.1);
+    laptop.set(true); laptop.update(.3);
+    check(laptop.music.bad && laptop.on, 'unavailable laptop files select beat fallback and keep the feed running');
+    laptop.set(false);
+    pc.toggle(); pc.update(.3);
+    check(pc.music.bad && pc.isOpen, 'unavailable PC files select fallback and keep the game running'); pc.toggle();
+  } catch (e) { lines.push('FAIL ' + e.stack); }
+  document.querySelector('#out').textContent = (lines.some((s) => s.startsWith('FAIL')) ? 'SOME FAILED' : 'ALL PASS') + '\n' + lines.join('\n');
+};
+</script>

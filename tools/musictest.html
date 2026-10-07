@@ -1,0 +1,43 @@
+<!doctype html><meta charset="utf-8"><title>Recorded music test</title>
+<pre id="out">running…</pre>
+<script type="module">
+import { MUSIC, SONOS } from '../src/config.js';
+import { MusicFile, MusicLoop, failedFiles, trackSrc } from '../src/music.js';
+import { initAudio, audioParts, toggleMuted } from '../src/audio.js';
+const lines = [], check = (ok, label) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${label}`); };
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const until = async (fn) => { for (let i = 0; i < 100 && !fn(); i++) await wait(50); return fn(); };
+try {
+  initAudio(); const A = audioParts(); await A.ctx.resume();
+  const loop = new MusicLoop(.2);
+  check(!performance.getEntriesByType('resource').some((e) => /\.(ogg|mp3)/.test(e.name)), 'constructors download no audio');
+  const tracks = SONOS.channels.flatMap((c) => c.tracks);
+  check(tracks.length === 12 && new Set(tracks.map((t) => t.files[0])).size === 12, 'six channels, two distinct recordings each');
+  for (const track of tracks) for (const src of track.files) {
+    let bad = false;
+    const file = new MusicFile(A, A.master, { ...track, files: ['../' + src] }, { failed: () => { bad = true; } });
+    const meter = A.ctx.createAnalyser(); meter.fftSize = 2048; file.node.connect(meter);
+    const wave = new Float32Array(meter.fftSize);
+    const ready = await until(() => { meter.getFloatTimeDomainData(wave); return bad || (file.el?.currentTime > .2 && wave.some((v) => Math.abs(v) > .0001)); });
+    check(ready && !bad && file.el?.currentTime > 0 && wave.some((v) => Math.abs(v) > .0001), `${src}: decodes, clock advances, audible samples`);
+    file.stop(); meter.disconnect();
+  }
+  check(trackSrc(tracks[0], (type) => type === 'audio/mpeg') === tracks[0].files[1], 'MP3 for browsers without Opus');
+  let failed = false;
+  const fallback = new MusicFile(A, A.master, { files: ['../music/missing.ogg', '../' + tracks[0].files[1]] }, { failed: () => { failed = true; } });
+  await until(() => fallback.src.endsWith('.mp3') && fallback.el?.currentTime > 0);
+  check(!failed && fallback.src.endsWith('.mp3') && fallback.el.currentTime > 0, 'missing Opus tries the real MP3'); fallback.stop();
+  const absent = { files: ['../music/missing.ogg', '../music/missing.mp3'] };
+  // Relative URLs here are deliberately ../music, since this standalone page lives under tools/.
+  loop.update(absent, {x: 1, y: 2, z: 3}); await until(() => loop.bad);
+  check(!loop.update(absent) && loop.bad, 'all formats unavailable: caller can generate fallback'); loop.stop();
+  const real = { ...MUSIC.game[0], files: MUSIC.game[0].files.map((s) => '../' + s) };
+  loop.update(real, {x: 1, y: 2, z: 3}, 1.25);
+  await until(() => loop.file?.el?.currentTime > 0);
+  check(loop.file.el.loop && loop.file.el.playbackRate === 1.25 && loop.pan.positionZ.value === 3, 'positional loop and faster Kaffeturbo ending');
+  toggleMuted(); await wait(300); check(A.master.gain.value < .01, 'M silences the shared master'); toggleMuted();
+  const el = loop.file.el; loop.stop(); check(el.paused && !el.getAttribute('src') && !loop.pan, 'stop releases audio, download and panner');
+  check(failedFiles.has('../music/missing.ogg'), 'failed URLs remembered');
+} catch (e) { lines.push(`FAIL ${e.stack}`); }
+document.querySelector('#out').textContent = (lines.some((s) => s.startsWith('FAIL')) ? 'SOME FAILED' : 'ALL PASS') + '\n' + lines.join('\n');
+</script>

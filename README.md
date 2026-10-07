@@ -45,6 +45,10 @@ Ett dygn går på 60 minuter och varje besök börjar på din egen klocka och da
 I alla fönster sitter plisségardiner som dras upp nerifrån: gå fram och tryck <kbd>E</kbd>, dra upp och ner med
 <kbd>W</kbd> <kbd>S</kbd> (eller ▲ ▼), <kbd>E</kbd> när du är klar. De mörka i sovrummen gör rummet mörkt mitt på dagen.
 
+Högtalarna och bilradion har sex musikkanaler med två låtar var. Även datorn, laptopen och Kaffeturbo spelar
+inspelad musik. Under *Om musiken* i menyn finns musiker och källor; alla inspelningar har CC0-licens.
+Musiken laddas först när den spelas, med genererad reservmusik om filerna inte går att hämta.
+
 Vad som är nytt står på lappen på frysen i köket (gå fram och tryck <kbd>E</kbd>). Det som
 tillkommit sedan ditt senaste besök är markerat *Nytt*.
 
