@@ -1853,19 +1853,74 @@ function symfonisk(item, lights) {
   const add = (m, x, y, z) => { m.position.set(x, y, z); m.castShadow = true; g.add(m); return m; };
   if (item.kind === 'lamp') {
     const L = S.lamp;
-    add(new THREE.Mesh(new THREE.CylinderGeometry(L.baseR, L.baseR, L.baseH, 32), fabric), 0, L.baseH / 2, 0);
-    add(new THREE.Mesh(new THREE.CylinderGeometry(L.baseR - 0.004, L.baseR, 0.008, 32), shell), 0, L.baseH + 0.004, 0); // the top plate
-    for (const [i, dx] of [-0.018, 0, 0.018].entries()) add(new THREE.Mesh(new THREE.CylinderGeometry(i === 1 ? 0.007 : 0.005, i === 1 ? 0.007 : 0.005, 0.003, 12), btnMat), dx, L.baseH + 0.009, L.baseR - 0.025);
-    add(new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.014, L.stem, 12), shell), 0, L.baseH + 0.008 + L.stem / 2, 0);
-    const glass = new THREE.MeshStandardMaterial({ color: 0xf4f2ee, roughness: 0.55, emissive: 0xffe0b0, emissiveIntensity: 0.04 });
-    const R = L.shadeR, H = L.shadeH; // a soft dome, open below round the stem
-    const dome = new THREE.LatheGeometry([[0.02, 0], [R * 0.9, 0.012], [R, 0.04], [R * 0.95, H * 0.62], [R * 0.66, H * 0.9], [0, H]].map(([x, y]) => new THREE.Vector2(x, y)), 40);
-    const y0 = L.baseH + 0.008 + L.stem;
-    const shade = add(new THREE.Mesh(dome, glass), 0, y0, 0);
-    add(new THREE.Mesh(new THREE.SphereGeometry(0.0025, 8, 6), sonosLed), 0, L.baseH + 0.009, L.baseR - 0.012);
-    // E on the glass = the light (its own lamp); E on the speaker base = the music (#187)
-    lights.push({ object: shade, shade: glass, height: H * 0.5, level: item.level, name: 'lampan' });
-    g.userData.keep = [shade]; // stays its own mesh: it is the lamp's E target
+    // Base: dark knitted fabric cylindrical speaker with slightly tapered top rim (#461, docs/symfonisk-lamphogtalare-ikea-2026-10-07.png)
+    const baseMat = new THREE.MeshStandardMaterial({ color: 0x1f2022, roughness: 0.95 });
+    const basePts = [
+      [0, 0],
+      [L.baseR, 0],
+      [L.baseR, L.baseH * 0.88],
+      [L.baseR * 0.95, L.baseH * 0.97],
+      [L.baseR * 0.88, L.baseH],
+      [0, L.baseH],
+    ];
+    const baseGeo = new THREE.LatheGeometry(basePts.map(([x, y]) => new THREE.Vector2(x, y)), 36);
+    add(new THREE.Mesh(baseGeo, baseMat), 0, 0, 0);
+
+    // Collar / shade mount ring
+    const collar = add(new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, L.stem, 24), shell), 0, L.baseH + L.stem / 2, 0);
+
+    // Control buttons on front of base
+    for (const [i, dx] of [-0.018, 0, 0.018].entries()) {
+      add(new THREE.Mesh(new THREE.CylinderGeometry(i === 1 ? 0.006 : 0.0045, i === 1 ? 0.006 : 0.0045, 0.003, 12), btnMat), dx, L.baseH * 0.2, L.baseR - 0.004);
+    }
+    add(new THREE.Mesh(new THREE.SphereGeometry(0.002, 8, 6), sonosLed), 0, L.baseH * 0.25, L.baseR - 0.004);
+
+    // Inner glowing opal diffuser: cylindrical with dome top protruding through the top opening
+    const y0 = L.baseH + L.stem;
+    const innerGlass = new THREE.MeshStandardMaterial({
+      color: 0xfff4e6,
+      roughness: 0.35,
+      emissive: 0xffdfa8,
+      emissiveIntensity: 0.04,
+    });
+    const innerPts = [
+      [0, 0],
+      [L.innerR, 0],
+      [L.innerR, L.innerH * 0.9],
+      [L.innerR * 0.88, L.innerH * 0.97],
+      [0, L.innerH],
+    ];
+    const innerGeo = new THREE.LatheGeometry(innerPts.map(([x, y]) => new THREE.Vector2(x, y)), 32);
+    const innerMesh = add(new THREE.Mesh(innerGeo, innerGlass), 0, y0, 0);
+
+    // Outer shade: large rounded barrel smoke/tinted glass with top opening and rim
+    const outerGlass = new THREE.MeshStandardMaterial({
+      color: 0x3a3834,
+      roughness: 0.12,
+      metalness: 0.1,
+      transparent: true,
+      opacity: 0.65,
+      side: THREE.DoubleSide,
+      depthWrite: false,
+    });
+    const R = L.outerR, H = L.outerH, holeR = L.topHoleR;
+    const outerPts = [
+      [0.05, 0],
+      [R * 0.85, 0.015],
+      [R, H * 0.35],
+      [R, H * 0.65],
+      [R * 0.92, H * 0.92],
+      [holeR * 1.08, H * 0.99],
+      [holeR, H],
+      [holeR * 0.96, H + 0.005], // rolled lip rim at top opening
+      [holeR * 1.04, H + 0.005],
+    ];
+    const outerGeo = new THREE.LatheGeometry(outerPts.map(([x, y]) => new THREE.Vector2(x, y)), 40);
+    const shade = add(new THREE.Mesh(outerGeo, outerGlass), 0, y0, 0);
+
+    // E on the glass = the light (its own lamp, controls inner diffuser glow); E on the speaker base = music (#187)
+    lights.push({ object: shade, shade: innerGlass, height: H * 0.5, level: item.level, name: 'lampan' });
+    g.userData.keep = [shade, innerMesh];
   } else {
     const { w, d, h } = S.speaker;
     const [W, Hh, D] = item.lying ? [h, w, d] : [w, h, d]; // lying on its side: 31 wide, 15 high, still 10 deep

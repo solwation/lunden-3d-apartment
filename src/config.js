@@ -2294,7 +2294,11 @@ export const HUE_GO = {
 
 export const SYMFONISK = {
   speaker: { w: 0.15, d: 0.1, h: 0.31 },
-  lamp: { baseR: 0.075, baseH: 0.2, stem: 0.04, shadeR: 0.1, shadeH: 0.16 },
+  // #461: Gen 2 SYMFONISK table lamp speaker (docs/symfonisk-lamphogtalare-ikea-2026-10-07.png).
+  // Dark knitted fabric cylindrical base Ø 16 cm (R 0.08, H 0.20), rounded top rim.
+  // Large tinted/smoke glass shade Ø 22 cm (R 0.11, H 0.25) with top opening Ø 12 cm and lip rim.
+  // Cylindrical inner opal diffuser Ø 8 cm (R 0.04, H 0.22) protruding slightly through top opening.
+  lamp: { baseR: 0.08, baseH: 0.20, stem: 0.015, outerR: 0.11, outerH: 0.25, innerR: 0.04, innerH: 0.22, topHoleR: 0.06 },
   colors: { white: 0xe8e8e4, black: 0x1f2022 },
   // #418 (docs/symfonisk-bokhylla-staende.jpg): a standing speaker with `controls: 'front'` has a light grey fabric front
   // (`front` by colour), a white − ⏯ + strip `controls.w` × `h` with its centre `y` over the bottom and the IKEA tab
