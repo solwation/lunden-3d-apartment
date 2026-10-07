@@ -355,6 +355,8 @@ src/rearrange.js       furniture cheat (#465): Enter / >_ opens a terminal; eith
                        Whole-layout reset also asks for confirmation, writes every registered home pose atomically, and rejects a changed global revision (#481).
                        tools/rearrangeresettest.html covers both confirmations, cancellation, followers and all-room reset.
                        Physical bounds ignore Ambilight; the TV targets support surfaces and follows BYÅS in the same saved batch, repairing legacy sunk TV poses on load (#478, tools/rearrangetvtest.html). Browser tests: tools/rearrangetest.html, tools/rearrangefollowtest.html;
+                       Wine racks use wall placement with their detached bottles; SYMFONISK lamps/speakers use support surfaces like the TV (#482).
+                       tools/rearrangeplacementtest.html verifies wall rotation, bottle followers, sill/table placement and reload.
                        Worker tests: cloudflare/layout.test.mjs. Development: cloudflare/dev.mjs and ?cloud=http://localhost:8145.
 src/lampwash.js        every lamp's light wherever the visitor is (#276, #294, #295, LIGHTING.wash): each pool anchor (small lamps
                        and ceiling lamps) lights the flat inside the lit materials' own shaders (`patch(scene)`: onBeforeCompile on

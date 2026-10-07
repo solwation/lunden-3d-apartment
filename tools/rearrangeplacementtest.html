@@ -1,0 +1,38 @@
+<!doctype html><html><meta charset="utf-8"><title>Wall rack and window lamp placement (#482)</title><pre id="out">running…</pre><script type="module">
+const lines=[];let pass=true;const check=(ok,s)=>{lines.push(`${ok?'PASS':'FAIL'} ${s}`);pass&&=!!ok;};
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+try {
+ localStorage.removeItem('lunden.furniture.layout');
+ const f=document.createElement('iframe');f.width=480;f.height=300;document.body.append(f);
+ async function load(){f.src='../index.html?life&shot&r='+Math.random();await new Promise(r=>f.onload=r);while(!f.contentWindow.__app)await wait(100);const A=f.contentWindow.__app;f.contentDocument.documentElement.requestFullscreen=undefined;f.contentDocument.getElementById('start-touch').click();A.rearrange.unlock('sarah is the goat');return A;}
+ let A=await load(),R=A.rearrange,T=await f.contentWindow.eval("import('three')");
+ const rack=R.pieces.find(p=>p.item.type==='winerack'),lamp=R.pieces.find(p=>p.item.type==='symfonisk'&&p.item.kind==='lamp');
+ const close=(a,b)=>a.elements.every((v,i)=>Math.abs(v-b.elements[i])<.001),pos=o=>o.getWorldPosition(new T.Vector3());
+ check(rack.picture,'wine rack uses wall placement');
+ const bottles=R.looseOn(rack),rackHome=rack.home.clone();check(bottles.length===8,'all eight wine bottles belong to rack');
+ const bottleHomes=bottles.map(h=>h.model.matrixWorld.clone());
+ R.begin(rack);check(R.selected.loose.length===8&&bottles.every(h=>!h.model.visible),'bottles join transparent preview');
+ const target=pos(rack.object).add(new T.Vector3(0,.15,.3)),normal=new T.Vector3(0,0,1).transformDirection(rack.home);
+ A.camera.position.copy(target).addScaledVector(normal,1.5);A.camera.lookAt(target);R.update();
+ check(R.valid&&R.candidate.elements[13]>.9,'real wall ray keeps rack above floor');
+ const first=R.candidate.clone();R.rotate();R.update();check(R.valid&&!close(first,R.candidate),'rack rotates on wall');
+ const delta=R.candidate.clone().multiply(rackHome.clone().invert());check(await R.confirm(),'save wall placement');
+ check(bottles.every((h,i)=>close(h.model.matrixWorld,delta.clone().multiply(bottleHomes[i]))),'every bottle follows wall movement and rotation once');
+ const lampHome=lamp.home.clone(),sills=A.world.cupSurfaces.filter(s=>s.parent===A.world.object&&Math.abs(s.userData.surface-.6)<.001);
+ const sill=sills.sort((a,b)=>pos(a).distanceTo(pos(lamp.object))-pos(b).distanceTo(pos(lamp.object)))[0];check(!!sill,'living-room window sill is a placement surface');
+ const sillAt=pos(sill);sillAt.y=sill.userData.surface;
+ R.begin(lamp);const bottomOffset=lamp.object.matrixWorld.elements[13]-R.selected.bounds.min.y;
+ A.camera.position.copy(sillAt).add(new T.Vector3(0,1.1,-.4));A.camera.lookAt(sillAt);R.update();
+ check(R.valid&&Math.abs(R.candidate.elements[13]-bottomOffset-sill.userData.surface)<.001,'lamp base rests on window sill instead of floor');check(await R.confirm(),'save lamp on sill');
+ const table=R.pieces.find(p=>p.item.type==='coffeetable'),surface=R.supports(table)[0],at=surface.getCenter(new T.Vector3());at.y=surface.max.y;
+ R.begin(lamp);A.camera.position.copy(at).add(new T.Vector3(0,1.2,.4));A.camera.lookAt(at);R.update();
+ check(R.valid&&Math.abs(R.candidate.elements[13]-bottomOffset-at.y)<.001,'lamp can also be placed on table');await R.confirm();
+ check(R.groupFor(table).includes(lamp),'lamp follows its new supporting furniture');
+ const savedRack=rack.object.matrixWorld.clone(),savedLamp=lamp.object.matrixWorld.clone(),rackId=rack.id,lampId=lamp.id;
+ A=await load();R=A.rearrange;
+ check(close(R.byId.get(rackId).object.matrixWorld,savedRack)&&close(R.byId.get(lampId).object.matrixWorld,savedLamp),'wall rack and supported lamp survive reload');
+ check(await R.restoreOriginal(R.byId.get(rackId))&&close(R.byId.get(rackId).object.matrixWorld,rackHome),'rack can return to original wall position');
+ check(await R.restoreOriginal(R.byId.get(lampId))&&close(R.byId.get(lampId).object.matrixWorld,lampHome),'lamp can return to original window position');
+ document.getElementById('out').textContent=lines.join('\n')+'\n'+(pass?'ALL PASS':'SOME FAILED');
+}catch(e){document.getElementById('out').textContent=lines.join('\n')+'\nFAIL '+e.stack;}
+</script></html>
