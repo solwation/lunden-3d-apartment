@@ -389,6 +389,7 @@ for (const t of taps) if (t.options) { const own = t.options; t.options = () => 
 const inFlatPlay = () => !player.below && !player.inCore && !player.aloft;
 const mess = life.mess = new Mess({ group: life.group, surfaces: world.cupSurfaces, roomAt: world.roomAt, walls: (l) => world.levels[l]?.wallSegments ?? [],
   isFree: (x, z, l, m) => inFlatPlay() && player.isFree(x, z, l, m), nearestFree: (x, z, l) => (inFlatPlay() ? player.nearestFree(x, z, l) : null) });
+vacuum.mess = mess; vacuum.player = player; vacuum.sonos = sonos;
 if (params0.get('mess') === '0') LIFE.rules.mess = false; // free play: no automatic mess
 life.onEvent((kind, d) => { if (kind === 'crumbs') mess.fromEvent(d); });
 life.keepPart('mess', { save: () => mess.save(), load: (v) => mess.load(v) });
@@ -490,6 +491,7 @@ const measure = new Measure(scene, camera, [world.object], document.getElementBy
 document.getElementById('measure-btn').addEventListener('click', () => measure.press());
 const cat = new CatSpawner(world);
 scene.add(cat.object);
+vacuum.cat = cat;
 const target = new Target(); // the Nerf target on the lawn (#99)
 const car = new Car(); // our Renault, called by the key in the hall (#173)
 scene.add(car.object);
@@ -1349,6 +1351,7 @@ document.addEventListener('keydown', (e) => {
   else if (e.ctrlKey) e.preventDefault();
   if (choices.rows && /^Digit[1-9]$/.test(e.code) && runChoice(Number(e.code.slice(5)) - 1)) e.preventDefault(); // a menu row (#367)
   if (e.code === 'KeyE' && focused) use(focused); // also while sitting: what is within reach (#184)
+  else if (e.code === 'KeyE' && heldItem()?.useLabel) heldItem().use();
   else if (e.code === 'KeyE' && rest.active) standUp();
   else if ((e.code === 'Space' || e.code === 'KeyC') && rest.active) { e.preventDefault(); standUp(); } // seated, C gets you up
   else if (e.code === 'KeyC' && !e.repeat) player.crouch = true; // (the repeats of the C that just stood you up do not crouch)
@@ -1489,6 +1492,9 @@ function updateFocus() {
     if (spot && item.isVacuum && stairUnderside(spot.point.x, spot.point.z) !== null && stairUnderside(spot.point.x, spot.point.z) < spot.point.y + 0.3) {
       spot = null; // low headroom under the stair winders / soffit (#389)
     }
+    if (spot && item.isVacuum && (!player.crouch || item.running)) {
+      spot = null; // in vacuum mode, walking cleans the floor; crouch to place down (#390)
+    }
     const lifeAim = (focused?.kind === 'life' || (focused?.kind === 'tap' && (life.items.held() || heldItem()?.isCup))) && (!!focused.options?.().some((a) => !a.reason) || !!focused.store); // (#382: a glass at the tap) // a plate it can go on (#367): that, not the table under it
     if (spot && !lifeAim && (!hit || spot.distance <= hit.distance + 0.05)) {
       snapSpot(spot, top && spot.point.y > LEVELS[Math.max(0, player.level)].floor + 0.05 ? top.object : null); // on a grid (#368)
@@ -1566,14 +1572,17 @@ function updateFocus() {
     const own = heldItem()?.useLabel && !heldItem().useAlt && !heldItem().clickIsUse ? ` · högerklick: ${heldItem().useLabel.toLowerCase()}` : ''; // (#443)
     promptEl.textContent = clickIsE() ? `Klicka (E) för att ${verb}${named}${own}` : `Tryck E för att ${verb}${named}`;
   }
+  const seated = rest.active && !reading; // sitting / lying: E with nothing in reach gets you up; Space / C always do
   const holding = !focused && heldItem()?.useLabel ? heldItem() : null; // touch: the button uses what you hold (fire, wave, light); a cup or the jug has no use of its own
   if (holding && touch.enabled) actionBtn.textContent = holding.useLabel;
-  const seated = rest.active && !reading; // sitting / lying: E with nothing in reach gets you up; Space / C always do
+  if (holding && !touch.enabled && !reading && !focused && !seated) {
+    promptEl.textContent = clickIsE() ? `Klicka (E) för att ${holding.useLabel.toLowerCase()}` : `Tryck E för att ${holding.useLabel.toLowerCase()}`;
+  }
   if (seated && !focused && !holding) actionBtn.textContent = 'Res dig';
   if (seated && !touch.enabled) promptEl.textContent = focused && !focused.blocked ? `${promptEl.textContent} · Mellanslag – res dig` : focused?.blocked ? promptEl.textContent : 'Tryck E för att resa dig';
   standBtn.hidden = !touch.enabled || !seated || (!focused && !holding);
   if (reading && touch.enabled) actionBtn.textContent = boardPanel.open ? 'Stäng tavlan' : 'Stäng lappen';
-  promptEl.hidden = (!focused && !seated) || touch.enabled || reading || (!!choices.rows && !seated);
+  promptEl.hidden = (!focused && !seated && !holding) || touch.enabled || reading || (!!choices.rows && !seated);
   const job = life.runner.job; // a timed life action going on (#372): what and how far
   if (job && !reading) { promptEl.textContent = `${job.label[0].toUpperCase()}${job.label.slice(1)} … ${Math.round(Math.min(1, job.t / Math.max(job.duration, 1e-6)) * 100)} %`; promptEl.hidden = false; }
   if (remoteAim && !touch.enabled && !reading) { promptEl.textContent = 'Klicka för att byta kanal · högerklick: av/på'; promptEl.hidden = false; }
@@ -1696,7 +1705,7 @@ function step(dt) {
   const fov = 72 + TURBO.fov * turbo.k;
   if (Math.abs(camera.fov - fov) > 0.01) { camera.fov = fov; camera.updateProjectionMatrix(); }
   const clipsNear = laptops.some((l) => l.on && l.screen.getWorldPosition(tmpV).distanceTo(camera.position) < LAPTOP.near); // Tilly's clips playing near (#283)
-  sonos.setDuck(turbo.active ? 0.3 : car.radio.playing && car.occupied ? CAR.music.duckHouse : clipsNear ? LAPTOP.duck : nests.talkingNear(camera.position) ? NEST.duck : 1); // (sitting in the car with its music on, #268)
+  sonos.setDuck(turbo.active ? 0.3 : car.radio.playing && car.occupied ? CAR.music.duckHouse : clipsNear ? LAPTOP.duck : nests.talkingNear(camera.position) ? NEST.duck : (vacuum.running && vacuum.nearSonos(sonos)) ? 0.45 : 1); // (sitting in the car with its music on, #268; vacuum motor nearby, #390)
   car.radio.setDuck(turbo.active ? 0.3 : 1);
   for (const d of world.doors) d.update(dt);
   for (const l of world.lids) l.update(dt);
@@ -2121,4 +2130,4 @@ document.documentElement.classList.remove('resuming'); // the page is ready: off
 hideLoading();
 
 // handle for tests/debugging (tools/touchtest.html, tools/perfcount.html)
-window.__app = { dynRes, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, toaster, life, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, coffeeJar, miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio, vacuum };
+window.__app = { dynRes, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, toaster, life, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, coffeeJar, miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio, vacuum, BREEDS, VARIANTS };

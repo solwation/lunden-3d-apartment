@@ -478,6 +478,24 @@ export class CatSpawner {
     return true;
   }
 
+  /** Scared by a vacuum cleaner or loud appliance (#390): runs off meowing; NOT counted as hurt. */
+  scare(from = null) {
+    if (!this.visible || this.leaving || this.held) return false;
+    this.released = null;
+    const p = this.object.position;
+    this.stopPetting();
+    this.dropFish();
+    sfx.meow({ x: p.x, y: p.y + 0.3, z: p.z }, this.variant.pitch * (this.breed.pitch ?? 1), this.voice);
+    if (from) this.petFrom = { x: from.x, z: from.z };
+    this.tailUp = false;
+    this.leave();
+    if (this.leaving) {
+      this.leaving.hurt = false;
+      this.leaving.speed = CAT_LEAVE.speed * 1.5;
+    }
+    return true;
+  }
+
   /** Rare breeds have their own voice (meow + purr in audio.js); null = the ordinary cat. */
   get voice() { return this.kitten ? 'kitten' : this.breed.rare || this.breed.superRare ? this.breed.voice ?? null : null; } // a kitten squeaks (#363)
 

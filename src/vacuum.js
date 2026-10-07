@@ -4,15 +4,108 @@ import { CLEANING as C, LEVELS, HOLD } from './config.js';
 import { Pack } from './contents.js';
 import { Holdable, handBusy } from './holdable.js';
 import { sfx } from './audio.js';
+import { bump, badge } from './stats.js';
 
-// The stick vacuum in the Klk under the stair on Entréplan (#338, #389, LIFE-025).
+// The stick vacuum in the Klk under the stair on Entréplan (#338, #389, LIFE-025, #390, LIFE-026).
 // When docked: stands in its dock under the stair (`CLEANING.vacuum` at x: 4.20, z: 6.609, dock: 1.18) with a blue
 // charging LED. The Klk door (door 4 on level 0) must be open to take or dock it.
 // Taking it puts it in "vacuum mode": held in front with its floor head resting on the floor.
-// Can be placed on the floor with E (leans/lies on the floor) and picked up again.
-// E at the dock puts it back and resumes charging (blue LED).
+// Walking moves it: the floor head follows in front of the visitor on the floor.
+// E / touch action button switches the motor on/off (synthesised motor whine).
+// While running, crumbs and dust in front of the head within working radius are removed.
+// Wall occlusion and floor level checks prevent suction through walls or between floors.
+// Clean rooms emit score and toast ("Rent i köket!"). Stats track vacuumed m².
+// Sonos ducks volume near the running motor. Cats run away meowing without counting as hurt.
 
 const purple = 0x7a4fa0, nickel = 0xa8abb0;
+
+export function cleanRoomName(room) {
+  if (!room) return 'Rent i rummet!';
+  if (/kök/i.test(room)) return 'Rent i köket!';
+  if (/vardagsrum/i.test(room)) return 'Rent i vardagsrummet!';
+  if (/hall/i.test(room)) return 'Rent i hallen!';
+  if (/tvätt/i.test(room)) return 'Rent i tvättstugan!';
+  if (/badrum/i.test(room) || /wc/i.test(room)) return 'Rent i badrummet!';
+  if (/klk/i.test(room)) return 'Rent i klädkammaren!';
+  if (/sovrum\s*(\d)/i.test(room)) {
+    const m = room.match(/sovrum\s*(\d)/i);
+    return `Rent i sovrum ${m[1]}!`;
+  }
+  return `Rent i ${room.toLowerCase()}!`;
+}
+
+function crosses(ax, az, bx, bz, [cx, cz, dx, dz]) {
+  const d = (bx - ax) * (dz - cz) - (bz - az) * (dx - cx);
+  if (Math.abs(d) < 1e-9) return false;
+  const t = ((cx - ax) * (dz - cz) - (cz - az) * (dx - cx)) / d;
+  const u = ((cx - ax) * (bz - az) - (cz - az) * (bx - ax)) / d;
+  return t > 0.001 && t < 0.999 && u > 0.001 && u < 0.999;
+}
+
+function slurpTexture() {
+  const c = document.createElement('canvas');
+  c.width = c.height = 32;
+  const g = c.getContext('2d');
+  const rg = g.createRadialGradient(16, 16, 0, 16, 16, 16);
+  rg.addColorStop(0, 'rgba(235,225,205,0.9)');
+  rg.addColorStop(0.5, 'rgba(180,160,140,0.5)');
+  rg.addColorStop(1, 'rgba(180,160,140,0)');
+  g.fillStyle = rg;
+  g.beginPath(); g.arc(16, 16, 16, 0, Math.PI * 2); g.fill();
+  return new THREE.CanvasTexture(c);
+}
+
+class SlurpParticles {
+  constructor(scene) {
+    const n = 24;
+    this.geo = new THREE.BufferGeometry();
+    this.geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(n * 3), 3));
+    this.geo.setAttribute('color', new THREE.BufferAttribute(new Float32Array(n * 4), 4));
+    this.pts = new THREE.Points(this.geo, new THREE.PointsMaterial({
+      size: 0.045, map: slurpTexture(), vertexColors: true, transparent: true, depthWrite: false,
+    }));
+    this.pts.frustumCulled = false;
+    this.pts.raycast = () => {};
+    this.pts.visible = false;
+    scene.add(this.pts);
+    this.p = [...Array(n)].map(() => ({ pos: new THREE.Vector3(), target: new THREE.Vector3(), life: 0, maxLife: 0.25 }));
+    this.next = 0;
+  }
+
+  burst(at) {
+    for (let i = 0; i < 8; i++) {
+      const q = this.p[this.next++ % this.p.length];
+      const a = Math.random() * Math.PI * 2, r = 0.05 + Math.random() * 0.18;
+      q.pos.set(at.x + Math.cos(a) * r, at.y + 0.01, at.z + Math.sin(a) * r);
+      q.target.copy(at).setY(at.y + 0.06);
+      q.life = q.maxLife = 0.2 + Math.random() * 0.12;
+    }
+    this.pts.visible = true;
+  }
+
+  update(dt) {
+    if (!this.pts.visible) return;
+    const pos = this.geo.attributes.position, col = this.geo.attributes.color;
+    let any = false;
+    this.p.forEach((q, i) => {
+      if (q.life > 0) {
+        q.life -= dt;
+        const f = 1 - Math.max(0, q.life / q.maxLife);
+        const cx = q.pos.x + (q.target.x - q.pos.x) * (f * 0.8);
+        const cy = q.pos.y + (q.target.y - q.pos.y) * f;
+        const cz = q.pos.z + (q.target.z - q.pos.z) * (f * 0.8);
+        pos.setXYZ(i, cx, cy, cz);
+        const alpha = Math.max(0, q.life / q.maxLife);
+        col.setXYZW(i, 0.9, 0.85, 0.75, alpha);
+        any = true;
+      } else {
+        col.setXYZW(i, 0, 0, 0, 0);
+      }
+    });
+    pos.needsUpdate = col.needsUpdate = true;
+    this.pts.visible = any;
+  }
+}
 
 /** Plain stick vacuum model. Origin is at the dock's resting position (V.x, V.dock, V.z). */
 export function buildVacuumModel() {
@@ -46,6 +139,12 @@ export function buildVacuumModel() {
   const glass = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.055, 0.15, 20).translate(V.x + dx, vy - 0.2, out(0.13) + dz),
     new THREE.MeshStandardMaterial({ color: 0xdfe6ea, roughness: 0.1, transparent: true, opacity: 0.4, depthWrite: false }));
   g.add(glass);
+
+  // Vacuum head marker object (used to locate the head in world coordinates)
+  const head = new THREE.Object3D();
+  head.name = 'vacuum-head';
+  head.position.set(V.x + dx, 0.035, out(0.15) + dz);
+  g.add(head);
 
   return g;
 }
@@ -97,6 +196,12 @@ export class Vacuum extends Holdable {
     this.floorOnly = true;
     this.running = false;
     this.grip = [0, V.dock - 0.16, -0.04]; // handle position
+
+    this.head = this.model.getObjectByName('vacuum-head');
+    this.slurpParticles = new SlurpParticles(scene);
+    this.hadMessRooms = new Set();
+    this.sound = null;
+    this.lastHeadPos = null;
 
     const self = this;
     // Overwrite blocked check on takeTarget & backTarget to ensure Klk door must be open
@@ -152,22 +257,125 @@ export class Vacuum extends Holdable {
   }
 
   onPut() {
+    this.stopRunning();
     this.led.visible = false;
     sfx.click?.(this.where());
   }
 
   goHome() {
+    this.stopRunning();
     super.goHome();
     if (this.led) this.led.visible = true;
   }
 
   putBack() {
     if (!this.doorOpen) return;
+    this.stopRunning();
     super.putBack();
   }
 
   take() {
     if (this.isAtDock && !this.doorOpen) return;
     super.take();
+  }
+
+  stopRunning() {
+    if (this.running) {
+      this.running = false;
+      this.useLabel = 'Starta';
+      this.sound?.stop?.();
+      this.sound = null;
+    }
+  }
+
+  use(speed = 0) {
+    if (!this.held) return;
+    this.running = !this.running;
+    this.useLabel = this.running ? 'Stäng av' : 'Starta';
+    sfx.click?.(this.where());
+    if (this.running) {
+      this.sound = sfx.vacuum?.(this.where());
+    } else {
+      this.sound?.stop?.();
+      this.sound = null;
+    }
+  }
+
+  nearSonos(sonos) {
+    if (!this.running || !sonos?.speakers) return false;
+    const p = this.where();
+    return sonos.speakers.some((s) => s.pos && s.pos.distanceTo(p) < 6.0);
+  }
+
+  update(dt) {
+    super.update(dt);
+    this.slurpParticles?.update(dt);
+
+    if (!this.held) {
+      this.stopRunning();
+      this.lastHeadPos = null;
+      return;
+    }
+
+    const headPos = this.head ? this.head.getWorldPosition(new THREE.Vector3()) : this.where();
+
+    if (this.running) {
+      this.sound?.move?.(headPos);
+
+      // Stats: vacuumed area m²
+      if (this.lastHeadPos) {
+        const d = headPos.distanceTo(this.lastHeadPos);
+        const swept = Math.min(d, 3.0 * dt) * 0.25;
+        if (swept > 0) bump('vacuumed', swept);
+      }
+      this.lastHeadPos = headPos.clone();
+
+      const level = this.player?.level ?? (headPos.y > LEVELS[1].floor - 0.4 ? 1 : 0);
+      const segs = this.world?.levels?.[level]?.wallSegments ?? [];
+
+      // Scare cat if nearby
+      if (this.cat && this.cat.visible && !this.cat.leaving && !this.cat.held) {
+        const cp = this.cat.object.position;
+        const dist = Math.hypot(cp.x - headPos.x, cp.z - headPos.z);
+        if (Math.abs(cp.y - headPos.y) < 1.5 && dist < 3.2) {
+          if (!segs.some((sg) => crosses(headPos.x, headPos.z, cp.x, cp.z, sg))) {
+            this.cat.scare(headPos);
+          }
+        }
+      }
+
+      // Pick up crumbs and dust within working radius (~0.35m)
+      if (this.mess) {
+        const res = this.mess.take(headPos.x, headPos.z, 0.35, {
+          level,
+          kinds: ['crumb', 'dust'],
+          ok: (spot) => {
+            if (spot.surf !== 'floor') return false;
+            return !segs.some((sg) => crosses(headPos.x, headPos.z, spot.x, spot.z, sg));
+          },
+        });
+
+        if (res && res.amount > 0) {
+          sfx.vacuumSlurp?.(headPos);
+          this.slurpParticles?.burst(headPos);
+          for (const s of res.spots) {
+            if (s.room) this.hadMessRooms.add(`${level}:${s.room}`);
+          }
+        }
+
+        // Room cleaned score and feedback
+        for (const rk of [...this.hadMessRooms]) {
+          const [lvlStr, rm] = rk.split(':');
+          const lvl = Number(lvlStr);
+          if (this.mess.total({ room: rm, level: lvl }) === 0) {
+            this.hadMessRooms.delete(rk);
+            badge(cleanRoomName(rm), false);
+            bump('cleanRoom', 1, rk);
+          }
+        }
+      }
+    } else {
+      this.lastHeadPos = null;
+    }
   }
 }

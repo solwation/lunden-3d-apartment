@@ -534,6 +534,59 @@ export const sfx = {
       stop() { const t1 = ctx.currentTime; g.gain.cancelScheduledValues(t1); g.gain.setValueAtTime(g.gain.value, t1); g.gain.linearRampToValueAtTime(0, t1 + 0.6); whine.stop(t1 + 0.7); src.stop(t1 + 0.7); },
     };
   },
+  /** Stick vacuum cleaner motor sound (#390): digital motor whine + airflow suction. */
+  vacuum(pos) {
+    if (!ready()) return null;
+    const t = ctx.currentTime, g = ctx.createGain(), p = ctx.createPanner();
+    Object.assign(p, { panningModel: 'equalpower', distanceModel: 'inverse', refDistance: 1.5, rolloffFactor: 1 });
+    if (pos) { p.positionX.value = pos.x; p.positionY.value = pos.y; p.positionZ.value = pos.z; }
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(0.25, t + 0.25);
+    g.connect(p).connect(master);
+    const whine = ctx.createOscillator(), wg = ctx.createGain();
+    whine.type = 'sawtooth';
+    whine.frequency.setValueAtTime(160, t);
+    whine.frequency.exponentialRampToValueAtTime(580, t + 0.35);
+    wg.gain.value = 0.04;
+    const whineLp = ctx.createBiquadFilter();
+    whineLp.type = 'lowpass'; whineLp.frequency.value = 1800;
+    whine.connect(whineLp).connect(wg).connect(g);
+    const src = ctx.createBufferSource();
+    src.buffer = noiseBuf; src.loop = true;
+    const bp = ctx.createBiquadFilter(), ng = ctx.createGain();
+    bp.type = 'bandpass'; bp.frequency.value = 1100; bp.Q.value = 2.0;
+    ng.gain.value = 0.14;
+    src.connect(bp).connect(ng).connect(g);
+    whine.start(t);
+    src.start(t, Math.random());
+    return {
+      move(q) {
+        if (!q) return;
+        const now = ctx.currentTime;
+        p.positionX.setTargetAtTime(q.x, now, 0.05);
+        p.positionY.setTargetAtTime(q.y, now, 0.05);
+        p.positionZ.setTargetAtTime(q.z, now, 0.05);
+      },
+      stop() {
+        const t1 = ctx.currentTime;
+        g.gain.cancelScheduledValues(t1);
+        g.gain.setValueAtTime(g.gain.value, t1);
+        g.gain.linearRampToValueAtTime(0, t1 + 0.35);
+        whine.frequency.cancelScheduledValues(t1);
+        whine.frequency.setValueAtTime(whine.frequency.value, t1);
+        whine.frequency.exponentialRampToValueAtTime(80, t1 + 0.35);
+        whine.stop(t1 + 0.4);
+        src.stop(t1 + 0.4);
+      },
+    };
+  },
+  /** Slurp sound when crumbs or dust get sucked up (#390). */
+  vacuumSlurp(pos) {
+    if (!ready()) return;
+    const t = ctx.currentTime, d = out(pos, 0.6);
+    tone(t, 0.09, d, { type: 'sine', from: 480, to: 1200, gain: 0.15 });
+    noise(t, 0.07, d, { type: 'bandpass', freq: 1600, q: 3, gain: 0.25 });
+  },
   /** The garage door's motor (#358): a low drone with a chain rattle while it runs. */
   garageMotor(pos) {
     if (!ready()) return null;

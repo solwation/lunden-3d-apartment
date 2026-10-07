@@ -1573,6 +1573,7 @@ export const SCORE = {
     visited: 5, songs: 3, read: 5, car: 15, grill: 10, hood: 3, tv: 3, pc: 5, parasol: 3, clock: 3, calendar: 3,
     blinds: 2, // per window's blind, the first time it is drawn up or down (#273)
     curtains: 2, // Sovrum 1's curtains drawn (#342), like a blind
+    cleanRoom: 15, // the first clean room: "Rent i köket!" (#390)
     coats: 10, greets: 2, // greets: per person (#247)
     catButts: 15, // a cat's bum seen from behind with its tail up (#262): per cat, then `again` per tail-up
     walkRain: 15, walkSnow: 25, walkHail: 40, walkStorm: 30, // out in the weather (#249): the first time, then `again` per shower
