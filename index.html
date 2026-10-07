@@ -441,7 +441,7 @@
     #terminal[hidden], #rearrange-help[hidden] { display: none; }
     #terminal form { width: min(440px, calc(100vw - 48px)); padding: 22px; box-sizing: border-box; background: #172322; color: #e5f4e6; border: 1px solid #648571; border-radius: 10px; font: 15px/1.5 monospace; }
     #terminal h2 { margin-top: 0; } #terminal input { width: 100%; box-sizing: border-box; padding: 10px; font: inherit; background: #07110d; color: #c7f5cd; border: 1px solid #648571; }
-    #terminal button, #terminal-btn, #rearrange-cancel { padding: 10px 14px; border: 1px solid #809488; border-radius: 6px; background: #172322; color: #fff; cursor: pointer; }
+    #terminal button, #terminal-btn, #rearrange-help button { padding: 10px 14px; border: 1px solid #809488; border-radius: 6px; background: #172322; color: #fff; cursor: pointer; }
     #terminal button { margin: 10px 4px 0 0; } #terminal-btn { position: fixed; left: 16px; top: 92px; font: 16px monospace; }
     #rearrange-help { position: fixed; top: 140px; left: 16px; max-width: min(440px, calc(100vw - 32px)); padding: 9px 12px; background: #172322dd; color: #fff; border-radius: 6px; font: 13px/1.5 system-ui; }
   </style>
@@ -753,7 +753,7 @@
   </div>
   <div id="hud" hidden>
     <button id="terminal-btn" aria-label="Öppna terminalen">&gt;_</button>
-    <div id="rearrange-help" hidden><span id="rearrange-status"></span> <button id="rearrange-cancel">Avbryt / avsluta</button></div>
+    <div id="rearrange-help" hidden><span id="rearrange-status"></span> <button id="rearrange-reset" hidden>Återställ originalposition</button> <button id="rearrange-cancel">Avbryt / avsluta</button></div>
     <div id="crosshair"></div>
     <div id="level"></div>
     <div id="stats" aria-live="off" hidden>

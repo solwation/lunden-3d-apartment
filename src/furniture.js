@@ -3268,6 +3268,7 @@ function secretary(item) {
   for (const sx of [-1, 1]) { const sg = new THREE.ExtrudeGeometry(sideShape, { depth: 0.018, bevelEnabled: false }); const m = new THREE.Mesh(sg, teak); m.rotation.y = -Math.PI / 2; m.position.set(sx * W / 2 + (sx < 0 ? 0.018 : 0), y0, 0); m.castShadow = true; g.add(m); }
   const topD = D - Math.tan(slope) * (yT - yF);
   box(g, W - 0.036, 0.02, topD, 0, yT + 0.01, topD / 2, teak);
+  (g.userData.surfaces ??= []).push({ x0: -W / 2 + 0.018, x1: W / 2 - 0.018, z0: 0.015, z1: topD, y: yT + 0.02 }); // top also supports loose things during rearrangement (#475)
   box(g, W - 0.036, 0.03, 0.015, 0, yT + 0.035, 0.0075, teak);
   // the cavity behind the flap: its floor (the drawer's top), a partition, the left shelf
   box(g, W - 0.036, 0.014, D - 0.02, 0, yF - 0.007, (D - 0.02) / 2, teakIn);

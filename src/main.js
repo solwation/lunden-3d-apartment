@@ -1476,6 +1476,8 @@ function behindWall(p) {
 function updateFocus() {
   if (rearrange.enabled && !reading) {
     rearrange.update(); focused = rearrange.target; focusPoint = null;
+    const restore = document.getElementById('rearrange-reset');
+    restore.hidden = !(rearrange.selected || focused?.piece); restore.disabled = rearrange.saving;
     showChoices(null, null); placeGhost.visible = itemGhost.visible = false;
     const text = focused ? (focused.blockedText ?? `${focused.verb === 'flytta' ? 'Flytta' : 'Placera'} ${focused.name}`) : 'Sikta på en möbel eller tavla';
     actionBtn.textContent = text; actionBtn.hidden = !touch.enabled || !focused;
@@ -1700,7 +1702,7 @@ try { if (localStorage.getItem('lunden.furniture') === '0') toggleFurniture(fals
 document.getElementById('furniture-btn').addEventListener('click', () => toggleFurniture());
 
 const rearrange = new Rearrange({ scene, camera, world, player, life, marks,
-  carryables: () => [...holdables, ...cups.cups, ...life.views.values()],
+  carryables: () => [...holdables, ...cups.cups, ...life.views.values(), fruit.carryable, ...fruit.placed],
   busy: () => !!heldItem() || rest.active || drawing.active || !world.furnitureOn,
   changed: (changes) => {
     if (rest.active && changes.some(({ p }) => p.object === rest.target?.pickable)) standUp();
@@ -1727,6 +1729,7 @@ document.getElementById('terminal-form').addEventListener('submit', (e) => {
   else document.getElementById('terminal-message').textContent = 'Okänd kod.';
 });
 editToggle.addEventListener('click', () => { rearrange.enable(!rearrange.enabled); editUI(); showTerminal(false); });
+document.getElementById('rearrange-reset').addEventListener('click', () => rearrange.restoreOriginal());
 document.getElementById('rearrange-cancel').addEventListener('click', () => { if (rearrange.selected) rearrange.cancel(); else rearrange.enable(false); editUI(); });
 document.addEventListener('keydown', (e) => {
   if (!terminal.hidden) { if (e.code === 'Escape') { e.preventDefault(); showTerminal(false, 'Escape'); } e.stopImmediatePropagation(); return; }

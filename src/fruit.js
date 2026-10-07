@@ -331,6 +331,7 @@ export class FruitBowl {
   constructor(scene, camera) {
     Object.assign(this, { scene, camera, eatenCount: 0 });
     this.group = new THREE.Group();
+    this.carryable = { model: this.group }; // bowl and fruit still inside travel as one (#475)
     this.group.position.set(C.x, C.y, C.z);
     const copper = new THREE.MeshStandardMaterial({ color: C.copper, metalness: 0.9, roughness: 0.22, envMap: roomEnv(), side: THREE.DoubleSide });
     this.wires = new THREE.Mesh(bowlGeometry(), copper);

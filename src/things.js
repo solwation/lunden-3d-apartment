@@ -20,6 +20,7 @@ const HELD = {
 
 export class Thing extends Holdable {
   constructor(scene, camera, { model, kind, back, name: given, held: own }) {
+    const furnitureHome = model.parent; // retain the support before Holdable moves the model into the scene (#475)
     model.updateWorldMatrix(true, true);
     const pos = model.getWorldPosition(new THREE.Vector3());
     const rot = new THREE.Euler().setFromQuaternion(model.getWorldQuaternion(new THREE.Quaternion()));
@@ -31,7 +32,7 @@ export class Thing extends Holdable {
       home: { pos, rot }, heldPose: { pos: new THREE.Vector3(...held.pos), rot: new THREE.Euler(...held.rot) },
       pick: { pos: mid, size: [size.x + 0.03, size.y + 0.03, size.z + 0.03] }, cooldown: kind === 'glass' ? 0.6 : 0.3,
     });
-    Object.assign(this, { kind });
+    Object.assign(this, { kind, furnitureHome });
     this.rest = { q: new THREE.Quaternion(), lift: 0 }; // its origin is the bottom centre: put down standing
   }
 

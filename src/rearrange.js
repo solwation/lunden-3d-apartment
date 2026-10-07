@@ -54,8 +54,11 @@ export class Rearrange {
   }
   onTop(o, surfaces) {
     o.updateWorldMatrix(true, true);
-    const b = new THREE.Box3().setFromObject(o), c = b.getCenter(new V());
-    return surfaces.some((s) => Math.abs(b.min.y - s.max.y) < REARRANGE.supportGap && c.x >= s.min.x && c.x <= s.max.x && c.z >= s.min.z && c.z <= s.max.z);
+    const b = new THREE.Box3().setFromObject(o), c = b.getCenter(new V()), origin = new V().setFromMatrixPosition(o.matrixWorld);
+    const inside = (s, p) => p.x >= s.min.x && p.x <= s.max.x && p.z >= s.min.z && p.z <= s.max.z;
+    // Tall/asymmetric plants can overhang: their base origin still rests on the support.
+    return surfaces.some((s) => Math.abs(b.min.y - s.max.y) < REARRANGE.supportGap
+      && (inside(s, c) || (Math.abs(origin.y - b.min.y) < REARRANGE.supportGap && inside(s, origin))));
   }
   groupFor(piece) {
     const group = [piece];
@@ -68,7 +71,8 @@ export class Rearrange {
   looseOn(piece) {
     const surfaces = this.supports(piece);
     return this.carryables().filter((h) => h.model && !h.held && !h.broken && shown(h.model) && !within(h.model, piece.object)
-      && (!h.item || h.item.place.at === 'world') && this.onTop(h.model, surfaces));
+      && (!h.item || h.item.place.at === 'world')
+      && (this.onTop(h.model, surfaces) || (!h.placed && h.furnitureHome && within(h.furnitureHome, piece.object))));
   }
   begin(piece) {
     if (!this.enabled || this.saving || this.busy() || !piece || !shown(piece.object)) return false;
@@ -155,6 +159,12 @@ export class Rearrange {
     if (!this.selected) return this.begin(target.piece);
     return this.confirm();
   }
+  async restoreOriginal(piece = this.selected?.piece ?? this.target?.piece) {
+    if (!piece || this.saving) return false;
+    if (this.selected?.piece !== piece && !this.begin(piece)) return false;
+    this.candidate = piece.home.clone(); this.valid = true;
+    return this.confirm(); // same attachments, atomic write and conflict handling as a normal move
+  }
   async confirm() {
     if (!this.selected || !this.valid || this.saving) return false;
     const selection = this.selected, delta = this.candidate.clone().multiply(selection.original.clone().invert());
@@ -178,6 +188,7 @@ export class Rearrange {
     }
   }
   carry(h, delta) {
+    this.marks.invalidate(h.model);
     const before = h.model.matrixWorld.clone(), after = delta.clone().multiply(before), pose = poseOf(after);
     if (h.item) {
       const yaw = new THREE.Euler().setFromQuaternion(new Q(...pose.quat), 'YXZ').y;

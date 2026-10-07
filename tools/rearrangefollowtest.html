@@ -1,0 +1,47 @@
+<!doctype html><html><meta charset="utf-8"><title>Furniture followers and restore (#475)</title><pre id="out">running…</pre><script type="module">
+const lines=[];let pass=true;const check=(ok,s)=>{lines.push(`${ok?'PASS':'FAIL'} ${s}`);pass&&=!!ok;};
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+try {
+ localStorage.removeItem('lunden.furniture.layout');localStorage.removeItem('lunden.furniture.unlocked');
+ const f=document.createElement('iframe');f.width=480;f.height=300;document.body.append(f);
+ async function load(){f.src='../index.html?life&shot&r='+Math.random();await new Promise(r=>f.onload=r);while(!f.contentWindow.__app)await wait(100);return f.contentWindow.__app;}
+ let A=await load(),R=A.rearrange,T=await f.contentWindow.eval("import('three')");
+ const find=type=>R.pieces.find(p=>p.item.type===type),pos=o=>o.getWorldPosition(new T.Vector3());
+ const table=find('coffeetable'),secretary=find('secretary'),palm=A.things.find(t=>t.name==='yuccapalmen');
+ const bowlHome=pos(A.fruit.group).clone(),palmHome=pos(palm.model).clone();
+ const stored={revision:1,pieces:{}};
+ for(const p of [table,secretary]){const at=pos(p.object).add(new T.Vector3(.3,0,-.2));stored.pieces[p.id]={pos:at.toArray(),quat:p.object.getWorldQuaternion(new T.Quaternion()).toArray(),revision:1};}
+ // Simulate a layout already saved by the old version, which had left the bowl and palm behind.
+ localStorage.setItem('lunden.furniture.layout',JSON.stringify(stored));
+ A=await load();R=A.rearrange;const w=f.contentWindow,d=f.contentDocument;
+ d.documentElement.requestFullscreen=undefined;d.getElementById('start-touch').click();R.unlock('sarah is the goat');
+ const newTable=find('coffeetable'),newSecretary=find('secretary'),newPalm=A.things.find(t=>t.name==='yuccapalmen');
+ check(pos(A.fruit.group).distanceTo(bowlHome.clone().add(new T.Vector3(.3,0,-.2)))<.001,'old saved table layout retroactively carries bowl');
+ check(pos(newPalm.model).distanceTo(palmHome.clone().add(new T.Vector3(.3,0,-.2)))<.001,'old saved secretary layout retroactively carries yucca');
+ const fruit=A.fruit.inBowl[0],beforeFruit=pos(fruit.model),bowlBefore=pos(A.fruit.group);
+ R.begin(newTable);check(R.selected.loose.some(h=>h.model===A.fruit.group),'bowl included in transparent table preview');
+ const delta=new T.Matrix4().makeTranslation(.2,0,.1);R.candidate=delta.clone().multiply(newTable.object.matrixWorld);R.valid=true;await R.confirm();
+ check(pos(fruit.model).distanceTo(beforeFruit.clone().add(new T.Vector3(.2,0,.1)))<.001,'fruit travels with bowl exactly once');
+ R.begin(newTable);A.step(1/60);const button=d.getElementById('rearrange-reset');
+ check(!button.hidden&&!button.disabled,'restore button available for selected furniture');button.click();await wait(100);
+ check(newTable.object.matrixWorld.equals(newTable.home)&&pos(A.fruit.group).distanceTo(bowlHome)<.001,'button restores table and bowl to original position');
+ newPalm.placed=true;
+ check(R.looseOn(newSecretary).includes(newPalm),'placed yucca on secretary top is recognized geometrically');newPalm.placed=false;
+ const palmBefore=pos(newPalm.model),homeBefore=newPalm.home.pos.clone(),original=newSecretary.object.matrixWorld.clone();
+ R.begin(newSecretary);check(R.selected.loose.includes(newPalm),'yucca carried through original furniture association');
+ const turn=new T.Matrix4().makeRotationY(Math.PI/2),at=pos(newSecretary.object);R.candidate=new T.Matrix4().makeTranslation(at.x,at.y,at.z).multiply(turn).multiply(new T.Matrix4().makeTranslation(-at.x,-at.y,-at.z)).multiply(original);R.valid=true;
+ const motion=R.candidate.clone().multiply(original.clone().invert());await R.confirm();
+ check(pos(newPalm.model).distanceTo(palmBefore.applyMatrix4(motion))<.001&&newPalm.home.pos.distanceTo(homeBefore.applyMatrix4(motion))<.001,'yucca position and return target follow rotation');
+ newPalm.take();newPalm.putBack();check(pos(newPalm.model).distanceTo(newPalm.home.pos)<.001,'picking up and returning yucca uses moved secretary');
+ check(await R.restoreOriginal(newSecretary)&&pos(newPalm.model).distanceTo(palmHome)<.001,'restore secretary also restores yucca');
+ const picture=R.pieces.find(p=>p.picture&&p.level===A.player.level);
+ const picAt=pos(picture.object),normal=new T.Vector3(0,0,1).transformDirection(picture.object.matrixWorld);
+ A.camera.position.copy(picAt).addScaledVector(normal,1.5);A.camera.lookAt(picAt);R.update();
+ check(R.target?.piece===picture,'real aim selects a wall picture for rearranging');
+ R.begin(picture);R.candidate=new T.Matrix4().makeTranslation(0,.1,0).multiply(picture.object.matrixWorld);R.valid=true;await R.confirm();
+ check(await R.restoreOriginal(picture)&&picture.object.matrixWorld.elements.every((v,i)=>Math.abs(v-picture.home.elements[i])<.0001),'picture can be moved and restored individually');
+ A=await load();R=A.rearrange;
+ check(pos(A.fruit.group).distanceTo(bowlHome)<.001&&pos(A.things.find(t=>t.name==='yuccapalmen').model).distanceTo(palmHome)<.001,'restored layout and followers persist after reload');
+ document.getElementById('out').textContent=lines.join('\n')+'\n'+(pass?'ALL PASS':'SOME FAILED');
+}catch(e){document.getElementById('out').textContent=lines.join('\n')+'\nFAIL '+e.stack;}
+</script></html>
