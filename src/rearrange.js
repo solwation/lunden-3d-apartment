@@ -5,10 +5,23 @@ import { inPoly, crosses } from './player.js';
 
 // #465: preview locally; only confirmed, revision-checked moves enter the shared arrangement.
 const CACHE = 'lunden.furniture.layout', UNLOCK = 'lunden.furniture.unlocked';
-const NAMES = { sofa: 'soffan', armchair: 'fåtöljen', ottoman: 'pallen', rug: 'mattan', pictures: 'tavlan', painting: 'tavlan', kposters: 'affischerna', skansnasTable: 'matbordet', skansnasChair: 'stolen', coffeetable: 'soffbordet', slattable: 'uteplatsbordet', randerstable: 'sidobordet', aborgtable: 'bordet', aborgchair: 'stolen', floorlamp: 'golvlampan', tubelamp: 'lampan', worklamp: 'lampan', walllamp: 'vägglampan', bed: 'sängen', bunk: 'våningssängen', daybed: 'sängen', gamingdesk: 'skrivbordet', gamingchair: 'stolen', laptop: 'datorn', tv: 'TV:n', palm: 'växten', planter: 'växten', parasol: 'parasollen', secretary: 'sekretären', sidetable: 'sängbordet', veronasofa: 'utesoffan', dynbox: 'dynboxen', huego: 'lampan', symfonisk: 'högtalaren', photoframe: 'fotoramen', nesthub: 'skärmen', nestmini: 'högtalaren' };
+const NAMES = { byas: 'TV-bänken', sofa: 'soffan', armchair: 'fåtöljen', ottoman: 'pallen', rug: 'mattan', pictures: 'tavlan', painting: 'tavlan', kposters: 'affischerna', skansnasTable: 'matbordet', skansnasChair: 'stolen', coffeetable: 'soffbordet', slattable: 'uteplatsbordet', randerstable: 'sidobordet', aborgtable: 'bordet', aborgchair: 'stolen', floorlamp: 'golvlampan', tubelamp: 'lampan', worklamp: 'lampan', walllamp: 'vägglampan', bed: 'sängen', bunk: 'våningssängen', daybed: 'sängen', gamingdesk: 'skrivbordet', gamingchair: 'stolen', laptop: 'datorn', tv: 'TV:n', palm: 'växten', planter: 'växten', parasol: 'parasollen', secretary: 'sekretären', sidetable: 'sängbordet', veronasofa: 'utesoffan', dynbox: 'dynboxen', huego: 'lampan', symfonisk: 'högtalaren', photoframe: 'fotoramen', nesthub: 'skärmen', nestmini: 'högtalaren' };
 const V = THREE.Vector3, Q = THREE.Quaternion, M = THREE.Matrix4;
 const shown = (o) => { for (; o; o = o.parent) if (!o.visible) return false; return true; };
 const within = (o, root) => { for (; o; o = o.parent) if (o === root) return true; return false; };
+// Actual solid geometry, excluding invisible targets and light overlays (notably TV Ambilight).
+function physicalBounds(root) {
+  root.updateWorldMatrix(true, true);
+  const bounds = new THREE.Box3();
+  root.traverse(o => {
+    if (!o.isMesh || !shown(o) || o.userData.surface !== undefined) return;
+    const materials = Array.isArray(o.material) ? o.material : [o.material];
+    if (materials.every(m => m.blending === THREE.AdditiveBlending || m.blending === THREE.CustomBlending)) return;
+    if (o.isInstancedMesh) { o.computeBoundingBox(); bounds.union(o.boundingBox.clone().applyMatrix4(o.matrixWorld)); }
+    else { o.geometry.computeBoundingBox(); bounds.union(o.geometry.boundingBox.clone().applyMatrix4(o.matrixWorld)); }
+  });
+  return bounds;
+}
 const read = (key, fallback) => { try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch { return fallback; } };
 function worldPose(o, matrix) {
   o.parent?.updateWorldMatrix(true, false);
@@ -54,7 +67,7 @@ export class Rearrange {
   }
   onTop(o, surfaces) {
     o.updateWorldMatrix(true, true);
-    const b = new THREE.Box3().setFromObject(o), c = b.getCenter(new V()), origin = new V().setFromMatrixPosition(o.matrixWorld);
+    const b = physicalBounds(o), c = b.getCenter(new V()), origin = new V().setFromMatrixPosition(o.matrixWorld);
     const inside = (s, p) => p.x >= s.min.x && p.x <= s.max.x && p.z >= s.min.z && p.z <= s.max.z;
     // Tall/asymmetric plants can overhang: their base origin still rests on the support.
     return surfaces.some((s) => Math.abs(b.min.y - s.max.y) < REARRANGE.supportGap
@@ -84,14 +97,14 @@ export class Rearrange {
     const inverse = original.clone().invert();
     for (const root of [...group.map((p) => p.object), ...loose.map((h) => h.model)]) {
       root.traverse((o) => {
-        if (!o.isMesh || !shown(o) || !o.geometry || o.userData.surface !== undefined) return;
+        if (!o.isMesh || !shown(o) || !o.geometry || o.userData.surface !== undefined || o.material?.blending === THREE.AdditiveBlending) return;
         let m;
         if (o.isInstancedMesh) { m = new THREE.InstancedMesh(o.geometry, this.ghostMat, o.count); m.instanceMatrix = o.instanceMatrix; }
         else m = new THREE.Mesh(o.geometry, this.ghostMat);
         m.matrixAutoUpdate = false; m.matrix.multiplyMatrices(inverse, o.matrixWorld); m.raycast = () => {}; this.ghost.add(m);
       });
     }
-    this.selected.bounds = new THREE.Box3().setFromObject(piece.object);
+    this.selected.bounds = physicalBounds(piece.object);
     for (const p of group) p.object.visible = false;
     for (const h of loose) h.model.visible = false;
     this.ghost.visible = true;
@@ -131,11 +144,19 @@ export class Rearrange {
       }
     } else {
       const floor = LEVELS[piece.level].floor;
-      const plane = new THREE.Plane(new V(0, 1, 0), -floor), at = this.ray.ray.intersectPlane(plane, new V());
+      const plane = new THREE.Plane(new V(0, 1, 0), -floor);
+      let at = this.ray.ray.intersectPlane(plane, new V()), height = floor;
+      if (piece.item.type === 'tv' && piece.item.mount !== 'wall') {
+        const surfaces = this.world.cupSurfaces.filter(s => shown(s.parent) && !s.userData.soft
+          && !this.selected.group.some(p => within(s, p.object))
+          && s.userData.surface >= floor && s.userData.surface < floor + LEVELS[piece.level].ceiling);
+        const hit = this.ray.intersectObjects(surfaces, false).find(h => h.face?.normal.y > 0.9);
+        if (hit) { at = hit.point; height = hit.object.userData.surface; }
+      }
       valid = !!at && at.distanceTo(this.camera.position) <= REARRANGE.reach && this.player.level === piece.level;
       if (valid) {
         const grid = LIFE.place.floorGrid;
-        pos.set(Math.round(at.x / grid) * grid, floor + old.pos[1] - bounds.min.y, Math.round(at.z / grid) * grid);
+        pos.set(Math.round(at.x / grid) * grid, height + old.pos[1] - bounds.min.y, Math.round(at.z / grid) * grid);
         q.premultiply(new Q().setFromAxisAngle(new V(0, 1, 0), this.turn));
         valid = pos.x >= 0.2 && pos.x <= this.world.size.x - 0.2 && pos.z >= -2 && pos.z <= this.world.size.z + 5;
       }
@@ -226,6 +247,19 @@ export class Rearrange {
       }
       worldPose(p.object, matrix); p.revision = next.revision;
       if (p.item.type === 'rug') { p.item.x = next.pos[0]; p.item.z = next.pos[2]; p.item.rot = THREE.MathUtils.radToDeg(new THREE.Euler().setFromQuaternion(new Q(...next.quat), 'YXZ').y) - 180; }
+    }
+    // Older clients placed the TV partly inside the bench. All clients repair that old pose
+    // on load; the next confirmed move writes the corrected pose through the usual revision check.
+    for (const p of this.pieces.filter(p => p.item.type === 'tv' && p.item.mount !== 'wall')) {
+      const b = physicalBounds(p.object), at = new V().setFromMatrixPosition(p.object.matrixWorld);
+      for (const bench of this.pieces.filter(b => b.item.type === 'byas' && b.level === p.level)) {
+        const bottom = new V().setFromMatrixPosition(bench.object.matrixWorld).y;
+        const top = this.supports(bench).find(s => at.x >= s.min.x && at.x <= s.max.x && at.z >= s.min.z && at.z <= s.max.z);
+        if (top && b.min.y >= bottom - .01 && b.min.y < top.max.y - .001) {
+          const matrix = p.object.matrixWorld.clone(); matrix.elements[13] += top.max.y - b.min.y;
+          worldPose(p.object, matrix); this.marks.invalidate(p.object); break;
+        }
+      }
     }
     this.state = state;
     try { localStorage.setItem(CACHE, JSON.stringify(state)); } catch {}

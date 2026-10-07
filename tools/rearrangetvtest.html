@@ -1,0 +1,31 @@
+<!doctype html><html><meta charset="utf-8"><title>TV support and bench (#478)</title><pre id="out">running…</pre><script type="module">
+const lines=[];let pass=true;const check=(ok,s)=>{lines.push(`${ok?'PASS':'FAIL'} ${s}`);pass&&=!!ok;};
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+try {
+ localStorage.removeItem('lunden.furniture.layout');localStorage.removeItem('lunden.furniture.unlocked');
+ const f=document.createElement('iframe');f.width=480;f.height=300;document.body.append(f);
+ async function load(){f.src='../index.html?life&shot&r='+Math.random();await new Promise(r=>f.onload=r);while(!f.contentWindow.__app)await wait(100);return f.contentWindow.__app;}
+ let A=await load(),R=A.rearrange;const T=await f.contentWindow.eval("import('three')");
+ const start=()=>{const d=f.contentDocument;d.documentElement.requestFullscreen=undefined;d.getElementById('start-touch').click();R.unlock('sarah is the goat');};start();
+ let tv=R.pieces.find(p=>p.item.type==='tv'&&p.level===0),bench=R.pieces.find(p=>p.item.type==='byas');
+ check(R.groupFor(bench).includes(tv),'TV is recognized on bench despite Ambilight');
+ R.begin(tv);check(R.selected.bounds.min.y>0.44,'TV bounds start at foot, not light effect');
+ const surface=R.supports(bench)[0],at=surface.getCenter(new T.Vector3());at.y=surface.max.y;
+ A.camera.position.set(at.x,1.6,at.z+1.5);A.camera.lookAt(at);R.update();
+ check(R.valid&&Math.abs(R.candidate.elements[13]-surface.max.y)<.001,'aiming at bench places TV foot on top');await R.confirm();
+ const benchOriginal=bench.object.matrixWorld.clone(),tvBefore=tv.object.matrixWorld.clone(),origin=new T.Vector3().setFromMatrixPosition(benchOriginal);
+ R.begin(bench);check(R.selected.group.includes(tv),'bench preview includes TV');
+ R.candidate=new T.Matrix4().makeTranslation(origin.x-.3,origin.y,origin.z+.2).multiply(new T.Matrix4().makeRotationY(Math.PI/2)).multiply(new T.Matrix4().makeTranslation(-origin.x,-origin.y,-origin.z)).multiply(benchOriginal);R.valid=true;
+ const delta=R.candidate.clone().multiply(benchOriginal.clone().invert());await R.confirm();
+ const expected=delta.clone().multiply(tvBefore);check(tv.object.matrixWorld.elements.every((v,i)=>Math.abs(v-expected.elements[i])<.001),'TV follows bench translation and rotation');
+ check(R.state.pieces[tv.id].revision===R.state.pieces[bench.id].revision,'bench and TV saved in one shared revision');
+ const tvId=tv.id,benchId=bench.id,pose=tv.object.matrixWorld.clone();A=await load();R=A.rearrange;start();tv=R.byId.get(tvId);bench=R.byId.get(benchId);
+ check(tv.object.matrixWorld.elements.every((v,i)=>Math.abs(v-pose.elements[i])<.001),'supported TV placement survives reload');
+ await R.restoreOriginal(bench);
+ // Simulate the old client saving the TV inside the bench, then receive that persisted layout.
+ const old=structuredClone(R.state);old.revision++;old.pieces[tv.id]={pos:[4.25,.318,8.01],quat:new T.Quaternion().setFromRotationMatrix(tv.home).toArray(),revision:old.revision};
+ R.apply(old);check(Math.abs(tv.object.position.y-R.supports(bench)[0].max.y)<.001,'old sunk TV pose is repaired above bench');
+ check(R.groupFor(bench).includes(tv),'repaired TV follows subsequent bench moves');
+ document.getElementById('out').textContent=lines.join('\n')+'\n'+(pass?'ALL PASS':'SOME FAILED');
+}catch(e){document.getElementById('out').textContent=lines.join('\n')+'\nFAIL '+e.stack;}
+</script></html>
