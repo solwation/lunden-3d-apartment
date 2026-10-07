@@ -23,7 +23,7 @@ try {
  const delta=new T.Matrix4().makeTranslation(.2,0,.1);R.candidate=delta.clone().multiply(newTable.object.matrixWorld);R.valid=true;await R.confirm();
  check(pos(fruit.model).distanceTo(beforeFruit.clone().add(new T.Vector3(.2,0,.1)))<.001,'fruit travels with bowl exactly once');
  R.begin(newTable);A.step(1/60);const button=d.getElementById('rearrange-reset');
- check(!button.hidden&&!button.disabled,'restore button available for selected furniture');button.click();await wait(100);
+ check(!button.hidden&&!button.disabled,'restore button available for selected furniture');button.click();d.getElementById('terminal-confirm-yes').click();await wait(100);A.showTerminal(false);
  check(newTable.object.matrixWorld.equals(newTable.home)&&pos(A.fruit.group).distanceTo(bowlHome)<.001,'button restores table and bowl to original position');
  newPalm.placed=true;
  check(R.looseOn(newSecretary).includes(newPalm),'placed yucca on secretary top is recognized geometrically');newPalm.placed=false;

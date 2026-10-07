@@ -31,3 +31,27 @@ test('both public cheat codes can save furniture',async()=>{
   assert.equal((await response.json()).pieces['f-sofa-0'].revision,1);
  }
 });
+
+const reset = (moves, expectedRevision) => new Request('https://test/furniture', {method:'PUT',body:JSON.stringify({code:'sarah is the goat',resetAll:true,expectedRevision,moves})});
+test('whole-home reset is one durable revision and supports more than 100 pieces',async()=>{
+ const {instance:r,ctx}=room();
+ const moves=Array.from({length:150},(_,i)=>move(`f-piece-${i}`));
+ assert.equal((await r.fetch(request(moves))).status,400);
+ assert.equal((await r.fetch(reset(moves))).status,400);
+ const response=await r.fetch(reset(moves,0));assert.equal(response.status,200);
+ const state=await response.json();assert.equal(state.revision,1);
+ assert.equal(Object.keys(state.pieces).length,150);
+ assert.ok(Object.values(state.pieces).every(p=>p.revision===1));
+ const loaded=await(await new DrawingRoom(ctx,{}).fetch(new Request('https://test/furniture'))).json();
+ assert.deepEqual(loaded,state);
+});
+test('reset refuses any change since confirmation opened, without partially resetting',async()=>{
+ const {instance:r}=room();
+ await r.fetch(request([move('f-one')]));
+ await r.fetch(request([move('f-other')]));
+ assert.equal((await r.fetch(reset([move('f-one',1,0)],1))).status,409);
+ assert.equal((await r.fetch(reset([move('f-one',1,0),move('f-other',0,0)],2))).status,409);
+ const state=await(await r.fetch(new Request('https://test/furniture'))).json();
+ assert.equal(state.revision,2);assert.equal(state.pieces['f-one'].pos[0],3);
+ assert.equal((await r.fetch(reset([move('f-one',1,0),move('f-other',2,0)],2))).status,200);
+});

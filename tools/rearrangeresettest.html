@@ -1,0 +1,36 @@
+<!doctype html><html><meta charset="utf-8"><title>Furniture reset confirmations (#481)</title><pre id="out">running…</pre><script type="module">
+const lines=[];let pass=true;const check=(ok,s)=>{lines.push(`${ok?'PASS':'FAIL'} ${s}`);pass&&=!!ok;};
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+try {
+ localStorage.removeItem('lunden.furniture.layout');
+ const f=document.createElement('iframe');f.width=480;f.height=300;f.src='../index.html?life&shot';document.body.append(f);
+ await new Promise(r=>f.onload=r);while(!f.contentWindow.__app)await wait(100);
+ const w=f.contentWindow,d=f.contentDocument,A=w.__app,R=A.rearrange,T=await w.eval("import('three')");
+ d.documentElement.requestFullscreen=undefined;d.getElementById('start-touch').click();R.unlock('olof is the goat');
+ const click=id=>d.getElementById(id).click(),home=p=>p.object.matrixWorld.elements.every((v,i)=>Math.abs(v-p.home.elements[i])<.0001);
+ const table=R.pieces.find(p=>p.item.type==='coffeetable'),upstairs=R.pieces.find(p=>p.level===1&&!p.picture),picture=R.pieces.find(p=>p.picture);
+ const bowlHome=A.fruit.group.getWorldPosition(new T.Vector3());
+ for(const p of [table,upstairs,picture]){R.begin(p);R.candidate=new T.Matrix4().makeTranslation(.2,0,0).multiply(p.object.matrixWorld);R.valid=true;check(await R.confirm(),'move '+p.name);}
+ R.begin(table);A.showTerminal(true);click('terminal-restore');
+ check(!d.getElementById('terminal-confirm').hidden&&d.getElementById('terminal-confirm-text').textContent.includes(table.name),'single reset names selected piece');
+ check(d.activeElement.id==='terminal-confirm-no'&&R.state.revision===3,'cancel focused by default; opening confirmation writes nothing');
+ click('terminal-confirm-no');check(R.state.revision===3&&!home(table),'cancel leaves position unchanged');
+ click('terminal-restore');click('terminal-confirm-yes');await wait(100);
+ check(home(table)&&!home(upstairs)&&!home(picture),'single reset restores only selected group');
+ check(A.fruit.group.getWorldPosition(new T.Vector3()).distanceTo(bowlHome)<.001,'single reset carries fruit bowl');
+ click('terminal-restore-all');
+ check(d.getElementById('terminal-confirm-text').textContent.includes('alla möbler i alla rum'),'global warning explicitly covers all rooms');
+ const revision=R.state.revision;click('terminal-confirm-no');check(R.state.revision===revision&&!home(upstairs),'global cancel writes nothing');
+ click('terminal-restore-all');d.dispatchEvent(new w.KeyboardEvent('keydown',{code:'Escape',bubbles:true}));
+ check(R.state.revision===revision&&!R.enabled&&d.getElementById('terminal').hidden,'Escape dismisses warning and leaves layout unchanged');
+ R.enable(true);A.showTerminal(true);click('terminal-restore-all');click('terminal-confirm-yes');await wait(100);
+ check(R.pieces.every(home),'global reset restores furniture, pictures and mirrors on every floor');
+ check(R.state.revision===revision+1&&R.pieces.every(p=>p.revision===R.state.revision),'entire reset is one revision');
+ check(R.pieces.length<=500&&JSON.stringify(R.state).length<128000,'whole apartment fits server request limits ('+R.pieces.length+' pieces)');
+ check(A.fruit.group.getWorldPosition(new T.Vector3()).distanceTo(bowlHome)<.001,'global reset leaves already restored bowl in place');
+ check(Object.keys(JSON.parse(localStorage.getItem('lunden.furniture.layout')).pieces).length===R.pieces.length,'complete original arrangement persists locally');
+ A.showTerminal(false);
+ check(!await R.restoreAll(revision)&&R.state.revision===revision+1,'stale global confirmation is rejected locally');
+ document.getElementById('out').textContent=lines.join('\n')+'\n'+(pass?'ALL PASS':'SOME FAILED');
+}catch(e){document.getElementById('out').textContent=lines.join('\n')+'\nFAIL '+e.stack;}
+</script></html>

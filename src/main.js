@@ -1717,13 +1717,16 @@ const rearrange = new Rearrange({ scene, camera, world, player, life, marks,
 });
 const terminal = document.getElementById('terminal'), terminalInput = document.getElementById('terminal-code');
 const editHelp = document.getElementById('rearrange-help'), editToggle = document.getElementById('rearrange-toggle');
-let editMenuPiece = null;
+let editMenuPiece = null, resetFurnitureRequest = null;
 function editUI() {
-  editHelp.hidden = !rearrange.enabled; editToggle.hidden = !rearrange.unlocked;
+  editHelp.hidden = !rearrange.enabled; editToggle.hidden = !rearrange.unlocked || !!resetFurnitureRequest;
   editToggle.textContent = rearrange.enabled ? 'Avsluta ommöblering' : 'Möblera om';
   editToggle.disabled = rearrange.saving;
   document.getElementById('terminal-unlock').hidden = rearrange.enabled;
-  document.getElementById('terminal-edit').hidden = !rearrange.enabled;
+  document.getElementById('terminal-edit').hidden = !rearrange.enabled || !!resetFurnitureRequest;
+  document.getElementById('terminal-confirm').hidden = !resetFurnitureRequest;
+  document.getElementById('terminal-close').hidden = !!resetFurnitureRequest;
+  document.getElementById('terminal-restore-all').disabled = rearrange.saving;
   document.getElementById('terminal-title').textContent = rearrange.enabled ? 'Möblera om' : 'Terminal';
   document.getElementById('terminal-close').textContent = rearrange.enabled ? 'Fortsätt möblera' : 'Stäng';
   document.getElementById('terminal-restore').disabled = !editMenuPiece || rearrange.saving;
@@ -1737,6 +1740,7 @@ function exitRearranging() {
 onEditPointerUnlock = exitRearranging; // Esc can be consumed by the browser; pointer unlock is the fallback.
 function showTerminal(show, byKey = 'button') {
   if (show && (reading || drawing.active)) return;
+  resetFurnitureRequest = null;
   terminal.hidden = !show; reading = show; player.keys.clear(); touch.analog.x = touch.analog.y = 0;
   if (show) { editMenuPiece = rearrange.selected?.piece ?? rearrange.target?.piece ?? null; if (locked) { boardFreed = true; document.exitPointerLock(); } editUI(); (rearrange.enabled ? document.getElementById('terminal-close') : terminalInput).focus(); }
   else if (boardFreed) { boardFreed = false; if (byKey === 'Escape') { overlay.hidden = true; armEl.hidden = false; } else canvas.requestPointerLock()?.catch(() => { armEl.hidden = false; }); }
@@ -1749,11 +1753,27 @@ document.getElementById('terminal-form').addEventListener('submit', (e) => {
   else document.getElementById('terminal-message').textContent = 'Okänd kod.';
 });
 editToggle.addEventListener('click', () => { rearrange.enable(!rearrange.enabled); editUI(); showTerminal(false); });
-document.getElementById('terminal-restore').addEventListener('click', async () => {
-  const saved = rearrange.restoreOriginal(editMenuPiece); editUI(); await saved; editUI();
+function requestFurnitureReset(all = false, piece = editMenuPiece) {
+  if (rearrange.saving || (!all && !piece)) return;
+  if (terminal.hidden) showTerminal(true);
+  resetFurnitureRequest = { all, piece, revision: rearrange.state.revision, base: piece?.revision };
+  document.getElementById('terminal-confirm-text').textContent = all
+    ? 'Vill du verkligen återställa? Detta kommer att återställa alla möbler i alla rum till deras ursprungliga plats.'
+    : `Vill du verkligen återställa ${piece.name} till sin ursprungliga plats? Medföljande föremål följer med.`;
+  editUI(); document.getElementById('terminal-confirm-no').focus();
+}
+document.getElementById('terminal-restore').addEventListener('click', () => requestFurnitureReset());
+document.getElementById('terminal-restore-all').addEventListener('click', () => requestFurnitureReset(true));
+document.getElementById('terminal-confirm-no').addEventListener('click', () => { resetFurnitureRequest = null; editUI(); });
+document.getElementById('terminal-confirm-yes').addEventListener('click', async () => {
+  const request = resetFurnitureRequest; if (!request || rearrange.saving) return;
+  resetFurnitureRequest = null;
+  if (!request.all && request.piece.revision !== request.base) { rearrange.say('Föremålet flyttades medan frågan var öppen. Försök igen.'); editUI(); return; }
+  const saved = request.all ? rearrange.restoreAll(request.revision) : rearrange.restoreOriginal(request.piece);
+  editUI(); await saved; editUI();
 });
 document.getElementById('terminal-cancel-move').addEventListener('click', () => { rearrange.cancel(); rearrange.say('Flytten avbröts.'); editUI(); });
-document.getElementById('rearrange-reset').addEventListener('click', () => rearrange.restoreOriginal());
+document.getElementById('rearrange-reset').addEventListener('click', () => requestFurnitureReset(false, rearrange.selected?.piece ?? rearrange.target?.piece));
 document.getElementById('rearrange-cancel').addEventListener('click', () => { if (rearrange.selected) rearrange.cancel(); else rearrange.enable(false); editUI(); });
 document.addEventListener('keydown', (e) => {
   if (!terminal.hidden) { if (e.code === 'Escape') { e.preventDefault(); exitRearranging(); showTerminal(false, 'Escape'); } e.stopImmediatePropagation(); return; }
@@ -1762,7 +1782,7 @@ document.addEventListener('keydown', (e) => {
   if (rearrange.enabled && !reading && ['KeyR', 'KeyX', 'KeyF', 'Home'].includes(e.code)) {
     e.preventDefault(); e.stopImmediatePropagation();
     if (!e.repeat && e.code === 'KeyR') rearrange.rotate();
-    if (!e.repeat && e.code === 'Home') rearrange.restoreOriginal();
+    if (!e.repeat && e.code === 'Home') requestFurnitureReset(false, rearrange.selected?.piece ?? rearrange.target?.piece);
     if (!e.repeat && e.code === 'KeyX') { if (rearrange.selected) rearrange.cancel(); else rearrange.enable(false); editUI(); }
   }
 }, true);

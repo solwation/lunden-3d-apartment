@@ -54,7 +54,9 @@ try {
  check(Math.abs(it.place.pos[0]-pos.x-.2)<.001,'plate and its persistent position follow table');}
  const stored=JSON.parse(w.localStorage.getItem('lunden.furniture.layout'));check(stored.revision>=3,'confirmed layout persists locally');
  R.begin(rug);d.dispatchEvent(new w.KeyboardEvent('keydown',{code:'Home',bubbles:true}));await wait(100);
- check(rug.object.matrixWorld.elements.every((v,i)=>Math.abs(v-rug.home.elements[i])<.0001),'Home key restores original position without leaving keyboard controls');
+ check(!d.getElementById('terminal-confirm').hidden,'Home asks for confirmation');
+ d.getElementById('terminal-confirm-yes').click();await wait(100);A.showTerminal(false);
+ check(rug.object.matrixWorld.elements.every((v,i)=>Math.abs(v-rug.home.elements[i])<.0001),'confirmed Home reset restores original position');
  R.begin(rug);A.showTerminal(true);
  check(!d.getElementById('terminal-edit').hidden&&!d.getElementById('terminal-cancel-move').disabled,'Enter menu exposes clickable furniture controls');
  d.getElementById('terminal-cancel-move').click();check(!R.selected&&R.enabled,'menu cancels preview without exiting mode');

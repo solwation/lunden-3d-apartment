@@ -9,10 +9,13 @@ export async function layoutFetch(request, storage, headers = {}) {
   if (request.method === 'GET') return reply(state);
   if (request.method !== 'PUT') return reply({ error: 'method' }, 405);
   const raw = await request.text();
-  if (raw.length > 64000) return reply({ error: 'too big' }, 413);
+  if (raw.length > 128000) return reply({ error: 'too big' }, 413);
   let b; try { b = JSON.parse(raw); } catch { return reply({ error: 'bad json' }, 400); }
   if (!CODES.has(b?.code)) return reply({ error: 'code' }, 403);
-  if (!Array.isArray(b.moves) || !b.moves.length || b.moves.length > 100 || new Set(b.moves.map((m) => m?.id)).size !== b.moves.length) return reply({ error: 'moves' }, 400);
+  if (b.resetAll !== undefined && b.resetAll !== true) return reply({ error: 'reset' }, 400);
+  if (b.resetAll && (!Number.isInteger(b.expectedRevision) || b.expectedRevision < 0)) return reply({ error: 'revision' }, 400);
+  if (b.resetAll && b.expectedRevision !== state.revision) return reply({ error: 'conflict', state }, 409);
+  if (!Array.isArray(b.moves) || !b.moves.length || b.moves.length > (b.resetAll ? 500 : 100) || new Set(b.moves.map((m) => m?.id)).size !== b.moves.length) return reply({ error: 'moves' }, 400);
   for (const m of b.moves) {
     if (!m || !idOK(m.id) || !Number.isInteger(m.base) || m.base < 0 || !vec(m.pos, 3, -100, 100) || !vec(m.quat, 4, -1, 1)
       || Math.abs(m.quat.reduce((s, x) => s + x*x, 0) - 1) > 0.001) return reply({ error: 'pose' }, 400);

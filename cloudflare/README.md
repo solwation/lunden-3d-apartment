@@ -19,7 +19,7 @@ den är pushad. Skriptet går att köra om hur många gånger som helst – det 
 
 ## Bra att veta
 
-- **Privat hem:** mat, gurkor, smulor och möbler skickas inte till Workern.
+- **Privat hem:** mat, gurkor och smulor skickas inte till Workern.
   Hemmets lokala lagring delas av flikar i samma webbläsarprofil; olika profiler/enheter har egna hem.
   Uppsatta teckningar, skrivbordsteckningen, spelarantal och den separata topplistan är gemensamma.
 - **Teckningarnas livslängd:** 24 timmar från senaste accepterade uppsättning/flytt (servertid).
@@ -76,3 +76,5 @@ den är pushad. Skriptet går att köra om hur många gånger som helst – det 
 `GET /furniture` returns `{revision, pieces}`. `PUT /furniture` accepts `{code, moves}` with the public game code and an atomic batch of `{id, base, pos, quat}` world poses. The existing `DrawingRoom` Durable Object serializes layout writes in persistent storage (`furniture-layout`), independently of expiring drawings. Each piece has a server revision: stale writes return HTTP 409 and the current state. No client clock is trusted; previews are never uploaded. The code unlocks a game mechanic, not secure authentication.
 
 The client polls every three seconds and on returning online/to the tab. Local development uses `node cloudflare/dev.mjs 8145`; open the game with `?cloud=http://localhost:8145`. `node --test cloudflare/*.test.mjs` covers concurrency, invalid inputs, persistence and existing drawing/identity behavior.
+
+Whole-layout reset adds `resetAll: true` and `expectedRevision` to the PUT body. It accepts up to 500 registered pieces (ordinary moves: 100), with a 128 kB request limit. The global revision must still match the revision shown when confirmation opened; otherwise the entire reset returns 409 without writing anything. Per-piece revision checks also apply.

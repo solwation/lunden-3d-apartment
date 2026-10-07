@@ -350,9 +350,11 @@ src/rearrange.js       furniture cheat (#465): Enter / >_ opens a terminal; eith
                        independent movement, reflection, restoration, reload and fixed-mirror exclusion.
                        Enter opens clickable rearrangement controls with a free cursor; Esc exits the mode and cancels the preview,
                        including native pointer-unlock events. Touch keeps its input mode when leaving the menu.
-                       Original-position reset (button / Home) uses the same atomic move; detached Thing supports and the fruit bowl follow
-                       furniture, including layouts saved before #475. Physical bounds ignore Ambilight; the TV targets support surfaces
-                       and follows BYÅS in the same saved batch, repairing legacy sunk TV poses on load (#478, tools/rearrangetvtest.html). Browser tests: tools/rearrangetest.html, tools/rearrangefollowtest.html;
+                       Original-position reset (button / Home) asks for confirmation and uses the same atomic move; detached Thing supports and the fruit bowl follow
+                       furniture, including layouts saved before #475.
+                       Whole-layout reset also asks for confirmation, writes every registered home pose atomically, and rejects a changed global revision (#481).
+                       tools/rearrangeresettest.html covers both confirmations, cancellation, followers and all-room reset.
+                       Physical bounds ignore Ambilight; the TV targets support surfaces and follows BYÅS in the same saved batch, repairing legacy sunk TV poses on load (#478, tools/rearrangetvtest.html). Browser tests: tools/rearrangetest.html, tools/rearrangefollowtest.html;
                        Worker tests: cloudflare/layout.test.mjs. Development: cloudflare/dev.mjs and ?cloud=http://localhost:8145.
 src/lampwash.js        every lamp's light wherever the visitor is (#276, #294, #295, LIGHTING.wash): each pool anchor (small lamps
                        and ceiling lamps) lights the flat inside the lit materials' own shaders (`patch(scene)`: onBeforeCompile on

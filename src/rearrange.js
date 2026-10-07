@@ -186,23 +186,39 @@ export class Rearrange {
     this.candidate = piece.home.clone(); this.valid = true;
     return this.confirm(); // same attachments, atomic write and conflict handling as a normal move
   }
+  async write(moves, extra = {}) {
+    if (this.url) {
+      const r = await fetch(this.url + '/furniture', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code: 'olof is the goat', moves, ...extra }) });
+      const body = await r.json();
+      if (r.status === 409 && body.state) { this.pending = body.state; throw Error('Någon annan ändrade möbleringen. Försök igen.'); }
+      if (!r.ok) throw Error('Kunde inte spara. Försök igen när anslutningen fungerar.');
+      return body;
+    }
+    const next = structuredClone(this.state); next.revision++;
+    for (const p of moves) next.pieces[p.id] = { pos: p.pos, quat: p.quat, revision: next.revision };
+    return next;
+  }
+  async restoreAll(expectedRevision = this.state.revision) {
+    if (!this.enabled || this.saving || this.busy()) return false;
+    this.cancel();
+    if (this.state.revision !== expectedRevision) { this.say('Möbleringen ändrades medan frågan var öppen. Öppna återställningen igen.'); return false; }
+    const moves = this.pieces.map(p => ({ id: p.id, base: p.revision, ...poseOf(p.home) }));
+    this.saving = true;
+    try {
+      const next = await this.write(moves, { resetAll: true, expectedRevision });
+      this.saving = false; this.pending = null; this.apply(next);
+      this.say(this.url ? 'All möblering är återställd för alla besökare.' : 'All möblering är återställd lokalt.'); return true;
+    } catch (e) {
+      this.saving = false; this.cancel(); this.say(e.message); await this.sync(); return false;
+    }
+  }
   async confirm() {
     if (!this.selected || !this.valid || this.saving) return false;
     const selection = this.selected, delta = this.candidate.clone().multiply(selection.original.clone().invert());
     const moves = selection.group.map((p) => ({ id: p.id, base: selection.base[p.id], ...poseOf(delta.clone().multiply(p.object.matrixWorld)) }));
     this.saving = true;
     try {
-      let next;
-      if (this.url) {
-        const r = await fetch(this.url + '/furniture', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code: 'olof is the goat', moves }) });
-        const body = await r.json();
-        if (r.status === 409 && body.state) { this.pending = body.state; throw Error('Någon annan flyttade föremålet. Försök igen.'); }
-        if (!r.ok) throw Error('Kunde inte spara. Försök igen när anslutningen fungerar.');
-        next = body;
-      } else {
-        next = structuredClone(this.state); next.revision++;
-        for (const p of moves) next.pieces[p.id] = { pos: p.pos, quat: p.quat, revision: next.revision };
-      }
+      const next = await this.write(moves);
       this.saving = false; this.pending = null; this.cancel(); this.apply(next); this.say(this.url ? 'Möbleringen är sparad och delas med alla.' : 'Möbleringen är sparad lokalt.'); return true;
     } catch (e) {
       this.saving = false; this.cancel(); this.say(e.message || 'Kunde inte spara flytten.'); await this.sync(); return false;
