@@ -141,6 +141,21 @@ async function run() {
   app = w.__app;
   const c2 = app.blinds.curtains[0];
   check(Math.abs(c2.t - 0.6) < 0.002 && Math.abs(c2.east.a - (c2.ends.east.open[0] + (S.meet - c2.ends.east.open[0]) * 0.6)) < 1e-3, `the state survives a reload (${c2.t})`);
+
+  // Verify all 6 rooms have curtains with proper configuration and themes (#459)
+  check(app.blinds.curtains.length === 6, `total 6 curtains in all rooms (${app.blinds.curtains.length})`);
+  const expectedRooms = ['Sovrum 1', 'Sovrum 2', 'Sovrum 3', 'Sovrum 4', 'Kök / matplats', 'Vardagsrum'];
+  const roomsFound = app.blinds.curtains.map(curt => curt.room);
+  for (const expected of expectedRooms) {
+    const found = app.blinds.curtains.find(curt => curt.room === expected);
+    check(!!found, `curtains found in ${expected}`);
+  }
+  for (const curt of app.blinds.curtains) {
+    curt.set(1);
+    check(curt.t === 1 && Math.abs(curt.west.b - curt.spec.meet) < 1e-6 && Math.abs(curt.east.a - curt.spec.meet) < 1e-6, `${curt.room} closes cleanly at meet ${curt.spec.meet}`);
+    curt.set(0);
+    check(curt.t === 0, `${curt.room} opens cleanly`);
+  }
   try { localStorage.removeItem('lunden.blinds'); } catch { /* */ }
 }
 run().catch((e) => check(false, `ERROR ${e.message}\n${e.stack}`)).finally(() => {

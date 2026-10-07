@@ -176,9 +176,30 @@ export const BLINDS = {
 // pair takes (less than the blackout blind); `glow` = the teal emissive by day (a little light through the cotton), lamp =
 // from a lit room. `speed` m/s of the east panel's leading edge while A / D are held (the west one keeps pace: same share).
 export const CURTAINS = [
-  { level: 1, room: 'Sovrum 1', west: 2.71, stop: 2.72, meet: 3.855, east: 5.32, z: 0.6, glass: [3.15, 4.56], stack: 0.22,
+  // Sovrum 1 (Sarah & Olof, L1 North): Jungle-print teal cotton panels
+  { level: 1, room: 'Sovrum 1', facade: 'north', theme: 'jungle', west: 2.71, stop: 2.72, meet: 3.855, east: 5.32, z: 0.6, glass: [3.15, 4.56], stack: 0.22,
     top: 2.36, drop: 0.015, fullness: 1.4, amp: 0.028, tile: 0.7, speed: 0.38, dim: 0.4,
     colors: { ground: '#2f7c86', track: 0xf3f2ee, glow: 0x3fa3ad, warm: 0xffc27a }, glow: { day: 0.18, lamp: 0.08 } },
+  // Sovrum 2 (Walter & Kian, L1 South): Star Wars / gaming sci-fi motif on dark navy
+  { level: 1, room: 'Sovrum 2', facade: 'south', theme: 'starwars', west: 2.77, stop: 2.78, meet: 3.85, east: 5.53, z: 12.12, glass: [3.22, 4.47], stack: 0.22,
+    top: 2.76, drop: 0.02, fullness: 1.4, amp: 0.028, tile: 0.65, speed: 0.38, dim: 0.4,
+    colors: { ground: '#141a29', track: 0xf3f2ee, glow: 0x223254, warm: 0xffc27a }, glow: { day: 0.15, lamp: 0.07 } },
+  // Sovrum 3 (Livia & Tuva, L1 North): Unicorn / pastel rainbow theme on soft cream
+  { level: 1, room: 'Sovrum 3', facade: 'north', theme: 'unicorn', west: 0.90, stop: 0.92, meet: 1.80, east: 2.59, z: 0.58, glass: [1.25, 2.34], stack: 0.22,
+    top: 2.36, drop: 0.015, fullness: 1.4, amp: 0.028, tile: 0.6, speed: 0.38, dim: 0.35,
+    colors: { ground: '#fdf6fa', track: 0xf3f2ee, glow: 0xffeef7, warm: 0xffc27a }, glow: { day: 0.22, lamp: 0.09 } },
+  // Sovrum 4 (Tilly, L1 South): K-pop & dark violet/lilac theme
+  { level: 1, room: 'Sovrum 4', facade: 'south', theme: 'kpop', west: 0.22, stop: 0.23, meet: 1.45, east: 2.61, z: 12.12, glass: [0.72, 2.19], stack: 0.22,
+    top: 2.76, drop: 0.02, fullness: 1.4, amp: 0.028, tile: 0.6, speed: 0.38, dim: 0.4,
+    colors: { ground: '#201826', track: 0xf3f2ee, glow: 0x3d2b4c, warm: 0xffc27a }, glow: { day: 0.15, lamp: 0.07 } },
+  // Kök / matplats (Entréplan North): Scandinavian kitchen / dining botanical linen
+  { level: 0, room: 'Kök / matplats', facade: 'north', theme: 'linen_kitchen', west: 2.50, stop: 2.52, meet: 3.85, east: 4.90, z: 0.58, glass: [3.15, 4.56], stack: 0.22,
+    top: 2.96, drop: 0.02, fullness: 1.4, amp: 0.028, tile: 0.6, speed: 0.38, dim: 0.35,
+    colors: { ground: '#ede7dc', track: 0xf3f2ee, glow: 0xf8f4ec, warm: 0xffc27a }, glow: { day: 0.22, lamp: 0.08 } },
+  // Vardagsrum (Entréplan South): Scandinavian living room Jacquard weave in warm sand
+  { level: 0, room: 'Vardagsrum', facade: 'south', theme: 'linen_living', west: 2.25, stop: 2.26, meet: 3.85, east: 5.48, z: 12.10, glass: [2.88, 4.81], stack: 0.22,
+    top: 2.96, drop: 0.02, fullness: 1.4, amp: 0.028, tile: 0.7, speed: 0.38, dim: 0.35,
+    colors: { ground: '#ded6c9', track: 0xf3f2ee, glow: 0xeee6d9, warm: 0xffc27a }, glow: { day: 0.20, lamp: 0.08 } },
 ];
 
 // Flower pots on the inner window boards (#136, the user: "blomkrukor med blommor i alla fönsterkarmar";
@@ -1093,11 +1114,9 @@ export const CAR = {
     inside: { gain: 1, cutoff: 18000 }, open: { gain: 0.75, cutoff: 6000 }, shut: { gain: 0.3, cutoff: 500 } },
 };
 
-// Where Tilly's daybed stands along Sovrum 4's west wall (#312, the user: more open floor): its centre's z, the head end
-// against the window wall — the wall's inner face z 12.2337 (data/plan.json), less the window board's 3 cm nose (world.js:
-// the daybed's end, 83 cm high, overlaps the window's west part, x 0.652…, so it stops short of the board, never in the
-// reveal), less a 4 mm gap, less half its length (HEMNES_DAYBED.W 2.07). The basketball holder and the posters follow it.
-export const DAYBED_Z = 12.2337 - 0.03 - 0.004 - 2.07 / 2;
+// Where Tilly's daybed stands along Sovrum 4's west wall (#312, #459): its centre's z, clear of the south window's
+// curtains (rail z 12.12, folds and wave depth). The basketball holder and the posters follow it.
+export const DAYBED_Z = 12.2337 - 0.12 - 2.07 / 2;
 
 // Tilly's basketball (src/basket.js, the user): a size 6 ball (Ø 23 cm) in a wall holder over her daybed (Sovrum 4's
 // west wall, x 0.202, centred on the bed, ball centre `y` over the floor). Click shoots it on an arc through the point
@@ -1634,7 +1653,7 @@ export const LEADERBOARD = { show: 10, every: 30, nameMax: 20 };
 // Drawing with crayons (#93, src/drawing.js): an A3 sheet in the middle of the ALEX desk in Sovrum 3. E on it:
 // the view goes down over the paper, the mouse is freed and you draw with crayons (palette at the bottom,
 // keys 1–9, "Sudda allt"); E / Esc / "Klar" goes back. The drawing is kept in localStorage.
-export const DRAWING = { level: 1, x: 2.61 - 0.66 - 0.02, z: 0.465 + 0.31, w: 0.42, h: 0.297, px: 840, eye: 0.3,
+export const DRAWING = { level: 1, x: 2.61 - 0.66 - 0.02, z: 0.465 + 0.31 + 0.08, w: 0.42, h: 0.297, px: 840, eye: 0.3,
   colors: ['#d8312e', '#f08a24', '#f2cf2b', '#43a047', '#2f6fd6', '#7b4bc4', '#f27bb3', '#8a5a3c', '#222222'],
   width: 9,
   // Taping it up (#176, src/posters.js): "Ta teckningen" in drawing mode puts the sheet in the hand (a fresh one
@@ -2611,8 +2630,8 @@ export const NEST = {
 };
 
 export const FURNITURE = [
-  // Vardagsrum: sofa with its back to the window (south wall), chaise in the SE corner
-  { type: 'sofa', level: 0, x: 5.5 - 2.82 / 2, z: 12.15 - 0.89 / 2, rot: 0, chaise: 'right' }, // sitter's right = east
+  // Vardagsrum: sofa with its back to the window (south wall, clear of curtains #459), chaise in the SE corner
+  { type: 'sofa', level: 0, x: 5.5 - 2.82 / 2, z: 12.06 - 0.89 / 2, rot: 0, chaise: 'right' }, // sitter's right = east
   // armchair + the dark red stool (#180) in the opposite (NW) corner, turned towards the room
   { type: 'armchair', level: 0, x: 0.78, z: 8.38, rot: -135 },
   { type: 'ottoman', level: 0, x: 1.33, z: 8.93, rot: -135 },
@@ -2863,8 +2882,8 @@ export const FURNITURE = [
   // sitting up in bed (guess). Faces east.
   { type: 'tv', level: 1, room: 'Sovrum 1', x: 2.752, z: BED1_Z, y: 1.3, rot: -90, w: 0.96, h: 0.56, fps: 12, px: 320, mount: 'wall', frame: 'black', name: 'tv:n' }, // with Ambilight (#223)
   { type: 'tv', level: 1, x: 2.61, z: 1.75, y: 1.2, rot: 90, w: 0.71, h: 0.41, fps: 12, px: 256, mount: 'wall', name: 'tv:n' },
-  { type: 'alex', level: 1, x: 2.61 - 0.66 - 0.02, z: 0.465 + 0.29, rot: 180, w: 1.32, d: 0.58, h: 0.76 },
-  { type: 'kidchair', level: 1, x: 2.61 - 0.66 - 0.02, z: 0.465 + 0.58 + 0.25, rot: 0 },
+  { type: 'alex', level: 1, x: 2.61 - 0.66 - 0.02, z: 0.465 + 0.29 + 0.08, rot: 180, w: 1.32, d: 0.58, h: 0.76 },
+  { type: 'kidchair', level: 1, x: 2.61 - 0.66 - 0.02, z: 0.465 + 0.58 + 0.25 + 0.08, rot: 0 },
   // a round dusty-pink short-pile rug (#310, the user; docs/matta-sovrum3-rosa-farg.png for the colour,
   // docs/matta-sovrum3-lizette-rund.png for the shape: "Matta Lizette", several sizes). Ø 160 × 1.2 cm is a guess.
   // #318 (the user): out in the room under the bunk's ladder (room side x ~1.2, z 2.02–2.47) rather than in the corner
@@ -2880,8 +2899,8 @@ export const FURNITURE = [
   { type: 'pineapple', level: 1, x: 0.202, z: (3.08 + 4.21) / 2, y: 1.45, rot: -90 },
   // Sovrum 2 (Walter & Kian). watch.z: a seat in the lower bunk (local z, level with the desk's monitor)
   // for watching films on the PC
-  { type: 'bunk', level: 1, x: 5.55 - 0.5, z: 12.23 - 1.05, rot: 0, w: 0.9, l: 2.0, sheets: 'vader', watch: { z: -0.3 } },
-  { type: 'malm', level: 1, room: 'Sovrum 2', x: 5.55 - 0.5, z: 12.23 - 1.05 - 1.06 - 0.25, rot: 0, w: 0.8, h: 1.24, d: 0.5, seed: 90, deco: 'vader' }, // its MALM (#235)
+  { type: 'bunk', level: 1, x: 5.55 - 0.5, z: 12.23 - 1.05 - 0.08, rot: 0, w: 0.9, l: 2.0, sheets: 'vader', watch: { z: -0.3 } },
+  { type: 'malm', level: 1, room: 'Sovrum 2', x: 5.55 - 0.5, z: 12.23 - 1.05 - 1.06 - 0.25 - 0.08, rot: 0, w: 0.8, h: 1.24, d: 0.5, seed: 90, deco: 'vader' }, // its MALM (#235)
   // Walter & Kian's neon print "EAT SLEEP GAME REPEAT" (#430, docs/tavla-sovrum2-eat-sleep-game-repeat.webp): ~40 × 50 cm
   // outside (*guess*, the user: "40x50 ca"), a thin black frame (~2 cm face, no passe-partout, *guess* from the photo), the
   // print filling it. On the east wall (inner face x 5.551) centred between wardrobe L's south face (z 8.504, plan.json) and
@@ -2890,14 +2909,14 @@ export const FURNITURE = [
   // photo's print cropped inside the frame and straightened (720 × 920 px = 36 × 46 cm).
   { type: 'pictures', level: 1, x: 5.551, z: (8.504 + 9.62) / 2, y: 1.55, rot: 90, w: 0.4, h: 0.5, gap: 0, frame: 0.02, depth: 0.025,
     rough: 0.5, cols: 1, rows: 1, atlas: 'textures/eat-sleep-game-repeat-sovrum2.jpg', grid: [1, 1], order: [0] },
-  // Walter & Kian's gaming corner (#77, #84): a black desk 140 × 70 along the west wall (opposite the bunk),
-  // its short end against the south window wall, facing east; curved 34" ultrawide on a monitor arm, RGB
+  // Walter & Kian's gaming corner (#77, #84, #459): a black desk 140 × 70 along the west wall (opposite the bunk),
+  // moved 8 cm north of the south window wall to clear the curtains, facing east; curved 34" ultrawide on a monitor arm, RGB
   // tower at the window end (out of the bunk's line of sight), keyboard, mouse, headset, speakers (sizes
   // our pick). E on it switches the PC on (animated game screen, RGB cycling, game sounds). The black/green
   // gaming chair in front of it is a seat (#71) and sitting down starts the PC; sitting in the lower bunk
   // swings the monitor round towards it and plays a film.
-  { type: 'gamingdesk', level: 1, x: 2.75 + 0.35, z: 12.23 - 0.7, rot: -90, w: 1.4, d: 0.7, fps: 12 },
-  { type: 'gamingchair', level: 1, x: 2.75 + 0.35 + 0.62, z: 12.23 - 0.7, rot: 90 },
+  { type: 'gamingdesk', level: 1, x: 2.75 + 0.35, z: 12.23 - 0.7 - 0.08, rot: -90, w: 1.4, d: 0.7, fps: 12 },
+  { type: 'gamingchair', level: 1, x: 2.75 + 0.35 + 0.62, z: 12.23 - 0.7 - 0.08, rot: 90 },
   // Sovrum 4 (Tilly): IKEA HEMNES dagbädd m 3 lådor, vit, 207 × 89 × 83 cm (ikea.com, HEMNES_DAYBED), back to the
   // west wall, charcoal and lilac bedding (#280), its head end by the window (#312, DAYBED_Z). rot = the way the seat faces.
   { type: 'daybed', level: 1, x: 0.2 + 0.46, z: DAYBED_Z, rot: -90 },
