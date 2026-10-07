@@ -1,0 +1,35 @@
+<!doctype html><html><meta charset="utf-8"><title>Independent secretary mirror (#476)</title><pre id="out">running…</pre><script type="module">
+const lines=[];let pass=true;const check=(ok,s)=>{lines.push(`${ok?'PASS':'FAIL'} ${s}`);pass&&=!!ok;};
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+try {
+ localStorage.removeItem('lunden.furniture.layout');localStorage.removeItem('lunden.furniture.unlocked');
+ const f=document.createElement('iframe');f.width=480;f.height=300;document.body.append(f);
+ async function load(){f.src='../index.html?life&shot&r='+Math.random();await new Promise(r=>f.onload=r);while(!f.contentWindow.__app)await wait(100);return f.contentWindow.__app;}
+ let A=await load(),R=A.rearrange;const T=await f.contentWindow.eval("import('three')");
+ let d=f.contentDocument;d.documentElement.requestFullscreen=undefined;d.getElementById('start-touch').click();R.unlock('sarah is the goat');
+ const id='f-mirror-skogsgransen-0',mirror=R.byId.get(id),secretary=R.pieces.find(p=>p.item.type==='secretary');
+ const close=(a,b)=>a.elements.every((v,i)=>Math.abs(v-b.elements[i])<.0001);
+ check(mirror?.picture&&mirror.name==='spegeln','mirror has its own stable wall-piece identity');
+ const original=mirror.object.matrixWorld.clone(),secretaryBefore=secretary.object.matrixWorld.clone();
+ const at=new T.Vector3().setFromMatrixPosition(original),normal=new T.Vector3(0,0,1).transformDirection(original);
+ A.camera.position.copy(at).addScaledVector(normal,1.5);A.camera.lookAt(at);R.update();
+ check(R.target?.piece===mirror,'aim selects mirror independently of secretary');
+ const reflector=A.reflectors().find(r=>r.name==='skogsgransen').r,reflectionBefore=reflector.matrixWorld.clone();
+ R.begin(mirror);check(R.selected.group.length===1&&R.selected.loose.length===0&&R.ghostMat.opacity===.35,'mirror has its own transparent preview');
+ A.camera.lookAt(at.clone().add(new T.Vector3(0,.25,.3)));R.update();const unturned=R.candidate?.clone();R.rotate();R.update();
+ check(R.valid&&unturned&&!close(unturned,R.candidate),'mirror can be placed and rotated on a real wall');
+ const moved=R.candidate.clone(),delta=moved.clone().multiply(original.clone().invert());check(await R.confirm(),'mirror move confirmed');A.scene.updateMatrixWorld(true);
+ check(close(secretary.object.matrixWorld,secretaryBefore),'moving mirror leaves secretary in place');
+ check(close(reflector.matrixWorld,delta.clone().multiply(reflectionBefore)),'reflection follows glass and frame');
+ R.begin(secretary);check(!R.selected.group.includes(mirror),'secretary does not carry wall mirror');
+ R.candidate=new T.Matrix4().makeTranslation(-.2,0,0).multiply(secretary.object.matrixWorld);R.valid=true;await R.confirm();
+ check(close(mirror.object.matrixWorld,moved),'moving secretary leaves mirror in place');await R.restoreOriginal(secretary);
+ check(close(mirror.object.matrixWorld,moved),'restoring secretary leaves mirror in place');
+ A=await load();R=A.rearrange;
+ check(close(R.byId.get(id).object.matrixWorld,moved),'independent mirror position survives reload');
+ d=f.contentDocument;d.documentElement.requestFullscreen=undefined;d.getElementById('start-touch').click();R.unlock('olof is the goat');
+ check(await R.restoreOriginal(R.byId.get(id))&&close(R.byId.get(id).object.matrixWorld,original),'mirror restores to its own original position');
+ A.renderer.render(A.scene,A.camera);
+ document.getElementById('out').textContent=lines.join('\n')+'\n'+(pass?'ALL PASS':'SOME FAILED');
+}catch(e){document.getElementById('out').textContent=lines.join('\n')+'\nFAIL '+e.stack;}
+</script></html>

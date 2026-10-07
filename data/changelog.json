@@ -1,4 +1,5 @@
 [
+  {"id": 465, "date": "2026-10-07", "text": "Spegeln ovanför sekretären kan nu flyttas, roteras och återställas separat i möbleringsläget."},
   {"id": 464, "date": "2026-10-07", "text": "I möbleringsläget kan även Home-tangenten återställa den valda möbeln eller tavlan till originalpositionen."},
   {"id": 463, "date": "2026-10-07", "text": "Fruktskålen och palmen följer nu med även tidigare flyttade möbler, och en knapp återställer möbler och tavlor till originalpositionen."},
   {"id": 462, "date": "2026-10-07", "text": "Väggar, dörrar och fast inredning har nu diskreta kantlinjer som gör rummens geometri lättare att urskilja."},

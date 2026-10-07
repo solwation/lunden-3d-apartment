@@ -218,6 +218,7 @@ export function buildHallWall() {
   const cabinet = new KeyCabinet();
   cabinet.object.position.set(H.cabinet.x, H.cabinet.y, H.cabinet.z);
   cabinet.object.rotation.y = H.cabinet.rotY;
-  group.add(mirror, nissedal(H.tall), nissedal(H.tallUp), skogsgransen(), cabinet.object); // (+ SKOGSGRÄNSEN over the secretary, #265)
-  return { object: group, cabinet, key: cabinet.key };
+  const secretaryMirror = skogsgransen();
+  group.add(mirror, nissedal(H.tall), nissedal(H.tallUp), secretaryMirror, cabinet.object); // (+ SKOGSGRÄNSEN over the secretary, #265)
+  return { object: group, cabinet, key: cabinet.key, secretaryMirror };
 }

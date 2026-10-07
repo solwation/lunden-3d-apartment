@@ -344,7 +344,8 @@ src/rearrange.js       furniture cheat (#465): Enter / >_ opens a terminal; eith
                        Confirmed world poses update footprints, seat targets, surface heights, light anchors/washes, rug data
                        and Marks caches. Local cached authoritative layout is lunden.furniture.layout; unlock is a convenience.
                        GET/PUT /furniture uses DrawingRoom's serialized durable storage, revision-checked atomic batches;
-                       conflicts cancel and pull the winning layout, previews never sync. Original-position reset (button / Home) uses the same atomic move; detached Thing supports and the fruit bowl follow
+                       conflicts cancel and pull the winning layout, previews never sync. The SKOGSGRÄNSEN mirror above the secretary is an independent wall piece, including its reflector (tools/rearrangemirrortest.html verifies independent placement, rotation, restoration and reload).
+                       Original-position reset (button / Home) uses the same atomic move; detached Thing supports and the fruit bowl follow
                        furniture, including layouts saved before #475. Browser tests: tools/rearrangetest.html, tools/rearrangefollowtest.html;
                        Worker tests: cloudflare/layout.test.mjs. Development: cloudflare/dev.mjs and ?cloud=http://localhost:8145.
 src/lampwash.js        every lamp's light wherever the visitor is (#276, #294, #295, LIGHTING.wash): each pool anchor (small lamps

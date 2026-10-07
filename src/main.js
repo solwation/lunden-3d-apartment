@@ -1479,7 +1479,7 @@ function updateFocus() {
     const restore = document.getElementById('rearrange-reset');
     restore.hidden = !(rearrange.selected || focused?.piece); restore.disabled = rearrange.saving;
     showChoices(null, null); placeGhost.visible = itemGhost.visible = false;
-    const text = focused ? (focused.blockedText ?? `${focused.verb === 'flytta' ? 'Flytta' : 'Placera'} ${focused.name}`) : 'Sikta på en möbel eller tavla';
+    const text = focused ? (focused.blockedText ?? `${focused.verb === 'flytta' ? 'Flytta' : 'Placera'} ${focused.name}`) : 'Sikta på en möbel, tavla eller spegel';
     actionBtn.textContent = text; actionBtn.hidden = !touch.enabled || !focused;
     promptEl.textContent = `${text} · E / klick · R: vrid · X: avbryt`;
     promptEl.hidden = touch.enabled; powerBtn.hidden = true;
