@@ -223,6 +223,7 @@ export function cookingActions(life) {
       const g = knifeLoad(c.held);
       I.set(c.target, { parts: [...c.target.parts, { type: c.held.machine.loadType ?? 'butter', amount: g }], prep: 'spread' });
       I.set(c.held, { machine: { load: 0, loadType: null } });
+      life.emit('prepared', { item: c.target }); // optional everyday tasks (#392)
       return g;
     },
     done: (c, job) => { if (job.base && c.heldView?.held) c.heldView.model.position.copy(job.base); },
@@ -287,6 +288,7 @@ export function cookingActions(life) {
       const part = { type: top.type, amount: top.amount };
       if (!I.remove(top)) return; // (it leaves its place first; nothing is added if it could not)
       I.set(bread, { parts: [...bread.parts, part], prep: 'assembled' });
+      life.emit('prepared', { item: bread }); // only after the topping really moved (#392)
       sfx.click(c.targetView?.where());
     },
     consumes: 'the topping in the hand (removed)', result: 'one more part on the bread: { type, amount } exactly as the topping was',

@@ -397,6 +397,9 @@ export class Vacuum extends Holdable {
             }
             sfx.vacuumSlurp?.(headPos);
             this.slurpParticles?.burst(headPos);
+            if (this.life) {
+              this.life.emit('vacuumed', { amount: res.amount, spots: res.spots, headPos: headPos.toArray() });
+            }
             for (const s of res.spots) {
               if (s.room) this.hadMessRooms.add(`${level}:${s.room}`);
             }

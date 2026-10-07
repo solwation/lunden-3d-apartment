@@ -686,6 +686,13 @@ src/life.js            the life simulator (epic #364) glue; the `&life` develope
                        The tools (#374, LIFE_TOOLS.stock, same restock): the kitchen knife, butter knife and cheese slicer on the
                        utensil drawer's towels, the cutting board on its long edge against the splashback between sink and hob
                        (store 'boardRack', only the board, "Ställa skärbrädan på sin plats")
+src/tasks.js           optional everyday tasks (#392): TASK_NOTE card on the kitchen worktop opens a Swedish panel (E/click/touch).
+                       Domain events prepared/bite/ate, washed/dishwasher, wipe, rubbishOut and vacuumed complete goals in any
+                       order; real kitchen worktops only, empty bins need no disposal. Sets deduplicate goals; life.keepPart('tasks')
+                       saves progress without replaying bonuses on load. SCORE.first.tasks=30 per task id, again.tasks=5 after
+                       explicit "Gör igen"; stats.tasks counts completions. Hints toggle persists as lunden.taskHints.
+                       The panel releases pointer lock, closes with its button/E/Escape, and permits touch scrolling.
+                       Browser regression: tools/taskstest.html (actual cooking, cloth and vacuum, permutations, save, UI/score).
 src/cooking.js         the life sim's kitchen work (M1): actions judged by the tags of the held tool and the food (LIFE_TOOLS.uses:
                        tool tag → food tag, `label`, `not`): the wrong tool is a blocked row "Osthyveln skär inte gurka", nothing used;
                        a new tool = an ITEMS entry with a 'tool:…' tag (ITEMS `noun` = the indefinite form in messages)

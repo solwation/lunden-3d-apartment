@@ -125,6 +125,10 @@ export class Cloth extends Holdable {
       badge('Disktrasan blev smutsig', false);
     }
 
+    if (this.life) {
+      this.life.emit('wipe', { point, surf: surfName });
+    }
+
     return true;
   }
 

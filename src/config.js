@@ -1594,10 +1594,12 @@ export const SCORE = {
     toiletPaper: 3, // paper torn off a roll and flushed away (#426): the first time, then `again`
     handwash: 4, handdry: 2, // hands washed at a basin / dried on a towel afterwards (#437): the first time, then `again`
     sandwiches: 40, // a sandwich made and eaten (#380): the first of each combination ("ost- och gurkmackan" …), then `again`
+    tasks: 30, // completed everyday task (LIFE-030, #392): first time bonus, then `again`
     handBrew: 10, // the first pot brewed by hand: water and coffee filled first (#334); no `again` (each brew has `each.brews`)
   },
   again: {
     sandwiches: 4, // every sandwich after the first of its kind (#380)
+    tasks: 5, // each repeated completed task (#392)
     doors: 0.1, lids: 0.1, flushes: 0.2, taps: 0.1, fridge: 0.1, appliances: 0.1, cabinets: 0.05, lights: 0.05,
     sat: 0.1, lay: 0.1, songs: 0.2, read: 0.5, car: 1, grill: 1, hood: 0.2, tv: 0.2, pc: 0.3, parasol: 0.2,
     clock: 0.1, calendar: 0.1, greets: 0.1, catButts: 1, walkRain: 2, walkSnow: 3, walkHail: 4, walkStorm: 3,
@@ -2946,3 +2948,6 @@ export const FURNITURE = [
     z: SKANSNAS.table.z + k * SKANSNAS.table.l / 4,
   }))),
 ];
+
+// Optional everyday task card beside the sink (#392), position/size are visual choices (*guess*).
+export const TASK_NOTE = { pos: [5.35, 0.932, 1.48], w: 0.18, h: 0.22, tilt: 0.15 };

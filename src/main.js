@@ -60,6 +60,7 @@ import { AirFryer } from './airfryer.js';
 import { buildFries } from './fries.js';
 import { Vacuum } from './vacuum.js';
 import { Cloth } from './cloth.js';
+import { TasksManager } from './tasks.js';
 import { buildCoffeeJar } from './coffeejar.js';
 import { FruitBowl } from './fruit.js';
 import { Drawing } from './drawing.js';
@@ -195,7 +196,29 @@ document.addEventListener('keydown', (e) => { // the board panel's keys, with or
   else if (boardPanel.key(e.code)) e.preventDefault();
   e.stopImmediatePropagation();
 }, true);
+function showTaskNote(show, byKey = 'E') {
+  reading = show;
+  tasks.showUI(show);
+  player.keys.clear();
+  touch.analog.x = touch.analog.y = 0;
+  if (show) {
+    sfx.paper(taskCard.object.getWorldPosition(new THREE.Vector3()));
+    if (locked) { boardFreed = true; document.exitPointerLock(); }
+    tasks.closeBtn.focus();
+  } else if (boardFreed) {
+    boardFreed = false;
+    if (byKey === 'Escape') { overlay.hidden = true; armEl.hidden = false; }
+    else canvas.requestPointerLock()?.catch(() => { armEl.hidden = false; });
+  }
+}
+document.addEventListener('keydown', (e) => {
+  if (document.getElementById('task-note').hidden) return;
+  if (e.code === 'KeyE' || e.code === 'Escape') { e.preventDefault(); showTaskNote(false, e.code); }
+  else if (scrollNote(document.querySelector('#task-note .paper'), e.code, e.shiftKey)) e.preventDefault();
+  e.stopImmediatePropagation();
+}, true);
 function showNote(show) {
+  if (!show && !tasks.modalEl.hidden) { showTaskNote(false); return; }
   if (!show && !boardEl.hidden) { showBoard(false); return; }
   if (!show && clockPanel.open) { showClock(false); return; }
   if (!show && sonos.open) { showSonos(false); return; }
@@ -390,11 +413,22 @@ for (const t of taps) if (t.options) { const own = t.options; t.options = () => 
 const inFlatPlay = () => !player.below && !player.inCore && !player.aloft;
 const mess = life.mess = new Mess({ group: life.group, surfaces: world.cupSurfaces, roomAt: world.roomAt, walls: (l) => world.levels[l]?.wallSegments ?? [],
   isFree: (x, z, l, m) => inFlatPlay() && player.isFree(x, z, l, m), nearestFree: (x, z, l) => (inFlatPlay() ? player.nearestFree(x, z, l) : null) });
-vacuum.mess = mess; vacuum.player = player; vacuum.sonos = sonos;
+vacuum.mess = mess; vacuum.player = player; vacuum.sonos = sonos; vacuum.life = life;
 const cloth = new Cloth(scene, camera, world, taps); // the dishcloth by the kitchen sink (#391)
-cloth.mess = mess;
+cloth.mess = mess; cloth.life = life;
 holdables.push(cloth);
 world.looseItems.push(cloth.model);
+const tasks = new TasksManager({ life, scene });
+const taskCard = tasks.build3DCard();
+scene.add(taskCard.object);
+world.looseItems.push(taskCard.object);
+tasks.bindUI({
+  modalEl: document.getElementById('task-note'),
+  listEl: document.getElementById('task-list'),
+  hintsBtn: document.getElementById('task-hints-btn'),
+  closeBtn: document.getElementById('task-close'),
+  onClose: () => showTaskNote(false, 'button'),
+});
 if (params0.get('mess') === '0') LIFE.rules.mess = false; // free play: no automatic mess
 life.onEvent((kind, d) => { if (kind === 'crumbs') mess.fromEvent(d); });
 life.keepPart('mess', { save: () => mess.save(), load: (v) => mess.load(v) });
@@ -940,7 +974,7 @@ document.getElementById('start-mouse').addEventListener('click', startMouse);
 // line at the bottom, no box (#190). Esc in the game still just frees the mouse.
 const armEl = document.getElementById('arm');
 let unlockedAt = -1e9;
-const otherOverlay = () => ['loading', 'install', 'reset-confirm', 'player-dialog', 'leaderboard-dialog', 'note', 'board-view', 'poster-panel'].some((id) => {
+const otherOverlay = () => ['loading', 'install', 'reset-confirm', 'player-dialog', 'leaderboard-dialog', 'note', 'task-note', 'board-view', 'poster-panel'].some((id) => {
   const el = document.getElementById(id);
   return el && !el.hidden && !el.classList.contains('done');
 })
@@ -1190,12 +1224,13 @@ document.addEventListener('wheel', (e) => { if (locked && !reading && choices.ro
 /** E / the action button on what you look at: doors toggle, the note opens. */
 function use(thing) {
   shadowState.hold = 1.5; // whatever moves now casts a moving shadow
-  if (!heldItem() && !['rest', 'place', 'note', 'clock', 'calendar', 'board', 'poster', 'paper'].includes(thing.kind) && focusPoint && thing === focused) hand.reach(focusPoint); // the arm reaches out (#195)
+  if (!heldItem() && !['rest', 'place', 'note', 'taskNote', 'clock', 'calendar', 'board', 'poster', 'paper'].includes(thing.kind) && focusPoint && thing === focused) hand.reach(focusPoint); // the arm reaches out (#195)
   if (thing.options && thing.kind !== 'life' && choices.rows && choices.target === thing) { // a lamp with a choice (#428): the marked row
     runChoice(choices.sel);
     if (thing.kind === 'lamp' && thing.isOpen) bump('lights', 1, idOf(thing));
   } else if (thing.blocked && (thing.kind === 'appliance' || thing.kind === 'cabinet')) sfx.click(camera.position); // something stands on the secretary's flap / the cushion box's lid (#447)
   else if (thing.kind === 'note') showNote(true);
+  else if (thing.kind === 'taskNote') showTaskNote(true);
   else if (thing.kind === 'clock') { showClock(true); bump('clock'); }
   else if (thing.kind === 'calendar') { showCalendar(true); bump('calendar'); }
   else if (thing.kind === 'blind' || thing.kind === 'curtain') showBlind(thing); // a pleated blind (#273), the curtains (#342)
@@ -1395,7 +1430,7 @@ window.addEventListener('resize', () => {
 // --- door interaction: look at a door within reach, press E ----------------
 const raycaster = new THREE.Raycaster();
 raycaster.far = 2.2;
-const pickables = [...garage.targets.map((t) => t.pickable), ...core.targets.map((t) => t.pickable), airFryer.basketTarget.pickable, airFryer.panelTarget.pickable, ...world.doors.map((d) => d.pickable), ...world.lids.map((l) => l.pickable), ...taps.map((t) => t.pickable), note.pickable, board.pickable, ...(coffeeJar ? [coffeeJar.target.pickable] : []), wallClock.pickable, calendar.pickable, ...lights.targets.map((t) => t.pickable), grill.pickable, blinds.object];
+const pickables = [...garage.targets.map((t) => t.pickable), ...core.targets.map((t) => t.pickable), airFryer.basketTarget.pickable, airFryer.panelTarget.pickable, ...world.doors.map((d) => d.pickable), ...world.lids.map((l) => l.pickable), ...taps.map((t) => t.pickable), note.pickable, taskCard.pickable, board.pickable, ...(coffeeJar ? [coffeeJar.target.pickable] : []), wallClock.pickable, calendar.pickable, ...lights.targets.map((t) => t.pickable), grill.pickable, blinds.object];
 const center = new THREE.Vector2(0, 0);
 const keyCabinet = world.lids.find((l) => l.kind === 'keybox');
 let focused = null, focusPoint = null;
@@ -2147,4 +2182,4 @@ document.documentElement.classList.remove('resuming'); // the page is ready: off
 hideLoading();
 
 // handle for tests/debugging (tools/touchtest.html, tools/perfcount.html)
-window.__app = { dynRes, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, toaster, life, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, coffeeJar, miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS };
+window.__app = { dynRes, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, toaster, life, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS };

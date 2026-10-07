@@ -21,7 +21,7 @@ export function setupTouch({ onLook }) {
   }
 
   document.addEventListener('pointerdown', (e) => {
-    if (!enabled || !isTouch(e) || e.target.closest?.('button, #stats')) return; // buttons; the stats panel scrolls (#245)
+    if (!enabled || !isTouch(e) || e.target.closest?.('button, #stats, #task-note')) return; // buttons; the stats panel scrolls (#245)
     if (stickId === null && e.clientX < window.innerWidth * 0.45) {
       stickId = e.pointerId;
       origin = { x: e.clientX, y: e.clientY };

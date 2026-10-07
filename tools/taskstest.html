@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Everyday tasks test (#392)</title></head>
+<body><pre id="out">running…</pre>
+<script type="module">
+const lines = [];
+let pass = true;
+const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); pass &&= !!ok; };
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+try {
+  const f = document.createElement('iframe');
+  f.width = 900; f.height = 600; f.src = '../index.html?life&shot'; document.body.append(f);
+  await new Promise((r) => { f.onload = r; });
+  while (!f.contentWindow.__app) await wait(100);
+  const w = f.contentWindow, d = f.contentDocument, A = w.__app;
+  d.getElementById('start-touch').click(); await wait(50);
+  const { tasks, life, stats, totalScore, showTaskNote, step, player, camera, cloth, vacuum } = A, I = life.items;
+  const secs = (s) => { for (let i = 0; i < Math.ceil(s * 60); i++) step(1 / 60); };
+  const row = (id, it) => life.options(it ? { item: life.view(it) } : { instance: I.held() }).find((o) => o.id === id);
+  const cleanTasks = () => tasks.load({ v: 1, goals: {} });
+  const task = (id) => tasks.tasks.find((t) => t.id === id);
+  const counter = { x: 5.25, y: 0.93, z: 3 };
+  check(tasks.tasks.length === 3 && life.worktopAt(Object.values(counter)), 'three optional tasks; fixture is an actual worktop');
+  const initialTasks = stats.tasks;
+  life.emit('ate', { type: 'breadSlice', parts: [] }); life.emit('ate', { type: 'apple' });
+  life.emit('crumbs', { source: 'cut' });
+  check(task('makeSandwich').completedGoals.size === 0, 'plain bread, fruit and cutting do not make a sandwich');
+  // Real cooking actions: assembling and eating, not synthetic completion events.
+  const bread = life.create('breadSlice', { at: 'world', pos: Object.values(counter), yaw: 0 });
+  life.create('cheeseSlice', { at: 'hand' }); step(1 / 60);
+  const topping = row('addTopping', bread);
+  check(topping && !topping.reason, 'real topping action is available'); topping?.run(); step(1 / 60);
+  check(task('makeSandwich').completedGoals.has('prep') && !task('makeSandwich').isDone, 'assembly completes preparation only');
+  life.view(bread).take(); step(1 / 60);
+  row('eat')?.run(); secs(0.8);
+  check(!task('makeSandwich').isDone, 'one bite is not a finished sandwich');
+  for (let i = 0; i < 3; i++) { row('eat')?.run(); secs(0.8); }
+  check(!I.get(bread.id) && task('makeSandwich').isDone && stats.tasks === initialTasks + 1, 'last bite completes the real sandwich once');
+  const savedDone = tasks.save(), scoreDone = totalScore(); tasks.load(savedDone);
+  check(task('makeSandwich').isDone && totalScore() === scoreDone, 'restoring a completed task never replays its bonus');
+  // All six kitchen permutations, with rubbish present so disposal is genuinely needed.
+  const bin = I.all().find((it) => I.has(it, 'bin')); I.setAmount(bin, 1);
+  const events = {
+    dishes: () => life.emit('dishwasher', { washed: ['plate-fixture'] }),
+    wipe: () => life.emit('wipe', { point: counter }),
+    rubbish: () => life.emit('rubbishOut', { amount: 1 }),
+  };
+  for (const order of [['dishes','wipe','rubbish'],['dishes','rubbish','wipe'],['wipe','dishes','rubbish'],['wipe','rubbish','dishes'],['rubbish','dishes','wipe'],['rubbish','wipe','dishes']]) {
+    cleanTasks(); const score = totalScore(), count = stats.tasks;
+    events[order[0]](); events[order[0]]();
+    const saved = life.serialize().x.tasks; tasks.load(saved);
+    check(task('resetKitchen').completedGoals.size === 1 && !task('resetKitchen').isDone, `${order.join('/')}: duplicate and reload preserve one goal`);
+    events[order[1]](); check(!task('resetKitchen').isDone, 'two goals do not finish kitchen');
+    events[order[2]](); events[order[2]]();
+    check(task('resetKitchen').isDone && stats.tasks === count + 1 && totalScore() === score + (order[0] === 'dishes' && order[1] === 'wipe' ? 30 : 5), `${order.join('/')}: one bonus, first 30 then repeat 5`);
+  }
+  cleanTasks();
+  life.emit('dishwasher', { washed: [] }); life.emit('wipe', { point: { x: 1, y: 1, z: 1 } });
+  life.emit('rubbishOut', { amount: 0 }); life.emit('vacuumed', { amount: 0 });
+  check(tasks.tasks.every((t) => !t.completedGoals.size), 'empty dishwasher, non-worktop wipe and zero amounts do not complete goals');
+  // Real cloth wipes must come from the kitchen worktop.
+  cloth.take(); cloth.wipe({ x: 1, y: 1, z: 1 });
+  check(!task('resetKitchen').completedGoals.has('wipe'), 'real cloth outside the kitchen does not count');
+  cloth.wipe(counter); cloth.putBack();
+  check(task('resetKitchen').completedGoals.has('wipe'), 'real cloth on worktop completes wiping');
+  for (const it of I.all().filter((it) => I.has(it, 'bin') || it.type === 'rubbishBag')) I.setAmount(it, 0);
+  const useful = I.all().filter((it) => I.has(it, 'edible')).map((it) => [it.id, it.amount]);
+  life.emit('washed', { what: 'koppen' });
+  check(task('resetKitchen').isDone && useful.every(([id, amount]) => I.get(id)?.amount === amount), 'empty bins skip disposal without wasting useful food');
+  // The vacuum event must come from removing actual floor mess.
+  const kd = A.world.klkDoor;
+  if (kd && !kd.isOpen) { kd.toggle(); for (let i = 0; i < 40; i++) kd.update(0.1); }
+  vacuum.take(); vacuum.use(); life.mess.clear();
+  life.mess.add('crumb', 4.3, 0, 2.6, { surf: 'floor', level: 0, amt: 0.5, room: 'Kök / matplats' });
+  player.spawn(4.12, 3.75, 0); camera.rotation.set(0, 0, 0); secs(0.8);
+  check(task('snackClean').isDone, 'real vacuum removes crumbs and completes clean-up'); vacuum.putBack();
+  // UI, voluntary repeats, persistence and input release.
+  showTaskNote(true); tasks.setHints(true); d.getElementById('task-hints-btn').click();
+  check(!tasks.hints && !d.querySelector('.task-hint') && w.localStorage.getItem('lunden.taskHints') === 'false', 'hints switch off everywhere and persist');
+  d.querySelector('[data-task="snackClean"]')?.click();
+  const repeatScore = totalScore(); life.emit('vacuumed', { amount: 0.1 });
+  check(task('snackClean').isDone && totalScore() === repeatScore + 5, 'Gör igen explicitly starts a repeat with the smaller bonus');
+  d.getElementById('task-close').click();
+  check(d.getElementById('task-note').hidden, 'close button closes panel');
+  player.spawn(4.1, 3.75, 0); step(1 / 60); const before = camera.position.clone();
+  A.touch.analog.y = 0.5; secs(0.15); A.touch.analog.y = 0;
+  check(camera.position.distanceTo(before) > 0.01, 'movement resumes after closing the panel');
+  for (const code of ['KeyE', 'Escape']) {
+    showTaskNote(true); d.dispatchEvent(new w.KeyboardEvent('keydown', { code, bubbles: true }));
+    check(d.getElementById('task-note').hidden, `${code} closes task panel`);
+  }
+  tasks.load({ v: 1, goals: { makeSandwich: ['prep', 'unknown', 'prep'], resetKitchen: 'bad' } });
+  check(task('makeSandwich').completedGoals.size === 1 && !task('resetKitchen').isDone, 'save loading filters unknown goals and malformed entries');
+  // The card is accessible through the same raycast and action button as other world items.
+  let found = false;
+  const p = tasks.card.object.position;
+  for (const [x,z] of [[4.5,1.65],[4.5,2],[4.5,1.3],[4.4,1.5]]) {
+    player.spawn(x,z,0); secs(0.05);
+    const dx = p.x-camera.position.x, dz=p.z-camera.position.z;
+    camera.rotation.y=Math.atan2(-dx,-dz); camera.rotation.x=Math.atan2(p.y-camera.position.y,Math.hypot(dx,dz)); step(1/60);
+    if (A.focus().focused?.kind === 'taskNote') { found = true; d.getElementById('action').click(); break; }
+  }
+  check(found && !d.getElementById('task-note').hidden, 'world task card can be aimed at and opened using the touch action');
+  tasks.setHints(true);
+  document.getElementById('out').textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
+} catch (e) { document.getElementById('out').textContent = `FAIL ${e.stack}\n${lines.join('\n')}`; }
+</script></body></html>
