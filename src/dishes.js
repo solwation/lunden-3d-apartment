@@ -136,15 +136,34 @@ export function dishActions(life) {
     consumes: 'nothing', result: 'the thing clean (its crumbs and butter gone)',
   });
 
-  // rinse the dishcloth at the running tap (#391, LIFE-027)
+  // rinse the dishcloth at the running tap (#391, #473, LIFE-027)
   A.define({
     id: 'rinseCloth', order: 1, duration: 1.0,
     label: 'skölja disktrasan',
     applies: (c) => isWashTap(c.raw) && (!!c.heldView?.isCloth || !!heldItem()?.isCloth),
     check: (c) => (!c.raw.isOpen ? 'Sätt på kranen först' : null),
-    run: (c) => {
+    animate: (c, k, job) => {
+      const v = c.heldView?.isCloth ? c.heldView : heldItem();
+      if (!v?.held) return;
+      job.base ??= v.model.position.clone();
+      job.rot ??= v.model.rotation.clone();
+      if (!job.sound) { job.sound = true; sfx.handwash(v.model.getWorldPosition(v.model.position.clone()), job.duration); }
+      const a = Math.sin(Math.PI * Math.min(1, k * 1.2)), w = k * Math.PI * 10;
+      v.model.position.set(job.base.x + 0.02 * Math.cos(w) * a, job.base.y - 0.05 * a + 0.01 * Math.sin(w) * a, job.base.z);
+      v.model.rotation.z = job.rot.z + 0.2 * Math.sin(w) * a;
+    },
+    commit: (c) => {
       const cloth = c.heldView?.isCloth ? c.heldView : heldItem();
       cloth?.rinse();
+      return true;
+    },
+    done: (c, job) => {
+      const v = c.heldView?.isCloth ? c.heldView : heldItem();
+      if (job.base && v?.held) { v.model.position.copy(job.base); v.model.rotation.copy(job.rot); }
+    },
+    cancel: (c, job) => {
+      const v = c.heldView?.isCloth ? c.heldView : heldItem();
+      if (job.base && v?.held) { v.model.position.copy(job.base); v.model.rotation.copy(job.rot); }
     },
     consumes: 'nothing', result: 'the dishcloth is clean and rinsed',
   });

@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Cloth rinse test (#473)</title></head>
+<body>
+<pre id="out">running…</pre>
+<script type="module">
+const out = document.getElementById('out');
+const lines = [];
+let pass = true;
+const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); pass &&= !!ok; return ok; };
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+
+async function load() {
+  const f = document.createElement('iframe');
+  f.width = 900; f.height = 600; f.src = '../index.html?life&shot';
+  document.body.append(f);
+  await new Promise((r) => { f.onload = r; });
+  while (!f.contentWindow.__app) await wait(100);
+  f.contentDocument.getElementById('start-touch').click();
+  await wait(50);
+  return f;
+}
+
+try {
+  const f = await load();
+  const w = f.contentWindow, d = f.contentDocument;
+  const A = w.__app;
+  const { cloth, taps, step, life, heldItem } = A;
+
+  check(cloth, 'cloth instance exists');
+  cloth.take();
+  check(cloth.held, 'cloth is held');
+
+  // Make cloth dirty
+  cloth.wipes = 5;
+  check(cloth.dirty, 'cloth is dirty');
+
+  // Find kitchen tap
+  const kitchenTap = taps.find((t) => t.name?.toLowerCase().includes('kök') || t.object?.position.x > 3.5) || taps[0];
+  check(kitchenTap, 'kitchen tap found');
+
+  // Turn tap on
+  if (!kitchenTap.isOpen) kitchenTap.toggle();
+  for (let i = 0; i < 30; i++) kitchenTap.update(0.1);
+  check(kitchenTap.isOpen, 'kitchen tap is open');
+
+  // Find the rinse action for the tap
+  const opts = life.options(kitchenTap);
+  const rinseAct = opts.find((o) => o.id === 'rinseCloth');
+  check(rinseAct && !rinseAct.reason, 'rinseCloth action available and allowed');
+
+  // Run the timed rinse action
+  const started = rinseAct.run();
+  check(started, 'rinse action started');
+  check(life.runner.busy, 'runner is busy executing rinse');
+
+  // Advance time to complete the 1.0s action
+  for (let i = 0; i < 70; i++) step(1 / 60);
+
+  check(!life.runner.busy, 'runner completed the rinse job without getting stuck');
+  check(!cloth.dirty && cloth.wipes === 0, 'cloth is clean after timed rinse completion');
+  check(cloth.held, 'cloth is still held and not lost');
+
+  // Test interruption: turn off tap during rinse or walk away
+  cloth.wipes = 5;
+  const rinseAct2 = life.options(kitchenTap).find((o) => o.id === 'rinseCloth');
+  rinseAct2.run();
+  check(life.runner.busy, 'second rinse started');
+
+  // Interrupt after 0.2s
+  for (let i = 0; i < 12; i++) step(1 / 60);
+  life.interrupt('test avbrott');
+  check(!life.runner.busy, 'runner successfully interrupted and not stuck');
+
+  // Put cloth back cleanly
+  cloth.putBack();
+  check(!cloth.held, 'cloth put back successfully');
+
+  f.remove();
+  out.textContent = `${pass ? 'ALL PASS' : 'SOME FAIL'}\n${lines.join('\n')}`;
+} catch (e) {
+  out.textContent = `FAIL error: ${e.message}\n${lines.join('\n')}\n${e.stack}`;
+}
+</script>
+</body>
+</html>
