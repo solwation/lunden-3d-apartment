@@ -1,6 +1,8 @@
 import * as THREE from 'three';
 import { ITEMS, LIFE, LIFE_WASTE } from './config.js';
 import { sfx } from './audio.js';
+import { heldItem } from './holdable.js';
+import { badge } from './stats.js';
 
 // The life simulator's rubbish (epic #364, milestone M2), after the bin under the sink (#381, cooking.js 'throwAway'):
 //   #386 three bins under the sink — Matavfall (the green one, a paper bag), Förpackningar (the small blue one), Restavfall
@@ -47,6 +49,34 @@ export function wasteActions(life) {
     check: (c) => (c.heldView ? `Lägg ifrån dig ${c.held ? I.name(c.held) : c.heldView.name ?? 'det du håller'} först` : c.targetView?.shutReason() ?? null),
     run: (c) => { I.set(c.target, { machine: { nobag: null } }); sfx.rustle?.(c.targetView?.where()); },
     consumes: 'nothing (a bag off the roll)', result: 'the bin has a bag again',
+  });
+  // empty the vacuum cleaner into Restavfall (#391, LIFE-027)
+  A.define({
+    id: 'emptyVacuum', order: 0,
+    label: (c) => `tömma dammsugaren i ${I.name(c.target)}`,
+    applies: (c) => isBin(c.target) && (!!c.heldView?.isVacuum || !!heldItem()?.isVacuum),
+    check: (c) => {
+      const vac = c.heldView?.isVacuum ? c.heldView : heldItem();
+      if (!vac || vac.dustAmount <= 1e-4) return 'Dammsugaren är redan tom';
+      const shut = c.targetView?.shutReason();
+      if (shut) return shut;
+      if (c.target.machine?.nobag) return 'Sätt i en ny påse först';
+      const sort = I.def(c.target).sort;
+      if (sort && sort !== 'rest' && LIFE.rules.strictSorting) return 'Damm ska slängas i restavfall';
+      if (c.target.amount + 1 > (I.def(c.target).capacity ?? 10) + 1e-6) return I.def(c.target).fullText ?? 'Restavfallspåsen är full';
+      return null;
+    },
+    run: (c) => {
+      const vac = c.heldView?.isVacuum ? c.heldView : heldItem();
+      const bin = c.target;
+      vac.emptyIntoBin?.(bin);
+      I.add(bin, 1);
+      sfx.rustle?.(c.targetView?.where());
+      sfx.vacuumSlurp?.(c.targetView?.where());
+      badge('Dammsugaren tömd', false);
+      life.emit('emptyVacuum', { into: bin.id });
+    },
+    consumes: "the vacuum's dust", result: 'dust moved into the bin, vacuum empty',
   });
   // the drop-off (#387): only a rubbish bag, in its own category's container; gone for good, counted once
   A.define({

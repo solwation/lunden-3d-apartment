@@ -308,6 +308,14 @@
     #jetpack.hot .bar i { background: #e5484d; }
     #jetpack.cut { animation: turbo-blink .35s steps(2) infinite; }
     #jetpack.cut::after { content: 'För varm!'; font-weight: 700; color: #ffb3b3; }
+    /* the vacuum cleaner (#391): dust cup fill bar under the score while held */
+    #vacuum-hud { position: fixed; left: calc(16px + var(--sl)); top: calc(50px + var(--st)); display: flex; align-items: center; gap: 6px; background: rgba(20, 35, 45, 0.45); color: #fff; padding: 4px 10px; border-radius: 8px; font-size: 13px; pointer-events: none; }
+    body.touch #vacuum-hud { top: calc(94px + var(--st)); }
+    #vacuum-hud[hidden] { display: none; }
+    #vacuum-hud .bar { width: 80px; height: 6px; background: rgba(255,255,255,.3); border-radius: 3px; overflow: hidden; }
+    #vacuum-hud .bar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #7a4fa0, #c080ff); }
+    #vacuum-hud.full .bar i { background: #e5484d; }
+    #vacuum-hud.full::after { content: 'Full!'; font-weight: 700; color: #ffb3b3; }
     #jet-glow { position: fixed; left: 0; right: 0; bottom: 0; height: 22vh; z-index: 2; pointer-events: none; opacity: 0; background: radial-gradient(ellipse 60% 100% at 50% 100%, rgba(255, 150, 40, .55), rgba(255, 80, 20, .18) 55%, transparent 80%); }
     #jet-up, #jet-down { position: fixed; right: calc(178px + var(--sr)); width: 48px; height: 48px; border: 0; border-radius: 50%; background: var(--panel); font-size: 22px; touch-action: none; user-select: none; -webkit-user-select: none; }
     #jet-up { bottom: calc(160px + var(--sb)); }
@@ -726,6 +734,7 @@
     <button id="turn-btn" class="touch-only" hidden aria-label="Vrid">⟳</button>
     <button id="stand-btn" class="touch-only" hidden>Res dig</button>
     <div id="jetpack" hidden title="Jetpacken: värme">🚀<span class="bar"><i></i></span></div>
+    <div id="vacuum-hud" hidden title="Dammsugaren: dammbehållare">🧹<span class="bar"><i></i></span></div>
     <div id="jet-glow" aria-hidden="true"></div>
     <button id="jet-up" class="touch-only" hidden aria-label="Jetpack: upp">⬆</button>
     <button id="jet-down" class="touch-only" hidden aria-label="Jetpack: ner">⬇</button>

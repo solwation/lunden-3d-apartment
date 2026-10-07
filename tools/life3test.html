@@ -221,6 +221,7 @@ if (want(390)) try {
   check(mess.spots.includes(crumbFloor1), 'mess on upper floor is not taken from lower floor');
 
   // Clear remaining crumbs in living room to test clean room
+  vac.dustAmount = 0; // empty vacuum so container limit doesn't prevent vacuuming
   P.spawn(1.32, 9.65, 0);
   for (let i = 0; i < 40; i++) step(1 / 60);
   check(mess.total({ room: 'Vardagsrum' }) === 0, 'living room mess cleared');
@@ -245,8 +246,70 @@ if (want(390)) try {
   f.remove();
 } catch (e) { pass = false; lines.push(`FAIL #390 error ${e.stack}`); }
 
+// --- #391: empty vacuum cleaner and wipe worktop with dishcloth --------------------------------------
+if (want(391)) try {
+  const f = await load('life&shot');
+  const K = kit(f), { A, step, V, settle } = K;
+  const vac = A.vacuum, mess = A.life.mess, cloth = A.cloth;
+  check(vac && cloth, 'vacuum and cloth available');
+
+  // 1. Vacuum dust accumulation and full notification
+  vac.dustAmount = 0.95;
+  check(!vac.isFull(), 'vacuum not full yet');
+  vac.dustAmount = 1.0;
+  check(vac.isFull(), 'vacuum is full at capacity');
+
+  // Test emptyIntoBin
+  const I = A.life.items;
+  const bins = [...A.life.views.values()].filter((v) => I.has(v.item, 'bin'));
+  const restBin = bins.find((b) => I.def(b.item).sort === 'rest') || bins[0];
+  check(restBin, 'rest wastebin found');
+  const prevBinAmount = restBin.item.amount;
+  vac.emptyIntoBin(restBin.item);
+  I.add(restBin.item, 1);
+  check(vac.dustAmount === 0, 'emptyIntoBin empties vacuum to 0');
+  check(restBin.item.amount > prevBinAmount, 'bin amount increased after emptying vacuum');
+
+  // 2. Cloth wipes and dirty limit
+  cloth.take();
+  check(cloth.held, 'cloth is held');
+  check(cloth.useLabel === 'Torka', 'cloth useLabel is Torka');
+  cloth.mess = mess;
+
+  // Add worktop crumbs
+  mess.clear();
+  const c1 = mess.add('crumb', 4.3, 0.9, 2.6, { surf: 'counter', amt: 0.5, room: 'Kök / matplats' });
+  check(mess.count() === 1, 'mess added on counter');
+
+  // Wipe worktop
+  cloth.wipe({ x: 4.3, y: 0.9, z: 2.6 });
+  check(cloth.wipes === 1, 'cloth wipe count incremented');
+  check(mess.count() === 0, 'crumbs wiped away by cloth');
+
+  // Wipe up to limit
+  for (let i = cloth.wipes; i < cloth.maxWipes; i++) {
+    cloth.wipe({ x: 4.3, y: 0.9, z: 2.6 });
+  }
+  check(cloth.dirty, 'cloth becomes dirty after maxWipes');
+  check(cloth.wipe({ x: 4.3, y: 0.9, z: 2.6 }) === false, 'dirty cloth refuses to wipe');
+
+  // Rinse at running tap
+  const kitchenTap = A.taps.find((t) => t.name?.toLowerCase().includes('kök') || t.object?.position.x > 3.5) || A.taps[0];
+  check(kitchenTap, 'kitchen tap found');
+  kitchenTap.toggle(); // turn tap on
+  settle(kitchenTap);
+  check(kitchenTap.isOpen, 'kitchen tap is running');
+
+  cloth.rinse();
+  check(!cloth.dirty && cloth.wipes === 0, 'cloth is clean after rinse');
+
+  cloth.putBack();
+  f.remove();
+} catch (e) { pass = false; lines.push(`FAIL #391 error ${e.stack}`); }
+
 lines.push(pass ? 'ALL PASS' : 'SOME FAILED');
 out.textContent = lines.join('\n');
 </script>
 </body>
 </html>
+

@@ -202,6 +202,9 @@ export class Vacuum extends Holdable {
     this.hadMessRooms = new Set();
     this.sound = null;
     this.lastHeadPos = null;
+    this.dustAmount = 0;
+    this.dustCapacity = 1.0;
+    this.fullNotified = false;
 
     const self = this;
     // Overwrite blocked check on takeTarget & backTarget to ensure Klk door must be open
@@ -251,14 +254,36 @@ export class Vacuum extends Holdable {
     return !this.held && !this.placed;
   }
 
+  isFull() {
+    return this.dustAmount >= this.dustCapacity;
+  }
+
+  updateHud() {
+    const el = document.getElementById('vacuum-hud');
+    if (!el) return;
+    el.hidden = !this.held;
+    const pct = Math.min(100, Math.round(this.dustAmount / this.dustCapacity * 100));
+    const i = el.querySelector('i');
+    if (i) i.style.width = `${pct}%`;
+    el.classList.toggle('full', this.dustAmount >= this.dustCapacity);
+  }
+
+  emptyIntoBin(bin) {
+    this.dustAmount = 0;
+    this.fullNotified = false;
+    this.updateHud();
+  }
+
   onTake() {
     this.led.visible = false;
+    this.updateHud();
     sfx.click?.(this.where());
   }
 
   onPut() {
     this.stopRunning();
     this.led.visible = false;
+    this.updateHud();
     sfx.click?.(this.where());
   }
 
@@ -346,20 +371,35 @@ export class Vacuum extends Holdable {
 
       // Pick up crumbs and dust within working radius (~0.35m)
       if (this.mess) {
-        const res = this.mess.take(headPos.x, headPos.z, 0.35, {
-          level,
-          kinds: ['crumb', 'dust'],
-          ok: (spot) => {
-            if (spot.surf !== 'floor') return false;
-            return !segs.some((sg) => crosses(headPos.x, headPos.z, spot.x, spot.z, sg));
-          },
-        });
+        if (this.dustAmount >= this.dustCapacity) {
+          if (!this.fullNotified) {
+            badge('Dammbehållaren är full', false);
+            this.fullNotified = true;
+          }
+        } else {
+          const capLeft = this.dustCapacity - this.dustAmount;
+          const res = this.mess.take(headPos.x, headPos.z, 0.35, {
+            level,
+            rate: capLeft,
+            kinds: ['crumb', 'dust'],
+            ok: (spot) => {
+              if (spot.surf !== 'floor') return false;
+              return !segs.some((sg) => crosses(headPos.x, headPos.z, spot.x, spot.z, sg));
+            },
+          });
 
-        if (res && res.amount > 0) {
-          sfx.vacuumSlurp?.(headPos);
-          this.slurpParticles?.burst(headPos);
-          for (const s of res.spots) {
-            if (s.room) this.hadMessRooms.add(`${level}:${s.room}`);
+          if (res && res.amount > 0) {
+            this.dustAmount = Math.min(this.dustCapacity, this.dustAmount + res.amount);
+            this.updateHud();
+            if (this.dustAmount >= this.dustCapacity && !this.fullNotified) {
+              badge('Dammbehållaren är full', false);
+              this.fullNotified = true;
+            }
+            sfx.vacuumSlurp?.(headPos);
+            this.slurpParticles?.burst(headPos);
+            for (const s of res.spots) {
+              if (s.room) this.hadMessRooms.add(`${level}:${s.room}`);
+            }
           }
         }
 

@@ -235,7 +235,7 @@ export class Life {
   interrupt(why) { this.runner.interrupt(why); }
 
   /** The E targets: every item not in the hand. */
-  targets() { const out = [...(this.storeTargets ?? [])], holding = !!this.items.held() || !!heldItem()?.wasteKind; for (const v of this.views.values()) if (!v.held && (holding || !this.items.has(v.item, 'fixed') || v.item.amount > 0 || v.item.machine.nobag)) out.push(v.target); return out; } // (#386: a bin with something in it / no bag: tie it up, a new bag) // + the stores' boxes (#369; they raycast only while a life item is held); a bin only with something in the hand (#381)
+  targets() { const out = [...(this.storeTargets ?? [])], holding = !!this.items.held() || !!heldItem()?.wasteKind || !!heldItem()?.isVacuum; for (const v of this.views.values()) if (!v.held && (holding || !this.items.has(v.item, 'fixed') || v.item.amount > 0 || v.item.machine.nobag)) out.push(v.target); return out; } // (#386: a bin with something in it / no bag: tie it up, a new bag) // + the stores' boxes (#369; they raycast only while a life item is held); a bin only with something in the hand (#381)
 
   update(dt) {
     for (const v of this.views.values()) v.update(dt);

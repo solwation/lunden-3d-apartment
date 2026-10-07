@@ -59,6 +59,7 @@ import { ToiletPaper } from './toiletpaper.js';
 import { AirFryer } from './airfryer.js';
 import { buildFries } from './fries.js';
 import { Vacuum } from './vacuum.js';
+import { Cloth } from './cloth.js';
 import { buildCoffeeJar } from './coffeejar.js';
 import { FruitBowl } from './fruit.js';
 import { Drawing } from './drawing.js';
@@ -390,6 +391,10 @@ const inFlatPlay = () => !player.below && !player.inCore && !player.aloft;
 const mess = life.mess = new Mess({ group: life.group, surfaces: world.cupSurfaces, roomAt: world.roomAt, walls: (l) => world.levels[l]?.wallSegments ?? [],
   isFree: (x, z, l, m) => inFlatPlay() && player.isFree(x, z, l, m), nearestFree: (x, z, l) => (inFlatPlay() ? player.nearestFree(x, z, l) : null) });
 vacuum.mess = mess; vacuum.player = player; vacuum.sonos = sonos;
+const cloth = new Cloth(scene, camera, world, taps); // the dishcloth by the kitchen sink (#391)
+cloth.mess = mess;
+holdables.push(cloth);
+world.looseItems.push(cloth.model);
 if (params0.get('mess') === '0') LIFE.rules.mess = false; // free play: no automatic mess
 life.onEvent((kind, d) => { if (kind === 'crumbs') mess.fromEvent(d); });
 life.keepPart('mess', { save: () => mess.save(), load: (v) => mess.load(v) });
@@ -1217,6 +1222,7 @@ function use(thing) {
   else if (thing.kind === 'airfry') thing.item.airfryHeld(); // a fish finger into the air fryer's basket (#287)
   else if (thing.kind === 'pourfries') thing.toggle(); // fries from the bag into the air fryer's basket (#301)
   else if (thing.kind === 'coffeejar' || thing.kind === 'mocca') thing.toggle(); // the coffee jar's scoop, the jug's water, the filter (#334)
+  else if (thing.kind === 'wipe') thing.cloth.wipe(thing.point);
   else if (thing.kind === 'saber' || thing.kind === 'holdable' || thing.kind === 'cup') thing.toggle();
   else if (thing.kind === 'place') thing.item.placeAt(thing.point, thing.yaw); // (as the ghost showed it, #368)
   else if (thing.kind === 'fry') thing.item.intoPan(); // the chicken into the pan on the hob (#160)
@@ -1495,8 +1501,19 @@ function updateFocus() {
     if (spot && item.isVacuum && (!player.crouch || item.running)) {
       spot = null; // in vacuum mode, walking cleans the floor; crouch to place down (#390)
     }
-    const lifeAim = (focused?.kind === 'life' || (focused?.kind === 'tap' && (life.items.held() || heldItem()?.isCup))) && (!!focused.options?.().some((a) => !a.reason) || !!focused.store); // (#382: a glass at the tap) // a plate it can go on (#367): that, not the table under it
-    if (spot && !lifeAim && (!hit || spot.distance <= hit.distance + 0.05)) {
+    const lifeAim = (focused?.kind === 'life' || (focused?.kind === 'tap' && (life.items.held() || heldItem()?.isCup || heldItem()?.isCloth))) && (!!focused.options?.().some((a) => !a.reason) || !!focused.store); // (#382: a glass at the tap, #391: rinse cloth) // a plate it can go on (#367): that, not the table under it
+    if (item?.isCloth && top && spot && !lifeAim) {
+      focused = {
+        name: top.object.userData.counter ? 'köksbänken' : (top.object.userData.name ?? 'bordet'),
+        kind: 'wipe',
+        verb: 'torka',
+        cloth,
+        point: spot.point,
+        blocked: cloth.dirty,
+        blockedText: 'Disktrasan är smutsig – skölj den vid kranen först',
+      };
+      placeGhost.visible = false;
+    } else if (spot && !lifeAim && (!hit || spot.distance <= hit.distance + 0.05)) {
       snapSpot(spot, top && spot.point.y > LEVELS[Math.max(0, player.level)].floor + 0.05 ? top.object : null); // on a grid (#368)
       placeTarget = { name: `${item.name} här`, kind: 'place', verb: item.placeVerb ?? 'lägga ner', item, point: spot.point, yaw: placeYaw() };
       focused = placeTarget;
@@ -2130,4 +2147,4 @@ document.documentElement.classList.remove('resuming'); // the page is ready: off
 hideLoading();
 
 // handle for tests/debugging (tools/touchtest.html, tools/perfcount.html)
-window.__app = { dynRes, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, toaster, life, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, coffeeJar, miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio, vacuum, BREEDS, VARIANTS };
+window.__app = { dynRes, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, toaster, life, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, coffeeJar, miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS };

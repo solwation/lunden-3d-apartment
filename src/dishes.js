@@ -1,6 +1,7 @@
 import { LIFE } from './config.js';
 import { sfx } from './audio.js';
 import { drinkName } from './drinks.js';
+import { heldItem } from './holdable.js';
 
 // The life simulator's drinks and dishes (epic #364, milestone M2): one action definition per step (actions.js), like the
 // kitchen work in cooking.js.
@@ -133,6 +134,37 @@ export function dishActions(life) {
     done: (c, job) => { const v = c.heldView; if (job.base && v?.held) { v.model.position.copy(job.base); v.model.rotation.copy(job.rot); } },
     cancel: (c, job) => { const v = c.heldView; if (job.base && v?.held) { v.model.position.copy(job.base); v.model.rotation.copy(job.rot); } },
     consumes: 'nothing', result: 'the thing clean (its crumbs and butter gone)',
+  });
+
+  // rinse the dishcloth at the running tap (#391, LIFE-027)
+  A.define({
+    id: 'rinseCloth', order: 1, duration: 1.0,
+    label: 'skölja disktrasan',
+    applies: (c) => isWashTap(c.raw) && (!!c.heldView?.isCloth || !!heldItem()?.isCloth),
+    check: (c) => (!c.raw.isOpen ? 'Sätt på kranen först' : null),
+    run: (c) => {
+      const cloth = c.heldView?.isCloth ? c.heldView : heldItem();
+      cloth?.rinse();
+    },
+    consumes: 'nothing', result: 'the dishcloth is clean and rinsed',
+  });
+
+  // wipe the worktop or table with the dishcloth (#391, LIFE-027)
+  A.define({
+    id: 'wipeWorktop', order: 0,
+    label: (c) => `torka ${c.targetView?.name ?? 'bänken'} med disktrasan`,
+    applies: (c) => (!!c.heldView?.isCloth || !!heldItem()?.isCloth) && (!!c.targetView?.userData?.surface || !!c.targetView?.userData?.counter || !!c.targetView?.userData?.worktop || c.target === 'worktop' || c.target === 'table'),
+    check: (c) => {
+      const cloth = c.heldView?.isCloth ? c.heldView : heldItem();
+      if (cloth?.dirty) return 'Disktrasan är smutsig – skölj den vid kranen först';
+      return null;
+    },
+    run: (c) => {
+      const cloth = c.heldView?.isCloth ? c.heldView : heldItem();
+      const p = c.targetView?.where?.() ?? c.targetView?.position;
+      cloth?.wipe(p);
+    },
+    consumes: 'nothing', result: 'crumbs and smears wiped, cloth gets dirty',
   });
 
   // scraping a plate into the open bin (#383): its food and crumbs go in, it stays dirty
