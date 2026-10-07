@@ -918,6 +918,21 @@ if (params.has('clip')) renderer.clippingPlanes = [new THREE.Plane(new THREE.Vec
 const canvas = renderer.domElement;
 const stickEl = document.getElementById('stick');
 let locked = false;
+export const isPhoneDevice = () => document.body?.classList?.contains('phone')
+  || (window.matchMedia?.('(pointer: coarse) and (hover: none)').matches ?? false)
+  || /Mobi|Android.*Mobile|iPhone|iPod/i.test(navigator.userAgent)
+  || (typeof location !== 'undefined' && /[?&]phone\b/.test(location.search));
+let activeMode = isPhoneDevice() ? 'touch' : null;
+let lastPointerType = 'mouse';
+window.addEventListener('pointerdown', (e) => {
+  lastPointerType = e.pointerType;
+  if (e.pointerType === 'touch' && isPhoneDevice() && !touch.enabled && !locked && overlay.hidden) {
+    activeMode = 'touch';
+    touch.enabled = true;
+    document.body.classList.add('touch');
+    if (armEl) armEl.hidden = true;
+  }
+}, { capture: true, passive: true });
 const touch = setupTouch({ onLook: (dx, dy) => look(dx * 0.005, dy * 0.005) });
 const active = () => locked || touch.enabled;
 
@@ -965,6 +980,7 @@ function showOverlay(show) {
 // Explicit choice on the start screen — a Surface has both a touchscreen and a keyboard.
 let startClickAt = -1e9, lockRetried = false;
 function startMouse() {
+  activeMode = 'mouse';
   initAudio();
   startClickAt = performance.now(); lockRetried = false;
   canvas.requestPointerLock()?.catch?.(() => {}); // a refusal also fires pointerlockerror (handled below)
@@ -988,17 +1004,40 @@ document.addEventListener('keydown', (e) => {
   overlay.hidden = true;
   armEl.hidden = false;
 });
-armEl.addEventListener('click', () => { armEl.hidden = true; startMouse(); });
+armEl.addEventListener('click', (e) => {
+  if (isPhoneDevice() || lastPointerType === 'touch' || e.pointerType === 'touch') {
+    armEl.hidden = true;
+    document.getElementById('start-touch')?.click();
+    return;
+  }
+  armEl.hidden = true;
+  startMouse();
+});
+const armTouchBtn = document.getElementById('arm-touch');
+if (armTouchBtn) {
+  armTouchBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    armEl.hidden = true;
+    document.getElementById('start-touch')?.click();
+  });
+}
 // refused (Chrome wants ~1 s between freeing the mouse and taking it again): try once more while the click
 // still counts as a gesture, else the game shows and the next click takes the mouse — never back to the start
 // screen, never a box to click (#190)
 document.addEventListener('pointerlockerror', () => {
+  if (isPhoneDevice()) {
+    armEl.hidden = true;
+    document.getElementById('start-touch')?.click();
+    return;
+  }
   if (!lockRetried && performance.now() - startClickAt < 4000) { lockRetried = true; setTimeout(() => canvas.requestPointerLock()?.catch?.(() => {}), 1100); }
   showOverlay(false); armEl.hidden = false;
 });
 document.getElementById('start-touch').addEventListener('click', () => {
+  activeMode = 'touch';
   initAudio();
   touch.enabled = true;
+  armEl.hidden = true;
   // fullscreen first: orientation.lock only works there (Android); iOS gets the rotate hint
   document.documentElement.requestFullscreen?.()
     .then(() => screen.orientation?.lock?.('landscape'))
@@ -2107,7 +2146,7 @@ function onTap(el, fn) {
 /** Where the visitor is, for a reload: place, view, mute, mode (none = still on the first start screen), the build. */
 const placeNow = () => ({ x: player.pos.x, z: player.pos.z, feetY: player.pos.y, yaw: camera.rotation.y, pitch: camera.rotation.x,
   hour: day.hour, month: day.month, muted: isMuted(), fullscreen: !!document.fullscreenElement, build: BUILD,
-  mode: locked ? 'mouse' : touch.enabled ? 'touch' : (!armEl.hidden || played) ? 'mouse' : undefined });
+  mode: isPhoneDevice() ? 'touch' : (activeMode ?? (touch.enabled ? 'touch' : locked ? 'mouse' : (!armEl.hidden || played) ? 'mouse' : undefined)) });
 // F5 carries on (#203): the place goes to this tab's sessionStorage every 2 s and when the page goes away
 const keepSession = () => { if (played && !resetHome.going) saveSession(placeNow()); };
 setInterval(keepSession, 2000);
@@ -2253,7 +2292,10 @@ function continueAfterReload(r) {
     setTimeout(() => { fadeEl.hidden = true; }, 900);
   }
   if (r.muted && !isMuted()) updateMute(toggleMuted());
-  if (r.mode === 'touch') {
+  const useTouch = isPhoneDevice() || r.mode === 'touch';
+  if (useTouch) {
+    armEl.hidden = true;
+    activeMode = 'touch';
     touch.enabled = true;
     showOverlay(false);
     window.addEventListener('pointerdown', () => {
@@ -2261,6 +2303,7 @@ function continueAfterReload(r) {
       if (r.fullscreen) document.documentElement.requestFullscreen?.().then(() => screen.orientation?.lock?.('landscape')).catch(() => {});
     }, { once: true, capture: true });
   } else {
+    activeMode = 'mouse';
     overlay.hidden = true;
     armEl.hidden = false; // the next click takes the mouse (pointer lock needs a gesture)
   }
@@ -2282,4 +2325,4 @@ document.documentElement.classList.remove('resuming'); // the page is ready: off
 hideLoading();
 
 // handle for tests/debugging (tools/touchtest.html, tools/perfcount.html)
-window.__app = { rearrange, showTerminal, dynRes, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, toaster, life, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS };
+window.__app = { isPhoneDevice, get activeMode() { return activeMode; }, set activeMode(v) { activeMode = v; }, rearrange, showTerminal, dynRes, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, toaster, life, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS };

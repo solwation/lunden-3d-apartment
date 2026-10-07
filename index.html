@@ -50,7 +50,9 @@
     #fade[hidden] { display: none; }
     #arm { position: fixed; inset: 0; cursor: pointer; background: transparent; }
     #arm[hidden] { display: none; }
-    #arm div { position: absolute; left: 50%; bottom: calc(26px + var(--sb)); transform: translateX(-50%); background: rgba(20, 35, 45, 0.55); color: #fff; padding: 6px 14px; border-radius: 16px; font: 500 13px system-ui, sans-serif; white-space: nowrap; pointer-events: none; }
+    #arm div { position: absolute; left: 50%; bottom: calc(26px + var(--sb)); transform: translateX(-50%); background: rgba(20, 35, 45, 0.55); color: #fff; padding: 6px 14px; border-radius: 16px; font: 500 13px system-ui, sans-serif; white-space: nowrap; pointer-events: none; display: inline-flex; align-items: center; gap: 8px; }
+    #arm .arm-switch-btn { pointer-events: auto; background: var(--accent); color: #fff; border: 0; border-radius: 10px; padding: 2px 8px; font: 600 12px system-ui, sans-serif; cursor: pointer; }
+    body.phone #arm .arm-label { display: none; }
     .card { background: var(--panel); padding: 28px 32px; border-radius: 10px; max-width: 420px; box-shadow: 0 10px 40px rgba(0,0,0,.25); }
     .card h1 { margin: 0 0 2px; font-size: 26px; }
     .card .kicker { color: var(--accent); font-weight: 700; font-size: 13px; letter-spacing: .05em; }
@@ -642,7 +644,7 @@
       </div>
     </div>
   </div>
-  <div id="arm" hidden role="button"><div>Klicka för att styra med musen</div></div>
+  <div id="arm" hidden role="button"><div><span class="arm-label">Klicka för att styra med musen</span> <button type="button" id="arm-touch" class="arm-switch-btn" aria-label="Byt till touchkontroller">Touch</button></div></div>
   <div id="rotate" role="alert">
     <div>
       <span class="ico">📱</span>
