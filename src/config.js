@@ -175,31 +175,32 @@ export const BLINDS = {
 // `tile` = m of fabric per pattern repeat. Our picks / *guess* unless noted. `dim` = the room's daylight a fully drawn
 // pair takes (less than the blackout blind); `glow` = the teal emissive by day (a little light through the cotton), lamp =
 // from a lit room. `speed` m/s of the east panel's leading edge while A / D are held (the west one keeps pace: same share).
+// `rail` = side-wall inner faces at the track, from data/plan.json (#468); cloth stops may sit inward of these.
 export const CURTAINS = [
   // Sovrum 1 (Sarah & Olof, L1 North): Jungle-print teal cotton panels
-  { level: 1, room: 'Sovrum 1', facade: 'north', theme: 'jungle', west: 2.71, stop: 2.72, meet: 3.855, east: 5.32, z: 0.6, glass: [3.15, 4.56], stack: 0.22,
+  { level: 1, room: 'Sovrum 1', facade: 'north', theme: 'jungle', rail: [2.7017, 5.5514], west: 2.71, stop: 2.72, meet: 3.855, east: 5.32, z: 0.6, glass: [3.15, 4.56], stack: 0.22,
     top: 2.36, drop: 0.015, fullness: 1.4, amp: 0.028, tile: 0.7, speed: 0.38, dim: 0.4,
     colors: { ground: '#2f7c86', track: 0xf3f2ee, glow: 0x3fa3ad, warm: 0xffc27a }, glow: { day: 0.18, lamp: 0.08 } },
   // Sovrum 2 (Walter & Kian, L1 South): Star Wars / gaming sci-fi motif on dark navy
-  { level: 1, room: 'Sovrum 2', facade: 'south', theme: 'starwars', west: 2.77, stop: 2.78, meet: 3.85, east: 5.53, z: 12.12, glass: [3.22, 4.47], stack: 0.22,
+  { level: 1, room: 'Sovrum 2', facade: 'south', theme: 'starwars', rail: [2.7517, 5.5514], west: 2.77, stop: 2.78, meet: 3.85, east: 5.53, z: 12.12, glass: [3.22, 4.47], stack: 0.22,
     top: 2.76, drop: 0.02, fullness: 1.4, amp: 0.028, tile: 0.65, speed: 0.38, dim: 0.4,
     colors: { ground: '#141a29', track: 0xf3f2ee, glow: 0x223254, warm: 0xffc27a }, glow: { day: 0.15, lamp: 0.07 } },
   // Sovrum 3 (Livia & Tuva, L1 North): Unicorn / pastel rainbow theme on soft cream
-  { level: 1, room: 'Sovrum 3', facade: 'north', theme: 'unicorn', west: 0.90, stop: 0.92, meet: 1.80, east: 2.59, z: 0.58, glass: [1.25, 2.34], stack: 0.22,
+  { level: 1, room: 'Sovrum 3', facade: 'north', theme: 'unicorn', rail: [0.202, 2.6067], west: 0.90, stop: 0.92, meet: 1.80, east: 2.59, z: 0.58, glass: [1.25, 2.34], stack: 0.22,
     top: 2.36, drop: 0.015, fullness: 1.4, amp: 0.028, tile: 0.6, speed: 0.38, dim: 0.35,
     colors: { ground: '#fdf6fa', track: 0xf3f2ee, glow: 0xffeef7, warm: 0xffc27a }, glow: { day: 0.22, lamp: 0.09 } },
   // Sovrum 4 (Tilly, L1 South): K-pop & dark violet/lilac theme
-  { level: 1, room: 'Sovrum 4', facade: 'south', theme: 'kpop', west: 0.22, stop: 0.23, meet: 1.45, east: 2.61, z: 12.12, glass: [0.72, 2.19], stack: 0.22,
+  { level: 1, room: 'Sovrum 4', facade: 'south', theme: 'kpop', rail: [0.202, 2.6317], west: 0.22, stop: 0.23, meet: 1.45, east: 2.61, z: 12.12, glass: [0.72, 2.19], stack: 0.22,
     top: 2.76, drop: 0.02, fullness: 1.4, amp: 0.028, tile: 0.6, speed: 0.38, dim: 0.4,
     colors: { ground: '#201826', track: 0xf3f2ee, glow: 0x3d2b4c, warm: 0xffc27a }, glow: { day: 0.15, lamp: 0.07 } },
   // Kök / matplats (#464): one 51 cm valance on the existing ceiling rail; length is a visual choice (*guess*).
-  { level: 0, room: 'Kök / matplats', facade: 'north', theme: 'linen_kitchen', style: 'valance', name: 'gardinkappan', initial: 1, west: 2.50, stop: 2.52, meet: 3.85, east: 4.90, z: 0.58, glass: [3.15, 4.56], stack: 0.22,
+  { level: 0, room: 'Kök / matplats', facade: 'north', theme: 'linen_kitchen', rail: [2.1516, 5.5512], style: 'valance', name: 'gardinkappan', initial: 1, west: 2.1516, stop: 2.17, meet: 3.85, east: 5.5312, z: 0.58, glass: [3.15, 4.56], stack: 0.22,
     top: 2.96, drop: 2.45, fullness: 1.4, amp: 0.028, tile: 0.6, speed: 0.38, dim: 0.03,
-    panels: [{ id: 'valance', from: 2.52, to: 4.90, park: 'left' }],
+    panels: [{ id: 'valance', from: 2.17, to: 5.5312, park: 'left' }],
     colors: { ground: '#ede7dc', track: 0xf3f2ee, glow: 0xf8f4ec, warm: 0xffc27a }, glow: { day: 0.22, lamp: 0.08 } },
   // Vardagsrum (#463): three olive panels, parked clear of door/window; rail spans the plan's inner faces x .2018–5.5512.
   // Splits/stack/fullness and colours are visual choices (*guess*), matching the olive/cream rug.
-  { level: 0, room: 'Vardagsrum', facade: 'south', theme: 'linen_living', west: 0.202, stop: 0.22, meet: 3.855, east: 5.531, z: 12.10, glass: [2.88, 4.81], stack: 0.22,
+  { level: 0, room: 'Vardagsrum', facade: 'south', theme: 'linen_kitchen', rail: [0.2018, 5.5512], west: 0.202, stop: 0.22, meet: 3.855, east: 5.531, z: 12.10, glass: [2.88, 4.81], stack: 0.22,
     top: 2.96, drop: 0.02, fullness: 1.4, amp: 0.028, tile: 0.7, speed: 0.38, dim: 0.35,
     panels: [{ id: 'west', from: 0.22, to: 2.15, park: 'left' }, { id: 'middle', from: 2.15, to: 3.855, park: 'left' }, { id: 'east', from: 3.855, to: 5.531, park: 'right' }],
     colors: { ground: '#657a38', track: 0xf3f2ee, glow: 0x91a85d, warm: 0xffc27a }, glow: { day: 0.20, lamp: 0.08 } },

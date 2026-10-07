@@ -157,12 +157,15 @@ async function run() {
     curt.set(0);
     check(curt.t === 0, `${curt.room} opens cleanly`);
   }
+  const wallFaces = [[2.7017, 5.5514], [2.7517, 5.5514], [0.202, 2.6067], [0.202, 2.6317], [2.1516, 5.5512], [0.2018, 5.5512]];
+  app.blinds.curtains.forEach((c, i) => check(c.spec.rail.every((x, side) => Math.abs(x - wallFaces[i][side]) < 0.001), `${c.room}: rail reaches both room walls`));
   const kitchen = app.blinds.curtains.find((c) => c.room === 'Kök / matplats');
   check(kitchen.panels.length === 1 && kitchen.name === 'gardinkappan', 'kitchen has one continuous valance');
   const hem = kitchen.panels[0].y0, top = kitchen.panels[0].y1;
   check(hem >= 2.4 && top - hem < 0.6 && Math.abs(top - 2.96) < 0.001, 'short valance hangs from original ceiling rail; window below stays free');
   kitchen.set(1);
   check(kitchen.panels[0].a === kitchen.spec.stop && kitchen.panels[0].b === kitchen.spec.east && kitchen.spec.dim < 0.05, 'spread valance covers rail width with only a small daylight cut');
+  check(kitchen.panels[0].a - kitchen.spec.rail[0] < 0.03 && kitchen.spec.rail[1] - kitchen.panels[0].b < 0.03, 'kitchen cloth reaches both side walls with end-stop clearance');
   kitchen.set(0.4); app.blinds.save();
   check(JSON.parse(w.localStorage.getItem('lunden.blinds'))[kitchen.id] === 0.4 && kitchen.id.endsWith('-valance'), 'valance position saves under its own key, independent of old long curtains');
   const living = app.blinds.curtains.find((c) => c.room === 'Vardagsrum');

@@ -539,7 +539,7 @@ export class Curtain {
     const sof = SOFFITS.find((o) => o.level === spec.level && spec.z > o.z0 && spec.z < o.z1 && spec.meet > o.x0 && spec.meet < o.x1);
     const yc = fl + (sof?.height ?? LEVELS[spec.level].ceiling); // the soffit's underside (RH 2.4) or ceiling
     const box = (x0, x1, ya, yb, z0, z1) => { const m = new THREE.Mesh(new THREE.BoxGeometry(x1 - x0, yb - ya, z1 - z0), trackMat); m.position.set((x0 + x1) / 2, (ya + yb) / 2, (z0 + z1) / 2); return m; };
-    const tx0 = spec.west, tx1 = spec.east + 0.02;
+    const [tx0, tx1] = spec.rail ?? [spec.west, spec.east + 0.02];
     statics.add(box(tx0, tx1, yc - 0.018, yc, spec.z - 0.012, spec.z + 0.012));
     statics.add(box(tx0, tx1, yc - 0.004, yc, spec.z - 0.02, spec.z + 0.02));
     statics.add(box(spec.stop - 0.012, spec.stop, yc - 0.03, yc - 0.018, spec.z - 0.01, spec.z + 0.01)); // west end stop

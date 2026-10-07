@@ -330,6 +330,7 @@ src/curtains.js        Sovrum 1's curtains (#342, CURTAINS): two floor-length te
                        #463: Vardagsrum has three olive panels on a wall-to-wall rail over the patio door too. Optional
                        CURTAINS.panels defines each closed span and parking side; cover sums the window overlap.
                        #464: kitchen valance is one short panel (hem 2.45 m), initially spread along the existing rail, dim 0.03.
+                       #468: every rail spans the room's side-wall faces (CURTAINS.rail, plan.json); kitchen cloth spans the full width too. Living-room fabric uses the kitchen's botanical motif on olive green.
                        Its '-valance' state id avoids inheriting the removed long curtains' position; subsequent positions save normally.
 src/lampwash.js        every lamp's light wherever the visitor is (#276, #294, #295, LIGHTING.wash): each pool anchor (small lamps
                        and ceiling lamps) lights the flat inside the lit materials' own shaders (`patch(scene)`: onBeforeCompile on
