@@ -6,7 +6,7 @@ Gå runt i lägenheten L1007 (Kv. Lunden, Peab) i webbläsaren som i ett FPS-spe
 
 **▶ Öppna: https://solwation.github.io/lunden-3d-apartment/**
 
-På köksbänken ligger en **uppdragslapp** med tre frivilliga vardagsuppdrag: gör en macka, återställ köket och städa efter mellanmålet. Delarna kan göras i valfri ordning och framstegen sparas. Tips går att stänga av; ett klart uppdrag ger 30 poäng första gången och 5 poäng när du väljer **Gör igen**. Tomma sopkärl behöver inte tömmas.
+På insidan av koppskåpets lucka i köket sitter en **uppdragslapp** med tre frivilliga vardagsuppdrag: gör en macka, återställ köket och städa efter mellanmålet. Delarna kan göras i valfri ordning och framstegen sparas. Tips går att stänga av; ett klart uppdrag ger 30 poäng första gången och 5 poäng när du väljer **Gör igen**. Tomma sopkärl behöver inte tömmas.
 
 När du håller ett föremål visar en vit kontur var det kan placeras eller lämnas tillbaka. Markeringen följer aktuella möbler och syns bara vid ett giltigt mål inom räckhåll.
 
@@ -96,3 +96,5 @@ Teckningar som tejpas upp och teckningen på skrivbordet kan delas mellan alla b
 Cloudflare Worker (kattfotona är personliga och stannar i webbläsaren) – slå på det med `./cloudflare/setup.sh` (se `cloudflare/README.md`).
 
 Mer om lägenheten: https://peabbostad.se/projekt/skane/kv.-lunden/l1007/
+
+Utvecklingsregler och läsanvisningar finns i [CLAUDE.md](CLAUDE.md). Därifrån når du ämnesfilerna i `docs/development/` för bland annat arkitektur, interaktioner, livssimulering, grafik, sparning, verifiering och drift.

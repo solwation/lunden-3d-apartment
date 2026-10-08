@@ -13,7 +13,7 @@ Implementera öppna GitHub-issues med subagenter (Agent-verktyget, `isolation: "
 issues inom området finns kvar. Nya issues dyker upp löpande — lista om varje gång en agent blir klar.
 
 ## Miljö (molnsession)
-- Ingen google-chrome: använd `/opt/pw-browsers/chromium --no-sandbox` med flaggorna i CLAUDE.md > Testing.
+- Ingen google-chrome: använd installerad Playwright Chromium med flaggorna i [verifieringsguiden](../../docs/development/verification.md).
 - cdn.jsdelivr.net är blockerad: servera med `python3 tools/devserve.py <port> <katalog>`. Varje agent har en egen port
   och serverar sin egen worktree.
 - `gh issue …` fungerar inte (GraphQL blockerat): använd `gh api` REST, t.ex.
@@ -61,7 +61,7 @@ Andra `/orkester`-sessioner kör på egna VM:ar och kan inte nås med SendMessag
 3. En commit per issue som slutar med `Fixes #N` (+ commit-trailers enligt sessionens attribuering). Pusha direkt:
    `git push origin HEAD:main`; vid avvisning rebasa igen och behåll båda sidor vid konflikt. Aldrig force-push.
 4. Changelog (bara synliga ändringar): precis före pushen id = högsta id + 1, överst i listan.
-5. Testa bara det ändringen rimligen påverkar (CLAUDE.md > Testing); listan i prompten är ett maxtak.
+5. Testa bara det ändringen rimligen påverkar ([verifieringsguiden](../../docs/development/verification.md)); listan i prompten är ett maxtak.
 6. Problem utanför den egna issuen → en ny issue `Bugg: …` med en `Lapp:`-rad, vad som felar, hur det återskapas och
    trolig orsak. Fixa inte i farten; gör klart den egna issuen.
 7. Frågor till användaren postas som kommentar på issuen; lämna den då öppen utan etikett och säg det i rapporten.
