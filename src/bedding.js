@@ -144,3 +144,10 @@ export function duvet(w, l, th, o = {}) {
   geo.computeVertexNormals();
   return geo;
 }
+
+// A vertex marker survives mergeStatic without keeping an extra rendered mesh (#555).
+// Every other geometry on this bed receives zero before merging.
+export function tagBedding(root,mesh,index=0){
+  const geo=mesh.geometry;geo.setAttribute('bedCare',new THREE.BufferAttribute(new Uint8Array(geo.attributes.position.count).fill(index+1),1));
+  root.userData.bedCareCount=Math.max(root.userData.bedCareCount??0,index+1);
+}

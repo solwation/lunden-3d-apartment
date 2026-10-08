@@ -16,6 +16,8 @@ Kranarna i kök, tvätt och båda badrummen styrs med blandarspaken: den lyfts n
 
 Markeringen av föremål är optimerad för att minska ryck när blicken flyttas.
 
+Täcken rufsas när du lägger dig i en säng. Res dig och sikta på sängen för att välja Bädda eller lägga dig igen; över- och underslafen sparas var för sig. Avbruten bäddning lämnar täcket rufsigt.
+
 Duka SKANSNÄS-bordet genom att bära ut tallrikar och dricksglas från skåpen och sikta på en av de sex dukplatserna. Varje plats rymmer en tallrik och ett glas; en upptagen plats behåller föremålet i handen. Dukning, mat på tallriken och vatten i glaset sparas mellan besöken.
 
 På tvättbänken står en vattenkanna. Fyll den vid en rinnande kran och sikta på en krukväxt för att vattna: jorden mörknar och fönsterväxternas blad reser sig. Varje växt får en dos; tom kanna, redan vattnad växt och konstväxt ger en förklaring. Kannans vatten och bevattningen sparas även när krukor flyttas.

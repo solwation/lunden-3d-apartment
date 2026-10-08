@@ -59,6 +59,7 @@ export class Rest {
     this.from = { pos: cam.position.clone(), yaw: cam.rotation.y, pitch: cam.rotation.x };
     const lim = REST[spot.kind];
     this.to = { yaw: spot.yaw, pitch: spot.kind === 'lie' ? lim.startPitch : 0 };
+    this.onBegin?.(target,spot);
   }
 
   end() {

@@ -1,0 +1,23 @@
+PASS double bed, daybed and both bunk berths have six independently marked care units
+PASS initial made beds preserve exact original merged positions and smooth normals
+PASS made bed explains why no repeated making is needed
+PASS made bed keeps its existing actual rest target reachable by touch
+PASS real touch lying rumples that bed through the normal rest lifecycle
+PASS making is refused while the visitor lies in the bed
+PASS lying visibly raises folds in the same merged duvet vertices
+PASS rumpling leaves frame, pillows and other berth positions unchanged
+PASS halfway making shows a preview without committing saved state
+PASS interruption restores exact rumpled geometry
+PASS rumpled bed exposes its actual make/lie choice target after standing
+PASS touch choice menu offers Bädda
+PASS double press cannot start another make job
+PASS completed touch making restores exact original cloth positions and smooth normals
+PASS sitting up does not rumple a freshly made bed
+PASS upper bunk rumples without changing lower bunk state or cloth
+PASS held item prevents making and stays in the hand
+PASS repeated lie/make cycles never accumulate geometry drift
+PASS actual reload preserves precise bed/berth ids and their separate rumpled states
+PASS new visit draws saved folds without putting the visitor into bed
+PASS bedding adds no inventory items or broken item invariants
+PASS actual home reset restores all beds to original made state
+ALL PASS

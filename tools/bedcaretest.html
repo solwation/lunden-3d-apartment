@@ -1,0 +1,46 @@
+<!doctype html><html lang="sv"><meta charset="utf-8"><title>Bed care test</title><pre id="out">running…</pre><script type="module">
+const lines=[];let pass=true;const check=(ok,text)=>{lines.push((ok?'PASS':'FAIL')+' '+text);pass&&=!!ok},wait=ms=>new Promise(r=>setTimeout(r,ms));
+try{
+ const f=document.createElement('iframe');f.width=480;f.height=300;document.body.append(f);
+ async function load(q){await new Promise(r=>{f.onload=r;f.src='../index.html?'+q});while(!f.contentWindow.__app)await wait(100);f.contentDocument.documentElement.requestFullscreen=undefined;f.contentDocument.getElementById('start-touch').click();const a=f.contentWindow.__app;a.renderer.setPixelRatio(.15);return a;}
+ let A=await load('life&shot&cloud='),L=A.life,B=A.bedCare;const T=await f.contentWindow.eval("import('three')"),{LIFE,BED_CARE:P,REST}=await f.contentWindow.eval("import('/src/config.js')");
+ const row=u=>L.options(u.target).find(a=>a.id==='makeBed'),run=u=>row(u)?.run(),finish=()=>L.runner.update(P.seconds);
+ check(B.units.length===6&&B.units.every(u=>u.made&&u.sections.length&&u.sections.every(s=>s.indices.length)),'double bed, daybed and both bunk berths have six independently marked care units');
+ check(B.units.every(u=>u.sections.every(s=>s.geo.attributes.position.array.every((v,i)=>v===s.base[i])&&s.geo.attributes.normal.array.every((v,i)=>v===s.norm[i]))),'initial made beds preserve exact original merged positions and smooth normals');
+ const u=B.units.find(u=>u.piece.item.type==='bed'),original=u.restTarget;
+ check(row(u)?.reason==='Sängen är redan bäddad'&&!run(u),'made bed explains why no repeated making is needed');
+ const point=original.spots[0].pos.clone().add(new T.Vector3(0,-REST.lieEye,.1));
+ function aim(point,target,feet=3.25){for(let k=0;k<20;k++){const a=k/20*Math.PI*2;A.player.spawn(point.x+Math.sin(a)*.8,point.z+Math.cos(a)*.8,0);A.player.pos.y=feet;A.player.eyeY=feet+1.62;A.step(0);A.camera.lookAt(point);A.camera.updateMatrixWorld(true);A.step(0);if(A.focus().focused===target)return true;}return false;}
+ check(aim(point,original),'made bed keeps its existing actual rest target reachable by touch');
+ if(A.focus().focused===original)f.contentDocument.getElementById('action').click();else A.use(original);
+ check(A.rest.active&&A.rest.kind==='lie'&&!u.made,'real touch lying rumples that bed through the normal rest lifecycle');
+ check(row(u)?.reason==='Res dig först'&&!run(u),'making is refused while the visitor lies in the bed');
+ check(u.sections.some(s=>s.indices.some(i=>s.geo.attributes.position.getY(i)!==s.base[i*3+1])),'lying visibly raises folds in the same merged duvet vertices');
+ check(u.sections.every(s=>Array.from(s.geo.attributes.bedCare.array).every((v,i)=>v===u.index+1||[0,1,2].every(k=>s.geo.attributes.position.array[i*3+k]===s.base[i*3+k]))),'rumpling leaves frame, pillows and other berth positions unchanged');
+ A.standUp();const fullRumpled=u.sections.map(s=>s.geo.attributes.position.array.slice());run(u);L.runner.update(P.seconds/2);
+ check(!u.made&&L.runner.busy&&u.sections.some((s,k)=>s.geo.attributes.position.array.some((v,i)=>v!==fullRumpled[k][i])),'halfway making shows a preview without committing saved state');L.runner.interrupt('test');
+ check(!u.made&&u.sections.every((s,k)=>s.geo.attributes.position.array.every((v,i)=>v===fullRumpled[k][i])),'interruption restores exact rumpled geometry');
+ check(aim(point,u.target),'rumpled bed exposes its actual make/lie choice target after standing');
+ const button=[...f.contentDocument.querySelectorAll('#choices button')].find(b=>/bädda/i.test(b.textContent));
+ check(!!button,'touch choice menu offers Bädda');if(button)button.click();else run(u);
+ check(!run(u),'double press cannot start another make job');finish();
+ check(u.made&&u.sections.every(s=>s.indices.every(i=>[0,1,2].every(k=>s.geo.attributes.position.array[i*3+k]===s.base[i*3+k]&&s.geo.attributes.normal.array[i*3+k]===s.norm[i*3+k]))),'completed touch making restores exact original cloth positions and smooth normals');
+ const stand=()=>({x:A.player.pos.x,y:A.player.pos.y,z:A.player.pos.z,yaw:0});
+ const sit=original.spots.find(s=>s.kind==='sit');A.rest.begin(original,sit,stand());A.rest.end();check(u.made,'sitting up does not rumple a freshly made bed');
+ const bunk=B.units.filter(u=>u.piece.item.type==='bunk').slice(0,2);A.rest.begin(bunk[1].restTarget,bunk[1].restTarget.spots[1],stand());A.rest.end();
+ check(!bunk[1].made&&bunk[0].made,'upper bunk rumples without changing lower bunk state or cloth');
+ const item=L.items.ofType('wateringCan')[0];L.view(item).take();check(row(bunk[1])?.reason==='Lägg ifrån dig det du håller'&&!run(bunk[1]),'held item prevents making and stays in the hand');L.view(item).putBack();
+ run(bunk[1]);finish();
+ for(let k=0;k<3;k++){A.rest.begin(original,original.spots[0],stand());A.rest.end();run(u);finish();}
+ check(u.made&&u.sections.every(s=>s.indices.every(i=>[0,1,2].every(k=>s.geo.attributes.position.array[i*3+k]===s.base[i*3+k]))),'repeated lie/make cycles never accumulate geometry drift');
+ const daybed=B.units.find(u=>u.piece.item.type==='daybed');A.rest.begin(daybed.restTarget,daybed.restTarget.spots[0],stand());A.rest.end();A.rest.begin(bunk[0].restTarget,bunk[0].restTarget.spots[0],stand());A.rest.end();
+ const rumpled=B.units.filter(u=>!u.made).map(u=>u.id),saved=L.serialize();f.contentWindow.localStorage.setItem(LIFE.save.key,JSON.stringify(saved));
+ A=await load('shot&cloud=&time=12');L=A.life;B=A.bedCare;
+ check(rumpled.length===2&&B.units.filter(u=>!u.made).length===2&&rumpled.every(id=>B.units.find(u=>u.id===id)?.made===false),'actual reload preserves precise bed/berth ids and their separate rumpled states');
+ check(!A.rest.active&&B.units.filter(u=>!u.made).every(u=>u.sections.some(s=>s.indices.some(i=>s.geo.attributes.position.getY(i)!==s.base[i*3+1]))),'new visit draws saved folds without putting the visitor into bed');
+ check(L.items.audit().length===0,'bedding adds no inventory items or broken item invariants');
+ A.resetHome.go=()=>{};A.resetHome.confirm();A=await load('shot&cloud=&time=12');
+ check(A.bedCare.units.every(u=>u.made),'actual home reset restores all beds to original made state');
+ document.getElementById('out').textContent=lines.join('\n')+'\n'+(pass?'ALL PASS':'SOME FAILED');
+}catch(e){document.getElementById('out').textContent=lines.join('\n')+'\nFAIL '+e.stack}
+</script></html>

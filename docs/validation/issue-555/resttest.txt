@@ -1,0 +1,134 @@
+ALL PASS
+PASS 31 seats/beds
+PASS #438: 12 courtyard benches, 56 spots
+PASS #453: 8 benches clear of 17 ways in
+PASS soffan #0 (sit): "Sätta dig i soffan" at spot true, no walking true, back up true
+PASS soffan #1 (sit): "Sätta dig i soffan" at spot true, no walking true, back up true
+PASS soffan #2 (sit): "Sätta dig i soffan" at spot true, no walking true, back up true
+PASS soffan #3 (sit): "Sätta dig i soffan" at spot true, no walking true, back up true
+PASS fåtöljen #0 (sit): "Sätta dig i fåtöljen" at spot true, no walking true, back up true
+PASS pallen #0 (sit): "Sätta dig på pallen" at spot true, no walking true, back up true
+PASS caféstolen #0 (sit): "Sätta dig på caféstolen" at spot true, no walking true, back up true
+PASS caféstolen #0 (sit): "Sätta dig på caféstolen" at spot true, no walking true, back up true
+PASS loungesoffan #0 (sit): "Sätta dig i loungesoffan" at spot true, no walking true, back up true
+PASS loungesoffan #1 (sit): "Sätta dig i loungesoffan" at spot true, no walking true, back up true
+PASS loungesoffan #2 (sit): "Sätta dig i loungesoffan" at spot true, no walking true, back up true
+PASS loungesoffan #3 (sit): "Sätta dig i loungesoffan" at spot true, no walking true, back up true
+PASS loungesoffan #4 (sit): "Sätta dig i loungesoffan" at spot true, no walking true, back up true
+PASS loungesoffan #5 (sit): "Sätta dig i loungesoffan" at spot true, no walking true, back up true
+PASS dynboxen #0 (sit): "Sätta dig på dynboxen" at spot true, no walking true, back up true
+PASS dynboxen #1 (sit): "Sätta dig på dynboxen" at spot true, no walking true, back up true
+PASS stolen #0 (sit): "Sätta dig på stolen" at spot true, no walking true, back up true
+PASS sängen #0 (lie): "Lägga dig i sängen" at spot true, looking up true, no walking true, back up true
+PASS sängen #1 (lie): "Lägga dig i sängen" at spot true, looking up true, no walking true, back up true
+PASS sängen #2 (sit): "Sätta dig upp i sängen" at spot true, no walking true, back up true
+PASS sängen #3 (sit): "Sätta dig upp i sängen" at spot true, no walking true, back up true
+PASS våningssängen #0 (lie): "Lägga dig i våningssängen" at spot true, looking up true, no walking true, back up true
+PASS våningssängen #1 (lie): "Lägga dig i våningssängen" at spot true, looking up true, no walking true, back up true
+PASS stolen #0 (sit): "Sätta dig på stolen" at spot true, no walking true, back up true
+PASS våningssängen #0 (lie): "Lägga dig i våningssängen" at spot true, looking up true, no walking true, back up true
+PASS våningssängen #1 (lie): "Lägga dig i våningssängen" at spot true, looking up true, no walking true, back up true
+PASS våningssängen #2 (sit): "Sätta dig i våningssängen" at spot true, no walking true, back up true
+PASS gamingstolen #0 (sit): "Sätta dig i gamingstolen" at spot true, no walking true, back up true
+PASS dagbädden #0 (lie): "Lägga dig i dagbädden" at spot true, looking up true, no walking true, back up true
+PASS pallen #0 (sit): "Sätta dig på pallen" at spot true, no walking true, back up true
+PASS stolen #0 (sit): "Sätta dig på stolen" at spot true, no walking true, back up true
+PASS stolen #0 (sit): "Sätta dig på stolen" at spot true, no walking true, back up true
+PASS stolen #0 (sit): "Sätta dig på stolen" at spot true, no walking true, back up true
+PASS stolen #0 (sit): "Sätta dig på stolen" at spot true, no walking true, back up true
+PASS bänken #0 (sit): "Sätta dig på bänken" at spot true, no walking true, back up true
+PASS bänken #1 (sit): "Sätta dig på bänken" at spot true, no walking true, back up true
+PASS bänken #2 (sit): "Sätta dig på bänken" at spot true, no walking true, back up true
+PASS bänken #3 (sit): "Sätta dig på bänken" at spot true, no walking true, back up true
+PASS bänken #4 (sit): "Sätta dig på bänken" at spot true, no walking true, back up true
+PASS bänken #5 (sit): "Sätta dig på bänken" at spot true, no walking true, back up true
+PASS bänken #6 (sit): "Sätta dig på bänken" at spot true, no walking true, back up true
+PASS bänken #7 (sit): "Sätta dig på bänken" at spot true, no walking true, back up true
+PASS bänken #8 (sit): "Sätta dig på bänken" at spot true, no walking true, back up true
+PASS bänken #9 (sit): "Sätta dig på bänken" at spot true, no walking true, back up true
+PASS bänken #0 (sit): "Sätta dig på bänken" at spot true, no walking true, back up true
+PASS bänken #1 (sit): "Sätta dig på bänken" at spot true, no walking true, back up true
+PASS bänken #2 (sit): "Sätta dig på bänken" at spot true, no walking true, back up true
+PASS bänken #3 (sit): "Sätta dig på bänken" at spot true, no walking true, back up true
+PASS bänken #4 (sit): "Sätta dig på bänken" at spot true, no walking true, back up true
+PASS bänken #5 (sit): "Sätta dig på bänken" at spot true, no walking true, back up true
+PASS bänken #6 (sit): "Sätta dig på bänken" at spot true, no walking true, back up true
+PASS bänken #7 (sit): "Sätta dig på bänken" at spot true, no walking true, back up true
+PASS bänken #8 (sit): "Sätta dig på bänken" at spot true, no walking true, back up true
+PASS bänken #9 (sit): "Sätta dig på bänken" at spot true, no walking true, back up true
+PASS bänken #0 (sit): "Sätta dig på bänken" at spot true, no walking true, back up true
+PASS bänken #1 (sit): "Sätta dig på bänken" at spot true, no walking true, back up true
+PASS bänken #2 (sit): "Sätta dig på bänken" at spot true, no walking true, back up true
+PASS bänken #3 (sit): "Sätta dig på bänken" at spot true, no walking true, back up true
+PASS bänken #4 (sit): "Sätta dig på bänken" at spot true, no walking true, back up true
+PASS bänken #5 (sit): "Sätta dig på bänken" at spot true, no walking true, back up true
+PASS bänken #0 (sit): "Sätta dig på bänken" at spot true, no walking true, back up true
+PASS bänken #1 (sit): "Sätta dig på bänken" at spot true, no walking true, back up true
+PASS bänken #2 (sit): "Sätta dig på bänken" at spot true, no walking true, back up true
+PASS bänken #3 (sit): "Sätta dig på bänken" at spot true, no walking true, back up true
+PASS bänken #4 (sit): "Sätta dig på bänken" at spot true, no walking true, back up true
+PASS bänken #5 (sit): "Sätta dig på bänken" at spot true, no walking true, back up true
+PASS bänken #0 (sit): "Sätta dig på bänken" at spot true, no walking true, back up true
+PASS bänken #1 (sit): "Sätta dig på bänken" at spot true, no walking true, back up true
+PASS bänken #2 (sit): "Sätta dig på bänken" at spot true, no walking true, back up true
+PASS bänken #0 (sit): "Sätta dig på bänken" at spot true, no walking true, back up true
+PASS bänken #1 (sit): "Sätta dig på bänken" at spot true, no walking true, back up true
+PASS bänken #2 (sit): "Sätta dig på bänken" at spot true, no walking true, back up true
+PASS bänken #0 (sit): "Sätta dig på bänken" at spot true, no walking true, back up true
+PASS bänken #1 (sit): "Sätta dig på bänken" at spot true, no walking true, back up true
+PASS bänken #2 (sit): "Sätta dig på bänken" at spot true, no walking true, back up true
+PASS bänken #0 (sit): "Sätta dig på bänken" at spot true, no walking true, back up true
+PASS bänken #1 (sit): "Sätta dig på bänken" at spot true, no walking true, back up true
+PASS bänken #2 (sit): "Sätta dig på bänken" at spot true, no walking true, back up true
+PASS bänken #0 (sit): "Sätta dig på bänken" at spot true, no walking true, back up true
+PASS bänken #1 (sit): "Sätta dig på bänken" at spot true, no walking true, back up true
+PASS bänken #2 (sit): "Sätta dig på bänken" at spot true, no walking true, back up true
+PASS bänken #0 (sit): "Sätta dig på bänken" at spot true, no walking true, back up true
+PASS bänken #1 (sit): "Sätta dig på bänken" at spot true, no walking true, back up true
+PASS bänken #2 (sit): "Sätta dig på bänken" at spot true, no walking true, back up true
+PASS bänken #0 (sit): "Sätta dig på bänken" at spot true, no walking true, back up true
+PASS bänken #1 (sit): "Sätta dig på bänken" at spot true, no walking true, back up true
+PASS bänken #2 (sit): "Sätta dig på bänken" at spot true, no walking true, back up true
+PASS bänken #0 (sit): "Sätta dig på bänken" at spot true, no walking true, back up true
+PASS bänken #1 (sit): "Sätta dig på bänken" at spot true, no walking true, back up true
+PASS bänken #2 (sit): "Sätta dig på bänken" at spot true, no walking true, back up true
+PASS sitting up in bed (other side): "Sätta dig upp i sängen", sat true, the TV on true and in view true, off again true
+PASS sitting up in bed (one side): "Sätta dig upp i sängen", sat true, the TV on true and in view true, off again true
+PASS sängen #0 (lie): the eye 10 cm over a surface
+PASS sängen #1 (lie): the eye 9 cm over a surface
+PASS sängen #2 (sit): the eye over nothing within 35 cm
+PASS sängen #3 (sit): the eye over nothing within 35 cm
+PASS våningssängen #0 (lie): the eye 16 cm over a surface
+PASS våningssängen #1 (lie): the eye 16 cm over a surface
+PASS våningssängen #0 (lie): the eye 16 cm over a surface
+PASS våningssängen #1 (lie): the eye 16 cm over a surface
+PASS dagbädden #0 (lie): the eye 22 cm over a surface
+PASS sängen at (4.5, 2.6): 21 of 6070 rays meet two surfaces within 1.5 mm
+PASS våningssängen at (0.7, 1.5): 0 of 3283 rays meet two surfaces within 1.5 mm
+PASS våningssängen at (5.0, 11.1): 0 of 3269 rays meet two surfaces within 1.5 mm
+PASS dagbädden at (0.7, 11.1): 0 of 2848 rays meet two surfaces within 1.5 mm
+PASS the IDANÄS frame's sides: 0 of 20045 rays meet two faces within 4 mm (drawer fronts, shadow lines, #402)
+PASS head turned 0.5 rad in the sofa: up looking the same way (yaw 0.50, pitch -0.20), 1.34 m in front
+PASS 43 furniture footprints downstairs
+PASS #302: 24 get-ups from the 4 dining chairs, all on free floor
+PASS #302: 540 / 540 get-ups (every seat and bed, ahead and turned, from behind) on free floor, able to walk away
+PASS #438: the sitter at (-3.4, 28.1): sat there with nobody on the lap true, then taken true, the look picks the spot beside it true
+PASS #438: 1 bench sitters
+PASS #445: the ottoman is a seat
+PASS #445: the cushion box: open = taken true, sat on the shut lid "Sätta dig på dynboxen", the lid no target then true
+PASS in the sofa (1.21 m from the remote): "Ta fjärrkontrollen", the "Res dig" button beside it
+PASS the remote in the hand, still sitting
+PASS a click: the TV comes on, from the sofa
+PASS up again (the button), the remote still in the hand
+PASS in the armchair: "Ta boken" (1.09 m)
+PASS reading, still sitting
+PASS closed, still sitting
+PASS back on the side table ("Lägga tillbaka boken på sidobordet")
+PASS looking away: "Res dig"
+PASS nothing in reach: the button stands you up
+PASS lying in underslafen (Sovrum 3, 0.55 m from the eye): "Släcka läslampan", toggled true, back true, still lying
+PASS lying in överslafen (Sovrum 3, 0.55 m from the eye): "Släcka läslampan", toggled true, back true, still lying
+PASS lying in underslafen (Sovrum 2, 0.54 m from the eye): "Släcka läslampan", toggled true, back true, still lying
+PASS lying in överslafen (Sovrum 2, 0.54 m from the eye): "Släcka läslampan", toggled true, back true, still lying
+PASS 4 berths with a reading lamp
+PASS the TV across the room is out of reach: "Res dig"

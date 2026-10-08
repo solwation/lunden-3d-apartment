@@ -76,17 +76,21 @@ f.onload = async () => {
         // where to look: a little under the eye, else the seat itself (#454: the low kids' chair, seen from behind, is
         // only its back rest under that line)
         const aims = sp.aimPos ? [sp.aimPos] : [sp.pos.clone().setY(sp.pos.y - 0.25), sp.pos.clone().setY(sp.pos.y - ((sp.kind ?? t.rest) === 'lie' ? 0.22 : 0.72) + 0.03)];
-        let named = false;
+        let named = false, lieChoice = null;
         for (const aim of aims) { // a spot picked by looking elsewhere (sitting up in bed, #213)
           const dx = aim.x - camera.position.x, dz = aim.z - camera.position.z;
           camera.rotation.y = Math.atan2(-dx, -dz);
           camera.rotation.x = Math.atan2(aim.y - camera.position.y, Math.hypot(dx, dz));
           step(1 / 60);
-          if ((named = !btn.hidden && btn.textContent.includes(t.name))) break;
+          // Rumpled beds now offer Make / Lie (#555); choose the real lie menu row.
+          const focused=w.__app.focus().focused;
+          lieChoice=focused?.bedCare?.restTarget===t ? [...d.querySelectorAll('#choices button')].find(b=>/lägga dig/i.test(b.textContent)) : null;
+          if ((named = (!btn.hidden && btn.textContent.includes(t.name)) || !!lieChoice)) break;
         }
         if (!named) continue;
-        btn.click();
-        if (rest.target === t) { label = btn.textContent; break; }
+        const chosenLabel=lieChoice?.textContent??btn.textContent;
+        (lieChoice??btn).click();
+        if (rest.target === t) { label = chosenLabel; break; }
         w.__app.standUp(); for (let i = 0; i < 3; i++) step(1 / 60); // another chair of the same name: up again, go on
       }
       return label;

@@ -27,7 +27,7 @@ import { registerRug, rugUnder } from './rugs.js';
 import { pingpingModel } from './pingping.js';
 import { buildWhiskyBottle, buildWineBottle } from './bottles.js';
 import { pineappleMirror } from './pineapple.js';
-import { pillow, duvet as duvetShape } from './bedding.js';
+import { pillow, duvet as duvetShape, tagBedding } from './bedding.js';
 import { drawerFill, personFor, Pack as StuffPack, garment, shoes, stack, rolls, rng } from './stuff.js';
 import { Pack, byasDrawer, byasMiddle, bestaContents, attachContents } from './contents.js';
 
@@ -716,7 +716,7 @@ function addDuvet(g, mat, w, y, zh, len, D, o = {}) {
     const m = new THREE.Mesh(geo, mat);
     m.position.set(x, yy, z);
     m.castShadow = m.receiveShadow = true;
-    g.add(m);
+    g.add(m);tagBedding(g,m,o.care??0);
   };
   const r = o.r ?? BEDDING.mattressR;
   add(duvetShape(w, len, D.th, { drop: D.drop, crumple: 0, ...o, r }), o.x ?? 0, y, zh + len / 2);
@@ -1020,7 +1020,7 @@ function bunk(item) {
     // mattress with a fitted sheet, a thick duvet turned back at the head end, a real pillow (#309)
     const mt = y + M.mattress, P = BEDDING.bunkPillow;
     addMattress(g, w - 0.02, M.mattress, l - 0.02, 0, mt, 0, fittedSheet(item.sheets ?? 'plain'));
-    addDuvet(g, duvet, w - 0.02, mt, -l / 2 + 0.5, l - 0.52, BEDDING.bunk, { seed: 7 + k * 4, uv: 0.8 });
+    addDuvet(g, duvet, w - 0.02, mt, -l / 2 + 0.5, l - 0.52, BEDDING.bunk, { seed: 7 + k * 4, uv: 0.8, care:k });
     const pil = new THREE.Mesh(pillow(P.w, P.d, P.h, { seed: 13 + k, uv: 0.8, dent: { x: 0, z: 0.03, r: 0.13, depth: PILLOWS.head.dent } }), item.sheets ? duvet : linen);
     pil.position.set(0, mt + 0.003, -l / 2 + 0.01 + P.d / 2); // its seam 3 mm over the sheet, not in its plane (#335)
     pil.castShadow = pil.receiveShadow = true;
@@ -1223,7 +1223,7 @@ function daybed() {
   const sp = new THREE.Mesh(duvetShape(md, sx1 - sx0, S.th, { r: 0.03, dropL: S.drop, dropR: 0, quilt: S.quilt, uv: 0.6, bump: 0.003, crumple: 0, seed: 12 }), M.spread);
   sp.position.set((sx0 + sx1) / 2, m1, mz);
   sp.rotation.y = Math.PI / 2;
-  g.add(sp);
+  g.add(sp);tagBedding(g,sp);
   // cushions against the back: black, holographic lilac, a graphic one, a faux-fur one, a small muted pink one; real
   // cushion shapes (#309: `pillow` stood up, its face to the front, leaning back by `tilt`)
   const cushion = (w, h, d, x, y, z, mat, tilt, roll = 0) => {
@@ -3722,6 +3722,7 @@ export function buildFurniture() {
   const ids = new Map();
   for (const item of FURNITURE) {
     const obj = BUILDERS[item.type](item, lights);
+    if(obj.userData.bedCareCount)obj.traverse(m=>{if(m.isMesh&&!m.geometry.attributes.bedCare)m.geometry.setAttribute('bedCare',new THREE.BufferAttribute(new Uint8Array(m.geometry.attributes.position.count),1));});
     // one mesh per material per piece (#48); the parasol folds and the beers come and go
     if (item.type !== 'parasol') {
       const keep = obj.userData.keep ?? [];
