@@ -1,0 +1,38 @@
+ALL PASS
+PASS 3 speakers
+PASS the black speaker (kitchen): "Spela musik på högtalaren"
+PASS no music downloaded before play
+PASS playing in 3 panners, the panel open (4.6,4.1,0.3 | 4.5,1.0,0.3 | 4.5,0.8,12.3)
+PASS the mix is up (0.177), 0 bars scheduled (context running)
+PASS next: "Lugn pop" → "Jazz"
+PASS channel 0: real music (0.07 s)
+PASS channel 0: next recording with stable genre (Lugn pop) and updated track
+PASS channel 0: rotation returns to first recording
+PASS channel 1: real music (0.10 s)
+PASS channel 1: next recording with stable genre (Jazz) and updated track
+PASS channel 1: rotation returns to first recording
+PASS channel 2: real music (0.09 s)
+PASS channel 2: next recording with stable genre (Lätt och glatt) and updated track
+PASS channel 2: rotation returns to first recording
+PASS channel 3: real music (0.10 s)
+PASS channel 3: next recording with stable genre (Pop och rock) and updated track
+PASS channel 3: rotation returns to first recording
+PASS channel 4: real music (0.10 s)
+PASS channel 4: next recording with stable genre (Akustiskt) and updated track
+PASS channel 4: rotation returns to first recording
+PASS channel 5: real music (0.10 s)
+PASS channel 5: next recording with stable genre (Ambient) and updated track
+PASS channel 5: rotation returns to first recording
+PASS volume up 0.177 → 0.232, down → 0.126
+PASS panel closed, still playing
+PASS "Styra musiken på högtalaren"
+PASS E again opens the panel
+PASS paused: the mix down, nothing composing
+PASS upstairs: the speakers below are floor-muffled, Sovrum 1 is only wall-muffled from the hall (1:0.45,0:0.20,0:0.20)
+PASS F stops the music
+PASS the file this browser plays: music/a.mp3
+PASS a missing file stays silent with a failure status (0 bars, "Lugn pop")
+PASS only the channel's own file was asked for (morning-blue.ogg, morning-blue.ogg, morning-blue.mp3, will-not-let-you.ogg, morning-blue.mp3, bossa-antigua.ogg, jazz-brunch.ogg, bossa-antigua.ogg, carefree.ogg, little-tomcat.ogg, carefree.ogg, inertia.ogg, together-on-our-own.ogg, inertia.ogg, already-there.ogg, follow-the-road.ogg, already-there.ogg, childhood.ogg, hiraeth.ogg, childhood.ogg, finns-inte-416.ogg)
+PASS a playable file streams in, nothing composed, its title shown (readyState 4, playing, error none, "Lugn pop", "Spelas nu: Testton – Testaren")
+PASS paused: the file stopped and let go
+PASS no retired generated music is scheduled in any channel

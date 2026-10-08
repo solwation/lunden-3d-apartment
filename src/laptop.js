@@ -2,13 +2,12 @@ import { MusicLoop } from './music.js';
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { LAPTOP as L, MUSIC } from './config.js';
-import { sfx } from './audio.js';
 import { mergeStatic } from './merge.js';
 
 // Tilly's laptop on the vanity (#283): a thin unbranded rose-gold laptop with two stickers on the lid. Its screen shows
 // "Klipp", an invented short-video app (no real brand or people, everything drawn on a canvas): a phone-shaped column of
 // clips in the middle of a dark browser window, a username, a caption, a like counter and a progress bar; every
-// LAPTOP.swipe s it slides up to the next clip. Each clip has quiet CC0 music (generated beats as an offline fallback). Two E targets: the screen (on,
+// LAPTOP.swipe s it slides up to the next clip. Each clip has quiet licensed music (unavailable files stay quiet). Two E targets: the screen (on,
 // then the next clip) and the keyboard (on / off). It plays until switched off (or F), like the TVs.
 
 const TAU = Math.PI * 2;
@@ -281,7 +280,7 @@ export function laptop(item) {
   mergeStatic(base);
   mergeStatic(lid, [screen]);
   const music = new MusicLoop(L.gain);
-  let on = false, acc = 0, beatAcc = 0, beatN = 0;
+  let on = false, acc = 0;
   const pos = new THREE.Vector3();
   const where = () => screen.getWorldPosition(pos);
   const self = {
@@ -292,7 +291,7 @@ export function laptop(item) {
       on = v;
       if (!on) music.stop();
       screen.material = on ? onMat : offMat;
-      if (on) { feed.t = 0; feed.slide = -1; feed.draw(); feed.texture.needsUpdate = true; acc = beatAcc = 0; self.onClip?.(feed.clip.key); }
+      if (on) { feed.t = 0; feed.slide = -1; feed.draw(); feed.texture.needsUpdate = true; acc = 0; self.onClip?.(feed.clip.key); }
     },
     update(dt) {
       if (!on) return;
@@ -301,18 +300,7 @@ export function laptop(item) {
       acc += dt;
       if (acc >= 1 / L.fps) { feed.draw(); feed.texture.needsUpdate = true; acc = 0; }
       const tracks = [MUSIC.game[1], MUSIC.kids[0], MUSIC.lofi[1]];
-      if (music.update(tracks[CLIPS.indexOf(feed.clip) % tracks.length], where())) return;
-      // the fallback beat: eighth notes — kick on 1 and 5, snare on 3 and 7, a hat on each, a blip on the even ones
-      const c = feed.clip, len = 30 / c.bpm;
-      beatAcc += dt;
-      if (beatAcc >= len) {
-        beatAcc %= len;
-        const s = beatN++ % 8, p = where();
-        sfx.beat(p, 'hat', L.gain * 0.6);
-        if (s === 0 || s === 4) sfx.beat(p, 'kick', L.gain);
-        if (s === 2 || s === 6) sfx.beat(p, 'snare', L.gain * 0.8);
-        if (s % 2 === 0 && feed.slide < 0) sfx.beat(p, 'blip', L.gain * 0.5, c.notes[(s / 2) % c.notes.length]);
-      }
+      music.update(tracks[CLIPS.indexOf(feed.clip) % tracks.length], where());
     },
   };
   const screenT = {

@@ -30,7 +30,7 @@ try {
   const absent = { files: ['../music/missing.ogg', '../music/missing.mp3'] };
   // Relative URLs here are deliberately ../music, since this standalone page lives under tools/.
   loop.update(absent, {x: 1, y: 2, z: 3}); await until(() => loop.bad);
-  check(!loop.update(absent) && loop.bad, 'all formats unavailable: caller can generate fallback'); loop.stop();
+  check(!loop.update(absent) && loop.bad, 'all formats unavailable: failure reported for silent playback'); loop.stop();
   const real = { ...MUSIC.game[0], files: MUSIC.game[0].files.map((s) => '../' + s) };
   loop.update(real, {x: 1, y: 2, z: 3}, 1.25);
   await until(() => loop.file?.el?.currentTime > 0);

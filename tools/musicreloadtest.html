@@ -1,0 +1,17 @@
+<!doctype html><html lang="sv"><meta charset="utf-8"><title>Music selection reload test</title><pre id="out">running…</pre><script type="module">
+const lines=[];let pass=true;const check=(ok,text)=>{lines.push((ok?'PASS':'FAIL')+' '+text);pass&&=!!ok},wait=ms=>new Promise(r=>setTimeout(r,ms));
+try{
+ const f=document.createElement('iframe');f.width=480;f.height=300;document.body.append(f);
+ async function load(q){await new Promise(r=>{f.onload=r;f.src='../index.html?shot&cloud=&'+q});while(!f.contentWindow.__app)await wait(100);const a=f.contentWindow.__app;a.renderer.setPixelRatio(.15);return a;}
+ let A=await load('time=12');f.contentDocument.documentElement.requestFullscreen=undefined;f.contentDocument.getElementById('start-touch').click();
+ const {SONOS}=await f.contentWindow.eval("import('/src/config.js')");check(SONOS.channels.map(c=>c.id).join()==='lofi,jazz,kids,synth,bach,rain','all six original channel ids and saved index meanings are retained');
+ A.player.spawn(1.3,2.6,0);A.step(0);A.sonos.channel=3;A.sonos.setVolume(7);A.sonos.play();
+ const {saveResume}=await f.contentWindow.eval("import('/src/resume.js')");saveResume({x:A.player.pos.x,z:A.player.pos.z,feetY:A.player.pos.y,yaw:0,pitch:0,mode:'touch',build:null,world:A.keepWorld()});
+ A=await load('reload=1');
+ check(A.sonos.channel===3&&A.sonos.name==='Pop och rock'&&A.sonos.volume===7&&A.sonos.playing,'actual page reload resumes original channel index, new matching genre, volume and playing state');
+ await new Promise(resolve=>{const b=f.contentDocument.createElement('button');b.id='music-test-start';b.textContent='Starta musik efter omladdning';b.style.cssText='position:fixed;top:0;left:0;z-index:999999';b.onclick=()=>{b.remove();resolve()};f.contentDocument.body.append(b)});
+ for(let k=0;k<20&&!A.sonos.trackName;k++){A.step(.01);await wait(50);}
+ check(A.sonos.trackName?.includes('Inertia – Josh Woodward'),'resumed player displays the new recording and correct artist');A.sonos.pause();
+ document.getElementById('out').textContent=lines.join('\n')+'\n'+(pass?'ALL PASS':'SOME FAILED');
+}catch(e){document.getElementById('out').textContent=lines.join('\n')+'\nFAIL '+e.stack}
+</script></html>

@@ -1525,8 +1525,8 @@ export const CAT_TAIL_UP = { every: [10, 25], seconds: [4, 8], standing: 3, blen
 export const CUP_STEAM = { seconds: 240, strips: 3, segments: 10, height: 0.13, width: 0.018, opacity: 0.4, milk: 2.5, drift: 0.04 };
 // "Kaffeturbo!" (#217, src/turbo.js): `cups` cups of coffee within `window` real seconds → `speed` × walking (indoors too)
 // for `seconds`; more coffee meanwhile adds `extend` × the time per 3 cups' worth, up to `max` s left; `fov` degrees wider;
-// the last `ending` s the tune speeds up; `bpm`, `volume` of the chiptune. Our picks.
-export const TURBO = { cups: 3, window: 300, seconds: 120, max: 240, extend: 1, speed: 1.8, fov: 6, ending: 5, bpm: 190, volume: 0.5 };
+// the last `ending` s the recording speeds up; `volume` is its gain. Our picks.
+export const TURBO = { cups: 3, window: 300, seconds: 120, max: 240, extend: 1, speed: 1.8, fov: 6, ending: 5, volume: 0.5 };
 // The coffee (#316, the user: "we live in Skåne, there we drink it dark" — Zoégas Mollbergs Blandning, a dark roast):
 // one colour for the jug (coffee.js), the cups (cups.js) and the mixes (DRINKS.coffee); almost black-brown, not reddish
 // (*guess*, tuned on screenshots). `roughness` low so light catching the surface gives a faint glint.
@@ -2399,30 +2399,30 @@ export const SYMFONISK = {
   controls: { w: 0.07, h: 0.017, y: 0.026, tab: 0.034 },
 };
 
-// CC0 recordings (#416), fetched only when played. Sources and edits: music/CREDITS.md.
-// Stable channel ids retain saved settings and the original generated fallback.
+// Licensed full-length studio recordings (#500), fetched only when played; music/CREDITS.md.
+// Channel ids remain stable so saved selections keep their genre after the new names.
 const track = (id, title, artist) => ({ title, artist, files: [`music/${id}.ogg`, `music/${id}.mp3`] });
 export const MUSIC = {
-  loadTimeout: 8000, // a stalled recording must not suppress the generated fallback forever
-  lofi: [track('lofi-hip-hop', 'lofi hip hop', 'omfgdude'), track('lofi-again', 'Lofi again', 'omfgdude')],
-  jazz: [track('basically-not-fusion-jazz', '(Basically not) Fusion Jazz', 'Spring Spring'), track('wild-jazz', 'Wild Jazz', 'Alex McCulloch')],
-  kids: [track('happy', 'Happy', 'Alex McCulloch'), track('happy-lullaby-song17', 'Happy Lullaby', 'cynicmusic')],
-  game: [track('as-fast-as-you-can', 'As fast as you can', 'Centurion_of_war'), track('face-the-facts', 'Face The Facts', 'Zane Little Music')],
-  acoustic: [track('revelation', 'Revelation', 'Indieteur'), track('happy-moments', 'Happy moments', 'Centurion_of_war')],
-  ambient: [track('background-space-track', 'My Very Own Dead Ship', 'yd'), track('from-here-to-where', 'From Here to Where?', 'Écrivain')],
-  pcGain: 0.12, // quiet background under the game's existing sound effects
+  loadTimeout: 8000, // stalled streams try the alternative format, then stay quiet
+  lofi: [track('morning-blue','Morning Blue','Josh Woodward'),track('will-not-let-you','I Will Not Let You Let Me Down','Josh Woodward')],
+  jazz: [track('bossa-antigua','Bossa Antigua','Kevin MacLeod'),track('jazz-brunch','Jazz Brunch','Kevin MacLeod')],
+  kids: [track('carefree','Carefree','Kevin MacLeod'),track('little-tomcat','Little Tomcat','Josh Woodward')],
+  game: [track('inertia','Inertia','Josh Woodward'),track('together-on-our-own','Together On Our Own','Josh Woodward')],
+  acoustic: [track('already-there','Already There','Josh Woodward'),track('follow-the-road','Follow the Road','Josh Woodward')],
+  ambient: [track('childhood','Childhood','Scott Buckley'),track('hiraeth','Hiraeth','Scott Buckley')],
+  pcGain: 0.12,
 };
 // Volume in steps; wall/floor attenuation on top of positional distance falloff.
 export const SONOS = {
   channels: [
-    { id: 'lofi', name: 'Lofi', tracks: MUSIC.lofi },
+    { id: 'lofi', name: 'Lugn pop', tracks: MUSIC.lofi },
     { id: 'jazz', name: 'Jazz', tracks: MUSIC.jazz },
-    { id: 'kids', name: 'Barnmusik', tracks: MUSIC.kids },
-    { id: 'synth', name: 'Chiptune', tracks: MUSIC.game },
+    { id: 'kids', name: 'Lätt och glatt', tracks: MUSIC.kids },
+    { id: 'synth', name: 'Pop och rock', tracks: MUSIC.game },
     { id: 'bach', name: 'Akustiskt', tracks: MUSIC.acoustic },
     { id: 'rain', name: 'Ambient', tracks: MUSIC.ambient },
   ],
-  steps: 10, start: 5, gain: 0.5, wall: 0.45, floor: 0.2, lookahead: 0.6,
+  steps: 10, start: 5, gain: 0.5, wall: 0.45, floor: 0.2,
 };
 
 // The ILVA Woodstock coffee table's shape (#410, furniture.js `coffeetable`, read off ILVA's product photo
@@ -2706,7 +2706,7 @@ export const VANITY = {
 // two stickers on the lid. E on the screen: on, then the next clip; E on the keyboard: on / off. On, it shows an invented
 // short-video app ("Klipp": no real brand, no real people) — a phone-shaped column of canvas-drawn clips that swipes up
 // to the next one every `swipe` s (the slide takes `slide` s), redrawn at `fps`; each clip has a quiet beat (`bpm`,
-// recorded loops at `gain`, with sfx.beat as fallback) and the house speakers are turned down to `duck` while it plays within `near` m. Sizes are guesses.
+// recorded loops at `gain`; unavailable files stay quiet) and the house speakers are turned down to `duck` while it plays within `near` m. Sizes are guesses.
 export const LAPTOP = { w: 0.3, d: 0.21, base: 0.014, lid: 0.006, open: 110, px: [400, 250], fps: 12, swipe: 7, slide: 0.45,
   gain: 0.1, duck: 0.6, near: 3.5 };
 

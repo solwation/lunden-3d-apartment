@@ -6,8 +6,8 @@
 <script>
 // Music in the SYMFONISK speakers (#187): E on the black one (kitchen, #298) starts it in all three (a panner each, the
 // mix up), the panel opens; next song → another name; volume up/down changes the gain; E closes the panel and the
-// music plays on; pause stops it; F stops it and hides the speakers. Checks the Web Audio state, and renders each
-// channel offline (OfflineAudioContext) to see that it makes a sound and does not clip.
+// music plays on; pause stops it; F stops it and hides the speakers. Real recordings rotate in each channel;
+// unavailable media stays silent without generated bars (#500).
 //   google-chrome --headless=new --dump-dom http://localhost:8137/tools/sonostest.html
 const out = document.getElementById('out');
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -48,7 +48,7 @@ f.onload = async () => {
   const bus = sonos.bus;
   pass &= check(sonos.playing && !panel.hidden && !!bus && bus.outs.length === 3 && bus.outs.every((o) => o.pan.positionX.value !== 0), `playing in 3 panners, the panel open (${bus?.outs.map((o) => o.pos.toArray().map((v) => v.toFixed(1)).join(',')).join(' | ')})`);
   const ctx = bus.mix.context; // headless Chrome may keep the context suspended (no real gesture): its clock stands still
-  pass &= check(sonos.gain > 0.05 && (!!sonos.file || sonos.barNo > 0), `the mix is up (${sonos.gain.toFixed(3)}), ${sonos.barNo} bars scheduled (context ${ctx.state})`);
+  pass &= check(sonos.gain > 0.05 && (!!sonos.file || sonos.unavailable), `the mix is up (${sonos.gain.toFixed(3)}), ${sonos.barNo} bars scheduled (context ${ctx.state})`);
   const name0 = panel.querySelector('.name').textContent;
   panel.querySelector('[data-act=next]').click();
   const name1 = panel.querySelector('.name').textContent;
@@ -92,7 +92,7 @@ f.onload = async () => {
   pass &= check(!sonos.playing && panel.hidden && !world.furnitureOn, 'F stops the music');
   toggleFurniture();
   // real music files (#416): picked by type, fetched only when the channel plays, a missing file falls back to the
-  // generated music, a playable one streams into the channel's sub-mix (no bars composed) with its title in the panel
+  // silence with status; a playable one streams into the channel's sub-mix (no bars composed) with its title in the panel
   const M = await w.eval(`import('${new URL('../src/sonos.js', location.href).href}')`);
   const { SONOS } = await w.eval(`import('${new URL('../src/config.js', location.href).href}')`);
   const pick = M.trackSrc({ files: ['music/a.ogg', 'music/a.mp3'] }, (t) => (t === 'audio/mpeg' ? 'maybe' : ''));
@@ -104,11 +104,11 @@ f.onload = async () => {
   sonos.channel = 0; sonos.play();
   for (let i = 0; i < 40 && sonos.file; i++) { step(0.05); await wait(100); }
   step(0.1);
-  // without a real gesture the browser refuses play() (no error, no failed file): the generated music then (run with
+  // Without a real gesture the browser refuses play() (no error, no failed file): silent status (run with
   // --autoplay-policy=no-user-gesture-required to test the files themselves)
   const autoplay = M.failedFiles.has('music/finns-inte-416.ogg');
-  pass &= check(!sonos.file && sonos.playing && sonos.barNo > 0 && panel.querySelector('.name').textContent === ch0.name,
-    `a missing file${autoplay ? '' : ' (play refused: no gesture)'} falls back to the generated music (${sonos.barNo} bars, "${panel.querySelector('.name').textContent}")`);
+  pass &= check(!sonos.file && sonos.playing && sonos.barNo === 0 && sonos.unavailable && panel.querySelector('.name').textContent === ch0.name,
+    `a missing file${autoplay ? '' : ' (play refused: no gesture)'} stays silent with a failure status (${sonos.barNo} bars, "${panel.querySelector('.name').textContent}")`);
   pass &= check(fetched().filter((f) => !beforeMissing.has(f)).length <= 1, `only the channel's own file was asked for (${fetched().join(', ') || 'none'})`);
   // a 3 s tone as a WAV blob stands in for a real track
   const sr = 22050, n = sr * 3, wav = new DataView(new ArrayBuffer(44 + n * 2));
@@ -133,28 +133,12 @@ f.onload = async () => {
     pass &= check(!sonos.file && !el.getAttribute('src'), 'paused: the file stopped and let go');
   } else {
     for (let i = 0; i < 10; i++) { step(0.05); await wait(50); }
-    pass &= check(!sonos.file && sonos.barNo > 0 && panel.querySelector('.name').textContent === ch0.name, 'play refused (no gesture): the generated music, never silence');
+    pass &= check(!sonos.file && sonos.barNo === 0 && sonos.unavailable && panel.querySelector('.name').textContent === ch0.name, 'play refused (no gesture): silence with a visible status');
     lines.push('SKIP the file itself: run with --autoplay-policy=no-user-gesture-required');
     sonos.pause();
   }
   ch0.tracks = originalTracks; sonos.channel = 0;
-  // each channel rendered offline for 6 s: audible, not clipping
-  const { CHANNELS } = await w.eval(`import('${new URL('../src/sonos.js', location.href).href}')`);
-  for (const [id, c] of Object.entries(CHANNELS)) {
-    const sr = 22050, ctx = new w.OfflineAudioContext(1, sr * 6, sr);
-    const noiseBuf = ctx.createBuffer(1, sr * 2, sr), nd = noiseBuf.getChannelData(0);
-    for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
-    const A = { ctx, noiseBuf }, dest = ctx.destination;
-    c.continuous?.(A, dest);
-    for (let t = 0.05, i = 0; t < 6; t += c.bar * c.beat) c.play(A, dest, t, i++);
-    const buf = await Promise.race([ctx.startRendering(), wait(8000).then(() => null)]); // --virtual-time-budget never finishes it
-    if (!buf) { lines.push(`SKIP ${id}: no offline rendering here (headless with virtual time; run it in a normal browser)`); continue; }
-    const data = buf.getChannelData(0);
-    let peak = 0, sum = 0;
-    for (const v of data) { peak = Math.max(peak, Math.abs(v)); sum += v * v; }
-    const rms = Math.sqrt(sum / data.length);
-    pass &= check(rms > 0.01 && peak < 1.2, `${id}: rms ${rms.toFixed(3)}, peak ${peak.toFixed(2)}`);
-  }
+  pass &= check(sonos.barNo===0,'no retired generated music is scheduled in any channel');
   out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
 };
 </script>

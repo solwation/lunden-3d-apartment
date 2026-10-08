@@ -1,0 +1,18 @@
+ALL PASS
+PASS car streams before rotation (context running, music/morning-blue.ogg)
+PASS car radio rotates to the next recording with stable genre
+PASS car radio rotation wraps to the first recording
+PASS PC game streams a recording
+PASS PC film switches to ambient recording
+PASS PC power off releases the recording
+PASS laptop clip streams a recording
+PASS Kaffeturbo streams instead of scheduling generated notes
+PASS Kaffeturbo music speeds up at the end
+PASS Kaffeturbo expiry releases the recording
+PASS F stops PC and laptop media
+PASS all failed speaker tracks stop after bounded attempts and show a load status
+PASS failed car recordings also stay quiet
+PASS unavailable Kaffeturbo stays silent with no generated tune
+PASS unavailable laptop files stay silent and keep the feed running
+PASS unavailable PC files stay silent and keep the game running
+PASS failed music in every player creates no synthetic notes

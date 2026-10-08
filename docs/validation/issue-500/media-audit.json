@@ -1,0 +1,170 @@
+[
+  {
+    "file": "morning-blue.ogg",
+    "seconds": 244.91,
+    "codec": "opus",
+    "channels": 2,
+    "bytes": 2975663
+  },
+  {
+    "file": "morning-blue.mp3",
+    "seconds": 244.9,
+    "codec": "mp3",
+    "channels": 2,
+    "bytes": 3918939
+  },
+  {
+    "file": "will-not-let-you.ogg",
+    "seconds": 181.91,
+    "codec": "opus",
+    "channels": 2,
+    "bytes": 2366060
+  },
+  {
+    "file": "will-not-let-you.mp3",
+    "seconds": 181.92,
+    "codec": "mp3",
+    "channels": 2,
+    "bytes": 2911494
+  },
+  {
+    "file": "little-tomcat.ogg",
+    "seconds": 197.71,
+    "codec": "opus",
+    "channels": 2,
+    "bytes": 3025424
+  },
+  {
+    "file": "little-tomcat.mp3",
+    "seconds": 197.66,
+    "codec": "mp3",
+    "channels": 2,
+    "bytes": 3163370
+  },
+  {
+    "file": "inertia.ogg",
+    "seconds": 177.31,
+    "codec": "opus",
+    "channels": 2,
+    "bytes": 2202518
+  },
+  {
+    "file": "inertia.mp3",
+    "seconds": 177.29,
+    "codec": "mp3",
+    "channels": 2,
+    "bytes": 2837275
+  },
+  {
+    "file": "together-on-our-own.ogg",
+    "seconds": 297.01,
+    "codec": "opus",
+    "channels": 2,
+    "bytes": 3566059
+  },
+  {
+    "file": "together-on-our-own.mp3",
+    "seconds": 296.95,
+    "codec": "mp3",
+    "channels": 2,
+    "bytes": 4751991
+  },
+  {
+    "file": "already-there.ogg",
+    "seconds": 221.21,
+    "codec": "opus",
+    "channels": 2,
+    "bytes": 2880656
+  },
+  {
+    "file": "already-there.mp3",
+    "seconds": 221.18,
+    "codec": "mp3",
+    "channels": 2,
+    "bytes": 3539693
+  },
+  {
+    "file": "follow-the-road.ogg",
+    "seconds": 297.51,
+    "codec": "opus",
+    "channels": 2,
+    "bytes": 3847966
+  },
+  {
+    "file": "follow-the-road.mp3",
+    "seconds": 297.46,
+    "codec": "mp3",
+    "channels": 2,
+    "bytes": 4759918
+  },
+  {
+    "file": "bossa-antigua.ogg",
+    "seconds": 283.41,
+    "codec": "opus",
+    "channels": 2,
+    "bytes": 3551441
+  },
+  {
+    "file": "bossa-antigua.mp3",
+    "seconds": 283.39,
+    "codec": "mp3",
+    "channels": 2,
+    "bytes": 4535281
+  },
+  {
+    "file": "jazz-brunch.ogg",
+    "seconds": 323.21,
+    "codec": "opus",
+    "channels": 2,
+    "bytes": 4318771
+  },
+  {
+    "file": "jazz-brunch.mp3",
+    "seconds": 323.14,
+    "codec": "mp3",
+    "channels": 2,
+    "bytes": 5171184
+  },
+  {
+    "file": "carefree.ogg",
+    "seconds": 205.21,
+    "codec": "opus",
+    "channels": 2,
+    "bytes": 3011773
+  },
+  {
+    "file": "carefree.mp3",
+    "seconds": 205.18,
+    "codec": "mp3",
+    "channels": 2,
+    "bytes": 3283821
+  },
+  {
+    "file": "childhood.ogg",
+    "seconds": 137.11,
+    "codec": "opus",
+    "channels": 2,
+    "bytes": 1938117
+  },
+  {
+    "file": "childhood.mp3",
+    "seconds": 137.11,
+    "codec": "mp3",
+    "channels": 2,
+    "bytes": 2194413
+  },
+  {
+    "file": "hiraeth.ogg",
+    "seconds": 346.21,
+    "codec": "opus",
+    "channels": 2,
+    "bytes": 4325494
+  },
+  {
+    "file": "hiraeth.mp3",
+    "seconds": 346.22,
+    "codec": "mp3",
+    "channels": 2,
+    "bytes": 5540170
+  }
+]

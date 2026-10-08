@@ -1,0 +1,111 @@
+[
+  {
+    "id": "lofi-hip-hop",
+    "title": "lofi hip hop",
+    "artist": "omfgdude",
+    "source": "https://opengameart.org/content/lofi-hip-hop",
+    "download": "https://opengameart.org/sites/default/files/lofihiphop.ogg",
+    "sha256": "8641e8203d0e7dc06db0276b69fc15f59e9f45faf76d2d647bc076a3339c1ef1",
+    "excerptSeconds": null
+  },
+  {
+    "id": "lofi-again",
+    "title": "Lofi again",
+    "artist": "omfgdude",
+    "source": "https://opengameart.org/content/lofi-again",
+    "download": "https://opengameart.org/sites/default/files/lofiagain.ogg",
+    "sha256": "d3b3410a186d45dadbcf87a8072b5a7f3b3f5a11fe38d9a7e9bdb3f66d5d86fa",
+    "excerptSeconds": null
+  },
+  {
+    "id": "basically-not-fusion-jazz",
+    "title": "(Basically not) Fusion Jazz",
+    "artist": "Spring Spring (Julie Damsgaard)",
+    "source": "https://opengameart.org/content/basically-not-fusion-jazz",
+    "download": "https://opengameart.org/sites/default/files/fusion%20jazz_0.ogg",
+    "sha256": "645f7cd6ef7a56b22fe394ff006dae17348cf70c72aa9e2a9b4d7f70b2804af4",
+    "excerptSeconds": 120
+  },
+  {
+    "id": "wild-jazz",
+    "title": "Wild Jazz",
+    "artist": "Alex McCulloch (Pro Sensory)",
+    "source": "https://opengameart.org/content/wild-jazz",
+    "download": "https://opengameart.org/sites/default/files/wild_jazz_0.mp3",
+    "sha256": "67e1ba88d5314d6a492e9c967521187e4deb5a6e2004ce320ca2e19152aa182a",
+    "excerptSeconds": null
+  },
+  {
+    "id": "happy",
+    "title": "Happy",
+    "artist": "Alex McCulloch (Pro Sensory)",
+    "source": "https://opengameart.org/content/happy",
+    "download": "https://opengameart.org/sites/default/files/happy_song_1_0.mp3",
+    "sha256": "f0ea8b0f4aabb82862bdfc4cdc4c00d65e64f1ec1571b3f78568240f295ba673",
+    "excerptSeconds": null
+  },
+  {
+    "id": "happy-lullaby-song17",
+    "title": "Happy Lullaby (song17)",
+    "artist": "cynicmusic",
+    "source": "https://opengameart.org/content/happy-lullaby-song17",
+    "download": "https://opengameart.org/sites/default/files/song17.mp3",
+    "sha256": "9fa0b0e96860eace536fa36f4e9c2c1284db894a8df3cdaa19ddae429b1bfd42",
+    "excerptSeconds": null
+  },
+  {
+    "id": "revelation",
+    "title": "Revelation",
+    "artist": "Indieteur",
+    "source": "https://opengameart.org/content/revelation",
+    "download": "https://opengameart.org/sites/default/files/Revelation.Wav",
+    "sha256": "f020d19d69ce5b7929958c78c0943f76c900b05dee102aad90bd09365dd3a08f",
+    "excerptSeconds": null
+  },
+  {
+    "id": "happy-moments",
+    "title": "Happy moments",
+    "artist": "Centurion_of_war",
+    "source": "https://opengameart.org/content/happy-moments",
+    "download": "https://opengameart.org/sites/default/files/piano1.3_0.ogg",
+    "sha256": "427a4a557b29695263da90c42e6f41a43e9078b7eafa9926163f5e2515547fcf",
+    "excerptSeconds": null
+  },
+  {
+    "id": "as-fast-as-you-can",
+    "title": "As fast as you can",
+    "artist": "Centurion_of_war",
+    "source": "https://opengameart.org/content/as-fast-as-you-can",
+    "download": "https://opengameart.org/sites/default/files/as_fast_as_you_can_2.31_low_0.ogg",
+    "sha256": "86777ab0f9ad27d11e88cb3001261e9f08008a64f1e252a8d4d61957f42e63fc",
+    "excerptSeconds": null
+  },
+  {
+    "id": "face-the-facts",
+    "title": "Face The Facts",
+    "artist": "Zane Little Music",
+    "source": "https://opengameart.org/content/face-the-facts",
+    "download": "https://opengameart.org/sites/default/files/face_the_facts.wav",
+    "sha256": "7473feb85c78130f0066738ae5b77a6162d6af0d3003f832e750a7b98c074a7f",
+    "excerptSeconds": null
+  },
+  {
+    "id": "background-space-track",
+    "title": "Background space track",
+    "artist": "yd",
+    "source": "https://opengameart.org/content/background-space-track",
+    "download": "https://opengameart.org/sites/default/files/projects.zip",
+    "sha256": "08d572588e3106723eb1d80c75951dbb8df16051c5a0b008bfb3709f2da20346",
+    "excerptSeconds": 120,
+    "archiveMember": "MyVeryOwnDeadShip.ogg"
+  },
+  {
+    "id": "from-here-to-where",
+    "title": "From Here to Where?",
+    "artist": "Écrivain",
+    "source": "https://opengameart.org/content/from-here-to-where",
+    "download": "https://opengameart.org/sites/default/files/music.ogg",
+    "sha256": "6a912959f7f5886c8dbba551ac9d3b2d30b36e2c9a069d15b40195db808e1530",
+    "excerptSeconds": null
+  }
+]

@@ -80,8 +80,8 @@ Alla gardinskenor i taket går från vägg till vägg. I köket hänger även de
 Vardagsrummet har tre ljusa gardinlängder med samma botaniska mönster och bottenfärg som kökskappan, på en takskena från vägg till vägg, även över balkongdörren. Dra dem åt sidan med <kbd>A</kbd>/<kbd>D</kbd> eller ◀/▶ så att dörren och fönstret lämnas fria.
 
 Högtalarna och bilradion har sex musikkanaler med två låtar var. Även datorn, laptopen och Kaffeturbo spelar
-inspelad musik. Under *Om musiken* i menyn finns musiker och källor; alla inspelningar har CC0-licens.
-Musiken laddas först när den spelas, med genererad reservmusik om filerna inte går att hämta.
+inspelad musik. Under *Om musiken* i menyn finns musiker och källor; alla inspelningar har CC BY 4.0-licens och kan provspelas där.
+Låtarna har full längd och stereo. Musiken laddas först när den spelas; om inspelningarna inte kan hämtas förblir det tyst.
 
 De 100 senaste ändringarna står på lappen på frysen i köket (gå fram och tryck <kbd>E</kbd>). Det som
 tillkommit sedan ditt senaste besök är markerat *Nytt*.

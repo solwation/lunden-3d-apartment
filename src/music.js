@@ -50,7 +50,7 @@ export class MusicFile {
 }
 
 // A looping track at an appliance, through the same master/mute as sound effects.
-// update returns false on failure so the caller can retain its generated fallback.
+// update returns false on failure; callers keep their visual/game flow running without generated music.
 export class MusicLoop {
   constructor(gain) { this.gain = gain; }
   update(track, pos = null, rate = 1) {

@@ -1,0 +1,34 @@
+ALL PASS
+PASS constructors download no audio
+PASS six channels, two distinct recordings each
+PASS music/morning-blue.ogg: decodes, clock advances, audible samples
+PASS music/morning-blue.mp3: decodes, clock advances, audible samples
+PASS music/will-not-let-you.ogg: decodes, clock advances, audible samples
+PASS music/will-not-let-you.mp3: decodes, clock advances, audible samples
+PASS music/bossa-antigua.ogg: decodes, clock advances, audible samples
+PASS music/bossa-antigua.mp3: decodes, clock advances, audible samples
+PASS music/jazz-brunch.ogg: decodes, clock advances, audible samples
+PASS music/jazz-brunch.mp3: decodes, clock advances, audible samples
+PASS music/carefree.ogg: decodes, clock advances, audible samples
+PASS music/carefree.mp3: decodes, clock advances, audible samples
+PASS music/little-tomcat.ogg: decodes, clock advances, audible samples
+PASS music/little-tomcat.mp3: decodes, clock advances, audible samples
+PASS music/inertia.ogg: decodes, clock advances, audible samples
+PASS music/inertia.mp3: decodes, clock advances, audible samples
+PASS music/together-on-our-own.ogg: decodes, clock advances, audible samples
+PASS music/together-on-our-own.mp3: decodes, clock advances, audible samples
+PASS music/already-there.ogg: decodes, clock advances, audible samples
+PASS music/already-there.mp3: decodes, clock advances, audible samples
+PASS music/follow-the-road.ogg: decodes, clock advances, audible samples
+PASS music/follow-the-road.mp3: decodes, clock advances, audible samples
+PASS music/childhood.ogg: decodes, clock advances, audible samples
+PASS music/childhood.mp3: decodes, clock advances, audible samples
+PASS music/hiraeth.ogg: decodes, clock advances, audible samples
+PASS music/hiraeth.mp3: decodes, clock advances, audible samples
+PASS MP3 for browsers without Opus
+PASS missing Opus tries the real MP3
+PASS all formats unavailable: failure reported for silent playback
+PASS positional loop and faster Kaffeturbo ending
+PASS M silences the shared master
+PASS stop releases audio, download and panner
+PASS failed URLs remembered

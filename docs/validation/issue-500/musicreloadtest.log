@@ -1,0 +1,4 @@
+PASS all six original channel ids and saved index meanings are retained
+PASS actual page reload resumes original channel index, new matching genre, volume and playing state
+PASS resumed player displays the new recording and correct artist
+ALL PASS

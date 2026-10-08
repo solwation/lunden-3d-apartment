@@ -1,130 +1,15 @@
 import { setIcon } from './hudicons.js';
 import * as THREE from 'three';
-import { audioParts, isMuted } from './audio.js';
+import { audioParts } from './audio.js';
 import { sonosLed } from './furniture.js';
 import { SONOS as S, CAR } from './config.js';
 import { MusicFile } from './music.js';
 export { trackSrc, failedFiles } from './music.js';
 
-// Music in all the SYMFONISK speakers (#187, #416). Six channels of CC0 recordings. The original generated
-// channels (lofi, jazz, children's songs, synthwave, Bach, rain and a fire) remain as fallbacks, each scheduling
-// a bar at a time a short way ahead (`SONOS.lookahead`), with few oscillators per note (the Surface Pro). One mix
-// feeds a panner per speaker, so it is loudest close to one; main.js passes how muffled each one is (walls, the
-// other floor). E on a speaker starts the music and opens #sonos-panel (⏮ ⏭ songs, ⏯, volume); E / Esc closes the
-// panel and the music plays on. F (the bare flat) stops it. The status lights glow white while it plays.
-// Real music (#416): a channel with `tracks` in SONOS.channels plays those files instead, loaded only when the channel
-// starts (an <audio> element through a MediaElementAudioSourceNode into the channel's sub-mix, so the panners, the
-// muffling, the ducking and mute work as before), one track after another; a file that fails to load or play falls
-// back to the channel's generated music — never silence. The panel / the car's screen show "title – artist".
-
-const midi = (n) => 440 * 2 ** ((n - 69) / 12);
-
-/** One sound: an oscillator through a gain envelope (attack, exponential decay) into `dest`. */
-function note(A, dest, t, n, dur, { type = 'sine', gain = 0.2, attack = 0.005, cutoff = 0, detune = 0 } = {}) {
-  const { ctx } = A;
-  const o = ctx.createOscillator(), g = ctx.createGain();
-  o.type = type; o.frequency.value = midi(n); o.detune.value = detune;
-  g.gain.setValueAtTime(0.0001, t);
-  g.gain.linearRampToValueAtTime(gain, t + attack);
-  g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-  let node = o;
-  if (cutoff) { const f = ctx.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = cutoff; o.connect(f); node = f; }
-  node.connect(g).connect(dest);
-  o.start(t); o.stop(t + dur + 0.05);
-}
-/** A burst of filtered noise (drums, crackle). */
-function hiss(A, dest, t, dur, { type = 'highpass', freq = 6000, q = 0.7, gain = 0.1 } = {}) {
-  const { ctx, noiseBuf } = A;
-  const src = ctx.createBufferSource(), f = ctx.createBiquadFilter(), g = ctx.createGain();
-  src.buffer = noiseBuf; f.type = type; f.frequency.value = freq; f.Q.value = q;
-  g.gain.setValueAtTime(gain, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-  src.connect(f).connect(g).connect(dest);
-  src.start(t, Math.random() * 1.5); src.stop(t + dur + 0.05);
-}
-function kick(A, dest, t, gain = 0.5) {
-  const { ctx } = A, o = ctx.createOscillator(), g = ctx.createGain();
-  o.frequency.setValueAtTime(130, t); o.frequency.exponentialRampToValueAtTime(42, t + 0.18);
-  g.gain.setValueAtTime(gain, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.3);
-  o.connect(g).connect(dest); o.start(t); o.stop(t + 0.35);
-}
-const snare = (A, d, t, gain = 0.12) => hiss(A, d, t, 0.16, { type: 'bandpass', freq: 1800, q: 0.6, gain });
-const hat = (A, d, t, gain = 0.05) => hiss(A, d, t, 0.04, { freq: 7500, gain });
-/** An electric-piano chord (two sines per note, a soft bell on top). */
-function rhodes(A, d, t, notes, dur, gain = 0.06) {
-  for (const n of notes) { note(A, d, t, n, dur, { gain, attack: 0.01 }); note(A, d, t, n + 12, dur * 0.4, { gain: gain * 0.25 }); }
-}
-
-// --- the channels: { bar: beats per bar, beat: seconds, play(A, dest, t, i) schedules bar i at time t } ---
-const LOFI_CHORDS = [[53, 57, 60, 64], [52, 55, 59, 62], [50, 53, 57, 60], [48, 52, 55, 59]]; // Fmaj7 Em7 Dm7 Cmaj7
-const JAZZ = [[[55, 58, 62, 65], 43], [[52, 55, 58, 62], 48], [[53, 57, 60, 64], 41], [[50, 53, 57, 60], 38]]; // Gm7 C7 Fmaj7 Dm7
-// children's songs (public domain): Blinka lilla stjärna (4/4) and Imse vimse spindel (6/8), [midi, beats] per bar
-const TWINKLE = [[[60, 1], [60, 1], [67, 1], [67, 1]], [[69, 1], [69, 1], [67, 2]], [[65, 1], [65, 1], [64, 1], [64, 1]], [[62, 1], [62, 1], [60, 2]],
-  [[67, 1], [67, 1], [65, 1], [65, 1]], [[64, 1], [64, 1], [62, 2]], [[67, 1], [67, 1], [65, 1], [65, 1]], [[64, 1], [64, 1], [62, 2]]];
-const TWINKLE_SONG = [...TWINKLE.slice(0, 4), ...TWINKLE.slice(4), ...TWINKLE.slice(0, 4)];
-const TWINKLE_BASS = [48, 53, 53, 55, 48, 48, 48, 55, 48, 53, 53, 55];
-const IMSE = [[[60, 2], [60, 1], [60, 2], [62, 1]], [[64, 3], [64, 2], [64, 1]], [[62, 2], [60, 1], [62, 2], [64, 1]], [[60, 6]],
-  [[64, 3], [64, 2], [65, 1]], [[67, 6]], [[67, 2], [65, 1], [64, 2], [65, 1]], [[67, 3], [64, 3]],
-  [[60, 3], [60, 2], [62, 1]], [[64, 6]], [[64, 2], [62, 1], [60, 2], [62, 1]], [[64, 3], [60, 3]],
-  [[55, 2], [55, 1], [60, 2], [60, 1]], [[60, 2], [62, 1], [64, 2], [64, 1]], [[64, 2], [62, 1], [60, 2], [62, 1]], [[60, 6]]];
-const IMSE_BASS = [48, 48, 55, 48, 48, 43, 43, 48, 48, 48, 55, 48, 43, 48, 55, 48];
-const SYNTH = [57, 53, 48, 55]; // Am F C G (roots)
-const BACH = [[60, 64, 67, 72, 76], [60, 62, 69, 74, 77], [59, 62, 67, 74, 77], [60, 64, 67, 72, 76], [60, 64, 69, 76, 81], [60, 62, 66, 69, 74],
-  [59, 62, 67, 74, 79], [59, 60, 64, 67, 72], [57, 60, 64, 67, 72], [50, 57, 62, 66, 72], [55, 59, 62, 67, 71], [55, 58, 64, 67, 73],
-  [53, 57, 62, 69, 74], [53, 56, 62, 65, 71], [52, 55, 60, 67, 72], [52, 53, 57, 60, 65], [50, 53, 57, 60, 65], [43, 50, 55, 59, 65], [48, 52, 55, 60, 64]];
-
-export const CHANNELS = { // exported for the offline render in tools/sonostest.html
-  lofi: { bar: 4, beat: 0.8, play(A, d, t, i) {
-    const b = this.beat, ch = LOFI_CHORDS[i % 4];
-    rhodes(A, d, t, ch, b * 2.2); rhodes(A, d, t + b * 2.5, ch.slice(1), b * 1.4, 0.045);
-    note(A, d, t, ch[0] - 12, b * 1.8, { gain: 0.22, attack: 0.02 }); note(A, d, t + b * 2, ch[0] - 12, b * 1.5, { gain: 0.18, attack: 0.02 });
-    kick(A, d, t, 0.35); kick(A, d, t + b * 2.5, 0.25); snare(A, d, t + b, 0.07); snare(A, d, t + b * 3, 0.07);
-    for (let k = 0; k < 8; k++) hat(A, d, t + b * (k / 2 + (k % 2 ? 0.08 : 0)), 0.02);
-    for (let k = 0; k < 6; k++) hiss(A, d, t + Math.random() * b * 4, 0.01, { freq: 3000, gain: 0.03 }); // vinyl crackle
-  } },
-  jazz: { bar: 4, beat: 0.5, play(A, d, t, i) {
-    const b = this.beat, [ch, root] = JAZZ[i % 4], sw = b * 0.66;
-    [0, 7, 3, 5].forEach((iv, k) => note(A, d, t + k * b, root + iv - (k === 3 ? 1 : 0), b * 0.95, { type: 'triangle', gain: 0.22, attack: 0.01, cutoff: 900 })); // walking bass
-    rhodes(A, d, t + b + sw - b * 0.66, ch, b * 0.6, 0.045); rhodes(A, d, t + 3 * b, ch, b * 0.5, 0.04);
-    for (let k = 0; k < 4; k++) { hiss(A, d, t + k * b, 0.25, { freq: 5000, gain: 0.025 }); if (k % 2) hiss(A, d, t + k * b + sw, 0.15, { freq: 5000, gain: 0.018 }); }
-    if (i % 2) for (const [k, n] of [[0, ch[3] + 12], [1.66, ch[2] + 12], [2.5, ch[1] + 12]]) note(A, d, t + k * b, n, b * 0.8, { type: 'triangle', gain: 0.06 }); // a little right-hand line
-  } },
-  kids: { bar: 4, beat: 0.55, play(A, d, t, i) {
-    const total = TWINKLE_SONG.length + IMSE.length, k = i % total;
-    const imse = k >= TWINKLE_SONG.length, j = imse ? k - TWINKLE_SONG.length : k;
-    const bar = imse ? IMSE[j] : TWINKLE_SONG[j], unit = imse ? this.beat * 4 / 6 : this.beat; // 6/8: six eighths in the same bar length
-    let at = t;
-    for (const [n, len] of bar) { note(A, d, at, n + 12, len * unit * 0.95, { type: 'triangle', gain: 0.12, attack: 0.01 }); at += len * unit; }
-    const root = imse ? IMSE_BASS[j] : TWINKLE_BASS[j];
-    note(A, d, t, root, this.beat * 1.8, { type: 'triangle', gain: 0.15 }); note(A, d, t + this.beat * 2, root + 7, this.beat * 1.8, { type: 'triangle', gain: 0.12 });
-  } },
-  synth: { bar: 4, beat: 0.6, play(A, d, t, i) {
-    const b = this.beat, r = SYNTH[i % 4];
-    for (let k = 0; k < 8; k++) note(A, d, t + k * b / 2, r - 12 + (k % 2 ? 12 : 0), b * 0.45, { type: 'sawtooth', gain: 0.07, cutoff: 700 });
-    const third = r === 57 ? 3 : 4;
-    [0, third, 7, 12, 7, third].forEach((iv, k) => note(A, d, t + k * b * 4 / 6, r + 12 + iv, b * 0.5, { type: 'square', gain: 0.025, cutoff: 2500 }));
-    note(A, d, t, r, b * 4, { type: 'sawtooth', gain: 0.03, attack: 0.4, cutoff: 1200, detune: 7 }); note(A, d, t, r + 7, b * 4, { type: 'sawtooth', gain: 0.025, attack: 0.4, cutoff: 1200, detune: -7 });
-    for (let k = 0; k < 4; k++) kick(A, d, t + k * b, 0.4);
-    snare(A, d, t + b, 0.12); snare(A, d, t + 3 * b, 0.12);
-    for (let k = 0; k < 8; k++) hat(A, d, t + (k + 0.5) * b / 2, 0.025);
-  } },
-  bach: { bar: 4, beat: 0.75, play(A, d, t, i) {
-    const ch = BACH[i % BACH.length], s = this.beat / 4; // sixteenths: 1 2 3 4 5 3 4 5, twice
-    const order = [0, 1, 2, 3, 4, 2, 3, 4];
-    for (let k = 0; k < 16; k++) {
-      const n = ch[order[k % 8]], held = k % 8 < 2; // the two low notes ring on
-      note(A, d, t + k * s, n, held ? s * (8 - k % 8) : s * 2.5, { type: 'triangle', gain: held ? 0.09 : 0.075, attack: 0.004 });
-    }
-  } },
-  rain: { bar: 4, beat: 0.5, continuous(A, d) { // a steady rain: looped noise, low and soft
-    const { ctx, noiseBuf } = A, src = ctx.createBufferSource(), f = ctx.createBiquadFilter(), g = ctx.createGain();
-    src.buffer = noiseBuf; src.loop = true; f.type = 'lowpass'; f.frequency.value = 1400; g.gain.value = 0.18;
-    src.connect(f).connect(g).connect(d); src.start();
-    return () => src.stop();
-  }, play(A, d, t) {
-    for (let k = 0; k < 14; k++) hiss(A, d, t + Math.random() * 2, 0.015 + Math.random() * 0.03, { type: 'bandpass', freq: 1500 + Math.random() * 2500, q: 1, gain: 0.05 + Math.random() * 0.12 }); // the fire
-    if (Math.random() < 0.4) hiss(A, d, t + Math.random() * 2, 0.4, { type: 'lowpass', freq: 300, gain: 0.08 }); // a log settling
-  } },
-};
+// Six channels of licensed recordings (#500), shared by room speakers and the car radio.
+// Files stream through the existing positional/muffled/ducked master graph. Failed formats try
+// the next recording once; if the whole channel fails it stays quiet with a visible status.
+// No generated music can restore the retired chiptune/MIDI sound on an offline visit.
 
 /** What the SYMFONISK speakers and the car's radio (#268) share: a channel's sub-mix into `this.bus.mix`, and composing
  * a bar at a time ahead — or, for a channel with `tracks` (#416), streaming its files into that sub-mix. */
@@ -134,10 +19,10 @@ class Composer {
     return S.channels[this.channel].name;
   }
 
-  /** The currently playing track and artist, or null if generated (#462). */
+  /** The currently playing track and artist, or a load status (#500) (#462). */
   get trackName() {
     const t = this.file?.track;
-    return t ? `${t.title} – ${t.artist}` : null;
+    return t ? `${t.title} – ${t.artist}` : this.unavailable ? 'Musiken kunde inte laddas' : null;
   }
 
   /** A fresh sub-mix for the channel (the old one fades out with what it had scheduled). */
@@ -145,31 +30,25 @@ class Composer {
     this.stopChannel();
     const g = A.ctx.createGain(); g.gain.value = 1; g.connect(this.bus.mix);
     this.ch = g;
-    this.barNo = 0; this.nextBar = A.ctx.currentTime + 0.08;
+    this.barNo = 0;
     this.songStart = performance.now();
     this.trackNo = 0;
-    if (!this.startTrack(A)) this.startGenerated(A);
+    this.failures=0;this.unavailable=false;
+    if (!this.startTrack(A)) this.unavailable=true;
   }
 
-  /** The channel's generated music (also the fallback when its files fail). */
-  startGenerated(A) {
-    this.nextBar = Math.max(this.nextBar, A.ctx.currentTime + 0.05);
-    const c = CHANNELS[S.channels[this.channel].id];
-    this.stopCont = c.continuous?.(A, this.ch) ?? null;
-  }
-
-  /** Start the channel's selected recording, rotating after ended; false for a generated-only channel. */
+  /** Start the channel's selected recording, rotating after ended; false if no recordings are configured. */
   startTrack(A) {
     const tracks = S.channels[this.channel].tracks ?? [];
     if (!tracks.length) return false;
     const k = this.trackNo % tracks.length, track = tracks[k];
     this.trackNo = k;
-    // Queue callbacks so even a track with no playable formats is assigned before fallback runs.
+    // Queue callbacks so even a track with no playable formats is assigned before the failure callback runs.
     const after = (bad) => queueMicrotask(() => {
       if (this.file !== file) return;
       this.dropFile();
-      if (bad) { this.startGenerated(A); }
-      else { this.trackNo = k + 1; this.startTrack(A); }
+      if(bad&&++this.failures>=tracks.length)this.unavailable=true;
+      else {if(!bad)this.failures=0;this.trackNo=k+1;this.startTrack(A);}
       this.onTrack?.();
     });
     const file = new MusicFile(A, this.ch, track, { ended: () => after(false), failed: () => after(true) });
@@ -186,26 +65,19 @@ class Composer {
     const A = audioParts();
     if (this.ch && A) { const g = this.ch, t = A.ctx.currentTime; g.gain.setTargetAtTime(0, t, 0.05); setTimeout(() => g.disconnect(), 1500); }
     this.dropFile();
-    this.stopCont?.(); this.stopCont = null;
     this.ch = null;
   }
 
-  /** Schedule the bars up to `lookahead` ahead (not while muted: the master is silent; not while a file plays). */
-  compose(A) {
-    if (!this.ch) this.startChannel(A); // the context came up after play()
-    const t = A.ctx.currentTime;
-    if (isMuted() || this.file) { this.nextBar = Math.max(this.nextBar, t); return; } // silent master / a file plays
-    const c = CHANNELS[S.channels[this.channel].id], len = c.bar * c.beat;
-    if (this.nextBar < t - 1) this.nextBar = t + 0.05; // a long stall (a hidden tab): start afresh
-    while (this.nextBar < t + S.lookahead) { c.play(A, this.ch, this.nextBar, this.barNo++); this.nextBar += len; }
-  }
+  /** Bring up the lazy transport after the sound context is activated. */
+  compose(A) { if (!this.ch) this.startChannel(A); }
+
 }
 
 export class Sonos extends Composer {
   /** speakers: the furniture targets of kind 'speaker'; panel: #sonos-panel. */
   constructor(speakers, panel) {
     super();
-    Object.assign(this, { speakers, panel, playing: false, channel: 0, volume: S.start, bus: null, ch: null, nextBar: 0, barNo: 0, stopCont: null });
+    Object.assign(this, { speakers, panel, playing: false, channel: 0, volume: S.start, bus: null, ch: null, barNo: 0 });
     const self = this;
     for (const t of speakers) Object.defineProperty(t, 'verb', { get: () => (self.playing ? 'styra musiken på' : 'spela musik på') });
     this.nameEl = panel.querySelector('.name');
@@ -327,7 +199,7 @@ export class Sonos extends Composer {
 export class CarRadio extends Composer {
   constructor() {
     super();
-    Object.assign(this, { playing: false, channel: 0, bus: null, ch: null, nextBar: 0, barNo: 0, stopCont: null, duck: 1, songStart: 0, k: null });
+    Object.assign(this, { playing: false, channel: 0, bus: null, ch: null, barNo: 0, duck: 1, songStart: 0, k: null });
   }
 
   ensureBus() {

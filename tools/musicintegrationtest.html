@@ -39,7 +39,7 @@ frame.onload = async () => {
     laptop.set(true); laptop.update(.1);
     check(await audible(laptop.music), 'laptop clip streams a recording');
     let clock = 0; app.turbo.now = () => clock; app.turbo.start(); app.turbo.update(.1);
-    check(await audible(app.turbo.recording) && app.turbo.step === 0, 'Kaffeturbo streams instead of scheduling generated notes');
+    check(await audible(app.turbo.recording) && !app.turbo.bus, 'Kaffeturbo streams instead of scheduling generated notes');
     clock = app.turbo.until - 1; app.turbo.update(.1);
     check(app.turbo.recording.file.el.playbackRate === 1.25, 'Kaffeturbo music speeds up at the end');
     clock += 2; const turboEl = app.turbo.recording.file.el; app.turbo.update(.1);
@@ -50,14 +50,20 @@ frame.onload = async () => {
     const { MUSIC } = await w.eval(`import("${new URL('../src/config.js', location.href)}")`);
     const { failedFiles } = await w.eval(`import("${new URL('../src/music.js', location.href)}")`);
     for (const list of Object.values(MUSIC)) if (Array.isArray(list)) for (const t of list) for (const f of t.files) failedFiles.add(f);
+    const ctx=audio.audioParts().ctx,native=ctx.createOscillator.bind(ctx);let generated=0;
+    ctx.createOscillator=(...args)=>{generated++;return native(...args)};
+    app.sonos.play();await wait(50);
+    check(app.sonos.unavailable&&!app.sonos.file&&app.sonos.trackName==='Musiken kunde inte laddas','all failed speaker tracks stop after bounded attempts and show a load status');app.sonos.pause();
+    radio.play();await wait(50);check(radio.unavailable&&!radio.file,'failed car recordings also stay quiet');radio.stop();
     app.turbo.start(); app.turbo.update(.1);
-    check(app.turbo.recording.bad && app.turbo.step > 0, 'unavailable Kaffeturbo files fall back to generated notes');
+    check(app.turbo.recording.bad && !app.turbo.bus, 'unavailable Kaffeturbo stays silent with no generated tune');
     app.turbo.stop(); app.turbo.update(.1);
     laptop.set(true); laptop.update(.3);
-    check(laptop.music.bad && laptop.on, 'unavailable laptop files select beat fallback and keep the feed running');
+    check(laptop.music.bad && laptop.on, 'unavailable laptop files stay silent and keep the feed running');
     laptop.set(false);
     pc.toggle(); pc.update(.3);
-    check(pc.music.bad && pc.isOpen, 'unavailable PC files select fallback and keep the game running'); pc.toggle();
+    check(pc.music.bad && pc.isOpen, 'unavailable PC files stay silent and keep the game running'); pc.toggle();
+    check(generated===0,'failed music in every player creates no synthetic notes');ctx.createOscillator=native;
   } catch (e) { lines.push('FAIL ' + e.stack); }
   document.querySelector('#out').textContent = (lines.some((s) => s.startsWith('FAIL')) ? 'SOME FAILED' : 'ALL PASS') + '\n' + lines.join('\n');
 };

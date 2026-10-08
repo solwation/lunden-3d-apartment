@@ -32,14 +32,14 @@ src/nest.js            smart speakers (#325, NEST): a smart display (screen + fa
                        boop); speech = Web Speech sv-SE (silent when muted), a bubble over a round one, a caption card on the display;
                        the display idles with a clock + weather icon, Miele's photo now and then, dimmed by night (canvas redrawn on
                        change); the Sonos ducked while one talks near; stats `nest` (first per speaker); F hushes / hides them
-src/sonos.js           music in the SYMFONISK speakers (#187, SONOS): six CC0 channels, two recordings each, one mix
+src/sonos.js           music in the SYMFONISK speakers (#187, SONOS): six CC BY 4.0 channels, two recordings each, one mix
                        → a panner per speaker (walls / the other floor muffle), #sonos-panel (⏮ ⏭ ⏯ volume, reading mode);
                        `Composer` (channel sub-mix + scheduling) is shared with the car's `CarRadio` (#268).
                        Real music (#416): a channel's `tracks` (files in music/, licences in music/CREDITS.md) stream through
                        an <audio> + MediaElementAudioSourceNode into its sub-mix, fetched only when it plays (`trackSrc`
-                       picks .ogg / .mp3 by canPlayType); a failed / refused file falls back to the generated music; the
-                       panel / car screen show "title – artist". Twelve CC0 recordings (under 20 MB, 64 kbps Opus + MP3, mono; ten full tracks, two 120 s excerpts),
-                       checked/downloaded 2026-10-07. Titles/artists/source links/licences/edits in music/CREDITS.md and
+                       picks .ogg / .mp3 by canPlayType); failed formats try the alternative and then the other channel track; all failed = silent status; the
+                       panel / car screen show "title – artist". Twelve studio recordings (84.62 MB combined alternatives, 96 kbps Opus / 128 kbps MP3 stereo, all full length),
+                       checked/downloaded 2026-10-08. Titles/artists/source links/licences/edits in music/CREDITS.md and
                        music/index.html ("Om musiken" in the start/pause menu); original hashes in music/sources.json.
 src/music.js           shared lazy MusicFile transport: format fallback, 8 s stall timeout, release media on stop;
                        MusicLoop for the positional PC/laptop and non-positional Kaffeturbo (faster near the end).
@@ -47,7 +47,7 @@ src/music.js           shared lazy MusicFile transport: format fallback, 8 s sta
                        game/ambient music; TVs have no programme audio and remain silent. tools/musictest.html checks
                        every real Opus/MP3, audible samples, lazy loading, failed formats, mute and loop cleanup;
                        tools/musicintegrationtest.html covers appliance playback, radio rotation, shutdown and fallback
-                       (click its Starta musiktest button with a real browser/Playwright click to activate iframe media)
+                       (click its Starta musiktest button with a real browser/Playwright click to activate iframe media); musicreloadtest checks actual saved-channel/volume reload
 tools/cattest.html     headless test of cat placement behind every door/wardrobe; up on seats, beds and tables (#200)
 tools/pettest.html     headless test of petting the cat (eyes, hand, stats counter, the photo; then it walks off and is gone)
 tools/mieletest.html   headless test of Miele (#328, &miele): her coat, first sight (fireworks, +1000, once), taken up (both hands, not
@@ -178,7 +178,7 @@ tools/kittentest.html  headless test of kittens (#363): the seeded draw (~KITTEN
   change, once per month change (`applySeason` in the loop).
 - Statistics (`src/stats.js`): cats found per coat, cats petted, doors, toilet lids, steps/metres,
   stair trips, time inside; reset on the start screen.
-- Sound effects are synthesised and positional; music uses lazy CC0 recordings with generated fallbacks (#416). The AudioContext is started by the
+- Sound effects are synthesised and positional; music uses lazy licensed recordings; unavailable media stays quiet (#500). The AudioContext is started by the
   start-screen buttons (browser autoplay rules). M / the speaker button mutes.
 
 
@@ -187,3 +187,5 @@ Cat placement test (#542): chance.appear=1 guarantees an attempt, not a safe spo
 Closet cat floor (#542): roomSpot uses stairUnderside with CAT_FLOOR_HEADROOM (0.8 m assumed resting-cat clearance) for Entréplan floor below flight B/winders. It still excludes flight A's solid/low underside and the upper-storey stair footprint. Previously rejecting every stairHeight footprint left only a narrow west strip in the Klk; seed 4242 from west of the door (centre 3.3514,6.15435) missed it in all 120 attempts. cattest retains this regression and checks actual lowest/highest visible vertices against the floor/soffit, at least one cat below the high soffit, and no upper floor cat in the stair hole.
 
 Miele fireworks verification (#547): mieletest observes spark colours over the first three seconds rather than sampling only at the end (the random 0.65–0.95 s pop times can leave no sparks then). Separate checks retain single counting and eventual expiry; deterministic random endpoints cover both extremes. ?only=fireworks scopes the browser test to coat/discovery/hearts without carrying/photo/rarity loops. Production effects/timing are unchanged.
+
+Music refresh (#500): all twelve #416 recordings are retired; previous-sources-416.json preserves original source history. Josh Woodward instrumental pop/folk/rock, Kevin MacLeod bossa/jazz/ukulele and Scott Buckley piano/cello/strings replace them. Stable channel ids/order retain saved index meanings despite Lugn pop/Lätt och glatt/Pop och rock names. Full-length stereo and higher encoding rates are explicit changes, not re-encoding of the retired files. CREDITS.md, sources.json and the public credits page include CC BY 4.0 attribution, source/artist links, original hashes and processing notices; preview controls preload nothing. Composer removes generated CHANNELS and makes a bounded attempt at both channel recordings before a load status. PC/laptop/Turbo remove their generated fallback scheduling; their visual/game flows continue with unavailable audio. Browser tests cover all 24 formats, lazy requests, mute, channel rotation, touch controls, failed streams with zero generated oscillators, media shutdown and real saved-state reload. Human listening review remains outstanding; these technical checks do not establish subjective musical quality.
