@@ -1,0 +1,22 @@
+PASS all static window/door glazing has shared opaque reflective physical materials
+PASS one small environment is shared across every facade and lit pane
+PASS street storey 1 has detailed actual openings
+PASS street storey 2 has detailed actual openings
+PASS street storey 3 has detailed actual openings
+PASS street storey 4 has detailed actual openings
+PASS courtyard storey 1 has detailed actual openings
+PASS courtyard storey 2 has detailed actual openings
+PASS courtyard storey 3 has detailed actual openings
+PASS courtyard storey 4 has detailed actual openings
+PASS ground and roof-terrace patio doors have distinct glazed leaf detailing
+PASS both original green ground/loft entry types remain
+PASS every pane center is exposed reflective glass rather than a flat wall/filler/frame
+PASS all new panes stay inside the original opening extents
+PASS jambs/sash rails/rubber seals/door handles are merged into shared batches
+PASS night dims reflected daylight and keeps existing warm occupied panes
+PASS L1007 real entrance glazing stays transparent and independent
+PASS L1007 original door still opens normally
+PASS L1007 original door still closes normally
+PASS L1007 existing top-hung window interactions remain
+PASS no new neighbor opening interaction is added
+ALL PASS

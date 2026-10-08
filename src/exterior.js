@@ -1,6 +1,7 @@
+import { neighborGlass } from './neighborglass.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { HUS_L as H, COLORS, FENCE_HEIGHT, SEASON, VERTICAL, storeyFloor, CORE, DOOR_HEIGHT, DOOR_TRIM } from './config.js';
+import { HUS_L as H, NEIGHBOR_OPENINGS as O, COLORS, FENCE_HEIGHT, SEASON, VERTICAL, storeyFloor, CORE, DOOR_HEIGHT, DOOR_TRIM } from './config.js';
 import { registerSnow } from './seasons.js';
 import { entryParts, entryMaterials, entryHandleParts } from './entrancedoor.js';
 import { wallLine, wallRect } from './roofs.js';
@@ -171,12 +172,17 @@ function spiralStair(t, top, steel, slabs) {
 export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, mats }) {
   const group = new THREE.Group();
   const bricks = [], renders = [], glassGeo = [], frames = [], solids = [], rails = [], roofs = [], pilasters = [], panels = [];
+  const seals = [], openingHardware = [], neighborOpenings = [];
   const patios = [], hedges = [], fences = [], copings = [];
   const segments = []; // collision for the neighbours' screen walls and hedges (lawn side)
   const loftD = H.loftgangDepth;
   const upperTop = roofTop + H.upperStoreys * H.storeyHeight;
   const entryHandles = [], entryWood = [], entryFrames = [], entryGlass = [], entryLeaves = [];
   const staticEntry = (x0,x1,y0,height,z) => {
+    // Same leaf and chrome hardware as L1007, now seated in a visible outer jamb.
+    frames.push(boxGeo(x0-O.frame,x0,y0,y0+height,z-O.depth/2,z+O.depth/2),boxGeo(x1,x1+O.frame,y0,y0+height,z-O.depth/2,z+O.depth/2),boxGeo(x0-O.frame,x1+O.frame,y0+height,y0+height+O.frame,z-O.depth/2,z+O.depth/2));
+    for(const y of [...O.hingeYs,height-O.hingeTop])openingHardware.push(boxGeo(x0,x0+O.hinge,y0+y,y0+y+O.hingeHeight,z+O.hingeZ[0],z+O.hingeZ[1]));
+    neighborOpenings.push({x0,x1,y0,y1:y0+height,z,north:true,kind:'entry'});
     const {parts,pane} = entryParts(x1-x0,height);
     for(const p of parts) {
       const [w,h,t]=p.size,[x,y,d]=p.pos;
@@ -205,30 +211,29 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
       staticEntry(o.x0+.01,o.x1-.01,o.y0,height,z);
       fakeWindow({...o,y0:o.y0+height},z,northSide,glassOut);return;
     }
-    const s = northSide ? -1 : 1;
-    glassOut.push(quadZ(o.x0, o.x1, o.y0, o.y1, z + s * 0.002, northSide));
-    const f = 0.06;
-    frames.push(
-      boxGeo(o.x0, o.x1, o.y0, o.y0 + f, z - 0.02, z + 0.02),
-      boxGeo(o.x0, o.x1, o.y1 - f, o.y1, z - 0.02, z + 0.02),
-      boxGeo(o.x0, o.x0 + f, o.y0, o.y1, z - 0.02, z + 0.02),
-      boxGeo(o.x1 - f, o.x1, o.y0, o.y1, z - 0.02, z + 0.02),
-    );
-    // our window's parts (#272, `win` = its WINDOWS spec): the transom bar, the living room's off-centre mullion,
-    // the top-hung sash's rails standing a little proud of the frame
-    const w = o.win;
-    if (!w) return;
-    const ty = w.transom > 0 ? o.y1 - w.transom : o.y1;
-    if (w.transom > 0) frames.push(boxGeo(o.x0, o.x1, ty - f / 2, ty + f / 2, z - 0.02, z + 0.02));
-    let a = o.x0 + f, b = o.x1 - f;
-    if (w.split > 0) {
-      const side = w.opens ?? 'a', mx = side === 'a' ? o.x0 + w.split * (o.x1 - o.x0) : o.x1 - w.split * (o.x1 - o.x0);
-      frames.push(boxGeo(mx - f / 2, mx + f / 2, o.y0, ty, z - 0.02, z + 0.02));
-      if (side === 'a') b = mx - f / 2; else a = mx + f / 2;
+    const sign=northSide?-1:1,f=O.frame,d=O.depth/2;
+    const floor=[1,2,3,4].map(storeyFloor).find(y=>Math.abs(o.y0-y)<O.floorTolerance);
+    const door=!northSide&&floor!==undefined&&o.y1-o.y0>DOOR_HEIGHT;
+    const record={...o,z,north:northSide,kind:door?'patio':'window',panes:[]};neighborOpenings.push(record);
+    frames.push(boxGeo(o.x0,o.x1,o.y0,o.y0+f,z-d,z+d),boxGeo(o.x0,o.x1,o.y1-f,o.y1,z-d,z+d),boxGeo(o.x0,o.x0+f,o.y0,o.y1,z-d,z+d),boxGeo(o.x1-f,o.x1,o.y0,o.y1,z-d,z+d));
+    const pane=(a,b,lo,hi,zp)=>{
+      if(b<=a||hi<=lo)return;
+      glassOut.push(quadZ(a,b,lo,hi,zp,northSide));record.panes.push({x0:a,x1:b,y0:lo,y1:hi,z:zp});
+      const r=O.gasket,zs=zp+sign*O.gasket/2;
+      seals.push(boxGeo(a,b,lo,lo+r,zs-O.gasket/2,zs+O.gasket/2),boxGeo(a,b,hi-r,hi,zs-O.gasket/2,zs+O.gasket/2),boxGeo(a,a+r,lo,hi,zs-O.gasket/2,zs+O.gasket/2),boxGeo(b-r,b,lo,hi,zs-O.gasket/2,zs+O.gasket/2));
+    };
+    const w=o.win??{},ty=door?Math.min(o.y0+DOOR_HEIGHT-DOOR_TRIM.gap,o.y1-f):w.transom>0?o.y1-w.transom:o.y1;
+    if(ty<o.y1-f){frames.push(boxGeo(o.x0,o.x1,ty-f/2,ty+f/2,z-d,z+d));pane(o.x0+f,o.x1-f,ty+f/2,o.y1-f,z+sign*.002);}
+    let a=o.x0+f,b=o.x1-f;
+    if(w.split>0){const side=w.opens??'a',mx=side==='a'?o.x0+w.split*(o.x1-o.x0):o.x1-w.split*(o.x1-o.x0);frames.push(boxGeo(mx-f/2,mx+f/2,o.y0,ty,z-d,z+d));if(side==='a'){pane(mx+f/2,b,o.y0+f,ty-f/2,z+sign*.002);b=mx-f/2;}else{pane(a,mx-f/2,o.y0+f,ty-f/2,z+sign*.002);a=mx+f/2;}}
+    const lo=o.y0+f,hi=ty<o.y1-f?ty-f/2:o.y1-f,r=door?O.patioRail:O.sash,bottom=door?O.patioBottom:r,zs=z+sign*O.sashOut,sd=O.sashDepth/2;
+    frames.push(boxGeo(a,b,lo,lo+bottom,zs-sd,zs+sd),boxGeo(a,b,hi-r,hi,zs-sd,zs+sd),boxGeo(a,a+r,lo,hi,zs-sd,zs+sd),boxGeo(b-r,b,lo,hi,zs-sd,zs+sd));
+    pane(a+r,b-r,lo+bottom,hi-r,zs);
+    if(door) for(const p of entryHandleParts(b-a)) {
+      // Reuse L1007's actual chrome rose/neck/lever dimensions on the exterior leaf face.
+      const [pw,ph,pt]=p.size,[px,py,pz]=p.pos;if(pz*sign<0)continue;
+      openingHardware.push(boxGeo(a+px-pw/2,a+px+pw/2,o.y0+py-ph/2,o.y0+py+ph/2,zs+pz-pt/2,zs+pz+pt/2));
     }
-    const lo = o.y0 + f, hi = w.transom > 0 ? ty - f / 2 : o.y1 - f, r = 0.045, zs = z + s * 0.02;
-    frames.push(boxGeo(a, b, lo, lo + r, zs - 0.015, zs + 0.015), boxGeo(a, b, hi - r, hi, zs - 0.015, zs + 0.015),
-      boxGeo(a, a + r, lo, hi, zs - 0.015, zs + 0.015), boxGeo(b - r, b, lo, hi, zs - 0.015, zs + 0.015));
   };
   const fakeWindowX = (o, x, west) => { // o: z0/z1/y0/y1 on a gable
     const s = west ? -1 : 1;
@@ -559,15 +564,19 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
   add(renders, new THREE.MeshStandardMaterial({ color: H.render, roughness: 0.95 }));
   add(pilasters, new THREE.MeshStandardMaterial({ color: COLORS.brick, roughness: 0.95 }));
   add(solids, wall);
-  add(frames, frame);
-  add(glassGeo, new THREE.MeshStandardMaterial({ color: 0x33434d, roughness: 0.1, metalness: 0.4 }), false);
+  add(frames, frame).name='neighborFrames';
+  add(seals,new THREE.MeshStandardMaterial({color:O.gasketColor,roughness:O.gasketRoughness})).name='neighborSeals';
+  add(openingHardware,entryMaterials().handle).name='neighborHardware';
+  const glassMaterial=neighborGlass();
+  add(glassGeo,glassMaterial,false).name='neighborGlass';
+  group.userData.neighborOpenings=neighborOpenings;
   add(rails, new THREE.MeshStandardMaterial({ color: COLORS.balcony, roughness: 0.5, metalness: 0.3 }));
   add([...fascia, ...capping], new THREE.MeshStandardMaterial({ color: Lf.fascia, roughness: 0.4, metalness: 0.4 }));
   const railMesh = add(balc, new THREE.MeshStandardMaterial({ color: Lf.door, roughness: 0.45, metalness: 0.2 }));
   if (railMesh) railMesh.name = 'terraceRails'; // the terraces' railings (tools/terracetest.html)
   group.userData.terraces = { list: terraces, y3, deck: deckY, parapet: par }; // #350
   const entryMats=entryMaterials();
-  add(entryWood,entryMats.wood);add(entryFrames,entryMats.frame);add(entryGlass,entryMats.glass,false);
+  add(entryWood,entryMats.wood);add(entryFrames,entryMats.frame);add(entryGlass,glassMaterial,false).name="neighborEntryGlass";
   add(entryHandles, entryMaterials().handle);
   group.userData.entryLeaves=entryLeaves;
   // #433: a wall light by every street-side front door on våning 1 (ours too): the box joins the lanterns' housings,
@@ -615,9 +624,10 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
   add(lampGlow, glowMat, false);
   /** night 0 … 1 (with the window lights): the lanterns by the loftgång doors glow after dusk. */
   // the upper units' courtyard windows (#337): a share of them lit after dusk (one material, its emissive switched)
-  const litMat = new THREE.MeshStandardMaterial({ color: 0x33434d, roughness: 0.1, metalness: 0.4, emissive: 0xffc98a, emissiveIntensity: 0 });
-  add(litGlass, litMat, false);
+  const litMat = glassMaterial.clone();litMat.emissive.setHex(0xffc98a);
+  add(litGlass, litMat, false).name="neighborLitGlass";
   group.userData.update = (night) => {
+    glassMaterial.envMapIntensity=litMat.envMapIntensity=THREE.MathUtils.lerp(O.reflectionDay,O.reflectionNight,night);
     glowMat.color.copy(night > 0.35 ? lit : off);
     litMat.emissiveIntensity = night > 0.35 ? 0.6 : 0;
     // the front-door lights (#433): on after dusk with a short fade (hysteresis: no flicker)

@@ -6,6 +6,12 @@ Related: [performance](performance.md), [plan-material](plan-material.md).
 ## Module and test map
 
 ```text
+src/neighborglass.js   opaque MeshPhysicalMaterial for unmodeled neighboring interiors (#516), shared by exterior.js's
+                       ordinary/occupied/entrance glass batches. One six-face 128 px procedural CubeTexture is reused;
+                       clearcoat and view-dependent envMap reflections, no live mirror pass or additional lights.
+                       Night lowers environment intensity and preserves existing warm occupied-window emission.
+                       NEIGHBOR_OPENINGS centralizes visual assumptions; reflection is a generic outdoor impression,
+                       not a surveyed or live reflection of surrounding buildings. L1007's clear materials are independent.
 src/architectureedges.js sharp architectural edges (#474), captured before loose furniture/decor is added;
                        excludes transparent overlays, cabinet contents and explicit loose roots. One static batch per floor,
                        one per moving door/fitting/lift anchor; 30° creases, no triangle diagonals, 1 mm depth bias with depth testing.

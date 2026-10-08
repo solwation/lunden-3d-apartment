@@ -3073,3 +3073,12 @@ export const REARRANGE = { reach: 6, supportGap: 0.06, poll: 3000 };
 
 // #514: marker graffiti on bikeNE's back west wall; dimensions/height are visual assumptions.
 export const CHEAT_NOTE = { x: -16.318, z: 3.15, width: 1.9, height: 1.25, heightAt: 1.55, fontTimeout: 2000, dayHour: 12, nightHour: 0 };
+
+// #516: neighboring opaque glazing/frame detailing. Frame/sash and patio-leaf rails follow L1007's
+// existing world.js/doors.js models; gasket/hardware/reflection choices are visual assumptions.
+export const NEIGHBOR_OPENINGS = {frame: .06, depth: .1, sash: .045, sashDepth: .04, sashOut: .03,
+  gasket: .006, gasketColor: 0x202626, gasketRoughness: .85, patioRail: .07, patioBottom: .1, floorTolerance: .12,
+  reflectionSize: 128, glassColor: 0x65818b, roughness: .07, metalness: .45, clearcoatRoughness: .04,
+  sky:'#87b5d3',horizon:'#e1e8e5',ground:'#657567',groundDark:'#303e37',silhouette:'#637e83',
+  reflectionDay: 1.4, reflectionNight: .12, hinge: .012, hingeHeight: .085, hingeYs: [.25,1.05], hingeTop: .2, hingeZ: [-.04,-.025],
+};

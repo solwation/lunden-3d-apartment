@@ -1,0 +1,35 @@
+PASS one terrace per upper flat, west → east: L1201 L1202 L1203 L1204 L1205 L1206 L1207 L1208 L1209
+PASS L1201: 5.93 × 1.9 m = 11.27 m² vs 12 m² (-6.1 %)
+PASS L1201: a closed polygon
+PASS L1202: 5.55 × 1.9 m = 10.55 m² vs 11 m² (-4.1 %)
+PASS L1202: a closed polygon
+PASS L1203: 5.55 × 1.9 m = 10.55 m² vs 11 m² (-4.1 %)
+PASS L1203: a closed polygon
+PASS L1204: 5.19 × 1.9 m = 9.86 m² vs 10 m² (-1.4 %)
+PASS L1204: a closed polygon
+PASS L1205: 5.27 × 1.9 m = 10.02 m² vs 10 m² (0.2 %)
+PASS L1205: a closed polygon
+PASS L1206: 5.55 × 1.9 m = 10.55 m² vs 11 m² (-4.1 %)
+PASS L1206: a closed polygon
+PASS L1207: 5.55 × 1.9 m = 10.55 m² vs 11 m² (-4.1 %)
+PASS L1207: a closed polygon
+PASS L1208: 5.55 × 1.9 m = 10.55 m² vs 11 m² (-4.1 %)
+PASS L1208: a closed polygon
+PASS L1209: 5.93 × 1.9 m = 11.27 m² vs 12 m² (-6.1 %)
+PASS L1209: a closed polygon
+PASS the std group's terraces are alike (10.55, 10.55, 10.55, 10.55, 10.55)
+PASS 12 > 11 > 10: L1201 11.27, L1209 11.27 > std 10.55 > L1204 9.86, L1205 10.02
+PASS L1201 | L1202 meet at x -35.825
+PASS L1202 | L1203 meet at x -30.275
+PASS L1203 | L1204 meet at x -24.725
+PASS L1204 ends at the loft's west wall (-19.54), L1205 starts at its east wall (-16.27)
+PASS L1205 | L1206 meet at x -11.000
+PASS L1206 | L1207 meet at x -5.450
+PASS L1207 | L1208 meet at x 0.100
+PASS L1208 | L1209 meet at x 5.650
+PASS L1201 / L1209 reach the gables (-41.75 / 11.58)
+PASS the exterior carries its terrace data
+PASS deck 0.06 and parapet 0.3 over våning 4's floor
+PASS the railing's top is 1.100 m over the finished deck (rail 1.1; not parapet + rail = 1.40)
+
+ALL PASS
