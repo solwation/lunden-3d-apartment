@@ -447,13 +447,12 @@ export const SITE = {
   // "P-platser för S:t Lars området" between the hedge (z −16.3) and a low green strip along Hus L (z −3.5…−2.9, open at
   // the portik); one row of stalls nose to the hedge (the plan's ticks, z −16.3…−11.3), none from the drive (in front of
   // the portik — the plan's photo covers that stretch: guess) to the east end; the aisle in front of the entrances. Parked
-  // car colours are ours. Bikes lean by some of Hus L's entrances (not ours). NW of Hus L, north of Hus C, the plan's
+  // car colours are ours. #529: no bicycles along Hus L's entrances. NW of Hus L, north of Hus C, the plan's
   // "Cykelvänligt kvarter" yard: a lawn with a tree and two smaller ones, a paved bike place with two rows of racks, a
   // narrow lawn east of it; light paving round it (west of x −66 is left for the stair down to Karpvägen, #256).
   life: {
     lot: { x0: -70.5, x1: -13, z0: -16.3, depth: 5, stall: 2.5 }, fill: 0.65,
     carColors: [0xf0f0ec, 0x23272c, 0x8d9399, 0x1f6f78, 0x7b1e22, 0x2d4e7a, 0xc9c3b8, 0x0f1012],
-    bikes: [[-38.8, -0.9], [-38.13, -0.9], [-27.61, -0.9], [-16.79, -0.9], [-16.12, -0.9], [-5.41, -0.9], [12.45, -0.9]], // x, z (along the façade)
     // the low green strip along the entrances: a concrete edge, grass and clipped entrance hedge (clear passages by every front doorway)
     strip: { z0: -3.5, z1: -2.9, h: 0.1, parts: [[-46, -10.6], [-8.5, 5.8]],
       // #496 correction: clipped entrance hedge IN this existing bed; parking shrubs stay original.

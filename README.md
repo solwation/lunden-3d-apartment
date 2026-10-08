@@ -89,7 +89,7 @@ m.m.) ligger samlade i `src/config.js`.
 
 Huset (Hus L, Parklängan), Å-husen A, B och C, vägarna och nivåskillnaden ner mot S:t Lars park
 och gården med pergola, grill, lekplats och boulebana är uppmätta på Peabs situationsplan och översiktsplaner (sidor ur planritningsbroschyren ligger i
-`docs/peab/`). Solen går efter verkliga väderstreck: entrén vetter mot östnordost.
+`docs/peab/`). Solen går efter verkliga väderstreck: entrén vetter mot östnordost. Entréstråket längs hus L är fritt från parkerade cyklar; cykelparkeringen vid kvarterets hörn har sina ställ kvar.
 
 Inredningen följer våra materialval i Peabs tillvalsportal: köket med grågröna Form Tall-luckor,
 överskåp och kyl/frys enligt vår köksritning, Ek Chalk-parkett, klinker i hall och våtrum, kakel i

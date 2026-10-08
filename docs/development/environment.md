@@ -33,7 +33,7 @@ src/street.js          Sankt Lars väg's details (SITE.street, #128): curbs (alo
 src/streetlife.js      life on the street (SITE.life, #113): the car park as on the situation plan (#260): asphalt from the hedge (SITE.shrubs,
                        z −16.3; the drive through it in front of the portik) to a low green strip along Hus L's entrances (z −3.5…−2.9, open
                        at the portik, no collision), one row of stalls nose to the hedge west of the drive with parked cars (instanced, a colour
-                       each, collision); bikes by Hus L's entrances; the bike yard NW of Hus L / north of Hus C (lawns, a tree, two rows of
+                       each, collision); no bikes along Hus L's entrances (#529); the bike yard NW of Hus L / north of Hus C (lawns, a tree, two rows of
                        racks; west of x −66 is left for #256's stair down to Karpvägen); #436: low concrete edges (`life.edges`, one
                        merged mesh, 5 cm, no collision) where the car park's asphalt meets grass and round the yard's lawns
 src/people.js          people in the area (PEOPLE, #114): low-poly figures (one InstancedMesh per body part, a colour each; #239:
@@ -91,3 +91,5 @@ tools/greettest.html   headless test: "Hälsa på grannen" on the bench sitter, 
 ## Sparse adults (#521)
 
 `PEOPLE` contains three adult paths (street with dog, entrance walk and patio walk), one cyclist, one bench sitter near Hus A and one eastern loft neighbour. Sandbox children, ball players, the child walker and selected extra adults are absent from the instance buffers. Empty ball/blanket settings do not create their props. Playground meshes, seating and walkways remain unchanged. `tools/peopletest.html` checks population, buffers, animations, props and day/winter visibility; `greettest` verifies greetings still work for remaining neighbours.
+
+Entrance bicycles (#529): removed SITE.life.bikes and the separate façade-bike loop in streetlife.js. Outdoor bicycles are generated only at the existing SITE.life.racks inside the paved bike yard NW of Hus L/north of Hus C, as on docs/peab/situationsplan.png and kalibrerad/situationsplan-300dpi.jpg. Those seven loose facade bikes had no collision segments, so removing them leaves no invisible obstacles. Existing rack collision remains confined to the yard. Basement cycle-room racks continue to exist; their wider layout corrections belong to #523. No relocation to invented coordinates. walktest checks entry and block routes; real views check the clear frontage and occupied yard.

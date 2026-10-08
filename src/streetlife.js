@@ -10,7 +10,7 @@ import { onRoad, onWalk } from './roads.js';
 
 // Life on the street (#113, SITE.life): the car park (one row along the hedge, #208, #260) with parked cars (instanced: a body with a
 // colour per car, trim, glass, tyres — four draw calls; the bodies from carmodel.js, #251), its white stall lines, the low green strip
-// along Hus L's entrances, bikes by the entrances and in the racks of the bike yard NW of Hus L (two draw calls), the yard's paving
+// along Hus L's entrances, bikes only in the racks of the bike yard NW of Hus L (two draw calls), the yard's paving
 // and lawns (#260). Returns { object, segments } (the parked cars and the racks block the way).
 
 const L = SITE.life;
@@ -139,10 +139,9 @@ export function buildStreetLife({ entrances = [] } = {}) {
     cm.name = 'concreteEdges'; cm.receiveShadow = true;
     group.add(cm);
   }
-  // bikes: leaning by the entrances (along the façade), and in the yard's racks (front wheel in the rack)
+  // #529: bicycles only in the plan's yard racks (front wheel in the rack), never along entrances.
   const bikes = [], bikeColors = [], cols = [0x1d3c6e, 0xb02a2a, 0x2a2a2a, 0xe2e2dc, 0x3c7a4a, 0x8a8f96, 0xd8a020];
   const put = (x, z, yaw, lean) => { bikes.push(new THREE.Matrix4().compose(new THREE.Vector3(x, 0, z), new THREE.Quaternion().setFromEuler(new THREE.Euler(lean, yaw, 0, 'YXZ')), new THREE.Vector3(1, 1, 1))); bikeColors.push(cols[Math.floor(R() * cols.length)]); };
-  for (const [x, z] of L.bikes) put(x, z, (R() - 0.5) * 0.1, -0.12);
   const rack = [];
   for (const r of L.racks) {
     const len = (r.n - 1) * r.gap + 0.5, cz = r.z0 + (r.n - 1) * r.gap / 2;
