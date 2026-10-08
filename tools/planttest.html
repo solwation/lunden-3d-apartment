@@ -6,7 +6,7 @@
 <script>
 // Pot plants you can lift (#185): a pot from the kitchen window onto the dining table (the window's merged meshes
 // lose it, its own model shows), the flower from the side table onto the kitchen window board, the shelf's
-// pot plant; F sends them all home (and the pot melts into the merged meshes again).
+// pot plant; the removed café flower stays absent (#490). F sends them all home (and the pot melts into the merged meshes again).
 //   google-chrome --headless=new --dump-dom http://localhost:8137/tools/planttest.html
 const out = document.getElementById('out');
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -14,11 +14,14 @@ const f = document.createElement('iframe');
 f.width = 900; f.height = 600; f.src = '../index.html';
 document.body.append(f);
 f.onload = async () => {
+ try {
   const w = f.contentWindow, d = f.contentDocument;
   while (!w.__app) await wait(100);
+  const A=w.__app;
   const { player, camera, step, world, scene, sillPots, things, heldItem, toggleFurniture } = w.__app;
   const lines = [];
   const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; };
+  d.documentElement.requestFullscreen=undefined;
   d.getElementById('start-touch').click();
   await wait(50);
   const btn = d.getElementById('action');
@@ -38,33 +41,38 @@ f.onload = async () => {
   let pass = check(sillPots.length >= 11, // (#409: the Sovrum 1 orchid made way for the Hue Go)
     `${sillPots.length} pots on the window boards, ${sill.children.length} merged meshes`);
   // (1) a pot from the kitchen window (z < 0.6, Entréplan) onto the dining table
+  const required=(value,name)=>{if(!value)throw new Error('Missing required '+name);return value;};
   const pot = sillPots.find((p) => p.home.pos.z < 0.6 && p.home.pos.y < 1);
+  required(pot,'kitchen sill plant');
   const v0 = verts();
   let label = aim(pot.home.pos.clone().add(new V(0, 0.08, 0)), [pot.home.pos.x, 1.2]);
-  pass &= check(/ta blomkrukan/i.test(label), `at the kitchen window: "${label}"`);
+  pass &= check(/ta blomkrukan/i.test(label)&&A.focus().focused===pot.takeTarget, `at the kitchen window: "${label}"`);
   btn.click(); step(1 / 60);
   pass &= check(heldItem() === pot && verts() < v0 && pot.model.children.every((m) => m.visible), `in the hand: the merged meshes without it (${v0} → ${verts()} vertices), its own model shows`);
   const at = (m) => m.getWorldPosition(new V());
   const table = world.cupSurfaces.find((m) => Math.abs(m.userData.surface - 0.75) < 0.01 && at(m).z > 0.8 && at(m).z < 3 && at(m).x > 2.5);
+  required(table,'dining table surface');
   const tp = at(table).setY(table.userData.surface);
   label = aim(tp, [tp.x - 0.9, tp.z + 0.3]);
-  pass &= check(/ställa ner blomkrukan/i.test(label), `at the dining table: "${label}"`);
+  pass &= check(/^Ställ ner$/i.test(label)&&A.focus().focused?.kind==='place', `at the dining table: "${label}"`);
   btn.click(); step(1 / 60);
   pass &= check(pot.placed && Math.abs(pot.model.position.y - table.userData.surface) < 0.01, `standing on the table (y ${pot.model.position.y.toFixed(3)})`);
   // (2) the side-table flower onto the living-room window board
   const flower = things.find((t) => t.kind === 'plant' && /sidobordet/.test(t.backTarget.name));
+  required(flower,'side-table flower');
   label = aim(flower.where().add(new V(0, 0.1, 0)), [flower.home.pos.x + 0.8, flower.home.pos.z + 0.4]);
-  pass &= check(/ta blomkrukan/i.test(label), `the flower on the side table: "${label}"`);
+  pass &= check(/ta blomkrukan/i.test(label)&&A.focus().focused===flower.takeTarget, `the flower on the side table: "${label}"`);
   btn.click(); step(1 / 60);
   pass &= check(heldItem() === flower, 'in the hand');
   const board = world.cupSurfaces.find((m) => at(m).z < 1 && at(m).y < 1 && Math.abs(m.userData.surface - 0.8) < 0.01); // the kitchen window (the living room's is behind the sofa)
+  required(board,'kitchen window board surface');
   const bp = at(board).setY(board.userData.surface).add(new V(-0.3, 0, -0.05)); // between two pots
   label = aim(bp, [bp.x, 1.3]);
-  pass &= check(/ställa ner blomkrukan/i.test(label), `at the kitchen window: "${label}"`);
+  pass &= check(/^Ställ ner$/i.test(label)&&A.focus().focused?.kind==='place', `at the kitchen window: "${label}"`);
   btn.click(); step(1 / 60);
   pass &= check(flower.placed && Math.abs(flower.model.position.y - board.userData.surface) < 0.01, `on the window board (y ${flower.model.position.y.toFixed(3)})`);
   // (3) the shelf's pot plant
-  const shelfPot = things.find((t) => t.kind === 'plant' && /hyllan/.test(t.backTarget.name) && t.home.pos.y > 1.7);
+  const shelfPot = required(things.find(t=>t.kind==='plant'&&/hyllan/.test(t.backTarget.name)&&t.name==='blomkrukan'&&t.home.pos.y>1.7),'upper-shelf plant');
   label = aim(shelfPot.where().add(new V(0, 0.05, 0)), [shelfPot.home.pos.x + 0.9, shelfPot.home.pos.z]);
   btn.click(); step(1 / 60);
   pass &= check(heldItem() === shelfPot, `the shelf's pot plant ("${label}")`);
@@ -72,37 +80,32 @@ f.onload = async () => {
   if (heldItem()) { heldItem().putBack?.(); step(1 / 60); }
   const face = things.find((t) => t.kind === 'plant' && /glasögonen/.test(t.name));
   pass &= check(!!face && Math.abs(face.home.pos.y - 1.85) < 0.01, `the face pot on the lower shelf (y ${face?.home.pos.y.toFixed(3)})`);
+  required(face,'face pot');
   label = aim(face.where().add(new V(0, 0.06, 0)), [face.home.pos.x + 0.9, face.home.pos.z]);
-  pass &= check(/ta krukan med glasögonen/i.test(label), `at the shelf: "${label}"`);
+  pass &= check(/ta krukan med glasögonen/i.test(label)&&A.focus().focused===face.takeTarget, `at the shelf: "${label}"`);
   btn.click(); step(1 / 60);
   pass &= check(heldItem() === face, 'the face pot in the hand');
   const tp2 = tp.clone().add(new V(0, 0, 0.35));
   label = aim(tp2, [tp2.x - 0.9, tp2.z + 0.3]);
-  pass &= check(/ställa ner krukan med glasögonen/i.test(label), `at the dining table: "${label}"`);
+  pass &= check(/^Ställ ner$/i.test(label)&&A.focus().focused?.kind==='place', `at the dining table: "${label}"`);
   btn.click(); step(1 / 60);
   pass &= check(face.placed && Math.abs(face.model.position.y - table.userData.surface) < 0.01, `the face pot on the table (y ${face.model.position.y.toFixed(3)})`);
   label = aim(face.where().add(new V(0, 0.06, 0)), [tp2.x + 0.9, tp2.z]);
   btn.click(); step(1 / 60);
   pass &= check(heldItem() === face, `taken again ("${label}")`);
   label = aim(face.home.pos.clone().add(new V(0, 0.06, 0)), [face.home.pos.x + 0.9, face.home.pos.z]);
-  pass &= check(/ställa tillbaka krukan med glasögonen/i.test(label), `at its place: "${label}"`);
+  pass &= check(/ställa tillbaka krukan med glasögonen/i.test(label)&&A.focus().focused===face.backTarget, `at its place: "${label}"`);
   btn.click(); step(1 / 60);
   pass &= check(!face.held && !face.placed && face.model.position.distanceTo(face.home.pos) < 0.001, 'back on the shelf');
+  required(face,'face pot');
   label = aim(face.where().add(new V(0, 0.06, 0)), [face.home.pos.x + 0.9, face.home.pos.z]);
   btn.click(); step(1 / 60);
   pass &= check(heldItem() === face, 'taken once more (F sends it home)');
-  // (5) the café table's flower outside (#406): taken, back on the table with E
+  // #490 / 436fb82 intentionally removed the café flower; the set remains.
   if (heldItem()) { heldItem().putBack?.(); step(1 / 60); }
-  const cafe = things.find((t) => t.kind === 'plant' && /cafébordet/.test(t.backTarget.name));
-  pass &= check(!!cafe && cafe.home.pos.z < 0 && Math.abs(cafe.home.pos.y - 0.71) < 0.01, `the flower on the café table outside (y ${cafe?.home.pos.y.toFixed(3)}, z ${cafe?.home.pos.z.toFixed(2)})`);
-  label = aim(cafe.where().add(new V(0, 0.1, 0)), [cafe.home.pos.x, cafe.home.pos.z - 0.9]);
-  pass &= check(/ta blomkrukan/i.test(label), `at the café table: "${label}"`);
-  btn.click(); step(1 / 60);
-  pass &= check(heldItem() === cafe, 'the café flower in the hand');
-  label = aim(cafe.home.pos.clone().add(new V(0, 0.05, 0)), [cafe.home.pos.x, cafe.home.pos.z - 0.9]);
-  pass &= check(/tillbaka blomkrukan/i.test(label), `at its place: "${label}"`);
-  btn.click(); step(1 / 60);
-  pass &= check(!cafe.held && !cafe.placed && cafe.model.position.distanceTo(cafe.home.pos) < 0.001, 'back on the café table');
+  const C=await w.eval("import('/src/config.js')");
+  pass &= check(!things.some(t=>t.kind==='plant'&&/cafébordet/.test(t.backTarget.name))&&C.FURNITURE.filter(t=>t.type==='aborgtable').length===1&&C.FURNITURE.filter(t=>t.type==='aborgchair').length===2,'café flower intentionally absent, table and two chairs retained');
+  required(face,'face pot');
   label = aim(face.where().add(new V(0, 0.06, 0)), [face.home.pos.x + 0.9, face.home.pos.z]);
   btn.click(); step(1 / 60);
   // F: all home, the pot back in the merged meshes
@@ -111,6 +114,7 @@ f.onload = async () => {
   pass &= check(!flower.placed && flower.model.position.distanceTo(flower.home.pos) < 0.001 && !shelfPot.held && shelfPot.model.position.distanceTo(shelfPot.home.pos) < 0.001, 'F: the flower and the shelf plant home');
   pass &= check(!face.held && !face.placed && face.model.position.distanceTo(face.home.pos) < 0.001, 'F: the face pot home');
   out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
+ } catch(e) { out.textContent='SOME FAILED\nFAIL '+(e.stack||e.message); }
 };
 </script>
 </body>

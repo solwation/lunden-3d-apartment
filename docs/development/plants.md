@@ -24,7 +24,8 @@ src/plants.js          SillPot (#185): each window-board pot is a Holdable; its 
                        the merged meshes are rebuilt without it) once taken; the side-table flower and the kitchen shelf's
                        vase / pot plant are plain Things (kind 'plant'); window boards are put-down surfaces too
 tools/planttest.html   headless test: lift pot plants (window board → table, side table → window board, the shelf; the face pot to the
-                       dining table and back on its shelf, #343), F home
+                       dining table and back on its shelf, #343), F home; #559 explicitly excludes café flower removed in #490/436fb82,
+                       selects actual upper shelf plant, verifies real interaction targets and reports missing fixtures instead of hanging
 ```
 
 ## Recent implementation notes
