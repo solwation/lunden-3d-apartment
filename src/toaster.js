@@ -145,7 +145,7 @@ export class Toaster extends Holdable {
     m.g.add(storePick);
     this.storePick = storePick;
     this.storeTarget = {
-      name: 'brödrosten', kind: 'life', store: 'toaster', pickable: storePick,
+      name: 'brödrosten', kind: 'life', store: 'toaster', pickable: storePick, outlineRoot: m.g, outlineOwner: this.takeTarget,
       options: () => (self.life ? self.life.options(self.storeTarget) : []),
       toggle: () => (self.life ? self.life.run(self.storeTarget) : false),
     };
@@ -164,11 +164,11 @@ export class Toaster extends Holdable {
       blocked: { get: () => !self.drawer.isOpen, configurable: true },
       blockedText: { get: () => 'Öppna lådan först', configurable: true },
     });
-    this.leverTarget = { kind: 'holdable', item: this, pickable: m.g,
+    this.leverTarget = { outlineRoot: m.lever, kind: 'holdable', item: this, pickable: m.g,
       get name() { return self.toasting ? 'brödrosten' : 'spaken på brödrosten'; }, get verb() { return self.toasting ? 'stoppa' : 'trycka ner'; },
       get blocked() { return handBusy(self) || (!self.plugged && !self.toasting); }, get blockedText() { return handBusy(self) ? undefined : 'Brödrosten är inte inkopplad'; },
       get isOpen() { return self.toasting; }, toggle: () => this.press() };
-    this.plugTarget = { kind: 'holdable', item: this, pickable: m.g,
+    this.plugTarget = { get outlineRoot() { return self.plug; }, kind: 'holdable', item: this, pickable: m.g,
       get name() { return self.plugged ? 'sladden' : 'brödrosten'; }, get verb() { return self.plugged ? 'dra ur' : 'koppla in'; },
       get blocked() { return !self.plugged && !self.inReach(); }, blockedText: 'För långt från uttaget',
       get isOpen() { return self.plugged; }, toggle: () => this.setPlugged(!this.plugged) };

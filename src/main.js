@@ -4,6 +4,7 @@ import { MieleHeld, HeartFireworks } from './miele.js';
 const DRAWING_COLORS = DRAWING.colors;
 import { buildWorld } from './world.js';
 import { photoGlow } from './furniture.js';
+import { InteractionOutline } from './interactionoutline.js';
 import { Rearrange } from './rearrange.js';
 import { Player, inPoly, crosses } from './player.js';
 import { Fall } from './fall.js';
@@ -1505,6 +1506,7 @@ const pickables = [...garage.targets.map((t) => t.pickable), ...core.targets.map
 const center = new THREE.Vector2(0, 0);
 const keyCabinet = world.lids.find((l) => l.kind === 'keybox');
 let focused = null, focusPoint = null;
+const interactionOutline = new InteractionOutline(scene,camera);
 
 /** Does the line a → b pass through one of the flat's slabs (a level's ceiling .. the next floor, the roof too) inside
  * its footprint, other than through the stair hole (#446)? Both faces of the slab are tested; a line grazing the hole's
@@ -1552,7 +1554,8 @@ function updateFocus() {
     actionBtn.textContent = text; actionBtn.hidden = !touch.enabled || !focused;
     promptEl.textContent = `${text} · E / klick · R: vrid · X: avbryt`;
     promptEl.hidden = touch.enabled; powerBtn.hidden = true;
-    turnBtn.hidden = !touch.enabled || !rearrange.selected; return;
+    turnBtn.hidden = !touch.enabled || !rearrange.selected;
+    interactionOutline.update(focused && !focused.blocked ? {...focused,outlineRoot:rearrange.selected?rearrange.ghost:focused.piece?.object} : null); return;
   }
   // sitting / lying (#184): what is within arm's reach can be used as usual (not the seat itself, nothing to sit on);
   // E with nothing in reach, Space / C or the "Res dig" button get you up
@@ -1692,6 +1695,8 @@ function updateFocus() {
   // a life-sim thing (#367): its actions; one = the usual prompt, several = the choice menu
   const rows = focused?.options ? shownRows(focused.options()) : null;
   showChoices(rows && rows.length > 1 && !reading ? rows : null, focused);
+  const outlineRow=choices.rows?.[choices.sel] ?? (rows?.length===1?rows[0]:null);
+  interactionOutline.update(!reading && !life.runner.job && !outlineRow?.reason ? focused : null);
   showItemGhost(item); // actual placement or the selected allowed return action (#368, #487)
   const one = rows?.length === 1 ? rows[0] : null;
   if (one && !one.reason) verb = one.label;
@@ -2353,4 +2358,4 @@ document.documentElement.classList.remove('resuming'); // the page is ready: off
 hideLoading();
 
 // handle for tests/debugging (tools/touchtest.html, tools/perfcount.html)
-window.__app = { eggs, isPhoneDevice, get activeMode() { return activeMode; }, set activeMode(v) { activeMode = v; }, rearrange, showTerminal, dynRes, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, toaster, life, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS };
+window.__app = { interactionOutline, eggs, isPhoneDevice, get activeMode() { return activeMode; }, set activeMode(v) { activeMode = v; }, rearrange, showTerminal, dynRes, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, toaster, life, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS };

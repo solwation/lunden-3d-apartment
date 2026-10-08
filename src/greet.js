@@ -74,7 +74,7 @@ export class Greetings {
     if (!best) return null;
     const eye = ray.origin, head = best.head;
     if (this.behindWall(head) || this.boxes.some((b) => crosses(eye, head, b))) return null;
-    return { name: Greetings.nameOf(best), kind: 'greet', verb: 'hälsa på', fig: best, point: best.head.clone() };
+    return { name: Greetings.nameOf(best), kind: 'greet', verb: 'hälsa på', fig: best, outlineRoot: this.people.object, outlineInstances: Object.values(this.people.parts).map(object=>({object,index:this.people.figs.indexOf(best)})), point: best.head.clone() };
   }
 
   /** The same from a point `o` looking at `p` (tests). */

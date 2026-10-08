@@ -68,7 +68,7 @@ export function buildStores(life, world) {
     const anchors = slots.map((s) => s.anchor);
     I.addStore({ id, name: spec.name, shutText: spec.shutText, fullText: spec.fullText, isOpen: spec.isOpen, carriers: !!spec.carriers, slots: slots.map((s) => ({ size: s.size })) });
     life.anchors.set(id, (k) => anchors[k] ?? null);
-    const target = { name: spec.name, kind: 'life', store: id, pickable: box };
+    const target = { name: spec.name, kind: 'life', store: id, pickable: box, outlineRoot: spec.outlineRoot, outlineOwner: spec.outlineOwner };
     target.options = () => life.options(target);
     target.toggle = () => life.run(target);
     Object.defineProperties(target, {
@@ -93,7 +93,7 @@ export function buildStores(life, world) {
       slots.push({ size: 's', anchor: a });
     }
     const box = pickBox(fridge.object, new THREE.Vector3(cx - iw / 2, y0 + 0.1, cz - depth / 2), new THREE.Vector3(cx + iw / 2, y0 + 1.7, cz + depth / 2), () => holding() && fridge.isOpen);
-    add('fridge', { name: 'kylskåpet', shutText: 'Öppna kylen först', fullText: 'Kylskåpet är fullt', isOpen: () => fridge.isOpen, carriers: true }, slots, box); // (a plate with food on it goes in too, #370)
+    add('fridge', { outlineRoot: fridge.object, outlineOwner: fridge, name: 'kylskåpet', shutText: 'Öppna kylen först', fullText: 'Kylskåpet är fullt', isOpen: () => fridge.isOpen, carriers: true }, slots, box); // (a plate with food on it goes in too, #370)
   }
   // the freezer: on the frozen bags in the top basket
   const freezer = world.lids.find((l) => l.kind === 'fridge' && l.freezer);
@@ -102,7 +102,7 @@ export function buildStores(life, world) {
     const slots = [-0.15, 0, 0.15].map((dx) => ({ size: 'm', anchor: anchorIn(freezer.object, new THREE.Vector3(cx + dx * iw / 0.55, y, cz + 0.02), -Math.PI / 2) }));
     if (freezer.shelves) slots.push({ size: 'm', anchor: anchorIn(freezer.object, new THREE.Vector3(cx + S.freezer.peas * iw / 0.55, freezer.shelves[0] + 0.002, cz - 0.03), -Math.PI / 2) }); // slot 3: the lower open shelf beside the fish fingers (#373)
     const box = pickBox(freezer.object, new THREE.Vector3(cx - iw / 2, y0 + 0.1, cz - depth / 2), new THREE.Vector3(cx + iw / 2, y0 + 1.75, cz + depth / 2), () => holding() && freezer.isOpen);
-    add('freezer', { name: 'frysen', shutText: 'Öppna frysen först', fullText: 'Fryslådan är full', isOpen: () => freezer.isOpen }, slots, box);
+    add('freezer', { outlineRoot: freezer.object, outlineOwner: freezer, name: 'frysen', shutText: 'Öppna frysen först', fullText: 'Fryslådan är full', isOpen: () => freezer.isOpen }, slots, box);
   }
   // a kitchen front's slots from its stock frame: [u (0…1 across), d (m in front of the plane, < 0 inside), y (m over the bottom
   // of its contents box), size, yaw (extra turn)] — in its contents group (rides with a drawer, hidden while shut)
@@ -114,7 +114,7 @@ export function buildStores(life, world) {
     const slots = list.map(([k, d, y, size, yaw = 0]) => ({ size, anchor: anchorIn(parent, F.at(uAt(k), d(b), b.y0 + y(b)), F.yaw + yaw) }));
     const p0 = F.at(b.a0, b.d0), p1 = F.at(b.a1, b.d1);
     const box = pickBox(F.drawer ? o.object : parent, new THREE.Vector3(Math.min(p0.x, p1.x), b.y0, Math.min(p0.z, p1.z)), new THREE.Vector3(Math.max(p0.x, p1.x), b.y1, Math.max(p0.z, p1.z)), () => holding() && o.isOpen);
-    add(id, { ...spec, isOpen: () => o.isOpen }, slots, box);
+    add(id, { ...spec, outlineRoot: o.object, outlineOwner: o, isOpen: () => o.isOpen }, slots, box);
   }
   const pantry = world.lids.find((l) => l.stock === 'pantry');
   front('pantry', pantry, { name: 'skafferiet', shutText: 'Öppna skafferiet först', fullText: 'Skafferiet är fullt' }, [
@@ -174,7 +174,7 @@ export function buildStores(life, world) {
       for (const s of list) bb.expandByPoint(s.pos);
       bb.expandByVector(new THREE.Vector3(0.09, 0.08, 0.09));
       const box = pickBox(rack.object, bb.min, bb.max, () => (holding() || !!heldItem()?.isCup) && rack.isOpen && dwDoor.isOpen);
-      add(id, { name, fullText: full, isOpen: () => dwDoor.isOpen && rack.isOpen }, slots, box);
+      add(id, { outlineRoot: rack.object, outlineOwner: rack, name, fullText: full, isOpen: () => dwDoor.isOpen && rack.isOpen }, slots, box);
       const st = I.store(id);
       Object.defineProperty(st, 'shutText', { get: () => (dwDoor.isOpen ? `Dra ut ${rack.name} först` : 'Öppna diskmaskinen först'), configurable: true });
       Object.assign(st, {

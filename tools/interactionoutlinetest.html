@@ -1,0 +1,35 @@
+<!doctype html><html><meta charset="utf-8"><title>Interaction target outlines (#513)</title><pre id="out">running…</pre><script type="module">
+const lines=[];let pass=true;const check=(ok,s)=>{lines.push((ok?'PASS':'FAIL')+' '+s);pass&&=!!ok},wait=ms=>new Promise(r=>setTimeout(r,ms));
+try{
+ const f=document.createElement('iframe');f.width=480;f.height=300;f.src='../index.html?life&shot&cloud=';document.body.append(f);await new Promise(r=>f.onload=r);while(!f.contentWindow.__app)await wait(100);const w=f.contentWindow,A=w.__app,T=await w.eval("import('three')"),V=T.Vector3,L=A.life,I=L.items,O=A.interactionOutline;
+ f.contentDocument.documentElement.requestFullscreen=undefined;f.contentDocument.getElementById('start-touch').click();A.renderer.setAnimationLoop(null);A.renderer.setPixelRatio(.15);A.renderer.setSize(180,120,false);
+ const aim=(point,from)=>{A.player.spawn(from[0],from[1],0);A.player.crouch=from[2]===.95;if(from[2])A.player.eyeY=from[2];A.step(0);A.scene.updateMatrixWorld(true);A.camera.lookAt(point);A.camera.updateMatrixWorld(true);A.step(0);return A.focus().focused};
+ const at=o=>new T.Box3().setFromObject(o).getCenter(new V());
+ const seek=(obj,expected)=>{const points=[at(obj)];obj.traverse(o=>{if(o.isMesh&&o.visible&&o.userData.door===expected)points.push(at(o))});for(const p of points)for(const height of [1.62,.95])for(let i=0;i<12;i++){const angle=i*Math.PI/6,from=[p.x+Math.sin(angle)*.7,p.z+Math.cos(angle)*.7,height];if(aim(p,from)===expected)return true}return false};
+ const drawer=A.world.lids.find(o=>o.stock==='utensils');drawer.toggle();for(let i=0;i<20;i++)drawer.update(.1);A.step(0);
+ const butter=I.all().find(i=>i.type==='butterKnife'),cheese=I.all().find(i=>i.type==='cheeseSlicer'),bv=L.view(butter),cv=L.view(cheese);const butterHome=structuredClone(butter.place),cheeseHome=structuredClone(cheese.place);
+ bv.take();bv.placeAt(new V(3.84,.712,-.45),0);cv.take();cv.placeAt(new V(3.84,.712,-.23),0);A.step(0);
+ check(seek(bv.model,bv.takeTarget)&&O.group.visible&&O.root===bv.model&&O.target===A.focus().focused,'butter knife has outline matching actual touch action target: '+A.focus().focused?.name+' / '+O.target?.name);
+ check(O.group.children.length===2&&O.materials[0].linewidth>O.materials[1].linewidth&&O.materials.every(m=>m.depthTest&&!m.depthWrite),'contrasting screen-width contour uses two depth-tested passes');
+ check(seek(cv.model,cv.takeTarget)&&O.root===cv.model,'neighbouring cheese slicer replaces knife outline');
+ const n=O.rebuilds;A.step(0);A.step(0);check(O.rebuilds===n,'steady focus does not regenerate edge geometry');
+ A.touch.enabled=false;A.step(0);check(O.group.visible&&O.target===A.focus().focused,'desktop uses same focused target and outline');A.touch.enabled=true;
+ I.move(butter,butterHome);I.move(cheese,cheeseHome);drawer.toggle();for(let i=0;i<20;i++)drawer.update(.1);A.step(0);check(O.root!==cv.model&&O.root!==bv.model,'closed drawer removes inaccessible utensil outline');
+ const door=drawer.object;check(seek(door,drawer)&&O.root===door,'actual drawer front gets its own outline');
+ const cabinet=A.world.lids.find(o=>o.stock==='platesLife');check(seek(cabinet.object,cabinet)&&O.root===cabinet.object&&O.root!==drawer.object,'different cupboard selects only its own leaf');
+ cabinet.toggle();for(let i=0;i<20;i++)cabinet.update(.1);O.update(cabinet);check(O.group.matrix.equals(cabinet.object.matrixWorld),'outline follows moving cupboard leaf exactly');
+ O.update({...cabinet,blocked:true});check(!O.group.visible,'blocked target does not advertise an available action');O.update(null);check(!O.group.visible&&O.root===null,'no target removes contour and disposes its active geometry');
+ // Render the same outline implementation against both background extremes and a solid occluder.
+ const {InteractionOutline}=await w.eval("import('/src/interactionoutline.js')"),scene=new T.Scene(),camera=new T.PerspectiveCamera(50,1,.1,20);camera.position.set(0,0,3);camera.lookAt(0,0,0);
+ const cube=new T.Mesh(new T.BoxGeometry(.6,.6,.6),new T.MeshBasicMaterial({color:0x777777}));scene.add(cube);const Q=new InteractionOutline(scene,camera);Q.update({pickable:cube});
+ const rt=new T.WebGLRenderTarget(160,160),pixels=new Uint8Array(160*160*4);A.renderer.setPixelRatio(1);A.renderer.setSize(160,160,false);
+ function pixelsFor(color){scene.background=new T.Color(color);A.renderer.setRenderTarget(rt);A.renderer.render(scene,camera);A.renderer.readRenderTargetPixels(rt,0,0,160,160,pixels);A.renderer.setRenderTarget(null);return pixels.slice()}
+ const dark=pixelsFor(0x000000),light=pixelsFor(0xffffff);const whiteCount=data=>{let n=0;for(let i=0;i<data.length;i+=4)if(data[i]>220&&data[i+1]>220&&data[i+2]>220)n++;return n};const darkCount=data=>{let n=0;for(let i=0;i<data.length;i+=4)if(data[i]<60&&data[i+1]<60&&data[i+2]<60)n++;return n};
+ check(whiteCount(dark)>60&&darkCount(light)>60,'real shader draws visible white/dark contrasting contours');
+ cube.visible=false;const sphere=new T.Mesh(new T.SphereGeometry(.3,24,16),new T.MeshBasicMaterial({color:0x777777}));scene.add(sphere);Q.update({pickable:sphere});check(whiteCount(pixelsFor(0x000000))>60,'smooth closed sphere also has a real outer silhouette');
+ const occluder=new T.Mesh(new T.BoxGeometry(1.8,1.8,.1),new T.MeshBasicMaterial({color:0x000000}));occluder.position.z=1;scene.add(occluder);const hidden=pixelsFor(0x000000);check(whiteCount(hidden)===0,'solid occluder hides contour rather than revealing object behind it');
+ scene.remove(sphere,occluder);const batch=new T.InstancedMesh(new T.BoxGeometry(.2,.2,.2),new T.MeshBasicMaterial(),3);scene.add(batch);const matrix=new T.Matrix4();for(let i=0;i<3;i++)batch.setMatrixAt(i,matrix.makeTranslation(i*2,0,0));Q.update({outlineRoot:scene,outlineInstances:[{object:batch,index:1}]});const drawn=Array.from(Q.positions.slice(0,Q.geometry.instanceCount*6));check(drawn.filter((_,i)=>i%3===0).every(x=>x>1.8&&x<2.2),'instanced target outlines one person/object instead of all batch instances');const rebuilds=Q.rebuilds;batch.setMatrixAt(1,matrix.makeTranslation(2.5,0,0));Q.update({outlineRoot:scene,outlineInstances:[{object:batch,index:1}]});check(Q.rebuilds===rebuilds&&Array.from(Q.positions.slice(0,Q.geometry.instanceCount*6)).filter((_,i)=>i%3===0).every(x=>x>2.3),'instance animation updates only its active contour');
+ const hits=[];Q.group.children.forEach(o=>o.raycast(new T.Raycaster(),hits));check(!hits.length,'outlines never intercept interaction rays');Q.clear();rt.dispose();
+ document.getElementById('out').textContent=lines.join('\n')+'\n'+(pass?'ALL PASS':'SOME FAILED');
+}catch(e){document.getElementById('out').textContent=lines.join('\n')+'\nFAIL '+e.stack}
+</script></html>
