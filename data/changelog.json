@@ -1,4 +1,5 @@
 [
+  {"id": 501, "date": "2026-10-08", "text": "Häcken direkt utanför entrédörrarna är formklippt; parkeringshäckens ursprungliga buskar är återställda."},
   {"id": 500, "date": "2026-10-08", "text": "Brödrosttestet har rättats så att smörknivens innehåll initieras korrekt och handlingar för att bre, lägga på ost och äta anropas via regelmotorn utan API-fel."},
   {"id": 499, "date": "2026-10-08", "text": "Loftgångens indragna gröna ytterdörrar syns korrekt framför lägenheternas förenklade byggnadsmodell."},
   {"id": 498, "date": "2026-10-08", "text": "Ytterdörrarna är mörkgröna med små tunna glasrutor högst upp i dörrbladen."},

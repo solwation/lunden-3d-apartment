@@ -742,7 +742,8 @@ export function buildWorld(plan) {
   const courtyard = buildCourtyard(); // walks, pergola, grill, sandboxes, boule, benches, beds (#80)
   scene.add(courtyard.object);
   outdoor.push(...courtyard.segments);
-  const life = buildStreetLife(); // parked cars, bikes, the square in front of Hus C (#113)
+  const entrances = [...l0.openings.north.filter(o=>o.entryPane), ...exterior.userData.entryLeaves.filter(o=>o.y0<.05)];
+  const life = buildStreetLife({entrances}); // parked cars, bikes, the square in front of Hus C (#113)
   scene.add(life.object);
   outdoor.push(...life.segments);
   // snow in the winter months (seasons.js): the lawn, the hedges and the patio paving

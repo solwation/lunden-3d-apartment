@@ -449,8 +449,12 @@ export const SITE = {
     lot: { x0: -70.5, x1: -13, z0: -16.3, depth: 5, stall: 2.5 }, fill: 0.65,
     carColors: [0xf0f0ec, 0x23272c, 0x8d9399, 0x1f6f78, 0x7b1e22, 0x2d4e7a, 0xc9c3b8, 0x0f1012],
     bikes: [[-38.8, -0.9], [-38.13, -0.9], [-27.61, -0.9], [-16.79, -0.9], [-16.12, -0.9], [-5.41, -0.9], [12.45, -0.9]], // x, z (along the façade)
-    // the low green strip along the entrances: a concrete edge, grass and low perennials (walked over, no collision)
-    strip: { z0: -3.5, z1: -2.9, h: 0.1, parts: [[-46, -10.6], [-8.5, 5.8]] },
+    // the low green strip along the entrances: a concrete edge, grass and clipped entrance hedge (clear passages by every front doorway)
+    strip: { z0: -3.5, z1: -2.9, h: 0.1, parts: [[-46, -10.6], [-8.5, 5.8]],
+      // #496 correction: clipped entrance hedge IN this existing bed; parking shrubs stay original.
+      // Assumed 58 cm total height above ground, 44 cm depth and 35 cm clear margin either side of each doorway.
+      hedge: { height: .5, depth: .44, rounding: .045, color: 0x48733c, roughness: .92, bump: .009,
+        texturePeriod: .32, textureLeaves: 1700, snowDepth: .035, entranceMargin: .35 } },
     yard: { x0: -66, x1: -46.33, z0: -3.5, z1: 9.6 },                              // the bike yard's paving
     lawns: [[-65, -59.1, 1.2, 8.5], [-53, -50.1, 1.2, 8.5]],                         // x0, x1, z0, z1
     bikePlace: { x0: -59.1, x1: -53, z0: 1.2, z1: 8.5 },                              // lighter paving
@@ -493,10 +497,7 @@ export const SITE = {
   bigTrees: [[-36, -34.5, 1.4], [-17, -35.2, 1.6], [-4, -34.8, 1.75], [9, -35.4, 1.45], [27.5, -34.2, 1.6], [33.5, -16, 1.35], [-58, -33.5, 1.5]],
   // a row of ornamental shrubs along our pavement (#130): the situation plan's hedge between the planting strip and the car
   // park (#260), with the drive into it in front of the portik (guess: the plan's photo covers it)
-  // #496: clipped boxwood on the existing front strip; height/depth/rounding are visual assumptions.
-  shrubs: { x0: -70.5, x1: 11, z: -16.3, step: 0.85, gaps: [[-13, -7.5]],
-    height: .9, depth: 1.2, rounding: .055, color: 0x48733c, roughness: .92, bump: .009,
-    texturePeriod: .32, textureLeaves: 1700, snowDepth: .035 },
+  shrubs: { x0: -70.5, x1: 11, z: -16.3, step: 0.85, gaps: [[-13, -7.5]] },
   // the narrow planting between Karpvägen and the plot line / Hus C's garage wall (#257, the situation plan: two trees)
   vergeTrees: [[-73.4, 37.5], [-74.4, 50]],
   birchShare: 0.3, // of the trees in the areas (not the young street maples): birches (#115)

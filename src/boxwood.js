@@ -1,11 +1,12 @@
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { SEASON } from './config.js';
 import { registerSeasonal } from './seasons.js';
 
 // A clipped evergreen hedge: continuous runs with the configured entrance/drive gaps preserved.
 export function hedgeRuns(spec) {
-  let runs = [[spec.x0,spec.x1]];
+  let runs = spec.parts?.map(p=>[...p]) ?? [[spec.x0,spec.x1]];
   for (const [a,b] of spec.gaps) runs = runs.flatMap(([lo,hi]) => b <= lo || a >= hi ? [[lo,hi]] : [[lo,Math.max(lo,a)],[Math.min(hi,b),hi]].filter(([x0,x1])=>x1>x0));
   return runs;
 }
@@ -42,6 +43,10 @@ export function boxwood(spec) {
     const z0=spec.z-spec.depth/2,z1=spec.z+spec.depth/2;
     group.userData.segments.push([x0,z0,x1,z0],[x1,z0,x1,z1],[x1,z1,x0,z1],[x0,z1,x0,z0]);
   }
-  registerSeasonal(month=>caps.forEach(cap=>{cap.visible=SEASON.snowMonths.includes(month)}));
+  // All runs share two draws: evergreen bodies and the winter-only top caps.
+  const combine = list => {const mesh=new THREE.Mesh(mergeGeometries(list.map(m=>{m.updateMatrix();return m.geometry.applyMatrix4(m.matrix)})),list[0].material);mesh.castShadow=mesh.receiveShadow=true;return mesh};
+  const bodies=group.children.filter(m=>!caps.includes(m));
+  const body=combine(bodies),snow=combine(caps);snow.visible=false;group.clear();group.add(body,snow);
+  registerSeasonal(month=>{snow.visible=SEASON.snowMonths.includes(month)});
   return group;
 }

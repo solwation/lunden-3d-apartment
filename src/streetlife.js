@@ -5,6 +5,7 @@ import { pavingTexture } from './patio.js';
 import { registerSnow } from './seasons.js';
 import { buildCar, MEGANE } from './carmodel.js';
 import { groundY } from './surroundings.js';
+import { boxwood } from './boxwood.js';
 import { onRoad, onWalk } from './roads.js';
 
 // Life on the street (#113, SITE.life): the car park (one row along the hedge, #208, #260) with parked cars (instanced: a body with a
@@ -51,7 +52,7 @@ function instanced(geo, material, mats, colors) {
   return m;
 }
 
-export function buildStreetLife() {
+export function buildStreetLife({ entrances = [] } = {}) {
   const group = new THREE.Group(), segments = [], R = rng(17);
   const white = new THREE.MeshStandardMaterial({ color: 0xeeeeea, roughness: 0.7 });
   // the car park: one row of stalls along the hedge, nose to it, from the west end to the drive (#208, #260)
@@ -91,18 +92,19 @@ export function buildStreetLife() {
   registerSnow(lawnMat, SEASON.snow.ground);
   const lawn = new THREE.Mesh(merge(L.lawns.map(([x0, x1, z0, z1]) => flat(x0, x1, z0, z1, 0.02))), lawnMat); lawn.receiveShadow = true;
   group.add(pave, place, lawn);
-  // the low green strip along Hus L's entrances (#260): a concrete edge, grass, low perennials
-  const S = L.strip, edge = [], grass = [], clumps = [];
+  // the low green strip along Hus L's entrances (#260): a concrete edge, grass, clipped boxwood
+  const S = L.strip, edge = [], grass = [];
   for (const [x0, x1] of S.parts) {
     const cx = (x0 + x1) / 2, w = x1 - x0;
     edge.push(box(w, S.h, 0.08, cx, S.h / 2, S.z0 + 0.04), box(w, S.h, 0.08, cx, S.h / 2, S.z1 - 0.04));
     grass.push(flat(x0, x1, S.z0 + 0.08, S.z1 - 0.08, S.h - 0.02));
-    for (let x = x0 + 0.3; x < x1 - 0.2; x += 0.45 + R() * 0.25) clumps.push(new THREE.IcosahedronGeometry(0.16 + R() * 0.08, 0).scale(1, 0.75, 1).translate(x, S.h + 0.06, (S.z0 + S.z1) / 2 + (R() - 0.5) * 0.15));
+    // Retain the original random sequence for the unrelated bike/yard models built later.
+    for(let x=x0+.3;x<x1-.2;x+=.45+R()*.25){R();R()}
   }
-  const clumpMat = new THREE.MeshStandardMaterial({ color: 0x4f7a38, roughness: 0.9, flatShading: true });
-  registerSnow(clumpMat, SEASON.snow.hedge);
-  group.add(new THREE.Mesh(merge(edge), new THREE.MeshStandardMaterial({ color: 0xbdb8ae, roughness: 0.85 })),
-    new THREE.Mesh(merge(grass), lawnMat), new THREE.Mesh(merge(clumps), clumpMat));
+  group.add(new THREE.Mesh(merge(edge),new THREE.MeshStandardMaterial({color:0xbdb8ae,roughness:.85})),new THREE.Mesh(merge(grass),lawnMat));
+  const frontHedge=boxwood({...S.hedge,parts:S.parts,z:(S.z0+S.z1)/2,
+    gaps:entrances.map(o=>[o.x0-S.hedge.entranceMargin,o.x1+S.hedge.entranceMargin])});
+  frontHedge.position.y=S.h-.02;group.add(frontHedge);segments.push(...frontHedge.userData.segments);
   // #436: concrete edges between the car park's asphalt and the grass, and round the yard's lawns (one merged mesh)
   const E = L.edges, curbs = [], inR = (r, x, z) => x > r.x0 && x < r.x1 && z > r.z0 && z < r.z1;
   const Wst = SITE.terrain.west.stair;
