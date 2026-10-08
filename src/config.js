@@ -2148,6 +2148,13 @@ export const TOWEL_HOOKS = { y: 1.4, gap: 0.17,
   hook: { rose: 0.027, roseT: 0.007, pin: 0.008, len: 0.032, end: 0.011, endT: 0.006, color: 0xd0d3d5, metalness: 0.45, roughness: 0.38 },
   towel: { color: 0x96807d, band: 0xa08986, w: 0.17, len: 0.48 },
   towels: [{ seed: 1.1 }, { seed: 2.7, len: 0.5 }] };
+// Basin mixer levers (#526): assumed proportions, not product measurements. The side
+// pin suits the existing goosenecks; vanity mixers have a short top paddle. Pick radius
+// is deliberately wider than the visible control for mouse/touch, but excludes the spout.
+export const TAP_LEVER = { seconds: 0.24, angle: 38, pickRadius: 0.075, pickHeight: 0.6,
+  side: { height: 0.07, offset: 0.037, length: 0.085, radius: 0.0055 },
+  top: { length: 0.075, width: 0.024, thickness: 0.007, height: 0.012 },
+  joint: { radius: 0.014, length: 0.02, segments: 12 } };
 // Washing the hands (#437, src/handwash.js): at a running basin tap with a free hand, "Tvätta händerna" rubs them under
 // the stream for `wash` s; wet they show drops and a glossier skin and dry by themselves after `wetFor` s (the last
 // `fade` s fading); E on a towel ("Torka händerna") takes `dry` s and swings it `swing` rad. A kitchen towel hangs on the

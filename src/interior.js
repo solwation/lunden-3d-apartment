@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { FINISH, TILED_ROOMS, KITCHEN as K, SKIRTING, LAUNDRY_SINK, LAUNDRY_CABINET, VANITY_BASIN, HAVBACK, LIGHTING, KITCHEN_SOCKETS } from './config.js';
+import { FINISH, TILED_ROOMS, KITCHEN as K, SKIRTING, LAUNDRY_SINK, LAUNDRY_CABINET, VANITY_BASIN, HAVBACK, LIGHTING, KITCHEN_SOCKETS, TAP_LEVER } from './config.js';
 import { wallCabinet } from './cabinets.js';
 import { Fridge } from './fridge.js';
 import { buildOvens } from './ovens.js';
@@ -386,8 +386,9 @@ function mixer(B, x, z, y, [dx, dz], material, { h = 0.3, r = 0.09, tube = 0.011
   arc.translate(x + dx * r, y + h, z + dz * r);
   B.add(arc, material);
   cylinderY(B, x + dx * 2 * r, z + dz * 2 * r, tube * 1.3, y + h - 0.07, y + h, material, 10);
-  B.box(x - 0.008, x + 0.008, z - 0.008, z + 0.008, y + 0.06, y + 0.15, material);
-  return { pos: [x + dx * 2 * r, y + h - 0.075, z + dz * 2 * r], dir: [0, -1, 0], r: tube, basin: y };
+  return { pos: [x + dx * 2 * r, y + h - 0.075, z + dz * 2 * r], dir: [0, -1, 0], r: tube, basin: y,
+    lever: { pos: [x - dz * TAP_LEVER.side.offset, y + TAP_LEVER.side.height, z + dx * TAP_LEVER.side.offset],
+      dir: [dx, dz], style: 'side', material } };
 }
 
 // ---------- kitchen ----------
@@ -800,7 +801,8 @@ function vanity(B, sinkF, wallX, y0, width, depth, open) {
   const bottom = sinkBowl(B, bowl, y0 + 0.87, VANITY_BASIN.depth, M.porcelain, 'x0');
   cylinderY(B, wallX + 0.08, cz, 0.018, y0 + 0.87, y0 + 1.0, M.chrome);
   B.box(wallX + 0.08, wallX + 0.2, cz - 0.012, cz + 0.012, y0 + 0.97, y0 + 0.99, M.chrome);
-  r.tap = { pos: [wallX + 0.19, y0 + 0.966, cz], dir: [0, -1, 0], r: 0.008, basin: bottom, name: 'blandaren' };
+  r.tap = { pos: [wallX + 0.19, y0 + 0.966, cz], dir: [0, -1, 0], r: 0.008, basin: bottom, name: 'blandaren',
+    lever: { pos: [wallX + 0.08, y0 + 1.0, cz], dir: [1, 0], style: 'top', material: M.chrome } };
   return r;
 }
 
