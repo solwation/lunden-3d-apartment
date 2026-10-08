@@ -778,6 +778,18 @@
   <div id="hud" hidden>
     <button id="terminal-btn" aria-label="Öppna terminalen">&gt;_</button>
     <div id="rearrange-help" hidden><span id="rearrange-status"></span><div>Enter: meny · Esc: avsluta · X: avbryt flytt</div> <button id="rearrange-reset" title="Återställ originalposition (Home)" hidden>Återställ originalposition · Home</button> <button id="rearrange-cancel">Avbryt / avsluta</button></div>
+    <div id="compass" role="img" aria-label="Geografisk kompass" title="Geografisk kompass">
+      <svg viewBox="0 0 64 64" class="compass-rose" aria-hidden="true">
+        <path d="M32 14 28 32 32 28 36 32Z" class="compass-north"/>
+        <path d="M32 50 29 33 32 36 35 33Z" class="compass-south"/>
+        <path d="M17 32H25M39 32H47" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <circle cx="32" cy="32" r="2" fill="currentColor"/>
+      </svg>
+      <span class="compass-letter" style="--cardinal:0deg" aria-hidden="true">N</span>
+      <span class="compass-letter" style="--cardinal:90deg" aria-hidden="true">Ö</span>
+      <span class="compass-letter" style="--cardinal:180deg" aria-hidden="true">S</span>
+      <span class="compass-letter" style="--cardinal:270deg" aria-hidden="true">V</span>
+    </div>
     <div id="crosshair"></div>
     <div id="level"></div>
     <div id="stats" aria-live="off" hidden>

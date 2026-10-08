@@ -2186,6 +2186,9 @@ export const DAY = {
   moonlight: 0.35, nightAmbient: 0.05,
 };
 
+// HUD compass (#528): visual sizing choices; geography reuses DAY.planNorth above.
+export const COMPASS = { size: 64, compactSize: 56, top: 8, narrowTop: 76 };
+
 // Analog wall clock (src/wallclock.js) on the kitchen side of the Tvätt/Badrum wall, centred on the
 // wall between the hall and the Badrum door (the user, #121): wall face x 2.152, z 3.145 to the door
 // architrave at 5.244 − DOOR_TRIM.width = 5.174 → z 4.16. rotY π/2 = facing east. Diameter 30 cm

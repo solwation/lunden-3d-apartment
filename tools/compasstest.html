@@ -1,0 +1,44 @@
+<!doctype html><html lang="sv"><meta charset="utf-8"><title>Geographic HUD compass (#528)</title><pre id="out">running…</pre><script type="module">
+const out=document.getElementById('out'),lines=[];let pass=true;
+const check=(ok,name)=>{pass&&=!!ok;lines.push(`${ok?'PASS':'FAIL'} ${name}`)},wait=ms=>new Promise(r=>setTimeout(r,ms));
+try {
+ const f=document.createElement('iframe');f.width=900;f.height=600;f.src='../index.html?shot&cloud=';document.body.append(f);await new Promise(r=>f.onload=r);while(!f.contentWindow.__app)await wait(100);
+ const w=f.contentWindow,d=f.contentDocument,A=w.__app,T=await w.eval("import('three')"),{DAY,COMPASS}=await w.eval("import('/src/config.js')"),C=A.compass,el=d.getElementById('compass');
+ d.documentElement.requestFullscreen=undefined;d.getElementById('start-touch').click();A.renderer.setAnimationLoop(null);A.renderer.setPixelRatio(.15);A.renderer.setSize(180,120,false);
+ for(const id of ['update','reloaded','countdown'])d.getElementById(id).hidden=true;
+ C.update();check(!el.hidden&&[...el.querySelectorAll('.compass-letter')].map(x=>x.textContent).join('')==='NÖSV','compass has all four Swedish cardinal letters');
+ check(DAY.planNorth===58,'geography matches the 58° FOJAB situation/overview north arrow used by the sun');
+ const near=(a,b)=>Math.abs(((a-b+540)%360)-180)<1e-5;
+ for(const [name,yaw,bearing] of [['plan-up',0,58],['true north',58,0],['true east',-32,90],['true south',-122,180],['true west',-212,270]]) {
+  A.camera.rotation.set(.3,T.MathUtils.degToRad(yaw),0,'YXZ');C.update();
+  check(near(C.bearing,bearing)&&near(parseFloat(el.style.getPropertyValue('--compass-angle')),-bearing),`${name}: correct geographic bearing and red north arrow`);
+ }
+ for(let yaw=-360;yaw<=360;yaw+=15) {
+  A.camera.rotation.set(0,T.MathUtils.degToRad(yaw),0,'YXZ');C.update();
+  if(!near(C.bearing,58-yaw))check(false,`full rotation failed at ${yaw}`);
+ }
+ check(pass,'two full turns preserve correct continuous direction across 0°/360°');
+ A.camera.rotation.set(0,1,0,'YXZ');C.update();const previous=C.bearing;A.camera.rotation.x=Math.PI/2;C.update();check(C.bearing===previous,'vertical view keeps last meaningful horizontal bearing');
+ A.player.spawn(3.5,-10,0);A.step(0);check(near(C.bearing,58),'movement and spawning use current camera direction');
+ A.player.spawn(2,-8,T.MathUtils.degToRad(58));A.step(0);check(near(C.bearing,0),'a changed player heading updates geographic north');
+ check(w.getComputedStyle(el).pointerEvents==='none'&&el.getAttribute('role')==='img'&&/norr/.test(el.getAttribute('aria-label')),'compass does not intercept controls and has an accessible direction');
+ const overlap=(a,b)=>a.left<b.right&&a.right>b.left&&a.top<b.bottom&&a.bottom>b.top;
+ for(const width of [480,600,720,844,1280]) {
+  f.width=width;await wait(50);C.update();const r=el.getBoundingClientRect();
+  const controls=['level','score','furniture-btn','stats-btn','mute','pause','terminal-btn'].map(id=>d.getElementById(id)).filter(e=>w.getComputedStyle(e).display!=='none');
+  check(r.width===(width<=600?COMPASS.compactSize:COMPASS.size)&&controls.every(e=>!overlap(r,e.getBoundingClientRect())),`${width}px touch view: compact readable compass leaves all HUD controls clear`);
+ }
+ f.width=844;d.documentElement.style.setProperty('--st','18px');d.documentElement.style.setProperty('--sl','34px');d.documentElement.style.setProperty('--sr','24px');await wait(50);
+ let r=el.getBoundingClientRect();check(r.top===COMPASS.top+18&&Math.abs((r.left+r.right)/2-(844+34-24)/2)<2,'safe areas shift the compass into the usable screen center');
+ for(const id of ['update','reloaded','countdown']) {
+  d.getElementById(id).hidden=false;C.update();check(el.hidden,`${id}: centered update message takes precedence`);d.getElementById(id).hidden=true;
+ }
+ C.update();check(!el.hidden,'compass returns after messages disappear');
+ A.showOverlay(true);check(d.getElementById('hud').hidden,'compass is part of HUD hidden by pause menu');A.showOverlay(false);
+ A.touch.enabled=false;A.camera.rotation.set(0,T.MathUtils.degToRad(-32),0,'YXZ');C.update();check(!el.hidden&&near(C.bearing,90),'desktop uses the same geographic compass');
+ // Actual new load reconstructs orientation from camera; no saved compass state can drift.
+ const loaded=new Promise(r=>f.onload=r);w.location.reload();await loaded;while(!f.contentWindow.__app)await wait(100);
+ const fresh=f.contentWindow.__app;fresh.camera.rotation.set(0,T.MathUtils.degToRad(58),0,'YXZ');fresh.compass.update();check(near(fresh.compass.bearing,0),'real reload rebuilds a correctly calibrated compass');
+ out.textContent=lines.join('\n')+'\n'+(pass?'ALL PASS':'SOME FAILED');
+}catch(e){out.textContent=lines.join('\n')+'\nFAIL '+e.stack}
+</script></html>

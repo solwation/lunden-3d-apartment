@@ -7,6 +7,7 @@ Related: [life](life.md), [storage](storage.md), [verification](verification.md)
 
 ```text
 src/interactionoutline.js  subtle target-only material brightness, normal depth testing, no edge geometry (#531)
+src/compass.js         camera-relative geographic compass; shares DAY.planNorth calibration (#528)
 src/hudicons.js        shared neutral SVG icons, pressed states and accessible labels (#525)
 src/hudicons.css       neutral mobile/desktop button surfaces, focus states and no-blur fallback (#525)
 index.html             page shell, HUD, start overlay, import map (three from jsDelivr, pinned)
@@ -311,3 +312,5 @@ HUD controls (#525): src/hudicons.js supplies own 24 px/1.7-stroke SVGs and idem
 - GNOME's "disable touchpad while typing" (on by default) blocks touchpad look while a WASD key
   is held — not a bug in the app. Arrow keys ← → turn as a keyboard-only fallback.
 
+
+HUD compass (#528): src/compass.js derives geographic bearing from camera world direction, clockwise from true north. DAY.planNorth=58 is the existing solar calibration from the north arrows in docs/peab/situationsplan.png and overview plans; positive YXZ yaw turns left so bearing=58−yaw. Red north arrow and N/Ö/S/V positions rotate, while letters counter-rotate to stay upright. Looking vertically keeps the last useful bearing. A small neutral glass surface uses safe-area insets; <=600 px screens place it on a second row, and centered update/reload/countdown messages hide it temporarily. No input capture, scene meshes, render passes, timers or persisted compass state. compasstest verifies cardinal directions, two turns, vertical view, movement/reload, phone/desktop, safe areas, control overlap and message priority.

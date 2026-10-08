@@ -26,3 +26,12 @@ body.hud-no-blur .hud-button, body.hud-no-blur #choices button { backdrop-filter
 #cal-panel { max-height: calc(100dvh - 32px); max-width: calc(100vw - 24px); overflow: auto; box-sizing: border-box; }
 #cal-panel .days { grid-template-columns: repeat(7,44px); }
 #cal-panel .days button { min-height: 44px; }
+
+/* #528: north follows the world; upright letters stay legible as the rose turns. */
+#compass { --compass-angle: 0deg; position: fixed; top: calc(var(--compass-top) + var(--st)); left: calc(50% + (var(--sl) - var(--sr)) / 2); width: var(--compass-size); height: var(--compass-size); transform: translateX(-50%); border-radius: 50%; box-sizing: border-box; color: #fff; background: var(--hud-glass); border: 1px solid var(--hud-edge); box-shadow: 0 2px 8px rgba(0,0,0,.2); pointer-events: none; z-index: 2; }
+#compass[hidden] { display: none; }
+.compass-rose { display: block; width: 100%; height: 100%; transform: rotate(var(--compass-angle)); }
+.compass-north { fill: #f46b70; stroke: #391b20; stroke-width: .65; }
+.compass-south { fill: rgba(255,255,255,.65); }
+.compass-letter { position: absolute; left: 50%; top: 50%; font: 600 10px/1 system-ui,sans-serif; text-shadow: 0 1px 2px #000; transform: translate(-50%,-50%) rotate(calc(var(--compass-angle) + var(--cardinal))) translateY(calc(var(--compass-size) * -.37)) rotate(calc(0deg - var(--compass-angle) - var(--cardinal))); }
+@media (max-width: 600px) { #compass { width: var(--compass-compact); height: var(--compass-compact); top: calc(var(--compass-narrow-top) + var(--st)); } .compass-letter { transform: translate(-50%,-50%) rotate(calc(var(--compass-angle) + var(--cardinal))) translateY(calc(var(--compass-compact) * -.37)) rotate(calc(0deg - var(--compass-angle) - var(--cardinal))); } }
