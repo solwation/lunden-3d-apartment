@@ -2011,6 +2011,7 @@ export const CONTENTS = {
 // Changelog note (src/changelog.js) on the freezer door: its front is the plan's F cabinet
 // z0 − 4 cm (the freestanding freezer sticks out, see interior.js). rotY π = facing north.
 export const CHANGELOG_NOTE = { x: 4.38, y: 1.42, z: 4.8844 - 0.04 - 0.002, rotY: Math.PI, w: 0.16, tilt: -0.05,
+  limit: 100, // latest visible changes on the freezer note (#543, user request)
   scrollLine: 40 }; // px per ↑ ↓ / W S step in the open note (#275)
 // The TODO post-its on the fridge door (#340, src/todo.js): real 76 × 76 mm notes, `cols` × `rows` at most (the last
 // says "+ N till …" when there are more; ~12 is the issue's guess), `gap` between them, tilted up to ±`tilt`°;

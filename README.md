@@ -71,7 +71,7 @@ Högtalarna och bilradion har sex musikkanaler med två låtar var. Även datorn
 inspelad musik. Under *Om musiken* i menyn finns musiker och källor; alla inspelningar har CC0-licens.
 Musiken laddas först när den spelas, med genererad reservmusik om filerna inte går att hämta.
 
-Vad som är nytt står på lappen på frysen i köket (gå fram och tryck <kbd>E</kbd>). Det som
+De 100 senaste ändringarna står på lappen på frysen i köket (gå fram och tryck <kbd>E</kbd>). Det som
 tillkommit sedan ditt senaste besök är markerat *Nytt*.
 
 ## Köra lokalt

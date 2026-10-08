@@ -37,7 +37,7 @@ export async function loadChangelog() {
   } catch { /* page still works without it */ }
   let store = null;
   try { store = localStorage; } catch { /* private mode etc. */ }
-  return markNew(entries, store || { getItem: () => null, setItem: () => {} });
+  return markNew(entries, store || { getItem: () => null, setItem: () => {} }).slice(0, CHANGELOG_NOTE.limit);
 }
 
 const fmtDate = (d) => new Date(`${d}T12:00:00`).toLocaleDateString('sv-SE', { day: 'numeric', month: 'short' });

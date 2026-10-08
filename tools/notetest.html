@@ -29,16 +29,16 @@ f.onload = async () => {
   if (stamped) {
     // a stamped build (#341): newest published first; seen=1 migrates to the t of entry 1
     const t1 = data.find((e) => e.id === 1)?.t || Math.max(...data.filter((e) => e.id <= 1).map((e) => e.t));
-    const want = data.filter((e) => e.t > t1).length;
+    const want = data.slice(0,100).filter((e) => e.t > t1).length;
     pass &= check(data.every((e, i) => i === 0 || data[i - 1].t >= e.t), 'stamped changelog.json is newest t first');
-    pass &= check(total === data.length && fresh === want, `"Nytt" on ${fresh} of ${total} entries since seen=1 (want ${want})`);
+    pass &= check(total === Math.min(100,data.length) && fresh === want, `"Nytt" on ${fresh} of ${total} entries since seen=1 (want ${want})`);
     pass &= check(Number(localStorage.getItem('lunden.changelogSeenT')) === Math.max(...data.map((e) => e.t)), 'last seen t stored');
   } else {
-    pass &= check(total > 1 && fresh === total - 1, `"Nytt" on ${fresh} of ${total} entries since seen=1`);
+    pass &= check(total === Math.min(100,data.length) && fresh === data.slice(0,100).filter(e=>e.id>1).length, `"Nytt" on ${fresh} of ${total} entries since seen=1`);
   }
   pass &= check(localStorage.getItem('lunden.changelogSeen') !== '1', 'last seen id updated');
   // markNew (#341) on made-up entries: id 4 was pushed last with a too low id
-  const { markNew } = await w.eval(`import('${new URL('../src/changelog.js', location.href)}')`); // the iframe has the import map
+  const { markNew, loadChangelog } = await w.eval(`import('${new URL('../src/changelog.js', location.href)}')`); // the iframe has the import map
   const mem = (o = {}) => ({ o, getItem: (k) => (k in o ? o[k] : null), setItem: (k, v) => { o[k] = v; } });
   const E = [{ id: 7, t: 300 }, { id: 6, t: 200 }, { id: 4, t: 400 }, { id: 3, t: 100 }];
   const fmt = (r) => r.map((e) => `${e.id}${e.isNew ? '*' : ''}`).join(' ');
@@ -57,6 +57,22 @@ f.onload = async () => {
   s = mem({ 'lunden.changelogSeen': '5' });
   r = markNew(D, s);
   pass &= check(fmt(r) === '7* 6* 4 3' && !('lunden.changelogSeenT' in s.o), `without t: file order, by id as before (${fmt(r)})`);
+  // Exercise the real loader: truncate after publication sorting, retaining all source entries.
+  const fetchBefore=w.fetch,keys=['lunden.changelogSeen','lunden.changelogSeenT'],seenBefore=keys.map(k=>w.localStorage.getItem(k));
+  try {
+    const history=Array.from({length:251},(_,i)=>({id:i+1,t:i+100,date:'2026-10-08',text:`change ${i+1}`}));
+    history[0].t=1000; // lowest id was actually published last
+    w.localStorage.setItem(keys[1],'300');
+    w.fetch=async()=>({json:async()=>history});
+    const latest=await loadChangelog();
+    pass &= check(latest.length===100&&latest[0].id===1&&latest[1].id===251&&latest[99].id===153&&latest.filter(e=>e.isNew).length===51,
+      'latest 100 selected after sorting by publication time, with correct New markers');
+    pass &= check(history.length===251&&w.localStorage.getItem(keys[0])==='251'&&w.localStorage.getItem(keys[1])==='1000','full history and last-seen metadata retained');
+    for(const n of [0,50,100]) {
+      w.fetch=async()=>({json:async()=>history.slice(0,n)});
+      pass &= check((await loadChangelog()).length===n,`history with ${n} changes displays all entries`);
+    }
+  } finally {w.fetch=fetchBefore;keys.forEach((k,i)=>seenBefore[i]===null?w.localStorage.removeItem(k):w.localStorage.setItem(k,seenBefore[i]));}
   d.getElementById('start-touch').click();
   await wait(50);
   // stand 1 m north of the note, facing south (yaw 180), eye level with it

@@ -84,3 +84,5 @@ Use relative paths only.
 
 Startkontroll (#512): `tools/startuptest.html` har 20 kontroller av aktuell/ny version, samma innehåll efter dokumentationsändring, HTML som inte hunnit publiceras, blockerad lagring, loopskydd, offline/fel, tidsgräns och sena svar, samt appens/andra sidors serviceworker-scope. Webbläsarintegration verifierar fem startscenarier (ny, aktuell, offline versionskontroll, utdraget svar, halvpublicerad HTML), en enda scenimport, cachebustad navigation och bibehållna hem-/inställnings-/resume-data. `loadingtest` och `updatetest` passerar; `stamp.sh` cachebustar bootstrap och dess små beroenden innan `main.js?v=BUILD` importeras.
 
+
+Freezer history limit (#543): loadChangelog marks/sorts the complete history before selecting CHANGELOG_NOTE.limit (100) entries for both the note texture and readable list. data/changelog.json retains the complete history and seen metadata still tracks the full input. notetest covers publication order with a late low-id entry, New markers and histories below/at/above the cap.
