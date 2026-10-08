@@ -828,27 +828,25 @@ export const START = { x: 2.875, z: -12, yawDeg: 180, pitchDeg: 8 };
 // Walkable area outside: in front of the north façade (x range, back to z0), our patio and, through
 // the gap in the hedge (SW corner), the lawn behind the row of patios up to z1 (#52).
 // People in the area (#114, src/people.js; Peab's renders docs/peab-innergard-ost.png, peab-radhusrad-innergard.png):
-// walkers going to and fro on the paths (x0, z0 → x1, z1 at speed m/s), cyclists on Sankt Lars väg, kids passing a
-// ball, people on the benches, someone lying on a blanket, neighbours on the loftgång. Daytime only (daylight above
-// `day`); the blanket only outside the snow months. Positions and colours are ours.
+// walkers going to and fro on the paths (x0, z0 → x1, z1 at speed m/s), one cyclist on Sankt Lars väg,
+// occasional adults on one bench and the loftgång. Daytime only (daylight above
+// `day`). Positions and colours are ours.
 export const PEOPLE = {
   day: 0.3,
-  // a kid on the patio walk beside the other walker there (z 18.5 | 19.2, clear of the bollards at 17.85); since the box
-  // reaches Hus B again (#254) someone walks the south walk once more (#259, it was taken off in #244)
+  // #521: sparse adults only. Remove sandbox/ball children, child walker, extra walkers,
+  // second cyclist, western bench sitter, blanket figure and western loft neighbour (19 → 6 figures).
   walkers: [
-    { a: [-70, -22.7], b: [12, -22.7], speed: 1.3, dog: true }, { a: [12, -22.9], b: [-60, -22.9], speed: 1.15 },
-    { a: [-44.4, -2.2], b: [14.48, -2.2], speed: 1.2 }, { a: [-12.6, 26.1], b: [11.3, 26.1], speed: 1.25 }, { a: [7.72, 18.2], b: [-38.61, 18.2], speed: 1.0, kid: true },
-    { a: [-42.47, 18.8], b: [9.65, 18.8], speed: 1.1 }, { a: [-45.9, 8.7], b: [-45.9, 51.5], speed: 1.3 },
-    { a: [-43.8, 30.5], b: [-10.6, 30.5], speed: 1.15 },
+    { a: [-70, -22.7], b: [12, -22.7], speed: 1.3, dog: true },
+    { a: [-44.4, -2.2], b: [14.48, -2.2], speed: 1.2 },
+    { a: [-42.47, 18.8], b: [9.65, 18.8], speed: 1.1 },
   ],
-  cyclists: [{ a: [-90, -26.4], b: [10, -26.4], speed: 4.5 }, { a: [10, -27.8], b: [-90, -27.8], speed: 5.2 }], // the straight (#257)
-  ball: [[-29.0, 20.4], [-24.0, 21.6]],              // two kids passing a ball (on the gravel by the sandbox)
-  sandbox: [[-24.6, 25.2], [-23.1, 26.4]],             // kids sitting in the sandbox
-  benches: [{ x: -3.4, z: 28.1, yaw: 180 }, { x: -37.3, z: 22.2, yaw: 90 }], // on COURTYARD.benches: yaw = the bench's rot − 180 (#207)
+  cyclists: [{ a: [-90, -26.4], b: [10, -26.4], speed: 4.5 }],
+  ball: [], sandbox: [], // playground geometry remains, no child instances or orphan football
+  benches: [{ x: -3.4, z: 28.1, yaw: 180 }],
   seatTaken: 0.4, // m: a courtyard bench spot this near a sitter is not offered to the visitor (#438)
   seat: 0.52, // the sitters' hip height: the bench seat (0.46) + the thigh (#243)
-  blanket: { x: 0.5, z: 22.4 },                       // on the lawn between the east tree squares (#259)
-  loftgang: [[-29.44, 1.0], [-8.88, 1.1]],          // neighbours standing on the loftgång (våning 3)
+  blanket: null,                       // no unattended animated figure/blanket left behind (#521)
+  loftgang: [[-8.88, 1.1]],          // neighbours standing on the loftgång (våning 3)
   bellNear: 12,                                    // m: a cyclist rings the bell passing this close
   shirts: [0x2f5d8a, 0xc0392b, 0xe7d9b8, 0x3e7b4f, 0xf2f2f0, 0x7d4a8c, 0xe08a2a, 0x1f2a36, 0x9bb7d4, 0xd4577a],
   pants: [0x23324a, 0x2b2b2b, 0x6b5844, 0x8a8f96, 0x384b6b, 0xc8bfa8],

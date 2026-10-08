@@ -39,8 +39,8 @@ src/streetlife.js      life on the street (SITE.life, #113): the car park as on 
 src/people.js          people in the area (PEOPLE, #114): low-poly figures (one InstancedMesh per body part, a colour each; #239:
                        lathe-turned torso/arms/legs, knees (#243: thigh + shin, `kneeL/R`), hands and shoes ride the arm / shin; a rounded dog;
                        posed every frame): walkers to and fro on the paths (a dog with one), cyclists on Sankt Lars väg
-                       (sfx.bell when they pass close), kids with a ball and in the sandbox, bench sitters, someone on a
-                       blanket (not in the snow months), neighbours on the loftgång; daytime only
+                       (sfx.bell when they pass close); #521 reduces 19 figures to six adults: three walkers, one cyclist,
+                       one bench sitter and one loft neighbour. No children, orphan ball or blanket; sandboxes remain. Daytime only
 src/patio.js           patio: Rusta Verona lounge + slatted table (#408), cushion box, parasol, planters with exotic plants
                        (furniture builders, FURNITURE + PATIO in config); seasons via Patio.update:
                        parasol folds at night/in winter, beers in summer, snowman in winter
@@ -87,3 +87,7 @@ tools/greettest.html   headless test: "Hälsa på grannen" on the bench sitter, 
                        Hus A, a walker stops and turns to you (#247)
 ```
 
+
+## Sparse adults (#521)
+
+`PEOPLE` contains three adult paths (street with dog, entrance walk and patio walk), one cyclist, one bench sitter near Hus A and one eastern loft neighbour. Sandbox children, ball players, the child walker and selected extra adults are absent from the instance buffers. Empty ball/blanket settings do not create their props. Playground meshes, seating and walkways remain unchanged. `tools/peopletest.html` checks population, buffers, animations, props and day/winter visibility; `greettest` verifies greetings still work for remaining neighbours.

@@ -5,8 +5,8 @@ import { bikeGeometry } from './streetlife.js';
 import { sfx } from './audio.js';
 
 // People in the area (#114): low-poly figures (a body, two arms and hands, two legs and shoes, a head, hair — one
-// InstancedMesh per part, a colour per person) walking to and fro on the paths, cycling on Sankt Lars väg, passing
-// a ball, sitting on benches and in the sandbox, lying on a blanket, standing on the loftgång; a dog trots after
+// InstancedMesh per part, a colour per person) walking to and fro on the paths, cycling on Sankt Lars väg, sitting
+// on a bench and standing on the loftgång; a dog trots after
 // one walker. Daytime only. Every figure is posed each frame from a few numbers (no skinning).
 
 const rnd = (() => { let s = 23; return () => ((s = (s * 16807) % 2147483647) / 2147483647); })();
@@ -42,7 +42,7 @@ export class People {
     P.ball.forEach(([x, z], i) => fig('ball', { x, z, kid: true, i }));
     for (const [x, z] of P.sandbox) fig('sandbox', { x, z, kid: true, yaw: rnd() * 6 });
     for (const b of P.benches) fig('sit', { ...b });
-    fig('lie', { ...P.blanket });
+    if(P.blanket) fig('lie', { ...P.blanket });
     const top = UNIT_TOP; // the loftgång deck = våning 3's floor
     for (const [x, z] of P.loftgang) fig('stand', { x, z, y: top, yaw: Math.PI });
     this.figs = figs;
@@ -67,8 +67,8 @@ export class People {
       new THREE.InstancedMesh(tyres, new THREE.MeshStandardMaterial({ color: 0x141414, roughness: 0.8 }), cyc.length)];
     cyc.forEach((f, i) => this.bikes[0].setColorAt(i, new THREE.Color(pick([0x1d3c6e, 0xb02a2a, 0x2a2a2a, 0x3c7a4a]))));
     for (const b of this.bikes) { b.castShadow = true; b.frustumCulled = false; this.group.add(b); }
-    this.ball = new THREE.Mesh(new THREE.IcosahedronGeometry(0.11, 1), new THREE.MeshStandardMaterial({ color: 0xf2f2f2, roughness: 0.5 }));
-    this.ball.castShadow = true;
+    this.ball = P.ball.length >= 2 ? new THREE.Mesh(new THREE.IcosahedronGeometry(0.11, 1), new THREE.MeshStandardMaterial({ color: 0xf2f2f2, roughness: 0.5 })) : null;
+    if(this.ball) this.ball.castShadow = true;
     const dogMat = new THREE.MeshStandardMaterial({ color: 0x8a5a32, roughness: 0.9 });
     this.dog = new THREE.Group();
     const cap = (r, l) => new THREE.CapsuleGeometry(r, l, 4, 10);
@@ -80,10 +80,10 @@ export class People {
     this.dogLegs = [[-0.055, 0.17], [0.055, 0.17], [-0.055, -0.17], [0.055, -0.17]].map(([x, z]) => { const l = new THREE.Mesh(cap(0.024, 0.22).translate(0, -0.13, 0), dogMat); l.position.set(x, 0.27, z); return l; });
     const tail = new THREE.Mesh(cap(0.016, 0.17), dogMat); tail.position.set(0, 0.4, -0.27); tail.rotation.x = -0.9;
     this.dog.add(dogBody, dogHead, tail, ...this.dogLegs);
-    const blanket = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.01, 1.9), new THREE.MeshStandardMaterial({ color: 0xc2453a, roughness: 1 }));
-    blanket.position.set(P.blanket.x, 0.01, P.blanket.z);
+    const blanket = P.blanket ? new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.01, 1.9), new THREE.MeshStandardMaterial({ color: 0xc2453a, roughness: 1 })) : null;
+    if(blanket) blanket.position.set(P.blanket.x, 0.01, P.blanket.z);
     this.blanket = blanket;
-    this.group.add(this.ball, this.dog, blanket);
+    this.group.add(...[this.ball, this.dog, blanket].filter(Boolean));
     this.m4 = new THREE.Matrix4(); this.q = new THREE.Quaternion(); this.q2 = new THREE.Quaternion(); this.v = new THREE.Vector3(); this.one = new THREE.Vector3(1, 1, 1);
     this.clock = 0;
     this.update(0, 1, 6, null);
@@ -142,7 +142,7 @@ export class People {
     if (!show) return;
     this.clock += dt;
     const cyc = this.figs.filter((g) => g.role === 'cycle');
-    this.blanket.visible = !SEASON.snowMonths.includes(month);
+    if(this.blanket) this.blanket.visible = !SEASON.snowMonths.includes(month);
     this.figs.forEach((f, i) => {
       if (f.greetT > 0) f.greetT -= dt;
       const len = Math.hypot(f.b?.[0] - f.a?.[0], f.b?.[1] - f.a?.[1]);

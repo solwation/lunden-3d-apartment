@@ -1,0 +1,19 @@
+<!doctype html><html><meta charset="utf-8"><title>Sparse adults (#521)</title><pre id="out">running…</pre><script type="module">
+const lines=[];let pass=true;const check=(ok,s)=>{lines.push((ok?'PASS':'FAIL')+' '+s);pass&&=!!ok},wait=ms=>new Promise(r=>setTimeout(r,ms));
+try{
+ const f=document.createElement('iframe');f.src='../index.html?shot&cloud=&time=12';document.body.append(f);await new Promise(r=>f.onload=r);while(!f.contentWindow.__app)await wait(100);const w=f.contentWindow,A=w.__app,P=A.people,T=await w.eval("import('three')"),config=await w.eval("import('/src/config.js')");A.renderer.setAnimationLoop(null);A.renderer.setPixelRatio(.15);A.renderer.setSize(180,120,false);
+ check(P.figs.length===6,'nineteen figures reduced to six scattered adults');
+ check(P.figs.every(f=>!f.kid&&!['sandbox','ball','lie'].includes(f.role)),'all sandbox/ball children, child walker and blanket figure removed');
+ check(P.figs.filter(f=>f.role==='walk').length===3&&P.figs.filter(f=>f.role==='cycle').length===1&&P.figs.filter(f=>f.role==='sit').length===1&&P.figs.filter(f=>f.role==='stand').length===1,'three walkers, one cyclist, one bench sitter and one loft neighbour remain');
+ check(Object.values(P.parts).every(m=>m.count===6),'all body-part instance buffers contain only the six remaining figures');
+ check(P.bikes.every(m=>m.count===1),'no bicycle instance left behind by removed cyclist');
+ check(P.ball===null&&P.blanket===null,'removed ball game and blanket figure leave no orphan prop mesh');
+ check(config.COURTYARD.sandboxes.length===2,'sandbox itself remains configured');
+ const before=P.figs.filter(f=>f.role==='walk').map(f=>f.t);for(let i=0;i<120;i++)P.update(1/60,1,6,null);
+ check(P.figs.filter(f=>f.role==='walk').every((f,i)=>f.t!==before[i]),'remaining adults continue their paths');
+ check(P.dog.parent===P.object&&P.figs.some(f=>f.dog),'dog stays attached to its retained owner');
+ check(Object.values(P.parts).every(m=>Array.from(m.instanceMatrix.array).every(Number.isFinite)),'remaining animated instances have finite transforms');
+ P.update(.1,0,6,null);check(!P.object.visible,'night hides the remaining figures and associated props together');P.update(.1,1,1,null);check(P.object.visible&&P.figs.length===6&&P.ball===null,'winter introduces no removed figure or ball');
+ document.getElementById('out').textContent=lines.join('\n')+'\n'+(pass?'ALL PASS':'SOME FAILED');
+}catch(e){document.getElementById('out').textContent=lines.join('\n')+'\nFAIL '+e.stack}
+</script></html>
