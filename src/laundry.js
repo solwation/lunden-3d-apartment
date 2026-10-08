@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { LAUNDRY as P } from './config.js';
 import { laundryBasket } from './laundrymodels.js';
+import { LaundryProgramme } from './laundryprogramme.js';
 
 // Laundry uses the same item data, slot rules, actions and save record as kitchen storage (#550).
 export class Laundry {
@@ -28,8 +29,12 @@ export class Laundry {
       const update=door.update.bind(door);door.update=dt=>{update(dt);root.visible=door.isOpen||door.t>0;};
       this.machines.push({kind,door,root,store});
     }
+    this.washer=new LaundryProgramme(life,this.machines.find(m=>m.kind==='washer'));
+    life.keepPart('laundry',{save:()=>({washer:this.washer.save()}),load:v=>this.washer.load(v?.washer)});
     life.items.namers.laundryClothes=item=>`${item.clean==='clean'?'rena':'smutsiga'} ${item.moisture==='wet'?'våta':'torra'} ${item.machine?.folded?'vikta ':''}plagget`;
   }
+  update(dt){this.washer.update(dt);}
+  cancel(){this.washer.cancel();}
   anchor(parent,pos) {const a=new THREE.Object3D();a.position.set(...pos);parent.add(a);return a;}
   register(id,spec,parent,anchors,pos,size,outlineRoot) {
     const I=this.life.items;

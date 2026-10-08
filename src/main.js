@@ -1765,6 +1765,7 @@ function updateFocus() {
 // --- furniture on/off (F / 🛋) ---------------------------------------------
 function toggleFurniture(on = !world.furnitureOn) {
   life.interrupt('F'); // a timed life action stops (#372): nothing used before its commit
+  laundry.cancel();
   dishProg?.cancel(); // the dishwasher stops, nothing washed (#385)
   if (rest.active) standUp(); // the seat is about to vanish
   if (!on) breaker.reset(); // whatever was shot to pieces is whole and home again (#263)
@@ -2002,6 +2003,7 @@ function step(dt) {
   fruit.update(dt);
   life.update(dt);
   mess.update(dt); // dust now and then (#388)
+  laundry.update(dt);
   dishProg?.update(dt); // (#385)
   dropoff.update(dt); // a lid (#387)
   toys.update(dt);

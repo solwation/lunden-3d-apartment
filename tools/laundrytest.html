@@ -8,11 +8,13 @@ try {
  check(clothes.length===3&&clothes.every(i=>i.clean==='dirty'&&i.moisture==='dry'&&i.place.store==='laundryBasket'),'basket starts with three dirty dry garments, each with its own stable id');
  check(N.machines.length===2&&N.machines.every(m=>m.store.anchors.length===3),'both real machine drums have three registered storage anchors');
  const run=(target,id)=>{const k=L.options(target).findIndex(a=>a.id===id);return k>=0&&L.run(target,k)};
+ check(N.washer.startReason()==='Tvättmaskinen är tom'&&!N.washer.start(),'empty washer rejects programme start through rules and direct API');
  const first=clothes[0];check(run(L.view(first).takeTarget,'take')&&I.held()===first,'garment can be taken from basket with the normal life action');
  const closed=L.options(machine.store.target).find(a=>a.id==='putIn');
  check(closed?.reason?.includes('Öppna')&&!run(machine.store.target,'putIn')&&I.held()===first,'closed washer blocks loading and leaves the garment in the hand');
  machine.door.toggle();machine.door.update(1);A.scene.updateMatrixWorld(true);
- const c=machine.door.laundry.center;A.player.spawn(1.30,c[2],90);A.player.crouch=true;A.player.eyeY=.95;A.step(0);A.camera.lookAt(c[0]-.02,c[1],c[2]);A.camera.updateMatrixWorld(true);A.step(0);
+ check(N.washer.startReason()==='Stäng luckan först'&&!N.washer.start(),'open washer rejects programme start');
+ const c=machine.door.laundry.center;A.player.spawn(1.30,c[2],Math.PI/2);A.player.crouch=true;A.player.eyeY=.95;A.step(0);A.camera.lookAt(c[0]-.02,c[1],c[2]);A.camera.updateMatrixWorld(true);A.step(0);
  check(A.focus().focused===machine.store.target,'aiming at the open washer drum selects the real storage action target ('+A.focus().focused?.name+' / '+A.focus().focused?.kind+')');
  if(A.focus().focused===machine.store.target)f.contentDocument.getElementById('action').click();else run(machine.store.target,'putIn');
  check(first.place.store==='laundryWasher'&&!I.held()&&L.view(first).model.parent===machine.store.anchors[0],'touch action loads the original garment into the static drum anchor');
@@ -32,6 +34,36 @@ try {
  check(I.ofType('laundryClothes').length===3&&ids.every(id=>I.get(id)?.place.store==='laundryWasher')&&I.get(ids[0]).clean==='clean'&&I.get(ids[0]).moisture==='wet','actual page reload preserves clothes, slots, cleanliness and independent wetness');
  check(!I.held()&&N.machines.every(m=>!m.door.isOpen&&!m.root.visible),'new visit starts with closed machine doors and hidden stored clothes');
  check(I.audit().length===0,'all inventory invariants hold after the full loading and reload flow');
+ // #551: real start control, interruption, exact saved game time and start-id membership.
+ L=A.life;N=A.laundry;let W=N.washer,M=W.machine;const cc=M.door.laundry.center;
+ A.player.spawn(1.30,cc[2],Math.PI/2);A.player.crouch=false;A.player.eyeY=1.62;A.step(0);A.camera.lookAt(W.panel.position);A.camera.updateMatrixWorld(true);A.step(0);
+ check(A.focus().focused===W.target,'aiming at the actual washer control selects the programme action');
+ if(A.focus().focused===W.target)f.contentDocument.getElementById('action').click();else W.start();
+ check(W.state==='running'&&W.ids.length===3&&W.left===W.seconds,'touch starts one programme with the exact original garment ids');
+ W.update(7.5);const leftBefore=W.left;M.door.toggle();M.door.update(1);W.update(20);
+ check(W.state==='paused'&&W.left===leftBefore,'opening the door pauses immediately without consuming programme time');
+ const removed=I.get(ids[1]),removedState={clean:removed.clean,moisture:removed.moisture};
+ check(run(L.view(removed).takeTarget,'take'),'paused open machine allows taking out an original garment');
+ L.view(removed).placeAt(new T.Vector3(1.28,0,4.1),0);
+ const replacement=I.create('laundryClothes',{at:'hand'}),replacementId=replacement.id;
+ check(L.options(M.store.target).find(a=>a.id==='putIn')?.reason?.includes('pågår')&&!run(M.store.target,'putIn')&&I.held()===replacement,'paused programme blocks new loading without losing the held replacement');
+ // Deliberate data-level insertion verifies membership even if saved inventory changes externally.
+ I.move(replacement,{at:'slot',store:M.store.id,slot:I.freeSlot(M.store.id,replacement)});
+ M.door.toggle();M.door.update(1);W.update(1);const savedLeft=W.left;
+ check(W.state==='running'&&savedLeft===leftBefore-1,'fully closed door resumes the same programme and remaining time');
+ check(L.flush(),'normal visit writes programme and load through the existing life save');
+ A=await load('../index.html?shot&cloud=&time=12');I=A.life.items;L=A.life;N=A.laundry;W=N.washer;M=W.machine;
+ check(W.busy&&W.left===savedLeft&&W.ids.length===3&&ids.every(id=>W.ids.includes(id)),'actual reload keeps exact game time and original start load without offline progress');
+ W.update(100);
+ check(W.state==='done'&&W.left===0&&[ids[0],ids[2]].every(id=>I.get(id).clean==='clean'&&I.get(id).moisture==='wet'&&!I.get(id).machine.folded),'completed programme makes remaining original clothes clean and wet, never dry or folded');
+ check(I.get(ids[1]).clean===removedState.clean&&I.get(ids[1]).moisture===removedState.moisture,'original garment removed during pause stays unchanged');
+ check(I.get(replacementId).clean==='dirty'&&I.get(replacementId).moisture==='dry','garment inserted after programme start is never included in its result');
+ I.move(I.get(replacementId),{at:'world',pos:[1.28,.001,4.2],yaw:0});
+ check(W.startReason()==='Tvätten är redan ren'&&!W.start(),'all-clean load rejects redundant washing');
+ I.set(I.get(ids[0]),{clean:'dirty'});W.start();W.update(3);const stateBefore=I.get(ids[0]).moisture;A.toggleFurniture();
+ check(!W.busy&&W.state==='idle'&&I.get(ids[0]).clean==='dirty'&&I.get(ids[0]).moisture===stateBefore&&I.ofType('laundryClothes').length===4,'F cancels programme without washing, drying or losing garments');A.toggleFurniture();
+ check(I.audit().length===0,'inventory invariants also hold after programme pause, replacement, reload and cancellation');
+
  document.getElementById('out').textContent=lines.join('\n')+'\n'+(pass?'ALL PASS':'SOME FAILED');
 }catch(e){document.getElementById('out').textContent=lines.join('\n')+'\nFAIL '+e.stack;}
 </script></html>

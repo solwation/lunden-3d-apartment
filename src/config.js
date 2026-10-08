@@ -1292,6 +1292,7 @@ export const LAUNDRY = {
   basket: { pos: [1.78, 0, 4.16], w: .42, d: .42, h: .36, slots: 3 },
   drum: { radius: .16, depth: .30, shell: .012, centerY: .42, slots: 3 },
   garment: { w: .18, d: .22, thick: .022, colors: [0x617b96,0xb77b73,0xa496b8] },
+  panel: { w: .26, h: .065, lift: .36, offset: .008, pickDepth: .02 },
   washSeconds: 35, drySeconds: 25,
 };
 export const ITEMS = {

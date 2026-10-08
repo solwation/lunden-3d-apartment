@@ -14,7 +14,7 @@ När du håller ett föremål visar en vit kontur var det kan placeras eller lä
 
 Kranarna i kök, tvätt och båda badrummen styrs med blandarspaken: den lyfts när vattnet sätts på och sänks när det stängs av.
 
-I tvättrummet finns en korg med smutsiga plagg. Ta ett plagg, öppna maskinluckan och sikta in i trumman för att lägga in det; stängda luckor och fulla maskiner stoppar lastningen. Plaggens plats och tillstånd sparas mellan besöken.
+I tvättrummet finns en korg med smutsiga plagg. Ta ett plagg, öppna maskinluckan och sikta in i trumman för att lägga in det; stängda luckor och fulla maskiner stoppar lastningen. Starta tvättprogrammet på panelen med luckan stängd: efter 35 sekunder är plaggen rena och våta. En öppnad lucka pausar programmet; återstående tid, plaggens plats och tillstånd sparas mellan besöken.
 
 I kylen finns en äggkartong: öppna den, ta ett ägg och knäck det i stekpannan på hällen. Påslagen häll steker ägget, som kan serveras på tallrik eller macka och ätas. Pannan och tallriken behöver sedan diskas vid kökskranen.
 

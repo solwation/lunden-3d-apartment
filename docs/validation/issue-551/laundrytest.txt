@@ -1,0 +1,35 @@
+PASS basket starts with three dirty dry garments, each with its own stable id
+PASS both real machine drums have three registered storage anchors
+PASS empty washer rejects programme start through rules and direct API
+PASS garment can be taken from basket with the normal life action
+PASS closed washer blocks loading and leaves the garment in the hand
+PASS open washer rejects programme start
+PASS aiming at the open washer drum selects the real storage action target (tvättmaskinen / life)
+PASS touch action loads the original garment into the static drum anchor
+PASS loaded garment lies physically inside the drum, behind the front plane
+PASS shutting the door hides contents without moving them with the swinging leaf
+PASS closed door blocks taking a stored garment
+PASS full washer rejects another garment without moving or losing any item
+PASS moisture changes independently of cleanliness
+PASS cleanliness changes do not dry the garment
+PASS invalid moisture is ignored
+PASS save/load and restocking preserve all original ids without duplicate basket stock
+PASS basket collision is registered while the central laundry path remains free
+PASS actual page reload preserves clothes, slots, cleanliness and independent wetness
+PASS new visit starts with closed machine doors and hidden stored clothes
+PASS all inventory invariants hold after the full loading and reload flow
+PASS aiming at the actual washer control selects the programme action
+PASS touch starts one programme with the exact original garment ids
+PASS opening the door pauses immediately without consuming programme time
+PASS paused open machine allows taking out an original garment
+PASS paused programme blocks new loading without losing the held replacement
+PASS fully closed door resumes the same programme and remaining time
+PASS normal visit writes programme and load through the existing life save
+PASS actual reload keeps exact game time and original start load without offline progress
+PASS completed programme makes remaining original clothes clean and wet, never dry or folded
+PASS original garment removed during pause stays unchanged
+PASS garment inserted after programme start is never included in its result
+PASS all-clean load rejects redundant washing
+PASS F cancels programme without washing, drying or losing garments
+PASS inventory invariants also hold after programme pause, replacement, reload and cancellation
+ALL PASS
