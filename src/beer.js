@@ -41,6 +41,7 @@ export class Beer extends Holdable {
     this.rest = { q: new THREE.Quaternion(), lift: 0 }; // it stands when put down
     this.setLevel(1);
     this.placeForSpot(null);
+    this.goHome();
     this.show(false);
   }
 

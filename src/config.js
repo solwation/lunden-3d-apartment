@@ -1068,7 +1068,7 @@ export const PINGPING = { w: 0.4, h: 0.38, d: 0.22, navy: 0x34437a, white: '#ece
 
 // The big beer on the patio (#117, src/beer.js): a 50 cl tankard (Ø 9 × 16 cm, our pick) that turns up on the
 // lounge table (top at 0.40) when you sit down in the lounge sofa; each gulp drinks `gulp` of it.
-export const BEER = { x: 4.46, y: 0.4, z: 14.3, r: 0.045, h: 0.16, gulp: 0.2, held: { x: 0.2, y: -0.24, z: -0.45 } };
+export const BEER = { x: 4.38, y: 0.4, z: 14.3, r: 0.045, h: 0.16, gulp: 0.2, held: { x: 0.2, y: -0.24, z: -0.45 } };
 
 // The Nerf target (#99, src/target.js): a round archery-style board on a wooden stand on the lawn south of the
 // hedge, facing the patio (north), its centre over the hedge so you can shoot from the patio door (~7.5 m).

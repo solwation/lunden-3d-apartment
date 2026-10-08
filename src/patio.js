@@ -210,6 +210,7 @@ export function slattable(item) {
   for (let i = 0; i < slats; i++) g.add(rbox(w - 0.004, top, sd - 0.008, 0, h - top / 2, -d / 2 + sd * (i + 0.5), woodMat, 0.003));
   if (item.beers) {
     const beers = new THREE.Group();
+    beers.visible = false;
     for (const [x, z] of [[-0.18, 0.08], [0.06, -0.1]]) {
       const b = beerGlass();
       b.position.set(x, h, z);
