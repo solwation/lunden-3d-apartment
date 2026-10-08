@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { HUS_L as H, COLORS, FENCE_HEIGHT, SEASON, VERTICAL, storeyFloor, CORE, DOOR_HEIGHT, DOOR_TRIM } from './config.js';
 import { registerSnow } from './seasons.js';
-import { entryParts, entryMaterials } from './entrancedoor.js';
+import { entryParts, entryMaterials, entryHandleParts } from './entrancedoor.js';
 import { wallLine, wallRect } from './roofs.js';
 import { groundY } from './surroundings.js';
 import { glowMaterial, poolGeometry, washGeometry, fadeGlow } from './groundglow.js';
@@ -175,13 +175,17 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
   const segments = []; // collision for the neighbours' screen walls and hedges (lawn side)
   const loftD = H.loftgangDepth;
   const upperTop = roofTop + H.upperStoreys * H.storeyHeight;
-  const entryWood = [], entryFrames = [], entryGlass = [], entryLeaves = [];
+  const entryHandles = [], entryWood = [], entryFrames = [], entryGlass = [], entryLeaves = [];
   const staticEntry = (x0,x1,y0,height,z) => {
     const {parts,pane} = entryParts(x1-x0,height);
     for(const p of parts) {
       const [w,h,t]=p.size,[x,y,d]=p.pos;
       const geo=boxGeo(x0+x-w/2,x0+x+w/2,y0+y-h/2,y0+y+h/2,z+d-t/2,z+d+t/2);
       ({wood:entryWood,frame:entryFrames,glass:entryGlass})[p.kind].push(geo);
+    }
+    for(const p of entryHandleParts(x1-x0)) {
+      const [w,h,t]=p.size,[x,y,d]=p.pos;
+      entryHandles.push(boxGeo(x0+x-w/2,x0+x+w/2,y0+y-h/2,y0+y+h/2,z+d-t/2,z+d+t/2));
     }
     entryLeaves.push({x0,x1,y0,height,z,pane:{x0:x0+pane.x0,x1:x0+pane.x1,y0:y0+pane.y0,y1:y0+pane.y1}});
   };
@@ -370,7 +374,6 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
       const zr = loftD + Lf.recess;
       renders.push(boxGeo(o.x0, o.x0 + 0.01, o.y0, o.y1, loftD, zr), boxGeo(o.x1 - 0.01, o.x1, o.y0, o.y1, loftD, zr), boxGeo(o.x0, o.x1, o.y1 - 0.01, o.y1, loftD, zr));
       staticEntry(o.x0+.01,o.x1-.01,o.y0,o.y1-o.y0-.01,zr+.025);
-      frames.push(boxGeo(o.x1 - 0.2, o.x1 - 0.08, o.y0 + 1.0, o.y0 + 1.03, zr - 0.04, zr)); // the handle
       const lx = o.x1 + Lf.lamp.dx, ly = o.y0 + Lf.lamp.y, { w: lw, h: lh } = Lf.lamp;
       lampBox.push(boxGeo(lx - lw / 2, lx + lw / 2, ly + lh / 2, ly + lh / 2 + 0.03, loftD - 0.12, loftD), boxGeo(lx - 0.03, lx + 0.03, ly - lh / 2, ly + lh / 2, loftD - 0.02, loftD));
       lampGlow.push(boxGeo(lx - lw / 2 + 0.01, lx + lw / 2 - 0.01, ly - lh / 2, ly + lh / 2, loftD - 0.11, loftD - 0.02));
@@ -565,6 +568,7 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
   group.userData.terraces = { list: terraces, y3, deck: deckY, parapet: par }; // #350
   const entryMats=entryMaterials();
   add(entryWood,entryMats.wood);add(entryFrames,entryMats.frame);add(entryGlass,entryMats.glass,false);
+  add(entryHandles, entryMaterials().handle);
   group.userData.entryLeaves=entryLeaves;
   // #433: a wall light by every street-side front door on våning 1 (ours too): the box joins the lanterns' housings,
   // the glass their glow; the façade wash and the ground pool are two additive meshes for the whole row
