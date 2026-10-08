@@ -53,3 +53,11 @@ test('an aborted or failed upstream is retryable and does not write a successful
     assert.equal((await beerShelfFetch(new Request(req.url,{method:'POST'}),env,{})).status,405);
   }finally{globalThis.fetch=original;}
 });
+
+
+test('source redirects fail the batch without following another host (edge-compatible manual mode)', async () => {
+  await assert.rejects(fetchShelf({fetcher: async (url, options) => {
+    assert.equal(options.redirect, 'manual');
+    return new Response('', {status: 302, headers: {Location: 'https://example.com'}});
+  }}), /source response 302/);
+});

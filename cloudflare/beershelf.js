@@ -68,12 +68,12 @@ export function imageData(bytes) {
 }
 export async function fetchShelf({ fetcher = fetch, now = Date.now(), signal = AbortSignal.timeout(TIMEOUT) } = {}) {
   const read = async path => JSON.parse(new TextDecoder().decode(await boundedBody(await fetcher(UPSTREAM + path,
-    { signal, redirect: 'error', headers: { Origin: 'https://untappdbolaget.se', 'User-Agent': 'Lunden-beer-shelf/1.0' } }), MAX_JSON)));
+    { signal, redirect: 'manual', headers: { Origin: 'https://untappdbolaget.se', 'User-Agent': 'Lunden-beer-shelf/1.0' } }), MAX_JSON)));
   const [top, ...docs] = await Promise.all([read('/top-lists'), ...CATEGORIES.map(c => read('/sb-products/' + encodeURIComponent(c))),
     ...CATEGORIES.map(c => read('/enrichment/' + encodeURIComponent(c)))]);
   const beers = selectBeers(top, docs.slice(0, 2), docs.slice(2));
   await Promise.all(beers.map(async beer => {
-    const bytes = await boundedBody(await fetcher(beer.imageURL, { signal, redirect: 'error' }), MAX_IMAGE);
+    const bytes = await boundedBody(await fetcher(beer.imageURL, { signal, redirect: 'manual' }), MAX_IMAGE);
     beer.image = imageData(bytes);
   }));
   return { version: 1, fetchedAt: now, day: shelfDay(now), source: SOURCE, sourceUpdatedAt: top.updatedAt, beers };
