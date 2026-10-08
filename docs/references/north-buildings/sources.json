@@ -1,0 +1,28 @@
+{
+  "retrieved": "2026-10-08",
+  "scope": "Befintlig bebyggelse geografiskt norr/nordväst om Kv. Lunden, Lund",
+  "osm": {
+    "overview": "https://www.openstreetmap.org/#map=18/55.6861/13.1800",
+    "detail": "https://www.openstreetmap.org/#map=19/55.68625/13.1795",
+    "attribution": "© OpenStreetMap contributors, https://www.openstreetmap.org/copyright",
+    "note": "Kartnamn är orienteringshjälp; verksamheter kan ändras."
+  },
+  "aerial": {
+    "source": "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/export?bbox=13.1778,55.6847,13.1822,55.6873&bboxSR=4326&imageSR=3857&size=1400,1050&format=jpg&f=image",
+    "bbox_wgs84": [
+      13.1778,
+      55.6847,
+      13.1822,
+      55.6873
+    ],
+    "attribution": "Source: Esri, Vantor, Earthstar Geographics, and the GIS User Community",
+    "note": "Norr uppåt. Fotodatum inte verifierat; Lunden visas under byggnation. Använd grannhusens volymer, inte byggplatsen, som referens."
+  },
+  "plans": {
+    "plankarta-samrad-2018.pdf": "https://mnd-assets.mynewsdesk.com/image/upload/f_pdf,fl_attachment/tx3kx8dlpvxn8ivpdumc",
+    "planbeskrivning-samrad-2018.pdf": "https://mnd-assets.mynewsdesk.com/image/upload/f_pdf,fl_attachment/n1kpyaycc92ld8qulcgd",
+    "publisher": "Lunds kommun",
+    "status": "Samrådshandling 2018-11-29, PÄ 38/2015, 1281K-P259. Inte verifierad aktuell antagen plan.",
+    "note": "Använd grundkartans omgivningskonturer som historiskt jämförelseunderlag. Byggrätter är inte bevis för faktiskt byggda hus."
+  }
+}
