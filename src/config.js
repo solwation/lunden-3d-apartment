@@ -2656,10 +2656,10 @@ export const FURNITURE = [
   { type: 'randerstable', level: 0, x: 1.52, z: 8.12, rot: 180, flower: true, flowerAt: [-0.09, -0.09] },
   // The ABORG café set (#406, #422) outside our front, in front of the kitchen window (x 3.05–4.66; the front door x 0.80–1.81
   // swings out to z −0.92): the table centred on the window, 3 cm off the façade (its top 0.71 is under the 0.8 sill, so the
-  // top-hung sash swings out over it), a little pot plant on its street half, out of the sash's sweep (its 0.96 m top lies ~1.29 m from the sash hinge, the sash is 1.26 m, #422). The chairs
+  // top-hung sash swings out over it). The tabletop has no pot plant (#490). The chairs
   // either side of it, both facing straight out to the street (rot 0 = −z: furniture.js turns a piece by rot + 180°),
   // parallel, backs to the house, 3 cm off the façade like the table. Clear of the car's stop (x 0.8–5.0, z −6.3…−4.5, CAR) and the green strip (z ≤ −2.9).
-  { type: 'aborgtable', level: 0, x: 3.85, z: -0.33, rot: 0, flower: true, flowerAt: [0.12, 0.2] }, // flowerAt local: +z = the street side
+  { type: 'aborgtable', level: 0, x: 3.85, z: -0.33, rot: 0 },
   { type: 'aborgchair', level: 0, x: 3.28, z: -0.27, rot: 0 },
   { type: 'aborgchair', level: 0, x: 4.42, z: -0.27, rot: 0 },
   // IKEA BESTÅ display combination with glass doors, white / Lappviken walnut effect, 120 × 42 × 193 cm (#104, ikea.com
