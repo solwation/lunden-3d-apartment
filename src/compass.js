@@ -9,6 +9,7 @@ const names=['norr','nordost','öster','sydost','söder','sydväst','väster','n
 export class Compass {
   constructor(camera,element) {
     this.camera=camera;this.element=element;this.direction=new THREE.Vector3();this.bearing=DAY.planNorth;
+    this.badges=document.getElementById('badges');
     this.blockers=['update','reloaded','countdown'].map(id=>document.getElementById(id)).filter(Boolean);
     for(const [key,value] of Object.entries({size:P.size,compact:P.compactSize,top:P.top,'narrow-top':P.narrowTop}))
       element.style.setProperty(`--compass-${key}`,`${value}px`);
@@ -26,6 +27,7 @@ export class Compass {
       this.element.setAttribute('aria-label',`Kompass, blickriktning ${names[Math.round(this.bearing/45)%8]} (${rounded}°)`);
       this.rounded=rounded;
     }
-    this.element.hidden=this.blockers.some(e=>!e.hidden);
+    // Let every event badge finish (including its fade) before restoring the compass.
+    this.element.hidden=!!this.badges?.childElementCount||this.blockers.some(e=>!e.hidden);
   }
 }

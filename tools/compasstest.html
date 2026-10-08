@@ -34,6 +34,18 @@ try {
   d.getElementById(id).hidden=false;C.update();check(el.hidden,`${id}: centered update message takes precedence`);d.getElementById(id).hidden=true;
  }
  C.update();check(!el.hidden,'compass returns after messages disappear');
+ // #541: real event badges, both layouts and multiple concurrent notices.
+ const {badge}=await w.eval("import('/src/stats.js')"),badges=d.getElementById('badges');
+ for(const touch of [false,true])for(const width of [390,844,1280]) {
+  f.width=width;d.body.classList.toggle('touch',touch);badges.replaceChildren();
+  badge('🐈 Klappat katt +1',false);badge('🧹 Städat +1',false);C.update();await wait(30);
+  check(el.hidden&&badges.children.length===2&&[...badges.children].every(b=>{const r=b.getBoundingClientRect();return r.width>0&&r.left>=0&&r.right<=width}),`${width}px ${touch?'touch':'desktop'}: multiple badges readable with compass hidden`);
+  badges.firstElementChild.remove();C.update();check(el.hidden,'compass stays hidden while last badge remains');
+  badges.lastElementChild.remove();C.update();check(!el.hidden,'compass returns when last badge leaves');
+ }
+ badge('Notisen tonar bort',false);C.update();check(el.hidden,'normal timed badge hides compass');
+ await wait(2700);C.update();check(!badges.childElementCount&&!el.hidden,'real badge expiry restores compass');
+ d.body.classList.add('touch');
  A.showOverlay(true);check(d.getElementById('hud').hidden,'compass is part of HUD hidden by pause menu');A.showOverlay(false);
  A.touch.enabled=false;A.camera.rotation.set(0,T.MathUtils.degToRad(-32),0,'YXZ');C.update();check(!el.hidden&&near(C.bearing,90),'desktop uses the same geographic compass');
  // Actual new load reconstructs orientation from camera; no saved compass state can drift.
