@@ -3050,7 +3050,7 @@ function keepInside(obj, item, yaw) {
     return t;
   };
   for (const mesh of [...obj.children]) {
-    if (!mesh.isMesh) continue;
+    if (!mesh.isMesh || obj.userData.wallExcludedMaterials?.includes(mesh.material)) continue;
     mesh.updateMatrix();
     const geo = mesh.geometry.clone().applyMatrix4(mesh.matrix);
     mesh.position.set(0, 0, 0); mesh.quaternion.identity(); mesh.scale.set(1, 1, 1);

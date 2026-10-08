@@ -2736,11 +2736,13 @@ export const FURNITURE = [
   // x 0.2 and the door at x 0.95, the wall's inner face at z 12.23). Canes, frond and leaflet lengths are *guesses*
   // for the former ~1.5 m total height; reduced model now ~1.25 m (#491).
   // `walls`: the fronds stay inside the west party wall and the façade (#137)
-  // #495: ZZ plant between BESTÅ (south edge z 11.15) and the existing palm. Assumed 63 cm
-  // overall height, about half the adjusted palm; identical copper pot profile at half its dimensions.
-  { type: 'zzplant', level: 0, x: .37, z: 11.4, height: .63, pot: { r: .076, h: .171 },
-    stems: 13, pairs: 7, stemHeight: .43, stemRadius: .006, spread: .075, leafLength: .07,
-    leafWidth: .03, leafThickness: .006, leafColor: 0x376b23, stemColor: 0x78903d, leafRoughness: .28, stemRoughness: .48 },
+  // #517: double #495's pot and overall height, retaining its corner and copper finish.
+  // Assumed mature silhouette: 126 cm, pot Ø 30.4 × 34.2 cm. Foliage clears west wall/BESTÅ.
+  { type: 'zzplant', level: 0, x: .37, z: 11.4, height: 1.26, pot: { r: .152, h: .342 },
+    stems: 15, pairs: 8, stemHeight: .86, stemRadius: .012, spread: .15, leafLength: .14,
+    leafWidth: .06, leafThickness: .012, leafColor: 0x376b23, stemColor: 0x78903d, leafRoughness: .28, stemRoughness: .48,
+    leafSegments: [16,8], stemSegments: [12,8], leafVariation: .18, leafTurn: .22,
+    veinBump: .0012, walls: { x0: .2, z0: 11.17, z1: 11.72 } },
   { type: 'palm', level: 0, x: 0.47, z: 11.96, pot: { r: 0.2, h: 0.45 }, potColor: 0x3d3f42, size: 0.8, potSize: 0.95, potStyle: 'copper', canes: 15, cane: 0.72, frond: 0.85, leaflet: 0.27,
     walls: { x0: 0.2, z1: 12.23 } },
   // Soffbord ILVA Woodstock, top i oljebehandlad ekfaner (art. 1055729): 120 × 60 × 47 cm, legs in

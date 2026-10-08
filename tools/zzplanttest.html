@@ -1,15 +1,17 @@
-<!doctype html><html><meta charset="utf-8"><title>ZZ plant (#495)</title><pre id="out">running…</pre><script type="module">
+<!doctype html><html><meta charset="utf-8"><title>ZZ plant (#495, #517)</title><pre id="out">running…</pre><script type="module">
 const cloud=new URLSearchParams(location.search).get('cloud')??'';
 const lines=[];let pass=true;const check=(ok,s)=>{lines.push((ok?'PASS':'FAIL')+' '+s);pass&&=!!ok},wait=ms=>new Promise(r=>setTimeout(r,ms));
 try{
  localStorage.removeItem('lunden.furniture.layout');const f=document.createElement('iframe');f.width=480;f.height=300;document.body.append(f);
  async function load(){f.src='../index.html?shot&cloud='+encodeURIComponent(cloud)+'&r='+Math.random();await new Promise(r=>f.onload=r);while(!f.contentWindow.__app)await wait(100);const A=f.contentWindow.__app;await A.rearrange.ready;f.contentDocument.documentElement.requestFullscreen=undefined;f.contentDocument.getElementById('start-touch').click();A.rearrange.unlock('olof is the goat');return A}
  let A=await load(),R=A.rearrange,T=await f.contentWindow.eval("import('three')");const close=(a,b)=>a.elements.every((v,i)=>Math.abs(v-b.elements[i])<.001);
- let p=R.pieces.find(p=>p.item.type==='zzplant');const home=p.home.clone(),id=p.id,box=new T.Box3().setFromObject(p.object),palm=R.pieces.find(p=>p.item.type==='palm'),palmBox=new T.Box3().setFromObject(palm.object);
- check(Math.abs(box.max.y-.63)<.002&&Math.abs(box.min.y)<.001,'plant stands on floor and is 63 cm tall');
- check(box.max.y/palmBox.max.y>.45&&box.max.y/palmBox.max.y<.55,'ZZ plant is about half the adjusted palm height');
+ let p=R.pieces.find(p=>p.item.type==='zzplant');const home=p.home.clone(),id=p.id,box=new T.Box3().setFromObject(p.object,true),palm=R.pieces.find(p=>p.item.type==='palm'),palmBox=new T.Box3().setFromObject(palm.object);
+ check(Math.abs(box.max.y-1.26)<.002&&Math.abs(box.min.y)<.001,'plant stands on floor and is 126 cm tall');
+ check(box.max.y/palmBox.max.y>.95&&box.max.y/palmBox.max.y<1.05,'ZZ plant is about the adjusted palm height');
  const mats=new Set();p.object.traverse(m=>{if(m.isMesh)mats.add(m.material)});const copper=[...mats].find(m=>m.metalness>.7);
  let shared=false;palm.object.traverse(m=>{if(m.material===copper)shared=true});check(shared,'palm and ZZ plant share brushed copper material');
+ let potMesh;p.object.traverse(m=>{if(m.material===copper)potMesh=m});const potBox=new T.Box3().setFromObject(potMesh,true);check(Math.abs(potBox.max.y-.342)<.001&&Math.abs(potBox.getSize(new T.Vector3()).x-.304)<.001,'actual copper pot remains round at doubled radius and height');
+ let varied=false;p.object.traverse(m=>{const a=m.geometry?.attributes.color;if(a&&new Set(Array.from(a.array).map(v=>v.toFixed(3))).size>10)varied=true});check(varied,'separate paired leaves retain individual green variations and vein bump');
  let count=0;p.object.traverse(m=>{if(m.isMesh)count++});check(count<=4,'stems and oval leaves merge into few material draws');
  check(box.min.x>.2&&box.min.z>11.15&&p.item.z+p.item.pot.r < palm.item.z-palm.item.pot.r*palm.item.size*palm.item.potSize,'foliage clears cabinet/wall and both pots have separate floor footprints');
  const cabinet=R.pieces.find(p=>p.item.type==='besta');cabinet.object.userData.targets.forEach(d=>{d.toggle();for(let i=0;i<40;i++)d.update(.1)});
