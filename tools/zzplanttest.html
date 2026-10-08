@@ -5,14 +5,18 @@ try{
  localStorage.removeItem('lunden.furniture.layout');const f=document.createElement('iframe');f.width=480;f.height=300;document.body.append(f);
  async function load(){f.src='../index.html?shot&cloud='+encodeURIComponent(cloud)+'&r='+Math.random();await new Promise(r=>f.onload=r);while(!f.contentWindow.__app)await wait(100);const A=f.contentWindow.__app;await A.rearrange.ready;f.contentDocument.documentElement.requestFullscreen=undefined;f.contentDocument.getElementById('start-touch').click();A.rearrange.unlock('olof is the goat');return A}
  let A=await load(),R=A.rearrange,T=await f.contentWindow.eval("import('three')");const close=(a,b)=>a.elements.every((v,i)=>Math.abs(v-b.elements[i])<.001);
- let p=R.pieces.find(p=>p.item.type==='zzplant');const home=p.home.clone(),id=p.id,box=new T.Box3().setFromObject(p.object,true),palm=R.pieces.find(p=>p.item.type==='palm'),palmBox=new T.Box3().setFromObject(palm.object);
+ // #561: interaction/ghost targets are not physical plant geometry. Keep every actually visible mesh.
+ const visibleMeshes=root=>{const meshes=[];root.updateWorldMatrix(true,true);root.traverse(m=>{if(!m.isMesh)return;for(let a=m;a;a=a.parent){if(a.userData.ghost||!a.visible)return;if(a===root)break;}meshes.push(m)});return meshes;};
+ const visibleBox=root=>{const box=new T.Box3();for(const m of visibleMeshes(root)){m.geometry.computeBoundingBox();box.union(m.geometry.boundingBox.clone().applyMatrix4(m.matrixWorld));}return box;};
+ let p=R.pieces.find(p=>p.item.type==='zzplant');const home=p.home.clone(),id=p.id,box=visibleBox(p.object),palm=R.pieces.find(p=>p.item.type==='palm'),palmBox=visibleBox(palm.object);
+
  check(Math.abs(box.max.y-1.26)<.002&&Math.abs(box.min.y)<.001,'plant stands on floor and is 126 cm tall');
  check(box.max.y/palmBox.max.y>.95&&box.max.y/palmBox.max.y<1.05,'ZZ plant is about the adjusted palm height');
- const mats=new Set();p.object.traverse(m=>{if(m.isMesh)mats.add(m.material)});const copper=[...mats].find(m=>m.metalness>.7);
+ const mats=new Set(visibleMeshes(p.object).map(m=>m.material));const copper=[...mats].find(m=>m.metalness>.7);
  let shared=false;palm.object.traverse(m=>{if(m.material===copper)shared=true});check(shared,'palm and ZZ plant share brushed copper material');
  let potMesh;p.object.traverse(m=>{if(m.material===copper)potMesh=m});const potBox=new T.Box3().setFromObject(potMesh,true);check(Math.abs(potBox.max.y-.342)<.001&&Math.abs(potBox.getSize(new T.Vector3()).x-.304)<.001,'actual copper pot remains round at doubled radius and height');
  let varied=false;p.object.traverse(m=>{const a=m.geometry?.attributes.color;if(a&&new Set(Array.from(a.array).map(v=>v.toFixed(3))).size>10)varied=true});check(varied,'separate paired leaves retain individual green variations and vein bump');
- let count=0;p.object.traverse(m=>{if(m.isMesh)count++});check(count<=4,'stems and oval leaves merge into few material draws');
+ const count=visibleMeshes(p.object).length;check(count<=4,'stems and oval leaves merge into few material draws');
  check(box.min.x>.2&&box.min.z>11.15&&p.item.z+p.item.pot.r < palm.item.z-palm.item.pot.r*palm.item.size*palm.item.potSize,'foliage clears cabinet/wall and both pots have separate floor footprints');
  const cabinet=R.pieces.find(p=>p.item.type==='besta');cabinet.object.userData.targets.forEach(d=>{d.toggle();for(let i=0;i<40;i++)d.update(.1)});
  check(cabinet.object.userData.targets.every(d=>d.isOpen),'all six cabinet doors still open');

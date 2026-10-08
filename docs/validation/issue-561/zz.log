@@ -1,0 +1,14 @@
+PASS plant stands on floor and is 126 cm tall
+PASS ZZ plant is about the adjusted palm height
+PASS palm and ZZ plant share brushed copper material
+PASS actual copper pot remains round at doubled radius and height
+PASS separate paired leaves retain individual green variations and vein bump
+PASS stems and oval leaves merge into few material draws
+PASS foliage clears cabinet/wall and both pots have separate floor footprints
+PASS all six cabinet doors still open
+PASS plant has valid floor placement preview
+PASS plant rotation and move save
+PASS cancel preserves saved plant placement
+PASS stable plant id and placement survive reload
+PASS original restore returns plant to its corner
+ALL PASS
