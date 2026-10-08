@@ -25,7 +25,13 @@ const load = (q) => new Promise((res) => { f.onload = async () => { while (!f.co
   const cam = app.camera;
   // meshes of a thing (door leaf, lid, front) the camera would not draw
   const unseen = (obj) => { const l = []; obj.traverse((m) => { if (m.isMesh && m.visible && !m.layers.test(cam.layers)) l.push(m.name || m.geometry?.type); }); return l; };
-  const things = () => app.world.doors.filter((t) => t.object.getWorldPosition(new (app.camera.position.constructor)()).y < 2); // Entréplan's doors (lids and small fronts may be far-culled)
+  const things = () => app.world.doors.filter((t) => {
+    const p = t.object.getWorldPosition(new (app.camera.position.constructor)());
+    return p.y >= 0 && p.y < 2 && p.x >= 0 && p.x <= app.world.size.x && p.z >= 0 && p.z <= app.world.size.z;
+  }); // Entréplan's apartment doors, including wardrobes; external doors may be far-culled (#544).
+  const portik = app.world.doors.find(t => t.name === 'dörren till lilla rummet');
+  check(portik && !things().includes(portik) && things().some(t=>t.kind==='wardrobe') && things().some(t=>t.name==='ytterdörren'),
+    'apartment door coverage includes entrance and wardrobes, excludes the distant portik door');
   const report = (where) => {
     const bad = [];
     for (const t of things()) { const u = unseen(t.object ?? t.pivot ?? t.leaf); if (u.length) bad.push(`${t.name ?? t.kind} (${u.length})`); }

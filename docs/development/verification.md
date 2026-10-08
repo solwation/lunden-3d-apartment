@@ -27,7 +27,7 @@ tools/postertest.html  headless test: take the drawing (blank sheet stays), back
                        taped under the top bunk, facing down, can be looked at from there (`?shots`, `?panel`)
 tools/boardtest.html   headless test: keep / throw away cat photos, a full board, the panel (needs a big virtual-time budget)
 tools/detailtest.html  headless test: from the doorstep through the open front door the hall's doors are drawn (#210); inside
-                       every Entréplan door is on a drawn layer, open or shut; outside the culler still works
+                       every apartment Entréplan door is on a drawn layer, open or shut; exterior portik doors are excluded (#544); outside the culler still works
 tools/breaktest.html   headless test: the AK-47 breaks a glass on the dining table from 2 m and ~8 m (shards on the table, a wine
                        splash, more points far away), the timer mends it, a dart breaks a glass but not a bottle, the saber a
                        bottle, a held glass is not hit, none through a wall, a cup goes, F mends all (#263)
