@@ -1926,14 +1926,14 @@ export const KITCHEN = {
     zones: [[0.33, 0.3, 0.2], [0.33, 0.75, 0.15], [0.74, 0.3, 0.15], [0.74, 0.74, 0.17]] },
 };
 
-// Wall sockets on the kitchen splashback (#442, src/sockets.js; the user): white double sockets, the usual Swedish kind, at
-// the top of the splashback just under the wall cabinets (centre `below` m under KITCHEN.wallBottom, *guess*), on the east
-// wall's tiled face `wall` (x, read off the model) facing west: over the Moccamaster (its z), between the sink (z ≤ 2.31) and
-// the hob (z ≥ 3.39) and in the corner behind the air fryer (5.478 = the south splashback's face; it replaced the
-// "Hörnbox" power box on the worktop). Plate `plate` w (along the wall) × h × t (~15 × 8 cm, *guess*), two round cups `r`
-// `pitch` apart; `taken` = which mouth (n = north, s = south) a fixed appliance's cord uses. Merged into the kitchen.
+// Wall sockets on the kitchen splashback (#442, #510, src/sockets.js; Peab tillval): black double sockets (Schneider
+// Exxact / Renova black option), at the top of the splashback just under the wall cabinets (centre `below` m under
+// KITCHEN.wallBottom), on the east wall's tiled face `wall` (x, read off the model) facing west: over the Moccamaster
+// (its z), between the sink (z ≤ 2.31) and the hob (z ≥ 3.39) and in the corner behind the air fryer (5.478 = the south
+// splashback's face; it replaced the "Hörnbox" power box on the worktop). Plate `plate` w (along the wall) × h × t (~15 × 8 cm),
+// two round cups `r` `pitch` apart; `taken` = which mouth (n = north, s = south) a fixed appliance's cord uses. Merged into the kitchen.
 export const KITCHEN_SOCKETS = { wall: 5.545, below: 0.08, plate: { w: 0.15, h: 0.08, t: 0.007 }, r: 0.02, pitch: 0.074,
-  color: 0xf3f3f0, at: [{ id: 'coffee', z: 1.4 }, { id: 'hob', z: 2.86 }, { id: 'corner', z: 5.478 - 0.13 }],
+  color: 0x1f2022, cupColor: 0x27282b, at: [{ id: 'coffee', z: 1.4 }, { id: 'hob', z: 2.86 }, { id: 'corner', z: 5.478 - 0.13 }],
   taken: { 'coffee-s': 'kaffebryggaren', 'corner-s': 'airfryern' } };
 
 // Sink bowls (#122, src/interior.js): the inset steel sink in Tvätt (40 × 26 cm as drawn, depth *guess*)

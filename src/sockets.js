@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { KITCHEN, KITCHEN_SOCKETS as S } from './config.js';
 
-// The kitchen's wall sockets (#442, KITCHEN_SOCKETS): white double sockets at the top of the splashback, just under
+// The kitchen's wall sockets (#442, #510, KITCHEN_SOCKETS): black double sockets at the top of the splashback, just under
 // the wall cabinets, on the east wall facing west. `mouths()` = every socket mouth (world point on the plate's face,
 // where a plug goes in, facing −x); interior.js merges their geometry into the kitchen (`socketGeometry`); the air
 // fryer, the Moccamaster and the toaster run their cords to them.

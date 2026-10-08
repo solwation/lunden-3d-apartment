@@ -413,7 +413,7 @@ src/eggs.js            #484: Eggs registers the pan as a one-slot cooking store,
                        EGG sizes/times/stock are guesses/game parameters. tools/eggtest.html.
 src/eggmodels.js       original carton, shell and egg geometry; frying whitens the translucent white and browns
                        it if left on too long. Bread uses the same cooked egg model for its topping.
-src/sockets.js         the kitchen's wall sockets (#442, KITCHEN_SOCKETS): white double sockets at the top of the splashback
+src/sockets.js         the kitchen's wall sockets (#442, #510, KITCHEN_SOCKETS): black double sockets at the top of the splashback
                        under the wall cabinets (over the Moccamaster, between the sink and the hob, in the corner; they replaced
                        the "Hörnbox" on the worktop), merged into the kitchen (stay with F); `mouths()` (fixed: the Moccamaster's
                        and the air fryer's, `taken`), `nearestFree`, `cordToMouth` (a cord along the worktop and up the wall), `plugAt`

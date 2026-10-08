@@ -147,9 +147,9 @@ function worldUV(geo, [ox, oy, oz]) {
   }
 }
 
-// the kitchen's wall sockets (#442): a white plate, light grey cups
+// the kitchen's wall sockets (#442, #510): black double sockets (plate and cups) according to Peab options
 const socketMats = { plate: new THREE.MeshStandardMaterial({ color: KITCHEN_SOCKETS.color, roughness: 0.35 }),
-  cup: new THREE.MeshStandardMaterial({ color: 0xdedede, roughness: 0.5 }) };
+  cup: new THREE.MeshStandardMaterial({ color: KITCHEN_SOCKETS.cupColor ?? 0x27282b, roughness: 0.5 }) };
 
 class Batch {
   constructor() { this.parts = new Map(); }
