@@ -29,6 +29,7 @@ const load = () => new Promise((resolve) => {
 });
 
 (async () => {
+  const { LIFE } = await import('../src/config.js');
   let f = await load();
   let w = f.contentWindow, d = f.contentDocument, app = w.__app;
   const { player, camera, step, world, scene, toaster, life, heldItem } = app;
@@ -116,19 +117,22 @@ const load = () => new Promise((resolve) => {
   pass &= check(bread1.place.at === 'on', 'toast on cutting board');
 
   // Butter knife with butter dab
-  const knife = I.create('butterKnife', { at: 'hand', machine: { load: 8, loadType: 'butter' } });
+  const knife = I.create('butterKnife', { at: 'hand' }, { machine: { load: 8, loadType: 'butter' } });
   run(0.1);
   const spreadOpt = life.options(toastView1.takeTarget).find((a) => a.id === 'spread');
   pass &= check(!!spreadOpt && !spreadOpt.reason, `spread butter available on toast: "${spreadOpt?.label}"`);
-  life.actions.get('spread').run({ life, items: I, held: knife, heldView: life.view(knife), target: bread1, targetView: toastView1 });
-  run(0.2);
+  spreadOpt?.run();
+  run(LIFE.butter.spread + 0.2);
   pass &= check(bread1.parts.some((p) => p.type === 'butter') && bread1.toasted, 'butter spread on toast');
   pass &= check(I.name(bread1) === 'den rostade smörgåsen', `buttered toast name: "${I.name(bread1)}"`);
 
   // 9. Add cheese topping
+  I.remove(knife);
   const cheese = I.create('cheeseSlice', { at: 'hand' });
   run(0.1);
-  life.actions.get('addTopping').run({ life, items: I, held: cheese, heldView: life.view(cheese), target: bread1, targetView: toastView1 });
+  const topOpt = life.options(toastView1.takeTarget).find((a) => a.id === 'addTopping');
+  pass &= check(!!topOpt && !topOpt.reason, `add cheese available on toast: "${topOpt?.label}"`);
+  topOpt?.run();
   run(0.2);
   pass &= check(bread1.parts.some((p) => p.type === 'cheeseSlice'), 'cheese added onto toast');
   pass &= check(I.name(bread1) === 'den rostade ostmackan', `cheese toast name: "${I.name(bread1)}"`);
@@ -136,13 +140,12 @@ const load = () => new Promise((resolve) => {
   // 10. Eat toast in 4 bites
   I.move(bread1, { at: 'hand' });
   run(0.1);
-  let bitesLeft = 4;
-  while (bitesLeft > 0) {
-    const eatAct = life.actions.get('eat');
-    const ctx = { life, items: I, held: bread1, heldView: toastView1, target: null };
-    eatAct.run(ctx);
-    bitesLeft--;
-    run(0.1);
+  while (bread1.amount > 1e-6) {
+    const eatAct = life.options(toastView1.takeTarget).find((a) => a.id === 'eat');
+    pass &= check(!!eatAct && !eatAct.reason, `eat action available: "${eatAct?.label}"`);
+    if (!eatAct || eatAct.reason) break;
+    eatAct.run();
+    run(LIFE.eat.seconds + 0.2);
   }
   pass &= check(!I.get(bread1.id), 'toast completely eaten');
 
