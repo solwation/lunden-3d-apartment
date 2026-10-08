@@ -1,0 +1,54 @@
+TAP version 13
+# beer shelf: offline
+# beer shelf: offline
+# Subtest: global ranking uses both IPA styles and normalised score, never personal/raw ranking
+ok 1 - global ranking uses both IPA styles and normalised score, never personal/raw ranking
+  ---
+  duration_ms: 1.926799
+  type: 'test'
+  ...
+# Subtest: metadata determines actual can/bottle type and volume; missing SB photo uses its real Untappd label
+ok 2 - metadata determines actual can/bottle type and volume; missing SB photo uses its real Untappd label
+  ---
+  duration_ms: 0.3557
+  type: 'test'
+  ...
+# Subtest: complete response includes all metadata and validated image bytes from fixed allowed source hosts
+ok 3 - complete response includes all metadata and validated image bytes from fixed allowed source hosts
+  ---
+  duration_ms: 55.27807
+  type: 'test'
+  ...
+# Subtest: missing category, malformed rank, changed product id, unknown packaging or untrusted image never yields a partial selection
+ok 4 - missing category, malformed rank, changed product id, unknown packaging or untrusted image never yields a partial selection
+  ---
+  duration_ms: 0.691999
+  type: 'test'
+  ...
+# Subtest: one failed/truncated/oversized image rejects the entire update
+ok 5 - one failed/truncated/oversized image rejects the entire update
+  ---
+  duration_ms: 53.258471
+  type: 'test'
+  ...
+# Subtest: an aborted or failed upstream is retryable and does not write a successful Worker day-cache
+ok 6 - an aborted or failed upstream is retryable and does not write a successful Worker day-cache
+  ---
+  duration_ms: 2.587499
+  type: 'test'
+  ...
+# Subtest: source redirects fail the batch without following another host (edge-compatible manual mode)
+ok 7 - source redirects fail the batch without following another host (edge-compatible manual mode)
+  ---
+  duration_ms: 0.7207
+  type: 'test'
+  ...
+1..7
+# tests 7
+# suites 0
+# pass 7
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 168.684308
