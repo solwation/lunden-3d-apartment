@@ -1,0 +1,35 @@
+PASS the courtyard is the reference level y 0 = Entréplan's floor 0 (ground 0)
+PASS no real plushöjd is claimed (ref.plus = null)
+PASS S2's differences: park 3 (3), ramp 0.9 (0.9), east stair 1.4 (1.4)
+PASS the NW stair falls 0.954 m (S2: ca 1 m)
+PASS ramp top at x 11.70: -0.001 → landing 0.000
+PASS ramp foot at x 11.70: -0.899 → street -0.895
+PASS ramp top at x 12.55: -0.001 → landing 0.000
+PASS ramp foot at x 12.55: -0.899 → street -0.895
+PASS ramp top at x 13.40: -0.001 → landing 0.000
+PASS ramp foot at x 13.40: -0.899 → street -0.895
+PASS stair x 11.6…13.5 from z 27.25: top 0.000, foot −1.4 on ground -1.400 at z 29.95
+PASS its walk starts at the foot (-1.399)
+PASS stair x -47.4…-45.9 from z 52.5: top 0.000, foot −3 on ground -3.000 at z 58.60
+PASS the NW stair leaves the level forecourt
+PASS the garage drive is level at the park / garage floor: -3.000 … -3.000
+PASS no ground rises above the courtyard or back towards a box edge: 0 
+PASS Hus A: base -3, plinth to -3.000, lowest ground round it -3.000
+PASS Hus B: base -3, plinth to -3.000, lowest ground round it -3.000
+PASS Hus C: base 0, plinth to -2.739, lowest ground round it -2.746
+PASS HepCat Store: base 0, plinth to -0.833, lowest ground round it -0.838
+PASS HepCat Store, the white middle: base 0, plinth to -0.492, lowest ground round it -0.496
+PASS The long brick building: base -1.2, plinth to -3.000, lowest ground round it -3.000
+PASS The long brick building (south part): base -2.7, plinth to -3.000, lowest ground round it -3.000
+PASS The long brick building (annex): base -3, plinth to -3.000, lowest ground round it -3.000
+PASS Realgymnasiet: base 0, plinth to 0.000, lowest ground round it 0.000
+PASS Skolan över gatan: base 0, plinth to 0.000, lowest ground round it 0.000
+PASS Skolan, västra flygeln: base 0, plinth to 0.000, lowest ground round it 0.000
+PASS Skolan, östra flygeln: base 0, plinth to 0.000, lowest ground round it 0.000
+PASS S:t Lars (old hospital): base 0, plinth to 0.000, lowest ground round it 0.000
+PASS Montessorigrundskolan: base 0, plinth to 0.000, lowest ground round it 0.000
+PASS Villa: base -3, plinth to -3.000, lowest ground round it -3.000
+PASS walkable ground in OUTDOOR is continuous (4973597 pairs 5 cm apart): 0 unguarded steps 
+PASS the 5 cm tolerance is below the visitor's step-up
+PASS no tree on asphalt or paving (173 trees): 
+ALL PASS

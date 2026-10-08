@@ -484,7 +484,7 @@ export const SITE = {
     // (#261: the east leg as on the plan: x ≈ 20.9…27.3 by HepCat, 22…29 by the long building)
     { name: 'Sankt Lars väg', path: [[-150, -27], [24.3, -27, 13], [24.1, 0, 30], [25.5, 26, 30], [25.5, 70], [23.9, 100], [23.3, 145.8], [22.5, 200]], w: [6, 6, 6.4, 7, 7, 7, 7, 7],
       walks: [{ side: 1, w: 2.5 }, { side: -1, w: 2 }] }, // our pavement; the far one along the school's wall (#126)
-    { name: 'Karpvägen', path: [[-75.8, -27], [-75.8, 22, 30], [-79.9, 51, 20], [-84.5, 66, 8], [-200, 70]], w: 5.8 },
+    { name: 'Karpvägen', path: [[-75.8, -27], [-75.8, 22, 30], [-79.9, 51, 20], [-84.5, 66, 8], [-105.74,70.72], [-125.37,63.39], [-191.7,40.27], [-196.1,38.73], [-200.83,37.12], [-202.86,35.86], [-204.59,33.56], [-206.22,30.1], [-207.84,25.96]], w: 5.8 },
     { name: 'Karpvägen, hörnen', fillets: [{ x: -78.7, z: -24, sx: -1, sz: 1, r: 9 }, { x: -72.9, z: -24, sx: 1, sz: 1, r: 3 }] },
     { name: 'Gården framför Hus L', x0: -70.5, x1: 13.5, z0: -16.3, z1: -3.5 }, // the car park up to the green strip (#260)
     // the car park's drive (#356): asphalt from Sankt Lars väg over our pavement and the planting strip through the gap in
@@ -565,6 +565,51 @@ export const SITE = {
     branchRise: 1,
     branchWidth: 0.55,
   },
+  // #534 west: exact OSM footprint points registered by SITE.geo; levelsSource distinguishes tagged floors.
+  // Heights, colours, windows and roof details are visual assumptions. Access paving/tree locations are approximate aerial traces.
+  west: {
+    buildings: [
+      {"source":"88457595","polygon":[[-158.68,-1.64],[-133.86,21.34],[-132.7,20.1],[-125.0,27.23],[-126.15,28.48],[-101.59,51.23],[-93.17,42.14],[-114.82,22.09],[-112.14,19.2],[-125.86,6.5],[-128.67,9.53],[-150.39,-10.6],[-158.68,-1.64]],"name":"\u00d6stra l\u00e4ngan vid Karpv\u00e4gen","levels":3,"levelsSource":"visual assumption"},
+      {"source":"342815181","polygon":[[-130.47,90.14],[-121.66,80.77],[-113.22,88.71],[-102.44,98.85],[-111.26,108.21],[-130.47,90.14]],"name":"Karpv\u00e4gen 10","levels":4,"levelsSource":"OSM"},
+      {"source":"342815182","polygon":[[-153.7,124.37],[-192.7,87.66],[-183.95,78.35],[-173.43,88.24],[-155.62,105.01],[-144.94,115.06],[-153.7,124.37]],"name":"Karpv\u00e4gen 6\u20138","levels":4,"levelsSource":"OSM"},
+      {"source":"342815183","polygon":[[-231.56,32.51],[-224.31,39.32],[-222.72,40.83],[-207.76,54.91],[-197.32,64.74],[-206.06,74.02],[-231.46,50.11],[-236.1,55.04],[-244.93,46.73],[-231.56,32.51]],"name":"Karpv\u00e4gen 2\u20134","levels":4,"levelsSource":"visual assumption"},
+      {"source":"476125237","polygon":[[-149.41,68.89],[-152.38,66.19],[-147.9,61.25],[-144.93,63.95],[-149.41,68.89]],"name":"Komplementbyggnad 476125237","levels":1,"levelsSource":"visual assumption"},
+      {"source":"476125238","polygon":[[-133.68,88.04],[-138.18,83.93],[-128.48,73.32],[-123.98,77.43],[-133.68,88.04]],"name":"Komplementbyggnad 476125238","levels":1,"levelsSource":"visual assumption"},
+      {"source":"476125239","polygon":[[-143.85,79.7],[-148.03,75.77],[-136.81,63.83],[-132.62,67.77],[-143.85,79.7]],"name":"Komplementbyggnad 476125239","levels":1,"levelsSource":"visual assumption"},
+    ],
+    paths: [
+      {"source":"44447979","path":[[-106.67,73.46],[-105.74,70.72],[-114.61,59.62],[-123.24,44.7],[-126.11,38.14],[-129.39,33.03],[-136.69,26.15],[-169.74,-4.22]],"w":1.8},
+      {"source":"342815184","path":[[-157.59,80.9],[-161.1,77.79]],"w":1.8},
+      {"source":"342815185","path":[[-155.54,96.56],[-147.16,87.38]],"w":1.8},
+      {"source":"342815186","path":[[-151.23,100.52],[-155.62,105.01]],"w":1.8},
+      {"source":"342815187","path":[[-169.24,83.98],[-173.43,88.24]],"w":1.8},
+      {"source":"342815188","path":[[-109.52,80.55],[-123.94,75.7],[-131.02,69.62]],"w":1.8},
+      {"source":"342815190","path":[[-164.4,88.42],[-157.59,80.9],[-140.42,61.94]],"w":1.8},
+      {"source":"342815193","path":[[-204.7,51.42],[-169.24,83.98],[-164.4,88.42],[-155.54,96.56],[-151.23,100.52],[-139.68,111.12]],"w":1.8},
+      {"source":"342815195","path":[[-196.65,42.17],[-192.69,43.58],[-140.42,61.94],[-127.94,66.21],[-106.67,73.46],[-109.52,80.55],[-113.22,88.71]],"w":1.8},
+    ],
+    access: [
+      {"source":"333642399","path":[[-105.74,70.72],[-94.36,79.13],[-87.63,84.85],[-82.37,86.66],[-77.43,86.81],[-70.18,84.72],[-67.08,80.8],[-64.88,72.28],[-64.54,67.71],[-65.92,63.05],[-79.26,48.81]],"w":3.5},
+      {"source":"342815192","path":[[-147.16,87.38],[-131.02,69.62],[-127.94,66.21],[-125.37,63.39]],"w":3.5},
+      {"source":"342815194","path":[[-191.7,40.27],[-192.69,43.58],[-193.8,47.27],[-193.23,49.03],[-191.44,50.93],[-161.1,77.79]],"w":3.5},
+      {"source":"aerial approximate parking trace 1","pixels":[[539,226],[554,228],[555,272],[536,274]],"polygon":[[-218.85,44.5],[-212.51,36.83],[-187.61,51.61],[-193.12,62.9]]},
+      {"source":"aerial approximate parking trace 2","pixels":[[532,294],[552,291],[541,350],[520,356]],"polygon":[[-183.36,72.11],[-178.06,59.9],[-148.98,86.61],[-152.96,100.41]]},
+      {"source":"aerial approximate parking trace 3","pixels":[[566,388],[583,386],[596,440],[579,443]],"polygon":[[-119.07,85.9],[-114.26,75.72],[-79.61,87.3],[-83.86,97.82]]},
+    ],
+    trees: [[-100,13,1.5],[-101,27,1.6],[-91,40,1.4],[-107,57,1.65],[-143,43,1.8],[-162,25,1.8],[-157,56,1.6],[-191,67,1.7],[-202,94,1.9],[-221,95,1.8],[-219,123,1.9],[-193,140,1.6]],
+    storey: 3,
+    roofRise: 1.5,
+    annexRise: 0.5,
+    window: [1.25,1.55],
+    sill: 0.85,
+    bay: 3.5,
+    frame: 0.08,
+    facade: 13747890,
+    roof: 5660765,
+    plinth: 9999754,
+    glass: 3230037,
+    pathLift: 0.025,
+  },
   // big old limes / chestnuts along the far pavement and in the school yard (#130, the user's photos): [x, z, size]
   bigTrees: [[-36, -34.5, 1.4], [-17, -35.2, 1.6], [-4, -34.8, 1.75], [9, -35.4, 1.45], [27.5, -34.2, 1.6], [33.5, -16, 1.35], [-58, -33.5, 1.5]],
   // a row of ornamental shrubs along our pavement (#130): the situation plan's hedge between the planting strip and the car
@@ -577,7 +622,6 @@ export const SITE = {
     // the courtyard's and the green's trees stand where the situation plan draws them: COURTYARD.trees
     { x0: -88.8, x1: 17.37, z0: -20, z1: -19, n: 11, young: true, skip: [[-14, -6.5]] }, // street trees along Sankt Lars väg: young maples by the site (#130); none in the drive (#260)
     { x0: 16.9, x1: 18.4, z0: -12, z1: 54.05, n: 7 },          // … and along its east leg (west of the cycle path, #255)
-    { x0: -125.48, x1: -80, z0: -20, z1: 65.63, n: 16 },          // west of Karpvägen (#257: off the road by onRoad)
   ],
 };
 

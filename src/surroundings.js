@@ -1,3 +1,4 @@
+import {buildWestBackdrop,westTreeSpots} from './sitebackdrop.js';
 import { buildRiverPark, parkDeckAt, parkTreeSpots, parkShrubSpots } from './riverpark.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
@@ -1048,7 +1049,7 @@ function trees(rand) {
       spots.push({ x, z, y: groundY(x, z), s: area.young ? 0.8 + rand() * 0.25 : 0.75 + rand() * 0.6, kind: area.young ? 'young' : birch ? 'birch' : 'tree' });
     }
   }
-  spots.push(...parkTreeSpots(renderedTerrainY));
+  spots.push(...parkTreeSpots(renderedTerrainY),...westTreeSpots(renderedTerrainY));
   for (const [x, z, s] of S.bigTrees) spots.push({ x, z, y: groundY(x, z), s, kind: 'big' });
   for (const [x, z] of S.vergeTrees) spots.push({ x, z, y: groundY(x, z), s: 0.8 + rand() * 0.3, kind: 'tree' }); // by Karpvägen (#257)
   for (const [x, z, s] of S.life.trees) spots.push({ x, z, y: groundY(x, z), s, kind: 'tree' }); // the bike yard's + one by the road (#260, #435)
@@ -1311,6 +1312,7 @@ export function buildSurroundings({ grass }) {
   flat([...S.paving.map((r) => groundStrip(r.x0, r.x1, r.z0, r.z1, 0.008)), ...walks], COLORS.paving, SEASON.snow.paving);
   group.add(buildRiverBridges());
   group.add(buildRiverPark(renderedTerrainY,renderedTerrainY));
+  group.add(buildWestBackdrop(renderedTerrainY));
   // Kv. Lunden's own blocks and the old S:t Lars buildings: own façade texture and roof colour each,
   // plus a white cornice under the old roofs (#47)
   const modern = S.blocks.filter((b) => !b.style), oldB = S.blocks.filter((b) => b.style === 'old'), school = S.blocks.filter((b) => b.style === 'school');
