@@ -399,6 +399,7 @@ const life = new Life({ scene, camera, say: (t) => badge(t, false), feet: () => 
   floorY: () => (player.level >= 0 ? LEVELS[player.level].floor : -Infinity), // (nothing goes down under the floor, #368)
   persist: lifeDev() ? null : { key: LIFE.save.key, canSave: () => { try { return !resetHome.going; } catch { return false; } } }, debug: params0.has('debug') }); // the home's stock kept between visits (#371; never with &life)
 const lifeStores = buildStores(life, world); // the fridge, the freezer, the pantry, the utensil drawer as slots (#369)
+if (toaster) toaster.initLife(life);
 const dwDoor = world.lids.find((l) => l.name === 'diskmaskinen' && l.panelAt);
 const dropoff = buildDropoff(life); // the rubbish bags' drop-off by the car park (#387, a game spot)
 scene.add(dropoff.object);

@@ -188,7 +188,7 @@ export class Mess {
   fromEvent(d) {
     if (!this.auto || !d?.pos) return null;
     const amt = M.per[d.from] ?? M.per.bite;
-    if (d.from === 'cut' || d.from === 'bag' || d.from === 'spread') { // beside the thing, on the surface it lies on
+    if (d.from === 'cut' || d.from === 'bag' || d.from === 'spread' || d.from === 'toast') { // beside the thing, on the surface it lies on
       for (let k = 0; k < 6; k++) {
         const a = Math.random() * Math.PI * 2, r = (d.from === 'spread' ? 0.12 : 0.2) + Math.random() * 0.08;
         const p = [d.pos[0] + Math.cos(a) * r, d.pos[1] + 0.2, d.pos[2] + Math.sin(a) * r];

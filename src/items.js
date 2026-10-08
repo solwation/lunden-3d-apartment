@@ -41,7 +41,7 @@ export const MIGRATIONS = {
 /** Size classes, smallest first: a slot or a carrier takes things up to its own size. */
 export const SIZES = { xs: 0, s: 1, m: 2, l: 3, xl: 4 };
 const UNITS = new Set(['g', 'ml', 'count']);
-const PKG = new Set(['closed', 'open', 'empty']), PREP = new Set(['whole', 'sliced', 'spread', 'assembled']), CLEAN = new Set(['clean', 'used', 'dirty']);
+const PKG = new Set(['closed', 'open', 'empty']), PREP = new Set(['whole', 'sliced', 'spread', 'assembled', 'toasted']), CLEAN = new Set(['clean', 'used', 'dirty']);
 const EPS = 1e-6;
 const round = (v) => Math.round(v * 1e6) / 1e6;
 const cap = (s) => (s ? s[0].toUpperCase() + s.slice(1) : s);
@@ -100,6 +100,7 @@ export class Items {
       pkg: PKG.has(props.pkg) ? props.pkg : d.pkg ?? null,
       prep: PREP.has(props.prep) ? props.prep : d.prep ?? null,
       clean: CLEAN.has(props.clean) ? props.clean : d.clean ?? null,
+      toasted: !!(props.toasted ?? d.toasted),
       machine: { ...(d.machine ?? {}), ...(props.machine ?? {}) },
       home: clonePlace(props.home) ?? (place?.at === 'slot' ? clonePlace(place) : null), // made in a store: that slot is its home
       parts: Array.isArray(props.parts) ? props.parts.map((p) => ({ ...p })) : [], // what it is made of (a sandwich's layers, #379)
@@ -234,6 +235,7 @@ export class Items {
     if (!it) return;
     if (fields.pkg !== undefined && (fields.pkg === null || PKG.has(fields.pkg))) it.pkg = fields.pkg;
     if (fields.prep !== undefined && (fields.prep === null || PREP.has(fields.prep))) it.prep = fields.prep;
+    if (fields.toasted !== undefined) it.toasted = !!fields.toasted;
     if (fields.clean !== undefined && (fields.clean === null || CLEAN.has(fields.clean))) it.clean = fields.clean;
     if (fields.machine) for (const [k, v] of Object.entries(fields.machine)) { if (v === null || v === undefined) delete it.machine[k]; else it.machine[k] = v; } // (null clears a field: nothing stale is saved)
     if (fields.home !== undefined) it.home = clonePlace(fields.home);
@@ -286,6 +288,7 @@ export class Items {
       const e = { id: i.id, type: i.type, place: clonePlace(i.place) };
       if (i.amount !== (this.defs[i.type]?.amount ?? 1)) e.amount = i.amount; // (#387: compact — a default amount and a home that is the place are left out; create() gives them back)
       for (const k of ['pkg', 'prep', 'clean']) if (i[k] !== null && i[k] !== undefined) e[k] = i[k];
+      if (i.toasted) e.toasted = true;
       if (Object.keys(i.machine).length) e.machine = { ...i.machine };
       if (i.home && !(i.place?.at === 'slot' && samePlace(i.home, i.place))) e.home = clonePlace(i.home);
       if (i.parts.length) e.parts = i.parts.map((x) => ({ ...x }));
@@ -320,7 +323,7 @@ export class Items {
     const depth = (e, n = 0) => (e.place?.at === 'on' && byId.has(e.place.parent) && n < 32 ? depth(byId.get(e.place.parent), n + 1) + 1 : 0);
     valid.sort((a, b) => depth(a) - depth(b));
     for (const e of valid) {
-      const props = { id: e.id, amount: e.amount, pkg: e.pkg, prep: e.prep, clean: e.clean, machine: e.machine, home: e.home, parts: e.parts };
+      const props = { id: e.id, amount: e.amount, pkg: e.pkg, prep: e.prep, clean: e.clean, machine: e.machine, home: e.home, parts: e.parts, toasted: e.toasted };
       let place = clonePlace(e.place);
       if (place?.at === 'hand' && !hand) place = null;
       let it = place ? this.create(e.type, place, props) : null;

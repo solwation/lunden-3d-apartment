@@ -153,6 +153,10 @@ export class Life {
       else if (kind === 'move') {
         if (item.place.at === 'hand' && extra?.at === 'on' && this.items.has(this.items.get(extra.parent), 'dish') && item.machine.plate !== extra.parent) this.items.set(item, { machine: { plate: extra.parent } }); // taken off a plate: its crumbs go there (#380)
         else if (item.place.at === 'on' && this.items.has(this.items.get(item.place.parent), 'dish') && item.machine.plate !== item.place.parent) this.items.set(item, { machine: { plate: item.place.parent } });
+        if (item.place.at === 'hand' && extra?.at === 'slot' && extra.store === 'toaster') {
+          const v = this.views.get(item.id);
+          this.emit('crumbs', { from: 'toast', item, pos: v?.where()?.toArray() ?? this.feet()?.pos });
+        }
       }
       if ((kind === 'create' || kind === 'move') && item.place?.at === 'on' && this.items.has(item, 'food')) { const par = this.items.get(item.place.parent); if (par?.clean === 'clean') this.items.set(par, { clean: 'used' }); } // food on a plate / the board: used (#383)
       if (kind === 'move') {

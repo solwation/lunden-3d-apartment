@@ -104,8 +104,10 @@ function toasterModel() {
   // the lever: black, on the right end (moves down / up)
   const lever = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.013, 0.034).translate(-0.015, 0, 0), matt);
   lever.castShadow = true;
-  g.add(body, ends, label, glow, lever);
-  return { g, body, ends, label, glow, glowMat, lever, up: feet + H - 0.035, down: feet + 0.05 };
+  const carriage = new THREE.Group();
+  carriage.name = 'carriage';
+  g.add(body, ends, label, glow, lever, carriage);
+  return { g, body, ends, label, glow, glowMat, lever, carriage, up: feet + H - 0.035, down: feet + 0.05 };
 }
 
 export class Toaster extends Holdable {
@@ -122,10 +124,36 @@ export class Toaster extends Holdable {
       heldPose: { pos: new THREE.Vector3(T.held.x, T.held.y, T.held.z), rot: new THREE.Euler(0.2, Math.PI - 0.45, 0, 'YXZ') }, // its front and lever towards you
       pick: { pos: home.clone().setY(home.y + T.h / 2), size: [0.3, T.h, 0.3] },
     });
-    Object.assign(this, { drawer, parts: m, plugged: false, toasting: false, left: 0, leverT: 0, glow: 0, hum: null, placeVerb: 'ställa ner',
+    Object.assign(this, { drawer, parts: m, carriage: m.carriage, plugged: false, toasting: false, left: 0, toastElapsed: 0, leverT: 0, glow: 0, hum: null, placeVerb: 'ställa ner',
       rest: { q: new THREE.Quaternion(), lift: 0 }, grip: [-T.w / 2 + 0.02, T.h * 0.45, 0] });
     m.lever.position.set(-T.w / 2 - 0.002, m.up, 0);
     const self = this;
+    this.anchors = [-0.027, 0.027].map((z) => {
+      const a = new THREE.Object3D();
+      a.position.set(0, 0.11, z - 0.006);
+      a.rotation.x = Math.PI / 2;
+      m.carriage.add(a);
+      return a;
+    });
+    const storePick = new THREE.Mesh(new THREE.BoxGeometry(T.w + 0.04, T.h + 0.08, T.d + 0.04), new THREE.MeshBasicMaterial());
+    storePick.position.set(0, T.h / 2, 0);
+    storePick.visible = false;
+    const storeRay = storePick.raycast.bind(storePick);
+    storePick.raycast = (r, hits) => {
+      if (self.placed && !self.toasting && self.life?.items?.held()?.type === 'breadSlice') storeRay(r, hits);
+    };
+    m.g.add(storePick);
+    this.storePick = storePick;
+    this.storeTarget = {
+      name: 'brödrosten', kind: 'life', store: 'toaster', pickable: storePick,
+      options: () => (self.life ? self.life.options(self.storeTarget) : []),
+      toggle: () => (self.life ? self.life.run(self.storeTarget) : false),
+    };
+    Object.defineProperties(this.storeTarget, {
+      blocked: { get: () => !self.storeTarget.options().some((a) => !a.reason) },
+      blockedText: { get: () => self.storeTarget.options()[0]?.reason ?? null },
+    });
+    storePick.userData.door = this.storeTarget;
     // the body: taken again (unplugged first); at home only with its drawer open
     Object.defineProperties(this.takeTarget, {
       blocked: { get: () => handBusy(self) || self.shut, configurable: true },
@@ -218,11 +246,38 @@ export class Toaster extends Holdable {
     if (!quiet) sfx.click(this.socket());
   }
 
+  initLife(life) {
+    this.life = life;
+    const self = this;
+    life.items.addStore({
+      id: 'toaster',
+      name: 'brödrosten',
+      shutText: 'Vänta tills brödrosten poppat upp',
+      fullText: 'Brödrosten är full',
+      isOpen: () => self.placed && !self.toasting,
+      slots: [{ size: 's', accepts: ['breadSlice'] }, { size: 's', accepts: ['breadSlice'] }],
+      accepts: ['breadSlice'],
+      putLabel: (held) => `lägga ${life.items.name(held)} i brödrosten`,
+      refuse: (it) => {
+        if (it.type !== 'breadSlice') return `${life.items.name(it)[0].toUpperCase()}${life.items.name(it).slice(1)} hör inte hemma i brödrosten`;
+        if (it.parts?.length) return 'Mackan har pålägg – rosta bara bröd';
+        if (!self.placed) return 'Ställ fram brödrosten först';
+        if (self.toasting) return 'Brödrosten rostar redan';
+        return null;
+      },
+    });
+    life.anchors.set('toaster', (k) => self.anchors[k] ?? null);
+    if (!life.storeTargets.includes(this.storeTarget)) {
+      life.storeTargets.push(this.storeTarget);
+    }
+  }
+
   /** E on the lever / the front: down it goes (plugged in), or STOP pops it early. */
   press() {
     if (this.toasting) { this.stopToast(true); return; }
     if (!this.plugged || !this.placed) return;
     this.toasting = true;
+    this.toastElapsed = 0;
     this.left = T.seconds.base + T.seconds.step * T.dial;
     const p = this.where();
     sfx.toasterDown(p);
@@ -233,9 +288,34 @@ export class Toaster extends Holdable {
   /** The lever comes up: with a pop and a pling when it is done (or stopped), silently when unplugged / sent home. */
   stopToast(pop) {
     if (!this.toasting) return;
+    const elapsed = this.toastElapsed ?? 0;
     this.toasting = false; this.left = 0;
     this.hum?.stop(); this.hum = null;
-    if (pop) { sfx.toasterPop(this.where()); this.onPop?.(); }
+    if (pop) {
+      sfx.toasterPop(this.where());
+      this.onPop?.();
+      if (elapsed >= 3 || elapsed >= (T.seconds.base + T.seconds.step * T.dial) * 0.4) {
+        this.toastBread();
+      }
+    }
+  }
+
+  toastBread() {
+    if (!this.life) return;
+    const I = this.life.items;
+    const inToaster = I.all().filter((i) => i.place?.at === 'slot' && i.place.store === 'toaster');
+    let toastedAny = false;
+    for (const it of inToaster) {
+      if (it.type === 'breadSlice' && !it.toasted) {
+        I.set(it, { toasted: true, prep: it.prep === 'whole' || !it.prep ? 'toasted' : it.prep });
+        toastedAny = true;
+      }
+    }
+    if (toastedAny) {
+      this.life.emit('crumbs', { from: 'toast', pos: this.where().toArray() });
+      this.life.emit('toasted', { items: inToaster });
+      this.life.bump?.('toasted', inToaster.length, 'toaster');
+    }
   }
 
   goHome() {
@@ -244,6 +324,7 @@ export class Toaster extends Holdable {
     this.stopToast(false);
     this.plugged = false;
     this.leverT = 0; this.glow = 0; this.parts.glowMat.opacity = 0; this.parts.lever.position.y = this.parts.up;
+    if (this.carriage) this.carriage.position.y = 0;
     this.drawer.object.add(this.model);
     this.model.position.copy(this.home.pos);
     this.model.rotation.copy(this.home.rot);
@@ -255,6 +336,8 @@ export class Toaster extends Holdable {
     if (handBusy(this)) return;
     if (this.plugged) { this.setPlugged(false, true); sfx.click(this.socket()); }
     this.stopToast(false);
+    this.leverT = 0; this.parts.lever.position.y = this.parts.up;
+    if (this.carriage) this.carriage.position.y = 0;
     super.take();
     this.buildCord();
     this.setTargets();
@@ -289,6 +372,7 @@ export class Toaster extends Holdable {
     super.update(dt);
     if (this.toasting) {
       this.left -= dt;
+      this.toastElapsed = (this.toastElapsed ?? 0) + dt;
       if (this.left <= 0) this.stopToast(true);
     }
     // the lever: down quickly, up with a snap; the slots glow up slowly as it heats and fade when it stops
@@ -296,6 +380,9 @@ export class Toaster extends Holdable {
     if (this.leverT !== goal) {
       this.leverT += Math.sign(goal - this.leverT) * Math.min(Math.abs(goal - this.leverT), dt / (goal ? 0.18 : 0.07));
       this.parts.lever.position.y = THREE.MathUtils.lerp(this.parts.up, this.parts.down, this.leverT);
+      if (this.carriage) {
+        this.carriage.position.y = - (this.parts.up - this.parts.down) * this.leverT;
+      }
     }
     if (this.glow !== goal) {
       this.glow += Math.sign(goal - this.glow) * Math.min(Math.abs(goal - this.glow), dt * (goal ? 0.4 : 0.6));

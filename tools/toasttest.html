@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Toast test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+// Test for toast in the toaster (#483 / LIFE-032a):
+// 1. Toaster placed on worktop and plugged in.
+// 2. Put bread slice into toaster slot: "lägga brödskivan i brödrosten".
+// 3. Put second bread slice into slot 1.
+// 4. Third slice refused: "Brödrosten är full".
+// 5. Lever down: carriage and bread slices lower down.
+// 6. Toasts and pops up: carriage rises, bread becomes toasted (toasted: true, prep: 'toasted').
+// 7. Crumbs emitted beside toaster on worktop.
+// 8. Name is "det rostade brödet".
+// 9. Take toast: "ta det rostade brödet", leaves slot into hand.
+// 10. Spread butter on toast: "den rostade smörgåsen".
+// 11. Add cheese topping: "den rostade ostmackan".
+// 12. Eat toast in bites until eaten up.
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const lines = [];
+const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); out.textContent = `running…\n${lines.join('\n')}`; return ok; };
+const load = () => new Promise((resolve) => {
+  const f = document.createElement('iframe');
+  f.width = 900; f.height = 600; f.src = '../index.html';
+  document.body.append(f);
+  f.onload = async () => { while (!f.contentWindow.__app) await wait(100); resolve(f); };
+});
+
+(async () => {
+  let f = await load();
+  let w = f.contentWindow, d = f.contentDocument, app = w.__app;
+  const { player, camera, step, world, scene, toaster, life, heldItem } = app;
+  const I = life.items;
+  const V = camera.position.constructor;
+  const top = 0.93;
+
+  d.getElementById('start-touch')?.click();
+  await wait(50);
+  const btn = d.getElementById('action');
+  const run = (s) => { for (let i = 0; i < s * 60; i++) step(1 / 60); };
+
+  // 1. Set up toaster on the worktop, plugged in
+  const spot = new V(5.24, top, 4.62);
+  toaster.take();
+  toaster.placeAt(spot);
+  toaster.setPlugged(true, true);
+  run(0.2);
+  let pass = check(toaster.placed && toaster.plugged, 'toaster placed and plugged in');
+
+  // 2. Create bread slices
+  const bread1 = I.create('breadSlice', { at: 'hand' });
+  run(0.1);
+  pass &= check(I.held() === bread1 && !bread1.toasted, 'bread slice 1 in hand');
+
+  // Aim at toaster with bread: check putIn action
+  const storeOpt = life.options(toaster.storeTarget);
+  const putAct = storeOpt.find((a) => a.id === 'putIn');
+  pass &= check(!!putAct && !putAct.reason && /lägga brödskivan i brödrosten/i.test(putAct.label), `putIn available: "${putAct?.label}"`);
+
+  // Run putIn action: bread1 goes into toaster slot 0
+  life.run(toaster.storeTarget);
+  run(0.2);
+  pass &= check(bread1.place.at === 'slot' && bread1.place.store === 'toaster' && bread1.place.slot === 0, 'bread 1 in slot 0');
+  const v1 = life.view(bread1);
+  pass &= check(v1 && v1.model.parent === toaster.anchors[0], 'bread 1 model attached to toaster slot anchor 0');
+
+  // 3. Put second bread slice in toaster
+  const bread2 = I.create('breadSlice', { at: 'hand' });
+  run(0.1);
+  life.run(toaster.storeTarget);
+  run(0.2);
+  pass &= check(bread2.place.at === 'slot' && bread2.place.store === 'toaster' && bread2.place.slot === 1, 'bread 2 in slot 1');
+
+  // 4. Try third slice when toaster is full
+  const bread3 = I.create('breadSlice', { at: 'hand' });
+  run(0.1);
+  const fullOpt = life.options(toaster.storeTarget);
+  const fullPut = fullOpt.find((a) => a.id === 'putIn');
+  pass &= check(fullPut?.reason === 'Brödrosten är full', `third slice blocked: "${fullPut?.reason}"`);
+  I.remove(bread3);
+
+  // 5. Lever down: start toasting
+  let crumbsEmitted = 0;
+  life.onEvent((kind, data) => { if (kind === 'crumbs') crumbsEmitted++; });
+  const y0 = toaster.carriage.position.y;
+  toaster.press();
+  run(0.5);
+  pass &= check(toaster.toasting && toaster.carriage.position.y < y0 - 0.05, `carriage lowered during toast (y: ${toaster.carriage.position.y.toFixed(3)})`);
+
+  // Check that while toasting, taking bread is blocked
+  const toastView1 = life.view(bread1);
+  const takeWhileToasting = life.options(toastView1.takeTarget).find((a) => a.id === 'take');
+  pass &= check(takeWhileToasting?.reason === 'Vänta tills brödrosten poppat upp', `taking blocked while toasting: "${takeWhileToasting?.reason}"`);
+
+  // 6. Fast-forward until toast pops up
+  run(toaster.left + 0.5);
+  pass &= check(!toaster.toasting && Math.abs(toaster.carriage.position.y - y0) < 0.005, 'toasting finished, carriage popped up');
+  pass &= check(bread1.toasted && bread2.toasted, 'both slices marked toasted: true');
+  pass &= check(I.name(bread1) === 'det rostade brödet', `name is "${I.name(bread1)}"`);
+  pass &= check(crumbsEmitted > 0, `crumbs emitted on toast pop (${crumbsEmitted})`);
+
+  // 7. Take toasted bread from slot
+  const takeOpt = life.options(toastView1.takeTarget).find((a) => a.id === 'take');
+  pass &= check(!!takeOpt && !takeOpt.reason && /ta det rostade brödet/i.test(takeOpt.label), `take label: "${takeOpt?.label}"`);
+
+  toastView1.take();
+  run(0.2);
+  pass &= check(I.held() === bread1 && bread1.place.at === 'hand', 'toasted bread in hand');
+
+  // 8. Place toast on the cutting board or plate, spread butter on it
+  const board = I.create('board', { at: 'world', pos: [5.1, top, 4.4], yaw: 0 });
+  I.move(bread1, { at: 'on', parent: board.id, slot: 1 });
+  run(0.2);
+  pass &= check(bread1.place.at === 'on', 'toast on cutting board');
+
+  // Butter knife with butter dab
+  const knife = I.create('butterKnife', { at: 'hand', machine: { load: 8, loadType: 'butter' } });
+  run(0.1);
+  const spreadOpt = life.options(toastView1.takeTarget).find((a) => a.id === 'spread');
+  pass &= check(!!spreadOpt && !spreadOpt.reason, `spread butter available on toast: "${spreadOpt?.label}"`);
+  life.actions.get('spread').run({ life, items: I, held: knife, heldView: life.view(knife), target: bread1, targetView: toastView1 });
+  run(0.2);
+  pass &= check(bread1.parts.some((p) => p.type === 'butter') && bread1.toasted, 'butter spread on toast');
+  pass &= check(I.name(bread1) === 'den rostade smörgåsen', `buttered toast name: "${I.name(bread1)}"`);
+
+  // 9. Add cheese topping
+  const cheese = I.create('cheeseSlice', { at: 'hand' });
+  run(0.1);
+  life.actions.get('addTopping').run({ life, items: I, held: cheese, heldView: life.view(cheese), target: bread1, targetView: toastView1 });
+  run(0.2);
+  pass &= check(bread1.parts.some((p) => p.type === 'cheeseSlice'), 'cheese added onto toast');
+  pass &= check(I.name(bread1) === 'den rostade ostmackan', `cheese toast name: "${I.name(bread1)}"`);
+
+  // 10. Eat toast in 4 bites
+  I.move(bread1, { at: 'hand' });
+  run(0.1);
+  let bitesLeft = 4;
+  while (bitesLeft > 0) {
+    const eatAct = life.actions.get('eat');
+    const ctx = { life, items: I, held: bread1, heldView: toastView1, target: null };
+    eatAct.run(ctx);
+    bitesLeft--;
+    run(0.1);
+  }
+  pass &= check(!I.get(bread1.id), 'toast completely eaten');
+
+  out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
+})().catch((e) => { out.textContent = `ERROR ${e.stack}\n${lines.join('\n')}`; });
+</script>
+</body>
+</html>

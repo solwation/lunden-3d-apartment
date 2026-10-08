@@ -17,6 +17,7 @@ const M = {
   foil: std(0xe9c75b, 0.35, { metalness: 0.35 }), butter: std(0xf7e39a, 0.5), lid: std(0xf4f1e6, 0.5),
   bag: new THREE.MeshStandardMaterial({ color: 0xf2efe6, roughness: 0.25, transparent: true, opacity: 0.55, depthWrite: false }),
   clip: std(0x2f6fc4, 0.5), crust: std(0x9a6332, 0.7), crumb: std(0xe8d3a8, 0.85),
+  toastCrust: std(0x6e3c15, 0.7), toastCrumb: std(0xc8964e, 0.8),
   steel: std(0xc9cdd0, 0.25, { metalness: 0.7 }), handle: std(0x222222, 0.55), peasBag: std(0x2f7d32, 0.35),
   glass: new THREE.MeshPhysicalMaterial({ color: 0xffffff, roughness: 0.05, transparent: true, opacity: 0.28, depthWrite: false }),
   cheeseSlice: std(0xf6dc7e, 0.5), binBag: std(0x1d1d1f, 0.6), binHeap: std(0x2a2a2c, 0.75),
@@ -276,9 +277,10 @@ function breadSlice() {
     object: g, grip: [-0.05, 0.006, 0.03],
     show(item, items) {
       const d = items.def(item), bites = d?.bites ?? 4, bitten = Math.max(0, Math.min(bites - 1, Math.round((1 - item.amount / (d?.amount ?? 1)) * bites)));
-      const key = `${bitten}|${(item.parts ?? []).map((p) => p.type).join(',')}`;
+      const key = `${bitten}|${item.toasted ? 1 : 0}|${(item.parts ?? []).map((p) => p.type).join(',')}`;
       if (key === shown) return;
       shown = key;
+      s.material = item.toasted ? [M.toastCrumb, M.toastCrust] : [M.crumb, M.crust];
       s.geometry.dispose();
       const shape = breadSliceShape(bitten, bites);
       s.geometry = shape.geo;

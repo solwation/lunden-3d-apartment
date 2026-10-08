@@ -297,10 +297,11 @@ export function cookingActions(life) {
   I.namers.breadSlice = (it) => {
     const has = (t) => it.parts?.some((p) => p.type === t);
     const cheese = has('cheeseSlice'), cuc = has('cucumberSlice');
-    if (cheese && cuc) return 'ost- och gurkmackan';
-    if (cheese) return 'ostmackan';
-    if (cuc) return 'gurkmackan';
-    if (has('butter')) return 'smörgåsen';
+    if (cheese && cuc) return it.toasted ? 'den rostade ost- och gurkmackan' : 'ost- och gurkmackan';
+    if (cheese) return it.toasted ? 'den rostade ostmackan' : 'ostmackan';
+    if (cuc) return it.toasted ? 'den rostade gurkmackan' : 'gurkmackan';
+    if (has('butter')) return it.toasted ? 'den rostade smörgåsen' : 'smörgåsen';
+    if (it.toasted) return 'det rostade brödet';
     return null;
   };
 
