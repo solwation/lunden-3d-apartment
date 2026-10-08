@@ -260,13 +260,15 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
     const win1 = { x0: CORE.window.x[0], x1: CORE.window.x[1], y0: y1 + CORE.window.sill, y1: y1 + CORE.window.head };
     const win2 = { x0: CORE.window.x[0], x1: CORE.window.x[1], y0: y2 + CORE.window.sill, y1: y2 + CORE.window.head };
     const l1101Wins = (H.core.l1101 ?? []).map((o) => ({ x0: coreX0 + o.x0, x1: coreX0 + o.x1, y0: y2 + o.sill, y1: y2 + o.head }));
-    const streetHoles = [{ x0: p0, x1: p1, y0: 0, y1: ph }, win1, win2, ...l1101Wins];
+    const portikHole = { x0: p0, x1: p1, y0: 0, y1: ph };
+    const streetHoles = [portikHole, win1, win2, ...l1101Wins];
     facade(bricks, coreX0, coreX1, 0, roofTop, -eps, true, streetHoles, false);
     const courtWin = (xa) => ({ x0: coreX0 + xa, x1: coreX0 + xa + 1.2, y0: y2 + 0.8, y1: y2 + 2.4 });
-    const courtHoles = [courtWin(1.0), courtWin(6.4)];
+    const courtWins = [courtWin(1.0), courtWin(6.4)];
+    const courtHoles = [portikHole, ...courtWins];
     facade(bricks, coreX0, coreX1, 0, roofTop, D + eps, false, courtHoles, false);
     l1101Wins.forEach((o) => fakeWindow(o, -eps, true));
-    courtHoles.forEach((o) => fakeWindow(o, D + eps, false));
+    courtWins.forEach((o) => fakeWindow(o, D + eps, false));
     // Brick reveals for the real stairwell windows between the street face (-eps) and the inner face CORE.north[1]
     const nz0 = -eps, nz1 = CORE.north[1];
     for (const w of [win1, win2]) {
