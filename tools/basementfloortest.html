@@ -1,0 +1,43 @@
+<!doctype html><html><meta charset="utf-8"><title>Basement floor regression #539</title>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
+<pre id="out">running…</pre><script type="module">
+import * as THREE from 'three';
+import { buildWorld } from '../src/world.js';
+import { Garage } from '../src/garage.js';
+import { Core } from '../src/core.js';
+import { Player } from '../src/player.js';
+import { GARAGE as G } from '../src/config.js';
+const lines=[];let pass=true;
+const check=(ok,label)=>{lines.push(`${ok?'PASS':'FAIL'} ${label}`);pass&&=!!ok};
+try {
+ const world=buildWorld(await fetch('../data/plan.json').then(r=>r.json()));world.garage=new Garage();world.core=new Core();
+ const camera=new THREE.PerspectiveCamera(),player=new Player(world,camera);
+ let missing=[];
+ for(const r of G.rects)for(let x=r.x0+.1;x<r.x1;x+=.5)for(let z=r.z0+.1;z<r.z1;z+=.5)
+   if(player.groundAt(x,z,G.floor)<G.floor)missing.push([x,z]);
+ check(!missing.length,`all basement floor rectangles support feet at ${G.floor} m; missing ${missing.length}, first ${JSON.stringify(missing[0])}`);
+ const doorway=G.rects.find(r=>r.id==='forradDoor'),cx=(doorway.x0+doorway.x1)/2;
+ check([doorway.z0,doorway.z1].every(z=>player.groundAt(cx,z,G.floor)===G.floor),'storage doorway supports feet at both exact rectangle joins');
+ function place(x,z){player.spawn(x,z,0);player.pos.y=G.floor;player.eyeY=G.floor+1.62;player.vy=0;player.fall=null;}
+ function walkTo(x,z,touch=false){
+   let supported=true;
+   for(let i=0;i<1200;i++){
+     const dx=x-player.pos.x,dz=z-player.pos.z;if(Math.hypot(dx,dz)<.08)break;
+     camera.rotation.set(0,Math.atan2(-dx,-dz),0,'YXZ');
+     if(touch)player.analog.y=1;else player.keys.add('KeyW');
+     player.update(1/60);supported&&=Math.abs(player.pos.y-G.floor)<.001;
+     if(!Number.isFinite(player.pos.y)||player.pos.y<G.floor-.2)break;
+   }
+   player.keys.clear();player.analog.y=0;
+   return supported&&Math.hypot(x-player.pos.x,z-player.pos.z)<.1;
+ }
+ for(const touch of [false,true]){
+   place(cx,8.2);
+   const route=[[cx,4],[10.6,4],[-10.2,4],[cx,4],[cx,8.2]];
+   check(route.every(([x,z])=>walkTo(x,z,touch)),`${touch?'touch':'keyboard'} enters storage, crosses x=0 to east end, traverses west end and returns without falling (${player.pos.x.toFixed(2)},${player.pos.y.toFixed(2)},${player.pos.z.toFixed(2)})`);
+ }
+ check(player.groundAt(1,4,0)===0,'apartment floor above basement remains at zero');
+ check(player.groundAt(1,4,G.floor-.5)===-Infinity,'no invented rescue floor under the basement');
+}catch(e){check(false,e.stack)}
+document.getElementById('out').textContent=lines.join('\n')+'\n'+(pass?'ALL PASS':'SOME FAILED');
+</script></html>

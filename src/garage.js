@@ -23,7 +23,7 @@ const T = SITE.terrain, GD = T.garageDoor, F = G.floor, C = G.ceiling, S = G.sta
 const westYAt = (x, z) => groundY(x, z);
 const RECTS = G.rects, R = Object.fromEntries(RECTS.map((r) => [r.id, r])), ENTR = R.entrance;
 const AREAS = [...new Set(RECTS.map((r) => r.area))];
-const inRect = (r, x, z, e = 0) => x > r.x0 - e && x < r.x1 + e && z > r.z0 - e && z < r.z1 + e;
+const inRect = (r, x, z, e = 0) => x >= r.x0 - e && x <= r.x1 + e && z >= r.z0 - e && z <= r.z1 + e;
 const rectAt = (x, z) => RECTS.find((r) => inRect(r, x, z)) ?? null;
 
 /** The stalls: { n, x0, x1, z0, z1, nose 'n' | 's', ours, pool }, numbered along the rows. */

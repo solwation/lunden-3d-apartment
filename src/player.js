@@ -122,7 +122,7 @@ export class Player {
     if (inside && !inHole) cands.push(LEVELS[1].floor);
     const s = stairHeight(x, z);
     if (s !== null) cands.push(s);
-    if (!inside && this.world.garage?.inside(x, z)) cands.push(GARAGE.floor); // the garage under the courtyard (#357)
+    if (this.world.garage?.inside(x, z)) cands.push(GARAGE.floor); // the garage under the courtyard (#357)
     const r = this.world.roofs?.under(x, z, feet, PLAYER.stepUp); // a roof, the loftgång, a terrace (#360)
     if (r) cands.push(r.y);
     let best = -Infinity;
