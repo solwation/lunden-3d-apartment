@@ -1,0 +1,13 @@
+{
+  "note": "Export reproduces metadata bbox/SR/size; Esri adjusts aspect ratio. Extent is projection metadata, not evidence of photo date.",
+  "extent": {
+    "xmin": 1466884.0892738644,
+    "ymin": 7495645.993426644,
+    "xmax": 1467341.840749716,
+    "ymax": 7495981.677842269,
+    "spatialReference": {
+      "wkid": 102100,
+      "latestWkid": 3857
+    }
+  }
+}

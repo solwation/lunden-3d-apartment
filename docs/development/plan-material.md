@@ -319,3 +319,5 @@ hard-coding numbers elsewhere.
 
 
 #523 basement audit: [p46 overlays and scope](../validation/issue-523/README.md). Distinguish the sourced 15 **extra rentals** from ordinary LGHFÖRRÅD under C/B/A. Boundaries/openings are graphical measurements (~0.15 m), not construction dimensions; 22 ordinary cages, finishes, swing directions, racks, parked cars and sensor lighting remain explicit assumptions in GARAGE.
+
+Bridge registration #532: same FOJAB/compass bearing (58°), OSM HepCat-centre anchor to its existing plan placement, approximate 3–5 m horizontal accuracy. The road and separate GC source ways are distinct; manufacturer confirms GC's 40 m, while all heights, other lengths/widths and support/rail details remain visual assumptions. [Evidence and source/assumption boundary](../validation/issue-532/README.md).

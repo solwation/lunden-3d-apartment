@@ -482,7 +482,7 @@ export const SITE = {
   // guess) and a small rounding on the east.
   roads: [
     // (#261: the east leg as on the plan: x ≈ 20.9…27.3 by HepCat, 22…29 by the long building)
-    { name: 'Sankt Lars väg', path: [[-150, -27], [24.3, -27, 13], [24.1, 0, 30], [25.5, 26, 30], [25.5, 200]], w: [6, 6, 6.4, 7, 7],
+    { name: 'Sankt Lars väg', path: [[-150, -27], [24.3, -27, 13], [24.1, 0, 30], [25.5, 26, 30], [25.5, 70], [23.9, 100], [23.3, 145.8], [22.5, 200]], w: [6, 6, 6.4, 7, 7, 7, 7, 7],
       walks: [{ side: 1, w: 2.5 }, { side: -1, w: 2 }] }, // our pavement; the far one along the school's wall (#126)
     { name: 'Karpvägen', path: [[-75.8, -27], [-75.8, 22, 30], [-79.9, 51, 20], [-84.5, 66, 8], [-200, 70]], w: 5.8 },
     { name: 'Karpvägen, hörnen', fillets: [{ x: -78.7, z: -24, sx: -1, sz: 1, r: 9 }, { x: -72.9, z: -24, sx: 1, sz: 1, r: 3 }] },
@@ -496,7 +496,20 @@ export const SITE = {
   paving: [
     { x0: -46.33, x1: 13.5, z0: -3.5, z1: 0 },  // path along Hus L's entrances (under the green strip too, #260)
   ],                                         // the pavements: roads' `walks`; the courtyard's own walks: COURTYARD
-  river: { x0: -193.04, x1: 144.78, z0: 120.65, z1: 130.3 }, // Höje å
+  // #532: geographic registration uses FOJAB/DAY.planNorth (58°) and the HepCat OSM footprint centre
+  // (way 130578353) matched to the existing Peab-based model centre. Horizontal accuracy ~3–5 m, not surveying.
+  geo: {anchor:{lon:13.181015825,lat:55.684965075,x:32.3,z:-.4},source:'OSM 2026-10-08, way 130578353'},
+  // Bridge ways 23873379 / 44447984 (same-date OSM snapshot); deck GC length 40 m from Hjalmarssons.
+  // All heights, widths, pier dimensions, rail/truss section sizes and colours below are visual ASSUMPTIONS.
+  bridges: {road:{ends:[[23.9,100],[23.3,145.8]],width:7.2,slab:.45,pier:.75,foot:1.8},
+    gc:{ends:[[18.1,101],[17.8,146.5]],length:40,width:3,slab:.18,truss:1.45,panels:10,steel:.10},
+    deckY:-3,waterY:-6.2,bedY:-6.8,rail:1.1,post:.07,railStep:1.9,approach:8},
+  // #532 foundation: sourced horizontal river centreline near the two bridges; #533 owns detailed banks/paths/vegetation.
+  // Width and uniform depth remain assumptions; do not describe these as measured water levels or surveyed banks.
+  river: {width:8,bank:10,path:[[204.64,74.37],[190.76,79.13],[131.38,74.61],[127.15,83.64],[124.35,101.96],
+    [116.11,114.02],[105.35,119.29],[74.99,119.53],[44.31,119.8],[1.16,125.14],[-15.1,129.89],[-67.45,166.11],
+    [-89.43,183.37],[-101.32,198.71],[-110.41,205.34],[-181.7,207.36],[-220.92,225.61],[-235.63,235.51],[-248.18,251.46]],
+    source:'OSM river way 137217705, local section registered to the existing model; 2026-10-08'},
   // big old limes / chestnuts along the far pavement and in the school yard (#130, the user's photos): [x, z, size]
   bigTrees: [[-36, -34.5, 1.4], [-17, -35.2, 1.6], [-4, -34.8, 1.75], [9, -35.4, 1.45], [27.5, -34.2, 1.6], [33.5, -16, 1.35], [-58, -33.5, 1.5]],
   // a row of ornamental shrubs along our pavement (#130): the situation plan's hedge between the planting strip and the car

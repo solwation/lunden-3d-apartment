@@ -5,6 +5,7 @@ import { registerTrees, registerSnow } from './seasons.js';
 import { buildStreet } from './street.js';
 import { onRoad, onWalk, pathStrip, filletGeometry } from './roads.js';
 import { wallRect } from './roofs.js';
+import {buildRiverBridges,deckAt,riverGround,riverDistance,roadBridgeSpan} from './riverbridge.js';
 
 // The rest of Kv. Lunden and its neighbourhood (SITE in config): the brick point blocks Hus A, B, C
 // with low hip roofs, the schools and buildings around the plot, Sankt Lars väg and Karpvägen,
@@ -58,13 +59,18 @@ function nwTread(x) {
  * the park level around the box, east of it Sankt Lars väg's gentler slope, west of it Karpvägen's (#256).
  * #355: also the stairs' treads and the Å-husen's entrance recesses, so the visitor walks the whole block. */
 export function groundY(x, z) {
+  const deck=deckAt(x,z);if(deck!==null)return deck; // #532 background bridge surfaces, outside OUTDOOR
+
   for (const [x0, x1, z0, z1, y] of stairTreads) if (x >= x0 && x <= x1 && z > z0 && z <= z1) return y;
   for (const f of recessFloors) if (x > f.x0 && x < f.x1 && z > f.z0 && z < f.z1) return f.y;
   if (z <= Wst.stair.z1) return Math.max(terrainY(x, z), nwTread(x)); // the NW stair's treads over the verge
   return terrainY(x, z);
 }
 /** The terrain itself (the grass / asphalt surface; groundY without the stairs' treads and the recesses' floors). */
-function terrainY(x, z) {
+function terrainY(x,z) {
+  const base=terrainBase(x,z);return z<60?base:riverGround(x,z,base);
+}
+function terrainBase(x, z) {
   if (onRamp(x, z)) return rampY(z);
   if (onBox(x, z)) return 0;
   const park = T.park * THREE.MathUtils.clamp((z - T.north) / T.slope, 0, 1); // 0 north of Hus L's back
@@ -84,7 +90,7 @@ export const terrainNorth = Math.min(E.profile[0][0], Wst.profile[0][0]);
  * is vertical. */
 function terrainGeometry() {
   const St = Wst.stair, z0 = terrainNorth;
-  const xs = new Set([-200, 200, E.x0 - 0.01, E.x0 + 0.01, E.x1, E.x1 + E.blend, E.gable, E.level, E.walk, R.x0 + 0.01, R.x1 - 0.01, R.x1 + 0.01,
+  const xs = new Set([-270, -200, 200, 220, E.x0 - 0.01, E.x0 + 0.01, E.x1, E.x1 + E.blend, E.gable, E.level, E.walk, R.x0 + 0.01, R.x1 - 0.01, R.x1 + 0.01,
       Wst.x - 0.01, Wst.x + 0.01, St.x1 - 0.01, St.x1 + 0.01]),
     zs = new Set([z0, 0, T.north, 260, T.north + T.slope, ...E.profile.map((p) => p[0]), ...Wst.profile.map((p) => p[0]), R.z0, R.z1, St.z1 - 0.01, St.z1 + 0.01, T.garageDoor.z0, T.garageDoor.z1]);
   for (let x = -200; x <= 200; x += 4) xs.add(x);
@@ -1005,7 +1011,7 @@ function trees(rand) {
       if (S.blocks.some((b) => x > b.x0 - 2 && x < b.x1 + 2 && z > b.z0 - 2 && z < b.z1 + 2)) continue;
       if (onRoad(x, z, 1) || onWalk(x, z, 0.5)) continue; // nor on a pavement (#435)
       if (area.skip?.some(([a, b]) => x > a && x < b)) continue; // a drive (#260)
-      if (z > S.river.z0 - 2 && z < S.river.z1 + 2) continue;
+      if (riverDistance(x,z) < S.river.width/2+S.river.bank*.3) continue; // #532 no trees in the water or submerged bank
       if (T.box.some((b) => Math.min(Math.abs(x - b.x0), Math.abs(x - b.x1)) < 1.5 && z > b.z0 && z < b.z1)) continue; // not on a retaining wall
       const birch = !area.young && rand() < S.birchShare; // slim birches with white trunks among the others (#115)
       spots.push({ x, z, y: groundY(x, z), s: area.young ? 0.8 + rand() * 0.25 : 0.75 + rand() * 0.6, kind: area.young ? 'young' : birch ? 'birch' : 'tree' });
@@ -1257,11 +1263,11 @@ export function buildSurroundings({ grass }) {
     : r.fillets ? r.fillets.map((f) => filletGeometry(f, 0.012, groundY)) : [groundStrip(r.x0, r.x1, r.z0, r.z1, 0.012)]);
   flat(asphalt, new THREE.MeshStandardMaterial({ color: COLORS.asphalt, roughness: 0.7 }), 0xd9dfe4); // ploughed, a little grey; damp (#128)
   // pavements along the roads (left out where they would lie on another road's asphalt: a junction's mouth)
+  const pavementClip=(road)=>road.name==='Sankt Lars väg'?c=>roadBridgeSpan(c.reduce((s,p)=>s+p[0],0)/4,c.reduce((s,p)=>s+p[1],0)/4)||c.every(([x,z])=>onRoad(x,z,-.05,road)):true;
   const walks = S.roads.flatMap((r) => (r.walks || []).map((k) => k.side > 0
-    ? pathStrip(r, (w) => w / 2, (w) => w / 2 + k.w, 0.008, groundY, true) : pathStrip(r, (w) => -w / 2 - k.w, (w) => -w / 2, 0.008, groundY, true)));
+    ? pathStrip(r, (w) => w / 2, (w) => w / 2 + k.w, 0.008, groundY, pavementClip(r)) : pathStrip(r, (w) => -w / 2 - k.w, (w) => -w / 2, 0.008, groundY, pavementClip(r))));
   flat([...S.paving.map((r) => groundStrip(r.x0, r.x1, r.z0, r.z1, 0.008)), ...walks], COLORS.paving, SEASON.snow.paving);
-  flat([groundStrip(S.river.x0, S.river.x1, S.river.z0, S.river.z1, 0.02)],
-    new THREE.MeshStandardMaterial({ color: COLORS.water, roughness: 0.15, metalness: 0.2 }));
+  group.add(buildRiverBridges());
   // Kv. Lunden's own blocks and the old S:t Lars buildings: own façade texture and roof colour each,
   // plus a white cornice under the old roofs (#47)
   const modern = S.blocks.filter((b) => !b.style), oldB = S.blocks.filter((b) => b.style === 'old'), school = S.blocks.filter((b) => b.style === 'school');

@@ -134,3 +134,5 @@ Utvecklingsregler och läsanvisningar finns i [CLAUDE.md](CLAUDE.md). Därifrån
 Källaren följer Peabs plan för cykelrum och förrådsområden under hus L, C, B och A. De 15 extra hyrförråden skiljs från ordinarie lägenhetsförråd; antal och indelning av ordinarie burar är illustrativa. [Planjämförelse, avgränsningar och webbläsartester](docs/validation/issue-523/README.md).
 
 Uteplatsens stora solfjäderspalm har en öppen rundad kruka med jord, fiberrik stam och veckade bladfingrar med mjuk vindrörelse. [Bilder och verifiering](docs/validation/issue-524/README.md).
+
+Vägbron och den separata gång- och cykelbron vid Sankt Lars väg syns över en nedsänkt Höje å, även bortom gångområdets gräns. [Kartjämförelse, vyer och antaganden](docs/validation/issue-532/README.md).

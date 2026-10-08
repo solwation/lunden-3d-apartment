@@ -1,0 +1,18 @@
+start: calls 197 tris 54307 geoms 755 tex 100
+kitchen: calls 331 tris 367132 geoms 874 tex 114
+living: calls 316 tris 463523 geoms 957 tex 118
+upstairs: calls 297 tris 393965 geoms 1057 tex 130
+patio: calls 81 tris 173813 geoms 1057 tex 130
+courtyard: calls 67 tris 162179 geoms 1057 tex 130
+karpvagen: calls 54 tris 118935 geoms 1057 tex 130
+garage: calls 323 tris 569651 geoms 1079 tex 136
+park: calls 416 tris 546199 geoms 1086 tex 136
+east: calls 43 tris 88901 geoms 1086 tex 136
+big hall: calls 335 tris 581289 geoms 1108 tex 139
+basement: calls 331 tris 576027 geoms 1110 tex 140
+mess cap: calls 284 → 286 with 400 added, drawn crumb 48/48 dust 32/32 spots 80
+quality scale: kitchen calls high 331 → low 304
+PASS quality scale reduced draw calls
+PASS adaptive logic drops tier on low fps
+PASS adaptive logic recovers tier on high fps
+ALL PASS

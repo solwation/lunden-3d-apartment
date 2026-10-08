@@ -137,7 +137,7 @@ export function pathStrip(road, a, b, lift, groundY, clip = false) {
   for (let k = 1; k < S.length; k++) {
     const p = S[k - 1], q = S[k];
     const c = [at(p, a(p.w)), at(p, b(p.w)), at(q, a(q.w)), at(q, b(q.w))];
-    if (clip && c.every(([x, z]) => onRoad(x, z, -0.05, road))) continue;
+    if (typeof clip==='function' ? clip(c) : clip && c.every(([x, z]) => onRoad(x, z, -0.05, road))) continue;
     // where the ground slopes, 10 cm pieces, so the strip stays on it through the slope's kinks
     const sloped = c.some(([x, z]) => Math.abs(groundY(x, z) - groundY(...c[0])) > 1e-4);
     const n = sloped ? Math.ceil(Math.hypot(q.x - p.x, q.z - p.z) / 0.1) : 1;

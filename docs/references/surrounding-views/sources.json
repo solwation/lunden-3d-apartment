@@ -1,0 +1,44 @@
+{
+  "retrieved": "2026-10-08",
+  "purpose": "Underlag för omgivningsvyer även utanför gångbart område",
+  "map_views": {
+    "osm-surroundings.png": "https://www.openstreetmap.org/#map=17/55.6849/13.1800",
+    "osm-bridge-south.png": "https://www.openstreetmap.org/#map=19/55.6842/13.1793",
+    "osm-west.png": "https://www.openstreetmap.org/#map=18/55.6853/13.1772",
+    "osm-east.png": "https://www.openstreetmap.org/#map=18/55.6853/13.1833",
+    "osm-south-far.png": "https://www.openstreetmap.org/#map=17/55.6828/13.1777"
+  },
+  "osm_attribution": "© OpenStreetMap contributors, https://www.openstreetmap.org/copyright",
+  "aerials": {
+    "service": "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/export",
+    "request_parameters": {
+      "bboxSR": 4326,
+      "imageSR": 3857,
+      "size": "1500,1100",
+      "format": "jpg",
+      "f": "image"
+    },
+    "aerial-surroundings.jpg_bbox": [
+      13.1755,
+      55.6815,
+      13.1855,
+      55.688
+    ],
+    "aerial-bridge.jpg_bbox": [
+      13.1778,
+      55.6834,
+      13.1808,
+      55.6851
+    ],
+    "attribution": "Source: Esri, Vantor, Earthstar Geographics, and the GIS User Community",
+    "note": "Fotodatum ej verifierat; Lunden visas under byggnation. Norr uppåt."
+  },
+  "documents": {
+    "bridge-water-report-2016": "https://hojea.se/rapporter/Analys_daemnpaaverk_Hoejeaa_Lund_2016_11_28_inkl_bil.pdf",
+    "report_publisher": "Höje å vattenråd/Ekologgruppen, 2016-11-28. Fotokredit för bro/åbilder: Siri Wahlström. Historiskt underlag, inte verifierat nuläge.",
+    "reserve-2021": "https://lund.se/download/18.1803745417f44c54940236b1/1649254859593/Beslut%20om%20naturreservat%20i%20H%C3%B6je%C3%A5dalen%20inkl.%20bilagor.pdf",
+    "reserve_publisher": "Lunds kommun, beslut 2021-12-15. Sidbilder: PDF-sida 11 och 33.",
+    "bridge_recent_reference": "https://hjalmarssons.se/verksamhetsomrade/broar/",
+    "bridge_note": "Text beskriver en 40 m GC-fackverksbro vid Sankt Lars väg. Sidans allmänna montagebild är inte platsverifierad och ska inte ensam användas som lokal referens."
+  }
+}
