@@ -147,7 +147,7 @@ export function personFor(room) {
  * things / boxes on the hat shelf (`shelfY`, up to `topY`), shoes on the floor along the front. `along`: the rod
  * runs along plan x (else z); `outward`: which way the front faces (±1 on the across axis). Returns one mesh.
  */
-export function wardrobeFill({ along, a0, a1, mid, depth, outward, y0, rodY, shelfY, topY }, who, seed = 1) {
+export function wardrobeFill({ along, a0, a1, mid, depth, outward, y0, rodY, shelfY, topY, shelfReserve = 0 }, who, seed = 1) {
   const R = rng(seed), p = new Pack();
   // build in a frame with x along the rod and z across (+z = towards the front), then turn into plan axes
   const frame = new THREE.Matrix4();
@@ -171,6 +171,9 @@ export function wardrobeFill({ along, a0, a1, mid, depth, outward, y0, rodY, she
   if (room > 0.08) {
     let sx = -half + 0.05;
     while (sx < half - 0.2) {
+      // Keep a quarter-shelf space for real folded laundry, reachable behind one leaf (#552).
+      const centre=-L/4;
+      if(shelfReserve&&sx<centre+shelfReserve/2&&sx+.32>centre-shelfReserve/2){sx=centre+shelfReserve/2;continue;}
       if (R() < 0.3) { p.box(0.32, Math.min(0.22, room - 0.02), depth * 0.7, sx + 0.16, shelfY, -0.02, pick(R, S.boxes)); sx += 0.38; continue; }
       stack(p, Math.max(1, Math.min(4, Math.floor((room - 0.02) / 0.06))), 0.3, 0.055, depth * 0.55, sx + 0.15, shelfY, 0, who.folded, R);
       sx += 0.36;

@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import {
-  WARDROBE, LEVELS, UNIT_TOP, SOFFITS, DOOR_HEIGHT, DOOR_TRIM, EXT_DOOR_HEAD, WINDOWS, WINDOW_TOP_HUNG_MAX, BLINDS, CABINET_HEIGHT, BASE_CABINET, SHELF_HEIGHT, TOILET,
+  LAUNDRY, WARDROBE, LEVELS, UNIT_TOP, SOFFITS, DOOR_HEIGHT, DOOR_TRIM, EXT_DOOR_HEAD, WINDOWS, WINDOW_TOP_HUNG_MAX, BLINDS, CABINET_HEIGHT, BASE_CABINET, SHELF_HEIGHT, TOILET,
   STAIR, COLORS, FENCE_HEIGHT, SITE, OUTDOOR, CABINET_FIXES, KLK, SEASON, FINISH, OPTIONS, EXTRA_WALLS, SLIDE_FLIP, ROOM_RENAMES, EXTRA_ROOMS, ROOM_DIVIDERS, CORE, PORTIK,
 } from './config.js';
 import { buildStairs, buildHandrails } from './stairs.js';
@@ -243,9 +243,9 @@ function buildWardrobe(group, g, y0, h, wallBoxes, doors) {
   const mid = (back + front) / 2;
   piece(a + t, b - t, mid - 0.012, mid + 0.012, y0 + 1.7, y0 + 1.724); // clothes rod
   // what goes inside (#230/#231) is added once the rooms are known (buildWorld): who sleeps here
-  wardrobeSpecs.push({ group, along, a0: a + t, a1: b - t, mid, front, back, depth: Math.abs(front - back) - t - 0.05, outward, y0, rodY: y0 + 1.7, shelfY: y0 + 1.8, topY: y1 - t });
+  const spec={ doors: [], group, along, a0: a + t, a1: b - t, mid, front, back, depth: Math.abs(front - back) - t - 0.05, outward, y0, rodY: y0 + 1.7, shelfY: y0 + 1.8, topY: y1 - t };wardrobeSpecs.push(spec);
   for (const d of wardrobeDoors({ along, front, back, outward, a, b, y0, height: h, material: M.door })) {
-    group.add(d.object);
+    spec.doors.push(d);group.add(d.object);
     doors.push(d);
   }
   return { along, outward, a, b, back, front, y0, y1, t };
@@ -793,10 +793,12 @@ export function buildWorld(plan) {
     (d) => (d.object.position.y > LEVELS[0].floor + 1.6 ? 1 : 0));
 
   // the wardrobes' contents (#230/#231): clothes on the rod, folded things on the hat shelf, shoes — by who lives there
+  const laundryWardrobes=[];
   wardrobeSpecs.forEach((w, i) => {
     const lv = w.y0 > LEVELS[0].floor + 1.6 ? 1 : 0, ac = (w.a0 + w.a1) / 2, fz = w.front + w.outward * 0.4;
     const room = roomMaps[lv].at(w.along ? ac : fz, w.along ? fz : ac);
     const who = personFor(room);
+    if(who){w.shelfReserve=LAUNDRY.wardrobe.reserve;w.room=room;w.level=lv;laundryWardrobes.push(w);}
     const m = who ? wardrobeFill(w, who, 11 + i * 7) : null;
     if (m) { m.userData.room = room; w.group.add(m); }
   });
@@ -836,6 +838,7 @@ export function buildWorld(plan) {
   return {
     object: scene,
     edgeLines,
+    wardrobes: laundryWardrobes, // reserved, usable shelf spaces (#552)
     setFurniture,
     furniture, // movable scene roots and collision data (#465)
     refreshFurniture: () => setFurniture(furniture.object.visible),

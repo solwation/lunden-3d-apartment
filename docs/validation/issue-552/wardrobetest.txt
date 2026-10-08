@@ -1,0 +1,32 @@
+PASS Hall and both upper wardrobes use shared joinery
+PASS Wardrobe 1: 105 closed seam rays from both sides
+PASS Wardrobe 1: track clearance at 0.25 (outer)
+PASS Wardrobe 1: track clearance at 0.5 (outer)
+PASS Wardrobe 1: track clearance at 1 (outer)
+PASS Wardrobe 1: open half exposes contents (outer)
+PASS Wardrobe 1: track clearance at 0.25 (inner)
+PASS Wardrobe 1: track clearance at 0.5 (inner)
+PASS Wardrobe 1: track clearance at 1 (inner)
+PASS Wardrobe 1: open half exposes contents (inner)
+PASS Wardrobe 1: switching sides closes previous door
+PASS Wardrobe 2: 105 closed seam rays from both sides
+PASS Wardrobe 2: track clearance at 0.25 (outer)
+PASS Wardrobe 2: track clearance at 0.5 (outer)
+PASS Wardrobe 2: track clearance at 1 (outer)
+PASS Wardrobe 2: open half exposes contents (outer)
+PASS Wardrobe 2: track clearance at 0.25 (inner)
+PASS Wardrobe 2: track clearance at 0.5 (inner)
+PASS Wardrobe 2: track clearance at 1 (inner)
+PASS Wardrobe 2: open half exposes contents (inner)
+PASS Wardrobe 2: switching sides closes previous door
+PASS Wardrobe 3: 105 closed seam rays from both sides
+PASS Wardrobe 3: track clearance at 0.25 (outer)
+PASS Wardrobe 3: track clearance at 0.5 (outer)
+PASS Wardrobe 3: track clearance at 1 (outer)
+PASS Wardrobe 3: open half exposes contents (outer)
+PASS Wardrobe 3: track clearance at 0.25 (inner)
+PASS Wardrobe 3: track clearance at 0.5 (inner)
+PASS Wardrobe 3: track clearance at 1 (inner)
+PASS Wardrobe 3: open half exposes contents (inner)
+PASS Wardrobe 3: switching sides closes previous door
+ALL PASS

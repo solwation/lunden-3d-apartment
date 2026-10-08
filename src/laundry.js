@@ -30,11 +30,37 @@ export class Laundry {
       this.machines.push({kind,door,root,store});
     }
     this.washer=new LaundryProgramme(life,this.machines.find(m=>m.kind==='washer'));
-    life.keepPart('laundry',{save:()=>({washer:this.washer.save()}),load:v=>this.washer.load(v?.washer)});
+    this.dryer=new LaundryProgramme(life,this.machines.find(m=>m.kind==='dryer'));
+    this.wardrobes=[];
+    for(const [i,w] of (world.wardrobes??[]).entries())this.wardrobe(w,i);
+    life.keepPart('laundry',{save:()=>({washer:this.washer.save(),dryer:this.dryer.save()}),load:v=>{this.washer.load(v?.washer);this.dryer.load(v?.dryer);}});
+    const garment=c=>life.items.has(c.target,'laundry')?c.target:c.raw.store?.startsWith('laundryWardrobe')?c.held:null;
+    life.actions.define({id:'laundryFold',order:1,label:'vika plagget',applies:c=>!!garment(c)&&!garment(c).machine.folded,
+      check:c=>{
+        const it=garment(c);
+        if(c.heldView&&c.held!==it)return 'Lägg ifrån dig det du håller först';
+        if(c.targetView?.shutReason())return c.targetView.shutReason();
+        return it.clean!=='clean'?'Tvätta plagget först':it.moisture!=='dry'?'Torka plagget först':null;
+      },run:c=>{const it=garment(c);life.items.set(it,{machine:{folded:true}});life.emit('laundryFolded',{id:it.id});},
+      consumes:'nothing',result:'the same clean dry garment becomes a folded stack'});
     life.items.namers.laundryClothes=item=>`${item.clean==='clean'?'rena':'smutsiga'} ${item.moisture==='wet'?'våta':'torra'} ${item.machine?.folded?'vikta ':''}plagget`;
   }
-  update(dt){this.washer.update(dt);}
-  cancel(){this.washer.cancel();}
+  wardrobe(w,index){
+    const C=P.wardrobe,root=new THREE.Group();root.name='laundryWardrobe';
+    const yaw=w.along?(w.outward>0?0:Math.PI):(w.outward>0?Math.PI/2:-Math.PI/2);
+    root.position.set(w.along?(w.a0+w.a1)/2:w.mid,0,w.along?w.mid:(w.a0+w.a1)/2);root.rotation.y=yaw;this.life.scene.add(root);
+    const localX=-(w.a1-w.a0-.06)/4;
+    const anchors=Array.from({length:C.slots},(_,k)=>this.anchor(root,[localX,w.shelfY+C.shelfGap+k*C.stackStep,0]));
+    root.updateWorldMatrix(true,true);const p=anchors[0].getWorldPosition(new THREE.Vector3()),along=w.along?p.x:p.z;
+    const isOpen=()=>w.doors.every(d=>Math.abs(d.pos-along)>d.len/2+P.garment.w*.8/2+C.accessGap);
+    const store=this.register(`laundryWardrobe${index}`,{name:`garderoben i ${w.room}`,slots:C.slots,isOpen,
+      shutText:'Öppna garderobsdörren framför hyllan först',fullText:'Garderobens tvätthylla är full',
+    },root,anchors,[localX,w.shelfY+C.pickHeight/2,Math.abs(w.front-w.back)/2+C.pickDepth/2],[C.reserve,C.pickHeight,C.pickDepth],root);
+    store.refuse=it=>!this.life.items.has(it,'laundry')?'Här lägger du bara kläder':it.clean!=='clean'?'Tvätta plagget först':it.moisture!=='dry'?'Torka plagget först':!it.machine.folded?'Vik plagget först':null;
+    root.visible=isOpen();this.wardrobes.push({spec:w,root,store,isOpen});
+  }
+  update(dt){this.washer.update(dt);this.dryer.update(dt);for(const w of this.wardrobes)w.root.visible=w.isOpen();}
+  cancel(){this.washer.cancel();this.dryer.cancel();}
   anchor(parent,pos) {const a=new THREE.Object3D();a.position.set(...pos);parent.add(a);return a;}
   register(id,spec,parent,anchors,pos,size,outlineRoot) {
     const I=this.life.items;

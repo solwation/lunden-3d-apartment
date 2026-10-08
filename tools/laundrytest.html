@@ -18,8 +18,8 @@ try {
  check(A.focus().focused===machine.store.target,'aiming at the open washer drum selects the real storage action target ('+A.focus().focused?.name+' / '+A.focus().focused?.kind+')');
  if(A.focus().focused===machine.store.target)f.contentDocument.getElementById('action').click();else run(machine.store.target,'putIn');
  check(first.place.store==='laundryWasher'&&!I.held()&&L.view(first).model.parent===machine.store.anchors[0],'touch action loads the original garment into the static drum anchor');
- const bound=new T.Box3().setFromObject(L.view(first).model),D=(await w.eval("import('/src/config.js')")).LAUNDRY.drum;
- check(bound.max.x<c[0]&&bound.min.x>c[0]-D.depth&&bound.min.y>c[1]-D.radius&&bound.max.y<c[1]+D.radius&&bound.min.z>c[2]-D.radius&&bound.max.z<c[2]+D.radius,'loaded garment lies physically inside the drum, behind the front plane');
+ const bound=new T.Box3().setFromObject(L.view(first).model),DRUM=(await w.eval("import('/src/config.js')")).LAUNDRY.drum;
+ check(bound.max.x<c[0]&&bound.min.x>c[0]-DRUM.depth&&bound.min.y>c[1]-DRUM.radius&&bound.max.y<c[1]+DRUM.radius&&bound.min.z>c[2]-DRUM.radius&&bound.max.z<c[2]+DRUM.radius,'loaded garment lies physically inside the drum, behind the front plane');
  const pos=L.view(first).model.getWorldPosition(new T.Vector3());machine.door.toggle();machine.door.update(1);
  check(!machine.root.visible&&pos.distanceTo(L.view(first).model.getWorldPosition(new T.Vector3()))<1e-8,'shutting the door hides contents without moving them with the swinging leaf');
  check(!run(L.view(first).takeTarget,'take')&&first.place.store==='laundryWasher','closed door blocks taking a stored garment');machine.door.toggle();machine.door.update(1);
@@ -64,6 +64,61 @@ try {
  check(!W.busy&&W.state==='idle'&&I.get(ids[0]).clean==='dirty'&&I.get(ids[0]).moisture===stateBefore&&I.ofType('laundryClothes').length===4,'F cancels programme without washing, drying or losing garments');A.toggleFurniture();
  check(I.audit().length===0,'inventory invariants also hold after programme pause, replacement, reload and cancellation');
 
+ // #552: complete basket → wash → dry → fold → real wardrobe storage, reload and reset.
+ A=await load('../index.html?life&shot&cloud=');L=A.life;I=L.items;N=A.laundry;W=N.washer;M=W.machine;
+ let batch=I.ofType('laundryClothes'),batchIds=batch.map(i=>i.id),D=N.dryer;
+ check(!D.start()&&D.startReason()==='Torktumlaren är tom','empty dryer rejects start');
+ M.door.toggle();M.door.update(1);
+ for(const i of batch){run(L.view(i).takeTarget,'take');run(M.store.target,'putIn');}
+ check(L.options({instance:batch[0]}).find(a=>a.id==='laundryFold')?.reason==='Tvätta plagget först','dirty laundry cannot be folded as finished');
+ M.door.toggle();M.door.update(1);W.start();W.update(W.seconds);M.door.toggle();M.door.update(1);
+ check(batch.every(i=>i.clean==='clean'&&i.moisture==='wet'),'complete flow washes all original basket clothes to clean wet state');
+ check(L.options(L.view(batch[0]).takeTarget).find(a=>a.id==='laundryFold')?.reason==='Torka plagget först','clean wet laundry cannot be folded');
+ D.machine.door.toggle();D.machine.door.update(1);
+ for(const i of batch){run(L.view(i).takeTarget,'take');run(D.machine.store.target,'putIn');}
+ D.machine.door.toggle();D.machine.door.update(1);I.set(batch[0],{clean:'dirty'});
+ check(!D.start()&&D.startReason()==='Tvätta kläderna först','dryer rejects dirty laundry and never substitutes washing');I.set(batch[0],{clean:'clean'});
+ const dp=D.panel.position;A.player.spawn(1.3,dp.z,Math.PI/2);A.player.crouch=false;A.player.eyeY=1.62;A.step(0);A.camera.lookAt(dp);A.camera.updateMatrixWorld(true);A.step(0);
+ check(A.focus().focused===D.target,'actual dryer display is a reachable programme control');
+ if(A.focus().focused===D.target)f.contentDocument.getElementById('action').click();else D.start();
+ D.update(5);const dryLeft=D.left;D.machine.door.toggle();D.machine.door.update(1);D.update(50);
+ check(D.state==='paused'&&D.left===dryLeft&&batch.every(i=>i.moisture==='wet'),'dryer door pauses time and leaves wet clothes unchanged');
+ D.machine.door.toggle();D.machine.door.update(1);D.update(0);
+ f.contentWindow.localStorage.setItem(LIFE.save.key,JSON.stringify(L.serialize()));
+ A=await load('../index.html?shot&cloud=&time=12');L=A.life;I=L.items;N=A.laundry;D=N.dryer;batch=batchIds.map(id=>I.get(id));
+ check(D.busy&&D.left===dryLeft&&D.ids.length===3&&batch.every(i=>i.place.store==='laundryDryer'&&i.moisture==='wet'),'actual reload preserves dryer load and exact remaining time without drying while absent');
+ D.update(100);check(D.state==='done'&&batch.every(i=>i.clean==='clean'&&i.moisture==='dry'&&!i.machine.folded),'dryer result is clean dry laundry, not automatically folded');
+ check(!D.start()&&D.startReason()==='Tvätten är redan torr','already-dry load does not start another dry programme');
+ D.machine.door.toggle();D.machine.door.update(1);run(L.view(batch[0]).takeTarget,'take');
+ const v=L.view(batch[0]),clothMesh=v.model.children.find(o=>o.isMesh);clothMesh.geometry.computeBoundingBox();const looseSize=clothMesh.geometry.boundingBox.getSize(new T.Vector3());
+ check(v.useLabel==='Vika plagget','held dry garment exposes folding through the existing use action');v.onUse();
+ clothMesh.geometry.computeBoundingBox();const foldedSize=clothMesh.geometry.boundingBox.getSize(new T.Vector3());
+ check(batch[0].machine.folded&&foldedSize.length()<looseSize.length()&&foldedSize.y>looseSize.y,'folding changes the same garment into a visibly smaller thicker stack');
+ const G=N.wardrobes[0];check(N.wardrobes.length===2&&N.wardrobes.every(g=>g.store.slots.length===2),'existing bedroom wardrobes each provide two reserved laundry shelf slots');
+ check(!run(G.store.target,'putIn')&&I.held()===batch[0]&&L.options(G.store.target).find(a=>a.id==='putIn')?.reason?.includes('Öppna'),'closed sliding wardrobe retains the folded garment in the hand');
+ function openShelf(g){const p=g.store.anchors[0].getWorldPosition(new T.Vector3()),a=g.spec.along?p.x:p.z;const d=g.spec.doors.slice().sort((u,v)=>Math.abs(u.closedPos-a)-Math.abs(v.closedPos-a))[0];if(!d.isOpen)d.toggle();for(const leaf of g.spec.doors)leaf.update(2);N.update(0);return d;}
+ const leaf=openShelf(G);check(G.isOpen()&&G.root.visible,'opening the matching sliding leaf exposes the reserved shelf');
+ for(const [fields,reason] of [[{clean:'dirty'},'Tvätta plagget först'],[{clean:'clean',moisture:'wet'},'Torka plagget först'],[{moisture:'dry',machine:{folded:false}},'Vik plagget först']]){
+   I.set(batch[0],fields);check(!run(G.store.target,'putIn')&&I.held()===batch[0]&&L.options(G.store.target).find(a=>a.id==='putIn')?.reason===reason,'wardrobe rejects unfinished garment: '+reason);
+ }
+ v.onUse();
+ function aimShelf(g){const p=g.store.pick.getWorldPosition(new T.Vector3()),s=g.spec;A.player.spawn(p.x+(s.along?0:s.outward*.6),p.z+(s.along?s.outward*.6:0),0);A.player.pos.y=3.25;A.player.eyeY=4.87;A.step(0);A.camera.lookAt(p);A.camera.updateMatrixWorld(true);A.step(0);return A.focus().focused;}
+ check(aimShelf(G)===G.store.target,'aiming at the open physical wardrobe shelf selects its storage action');
+ if(A.focus().focused===G.store.target)f.contentDocument.getElementById('action').click();else run(G.store.target,'putIn');
+ check(batch[0].place.store===G.store.id&&!I.held(),'actual touch storage puts folded clothes on the existing wardrobe shelf');
+ const storedPos=L.view(batch[0]).model.getWorldPosition(new T.Vector3());leaf.toggle();for(const d of G.spec.doors)d.update(2);N.update(0);
+ check(!G.root.visible&&!run(L.view(batch[0]).takeTarget,'take')&&storedPos.distanceTo(L.view(batch[0]).model.getWorldPosition(new T.Vector3()))<1e-8,'closed wardrobe hides and blocks stored clothes while keeping them on the static shelf');openShelf(G);
+ for(const i of batch.slice(1)){A.player.spawn(1.3,D.machine.door.laundry.center[2],0);run(L.view(i).takeTarget,'take');L.view(i).onUse();if(i===batch[1])run(G.store.target,'putIn');}
+ check(I.held()===batch[2]&&!run(G.store.target,'putIn')&&L.options(G.store.target).find(a=>a.id==='putIn')?.reason==='Garderobens tvätthylla är full'&&I.ofType('laundryClothes').length===3,'full wardrobe retains the third original folded garment without item loss');
+ const other=N.wardrobes[1];openShelf(other);run(other.store.target,'putIn');
+ check(batch.every(i=>i.place.store?.startsWith('laundryWardrobe')&&i.clean==='clean'&&i.moisture==='dry'&&i.machine.folded),'all original basket garments complete washing, drying, folding and wardrobe storage');
+ L.flush();A=await load('../index.html?shot&cloud=&time=12');L=A.life;I=L.items;N=A.laundry;
+ check(I.ofType('laundryClothes').length===3&&batchIds.every(id=>I.get(id)?.place.store?.startsWith('laundryWardrobe')&&I.get(id).clean==='clean'&&I.get(id).moisture==='dry'&&I.get(id).machine.folded),'actual reload keeps all original folded wardrobe items and never duplicates basket stock');
+ check(I.audit().length===0,'complete laundry flow and reload preserve every inventory invariant');
+ let resetUrl=null;A.resetHome.go=url=>{resetUrl=url;};A.resetHome.confirm();
+ check(resetUrl&&f.contentWindow.localStorage.getItem(LIFE.save.key)===null,'actual reset clears the laundry item and programme save through existing reset control');
+ A=await load('../index.html?shot&cloud=&time=12');I=A.life.items;N=A.laundry;
+ check(I.ofType('laundryClothes').length===3&&I.ofType('laundryClothes').every(i=>i.place.store==='laundryBasket'&&i.clean==='dirty'&&i.moisture==='dry'&&!i.machine.folded)&&N.washer.state==='idle'&&N.dryer.state==='idle','fresh page after reset restores dirty basket stock, empty wardrobes and idle machines');
  document.getElementById('out').textContent=lines.join('\n')+'\n'+(pass?'ALL PASS':'SOME FAILED');
 }catch(e){document.getElementById('out').textContent=lines.join('\n')+'\nFAIL '+e.stack;}
 </script></html>
