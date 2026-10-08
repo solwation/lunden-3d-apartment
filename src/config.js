@@ -774,6 +774,12 @@ export const CABINET_HEIGHT = {
   EL: 2.1, G: 2.1, L: 2.1, 'U/M': 2.1, K: 2.1, F: 2.1,
   TT: 0.85, TM: 0.85, DM: 0.9,
 };
+// Sliding wardrobe joinery (#537): construction assumptions, not measured Peab details.
+export const WARDROBE = {
+  carcass: 0.02, plinth: 0.08, panel: 0.02, firstTrack: 0.015, trackSpacing: 0.025,
+  overlap: 0.04, edgeGap: 0.002, sealWidth: 0.008, sealGap: 0.001, railLip: 0.012,
+};
+
 export const BASE_CABINET = 0.9;
 // WC-stol Ifö Spira 6260 (our choice in both bathrooms): approx. W 35.5 × D 65 cm, seat 42 cm,
 // tank top 84 cm (Ifö product sheet, rounded). Replaces the plan's schematic symbol (#14).

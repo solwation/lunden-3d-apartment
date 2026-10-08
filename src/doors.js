@@ -1,5 +1,6 @@
 import * as THREE from 'three';
-import { DOOR_HEIGHT, DOOR_TRIM } from './config.js';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { WARDROBE, DOOR_HEIGHT, DOOR_TRIM } from './config.js';
 
 import { entryParts, entryMaterials } from './entrancedoor.js';
 
@@ -186,20 +187,35 @@ export class SlidingDoor extends Slider {
  */
 export function wardrobeDoors({ along, front, back, outward, a, b, y0, height, material }) {
   const half = (b - a) / 2;
-  const len = half + 0.02;
+  const W = WARDROBE, inset = W.carcass + W.edgeGap;
+  const len = half - inset + W.overlap / 2;
+  const bottom = y0 + W.plinth + W.edgeGap, top = y0 + height - W.carcass - W.edgeGap;
+  const leafHeight = top - bottom;
   const mk = (track, closed, open) => {
     const door = new Slider({
-      along, len, material, thickness: 0.02,
-      face: front + outward * (0.015 + track * 0.025),
-      y: y0 + height / 2, height: height - 0.02,
+      along, len, material, thickness: W.panel,
+      face: front + outward * (W.firstTrack + track * W.trackSpacing),
+      y: (bottom + top) / 2, height: leafHeight,
       closedPos: closed, openPos: open,
     });
+    // The inner panel's meeting stile reaches into the gap between tracks. It travels with
+    // the leaf, stopping short of the outer panel, so opening still exposes the cupboard.
+    if (track === 0) {
+      const depth = W.trackSpacing - W.panel - W.sealGap;
+      const edge = -len / 2 + W.sealWidth / 2;
+      const q = outward * (W.panel / 2 + depth / 2);
+      const seal = new THREE.BoxGeometry(along ? W.sealWidth : depth, leafHeight, along ? depth : W.sealWidth);
+      seal.translate(along ? edge : q, 0, along ? q : edge);
+      const old = door.panel.geometry;
+      door.panel.geometry = mergeGeometries([old, seal]);
+      old.dispose(); seal.dispose();
+    }
     door.kind = 'wardrobe';
     door.name = 'garderobsdörren';
     door.wardrobe = { along, outward, back, y0 };
     return door;
   };
-  const m0 = a + half / 2, m1 = b - half / 2;
+  const m0 = a + inset + len / 2, m1 = b - inset - len / 2;
   const pair = [mk(1, m0, m1), mk(0, m1, m0)];
   // only one side open at a time: opening one panel slides the other back
   pair.forEach((d, i) => {

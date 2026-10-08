@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import {
-  LEVELS, UNIT_TOP, SOFFITS, DOOR_HEIGHT, DOOR_TRIM, EXT_DOOR_HEAD, WINDOWS, WINDOW_TOP_HUNG_MAX, BLINDS, CABINET_HEIGHT, BASE_CABINET, SHELF_HEIGHT, TOILET,
+  WARDROBE, LEVELS, UNIT_TOP, SOFFITS, DOOR_HEIGHT, DOOR_TRIM, EXT_DOOR_HEAD, WINDOWS, WINDOW_TOP_HUNG_MAX, BLINDS, CABINET_HEIGHT, BASE_CABINET, SHELF_HEIGHT, TOILET,
   STAIR, COLORS, FENCE_HEIGHT, SITE, OUTDOOR, CABINET_FIXES, KLK, SEASON, FINISH, OPTIONS, EXTRA_WALLS, SLIDE_FLIP, ROOM_RENAMES, EXTRA_ROOMS, ROOM_DIVIDERS, CORE, PORTIK,
 } from './config.js';
 import { buildStairs, buildHandrails } from './stairs.js';
@@ -220,18 +220,25 @@ function buildWardrobe(group, g, y0, h, wallBoxes, doors) {
     ? w.x1 > g.x0 + 0.05 && w.x0 < g.x1 - 0.05 && Math.abs((side < 0 ? w.z1 : w.z0) - (side < 0 ? g.z0 : g.z1)) < 0.05
     : w.z1 > g.z0 + 0.05 && w.z0 < g.z1 - 0.05 && Math.abs((side < 0 ? w.x1 : w.x0) - (side < 0 ? g.x0 : g.x1)) < 0.05));
   const outward = backed(+1) && !backed(-1) ? -1 : backed(-1) ? +1 : -1;
-  const t = 0.02, y1 = y0 + h;
+  const t = WARDROBE.carcass, y1 = y0 + h;
   const [a, b] = along ? [g.x0, g.x1] : [g.z0, g.z1];
   const [p0, p1] = along ? [g.z0, g.z1] : [g.x0, g.x1];
   const front = outward > 0 ? p1 : p0, back = outward > 0 ? p0 : p1;
+  const trackFront = front + outward * (WARDROBE.firstTrack + WARDROBE.trackSpacing + WARDROBE.panel / 2);
   const piece = (a0, a1, q0, q1, ya, yb) => group.add(along
     ? box(a0, a1, Math.min(q0, q1), Math.max(q0, q1), ya, yb, M.cabinet)
     : box(Math.min(q0, q1), Math.max(q0, q1), a0, a1, ya, yb, M.cabinet));
   piece(a, b, back, back + outward * t, y0, y1);                // back
-  piece(a, a + t, back, front, y0, y1);                         // ends
-  piece(b - t, b, back, front, y0, y1);
-  piece(a, b, back, front, y1 - t, y1);                         // top
-  piece(a, b, back, front, y0, y0 + 0.08);                      // plinth
+  piece(a, a + t, back, trackFront, y0, y1);                         // ends
+  piece(b - t, b, back, trackFront, y0, y1);
+  piece(a, b, back, trackFront, y1 - t, y1);                         // top
+  piece(a, b, back, trackFront, y0, y0 + WARDROBE.plinth);                      // plinth
+  // Fixed track lips behind the leaves cover the small top/bottom running clearances.
+  const railFace = front + outward * (WARDROBE.firstTrack - WARDROBE.panel / 2 - WARDROBE.sealGap);
+  piece(a + t, a + t + WARDROBE.railLip, back, railFace, y0, y1);
+  piece(b - t - WARDROBE.railLip, b - t, back, railFace, y0, y1);
+  piece(a + t, b - t, front - outward * t, railFace, y0 + WARDROBE.plinth, y0 + WARDROBE.plinth + WARDROBE.railLip);
+  piece(a + t, b - t, front - outward * t, railFace, y1 - t - WARDROBE.railLip, y1 - t);
   piece(a + t, b - t, back, front - outward * 0.05, y0 + 1.78, y0 + 1.8); // hat shelf
   const mid = (back + front) / 2;
   piece(a + t, b - t, mid - 0.012, mid + 0.012, y0 + 1.7, y0 + 1.724); // clothes rod

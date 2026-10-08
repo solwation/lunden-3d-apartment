@@ -14,7 +14,8 @@ src/stairs.js          stair treads + walking height function (stairHeight) and 
                        collision, the Klk under it); the rise is LEVELS[1].floor − LEVELS[0].floor in equal risers (#352)
                        handrails (#419, `handrailRuns` / `buildHandrails`, STAIR.handrail): white Ø 4 cm rails on brackets, 0.9 m
                        over the nosings (eased through the winders), returns into the wall; merged with the M.rail parts
-src/doors.js           SwingDoor / SlidingDoor (E to open/close, animated, dynamic collision)
+src/doors.js           SwingDoor / SlidingDoor (E to open/close, animated, dynamic collision); wardrobeDoors
+                       shares rebated G/L carcasses with world.js (WARDROBE assumptions; wardrobetest, #537)
 src/exterior.js        Hus L (HUS_L): brick row with the core/portik, neighbours' patios, rendered upper
                        units with pilasters, loftgång, spiral-stair drums (a doorway `gap` onto the loftgång / landing; inside a visual-only
                        spiral stair, `HUS_L.spiral`, #444: column, open treads, wall handrail, top landing + guard, all *guess*),

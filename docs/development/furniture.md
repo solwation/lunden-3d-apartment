@@ -81,3 +81,5 @@ tools/bestatest.html   headless test: the BESTÅ display cabinet's six doors ope
 
 BESTÅ wall placement (#492): the whole cabinet is a wall-mounted movable root (including doors, contents and spots), and its preview must fit vertically within the floor/ceiling. Existing misplaced saves remain selectable and can be moved or restored individually. Regression: tools/bestaplacementtest.html.
 
+
+Sliding wardrobe seams (#537): world.js extends G/L carcass ends, top and plinth to the outer track and adds rebated jambs/track lips behind the leaves. doors.js insets the two panels within the opening (4 cm meeting overlap); the inner panel carries a small meeting stile, merged into its existing mesh, with 1 mm outer-track clearance. WARDROBE in config centralizes these construction assumptions (not measured Peab joinery). All three fitted wardrobes share the fix; no new materials or final draw meshes. tools/wardrobetest.html checks 315 closed seam rays including side/top/bottom clearances at ±80°, both leaves partially/fully open without track overlap, visible openings and side switching. opentest and walktest cover existing cupboards/routes.

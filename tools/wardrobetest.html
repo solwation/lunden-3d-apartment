@@ -1,0 +1,47 @@
+<!doctype html><html lang="sv"><meta charset="utf-8"><title>Wardrobe seams</title>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
+<pre id="out">running…</pre><script type="module">
+import * as THREE from 'three';
+import { buildWorld } from '../src/world.js';
+import { WARDROBE as W, CABINET_HEIGHT, COLORS } from '../src/config.js';
+const world = buildWorld(await fetch('../data/plan.json').then(r=>r.json()));
+const doors = world.doors.filter(d=>d.kind==='wardrobe'), lines=[];
+let pass=true;
+const check=(ok,label)=>{pass&&=ok;lines.push(`${ok?'PASS':'FAIL'} ${label}`)};
+check(doors.length===6,'Hall and both upper wardrobes use shared joinery');
+const carcass=[];
+world.object.traverse(m=>{if(m.isMesh&&m.material?.color?.getHex()===COLORS.cabinet)carcass.push(m)});
+for(let i=0;i<doors.length;i+=2){
+ const pair=doors.slice(i,i+2), d=pair[0], mid=(d.closedPos+pair[1].closedPos)/2;
+ const outer=d.face+d.wardrobe.outward*W.panel/2, outward=d.wardrobe.outward;
+ const point=(u,p,y)=>d.along?new THREE.Vector3(u,y,p):new THREE.Vector3(p,y,u);
+ const ray=new THREE.Raycaster();
+ const blocked=(u,y,angle)=>{
+   // Aim at the seam plane from both oblique sides, then continue 12 cm into the cupboard.
+   const n=Math.cos(angle), t=Math.sin(angle), seam=point(u,outer,y);
+   const origin=seam.clone().add(point(t*.5,outward*n*.5,0));
+   const dir=seam.clone().sub(origin).normalize();
+   ray.set(origin,dir);ray.far=.5+.12/n;
+   return ray.intersectObjects([...carcass,...pair.map(o=>o.object)],false).length>0;
+ };
+ pair.forEach(o=>{o.t=o.target=0;o.apply()});world.object.updateMatrixWorld(true);
+ const edges=[d.closedPos-d.len/2-W.edgeGap/2,mid-W.overlap/2,mid,mid+W.overlap/2,pair[1].closedPos+pair[1].len/2+W.edgeGap/2];
+ let misses=[];
+ for(const u of edges)for(const y of [d.y,d.wardrobe.y0+W.plinth+.001,d.wardrobe.y0+CABINET_HEIGHT.G-W.carcass-.001])for(const deg of [-80,-60,-30,0,30,60,80]){
+   if(!blocked(u,y,deg*Math.PI/180))misses.push([u,y,deg]);
+ }
+ check(!misses.length,`Wardrobe ${i/2+1}: ${edges.length*3*7} closed seam rays from both sides${misses.length?' '+JSON.stringify(misses):''}`);
+ for(const o of pair){
+   for(const t of [.25,.5,1]){
+     o.t=t;o.apply();world.object.updateMatrixWorld(true);
+     const a=new THREE.Box3().setFromObject(o.object), b=new THREE.Box3().setFromObject(pair.find(p=>p!==o).object);
+     check(!a.intersectsBox(b),`Wardrobe ${i/2+1}: track clearance at ${t} (${o===d?'outer':'inner'})`);
+   }
+   check(!blocked(o.closedPos,o.y,0),`Wardrobe ${i/2+1}: open half exposes contents (${o===d?'outer':'inner'})`);
+   o.t=o.target=0;o.apply();world.object.updateMatrixWorld(true);
+ }
+ pair[0].toggle();pair[1].toggle();check(pair[0].target===0&&pair[1].target===1,`Wardrobe ${i/2+1}: switching sides closes previous door`);
+ pair.forEach(o=>{o.t=o.target=0;o.apply()});
+}
+document.getElementById('out').textContent=lines.join('\n')+'\n'+(pass?'ALL PASS':'SOME FAILED');
+</script></html>

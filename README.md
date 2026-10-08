@@ -47,6 +47,7 @@ dyker upp för att öppna och stänga dörrar. 📊 visar statistiken.
 **iPhone:** sidan blir bara helskärm som app, så den ber dig först lägga till den på hemskärmen
 (Dela → *Lägg till på hemskärmen*). Appen har egen statistik, skild från webbläsarens.
 
+Garderobernas stängda skjutdörrar har täckta fogar även från sneda vinklar.
 Öppna dörrar och garderober — ibland sitter det en katt där och tvättar sig. Gå fram och tryck
 <kbd>E</kbd> så får du klappa den. 🐈 Statistiken (katter, dörrar, steg …) sparas i webbläsaren; varje
 sak du gör visas som en liten bricka ("✋ Klappat katt +1").
