@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { INTERACTION_MATERIAL_SOURCE } from './interactionoutline.js';
 import { LEVELS, LIGHTING } from './config.js';
 
 // The lamps' light wherever the visitor is (#276, #294, #295). The pool of point lights only lights the few lamps that
@@ -155,7 +156,10 @@ class LampWashes {
     const { head, body } = this.glsl, uniforms = this.uniforms;
     root.traverse((o) => {
       if (!o.material) return;
-      for (const m of [o.material].flat()) {
+      for (const visibleMaterial of [o.material].flat()) {
+        // Temporary focus materials already delegate to this source shader. Patch the
+        // source even when it was first created during focus, never the wrapper (#548).
+        const m = visibleMaterial?.[INTERACTION_MATERIAL_SOURCE] ?? visibleMaterial;
         if (!m || this.patched.has(m) || !(m.isMeshStandardMaterial || m.isMeshLambertMaterial || m.isMeshPhongMaterial)) continue;
         this.patched.add(m);
         const before = m.onBeforeCompile, key = m.customProgramCacheKey;

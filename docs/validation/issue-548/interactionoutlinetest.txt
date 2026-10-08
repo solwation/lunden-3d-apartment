@@ -1,0 +1,34 @@
+PASS butter knife has brightness matching actual touch action target: smörkniven / smörkniven
+PASS private materials highlight physical target without any edge mesh or extra draw
+PASS neighbouring cheese slicer replaces knife highlight
+PASS previous knife materials are restored exactly when target changes
+PASS steady focus reuses temporary materials
+PASS desktop uses same focused target and highlight
+PASS closed drawer removes inaccessible utensil highlight
+PASS actual drawer front gets its own highlight
+PASS different cupboard selects only its own leaf
+PASS highlight follows moving cupboard leaf exactly
+PASS blocked target does not advertise an available action
+PASS no target restores all materials and clears highlight
+PASS closed entry door is the real focused action target
+PASS closed entry door keeps exactly one lamp shader through repeated light scans
+PASS actual target becomes slightly brighter, retaining its material color
+PASS brightness works on both dark and light backgrounds
+PASS shared neighbouring material remains completely unchanged
+PASS brightness adds no geometry, edges or render passes
+PASS clearing restores original material and every rendered pixel exactly
+PASS appearance changes through stored references and mesh material both remain live
+PASS clearing preserves legitimate appearance changes made while focused
+PASS existing shader hooks remain active alongside subtle brightness
+PASS MeshStandardMaterial stays opaque and subtly brighter through repeated lamp scans (45 → 50)
+PASS MeshStandardMaterial restores exact pixels after lamp scans
+PASS MeshPhysicalMaterial stays opaque and subtly brighter through repeated lamp scans (45 → 50)
+PASS MeshPhysicalMaterial restores exact pixels after lamp scans
+PASS first lamp scan during focus patches the source while keeping the target visible
+PASS newly discovered material keeps both its lamp shader and target brightness
+PASS smooth detailed sphere brightens without tessellation lines
+PASS solid wall hides highlighted target through the ordinary depth buffer
+PASS real instanced shader brightens only the selected figure, leaving both neighbours unchanged
+PASS animated figure pose follows original geometry without material rebuild
+PASS instanced material also returns to original when no target remains
+ALL PASS

@@ -21,6 +21,16 @@ try{
  const cabinet=A.world.lids.find(o=>o.stock==='platesLife');check(seek(cabinet.object,cabinet)&&O.root===cabinet.object&&O.root!==drawer.object,'different cupboard selects only its own leaf');
  cabinet.toggle();for(let i=0;i<20;i++)cabinet.update(.1);O.update(cabinet);check(O.group.matrix.equals(cabinet.object.matrixWorld),'highlight follows moving cupboard leaf exactly');
  O.update({...cabinet,blocked:true});check(!O.group.visible,'blocked target does not advertise an available action');O.update(null);check(!O.group.visible&&O.root===null,'no target restores all materials and clears highlight');
+ // Closed real entry door, including the same periodic light scan used by the frame loop.
+ const entry=A.world.doors.find(d=>d.name==='ytterdörren');
+ check(!entry.isOpen&&seek(entry.object,entry)&&O.root===entry.object,'closed entry door is the real focused action target');
+ A.lights.wash.patch(A.scene);A.lights.wash.patch(A.scene);
+ const once=O.entries.every(e=>e.materials.every(m=>{
+   const shader={vertexShader:T.ShaderLib.standard.vertexShader,fragmentShader:T.ShaderLib.standard.fragmentShader,uniforms:{}};
+   m.onBeforeCompile(shader,A.renderer);
+   return (shader.fragmentShader.match(/uniform highp sampler2D uLampData/g)||[]).length===1;
+ }));
+ check(once,'closed entry door keeps exactly one lamp shader through repeated light scans');O.clear();
  // Real rendered pixels: subtle gain, exact restoration, ordinary occlusion and one instance.
  const {InteractionOutline}=await w.eval("import('/src/interactionoutline.js')"),scene=new T.Scene(),camera=new T.PerspectiveCamera(50,1,.1,20);camera.position.set(0,0,3);camera.lookAt(0,0,0);
  const shared=new T.MeshBasicMaterial({color:0x777777}),cube=new T.Mesh(new T.BoxGeometry(.6,.6,.6),shared),neighbour=new T.Mesh(cube.geometry,shared);neighbour.position.x=.8;scene.add(cube,neighbour);const Q=new InteractionOutline(scene,camera);
@@ -42,6 +52,24 @@ try{
  cube.material=patched;const patchedBase=center(pixelsFor(0x000000));Q.update({pickable:cube});const patchedActive=center(pixelsFor(0x000000));
  check(hookCalls===2&&patchedActive>patchedBase&&patchedActive<patchedBase+15,'existing shader hooks remain active alongside subtle brightness');
  Q.clear();cube.material=shared;
+ // #548: the periodic lamp scan must not install its shader a second time on a focused clone.
+ scene.add(new T.AmbientLight(0xffffff,3));
+ for(const Material of [T.MeshStandardMaterial,T.MeshPhysicalMaterial]) {
+   cube.material=new Material({color:0x777777,roughness:.8});
+   A.lights.wash.patch(scene);const litBase=center(pixelsFor(0x000000));
+   Q.update({pickable:cube});A.lights.wash.patch(scene);A.lights.wash.patch(scene);
+   const litActive=center(pixelsFor(0x000000));
+   check(litBase>30&&litActive>litBase+2&&litActive<litBase+20,Material.name+' stays opaque and subtly brighter through repeated lamp scans ('+litBase+' → '+litActive+')');
+   Q.clear();check(center(pixelsFor(0x000000))===litBase,Material.name+' restores exact pixels after lamp scans');
+ }
+ // A new object may be focused before the next lamp scan discovers it.
+ cube.material=new T.MeshStandardMaterial({color:0x777777,roughness:.8});
+ Q.update({pickable:cube});pixelsFor(0x000000);
+ A.lights.wash.patch(scene);const firstScan=center(pixelsFor(0x000000));
+ check(firstScan>30&&Q.entries[0].original!==cube.material,'first lamp scan during focus patches the source while keeping the target visible');
+ Q.clear();const newBase=center(pixelsFor(0x000000));
+ check(firstScan>newBase+2&&firstScan<newBase+20,'newly discovered material keeps both its lamp shader and target brightness');
+ cube.material=shared;
 
  cube.visible=false;const sphere=new T.Mesh(new T.SphereGeometry(.3,24,16),shared);scene.add(sphere);const sphereBase=center(pixelsFor(0x000000));Q.update({pickable:sphere});check(center(pixelsFor(0x000000))>sphereBase+2,'smooth detailed sphere brightens without tessellation lines');
  const occluder=new T.Mesh(new T.BoxGeometry(1.8,1.8,.1),new T.MeshBasicMaterial({color:0x000000}));occluder.position.z=1;scene.add(occluder);check(center(pixelsFor(0x000000))===0,'solid wall hides highlighted target through the ordinary depth buffer');

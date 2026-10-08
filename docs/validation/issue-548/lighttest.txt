@@ -1,0 +1,55 @@
+ALL PASS
+PASS 32 switches/lamps
+PASS lampan @ (1.89, 1.05, 3.15) from (1.84, 3.85) button "Tända lampan" (Tvätt) on=true (glow, pool light, 1 washes true) off=true
+PASS lampan @ (2.05, 1.05, 6.28) from (1.78, 5.63) button "Tända lampan" (Badrum) on=true (glow, pool light, 1 washes true) off=true
+PASS lampan @ (1.62, 4.30, 5.01) from (2.27, 4.74) button "Tända lampan" (Sovrum 3) on=true (glow, pool light, 1 washes true) off=true
+PASS lampan @ (3.69, 4.30, 5.01) from (3.58, 4.33) button "Tända lampan" (Sovrum 1) on=true (glow, pool light, 1 washes true) off=true
+PASS lampan @ (1.42, 4.30, 6.12) from (1.15, 5.47) button "Tända lampan" (WC/dusch) on=true (glow, pool light, 1 washes true) off=true
+PASS lampan @ (3.74, 4.30, 7.81) from (3.63, 8.52) button "Tända lampan" (Sovrum 2) on=true (glow, pool light, 1 washes true) off=true
+PASS lampan @ (1.64, 4.30, 7.81) from (1.64, 8.51) button "Tända lampan" (Sovrum 4) on=true (glow, pool light, 1 washes true) off=true
+PASS lampan @ (1.95, 1.05, 0.47) from (1.84, 1.17) button "Tända lampan" (Hall) on=true (glow, pool light, 2 washes true) off=true
+PASS lampan @ (2.16, 1.05, 1.65) from (2.16, 2.35) button "Tända lampan" (Kök / matplats) on=true (glow, pool light, 2 washes true) off=true
+PASS lampan @ (3.40, 1.05, 7.81) from (3.40, 8.51) button "Tända lampan" (Vardagsrum) on=true (glow, pool light, 1 washes true) off=true
+PASS lampan @ (2.65, 4.30, 5.14) from (2.65, 5.84) button "Tända lampan" (Hall) on=true (glow, pool light, 1 washes true) off=true
+PASS lampan @ (4.85, 4.30, 4.29) from (4.85, 4.79) button "Tända lampan" (Klk) on=true (glow, pool light, 1 washes true) off=true
+PASS lampan @ (3.34, 1.05, 5.55) from (3.13, 6.25) button "Tända lampan" (Klk) on=true (glow, behind a door: no pool light, 1 washes true) off=true
+PASS golvlampan @ (0.36, 0.00, 8.86) from (0.63, 9.51) button "Tända golvlampan" () on=true off=true
+PASS spotsen @ (0.59, 2.32, 10.55) from (1.24, 10.82) button "Tända spotsen" () on=true off=true
+PASS långlampan @ (5.39, 1.00, 7.96) from (5.12, 8.61) button "Tända långlampan" () on=true off=true
+PASS rottinglampan @ (3.65, 3.55, 6.88) from (3.65, 6.18) button "Tända rottinglampan" () on=true off=true
+PASS Hue Go-lampan @ (3.14, 4.02, 0.33) from (3.40, 0.98) button "Tända Hue Go-lampan" () on=true off=true
+PASS lampan @ (4.55, 0.94, 12.30) from (5.30, 10.23) button "Tända lampan" () on=true off=true
+PASS nattlampan @ (5.30, 3.83, 1.38) from (5.03, 0.73) button "Tända nattlampan" () on=true off=true
+PASS nattlampan @ (5.30, 3.83, 3.72) from (4.87, 3.75) button "Tända nattlampan" () on=true off=true
+PASS spegelns lampa @ (4.40, 4.71, 5.48) from (5.02, 4.76) button "Tända spegelns lampa" () on=true off=true
+PASS enhörningslampan @ (0.90, 4.49, 2.78) from (0.90, 3.48) button "Tända enhörningslampan" () on=true off=true
+PASS dödsstjärnan @ (5.25, 4.49, 9.85) from (5.25, 9.15) button "Tända dödsstjärnan" () on=true off=true
+PASS sminkspegelns lampor @ (2.63, 4.53, 11.45) from (2.38, 10.71) button "Tända sminkspegelns lampor" () on=true off=true
+PASS lampan i köksfläkten @ (5.20, 1.64, 3.94) from (5.20, 4.64) button "Tända lampan i köksfläkten" () on=true off=true
+PASS bänkbelysningen @ (5.24, 1.44, 1.68) from (4.59, 1.41) button "Tända bänkbelysningen" () on=true off=true
+PASS spegelbelysningen @ (0.23, 1.50, 5.55) from (0.93, 5.55) button "Tända spegelbelysningen" () on=true off=true
+PASS the Hue Go's colour scenes (menu): on in #ff9fc6, glow + wash follow (true), round to warm white (true), kept over a reload (true)
+PASS bänkbelysningen: the LED and the wash on (true) and off (true)
+PASS lampan i köksfläkten: the LED and the wash on (true) and off (true)
+PASS rottinglampan: the LED and the wash on (true) and off (true)
+PASS 4 reading lamps at the bunks
+PASS läslampan Sovrum 3 underslafen @ (0.32, 0.68, 0.94) from (1.50, 0.95, 1.74) crouched: "Tända läslampan", on=true off=true, colour true, room Sovrum 3
+PASS läslampan Sovrum 3 överslafen @ (0.32, 1.58, 0.94) from (1.50, 1.62, 1.74) standing: "Tända läslampan", on=true off=true, colour true, room Sovrum 3
+PASS läslampan Sovrum 2 underslafen @ (5.43, 0.68, 11.76) from (4.24, 0.95, 11.76) crouched: "Tända läslampan", on=true off=true, colour true, room Sovrum 2
+PASS läslampan Sovrum 2 överslafen @ (5.43, 1.58, 11.76) from (4.24, 1.62, 11.76) standing: "Tända läslampan", on=true off=true, colour true, room Sovrum 2
+PASS SYMFONISK: speaker white (4.57, 0.33) Sovrum 1, speaker black (4.48, 0.33) Kök / matplats, lamp white (4.55, 12.30) Vardagsrum
+PASS no lamp in the stair opening
+PASS 13 switches on a wall
+PASS &time=22: 18 small lamps on (18), the hood light and all 13 ceiling lamps off
+PASS spooled to 12: the small lamps fade out (half-way true) and are off, the living-room ceiling lamp stays on
+PASS the floor lamp switched on by hand in the day stays on
+PASS spooled to 22: the small lamps are on again, the ceiling lamp unchanged
+PASS the floor lamp switched off by hand at night stays off
+PASS …until the next dusk switches it on again
+PASS walked into Kök / matplats: the living room still lit (true), the biggest pool step in one frame 0.092 at (2.74, 4.58)
+PASS 35 lamp anchors light the flat in the shaders (18 small lamps), 1030 of 1030 standard materials have it
+PASS through 56 room/view stops on both floors: every small lamp's on, k and wash unchanged (19 washes full, the floor lamp switched off by hand stays off)
+PASS #294: at every stop each lit lamp's wash + pool light add up to the lamp
+PASS #294: 69 lit lamp parts stay drawn over 12 1 m steps away, none culled for its size
+PASS at dawn every small lamp's wash is gone
+PASS …and at the dusk they are all back, the hand-switched floor lamp too

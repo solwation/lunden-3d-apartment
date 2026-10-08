@@ -1,6 +1,9 @@
 import * as THREE from 'three';
 import { INTERACTION_OUTLINE as P } from './config.js';
 
+// Shader decorators follow the source instead of patching a focused clone twice (#548).
+export const INTERACTION_MATERIAL_SOURCE=Symbol('interactionMaterialSource');
+
 const shown=o=>{for(;o;o=o.parent)if(!o.visible)return false;return true};
 // #531: a subtle brightness change on the actual physical target, with no edge geometry.
 // Private temporary materials keep shared neighbours unchanged; the normal depth buffer
@@ -20,7 +23,8 @@ export class InteractionOutline {
     this.entries=[];this.group.visible=false;this.root=null;this.target=null;
   }
   highlight(original,index) {
-    const material=original.clone(),before=original.onBeforeCompile;
+    const material=original.clone();
+    material[INTERACTION_MATERIAL_SOURCE]=original;
     // Keep live appearance state in the original material. Lamps and appliances update
     // both stored material references and mesh.material; neither path may freeze while
     // focused or lose changes when focus ends. Only identity, listeners and shader hooks
@@ -32,9 +36,8 @@ export class InteractionOutline {
         get:()=>original[key],set:value=>{original[key]=value}});
     }
     material.onBeforeRender=original.onBeforeRender;
-    const baseKey=original.customProgramCacheKey.call(original);
     material.onBeforeCompile=(shader,renderer)=>{
-      before.call(material,shader,renderer);
+      original.onBeforeCompile.call(material,shader,renderer);
       let gain=String(P.brightness);
       if(index!==null) {
         // All figures share an InstancedMesh. Only the greeted figure gets brighter.
@@ -45,7 +48,7 @@ export class InteractionOutline {
       }
       shader.fragmentShader=shader.fragmentShader.replace('#include <opaque_fragment>',`outgoingLight *= ${gain};\n#include <opaque_fragment>`);
     };
-    material.customProgramCacheKey=()=>`${baseKey}|interaction-brightness:${P.brightness}:${index}`;
+    material.customProgramCacheKey=()=>`${original.customProgramCacheKey.call(original)}|interaction-brightness:${P.brightness}:${index}`;
     return material;
   }
   update(target) {

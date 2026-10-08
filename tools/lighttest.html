@@ -272,7 +272,9 @@ async function nightTest(lines) {
   const auto = small.filter((f) => wash.lamps.includes(f));
   const mats = new Set();
   w.__app.scene.traverse((o) => { for (const m of [o.material].flat()) if (m?.isMeshStandardMaterial) mats.add(m); });
-  const patched = [...mats].filter((m) => wash.patched.has(m)).length;
+  // Focus materials delegate their lamp shader to the source (#548).
+  const { INTERACTION_MATERIAL_SOURCE } = await w.eval("import('/src/interactionoutline.js')");
+  const patched = [...mats].filter((m) => wash.patched.has(m[INTERACTION_MATERIAL_SOURCE] ?? m)).length;
   check(wash.lamps.length >= 20 && auto.length >= 10 && patched === mats.size,
     `${wash.lamps.length} lamp anchors light the flat in the shaders (${auto.length} small lamps), ${patched} of ${mats.size} standard materials have it`);
   const pick = floor; pick.toggle(); // one switched off by hand: it stays off through the walk too
