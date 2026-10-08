@@ -1466,6 +1466,8 @@ URL parameters (debugging / screenshots):
 
 Vacuum bin capacity (#485) is configured by `CLEANING.vacuum.dustCapacity`: 3.0 mess units (three times the former 1.0, a gameplay choice). The HUD, full stop and suction limit all use this value. Browser checks: `tools/life3test.html?only=390,391,485`.
 
+Living-room palm (#491): original id/position retained; geometry dimensions scale by 0.8, pot by 0.8 × 0.95 (Ø 30.4 × 34.2 cm, extra reduction is a visual choice). Shared rounded brushed-copper pot: src/plantpots.js. Scaling is baked into geometry, so saved furniture transforms cannot undo the size change.
+
 ## Testing
 
 Headless Chrome with SwiftShader works on this machine:
