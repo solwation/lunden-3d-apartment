@@ -3,6 +3,7 @@ import { MUSIC } from './config.js';
 import * as THREE from 'three';
 import { sfx } from './audio.js';
 import { mergeStatic } from './merge.js';
+import { zzplant } from './zzplant.js';
 import { copperPot } from './plantpots.js';
 import { restTarget } from './rest.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
@@ -3656,7 +3657,7 @@ function aborgtable(item, lights) {
   return aborgTableModel(item, lights, () => { const f = flower(); mergeStatic(f); return f; });
 }
 
-const BUILDERS = { pineapple: pineappleMirror, aborgtable, aborgchair, randerstable, tubelamp, dani, secretary, winerack, besta, painting, pictures, palm, sofa, armchair, ottoman, floorlamp, sidetable, coffeetable, veronasofa, slattable, parasol, planter, dynbox, bed, skansnasTable, skansnasChair, bunk, daybed, kposters, smastad, rug, ragrund, coatrack, shoerack, byas, tv, nordkisa, worklamp, walllamp, symfonisk, gamingdesk, gamingchair, nordli, malm, alex, kidchair, vanity, vanitystool, laptop, photoframe, huego, nesthub, nestmini, hookrail, towelhooks, klk, cleaning };
+const BUILDERS = { pineapple: pineappleMirror, aborgtable, aborgchair, randerstable, tubelamp, dani, secretary, winerack, besta, painting, pictures, palm, zzplant, sofa, armchair, ottoman, floorlamp, sidetable, coffeetable, veronasofa, slattable, parasol, planter, dynbox, bed, skansnasTable, skansnasChair, bunk, daybed, kposters, smastad, rug, ragrund, coatrack, shoerack, byas, tv, nordkisa, worklamp, walllamp, symfonisk, gamingdesk, gamingchair, nordli, malm, alex, kidchair, vanity, vanitystool, laptop, photoframe, huego, nesthub, nestmini, hookrail, towelhooks, klk, cleaning };
 
 /** An invisible thin box over a table top (raycast target for putting a cup down, #90). Local rect. */
 export function surfaceBox(r, list) {
