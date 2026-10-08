@@ -13,6 +13,7 @@ try{
  check(door.segment().some((v,i)=>Math.abs(v-closed[i])>.1),'animated leaf retains moving collision');door.toggle();for(let i=0;i<40;i++)door.update(.1);check(!door.isOpen&&door.t===0,'entrance closes normally');
  const exterior=A.world.object.getObjectByName('exterior')??A.world.object.children.find(o=>o.userData.entryLeaves);const all=exterior?.userData.entryLeaves??[];
  check(all.some(d=>d.y0<.05)&&all.some(d=>d.y0>5),'static ground and loft entrance leaves both registered');
+ ray.far=.5;check(all.every(d=>{ray.set(new T.Vector3((d.x0+d.x1)/2,d.y0+1.3,d.z-.3),new T.Vector3(0,0,1));return ray.intersectObject(exterior,true)[0]?.object.material===mats.wood}),'green leaf visible from outside every recessed static entrance');
  ray.far=.2;check(all.every(d=>{ray.set(new T.Vector3((d.pane.x0+d.pane.x1)/2,(d.pane.y0+d.pane.y1)/2,d.z-.05),new T.Vector3(0,0,1));const hits=ray.intersectObject(exterior,true);return hits.some(h=>h.object.material===mats.glass)&&!hits.some(h=>!h.object.material.transparent)}),'static glazing apertures remain clear through door and neighbouring building mass');ray.far=Infinity;
  check(all.every(d=>Math.abs(d.pane.y1-d.pane.y0-.12)<.001&&Math.abs(d.pane.x1-d.pane.x0-.36)<.001),'every static entrance has same small high pane');
  const dc=A.detail();check(dc.shut.north.some(o=>Math.abs(o.y0-pane.y0)<.001&&Math.abs(o.y1-pane.y1)<.001),'closed-door culling preserves view through small pane');

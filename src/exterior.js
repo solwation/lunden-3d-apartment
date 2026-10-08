@@ -183,9 +183,9 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
     }
     entryLeaves.push({x0,x1,y0,height,z,pane:{x0:x0+pane.x0,x1:x0+pane.x1,y0:y0+pane.y0,y1:y0+pane.y1}});
   };
-  // The simplified neighbouring building masses must also leave the glazing aperture clear.
+  // The simplified neighbouring building masses leave the recessed entrance and its glazing clear.
   const entrySolid = (x0,x1,y0,y1,z0,z1) => {
-    const holes=entryLeaves.filter(d=>d.z>=z0-.1&&d.z<z1&&d.pane.x1>x0&&d.pane.x0<x1&&d.pane.y1>y0&&d.pane.y0<y1).map(d=>d.pane);
+    const holes=entryLeaves.filter(d=>d.z>=z0-.1&&d.z<z1&&d.pane.x1>x0&&d.pane.x0<x1&&d.pane.y1>y0&&d.pane.y0<y1).map(d=>({x0:d.x0,x1:d.x1,y0:d.y0,y1:d.y0+d.height}));
     return complement(x0,x1,y0,y1,holes).map(([a,b,c,d])=>boxGeo(a,b,c,d,z0,z1));
   };
   const eps = 0.006;
