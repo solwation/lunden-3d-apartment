@@ -64,22 +64,22 @@ function veronaModule(g, x0, x1, z0, z1, { back = false, arms = [] } = {}) {
 }
 
 /**
- * The family's Rusta Verona lounge (#408, #429): a row of four modules along x, centred on the origin, backs at −z, seats
+ * The family's Rusta Verona lounge (#408, #429, shortened #489): a row of three modules along x, centred on the origin, backs at −z, seats
  * facing +z, an arm at each end; in front of the +x end module the two divans (backless, no arms, P.verona.divanL long)
- * end to end along +z — one long bench along the east screen wall, an L. Seven places: one per row module facing +z,
+ * end to end along +z — one long bench along the east screen wall, an L. Six places: one per row module facing +z,
  * the bench's (P.verona.bench) facing −x, towards the table. The decorative cushions (#399) — along the backs, and
  * standing against the screen wall on the bench (`wall: true`) — are one merged mesh, shown by the season.
  */
 export function veronasofa() {
   const g = new THREE.Group();
-  const V = P.verona, W = V.W, D = V.D, X = 2 * W, z0 = -D / 2, z1 = D / 2, z3 = z1 + 2 * V.divanL;
-  for (let i = 0; i < 4; i++) {
+  const V = P.verona, W = V.W, D = V.D, X = 1.5 * W, z0 = -D / 2, z1 = D / 2, z3 = z1 + 2 * V.divanL;
+  for (let i = 0; i < 3; i++) {
     const a = -X + i * W;
-    veronaModule(g, a, a + W, z0, z1, { back: true, arms: i === 0 ? ['x0'] : i === 3 ? ['x1'] : [] });
+    veronaModule(g, a, a + W, z0, z1, { back: true, arms: i === 0 ? ['x0'] : i === 2 ? ['x1'] : [] });
   }
   for (let k = 0; k < 2; k++) veronaModule(g, X - W, X, z1 + k * V.divanL, z1 + (k + 1) * V.divanL); // the bench
   const seatY = V.base + V.seatT, benchX = X - W / 2 - 0.06; // (the wall cushions take the back of the bench's seat)
-  const spots = [0, 1, 2, 3].map((i) => ({ x: -X + W * (i + 0.5), y: seatY, z: 0.04 }))
+  const spots = [0, 1, 2].map((i) => ({ x: -X + W * (i + 0.5), y: seatY, z: 0.04 }))
     .concat(V.bench.map((u) => ({ x: benchX, y: seatY, z: z1 + u * (z3 - z1), dir: [-1, 0] })));
   g.userData.rest = { kind: 'sit', name: 'loungesoffan', verb: 'sätta dig i', spots };
   g.userData.footprint = [{ x0: -X, x1: X, z0, z1 }, { x0: X - W, x1: X, z0: z1, z1: z3 }];

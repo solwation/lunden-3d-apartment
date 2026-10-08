@@ -252,6 +252,18 @@ export class Rearrange {
     if (state.revision < this.state.revision) return;
     if (this.selected || this.saving) { this.pending = state; return; }
     this.scene.updateMatrixWorld(true);
+    // #489: migrate older veronasofa layout if present in state.pieces
+    const sofaPiece = this.pieces.find((p) => p.item.type === 'veronasofa');
+    if (sofaPiece && !state.pieces[sofaPiece.id]) {
+      const oldId = Object.keys(state.pieces).find((k) => k.startsWith('f-veronasofa-'));
+      if (oldId) {
+        const entry = state.pieces[oldId];
+        delete state.pieces[oldId];
+        const oldDefX = 5.66 - 2 * 0.685, oldDefZ = 12.76 + 0.66 / 2;
+        const moved = Math.hypot(entry.pos[0] - oldDefX, entry.pos[2] - oldDefZ) > 0.05;
+        if (moved) state.pieces[sofaPiece.id] = entry;
+      }
+    }
     const changes = [];
     for (const p of this.pieces) {
       const next = state.pieces[p.id];

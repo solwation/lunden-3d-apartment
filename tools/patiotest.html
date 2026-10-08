@@ -15,11 +15,12 @@ f.width = 900; f.height = 600;
 f.src = '../index.html?shot';
 document.body.append(f);
 f.onload = async () => {
+  try {
   const w = f.contentWindow;
   while (!w.__app) await wait(100);
   const { day, patio, step, player, world, camera, use } = w.__app;
   const lines = [];
-  const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; };
+  const check = (ok, name) => { const s = `${ok ? 'PASS' : 'FAIL'} ${name}`; lines.push(s); out.textContent = lines.join('\n'); return ok; };
   const at = (month, hour, secs = 4) => { day.month = month; day.hour = hour; day.paused = true; for (let i = 0; i < secs * 20; i++) step(0.05); return patio.state; };
   let pass = true, s;
   s = at(7, 15);
@@ -88,14 +89,16 @@ f.onload = async () => {
     world.setFurniture(true);
     return player.pos;
   };
-  // the Verona L (#408, #429): the four-module row under the window, both divans end to end along the east screen wall as
+  // the Verona L (#408, #429, #489): the three-module row under the window (x 3.605–5.66), both divans end to end along the east screen wall as
   // one long bench (x 4.975–5.66, z 13.42–16.02), the small table in the L's corner
   let p = walk(3.6, 14.9, -Math.PI / 2, 4);
   pass &= check(p.x > 4.5 && p.x < 4.975, `the bench blocks walking east (stopped at x ${p.x.toFixed(2)})`);
   p = walk(3.6, 14.9, -Math.PI / 2, 4, false);
   pass &= check(p.x > 5.2, `F off: walks on to the screen wall (x ${p.x.toFixed(2)})`);
+  p = walk(3.7, 14.5, 0, 4);
+  pass &= check(p.z > 13.42 && p.z < 13.9, `walking north towards the row stops at the sofa (stopped at z ${p.z.toFixed(2)})`);
   p = walk(3.3, 15.6, 0, 4);
-  pass &= check(p.z > 13.42 && p.z < 13.9, `where the west divan stood you walk up to the row (stopped at z ${p.z.toFixed(2)})`);
+  pass &= check(p.z < 13.5, `where the removed module stood you walk freely past the sofa to the window (z ${p.z.toFixed(2)})`);
   p = walk(4.2, 15.2, 0, 4);
   pass &= check(p.z > 14.25 && p.z < 14.8, `the table blocks walking north (stopped at z ${p.z.toFixed(2)})`);
   p = walk(2.6, 15.6, 0, 4);
@@ -105,32 +108,18 @@ f.onload = async () => {
   const sofa = world.furnitureTargets.find((t) => t.name === 'loungesoffan');
   const facing = (yaw) => Math.abs(Math.cos(yaw)) > 0.99 ? (Math.cos(yaw) < 0 ? 'south' : 'north') : (Math.sin(yaw) > 0.99 ? 'west' : Math.sin(yaw) < -0.99 ? 'east' : yaw.toFixed(2));
   const faces = sofa.spots.map((sp) => facing(sp.yaw));
-  pass &= check(sofa.spots.length === 7 && faces.slice(0, 4).every((f) => f === 'south') && faces.slice(4).every((f) => f === 'west'), `7 seats (4 in the row facing south, 3 on the bench facing west: ${faces.join(', ')})`);
-  pass &= check(sofa.spots.every((sp) => sp.pos.z < 16.0 && sp.pos.x > 2.9 && sp.pos.x < 5.7) && sofa.spots.slice(4).every((sp) => sp.pos.x > 4.975 && sp.pos.z > 13.42), `every seat in the L (${sofa.spots.map((sp) => `${sp.pos.x.toFixed(2)},${sp.pos.z.toFixed(2)}`).join(' ')})`);
-  // the westernmost module has its back again (#429): the living-room window's opening sash (x 2.79–3.53) stops against
-  // it — opened all the way, its outer face stays short of the back (the nearest part of the sofa under it)
+  pass &= check(sofa.spots.length === 6 && faces.slice(0, 3).every((f) => f === 'south') && faces.slice(3).every((f) => f === 'west'), `6 seats (3 in the row facing south, 3 on the bench facing west: ${faces.join(', ')})`);
+  pass &= check(sofa.spots.every((sp) => sp.pos.z < 16.0 && sp.pos.x > 3.6 && sp.pos.x < 5.7) && sofa.spots.slice(3).every((sp) => sp.pos.x > 4.975 && sp.pos.z > 13.42), `every seat in the L (${sofa.spots.map((sp) => `${sp.pos.x.toFixed(2)},${sp.pos.z.toFixed(2)}`).join(' ')})`);
+  // the door-end module was removed (#489): the living-room window's opening sash (x 2.79–3.53) has completely free clearance
   {
     const V = camera.position.constructor;
-    const win = world.lids.find((o) => o.name === 'fönstret' && Math.abs(o.object.getWorldPosition(new V()).z - 12.63) < 0.05 && o.object.getWorldPosition(new V()).y < 3);
-    let back = Infinity, top = 0;
+    let nearestSofaX = Infinity;
     sofa.pickable.updateMatrixWorld(true);
     sofa.pickable.traverse((m) => {
       const a = m.isMesh && m.visible && m.geometry.attributes.position;
-      if (a) for (let k = 0; k < a.count; k++) { const q = m.localToWorld(new V().fromBufferAttribute(a, k)); if (q.x < 3.53) { back = Math.min(back, q.z); if (q.z < 12.9) top = Math.max(top, q.y); } }
+      if (a) for (let k = 0; k < a.count; k++) { const q = m.localToWorld(new V().fromBufferAttribute(a, k)); if (q.z < 13.5) nearestSofaX = Math.min(nearestSofaX, q.x); }
     });
-    let sash = -Infinity, low = Infinity;
-    if (win) {
-      if (!win.isOpen) win.toggle();
-      for (let i = 0; i < 120; i++) win.update(1 / 30);
-      win.object.updateMatrixWorld(true);
-      win.object.traverse((m) => {
-        const a = m.isMesh && m.geometry.attributes.position;
-        if (a) for (let k = 0; k < a.count; k++) { const q = m.localToWorld(new V().fromBufferAttribute(a, k)); sash = Math.max(sash, q.z); low = Math.min(low, q.y); }
-      });
-      win.toggle();
-      for (let i = 0; i < 120; i++) win.update(1 / 30);
-    }
-    pass &= check(!!win && win.max < 10 && sash > 12.7 && sash < back && low < top, `the sash opens a little (max ${win?.max}°) and stops short of the westernmost back (sash out to z ${sash.toFixed(3)}, the back at ${back.toFixed(3)}, its top ${top.toFixed(2)} m over the sash's bottom ${low.toFixed(2)} m)`);
+    pass &= check(nearestSofaX > 3.55, `shortened sofa leaves window sash (up to 3.53) free (nearest sofa at x ${nearestSofaX.toFixed(3)})`);
   }
   const swing = [];
   for (let a = 0; a <= 90; a += 15) for (const r of [0.3, 0.6, 0.92]) swing.push([0.95 + r * Math.cos(a * Math.PI / 180), 12.72 + r * Math.sin(a * Math.PI / 180)]);
@@ -224,6 +213,9 @@ f.onload = async () => {
     cup.putBack(); step(1 / 60);
   } catch (e) { pass = false; lines.push(`FAIL cushion box surface error ${e.stack}`); }
   out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
+  } catch (err) {
+    out.textContent = `FAIL error: ${err.message}\n${err.stack}\n${lines?.join('\n') || ''}`;
+  }
 };
 </script>
 </body>

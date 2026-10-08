@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Verona Sofa Test #489</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const f = document.createElement('iframe');
+f.width = 900; f.height = 600;
+f.src = '../index.html?shot';
+document.body.append(f);
+
+f.onload = async () => {
+  try {
+    const w = f.contentWindow;
+    while (!w.__app) await wait(100);
+    const { player, camera, step, world, rearrange: R, use, rest, standUp } = w.__app;
+    const THREE = await f.contentWindow.eval("import('three')");
+    const V = THREE.Vector3;
+    const lines = [];
+    const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); out.textContent = lines.join('\n'); return ok; };
+    let pass = true;
+
+    const sofa = world.furnitureTargets.find((t) => t.name === 'loungesoffan');
+    pass &= check(!!sofa, 'verona lounge sofa target found');
+
+    // 1. Seat count and facing
+    const facing = (yaw) => Math.abs(Math.cos(yaw)) > 0.99 ? (Math.cos(yaw) < 0 ? 'south' : 'north') : (Math.sin(yaw) > 0.99 ? 'west' : Math.sin(yaw) < -0.99 ? 'east' : yaw.toFixed(2));
+    const faces = sofa.spots.map((sp) => facing(sp.yaw));
+    pass &= check(sofa.spots.length === 6, `exactly 6 seats (got ${sofa.spots.length})`);
+    pass &= check(faces.slice(0, 3).every(f => f === 'south') && faces.slice(3).every(f => f === 'west'), `3 south facing row seats, 3 west facing bench seats: ${faces.join(', ')}`);
+
+    // 2. Corner positioning
+    let maxX = -Infinity, minX = Infinity;
+    sofa.pickable.updateMatrixWorld(true);
+    sofa.pickable.traverse((m) => {
+      const a = m.isMesh && m.visible && m.geometry.attributes.position;
+      if (a) for (let k = 0; k < a.count; k++) {
+        const q = m.localToWorld(new V().fromBufferAttribute(a, k));
+        if (q.z < 13.5) { maxX = Math.max(maxX, q.x); minX = Math.min(minX, q.x); }
+      }
+    });
+    pass &= check(Math.abs(maxX - 5.66) < 0.02, `corner stays at east corner (maxX = ${maxX.toFixed(3)}, expected ~5.66)`);
+    pass &= check(minX > 3.55, `door end shortened by one module (minX = ${minX.toFixed(3)}, expected ~3.60)`);
+
+    // 3. Sitting in every seat and standing up
+    for (let i = 0; i < sofa.spots.length; i++) {
+      const sp = sofa.spots[i];
+      rest.begin(sofa, sp, { pos: player.pos.clone(), yaw: 0 }); step(1 / 60);
+      pass &= check(rest.active, `sat down in seat ${i}`);
+      standUp(); step(1 / 60);
+      pass &= check(!rest.active, `stood up from seat ${i}`);
+    }
+
+    // 4. Rearrange: move, rotate, cushions follow, restore original
+    R.unlock('olof is the goat');
+    const piece = R.pieces.find(p => p.item.type === 'veronasofa');
+    pass &= check(!!piece, 'veronasofa piece found in rearrange');
+
+    const homeMatrix = piece.home.clone();
+    R.begin(piece);
+    pass &= check(R.selected?.piece === piece, 'veronasofa selected for rearrange');
+    pass &= check(R.ghost.children.length > 0, 'ghost preview created with sofa mesh and cushions');
+
+    // Move sofa 1m south
+    const curPose = piece.object.getWorldPosition(new V());
+    R.candidate = new THREE.Matrix4().makeTranslation(0, 0, 1).multiply(piece.object.matrixWorld);
+    R.valid = true;
+    await R.confirm();
+
+    const movedPos = piece.object.getWorldPosition(new V());
+    pass &= check(Math.abs(movedPos.z - (curPose.z + 1)) < 0.02, 'sofa moved south');
+    pass &= check(Math.abs(sofa.spots[0].pos.z - (13.13 + 1)) < 0.05, 'seat spots followed move');
+
+    // Restore original
+    await R.restoreOriginal(piece);
+    const restoredPos = piece.object.getWorldPosition(new V());
+    pass &= check(Math.abs(restoredPos.z - curPose.z) < 0.01 && Math.abs(restoredPos.x - curPose.x) < 0.01, 'sofa restored to original corner position');
+    pass &= check(Math.abs(sofa.spots[0].pos.x - 3.95) < 0.05, 'seat spots restored to original coordinates');
+
+    // 5. Layout migration:
+    // a) Older layout where sofa was default (unmoved)
+    const oldDefaultState = {
+      revision: 10,
+      pieces: {
+        'f-veronasofa-0-4.29-13.09-0-0': {
+          pos: [4.29, 0, 13.09],
+          quat: [0, 1, 0, 0],
+          revision: 5
+        }
+      }
+    };
+    R.apply(oldDefaultState);
+    const afterDefaultMig = piece.object.getWorldPosition(new V());
+    pass &= check(Math.abs(afterDefaultMig.x - (5.66 - 1.5 * 0.685)) < 0.01, 'old default pos layout migrated to new corner home without moving sofa');
+
+    // b) Older layout where sofa was moved by user
+    const oldMovedState = {
+      revision: 20,
+      pieces: {
+        'f-veronasofa-0-4.29-13.09-0-0': {
+          pos: [3.5, 0, 15.0],
+          quat: [0, 0.7071, 0, 0.7071],
+          revision: 15
+        }
+      }
+    };
+    R.apply(oldMovedState);
+    const afterUserMoveMig = piece.object.getWorldPosition(new V());
+    pass &= check(Math.abs(afterUserMoveMig.x - 3.5) < 0.02 && Math.abs(afterUserMoveMig.z - 15.0) < 0.02, 'user-moved layout from old piece id successfully migrated to new piece');
+
+    // Restore all clean
+    await R.restoreOriginal(piece);
+    localStorage.removeItem('lunden.furniture.layout');
+    localStorage.removeItem('lunden.furniture.unlocked');
+
+    out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
+  } catch (err) {
+    out.textContent = `FAIL: ${err.message}\n${err.stack}`;
+  }
+};
+</script>
+</body>
+</html>

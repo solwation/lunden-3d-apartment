@@ -2422,15 +2422,15 @@ export const PATIO = {
   // wall behind it), walls `wall` thick, slats every `slat` m
   dynbox: { L: 1.25, D: 0.58, H: 0.6, lid: 0.035, wall: 0.025, slat: 0.07, max: 88, color: 0x3d4043 },
   // cosy outdoor cushions in the lounge sofa (#399, colours and places our pick; 45 × 45, the lumbar 50 × 30, *guess*),
-  // since #408 on the Verona sofa, in its local frame: the back row along x centred on 0 (module centres ±0.3425,
-  // ±1.0275; since #429 every module has its back), the back cushions' front at z −0.15, +z = south. `yaw` turns the face
+  // since #408 on the Verona sofa, in its local frame: the back row along x centred on 0 (module centres 0,
+  // ±0.685; since #489 three modules in the row), the back cushions' front at z −0.15, +z = south. `yaw` turns the face
   // (0 = +z, π/2 = +x), `lean` back. Out on the sofa in the parasol's months unless it
   // rains, else in the cushion box (Patio.update)
   cushions: [
-    { x: 1.17, z: -0.06, yaw: -0.6, lean: 0.35, kind: 'weave', color: 0xc9952f, crumple: 0.45 },                  // ochre, in the corner by the east arm
-    { x: 0.0, z: -0.07, yaw: 0.05, lean: 0.4, kind: 'stripe', color: 0xf2ede2, crumple: 0.3 },                     // off-white striped, between two seats
-    { x: 0.685, z: -0.08, yaw: -0.05, lean: 0.3, kind: 'weave', color: 0x8ea488, size: 0.3, w: 0.5, crumple: 0.3 }, // a sage lumbar, between the next two
-    { x: -0.48, z: -0.06, yaw: 0.45, lean: 0.4, kind: 'weave', color: 0xb35a3c, crumple: 0.35 },                   // terracotta, at the backs' west end
+    { x: 0.83, z: -0.06, yaw: -0.6, lean: 0.35, kind: 'weave', color: 0xc9952f, crumple: 0.45 },                  // ochre, in the corner by the east arm
+    { x: -0.34, z: -0.07, yaw: 0.05, lean: 0.4, kind: 'stripe', color: 0xf2ede2, crumple: 0.3 },                    // off-white striped, between two seats
+    { x: 0.34, z: -0.08, yaw: -0.05, lean: 0.3, kind: 'weave', color: 0x8ea488, size: 0.3, w: 0.5, crumple: 0.3 }, // a sage lumbar, between the next two
+    { x: -0.82, z: -0.06, yaw: 0.45, lean: 0.4, kind: 'weave', color: 0xb35a3c, crumple: 0.35 },                  // terracotta, at the backs' west end
     // #429: standing on the long bench against the east screen wall (`wall`): `x` along the bench from its north end
     // (0…2.6, +z), `z` out from the bench's outer edge (the screen-wall side), `yaw` 0 = facing west (into the seat)
     { wall: true, x: 0.3, z: 0.12, yaw: 0.35, lean: 0.35, kind: 'stripe', color: 0xe7d8b8, crumple: 0.4 },          // sand striped, in the corner
@@ -2777,12 +2777,11 @@ export const FURNITURE = [
   { type: 'rug', level: 0, x: 3.9, z: 10.6, w: 3.0, d: 2.0, h: 0.012, color: '#5a6150', stripe: '#e6e1d6', pitch: 0.062, white: 0.022,
     fields: ['ewn', 'nes'] },
   // Uteplats (paved z 12.75–16.8 in front of the hedge, see PATIO). The family's Rusta Verona lounge (#408, replacing the
-  // Plantagen Oslo set of #397 / #407), the user's layout (#429): an L. Four modules in a row (x 2.92–5.66) with their backs
-  // to the façade under the living-room window (6 cm of air), the east end in the NE corner by the east screen wall (inner
-  // face x 5.68), seats facing south (the patio faces WSW), an arm at each end; every module has its back, so the window's
-  // opening sash (the west 35 %, x ≤ 3.53) stops against the westernmost back (WINDOWS `max`). Both divans end to end
-  // along the east screen wall from the row's east module (z 13.42–16.02): one long bench, cushions against the wall.
-  { type: 'veronasofa', level: 0, x: 5.66 - 2 * 0.685, z: 12.76 + 0.66 / 2, rot: 180 },
+  // Plantagen Oslo set of #397 / #407), the user's layout (#429, shortened #489): an L. Three modules in a row (x 3.605–5.66)
+  // with their backs to the façade under the living-room window (6 cm of air), the east end in the NE corner by the east
+  // screen wall (inner face x 5.68), seats facing south (the patio faces WSW), an arm at each end; every module has its back.
+  // Both divans end to end along the east screen wall from the row's east module (z 13.42–16.02): one long bench, cushions against the wall.
+  { type: 'veronasofa', level: 0, x: 5.66 - 1.5 * 0.685, z: 12.76 + 0.66 / 2, rot: 180 },
   // the small slatted table in the L's corner: 0.6 m in front of the row's seats, 0.475 m from the bench's seat front (x 4.975):
   // room to get up from every seat and step out past it (#302)
   { type: 'slattable', level: 0, x: 4.2, z: 12.76 + 0.66 + 0.605 + 0.45 / 2, rot: 180, beers: true },
