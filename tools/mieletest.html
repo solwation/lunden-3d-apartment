@@ -8,8 +8,9 @@
 // amber eyes); first sight gives heart fireworks and the big score, once; E takes her into your arms (both hands), a
 // hug (squeezed, eyes shut, hearts, counted), her board photo captioned Miele; not on a table; down on the floor she
 // looks, walks off and fades; found again: the smaller bonus; F while holding her; never hurt while held; the rarity
-// (seeded draws), and no second Miele while she is out.
+// (seeded draws), and no second Miele while she is out. ?only=fireworks scopes to coat/discovery/hearts.
 //   google-chrome --headless=new --dump-dom http://localhost:8137/tools/mieletest.html
+const onlyFireworks = new URLSearchParams(location.search).get('only') === 'fireworks'; // #547: skip carrying/photo/rarity checks
 const out = document.getElementById('out');
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 localStorage.removeItem('lunden.stats');
@@ -57,11 +58,32 @@ f.onload = async () => {
   const gain = totalScore() - score0;
   const badges = d.getElementById('badges').textContent;
   pass &= check(cat.seen && stats.miele === 1 && gain >= 1000 && fireworks.active && /hittade Miele/.test(badges), `found: fireworks, +${gain} points, "${badges}"`);
-  for (let i = 0; i < 90; i++) step(1 / 30);
-  const popped = fireworks.small.geometry.attributes.color.array.some((c) => c > 0.05);
+  // Observe the effect while it runs: a late sample can miss every spark after its fade.
+  const observePops = (advance) => {
+    let popped = false;
+    for (let i = 0; i < 90; i++) {
+      advance(1 / 30);
+      popped ||= fireworks.small.geometry.attributes.color.array.some((c) => c > 0.05);
+    }
+    return popped;
+  };
+  const popped = observePops(step);
   pass &= check(stats.miele === 1 && totalScore() - score0 === gain && popped, 'counted once; the hearts have popped into small ones');
   for (let i = 0; i < 60; i++) step(1 / 30);
   pass &= check(!fireworks.active, 'the fireworks are over after a few seconds');
+  // Regress the random endpoints too: both early/late shells must pop and then expire.
+  for (const random of [0, 0.999999]) {
+    const originalRandom = w.Math.random;
+    try { w.Math.random = () => random; fireworks.burst(cat.head.getWorldPosition(new V())); }
+    finally { w.Math.random = originalRandom; }
+    const didPop = observePops(dt => fireworks.update(dt));
+    for (let i = 0; i < 60; i++) fireworks.update(1 / 30);
+    pass &= check(didPop && !fireworks.active, `fireworks at random ${random}: sparks observed, then expired`);
+  }
+  if (onlyFireworks) {
+    out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
+    return;
+  }
   // E takes her up
   lookAt(cat.head.getWorldPosition(new V()));
   step(1 / 60);
