@@ -59,6 +59,8 @@ function light(x, y, z) {
 const shade = (nx, ny, nz) => (ny > 0.5 ? 1 : ny < -0.5 ? 0.62 : Math.abs(nz) > Math.abs(nx) ? 0.8 : 0.9);
 function bake(geo, hex) {
   const g = geo.index ? geo.toNonIndexed() : geo;
+  // Keep construction primitives available to the edge filter after baking.
+  g.userData.edgePlane = geo.type === 'PlaneGeometry';
   if (!g.attributes.normal) g.computeVertexNormals();
   const n = g.attributes.normal;
   for (const k of Object.keys(g.attributes)) if (k !== 'position' && k !== 'normal') g.deleteAttribute(k);
@@ -369,7 +371,7 @@ export class Core {
       for (let i = 0; i < uv.count; i++) uv.setXY(i, (k + uv.getX(i)) / 4, uv.getY(i));
       return g;
     });
-    const add = (geos, mat) => { if (!geos.length) return; const m = new THREE.Mesh(mergeGeometries(geos), mat); m.raycast = () => {}; group.add(m); return m; };
+    const add = (geos, mat) => { if (!geos.length) return; const m = new THREE.Mesh(mergeGeometries(geos), mat); m.userData.edgeSources = geos; m.raycast = () => {}; group.add(m); return m; };
     this.mats = { wall: new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.DoubleSide }), light: new THREE.MeshBasicMaterial({ color: 0xffffff }) };
     add([...geo.wall, ...geo.low, ...geo.stair, ...geo.rail], this.mats.wall);
     add(geo.light, this.mats.light);
@@ -391,6 +393,7 @@ export class Core {
     this.edgeLines = architectureEdges(group, {
       moving: [...this.doors.map(t => t.door.pivot), this.lift.car, ...this.lift.carDoors, ...this.lift.landing.flat()],
     });
+    group.traverse(o => { delete o.userData.edgeSources; }); // construction-only source geometry can now be collected
   }
 
   placeDoor(d) {

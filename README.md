@@ -10,7 +10,7 @@ På köksbänken ligger en **uppdragslapp** med tre frivilliga vardagsuppdrag: g
 
 Tryck **Enter** (eller **>_** på touch) för att öppna terminalen. Fuskkoderna `olof is the goat` och `sarah is the goat` låser upp **Möblera om**: sikta på en möbel, tavla eller en lös spegel, välj med E/klick, sikta på golvet eller väggen och placera med E igen. **R/⟳** roterar och **X/Avbryt** avbryter. De lösa speglarna kan flyttas separat; badrummens fasta speglar behåller sina platser. TV:n placeras ovanpå bänkytan och följer med TV-bänken vid flytt och rotation. Vinstället och vitrinskåpet flyttas på väggar med innehållet kvar; SYMFONISK-lampan och högtalarna kan placeras på fönsterbrädor och bord. Föremål på möbler följer med; mattor flyttas för sig. Bekräftade placeringar delas via Cloudflare och sparas till nästa besök. Knappen **Återställ originalposition** (eller **Home** på tangentbordet) ber om bekräftelse och återställer sedan den valda möbeln eller tavlan med medföljande saker. **Återställ all möblering** varnar innan alla möbler, tavlor och lösa speglar i alla rum återställs. Båda återställningarna delas med alla besökare; **Avbryt** eller **Esc** ändrar ingenting. **Enter** öppnar en klickbar möbleringsmeny med fri muspekare. **Esc** avslutar möbleringsläget och avbryter en osparad flytt.
 
-Diskreta kantlinjer på väggar, dörrar och fast inredning gör hörn och rumsgeometri lättare att urskilja, även i trapphuset och hissen.
+Diskreta kantlinjer på väggar, dörrar och fast inredning gör hörn och rumsgeometri lättare att urskilja, även i trapphuset och hissen. Skarvar mellan byggdelar på samma plana väggyta filtreras bort; verkliga hörn och öppningar behåller sina accenter.
 
 ## Styrning
 

@@ -109,6 +109,9 @@ src/config.js          everything NOT in the PDF: heights, soffits, stair layout
 src/architectureedges.js sharp architectural edges (#474), captured before loose furniture/decor is added;
                        excludes transparent overlays, cabinet contents and explicit loose roots. One static batch per floor,
                        one per moving door/fitting/lift anchor; 30° creases, no triangle diagonals, 1 mm depth bias with depth testing.
+                       #505 filters coplanar construction seams against the solid union and open wall planes;
+                       a temporary triangle tree accelerates baked solids. core.js retains edgeSources while baking
+                       so open wall panels and individual blocks stay distinguishable. Moving anchors remain separate.
                        world.js and core.js build them once; furniture and loose things have no outlines. tools/architecturetest.html
                        verifies batching, exclusions, moving doors/lift, no box diagonals and real WebGL occlusion.
 src/world.js           builds meshes + per-level collision segments from data/plan.json
