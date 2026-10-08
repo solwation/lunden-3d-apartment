@@ -4,6 +4,8 @@ name = "lunden-l1007"
 main = "worker.js"
 compatibility_date = "2025-09-01"
 workers_dev = true
+# #511: public fetch to the source Worker on the same workers.dev zone.
+compatibility_flags = ["global_fetch_strictly_public"]
 
 [[durable_objects.bindings]]
 name = "DRAWINGS"
