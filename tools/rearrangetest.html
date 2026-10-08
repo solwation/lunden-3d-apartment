@@ -7,8 +7,8 @@ try {
  await new Promise(r=>f.onload=r);while(!f.contentWindow.__app)await wait(100);
  const w=f.contentWindow,d=f.contentDocument,A=w.__app,R=A.rearrange,T=await w.eval("import('three')");
  d.documentElement.requestFullscreen=undefined;d.getElementById('start-touch').click();
- d.dispatchEvent(new w.KeyboardEvent('keydown',{code:'Enter',bubbles:true}));
- check(!d.getElementById('terminal').hidden,'Enter opens terminal');
+ d.dispatchEvent(new w.KeyboardEvent('keydown',{code:'Backquote',key:'§',bubbles:true}));
+ check(!d.getElementById('terminal').hidden,'§ opens console');
  const form=d.getElementById('terminal-form'),input=d.getElementById('terminal-code');
  input.value='wrong';form.requestSubmit();check(!R.unlocked&&!R.enabled,'wrong cheat does not unlock');
  input.value='olof is the goat';form.requestSubmit();check(R.enabled&&R.unlocked&&d.getElementById('terminal').hidden,'exact cheat unlocks and returns to play');
@@ -58,7 +58,7 @@ try {
  d.getElementById('terminal-confirm-yes').click();await wait(100);A.showTerminal(false);
  check(rug.object.matrixWorld.elements.every((v,i)=>Math.abs(v-rug.home.elements[i])<.0001),'confirmed Home reset restores original position');
  R.begin(rug);A.showTerminal(true);
- check(!d.getElementById('terminal-edit').hidden&&!d.getElementById('terminal-cancel-move').disabled,'Enter menu exposes clickable furniture controls');
+ check(!d.getElementById('terminal-edit').hidden&&!d.getElementById('terminal-cancel-move').disabled,'console menu exposes clickable furniture controls');
  d.getElementById('terminal-cancel-move').click();check(!R.selected&&R.enabled,'menu cancels preview without exiting mode');
  d.dispatchEvent(new w.KeyboardEvent('keydown',{code:'Escape',bubbles:true}));
  check(!R.enabled&&!R.selected&&d.getElementById('terminal').hidden&&A.touch.enabled,'Esc exits mode and touch remains available');

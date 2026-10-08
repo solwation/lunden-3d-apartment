@@ -1,0 +1,29 @@
+PASS § opens console
+PASS wrong cheat does not unlock
+PASS exact cheat unlocks and returns to play
+PASS Sarah cheat also unlocks and returns to play
+PASS unique stable ids
+PASS individual framed pictures are selectable
+PASS real look ray selects the sofa
+PASS normal left click starts furniture move
+PASS moving sofa shows transparent preview, hides original
+PASS cancel restores sofa and writes nothing
+PASS confirm move
+PASS seat interaction follows sofa
+PASS collision segments follow movement
+PASS sofa pose updated
+PASS rug never carries furniture or things above it
+PASS moving rug leaves sofa unchanged
+PASS picture can be previewed on its actual wall
+PASS moving one picture leaves neighbouring pictures in place
+PASS aim at floor produces a rotated placement preview
+PASS dining table available for support test
+PASS plate recognized on table
+PASS plate and its persistent position follow table
+PASS confirmed layout persists locally
+PASS Home asks for confirmation
+PASS confirmed Home reset restores original position
+PASS console menu exposes clickable furniture controls
+PASS menu cancels preview without exiting mode
+PASS Esc exits mode and touch remains available
+ALL PASS

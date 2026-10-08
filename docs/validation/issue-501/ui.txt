@@ -1,0 +1,17 @@
+PASS touch console control sits completely inside the score badge with a reachable target
+PASS score pointer-events do not prevent tapping the embedded console button
+PASS embedded control opens console and focuses its code input
+PASS ordinary Enter no longer unexpectedly opens console
+PASS Swedish § physical key opens console
+PASS § key value also opens console when browser code differs
+PASS unlock flows straight into clear selection step without an extra menu
+PASS idle edit toolbar presents menu/done without irrelevant move controls
+PASS selected step names the item and exposes one consistent rotate/cancel pair
+PASS visible rotate button rotates the preview
+PASS cancel restores original item and stays in edit mode
+PASS menu pauses with selected preview intact and hides the underlying toolbar
+PASS restore controls are available inside an explicit grouped section
+PASS restoring still requires confirmation naming the selected item
+PASS Done exits and discards only the unsaved preview
+PASS console fits landscape phone height with scrollable content
+ALL PASS

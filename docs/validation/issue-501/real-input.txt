@@ -1,0 +1,7 @@
+PASS real phone tap opens embedded console
+PASS phone rotate preview
+PASS phone cancel keeps edit mode
+PASS phone done exits
+PASS keyboard Enter keeps console closed
+PASS actual physical §/Backquote opens console in locked keyboard mode
+PASS desktop uses keyboard shortcut without floating console button

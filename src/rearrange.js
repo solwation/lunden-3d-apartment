@@ -63,7 +63,7 @@ export class Rearrange {
   enable(on) {
     if (on && (!this.unlocked || this.busy())) { this.say('Lägg ifrån dig det du håller och res dig först.'); return false; }
     if (this.saving) { if (!on) this.enabled = false; return !on; } // a confirmed write finishes even if the user exits
-    this.cancel(); this.enabled = !!on; this.say(on ? 'Välj en möbel, tavla eller spegel · E: välj · R: vrid · X: avbryt' : 'Ommöblering avslutad'); return true;
+    this.cancel(); this.enabled = !!on; this.say(on ? 'Sikta på en möbel, tavla eller spegel och välj den.' : 'Ommöblering avslutad'); return true;
   }
   say(text) { this.message = text; this.status?.(text); }
   supports(piece) {
@@ -113,7 +113,7 @@ export class Rearrange {
     for (const p of group) p.object.visible = false;
     for (const h of loose) h.model.visible = false;
     this.ghost.visible = true;
-    this.say('Sikta på en plats · E: placera · R: vrid · X: avbryt'); return true;
+    this.say('Sikta på en ny plats och placera föremålet.'); return true;
   }
   cancel() {
     if (this.saving) return;

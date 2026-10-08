@@ -1,0 +1,18 @@
+PASS move soffbordet
+PASS move möbeln
+PASS move vitrinskåpet
+PASS single reset names selected piece
+PASS cancel focused by default; opening confirmation writes nothing
+PASS cancel leaves position unchanged
+PASS single reset restores only selected group
+PASS single reset carries fruit bowl
+PASS global warning explicitly covers all rooms
+PASS global cancel writes nothing
+PASS Escape dismisses warning and leaves layout unchanged
+PASS global reset restores furniture, pictures and mirrors on every floor
+PASS entire reset is one revision
+PASS whole apartment fits server request limits (101 pieces)
+PASS global reset leaves already restored bowl in place
+PASS complete original arrangement persists locally
+PASS stale global confirmation is rejected locally
+ALL PASS

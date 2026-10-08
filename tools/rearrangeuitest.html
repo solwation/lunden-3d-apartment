@@ -1,0 +1,26 @@
+<!doctype html><html lang="sv"><meta charset="utf-8"><title>Rearrangement UI test</title><pre id="out">running…</pre><script type="module">
+const lines=[];let pass=true;const check=(ok,text)=>{lines.push((ok?'PASS':'FAIL')+' '+text);pass&&=!!ok},wait=ms=>new Promise(r=>setTimeout(r,ms));
+try{
+ const f=document.createElement('iframe');f.width=844;f.height=390;f.src='../index.html?life&shot&cloud=';document.body.append(f);await new Promise(r=>f.onload=r);while(!f.contentWindow.__app)await wait(100);
+ const w=f.contentWindow,d=f.contentDocument,A=w.__app,R=A.rearrange,T=await w.eval("import('three')");d.documentElement.requestFullscreen=undefined;d.getElementById('start-touch').click();const click=id=>d.getElementById(id).click(),key=(code,k)=>d.dispatchEvent(new w.KeyboardEvent('keydown',{code,key:k,bubbles:true}));
+ const score=d.getElementById('score'),button=d.getElementById('terminal-btn'),sb=score.getBoundingClientRect(),bb=button.getBoundingClientRect();
+ check(button.parentElement===score&&bb.width>=36&&bb.height>=36&&bb.top>=sb.top&&bb.bottom<=sb.bottom&&bb.left>=sb.left&&bb.right<=sb.right,'touch console control sits completely inside the score badge with a reachable target');
+ check(d.elementFromPoint(bb.x+bb.width/2,bb.y+bb.height/2)===button,'score pointer-events do not prevent tapping the embedded console button');
+ click('terminal-btn');check(!d.getElementById('terminal').hidden&&d.activeElement===d.getElementById('terminal-code'),'embedded control opens console and focuses its code input');click('terminal-close');
+ key('Enter','Enter');check(d.getElementById('terminal').hidden,'ordinary Enter no longer unexpectedly opens console');key('Backquote','§');check(!d.getElementById('terminal').hidden,'Swedish § physical key opens console');click('terminal-close');
+ key('Unidentified','§');check(!d.getElementById('terminal').hidden,'§ key value also opens console when browser code differs');click('terminal-close');
+ click('terminal-btn');d.getElementById('terminal-code').value='olof is the goat';d.getElementById('terminal-form').requestSubmit();A.step(0);
+ check(R.enabled&&!d.getElementById('rearrange-help').hidden&&d.getElementById('rearrange-step').textContent==='1. Välj ett föremål','unlock flows straight into clear selection step without an extra menu');
+ check(d.getElementById('rearrange-rotate').hidden&&d.getElementById('rearrange-cancel').hidden,'idle edit toolbar presents menu/done without irrelevant move controls');
+ const piece=R.pieces.find(p=>p.item.type==='coffeetable'),before=piece.object.matrixWorld.clone();R.begin(piece);A.step(0);
+ check(d.getElementById('rearrange-step').textContent.includes('2. Placera '+piece.name)&&!d.getElementById('rearrange-rotate').hidden&&!d.getElementById('rearrange-cancel').hidden&&d.getElementById('turn-btn').hidden,'selected step names the item and exposes one consistent rotate/cancel pair');
+ const turn=R.turn;click('rearrange-rotate');check(R.turn>turn,'visible rotate button rotates the preview');click('rearrange-cancel');
+ check(R.enabled&&!R.selected&&piece.object.visible&&piece.object.matrixWorld.equals(before),'cancel restores original item and stays in edit mode');
+ R.begin(piece);A.step(0);click('rearrange-menu');check(!d.getElementById('terminal').hidden&&d.getElementById('rearrange-help').hidden&&R.selected?.piece===piece,'menu pauses with selected preview intact and hides the underlying toolbar');
+ const details=d.getElementById('terminal-reset-options');details.querySelector('summary').click();check(details.open&&!d.getElementById('terminal-restore').disabled,'restore controls are available inside an explicit grouped section');
+ click('terminal-restore');check(!d.getElementById('terminal-confirm').hidden&&d.getElementById('terminal-confirm-text').textContent.includes(piece.name),'restoring still requires confirmation naming the selected item');click('terminal-confirm-no');click('terminal-close');A.step(0);
+ click('rearrange-finish');check(!R.enabled&&!R.selected&&!R.ghost.visible&&piece.object.matrixWorld.equals(before)&&d.getElementById('rearrange-help').hidden,'Done exits and discards only the unsaved preview');
+ const form=d.querySelector('#terminal form');click('terminal-btn');check(form.getBoundingClientRect().height<=f.height-32&&w.getComputedStyle(form).overflowY==='auto','console fits landscape phone height with scrollable content');click('terminal-close');
+ document.getElementById('out').textContent=lines.join('\n')+'\n'+(pass?'ALL PASS':'SOME FAILED');
+}catch(e){document.getElementById('out').textContent=lines.join('\n')+'\nFAIL '+e.stack}
+</script></html>

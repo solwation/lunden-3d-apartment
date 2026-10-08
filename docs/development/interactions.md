@@ -36,7 +36,7 @@ src/jetpack.js         the jetpack (#359, JETPACK): our own unbranded pack (one 
                        (SCORE.first: the first take-off); `&jetpack` = on from the start (tools/jetpacktest.html)
 src/touch.js           on-screen joystick (left) + drag-to-look (right), multi-touch pointer events
 src/main.js            renderer, lights, input modes, door raycast prompt/button, loop (step)
-src/rearrange.js       furniture cheat (#465): Enter / >_ opens a terminal; either exact code "olof is the goat" or "sarah is the goat" unlocks rearrangement.
+src/rearrange.js       furniture cheat (#465): § / >_ inside the touch score badge opens the console; either exact code "olof is the goat" or "sarah is the goat" unlocks rearrangement.
                        buildFurniture exposes stable movable ids and separates framed pictures before per-frame merging.
                        E/click selects and confirms, R/turn rotates, X/cancel abandons the local 35%-opacity ghost. Rugs never
                        carry things above them; support surfaces identify carried furniture and local Holdables/life items.
@@ -47,8 +47,11 @@ src/rearrange.js       furniture cheat (#465): Enter / >_ opens a terminal; eith
                        wall pieces with their reflectors; furniture builders expose wallMirrors, detached before layout restoration.
                        Bathroom mirrors/cabinets remain fixed. tools/rearrangemirrortest.html and tools/loosemirrorstest.html verify
                        independent movement, reflection, restoration, reload and fixed-mirror exclusion.
-                       Enter opens clickable rearrangement controls with a free cursor; Esc exits the mode and cancels the preview,
+                       § / Meny opens clickable rearrangement controls with a free cursor; Esc exits the mode and cancels the preview,
                        including native pointer-unlock events. Touch keeps its input mode when leaving the menu.
+                       The compact edit panel shows selection/placement steps, selected-only Rotate/Cancel, Menu and Done.
+                       Reset controls sit in a collapsible menu section and retain both confirmations; Enter only submits the code.
+                       tools/rearrangeuitest.html covers the touch badge hit area, §, panel states, cancellation and menu scrolling.
                        Original-position reset (button / Home) asks for confirmation and uses the same atomic move; detached Thing supports and the fruit bowl follow
                        furniture, including layouts saved before #475.
                        Whole-layout reset also asks for confirmation, writes every registered home pose atomically, and rejects a changed global revision (#481).

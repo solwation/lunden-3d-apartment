@@ -1585,14 +1585,13 @@ function updateFocus() {
   setPressed(document.getElementById('crouch-btn'),player.crouch);
   if (rearrange.enabled && !reading) {
     rearrange.update(); focused = rearrange.target; focusPoint = null;
-    const restore = document.getElementById('rearrange-reset');
-    restore.hidden = !(rearrange.selected || focused?.piece); restore.disabled = rearrange.saving;
+    renderRearrangeHUD();
     showChoices(null, null); placeGhost.visible = itemGhost.visible = false;
     const text = focused ? (focused.blockedText ?? `${focused.verb === 'flytta' ? 'Flytta' : 'Placera'} ${focused.name}`) : 'Sikta på en möbel, tavla eller spegel';
     actionBtn.textContent = text; actionBtn.hidden = !touch.enabled || !focused;
     promptEl.textContent = `${text} · E / klick · R: vrid · X: avbryt`;
     promptEl.hidden = touch.enabled; powerBtn.hidden = true;
-    turnBtn.hidden = !touch.enabled || !rearrange.selected;
+    turnBtn.hidden = true; // the edit panel owns its visible rotate control (#501)
     interactionOutline.update(focused && !focused.blocked ? {...focused,outlineRoot:rearrange.selected?rearrange.ghost:focused.piece?.object} : null); return;
   }
   // sitting / lying (#184): what is within arm's reach can be used as usual (not the seat itself, nothing to sit on);
@@ -1832,9 +1831,17 @@ const rearrange = new Rearrange({ scene, camera, world, player, life, marks,
 });
 const terminal = document.getElementById('terminal'), terminalInput = document.getElementById('terminal-code');
 const editHelp = document.getElementById('rearrange-help'), editToggle = document.getElementById('rearrange-toggle');
-let editMenuPiece = null, resetFurnitureRequest = null;
+let editMenuPiece = null, resetFurnitureRequest = null, editHUDKey = '';
+function renderRearrangeHUD() {
+  const p=rearrange.selected?.piece,key=`${rearrange.enabled}|${rearrange.saving}|${p?.id??''}|${reading}`;
+  if(key===editHUDKey)return;editHUDKey=key;
+  editHelp.hidden=!rearrange.enabled||reading;
+  document.getElementById('rearrange-step').textContent=rearrange.saving?'Sparar möbleringen…':p?`2. Placera ${p.name}`:'1. Välj ett föremål';
+  for(const id of ['rearrange-rotate','rearrange-cancel']){const b=document.getElementById(id);b.hidden=!p;b.disabled=rearrange.saving;}
+  document.getElementById('rearrange-menu').disabled=rearrange.saving;
+}
 function editUI() {
-  editHelp.hidden = !rearrange.enabled; editToggle.hidden = !rearrange.unlocked || !!resetFurnitureRequest;
+  renderRearrangeHUD(); editToggle.hidden = !rearrange.unlocked || !!resetFurnitureRequest;
   editToggle.textContent = rearrange.enabled ? 'Avsluta ommöblering' : 'Möblera om';
   editToggle.disabled = rearrange.saving;
   document.getElementById('terminal-unlock').hidden = rearrange.enabled;
@@ -1842,11 +1849,12 @@ function editUI() {
   document.getElementById('terminal-confirm').hidden = !resetFurnitureRequest;
   document.getElementById('terminal-close').hidden = !!resetFurnitureRequest;
   document.getElementById('terminal-restore-all').disabled = rearrange.saving;
-  document.getElementById('terminal-title').textContent = rearrange.enabled ? 'Möblera om' : 'Terminal';
+  document.getElementById('terminal-title').textContent = rearrange.enabled ? 'Möblera om' : 'Konsol';
   document.getElementById('terminal-close').textContent = rearrange.enabled ? 'Fortsätt möblera' : 'Stäng';
   document.getElementById('terminal-restore').disabled = !editMenuPiece || rearrange.saving;
-  document.getElementById('terminal-cancel-move').disabled = !rearrange.selected || rearrange.saving;
-  document.getElementById('terminal-edit-status').textContent = rearrange.message;
+  document.getElementById('terminal-cancel-move').hidden = !rearrange.selected;
+  document.getElementById('terminal-cancel-move').disabled = rearrange.saving;
+  document.getElementById('terminal-edit-status').textContent = editMenuPiece?`Valt föremål: ${editMenuPiece.name}`:'Ingen möbel vald. Sikta på ett föremål för att flytta det.';
 }
 function exitRearranging() {
   if (!rearrange.enabled) return;
@@ -1859,6 +1867,7 @@ function showTerminal(show, byKey = 'button') {
   terminal.hidden = !show; reading = show; player.keys.clear(); touch.analog.x = touch.analog.y = 0;
   if (show) { editMenuPiece = rearrange.selected?.piece ?? rearrange.target?.piece ?? null; if (locked) { boardFreed = true; document.exitPointerLock(); } editUI(); (rearrange.enabled ? document.getElementById('terminal-close') : terminalInput).focus(); }
   else if (boardFreed) { boardFreed = false; if (byKey === 'Escape') { overlay.hidden = true; armEl.hidden = false; } else canvas.requestPointerLock()?.catch(() => { armEl.hidden = false; }); }
+  renderRearrangeHUD();
 }
 document.getElementById('terminal-btn').addEventListener('click', () => showTerminal(true));
 document.getElementById('terminal-close').addEventListener('click', () => showTerminal(false));
@@ -1888,12 +1897,14 @@ document.getElementById('terminal-confirm-yes').addEventListener('click', async 
   editUI(); await saved; editUI();
 });
 document.getElementById('terminal-cancel-move').addEventListener('click', () => { rearrange.cancel(); rearrange.say('Flytten avbröts.'); editUI(); });
-document.getElementById('rearrange-reset').addEventListener('click', () => requestFurnitureReset(false, rearrange.selected?.piece ?? rearrange.target?.piece));
-document.getElementById('rearrange-cancel').addEventListener('click', () => { if (rearrange.selected) rearrange.cancel(); else rearrange.enable(false); editUI(); });
+document.getElementById('rearrange-cancel').addEventListener('click', () => { rearrange.cancel();rearrange.say('Flytten avbröts. Välj ett nytt föremål.');editUI(); });
+document.getElementById('rearrange-rotate').addEventListener('click', () => rearrange.rotate());
+document.getElementById('rearrange-menu').addEventListener('click', () => showTerminal(true));
+document.getElementById('rearrange-finish').addEventListener('click', exitRearranging);
 document.addEventListener('keydown', (e) => {
   if (!terminal.hidden) { if (e.code === 'Escape') { e.preventDefault(); exitRearranging(); showTerminal(false, 'Escape'); } e.stopImmediatePropagation(); return; }
   if (e.code === 'Escape' && rearrange.enabled && !reading) { e.preventDefault(); e.stopImmediatePropagation(); exitRearranging(); if (locked) document.exitPointerLock(); return; }
-  if (e.code === 'Enter' && active() && !reading && !drawing.active && !e.repeat) { e.preventDefault(); e.stopImmediatePropagation(); showTerminal(true); return; }
+  if ((e.code === 'Backquote'||e.key === '§') && active() && !reading && !drawing.active && !e.repeat && !e.ctrlKey && !e.metaKey && !e.altKey) { e.preventDefault(); e.stopImmediatePropagation(); showTerminal(true); return; }
   if (rearrange.enabled && !reading && ['KeyR', 'KeyX', 'KeyF', 'Home'].includes(e.code)) {
     e.preventDefault(); e.stopImmediatePropagation();
     if (!e.repeat && e.code === 'KeyR') rearrange.rotate();
@@ -1907,6 +1918,7 @@ document.addEventListener('keydown', (e) => {
 const statsEl = document.getElementById('stats'), statsBody = document.getElementById('stats-body');
 setBadgeElement(document.getElementById('badges'));
 setScoreElement(document.getElementById('score')); // points, top left (#197)
+document.getElementById('score').append(document.getElementById('terminal-btn')); // preserve its listener inside the touch score badge (#501)
 
 const menuPresenceEl = document.getElementById('menu-presence');
 const menuPresenceListEl = document.getElementById('menu-presence-list');
