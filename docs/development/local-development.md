@@ -32,6 +32,7 @@ URL parameters (debugging / screenshots):
 - `&life` — the life simulator's developer scenario (#365, `src/life.js` `devScenario`, `LIFE.dev`): everything at home and
   shut (not with `&open`), no cat, noon paused (unless `&time`), the visitor in the kitchen, an empty cup + the milk on the worktop, a wine glass
   on the dining table; life items on the dining table and in the drawer (`LIFE.dev.items` / `stored`) + the kitchen's stock, fresh (LIFE_FOOD, #373). The resume / F5 records are neither read nor written (`resume.js`), so the visitor's own place stays.
+- `&beers=http://localhost:8144/beer-shelf` — test the daily beer source through `node cloudflare/dev.mjs 8144`; separate from shared-layout `&cloud=`. `&life` normally uses the prepared beer snapshot and no persistent beer cache.
 - `&warm` — run the start's shader / upload warm-up (#432) in headless Chrome too (it skips it otherwise).
 - `&fall=h` — drop from h m (default 5) above the ground where you start (#361; with `&at=`): over 3 m it hurts.
 - `&hoop` — the basketball hoop up out front. `&car` — our car parked in front of the house. `&water` — turn on every tap and shower. `&tv` — switch the TV on. `&laptop` — Tilly's laptop on. `&secret=i` — the secret drawer shows surprise i (SECRET.items, with `&open`).

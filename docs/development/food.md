@@ -72,6 +72,19 @@ src/fries.js           Aviko frozen fries (#301, FRIES): a stand-up bag (canvas 
                        (cups.js `Steam`) for FRIES.steam s; E with a free hand takes a bunch (FriesBunch: click / "Ät" eats one fry,
                        put down / taken again); stats fries / friesCooked / friesBurnt; F: emptied, the bag full; `&fries` = a done
                        basket out (screenshots)
+src/beershelf.js       #511: four correctly typed packages (two global DIPA/two global TIPA) on the fridge's upper glass shelf.
+                       Real product photos/Untappd labels plus readable names/breweries; no pickup/drinking mechanic.
+                       BEER_SHELF centralises placement, can/bottle proportions and product-photo crop. Volume/type come from
+                       source metadata; diameters/heights are explicit standard-package assumptions, not manufacturer dimensions.
+                       Closed fridge hides the entire group; meshes do not intercept existing item/door raycasts.
+src/beershelfdata.js   daily startup refresh and complete durable metadata+image cache; see storage.md.
+src/beershelfschema.js shared strict wire format and Europe/Stockholm day.
+cloudflare/beershelf.js GET-only public-source adapter; globalByStyle normalized ranking, merge Double/Triple IPA styles,
+                       take the first two unique beers each, and join the source's product/enrichment catalogues.
+                       Real packaging/volume required; missing/invalid metadata or any image fails the complete batch.
+data/beer-shelf-default.json prepared real four-beer snapshot with embedded original images; fetchedAt=0 never claims daily success.
+tools/beershelfcachetest.html real image decoding, atomic daily caching, offline/timeout/partial failure and actual reload.
+tools/beershelfmodeltest.html shelf clearance, real canvas labels, can/bottle sizes and stable package count.
 src/beer.js            the big beer (BEER, #117), a Holdable: served on the lounge table when you sit in the lounge sofa,
                        click / "Drick" drinks a gulp (the level drops), back on the table = full; cups drink too
 src/drinks.js          what a glass / cup holds (DRINKS, #166): `Contents` (amounts per drink, pour over a second, sip in

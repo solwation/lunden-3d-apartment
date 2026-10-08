@@ -1,0 +1,12 @@
+PASS first offline load uses prepared DIPA/TIPA with four decodable labels
+PASS failed first updates retry on later loads and never count as successful days
+PASS complete live metadata and labels replace the prepared snapshot
+PASS additional home loads on the successful day use cache without any network read
+PASS network failure preserves identical old metadata, labels and success timestamp
+PASS timeout preserves the old batch and returns within the bounded wait
+PASS HTTP failure cannot overwrite the last complete snapshot
+PASS partial metadata never writes a partial cache
+PASS one image failing actual browser decoding keeps all four old labels
+PASS a new day retries automatically after failures and commits only a successful complete batch
+PASS actual page reload retains the complete current-day metadata and all four label images without fetching
+ALL PASS

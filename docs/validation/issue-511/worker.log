@@ -1,0 +1,82 @@
+TAP version 13
+# Subtest: global ranking uses both IPA styles and normalised score, never personal/raw ranking
+ok 1 - global ranking uses both IPA styles and normalised score, never personal/raw ranking
+  ---
+  duration_ms: 2.017699
+  type: 'test'
+  ...
+# Subtest: metadata determines actual can/bottle type and volume; missing SB photo uses its real Untappd label
+ok 2 - metadata determines actual can/bottle type and volume; missing SB photo uses its real Untappd label
+  ---
+  duration_ms: 0.4378
+  type: 'test'
+  ...
+# Subtest: complete response includes all metadata and validated image bytes from fixed allowed source hosts
+ok 3 - complete response includes all metadata and validated image bytes from fixed allowed source hosts
+  ---
+  duration_ms: 70.032674
+  type: 'test'
+  ...
+# Subtest: missing category, malformed rank, changed product id, unknown packaging or untrusted image never yields a partial selection
+ok 4 - missing category, malformed rank, changed product id, unknown packaging or untrusted image never yields a partial selection
+  ---
+  duration_ms: 0.746099
+  type: 'test'
+  ...
+# Subtest: one failed/truncated/oversized image rejects the entire update
+ok 5 - one failed/truncated/oversized image rejects the entire update
+  ---
+  duration_ms: 51.780581
+  type: 'test'
+  ...
+# Subtest: an aborted or failed upstream is retryable and does not write a successful Worker day-cache
+ok 6 - an aborted or failed upstream is retryable and does not write a successful Worker day-cache
+  ---
+  duration_ms: 2.444199
+  type: 'test'
+  ...
+# Subtest: arrangement writes are atomic, serialized and durable; stale clients cannot overwrite
+ok 7 - arrangement writes are atomic, serialized and durable; stale clients cannot overwrite
+  ---
+  duration_ms: 33.045587
+  type: 'test'
+  ...
+# Subtest: reject wrong code, bad geometry and duplicate ids without changing state
+ok 8 - reject wrong code, bad geometry and duplicate ids without changing state
+  ---
+  duration_ms: 3.718199
+  type: 'test'
+  ...
+# Subtest: both public cheat codes can save furniture
+ok 9 - both public cheat codes can save furniture
+  ---
+  duration_ms: 1.967599
+  type: 'test'
+  ...
+# Subtest: whole-home reset is one durable revision and supports more than 100 pieces
+ok 10 - whole-home reset is one durable revision and supports more than 100 pieces
+  ---
+  duration_ms: 7.287697
+  type: 'test'
+  ...
+# Subtest: reset refuses any change since confirmation opened, without partially resetting
+ok 11 - reset refuses any change since confirmation opened, without partially resetting
+  ---
+  duration_ms: 2.773899
+  type: 'test'
+  ...
+# Subtest: legacy Tilly group migrates once, preserves other layouts and newer individual posters
+ok 12 - legacy Tilly group migrates once, preserves other layouts and newer individual posters
+  ---
+  duration_ms: 1.503999
+  type: 'test'
+  ...
+1..12
+# tests 12
+# suites 0
+# pass 12
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 195.596727

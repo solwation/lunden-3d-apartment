@@ -1641,6 +1641,17 @@ export const MILK = { w: 0.07, h: 0.195, gable: 0.03, blue: '#2f6fc4', held: { x
 // cloudflare/setup.sh; keep it on one line. Locally (BUILD 'dev') it is off unless the page has &cloud=<url>.
 export const CLOUD_URL = 'https://lunden-l1007.olw.workers.dev';
 
+// #511: four packages on the front of the upper free fridge shelf. Dimensions are model assumptions
+// based on normal 330/440/473/500 ml packages, not product-specific measured drawings.
+export const BEER_SHELF = {
+  endpoint: CLOUD_URL + '/beer-shelf', defaultURL: './data/beer-shelf-default.json', timeout: 8000,
+  cache: 'lunden.beerShelf.v1', y: 1.523, frontDepth: 0.11, across: [-0.33, -0.11, 0.11, 0.33],
+  can: { diameter: 0.066, height330: 0.115, height440: 0.149, height473: 0.168, height500: 0.168, tabRadius: .009, tabWire: .0015, tabDepth: -.005 },
+  bottle: { diameter: 0.065, height330: 0.23, height500: 0.27, neck: 0.018, bodyFraction: .63, shoulderFraction: .15, neckFraction: .22, capHeight: .006 },
+  productCrop: [.12, .24, .76, .57],
+};
+
+
 // The score (#198, the global leaderboard; #197 shows it in the HUD), balanced (the user): you can grind for ever, but
 // what is easy to repeat gives little and what is rare or hard gives a lot. Our picks.
 //  each:   points per counted event (stats.js `bump`), every time.

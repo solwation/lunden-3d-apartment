@@ -1,0 +1,31 @@
+<!doctype html><html lang="sv"><meta charset="utf-8"><title>Beer shelf cache</title><pre id="out">running…</pre>
+<script type="module">
+import { loadBeerShelf } from '../src/beershelfdata.js';import { BEER_SHELF as P } from '../src/config.js';import { beerDay } from '../src/beershelfschema.js';
+const out=document.getElementById('out'),lines=[];let pass=true;
+const check=(ok,name)=>{lines.push(`${ok?'PASS':'FAIL'} ${name}`);pass&&=!!ok;out.textContent=lines.join('\n');};
+const cacheName='lunden.beerShelf.issue511',key=new URL('./data/beer-shelf-cache',document.baseURI).href,endpoint='/test-beer-shelf';
+try{
+if(sessionStorage.getItem('beer-cache-reload')){sessionStorage.removeItem('beer-cache-reload');lines.push(...JSON.parse(sessionStorage.getItem('beer-cache-lines')??'[]'));sessionStorage.removeItem('beer-cache-lines');let calls=0;
+const value=await loadBeerShelf({cacheName,endpoint,fetcher:async()=>{calls++;throw Error('network after reload')}});
+check(value.record.fetchedAt>0&&value.images.length===4&&calls===0,'actual page reload retains the complete current-day metadata and all four label images without fetching');await caches.delete(cacheName);
+}else{
+await caches.delete(cacheName);const prepared=await (await fetch('../data/beer-shelf-default.json')).json(),now=Date.now();let calls=0;
+const failure=async url=>{if(url===P.defaultURL)return Response.json(prepared);calls++;throw Error('offline')};
+const first=await loadBeerShelf({cacheName,endpoint,fetcher:failure,timeout:1000});check(first.record.fetchedAt===0&&first.images.length===4,'first offline load uses prepared DIPA/TIPA with four decodable labels');
+const again=await loadBeerShelf({cacheName,endpoint,fetcher:failure,timeout:1000});check(calls===2&&again.record.fetchedAt===0,'failed first updates retry on later loads and never count as successful days');
+const next=structuredClone(prepared);next.fetchedAt=now;next.day=beerDay(now);
+const fresh=await loadBeerShelf({cacheName,endpoint,fetcher:async()=>{calls++;return Response.json(next)}});check(fresh.record.fetchedAt===now&&fresh.images.length===4,'complete live metadata and labels replace the prepared snapshot');
+let sameDay=0;await loadBeerShelf({cacheName,endpoint,fetcher:async()=>{sameDay++;throw Error('must not fetch')}});check(sameDay===0,'additional home loads on the successful day use cache without any network read');
+const cache=await caches.open(cacheName),old=structuredClone(next);old.fetchedAt=now-86400000;old.day=beerDay(old.fetchedAt);
+await cache.put(key,Response.json(old));const before=JSON.stringify(old);
+const compare=async(name,fetcher,timeout=1000)=>{const result=await loadBeerShelf({cacheName,endpoint,fetcher,timeout});const stored=await(await cache.match(key)).text();check(JSON.stringify(result.record)===before&&stored===before&&result.images.length===4,name);};
+await compare('network failure preserves identical old metadata, labels and success timestamp',async()=>{throw Error('network')});
+await compare('timeout preserves the old batch and returns within the bounded wait',async()=>new Promise(()=>{}),50);
+await compare('HTTP failure cannot overwrite the last complete snapshot',async()=>new Response('',{status:503}));
+await compare('partial metadata never writes a partial cache',async()=>Response.json({...next,beers:next.beers.slice(0,3)}));
+const broken=structuredClone(next);broken.beers[3].image='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAAB';
+await compare('one image failing actual browser decoding keeps all four old labels',async()=>Response.json(broken));
+let retry=0;await loadBeerShelf({cacheName,endpoint,fetcher:async()=>{retry++;return Response.json(next)}});check(retry===1,'a new day retries automatically after failures and commits only a successful complete batch');
+if(pass){sessionStorage.setItem('beer-cache-lines',JSON.stringify(lines));sessionStorage.setItem('beer-cache-reload','1');location.reload();} }
+}catch(e){check(false,e.stack);}if(!sessionStorage.getItem('beer-cache-reload'))out.textContent=lines.join('\n')+'\n'+(pass?'ALL PASS':'SOME FAILED');
+</script></html>

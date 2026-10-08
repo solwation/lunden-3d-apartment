@@ -1,3 +1,4 @@
+import { beerShelfFetch } from './beershelf.js';
 import { layoutFetch } from './layout.js';
 // Kv. Lunden L1007 — the shared world (#178, #119): a small Cloudflare Worker with one KV namespace (binding
 // LUNDEN). It keeps the drawings taped up in the flat, and the sheet on the Sovrum 3 desk,
@@ -91,6 +92,7 @@ const worker = {
     const url = new URL(request.url), parts = url.pathname.split('/').filter(Boolean), [what, id] = parts;
     const m = request.method;
     if (parts.length > 2 || (id !== undefined && !ID.test(id) && what !== 'admin')) return fail(404, 'not found', h);
+    if (what === 'beer-shelf' && !id) return beerShelfFetch(request, env, h);
     // One authority for drawing metadata: KV read/modify/write loses concurrent moves.
     if (env.DRAWINGS && (what === 'furniture' || what === 'drawings' || (what === 'admin' && (id === 'all' || id === 'drawings')))) {
       return env.DRAWINGS.get(env.DRAWINGS.idFromName('shared')).fetch(request);

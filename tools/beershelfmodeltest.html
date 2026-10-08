@@ -1,0 +1,17 @@
+<!doctype html><html lang="sv"><meta charset="utf-8"><title>Beer shelf model</title><pre id="out">running…</pre><iframe id="f" src="../index.html?life&shot&cloud=" width="900" height="600"></iframe>
+<script>
+const f=document.getElementById('f'),out=document.getElementById('out'),lines=[];let pass=true;
+const check=(ok,name)=>{lines.push(`${ok?'PASS':'FAIL'} ${name}`);pass&&=!!ok;out.textContent=lines.join('\n');};
+f.onload=async()=>{try{const w=f.contentWindow,d=f.contentDocument;while(!w.__app)await new Promise(r=>setTimeout(r,100));const A=w.__app,S=A.beerShelf,fridge=A.fridge,V=A.camera.position.constructor;
+d.documentElement.requestFullscreen=undefined;d.getElementById('start-touch').click();check(S.record.beers.length===4&&['DIPA','TIPA'].every(g=>S.record.beers.filter(b=>b.group===g).length===2),'prepared shelf represents both actual globally ranked IPA categories');check(S.record.beers.every(b=>b.name&&b.brewery&&b.sourceURL&&b.imageURL)&&S.record.sourceUpdatedAt>0,'every package retains verifiable name, brewery, source and ranking timestamp');check(!S.group.visible,'shut fridge hides all beer label draw calls');
+const {cx,iw,y0,depth,cz}=fridge.inside,baseline=y0+1.523,roof=y0+fridge.size.h-.04;
+for(const p of S.packages){const o=p.object;check(o.position.y===baseline&&o.position.x-p.diameter/2>cx-iw/2&&o.position.x+p.diameter/2<cx+iw/2&&o.position.z-p.diameter/2>fridge.door.position.z+.07&&o.position.z+p.diameter/2<cz+depth/2&&o.position.y+p.height<roof,`${p.beer.name} rests on the actual shelf inside the closed door and liner`);const material=o.children[0].material[0],canvas=material.map.image;check(material.map.isCanvasTexture&&canvas.width===512&&canvas.height===256,`${p.beer.name} has its decoded identity label plus name/brewery band`);}
+check(S.packages.every((p,i)=>S.packages.slice(i+1).every(q=>Math.abs(p.object.position.x-q.object.position.x)>(p.diameter+q.diameter)/2)),'all four packages have distinct nonoverlapping positions');
+fridge.isOpen=true;for(let i=0;i<60;i++)fridge.update(1/60);S.update();check(S.group.visible,'opening the fridge exposes the same four labels');fridge.toggle();for(let i=0;i<60;i++)fridge.update(1/60);S.update();check(!S.group.visible&&S.packages.length===4,'door closing hides the shelf without duplicating packages');
+// The future bottle path uses the same decoded identity data, tested against actual Three geometry.
+const {BeerShelf:Factory}=await w.eval("import('/src/beershelf.js')");
+const record=structuredClone(S.record);record.beers[0].type='bottle';record.beers[0].ml=330;record.beers[1].type='bottle';record.beers[1].ml=500;
+const images=await Promise.all(record.beers.map(b=>new Promise((r,j)=>{const image=new Image;image.onload=()=>r(image);image.onerror=j;image.src=b.image;})));const alternate=new Factory(fridge,{record,images});
+check(alternate.packages[0].height===.23&&alternate.packages[1].height===.27&&alternate.packages.slice(0,2).every(p=>p.object.children.length===4&&p.object.position.y+p.height+.006<roof),'330/500 ml bottle bodies, shoulders, necks and caps retain shelf/roof clearance');fridge.object.remove(alternate.group);
+}catch(e){check(false,e.stack);}out.textContent=lines.join('\n')+'\n'+(pass?'ALL PASS':'SOME FAILED');};
+</script></html>

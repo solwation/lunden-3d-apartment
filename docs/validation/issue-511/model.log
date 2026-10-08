@@ -1,0 +1,16 @@
+PASS prepared shelf represents both actual globally ranked IPA categories
+PASS every package retains verifiable name, brewery, source and ranking timestamp
+PASS shut fridge hides all beer label draw calls
+PASS Toppling Goliath Double Dry Hop King Sue rests on the actual shelf inside the closed door and liner
+PASS Toppling Goliath Double Dry Hop King Sue has its decoded identity label plus name/brewery band
+PASS Elmeleven Parallel Universe rests on the actual shelf inside the closed door and liner
+PASS Elmeleven Parallel Universe has its decoded identity label plus name/brewery band
+PASS Omnipollo x RaR Brewing ROaR Saturated Double IPA rests on the actual shelf inside the closed door and liner
+PASS Omnipollo x RaR Brewing ROaR Saturated Double IPA has its decoded identity label plus name/brewery band
+PASS Omnipollo x Brujos Unholy Church rests on the actual shelf inside the closed door and liner
+PASS Omnipollo x Brujos Unholy Church has its decoded identity label plus name/brewery band
+PASS all four packages have distinct nonoverlapping positions
+PASS opening the fridge exposes the same four labels
+PASS door closing hides the shelf without duplicating packages
+PASS 330/500 ml bottle bodies, shoulders, necks and caps retain shelf/roof clearance
+ALL PASS

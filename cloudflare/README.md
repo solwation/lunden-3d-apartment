@@ -67,6 +67,7 @@ den är pushad. Skriptet går att köra om hur många gånger som helst – det 
 | `PUT /drawings/:id` | metadata + `image` (data-URL); senaste `updated` vinner |
 | `DELETE /drawings/:id` | slängd |
 | `GET` / `PUT /paper` | teckningen på skrivbordet `{ image, updated }` (ingen 24h-gräns) |
+| `GET /beer-shelf` | complete global DIPA/TIPA selection with original label images; 503 on any source failure |
 | `GET /scores` | topp 20 `[{ name, score }]` |
 | `POST /scores` | `{ id, name, score }` (text/plain eller JSON) |
 | `DELETE /admin/:what` | nödbroms, kräver `ADMIN_TOKEN` |
@@ -80,3 +81,9 @@ The client polls every three seconds and on returning online/to the tab. Local d
 Whole-layout reset adds `resetAll: true` and `expectedRevision` to the PUT body. It accepts up to 500 registered pieces (ordinary moves: 100), with a 128 kB request limit. The global revision must still match the revision shown when confirmation opened; otherwise the entire reset returns 409 without writing anything. Per-piece revision checks also apply.
 
 Tilly-poster migration (#493): GET /furniture removes the obsolete group pose once, records migrations.individualPosters, and increments the global revision. Existing individual poster poses and other furniture are preserved; obsolete group PUTs return 410. To reproduce locally, set LUNDEN_LAYOUT_FIXTURE to a JSON layout path when starting dev.mjs.
+
+## Daily beer shelf (#511)
+
+`GET /beer-shelf` reads [UntappdBolaget's global style lists](https://untappdbolaget.se/top-10?rank=global) through its public Worker, `/top-lists`, `/sb-products/:category` and `/enrichment/:category`. The source's `globalByStyle` uses normalized global scores. Double IPA styles (excluding Triple) and Triple IPA styles are merged separately; the first two distinct beers in each group are joined to actual package type/volume and original Systembolaget product photos or Untappd labels. The prepared 2026-10-08 selection is four cans (473/440/440/440 ml); bottles are rendered when the source actually supplies them.
+
+The adapter allows only known source/image hosts, bounded responses and a 6.5-second source deadline. All metadata and all four images must succeed. It writes no KV state and pins no failed images in a server day-cache. Browser image decoding and atomic persistent cache replacement own daily success; failed loads retain the previous whole selection and can retry on another load. No source credentials are required. `node --test cloudflare/beershelf.test.mjs` tests ranking, catalogue joins, packaging, complete images, source failures and GET-only behavior with offline fixtures.
