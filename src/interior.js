@@ -962,7 +962,10 @@ function havback(B, group, list, room, y0) {
       P.add(new THREE.SphereGeometry(0.013, 14, 10).scale(1, 1, 0.75).translate(kx, ky, kz), M.brass);
     } });
   const P = new Pack(), [x, z] = F.at((F.u0 + F.u1) / 2, 0);
-  havbackContents(P, { hw: H.w / 2 - t - 0.004, zb: -H.d + 0.008 + 0.004, zf: -FT - 0.008, levels });
+  const hw=H.w/2-t-.004,zb=-H.d+.012;
+  // The five original rolls become Items at the same shelf positions (#557).
+  door.toiletRolls={matrix:frameMatrix(F.dir,new THREE.Vector3(x,y0,z)),positions:[[-hw+.06,levels[0][0],zb+.07],[-hw+.06,levels[0][0],zb+.185],[-hw+.175,levels[0][0],zb+.07],[-hw+.06,levels[0][0]+.1,zb+.07],[-hw+.06,levels[0][0]+.1,zb+.185]]};
+  havbackContents(P, { hw, zb, zf: -FT - 0.008, levels });
   group.add(attachContents(P.meshes(frameMatrix(F.dir, new THREE.Vector3(x, y0, z))), door));
   return { x0: r.x0, x1: r.x1, z0: r.z0, z1: r.z1 };
 }

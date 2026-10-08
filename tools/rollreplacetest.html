@@ -1,0 +1,50 @@
+<!doctype html><html lang="sv"><meta charset="utf-8"><title>Replace toilet roll test</title><pre id="out">running…</pre><script type="module">
+const lines=[];let pass=true;const check=(ok,text)=>{lines.push((ok?'PASS':'FAIL')+' '+text);pass&&=!!ok},wait=ms=>new Promise(r=>setTimeout(r,ms));
+try{
+ const f=document.createElement('iframe');f.width=480;f.height=300;document.body.append(f);
+ async function load(q){await new Promise(r=>{f.onload=r;f.src='../index.html?'+q});while(!f.contentWindow.__app)await wait(100);f.contentDocument.documentElement.requestFullscreen=undefined;f.contentDocument.getElementById('start-touch').click();const a=f.contentWindow.__app;a.renderer.setPixelRatio(.15);return a;}
+ let A=await load('life&shot&cloud='),L=A.life,I=L.items,P=A.toiletPaper;const T=await f.contentWindow.eval("import('three')"),{LIFE,TOILET_PAPER:C}=await f.contentWindow.eval("import('/src/config.js')");
+ const run=(t,id)=>L.options(t).find(a=>a.id===id)?.run();let h=P.holders[0],old=h.item,spare=I.ofType('toiletRoll').find(i=>i.place.store==='toiletRollSpare');const originalIds=I.ofType('toiletRoll').map(i=>i.id).sort().join(),oldId=old.id,spareId=spare.id;
+ check(I.ofType('toiletRoll').length===7&&P.holders.every(h=>h.left===C.sheets)&&I.ofType('toiletRoll').filter(i=>i.place.store==='toiletRollSpare').length===5,'two installed rolls and the five original HAVBÄCK spares, with no decorative copies');
+ check(!run(L.view(spare).takeTarget,'take')&&!I.held(),'closed HAVBÄCK refuses taking a reserve roll');
+ P.spareDoor.toggle();P.spareDoor.update(2);A.scene.updateMatrixWorld(true);
+ function aim(point,target,crouch=false,level=0){for(let k=0;k<16;k++){const a=k/16*Math.PI*2;A.player.spawn(point.x+Math.sin(a)*.6,point.z+Math.cos(a)*.6,0);A.player.pos.y=level;A.player.crouch=crouch;A.player.eyeY=level+(crouch?.95:1.62);A.step(0);A.camera.lookAt(point);A.camera.updateMatrixWorld(true);A.step(0);if(A.focus().focused===target)return true}return false;}
+ const point=new T.Box3().setFromObject(L.view(spare).model).getCenter(new T.Vector3());
+ check(P.spareRoot.visible&&aim(point,L.view(spare).takeTarget,true),'original bottom-shelf reserve roll is visible and reachable through actual crouched touch');
+ if(A.focus().focused===L.view(spare).takeTarget)f.contentDocument.getElementById('action').click();else run(L.view(spare).takeTarget,'take');
+ check(I.held()===spare,'actual touch takes original reserve instance');
+ const fullRadius=h.r;h.replaceTarget.toggle();check(I.held()===spare&&h.item===old&&h.left===C.sheets&&h.replaceTarget.blockedText==='Använd upp rullen först','full installed roll blocks replacement without losing or consuming the reserve');
+ I.setAmount(old,0);I.set(old,{machine:{hang:1}});h.len=h.from=h.to=C.tail+C.sheet;h.shape();
+ h.replaceTarget.toggle();check(I.held()===spare&&h.item===old&&h.replaceTarget.blockedText==='Riv av pappret först','untorn hanging sheet blocks replacement and preserves both rolls');
+ I.set(old,{machine:{hang:0}});h.len=h.from=h.to=C.tail;h.shape();check(h.r===C.roll.core&&!h.paper.visible,'spent roll visibly exposes the original cardboard core');
+ check(aim(h.spin.getWorldPosition(new T.Vector3()),h.replaceTarget,true),'empty existing holder selects replace action through actual touch');
+ let atomic=true;const off=I.on(()=>{atomic&&=I.audit().length===0});
+ if(A.focus().focused===h.replaceTarget)f.contentDocument.getElementById('action').click();else h.replaceTarget.toggle();
+ check(h.item===spare&&spare.place.store===h.store&&I.held()===old&&old.amount===0&&h.paper.visible&&Math.abs(h.r-fullRadius)<1e-8,'touch installs the same reserve roll and puts the same empty core in hand');
+ off();check(atomic&&I.audit().length===0&&old.home.store==='toiletRollSpare'&&spare.home.store===h.store,'atomic exchange keeps one hand, one item per slot and homes matching the exchanged rolls');
+ h.replaceTarget.toggle();check(I.held()===old&&h.item===spare,'double press with the empty core cannot exchange or consume another roll');
+ const put=P.spareDoor.options().find(a=>a.id==='putIn');check(!!put&&!put.reason,'existing HAVBÄCK front offers putting the empty core back');put?.run();
+ check(!I.held()&&old.place.store==='toiletRollSpare'&&L.view(old).model.visible,'empty core returns visibly to the available original reserve shelf');
+ h.pull();h.update(C.pullTime/2);const left=h.left,hang=h.hang;
+ f.contentWindow.localStorage.setItem(LIFE.save.key,JSON.stringify(L.serialize()));A=await load('shot&cloud=&time=12');L=A.life;I=L.items;P=A.toiletPaper;h=P.holders[0];
+ check(h.item?.id===spareId&&h.left===left&&h.hang===hang&&Math.abs(h.len-(C.tail+hang*C.sheet))<1e-8,'actual reload mid-pull keeps installed identity, exact sheet amount and complete hanging sheet');
+ check(I.get(oldId)?.amount===0&&I.get(oldId)?.place.store==='toiletRollSpare'&&I.ofType('toiletRoll').map(i=>i.id).sort().join()===originalIds,'actual reload keeps all original identities and the returned empty core');
+ const before=I.ofType('toiletRoll').reduce((n,i)=>n+i.amount,0);A.toggleFurniture();A.toggleFurniture();L.restock();
+ check(I.ofType('toiletRoll').length===7&&I.ofType('toiletRoll').reduce((n,i)=>n+i.amount,0)===before&&h.hang===hang,'F and restock retain finite paper amounts instead of silently refilling rolls');
+ P.spareDoor.toggle();P.spareDoor.update(2);spare=I.ofType('toiletRoll').find(i=>i.place.store==='toiletRollSpare'&&i.amount>0);run(L.view(spare).takeTarget,'take');
+ const heldId=spare.id;f.contentWindow.localStorage.setItem(LIFE.save.key,JSON.stringify(L.serialize()));A=await load('shot&cloud=&time=12');L=A.life;I=L.items;P=A.toiletPaper;
+ check(!I.held()&&I.get(heldId)?.place.store==='toiletRollSpare'&&I.ofType('toiletRoll').length===7,'actual reload after fetching but before replacing returns unchanged spare to its home without loss');
+ P.spareDoor.toggle();P.spareDoor.update(2);for(const r of I.ofType('toiletRoll').filter(i=>i.place.store==='toiletRollSpare'))I.setAmount(r,0);
+ const upper=P.holders[1],reserve=I.ofType('toiletRoll').find(i=>i.place.store==='toiletRollSpare');I.setAmount(reserve,C.sheets);run(L.view(reserve).takeTarget,'take');I.setAmount(upper.item,0);
+ check(aim(upper.spin.getWorldPosition(new T.Vector3()),upper.replaceTarget,true,upper.toilet.object.position.y),'upstairs empty holder also offers replacement through actual touch');
+ if(A.focus().focused===upper.replaceTarget)f.contentDocument.getElementById('action').click();else upper.replaceTarget.toggle();
+ check(upper.item===reserve&&upper.left===C.sheets&&I.held()?.amount===0,'same reserve installs upstairs while its original empty core stays in hand');
+ P.spareDoor.options().find(a=>a.id==='putIn')?.run();
+ const empty=I.ofType('toiletRoll').find(i=>i.place.store==='toiletRollSpare');run(L.view(empty).takeTarget,'take');P.holders[1].replaceTarget.toggle();L.restock();
+ check(I.held()===empty&&P.holders[1].left===C.sheets&&I.ofType('toiletRoll').filter(i=>i.place.store==='toiletRollSpare'&&i.amount>0).length===0&&I.ofType('toiletRoll').length===7,'empty reserve supply retains cores and cannot replace, refill or duplicate a roll');
+ check(I.audit().length===0,'inventory audit passes after replacement, interruptions, restock and empty supply');
+ A.resetHome.go=()=>{};A.resetHome.confirm();A=await load('shot&cloud=&time=12');I=A.life.items;
+ check(I.ofType('toiletRoll').length===7&&I.ofType('toiletRoll').every(i=>i.amount===C.sheets)&&A.toiletPaper.holders.every(h=>h.hang===0),'actual home reset restores seven full original rolls and short holder tails');
+ document.getElementById('out').textContent=lines.join('\n')+'\n'+(pass?'ALL PASS':'SOME FAILED');
+}catch(e){document.getElementById('out').textContent=lines.join('\n')+'\nFAIL '+e.stack}
+</script></html>

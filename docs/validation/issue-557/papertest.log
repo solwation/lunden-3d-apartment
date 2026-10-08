@@ -1,0 +1,23 @@
+ALL PASS
+PASS 2 holders (one per toilet)
+PASS Entréplan: aiming at the roll says "Dra ut toapappret"
+PASS Entréplan: one sheet out (len 0.145, the roll turned 2.01 rad)
+PASS Entréplan: up to 4 sheets, then "Riv av pappret först"
+PASS Entréplan: the roll got thinner (55.0 → 54.4 mm)
+PASS Entréplan: aiming at the strip says "Riv av pappret"
+PASS Entréplan: torn off into the hand, a short tail left
+PASS Entréplan: no pulling with the paper in the hand ("Släng pappret i toaletten först")
+PASS Entréplan: aiming at the toilet says "Släng pappret i toaletten"
+PASS Entréplan: the lid opens, it flushes (counted), the wad in the bowl
+PASS Entréplan: the paper swirled away (stats.toiletPaper 1)
+PASS Övre plan: aiming at the roll says "Dra ut toapappret"
+PASS Övre plan: one sheet out (len 0.145, the roll turned 2.01 rad)
+PASS Övre plan: up to 4 sheets, then "Riv av pappret först"
+PASS Övre plan: the roll got thinner (55.0 → 54.4 mm)
+PASS Övre plan: aiming at the strip says "Riv av pappret"
+PASS Övre plan: torn off into the hand, a short tail left
+PASS Övre plan: no pulling with the paper in the hand ("Släng pappret i toaletten först")
+PASS Övre plan: aiming at the toilet says "Släng pappret i toaletten"
+PASS Övre plan: the lid opens, it flushes (counted), the wad in the bowl
+PASS Övre plan: the paper swirled away (stats.toiletPaper 2)
+PASS F: used roll quantities kept, the paper in the hand gone

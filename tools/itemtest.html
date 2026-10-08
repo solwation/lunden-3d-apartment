@@ -52,6 +52,19 @@ try {
   I.set(plate, { clean: 'sparkly' });
   check(plate.clean === 'dirty', 'an unknown state is ignored');
   check(SIZES.xs < SIZES.s && SIZES.s < SIZES.m && I.size(slice) === SIZES.xs, 'size classes');
+  // An exchange must be all-or-nothing, including a promised output slot (#557).
+  {
+    const E=new Items(ITEMS);E.addStore({id:'roll',name:'hållaren',slots:[{size:'s',accepts:['toiletRoll']}]});
+    const empty=E.create('toiletRoll',{at:'slot',store:'roll',slot:0},{amount:0}),wrong=E.create('knife',{at:'hand'});
+    const before=JSON.stringify(E.serialize());
+    check(!!E.exchangeHand(empty)&&JSON.stringify(E.serialize())===before,'wrong item cannot exchange into a typed slot: neither record changes');E.remove(wrong);
+    const spare=E.create('toiletRoll',{at:'hand'});spare.lock='test';
+    check(!!E.exchangeHand(empty)&&E.held()===spare&&empty.place.store==='roll','locked reserve cannot exchange: both original places kept');delete spare.lock;
+    E.reserved.set(E.placeKey(empty.place),'test');
+    check(!!E.exchangeHand(empty)&&E.held()===spare&&empty.place.store==='roll','reserved output slot prevents exchange without partial movement');E.reserved.clear();
+    let atomic=true;E.on(()=>{atomic&&=E.audit().length===0});
+    check(!E.exchangeHand(empty)&&atomic&&E.held()===empty&&spare.place.store==='roll','valid exchange exposes only the completed one-hand/one-slot state to listeners');
+  }
   // stores (#369 builds on these rules)
   let open = false;
   I.addStore({ id: 'test', name: 'lådan', slots: [{ size: 's' }, { size: 'm' }], isOpen: () => open });

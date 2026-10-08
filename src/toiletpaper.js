@@ -1,13 +1,7 @@
-// Toilet-paper holders (#426, TOILET_PAPER in config): one beside each toilet (toilet.js), brushed steel like the towel
-// hooks (#424), on the tank's wall at the side away from the toilet, a white roll on it with a short tail hanging.
-// E on the roll (a free hand) pulls out a sheet: the roll turns, a soft rustle, the strip hangs down one sheet further
-// (up to `hang` sheets). E on the hanging strip tears it off into the hand as a crumpled wad (crumple sound); it can't be
-// put down — it is thrown away with E on a toilet (the lid opens if it is shut, the wad drops in and it flushes; with the
-// tank still refilling it floats there until the next flush). Each roll gets thinner as it is used and is empty after
-// `sheets`; F (the bare flat) puts full rolls back and clears the wad away. Not loose items (they stay with F, like the
-// bathroom fittings); nothing is saved across a reload. Stats: `toiletPaper` per wad flushed away.
+// Existing holders and paper/wad flow (#426), backed by finite Items rolls and HAVBÄCK spares (#557).
 import * as THREE from 'three';
 import { TOILET_PAPER as C, TOWEL_HOOKS } from './config.js';
+import { mergeStatic } from './merge.js';
 import { sfx } from './audio.js';
 import { heldItem, setHeld } from './holdable.js';
 
@@ -39,6 +33,19 @@ function mesh(geo, m) {
   const o = new THREE.Mesh(geo, m);
   o.castShadow = o.receiveShadow = true;
   return o;
+}
+
+/** Upright loose roll, reusing the holder's paper/cardboard materials and dimensions. */
+export function toiletRoll(){
+  const object=new THREE.Group(),R=C.roll;
+  const body=mesh(new THREE.CylinderGeometry(1,1,R.w,32),rollPaper);body.position.y=R.w/2;object.add(body);
+  const core=new THREE.Group(),tube=mesh(new THREE.CylinderGeometry(R.core,R.core,R.w,24,1,true),card);tube.position.y=R.w/2;core.add(tube);
+  for(const e of [-1,1]){
+    const ring=mesh(new THREE.RingGeometry(R.core-.003,R.core,24).rotateX(-e*Math.PI/2),card);ring.position.y=R.w/2+e*(R.w/2+.0006);
+    const dark=mesh(new THREE.CircleGeometry(R.core-.003,24).rotateX(-e*Math.PI/2),hole);dark.position.y=R.w/2+e*(R.w/2+.0004);core.add(ring,dark);
+  }
+  mergeStatic(core);object.add(core);
+  return {object,show:it=>{const r=R.core+(R.r-R.core)*Math.sqrt(Math.min(C.sheets,it.amount)/C.sheets);body.scale.set(r,1,r);body.visible=it.amount>0;object.visible=!it.place?.store?.startsWith('toiletHolder');}};
 }
 
 /** A crumpled paper wad: a lumpy ball (an icosphere with every vertex pushed in or out), radius 1. */
@@ -143,6 +150,7 @@ class Holder {
     this.paper = mesh(new THREE.CylinderGeometry(1, 1, R.w, 32), rollPaper);
     this.paper.rotation.z = Math.PI / 2;
     this.spin.add(this.paper);
+    this.core=mesh(new THREE.CylinderGeometry(R.core,R.core,R.w,24,1,true),card);this.core.rotation.z=Math.PI/2;this.spin.add(this.core);
     for (const e of [-1, 1]) {
       const ring = mesh(new THREE.RingGeometry(R.core - 0.003, R.core, 24), card);
       ring.rotation.y = e * Math.PI / 2; ring.position.x = e * (R.w / 2 + 0.0006);
@@ -185,7 +193,7 @@ class Holder {
   get hang() { return Math.round((this.to - C.tail) / C.sheet); }
 
   reset() {
-    this.left = C.sheets;
+    this.left = this.item?.amount ?? C.sheets;
     this.len = this.from = this.to = C.tail;
     this.anim = 0;
     this.shape();
@@ -197,6 +205,7 @@ class Holder {
     this.r = r;
     this.paper.scale.set(r, 1, r); // (turned: its x / z are the radius)
     this.paper.visible = this.left > 0;
+    this.core.visible = this.left <= 0;
     this.strip.visible = this.left > 0 || this.len > C.tail + 0.001;
     this.strip.position.set(this.strip.position.x, C.y, this.az + r + 0.0015);
     this.strip.scale.y = this.len;
@@ -210,8 +219,9 @@ class Holder {
   /** E on the roll: one more sheet out. */
   pull() {
     if (this.left <= 0 || this.hang >= C.hang || heldItem()) return;
-    this.left--;
+    if(this.item){this.pack.life.items.consume(this.item,1);}else this.left--;
     this.from = this.len; this.to = this.to + C.sheet; this.anim = C.pullTime;
+    if(this.item)this.pack.life.items.set(this.item,{machine:{hang:this.hang}});
     sfx.paper(this.spin.getWorldPosition(new THREE.Vector3()));
   }
 
@@ -220,6 +230,7 @@ class Holder {
     const n = this.hang;
     if (n < 1 || heldItem()) return;
     this.len = this.from = this.to = C.tail; this.anim = 0;
+    if(this.item)this.pack.life.items.set(this.item,{machine:{hang:0}});
     this.shape();
     sfx.crumple(this.spin.getWorldPosition(new THREE.Vector3()));
     this.pack.wad.take(n);
@@ -249,6 +260,35 @@ export class ToiletPaper {
     for (const t of toilets) { this.byTarget.set(t, t); this.byTarget.set(t.flush, t); }
   }
 
+  /** Register before Life.restore/restock; all seven original rolls keep ordinary Items state. */
+  initLife(life,world,toggleCabinet=door=>door.toggle()){
+    this.life=life;const I=life.items;
+    I.namers.toiletRoll=it=>it.amount>0?'toalettrullen':'den tomma papphylsan';
+    const door=world.lids.find(d=>d.toiletRolls);
+    if(door){
+      const root=new THREE.Group();root.applyMatrix4(door.toiletRolls.matrix);life.scene.add(root);root.visible=door.isOpen;
+      const st=I.addStore({id:'toiletRollSpare',name:'HAVBÄCK',slots:door.toiletRolls.positions.map(()=>({size:'s',accepts:['toiletRoll']})),isOpen:()=>door.isOpen,shutText:'Öppna högskåpet först',putLabel:it=>`lägga ${I.name(it)} i högskåpet`});
+      const anchors=door.toiletRolls.positions.map(p=>{const a=new THREE.Object3D();a.position.set(...p);root.add(a);return a;});life.anchors.set(st.id,p=>anchors[p.slot]);
+      const target={kind:'life',name:'högskåpet',store:st.id,pickable:door.pickable};
+      target.options=()=>life.options(target);target.toggle=()=>life.run(target);
+      const own=door.options;door.options=()=>[...target.options(),...(own?own():[{id:'cabinet',label:door.isOpen?'stänga högskåpet':'öppna högskåpet',run:()=>toggleCabinet(door)}])];
+      const update=door.update.bind(door);door.update=dt=>{update(dt);root.visible=door.isOpen;};
+      Object.assign(this,{spares:st,spareRoot:root,spareDoor:door});
+      anchors.forEach((a,k)=>life.stock.push(['toiletRoll',st.id,k]));
+    }
+    this.holders.forEach((h,k)=>{
+      const id=`toiletHolder${k}`;I.addStore({id,name:'toalettrullshållaren',slots:[{size:'s',accepts:['toiletRoll']}],isOpen:()=>false,shutText:'Byt den tomma rullen med en reservrulle'});
+      life.anchors.set(id,()=>h.spin);h.store=id;life.stock.push(['toiletRoll',id,0]);
+      h.replaceTarget={kind:'holdable',name:'toalettrullen',verb:'byta',get blocked(){return !!why(h)},get blockedText(){return why(h)},toggle:()=>{
+        const reason=why(h);if(reason){life.say(reason);return;}
+        const err=I.exchangeHand(h.item,{ignoreShut:true});if(err)life.say(err);else {h.reset();sfx.click(h.spin.getWorldPosition(new THREE.Vector3()));}
+      }};
+    });
+    const why=h=>{const spare=I.held();return spare?.type!=='toiletRoll'?'Hämta en reservrulle i högskåpet':spare.amount<=0?'Papphylsan är tom':h.left>0?'Använd upp rullen först':h.hang>0?'Riv av pappret först':h.anim>0?'Vänta tills pappret dragits ut':null;};
+    const sync=()=>{for(const h of this.holders){const it=I.occupant({at:'slot',store:h.store,slot:0});if(!it)continue;const changed=h.item!==it;h.item=it;h.left=it.amount;if(changed){h.len=h.from=h.to=C.tail+(Number(it.machine.hang)||0)*C.sheet;h.anim=0;}h.shape();}};
+    I.on((kind,it)=>{if(it.type==='toiletRoll')sync();});this.syncItems=sync;
+  }
+
   /** Blocked by something in the hand: the wad has to go in a toilet (it can't be put down). */
   busyText() { return heldItem() === this.wad ? 'Släng pappret i toaletten först' : undefined; }
 
@@ -257,6 +297,7 @@ export class ToiletPaper {
 
   /** Holding the wad, aimed at a toilet (its bowl / lid or the flush button): throw it in instead. */
   aim(focused) {
+    if(this.life?.items.held()?.type==='toiletRoll'){const h=this.holders.find(h=>focused===h.rollTarget);if(h)return h.replaceTarget;}
     if (heldItem() !== this.wad) return null;
     const t = focused && this.byTarget.get(focused);
     return t ? { name: 'pappret i toaletten', kind: 'holdable', verb: 'släng', toggle: () => this.throwIn(t) } : null;
@@ -270,10 +311,10 @@ export class ToiletPaper {
     if (t.flush.toggle()) this.onFlush?.(t.flush);
   }
 
-  /** F / a fresh start: full rolls, a short tail each, the wad gone. */
+  /** F clears loose paper; installed Items quantities and hanging sheets stay as saved. */
   reset() {
     this.wad.hide();
-    for (const h of this.holders) h.reset();
+    if(this.life)this.syncItems();else for (const h of this.holders) h.reset();
   }
 
   update(dt) {

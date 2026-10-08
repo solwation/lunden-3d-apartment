@@ -1,0 +1,65 @@
+PASS two cucumbers, two instances (cucumber#1, cucumber#2)
+PASS the type's defaults: 300 g, whole, no package, no cleanliness
+PASS taking 10 g from one leaves the other
+PASS taking more than there is: only what there is, 0 left
+PASS never below 0, a negative take does nothing
+PASS setAmount clamps at 0
+PASS an unknown type is refused
+PASS a bad place creates nothing
+PASS an opened butter pack with 185 g left (the plan's example)
+PASS into the hand
+PASS a second thing for the hand: refused, it stays
+PASS down again: the hand is empty
+PASS audit: ok
+PASS a slice on the plate
+PASS no plate on a plate
+PASS a plate is never on itself
+PASS a taken spot: refused, nothing moves
+PASS a plate with something on it is not removed (nothing silently lost)
+PASS a dirty plate still carrying its food
+PASS an unknown state is ignored
+PASS size classes
+PASS wrong item cannot exchange into a typed slot: neither record changes
+PASS locked reserve cannot exchange: both original places kept
+PASS reserved output slot prevents exchange without partial movement
+PASS valid exchange exposes only the completed one-hand/one-slot state to listeners
+PASS a shut store: open it first
+PASS open: in it goes
+PASS too big for the slot: refused
+PASS audit at the end: ok
+PASS a box on the tray, a box on that box
+PASS a box never goes onto a box lying on it (no cycle)
+PASS nor onto itself
+PASS root / ancestors / descendants
+PASS the tray onto a box on it: refused; audit ok
+PASS a knife is not put on the plate
+PASS the board: the cucumber's spot is 0 (0), a slice's the first of the others (1)
+PASS the board does not go on a plate
+PASS round trip: the plate in the hand with half a slice on it, the opened butter (185 g) in its slot
+PASS ids go on after the saved ones (plate#2)
+PASS a new visit: empty-handed, the plate on the worktop with its slice
+PASS its store missing: the butter goes to the fallback (logged), not lost
+PASS an unreadable record changes nothing
+PASS an unknown type is skipped (logged); a missing carrier: to the fallback; a negative amount: 0
+PASS audits ok after loading
+PASS "Återställ" clears lunden.life (not in RESET_KEEP)
+PASS events: change:cheese#1,move:cheese#1
+PASS &life: a cucumber on the dining table (y 0.754)
+PASS it is an E target: "ta gurkan"
+PASS taken: the instance is in the hand, its model in the view
+PASS not a target while held
+PASS the cup is blocked while the cucumber is held (one thing at a time)
+PASS half used: the model is half as long
+PASS down on the worktop: data and model agree
+PASS F with it in the hand: back down where it lay (never lost), hidden with the loose things
+PASS F again: it is there
+PASS a spot under the floor: refused, still in the hand
+PASS holding the plate at the bread: "lägga brödskivan på tallriken"
+PASS all three on the plate, the bread in the middle
+PASS their models ride on the plate's (children of its spots)
+PASS put down turned: still on it, in the same spots
+PASS the plate with its food into the fridge
+PASS and out again in the hand, the food still on it
+PASS one slice taken off: two left on the plate
+PASS audit in the game: ok
+ALL PASS

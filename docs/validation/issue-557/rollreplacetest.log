@@ -1,0 +1,23 @@
+PASS two installed rolls and the five original HAVBÄCK spares, with no decorative copies
+PASS closed HAVBÄCK refuses taking a reserve roll
+PASS original bottom-shelf reserve roll is visible and reachable through actual crouched touch
+PASS actual touch takes original reserve instance
+PASS full installed roll blocks replacement without losing or consuming the reserve
+PASS untorn hanging sheet blocks replacement and preserves both rolls
+PASS spent roll visibly exposes the original cardboard core
+PASS empty existing holder selects replace action through actual touch
+PASS touch installs the same reserve roll and puts the same empty core in hand
+PASS atomic exchange keeps one hand, one item per slot and homes matching the exchanged rolls
+PASS double press with the empty core cannot exchange or consume another roll
+PASS existing HAVBÄCK front offers putting the empty core back
+PASS empty core returns visibly to the available original reserve shelf
+PASS actual reload mid-pull keeps installed identity, exact sheet amount and complete hanging sheet
+PASS actual reload keeps all original identities and the returned empty core
+PASS F and restock retain finite paper amounts instead of silently refilling rolls
+PASS actual reload after fetching but before replacing returns unchanged spare to its home without loss
+PASS upstairs empty holder also offers replacement through actual touch
+PASS same reserve installs upstairs while its original empty core stays in hand
+PASS empty reserve supply retains cores and cannot replace, refill or duplicate a roll
+PASS inventory audit passes after replacement, interruptions, restock and empty supply
+PASS actual home reset restores seven full original rolls and short holder tails
+ALL PASS

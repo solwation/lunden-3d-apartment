@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { EGG } from './config.js';
 import { wateringCan } from './wateringmodels.js';
+import { toiletRoll } from './toiletpaper.js';
 import { hallJacket, hallShoes } from './hallmodels.js';
 import { laundryClothes } from './laundrymodels.js';
 import { eggCarton, rawEgg, friedEgg } from './eggmodels.js';
@@ -429,7 +430,7 @@ function rubbishBag() {
   return { object: g, grip: [0, 0.31, 0], show(item) { const m = mats[item.machine?.sort] ?? BAGS.black; for (const o of [body, neck, ...ears]) o.material = m; body.scale.setScalar(0.75 + 0.25 * Math.min(1, (item.amount ?? 0) / 8)); } };
 }
 
-const BUILDERS = { hallJacket, hallShoes, wateringCan, laundryClothes, eggCarton, rawEgg, friedEgg, rubbishBag, glass, plate, board, cucumber, cucumberSlice, cheese, butter, breadBag, breadSlice, knife, peas, butterKnife, cheeseSlicer, cheeseSlice, bin };
+const BUILDERS = { toiletRoll, hallJacket, hallShoes, wateringCan, laundryClothes, eggCarton, rawEgg, friedEgg, rubbishBag, glass, plate, board, cucumber, cucumberSlice, cheese, butter, breadBag, breadSlice, knife, peas, butterKnife, cheeseSlicer, cheeseSlice, bin };
 
 /** The model of a type (its `model` builder; a grey box when there is none). */
 export function buildModel(def) {

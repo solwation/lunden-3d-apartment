@@ -1310,7 +1310,19 @@ export const TABLE_SETTING = {inset:.17,glassIn:.14,glassAhead:.13,lift:.001,pic
 // Hall chores reuse the existing shell jacket/sneaker models. Floor starts, picks and access clearance are game assumptions (#556).
 export const HALL_CARE = {jacket:{len:.78,color:0x2f4a63,kind:'shell',floor:[1.15,.002,1.65]},shoes:{color:0xe9e6df,boot:false,floor:[1.20,.002,2.72],gap:.05},
   jacketPick:[.30,.84,.14],shoePick:[.22,.13,.28],floorJacketPick:[.30,.12,.84],floorShoePick:[.22,.13,.28],wardrobePick:[.12,.9,.045],access:.055,frontGap:.015};
+// Toilet-paper holders (#426, src/toiletpaper.js): one beside each toilet, on the tank's wall in the toilet's own frame
+// (x along the wall from the toilet's middle, z out of it, y up): the plate `side` m along the wall (the side with free
+// wall in both bathrooms: towards the vanity downstairs, the shaft box upstairs), `y` up (*guess*, ~0.7 m in the issue),
+// `wall` = the tiles; a post `arm` out, a rod `rod` long running `dir` (away from the toilet, clear of its tank) with the
+// roll on it. Roll: `w` wide, radius `r` full → `core` (a standard roll ~10 × Ø 11 cm, *guess*), `sheets` sheets of
+// `sheet` m (*guess*: a short roll); a `tail` hangs at rest, E pulls one sheet out (`pullTime` s) up to `hang` sheets;
+// the wad in the hand: radius `wad` [1 sheet, `hang` sheets], `held` = camera space; flushed it swirls away in `swirl` s.
+export const TOILET_PAPER = { side: 0.24, y: 0.7, wall: 0.006, arm: 0.075, rod: 0.13, dir: 1, plate: 0.025,
+  roll: { w: 0.098, r: 0.055, core: 0.021 }, sheets: 120, sheet: 0.11, tail: 0.035, hang: 4, pullTime: 0.35,
+  wad: [0.022, 0.04], held: [0.17, -0.2, -0.42], swirl: 1.6 };
+
 export const ITEMS = {
+  toiletRoll: {name:'toalettrullen',tags:['toiletRoll'],unit:'count',amount:TOILET_PAPER.sheets,size:'s',model:'toiletRoll',held:{pos:[.15,-.23,-.42],rot:[.15,0,.2]}},
   hallJacket: {name:'jackan',tags:['hallJacket'],unit:'count',amount:1,size:'m',model:'hallJacket',held:{pos:[.12,-.34,-.48],rot:[.35,0,0]}},
   hallShoes: {name:'skorna',tags:['hallShoes'],unit:'count',amount:1,size:'m',model:'hallShoes',held:{pos:[.14,-.28,-.44],rot:[.2,0,0]}},
   wateringCan: { name: 'vattenkannan', noun: 'vattenkanna', tags: ['wateringCan','fillable'], unit: 'ml', amount: 0, capacity: WATERING.capacity, fullText: 'Vattenkannan är full', size: 'm', model: 'wateringCan', held: {pos:[.16,-.30,-.48],rot:[.1,-.25,0]} },
@@ -2199,17 +2211,6 @@ export const TAP_LEVER = { seconds: 0.24, angle: 38, pickRadius: 0.075, pickHeig
 // middle (towards the worktop), so aiming at the oven door's middle still opens the oven. All our picks.
 export const HANDWASH = { wash: 2.2, dry: 1.6, wetFor: 60, fade: 20, swing: 0.12, kitchenTowelAt: 0.14,
   kitchenTowel: { color: 0xe6dfd2, band: 0x4b6683, w: 0.2, len: 0.42, seed: 3.3, slant: 0.2 } };
-// Toilet-paper holders (#426, src/toiletpaper.js): one beside each toilet, on the tank's wall in the toilet's own frame
-// (x along the wall from the toilet's middle, z out of it, y up): the plate `side` m along the wall (the side with free
-// wall in both bathrooms: towards the vanity downstairs, the shaft box upstairs), `y` up (*guess*, ~0.7 m in the issue),
-// `wall` = the tiles; a post `arm` out, a rod `rod` long running `dir` (away from the toilet, clear of its tank) with the
-// roll on it. Roll: `w` wide, radius `r` full → `core` (a standard roll ~10 × Ø 11 cm, *guess*), `sheets` sheets of
-// `sheet` m (*guess*: a short roll); a `tail` hangs at rest, E pulls one sheet out (`pullTime` s) up to `hang` sheets;
-// the wad in the hand: radius `wad` [1 sheet, `hang` sheets], `held` = camera space; flushed it swirls away in `swirl` s.
-export const TOILET_PAPER = { side: 0.24, y: 0.7, wall: 0.006, arm: 0.075, rod: 0.13, dir: 1, plate: 0.025,
-  roll: { w: 0.098, r: 0.055, core: 0.021 }, sheets: 120, sheet: 0.11, tail: 0.035, hang: 4, pullTime: 0.35,
-  wad: [0.022, 0.04], held: [0.17, -0.2, -0.42], swirl: 1.6 };
-
 // Day cycle (src/daycycle.js): one day in `minutes` real minutes (60, the user #125). The sun follows the real solar
 // path for the date (declination, hour angle) at Kv. Lunden, Karpvägen / S:t Lars väg in Lund
 // (55.70° N, 13.17° E, docs/tomten-google-maps.jpg). planNorth = compass bearing of the plan's

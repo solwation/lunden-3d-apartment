@@ -412,10 +412,6 @@ export function havbackContents(P, { hw, zb, zf, levels }) {
   const rand = rng(293), zc = (zb + zf) / 2, d = zf - zb, white = 0xf3f2ee, bamboo = 0xd8bd8c;
   const [l0, l1, l2, l3, l4, l5] = levels;
   // bottom: toilet rolls, two by two, a second layer on the left; a cleaning spray on the right
-  for (const [x, z, k] of [[-hw + 0.06, zb + 0.07, 0], [-hw + 0.06, zb + 0.185, 0], [-hw + 0.175, zb + 0.07, 0], [-hw + 0.06, zb + 0.07, 1], [-hw + 0.06, zb + 0.185, 1]]) {
-    P.cyl(0.054, 0.054, 0.1, x, l0[0] + 0.05 + k * 0.1, z, white, { seg: 14 });
-    P.cyl(0.021, 0.021, 0.101, x, l0[0] + 0.05 + k * 0.1, z, 0xb59a7a, { seg: 8 }); // the cardboard core
-  }
   const sx = hw - 0.06, sz = zc;
   P.box(0.07, 0.2, 0.045, sx, l0[0] + 0.1, sz, 0x48c9b0, { gloss: true });            // the spray bottle
   P.cyl(0.014, 0.016, 0.03, sx, l0[0] + 0.215, sz, 0xf4f4f2, { seg: 10 });            // its neck

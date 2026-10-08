@@ -414,6 +414,7 @@ const laundry = new Laundry(life,world);
 const watering = new Watering(life,world,{sillPots,things,lights});
 const tableSetting = new TableSetting(life,world);
 const hallCare = new HallCare(life,world);
+toiletPaper.initLife(life,world,door=>{door.toggle();if(door.isOpen)bump('cabinets',1,idOf(door));});
 const bedCare = new BedCare(life,world,rest,target=>use(target));
 if (toaster) toaster.initLife(life);
 const eggs = pan ? new Eggs(life, pan) : null;
@@ -1785,7 +1786,7 @@ function toggleFurniture(on = !world.furnitureOn) {
   if (!on) beer.show(false); else beer.show(beer.out); // the beer only once served (setFurniture showed it)
   if (!on) { // whatever is in the hand, or put down somewhere, goes home first (#102)
     heldItem()?.putBack(); toys.darts.hide();
-    toiletPaper.reset(); // full rolls, the torn-off paper gone (#426)
+    toiletPaper.reset(); // clear loose paper, keep saved roll amounts (#557)
     handWash.reset(); // (the kitchen towel goes with the loose items)
     fish?.reset(); // the fish fingers lying around are cleared away, the carton is full again (#162)
     airFryer.reset(); // off, the basket in and empty (#287)

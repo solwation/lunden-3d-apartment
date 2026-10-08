@@ -117,4 +117,6 @@ Cloudflare Worker (kattfotona är personliga och stannar i webbläsaren) – sl�
 
 Mer om lägenheten: https://peabbostad.se/projekt/skane/kv.-lunden/l1007/
 
+Du kan hämta en reservrulle i HAVBÄCK, byta en tom toalettrulle och lägga tillbaka papphylsan. Rullar och återstående papper sparas mellan besöken.
+
 Utvecklingsregler och läsanvisningar finns i [CLAUDE.md](CLAUDE.md). Därifrån når du ämnesfilerna i `docs/development/` för bland annat arkitektur, interaktioner, livssimulering, grafik, sparning, verifiering och drift.

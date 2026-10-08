@@ -184,7 +184,7 @@ export class Items {
         return null;
       case 'hand': {
         const h = this.held();
-        return h && h !== item ? `Lägg ifrån dig ${this.name(h)} först` : null;
+        return h && h !== item && h !== opts.except ? `Lägg ifrån dig ${this.name(h)} först` : null;
       }
       case 'slot': {
         const s = this.store(place.store);
@@ -195,7 +195,7 @@ export class Items {
         const accepts = slot.accepts ?? s.accepts;
         if (accepts && !accepts.some((t) => this.has(item, t) || item.type === t)) return `${what} hör inte hemma i ${s.name}`;
         if (this.size(item) > (SIZES[slot.size ?? 'm'] ?? SIZES.m)) return `${what} får inte plats i ${s.name}`;
-        if (this.occupant(place, item) || this.isReserved(place, opts.by)) return s.fullText ?? `Platsen i ${s.name} är upptagen`;
+        if ((this.occupant(place, item) && this.occupant(place, item) !== opts.except) || this.isReserved(place, opts.by)) return s.fullText ?? `Platsen i ${s.name} är upptagen`;
         if (this.children(item).length && !s.carriers) return `Ta av det som ligger på ${this.name(item)} först`;
         return null;
       }
@@ -228,6 +228,21 @@ export class Items {
     const from = it.place;
     it.place = clonePlace(place);
     this.emit('move', it, from);
+    return null;
+  }
+
+  /** Atomic hand/slot exchange (#557). Validate both directions before changing either record;
+   * listeners only see the completed exchange. Slot homes follow their contents, including the empty core. */
+  exchangeHand(item, opts = {}) {
+    const a=this.held(),b=this.get(item);
+    if(!a||!b||a===b||b.place?.at!=='slot')return 'Ingen rulle att byta';
+    if(a.lock||b.lock)return 'Rullen används just nu';
+    const ap=clonePlace(a.place),bp=clonePlace(b.place);
+    const why=this.check(a,bp,{...opts,except:b})??this.check(b,ap,{...opts,except:a});
+    if(why)return why;
+    const home=a.home;a.home=b.home;b.home=home;
+    a.place=bp;b.place=ap;
+    this.emit('move',a,ap);this.emit('move',b,bp);
     return null;
   }
 
