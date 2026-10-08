@@ -2080,10 +2080,10 @@ export const WALL_SHELVES = {
 export const HALL_WALL = {
   x: 2.057, rotY: -Math.PI / 2,
   mirror: { x: 1.177, z: 7.804, rotY: 0, y: 1.5, d: 1.1, frame: 0.018, depth: 0.03 },
-  // where LINDBYN hung before #205, the hall wall on the left as you come in: IKEA NISSEDAL black 40 × 150 cm (#226,
+  // where LINDBYN hung before #205, the hall wall on the left as you come in: IKEA NISSEDAL black 65 × 150 cm (#540, docs/spegel-nissedal-svart-65x150.jpg;
   // replacing Rusta "Staffan", #218), a flat black frame ~2.5 cm wide and ~3 cm deep (guess), hung upright and centred
   // on the wall, bottom ~0.4 m / top ~1.9 m up (guess: a full-length mirror)
-  tall: { x: 2.057, z: 1.115, rotY: -Math.PI / 2, y: 1.15, w: 0.4, h: 1.5, frame: 0.025, depth: 0.03 },
+  tall: { x: 2.057, z: 1.115, rotY: -Math.PI / 2, y: 1.15, w: 0.65, h: 1.5, frame: 0.025, depth: 0.03 },
   // a second NISSEDAL in the upstairs hall (#332, the user): on the west wall (face x 1.5418) right of the WC/dusch door seen
   // from the hall, centred on the free stretch from the north wall stub's face (z 5.1345) to the door's 70 mm
   // architrave (door 6.2444 → 6.1744): z 5.654; the same height over the Övre plan floor as downstairs; facing east
