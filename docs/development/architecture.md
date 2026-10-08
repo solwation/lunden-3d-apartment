@@ -45,9 +45,10 @@ src/garage.js          the garage under the courtyard + Hus L's basement (#357, 
                        entrance hall behind `terrain.garageDoor`, the turn into the big hall under the courtyard (the plan's
                        column grid, painted stalls / numbers on canvas floors, parked `lite` cars instanced, the car pool's two,
                        bike racks), our stall straight under our patio (charger, "L1007"), Hus L's basement through a steel door
-                       (bike rooms, Elrum, the core's Hisshall — #415 — and the 15 wire-mesh förråd in LGHFÖRRÅD: cage doors one
-                       InstancedMesh + invisible pick boxes, kind 'cabinet'), the Miljörum under Hus C (bins), fake doors on the
-                       neighbours' walls. Per sensor area MeshBasic materials with the tubes' light baked into vertex colours
+                       (bike rooms, Elrum, the core's Hisshall — #415 — and 15 extra rental cages: cage doors one
+                       InstancedMesh + invisible pick boxes, kind 'cabinet'), ordinary LGHFÖRRÅD and basement lobbies under C/B/A
+                       (#523, 22 illustrative cages, not a surveyed count), the Miljörum under Hus C (bins). Unsupported
+                       fake doors replaced by real doorways; A/B north brick skin clipped at their garage openings. Per sensor area MeshBasic materials with the tubes' light baked into vertex colours
                        (colour = on/off, motion sensor + flicker); nothing drawn unless the camera is down here (or just the
                        entrance from west of the door, `near`, else `blackout`); one pool-light spot per area (lights.extra),
                        `under` cuts the daylight (DayCycle.under). player.js `below` (in its rects at the floor's height):
@@ -136,3 +137,5 @@ Entrance handles (#519): static ground-floor and loft green entrances share `ent
 Basement floor support (#539): Player.groundAt includes GARAGE.floor anywhere inside the garage rectangles, including underneath the apartment footprint. Previously the `!inside` condition discarded this floor on crossing x=0 into the apartment projection (e.g. z=4 in the storage corridor), causing unbounded falling. Garage rectangle membership includes its boundary so shared doorway edges carry feet as well. Floor meshes and room layout remain the source of the floor extents. tools/basementfloortest.html samples all basement floor rectangles, exact storage-door joins, and keyboard/touch travel to both ends and back; garage, walk and lift tests cover the adjoining routes.
 
 Neighbor opening details (#516): exterior.js adds jambs, sashes, seals and shared door hardware inside the existing facade holes on all four street/courtyard storeys. Opening positions, widths, heights and variations are unchanged; the simplified neighbor glazing is opaque and reflective. L1007 retains its transparent moving windows/entrance and collision. `NEIGHBOR_OPENINGS` separates existing model dimensions from visual assumptions; `neighboropeningstest` and `entrancedoortest` verify both sets.
+
+Basement layout #523: [source comparison, explicit scope and browser evidence](../validation/issue-523/README.md). The 15 Hus L cages are extra rentals; ordinary C/B/A rooms follow p46. C/B/A stairs and lift shafts remain closed basement stubs, not functioning vertical circulation. `GARAGE.storage.ordinary` is illustrative, no verified cage count. Existing four pool lights and sensor areas are reused. `tools/basementlayouttest.html` checks actual collision routes and visible leaf widths; `tools/basementvisittest.html` checks actual focus, opaque openings, sensors, page reload and full reset.

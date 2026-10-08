@@ -130,3 +130,5 @@ Mer om lägenheten: https://peabbostad.se/projekt/skane/kv.-lunden/l1007/
 Du kan hämta en reservrulle i HAVBÄCK, byta en tom toalettrulle och lägga tillbaka papphylsan. Rullar och återstående papper sparas mellan besöken.
 
 Utvecklingsregler och läsanvisningar finns i [CLAUDE.md](CLAUDE.md). Därifrån når du ämnesfilerna i `docs/development/` för bland annat arkitektur, interaktioner, livssimulering, grafik, sparning, verifiering och drift.
+
+Källaren följer Peabs plan för cykelrum och förrådsområden under hus L, C, B och A. De 15 extra hyrförråden skiljs från ordinarie lägenhetsförråd; antal och indelning av ordinarie burar är illustrativa. [Planjämförelse, avgränsningar och webbläsartester](docs/validation/issue-523/README.md).

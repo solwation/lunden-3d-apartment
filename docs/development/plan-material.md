@@ -83,7 +83,7 @@ material/              screenshots of our choices in Peab's option portal (local
   level with the garage floor; `tools/terraintest.html` checks the joins, plinths and that walkable ground has no
   unguarded step); around the box the ground is one storey lower (`park` −3, Å-husen A/B suterräng); retaining
   walls with a railing where the box meets it (none along a house's façade), the garage door in its west face
-  south of Hus C (z 41…47) with an asphalt drive from Karpvägen (#357: walkable inside, src/garage.js — layout guessed), stairs down to the park level (`terrain.stairs`:
+  south of Hus C (z 41…47) with an asphalt drive from Karpvägen (#357: walkable inside, src/garage.js — p46 room layout; parking/cages/heights assumed), stairs down to the park level (`terrain.stairs`:
   between Hus C and B, #254).
   East edge (#255): the box ends at x 11.6; the `terrain.ramp` x 11.6…13.5 falls 0.9 m from a landing (the box's last
   part, z 24.5…27.25) by the walk along Hus A north to the street by Hus L's gable (#256, walkable: outdoors
@@ -317,3 +317,5 @@ Values marked *guess* in `src/config.js` (slab thickness, upstairs window heads,
 cabinet heights) should be checked against Peab's material and corrected there — not by
 hard-coding numbers elsewhere.
 
+
+#523 basement audit: [p46 overlays and scope](../validation/issue-523/README.md). Distinguish the sourced 15 **extra rentals** from ordinary LGHFÖRRÅD under C/B/A. Boundaries/openings are graphical measurements (~0.15 m), not construction dimensions; 22 ordinary cages, finishes, swing directions, racks, parked cars and sensor lighting remain explicit assumptions in GARAGE.

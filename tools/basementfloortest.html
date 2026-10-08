@@ -31,6 +31,7 @@ try {
    player.keys.clear();player.analog.y=0;
    return supported&&Math.hypot(x-player.pos.x,z-player.pos.z)<.1;
  }
+ const entry=world.garage.cageDoors.find(d=>d.rect?.id==='forradDoor');entry.angle=entry.target=entry.max;world.garage.place(entry);
  for(const touch of [false,true]){
    place(cx,8.2);
    const route=[[cx,4],[10.6,4],[-10.2,4],[cx,4],[cx,8.2]];

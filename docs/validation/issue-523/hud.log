@@ -1,0 +1,9 @@
+PASS storage under apartment: Under gården · Hyrförråd · 20:34
+PASS basement visit counted as storage, not apartment kitchen
+PASS east basement under apartment: Under gården · Cykelförråd · 20:34
+PASS west storage: Under gården · Hyrförråd · 20:34
+PASS basement stair/lift lobby: Hus L · Trapphus · våning −1 · 20:34
+PASS stairwell above basement: Hus L · Trapphus · våning 1 · 20:34
+PASS apartment above storage: Entréplan · Kök / matplats · 20:34
+PASS street: Utomhus · 20:34
+ALL PASS

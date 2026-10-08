@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { SITE as S, COLORS, SEASON, COURTYARD } from './config.js';
+import { SITE as S, COLORS, SEASON, COURTYARD, GARAGE } from './config.js';
 import { registerTrees, registerSnow } from './seasons.js';
 import { buildStreet } from './street.js';
 import { onRoad, onWalk, pathStrip, filletGeometry } from './roads.js';
@@ -642,6 +642,48 @@ function aHouseParts(b) {
   return { grid, plain };
 }
 
+/** #523: subtract the actual garage-facing door rectangles from A/B's north brick skin.
+ * Garage owns their leaves, lintels and collision. Clip attributes together; upper-storey faces stay intact. */
+function basementDoorCuts(geo, b) {
+  const doors = GARAGE.rects.filter(r => r.door && r.x0 > b.x0 && r.x1 < b.x1 && r.z0 <= b.z0 && r.z1 >= b.z0);
+  if (!doors.length) return geo;
+  geo = geo.index ? geo.toNonIndexed() : geo;
+  const attrs = ['position', 'normal', 'uv'].map(k => geo.attributes[k]), polygons = [];
+  const clip = (poly, axis, edge, positive) => {
+    const out = [], inside = v => positive ? v[axis] >= edge : v[axis] <= edge;
+    for (let i = 0; i < poly.length; i++) {
+      const a = poly[i], c = poly[(i + 1) % poly.length], ai = inside(a), ci = inside(c);
+      if (ai) out.push(a);
+      if (ai !== ci) { const t = (edge - a[axis]) / (c[axis] - a[axis]); out.push(a.map((v, k) => v + (c[k] - v) * t)); }
+    }
+    return out;
+  };
+  for (let i = 0; i < attrs[0].count; i += 3) {
+    let pieces = [Array.from({length:3}, (_, j) => attrs.flatMap(a => Array.from(a.array.slice((i+j)*a.itemSize,(i+j+1)*a.itemSize))))];
+    if (attrs[1].getZ(i) < -.9 && Math.abs(attrs[0].getZ(i) - b.z0) < .001) for (const r of doors) {
+      const kept = [];
+      for (const original of pieces) {
+        let inside = original;
+        for (const [axis, edge, positive] of [[0,r.x0,true],[0,r.x1,false],[1,GARAGE.floor,true],[1,GARAGE.floor+GARAGE.doorHead,false]]) {
+          const outside = clip(inside, axis, edge, !positive);
+          if (outside.length >= 3) kept.push(outside);
+          inside = clip(inside, axis, edge, positive);
+          if (inside.length < 3) break;
+        }
+      }
+      pieces = kept;
+    }
+    polygons.push(...pieces);
+  }
+  const data = [[],[],[]];
+  for (const p of polygons) for (let j=1;j<p.length-1;j++) for (const v of [p[0],p[j],p[j+1]]) {
+    data[0].push(...v.slice(0,3));data[1].push(...v.slice(3,6));data[2].push(...v.slice(6,8));
+  }
+  const result = new THREE.BufferGeometry();
+  ['position','normal','uv'].forEach((k,i)=>result.setAttribute(k,new THREE.Float32BufferAttribute(data[i],attrs[i].itemSize)));
+  geo.dispose();return result;
+}
+
 /** The bands of an Å-hus's outline, extruded (see aHouseParts). */
 function aHouse(b) {
   const geos = [], key = (st) => (b.recesses ?? []).map((r) => +onStorey(r, st)).join();
@@ -657,7 +699,7 @@ function aHouse(b) {
       uv.setXY(i, along / S.bay, (p.getY(i) - b.base) / S.storey);
     }
     geo.clearGroups();
-    geos.push(geo);
+    geos.push(basementDoorCuts(geo, b));
     st = end;
   }
   return geos;

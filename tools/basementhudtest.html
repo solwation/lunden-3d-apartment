@@ -8,10 +8,10 @@ try{
  function at(x,z,y){P.spawn(x,z,0);P.pos.y=y;P.eyeY=y+1.62;A.camera.position.set(x,P.eyeY,z);for(let i=0;i<3;i++)A.step(1/60);return d.getElementById('level').textContent;}
  const before=rooms();
  let text=at(5,4,-3);
- check(P.below&&/Under gården · Förråd/.test(text),`storage under apartment: ${text}`);
- check(rooms().includes('g:Förråd')&&!rooms().filter(k=>!before.includes(k)).some(k=>/^0:/.test(k)),'basement visit counted as storage, not apartment kitchen');
+ check(P.below&&/Under gården · Hyrförråd/.test(text),`storage under apartment: ${text}`);
+ check(rooms().includes('g:Hyrförråd')&&!rooms().filter(k=>!before.includes(k)).some(k=>/^0:/.test(k)),'basement visit counted as storage, not apartment kitchen');
  text=at(5,8.3,-3);check(/Under gården · Cykelförråd/.test(text),`east basement under apartment: ${text}`);
- text=at(-4,4,-3);check(/Under gården · Förråd/.test(text),`west storage: ${text}`);
+ text=at(-4,4,-3);check(/Under gården · Hyrförråd/.test(text),`west storage: ${text}`);
  text=at(-17.3,8.4,-3);check(/Hus L · Trapphus · våning −1/.test(text),`basement stair/lift lobby: ${text}`);
  text=at(-17.3,8.4,0);check(/Hus L · Trapphus/.test(text),`stairwell above basement: ${text}`);
  text=at(4.2,4,0);check(/Entréplan · Kök/.test(text),`apartment above storage: ${text}`);

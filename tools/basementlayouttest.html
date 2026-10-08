@@ -1,0 +1,31 @@
+<!doctype html><html><meta charset="utf-8"><title>Basement layout #523</title>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script><pre id="out">running…</pre><script type="module">
+import * as THREE from 'three';
+import {buildWorld} from '../src/world.js';import {Garage,CAGES,STALLS} from '../src/garage.js';import {Core} from '../src/core.js';import {Player} from '../src/player.js';import {GARAGE as G,PLAYER} from '../src/config.js';
+const lines=[];let pass=true;const check=(ok,s)=>{lines.push(`${ok?'PASS':'FAIL'} ${s}`);pass&&=!!ok};
+try{
+ const world=buildWorld(await fetch('../data/plan.json').then(r=>r.json()));world.garage=new Garage();world.core=new Core();const g=world.garage,camera=new THREE.PerspectiveCamera(),p=new Player(world,camera);
+ p.spawn(-46,20,0);p.pos.y=G.floor;p.eyeY=G.floor+1.62;p.vy=0;p.fall=null;
+ check(G.bikes.every(row=>row[2]<12.11),'no bike rows in the car-parking halls');
+ check(CAGES.filter(c=>c.rental).length===15&&CAGES.filter(c=>!c.rental).length===22,'15 extra rentals distinguished from 22 illustrative ordinary cages');
+ check(CAGES.find(c=>c.ours).n===7&&Math.abs(CAGES.find(c=>c.ours).x0+5.23)<.01,'existing own rental cage retained in the same position');
+ const ours=STALLS.find(s=>s.ours);check(ours.n===18&&STALLS.filter(s=>s.pool).length===2,'own car stall 18 and both car-pool stalls retained');
+ check(!G.fakeDoors.length,'unsupported dummy doors replaced by actual rooms and openings');
+ const steel=g.cageDoors.filter(d=>d.steel);let match=true;
+ for(const d of steel){const i=g.cageDoors.indexOf(d),closed=g.dynamic().at(-g.cageDoors.length+i),m=new THREE.Matrix4();d.inst.getMatrixAt(d.index,m);match&&=Math.abs(m.elements[12]-d.hx)<.001&&Math.abs(m.elements[14]-d.hz)<.001&&Math.abs(Math.hypot(m.elements[0],m.elements[2])*G.storage.door-d.w)<.001;d.angle=d.target=d.max;g.place(d);const opened=g.dynamic().at(-g.cageDoors.length+i);match&&=Math.hypot(closed[2]-opened[2],closed[3]-opened[3])>d.w;}
+ check(match,`${steel.length} steel leaves change their visible matrices and collision together`);
+ const segs=[...g.segments,...g.dynamic()],buckets=new Map();const cell=.5,key=(x,z)=>`${x},${z}`;
+ for(const s of segs){for(let x=Math.floor((Math.min(s[0],s[2])-.3)/cell);x<=Math.floor((Math.max(s[0],s[2])+.3)/cell);x++)for(let z=Math.floor((Math.min(s[1],s[3])-.3)/cell);z<=Math.floor((Math.max(s[1],s[3])+.3)/cell);z++){const k=key(x,z);if(!buckets.has(k))buckets.set(k,[]);buckets.get(k).push(s);}}
+ const dist=(x,z,[a,b,c,d])=>{const dx=c-a,dz=d-b,t=Math.max(0,Math.min(1,((x-a)*dx+(z-b)*dz)/(dx*dx+dz*dz||1)));return Math.hypot(x-a-t*dx,z-b-t*dz)};
+ const step=.2,cache=new Map(),free=(x,z)=>{const k=key(x,z);if(cache.has(k))return cache.get(k);const px=x*step,pz=z*step,v=g.inside(px,pz)&&!(buckets.get(key(Math.floor(px/cell),Math.floor(pz/cell)))??[]).some(s=>dist(px,pz,s)<PLAYER.radius+.015);cache.set(k,v);return v;};
+ const nearest=(x,z)=>{const a=Math.round(x/step),b=Math.round(z/step);for(let r=0;r<=3;r++)for(let i=-r;i<=r;i++)for(let j=-r;j<=r;j++)if(free(a+i,b+j))return[a+i,b+j];throw Error(`no free destination ${x},${z}`)};
+ function path(x,z){const start=nearest(p.pos.x,p.pos.z),end=nearest(x,z),q=[start],seen=new Map([[key(...start),null]]);let found=false;for(let i=0;i<q.length;i++){const n=q[i];if(n[0]===end[0]&&n[1]===end[1]){found=true;break}for(const [dx,dz]of[[1,0],[-1,0],[0,1],[0,-1]]){const a=n[0]+dx,b=n[1]+dz,k=key(a,b);if(!seen.has(k)&&free(a,b)){seen.set(k,n);q.push([a,b]);}}}if(!found)return null;const out=[];let n=end;while(n){out.push(n.map(v=>v*step));n=seen.get(key(...n))}return out.reverse();}
+ function walk(route){if(!route)return false;for(const [x,z]of route){let i=0;while(Math.hypot(x-p.pos.x,z-p.pos.z)>.055&&i++<50){camera.rotation.set(0,Math.atan2(-(x-p.pos.x),-(z-p.pos.z)),0,'YXZ');p.keys.add('KeyW');p.update(1/60);if(Math.abs(p.pos.y-G.floor)>.001)return false;}p.keys.clear();if(i>=50)return false;}return true;}
+ const targets=[['west CYKEL',-39,4],['east CYKEL',-14,4],['rental passage through shared opening',-8,4],['Hus L lift lobby',-17.7,8.4],['C west',-65,21],['C north',-55,16],['C east',-54,18.3],['C south',-57,29],['B west',-38,38],['B east',-29,37],['B south',-39,46.8],['B stair foot',-32.1,48],['A west',-5,32.4],['A east',5,33.3],['A south',6.8,42.3],['A stair foot',.1,44.5]];
+ for(const [label,x,z]of targets){const route=path(x,z),ok=walk(route);check(ok,`walk garage → ${label}: ${route?.length??0} steps, feet ${p.pos.y.toFixed(2)}, reached ${p.pos.x.toFixed(2)},${p.pos.z.toFixed(2)}`);if(!ok){p.spawn(-46,20,0);p.pos.y=G.floor;p.eyeY=G.floor+1.62;p.vy=0;p.fall=null;}}
+ let backs=true;for(const c of CAGES.filter(c=>!c.rental)){const z=c.front==='n'?c.z1:c.z0;backs&&=g.segments.some(s=>Math.abs(s[1]-z)<.001&&Math.abs(s[3]-z)<.001&&Math.abs(s[0]-c.x0)<.001&&Math.abs(s[2]-c.x1)<.001);}
+ check(backs,'all illustrative ordinary cages have colliding rear mesh panels');
+ const signs=g.exitSigns??[];check(signs.length>0&&signs.every(s=>Number.isFinite(g.exitDist(s.x,s.z))),'new basement exit signs have finite routes');
+ check(g.roomAt(-8,4)==='Hyrförråd'&&g.roomAt(-38,38)==='Förråd B'&&g.roomAt(5,33.3)==='Förråd A','room names follow distinct rental and ordinary storage functions');
+}catch(e){check(false,e.stack)}document.querySelector('#out').textContent=lines.join('\n')+'\n'+(pass?'ALL PASS':'SOME FAILED');
+</script></html>

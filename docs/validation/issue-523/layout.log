@@ -1,0 +1,26 @@
+PASS no bike rows in the car-parking halls
+PASS 15 extra rentals distinguished from 22 illustrative ordinary cages
+PASS existing own rental cage retained in the same position
+PASS own car stall 18 and both car-pool stalls retained
+PASS unsupported dummy doors replaced by actual rooms and openings
+PASS 30 steel leaves change their visible matrices and collision together
+PASS walk garage → west CYKEL: 366 steps, feet -3.00, reached -39.00,4.03
+PASS walk garage → east CYKEL: 178 steps, feet -3.00, reached -14.00,4.03
+PASS walk garage → rental passage through shared opening: 31 steps, feet -3.00, reached -8.03,4.00
+PASS walk garage → Hus L lift lobby: 71 steps, feet -3.00, reached -17.59,8.36
+PASS walk garage → C west: 357 steps, feet -3.00, reached -64.99,20.96
+PASS walk garage → C north: 76 steps, feet -3.00, reached -55.01,16.04
+PASS walk garage → C east: 22 steps, feet -3.00, reached -54.00,18.37
+PASS walk garage → C south: 155 steps, feet -3.00, reached -57.00,28.97
+PASS walk garage → B west: 223 steps, feet -3.00, reached -38.00,37.96
+PASS walk garage → B east: 61 steps, feet -3.00, reached -29.00,36.96
+PASS walk garage → B south: 110 steps, feet -3.00, reached -39.00,46.77
+PASS walk garage → B stair foot: 58 steps, feet -3.00, reached -32.00,47.97
+PASS walk garage → A west: 340 steps, feet -3.00, reached -4.95,32.40
+PASS walk garage → A east: 55 steps, feet -3.00, reached 4.97,33.20
+PASS walk garage → A south: 83 steps, feet -3.00, reached 6.80,42.16
+PASS walk garage → A stair foot: 66 steps, feet -3.00, reached 0.20,44.56
+PASS all illustrative ordinary cages have colliding rear mesh panels
+PASS new basement exit signs have finite routes
+PASS room names follow distinct rental and ordinary storage functions
+ALL PASS

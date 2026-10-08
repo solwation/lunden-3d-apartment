@@ -1,0 +1,52 @@
+SOME FAILED
+PASS from the start the garage is not drawn (a dark opening stands in)
+PASS on the drive at the floor's height (-3.00)
+PASS the garage door is shut
+PASS the shut door holds (x -70.72)
+PASS the button outside: "Trycka på knappen till garageporten"
+PASS it opens (t 0.11), slowly
+PASS open: no longer in the way
+PASS walked in through the door: below, y -3.00, x -66.12
+PASS drawn, the room is "Garage" (HUD "Under gården · Garage · 12:08 · 🌧")
+PASS the tubes are on (1.00), the daylight cut (under 0.58)
+PASS deep inside: under 0.92, sun 0.03
+PASS it is raining outside (0.80)
+PASS no rain falls inside the garage (0 streaks under its ceiling)
+PASS the entrance hall's south wall stops the visitor (z 51.58)
+PASS through the turn into the big hall (z 20.00)
+PASS along the big hall to its east wall beyond L1007 (x 8.70)
+PASS a column is in the way (x -41.98)
+PASS a parked car is in the way (z 17.22, car 14.82)
+PASS put inside a parked car: moved out to (-47.05, 15.06)
+PASS our stall 18 has no other car
+PASS our Renault stands in it (1.90, -3.00, 14.82), a box in the way
+PASS in its stall its doors are targets, the seats not while shut
+PASS the driver's door open: the seat is a target (sit in the car down here)
+PASS our stall is straight under our patio (x 0.53 … 3.16, z 12.62)
+PASS the shut basement door holds (z 12.58)
+FAIL E target: "Öppna"
+PASS through it into the bike room (Cykelförråd, z 9.40)
+PASS west into the lift lobby (Hisshall, x -17.26)
+PASS into the miljörum (Miljörum)
+PASS rooms: Garage, Miljörum, Cykelförråd, Elrum, Hisshall, Förråd
+PASS 15 förråd in Hus L's LGHFÖRRÅD (15)
+PASS the shut förråd door holds (0.22 m out)
+FAIL E target: "Öppna"
+PASS it opens (1.50 rad)
+PASS walked into the förråd (-4.43, 6.17)
+PASS and shut again
+PASS someone in the opening: it stays open
+PASS away from it: it starts to shut by itself (t 0.77)
+PASS stepping into the opening while it shuts: it opens again
+PASS then it is shut
+PASS the button inside opens it (2 presses)
+PASS per-area sensors: in the entrance hall the basement's east part and the far hall stay dark
+PASS on the courtyard over the hall: y 0.00, not below
+PASS over the garage door the box's edge still holds (x -59.28, y 0.00)
+PASS gone: the tubes go out after 90 s, daylight back
+PASS 50 exit-sign faces, every one with a way out ()
+PASS each face's arrow leads closer to an exit ()
+PASS the entrance hall's way runs west to the garage door (-1.00), the basement corridor's west to the stairwell (-1.00), the förråd's east along its passage to the door (0.98)
+PASS the faces: ahead 28, left 0, right 0, back 22
+PASS 2 utrymningsplaner, "Du är här" on the floor in front of each, the lobby's by the stairwell (0.00 m)
+PASS the plans drawn on one canvas, the exit signs always lit

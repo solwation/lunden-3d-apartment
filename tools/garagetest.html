@@ -124,8 +124,8 @@ async function run() {
   at((R.miljoDoor.x0 + R.miljoDoor.x1) / 2 + 0.15, 35.3, G.floor);
   walk(0, 2.5);
   check(garage.roomAt(player.pos.x, player.pos.z) === 'Miljörum', `into the miljörum (${garage.roomAt(player.pos.x, player.pos.z)})`);
-  check(['Garage', 'Cykelförråd', 'Förråd', 'Miljörum', 'Elrum', 'Hisshall'].every((n) => garage.roomNames.includes(n)), `rooms: ${garage.roomNames.join(', ')}`);
-  check(CAGES.length === 15 && CAGES.every((k) => k.x0 >= R.forrad.x0 - 0.01 && k.x1 <= R.forrad.x1 + 0.01), `15 förråd in Hus L's LGHFÖRRÅD (${CAGES.length})`);
+  check(['Garage', 'Cykelförråd', 'Hyrförråd', 'Förråd C', 'Förråd B', 'Förråd A', 'Miljörum', 'Elrum', 'Hisshall'].every((n) => garage.roomNames.includes(n)), `rooms: ${garage.roomNames.join(', ')}`);
+  check(CAGES.filter(k=>k.rental).length === 15 && CAGES.filter(k=>k.rental).every((k) => k.x0 >= R.forrad.x0 - 0.01 && k.x1 <= R.forrad.x1 + 0.01), `15 extra hyrförråd in Hus L, plus ordinary C/B/A storage (${CAGES.length})`);
   // a förråd: its front holds while shut; E opens it; in; shut again
   const c = CAGES.find((k) => k.ours), t = garage.targets.find((x) => x.door.cage === c), dd = t.door;
   const mid = dd.hx + dd.dir[0] * 0.45, midz = dd.hz + dd.dir[1] * 0.45;
@@ -139,7 +139,7 @@ async function run() {
   camera.rotation.set(-0.35, yawIn, 0, 'YXZ');
   step(1 / 60);
   const btn = d.getElementById('action');
-  check(/öppna vårt förråd/i.test(btn.textContent), `E target: "${btn.textContent}"`);
+  check(/öppna vårt hyrförråd/i.test(btn.textContent), `E target: "${btn.textContent}"`);
   btn.click();
   for (let i = 0; i < 60; i++) step(1 / 60);
   check(t.isOpen && dd.angle > 1.4, `it opens (${f2(dd.angle)} rad)`);
@@ -193,7 +193,7 @@ async function run() {
   });
   check(!wrong.length, `each face's arrow leads closer to an exit (${wrong.map((s) => `${s.x},${s.z} ${s.cell} n ${s.n} d ${f2(dist(s.x, s.z))} way ${garage.exitWay(s.x, s.z, E.look)?.map(f2)}`).join('; ')})`);
   const wE = garage.exitWay(-60, 44), wB = garage.exitWay(-5, 8.6), wF = garage.exitWay(-5.4, 4.0);
-  check(wE[0] < -0.7 && wB[0] < -0.7 && wF[0] > 0.5, `the entrance hall's way runs west to the garage door (${f2(wE[0])}), the basement corridor's west to the stairwell (${f2(wB[0])}), the förråd's east along its passage to the door (${f2(wF[0])})`);
+  check(wE[0] < -0.7 && wB[0] < -0.7 && wF[0] < -0.5, `the entrance hall's way runs west to the garage door (${f2(wE[0])}), the basement corridor's west to the stairwell (${f2(wB[0])}), the rental passage's west through the drawing's bike-room connection (${f2(wF[0])})`);
   check(['ahead', 'left', 'right', 'back'].every((c) => signs.some((s) => s.cell === c)) || signs.some((s) => s.cell === 'ahead'), `the faces: ${['ahead', 'left', 'right', 'back'].map((c) => `${c} ${signs.filter((s) => s.cell === c).length}`).join(', ')}`);
   check(garage.plans.length === E.plans.length && garage.plans.every((p) => garage.inside(p.here[0], p.here[1])) && dist(...garage.plans[0].here) < 2,
     `${garage.plans.length} utrymningsplaner, "Du är här" on the floor in front of each, the lobby's by the stairwell (${f2(dist(...garage.plans[0].here))} m)`);

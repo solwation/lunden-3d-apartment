@@ -1,0 +1,15 @@
+PASS graffiti remains reachable and selected by the actual interaction ray
+PASS normal action reads the existing graffiti
+PASS Förråd B uses actual basement sensor lighting and room identity
+PASS Förråd A uses actual basement sensor lighting and room identity
+PASS Förråd C uses actual basement sensor lighting and room identity
+PASS entryA actual closed door is selectable from garage
+PASS entryA open doorway has no opaque brick or wall across its actual clear opening
+PASS entryB actual closed door is selectable from garage
+PASS entryB open doorway has no opaque brick or wall across its actual clear opening
+PASS real reload restores an existing rental-passage position on the same floor
+PASS normal saved visit retains the owned car in the garage
+PASS real reload restores a new ordinary-storage passage safely
+PASS ordinary full reset starts safely with all basement doors closed
+PASS full reset keeps new source-based layout and the original car home
+ALL PASS

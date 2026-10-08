@@ -1,0 +1,7 @@
+PASS all basement floor rectangles support feet at -3 m; missing 0, first undefined
+PASS storage doorway supports feet at both exact rectangle joins
+PASS keyboard enters storage, crosses x=0 to east end, traverses west end and returns without falling (-0.53,-3.00,8.13)
+PASS touch enters storage, crosses x=0 to east end, traverses west end and returns without falling (-0.53,-3.00,8.16)
+PASS apartment floor above basement remains at zero
+PASS no invented rescue floor under the basement
+ALL PASS

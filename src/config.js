@@ -911,6 +911,8 @@ export const OUTDOOR = { x0: -78.5, x1: 27.5, z0: -14, z1: 64 };
 // rectangle (garage.js), so a doorway is a small rectangle through the wall.
 export const GARAGE = {
   floor: -3,          // = SITE.terrain.park: the drive is level with the door (#346)
+  doorClearance: .25, // #523: assumed extra side clearance at actual basement doorways
+  doorHead: 2.1, // ASSUMPTION: existing basement lintel height; shared with the A/B brick openings.
   ceiling: -0.35,     // ASSUMPTION: the deck + the courtyard's soil over it; 2.65 m clear (the door is 2.6)
   // DRAWING: each walkable rectangle → [room name, sensor area]. The entrance hall south of Hus C's rooms (INFART GARAGE),
   // open north-east into the big hall (BILPARKERING / CYKELPARKERING) under the courtyard, which runs east between Hus
@@ -936,15 +938,90 @@ export const GARAGE = {
     { id: 'coreE', x0: -16.62, x1: -16.33, z0: 7.95, z1: 8.85, room: 'Hisshall', area: 'basementW' },
     { id: 'bandE', x0: -16.33, x1: 11.12, z0: 7.79, z1: 12.11, room: 'Cykelförråd', area: 'basementE' },
     { id: 'bikeNE', x0: -16.33, x1: -11.08, z0: 0.47, z1: 7.5, room: 'Cykelförråd', area: 'basementE' },
-    { id: 'bikeNEDoor', x0: -15.45, x1: -14.55, z0: 7.5, z1: 7.79, room: 'Cykelförråd', area: 'basementE' },
-    { id: 'forrad', x0: -10.78, x1: 11.12, z0: 0.47, z1: 7.5, room: 'Förråd', area: 'basementE' }, // LGHFÖRRÅD: "15 extra lägenhetsförråd"
-    { id: 'forradDoor', x0: -0.98, x1: -0.08, z0: 7.5, z1: 7.79, room: 'Förråd', area: 'basementE' },
+    { id: 'bikeNEDoor', x0: -15.45, x1: -14.55, z0: 7.5, z1: 7.79, room: 'Cykelförråd', area: 'basementE', door: {kind:'steel',hinge:'x0',open:-1,name:'dörren till östra cykelrummet'} },
+    { id: 'forrad', x0: -10.78, x1: 11.12, z0: 0.47, z1: 7.5, room: 'Hyrförråd', area: 'basementE' }, // LGHFÖRRÅD: "15 extra lägenhetsförråd"
+    { id: 'forradDoor', x0: -0.98, x1: -0.08, z0: 7.5, z1: 7.79, room: 'Hyrförråd', area: 'basementE', door: {kind:'steel',hinge:'x0',open:1,name:'dörren till hyrförråden'} },
     { id: 'garageDoorL', x0: -15.45, x1: -14.55, z0: 12.11, z1: 12.62, room: 'Garage', area: 'hallW', door: { kind: 'steel', hinge: 'x0', open: 1, name: 'dörren till källaren' } }, // from the basement out into the garage
+    // Unlabelled utility cells have no inferred function; the drawing shows no UC access.
+    {id:'roomCN',x0:-62.3,x1:-60.55,z0:13.05,z1:15.1,room:'Källarrum C',area:'entrance'},
+    {id:'roomCNDoor',x0:-62.1,x1:-61.1,z0:15.1,z1:15.5,room:'Källarrum C',area:'entrance',door:{kind:'steel',hinge:'x0',open:-1,name:'dörren till nordligaste källarrummet C'}},
+    {id:'roomCAnnexS',x0:-64.5,x1:-62.8,z0:17.25,z1:18.75,room:'Källarrum C',area:'entrance'},
+    {id:'roomCAnnexSDoor',x0:-62.8,x1:-62.3,z0:17.5,z1:18.5,room:'Källarrum C',area:'entrance',door:{kind:'steel',hinge:'x0',open:-1,name:'dörren till källarrummets sidocell C'}},
+    {id:'stairB',x0:-33.1,x1:-31.2,z0:45.8,z1:49.9,room:'Trapphus B',area:'hallW'},
+    {id:'stairBJoin',x0:-33.3,x1:-33.1,z0:46.0,z1:47.3,room:'Trapphus B',area:'hallW'},
+    {id:'passageAWest',x0:-9.05,x1:-.9,z0:41.4,z1:42.75,room:'Trapphus A',area:'hallE'},
+    // #523: room interior faces and openings read from p46 (graphic accuracy about 0.15 m); see validation.
+    {id: 'bikeFarNW',x0: -41.45,x1: -35.9,z0: 0.47,z1: 7.5,room: 'Cykelförråd',area: 'basementW'},
+    {id: 'bikeFarNWDoor',x0: -40.72,x1: -39.65,z0: 7.5,z1: 7.79,room: 'Cykelförråd',area: 'basementW',door: {kind: 'steel',hinge: 'x0',open: 1,name: 'dörren till västra cykelrummet'}},
+    {id: 'bandFarW',x0: -41.45,x1: -35.6,z0: 7.79,z1: 12.11,room: 'Källarpassage',area: 'basementW'},
+    {id: 'bikeStorageGap',x0: -11.08,x1: -10.78,z0: 3.2,z1: 4.8,room: 'Hyrförråd',area: 'basementE'},
+    {id: 'hallCNiche',x0: -53.4,x1: -51.4,z0: 21.3,z1: 25,room: 'Garage',area: 'hallW'},
+    {id: 'passageC',x0: -62.3,x1: -60.55,z0: 15.5,z1: 34.01,room: 'Trapphus C',area: 'entrance'},
+    {id: 'entryC',x0: -62.1,x1: -61.1,z0: 34.01,z1: 34.52,room: 'Trapphus C',area: 'entrance',door: {kind: 'steel',hinge: 'x0',open: 1,name: 'dörren till trapphus C'}},
+    {id: 'passageCE',x0: -60.55,x1: -53.9,z0: 23.3,z1: 24.6,room: 'Trapphus C',area: 'entrance'},
+    {id: 'entryCE',x0: -53.9,x1: -53.4,z0: 23.4,z1: 24.4,room: 'Trapphus C',area: 'entrance',door: {kind: 'steel',hinge: 'x0',open: -1,name: 'dörren till hisshallen C'}},
+    {id: 'storeCNW',x0: -69.9,x1: -64.8,z0: 17.25,z1: 24.3,room: 'Förråd C',area: 'entrance'},
+    {id: 'storeCNWWing',x0: -64.8,x1: -62.8,z0: 19.05,z1: 22.95,room: 'Förråd C',area: 'entrance'},
+    {id: 'storeCNWDoor',x0: -62.8,x1: -62.3,z0: 20.05,z1: 21.05,room: 'Förråd C',area: 'entrance',door: {kind: 'steel',hinge: 'x0',open: -1,name: 'dörren till förråd C väst'}},
+    {id: 'roomCW',x0: -69.9,x1: -62.8,z0: 24.65,z1: 28.25,room: 'Källarrum C',area: 'entrance'},
+    {id: 'roomCWDoor',x0: -62.8,x1: -62.3,z0: 24.9,z1: 25.9,room: 'Källarrum C',area: 'entrance',door: {kind: 'steel',hinge: 'x0',open: -1,name: 'dörren till källarrummet C'}},
+    {id: 'roomCWJoin',x0: -67.85,x1: -66.85,z0: 24.3,z1: 24.65,room: 'Källarrum C',area: 'entrance',door: {kind: 'steel',hinge: 'x0',open: 1,name: 'dörren mellan källarrummen C'}},
+    {id: 'storeCNETop',x0: -60.2,x1: -51.95,z0: 13.05,z1: 16.95,room: 'Förråd C',area: 'entrance'},
+    {id: 'storeCNEAlcove',x0: -60.2,x1: -58.55,z0: 16.95,z1: 19,room: 'Förråd C',area: 'entrance'},
+    {id: 'storeCNE',x0: -58.55,x1: -51.95,z0: 17.25,z1: 21.1,room: 'Förråd C',area: 'entrance'},
+    {id: 'storeCNEWing',x0: -60.2,x1: -57.65,z0: 19.35,z1: 23,room: 'Förråd C',area: 'entrance'},
+    {id: 'storeCNEJoin',x0: -56.6,x1: -55.15,z0: 16.95,z1: 17.25,room: 'Förråd C',area: 'entrance'},
+    {id: 'storeCNETopDoor',x0: -60.55,x1: -60.2,z0: 15.6,z1: 16.6,room: 'Förråd C',area: 'entrance',door: {kind: 'steel',hinge: 'x0',open: 1,name: 'dörren till förråd C norr'}},
+    {id: 'storeCNEDoor',x0: -60.55,x1: -60.2,z0: 20.05,z1: 21.05,room: 'Förråd C',area: 'entrance',door: {kind: 'steel',hinge: 'x0',open: 1,name: 'dörren till förråd C öst'}},
+    {id: 'elC',x0: -57.35,x1: -53.55,z0: 21.4,z1: 23,room: 'Elrum C',area: 'entrance'},
+    {id: 'elCDoor',x0: -56.1,x1: -55.1,z0: 23,z1: 23.3,room: 'Elrum C',area: 'entrance',door: {kind: 'steel',hinge: 'x0',open: -1,name: 'dörren till elrum C'}},
+    {id: 'storeCSE',x0: -60.2,x1: -51.95,z0: 25,z1: 34.01,room: 'Förråd C',area: 'entrance'},
+    {id: 'storeCSEDoor',x0: -54.7,x1: -53.7,z0: 24.6,z1: 25,room: 'Förråd C',area: 'entrance',door: {kind: 'steel',hinge: 'x0',open: 1,name: 'dörren till förråd C söder'}},
+    {id: 'storeCSEOutsideDoor',x0: -56.7,x1: -55.7,z0: 34.01,z1: 34.52,room: 'Förråd C',area: 'entrance',door: {kind: 'steel',hinge: 'x0',open: 1,name: 'dörren från garaget till förråd C'}},
+    {id: 'utilityC',x0: -69.9,x1: -64.8,z0: 13.05,z1: 16.95,room: 'Undercentral C',area: 'entrance'},
+    {id: 'utilityCAnnex',x0: -64.5,x1: -62.8,z0: 13.05,z1: 16.95,room: 'Källarrum C',area: 'entrance'},
+    {id: 'utilityCDoor',x0: -62.8,x1: -62.3,z0: 15.6,z1: 16.6,room: 'Källarrum C',area: 'entrance',door: {kind: 'steel',hinge: 'x0',open: -1,name: 'dörren till norra källarrummet C'}},
+    {id: 'entryB',x0: -34.5,x1: -33.45,z0: 33.16,z1: 33.7,room: 'Trapphus B',area: 'hallW',door: {kind: 'steel',hinge: 'x0',open: 1,name: 'dörren till trapphus B'}},
+    {id: 'passageBN',x0: -34.8,x1: -32.4,z0: 33.7,z1: 38.45,room: 'Trapphus B',area: 'hallW'},
+    {id: 'passageBMid',x0: -34.8,x1: -33.6,z0: 38.45,z1: 43.45,room: 'Trapphus B',area: 'hallW'},
+    {id: 'passageBS',x0: -35.35,x1: -31.55,z0: 43.8,z1: 45.8,room: 'Trapphus B',area: 'hallW'},
+    {id: 'passageBJoin',x0: -34.6,x1: -33.6,z0: 43.45,z1: 43.8,room: 'Trapphus B',area: 'hallW',door: {kind: 'steel',hinge: 'x0',open: 1,name: 'dörren till södra hisshallen B'}},
+    {id: 'passageBEnd',x0: -35,x1: -33.3,z0: 45.8,z1: 47.55,room: 'Trapphus B',area: 'hallW'},
+    {id: 'storeBNW',x0: -41.08,x1: -35.1,z0: 33.7,z1: 40.5,room: 'Förråd B',area: 'hallW'},
+    {id: 'storeBNWWing',x0: -37.6,x1: -35.1,z0: 40.5,z1: 43.45,room: 'Förråd B',area: 'hallW'},
+    {id: 'storeBNWDoor',x0: -35.1,x1: -34.8,z0: 37.05,z1: 38.05,room: 'Förråd B',area: 'hallW',door: {kind: 'steel',hinge: 'x0',open: -1,name: 'dörren till förråd B väst'}},
+    {id: 'storeBNE',x0: -31.9,x1: -26.3,z0: 33.7,z1: 36.05,room: 'Förråd B',area: 'hallW'},
+    {id: 'storeBNEWing',x0: -31.9,x1: -28.35,z0: 36.05,z1: 38.45,room: 'Förråd B',area: 'hallW'},
+    {id: 'storeBNEDoor',x0: -32.4,x1: -31.9,z0: 35.35,z1: 36.35,room: 'Förråd B',area: 'hallW',door: {kind: 'steel',hinge: 'x0',open: 1,name: 'dörren till förråd B öst'}},
+    {id: 'elB',x0: -41.08,x1: -37.9,z0: 40.8,z1: 42.6,room: 'Elrum B',area: 'hallW'},
+    {id: 'elBDoor',x0: -37.9,x1: -37.6,z0: 41.25,z1: 42.25,room: 'Elrum B',area: 'hallW',door: {kind: 'steel',hinge: 'x0',open: -1,name: 'dörren till elrum B'}},
+    {id: 'storeBSW',x0: -41.08,x1: -35.75,z0: 43.8,z1: 47.55,room: 'Förråd B',area: 'hallW'},
+    {id: 'storeBSWWing',x0: -41.08,x1: -37.85,z0: 47.55,z1: 50.3,room: 'Förråd B',area: 'hallW'},
+    {id: 'storeBSWDoor',x0: -35.75,x1: -35.35,z0: 44.55,z1: 45.55,room: 'Förråd B',area: 'hallW',door: {kind: 'steel',hinge: 'x0',open: -1,name: 'dörren till förråd B söder'}},
+    {id: 'entryA',x0: 1.3,x1: 2.35,z0: 28.76,z1: 29.3,room: 'Trapphus A',area: 'hallE',door: {kind: 'steel',hinge: 'x0',open: 1,name: 'dörren till trapphus A'}},
+    {id: 'passageAN',x0: 0.05,x1: 2.5,z0: 29.3,z1: 35.4,room: 'Trapphus A',area: 'hallE'},
+    {id: 'passageAMid',x0: 1.2,x1: 2.5,z0: 35.4,z1: 38.4,room: 'Trapphus A',area: 'hallE'},
+    {id: 'passageAS',x0: -0.9,x1: 2.5,z0: 38.4,z1: 41,room: 'Trapphus A',area: 'hallE'},
+    {id: 'passageAEnd',x0: 1.25,x1: 2.85,z0: 41,z1: 43.2,room: 'Trapphus A',area: 'hallE'},
+    {id: 'passageAStair',x0: -0.9,x1: 2.85,z0: 43.2,z1: 45.35,room: 'Trapphus A',area: 'hallE'},
+    {id: 'storeANW',x0: -9.05,x1: -0.25,z0: 29.3,z1: 33.15,room: 'Förråd A',area: 'hallE'},
+    {id: 'storeANWWing',x0: -3.55,x1: -1.4,z0: 33.15,z1: 35.35,room: 'Förråd A',area: 'hallE'},
+    {id: 'storeANWInner',x0: -1.4,x1: -0.25,z0: 33.15,z1: 34.2,room: 'Förråd A',area: 'hallE'},
+    {id: 'storeANWDoor',x0: -0.25,x1: 0.05,z0: 31.95,z1: 32.95,room: 'Förråd A',area: 'hallE',door: {kind: 'steel',hinge: 'x0',open: -1,name: 'dörren till förråd A väst'}},
+    {id: 'storeANE',x0: 2.85,x1: 8.9,z0: 29.3,z1: 35.65,room: 'Förråd A',area: 'hallE'},
+    {id: 'storeANEWing',x0: 2.85,x1: 5.35,z0: 35.65,z1: 38.4,room: 'Förråd A',area: 'hallE'},
+    {id: 'storeANEDoor',x0: 2.5,x1: 2.85,z0: 32.9,z1: 33.9,room: 'Förråd A',area: 'hallE',door: {kind: 'steel',hinge: 'x0',open: 1,name: 'dörren till förråd A öst'}},
+    {id: 'elA',x0: 5.7,x1: 8.9,z0: 35.95,z1: 37.8,room: 'Elrum A',area: 'hallE'},
+    {id: 'elADoor',x0: 5.35,x1: 5.7,z0: 36.3,z1: 37.3,room: 'Elrum A',area: 'hallE',door: {kind: 'steel',hinge: 'x0',open: 1,name: 'dörren till elrum A'}},
+    {id: 'storeASE',x0: 2.9,x1: 8.9,z0: 38.8,z1: 43.2,room: 'Förråd A',area: 'hallE'},
+    {id: 'storeASEWing',x0: 5.15,x1: 8.9,z0: 43.2,z1: 45.65,room: 'Förråd A',area: 'hallE'},
+    {id: 'storeASEDoor',x0: 2.5,x1: 2.9,z0: 39.6,z1: 40.6,room: 'Förråd A',area: 'hallE',door: {kind: 'steel',hinge: 'x0',open: 1,name: 'dörren till förråd A söder'}},
   ],
   // DRAWING: free-standing / partial walls inside the rectangles [x0, x1, z0, z1]: the förråd room's partitions and the
   // bike rooms' half walls (z 3.2 … 4.8 open between them); the core's lift shaft south of the lobby
   partials: [[-30.35, -30.05, 0.47, 3.2], [-30.35, -30.05, 4.8, 7.5], [-24.8, -24.46, 2.67, 3.2], [-24.8, -24.46, 4.8, 7.5],
     [-5.53, -5.23, 0.47, 3.2], [-5.53, -5.23, 4.8, 7.5], [0.02, 0.32, 0.47, 3.2], [0.02, 0.32, 4.8, 7.5], [5.57, 5.87, 0.47, 3.2], [5.57, 5.87, 4.8, 7.5],
+    [-38.45,-38.15,8.9,12.11],[-35.9,-35.6,8.9,12.11],[-30.35,-30.05,9.4,12.11],[-24.8,-24.46,9.4,12.11],
     [-11.08, -10.78, 9.4, 12.11], [-5.53, -5.23, 9.4, 12.11], [0.02, 0.32, 9.4, 12.11], [5.57, 5.87, 9.4, 12.11]],
   // DRAWING: the columns (0.42 m squares, centres) — the big hall's grid (7.9 m) and the entrance hall's; the entrance
   // hall's line at x −58.2 is a row of short walls on the plan, drawn as columns here
@@ -960,20 +1037,28 @@ export const GARAGE = {
       [-69.95, -51.9, 34.52, 39.9, 'n', 2.9], [-69.95, -42.6, 47.8, 51.8, 's', 2.9]],
     skip: [[-17.85, -12.59]], ours: [0.58, 3.21], pool: [[-49.44, -44.18]], cars: 0.55, seed: 23,
   },
-  // ASSUMPTION: bike racks in the big hall (CYKELPARKERING) along the middle column row, and in the basement's bike rooms
+  // #523: racks only in the dedicated CYKEL rooms shown on p46; no inferred racks in car-parking areas.
+  // Rack depth/spacing/bike occupancy are visual assumptions; the existing room-side rows follow the drawing
   // along their walls (the plan draws racks there): [x0, x1, z, facing ±1 (towards +z / −z)]
-  bikes: [[-33.2, -26.2, 24.9, 1], [-33.2, -26.2, 24.0, -1], [-35.3, -19.6, 11.6, -1], [-14.2, -11.4, 11.6, -1], [-10.6, -5.8, 11.6, -1],
-    [-5.0, -0.2, 11.6, -1], [0.55, 5.3, 11.6, -1], [6.1, 10.8, 11.6, -1], [-35.3, -30.6, 0.95, 1], [-29.8, -25.1, 0.95, 1], [-24.2, -19.6, 7.0, -1],
+  bikes: [[-41.15,-36.2,.95,1], [-29.75,-25.1,11.6,-1], [-10.6, -5.8, 11.6, -1],
+    [-5.0, -0.2, 11.6, -1], [0.55, 5.3, 11.6, -1], [6.1, 10.8, 11.6, -1],  [-29.8, -25.1, 0.95, 1],[-29.8,-27.9,7,-1],[-26.6,-25.1,7,-1], [-24.2, -19.6, 7.0, -1],
     [-16.0, -11.4, 0.95, 1]],
-  // DRAWING: the 15 förråd (LGHFÖRRÅD) in Hus L's north-east room, four bays between its partitions with a passage
+  // DRAWING: the 15 extra rental förråd (LGHFÖRRÅD) in Hus L's north-east room, four bays between its partitions with a passage
   // through them (z 3.2 … 4.8); ASSUMPTION: two wire-mesh cages per bay each side of it, but one where the room's door
   // comes in, a door `door` m wide in each cage's front, opening into the passage up to `max` rad. `ours` (L1007).
   storage: { bays: [[-10.78, -5.53], [-5.23, 0.02], [0.32, 5.57], [5.87, 11.12]], north: [0.47, 3.2], south: [4.8, 7.5], skipSouth: 1,
-    door: 0.9, max: 1.5, speed: 3, ours: 7, seed: 41 },
-  // walls with a door we cannot open (the rooms under Hus C, Hus B / A's basements): [x, z, face n|s|e|w, label] — the
-  // face the door is seen from (DRAWING: where the plan draws a door on the garage's walls; ASSUMPTION: the labels' text)
-  fakeDoors: [[-56.2, 34.52, 's', 'LGHFÖRRÅD'], [-51.4, 23.1, 'e', 'TRAPPHUS C'], [-36.6, 33.16, 'n', 'LGHFÖRRÅD'], [-29.5, 33.16, 'n', 'TRAPPHUS B'],
-    [-3.5, 28.76, 'n', 'TRAPPHUS A'], [4.5, 28.76, 'n', 'LGHFÖRRÅD'], [-41.8, 44.4, 'w', 'EL']],
+    door: 0.9, max: 1.5, speed: 3, ours: 7, seed: 41,
+    // #523: illustrative cage subdivisions in ordinary storage rooms, NOT a surveyed count or allocation.
+    // x0,x1,z0,z1,front,count,room id,building; room boundaries above follow p46. Legacy L rental cages stay first.
+    ordinary: [
+      [-69.6,-65.1,17.6,19.5,'s',2,'storeCNW','C'],[-59.9,-52.3,13.4,15.2,'s',3,'storeCNETop','C'],
+      [-58.2,-52.3,19.1,20.7,'n',2,'storeCNE','C'],[-59.9,-55.4,25.3,27.4,'s',2,'storeCSE','C'],
+      [-40.8,-36,34,36.1,'s',2,'storeBNW','B'],[-31.6,-26.6,34,35.7,'s',2,'storeBNE','B'],
+      [-40.8,-37.4,44.1,45.7,'s',2,'storeBSW','B'],[-8.8,-.55,29.6,31.4,'s',3,'storeANW','A'],
+      [3.2,8.6,29.6,31.4,'s',2,'storeANE','A'],[5.45,8.6,43.7,45.35,'n',2,'storeASEWing','A'],
+    ] },
+    // #523: C/B/A storage and lobby doors above replace the old unsupported wall-mounted dummy doors.
+  fakeDoors: [],
   // #358: a sectional (overhead) door in `sections` panels rising on tracks and running in under the ceiling in `seconds`
   // s; it shuts by itself `auto` s after it opened unless someone / our car is in the opening (it opens again if one
   // comes in while it shuts). A button on a post outside south of the drive (`post`) and on the wall inside (`inside`);
@@ -996,7 +1081,7 @@ export const GARAGE = {
     w: 0.44, y: 2.25, look: 5,
     hang: [[-64.3, 44], [-53.1, 44], [-47.4, 42], [-68.6, 44, 'e'], [-46.2, 20.8], [-35.7, 20.8], [-25.1, 20.8], [-41, 27], [-30.4, 27], [-20, 27],
       [-15, 18.6], [-4.8, 20.8], [4.35, 20.8], [-30.1, 9.95], [-24.7, 9.95], [-13, 8.6], [-8, 8.6], [-2.6, 8.6], [2.9, 8.6], [-28.7, 4.0], [-22, 4.0],
-      [-15, 6.9, 'n'], [-5.4, 4.0], [5.7, 4.0]],
+      [-15, 6.9, 'n'], [-5.4, 4.0], [5.7, 4.0],[-39,5],[-61.45,23.8],[-61.45,30],[-34,37],[-33.8,44.5],[1.3,33],[1.8,39.5]],
     wall: [[-19.25, 8.4, 'w', 2.35], [-16.33, 8.4, 'e', 2.35], [-16.1, 12.62, 's', 2.35], [-0.53, 7.5, 'n', 2.35]],
     plans: [[-16.98, 9.95, 'n', 1.45], [-13.4, 12.62, 's', 1.5]], size: [0.42, 0.297],
   },

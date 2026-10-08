@@ -10,8 +10,9 @@ import { escapeField, exitTexture, EXIT_CELLS, planTexture } from './escape.js';
 // plan's; heights, stalls, cages and lights are ours). The entrance hall behind the garage door (SITE.terrain.garageDoor)
 // turns north-east into the big hall under the whole courtyard (painted stalls and numbers on canvas floors, the plan's
 // column grid, parked cars, the car pool, bike racks, our own stall straight under our patio), Hus L's basement through
-// a steel door: bike rooms, the elrum, the lift / stair lobby in the core, the 15 wire-mesh förråd (doors that open with
-// E, things inside); the miljörum under Hus C.
+// a steel door: bike rooms, the elrum, the lift / stair lobby in the core, the 15 extra rental cages plus ordinary storage under A/B/C (doors
+// that open with
+// E, illustrative contents); the miljörum under Hus C.
 // Walking: the visitor is `below` (player.js) inside these rectangles at the floor's height; then this module's segments
 // are the collision (not the courtyard's). Walls stand on every rectangle edge that touches no other rectangle. Drawing:
 // per sensor area the shell, floors, cages, signs and tubes are MeshBasic with the fluorescent light baked into vertex
@@ -33,7 +34,9 @@ export const STALLS = (() => {
     const n = Math.floor((x1 - x0) / w + 1e-6);
     for (let k = 0; k < n; k++) {
       const a = x0 + k * w, b = a + w, mid = (a + b) / 2;
-      if (row === 0 && S.skip.some(([s0, s1]) => mid > s0 && mid < s1)) continue; // (in front of the basement door)
+      if (row === 0 && S.skip.some(([s0, s1]) => mid > s0 && mid < s1)) continue;
+      // #523: assumed parking rows must leave the drawing's actual basement doorways clear.
+      if(RECTS.some(r=>r.door&&(nose==='n'?Math.abs(r.z1-z0)<.01:Math.abs(r.z0-z1)<.01)&&b>r.x0-G.doorClearance&&a<r.x1+G.doorClearance))continue; // (in front of the basement door)
       out.push({ n: out.length + 1, x0: a, x1: b, z0, z1, nose, ours: row === 0 && mid > S.ours[0] && mid < S.ours[1], pool: row === 0 && S.pool.some(([p0, p1]) => mid > p0 && mid < p1) }); // (both in the big hall's north row)
     }
   });
@@ -48,7 +51,13 @@ export const CAGES = (() => {
     for (const k of [0, 1]) out.push({ x0: a0 + k * h, x1: a0 + (k + 1) * h, z0: ST.north[0], z1: ST.north[1], front: 's' });
     for (const k of [0, 1]) if (!(i === ST.skipSouth && k === 1)) out.push({ x0: a0 + k * h, x1: a0 + (k + 1) * h, z0: ST.south[0], z1: ST.south[1], front: 'n' });
   });
-  return out.map((c, i) => ({ ...c, n: i + 1, ours: i + 1 === ST.ours }));
+  const cages=out.map((c,i)=>({...c,n:i+1,ours:i+1===ST.ours,rental:true,room:'forrad',label:i+1===ST.ours?`HYRFÖRRÅD ${i+1} · L1007`:`HYRFÖRRÅD ${i+1}`}));
+  const numbers={};
+  for(const [x0,x1,z0,z1,front,count,room,building] of ST.ordinary??[])for(let k=0;k<count;k++){
+    const n=numbers[building]=(numbers[building]??0)+1,w=(x1-x0)/count;
+    cages.push({x0:x0+k*w,x1:x0+(k+1)*w,z0,z1,front,room,rental:false,ours:false,n:`${building}${n}`,label:`FÖRRÅD ${building}${n}`});
+  }
+  return cages;
 })();
 
 /** The columns' centres [x, z]. */
@@ -162,8 +171,8 @@ function meshTexture() {
 const SOLID_V = 0.97;
 
 /** Signs: one atlas of plates (cells of 256 × 64; green for the car pool and the way out). */
-const SIGNS = ['HISS', 'TRAPPHUS L', 'UTFART', 'GARAGE', 'BILPOOL', 'L1007', 'MILJÖRUM', 'ELRUM', 'CYKELFÖRRÅD', 'FÖRRÅD', 'KÄLLARE · HISS',
-  ...new Set(G.fakeDoors.map((f) => f[3])), ...CAGES.map((c) => (c.ours ? 'FÖRRÅD 7 · L1007' : `FÖRRÅD ${c.n}`))];
+const SIGNS = ['HISS', 'TRAPPHUS L', 'UTFART', 'GARAGE', 'BILPOOL', 'L1007', 'MILJÖRUM', 'ELRUM', 'CYKELFÖRRÅD', 'FÖRRÅD', 'HYRFÖRRÅD', 'KÄLLARE · HISS',
+  ...new Set([...G.fakeDoors.map(f=>f[3]),...RECTS.filter(r=>r.door).map(r=>r.room.toUpperCase())]), ...CAGES.map(c=>c.label)];
 function signTexture() {
   const c = document.createElement('canvas'); c.width = 1024; c.height = 64 * Math.ceil(SIGNS.length / 4);
   const g = c.getContext('2d');
@@ -212,7 +221,7 @@ export class Garage {
     }
     // over every doorway (a thin rectangle through a wall): the lintel; the garage door's: up to the ceiling from its head
     for (const r of RECTS.filter((q) => Math.min(q.x1 - q.x0, q.z1 - q.z0) < 0.7)) {
-      const across = r.x1 - r.x0 < r.z1 - r.z0, head = r.id === 'doorway' ? F + GD.h : F + 2.1;
+      const across = r.x1 - r.x0 < r.z1 - r.z0, head = r.id === 'doorway' ? F + GD.h : F + G.doorHead;
       for (const v of across ? [r.x0, r.x1] : [r.z0, r.z1]) this.areas[r.area].geos.shell.push(bake(across ? panel(v, r.z0, v, r.z1, head, C) : panel(r.x0, v, r.x1, v, head, C), WALL));
     }
     // the partial walls and the columns: concrete boxes (a yellow foot band on the columns)
@@ -251,8 +260,14 @@ export class Garage {
     put('signs', plate('KÄLLARE · HISS', -15.0, F + 2.35, 12.65, facing(0, 1), 0.9), -15, 13);
     put('signs', plate('MILJÖRUM', -64.5, F + 2.35, 34.55, facing(0, 1), 0.7), -64.5, 35);
     put('signs', plate('ELRUM', -23.55, F + 2.35, 2.7, facing(0, 1), 0.6), -23.55, 3);
-    put('signs', plate('FÖRRÅD', -0.53, F + 2.35, 7.82, facing(0, 1), 0.6), -0.53, 8.2);
+    put('signs', plate('HYRFÖRRÅD', -0.53, F + 2.35, 7.82, facing(0, 1), 0.6), -0.53, 8.2);
     put('signs', plate('CYKELFÖRRÅD', -15.0, F + 2.35, 7.82, facing(0, 1), 0.8), -15, 8.2);
+    for(const r of RECTS.filter(r=>r.door&&!['miljoDoor','elDoor','garageDoorL'].includes(r.id))){
+      const mx=(r.x0+r.x1)/2,mz=(r.z0+r.z1)/2,along=r.x1-r.x0>r.z1-r.z0;
+      const label=r.room==='Hyrförråd'?'HYRFÖRRÅD':r.room==='Cykelförråd'?'CYKELFÖRRÅD':r.room.toUpperCase();
+      if(!SIGNS.includes(label))continue;
+      for(const sign of [-1,1])put('signs',plate(label,mx+(along?0:sign*.03),F+2.35,mz+(along?sign*.03:0),facing(along?0:sign,along?sign:0),.8),mx,mz);
+    }
     // doors we cannot open: a steel leaf on the wall and its sign
     for (const [x, z, face, label] of G.fakeDoors) {
       const [ox, oz] = FACES[face], along = oz !== 0, px = x + ox * 0.03, pz = z + oz * 0.03, ax = x + ox, az = z + oz;
@@ -297,16 +312,18 @@ export class Garage {
     const solid = (g) => { g = bake(g, 0x9aa0a4, true); const uv = g.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setXY(i, 0.5, SOLID_V); return g; };
     const post = (x, z) => put('mesh', solid(box(0.04, C - F, 0.04, x, (F + C) / 2, z)), x, z);
     for (const c of CAGES) {
+      const room=R[c.room];
       const line = c.front === 'n' ? c.z0 : c.z1, back = c.front === 'n' ? c.z1 : c.z0, out = c.front === 'n' ? -1 : 1;
-      for (const x of [c.x0, c.x1]) if (!G.partials.some(([p0, p1, q0, q1]) => x > p0 - 0.35 && x < p1 + 0.35 && (q0 + q1) / 2 > Math.min(line, back) && (q0 + q1) / 2 < Math.max(line, back)) && x > R.forrad.x0 + 0.1 && x < R.forrad.x1 - 0.1) meshWall(x, line, x, back);
+      if (!c.rental) meshWall(c.x0, back, c.x1, back); // illustrative ordinary cages stand clear of the concrete walls
+      for (const x of [c.x0, c.x1]) if (!G.partials.some(([p0, p1, q0, q1]) => x > p0 - 0.35 && x < p1 + 0.35 && (q0 + q1) / 2 > Math.min(line, back) && (q0 + q1) / 2 < Math.max(line, back)) && x > room.x0 + 0.1 && x < room.x1 - 0.1) meshWall(x, line, x, back);
       const h0 = c.x0 + 0.15, h1 = h0 + ST.door;
       meshWall(c.x0, line, h0, line); meshWall(h1, line, c.x1, line);
-      const lg = panel(h0, line, h1, line, F + 2.1, C - 0.02), uv = lg.attributes.uv;
+      const lg = panel(h0, line, h1, line, F + G.doorHead, C - 0.02), uv = lg.attributes.uv;
       for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * ST.door / 0.16, uv.getY(i) * (C - F - 2.1) / 0.16);
       put('mesh', bake(lg, 0xffffff, true), (h0 + h1) / 2, line);
       for (const x of [c.x0, h0, h1, c.x1]) post(x, line);
       this.cageDoors.push({ cage: c, hx: h0, hz: line, dir: [1, 0], out: [0, out], w: ST.door, angle: 0, target: 0, steel: false, max: ST.max });
-      put('signs', plate(c.ours ? 'FÖRRÅD 7 · L1007' : `FÖRRÅD ${c.n}`, (h0 + h1) / 2, F + 2.3, line + out * 0.03, facing(0, out), 0.5), (h0 + h1) / 2, line);
+      put('signs', plate(c.label, (h0 + h1) / 2, F + 2.3, line + out * 0.03, facing(0, out), 0.5), (h0 + h1) / 2, line);
     }
     this.contents((kind, g, x, z) => put(kind, g, x, z));
     // the steel doors (the miljörum, the elrum, the basement ↔ garage): a leaf in each such doorway, E opens it
@@ -377,7 +394,7 @@ export class Garage {
     };
     const cages = this.cageDoors.filter((d) => !d.steel), steel = this.cageDoors.filter((d) => d.steel);
     this.leaves = new THREE.InstancedMesh(leafGeo(ST.door, 2.0, true), new THREE.MeshBasicMaterial({ map: meshTex, alphaTest: 0.5, side: THREE.DoubleSide }), cages.length);
-    this.steelLeaves = new THREE.InstancedMesh(leafGeo(0.9, 2.05, false), new THREE.MeshBasicMaterial({ color: 0xffffff }), steel.length);
+    this.steelLeaves = new THREE.InstancedMesh(leafGeo(ST.door, 2.05, false), new THREE.MeshBasicMaterial({ color: 0xffffff }), steel.length);
     for (const m of [this.leaves, this.steelLeaves]) { m.raycast = () => {}; m.frustumCulled = false; group.add(m); }
     const pickMat = new THREE.MeshBasicMaterial();
     this.targets = this.cageDoors.map((d) => {
@@ -388,7 +405,7 @@ export class Garage {
       const pick = new THREE.Mesh(new THREE.BoxGeometry(d.w, 2.0, 0.12), pickMat); pick.position.set(d.w / 2, F + 1.05, 0); pick.visible = false;
       pivot.add(pick); group.add(pivot);
       const garage = this;
-      const t = { kind: 'cabinet', name: d.steel ? d.name : d.cage.ours ? 'vårt förråd' : `förråd ${d.cage.n}`, pickable: pick, door: d,
+      const t = { kind: 'cabinet', name: d.steel ? d.name : d.cage.ours ? 'vårt hyrförråd' : d.cage.rental ? `hyrförråd ${d.cage.n}` : `förråd ${d.cage.n}`, pickable: pick, door: d,
         get isOpen() { return d.target > 0; },
         toggle() { d.target = d.target > 0 ? 0 : d.max; garage.sound(d); } };
       pick.userData.door = t;
@@ -469,7 +486,7 @@ export class Garage {
     });
     const exits = [{ x: (GD.x + ENTR.x0) / 2 + 0.6, z: (GD.z0 + GD.z1) / 2, label: 'Garageport' }, { x: (CORE.x0 + CORE.x1) / 2, z: (CORE.south[0] + CORE.south[1]) / 2, label: 'Trapphus' }];
     const rooms = [['GARAGE', -56, 49.5], ['GARAGE', -30, 15.2], ['GARAGE', 0, 25], ['MILJÖRUM', -66.3, 31.3], ['CYKELFÖRRÅD', -27.4, 6.2], ['CYKELFÖRRÅD', -2.6, 10.5],
-      ['ELRUM', -21.8, 1.4], ['FÖRRÅD', 0.2, 4.0]];
+      ['ELRUM', -21.8, 1.4], ['HYRFÖRRÅD', 0.2, 4.0],['FÖRRÅD C',-66.3,21],['FÖRRÅD C',-55,28.5],['FÖRRÅD B',-38,38],['FÖRRÅD A',5,33]];
     const P = planTexture(plans, { rects: RECTS, walls: wallLines(), blocks, cages: CAGES, core: { x0: CORE.x0, x1: CORE.split, z0: R.core.z0, landing: CORE.south[0] }, lift: CORE.lift, exits, field, rooms });
     this.planTex = P.tex; this.planCanvas = P.canvas;
     this.plans = plans;
@@ -529,7 +546,7 @@ export class Garage {
   /** Is (x, z) inside the garage, the basement or a room down here? */
   inside(x, z) { return !!rectAt(x, z); }
 
-  /** Room name at (x, z) ('Garage', 'Cykelförråd', 'Förråd', 'Miljörum', 'Elrum', 'Hisshall') or null. */
+  /** Room name at (x, z) including rental / ordinary storage and A/B/C basement lobbies, or null. */
   roomAt(x, z) { return rectAt(x, z)?.room ?? null; }
 
   /** The sensor area at (x, z) or null. */
@@ -549,7 +566,7 @@ export class Garage {
   place(d) {
     const a = d.angle, dx = d.dir[0] * Math.cos(a) + d.out[0] * Math.sin(a), dz = d.dir[1] * Math.cos(a) + d.out[1] * Math.sin(a), yaw = Math.atan2(-dz, dx);
     d.pivot.rotation.y = yaw; d.pivot.updateMatrix();
-    d.inst.setMatrixAt(d.index, new THREE.Matrix4().makeRotationY(yaw).setPosition(d.hx, 0, d.hz));
+    d.inst.setMatrixAt(d.index, new THREE.Matrix4().makeRotationY(yaw).scale(new THREE.Vector3(d.w / ST.door, 1, 1)).setPosition(d.hx, 0, d.hz));
     d.inst.instanceMatrix.needsUpdate = true;
   }
 
