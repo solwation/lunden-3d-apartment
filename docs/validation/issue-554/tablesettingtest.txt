@@ -1,0 +1,26 @@
+PASS six existing chair positions each have one plate and one glass slot
+PASS all settings start empty while the existing kitchen stock remains unchanged
+PASS normal closed cabinet rules still block taking plates
+PASS plate 1 can be carried and aimed at its real place setting
+PASS glass 1 can be aimed at its setting despite the existing plate
+PASS touch places original plate/glass pair 1 in the matching distinct slots
+PASS plate 2 can be carried and aimed at its real place setting
+PASS glass 2 can be aimed at its setting despite the existing plate
+PASS touch places original plate/glass pair 2 in the matching distinct slots
+PASS plate 3 can be carried and aimed at its real place setting
+PASS glass 3 can be aimed at its setting despite the existing plate
+PASS touch places original plate/glass pair 3 in the matching distinct slots
+PASS setting the table creates no new plates or glasses
+PASS all three place settings have physically separate plate and glass geometry
+PASS occupied plate slot rejects another plate without moving either original
+PASS another chair place accepts the retained spare plate
+PASS table accepts only plates and drinking glasses and retains a wrong held item
+PASS set plate can be taken back with normal life action
+PASS plate can return to its setting with the same food riding on it
+PASS setting anchors and original dishes follow their movable table
+PASS restocking open cupboards never duplicates dishes now on the table
+PASS actual reload preserves all original dish identities and chosen chair slots
+PASS actual reload keeps food on its plate and water in its glass
+PASS saved table reload has no duplicated inventory or broken slot invariants
+PASS actual reset returns original kitchen stock and an empty dining table
+ALL PASS

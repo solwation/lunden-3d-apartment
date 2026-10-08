@@ -1,0 +1,52 @@
+<!doctype html><html lang="sv"><meta charset="utf-8"><title>Table setting test</title><pre id="out">running…</pre><script type="module">
+const lines=[];let pass=true;const check=(ok,text)=>{lines.push((ok?'PASS':'FAIL')+' '+text);pass&&=!!ok},wait=ms=>new Promise(r=>setTimeout(r,ms));
+try{
+ const f=document.createElement('iframe');f.width=480;f.height=300;document.body.append(f);
+ async function load(q){await new Promise(r=>{f.onload=r;f.src='../index.html?'+q});while(!f.contentWindow.__app)await wait(100);f.contentDocument.documentElement.requestFullscreen=undefined;f.contentDocument.getElementById('start-touch').click();const a=f.contentWindow.__app;a.renderer.setPixelRatio(.15);return a;}
+ let A=await load('life&shot&cloud='),L=A.life,I=L.items,S=A.tableSetting;const T=await f.contentWindow.eval("import('three')"),{LIFE}=await f.contentWindow.eval("import('/src/config.js')");
+ const run=(t,id)=>L.options(t).find(a=>a.id===id)?.run();
+ const plates=I.ofType('plate').filter(i=>i.home?.store==='plates'),glasses=I.ofType('glass'),ids=[...plates,...glasses].map(i=>i.id),counts=[I.ofType('plate').length,glasses.length];
+ check(S.places.length===6&&S.places.every(p=>p.store.slots.length===2),'six existing chair positions each have one plate and one glass slot');
+ check(plates.length===3&&glasses.length===3&&S.places.every(p=>!I.all().some(i=>i.place.store===p.store.id)),'all settings start empty while the existing kitchen stock remains unchanged');
+ const cabinet=A.world.lids.find(l=>l.stock==='platesLife'),glassCab=A.world.lids.find(l=>l.stock==='glasses');
+ check(!run(L.view(plates[0]).takeTarget,'take')&&plates[0].place.store==='plates','normal closed cabinet rules still block taking plates');
+ for(const c of [cabinet,glassCab]){if(!c.isOpen)c.toggle();c.update(2);}A.scene.updateMatrixWorld(true);
+ function aim(target){const p=target.pickable.getWorldPosition(new T.Vector3());for(let k=0;k<16;k++){const a=k/16*Math.PI*2;A.player.spawn(p.x+Math.sin(a)*.8,p.z+Math.cos(a)*.8,0);A.step(0);A.camera.lookAt(p);A.camera.updateMatrixWorld(true);A.step(0);if(A.focus().focused===target)return true}return false}
+ for(let k=0;k<3;k++){
+  const place=S.places[k];run(L.view(plates[k]).takeTarget,'take');
+  check(I.held()===plates[k]&&aim(place.target),'plate '+(k+1)+' can be carried and aimed at its real place setting');
+  if(A.focus().focused===place.target)f.contentDocument.getElementById('action').click();else run(place.target,'putIn');
+  run(L.view(glasses[k]).takeTarget,'take');
+  check(aim(place.target),'glass '+(k+1)+' can be aimed at its setting despite the existing plate');
+  if(A.focus().focused===place.target)f.contentDocument.getElementById('action').click();else run(place.target,'putIn');
+  check(plates[k].place.store===place.store.id&&plates[k].place.slot===0&&glasses[k].place.store===place.store.id&&glasses[k].place.slot===1&&!I.held(),'touch places original plate/glass pair '+(k+1)+' in the matching distinct slots');
+ }
+ check(I.ofType('plate').length===counts[0]&&I.ofType('glass').length===counts[1],'setting the table creates no new plates or glasses');
+ const bounds=[];for(const i of [...plates,...glasses])bounds.push(new T.Box3().setFromObject(L.view(i).model));
+ // Both footprints are circular: an AABB corner overlap is not a plate/glass collision.
+ const footprint=b=>{const s=b.getSize(new T.Vector3()),c=b.getCenter(new T.Vector3());return {x:c.x,z:c.z,r:Math.max(s.x,s.z)/2}};
+ const discs=bounds.map(footprint);
+ check(discs.every((b,k)=>discs.every((n,j)=>k===j||Math.hypot(b.x-n.x,b.z-n.z)>b.r+n.r)),'all three place settings have physically separate plate and glass geometry');
+ const spare=I.ofType('plate').find(i=>!plates.includes(i)),first=S.places[0];run(L.view(spare).takeTarget,'take');
+ const before=JSON.stringify(plates[0].place);check(!run(first.target,'putIn')&&I.held()===spare&&JSON.stringify(plates[0].place)===before,'occupied plate slot rejects another plate without moving either original');
+ run(S.places[3].target,'putIn');check(spare.place.store===S.places[3].store.id,'another chair place accepts the retained spare plate');
+ const can=I.ofType('wateringCan')[0];run(L.view(can).takeTarget,'take');
+ check(!run(first.target,'putIn')&&I.held()===can&&L.options(first.target).find(a=>a.id==='putIn')?.reason==='Duka med en tallrik eller ett dricksglas','table accepts only plates and drinking glasses and retains a wrong held item');L.view(can).putBack();
+ run(L.view(plates[0]).takeTarget,'take');check(I.held()===plates[0],'set plate can be taken back with normal life action');
+ const food=I.create('breadSlice',{at:'on',parent:plates[0].id,slot:0});
+ run(first.target,'putIn');
+ check(food.place.parent===plates[0].id&&plates[0].place.store===first.store.id,'plate can return to its setting with the same food riding on it');
+ I.set(glasses[0],{machine:{drink:'water'}});I.setAmount(glasses[0],120);
+ const matrix=S.table.matrixWorld.clone();S.table.position.x+=.2;S.table.rotation.y+=.1;A.scene.updateMatrixWorld(true);
+ check(!S.table.matrixWorld.equals(matrix)&&L.view(plates[0]).model.parent===first.anchors[0],'setting anchors and original dishes follow their movable table');S.table.position.x-=.2;S.table.rotation.y-=.1;A.scene.updateMatrixWorld(true);
+ L.restock();check(I.ofType('plate').length===counts[0]&&I.ofType('glass').length===counts[1],'restocking open cupboards never duplicates dishes now on the table');
+ const placements=ids.map(id=>[id,I.get(id).place.store,I.get(id).place.slot]),spareId=spare.id,foodId=food.id;
+ f.contentWindow.localStorage.setItem(LIFE.save.key,JSON.stringify(L.serialize()));A=await load('shot&cloud=&time=12');L=A.life;I=L.items;S=A.tableSetting;
+ check(placements.every(([id,s,k])=>I.get(id)?.place.store===s&&I.get(id).place.slot===k)&&I.get(spareId)?.place.store==='tableSetting3','actual reload preserves all original dish identities and chosen chair slots');
+ check(I.get(foodId)?.place.parent===plates[0].id&&I.get(glasses[0].id)?.amount===120&&I.get(glasses[0].id)?.machine.drink==='water','actual reload keeps food on its plate and water in its glass');
+ check(I.ofType('plate').length===counts[0]&&I.ofType('glass').length===counts[1]&&I.audit().length===0,'saved table reload has no duplicated inventory or broken slot invariants');
+ A.resetHome.go=()=>{};A.resetHome.confirm();A=await load('shot&cloud=&time=12');I=A.life.items;S=A.tableSetting;
+ check(I.ofType('plate').length===3&&I.ofType('glass').length===3&&S.places.every(p=>!I.all().some(i=>i.place.store===p.store.id)),'actual reset returns original kitchen stock and an empty dining table');
+ document.getElementById('out').textContent=lines.join('\n')+'\n'+(pass?'ALL PASS':'SOME FAILED');
+}catch(e){document.getElementById('out').textContent=lines.join('\n')+'\nFAIL '+e.stack}
+</script></html>

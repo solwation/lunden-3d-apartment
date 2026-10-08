@@ -1303,6 +1303,8 @@ export const WATERING = {
   tilt: .65, streamRadius: .003, pickMargin: .025, rackPick: [.34,.24,.2], soilRoughness: .35,
   wall: .006, bottom: .012, spoutRadius: .009, handleRadius: .008, waterInset: .007, waterBottom: .015, waterHeadroom: .02,
 };
+// Fixed place settings relative to the existing six chairs; spacing/pick sizes are game assumptions (#554).
+export const TABLE_SETTING = {inset:.17,glassIn:.14,glassAhead:.13,lift:.001,pick:[.34,.15,.34],pickIn:.04,pickY:.065,pickZ:.02};
 export const ITEMS = {
   wateringCan: { name: 'vattenkannan', noun: 'vattenkanna', tags: ['wateringCan','fillable'], unit: 'ml', amount: 0, capacity: WATERING.capacity, fullText: 'Vattenkannan är full', size: 'm', model: 'wateringCan', held: {pos:[.16,-.30,-.48],rot:[.1,-.25,0]} },
   laundryClothes: { name: 'plagget', noun: 'plagg', tags: ['laundry'], unit: 'count', amount: 1, size: 's', clean: 'dirty', moisture: 'dry', model: 'laundryClothes' },

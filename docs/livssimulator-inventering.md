@@ -152,3 +152,5 @@ Code in src/mess.js (and the vacuum / the cloth below), the test is `tools/life3
 ## M4 – small chores (#396)
 
 - **#553 watering**: existing indoor window pots, plant Things and movable palm/ZZ are **extended** with saved care ids, wet soil and per-pot window foliage changes. Artificial shelf eucalyptus refuses watering. One **new** Items watering can reuses the M0 hand/slots and M2 basin filling/pouring; no separate inventory. WATERING defines assumed game capacity/dose/timing and display dimensions. State lives in the same life record (`x.watering` and the can instance amount).
+
+- **#554 table setting**: the existing movable SKANSNÄS is **extended** with six ordinary plate/glass slot pairs matching its chairs. The same M0 dish instances move from kitchen cupboards to the table; plate food and glass liquids remain attached/saved. Full or wrong slots retain the held item. No dish duplication, extra inventory or saved table counter.
