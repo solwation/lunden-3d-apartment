@@ -22,4 +22,4 @@ Verifierat i riktig Chromium-webbläsare med telefonvy 640 × 480: alla sex upps
 |---|---|
 | ![Inifrån](bedroom-night.png) | ![Utifrån](bedroom-outside-night.png) |
 
-93 gardinkontroller och 32 plissékontroller passerar. Jämförelse med föregående version, samma mobilvy och kameror: samtliga sex rum har identiskt antal ritningar och trianglar både dag och kväll. Dagens ritningar: 183, 182, 214, 183, 268 och 215; kvällens: 173, 171, 204, 172, 258 och 190 (Sovrum 1–4, kök, vardagsrum). Mätningen gäller renderkostnad i webbläsare, inte FPS på fysisk mobilhårdvara.
+93 gardinkontroller och 31 plissékontroller passerar. Jämförelse med föregående version, samma mobilvy och kameror: samtliga sex rum har identiskt antal ritningar och trianglar både dag och kväll. Dagens ritningar: 183, 182, 214, 183, 268 och 215; kvällens: 173, 171, 204, 172, 258 och 190 (Sovrum 1–4, kök, vardagsrum). Mätningen gäller renderkostnad i webbläsare, inte FPS på fysisk mobilhårdvara.
