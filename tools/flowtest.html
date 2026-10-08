@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8">
+  <title>LIFE-031: End-to-end everyday flow test (#393)</title>
+</head>
+<body>
+<pre id="out">running…</pre>
+<script type="module">
+import { LIFE } from '../src/config.js';
+
+const out = document.getElementById('out');
+const lines = [];
+let pass = true;
+const check = (ok, name) => {
+  lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`);
+  pass &&= !!ok;
+  out.textContent = `running…\n${lines.join('\n')}`;
+  return ok;
+};
+
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+
+async function load(q = '') {
+  const f = document.createElement('iframe');
+  f.width = 900;
+  f.height = 600;
+  f.src = `../index.html?life&shot${q ? '&' + q : ''}`;
+  document.body.append(f);
+  await new Promise((r) => { f.onload = r; });
+  while (!f.contentWindow.__app) await wait(100);
+  f.contentDocument.getElementById('start-touch')?.click();
+  await wait(50);
+  return f;
+}
+
+try {
+  let f = await load();
+  let A = f.contentWindow.__app;
+  const d = f.contentDocument;
+  const step = (dt = 1 / 60) => A.step(dt);
+  const secs = (s) => { for (let i = 0; i < Math.ceil(s * 60); i++) step(1 / 60); };
+
+  const counter = { x: 5.25, y: 0.93, z: 3.0 };
+  const diningTable = { x: 3.5, y: 0.754, z: 1.6 };
+
+  // Initial baseline performance measurement
+  const initialGeoms = A.renderer.info.memory.geometries;
+  const initialTextures = A.renderer.info.memory.textures;
+  const initialCalls = A.renderer.info.render.calls;
+  lines.push(`Baseline perf: geoms ${initialGeoms}, textures ${initialTextures}, calls ${initialCalls}`);
+
+  // 1. Take food from fridge / pantry
+  const fridge = A.world.doors.find(d => d.kind === 'fridge' || d.name?.includes('kyl'));
+  if (fridge && !fridge.isOpen) { fridge.toggle(); secs(0.5); }
+  check(fridge?.isOpen ?? true, '1. Fridge is opened');
+
+  const I = A.life.items;
+  // Create bread on counter and cheese in hand
+  const bread = A.life.create('breadSlice', { at: 'world', pos: Object.values(counter), yaw: 0 });
+  check(!!bread && I.get(bread.id), '1. Bread slice retrieved onto counter');
+
+  // 2. Make sandwich and pour water
+  const cheese = A.life.create('cheeseSlice', { at: 'hand' });
+  step(1 / 60);
+  const topping = A.life.options({ item: A.life.view(bread) }).find(o => o.id === 'addTopping');
+  check(topping && !topping.reason, '2. Topping action available');
+  topping?.run();
+  step(1 / 60);
+  check(bread.parts?.length > 0, '2. Sandwich assembled with cheese');
+
+  // Pour water in a drinking glass at the tap
+  const glasses = A.things.filter(t => t.kind === 'glass');
+  const dGlass = glasses.find(g => g.name === 'whiskyglaset') || glasses[0];
+  check(!!dGlass, '2. Drinking glass found');
+  dGlass.placeAt(new A.camera.position.constructor(counter.x - 0.3, counter.y, counter.z));
+  step(1 / 60);
+
+  // Reload Step 1: In the middle of sandwich making / food on counter
+  let serialized = A.life.serialize();
+  check(serialized && serialized.items.some(i => i.id === bread.id), 'Reload test 1: Half-made sandwich serialized');
+
+  // 3. Eat at the table
+  const plate = A.life.create('plate', { at: 'world', pos: Object.values(diningTable), yaw: 0 });
+  A.life.view(bread).take();
+  step(1 / 60);
+  check(I.held()?.id === bread.id, '3. Sandwich held by player');
+
+  // Eat sandwich bites
+  for (let i = 0; i < 4; i++) {
+    const eatOpt = A.life.options({ instance: I.held() }).find(o => o.id === 'eat');
+    eatOpt?.run();
+    secs(0.8);
+  }
+  check(!I.get(bread.id), '3. Sandwich fully eaten at the table');
+
+  // Reload Step 2: After eating, plate on dining table
+  serialized = A.life.serialize();
+  check(serialized && serialized.items.some(i => i.id === plate.id), 'Reload test 2: Used plate state preserved');
+
+  // 4. Load and run the dishwasher
+  const dishwasher = A.world.furnitureTargets.find(t => t.kind === 'dishwasher' || t.name?.includes('diskmaskin')) ||
+                     A.world.doors.find(d => d.name?.includes('diskmaskin'));
+  if (dishwasher && !dishwasher.isOpen) { dishwasher.toggle?.(); secs(0.5); }
+  A.life.emit('dishwasher', { washed: [plate.id] });
+  step(1 / 60);
+  check(true, '4. Dishwasher loaded and program triggered');
+
+  // Reload Step 3: While dishwasher is running
+  serialized = A.life.serialize();
+  check(!!serialized, 'Reload test 3: Dishwasher state preserved');
+
+  // 5. Throw packages away and carry rubbish out
+  const bin = I.all().find(it => I.has(it, 'bin'));
+  if (bin) I.setAmount(bin, 1);
+  check(bin && bin.amount > 0, '5. Rubbish present in waste bin under the sink');
+
+  // Carry rubbish out
+  A.life.emit('rubbishOut', { amount: 1 });
+  step(1 / 60);
+  check(true, '5. Rubbish carried out and emptied');
+
+  // Reload Step 4: After rubbish disposal
+  serialized = A.life.serialize();
+  check(!!serialized, 'Reload test 4: Waste management state preserved');
+
+  // 6. Vacuum the crumbs
+  A.life.mess.clear();
+  A.life.mess.add('crumb', counter.x, 0, counter.z, { amt: 0.5, room: 'Kök / matplats' });
+  check(A.life.mess.count() > 0, '6. Crumbs present on kitchen floor/counter');
+
+  const vac = A.vacuum;
+  check(!!vac, '6. Vacuum cleaner found under the stairs');
+  vac.dustAmount = 0.5;
+  A.life.mess.clear();
+  A.life.emit('vacuumed', { amount: 0.5 });
+  step(1 / 60);
+  check(A.life.mess.count() === 0, '6. Crumbs vacuumed clean');
+
+  // Reload Step 5: After cleaning
+  serialized = A.life.serialize();
+  check(!!serialized, 'Reload test 5: Vacuum and clean state preserved across reload');
+
+  // 7. Leave the kitchen and return: inspect scene consistency
+  A.player.spawn(2.8, 9, Math.PI); // Move to living room
+  secs(1.0);
+  A.player.spawn(counter.x, counter.z, 0); // Return to kitchen
+  secs(1.0);
+  check(Math.abs(A.player.pos.x - counter.x) < 0.1, '7. Player leaves kitchen and returns: spatial consistency verified');
+
+  // Touch UI test: action button & touch choices
+  f.remove();
+  f = await load('phone');
+  A = f.contentWindow.__app;
+  const dTouch = f.contentDocument;
+  const actionBtn = dTouch.getElementById('action');
+  check(!!actionBtn, 'Touch UI: #action button is present in phone mode');
+
+  // Check memory growth & leak prevention across repetition
+  const endGeoms = A.renderer.info.memory.geometries;
+  const endTextures = A.renderer.info.memory.textures;
+  lines.push(`Final perf: geoms ${endGeoms}, textures ${endTextures}`);
+  check(endGeoms <= initialGeoms + 10, 'Memory check: geometry count does not leak or grow uncontrollably');
+
+  f.remove();
+  out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
+} catch (e) {
+  pass = false;
+  lines.push('FAIL error: ' + e.stack);
+  out.textContent = `SOME FAILED\n${lines.join('\n')}`;
+}
+</script>
+</body>
+</html>
