@@ -1,7 +1,8 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { HUS_L as H, COLORS, FENCE_HEIGHT, SEASON, VERTICAL, storeyFloor, CORE } from './config.js';
+import { HUS_L as H, COLORS, FENCE_HEIGHT, SEASON, VERTICAL, storeyFloor, CORE, DOOR_HEIGHT, DOOR_TRIM } from './config.js';
 import { registerSnow } from './seasons.js';
+import { entryParts, entryMaterials } from './entrancedoor.js';
 import { wallLine, wallRect } from './roofs.js';
 import { groundY } from './surroundings.js';
 import { glowMaterial, poolGeometry, washGeometry, fadeGlow } from './groundglow.js';
@@ -160,7 +161,7 @@ function spiralStair(t, top, steel, slabs) {
  *  - våning 1–2: brick, a row of units like ours on both sides of the stair core with the portik;
  *    the other units get our façade openings as glass, and our patio/hedge/screen walls
  *  - våning 3–4: the stacked two-storey units, white render with brick pilasters, set back behind
- *    the loftgång (their own street openings per flat type, HUS_L.street, #347) (grey-green railing, a light metal fascia, recessed white doors with a lantern each, #111) on the
+ *    the loftgång (their own street openings per flat type, HUS_L.street, #347) (grey-green railing, a light metal fascia, recessed green doors with a small high pane and lantern each, #111) on the
  *    north side; on the courtyard side (#337, HUS_L.court) våning 3 in brick, våning 4 set back behind roof terraces,
  *    the core's brick loft rising through them; spiral stairs in brick drums at both ends
  *  - flat roof with solar panels and a light metal capping
@@ -172,12 +173,32 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
   const segments = []; // collision for the neighbours' screen walls and hedges (lawn side)
   const loftD = H.loftgangDepth;
   const upperTop = roofTop + H.upperStoreys * H.storeyHeight;
+  const entryWood = [], entryFrames = [], entryGlass = [], entryLeaves = [];
+  const staticEntry = (x0,x1,y0,height,z) => {
+    const {parts,pane} = entryParts(x1-x0,height);
+    for(const p of parts) {
+      const [w,h,t]=p.size,[x,y,d]=p.pos;
+      const geo=boxGeo(x0+x-w/2,x0+x+w/2,y0+y-h/2,y0+y+h/2,z+d-t/2,z+d+t/2);
+      ({wood:entryWood,frame:entryFrames,glass:entryGlass})[p.kind].push(geo);
+    }
+    entryLeaves.push({x0,x1,y0,height,z,pane:{x0:x0+pane.x0,x1:x0+pane.x1,y0:y0+pane.y0,y1:y0+pane.y1}});
+  };
+  // The simplified neighbouring building masses must also leave the glazing aperture clear.
+  const entrySolid = (x0,x1,y0,y1,z0,z1) => {
+    const holes=entryLeaves.filter(d=>d.z>=z0-.1&&d.z<z1&&d.pane.x1>x0&&d.pane.x0<x1&&d.pane.y1>y0&&d.pane.y0<y1).map(d=>d.pane);
+    return complement(x0,x1,y0,y1,holes).map(([a,b,c,d])=>boxGeo(a,b,c,d,z0,z1));
+  };
   const eps = 0.006;
 
   // the units along x: west row | core | east row (ours: ox = 0); each neighbour spans its own façade strip
   const { units, core: [coreX0, coreX1], xw, xe } = husLLayout(W);
 
   const fakeWindow = (o, z, northSide, glassOut = glassGeo) => {
+    if(northSide && o.y0 < .05 && o.y1 > 2) {
+      const height=DOOR_HEIGHT-DOOR_TRIM.gap;
+      staticEntry(o.x0+.01,o.x1-.01,o.y0,height,z);
+      fakeWindow({...o,y0:o.y0+height},z,northSide,glassOut);return;
+    }
     const s = northSide ? -1 : 1;
     glassOut.push(quadZ(o.x0, o.x1, o.y0, o.y1, z + s * 0.002, northSide));
     const f = 0.06;
@@ -229,7 +250,7 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
     facade(bricks, ux0, ux1, 0, roofTop, -eps, true, shift(northOf(ox), ox, 0), !ours);
     facade(bricks, ux0, ux1, 0, roofTop, D + eps, false, shift(south, ox, 0), !ours);
     if (ours) continue;
-    solids.push(boxGeo(ux0 + 0.001, ux1 - 0.001, 0, roofTop, 0, D));
+    solids.push(...entrySolid(ux0 + 0.001, ux1 - 0.001, 0, roofTop, 0, D));
     // the neighbours' patios: same slab, hedge and screen walls as ours (within their own strip: no overlap with ours)
     if (site.patio) { // slab paving like ours: UVs in metres (x, z)
       const pg = boxGeo(Math.max(ux0, ox + site.patio.x0), Math.min(ux1, ox + site.patio.x1), -0.01, 0.0, D, site.patio.z1);
@@ -303,7 +324,7 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
   const C = H.court, y3 = roofTop + H.storeyHeight, zs = D - C.setback, par = y3 + C.parapet, deckY = y3 + C.deck;
   const LT = C.core.loft, coreW = coreX0 - H.wall, loftX0 = coreW - LT.west, loftX1 = coreW + LT.w, loftTop = upperTop + LT.rise, zt = zs - LT.back, zf = D - LT.face;
   const uppers = [...units.map((u) => [u.x0, u.x1, u.ox, u.upper]), [coreX0, coreX1, null, 'L1205']];
-  const Lf = H.loft, doors = [], lampBox = [], lampGlow = [], balc = [], litGlass = [];
+  const Lf = H.loft, lampBox = [], lampGlow = [], balc = [], litGlass = [];
   let seed = 337;
   const isLit = () => ((seed = (seed * 16807) % 2147483647) / 2147483647) < C.lit;
   const open = (list, ox, base) => list.map((o) => ({ x0: ox + o.x0, x1: ox + o.x1, y0: base + o.sill, y1: base + o.head }));
@@ -327,11 +348,10 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
     for (const o of holes) {
       if (!o.door) { fakeWindow(o, loftD - eps, true); continue; }
       if (o.hole) continue;
-      // the entrance (#111): set back, a white door with a narrow glass light, render reveals, a lantern beside it
+      // the entrance (#111): set back, a green door with a small thin high pane, render reveals, a lantern beside it
       const zr = loftD + Lf.recess;
       renders.push(boxGeo(o.x0, o.x0 + 0.01, o.y0, o.y1, loftD, zr), boxGeo(o.x1 - 0.01, o.x1, o.y0, o.y1, loftD, zr), boxGeo(o.x0, o.x1, o.y1 - 0.01, o.y1, loftD, zr));
-      doors.push(boxGeo(o.x0 + 0.01, o.x1 - 0.01, o.y0, o.y1 - 0.01, zr, zr + 0.05));
-      glassGeo.push(quadZ(o.x0 + 0.12, o.x0 + 0.24, o.y0 + 0.9, o.y1 - 0.25, zr - 0.002, true));
+      staticEntry(o.x0+.01,o.x1-.01,o.y0,o.y1-o.y0-.01,zr+.025);
       frames.push(boxGeo(o.x1 - 0.2, o.x1 - 0.08, o.y0 + 1.0, o.y0 + 1.03, zr - 0.04, zr)); // the handle
       const lx = o.x1 + Lf.lamp.dx, ly = o.y0 + Lf.lamp.y, { w: lw, h: lh } = Lf.lamp;
       lampBox.push(boxGeo(lx - lw / 2, lx + lw / 2, ly + lh / 2, ly + lh / 2 + 0.03, loftD - 0.12, loftD), boxGeo(lx - 0.03, lx + 0.03, ly - lh / 2, ly + lh / 2, loftD - 0.02, loftD));
@@ -341,8 +361,8 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
     const low = core ? open(C.core.lower, x1 + H.wall - C.core.lowerW, roofTop) : open(C.lower, ox, roofTop);
     facade(bricks, x0, x1, roofTop, par, D + eps, false, low, false);
     low.forEach((o) => courtWindow(o, D + eps));
-    if (core) solids.push(boxGeo(x0 + 0.001, CORE.x0 - 0.03, roofTop, y3, loftD, D), boxGeo(CORE.x1 + 0.03, x1 - 0.001, roofTop, y3, loftD, D), boxGeo(CORE.x0, CORE.x1, roofTop + 2.68, y3, loftD, D)); // (the stairwell's top storey, #415)
-    else solids.push(boxGeo(x0 + 0.001, x1 - 0.001, roofTop, y3, loftD, D));
+    if (core) solids.push(...entrySolid(x0 + 0.001, CORE.x0 - 0.03, roofTop, y3, loftD, D), ...entrySolid(CORE.x1 + 0.03, x1 - 0.001, roofTop, y3, loftD, D), boxGeo(CORE.x0, CORE.x1, roofTop + 2.68, y3, loftD, D)); // (the stairwell's top storey, #415)
+    else solids.push(...entrySolid(x0 + 0.001, x1 - 0.001, roofTop, y3, loftD, D));
     // våning 4, set back behind the terrace: white render with the window and the terrace door
     // the terrace door's threshold sits on the finished deck (#350)
     const ta = core ? loftX1 : x0, up = (core ? open(C.core.upper, coreW, y3) : open(C.upper, ox, y3)).map((o) => ({ ...o, y0: Math.max(o.y0, deckY) }));
@@ -510,7 +530,9 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
   const railMesh = add(balc, new THREE.MeshStandardMaterial({ color: Lf.door, roughness: 0.45, metalness: 0.2 }));
   if (railMesh) railMesh.name = 'terraceRails'; // the terraces' railings (tools/terracetest.html)
   group.userData.terraces = { list: terraces, y3, deck: deckY, parapet: par }; // #350
-  add(doors, new THREE.MeshStandardMaterial({ color: Lf.door, roughness: 0.4 }));
+  const entryMats=entryMaterials();
+  add(entryWood,entryMats.wood);add(entryFrames,entryMats.frame);add(entryGlass,entryMats.glass,false);
+  group.userData.entryLeaves=entryLeaves;
   // #433: a wall light by every street-side front door on våning 1 (ours too): the box joins the lanterns' housings,
   // the glass their glow; the façade wash and the ground pool are two additive meshes for the whole row
   const DL = H.doorLamp, frontDoor = north.find((o) => o.y0 < 0.05 && o.y1 > 2);

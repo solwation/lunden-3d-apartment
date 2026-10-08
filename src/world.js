@@ -457,7 +457,7 @@ function buildLevel(floor, li, group) {
     }
     if (gap && !exterior) trims.push(...architraves(gap, y0, head));
     if (gap) doorways.push({ gap, c, exterior });
-    const door = new SwingDoor(leaf, y0, M.door, false, { glazed: exterior && tz > D, glass: M.glass, frame: M.frame });
+    const door = new SwingDoor(leaf, y0, M.door, false, { entrance: exterior && tz < 0, glazed: exterior && tz > D, glass: M.glass, frame: M.frame });
     door.name = exterior ? 'ytterdörren' : 'dörren';
     if (exterior && tz < 0) lids.push(letterFlap(door)); // the front door's letter box (#103)
     group.add(door.object);
@@ -465,7 +465,9 @@ function buildLevel(floor, li, group) {
     if (exterior && gap) {
       // transom above the leaf, in the plane of the closed leaf
       addWindowFrame(group, gap.lo, gap.hi, leaf.hinge[1] + (tz < 0 ? 0.03 : -0.03), y0 + DOOR_HEIGHT, head, 0, -1, false);
-      openings[tz < 0 ? 'north' : 'south'].push({ x0: gap.lo, x1: gap.hi, y0, y1: head });
+      const pane = door.entryPane, center = door.opening().center[0];
+      const entryPane = pane ? { x0: center - (pane.x1-pane.x0)/2, x1: center + (pane.x1-pane.x0)/2, y0: y0+pane.y0, y1: y0+pane.y1 } : undefined;
+      openings[tz < 0 ? 'north' : 'south'].push({ x0: gap.lo, x1: gap.hi, y0, y1: head, entryPane });
     }
   }
 

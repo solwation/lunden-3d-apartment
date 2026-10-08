@@ -23,9 +23,9 @@ export class DetailCuller {
   /** box: { W, D, roof, floor1, doorHeight } the flat's footprint (plan), roof height, Övre plan's floor, the door height; openings: { north: [], south: [] } (x0 x1 y0 y1);
    * doorOpen(): is the front door open (then its whole doorway counts, #210)? */
   constructor(root, box, openings, doorOpen = () => false) {
-    // the front door's leaf is solid while it is shut: through it only its transom counts (doorHeight above its sill)
+    // the front door's leaf is solid while it is shut: through it its transom and small high pane count (doorHeight above its sill)
     const solid = (o) => o.y0 < 0.05 || Math.abs(o.y0 - box.floor1) < 0.05;
-    this.shut = { north: openings.north.map((o) => (solid(o) ? { ...o, y0: o.y0 + box.doorHeight } : o)), south: openings.south };
+    this.shut = { north: openings.north.flatMap(o => solid(o) ? [{ ...o, y0: o.y0 + box.doorHeight }, ...(o.entryPane ? [o.entryPane] : [])] : [o]), south: openings.south };
     this.full = { north: openings.north, south: openings.south };
     Object.assign(this, { box, doorOpen, open: false, openings: this.shut });
     this.items = [];

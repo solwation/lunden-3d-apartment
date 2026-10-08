@@ -103,6 +103,10 @@ export const DOOR_SIGNS = [
 // above the leaf, like the windows. Checked (#3) against Peab's render of L1004's living room, same
 // unit type (docs/peab/l1004-vardagsrum-render.jpg, scaled by RH 3.0 m): patio door head ≈ 2.65 m,
 // leaf incl. frame ≈ 2.2 m — within the estimate's error, so the values are kept.
+// #497: muted dark green and a small thin high pane, visual assumptions (no verified RAL/NCS or glazing dimensions).
+export const ENTRY_DOOR = { color: 0x314d3c, roughness: .58, thickness: .04,
+  glass: { width: .36, height: .12, top: .12, frame: .015, thickness: .008,
+    frameColor: 0x566b5c, frameRoughness: .4, frameMetalness: .25, color: 0xb5cbd0, opacity: .48, roughness: .22 } };
 export const DOOR_HEIGHT = 2.1;
 // Interior door finish (#45): the leaf fills the opening with an even `gap` (fog) at hinge, latch and
 // head; white architraves (dörrfoder) `width` × `thickness` around the opening on both wall faces,

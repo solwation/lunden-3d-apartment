@@ -1,6 +1,8 @@
 import * as THREE from 'three';
 import { DOOR_HEIGHT, DOOR_TRIM } from './config.js';
 
+import { entryParts, entryMaterials } from './entrancedoor.js';
+
 const SPEED = 3.0; // open/close animation, fraction per second
 const handleMat = new THREE.MeshStandardMaterial({ color: 0xc9cdd0, metalness: 0.5, roughness: 0.28 });
 
@@ -8,7 +10,7 @@ const ease = (t) => t * t * (3 - 2 * t);
 
 /** Hinged door. Open pose = the leaf as drawn on the plan, closed = across the gap. */
 export class SwingDoor {
-  constructor({ hinge, tip, wall }, y0, material, open, { glazed = false, glass, frame } = {}) {
+  constructor({ hinge, tip, wall }, y0, material, open, { glazed = false, entrance = false, glass, frame } = {}) {
     this.kind = 'swing';
     this.hinge = hinge;
     this.len = Math.hypot(tip[0] - hinge[0], tip[1] - hinge[1]);
@@ -33,7 +35,15 @@ export class SwingDoor {
       this.object.add(mesh);
       return mesh;
     };
-    if (glazed) {
+    if (entrance) {
+      const spec = entryParts(L,H), mats = entryMaterials();
+      this.entryPane = spec.pane;
+      for (const p of spec.parts) {
+        const [w,h,t] = p.size, [x,y,z] = p.pos;
+        const mesh = part(t,h,w,z,y,x,mats[p.kind]);
+        mesh.castShadow = p.kind !== 'glass'; mesh.userData.entryPart = p.kind;
+      }
+    } else if (glazed) {
       // aluminium-clad glazed door: frame + one glass pane (like the patio door in Peab's render)
       // slim aluminium frame, almost the whole leaf is clear glass
       const f = 0.07, b = 0.1;
