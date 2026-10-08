@@ -1,0 +1,41 @@
+ALL PASS
+PASS parked
+PASS the door: "Öppna"
+PASS the seat is no target while the door is shut ("Öppna")
+PASS the door opens (1.10 rad)
+PASS now the seat: "Sitt ner"
+PASS sitting inside (local -0.02, 1.26, -0.37)
+PASS looking ahead along the car (1.00)
+PASS the screens are awake
+PASS seated: the centre screen "Sätta på musik"
+PASS music on: "Lugn pop", the channel running (true), on the screen (Lugn pop|Morning Blue – Josh Woodward|0:00 / 3:00)
+PASS heard clear inside the car
+PASS the ⏭ button: "Byta till nästa låt"
+PASS next song: "Jazz"
+PASS counted (2)
+PASS now "Stänga av musiken"
+PASS off again: the map is back
+PASS and on again
+PASS out again where you stood, by the door
+PASS out: it plays on through the open door (0.75)
+PASS the screen is no target from outside ("")
+PASS the door shut: muffled (0.3, 500 Hz)
+PASS the door: "Öppna"
+PASS the seat is no target while the door is shut ("Öppna")
+PASS the door opens (1.10 rad)
+PASS now the seat: "Sitt ner"
+PASS sitting inside (local -0.02, 1.26, 0.37)
+PASS looking ahead along the car (1.00)
+PASS the screens are awake
+PASS out again where you stood, by the door
+PASS the key: the doors close first
+PASS then it drives off (leaving)
+PASS the music stops as it leaves (#268)
+PASS route in (street): the whole car on asphalt at 222 points, 111 m
+PASS route in (street): clear of the bus stop (14.7 m)
+PASS route out (street): the whole car on asphalt at 245 points, 122 m
+PASS route out (street): clear of the bus stop (13.7 m)
+PASS route in (garage): the whole car on asphalt at 527 points, 263 m
+PASS route in (garage): clear of the bus stop (14.7 m)
+PASS route out (garage): the whole car on asphalt at 542 points, 271 m
+PASS route out (garage): clear of the bus stop (13.7 m)

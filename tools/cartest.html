@@ -21,26 +21,28 @@ f.onload = async () => {
   const { player, camera, step, car, rest, standUp } = w.__app;
   const lines = [];
   const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; };
+  d.documentElement.requestFullscreen = undefined; // Keep automated start inside its browser viewport.
   d.getElementById('start-touch').click();
   await wait(50);
   const btn = d.getElementById('action'), V = camera.position.constructor;
   const look = (p) => { const dx = p.x - camera.position.x, dz = p.z - camera.position.z; camera.rotation.set(Math.atan2(p.y - camera.position.y, Math.hypot(dx, dz)), Math.atan2(-dx, -dz), 0, 'YXZ'); step(1 / 60); };
   const local = (x, y, z) => { car.object.updateMatrixWorld(true); return new V(x, y, z).applyMatrix4(car.object.matrixWorld); };
   let pass = check(car.state === 'parked', 'parked');
-  for (const [side, standZ, door, seat] of [[-1, -1.25, /öppna förardörren/i, /sätta dig i förarsätet/i], [1, 1.25, /öppna passagerardörren/i, /sätta dig i passagerarsätet/i]]) {
+  for (const [side, standZ] of [[-1, -1.25], [1, 1.25]]) {
+    const dr = car.doors.find((x) => x.front && x.side === side);
+    const seat = car.seats.find((x) => x.door === dr);
     const stand = local(0.1, 0, standZ);
     player.spawn(stand.x, stand.z, 0);
     for (let i = 0; i < 3; i++) step(1 / 60);
     look(local(0.5, 0.75, side * 0.86));
-    pass &= check(!btn.hidden && door.test(btn.textContent), `the door: "${btn.textContent}"`);
+    pass &= check(!btn.hidden && btn.textContent === 'Öppna' && w.__app.focus().focused === dr, `the door: "${btn.textContent}"`);
     look(local(-0.05, 0.6, side * 0.37));
-    pass &= check(!seat.test(btn.textContent), `the seat is no target while the door is shut ("${btn.hidden ? '' : btn.textContent}")`);
+    pass &= check(w.__app.focus().focused !== seat && !car.targets().includes(seat), `the seat is no target while the door is shut ("${btn.hidden ? '' : btn.textContent}")`);
     look(local(0.5, 0.75, side * 0.86)); btn.click();
     for (let i = 0; i < 60; i++) step(1 / 60);
-    const dr = car.doors.find((x) => x.front && x.side === side);
     pass &= check(dr.angle > 0.9, `the door opens (${dr.angle.toFixed(2)} rad)`);
     look(local(-0.05, 0.6, side * 0.37));
-    pass &= check(!btn.hidden && seat.test(btn.textContent), `now the seat: "${btn.textContent}"`);
+    pass &= check(!btn.hidden && btn.textContent === 'Sitt ner' && w.__app.focus().focused === seat, `now the seat: "${btn.textContent}"`);
     btn.click();
     for (let i = 0; i < 60; i++) step(1 / 60);
     car.object.updateMatrixWorld(true);
