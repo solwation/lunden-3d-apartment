@@ -1,0 +1,28 @@
+/* #525: small neutral glass surfaces, with legible fallback when backdrop blur is unavailable. */
+:root { --hud-glass: rgba(24,30,36,.68); --hud-edge: rgba(255,255,255,.32); --hud-blur: 2px; }
+body :is(#hud,.hud-controls) .hud-button, body.touch #hud .hud-button, .hud-button {
+  color: #fff; background: var(--hud-glass); border: 1px solid var(--hud-edge); opacity: 1;
+  min-height: 44px; box-sizing: border-box; box-shadow: 0 2px 8px rgba(0,0,0,.2), inset 0 1px rgba(255,255,255,.06);
+  backdrop-filter: blur(var(--hud-blur)); -webkit-backdrop-filter: blur(var(--hud-blur));
+}
+.hud-icon { width: 22px; height: 22px; vertical-align: middle; pointer-events: none; }
+.hud-icon * { pointer-events: none; }
+#hud .hud-icon-button, body.touch #hud .hud-icon-button, .hud-icon-button { min-width: 48px; min-height: 48px; padding: 10px; }
+.hud-indicator-icon .hud-icon { width: 18px; height: 18px; }
+#hud .hud-button.on, #hud .hud-button[aria-pressed=true], body :is(#hud,.hud-controls) .hud-button.on, body :is(#hud,.hud-controls) .hud-button[aria-pressed=true], #choices button.sel {
+  background: rgba(90,98,105,.9); border-color: rgba(255,255,255,.85); box-shadow: inset 0 0 0 1px rgba(255,255,255,.18);
+}
+#hud .hud-button:active, body.touch #hud .hud-button:active, body :is(#hud,.hud-controls) .hud-button:active { background: rgba(52,60,67,.9); border-color: #fff; }
+.hud-button:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+#hud .hud-button:disabled, body :is(#hud,.hud-controls) .hud-button:disabled { opacity: .38; cursor: default; }
+.hud-button[hidden] { display: none !important; }
+#choices button, body.touch #choices button { color: #fff; background: var(--hud-glass); border: 1px solid var(--hud-edge); opacity: 1; min-height: 44px; }
+#choices button:disabled, #choices button.no { opacity: .38; }
+#stick.sprint { border-color: #fff; }
+#stick.sprint .knob { background: #fff; box-shadow: 0 0 0 4px rgba(255,255,255,.25); }
+@media (hover:hover) { #hud .hud-button:hover, body :is(#hud,.hud-controls) .hud-button:hover { border-color: rgba(255,255,255,.7); background: rgba(42,49,55,.85); } }
+@supports not ((backdrop-filter:blur(2px)) or (-webkit-backdrop-filter:blur(2px))) { :root { --hud-glass: rgba(24,30,36,.78); } }
+body.hud-no-blur .hud-button, body.hud-no-blur #choices button { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; background: rgba(24,30,36,.78) !important; }
+#cal-panel { max-height: calc(100dvh - 32px); max-width: calc(100vw - 24px); overflow: auto; box-sizing: border-box; }
+#cal-panel .days { grid-template-columns: repeat(7,44px); }
+#cal-panel .days button { min-height: 44px; }

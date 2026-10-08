@@ -193,8 +193,9 @@ export class CalendarPanel {
       ...[...Array(first)].map(() => document.createElement('span')),
       ...[...Array(n)].map((_, i) => {
         const b = document.createElement('button');
-        b.textContent = String(i + 1);
-        if (this.day.year === v.year && this.day.month === v.month && this.day.date === i + 1) b.className = 'on';
+        b.textContent = String(i + 1);b.className='hud-button';
+        b.setAttribute('aria-label',`${i+1} ${MONTHS[v.month-1]} ${v.year}`);
+        if (this.day.year === v.year && this.day.month === v.month && this.day.date === i + 1) b.classList.add('on');
         b.addEventListener('click', () => this.choose(i + 1));
         return b;
       }));

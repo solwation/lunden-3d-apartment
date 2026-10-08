@@ -1,3 +1,4 @@
+import { setTextIcon } from './hudicons.js';
 import * as THREE from 'three';
 import { CAT_BOARD as B } from './config.js';
 import { withStore as withDb } from './idb.js';
@@ -231,8 +232,10 @@ export class BoardPanel {
       const id = p.id ?? p.time, card = document.createElement('div');
       card.className = `card${i === this.sel ? ' sel' : ''}${p.kept ? ' kept' : ''}`;
       card.innerHTML = `<img alt=""><b></b><small>${fmt(p.time)}</small><div class="acts">
-        <button data-act="keep" data-i="${i}" aria-pressed="${!!p.kept}">${p.kept ? '📌 Sparad' : '📌 Spara'}</button>
-        <button data-act="discard" data-i="${i}">${this.confirm === id ? 'Säker? 🗑' : '🗑 Släng'}</button></div>`;
+        <button data-act="keep" data-i="${i}" aria-pressed="${!!p.kept}">${p.kept ? 'Sparad' : 'Spara'}</button>
+        <button data-act="discard" data-i="${i}">${this.confirm === id ? 'Säker?' : 'Släng'}</button></div>`;
+      setTextIcon(card.querySelector('[data-act=keep]'),'pin',p.kept?'Sparad':'Spara');
+      setTextIcon(card.querySelector('[data-act=discard]'),'trash',this.confirm===id?'Säker?':'Släng');
       card.querySelector('img').src = p.data;
       card.querySelector('b').textContent = p.kitten ? `${p.name} 🐾 kattunge` : p.name;
       this.grid.append(card);

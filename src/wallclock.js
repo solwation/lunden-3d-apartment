@@ -1,3 +1,4 @@
+import { setIcon } from './hudicons.js';
 import * as THREE from 'three';
 import { WALL_CLOCK as C } from './config.js';
 import { formatHour, sunTimes } from './daycycle.js';
@@ -131,9 +132,9 @@ export class ClockPanel {
     const d = this.day;
     this.timeEl.textContent = formatHour(d.hour);
     const sun = sunTimes(d.doy);
-    const state = d.spool < 0 ? '⏪ spolar bakåt' : d.spool > 0 ? '⏩ spolar framåt' : d.paused ? '⏸ pausad' : '';
+    const state = d.spool < 0 ? 'spolar bakåt' : d.spool > 0 ? 'spolar framåt' : d.paused ? 'pausad' : '';
     this.infoEl.textContent = [`${d.date} ${MONTHS[d.month - 1]}`, sun && `sol upp ${formatHour(sun[0])}, ner ${formatHour(sun[1])}`, state].filter(Boolean).join(' · ');
-    this.playBtn.textContent = d.paused ? '▶' : '⏸';
+    setIcon(this.playBtn,d.paused?'play':'pause',d.paused?'Starta tiden':'Pausa tiden');
     this.playBtn.setAttribute('aria-label', d.paused ? 'Starta tiden' : 'Pausa tiden');
   }
 }

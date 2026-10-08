@@ -1,7 +1,9 @@
+import { initHudIcons, setIcon, setPressed } from './hudicons.js';
 import * as THREE from 'three';
 import { UNIT_TOP, COLORS, LEVELS, DAY, START, PLAYER, DRAWING, STAIR, HOLD, LIFE, REMOTE, REST, DOOR_HEIGHT, TURBO, WEATHER, BREAK, CAR, KITCHEN, LAPTOP, NEST, AUTO_RELOAD, MIELE, CUPS, GARAGE } from './config.js';
 import { MieleHeld, HeartFireworks } from './miele.js';
 const DRAWING_COLORS = DRAWING.colors;
+initHudIcons();
 import { buildWorld } from './world.js';
 import { photoGlow } from './furniture.js';
 import { InteractionOutline } from './interactionoutline.js';
@@ -1375,7 +1377,8 @@ const standBtn = document.getElementById('stand-btn'); // touch, sitting with so
 standBtn.addEventListener('click', () => { if (rest.active) standUp(); });
 const muteBtn = document.getElementById('mute');
 function updateMute(m = isMuted()) {
-  muteBtn.textContent = m ? '🔇' : '🔊';
+  setIcon(muteBtn,m?'volume-off':'volume',m?'Slå på ljud':'Stäng av ljud');
+  setPressed(muteBtn,m);
   muteBtn.setAttribute('aria-label', m ? 'Slå på ljud' : 'Stäng av ljud');
 }
 muteBtn.addEventListener('click', () => updateMute(toggleMuted()));
@@ -1490,7 +1493,7 @@ window.addEventListener('blur', () => { if (!touch.enabled) player.crouch = fals
 const crouchBtn = document.getElementById('crouch-btn');
 crouchBtn.addEventListener('click', () => {
   player.crouch = !player.crouch;
-  crouchBtn.classList.toggle('on', player.crouch);
+  setPressed(crouchBtn,player.crouch);
 });
 window.addEventListener('resize', () => {
   window.scrollTo(0, 0); // iOS may have scrolled the page when the bars or orientation changed
@@ -1545,6 +1548,9 @@ function behindWall(p) {
 }
 
 function updateFocus() {
+  setPressed(document.getElementById('furniture-btn'),world.furnitureOn);
+  setPressed(document.getElementById('measure-btn'),measure.active);
+  setPressed(document.getElementById('crouch-btn'),player.crouch);
   if (rearrange.enabled && !reading) {
     rearrange.update(); focused = rearrange.target; focusPoint = null;
     const restore = document.getElementById('rearrange-reset');
@@ -1730,7 +1736,7 @@ function updateFocus() {
   actionBtn.hidden = !(focused || reading || holding || seated) || !touch.enabled || (!!choices.rows && !reading) || clockPanel.open || calPanel.open || blindPanel.open || sonos.open || !!viewing; // the strips have their own ×
   powerBtn.hidden = !touch.enabled || !heldItem()?.useAlt || reading;
   turnBtn.hidden = !touch.enabled || reading || focused?.kind !== 'place' || !!focused.blocked || !itemGhost.visible; // ⟳ (#368)
-  if (!powerBtn.hidden) { const icon = heldItem().altIcon ?? '⏻'; if (powerBtn.textContent !== icon) { powerBtn.textContent = icon; powerBtn.setAttribute('aria-label', heldItem().altLabel ?? 'Stäng av / slå på TV:n'); } }
+  if (!powerBtn.hidden) setIcon(powerBtn,heldItem().altIcon==='🏀'?'basketball':'power',heldItem().altLabel??'Stäng av / slå på TV:n');
 }
 
 // --- furniture on/off (F / 🛋) ---------------------------------------------
@@ -1740,6 +1746,7 @@ function toggleFurniture(on = !world.furnitureOn) {
   if (rest.active) standUp(); // the seat is about to vanish
   if (!on) breaker.reset(); // whatever was shot to pieces is whole and home again (#263)
   world.setFurniture(on);
+  setPressed(document.getElementById('furniture-btn'),on);
   if (!on) beer.show(false); else beer.show(beer.out); // the beer only once served (setFurniture showed it)
   if (!on) { // whatever is in the hand, or put down somewhere, goes home first (#102)
     heldItem()?.putBack(); toys.darts.hide();

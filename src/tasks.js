@@ -234,7 +234,7 @@ export class TasksManager {
 
       if (task.isDone) {
         const again = document.createElement('button');
-        again.type = 'button'; again.textContent = 'Gör igen'; again.className = 'task-again';
+        again.type = 'button'; again.textContent = 'Gör igen'; again.className = 'task-again hud-button';
         again.dataset.task = task.id;
         again.addEventListener('click', () => this.resetTask(task.id));
         card.append(again);

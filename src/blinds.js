@@ -1,3 +1,4 @@
+import { setIcon } from './hudicons.js';
 import * as THREE from 'three';
 import { BLINDS, CURTAINS } from './config.js';
 import { Curtain } from './curtains.js';
@@ -233,7 +234,8 @@ export class BlindPanel {
       this.el.classList.toggle('curtain', c);
       this.el.setAttribute('aria-label', c ? 'Gardinerna' : 'Plisségardinen');
       const [u, dn] = ['up', 'down'].map((a) => this.el.querySelector(`[data-act=${a}]`));
-      u.textContent = c ? '◀' : '▲'; dn.textContent = c ? '▶' : '▼';
+      setIcon(u,c?'left':'up',c?'Dra för (håll inne)':'Dra upp (håll inne)');
+      setIcon(dn,c?'right':'down',c?'Dra ifrån (håll inne)':'Dra ner (håll inne)');
       u.setAttribute('aria-label', c ? 'Dra för (håll inne)' : 'Dra upp (håll inne)');
       dn.setAttribute('aria-label', c ? 'Dra ifrån (håll inne)' : 'Dra ner (håll inne)');
       const hint = this.el.querySelector('small');

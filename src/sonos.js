@@ -1,3 +1,4 @@
+import { setIcon } from './hudicons.js';
 import * as THREE from 'three';
 import { audioParts, isMuted } from './audio.js';
 import { sonosLed } from './furniture.js';
@@ -314,7 +315,7 @@ export class Sonos extends Composer {
     }
     this.volEl.style.setProperty('--v', `${(this.volume / S.steps) * 100}%`);
     this.volEl.setAttribute('aria-label', `Volym ${this.volume} av ${S.steps}`);
-    this.playBtn.textContent = this.playing ? '⏸' : '▶';
+    setIcon(this.playBtn,this.playing?'pause':'play',this.playing?'Pausa':'Spela');
     this.playBtn.setAttribute('aria-label', this.playing ? 'Pausa' : 'Spela');
   }
 }
