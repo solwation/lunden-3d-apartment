@@ -1,3 +1,4 @@
+import { windGeometry, windMaterial, windShadow } from './plantwind.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { SILL_PLANTS as S } from './config.js';
@@ -269,12 +270,15 @@ export function buildSillPlants(sills) {
     const lists = {};
     for (const p of pots) {
       if (away.has(p)) continue;
-      for (const [k, list] of Object.entries(p.geos)) for (const geo of list) (lists[MAT_OF[k] ?? k] ??= []).push(geo.clone().translate(p.base.x, p.base.y, p.base.z));
+      for (const [k, list] of Object.entries(p.geos)) for (const geo of list) {
+        const copy=geo.clone();if(['leaf','trail','flower'].includes(k))windGeometry(copy,p.soilY,1000+p.sill*10+p.k,null,k==='trail');
+        (lists[MAT_OF[k] ?? k] ??= []).push(copy.translate(p.base.x,p.base.y,p.base.z));
+      }
     }
     for (const [k, list] of Object.entries(lists)) {
       if (!list.length) continue;
-      const m = new THREE.Mesh(mergeGeometries(list), mats[k]);
-      m.castShadow = true;
+      const m = new THREE.Mesh(mergeGeometries(list), (['leaf','flower'].includes(k)?windMaterial(mats[k]):mats[k]));
+      m.castShadow = true;windShadow(m);
       g.add(m);
     }
   };
@@ -288,9 +292,9 @@ export function potModel(pot) {
   const g = new THREE.Group(), lists = {};
   for (const [k, list] of Object.entries(pot.geos)) {
     for (const geo of list) {
-      let c = geo;
+      let c=geo.clone();if(['leaf','trail','flower'].includes(k))windGeometry(c,pot.soilY,1000+pot.sill*10+pot.k,null,k==='trail');
       if (k === 'trail') {
-        c = geo.clone();
+        // Preserve wind attributes while laying the original trailing geometry flat.
         const p = c.attributes.position;
         for (let i = 0; i < p.count; i++) p.setY(i, Math.max(p.getY(i), 0.004 + (p.getY(i) + S.trail) * 0.02));
       }
@@ -299,9 +303,9 @@ export function potModel(pot) {
   }
   for (const [k, list] of Object.entries(lists)) {
     if (!list.length) continue;
-    const m = new THREE.Mesh(mergeGeometries(list), mats[k]);
+    const m = new THREE.Mesh(mergeGeometries(list), (['leaf','flower'].includes(k)?windMaterial(mats[k]):mats[k]));
     m.userData.plantPart=k;
-    m.castShadow = true;
+    m.castShadow = true;windShadow(m);
     g.add(m);
   }
   return g;

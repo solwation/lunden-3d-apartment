@@ -3082,3 +3082,8 @@ export const NEIGHBOR_OPENINGS = {frame: .06, depth: .1, sash: .045, sashDepth: 
   sky:'#87b5d3',horizon:'#e1e8e5',ground:'#657567',groundDark:'#303e37',silhouette:'#637e83',
   reflectionDay: 1.4, reflectionNight: .12, hinge: .012, hingeHeight: .085, hingeYs: [.25,1.05], hingeTop: .2, hingeZ: [-.04,-.025],
 };
+
+// #518: visual animation assumptions, not measured weather. Metres of foliage height scale the sway;
+// opening progress gates wind, rain/snow/hail strengthen it; easing prevents abrupt changes.
+export const PLANT_WIND={calm:.025,wetBoost:2,stormBoost:.5,easeSeconds:1.2,sleepThreshold:.00001,
+  heightCap:1.5,maxDisplacement:.06,variationMin:.75,variationRange:.4,speedMin:1.1,speedRange:.65};

@@ -1,0 +1,28 @@
+PASS one empty can starts on its counter rack
+PASS existing indoor plants start dry without new plant instances
+PASS empty can remains held and watering explains that it needs filling
+PASS watering can never exposes the drinking-glass action
+PASS closed tap blocks filling
+PASS cancelled filling restores empty can and releases its reservation
+PASS running tap can be aimed at while holding the can
+PASS real touch filling reaches saved can capacity and rejects overfill
+PASS mid-pour previews a water stream but consumes no water
+PASS cancelled watering leaves plant and amount unchanged and hides stream
+PASS real window plant can be aimed at with watering can
+PASS double press cannot start a second watering job
+PASS watering commits exactly one dose to the original plant
+PASS watered sill plant shows darker soil and lifted foliage in existing batched geometry
+PASS neighbor remains visually dry despite shared home materials
+PASS already watered plant blocks another dose
+PASS moving an existing pot retains care identity and watering focus
+PASS care target stays invisible when SillPot reveals its own child meshes
+PASS returning pot to merged window display preserves watered state
+PASS documented artificial plant explains why it needs no watering
+PASS ordinary indoor plant darkens independently without changing neighboring shared soil finishes
+PASS less than one dose cannot partly water a plant
+PASS normal sink pouring empties can without reverting watered plant
+PASS actual reload preserves original can amount and rack slot without duplicate stock
+PASS actual reload keeps exact watered plant identities
+PASS inventory invariants hold after filling, cancellation, moving, pouring and reload
+PASS actual home reset restores one empty can and dry plants
+ALL PASS

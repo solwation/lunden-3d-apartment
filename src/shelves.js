@@ -1,3 +1,4 @@
+import { windPlant } from './plantwind.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { WALL_SHELVES as S } from './config.js';
@@ -392,7 +393,7 @@ export function buildWallShelves() {
   }
   const porcelainMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.16 });
   const facePot = holdable([[fPot, porcelainMat], [fDark, matteMat], [fLeaf, leafMat]], xc, y1, F.z);
-  facePot.userData.artificial=true;
+  facePot.userData.artificial=true;windPlant(facePot,F.h-.012,[leafMat],{trail:true});
   // a golden pothos in an off-white pot, its vines trailing over the front edge (upper shelf)
   const pGlaze = [], pLeaf = [], pSoil=[];
   {
@@ -433,6 +434,7 @@ export function buildWallShelves() {
     }
   }
   const pothos = holdable([[pGlaze, glazeMat], [pLeaf, leafMat], [pSoil, new THREE.MeshStandardMaterial({vertexColors:true,color:0xffffff,roughness:1,userData:{plantSoil:true}})]], xc, y2, 1.455);
+  windPlant(pothos,.078,[leafMat],{trail:true});
   group.userData.plants = [
     { model: facePot, kind: 'plant', back: 'hyllan', name: 'krukan med glasögonen' },
     { model: pothos, kind: 'plant', back: 'hyllan' },

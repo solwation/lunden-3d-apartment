@@ -1,3 +1,4 @@
+import { windPlant, windMaterial } from './plantwind.js';
 import { MusicLoop } from './music.js';
 import { MUSIC } from './config.js';
 import * as THREE from 'three';
@@ -485,7 +486,7 @@ function flower() {
     g.add(heart);
   }
   g.traverse((m) => { m.castShadow = true; });
-  return g;
+  return windPlant(g,.097,[leafMat,petalMat,heartMat]);
 }
 
 function sidetable(item) {
@@ -2343,7 +2344,7 @@ function cactus() {
     out.rotation.z = Math.PI / 2;
     column(0.014, len, s * 0.05, y - 0.005, 0);
   }
-  return g;
+  return windPlant(g,.087,[green]);
 }
 
 /** A pink-flowering pot plant in a lilac pot (the unicorn room): the side table's flower with more, pinker blooms. */
@@ -2351,7 +2352,7 @@ function pinkFlower() {
   const g = flower();
   const pot = new THREE.MeshStandardMaterial({ color: 0xc7a6e8, roughness: 0.6 });
   const pink = new THREE.MeshStandardMaterial({ color: 0xff7ac0, roughness: 0.7 });
-  g.traverse((m) => { if (m.material === potMat) m.material = pot; else if (m.material === petalMat) m.material = pink; });
+  g.traverse((m) => { if (m.material === potMat) m.material = pot; else if (m.material === windMaterial(petalMat)) m.material = windMaterial(pink); });
   return g;
 }
 
@@ -2846,7 +2847,7 @@ function palm(item) {
   g.add(new THREE.Mesh(geo, leafMat));
   g.traverse((m) => { if (m.isMesh) m.castShadow = true; });
   g.userData.footprint = [{ x0: -P.pot.r, x1: P.pot.r, z0: -P.pot.r, z1: P.pot.r }];
-  return g;
+  return windPlant(g,y0,[caneMat,leafMat]);
 }
 
 /** The abstract painting (#133): blue, turquoise, purple and green washes running from the top left down to
@@ -3247,7 +3248,7 @@ function yucca(Y = YUCCA) {
   geo.computeVertexNormals();
   g.add(new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.6, side: THREE.DoubleSide })));
   g.traverse((m) => { if (m.isMesh) m.castShadow = true; });
-  return g;
+  return windPlant(g,Y.pot.h-.012,[bark,g.children.at(-1).material]);
 }
 
 /** The secretary "Bang" (IKEA, c. 1960, #118): teak veneer on black hairpin legs with X braces and a wire shelf;
@@ -3408,6 +3409,7 @@ function secretary(item) {
   const stem = new THREE.Mesh(cg, green); stem.position.y = 0.1; cactus.add(stem);
   const dome = new THREE.Mesh(new THREE.SphereGeometry(0.029, 12, 6, 0, Math.PI * 2, 0, Math.PI / 2), green); dome.position.y = 0.14; cactus.add(dome);
   const flower = new THREE.Mesh(new THREE.SphereGeometry(0.009, 8, 6), new THREE.MeshStandardMaterial({ color: 0xff5fa2, roughness: 0.5 })); flower.scale.y = 0.6; flower.position.set(0.006, 0.168, 0.004); cactus.add(flower);
+  windPlant(cactus,.06,[green,flower.material]);
   cactus.position.set(0.1, yT + 0.02, topD / 2 + 0.01); // (the yucca has the north end since #265)
   }, 'kaktusen');
   // a small yucca palm at the north end, its leaves partly in front of the SKOGSGRÄNSEN mirror (#265); a pot plant you can take

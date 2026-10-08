@@ -466,7 +466,7 @@ function buildLevel(floor, li, group) {
     if (gap && !exterior) trims.push(...architraves(gap, y0, head));
     if (gap) doorways.push({ gap, c, exterior });
     const door = new SwingDoor(leaf, y0, M.door, false, { entrance: exterior && tz < 0, glazed: exterior && tz > D, glass: M.glass, frame: M.frame });
-    door.name = exterior ? 'ytterdörren' : 'dörren';
+    door.name = exterior ? 'ytterdörren' : 'dörren';door.exterior=exterior;
     if (exterior && tz < 0) lids.push(letterFlap(door)); // the front door's letter box (#103)
     group.add(door.object);
     doors.push(door);

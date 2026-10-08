@@ -1,0 +1,36 @@
+<!doctype html><html><meta charset="utf-8"><title>Plant wind</title><pre id="out">running…</pre><script type="module">
+const lines=[];let pass=true;const check=(ok,text)=>{lines.push((ok?'PASS':'FAIL')+' '+text);pass&&=!!ok},wait=ms=>new Promise(r=>setTimeout(r,ms));
+try{
+const f=document.createElement('iframe');f.width=700;f.height=500;document.body.append(f);f.src='../index.html?life&shot&cloud=&weather=clear';await new Promise(r=>f.onload=r);while(!f.contentWindow.__app)await wait(100);
+const w=f.contentWindow,A=w.__app,T=await w.eval("import('three')"),C=A.plantWind,{PLANT_WIND:P}=await w.eval("import('/src/config.js')");
+const meshes=root=>{const rows=[];root.traverse(m=>{if(m.isMesh&&m.geometry.attributes.plantWind)rows.push(m)});return rows},settle=()=>{for(let k=0;k<120;k++)C.update(.1)},state=(o,t)=>{o.t=t;o.target=t;o.apply?.()};
+for(const o of C.openings)state(o,0);A.weather.force='clear';A.weather.update(0);settle();
+check(C.openings.length===A.world.lids.filter(o=>o.name==='fönstret').length+2,'only real windows and the two apartment exterior doors feed wind');
+check(C.power===0,'all outdoor openings shut gives no wind');
+const inner=A.world.doors.find(o=>!o.exterior&&o.name==='dörren'),cabinet=A.world.lids.find(o=>o.name!=='fönstret');state(inner,1);state(cabinet,1);settle();check(C.power===0,'an open inner door and cupboard/appliance do not create wind');state(inner,0);state(cabinet,0);
+const win=C.openings.find(o=>o.name==='fönstret');state(win,1);C.update(.1);check(C.power>0&&C.power<P.calm,'opening produces a gradual onset');settle();const calm=C.power;check(Math.abs(calm-P.calm)<.0001,'one fully open window reaches calm wind');
+state(win,0);C.update(.1);check(C.power>0&&C.power<calm,'closing fades rather than snapping');settle();check(C.power===0,'closed wind eventually stops exactly');
+for(const door of C.openings.filter(o=>o.exterior)){state(door,1);settle();check(C.power>0,`${door.entryPane?'entrance':'patio'} door alone produces outdoor wind`);state(door,0);settle()}
+state(win,.5);settle();check(Math.abs(C.power-calm*.5)<.0001,'partial opening scales airflow');state(win,1);settle();
+for(const kind of ['rain','snow']){A.weather.force=kind;A.weather.update(0);const before=C.power;C.update(.1);check(C.power>before&&C.power<calm*(1+.8*P.wetBoost),`${kind} strengthens wind smoothly`);settle();check(C.power>calm*2,`${kind} has greater settled sway than calm weather`);A.weather.force='clear';A.weather.update(0);settle()}
+const roots=[...A.things.filter(t=>t.kind==='plant').map(t=>t.model),...A.world.furniture.movable.filter(p=>['palm','zzplant','planter'].includes(p.item.type)).map(p=>p.object)],entrance=A.world.object.getObjectByName('entrance-plants');
+check(roots.length>=10&&roots.every(root=>meshes(root).length>0),'all plant Things and indoor/outdoor movable planters have animated foliage');check(entrance.userData.records.every(p=>meshes(p.model).length>0),'all ground and loft entrance pots have animated foliage');
+check(A.sillPots.every(p=>meshes(p.model).length>0)&&meshes(A.world.sillPlants).length===2,'every window plant animates in its personal model and the same two home foliage batches');
+const all=[...roots,...A.sillPots.map(p=>p.model),entrance,A.world.sillPlants],moving=all.flatMap(meshes);let fixed=0,noSoil=true;for(const root of all)root.traverse(m=>{if(m.isMesh&&m.material.userData.plantSoil)noSoil&&=!m.geometry.attributes.plantWind;if(m.isMesh&&!m.geometry.attributes.plantWind)fixed++});check(noSoil&&fixed>20,'pottery and soil retain stationary unmodified geometry/shaders');
+check(moving.every(m=>m.material.userData.plantWind&&m.customDepthMaterial?.userData.plantWind),'foliage and sun shadows use the same wind shader');
+const phases=new Set(moving.flatMap(m=>Array.from(m.geometry.attributes.plantWind.array).filter((_,i)=>i%4===1).map(v=>v.toFixed(2))));check(phases.size>30,'plants and foliage vary in phase rather than moving in lockstep');
+const original=moving.map(m=>m.geometry.attributes.position.array.slice());for(let k=0;k<100;k++)C.update(.1);check(moving.every((m,i)=>original[i].every((v,j)=>v===m.geometry.attributes.position.array[j])),'100 wind updates upload no vertex arrays and preserve bounds/placement geometry');
+const clock=C.time;A.step(.05);check(C.time>clock,'ordinary app frames update wind from the current opening/weather state');
+// Render original built foliage and pottery in an isolated real WebGL scene: verify pixels, not just uniforms.
+const palm=roots.find(r=>r.userData.windPlant&&meshes(r).some(m=>m.geometry.attributes.position.count>5000))??roots[0],copy=new T.Group();palm.updateWorldMatrix(true,true);const inv=palm.matrixWorld.clone().invert();palm.traverse(m=>{if(!m.isMesh||m.material.visible===false||m.userData.ghost)return;const mesh=new T.Mesh(m.geometry,m.material);mesh.matrix.copy(new T.Matrix4().multiplyMatrices(inv,m.matrixWorld));mesh.matrixAutoUpdate=false;copy.add(mesh)});
+const scene=new T.Scene();scene.background=new T.Color(0xffffff);scene.add(copy,new T.HemisphereLight(0xffffff,0x606060,3));const box=new T.Box3().setFromObject(copy),size=box.getSize(new T.Vector3()),mid=box.getCenter(new T.Vector3()),height=Math.max(size.y,size.x)*1.2;
+const camera=new T.OrthographicCamera(-height/2,height/2,height/2,-height/2,.01,20);camera.position.set(mid.x,mid.y,mid.z+4);camera.lookAt(mid);const renderTarget=new T.WebGLRenderTarget(192,192),renderer=A.renderer;
+const render=()=>{renderer.setRenderTarget(renderTarget);renderer.render(scene,camera);const pixels=new Uint8Array(192*192*4);renderer.readRenderTargetPixels(renderTarget,0,0,192,192,pixels);renderer.setRenderTarget(null);return pixels},diff=(a,b)=>a.reduce((n,v,i)=>n+(Math.abs(v-b[i])>8),0);
+A.weather.force='snow';A.weather.update(0);state(win,1);settle();const leavesA=render();C.update(1.4);const leavesB=render();check(diff(leavesA,leavesB)>20,'real WebGL pixels show foliage moving between wind phases');
+A.interactionOutline.update({outlineRoot:copy,pickable:copy});const focusA=render();C.update(1.4);const focusB=render();check(diff(focusA,focusB)>20,'actual interaction brightness shader preserves live foliage motion');A.interactionOutline.clear();
+copy.traverse(m=>{if(m.geometry?.attributes.plantWind)m.visible=false});const potA=render();C.update(2);const potB=render();check(diff(potA,potB)===0,'real rendered pottery stays pixel-identical during wind');renderTarget.dispose();
+const pot=A.sillPots[0];pot.take();pot.placeAt(new T.Vector3(4.4,.931,2.8),0);check(pot.placed&&meshes(pot.model).every(m=>m.geometry.attributes.plantWind&&m.customDepthMaterial),'moving a window pot retains animation and shadow metadata');pot.take();pot.putBack();check(!pot.away.has(pot.pot)&&meshes(A.world.sillPlants).length===2&&meshes(A.world.sillPlants).every(m=>m.customDepthMaterial),'returning a pot rebuilds original home batches with wind/shadows');
+for(const o of C.openings)state(o,0);A.weather.force='clear';A.weather.update(0);settle();check(C.power===0,'final closed state remains still after weather and movement changes');
+}catch(e){check(false,e.stack||e.message)}
+document.querySelector('#out').textContent=lines.join('\n')+'\n'+(pass?'ALL PASS':'SOME FAILED');
+</script></html>

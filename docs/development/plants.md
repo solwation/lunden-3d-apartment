@@ -6,6 +6,12 @@ Related: [furniture](furniture.md), [graphics](graphics.md), [environment](envir
 ## Module and test map
 
 ```text
+src/plantwind.js       shared GPU foliage sway (#518): plantWind height/phase/stiffness attributes survive material merges;
+                       shared time/power uniforms and matching custom sun-depth shader. Existing plant builders select
+                       foliage materials explicitly, leaving pots/soil/decor unchanged. Sill home/own models retain their
+                       five/two foliage batches and rebuild wind/shadows after moving or watering.
+tools/plantwindtest.html real opening/weather transitions, all plant families, actual WebGL foliage/pot pixel checks,
+                       focus brightness compatibility, movement/return and no per-frame vertex uploads.
 src/plantpots.js       shared rounded brushed-copper pot geometry/material (#491, #517)
 src/entranceplants.js  shared plant templates and door-relative entrance placement on ground and loftgång (#498)
 src/boxwood.js         merged evergreen entrance hedge and winter snow caps (#496)
@@ -33,3 +39,5 @@ Entréväxter (#498): `src/entranceplants.js`, byggd av `exterior.js`, placerar 
 
 
 Plant care (#553, part of #396): `src/watering.js` adds care targets to existing SillPot, plant Things and movable indoor palm/ZZ roots. Watered ids are saved in `x.watering`; no duplicate inventory of plants. Window soil vertex colours and original leaf/flower arrays change per pot and rebuild the same five material batches; own models receive the same transformation, including when moved or returned home. Other plants clone tagged soil materials once so a wet copper pot cannot darken its neighbor. The shelf face-pot eucalyptus is artificial and refuses water. `tools/wateringtest.html` covers actual touch fill/water, reservation/cancellation, exact dose, independent appearance, movement, reload and reset; `planttest` keeps existing lifting intact. All amounts, visual dryness and can dimensions are game assumptions in WATERING.
+
+Plant wind (#518): `PlantWind` reads actual animation progress from apartment windows and the two `SwingDoor.exterior` leaves; cupboards, internal/portik doors and letter flaps do not drive wind. The largest open fraction gates every potted plant, including outside entrances, patio planters and artificial eucalyptus. Shared Weather.kind/rain/storm strengthens rain/snow/hail with smooth easing. Heights, frequencies, strength and a 6 cm maximum displacement per axis are visual/game assumptions in `PLANT_WIND`, not measured weather. Plant phase/stiffness and slow gusts vary; closed openings eventually give exactly zero movement. Pots, soil, saved positions, care state and interaction geometry remain unchanged. Shader bounds expand only the rendering sphere; footprints and geometry positions are unchanged. Per frame only two uniforms change, no extra meshes/material batches/lights; the zero-wind shader skips sine work. Original material hooks and interaction brightness delegate normally. [Validation](../validation/issue-518/README.md).

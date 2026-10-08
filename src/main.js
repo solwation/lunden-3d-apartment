@@ -1,3 +1,4 @@
+import { PlantWind, windShadow } from './plantwind.js';
 import { runCheat, cheatHelp } from './cheats.js';
 import { cleanHome } from './cheatclean.js';
 import { buildCheatNote } from './cheatnote.js';
@@ -422,6 +423,7 @@ const life = new Life({ scene, camera, say: (t) => badge(t, false), feet: () => 
 const lifeStores = buildStores(life, world); // the fridge, the freezer, the pantry, the utensil drawer as slots (#369)
 const laundry = new Laundry(life,world);
 const watering = new Watering(life,world,{sillPots,things,lights});
+const plantWind=new PlantWind(world,weather);scene.traverse(windShadow);
 const tableSetting = new TableSetting(life,world);
 const hallCare = new HallCare(life,world);
 toiletPaper.initLife(life,world,door=>{door.toggle();if(door.isOpen)bump('cabinets',1,idOf(door));});
@@ -2127,6 +2129,7 @@ function step(dt) {
   const moved = Math.hypot(player.pos.x - lastWeatherPos.x, player.pos.z - lastWeatherPos.z); // on foot (not a jump / spawn)
   lastWeatherPos.copy(player.pos);
   weather.update(dt, !player.outdoors || player.below || player.inCore, moved < 1 ? moved : 0); // (the garage: dry and muffled, #357) // after the day: it sets the overcast / flash the next day.update applies (#248)
+  plantWind.update(dt);
   people.update(dt, weather.rain > WEATHER.people ? 0 : day.daylight, day.month, player); // they go in when it pours
   greet.update(dt); // greetings and answers (#247)
   cat.update(dt);
@@ -2517,4 +2520,4 @@ document.documentElement.classList.remove('resuming'); // the page is ready: off
 hideLoading();
 
 // handle for tests/debugging (tools/touchtest.html, tools/perfcount.html)
-window.__app = { cheats, cheatNote, showCheatNote, beerShelf, hallCare, bedCare, tableSetting, watering, laundry, compass, showOverlay, resumeFromMenu, interactionOutline, eggs, isPhoneDevice, get activeMode() { return activeMode; }, set activeMode(v) { activeMode = v; }, rearrange, showTerminal, dynRes, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, toaster, life, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS };
+window.__app = { plantWind, cheats, cheatNote, showCheatNote, beerShelf, hallCare, bedCare, tableSetting, watering, laundry, compass, showOverlay, resumeFromMenu, interactionOutline, eggs, isPhoneDevice, get activeMode() { return activeMode; }, set activeMode(v) { activeMode = v; }, rearrange, showTerminal, dynRes, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, toaster, life, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS };

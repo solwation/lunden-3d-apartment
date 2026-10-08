@@ -1,3 +1,4 @@
+import { windPlant } from './plantwind.js';
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
@@ -437,7 +438,7 @@ export function planter(item) {
   }
   g.traverse((m) => { m.castShadow = m.receiveShadow = true; });
   g.userData.footprint = [{ x0: -r, x1: r, z0: -r, z1: r }];
-  return g;
+  return windPlant(g,h-.03,[PLANT_MATS[item.plant],trunkMat]);
 }
 
 // --- snowman ------------------------------------------------------------------

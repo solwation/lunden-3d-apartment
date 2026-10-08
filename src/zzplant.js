@@ -1,3 +1,4 @@
+import { windPlant } from './plantwind.js';
 import * as THREE from 'three';
 import { copperPot } from './plantpots.js';
 
@@ -61,5 +62,5 @@ export function zzplant(item) {
   canopy.scale.setScalar((item.height - soil) / height);
   root.traverse(m=>{if(m.isMesh)m.castShadow=m.receiveShadow=true});
   root.userData.footprint = [{x0:-item.pot.r,x1:item.pot.r,z0:-item.pot.r,z1:item.pot.r}];
-  return root;
+  return windPlant(root,soil,[leaves,stems]);
 }
