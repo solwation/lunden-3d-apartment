@@ -1,0 +1,146 @@
+ALL PASS
+PASS start ute → ytterdörren → hall
+  → (1.3, -3) at (1.32, -3.10) y=0.00 level=0 t=5.6s
+  → (1.3, -0.5) at (1.30, -0.62) y=0.00 level=0 t=1.5s
+  → (1.3, 1.2) at (1.30, 1.09) y=0.00 level=0 t=1.1s
+PASS fasaden blockerar (in i grannens lägenhet)
+  → (-3, -2) at (-3.00, -2.00) y=0.00 level=0 t=0.0s
+  → (-3, 3) STUCK at (-3.00, -0.22) y=0.00 level=0 t=18.1s
+PASS entré → trappa → Sovrum 1
+  → (1.3, -0.5) at (1.30, -0.61) y=0.00 level=0 t=0.6s
+  → (1.3, 2.4) at (1.30, 2.29) y=0.00 level=0 t=1.8s
+  → (2.4, 2.4) at (2.28, 2.39) y=0.00 level=0 t=0.6s
+  → (2.4, 4.6) at (2.40, 4.49) y=0.00 level=0 t=1.3s
+  → (2.7, 7.13) at (2.69, 7.04) y=0.00 level=0 t=1.6s
+  → (4.3, 7.13) at (4.21, 7.12) y=0.61 level=0 t=1.0s
+  → (5.1, 7) at (5.00, 7.01) y=1.22 level=0 t=0.5s
+  → (5.15, 6.2) at (5.13, 6.31) y=2.03 level=1 t=0.4s
+  → (4.3, 6.2) at (4.42, 6.21) y=2.64 level=1 t=0.4s
+  → (3, 6.2) at (3.11, 6.20) y=3.25 level=1 t=0.8s
+  → (3.15, 5.5) at (3.14, 5.62) y=3.25 level=1 t=0.4s
+  → (3.15, 3) at (3.10, 3.09) y=3.25 level=1 t=1.6s
+PASS Sovrum 1 → ner → uteplats
+  → (3.15, 5.5) at (3.15, 5.38) y=3.25 level=1 t=1.4s
+  → (3, 6.2) at (3.02, 6.09) y=3.25 level=1 t=0.4s
+  → (4.3, 6.2) at (4.19, 6.19) y=3.00 level=1 t=0.7s
+  → (5.15, 6.2) at (5.04, 6.20) y=2.34 level=1 t=0.5s
+  → (5.1, 7) at (5.09, 6.89) y=1.66 level=1 t=0.4s
+  → (4.3, 7.13) at (4.40, 7.10) y=0.81 level=0 t=0.4s
+  → (2.7, 7.13) at (2.80, 7.13) y=0.00 level=0 t=1.0s
+  → (2.7, 9) at (2.71, 8.89) y=0.00 level=0 t=1.1s
+  → (1.4, 12) at (1.44, 11.91) y=0.00 level=0 t=2.0s
+  → (1.4, 13.5) at (1.40, 13.40) y=0.00 level=0 t=0.9s
+PASS uteplats → genom häcköppningen → gräsmattan
+  → (1.4, 15.2) at (1.40, 15.10) y=0.00 level=0 t=1.0s
+  → (0.6, 16.4) at (0.66, 16.30) y=0.00 level=0 t=0.9s
+  → (0.6, 18.4) at (0.60, 18.30) y=0.00 level=0 t=1.3s
+  → (2.5, 20) at (2.41, 19.92) y=0.00 level=0 t=1.5s
+PASS grannens skärmvägg blockerar (gräsmattan → grannens uteplats)
+  → (-2, 20) at (-2.00, 20.00) y=0.00 level=0 t=0.0s
+  → (-2, 14) STUCK at (-2.00, 17.82) y=0.00 level=0 t=18.8s
+PASS gården: från gräsmattan till pergolan, bordet stoppar
+  → (-10, 20) at (-9.90, 20.00) y=0.00 level=0 t=7.7s
+  → (-17.4, 22) STUCK at (-15.08, 22.00) y=0.00 level=0 t=19.9s
+PASS gården: rampen längs Sankt Lars väg, räcket mot gatan stoppar (#255)
+  → (12.5, 25.5) at (12.39, 25.50) y=0.00 level=0 t=4.6s
+  → (12.5, 15) at (12.50, 15.10) y=-0.65 level=0 t=6.5s
+  → (16, 15) STUCK at (13.28, 15.00) y=-0.66 level=0 t=17.2s
+PASS gården: nerför rampen mot Hus L:s gavel, 0,9 m (#256)
+  → (12.5, 13) at (12.50, 13.10) y=-0.79 level=0 t=7.7s
+PASS gården: nerför trappan mot Sankt Lars väg, 1,4 m (#255, #355)
+  → (12.5, 26.5) at (12.50, 26.38) y=0.00 level=0 t=0.6s
+  → (12.5, 30.5) at (12.50, 30.38) y=-1.44 level=0 t=2.5s
+PASS kvarteret: START → runt Hus C → nerför trappan mot Karpvägen → garageinfarten (#355)
+  → (-12, -8) at (-11.91, -8.03) y=0.00 level=0 t=9.6s
+  → (-40, -8) at (-39.91, -8.00) y=0.00 level=0 t=17.5s
+  → (-66.5, -8) at (-66.39, -8.00) y=0.00 level=0 t=16.6s
+  → (-67.5, 5) at (-67.49, 4.89) y=0.00 level=0 t=8.1s
+  → (-73, 5) at (-72.90, 5.00) y=-0.56 level=0 t=3.4s
+  → (-73.5, 20) at (-73.50, 19.89) y=-1.59 level=0 t=9.3s
+  → (-73.5, 44) at (-73.50, 43.89) y=-3.00 level=0 t=15.0s
+  → (-71.5, 44) at (-71.61, 43.99) y=-3.00 level=0 t=1.2s
+PASS garaget: porten → svängen → stora hallen → vår plats under uteplatsen → källardörren → hisshallen (#357, #417)
+  → (-60, 44) at (-60.11, 44.00) y=-3.00 level=0 t=8.4s
+  → (-46.6, 42) at (-46.71, 42.02) y=-3.00 level=0 t=8.5s
+  → (-46.6, 21) at (-46.60, 21.11) y=-3.00 level=0 t=13.1s
+  → (1.9, 20.5) at (1.80, 20.50) y=-3.00 level=0 t=30.2s
+  → (1.9, 18) at (1.90, 18.10) y=-3.00 level=0 t=1.5s
+  → (-15, 18) at (-14.90, 18.00) y=-3.00 level=0 t=10.5s
+  → (-15, 13.4) at (-15.00, 13.49) y=-3.00 level=0 t=2.8s
+  → (-15, 10.5) at (-15.00, 10.61) y=-3.00 level=0 t=1.8s
+  → (-17.8, 8.4) at (-17.69, 8.42) y=-3.00 level=0 t=3.5s
+PASS trapphuset: portiken → trappan ner → garagets hisshall → upp igen → trappan till våning 3 → loftgången (#415)
+  → (-16.2, 8.95) at (-16.10, 8.95) y=0.00 level=0 t=0.8s
+  → (-17.3, 9) at (-17.19, 9.00) y=0.00 level=0 t=0.7s
+  → (-17.3, 3) at (-17.30, 3.10) y=0.00 level=0 t=3.7s
+  → (-18.45, 3.2) at (-18.33, 3.19) y=0.00 level=0 t=0.7s
+  → (-18.45, 9) at (-18.45, 8.90) y=-3.00 level=0 t=3.6s
+  → (-17.6, 8.4) at (-17.69, 8.45) y=-3.00 level=0 t=0.6s
+  → (-15.5, 8.4) at (-15.61, 8.40) y=-3.00 level=0 t=1.3s
+  → (-17.6, 8.4) at (-17.50, 8.40) y=-3.00 level=0 t=1.2s
+  → (-18.45, 8.4) at (-18.36, 8.40) y=-3.00 level=0 t=0.5s
+  → (-18.45, 3) at (-18.45, 3.09) y=0.00 level=0 t=3.3s
+  → (-17.3, 3) at (-17.41, 3.01) y=0.00 level=0 t=0.7s
+  → (-17.3, 8.6) at (-17.30, 8.50) y=0.00 level=0 t=3.4s
+  → (-18.45, 8.2) at (-18.36, 8.22) y=0.00 level=0 t=0.7s
+  → (-18.45, 3) at (-18.45, 3.10) y=3.25 level=0 t=3.2s
+  → (-17.3, 3) at (-17.41, 3.01) y=3.25 level=0 t=0.7s
+  → (-17.3, 8.6) at (-17.30, 8.50) y=3.25 level=0 t=3.4s
+  → (-18.45, 8.2) at (-18.36, 8.22) y=3.25 level=0 t=0.7s
+  → (-18.45, 3.2) at (-18.45, 3.32) y=6.40 level=0 t=3.1s
+  → (-17.6, 2.4) at (-17.67, 2.48) y=6.40 level=0 t=0.7s
+  → (-17.6, 0.8) at (-17.60, 0.90) y=6.40 level=0 t=1.0s
+PASS kvarteret: gården → trappan mellan Hus C och B → runt Hus B och A → uppför rampen → START (#355)
+  → (-46.6, 50) at (-46.59, 49.90) y=0.00 level=0 t=19.7s
+  → (-46.6, 52.3) at (-46.60, 52.20) y=0.00 level=0 t=1.4s
+  → (-46.6, 59.5) at (-46.60, 59.40) y=-3.00 level=0 t=4.5s
+  → (-30, 60) at (-30.10, 60.00) y=-3.00 level=0 t=10.3s
+  → (-16, 60) at (-16.10, 60.00) y=-3.00 level=0 t=8.8s
+  → (0, 56) at (-0.11, 56.03) y=-3.00 level=0 t=10.3s
+  → (11.2, 56) at (11.09, 56.00) y=-3.00 level=0 t=7.0s
+  → (11.2, 33) at (11.20, 33.09) y=-1.75 level=0 t=14.3s
+  → (12.5, 30.6) at (12.44, 30.71) y=-1.48 level=0 t=1.7s
+  → (12.5, 26) at (12.50, 26.12) y=0.00 level=0 t=2.9s
+  → (12.5, 11) at (12.50, 11.11) y=-0.85 level=0 t=9.4s
+  → (12.5, -2) at (12.50, -1.88) y=0.00 level=0 t=8.1s
+  → (6, -6) at (6.10, -5.95) y=0.00 level=0 t=5.0s
+  → (2.875, -12) at (2.93, -11.90) y=0.00 level=0 t=4.2s
+PASS kvarteret: gröningen mellan Hus A och B → stödmuren mot gården stoppar (#355)
+  → (-16, 30) STUCK at (-16.00, 33.52) y=-3.00 level=0 t=24.4s
+PASS kvarteret: parkplanet → inte upp på gården vid sidan om trappan (#355)
+  → (-49, 50) STUCK at (-49.00, 52.72) y=-3.00 level=0 t=21.3s
+PASS kvarteret: in i Hus A:s entrénisch från gården (#355)
+  → (1.2, 30.2) at (1.20, 30.08) y=0.00 level=0 t=2.5s
+PASS kvarteret: Hus A:s entrénisch, väggen bakom stoppar (#355)
+  → (1.2, 32) STUCK at (1.20, 30.68) y=0.00 level=0 t=18.8s
+PASS kvarteret: genom portiken till gården (#355)
+  → (-15, 14) at (-15.00, 13.89) y=0.00 level=0 t=9.9s
+PASS kvarteret: Hus L:s gavel stoppar (#355)
+  → (-38, 6) STUCK at (-41.97, 6.00) y=0.00 level=0 t=19.4s
+PASS kvarteret: gränsen mot HepCat Store stoppar (#355)
+  → (32, 0) STUCK at (27.28, -0.00) y=-0.42 level=0 t=20.0s
+PASS gården: södra gången längs Hus B hela vägen till Hus A (#259)
+  → (-44.2, 30.5) at (-44.20, 30.39) y=0.00 level=0 t=7.4s
+  → (-30, 30.5) at (-30.09, 30.50) y=0.00 level=0 t=8.8s
+  → (-18, 30.5) at (-18.09, 30.50) y=0.00 level=0 t=7.5s
+  → (-11, 30.5) at (-11.11, 30.50) y=0.00 level=0 t=4.4s
+PASS gården: Hus A:s vägg stoppar (#259)
+  → (-5, 30.5) STUCK at (-9.98, 30.50) y=0.00 level=0 t=18.8s
+PASS gården: räcket mot gröningen mellan Hus A och B stoppar (#259)
+  → (-16, 36) STUCK at (-16.00, 33.08) y=0.00 level=0 t=18.5s
+PASS vägg blockerar (hall → badrum genom vägg)
+  → (1.3, 2.4) at (1.30, 2.40) y=0.00 level=0 t=0.0s
+  → (2.4, 6) STUCK at (2.06, 2.83) y=0.00 level=0 t=17.4s
+PASS sprint på parkplanet söder om Hus B (3.20 m/s)
+PASS sprint utomhus (3.20 m/s, vill 3.2)
+PASS sprint inomhus med Shift (3.20 m/s, vill 3.2)
+PASS sprint tunnlar inte genom häcken (z 17.82)
+PASS full touch stick sprints indoors at outdoor pace
+PASS indoor sprint does not tunnel through bathroom wall at 30fps
+PASS indoor sprint stops at closed entrance door
+PASS same sprint speed continuously across open entrance
+PASS isFree / nearestFree på parkplanet (-22.36, 45.06)
+PASS huk: ögonhöjd 0.95 m
+PASS huk: fart 0.80 m/s
+PASS huk: uppför trappan (level 1)
+PASS reser sig när Ctrl släpps

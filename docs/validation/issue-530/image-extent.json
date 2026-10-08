@@ -1,0 +1,14 @@
+{
+  "extent": {
+    "xmin": 1466848.606875573,
+    "ymin": 7495902.691961085,
+    "xmax": 1467533.170435119,
+    "ymax": 7496416.114630745,
+    "spatialReference": {
+      "wkid": 102100,
+      "latestWkid": 3857
+    }
+  },
+  "attribution": "Esri, Vantor, Earthstar Geographics and the GIS User Community",
+  "note": "EPSG:3857 adjusted export extent, image date unknown"
+}

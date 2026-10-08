@@ -4,7 +4,7 @@ try{const f=document.createElement('iframe');f.width=720;f.height=480;f.src='../
 const source=await fetch('../docs/references/surrounding-views/osm-2026-10-08.json').then(r=>r.json());
 check(cfg.paths.length>=14&&cfg.paths.every(p=>{const f=source.features.find(f=>f.id===p.source);return f&&p.path.every(q=>f.points.some(v=>{const pp=G.geoToPlan(...v);return Math.hypot(q[0]-pp[0],q[1]-pp[1])<.02}))}),'all main paths use actual mapped way coordinates');
 check(C.OUTDOOR.z1===64,'background paths and terrain do not extend walking boundary');
-const trees=S.treeFeet.filter(t=>t.patch&&!['west-street','east-park'].includes(t.patch)),spots=P.parkTreeSpots(S.renderedTerrainY),shrubs=P.parkShrubSpots(S.renderedTerrainY);check(trees.length>=65&&trees.length<=100,`patch-constrained mature canopy: ${trees.length} trees`);
+const trees=S.treeFeet.filter(t=>t.patch&&!['west-street','east-park','north-park'].includes(t.patch)),spots=P.parkTreeSpots(S.renderedTerrainY),shrubs=P.parkShrubSpots(S.renderedTerrainY);check(trees.length>=65&&trees.length<=100,`patch-constrained mature canopy: ${trees.length} trees`);
 check(trees.every(t=>!P.inParkGlade(t.x,t.z)&&!P.onParkPath(t.x,t.z,cfg.pathClearance)&&Math.abs(t.y-S.renderedTerrainY(t.x,t.z))<1e-7),'tree feet follow terrain and leave actual paths/glade clear');
 check(new Set(spots.map(t=>Math.round(t.s*10))).size>5&&new Set(trees.map(t=>t.patch)).size===cfg.patches.length,'canopy heights vary across all sourced patches');
 check(shrubs.length>=70&&shrubs.every(t=>t.y>C.SITE.bridges.waterY&&Math.abs(t.y-S.renderedTerrainY(t.x,t.z))<1e-7),`woody understory on banks above water: ${shrubs.length}`);

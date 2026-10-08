@@ -1,5 +1,5 @@
 import {buildSouthBackdrop} from './southbackdrop.js';
-import {buildWestBackdrop,buildEastBackdrop,westTreeSpots,eastTreeSpots} from './sitebackdrop.js';
+import {buildWestBackdrop,buildEastBackdrop,buildNorthBackdrop,westTreeSpots,eastTreeSpots,northTreeSpots} from './sitebackdrop.js';
 import { buildRiverPark, parkDeckAt, parkTreeSpots, parkShrubSpots } from './riverpark.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
@@ -1051,7 +1051,7 @@ function trees(rand) {
       spots.push({ x, z, y: groundY(x, z), s: area.young ? 0.8 + rand() * 0.25 : 0.75 + rand() * 0.6, kind: area.young ? 'young' : birch ? 'birch' : 'tree' });
     }
   }
-  spots.push(...parkTreeSpots(renderedTerrainY),...westTreeSpots(renderedTerrainY),...eastTreeSpots(renderedTerrainY));
+  spots.push(...parkTreeSpots(renderedTerrainY),...westTreeSpots(renderedTerrainY),...eastTreeSpots(renderedTerrainY),...northTreeSpots(renderedTerrainY));
   for (const [x, z, s] of S.bigTrees) spots.push({ x, z, y: groundY(x, z), s, kind: 'big' });
   for (const [x, z] of S.vergeTrees) spots.push({ x, z, y: groundY(x, z), s: 0.8 + rand() * 0.3, kind: 'tree' }); // by Karpvägen (#257)
   for (const [x, z, s] of S.life.trees) spots.push({ x, z, y: groundY(x, z), s, kind: 'tree' }); // the bike yard's + one by the road (#260, #435)
@@ -1317,6 +1317,7 @@ export function buildSurroundings({ grass }) {
   group.add(buildRiverPark(renderedTerrainY,renderedTerrainY));
   group.add(buildWestBackdrop(renderedTerrainY));
   group.add(buildEastBackdrop(renderedTerrainY,historicBrick));
+  group.add(buildNorthBackdrop(renderedTerrainY,historicBrick));
   group.add(buildSouthBackdrop(renderedTerrainY));
   // Kv. Lunden's own blocks and the old S:t Lars buildings: own façade texture and roof colour each,
   // plus a white cornice under the old roofs (#47)

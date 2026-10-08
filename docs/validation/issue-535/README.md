@@ -32,7 +32,7 @@ Alla nya våningsantal är visuella antaganden: huvudsakligen två våningar, en
 
 Kartans servicevägar och gångvägar binds ihop enligt egna source-id i konfigurationen. Bredd 4,5/2 m är antaganden. Fem träd har faktiska OSM-punkter; övriga trädrader och tre dungar är ungefärligt tolkade från flygbilden, inte individuellt kartlagda stammar. Totalt 62 träd använder befintliga säsongsinstanser och håller byggnader/angöring fria. Mellanrummen lämnas gräsbevuxna, inga uppfunna parkeringsantal eller fordon tillkommer.
 
-11 489 trianglar i de fem campusbatcharna. Inga nya ljus eller renderpass. Mobilbilden använder Android/touchprofil 844×390, inte uppmätt fysisk telefon-fps.
+12 703 trianglar i de fem campusbatcharna. Inga nya ljus eller renderpass. Mobilbilden använder Android/touchprofil 844×390, inte uppmätt fysisk telefon-fps.
 
 ## Webbläsarverifiering
 

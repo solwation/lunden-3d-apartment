@@ -13,7 +13,7 @@ check(visible>150&&visible===pos.count/6,`all ${visible}/${pos.count/6} actual w
 if(misses.length)lines.push(JSON.stringify(misses));
 const road=C.SITE.roads.find(r=>r.name==='Karpvägen'),far=road.path.slice(4),mapped=source.features.find(f=>f.id==='342815196').points.map(p=>G.geoToPlan(...p));check(far.slice(1).every(q=>mapped.some(p=>Math.hypot(p[0]-q[0],p[1]-q[1])<.02))&&far.at(-1)[1]<40,'far road follows mapped northwestern return rather than old east–west line');
 const trees=S.treeFeet.filter(t=>t.patch==='west-street');check(trees.length>=6&&trees.every(t=>!B.onWestAccess(t.x,t.z,.5)&&!B.onWestBuilding(t.x,t.z)),`aerial-interpreted street/park trees leave buildings and access clear: ${trees.length}`);
-check(S.treeFeet.filter(t=>t.patch&&!['west-street','east-park'].includes(t.patch)).every(t=>!B.onWestBuilding(t.x,t.z)&&!B.onWestAccess(t.x,t.z,.5)),'river park planting excludes newly added western building/access footprints');
+check(S.treeFeet.filter(t=>t.patch&&!['west-street','east-park','north-park'].includes(t.patch)).every(t=>!B.onWestBuilding(t.x,t.z)&&!B.onWestAccess(t.x,t.z,.5)),'river park planting excludes newly added western building/access footprints');
 check(W.access.filter(p=>p.polygon).length===3&&W.access.filter(p=>p.path).every(p=>source.features.some(f=>f.id===p.source&&f.tags.highway==='service')),'mapped service access and three approximate aerial parking traces, no invented cars/stall counts');
 check(C.OUTDOOR.x0===-78.5&&C.OUTDOOR.z1===64&&W.buildings.every(b=>b.polygon.every(p=>p[0]<C.OUTDOOR.x0)),'all added houses remain beyond unchanged walking boundary');
 const gd=C.SITE.terrain.garageDoor;check(Math.abs(S.groundY(gd.drive,(gd.z0+gd.z1)/2)+3)<.001,'existing garage drive remains at basement/park level');

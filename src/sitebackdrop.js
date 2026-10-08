@@ -17,14 +17,18 @@ export const onEastBuilding=(x,z)=>SITE.east.buildings.some(b=>inside(x,z,b.poly
 export function onEastAccess(x,z,margin=0){return [...SITE.east.paths,...SITE.east.access].some(p=>p.path.slice(1).some(([c,d],i)=>{
  const[a,b]=p.path[i],dx=c-a,dz=d-b,t=Math.max(0,Math.min(1,((x-a)*dx+(z-b)*dz)/(dx*dx+dz*dz)));return Math.hypot(x-a-t*dx,z-b-t*dz)<p.w/2+margin;
 }));}
-export function eastTreeSpots(ground){const E=SITE.east,points=E.trees.map(([x,z,source])=>({x,z,source}));
+const campusAccess=(E,x,z,margin=0)=>[...E.paths,...E.access].some(p=>p.polygon?inside(x,z,p.polygon):p.path.slice(1).some(([c,d],i)=>{const[a,b]=p.path[i],dx=c-a,dz=d-b,t=Math.max(0,Math.min(1,((x-a)*dx+(z-b)*dz)/(dx*dx+dz*dz)));return Math.hypot(x-a-t*dx,z-b-t*dz)<p.w/2+margin;}));
+export const northTreeSpots=ground=>campusTreeSpots(SITE.north,'north',ground);
+export const eastTreeSpots=ground=>campusTreeSpots(SITE.east,'east',ground);
+function campusTreeSpots(E,key,ground){const points=E.trees.map(([x,z,source])=>({x,z,source}));
  for(const row of E.treeRows){const[a,b]=row.from,[c,d]=row.to,len=Math.hypot(c-a,d-b);for(let t=0;t<=len;t+=row.step)points.push({x:a+(c-a)*t/len,z:b+(d-b)*t/len,source:'aerial '+row.name});}
- let seed=535;const rand=()=>((seed=seed*16807%2147483647)/2147483647);
+ let seed=key==='north'?530:535;const rand=()=>((seed=seed*16807%2147483647)/2147483647);
  for(const patch of E.treePatches){const xs=patch.polygon.map(p=>p[0]),zs=patch.polygon.map(p=>p[1]),x0=Math.min(...xs),z0=Math.min(...zs),dx=Math.max(...xs)-x0,dz=Math.max(...zs)-z0;let count=0;for(let k=0;k<patch.n*30&&count<patch.n;k++){const x=x0+dx*rand(),z=z0+dz*rand();if(!inside(x,z,patch.polygon))continue;points.push({x,z,source:'aerial '+patch.name});count++;}}
- return points.filter(({x,z})=>!onRoad(x,z,.5)&&!onWalk(x,z,.5)&&!onEastBuilding(x,z)&&!onEastAccess(x,z,.5)).map(({x,z,source},i)=>({x,z,source,s:E.treeScale[0]+(i*37%97)/97*(E.treeScale[1]-E.treeScale[0]),y:ground(x,z),kind:'big',patch:'east-park'}));}
+ return points.filter(({x,z})=>!onRoad(x,z,.5)&&!onWalk(x,z,.5)&&!E.buildings.some(b=>inside(x,z,b.polygon)&&!(b.holes??[]).some(h=>inside(x,z,h)))&&!campusAccess(E,x,z,.5)).map(({x,z,source},i)=>({x,z,source,s:E.treeScale[0]+(i*37%97)/97*(E.treeScale[1]-E.treeScale[0]),y:ground(x,z),kind:'big',patch:key+'-park'}));}
 /** Background exteriors only. Exact map footprints, illustrative facade/roof heights, no interiors/collision. */
 export function buildWestBackdrop(ground){return buildBackdrop(SITE.west,'west',ground);}
 export function buildEastBackdrop(ground,brick){return buildBackdrop(SITE.east,'east',ground,brick);}
+export function buildNorthBackdrop(ground,brick){return buildBackdrop(SITE.north,'north',ground,brick);}
 function buildBackdrop(W,key,ground,brick=null){
  const group=new THREE.Group();group.name=key+'-backdrop';const parts={facade:[],roof:[],glass:[],access:[],...(brick?{modern:[]}: {})},records=[];
  for(const b of W.buildings){const p=b.polygon.slice(0,-1),holes=(b.holes??[]).map(h=>h.slice(0,-1)),height=b.storey??W.storey,heights=p.map(v=>ground(...v)),base=Math.max(...heights),bottom=Math.min(...heights)-.1,eave=base+b.levels*height;const footprint=shape(p);footprint.holes=holes.map(h=>new THREE.Path(h.map(([x,z])=>new THREE.Vector2(x,-z))));const wallParts=b.modern?parts.modern:parts.facade;

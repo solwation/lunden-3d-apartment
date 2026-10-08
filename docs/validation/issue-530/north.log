@@ -1,0 +1,15 @@
+PASS three missing north footprints, 80 unique mapped background buildings across all areas
+PASS Hunnerupshemmet / 85: actual mapped footprint
+PASS Norra vinklade byggnaden: actual mapped footprint
+PASS Norra tegelpaviljongen: actual mapped footprint
+PASS rehabilitation/Karpvägen houses and Montessori reused without duplication
+PASS five merged external/access material batches
+PASS plinths cover actual rendered ground
+PASS actual outward windows 426/426
+PASS far Sankt Lars väg follows actual northwestern turn, retained near control points
+PASS source paths/roads plus two explicitly approximate parking surfaces
+PASS northern avenues and grove clear of houses/parking: 39
+PASS aerial pixel parking traces do not intrude into mapped houses
+PASS walking boundary unchanged
+PASS north detail budget: 8380 triangles
+ALL PASS
