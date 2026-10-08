@@ -1,7 +1,7 @@
 import * as THREE from 'three';
-import { Holdable } from './holdable.js';
+import { Holdable, heldItem, setHeld } from './holdable.js';
 import { sfx } from './audio.js';
-import { PAN as P } from './config.js';
+import { PAN as P, LIFE } from './config.js';
 
 // The frying pan (#159), a Holdable that lives in the middle drawer under the hob: it rides with the drawer
 // (a child of it), so it is only reachable with the drawer open. E on the hob with the pan in the hand stands
@@ -35,7 +35,13 @@ export class Pan extends Holdable {
       heldPose: { pos: new THREE.Vector3(P.held.x, P.held.y, P.held.z), rot: new THREE.Euler(0.55, -Math.PI / 2 + 0.35, 0, 'YXZ') }, // handle towards you, a little to the right
       pick: { pos: home.clone().setY(home.y + 0.04), size: [0.3, 0.1, 0.3] },
     });
-    Object.assign(this, { drawer, hob, onHob: false, placeVerb: 'ställa ner' });
+    Object.assign(this, { drawer, hob, clean: 'clean', isPan: true, onHob: false, placeVerb: 'ställa ner' });
+    const smear = new THREE.Mesh(new THREE.CircleGeometry(P.d * .35, 24).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0x6d4c22, transparent: true, opacity: .45, depthWrite: false }));
+    smear.position.y = .0045; smear.visible = false; smear.raycast = () => {}; this.model.add(smear); this.smear = smear;
+    Object.defineProperties(this.backTarget, {
+      blocked: { get: () => !!this.egg || (LIFE.rules.washFirst && this.dirty) },
+      blockedText: { get: () => this.egg ? 'Ta ur ägget först' : 'Diska stekpannan först' },
+    });
     this.goHome();
   }
 
@@ -52,16 +58,48 @@ export class Pan extends Holdable {
     if (!this.held) return;
     super.placeAt(p, yaw);
     this.onHob = !!this.hob && p.distanceTo(this.hob.zone) < 0.05;
+    this.lastPlaced = { pos: this.model.position.toArray(), quat: this.model.quaternion.toArray() };
     sfx.cupboard(p, false);
   }
 
   /** Upright, the handle towards the room (−x), whatever the turn (#368: the ghost the same). */
   poseAt(obj, p) { super.poseAt(obj, p, 0); obj.quaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI); }
 
-  take() { super.take(); this.onHob = false; }
+  take() {
+    if (this.placed) this.lastPlaced = { pos: this.model.getWorldPosition(new THREE.Vector3()).toArray(), quat: this.model.getWorldQuaternion(new THREE.Quaternion()).toArray() };
+    super.take(); this.onHob = false;
+  }
+
+  get dirty() { return this.clean === 'dirty'; }
+  setDirty(on) { this.clean = on ? 'dirty' : 'clean'; if (this.smear) this.smear.visible = on; }
+  wash() { this.setDirty(false); }
+  putBack() {
+    if (this.held && (this.egg || LIFE.rules.washFirst && this.dirty) && this.eggs) {
+      // F / a hand switch must release the hand without hiding a dirty pan or its food.
+      const p = this.lastPlaced?.pos ?? this.eggs.life.feet().pos;
+      this.placeAt(new THREE.Vector3(...p)); return;
+    }
+    super.putBack();
+  }
+  saveState() {
+    const place = this.placed ? { pos: this.model.position.toArray(), quat: this.model.quaternion.toArray() } : this.held ? this.lastPlaced ?? null : null;
+    return { clean: this.clean, place };
+  }
+  loadState(state) {
+    if (!state || typeof state !== 'object') return;
+    this.setDirty(state.clean === 'dirty');
+    if (heldItem() === this) setHeld(null); this.held = false;
+    const place = state.place;
+    if (Array.isArray(place?.pos) && place.pos.length === 3 && place.pos.every(Number.isFinite) && Array.isArray(place.quat) && place.quat.length === 4 && place.quat.every(Number.isFinite)) {
+      this.scene.add(this.model); this.model.position.set(...place.pos); this.model.quaternion.set(...place.quat); this.placed = true; this.lastPlaced = place;
+      this.onHob = !!this.hob && this.model.position.distanceTo(this.hob.zone) < .05;
+    } else this.goHome();
+    this.model.updateMatrixWorld(true);
+  }
 
   update(dt) { // the pick box (in the scene) follows the drawer while it slides
     this.drawer.object.getWorldPosition(this.holder.position);
     super.update(dt);
+    this.eggs?.update(dt);
   }
 }

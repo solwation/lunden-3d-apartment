@@ -38,6 +38,7 @@ import { Saber } from './saber.js';
 import { buildToys } from './toys.js';
 import { Remote } from './remote.js';
 import { Book } from './book.js';
+import { Eggs } from './eggs.js';
 import { Pan } from './pan.js';
 import { Toaster } from './toaster.js';
 import { buildSillPots } from './plants.js';
@@ -400,6 +401,7 @@ const life = new Life({ scene, camera, say: (t) => badge(t, false), feet: () => 
   persist: lifeDev() ? null : { key: LIFE.save.key, canSave: () => { try { return !resetHome.going; } catch { return false; } } }, debug: params0.has('debug') }); // the home's stock kept between visits (#371; never with &life)
 const lifeStores = buildStores(life, world); // the fridge, the freezer, the pantry, the utensil drawer as slots (#369)
 if (toaster) toaster.initLife(life);
+const eggs = pan ? new Eggs(life, pan) : null;
 const dwDoor = world.lids.find((l) => l.name === 'diskmaskinen' && l.panelAt);
 const dropoff = buildDropoff(life); // the rubbish bags' drop-off by the car park (#387, a game spot)
 scene.add(dropoff.object);
@@ -441,6 +443,7 @@ fruit.onEaten = (f) => bump('fruit', 1, f.kind);
 airFryer.onDone = () => { if (fish?.inFryer.length || fries?.count) bump('airfried', 1, 'airfryer'); }; // a batch done (#287)
 const fridge = world.lids.find((l) => l.kind === 'fridge' && !l.freezer);
 const chicken = fridge ? new Chicken(scene, camera, fridge, pan, world.hob) : null; // the roast chicken: take it, fry it in the pan (#160)
+if (pan) pan.occupied = () => !!chicken?.inPan || !!fish?.inPan.length;
 if (chicken) holdables.push(chicken);
 // the cooker hood draws the chicken's smoke; without it the smoke alarm in the kitchen ceiling goes off (#194)
 const smokeAlarm = new SmokeAlarm();
@@ -1621,7 +1624,7 @@ function updateFocus() {
     placeGhost.visible = true;
   }
   // the chicken in the hand, aimed at the pan on the hob (or the hob): into the pan (#160)
-  if (item === chicken && pan?.onHob && !chicken.inPan && !fish?.inPan.length && (focused === pan.takeTarget || focused?.kind === 'hob'
+  if (item === chicken && pan?.onHob && !chicken.inPan && !fish?.inPan.length && !pan.egg && (focused === pan.takeTarget || focused?.kind === 'hob'
     || (focused?.kind === 'place' && focused.point.distanceTo(world.hob.zone) < 0.35))) {
     focused = { name: 'kycklingen i pannan', kind: 'fry', verb: 'lägga', item: chicken };
     placeGhost.visible = false;
@@ -1721,7 +1724,7 @@ function toggleFurniture(on = !world.furnitureOn) {
     fruit.reset(); // every piece of fruit back in the bowl, whole (#326)
     for (const l of world.lids) if (l.kind === 'fridge' && l.isOpen) l.toggle(); // the fridge and freezer doors shut: no alarm (#288)
     rifle?.reset(); // the dropped magazines go, a full one in (#196)
-    for (const h of holdables) if (h.placed) h.goHome();
+    for (const h of holdables) if (h.placed && !(h === pan && (pan.egg || pan.dirty))) h.goHome(); // life-sim food and dirty cookware stay where left
     jetpack.goHome(); // back on its hook by the garage (#359)
     cups.reset(); // the cups standing out go, the cabinet is full again (#215)
     coffeeJar?.reset(); // the scoop in its loop, the Moccamaster's tank and filter empty (#334)
@@ -2328,4 +2331,4 @@ document.documentElement.classList.remove('resuming'); // the page is ready: off
 hideLoading();
 
 // handle for tests/debugging (tools/touchtest.html, tools/perfcount.html)
-window.__app = { isPhoneDevice, get activeMode() { return activeMode; }, set activeMode(v) { activeMode = v; }, rearrange, showTerminal, dynRes, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, toaster, life, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS };
+window.__app = { eggs, isPhoneDevice, get activeMode() { return activeMode; }, set activeMode(v) { activeMode = v; }, rearrange, showTerminal, dynRes, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, toaster, life, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS };

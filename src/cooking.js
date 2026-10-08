@@ -137,7 +137,7 @@ export function cookingActions(life) {
       const got = I.create(I.def(c.target).dispense, { at: 'hand' });
       if (I.isEmpty(c.target)) I.set(c.target, { pkg: 'empty' });
       sfx.rustle?.(c.targetView?.where());
-      if (c.targetView) life.emit('crumbs', { from: 'bag', item: c.target, pos: c.targetView.where().toArray() }); // (#388)
+      if (c.targetView && c.target.type === 'breadBag') life.emit('crumbs', { from: 'bag', item: c.target, pos: c.targetView.where().toArray() }); // (#388)
       return got;
     },
     consumes: 'one (count) out of the package', result: 'one new thing of its `dispense` type in the hand; an empty package stays (pkg empty)',
@@ -148,7 +148,7 @@ export function cookingActions(life) {
     id: 'eat', order: 0, duration: LIFE.eat.seconds, commitAt: 0.5,
     label: 'äta',
     applies: (c) => !!c.target && c.target === c.held && !!I.def(c.target)?.bites,
-    check: (c) => (c.target.amount > 1e-6 ? null : 'Det finns inget kvar'),
+    check: (c) => I.def(c.target).needsCooking && !c.target.machine.cooked ? 'Stek ägget först' : (c.target.amount > 1e-6 ? null : 'Det finns inget kvar'),
     reserve: (c) => ({ inputs: [c.target] }),
     animate: (c, k, job) => { // to the mouth and back
       const v = c.heldView;
@@ -278,6 +278,7 @@ export function cookingActions(life) {
     label: (c) => `lägga ${nm(c.held)} på ${nm(c.target)}`,
     applies: (c) => !!c.held && I.has(c.held, 'topping') && !!c.target && I.has(c.target, 'base') && c.target !== c.held,
     check: (c) => {
+      if (I.def(c.held).needsCooking && !c.held.machine.cooked) return 'Stek ägget först';
       if (c.target.place.at === 'hand') return 'Lägg ner brödet först';
       if (c.target.parts.length >= LIFE.sandwich.max) return 'Mackan rymmer inte mer';
       if (c.target.lock || c.held.lock) return 'Vänta lite';
@@ -286,6 +287,7 @@ export function cookingActions(life) {
     run: (c) => {
       const top = c.held, bread = c.target;
       const part = { type: top.type, amount: top.amount };
+      if (top.type === 'friedEgg') part.machine = { cook: top.machine.cook, cooked: true };
       if (!I.remove(top)) return; // (it leaves its place first; nothing is added if it could not)
       I.set(bread, { parts: [...bread.parts, part], prep: 'assembled' });
       life.emit('prepared', { item: bread }); // only after the topping really moved (#392)
@@ -296,6 +298,7 @@ export function cookingActions(life) {
   /** A sandwich's name from what is on it (#379): "ost- och gurkmackan", "ostmackan", "smörgåsen med smör" … */
   I.namers.breadSlice = (it) => {
     const has = (t) => it.parts?.some((p) => p.type === t);
+    if (has('friedEgg')) return it.toasted ? 'den rostade äggmackan' : 'äggmackan';
     const cheese = has('cheeseSlice'), cuc = has('cucumberSlice');
     if (cheese && cuc) return it.toasted ? 'den rostade ost- och gurkmackan' : 'ost- och gurkmackan';
     if (cheese) return it.toasted ? 'den rostade ostmackan' : 'ostmackan';

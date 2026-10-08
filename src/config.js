@@ -1216,7 +1216,7 @@ export const DISHWASHER = { out: 0.38, lower: { y: 0.05, h: 0.13, plates: 6 }, u
 // anywhere (in the hand, lying out, half used). The milk is milk.js's carton (#168), the fish fingers fishfingers.js's.
 export const LIFE_FOOD = {
   amounts: { cucumber: 300, cheese: 500, butter: 500, peas: 500, breadBag: 12 }, // g, g, g, g, slices
-  stock: [['cheese', 'fridge', 0], ['cucumber', 'fridge', 1], ['butter', 'fridge', 6], // the bottom shelf; the butter in the door's top bin
+  stock: [['cheese', 'fridge', 0], ['cucumber', 'fridge', 1], ['butter', 'fridge', 6], ['eggCarton', 'fridge', 2], // the bottom shelf; the butter in the door's top bin
     ['peas', 'freezer', 3], // on the lower open shelf beside the fish-finger carton
     ['breadBag', 'pantry', 0]], // the bottom of the pantry cabinet
 };
@@ -1246,7 +1246,12 @@ export const LIFE_TOOLS = {
 // `model` = the builder in lifemodels.js, `held` = its pose in the hand (camera space), `noun` = the indefinite form in messages
 // ("Osthyveln skär inte gurka", #374). Amounts are game parameters from
 // the plan (docs/livssimulator-plan-2026-10-04.md: a cucumber 300 g, a slice 10 g), not product measures.
+// Egg size, stock and game-paced frying times are assumptions (#484).
+export const EGG = { count: 6, crack: .65, seconds: 8, burnAt: 24, shellRadius: .022, whiteRadius: .051, yolkRadius: .017, carton: { w: .155, d: .105, h: .067 } };
 export const ITEMS = {
+  eggCarton: { name: 'äggkartongen', tags: ['food', 'package'], unit: 'count', amount: EGG.count, size: 'm', pkg: 'closed', model: 'eggCarton', dispense: 'rawEgg', dispenseLabel: 'ta ett ägg' },
+  rawEgg: { name: 'ägget', tags: ['food'], unit: 'count', amount: 1, size: 'xs', model: 'rawEgg' },
+  friedEgg: { name: 'det stekta ägget', tags: ['food', 'topping'], unit: 'count', amount: 1, size: 's', model: 'friedEgg', bites: 4, needsCooking: true },
   plate: { name: 'tallriken', tags: ['dish', 'carrier', 'dishwasherSafe'], unit: 'count', amount: 1, size: 'm', clean: 'clean', model: 'plate',
     carrier: { slots: 6, size: 's', accepts: ['food'], fullText: 'Tallriken är full', order: [0, 1, 2, 3, 4, 5] } }, // the middle first, then round it
   board: { name: 'skärbrädan', tags: ['carrier', 'station'], unit: 'count', amount: 1, size: 'l', clean: 'clean', model: 'board',

@@ -403,7 +403,16 @@ src/ovens.js           oven (drop-down door) + microwave (side door) in the tall
 src/hob.js             the induction hob (#158): E switches it on/off (the front zone glows, "9" on the display, a hum);
                        in world.lids, `world.hob` (`zone`, `on`) for the pan/chicken; stays with F but F switches it off
 src/pan.js             the frying pan (#159), a Holdable in the middle drawer under the hob (`world.panDrawer`, a child
-                       of the drawer while at home); E on the hob with it in the hand stands it on the front zone (`onHob`)
+                       of the drawer while at home); E on the hob with it in the hand stands it on the front zone (`onHob`).
+                       #484: dirty after cracking an egg, washed by the shared dish action at the kitchen tap;
+                       cannot return to the drawer with an egg or (washFirst) while dirty. F pauses the hob and
+                       preserves food/dirty cookware in place. life.keepPart("pan") keeps cleanliness and world pose.
+src/eggs.js            #484: Eggs registers the pan as a one-slot cooking store, crackEgg uses the existing Runner
+                       (one raw egg -> one cracked item, cancellation consumes nothing). Heat only on the hob
+                       while switched on; machine.cook/cooked persists, supports serving and sandwich toppings.
+                       EGG sizes/times/stock are guesses/game parameters. tools/eggtest.html.
+src/eggmodels.js       original carton, shell and egg geometry; frying whitens the translucent white and browns
+                       it if left on too long. Bread uses the same cooked egg model for its topping.
 src/sockets.js         the kitchen's wall sockets (#442, KITCHEN_SOCKETS): white double sockets at the top of the splashback
                        under the wall cabinets (over the Moccamaster, between the sink and the hob, in the corner; they replaced
                        the "Hörnbox" on the worktop), merged into the kitchen (stay with F); `mouths()` (fixed: the Moccamaster's

@@ -93,9 +93,9 @@ export function dishActions(life) {
   });
 
   // washing up by hand (#383): something used / dirty in the hand at the running kitchen tap
-  const washable = (c) => (c.held ? (c.held.clean ?? null) !== null : !!c.heldView?.isCup);
+  const washable = (c) => (c.held ? (c.held.clean ?? null) !== null : !!c.heldView?.isCup || !!c.heldView?.isPan);
   const isClean = (c) => (c.held ? c.held.clean === 'clean' : !c.heldView.dirty);
-  const heldName = (c) => (c.held ? nm(c.held) : 'koppen');
+  const heldName = (c) => (c.held ? nm(c.held) : c.heldView?.name ?? 'koppen');
   A.define({
     id: 'wash', order: 1, duration: LIFE.wash.seconds,
     label: (c) => `diska ${heldName(c)}`,
@@ -107,6 +107,7 @@ export function dishActions(life) {
       if (isClean(c)) return `${cap(n)} är redan ${/et$/.test(n) ? 'rent' : 'ren'}`;
       if (c.held && I.children(c.held).length) return `Skrapa av ${n} först`;
       if (c.held && drinkIn(c.held)) return `Häll ut ${the(drinkIn(c.held))} först`;
+      if (!c.held && (c.heldView.egg || c.heldView.occupied?.())) return 'Ta ur maten först';
       if (!c.held && c.heldView.fill > 0.01) return 'Häll ut det som är i koppen först';
       return null;
     },

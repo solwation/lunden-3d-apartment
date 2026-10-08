@@ -354,12 +354,12 @@ export class FishPack {
   }
 
   /** Is there room in the pan for the one in the hand (not with the chicken in it)? */
-  canFry(chickenInPan) { return !!this.holding && !!this.pan?.onHob && !chickenInPan && this.inPan.length < F.slots; }
+  canFry(chickenInPan) { return !!this.holding && !!this.pan?.onHob && !chickenInPan && !this.pan.egg && this.inPan.length < F.slots; }
 
   /** The held one into the pan, in the first free slot. */
   fryHeld() {
     const f = this.holding;
-    if (!f || !this.pan) return;
+    if (!f || !this.pan || this.pan.egg) return;
     const used = new Set(this.inPan.map((x) => x.slot));
     let i = 0;
     while (used.has(i)) i++;

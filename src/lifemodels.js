@@ -1,5 +1,7 @@
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { EGG } from './config.js';
+import { eggCarton, rawEgg, friedEgg } from './eggmodels.js';
 import { Contents, GlassLiquid } from './drinks.js';
 
 // Models for the life simulator's things (#366): plain shapes of our own, no brands. Each builder returns
@@ -256,6 +258,9 @@ function sandwichLayers(parts, bitten, bites, xe) {
     } else if (p.type === 'cheeseSlice') {
       const m = mesh(breadSliceShape(bitten, bites).geo.scale(0.86, 0.17, 0.84), M.cheeseSlice);
       m.position.set(0.003 * (g.children.length % 2 ? 1 : -1), y, 0); g.add(m); y += 0.0022;
+    } else if (p.type === 'friedEgg') {
+      const model = friedEgg(); model.show({ amount: p.amount * (1 - bitten / bites), machine: p.machine ?? { cook: EGG.seconds, cooked: true } });
+      const egg = model.object; egg.position.y = y; g.add(egg); y += .014;
     } else if (p.type === 'cucumberSlice') {
       const spots = [[-0.03, -0.025], [0.012, -0.025], [-0.03, 0.022], [0.012, 0.022], [-0.009, 0], [0.032, 0]];
       const [x, z] = spots[nCuc++ % spots.length];
@@ -419,7 +424,7 @@ function rubbishBag() {
   return { object: g, grip: [0, 0.31, 0], show(item) { const m = mats[item.machine?.sort] ?? BAGS.black; for (const o of [body, neck, ...ears]) o.material = m; body.scale.setScalar(0.75 + 0.25 * Math.min(1, (item.amount ?? 0) / 8)); } };
 }
 
-const BUILDERS = { rubbishBag, glass, plate, board, cucumber, cucumberSlice, cheese, butter, breadBag, breadSlice, knife, peas, butterKnife, cheeseSlicer, cheeseSlice, bin };
+const BUILDERS = { eggCarton, rawEgg, friedEgg, rubbishBag, glass, plate, board, cucumber, cucumberSlice, cheese, butter, breadBag, breadSlice, knife, peas, butterKnife, cheeseSlicer, cheeseSlice, bin };
 
 /** The model of a type (its `model` builder; a grey box when there is none). */
 export function buildModel(def) {

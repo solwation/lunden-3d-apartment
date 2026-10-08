@@ -75,7 +75,7 @@ export class Chicken extends Holdable {
 
   /** Lay it in the pan on the hob (main.js: E on the pan with the chicken in the hand). */
   intoPan() {
-    if (!this.held || !this.pan) return;
+    if (!this.held || !this.pan || this.pan.egg) return;
     this.held = false;
     setHeld(null); // the hand is free (this one is no longer held, so nothing is put back)
     this.pan.model.add(this.model);

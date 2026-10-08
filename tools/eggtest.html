@@ -1,0 +1,43 @@
+<!doctype html><html><meta charset="utf-8"><title>Eggs and frying (#484)</title><pre id="out">running…</pre><script type="module">
+const lines=[];let pass=true;const check=(ok,s)=>{lines.push((ok?'PASS':'FAIL')+' '+s);pass&&=!!ok},wait=ms=>new Promise(r=>setTimeout(r,ms));
+try{
+ const frame=document.createElement('iframe');frame.width=640;frame.height=400;frame.src='../index.html?life&shot';document.body.append(frame);await new Promise(r=>frame.onload=r);while(!frame.contentWindow.__app)await wait(100);
+ const w=frame.contentWindow,A=w.__app,T=await w.eval("import('three')"),{EGG,LIFE}=await w.eval("import('../src/config.js')"),L=A.life,I=L.items,P=A.pan;
+ frame.contentDocument.documentElement.requestFullscreen=undefined;frame.contentDocument.getElementById('start-touch').click();A.renderer.setAnimationLoop(null);
+ const action=(target,id)=>L.options(target).find(a=>a.id===id),run=(target,id)=>action(target,id)?.run(),finish=s=>L.runner.update(s??1);
+ const carton=I.all().find(i=>i.type==='eggCarton'),cartonTarget=L.view(carton).target;
+ check(carton?.amount===6&&carton.place.store==='fridge','six eggs start in the fridge');
+ check(action(cartonTarget,'dispense')?.reason==='Öppna kylen först','closed fridge blocks egg access');
+ A.fridge.toggle();A.fridge.update(1);run(cartonTarget,'open');
+ const before=carton.amount;run(cartonTarget,'dispense');L.interrupt('test');check(carton.amount===before&&!I.held(),'cancel taking an egg consumes nothing');
+ run(cartonTarget,'dispense');finish();const raw=I.held();check(raw?.type==='rawEgg'&&carton.amount===before-1,'taking one egg consumes exactly one from carton');
+ check(action(A.eggs.target,'crackEgg')?.reason==='Ställ stekpannan på hällen först','pan must stand on the hob');
+ L.view(raw).placeAt(new T.Vector3(5.25,.931,3));P.take();P.placeAt(A.world.hob.zone);L.view(raw).take();
+ run(A.eggs.target,'crackEgg');L.interrupt('test');check(I.held()===raw&&!P.egg&&!P.dirty,'cancel cracking preserves raw egg and clean pan');
+ // Real action target is picked while aiming at the pan with a raw egg held.
+ A.player.spawn(4.55,A.world.hob.zone.z,0);A.camera.lookAt(A.world.hob.zone);A.scene.updateMatrixWorld(true);A.step(0);
+ const focus=A.focus().focused;check(focus?.store==='fryingPan'&&action(focus,'crackEgg')&&!action(focus,'crackEgg').reason,'touch/mouse focus offers cracking on actual pan');
+ run(A.eggs.target,'crackEgg');check(!run(A.eggs.target,'crackEgg'),'double press cannot start another cracking job');finish();
+ const egg=P.egg,id=egg.id;check(!!egg&&!I.get(raw.id)&&!I.held()&&P.dirty,'one raw egg becomes one egg in pan, pan dirty');
+ P.update(2);check(!egg.machine.cook,'unlit hob does not cook');A.world.hob.set(true);P.update(3);const elapsed=egg.machine.cook;
+ A.world.hob.set(false);P.update(5);check(egg.machine.cook===elapsed,'turning off the hob pauses cooking');
+ P.take();A.world.hob.set(true);P.update(2);check(egg.machine.cook===elapsed&&L.view(egg).model.parent===A.eggs.anchor,'lifting pan pauses cooking and carries the same egg');
+ P.placeAt(A.world.hob.zone);L.view(egg).take();check(action({instance:egg},'eat')?.reason==='Stek ägget först','raw cracked egg cannot be eaten');
+ check(run(A.eggs.target,'putIn')&&P.egg===egg,'unfinished egg can return to pan without losing progress');P.update(EGG.seconds-elapsed+.1);check(egg.machine.cooked&&I.get(id)===egg,'lit zone cooks same instance to a ready egg');
+ const white=L.view(egg).model.children[0];check(white.material.opacity===1&&white.material.color.r>.9,'cooked white becomes opaque and pale');
+ A.toggleFurniture();P.update(2);check(!A.world.hob.on&&P.egg===egg&&P.onHob,'F pauses heat without hiding egg away in pan drawer');A.toggleFurniture();
+ const rec=L.serialize();L.load(rec);const loaded=I.get(id);check(P.egg===loaded&&loaded.machine.cooked&&P.onHob&&P.dirty,'save/load retains egg progress, pan location and dirty state');
+ L.view(loaded).take();const plate=I.all().find(i=>i.type==='plate');I.move(plate,{at:'world',pos:[5.25,.931,3],yaw:0});run(L.view(plate).target,'putOn');
+ check(loaded.place.parent===plate.id&&plate.clean==='used','same cooked egg is served on plate, plate becomes used');
+ L.view(loaded).take();for(let i=0;i<4;i++){run({instance:loaded},'eat');finish(1)}check(!I.get(id)&&plate.clean==='dirty','four bites consume egg and leave dirty plate');
+ P.take();check(P.backTarget.blocked&&P.backTarget.blockedText==='Diska stekpannan först','dirty pan cannot be returned to drawer');
+ const tap=A.taps.find(t=>LIFE.wash.taps.includes(t.name));if(!tap.isOpen)tap.toggle();
+ run(tap,'wash');L.interrupt('test');check(P.dirty,'cancel dishwashing leaves pan dirty');run(tap,'wash');finish(LIFE.wash.seconds+.1);check(!P.dirty&&!P.smear.visible,'shared dishwashing action cleans pan');P.putBack();check(P.model.parent===P.drawer.object,'clean pan returns to drawer');
+ // A second cooked egg moves onto bread without copying; model and save retain the layer.
+ const second=L.create('friedEgg',{at:'world',pos:[5.25,.931,3]}, {machine:{cook:EGG.seconds,cooked:true}}),bread=L.create('breadSlice',{at:'world',pos:[5.25,.931,3.3]});L.view(second).take();run(L.view(bread).target,'addTopping');
+ check(!I.get(second.id)&&bread.parts.some(p=>p.type==='friedEgg')&&/äggmackan/.test(I.name(bread)),'cooked egg becomes a visible egg sandwich without duplicating item');
+ check(L.view(bread).model.getObjectByName('layers')?.children.length===1,'egg layer is drawn on sandwich');
+ L.load(L.serialize());check(I.get(bread.id).parts[0].machine.cooked,'sandwich egg state persists');
+ document.getElementById('out').textContent=lines.join('\n')+'\n'+(pass?'ALL PASS':'SOME FAILED');
+}catch(e){document.getElementById('out').textContent=lines.join('\n')+'\nFAIL '+e.stack}
+</script></html>
