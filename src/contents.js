@@ -280,10 +280,10 @@ function shoe(P, m, colour, { len = 0.27, kid = false } = {}) {
  * cat still fits underneath), hats, gloves and scarves on the shelf, shoes on a slanted rack along the back and a
  * pair of rubber boots — the middle of the floor stays free (the cat sits there, wardrobeSpot in cat.js).
  */
-export function hallWardrobe(P, { hl, depth, rodY, rodZ, shelfY, topY }) {
+export function hallWardrobe(P, { hl, depth, rodY, rodZ, shelfY, topY, reserveCoat=false }) {
   const W = CONTENTS.wardrobe, rand = rng(61);
   const n = W.coats.length, pitch = (2 * hl - 0.12) / (n - 1);
-  W.coats.forEach((c, i) => coat(P, -hl + 0.06 + i * pitch + (rand() - 0.5) * 0.01, rodY, rodZ, { ...c, hanger: c.kid ? 0xf2f2ee : 0x9a6b43 }));
+  W.coats.forEach((c,i)=>{const x=-hl+.06+i*pitch+(rand()-.5)*.01;if(!reserveCoat||i!==0)coat(P,x,rodY,rodZ,{...c,hanger:c.kid?0xf2f2ee:0x9a6b43});});
   // the shelf: a basket of mittens, a stack of scarves, beanies, gloves and a cap
   const y = shelfY, zc = Math.min(depth - 0.08, 0.3);
   const bx = -hl + 0.16, bw = 0.28, bd = 0.3, bh = 0.15;

@@ -248,7 +248,7 @@ function buildWardrobe(group, g, y0, h, wallBoxes, doors) {
     spec.doors.push(d);group.add(d.object);
     doors.push(d);
   }
-  return { along, outward, a, b, back, front, y0, y1, t };
+  return { along, outward, a, b, back, front, y0, y1, t, spec };
 }
 
 /** What hangs and stands in the hall wardrobe (#231, contents.js), in the wardrobe's frame: x along the rod, z from
@@ -256,8 +256,9 @@ function buildWardrobe(group, g, y0, h, wallBoxes, doors) {
 function hallWardrobeContents(group, w) {
   const dir = w.along ? (w.outward > 0 ? 's' : 'n') : (w.outward > 0 ? 'e' : 'w'), m = (w.a + w.b) / 2;
   const origin = w.along ? new THREE.Vector3(m, w.y0, w.back) : new THREE.Vector3(w.back, w.y0, m);
+  w.spec.hall={origin,dir,slot:[-(w.b-w.a)/2+w.t+.06,1.712,Math.abs(w.front-w.back)/2]};
   const P = new Pack();
-  hallWardrobe(P, { hl: (w.b - w.a) / 2 - w.t, depth: Math.abs(w.front - w.back), rodY: 1.712, rodZ: Math.abs(w.front - w.back) / 2, shelfY: 1.8, topY: w.y1 - w.y0 - w.t });
+  hallWardrobe(P, { hl: (w.b - w.a) / 2 - w.t, depth: Math.abs(w.front - w.back), rodY: 1.712, rodZ: Math.abs(w.front - w.back) / 2, shelfY: 1.8, topY: w.y1 - w.y0 - w.t, reserveCoat:true });
   for (const m of P.meshes(frameMatrix(dir, origin))) { m.userData.noArchitectureEdges = true; group.add(m); }
 }
 
@@ -793,7 +794,7 @@ export function buildWorld(plan) {
     (d) => (d.object.position.y > LEVELS[0].floor + 1.6 ? 1 : 0));
 
   // the wardrobes' contents (#230/#231): clothes on the rod, folded things on the hat shelf, shoes — by who lives there
-  const laundryWardrobes=[];
+  const laundryWardrobes=[],hallWardrobes=wardrobeSpecs.filter(w=>w.hall);
   wardrobeSpecs.forEach((w, i) => {
     const lv = w.y0 > LEVELS[0].floor + 1.6 ? 1 : 0, ac = (w.a0 + w.a1) / 2, fz = w.front + w.outward * 0.4;
     const room = roomMaps[lv].at(w.along ? ac : fz, w.along ? fz : ac);
@@ -838,6 +839,7 @@ export function buildWorld(plan) {
   return {
     object: scene,
     edgeLines,
+    hallWardrobes,
     wardrobes: laundryWardrobes, // reserved, usable shelf spaces (#552)
     setFurniture,
     furniture, // movable scene roots and collision data (#465)

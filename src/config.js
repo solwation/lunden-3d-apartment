@@ -1307,7 +1307,12 @@ export const WATERING = {
 export const BED_CARE = {seconds:1.4,height:.055,pull:.16,waveX:8,waveZ:12};
 // Fixed place settings relative to the existing six chairs; spacing/pick sizes are game assumptions (#554).
 export const TABLE_SETTING = {inset:.17,glassIn:.14,glassAhead:.13,lift:.001,pick:[.34,.15,.34],pickIn:.04,pickY:.065,pickZ:.02};
+// Hall chores reuse the existing shell jacket/sneaker models. Floor starts, picks and access clearance are game assumptions (#556).
+export const HALL_CARE = {jacket:{len:.78,color:0x2f4a63,kind:'shell',floor:[1.15,.002,1.65]},shoes:{color:0xe9e6df,boot:false,floor:[1.20,.002,2.72],gap:.05},
+  jacketPick:[.30,.84,.14],shoePick:[.22,.13,.28],floorJacketPick:[.30,.12,.84],floorShoePick:[.22,.13,.28],wardrobePick:[.12,.9,.045],access:.055,frontGap:.015};
 export const ITEMS = {
+  hallJacket: {name:'jackan',tags:['hallJacket'],unit:'count',amount:1,size:'m',model:'hallJacket',held:{pos:[.12,-.34,-.48],rot:[.35,0,0]}},
+  hallShoes: {name:'skorna',tags:['hallShoes'],unit:'count',amount:1,size:'m',model:'hallShoes',held:{pos:[.14,-.28,-.44],rot:[.2,0,0]}},
   wateringCan: { name: 'vattenkannan', noun: 'vattenkanna', tags: ['wateringCan','fillable'], unit: 'ml', amount: 0, capacity: WATERING.capacity, fullText: 'Vattenkannan är full', size: 'm', model: 'wateringCan', held: {pos:[.16,-.30,-.48],rot:[.1,-.25,0]} },
   laundryClothes: { name: 'plagget', noun: 'plagg', tags: ['laundry'], unit: 'count', amount: 1, size: 's', clean: 'dirty', moisture: 'dry', model: 'laundryClothes' },
   eggCarton: { name: 'äggkartongen', tags: ['food', 'package'], unit: 'count', amount: EGG.count, size: 'm', pkg: 'closed', model: 'eggCarton', dispense: 'rawEgg', dispenseLabel: 'ta ett ägg' },

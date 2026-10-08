@@ -1,0 +1,44 @@
+<!doctype html><html lang="sv"><meta charset="utf-8"><title>Hall care test</title><pre id="out">running…</pre><script type="module">
+const lines=[];let pass=true;const check=(ok,text)=>{lines.push((ok?'PASS':'FAIL')+' '+text);pass&&=!!ok},wait=ms=>new Promise(r=>setTimeout(r,ms));
+try{
+ const f=document.createElement('iframe');f.width=480;f.height=300;document.body.append(f);
+ async function load(q){await new Promise(r=>{f.onload=r;f.src='../index.html?'+q});while(!f.contentWindow.__app)await wait(100);f.contentDocument.documentElement.requestFullscreen=undefined;f.contentDocument.getElementById('start-touch').click();const a=f.contentWindow.__app;a.renderer.setPixelRatio(.15);return a;}
+ let A=await load('life&shot&cloud='),L=A.life,I=L.items,H=A.hallCare;const T=await f.contentWindow.eval("import('three')"),{LIFE}=await f.contentWindow.eval("import('/src/config.js')");
+ const run=(t,id)=>L.options(t).find(a=>a.id===id)?.run();let jacket=I.ofType('hallJacket')[0],shoes=I.ofType('hallShoes')[0];const jacketId=jacket.id,shoesId=shoes.id;
+ const coat=H.stores.get('hallCoatRack'),rack=H.stores.get('hallShoeRack'),ward=H.wardrobes[0];
+ check(I.ofType('hallJacket').length===1&&I.ofType('hallShoes').length===1&&jacket.place.store==='hallFloorjacket'&&shoes.place.store==='hallFloorshoes','one original-style jacket and shoe pair start on the hall floor, with no duplicate rack decoration');
+ check([jacket,shoes].every(i=>{const p=L.view(i).model.getWorldPosition(new T.Vector3());return A.player.isFree(p.x,p.z,0)}),'both floor starts sit in the free hall aisle outside the closed wardrobe');
+ const jview=L.view(jacket),sview=L.view(shoes),floorBox=new T.Box3().setFromObject(jview.model),shoeBox=new T.Box3().setFromObject(sview.model);
+ check(floorBox.min.y>=0&&floorBox.max.y<.2&&floorBox.getSize(new T.Vector3()).z>.7&&!floorBox.intersectsBox(shoeBox),'jacket lies visibly flat above floor and separate from the shoe pair');
+ function aim(point,target,crouch=false){for(let k=0;k<16;k++){const a=k/16*Math.PI*2;A.player.spawn(point.x+Math.sin(a)*.6,point.z+Math.cos(a)*.6,0);A.player.crouch=crouch;A.player.eyeY=crouch?.95:1.62;A.step(0);A.camera.lookAt(point);A.camera.updateMatrixWorld(true);A.step(0);if(A.focus().focused===target)return true}return false;}
+ const jpoint=floorBox.getCenter(new T.Vector3());check(aim(jpoint,jview.takeTarget,true),'lying jacket is reachable through actual crouched touch focus');
+ if(A.focus().focused===jview.takeTarget)f.contentDocument.getElementById('action').click();else run(jview.takeTarget,'take');
+ check(I.held()===jacket,'actual touch takes the same floor jacket instance');
+ check(ward&&!run(ward.store.target,'putIn')&&I.held()===jacket&&L.options(ward.store.target).find(a=>a.id==='putIn')?.reason?.includes('Öppna'),'closed hall wardrobe refuses hanging and keeps jacket in hand');
+ const cp=coat.pick.getWorldPosition(new T.Vector3());check(aim(cp,coat.target),'empty actual wall hook can be selected with jacket held');
+ if(A.focus().focused===coat.target)f.contentDocument.getElementById('action').click();else run(coat.target,'putIn');
+ const hung=new T.Box3().setFromObject(jview.model);check(jacket.place.store==='hallCoatRack'&&!I.held()&&hung.getSize(new T.Vector3()).y>.7&&hung.min.y>.7,'touch hangs original jacket vertically on existing hook, above the floor');
+ run(sview.takeTarget,'take');const rp=rack.pick.getWorldPosition(new T.Vector3());check(aim(rp,rack.target,true),'existing shoe rack empty space can be selected through touch');
+ if(A.focus().focused===rack.target)f.contentDocument.getElementById('action').click();else run(rack.target,'putIn');
+ check(shoes.place.store==='hallShoeRack'&&!I.held()&&new T.Box3().setFromObject(sview.model).min.y>.29,'touch puts the original pair on the existing top wire shelf');
+ const extra=I.create('hallJacket',{at:'hand'});check(!run(coat.target,'putIn')&&I.held()===extra&&jacket.place.store==='hallCoatRack','full coat hook retains another jacket without displacing the original');I.remove(extra);
+ const spare=I.create('hallShoes',{at:'hand'});check(!run(rack.target,'putIn')&&I.held()===spare&&shoes.place.store==='hallShoeRack','full shoe shelf retains another pair without loss');I.remove(spare);
+ run(jview.takeTarget,'take');check(!run(rack.target,'putIn')&&I.held()===jacket&&L.options(rack.target).find(a=>a.id==='putIn')?.reason==='Här ställer du skorna','wrong target retains jacket and explains that the shelf is for shoes');
+ const wp=ward.store.anchors[0].getWorldPosition(new T.Vector3()),along=ward.spec.along?wp.x:wp.z,leaf=ward.spec.doors.slice().sort((a,b)=>Math.abs(a.closedPos-along)-Math.abs(b.closedPos-along))[0];
+ leaf.toggle();for(const d of ward.spec.doors)d.update(2);A.scene.updateMatrixWorld(true);
+ check(ward.open()&&ward.root.visible,'matching real sliding leaf clears the reserved wardrobe hook');
+ const pick=ward.store.pick.getWorldPosition(new T.Vector3());check(aim(pick,ward.store.target),'open reserved hall-wardrobe space is reachable through actual touch');
+ if(A.focus().focused===ward.store.target)f.contentDocument.getElementById('action').click();else run(ward.store.target,'putIn');
+ check(jacket.place.store==='hallWardrobeHook'&&!I.held()&&jview.model.parent===ward.store.anchors[0],'actual touch hangs same jacket side-on along the existing wardrobe rod');
+ const another=I.create('hallJacket',{at:'hand'});check(!run(ward.store.target,'putIn')&&I.held()===another&&jacket.place.store==='hallWardrobeHook','full wardrobe hook retains another jacket and preserves its original occupant');I.remove(another);
+ const stored=jview.model.getWorldPosition(new T.Vector3());leaf.toggle();for(const d of ward.spec.doors)d.update(2);
+ check(!ward.root.visible&&!run(jview.takeTarget,'take')&&stored.distanceTo(jview.model.getWorldPosition(new T.Vector3()))<1e-8,'closed wardrobe hides and blocks jacket without moving it with the door');
+ L.restock();check(I.ofType('hallJacket').length===1&&I.ofType('hallShoes').length===1,'tidied items never cause duplicate floor stock');
+ f.contentWindow.localStorage.setItem(LIFE.save.key,JSON.stringify(L.serialize()));A=await load('shot&cloud=&time=12');L=A.life;I=L.items;H=A.hallCare;jacket=I.get(jacketId);shoes=I.get(shoesId);
+ check(jacket?.place.store==='hallWardrobeHook'&&shoes?.place.store==='hallShoeRack'&&I.ofType('hallJacket').length===1&&I.ofType('hallShoes').length===1,'actual reload preserves original tidied identities and places with no floor copies');
+ check(!H.wardrobes[0].root.visible&&I.audit().length===0,'new visit starts with closed wardrobe while inventory invariants hold');
+ A.resetHome.go=()=>{};A.resetHome.confirm();A=await load('shot&cloud=&time=12');I=A.life.items;
+ check(I.ofType('hallJacket').length===1&&I.ofType('hallJacket')[0].place.store==='hallFloorjacket'&&I.ofType('hallShoes').length===1&&I.ofType('hallShoes')[0].place.store==='hallFloorshoes','actual reset restores one jacket and pair on the floor and empty usable storage');
+ document.getElementById('out').textContent=lines.join('\n')+'\n'+(pass?'ALL PASS':'SOME FAILED');
+}catch(e){document.getElementById('out').textContent=lines.join('\n')+'\nFAIL '+e.stack}
+</script></html>

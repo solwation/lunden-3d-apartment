@@ -1,0 +1,23 @@
+PASS one original-style jacket and shoe pair start on the hall floor, with no duplicate rack decoration
+PASS both floor starts sit in the free hall aisle outside the closed wardrobe
+PASS jacket lies visibly flat above floor and separate from the shoe pair
+PASS lying jacket is reachable through actual crouched touch focus
+PASS actual touch takes the same floor jacket instance
+PASS closed hall wardrobe refuses hanging and keeps jacket in hand
+PASS empty actual wall hook can be selected with jacket held
+PASS touch hangs original jacket vertically on existing hook, above the floor
+PASS existing shoe rack empty space can be selected through touch
+PASS touch puts the original pair on the existing top wire shelf
+PASS full coat hook retains another jacket without displacing the original
+PASS full shoe shelf retains another pair without loss
+PASS wrong target retains jacket and explains that the shelf is for shoes
+PASS matching real sliding leaf clears the reserved wardrobe hook
+PASS open reserved hall-wardrobe space is reachable through actual touch
+PASS actual touch hangs same jacket side-on along the existing wardrobe rod
+PASS full wardrobe hook retains another jacket and preserves its original occupant
+PASS closed wardrobe hides and blocks jacket without moving it with the door
+PASS tidied items never cause duplicate floor stock
+PASS actual reload preserves original tidied identities and places with no floor copies
+PASS new visit starts with closed wardrobe while inventory invariants hold
+PASS actual reset restores one jacket and pair on the floor and empty usable storage
+ALL PASS

@@ -1525,7 +1525,7 @@ const blackMetal = new THREE.MeshStandardMaterial({ color: 0x1e1f21, roughness: 
 
 /** A jacket on a hook: collar, shoulders, a body narrowing down to the hem, sleeves hanging along its
  * sides. Hung from (0, 0, 0), front towards +z. `len` = hem below the hook, `kind` changes the cut. */
-function jacket(len, color, kind) {
+export function jacket(len, color, kind) {
   const g = new THREE.Group();
   const m = new THREE.MeshStandardMaterial({ color, roughness: 0.92 });
   // the rack is 74 cm with jackets on every other hook (29 cm apart): seen from the front they hang
@@ -1568,11 +1568,12 @@ function coatrack(item) {
     const x = -w / 2 + 0.08 + (i * (w - 0.16)) / (hooks - 1);
     g.add(rbox(0.015, 0.015, 0.06, x, y - 0.1, back + 0.05, blackMetal, 0.004));
     const c = coats[[0, 2, 4].indexOf(i)];
-    if (!c) continue; // three jackets on alternate hooks, so they don't overlap
+    if (!c || i===0) continue; // first existing jacket becomes a saved life item (#556)
     const j = jacket(c[1], c[0], c[2]);
     j.position.set(x, y - 0.11, back + 0.075 + i * 0.008); // staggered off the wall a little (no z-fighting)
     g.add(j);
   }
+  g.userData.hallCare={jacket:[-w/2+.08,y-.11,back+.075]};
   // a knitted beanie (dome with a folded brim) and a small key bowl on the shelf
   const knit = new THREE.MeshStandardMaterial({ color: 0x9c3b2c, roughness: 1 });
   const dome = new THREE.Mesh(new THREE.SphereGeometry(0.085, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2), knit);
@@ -1587,7 +1588,7 @@ function coatrack(item) {
 }
 
 /** One shoe: a sole, a rounded upper narrowing to the toe, a heel counter; boots get a shaft. */
-function shoe(col, boot) {
+export function shoe(col, boot) {
   const g = new THREE.Group();
   const up = new THREE.MeshStandardMaterial({ color: col, roughness: 0.65 });
   const sole = new THREE.MeshStandardMaterial({ color: boot ? 0x2a2522 : 0xf0eee8, roughness: 0.85 });
@@ -1610,13 +1611,15 @@ function shoerack(item) {
   // pairs: [x of the pair's centre / 0.74 m, shelf, colour, boot]
   const pairs = [[-0.25, 0.3, 0xe9e6df, false], [0.0, 0.3, 0x3d5a7a, false], [0.25, 0.3, 0xc0392b, false],
     [-0.2, 0.06, 0x5a3a24, true], [0.18, 0.06, 0x1c1c1c, true]];
-  for (const [px, y, col, boot] of pairs) {
+  for (const [i,[px, y, col, boot]] of pairs.entries()) {
+    if(i===0)continue; // first existing sneaker pair becomes a saved life item (#556)
     for (const dx of [-0.05, 0.05]) {
       const s1 = shoe(col, boot);
       s1.position.set(px * (w / 0.74) + dx, y + 0.005, z);
       g.add(s1);
     }
   }
+  g.userData.hallCare={shoes:[pairs[0][0]*(w/.74),pairs[0][1]+.005,z]};
   g.userData.footprint = [{ x0: -w / 2, x1: w / 2, z0: -0.15, z1: -0.15 + d }];
   return g;
 }
