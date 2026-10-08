@@ -1287,7 +1287,15 @@ export const LIFE_TOOLS = {
 // the plan (docs/livssimulator-plan-2026-10-04.md: a cucumber 300 g, a slice 10 g), not product measures.
 // Egg size, stock and game-paced frying times are assumptions (#484).
 export const EGG = { count: 6, crack: .65, seconds: 8, burnAt: 24, shellRadius: .022, whiteRadius: .051, yolkRadius: .017, carton: { w: .155, d: .105, h: .067 } };
+// Laundry gameplay and interior proportions are assumptions (#395/#550), not product specifications.
+export const LAUNDRY = {
+  basket: { pos: [1.78, 0, 4.16], w: .42, d: .42, h: .36, slots: 3 },
+  drum: { radius: .16, depth: .30, shell: .012, centerY: .42, slots: 3 },
+  garment: { w: .18, d: .22, thick: .022, colors: [0x617b96,0xb77b73,0xa496b8] },
+  washSeconds: 35, drySeconds: 25,
+};
 export const ITEMS = {
+  laundryClothes: { name: 'plagget', noun: 'plagg', tags: ['laundry'], unit: 'count', amount: 1, size: 's', clean: 'dirty', moisture: 'dry', model: 'laundryClothes' },
   eggCarton: { name: 'äggkartongen', tags: ['food', 'package'], unit: 'count', amount: EGG.count, size: 'm', pkg: 'closed', model: 'eggCarton', dispense: 'rawEgg', dispenseLabel: 'ta ett ägg' },
   rawEgg: { name: 'ägget', tags: ['food'], unit: 'count', amount: 1, size: 'xs', model: 'rawEgg' },
   friedEgg: { name: 'det stekta ägget', tags: ['food', 'topping'], unit: 'count', amount: 1, size: 's', model: 'friedEgg', bites: 4, needsCooking: true },

@@ -2,7 +2,7 @@
 // stable id and independent properties. Plain data and logic, no three.js: the 3D side (life.js, a Holdable per instance)
 // only shows what is here, and tools/itemtest.html tests it without rendering.
 //
-// An instance: { id ('cucumber#3'), type, place, amount, pkg, prep, clean, machine, home }
+// An instance: { id ('cucumber#3'), type, place, amount, pkg, prep, clean, moisture, machine, home }
 //   place  — exactly one of
 //            { at: 'world', pos: [x, y, z], yaw }        lying / standing somewhere (a worktop, a table, the floor)
 //            { at: 'hand' }                             in the visitor's hand (one at a time)
@@ -12,6 +12,7 @@
 //   pkg    — 'closed' | 'open' | 'empty', or null (not a package)
 //   prep   — 'whole' | 'sliced' | 'spread' | 'assembled', or null
 //   clean  — 'clean' | 'used' | 'dirty', or null (food)
+//   moisture — 'wet' | 'dry', or null; independent of cleanliness (#550)
 //   machine — free per-type fields of a machine / appliance (on, time left …); separate fields, not one enum
 //   home   — the place it goes back to (a slot), or null
 // The existing holdables (cups, glasses, the milk, fish fingers, fruit, fries) keep their own state for now; the ones
@@ -41,7 +42,7 @@ export const MIGRATIONS = {
 /** Size classes, smallest first: a slot or a carrier takes things up to its own size. */
 export const SIZES = { xs: 0, s: 1, m: 2, l: 3, xl: 4 };
 const UNITS = new Set(['g', 'ml', 'count']);
-const PKG = new Set(['closed', 'open', 'empty']), PREP = new Set(['whole', 'sliced', 'spread', 'assembled', 'toasted']), CLEAN = new Set(['clean', 'used', 'dirty']);
+const PKG = new Set(['closed', 'open', 'empty']), PREP = new Set(['whole', 'sliced', 'spread', 'assembled', 'toasted']), CLEAN = new Set(['clean', 'used', 'dirty']), MOISTURE = new Set(['wet', 'dry']);
 const EPS = 1e-6;
 const round = (v) => Math.round(v * 1e6) / 1e6;
 const cap = (s) => (s ? s[0].toUpperCase() + s.slice(1) : s);
@@ -100,6 +101,7 @@ export class Items {
       pkg: PKG.has(props.pkg) ? props.pkg : d.pkg ?? null,
       prep: PREP.has(props.prep) ? props.prep : d.prep ?? null,
       clean: CLEAN.has(props.clean) ? props.clean : d.clean ?? null,
+      moisture: MOISTURE.has(props.moisture) ? props.moisture : d.moisture ?? null,
       toasted: !!(props.toasted ?? d.toasted),
       machine: { ...(d.machine ?? {}), ...(props.machine ?? {}) },
       home: clonePlace(props.home) ?? (place?.at === 'slot' ? clonePlace(place) : null), // made in a store: that slot is its home
@@ -237,6 +239,7 @@ export class Items {
     if (fields.prep !== undefined && (fields.prep === null || PREP.has(fields.prep))) it.prep = fields.prep;
     if (fields.toasted !== undefined) it.toasted = !!fields.toasted;
     if (fields.clean !== undefined && (fields.clean === null || CLEAN.has(fields.clean))) it.clean = fields.clean;
+    if (fields.moisture !== undefined && (fields.moisture === null || MOISTURE.has(fields.moisture))) it.moisture = fields.moisture;
     if (fields.machine) for (const [k, v] of Object.entries(fields.machine)) { if (v === null || v === undefined) delete it.machine[k]; else it.machine[k] = v; } // (null clears a field: nothing stale is saved)
     if (fields.home !== undefined) it.home = clonePlace(fields.home);
     if (Array.isArray(fields.parts)) it.parts = fields.parts.map((p) => ({ ...p }));
@@ -287,7 +290,7 @@ export class Items {
     const items = this.all().map((i) => {
       const e = { id: i.id, type: i.type, place: clonePlace(i.place) };
       if (i.amount !== (this.defs[i.type]?.amount ?? 1)) e.amount = i.amount; // (#387: compact — a default amount and a home that is the place are left out; create() gives them back)
-      for (const k of ['pkg', 'prep', 'clean']) if (i[k] !== null && i[k] !== undefined) e[k] = i[k];
+      for (const k of ['pkg', 'prep', 'clean', 'moisture']) if (i[k] !== null && i[k] !== undefined) e[k] = i[k];
       if (i.toasted) e.toasted = true;
       if (Object.keys(i.machine).length) e.machine = { ...i.machine };
       if (i.home && !(i.place?.at === 'slot' && samePlace(i.home, i.place))) e.home = clonePlace(i.home);
@@ -323,7 +326,7 @@ export class Items {
     const depth = (e, n = 0) => (e.place?.at === 'on' && byId.has(e.place.parent) && n < 32 ? depth(byId.get(e.place.parent), n + 1) + 1 : 0);
     valid.sort((a, b) => depth(a) - depth(b));
     for (const e of valid) {
-      const props = { id: e.id, amount: e.amount, pkg: e.pkg, prep: e.prep, clean: e.clean, machine: e.machine, home: e.home, parts: e.parts, toasted: e.toasted };
+      const props = { id: e.id, amount: e.amount, pkg: e.pkg, prep: e.prep, clean: e.clean, moisture: e.moisture, machine: e.machine, home: e.home, parts: e.parts, toasted: e.toasted };
       let place = clonePlace(e.place);
       if (place?.at === 'hand' && !hand) place = null;
       let it = place ? this.create(e.type, place, props) : null;

@@ -1,0 +1,19 @@
+PASS basket starts with three dirty dry garments, each with its own stable id
+PASS both real machine drums have three registered storage anchors
+PASS garment can be taken from basket with the normal life action
+PASS closed washer blocks loading and leaves the garment in the hand
+PASS aiming at the open washer drum selects the real storage action target (tvättmaskinen / life)
+PASS touch action loads the original garment into the static drum anchor
+PASS loaded garment lies physically inside the drum, behind the front plane
+PASS shutting the door hides contents without moving them with the swinging leaf
+PASS closed door blocks taking a stored garment
+PASS full washer rejects another garment without moving or losing any item
+PASS moisture changes independently of cleanliness
+PASS cleanliness changes do not dry the garment
+PASS invalid moisture is ignored
+PASS save/load and restocking preserve all original ids without duplicate basket stock
+PASS basket collision is registered while the central laundry path remains free
+PASS actual page reload preserves clothes, slots, cleanliness and independent wetness
+PASS new visit starts with closed machine doors and hidden stored clothes
+PASS all inventory invariants hold after the full loading and reload flow
+ALL PASS

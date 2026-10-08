@@ -1,0 +1,37 @@
+<!doctype html><html lang="sv"><meta charset="utf-8"><title>Laundry test</title><pre id="out">running…</pre><script type="module">
+const lines=[];let pass=true;const check=(ok,text)=>{lines.push((ok?'PASS':'FAIL')+' '+text);pass&&=!!ok},wait=ms=>new Promise(r=>setTimeout(r,ms));
+try {
+ const f=document.createElement('iframe');f.width=480;f.height=300;document.body.append(f);
+ async function load(url){await new Promise(r=>{f.onload=r;f.src=url});while(!f.contentWindow.__app)await wait(100);const A=f.contentWindow.__app;f.contentDocument.documentElement.requestFullscreen=undefined;f.contentDocument.getElementById('start-touch').click();A.renderer.setPixelRatio(.15);return A;}
+ let A=await load('../index.html?life&shot&cloud='),w=f.contentWindow,T=await w.eval("import('three')"),L=A.life,I=L.items,N=A.laundry;
+ const clothes=I.ofType('laundryClothes'),ids=clothes.map(i=>i.id),machine=N.machines.find(m=>m.kind==='washer');
+ check(clothes.length===3&&clothes.every(i=>i.clean==='dirty'&&i.moisture==='dry'&&i.place.store==='laundryBasket'),'basket starts with three dirty dry garments, each with its own stable id');
+ check(N.machines.length===2&&N.machines.every(m=>m.store.anchors.length===3),'both real machine drums have three registered storage anchors');
+ const run=(target,id)=>{const k=L.options(target).findIndex(a=>a.id===id);return k>=0&&L.run(target,k)};
+ const first=clothes[0];check(run(L.view(first).takeTarget,'take')&&I.held()===first,'garment can be taken from basket with the normal life action');
+ const closed=L.options(machine.store.target).find(a=>a.id==='putIn');
+ check(closed?.reason?.includes('Öppna')&&!run(machine.store.target,'putIn')&&I.held()===first,'closed washer blocks loading and leaves the garment in the hand');
+ machine.door.toggle();machine.door.update(1);A.scene.updateMatrixWorld(true);
+ const c=machine.door.laundry.center;A.player.spawn(1.30,c[2],90);A.player.crouch=true;A.player.eyeY=.95;A.step(0);A.camera.lookAt(c[0]-.02,c[1],c[2]);A.camera.updateMatrixWorld(true);A.step(0);
+ check(A.focus().focused===machine.store.target,'aiming at the open washer drum selects the real storage action target ('+A.focus().focused?.name+' / '+A.focus().focused?.kind+')');
+ if(A.focus().focused===machine.store.target)f.contentDocument.getElementById('action').click();else run(machine.store.target,'putIn');
+ check(first.place.store==='laundryWasher'&&!I.held()&&L.view(first).model.parent===machine.store.anchors[0],'touch action loads the original garment into the static drum anchor');
+ const bound=new T.Box3().setFromObject(L.view(first).model),D=(await w.eval("import('/src/config.js')")).LAUNDRY.drum;
+ check(bound.max.x<c[0]&&bound.min.x>c[0]-D.depth&&bound.min.y>c[1]-D.radius&&bound.max.y<c[1]+D.radius&&bound.min.z>c[2]-D.radius&&bound.max.z<c[2]+D.radius,'loaded garment lies physically inside the drum, behind the front plane');
+ const pos=L.view(first).model.getWorldPosition(new T.Vector3());machine.door.toggle();machine.door.update(1);
+ check(!machine.root.visible&&pos.distanceTo(L.view(first).model.getWorldPosition(new T.Vector3()))<1e-8,'shutting the door hides contents without moving them with the swinging leaf');
+ check(!run(L.view(first).takeTarget,'take')&&first.place.store==='laundryWasher','closed door blocks taking a stored garment');machine.door.toggle();machine.door.update(1);
+ for(const i of clothes.slice(1)){run(L.view(i).takeTarget,'take');run(machine.store.target,'putIn');}
+ const extra=I.create('laundryClothes',{at:'hand'}),full=L.options(machine.store.target).find(a=>a.id==='putIn');
+ check(full?.reason==='Tvättmaskinen är full'&&!run(machine.store.target,'putIn')&&I.held()===extra&&clothes.every(i=>i.place.store==='laundryWasher'),'full washer rejects another garment without moving or losing any item');I.remove(extra);
+ I.set(first,{moisture:'wet'});check(first.clean==='dirty'&&first.moisture==='wet','moisture changes independently of cleanliness');I.set(first,{clean:'clean'});check(first.moisture==='wet','cleanliness changes do not dry the garment');I.set(first,{moisture:'invalid'});check(first.moisture==='wet','invalid moisture is ignored');
+ const record=L.serialize();L.load(record);L.restock();check(I.ofType('laundryClothes').length===3&&ids.every(id=>I.get(id)?.place.store==='laundryWasher'),'save/load and restocking preserve all original ids without duplicate basket stock');
+ check(A.player.isFree(1.28,4.16,0)&&N.segments.every(s=>A.world.levels[0].segments.includes(s)),'basket collision is registered while the central laundry path remains free');
+ const {LIFE}=await w.eval("import('/src/config.js')");w.localStorage.setItem(LIFE.save.key,JSON.stringify(L.serialize()));
+ A=await load('../index.html?shot&cloud=&time=12');I=A.life.items;N=A.laundry;
+ check(I.ofType('laundryClothes').length===3&&ids.every(id=>I.get(id)?.place.store==='laundryWasher')&&I.get(ids[0]).clean==='clean'&&I.get(ids[0]).moisture==='wet','actual page reload preserves clothes, slots, cleanliness and independent wetness');
+ check(!I.held()&&N.machines.every(m=>!m.door.isOpen&&!m.root.visible),'new visit starts with closed machine doors and hidden stored clothes');
+ check(I.audit().length===0,'all inventory invariants hold after the full loading and reload flow');
+ document.getElementById('out').textContent=lines.join('\n')+'\n'+(pass?'ALL PASS':'SOME FAILED');
+}catch(e){document.getElementById('out').textContent=lines.join('\n')+'\nFAIL '+e.stack;}
+</script></html>

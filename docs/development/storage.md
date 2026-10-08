@@ -38,3 +38,5 @@ tools/cloudtest.html   headless test of the shared world against `node cloudflar
                        leaderboard (name, score, escaped list, a capped cheat), off without &cloud
 ```
 
+
+Laundry item state (#550): Items adds optional moisture ('wet'/'dry'/null) independently of clean and machine.folded. Version-2 serialization/load includes it when present; older records keep type defaults (ordinary items null, laundry dry), without a migration or change to existing cleanliness values. Laundry stores register before Life.restore and existing restock keeps original basket homes/ids. laundrytest performs a real page reload with clean wet clothes in machine slots, verifies empty hands/closed fronts and checks inventory audit.

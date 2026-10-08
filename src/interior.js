@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { FINISH, TILED_ROOMS, KITCHEN as K, SKIRTING, LAUNDRY_SINK, LAUNDRY_CABINET, VANITY_BASIN, HAVBACK, LIGHTING, KITCHEN_SOCKETS, TAP_LEVER } from './config.js';
+import { FINISH, TILED_ROOMS, KITCHEN as K, SKIRTING, LAUNDRY_SINK, LAUNDRY_CABINET, VANITY_BASIN, HAVBACK, LIGHTING, KITCHEN_SOCKETS, TAP_LEVER, LAUNDRY } from './config.js';
 import { wallCabinet } from './cabinets.js';
 import { Fridge } from './fridge.js';
 import { buildOvens } from './ovens.js';
@@ -695,14 +695,28 @@ function buildLaundry(B, group, floor, room, y0, handled, taps, appliances) {
   for (const c of cabs) {
     const F = frame(B, c, 'e');
     const w = 0.6, a0 = (F.u0 + F.u1) / 2 - w / 2, a1 = a0 + w;
-    F.box(a0, a1, -F.depth + 0.02, 0, y0 + 0.01, y0 + 0.85, M.appliance);
-    F.box(a0 + 0.02, a1 - 0.02, 0, 0.004, y0 + 0.74, y0 + 0.82, M.steel);
-    const [dx, dz] = F.at((a0 + a1) / 2, 0.01);
-    // the drum opening behind the door
-    const drum = new THREE.CylinderGeometry(0.16, 0.16, 0.004, 32);
-    drum.rotateZ(Math.PI / 2);
-    drum.translate(...(([x, z]) => [x, y0 + 0.42, z])(F.at((a0 + a1) / 2, 0.001)));
-    B.add(drum, M.black);
+    // A real hollow drum rather than a black disc on a solid body (#550).
+    const D=LAUNDRY.drum, mid=(a0+a1)/2, t=D.shell;
+    F.box(a0,a0+t,-F.depth+.02,0,y0+.01,y0+.85,M.appliance);
+    F.box(a1-t,a1,-F.depth+.02,0,y0+.01,y0+.85,M.appliance);
+    F.box(a0+t,a1-t,-F.depth+.02,0,y0+.01,y0+.01+t,M.appliance);
+    F.box(a0+t,a1-t,-F.depth+.02,0,y0+.85-t,y0+.85,M.appliance);
+    F.box(a0+t,a1-t,-F.depth+.02,-F.depth+.02+t,y0+.01+t,y0+.85-t,M.appliance);
+    const face=new THREE.Shape();
+    face.moveTo(-w/2,.01-D.centerY);face.lineTo(w/2,.01-D.centerY);
+    face.lineTo(w/2,.85-D.centerY);face.lineTo(-w/2,.85-D.centerY);face.closePath();
+    const hole=new THREE.Path();hole.absarc(0,0,D.radius,0,Math.PI*2,true);face.holes.push(hole);
+    const panel=new THREE.ExtrudeGeometry(face,{depth:t,bevelEnabled:false,curveSegments:32})
+      .rotateY(Math.PI/2).translate(F.f-t,y0+D.centerY,mid);
+    panel.setIndex(Array.from({length:panel.attributes.position.count},(_,i)=>i));B.add(panel,M.appliance);
+    F.box(a0+.02,a1-.02,0,.004,y0+.74,y0+.82,M.steel);
+    const [dx,dz]=F.at(mid,.01);
+    const drum=new THREE.CylinderGeometry(D.radius-.003,D.radius-.003,D.depth,32,1,true);
+    // Inward faces use the existing steel finish, without another material or two-sided draw.
+    const ix=drum.index.array;for(let k=0;k<ix.length;k+=3)[ix[k+1],ix[k+2]]=[ix[k+2],ix[k+1]];
+    drum.computeVertexNormals();drum.rotateZ(Math.PI/2).translate(F.f-D.depth/2,y0+D.centerY,mid);B.add(drum,M.steel);
+    B.add(new THREE.CircleGeometry(D.radius-.003,32).rotateY(Math.PI/2)
+      .translate(F.f-D.depth,y0+D.centerY,mid),M.black);
     // the round door: hinged on its left edge, opens with E (#103)
     const DB = new Batch();
     const ring = new THREE.TorusGeometry(0.17, 0.025, 10, 32);
@@ -716,6 +730,7 @@ function buildLaundry(B, group, floor, room, y0, handled, taps, appliances) {
     const [hx, hz] = F.at((a0 + a1) / 2 - 0.195, 0.01), at = new THREE.Vector3(hx, y0 + 0.42, hz);
     const free = new THREE.Vector3(dx - hx, 0, dz - hz).applyAxisAngle(new THREE.Vector3(0, 1, 0), 0.1);
     const o = new Openable({ name: c.label === 'TM' ? 'tvättmaskinen' : 'torktumlaren', object: pivotAround(DB.meshes(), at), mode: 'hinge', sign: free.x > 0 ? 1 : -1, max: 100 });
+    o.laundry = { kind: c.label === 'TM' ? 'washer' : 'dryer', front: F.f, center: [F.f,y0+LAUNDRY.drum.centerY,(a0+a1)/2] };
     o.normal = new THREE.Vector3(1, 0, 0);
     group.add(o.object);
     appliances.push(o);
