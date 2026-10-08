@@ -89,3 +89,5 @@ suite every time):
   touchtest only for input changes; perfcount only for geometry that adds meshes / materials.
 - Not the whole list "to be safe"; a pre-existing failure you happen to see goes into an issue, not into your change.
 
+
+Openable button test (#545): opentest uses exact focused-target identity before clicking each front, clears seated/held/input state between cases, updates scene matrices for manual steps and reacquires the moved front before closing. Sampling points on the open front handles sashes partly covered by curtain stacks; clicks on neighbouring seats/items do not count as cabinet actions. All 84 fronts retain geometry/contents checks.
