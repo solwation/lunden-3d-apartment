@@ -35,7 +35,7 @@ import { DishProgramme } from './dishwasher.js';
 import { buildDropoff } from './waste.js';
 import { shownRows } from './actions.js';
 import { buildStores } from './stores.js';
-import { clearLocalHome, takeResetDone } from './reset.js';
+import { clearLocalHome, takeResetDone, takeResetHideMenu, RESET_HIDE_MENU } from './reset.js';
 import { Rest, chooseSpot } from './rest.js';
 import { Saber } from './saber.js';
 import { buildToys } from './toys.js';
@@ -870,17 +870,21 @@ function realNow() {
   Object.assign(day, { hour: n.getHours() + n.getMinutes() / 60 + n.getSeconds() / 3600, year: n.getFullYear(), month: n.getMonth() + 1, date: n.getDate(), paused: false, spool: 0 });
 }
 const toStartDone = document.getElementById('to-start-done');
-for (const id of ['restart', 'to-start']) { // also on the start screen shown when the mouse is freed (pause)
-  document.getElementById(id).addEventListener('click', () => {
-    spawnAtStart();
-    realNow();
-    resumeEl.hidden = true;
-    if (toStartDone && id === 'to-start') {
-      toStartDone.hidden = false;
-      setTimeout(() => { toStartDone.hidden = true; }, 3000);
-    }
-  });
-}
+document.getElementById('restart')?.addEventListener('click', () => {
+  spawnAtStart();
+  realNow();
+  resumeEl.hidden = true;
+});
+document.getElementById('to-start')?.addEventListener('click', () => {
+  spawnAtStart();
+  realNow();
+  resumeEl.hidden = true;
+  if (toStartDone) {
+    toStartDone.hidden = false;
+    setTimeout(() => { toStartDone.hidden = true; }, 3000);
+  }
+  resumeFromMenu();
+});
 const toggleInst = document.getElementById('toggle-instructions');
 const instEl = document.getElementById('instructions');
 if (toggleInst && instEl) {
@@ -1019,6 +1023,22 @@ document.getElementById('start-mouse').addEventListener('click', startMouse);
 // click (anywhere) does exactly what the button does — #arm is a see-through click catcher with a small
 // line at the bottom, no box (#190). Esc in the game still just frees the mouse.
 const armEl = document.getElementById('arm');
+function resumeFromMenu() {
+  const useTouch = isPhoneDevice() || activeMode === 'touch' || lastPointerType === 'touch';
+  if (useTouch) {
+    activeMode = 'touch';
+    initAudio();
+    touch.enabled = true;
+    if (armEl) armEl.hidden = true;
+    showOverlay(false);
+  } else {
+    activeMode = 'mouse';
+    initAudio();
+    showOverlay(false);
+    if (armEl) armEl.hidden = locked;
+    canvas.requestPointerLock()?.catch?.(() => {});
+  }
+}
 let unlockedAt = -1e9;
 const otherOverlay = () => ['loading', 'install', 'reset-confirm', 'player-dialog', 'leaderboard-dialog', 'note', 'task-note', 'terminal', 'board-view', 'poster-panel'].some((id) => {
   const el = document.getElementById(id);
@@ -2225,7 +2245,11 @@ const resetHome = {
     if (this.going) return;
     this.going = true; // no F5 record on the way out (keepSession)
     reloading = true; // no "leave the page?" question
+    resetEl.hidden = true;
+    showOverlay(false);
     clearLocalHome();
+    const mode = activeMode || (isPhoneDevice() || lastPointerType === 'touch' ? 'touch' : 'mouse');
+    try { sessionStorage.setItem(RESET_HIDE_MENU, mode); } catch {}
     this.go(location.href);
   },
 };
@@ -2246,7 +2270,23 @@ document.addEventListener('keydown', (e) => {
   else if (e.code === 'Escape' && leaderboard?.dialog && !leaderboard.dialog.hidden) { e.preventDefault(); leaderboard.handleSkip(); }
   else if (e.code === 'Escape' && !statsEl.hidden) { e.preventDefault(); showStats(false); statsPinned = false; }
 });
-if (takeResetDone()) document.getElementById('reset-done').hidden = false;
+const resetDone = takeResetDone();
+const resetHideMode = takeResetHideMenu();
+if (resetDone) {
+  document.getElementById('reset-done').hidden = false;
+  if (resetHideMode) {
+    showOverlay(false);
+    const useTouch = isPhoneDevice() || resetHideMode === 'touch';
+    if (useTouch) {
+      activeMode = 'touch';
+      touch.enabled = true;
+      if (armEl) armEl.hidden = true;
+    } else {
+      activeMode = 'mouse';
+      if (armEl) armEl.hidden = false;
+    }
+  }
+}
 onTap(document.getElementById('update-reload'), () => {
   reloading = true;
   saveResume({ ...placeNow(), build: null, world: keepWorld() }); // a new version for sure; the world as it is (#277)
@@ -2364,4 +2404,4 @@ document.documentElement.classList.remove('resuming'); // the page is ready: off
 hideLoading();
 
 // handle for tests/debugging (tools/touchtest.html, tools/perfcount.html)
-window.__app = { interactionOutline, eggs, isPhoneDevice, get activeMode() { return activeMode; }, set activeMode(v) { activeMode = v; }, rearrange, showTerminal, dynRes, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, toaster, life, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS };
+window.__app = { showOverlay, resumeFromMenu, interactionOutline, eggs, isPhoneDevice, get activeMode() { return activeMode; }, set activeMode(v) { activeMode = v; }, rearrange, showTerminal, dynRes, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, toaster, life, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS };

@@ -1,4 +1,5 @@
 [
+  {"id": 513, "date": "2026-10-08", "text": "Menyn döljs nu automatiskt när man går till startplatsen eller återställer hemmet."},
   {"id": 512, "date": "2026-10-08", "text": "Föremålet du siktar på markeras med en diskret ljushetsökning utan interna meshlinjer."},
   {"id": 511, "date": "2026-10-08", "text": "Färre människor på gården och inga barn i sandlådorna."},
   {"id": 510, "date": "2026-10-08", "text": "Versionskontroll och uppdatering sker före 3D-laddningen, med tidsgräns och skydd mot omladdningsloopar."},

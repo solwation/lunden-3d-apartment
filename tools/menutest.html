@@ -44,10 +44,39 @@ const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); ret
   toggleInst.click();
   pass &= check(instructions.hidden && /Visa instruktioner/.test(toggleInst.textContent), 'clicking toggle again collapses instructions');
 
-  // 3. Test to-start action feedback
+  // 3. Test to-start action feedback and auto-closing menu (#522)
+  const app = f.contentWindow.__app;
+  const overlay = d.getElementById('overlay');
   toStart.click();
   const toStartDone = d.getElementById('to-start-done');
   pass &= check(toStartDone && !toStartDone.hidden, 'to-start shows feedback notice');
+  pass &= check(overlay.hidden, 'to-start closes menu automatically');
+  pass &= check(app.player.pos.z < -5, 'to-start moves player to start position');
+
+  // Test to-start closes menu even when already at start
+  app.showOverlay(true);
+  pass &= check(!overlay.hidden, 'menu reopened for at-start check');
+  toStart.click();
+  pass &= check(overlay.hidden, 'to-start closes menu even when already at start');
+
+  // 4. Test reset-home confirmation and cancellation auto-closing menu (#522)
+  app.showOverlay(true);
+  const resetConfirm = d.getElementById('reset-confirm');
+  const resetYes = d.getElementById('reset-yes');
+  const resetNo = d.getElementById('reset-no');
+
+  resetHome.click();
+  pass &= check(!resetConfirm.hidden && !overlay.hidden, 'reset-home ask shows confirmation modal');
+  resetNo.click();
+  pass &= check(resetConfirm.hidden && !overlay.hidden, 'reset cancellation preserves menu visibility');
+
+  let goUrl = null;
+  app.resetHome.go = (u) => { goUrl = u; };
+  resetHome.click();
+  resetYes.click();
+  pass &= check(resetConfirm.hidden, 'reset confirmation hides confirmation dialog');
+  pass &= check(overlay.hidden, 'reset confirmation closes menu automatically');
+  pass &= check(f.contentWindow.sessionStorage.getItem('lunden.resetHideMenu') !== null, 'reset stores resetHideMenu flag');
 
   f.remove();
   out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;

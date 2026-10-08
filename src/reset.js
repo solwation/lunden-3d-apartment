@@ -10,6 +10,8 @@ import { RESET_KEEP } from './config.js';
 const PREFIX = 'lunden.';
 /** One-time flag for the reloaded page: say "Hemmet är återställt". */
 export const RESET_DONE = 'lunden.resetDone';
+/** One-time flag to hide menu automatically when resetting from menu (#522). */
+export const RESET_HIDE_MENU = 'lunden.resetHideMenu';
 
 /** Remove every 'lunden.*' key not in RESET_KEEP from both storages; returns the keys removed. */
 export function clearLocalHome() {
@@ -36,4 +38,13 @@ export function takeResetDone() {
     sessionStorage.removeItem(RESET_DONE);
     return done;
   } catch { return false; }
+}
+
+/** Returns the input mode to resume after reset and hides the menu, removing the flag. */
+export function takeResetHideMenu() {
+  try {
+    const mode = sessionStorage.getItem(RESET_HIDE_MENU);
+    if (mode) sessionStorage.removeItem(RESET_HIDE_MENU);
+    return mode;
+  } catch { return null; }
 }
