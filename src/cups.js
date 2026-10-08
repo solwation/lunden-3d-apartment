@@ -40,6 +40,7 @@ export function cupCabinet(c) {
   // and stops flat against the tall unit's side at OPEN_DEG (#116)
   const P = 0.024, gap = 0.0015;
   const door = new THREE.Group();
+  door.userData.moving = true; // the inner task card and handle follow its animated hinge (#509)
   door.position.set(c.front - P, c.y0, c.z0);
   // add(d0, d1, …): d = distance in front of the front plane (negative = behind it), like interior.js `frame`
   const add = (d0, d1, y0, y1, z0, z1, m) => { const o = new THREE.Mesh(new THREE.BoxGeometry(d1 - d0, y1 - y0, z1 - z0), m); o.position.set(P - (d0 + d1) / 2, (y0 + y1) / 2, (z0 + z1) / 2); o.castShadow = true; door.add(o); };
@@ -51,7 +52,7 @@ export function cupCabinet(c) {
   add(0.012, 0.012 + t, hy - L / 2, hy + L / 2, hz - t / 2, hz + t / 2, c.handle);
   for (const s of [-1, 1]) add(0, 0.012, hy + s * 0.064 - 0.005, hy + s * 0.064 + 0.005, hz - 0.005, hz + 0.005, c.handle);
   const cab = {
-    name: 'skåpet', kind: 'appliance', isOpen: false, z0: c.z0, width: W, t: 0, object: door, pickable: door, door, hinge: 'side', lamp: { emissiveIntensity: 0 },
+    name: 'skåpet', kind: 'appliance', isOpen: false, z0: c.z0, width: W, innerFace: { x: P+FT, width: W, height: H }, t: 0, object: door, pickable: door, door, hinge: 'side', lamp: { emissiveIntensity: 0 },
     get verb() { return this.isOpen && heldItem()?.isCup ? 'ställa tillbaka koppen i' : this.isOpen ? 'stänga' : 'öppna'; },
     get unwashed() { return this.isOpen && !!heldItem()?.isCup && heldItem().dirty && LIFE.rules.washFirst; }, // (#383: a used cup is washed up first)
     get blocked() { return this.isOpen && !!heldItem()?.isCup && (this.freeSlot?.() < 0 || this.unwashed); }, // all three spots taken (#215)

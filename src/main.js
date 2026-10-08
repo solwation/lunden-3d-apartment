@@ -427,8 +427,7 @@ cloth.mess = mess; cloth.life = life;
 holdables.push(cloth);
 world.looseItems.push(cloth.model);
 const tasks = new TasksManager({ life, scene });
-const taskCard = tasks.build3DCard();
-scene.add(taskCard.object);
+const taskCard = tasks.build3DCard(cups.cabinet);
 world.looseItems.push(taskCard.object);
 tasks.bindUI({
   modalEl: document.getElementById('task-note'),
@@ -1505,7 +1504,7 @@ window.addEventListener('resize', () => {
 // --- door interaction: look at a door within reach, press E ----------------
 const raycaster = new THREE.Raycaster();
 raycaster.far = 2.2;
-const pickables = [...garage.targets.map((t) => t.pickable), ...core.targets.map((t) => t.pickable), airFryer.basketTarget.pickable, airFryer.panelTarget.pickable, ...world.doors.map((d) => d.pickable), ...world.lids.map((l) => l.pickable), ...taps.map((t) => t.pickable), note.pickable, taskCard.pickable, board.pickable, ...(coffeeJar ? [coffeeJar.target.pickable] : []), wallClock.pickable, calendar.pickable, ...lights.targets.map((t) => t.pickable), grill.pickable, blinds.object];
+const pickables = [...garage.targets.map((t) => t.pickable), ...core.targets.map((t) => t.pickable), airFryer.basketTarget.pickable, airFryer.panelTarget.pickable, ...world.doors.map((d) => d.pickable), ...world.lids.map((l) => l.pickable), ...taps.map((t) => t.pickable), note.pickable, board.pickable, ...(coffeeJar ? [coffeeJar.target.pickable] : []), wallClock.pickable, calendar.pickable, ...lights.targets.map((t) => t.pickable), grill.pickable, blinds.object];
 const center = new THREE.Vector2(0, 0);
 const keyCabinet = world.lids.find((l) => l.kind === 'keybox');
 let focused = null, focusPoint = null;

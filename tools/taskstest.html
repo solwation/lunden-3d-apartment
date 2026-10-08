@@ -93,7 +93,15 @@ try {
   check(task('makeSandwich').completedGoals.size === 1 && !task('resetKitchen').isDone, 'save loading filters unknown goals and malformed entries');
   // The card is accessible through the same raycast and action button as other world items.
   let found = false;
-  const p = tasks.card.object.position;
+  const cab=A.cups.cabinet,card=tasks.card.object;
+  check(card.parent===cab.door && tasks.card.blocked, 'one task card is attached to the closed cup-cabinet door and cannot be used');
+  const shut=card.getWorldPosition(new (await w.eval("import('three')")).Vector3());
+  let count=0;A.scene.traverse(o=>{if(o===card)count++});check(count===1, 'task card occurs exactly once, with no remaining worktop copy');
+  player.spawn(4.5,1.65,0);secs(.05);camera.lookAt(shut);camera.updateMatrixWorld(true);step(1/60);
+  check(A.focus().focused?.kind!=='taskNote', 'closed door physically hides the task card from the normal raycast');
+  cab.toggle();for(let i=0;i<30;i++)cab.update(.1);
+  const p=card.getWorldPosition(new (await w.eval("import('three')")).Vector3());
+  check(p.distanceTo(shut)>.1&&!tasks.card.blocked, 'task card follows the real hinge to the opened inside face');
   for (const [x,z] of [[4.5,1.65],[4.5,2],[4.5,1.3],[4.4,1.5]]) {
     player.spawn(x,z,0); secs(0.05);
     const dx = p.x-camera.position.x, dz=p.z-camera.position.z;

@@ -243,8 +243,8 @@ export class TasksManager {
     }
   }
 
-  build3DCard() {
-    const { w, h, pos, tilt } = TASK_NOTE;
+  build3DCard(cabinet) {
+    const { w, h, tilt, inset, height, across } = TASK_NOTE;
     const canvas = document.createElement('canvas');
     canvas.width = 256; canvas.height = 320;
     const g = canvas.getContext('2d');
@@ -276,13 +276,17 @@ export class TasksManager {
     const mat = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.8 });
     const mesh = new THREE.Mesh(geom, mat);
 
-    // Small optional task card beside the sink, on the kitchen worktop.
-    mesh.position.set(...pos);
-    mesh.rotation.set(-Math.PI / 2, 0, tilt);
+    // On the actual inner door face; parent rotation carries the sheet with the hinge (#509).
+    const face = cabinet.innerFace;
+    mesh.position.set(face.x+inset, face.height*height, face.width*across);
+    mesh.rotation.set(0, Math.PI/2, tilt);
+    cabinet.door.add(mesh);
 
     const cardTarget = {
       name: 'uppdragslappen',
       kind: 'taskNote',
+      get blocked() { return !cabinet.isOpen; },
+      blockedText: 'Öppna skåpet',
       verb: 'läsa',
       object: mesh,
       pickable: mesh,

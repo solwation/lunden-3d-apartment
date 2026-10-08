@@ -2999,8 +2999,9 @@ export const FURNITURE = [
   }))),
 ];
 
-// Optional everyday task card beside the sink (#392), position/size are visual choices (*guess*).
-export const TASK_NOTE = { pos: [5.35, 0.932, 1.48], w: 0.18, h: 0.22, tilt: 0.15 };
+// Optional everyday task card on the cup-cabinet door's inside (#392, #509).
+// #509: visual assumptions; size retained, mounting fractions of the actual door's height/width.
+export const TASK_NOTE = { w: 0.18, h: 0.22, tilt: 0.04, inset: 0.001, height: 0.55, across: 0.5 };
 
 // Furniture cheat (#465): interaction distance and support tolerance are gameplay choices, not surveyed dimensions.
 export const REARRANGE = { reach: 6, supportGap: 0.06, poll: 3000 };
