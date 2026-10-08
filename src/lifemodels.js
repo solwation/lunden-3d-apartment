@@ -331,7 +331,9 @@ function butterKnife() {
   const lump = mesh(new THREE.SphereGeometry(0.012, 10, 6).scale(1.4, 0.45, 1), M.butter); // a dab of butter on the blade (#378)
   lump.position.set(0.06, 0.0095, 0);
   lump.visible = false;
-  g.add(blade, handle, lump);
+  const pick = new THREE.Mesh(new THREE.BoxGeometry(0.19, 0.022, 0.032), new THREE.MeshBasicMaterial({ visible: false }));
+  pick.position.set(-0.015, 0.011, 0);
+  g.add(blade, handle, lump, pick);
   const sm = bladeSmear(0.06, 0.016, 0xf2dc86, 0.04, 0.0078);
   g.add(sm);
   return { object: g, grip: [-0.06, 0.007, 0], show(item) { lump.visible = (item.machine?.load ?? 0) > 0; sm.visible = item.clean === 'dirty'; } };
