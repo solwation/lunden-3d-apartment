@@ -1594,7 +1594,8 @@ function updateFocus() {
       spot = null; // in vacuum mode, walking cleans the floor; crouch to place down (#390)
     }
     const lifeAim = (focused?.kind === 'life' || (focused?.kind === 'tap' && (life.items.held() || heldItem()?.isCup || heldItem()?.isCloth))) && (!!focused.options?.().some((a) => !a.reason) || !!focused.store); // (#382: a glass at the tap, #391: rinse cloth) // a plate it can go on (#367): that, not the table under it
-    if (item?.isCloth && top && spot && !lifeAim) {
+    const atBack = (focused === item.backTarget || hit?.object?.userData?.door === item.backTarget);
+    if (item?.isCloth && top && spot && !lifeAim && !atBack) {
       focused = {
         name: top.object.userData.counter ? 'köksbänken' : (top.object.userData.name ?? 'bordet'),
         kind: 'wipe',
