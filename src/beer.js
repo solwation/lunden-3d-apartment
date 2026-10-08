@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { Holdable } from './holdable.js';
 import { sfx } from './audio.js';
-import { BEER as B } from './config.js';
+import { BEER as B, PATIO as P } from './config.js';
 
 // The big beer on the patio (#117): sit down in the lounge sofa and a 50 cl tankard of lager with a head of
 // foam turns up on the lounge table, all year round. E takes it; a click / the "Drick" touch button drinks a
@@ -28,7 +28,7 @@ function tankard() {
 }
 
 export class Beer extends Holdable {
-  constructor(scene, camera) {
+  constructor(scene, camera, world = null) {
     const { g, beer, foam } = tankard();
     const home = new THREE.Vector3(B.x, B.y, B.z);
     super(scene, camera, {
@@ -37,10 +37,24 @@ export class Beer extends Holdable {
       heldPose: { pos: new THREE.Vector3(B.held.x, B.held.y, B.held.z), rot: new THREE.Euler(0, -0.4, 0) },
       pick: { pos: home.clone().setY(B.y + B.h / 2), size: [0.16, B.h + 0.04, 0.16] }, cooldown: 0.6,
     });
-    Object.assign(this, { beer, foam, level: 1, sip: 0, gulps: 0, out: false });
+    Object.assign(this, { beer, foam, level: 1, sip: 0, gulps: 0, out: false, world });
     this.rest = { q: new THREE.Quaternion(), lift: 0 }; // it stands when put down
     this.setLevel(1);
+    this.placeForSpot(null);
     this.show(false);
+  }
+
+  getTable() {
+    return this.world?.furniture?.movable?.find((p) => p.item?.type === 'slattable') ?? null;
+  }
+
+  get furnitureHome() {
+    return this.getTable()?.object ?? null;
+  }
+
+  get target() {
+    if (this.held) this.updateHomeFromTable();
+    return super.target;
   }
 
   /** "Drick" while there is beer left; nothing to click when it is empty. */
@@ -62,29 +76,67 @@ export class Beer extends Holdable {
     this.holder.visible = v;
   }
 
-  /** Position the beer on the lounge table directly in front of the seated visitor (#472). */
-  placeForSpot(spot) {
-    if (!spot?.pos) return;
-    let x, z;
-    if (spot.dir?.[0] === -1 || spot.pos.x > 5.0) {
-      // Seated on the bench along the east screen wall, facing west (-x) towards the table
-      x = 4.42;
-      z = Math.max(14.10, Math.min(14.40, spot.pos.z));
-      if (Math.hypot(x - 4.38, z - 14.17) < 0.12) {
-        z = z < 14.17 ? 14.06 : 14.28;
-      }
-    } else {
-      // Seated in the sofa row facing south (+z) towards the table
-      z = 14.10;
-      x = Math.max(3.98, Math.min(4.42, spot.pos.x));
-      if (Math.hypot(x - 4.38, z - 14.17) < 0.12) {
-        x = 4.26;
-      }
+  /** Position the beer on the lounge table directly in front of the seated visitor (#472, #488). */
+  placeForSpot(spot = null) {
+    const table = this.getTable();
+    if (!table) {
+      if (spot?.pos) this.home.pos.set(B.x, B.y, B.z);
+      return;
     }
-    const y = B.y;
-    this.home.pos.set(x, y, z);
+    table.object.updateWorldMatrix(true, false);
+    const { w, d, h } = P.slatTable;
+    const margin = B.r + 0.015;
+    const minX = -w / 2 + margin, maxX = w / 2 - margin;
+    const minZ = -d / 2 + margin, maxZ = d / 2 - margin;
+
+    let lx, lz;
+    if (spot?.pos) {
+      let forward;
+      if (spot.dir?.[0] === -1 || spot.pos.x > 5.0) {
+        forward = new THREE.Vector3(-1, 0, 0);
+      } else {
+        forward = new THREE.Vector3(0, 0, 1);
+      }
+      const ideal = spot.pos.clone().addScaledVector(forward, 0.55);
+      const inv = table.object.matrixWorld.clone().invert();
+      const localP = ideal.applyMatrix4(inv);
+      lx = Math.max(minX, Math.min(maxX, localP.x));
+      lz = Math.max(minZ, Math.min(maxZ, localP.z));
+    } else if (this.localPos) {
+      lx = this.localPos.x;
+      lz = this.localPos.z;
+    } else {
+      lx = 0.18;
+      lz = 0.05;
+    }
+
+    // Avoid colliding with summer beer glasses if present on the table (#408)
+    if (Math.hypot(lx - (-0.18), lz - 0.08) < 0.11) {
+      lx = lx < -0.18 ? -0.18 - 0.08 : -0.18 + 0.08;
+      lx = Math.max(minX, Math.min(maxX, lx));
+    }
+    if (Math.hypot(lx - 0.06, lz - (-0.1)) < 0.11) {
+      lz = lz < -0.1 ? -0.1 - 0.08 : -0.1 + 0.08;
+      lz = Math.max(minZ, Math.min(maxZ, lz));
+    }
+
+    this.localPos = new THREE.Vector3(lx, h, lz);
+    this.updateHomeFromTable();
+  }
+
+  updateHomeFromTable() {
+    const table = this.getTable();
+    if (!table) return;
+    table.object.updateWorldMatrix(true, false);
+    if (!this.localPos) {
+      const { h } = P.slatTable;
+      this.localPos = new THREE.Vector3(0.18, h, 0.05);
+    }
+    const worldPos = this.localPos.clone().applyMatrix4(table.object.matrixWorld);
+    this.home.pos.copy(worldPos);
+    this.home.rot.y = new THREE.Euler().setFromRotationMatrix(table.object.matrixWorld, 'YXZ').y + Math.PI * 0.8;
     if (this.holder?.children?.[0]) {
-      this.holder.children[0].position.set(x, y + B.h / 2, z);
+      this.holder.children[0].position.copy(worldPos).y += B.h / 2;
     }
   }
 
@@ -103,6 +155,7 @@ export class Beer extends Holdable {
   mend() { this.broken = false; this.goHome(); this.model.visible = this.out; }
 
   goHome() {
+    this.updateHomeFromTable();
     super.goHome();
     this.model.updateMatrixWorld(true);
     if (this.out) this.setLevel(1); // back on the table: a fresh one

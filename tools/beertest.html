@@ -17,6 +17,7 @@ f.onload = async () => {
   while (!w.__app) await wait(100);
   const { player, camera, step, beer, use, heldItem, world, rest, standUp, stats, cups, scene } = w.__app;
   const V = camera.position.constructor;
+  const THREE = await f.contentWindow.eval("import('three')");
   const lines = [];
   const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; };
   d.getElementById('start-touch').click();
@@ -56,6 +57,73 @@ f.onload = async () => {
   pass &= check(!beer.model.visible, 'F: the beer is gone');
   w.__app.toggleFurniture(true); step(1 / 60);
   pass &= check(!beer.model.visible, 'F again: still gone until you sit down');
+
+  // #488: Rearrange table, beer follows table move, sits on tabletop, tracks return
+  beer.serve(sofa.spots[0]); step(1 / 60);
+  pass &= check(beer.model.visible, 'beer re-served after sitting down again');
+
+  const R = w.__app.rearrange;
+  R.unlock('sarah is the goat');
+  const table = R.pieces.find(p => p.item.type === 'slattable');
+  pass &= check(!!table, 'patio slat table found in rearrange pieces');
+
+  const beerBefore = beer.where().clone();
+  const tableBefore = table.object.matrixWorld.clone();
+  R.begin(table);
+  pass &= check(R.selected.loose.includes(beer), 'beer on table recognized as loose follower');
+
+  const turn = new THREE.Matrix4().makeRotationY(Math.PI / 2);
+  const at = table.object.getWorldPosition(new V());
+  R.candidate = new THREE.Matrix4().makeTranslation(at.x + 0.3, at.y, at.z + 0.2).multiply(turn).multiply(new THREE.Matrix4().makeTranslation(-at.x, -at.y, -at.z)).multiply(tableBefore);
+  R.valid = true;
+  const motion = R.candidate.clone().multiply(tableBefore.clone().invert());
+  await R.confirm();
+
+  pass &= check(beer.where().distanceTo(beerBefore.clone().applyMatrix4(motion)) < 0.001, 'beer followed moved table exactly once');
+  const surfWorld = new THREE.Vector3(0, 0.40, 0).applyMatrix4(table.object.matrixWorld);
+  pass &= check(Math.abs(beer.where().y - surfWorld.y) < 0.001, `beer base stands exactly on table surface (${beer.where().y.toFixed(3)} vs ${surfWorld.y.toFixed(3)})`);
+
+  // Pick up beer, move table while held in hand
+  use(beer.target); step(1 / 60);
+  pass &= check(heldItem() === beer && beer.held, 'beer taken into hand');
+
+  const tablePos = table.object.getWorldPosition(new V());
+  const nextPose = { pos: [tablePos.x + 0.1, tablePos.y, tablePos.z - 0.1], quat: table.object.quaternion.toArray(), revision: R.state.pieces[table.id].revision + 1 };
+  const newState = structuredClone(R.state); newState.revision++; newState.pieces[table.id] = nextPose;
+  R.apply(newState);
+
+  pass &= check(heldItem() === beer && beer.held, 'beer in hand was not pulled out of hand when table moved');
+  use(beer.backTarget); step(1 / 60);
+  pass &= check(!beer.held && beer.model.visible, 'beer returned to moved table');
+  const surfWorld2 = new THREE.Vector3(0, 0.40, 0).applyMatrix4(table.object.matrixWorld);
+  pass &= check(Math.abs(beer.where().y - surfWorld2.y) < 0.001, 'returned beer stands on moved table surface');
+
+  // Serving from different seat spots (row seat vs bench seat)
+  const benchSpot = sofa.spots.find(s => s.dir?.[0] === -1 || s.pos.x > 5.0);
+  beer.serve(benchSpot);
+  pass &= check(beer.model.visible && Math.abs(beer.where().y - surfWorld2.y) < 0.001, 'serving for bench seat stands on table');
+
+  const rowSpot = sofa.spots.find(s => !s.dir);
+  beer.serve(rowSpot);
+  pass &= check(beer.model.visible && Math.abs(beer.where().y - surfWorld2.y) < 0.001, 'serving for row seat stands on table');
+
+  // Persistence across reload with saved layout
+  localStorage.setItem('lunden.furniture.layout', JSON.stringify(R.state));
+  const f2 = document.createElement('iframe');
+  f2.width = 900; f2.height = 600; f2.src = '../index.html';
+  document.body.append(f2);
+  await new Promise(r => { f2.onload = r; });
+  while (!f2.contentWindow.__app) await wait(100);
+  const A2 = f2.contentWindow.__app;
+  const table2 = A2.rearrange.pieces.find(p => p.item.type === 'slattable');
+  pass &= check(table2.object.matrixWorld.elements.every((v, i) => Math.abs(v - table.object.matrixWorld.elements[i]) < 0.001), 'rearranged table layout persisted across reload');
+  A2.beer.serve(benchSpot);
+  const surf2 = new THREE.Vector3(0, 0.40, 0).applyMatrix4(table2.object.matrixWorld);
+  pass &= check(Math.abs(A2.beer.where().y - surf2.y) < 0.001, 'new serve after reload stands on rearranged table');
+  f2.remove();
+
+  localStorage.removeItem('lunden.furniture.layout');
+  localStorage.removeItem('lunden.furniture.unlocked');
   out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
 };
 </script>

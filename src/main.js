@@ -351,7 +351,7 @@ function showBook(show) {
   if (show) bump('read'); // statistics and points (#197)
   player.keys.clear();
 }
-const beer = new Beer(scene, camera); // a big beer on the lounge table when you sit down in the lounge sofa (#117)
+const beer = new Beer(scene, camera, world); // a big beer on the lounge table when you sit down in the lounge sofa (#117)
 beer.onGulp = () => bump('beer');
 const things = buildThings(scene, camera, world.things); // bottles and glasses in the living room (#152)
 const secret = buildSecret(things, { first: params0.has('secret') ? Number(params0.get('secret')) : null, onFind: (t, rare) => secretFound(t.secret, t.name, rare) }); // a new surprise in the secretary's secret drawer each time (#183)
