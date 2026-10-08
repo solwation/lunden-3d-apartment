@@ -1,0 +1,25 @@
+<!doctype html><html><meta charset="utf-8"><title>Entrance plants (#498)</title><pre id="out">running…</pre><script type="module">
+const lines=[];let pass=true;const check=(ok,s)=>{lines.push((ok?'PASS':'FAIL')+' '+s);pass&&=!!ok},wait=ms=>new Promise(r=>setTimeout(r,ms));
+try{
+ const f=document.createElement('iframe');f.src='../index.html?phone&shot&cloud=';document.body.append(f);await new Promise(r=>f.onload=r);while(!f.contentWindow.__app)await wait(100);const w=f.contentWindow,A=w.__app,T=await w.eval("import('three')"),config=await w.eval("import('/src/config.js')"),C=config.ENTRANCE_PLANTS;
+ f.contentDocument.documentElement.requestFullscreen=undefined;f.contentDocument.getElementById('start-touch').click();A.renderer.setAnimationLoop(null);A.renderer.setPixelRatio(.15);A.renderer.setSize(180,120,false);
+ const plants=A.scene.getObjectByName('entrance-plants'),records=plants.userData.records,ground=records.filter(r=>r.y<1),loft=records.filter(r=>r.y>1);
+ check(ground.length===11&&loft.length===11,'eleven plants at ground entrances and eleven on loftgång');
+ check(new Set(ground.map(r=>r.variant)).size===3&&new Set(loft.map(r=>r.variant)).size===3,'palms, broad-leaf and low rosette plants on both levels');
+ check(new Set(ground.map(r=>r.unit)).size===8&&new Set(loft.map(r=>r.unit)).size===8,'all eight ground and eight upper street entrances decorated; core untouched');
+ check(records.every(r=>Math.abs(new T.Box3().setFromObject(r.model).min.y-r.y)<1e-6),'round pot bases touch the current ground/deck, no floating or slab penetration');
+ check(records.every(r=>{let clear=true;r.model.updateMatrixWorld(true);r.model.traverse(m=>{if(!m.isMesh)return;const p=m.geometry.attributes.position;for(let i=0;i<p.count;i++){const v=new T.Vector3().fromBufferAttribute(p,i).applyMatrix4(m.matrixWorld);clear&&=r.y>1?v.z<r.door.z-.02&&v.z>.7:v.z<-.02; if(v.y>r.y+.1&&v.y<r.y+2.3)clear&&=v.x<r.door.x0-.05||v.x>r.door.x1+.05}});return clear}),'actual leaf vertices stay clear of façade, doorway and outer loft walking lane');
+ check(records.every(r=>r.model.children.length<=4),'each plant has at most four meshes, merged leaves');
+ check(records.filter(r=>r.variant===0).every(r=>r.model.children[2].geometry===records.find(q=>q.variant===0).model.children[2].geometry),'repeated plants reuse merged leaf geometry and materials');
+ const at=(x,z,y)=>{A.player.spawn(x,z,0);A.player.pos.y=y;A.player.vy=0;A.step(0)},near=(x,z)=>Math.hypot(A.player.pos.x-x,A.player.pos.z-z)<.15;
+ const walk=(x,z,seconds=20)=>{for(let i=0;i<seconds*60&&!near(x,z);i++){A.camera.rotation.set(0,Math.atan2(-(x-A.player.pos.x),-(z-A.player.pos.z)),0,'YXZ');A.player.keys.add('KeyW');A.player.update(1/60)}A.player.keys.clear();A.step(0);return near(x,z)};
+ at(-9.3,.42,loft[0].y);check(walk(7,.42),'actual visitor walks outer loft lane past all eastern plant groups');
+ at(7,.42,loft[0].y);check(walk(-9.3,.42),'same loft route remains usable in reverse');
+ at(-9,-1.3,0);check(walk(7,-1.3),'ground entrance walkway remains free');
+ const p=ground.find(r=>r.unit==='L1007'&&r.slot===0);at(p.x,-1.3,0);check(!walk(p.x,p.z,3)&&A.player.pos.z<p.z-p.r,'ground pot collision stops the visitor at the actual pot');
+ const q=loft.find(r=>r.unit==='L1208'&&r.slot===0);at(q.x,.4,q.y);check(!walk(q.x,q.z,3)&&A.player.pos.z<q.z-q.r,'loft pot blocks walking through its actual body');
+ const door=A.world.doors.find(d=>d.name==='ytterdörren'&&d.hinge[1]===0);at(1.3,-1.3,0);if(!door.isOpen)A.useDoor(door);for(let i=0;i<30;i++)door.update(.1);check(walk(1.3,1.2,6),'our real front door opens and can be walked through between the plants');
+ check(config.FURNITURE.filter(t=>t.type==='aborgtable'&&t.z<0).every(t=>!t.flower),'front café table flower is not reintroduced');
+ document.getElementById('out').textContent=lines.join('\n')+'\n'+(pass?'ALL PASS':'SOME FAILED');
+}catch(e){document.getElementById('out').textContent=lines.join('\n')+'\nFAIL '+e.stack}
+</script></html>

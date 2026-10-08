@@ -577,6 +577,19 @@ export const COURTYARD = {
 };
 
 // Hus L (Parklängan): stacked row houses, overview plans våning 1–5 + Peab's aerial render.
+// #498: entrance plants inspired by the Peab rendering (docs/references/framsida-hack-dorrar-planteringar-2026-10-08.jpg).
+// All counts, species, pot dimensions, foliage scales and offsets below are visual ASSUMPTIONS in metres.
+// Pots stand beside doors against the façade, leaving the loftgång's outer walking lane and core/stairs clear.
+export const ENTRANCE_PLANTS = {
+  counts: [1, 2, 1, 1, 2, 1, 2, 1], // west → east, independently repeated at ground and loft entrances
+  groundZ: -.40, loftWallOffset: .40, doorGap: .45, foliageRadius: .34,
+  variants: [
+    { plant: 'palm', pot: { r: .18, h: .40 }, foliageScale: [.48, .72, .48], color: 0x656964 },
+    { plant: 'banana', pot: { r: .16, h: .32 }, foliageScale: [.48, .65, .48], color: 0xa36f51 },
+    { plant: 'agave', pot: { r: .20, h: .35 }, foliageScale: [.64, .76, .64], color: 0xc4bda9 },
+  ],
+};
+
 // Våning 1–2: L1001–L1004 | stair core + portik (+ L1101 on våning 2) | L1005–L1008; we are
 // L1007, L1008 is the east end unit (gable windows, spiral escape stair north of it).
 // Våning 3–4: L1201–L1209, two-storey units entered from the loftgång on våning 3 (L1208 is the one

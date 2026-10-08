@@ -8,6 +8,7 @@ import { groundY } from './surroundings.js';
 import { glowMaterial, poolGeometry, washGeometry, fadeGlow } from './groundglow.js';
 import { pavingTexture } from './patio.js';
 import { portikPlan } from './portik.js';
+import { buildEntrancePlants } from './entranceplants.js';
 
 // Brick: 250 × 65 mm + 10 mm joints → 0.26 m per brick, 0.075 m per course.
 const TILE_W = 1.04, TILE_H = 0.6; // one texture tile = 4 bricks × 8 courses
@@ -527,6 +528,21 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
     }
   }
   group.userData.walk = { surfaces, walls };
+  const plantingDoors = [
+    ...units.map((u, index) => {
+      const d = northOf(u.ox).find(o => o.y0 < .05 && (o.entryPane || o.y1 < 2.5));
+      return d && { unit: u.lower, index, x0: u.ox+d.x0, x1: u.ox+d.x1, y: 0, z: 0 };
+    }).filter(Boolean),
+    ...uppers.filter(u => u[2] != null).map(([x0,x1,ox,id], index) => {
+      const d = streetOpenings(id,ox,x1).find(o => o.door);
+      return d && { unit: id, index, x0: d.x0, x1: d.x1, y: roofTop, z: loftD };
+    }).filter(Boolean),
+  ];
+  const planting = buildEntrancePlants(plantingDoors, groundY);
+  group.add(planting);
+  group.userData.entrancePlants = planting;
+  segments.push(...planting.userData.groundSegments);
+  walls.push(...planting.userData.walls);
 
   const add = (geos, material, shadow = true) => {
     if (!geos.length) return;

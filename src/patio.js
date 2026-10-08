@@ -419,7 +419,7 @@ function agave(leaf, wood, top) {
 /** A large planter (P.pot) with `item.plant`: 'palm', 'banana' or 'agave'. One mesh per material. */
 export function planter(item) {
   const g = new THREE.Group();
-  const { r, h } = P.pot;
+  const { r, h } = item.pot ?? P.pot;
   const pot = new THREE.Mesh(new THREE.CylinderGeometry(r, r * 0.8, h, 28), potMat);
   pot.position.y = h / 2;
   const soil = new THREE.Mesh(new THREE.CircleGeometry(r * 0.93, 28), soilMat);
@@ -429,7 +429,11 @@ export function planter(item) {
   const leaf = [], wood = [];
   ({ palm, banana, agave })[item.plant](leaf, wood, h - 0.03);
   for (const [list, mat] of [[leaf, PLANT_MATS[item.plant]], [wood, trunkMat]]) {
-    if (list.length) g.add(new THREE.Mesh(mergeGeometries(list.map((x) => x.index ? x.toNonIndexed() : x)), mat));
+    if (list.length) {
+      const geo = mergeGeometries(list.map((x) => x.index ? x.toNonIndexed() : x));
+      if (item.foliageScale) geo.translate(0, -(h-.03), 0).scale(...item.foliageScale).translate(0, h-.03, 0);
+      g.add(new THREE.Mesh(geo, mat));
+    }
   }
   g.traverse((m) => { m.castShadow = m.receiveShadow = true; });
   g.userData.footprint = [{ x0: -r, x1: r, z0: -r, z1: r }];
