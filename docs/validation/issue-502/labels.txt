@@ -1,0 +1,9 @@
+PASS butterKnife stays named in the actual drawer target
+PASS named butterKnife button takes that exact item
+PASS cheeseSlicer stays named in the actual drawer target
+PASS named cheeseSlicer button takes that exact item
+PASS small package choices retain their item name
+PASS package closing remains identifiable and functional
+PASS transfer action retains both item and destination
+PASS named transfer still places the same slice on the plate
+ALL PASS

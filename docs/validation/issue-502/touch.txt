@@ -1,0 +1,11 @@
+PASS touch: overlayHidden=true moved=1.43m turned=0.30rad analogY=0.89 pos=3.30,-10.64
+PASS two choices as buttons: Ta smöret | Öppna smöret (button "" hidden true, at 2.52,1.75, butter 3.35,0.75,1.75, touch true, targets 90, cam 2.52,1.62,1.75 rot -0.79,-1.57, prompt "", focused life/smöret, hits 1.15:smöret,1.15:smöret,1.15:smöret,1.16:smöret layers 1)
+PASS the single action button gives way to them
+PASS a tap on "Öppna smöret": open (open), the view did not turn
+PASS the menu follows the state: Ta smöret | Stänga smöret
+PASS row 2 by number: closed again
+PASS E: the first row, "Ta smöret": in the hand
+PASS one action: the usual button "Ta gurkan"
+PASS with the slice in the hand at the plate: "Lägga gurkskivan på tallriken"
+PASS E: the slice lies on the plate
+ALL PASS

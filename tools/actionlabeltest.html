@@ -1,0 +1,19 @@
+<!doctype html><html lang="sv"><meta charset="utf-8"><title>Action labels</title>
+<pre id="out">running…</pre><iframe id="f" src="../index.html?life&shot&cloud=" width="844" height="390"></iframe>
+<script>
+const out=document.getElementById('out'),f=document.getElementById('f');
+f.onload=async()=>{const w=f.contentWindow,d=f.contentDocument,lines=[];let pass=true;
+const check=(ok,name)=>{lines.push(`${ok?'PASS':'FAIL'} ${name}`);pass&&=!!ok;out.textContent=lines.join('\n');};
+try{while(!w.__app)await new Promise(r=>setTimeout(r,100));const A=w.__app,{life,player,camera,scene,step}=A;
+d.documentElement.requestFullscreen=undefined;d.getElementById('start-touch').click();
+const btn=d.getElementById('action'),buttons=()=>[...d.querySelectorAll('#choices button')],text=()=>btn.hidden?buttons().map(b=>b.textContent).join(' | '):btn.textContent;
+const aim=(p,predicate)=>{for(let i=0;i<32;i++){const a=i/32*Math.PI*2,r=.75+(i%2)*.3;player.spawn(p.x+Math.sin(a)*r,p.z+Math.cos(a)*r,0);step(0);scene.updateMatrixWorld(true);camera.lookAt(p);camera.updateMatrixWorld(true);step(0);if(predicate(A.focus().focused,text()))return true;}return false;};
+const drawer=A.world.lids.find(l=>l.stock==='utensils');drawer.toggle();for(let i=0;i<40;i++)drawer.update(.1);scene.updateMatrixWorld(true);
+for(const type of ['butterKnife','cheeseSlicer']){const it=life.items.ofType(type)[0],view=life.view(it);check(aim(view.where(),(t,s)=>t===view.target&&s.includes(type==='butterKnife'?'Ta smörkniven':'Ta osthyveln')),`${type} stays named in the actual drawer target`);btn.click();step(0);check(A.heldItem()===view,`named ${type} button takes that exact item`);view.putBack();step(0);}
+const butter=life.items.ofType('butter').find(i=>i.place.at==='world'),bv=life.view(butter);
+check(aim(bv.where(),(t,s)=>t===bv.target&&s.includes('Ta smöret')&&s.includes('Öppna smöret')),'small package choices retain their item name');buttons().find(b=>b.textContent==='Öppna smöret').click();step(0);check(butter.pkg==='open'&&text().includes('Stänga smöret'),'package closing remains identifiable and functional');
+const plate=life.items.ofType('plate')[0],slice=life.items.ofType('cucumberSlice')[0];life.view(slice).take();step(0);
+check(aim(life.view(plate).where(),(t,s)=>s==='Lägga gurkskivan på tallriken'),'transfer action retains both item and destination');
+btn.click();step(0);check(slice.place.parent===plate.id&&slice.place.at==='on','named transfer still places the same slice on the plate');
+}catch(e){check(false,e.stack);}out.textContent=lines.join('\n')+'\n'+(pass?'ALL PASS':'SOME FAILED');};
+</script></html>

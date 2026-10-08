@@ -36,6 +36,9 @@ src/jetpack.js         the jetpack (#359, JETPACK): our own unbranded pack (one 
                        (SCORE.first: the first take-off); `&jetpack` = on from the start (tools/jetpacktest.html)
 src/touch.js           on-screen joystick (left) + drag-to-look (right), multi-touch pointer events
 src/main.js            renderer, lights, input modes, door raycast prompt/button, loop (step)
+                       shortButtonLabel uses exact target-owned verbs for structural fronts, seats, taps, wiping, speakers and generic placement (#502).
+                       Touch buttons/choice rows shorten only known unambiguous actions; small item/package names, specific transfer destinations and blocked reasons remain.
+                       Desktop prompts keep their full context. tools/actionlabeltest.html covers actual utensils/package/transfer buttons; opentest checks all front labels.
 src/rearrange.js       furniture cheat (#465): § / >_ inside the touch score badge opens the console; either exact code "olof is the goat" or "sarah is the goat" unlocks rearrangement.
                        buildFurniture exposes stable movable ids and separates framed pictures before per-frame merging.
                        E/click selects and confirms, R/turn rotates, X/cancel abandons the local 35%-opacity ghost. Rugs never

@@ -1291,12 +1291,33 @@ function showChoices(rows, target) {
   } else choices.rows = rows; // (fresh closures for run)
   choicesEl.hidden = !rows;
 }
+// Short touch labels only when the aimed-at object unambiguously owns the action (#502).
+// Item names and destinations remain in package/tool/transfer actions and blocked reasons.
+function shortButtonLabel(target, label) {
+  const text = label.trim(), name = target?.name;
+  const structural = ['swing', 'sliding', 'cabinet', 'appliance', 'fridge', 'cardoor'].includes(target?.kind);
+  const verbs = structural ? { öppna: 'Öppna', stänga: 'Stäng', 'dra ut': 'Dra ut', 'skjuta in': 'Skjut in' }
+    : target?.kind === 'rest' ? { 'sätta dig i': 'Sitt ner', 'sätta dig på': 'Sitt ner', 'sätta dig upp i': 'Sitt upp', 'lägga dig i': 'Ligg ner' }
+    : target?.kind === 'wipe' ? { torka: 'Torka' }
+    : target?.kind === 'tap' ? { 'sätta på': 'Sätt på', 'stänga av': 'Stäng av' }
+    : target?.kind === 'speaker' ? { 'spela musik på': 'Spela musik', 'styra musiken på': 'Styr musiken' }
+    : null;
+  if (verbs && name) for (const [verb, short] of Object.entries(verbs)) {
+    if (text === `${verb} ${name}`) return short;
+  }
+  // Generic placement already shows the held item and its ghost. A specific destination stays named.
+  if (target?.kind === 'place' && name === `${target.item?.name} här`) {
+    if (text === `lägga ner ${name}`) return 'Lägg ner';
+    if (text === `ställa ner ${name}`) return 'Ställ ner';
+  }
+  return text ? text[0].toUpperCase() + text.slice(1) : '';
+}
 function renderChoices() {
   choicesEl.replaceChildren();
   if (!choices.rows) return;
   choices.rows.forEach((r, i) => {
     const b = document.createElement('button');
-    const text = `${r.label[0].toUpperCase()}${r.label.slice(1)}`;
+    const text = touch.enabled ? shortButtonLabel(choices.target, r.label) : `${r.label[0].toUpperCase()}${r.label.slice(1)}`;
     b.textContent = touch.enabled ? (r.reason ? `${text} – ${r.reason}` : text) : `${i + 1}  ${text}${r.reason ? ` – ${r.reason}` : ''}${i === choices.sel ? '  ◀ E' : ''}`;
     b.className = `${i === choices.sel ? 'sel' : ''} ${r.reason ? 'no' : ''}`;
     b.dataset.i = i;
@@ -1747,7 +1768,7 @@ function updateFocus() {
   } else if (focused?.blocked) {
     actionBtn.textContent = promptEl.textContent = focused.blockedText ?? 'Lägg ifrån dig det du håller först'; // or: the glass / cup is full (#167)
   } else if (focused && touch.enabled) {
-    actionBtn.textContent = `${verb[0].toUpperCase()}${verb.slice(1)}${named}`;
+    actionBtn.textContent = shortButtonLabel(focused, `${verb}${named}`);
   } else if (focused) {
     const own = heldItem()?.useLabel && !heldItem().useAlt && !heldItem().clickIsUse ? ` · högerklick: ${heldItem().useLabel.toLowerCase()}` : ''; // (#443)
     promptEl.textContent = clickIsE() ? `Klicka (E) för att ${verb}${named}${own}` : `Tryck E för att ${verb}${named}`;
@@ -1761,7 +1782,7 @@ function updateFocus() {
   if (seated && !focused && !holding) actionBtn.textContent = 'Res dig';
   if (seated && !touch.enabled) promptEl.textContent = focused && !focused.blocked ? `${promptEl.textContent} · Mellanslag – res dig` : focused?.blocked ? promptEl.textContent : 'Tryck E för att resa dig';
   standBtn.hidden = !touch.enabled || !seated || (!focused && !holding);
-  if (reading && touch.enabled) actionBtn.textContent = boardPanel.open ? 'Stäng tavlan' : 'Stäng lappen';
+  if (reading && touch.enabled) actionBtn.textContent = 'Stäng';
   promptEl.hidden = (!focused && !seated && !holding) || touch.enabled || reading || (!!choices.rows && !seated);
   const job = life.runner.job; // a timed life action going on (#372): what and how far
   if (job && !reading) { promptEl.textContent = `${job.label[0].toUpperCase()}${job.label.slice(1)} … ${Math.round(Math.min(1, job.t / Math.max(job.duration, 1e-6)) * 100)} %`; promptEl.hidden = false; }
