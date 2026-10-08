@@ -1,4 +1,4 @@
-<!doctype html><html><meta charset="utf-8"><title>Interaction target outlines (#513)</title><pre id="out">running…</pre><script type="module">
+<!doctype html><html><meta charset="utf-8"><title>Interaction target brightness (#531)</title><pre id="out">running…</pre><script type="module">
 const lines=[];let pass=true;const check=(ok,s)=>{lines.push((ok?'PASS':'FAIL')+' '+s);pass&&=!!ok},wait=ms=>new Promise(r=>setTimeout(r,ms));
 try{
  const f=document.createElement('iframe');f.width=480;f.height=300;f.src='../index.html?life&shot&cloud=';document.body.append(f);await new Promise(r=>f.onload=r);while(!f.contentWindow.__app)await wait(100);const w=f.contentWindow,A=w.__app,T=await w.eval("import('three')"),V=T.Vector3,L=A.life,I=L.items,O=A.interactionOutline;
@@ -9,27 +9,49 @@ try{
  const drawer=A.world.lids.find(o=>o.stock==='utensils');drawer.toggle();for(let i=0;i<20;i++)drawer.update(.1);A.step(0);
  const butter=I.all().find(i=>i.type==='butterKnife'),cheese=I.all().find(i=>i.type==='cheeseSlicer'),bv=L.view(butter),cv=L.view(cheese);const butterHome=structuredClone(butter.place),cheeseHome=structuredClone(cheese.place);
  bv.take();bv.placeAt(new V(3.84,.712,-.45),0);cv.take();cv.placeAt(new V(3.84,.712,-.23),0);A.step(0);
- check(seek(bv.model,bv.takeTarget)&&O.group.visible&&O.root===bv.model&&O.target===A.focus().focused,'butter knife has outline matching actual touch action target: '+A.focus().focused?.name+' / '+O.target?.name);
- check(O.group.children.length===2&&O.materials[0].linewidth>O.materials[1].linewidth&&O.materials.every(m=>m.depthTest&&!m.depthWrite),'contrasting screen-width contour uses two depth-tested passes');
- check(seek(cv.model,cv.takeTarget)&&O.root===cv.model,'neighbouring cheese slicer replaces knife outline');
- const n=O.rebuilds;A.step(0);A.step(0);check(O.rebuilds===n,'steady focus does not regenerate edge geometry');
- A.touch.enabled=false;A.step(0);check(O.group.visible&&O.target===A.focus().focused,'desktop uses same focused target and outline');A.touch.enabled=true;
- I.move(butter,butterHome);I.move(cheese,cheeseHome);drawer.toggle();for(let i=0;i<20;i++)drawer.update(.1);A.step(0);check(O.root!==cv.model&&O.root!==bv.model,'closed drawer removes inaccessible utensil outline');
- const door=drawer.object;check(seek(door,drawer)&&O.root===door,'actual drawer front gets its own outline');
+ check(seek(bv.model,bv.takeTarget)&&O.group.visible&&O.root===bv.model&&O.target===A.focus().focused,'butter knife has brightness matching actual touch action target: '+A.focus().focused?.name+' / '+O.target?.name);
+ check(O.group.children.length===0&&O.entries.every(e=>e.highlight!==e.original),'private materials highlight physical target without any edge mesh or extra draw');
+ const knifeMaterials=O.entries.map(e=>[e.object,e.original]);
+ check(seek(cv.model,cv.takeTarget)&&O.root===cv.model,'neighbouring cheese slicer replaces knife highlight');
+ check(knifeMaterials.every(([o,m])=>o.material===m),'previous knife materials are restored exactly when target changes');
+ const n=O.rebuilds;A.step(0);A.step(0);check(O.rebuilds===n,'steady focus reuses temporary materials');
+ A.touch.enabled=false;A.step(0);check(O.group.visible&&O.target===A.focus().focused,'desktop uses same focused target and highlight');A.touch.enabled=true;
+ I.move(butter,butterHome);I.move(cheese,cheeseHome);drawer.toggle();for(let i=0;i<20;i++)drawer.update(.1);A.step(0);check(O.root!==cv.model&&O.root!==bv.model,'closed drawer removes inaccessible utensil highlight');
+ const door=drawer.object;check(seek(door,drawer)&&O.root===door,'actual drawer front gets its own highlight');
  const cabinet=A.world.lids.find(o=>o.stock==='platesLife');check(seek(cabinet.object,cabinet)&&O.root===cabinet.object&&O.root!==drawer.object,'different cupboard selects only its own leaf');
- cabinet.toggle();for(let i=0;i<20;i++)cabinet.update(.1);O.update(cabinet);check(O.group.matrix.equals(cabinet.object.matrixWorld),'outline follows moving cupboard leaf exactly');
- O.update({...cabinet,blocked:true});check(!O.group.visible,'blocked target does not advertise an available action');O.update(null);check(!O.group.visible&&O.root===null,'no target removes contour and disposes its active geometry');
- // Render the same outline implementation against both background extremes and a solid occluder.
+ cabinet.toggle();for(let i=0;i<20;i++)cabinet.update(.1);O.update(cabinet);check(O.group.matrix.equals(cabinet.object.matrixWorld),'highlight follows moving cupboard leaf exactly');
+ O.update({...cabinet,blocked:true});check(!O.group.visible,'blocked target does not advertise an available action');O.update(null);check(!O.group.visible&&O.root===null,'no target restores all materials and clears highlight');
+ // Real rendered pixels: subtle gain, exact restoration, ordinary occlusion and one instance.
  const {InteractionOutline}=await w.eval("import('/src/interactionoutline.js')"),scene=new T.Scene(),camera=new T.PerspectiveCamera(50,1,.1,20);camera.position.set(0,0,3);camera.lookAt(0,0,0);
- const cube=new T.Mesh(new T.BoxGeometry(.6,.6,.6),new T.MeshBasicMaterial({color:0x777777}));scene.add(cube);const Q=new InteractionOutline(scene,camera);Q.update({pickable:cube});
+ const shared=new T.MeshBasicMaterial({color:0x777777}),cube=new T.Mesh(new T.BoxGeometry(.6,.6,.6),shared),neighbour=new T.Mesh(cube.geometry,shared);neighbour.position.x=.8;scene.add(cube,neighbour);const Q=new InteractionOutline(scene,camera);
  const rt=new T.WebGLRenderTarget(160,160),pixels=new Uint8Array(160*160*4);A.renderer.setPixelRatio(1);A.renderer.setSize(160,160,false);
  function pixelsFor(color){scene.background=new T.Color(color);A.renderer.setRenderTarget(rt);A.renderer.render(scene,camera);A.renderer.readRenderTargetPixels(rt,0,0,160,160,pixels);A.renderer.setRenderTarget(null);return pixels.slice()}
- const dark=pixelsFor(0x000000),light=pixelsFor(0xffffff);const whiteCount=data=>{let n=0;for(let i=0;i<data.length;i+=4)if(data[i]>220&&data[i+1]>220&&data[i+2]>220)n++;return n};const darkCount=data=>{let n=0;for(let i=0;i<data.length;i+=4)if(data[i]<60&&data[i+1]<60&&data[i+2]<60)n++;return n};
- check(whiteCount(dark)>60&&darkCount(light)>60,'real shader draws visible white/dark contrasting contours');
- cube.visible=false;const sphere=new T.Mesh(new T.SphereGeometry(.3,24,16),new T.MeshBasicMaterial({color:0x777777}));scene.add(sphere);Q.update({pickable:sphere});check(whiteCount(pixelsFor(0x000000))>60,'smooth closed sphere also has a real outer silhouette');
- const occluder=new T.Mesh(new T.BoxGeometry(1.8,1.8,.1),new T.MeshBasicMaterial({color:0x000000}));occluder.position.z=1;scene.add(occluder);const hidden=pixelsFor(0x000000);check(whiteCount(hidden)===0,'solid occluder hides contour rather than revealing object behind it');
- scene.remove(sphere,occluder);const batch=new T.InstancedMesh(new T.BoxGeometry(.2,.2,.2),new T.MeshBasicMaterial(),3);scene.add(batch);const matrix=new T.Matrix4();for(let i=0;i<3;i++)batch.setMatrixAt(i,matrix.makeTranslation(i*2,0,0));Q.update({outlineRoot:scene,outlineInstances:[{object:batch,index:1}]});const drawn=Array.from(Q.positions.slice(0,Q.geometry.instanceCount*6));check(drawn.filter((_,i)=>i%3===0).every(x=>x>1.8&&x<2.2),'instanced target outlines one person/object instead of all batch instances');const rebuilds=Q.rebuilds;batch.setMatrixAt(1,matrix.makeTranslation(2.5,0,0));Q.update({outlineRoot:scene,outlineInstances:[{object:batch,index:1}]});check(Q.rebuilds===rebuilds&&Array.from(Q.positions.slice(0,Q.geometry.instanceCount*6)).filter((_,i)=>i%3===0).every(x=>x>2.3),'instance animation updates only its active contour');
- const hits=[];Q.group.children.forEach(o=>o.raycast(new T.Raycaster(),hits));check(!hits.length,'outlines never intercept interaction rays');Q.clear();rt.dispose();
+ const center=data=>data[(80*160+80)*4];
+ const base=pixelsFor(0x000000),calls=A.renderer.info.render.calls;Q.update({pickable:cube});const dark=pixelsFor(0x000000),light=pixelsFor(0xffffff);
+ check(center(dark)>center(base)+2&&center(dark)<center(base)+20,'actual target becomes slightly brighter, retaining its material color');
+ check(center(light)===center(dark),'brightness works on both dark and light backgrounds');
+ check(neighbour.material===shared&&cube.material!==shared,'shared neighbouring material remains completely unchanged');
+ check(A.renderer.info.render.calls===calls&&Q.group.children.length===0,'brightness adds no geometry, edges or render passes');
+ Q.clear();check(cube.material===shared&&pixelsFor(0x000000).every((v,i)=>v===base[i]),'clearing restores original material and every rendered pixel exactly');
+ Q.update({pickable:cube});shared.color.setHex(0x555555);cube.material.opacity=.75;
+ check(cube.material.color===shared.color&&cube.material.opacity===shared.opacity&&shared.opacity===.75,'appearance changes through stored references and mesh material both remain live');
+ Q.clear();check(cube.material===shared&&shared.color.getHex()===0x555555&&shared.opacity===.75,'clearing preserves legitimate appearance changes made while focused');
+ shared.color.setHex(0x777777);shared.opacity=1;
+ const patched=new T.MeshBasicMaterial({color:0x777777});let hookCalls=0;
+ patched.onBeforeCompile=shader=>{hookCalls++;shader.fragmentShader=shader.fragmentShader.replace('#include <opaque_fragment>','outgoingLight *= 0.5;\n#include <opaque_fragment>')};
+ cube.material=patched;const patchedBase=center(pixelsFor(0x000000));Q.update({pickable:cube});const patchedActive=center(pixelsFor(0x000000));
+ check(hookCalls===2&&patchedActive>patchedBase&&patchedActive<patchedBase+15,'existing shader hooks remain active alongside subtle brightness');
+ Q.clear();cube.material=shared;
+
+ cube.visible=false;const sphere=new T.Mesh(new T.SphereGeometry(.3,24,16),shared);scene.add(sphere);const sphereBase=center(pixelsFor(0x000000));Q.update({pickable:sphere});check(center(pixelsFor(0x000000))>sphereBase+2,'smooth detailed sphere brightens without tessellation lines');
+ const occluder=new T.Mesh(new T.BoxGeometry(1.8,1.8,.1),new T.MeshBasicMaterial({color:0x000000}));occluder.position.z=1;scene.add(occluder);check(center(pixelsFor(0x000000))===0,'solid wall hides highlighted target through the ordinary depth buffer');
+ Q.clear();scene.remove(sphere,occluder,neighbour,cube);
+ const batch=new T.InstancedMesh(new T.BoxGeometry(.3,.3,.3),shared,3);scene.add(batch);const matrix=new T.Matrix4();for(let i=0;i<3;i++)batch.setMatrixAt(i,matrix.makeTranslation((i-1)*.65,0,0));const batchBase=pixelsFor(0x000000);
+ Q.update({outlineRoot:scene,outlineInstances:[{object:batch,index:1}]});const selected=pixelsFor(0x000000);
+ let middleChanged=0,outsideChanged=0;for(let y=0;y<160;y++)for(let x=0;x<160;x++){const k=(y*160+x)*4;if(selected[k]!==batchBase[k]){if(x>=65&&x<=95)middleChanged++;else outsideChanged++;}}
+ check(middleChanged>100&&outsideChanged===0,'real instanced shader brightens only the selected figure, leaving both neighbours unchanged');
+ const rebuilds=Q.rebuilds;batch.setMatrixAt(1,matrix.makeTranslation(.1,0,0));batch.instanceMatrix.needsUpdate=true;Q.update({outlineRoot:scene,outlineInstances:[{object:batch,index:1}]});pixelsFor(0x000000);check(Q.rebuilds===rebuilds,'animated figure pose follows original geometry without material rebuild');
+ Q.update(null);check(batch.material===shared,'instanced material also returns to original when no target remains');rt.dispose();
  document.getElementById('out').textContent=lines.join('\n')+'\n'+(pass?'ALL PASS':'SOME FAILED');
 }catch(e){document.getElementById('out').textContent=lines.join('\n')+'\nFAIL '+e.stack}
 </script></html>

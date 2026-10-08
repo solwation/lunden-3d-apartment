@@ -8,6 +8,8 @@ Gå runt i lägenheten L1007 (Kv. Lunden, Peab) i webbläsaren som i ett FPS-spe
 
 På insidan av koppskåpets lucka i köket sitter en **uppdragslapp** med tre frivilliga vardagsuppdrag: gör en macka, återställ köket och städa efter mellanmålet. Delarna kan göras i valfri ordning och framstegen sparas. Tips går att stänga av; ett klart uppdrag ger 30 poäng första gången och 5 poäng när du väljer **Gör igen**. Tomma sopkärl behöver inte tömmas.
 
+Föremålet du siktar på blir diskret ljusare när det går att använda. Markeringen följer den aktuella handlingen och försvinner när du tittar bort.
+
 När du håller ett föremål visar en vit kontur var det kan placeras eller lämnas tillbaka. Markeringen följer aktuella möbler och syns bara vid ett giltigt mål inom räckhåll.
 
 I kylen finns en äggkartong: öppna den, ta ett ägg och knäck det i stekpannan på hällen. Påslagen häll steker ägget, som kan serveras på tallrik eller macka och ätas. Pannan och tallriken behöver sedan diskas vid kökskranen.

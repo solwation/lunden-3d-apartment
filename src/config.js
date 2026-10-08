@@ -1180,9 +1180,9 @@ export const TARGET = {
 
 // Putting held things down (#102, holdable.js / main.js): a table top, worktop or the floor within `reach` m
 // of the eye.
-// #513: pixel widths stay legible on desktop/touch; only two draws for the active physical target.
-export const INTERACTION_OUTLINE = { color: 0xffffff, borderColor: 0x171a1d, width: 1.8, borderWidth: 4,
-  opacity: .96, angle: 30, cacheFaces: 48000, depthBias: .001, renderOrder: 8 };
+// #531: artistic tuning, 12% brighter in linear light on the active target only.
+// Ordinary materials/depth testing stay intact; no additional render passes or edges.
+export const INTERACTION_OUTLINE = { brightness: 1.12 };
 export const HOLD = { reach: 2.2 };
 
 // The life simulator (epic #364, src/life.js; docs/livssimulator-inventering.md). `dev` = the developer scenario
