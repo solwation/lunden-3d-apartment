@@ -166,7 +166,7 @@ for (const [name, r] of Object.entries(routes)) {
   lines.length = 0;
   out.dataset.log = (out.dataset.log ?? '') + `${ok ? 'PASS' : 'FAIL'} ${name}\n` + out.textContent.split('\n').slice(1).join('\n') + '\n';
 }
-// sprint (#43): Shift outdoors ≈ PLAYER.run, Shift inside only walking pace; no tunnelling
+// sprint (#43): Shift indoors/outdoors ≈ PLAYER.run; no tunnelling
 {
   const { PLAYER } = await import('../src/config.js');
   const run = (x, z, yaw, secs) => {
@@ -182,17 +182,28 @@ for (const [name, r] of Object.entries(routes)) {
   const okPark = Math.abs(parkV - PLAYER.run * (player.boost ?? 1)) < 0.15 * (player.boost ?? 1);
   pass &&= okPark;
   out.dataset.log += `${okPark ? 'PASS' : 'FAIL'} sprint på parkplanet söder om Hus B (${parkV.toFixed(2)} m/s)\n`;
-  const inV = run(1.3, 0.8, Math.PI, 0.5);             // hall, facing south
+  const inV = run(1.3, 0.8, Math.PI, 0.2);             // hall, facing south
   const B = player.boost ?? 1; // ?turbo: every pace × the Kaffeturbo factor
-  const okOut = Math.abs(outV - PLAYER.run * B) < 0.15 * B, okIn = Math.abs(inV - PLAYER.walk * B) < 0.15 * B;
+  const okOut = Math.abs(outV - PLAYER.run * B) < 0.15 * B, okIn = Math.abs(inV - PLAYER.run * B) < 0.15 * B;
   pass &&= okOut && okIn;
   out.dataset.log += `${okOut ? 'PASS' : 'FAIL'} sprint utomhus (${outV.toFixed(2)} m/s, vill ${PLAYER.run * B})\n`;
-  out.dataset.log += `${okIn ? 'PASS' : 'FAIL'} inomhus bara gång med Shift (${inV.toFixed(2)} m/s, vill ${PLAYER.walk * B})\n`;
+  out.dataset.log += `${okIn ? 'PASS' : 'FAIL'} sprint inomhus med Shift (${inV.toFixed(2)} m/s, vill ${PLAYER.run * B})\n`;
   // sprint straight at a neighbour's screen wall from the lawn: must stop at it
   run(-2.0, 21.0, 0, 3);
   const okWall = player.pos.z > 17.5;
   pass &&= okWall;
   out.dataset.log += `${okWall ? 'PASS' : 'FAIL'} sprint tunnlar inte genom häcken (z ${player.pos.z.toFixed(2)})\n`;
+}
+// #546: real touch input, continuous doorway speed and indoor collision at a lower frame rate.
+{
+ const {PLAYER}=await import('../src/config.js'),B=player.boost??1,check=(ok,text)=>{pass&&=ok;out.dataset.log+=`${ok?'PASS':'FAIL'} ${text}\n`;};
+ player.spawn(1.3,.8,Math.PI);player.keys=new Set();player.analog={x:0,y:1};for(let i=0;i<12;i++)player.update(dt);check(Math.abs((player.pos.z-.8)/.2-PLAYER.run*B)<.15*B,'full touch stick sprints indoors at outdoor pace');player.analog={x:0,y:0};
+ player.spawn(1.3,3.5,-Math.PI/2);player.keys=new Set(['KeyW','ShiftLeft']);for(let i=0;i<90;i++)player.update(1/30);check(player.pos.x<2.1,'indoor sprint does not tunnel through bathroom wall at 30fps');
+ const door=world.doors.find(d=>d.kind==='swing'&&Math.hypot(d.hinge[0]-.8,d.hinge[1])<.05);if(door.isOpen)door.toggle();for(let i=0;i<120;i++)door.update(dt);
+ player.spawn(1.3,.8,0);player.keys=new Set(['KeyW','ShiftRight']);for(let i=0;i<60;i++)player.update(dt);check(player.pos.z>.15&&!player.outdoors,'indoor sprint stops at closed entrance door');
+ door.toggle();for(let i=0;i<120;i++)door.update(dt);player.spawn(1.3,-1,Math.PI);player.keys=new Set(['KeyW','ShiftLeft']);let outside=false,inside=false,slow=false;
+ for(let i=0;i<Math.ceil(2/(PLAYER.run*B)*60);i++){const z=player.pos.z;player.update(dt);outside||=player.outdoors;inside||=!player.outdoors;slow||=Math.abs(player.pos.z-z-PLAYER.run*B*dt)>.01;}
+ check(outside&&inside&&!slow,'same sprint speed continuously across open entrance');player.keys=new Set();door.toggle();for(let i=0;i<120;i++)door.update(dt);
 }
 // #355: never stuck round the block (#314): a free spot on the park level, and from a spot pressed against Hus B's
 // east wall the nearest free one is outside the house

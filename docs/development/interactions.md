@@ -273,8 +273,8 @@ HUD controls (#525): src/hudicons.js supplies own 24 px/1.7-stroke SVGs and idem
 - Phones/tablets: the Touch button goes fullscreen and calls `screen.orientation.lock('landscape')`
   (Android); in portrait with a coarse pointer (≤ 1100 px wide) a "rotate" overlay covers the page
   (iOS can't lock). Headless Chrome doesn't emulate `pointer: coarse` — test the overlay by hand.
-- Sprint (#43): Shift, or the touch stick pushed past `PLAYER.sprintStick`, runs at `PLAYER.run` —
-  outdoors only (`player.outdoors` = outside the flat's footprint); inside it is walking pace. The
+- Sprint (#43, #546): Shift, or the touch stick pushed past `PLAYER.sprintStick`, runs at `PLAYER.run` —
+  both indoors and outdoors, with continuous speed through doorways. The
   stick's knob turns green while sprinting; footsteps use a longer stride. Moves are sub-stepped (5 cm).
 - Crouch (#70): hold Ctrl (or the 🧎 toggle on touch) → eye `PLAYER.crouchEye` 0.95 m at `crouchSpeed` (50 %),
   no sprint; you only stand up again where there is head room (`roomToStand`: not under the stair's

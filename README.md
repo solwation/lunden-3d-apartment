@@ -48,7 +48,7 @@ Diskreta kantlinjer på väggar, dörrar och fast inredning gör hörn och rumsg
 |---|---|
 | <kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> / piltangenter | gå |
 | Mus | titta |
-| <kbd>Shift</kbd> | spring (bara utomhus) |
+| <kbd>Shift</kbd> | spring |
 | <kbd>C</kbd> | håll inne för att huka dig (sittande: res dig; <kbd>Ctrl</kbd> fungerar också) |
 | <kbd>←</kbd> <kbd>→</kbd> | vrid |
 | <kbd>E</kbd> | öppna/stäng dörren du tittar på, klappa katten, läsa lappen |
@@ -61,7 +61,7 @@ Diskreta kantlinjer på väggar, dörrar och fast inredning gör hörn och rumsg
 
 **Touch (mobil, surfplatta, Surface):** välj *Touch* på startskärmen (på telefon och surfplatta finns
 bara en *Börja*-knapp). Vänster tumme är en joystick
-(tryck ut den helt för att springa utomhus), dra med höger tumme för att titta, och tryck på knappen som
+(tryck ut den helt för att springa), dra med höger tumme för att titta, och tryck på knappen som
 dyker upp för att öppna och stänga dörrar. 📊 visar statistiken.
 
 **iPhone:** sidan blir bara helskärm som app, så den ber dig först lägga till den på hemskärmen

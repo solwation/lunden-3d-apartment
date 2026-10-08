@@ -99,7 +99,7 @@ export class Player {
     return !!this.world.core?.contains(p.x, p.z, p.y);
   }
 
-  /** Outside the flat (street, lawn, patio, up on the roofs): the only place to sprint. */
+  /** Outside the flat (street, lawn, patio, up on the roofs); used for terrain and ambience. */
   get outdoors() {
     return !this.inFootprint() || this.aloft;
   }
@@ -229,7 +229,7 @@ export class Player {
     const fwd = keyFwd || this.analog.y;
     const side = keySide || this.analog.x;
     // analog stick: speed follows how far it's pushed; Shift or the stick pushed all the way out
-    // sprints — outdoors only, inside it is just walking (no rushing through the flat, #43)
+    // sprints at the same pace indoors and outdoors (#546)
     const amount = keyFwd || keySide ? 1 : Math.min(1, Math.hypot(this.analog.x, this.analog.y));
     const wantsRun = k.has('ShiftLeft') || k.has('ShiftRight') || (!keyFwd && !keySide && amount > PLAYER.sprintStick);
     // crouch (#70): down at once, up only where there is head room (under the stair there may be none)
@@ -239,7 +239,7 @@ export class Player {
     const lift = jet ? jet.lift(dt, this.pos.y <= g0 + 0.02) : 0;
     this.flying = !!jet && (this.pos.y > g0 + 0.02 || lift > GRAVITY);
     this.crouched = !this.flying && (this.crouch || this.kneel || (this.crouched && !this.roomToStand()));
-    this.sprinting = wantsRun && this.outdoors && !this.crouched && (keyFwd || keySide || amount > 0);
+    this.sprinting = wantsRun && !this.crouched && (keyFwd || keySide || amount > 0);
     const speed = (this.sprinting ? PLAYER.run : PLAYER.walk * amount) * (this.crouched ? PLAYER.crouchSpeed : 1) * (this.boost ?? 1); // boost: Kaffeturbo (#217)
 
     const yaw = this.camera.rotation.y;
