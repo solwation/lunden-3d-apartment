@@ -1464,6 +1464,8 @@ URL parameters (debugging / screenshots):
 - `&clip=y` — clip everything above height y (cut-away plan view, e.g.
   `?shot&at=2.87,6.35,0,-90,16&clip=2.5` for Entréplan from above, `clip=5.6` + feet 19 for Övre plan).
 
+Vacuum bin capacity (#485) is configured by `CLEANING.vacuum.dustCapacity`: 3.0 mess units (three times the former 1.0, a gameplay choice). The HUD, full stop and suction limit all use this value. Browser checks: `tools/life3test.html?only=390,391,485`.
+
 ## Testing
 
 Headless Chrome with SwiftShader works on this machine:

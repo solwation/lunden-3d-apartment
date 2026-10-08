@@ -792,7 +792,8 @@ export const CLEANING = {
   shelf: { x0: 3.87, x1: 4.63, z: 5.704, d: 0.30, t: 0.02, ys: [0.72, 1.12, 1.52, 1.92], standards: [3.95, 4.50], solid: [4.10, 0.2] },
   rail: { x: 5.551, z0: 5.80, z1: 6.32, y: 1.30 },
   bucket: { x: 5.24, z: 6.50, r: 0.155, h: 0.30 },
-  vacuum: { x: 4.20, z: 6.609, dock: 1.18 },
+  // Gameplay choice (#485): three times the former 1.0 mess units; suction and dirt amounts stay the same.
+  vacuum: { x: 4.20, z: 6.609, dock: 1.18, dustCapacity: 3.0 },
 };
 
 // Where a visit starts: out on the grass in front of the entrance façade, facing the house with the

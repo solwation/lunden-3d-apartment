@@ -254,9 +254,9 @@ if (want(391)) try {
   check(vac && cloth, 'vacuum and cloth available');
 
   // 1. Vacuum dust accumulation and full notification
-  vac.dustAmount = 0.95;
+  vac.dustAmount = vac.dustCapacity * 0.95;
   check(!vac.isFull(), 'vacuum not full yet');
-  vac.dustAmount = 1.0;
+  vac.dustAmount = vac.dustCapacity;
   check(vac.isFull(), 'vacuum is full at capacity');
 
   // Test emptyIntoBin
@@ -306,6 +306,31 @@ if (want(391)) try {
   cloth.putBack();
   f.remove();
 } catch (e) { pass = false; lines.push(`FAIL #391 error ${e.stack}`); }
+
+// --- #485: larger bin, real suction conserves excess dirt and resumes after emptying -----------------
+if (want(485)) try {
+  const f = await load('life&shot');
+  const { A, step, settle } = kit(f);
+  const vac = A.vacuum, mess = A.life.mess;
+  check(vac.dustCapacity === 3, 'bin holds three times the former 1.0 mess units');
+  A.world.klkDoor.toggle(); settle(A.world.klkDoor); vac.take(); vac.use();
+  A.player.spawn(4.12, 3.75, 0); A.camera.rotation.set(0, 0, 0, 'YXZ');
+  const clean = () => { for (let i = 0; i < 40; i++) step(1 / 60); };
+  const add = (amt) => mess.add('crumb', 4.3, LEVELS[0].floor, 2.6, { surf: 'floor', level: 0, amt });
+  const bar = f.contentDocument.querySelector('#vacuum-hud i');
+  mess.clear(); add(1); clean();
+  check(Math.abs(vac.dustAmount - 1) < 1e-6 && !vac.isFull(), 'old full-bin load fits with room to spare');
+  check(bar.style.width === '33%', 'old full-bin load shows 33 percent');
+  add(1); clean(); add(0.75);
+  mess.add('dust', 4.3, LEVELS[0].floor, 2.6, { surf: 'floor', level: 0, amt: 0.75 }); clean();
+  check(vac.isFull() && vac.dustAmount === 3 && bar.style.width === '100%', 'full bin stops at 3 and 100 percent');
+  check(Math.abs(mess.total() - 0.5) < 1e-6, 'excess dirt remains on floor');
+  clean(); check(Math.abs(mess.total() - 0.5) < 1e-6, 'running full vacuum cannot destroy excess dirt');
+  vac.emptyIntoBin();
+  check(bar.style.width === '0%' && !vac.isFull(), 'emptying resets indicator and full state');
+  clean(); check(mess.total() === 0 && Math.abs(vac.dustAmount - 0.5) < 1e-6, 'vacuum resumes and collects remaining dirt');
+  vac.putBack(); f.remove();
+} catch (e) { pass = false; lines.push(`FAIL #485 error ${e.stack}`); }
 
 lines.push(pass ? 'ALL PASS' : 'SOME FAILED');
 out.textContent = lines.join('\n');

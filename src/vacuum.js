@@ -203,7 +203,7 @@ export class Vacuum extends Holdable {
     this.sound = null;
     this.lastHeadPos = null;
     this.dustAmount = 0;
-    this.dustCapacity = 1.0;
+    this.dustCapacity = V.dustCapacity;
     this.fullNotified = false;
 
     const self = this;
@@ -378,15 +378,20 @@ export class Vacuum extends Holdable {
           }
         } else {
           const capLeft = this.dustCapacity - this.dustAmount;
-          const res = this.mess.take(headPos.x, headPos.z, 0.35, {
-            level,
-            rate: capLeft,
-            kinds: ['crumb', 'dust'],
-            ok: (spot) => {
-              if (spot.surf !== 'floor') return false;
-              return !segs.some((sg) => crosses(headPos.x, headPos.z, spot.x, spot.z, sg));
-            },
-          });
+          // Mess.take's rate is per spot. Share the bin's remaining capacity across
+          // all nearby spots so simultaneous crumbs + dust cannot overflow it (#485).
+          const res = { amount: 0, spots: [] };
+          for (const spot of [...this.mess.spots]) {
+            if (res.amount >= capLeft) break;
+            if (spot.level !== level || spot.surf !== 'floor' || !['crumb', 'dust'].includes(spot.kind)
+              || Math.hypot(spot.x - headPos.x, spot.z - headPos.z) > 0.35
+              || segs.some((sg) => crosses(headPos.x, headPos.z, spot.x, spot.z, sg))) continue;
+            const taken = this.mess.take(headPos.x, headPos.z, 0.35, {
+              level, rate: capLeft - res.amount, kinds: ['crumb', 'dust'], ok: (s) => s === spot,
+            });
+            res.amount += taken.amount;
+            res.spots.push(...taken.spots);
+          }
 
           if (res && res.amount > 0) {
             this.dustAmount = Math.min(this.dustCapacity, this.dustAmount + res.amount);
