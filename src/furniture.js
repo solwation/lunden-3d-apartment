@@ -3745,7 +3745,7 @@ export function buildFurniture() {
     const serial = ids.get(baseId) ?? 0; ids.set(baseId, serial + 1);
     for (const [i, object] of (obj.userData.frames ?? [obj]).entries()) {
       movable.push({ id: `${baseId}-${serial}-${i}`, item, object, level: item.level,
-        picture: ['pictures', 'painting', 'kposters', 'pineapple', 'winerack'].includes(item.type), name: item.type === 'pictures' ? 'tavlan' : obj.userData.interact?.name ?? item.type });
+        picture: ['pictures', 'painting', 'kposters', 'pineapple', 'winerack', 'besta'].includes(item.type), name: item.type === 'pictures' ? 'tavlan' : obj.userData.interact?.name ?? item.type });
     }
     // Decorative wall mirrors are independent of the furniture below them (#479).
     for (const [i, m] of (obj.userData.wallMirrors ?? []).entries()) {

@@ -1468,6 +1468,8 @@ Vacuum bin capacity (#485) is configured by `CLEANING.vacuum.dustCapacity`: 3.0 
 
 Living-room palm (#491): original id/position retained; geometry dimensions scale by 0.8, pot by 0.8 × 0.95 (Ø 30.4 × 34.2 cm, extra reduction is a visual choice). Shared rounded brushed-copper pot: src/plantpots.js. Scaling is baked into geometry, so saved furniture transforms cannot undo the size change.
 
+BESTÅ wall placement (#492): the whole cabinet is a wall-mounted movable root (including doors, contents and spots), and its preview must fit vertically within the floor/ceiling. Existing misplaced saves remain selectable and can be moved or restored individually. Regression: tools/bestaplacementtest.html.
+
 ## Testing
 
 Headless Chrome with SwiftShader works on this machine:

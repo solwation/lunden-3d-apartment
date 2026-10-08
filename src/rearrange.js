@@ -5,7 +5,7 @@ import { inPoly, crosses } from './player.js';
 
 // #465: preview locally; only confirmed, revision-checked moves enter the shared arrangement.
 const CACHE = 'lunden.furniture.layout', UNLOCK = 'lunden.furniture.unlocked';
-const NAMES = { winerack: 'vinstället', pineapple: 'ananaspegeln', byas: 'TV-bänken', sofa: 'soffan', armchair: 'fåtöljen', ottoman: 'pallen', rug: 'mattan', pictures: 'tavlan', painting: 'tavlan', kposters: 'affischerna', skansnasTable: 'matbordet', skansnasChair: 'stolen', coffeetable: 'soffbordet', slattable: 'uteplatsbordet', randerstable: 'sidobordet', aborgtable: 'bordet', aborgchair: 'stolen', floorlamp: 'golvlampan', tubelamp: 'lampan', worklamp: 'lampan', walllamp: 'vägglampan', bed: 'sängen', bunk: 'våningssängen', daybed: 'sängen', gamingdesk: 'skrivbordet', gamingchair: 'stolen', laptop: 'datorn', tv: 'TV:n', palm: 'växten', planter: 'växten', parasol: 'parasollen', secretary: 'sekretären', sidetable: 'sängbordet', veronasofa: 'utesoffan', dynbox: 'dynboxen', huego: 'lampan', symfonisk: 'högtalaren', photoframe: 'fotoramen', nesthub: 'skärmen', nestmini: 'högtalaren' };
+const NAMES = { besta: 'vitrinskåpet', winerack: 'vinstället', pineapple: 'ananaspegeln', byas: 'TV-bänken', sofa: 'soffan', armchair: 'fåtöljen', ottoman: 'pallen', rug: 'mattan', pictures: 'tavlan', painting: 'tavlan', kposters: 'affischerna', skansnasTable: 'matbordet', skansnasChair: 'stolen', coffeetable: 'soffbordet', slattable: 'uteplatsbordet', randerstable: 'sidobordet', aborgtable: 'bordet', aborgchair: 'stolen', floorlamp: 'golvlampan', tubelamp: 'lampan', worklamp: 'lampan', walllamp: 'vägglampan', bed: 'sängen', bunk: 'våningssängen', daybed: 'sängen', gamingdesk: 'skrivbordet', gamingchair: 'stolen', laptop: 'datorn', tv: 'TV:n', palm: 'växten', planter: 'växten', parasol: 'parasollen', secretary: 'sekretären', sidetable: 'sängbordet', veronasofa: 'utesoffan', dynbox: 'dynboxen', huego: 'lampan', symfonisk: 'högtalaren', photoframe: 'fotoramen', nesthub: 'skärmen', nestmini: 'högtalaren' };
 const usesSupport = (piece) => piece.item.type === 'symfonisk' || (piece.item.type === 'tv' && piece.item.mount !== 'wall');
 const V = THREE.Vector3, Q = THREE.Quaternion, M = THREE.Matrix4;
 const shown = (o) => { for (; o; o = o.parent) if (!o.visible) return false; return true; };
@@ -172,6 +172,10 @@ export class Rearrange {
         }
       }
       worldPose(this.ghost, this.candidate);
+      if (piece.item.type === 'besta') {
+        const box = new THREE.Box3().setFromObject(this.ghost), level = LEVELS[piece.level];
+        valid = box.min.y >= level.floor + .02 && box.max.y <= level.floor + level.ceiling - .02;
+      }
     }
     this.valid = valid; this.ghost.visible = valid;
     this.target = { kind: 'rearrange', name: piece.name, verb: 'placera', blocked: !valid, blockedText: piece.picture ? 'Sikta på en vägg' : usesSupport(piece) ? 'Sikta på en avställningsyta eller golvet' : 'Sikta på golvet inom räckhåll' };
