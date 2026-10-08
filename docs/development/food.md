@@ -100,6 +100,13 @@ src/fishfingers.js     fish fingers (FISH, #162): a carton on the freezer's lowe
                        golden after fry.seconds, burnt + smoke from burnAt; fried ones steam, crunch, never go back in the carton
 src/fridge.js          the fridge: hollow, lit, opens with E (in world.lids); `shelfSpot` = the chicken's place; the freezer is
                        the same class (`freezer: true`, #161): drawers + shelves, the changelog note rides on its door;
+                       #504 adds a hollow grönsakslåda and four hollow freezer drawers: Openable pivots in world.lids with two m-sized slots each.
+                       COLD_DRAWERS measurements/travel are assumptions based on the original model, not manufacturer measurements.
+                       Door fully open before pulling/loading; drawers fully in before closing a door. F closes drawers before doors.
+                       Transparent walls let actual stored food be selected; held food targets loading boxes while the grip can still close.
+                       Anonymous juice blocks/frozen-bag blocks are removed. Old fridge/freezer store ids/slot indices remain; freezer slots 0–2 use the upper glass shelf.
+                       Drawer stores fridgeDrawer/freezerDrawer1–4 keep contents/amounts/homes through normal Life saving; anchors follow their pivot.
+                       tools/colddrawertest.html covers real front/loading/pickup actions, full storage, followers, door guards, real reload and F.
                        open past FRIDGE_ALARM.after s it beeps and a red LED blinks (`onAlarm` → a deduction, #288; the note
                        open pauses the freezer's timer, `paused`); F shuts both
 tools/beertest.html    headless test: sit in the lounge sofa → beer, drink it empty, back = full, a sip of coffee, F

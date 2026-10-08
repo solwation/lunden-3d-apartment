@@ -1200,9 +1200,9 @@ export const LIFE = {
     stored: [] }, // in their stores (#369): [type, store, slot] (+ the kitchen's stock, LIFE_FOOD / LIFE_TOOLS) // life items (#366) on the dining table: [x, z, yaw°]
   tooFar: 1.5, // a life-sim thing up to this much past HOLD.reach says "För långt bort" (#367)
   // storage slots (#369, stores.js): the fridge's free glass shelves (m over its floor; 0.82 = the chicken's, 1.2 = the milk's stay
-  // as they are) and its door bins [y on the door, spots as fractions of the door's width]; the freezer: the top of the frozen
-  // bags in its top basket (1.02 + the bags' 0.35 × 0.26 m). Our picks, from fridge.js's own shelf heights.
-  stores: { fridge: { shelves: [0.45, 1.52], bins: [[0.85, [0.3, 0.7]], [1.3, [0.3, 0.7]], [0.4, [0.7]]] }, freezer: { y: 1.117, peas: 0.15 },
+  // as they are) and its door bins [y on the door, spots as fractions of the door's width]; freezer slots 0–2 now sit
+  // on its upper glass shelf instead of anonymous frozen blocks (#504). Stable store/slot ids preserve saved food.
+  stores: { fridge: { shelves: [0.45, 1.52], bins: [[0.85, [0.3, 0.7]], [1.3, [0.3, 0.7]], [0.4, [0.7]]] }, freezer: { y: 1.604, peas: 0.15 },
     boardRack: { z: 2.95, lean: 10 }, plates: { stack: 0.019 }, glasses: [0.25, 0.5, 0.75] }, // glasses: the drinking glasses' spots across the glass cabinet's lower shelf (fractions, #382) // plates: the height of one plate in the stack (#379) // the cutting board on its long edge against the splashback (#374): its middle's z, leaning ° off upright // peas: the lower open shelf's spot east of the fish-finger carton (x from the middle, #373)
   place: { grid: 0.05, floorGrid: 0.1, margin: 0.04, turn: 45, outlineOpacity: .85 },
   // saving (#371): localStorage `key` written `every` s after a change; a thing whose place is gone lands on the free worktop (`lost`)
@@ -1247,6 +1247,14 @@ export const LIFE_WASTE = { dropoff: { x: PORTIK.east - 0.5, z: (PORTIK.north + 
 // #385: a programme takes `seconds` of game time (a short game programme, adjustable); `plinth` = the tub's bottom over the
 // floor (the floor spot's height).
 export const DISHWASHER = { out: 0.38, lower: { y: 0.05, h: 0.13, plates: 6 }, upper: { y: 0.36, h: 0.11, glasses: 6 }, tray: 4, seconds: 60, plinth: 0.097 };
+
+// #504: cold drawer geometry/slots are assumptions based on the existing fridge/freezer model,
+// not a manufacturer drawing. Preserve basket heights; 30 cm travel leaves their backs on the runners.
+export const COLD_DRAWERS = {
+  fridge: [[0.09, 0.31]], freezer: [[0.1, 0.4], [0.42, 0.72], [0.74, 1.0], [1.02, 1.28]],
+  out: 0.30, speed: 2, wall: 0.006, sideClearance: 0.015, endClearance: 0.03,
+  slotAcross: [-0.24, 0.24], slotDepth: [0], slotLift: 0.002,
+};
 
 // The kitchen's food from the start (#373, LIFE-009; the user: no shop, no delivery, no budget — the food is simply there):
 // `stock` = [type, store, slot] — where each thing lives (its home); `amounts` = what a fresh one holds, game parameters from

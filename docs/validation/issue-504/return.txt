@@ -1,0 +1,16 @@
+PASS cloth home shows white contour for real return action
+PASS cloth returns exactly to contour, marker disappears
+PASS board rack offers contour in its actual leaning orientation
+PASS board lands exactly as tilted contour showed
+PASS dirty board has no inaccessible clean-only return contour
+PASS closed fridge does not advertise milk shelf
+PASS open fridge exposes actual milk return contour
+PASS milk returns exactly to contour and marker disappears
+PASS white placement contour follows moved support surface
+PASS placed milk matches moved-table contour exactly
+PASS looking away hides contour while item stays held
+PASS return without aiming leaves no stale contour
+PASS ordinary cup also previews its actual free cabinet slot: appliance skåpet true
+PASS cup returns to the previewed free slot
+PASS contours never intercept interaction rays
+ALL PASS

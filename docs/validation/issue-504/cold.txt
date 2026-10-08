@@ -1,0 +1,78 @@
+PASS one fridge drawer and four freezer drawers have independent stable stores
+PASS grönsakslådan cannot open/load behind its closed appliance door
+PASS grönsakslådan is reached on its actual transparent front
+PASS grönsakslådan draws out through the touch action
+PASS held food reaches grönsakslådan loading target
+PASS food is stored in grönsakslådan through its normal action
+PASS grönsakslådan transparent walls leave the stored food selectable
+PASS grönsakslådan food is taken through its visible action
+PASS grönsakslådan full capacity keeps the extra item in hand
+PASS kylskåpet cannot close over an extended drawer
+PASS grönsakslådan front remains selectable after moving
+PASS grönsakslådan mouse action carries the same food back inside
+PASS closed grönsakslådan blocks taking its contents
+PASS fryslåda 1 cannot open/load behind its closed appliance door
+PASS fryslåda 1 is reached on its actual transparent front
+PASS fryslåda 1 draws out through the touch action
+PASS held food reaches fryslåda 1 loading target
+PASS food is stored in fryslåda 1 through its normal action
+PASS fryslåda 1 transparent walls leave the stored food selectable
+PASS fryslåda 1 food is taken through its visible action
+PASS fryslåda 1 full capacity keeps the extra item in hand
+PASS frysen cannot close over an extended drawer
+PASS fryslåda 1 front remains selectable after moving
+PASS fryslåda 1 mouse action carries the same food back inside
+PASS closed fryslåda 1 blocks taking its contents
+PASS fryslåda 2 cannot open/load behind its closed appliance door
+PASS fryslåda 2 is reached on its actual transparent front
+PASS fryslåda 2 draws out through the touch action
+PASS held food reaches fryslåda 2 loading target
+PASS food is stored in fryslåda 2 through its normal action
+PASS fryslåda 2 transparent walls leave the stored food selectable
+PASS fryslåda 2 food is taken through its visible action
+PASS fryslåda 2 full capacity keeps the extra item in hand
+PASS frysen cannot close over an extended drawer
+PASS fryslåda 2 front remains selectable after moving
+PASS fryslåda 2 mouse action carries the same food back inside
+PASS closed fryslåda 2 blocks taking its contents
+PASS fryslåda 3 cannot open/load behind its closed appliance door
+PASS fryslåda 3 is reached on its actual transparent front
+PASS fryslåda 3 draws out through the touch action
+PASS held food reaches fryslåda 3 loading target
+PASS food is stored in fryslåda 3 through its normal action
+PASS fryslåda 3 transparent walls leave the stored food selectable
+PASS fryslåda 3 food is taken through its visible action
+PASS fryslåda 3 full capacity keeps the extra item in hand
+PASS frysen cannot close over an extended drawer
+PASS fryslåda 3 front remains selectable after moving
+PASS fryslåda 3 mouse action carries the same food back inside
+PASS closed fryslåda 3 blocks taking its contents
+PASS fryslåda 4 cannot open/load behind its closed appliance door
+PASS fryslåda 4 is reached on its actual transparent front
+PASS fryslåda 4 draws out through the touch action
+PASS held food reaches fryslåda 4 loading target
+PASS food is stored in fryslåda 4 through its normal action
+PASS fryslåda 4 transparent walls leave the stored food selectable
+PASS fryslåda 4 food is taken through its visible action
+PASS fryslåda 4 full capacity keeps the extra item in hand
+PASS frysen cannot close over an extended drawer
+PASS fryslåda 4 front remains selectable after moving
+PASS fryslåda 4 mouse action carries the same food back inside
+PASS closed fryslåda 4 blocks taking its contents
+PASS legacy freezer slot zero now has a real shelf instead of an anonymous block
+PASS original pea shelf home retains its store and slot id
+PASS fridgeDrawer reload retains exact instances and amounts
+PASS fridgeDrawer fresh visit closes the fronts and retains access rules
+PASS freezerDrawer1 reload retains exact instances and amounts
+PASS freezerDrawer1 fresh visit closes the fronts and retains access rules
+PASS freezerDrawer2 reload retains exact instances and amounts
+PASS freezerDrawer2 fresh visit closes the fronts and retains access rules
+PASS freezerDrawer3 reload retains exact instances and amounts
+PASS freezerDrawer3 fresh visit closes the fronts and retains access rules
+PASS freezerDrawer4 reload retains exact instances and amounts
+PASS freezerDrawer4 fresh visit closes the fronts and retains access rules
+PASS legacy shelf contents survive the real reload
+PASS F closes drawers before their appliance doors
+PASS F preserves the stored food without restocking copies
+PASS saved cold storage inventory audit passes
+ALL PASS

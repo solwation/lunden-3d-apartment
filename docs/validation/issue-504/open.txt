@@ -1,0 +1,188 @@
+ALL PASS
+PASS 89 openable fronts
+PASS no open front overlaps a closed neighbour or a wall
+PASS 2 wardrobe doors, 5 posters: none covered or swept
+PASS short opening action for brevinkastet: Öppna
+PASS short closing action for brevinkastet: Stäng
+PASS short opening action for fönstret: Öppna
+PASS short closing action for fönstret: Stäng
+PASS short opening action for fönstret: Öppna
+PASS short closing action for fönstret: Stäng
+PASS short opening action for skåpet: Öppna
+PASS short closing action for skåpet: Stäng
+PASS short opening action for skåpet: Öppna
+PASS short closing action for skåpet: Stäng
+PASS short opening action for diskmaskinen: Öppna
+PASS short closing action for diskmaskinen: Stäng
+PASS short opening action for underkorgen: Dra ut
+PASS short closing action for underkorgen: Skjut in
+PASS short opening action for överkorgen: Dra ut
+PASS short closing action for överkorgen: Skjut in
+PASS short opening action for skåpet: Öppna
+PASS short closing action for skåpet: Stäng
+PASS short opening action for skåpet: Öppna
+PASS short closing action for skåpet: Stäng
+PASS short opening action for lådan: Öppna
+PASS short closing action for lådan: Stäng
+PASS short opening action for lådan: Öppna
+PASS short closing action for lådan: Stäng
+PASS short opening action for lådan: Öppna
+PASS short closing action for lådan: Stäng
+PASS short opening action for lådan: Öppna
+PASS short closing action for lådan: Stäng
+PASS short opening action for lådan: Öppna
+PASS short closing action for lådan: Stäng
+PASS short opening action for lådan: Öppna
+PASS short closing action for lådan: Stäng
+PASS short opening action for lådan: Öppna
+PASS short closing action for lådan: Stäng
+PASS short opening action for lådan: Öppna
+PASS short closing action for lådan: Stäng
+PASS short opening action for lådan: Öppna
+PASS short closing action for lådan: Stäng
+PASS short opening action for grönsakslådan: Dra ut
+PASS short closing action for grönsakslådan: Skjut in
+PASS short opening action for skåpet: Öppna
+PASS short closing action for skåpet: Stäng
+PASS short opening action for fryslåda 1: Dra ut
+PASS short closing action for fryslåda 1: Skjut in
+PASS short opening action for fryslåda 2: Dra ut
+PASS short closing action for fryslåda 2: Skjut in
+PASS short opening action for fryslåda 3: Dra ut
+PASS short closing action for fryslåda 3: Skjut in
+PASS short opening action for fryslåda 4: Dra ut
+PASS short closing action for fryslåda 4: Skjut in
+PASS short opening action for skåpet: Öppna
+PASS short closing action for skåpet: Stäng
+PASS short opening action for hörnskåpet: Öppna
+PASS short closing action for hörnskåpet: Stäng
+PASS short opening action for skåpet: Öppna
+PASS short closing action for skåpet: Stäng
+PASS short opening action for skåpet: Öppna
+PASS short closing action for skåpet: Stäng
+PASS short opening action for skåpet: Öppna
+PASS short closing action for skåpet: Stäng
+PASS short opening action for skåpet: Öppna
+PASS short closing action for skåpet: Stäng
+PASS short opening action for skåpet: Öppna
+PASS short closing action for skåpet: Stäng
+PASS short opening action for skåpet: Öppna
+PASS short closing action for skåpet: Stäng
+PASS short opening action for skåpet: Öppna
+PASS short closing action for skåpet: Stäng
+PASS short opening action for torktumlaren: Öppna
+PASS short closing action for torktumlaren: Stäng
+PASS short opening action for tvättmaskinen: Öppna
+PASS short closing action for tvättmaskinen: Stäng
+PASS short opening action for skåpet: Öppna
+PASS short closing action for skåpet: Stäng
+PASS short opening action for skåpet: Öppna
+PASS short closing action for skåpet: Stäng
+PASS short opening action for skåpet: Öppna
+PASS short closing action for skåpet: Stäng
+PASS short opening action for lådan: Öppna
+PASS short closing action for lådan: Stäng
+PASS short opening action for lådan: Öppna
+PASS short closing action for lådan: Stäng
+PASS short opening action for högskåpet: Öppna
+PASS short closing action for högskåpet: Stäng
+PASS short opening action for elskåpet: Öppna
+PASS short closing action for elskåpet: Stäng
+PASS short opening action for fönstret: Öppna
+PASS short closing action for fönstret: Stäng
+PASS short opening action for fönstret: Öppna
+PASS short closing action for fönstret: Stäng
+PASS short opening action for fönstret: Öppna
+PASS short closing action for fönstret: Stäng
+PASS short opening action for fönstret: Öppna
+PASS short closing action for fönstret: Stäng
+PASS short opening action for lådan: Öppna
+PASS short closing action for lådan: Stäng
+PASS short opening action for lådan: Öppna
+PASS short closing action for lådan: Stäng
+PASS short opening action for spegelskåpet: Öppna
+PASS short closing action for spegelskåpet: Stäng
+PASS short opening action for lådan: Öppna
+PASS short closing action for lådan: Stäng
+PASS short opening action for lådan: Öppna
+PASS short closing action for lådan: Stäng
+PASS short opening action for dynboxens lock: Öppna
+PASS short closing action for dynboxens lock: Stäng
+PASS short opening action for lådan: Öppna
+PASS short closing action for lådan: Stäng
+PASS short opening action for lådan: Öppna
+PASS short closing action for lådan: Stäng
+PASS short opening action for lådan: Öppna
+PASS short closing action for lådan: Stäng
+PASS short opening action for lådan: Öppna
+PASS short closing action for lådan: Stäng
+PASS short opening action for lådan: Öppna
+PASS short closing action for lådan: Stäng
+PASS short opening action for lådan: Öppna
+PASS short closing action for lådan: Stäng
+PASS short opening action for lådan: Öppna
+PASS short closing action for lådan: Stäng
+PASS short opening action for lådan: Öppna
+PASS short closing action for lådan: Stäng
+PASS short opening action for lådan: Öppna
+PASS short closing action for lådan: Stäng
+PASS short opening action for lådan: Öppna
+PASS short closing action for lådan: Stäng
+PASS short opening action for sänglådan: Öppna
+PASS short closing action for sänglådan: Stäng
+PASS short opening action for sänglådan: Öppna
+PASS short closing action for sänglådan: Stäng
+PASS short opening action for lådan: Öppna
+PASS short closing action for lådan: Stäng
+PASS short opening action for lådan: Öppna
+PASS short closing action for lådan: Stäng
+PASS short opening action for lådan: Öppna
+PASS short closing action for lådan: Stäng
+PASS short opening action for lådan: Öppna
+PASS short closing action for lådan: Stäng
+PASS short opening action for lådan: Öppna
+PASS short closing action for lådan: Stäng
+PASS short opening action for lådan: Öppna
+PASS short closing action for lådan: Stäng
+PASS short opening action for lådan: Öppna
+PASS short closing action for lådan: Stäng
+PASS short opening action for lådan: Öppna
+PASS short closing action for lådan: Stäng
+PASS short opening action for lådan: Öppna
+PASS short closing action for lådan: Stäng
+PASS short opening action for lådan: Öppna
+PASS short closing action for lådan: Stäng
+PASS short opening action for lådan: Öppna
+PASS short closing action for lådan: Stäng
+PASS short opening action for lådan: Öppna
+PASS short closing action for lådan: Stäng
+PASS short opening action for lådan: Öppna
+PASS short closing action for lådan: Stäng
+PASS short opening action for lådan: Öppna
+PASS short closing action for lådan: Stäng
+PASS short opening action for lådan: Öppna
+PASS short closing action for lådan: Stäng
+PASS short opening action for lådan: Öppna
+PASS short closing action for lådan: Stäng
+PASS short opening action for lådan: Öppna
+PASS short closing action for lådan: Stäng
+PASS short opening action for lådan: Öppna
+PASS short closing action for lådan: Stäng
+PASS short opening action for lådan: Öppna
+PASS short closing action for lådan: Stäng
+PASS short opening action for lådan: Öppna
+PASS short closing action for lådan: Stäng
+PASS short opening action for lådan: Öppna
+PASS short closing action for lådan: Stäng
+PASS short opening action for lådan: Öppna
+PASS short closing action for lådan: Stäng
+PASS short opening action for garderobens vänstra dörr: Öppna
+PASS short closing action for garderobens vänstra dörr: Stäng
+PASS short opening action for garderobens högra dörr: Öppna
+PASS short closing action for garderobens högra dörr: Stäng
+PASS the dishwasher's 2 racks: behind the front (underkorgen -0.055 m, överkorgen -0.055 m), blocked with the door up
+PASS every front opens and closes with the button
+PASS 31 kitchen fronts, all with contents or own/empty (21 filled)
+PASS the front over the hood is a dummy: no Openable (none), looking at it: ""
+PASS kitchen contents hidden when shut, inside when open
+PASS 45 other fronts with contents: hidden when shut, inside when open

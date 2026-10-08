@@ -457,7 +457,7 @@ function buildKitchen(B, group, floor, y0, yC, handled, taps, appliances) {
         // the fridge opens (fridge.js); hinged at the wall side, handle by the freezer
         const fr = new Fridge({ x0: u0 + 0.003, x1: u1 - 0.003, zFront: c.z0 + 0.015, zBack: c.z1 - 0.03, y0: y0 + 0.01, h: K.fridgeHeight - 0.01 });
         group.add(fr.object);
-        appliances.push(fr);
+        appliances.push(fr, ...fr.drawers);
       } else {
         // the freezer opens too (#161), hinged at the far side so the handles meet; the changelog note on
         // its door is attached by main.js and swings with it. 90°: the corner unit's front is beside it (#116)
@@ -466,7 +466,7 @@ function buildKitchen(B, group, floor, y0, yC, handled, taps, appliances) {
         const fz = new Fridge({ x0: u0 + 0.003, x1: u1 - 0.003, zFront: c.z0 + 0.015, zBack: c.z1 - 0.03, y0: y0 + 0.01, h: K.fridgeHeight - 0.01,
           hinge: hiSide ? 'x0' : 'x1', freezer: true, max: 90, name: 'frysen' });
         group.add(fz.object);
-        appliances.push(fz);
+        appliances.push(fz, ...fz.drawers);
       }
       F.box(u0, u1, -F.depth, -FT, yF, yF + K.grille, M.front);
       shell(F, u0, u1, yF + K.grille, yTop, F.depth, { shelf: false });

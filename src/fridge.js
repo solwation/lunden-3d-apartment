@@ -1,7 +1,9 @@
 import * as THREE from 'three';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { Openable, pivotAround } from './openables.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { sfx } from './audio.js';
-import { FRIDGE_ALARM as AL, SCORE } from './config.js';
+import { FRIDGE_ALARM as AL, SCORE, COLD_DRAWERS as C } from './config.js';
 
 // The fridge (Electrolux LRT7ME39X, stainless): hollow cabinet with a lit white liner, glass
 // shelves and a door that swings open with E. The roast chicken on the middle shelf is a Holdable of its own
@@ -23,7 +25,6 @@ const skin = new THREE.MeshStandardMaterial({ color: 0xb8662a, roughness: 0.35 }
 const skinDark = new THREE.MeshStandardMaterial({ color: 0x8e4a1c, roughness: 0.4 });
 const bone = new THREE.MeshStandardMaterial({ color: 0xf1e7d2, roughness: 0.6 });
 const plate = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.15 });
-const juice = new THREE.MeshStandardMaterial({ color: 0xf2a33a, roughness: 0.5 });
 
 function box(sx, sy, sz, x, y, z, m, r = 0) {
   const geo = r ? new RoundedBoxGeometry(sx, sy, sz, 2, r) : new THREE.BoxGeometry(sx, sy, sz);
@@ -91,28 +92,52 @@ export class Fridge {
     g.add(box(iw, 0.004, d - wall, cx, y0 + h - wall - 0.002, cz - wall / 2, liner));
     g.add(box(iw * 0.5, 0.01, 0.05, cx, y0 + h - wall - 0.01, zBack - 0.15, lamp)); // light
     this.inside = { cx, cz, iw, depth: d - wall, y0 };
+    this.drawers = [];
+    const bz0 = zFront + C.endClearance, bz1 = zBack - wall - C.endClearance;
+    const bw = iw - 2 * C.sideClearance, bd = bz1 - bz0, bzc = (bz0 + bz1) / 2;
+    const makeDrawer = ([yb, yt], index) => {
+      const bh = yt - yb, material = freezer ? basket : glass, parts = [
+        box(bw, bh, C.wall, cx, y0 + yb + bh / 2, bz0, material),
+        box(bw, bh, C.wall, cx, y0 + yb + bh / 2, bz1, material),
+        box(bw, C.wall, bd, cx, y0 + yb + C.wall / 2, bzc, material),
+        ...[-1, 1].map(sign => box(C.wall, bh, bd, cx + sign * bw / 2, y0 + yb + bh / 2, bzc, material)),
+      ];
+      for (const part of parts) { part.updateMatrix(); part.geometry.applyMatrix4(part.matrix); }
+      const body = new THREE.Mesh(mergeGeometries(parts.map(part => part.geometry)), material);
+      for (const part of parts) part.geometry.dispose();
+      body.castShadow = body.receiveShadow = true;
+      const grip = box(bw * 0.4, 0.02, 0.012, cx, y0 + yt - 0.035, bz0 - C.wall, liner);
+      grip.updateMatrix(); grip.geometry.applyMatrix4(grip.matrix);
+      const at = new THREE.Vector3(cx, y0 + yb, bz0);
+      const drawer = new Openable({ name: freezer ? `fryslåda ${index + 1}` : 'grönsakslådan',
+        object: pivotAround([body, new THREE.Mesh(grip.geometry, liner)], at), mode: 'drawer', out: [0, 0, -C.out], speed: C.speed });
+      drawer.body = body;
+      drawer.stock = 'own';
+      drawer.coldDrawer = true; drawer.coldOwner = this;
+      drawer.storeId = freezer ? `freezerDrawer${index + 1}` : 'fridgeDrawer';
+      drawer.slotPoints = C.slotDepth.flatMap(dz => C.slotAcross.map(dx => new THREE.Vector3(cx + dx * bw, y0 + yb + C.wall + C.slotLift, bzc + dz * bd)));
+      drawer.normal = new THREE.Vector3(0, 0, -1);
+      drawer.bounds = new THREE.Box3(new THREE.Vector3(cx - bw / 2, y0 + yb, bz0), new THREE.Vector3(cx + bw / 2, y0 + yt, bz1));
+      Object.defineProperties(drawer, {
+        verb: { get: () => drawer.isOpen ? 'skjuta in' : 'dra ut' },
+        blocked: { get: () => !this.isOpen || this.t < 1 },
+        blockedText: { get: () => `Öppna ${this.freezer ? 'frysen' : 'kylen'} helt först` },
+      });
+      g.add(drawer.object); this.drawers.push(drawer);
+    };
     if (freezer) {
       // frost along the back, two open shelves at the top (the fish fingers go there, #162) and see-through
-      // drawers (baskets) with frozen things in them below, each with a grip on its front edge
+      // empty storage drawers below, each with a grip on its front edge (#504)
       g.add(box(iw - 0.01, 0.02, 0.02, cx, y0 + h - wall - 0.05, zBack - wall - 0.012, liner));
       this.shelves = [1.32, 1.6].map((y) => y0 + y + 0.004); // the shelves' top faces (world y)
       for (const y of [1.32, 1.6]) g.add(box(iw - 0.01, 0.008, d - wall - 0.03, cx, y0 + y, cz - 0.015, glass));
-      const bz0 = zFront + 0.03, bz1 = zBack - wall - 0.03, bw = iw - 0.03, bzc = (bz0 + bz1) / 2;
-      for (const [yb, yt] of [[0.1, 0.4], [0.42, 0.72], [0.74, 1.0], [1.02, 1.28]]) {
-        const bh = yt - yb;
-        g.add(box(bw, bh - 0.02, 0.006, cx, y0 + yb + bh / 2, bz0, basket));                                    // front
-        g.add(box(bw, 0.006, bz1 - bz0, cx, y0 + yb + 0.003, bzc, basket));                                    // bottom
-        for (const s of [-1, 1]) g.add(box(0.006, bh * 0.7, bz1 - bz0, cx + s * bw / 2, y0 + yb + bh * 0.35, bzc, basket));
-        g.add(box(bw * 0.4, 0.02, 0.012, cx, y0 + yt - 0.035, bz0 - 0.006, liner));                            // grip
-        g.add(box(bw * 0.7, bh * 0.35, (bz1 - bz0) * 0.6, cx, y0 + yb + 0.006 + bh * 0.175, bzc + 0.02, liner)); // frozen bags
-      }
+      C.freezer.forEach(makeDrawer);
     } else {
       // glass shelves + a crisper drawer at the bottom
       for (const y of [0.45, 0.82, 1.2, 1.52]) g.add(box(iw - 0.01, 0.006, d - wall - 0.04, cx, y0 + y, cz - 0.01, glass));
-      g.add(box(iw - 0.02, 0.22, d - wall - 0.08, cx, y0 + 0.2, cz, glass));
-      // the chicken's place on the middle shelf (chicken.js), a juice (and the milk, #168) on the shelf above
+      C.fridge.forEach(makeDrawer);
+      // the chicken's place on the middle shelf (chicken.js) and the named milk carton above (#168)
       this.shelfSpot = new THREE.Vector3(cx, y0 + 0.823, cz - 0.03);
-      g.add(box(0.07, 0.18, 0.07, cx + 0.1, y0 + 1.3, cz + 0.02, juice, 0.008));
       this.milkAt = new THREE.Vector3(cx - 0.12, y0 + 1.203, cz); // the milk carton stands here (a Holdable, milk.js, #168)
     }
 
@@ -129,7 +154,6 @@ export class Fridge {
     if (freezer) this.door.add(box(w - 0.08, h - 0.16, 0.012, s * w / 2, h / 2, 0.008, liner)); // the flat inner door inside its gasket
     else {
       for (const y of [0.4, 0.85, 1.3]) this.door.add(box(w - 0.1, 0.08, 0.07, s * w / 2, y, 0.035, glass)); // door bins
-      this.door.add(box(0.07, 0.24, 0.07, s * w * 0.3, 0.56, 0.035, juice, 0.01));
     }
     // the door alarm's LED (#288): a small red dot on the door's front, near the top on the handle side
     this.ledMat = new THREE.MeshBasicMaterial({ color: 0x3a0c0c });
@@ -144,7 +168,11 @@ export class Fridge {
     this.object = g;
   }
 
+  get blocked() { return this.isOpen && this.drawers.some(drawer => drawer.isOpen || drawer.t > 0); }
+  get blockedText() { return 'Skjut in lådorna först'; }
+
   toggle() {
+    if (this.blocked) return false;
     this.isOpen = !this.isOpen;
     const p = this.door.position;
     sfx.fridge({ x: p.x, y: p.y + 1.2, z: p.z }, this.isOpen);

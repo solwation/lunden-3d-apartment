@@ -1,0 +1,18 @@
+PASS stores with slots: fridge 11, freezer 4, pantry 3, utensils 3
+PASS the shut fridge: "Öppna kylen först", the cheese still in the hand
+PASS open: the cheese on a fridge shelf
+FAIL it lies inside the fridge (3.59, 1.53, 5.18)
+PASS the open fridge: "Ta osten"
+PASS taken out with E
+PASS holding it at the open fridge: "Lägga osten i kylskåpet"
+PASS E: back in the fridge (the first free slot)
+PASS the shut fridge: "Öppna kylskåpet" (the cheese's own target: "Öppna kylen först")
+PASS a full freezer: "Fryslådan är full", the butter still in the hand
+PASS moving it into a taken slot changes nothing
+PASS the cutting board does not fit in the drawer
+PASS the knife rides out with the drawer (-0.42,0.00,0.00) and shows only while it is open
+PASS made in its slot: that is its home
+PASS opening and shutting three times: still 42 things, 42 views (audit ok)
+PASS F with the knife in the hand: back in its drawer slot
+PASS the bread bag in the pantry (5.32, 1.47, 4.30)
+SOME FAILED

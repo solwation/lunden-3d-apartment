@@ -92,7 +92,7 @@ export function buildStores(life, world) {
       fridge.door.add(a);
       slots.push({ size: 's', anchor: a });
     }
-    const box = pickBox(fridge.object, new THREE.Vector3(cx - iw / 2, y0 + 0.1, cz - depth / 2), new THREE.Vector3(cx + iw / 2, y0 + 1.7, cz + depth / 2), () => holding() && fridge.isOpen);
+    const box = pickBox(fridge.object, new THREE.Vector3(cx - iw / 2, y0 + 0.4, cz - depth / 2), new THREE.Vector3(cx + iw / 2, y0 + 1.7, cz + depth / 2), () => holding() && fridge.isOpen);
     add('fridge', { outlineRoot: fridge.object, outlineOwner: fridge, name: 'kylskåpet', shutText: 'Öppna kylen först', fullText: 'Kylskåpet är fullt', isOpen: () => fridge.isOpen, carriers: true }, slots, box); // (a plate with food on it goes in too, #370)
   }
   // the freezer: on the frozen bags in the top basket
@@ -101,8 +101,33 @@ export function buildStores(life, world) {
     const { cx, cz, iw, depth, y0 } = freezer.inside, y = y0 + S.freezer.y;
     const slots = [-0.15, 0, 0.15].map((dx) => ({ size: 'm', anchor: anchorIn(freezer.object, new THREE.Vector3(cx + dx * iw / 0.55, y, cz + 0.02), -Math.PI / 2) }));
     if (freezer.shelves) slots.push({ size: 'm', anchor: anchorIn(freezer.object, new THREE.Vector3(cx + S.freezer.peas * iw / 0.55, freezer.shelves[0] + 0.002, cz - 0.03), -Math.PI / 2) }); // slot 3: the lower open shelf beside the fish fingers (#373)
-    const box = pickBox(freezer.object, new THREE.Vector3(cx - iw / 2, y0 + 0.1, cz - depth / 2), new THREE.Vector3(cx + iw / 2, y0 + 1.75, cz + depth / 2), () => holding() && freezer.isOpen);
+    const box = pickBox(freezer.object, new THREE.Vector3(cx - iw / 2, y0 + 0.4, cz - depth / 2), new THREE.Vector3(cx + iw / 2, y0 + 1.75, cz + depth / 2), () => holding() && freezer.isOpen);
     add('freezer', { outlineRoot: freezer.object, outlineOwner: freezer, name: 'frysen', shutText: 'Öppna frysen först', fullText: 'Fryslådan är full', isOpen: () => freezer.isOpen }, slots, box);
+  }
+  // New cold drawers have separate stable stores; old shelf ids/indices keep saved food and its homes (#504).
+  for (const owner of [fridge, freezer].filter(Boolean)) for (const drawer of owner.drawers) {
+    const slots = drawer.slotPoints.map(p => ({ size: 'm', anchor: anchorIn(drawer.object, p, -Math.PI / 2) }));
+    const open = () => owner.isOpen && owner.t === 1 && drawer.isOpen && drawer.t === 1;
+    const box = pickBox(drawer.object, drawer.bounds.min, drawer.bounds.max, () => !!heldItem() && open());
+    add(drawer.storeId, { outlineRoot: drawer.object, outlineOwner: drawer, name: drawer.name,
+      fullText: `${cap(drawer.name)} är full`, isOpen: open, carriers: true }, slots, box);
+    // Transparent walls remain visible but allow selecting the actual food behind them.
+    drawer.object.traverse(mesh => {
+      if (!mesh.isMesh) return;
+      const raycast = mesh.raycast.bind(mesh), ownHits = [];
+      mesh.raycast = (ray, hits) => {
+        ownHits.length = 0; raycast(ray, ownHits);
+        if (!ownHits.length) return;
+        if (open()) {
+          if (heldItem() && mesh === drawer.body) return; // loading box owns the body; grip still closes
+          const contents = I.all().filter(it => it.place.at === 'slot' && it.place.store === drawer.storeId)
+            .map(it => life.view(it)?.target.pickable).filter(Boolean);
+          if (contents.length && ray.intersectObjects(contents, true).length) return;
+        }
+        hits.push(...ownHits);
+      };
+    });
+    Object.defineProperty(I.store(drawer.storeId), 'shutText', { get: () => owner.isOpen ? `Dra ut ${drawer.name} helt först` : `Öppna ${owner.freezer ? 'frysen' : 'kylen'} först` });
   }
   // a kitchen front's slots from its stock frame: [u (0…1 across), d (m in front of the plane, < 0 inside), y (m over the bottom
   // of its contents box), size, yaw (extra turn)] — in its contents group (rides with a drawer, hidden while shut)

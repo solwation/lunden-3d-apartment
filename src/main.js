@@ -1812,6 +1812,7 @@ function toggleFurniture(on = !world.furnitureOn) {
     airFryer.reset(); // off, the basket in and empty (#287)
     fries?.reset(); // the fries out of the basket and the hand, a full bag (#301)
     fruit.reset(); // every piece of fruit back in the bowl, whole (#326)
+    for (const l of world.lids.filter(l => l.coldDrawer)) { l.isOpen = false; l.t = 0; l.pose(0); } // close before their doors (#504)
     for (const l of world.lids) if (l.kind === 'fridge' && l.isOpen) l.toggle(); // the fridge and freezer doors shut: no alarm (#288)
     rifle?.reset(); // the dropped magazines go, a full one in (#196)
     for (const h of holdables) if (h.placed && !(h === pan && (pan.egg || pan.dirty))) h.goHome(); // life-sim food and dirty cookware stay where left
