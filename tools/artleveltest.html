@@ -1,0 +1,28 @@
+<!doctype html><html><meta charset="utf-8"><title>Artwork between storeys (#494)</title><pre id="out">running…</pre><script type="module">
+const lines=[];let pass=true;const check=(ok,s)=>{lines.push((ok?'PASS':'FAIL')+' '+s);pass&&=!!ok},wait=ms=>new Promise(r=>setTimeout(r,ms));
+const cloud=new URLSearchParams(location.search).get('cloud')??'';
+try{
+ localStorage.removeItem('lunden.furniture.layout');const frames=[];
+ async function load(f){f??=document.createElement('iframe');if(!f.parentNode){f.width=480;f.height=300;document.body.append(f);frames.push(f)}f.src='../index.html?shot&cloud='+encodeURIComponent(cloud)+'&r='+Math.random();await new Promise(r=>f.onload=r);while(!f.contentWindow.__app)await wait(100);const A=f.contentWindow.__app;await A.rearrange.ready;f.contentDocument.documentElement.requestFullscreen=undefined;f.contentDocument.getElementById('start-touch').click();A.rearrange.unlock('olof is the goat');return A}
+ let A=await load(),R=A.rearrange,T=await frames[0].contentWindow.eval("import('three')");
+ const close=(a,b)=>a.elements.every((v,i)=>Math.abs(v-b.elements[i])<.001);
+ const p=R.pieces.find(p=>p.item.type==='kposters'),id=p.id,home=p.home.clone(),siblings=R.pieces.filter(q=>q.item.type==='kposters'&&q!==p).map(q=>[q,q.object.matrixWorld.clone()]);
+ async function move(piece,level){R.begin(piece);A.player.pos.set(1.7,level?3.25:0,11.4);const y=level?4.75:1.5;A.camera.position.set(1.7,y,11.4);A.camera.lookAt(.2,y,11.4);R.update();check(R.valid&&R.ghost.visible,'wall preview on destination storey '+level);R.rotate();R.update();check(R.valid,'rotation remains valid on destination storey');return R.confirm()}
+ check(await move(p,0)&&p.level===0&&p.homeLevel===1,'poster moves downstairs and preserves original storey');
+ const moved=p.object.matrixWorld.clone();A.camera.lookAt(new T.Vector3().setFromMatrixPosition(moved));R.update();check(R.target?.piece===p,'poster can be selected on downstairs wall');
+ R.begin(p);R.cancel();check(close(p.object.matrixWorld,moved)&&p.level===0,'cancel keeps saved pose and storey');
+ R.begin(p);A.camera.position.set(1.7,.21,11.4);A.camera.lookAt(.2,.21,11.4);R.update();check(!R.valid,'whole poster cannot extend through floor');
+ A.camera.position.set(1.7,2.9,11.4);A.camera.lookAt(.2,2.9,11.4);R.update();check(!R.valid,'whole poster cannot extend through ceiling');
+ A.camera.position.set(40,1.5,11.4);A.camera.lookAt(.2,1.5,11.4);R.update();check(!R.valid,'wall beyond reach is rejected');R.cancel();
+ const B=await load();check(close(B.rearrange.byId.get(id).object.matrixWorld,moved)&&B.rearrange.byId.get(id).level===0,'second client infers downstairs storey from saved transform');
+ A=await load(frames[0]);R=A.rearrange;let q=R.byId.get(id);check(q.level===0&&close(q.object.matrixWorld,moved),'reload preserves downstairs placement and selection storey');
+ check(await move(q,1)&&q.level===1,'poster moves back upstairs');
+ check(await R.restoreOriginal(q)&&q.level===1&&close(q.object.matrixWorld,home),'original restore returns original wall and storey');
+ const painting=R.pieces.find(p=>['pictures','painting'].includes(p.item.type)&&p.homeLevel===0),paintingHome=painting.home.clone();check(await move(painting,1)&&painting.level===1,'ordinary downstairs artwork moves upstairs');
+ A.camera.lookAt(new T.Vector3().setFromMatrixPosition(painting.object.matrixWorld));R.update();check(R.target?.piece===painting,'ordinary artwork selectable on new storey');
+ check(await R.restoreOriginal(painting)&&painting.level===0&&close(painting.object.matrixWorld,paintingHome),'ordinary artwork restores downstairs');
+ check(siblings.every(([p,m])=>close(R.byId.get(p.id).object.matrixWorld,m)),'individual poster siblings stay unchanged');
+ if(cloud){await B.rearrange.sync();check(B.rearrange.byId.get(id).level===1&&close(B.rearrange.byId.get(id).object.matrixWorld,home),'second client sees restored upstairs pose')}
+ document.getElementById('out').textContent=lines.join('\n')+'\n'+(pass?'ALL PASS':'SOME FAILED');
+}catch(e){document.getElementById('out').textContent=lines.join('\n')+'\nFAIL '+e.stack}
+</script></html>

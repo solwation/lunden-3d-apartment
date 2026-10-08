@@ -7,6 +7,9 @@ import { inPoly, crosses } from './player.js';
 // #465: preview locally; only confirmed, revision-checked moves enter the shared arrangement.
 const CACHE = 'lunden.furniture.layout', UNLOCK = 'lunden.furniture.unlocked';
 const NAMES = { besta: 'vitrinskåpet', winerack: 'vinstället', pineapple: 'ananaspegeln', byas: 'TV-bänken', sofa: 'soffan', armchair: 'fåtöljen', ottoman: 'pallen', rug: 'mattan', pictures: 'tavlan', painting: 'tavlan', kposters: 'affischerna', skansnasTable: 'matbordet', skansnasChair: 'stolen', coffeetable: 'soffbordet', slattable: 'uteplatsbordet', randerstable: 'sidobordet', aborgtable: 'bordet', aborgchair: 'stolen', floorlamp: 'golvlampan', tubelamp: 'lampan', worklamp: 'lampan', walllamp: 'vägglampan', bed: 'sängen', bunk: 'våningssängen', daybed: 'sängen', gamingdesk: 'skrivbordet', gamingchair: 'stolen', laptop: 'datorn', tv: 'TV:n', palm: 'växten', planter: 'växten', parasol: 'parasollen', secretary: 'sekretären', sidetable: 'sängbordet', veronasofa: 'utesoffan', dynbox: 'dynboxen', huego: 'lampan', symfonisk: 'högtalaren', photoframe: 'fotoramen', nesthub: 'skärmen', nestmini: 'högtalaren' };
+const crossesLevels = (piece) => ['pictures', 'painting', 'kposters'].includes(piece.item.type);
+// Floors have disjoint height intervals; the saved world transform identifies the storey.
+const levelAt = (y) => LEVELS.findIndex(l => y > l.floor && y < l.floor + l.ceiling);
 const usesSupport = (piece) => piece.item.type === 'symfonisk' || (piece.item.type === 'tv' && piece.item.mount !== 'wall');
 const V = THREE.Vector3, Q = THREE.Quaternion, M = THREE.Matrix4;
 const shown = (o) => { for (; o; o = o.parent) if (!o.visible) return false; return true; };
@@ -40,7 +43,7 @@ export class Rearrange {
     this.byId = new Map(this.pieces.map((p) => [p.id, p]));
     if (this.byId.size !== this.pieces.length) throw Error('Duplicate furniture ids');
     scene.updateMatrixWorld(true);
-    for (const p of this.pieces) { p.name = NAMES[p.item.type] ?? (p.name === p.item.type ? 'möbeln' : p.name); p.home = p.object.matrixWorld.clone(); p.revision = 0; }
+    for (const p of this.pieces) { p.name = NAMES[p.item.type] ?? (p.name === p.item.type ? 'möbeln' : p.name); p.home = p.object.matrixWorld.clone(); p.homeLevel = p.level; p.revision = 0; }
     this.unlocked = read(UNLOCK, false) === true; this.enabled = false; this.saving = false;
     this.ray = new THREE.Raycaster(); this.ray.layers.enableAll();
     this.ghost = new THREE.Group(); this.ghost.visible = false; this.ghost.userData.ghost = true; scene.add(this.ghost);
@@ -135,14 +138,16 @@ export class Rearrange {
     }
     if (this.saving) { this.target = { kind: 'rearrange', blocked: true, blockedText: 'Sparar möbleringen…' }; return; }
     const { piece, original, bounds } = this.selected;
-    const old = poseOf(original), q = new Q(...old.quat), pos = new V(); let valid = true;
+    const old = poseOf(original), q = new Q(...old.quat), pos = new V(); let valid = true, destination = piece.level;
     if (piece.picture) {
       const hit = this.marks.hit(this.ray.ray.origin, this.ray.ray.origin.clone().addScaledVector(this.ray.ray.direction, REARRANGE.reach));
       valid = !!hit?.normal && Math.abs(hit.normal.y) < 0.1;
       if (valid) {
         pos.copy(hit.point).addScaledVector(hit.normal, 0.008);
         q.setFromUnitVectors(new V(0, 0, 1), hit.normal).multiply(new Q().setFromAxisAngle(new V(0, 0, 1), this.turn));
-        valid = pos.y > LEVELS[piece.level].floor + 0.2 && pos.y < LEVELS[piece.level].floor + LEVELS[piece.level].ceiling - 0.2;
+        destination = crossesLevels(piece) ? levelAt(pos.y) : piece.level;
+        const level = LEVELS[destination];
+        valid = !!level && destination === this.player.level && pos.y > level.floor + 0.2 && pos.y < level.floor + level.ceiling - 0.2;
       }
     } else {
       const floor = LEVELS[piece.level].floor;
@@ -173,8 +178,8 @@ export class Rearrange {
         }
       }
       worldPose(this.ghost, this.candidate);
-      if (piece.item.type === 'besta') {
-        const box = new THREE.Box3().setFromObject(this.ghost), level = LEVELS[piece.level];
+      if (piece.item.type === 'besta' || crossesLevels(piece)) {
+        const box = new THREE.Box3().setFromObject(this.ghost), level = LEVELS[destination];
         valid = box.min.y >= level.floor + .02 && box.max.y <= level.floor + level.ceiling - .02;
       }
     }
@@ -281,6 +286,10 @@ export class Rearrange {
         for (const lamp of spec.lamp?.room.lamps ?? []) { lamp.pos.applyMatrix4(delta); delete lamp.roomName; }
       }
       worldPose(p.object, matrix); p.revision = next.revision;
+      if (crossesLevels(p)) {
+        const level = levelAt(next.pos[1]);
+        if (level >= 0) { p.level = level; p.object.userData.level = level; }
+      }
       if (p.item.type === 'rug') { p.item.x = next.pos[0]; p.item.z = next.pos[2]; p.item.rot = THREE.MathUtils.radToDeg(new THREE.Euler().setFromQuaternion(new Q(...next.quat), 'YXZ').y) - 180; }
     }
     // Older clients placed the TV partly inside the bench. All clients repair that old pose

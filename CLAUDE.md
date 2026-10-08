@@ -1763,3 +1763,5 @@ suite every time):
 - Target hardware includes a Surface Pro (Intel Iris 640): keep draw calls and lights modest,
   pixel ratio capped at 1.5, one shadow-casting light.
 - New tunable numbers go in `src/config.js` with a comment saying where they come from.
+
+Artwork across storeys (#494): pictures/painting/individual kposters validate the entire preview against the destination floor and ceiling. Their current movable level is inferred from saved world Y in the disjoint LEVELS intervals on every apply, while homeLevel/home retain their original storey and matrix. Stable ids and layout schema remain unchanged; shared config item.level is never mutated. tools/artleveltest.html verifies both directions, destination selection, boundaries, reach, cancel, shared sync/reload and original restore.
