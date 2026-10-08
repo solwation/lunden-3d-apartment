@@ -1,0 +1,16 @@
+PASS same patio location and Ø60 ×62 cm fibre-clay pot
+PASS four merged material meshes including stationary soil
+PASS rounded turned pot with 48 radial segments
+PASS vertical ray sees actual recessed soil through open top, no cylinder cap
+PASS continuous lip and real inside wall extend below soil level
+PASS small shared mineral and bark bump textures
+PASS individual leaf fingers carry varied green shades and folded-ridge shading
+PASS curved tapered trunk has subdivided irregular surface
+PASS bounded model triangle budget: 10632
+PASS fan blades are separately curved fingers rather than solid flat circles
+PASS new leaf and trunk batches retain wind weights while pot/soil stay fixed
+PASS actual home builds the detailed patio palm
+PASS actual canopy clears wall faces at approximately original height 2.62m
+PASS original pot collision footprint retained
+PASS small entrance palms retain original economical geometry
+ALL PASS

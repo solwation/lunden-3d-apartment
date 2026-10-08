@@ -1,0 +1,29 @@
+PASS only real windows and the two apartment exterior doors feed wind
+PASS all outdoor openings shut gives no wind
+PASS an open inner door and cupboard/appliance do not create wind
+PASS opening produces a gradual onset
+PASS one fully open window reaches calm wind
+PASS closing fades rather than snapping
+PASS closed wind eventually stops exactly
+PASS entrance door alone produces outdoor wind
+PASS patio door alone produces outdoor wind
+PASS partial opening scales airflow
+PASS rain strengthens wind smoothly
+PASS rain has greater settled sway than calm weather
+PASS snow strengthens wind smoothly
+PASS snow has greater settled sway than calm weather
+PASS all plant Things and indoor/outdoor movable planters have animated foliage
+PASS all ground and loft entrance pots have animated foliage
+PASS every window plant animates in its personal model and the same two home foliage batches
+PASS pottery and soil retain stationary unmodified geometry/shaders
+PASS foliage and sun shadows use the same wind shader
+PASS plants and foliage vary in phase rather than moving in lockstep
+PASS 100 wind updates upload no vertex arrays and preserve bounds/placement geometry
+PASS ordinary app frames update wind from the current opening/weather state
+PASS real WebGL pixels show foliage moving between wind phases
+PASS actual interaction brightness shader preserves live foliage motion
+PASS real rendered pottery stays pixel-identical during wind
+PASS moving a window pot retains animation and shadow metadata
+PASS returning a pot rebuilds original home batches with wind/shadows
+PASS final closed state remains still after weather and movement changes
+ALL PASS

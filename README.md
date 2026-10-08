@@ -132,3 +132,5 @@ Du kan hämta en reservrulle i HAVBÄCK, byta en tom toalettrulle och lägga til
 Utvecklingsregler och läsanvisningar finns i [CLAUDE.md](CLAUDE.md). Därifrån når du ämnesfilerna i `docs/development/` för bland annat arkitektur, interaktioner, livssimulering, grafik, sparning, verifiering och drift.
 
 Källaren följer Peabs plan för cykelrum och förrådsområden under hus L, C, B och A. De 15 extra hyrförråden skiljs från ordinarie lägenhetsförråd; antal och indelning av ordinarie burar är illustrativa. [Planjämförelse, avgränsningar och webbläsartester](docs/validation/issue-523/README.md).
+
+Uteplatsens stora solfjäderspalm har en öppen rundad kruka med jord, fiberrik stam och veckade bladfingrar med mjuk vindrörelse. [Bilder och verifiering](docs/validation/issue-524/README.md).

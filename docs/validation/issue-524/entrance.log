@@ -1,0 +1,15 @@
+PASS eleven plants at ground entrances and eleven on loftgång
+PASS palms, broad-leaf and low rosette plants on both levels
+PASS all eight ground and eight upper street entrances decorated; core untouched
+PASS round pot bases touch the current ground/deck, no floating or slab penetration
+PASS actual leaf vertices stay clear of façade, doorway and outer loft walking lane
+PASS each plant has at most four meshes, merged leaves
+PASS repeated plants reuse merged leaf geometry and materials
+PASS actual visitor walks outer loft lane past all eastern plant groups
+PASS same loft route remains usable in reverse
+PASS ground entrance walkway remains free
+PASS ground pot collision stops the visitor at the actual pot
+PASS loft pot blocks walking through its actual body
+PASS our real front door opens and can be walked through between the plants
+PASS front café table flower is not reintroduced
+ALL PASS

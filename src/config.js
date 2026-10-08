@@ -2604,6 +2604,10 @@ export const PATIO = {
   slatTable: { w: 0.6, d: 0.45, h: 0.4, slats: 5, frame: 0x221f1d, wood: 0x3d3029 },
   parasol: { radius: 1.5, height: 2.45, color: 0xe8e1d1, months: [4, 5, 6, 7, 8, 9] },
   pot: { r: 0.3, h: 0.62, color: 0x55595c }, // fibre-clay planter Ø 60 cm (guess)
+  // #524: visual assumptions, same Trachycarpus fan palm and Ø60 ×62 cm fibre-clay pot; no botanical survey.
+  palmDetail: { trunk:1.3, bottom:.09, top:.065, bend:.025, trunkSegments:20, trunkRings:24, fibres:280, fibreLength:.055, fibreWidth:.004, fibreLift:.009,
+    fronds:16, fingers:17, fingerSegments:6, stalk:.38, fan:.42, tipDroop:.07,
+    potSegments:48, potWall:.025, soilDepth:.03, textureSize:128, potBump:.003, barkBump:.009 },
   beerMonths: [6, 7, 8], beerHours: [12, 23],
   // the cushion box (#400, src/patio.js `dynbox`, our own look): an anthracite slatted wood-look outdoor box, 125 × 58 × 60
   // cm (*guess*, a common size), the lid `lid` thick hinged at the back, opening `max`° (on its stays, short of the screen
@@ -2992,7 +2996,7 @@ export const FURNITURE = [
   // x 0.065, 4 cm of air: the lid stops at 88°, its outer face still short of it), south of the palm (z ≥ 13.55), clear of the door's
   // swing (x ≥ 0.95) and well north of the gap in the hedge (z 16.8); the lid opens towards the patio
   { type: 'dynbox', level: 0, x: 0.105 + 0.29, z: 13.7 + 0.625, rot: -90 },
-  { type: 'planter', level: 0, x: 0.45, z: 13.25, plant: 'palm', walls: { x0: 0.065, z0: 12.7 } }, // fronds clear of the façade + screen wall (#137)
+  { type: 'planter', level: 0, x: 0.45, z: 13.25, plant: 'palm', detailedPalm: true, walls: { x0: 0.065, z0: 12.7 } }, // fronds clear of the façade + screen wall (#137)
   { type: 'planter', level: 0, x: 5.3, z: 16.45, plant: 'agave' }, // SE corner by the hedge (#397: the sofa's corner took its old spot; #429: south of the bench's end)
   // Upstairs bedrooms (the user's plan). Beds: rot = direction from the head to the foot end.
   // IKEA NORDKISA bedside tables, bamboo, 40 × 40 cm (ikea.com, #64; the 55 cm height is a guess, about the

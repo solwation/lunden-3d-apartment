@@ -382,6 +382,64 @@ function palm(leaf, wood, top) {
   }
 }
 
+// #524: the patio palm alone uses the detailed model; small entrance templates retain their cheap silhouette.
+let detailedPalmMats;
+function palmMaterials() {
+  if (detailedPalmMats) return detailedPalmMats;
+  const D=P.palmDetail;
+  const texture = (bark=false) => {
+    const c=document.createElement('canvas');c.width=c.height=D.textureSize;const ctx=c.getContext('2d');let seed=524;
+    const random=()=>((seed=seed*16807%2147483647)/2147483647);
+    for(let y=0;y<c.height;y++)for(let x=0;x<c.width;x++){
+      const v=Math.round(150+random()*70+(bark?Math.sin(x*.7+y*.35)*24:0));ctx.fillStyle=`rgb(${v},${v},${v})`;ctx.fillRect(x,y,1,1);
+    }
+    const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(bark?3:2,bark?6:3);return t;
+  };
+  const grain=texture(),fibres=texture(true);
+  detailedPalmMats={pot:new THREE.MeshStandardMaterial({color:P.pot.color,roughness:.86,bumpMap:grain,bumpScale:D.potBump}),
+    wood:new THREE.MeshStandardMaterial({color:0x6b4e32,vertexColors:true,roughness:.95,bumpMap:fibres,bumpScale:D.barkBump}),
+    leaf:new THREE.MeshStandardMaterial({color:0xffffff,vertexColors:true,roughness:.68,side:THREE.DoubleSide})};
+  return detailedPalmMats;
+}
+
+/** Curved, fibrous trunk and individually folded fingers arranged as fan leaves (not an areca). */
+function detailedPalm(leaf,wood,top) {
+  const D=P.palmDetail,trunk=new THREE.CylinderGeometry(D.top,D.bottom,D.trunk,D.trunkSegments,D.trunkRings),p=trunk.attributes.position;
+  for(let i=0;i<p.count;i++){const t=p.getY(i)/D.trunk+.5,a=Math.atan2(p.getZ(i),p.getX(i)),rib=1+.035*Math.sin(a*7+t*48);
+    p.setXYZ(i,p.getX(i)*rib+D.bend*t*t,top+t*D.trunk,p.getZ(i)*rib-D.bend*.4*t*t);}
+  trunk.computeVertexNormals();trunk.setAttribute('color',new THREE.Float32BufferAttribute(new Array(p.count*3).fill(1),3));wood.push(trunk);
+  // Thin raised fibrous ribbons: baked into the trunk batch, no individual meshes or moving objects.
+  const positions=[],colors=[],uvs=[],indices=[];
+  const fibrePoint=(a,t,lift)=>{const r=(D.bottom+(D.top-D.bottom)*t)*(1+.035*Math.sin(a*7+t*48))+lift;
+    return [Math.cos(a)*r+D.bend*t*t,top+t*D.trunk,Math.sin(a)*r-D.bend*.4*t*t];};
+  for(let i=0;i<D.fibres;i++){
+    const a=i*2.399963,t=.025+(i*.618034%1)*.94,len=D.fibreLength/D.trunk,base=positions.length/3,shade=.62+(i%7)*.07;
+    for(const [side,end]of[[-1,0],[1,0],[-1,1],[1,1]]){const angle=a+side*D.fibreWidth/(D.bottom*2)+end*.11;
+      positions.push(...fibrePoint(angle,Math.min(.995,t+len*end),.001+D.fibreLift*end));colors.push(shade,shade,shade);uvs.push(angle/(Math.PI*2),t+len*end);}
+    indices.push(base,base+2,base+1,base+1,base+2,base+3);
+  }
+  const fibres=new THREE.BufferGeometry();fibres.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));fibres.setAttribute('normal',new THREE.Float32BufferAttribute(new Array(positions.length).fill(0),3));fibres.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));fibres.setAttribute('uv',new THREE.Float32BufferAttribute(uvs,2));fibres.setIndex(indices);fibres.computeVertexNormals();wood.push(fibres);
+  const crown=top+D.trunk;
+  for(let i=0;i<D.fronds;i++){
+    const az=i*2.399963,lean=.43+(i%4)*.22+(Math.sin(i*3)*.06),height=crown-(i%4)*.028;
+    const matrix=M4().makeTranslation(D.bend,height,-D.bend*.4).multiply(M4().makeRotationY(az)).multiply(M4().makeRotationX(lean));
+    const path=new THREE.CatmullRomCurve3([new THREE.Vector3(),new THREE.Vector3(.008,D.stalk*.5,.015),new THREE.Vector3(0,D.stalk,.04)]);
+    const stalk=new THREE.TubeGeometry(path,6,.009,6,false);const green=new THREE.Color().setHSL(.29+(i%3)*.011,.42,.20+(i%5)*.017);
+    const tint=g=>{const a=new Float32Array(g.attributes.position.count*3);for(let k=0;k<a.length;k+=3){a[k]=green.r;a[k+1]=green.g;a[k+2]=green.b}g.setAttribute('color',new THREE.BufferAttribute(a,3));return g};
+    leaf.push(tint(stalk).applyMatrix4(matrix));
+    for(let j=0;j<D.fingers;j++){
+      const a=-1.12+j/(D.fingers-1)*2.24,len=D.fan*(.83+.17*Math.cos(a))*(.95+.06*Math.sin(i*7+j*3)),positions=[],indices=[],colors=[];
+      for(let k=0;k<=D.fingerSegments;k++){
+        const t=k/D.fingerSegments,width=(.004+.027*Math.sin(Math.PI*t))*(1-t**8),radius=t*len;
+        for(const u of [-1,0,1]){positions.push(Math.sin(a)*radius+Math.cos(a)*u*width,D.stalk+Math.cos(a)*radius-Math.sin(a)*u*width,
+          .04+.07*t-D.tipDroop*t*t+.012*Math.abs(u)*Math.sin(Math.PI*t));const shade=(1-.11*Math.abs(u))*(.93+.08*Math.sin(j*3+i));colors.push(green.r*shade,green.g*shade,green.b*shade);}
+      }
+      for(let k=0;k<D.fingerSegments;k++)for(let u=0;u<2;u++){const n=k*3+u;indices.push(n,n+3,n+1,n+1,n+3,n+4);}
+      const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));g.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(new Array(positions.length/3*2).fill(0),2));g.setIndex(indices);g.computeVertexNormals();leaf.push(g.applyMatrix4(matrix));
+    }
+  }
+}
+
 /** Banana (Musa): green pseudo-stem, big arching leaves. */
 function banana(leaf, wood, top) {
   const stem = new THREE.CylinderGeometry(0.05, 0.07, 0.75, 10);
@@ -421,24 +479,28 @@ function agave(leaf, wood, top) {
 export function planter(item) {
   const g = new THREE.Group();
   const { r, h } = item.pot ?? P.pot;
-  const pot = new THREE.Mesh(new THREE.CylinderGeometry(r, r * 0.8, h, 28), potMat);
-  pot.position.y = h / 2;
-  const soil = new THREE.Mesh(new THREE.CircleGeometry(r * 0.93, 28), soilMat);
+  const detailed=item.plant==='palm'&&item.detailedPalm, D=P.palmDetail, mats=detailed?palmMaterials():null,soilY=h-(detailed?D.soilDepth:.03);
+  // Turned open wall: a rounded foot, tapered body and continuous lip turning down into the pot.
+  const profile=[[0,0],[.77,0],[.8,.01],[.805,.025],[.81,.06],[.86,.28],[.94,.65],[.99,.94],
+    [1,.975],[1,.993],[.985,1],[.95,1],[.93,.985],[.925,.95],[.92,.89]];
+  const pot = new THREE.Mesh(detailed?new THREE.LatheGeometry(profile.map(([x,y])=>new THREE.Vector2(x*r,y*h)),D.potSegments):new THREE.CylinderGeometry(r,r*.8,h,28),detailed?mats.pot:potMat);
+  if(!detailed)pot.position.y=h/2;pot.name=detailed?'patio-fibre-clay-pot':'planter-pot';
+  const soil = new THREE.Mesh(new THREE.CircleGeometry(detailed?r-D.potWall:r*.93,detailed?D.potSegments:28), soilMat);
   soil.rotation.x = -Math.PI / 2;
-  soil.position.y = h - 0.03;
+  soil.position.y = soilY;
   g.add(pot, soil);
   const leaf = [], wood = [];
-  ({ palm, banana, agave })[item.plant](leaf, wood, h - 0.03);
-  for (const [list, mat] of [[leaf, PLANT_MATS[item.plant]], [wood, trunkMat]]) {
+  (detailed?detailedPalm:({palm,banana,agave})[item.plant])(leaf,wood,soilY);
+  for (const [list, mat] of [[leaf, detailed?mats.leaf:PLANT_MATS[item.plant]], [wood,detailed?mats.wood:trunkMat]]) {
     if (list.length) {
       const geo = mergeGeometries(list.map((x) => x.index ? x.toNonIndexed() : x));
-      if (item.foliageScale) geo.translate(0, -(h-.03), 0).scale(...item.foliageScale).translate(0, h-.03, 0);
+      if (item.foliageScale) geo.translate(0,-soilY,0).scale(...item.foliageScale).translate(0,soilY,0);
       g.add(new THREE.Mesh(geo, mat));
     }
   }
   g.traverse((m) => { m.castShadow = m.receiveShadow = true; });
   g.userData.footprint = [{ x0: -r, x1: r, z0: -r, z1: r }];
-  return windPlant(g,h-.03,[PLANT_MATS[item.plant],trunkMat]);
+  return windPlant(g,soilY,[detailed?mats.leaf:PLANT_MATS[item.plant],detailed?mats.wood:trunkMat]);
 }
 
 // --- snowman ------------------------------------------------------------------
