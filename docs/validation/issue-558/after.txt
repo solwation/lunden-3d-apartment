@@ -1,0 +1,7 @@
+PASS 30 focus/clear switches reuse warmed shaders; added programs 0
+PASS objects sharing one source reuse the same focus material
+PASS first visits to different figures share one shader using an instance uniform
+PASS 30 greeted-figure switches reuse warmed instanced shaders; added programs 0
+PASS disposing the source releases its cached focus GPU resources
+PASS every original material restored after focus ends
+ALL PASS

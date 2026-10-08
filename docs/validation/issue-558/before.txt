@@ -1,0 +1,6 @@
+FAIL 30 focus/clear switches reuse warmed shaders; added programs 30
+FAIL objects sharing one source reuse the same focus material
+FAIL 30 greeted-figure switches reuse warmed instanced shaders; added programs 30
+PASS disposing the source releases its cached focus GPU resources
+PASS every original material restored after focus ends
+SOME FAILED

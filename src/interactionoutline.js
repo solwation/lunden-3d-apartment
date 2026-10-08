@@ -13,16 +13,30 @@ export class InteractionOutline {
     this.camera=camera;this.group=new THREE.Group();this.group.visible=false;
     this.group.userData.ghost=true;scene.add(this.group);
     this.entries=[];this.root=null;this.target=null;this.rebuilds=0;
+    this.cache=new WeakMap();
   }
   clear() {
     for(const e of this.entries) {
       // Do not overwrite a material changed independently while this target was active.
       if(e.object.material===e.highlight)e.object.material=e.original;
-      for(const material of e.materials)material.dispose();
     }
     this.entries=[];this.group.visible=false;this.root=null;this.target=null;
   }
   highlight(original,index) {
+    // Clearing focus used to dispose the last bright shader, forcing GPU compilation
+    // whenever the eye crossed a target again (#558). Reuse source/index variants;
+    // their lifetime follows the source, including its explicit disposal.
+    let variants=this.cache.get(original);
+    if(!variants){
+      variants=new Map();this.cache.set(original,variants);
+      const release=()=>{
+        if(this.entries.some(e=>(Array.isArray(e.original)?e.original:[e.original]).includes(original)))this.clear();
+        for(const material of variants.values())material.dispose();
+        this.cache.delete(original);original.removeEventListener('dispose',release);
+      };
+      original.addEventListener('dispose',release);
+    }
+    if(variants.has(index))return variants.get(index);
     const material=original.clone();
     material[INTERACTION_MATERIAL_SOURCE]=original;
     // Keep live appearance state in the original material. Lamps and appliances update
@@ -41,15 +55,16 @@ export class InteractionOutline {
       let gain=String(P.brightness);
       if(index!==null) {
         // All figures share an InstancedMesh. Only the greeted figure gets brighter.
-        shader.vertexShader='flat varying float interactionActive;\n'+shader.vertexShader;
-        shader.vertexShader=shader.vertexShader.replace('void main() {',`void main() {\ninteractionActive = gl_InstanceID == ${index} ? 1.0 : 0.0;`);
+        shader.uniforms.interactionIndex={value:index};
+        shader.vertexShader='uniform int interactionIndex;\nflat varying float interactionActive;\n'+shader.vertexShader;
+        shader.vertexShader=shader.vertexShader.replace('void main() {',`void main() {\ninteractionActive = gl_InstanceID == interactionIndex ? 1.0 : 0.0;`);
         shader.fragmentShader='flat varying float interactionActive;\n'+shader.fragmentShader;
         gain=`mix(1.0, ${P.brightness}, interactionActive)`;
       }
       shader.fragmentShader=shader.fragmentShader.replace('#include <opaque_fragment>',`outgoingLight *= ${gain};\n#include <opaque_fragment>`);
     };
-    material.customProgramCacheKey=()=>`${original.customProgramCacheKey.call(original)}|interaction-brightness:${P.brightness}:${index}`;
-    return material;
+    material.customProgramCacheKey=()=>`${original.customProgramCacheKey.call(original)}|interaction-brightness:${P.brightness}:${index===null?'mesh':'instance'}`;
+    variants.set(index,material);return material;
   }
   update(target) {
     let root=target?.outlineRoot??target?.piece?.object??target?.pickable??target?.item?.model??target?.object;

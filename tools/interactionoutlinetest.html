@@ -78,6 +78,9 @@ try{
  Q.update({outlineRoot:scene,outlineInstances:[{object:batch,index:1}]});const selected=pixelsFor(0x000000);
  let middleChanged=0,outsideChanged=0;for(let y=0;y<160;y++)for(let x=0;x<160;x++){const k=(y*160+x)*4;if(selected[k]!==batchBase[k]){if(x>=65&&x<=95)middleChanged++;else outsideChanged++;}}
  check(middleChanged>100&&outsideChanged===0,'real instanced shader brightens only the selected figure, leaving both neighbours unchanged');
+ Q.update({outlineRoot:scene,outlineInstances:[{object:batch,index:0}]});const leftSelected=pixelsFor(0x000000);
+ check(center(leftSelected)===center(batchBase)&&leftSelected.some((v,i)=>v!==batchBase[i]),'changing greeted index updates the shared shader uniform and restores previous figure pixels');
+ Q.update({outlineRoot:scene,outlineInstances:[{object:batch,index:1}]});pixelsFor(0x000000);
  const rebuilds=Q.rebuilds;batch.setMatrixAt(1,matrix.makeTranslation(.1,0,0));batch.instanceMatrix.needsUpdate=true;Q.update({outlineRoot:scene,outlineInstances:[{object:batch,index:1}]});pixelsFor(0x000000);check(Q.rebuilds===rebuilds,'animated figure pose follows original geometry without material rebuild');
  Q.update(null);check(batch.material===shared,'instanced material also returns to original when no target remains');rt.dispose();
  document.getElementById('out').textContent=lines.join('\n')+'\n'+(pass?'ALL PASS':'SOME FAILED');

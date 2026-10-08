@@ -1,0 +1,23 @@
+<!doctype html><html lang="sv"><meta charset="utf-8"><title>Focus shader reuse</title><pre id="out">running…</pre>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js"}}</script>
+<script type="module">
+import * as T from 'three';import {InteractionOutline} from '../src/interactionoutline.js';
+const lines=[];let pass=true;const check=(ok,s)=>{lines.push((ok?'PASS ':'FAIL ')+s);pass&&=ok;};
+try{
+ const scene=new T.Scene(),camera=new T.PerspectiveCamera(50,1,.1,10);camera.position.z=3;const r=new T.WebGLRenderer({antialias:false});r.setSize(48,48);document.body.append(r.domElement);
+ const gl=r.getContext(),create=gl.createProgram.bind(gl);let compiled=0;gl.createProgram=(...a)=>{compiled++;return create(...a)};
+ const geometry=new T.BoxGeometry(.4,.4,.4),material=new T.MeshBasicMaterial({color:0x777777}),a=new T.Mesh(geometry,material),b=new T.Mesh(geometry,material);a.position.x=-.5;b.position.x=.5;scene.add(a,b);const O=new InteractionOutline(scene,camera);
+ const frame=target=>{O.update(target);r.render(scene,camera)};
+ frame({pickable:a});frame({pickable:b});frame(null);const warm=compiled;for(let k=0;k<30;k++){frame({pickable:k%2?a:b});frame(null)};
+ check(compiled===warm,'30 focus/clear switches reuse warmed shaders; added programs '+(compiled-warm));
+ const first=(()=>{O.update({pickable:a});return a.material})();O.clear();O.update({pickable:b});check(b.material===first,'objects sharing one source reuse the same focus material');O.clear();
+ const count=3,batch=new T.InstancedMesh(geometry,material,count);scene.remove(a,b);scene.add(batch);const mat=new T.Matrix4();for(let i=0;i<count;i++)batch.setMatrixAt(i,mat.makeTranslation((i-1)*.5,0,0));
+ const target=i=>({outlineRoot:batch,outlineInstances:[{object:batch,index:i}]});frame(target(0));const oneFigure=compiled;for(let i=1;i<count;i++)frame(target(i));
+ check(compiled===oneFigure,'first visits to different figures share one shader using an instance uniform');frame(null);const peopleWarm=compiled;
+ for(let i=0;i<30;i++){frame(target(i%count));frame(null)};
+ check(compiled===peopleWarm,'30 greeted-figure switches reuse warmed instanced shaders; added programs '+(compiled-peopleWarm));
+ const beforeDispose=compiled;material.dispose();frame(target(1));check(compiled>beforeDispose,'disposing the source releases its cached focus GPU resources');O.clear();
+ check(a.material===material&&b.material===material&&batch.material===material,'every original material restored after focus ends');r.dispose();geometry.dispose();material.dispose();
+ document.getElementById('out').textContent=lines.join('\n')+'\n'+(pass?'ALL PASS':'SOME FAILED');
+}catch(e){document.getElementById('out').textContent=lines.join('\n')+'\nFAIL '+e.stack}
+</script></html>

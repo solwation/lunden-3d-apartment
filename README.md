@@ -14,6 +14,8 @@ När du håller ett föremål visar en vit kontur var det kan placeras eller lä
 
 Kranarna i kök, tvätt och båda badrummen styrs med blandarspaken: den lyfts när vattnet sätts på och sänks när det stängs av.
 
+Markeringen av föremål är optimerad för att minska ryck när blicken flyttas.
+
 På tvättbänken står en vattenkanna. Fyll den vid en rinnande kran och sikta på en krukväxt för att vattna: jorden mörknar och fönsterväxternas blad reser sig. Varje växt får en dos; tom kanna, redan vattnad växt och konstväxt ger en förklaring. Kannans vatten och bevattningen sparas även när krukor flyttas.
 
 I tvättrummet finns en korg med smutsiga plagg. Ta ett plagg, öppna maskinluckan och sikta in i trumman för att lägga in det; stängda luckor och fulla maskiner stoppar lastningen. Starta tvättprogrammet på panelen med luckan stängd: efter 35 sekunder är plaggen rena och våta. Lägg den våta tvätten i torktumlaren och kör dess 25-sekundersprogram. Vik torra plagg med användhandlingen och lägg dem på tvätthyllan i en öppen sovrumsgarderob; när hyllan är full stannar plagget i handen. Öppnade maskinluckor pausar programmen; återstående tid, plaggens plats och tillstånd sparas mellan besöken.
