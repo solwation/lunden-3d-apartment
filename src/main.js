@@ -2044,11 +2044,11 @@ function step(dt) {
   if (roof && roof.id !== lastRoof && active()) bump('roofs', 1, roof.id);
   if (roof || !player.fall) lastRoof = roof?.id ?? null;
   if (roof) roofName = roof.name; else if (!player.aloft) roofName = null;
-  const lvl = outside ? -1 : player.level;
+  const under = player.inCore ? `Hus L · ${core.roomAt(player.pos.x, player.pos.z, player.pos.y)}` // the stairwell, the lift (#415)
+    : player.below ? `Under gården · ${garage.roomAt(player.pos.x, player.pos.z)}` : null; // the garage, the förråd, the lobby (#357)
+  const lvl = outside || under ? -1 : player.level; // basement/core take precedence over the apartment x/z footprint (#549)
   const room = lvl < 0 ? null : world.roomAt(lvl, player.pos.x, player.pos.z);
   if (room && active()) visitRoom(`${lvl}:${room}`);
-  const under = !outside ? null : player.inCore ? `Hus L · ${core.roomAt(player.pos.x, player.pos.z, player.pos.y)}` // the stairwell, the lift (#415)
-    : player.below ? `Under gården · ${garage.roomAt(player.pos.x, player.pos.z)}` : null; // the garage, the förråd, the lobby (#357)
   if (under && active()) visitRoom(`g:${under.split(' · ')[1]}`);
   if (room !== lastRoom && room) lastRoom = room; // keep the last name while inside a doorway
   mapTimer -= dt;

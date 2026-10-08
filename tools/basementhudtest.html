@@ -1,0 +1,21 @@
+<!doctype html><html><meta charset="utf-8"><title>Basement HUD regression #549</title><pre id="out">running…</pre><script type="module">
+const lines=[];let pass=true;const check=(ok,label)=>{lines.push(`${ok?'PASS':'FAIL'} ${label}`);pass&&=!!ok},wait=ms=>new Promise(r=>setTimeout(r,ms));
+try{
+ const f=document.createElement('iframe');f.width=720;f.height=480;f.src='../index.html?shot&cloud=';document.body.append(f);await new Promise(r=>f.onload=r);while(!f.contentWindow.__app)await wait(100);
+ const w=f.contentWindow,d=f.contentDocument,A=w.__app,P=A.player;
+ d.documentElement.requestFullscreen=undefined;d.getElementById('start-touch').click();A.renderer.setAnimationLoop(null);
+ const rooms=()=>Object.keys(A.stats.visited);
+ function at(x,z,y){P.spawn(x,z,0);P.pos.y=y;P.eyeY=y+1.62;A.camera.position.set(x,P.eyeY,z);for(let i=0;i<3;i++)A.step(1/60);return d.getElementById('level').textContent;}
+ const before=rooms();
+ let text=at(5,4,-3);
+ check(P.below&&/Under gården · Förråd/.test(text),`storage under apartment: ${text}`);
+ check(rooms().includes('g:Förråd')&&!rooms().filter(k=>!before.includes(k)).some(k=>/^0:/.test(k)),'basement visit counted as storage, not apartment kitchen');
+ text=at(5,8.3,-3);check(/Under gården · Cykelförråd/.test(text),`east basement under apartment: ${text}`);
+ text=at(-4,4,-3);check(/Under gården · Förråd/.test(text),`west storage: ${text}`);
+ text=at(-17.3,8.4,-3);check(/Hus L · Trapphus · våning −1/.test(text),`basement stair/lift lobby: ${text}`);
+ text=at(-17.3,8.4,0);check(/Hus L · Trapphus/.test(text),`stairwell above basement: ${text}`);
+ text=at(4.2,4,0);check(/Entréplan · Kök/.test(text),`apartment above storage: ${text}`);
+ text=at(2.875,-12,0);check(/Utomhus/.test(text),`street: ${text}`);
+}catch(e){check(false,e.stack)}
+document.getElementById('out').textContent=lines.join('\n')+'\n'+(pass?'ALL PASS':'SOME FAILED');
+</script></html>
