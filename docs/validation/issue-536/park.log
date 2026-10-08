@@ -1,0 +1,20 @@
+PASS all main paths use actual mapped way coordinates
+PASS background paths and terrain do not extend walking boundary
+PASS patch-constrained mature canopy: 90 trees
+PASS tree feet follow terrain and leave actual paths/glade clear
+PASS canopy heights vary across all sourced patches
+PASS woody understory on banks above water: 95
+PASS low waterside growth grounded and clear of paths: 190
+PASS river width and bank transitions vary continuously along sourced bends
+PASS bank 4 rises continuously from submerged bed to park
+PASS bank 8 rises continuously from submerged bed to park
+PASS bank 12 rises continuously from submerged bed to park
+PASS bank 15 rises continuously from submerged bed to park
+PASS paths, timber crossing and shore growth use three material batches
+PASS bounded park detail geometry: 5452 triangles
+PASS actual surfaced path vertices follow rendered terrain (max gap 0.025 m)
+PASS small mapped timber bridge connects west-bank paths over river
+PASS actual river surface lies under small timber deck
+PASS shared seasonal system removes summer leaf cover in winter
+PASS season change restores actual instanced crowns without rebuild
+ALL PASS

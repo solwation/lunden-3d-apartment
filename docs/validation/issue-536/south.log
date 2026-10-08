@@ -1,0 +1,68 @@
+PASS 54 unique existing mapped south-bank footprints, no proposed plan buildings
+PASS Sankt Lars väg 64: actual mapped footprint
+PASS Sankt Lars 88457554: actual mapped footprint
+PASS Sankt Lars 88457556: actual mapped footprint
+PASS Sankt Lars väg 57: actual mapped footprint
+PASS Sankt Lars väg 70: actual mapped footprint
+PASS Sankt Lars väg 56: actual mapped footprint
+PASS Sankt Lars 88457566: actual mapped footprint
+PASS Sankt Lars väg 61: actual mapped footprint
+PASS Sankt Lars väg 59: actual mapped footprint
+PASS Sankt Lars väg 42: actual mapped footprint
+PASS Sankt Lars väg 63: actual mapped footprint
+PASS Sankt Lars väg 48: actual mapped footprint
+PASS Sankt Lars väg 60: actual mapped footprint
+PASS Sankt Lars väg 49: actual mapped footprint
+PASS Sankt Lars väg 43: actual mapped footprint
+PASS Sankt Lars väg 45: actual mapped footprint
+PASS Sankt Lars väg 66: actual mapped footprint
+PASS Sankt Lars väg 47: actual mapped footprint
+PASS Sankt Lars väg 58: actual mapped footprint
+PASS Sankt Lars väg 46: actual mapped footprint
+PASS Sankt Lars väg 54: actual mapped footprint
+PASS Sankt Lars väg 62: actual mapped footprint
+PASS Sankt Lars 88457611: actual mapped footprint
+PASS Sankt Lars väg 41: actual mapped footprint
+PASS Sankt Lars 145221620: actual mapped footprint
+PASS Sankt Lars 145221625: actual mapped footprint
+PASS Sankt Lars 145221627: actual mapped footprint
+PASS Sävsländegatan 14: actual mapped footprint
+PASS Nattsländegatan 16: actual mapped footprint
+PASS Sävsländegatan 2: actual mapped footprint
+PASS Hattsnäckegränden 8: actual mapped footprint
+PASS Nattsländegatan 2: actual mapped footprint
+PASS Sävsländegatan 6: actual mapped footprint
+PASS Hattsnäckegränden 12: actual mapped footprint
+PASS Nattsländegatan 6: actual mapped footprint
+PASS Sävsländegatan 18: actual mapped footprint
+PASS Nattsländegatan 12: actual mapped footprint
+PASS Nattsländegatan 20: actual mapped footprint
+PASS Sävsländegatan 10: actual mapped footprint
+PASS Hattsnäckegränden 4: actual mapped footprint
+PASS Nattsländegatan 10: actual mapped footprint
+PASS Nattsländegatan 14: actual mapped footprint
+PASS Nattsländegatan 18: actual mapped footprint
+PASS Nattsländegatan 4: actual mapped footprint
+PASS Nattsländegatan 8: actual mapped footprint
+PASS Hattsnäckegränden 10: actual mapped footprint
+PASS Sävsländegatan 12: actual mapped footprint
+PASS Sävsländegatan 16: actual mapped footprint
+PASS Hattsnäckegränden 2: actual mapped footprint
+PASS Sävsländegatan 20: actual mapped footprint
+PASS Sävsländegatan 4: actual mapped footprint
+PASS Hattsnäckegränden 6: actual mapped footprint
+PASS Sävsländegatan 8: actual mapped footprint
+PASS Sankt Lars 44: actual mapped footprint
+PASS two tagged four-storey/hipped landmarks separated from assumed heights/roof details
+PASS four merged surfaces plus two low-detail vegetation instances
+PASS bounded far detail: 9503 triangles including instances
+PASS Asylen building44 courtyard has actual open roof/body hole
+PASS finite landmark heights
+PASS sparse trees confined to mapped woodland, clear of open fields and houses
+PASS clear-weather visibility reaches existing far groups and hides outer ground edge
+PASS rain still shortens visibility to existing weather target
+PASS far woodland leaves actual mapped roads clear
+PASS walking boundary remains unchanged
+PASS winter removes far leaf cover and makes fields snowy
+PASS summer restores foliage and field colors
+ALL PASS

@@ -1,3 +1,4 @@
+import {buildSouthBackdrop} from './southbackdrop.js';
 import {buildWestBackdrop,buildEastBackdrop,westTreeSpots,eastTreeSpots} from './sitebackdrop.js';
 import { buildRiverPark, parkDeckAt, parkTreeSpots, parkShrubSpots } from './riverpark.js';
 import * as THREE from 'three';
@@ -1316,6 +1317,7 @@ export function buildSurroundings({ grass }) {
   group.add(buildRiverPark(renderedTerrainY,renderedTerrainY));
   group.add(buildWestBackdrop(renderedTerrainY));
   group.add(buildEastBackdrop(renderedTerrainY,historicBrick));
+  group.add(buildSouthBackdrop(renderedTerrainY));
   // Kv. Lunden's own blocks and the old S:t Lars buildings: own façade texture and roof colour each,
   // plus a white cornice under the old roofs (#47)
   const modern = S.blocks.filter((b) => !b.style), oldB = S.blocks.filter((b) => b.style === 'old'), school = S.blocks.filter((b) => b.style === 'school');
