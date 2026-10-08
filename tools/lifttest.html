@@ -24,6 +24,7 @@ async function run() {
   const lines = [];
   let pass = true;
   const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); pass &&= !!ok; return ok; };
+  d.documentElement.requestFullscreen=undefined;
   d.getElementById('start-touch').click();
   await wait(50);
   const f2 = (v) => v.toFixed(2);
@@ -41,7 +42,7 @@ async function run() {
   walkTo(-17.6, dzm, 3);
   check(player.pos.x > pd.door.hx - 0.1 && !player.inCore, `the shut portik door holds (x ${f2(player.pos.x)})`);
   at(-14.9, dzm, 0); look(pd.pickable);
-  check(/öppna porten till trapphuset/i.test(btn.textContent), `E: "${btn.textContent}"`);
+  check(btn.textContent==='Öppna'&&w.__app.focus().focused===pd, `E: "${btn.textContent}"`);
   btn.click(); for (let i = 0; i < 60; i++) step(1 / 60);
   walkTo(-16.0, dzm); walkTo(-17.4, 9.0);
   check(player.inCore && near(-17.4, 9.0) && Math.abs(player.pos.y - Y[1]) < 0.02 && /Trapphus · våning 1/.test(d.getElementById('level').textContent), `in the stairwell on våning 1 (HUD "${d.getElementById('level').textContent}")`);

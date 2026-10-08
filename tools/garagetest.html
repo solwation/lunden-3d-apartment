@@ -26,6 +26,7 @@ async function run() {
   const lines = [];
   let pass = true;
   const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); pass &&= !!ok; return ok; };
+  d.documentElement.requestFullscreen=undefined;
   d.getElementById('start-touch').click();
   await wait(50);
   const f2 = (v) => v.toFixed(2);
@@ -110,7 +111,7 @@ async function run() {
   check(player.pos.z > (R.garageDoorL.z0 + R.garageDoorL.z1) / 2 + 0.15, `the shut basement door holds (z ${f2(player.pos.z)})`);
   at(bdx, 13.6, G.floor);
   camera.rotation.set(-0.3, 0, 0, 'YXZ'); step(1 / 60);
-  check(/öppna dörren till källaren/i.test(d.getElementById('action').textContent), `E target: "${d.getElementById('action').textContent}"`);
+  check(d.getElementById('action').textContent==='Öppna'&&w.__app.focus().focused===bd, `E target: "${d.getElementById('action').textContent}"`);
   d.getElementById('action').click(); for (let i = 0; i < 60; i++) step(1 / 60);
   at(bdx - 0.2, 13.4, G.floor);
   walk(0, 2.5);
@@ -139,7 +140,7 @@ async function run() {
   camera.rotation.set(-0.35, yawIn, 0, 'YXZ');
   step(1 / 60);
   const btn = d.getElementById('action');
-  check(/öppna vårt hyrförråd/i.test(btn.textContent), `E target: "${btn.textContent}"`);
+  check(btn.textContent==='Öppna'&&w.__app.focus().focused===t, `E target: "${btn.textContent}"`);
   btn.click();
   for (let i = 0; i < 60; i++) step(1 / 60);
   check(t.isOpen && dd.angle > 1.4, `it opens (${f2(dd.angle)} rad)`);

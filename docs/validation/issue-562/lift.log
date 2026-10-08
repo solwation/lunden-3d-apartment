@@ -1,0 +1,23 @@
+ALL PASS
+PASS the shut portik door holds (x -15.90)
+PASS E: "Öppna"
+PASS in the stairwell on våning 1 (HUD "Hus L · Trapphus · våning 1 · 12:02")
+PASS E: "Kalla på hissen"
+PASS the doors open (1.00)
+PASS into the car (-18.38, 10.90)
+PASS riding down (y -2.68 = the car's), no way out while it moves
+PASS arrived on våning −1, the doors open (y -3.00)
+PASS out through the lobby into the basement (Cykelförråd)
+PASS someone in the doorway: they stay open (1.00)
+PASS up to våning 3 (y 6.40)
+PASS along våning 3 to the street-end landing (y 6.40)
+PASS out onto the loftgång (y 6.40, aloft true)
+PASS up the stairs to våning 2 (y 3.25)
+PASS on up to våning 3 (y 6.40)
+PASS down the stairs to våning −1 (y -3.00)
+PASS no fall on the stairs (0)
+PASS from the stair's foot out into the garage hall (Garage, z 14.91)
+PASS and back to the stairwell
+PASS the guard by the flights holds on våning 2 (x -17.73, y 3.25)
+PASS a reload mid-ride: it goes on to våning 3 (3)
+PASS the rides counted (v0, v3)
