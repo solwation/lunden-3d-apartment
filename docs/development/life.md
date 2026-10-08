@@ -100,7 +100,7 @@ src/waste.js           the life sim's rubbish (M2). #386: three bins under the s
                        påsen" → an ITEMS 'rubbishBag' in the hand with the bin's amount + parts (moved), the bin empty with
                        `machine.nobag`; 'newBag' "Sätta i en ny påse" (off the roll: no item). items.js ITEMS_VERSION 2:
                        MIGRATIONS[1] splits a saved single bin's food / packages into the new bins
-                       #387 `buildDropoff` (__app.dropoff): the drop-off in the portik's wide open area (#520, LIFE_WASTE.dropoff, a game
+                       #387 `buildDropoff` (__app.dropoff): the drop-off along the portik's east/apartment-facing wall (#538, LIFE_WASTE.dropoff, a game
                        use of an unlabelled drawn space): three underground containers with a lid per category (life targets, `dropoff` = the
                        sort; their outline is collision + an obstacle polygon); 'dropBag' "Slänga matavfallspåsen i
                        matavfallsbehållaren" — only a rubbish bag ("Bara soppåsar här"), its own category while sorting is strict;
@@ -242,3 +242,5 @@ Vacuum bin capacity (#485) is configured by `CLEANING.vacuum.dustCapacity`: 3.0 
 
 Uppdragslapp (#509): `TasksManager.build3DCard(cups.cabinet)` monterar ett enda blad på koppskåpets faktiska innerblad (`cabinet.innerFace`, från dess fronttjocklek och gångjärn). `TASK_NOTE` innehåller pappersmått och relativa höjd-/sidlägen, alla visuella antaganden. Kortet följer luckans transform, är spärrat när skåpet är stängt och använder befintlig rekursiv skåpraycast; ingen lapp på arbetsbänken. Luckans `userData.moving` uppdaterar DetailCuller under animation. `taskstest` täcker innerplacering, verklig rörelse och touchläsning utöver tidigare uppdragsflöden.
 
+
+Portik bin orientation (#538): LIFE_WASTE.dropoff derives the row centre from PORTIK.east (10 cm nominal body-to-wall gap) and the midpoint of the open bay wall, yaw −90° so fronts/labels face west into the passage. No bin transform is saved: geometry, collision segments/polygon and targets rebuild together from this config on normal reload/reset. portiktest verifies all three bag/lid actions, clear passage both ways and actual reload/full reset; life2test ?only=387 derives aiming/collision checks from the row transform. Placement and bin dimensions remain game assumptions in the unlabelled Peab space.

@@ -6,11 +6,11 @@ try{
  const at=(x,z)=>{A.player.spawn(x,z,0);A.step(0)},near=(x,z)=>Math.hypot(A.player.pos.x-x,A.player.pos.z-z)<.2;
  const walk=(x,z,seconds=8)=>{for(let i=0;i<seconds*60&&!near(x,z);i++){A.camera.rotation.set(0,Math.atan2(-(x-A.player.pos.x),-(z-A.player.pos.z)),0,'YXZ');A.player.keys.add('KeyW');A.step(1/60)}A.player.keys.clear();A.step(0);return near(x,z)};
  const aim=p=>{A.camera.lookAt(p);A.camera.updateMatrixWorld(true);A.step(0);return A.focus().focused};
- at(-15,-2);check(walk(-15,3)&&walk(-12.2,4),'walk through street mouth into widened open area');
+ at(-15,-2);check(walk(-15,3)&&walk(-13,4),'walk through street mouth into widened open area');
  // Physical geometry, not just collision: rays cross both newly hollow spaces.
  const clear=(a,b)=>{const origin=new V(...a),end=new V(...b),ray=new T.Raycaster(origin,end.clone().sub(origin).normalize(),.001,origin.distanceTo(end)-.001);return !ray.intersectObjects(A.scene.children,true).some(h=>h.object.isMesh&&h.object.visible&&!h.object.userData.ghost&&!h.object.userData.door&&!h.object.material.transparent&&h.object.layers.test(A.camera.layers))};
  check(clear([-15,1.6,4],[-12.2,1.6,4]),'widened open space is not filled by an opaque mass');
- check(!walk(-10.5,4,4)&&A.player.pos.x<-11.37,'east wall holds at the visible room boundary');
+ at(-12.8,6.5);check(!walk(-10.5,6.5,4)&&A.player.pos.x<-11.37&&A.player.pos.x>-11.7,'east wall holds at the visible room boundary');
  at(-15,10.03);check(!walk(-12.5,10.03,4)&&A.player.pos.x<D.hinge[0],'closed small-room door blocks entry');
  at(-14.65,10.03);check(aim(new V(D.hinge[0],1.1,10.03))===D,'real door action can be selected from passage');A.useDoor(D);for(let i=0;i<20;i++)D.update(.1);
  check(walk(-12.5,10.03),'opening door allows entry into small room');check(clear([-12.7,1.5,8.7],[-11.6,1.5,10.9]),'small room is genuinely hollow');
@@ -19,14 +19,20 @@ try{
  A.player.keys.add('Space');for(let i=0;i<60;i++)A.step(1/60);A.player.keys.clear();check(Math.abs(A.player.pos.y)<.01&&!J.flames.visible,'room ceiling prevents indoor thrust');
  const saved=JSON.parse(JSON.stringify(A.keepWorld()));J.goHome();D.toggle();for(let i=0;i<20;i++)D.update(.1);const {loadWorld}=await w.eval("import('/src/keep.js')");loadWorld(A,saved);check(D.isOpen&&J.worn,'door and worn jetpack survive world save/restore');J.goHome();check(P.contains(J.model.position.x,J.model.position.z)&&J.state==='hook','reset returns jetpack to the new home');
  at(-12.5,10.03);check(walk(-15,10.03)&&walk(-15,14),'small room exit and courtyard mouth remain walkable');check(walk(-15,4)&&walk(-15,-2),'reverse courtyard-to-street route works');
- const B=A.dropoff;check(B.poly.every(([x,z])=>P.contains(x,z)),'all three relocated containers fit inside open area');
- for(const target of B.targets){const bag=A.life.create('rubbishBag',{at:'hand'},{amount:1,parts:[],machine:{sort:target.dropoff}});A.step(0);const p=target.pickable.getWorldPosition(new V());p.y+=.03;at(p.x,p.z+1.1);check(aim(p)===target&&A.life.run(target)&&!A.life.items.get(bag.id),'bag reaches and empties into '+target.dropoff+' container')}
+ const {LIFE_WASTE}=await w.eval("import('/src/config.js')"),BW=LIFE_WASTE.dropoff;
+ const correctlyPlaced=b=>Math.abs(b.object.position.x-BW.x)<.001&&Math.abs(b.object.position.z-BW.z)<.001&&Math.abs(b.object.rotation.y-BW.yaw*Math.PI/180)<.001;
+ const B=A.dropoff;check(correctlyPlaced(B),'containers rotated 90 degrees along apartment-facing east wall');check(B.poly.every(([x,z])=>P.contains(x,z)),'all three relocated containers fit inside open area');
+ check(Math.max(...B.poly.map(p=>p[0]))<P.spaces[1].x1&&Math.min(...B.poly.map(p=>p[0]))>P.spaces[1].x1-1,'bin row stays within one metre of east wall');
+ const bounds=new T.Box3().setFromObject(B.object);check(Math.abs(bounds.min.y)<.001&&bounds.max.x<P.spaces[1].x1&&bounds.min.z>P.spaces[1].z0&&bounds.max.z<P.spaces[1].z1,'actual bin meshes stand on floor and clear walls');
+ const normal=new V(0,0,1).transformDirection(B.object.matrixWorld);
+ for(const target of B.targets){const bag=A.life.create('rubbishBag',{at:'hand'},{amount:1,parts:[],machine:{sort:target.dropoff}});A.step(0);const p=target.pickable.getWorldPosition(new V());p.y+=.03;at(p.x+normal.x*1.1,p.z+normal.z*1.1);check(aim(p)===target&&A.life.run(target)&&!A.life.items.get(bag.id),'bag reaches and empties into '+target.dropoff+' container');B.update(.45);const lidBounds=new T.Box3().setFromObject(target.pickable);check(lidBounds.max.x<P.spaces[1].x1,'open lid clears apartment wall on '+target.dropoff);check(target.pickable.parent.rotation.x<-.5,'lid lifts freely on '+target.dropoff);B.update(.45);check(Math.abs(target.pickable.parent.rotation.x)<.001,'lid closes on '+target.dropoff)}
  J.putOn();const reloadState=JSON.parse(JSON.stringify(A.keepWorld()));
  w.sessionStorage.setItem('lunden.resume',JSON.stringify({ts:Date.now(),x:-15,z:4,feetY:0,yaw:0,pitch:0,mode:'touch',world:reloadState}));
  f.src='../index.html?shot&cloud=&reload='+Math.random();await new Promise(r=>f.onload=r);while(!f.contentWindow.__app)await wait(100);const BApp=f.contentWindow.__app;BApp.renderer.setAnimationLoop(null);BApp.renderer.setPixelRatio(.15);BApp.renderer.setSize(180,120,false);
  check(BApp.jetpack.worn&&BApp.world.portik.doorTarget.isOpen,'real page reload restores worn jetpack and room door');
- check(Math.abs(BApp.dropoff.object.position.x+12.95)<.001&&BApp.world.portik.contains(BApp.dropoff.object.position.x,BApp.dropoff.object.position.z),'real reload builds containers at their new position');
- const resetLoad=new Promise(r=>f.onload=r);BApp.resetHome.confirm();await resetLoad;while(!f.contentWindow.__app)await wait(100);const CApp=f.contentWindow.__app;CApp.renderer.setAnimationLoop(null);CApp.renderer.setPixelRatio(.15);CApp.renderer.setSize(180,120,false);check(CApp.jetpack.state==='hook'&&CApp.world.portik.contains(CApp.jetpack.model.position.x,CApp.jetpack.model.position.z),'ordinary reset and real reload send jetpack to the new room');
+ check(correctlyPlaced(BApp.dropoff)&&BApp.world.portik.contains(BApp.dropoff.object.position.x,BApp.dropoff.object.position.z),'real reload builds containers at their new position');
+ check(correctlyPlaced(BApp.dropoff),'saved visit does not restore obsolete bin position');
+ const resetLoad=new Promise(r=>f.onload=r);BApp.resetHome.confirm();await resetLoad;while(!f.contentWindow.__app)await wait(100);const CApp=f.contentWindow.__app;CApp.renderer.setAnimationLoop(null);CApp.renderer.setPixelRatio(.15);CApp.renderer.setSize(180,120,false);check(correctlyPlaced(CApp.dropoff),'full reset keeps east-wall bin position and rotation');check(CApp.jetpack.state==='hook'&&CApp.world.portik.contains(CApp.jetpack.model.position.x,CApp.jetpack.model.position.z),'ordinary reset and real reload send jetpack to the new room');
  document.getElementById('out').textContent=lines.join('\n')+'\n'+(pass?'ALL PASS':'SOME FAILED');
 }catch(e){document.getElementById('out').textContent=lines.join('\n')+'\nFAIL '+e.stack}
 </script></html>

@@ -1235,9 +1235,11 @@ export const LIFE_MESS = {
 };
 
 // The drop-off for full rubbish bags (#387/#520, src/waste.js `buildDropoff`).
-// Peab's room functions are unlabelled. #520 places the same three categories in the portik's open bay,
-// clear of its through route. x/z center the middle container; gap = spacing, size/h = metres (game choices).
-export const LIFE_WASTE = { dropoff: { x: -12.95, z: 1.2, yaw: 0, gap: 1.0, size: 0.8, h: 1.05 } };
+// Peab's room functions are unlabelled. #538: the user places the same three categories along
+// the open bay's east (apartment-facing) wall, fronts toward the passage (west). Dimensions,
+// 10 cm wall clearance and centring on this wall are game assumptions, not measured bin positions.
+// Fixed geometry is rebuilt from config on reload/reset; saves never restore a bin transform.
+export const LIFE_WASTE = { dropoff: { x: PORTIK.east - 0.5, z: (PORTIK.north + PORTIK.room.wallNorth) / 2, yaw: -90, gap: 1.0, size: 0.8, h: 1.05 } };
 
 // The dishwasher (#384, src/dishwasher.js; the integrated KEZA9310W of the plan, no product drawing — our picks): its racks roll
 // `out` m when the door is down; the lower rack (`y` over the tub's bottom, `h` high) holds `plates` plates on edge, the upper

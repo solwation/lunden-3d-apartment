@@ -495,7 +495,9 @@ if (want(387)) try {
   check(bag?.type === 'rubbishBag' && bag.amount === 2, `a bag in the hand (${I.name(bag)}, ${bag?.amount})`);
   A.player.spawn(2.875, -3, Math.PI); step(1 / 60); // (out on the pavement: the bag rides in the hand like any thing)
   const p = cFood.pickable.getWorldPosition(new V()); p.y += 0.03;
-  const t1 = K.aim(p, /Slänga matavfallspåsen i matavfallsbehållaren/, [[p.x, p.z + 1.1], [p.x - 0.4, p.z + 1.1], [p.x + 0.4, p.z + 1.2]]);
+  const front = new V(0, 0, 1).transformDirection(D.object.matrixWorld), side = new V(1, 0, 0).transformDirection(D.object.matrixWorld);
+  const approach = [[0, 1.1], [-0.4, 1.1], [0.4, 1.2]].map(([u, v]) => [p.x + side.x * u + front.x * v, p.z + side.z * u + front.z * v]);
+  const t1 = K.aim(p, /Slänga matavfallspåsen i matavfallsbehållaren/, approach);
   check(!!t1 && I.held() === bag, `at the drop-off with the bag: "${t1}"`);
   check(row('dropBag', cPack)?.reason === 'Matavfallspåsen → Matavfall', `the wrong container: "${row('dropBag', cPack)?.reason}"`);
   const n0 = A.stats.rubbishOut ?? 0, s0 = A.totalScore();
@@ -515,7 +517,7 @@ if (want(387)) try {
   check(bag2 && bag2.id !== bag.id && row('dropBag', cFood)?.run() === true && (A.stats.rubbishOut ?? 0) === n0 + 2, 'a second bag: carried out, counted again');
   // the containers block the way
   const c = D.object.position;
-  check(A.player.isFree(c.x, c.z + 1.2, 0) && !A.player.isFree(c.x, c.z + 0.45, 0) && !A.player.isFree(c.x, c.z, 0), 'the containers are no walk-through');
+  check(A.player.isFree(c.x + front.x * 1.2, c.z + front.z * 1.2, 0) && !A.player.isFree(c.x + front.x * 0.45, c.z + front.z * 0.45, 0) && !A.player.isFree(c.x, c.z, 0), 'the containers are no walk-through');
   check(I.audit().length === 0, `audit: ${I.audit().join('; ') || 'ok'}`);
   f.remove();
 } catch (e) { pass = false; lines.push(`FAIL #387 error ${e.stack}`); }
