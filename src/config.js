@@ -489,7 +489,10 @@ export const SITE = {
   bigTrees: [[-36, -34.5, 1.4], [-17, -35.2, 1.6], [-4, -34.8, 1.75], [9, -35.4, 1.45], [27.5, -34.2, 1.6], [33.5, -16, 1.35], [-58, -33.5, 1.5]],
   // a row of ornamental shrubs along our pavement (#130): the situation plan's hedge between the planting strip and the car
   // park (#260), with the drive into it in front of the portik (guess: the plan's photo covers it)
-  shrubs: { x0: -70.5, x1: 11, z: -16.3, step: 0.85, gaps: [[-13, -7.5]] },
+  // #496: clipped boxwood on the existing front strip; height/depth/rounding are visual assumptions.
+  shrubs: { x0: -70.5, x1: 11, z: -16.3, step: 0.85, gaps: [[-13, -7.5]],
+    height: .9, depth: 1.2, rounding: .055, color: 0x48733c, roughness: .92, bump: .009,
+    texturePeriod: .32, textureLeaves: 1700, snowDepth: .035 },
   // the narrow planting between Karpvägen and the plot line / Hus C's garage wall (#257, the situation plan: two trees)
   vergeTrees: [[-73.4, 37.5], [-74.4, 50]],
   birchShare: 0.3, // of the trees in the areas (not the young street maples): birches (#115)

@@ -1,0 +1,18 @@
+<!doctype html><html><meta charset="utf-8"><title>Clipped front hedge (#496)</title><script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script><pre id="out">running…</pre><script type="module">
+import * as T from 'three';import {boxwood} from '../src/boxwood.js';import {SITE,SEASON} from '../src/config.js';import {applySeason} from '../src/seasons.js';
+const lines=[];let pass=true;const check=(ok,s)=>{lines.push((ok?'PASS':'FAIL')+' '+s);pass&&=!!ok};
+try{
+ const h=boxwood(SITE.shrubs),runs=h.userData.runs,bodies=h.children.filter((_,i)=>i%2===0),caps=h.children.filter((_,i)=>i%2===1);
+ check(runs.length===2&&runs[0][0]===-70.5&&runs[1][1]===11,'original front strip location and extent retained');
+ check(runs[0][1]===-13&&runs[1][0]===-7.5,'full 5.5 metre drive opening remains clear');
+ check(bodies.every(m=>Array.from(m.geometry.attributes.normal.array).some(v=>Math.abs(v)>.05&&Math.abs(v)<.95)&&m.material.map&&m.material.bumpMap),'clipped rounded silhouette has dense leaf texture and relief');
+ check(h.children.length===4&&bodies[0].material===bodies[1].material,'two continuous runs share material with bounded draw count');
+ const boxes=bodies.map(m=>new T.Box3().setFromObject(m));check(boxes.every(b=>Math.abs(b.min.y)<.001&&Math.abs(b.max.y-.9)<.001),'hedge stands on original level ground at 90 cm height');
+ check(boxes.every((b,i)=>{const seg=h.userData.segments.slice(i*4,i*4+4);return seg.every(([x0,z0,x1,z1])=>[x0,x1].every(x=>x>=b.min.x-.001&&x<=b.max.x+.001)&&[z0,z1].every(z=>z>=b.min.z-.001&&z<=b.max.z+.001))}),'collision boundaries agree with each clipped run');
+ const matrices=bodies.map(m=>m.matrixWorld.clone()),color=bodies[0].material.color.clone();applySeason(10);check(bodies[0].material.color.equals(color)&&bodies.every((m,i)=>m.matrixWorld.equals(matrices[i])),'autumn retains evergreen foliage and full clipped shape');
+ applySeason(SEASON.snowMonths[0]);check(caps.every(m=>m.visible)&&bodies.every(m=>m.visible&&m.material.color.equals(color)),'winter snow covers tops while evergreen sides remain');
+ applySeason(7);check(caps.every(m=>!m.visible),'summer removes snow caps');
+ const renderer=new T.WebGLRenderer({antialias:true});renderer.setSize(800,400);document.body.append(renderer.domElement);const scene=new T.Scene();scene.background=new T.Color(0xd4dce2);scene.add(h,new T.HemisphereLight(0xffffff,0x777777,2));const light=new T.DirectionalLight(0xffffff,2);light.position.set(0,5,4);scene.add(light);const camera=new T.PerspectiveCamera(55,2,.1,200);camera.position.set(-5,1.5,-13.4);camera.lookAt(-5,.55,-16.3);renderer.render(scene,camera);
+ document.getElementById('out').textContent=lines.join('\n')+'\n'+(pass?'ALL PASS':'SOME FAILED');
+}catch(e){document.getElementById('out').textContent=lines.join('\n')+'\nFAIL '+e.stack}
+</script></html>

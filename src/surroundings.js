@@ -4,6 +4,7 @@ import { SITE as S, COLORS, SEASON, COURTYARD } from './config.js';
 import { registerTrees, registerSnow } from './seasons.js';
 import { buildStreet } from './street.js';
 import { onRoad, onWalk, pathStrip, filletGeometry } from './roads.js';
+import { boxwood } from './boxwood.js';
 import { wallRect } from './roofs.js';
 
 // The rest of Kv. Lunden and its neighbourhood (SITE in config): the brick point blocks Hus A, B, C
@@ -999,14 +1000,6 @@ function trees(rand) {
       lobes.push({ pos: new THREE.Vector3(t.x, t.y + h + (young ? 1.7 : 1.6) * t.s, t.z), rot: new THREE.Quaternion().setFromEuler(new THREE.Euler(0, rand() * 6, 0)), scale: sc, ...r });
     }
   }
-  // ornamental shrubs along our pavement: small round bushes, coloured with the season like the trees
-  const sh = S.shrubs;
-  for (let x = sh.x0; x <= sh.x1; x += sh.step) {
-    if (sh.gaps.some(([a, b]) => x > a && x < b)) continue;
-    const s = 0.45 + rand() * 0.2;
-    lobes.push({ pos: new THREE.Vector3(x + (rand() - 0.5) * 0.2, 0.42 * s / 0.55, sh.z + (rand() - 0.5) * 0.15), rot: new THREE.Quaternion().setFromEuler(new THREE.Euler(0, rand() * 6, 0)),
-      scale: new THREE.Vector3(s * 1.2, s, s * 1.1), r1: 0.2 + rand() * 0.15, r2: 0.9, r3: 0.15 + rand() * 0.2, r4: 1 }); // one red-brown hedge; r2 high: some leaves stay; r4: no blossom
-  }
   const trunkGeo = new THREE.CylinderGeometry(0.14, 0.2, 1, 7).translate(0, 0.5, 0);
   const crownGeo = new THREE.IcosahedronGeometry(1, 1);
   const trunk = new THREE.InstancedMesh(trunkGeo, new THREE.MeshStandardMaterial({ color: 0x5a4636, roughness: 1 }), trunkM.length);
@@ -1317,6 +1310,8 @@ export function buildSurroundings({ grass }) {
   // blocks on the slope south of Hus L stand on a plinth down to the ground (#142)
   const plinths = S.blocks.map(plinth).filter(Boolean);
   if (plinths.length) mesh(plinths, new THREE.MeshStandardMaterial({ color: 0x6e3326, roughness: 0.95 }));
+  const frontHedge = boxwood(S.shrubs);
+  group.add(frontHedge); group.userData.segments.push(...frontHedge.userData.segments);
   group.add(...trees(rng(3)));
   const windows = buildWindowLights(), street = buildStreet(groundY); // street lamps, crossing, curbs … (#128)
   group.add(windows.object, street.object);
