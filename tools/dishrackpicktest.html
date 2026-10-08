@@ -1,0 +1,21 @@
+<!doctype html><html lang="sv"><meta charset="utf-8"><title>Dishwasher rack hit surfaces</title>
+<pre id="out">running…</pre><iframe id="f" src="../index.html?life&shot&cloud=" width="900" height="600"></iframe>
+<script>
+const f=document.getElementById('f'),out=document.getElementById('out');
+f.onload=async()=>{const w=f.contentWindow,d=f.contentDocument,lines=[];let pass=true;const check=(ok,name)=>{lines.push(`${ok?'PASS':'FAIL'} ${name}`);pass&&=!!ok;out.textContent=lines.join('\n');};
+try{while(!w.__app)await new Promise(r=>setTimeout(r,100));const A=w.__app,{life,player,camera,scene,step}=A,V=camera.position.constructor;
+d.documentElement.requestFullscreen=undefined;d.getElementById('start-touch').click();const door=A.dishProg.door,[lower,upper]=door.racks,btn=d.getElementById('action');
+const pose=(o,open)=>{o.isOpen=open;for(let i=0;i<60;i++)o.update(1/60);scene.updateMatrixWorld(true);};
+const aim=(p,predicate)=>{for(let i=0;i<32;i++){const a=i/32*Math.PI*2,r=.75+(i%2)*.3;player.spawn(p.x+Math.sin(a)*r,p.z+Math.cos(a)*r,0);step(0);scene.updateMatrixWorld(true);camera.lookAt(p);camera.updateMatrixWorld(true);step(0);if(predicate(A.focus().focused))return true;}return false;};
+for(const rack of [lower,upper]){check(rack.pickSurface&&!rack.pickSurface.visible&&rack.pickSurface.parent===rack.object,`${rack.name} has an invisible continuous surface on its moving pivot`);const rc=A.focus().raycaster;rc.ray.origin.copy(rack.box.getCenter(new V()).addScaledVector(rack.normal,1));rc.ray.direction.copy(rack.normal).negate();check(rc.intersectObject(rack.pickSurface).length===0,`${rack.name} surface cannot steal focus through a shut door`);}
+pose(door,true);
+for(const rack of [lower,upper]){pose(lower,false);pose(upper,false);let gap=null;const box=rack.box,size=box.getSize(new V());
+for(const fx of [.17,.31,.47,.63,.79])for(const fy of [.21,.39,.57,.73]){const p=box.min.clone().add(new V(size.x*fx,size.y*fy,size.z*.5));if(Math.abs(rack.normal.x)>.5)p.x=rack.normal.x>0?box.max.x:box.min.x;else p.z=rack.normal.z>0?box.max.z:box.min.z;
+if(aim(p,t=>t===rack)){const rc=A.focus().raycaster,wireHits=rc.intersectObjects(rack.object.children.filter(o=>o!==rack.pickSurface),true);const newHits=rc.intersectObject(rack.pickSurface);if(!wireHits.length&&newHits.length){gap=p;break;}}}check(!!gap,`${rack.name} is selected through an actual empty wire gap`);
+if(gap){aim(gap,t=>t===rack);btn.click();for(let i=0;i<60;i++)step(1/60);check(rack.isOpen&&rack.t===1,`touch gap action draws out ${rack.name}`);const moved=gap.clone().add(rack.out);check(aim(moved,t=>t===rack),`${rack.name} hit surface follows the fully extended basket`);A.click(0);for(let i=0;i<60;i++)step(1/60);check(!rack.isOpen&&rack.t===0,`mouse left-click on gap pushes in ${rack.name}`);}}
+pose(lower,true);pose(upper,true);
+for(const [type,store,rack]of [['plate','dwLower',lower],['glass','dwUpper',upper],['butterKnife','dwTray',upper]]){const it=life.items.ofType(type)[0];life.items.move(it,{at:'slot',store,slot:0},{ignoreShut:true});scene.updateMatrixWorld(true);const view=life.view(it);check(aim(view.where(),t=>t===view.target),`${type} remains selectable inside the broad ${rack.name} surface`);const rc=A.focus().raycaster;check(rc.intersectObject(rack.pickSurface).length===0,`${type} ray passes through the invisible basket surface`);btn.click();step(0);check(A.heldItem()===view,`${type} action picks up the exact dish instead of moving its basket`);const target=A.lifeStores.stores[store].target;check(rc.intersectObject(rack.pickSurface).length===0,`held ${type} disables the broad surface for existing loading targets`);A.use(target);step(0);check(it.place.store===store&&!A.heldItem(),`${type} returns to the same rack store`);}
+const cup=A.cups.cups.find(c=>c.state==='cabinet');A.lifeStores.stores.dwUpper.parkCup(cup,1);scene.updateMatrixWorld(true);check(aim(cup.model.getWorldPosition(new V()),t=>t===cup.target),'parked coffee cup remains selectable through the rack helper');btn.click();step(0);check(A.heldItem()===cup,'coffee cup is picked up rather than closing the upper rack');cup.putBack();
+check(life.items.audit().length===0,'rack interaction leaves inventory consistent');
+}catch(e){check(false,e.stack);}out.textContent=lines.join('\n')+'\n'+(pass?'ALL PASS':'SOME FAILED');};
+</script></html>

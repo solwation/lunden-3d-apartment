@@ -1,0 +1,31 @@
+PASS underkorgen has an invisible continuous surface on its moving pivot
+PASS underkorgen surface cannot steal focus through a shut door
+PASS överkorgen has an invisible continuous surface on its moving pivot
+PASS överkorgen surface cannot steal focus through a shut door
+PASS underkorgen is selected through an actual empty wire gap
+PASS touch gap action draws out underkorgen
+PASS underkorgen hit surface follows the fully extended basket
+PASS mouse left-click on gap pushes in underkorgen
+PASS överkorgen is selected through an actual empty wire gap
+PASS touch gap action draws out överkorgen
+PASS överkorgen hit surface follows the fully extended basket
+PASS mouse left-click on gap pushes in överkorgen
+PASS plate remains selectable inside the broad underkorgen surface
+PASS plate ray passes through the invisible basket surface
+PASS plate action picks up the exact dish instead of moving its basket
+PASS held plate disables the broad surface for existing loading targets
+PASS plate returns to the same rack store
+PASS glass remains selectable inside the broad överkorgen surface
+PASS glass ray passes through the invisible basket surface
+PASS glass action picks up the exact dish instead of moving its basket
+PASS held glass disables the broad surface for existing loading targets
+PASS glass returns to the same rack store
+PASS butterKnife remains selectable inside the broad överkorgen surface
+PASS butterKnife ray passes through the invisible basket surface
+PASS butterKnife action picks up the exact dish instead of moving its basket
+PASS held butterKnife disables the broad surface for existing loading targets
+PASS butterKnife returns to the same rack store
+PASS parked coffee cup remains selectable through the rack helper
+PASS coffee cup is picked up rather than closing the upper rack
+PASS rack interaction leaves inventory consistent
+ALL PASS

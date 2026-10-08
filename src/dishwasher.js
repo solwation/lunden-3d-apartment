@@ -38,6 +38,19 @@ export function buildRacks({ F, u0, u1, yb, yt, door, open, batch, onBatch, chro
     o.stock = 'own'; // (the life sim's slots: no static contents)
     o.slots = slots;
     o.box = [world(a0, d0, y), world(a1, d1, y + h)].reduce((b, p) => b.expandByPoint(p), new THREE.Box3());
+    // Invisible continuous basket volume: aim through a wire gap, not at a 3 mm wire (#503).
+    // It follows the same pivot and stays inside the existing basket bounds; no rendered surface.
+    const size = o.box.getSize(new THREE.Vector3()), mid = o.box.getCenter(new THREE.Vector3());
+    const pick = new THREE.Mesh(new THREE.BoxGeometry(size.x, size.y, size.z), new THREE.MeshBasicMaterial());
+    pick.visible = false; pick.position.copy(mid).sub(at); pick.userData.door = o;
+    const raycast = pick.raycast.bind(pick), basketHits = [];
+    pick.raycast = (ray, hits) => {
+      // The closed door stays the target. Stores provide held-item/contents pass-through after life init.
+      if (!door.isOpen) return;
+      basketHits.length = 0; raycast(ray, basketHits);
+      if (basketHits.length && !o.pickThrough?.(ray)) hits.push(...basketHits);
+    };
+    o.object.add(pick); o.pickSurface = pick;
     Object.defineProperties(o, {
       verb: { get: () => (o.isOpen ? 'skjuta in' : 'dra ut'), configurable: true },
       blocked: { get: () => !door.isOpen && !o.isOpen, configurable: true },

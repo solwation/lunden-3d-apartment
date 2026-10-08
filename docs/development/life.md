@@ -126,6 +126,9 @@ src/dishes.js          the life sim's drinks and dishes (M2): #382 the drinking 
 src/dishwasher.js      the dishwasher (#384, DISHWASHER): `buildRacks` (interior.js's DM unit) — two wire racks, Openable 'drawer's
                        in world.lids ("Dra ut / Skjuta in underkorgen"), `blocked` while the door is up ("Fäll ner luckan först");
                        the door is blocked while a rack is out ("Skjut in korgarna först"); a cutlery tray rides on the upper rack.
+                       Invisible basket hit volumes follow the existing pivots inside the original bounds (#503), enabled only with the door down.
+                       stores.js pickThrough lets actual contained dishes/cups through and disables the broad surface while loading an open rack.
+                       tools/dishrackpicktest.html verifies real wire gaps, touch/mouse actions, moving surfaces and dish/cup selection.
                        Each rack's `slots` (world pose, size, accepts) become stores.js 'dwLower' (6 plates on edge), 'dwUpper' (6
                        glasses upside down), 'dwTray' (4 tools); a store's `refuse(item)` (life.js putIn): not `dishwasherSafe`
                        ("Skärbrädan diskas för hand"), the wrong rack ("Tallrikar i underkorgen", "Glas i överkorgen", "Bestick i

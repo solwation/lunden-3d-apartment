@@ -86,7 +86,7 @@ Låtarna har full längd och stereo. Musiken laddas först när den spelas; om i
 De 100 senaste ändringarna står på lappen på frysen i köket (gå fram och tryck <kbd>E</kbd>). Det som
 tillkommit sedan ditt senaste besök är markerat *Nytt*.
 
-På touch använder tydliga dörrar, lådor och luckor korta texter som **Öppna**, **Stäng** och **Dra ut**. Små föremål behåller sina namn, till exempel **Ta smörkniven**, och förflyttningar till ett särskilt mål anger vart föremålet hamnar.
+På touch använder tydliga dörrar, lådor och luckor korta texter som **Öppna**, **Stäng** och **Dra ut**. Små föremål behåller sina namn, till exempel **Ta smörkniven**, och förflyttningar till ett särskilt mål anger vart föremålet hamnar. Diskmaskinens korgar kan väljas även mellan metalltrådarna; tallrikar, glas och bestick i dem går fortfarande att plocka upp.
 
 ## Köra lokalt
 

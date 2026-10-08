@@ -164,6 +164,17 @@ export function buildStores(life, world) {
   const dwDoor = world.lids.find((l) => l.name === 'diskmaskinen' && l.racks);
   if (dwDoor) {
     const [lower, upper] = dwDoor.racks;
+    // A basket's broad hit surface must not cover its dishes or the existing loading targets (#503).
+    for (const [rack, ids] of [[lower, ['dwLower']], [upper, ['dwUpper', 'dwTray']]]) {
+      rack.pickThrough = (ray) => {
+        if (!rack.isOpen || !dwDoor.isOpen) return false;
+        if (heldItem()) return true;
+        const targets = I.all().filter(it => it.place.at === 'slot' && ids.includes(it.place.store))
+          .map(it => life.view(it)?.target.pickable).filter(Boolean);
+        for (const id of ids) for (const cup of I.store(id)?.parkedCups?.values() ?? []) targets.push(cup.target.pickable);
+        return targets.length > 0 && ray.intersectObjects(targets, true).length > 0;
+      };
+    }
     const right = { plate: 'Tallrikar i underkorgen', glass: 'Glas i överkorgen', tool: 'Bestick i bestickkorgen' };
     const rightText = (it) => (it.isCup ? 'Glas och koppar i överkorgen' : Object.entries(right).find(([t]) => I.has(it, t) || it.type === t)?.[1] ?? `${cap(I.name(it))} ska inte i diskmaskinen`);
     const the = (k) => ({ water: 'vattnet', milk: 'mjölken' })[k] ?? 'det';
