@@ -33,5 +33,5 @@ export function watchForUpdates(onUpdate) {
   const onVisible = () => { if (document.visibilityState === 'visible') check(); };
   timer = setInterval(check, INTERVAL);
   document.addEventListener('visibilitychange', onVisible);
-  check();
+  // Startup already checked before the scene import (#512). Poll only for later publications.
 }

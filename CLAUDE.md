@@ -66,7 +66,9 @@ It also writes `data/todo.json` from the repo's open issues (`tools/todo.py`, RE
 GITHUB_TOKEN, `[]` on any error) AFTER the hash and outside it (#340): a changed TODO list reloads nobody; the Pages
 workflow also runs once a day (schedule) so the post-its follow the issues. Locally `data/todo.sample.json` is used.
 Commits that only touch docs/, material/, cloudflare/, `*.md` or cloud.yml do not deploy at all (`paths-ignore`).
-The page polls `version.json` every minute; when its content hash differs from `CONTENT` (`isNewer`; a file without a
+At startup, `bootstrap.js` waits at most 2.5 seconds for `startup.js` to check `version.json` and (when needed) fresh HTML before importing the expensive scene. A coherent new build navigates to `?v=<SHA>` before `main.js` runs; network/HTML errors continue the working version. Session and URL guards prevent repeated startup navigation. Saved home/settings/resume data remain intact. No service worker is installed by this project; a legacy registration with exactly this app's scope is retired only for an early update, without touching parent-site registrations.
+
+During a visit the page polls `version.json` every minute; when its content hash differs from `CONTENT` (`isNewer`; a file without a
 hash falls back to the SHA) it reloads by itself — a new SHA with the same content (tests, reference images) is no
 reload, so a reload without a note entry means an invisible fix (#192, `autoReload` in
 main.js, `AUTO_RELOAD` in config): once the visitor has been still for 2.5 s (no keys/stick/mouse/touch, not walking, no panel,
@@ -206,7 +208,9 @@ src/jetpack.js         the jetpack (#359, JETPACK): our own unbranded pack (one 
                        (SCORE.first: the first take-off); `&jetpack` = on from the start (tools/jetpacktest.html)
 src/touch.js           on-screen joystick (left) + drag-to-look (right), multi-touch pointer events
 src/main.js            renderer, lights, input modes, door raycast prompt/button, loop (step)
-src/version.js         BUILD stamp + polling for a newer published version
+src/bootstrap.js       lightweight startup gate: bounded version check before importing main.js (#512)
+src/startup.js         fresh HTML/build check + cache-busted early update; loop guards; no scene on outgoing page
+src/version.js         BUILD/CONTENT stamps + polling for publications later during a visit
 src/keep.js            the world's state across a page-made reload (#277): saveWorld / loadWorld, one part per module
 src/reset.js           "Återställ" on the start screen (#303): clears every local 'lunden.*' key except RESET_KEEP (config)
 src/cat.js             the cat: random coat, washing animation, appears/moves/vanishes behind doors
@@ -1783,3 +1787,5 @@ Entréväxter (#498): `src/entranceplants.js`, byggd av `exterior.js`, placerar 
 Takgardinernas ljus (#499): `CURTAIN_LIGHT` samlar antagen svag transparens, diffus transmission, råhet och genomlysning. Alla sex `Curtain`-uppsättningar använder matt, lätt transparent tyg med `depthWrite` och `forceSinglePass`; de vanliga täta skuggorna stoppar direkt sol. `daylightCut` styr rummets befintliga diffusa fyllnad via `Blinds.update`, fullängd från gemensam transmission, kappans lilla bidrag från `spec.dim`. Plissématerial och vertikal styrning är oförändrade; inga nya ljus/renderpass. `curtaintest` verifierar även alla sex lagrade lägen efter riktig omladdning och tygens dags-/kvällsgenomlysning. Vyer och begränsningar: `docs/validation/issue-499/README.md`.
 
 Uppdragslapp (#509): `TasksManager.build3DCard(cups.cabinet)` monterar ett enda blad på koppskåpets faktiska innerblad (`cabinet.innerFace`, från dess fronttjocklek och gångjärn). `TASK_NOTE` innehåller pappersmått och relativa höjd-/sidlägen, alla visuella antaganden. Kortet följer luckans transform, är spärrat när skåpet är stängt och använder befintlig rekursiv skåpraycast; ingen lapp på arbetsbänken. Luckans `userData.moving` uppdaterar DetailCuller under animation. `taskstest` täcker innerplacering, verklig rörelse och touchläsning utöver tidigare uppdragsflöden.
+
+Startkontroll (#512): `tools/startuptest.html` har 20 kontroller av aktuell/ny version, samma innehåll efter dokumentationsändring, HTML som inte hunnit publiceras, blockerad lagring, loopskydd, offline/fel, tidsgräns och sena svar, samt appens/andra sidors serviceworker-scope. Webbläsarintegration verifierar fem startscenarier (ny, aktuell, offline versionskontroll, utdraget svar, halvpublicerad HTML), en enda scenimport, cachebustad navigation och bibehållna hem-/inställnings-/resume-data. `loadingtest` och `updatetest` passerar; `stamp.sh` cachebustar bootstrap och dess små beroenden innan `main.js?v=BUILD` importeras.

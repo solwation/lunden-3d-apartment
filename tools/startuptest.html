@@ -1,0 +1,27 @@
+<!doctype html><html><meta charset="utf-8"><title>Startup update (#512)</title><pre id="out">running…</pre><script type="module">
+import { prepareStartup } from '../src/startup.js';
+const lines=[];let pass=true;const check=(ok,s)=>{lines.push((ok?'PASS':'FAIL')+' '+s);pass&&=!!ok};
+const local={version:'old',content:'oldhash'},remote={version:'new',content:'newhash'},html='<script type="module" src="src/bootstrap.js?v=new"><\/script>';
+const res=value=>({ok:true,json:async()=>value,text:async()=>value});
+async function run(overrides={}){const calls=[],nav=[],mem=new Map(),storage={getItem:k=>mem.get(k),setItem:(k,v)=>mem.set(k,v)};const ok=await prepareStartup({local,url:location.origin+'/app/index.html?phone#here',storage,timeout:100,fetcher:async(url,options)=>{calls.push({url,options});return res(calls.length===1?remote:html)},navigate:url=>nav.push(url),serviceWorker:null,...overrides});return {ok,calls,nav,mem}}
+try{
+ let r=await run({local:{version:'dev',content:'dev'}});check(r.ok&&!r.calls.length&&!r.nav.length,'local development starts without network check');
+ r=await run({fetcher:async()=>res(local)});check(r.ok&&!r.nav.length,'current version starts without reload');
+ r=await run({fetcher:async()=>res({version:'docs-only',content:'oldhash'})});check(r.ok&&!r.nav.length,'docs-only publication with same content starts normally');
+ r=await run();check(!r.ok&&r.nav.length===1,'new version navigates before scene import');check(r.calls.length===2&&r.calls.every(c=>c.options.cache==='no-store'),'only version JSON and fresh HTML are fetched before update');check(new URL(r.nav[0]).searchParams.get('v')==='new'&&new URL(r.nav[0]).searchParams.has('phone')&&new URL(r.nav[0]).hash==='#here','cache-busted navigation preserves options and anchor');check(r.mem.size===1,'only the startup loop marker is written');
+ r=await run({url:location.origin+'/app/index.html?v=new'});check(r.ok&&!r.nav.length,'URL guard prevents repeated navigation to same build');
+ r=await run({storage:{getItem:()=>JSON.stringify({version:'new',at:Date.now()}),setItem:()=>{throw Error('must not rewrite')}}});check(r.ok&&!r.nav.length,'session marker prevents a reload loop with stale shell');
+ r=await run({storage:{getItem:()=>{throw Error('blocked')},setItem:()=>{throw Error('blocked')}}});check(!r.ok&&r.nav.length===1,'blocked storage still updates safely using the URL guard');
+ r=await run({fetcher:async()=>{throw Error('offline')}});check(r.ok&&!r.nav.length,'offline starts the existing working version');
+ r=await run({fetcher:async()=>({ok:false})});check(r.ok&&!r.nav.length,'failed version response starts current version');
+ r=await run({fetcher:async()=>({ok:true,json:async()=>{throw Error('malformed')}})});check(r.ok&&!r.nav.length,'malformed version data starts current version');
+ let n=0;r=await run({fetcher:async()=>++n===1?res(remote):({ok:false})});check(r.ok&&!r.nav.length,'failed update HTML download does not abandon current version');
+ n=0;r=await run({fetcher:async()=>res(++n===1?remote:html.replace('v=new','v=old'))});check(r.ok&&!r.nav.length,'partially published deployment does not reload old HTML');
+ const start=performance.now();r=await run({timeout:35,fetcher:()=>new Promise(()=>{})});check(r.ok&&!r.nav.length&&performance.now()-start<500,'hung network check has bounded startup wait');
+ let release;const slow=run({timeout:30,fetcher:()=>new Promise(resolve=>release=resolve)});r=await slow;release(res(remote));await new Promise(resolve=>setTimeout(resolve,50));check(r.ok&&!r.nav.length,'late timed-out response cannot navigate after startup continues');
+ let retired=false;r=await run({serviceWorker:{getRegistration:async()=>({scope:location.origin+'/app/',unregister:async()=>{retired=true}})}});check(!r.ok&&retired,'legacy service worker scoped to this app is retired before navigation');
+ retired=false;r=await run({serviceWorker:{getRegistration:async()=>({scope:location.origin+'/',unregister:async()=>{retired=true}})}});check(!r.ok&&!retired,'service worker belonging to parent site is left intact');
+ r=await run({serviceWorker:{getRegistration:async()=>{throw Error('failed')}}});check(r.ok&&!r.nav.length,'failed worker retirement falls back without a reload loop');
+}catch(e){check(false,e.stack)}
+document.getElementById('out').textContent=lines.join('\n')+'\n'+(pass?'ALL PASS':'SOME FAILED');
+</script></html>

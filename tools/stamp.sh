@@ -24,5 +24,5 @@ python3 tools/todo.py "$OUT/data/todo.json" || echo '[]' > "$OUT/data/todo.json"
 printf '{"version":"%s","content":"%s","built":"%s"}\n' "$V" "$C" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > "$OUT/version.json"
 # cache-bust modules and data so a reload really fetches the new version
 sed -i -E "s#(from '\./[^']+\.js)'#\1?v=$V'#g" "$OUT"/src/*.js
-sed -i -E "s#src=\"src/main\.js\"#src=\"src/main.js?v=$V\"#" "$OUT/index.html"
+sed -i -E "s#src=\"src/bootstrap\.js\"#src=\"src/bootstrap.js?v=$V\"#" "$OUT/index.html"
 sed -i -E "s#'(data/[^']+\.json)'#'\1?v=$V'#g" "$OUT"/src/*.js
