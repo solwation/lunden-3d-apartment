@@ -1,0 +1,18 @@
+PASS geographic anchor matches existing HepCat model centre
+PASS registration round-trips actual OSM coordinates and reuses compass bearing
+PASS road endpoints follow corresponding source way within rounding tolerance
+PASS gc endpoints follow corresponding source way within rounding tolerance
+PASS actual scene has four merged material meshes, no per-post draws
+PASS GC deck length 40 m from manufacturer, separate from mapped approaches
+PASS road and GC are distinct parallel crossings
+PASS road surface joins road/GC at deck level
+PASS road bank approach -1 joins without a step
+PASS road bank approach 1 joins without a step
+PASS gc surface joins road/GC at deck level
+PASS gc bank approach -1 joins without a step
+PASS gc bank approach 1 joins without a step
+PASS water and excavated bed lie well below both decks
+PASS actual vertical ray under road hits water, no opaque ground or road across opening
+PASS both background bridges are visible geometry beyond unchanged walking boundary
+PASS bounded four-batch bridge and water geometry: 2770 triangles
+ALL PASS

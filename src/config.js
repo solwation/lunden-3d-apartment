@@ -506,10 +506,65 @@ export const SITE = {
     deckY:-3,waterY:-6.2,bedY:-6.8,rail:1.1,post:.07,railStep:1.9,approach:8},
   // #532 foundation: sourced horizontal river centreline near the two bridges; #533 owns detailed banks/paths/vegetation.
   // Width and uniform depth remain assumptions; do not describe these as measured water levels or surveyed banks.
-  river: {width:8,bank:10,path:[[204.64,74.37],[190.76,79.13],[131.38,74.61],[127.15,83.64],[124.35,101.96],
+  river: {width:8,bank:10,
+    // #533 widths/bank spans are visual estimates from the aerial/2016 photos, not surveyed dimensions.
+    widths:[6,6,7,8,8,9,9,8,8,8,7,7,6,6,6,7,7,6,6],
+    banks:[13,14,15,12,11,12,13,11,10,10,12,14,13,7,3,3,13,12,10],
+    terrainSubdivisions:3, terrainRefineRadius:28, path:[[204.64,74.37],[190.76,79.13],[131.38,74.61],[127.15,83.64],[124.35,101.96],
     [116.11,114.02],[105.35,119.29],[74.99,119.53],[44.31,119.8],[1.16,125.14],[-15.1,129.89],[-67.45,166.11],
     [-89.43,183.37],[-101.32,198.71],[-110.41,205.34],[-181.7,207.36],[-220.92,225.61],[-235.63,235.51],[-248.18,251.46]],
     source:'OSM river way 137217705, local section registered to the existing model; 2026-10-08'},
+  // #533: main park paths are OSM 2026-10-08; canopy patches/glade traced approximately on the registered aerial.
+  // Counts, species mix, widths, heights, branch detail and the small western timber bridge are visual ASSUMPTIONS.
+  // Nearby Peab trees and OUTDOOR remain unchanged. No claim of an individual-tree survey.
+  riverPark: {
+    paths: [
+      {"source":"27185148","path":[[-200.07,180.53],[-200.37,184.39],[-201.95,187.43],[-208.76,194.32],[-215.41,200.85],[-227.39,211.23],[-237.82,219.32],[-248.16,229.58],[-255.99,242.35],[-265.44,257.65],[-270.74,265.48],[-272.82,267.58]],"w":2.4},
+      {"source":"44447962","path":[[44.88,203.85],[37.91,203.57],[28.48,203.89],[21.24,203.65]],"w":2.4},
+      {"source":"44447963","path":[[103.93,63.38],[101.0,69.87],[95.97,75.69],[89.35,79.83],[59.89,90.49],[51.41,95.47],[36.22,106.44],[29.23,110.87],[6.57,111.81],[-3.04,112.12],[-19.69,116.64],[-41.72,125.32],[-58.01,134.01],[-76.42,143.99],[-87.02,150.59],[-100.48,158.69],[-112.31,163.72],[-143.19,174.31]],"w":1.8},
+      {"source":"44447964","path":[[21.24,203.65],[19.97,211.53],[16.84,219.12],[13.53,223.29],[10.63,226.42],[2.42,232.88]],"w":2.4},
+      {"source":"44447973","path":[[-143.19,174.31],[-164.82,132.16],[-179.29,118.02],[-197.07,110.89],[-210.7,111.1],[-222.98,112.95],[-235.57,116.6],[-244.18,117.27]],"w":1.8},
+      {"source":"51890086","path":[[-131.05,199.16],[-143.19,174.31]],"w":2.4},
+      {"source":"123898761","path":[[-38.41,84.43],[-43.7,86.47],[-60.68,87.01],[-70.18,84.72]],"w":1.8},
+      {"source":"123898762","path":[[-41.72,125.32],[-40.18,109.62],[-39.76,91.6],[-38.41,84.43],[-34.53,80.61],[-31.15,75.44],[-28.7,67.46],[-26.65,63.98]],"w":1.8},
+      {"source":"123898768","path":[[-200.07,180.53],[-191.63,180.56],[-165.47,178.9],[-143.19,174.31]],"w":2.4},
+      {"source":"130537426","path":[[-70.18,84.72],[-69.95,91.15],[-72.1,126.02],[-76.42,143.99]],"w":1.8},
+      {"source":"185706718","path":[[2.42,232.88],[-19.44,235.65],[-37.76,238.95],[-52.03,241.04],[-64.21,239.79],[-81.58,235.31],[-95.84,232.68],[-106.42,229.2],[-111.74,227.09]],"w":1.8},
+      {"source":"1228396153","path":[[92.56,207.89],[83.04,205.95],[76.03,204.19],[58.01,201.56],[51.45,202.12],[44.88,203.85]],"w":2.4},
+      {"source":"1432565773","path":[[-111.74,227.09],[-116.2,219.98],[-121.76,214.85],[-124.08,212.06]],"w":2.4},
+      {"source":"1432565775","path":[[21.24,203.65],[19.52,177.95],[17.8,146.49]],"w":2.4},
+      {"source":"44447981","path":[[18.22,80.29],[18.05,100.96]],"w":3},
+    ],
+    patches: [
+      {"name":"western-bank","polygon":[[-250,238],[-232,216],[-180,194],[-140,196],[-139,214],[-190,222],[-232,248]],"n":18},
+      {"name":"north-bank","polygon":[[-125,185],[-104,164],[-78,143],[-52,127],[-15,121],[-1,130],[-26,149],[-69,170],[-107,199]],"n":20},
+      {"name":"south-bank","polygon":[[-106,221],[-101,191],[-69,180],[-27,155],[5,138],[4,165],[-52,196],[-85,230]],"n":17},
+      {"name":"bridge-east-bank","polygon":[[35,106],[74,105],[112,107],[120,121],[83,140],[39,144]],"n":14},
+      {"name":"eastern-bend","polygon":[[121,61],[166,58],[202,61],[211,83],[183,95],[139,96],[139,114],[126,116],[115,93]],"n":15},
+      {"name":"park-edge","polygon":[[-129,80],[-110,82],[-83,106],[-92,135],[-106,137],[-130,112]],"n":6},
+    ],
+    glades: [
+      {"name":"central-lawn","polygon":[[-93,89],[-76,83],[-46,86],[-46,111],[-65,121],[-86,124]]},
+    ],
+    treeScale: [1.35,2.35],
+    treeSpacing: 7,
+    shrubScale: [0.8,1.9],
+    shrubCount: 95,
+    shoreCount: 190,
+    shoreHeight: [0.25,0.7],
+    shoreOffset: [0.5,2.2],
+    pathClearance: 0.6,
+    bridgeClearance: 1.5,
+    branchCount: 3,
+    woodBridge: {"source":"51890085","ends":[[-131.05,199.16],[-124.08,212.06]],"width":2.2,"deckY":-3,"slab":0.22,"rail":1.1,"postStep":2,"railSize":0.08,"postSize":0.1,"abutment":0.35},
+    shoreRadius: [0.16,0.46],
+    shoreLeaves: 5,
+    shrubAspect: [1,0.65,0.8],
+    twigWidth: 0.2,
+    branchReach: 2,
+    branchRise: 1,
+    branchWidth: 0.55,
+  },
   // big old limes / chestnuts along the far pavement and in the school yard (#130, the user's photos): [x, z, size]
   bigTrees: [[-36, -34.5, 1.4], [-17, -35.2, 1.6], [-4, -34.8, 1.75], [9, -35.4, 1.45], [27.5, -34.2, 1.6], [33.5, -16, 1.35], [-58, -33.5, 1.5]],
   // a row of ornamental shrubs along our pavement (#130): the situation plan's hedge between the planting strip and the car
@@ -522,7 +577,6 @@ export const SITE = {
     // the courtyard's and the green's trees stand where the situation plan draws them: COURTYARD.trees
     { x0: -88.8, x1: 17.37, z0: -20, z1: -19, n: 11, young: true, skip: [[-14, -6.5]] }, // street trees along Sankt Lars väg: young maples by the site (#130); none in the drive (#260)
     { x0: 16.9, x1: 18.4, z0: -12, z1: 54.05, n: 7 },          // … and along its east leg (west of the cycle path, #255)
-    { x0: -125.48, x1: 67.57, z0: 65.63, z1: 135.13, n: 55 },      // S:t Lars park / woods towards Höje å
     { x0: -125.48, x1: -80, z0: -20, z1: 65.63, n: 16 },          // west of Karpvägen (#257: off the road by onRoad)
   ],
 };

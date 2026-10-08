@@ -136,3 +136,5 @@ Källaren följer Peabs plan för cykelrum och förrådsområden under hus L, C,
 Uteplatsens stora solfjäderspalm har en öppen rundad kruka med jord, fiberrik stam och veckade bladfingrar med mjuk vindrörelse. [Bilder och verifiering](docs/validation/issue-524/README.md).
 
 Vägbron och den separata gång- och cykelbron vid Sankt Lars väg syns över en nedsänkt Höje å, även bortom gångområdets gräns. [Kartjämförelse, vyer och antaganden](docs/validation/issue-532/README.md).
+
+Höje å omges av varierande slänter, kartans huvudstigar, öppna gräsytor, större lövträdsdungar och strandvegetation som följer årstiderna. [Underlag och jämförelsevyer](docs/validation/issue-533/README.md).

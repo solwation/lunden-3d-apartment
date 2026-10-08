@@ -1,3 +1,4 @@
+import { buildRiverPark, parkDeckAt, parkTreeSpots, parkShrubSpots } from './riverpark.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { SITE as S, COLORS, SEASON, COURTYARD, GARAGE } from './config.js';
@@ -59,6 +60,7 @@ function nwTread(x) {
  * the park level around the box, east of it Sankt Lars väg's gentler slope, west of it Karpvägen's (#256).
  * #355: also the stairs' treads and the Å-husen's entrance recesses, so the visitor walks the whole block. */
 export function groundY(x, z) {
+  const parkDeck=parkDeckAt(x,z); if(parkDeck!==null)return parkDeck;
   const deck=deckAt(x,z);if(deck!==null)return deck; // #532 background bridge surfaces, outside OUTDOOR
 
   for (const [x0, x1, z0, z1, y] of stairTreads) if (x >= x0 && x <= x1 && z > z0 && z <= z1) return y;
@@ -88,16 +90,19 @@ function terrainBase(x, z) {
 export const terrainNorth = Math.min(E.profile[0][0], Wst.profile[0][0]);
 /** Terrain south of Hus L and along the sloping streets: a grid with lines on every box edge, so the step at the edges
  * is vertical. */
+let terrainSurface = (x,z) => terrainY(x,z)-.01;
+/** Rendered triangle surface for background planting/paths; no change to the player's ground queries. */
+export const renderedTerrainY = (x,z) => terrainSurface(x,z);
 function terrainGeometry() {
   const St = Wst.stair, z0 = terrainNorth;
   const xs = new Set([-270, -200, 200, 220, E.x0 - 0.01, E.x0 + 0.01, E.x1, E.x1 + E.blend, E.gable, E.level, E.walk, R.x0 + 0.01, R.x1 - 0.01, R.x1 + 0.01,
       Wst.x - 0.01, Wst.x + 0.01, St.x1 - 0.01, St.x1 + 0.01]),
     zs = new Set([z0, 0, T.north, 260, T.north + T.slope, ...E.profile.map((p) => p[0]), ...Wst.profile.map((p) => p[0]), R.z0, R.z1, St.z1 - 0.01, St.z1 + 0.01, T.garageDoor.z0, T.garageDoor.z1]);
-  for (let x = -200; x <= 200; x += 4) xs.add(x);
+  for (let x = -270; x <= 220; x += 4) xs.add(x);
   for (let z = z0; z <= 260; z += 4) zs.add(z);
   for (const b of T.box) { for (const x of [b.x0, b.x1]) { xs.add(x - 0.01); xs.add(x + 0.01); } for (const z of [b.z0, b.z1]) { zs.add(z - 0.01); zs.add(z + 0.01); } }
   const X = [...xs].sort((a, b) => a - b), Z = [...zs].filter((z) => z >= z0).sort((a, b) => a - b);
-  const pos = [], idx = [];
+  const pos = [], idx = [], cells=new Map();
   for (const z of Z) for (const x of X) pos.push(x, terrainY(x, z) - 0.01, z);
   const nx = X.length;
   for (let j = 0; j < Z.length - 1; j++) for (let i = 0; i < nx - 1; i++) {
@@ -105,8 +110,34 @@ function terrainGeometry() {
     const mx = (X[i] + X[i + 1]) / 2, mz = (Z[j] + Z[j + 1]) / 2;
     if (mz < T.north && mx > westEdge(mz) && mx < E.gable) continue; // world.js's flat plate
     if (Math.abs(mx - T.garageDoor.x) < 0.02 && mz > T.garageDoor.z0 && mz < T.garageDoor.z1) continue; // the box edge's face: the garage door's opening (#357)
-    idx.push(a, c, b, b, c, d);
+    // Refine only the river corridor, including a flat buffer outside the widest bank.
+    // Boundary samples interpolate any adjacent coarse edge, so mixed cells remain watertight.
+    const fine=(i,j)=>i>=0&&j>=0&&i<X.length-1&&j<Z.length-1&&
+      (Z[j]+Z[j+1])/2>60&&riverDistance((X[i]+X[i+1])/2,(Z[j]+Z[j+1])/2)<S.river.terrainRefineRadius;
+    if(fine(i,j)){
+      const n=S.river.terrainSubdivisions,at=(u,v)=>{
+        const x=X[i]+(X[i+1]-X[i])*u/n,z=Z[j]+(Z[j+1]-Z[j])*v/n;
+        let y=terrainY(x,z)-.01;
+        const edge=(ax,az,bx,bz,t)=>terrainY(ax,az)*(1-t)+terrainY(bx,bz)*t-.01;
+        if(u===0&&!fine(i-1,j))y=edge(X[i],Z[j],X[i],Z[j+1],v/n);
+        if(u===n&&!fine(i+1,j))y=edge(X[i+1],Z[j],X[i+1],Z[j+1],v/n);
+        if(v===0&&!fine(i,j-1))y=edge(X[i],Z[j],X[i+1],Z[j],u/n);
+        if(v===n&&!fine(i,j+1))y=edge(X[i],Z[j+1],X[i+1],Z[j+1],u/n);
+        const k=pos.length/3;pos.push(x,y,z);return k;
+      };
+      const row=Array.from({length:n+1},(_,v)=>Array.from({length:n+1},(_,u)=>at(u,v)));
+      cells.set(j*nx+i,row);
+      for(let v=0;v<n;v++)for(let u=0;u<n;u++)idx.push(row[v][u],row[v+1][u],row[v][u+1],row[v][u+1],row[v+1][u],row[v+1][u+1]);
+    }else idx.push(a,c,b,b,c,d);
   }
+  // Same barycentric interpolation as the emitted triangles: bank paths/plants cannot hover over a curved cell.
+  const find=(list,v)=>{let lo=0,hi=list.length-1;while(hi-lo>1){const mid=(lo+hi)>>1;if(list[mid]<=v)lo=mid;else hi=mid;}return lo;};
+  terrainSurface=(x,z)=>{
+    const i=find(X,x),j=find(Z,z),row=cells.get(j*nx+i),n=row?row.length-1:1;
+    const u=Math.max(0,Math.min(n-1e-8,(x-X[i])/(X[i+1]-X[i])*n)),v=Math.max(0,Math.min(n-1e-8,(z-Z[j])/(Z[j+1]-Z[j])*n)),a=Math.floor(u),b=Math.floor(v),f=u-a,g=v-b;
+    const y=(du,dv)=>pos[(row?row[b+dv][a+du]:(j+dv)*nx+i+du)*3+1];
+    return f+g<=1?y(0,0)+(y(1,0)-y(0,0))*f+(y(0,1)-y(0,0))*g:y(1,1)+(y(0,1)-y(1,1))*(1-f)+(y(1,0)-y(1,1))*(1-g);
+  };
   const geo = new THREE.BufferGeometry();
   geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
   geo.setAttribute('uv', new THREE.Float32BufferAttribute(new Array((pos.length / 3) * 2).fill(0), 2));
@@ -1017,11 +1048,12 @@ function trees(rand) {
       spots.push({ x, z, y: groundY(x, z), s: area.young ? 0.8 + rand() * 0.25 : 0.75 + rand() * 0.6, kind: area.young ? 'young' : birch ? 'birch' : 'tree' });
     }
   }
+  spots.push(...parkTreeSpots(renderedTerrainY));
   for (const [x, z, s] of S.bigTrees) spots.push({ x, z, y: groundY(x, z), s, kind: 'big' });
   for (const [x, z] of S.vergeTrees) spots.push({ x, z, y: groundY(x, z), s: 0.8 + rand() * 0.3, kind: 'tree' }); // by Karpvägen (#257)
   for (const [x, z, s] of S.life.trees) spots.push({ x, z, y: groundY(x, z), s, kind: 'tree' }); // the bike yard's + one by the road (#260, #435)
   treeFeet.length = 0;
-  treeFeet.push(...spots.map(({ x, z, kind }) => ({ x, z, kind })));
+  treeFeet.push(...spots.map(({ x, z, y, kind, patch }) => ({ x, z, y, kind, patch })));
   // crowns: one per tree, three to five lobes per big tree, an ellipsoid per young maple
   const lobes = [];
   const trunkM = [], birchM = [], m = new THREE.Matrix4(), q = new THREE.Quaternion();
@@ -1030,6 +1062,10 @@ function trees(rand) {
     if (t.kind === 'big') {
       const h = 4.6 * t.s;
       trunkM.push(m.clone().compose(new THREE.Vector3(t.x, t.y, t.z), q.identity(), new THREE.Vector3(2.0 * t.s, h, 2.0 * t.s)));
+      if(t.patch)for(let k=0;k<S.riverPark.branchCount;k++){
+        const angle=k*Math.PI*2/S.riverPark.branchCount+rand(),start=new THREE.Vector3(t.x,t.y+h*.65,t.z),end=new THREE.Vector3(t.x+Math.cos(angle)*t.s*S.riverPark.branchReach,t.y+h+t.s*S.riverPark.branchRise,t.z+Math.sin(angle)*t.s*S.riverPark.branchReach),v=end.clone().sub(start);
+        trunkM.push(m.clone().compose(start,new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),v.clone().normalize()),new THREE.Vector3(t.s*S.riverPark.branchWidth,v.length(),t.s*S.riverPark.branchWidth)));
+      }
       const n = 4 + Math.floor(rand() * 2);
       for (let k = 0; k < n; k++) {
         const a = (k / n) * 6.28 + rand() * 0.6, d = (k === 0 ? 0 : 1.9) * t.s;
@@ -1046,6 +1082,11 @@ function trees(rand) {
       const sc = young ? new THREE.Vector3(1.3, 2.1, 1.3).multiplyScalar(t.s) : new THREE.Vector3(2.4, 2.6, 2.4).multiplyScalar(t.s);
       lobes.push({ pos: new THREE.Vector3(t.x, t.y + h + (young ? 1.7 : 1.6) * t.s, t.z), rot: new THREE.Quaternion().setFromEuler(new THREE.Euler(0, rand() * 6, 0)), scale: sc, ...r });
     }
+  }
+  // Park understory uses the same seasonal crown batch, plus persistent woody twigs in the trunk batch.
+  for(const t of parkShrubSpots(renderedTerrainY)){
+    lobes.push({pos:new THREE.Vector3(t.x,t.y+t.s*.5,t.z),rot:q.clone().identity(),scale:new THREE.Vector3(...S.riverPark.shrubAspect).multiplyScalar(t.s),r1:rand(),r2:rand(),r3:rand(),r4:1});
+    trunkM.push(m.clone().compose(new THREE.Vector3(t.x,t.y,t.z),q.clone().identity(),new THREE.Vector3(S.riverPark.twigWidth,t.s,S.riverPark.twigWidth)));
   }
   // ornamental shrubs along our pavement: small round bushes, coloured with the season like the trees
   const sh = S.shrubs;
@@ -1237,10 +1278,11 @@ export function buildSurroundings({ grass }) {
     const mesh = new THREE.Mesh(mergeGeometries(geos), mat);
     mesh.receiveShadow = true;
     group.add(mesh);
+    return mesh;
   };
   // the ground south of Hus L: the raised courtyard on the garage box and the park level around it (the
   // street side north of Hus L is world.js's ground); retaining walls, railings and the garage door
-  flat([terrainGeometry()], grass, SEASON.snow.ground);
+  flat([terrainGeometry()], grass, SEASON.snow.ground).name='site-terrain';
   const bw = boxWalls();
   const concrete = new THREE.MeshStandardMaterial({ color: 0xb9b4ab, roughness: 0.95, side: THREE.DoubleSide });
   flat(bw.walls, new THREE.MeshStandardMaterial({ map: brickTexture(), roughness: 0.95, side: THREE.DoubleSide })); // brick retaining walls (#148)
@@ -1268,6 +1310,7 @@ export function buildSurroundings({ grass }) {
     ? pathStrip(r, (w) => w / 2, (w) => w / 2 + k.w, 0.008, groundY, pavementClip(r)) : pathStrip(r, (w) => -w / 2 - k.w, (w) => -w / 2, 0.008, groundY, pavementClip(r))));
   flat([...S.paving.map((r) => groundStrip(r.x0, r.x1, r.z0, r.z1, 0.008)), ...walks], COLORS.paving, SEASON.snow.paving);
   group.add(buildRiverBridges());
+  group.add(buildRiverPark(renderedTerrainY,renderedTerrainY));
   // Kv. Lunden's own blocks and the old S:t Lars buildings: own façade texture and roof colour each,
   // plus a white cornice under the old roofs (#47)
   const modern = S.blocks.filter((b) => !b.style), oldB = S.blocks.filter((b) => b.style === 'old'), school = S.blocks.filter((b) => b.style === 'school');

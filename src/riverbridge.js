@@ -10,8 +10,15 @@ export const bridgeRecords=['road','gc'].map(kind=>{
 const local=(r,x,z)=>[(x-r.x)*r.dx+(z-r.z)*r.dz,-(x-r.x)*r.dz+(z-r.z)*r.dx];
 export function deckAt(x,z){return bridgeRecords.some(r=>{const[a,b]=local(r,x,z);return Math.abs(a)<=r.len/2&&Math.abs(b)<=r.width/2})?B.deckY:null;}
 export function roadBridgeSpan(x,z){const r=bridgeRecords[0];return Math.abs(local(r,x,z)[0])<=r.len/2;}
-export function riverDistance(x,z){let best=Infinity;for(let i=1;i<R.path.length;i++){const[a,b]=R.path[i-1],[c,d]=R.path[i],dx=c-a,dz=d-b,t=Math.max(0,Math.min(1,((x-a)*dx+(z-b)*dz)/(dx*dx+dz*dz)));best=Math.min(best,Math.hypot(x-a-t*dx,z-b-t*dz));}return best;}
-export function riverGround(x,z,base){const d=riverDistance(x,z),u=Math.max(0,Math.min(1,(d-R.width/2)/R.bank));return B.bedY+(base-B.bedY)*(u*u*(3-2*u));}
+/** Nearest sourced river segment, with interpolated visual width/bank estimates. */
+export function riverAt(x,z){let best={distance:Infinity};for(let i=1;i<R.path.length;i++){
+ const[a,b]=R.path[i-1],[c,d]=R.path[i],dx=c-a,dz=d-b,len=Math.hypot(dx,dz),t=Math.max(0,Math.min(1,((x-a)*dx+(z-b)*dz)/(len*len)));
+ const distance=Math.hypot(x-a-t*dx,z-b-t*dz);if(distance<best.distance){
+ const interp=(values,fallback)=>values?values[i-1]+(values[i]-values[i-1])*t:fallback;
+ best={distance,x:a+t*dx,z:b+t*dz,nx:-dz/len,nz:dx/len,width:interp(R.widths,R.width),bank:interp(R.banks,R.bank),segment:i,t};}}
+ return best;}
+export function riverDistance(x,z){return riverAt(x,z).distance;}
+export function riverGround(x,z,base){const r=riverAt(x,z),u=Math.max(0,Math.min(1,(r.distance-r.width/2)/r.bank));return B.bedY+(base-B.bedY)*(u*u*(3-2*u));}
 
 /** Two background bridges, merged by material, independent of the walking boundary. No new lights or render passes. */
 export function buildRiverBridges(){
@@ -45,7 +52,7 @@ export function buildRiverBridges(){
  }
  const gc=bridgeRecords[1],ends=[-1,1].map(s=>[gc.x+gc.dx*gc.len/2*s,gc.z+gc.dz*gc.len/2*s]);
  for(let i=0;i<2;i++){const[x,z]=ends[i],sign=i===0?-1:1;parts.asphalt.push(pathStrip({path:[[x,z],[x+.8,z+sign*B.approach],[20,z+sign*B.approach*1.6]],w:B.gc.width},w=>-w/2,w=>w/2,.025,()=>B.deckY));}
- parts.water.push(pathStrip({path:R.path,w:R.width},w=>-w/2,w=>w/2,0,()=>B.waterY));
+ parts.water.push(pathStrip({path:R.path,w:R.widths??R.width},w=>-w/2,w=>w/2,0,()=>B.waterY));
  const mats={concrete:new THREE.MeshStandardMaterial({color:0xaaa79e,roughness:.95}),steel:new THREE.MeshStandardMaterial({color:0x575f5b,metalness:.45,roughness:.55}),asphalt:new THREE.MeshStandardMaterial({color:COLORS.asphalt,roughness:.85}),water:new THREE.MeshStandardMaterial({color:COLORS.water,roughness:.15,metalness:.2})};
  for(const[k,list]of Object.entries(parts)){const geo=mergeGeometries(list.map(g=>g.index?g.toNonIndexed():g));const mesh=new THREE.Mesh(geo,mats[k]);mesh.name=`bridges-${k}`;mesh.castShadow=k!=='water';mesh.receiveShadow=true;group.add(mesh);list.forEach(g=>g.dispose());}
  group.userData.records=bridgeRecords;return group;
