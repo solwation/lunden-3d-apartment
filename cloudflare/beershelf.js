@@ -85,5 +85,5 @@ export async function beerShelfFetch(request, env, headers) {
     // Final image decoding/atomic persistence happens in the browser. Do not pin failed image data
     // in a Worker day-cache: a later home load must be able to retry the upstream sources.
     return response(await fetchShelf());
-  } catch (error) { console.error('beer shelf:', error.message); return response({ error: 'beer shelf unavailable' }, 503); } // browser keeps its last complete cache
+  } catch (error) { console.error('beer shelf:', error.message); return response({ error: 'beer shelf unavailable', reason: String(error.message).slice(0, 160) }, 503); } // browser keeps its last complete cache
 }
