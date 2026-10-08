@@ -202,7 +202,7 @@ tools/cooktest.html    headless test: the induction hob on/off (glow), F switche
 tools/actiontest.html  headless test (#372): the plan's cutting action through the Runner — a double press consumes once (−10 g,
                        one 10 g slice), interrupted before the commit nothing is used, after it the slice stays, a save mid-action has
                        no locks, the last 4 g, a full board; in &life: the menu, F / walking off / the hand changing stop it, keepWorld
-tools/storetest.html   headless test (#369): the stores' slots; the shut fridge refuses ("Öppna kylen först"), open: in, taken out with E
+tools/storetest.html   headless test (#369, #560): actual chosen slot anchor/parent, not an assumed empty bottom shelf; the stores' slots; the shut fridge refuses ("Öppna kylen först"), open: in, taken out with E
                        and back in with "Lägga osten i kylskåpet", not through the shut door; a full freezer keeps the thing in the hand;
                        the knife rides with the drawer, hidden while shut; reopening never duplicates; F → its home slot; the pantry
 tools/itemtest.html    headless test (#366): items.js with plain asserts (two instances, amounts never < 0, one place, carriers,

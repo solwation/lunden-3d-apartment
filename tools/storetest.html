@@ -22,6 +22,7 @@ f.onload = async () => {
   while (!w.__app) await wait(100);
   try {
     const A = w.__app, { life, world, step, camera, player, heldItem, scene } = A, I = life.items;
+    d.documentElement.requestFullscreen=undefined;
     d.getElementById('start-touch').click();
     await wait(50);
     const btn = d.getElementById('action');
@@ -41,7 +42,8 @@ f.onload = async () => {
     fridge.toggle(); settle(fridge);
     check(I.move(cheese, { at: 'slot', store: 'fridge', slot: k0f }) === null && cheese.place.store === 'fridge' && !heldItem(), 'open: the cheese on a fridge shelf');
     const cv = life.view(cheese), cp = cv.where();
-    check(cp.x > 3.1 && cp.x < 4.1 && cp.z > 4.9 && cp.y > 0.3 && cp.y < 0.7, `it lies inside the fridge (${cp.x.toFixed(2)}, ${cp.y.toFixed(2)}, ${cp.z.toFixed(2)})`);
+    const anchor=life.anchorOf({at:'slot',store:'fridge',slot:k0f}),expected=anchor?.getWorldPosition(new V());
+    check(anchor&&cv.model.parent===anchor&&cp.distanceTo(expected)<.001&&cheese.place.slot===k0f&&Math.abs(cp.x-fridge.inside.cx)<fridge.inside.iw/2&&Math.abs(cp.z-fridge.inside.cz)<fridge.inside.depth/2, `it lies inside the fridge (${cp.x.toFixed(2)}, ${cp.y.toFixed(2)}, ${cp.z.toFixed(2)})`);
     // take it in the game: aim at it through the open door
     const aim = (p, stands) => {
       for (const [x, z] of stands) {
