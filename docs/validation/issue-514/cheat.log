@@ -1,0 +1,34 @@
+PASS bundled handwritten marker font loads before the wall texture is drawn
+PASS actual console help and graffiti list every public command from one catalogue
+PASS secret commands are absent from all public lists
+PASS unknown input has clear feedback
+PASS night updates actual daylight without changing pause
+PASS day uses actual time and sky update
+PASS all controllable home lamps switch on
+PASS lamps switch off without changing the hob
+PASS indoor jetpack command respects the normal flight restriction
+PASS outdoor jetpack equips the existing pack once and repeat keeps its heat
+PASS home from the basement/flying pack lands safely in free home space
+PASS handsfree returns the same life item to its valid original storage
+PASS handsfree without a home while airborne uses a real ground surface
+PASS handsfree parks paper in an existing toilet without hiding or flushing it
+PASS repeated handsfree has no duplication
+PASS clean clears indoor/outdoor mess, spills, vacuum bin and cloth state
+PASS empty packages/tied bags removed and all sorting bins empty with usable bags
+PASS reusable dirty dishes/pan are clean and partial used glass emptied
+PASS used cup and legacy glass go to real storage without replacement
+PASS full legacy coffee cup is washed in place without draining or removing it
+PASS clean placed dishes and full beverages retain their placements and contents
+PASS intact food, hall placement and laundry are preserved
+PASS clean preserves furniture, time and personal lamp settings
+PASS repeated clean is idempotent with a valid inventory
+PASS clean flushes the real persistent life record
+PASS actual back-wall graffiti is reachable and selected by the normal ray
+PASS normal read action opens the same public list
+PASS note closes normally on touch
+PASS original Olof secret still unlocks furniture arrangement
+PASS original Sarah secret still unlocks furniture arrangement
+PASS actual normal-home reload keeps cleaned waste/dishes
+PASS actual reload preserves arranged clean dishes/full drinks and empty bins
+PASS reload retains cleared mess with a valid inventory
+ALL PASS

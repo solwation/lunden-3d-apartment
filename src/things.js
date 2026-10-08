@@ -121,7 +121,7 @@ export class Glass extends Thing {
 
   onUse() {
     if (this.fill <= 0.01) return;
-    this.sipT = 1;
+    this.sipT = 1; this.used = true;
     this.onSip?.(this.contents.main);
     sfx.gulp(this.where());
     this.contents.sip(D.sip);
@@ -132,9 +132,12 @@ export class Glass extends Thing {
   goHome() {
     super.goHome();
     if (!this.contents) return; // (the constructor of Holdable sends it home before the contents exist)
-    this.contents.clear();
+    this.contents.clear(); this.used = false;
     this.liquid.show(this.contents);
   }
+
+  keepState() { return this.used ? { used: true } : null; }
+  loadKeep(state) { this.used = state?.used === true; }
 
   tick(dt) {
     this.sipT = Math.max(0, this.sipT - dt * 1.6);

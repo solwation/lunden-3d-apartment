@@ -1,0 +1,1 @@
+Kalam Bold Latin WOFF2, Copyright (c) 2014 Indian Type Foundry. Font source: https://github.com/google/fonts/tree/main/ofl/kalam. Unmodified Google Fonts Latin distribution: https://fonts.gstatic.com/s/kalam/v18/YA9Qr0Wd4kDdMtDqHTLMkiQ.woff2. Bundled under SIL Open Font License 1.1 (Kalam-OFL.txt). Used for the bike-room marker graffiti; no runtime Google Fonts request.

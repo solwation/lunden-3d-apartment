@@ -57,6 +57,10 @@ in Swedish. Code, comments and this file are in English; UI text is Swedish.
 
 Static ES-module Three.js site, with no framework or development build step. Scene geometry comes from `data/plan.json`, extracted from the dimensioned PDF. Coordinates: x east, z south, y up; north is −z. `src/config.js` holds shared measurements and tunables. `src/bootstrap.js` checks published versions before `src/main.js` builds the scene.
 
+## Cheat-code maintenance
+
+When adding, changing or removing a cheat code, update the shared `src/cheats.js` catalogue so both public console help and the bike-room graffiti stay current. The secret `sarah is the goat` and `olof is the goat` commands must always be excluded from all public lists.
+
 ## Shared conventions
 
 - Plain ES modules, no framework, no bundler. Keep three.js pinned in the import map.

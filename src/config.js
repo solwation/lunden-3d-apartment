@@ -3070,3 +3070,6 @@ export const TASK_NOTE = { w: 0.18, h: 0.22, tilt: 0.04, inset: 0.001, height: 0
 
 // Furniture cheat (#465): interaction distance and support tolerance are gameplay choices, not surveyed dimensions.
 export const REARRANGE = { reach: 6, supportGap: 0.06, poll: 3000 };
+
+// #514: marker graffiti on bikeNE's back west wall; dimensions/height are visual assumptions.
+export const CHEAT_NOTE = { x: -16.318, z: 3.15, width: 1.9, height: 1.25, heightAt: 1.55, fontTimeout: 2000, dayHour: 12, nightHour: 0 };

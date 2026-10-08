@@ -1,0 +1,68 @@
+PASS food on the plate: used
+PASS eaten off it: dirty, crumbs and a smear
+PASS a dirty plate into its cabinet: "Diska den först"
+PASS washing it with food on: "Skrapa av tallriken först"
+PASS the bin shut: "Öppna skåpet under diskhon först"
+PASS at the open bin: "skrapa av tallriken"
+PASS scraped: the slice and the crumbs in the bin (2), the plate still dirty
+PASS again: "Det finns inget att skrapa av"
+PASS the tap off: washing waits for the water (a quiet row)
+PASS at the running tap: "Diska tallriken | Stäng av"
+PASS half-way: still dirty
+PASS washed: clean, counted, no smear
+PASS again: "Tallriken är redan ren"
+PASS the clean plate back in its cabinet
+PASS walked off mid-scrub: still dirty, nothing going on
+PASS a cut: the knife dirty, the board dirty, the cucumber has no cleanliness
+PASS the dirty knife into the drawer: "Diska den först"
+PASS washed by hand, back in the drawer
+PASS free play: a dirty knife goes in
+PASS a sip of water: used
+PASS a sip of milk: dirty, a film
+PASS washing it half full: "Häll ut mjölken först"
+PASS emptied, washed, back in the glass cabinet
+PASS a sip from the cup: dirty, the cabinet says "Diska den först"
+PASS washing it with coffee in: "Häll ut det som är i koppen först"
+PASS poured out: a ring on its bottom
+PASS washed: clean, the cabinet takes it
+PASS back in the cabinet (cabinet)
+PASS a record keeps the dirty plate and its crumbs
+PASS audit: ok
+PASS idle, empty: "Diskmaskinen är tom"
+PASS the door down: "Stäng luckan först"
+PASS its panel: "Starta diskmaskinen"
+PASS started: running, the spot on the floor
+PASS 10 s in: 49.9 s left, "Diskar – 0:50 kvar"
+PASS the door down: paused at 49.9 s, "Pausad – stäng luckan (0:50 kvar)"
+PASS added mid-run: "Diskmaskinen är igång – vänta tills den är klar"
+PASS the door shut: running again
+PASS saved: {"s":"running","left":49.9,"ids":["knife#2","plate#5","glass#7"]}
+PASS loaded: running, 49.9 s left
+PASS done: the plate clean (no crumbs), the knife clean, counted
+PASS the glass taken out mid-run: still dirty
+PASS the cup in the upper rack is clean after the programme
+PASS done: "starta diskmaskinen igen" – "Allt i maskinen är redan rent"
+PASS the clean plate at its cabinet: "ok"
+PASS unloaded into the plate cabinet
+PASS cabinet accepts clean cup
+PASS unloaded clean cup into cabinet
+PASS stopped (F): idle, silent, the knife still dirty
+PASS audit: ok
+PASS three bins under the sink: Restavfall, Matavfall, Förpackningar
+PASS the wrong bins: "Gurkänden → Matavfall"
+PASS refused: the end still in the hand
+PASS the right bin named: "Slänga gurkänden i matavfallet"
+PASS in Matavfall
+PASS free sorting: a slice in Restavfall
+PASS a free hand at the bin: "knyta ihop påsen"
+PASS tied
+PASS the bag in the hand: matavfallspåsen 4 ([{"type":"food","amount":4}]), the bin 0
+PASS no bag rim in the bin
+PASS the bag is no waste for the bin
+PASS a new bag with the hand full: "Lägg ifrån dig matavfallspåsen först"
+PASS no bag: "Sätt i en ny påse först"
+PASS a new bag off the roll
+PASS audit: ok
+PASS migrated: Restavfall 0, Matavfall 1, Förpackningar 4
+PASS saved as v2
+ALL PASS

@@ -112,11 +112,11 @@ export class LifeItem extends Holdable {
   poseAt(obj, p, yaw = 0) { obj.position.set(p.x, p.y + 0.001, p.z); obj.quaternion.setFromAxisAngle(UP, yaw); }
 
   /** The hand is needed for something else (or F): back to its home (a store's slot) if that is free, else down where
-   * it last lay, else at the visitor's feet. Never lost. */
-  putBack() {
+   * it last lay, else at the visitor's feet. A caller can supply grounded feet for airborne shortcuts. Never lost. */
+  putBack({ feet = this.life.feet() } = {}) {
     if (!this.held) return;
     const items = this.life.items, it = this.item;
-    for (const place of [it.home, this.life.lastWorld.get(it.id), this.life.feet()]) {
+    for (const place of [it.home, this.life.lastWorld.get(it.id), feet]) {
       if (place && !items.move(it, place, { ignoreShut: true })) return;
     }
   }

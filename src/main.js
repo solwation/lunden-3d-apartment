@@ -1,3 +1,7 @@
+import { runCheat, cheatHelp } from './cheats.js';
+import { cleanHome } from './cheatclean.js';
+import { buildCheatNote } from './cheatnote.js';
+import { CHEAT_NOTE } from './config.js';
 import { loadBeerShelf } from './beershelfdata.js';
 import { BeerShelf } from './beershelf.js';
 import { initHudIcons, setIcon, setPressed } from './hudicons.js';
@@ -150,6 +154,7 @@ const plan = await fetch('data/plan.json').then((r) => r.json());
 const world = buildWorld(plan);
 scene.add(world.object);
 const garage = world.garage = new Garage(); // the garage and the förråd under the courtyard (#357)
+const cheatNote = await buildCheatNote(garage, () => showCheatNote(true));
 scene.add(garage.object, garage.blackout, garage.door.object); // (+ its door, #358)
 const core = world.core = new Core(); // Hus L's stairwell and lift by the portik (#415)
 scene.add(core.object);
@@ -1059,7 +1064,7 @@ function resumeFromMenu() {
   }
 }
 let unlockedAt = -1e9;
-const otherOverlay = () => ['loading', 'install', 'reset-confirm', 'player-dialog', 'leaderboard-dialog', 'note', 'task-note', 'terminal', 'board-view', 'poster-panel'].some((id) => {
+const otherOverlay = () => ['loading', 'install', 'reset-confirm', 'player-dialog', 'leaderboard-dialog', 'note', 'task-note', 'terminal', 'cheat-note', 'board-view', 'poster-panel'].some((id) => {
   const el = document.getElementById(id);
   return el && !el.hidden && !el.classList.contains('done');
 })
@@ -1377,6 +1382,7 @@ function use(thing) {
   else if (thing.kind === 'hood') { thing.toggle(); if (thing.on) bump('hood'); } // the cooker hood's fan (#194)
   else if (thing.kind === 'hob') { thing.toggle(); if (thing.on) bump('appliances', 1, 'hob'); } // the induction hob (#158)
   else if (thing.kind === 'cabinet') { thing.toggle(); if (thing.isOpen) bump('cabinets', 1, idOf(thing)); } // wall cabinets that open (#138)
+  else if (thing.kind === 'cheat-note') thing.toggle();
   else if (thing.kind === 'target') thing.toggle(); // clear the score (#99)
   else if (thing.kind === 'rest') sitOrLie(thing);
   else if (thing.kind === 'life' && !thing.tooFar) { // a life-sim thing (#367): the chosen row of the menu, else its first allowed action
@@ -1872,7 +1878,7 @@ function editUI() {
   renderRearrangeHUD(); editToggle.hidden = !rearrange.unlocked || !!resetFurnitureRequest;
   editToggle.textContent = rearrange.enabled ? 'Avsluta ommöblering' : 'Möblera om';
   editToggle.disabled = rearrange.saving;
-  document.getElementById('terminal-unlock').hidden = rearrange.enabled;
+  document.getElementById('terminal-unlock').hidden = !!resetFurnitureRequest;
   document.getElementById('terminal-edit').hidden = !rearrange.enabled || !!resetFurnitureRequest;
   document.getElementById('terminal-confirm').hidden = !resetFurnitureRequest;
   document.getElementById('terminal-close').hidden = !!resetFurnitureRequest;
@@ -1899,11 +1905,58 @@ function showTerminal(show, byKey = 'button') {
 }
 document.getElementById('terminal-btn').addEventListener('click', () => showTerminal(true));
 document.getElementById('terminal-close').addEventListener('click', () => showTerminal(false));
-document.getElementById('terminal-form').addEventListener('submit', (e) => {
-  e.preventDefault();
-  if (rearrange.unlock(terminalInput.value)) { document.getElementById('terminal-message').textContent = 'Superkraft upplåst: möblera om!'; terminalInput.value = ''; editUI(); showTerminal(false); }
-  else document.getElementById('terminal-message').textContent = 'Okänd kod.';
+const cheats = {
+  clean: () => cleanHome({life,cups,pan,vacuum,cloth,marks,breaker,holdables,dishProg,toiletPaper}),
+  jetpack: () => {
+    if (jetpack.worn) return 'Jetpacken är redan på.';
+    if (!player.outdoors) return 'Gå ut först. Jetpacken kan inte användas inne i hemmet.';
+    jetpack.putOn(); return player.below || player.inCore ? 'Jetpacken på. Ingen flygning under tak.' : 'Jetpacken på. Mellanslag eller pil upp ger lyft.';
+  },
+  home: () => {
+    life.interrupt('home'); if(rest.active) standUp();
+    const old=player.pos.clone(), oldCamera=camera.position.clone(), oldRotation=camera.rotation.clone();
+    const motion={eyeY:player.eyeY,vy:player.vy,glide:player.glide,fall:player.fall,flying:player.flying,jv:{...player.jv}};
+    spawnAtStart();
+    const point = player.isFree(START.x,START.z,0) ? START : player.nearestFree(START.x,START.z,0);
+    if (!point) {player.pos.copy(old);Object.assign(player,motion);camera.position.copy(oldCamera);camera.rotation.copy(oldRotation);return 'Ingen fri startplats just nu.';}
+    if(jetpack.worn) jetpack.goHome();
+    player.crouch=player.crouched=false;player.keys.clear();touch.analog.x=touch.analog.y=0;
+    player.spawn(point.x,point.z,THREE.MathUtils.degToRad(START.yawDeg));camera.rotation.x=THREE.MathUtils.degToRad(START.pitchDeg);
+    return 'Hemma på en fri startplats.';
+  },
+  day: () => {day.hour=CHEAT_NOTE.dayHour;day.update(0);wallClock.update(day.hour);return 'Dagsljus.';},
+  night: () => {day.hour=CHEAT_NOTE.nightHour;day.update(0);wallClock.update(day.hour);return 'Natt.';},
+  'lights on': () => {lights.setAll(true);return 'Hemmets lampor tända.';},
+  'lights off': () => {lights.setAll(false);return 'Hemmets lampor släckta.';},
+  handsfree: () => {
+    life.interrupt('handsfree'); const item=heldItem();if(!item)return 'Händerna är redan fria.';
+    const feet = {...life.feet(),pos:[player.pos.x,player.groundAt(player.pos.x,player.pos.z,player.pos.y),player.pos.z]};
+    if(item===toiletPaper.wad){
+      const nearest=[...toiletPaper.holders].sort((a,b)=>a.toilet.object.position.distanceTo(player.pos)-b.toilet.object.position.distanceTo(player.pos))[0].toilet;
+      if(!nearest.isOpen)nearest.toggle();item.drop(nearest);
+    } else if(!item.lifeItem&&item.placeAt)item.placeAt(new THREE.Vector3(...feet.pos));
+    else item.putBack({feet});
+    return heldItem()?'Det gick inte att ställa undan föremålet. Du håller det kvar.':'Föremålet undanlagt. Händerna fria.';
+  },
+  unlock: code => {
+    rearrange.unlock(code);editUI();showTerminal(false);return 'Superkraft upplåst: möblera om!';
+  },
+};
+document.getElementById('terminal-form').addEventListener('submit', e => {
+  e.preventDefault(); const message=runCheat(terminalInput.value,cheats);
+  document.getElementById('terminal-message').textContent=message;terminalInput.value='';life.flush();
 });
+function showCheatNote(show, byKey='button') {
+  const panel=document.getElementById('cheat-note');panel.hidden=!show;reading=show;
+  player.keys.clear();touch.analog.x=touch.analog.y=0;
+  if(show){document.getElementById('cheat-note-text').textContent=cheatHelp();if(locked){boardFreed=true;document.exitPointerLock();}document.getElementById('cheat-note-close').focus();}
+  else if(boardFreed){boardFreed=false;if(byKey==='Escape'){overlay.hidden=true;armEl.hidden=false;}else canvas.requestPointerLock()?.catch(()=>{armEl.hidden=false;});}
+}
+document.getElementById('cheat-note-close').addEventListener('click',()=>showCheatNote(false));
+document.addEventListener('keydown', e => {
+  if(document.getElementById('cheat-note').hidden)return;
+  if(['Escape','KeyE'].includes(e.code)){e.preventDefault();showCheatNote(false,e.code);}e.stopImmediatePropagation();
+},true);
 editToggle.addEventListener('click', () => { rearrange.enable(!rearrange.enabled); editUI(); showTerminal(false); });
 function requestFurnitureReset(all = false, piece = editMenuPiece) {
   if (rearrange.saving || (!all && !piece)) return;
@@ -2464,4 +2517,4 @@ document.documentElement.classList.remove('resuming'); // the page is ready: off
 hideLoading();
 
 // handle for tests/debugging (tools/touchtest.html, tools/perfcount.html)
-window.__app = { beerShelf, hallCare, bedCare, tableSetting, watering, laundry, compass, showOverlay, resumeFromMenu, interactionOutline, eggs, isPhoneDevice, get activeMode() { return activeMode; }, set activeMode(v) { activeMode = v; }, rearrange, showTerminal, dynRes, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, toaster, life, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS };
+window.__app = { cheats, cheatNote, showCheatNote, beerShelf, hallCare, bedCare, tableSetting, watering, laundry, compass, showOverlay, resumeFromMenu, interactionOutline, eggs, isPhoneDevice, get activeMode() { return activeMode; }, set activeMode(v) { activeMode = v; }, rearrange, showTerminal, dynRes, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, toaster, life, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS };

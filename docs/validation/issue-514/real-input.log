@@ -1,0 +1,8 @@
+PASS phone physical tap opens console
+PASS phone tap executes public help
+PASS phone executes a real time command
+PASS phone has no page errors
+PASS desktop physical § key opens console
+PASS desktop Enter executes public help
+PASS desktop executes a real time command
+PASS desktop has no page errors
