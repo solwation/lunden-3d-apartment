@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import {
   LEVELS, UNIT_TOP, SOFFITS, DOOR_HEIGHT, DOOR_TRIM, EXT_DOOR_HEAD, WINDOWS, WINDOW_TOP_HUNG_MAX, BLINDS, CABINET_HEIGHT, BASE_CABINET, SHELF_HEIGHT, TOILET,
-  STAIR, COLORS, FENCE_HEIGHT, SITE, OUTDOOR, CABINET_FIXES, KLK, SEASON, FINISH, OPTIONS, EXTRA_WALLS, SLIDE_FLIP, ROOM_RENAMES, EXTRA_ROOMS, ROOM_DIVIDERS, CORE,
+  STAIR, COLORS, FENCE_HEIGHT, SITE, OUTDOOR, CABINET_FIXES, KLK, SEASON, FINISH, OPTIONS, EXTRA_WALLS, SLIDE_FLIP, ROOM_RENAMES, EXTRA_ROOMS, ROOM_DIVIDERS, CORE, PORTIK,
 } from './config.js';
 import { buildStairs, buildHandrails } from './stairs.js';
 import { klkFittings } from './closet.js';
@@ -687,9 +687,13 @@ export function buildWorld(plan) {
   // handrails: the wall side along the flights and round the winders, one per flight on the inner side (#419)
   for (const m of [...buildHandrails(M.rail).children]) scene.add(m);
 
+  const PD=PORTIK.door;
+  const portikDoor=new SwingDoor({hinge:[PD.x,PD.z1],tip:[PD.x-(PD.z1-PD.z0),PD.z1],wall:[PD.x,PD.z0]},0,mat(PD.color),false);
+  portikDoor.name='dörren till lilla rummet';scene.add(portikDoor.object);
+
   // Capture only architecture, before adding loose furniture, plants, curtains and cabinet contents.
   const edgeLines = architectureEdges(scene, {
-    moving: [...l0.doors, ...l1.doors, ...l0.lids, ...l1.lids, ...l0.appliances, ...l1.appliances].map(d => d.object),
+    moving: [...l0.doors, ...l1.doors, portikDoor, ...l0.lids, ...l1.lids, ...l0.appliances, ...l1.appliances].map(d => d.object),
     exclude: interiorLoose, floor: LEVELS[1].floor,
   });
 
@@ -758,7 +762,7 @@ export function buildWorld(plan) {
   outdoor.push(
     [o.x0, o.z0, o.x1, o.z0], [o.x1, o.z0, o.x1, o.z1], [o.x1, o.z1, o.x0, o.z1], [o.x0, o.z1, o.x0, o.z0],
     [xw, 0, p0, 0], [p1, 0, 0, 0], [W, 0, xe, 0], [xe, 0, xe, D], [xw, D, p0, D], [p1, D, 0, D], [W, D, xe, D], [xw, D, xw, 0],
-    [p0, 0, p0, CORE.portikDoor.z[0]], [p0, CORE.portikDoor.z[1], p0, D], [p1, 0, p1, D], // the portik's sides (the stairwell's door: core.js, #415)
+    ...exterior.userData.portik.segments, // same calibrated room boundaries as actual geometry (#520)
     ...exterior.userData.segments,
     ...surroundings.userData.segments.filter((s) => Math.max(s[0], s[2]) > o.x0 - 1 && Math.min(s[0], s[2]) < o.x1 + 1
       && Math.max(s[1], s[3]) > o.z0 - 1 && Math.min(s[1], s[3]) < o.z1 + 1), // the box's edge, Hus A / B / C (#255, #259)
@@ -794,14 +798,14 @@ export function buildWorld(plan) {
   // bake the static fittings into one mesh per material and level (draw calls, #48)
   const box3 = new THREE.Box3(), mid = new THREE.Vector3();
   const merged = mergeStatic(scene, [
-    ...l0.doors, ...l1.doors, ...l0.lids, ...l1.lids, ...l0.appliances, ...l1.appliances,
+    ...l0.doors, ...l1.doors, portikDoor, ...l0.lids, ...l1.lids, ...l0.appliances, ...l1.appliances,
   ].map((d) => d.object).concat([blinds.object, sillPlants, hallWall.object, furniture.object, exterior, surroundings, shelves, ...interiorLoose]), (o) => { // loose items stay separate (F hides them)
     box3.setFromObject(o).getCenter(mid);
     if (mid.x < 0 || mid.x > W || mid.z < 0 || mid.z > D) return 'out';
     return mid.y < LEVELS[1].floor - 0.05 ? 'l0' : 'l1';
   });
   scene.userData.merged = merged;
-  for (const d of [...l0.doors, ...l1.doors]) mergeStatic(d.object, d.keep ?? [], () => '', { tagged: true }); // leaf + handles (not the letter flap)
+  for (const d of [...l0.doors, ...l1.doors,portikDoor]) mergeStatic(d.object, d.keep ?? [], () => '', { tagged: true }); // leaf + handles (not the letter flap)
 
   // furniture can be switched off (F): keep its collision separate from the fixed segments
   const fixed = [l0.segments, l1.segments];
@@ -847,7 +851,8 @@ export function buildWorld(plan) {
     levels,
     roofs, // the walkable roofs outdoors (#360)
     upperSegments: surroundings.userData.upper, // the box's edge over the garage door: in the way only up on the courtyard (#357)
-    doors: [...l0.doors, ...l1.doors],
+    portik: {...exterior.userData.portik,doorTarget:portikDoor},
+    doors: [...l0.doors, ...l1.doors,portikDoor],
     klkDoor: l0.doors.find((d) => d.kind === 'swing' && Math.abs(d.hinge[0] - 3.35) < 0.1 && Math.abs(d.hinge[1] - 5.70) < 0.1) ?? null, // door into the Klk under the stair (#389)
     lids: [...l0.lids, ...l1.lids, ...l0.appliances, ...l1.appliances, hallWall.cabinet], // toggled with E, not doors
     hob: [...l0.appliances, ...l1.appliances].find((a) => a.kind === 'hob') ?? null, // the induction hob (#158)

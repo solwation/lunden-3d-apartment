@@ -7,6 +7,7 @@ import { wallLine, wallRect } from './roofs.js';
 import { groundY } from './surroundings.js';
 import { glowMaterial, poolGeometry, washGeometry, fadeGlow } from './groundglow.js';
 import { pavingTexture } from './patio.js';
+import { portikPlan } from './portik.js';
 
 // Brick: 250 × 65 mm + 10 mm joints → 0.26 m per brick, 0.075 m per course.
 const TILE_W = 1.04, TILE_H = 0.6; // one texture tile = 4 bricks × 8 courses
@@ -307,17 +308,33 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
     const [dz0, dz1] = CORE.portikDoor.opening, dh = 2.2; // (#456: the door + its sidelight)
     const g = 0.03; // (#448: kept a few cm off the stairwell's own walls — coplanar faces flickered)
     const nz = CORE.north[1] - g;
-    solids.push(boxGeo(coreX0, CORE.x0 - g, 0, roofTop, 0, D), boxGeo(CORE.x1 + g, p0, 0, roofTop, 0, dz0 - g), boxGeo(CORE.x1 + g, p0, 0, roofTop, dz1 + g, D),
-      boxGeo(CORE.x1 + g, p0, dh + g, roofTop, dz0, dz1),
+    const PP=portikPlan([p0,p1],D);
+    for(const [ya,yb,spaces] of [[0,dh,[...PP.spaces,PP.connector]],[dh,ph,PP.spaces]]){
+      const holes=spaces.map(r=>({x0:r.x0,x1:r.x1,y0:r.z0,y1:r.z1}));
+      for(const [a,b,c,d] of complement(CORE.x1+g,coreX1,0,D,holes))solids.push(boxGeo(a,b,ya,yb,c,d));
+    }
+    // Whole core over the actual 3 m portik ceiling; upper-storey structure is unchanged.
+    solids.push(boxGeo(CORE.x1+g,coreX1,ph,roofTop,0,D));
+    for(const [ax,az,bx,bz] of PP.segments) {
+      if(ax===bx){const sign=PP.contains(ax+.001,(az+bz)/2)?1:-1;bricks.push(quadX(az,bz,0,ph,ax+sign*eps,false))}
+      else {const sign=PP.contains((ax+bx)/2,az+.001)?1:-1;bricks.push(quadZ(ax,bx,0,ph,az+sign*eps,false))}
+    }
+    const PW=PP.spaces[1].x0;
+    bricks.push(quadX(dz0,dz1,dh,ph,PW+eps,false));
+    // A real doorway through the small room's thick west wall (lintel, jambs, clear sill).
+    const PD=PP.door,PR=PP.room;
+    solids.push(boxGeo(PR.wallWest,PR.west,PD.height,ph,PD.z0,PD.z1));
+    bricks.push(quadY(PR.wallWest,PR.west,PD.z0,PD.z1,PD.height,true));
+    group.userData.portik=PP;
+    solids.push(boxGeo(coreX0, CORE.x0 - g, 0, roofTop, 0, D),
       // solids in the stairwell north wall around the two windows (#457, #470)
       boxGeo(CORE.x0, CORE.x1, 0, win1.y0 - g, 0, nz),
       boxGeo(CORE.x0, win1.x0 - g, win1.y0, win1.y1, 0, nz), boxGeo(win1.x1 + g, CORE.x1, win1.y0, win1.y1, 0, nz),
       boxGeo(CORE.x0, CORE.x1, win1.y1 + g, win2.y0 - g, 0, nz),
       boxGeo(CORE.x0, win2.x0 - g, win2.y0, win2.y1, 0, nz), boxGeo(win2.x1 + g, CORE.x1, win2.y0, win2.y1, 0, nz),
       boxGeo(CORE.x0, CORE.x1, win2.y1 + g, roofTop - 0.2, 0, nz),
-      boxGeo(CORE.x0, CORE.x1, roofTop - 0.2, roofTop, 0, CORE.loftFace - g),
-      boxGeo(p1, coreX1, 0, roofTop, 0, D), boxGeo(p0, p1, ph, roofTop, 0, D));
-    bricks.push(quadX(0, dz0, 0, ph, p0 + eps, false), quadX(dz1, D, 0, ph, p0 + eps, false), quadX(dz0, dz1, dh, ph, p0 + eps, false), quadX(0, D, 0, ph, p1 - eps, true));
+      boxGeo(CORE.x0, CORE.x1, roofTop - 0.2, roofTop, 0, CORE.loftFace - g));
+
   }
 
   // våning 3–4: the upper units (L1201–L1209), one over each lower unit and one (L1205) over the core
@@ -548,7 +565,8 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
   // lamps (opal discs; their pools / washes join the door lights' meshes and fade with them)
   const PL = H.portikLamp, [pk0, pk1] = H.core.portik.map((p) => coreX0 + p), pkx = (pk0 + pk1) / 2, pkh = H.core.portikHeight;
   {
-    const g = new THREE.PlaneGeometry(pk1 - pk0, D, 1, 1).rotateX(-Math.PI / 2).translate(pkx, groundY(pkx, D / 2) + 0.006, D / 2);
+    const cells=group.userData.portik.cells;
+    const g=mergeGeometries(cells.map(r=>new THREE.PlaneGeometry(r.x1-r.x0,r.z1-r.z0).rotateX(-Math.PI/2).translate((r.x0+r.x1)/2,.006,(r.z0+r.z1)/2)));
     const p = g.attributes.position, uv = g.attributes.uv;
     for (let i = 0; i < p.count; i++) uv.setXY(i, p.getX(i), p.getZ(i));
     const m = new THREE.Mesh(g, new THREE.MeshStandardMaterial({ map: pavingTexture(), roughness: 0.95 }));

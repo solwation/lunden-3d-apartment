@@ -1,8 +1,7 @@
 import { architectureEdges } from './architectureedges.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { CORE as K, GARAGE, HUS_L, PLAYER, storeyFloor } from './config.js';
-import { husLLayout } from './exterior.js';
+import { CORE as K, PORTIK, GARAGE, HUS_L, PLAYER, storeyFloor } from './config.js';
 import { sfx } from './audio.js';
 
 // Hus L's stair core by the portik (#415, CORE in config): a walkable stairwell from the garage's lobby (våning −1) up
@@ -19,7 +18,7 @@ const LABELS = ['−1', '1', '2', '3'];
 const X0 = K.x0, X1 = K.x1, XS = K.split, FOOT = K.foot, N = K.north, S1 = K.south[1], CEIL = Y[3] + 2.6;
 const ZT = K.treads.map((n) => FOOT - n * K.tread); // each flight's top end (the street-end floor it arrives on)
 const ZTMIN = Math.min(...ZT), LOFT = K.loftFace, SH = K.shaft, [LD0, LD1] = K.loftDoor.x;
-const P0 = husLLayout().portik[0], [DZ0, DZ1] = K.portikDoor.z, [OP0, OP1] = K.portikDoor.opening, L = K.lift, LOFT_Z = LOFT - 0.01;
+const P0 = PORTIK.west, [DZ0, DZ1] = K.portikDoor.z, [OP0, OP1] = K.portikDoor.opening, L = K.lift, LOFT_Z = LOFT - 0.01;
 const inX = (x) => x > X0 && x < X1;
 const between = (v, a, b) => v > a && v < b;
 /** Flight k's walking line at z (its foot → its top: linear, between the nosings). */

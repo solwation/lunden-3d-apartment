@@ -110,8 +110,9 @@ export function wasteActions(life) {
 }
 
 
-// #387 the drop-off outdoors (LIFE_WASTE.dropoff, a *guess*: our real waste room is not in Peab's material): three underground
-// containers by the car park's east end, a lid per category. Only a rubbish bag goes in ("Bara soppåsar här"), in its own
+// #387/#520: three containers in the widened open part of the portik (LIFE_WASTE.dropoff).
+// Peab p.47 draws the space, not its real use. Each container has a lid; only a rubbish bag goes in
+// ("Bara soppåsar här"), in its own
 // category's container while the sorting is strict; E drops it in: the lid lifts and shuts with a thud, the bag is gone (one
 // emptying, one reward: stats rubbishOut). Back home a new bag goes in under the sink ('newBag').
 const CONTAINERS = [
@@ -133,7 +134,7 @@ function tagMaterial(word) {
 }
 
 /**
- * The drop-off by the car park (#387). Returns { object, targets, segments, update(dt) }; the targets are life-sim targets
+ * The drop-off in the portik (#387, #520). Returns { object, targets, segments, update(dt) }; the targets are life-sim targets
  * (kind 'life', `dropoff` = the category), the segments the containers' outlines for the visitor's collision.
  */
 export function buildDropoff(life) {

@@ -229,7 +229,8 @@ export class Jetpack {
     const up = k.has('Space') || this.touchUp;
     const down = k.has('KeyC') || k.has('ControlLeft') || k.has('ControlRight') || this.touchDown;
     if (this.cut && this.heat <= J.heat.resume) this.cut = false;
-    const roofed = this.player.below || this.player.inCore; // under the garage's / the stairwell's ceiling: no thrust (#441)
+    const p=this.player.pos,portik=this.player.world.portik;
+    const roofed = this.player.below || this.player.inCore || (portik?.contains(p.x,p.z)&&p.y<portik.height); // no thrust under garage/stairwell/portik ceilings (#441, #520)
     if (up && roofed && !this.roofedHint) this.onRoofed?.();
     this.roofedHint = up && roofed;
     const on = up && !this.cut && !roofed;

@@ -1001,8 +1001,14 @@ export const GARAGE = {
 // / coreE). The sheets' band is x −19.04 … −16.62; the model keeps −18.95 (L1004's wall, GARAGE). ASSUMPTION: every height
 // (storeyFloor / GARAGE.floor, #344 — so the risers 17 × 0.176, 18 × 0.181, 17 × 0.185 m: even, which fits the drawn tread
 // counts, but no section gives them), the railings and handrails, the slabs, the window's size (the façade's, exterior.js),
-// the doors' leaves, the lift's car, speed and doors, the lights. Not modelled: the portik's inside (wider than its mouths
-// on the sheet): its door stays in the portik's west wall with a short passage to the stairwell.
+// the doors' leaves, the lift's car, speed and doors, the lights. #520 models the wider portik interior and its small room.
+// #520: scale-calibrated interior faces from printed p.47 (unlabelled spaces, not verified functions).
+// Mouths retain HUS_L.core.portik; the passage widens to the east and joins the existing stair screen.
+export const PORTIK = {
+  west: -16.12, east: -11.37, north: .55, south: 11.77,
+  room: { west: -13.3, east: -11.37, north: 7.85, south: 11.6, wallWest: -13.8, wallNorth: 7.35 },
+  door: { x: -13.55, z0: 9.5, z1: 10.55, height: DOOR_HEIGHT, color: 0x6d5a45 },
+};
 export const CORE = {
   x0: -18.95, x1: -16.62, split: -17.95,         // the band's inner faces; the flights' open (east) side
   foot: 7.61, tread: 0.25, treads: [16, 17, 16], // every flight's bottom step (its south end); per flight −1→1, 1→2, 2→3
@@ -1207,11 +1213,10 @@ export const LIFE_MESS = {
   dust: { every: 150, perRoom: 3, amount: 0.35, wall: 0.45 },
 };
 
-// The drop-off for full rubbish bags (#387, src/waste.js `buildDropoff`): a *guess* — our real waste room is not verified in
-// Peab's material, so this is a game spot: three underground containers (Matavfall, Förpackningar, Restavfall) in a row by
-// the east end of the car park in front of Hus L, clear of the car's loop. x, z = the middle one, `gap` between them, `size`
-// / `h` their tops over the ground (m; our picks).
-export const LIFE_WASTE = { dropoff: { x: 10.9, z: -12.4, yaw: 0, gap: 1.1, size: 0.8, h: 1.05 } };
+// The drop-off for full rubbish bags (#387/#520, src/waste.js `buildDropoff`).
+// Peab's room functions are unlabelled. #520 places the same three categories in the portik's open bay,
+// clear of its through route. x/z center the middle container; gap = spacing, size/h = metres (game choices).
+export const LIFE_WASTE = { dropoff: { x: -12.95, z: 1.2, yaw: 0, gap: 1.0, size: 0.8, h: 1.05 } };
 
 // The dishwasher (#384, src/dishwasher.js; the integrated KEZA9310W of the plan, no product drawing — our picks): its racks roll
 // `out` m when the door is down; the lower rack (`y` over the tub's bottom, `h` high) holds `plates` plates on edge, the upper
@@ -1726,17 +1731,16 @@ export const FALL = { hurt: 3, soft: 1, free: 1, wake: { x: 1.3, z: -4.0, yawDeg
 // top, UNIT_TOP) = up there — the roofs' own walls collide instead of the ground's. Our choice (above every outdoor
 // step, below the lowest canopy).
 export const ROOFS = { aloft: 2.0 };
-// The jetpack (#359, src/jetpack.js): our own unbranded model on a wall hook beside the garage door (terrain.garageDoor,
-// z 41…47) — since #441 inside the garage — `hook` = its spot (x on the wall, z, the hook's height over the floor there).
+// The jetpack (#359, #520): own unbranded model on the east wall of the portik's small room.
+// Placement is a game choice; no room function is specified by Peab's plan.
 // Worn on the back (hands free). Every number is a game choice, not a real jetpack's: `thrust` m/s² up while Space / ⬆ is
 // held (gravity 9.8: about 60 % of the time to hover), `down` m/s² extra with C / Ctrl / ⬇, `climb` / `sink` m/s caps,
 // `speed` m/s flying across, `accel` 1/s how fast it gets there (inertia), `ceiling` m (model y) and OUTDOOR's edge as the
 // bounds; `heat` rises `up` per s of thrust, falls `cool` per s in the air and `ground` per s standing, `warn` beeps,
 // at 1 the thrust cuts out until it is down to `resume` (a cut high up = a fall, fall.js).
 export const JETPACK = {
-  // #441: inside the garage on the entrance hall's west wall (GARAGE.rects entrance x0), between the north stalls and the
-  // door's opening, facing east (`face`), `h` over the garage floor; the sign `over` m above the hook, `w` m wide
-  hook: { x: -69.95, z: 40.45, h: 1.45, face: 1, floor: GARAGE.floor }, sign: { w: 0.9, over: 0.75 },
+  // #520: east wall of the portik room, faces west. h above floor; sign over m above hook, w m wide.
+  hook: { x: -11.39, z: 9.1, h: 1.45, face: -1, floor: 0 }, sign: { w: 0.9, over: 0.75 },
   thrust: 16, down: 9, climb: 6, sink: 12, speed: 9, accel: 2.2, ceiling: 40,
   heat: { up: 1 / 45, cool: 1 / 20, ground: 1 / 5, warn: 0.8, resume: 0.35 }, // (hovering just about holds; 45 s of steady thrust)
   drop: 0.55, // m in front of the feet where "Ta av jetpacken" stands it

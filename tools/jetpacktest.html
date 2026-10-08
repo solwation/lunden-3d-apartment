@@ -72,11 +72,11 @@ async function run() {
     player.keys = new Set();
   };
 
-  // (1) on its hook inside the garage beside the garage door, under its sign (#441)
+  // (1) #520: actual hook in the small room, on the portik's east wall.
   const H = JETPACK.hook, gd = SITE.terrain.garageDoor, m = jetpack.model.position, garage = world.garage;
-  check(jetpack.state === 'hook' && Math.abs(m.x - H.x) < 0.1 && Math.abs(m.z - H.z) < 0.01 && garage.inside(m.x, m.z) && m.y < GARAGE.ceiling && jetpack.sign.position.y > m.y,
-    `on its hook in the garage at (${f2(m.x)}, ${f2(m.y)}, ${f2(m.z)}), beside the garage door (z ${gd.z0}…${gd.z1}), the sign over it`);
-  place(H.x + 1.0, H.z, GARAGE.floor, 90, -15);
+  check(jetpack.state==='hook'&&Math.abs(m.x-H.x)<.1&&Math.abs(m.z-H.z)<.01&&world.portik.contains(m.x,m.z)&&m.y>0&&jetpack.sign.position.y>m.y,'on its hook in the portik small room, sign above');
+  world.portik.doorTarget.toggle();for(let i=0;i<20;i++)world.portik.doorTarget.update(.1);
+  place(H.x-1,H.z,0,-90,-15);
   check(/ta på dig jetpacken/.test(prompt()), `facing it: "${prompt()}"`);
   const flights0 = stats.flights ?? 0, seen0 = !!stats.seen.flights?.jetpack;
   key('KeyE'); key('KeyE', false);
@@ -85,6 +85,9 @@ async function run() {
   check(/ta av dig jetpacken/.test(prompt()), `standing with it on: "${prompt()}"`);
 
   // (#441) under the garage's ceiling Space does nothing; out through the garage door, then it lifts
+  const roomY=player.pos.y;key('Space');for(let i=0;i<60;i++)step(dt);key('Space',false);
+  check(Math.abs(player.pos.y-roomY)<.01&&!jetpack.flames.visible,'no thrust through portik room ceiling');
+  place(-68.95,40.45,GARAGE.floor,90,-15);
   const yg = player.pos.y;
   key('Space'); for (let i = 0; i < 60; i++) step(dt); key('Space', false);
   check(jetpack.worn && Math.abs(player.pos.y - yg) < 0.01 && !jetpack.flames.visible, `in the garage: no thrust under the ceiling (y ${f2(player.pos.y)})`);
@@ -144,7 +147,7 @@ async function run() {
   const at = m.clone();
   for (let i = 0; i < 60; i++) step(dt);
   check(m.distanceTo(at) < 1e-6, 'it stays there');
-  camera.rotation.x = -50 * Math.PI / 180; for (let i = 0; i < 3; i++) step(dt);
+  camera.lookAt(jetpack.target.pickable.getWorldPosition(camera.position.clone()));for(let i=0;i<3;i++)step(dt);
   check(/ta på dig jetpacken/.test(prompt()), `looking down at it: "${prompt()}"`);
   key('KeyE'); key('KeyE', false); step(dt);
   check(jetpack.worn, 'E: on again');
@@ -201,7 +204,7 @@ async function run() {
 
   // (11) F sends it home
   toggleFurniture(false); toggleFurniture(true);
-  check(jetpack.state === 'hook' && Math.abs(m.z - H.z) < 0.01 && garage.inside(m.x, m.z), 'F: back on its hook in the garage');
+  check(jetpack.state === 'hook' && Math.abs(m.z - H.z) < 0.01 && garage.inside(m.x, m.z), 'F: back on its hook in the portik room');
 
   // (12) touch: ⬆ / ⬇ while it is worn; "Ta av dig jetpacken" on the action button
   place(-20, -6, 0, 180); jetpack.putOn();
