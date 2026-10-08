@@ -8,7 +8,7 @@ const MAX_JSON = 2_000_000, MAX_IMAGE = 300_000, TIMEOUT = 6500;
 export const shelfDay = beerDay;
 
 async function boundedBody(response, max) {
-  if (!response.ok || Number(response.headers.get('Content-Length')) > max) throw Error('source response');
+  if (!response.ok || Number(response.headers.get('Content-Length')) > max) throw Error(`source response ${response.status}`);
   const reader = response.body.getReader(), parts = []; let total = 0;
   for (;;) { const { value, done } = await reader.read(); if (done) break; total += value.length;
     if (total > max) { await reader.cancel(); throw Error('source size'); } parts.push(value); }
@@ -85,5 +85,5 @@ export async function beerShelfFetch(request, env, headers) {
     // Final image decoding/atomic persistence happens in the browser. Do not pin failed image data
     // in a Worker day-cache: a later home load must be able to retry the upstream sources.
     return response(await fetchShelf());
-  } catch { return response({ error: 'beer shelf unavailable' }, 503); } // browser keeps its last complete cache
+  } catch (error) { console.error('beer shelf:', error.message); return response({ error: 'beer shelf unavailable' }, 503); } // browser keeps its last complete cache
 }
