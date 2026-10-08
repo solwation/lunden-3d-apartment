@@ -392,14 +392,15 @@ export function buildWallShelves() {
   }
   const porcelainMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.16 });
   const facePot = holdable([[fPot, porcelainMat], [fDark, matteMat], [fLeaf, leafMat]], xc, y1, F.z);
+  facePot.userData.artificial=true;
   // a golden pothos in an off-white pot, its vines trailing over the front edge (upper shelf)
-  const pGlaze = [], pLeaf = [];
+  const pGlaze = [], pLeaf = [], pSoil=[];
   {
     const out = [[0.04, 0], [0.044, 0.004], [0.05, 0.075], [0.053, 0.082], [0.053, 0.09]];
     const g = vessel(out, 0.004, 0.012, 32);
     const n = g.attributes.position.count / 33;
     pGlaze.push(tint(g, Array.from({ length: n }, (_, j) => (j < 1 ? C.clay : C.offwhite))));
-    pLeaf.push(tint(cyl(0.046, 0.046, 0.004, 24), C.soil).translate(0, 0.078, 0));
+    pSoil.push(tint(cyl(0.046, 0.046, 0.004, 24), C.soil).translate(0, 0.078, 0));
     const heart = new THREE.Shape();
     heart.moveTo(0, 0); heart.bezierCurveTo(0.6, 0.15, 0.55, 0.85, 0, 1); heart.bezierCurveTo(-0.55, 0.85, -0.6, 0.15, 0, 0);
     const heartGeo = new THREE.ShapeGeometry(heart, 6);
@@ -431,7 +432,7 @@ export function buildWallShelves() {
       }
     }
   }
-  const pothos = holdable([[pGlaze, glazeMat], [pLeaf, leafMat]], xc, y2, 1.455);
+  const pothos = holdable([[pGlaze, glazeMat], [pLeaf, leafMat], [pSoil, new THREE.MeshStandardMaterial({vertexColors:true,color:0xffffff,roughness:1,userData:{plantSoil:true}})]], xc, y2, 1.455);
   group.userData.plants = [
     { model: facePot, kind: 'plant', back: 'hyllan', name: 'krukan med glasögonen' },
     { model: pothos, kind: 'plant', back: 'hyllan' },

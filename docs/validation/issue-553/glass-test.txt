@@ -1,0 +1,33 @@
+PASS three clean, empty glasses in the glass cabinet (glasses:0, glasses:1, glasses:2)
+PASS the cabinet shut: "Öppna glasskåpet först"
+PASS the open cabinet: "Ta dricksglaset"
+PASS the glass in the hand
+PASS the tap off: fillWater(Sätt på kranen först), wash(Sätt på kranen först), on
+PASS at the running tap: "Fylla dricksglaset med vatten | Stänga av köksblandaren"
+PASS half-way: nothing committed yet
+PASS filled: 250 ml water
+PASS full: "Dricksglaset är fullt"
+PASS two presses from 100 ml: 250 ml
+PASS the click with it in the hand: "Dricka"
+PASS a sip: 210 ml left, used, counted
+PASS drunk up: 0 ml, "Dricksglaset är tomt"
+PASS the carton full: 1000 ml
+PASS milk in the hand at the glass: "hälla mjölk i dricksglaset"
+PASS poured: 200 ml milk, 800 ml left in the carton
+PASS up to the brim only: 250 ml, the carton 750 ml
+PASS full: "Dricksglaset är fullt"
+PASS milk on water: "Häll ut vattnet först"
+PASS the last of it: 120 ml in the glass, the carton 0 ml (den tomma mjölkkartongen)
+PASS empty: "Mjölken är slut"
+PASS the old cup: nothing pours from the empty carton
+PASS the empty carton at the bin: "slänga den tomma mjölkkartongen i förpackningarna" 
+PASS thrown: the bin 2/12, the carton gone
+PASS no target while it is gone
+PASS the fridge opened again: a full carton at home (1000 ml)
+PASS milk in the glass at the tap: "Häll ut mjölken först"
+PASS poured out at the tap: 0 ml
+PASS then filled with water
+PASS saved: x.milk {"ml":333}
+PASS loaded: the carton 333 ml, three glasses
+PASS audit: ok
+ALL PASS

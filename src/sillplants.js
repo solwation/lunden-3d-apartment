@@ -16,7 +16,7 @@ import { SILL_PLANTS as S } from './config.js';
 const mats = {
   terracotta: new THREE.MeshStandardMaterial({ color: 0xb8643f, roughness: 0.9 }),
   ceramic: new THREE.MeshStandardMaterial({ color: 0xf2f0ea, roughness: 0.35 }),
-  soil: new THREE.MeshStandardMaterial({ color: 0x3b2a1e, roughness: 1 }),
+  soil: new THREE.MeshStandardMaterial({ color: 0x3b2a1e, roughness: 1, vertexColors: true }),
   leaf: new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.7, side: THREE.DoubleSide }),
   flower: new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.6, side: THREE.DoubleSide }),
 };
@@ -256,10 +256,10 @@ export function buildSillPlants(sills) {
       out[mat].push(strip(new THREE.CylinderGeometry(r * 0.92, r * 0.86, 0.012, 20).translate(0, 0.006, 0))); // the saucer
       out[mat].push(strip(new THREE.CylinderGeometry(r, r * 0.76, h, 20).translate(0, h / 2 + 0.004, 0)));
       out[mat].push(strip(new THREE.TorusGeometry(r - 0.004, 0.007, 5, 20).rotateX(Math.PI / 2).translate(0, h + 0.004, 0)));
-      out.soil.push(strip(new THREE.CircleGeometry(r - 0.008, 14).rotateX(-Math.PI / 2).translate(0, h - 0.012, 0)));
+      out.soil.push(tint(new THREE.CircleGeometry(r - 0.008, 14).rotateX(-Math.PI / 2).translate(0, h - 0.012, 0),0xffffff));
       plant(kind, h - 0.012, R, out, { inYaw, edge, r, col: colour });
       squeeze([...out.leaf, ...out.trail, ...out.flower], win, Math.abs(back - zc), s.x0 + S.side - x, s.x1 - S.side - x);
-      pots.push({ base: new THREE.Vector3(x, s.y, zc), geos: out, sill: i, k, kind });
+      pots.push({ base: new THREE.Vector3(x, s.y, zc), geos: out, sill: i, k, kind, soilY: h-.012 });
     }
   });
   const g = new THREE.Group();
@@ -300,6 +300,7 @@ export function potModel(pot) {
   for (const [k, list] of Object.entries(lists)) {
     if (!list.length) continue;
     const m = new THREE.Mesh(mergeGeometries(list), mats[k]);
+    m.userData.plantPart=k;
     m.castShadow = true;
     g.add(m);
   }

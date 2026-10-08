@@ -456,6 +456,7 @@ function flower() {
   g.add(pot);
   const soil = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.005, 20),
     new THREE.MeshStandardMaterial({ color: 0x3b2a1e, roughness: 1 }));
+  soil.material.userData.plantSoil=true;
   soil.position.y = 0.097;
   g.add(soil);
   for (let i = 0; i < 6; i++) {
@@ -2329,7 +2330,7 @@ function cactus() {
   const g = new THREE.Group();
   const pot = new THREE.MeshStandardMaterial({ color: 0x1d1f22, roughness: 0.6 });
   const green = new THREE.MeshStandardMaterial({ color: 0x4f7f4a, roughness: 0.75 });
-  const sand = new THREE.MeshStandardMaterial({ color: 0xd8c39a, roughness: 1 });
+  const sand = new THREE.MeshStandardMaterial({ color: 0xd8c39a, roughness: 1 });sand.userData.plantSoil=true;
   const add = (m, x, y, z) => { m.position.set(x, y, z); m.castShadow = true; g.add(m); return m; };
   add(new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.04, 0.09, 20), pot), 0, 0.045, 0);
   add(new THREE.Mesh(new THREE.CylinderGeometry(0.046, 0.046, 0.005, 20), sand), 0, 0.087, 0);
@@ -2797,6 +2798,7 @@ function palm(item) {
     const rim = new THREE.Mesh(new THREE.TorusGeometry(P.pot.r - 0.012, 0.012, 6, 28).rotateX(Math.PI / 2), potMat);
     rim.position.y = P.pot.h;
     const soil = new THREE.Mesh(new THREE.CircleGeometry(P.pot.r - 0.02, 24).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ color: 0x3b2a1e, roughness: 1 }));
+    soil.material.userData.plantSoil=true;
     soil.position.y = P.pot.h - 0.04;
     g.add(pot, rim, soil);
   }
@@ -3194,6 +3196,7 @@ function yucca(Y = YUCCA) {
   const pot = new THREE.Mesh(new THREE.CylinderGeometry(Y.pot.r, Y.pot.r * 0.82, Y.pot.h, 24), new THREE.MeshStandardMaterial({ color: Y.potColor, roughness: 0.55 }));
   pot.position.y = Y.pot.h / 2;
   const soil = new THREE.Mesh(new THREE.CylinderGeometry(Y.pot.r * 0.93, Y.pot.r * 0.93, 0.005, 20), new THREE.MeshStandardMaterial({ color: 0x3b2a1e, roughness: 1 }));
+  soil.material.userData.plantSoil=true;
   soil.position.y = Y.pot.h - 0.012;
   g.add(pot, soil);
   // the canes: beige-brown bark with leaf-scar rings (a lathe with a little bulge every few cm)

@@ -28,6 +28,7 @@ const the = (k) => ({ water: 'vattnet', milk: 'mjölken', wine: 'vinet', coffee:
 export function dishActions(life) {
   const A = life.actions, I = life.items, nm = (it) => I.name(it);
   const isGlass = (it) => !!it && I.has(it, 'glass');
+  const isFillable = it => isGlass(it) || I.has(it,'fillable');
   const volume = (it) => I.def(it).capacity ?? 250;
   /** What the glass holds now, or null when it is empty. */
   const drinkIn = (it) => (it.amount > 0.5 ? it.machine?.drink ?? null : null);
@@ -40,13 +41,13 @@ export function dishActions(life) {
   A.define({
     id: 'fillWater', order: 0, duration: LIFE.drink.fill,
     label: (c) => `fylla ${nm(c.held)} med vatten`,
-    applies: (c) => isGlass(c.held) && isBasinTap(c.raw),
+    applies: (c) => isFillable(c.held) && isBasinTap(c.raw),
     quiet: (c) => !c.raw.isOpen,
     check: (c) => {
       if (!c.raw.isOpen) return 'Sätt på kranen först';
       const k = drinkIn(c.held);
       if (k && k !== 'water') return `Häll ut ${the(k)} först`;
-      if (c.held.amount >= volume(c.held) - 0.5) return `${cap(nm(c.held))} är fullt`;
+      if (c.held.amount >= volume(c.held) - 0.5) return I.def(c.held).fullText ?? `${cap(nm(c.held))} är fullt`;
       return null;
     },
     reserve: (c) => ({ inputs: [c.held] }),
@@ -75,7 +76,7 @@ export function dishActions(life) {
   A.define({
     id: 'pourOut', order: 2, duration: LIFE.drink.pour * 0.6,
     label: (c) => (c.held ? `hälla ut ${the(drinkIn(c.held))}` : 'hälla ut det som är i koppen'),
-    applies: (c) => isBasinTap(c.raw) && (isGlass(c.held) ? !!drinkIn(c.held) : !!c.heldView?.isCup && c.heldView.fill > 0.01), // (a coffee cup too, #383)
+    applies: (c) => isBasinTap(c.raw) && (isFillable(c.held) ? !!drinkIn(c.held) : !!c.heldView?.isCup && c.heldView.fill > 0.01), // (a coffee cup too, #383)
     reserve: (c) => ({ inputs: c.held ? [c.held] : [] }),
     animate: (c, k, job) => {
       const v = c.heldView;

@@ -1296,7 +1296,15 @@ export const LAUNDRY = {
   panel: { w: .26, h: .065, lift: .36, offset: .008, pickDepth: .02 },
   washSeconds: 35, drySeconds: 25,
 };
+// Plant care game amounts, timing, can/rack geometry and display changes are assumptions (#553).
+export const WATERING = {
+  capacity: 1000, dose: 120, seconds: 1.2, soilWet: .55, dryLift: .88, dryLeaf: .96,
+  home: [.50,.91,4.22], can: { r: .065, h: .18, spout: .15, handle: .06, color: 0x537c6b },
+  tilt: .65, streamRadius: .003, pickMargin: .025, rackPick: [.34,.24,.2], soilRoughness: .35,
+  wall: .006, bottom: .012, spoutRadius: .009, handleRadius: .008, waterInset: .007, waterBottom: .015, waterHeadroom: .02,
+};
 export const ITEMS = {
+  wateringCan: { name: 'vattenkannan', noun: 'vattenkanna', tags: ['wateringCan','fillable'], unit: 'ml', amount: 0, capacity: WATERING.capacity, fullText: 'Vattenkannan är full', size: 'm', model: 'wateringCan', held: {pos:[.16,-.30,-.48],rot:[.1,-.25,0]} },
   laundryClothes: { name: 'plagget', noun: 'plagg', tags: ['laundry'], unit: 'count', amount: 1, size: 's', clean: 'dirty', moisture: 'dry', model: 'laundryClothes' },
   eggCarton: { name: 'äggkartongen', tags: ['food', 'package'], unit: 'count', amount: EGG.count, size: 'm', pkg: 'closed', model: 'eggCarton', dispense: 'rawEgg', dispenseLabel: 'ta ett ägg' },
   rawEgg: { name: 'ägget', tags: ['food'], unit: 'count', amount: 1, size: 'xs', model: 'rawEgg' },

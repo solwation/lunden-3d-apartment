@@ -148,3 +148,7 @@ Code in src/mess.js (and the vacuum / the cloth below), the test is `tools/life3
   Crumbs come from the life sim's existing `crumbs` event (#380, **extended**: a bite says where the eater stands; cutting
   and the bread bag emit it too), dust gathers slowly near the walls. Reachable floor = player.js `isFree` / `nearestFree`
   (#314, **reused**). Saved as a part of the life record (`x.mess`, `life.keepPart`). `LIFE.rules.mess` / `&mess=0` = off.
+
+## M4 – small chores (#396)
+
+- **#553 watering**: existing indoor window pots, plant Things and movable palm/ZZ are **extended** with saved care ids, wet soil and per-pot window foliage changes. Artificial shelf eucalyptus refuses watering. One **new** Items watering can reuses the M0 hand/slots and M2 basin filling/pouring; no separate inventory. WATERING defines assumed game capacity/dose/timing and display dimensions. State lives in the same life record (`x.watering` and the can instance amount).

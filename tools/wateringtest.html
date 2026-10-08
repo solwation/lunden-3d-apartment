@@ -1,0 +1,58 @@
+<!doctype html><html lang="sv"><meta charset="utf-8"><title>Watering test</title><pre id="out">running…</pre><script type="module">
+const lines=[];let pass=true;const check=(ok,text)=>{lines.push((ok?'PASS':'FAIL')+' '+text);pass&&=!!ok},wait=ms=>new Promise(r=>setTimeout(r,ms));
+try{
+ const f=document.createElement('iframe');f.width=480;f.height=300;document.body.append(f);
+ async function load(q){await new Promise(r=>{f.onload=r;f.src='../index.html?'+q});while(!f.contentWindow.__app)await wait(100);f.contentDocument.documentElement.requestFullscreen=undefined;f.contentDocument.getElementById('start-touch').click();const a=f.contentWindow.__app;a.renderer.setPixelRatio(.15);return a;}
+ let A=await load('life&shot&cloud='),L=A.life,I=L.items,W=A.watering;
+ const {WATERING:P,LIFE}=await f.contentWindow.eval("import('/src/config.js')"),T=await f.contentWindow.eval("import('three')");
+ const row=(t,id)=>L.options(t).find(a=>a.id===id),run=(t,id)=>row(t,id)?.run(),finish=()=>L.runner.update(10);
+ let can=I.ofType('wateringCan')[0],canId=can.id,p=W.plants.find(p=>p.id.startsWith('sill:')),neighbor=W.plants.find(x=>x!==p&&x.id.startsWith('sill:'));
+ check(I.ofType('wateringCan').length===1&&can.amount===0&&can.place.store==='wateringCanRack','one empty can starts on its counter rack');
+ check(W.plants.filter(p=>p.id.startsWith('sill:')).length===A.sillPots.length&&W.plants.some(p=>p.id.startsWith('furniture:'))&&W.plants.every(p=>!p.watered),'existing indoor plants start dry without new plant instances');
+ run(L.view(can).takeTarget,'take');
+ check(I.held()===can&&row(p.target,'waterPlant')?.reason==='Fyll vattenkannan först','empty can remains held and watering explains that it needs filling');
+ check(!L.options(L.view(can).takeTarget).some(a=>a.id==='drink'),'watering can never exposes the drinking-glass action');
+ const tap=A.taps.find(t=>t.name==='köksblandaren');if(tap.isOpen)tap.toggle();
+ check(row(tap,'fillWater')?.reason==='Sätt på kranen först'&&!run(tap,'fillWater'),'closed tap blocks filling');tap.toggle();
+ run(tap,'fillWater');L.runner.update(LIFE.drink.fill/2);L.runner.interrupt('test');
+ check(can.amount===0&&!can.lock,'cancelled filling restores empty can and releases its reservation');
+ function aim(point,target,feet=0){for(let k=0;k<16;k++){const a=k/16*Math.PI*2;A.player.spawn(point.x+Math.sin(a)*.8,point.z+Math.cos(a)*.8,0);A.player.pos.y=feet;A.player.eyeY=feet+1.62;A.step(0);A.camera.lookAt(point);A.camera.updateMatrixWorld(true);A.step(0);if(A.focus().focused===target)return true;}return false;}
+ const tp=tap.pickable.getWorldPosition(new T.Vector3());check(aim(tp,tap),'running tap can be aimed at while holding the can');
+ if(A.focus().focused===tap)f.contentDocument.getElementById('action').click();else run(tap,'fillWater');finish();
+ check(can.amount===P.capacity&&can.machine.drink==='water'&&row(tap,'fillWater')?.reason==='Vattenkannan är full','real touch filling reaches saved can capacity and rejects overfill');
+ const soil=p.owner.pot.geos.soil[0],leaf=p.owner.pot.geos.leaf[0],drySoil=soil.attributes.color.array.slice(),dryLeaf=leaf.attributes.position.array.slice(),otherSoil=neighbor.owner.pot.geos.soil[0].attributes.color.array.slice();
+ const differs=(a,b)=>a.some((v,k)=>Math.abs(v-b[k])>1e-6);
+ run(p.target,'waterPlant');L.runner.update(P.seconds/2);
+ check(can.amount===P.capacity&&!p.watered&&W.stream.visible,'mid-pour previews a water stream but consumes no water');L.runner.interrupt('test');
+ check(can.amount===P.capacity&&!p.watered&&!W.stream.visible&&!can.lock,'cancelled watering leaves plant and amount unchanged and hides stream');
+ const point=p.soilPoint().add(new T.Vector3(0,.08,0)),feet=point.y>3?3.25:0;
+ check(aim(point,p.target,feet),'real window plant can be aimed at with watering can');
+ if(A.focus().focused===p.target)f.contentDocument.getElementById('action').click();else run(p.target,'waterPlant');
+ check(!run(p.target,'waterPlant'),'double press cannot start a second watering job');finish();
+ check(p.watered&&can.amount===P.capacity-P.dose&&!W.stream.visible,'watering commits exactly one dose to the original plant');
+ check(differs(drySoil,soil.attributes.color.array)&&differs(dryLeaf,leaf.attributes.position.array),'watered sill plant shows darker soil and lifted foliage in existing batched geometry');
+ check(!differs(otherSoil,neighbor.owner.pot.geos.soil[0].attributes.color.array),'neighbor remains visually dry despite shared home materials');
+ check(row(p.target,'waterPlant')?.reason==='Växten är redan vattnad'&&!run(p.target,'waterPlant'),'already watered plant blocks another dose');
+ L.view(can).putBack();p.owner.take();p.owner.placeAt(new T.Vector3(4.4,.931,2.8),0);L.view(can).take();
+ check(p.watered&&p.owner.away.has(p.owner.pot)&&W.aim(p.owner.takeTarget)===p.target,'moving an existing pot retains care identity and watering focus');
+ const pick=p.target.pickable;check(pick.material.visible===false,'care target stays invisible when SillPot reveals its own child meshes');
+ L.view(can).putBack();p.owner.take();p.owner.putBack();L.view(can).take();
+ check(p.watered&&!p.owner.away.has(p.owner.pot),'returning pot to merged window display preserves watered state');
+ const artificial=W.plants.find(p=>p.artificial);check(artificial&&row(artificial.target,'waterPlant')?.reason==='Konstväxten behöver inget vatten','documented artificial plant explains why it needs no watering');
+ const real=W.plants.find(p=>!p.id.startsWith('sill:')&&!p.artificial),dryMaterials=[];
+ for(const n of W.plants.filter(x=>x!==real&&!x.id.startsWith('sill:')))n.root.traverse(m=>{if(m.isMesh&&m.material.userData.plantSoil)dryMaterials.push([m.material,m.material.color.getHex()]);});
+ run(real.target,'waterPlant');finish();
+ check(real.watered&&can.amount===P.capacity-2*P.dose&&dryMaterials.every(([m,c])=>m.color.getHex()===c),'ordinary indoor plant darkens independently without changing neighboring shared soil finishes');
+ I.setAmount(can,P.dose-1);check(!run(neighbor.target,'waterPlant')&&row(neighbor.target,'waterPlant')?.reason==='Fyll vattenkannan först','less than one dose cannot partly water a plant');
+ run(tap,'fillWater');finish();run(tap,'pourOut');finish();check(can.amount===0&&p.watered,'normal sink pouring empties can without reverting watered plant');
+ run(tap,'fillWater');finish();run(neighbor.target,'waterPlant');finish();L.view(can).putBack();
+ const savedAmount=can.amount,watered=W.plants.filter(p=>p.watered).map(p=>p.id);f.contentWindow.localStorage.setItem(LIFE.save.key,JSON.stringify(L.serialize()));
+ A=await load('shot&cloud=&time=12');L=A.life;I=L.items;W=A.watering;can=I.get(canId);
+ check(I.ofType('wateringCan').length===1&&can.amount===savedAmount&&can.place.store==='wateringCanRack','actual reload preserves original can amount and rack slot without duplicate stock');
+ check(W.plants.filter(p=>p.watered).length===watered.length&&watered.every(id=>W.plants.find(p=>p.id===id)?.watered),'actual reload keeps exact watered plant identities');
+ check(I.audit().length===0,'inventory invariants hold after filling, cancellation, moving, pouring and reload');
+ A.resetHome.go=()=>{};A.resetHome.confirm();A=await load('shot&cloud=&time=12');
+ check(A.life.items.ofType('wateringCan').length===1&&A.life.items.ofType('wateringCan')[0].amount===0&&A.watering.plants.every(p=>!p.watered),'actual home reset restores one empty can and dry plants');
+ document.getElementById('out').textContent=lines.join('\n')+'\n'+(pass?'ALL PASS':'SOME FAILED');
+}catch(e){document.getElementById('out').textContent=lines.join('\n')+'\nFAIL '+e.stack;}
+</script></html>

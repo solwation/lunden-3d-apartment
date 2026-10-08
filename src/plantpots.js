@@ -15,7 +15,7 @@ function materials() {
     brush.wrapS = brush.wrapT = THREE.RepeatWrapping;
     brush.repeat.set(1, 3);
     copper = new THREE.MeshStandardMaterial({ color: 0xb77954, metalness: 0.78, roughness: 0.64, roughnessMap: brush });
-    soil = new THREE.MeshStandardMaterial({ color: 0x35281f, roughness: 1 });
+    soil = new THREE.MeshStandardMaterial({ color: 0x35281f, roughness: 1 });soil.userData.plantSoil=true;
   }
   return { copper, soil };
 }
