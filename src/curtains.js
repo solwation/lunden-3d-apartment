@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { LEVELS, SOFFITS } from './config.js';
+import { LEVELS, SOFFITS, CURTAIN_LIGHT as LIGHT } from './config.js';
 import { sfx } from './audio.js';
 
 // Curtains on a ceiling track (#342, CURTAINS in config): Sovrum 1's two teal jungle-print panels. One track under the
@@ -513,7 +513,11 @@ export class Curtain {
     const fl = LEVELS[spec.level].floor;
     const y0 = fl + spec.drop, y1 = fl + spec.top;
     this.tex = printTexture(spec.theme, spec.colors.ground);
-    this.mat = new THREE.MeshStandardMaterial({ map: this.tex, emissiveMap: this.tex, emissive: 0x000000, roughness: 0.93, side: THREE.DoubleSide });
+    this.mat = new THREE.MeshStandardMaterial({ map: this.tex, emissiveMap: this.tex, emissive: 0x000000, roughness: LIGHT.roughness, side: THREE.DoubleSide, opacity: LIGHT.opacity, transparent: true, depthWrite: true, forceSinglePass: true });
+    // One depth-tested pass avoids double blending of two-sided cloth. Gathered folds keep their density.
+    // Three's default shadow depth material stays solid, so see-through does not create sharp sun pinholes.
+    // Blinds.update sends the transmitted share through the room's existing diffuse fill instead.
+    this.daylightCut = spec.dim ?? 1-LIGHT.diffuseTransmission;
     // Each cloth panel has a closed span and parks at one end of that span. Ordinary pairs retain their ids.
     const spans = spec.panels ?? [{ id: 'west', from: spec.stop, to: spec.meet, park: 'left' },
       { id: 'east', from: spec.meet, to: spec.east, park: 'right' }];
@@ -588,8 +592,8 @@ export class Curtain {
   /** The cotton lets a little daylight through (teal), warm from a lit room at night. */
   glow(day, lit) {
     const g = this.spec.glow, e = this.mat.emissive;
-    e.setHex(this.spec.colors.glow).multiplyScalar(day * g.day);
-    if (lit) e.add(tmp.setHex(this.spec.colors.warm).multiplyScalar(g.lamp));
+    e.setHex(this.spec.colors.glow).multiplyScalar(day * g.day * LIGHT.backlightGain);
+    if (lit) e.add(tmp.setHex(this.spec.colors.warm).multiplyScalar(g.lamp * LIGHT.warmGain));
   }
 }
 const tmp = new THREE.Color();

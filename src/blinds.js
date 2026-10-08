@@ -195,7 +195,7 @@ export class Blinds {
       goal = w ? cut / w : 0;
       // drawn curtains take their share on top (a cotton print: less than the blackout blind)
       let cc = 0;
-      for (const c of this.curtains) if (c.level === env.level && c.room === env.room) cc += c.cover * c.spec.dim * (c.spec.glass[1] - c.spec.glass[0]) / (w || 1);
+      for (const c of this.curtains) if (c.level === env.level && c.room === env.room) cc += c.cover * c.daylightCut * (c.spec.glass[1] - c.spec.glass[0]) / (w || 1);
       goal = 1 - (1 - goal) * (1 - Math.min(1, cc));
     }
     this.dim += (goal - this.dim) * (this.started ? Math.min(1, dt / B.fade * 3) : 1); // the first frame: at once (a reload, screenshots)

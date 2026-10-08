@@ -83,7 +83,7 @@ async function run() {
   btn.click();
   const panel = d.getElementById('blind-panel');
   check(!panel.hidden && blinds.active === c && panel.classList.contains('curtain'), 'E opens the strip, sideways (#blind-panel.curtain)');
-  check(panel.querySelector('[data-act=up]').textContent === '◀', 'the buttons are ◀ ▶');
+  check(panel.querySelector('[data-act=up]').dataset.hudIcon === 'left' && panel.querySelector('[data-act=down]').dataset.hudIcon === 'right', 'the buttons show horizontal curtain controls');
   const before = { x: player.pos.x, z: player.pos.z };
   app.touch.analog.y = 1;
   for (let i = 0; i < 30; i++) step(1 / 60);
@@ -110,7 +110,7 @@ async function run() {
   // daylight: the room loses some, less than with the blackout blind
   for (let i = 0; i < 120; i++) step(1 / 30);
   const dimC = day.dim;
-  check(dimC > S.dim * 0.85 && dimC < BLINDS.dim.dark, `Sovrum 1 with the curtains drawn: daylight cut ${dimC.toFixed(2)} (blackout ${BLINDS.dim.dark})`);
+  check(dimC > c.daylightCut * 0.85 && dimC < BLINDS.dim.dark, `Sovrum 1 with the curtains drawn: daylight cut ${dimC.toFixed(2)} (blackout ${BLINDS.dim.dark})`);
   check(c.mat.emissive.g > 0.04 && c.mat.emissive.b > c.mat.emissive.r, `they glow teal by day (${c.mat.emissive.toArray().map((v) => v.toFixed(2)).join(', ')})`);
   // D opens them again, back to the parked spots
   blindPanel.key('KeyD', true);
@@ -130,17 +130,18 @@ async function run() {
   // a blind afterwards gets its own upright strip back
   const b = blinds.list.find((x) => x.room === 'Sovrum 1');
   app.showBlind(b);
-  check(!panel.classList.contains('curtain') && panel.querySelector('[data-act=up]').textContent === '▲', 'the blind keeps its ▲ ▼ strip');
+  check(!panel.classList.contains('curtain') && panel.querySelector('[data-act=up]').dataset.hudIcon === 'up', 'the blind keeps its vertical control strip');
   app.showNote(false);
   check(panel.hidden, 'E leaves the mode');
   // remembered over a reload
-  c.set(0.6); blinds.save();
+  c.set(0.6); blinds.curtains.slice(1).forEach((c,i)=>c.set(.15+i*.1)); const remembered=blinds.curtains.map(c=>c.t); blinds.save();
   f.src = URL0 + '&r=1';
   await loaded();
   w = f.contentWindow; d = f.contentDocument;
   while (!w.__app) await wait(100);
   app = w.__app;
   const c2 = app.blinds.curtains[0];
+  check(app.blinds.curtains.every((c,i)=>Math.abs(c.t-remembered[i])<.002), 'all six saved curtain/valance positions survive a real reload');
   check(Math.abs(c2.t - 0.6) < 0.002 && Math.abs(c2.east.a - (c2.ends.east.open[0] + (S.meet - c2.ends.east.open[0]) * 0.6)) < 1e-3, `the state survives a reload (${c2.t})`);
 
   // Verify all 6 rooms have curtains with proper configuration and themes (#459)
@@ -181,6 +182,15 @@ async function run() {
     const a = p.mesh.geometry.attributes.position.array;
     return Array.from({ length: a.length / 3 }, (_, i) => a[i * 3 + 2]).every((z) => z > 12.06 && z < 12.2337);
   }), 'cloth folds stay between sofa back and window wall');
+  const { CURTAIN_LIGHT } = await import('../src/config.js');
+  for(const cloth of app.blinds.curtains) {
+    const m=cloth.mat;
+    check(!m.alphaHash && m.transparent && m.forceSinglePass && m.depthWrite && m.opacity===CURTAIN_LIGHT.opacity && m.opacity<1 && m.opacity>.9, `${cloth.room}: slight transparency in one depth-tested cloth pass`);
+    check(m.roughness>.9 && m.map===m.emissiveMap && cloth.panels.every(p=>p.mesh.castShadow), `${cloth.room}: print, rough fabric and solid sun-blocking shadow retained`);
+    cloth.glow(1,false);const glowDay=m.emissive.clone();cloth.glow(0,false);const glowDark=m.emissive.clone();cloth.glow(0,true);
+    check((glowDay.r+glowDay.g+glowDay.b>0 && glowDark.r+glowDark.g+glowDark.b===0 && m.emissive.r+m.emissive.g+m.emissive.b>0), `${cloth.room}: daylight backlighting and warm room-lit glow, dark when unlit`);
+    check(cloth.spec.style==='valance' ? cloth.daylightCut<.05 : Math.abs(1-cloth.daylightCut-CURTAIN_LIGHT.diffuseTransmission)<1e-6, `${cloth.room}: diffuse transmission controls room fill; valance leaves lower glass free`);
+  }
   try { localStorage.removeItem('lunden.blinds'); } catch { /* */ }
 }
 run().catch((e) => check(false, `ERROR ${e.message}\n${e.stack}`)).finally(() => {
