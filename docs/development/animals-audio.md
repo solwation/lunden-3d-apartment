@@ -181,3 +181,5 @@ tools/kittentest.html  headless test of kittens (#363): the seeded draw (~KITTEN
 - Sound effects are synthesised and positional; music uses lazy CC0 recordings with generated fallbacks (#416). The AudioContext is started by the
   start-screen buttons (browser autoplay rules). M / the speaker button mutes.
 
+
+Cat placement test (#542): chance.appear=1 guarantees an attempt, not a safe spot from roomSpot's bounded random search. tools/cattest.html checks every successful placement and requires each door side to receive a cat across the two fixed furniture seeds; a single exhausted search is reported with door coordinates, side and seed. A placement regression affecting both seeds still fails.

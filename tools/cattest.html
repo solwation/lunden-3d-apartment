@@ -69,7 +69,7 @@ for (const door of world.doors) {
   lines.push(`${ok && vanished ? 'PASS' : 'FAIL'} ${door.name} @ (${center.map((v) => v.toFixed(2)).join(', ')}) → cat (${p.x.toFixed(2)}, ${p.y.toFixed(2)}, ${p.z.toFixed(2)}) vanished-on-reopen=${vanished}`);
 }
 // #200: with chance.furniture = 1 the cat goes up on a seat, bed or table in the room when there is one in view
-const ups = [];
+const ups = [], placements = new Map();
 // two seeds: the candidates are shuffled together, so one seed alone hangs on how many seats there are anywhere (#397)
 for (const seed0 of [777, 4242])
 for (const door of world.doors) {
@@ -80,12 +80,20 @@ for (const door of world.doors) {
   const { center, normal } = door.opening();
   for (const sgn of [1, -1]) { // from both sides: the room beyond may be either way
   const from = { x: center[0] + sgn * normal[0] * 0.8, z: center[1] + sgn * normal[1] * 0.8 };
+  const key = `${door.name}@${center.join(',')}:${sgn}`;
+  placements.set(key, placements.get(key) ?? 0);
   cat.hide();
   cat.onOpen(door, from);
-  if (!cat.visible) { pass = false; lines.push(`FAIL furniture: no cat behind ${door.name}`); continue; }
+  // appear=1 requests a placement; the bounded random search may still find no safe spot.
+  // Require coverage across seeds below, while checking every successful placement.
+  if (!cat.visible) { lines.push(`INFO no safe sampled spot behind ${key}, seed ${seed0}`); continue; }
+  placements.set(key, placements.get(key) + 1);
   rests_(cat, door);
   const p = cat.object.position, floor = p.y < 1.6 ? 0 : 3.25;
   const side = sgn * ((p.x - center[0]) * normal[0] + (p.z - center[1]) * normal[1]);
+  const farSide = side < -0.3;
+  pass &&= farSide;
+  if (!farSide) lines.push(`FAIL cat on wrong side of ${key}, seed ${seed0}`);
   if (cat.on) {
     const ok = side < -0.2 && p.y > floor + 0.3 && p.y < floor + 1.5; // (a top bunk is ~1.3 m up)
     pass &&= ok;
@@ -94,6 +102,9 @@ for (const door of world.doors) {
   }
   }
 }
+const missed = [...placements].filter(([,count]) => count === 0).map(([key]) => key);
+pass &&= !missed.length;
+lines.push(`${missed.length ? 'FAIL' : 'PASS'} both seeds together cover every door side (${placements.size} sides)${missed.length ? ': ' + missed.join('; ') : ''}`);
 const okUps = ups.length >= 4 && ups.includes('lie') && ups.includes('sit');
 pass &&= okUps;
 lines.push(`${okUps ? 'PASS' : 'FAIL'} cats up on furniture behind ${ups.length} doors (${[...new Set(ups)].join(', ')})`);
