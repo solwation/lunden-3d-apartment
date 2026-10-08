@@ -2,6 +2,7 @@
 //   node cloudflare/dev.mjs [port=8144] [admin token]
 // then open the site with &cloud=http://localhost:8144
 import http from 'node:http';
+import { readFileSync } from 'node:fs';
 import worker from './worker.js';
 
 const port = Number(process.argv[2] ?? 8144);
@@ -18,6 +19,8 @@ const LUNDEN = {
   },
 };
 const layouts = new Map();
+// Optional local-only seed for reproducing migrations; never a public HTTP endpoint.
+if (process.env.LUNDEN_LAYOUT_FIXTURE) layouts.set('furniture-layout', JSON.parse(readFileSync(process.env.LUNDEN_LAYOUT_FIXTURE, 'utf8')));
 let layoutGate = Promise.resolve();
 const layoutStorage = { get: async (k) => structuredClone(layouts.get(k)), put: async (k,v) => layouts.set(k, structuredClone(v)) };
 const env = { LUNDEN, layoutStorage, ADMIN_TOKEN: process.argv[3] };

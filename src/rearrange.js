@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { LEVELS, LIFE, REARRANGE } from './config.js';
 import { cloudUrl } from './cloud.js';
+import { migratePosterLayout } from './layoutmigrations.js';
 import { inPoly, crosses } from './player.js';
 
 // #465: preview locally; only confirmed, revision-checked moves enter the shared arrangement.
@@ -246,6 +247,7 @@ export class Rearrange {
     }
   }
   apply(state) {
+    state = migratePosterLayout(state);
     if (!state || !Number.isInteger(state.revision) || !state.pieces || typeof state.pieces !== 'object') return;
     if (state.revision < this.state.revision) return;
     if (this.selected || this.saving) { this.pending = state; return; }

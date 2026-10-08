@@ -1470,6 +1470,8 @@ Living-room palm (#491): original id/position retained; geometry dimensions scal
 
 BESTÅ wall placement (#492): the whole cabinet is a wall-mounted movable root (including doors, contents and spots), and its preview must fit vertically within the floor/ceiling. Existing misplaced saves remain selectable and can be moved or restored individually. Regression: tools/bestaplacementtest.html.
 
+Tilly posters (#493): separate unmerged planes with stable per-art ids (suffix poster-nova/moon/bloom/lumi/starlyt). src/layoutmigrations.js retires only the former group id from cached and shared layouts, restoring default posters without overwriting later individual moves. Worker persists migration once and rejects writes by old group clients.
+
 ## Testing
 
 Headless Chrome with SwiftShader works on this machine:

@@ -1,0 +1,38 @@
+<!doctype html><html><meta charset="utf-8"><title>Individual posters and layout migration (#493)</title><pre id="out">running…</pre><script type="module">
+const lines=[];let pass=true;const check=(ok,s)=>{lines.push((ok?'PASS':'FAIL')+' '+s);pass&&=!!ok},wait=ms=>new Promise(r=>setTimeout(r,ms));
+const cloud=new URLSearchParams(location.search).get('cloud')??'';
+try{
+ const legacy='f-kposters-1-0-0-0-0';
+ localStorage.setItem('lunden.furniture.layout',JSON.stringify({revision:4,pieces:{[legacy]:{revision:4,pos:[20,30,20],quat:[0,0,0,1]}}}));
+ const frames=[];
+ async function load(f){f??=document.createElement('iframe');if(!f.parentNode){f.width=480;f.height=300;document.body.append(f);frames.push(f)}
+ f.src='../index.html?shot&cloud='+encodeURIComponent(cloud)+'&r='+Math.random();await new Promise(r=>f.onload=r);while(!f.contentWindow.__app)await wait(100);const A=f.contentWindow.__app;await A.rearrange.ready;f.contentDocument.documentElement.requestFullscreen=undefined;f.contentDocument.getElementById('start-touch').click();A.rearrange.unlock('olof is the goat');A.player.pos.y=3.25;return A}
+ let A=await load(),R=A.rearrange,T=await frames[0].contentWindow.eval("import('three')");
+ const close=(a,b)=>a.elements.every((v,i)=>Math.abs(v-b.elements[i])<.001);
+ const posters=R.pieces.filter(p=>p.item.type==='kposters'),p=posters[0],id=p.id,home=p.home.clone();
+ check(posters.length===5&&posters.every(p=>p.object.isMesh),'all five posters are separate unmerged meshes');
+ check(posters.every(p=>close(p.object.matrixWorld,p.home)),'bad cached/shared group pose restores all five original posters');
+ check(!R.state.pieces[legacy],'obsolete group pose removed from cached state');
+ const siblings=posters.slice(1).map(p=>({id:p.id,m:p.object.matrixWorld.clone()}));
+ R.begin(p);check(R.selected.group.length===1&&R.ghost.children.length===1,'selecting one poster previews only that poster');
+ const target=new T.Vector3().setFromMatrixPosition(home).add(new T.Vector3(0,.12,-.12)),normal=new T.Vector3(0,0,1).transformDirection(home);
+ A.camera.position.copy(target).addScaledVector(normal,1);A.camera.lookAt(target);R.update();
+ check(R.valid,'original world-space poster origin gives valid wall preview');
+ R.rotate();R.update();check(R.valid,'poster rotates on its wall');const moved=R.candidate.clone();
+ check(await R.confirm(),'single poster move saved');
+ check(siblings.every(({id,m})=>close(R.byId.get(id).object.matrixWorld,m)),'all other posters remain unchanged');
+ R.begin(p);R.cancel();check(close(p.object.matrixWorld,moved),'cancel preserves last saved individual pose');
+ const B=await load();await B.rearrange.sync();
+ check(close(B.rearrange.byId.get(id).object.matrixWorld,moved),'second client sees saved individual pose');
+ check(siblings.every(({id,m})=>close(B.rearrange.byId.get(id).object.matrixWorld,m)),'second client retains all four sibling posters');
+ A=await load(frames[0]);R=A.rearrange;
+ check(close(R.byId.get(id).object.matrixWorld,moved),'reload preserves individual pose without duplicates');
+ check(R.pieces.filter(p=>p.item.type==='kposters').length===5,'reload still has exactly five posters');
+ check(await R.restoreOriginal(R.byId.get(id))&&close(R.byId.get(id).object.matrixWorld,home),'targeted original restore restores one poster');
+ await B.rearrange.sync();
+ if(cloud)check(close(B.rearrange.byId.get(id).object.matrixWorld,home),'second client sees targeted restore');
+ check(siblings.every(({id,m})=>close(R.byId.get(id).object.matrixWorld,m)),'restore leaves all sibling posters unchanged');
+ if(cloud){const one=await(await fetch(cloud+'/furniture')).json(),two=await(await fetch(cloud+'/furniture')).json();check(!one.pieces[legacy]&&one.revision===two.revision,'shared group migration is durable and does not rerun')}
+ document.getElementById('out').textContent=lines.join('\n')+'\n'+(pass?'ALL PASS':'SOME FAILED');
+}catch(e){document.getElementById('out').textContent=lines.join('\n')+'\nFAIL '+e.stack}
+</script></html>

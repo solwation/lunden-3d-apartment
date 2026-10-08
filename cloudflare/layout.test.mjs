@@ -55,3 +55,24 @@ test('reset refuses any change since confirmation opened, without partially rese
  assert.equal(state.revision,2);assert.equal(state.pieces['f-one'].pos[0],3);
  assert.equal((await r.fetch(reset([move('f-one',1,0),move('f-other',2,0)],2))).status,200);
 });
+
+test('legacy Tilly group migrates once, preserves other layouts and newer individual posters', async()=>{
+ const {ctx,instance:r}=room();
+ const old='f-kposters-1-0-0-0-0', child='f-kposters-1-0-0-0-poster-nova';
+ const previous={revision:7,pieces:{
+  [old]:{revision:4,pos:[30,30,30],quat:[0,0,0,1]},
+  [child]:{revision:6,pos:[.22,4.9,10],quat:[0,0,0,1]},
+  'f-sofa-0':{revision:7,pos:[3,0,9],quat:[0,0,0,1]}}};
+ await ctx.storage.put('furniture-layout',previous);
+ const first=await(await r.fetch(new Request('https://test/furniture'))).json();
+ assert.equal(first.revision,8);assert.equal(first.migrations.individualPosters,1);
+ assert.equal(first.pieces[old],undefined);
+ assert.deepEqual(first.pieces[child],previous.pieces[child]);
+ assert.deepEqual(first.pieces['f-sofa-0'],previous.pieces['f-sofa-0']);
+ assert.deepEqual(await(await r.fetch(new Request('https://test/furniture'))).json(),first);
+ assert.equal((await r.fetch(request([move(old)]))).status,410);
+ assert.equal((await r.fetch(request([move(child,6,1)]))).status,200);
+ const second=await(await new DrawingRoom(ctx,{}).fetch(new Request('https://test/furniture'))).json();
+ assert.equal(second.revision,9);assert.equal(second.pieces[child].pos[0],1);
+ assert.equal(second.pieces[old],undefined);
+});

@@ -1387,6 +1387,7 @@ const POSTER_SIZE = { A2: [0.42, 0.594], A3: [0.297, 0.42] };
 const POSTER_WALL = { west: { x: 0.2055, rot: Math.PI / 2 }, north: { z: 7.8085, rot: 0 } };
 function kposters() {
   const g = new THREE.Group();
+  g.userData.frames = [];
   const mat = new THREE.MeshStandardMaterial({ map: kposterTexture(), roughness: 0.55 });
   for (const p of KPOP_POSTERS) {
     const [w, h] = POSTER_SIZE[p.size], cell = POSTER_ART.indexOf(p.art), wall = POSTER_WALL[p.wall];
@@ -1398,8 +1399,10 @@ function kposters() {
     if (p.wall === 'west') m.position.set(wall.x, p.y, p.at);
     else m.position.set(p.at, p.y, wall.z);
     m.receiveShadow = true;
-    g.add(m);
+    m.userData.posterId = p.art;
+    g.add(m); g.userData.frames.push(m);
   }
+  g.userData.keep = g.userData.frames; // each poster stays a separate movable root (#493)
   return g;
 }
 
@@ -3744,7 +3747,8 @@ export function buildFurniture() {
     const baseId = `f-${item.type}-${item.level}-${item.x}-${item.z}`;
     const serial = ids.get(baseId) ?? 0; ids.set(baseId, serial + 1);
     for (const [i, object] of (obj.userData.frames ?? [obj]).entries()) {
-      movable.push({ id: `${baseId}-${serial}-${i}`, item, object, level: item.level,
+      const suffix = item.type === 'kposters' ? 'poster-' + object.userData.posterId : i;
+      movable.push({ id: `${baseId}-${serial}-${suffix}`, item, object, level: item.level,
         picture: ['pictures', 'painting', 'kposters', 'pineapple', 'winerack', 'besta'].includes(item.type), name: item.type === 'pictures' ? 'tavlan' : obj.userData.interact?.name ?? item.type });
     }
     // Decorative wall mirrors are independent of the furniture below them (#479).

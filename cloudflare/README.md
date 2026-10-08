@@ -78,3 +78,5 @@ den är pushad. Skriptet går att köra om hur många gånger som helst – det 
 The client polls every three seconds and on returning online/to the tab. Local development uses `node cloudflare/dev.mjs 8145`; open the game with `?cloud=http://localhost:8145`. `node --test cloudflare/*.test.mjs` covers concurrency, invalid inputs, persistence and existing drawing/identity behavior.
 
 Whole-layout reset adds `resetAll: true` and `expectedRevision` to the PUT body. It accepts up to 500 registered pieces (ordinary moves: 100), with a 128 kB request limit. The global revision must still match the revision shown when confirmation opened; otherwise the entire reset returns 409 without writing anything. Per-piece revision checks also apply.
+
+Tilly-poster migration (#493): GET /furniture removes the obsolete group pose once, records migrations.individualPosters, and increments the global revision. Existing individual poster poses and other furniture are preserved; obsolete group PUTs return 410. To reproduce locally, set LUNDEN_LAYOUT_FIXTURE to a JSON layout path when starting dev.mjs.
