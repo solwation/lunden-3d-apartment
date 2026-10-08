@@ -1166,7 +1166,7 @@ export const LIFE = {
   // bags in its top basket (1.02 + the bags' 0.35 × 0.26 m). Our picks, from fridge.js's own shelf heights.
   stores: { fridge: { shelves: [0.45, 1.52], bins: [[0.85, [0.3, 0.7]], [1.3, [0.3, 0.7]], [0.4, [0.7]]] }, freezer: { y: 1.117, peas: 0.15 },
     boardRack: { z: 2.95, lean: 10 }, plates: { stack: 0.019 }, glasses: [0.25, 0.5, 0.75] }, // glasses: the drinking glasses' spots across the glass cabinet's lower shelf (fractions, #382) // plates: the height of one plate in the stack (#379) // the cutting board on its long edge against the splashback (#374): its middle's z, leaning ° off upright // peas: the lower open shelf's spot east of the fish-finger carton (x from the middle, #373)
-  place: { grid: 0.05, floorGrid: 0.1, margin: 0.04, turn: 45 },
+  place: { grid: 0.05, floorGrid: 0.1, margin: 0.04, turn: 45, outlineOpacity: .85 },
   // saving (#371): localStorage `key` written `every` s after a change; a thing whose place is gone lands on the free worktop (`lost`)
   save: { key: 'lunden.life', every: 1, lost: [5.25, 0.931, 3.0] },
   job: { walk: 0.6 },

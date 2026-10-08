@@ -1,0 +1,34 @@
+<!doctype html><html><meta charset="utf-8"><title>White placement and return contours (#487)</title><pre id="out">running…</pre><script type="module">
+const lines=[];let pass=true;const check=(ok,s)=>{lines.push((ok?'PASS':'FAIL')+' '+s);pass&&=!!ok},wait=ms=>new Promise(r=>setTimeout(r,ms));
+try{
+ const f=document.createElement('iframe');f.width=640;f.height=400;f.src='../index.html?life&shot';document.body.append(f);await new Promise(r=>f.onload=r);while(!f.contentWindow.__app)await wait(100);
+ const w=f.contentWindow,A=w.__app,T=await w.eval("import('three')"),V=T.Vector3,L=A.life,I=L.items,G=A.placement.ghost;
+ f.contentDocument.documentElement.requestFullscreen=undefined;f.contentDocument.getElementById('start-touch').click();A.renderer.setAnimationLoop(null);
+ const aim=(point,from)=>{A.player.spawn(from[0],from[1],0);A.step(0);A.scene.updateMatrixWorld(true);A.camera.lookAt(point);A.camera.updateMatrixWorld(true);A.step(0);return A.focus().focused;};
+ const near=(a,b)=>{A.scene.updateMatrixWorld(true);return a.elements.every((x,i)=>Math.abs(x-b.elements[i])<.002)},snapshot=()=>{A.scene.updateMatrixWorld(true);return G.matrixWorld.clone();};
+ const outlined=()=>G.visible&&G.children.some(o=>o.isLineSegments&&o.material.color.getHex()===0xffffff&&o.material.depthTest&&!o.material.depthWrite);
+ A.cloth.take();const ch=A.cloth.backTarget.pickable.getWorldPosition(new V());let target=aim(ch,[4.55,1.82]);
+ check(target===A.cloth.backTarget&&outlined(),'cloth home shows white contour for real return action');const cm=snapshot();A.use(target);A.step(0);
+ check(near(A.cloth.model.matrixWorld,cm)&&!G.visible,'cloth returns exactly to contour, marker disappears');
+ const board=I.all().find(i=>i.type==='board');L.view(board).take();const rack=L.storeTargets.find(t=>t.store==='boardRack'),anchor=L.anchorOf({at:'slot',store:'boardRack',slot:0});
+ const bp=anchor.getWorldPosition(new V());target=aim(bp,[4.65,2.95]);check(target?.store==='boardRack'&&outlined(),'board rack offers contour in its actual leaning orientation');
+ const bm=snapshot();A.use(target);A.step(0);check(board.place.store==='boardRack'&&near(L.view(board).model.matrixWorld,bm),'board lands exactly as tilted contour showed');
+ L.view(board).take();I.set(board,{clean:'dirty'});aim(bp,[4.65,2.95]);check(!G.visible,'dirty board has no inaccessible clean-only return contour');I.set(board,{clean:'clean'});A.use(rack);A.step(0);
+ const milk=A.milk,mp=milk.home.pos.clone().add(new V(0,.1,0)),from=[mp.x,mp.z-.9];milk.take();target=aim(mp,from);check(!G.visible&&target!==milk.backTarget,'closed fridge does not advertise milk shelf');
+ A.fridge.toggle();for(let i=0;i<20;i++)A.fridge.update(.1);target=aim(mp,from);
+ check(target===milk.backTarget&&outlined(),'open fridge exposes actual milk return contour');const mm=snapshot();A.use(target);A.step(0);check(near(milk.model.matrixWorld,mm)&&!G.visible,'milk returns exactly to contour and marker disappears');
+ // Move a support through the real rearrangement flow, then place on its moved surface.
+ const R=A.rearrange,p=R.pieces.find(p=>p.item.type==='coffeetable'&&p.level===0);R.unlock('olof is the goat');R.begin(p);
+ const move=p.object.matrixWorld.clone();move.elements[12]+=.3;move.elements[14]+=.2;R.candidate=move;R.valid=true;await R.confirm();R.enable(false);
+ const surface=R.world.furniture.surfaces.find(s=>{for(let o=s;o;o=o.parent)if(o===p.object)return true;return false;});
+ const box=new T.Box3().setFromObject(surface),at=box.getCenter(new V()).setY(surface.userData.surface);
+ milk.take();target=aim(at,[at.x+.65,at.z-.25]);check(target?.kind==='place'&&outlined(),'white placement contour follows moved support surface');const pm=snapshot();A.use(target);A.step(0);
+ check(near(milk.model.matrixWorld,pm)&&!G.visible,'placed milk matches moved-table contour exactly');
+ milk.take();A.camera.rotation.x=1.3;A.step(0);check(!G.visible,'looking away hides contour while item stays held');milk.putBack();A.step(0);check(!G.visible,'return without aiming leaves no stale contour');
+ await R.restoreOriginal(p);R.enable(false);
+ const cab=A.cups.cabinet;if(!cab.isOpen){cab.toggle();for(let i=0;i<20;i++)cab.update(.1)}const cup=A.cups.cups.find(c=>c.state==='cabinet');cup.take();
+ const cp=cab.door.children[0].getWorldPosition(new V());for(const stand of [[4.4,1.7],[4.3,1.4],[4.5,2],[4.2,1.2]]){target=aim(cp,stand);if(target===cab)break;}check(target===cab&&outlined(),'ordinary cup also previews its actual free cabinet slot: '+target?.kind+' '+target?.name+' '+G.visible);const cpm=snapshot();A.use(target);A.step(0);check(near(cup.model.matrixWorld,cpm)&&!G.visible,'cup returns to the previewed free slot');
+ check(G.children.filter(o=>o.isLineSegments).every(o=>{const hits=[];o.raycast(A.focus().raycaster,hits);return hits.length===0}),'contours never intercept interaction rays');
+ document.getElementById('out').textContent=lines.join('\n')+'\n'+(pass?'ALL PASS':'SOME FAILED');
+}catch(e){document.getElementById('out').textContent=lines.join('\n')+'\nFAIL '+e.stack}
+</script></html>

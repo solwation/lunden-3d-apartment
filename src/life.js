@@ -353,6 +353,7 @@ function baseActions(life) {
   const A = life.actions, I = life.items, nm = (it) => I.name(it);
   A.define({
     id: 'putOn', order: 10, label: (c) => `lägga ${nm(c.held)} på ${nm(c.target)}`,
+    preview: c => life.anchorOf({ at: 'on', parent: c.target.id, slot: I.freeSpot(c.target, c.held) }),
     applies: (c) => !!c.held && !!c.target && !!I.def(c.target)?.carrier && c.held !== c.target,
     check: (c) => (I.freeSpot(c.target, c.held) >= 0 ? null : I.check(c.held, { at: 'on', parent: c.target.id, slot: 0 }) ?? I.def(c.target).carrier.fullText ?? `${nm(c.target)} är full`),
     run: (c) => { I.move(c.held, { at: 'on', parent: c.target.id, slot: I.freeSpot(c.target, c.held) }); sfx.click(c.targetView?.where()); },
@@ -360,6 +361,7 @@ function baseActions(life) {
   });
   A.define({
     id: 'putIn', order: 5,
+    preview: c => c.held && life.anchorOf({ at: 'slot', store: c.raw.store, slot: I.freeSlot(c.raw.store, c.held) }),
     label: (c) => {
       const held = c.held ?? c.heldView;
       return I.store(c.raw.store)?.putLabel?.(held) ?? `lägga ${nm(c.held)} i ${I.store(c.raw.store)?.name ?? ''}`;

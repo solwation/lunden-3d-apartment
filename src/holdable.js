@@ -55,6 +55,7 @@ export class Holdable {
    */
   constructor(scene, camera, opts) {
     Object.assign(this, { scene, camera, held: false, t: 0, uses: 0, cool: 0, lastYaw: 0, lastPitch: 0, ...opts });
+    this.homeScale = this.model.scale.clone();
     this.holder = new THREE.Group();
     for (const p of opts.parts ?? []) this.holder.add(p);
     const pick = new THREE.Mesh(new THREE.BoxGeometry(...opts.pick.size), new THREE.MeshBasicMaterial());
@@ -77,6 +78,14 @@ export class Holdable {
   shatter() { this.broken = true; this.placed = false; this.model.visible = false; }
   /** Whole again, at home. */
   mend() { this.broken = false; this.goHome(); this.model.visible = true; }
+
+  /** World pose of the same home used by goHome (return preview, #487). */
+  homeMatrix() {
+    const frame = this.homeParent ?? this.drawer?.object ?? this.scene, pose = this.local ?? this.home;
+    if (!pose?.pos?.isVector3 || !pose.rot?.isEuler) return null;
+    frame.updateWorldMatrix(true, false);
+    return frame.matrixWorld.clone().multiply(new THREE.Matrix4().compose(pose.pos, new THREE.Quaternion().setFromEuler(pose.rot), this.homeScale));
+  }
 
   goHome() {
     this.placed = false;

@@ -477,7 +477,13 @@ src/holdable.js        things you take and hold (one at a time): home + pick box
                        none): main.js snaps the spot (LIFE.place: a 5 cm grid inside a table's / worktop's edges, 10 cm on the
                        floor), the turn = the view in 45° steps + R / the ⟳ button (#turn-btn), and a faint ghost of the thing
                        (`itemGhost`, its meshes with one see-through material) stands exactly where E will put it; without
-                       `poseAt` the ring as before. Looking away cancels (still in the hand); a life item never goes under the floor
+                       `poseAt` the ring as before. Looking away cancels (still in the hand); a life item never goes under the floor.
+                       #487 adds white depth-tested outlines (LIFE.place.outlineOpacity, 1 mm depth bias) to the same
+                       ghost, including valid returns: Holdable.homeMatrix reads the live drawer/home frame, life
+                       putIn/putOn preview the same free slot/anchor as their actions, cups preview their free shelf.
+                       Blocked/closed targets and non-placement menu rows show no return ghost. Home targets take
+                       precedence over the generic surface beneath them. tools/returnmarkerstest.html covers the
+                       cloth, leaning board, fridge access, cups and a moved support; holdtest covers other placement.
 src/hand.js            the visitor's arm + hand (HAND, #195, #238): three meshes in the camera (sleeve, cuff, the hand: palm,
                        thumb, four three-joint fingers of capsules + the bare wrist, with morph targets relaxed | grip |
                        spread), hidden when empty; holding a thing the fingers close round its `grip` (or the right edge of

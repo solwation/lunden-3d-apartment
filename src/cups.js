@@ -56,6 +56,11 @@ export function cupCabinet(c) {
     get unwashed() { return this.isOpen && !!heldItem()?.isCup && heldItem().dirty && LIFE.rules.washFirst; }, // (#383: a used cup is washed up first)
     get blocked() { return this.isOpen && !!heldItem()?.isCup && (this.freeSlot?.() < 0 || this.unwashed); }, // all three spots taken (#215)
     get blockedText() { return this.unwashed ? 'Diska den först' : this.blocked ? 'Skåpet är fullt' : undefined; },
+    previewReturn(item) {
+      if (!this.isOpen || this.blocked || !item?.isCup) return null;
+      const slot = item.freeSlot?.(), pos = item.slots?.[slot];
+      return pos ? new THREE.Matrix4().makeTranslation(pos.x, pos.y, pos.z) : null;
+    },
     toggle() {
       if (this.isOpen && heldItem()?.isCup) { if (this.freeSlot?.() >= 0 && !this.unwashed) heldItem().goHome(); return; } // the held cup back on its shelf (#141)
       this.isOpen = !this.isOpen; sfx.click(door.getWorldPosition(new THREE.Vector3()));

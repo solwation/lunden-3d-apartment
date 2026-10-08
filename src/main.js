@@ -481,8 +481,12 @@ function floorSpot() {
 // Putting things down (#368): the spot snaps to a grid (LIFE.place: a table top / worktop clamped inside its edges, the
 // floor coarser), the thing turns in steps (R / the ⟳ button) from the way you look, and a faint ghost of the thing itself
 // stands where it will land (`poseAt` of its class; without one the ring as before). E puts it down exactly like that.
-let placeTurn = 0, ghostOf = null, ghostItem = null;
+let placeTurn = 0, ghostOf = null, ghostItem = null, ghostGeometry = [];
 const ghostMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.35, depthWrite: false });
+const ghostOutlineMat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: LIFE.place.outlineOpacity, depthTest: true, depthWrite: false });
+// Bias depth by one millimetre without moving the promised placement.
+ghostOutlineMat.onBeforeCompile = shader => { shader.vertexShader = shader.vertexShader.replace('#include <project_vertex>', `#include <project_vertex>
+  gl_Position = projectionMatrix * vec4(mvPosition.xyz * max(0.0, 1.0 - .001 / max(length(mvPosition.xyz), .001)), mvPosition.w);`); };
 const itemGhost = new THREE.Group();
 itemGhost.visible = false;
 itemGhost.userData.ghost = true;
@@ -509,25 +513,43 @@ function placeYaw() {
 function turnPlacement() { if (rearrange.enabled) { rearrange.rotate(); return; } placeTurn = (placeTurn + 1) % Math.round(360 / LIFE.place.turn); if (focused?.kind === 'place') focused.yaw = placeYaw(); }
 /** A see-through copy of the held thing's meshes (lights, particles left out), rebuilt when the hand changes. */
 function buildGhost(item) {
-  itemGhost.clear();
+  for (const o of itemGhost.children) if (o.isLineSegments) o.geometry.dispose();
+  itemGhost.clear(); ghostGeometry = [];
   const m = item.model;
   m.updateMatrixWorld(true);
   const inv = m.matrixWorld.clone().invert();
   m.traverse((o) => {
     if (!o.isMesh || o.isInstancedMesh || o.isSkinnedMesh || !o.visible || !o.geometry) return;
+    ghostGeometry.push({ object: o, geometry: o.geometry });
     const g = new THREE.Mesh(o.geometry, ghostMat);
     g.matrixAutoUpdate = false;
     g.matrix.multiplyMatrices(inv, o.matrixWorld);
     g.raycast = () => {};
-    itemGhost.add(g);
+    const line = new THREE.LineSegments(new THREE.EdgesGeometry(o.geometry, 30), ghostOutlineMat);
+    line.matrixAutoUpdate = false; line.matrix.copy(g.matrix); line.raycast = () => {};
+    itemGhost.add(g, line);
   });
 }
 function showItemGhost(item) {
   if (item !== ghostItem) { ghostItem = item; placeTurn = 0; ghostOf = null; }
   const t = focused?.kind === 'place' && !focused.blocked && focused.item === item && placeGhost.visible ? focused : null;
-  if (!t || !item?.poseAt) { itemGhost.visible = false; return; }
-  if (ghostOf !== item) { buildGhost(item); ghostOf = item; }
-  item.poseAt(itemGhost, t.point, t.yaw ?? placeYaw());
+  let home = null;
+  if (!reading && item?.held && focused && !focused.blocked && !focused.tooFar) {
+    if (focused === item.backTarget) home = item.homeMatrix?.();
+    else if (focused.previewReturn) home = focused.previewReturn(item);
+    else if (focused.options && item.lifeItem) {
+      const row = choices.rows?.[choices.sel] ?? focused.options().find(a => !a.reason);
+      if (row && !row.reason && row.def?.preview) {
+        const anchor = row.def.preview(life.context(focused));
+        if (anchor) { anchor.updateWorldMatrix(true, false); home = anchor.matrixWorld.clone(); }
+      }
+    }
+  }
+  if ((!t || !item?.poseAt || reading) && !home) { itemGhost.visible = false; return; }
+  if (ghostOf !== item || ghostGeometry.some(p => p.object.geometry !== p.geometry)) { buildGhost(item); ghostOf = item; }
+  itemGhost.scale.copy(item.model.scale);
+  if (home) { home.decompose(itemGhost.position, itemGhost.quaternion, itemGhost.scale); if (item.lifeItem) itemGhost.scale.multiply(item.model.scale); }
+  else item.poseAt(itemGhost, t.point, t.yaw ?? placeYaw());
   itemGhost.visible = true;
   placeGhost.visible = false; // (the ring only for things without a ghost)
 }
@@ -1597,7 +1619,7 @@ function updateFocus() {
       spot = null; // in vacuum mode, walking cleans the floor; crouch to place down (#390)
     }
     const lifeAim = (focused?.kind === 'life' || (focused?.kind === 'tap' && (life.items.held() || heldItem()?.isCup || heldItem()?.isCloth))) && (!!focused.options?.().some((a) => !a.reason) || !!focused.store); // (#382: a glass at the tap, #391: rinse cloth) // a plate it can go on (#367): that, not the table under it
-    const atBack = (focused === item.backTarget || hit?.object?.userData?.door === item.backTarget);
+    const atBack = !!item.backTarget && (focused === item.backTarget || hit?.object?.userData?.door === item.backTarget);
     if (item?.isCloth && top && spot && !lifeAim && !atBack) {
       focused = {
         name: top.object.userData.counter ? 'köksbänken' : (top.object.userData.name ?? 'bordet'),
@@ -1609,7 +1631,7 @@ function updateFocus() {
         blockedText: 'Disktrasan är smutsig – skölj den vid kranen först',
       };
       placeGhost.visible = false;
-    } else if (spot && !lifeAim && (!hit || spot.distance <= hit.distance + 0.05)) {
+    } else if (spot && !lifeAim && !atBack && (!hit || spot.distance <= hit.distance + 0.05)) {
       snapSpot(spot, top && spot.point.y > LEVELS[Math.max(0, player.level)].floor + 0.05 ? top.object : null); // on a grid (#368)
       placeTarget = { name: `${item.name} här`, kind: 'place', verb: item.placeVerb ?? 'lägga ner', item, point: spot.point, yaw: placeYaw() };
       focused = placeTarget;
@@ -1664,13 +1686,13 @@ function updateFocus() {
   // the remote in the hand, aimed at a TV: the click / the touch button are the remote's (#101)
   const remoteAim = heldItem() === remote && focused?.kind === 'tv';
   if (remoteAim) focused = null;
-  showItemGhost(item); // the thing's own ghost where it would land (#368)
   // a bed with a seat in it: the verb of the spot the look ray picks
   const spot = focused?.kind === 'rest' ? chooseSpot(focused, raycaster.ray, null) : null;
   let verb = !focused ? '' : spot?.verb ?? focused.verb ?? (focused.isOpen ? 'stänga' : 'öppna');
   // a life-sim thing (#367): its actions; one = the usual prompt, several = the choice menu
   const rows = focused?.options ? shownRows(focused.options()) : null;
   showChoices(rows && rows.length > 1 && !reading ? rows : null, focused);
+  showItemGhost(item); // actual placement or the selected allowed return action (#368, #487)
   const one = rows?.length === 1 ? rows[0] : null;
   if (one && !one.reason) verb = one.label;
   const named = one ? '' : ` ${focused?.name ?? ''}`; // (an action's label names its thing)
