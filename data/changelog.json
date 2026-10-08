@@ -1,551 +1,2751 @@
 [
-  {"id": 550, "date": "2026-10-08", "text": "Västervyn får kartans husrad, angöring och parkstråk längs Karpvägens fortsättning mot nordväst."},
-  {"id": 549, "date": "2026-10-08", "text": "Höje å får varierande slänter, kartans parkstigar och lövträdsdungar med buskage och strandvegetation."},
-  {"id": 548, "date": "2026-10-08", "text": "Sankt Lars väg får en vägbro och en separat gång- och cykelbro över den nedsänkta Höje å."},
-  {"id": 547, "date": "2026-10-08", "text": "Uteplatsens stora palm får veckade bladfingrar, fiberrik stam och en mjukare öppen kruka med synlig jord."},
-  {"id": 546, "date": "2026-10-08", "text": "Källarens cykelrum och förrådsområden följer ritningen, med skilda hyrförråd och fria gångar utan cyklar bland bilarna."},
-  {"id": 545, "date": "2026-10-08", "text": "Krukväxternas blad svajar mjukt vid öppna fönster och ytterdörrar, med starkare vind i regn och snö."},
-  {"id": 544, "date": "2026-10-08", "text": "Grannlägenheternas dörrar och fönster får karmar, bågar, beslag och glasreflektioner på L-husets båda sidor och fyra våningar."},
-  {"id": 543, "date": "2026-10-08", "text": "Konsolen får städning och fler genvägar, med samma publika fuskkoder som tuschklotter längst in i cykelförrådet."},
-  {"id": 542, "date": "2026-10-08", "text": "Kylhyllans dubbel-IPA och trippel-IPA uppdateras dagligen från globala topplistor med riktiga etiketter och trygg offlinecache."},
-  {"id": 541, "date": "2026-10-08", "text": "Kylens grönsakslåda och frysens fyra lådor kan dras ut och fyllas med sparade föremål utan anonyma varublock."},
-  {"id": 540, "date": "2026-10-08", "text": "Diskmaskinens korgar kan väljas mellan metalltrådarna utan att skymma disken eller störa inlastningen."},
-  {"id": 539, "date": "2026-10-08", "text": "Tydliga actionknappar får kortare texter medan små föremål och särskilda destinationer behåller sina namn."},
-  {"id": 538, "date": "2026-10-08", "text": "Ommöbleringen får tydliga steg och flyttknappar, med konsolen i poängbrickan på touch och på §-tangenten."},
-  {"id": 537, "date": "2026-10-08", "text": "Musikkanalerna spelar nya inspelningar i stereo och återgår inte till blip-blop när ljudfiler saknas."},
-  {"id": 536, "date": "2026-10-08", "text": "Tomma toalettrullar kan bytas med reservrullar från HAVBÄCK och sparar återstående papper mellan besöken."},
-  {"id": 535, "date": "2026-10-08", "text": "Hallens jacka och skor kan läggas undan på krok, skohylla eller i en öppen garderob och sparas utan kopior."},
-  {"id": 534, "date": "2026-10-08", "text": "Sängarnas täcken rufsas när du ligger där och kan bäddas igen med separata sparade tillstånd för varje slaf."},
-  {"id": 533, "date": "2026-10-08", "text": "Matbordets sex dukplatser sparar tallrikar och glas med deras mat och dryck utan att skapa extra föremål."},
-  {"id": 532, "date": "2026-10-08", "text": "Föremålsmarkeringen återanvänder GPU-program för att minska ryck när blicken flyttas mellan föremål och personer."},
-  {"id": 531, "date": "2026-10-08", "text": "Vattenkannan kan fyllas vid kranen och bevattnade krukväxter behåller sitt synliga tillstånd mellan besök."},
-  {"id": 530, "date": "2026-10-08", "text": "Tvätten kan torkas, vikas och sparas på garderobshyllor utan föremålsförlust när det är fullt."},
-  {"id": 529, "date": "2026-10-08", "text": "Tvättmaskinens program sparar återstående tid och gör plaggen rena och våta."},
-  {"id": 528, "date": "2026-10-08", "text": "Tvättkorgen innehåller sparade plagg som kan läggas i maskinernas öppna trummor utan att försvinna när det är fullt."},
-  {"id": 527, "date": "2026-10-08", "text": "Smörkniven i den öppna besticklådan kan nu väljas från normala blickvinklar och positioner framför lådan."},
-  {"id": 526, "date": "2026-10-08", "text": "Fokuserade föremål behåller sina synliga material när lampljuset uppdateras."},
-  {"id": 525, "date": "2026-10-08", "text": "Förråd och cykelförråd under lägenheten visas nu med rätt rumsnamn och rumsstatistik."},
-  {"id": 524, "date": "2026-10-08", "text": "Katter kan dyka upp på det fria golvet i städklädkammaren under trappans höga delar."},
-  {"id": 523, "date": "2026-10-08", "text": "Ändringslappen på frysen visar nu högst de 100 senaste ändringarna."},
-  {"id": 522, "date": "2026-10-08", "text": "Kompassen döljs medan notiser visas och återkommer när den sista notisen försvinner."},
-  {"id": 521, "date": "2026-10-08", "text": "Golvet bär nu genom hela källarens förrådsgång, även under lägenheten och över dörrtrösklar."},
-  {"id": 520, "date": "2026-10-08", "text": "Entréhallens svarta NISSEDAL-spegel är nu 65 × 150 cm enligt referensbilden."},
-  {"id": 519, "date": "2026-10-08", "text": "Sopbehållarna står längs portikväggen mot lägenheten med framsidorna åt den fria gången."},
-  {"id": 518, "date": "2026-10-08", "text": "Handtagen på de gröna entrédörrarna syns nu på båda sidor, även när dörrarna är stängda."},
-  {"id": 517, "date": "2026-10-08", "text": "Garderobernas stängda skjutdörrar har täckta fogar som stoppar insyn från sneda vinklar."},
-  {"id": 516, "date": "2026-10-08", "text": "Cyklarna längs hus L:s entréer är borttagna; cykelparkeringen vid kvarterets hörn finns kvar."},
-  {"id": 515, "date": "2026-10-08", "text": "En liten kompass visar geografiska väderstreck med en röd nordpil som följer din blick."},
-  {"id": 514, "date": "2026-10-08", "text": "Blandarspakarna i kök, tvätt och båda badrummen lyfts när vattnet sätts på och sänks när det stängs av."},
-  {"id": 513, "date": "2026-10-08", "text": "Menyn döljs nu automatiskt när man går till startplatsen eller återställer hemmet."},
-  {"id": 512, "date": "2026-10-08", "text": "Föremålet du siktar på markeras med en diskret ljushetsökning utan interna meshlinjer."},
-  {"id": 511, "date": "2026-10-08", "text": "Färre människor på gården och inga barn i sandlådorna."},
-  {"id": 510, "date": "2026-10-08", "text": "Versionskontroll och uppdatering sker före 3D-laddningen, med tidsgräns och skydd mot omladdningsloopar."},
-  {"id": 509, "date": "2026-10-08", "text": "Uppdragslappen sitter nu på insidan av koppskåpets lucka och följer med när den öppnas."},
-  {"id": 508, "date": "2026-10-08", "text": "Alla takgardiner får lätt transparent tyg och dämpat, diffust ljusgenomsläpp."},
-  {"id": 507, "date": "2026-10-08", "text": "Fler varierade krukväxter vid entréerna och längs loftgången, med fria gångvägar."},
-  {"id": 506, "date": "2026-10-08", "text": "Tydliga, enhetliga ikoner och läsbara kontroller på mobil och dator."},
-  {"id": 505, "date": "2026-10-08", "text": "Portiken följer ritningen med öppet utrymme för sopbehållare och ett rum för jetpacken."},
-  {"id": 504, "date": "2026-10-08", "text": "Garderobsblomman och kopparkrukan är dubbelt så stora, med fler bladdetaljer."},
-  {"id": 503, "date": "2026-10-08", "text": "Interaktionsmålet får en tydlig kontur som följer föremålet."},
-  {"id": 502, "date": "2026-10-08", "text": "Eluttagen ovanför köksbänken är nu svarta i enlighet med valt tillval."},
-  {"id": 501, "date": "2026-10-08", "text": "Häcken direkt utanför entrédörrarna är formklippt; parkeringshäckens ursprungliga buskar är återställda."},
-  {"id": 500, "date": "2026-10-08", "text": "Brödrosttestet har rättats så att smörknivens innehåll initieras korrekt och handlingar för att bre, lägga på ost och äta anropas via regelmotorn utan API-fel."},
-  {"id": 499, "date": "2026-10-08", "text": "Loftgångens indragna gröna ytterdörrar syns korrekt framför lägenheternas förenklade byggnadsmodell."},
-  {"id": 498, "date": "2026-10-08", "text": "Ytterdörrarna är mörkgröna med små tunna glasrutor högst upp i dörrbladen."},
-  {"id": 497, "date": "2026-10-08", "text": "Portiken genom hus L har åter öppnats mot innergården så att passagen är fri och synlig hela vägen mellan gatan och gården."},
-  {"id": 496, "date": "2026-10-08", "text": "Framsidans häck är tät, småbladig och formklippt med fria öppningar och snö på ovansidan vintertid."},
-  {"id": 495, "date": "2026-10-08", "text": "En garderobsblomma i mindre kopparkruka står mellan vitrinskåpet och uteplatsdörren."},
-  {"id": 494, "date": "2026-10-08", "text": "Efter återställning av hemmet är uteplatsens öl dold tills man sätter sig i soffan, och startpositionen vilar korrekt på bordsskivan i stället för att sväva vid divanen."},
-  {"id": 493, "date": "2026-10-08", "text": "Tavlor och posters kan flyttas mellan våningarna och väljas på sin nya vägg."},
-  {"id": 492, "date": "2026-10-08", "text": "Vita konturer visar giltiga placeringar och returplatser för föremål i handen."},
-  {"id": 491, "date": "2026-10-08", "text": "Ägg kan tas ur kylen, stekas på hällen och serveras på tallrik eller macka."},
-  {"id": 490, "date": "2026-10-08", "text": "Uteplatsens loungesoffa har kortats med en sittmodul mot dörren för friare passage, medan hörnplaceringen och bänken längs skärmväggen behålls intakta."},
-  {"id": 489, "date": "2026-10-08", "text": "Falska streck på plana väggar är borta, medan riktiga hörn och öppningar framhävs."},
-  {"id": 488, "date": "2026-10-08", "text": "Tillys posters har återställts och kan flyttas separat utan att de andra försvinner."},
-  {"id": 487, "date": "2026-10-08", "text": "Vitrinskåpet kan nu flyttas på väggen med luckor och innehåll kvar och återställas till sin ursprungliga höjd."},
-  {"id": 486, "date": "2026-10-08", "text": "Ölen på uteplatsen placeras nu alltid stadigt på loungebordets skiva och följer bordet korrekt vid flytt, rotation och omladdning."},
-  {"id": 485, "date": "2026-10-08", "text": "Vardagsrummets guldpalm är 20 procent mindre och står i en rundad kruka i borstad koppar."},
-  {"id": 484, "date": "2026-10-08", "text": "Krukväxten på framsidans cafébord är borttagen medan bordet och båda stolarna står kvar."},
-  {"id": 483, "date": "2026-10-08", "text": "Disktrasan vilar nu tydligt synlig ovanpå diskbänken och draperad över kanten mot diskhon och kan enkelt läggas tillbaka dit."},
-  {"id": 482, "date": "2026-10-08", "text": "Dammsugaren rymmer tre gånger så mycket smuts och lämnar det som inte får plats kvar på golvet."},
-  {"id": 481, "date": "2026-10-08", "text": "Brödskivor kan nu placeras i brödrosten, rostas med sänkbar släde och värmeglöd, poppa upp som gyllenbrunt rostat bröd som kan bres, toppas med pålägg och ätas."},
-  {"id": 480, "date": "2026-10-08", "text": "Hela det sammanhängande vardagsflödet från mellanmål till städat kök har testats och verifierats för både desktop och touch med bevarade tillstånd vid återladdning."},
-  {"id": 479, "date": "2026-10-07", "text": "Whisky- och vinflaskorna i vitrinskåpet och vinhyllan är nu modellerade efter verkliga premiumprodukter från Systembolaget med Tullamore D.E.W. bland whiskysorterna, autentiska etiketter och rätt interaktionsnamn."},
-  {"id": 478, "date": "2026-10-07", "text": "Radiokanalerna i Sonos och på bilens skärm visar nu stabila genrenamn i stället för låttitlar, med aktuell låt och artist separat som ”Spelas nu”."},
-  {"id": 477, "date": "2026-10-07", "text": "Ölen på uteplatsens loungebord placeras nu framför den sittande spelaren inom bekvämt räckhåll från alla sittplatser runt bordet."},
-  {"id": 476, "date": "2026-10-07", "text": "Prylarna på städskåpets hyllor under trappan syns nu som vanligt igen i stället för att vara osynliga bakom namnlapparna."},
-  {"id": 475, "date": "2026-10-07", "text": "Mobiltelefoner behåller nu automatiskt touchkontroller vid paus, omladdning och versionsuppdatering, med en direkt väg tillbaka till touch."},
-  {"id": 474, "date": "2026-10-07", "text": "Poäng- och spelarbadgen har fått enhetliga textstorlekar, anpassad ikonstorlek samt förbättrade proportioner och linjering i både desktop- och mobilvy."},
-  {"id": 473, "date": "2026-10-07", "text": "Trapphusets fönsterkarmar, glas och intilliggande fasadsolider har justerats för att eliminera överlappande ytor och flimmer."},
-  {"id": 472, "date": "2026-10-07", "text": "Disksvamparna i städskåpet under trappan har staplats utan överlappande ytor för att eliminera flimmer."},
-  {"id": 471, "date": "2026-10-07", "text": "Disktrasan fastnar inte längre vid sköljning vid rinnande kran och kan avbrytas säkert utan att hemmet behöver återställas."},
-  {"id": 470, "date": "2026-10-07", "text": "Vinstället kan flyttas på väggen med flaskorna kvar och SYMFONISK-lampan kan placeras på fönsterbrädor och bord."},
-  {"id": 469, "date": "2026-10-07", "text": "Återställ vald möbel eller all möblering med bekräftelse innan ändringen delas med alla besökare."},
-  {"id": 468, "date": "2026-10-07", "text": "Alla lösa dekorativa speglar kan nu flyttas och återställas separat, medan badrummens fasta speglar behåller sina platser."},
-  {"id": 467, "date": "2026-10-07", "text": "TV:n placeras ovanpå TV-bänken och följer med när bänken flyttas eller roteras, och tidigare nedsjunkna placeringar rättas vid laddning."},
-  {"id": 466, "date": "2026-10-07", "text": "Enter öppnar en klickbar möbleringsmeny med fri muspekare, och Esc avslutar läget och avbryter osparade flyttar."},
-  {"id": 465, "date": "2026-10-07", "text": "Spegeln ovanför sekretären kan nu flyttas, roteras och återställas separat i möbleringsläget."},
-  {"id": 464, "date": "2026-10-07", "text": "I möbleringsläget kan även Home-tangenten återställa den valda möbeln eller tavlan till originalpositionen."},
-  {"id": 463, "date": "2026-10-07", "text": "Fruktskålen och palmen följer nu med även tidigare flyttade möbler, och en knapp återställer möbler och tavlor till originalpositionen."},
-  {"id": 462, "date": "2026-10-07", "text": "Väggar, dörrar och fast inredning har nu diskreta kantlinjer som gör rummens geometri lättare att urskilja."},
-  {"id": 461, "date": "2026-10-07", "text": "Vardagsrummets gardiner har nu samma ljusa bakgrundsfärg som kökskappan."},
-  {"id": 460, "date": "2026-10-07", "text": "Fuskkoderna ”olof is the goat” och ”sarah is the goat” låser upp flytt och rotation av möbler och tavlor med delad möblering för alla besökare."},
-  {"id": 459, "date": "2026-10-07", "text": "Alla gardinskenor och kökskappan går nu från vägg till vägg, och vardagsrumsgardinerna har samma botaniska mönster som kappan."},
-  {"id": 458, "date": "2026-10-07", "text": "Kökets långa gardiner har ersatts av en kort botaniskt mönstrad kappa i den befintliga takskenan."},
-  {"id": 457, "date": "2026-10-07", "text": "Vardagsrummet har nu tre olivgröna gardinlängder på en skena från vägg till vägg, även över balkongdörren."},
-  {"id": 456, "date": "2026-10-07", "text": "På köksbänken finns nu frivilliga vardagsuppdrag med sparade framsteg, avstängningsbara tips och bonuspoäng."},
-  {"id": 455, "date": "2026-10-07", "text": "Dammsugaren kan nu tömmas i restavfallet när dammbehållaren blir full, och bänkytor kan torkas av med disktrasan som sköljs ren vid kökskranen."},
-  {"id": 454, "date": "2026-10-07", "text": "Skaftdammsugaren kan nu startas och dammsuger upp smulor och damm från golvet med motorljud och sugeffekt, ger poäng vid städat rum och skrämmer iväg katten."},
-  {"id": 453, "date": "2026-10-07", "text": "Grafikkvaliteten anpassar sig nu dynamiskt i flera nivåer efter enhetens faktiska prestanda för mjukare flyt på mobiler och långsammare datorer."},
-  {"id": 452, "date": "2026-10-07", "text": "SYMFONISK-lamphögtalaren i vardagsrummet har uppdaterats med mörk textilklädd bas, rökfärgad glasskärm och en varmt lysande inre diffusor enligt IKEA-modellen."},
-  {"id": 451, "date": "2026-10-07", "text": "Alla sovrum och sällskapsrum har nu försetts med takskensgardiner med mönster och färger anpassade till respektive rums tema."},
-  {"id": 450, "date": "2026-10-07", "text": "Högtalarna, bilradion, datorn, laptopen och Kaffeturbo spelar nu riktig musik, med två låtar i rotation på varje radiokanal."},
-  {"id": 449, "date": "2026-10-07", "text": "Skaftdammsugaren i klädkammaren under trappan kan nu tas ut, ställas ner och dockas tillbaka för laddning."},
-  {"id": 448, "date": "2026-10-06", "text": "Kaffekoppar kan nu ställas i diskmaskinens överkorg och blir rena efter ett diskprogram."},
-  {"id": 447, "date": "2026-10-06", "text": "Knapparna på skärmen vid touch-styrning är nu halvt genomskinliga för att inte skymma spelet."},
-  {"id": 446, "date": "2026-10-06", "text": "Trapphuset vid portiken har nu fönster mot gatan på våning 1 och 2 enligt ritningarna."},
-  {"id": 445, "date": "2026-10-06", "text": "Statistikpanelen anpassar sig nu dynamiskt till fönstrets fulla höjd, och aktiva spelare samt deras poäng visas i start- och pausmenyn."},
-  {"id": 444, "date": "2026-10-06", "text": "Topplistans rader döljs nu från paus- och startmenyn och visas uteslutande via popupen Topplistan samt i helskärmsstatistiken."},
-  {"id": 443, "date": "2026-10-06", "text": "Pausmenyns fortsätt-knappar förtydligar nu om de återupptar med Mus & tangentbord eller Touch."},
-  {"id": 442, "date": "2026-10-06", "text": "QR-koden visas nu i skärmens hörn på dator samt i porträttläge på mobil, topplistan nås via en popup i menyn samt visas helskärms i flera kolumner i statistikvyn tillsammans med aktiva spelare."},
-  {"id": 441, "date": "2026-10-06", "text": "Spelarnamnet skrivs nu in i en separat dialog innan startskärmen, och knappen Byt spelare i menyn öppnar dialogen igen."},
-  {"id": 440, "date": "2026-10-06", "text": "Paus- och startmenyn har nu ordentliga menyknappar med tydliga beskrivningar och en separat knapp för att fälla ut instruktionerna."},
-  {"id": 439, "date": "2026-10-06", "text": "En laddningsskärm visas nu medan lägenheten laddas in innan startskärmen dyker upp."},
-  {"id": 438, "date": "2026-10-05", "text": "Spelarnamnet låses när du trycker OK, och Ny spelare sparar det förra resultatet och börjar om med noll poäng i ett återställt hem."},
-  {"id": 437, "date": "2026-10-05", "text": "Uppsatta teckningar försvinner efter ett dygn om ingen flyttar dem."},
-  {"id": 436, "date": "2026-10-05", "text": "Teckningar delas nu mellan besökare, och när någon flyttar en teckning uppdateras platsen även hos de andra."},
-  {"id": 435, "date": "2026-10-05", "text": "Topplistan visar de tio bästa resultaten med datum."},
-  {"id": 434, "date": "2026-10-05", "text": "Vid poängen ser du nu hur många som besöker lägenheten just nu."},
-  {"id": 433, "date": "2026-10-05", "text": "Escape-menyn har nu en Avsluta-knapp som försöker stänga fönstret och visar hjälp om webbläsaren blockerar det."},
-  {"id": 432, "date": "2026-10-05", "text": "Trapphuset vid portiken följer nu ritningarna: en rak trappa per våning längs väggen och en gång tillbaka till hissen."},
-  {"id": 431, "date": "2026-10-05", "text": "Det blir smulor där man äter och skär, och lite damm samlas längs väggarna med tiden."},
-  {"id": 430, "date": "2026-10-04", "text": "Knutna soppåsar bär du ut till de nya sopbehållarna vid parkeringen – en för matavfall, en för förpackningar och en för restavfall."},
-  {"id": 429, "date": "2026-10-04", "text": "Under diskhon finns nu tre sopkärl – Matavfall, Förpackningar och Restavfall – och när ett är fullt knyter du ihop påsen och sätter i en ny."},
-  {"id": 428, "date": "2026-10-04", "text": "Starta diskmaskinen på panelen överst på luckan: den brummar, visar tiden som är kvar med en röd prick på golvet och säger till när disken är klar."},
-  {"id": 427, "date": "2026-10-04", "text": "Diskmaskinens korgar går att dra ut när luckan är nere: tallrikar i underkorgen, glas i överkorgen och knivar i bestickkorgen."},
-  {"id": 426, "date": "2026-10-04", "text": "Det du använder blir smutsigt: skrapa av tallriken i soporna och diska för hand vid köksblandaren innan disken går tillbaka i skåpet."},
-  {"id": 425, "date": "2026-10-04", "text": "Ta ett dricksglas ur glasskåpet, fyll det med vatten vid kranen eller häll upp mjölk och drick – mjölkpaketet tar slut och kan slängas."},
-  {"id": 424, "date": "2026-10-04", "text": "I garaget och källaren visar gröna Nödutgång-skyltar i taket vägen ut, och vid hisshallen och källardörren sitter en utrymningsplan med \"Du är här\"."},
-  {"id": 423, "date": "2026-10-04", "text": "När du reser dig från en stol, soffa eller säng hamnar du åter framför den och inte på ett konstigt ställe."},
-  {"id": 422, "date": "2026-10-04", "text": "Portiken genom Hus L är nu plattsatt hela vägen till gården och lyses upp av taklampor när det mörknar."},
-  {"id": 421, "date": "2026-10-04", "text": "Under diskhon står nu en avfallshink: öppna skåpet och släng gurkänden och tomma förpackningar där."},
-  {"id": 420, "date": "2026-10-04", "text": "Vid trappans fot i källaren under Hus L visar gröna skyltar och dörrkarmar vägen ut till cykelrummen och garaget."},
-  {"id": 419, "date": "2026-10-04", "text": "Bänkarna framför Hus A står inte längre i vägen för uteplatsernas öppningar."},
-  {"id": 418, "date": "2026-10-04", "text": "Nu kan du ställa saker på sekretärens nedfällda skrivskiva och på dynboxens stängda lock – de öppnas och stängs inte förrän det är bortplockat."},
-  {"id": 417, "date": "2026-10-04", "text": "Mackan äter du i några tuggor, gärna sittande vid bordet – kvar blir en tallrik med smulor, och första mackan av varje sort ger extra poäng."},
-  {"id": 416, "date": "2026-10-04", "text": "Trapphuset i Hus L ser bättre ut: stegen syns, trapporna har släta undersidor, väggarna flimrar inte och våningssiffran sitter inte längre över dörren."},
-  {"id": 415, "date": "2026-10-04", "text": "Loftgångens östra ände och avsatserna vid spiraltrapporna har nu räcke, så man inte kan gå över kanten."},
-  {"id": 414, "date": "2026-10-04", "text": "Jetpacken hänger nu inne i garaget under skylten \"Låna Jetpack på eget ansvar. Se upp för fiskmåsar.\""},
-  {"id": 413, "date": "2026-10-04", "text": "Köket har fått eluttag högt upp på stänkskyddet – ovanför kaffebryggaren, mellan diskhon och hällen och i hörnet – i stället för hörnboxen på bänken."},
-  {"id": 412, "date": "2026-10-04", "text": "Bilarna i garaget lyses nu upp av lysrören, så de syns även på natten."},
-  {"id": 411, "date": "2026-10-04", "text": "Lägg ost och gurka på en smörgås och bär mackan på en tallrik från skåpet ovanför bänken till bordet."},
-  {"id": 410, "date": "2026-10-04", "text": "Sängen och annat på övervåningen går inte längre att nå genom kökstaket – bara genom trapphålet."},
-  {"id": 409, "date": "2026-10-04", "text": "Vid varje handfat kan du nu tvätta händerna när kranen är på och sedan torka dem på en handduk – även i köket och tvättstugan."},
-  {"id": 408, "date": "2026-10-04", "text": "Knappen till garageporten sitter nu på stolpens sida mot infarten."},
-  {"id": 407, "date": "2026-10-04", "text": "Nu kan du sätta dig på pallen framför fåtöljen och på dynboxen på altanen när locket är stängt."},
-  {"id": 406, "date": "2026-10-04", "text": "Trapphuset vid portiken går att gå in i: trappor från garaget upp till loftgången och en hiss som stannar på alla fyra våningarna."},
-  {"id": 405, "date": "2026-10-04", "text": "Med mus och tangentbord gör ett vänsterklick nu samma sak som E, och högerklick äter, dricker eller använder det du håller."},
-  {"id": 404, "date": "2026-10-04", "text": "Med smörkniven tar du smör ur paketet och breder det på brödet, och med osthyveln hyvlar du ostskivor."},
-  {"id": 403, "date": "2026-10-04", "text": "Brödpåsen i skafferiet går att öppna och ta skivor ur en i taget, och en brödskiva äter du i några tuggor."},
-  {"id": 402, "date": "2026-10-04", "text": "På gården kan du nu sätta dig på alla bänkar och vid långbordet under pergolan, och ställa saker på borden och grillens nya sidobord."},
-  {"id": 401, "date": "2026-10-04", "text": "Där parkeringens asfalt möter gräset på framsidan går nu en låg betongkant."},
-  {"id": 400, "date": "2026-10-04", "text": "Spelet fryser inte längre i ett par sekunder när du öppnar ytterdörren första gången."},
-  {"id": 399, "date": "2026-10-04", "text": "Hus L:s två runda trapptorn har nu en spiraltrappa inuti och en öppning ut mot loftgången."},
-  {"id": 398, "date": "2026-10-04", "text": "Med kökskniven skär du gurkan på skärbrädan i en eller tre skivor åt gången, tills bara änden är kvar."},
-  {"id": 397, "date": "2026-10-04", "text": "Vid varje ytterdörr på Hus L:s framsida sitter nu en vägglampa som tänds av sig själv när det blir mörkt."},
-  {"id": 396, "date": "2026-10-04", "text": "Skärbrädan går att lägga på bänken och bära med det som ligger på den, och skivorna kan skjutas över på en tallrik."},
-  {"id": 395, "date": "2026-10-04", "text": "Garaget följer nu ritningen: det svänger in under hela gården, vår bil står rakt under uteplatsen och genom en ståldörr når du källaren under Hus L med cykelrum, förråd och hisshall."},
-  {"id": 394, "date": "2026-10-04", "text": "Gatlyktorna lyser nu upp gatan och trottoaren med en varm ljuspöl under varje lykta."},
-  {"id": 393, "date": "2026-10-04", "text": "På altanen står båda divanerna nu efter varandra längs skärmväggen som en lång bänk med kuddar, och soffan har fått tillbaka ryggen och armstödet i väster."},
-  {"id": 392, "date": "2026-10-04", "text": "Walter och Kian har fått en neontavla, EAT SLEEP GAME REPEAT, på väggen mellan garderoben och byrån."},
-  {"id": 391, "date": "2026-10-04", "text": "I lådan under hällen ligger nu kökskniv, smörkniv och osthyvel, och skärbrädan står lutad mot kakelväggen – fel verktyg säger ifrån."},
-  {"id": 390, "date": "2026-10-04", "text": "Att göra-lapparna på kylen visar nu bara sitt nummer i hörnet, är inte längre röda och de viktigaste sitter först."},
-  {"id": 389, "date": "2026-10-04", "text": "Cafébordet på framsidan står nu tätt intill väggen under köksfönstret, med stolarna rakt ut mot gatan."},
-  {"id": 388, "date": "2026-10-04", "text": "Trädet som stod mitt på asfalten framför Hus L står nu på gräset vid vägen."},
-  {"id": 387, "date": "2026-10-04", "text": "Hue Go-lampan i Sovrum 1 är nu den klassiska frostade skålen, och du kan byta färg på ljuset."},
-  {"id": 386, "date": "2026-10-04", "text": "I kylen ligger nu gurka, ost och smör, i frysen en påse ärter och i skafferiet en brödpåse – tar det slut finns nytt där nästa gång du öppnar."},
-  {"id": 385, "date": "2026-10-04", "text": "Vår Renault står nu parkerad i garaget, och garageporten öppnas med en knapp – bilnyckeln i hallen kör ut bilen till dörren och tillbaka in igen."},
-  {"id": 384, "date": "2026-10-04", "text": "Vid båda toaletterna sitter nu en toapappershållare: dra ut papper, riv av det och släng det i toaletten."},
-  {"id": 383, "date": "2026-10-04", "text": "Båda badrummen har fått en mjuk duschmatta med knoppar i samma färg som handdukarna."},
-  {"id": 382, "date": "2026-10-04", "text": "I båda badrummen hänger nu två handdukar i dov lila på runda krokar i borstat stål."},
-  {"id": 381, "date": "2026-10-04", "text": "När du ska ställa ner något syns en svag skugga av saken där den hamnar, och med R (eller ⟳) vrider du den."},
-  {"id": 380, "date": "2026-10-04", "text": "Rottinglampan uppe i hallen står nu framför trappräcket i stället för vid Sarah och Olofs dörr."},
-  {"id": 379, "date": "2026-10-04", "text": "Vid garageinfarten hänger en jetpack: ta på dig den, flyg fritt över kvarteret och landa på taken."},
-  {"id": 378, "date": "2026-10-04", "text": "Uteplatsen har fått familjens egen loungesoffa med en divan i var ände och ett litet ribbbord i mitten."},
-  {"id": 377, "date": "2026-10-04", "text": "Livia har fått sin gula ananasspegel på väggen mellan byrån och garderoben."},
-  {"id": 376, "date": "2026-10-04", "text": "Trappan har fått vita ledstänger längs väggen hela vägen upp och på insidan av båda trapploppen."},
-  {"id": 375, "date": "2026-10-04", "text": "Bordet på uteplatsen är vridet så att långsidan vetter mot soffan under fönstret."},
-  {"id": 374, "date": "2026-10-04", "text": "Framför köksfönstret står nu ett litet cafébord med två stolar att sitta på och en blomkruka på bordet."},
-  {"id": 373, "date": "2026-10-04", "text": "Uppe i hallen, i hörnet vid Sarah och Olofs dörr, står nu en låg rottinglampa som tänds när det skymmer."},
-  {"id": 372, "date": "2026-10-04", "text": "I sovrum 1:s fönster står Sonos-högtalaren nu upprätt längst till höger, Hue Go-lampan längst till vänster och ormbunken i mitten."},
-  {"id": 371, "date": "2026-10-04", "text": "Brödrosten står i nedersta lådan vid hörnet: ta fram den, koppla in den i hörnboxen och rosta."},
-  {"id": 370, "date": "2026-10-04", "text": "Till höger om altandörren står nu en dynbox: öppna locket så ligger utekuddarna där när de är intagna."},
-  {"id": 369, "date": "2026-10-04", "text": "Sidobordet vid fåtöljen är nu ett mörklila brickbord, och boken och blomman står kvar på det."},
-  {"id": 368, "date": "2026-10-04", "text": "Katterna sitter och står nu på golvet i stället för att sjunka ner en bit i det."},
-  {"id": 367, "date": "2026-10-04", "text": "Soffbordet i vardagsrummet har fått mjukt rundade hörn, utåtställda ben och en hylla av runda spjälor."},
-  {"id": 366, "date": "2026-10-04", "text": "I Sarah och Olofs fönster står nu en Hue Go-lampa som kan byta färg, och högtalaren ligger längst till vänster."},
-  {"id": 365, "date": "2026-10-04", "text": "Garaget under gården går att gå in i genom porten från Karpvägen – med parkeringsplatser, vår egen plats nummer 7, en förrådsgång med 15 förråd och en hisshall."},
-  {"id": 364, "date": "2026-10-04", "text": "Ibland dyker en sällsynt, busig kattunge upp i stället för en vuxen katt – den ger extra poäng."},
-  {"id": 363, "date": "2026-10-04", "text": "Utesoffan har fått mysiga kuddar, som tas in när det regnar och på vintern."},
-  {"id": 362, "date": "2026-10-04", "text": "Ovanför stolen i Sarah och Olofs sovrum hänger nu en liten svartramad linjeteckning."},
-  {"id": 361, "date": "2026-10-04", "text": "Parasollet står nu framför utesoffan och lutar mot eftermiddagssolen, så att du sitter i skugga."},
-  {"id": 360, "date": "2026-10-04", "text": "Utesoffan står nu under vardagsrumsfönstret och längs östra skärmväggen, så att du sitter med ansiktet mot solen."},
-  {"id": 359, "date": "2026-10-04", "text": "Sängen i Sarah och Olofs sovrum har flyttats en bit mot klädkammaren, så stolen har lämnat hörnet och gardinen kan dras ända bort till väggen."},
-  {"id": 358, "date": "2026-10-04", "text": "Bilen kör nu in på parkeringen genom en riktig infart i häcken i stället för över trottoaren."},
-  {"id": 357, "date": "2026-10-04", "text": "Faller du mer än tre meter gör du dig illa: det svartnar och du vaknar utanför ytterdörren."},
-  {"id": 356, "date": "2026-10-04", "text": "Nu kan du gå runt hela kvarteret: genom portiken, ner för trapporna till parken, runt hus A, B och C och fram till garageinfarten."},
-  {"id": 355, "date": "2026-10-04", "text": "Gardinerna i Sarah och Olofs sovrum är nu tvådelade och dras isär åt varsitt håll från mitten av fönstret."},
-  {"id": 354, "date": "2026-10-04", "text": "Loftgången på Parklängan är nu smalare, så övervåningarnas gatufasad står där Peabs ritningar visar den."},
-  {"id": 353, "date": "2026-10-04", "text": "Gavlarna på Parklängan har nu fönstren där Peabs ritningar visar dem, även på västra gaveln."},
-  {"id": 352, "date": "2026-10-04", "text": "Takterrasserna högst upp i Parklängan har nu olika storlek per lägenhet, med skärmväggar bara mellan grannarna."},
-  {"id": 351, "date": "2026-10-04", "text": "Hus A, B och C har nu var sitt eget tak, och A och B har fått huset på taket som takplanerna visar."},
-  {"id": 350, "date": "2026-10-04", "text": "Fönstret i Walter och Kians rum har nu ritningens mått: lite bredare och lägre bröstning, men fortfarande mindre än Tillys."},
-  {"id": 349, "date": "2026-10-04", "text": "Fönstren på hus A, B och C sitter nu där husens planritningar visar dem i stället för i ett jämnt rutnät."},
-  {"id": 348, "date": "2026-10-04", "text": "Lägenheterna högst upp i Parklängan har nu egna fönster och dörrar mot loftgången enligt Peabs ritningar."},
-  {"id": 347, "date": "2026-10-04", "text": "Garageinfarten vid Karpvägen ligger nu plant framför garageporten."},
-  {"id": 346, "date": "2026-10-04", "text": "Trappans undersida i städskrubben under trappan är nu vitmålad i stället för parkett."},
-  {"id": 345, "date": "2026-10-04", "text": "I Sovrum 1 hänger nu turkosa gardiner med djurmönster i en takskena – dra för och ifrån dem som plisségardinen."},
-  {"id": 344, "date": "2026-10-04", "text": "Speglarna med egen belysning lyser och speglar nu mjukare: badrumsspegeln, Tillys sminkspegel och spegeln i klädkammaren."},
-  {"id": 343, "date": "2026-10-04", "text": "På köksväggens hylla står nu en vit ansiktskruka med glasögon och eukalyptus som hår, i stället för eukalyptusvasen."},
-  {"id": 342, "date": "2026-10-04", "text": "Kuddarna och lakanen i sängarna flimrar inte längre."},
-  {"id": 341, "date": "2026-10-04", "text": "Lappen på frysen visar nu alltid det senast publicerade överst, med Nytt på det du inte sett."},
-  {"id": 340, "date": "2026-10-04", "text": "På kylskåpsdörren sitter nu små post-it-lappar med det som är på gång, och E visar hela att göra-listan."},
-  {"id": 339, "date": "2026-10-04", "text": "Städskrubben under trappan har fått hyllor med städsaker och reservpapper, en mopphink med mopp och en skaftdammsugare på väggen."},
-  {"id": 338, "date": "2026-10-04", "text": "Hus L har mot gården nu tegel i tre våningar och en indragen översta våning med takterrasser, bruten av ett högre tegelparti i mitten."},
-  {"id": 337, "date": "2026-10-04", "text": "Byrån i Sarah och Olofs klädkammare står nu ända in mot väggen till höger."},
-  {"id": 335, "date": "2026-10-04", "text": "Bredvid kaffebryggaren står en kaffeburk med skopa – fyll kannan med vatten vid kranen och häll i kaffe innan du brygger."},
-  {"id": 334, "date": "2026-10-04", "text": "I köket hänger tavlan \"This kitchen is for dancing\" under hyllorna, som flyttats upp en bit."},
-  {"id": 333, "date": "2026-10-04", "text": "I övre hallen hänger nu en hög svart spegel till höger om dörren till toaletten."},
-  {"id": 332, "date": "2026-10-04", "text": "Klädkammaren i Sarah och Olofs sovrum har fått hylla och klädstång med kläder, ett sminkhörn med tänd spegel på byrån och en mjuk matta."},
-  {"id": 331, "date": "2026-10-04", "text": "Barnens sovrum har fått krokar vid garderoben med tröjor, en keps och en tygkasse."},
-  {"id": 330, "date": "2026-10-04", "text": "I Sarah och Olofs sovrum sitter en krokrad på klädkammarens utsida vid dörren, med en morgonrock och en hoodtröja."},
-  {"id": 329, "date": "2026-10-04", "text": "En mycket ovanlig katt har setts i huset – håll utkik bakom dörrarna."},
-  {"id": 328, "date": "2026-10-04", "text": "På soffbordet står nu en fruktskål i koppar full av frukt som du kan ta och äta upp."},
-  {"id": 327, "date": "2026-10-04", "text": "Smarta högtalare har flyttat in – en med skärm i köksfönstret och två runda på väggarna – tryck på en så svarar den."},
-  {"id": 326, "date": "2026-10-04", "text": "Ljussabeln i Walter och Kians rum hänger nu på Nerf-tavlan bland blastrarna, som blivit större."},
-  {"id": 325, "date": "2026-10-04", "text": "Fotot av Miele i Sarah och Olofs sovrum är ljusare och syns tydligt på fönsterbänken."},
-  {"id": 324, "date": "2026-10-03", "text": "Alla sängar har fått tjocka, mjuka täcken som hänger över kanterna, riktiga kuddar och lakan över madrasserna."},
-  {"id": 323, "date": "2026-10-03", "text": "Tillys dagbädd står nu vid fönstret, så hon har mer golv att röra sig på."},
-  {"id": 322, "date": "2026-10-03", "text": "På fönsterbänken i Sarah och Olofs sovrum står nu ett inramat foto av katten Miele som du kan ta och titta närmare på."},
-  {"id": 321, "date": "2026-10-03", "text": "Den rosa runda mattan hos Livia och Tuva ligger nu längre ut i rummet, under stegen till våningssängen."},
-  {"id": 320, "date": "2026-10-03", "text": "Under dubbelsängen i Sarah och Olofs rum ligger nu den stora grå ryamattan med vitt sicksackmönster."},
-  {"id": 319, "date": "2026-10-03", "text": "Skåpet ovanför köksfläkten är en attrapp utan handtag och går inte längre att öppna."},
-  {"id": 318, "date": "2026-10-03", "text": "Klinkern i hallen går nu ända fram till ytterdörren, och våtrummens kakel ända fram till dörrarna – ingen trästrimla vid tröskeln."},
-  {"id": 317, "date": "2026-10-03", "text": "Toaletterna har fått en djup skål med blått vatten i botten, och när du spolar rinner vattnet ner längs skålen och virvlar runt."},
-  {"id": 316, "date": "2026-10-03", "text": "Sarah och Olofs säng har fått vita hotellkuddar under huvudkuddarna, och kuddarna ser ut som riktiga kuddar."},
-  {"id": 315, "date": "2026-10-03", "text": "Hörnskåpet längst till höger ovanför bänken i köket har nu handtaget till vänster och öppnas åt höger."},
-  {"id": 314, "date": "2026-10-03", "text": "Soffans och fåtöljens kuddar är nu våra egna fyra sorter, och filtarna är lila och grå fleece."},
-  {"id": 313, "date": "2026-10-03", "text": "Hamnar du någonsin inne i en möbel eller bilen glider du nu ut på fritt golv i stället för att fastna."},
-  {"id": 312, "date": "2026-10-03", "text": "Kaffet är nu mörkrost som i Skåne, nästan svart i kannan och koppen."},
-  {"id": 311, "date": "2026-10-03", "text": "Tillys garderob står nu i vänstra hörnet och har två dörrar som öppnas åt var sitt håll."},
-  {"id": 310, "date": "2026-10-03", "text": "Över köksbordet hänger nu familjens tre kopparlampor, som lyser varmt ner på bordet när du tänder i köket."},
-  {"id": 309, "date": "2026-10-03", "text": "Moccamastern står nu rättvänd: vattentanken och strömbrytaren till vänster, kannan till höger."},
-  {"id": 308, "date": "2026-10-03", "text": "Livia och Tuva har fått en rund rosa matta under våningssängen och skrivbordet."},
-  {"id": 307, "date": "2026-10-03", "text": "Reser du dig från en stol vid matbordet hamnar du nu på golvet bredvid, inte uppe på bordet."},
-  {"id": 306, "date": "2026-10-03", "text": "Startskärmen har fått \"Återställ\": hela hemmet går tillbaka till början, men uppsatta teckningar, poängen och kattfotona finns kvar."},
-  {"id": 305, "date": "2026-10-03", "text": "Tilly har fått en vit IKEA-garderob vid dörren med sina kläder i, och klädställningen är borta."},
-  {"id": 304, "date": "2026-10-03", "text": "Sidan laddar bara om sig själv när något du faktiskt ser har ändrats, inte i onödan."},
-  {"id": 303, "date": "2026-10-03", "text": "I frysen ligger en påse Aviko pommes frites – häll i airfryern, kör, och ät dem rykande heta ur handen."},
-  {"id": 302, "date": "2026-10-03", "text": "Den konstiga mörka lådan ovanför hallgarderoben är borta – lampan lyser nu upp väggen ovanför garderoberna."},
-  {"id": 301, "date": "2026-10-03", "text": "Den svartvita tavlan vid trappans fot hänger nu mitt på väggen mellan badrumsdörren och vardagsrummet."},
-  {"id": 300, "date": "2026-10-03", "text": "Den vita och den svarta SYMFONISK-högtalaren har bytt plats: den vita står i Sarah och Olofs sovrumsfönster, den svarta i köksfönstret."},
-  {"id": 299, "date": "2026-10-03", "text": "Sänggaveln på Sarah och Olofs säng är slät, utan de mörka prickarna."},
-  {"id": 298, "date": "2026-10-03", "text": "Airfryern står längre in i bänkhörnet, snett vriden så att korgen pekar ut mot köket."},
-  {"id": 297, "date": "2026-10-03", "text": "Tända lampor lyser upp rummet lika mycket var du än står – nära, i ett annat rum, på andra våningen eller utifrån."},
-  {"id": 296, "date": "2026-10-03", "text": "Taklamporna lyser nu upp sitt rum även när du står en bit bort, som hallens lampa på nedervåningen."},
-  {"id": 295, "date": "2026-10-03", "text": "Fönsterväxterna är större och frodigare, med monstera, gullranka, ormbunke och ett litet olivträd bland dem."},
-  {"id": 294, "date": "2026-10-03", "text": "En ny version räknar ner från 5 så att du hinner avbryta genom att röra dig, och efteråt är allt kvar som det var – bilen, det du håller i, dörrar, lampor och klockan."},
-  {"id": 293, "date": "2026-10-03", "text": "Minuspoäng för slarv och elakheter: kyl och frys som står öppna piper, bränd mat, spill och att skada katterna drar av lite."},
-  {"id": 292, "date": "2026-10-03", "text": "Ängsgrästavlan över Sarah och Olofs säng är ljusare och lyses upp av sänglamporna på kvällen."},
-  {"id": 291, "date": "2026-10-03", "text": "I badrummet hänger nu ett mörkgrått högskåp från IKEA med handdukar, schampo och toapapper – öppna det med E."},
-  {"id": 290, "date": "2026-10-03", "text": "På Tillys sminkbord står en laptop – tryck E på skärmen för korta roliga klipp i appen Klipp."},
-  {"id": 289, "date": "2026-10-03", "text": "Köksets vägghyllor har fått riktiga saker: kokböcker, glasburkar, keramik, ljusstakar i mässing, inramade tavlor och en hängande pothos."},
-  {"id": 288, "date": "2026-10-03", "text": "Tilly har fått en svart klädställning, IKEA MULIG, med sina coola kläder, sneakers och en tygkasse."},
-  {"id": 287, "date": "2026-10-03", "text": "Bänkbelysningen i köket är nu en jämn LED-list under alla överskåp, så det är lika ljust vid diskhon som vid spisen."},
-  {"id": 286, "date": "2026-10-03", "text": "Den vita högtalaren i köket står nu i köksfönstret i stället för på bänken."},
-  {"id": 285, "date": "2026-10-03", "text": "En airfryer står i bänkhörnet bredvid frysen – lägg fiskpinnar i korgen, starta den och vänta på pipet."},
-  {"id": 284, "date": "2026-10-03", "text": "Tillys dagbädd ser ut som IKEA:s HEMNES, med tuffare sängkläder och K-pop-affischer på väggarna."},
-  {"id": 283, "date": "2026-10-03", "text": "Soffan och fåtöljen har fått prydnadskuddar och en våffelstickad filt."},
-  {"id": 282, "date": "2026-10-03", "text": "När du går ner för trappan möter dig nu en svartvit tavla på väggen rakt fram."},
-  {"id": 281, "date": "2026-10-03", "text": "Tilly har fått ett sminkbord med smink, en pall och en Hollywoodspegel med lampor runt om som tänds när det skymmer."},
-  {"id": 280, "date": "2026-10-03", "text": "Över Sarah och Olofs säng hänger nu deras stora tavla med ängsgräs i morgondimma."},
-  {"id": 279, "date": "2026-10-03", "text": "Divanens armstöd slutar nu i kant med soffans sittdynor."},
-  {"id": 278, "date": "2026-10-03", "text": "De små lamporna lyser upp sina rum hela kvällen och natten, även när du inte är där – också sett genom dörren eller fönstret."},
-  {"id": 277, "date": "2026-10-03", "text": "Alla fönster har fått plisségardiner som dras upp nerifrån – tryck E och dra med W och S."},
-  {"id": 276, "date": "2026-10-03", "text": "Lappen på frysen går att bläddra i med piltangenterna, W S, Page Up/Down, mellanslag och Home/End."},
-  {"id": 275, "date": "2026-10-03", "text": "Pingvinkudden Pingping sitter mellan kuddarna i Sarah och Olofs säng – ta honom i famnen och krama honom."},
-  {"id": 274, "date": "2026-10-03", "text": "Bänkbelysningen och fläktlampan i köket ger ett mjukare ljus på kaklet, utan bländande fläckar."},
-  {"id": 273, "date": "2026-10-03", "text": "Du hukar dig nu med C, så att huka och gå framåt inte längre stänger fliken med Ctrl+W."},
-  {"id": 272, "date": "2026-10-03", "text": "Fönstren mot uteplatsen har nu också en enda överkantshängd båge, och vardagsrumsfönstret har en bred fast ruta och en smal som går att öppna."},
-  {"id": 271, "date": "2026-10-03", "text": "Långlampan i linne står nu i vardagsrumshörnet till höger om tv:n och tänds av sig själv när det skymmer."},
-  {"id": 270, "date": "2026-10-03", "text": "Å-husens balkonger har fått dörr och fönster, uteplatserna en låg tegelmur med öppning, och Hus A:s entré syns tydligt med glasdörr, skärmtak och husbokstav."},
-  {"id": 269, "date": "2026-10-03", "text": "Vår Renault syns nu hel med hjul och bakrutor medan den kör fram, och Nerf-pilarna syns hela vägen genom luften."},
-  {"id": 268, "date": "2026-10-03", "text": "Sätt dig i bilen och tryck på mittskärmen, så spelas musik i Renaulten."},
-  {"id": 267, "date": "2026-10-03", "text": "Gatorna sluttar nu söderut, och rampen vid gårdens östra kant går på riktigt ner till gatan mot HepCat Store."},
-  {"id": 266, "date": "2026-10-03", "text": "Glas, flaskor och koppar går att skjuta sönder med AK-47:an, Nerf-pilarna, lightsabern och trollstavarna – ju längre ifrån, desto fler poäng."},
-  {"id": 265, "date": "2026-10-03", "text": "Framsidan följer situationsplanen: parkeringen ligger mellan häcken och en låg grön remsa vid entréerna, och nordväst om huset finns en cykelgård."},
-  {"id": 264, "date": "2026-10-03", "text": "Över sekretären hänger nu spegeln SKOGSGRÄNSEN i koppar, med en liten yuccapalm bredvid som du kan ta."},
-  {"id": 263, "date": "2026-10-03", "text": "Katten reser sig ibland med svansen rakt upp – ser du den bakifrån får du poäng."},
-  {"id": 262, "date": "2026-10-03", "text": "Gården är uppritad på nytt: gräsmattor runt trädgrupperna, grus bara vid lekplatsen, och du kan gå södra gången längs Hus B hela vägen till Hus A."},
-  {"id": 261, "date": "2026-10-03", "text": "Koppskåpet över kaffebryggaren sticker inte längre ut utan ligger i linje med de andra överskåpen."},
-  {"id": 260, "date": "2026-10-03", "text": "HepCat Store och det långa tegelhuset står nu där situationsplanen visar dem, med en öppen plats emellan."},
-  {"id": 259, "date": "2026-10-03", "text": "Gårdens östra kant har en ramp längs Sankt Lars väg och en kort trappa ner mot gatan, som bara ligger någon meter lägre."},
-  {"id": 258, "date": "2026-10-03", "text": "Karpvägen går nu nära Hus C och svänger in i Sankt Lars väg, som i sin tur tar en mjuk kurva runt hörnet i nordost."},
-  {"id": 257, "date": "2026-10-03", "text": "Å-husen har fått sin rätta form med hörnloggior i olika storlek, vitputsade entréer och valmat tak."},
-  {"id": 256, "date": "2026-10-03", "text": "Den upphöjda gården har rätt kanter, garageinfarten ligger vid Hus C och en trappa leder ner söderut mellan Hus C och Hus B."},
-  {"id": 255, "date": "2026-10-03", "text": "Området har rätt skala efter ritningarnas skalstock: radhuslängan är 1,5 m kortare och Å-husen och gården ligger där de ska."},
-  {"id": 254, "date": "2026-10-03", "text": "Fönstren mot gatan är nu som på bygget: en enda båge utan mittpost som är upphängd upptill och fälls ut nedtill."},
-  {"id": 253, "date": "2026-10-03", "text": "De parkerade bilarna på parkeringen ser ut som riktiga bilar med fönster, lampor och fälgar."},
-  {"id": 252, "date": "2026-10-03", "text": "Vår Megane E-Tech är ombyggd och ser ut som den riktiga, och du kan öppna dörrarna och sätta dig i förar- eller passagerarsätet."},
-  {"id": 251, "date": "2026-10-03", "text": "Det kan snöa på vintern och hagla på våren, och du får poäng för att gå ut och gå en bit i regn, snö, hagel och åska."},
-  {"id": 250, "date": "2026-10-03", "text": "Nu kan det regna på våren och hösten och bli åskväder i slutet av sommaren."},
-  {"id": 249, "date": "2026-10-03", "text": "Sikta på någon utomhus så kan du hälsa: du säger hej och de svarar med egen röst och vinkar."},
-  {"id": 248, "date": "2026-10-03", "text": "Hörnloggiorna på Hus A vid gårdskanten ser riktiga ut: stödmuren går inte längre snett genom dem och de har räcke i gårdsnivå."},
-  {"id": 247, "date": "2026-10-03", "text": "Statistiken på telefon är smalare, går att scrolla med fingret och kan visas i helskärm."},
-  {"id": 246, "date": "2026-10-03", "text": "När du klappar katten går du ner på knä och klappar med din egen hand, och fiskpinnen hålls mellan fingrarna."},
-  {"id": 245, "date": "2026-10-03", "text": "Människorna utomhus har fått knän, så de på bänkarna sitter på sitsen med benen ner i stället för rakt genom bänken."},
-  {"id": 244, "date": "2026-10-03", "text": "Ingen går längre i luften utanför staketet bakom lekplatsen på gården."},
-  {"id": 243, "date": "2026-10-03", "text": "Kläderna och skorna i garderober och lådor har fått mjukare, rundade former."},
-  {"id": 242, "date": "2026-10-03", "text": "Katternas ben är nu rundade och smalnar av mot tassarna."},
-  {"id": 241, "date": "2026-10-03", "text": "Människorna utomhus har fått rundade kroppar, händer och skor, och hunden är mjukare i formen."},
-  {"id": 240, "date": "2026-10-03", "text": "Handen och armen är nu verklighetstrogna, med fingrar som greppar det du håller, öppnas när du sträcker dig och bär basketbollen på handflatan."},
-  {"id": 239, "date": "2026-10-03", "text": "Nerf-blastrarna i Walter och Kians rum är nu tre olika, mer verklighetstrogna modeller: en pistol, en med trumma och en lång med magasin och kolv."},
-  {"id": 238, "date": "2026-10-03", "text": "Poängen är omräknade: ovanliga katter, korgar och skicklighet ger mest, och enkla saker som upprepas ger bara lite."},
-  {"id": 237, "date": "2026-10-03", "text": "Tillys dagbädd har lådor med basketskor och hårprylar, och hennes basketboll kan studsas och skjutas i korgen som dyker upp på asfalten framför huset."},
-  {"id": 236, "date": "2026-10-03", "text": "På byråerna i barnrummen står nu en Dödsstjärne-lampa och en kaktus hos Walter och Kian, och en enhörningslampa och en rosa blomma hos Livia och Tuva."},
-  {"id": 235, "date": "2026-10-03", "text": "Nerf-blastrarna hänger nu bredvid lightsabern i Walter och Kians rum, inte längre bakom byrån."},
-  {"id": 234, "date": "2026-10-03", "text": "Walter och Kian och Livia och Tuva har fått en vit MALM-byrå med sex lådor vid våningssängens fotända."},
-  {"id": 233, "date": "2026-10-02", "text": "Skåp och lådor i vardagsrummet, hallen, badrummen och tvättstugan är fyllda, med filmer och tv-spel under tv:n och jackor och skor i hallgarderoben."},
-  {"id": 232, "date": "2026-10-02", "text": "De små lamporna tänds själva när det skymmer och släcks när det ljusnar, taklamporna tänder du själv, och ljuset hoppar inte längre när du byter rum."},
-  {"id": 231, "date": "2026-10-02", "text": "Garderoberna i sovrummen har kläder på galgar, tröjor på hatthyllan och skor, och byråer och lådor har vikta t-shirts, strumpor, pyjamas, jeans och pyssel."},
-  {"id": 230, "date": "2026-10-02", "text": "Köksskåpen och lådorna är fyllda med porslin, glas, kastruller, torrvaror, bestick och annat i god ordning."},
-  {"id": 229, "date": "2026-10-02", "text": "Våningssängarna är nu vita IKEA MYDAL med räcke runt överslafen och en rak stege."},
-  {"id": 228, "date": "2026-10-02", "text": "Trapptavlorna hänger nu större, 40 × 50 cm, i trapphuset på övervåningen."},
-  {"id": 227, "date": "2026-10-02", "text": "Trappräcket svävar inte längre i svängen: det står på väggen mellan trappens lopp och har stolpar i hörnen."},
-  {"id": 226, "date": "2026-10-02", "text": "Katterna reser sig och går på alla fyra ben i stället för att glida fram sittande."},
-  {"id": 225, "date": "2026-10-02", "text": "I trappan hänger fyra inramade tavlor i en kvadrat på väggen rakt fram: fikus, akvarell, peace och solros."},
-  {"id": 224, "date": "2026-10-02", "text": "Korktavlan med kattbilderna i köket är mindre: riktiga polaroidbilder, två rader med fem."},
-  {"id": 223, "date": "2026-10-02", "text": "Varje slaf i våningssängarna har fått en egen NYMÅNE-läslampa på väggen, vit hos Livia och Tuva och svart hos Walter och Kian, som du kan tända även när du ligger i sängen."},
-  {"id": 222, "date": "2026-10-02", "text": "Hallspegeln är nu en större IKEA NISSEDAL, svart 40 × 150 cm."},
-  {"id": 221, "date": "2026-10-02", "text": "Bänkbelysningen under köksskåpen och lampan i köksfläkten tänds och släcks var för sig."},
-  {"id": 220, "date": "2026-10-02", "text": "Tv:n i Sovrum 1 har fått Ambilight."},
-  {"id": 219, "date": "2026-10-02", "text": "Efter en omladdning blinkar startskärmen inte längre fram – det står bara \"Laddar…\" tills du är tillbaka där du var."},
-  {"id": 218, "date": "2026-10-02", "text": "I byrån i Sarahs och Olofs klädkammare ligger en AK-47: håll inne för automateld, den byter magasin själv och träffar pricktavlan."},
-  {"id": 217, "date": "2026-10-02", "text": "I hallen hänger nu en hög smal spegel med svart ram där den runda spegeln satt förut."},
-  {"id": 216, "date": "2026-10-02", "text": "Allt du gör ger poäng som visas uppe till vänster, och statistiken räknar fler saker, som fiskpinnar till katten."},
-  {"id": 215, "date": "2026-10-02", "text": "Du har fått en arm och en hand som håller det du bär och sträcker sig fram när du öppnar dörrar och skåp."},
-  {"id": 214, "date": "2026-10-02", "text": "Drick tre koppar kaffe på fem minuter så får du Kaffeturbo: du springer dubbelt så fort en stund, till glad 8-bitarsmusik."},
-  {"id": 213, "date": "2026-10-02", "text": "Katterna kan nu sitta i sängar, soffor, stolar och fåtöljer och på bord."},
-  {"id": 212, "date": "2026-10-02", "text": "Sovrum 1 har fått en 43-tums tv på väggen mitt emot sängen – sätt dig upp i sängen så slås den på."},
-  {"id": 211, "date": "2026-10-02", "text": "Kaffekopparna har olika mönster, och saknas det en kopp i skåpet står det en ny där nästa gång du öppnar det."},
-  {"id": 210, "date": "2026-10-02", "text": "Ångan över kaffet slingrar sig nu uppåt i tunna strängar, och den försvinner när kaffet har svalnat."},
-  {"id": 209, "date": "2026-10-02", "text": "Spotsen på vitrinskåpet lyser nu ner över skåpets front, och glasdelen har fått egen belysning."},
-  {"id": 208, "date": "2026-10-02", "text": "Fiskpinnarna går att steka i stekpannan: frysta och bleka blir de gyllene, men glöm dem inte på plattan."},
-  {"id": 207, "date": "2026-10-02", "text": "När du har klappat katten går den iväg och försvinner."},
-  {"id": 206, "date": "2026-10-02", "text": "Tv-bänken har lådor i ändarna i stället för luckor – med spelkontroll, sladdar och filmer i."},
-  {"id": 205, "date": "2026-10-02", "text": "Startskärmen har fått en QR-kod, så att du lätt kan öppna lägenheten på en surfplatta eller telefon."},
-  {"id": 204, "date": "2026-10-02", "text": "Dörrarna i hallen syns nu också när du tittar in genom den öppna ytterdörren."},
-  {"id": 203, "date": "2026-10-02", "text": "Bänkarna på gården har nu ryggen mot husen och vetter ut mot gården."},
-  {"id": 202, "date": "2026-10-02", "text": "Framsidan är asfalterad med en rad parkeringsplatser längs häcken, och vår Renault stannar nu precis utanför dörren."},
-  {"id": 201, "date": "2026-10-02", "text": "Den svarta Sonos-högtalaren står nu i fönstret i Sovrum 1, och musiken hörs där också."},
-  {"id": 200, "date": "2026-10-02", "text": "Grillen på gården går att tända med E: den sprakar med stora lågor och lyser upp i mörkret."},
-  {"id": 199, "date": "2026-10-02", "text": "En ny version laddas nu in av sig själv när du står still en stund – bilden tonar mjukt ut och in och du står kvar där du var."},
-  {"id": 198, "date": "2026-10-02", "text": "Den runda spegeln har flyttat från hallen till väggen bakom fåtöljen i vardagsrummet."},
-  {"id": 197, "date": "2026-10-02", "text": "Lägg dig i underslafen i våningssängen med en teckning i handen, så kan du tejpa upp den i \"taket\" ovanför dig."},
-  {"id": 196, "date": "2026-10-02", "text": "Slå på köksfläkten när du steker, annars går brandlarmet; kycklingen är ljus innan den steks och går att bryta bitar av och äta."},
-  {"id": 195, "date": "2026-10-02", "text": "När du reser dig efter att ha suttit eller legat tittar du åt samma håll som du gjorde då."},
-  {"id": 194, "date": "2026-10-02", "text": "F5 startar inte om från början längre: du fortsätter där du var, och \"Ny version laddad\" visas bara om det kom en ny version."},
-  {"id": 193, "date": "2026-10-02", "text": "Ingen \"Klicka för att börja\"-ruta längre: med mus och tangentbord börjar spelet direkt."},
-  {"id": 192, "date": "2026-10-02", "text": "Byggläget (\"visa bygget som det ser ut nu\") är borttaget."},
-  {"id": 191, "date": "2026-10-02", "text": "I byggläget är innergården som den ser ut nu: blöt betong med pölar, grus, betongmur, byggbod och unga lönnar."},
-  {"id": 190, "date": "2026-10-02", "text": "I parken och skogen mot Höje å står nu också björkar med vita stammar som gulnar på hösten."},
-  {"id": 189, "date": "2026-10-02", "text": "Utsikten från gatan ritas snabbare: små saker långt bort och det som inte syns genom fönstren ritas inte."},
-  {"id": 188, "date": "2026-10-02", "text": "Startskärmen kan visa bygget som det ser ut nu: ställningar med nät, blå vindskydd, byggstaket och maskiner."},
-  {"id": 187, "date": "2026-10-02", "text": "Det har flyttat in folk i området: grannar promenerar (en med hund), cyklister plingar, barn spelar boll och leker i sandlådan och någon solar på en filt."},
-  {"id": 186, "date": "2026-10-02", "text": "Den hemliga lådan i sekretären har en ny liten överraskning varje gång du öppnar den – 18 olika, några ovanliga."},
-  {"id": 185, "date": "2026-10-02", "text": "De övre radhusen har fått franska balkonger mot gården och en ljus plåtkant på taket."},
-  {"id": 184, "date": "2026-10-02", "text": "Innergården har fått pollare som lyser på kvällen, en röd lekstuga vid sandlådan och ett cykelställ med cyklar."},
-  {"id": 183, "date": "2026-10-02", "text": "På parkeringen står bilar i rutor, cyklar står vid entréerna och framför Hus C finns ett stenlagt torg med planteringar och cykelställ."},
-  {"id": 182, "date": "2026-10-02", "text": "Loftgången har fått plåtkant, rund handledare, indragna vita entrédörrar och en lykta vid varje dörr som tänds på kvällen."},
-  {"id": 181, "date": "2026-10-02", "text": "De små blomkrukorna i fönstren, på sidobordet och på kökshyllan går att lyfta upp och ställa någon annanstans."},
-  {"id": 180, "date": "2026-10-02", "text": "E på en uppsatt teckning visar den stort – där kan du ta ner den eller skrynkla ihop den och kasta iväg den."},
-  {"id": 179, "date": "2026-10-02", "text": "Leksaksbilen, kritorna, brevet och de andra sakerna i sekretären går att ta upp och flytta, liksom ugglan och kaktusen ovanpå."},
-  {"id": 178, "date": "2026-10-02", "text": "Bilnyckeln i hallen kallar på vår vita Renault Megane (FGZ 56D): den kör fram och parkerar framför huset, och åker iväg när du trycker igen."},
-  {"id": 177, "date": "2026-10-02", "text": "Katten går fram och äter upp en fiskpinne som ligger på golvet i närheten."},
-  {"id": 176, "date": "2026-10-02", "text": "När du sitter eller ligger kan du nå saker i närheten, t.ex. fjärrkontrollen från soffan och boken från fåtöljen; Mellanslag reser dig."},
-  {"id": 175, "date": "2026-10-02", "text": "På kattavlan kan du nu spara bilder (röd knappnål) eller slänga dem – sparade bilder trillar aldrig ner."},
-  {"id": 174, "date": "2026-10-02", "text": "Tryck E på en SYMFONISK-högtalare så spelar musik i alla tre – byt låt och ändra volymen i panelen."},
-  {"id": 173, "date": "2026-10-02", "text": "Med whiskyflaskan i handen kan du hälla en skvätt whisky i kaffekoppen och dricka en kaffekask."},
-  {"id": 172, "date": "2026-10-02", "text": "Mjölkpaketet i kylen går att ta ut och hälla i ett glas, i en tom kopp eller som en skvätt i kaffet."},
-  {"id": 171, "date": "2026-10-02", "text": "I frysen finns ett paket fiskpinnar: ta en i taget, ät upp den eller lägg den var som helst."},
-  {"id": 170, "date": "2026-10-02", "text": "Tre SYMFONISK-högtalare har flyttat in: en vit i köket, en svart på tv-bänken och en lamphögtalare i fönstret bakom soffan som tänds med E."},
-  {"id": 169, "date": "2026-10-02", "text": "Teckningarna i flickornas rum går att ta med sig och tejpa upp på väggarna eller på kylen."},
-  {"id": 168, "date": "2026-10-02", "text": "Med en vin-, champagne- eller whiskyflaska i handen kan du hälla upp i ett glas som står framme och sedan dricka ur det."},
-  {"id": 167, "date": "2026-10-02", "text": "Kycklingen i kylen går att ta ut och steka i pannan på hällen – då fräser den och ryker en stund."},
-  {"id": 166, "date": "2026-10-02", "text": "Frysen går att öppna, och lappen med ändringar följer med dörren."},
-  {"id": 165, "date": "2026-10-02", "text": "I lådan under hällen ligger en stekpanna som du kan ta fram och ställa på hällen."},
-  {"id": 164, "date": "2026-10-02", "text": "Induktionshällen går att slå på och av med E – den främre plattan glöder rött och surrar svagt."},
-  {"id": 163, "date": "2026-10-02", "text": "Mattan i vardagsrummet har fått Sarahs mönster: mörkgrön med vita ränder som böjer sig i bågar."},
-  {"id": 162, "date": "2026-10-02", "text": "Sovrum 1 har fått en svart taklampa med skärm av snören och en klar glödlampa."},
-  {"id": 161, "date": "2026-10-02", "text": "Brandtrappan på husets västra kortände står nu direkt mot gaveln."},
-  {"id": 160, "date": "2026-10-02", "text": "Efter \"Ladda om\" kommer du direkt tillbaka där du var, utan startskärm – bara en kort \"Omladdning klar\"."},
-  {"id": 159, "date": "2026-10-02", "text": "Toaletterna går att spola med E på spolknappen – sedan fylls cisternen på en stund."},
-  {"id": 158, "date": "2026-10-02", "text": "Fotpallen framför fåtöljen är utbytt mot en mörkröd klädd pall med lös dyna."},
-  {"id": 157, "date": "2026-10-02", "text": "Nerf-pilarna träffar måltavlan igen, och tavlan stiger upp ur gräset när du håller en blaster, lasersvärdet eller en trollstav."},
-  {"id": 156, "date": "2026-10-02", "text": "Spotsen ovanpå vitrinskåpet lyser nu synligt och kastar ljus uppåt på väggen när taklampan tänds."},
-  {"id": 155, "date": "2026-10-02", "text": "Boken \"Katten på Karpvägen\" handlar nu om två familjer som flyttar ihop."},
-  {"id": 154, "date": "2026-10-02", "text": "Namnskylten på Sovrum 1 säger nu \"Sarah & Olof\"."},
-  {"id": 153, "date": "2026-10-02", "text": "Tvättstugans skåpdörr går inte längre igenom väggen när den öppnas."},
-  {"id": 152, "date": "2026-10-02", "text": "Tvättstugans väggskåp över diskhon är borta – nu sitter skåpet bara över maskinerna."},
-  {"id": 151, "date": "2026-10-02", "text": "Ytterdörren har fått ett brevinkast i mässing som går att lyfta, och under diskhon står sopsorteringen."},
-  {"id": 150, "date": "2026-10-02", "text": "Det susar av vind genom ett öppet fönster."},
-  {"id": 149, "date": "2026-10-02", "text": "Fönstren går att öppna med E – bågarna öppnas utåt som på riktiga svenska fönster."},
-  {"id": 148, "date": "2026-10-02", "text": "Elskåpet i hallen går att öppna: där sitter elcentralen och routern med blinkande lampor."},
-  {"id": 147, "date": "2026-10-02", "text": "I badrummen går tvättställens lådor och spegelskåpet att öppna, och i tvättstugan tvättmaskinen, torktumlaren och skåpet under diskhon."},
-  {"id": 146, "date": "2026-10-02", "text": "TV-bänkens två luckor går att öppna med E."},
-  {"id": 145, "date": "2026-10-02", "text": "Lådorna i nattduksborden, byrån i Klk, Livias och Tuvas skrivbord och sänglådorna i dubbelsängen går att dra ut med E."},
-  {"id": 144, "date": "2026-10-02", "text": "Alla köksluckor och lådor går att öppna med E: skåp, överskåp, diskmaskinen och lådorna."},
-  {"id": 143, "date": "2026-10-02", "text": "Innergården bakom oss slutar nu i en tegelmur med ljust räcke, och en trappa leder ner till cykelvägen."},
-  {"id": 142, "date": "2026-10-02", "text": "Innergårdens pergola har fått ljusa balkar, klätterväxter, ljusslingor som tänds på kvällen och tegel i fiskbensmönster."},
-  {"id": 141, "date": "2026-10-02", "text": "Å-husens fönster sitter nu i djupa tegelsmygar med stående tegel under och över, och takkanten är ljusgrå plåt."},
-  {"id": 140, "date": "2026-10-02", "text": "Å-husen har fått platta tak med ljus plåtkant och ventilationshuvar, som på Peabs bilder."},
-  {"id": 139, "date": "2026-10-02", "text": "Vinflaskorna, whiskyflaskorna och glasen kan tas ut, ställas på bord och läggas tillbaka i hyllan eller skåpet."},
-  {"id": 138, "date": "2026-10-02", "text": "Vinflaskorna ligger nu vågrätt i vinhyllan och har korkar."},
-  {"id": 137, "date": "2026-10-02", "text": "Vitrinskåpets luckor öppnas nu utåt mot rummet."},
-  {"id": 136, "date": "2026-10-02", "text": "Grannhusens balkonger är nu indragna loggior i husens hörn, med ljusa väggar och spjälräcke – som på ritningarna."},
-  {"id": 135, "date": "2026-10-02", "text": "Måltavlan på gräsmattan fälls bara upp när du håller i en nerfgun."},
-  {"id": 134, "date": "2026-10-02", "text": "När du kommer tillbaka eller börjar från start visar köksklockan och almanackan alltid riktig tid och dagens datum."},
-  {"id": 133, "date": "2026-10-02", "text": "Grannhusen i kvarteret har fått balkonger med ljusa spjälräcken, och på en del står det växter."},
-  {"id": 132, "date": "2026-10-02", "text": "Det långa tegelhuset bakom HepCat svävar inte längre – hus i slänten står på en sockel ner till marken."},
-  {"id": 131, "date": "2026-10-02", "text": "Grannhusen i kvarteret har fått vita fönsterfoder, fönsterbleck, ljus taklist och stuprör som på Peabs bilder."},
-  {"id": 130, "date": "2026-10-02", "text": "Stora gamla lövträd står nu vid skolan, unga lönnar längs vår trottoar och en buskhäck vid gången – alla följer årstiden."},
-  {"id": 129, "date": "2026-10-02", "text": "Vid gatan står nu busshållplatsen, den röda Flyttad-skylten, en parkeringsskylt och HepCats gatupratare."},
-  {"id": 128, "date": "2026-10-02", "text": "Gatan har fått kantsten, lagad asfalt, gatlyktor som lyser på kvällen, övergångsställe, bygget trafikljus och höstlöv."},
-  {"id": 127, "date": "2026-10-02", "text": "En gammal teaksekretär står mellan TV:n och soffan – fäll ned klaffen och öppna alla små lådor, det finns en hemlig också."},
-  {"id": 126, "date": "2026-10-02", "text": "HepCat Store på andra sidan gatan har fått sitt riktiga utseende – tegel, vit gavel och plåttak – med det långa tegelhuset bakom."},
-  {"id": 125, "date": "2026-10-02", "text": "Mitt emot köket står nu en lång tegelmur och skolan i två våningar med vita hörn, som i verkligheten."},
-  {"id": 124, "date": "2026-10-02", "text": "Sätt dig i loungesoffan så kommer en stor öl – ta den och drick med klick. Kaffet i koppen går också att dricka."},
-  {"id": 123, "date": "2026-10-02", "text": "Kaffekopparna kan tas ut tomma och ställas var som helst – ta kannan, häll själv i koppen och ställ tillbaka kannan på bryggaren."},
-  {"id": 122, "date": "2026-10-02", "text": "En bok ligger på sidobordet vid fåtöljen – ta upp den och läs, A D bläddrar."},
-  {"id": 121, "date": "2026-10-02", "text": "En vinhylla i svart metall med åtta flaskor hänger mellan vitrinskåpet och fåtöljen."},
-  {"id": 120, "date": "2026-10-02", "text": "Ett vitrinskåp (IKEA BESTÅ) hänger nu på väggen i vardagsrummet, med fina glas, whiskyflaskor och spotlights – alla dörrar går att öppna."},
-  {"id": 119, "date": "2026-10-02", "text": "Alla fönsterbänkar har fått blomkrukor – pelargoner, orkidéer, kaktusar, basilika, murgröna och saintpaulior."},
-  {"id": 118, "date": "2026-10-02", "text": "Tvättstugan har fått ett vitt väggskåp över bänken – luckorna går att öppna och där finns handdukar och tvättmedel."},
-  {"id": 117, "date": "2026-10-02", "text": "Spegelskåpet i badrummet på övervåningen speglar nu rummet, som de andra speglarna."},
-  {"id": 116, "date": "2026-10-02", "text": "Palmbladen vid altandörren går inte längre igenom väggen – varken inne eller ute."},
-  {"id": 115, "date": "2026-10-02", "text": "Vardagsrummet har fått en taklampa av vikt vitt papper med rombmönster som lyser mjukt när den är tänd."},
-  {"id": 114, "date": "2026-10-02", "text": "Nyckelskåpet sitter nu mitt på den smala väggen vid ytterdörren, fritt från spegeln."},
-  {"id": 113, "date": "2026-10-02", "text": "En måltavla står på gräsmattan bakom häcken – skjut på den med nerfgunen, mitten och långa skott ger mest poäng."},
-  {"id": 112, "date": "2026-10-02", "text": "Nerfpilarna lämnar färgstänk i blasterns färg där de träffar – stänken försvinner efter en halv minut."},
-  {"id": 111, "date": "2026-10-02", "text": "Trollspöna trollar fram stjärnor och fladdrande fjärilar där du pekar – de försvinner efter en stund."},
-  {"id": 110, "date": "2026-10-02", "text": "En stor abstrakt tavla med svart ram hänger nu över divanen i vardagsrummet."},
-  {"id": 109, "date": "2026-10-02", "text": "Lightsabern bränner märken med lite rök i väggar, golv och möbler – de försvinner efter ett par minuter."},
-  {"id": 108, "date": "2026-10-02", "text": "En guldpalm i stor kruka står nu till höger om altandörren i vardagsrummet."},
-  {"id": 107, "date": "2026-10-02", "text": "En fjärrkontroll ligger på soffbordet: rikta den mot en TV, klicka för att byta program och högerklicka för att stänga av."},
-  {"id": 106, "date": "2026-10-02", "text": "Livia och Tuva har fått en TV på väggen mitt emot kojen, med Ambilight och ett nytt program varje gång den slås på."},
-  {"id": 105, "date": "2026-10-02", "text": "Allt du bär på kan läggas ner på bord, bänkar och golvet – och du kan bara bära en sak i taget."},
-  {"id": 104, "date": "2026-10-02", "text": "Diskhon, vasken i tvättstugan och handfaten är nu riktiga fördjupningar med botten och avlopp."},
-  {"id": 103, "date": "2026-10-02", "text": "Nyckelskåpet sitter nu på den smala väggen bredvid ytterdörren, och spegeln hänger mitt på hallväggen."},
-  {"id": 102, "date": "2026-10-02", "text": "Köksklockan sitter nu mitt på väggen, över anslagstavlan och almanackan."},
-  {"id": 101, "date": "2026-10-02", "text": "Almanackan och köksklockan styrs nu med WASD: A D byter månad eller spolar, W S byter dag."},
-  {"id": 100, "date": "2026-10-02", "text": "Startskärmen avslöjar inte längre klockan, almanackan och katterna – de får du upptäcka själv."},
-  {"id": 99, "date": "2026-10-02", "text": "Ett dygn tar nu 60 minuter i stället för 12 – vill du se natten kan du spola fram köksklockan."},
-  {"id": 98, "date": "2026-10-02", "text": "Walter och Kians fönster i Sovrum 2 är nu mindre än Tillys fönster i Sovrum 4."},
-  {"id": 97, "date": "2026-10-02", "text": "Koppskåpets lucka går inte längre igenom ugnsskåpet – den stannar mot skåpets sida."},
-  {"id": 96, "date": "2026-10-02", "text": "Besöket börjar på riktig tid och datum. Köksklockan ställer tiden, och den nya kattalmanackan bredvid väljer datum."},
-  {"id": 95, "date": "2026-10-02", "text": "Rita med krita på pappret på skrivbordet i Sovrum 3 – teckningen sparas till nästa gång."},
-  {"id": 94, "date": "2026-10-02", "text": "Livia och Tuva har fått ett vitt IKEA ALEX-skrivbord under fönstret, en stol och pyssel på bordet."},
-  {"id": 93, "date": "2026-10-02", "text": "En vit IKEA NORDLI-byrå med åtta lådor står i klädkammaren i Sovrum 1."},
-  {"id": 92, "date": "2026-10-02", "text": "Sovrum 1: dubbelsängen är en IKEA IDANÄS med hög, knäppt huvudgavel i mörkgrått tyg."},
-  {"id": 91, "date": "2026-10-02", "text": "Koka kaffe, ta en kopp ur överskåpet, fyll den och ställ den på vilket bord du vill."},
-  {"id": 90, "date": "2026-10-02", "text": "En ficklampa ligger på hatthyllan i hallgarderoben – ta den med E och klicka för att tända och släcka."},
-  {"id": 89, "date": "2026-10-02", "text": "Trollstavar och ett enhörningsdiadem hänger i Livia och Tuvas rum – vifta med en stav så gnistrar det."},
-  {"id": 88, "date": "2026-10-02", "text": "Nerf-blastrar på väggen hos Walter och Kian – ta en med E och klicka för att skjuta skumpilar."},
-  {"id": 87, "date": "2026-10-02", "text": "LED-slingor på skärmväggarna vid uteplatsen tänds i skymningen och släcks i gryningen."},
-  {"id": 86, "date": "2026-10-02", "text": "Sovrum 1: nytt ljusgrönt bäddset med blommönster."},
-  {"id": 85, "date": "2026-10-02", "text": "Kartan är dold tills du håller inne Tab (📊 på touch) – den visas ihop med statistiken. K visar bara kartan."},
-  {"id": 84, "date": "2026-10-02", "text": "Taklampan som svävade mitt i trappan sitter nu under trappan, i förrådet."},
-  {"id": 83, "date": "2026-10-02", "text": "Ugn och mikro räknas inte längre som toalettlock i statistiken."},
-  {"id": 82, "date": "2026-10-02", "text": "Gården som på ritningen: stengångar, pergola med matbord, grill, sandlådor, boulebana, bänkar, odlingslådor och planteringar – och du kan gå runt där."},
-  {"id": 81, "date": "2026-10-02", "text": "Datorbordet hos Walter och Kian står längs väggen mittemot våningssängen, med kortsidan mot fönstret – skärmen tittar rakt mot underslafen."},
-  {"id": 80, "date": "2026-10-02", "text": "Touch: huka- och mätknappen ligger inte längre ovanpå varandra – de sitter bredvid kartan, ovanför den stora knappen."},
-  {"id": 79, "date": "2026-10-02", "text": "Datorbordet hos Walter och Kian står nu vid fönstret, med en liten lucka till våningssängen. Sätt dig i gamingstolen så startar datorn av sig själv. Sätt dig i underslafen så svänger skärmen ut på sin arm mot sängen och det börjar gå en film."},
-  {"id": 78, "date": "2026-10-02", "text": "Kvarteret står på garaget: gården är upphöjd med stödmur och räcke mot parken, och garageinfarten ligger vid Karpvägen."},
-  {"id": 77, "date": "2026-10-02", "text": "En lightsaber hänger i Walter och Kians rum – ta den med E, svinga, och häng tillbaka den."},
-  {"id": 76, "date": "2026-10-02", "text": "Walter och Kian har fått ett gamingbord med böjd skärm och RGB-dator – starta den med E."},
-  {"id": 75, "date": "2026-10-02", "text": "F visar den tomma lägenheten: även hyllor, speglar, tavlor, kaffebryggare, skyltar och katten försvinner."},
-  {"id": 74, "date": "2026-10-02", "text": "Strömbrytaren i WC/dusch uppe sitter på väggen i stället för i luften."},
-  {"id": 73, "date": "2026-10-02", "text": "Sätt dig i soffor, fåtölj och stolar, och lägg dig i sängarna med E – E igen för att resa dig."},
-  {"id": 72, "date": "2026-10-02", "text": "Huka dig med Ctrl (🧎 på touch) för att komma nära katterna."},
-  {"id": 71, "date": "2026-10-02", "text": "\"Ladda om\" i nyhetsnotisen tar dig tillbaka dit du var; på startskärmen kan du välja att börja från start."},
-  {"id": 70, "date": "2026-10-02", "text": "Årstider: träden byter färg efter månad, och december–februari ligger snö – snögubben står nu precis bakom häcken."},
-  {"id": 69, "date": "2026-10-02", "text": "Jackorna på hatthyllan ser ut som jackor, och skorna som skor."},
-  {"id": 68, "date": "2026-10-02", "text": "Mysiga blårutiga sängkläder, extrakudde och överkast i Sovrum 1."},
-  {"id": 67, "date": "2026-10-02", "text": "Vita NYMÅNE-nattlampor på nattduksborden – tänd och släck dem med E."},
-  {"id": 66, "date": "2026-10-02", "text": "Två nattduksbord i bambu, IKEA NORDKISA, vid sängen i Sovrum 1."},
-  {"id": 65, "date": "2026-10-02", "text": "En 55-tums tv på tv-bänken – slå på den med E."},
-  {"id": 64, "date": "2026-10-02", "text": "En vit högglansig tv-bänk, IKEA BYÅS, mitt emot soffan."},
-  {"id": 63, "date": "2026-10-02", "text": "Matbordet SKANSNÄS är avlångt, 150 × 90 cm, och stolarna har ljus flätad sits."},
-  {"id": 62, "date": "2026-10-02", "text": "Hallen har fått hatthylla med jackor och en skohylla till höger innanför dörren."},
-  {"id": 61, "date": "2026-10-02", "text": "Husen runt tomten ser ut som S:t Lars gamla tegelbyggnader, med branta mörka tak och höga fönster."},
-  {"id": 60, "date": "2026-10-02", "text": "Grannen till vänster (L1008) har köksfönstret på gaveln och brandtrappan tätt intill huset."},
-  {"id": 59, "date": "2026-10-02", "text": "Speglarna visar spegelbild, och LED-listen på badrumsspegeln tänds och släcks med E."},
-  {"id": 58, "date": "2026-10-02", "text": "Fäll ut och fäll ihop parasollet med E."},
-  {"id": 57, "date": "2026-10-02", "text": "Uteplatsen har fått stenplattor i ljusgrå betong."},
-  {"id": 56, "date": "2026-10-02", "text": "En RÅGRUND-stol i bambu med handduk står i hörnet i Sovrum 1."},
-  {"id": 55, "date": "2026-10-02", "text": "Hallspegeln är en stor svart IKEA LINDBYN, Ø 110 cm."},
-  {"id": 54, "date": "2026-10-02", "text": "En svart Moccamaster på bänken – sätt på den med E och lyssna när den brygger."},
-  {"id": 53, "date": "2026-10-02", "text": "Ugnen och mikron går att öppna med E."},
-  {"id": 52, "date": "2026-10-02", "text": "Golvlampan är en IKEA NYMÅNE med tre spotar och står bredvid fåtöljen."},
-  {"id": 51, "date": "2026-10-02", "text": "Stor ljus matta under soffan och soffbordet."},
-  {"id": 50, "date": "2026-10-02", "text": "Nytt matbord: runda IKEA SKANSNÄS i brun bok med fyra stolar, inskjutna under bordet."},
-  {"id": 49, "date": "2026-10-02", "text": "Snabbare: hälften så många ritanrop, skuggor ritas bara om när de ändras, och upplösningen anpassas om datorn kämpar."},
-  {"id": 48, "date": "2026-10-02", "text": "Spring utomhus med Shift eller med joysticken helt utdragen; inne går du som vanligt."},
-  {"id": 47, "date": "2026-10-02", "text": "Lappen på frysen är lättare att läsa, med korta punkter; startskärmen berättar inte längre om nyheter."},
-  {"id": 46, "date": "2026-10-02", "text": "Innerdörrarna fyller hela öppningen och har vita dörrfoder."},
-  {"id": 45, "date": "2026-10-02", "text": "Trappstegen har samma Ek Chalk-parkett som golven."},
-  {"id": 44, "date": "2026-10-02", "text": "Bananplantan i häcköppningen är borta – du kan gå ut på gräsmattan."},
-  {"id": 43, "date": "2026-10-02", "text": "”Ladda om” i nyhetsnotisen fungerar på telefon och hämtar alltid nya versionen."},
-  {"id": 42, "date": "2026-10-02", "text": "Esc på startskärmen väljer Mus & tangentbord."},
-  {"id": 41, "date": "2026-10-02", "text": "Musen och touchpaden är mindre känsliga."},
-  {"id": 40, "date": "2026-10-02", "text": "Ovanliga katter låter annorlunda och får stjärnor runt sig när du klappar dem."},
-  {"id": 39, "date": "2026-10-02", "text": "Hallen: rund spegel och Solstickan-nyckelskåp med bilnyckel som säger beep beep."},
-  {"id": 38, "date": "2026-10-02", "text": "Två hyllor i köket med porträtt, blommor och småsaker."},
-  {"id": 37, "date": "2026-10-02", "text": "Kattavlan hänger under köksklockan."},
-  {"id": 36, "date": "2026-10-02", "text": "Besöket börjar ute på gräset framför huset."},
-  {"id": 35, "date": "2026-10-02", "text": "Huset, kvarteret och väderstrecken som på Peabs ritningar."},
-  {"id": 34, "date": "2026-10-02", "text": "Möblerad uteplats med parasoll, krukor, sommaröl och vintersnögubbe."},
-  {"id": 33, "date": "2026-10-02", "text": "Soffbord ILVA Woodstock, enklare startskärm på telefon och månadsnamn på klockan."},
-  {"id": 32, "date": "2026-10-02", "text": "Besöket börjar 07:00 och solen följer månaden – spola tiden på köksklockan."},
-  {"id": 31, "date": "2026-10-02", "text": "Dold statistik (håll Tab), +1-brickor och installation på iPhone."},
-  {"id": 30, "date": "2026-10-01", "text": "Dygnet går på 12 minuter, med sol, måne och tända fönster hos grannarna."},
-  {"id": 29, "date": "2026-10-01", "text": "Lampknappar i varje rum och tändbara lampor."},
-  {"id": 28, "date": "2026-10-01", "text": "Klappade katter fotograferas och sätts upp på en tavla i köket."},
-  {"id": 27, "date": "2026-10-01", "text": "Våningssängar med Darth Vader- och enhörningslakan."},
-  {"id": 26, "date": "2026-10-01", "text": "Kylskåpet går att öppna – där ryker en grillad kyckling."},
-  {"id": 25, "date": "2026-10-01", "text": "Kliv in under en påslagen dusch så skriker du ”iiiih!”."},
-  {"id": 24, "date": "2026-10-01", "text": "Sängar och namnskyltar i barnens rum."},
-  {"id": 23, "date": "2026-10-01", "text": "Touch-läget vill ha liggande skärm."},
-  {"id": 22, "date": "2026-10-01", "text": "Kranar och duschar går att sätta på med E."},
-  {"id": 21, "date": "2026-10-01", "text": "Duschmunstyckena vi beställt."},
-  {"id": 20, "date": "2026-10-01", "text": "Garderoben i Sovrum 2 går att öppna."},
-  {"id": 19, "date": "2026-10-01", "text": "Matbord 180 × 90 med sex stolar."},
-  {"id": 18, "date": "2026-10-01", "text": "Utsikt med hus, träd och moln; vitt trappräcke."},
-  {"id": 17, "date": "2026-10-01", "text": "Exempelmöbler i alla rum – F visar/döljer dem."},
-  {"id": 16, "date": "2026-10-01", "text": "Mätverktyg: Q (📏 på touch)."},
-  {"id": 15, "date": "2026-10-01", "text": "Flera kattraser, några ovanliga."},
-  {"id": 14, "date": "2026-10-01", "text": "Golvsocklar och Hoppe Stockholm-handtag."},
-  {"id": 13, "date": "2026-10-01", "text": "Mjuka skuggor i hörnen."},
-  {"id": 12, "date": "2026-10-01", "text": "Minikarta med rumsnamn (K)."},
-  {"id": 11, "date": "2026-10-01", "text": "Statistik över katter, dörrar, steg och tid."},
-  {"id": 10, "date": "2026-10-01", "text": "Klappa katten med E."},
-  {"id": 9, "date": "2026-10-01", "text": "Ifö Spira-toaletter med lock som går att fälla."},
-  {"id": 8, "date": "2026-10-01", "text": "Ändringslogg på frysen."},
-  {"id": 7, "date": "2026-10-01", "text": "Våra materialval i kök, golv och badrum."},
-  {"id": 6, "date": "2026-10-01", "text": "Tillvalsdörren till Allrum – fyra sovrum uppe."},
-  {"id": 5, "date": "2026-10-01", "text": "Vardagsrumsmöbler från IKEA LANDSKRONA."},
-  {"id": 4, "date": "2026-10-01", "text": "En katt kan gömma sig bakom dörrar; ljud för dörrar och steg."},
-  {"id": 3, "date": "2026-10-01", "text": "Meddelande om ny version och skjutdörrar på garderoberna."},
-  {"id": 2, "date": "2026-10-01", "text": "Fönstermått från bofakta, tegelfasad och touchstyrning."},
-  {"id": 1, "date": "2026-10-01", "text": "Första versionen: gå runt i båda planen."}
+  {
+    "id": 551,
+    "text": "Skolområdet österut har kartbaserade hus, öppna gårdar och parkens alléer."
+  },
+  {
+    "id": 550,
+    "date": "2026-10-08",
+    "text": "Västervyn får kartans husrad, angöring och parkstråk längs Karpvägens fortsättning mot nordväst."
+  },
+  {
+    "id": 549,
+    "date": "2026-10-08",
+    "text": "Höje å får varierande slänter, kartans parkstigar och lövträdsdungar med buskage och strandvegetation."
+  },
+  {
+    "id": 548,
+    "date": "2026-10-08",
+    "text": "Sankt Lars väg får en vägbro och en separat gång- och cykelbro över den nedsänkta Höje å."
+  },
+  {
+    "id": 547,
+    "date": "2026-10-08",
+    "text": "Uteplatsens stora palm får veckade bladfingrar, fiberrik stam och en mjukare öppen kruka med synlig jord."
+  },
+  {
+    "id": 546,
+    "date": "2026-10-08",
+    "text": "Källarens cykelrum och förrådsområden följer ritningen, med skilda hyrförråd och fria gångar utan cyklar bland bilarna."
+  },
+  {
+    "id": 545,
+    "date": "2026-10-08",
+    "text": "Krukväxternas blad svajar mjukt vid öppna fönster och ytterdörrar, med starkare vind i regn och snö."
+  },
+  {
+    "id": 544,
+    "date": "2026-10-08",
+    "text": "Grannlägenheternas dörrar och fönster får karmar, bågar, beslag och glasreflektioner på L-husets båda sidor och fyra våningar."
+  },
+  {
+    "id": 543,
+    "date": "2026-10-08",
+    "text": "Konsolen får städning och fler genvägar, med samma publika fuskkoder som tuschklotter längst in i cykelförrådet."
+  },
+  {
+    "id": 542,
+    "date": "2026-10-08",
+    "text": "Kylhyllans dubbel-IPA och trippel-IPA uppdateras dagligen från globala topplistor med riktiga etiketter och trygg offlinecache."
+  },
+  {
+    "id": 541,
+    "date": "2026-10-08",
+    "text": "Kylens grönsakslåda och frysens fyra lådor kan dras ut och fyllas med sparade föremål utan anonyma varublock."
+  },
+  {
+    "id": 540,
+    "date": "2026-10-08",
+    "text": "Diskmaskinens korgar kan väljas mellan metalltrådarna utan att skymma disken eller störa inlastningen."
+  },
+  {
+    "id": 539,
+    "date": "2026-10-08",
+    "text": "Tydliga actionknappar får kortare texter medan små föremål och särskilda destinationer behåller sina namn."
+  },
+  {
+    "id": 538,
+    "date": "2026-10-08",
+    "text": "Ommöbleringen får tydliga steg och flyttknappar, med konsolen i poängbrickan på touch och på §-tangenten."
+  },
+  {
+    "id": 537,
+    "date": "2026-10-08",
+    "text": "Musikkanalerna spelar nya inspelningar i stereo och återgår inte till blip-blop när ljudfiler saknas."
+  },
+  {
+    "id": 536,
+    "date": "2026-10-08",
+    "text": "Tomma toalettrullar kan bytas med reservrullar från HAVBÄCK och sparar återstående papper mellan besöken."
+  },
+  {
+    "id": 535,
+    "date": "2026-10-08",
+    "text": "Hallens jacka och skor kan läggas undan på krok, skohylla eller i en öppen garderob och sparas utan kopior."
+  },
+  {
+    "id": 534,
+    "date": "2026-10-08",
+    "text": "Sängarnas täcken rufsas när du ligger där och kan bäddas igen med separata sparade tillstånd för varje slaf."
+  },
+  {
+    "id": 533,
+    "date": "2026-10-08",
+    "text": "Matbordets sex dukplatser sparar tallrikar och glas med deras mat och dryck utan att skapa extra föremål."
+  },
+  {
+    "id": 532,
+    "date": "2026-10-08",
+    "text": "Föremålsmarkeringen återanvänder GPU-program för att minska ryck när blicken flyttas mellan föremål och personer."
+  },
+  {
+    "id": 531,
+    "date": "2026-10-08",
+    "text": "Vattenkannan kan fyllas vid kranen och bevattnade krukväxter behåller sitt synliga tillstånd mellan besök."
+  },
+  {
+    "id": 530,
+    "date": "2026-10-08",
+    "text": "Tvätten kan torkas, vikas och sparas på garderobshyllor utan föremålsförlust när det är fullt."
+  },
+  {
+    "id": 529,
+    "date": "2026-10-08",
+    "text": "Tvättmaskinens program sparar återstående tid och gör plaggen rena och våta."
+  },
+  {
+    "id": 528,
+    "date": "2026-10-08",
+    "text": "Tvättkorgen innehåller sparade plagg som kan läggas i maskinernas öppna trummor utan att försvinna när det är fullt."
+  },
+  {
+    "id": 527,
+    "date": "2026-10-08",
+    "text": "Smörkniven i den öppna besticklådan kan nu väljas från normala blickvinklar och positioner framför lådan."
+  },
+  {
+    "id": 526,
+    "date": "2026-10-08",
+    "text": "Fokuserade föremål behåller sina synliga material när lampljuset uppdateras."
+  },
+  {
+    "id": 525,
+    "date": "2026-10-08",
+    "text": "Förråd och cykelförråd under lägenheten visas nu med rätt rumsnamn och rumsstatistik."
+  },
+  {
+    "id": 524,
+    "date": "2026-10-08",
+    "text": "Katter kan dyka upp på det fria golvet i städklädkammaren under trappans höga delar."
+  },
+  {
+    "id": 523,
+    "date": "2026-10-08",
+    "text": "Ändringslappen på frysen visar nu högst de 100 senaste ändringarna."
+  },
+  {
+    "id": 522,
+    "date": "2026-10-08",
+    "text": "Kompassen döljs medan notiser visas och återkommer när den sista notisen försvinner."
+  },
+  {
+    "id": 521,
+    "date": "2026-10-08",
+    "text": "Golvet bär nu genom hela källarens förrådsgång, även under lägenheten och över dörrtrösklar."
+  },
+  {
+    "id": 520,
+    "date": "2026-10-08",
+    "text": "Entréhallens svarta NISSEDAL-spegel är nu 65 × 150 cm enligt referensbilden."
+  },
+  {
+    "id": 519,
+    "date": "2026-10-08",
+    "text": "Sopbehållarna står längs portikväggen mot lägenheten med framsidorna åt den fria gången."
+  },
+  {
+    "id": 518,
+    "date": "2026-10-08",
+    "text": "Handtagen på de gröna entrédörrarna syns nu på båda sidor, även när dörrarna är stängda."
+  },
+  {
+    "id": 517,
+    "date": "2026-10-08",
+    "text": "Garderobernas stängda skjutdörrar har täckta fogar som stoppar insyn från sneda vinklar."
+  },
+  {
+    "id": 516,
+    "date": "2026-10-08",
+    "text": "Cyklarna längs hus L:s entréer är borttagna; cykelparkeringen vid kvarterets hörn finns kvar."
+  },
+  {
+    "id": 515,
+    "date": "2026-10-08",
+    "text": "En liten kompass visar geografiska väderstreck med en röd nordpil som följer din blick."
+  },
+  {
+    "id": 514,
+    "date": "2026-10-08",
+    "text": "Blandarspakarna i kök, tvätt och båda badrummen lyfts när vattnet sätts på och sänks när det stängs av."
+  },
+  {
+    "id": 513,
+    "date": "2026-10-08",
+    "text": "Menyn döljs nu automatiskt när man går till startplatsen eller återställer hemmet."
+  },
+  {
+    "id": 512,
+    "date": "2026-10-08",
+    "text": "Föremålet du siktar på markeras med en diskret ljushetsökning utan interna meshlinjer."
+  },
+  {
+    "id": 511,
+    "date": "2026-10-08",
+    "text": "Färre människor på gården och inga barn i sandlådorna."
+  },
+  {
+    "id": 510,
+    "date": "2026-10-08",
+    "text": "Versionskontroll och uppdatering sker före 3D-laddningen, med tidsgräns och skydd mot omladdningsloopar."
+  },
+  {
+    "id": 509,
+    "date": "2026-10-08",
+    "text": "Uppdragslappen sitter nu på insidan av koppskåpets lucka och följer med när den öppnas."
+  },
+  {
+    "id": 508,
+    "date": "2026-10-08",
+    "text": "Alla takgardiner får lätt transparent tyg och dämpat, diffust ljusgenomsläpp."
+  },
+  {
+    "id": 507,
+    "date": "2026-10-08",
+    "text": "Fler varierade krukväxter vid entréerna och längs loftgången, med fria gångvägar."
+  },
+  {
+    "id": 506,
+    "date": "2026-10-08",
+    "text": "Tydliga, enhetliga ikoner och läsbara kontroller på mobil och dator."
+  },
+  {
+    "id": 505,
+    "date": "2026-10-08",
+    "text": "Portiken följer ritningen med öppet utrymme för sopbehållare och ett rum för jetpacken."
+  },
+  {
+    "id": 504,
+    "date": "2026-10-08",
+    "text": "Garderobsblomman och kopparkrukan är dubbelt så stora, med fler bladdetaljer."
+  },
+  {
+    "id": 503,
+    "date": "2026-10-08",
+    "text": "Interaktionsmålet får en tydlig kontur som följer föremålet."
+  },
+  {
+    "id": 502,
+    "date": "2026-10-08",
+    "text": "Eluttagen ovanför köksbänken är nu svarta i enlighet med valt tillval."
+  },
+  {
+    "id": 501,
+    "date": "2026-10-08",
+    "text": "Häcken direkt utanför entrédörrarna är formklippt; parkeringshäckens ursprungliga buskar är återställda."
+  },
+  {
+    "id": 500,
+    "date": "2026-10-08",
+    "text": "Brödrosttestet har rättats så att smörknivens innehåll initieras korrekt och handlingar för att bre, lägga på ost och äta anropas via regelmotorn utan API-fel."
+  },
+  {
+    "id": 499,
+    "date": "2026-10-08",
+    "text": "Loftgångens indragna gröna ytterdörrar syns korrekt framför lägenheternas förenklade byggnadsmodell."
+  },
+  {
+    "id": 498,
+    "date": "2026-10-08",
+    "text": "Ytterdörrarna är mörkgröna med små tunna glasrutor högst upp i dörrbladen."
+  },
+  {
+    "id": 497,
+    "date": "2026-10-08",
+    "text": "Portiken genom hus L har åter öppnats mot innergården så att passagen är fri och synlig hela vägen mellan gatan och gården."
+  },
+  {
+    "id": 496,
+    "date": "2026-10-08",
+    "text": "Framsidans häck är tät, småbladig och formklippt med fria öppningar och snö på ovansidan vintertid."
+  },
+  {
+    "id": 495,
+    "date": "2026-10-08",
+    "text": "En garderobsblomma i mindre kopparkruka står mellan vitrinskåpet och uteplatsdörren."
+  },
+  {
+    "id": 494,
+    "date": "2026-10-08",
+    "text": "Efter återställning av hemmet är uteplatsens öl dold tills man sätter sig i soffan, och startpositionen vilar korrekt på bordsskivan i stället för att sväva vid divanen."
+  },
+  {
+    "id": 493,
+    "date": "2026-10-08",
+    "text": "Tavlor och posters kan flyttas mellan våningarna och väljas på sin nya vägg."
+  },
+  {
+    "id": 492,
+    "date": "2026-10-08",
+    "text": "Vita konturer visar giltiga placeringar och returplatser för föremål i handen."
+  },
+  {
+    "id": 491,
+    "date": "2026-10-08",
+    "text": "Ägg kan tas ur kylen, stekas på hällen och serveras på tallrik eller macka."
+  },
+  {
+    "id": 490,
+    "date": "2026-10-08",
+    "text": "Uteplatsens loungesoffa har kortats med en sittmodul mot dörren för friare passage, medan hörnplaceringen och bänken längs skärmväggen behålls intakta."
+  },
+  {
+    "id": 489,
+    "date": "2026-10-08",
+    "text": "Falska streck på plana väggar är borta, medan riktiga hörn och öppningar framhävs."
+  },
+  {
+    "id": 488,
+    "date": "2026-10-08",
+    "text": "Tillys posters har återställts och kan flyttas separat utan att de andra försvinner."
+  },
+  {
+    "id": 487,
+    "date": "2026-10-08",
+    "text": "Vitrinskåpet kan nu flyttas på väggen med luckor och innehåll kvar och återställas till sin ursprungliga höjd."
+  },
+  {
+    "id": 486,
+    "date": "2026-10-08",
+    "text": "Ölen på uteplatsen placeras nu alltid stadigt på loungebordets skiva och följer bordet korrekt vid flytt, rotation och omladdning."
+  },
+  {
+    "id": 485,
+    "date": "2026-10-08",
+    "text": "Vardagsrummets guldpalm är 20 procent mindre och står i en rundad kruka i borstad koppar."
+  },
+  {
+    "id": 484,
+    "date": "2026-10-08",
+    "text": "Krukväxten på framsidans cafébord är borttagen medan bordet och båda stolarna står kvar."
+  },
+  {
+    "id": 483,
+    "date": "2026-10-08",
+    "text": "Disktrasan vilar nu tydligt synlig ovanpå diskbänken och draperad över kanten mot diskhon och kan enkelt läggas tillbaka dit."
+  },
+  {
+    "id": 482,
+    "date": "2026-10-08",
+    "text": "Dammsugaren rymmer tre gånger så mycket smuts och lämnar det som inte får plats kvar på golvet."
+  },
+  {
+    "id": 481,
+    "date": "2026-10-08",
+    "text": "Brödskivor kan nu placeras i brödrosten, rostas med sänkbar släde och värmeglöd, poppa upp som gyllenbrunt rostat bröd som kan bres, toppas med pålägg och ätas."
+  },
+  {
+    "id": 480,
+    "date": "2026-10-08",
+    "text": "Hela det sammanhängande vardagsflödet från mellanmål till städat kök har testats och verifierats för både desktop och touch med bevarade tillstånd vid återladdning."
+  },
+  {
+    "id": 479,
+    "date": "2026-10-07",
+    "text": "Whisky- och vinflaskorna i vitrinskåpet och vinhyllan är nu modellerade efter verkliga premiumprodukter från Systembolaget med Tullamore D.E.W. bland whiskysorterna, autentiska etiketter och rätt interaktionsnamn."
+  },
+  {
+    "id": 478,
+    "date": "2026-10-07",
+    "text": "Radiokanalerna i Sonos och på bilens skärm visar nu stabila genrenamn i stället för låttitlar, med aktuell låt och artist separat som ”Spelas nu”."
+  },
+  {
+    "id": 477,
+    "date": "2026-10-07",
+    "text": "Ölen på uteplatsens loungebord placeras nu framför den sittande spelaren inom bekvämt räckhåll från alla sittplatser runt bordet."
+  },
+  {
+    "id": 476,
+    "date": "2026-10-07",
+    "text": "Prylarna på städskåpets hyllor under trappan syns nu som vanligt igen i stället för att vara osynliga bakom namnlapparna."
+  },
+  {
+    "id": 475,
+    "date": "2026-10-07",
+    "text": "Mobiltelefoner behåller nu automatiskt touchkontroller vid paus, omladdning och versionsuppdatering, med en direkt väg tillbaka till touch."
+  },
+  {
+    "id": 474,
+    "date": "2026-10-07",
+    "text": "Poäng- och spelarbadgen har fått enhetliga textstorlekar, anpassad ikonstorlek samt förbättrade proportioner och linjering i både desktop- och mobilvy."
+  },
+  {
+    "id": 473,
+    "date": "2026-10-07",
+    "text": "Trapphusets fönsterkarmar, glas och intilliggande fasadsolider har justerats för att eliminera överlappande ytor och flimmer."
+  },
+  {
+    "id": 472,
+    "date": "2026-10-07",
+    "text": "Disksvamparna i städskåpet under trappan har staplats utan överlappande ytor för att eliminera flimmer."
+  },
+  {
+    "id": 471,
+    "date": "2026-10-07",
+    "text": "Disktrasan fastnar inte längre vid sköljning vid rinnande kran och kan avbrytas säkert utan att hemmet behöver återställas."
+  },
+  {
+    "id": 470,
+    "date": "2026-10-07",
+    "text": "Vinstället kan flyttas på väggen med flaskorna kvar och SYMFONISK-lampan kan placeras på fönsterbrädor och bord."
+  },
+  {
+    "id": 469,
+    "date": "2026-10-07",
+    "text": "Återställ vald möbel eller all möblering med bekräftelse innan ändringen delas med alla besökare."
+  },
+  {
+    "id": 468,
+    "date": "2026-10-07",
+    "text": "Alla lösa dekorativa speglar kan nu flyttas och återställas separat, medan badrummens fasta speglar behåller sina platser."
+  },
+  {
+    "id": 467,
+    "date": "2026-10-07",
+    "text": "TV:n placeras ovanpå TV-bänken och följer med när bänken flyttas eller roteras, och tidigare nedsjunkna placeringar rättas vid laddning."
+  },
+  {
+    "id": 466,
+    "date": "2026-10-07",
+    "text": "Enter öppnar en klickbar möbleringsmeny med fri muspekare, och Esc avslutar läget och avbryter osparade flyttar."
+  },
+  {
+    "id": 465,
+    "date": "2026-10-07",
+    "text": "Spegeln ovanför sekretären kan nu flyttas, roteras och återställas separat i möbleringsläget."
+  },
+  {
+    "id": 464,
+    "date": "2026-10-07",
+    "text": "I möbleringsläget kan även Home-tangenten återställa den valda möbeln eller tavlan till originalpositionen."
+  },
+  {
+    "id": 463,
+    "date": "2026-10-07",
+    "text": "Fruktskålen och palmen följer nu med även tidigare flyttade möbler, och en knapp återställer möbler och tavlor till originalpositionen."
+  },
+  {
+    "id": 462,
+    "date": "2026-10-07",
+    "text": "Väggar, dörrar och fast inredning har nu diskreta kantlinjer som gör rummens geometri lättare att urskilja."
+  },
+  {
+    "id": 461,
+    "date": "2026-10-07",
+    "text": "Vardagsrummets gardiner har nu samma ljusa bakgrundsfärg som kökskappan."
+  },
+  {
+    "id": 460,
+    "date": "2026-10-07",
+    "text": "Fuskkoderna ”olof is the goat” och ”sarah is the goat” låser upp flytt och rotation av möbler och tavlor med delad möblering för alla besökare."
+  },
+  {
+    "id": 459,
+    "date": "2026-10-07",
+    "text": "Alla gardinskenor och kökskappan går nu från vägg till vägg, och vardagsrumsgardinerna har samma botaniska mönster som kappan."
+  },
+  {
+    "id": 458,
+    "date": "2026-10-07",
+    "text": "Kökets långa gardiner har ersatts av en kort botaniskt mönstrad kappa i den befintliga takskenan."
+  },
+  {
+    "id": 457,
+    "date": "2026-10-07",
+    "text": "Vardagsrummet har nu tre olivgröna gardinlängder på en skena från vägg till vägg, även över balkongdörren."
+  },
+  {
+    "id": 456,
+    "date": "2026-10-07",
+    "text": "På köksbänken finns nu frivilliga vardagsuppdrag med sparade framsteg, avstängningsbara tips och bonuspoäng."
+  },
+  {
+    "id": 455,
+    "date": "2026-10-07",
+    "text": "Dammsugaren kan nu tömmas i restavfallet när dammbehållaren blir full, och bänkytor kan torkas av med disktrasan som sköljs ren vid kökskranen."
+  },
+  {
+    "id": 454,
+    "date": "2026-10-07",
+    "text": "Skaftdammsugaren kan nu startas och dammsuger upp smulor och damm från golvet med motorljud och sugeffekt, ger poäng vid städat rum och skrämmer iväg katten."
+  },
+  {
+    "id": 453,
+    "date": "2026-10-07",
+    "text": "Grafikkvaliteten anpassar sig nu dynamiskt i flera nivåer efter enhetens faktiska prestanda för mjukare flyt på mobiler och långsammare datorer."
+  },
+  {
+    "id": 452,
+    "date": "2026-10-07",
+    "text": "SYMFONISK-lamphögtalaren i vardagsrummet har uppdaterats med mörk textilklädd bas, rökfärgad glasskärm och en varmt lysande inre diffusor enligt IKEA-modellen."
+  },
+  {
+    "id": 451,
+    "date": "2026-10-07",
+    "text": "Alla sovrum och sällskapsrum har nu försetts med takskensgardiner med mönster och färger anpassade till respektive rums tema."
+  },
+  {
+    "id": 450,
+    "date": "2026-10-07",
+    "text": "Högtalarna, bilradion, datorn, laptopen och Kaffeturbo spelar nu riktig musik, med två låtar i rotation på varje radiokanal."
+  },
+  {
+    "id": 449,
+    "date": "2026-10-07",
+    "text": "Skaftdammsugaren i klädkammaren under trappan kan nu tas ut, ställas ner och dockas tillbaka för laddning."
+  },
+  {
+    "id": 448,
+    "date": "2026-10-06",
+    "text": "Kaffekoppar kan nu ställas i diskmaskinens överkorg och blir rena efter ett diskprogram."
+  },
+  {
+    "id": 447,
+    "date": "2026-10-06",
+    "text": "Knapparna på skärmen vid touch-styrning är nu halvt genomskinliga för att inte skymma spelet."
+  },
+  {
+    "id": 446,
+    "date": "2026-10-06",
+    "text": "Trapphuset vid portiken har nu fönster mot gatan på våning 1 och 2 enligt ritningarna."
+  },
+  {
+    "id": 445,
+    "date": "2026-10-06",
+    "text": "Statistikpanelen anpassar sig nu dynamiskt till fönstrets fulla höjd, och aktiva spelare samt deras poäng visas i start- och pausmenyn."
+  },
+  {
+    "id": 444,
+    "date": "2026-10-06",
+    "text": "Topplistans rader döljs nu från paus- och startmenyn och visas uteslutande via popupen Topplistan samt i helskärmsstatistiken."
+  },
+  {
+    "id": 443,
+    "date": "2026-10-06",
+    "text": "Pausmenyns fortsätt-knappar förtydligar nu om de återupptar med Mus & tangentbord eller Touch."
+  },
+  {
+    "id": 442,
+    "date": "2026-10-06",
+    "text": "QR-koden visas nu i skärmens hörn på dator samt i porträttläge på mobil, topplistan nås via en popup i menyn samt visas helskärms i flera kolumner i statistikvyn tillsammans med aktiva spelare."
+  },
+  {
+    "id": 441,
+    "date": "2026-10-06",
+    "text": "Spelarnamnet skrivs nu in i en separat dialog innan startskärmen, och knappen Byt spelare i menyn öppnar dialogen igen."
+  },
+  {
+    "id": 440,
+    "date": "2026-10-06",
+    "text": "Paus- och startmenyn har nu ordentliga menyknappar med tydliga beskrivningar och en separat knapp för att fälla ut instruktionerna."
+  },
+  {
+    "id": 439,
+    "date": "2026-10-06",
+    "text": "En laddningsskärm visas nu medan lägenheten laddas in innan startskärmen dyker upp."
+  },
+  {
+    "id": 438,
+    "date": "2026-10-05",
+    "text": "Spelarnamnet låses när du trycker OK, och Ny spelare sparar det förra resultatet och börjar om med noll poäng i ett återställt hem."
+  },
+  {
+    "id": 437,
+    "date": "2026-10-05",
+    "text": "Uppsatta teckningar försvinner efter ett dygn om ingen flyttar dem."
+  },
+  {
+    "id": 436,
+    "date": "2026-10-05",
+    "text": "Teckningar delas nu mellan besökare, och när någon flyttar en teckning uppdateras platsen även hos de andra."
+  },
+  {
+    "id": 435,
+    "date": "2026-10-05",
+    "text": "Topplistan visar de tio bästa resultaten med datum."
+  },
+  {
+    "id": 434,
+    "date": "2026-10-05",
+    "text": "Vid poängen ser du nu hur många som besöker lägenheten just nu."
+  },
+  {
+    "id": 433,
+    "date": "2026-10-05",
+    "text": "Escape-menyn har nu en Avsluta-knapp som försöker stänga fönstret och visar hjälp om webbläsaren blockerar det."
+  },
+  {
+    "id": 432,
+    "date": "2026-10-05",
+    "text": "Trapphuset vid portiken följer nu ritningarna: en rak trappa per våning längs väggen och en gång tillbaka till hissen."
+  },
+  {
+    "id": 431,
+    "date": "2026-10-05",
+    "text": "Det blir smulor där man äter och skär, och lite damm samlas längs väggarna med tiden."
+  },
+  {
+    "id": 430,
+    "date": "2026-10-04",
+    "text": "Knutna soppåsar bär du ut till de nya sopbehållarna vid parkeringen – en för matavfall, en för förpackningar och en för restavfall."
+  },
+  {
+    "id": 429,
+    "date": "2026-10-04",
+    "text": "Under diskhon finns nu tre sopkärl – Matavfall, Förpackningar och Restavfall – och när ett är fullt knyter du ihop påsen och sätter i en ny."
+  },
+  {
+    "id": 428,
+    "date": "2026-10-04",
+    "text": "Starta diskmaskinen på panelen överst på luckan: den brummar, visar tiden som är kvar med en röd prick på golvet och säger till när disken är klar."
+  },
+  {
+    "id": 427,
+    "date": "2026-10-04",
+    "text": "Diskmaskinens korgar går att dra ut när luckan är nere: tallrikar i underkorgen, glas i överkorgen och knivar i bestickkorgen."
+  },
+  {
+    "id": 426,
+    "date": "2026-10-04",
+    "text": "Det du använder blir smutsigt: skrapa av tallriken i soporna och diska för hand vid köksblandaren innan disken går tillbaka i skåpet."
+  },
+  {
+    "id": 425,
+    "date": "2026-10-04",
+    "text": "Ta ett dricksglas ur glasskåpet, fyll det med vatten vid kranen eller häll upp mjölk och drick – mjölkpaketet tar slut och kan slängas."
+  },
+  {
+    "id": 424,
+    "date": "2026-10-04",
+    "text": "I garaget och källaren visar gröna Nödutgång-skyltar i taket vägen ut, och vid hisshallen och källardörren sitter en utrymningsplan med \"Du är här\"."
+  },
+  {
+    "id": 423,
+    "date": "2026-10-04",
+    "text": "När du reser dig från en stol, soffa eller säng hamnar du åter framför den och inte på ett konstigt ställe."
+  },
+  {
+    "id": 422,
+    "date": "2026-10-04",
+    "text": "Portiken genom Hus L är nu plattsatt hela vägen till gården och lyses upp av taklampor när det mörknar."
+  },
+  {
+    "id": 421,
+    "date": "2026-10-04",
+    "text": "Under diskhon står nu en avfallshink: öppna skåpet och släng gurkänden och tomma förpackningar där."
+  },
+  {
+    "id": 420,
+    "date": "2026-10-04",
+    "text": "Vid trappans fot i källaren under Hus L visar gröna skyltar och dörrkarmar vägen ut till cykelrummen och garaget."
+  },
+  {
+    "id": 419,
+    "date": "2026-10-04",
+    "text": "Bänkarna framför Hus A står inte längre i vägen för uteplatsernas öppningar."
+  },
+  {
+    "id": 418,
+    "date": "2026-10-04",
+    "text": "Nu kan du ställa saker på sekretärens nedfällda skrivskiva och på dynboxens stängda lock – de öppnas och stängs inte förrän det är bortplockat."
+  },
+  {
+    "id": 417,
+    "date": "2026-10-04",
+    "text": "Mackan äter du i några tuggor, gärna sittande vid bordet – kvar blir en tallrik med smulor, och första mackan av varje sort ger extra poäng."
+  },
+  {
+    "id": 416,
+    "date": "2026-10-04",
+    "text": "Trapphuset i Hus L ser bättre ut: stegen syns, trapporna har släta undersidor, väggarna flimrar inte och våningssiffran sitter inte längre över dörren."
+  },
+  {
+    "id": 415,
+    "date": "2026-10-04",
+    "text": "Loftgångens östra ände och avsatserna vid spiraltrapporna har nu räcke, så man inte kan gå över kanten."
+  },
+  {
+    "id": 414,
+    "date": "2026-10-04",
+    "text": "Jetpacken hänger nu inne i garaget under skylten \"Låna Jetpack på eget ansvar. Se upp för fiskmåsar.\""
+  },
+  {
+    "id": 413,
+    "date": "2026-10-04",
+    "text": "Köket har fått eluttag högt upp på stänkskyddet – ovanför kaffebryggaren, mellan diskhon och hällen och i hörnet – i stället för hörnboxen på bänken."
+  },
+  {
+    "id": 412,
+    "date": "2026-10-04",
+    "text": "Bilarna i garaget lyses nu upp av lysrören, så de syns även på natten."
+  },
+  {
+    "id": 411,
+    "date": "2026-10-04",
+    "text": "Lägg ost och gurka på en smörgås och bär mackan på en tallrik från skåpet ovanför bänken till bordet."
+  },
+  {
+    "id": 410,
+    "date": "2026-10-04",
+    "text": "Sängen och annat på övervåningen går inte längre att nå genom kökstaket – bara genom trapphålet."
+  },
+  {
+    "id": 409,
+    "date": "2026-10-04",
+    "text": "Vid varje handfat kan du nu tvätta händerna när kranen är på och sedan torka dem på en handduk – även i köket och tvättstugan."
+  },
+  {
+    "id": 408,
+    "date": "2026-10-04",
+    "text": "Knappen till garageporten sitter nu på stolpens sida mot infarten."
+  },
+  {
+    "id": 407,
+    "date": "2026-10-04",
+    "text": "Nu kan du sätta dig på pallen framför fåtöljen och på dynboxen på altanen när locket är stängt."
+  },
+  {
+    "id": 406,
+    "date": "2026-10-04",
+    "text": "Trapphuset vid portiken går att gå in i: trappor från garaget upp till loftgången och en hiss som stannar på alla fyra våningarna."
+  },
+  {
+    "id": 405,
+    "date": "2026-10-04",
+    "text": "Med mus och tangentbord gör ett vänsterklick nu samma sak som E, och högerklick äter, dricker eller använder det du håller."
+  },
+  {
+    "id": 404,
+    "date": "2026-10-04",
+    "text": "Med smörkniven tar du smör ur paketet och breder det på brödet, och med osthyveln hyvlar du ostskivor."
+  },
+  {
+    "id": 403,
+    "date": "2026-10-04",
+    "text": "Brödpåsen i skafferiet går att öppna och ta skivor ur en i taget, och en brödskiva äter du i några tuggor."
+  },
+  {
+    "id": 402,
+    "date": "2026-10-04",
+    "text": "På gården kan du nu sätta dig på alla bänkar och vid långbordet under pergolan, och ställa saker på borden och grillens nya sidobord."
+  },
+  {
+    "id": 401,
+    "date": "2026-10-04",
+    "text": "Där parkeringens asfalt möter gräset på framsidan går nu en låg betongkant."
+  },
+  {
+    "id": 400,
+    "date": "2026-10-04",
+    "text": "Spelet fryser inte längre i ett par sekunder när du öppnar ytterdörren första gången."
+  },
+  {
+    "id": 399,
+    "date": "2026-10-04",
+    "text": "Hus L:s två runda trapptorn har nu en spiraltrappa inuti och en öppning ut mot loftgången."
+  },
+  {
+    "id": 398,
+    "date": "2026-10-04",
+    "text": "Med kökskniven skär du gurkan på skärbrädan i en eller tre skivor åt gången, tills bara änden är kvar."
+  },
+  {
+    "id": 397,
+    "date": "2026-10-04",
+    "text": "Vid varje ytterdörr på Hus L:s framsida sitter nu en vägglampa som tänds av sig själv när det blir mörkt."
+  },
+  {
+    "id": 396,
+    "date": "2026-10-04",
+    "text": "Skärbrädan går att lägga på bänken och bära med det som ligger på den, och skivorna kan skjutas över på en tallrik."
+  },
+  {
+    "id": 395,
+    "date": "2026-10-04",
+    "text": "Garaget följer nu ritningen: det svänger in under hela gården, vår bil står rakt under uteplatsen och genom en ståldörr når du källaren under Hus L med cykelrum, förråd och hisshall."
+  },
+  {
+    "id": 394,
+    "date": "2026-10-04",
+    "text": "Gatlyktorna lyser nu upp gatan och trottoaren med en varm ljuspöl under varje lykta."
+  },
+  {
+    "id": 393,
+    "date": "2026-10-04",
+    "text": "På altanen står båda divanerna nu efter varandra längs skärmväggen som en lång bänk med kuddar, och soffan har fått tillbaka ryggen och armstödet i väster."
+  },
+  {
+    "id": 392,
+    "date": "2026-10-04",
+    "text": "Walter och Kian har fått en neontavla, EAT SLEEP GAME REPEAT, på väggen mellan garderoben och byrån."
+  },
+  {
+    "id": 391,
+    "date": "2026-10-04",
+    "text": "I lådan under hällen ligger nu kökskniv, smörkniv och osthyvel, och skärbrädan står lutad mot kakelväggen – fel verktyg säger ifrån."
+  },
+  {
+    "id": 390,
+    "date": "2026-10-04",
+    "text": "Att göra-lapparna på kylen visar nu bara sitt nummer i hörnet, är inte längre röda och de viktigaste sitter först."
+  },
+  {
+    "id": 389,
+    "date": "2026-10-04",
+    "text": "Cafébordet på framsidan står nu tätt intill väggen under köksfönstret, med stolarna rakt ut mot gatan."
+  },
+  {
+    "id": 388,
+    "date": "2026-10-04",
+    "text": "Trädet som stod mitt på asfalten framför Hus L står nu på gräset vid vägen."
+  },
+  {
+    "id": 387,
+    "date": "2026-10-04",
+    "text": "Hue Go-lampan i Sovrum 1 är nu den klassiska frostade skålen, och du kan byta färg på ljuset."
+  },
+  {
+    "id": 386,
+    "date": "2026-10-04",
+    "text": "I kylen ligger nu gurka, ost och smör, i frysen en påse ärter och i skafferiet en brödpåse – tar det slut finns nytt där nästa gång du öppnar."
+  },
+  {
+    "id": 385,
+    "date": "2026-10-04",
+    "text": "Vår Renault står nu parkerad i garaget, och garageporten öppnas med en knapp – bilnyckeln i hallen kör ut bilen till dörren och tillbaka in igen."
+  },
+  {
+    "id": 384,
+    "date": "2026-10-04",
+    "text": "Vid båda toaletterna sitter nu en toapappershållare: dra ut papper, riv av det och släng det i toaletten."
+  },
+  {
+    "id": 383,
+    "date": "2026-10-04",
+    "text": "Båda badrummen har fått en mjuk duschmatta med knoppar i samma färg som handdukarna."
+  },
+  {
+    "id": 382,
+    "date": "2026-10-04",
+    "text": "I båda badrummen hänger nu två handdukar i dov lila på runda krokar i borstat stål."
+  },
+  {
+    "id": 381,
+    "date": "2026-10-04",
+    "text": "När du ska ställa ner något syns en svag skugga av saken där den hamnar, och med R (eller ⟳) vrider du den."
+  },
+  {
+    "id": 380,
+    "date": "2026-10-04",
+    "text": "Rottinglampan uppe i hallen står nu framför trappräcket i stället för vid Sarah och Olofs dörr."
+  },
+  {
+    "id": 379,
+    "date": "2026-10-04",
+    "text": "Vid garageinfarten hänger en jetpack: ta på dig den, flyg fritt över kvarteret och landa på taken."
+  },
+  {
+    "id": 378,
+    "date": "2026-10-04",
+    "text": "Uteplatsen har fått familjens egen loungesoffa med en divan i var ände och ett litet ribbbord i mitten."
+  },
+  {
+    "id": 377,
+    "date": "2026-10-04",
+    "text": "Livia har fått sin gula ananasspegel på väggen mellan byrån och garderoben."
+  },
+  {
+    "id": 376,
+    "date": "2026-10-04",
+    "text": "Trappan har fått vita ledstänger längs väggen hela vägen upp och på insidan av båda trapploppen."
+  },
+  {
+    "id": 375,
+    "date": "2026-10-04",
+    "text": "Bordet på uteplatsen är vridet så att långsidan vetter mot soffan under fönstret."
+  },
+  {
+    "id": 374,
+    "date": "2026-10-04",
+    "text": "Framför köksfönstret står nu ett litet cafébord med två stolar att sitta på och en blomkruka på bordet."
+  },
+  {
+    "id": 373,
+    "date": "2026-10-04",
+    "text": "Uppe i hallen, i hörnet vid Sarah och Olofs dörr, står nu en låg rottinglampa som tänds när det skymmer."
+  },
+  {
+    "id": 372,
+    "date": "2026-10-04",
+    "text": "I sovrum 1:s fönster står Sonos-högtalaren nu upprätt längst till höger, Hue Go-lampan längst till vänster och ormbunken i mitten."
+  },
+  {
+    "id": 371,
+    "date": "2026-10-04",
+    "text": "Brödrosten står i nedersta lådan vid hörnet: ta fram den, koppla in den i hörnboxen och rosta."
+  },
+  {
+    "id": 370,
+    "date": "2026-10-04",
+    "text": "Till höger om altandörren står nu en dynbox: öppna locket så ligger utekuddarna där när de är intagna."
+  },
+  {
+    "id": 369,
+    "date": "2026-10-04",
+    "text": "Sidobordet vid fåtöljen är nu ett mörklila brickbord, och boken och blomman står kvar på det."
+  },
+  {
+    "id": 368,
+    "date": "2026-10-04",
+    "text": "Katterna sitter och står nu på golvet i stället för att sjunka ner en bit i det."
+  },
+  {
+    "id": 367,
+    "date": "2026-10-04",
+    "text": "Soffbordet i vardagsrummet har fått mjukt rundade hörn, utåtställda ben och en hylla av runda spjälor."
+  },
+  {
+    "id": 366,
+    "date": "2026-10-04",
+    "text": "I Sarah och Olofs fönster står nu en Hue Go-lampa som kan byta färg, och högtalaren ligger längst till vänster."
+  },
+  {
+    "id": 365,
+    "date": "2026-10-04",
+    "text": "Garaget under gården går att gå in i genom porten från Karpvägen – med parkeringsplatser, vår egen plats nummer 7, en förrådsgång med 15 förråd och en hisshall."
+  },
+  {
+    "id": 364,
+    "date": "2026-10-04",
+    "text": "Ibland dyker en sällsynt, busig kattunge upp i stället för en vuxen katt – den ger extra poäng."
+  },
+  {
+    "id": 363,
+    "date": "2026-10-04",
+    "text": "Utesoffan har fått mysiga kuddar, som tas in när det regnar och på vintern."
+  },
+  {
+    "id": 362,
+    "date": "2026-10-04",
+    "text": "Ovanför stolen i Sarah och Olofs sovrum hänger nu en liten svartramad linjeteckning."
+  },
+  {
+    "id": 361,
+    "date": "2026-10-04",
+    "text": "Parasollet står nu framför utesoffan och lutar mot eftermiddagssolen, så att du sitter i skugga."
+  },
+  {
+    "id": 360,
+    "date": "2026-10-04",
+    "text": "Utesoffan står nu under vardagsrumsfönstret och längs östra skärmväggen, så att du sitter med ansiktet mot solen."
+  },
+  {
+    "id": 359,
+    "date": "2026-10-04",
+    "text": "Sängen i Sarah och Olofs sovrum har flyttats en bit mot klädkammaren, så stolen har lämnat hörnet och gardinen kan dras ända bort till väggen."
+  },
+  {
+    "id": 358,
+    "date": "2026-10-04",
+    "text": "Bilen kör nu in på parkeringen genom en riktig infart i häcken i stället för över trottoaren."
+  },
+  {
+    "id": 357,
+    "date": "2026-10-04",
+    "text": "Faller du mer än tre meter gör du dig illa: det svartnar och du vaknar utanför ytterdörren."
+  },
+  {
+    "id": 356,
+    "date": "2026-10-04",
+    "text": "Nu kan du gå runt hela kvarteret: genom portiken, ner för trapporna till parken, runt hus A, B och C och fram till garageinfarten."
+  },
+  {
+    "id": 355,
+    "date": "2026-10-04",
+    "text": "Gardinerna i Sarah och Olofs sovrum är nu tvådelade och dras isär åt varsitt håll från mitten av fönstret."
+  },
+  {
+    "id": 354,
+    "date": "2026-10-04",
+    "text": "Loftgången på Parklängan är nu smalare, så övervåningarnas gatufasad står där Peabs ritningar visar den."
+  },
+  {
+    "id": 353,
+    "date": "2026-10-04",
+    "text": "Gavlarna på Parklängan har nu fönstren där Peabs ritningar visar dem, även på västra gaveln."
+  },
+  {
+    "id": 352,
+    "date": "2026-10-04",
+    "text": "Takterrasserna högst upp i Parklängan har nu olika storlek per lägenhet, med skärmväggar bara mellan grannarna."
+  },
+  {
+    "id": 351,
+    "date": "2026-10-04",
+    "text": "Hus A, B och C har nu var sitt eget tak, och A och B har fått huset på taket som takplanerna visar."
+  },
+  {
+    "id": 350,
+    "date": "2026-10-04",
+    "text": "Fönstret i Walter och Kians rum har nu ritningens mått: lite bredare och lägre bröstning, men fortfarande mindre än Tillys."
+  },
+  {
+    "id": 349,
+    "date": "2026-10-04",
+    "text": "Fönstren på hus A, B och C sitter nu där husens planritningar visar dem i stället för i ett jämnt rutnät."
+  },
+  {
+    "id": 348,
+    "date": "2026-10-04",
+    "text": "Lägenheterna högst upp i Parklängan har nu egna fönster och dörrar mot loftgången enligt Peabs ritningar."
+  },
+  {
+    "id": 347,
+    "date": "2026-10-04",
+    "text": "Garageinfarten vid Karpvägen ligger nu plant framför garageporten."
+  },
+  {
+    "id": 346,
+    "date": "2026-10-04",
+    "text": "Trappans undersida i städskrubben under trappan är nu vitmålad i stället för parkett."
+  },
+  {
+    "id": 345,
+    "date": "2026-10-04",
+    "text": "I Sovrum 1 hänger nu turkosa gardiner med djurmönster i en takskena – dra för och ifrån dem som plisségardinen."
+  },
+  {
+    "id": 344,
+    "date": "2026-10-04",
+    "text": "Speglarna med egen belysning lyser och speglar nu mjukare: badrumsspegeln, Tillys sminkspegel och spegeln i klädkammaren."
+  },
+  {
+    "id": 343,
+    "date": "2026-10-04",
+    "text": "På köksväggens hylla står nu en vit ansiktskruka med glasögon och eukalyptus som hår, i stället för eukalyptusvasen."
+  },
+  {
+    "id": 342,
+    "date": "2026-10-04",
+    "text": "Kuddarna och lakanen i sängarna flimrar inte längre."
+  },
+  {
+    "id": 341,
+    "date": "2026-10-04",
+    "text": "Lappen på frysen visar nu alltid det senast publicerade överst, med Nytt på det du inte sett."
+  },
+  {
+    "id": 340,
+    "date": "2026-10-04",
+    "text": "På kylskåpsdörren sitter nu små post-it-lappar med det som är på gång, och E visar hela att göra-listan."
+  },
+  {
+    "id": 339,
+    "date": "2026-10-04",
+    "text": "Städskrubben under trappan har fått hyllor med städsaker och reservpapper, en mopphink med mopp och en skaftdammsugare på väggen."
+  },
+  {
+    "id": 338,
+    "date": "2026-10-04",
+    "text": "Hus L har mot gården nu tegel i tre våningar och en indragen översta våning med takterrasser, bruten av ett högre tegelparti i mitten."
+  },
+  {
+    "id": 337,
+    "date": "2026-10-04",
+    "text": "Byrån i Sarah och Olofs klädkammare står nu ända in mot väggen till höger."
+  },
+  {
+    "id": 335,
+    "date": "2026-10-04",
+    "text": "Bredvid kaffebryggaren står en kaffeburk med skopa – fyll kannan med vatten vid kranen och häll i kaffe innan du brygger."
+  },
+  {
+    "id": 334,
+    "date": "2026-10-04",
+    "text": "I köket hänger tavlan \"This kitchen is for dancing\" under hyllorna, som flyttats upp en bit."
+  },
+  {
+    "id": 333,
+    "date": "2026-10-04",
+    "text": "I övre hallen hänger nu en hög svart spegel till höger om dörren till toaletten."
+  },
+  {
+    "id": 332,
+    "date": "2026-10-04",
+    "text": "Klädkammaren i Sarah och Olofs sovrum har fått hylla och klädstång med kläder, ett sminkhörn med tänd spegel på byrån och en mjuk matta."
+  },
+  {
+    "id": 331,
+    "date": "2026-10-04",
+    "text": "Barnens sovrum har fått krokar vid garderoben med tröjor, en keps och en tygkasse."
+  },
+  {
+    "id": 330,
+    "date": "2026-10-04",
+    "text": "I Sarah och Olofs sovrum sitter en krokrad på klädkammarens utsida vid dörren, med en morgonrock och en hoodtröja."
+  },
+  {
+    "id": 329,
+    "date": "2026-10-04",
+    "text": "En mycket ovanlig katt har setts i huset – håll utkik bakom dörrarna."
+  },
+  {
+    "id": 328,
+    "date": "2026-10-04",
+    "text": "På soffbordet står nu en fruktskål i koppar full av frukt som du kan ta och äta upp."
+  },
+  {
+    "id": 327,
+    "date": "2026-10-04",
+    "text": "Smarta högtalare har flyttat in – en med skärm i köksfönstret och två runda på väggarna – tryck på en så svarar den."
+  },
+  {
+    "id": 326,
+    "date": "2026-10-04",
+    "text": "Ljussabeln i Walter och Kians rum hänger nu på Nerf-tavlan bland blastrarna, som blivit större."
+  },
+  {
+    "id": 325,
+    "date": "2026-10-04",
+    "text": "Fotot av Miele i Sarah och Olofs sovrum är ljusare och syns tydligt på fönsterbänken."
+  },
+  {
+    "id": 324,
+    "date": "2026-10-03",
+    "text": "Alla sängar har fått tjocka, mjuka täcken som hänger över kanterna, riktiga kuddar och lakan över madrasserna."
+  },
+  {
+    "id": 323,
+    "date": "2026-10-03",
+    "text": "Tillys dagbädd står nu vid fönstret, så hon har mer golv att röra sig på."
+  },
+  {
+    "id": 322,
+    "date": "2026-10-03",
+    "text": "På fönsterbänken i Sarah och Olofs sovrum står nu ett inramat foto av katten Miele som du kan ta och titta närmare på."
+  },
+  {
+    "id": 321,
+    "date": "2026-10-03",
+    "text": "Den rosa runda mattan hos Livia och Tuva ligger nu längre ut i rummet, under stegen till våningssängen."
+  },
+  {
+    "id": 320,
+    "date": "2026-10-03",
+    "text": "Under dubbelsängen i Sarah och Olofs rum ligger nu den stora grå ryamattan med vitt sicksackmönster."
+  },
+  {
+    "id": 319,
+    "date": "2026-10-03",
+    "text": "Skåpet ovanför köksfläkten är en attrapp utan handtag och går inte längre att öppna."
+  },
+  {
+    "id": 318,
+    "date": "2026-10-03",
+    "text": "Klinkern i hallen går nu ända fram till ytterdörren, och våtrummens kakel ända fram till dörrarna – ingen trästrimla vid tröskeln."
+  },
+  {
+    "id": 317,
+    "date": "2026-10-03",
+    "text": "Toaletterna har fått en djup skål med blått vatten i botten, och när du spolar rinner vattnet ner längs skålen och virvlar runt."
+  },
+  {
+    "id": 316,
+    "date": "2026-10-03",
+    "text": "Sarah och Olofs säng har fått vita hotellkuddar under huvudkuddarna, och kuddarna ser ut som riktiga kuddar."
+  },
+  {
+    "id": 315,
+    "date": "2026-10-03",
+    "text": "Hörnskåpet längst till höger ovanför bänken i köket har nu handtaget till vänster och öppnas åt höger."
+  },
+  {
+    "id": 314,
+    "date": "2026-10-03",
+    "text": "Soffans och fåtöljens kuddar är nu våra egna fyra sorter, och filtarna är lila och grå fleece."
+  },
+  {
+    "id": 313,
+    "date": "2026-10-03",
+    "text": "Hamnar du någonsin inne i en möbel eller bilen glider du nu ut på fritt golv i stället för att fastna."
+  },
+  {
+    "id": 312,
+    "date": "2026-10-03",
+    "text": "Kaffet är nu mörkrost som i Skåne, nästan svart i kannan och koppen."
+  },
+  {
+    "id": 311,
+    "date": "2026-10-03",
+    "text": "Tillys garderob står nu i vänstra hörnet och har två dörrar som öppnas åt var sitt håll."
+  },
+  {
+    "id": 310,
+    "date": "2026-10-03",
+    "text": "Över köksbordet hänger nu familjens tre kopparlampor, som lyser varmt ner på bordet när du tänder i köket."
+  },
+  {
+    "id": 309,
+    "date": "2026-10-03",
+    "text": "Moccamastern står nu rättvänd: vattentanken och strömbrytaren till vänster, kannan till höger."
+  },
+  {
+    "id": 308,
+    "date": "2026-10-03",
+    "text": "Livia och Tuva har fått en rund rosa matta under våningssängen och skrivbordet."
+  },
+  {
+    "id": 307,
+    "date": "2026-10-03",
+    "text": "Reser du dig från en stol vid matbordet hamnar du nu på golvet bredvid, inte uppe på bordet."
+  },
+  {
+    "id": 306,
+    "date": "2026-10-03",
+    "text": "Startskärmen har fått \"Återställ\": hela hemmet går tillbaka till början, men uppsatta teckningar, poängen och kattfotona finns kvar."
+  },
+  {
+    "id": 305,
+    "date": "2026-10-03",
+    "text": "Tilly har fått en vit IKEA-garderob vid dörren med sina kläder i, och klädställningen är borta."
+  },
+  {
+    "id": 304,
+    "date": "2026-10-03",
+    "text": "Sidan laddar bara om sig själv när något du faktiskt ser har ändrats, inte i onödan."
+  },
+  {
+    "id": 303,
+    "date": "2026-10-03",
+    "text": "I frysen ligger en påse Aviko pommes frites – häll i airfryern, kör, och ät dem rykande heta ur handen."
+  },
+  {
+    "id": 302,
+    "date": "2026-10-03",
+    "text": "Den konstiga mörka lådan ovanför hallgarderoben är borta – lampan lyser nu upp väggen ovanför garderoberna."
+  },
+  {
+    "id": 301,
+    "date": "2026-10-03",
+    "text": "Den svartvita tavlan vid trappans fot hänger nu mitt på väggen mellan badrumsdörren och vardagsrummet."
+  },
+  {
+    "id": 300,
+    "date": "2026-10-03",
+    "text": "Den vita och den svarta SYMFONISK-högtalaren har bytt plats: den vita står i Sarah och Olofs sovrumsfönster, den svarta i köksfönstret."
+  },
+  {
+    "id": 299,
+    "date": "2026-10-03",
+    "text": "Sänggaveln på Sarah och Olofs säng är slät, utan de mörka prickarna."
+  },
+  {
+    "id": 298,
+    "date": "2026-10-03",
+    "text": "Airfryern står längre in i bänkhörnet, snett vriden så att korgen pekar ut mot köket."
+  },
+  {
+    "id": 297,
+    "date": "2026-10-03",
+    "text": "Tända lampor lyser upp rummet lika mycket var du än står – nära, i ett annat rum, på andra våningen eller utifrån."
+  },
+  {
+    "id": 296,
+    "date": "2026-10-03",
+    "text": "Taklamporna lyser nu upp sitt rum även när du står en bit bort, som hallens lampa på nedervåningen."
+  },
+  {
+    "id": 295,
+    "date": "2026-10-03",
+    "text": "Fönsterväxterna är större och frodigare, med monstera, gullranka, ormbunke och ett litet olivträd bland dem."
+  },
+  {
+    "id": 294,
+    "date": "2026-10-03",
+    "text": "En ny version räknar ner från 5 så att du hinner avbryta genom att röra dig, och efteråt är allt kvar som det var – bilen, det du håller i, dörrar, lampor och klockan."
+  },
+  {
+    "id": 293,
+    "date": "2026-10-03",
+    "text": "Minuspoäng för slarv och elakheter: kyl och frys som står öppna piper, bränd mat, spill och att skada katterna drar av lite."
+  },
+  {
+    "id": 292,
+    "date": "2026-10-03",
+    "text": "Ängsgrästavlan över Sarah och Olofs säng är ljusare och lyses upp av sänglamporna på kvällen."
+  },
+  {
+    "id": 291,
+    "date": "2026-10-03",
+    "text": "I badrummet hänger nu ett mörkgrått högskåp från IKEA med handdukar, schampo och toapapper – öppna det med E."
+  },
+  {
+    "id": 290,
+    "date": "2026-10-03",
+    "text": "På Tillys sminkbord står en laptop – tryck E på skärmen för korta roliga klipp i appen Klipp."
+  },
+  {
+    "id": 289,
+    "date": "2026-10-03",
+    "text": "Köksets vägghyllor har fått riktiga saker: kokböcker, glasburkar, keramik, ljusstakar i mässing, inramade tavlor och en hängande pothos."
+  },
+  {
+    "id": 288,
+    "date": "2026-10-03",
+    "text": "Tilly har fått en svart klädställning, IKEA MULIG, med sina coola kläder, sneakers och en tygkasse."
+  },
+  {
+    "id": 287,
+    "date": "2026-10-03",
+    "text": "Bänkbelysningen i köket är nu en jämn LED-list under alla överskåp, så det är lika ljust vid diskhon som vid spisen."
+  },
+  {
+    "id": 286,
+    "date": "2026-10-03",
+    "text": "Den vita högtalaren i köket står nu i köksfönstret i stället för på bänken."
+  },
+  {
+    "id": 285,
+    "date": "2026-10-03",
+    "text": "En airfryer står i bänkhörnet bredvid frysen – lägg fiskpinnar i korgen, starta den och vänta på pipet."
+  },
+  {
+    "id": 284,
+    "date": "2026-10-03",
+    "text": "Tillys dagbädd ser ut som IKEA:s HEMNES, med tuffare sängkläder och K-pop-affischer på väggarna."
+  },
+  {
+    "id": 283,
+    "date": "2026-10-03",
+    "text": "Soffan och fåtöljen har fått prydnadskuddar och en våffelstickad filt."
+  },
+  {
+    "id": 282,
+    "date": "2026-10-03",
+    "text": "När du går ner för trappan möter dig nu en svartvit tavla på väggen rakt fram."
+  },
+  {
+    "id": 281,
+    "date": "2026-10-03",
+    "text": "Tilly har fått ett sminkbord med smink, en pall och en Hollywoodspegel med lampor runt om som tänds när det skymmer."
+  },
+  {
+    "id": 280,
+    "date": "2026-10-03",
+    "text": "Över Sarah och Olofs säng hänger nu deras stora tavla med ängsgräs i morgondimma."
+  },
+  {
+    "id": 279,
+    "date": "2026-10-03",
+    "text": "Divanens armstöd slutar nu i kant med soffans sittdynor."
+  },
+  {
+    "id": 278,
+    "date": "2026-10-03",
+    "text": "De små lamporna lyser upp sina rum hela kvällen och natten, även när du inte är där – också sett genom dörren eller fönstret."
+  },
+  {
+    "id": 277,
+    "date": "2026-10-03",
+    "text": "Alla fönster har fått plisségardiner som dras upp nerifrån – tryck E och dra med W och S."
+  },
+  {
+    "id": 276,
+    "date": "2026-10-03",
+    "text": "Lappen på frysen går att bläddra i med piltangenterna, W S, Page Up/Down, mellanslag och Home/End."
+  },
+  {
+    "id": 275,
+    "date": "2026-10-03",
+    "text": "Pingvinkudden Pingping sitter mellan kuddarna i Sarah och Olofs säng – ta honom i famnen och krama honom."
+  },
+  {
+    "id": 274,
+    "date": "2026-10-03",
+    "text": "Bänkbelysningen och fläktlampan i köket ger ett mjukare ljus på kaklet, utan bländande fläckar."
+  },
+  {
+    "id": 273,
+    "date": "2026-10-03",
+    "text": "Du hukar dig nu med C, så att huka och gå framåt inte längre stänger fliken med Ctrl+W."
+  },
+  {
+    "id": 272,
+    "date": "2026-10-03",
+    "text": "Fönstren mot uteplatsen har nu också en enda överkantshängd båge, och vardagsrumsfönstret har en bred fast ruta och en smal som går att öppna."
+  },
+  {
+    "id": 271,
+    "date": "2026-10-03",
+    "text": "Långlampan i linne står nu i vardagsrumshörnet till höger om tv:n och tänds av sig själv när det skymmer."
+  },
+  {
+    "id": 270,
+    "date": "2026-10-03",
+    "text": "Å-husens balkonger har fått dörr och fönster, uteplatserna en låg tegelmur med öppning, och Hus A:s entré syns tydligt med glasdörr, skärmtak och husbokstav."
+  },
+  {
+    "id": 269,
+    "date": "2026-10-03",
+    "text": "Vår Renault syns nu hel med hjul och bakrutor medan den kör fram, och Nerf-pilarna syns hela vägen genom luften."
+  },
+  {
+    "id": 268,
+    "date": "2026-10-03",
+    "text": "Sätt dig i bilen och tryck på mittskärmen, så spelas musik i Renaulten."
+  },
+  {
+    "id": 267,
+    "date": "2026-10-03",
+    "text": "Gatorna sluttar nu söderut, och rampen vid gårdens östra kant går på riktigt ner till gatan mot HepCat Store."
+  },
+  {
+    "id": 266,
+    "date": "2026-10-03",
+    "text": "Glas, flaskor och koppar går att skjuta sönder med AK-47:an, Nerf-pilarna, lightsabern och trollstavarna – ju längre ifrån, desto fler poäng."
+  },
+  {
+    "id": 265,
+    "date": "2026-10-03",
+    "text": "Framsidan följer situationsplanen: parkeringen ligger mellan häcken och en låg grön remsa vid entréerna, och nordväst om huset finns en cykelgård."
+  },
+  {
+    "id": 264,
+    "date": "2026-10-03",
+    "text": "Över sekretären hänger nu spegeln SKOGSGRÄNSEN i koppar, med en liten yuccapalm bredvid som du kan ta."
+  },
+  {
+    "id": 263,
+    "date": "2026-10-03",
+    "text": "Katten reser sig ibland med svansen rakt upp – ser du den bakifrån får du poäng."
+  },
+  {
+    "id": 262,
+    "date": "2026-10-03",
+    "text": "Gården är uppritad på nytt: gräsmattor runt trädgrupperna, grus bara vid lekplatsen, och du kan gå södra gången längs Hus B hela vägen till Hus A."
+  },
+  {
+    "id": 261,
+    "date": "2026-10-03",
+    "text": "Koppskåpet över kaffebryggaren sticker inte längre ut utan ligger i linje med de andra överskåpen."
+  },
+  {
+    "id": 260,
+    "date": "2026-10-03",
+    "text": "HepCat Store och det långa tegelhuset står nu där situationsplanen visar dem, med en öppen plats emellan."
+  },
+  {
+    "id": 259,
+    "date": "2026-10-03",
+    "text": "Gårdens östra kant har en ramp längs Sankt Lars väg och en kort trappa ner mot gatan, som bara ligger någon meter lägre."
+  },
+  {
+    "id": 258,
+    "date": "2026-10-03",
+    "text": "Karpvägen går nu nära Hus C och svänger in i Sankt Lars väg, som i sin tur tar en mjuk kurva runt hörnet i nordost."
+  },
+  {
+    "id": 257,
+    "date": "2026-10-03",
+    "text": "Å-husen har fått sin rätta form med hörnloggior i olika storlek, vitputsade entréer och valmat tak."
+  },
+  {
+    "id": 256,
+    "date": "2026-10-03",
+    "text": "Den upphöjda gården har rätt kanter, garageinfarten ligger vid Hus C och en trappa leder ner söderut mellan Hus C och Hus B."
+  },
+  {
+    "id": 255,
+    "date": "2026-10-03",
+    "text": "Området har rätt skala efter ritningarnas skalstock: radhuslängan är 1,5 m kortare och Å-husen och gården ligger där de ska."
+  },
+  {
+    "id": 254,
+    "date": "2026-10-03",
+    "text": "Fönstren mot gatan är nu som på bygget: en enda båge utan mittpost som är upphängd upptill och fälls ut nedtill."
+  },
+  {
+    "id": 253,
+    "date": "2026-10-03",
+    "text": "De parkerade bilarna på parkeringen ser ut som riktiga bilar med fönster, lampor och fälgar."
+  },
+  {
+    "id": 252,
+    "date": "2026-10-03",
+    "text": "Vår Megane E-Tech är ombyggd och ser ut som den riktiga, och du kan öppna dörrarna och sätta dig i förar- eller passagerarsätet."
+  },
+  {
+    "id": 251,
+    "date": "2026-10-03",
+    "text": "Det kan snöa på vintern och hagla på våren, och du får poäng för att gå ut och gå en bit i regn, snö, hagel och åska."
+  },
+  {
+    "id": 250,
+    "date": "2026-10-03",
+    "text": "Nu kan det regna på våren och hösten och bli åskväder i slutet av sommaren."
+  },
+  {
+    "id": 249,
+    "date": "2026-10-03",
+    "text": "Sikta på någon utomhus så kan du hälsa: du säger hej och de svarar med egen röst och vinkar."
+  },
+  {
+    "id": 248,
+    "date": "2026-10-03",
+    "text": "Hörnloggiorna på Hus A vid gårdskanten ser riktiga ut: stödmuren går inte längre snett genom dem och de har räcke i gårdsnivå."
+  },
+  {
+    "id": 247,
+    "date": "2026-10-03",
+    "text": "Statistiken på telefon är smalare, går att scrolla med fingret och kan visas i helskärm."
+  },
+  {
+    "id": 246,
+    "date": "2026-10-03",
+    "text": "När du klappar katten går du ner på knä och klappar med din egen hand, och fiskpinnen hålls mellan fingrarna."
+  },
+  {
+    "id": 245,
+    "date": "2026-10-03",
+    "text": "Människorna utomhus har fått knän, så de på bänkarna sitter på sitsen med benen ner i stället för rakt genom bänken."
+  },
+  {
+    "id": 244,
+    "date": "2026-10-03",
+    "text": "Ingen går längre i luften utanför staketet bakom lekplatsen på gården."
+  },
+  {
+    "id": 243,
+    "date": "2026-10-03",
+    "text": "Kläderna och skorna i garderober och lådor har fått mjukare, rundade former."
+  },
+  {
+    "id": 242,
+    "date": "2026-10-03",
+    "text": "Katternas ben är nu rundade och smalnar av mot tassarna."
+  },
+  {
+    "id": 241,
+    "date": "2026-10-03",
+    "text": "Människorna utomhus har fått rundade kroppar, händer och skor, och hunden är mjukare i formen."
+  },
+  {
+    "id": 240,
+    "date": "2026-10-03",
+    "text": "Handen och armen är nu verklighetstrogna, med fingrar som greppar det du håller, öppnas när du sträcker dig och bär basketbollen på handflatan."
+  },
+  {
+    "id": 239,
+    "date": "2026-10-03",
+    "text": "Nerf-blastrarna i Walter och Kians rum är nu tre olika, mer verklighetstrogna modeller: en pistol, en med trumma och en lång med magasin och kolv."
+  },
+  {
+    "id": 238,
+    "date": "2026-10-03",
+    "text": "Poängen är omräknade: ovanliga katter, korgar och skicklighet ger mest, och enkla saker som upprepas ger bara lite."
+  },
+  {
+    "id": 237,
+    "date": "2026-10-03",
+    "text": "Tillys dagbädd har lådor med basketskor och hårprylar, och hennes basketboll kan studsas och skjutas i korgen som dyker upp på asfalten framför huset."
+  },
+  {
+    "id": 236,
+    "date": "2026-10-03",
+    "text": "På byråerna i barnrummen står nu en Dödsstjärne-lampa och en kaktus hos Walter och Kian, och en enhörningslampa och en rosa blomma hos Livia och Tuva."
+  },
+  {
+    "id": 235,
+    "date": "2026-10-03",
+    "text": "Nerf-blastrarna hänger nu bredvid lightsabern i Walter och Kians rum, inte längre bakom byrån."
+  },
+  {
+    "id": 234,
+    "date": "2026-10-03",
+    "text": "Walter och Kian och Livia och Tuva har fått en vit MALM-byrå med sex lådor vid våningssängens fotända."
+  },
+  {
+    "id": 233,
+    "date": "2026-10-02",
+    "text": "Skåp och lådor i vardagsrummet, hallen, badrummen och tvättstugan är fyllda, med filmer och tv-spel under tv:n och jackor och skor i hallgarderoben."
+  },
+  {
+    "id": 232,
+    "date": "2026-10-02",
+    "text": "De små lamporna tänds själva när det skymmer och släcks när det ljusnar, taklamporna tänder du själv, och ljuset hoppar inte längre när du byter rum."
+  },
+  {
+    "id": 231,
+    "date": "2026-10-02",
+    "text": "Garderoberna i sovrummen har kläder på galgar, tröjor på hatthyllan och skor, och byråer och lådor har vikta t-shirts, strumpor, pyjamas, jeans och pyssel."
+  },
+  {
+    "id": 230,
+    "date": "2026-10-02",
+    "text": "Köksskåpen och lådorna är fyllda med porslin, glas, kastruller, torrvaror, bestick och annat i god ordning."
+  },
+  {
+    "id": 229,
+    "date": "2026-10-02",
+    "text": "Våningssängarna är nu vita IKEA MYDAL med räcke runt överslafen och en rak stege."
+  },
+  {
+    "id": 228,
+    "date": "2026-10-02",
+    "text": "Trapptavlorna hänger nu större, 40 × 50 cm, i trapphuset på övervåningen."
+  },
+  {
+    "id": 227,
+    "date": "2026-10-02",
+    "text": "Trappräcket svävar inte längre i svängen: det står på väggen mellan trappens lopp och har stolpar i hörnen."
+  },
+  {
+    "id": 226,
+    "date": "2026-10-02",
+    "text": "Katterna reser sig och går på alla fyra ben i stället för att glida fram sittande."
+  },
+  {
+    "id": 225,
+    "date": "2026-10-02",
+    "text": "I trappan hänger fyra inramade tavlor i en kvadrat på väggen rakt fram: fikus, akvarell, peace och solros."
+  },
+  {
+    "id": 224,
+    "date": "2026-10-02",
+    "text": "Korktavlan med kattbilderna i köket är mindre: riktiga polaroidbilder, två rader med fem."
+  },
+  {
+    "id": 223,
+    "date": "2026-10-02",
+    "text": "Varje slaf i våningssängarna har fått en egen NYMÅNE-läslampa på väggen, vit hos Livia och Tuva och svart hos Walter och Kian, som du kan tända även när du ligger i sängen."
+  },
+  {
+    "id": 222,
+    "date": "2026-10-02",
+    "text": "Hallspegeln är nu en större IKEA NISSEDAL, svart 40 × 150 cm."
+  },
+  {
+    "id": 221,
+    "date": "2026-10-02",
+    "text": "Bänkbelysningen under köksskåpen och lampan i köksfläkten tänds och släcks var för sig."
+  },
+  {
+    "id": 220,
+    "date": "2026-10-02",
+    "text": "Tv:n i Sovrum 1 har fått Ambilight."
+  },
+  {
+    "id": 219,
+    "date": "2026-10-02",
+    "text": "Efter en omladdning blinkar startskärmen inte längre fram – det står bara \"Laddar…\" tills du är tillbaka där du var."
+  },
+  {
+    "id": 218,
+    "date": "2026-10-02",
+    "text": "I byrån i Sarahs och Olofs klädkammare ligger en AK-47: håll inne för automateld, den byter magasin själv och träffar pricktavlan."
+  },
+  {
+    "id": 217,
+    "date": "2026-10-02",
+    "text": "I hallen hänger nu en hög smal spegel med svart ram där den runda spegeln satt förut."
+  },
+  {
+    "id": 216,
+    "date": "2026-10-02",
+    "text": "Allt du gör ger poäng som visas uppe till vänster, och statistiken räknar fler saker, som fiskpinnar till katten."
+  },
+  {
+    "id": 215,
+    "date": "2026-10-02",
+    "text": "Du har fått en arm och en hand som håller det du bär och sträcker sig fram när du öppnar dörrar och skåp."
+  },
+  {
+    "id": 214,
+    "date": "2026-10-02",
+    "text": "Drick tre koppar kaffe på fem minuter så får du Kaffeturbo: du springer dubbelt så fort en stund, till glad 8-bitarsmusik."
+  },
+  {
+    "id": 213,
+    "date": "2026-10-02",
+    "text": "Katterna kan nu sitta i sängar, soffor, stolar och fåtöljer och på bord."
+  },
+  {
+    "id": 212,
+    "date": "2026-10-02",
+    "text": "Sovrum 1 har fått en 43-tums tv på väggen mitt emot sängen – sätt dig upp i sängen så slås den på."
+  },
+  {
+    "id": 211,
+    "date": "2026-10-02",
+    "text": "Kaffekopparna har olika mönster, och saknas det en kopp i skåpet står det en ny där nästa gång du öppnar det."
+  },
+  {
+    "id": 210,
+    "date": "2026-10-02",
+    "text": "Ångan över kaffet slingrar sig nu uppåt i tunna strängar, och den försvinner när kaffet har svalnat."
+  },
+  {
+    "id": 209,
+    "date": "2026-10-02",
+    "text": "Spotsen på vitrinskåpet lyser nu ner över skåpets front, och glasdelen har fått egen belysning."
+  },
+  {
+    "id": 208,
+    "date": "2026-10-02",
+    "text": "Fiskpinnarna går att steka i stekpannan: frysta och bleka blir de gyllene, men glöm dem inte på plattan."
+  },
+  {
+    "id": 207,
+    "date": "2026-10-02",
+    "text": "När du har klappat katten går den iväg och försvinner."
+  },
+  {
+    "id": 206,
+    "date": "2026-10-02",
+    "text": "Tv-bänken har lådor i ändarna i stället för luckor – med spelkontroll, sladdar och filmer i."
+  },
+  {
+    "id": 205,
+    "date": "2026-10-02",
+    "text": "Startskärmen har fått en QR-kod, så att du lätt kan öppna lägenheten på en surfplatta eller telefon."
+  },
+  {
+    "id": 204,
+    "date": "2026-10-02",
+    "text": "Dörrarna i hallen syns nu också när du tittar in genom den öppna ytterdörren."
+  },
+  {
+    "id": 203,
+    "date": "2026-10-02",
+    "text": "Bänkarna på gården har nu ryggen mot husen och vetter ut mot gården."
+  },
+  {
+    "id": 202,
+    "date": "2026-10-02",
+    "text": "Framsidan är asfalterad med en rad parkeringsplatser längs häcken, och vår Renault stannar nu precis utanför dörren."
+  },
+  {
+    "id": 201,
+    "date": "2026-10-02",
+    "text": "Den svarta Sonos-högtalaren står nu i fönstret i Sovrum 1, och musiken hörs där också."
+  },
+  {
+    "id": 200,
+    "date": "2026-10-02",
+    "text": "Grillen på gården går att tända med E: den sprakar med stora lågor och lyser upp i mörkret."
+  },
+  {
+    "id": 199,
+    "date": "2026-10-02",
+    "text": "En ny version laddas nu in av sig själv när du står still en stund – bilden tonar mjukt ut och in och du står kvar där du var."
+  },
+  {
+    "id": 198,
+    "date": "2026-10-02",
+    "text": "Den runda spegeln har flyttat från hallen till väggen bakom fåtöljen i vardagsrummet."
+  },
+  {
+    "id": 197,
+    "date": "2026-10-02",
+    "text": "Lägg dig i underslafen i våningssängen med en teckning i handen, så kan du tejpa upp den i \"taket\" ovanför dig."
+  },
+  {
+    "id": 196,
+    "date": "2026-10-02",
+    "text": "Slå på köksfläkten när du steker, annars går brandlarmet; kycklingen är ljus innan den steks och går att bryta bitar av och äta."
+  },
+  {
+    "id": 195,
+    "date": "2026-10-02",
+    "text": "När du reser dig efter att ha suttit eller legat tittar du åt samma håll som du gjorde då."
+  },
+  {
+    "id": 194,
+    "date": "2026-10-02",
+    "text": "F5 startar inte om från början längre: du fortsätter där du var, och \"Ny version laddad\" visas bara om det kom en ny version."
+  },
+  {
+    "id": 193,
+    "date": "2026-10-02",
+    "text": "Ingen \"Klicka för att börja\"-ruta längre: med mus och tangentbord börjar spelet direkt."
+  },
+  {
+    "id": 192,
+    "date": "2026-10-02",
+    "text": "Byggläget (\"visa bygget som det ser ut nu\") är borttaget."
+  },
+  {
+    "id": 191,
+    "date": "2026-10-02",
+    "text": "I byggläget är innergården som den ser ut nu: blöt betong med pölar, grus, betongmur, byggbod och unga lönnar."
+  },
+  {
+    "id": 190,
+    "date": "2026-10-02",
+    "text": "I parken och skogen mot Höje å står nu också björkar med vita stammar som gulnar på hösten."
+  },
+  {
+    "id": 189,
+    "date": "2026-10-02",
+    "text": "Utsikten från gatan ritas snabbare: små saker långt bort och det som inte syns genom fönstren ritas inte."
+  },
+  {
+    "id": 188,
+    "date": "2026-10-02",
+    "text": "Startskärmen kan visa bygget som det ser ut nu: ställningar med nät, blå vindskydd, byggstaket och maskiner."
+  },
+  {
+    "id": 187,
+    "date": "2026-10-02",
+    "text": "Det har flyttat in folk i området: grannar promenerar (en med hund), cyklister plingar, barn spelar boll och leker i sandlådan och någon solar på en filt."
+  },
+  {
+    "id": 186,
+    "date": "2026-10-02",
+    "text": "Den hemliga lådan i sekretären har en ny liten överraskning varje gång du öppnar den – 18 olika, några ovanliga."
+  },
+  {
+    "id": 185,
+    "date": "2026-10-02",
+    "text": "De övre radhusen har fått franska balkonger mot gården och en ljus plåtkant på taket."
+  },
+  {
+    "id": 184,
+    "date": "2026-10-02",
+    "text": "Innergården har fått pollare som lyser på kvällen, en röd lekstuga vid sandlådan och ett cykelställ med cyklar."
+  },
+  {
+    "id": 183,
+    "date": "2026-10-02",
+    "text": "På parkeringen står bilar i rutor, cyklar står vid entréerna och framför Hus C finns ett stenlagt torg med planteringar och cykelställ."
+  },
+  {
+    "id": 182,
+    "date": "2026-10-02",
+    "text": "Loftgången har fått plåtkant, rund handledare, indragna vita entrédörrar och en lykta vid varje dörr som tänds på kvällen."
+  },
+  {
+    "id": 181,
+    "date": "2026-10-02",
+    "text": "De små blomkrukorna i fönstren, på sidobordet och på kökshyllan går att lyfta upp och ställa någon annanstans."
+  },
+  {
+    "id": 180,
+    "date": "2026-10-02",
+    "text": "E på en uppsatt teckning visar den stort – där kan du ta ner den eller skrynkla ihop den och kasta iväg den."
+  },
+  {
+    "id": 179,
+    "date": "2026-10-02",
+    "text": "Leksaksbilen, kritorna, brevet och de andra sakerna i sekretären går att ta upp och flytta, liksom ugglan och kaktusen ovanpå."
+  },
+  {
+    "id": 178,
+    "date": "2026-10-02",
+    "text": "Bilnyckeln i hallen kallar på vår vita Renault Megane (FGZ 56D): den kör fram och parkerar framför huset, och åker iväg när du trycker igen."
+  },
+  {
+    "id": 177,
+    "date": "2026-10-02",
+    "text": "Katten går fram och äter upp en fiskpinne som ligger på golvet i närheten."
+  },
+  {
+    "id": 176,
+    "date": "2026-10-02",
+    "text": "När du sitter eller ligger kan du nå saker i närheten, t.ex. fjärrkontrollen från soffan och boken från fåtöljen; Mellanslag reser dig."
+  },
+  {
+    "id": 175,
+    "date": "2026-10-02",
+    "text": "På kattavlan kan du nu spara bilder (röd knappnål) eller slänga dem – sparade bilder trillar aldrig ner."
+  },
+  {
+    "id": 174,
+    "date": "2026-10-02",
+    "text": "Tryck E på en SYMFONISK-högtalare så spelar musik i alla tre – byt låt och ändra volymen i panelen."
+  },
+  {
+    "id": 173,
+    "date": "2026-10-02",
+    "text": "Med whiskyflaskan i handen kan du hälla en skvätt whisky i kaffekoppen och dricka en kaffekask."
+  },
+  {
+    "id": 172,
+    "date": "2026-10-02",
+    "text": "Mjölkpaketet i kylen går att ta ut och hälla i ett glas, i en tom kopp eller som en skvätt i kaffet."
+  },
+  {
+    "id": 171,
+    "date": "2026-10-02",
+    "text": "I frysen finns ett paket fiskpinnar: ta en i taget, ät upp den eller lägg den var som helst."
+  },
+  {
+    "id": 170,
+    "date": "2026-10-02",
+    "text": "Tre SYMFONISK-högtalare har flyttat in: en vit i köket, en svart på tv-bänken och en lamphögtalare i fönstret bakom soffan som tänds med E."
+  },
+  {
+    "id": 169,
+    "date": "2026-10-02",
+    "text": "Teckningarna i flickornas rum går att ta med sig och tejpa upp på väggarna eller på kylen."
+  },
+  {
+    "id": 168,
+    "date": "2026-10-02",
+    "text": "Med en vin-, champagne- eller whiskyflaska i handen kan du hälla upp i ett glas som står framme och sedan dricka ur det."
+  },
+  {
+    "id": 167,
+    "date": "2026-10-02",
+    "text": "Kycklingen i kylen går att ta ut och steka i pannan på hällen – då fräser den och ryker en stund."
+  },
+  {
+    "id": 166,
+    "date": "2026-10-02",
+    "text": "Frysen går att öppna, och lappen med ändringar följer med dörren."
+  },
+  {
+    "id": 165,
+    "date": "2026-10-02",
+    "text": "I lådan under hällen ligger en stekpanna som du kan ta fram och ställa på hällen."
+  },
+  {
+    "id": 164,
+    "date": "2026-10-02",
+    "text": "Induktionshällen går att slå på och av med E – den främre plattan glöder rött och surrar svagt."
+  },
+  {
+    "id": 163,
+    "date": "2026-10-02",
+    "text": "Mattan i vardagsrummet har fått Sarahs mönster: mörkgrön med vita ränder som böjer sig i bågar."
+  },
+  {
+    "id": 162,
+    "date": "2026-10-02",
+    "text": "Sovrum 1 har fått en svart taklampa med skärm av snören och en klar glödlampa."
+  },
+  {
+    "id": 161,
+    "date": "2026-10-02",
+    "text": "Brandtrappan på husets västra kortände står nu direkt mot gaveln."
+  },
+  {
+    "id": 160,
+    "date": "2026-10-02",
+    "text": "Efter \"Ladda om\" kommer du direkt tillbaka där du var, utan startskärm – bara en kort \"Omladdning klar\"."
+  },
+  {
+    "id": 159,
+    "date": "2026-10-02",
+    "text": "Toaletterna går att spola med E på spolknappen – sedan fylls cisternen på en stund."
+  },
+  {
+    "id": 158,
+    "date": "2026-10-02",
+    "text": "Fotpallen framför fåtöljen är utbytt mot en mörkröd klädd pall med lös dyna."
+  },
+  {
+    "id": 157,
+    "date": "2026-10-02",
+    "text": "Nerf-pilarna träffar måltavlan igen, och tavlan stiger upp ur gräset när du håller en blaster, lasersvärdet eller en trollstav."
+  },
+  {
+    "id": 156,
+    "date": "2026-10-02",
+    "text": "Spotsen ovanpå vitrinskåpet lyser nu synligt och kastar ljus uppåt på väggen när taklampan tänds."
+  },
+  {
+    "id": 155,
+    "date": "2026-10-02",
+    "text": "Boken \"Katten på Karpvägen\" handlar nu om två familjer som flyttar ihop."
+  },
+  {
+    "id": 154,
+    "date": "2026-10-02",
+    "text": "Namnskylten på Sovrum 1 säger nu \"Sarah & Olof\"."
+  },
+  {
+    "id": 153,
+    "date": "2026-10-02",
+    "text": "Tvättstugans skåpdörr går inte längre igenom väggen när den öppnas."
+  },
+  {
+    "id": 152,
+    "date": "2026-10-02",
+    "text": "Tvättstugans väggskåp över diskhon är borta – nu sitter skåpet bara över maskinerna."
+  },
+  {
+    "id": 151,
+    "date": "2026-10-02",
+    "text": "Ytterdörren har fått ett brevinkast i mässing som går att lyfta, och under diskhon står sopsorteringen."
+  },
+  {
+    "id": 150,
+    "date": "2026-10-02",
+    "text": "Det susar av vind genom ett öppet fönster."
+  },
+  {
+    "id": 149,
+    "date": "2026-10-02",
+    "text": "Fönstren går att öppna med E – bågarna öppnas utåt som på riktiga svenska fönster."
+  },
+  {
+    "id": 148,
+    "date": "2026-10-02",
+    "text": "Elskåpet i hallen går att öppna: där sitter elcentralen och routern med blinkande lampor."
+  },
+  {
+    "id": 147,
+    "date": "2026-10-02",
+    "text": "I badrummen går tvättställens lådor och spegelskåpet att öppna, och i tvättstugan tvättmaskinen, torktumlaren och skåpet under diskhon."
+  },
+  {
+    "id": 146,
+    "date": "2026-10-02",
+    "text": "TV-bänkens två luckor går att öppna med E."
+  },
+  {
+    "id": 145,
+    "date": "2026-10-02",
+    "text": "Lådorna i nattduksborden, byrån i Klk, Livias och Tuvas skrivbord och sänglådorna i dubbelsängen går att dra ut med E."
+  },
+  {
+    "id": 144,
+    "date": "2026-10-02",
+    "text": "Alla köksluckor och lådor går att öppna med E: skåp, överskåp, diskmaskinen och lådorna."
+  },
+  {
+    "id": 143,
+    "date": "2026-10-02",
+    "text": "Innergården bakom oss slutar nu i en tegelmur med ljust räcke, och en trappa leder ner till cykelvägen."
+  },
+  {
+    "id": 142,
+    "date": "2026-10-02",
+    "text": "Innergårdens pergola har fått ljusa balkar, klätterväxter, ljusslingor som tänds på kvällen och tegel i fiskbensmönster."
+  },
+  {
+    "id": 141,
+    "date": "2026-10-02",
+    "text": "Å-husens fönster sitter nu i djupa tegelsmygar med stående tegel under och över, och takkanten är ljusgrå plåt."
+  },
+  {
+    "id": 140,
+    "date": "2026-10-02",
+    "text": "Å-husen har fått platta tak med ljus plåtkant och ventilationshuvar, som på Peabs bilder."
+  },
+  {
+    "id": 139,
+    "date": "2026-10-02",
+    "text": "Vinflaskorna, whiskyflaskorna och glasen kan tas ut, ställas på bord och läggas tillbaka i hyllan eller skåpet."
+  },
+  {
+    "id": 138,
+    "date": "2026-10-02",
+    "text": "Vinflaskorna ligger nu vågrätt i vinhyllan och har korkar."
+  },
+  {
+    "id": 137,
+    "date": "2026-10-02",
+    "text": "Vitrinskåpets luckor öppnas nu utåt mot rummet."
+  },
+  {
+    "id": 136,
+    "date": "2026-10-02",
+    "text": "Grannhusens balkonger är nu indragna loggior i husens hörn, med ljusa väggar och spjälräcke – som på ritningarna."
+  },
+  {
+    "id": 135,
+    "date": "2026-10-02",
+    "text": "Måltavlan på gräsmattan fälls bara upp när du håller i en nerfgun."
+  },
+  {
+    "id": 134,
+    "date": "2026-10-02",
+    "text": "När du kommer tillbaka eller börjar från start visar köksklockan och almanackan alltid riktig tid och dagens datum."
+  },
+  {
+    "id": 133,
+    "date": "2026-10-02",
+    "text": "Grannhusen i kvarteret har fått balkonger med ljusa spjälräcken, och på en del står det växter."
+  },
+  {
+    "id": 132,
+    "date": "2026-10-02",
+    "text": "Det långa tegelhuset bakom HepCat svävar inte längre – hus i slänten står på en sockel ner till marken."
+  },
+  {
+    "id": 131,
+    "date": "2026-10-02",
+    "text": "Grannhusen i kvarteret har fått vita fönsterfoder, fönsterbleck, ljus taklist och stuprör som på Peabs bilder."
+  },
+  {
+    "id": 130,
+    "date": "2026-10-02",
+    "text": "Stora gamla lövträd står nu vid skolan, unga lönnar längs vår trottoar och en buskhäck vid gången – alla följer årstiden."
+  },
+  {
+    "id": 129,
+    "date": "2026-10-02",
+    "text": "Vid gatan står nu busshållplatsen, den röda Flyttad-skylten, en parkeringsskylt och HepCats gatupratare."
+  },
+  {
+    "id": 128,
+    "date": "2026-10-02",
+    "text": "Gatan har fått kantsten, lagad asfalt, gatlyktor som lyser på kvällen, övergångsställe, bygget trafikljus och höstlöv."
+  },
+  {
+    "id": 127,
+    "date": "2026-10-02",
+    "text": "En gammal teaksekretär står mellan TV:n och soffan – fäll ned klaffen och öppna alla små lådor, det finns en hemlig också."
+  },
+  {
+    "id": 126,
+    "date": "2026-10-02",
+    "text": "HepCat Store på andra sidan gatan har fått sitt riktiga utseende – tegel, vit gavel och plåttak – med det långa tegelhuset bakom."
+  },
+  {
+    "id": 125,
+    "date": "2026-10-02",
+    "text": "Mitt emot köket står nu en lång tegelmur och skolan i två våningar med vita hörn, som i verkligheten."
+  },
+  {
+    "id": 124,
+    "date": "2026-10-02",
+    "text": "Sätt dig i loungesoffan så kommer en stor öl – ta den och drick med klick. Kaffet i koppen går också att dricka."
+  },
+  {
+    "id": 123,
+    "date": "2026-10-02",
+    "text": "Kaffekopparna kan tas ut tomma och ställas var som helst – ta kannan, häll själv i koppen och ställ tillbaka kannan på bryggaren."
+  },
+  {
+    "id": 122,
+    "date": "2026-10-02",
+    "text": "En bok ligger på sidobordet vid fåtöljen – ta upp den och läs, A D bläddrar."
+  },
+  {
+    "id": 121,
+    "date": "2026-10-02",
+    "text": "En vinhylla i svart metall med åtta flaskor hänger mellan vitrinskåpet och fåtöljen."
+  },
+  {
+    "id": 120,
+    "date": "2026-10-02",
+    "text": "Ett vitrinskåp (IKEA BESTÅ) hänger nu på väggen i vardagsrummet, med fina glas, whiskyflaskor och spotlights – alla dörrar går att öppna."
+  },
+  {
+    "id": 119,
+    "date": "2026-10-02",
+    "text": "Alla fönsterbänkar har fått blomkrukor – pelargoner, orkidéer, kaktusar, basilika, murgröna och saintpaulior."
+  },
+  {
+    "id": 118,
+    "date": "2026-10-02",
+    "text": "Tvättstugan har fått ett vitt väggskåp över bänken – luckorna går att öppna och där finns handdukar och tvättmedel."
+  },
+  {
+    "id": 117,
+    "date": "2026-10-02",
+    "text": "Spegelskåpet i badrummet på övervåningen speglar nu rummet, som de andra speglarna."
+  },
+  {
+    "id": 116,
+    "date": "2026-10-02",
+    "text": "Palmbladen vid altandörren går inte längre igenom väggen – varken inne eller ute."
+  },
+  {
+    "id": 115,
+    "date": "2026-10-02",
+    "text": "Vardagsrummet har fått en taklampa av vikt vitt papper med rombmönster som lyser mjukt när den är tänd."
+  },
+  {
+    "id": 114,
+    "date": "2026-10-02",
+    "text": "Nyckelskåpet sitter nu mitt på den smala väggen vid ytterdörren, fritt från spegeln."
+  },
+  {
+    "id": 113,
+    "date": "2026-10-02",
+    "text": "En måltavla står på gräsmattan bakom häcken – skjut på den med nerfgunen, mitten och långa skott ger mest poäng."
+  },
+  {
+    "id": 112,
+    "date": "2026-10-02",
+    "text": "Nerfpilarna lämnar färgstänk i blasterns färg där de träffar – stänken försvinner efter en halv minut."
+  },
+  {
+    "id": 111,
+    "date": "2026-10-02",
+    "text": "Trollspöna trollar fram stjärnor och fladdrande fjärilar där du pekar – de försvinner efter en stund."
+  },
+  {
+    "id": 110,
+    "date": "2026-10-02",
+    "text": "En stor abstrakt tavla med svart ram hänger nu över divanen i vardagsrummet."
+  },
+  {
+    "id": 109,
+    "date": "2026-10-02",
+    "text": "Lightsabern bränner märken med lite rök i väggar, golv och möbler – de försvinner efter ett par minuter."
+  },
+  {
+    "id": 108,
+    "date": "2026-10-02",
+    "text": "En guldpalm i stor kruka står nu till höger om altandörren i vardagsrummet."
+  },
+  {
+    "id": 107,
+    "date": "2026-10-02",
+    "text": "En fjärrkontroll ligger på soffbordet: rikta den mot en TV, klicka för att byta program och högerklicka för att stänga av."
+  },
+  {
+    "id": 106,
+    "date": "2026-10-02",
+    "text": "Livia och Tuva har fått en TV på väggen mitt emot kojen, med Ambilight och ett nytt program varje gång den slås på."
+  },
+  {
+    "id": 105,
+    "date": "2026-10-02",
+    "text": "Allt du bär på kan läggas ner på bord, bänkar och golvet – och du kan bara bära en sak i taget."
+  },
+  {
+    "id": 104,
+    "date": "2026-10-02",
+    "text": "Diskhon, vasken i tvättstugan och handfaten är nu riktiga fördjupningar med botten och avlopp."
+  },
+  {
+    "id": 103,
+    "date": "2026-10-02",
+    "text": "Nyckelskåpet sitter nu på den smala väggen bredvid ytterdörren, och spegeln hänger mitt på hallväggen."
+  },
+  {
+    "id": 102,
+    "date": "2026-10-02",
+    "text": "Köksklockan sitter nu mitt på väggen, över anslagstavlan och almanackan."
+  },
+  {
+    "id": 101,
+    "date": "2026-10-02",
+    "text": "Almanackan och köksklockan styrs nu med WASD: A D byter månad eller spolar, W S byter dag."
+  },
+  {
+    "id": 100,
+    "date": "2026-10-02",
+    "text": "Startskärmen avslöjar inte längre klockan, almanackan och katterna – de får du upptäcka själv."
+  },
+  {
+    "id": 99,
+    "date": "2026-10-02",
+    "text": "Ett dygn tar nu 60 minuter i stället för 12 – vill du se natten kan du spola fram köksklockan."
+  },
+  {
+    "id": 98,
+    "date": "2026-10-02",
+    "text": "Walter och Kians fönster i Sovrum 2 är nu mindre än Tillys fönster i Sovrum 4."
+  },
+  {
+    "id": 97,
+    "date": "2026-10-02",
+    "text": "Koppskåpets lucka går inte längre igenom ugnsskåpet – den stannar mot skåpets sida."
+  },
+  {
+    "id": 96,
+    "date": "2026-10-02",
+    "text": "Besöket börjar på riktig tid och datum. Köksklockan ställer tiden, och den nya kattalmanackan bredvid väljer datum."
+  },
+  {
+    "id": 95,
+    "date": "2026-10-02",
+    "text": "Rita med krita på pappret på skrivbordet i Sovrum 3 – teckningen sparas till nästa gång."
+  },
+  {
+    "id": 94,
+    "date": "2026-10-02",
+    "text": "Livia och Tuva har fått ett vitt IKEA ALEX-skrivbord under fönstret, en stol och pyssel på bordet."
+  },
+  {
+    "id": 93,
+    "date": "2026-10-02",
+    "text": "En vit IKEA NORDLI-byrå med åtta lådor står i klädkammaren i Sovrum 1."
+  },
+  {
+    "id": 92,
+    "date": "2026-10-02",
+    "text": "Sovrum 1: dubbelsängen är en IKEA IDANÄS med hög, knäppt huvudgavel i mörkgrått tyg."
+  },
+  {
+    "id": 91,
+    "date": "2026-10-02",
+    "text": "Koka kaffe, ta en kopp ur överskåpet, fyll den och ställ den på vilket bord du vill."
+  },
+  {
+    "id": 90,
+    "date": "2026-10-02",
+    "text": "En ficklampa ligger på hatthyllan i hallgarderoben – ta den med E och klicka för att tända och släcka."
+  },
+  {
+    "id": 89,
+    "date": "2026-10-02",
+    "text": "Trollstavar och ett enhörningsdiadem hänger i Livia och Tuvas rum – vifta med en stav så gnistrar det."
+  },
+  {
+    "id": 88,
+    "date": "2026-10-02",
+    "text": "Nerf-blastrar på väggen hos Walter och Kian – ta en med E och klicka för att skjuta skumpilar."
+  },
+  {
+    "id": 87,
+    "date": "2026-10-02",
+    "text": "LED-slingor på skärmväggarna vid uteplatsen tänds i skymningen och släcks i gryningen."
+  },
+  {
+    "id": 86,
+    "date": "2026-10-02",
+    "text": "Sovrum 1: nytt ljusgrönt bäddset med blommönster."
+  },
+  {
+    "id": 85,
+    "date": "2026-10-02",
+    "text": "Kartan är dold tills du håller inne Tab (📊 på touch) – den visas ihop med statistiken. K visar bara kartan."
+  },
+  {
+    "id": 84,
+    "date": "2026-10-02",
+    "text": "Taklampan som svävade mitt i trappan sitter nu under trappan, i förrådet."
+  },
+  {
+    "id": 83,
+    "date": "2026-10-02",
+    "text": "Ugn och mikro räknas inte längre som toalettlock i statistiken."
+  },
+  {
+    "id": 82,
+    "date": "2026-10-02",
+    "text": "Gården som på ritningen: stengångar, pergola med matbord, grill, sandlådor, boulebana, bänkar, odlingslådor och planteringar – och du kan gå runt där."
+  },
+  {
+    "id": 81,
+    "date": "2026-10-02",
+    "text": "Datorbordet hos Walter och Kian står längs väggen mittemot våningssängen, med kortsidan mot fönstret – skärmen tittar rakt mot underslafen."
+  },
+  {
+    "id": 80,
+    "date": "2026-10-02",
+    "text": "Touch: huka- och mätknappen ligger inte längre ovanpå varandra – de sitter bredvid kartan, ovanför den stora knappen."
+  },
+  {
+    "id": 79,
+    "date": "2026-10-02",
+    "text": "Datorbordet hos Walter och Kian står nu vid fönstret, med en liten lucka till våningssängen. Sätt dig i gamingstolen så startar datorn av sig själv. Sätt dig i underslafen så svänger skärmen ut på sin arm mot sängen och det börjar gå en film."
+  },
+  {
+    "id": 78,
+    "date": "2026-10-02",
+    "text": "Kvarteret står på garaget: gården är upphöjd med stödmur och räcke mot parken, och garageinfarten ligger vid Karpvägen."
+  },
+  {
+    "id": 77,
+    "date": "2026-10-02",
+    "text": "En lightsaber hänger i Walter och Kians rum – ta den med E, svinga, och häng tillbaka den."
+  },
+  {
+    "id": 76,
+    "date": "2026-10-02",
+    "text": "Walter och Kian har fått ett gamingbord med böjd skärm och RGB-dator – starta den med E."
+  },
+  {
+    "id": 75,
+    "date": "2026-10-02",
+    "text": "F visar den tomma lägenheten: även hyllor, speglar, tavlor, kaffebryggare, skyltar och katten försvinner."
+  },
+  {
+    "id": 74,
+    "date": "2026-10-02",
+    "text": "Strömbrytaren i WC/dusch uppe sitter på väggen i stället för i luften."
+  },
+  {
+    "id": 73,
+    "date": "2026-10-02",
+    "text": "Sätt dig i soffor, fåtölj och stolar, och lägg dig i sängarna med E – E igen för att resa dig."
+  },
+  {
+    "id": 72,
+    "date": "2026-10-02",
+    "text": "Huka dig med Ctrl (🧎 på touch) för att komma nära katterna."
+  },
+  {
+    "id": 71,
+    "date": "2026-10-02",
+    "text": "\"Ladda om\" i nyhetsnotisen tar dig tillbaka dit du var; på startskärmen kan du välja att börja från start."
+  },
+  {
+    "id": 70,
+    "date": "2026-10-02",
+    "text": "Årstider: träden byter färg efter månad, och december–februari ligger snö – snögubben står nu precis bakom häcken."
+  },
+  {
+    "id": 69,
+    "date": "2026-10-02",
+    "text": "Jackorna på hatthyllan ser ut som jackor, och skorna som skor."
+  },
+  {
+    "id": 68,
+    "date": "2026-10-02",
+    "text": "Mysiga blårutiga sängkläder, extrakudde och överkast i Sovrum 1."
+  },
+  {
+    "id": 67,
+    "date": "2026-10-02",
+    "text": "Vita NYMÅNE-nattlampor på nattduksborden – tänd och släck dem med E."
+  },
+  {
+    "id": 66,
+    "date": "2026-10-02",
+    "text": "Två nattduksbord i bambu, IKEA NORDKISA, vid sängen i Sovrum 1."
+  },
+  {
+    "id": 65,
+    "date": "2026-10-02",
+    "text": "En 55-tums tv på tv-bänken – slå på den med E."
+  },
+  {
+    "id": 64,
+    "date": "2026-10-02",
+    "text": "En vit högglansig tv-bänk, IKEA BYÅS, mitt emot soffan."
+  },
+  {
+    "id": 63,
+    "date": "2026-10-02",
+    "text": "Matbordet SKANSNÄS är avlångt, 150 × 90 cm, och stolarna har ljus flätad sits."
+  },
+  {
+    "id": 62,
+    "date": "2026-10-02",
+    "text": "Hallen har fått hatthylla med jackor och en skohylla till höger innanför dörren."
+  },
+  {
+    "id": 61,
+    "date": "2026-10-02",
+    "text": "Husen runt tomten ser ut som S:t Lars gamla tegelbyggnader, med branta mörka tak och höga fönster."
+  },
+  {
+    "id": 60,
+    "date": "2026-10-02",
+    "text": "Grannen till vänster (L1008) har köksfönstret på gaveln och brandtrappan tätt intill huset."
+  },
+  {
+    "id": 59,
+    "date": "2026-10-02",
+    "text": "Speglarna visar spegelbild, och LED-listen på badrumsspegeln tänds och släcks med E."
+  },
+  {
+    "id": 58,
+    "date": "2026-10-02",
+    "text": "Fäll ut och fäll ihop parasollet med E."
+  },
+  {
+    "id": 57,
+    "date": "2026-10-02",
+    "text": "Uteplatsen har fått stenplattor i ljusgrå betong."
+  },
+  {
+    "id": 56,
+    "date": "2026-10-02",
+    "text": "En RÅGRUND-stol i bambu med handduk står i hörnet i Sovrum 1."
+  },
+  {
+    "id": 55,
+    "date": "2026-10-02",
+    "text": "Hallspegeln är en stor svart IKEA LINDBYN, Ø 110 cm."
+  },
+  {
+    "id": 54,
+    "date": "2026-10-02",
+    "text": "En svart Moccamaster på bänken – sätt på den med E och lyssna när den brygger."
+  },
+  {
+    "id": 53,
+    "date": "2026-10-02",
+    "text": "Ugnen och mikron går att öppna med E."
+  },
+  {
+    "id": 52,
+    "date": "2026-10-02",
+    "text": "Golvlampan är en IKEA NYMÅNE med tre spotar och står bredvid fåtöljen."
+  },
+  {
+    "id": 51,
+    "date": "2026-10-02",
+    "text": "Stor ljus matta under soffan och soffbordet."
+  },
+  {
+    "id": 50,
+    "date": "2026-10-02",
+    "text": "Nytt matbord: runda IKEA SKANSNÄS i brun bok med fyra stolar, inskjutna under bordet."
+  },
+  {
+    "id": 49,
+    "date": "2026-10-02",
+    "text": "Snabbare: hälften så många ritanrop, skuggor ritas bara om när de ändras, och upplösningen anpassas om datorn kämpar."
+  },
+  {
+    "id": 48,
+    "date": "2026-10-02",
+    "text": "Spring utomhus med Shift eller med joysticken helt utdragen; inne går du som vanligt."
+  },
+  {
+    "id": 47,
+    "date": "2026-10-02",
+    "text": "Lappen på frysen är lättare att läsa, med korta punkter; startskärmen berättar inte längre om nyheter."
+  },
+  {
+    "id": 46,
+    "date": "2026-10-02",
+    "text": "Innerdörrarna fyller hela öppningen och har vita dörrfoder."
+  },
+  {
+    "id": 45,
+    "date": "2026-10-02",
+    "text": "Trappstegen har samma Ek Chalk-parkett som golven."
+  },
+  {
+    "id": 44,
+    "date": "2026-10-02",
+    "text": "Bananplantan i häcköppningen är borta – du kan gå ut på gräsmattan."
+  },
+  {
+    "id": 43,
+    "date": "2026-10-02",
+    "text": "”Ladda om” i nyhetsnotisen fungerar på telefon och hämtar alltid nya versionen."
+  },
+  {
+    "id": 42,
+    "date": "2026-10-02",
+    "text": "Esc på startskärmen väljer Mus & tangentbord."
+  },
+  {
+    "id": 41,
+    "date": "2026-10-02",
+    "text": "Musen och touchpaden är mindre känsliga."
+  },
+  {
+    "id": 40,
+    "date": "2026-10-02",
+    "text": "Ovanliga katter låter annorlunda och får stjärnor runt sig när du klappar dem."
+  },
+  {
+    "id": 39,
+    "date": "2026-10-02",
+    "text": "Hallen: rund spegel och Solstickan-nyckelskåp med bilnyckel som säger beep beep."
+  },
+  {
+    "id": 38,
+    "date": "2026-10-02",
+    "text": "Två hyllor i köket med porträtt, blommor och småsaker."
+  },
+  {
+    "id": 37,
+    "date": "2026-10-02",
+    "text": "Kattavlan hänger under köksklockan."
+  },
+  {
+    "id": 36,
+    "date": "2026-10-02",
+    "text": "Besöket börjar ute på gräset framför huset."
+  },
+  {
+    "id": 35,
+    "date": "2026-10-02",
+    "text": "Huset, kvarteret och väderstrecken som på Peabs ritningar."
+  },
+  {
+    "id": 34,
+    "date": "2026-10-02",
+    "text": "Möblerad uteplats med parasoll, krukor, sommaröl och vintersnögubbe."
+  },
+  {
+    "id": 33,
+    "date": "2026-10-02",
+    "text": "Soffbord ILVA Woodstock, enklare startskärm på telefon och månadsnamn på klockan."
+  },
+  {
+    "id": 32,
+    "date": "2026-10-02",
+    "text": "Besöket börjar 07:00 och solen följer månaden – spola tiden på köksklockan."
+  },
+  {
+    "id": 31,
+    "date": "2026-10-02",
+    "text": "Dold statistik (håll Tab), +1-brickor och installation på iPhone."
+  },
+  {
+    "id": 30,
+    "date": "2026-10-01",
+    "text": "Dygnet går på 12 minuter, med sol, måne och tända fönster hos grannarna."
+  },
+  {
+    "id": 29,
+    "date": "2026-10-01",
+    "text": "Lampknappar i varje rum och tändbara lampor."
+  },
+  {
+    "id": 28,
+    "date": "2026-10-01",
+    "text": "Klappade katter fotograferas och sätts upp på en tavla i köket."
+  },
+  {
+    "id": 27,
+    "date": "2026-10-01",
+    "text": "Våningssängar med Darth Vader- och enhörningslakan."
+  },
+  {
+    "id": 26,
+    "date": "2026-10-01",
+    "text": "Kylskåpet går att öppna – där ryker en grillad kyckling."
+  },
+  {
+    "id": 25,
+    "date": "2026-10-01",
+    "text": "Kliv in under en påslagen dusch så skriker du ”iiiih!”."
+  },
+  {
+    "id": 24,
+    "date": "2026-10-01",
+    "text": "Sängar och namnskyltar i barnens rum."
+  },
+  {
+    "id": 23,
+    "date": "2026-10-01",
+    "text": "Touch-läget vill ha liggande skärm."
+  },
+  {
+    "id": 22,
+    "date": "2026-10-01",
+    "text": "Kranar och duschar går att sätta på med E."
+  },
+  {
+    "id": 21,
+    "date": "2026-10-01",
+    "text": "Duschmunstyckena vi beställt."
+  },
+  {
+    "id": 20,
+    "date": "2026-10-01",
+    "text": "Garderoben i Sovrum 2 går att öppna."
+  },
+  {
+    "id": 19,
+    "date": "2026-10-01",
+    "text": "Matbord 180 × 90 med sex stolar."
+  },
+  {
+    "id": 18,
+    "date": "2026-10-01",
+    "text": "Utsikt med hus, träd och moln; vitt trappräcke."
+  },
+  {
+    "id": 17,
+    "date": "2026-10-01",
+    "text": "Exempelmöbler i alla rum – F visar/döljer dem."
+  },
+  {
+    "id": 16,
+    "date": "2026-10-01",
+    "text": "Mätverktyg: Q (📏 på touch)."
+  },
+  {
+    "id": 15,
+    "date": "2026-10-01",
+    "text": "Flera kattraser, några ovanliga."
+  },
+  {
+    "id": 14,
+    "date": "2026-10-01",
+    "text": "Golvsocklar och Hoppe Stockholm-handtag."
+  },
+  {
+    "id": 13,
+    "date": "2026-10-01",
+    "text": "Mjuka skuggor i hörnen."
+  },
+  {
+    "id": 12,
+    "date": "2026-10-01",
+    "text": "Minikarta med rumsnamn (K)."
+  },
+  {
+    "id": 11,
+    "date": "2026-10-01",
+    "text": "Statistik över katter, dörrar, steg och tid."
+  },
+  {
+    "id": 10,
+    "date": "2026-10-01",
+    "text": "Klappa katten med E."
+  },
+  {
+    "id": 9,
+    "date": "2026-10-01",
+    "text": "Ifö Spira-toaletter med lock som går att fälla."
+  },
+  {
+    "id": 8,
+    "date": "2026-10-01",
+    "text": "Ändringslogg på frysen."
+  },
+  {
+    "id": 7,
+    "date": "2026-10-01",
+    "text": "Våra materialval i kök, golv och badrum."
+  },
+  {
+    "id": 6,
+    "date": "2026-10-01",
+    "text": "Tillvalsdörren till Allrum – fyra sovrum uppe."
+  },
+  {
+    "id": 5,
+    "date": "2026-10-01",
+    "text": "Vardagsrumsmöbler från IKEA LANDSKRONA."
+  },
+  {
+    "id": 4,
+    "date": "2026-10-01",
+    "text": "En katt kan gömma sig bakom dörrar; ljud för dörrar och steg."
+  },
+  {
+    "id": 3,
+    "date": "2026-10-01",
+    "text": "Meddelande om ny version och skjutdörrar på garderoberna."
+  },
+  {
+    "id": 2,
+    "date": "2026-10-01",
+    "text": "Fönstermått från bofakta, tegelfasad och touchstyrning."
+  },
+  {
+    "id": 1,
+    "date": "2026-10-01",
+    "text": "Första versionen: gå runt i båda planen."
+  }
 ]

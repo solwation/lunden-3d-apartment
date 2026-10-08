@@ -405,18 +405,7 @@ export const SITE = {
     // further south behind an open gap); the long building's east side and the annex's depth are off the sheet (guess)
     { name: 'HepCat Store', x0: 28.2, x1: 36.4, z0: -10.8, z1: 10.0, base: 0, storeys: 1, roof: 'gable', style: 'hepcat', chimneys: [-5, 4] }, // #127
     { name: 'HepCat Store, the white middle', x0: 27.9, x1: 36.4, z0: -2.6, z1: 1.8, base: 0, storeys: 1, roof: 'gable', style: 'hepcatWhite' },
-    // (the ground falls along the road, terrain.east: two parts, each standing on the highest ground under it)
-    { name: 'The long brick building', x0: 31.3, x1: 42, z0: 23, z1: 42, base: -1.2, storeys: 1, roof: 'gable', style: 'longhouse' },
-    { name: 'The long brick building (south part)', x0: 31.3, x1: 42, z0: 42, z1: 61.6, base: -2.7, storeys: 1, roof: 'gable', style: 'longhouse' },
-    { name: 'The long brick building (annex)', x0: 31.3, x1: 36, z0: 61.6, z1: 70.9, base: -3, storeys: 1, roof: 'gable', style: 'longhouse' },
-    { name: 'Realgymnasiet', x0: 5, x1: 70, z0: -74, z1: -50, base: 0, storeys: 3, roof: 'hip', style: 'old' },
-    // straight across the street from our kitchen (#126): a long two-storey school with end pavilions that stand
-    // a little forward (the user's photos; position and length are guesses), behind a brick wall
-    { name: 'Skolan över gatan', x0: -21.5, x1: 25.5, z0: -48, z1: -38, base: 0, storeys: 1, roof: 'hip', style: 'school' },
-    { name: 'Skolan, västra flygeln', x0: -22, x1: -13, z0: -48.4, z1: -37.4, base: 0, storeys: 1, roof: 'hip', style: 'school' },
-    { name: 'Skolan, östra flygeln', x0: 17, x1: 26, z0: -48.4, z1: -37.4, base: 0, storeys: 1, roof: 'hip', style: 'school' },
-    { name: 'S:t Lars (old hospital)', x0: -62, x1: -22, z0: -62, z1: -46, base: 0, storeys: 3, roof: 'hip', style: 'old' },
-    { name: 'Montessorigrundskolan', x0: -78, x1: -60, z0: -115, z1: -70, base: 0, storeys: 2, roof: 'hip', style: 'old' },
+    // #535: school/longhouse placeholders moved to source-based SITE.east; the photo-based wall remains.
     { name: 'Villa', x0: -63, x1: -47.3, z0: 67.7, z1: 84.1, base: -3, storeys: 3, roof: 'hip', style: 'old' }, // brick house, hip roof
   ],
   // The street details (#128, src/street.js; the user's photos in docs/foton/): granite curbs along Sankt Lars väg,
@@ -496,6 +485,8 @@ export const SITE = {
   paving: [
     { x0: -46.33, x1: 13.5, z0: -3.5, z1: 0 },  // path along Hus L's entrances (under the green strip too, #260)
   ],                                         // the pavements: roads' `walks`; the courtyard's own walks: COURTYARD
+  // #535: visible terrain extent covers the sourced campus; independent of OUTDOOR walking bounds.
+  backgroundGround: {x0:-270,x1:340,z0:-230,z1:260},
   // #532: geographic registration uses FOJAB/DAY.planNorth (58°) and the HepCat OSM footprint centre
   // (way 130578353) matched to the existing Peab-based model centre. Horizontal accuracy ~3–5 m, not surveying.
   geo: {anchor:{lon:13.181015825,lat:55.684965075,x:32.3,z:-.4},source:'OSM 2026-10-08, way 130578353'},
@@ -607,6 +598,72 @@ export const SITE = {
     facade: 13747890,
     roof: 5660765,
     plinth: 9999754,
+    glass: 3230037,
+    pathLift: 0.025,
+  },
+  // #535: east-campus source polygons replace old illustrative school/longhouse blocks; HepCat is preserved.
+  // Named campus polygons identify buildings; names are orientation only. All floor counts/heights/roof details remain assumptions.
+  east: {
+    buildings: [
+      {"source":"88457546","polygon":[[39.82,-133.52],[50.71,-133.78],[50.79,-130.68],[64.45,-131.0],[64.9,-113.43],[50.44,-113.08],[50.33,-117.48],[45.1,-117.36],[45.18,-114.52],[26.82,-114.08],[26.39,-131.02],[39.88,-131.33],[39.82,-133.52]],"name":"Sankt Thomas skola","levels":2,"levelsSource":"visual assumption","storey":3.6,"roofRise":3,"frameColor":15657439},
+      {"source":"88457547","polygon":[[138.12,-129.52],[138.19,-137.81],[133.49,-137.87],[133.57,-147.48],[137.9,-147.43],[137.94,-151.12],[149.85,-150.99],[149.82,-147.73],[154.48,-147.67],[154.39,-138.06],[150.15,-138.11],[150.07,-129.28],[166.05,-129.1],[165.94,-116.99],[149.39,-117.17],[148.9,-63.59],[161.35,-63.45],[161.24,-52.48],[136.64,-52.75],[136.71,-59.94],[136.28,-59.94],[136.91,-129.54],[138.12,-129.52]],"name":"H\u00f6jebroskolan / byggnad 9","levels":2,"levelsSource":"visual assumption","storey":3.6,"roofRise":3,"frameColor":15657439},
+      {"source":"88457552","polygon":[[105.08,-126.68],[116.15,-126.46],[116.21,-129.88],[126.08,-129.69],[126.0,-126.27],[127.31,-126.24],[127.14,-117.41],[125.83,-117.44],[125.71,-111.53],[115.85,-111.72],[115.97,-117.63],[104.89,-117.86],[104.79,-112.25],[91.54,-112.51],[91.65,-118.12],[80.5,-118.34],[80.35,-111.1],[70.85,-111.29],[71.23,-130.27],[80.74,-130.08],[80.68,-127.17],[91.83,-126.95],[91.87,-129.08],[105.11,-128.82],[105.08,-126.68]],"name":"F\u00f6rskolan Freinet","levels":2,"levelsSource":"visual assumption","storey":3.6,"roofRise":3,"frameColor":15657439},
+      {"source":"88457558","polygon":[[273.63,-69.61],[292.05,-79.29],[296.27,-71.27],[277.85,-61.58],[273.63,-69.61]],"name":"Komplementbyggnad 88457558","levels":1,"levelsSource":"visual assumption","storey":3.6,"roofRise":2,"frameColor":15657439},
+      {"source":"88457565","polygon":[[228.12,-65.56],[261.7,-65.44],[261.68,-53.62],[260.67,-53.63],[260.66,-49.35],[252.87,-49.38],[252.88,-54.29],[228.1,-54.38],[228.12,-65.56]],"name":"F\u00f6rskolan Kastanjen","levels":1,"levelsSource":"visual assumption","storey":3.6,"roofRise":2,"frameColor":15657439},
+      {"source":"88457581","polygon":[[89.73,17.57],[89.78,-8.74],[115.39,-8.64],[115.38,-1.76],[115.37,4.0],[115.34,19.86],[107.99,19.84],[107.98,25.63],[94.57,25.58],[94.58,17.58],[89.73,17.57]],"name":"Kunskapsskolan","levels":2,"levelsSource":"visual assumption","storey":3.6,"roofRise":3,"frameColor":15657439},
+      {"source":"88457600","polygon":[[79.7,63.91],[79.48,54.45],[85.17,54.33],[84.82,39.49],[89.99,39.38],[90.56,63.68],[79.7,63.91]],"name":"Komplementbyggnad 88457600","levels":1,"levelsSource":"visual assumption","storey":3.6,"roofRise":2,"frameColor":15657439},
+      {"source":"88457601","polygon":[[147.34,-3.67],[125.29,-3.73],[124.91,-1.56],[115.38,-1.76],[115.37,4.0],[125.33,4.25],[126.01,24.18],[148.79,24.33],[147.34,-3.67]],"name":"\u00d6stra paviljongen vid Kunskapsskolan","levels":2,"levelsSource":"visual assumption","storey":3.6,"roofRise":3,"frameColor":15657439},
+      {"source":"88457606","polygon":[[105.93,-66.55],[116.99,-66.33],[117.06,-69.76],[126.92,-69.55],[126.86,-66.13],[128.15,-66.1],[127.98,-57.28],[126.68,-57.3],[126.56,-51.39],[116.7,-51.6],[116.82,-57.49],[105.74,-57.72],[105.64,-52.11],[92.39,-52.39],[92.49,-57.98],[81.35,-58.21],[81.21,-50.96],[71.71,-51.16],[72.07,-70.14],[81.58,-69.94],[81.53,-67.04],[92.67,-66.81],[92.72,-68.95],[105.96,-68.68],[105.93,-66.55]],"name":"F\u00f6rskolan Framtiden","levels":2,"levelsSource":"visual assumption","storey":3.6,"roofRise":3,"frameColor":15657439},
+      {"source":"88457612","polygon":[[-5.23,-65.15],[6.26,-65.2],[6.22,-71.29],[15.76,-71.33],[15.89,-52.58],[6.38,-52.54],[6.35,-56.62],[-5.13,-56.57],[-5.11,-53.63],[-18.01,-53.57],[-18.04,-56.52],[-29.02,-56.47],[-29.0,-53.72],[-38.79,-53.67],[-38.89,-70.68],[-29.02,-70.73],[-28.98,-65.05],[-18.13,-65.1],[-18.17,-70.15],[-5.26,-70.22],[-5.23,-65.15]],"name":"NTI / skolan \u00f6ver gatan","levels":2,"levelsSource":"visual assumption","storey":4.3,"roofRise":3,"frameColor":15657439},
+      {"source":"130578352","polygon":[[125.46,40.62],[119.55,40.67],[119.67,53.05],[125.59,53.0],[125.46,40.62]],"name":"Komplementbyggnad 130578352","levels":1,"levelsSource":"visual assumption","storey":3.6,"roofRise":2,"frameColor":15657439},
+      {"source":"130678797","polygon":[[-41.57,-134.49],[-31.06,-134.87],[-30.95,-131.92],[-21.25,-132.27],[-21.36,-135.15],[-5.68,-135.72],[-5.58,-133.09],[4.47,-133.45],[4.35,-136.54],[15.03,-136.93],[15.85,-115.25],[4.21,-114.83],[3.94,-121.73],[-3.76,-121.45],[-3.63,-117.88],[-19.49,-117.3],[-19.68,-122.28],[-31.94,-121.83],[-31.75,-116.71],[-40.87,-116.38],[-41.57,-134.49]],"name":"\u00d6stra borgg\u00e5rden, byggnad 2","levels":2,"levelsSource":"visual assumption","storey":3.6,"roofRise":3,"frameColor":15657439},
+      {"source":"130681301","polygon":[[72.93,40.79],[46.47,40.46],[46.68,19.41],[28.4,19.19],[28.0,58.28],[72.74,58.83],[72.93,40.79]],"name":"Consensum / l\u00e5nga tegelbyggnaden","levels":1,"levelsSource":"visual assumption","storey":3.8,"roofRise":2,"frameColor":13675862},
+      {"source":"145221568","polygon":[[43.51,2.27],[43.59,-7.33],[50.43,-7.26],[50.34,2.34],[43.51,2.27]],"name":"Komplementbyggnad 145221568","levels":1,"levelsSource":"visual assumption","storey":3.6,"roofRise":2,"frameColor":15657439},
+      {"source":"88457613","polygon":[[-64.12,-68.25],[-63.81,-121.44],[-67.62,-121.47],[-67.63,-120.2],[-77.62,-120.28],[-77.54,-133.09],[-67.3,-133.01],[-67.32,-130.44],[-64.01,-130.41],[-64.01,-132.44],[-63.91,-149.78],[-59.73,-149.75],[-59.7,-153.85],[-51.38,-153.78],[-51.4,-150.45],[-46.25,-150.41],[-46.3,-141.13],[-50.67,-141.15],[-50.68,-139.83],[-57.96,-139.88],[-58.01,-132.56],[-50.03,-132.49],[-50.46,-56.41],[-74.94,-56.6],[-74.87,-68.33],[-64.12,-68.25]],"name":"Montessorigrundskolan","levels":2,"levelsSource":"visual assumption","storey":3.6,"roofRise":3,"frameColor":15657439},
+      {"source":"relation/1309427","modern":true,"roof":"flat","facade":13813939,"polygon":[[24.22,-78.12],[61.31,-77.75],[61.01,-40.76],[23.92,-41.13],[24.22,-78.12]],"holes":[[[36.21,-66.93],[51.38,-66.63],[51.09,-49.91],[35.92,-50.2],[36.21,-66.93]]],"name":"Realgymnasiet / byggnad 88","levels":2,"levelsSource":"visual assumption","storey":3.6,"roofRise":3,"frameColor":15657439},
+    ],
+    paths: [
+      {"source":"61112064","path":[[248.57,20.99],[262.52,11.51],[269.96,5.6],[274.94,1.24],[280.52,-4.93],[285.42,-10.66],[290.56,-17.79],[296.05,-26.85],[306.75,-46.47],[314.76,-59.29],[322.42,-72.87],[325.33,-81.47],[325.52,-89.03],[322.12,-100.48],[319.97,-106.14],[318.65,-110.25],[317.22,-116.09],[315.66,-121.19],[315.06,-124.8],[313.34,-131.43]],"w":2},
+      {"source":"61112065","path":[[248.57,20.99],[239.56,21.12],[235.14,22.82],[228.02,25.33],[202.15,34.86],[193.02,34.82]],"w":2},
+    ],
+    access: [
+      {"source":"30633554","path":[[64.6,-23.58],[66.93,-86.35],[66.75,-136.67],[66.68,-157.77]],"w":4.5},
+      {"source":"33646346","path":[[17.4,-21.81],[25.5,-22.71],[42.02,-22.6],[64.6,-23.58]],"w":4.5},
+      {"source":"44447961","path":[[130.35,-23.46],[130.2,-33.79],[130.09,-49.96],[129.42,-89.2],[128.56,-151.91],[128.42,-159.55]],"w":4.5},
+      {"source":"44447965","path":[[197.71,-58.66],[222.18,-60.24],[228.75,-69.41],[266.49,-70.78],[266.5,-36.36],[278.76,-31.43],[286.82,-29.24],[296.05,-26.85],[314.79,-29.99],[328.24,-32.14]],"w":4.5},
+      {"source":"44447967","path":[[52.88,64.43],[73.18,67.8],[103.93,63.38]],"w":4.5},
+      {"source":"60420592","path":[[16.87,-158.49],[44.01,-157.94]],"w":4.5},
+      {"source":"60420593","path":[[64.6,-23.58],[104.66,-22.41],[120.84,-23.07],[130.35,-23.46],[143.67,-21.3],[165.49,-25.18],[181.13,-33.32],[188.29,-38.62],[191.25,-43.72],[197.71,-58.66],[197.28,-137.02],[197.48,-146.01],[195.99,-159.04]],"w":4.5},
+      {"source":"60420597","path":[[44.01,-157.94],[66.68,-157.77],[128.42,-159.55],[195.99,-159.04]],"w":4.5},
+      {"source":"130731429","path":[[197.71,-58.66],[210.05,-70.57],[217.75,-84.81],[222.28,-99.05],[225.38,-109.87],[225.64,-121.57],[224.99,-130.7],[229.24,-135.59],[236.26,-136.82],[244.55,-135.95],[250.31,-132.0],[251.65,-126.35],[251.25,-119.51],[246.62,-113.21],[235.66,-110.93],[229.21,-111.4],[225.38,-109.87]],"w":4.5},
+      {"source":"145221600","path":[[62.44,9.9],[77.08,10.13],[77.56,-14.55]],"w":4.5},
+      {"source":"145221608","path":[[42.02,-22.6],[41.59,9.63],[62.44,9.9],[62.84,-12.92],[64.6,-23.58]],"w":4.5},
+      {"source":"159284495","path":[[103.93,63.38],[111.66,62.1],[124.13,56.78],[132.13,55.42],[151.46,51.2],[175.16,45.0],[190.09,38.61],[193.02,34.82]],"w":4.5},
+      {"source":"159284525","path":[[193.02,34.82],[195.65,30.96],[197.66,13.19],[197.5,-9.96],[194.66,-29.07],[188.29,-38.62]],"w":4.5},
+    ],
+    trees: [
+      [56.94,-193.99,"564870146"],
+      [33.45,-178.24,"564870159"],
+      [33.48,-190.92,"564870160"],
+      [33.52,-204.74,"564870163"],
+      [57.09,-179.06,"564870229"],
+    ],
+    treeScale: [1.2,1.8],
+    // Approximate aerial-interpreted avenue strips and park clusters; not individually mapped trees.
+    treeRows: [{"name":"west-campus-avenue","from":[58,-151],"to":[60,-30],"step":13},{"name":"central-crossing","from":[74,-19],"to":[181,-19],"step":14},{"name":"eastern-park-avenue","from":[207,-151],"to":[209,-57],"step":14},{"name":"northern-courtyard","from":[73,-166],"to":[182,-166],"step":15}],
+    treePatches: [{"name":"east-park","polygon":[[177,-148],[192,-144],[190,-75],[174,-69]],"n":10},{"name":"east-meadow-edge","polygon":[[206,-22],[219,-60],[242,-46],[227,-5]],"n":12},{"name":"far-park","polygon":[[269,-153],[302,-147],[299,-96],[274,-100]],"n":8}],
+    // Mapped tree positions; dimensions/age/species are assumptions. Slight size variation, no random relocation.
+
+    storey: 3.6,
+    roofRise: 3,
+    annexRise: 1,
+    window: [1,1.9],
+    sill: 0.95,
+    bay: 2.8,
+    frame: 0.07,
+    facade: 16777215,
+    roof: 4541521,
+    plinth: 7758680,
     glass: 3230037,
     pathLift: 0.025,
   },

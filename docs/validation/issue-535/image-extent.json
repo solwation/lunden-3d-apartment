@@ -1,0 +1,13 @@
+{
+  "extent": {
+    "xmin": 1466371.4240941277,
+    "ymin": 7495270.833994029,
+    "xmax": 1468121.672707357,
+    "ymax": 7496554.349643731,
+    "spatialReference": {
+      "wkid": 102100,
+      "latestWkid": 3857
+    }
+  },
+  "note": "EPSG:3857 export extent; photo acquisition date not verified"
+}

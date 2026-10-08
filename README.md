@@ -140,3 +140,5 @@ Vägbron och den separata gång- och cykelbron vid Sankt Lars väg syns över en
 Höje å omges av varierande slänter, kartans huvudstigar, öppna gräsytor, större lövträdsdungar och strandvegetation som följer årstiderna. [Underlag och jämförelsevyer](docs/validation/issue-533/README.md).
 
 Västervyn har kartans husrad och angöring längs Karpvägen, som fortsätter mot nordväst förbi öppna parkytor. [Fotavtryck och sommar-/vinterjämförelse](docs/validation/issue-534/README.md).
+
+Eastern campus (#535): `SITE.east` and `sitebackdrop.js` replace nine illustrative blocks with sixteen mapped footprints, including Montessori wings and Realgym’s actual courtyard hole. HepCat’s detailed geometry stays. Shared brick texture, five exterior batches, sourced access/paths and approximate aerial avenues/groves using existing seasonal tree instances; unchanged OUTDOOR. All heights/floor counts/roof details remain assumptions. `eastbackdroptest` checks source geometry, actual outward windows, open courtyard and tree/access clearance. [Inventory, sources and browser comparison](docs/validation/issue-535/README.md).

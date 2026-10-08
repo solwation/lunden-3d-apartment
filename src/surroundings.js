@@ -1,4 +1,4 @@
-import {buildWestBackdrop,westTreeSpots} from './sitebackdrop.js';
+import {buildWestBackdrop,buildEastBackdrop,westTreeSpots,eastTreeSpots} from './sitebackdrop.js';
 import { buildRiverPark, parkDeckAt, parkTreeSpots, parkShrubSpots } from './riverpark.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
@@ -96,10 +96,10 @@ let terrainSurface = (x,z) => terrainY(x,z)-.01;
 export const renderedTerrainY = (x,z) => terrainSurface(x,z);
 function terrainGeometry() {
   const St = Wst.stair, z0 = terrainNorth;
-  const xs = new Set([-270, -200, 200, 220, E.x0 - 0.01, E.x0 + 0.01, E.x1, E.x1 + E.blend, E.gable, E.level, E.walk, R.x0 + 0.01, R.x1 - 0.01, R.x1 + 0.01,
+  const xs = new Set([S.backgroundGround.x0, -200, 200, S.backgroundGround.x1, E.x0 - 0.01, E.x0 + 0.01, E.x1, E.x1 + E.blend, E.gable, E.level, E.walk, R.x0 + 0.01, R.x1 - 0.01, R.x1 + 0.01,
       Wst.x - 0.01, Wst.x + 0.01, St.x1 - 0.01, St.x1 + 0.01]),
     zs = new Set([z0, 0, T.north, 260, T.north + T.slope, ...E.profile.map((p) => p[0]), ...Wst.profile.map((p) => p[0]), R.z0, R.z1, St.z1 - 0.01, St.z1 + 0.01, T.garageDoor.z0, T.garageDoor.z1]);
-  for (let x = -270; x <= 220; x += 4) xs.add(x);
+  for (let x = S.backgroundGround.x0; x <= S.backgroundGround.x1; x += 4) xs.add(x);
   for (let z = z0; z <= 260; z += 4) zs.add(z);
   for (const b of T.box) { for (const x of [b.x0, b.x1]) { xs.add(x - 0.01); xs.add(x + 0.01); } for (const z of [b.z0, b.z1]) { zs.add(z - 0.01); zs.add(z + 0.01); } }
   const X = [...xs].sort((a, b) => a - b), Z = [...zs].filter((z) => z >= z0).sort((a, b) => a - b);
@@ -445,9 +445,10 @@ function schoolGrounds() {
   const p = wall.attributes.position, n = wall.attributes.normal, uv = wall.attributes.uv;
   for (let i = 0; i < p.count; i++) uv.setXY(i, (Math.abs(n.getX(i)) > 0.5 ? p.getZ(i) : p.getX(i)) / 2, p.getY(i) / 2); // 2 × 2 m per tile
   const coping = new THREE.BoxGeometry(W.x1 - W.x0 + 0.06, 0.06, W.t + 0.08).translate((W.x0 + W.x1) / 2, W.h + 0.03, W.z);
-  const chimneys = [], main = S.blocks.find((b) => b.style === 'school'), top = main.base + S.school.storey;
+  const campus=S.east?.buildings.find(b=>b.source==='88457612'),main=S.blocks.find(b=>b.style==='school')??{base:0,x0:Math.min(...campus.polygon.map(p=>p[0])),x1:Math.max(...campus.polygon.map(p=>p[0])),z0:Math.min(...campus.polygon.map(p=>p[1])),z1:Math.max(...campus.polygon.map(p=>p[1]))};
+  const chimneys=[],top=main.base+S.school.storey;
   const rise = S.school.roofPitch * Math.min(main.x1 - main.x0, main.z1 - main.z0) / 2 + 0.3;
-  for (const x of S.school.chimneys) chimneys.push(new THREE.BoxGeometry(0.7, 1.6, 0.5).translate(x, top + rise + 0.2, (main.z0 + main.z1) / 2 + (x % 2 ? 0.8 : -0.8)));
+  for (const x of S.school.chimneys.filter(x=>x>main.x0&&x<main.x1)) chimneys.push(new THREE.BoxGeometry(0.7, 1.6, 0.5).translate(x, top + rise + 0.2, (main.z0 + main.z1) / 2 + (x % 2 ? 0.8 : -0.8)));
   // greenhouse: a dark frame and glass panes under a pitched glass roof
   const frame = [], panes = [], cx = (G.x0 + G.x1) / 2, cz = (G.z0 + G.z1) / 2, d = G.z1 - G.z0;
   for (let x = G.x0; x <= G.x1 + 1e-6; x += (G.x1 - G.x0) / 8) for (const z of [G.z0, G.z1]) frame.push(new THREE.BoxGeometry(0.05, G.h, 0.05).translate(x, G.h / 2, z));
@@ -1049,12 +1050,12 @@ function trees(rand) {
       spots.push({ x, z, y: groundY(x, z), s: area.young ? 0.8 + rand() * 0.25 : 0.75 + rand() * 0.6, kind: area.young ? 'young' : birch ? 'birch' : 'tree' });
     }
   }
-  spots.push(...parkTreeSpots(renderedTerrainY),...westTreeSpots(renderedTerrainY));
+  spots.push(...parkTreeSpots(renderedTerrainY),...westTreeSpots(renderedTerrainY),...eastTreeSpots(renderedTerrainY));
   for (const [x, z, s] of S.bigTrees) spots.push({ x, z, y: groundY(x, z), s, kind: 'big' });
   for (const [x, z] of S.vergeTrees) spots.push({ x, z, y: groundY(x, z), s: 0.8 + rand() * 0.3, kind: 'tree' }); // by Karpvägen (#257)
   for (const [x, z, s] of S.life.trees) spots.push({ x, z, y: groundY(x, z), s, kind: 'tree' }); // the bike yard's + one by the road (#260, #435)
   treeFeet.length = 0;
-  treeFeet.push(...spots.map(({ x, z, y, kind, patch }) => ({ x, z, y, kind, patch })));
+  treeFeet.push(...spots.map(({ x, z, y, kind, patch, source }) => ({ x, z, y, kind, patch, source })));
   // crowns: one per tree, three to five lobes per big tree, an ellipsoid per young maple
   const lobes = [];
   const trunkM = [], birchM = [], m = new THREE.Matrix4(), q = new THREE.Quaternion();
@@ -1273,6 +1274,7 @@ function groundStrip(x0, x1, z0, z1, lift) {
 
 export function buildSurroundings({ grass }) {
   const group = new THREE.Group();
+  const historicBrick=brickTexture();
   const flat = (geos, color, snow) => {
     const mat = color.isMaterial ? color : new THREE.MeshStandardMaterial({ color, roughness: 1 });
     if (snow) registerSnow(mat, snow);
@@ -1286,7 +1288,7 @@ export function buildSurroundings({ grass }) {
   flat([terrainGeometry()], grass, SEASON.snow.ground).name='site-terrain';
   const bw = boxWalls();
   const concrete = new THREE.MeshStandardMaterial({ color: 0xb9b4ab, roughness: 0.95, side: THREE.DoubleSide });
-  flat(bw.walls, new THREE.MeshStandardMaterial({ map: brickTexture(), roughness: 0.95, side: THREE.DoubleSide })); // brick retaining walls (#148)
+  flat(bw.walls, new THREE.MeshStandardMaterial({ map: historicBrick, roughness: 0.95, side: THREE.DoubleSide })); // brick retaining walls (#148)
   const lightRail = new THREE.MeshStandardMaterial({ color: 0xb9bdbd, roughness: 0.5, metalness: 0.3 });
   flat([...bw.rails, ...bw.stairs.rails.map((g) => g.toNonIndexed())].map((g) => { g = g.index ? g.toNonIndexed() : g; g.deleteAttribute('uv'); return g; }), lightRail);
   group.add(new THREE.Mesh(mergeGeometries(bw.slats.map((g) => g.toNonIndexed())), new THREE.MeshStandardMaterial({ map: railTexture(), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.6 })));
@@ -1313,11 +1315,13 @@ export function buildSurroundings({ grass }) {
   group.add(buildRiverBridges());
   group.add(buildRiverPark(renderedTerrainY,renderedTerrainY));
   group.add(buildWestBackdrop(renderedTerrainY));
+  group.add(buildEastBackdrop(renderedTerrainY,historicBrick));
   // Kv. Lunden's own blocks and the old S:t Lars buildings: own façade texture and roof colour each,
   // plus a white cornice under the old roofs (#47)
   const modern = S.blocks.filter((b) => !b.style), oldB = S.blocks.filter((b) => b.style === 'old'), school = S.blocks.filter((b) => b.style === 'school');
   const side = (st) => S.blocks.filter((b) => b.style === st);
   const mesh = (geos, material, snow) => {
+    if (!geos.length) { material.dispose(); return; }
     if (snow) registerSnow(material, snow);
     const m = new THREE.Mesh(mergeGeometries(geos), material);
     m.receiveShadow = true;
@@ -1377,14 +1381,15 @@ export function buildSurroundings({ grass }) {
     for (const [x, sgn, f] of [[b.x0, -1, 'w'], [b.x1, 1, 'e']]) for (let z = b.z0 + 12; z < b.z1 - 4; z += 12) if (!inCut(b, f, z - 0.1, z + 0.1)) pipes.push(new THREE.CylinderGeometry(0.05, 0.05, h, 6).translate(x + sgn * 0.07, y, z));
   }
   mesh(pipes, new THREE.MeshStandardMaterial({ color: 0x8f9396, roughness: 0.5, metalness: 0.3 }));
-  if (school.length) { // the school across the street, its wall and greenhouse (#126)
+  if (school.length || S.east) { // the school across the street, its wall and greenhouse (#126)
     const white = new THREE.MeshStandardMaterial({ color: 0xf1eee6, roughness: 0.8 });
-    mesh(school.map(block), new THREE.MeshStandardMaterial({ map: schoolFacadeTexture(), roughness: 0.95 }));
+    if(school.length){mesh(school.map(block), new THREE.MeshStandardMaterial({ map: schoolFacadeTexture(), roughness: 0.95 }));
     mesh(school.map(roof), new THREE.MeshStandardMaterial({ color: 0x5c6369, roughness: 0.5, metalness: 0.15, side: THREE.DoubleSide }), SEASON.snow.roof);
     mesh(school.flatMap((b) => [...quoins(b, S.school.storey), new THREE.BoxGeometry(b.x1 - b.x0 + 0.36, 0.32, b.z1 - b.z0 + 0.36)
       .translate((b.x0 + b.x1) / 2, b.base + S.school.storey - 0.16, (b.z0 + b.z1) / 2)]), white); // quoins + cornice
+    }
     const sg = schoolGrounds();
-    mesh(sg.wall, new THREE.MeshStandardMaterial({ map: brickTexture(), roughness: 0.95 }));
+    mesh(sg.wall, new THREE.MeshStandardMaterial({ map: historicBrick, roughness: 0.95 }));
     mesh(sg.coping, new THREE.MeshStandardMaterial({ color: 0x1f2124, roughness: 0.5, metalness: 0.3 }), SEASON.snow.roof);
     mesh(sg.frame, new THREE.MeshStandardMaterial({ color: 0x2b2e31, roughness: 0.5, metalness: 0.4 }));
     const glassMat = new THREE.MeshStandardMaterial({ color: 0xdfe8ec, roughness: 0.05, transparent: true, opacity: 0.35, depthWrite: false, side: THREE.DoubleSide });

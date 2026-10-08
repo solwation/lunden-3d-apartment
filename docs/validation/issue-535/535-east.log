@@ -1,0 +1,28 @@
+PASS sixteen unique campus footprints
+PASS Sankt Thomas skola: actual source polygon
+PASS Höjebroskolan / byggnad 9: actual source polygon
+PASS Förskolan Freinet: actual source polygon
+PASS Komplementbyggnad 88457558: actual source polygon
+PASS Förskolan Kastanjen: actual source polygon
+PASS Kunskapsskolan: actual source polygon
+PASS Komplementbyggnad 88457600: actual source polygon
+PASS Östra paviljongen vid Kunskapsskolan: actual source polygon
+PASS Förskolan Framtiden: actual source polygon
+PASS NTI / skolan över gatan: actual source polygon
+PASS Komplementbyggnad 130578352: actual source polygon
+PASS Östra borggården, byggnad 2: actual source polygon
+PASS Consensum / långa tegelbyggnaden: actual source polygon
+PASS Komplementbyggnad 145221568: actual source polygon
+PASS Montessorigrundskolan: actual source polygon
+PASS Realgymnasiet / byggnad 88: actual source polygon
+PASS HepCat detailed bodies retained, replaced school placeholders removed
+PASS five merged exterior/access batches, shared brick map
+PASS plinths cover terrain
+PASS actual outward windows 1255/1255
+PASS Realgym courtyard remains actually open through roof/body
+PASS brick texture reused from existing surrounding masonry
+PASS park rows/groves clear of houses and access: 62
+PASS five actual mapped trees distinguished from aerial-interpreted rows
+PASS walking boundary unchanged
+PASS campus geometry budget: 11489 triangles
+ALL PASS

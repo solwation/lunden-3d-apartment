@@ -1,4 +1,4 @@
-import {onWestBuilding,onWestAccess} from './sitebackdrop.js';
+import {onWestBuilding,onWestAccess,onEastBuilding,onEastAccess} from './sitebackdrop.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { SITE, SEASON } from './config.js';
@@ -24,7 +24,7 @@ export function parkDeckAt(x,z) {
 }
 function clear(x,z) {
   const r=riverAt(x,z);
-  return z>64 && !onWestBuilding(x,z) && !onWestAccess(x,z,.5) && !inParkGlade(x,z) && !onParkPath(x,z,P.pathClearance) &&
+  return z>64 && !onEastBuilding(x,z) && !onEastAccess(x,z,.5) && !onWestBuilding(x,z) && !onWestAccess(x,z,.5) && !inParkGlade(x,z) && !onParkPath(x,z,P.pathClearance) &&
     !onRoad(x,z,P.bridgeClearance) && !onWalk(x,z,.5) && deckAt(x,z)===null && parkDeckAt(x,z)===null &&
     r.distance>r.width/2+2 && !SITE.blocks.some(b=>x>b.x0-2&&x<b.x1+2&&z>b.z0-2&&z<b.z1+2);
 }
