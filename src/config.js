@@ -816,9 +816,9 @@ export const KLK = {
 // z 5.704–6.609 (plan.json; east of x 4.671 it runs on south under the winders). Head room slopes: the slab (3.0) west of
 // x 3.86, flight B's soffit (2.39–2.80) over x 3.86–4.645, the winders (1.58–2.19 over the Klk) east of that. All guesses:
 // a white wall shelf (four shelves on two standards) on the north wall under flight B (the floor west of it, outside
-// the stair, is where a cat can turn up: the shelf collides only from `solid`[0] east and `solid`[1] deep, so the way
-// in under flight B stays open), a tool rail on the east wall under the winders, a mop bucket in the SE corner with
-// the mop leaning on the east wall, a stick vacuum in a dock on the south wall.
+// the stair, and the clear floor below its high soffit, are where a cat can turn up: the shelf collides only from
+// `solid`[0] east and `solid`[1] deep, so the way in under flight B stays open), a tool rail on the east wall under the
+// winders, a mop bucket in the SE corner with the mop leaning on the east wall, a stick vacuum in a dock on the south wall.
 export const CLEANING = {
   shelf: { x0: 3.87, x1: 4.63, z: 5.704, d: 0.30, t: 0.02, ys: [0.72, 1.12, 1.52, 1.92], standards: [3.95, 4.50], solid: [4.10, 0.2] },
   rail: { x: 5.551, z0: 5.80, z1: 6.32, y: 1.30 },
@@ -1467,8 +1467,10 @@ export const CAT_LEAVE = { dist: 3, speed: 0.6, fade: 1.2 };
 // down again in the same time when it stops; a diagonal-pair gait, one leg cycle per `stride` m (× breed size), legs
 // swinging ±`swing` rad, the hind knee flexing up to `knee` rad as the paw comes forward, the body bobbing `bob` m. Our picks.
 export const CAT_WALK = { rise: 0.3, stride: 0.3, swing: 0.4, knee: 0.6, bob: 0.006 };
-// A cat turning up behind a door sits up on a bed, sofa, chair or table in that room this often (#200, cat.js furnitureSpot),
-// on one seen straight from the doorway within `reach` m.
+// #542: assumed clearance for a resting cat on Entréplan below the high stair soffit.
+export const CAT_FLOOR_HEADROOM = 0.8;
+
+// A cat turning up behind a door sits up on visible furniture in that room this often (#200); reach in metres.
 export const CAT_FURNITURE = { chance: 0.4, reach: 5 };
 // Tail up (#262, cat.js `updateTail`): now and then (a wait of `every` [min, max] s, `standing` × as fast while it is up on
 // its feet) the cat gets up and holds its tail straight up for `seconds` [min, max] s, raised/lowered over `blend` s, turning

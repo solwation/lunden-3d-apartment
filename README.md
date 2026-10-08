@@ -49,7 +49,7 @@ dyker upp för att öppna och stänga dörrar. 📊 visar statistiken.
 
 Entréhallen har en svart IKEA NISSEDAL-spegel, 65 × 150 cm.
 Garderobernas stängda skjutdörrar har täckta fogar även från sneda vinklar.
-Öppna dörrar och garderober — ibland sitter det en katt där och tvättar sig. Gå fram och tryck
+Öppna dörrar och garderober — ibland sitter det en katt där och tvättar sig, även i städklädkammaren under trappan. Gå fram och tryck
 <kbd>E</kbd> så får du klappa den. 🐈 Statistiken (katter, dörrar, steg …) sparas i webbläsaren; varje
 sak du gör visas som en liten bricka ("✋ Klappat katt +1").
 

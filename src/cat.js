@@ -1,6 +1,6 @@
 import * as THREE from 'three';
-import { LEVELS, CAT_FISH, CAT_LEAVE, CAT_FURNITURE, CAT_WALK, CAT_TAIL_UP, CAT_HURT, REST, MIELE, KITTEN } from './config.js';
-import { stairHeight } from './stairs.js';
+import { LEVELS, CAT_FLOOR_HEADROOM, CAT_FISH, CAT_LEAVE, CAT_FURNITURE, CAT_WALK, CAT_TAIL_UP, CAT_HURT, REST, MIELE, KITTEN } from './config.js';
+import { stairHeight, stairUnderside } from './stairs.js';
 import { rugLift } from './rugs.js';
 import { sfx } from './audio.js';
 
@@ -658,7 +658,9 @@ export class CatSpawner {
       // 0.4–3 m in, more often close to the door (rooms with a big bed by the door have little floor, #91)
       const r = this.rand(), dist = 0.4 + r * r * 2.6, lat = (this.rand() - 0.5) * 3;
       const x = center[0] + nx * dist - nz * lat, z = center[1] + nz * dist + nx * lat;
-      if (stairHeight(x, z) !== null) continue;
+      // The closet has a ground floor below flight B/winders. Reject low/solid stair
+      // space, and upper-storey stair holes, rather than the whole stair footprint.
+      if (stairHeight(x, z) !== null && (level !== 0 || stairUnderside(x, z) < y0 + CAT_FLOOR_HEADROOM)) continue;
       if (segs.some((s) => distToSeg(x, z, s) < 0.24)) continue;
       if (segs.some((s) => segIntersect(sx, sz, x, z, s))) continue;
       const yaw = Math.atan2(center[0] - x, center[1] - z) + (this.rand() - 0.5) * 1.6;

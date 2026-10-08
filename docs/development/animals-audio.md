@@ -183,3 +183,5 @@ tools/kittentest.html  headless test of kittens (#363): the seeded draw (~KITTEN
 
 
 Cat placement test (#542): chance.appear=1 guarantees an attempt, not a safe spot from roomSpot's bounded random search. tools/cattest.html checks every successful placement and requires each door side to receive a cat across the two fixed furniture seeds; a single exhausted search is reported with door coordinates, side and seed. A placement regression affecting both seeds still fails.
+
+Closet cat floor (#542): roomSpot uses stairUnderside with CAT_FLOOR_HEADROOM (0.8 m assumed resting-cat clearance) for Entréplan floor below flight B/winders. It still excludes flight A's solid/low underside and the upper-storey stair footprint. Previously rejecting every stairHeight footprint left only a narrow west strip in the Klk; seed 4242 from west of the door (centre 3.3514,6.15435) missed it in all 120 attempts. cattest retains this regression and checks actual lowest/highest visible vertices against the floor/soffit, at least one cat below the high soffit, and no upper floor cat in the stair hole.
