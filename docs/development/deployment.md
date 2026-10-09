@@ -6,6 +6,7 @@ Related: [storage](storage.md), [verification](verification.md).
 ## Module and test map
 
 ```text
+src/viewport.js        renderer/camera sizing is attached before scene loading, including rotations during awaits (#567)
 src/bootstrap.js       lightweight startup gate: bounded version check before importing main.js (#512)
 src/startup.js         fresh HTML/build check + cache-busted early update; loop guards; no scene on outgoing page
 src/version.js         BUILD/CONTENT stamps + polling for publications later during a visit

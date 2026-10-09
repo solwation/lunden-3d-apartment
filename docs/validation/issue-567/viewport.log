@@ -1,0 +1,17 @@
+PASS canvas is synchronized while scene loading is blocked
+PASS first portrait-to-landscape rotation fills the surface during startup
+PASS late CSS layout without another window resize updates the drawing buffer
+PASS camera projection matches the rotated surface after loading
+PASS repeated rotation 390×844: CSS surface, buffer and camera agree
+PASS repeated rotation 844×390: CSS surface, buffer and camera agree
+PASS repeated rotation 360×740: CSS surface, buffer and camera agree
+PASS repeated rotation 740×360: CSS surface, buffer and camera agree
+PASS resizing retains the lower adaptive rendering resolution
+PASS temporary zero-size layout retains a valid buffer and camera
+PASS unchanged viewport events do not reallocate the drawing buffer
+PASS touch console hit target and submit work after rotation
+PASS touch pause menu opens at its displayed location after rotation
+PASS touch resume remains usable after rotation
+PASS touch controls stay inside the rotated viewport
+PASS no browser errors: 
+ALL PASS

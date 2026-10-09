@@ -1,3 +1,4 @@
+import { bindGameViewport } from './viewport.js';
 import { PlantWind, windShadow } from './plantwind.js';
 import { runCheat, cheatHelp } from './cheats.js';
 import { cleanHome } from './cheatclean.js';
@@ -127,19 +128,20 @@ setupInstall({ force: new URLSearchParams(location.search).has('install') });
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 const MAX_PIXEL_RATIO = Math.min(window.devicePixelRatio, 1.5);
 renderer.setPixelRatio(MAX_PIXEL_RATIO);
-renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.toneMapping = THREE.NeutralToneMapping;
 renderer.toneMappingExposure = 1.0;
+renderer.domElement.id = 'game-canvas';
 document.body.prepend(renderer.domElement);
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(COLORS.sky); // replaced by the day-cycle sky
 scene.fog = new THREE.Fog(COLORS.sky, SITE.south.view.fogNear, SITE.south.view.fogFar);
 
-const camera = new THREE.PerspectiveCamera(72, window.innerWidth / window.innerHeight, 0.05, SITE.south.view.cameraFar);
+const camera = new THREE.PerspectiveCamera(72, 1, 0.05, SITE.south.view.cameraFar);
 camera.rotation.order = 'YXZ';
+bindGameViewport(renderer, camera);
 const compass = new Compass(camera, document.getElementById('compass'));
 
 const hemi = new THREE.HemisphereLight(0xeaf3ff, 0xd6d2ca, 2.0);
@@ -1561,12 +1563,6 @@ const crouchBtn = document.getElementById('crouch-btn');
 crouchBtn.addEventListener('click', () => {
   player.crouch = !player.crouch;
   setPressed(crouchBtn,player.crouch);
-});
-window.addEventListener('resize', () => {
-  window.scrollTo(0, 0); // iOS may have scrolled the page when the bars or orientation changed
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
 // --- door interaction: look at a door within reach, press E ----------------

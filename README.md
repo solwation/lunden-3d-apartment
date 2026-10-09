@@ -60,7 +60,7 @@ Diskreta kantlinjer på väggar, dörrar och fast inredning gör hörn och rumsg
 | <kbd>Esc</kbd> | släpp musen |
 
 **Touch (mobil, surfplatta, Surface):** välj *Touch* på startskärmen (på telefon och surfplatta finns
-bara en *Börja*-knapp). Vänster tumme är en joystick
+bara en *Börja*-knapp). Spelbildens storlek följer skärmens visningsyta även vid rotation under laddningen. Vänster tumme är en joystick
 (tryck ut den helt för att springa), dra med höger tumme för att titta, och tryck på knappen som
 dyker upp för att öppna och stänga dörrar. 📊 visar statistiken.
 
