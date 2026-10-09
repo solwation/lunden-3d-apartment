@@ -3,9 +3,11 @@ import { LAUNDRY as P } from './config.js';
 import { sfx } from './audio.js';
 
 // Game-time washing/drying: explicit start ids, independent clean/wet state, no elapsed wall time (#551/#552).
+// A power cut (#612, `mains(false)`): a running programme stands still (no sound, the panel dark) and goes on with the time
+// left when the power is back; it cannot be started without power.
 export class LaundryProgramme {
   constructor(life,machine) {
-    Object.assign(this,{life,machine,door:machine.door,state:'idle',left:0,ids:[],sound:null,lastLabel:null});
+    Object.assign(this,{life,machine,door:machine.door,state:'idle',left:0,ids:[],sound:null,lastLabel:null,powered:true});
     this.kind=machine.kind;this.drying=this.kind==='dryer';
     this.seconds=this.drying?P.drySeconds:P.washSeconds;
     const c=machine.door.laundry.center,C=P.panel;
@@ -22,12 +24,13 @@ export class LaundryProgramme {
     life.actions.define({id:this.drying?'laundryDryStart':'laundryWashStart',order:0,label:this.drying?'starta torkprogrammet':'starta tvättprogrammet',applies:c=>c.raw?.laundryPanel===this&&!this.busy,
       check:()=>this.startReason(),run:()=>this.start(),consumes:'nothing',result:'only start garments still inside are washed or dried'});
     life.actions.define({id:this.drying?'laundryDryStatus':'laundryWashStatus',order:0,label:this.drying?'torkprogrammet':'tvättprogrammet',applies:c=>c.raw?.laundryPanel===this&&this.busy,
-      check:()=>this.door.isOpen||this.door.t>0?`Pausad – stäng luckan (${Math.ceil(this.left)} s kvar)`:`${this.drying?'Torkar':'Tvättar'} – ${Math.ceil(this.left)} s kvar`,run:()=>{},consumes:'nothing',result:'status only'});
+      check:()=>!this.powered?`Strömmen är borta – ${Math.ceil(this.left)} s kvar`:this.door.isOpen||this.door.t>0?`Pausad – stäng luckan (${Math.ceil(this.left)} s kvar)`:`${this.drying?'Torkar':'Tvättar'} – ${Math.ceil(this.left)} s kvar`,run:()=>{},consumes:'nothing',result:'status only'});
     this.draw();
   }
   get busy(){return this.state==='running'||this.state==='paused';}
   inside(){return this.life.items.all().filter(i=>i.place.at==='slot'&&i.place.store===this.machine.store.id);}
   startReason(){
+    if(!this.powered)return 'Strömmen är borta';
     if(this.busy)return this.drying?'Torkprogrammet pågår':'Tvättprogrammet pågår';
     if(this.door.isOpen||this.door.t>0)return 'Stäng luckan först';
     const clothes=this.inside();
@@ -54,9 +57,11 @@ export class LaundryProgramme {
     this.life.emit(this.drying?'laundryDried':'laundryWashed',this.drying?{dried:washed}:{washed});this.life.say(this.drying?'Tvätten är torr':'Tvätten är klar och våt');sfx.pling(this.panel.position,.8);
   }
   cancel(){this.state='idle';this.left=0;this.ids=[];this.life.dirty=true;this.sounds();this.draw();}
+  /** The mains (#612): without power a running programme stands still and the panel is dark. */
+  mains(on){this.powered=on;this.panel.material.color.setScalar(on?1:0.04);this.sounds();}
   sounds(){
-    if(this.state==='running'&&!this.sound)this.sound=(this.drying?sfx.fan(this.panel.position):sfx.dishwasher(this.panel.position))??null;
-    if(this.state!=='running'&&this.sound){this.sound.stop();this.sound=null;}
+    if(this.state==='running'&&this.powered&&!this.sound)this.sound=(this.drying?sfx.fan(this.panel.position):sfx.dishwasher(this.panel.position))??null;
+    if((this.state!=='running'||!this.powered)&&this.sound){this.sound.stop();this.sound=null;}
   }
   draw(){
     const label=this.busy?`${this.state==='paused'?'Paus':this.drying?'Tork':'Tvätt'} ${Math.ceil(this.left)} s`:this.state==='done'?(this.drying?'Klart · torrt':'Klart · vått'):(this.drying?'▶ Torka':'▶ Tvätta');
@@ -67,7 +72,7 @@ export class LaundryProgramme {
   update(dt){
     if(this.state==='running'&&(this.door.isOpen||this.door.t>0)){this.state='paused';this.life.dirty=true;}
     else if(this.state==='paused'&&!this.door.isOpen&&this.door.t===0){this.state='running';this.life.dirty=true;}
-    if(this.state==='running'&&Number.isFinite(dt)&&dt>0){this.left=Math.max(0,this.left-dt);this.life.dirty=true;if(this.left===0)this.finish();}
+    if(this.state==='running'&&this.powered&&Number.isFinite(dt)&&dt>0){this.left=Math.max(0,this.left-dt);this.life.dirty=true;if(this.left===0)this.finish();}
     this.sounds();this.draw();
   }
   save(){return {s:this.state,...(this.busy?{left:this.left,ids:[...this.ids]}:{})};}

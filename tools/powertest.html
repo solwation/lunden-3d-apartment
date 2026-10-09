@@ -11,6 +11,9 @@
 // button held (pointerdown … pointerup) on the fuse box, letting go pauses, a click does not hold; after POWER.repair s
 // in all the power is back and the lamps that were on are on. The flashlight lies in the cabinet. A reload during a
 // cut starts with power.
+// #612: the fridge's and freezer's lamps, the oven's and microwave's lamps go dark (the doors still open), a brew going
+// on, the dishwasher and the washer / dryer stand still and carry on with the time left afterwards, a moving lift creeps
+// down to the stop below and opens its doors.
 //   google-chrome --headless=new --dump-dom http://localhost:8137/tools/powertest.html
 import { SITE, POWER } from '../src/config.js';
 const out = document.getElementById('out');
@@ -78,6 +81,21 @@ cab.toggle(); for (let i = 0; i < 90; i++) cab.update(1 / 60); cab.object.update
 // --- the flashlight lies in the cabinet (#604)
 pass &= check(aim(toys.flashlight.model, stands, /ta ficklampan/i), `the flashlight in the open EL/C cabinet: “${btn.textContent}”`);
 pass &= check(aim(power.target.pickable, stands, /pilla på elcentralen/i), `cabinet open: “${btn.textContent}”`);
+// --- #612: appliances on and running when the power goes
+const { dishProg, laundry } = app;
+const fridge = app.fridge, freezer = world.lids.find((l) => l.kind === 'fridge' && l.freezer);
+const oven = world.lids.find((l) => l.kind === 'appliance' && l.name === 'ugnen'), micro = world.lids.find((l) => l.kind === 'appliance' && l.name === 'mikron');
+const mocca = world.lids.find((l) => l.kind === 'coffee'), lift = world.core.lift;
+const fridgeLit = (fr) => fr.lit.every(([m, key, v]) => (key === 'color' ? m.color.getHex() === v : m[key] === v));
+const fridgeDark = (fr) => fr.lit.every(([m, key]) => (key === 'color' ? m.color.getHex() === 0x1c1f22 : m[key] === 0));
+for (const a of [fridge, freezer, oven, micro]) if (!a.isOpen) a.toggle();
+mocca.prime(); if (!mocca.isOpen) mocca.toggle();
+dishProg.load({ s: 'running', left: 60, ids: [] });
+laundry.washer.load({ s: 'running', left: 30, ids: [] }); laundry.dryer.load({ s: 'running', left: 25, ids: [] });
+lift.call(3, false);
+run(0.5);
+pass &= check(fridgeLit(fridge) && fridgeLit(freezer) && oven.lamp.emissiveIntensity > 0 && micro.lamp.emissiveIntensity > 0, 'with power: the fridge, freezer, oven and microwave lamps lit');
+pass &= check(mocca.isOpen && mocca.sound && dishProg.running && dishProg.sound && laundry.washer.sound && laundry.dryer.sound && lift.moving, 'with power: brewing, dishwasher, washer, dryer and the lift going');
 // --- trip it: buzz (flicker), then the bang
 btn.click();
 pass &= check(power.state === 'buzz', `buzzing (${power.state})`);
@@ -99,6 +117,16 @@ pass &= check(!tv.isOpen, 'the TV went off');
 const tp = tv.pickable.getWorldPosition(new V());
 pass &= check(aim(tv.pickable, [[1.5, 0], [-1.5, 0], [0, 1.5], [0, -1.5], [1, 1], [-1, -1], [1, -1], [-1, 1]].map(([dx, dz]) => [tp.x + dx, tp.z + dz]), /strömmen är borta/i), `the TV: “${btn.textContent}”`);
 pass &= check(!lights.roomLit(0, 'Hall'), 'no room counts as lit');
+// #612
+pass &= check(fridgeDark(fridge) && fridgeDark(freezer) && fridge.isOpen && freezer.isOpen, 'the open fridge and freezer are dark');
+pass &= check(oven.lamp.emissiveIntensity === 0 && micro.lamp.emissiveIntensity === 0 && oven.isOpen && micro.isOpen, 'the open oven and microwave are dark');
+pass &= check(fridge.openFor === 0 && !fridge.alarming, 'no door alarm without power');
+const cut = { brew: mocca.t, dish: dishProg.left, wash: laundry.washer.left, dry: laundry.dryer.left };
+pass &= check(mocca.isOpen && !mocca.sound && mocca.led.emissiveIntensity === 0, 'the brew paused: no sound, no light, the switch still on');
+pass &= check(dishProg.state === 'running' && !dishProg.sound && !dishProg.spot.visible, 'the dishwasher stands still: no hum, no spot');
+pass &= check(!laundry.washer.sound && !laundry.dryer.sound && laundry.washer.panel.material.color.r < 0.1, 'the washer and dryer stand still, their panels dark');
+pass &= check(lift.target === null && lift.lamp.color.getHex() !== 0xfffcf0, `the lift's call forgotten, its light dark (y ${lift.y.toFixed(2)})`);
+const liftCutY = lift.y;
 // --- mending: held, paused when let go, a click does not mend
 pass &= check(aim(power.target.pickable, stands, /laga elcentralen/i), `in the cut: “${btn.textContent}”`);
 ptr('pointerdown');
@@ -113,6 +141,9 @@ player.spawn(3, 3, 0); ptr('pointerdown'); run(2); // held, but elsewhere
 pass &= check(Math.abs(power.progress - p10) < 1e-6, 'held but looking away: no progress');
 ptr('pointerup');
 pass &= check(aim(power.target.pickable, stands, /laga elcentralen/i), 'back at the fuse box');
+pass &= check(mocca.t === cut.brew && dishProg.left === cut.dish && laundry.washer.left === cut.wash && laundry.dryer.left === cut.dry,
+  `nothing ran on in the cut (brew ${mocca.t.toFixed(2)} s, dishwasher ${dishProg.left.toFixed(1)} s, washer ${laundry.washer.left.toFixed(1)} s)`);
+pass &= check(lift.at !== null && lift.y <= liftCutY + 1e-6 && lift.doors === 1, `the lift crept down to a stop and opened (stop ${lift.at}, y ${lift.y.toFixed(2)} from ${liftCutY.toFixed(2)})`);
 ptr('pointerdown');
 run(POWER.repair - p10 + 0.5);
 ptr('pointerup');
@@ -123,6 +154,12 @@ pass &= check(w2.lunden === w0.lunden && w2.other === w0.other, `windows lit aga
 pass &= check(hall?.on === true && hall.mats.some((m) => m.emissiveIntensity > 0 || (m.userData.glow && m.visible)), 'the hall lamp is lit again');
 pass &= check(!auto || auto.spec.shade.emissiveIntensity > 0.5, 'the small lamp is lit again');
 pass &= check(world.core.mats.wall.color.r === 1 && !world.garage.powerOff, 'the stairwell and garage have power');
+// #612: the lamps back, what was running goes on with the time it had left
+pass &= check(fridgeLit(fridge) && fridgeLit(freezer) && oven.lamp.emissiveIntensity > 0 && micro.lamp.emissiveIntensity > 0, 'the fridge, freezer, oven and microwave lamps lit again');
+pass &= check(mocca.isOpen && mocca.sound && mocca.t > cut.brew && mocca.led.emissiveIntensity > 0, `the brew goes on (${mocca.t.toFixed(2)} s)`);
+pass &= check(dishProg.running && dishProg.sound && dishProg.left < cut.dish && dishProg.left > cut.dish - 2, `the dishwasher goes on (${dishProg.left.toFixed(1)} s left)`);
+pass &= check(laundry.washer.sound && laundry.washer.left < cut.wash && laundry.dryer.left < cut.dry, 'the washer and dryer go on');
+pass &= check(lift.lamp.color.getHex() === 0xfffcf0, 'the lift has its light again');
 // --- a reload in a cut starts with power
 power.trip(); run(POWER.buzz + 0.5, 1 / 30);
 pass &= check(power.state === 'off', 'cut again before the reload');

@@ -13,6 +13,8 @@ import { mouths, cordToMouth, plugAt } from './sockets.js';
 // the open-topped filter basket (`filterTarget`: a puff, the grounds rise). Brewing drains the tank and leaves wet grounds
 // (`spent`): the next pot needs both again. Without them the switch says what is missing (`blockedText`). `prime()` fills
 // both (tests), `reset()` empties them (F).
+// A power cut (#612, `mains(false)`): a brew going on pauses (no light, no sound, the jug stops filling) with its switch
+// still on, and carries on with the time left when the power is back, as a real one with a mechanical switch does.
 // Built facing −x (the east kitchen run, worktop top at `y0`).
 
 const black = new THREE.MeshStandardMaterial({ color: 0x17181a, roughness: 0.35 });
@@ -35,7 +37,7 @@ const mesh = (geo, m, x, y, z) => {
 export class Moccamaster {
   constructor(y0) {
     Object.assign(this, { name: 'kaffebryggaren', kind: 'coffee', isOpen: false, t: 0, fill: 0, sound: null, done: 0,
-      water: 0, grounds: 0, spent: false, jugWater: 0, water0: 0, shown: { water: 0, jug: 0, grounds: 0 }, puffT: 0 }); // #334
+      water: 0, grounds: 0, spent: false, jugWater: 0, water0: 0, shown: { water: 0, jug: 0, grounds: 0 }, puffT: 0, powered: true }); // #334; powered: #612
     const g = new THREE.Group();
     // local frame: x = depth (0 = front … d = back), z = width (−w/2 = viewer's left = north)
     const { w, d, h } = C;
@@ -185,7 +187,7 @@ export class Moccamaster {
 
   toggle() {
     const p = this.object.getWorldPosition(new THREE.Vector3());
-    if (!this.isOpen && this.missing) { sfx.click(p); return; } // no water or no coffee: nothing happens (#334)
+    if (!this.isOpen && (this.missing || !this.powered)) { sfx.click(p); return; } // no water or no coffee (#334), no mains (#612): nothing happens
     if (this.isOpen && this.t > 2.5) { this.spent = true; this.water0 = 0; } // switched off mid-brew: the grounds are wet already
     this.isOpen = !this.isOpen;
     sfx.click(p);
@@ -199,6 +201,16 @@ export class Moccamaster {
       this.sound = null;
     }
     this.led.emissiveIntensity = this.isOpen ? 2.2 : 0;
+  }
+
+  /** The mains (#612): a brew going on pauses in a power cut and carries on with the time left when it is back. */
+  mains(on) {
+    if (this.powered === on) return;
+    this.powered = on;
+    if (!this.isOpen) return;
+    this.sound?.stop();
+    this.sound = on ? sfx.brew(this.object.getWorldPosition(new THREE.Vector3()), Math.max(0.5, C.brewSeconds - this.t)) : null;
+    this.led.emissiveIntensity = on ? 2.2 : 0;
   }
 
   /** Is the jug on the hot plate? (Only then does brewing fill it, #141.) */
@@ -220,7 +232,7 @@ export class Moccamaster {
       this.puff.visible = this.puffT > 0;
       this.puff.material.opacity = Math.min(1, this.puffT * 2) * 0.8;
     }
-    if (!this.isOpen) return;
+    if (!this.isOpen || !this.powered) return; // (a power cut: paused, #612)
     this.t += dt;
     this.water = this.water0 * (1 - THREE.MathUtils.clamp(this.t / (C.brewSeconds - 1), 0, 1)); // the tank drains (#334)
     // the jug starts filling after a couple of seconds of heating — if it is there; never empties it

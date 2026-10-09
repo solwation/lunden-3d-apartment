@@ -1754,7 +1754,8 @@ export const CORE = {
   // street-façade window on våning 1 and 2 (#457, DRAWING overview plans pp. 47–48): x ≈ −18.55 … −17.15;
   // sill and head heights are an ASSUMPTION
   window: { x: [-18.55, -17.15], sill: 0.8, head: 2.4 },
-  lift: { x0: -18.95, x1: -17.44, z0: 9.78, z1: 12.28, door: [-18.84, -17.94], speed: 1.0, accel: 0.6, doorTime: 1.4, wait: 6 },
+  // rescue: m/s the car creeps down to the stop below in a power cut (#612, battery rescue drive; *guess*)
+  lift: { x0: -18.95, x1: -17.44, z0: 9.78, z1: 12.28, door: [-18.84, -17.94], speed: 1.0, accel: 0.6, doorTime: 1.4, wait: 6, rescue: 0.25 },
   light: { hold: 60 },
 };
 

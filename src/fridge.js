@@ -12,6 +12,7 @@ import { FRIDGE_ALARM as AL, SCORE, COLD_DRAWERS as C } from './config.js';
 // The door alarm (#288): open longer than FRIDGE_ALARM.after s it beeps every `every` s and a red LED on the door's
 // top blinks until it is shut; `onAlarm(longer)` (main.js: a deduction) when it starts and for each further `after` s
 // (at most SCORE.penalties.fridgeMax of those); `paused` (main.js: the note on the freezer door is open) stops the timer.
+// A power cut (#612, `mains(false)`): the inner lamp and the liner's glow go dark, the door alarm is silent.
 
 const steel = new THREE.MeshStandardMaterial({ color: 0xc3c7ca, roughness: 0.32, metalness: 0.35 });
 const steelDark = new THREE.MeshStandardMaterial({ color: 0x8f9497, roughness: 0.35, metalness: 0.35 });
@@ -74,7 +75,7 @@ export class Fridge {
    * drawers instead of food. `max` = the door's stop in degrees (#116).
    */
   constructor({ x0, x1, zFront, zBack, y0, h, hinge = 'x0', freezer = false, max = 105, name = 'kylskåpet' }) {
-    Object.assign(this, { name, kind: 'fridge', isOpen: false, t: 0, freezer, max, openFor: 0, alarming: false, beepT: 0, longer: 0, paused: false });
+    Object.assign(this, { name, kind: 'fridge', isOpen: false, t: 0, freezer, max, openFor: 0, alarming: false, beepT: 0, longer: 0, paused: false, powered: true });
     const g = new THREE.Group();
     const w = x1 - x0, d = zBack - zFront, cx = (x0 + x1) / 2, cz = (zFront + zBack) / 2;
     const wall = 0.04;
@@ -166,6 +167,16 @@ export class Fridge {
     this.pickable = this.door;
 
     this.object = g;
+    this.lit = [[liner, 'emissiveIntensity', liner.emissiveIntensity], [lamp, 'color', lamp.color.getHex()]];
+  }
+
+  /** The mains (#612, power.js via main.js): in a power cut the lamp and the liner's glow are dark, no alarm. */
+  mains(on) {
+    this.powered = on;
+    for (const [m, key, v] of this.lit) {
+      if (key === 'color') m.color.setHex(on ? v : 0x1c1f22);
+      else m[key] = on ? v : 0;
+    }
   }
 
   get blocked() { return this.isOpen && this.drawers.some(drawer => drawer.isOpen || drawer.t > 0); }
@@ -184,7 +195,7 @@ export class Fridge {
     const e = this.t * this.t * (3 - 2 * this.t);
     this.door.rotation.y = this.sign * e * THREE.MathUtils.degToRad(this.max);
     // the door alarm (#288)
-    if (!this.isOpen) this.openFor = 0;
+    if (!this.isOpen || !this.powered) this.openFor = 0; // (no mains, no alarm: #612)
     else if (!this.paused) this.openFor += dt;
     const ring = this.isOpen && this.openFor > AL.after;
     if (ring && !this.alarming) { this.alarming = true; this.beepT = 0; this.longer = 0; this.onAlarm?.(false); }

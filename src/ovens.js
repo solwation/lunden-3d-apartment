@@ -4,7 +4,7 @@ import { sfx } from './audio.js';
 // The oven and the microwave in the tall kitchen unit open with E (#58). The doors are their own
 // objects (the rest of the kitchen stays one merged mesh per material in interior.js); they live in
 // world.lids, so the cat logic and the door tests never see them. A small lamp inside lights up
-// while a door is open (own emissive material, no extra lights).
+// while a door is open (own emissive material, no extra lights), not in a power cut (#612, `mains`).
 //
 // Built for a front facing −x (the east kitchen run): `f` = x of the front face, the doors swing
 // out towards −x.
@@ -22,7 +22,7 @@ const box = (sx, sy, sz, x, y, z, m) => {
 
 class ApplianceDoor {
   constructor({ name, pivot, hinge, maxAngle, lamp, sound }) {
-    Object.assign(this, { name, kind: 'appliance', isOpen: false, t: 0, hinge, maxAngle, lamp, sound });
+    Object.assign(this, { name, kind: 'appliance', isOpen: false, t: 0, hinge, maxAngle, lamp, sound, powered: true });
     this.door = new THREE.Group();
     this.door.position.copy(pivot);
     this.object = this.door;
@@ -31,6 +31,9 @@ class ApplianceDoor {
 
   /** Tag every part of the door as the E target (call after adding the parts). */
   tag() { this.door.traverse((m) => { m.userData.door = this; }); }
+
+  /** The mains (#612): in a power cut the lamp stays dark (the door still opens). */
+  mains(on) { this.powered = on; }
 
   toggle() {
     this.isOpen = !this.isOpen;
@@ -43,7 +46,7 @@ class ApplianceDoor {
     const e = this.t * this.t * (3 - 2 * this.t);
     if (this.hinge === 'bottom') this.door.rotation.z = e * this.maxAngle; // top falls towards −x
     else this.door.rotation.y = -e * this.maxAngle;                          // free edge swings to −x
-    this.lamp.emissiveIntensity = this.t > 0.05 ? 1.1 : 0;
+    this.lamp.emissiveIntensity = this.t > 0.05 && this.powered ? 1.1 : 0;
   }
 }
 

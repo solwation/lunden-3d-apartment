@@ -976,8 +976,11 @@ power.onCut = () => { // screens, music and the cooker go off and stay off (only
   if (sonos.playing) sonos.pause();
   world.hob?.set(false); world.hood?.set(false);
   nests.powered = false; window.speechSynthesis?.cancel(); core.setPower(false); garage.powerOff = true;
+  mainsAppliances(false);
 };
-power.onRestore = () => { for (const t of world.furnitureTargets) t.mains?.(true); nests.powered = true; core.setPower(true); garage.powerOff = false; };
+// #612: fridge/freezer/oven/microwave lamps dark, a brew, the dishwasher and the laundry programmes pause and go on afterwards
+const mainsAppliances = (on) => { for (const l of world.lids) l.mains?.(on); dishProg?.mains(on); laundry.washer?.mains(on); laundry.dryer?.mains(on); };
+power.onRestore = () => { for (const t of world.furnitureTargets) t.mains?.(true); nests.powered = true; core.setPower(true); garage.powerOff = false; mainsAppliances(true); };
 { const findTv = remote.findTv; remote.findTv = () => (power.on ? findTv() : null); } // the remote does nothing in a power cut
 if (params.has('turbo')) turbo.start(); // Kaffeturbo at once (screenshots, #217)
 // ?open opens every door (screenshots of open doors/wardrobes)

@@ -111,7 +111,8 @@ export function buildRacks({ F, u0, u1, yb, yt, door, open, batch, onBatch, chro
 // floor"); done: a chime and "Disken är klar". Only what was in it at the start and is still in it becomes clean. While it
 // runs or is paused nothing can be added (one rule: refused, "Diskmaskinen är igång"); taking something out mid-run leaves
 // it dirty. The state and the time left are kept with the life sim (`life.keepPart('dishwasher')`). F stops it (nothing
-// washed). Stats `dishwasher`.
+// washed). Stats `dishwasher`. A power cut (#612, `mains(false)`): a running programme stands still (no hum, no spot, the LED
+// dark) and carries on with the time left when the power is back; it cannot be started without power.
 
 const STORES = ['dwLower', 'dwUpper', 'dwTray'];
 const mmss = (s) => { const t = Math.max(0, Math.ceil(s)); return `${Math.floor(t / 60)}:${String(t % 60).padStart(2, '0')}`; };
@@ -119,7 +120,7 @@ const mmss = (s) => { const t = Math.max(0, Math.ceil(s)); return `${Math.floor(
 export class DishProgramme {
   /** life: life.js Life; door: the dishwasher's flap (buildRacks gave it `racks`, `panelAt`); sfx: audio.js; say(text). */
   constructor(life, door, { sfx, say = () => {} } = {}) {
-    Object.assign(this, { life, door, sfx, say, state: 'idle', left: 0, ids: [], sound: null });
+    Object.assign(this, { life, door, sfx, say, state: 'idle', left: 0, ids: [], sound: null, powered: true });
     const I = life.items, P = door.panelAt;
     // the panel: an invisible pick box over the door's top band (it rides with the door), a small LED on it, the floor spot
     const pick = new THREE.Mesh(new THREE.BoxGeometry(...P.size), new THREE.MeshBasicMaterial());
@@ -156,7 +157,7 @@ export class DishProgramme {
       id: 'dwStart', order: 0,
       label: () => (self.state === 'done' ? 'starta diskmaskinen igen' : 'starta diskmaskinen'),
       applies: (c) => !!c.raw?.dishpanel && !self.busy,
-      check: () => (door.isOpen ? 'Stäng luckan först' : (dirtyInside().length + self.dirtyCupsInside().length) ? null : (self.inside().length + self.cupsInside().length) ? 'Allt i maskinen är redan rent' : 'Diskmaskinen är tom'),
+      check: () => (!self.powered ? 'Strömmen är borta' : door.isOpen ? 'Stäng luckan först' : (dirtyInside().length + self.dirtyCupsInside().length) ? null : (self.inside().length + self.cupsInside().length) ? 'Allt i maskinen är redan rent' : 'Diskmaskinen är tom'),
       run: () => self.start(),
       consumes: 'nothing', result: 'a programme of DISHWASHER.seconds game s; what is in it now is clean at the end',
     });
@@ -164,7 +165,7 @@ export class DishProgramme {
       id: 'dwStatus', order: 0,
       label: 'diskmaskinen',
       applies: (c) => !!c.raw?.dishpanel && self.busy,
-      check: () => (self.state === 'paused' ? `Pausad – stäng luckan (${mmss(self.left)} kvar)` : `Diskar – ${mmss(self.left)} kvar`),
+      check: () => (!self.powered ? `Strömmen är borta – ${mmss(self.left)} kvar` : self.state === 'paused' ? `Pausad – stäng luckan (${mmss(self.left)} kvar)` : `Diskar – ${mmss(self.left)} kvar`),
       run: () => {},
       consumes: 'nothing', result: 'nothing: the time left is shown',
     });
@@ -179,8 +180,11 @@ export class DishProgramme {
   cupsInside() { const st = this.life.items.store('dwUpper'); return st?.parkedCups ? [...st.parkedCups.values()] : []; }
   dirtyCupsInside() { return this.cupsInside().filter((c) => c.dirty); }
 
+  /** The mains (#612): without power a running programme stands still; it goes on with the time left. */
+  mains(on) { this.powered = on; this.sounds(); }
+
   start() {
-    if (this.busy || this.door.isOpen) return false;
+    if (this.busy || this.door.isOpen || !this.powered) return false;
     this.ids = this.inside().map((it) => it.id);
     this.cupsAtStart = this.cupsInside().slice();
     this.left = D.seconds;
@@ -221,17 +225,17 @@ export class DishProgramme {
   cancel() { if (this.busy) { this.state = 'idle'; this.left = 0; this.ids = []; this.cupsAtStart = []; this.life.dirty = true; } this.sounds(); }
 
   sounds() {
-    const on = this.state === 'running';
+    const on = this.state === 'running' && this.powered;
     if (on && !this.sound) this.sound = this.sfx.dishwasher?.(this.where()) ?? null;
     if (!on && this.sound) { this.sound.stop(); this.sound = null; }
     this.spot.visible = on;
-    this.led.material.color.setHex(on ? 0xff3322 : this.state === 'paused' ? 0xffaa22 : this.state === 'done' ? 0x33dd55 : 0x331111);
+    this.led.material.color.setHex(!this.powered ? 0x1a0a0a : on ? 0xff3322 : this.state === 'paused' ? 0xffaa22 : this.state === 'done' ? 0x33dd55 : 0x331111);
   }
 
   update(dt) {
     if (this.state === 'running' && this.door.isOpen) this.state = 'paused'; // the door opened: it waits
     else if (this.state === 'paused' && !this.door.isOpen && this.door.t === 0) this.state = 'running'; // shut again: on with the time left
-    if (this.state === 'running') { this.left -= dt; if (this.left <= 0) this.finish(); }
+    if (this.state === 'running' && this.powered) { this.left -= dt; if (this.left <= 0) this.finish(); } // (a power cut: it stands still, #612)
     this.sounds();
   }
 

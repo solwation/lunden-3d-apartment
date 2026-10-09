@@ -81,10 +81,12 @@ function labelTexture(w, h, draw) {
   return { c, t };
 }
 
-/** The lift: a car in the shaft at the band's courtyard end, four stops, sliding doors, buttons. */
+/** The lift: a car in the shaft at the band's courtyard end, four stops, sliding doors, buttons. A power cut (#612,
+ * `mains(false)`): the call is forgotten, a car on its way creeps down on its rescue drive (L.rescue) to the stop below,
+ * the doors open there and stay open (nobody is shut in), its light, display and buttons are dark. */
 export class Lift {
   constructor(group) {
-    Object.assign(this, { y: Y[1], at: 1, target: null, v: 0, doors: 0, waitT: 0, open: false, hum: null, rides: 0, onArrive: null, carrying: false });
+    Object.assign(this, { y: Y[1], at: 1, target: null, v: 0, doors: 0, waitT: 0, open: false, hum: null, rides: 0, onArrive: null, carrying: false, powered: true });
     const W = L.x1 - L.x0, D = L.z1 - L.z0, cx = (L.x0 + L.x1) / 2, cz = (L.z0 + L.z1) / 2, [d0, d1] = L.door, dw = (d1 - d0) / 2;
     this.car = new THREE.Group(); group.add(this.car);
     const steel = new THREE.MeshStandardMaterial({ color: 0xd3d7da, roughness: 0.4, metalness: 0.35 });
@@ -93,6 +95,7 @@ export class Lift {
     inner.push(new THREE.Mesh(new THREE.BoxGeometry(W - 0.1, 0.05, D - 0.1).translate(cx, 0.025, cz), basic(0x55585b))); // floor
     inner.push(new THREE.Mesh(new THREE.BoxGeometry(W - 0.1, 0.05, D - 0.1).translate(cx, 2.25, cz), basic(0xd8d8d4))); // ceiling
     inner.push(new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.02, 0.9).translate(cx, 2.22, cz), basic(0xfffcf0))); // its light
+    this.lamp = inner.at(-1).material;
     for (const [x, sz] of [[L.x0 + 0.05, D - 0.1], [L.x1 - 0.05, D - 0.1]]) inner.push(new THREE.Mesh(new THREE.BoxGeometry(0.03, 2.25, sz).translate(x, 1.125, cz), basic(0xc9ccce)));
     inner.push(new THREE.Mesh(new THREE.BoxGeometry(W - 0.1, 2.25, 0.03).translate(cx, 1.125, L.z1 - 0.05), basic(0xc9ccce))); // back wall
     inner.push(new THREE.Mesh(new THREE.BoxGeometry(W - 0.4, 1.2, 0.01).translate(cx, 1.4, L.z1 - 0.07), new THREE.MeshStandardMaterial({ color: 0xdfe6ea, roughness: 0.03, metalness: 0.95 }))); // the mirror
@@ -110,6 +113,7 @@ export class Lift {
     this.btnMat = btnMat;
     this.display = labelTexture(128, 64, () => {});
     const disp = new THREE.Mesh(new THREE.PlaneGeometry(0.24, 0.12), new THREE.MeshBasicMaterial({ map: this.display.t }));
+    this.dispMat = disp.material;
     disp.position.set((d0 + d1) / 2, 2.32, L.z0 + 0.105); disp.raycast = () => {}; this.car.add(disp);
     const plate = labelTexture(64, 256, (g) => { g.fillStyle = '#c9ccce'; g.fillRect(0, 0, 64, 256); g.fillStyle = '#222'; g.font = 'bold 30px sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; LABELS.forEach((l, i) => g.fillText(l, 20, 224 - i * 60)); });
     const pm = new THREE.Mesh(new THREE.PlaneGeometry(0.16, 0.64), new THREE.MeshBasicMaterial({ map: plate.t }));
@@ -145,7 +149,31 @@ export class Lift {
   /** Someone standing in the doorway (the landing's side or the car's)? */
   inDoorway(p) { return p.x > L.door[0] - 0.25 && p.x < L.door[1] + 0.25 && Math.abs(p.z - L.z0) < 0.45 && Math.abs(p.y - this.y) < 1.3; }
 
+  /** The mains (#612). */
+  mains(on) {
+    this.powered = on;
+    this.lamp.color.setHex(on ? 0xfffcf0 : 0x2a2a28);
+    this.dispMat.color.setScalar(on ? 1 : 0);
+    if (!on) { this.target = null; this.btnMat.emissiveIntensity = 0; this.hum?.stop(); this.hum = null; }
+    this.shown = null; // (the display redraws when the power is back)
+  }
+
+  /** A power cut: on its way, down to the stop below at the rescue speed; at a stop, the doors open and stay open. */
+  rescue(dt, player) {
+    if (this.at === null) {
+      const k = Y.reduce((b, y, i) => (y <= this.y + 1e-6 ? i : b), 0);
+      this.v = -L.rescue;
+      this.y = Math.max(Y[k], this.y - L.rescue * dt);
+      if (this.y <= Y[k]) { this.y = Y[k]; this.v = 0; this.at = k; if (this.carHas(player.pos)) this.onArrive?.(k); }
+    }
+    this.open = this.at !== null;
+    const want = this.open ? 1 : 0;
+    this.doors += Math.sign(want - this.doors) * Math.min(Math.abs(want - this.doors), dt / L.doorTime);
+    this.place();
+  }
+
   update(dt, player) {
+    if (!this.powered) { this.rescue(dt, player); return; }
     const p = player.pos, busy = this.inDoorway(p);
     if (this.at !== null && this.target === null) { // standing at a stop
       if (busy && this.open === false && this.doors > 0) this.open = true; // never on the visitor (#314)
@@ -399,6 +427,7 @@ export class Core {
   setPower(on) {
     this.mats.wall.color.setScalar(on ? 1 : POWER.emergency);
     this.mats.light.color.setScalar(on ? 1 : 0.2);
+    this.lift.mains(on); // (#612)
   }
 
   placeDoor(d) {
