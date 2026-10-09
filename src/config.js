@@ -2439,6 +2439,23 @@ export const JETPACK = {
   drop: 0.55, // m in front of the feet where "Ta av jetpacken" stands it
 };
 
+// The Spider-Man suit (#597, src/spidersuit.js): folded in the second drawer of Walter & Kian's MALM (Sovrum 2; the
+// MALM entry's `suit: true`). E puts it on / lays it down folded (like the jetpack, `drop` m in front of the feet).
+// With it on, outdoors only: walking into the façade of a building listed in roofs.js (a roof surface above you behind
+// the wall) holds you on it; W / the stick up climbs, S down, A / D sideways, Space lets go; within `reach` m of a roof's
+// edge you pull yourself over onto it. Webs: a click with nothing in focus and empty hands (touch: the 🕸 button) shoots
+// a strand to what the crosshair hits within `range` m, a web splat stays there `life` s; at most `max` at once
+// (draw calls, #592). Every number is a game choice (*guess*), not a measurement.
+export const SPIDER = {
+  climb: 2.2, side: 1.6, // m/s up / down and sideways on a wall (*guess*)
+  minWall: 1.0, // m: the roof behind a wall must be at least this far over the feet to grab it (no fences, no kerbs) (*guess*)
+  reach: 1.3, // m over the feet within which a roof's edge is pulled over (*guess*)
+  probe: 0.3, // m past the body's radius where the wall / the roof behind it is looked for (*guess*)
+  drop: 0.5, // m in front of the feet where "Ta av dig dräkten" lays it (*guess*)
+  web: { range: 35, life: 8, max: 4, speed: 60, size: 1.2 }, // m, s, webs at once, m/s of the strand, m across a splat (*guess*)
+  colors: { red: 0xc8202a, blue: 0x1d3f9a, line: 0x140a0a }, // the suit (own drawing, no licensed artwork)
+};
+
 // Two flights with winders between them (from the stair outline on both plans).
 // Flight A runs east along the south half, winders turn 180° at the east end,
 // flight B runs west along the north half and arrives in the upstairs hall.
@@ -3678,7 +3695,7 @@ export const FURNITURE = [
   // Sovrum 2 (Walter & Kian). watch.z: a seat in the lower bunk (local z, level with the desk's monitor)
   // for watching films on the PC
   { type: 'bunk', level: 1, x: 5.55 - 0.5, z: 12.23 - 1.05 - 0.08, rot: 0, w: 0.9, l: 2.0, sheets: 'vader', watch: { z: -0.3 } },
-  { type: 'malm', level: 1, room: 'Sovrum 2', x: 5.55 - 0.5, z: 12.23 - 1.05 - 1.06 - 0.25 - 0.08, rot: 0, w: 0.8, h: 1.24, d: 0.5, seed: 90, deco: 'vader' }, // its MALM (#235)
+  { type: 'malm', level: 1, room: 'Sovrum 2', x: 5.55 - 0.5, z: 12.23 - 1.05 - 1.06 - 0.25 - 0.08, rot: 0, w: 0.8, h: 1.24, d: 0.5, seed: 90, deco: 'vader', suit: true }, // its MALM (#235); the Spider-Man suit in a drawer (#597)
   // Walter & Kian's neon print "EAT SLEEP GAME REPEAT" (#430, docs/tavla-sovrum2-eat-sleep-game-repeat.webp): ~40 × 50 cm
   // outside (*guess*, the user: "40x50 ca"), a thin black frame (~2 cm face, no passe-partout, *guess* from the photo), the
   // print filling it. On the east wall (inner face x 5.551) centred between wardrobe L's south face (z 8.504, plan.json) and

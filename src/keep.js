@@ -9,7 +9,7 @@ import { SONOS, MOCCAMASTER } from './config.js';
 // restoring: the clock and the date (a mid-visit update keeps the game's time, spooled or paused — a new visit still
 // starts at the real time, #143), the car, doors / lids / fronts, lamps, the TV / PC / hob / hood / grill, the coffee
 // in the jug, the music, the parasol, things put down and the one in the hand (cups with what is in them), sitting /
-// lying, the cat, the jetpack (#359) (a thing's own state: `keepState()` / `loadKeep(s)`, e.g. the toaster plugged in, #401). Not kept (fresh as before): cooking (the chicken, fish fingers, the fries, #301), taps, the drawing in the hand.
+// lying, the cat, the jetpack (#359), the Spider-Man suit (#597) (a thing's own state: `keepState()` / `loadKeep(s)`, e.g. the toaster plugged in, #401). Not kept (fresh as before): cooking (the chicken, fish fingers, the fries, #301), taps, the drawing in the hand.
 // `a` is the app: main.js hands over what the parts need.
 
 export const KEEP_VERSION = 1;
@@ -247,6 +247,11 @@ const PARTS = {
     load: ({ jetpack }, s) => jetpack?.loadState(s),
   },
 
+  spidersuit: { // the Spider-Man suit (#597): laid down somewhere (the spot), or on; null = in its drawer
+    save: ({ suit }) => suit?.saveState() ?? null,
+    load: ({ suit }, s) => suit?.loadState(s),
+  },
+
   rest: { // sitting / lying (rest.js): which seat or bed, which spot on it, where you stood before
     save({ rest, world, car }) {
       if (!rest.active) return null;
@@ -309,7 +314,7 @@ const restKey = (t) => `${t.name}|${t.spots[0] ? vec(t.spots[0].pos).join(',') :
 
 // the order things come back in: the clock before the lamps (dusk), the car before its seat, fronts before what
 // lies in them, the TV before sitting in front of it
-const ORDER = ['clock', 'car', 'lift', 'open', 'lamps', 'on', 'grill', 'coffee', 'sonos', 'parasol', 'things', 'jetpack', 'life', 'rest', 'cat'];
+const ORDER = ['clock', 'car', 'lift', 'open', 'lamps', 'on', 'grill', 'coffee', 'sonos', 'parasol', 'things', 'jetpack', 'spidersuit', 'life', 'rest', 'cat'];
 
 /** The world part of a reload record. */
 export function saveWorld(a) {

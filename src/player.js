@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { LEVELS, PLAYER, STAIR, UNIT_TOP, ROOFS, GARAGE, JETPACK } from './config.js';
+import { LEVELS, PLAYER, STAIR, UNIT_TOP, ROOFS, GARAGE, JETPACK, SPIDER } from './config.js';
 import { stairHeight, stairUnderside } from './stairs.js';
 import { groundY } from './surroundings.js';
 
@@ -60,6 +60,8 @@ export class Player {
     this.jet = null;       // the jetpack (#359, jetpack.js): `worn`, `lift(dt, grounded)` = m/s² of thrust (− = down faster)
     this.flying = false;   // in the air with the jetpack on
     this.jv = { x: 0, z: 0 }; // flying: the horizontal velocity (inertia)
+    this.suit = null;      // the Spider-Man suit (#597, spidersuit.js): `worn` lets you hold on to outdoor façades
+    this.climb = null;     // on a wall: { nx, nz } = the façade's outward normal
   }
 
   spawn(x, z, yaw) {
@@ -68,6 +70,7 @@ export class Player {
     this.glide = null; // (an unstick under way is for the old place, #314)
     this.fall = null; // (a teleport is no fall, #361)
     this.flying = false; this.jv.x = this.jv.z = 0;
+    this.climb = null;
     this.eyeY = this.pos.y + PLAYER.eye;
     this.camera.position.set(x, this.eyeY, z);
     this.camera.rotation.set(0, yaw, 0, 'YXZ');
@@ -218,6 +221,65 @@ export class Player {
     return true;
   }
 
+  /** The suit on, outdoors, not in the garage / the stairwell, not flying the jetpack: walls may be climbed (#597). */
+  get canClimb() {
+    return !!this.suit?.worn && !!this.world.roofs && this.outdoors && !this.below && !this.inCore && !this.flying;
+  }
+
+  /** The top of the building whose façade is in direction (dx, dz) of (x, z) (roofs.js's surfaces), or −∞. */
+  roofAhead(x, z, dx, dz) {
+    const d = PLAYER.radius + SPIDER.probe;
+    return this.world.roofs.topAt(x + dx * d, z + dz * d);
+  }
+
+  /** Let go of the wall (Space, the suit off): a small push off it, then an ordinary fall. */
+  letGo() {
+    const c = this.climb;
+    if (!c) return;
+    this.climb = null;
+    this.pos.x += c.nx * 0.08; this.pos.z += c.nz * 0.08;
+    this.vy = 0;
+  }
+
+  /** One frame on a wall (#597): up / down with W S (the stick), sideways with A D; over the edge onto a roof within
+   * SPIDER.reach; down at the foot of the wall you stand again. False when it let go (the usual update goes on). */
+  climbStep(dt, fwd, side) {
+    if (this.keys.has('Space') || !this.canClimb) { this.letGo(); return false; }
+    const c = this.climb, p = this.pos, R = this.world.roofs;
+    const up = THREE.MathUtils.clamp(fwd, -1, 1), sd = THREE.MathUtils.clamp(side, -1, 1);
+    const x0 = p.x, z0 = p.z;
+    p.y += up * SPIDER.climb * dt;
+    p.x += c.nz * sd * SPIDER.side * dt; p.z += -c.nx * sd * SPIDER.side * dt; // right of facing the wall = (nz, −nx)
+    // hug it: lean in, its segments push back out (that push is the wall's normal here, round a bend too)
+    p.x -= c.nx * 0.04; p.z -= c.nz * 0.04;
+    const bx = p.x, bz = p.z, [stat, dyn] = this.segments();
+    for (let it = 0; it < 3; it++) {
+      let hit = false;
+      for (const s of stat) hit = pushOut(p, PLAYER.radius, s) || hit;
+      for (const s of dyn) hit = pushOut(p, PLAYER.radius, s) || hit;
+      if (!hit) break;
+    }
+    const px = p.x - bx, pz = p.z - bz, pl = Math.hypot(px, pz);
+    if (pl > 1e-5 && (px * c.nx + pz * c.nz) / pl > 0.5) { c.nx = px / pl; c.nz = pz / pl; }
+    else if (pl < 1e-5) { p.x += c.nx * 0.04; p.z += c.nz * 0.04; } // (no wall pushed: lean back)
+    // over the edge: a roof behind the wall within reach of the hands
+    const d = PLAYER.radius + SPIDER.probe + 0.25, ix = p.x - c.nx * d, iz = p.z - c.nz * d;
+    const r = R.under(ix, iz, p.y, SPIDER.reach);
+    if (up > 0 && r && r.y > p.y - 0.3) {
+      p.set(ix, r.y, iz); this.climb = null; this.vy = 0; this.fall = null;
+      this.onMantle?.();
+      return true;
+    }
+    // past the side of the building: back
+    if (this.roofAhead(p.x, p.z, -c.nx, -c.nz) <= p.y) { p.x = x0; p.z = z0; }
+    if (this.roofAhead(p.x, p.z, -c.nx, -c.nz) <= p.y) { this.letGo(); return false; } // (nothing left to hold)
+    // down at the foot of the wall: standing
+    const g = this.groundAt(p.x, p.z, p.y);
+    if (p.y <= g) { p.y = g; if (up <= 0) this.climb = null; }
+    this.vy = 0; this.fall = null; this.flying = false; this.crouched = false; this.sprinting = false;
+    return true;
+  }
+
   update(dt) {
     if (this.unstick(dt)) return; // pushed out of a piece of furniture / the car first (#314)
     const k = this.keys;
@@ -232,6 +294,7 @@ export class Player {
     // sprints at the same pace indoors and outdoors (#546)
     const amount = keyFwd || keySide ? 1 : Math.min(1, Math.hypot(this.analog.x, this.analog.y));
     const wantsRun = k.has('ShiftLeft') || k.has('ShiftRight') || (!keyFwd && !keySide && amount > PLAYER.sprintStick);
+    if (this.climb && this.climbStep(dt, fwd, side)) { this.settleEye(dt); return; } // on a wall (#597)
     // crouch (#70): down at once, up only where there is head room (under the stair there may be none)
     // the jetpack (#359): its thrust first (Space / ⬆; C / Ctrl / ⬇ down faster); off the ground it flies
     const jet = this.jet?.worn ? this.jet : null;
@@ -260,16 +323,20 @@ export class Player {
     // move in small sub-steps so fast movement can't tunnel through thin walls
     const steps = Math.max(1, Math.ceil(Math.hypot(mx, mz) / 0.05));
     const [stat, dyn] = this.segments();
+    let wallN = null; // the way the last wall pushed back (a façade to climb, #597)
     for (let i = 0; i < steps; i++) {
       const prev = this.pos.clone();
       this.pos.x += mx / steps;
       this.pos.z += mz / steps;
+      const bx = this.pos.x, bz = this.pos.z;
       for (let it = 0; it < 3; it++) {
         let hit = false;
         for (const s of stat) hit = pushOut(this.pos, PLAYER.radius, s) || hit;
         for (const s of dyn) hit = pushOut(this.pos, PLAYER.radius, s) || hit;
         if (!hit) break;
       }
+      const px = this.pos.x - bx, pz = this.pos.z - bz, pl = Math.hypot(px, pz);
+      if (pl > 1e-5) wallN = { nx: px / pl, nz: pz / pl };
       if (this.blockedByStair(this.pos.x, this.pos.z, this.pos.y)) {
         // slide: try each axis separately
         const tryX = new THREE.Vector3(this.pos.x, prev.y, prev.z);
@@ -291,6 +358,15 @@ export class Player {
     }
 
     if (this.flying) { this.jv.x = (this.pos.x - x0) / dt; this.jv.z = (this.pos.z - z0) / dt; } // (a wall takes the speed)
+
+    // the Spider-Man suit (#597): walking (or falling) into the façade of a building taller than you holds you on it
+    if (wallN && fwd > 0.3 && this.canClimb && -(fx * wallN.nx + fz * wallN.nz) > 0.5
+      && this.roofAhead(this.pos.x, this.pos.z, -wallN.nx, -wallN.nz) > this.pos.y + SPIDER.minWall) {
+      this.climb = wallN; this.vy = 0; this.fall = null; this.crouched = false; this.sprinting = false;
+      this.onGrab?.();
+      this.settleEye(dt);
+      return;
+    }
 
     // gravity (and the jetpack's thrust, #359)
     const g = this.groundAt(this.pos.x, this.pos.z, this.pos.y);
@@ -317,7 +393,11 @@ export class Player {
     }
 
     this.world.core?.snap(this); // riding the lift (#415)
-    // smooth the eye height over stair steps
+    this.settleEye(dt);
+  }
+
+  /** The camera to the feet + the eye height (smoothed over stair steps). */
+  settleEye(dt) {
     const target = this.pos.y + (this.crouched ? PLAYER.crouchEye : PLAYER.eye);
     this.eyeY += (target - this.eyeY) * Math.min(1, dt * 14);
     this.camera.position.set(this.pos.x, this.eyeY, this.pos.z);

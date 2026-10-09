@@ -34,6 +34,19 @@ src/jetpack.js         the jetpack (#359, JETPACK): our own unbranded pack (one 
                        through a door with it on stands it down outside; F / waking after a fall (`fall.onWake`) send it home; keep.js
                        part `jetpack`; flames (rig on your back) + smoke (one Points) + #jet-glow + sfx.jetRoar; stats `flights`
                        (SCORE.first: the first take-off); `&jetpack` = on from the start (tools/jetpacktest.html)
+src/spidersuit.js      the Spider-Man suit (#597, SPIDER, all values *guess*): our own drawing (red top with web lines + a small spider,
+                       blue under it, no licensed artwork) folded in the second drawer of Walter & Kian's MALM (furniture.js names
+                       that drawer box 'spidersuit-drawer'; its pick box only answers with the drawer open). E puts it on anywhere
+                       (the jetpack's flow: `dropTarget` "Ta av dig dräkten" lays it folded in front of you, keep.js part
+                       `spidersuit`, F home to the drawer); hand.js `suitHands` = red gloves, blue sleeve. `player.suit` = it:
+                       outdoors only (`player.canClimb`: not in the flat, the garage, the stairwell, nor flying the jetpack), walking
+                       or falling into a wall whose push-back faces you, with a roofs.js surface ≥ `minWall` over the feet behind it
+                       (`roofAhead`), holds you on it (`player.climb` = the wall's normal); W / S (the stick) up / down at `climb`,
+                       A / D sideways at `side` (stops at the building's side), Space lets go (a normal fall), down at its foot you
+                       stand; a roof surface behind the wall within `reach` of the feet is pulled over onto. Webs: a click with
+                       nothing in focus and empty hands (`click` → 'web') or the touch 🕸 (#web-btn) raycasts the drawn scene up to
+                       `web.range`; a strand (one Line) flies out at `web.speed`, a splat (one plane) sticks on the hit face for
+                       `web.life` s, at most `web.max`; sfx.thwip. `&spidersuit` = on from the start (tools/spidersuittest.html)
 src/touch.js           on-screen joystick (left) + drag-to-look (right), multi-touch pointer events
 src/viewport.js        early CSS-surface observer: keeps canvas buffer/camera in sync through startup rotation (#567)
 src/main.js            renderer, lights, input modes, door raycast prompt/button, loop (step)
@@ -219,6 +232,10 @@ tools/jetpacktest.html headless test (#359): the jetpack on its hook in the port
                        OUTDOOR's edge, onto Hus C's roof (counted), stood down there and on again, keep.js round trip, Hus L / Hus A hold,
                        overheating cuts out, a cut high up hurts (home on its hook), in through the front door = stood down outside,
                        F home, touch ⬆ and "Ta av dig jetpacken"
+tools/spidersuittest.html headless test (#597): the suit in the MALM drawer (no target through the shut drawer), E on, indoors no
+                       climbing, laid on the floor and on again, keep.js round trip, onto Hus C's façade (W up, D sideways, S down,
+                       Space lets go unhurt), up and over onto its roof, the area's edge not climbable, webs stick (max, gone after
+                       `life`), F home, the `spiderman` cheat, touch: the stick climbs, 🕸 shoots, "Ta av dig dräkten"
 tools/sabertest.html   headless test: take the lightsaber, swing it, hang it back
 tools/toystest.html    headless test: blaster (dart lands), wand (sparkles), flashlight (beam follows the view)
 tools/wandtest.html    headless test: a wand's magic on the wall (stars + butterflies), none in the sky, gone after a while
@@ -332,9 +349,9 @@ Compass notifications (#541): Compass.update hides the compass whenever #badges 
 
 Basement HUD (#549): main.js selects the garage/core label and room-statistics key before testing the apartment footprint. Storage directly beneath the kitchen therefore displays Förråd and records g:Förråd, while the kitchen above remains an Entréplan room. tools/basementhudtest.html covers both basement halves, the bike corridor, lift lobby, stairwell, apartment and street.
 
-Console cheats (#514): `src/cheats.js` is the shared command catalogue for execution, help and bike-room writing. All eight public commands list code and Swedish meaning; the two original goat codes are marked secret and excluded from both public lists. The existing console form stays available in the rearrangement menu. `src/cheatnote.js` renders one transparent marker-text plane on bikeNE's back west wall, added to the existing garage area/targets. A bundled 22 kB Kalam Bold Latin font (SIL OFL 1.1, attribution in data/fonts) loads with a two-second bound; no runtime third-party font request. CHEAT_NOTE dimensions/placement are explicit visual assumptions. The normal ray/read action opens a scrollable 17 px text dialog for phone/desktop, with E/Esc and a close button.
+Console cheats (#514): `src/cheats.js` is the shared command catalogue for execution, help and bike-room writing. All nine public commands (`spiderman` since #597) list code and Swedish meaning; the two original goat codes are marked secret and excluded from both public lists. The existing console form stays available in the rearrangement menu. `src/cheatnote.js` renders one transparent marker-text plane on bikeNE's back west wall, added to the existing garage area/targets. A bundled 22 kB Kalam Bold Latin font (SIL OFL 1.1, attribution in data/fonts) loads with a two-second bound; no runtime third-party font request. CHEAT_NOTE dimensions/placement are explicit visual assumptions. The normal ray/read action opens a scrollable 17 px text dialog for phone/desktop, with E/Esc and a close button.
 
-Commands use existing controllers: Lights.setAll, DayCycle.hour/update, Jetpack.putOn and original holdable paths. Jetpack refuses the flat interior with feedback, keeps roof restrictions and does not reset an already-worn pack's heat. Handsfree keeps the same item, uses valid original life storage/last placement or a grounded fallback, places ordinary holdables on a real surface, restores drawings through their existing desk path and parks paper in an existing toilet without flushing/hiding it. tools/cheattest.html covers the actual console, both secrets/public exclusion, repeated shortcuts, genuine ray reading and normal-home reload; rearrangeuitest still covers keyboard/touch console and edit controls.
+Commands use existing controllers: Lights.setAll, DayCycle.hour/update, Jetpack.putOn, SpiderSuit.putOn (`spiderman`, #597: anywhere, climbing still outdoors only) and original holdable paths. Jetpack refuses the flat interior with feedback, keeps roof restrictions and does not reset an already-worn pack's heat. Handsfree keeps the same item, uses valid original life storage/last placement or a grounded fallback, places ordinary holdables on a real surface, restores drawings through their existing desk path and parks paper in an existing toilet without flushing/hiding it. tools/cheattest.html covers the actual console, both secrets/public exclusion, repeated shortcuts, genuine ray reading and normal-home reload; rearrangeuitest still covers keyboard/touch console and edit controls.
 
 Console catalogue cleanup (#565): `home` and its handler are removed; no restart/reset aliases exist. The retained commands provide cleanup, jetpack, time/lighting and hands-free shortcuts, plus help and the two secret rearrangement unlocks. Console opening, help and command responses never reveal the note location. The ordinary start/reset menu actions remain available. `tools/cheattest.html` rejects removed names (including case/whitespace variants) without changing player/inventory state and checks spoiler-free console output alongside the existing shortcuts and readable world note.
 

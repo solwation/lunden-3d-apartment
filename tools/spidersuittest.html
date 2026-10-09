@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Spider-Man suit test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+// #597: the Spider-Man suit folded in the second drawer of Walter & Kian's MALM: not a target through the shut drawer;
+// open it, E puts it on (red hands, 🕸 on touch); indoors walking into a wall climbs nothing; E with nothing else lays it
+// on the floor, E on it again; outdoors walking into Hus C's façade holds you on it, W climbs, A / D sideways, S down to
+// the ground, Space lets go, W to the top pulls you over onto the roof unhurt; walls with no building behind (the area's
+// edge) cannot be climbed; a click shoots a web that sticks to the façade, at most SPIDER.web.max at once, gone after
+// `life`; keep.js round trip; F home to the drawer; the `spiderman` cheat; touch: the stick climbs, 🕸 shoots.
+//   node runtest.cjs http://localhost:8137/tools/spidersuittest.html
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const f = document.createElement('iframe');
+f.width = 900; f.height = 600;
+f.src = '../index.html?shot&time=12&month=6&freeze';
+document.body.append(f);
+f.onload = () => run().catch((e) => { out.textContent = `FAIL ${e}\n${e.stack}\nSOME FAILED`; });
+async function run() {
+  const w = f.contentWindow, d = f.contentDocument;
+  while (!w.__app) await wait(100);
+  const A = w.__app, { player, fall, world, step, camera, renderer, suit, toggleFurniture, touch, keepWorld, cheats, scene } = A;
+  const mod = (p) => w.eval(`import('${new URL(p, location.href).href}')`);
+  const { PLAYER, SPIDER, SITE, LEVELS, HAND, OUTDOOR } = await mod('../src/config.js');
+  const lines = [];
+  let pass = true;
+  const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); pass &&= !!ok; return ok; };
+  const f2 = (v) => v.toFixed(2);
+  d.getElementById('install').hidden = true;
+  Object.defineProperty(d, 'pointerLockElement', { get: () => renderer.domElement, configurable: true });
+  d.dispatchEvent(new w.Event('pointerlockchange'));
+  const landings = [];
+  const land0 = player.onLand;
+  player.onLand = (drop, gap) => { const r = land0(drop, gap); landings.push({ drop, gap, r }); return r; };
+  const dt = 1 / 60;
+  const key = (code, down = true) => d.dispatchEvent(new w.KeyboardEvent(down ? 'keydown' : 'keyup', { code, bubbles: true }));
+  const prompt = () => d.getElementById('prompt').hidden ? '' : d.getElementById('prompt').textContent;
+  const place = (x, z, feet, yawDeg = 180, pitchDeg = 0) => {
+    player.spawn(x, z, yawDeg * Math.PI / 180);
+    if (feet !== undefined) { player.pos.y = feet; player.eyeY = feet + PLAYER.eye; }
+    camera.rotation.x = pitchDeg * Math.PI / 180;
+    landings.length = 0;
+    for (let i = 0; i < 10; i++) step(dt);
+  };
+  const run = (secs, keys = []) => { player.keys = new Set(keys); for (let t = 0; t < secs; t += dt) { step(dt); if (fall.active) break; } player.keys = new Set(); };
+
+  // (1) in the drawer, the drawer shut: not a target
+  const box = scene.getObjectByName('spidersuit-drawer'), m = suit.model;
+  check(box && suit.state === 'drawer' && m.parent === box && !suit.reachable && suit.drawer && !suit.drawer.isOpen, 'folded in the MALM drawer (Sovrum 2), the drawer shut: not reachable');
+  const at = m.getWorldPosition(camera.position.clone());
+  check(at.y > LEVELS[1].floor + 0.5 && at.y < LEVELS[1].floor + 1.1 && Math.abs(at.x - 5.05) < 0.4 && Math.abs(at.z - 9.79) < 0.4, `in Walter & Kian's MALM (${f2(at.x)}, ${f2(at.y)}, ${f2(at.z)})`);
+  place(5.05, 8.95, LEVELS[1].floor, 180, -40); // (the MALM's drawers open north, away from the bunk)
+  camera.lookAt(at); for (let i = 0; i < 3; i++) step(dt);
+  check(!/Spindelmannendräkten/.test(prompt()), `drawer shut: "${prompt()}"`);
+  // (2) open it, E on the suit: on
+  suit.drawer.toggle(); for (let i = 0; i < 40; i++) step(dt);
+  camera.lookAt(suit.target.pickable.getWorldPosition(camera.position.clone())); for (let i = 0; i < 3; i++) step(dt);
+  check(/ta på dig Spindelmannendräkten/i.test(prompt()), `drawer open: "${prompt()}"`);
+  key('KeyE'); key('KeyE', false); step(dt);
+  check(suit.worn && player.suit === suit && !m.visible && !A.heldItem(), 'E: the suit on (hands free)');
+  // (3) indoors: walking into the wall climbs nothing
+  place(5.05, 8.95, LEVELS[1].floor, 0, 0);
+  const y0 = player.pos.y;
+  run(1.5, ['KeyW']);
+  run(1, ['KeyW']);
+  check(!player.climb && Math.abs(player.pos.y - y0) < 0.01, `indoors into the room's north wall: no climbing (y ${f2(player.pos.y)})`);
+  // (4) E with nothing else: laid on the floor, E on it again
+  place(5.05, 8.95, LEVELS[1].floor, 0, 75); // (up at the ceiling: nothing else in focus)
+  check(/ta av dig dräkten/.test(prompt()), `standing with it on: "${prompt()}"`);
+  key('KeyE'); key('KeyE', false); step(dt);
+  check(suit.state === 'ground' && !player.suit && m.visible && m.parent === scene && Math.abs(m.position.y - LEVELS[1].floor) < 0.05, `laid down on the floor at (${f2(m.position.x)}, ${f2(m.position.y)}, ${f2(m.position.z)})`);
+  camera.lookAt(suit.target.pickable.getWorldPosition(camera.position.clone())); for (let i = 0; i < 3; i++) step(dt);
+  check(/ta på dig Spindelmannendräkten/i.test(prompt()), `looking down at it: "${prompt()}"`);
+  key('KeyE'); key('KeyE', false); step(dt);
+  check(suit.worn, 'E: on again');
+  // keep.js: laid down → saved → back
+  suit.takeOff();
+  const saved = JSON.parse(JSON.stringify(keepWorld().spidersuit ?? null)), spot = m.position.clone();
+  suit.goHome(); suit.loadState(saved);
+  check(saved?.s === 'ground' && suit.state === 'ground' && m.position.distanceTo(spot) < 0.01, `keep.js round trip: ${JSON.stringify(saved)}`);
+  suit.putOn();
+  check(JSON.stringify(keepWorld().spidersuit) === '{"s":"worn"}', 'keep.js: worn is saved');
+
+  // (5) outdoors: into Hus C's south façade → on the wall; climb; sideways; down; let go
+  const C = SITE.blocks.find((b) => b.name === 'Hus C'), cx = (C.x0 + C.x1) / 2, roofC = world.roofs.topAt(cx, C.z1 - 1);
+  place(cx, C.z1 + 1.5, undefined, 0, 0);
+  const gy = player.pos.y;
+  for (let t = 0; t < 3 && !player.climb; t += dt) { player.keys = new Set(['KeyW']); step(dt); }
+  check(player.climb && Math.abs(player.climb.nz - 1) < 0.1, `walked into Hus C's south façade: on the wall (normal ${player.climb && f2(player.climb.nx)}, ${player.climb && f2(player.climb.nz)})`);
+  run(1, ['KeyW']);
+  check(player.climb && player.pos.y > gy + SPIDER.climb * 0.8 && player.pos.z > C.z1 && !player.fall, `W 1 s: up ${f2(player.pos.y - gy)} m, still outside the façade (z ${f2(player.pos.z)})`);
+  const x1 = player.pos.x;
+  run(1, ['KeyD']);
+  check(player.climb && player.pos.x > x1 + SPIDER.side * 0.8, `D 1 s: sideways ${f2(player.pos.x - x1)} m`);
+  run(2, ['KeyS']);
+  check(!player.climb && Math.abs(player.pos.y - gy) < 0.05, `S: down to the ground and standing (y ${f2(player.pos.y)})`);
+  for (let t = 0; t < 2 && !player.climb; t += dt) { player.keys = new Set(['KeyW']); step(dt); }
+  run(0.6, ['KeyW']);
+  const hy = player.pos.y;
+  run(0.05, ['Space']);
+  check(!player.climb, `Space: let go at ${f2(hy - gy)} m`);
+  run(2);
+  check(Math.abs(player.pos.y - gy) < 0.05 && !landings.some((l) => l.r === 'hurt'), 'fell back down, unhurt');
+  // (6) to the top: over the edge onto the roof
+  for (let t = 0; t < 2 && !player.climb; t += dt) { player.keys = new Set(['KeyW']); step(dt); }
+  let t = 0;
+  for (; t < 30 && player.climb; t += dt) { player.keys = new Set(['KeyW']); step(dt); }
+  player.keys = new Set();
+  for (let i = 0; i < 10; i++) step(dt);
+  const on = world.roofs.standingOn(player.pos.x, player.pos.z, player.pos.y);
+  check(on?.id === 'roof-Hus C' && !landings.some((l) => l.r === 'hurt') && player.aloft, `climbed ${f2(roofC - gy)} m in ${f2(t)} s: on ${on?.name ?? 'nothing'} at ${f2(player.pos.y)} m`);
+  // (7) the area's edge (no building behind): no climbing
+  place(OUTDOOR.x0 + 1, 0, undefined, 90, 0);
+  run(2, ['KeyW']);
+  check(!player.climb, `the area's west edge: not climbable (x ${f2(player.pos.x)})`);
+
+  // (8) webs: a click shoots, a splat on Hus C's façade
+  place(cx, C.z1 + 6, undefined, 0, 10);
+  const r = A.click(0);
+  for (let i = 0; i < 30; i++) step(dt);
+  const web = suit.webs[0]?.mesh;
+  check(r === 'web' && suit.webs.length === 1 && web && Math.abs(web.position.z - C.z1) < 0.3, `click: a web on the façade at (${web && f2(web.position.x)}, ${web && f2(web.position.y)}, ${web && f2(web.position.z)})`);
+  for (let i = 0; i < 6; i++) { camera.rotation.y = (i - 3) * 0.12; A.click(0); for (let k = 0; k < 20; k++) step(dt); }
+  check(suit.webs.length === SPIDER.web.max, `six more: ${suit.webs.length} at once (max ${SPIDER.web.max})`);
+  for (let i = 0; i < (SPIDER.web.life + 1) * 10; i++) step(0.1);
+  check(suit.webs.length === 0 && !suit.strand.visible, `after ${SPIDER.web.life} s: gone`);
+
+  // (9) F: home to the drawer (the drawer shut)
+  toggleFurniture(false); toggleFurniture(true);
+  check(suit.state === 'drawer' && m.parent === box && !player.suit, 'F: back in its drawer');
+  // (10) the cheat
+  const said = cheats.spiderman();
+  check(suit.worn && /på/.test(said) && /redan/.test(cheats.spiderman()), `spiderman: "${said}"`);
+
+  // (11) touch: 🕸 shown, the stick climbs, 🕸 shoots, the action button lays it down
+  place(cx, C.z1 + 1.5, undefined, 0, 0);
+  touch.enabled = true; d.body.classList.add('touch');
+  for (let i = 0; i < 3; i++) step(dt);
+  const web2 = d.getElementById('web-btn');
+  check(!web2.hidden && w.getComputedStyle(web2).display !== 'none', 'touch: 🕸 shown');
+  touch.analog.y = 1;
+  for (let t2 = 0; t2 < 3 && !player.climb; t2 += dt) step(dt);
+  for (let i = 0; i < 60; i++) step(dt);
+  check(player.climb && player.pos.y > gy + 1.5, `the stick forward: on the wall, up ${f2(player.pos.y - gy)} m`);
+  touch.analog.y = -1;
+  for (let i = 0; i < 150 && player.climb; i++) step(dt);
+  touch.analog.y = 0; for (let i = 0; i < 5; i++) step(dt);
+  check(!player.climb && Math.abs(player.pos.y - gy) < 0.05, 'the stick back: down and standing');
+  web2.dispatchEvent(new w.PointerEvent('pointerdown', { bubbles: true, pointerType: 'touch' }));
+  for (let i = 0; i < 20; i++) step(dt);
+  check(suit.webs.length >= 1, `🕸: a web (${suit.webs.length})`);
+  camera.rotation.x = 0.4; for (let i = 0; i < 3; i++) step(dt);
+  const act = d.getElementById('action');
+  check(/Ta av dig dräkten/i.test(act.textContent) && !act.hidden, `the action button says "${act.textContent}"`);
+  act.click(); step(dt);
+  check(suit.state === 'ground' && web2.hidden, 'the action button laid it down; 🕸 hidden');
+  touch.enabled = false; d.body.classList.remove('touch');
+  suit.goHome();
+
+  out.textContent = lines.join('\n') + `\n${pass ? 'ALL PASS' : 'SOME FAILED'}`;
+}
+</script>
+</body>
+</html>

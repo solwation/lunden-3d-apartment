@@ -350,6 +350,9 @@
     #jet-up { bottom: calc(160px + var(--sb)); }
     #jet-down { bottom: calc(100px + var(--sb)); }
     #jet-up[hidden], #jet-down[hidden] { display: none; }
+    /* the Spider-Man suit's web button (#597), above the jetpack's ⬆ */
+    #web-btn { position: fixed; right: calc(178px + var(--sr)); bottom: calc(220px + var(--sb)); width: 48px; height: 48px; border: 0; border-radius: 50%; background: var(--panel); font-size: 22px; touch-action: none; user-select: none; -webkit-user-select: none; }
+    #web-btn[hidden] { display: none; }
     .resume { font-size: 14px; background: #e8f2f6; border-radius: 6px; padding: 8px 10px; }
     .resume[hidden] { display: none; }
     .resume .linkish { margin: 0 0 0 6px; }
@@ -558,6 +561,7 @@
             <span><kbd>Shift</kbd></span><span>spring</span>
             <span><kbd>C</kbd></span><span>håll inne för att huka dig (sittande: res dig)</span>
             <span><kbd>Mellanslag</kbd></span><span>med jetpacken på: lyft (<kbd>C</kbd> ner fortare)</span>
+            <span>Spindelmannendräkten</span><span>gå in i en yttervägg utomhus: <kbd>W</kbd> <kbd>S</kbd> klättra, <kbd>A</kbd> <kbd>D</kbd> åt sidan, <kbd>Mellanslag</kbd> släpp; klick skjuter nät</span>
             <span><kbd>←</kbd> <kbd>→</kbd></span><span>vrid (om pekplattan är spärrad medan du skriver)</span>
             <span><kbd>E</kbd> eller vänsterklick</span><span>öppna, stäng och använd det du tittar på</span>
             <span>Vänsterklick</span><span>inget framför dig: använd det du håller; vapen och bollen: skjut / kasta</span>
@@ -576,6 +580,7 @@
             <span>Knapp</span><span>öppna, stäng och använd det du tittar på</span>
             <span>🧎</span><span>huka dig / res dig</span>
             <span>⬆ ⬇</span><span>med jetpacken på: upp / ner</span>
+            <span>🕸</span><span>med Spindelmannendräkten på: skjut nät (joysticken klättrar på ytterväggar)</span>
             <span>📏</span><span>mät: sätt en punkt där krysset pekar, sedan nästa</span>
             <span>📊</span><span>visa/dölj statistiken och kartan</span>
             <span>&gt;_</span><span>öppna konsolen (i poängbrickan)</span>
@@ -847,6 +852,7 @@
     <div id="jet-glow" aria-hidden="true"></div>
     <button id="jet-up" class="touch-only" hidden aria-label="Jetpack: upp">⬆</button>
     <button id="jet-down" class="touch-only" hidden aria-label="Jetpack: ner">⬇</button>
+    <button id="web-btn" class="touch-only" hidden aria-label="Skjut nät">🕸</button>
     <!-- #582: the top-right touch shortcuts share one segmented glass badge; on desktop it is display: contents (mute alone, bottom right) -->
     <div id="hud-top" role="group" aria-label="Snabbknappar">
       <button id="furniture-btn" class="touch-only" aria-label="Möbler och prylar av/på">🛋</button>

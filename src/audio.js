@@ -706,6 +706,13 @@ export const sfx = {
     noise(t, 0.12, d, { type: 'lowpass', freq: 1400, gain: 0.35, attack: 0.002 });
     tone(t, 0.08, d, { type: 'sine', from: 320, to: 90, gain: 0.15 });
   },
+  /** A web shot (#597): a quick rising "thwip" of filtered noise and a short whistle. */
+  thwip(pos = null) {
+    if (!ready()) return;
+    const t = ctx.currentTime, d = out(pos, 0.7);
+    noise(t, 0.12, d, { type: 'bandpass', freq: 2600, q: 2.5, gain: 0.3, attack: 0.004 });
+    tone(t, 0.1, d, { type: 'sine', from: 900, to: 2200, gain: 0.05 });
+  },
     /** A gulp: a soft throat-click and a short low swallow (beer, coffee). */
   gulp(pos) {
     if (!ready()) return;

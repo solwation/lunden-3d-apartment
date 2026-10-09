@@ -2247,9 +2247,10 @@ function malm(item, lights) {
     const y0 = plinth + 0.005 + (4 - r) * rowH, n = fills.length;
     fills.forEach((fill, i) => {
       const x0 = -w / 2 + 0.006 + i * (w - 0.012) / n + gap, x1 = -w / 2 + 0.006 + (i + 1) * (w - 0.012) / n - gap, fh = rowH - 2 * gap;
+      const suit = item.suit && r === 1; // the Spider-Man suit lies alone in the second drawer (#597, spidersuit.js finds it by name)
       addDrawer(g, 'lådan', { x: (x0 + x1) / 2, y: y0 + gap, zf: d / 2, w: x1 - x0, h: fh, depth: d - 0.08, front: white, inner: white,
-        out: 0.32, grip: (o) => { const lip = rbox(x1 - x0, 0.016, 0.02, 0, fh - 0.008, 0, white, 0.007); lip.castShadow = true; o.add(lip); },
-        fill, who: item.room, seed: item.seed + r * 3 + i });
+        out: 0.32, grip: (o) => { const lip = rbox(x1 - x0, 0.016, 0.02, 0, fh - 0.008, 0, white, 0.007); lip.castShadow = true; o.add(lip); if (suit) { o.name = 'spidersuit-drawer'; o.userData.depth = d - 0.08; } },
+        fill: suit ? null : fill, who: item.room, seed: item.seed + r * 3 + i });
     });
   });
   g.traverse((m) => { if (m.isMesh) m.castShadow = m.receiveShadow = true; });

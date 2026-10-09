@@ -38,6 +38,7 @@ import { Compass } from './compass.js';
 import { Measure } from './measure.js';
 import { cloudTexture, groundY } from './surroundings.js';
 import { Jetpack } from './jetpack.js';
+import { SpiderSuit } from './spidersuit.js';
 import { DayCycle } from './daycycle.js';
 import { WallClock, ClockPanel } from './wallclock.js';
 import { Patio, buildStringLights } from './patio.js';
@@ -361,6 +362,9 @@ jetpack.onFlight = () => bump('flights', 1, 'jetpack'); // each take-off; the fi
 jetpack.onLeftAtDoor = () => badge('🚀 Jetpacken står kvar utanför', false);
 jetpack.onRoofed = () => badge('🚀 Inte inomhus', false); // Space under the garage's ceiling (#441)
 fall.onWake.push(() => jetpack.goHome());
+// the Spider-Man suit in Walter & Kian's MALM drawer (#597): E on / off like the jetpack; climbs façades, shoots webs
+const suit = new SpiderSuit({ scene, camera, player, drawer: scene.getObjectByName('spidersuit-drawer'), button: document.getElementById('web-btn') });
+suit.onWear = () => badge(touch.enabled ? '🕷 Dräkten på: gå in i en yttervägg och klättra, 🕸 skjuter nät' : '🕷 Dräkten på: gå in i en yttervägg och klättra (Mellanslag släpper), klicka för nät', false);
 const rest = new Rest(camera); // sitting / lying down (#71/#72)
 const saber = new Saber(scene, camera); // the lightsaber in Sovrum 2 (#78)
 const toys = buildToys(scene, camera); // Nerf blasters, magic wands, the flashlight (#86, #87, #89)
@@ -892,6 +896,7 @@ if (at) {
 // &fall=h (#361): drop from h m above the ground here (a test of falling until the jetpack / roofs can give one)
 if (params0.has('fall')) player.pos.y += Number(params0.get('fall') || 5);
 if (params0.has('jetpack')) jetpack.putOn(); // &jetpack (#359): on your back from the start (outdoors only)
+if (params0.has('spidersuit')) suit.putOn(); // &spidersuit (#597): the suit on from the start
 // the resumed place (not with ?at=): back to the same spot and view (the clock is real, #143); the start screen then
 // says so and offers "Börja från start" instead
 const resumeEl = document.getElementById('resume');
@@ -1432,7 +1437,7 @@ function use(thing) {
   }
   else if (thing.kind === 'cardoor') thing.toggle(); // open / shut a door of our car (#250)
   else if (thing.kind === 'carmusic') thing.toggle(); // music in the car: on / off, ⏮ ⏭ (#268)
-  else if (thing.kind === 'jetpack') thing.toggle(); // put the jetpack on / stand it down (#359)
+  else if (thing.kind === 'jetpack' || thing.kind === 'spidersuit') thing.toggle(); // put the jetpack / the suit on, stand it down (#359, #597)
   else if (thing.kind === 'liftcall' || thing.kind === 'liftbtn') thing.press(); // the lift (#415)
   else if (thing.kind === 'garagebutton') { thing.press(); bump('garageDoor'); } // the garage door's buttons (#358)
   else if (thing.kind === 'carkey') { thing.press(); car.call(); bump('car'); } // beep beep: the car comes, or leaves (#173)
@@ -1496,6 +1501,7 @@ function click(button) {
   if (book.reading) { book.turn(1); return 'page'; }
   if (reading) return 'none';
   if (held?.clickIsUse || !focused) {
+    if (!held && suit.worn) { suit.shoot(); return 'web'; } // empty hands in the suit: a web (#597)
     if (held?.trigger) held.trigger(true); else held?.use();
     return held ? 'use' : 'none';
   }
@@ -1504,7 +1510,7 @@ function click(button) {
   return 'e';
 }
 /** What a left click may do E on: the focus, but not the jetpack's "stand it down" (E's fallback with nothing in focus). */
-const clickTarget = () => (focused === jetpack.dropTarget ? null : focused);
+const clickTarget = () => (focused === jetpack.dropTarget || focused === suit.dropTarget ? null : focused);
 /** Does a left click do E on what is in focus now (the prompt says "Klicka")? */
 const clickIsE = () => !!clickTarget() && !focused.blocked && !heldItem()?.clickIsUse;
 document.addEventListener('mousedown', (e) => { if (locked && (e.button === 0 || e.button === 2)) click(e.button); });
@@ -1538,7 +1544,7 @@ document.addEventListener('keydown', (e) => {
     return;
   }
   player.keys.add(e.code);
-  if (e.code === 'Space' && jetpack.worn) e.preventDefault(); // thrust (#359)
+  if (e.code === 'Space' && (jetpack.worn || suit.worn)) e.preventDefault(); // thrust (#359); let go of a wall (#597)
   // crouch while held (#70): C, so crouching and walking is never Ctrl+W = close the tab (#274); Ctrl still works,
   // and while it is held the browser's other Ctrl shortcuts (save, print, bookmark …) are kept from opening
   if (isCtrl(e.code)) player.crouch = true;
@@ -1644,6 +1650,7 @@ function updateFocus() {
   // the car key only while its cabinet is open
   const extra = [...(cat.visible && !cat.held ? [cat.object] : []), ...(keyCabinet?.keyReachable ? [world.carKey.pickable] : []), ...car.targets(rest.target).map((t) => t.pickable), // our car's doors and front seats (#250)
     ...jetpack.targets(), // the jetpack on its hook / where it was stood down (#359)
+    ...suit.targets(), // the Spider-Man suit in its drawer / where it was laid (#597)
     ...world.courtyardTargets.map((t) => t.pickable), // the courtyard's benches (#438): F keeps them
     ...(world.furnitureOn ? [...(target.object.visible ? [target.target] : []), ...patio.targets, ...world.furnitureTargets, ...holdables.map((h) => h.target), drawing.target, ...posters.targets].map((t) => t.pickable) : [])]; // parasol, TV, seats, beds, toys — unless F hid the furniture
   // the nearest hit on something actually shown (F hides the loose items, the raycaster doesn't care)
@@ -1766,6 +1773,7 @@ function updateFocus() {
   // the jetpack (#359): no sitting down in the air; with nothing else to do, E / the action button stands it down
   if (player.flying && focused?.kind === 'rest') focused = null;
   if (!focused && !rest.active && jetpack.canTakeOff) focused = jetpack.dropTarget;
+  else if (!focused && !rest.active && suit.canTakeOff) focused = suit.dropTarget; // (#597)
   // the remote in the hand, aimed at a TV: the click / the touch button are the remote's (#101)
   const remoteAim = heldItem() === remote && focused?.kind === 'tv';
   if (remoteAim) focused = null;
@@ -1836,6 +1844,7 @@ function toggleFurniture(on = !world.furnitureOn) {
     rifle?.reset(); // the dropped magazines go, a full one in (#196)
     for (const h of holdables) if (h.placed && !(h === pan && (pan.egg || pan.dirty))) h.goHome(); // life-sim food and dirty cookware stay where left
     jetpack.goHome(); // back on its hook by the garage (#359)
+    suit.goHome(); // back in its drawer (#597)
     cups.reset(); // the cups standing out go, the cabinet is full again (#215)
     coffeeJar?.reset(); // the scoop in its loop, the Moccamaster's tank and filter empty (#334)
   }
@@ -1928,6 +1937,10 @@ const cheats = {
     if (jetpack.worn) return 'Jetpacken är redan på.';
     if (!player.outdoors) return 'Gå ut först. Jetpacken kan inte användas inne i hemmet.';
     jetpack.putOn(); return player.below || player.inCore ? 'Jetpacken på. Ingen flygning under tak.' : 'Jetpacken på. Mellanslag eller pil upp ger lyft.';
+  },
+  spiderman: () => {
+    if (suit.worn) return 'Spindelmannendräkten är redan på.';
+    suit.putOn(); return 'Spindelmannendräkten på. Gå in i en yttervägg utomhus för att klättra; klick eller 🕸 skjuter nät.';
   },
   day: () => {day.hour=CHEAT_NOTE.dayHour;day.update(0);wallClock.update(day.hour);return 'Dagsljus.';},
   night: () => {day.hour=CHEAT_NOTE.nightHour;day.update(0);wallClock.update(day.hour);return 'Natt.';},
@@ -2159,6 +2172,7 @@ function step(dt) {
     updateFocus();
   }
   jetpack.update(dt); // flames, smoke, the roar, the heat bar; stood down at the door (#359)
+  suit.update(dt); // the web strand and splats (#597)
   const outside = player.outdoors; // (the loftgång and the terraces over the flat too, #360)
   // up on a roof (#360): the first time on each one counts; the HUD names it
   const roof = outside && player.aloft && !player.fall ? world.roofs.standingOn(player.pos.x, player.pos.z, player.pos.y) : null;
@@ -2404,7 +2418,7 @@ const autoReload = {
   },
   /** Something time-bound that a reload would cut short (and keep.js does not keep): wait for it to end. */
   get waiting() {
-    return !!(jetpack.flying || world.lids.find((l) => l.kind === 'coffee')?.isOpen || chicken?.smoking || (world.hob?.on && pan?.onHob)
+    return !!(jetpack.flying || player.climb || world.lids.find((l) => l.kind === 'coffee')?.isOpen || chicken?.smoking || (world.hob?.on && pan?.onHob)
       || airFryer.running || toaster?.toasting || life.runner.busy || dishProg?.running || grill.on || turbo.active || car.radio.playing || ball.flying || nests.talking);
   },
   update(dt) {
@@ -2479,7 +2493,7 @@ function continueAfterReload(r) {
   setTimeout(() => { reloadedEl.hidden = true; }, RELOAD_NOTE_S * 1000 + 700);
 }
 // the world's state for a reload made by the page (#277, keep.js): what each part needs
-const keepApp = { life, jetpack, car, world, lights, day, grill, sonos, patio, holdables, cups, beer, chicken, scene, rest, cat, BREEDS, VARIANTS,
+const keepApp = { life, jetpack, suit, car, world, lights, day, grill, sonos, patio, holdables, cups, beer, chicken, scene, rest, cat, BREEDS, VARIANTS,
   sitAt: (target, spot, stand) => sitAt(target, spot, stand, true) };
 function keepWorld() { try { return saveWorld(keepApp); } catch (e) { console.warn('keep', e); return null; } }
 if (resumeOk && resumed.mode && resumed.world) loadWorld(keepApp, resumed.world); // mid-visit only: the game's clock too (a new visit: real time, #143)
@@ -2490,4 +2504,4 @@ document.documentElement.classList.remove('resuming'); // the page is ready: off
 hideLoading();
 
 // handle for tests/debugging (tools/touchtest.html, tools/perfcount.html)
-window.__app = { frame, hitch, warm, christmas, plantWind, cheats, cheatNote, showCheatNote, beerShelf, hallCare, bedCare, tableSetting, watering, laundry, compass, showOverlay, resumeFromMenu, interactionOutline, eggs, isPhoneDevice, get activeMode() { return activeMode; }, set activeMode(v) { activeMode = v; }, rearrange, showTerminal, quality, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, toaster, life, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS };
+window.__app = { frame, hitch, warm, christmas, plantWind, cheats, cheatNote, showCheatNote, beerShelf, hallCare, bedCare, tableSetting, watering, laundry, compass, showOverlay, resumeFromMenu, interactionOutline, eggs, isPhoneDevice, get activeMode() { return activeMode; }, set activeMode(v) { activeMode = v; }, rearrange, showTerminal, quality, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, suit, toaster, life, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS };

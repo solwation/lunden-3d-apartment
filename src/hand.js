@@ -32,6 +32,12 @@ function dropsGeometry() {
   return mergeGeometries(parts).scale(H.size, H.size, H.size);
 }
 const sleeve = new THREE.MeshStandardMaterial({ color: H.sleeve, roughness: 0.85 });
+/** The Spider-Man suit on (#597): red gloves and a blue sleeve; off: skin and the usual sleeve again. */
+export function suitHands(on, red = 0xc8202a, blue = 0x1d3f9a) {
+  SKIN.color.set(on ? red : H.skin); SKIN.wet.copy(SKIN.color).multiplyScalar(0.88);
+  skin.color.copy(SKIN.color); skin.emissive.set(on ? 0x000000 : H.skinGlow);
+  sleeve.color.set(on ? blue : H.sleeve);
+}
 
 // The hand's frame: the wrist at the origin, the fingers towards +z, the palm facing +x, the thumb on top (+y) —
 // a right hand with its palm to the left, as it comes from the shoulder in the lower right of the view.
