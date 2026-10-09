@@ -90,7 +90,7 @@ export function buildCampusFacade(b, p, holes, base, bottom, parts) {
           // Cornice steps and dentils run along every uncovered stretch, cut edges included.
           for (const [dy, h, depth] of S.cornice) box(mid, eave + dy, w + .12, h, depth, depth / 2 - .015);
           if (S.soffit) box(mid, eave - .06, w + 2 * S.soffit.depth, .12, S.soffit.depth * 2, 0, S.soffit.color);
-          if (S.dentil && w > 1.2) for (let t = t0 + .3; t < t1 - .2; t += S.dentil.step) box(t, eave + S.cornice[0][0], S.dentil.width, S.dentil.height, S.dentil.depth, .08);
+          if (S.dentil && w > 1.2) for (let t = t0 + .3; t < t1 - .2; t += S.dentil.step) box(t, eave + S.cornice[0][0], S.dentil.width, S.dentil.height, S.dentil.depth, S.dentil.depth < .096 ? .19 : .08);
           if (cut) continue;
           box(mid, base + S.plinth / 2, w + .04, S.plinth, .13, .065, S.plinthColor ?? S.trim);
           if (S.apron) box(mid, base + (S.plinth + S.apron) / 2, w + .02, S.apron - S.plinth, .05, .03, S.trim);
@@ -128,9 +128,9 @@ export function buildCampusFacade(b, p, holes, base, bottom, parts) {
           const dx = to[0] - from[0], dz = to[1] - from[1], len = Math.hypot(dx, dz), ux = dx / len, uz = dz / len;
           const nx = orientation * uz, nz = -orientation * ux, angle = Math.atan2(nx, nz), along = sign < 0 ? -S.quoin / 2 : S.quoin / 2;
           const y0 = base + S.plinth, y1 = eave + S.cornice[0][0] - S.cornice[0][1] / 2;
-          const at = (y, h, depth, color) => parts.modern.push(tint(plain(new THREE.BoxGeometry(S.quoin, h, depth).rotateY(angle).translate(curr[0] + ux * along + nx * depth / 2, y, curr[1] + uz * along + nz * depth / 2)), color));
+          const at = (y, h, depth, color) => parts.modern.push(tint(plain((depth < .096 ? new THREE.PlaneGeometry(S.quoin, h) : new THREE.BoxGeometry(S.quoin, h, depth)).rotateY(angle).translate(curr[0] + ux * along + nx * (depth < .096 ? .096 : depth / 2), y, curr[1] + uz * along + nz * (depth < .096 ? .096 : depth / 2))), color));
           at((y0 + y1) / 2, y1 - y0, .09, S.trim);
-          if (S.jointStep) for (let y = y0 + S.jointStep; y < y1; y += S.jointStep) at(y, .014, .095, S.joint);
+          if (S.jointStep) for (let y = y0 + S.jointStep; y < y1; y += S.jointStep) at(y, .014, .092, S.joint);
         }
       }
     }
@@ -219,21 +219,22 @@ function buildCentre(p, base, pieces, eaveOf, S, parts, windows) {
   const C = S.centre, eave = Math.max(...pieces.map(eaveOf)), [x0, x1] = C.x, z = C.face, depth = C.depth, cx = (x0 + x1) / 2, n = C.normal;
   const w = x1 - x0, zc = z - n * depth / 2;
   // The risalit block itself, slightly proud of the flanks and white-rendered on the ground floor.
-  parts.schoolBrick.push(tint(plain(new THREE.BoxGeometry(w, eave - base + .3, depth).translate(cx, base + (eave - base + .3) / 2 - .3, zc)), S.wall));
+  if (depth) parts.schoolBrick.push(tint(plain(new THREE.BoxGeometry(w, eave - base + .3, depth).translate(cx, base + (eave - base + .3) / 2 - .3, zc)), S.wall));
   const front = (x, y, ww, hh, d = .12, color = S.trim, list = parts.modern) => list.push(tint(plain((d < .096 ? new THREE.PlaneGeometry(ww, hh) : new THREE.BoxGeometry(ww, hh, d)).rotateY(n > 0 ? 0 : Math.PI).translate(x, y, z + n * d / 2)), color));
-  front(cx, base + C.render / 2, w + .1, C.render, .08);
-  for (const x of [x0 + .45, x1 - .45, x0 + w * .3, x1 - w * .3]) front(x, (base + eave) / 2, .7, eave - base, .14);
-  for (const [dy, h, d] of S.cornice) front(cx, eave + dy, w + .3, h, d + .02);
-  if (S.dentil) for (let x = x0 + .3; x < x1 - .2; x += S.dentil.step) front(x, eave + S.cornice[0][0], S.dentil.width, S.dentil.height, S.dentil.depth + .05);
+  if (C.render) front(cx, base + C.render / 2, w + .1, C.render, .08);
+  if (C.pilasters) for (const x of [x0 + .45, x1 - .45, x0 + w * .3, x1 - w * .3]) front(x, (base + eave) / 2, .7, eave - base, .14);
+  if (depth) for (const [dy, h, d] of S.cornice) front(cx, eave + dy, w + .3, h, d + .02);
+  if (S.dentil && depth) for (let x = x0 + .3; x < x1 - .2; x += S.dentil.step) front(x, eave + S.cornice[0][0], S.dentil.width, S.dentil.height, S.dentil.depth + .05);
   // Pediment: a white triangle with a raking cornice on the risalit's front.
   const tri = new THREE.Shape([new THREE.Vector2(-w / 2 - .15, 0), new THREE.Vector2(w / 2 + .15, 0), new THREE.Vector2(0, C.pediment)]);
-  const ped = new THREE.ExtrudeGeometry(tri, { depth: depth + .2, bevelEnabled: false }).translate(0, 0, -(depth + .2) / 2).rotateY(n > 0 ? 0 : Math.PI).translate(cx, eave + .1, zc);
+  const D = depth || C.pedDepth, ped = new THREE.ExtrudeGeometry(tri, { depth: D + .15, bevelEnabled: false }).translate(0, 0, -(D + .15)).rotateY(n > 0 ? 0 : Math.PI).translate(cx, eave + .1, z + n * .15);
   parts.modern.push(tint(plain(ped), S.trim));
   const roofFace = new THREE.BufferGeometry();
   // Pediment roof slopes back to the main roof.
-  const back = zc - n * (depth / 2 + C.roofBack), yTop = eave + .1 + C.pediment;
+  const back = z - n * (D + C.roofBack), yTop = eave + .1 + C.pediment;
   roofFace.setAttribute('position', new THREE.Float32BufferAttribute([x0 - .3, eave + .1, z + n * .15, cx, yTop, z + n * .15, cx, yTop, back, x0 - .3, eave + .1, z + n * .15, cx, yTop, back, x0 - .3, eave + .1, back, x1 + .3, eave + .1, z + n * .15, cx, yTop, back, cx, yTop, z + n * .15, x1 + .3, eave + .1, z + n * .15, x1 + .3, eave + .1, back, cx, yTop, back], 3));
   roofFace.computeVertexNormals(); roofFace.setAttribute('uv', new THREE.Float32BufferAttribute(new Array(roofFace.attributes.position.count * 2).fill(0), 2)); parts.schoolRoof.push(roofFace);
+  if (!C.window) return {};
   // The great round-arched window over the upper floors.
   const W = C.window, arch = new THREE.Shape(); arch.moveTo(-W.width / 2, 0); arch.lineTo(W.width / 2, 0); arch.lineTo(W.width / 2, W.height - W.width / 2);
   arch.absarc(0, W.height - W.width / 2, W.width / 2, 0, Math.PI, false); arch.closePath();

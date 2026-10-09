@@ -816,7 +816,10 @@ export const SITE = {
       {"source":"88457581","polygon":[[89.73,17.57],[89.78,-8.74],[115.39,-8.64],[115.38,-1.76],[115.37,4.0],[115.34,19.86],[107.99,19.84],[107.98,25.63],[94.57,25.58],[94.58,17.58],[89.73,17.57]],"name":"Kunskapsskolan","levels":2,"levelsSource":"visual assumption","storey":3.6,"roofRise":3,"frameColor":15657439},
       {"source":"88457600","polygon":[[79.7,63.91],[79.48,54.45],[85.17,54.33],[84.82,39.49],[89.99,39.38],[90.56,63.68],[79.7,63.91]],"name":"Komplementbyggnad 88457600","levels":1,"levelsSource":"visual assumption","storey":3.6,"roofRise":2,"frameColor":15657439},
       {"source":"88457601","polygon":[[147.34,-3.67],[125.29,-3.73],[124.91,-1.56],[115.38,-1.76],[115.37,4.0],[125.33,4.25],[126.01,24.18],[148.79,24.33],[147.34,-3.67]],"name":"\u00d6stra paviljongen vid Kunskapsskolan","levels":2,"levelsSource":"visual assumption","storey":3.6,"roofRise":3,"frameColor":15657439},
-      {"source":"88457606","polygon":[[105.93,-66.55],[116.99,-66.33],[117.06,-69.76],[126.92,-69.55],[126.86,-66.13],[128.15,-66.1],[127.98,-57.28],[126.68,-57.3],[126.56,-51.39],[116.7,-51.6],[116.82,-57.49],[105.74,-57.72],[105.64,-52.11],[92.39,-52.39],[92.49,-57.98],[81.35,-58.21],[81.21,-50.96],[71.71,-51.16],[72.07,-70.14],[81.58,-69.94],[81.53,-67.04],[92.67,-66.81],[92.72,-68.95],[105.96,-68.68],[105.93,-66.55]],"name":"F\u00f6rskolan Framtiden","levels":2,"levelsSource":"visual assumption","storey":3.6,"roofRise":3,"frameColor":15657439},
+      {"source":"88457606","polygon":[[105.93,-66.55],[116.99,-66.33],[117.06,-69.76],[126.92,-69.55],[126.86,-66.13],[128.15,-66.1],[127.98,-57.28],[126.68,-57.3],[126.56,-51.39],[116.7,-51.6],[116.82,-57.49],[105.74,-57.72],[105.64,-52.11],[92.39,-52.39],[92.49,-57.98],[81.35,-58.21],[81.21,-50.96],[71.71,-51.16],[72.07,-70.14],[81.58,-69.94],[81.53,-67.04],[92.67,-66.81],[92.72,-68.95],[105.96,-68.68],[105.93,-66.55]],"name":"F\u00f6rskolan Framtiden / byggnad 8","levels":2,"levelsSource":"Commons 2014 photo and Hemsö By8: two storeys","storey":4.3,"frameColor":15657439,
+        "campus":{"style":"stenhammar","sections":[{"name":"west pavilion","box":[71,-70.6,81.4,-50.5],"raise":1.2},{"name":"centre","box":[92.55,-69.4,105.85,-51.7],"raise":1.2},{"name":"east pavilion","box":[116.9,-70.2,128.6,-50.9],"raise":1.2}],
+          "centre":{"x":[92.72,105.96],"face":-68.82,"normal":-1,"depth":0,"pedDepth":1.6,"pediment":1.9,"roofBack":2.5},
+          "chimneys":[[76.6,-61.2],[122.6,-61],[99.3,-61.5],[87,-62.6],[111.5,-62.2]]}},
       {"source":"88457612","polygon":[[-5.23,-65.15],[6.26,-65.2],[6.22,-71.29],[15.76,-71.33],[15.89,-52.58],[6.38,-52.54],[6.35,-56.62],[-5.13,-56.57],[-5.11,-53.63],[-18.01,-53.57],[-18.04,-56.52],[-29.02,-56.47],[-29.0,-53.72],[-38.79,-53.67],[-38.89,-70.68],[-29.02,-70.73],[-28.98,-65.05],[-18.13,-65.1],[-18.17,-70.15],[-5.26,-70.22],[-5.23,-65.15]],"name":"NTI / skolan \u00f6ver gatan","levels":2,"levelsSource":"visual assumption","storey":4.3,"roofRise":3,"frameColor":15657439,"classic":true},
       {"source":"130578352","polygon":[[125.46,40.62],[119.55,40.67],[119.67,53.05],[125.59,53.0],[125.46,40.62]],"name":"Komplementbyggnad 130578352","levels":1,"levelsSource":"visual assumption","storey":3.6,"roofRise":2,"frameColor":15657439},
       {"source":"130678797","polygon":[[-41.57,-134.49],[-31.06,-134.87],[-30.95,-131.92],[-21.25,-132.27],[-21.36,-135.15],[-5.68,-135.72],[-5.58,-133.09],[4.47,-133.45],[4.35,-136.54],[15.03,-136.93],[15.85,-115.25],[4.21,-114.83],[3.94,-121.73],[-3.76,-121.45],[-3.63,-117.88],[-19.49,-117.3],[-19.68,-122.28],[-31.94,-121.83],[-31.75,-116.71],[-40.87,-116.38],[-41.57,-134.49]],"name":"\u00d6stra borgg\u00e5rden, byggnad 2","levels":2,"levelsSource":"visual assumption","storey":3.6,"roofRise":3,"frameColor":15657439},
@@ -870,6 +873,15 @@ export const SITE = {
         plinth: .85, plinthColor: 0xd9d4ca, apron: 1.2, piers: { width: .72, depth: .06, edge: .4 }, frieze: .85,
         cornice: [[-.28, .26, .12], [-.12, .14, .26], [.0, .12, .36]], frame: .12, mullion: .045,
         roof: { rise: 2.6, slope: .55, grid: 2 }, chimney: [.62, 1.5, .62] },
+      // Byggnad 2, 7 and 8 (#577, #578): Stenhammar's two-storey wards like the school (#564, byggnad 3): red brick, white
+      // rusticated quoins, plinth and floor band, a white cornice with dentils, segmental ground-floor windows with keystones
+      // and straight upper ones under cornice crowns. End pavilions and centre stand taller than the linking wings
+      // (`sections` with `raise`); low dark metal hips with brick chimneys.
+      stenhammar: { storeys: [4.3, 4.3], bay: 2.75, margin: 2.45, wall: 0xffffff, trim: 0xeeeae1, joint: 0xc3bbb0, glass: 0x405660,
+        windows: [{ sill: 1.05, head: 3.45, width: 1.35, arch: .2, crown: 'key' }, { sill: .95, head: 3.2, width: 1.35, crown: 'cornice' }],
+        plinth: .8, bands: [{ h: .22 }], cornice: [[-.45, .32, .12], [-.23, .14, .23], [-.08, .16, .34]],
+        dentil: { step: .55, width: .16, height: .22, depth: .09 }, quoin: .65, jointStep: .43, frame: .12, mullion: .045,
+        roof: { rise: 1.1, slope: .26, grid: 2 }, chimney: [.65, 1.45, .65] },
     },
 
     storey: 3.6,

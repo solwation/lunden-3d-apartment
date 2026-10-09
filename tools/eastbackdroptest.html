@@ -1,5 +1,5 @@
 <!doctype html><html><meta charset="utf-8"><title>East campus #535</title><pre id="out">running…</pre><script type="module">
-const lines=[],CAMPUS_TRIS=36000;let pass=true;const check=(ok,s)=>{lines.push(`${ok?'PASS':'FAIL'} ${s}`);pass&&=!!ok},wait=ms=>new Promise(r=>setTimeout(r,ms));
+const lines=[],CAMPUS_TRIS=44000;let pass=true;const check=(ok,s)=>{lines.push(`${ok?'PASS':'FAIL'} ${s}`);pass&&=!!ok},wait=ms=>new Promise(r=>setTimeout(r,ms));
 try{const f=document.createElement('iframe');f.width=720;f.height=480;f.src='../index.html?shot&month=6&cloud=';document.body.append(f);await new Promise(r=>f.onload=r);while(!f.contentWindow.__app)await wait(100);const w=f.contentWindow,A=w.__app,T=await w.eval("import('three')"),C=await w.eval("import('/src/config.js')"),S=await w.eval("import('/src/surroundings.js')"),G=await w.eval("import('/src/sitegeo.js')"),B=await w.eval("import('/src/sitebackdrop.js')"),W=C.SITE.east;
 const source=await fetch('../docs/references/surrounding-views/osm-2026-10-08.json').then(r=>r.json());
 check(W.buildings.length===16&&new Set(W.buildings.map(b=>b.source)).size===16,'sixteen unique campus footprints');
@@ -23,6 +23,12 @@ const ward=src=>group.userData.buildings.find(b=>b.source===src),b4=ward('884576
 check([b4,b9].every(b=>b.campus&&b.pieces[0].levels===1&&Math.abs(b.pieces[0].eave-b.base-4.7)<.01&&b.windows.length>40),'4 and 9: one-storey ward bodies with their own window rows');
 check(b4.pieces.length===2&&b4.pieces[1].levels===2&&b4.pieces[1].area<250&&b9.pieces.length===1,'4: one bounded two-storey block, 9: one storey throughout');
 check([b4,b9].every(b=>b.windows.every(w=>w.floor===0?w.arched:!w.arched)),'4 and 9: segmental ground-floor windows');
+// #578: byggnad 8 is two storeys with taller end pavilions and centre than its linking wings, and a pediment on the courtyard centre.
+const b8=ward('88457606'),p8=b8.pieces;
+check(p8.length===4&&p8.slice(1).every(q=>q.levels===2&&q.eave>p8[0].eave+1)&&Math.abs(p8[0].eave-b8.base-8.6)<.01,'8: pavilions and centre stand above the two-storey wings');
+const eastPav=b8.windows.filter(w=>w.floor===0&&w.n[0]<-.9&&w.x<72.5);
+check(eastPav.length===6&&b8.windows.filter(w=>w.floor===0&&w.n[1]<-.9&&w.x>71&&w.x<82).length===2,`8: six windows along the west pavilion side, two on its courtyard front (${eastPav.length})`);
+check(new T.Raycaster(new T.Vector3(99.3,b8.eave+1.2,-75),new T.Vector3(0,0,1),0,8).intersectObject(modern)[0]?.point.z<-68.5,'8: pediment on the courtyard centre');
 const real=W.buildings.find(b=>b.source==='relation/1309427'),hole=real.holes[0].slice(0,-1),cx=hole.reduce((v,p)=>v+p[0],0)/hole.length,cz=hole.reduce((v,p)=>v+p[1],0)/hole.length;check(!new T.Raycaster(new T.Vector3(cx,40,cz),new T.Vector3(0,-1,0),0,50).intersectObjects([facade,modern,A.scene.getObjectByName('east-roof')]).length,'Realgym courtyard remains actually open through roof/body');
 let shared=0;A.scene.traverse(m=>{if(m.isMesh&&m!==facade&&m.material.map===facade.material.map)shared++});check(facade.material.map&&shared>0,'brick texture reused from existing surrounding masonry');
 const trees=S.treeFeet.filter(t=>t.patch==='east-park');check(trees.length>50&&trees.every(t=>!B.onEastBuilding(t.x,t.z)&&!B.onEastAccess(t.x,t.z,.5)),`park rows/groves clear of houses and access: ${trees.length}`);check(trees.filter(t=>typeof t.source==='string'&&!t.source.startsWith('aerial')).length===5,'five actual mapped trees distinguished from aerial-interpreted rows');
