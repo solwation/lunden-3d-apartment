@@ -9,7 +9,7 @@ Du är orkestrerare för repot solwation/lunden-3d-apartment. Läs CLAUDE.md fö
 (Om inget område anges: alla öppna issues.)
 
 ## Uppdrag
-Implementera öppna GitHub-issues med subagenter (Agent-verktyget, `isolation: "worktree"`, i bakgrunden) tills inga
+Implementera öppna GitHub-issues med subagenter (Agent-verktyget, `isolation: "worktree"` i molnet, egen ext4-worktree lokalt i WSL, i bakgrunden) tills inga
 issues inom området finns kvar. Nya issues dyker upp löpande — lista om varje gång en agent blir klar.
 
 ## Miljö (molnsession)
@@ -22,6 +22,19 @@ issues inom området finns kvar. Nya issues dyker upp löpande — lista om varj
   är klar (`git worktree remove --force .claude/worktrees/agent-<id>` + `git branch -D worktree-agent-<id>`, aldrig en
   som fortfarande kör), och ge Chrome en tillfällig `--user-data-dir` som tas bort efter körningen (`rm -rf`).
 - VM:en har ~4 CPU:er: **högst 3 agenter samtidigt** — fler gör bara varje headless-test långsammare.
+
+## Miljö (lokal WSL)
+- Repot under `/mnt/c/...` går via 9p-bryggan och är ~100× långsammare. Kör orkestern i ext4-spegeln
+  `~/lunden-3d-apartment` (remote `winc` pekar på /mnt/c-kopian, se den globala CLAUDE.md).
+- `isolation: "worktree"` skapar worktreen under sessionens arbetskatalog, alltså på /mnt/c om sessionen startades där.
+  Starta därför agenterna **utan** `isolation`, och låt varje agent skapa en egen worktree på ext4:
+  `git -C ~/lunden-3d-apartment fetch origin main && git -C ~/lunden-3d-apartment worktree add --detach ~/lunden-wt/<namn> origin/main`.
+  Agenten arbetar bara där och tar bort den när den är klar (`git -C ~/lunden-3d-apartment worktree remove --force ~/lunden-wt/<namn>`).
+- Saknas google-chrome används Playwright Chromium (`~/.cache/ms-playwright/chromium-*/chrome-linux*/chrome --no-sandbox`).
+  Ge varje körning en tillfällig `--user-data-dir` och servera med `tools/devserve.py` på agentens egen port, precis som i molnet.
+- Om en tidigare orkestersession har krashat: läs dess statuskommentar i #420 och kommentarerna på de reserverade
+  issuerna. Leta efter rester i `~/lunden-wt/` och `git worktree list` (i både ext4- och /mnt/c-kopian). Fortsätt
+  sedan kedjorna och redigera den gamla statuskommentaren i stället för att skapa en ny.
 
 ## Synkronisering med andra orkestrar (issue #420, etikett `orkester`)
 Andra `/orkester`-sessioner kör på egna VM:ar och kan inte nås med SendMessage — GitHub är den gemensamma kanalen.
