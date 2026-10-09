@@ -375,6 +375,19 @@ export const SITE = {
   // roof with chimneys. One façade texture tile = a bay × the whole height (`storey`); `rows` = window-light
   // centres and sizes. A greenhouse in its yard and a 2.3 m brick wall with a black coping along the pavement.
   school: { bay: 3.0, storey: 8.6, roofPitch: 0.32, rows: [{ y: 2.05, s: [0.95, 1.6, 1] }, { y: 5.95, s: [0.95, 1.35, 1] }],
+    // #564 photo interpretation, not measured: see docs/validation/issue-564/README.md.
+    mapped: { roofRise: 1.05, roofSlope: .24, roofGrid: 1.2, seam: .6,
+      white: 0xeeeae1, joint: 0xc3bbb0, glass: 0x405660,
+      // Edge indices of unchanged OSM 88457612. Two windows on visible outer fronts;
+      // centre/rear/connecting-wing counts obscured by trees are guesses.
+      bays: [4,0,2,5,2,0,4,0,4,0,4,0,2,5,2,0,4,0,4,0],
+      fronts: [4,8,12], width: 1.5, sill: [1.05,5.25], head: [3.45,7.5],
+      archRise: .20, frame: .12, mullion: .045, quoin: .65, jointStep: .43,
+      plinth: .72, belt: [4.3,.22], cornice: [[-.45,.32,.12],[-.23,.14,.23],[-.08,.16,.34]],
+      dentil: { step: .48, width: .16, height: .22, depth: .20 },
+      chimneys: [[-34,-62],[-12,-62],[11,-62]], chimney: [.65,1.45,.65], cap: [.82,.12,.82],
+      brick: { mortar: '#96877b', base: [125,64,46], variation: 26 },
+      metal: ['#53585b','#333a3e','#697074'] },
     wall: { x0: -26, x1: 30, z: -32.15, h: 2.3, t: 0.3 }, greenhouse: { x0: 13, x1: 21, z0: -36.8, z1: -33.6, h: 2.2, ridge: 1.0 },
     chimneys: [-14, -3, 8, 17] },
   // HepCat Store and the long brick building behind it, east of our row across Sankt Lars väg (#127, the user's photos

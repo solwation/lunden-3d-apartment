@@ -449,7 +449,7 @@ function schoolGrounds() {
   const campus=S.east?.buildings.find(b=>b.source==='88457612'),main=S.blocks.find(b=>b.style==='school')??{base:0,x0:Math.min(...campus.polygon.map(p=>p[0])),x1:Math.max(...campus.polygon.map(p=>p[0])),z0:Math.min(...campus.polygon.map(p=>p[1])),z1:Math.max(...campus.polygon.map(p=>p[1]))};
   const chimneys=[],top=main.base+S.school.storey;
   const rise = S.school.roofPitch * Math.min(main.x1 - main.x0, main.z1 - main.z0) / 2 + 0.3;
-  for (const x of S.school.chimneys.filter(x=>x>main.x0&&x<main.x1)) chimneys.push(new THREE.BoxGeometry(0.7, 1.6, 0.5).translate(x, top + rise + 0.2, (main.z0 + main.z1) / 2 + (x % 2 ? 0.8 : -0.8)));
+  for (const x of (campus ? [] : S.school.chimneys).filter(x=>x>main.x0&&x<main.x1)) chimneys.push(new THREE.BoxGeometry(0.7, 1.6, 0.5).translate(x, top + rise + 0.2, (main.z0 + main.z1) / 2 + (x % 2 ? 0.8 : -0.8)));
   // greenhouse: a dark frame and glass panes under a pitched glass roof
   const frame = [], panes = [], cx = (G.x0 + G.x1) / 2, cz = (G.z0 + G.z1) / 2, d = G.z1 - G.z0;
   for (let x = G.x0; x <= G.x1 + 1e-6; x += (G.x1 - G.x0) / 8) for (const z of [G.z0, G.z1]) frame.push(new THREE.BoxGeometry(0.05, G.h, 0.05).translate(x, G.h / 2, z));

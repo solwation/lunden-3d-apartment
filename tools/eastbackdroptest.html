@@ -5,12 +5,19 @@ const source=await fetch('../docs/references/surrounding-views/osm-2026-10-08.js
 check(W.buildings.length===16&&new Set(W.buildings.map(b=>b.source)).size===16,'sixteen unique campus footprints');
 for(const b of W.buildings){const f=source.features.find(f=>f.id===b.source);check(f&&b.polygon.length===f.points.length&&b.polygon.every((q,i)=>{const p=G.geoToPlan(...f.points[i]);return Math.hypot(p[0]-q[0],p[1]-q[1])<.02}),`${b.name}: actual source polygon`);}
 check(C.SITE.blocks.filter(b=>b.style==='hepcat'||b.style==='hepcatWhite').length===2&&!C.SITE.blocks.some(b=>['school','longhouse'].includes(b.style)||b.name==='S:t Lars (old hospital)'),'HepCat detailed bodies retained, replaced school placeholders removed');
-const group=A.scene.getObjectByName('east-backdrop');check(group?.children.length===5&&group.children.every(m=>m.isMesh),'five merged exterior/access batches, shared brick map');
+const group=A.scene.getObjectByName('east-backdrop');check(group?.children.length===7&&group.children.every(m=>m.isMesh),'seven merged exterior/access batches including school masonry and metal');
 check(group.userData.buildings.every(b=>b.bottom<=Math.min(...b.polygon.map(p=>S.renderedTerrainY(...p)))&&b.eave>b.base+2),'plinths cover terrain');
-const glass=A.scene.getObjectByName('east-glass'),facade=A.scene.getObjectByName('east-facade'),modern=A.scene.getObjectByName('east-modern'),pos=glass.geometry.attributes.position,norm=glass.geometry.attributes.normal;A.scene.updateMatrixWorld(true);let visible=0,total=0;
-// Each pair has six frame vertices followed by six glass vertices.
-for(let i=6;i<pos.count;i+=12){total++;const centre=new T.Vector3();for(let j=0;j<3;j++)centre.addScaledVector(new T.Vector3().fromBufferAttribute(pos,i+j),[.2,.3,.5][j]);const n=new T.Vector3().fromBufferAttribute(norm,i),ray=new T.Raycaster(centre.clone().addScaledVector(n,1),n.clone().negate(),0,2);if(ray.intersectObjects([glass,facade,modern])[0]?.object===glass)visible++;}
+const glass=A.scene.getObjectByName('east-glass'),facade=A.scene.getObjectByName('east-facade'),modern=A.scene.getObjectByName('east-modern');A.scene.updateMatrixWorld(true);let visible=0,total=0;
+// Geometric window centres are independent of arch tessellation and trim topology.
+for(const b of group.userData.buildings)for(const win of b.windows??[]){
+ total++;const n=new T.Vector3(win.n[0],0,win.n[1]),centre=new T.Vector3(win.x+win.n[1]*win.width*.13,win.y+.09,win.z-win.n[0]*win.width*.13),ray=new T.Raycaster(centre.clone().addScaledVector(n,1),n.clone().negate(),0,2);
+ if(ray.intersectObjects([glass,facade,modern,A.scene.getObjectByName('east-schoolBrick')])[0]?.object===glass)visible++;
+}
 check(visible===total&&total>300,`actual outward windows ${visible}/${total}`);
+const school=group.userData.buildings.find(b=>b.classic);
+check([4,12].every(edge=>school.windows.filter(w=>w.edge===edge&&w.floor===0).length===2),'school outer fronts have two windows per floor');
+check(school.windows.filter(w=>w.floor===0).every(w=>w.arched)&&school.windows.filter(w=>w.floor===1).every(w=>!w.arched),'school shallow lower arches and straight upper windows');
+check(school.ridge-school.eave<1.1,'school roof stays low above continuous cornice');
 const real=W.buildings.find(b=>b.source==='relation/1309427'),hole=real.holes[0].slice(0,-1),cx=hole.reduce((v,p)=>v+p[0],0)/hole.length,cz=hole.reduce((v,p)=>v+p[1],0)/hole.length;check(!new T.Raycaster(new T.Vector3(cx,40,cz),new T.Vector3(0,-1,0),0,50).intersectObjects([facade,modern,A.scene.getObjectByName('east-roof')]).length,'Realgym courtyard remains actually open through roof/body');
 let shared=0;A.scene.traverse(m=>{if(m.isMesh&&m!==facade&&m.material.map===facade.material.map)shared++});check(facade.material.map&&shared>0,'brick texture reused from existing surrounding masonry');
 const trees=S.treeFeet.filter(t=>t.patch==='east-park');check(trees.length>50&&trees.every(t=>!B.onEastBuilding(t.x,t.z)&&!B.onEastAccess(t.x,t.z,.5)),`park rows/groves clear of houses and access: ${trees.length}`);check(trees.filter(t=>typeof t.source==='string'&&!t.source.startsWith('aerial')).length===5,'five actual mapped trees distinguished from aerial-interpreted rows');

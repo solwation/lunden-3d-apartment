@@ -3,6 +3,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { SITE, SEASON } from './config.js';
 import { pathStrip, onRoad, onWalk } from './roads.js';
 import { registerSnow } from './seasons.js';
+import { buildSchoolFacade, schoolTextures } from './schoolfacade.js';
 const W=SITE.west;
 const shape=poly=>new THREE.Shape(poly.map(([x,z])=>new THREE.Vector2(x,-z)));
 const strip=(a,b,low,top)=>{const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute([a[0],low,a[1],b[0],low,b[1],b[0],top[1],b[1],a[0],low,a[1],b[0],top[1],b[1],a[0],top[0],a[1]],3));g.computeVertexNormals();return g;};
@@ -30,8 +31,10 @@ export function buildWestBackdrop(ground){return buildBackdrop(SITE.west,'west',
 export function buildEastBackdrop(ground,brick){return buildBackdrop(SITE.east,'east',ground,brick);}
 export function buildNorthBackdrop(ground,brick){return buildBackdrop(SITE.north,'north',ground,brick);}
 function buildBackdrop(W,key,ground,brick=null){
- const group=new THREE.Group();group.name=key+'-backdrop';const parts={facade:[],roof:[],glass:[],access:[],...(brick?{modern:[]}: {})},records=[];
+ const group=new THREE.Group();group.name=key+'-backdrop';const parts={facade:[],roof:[],glass:[],access:[],...(brick||W.buildings.some(b=>b.classic)?{modern:[]}: {})},records=[];
  for(const b of W.buildings){const p=b.polygon.slice(0,-1),holes=(b.holes??[]).map(h=>h.slice(0,-1)),height=b.storey??W.storey,heights=p.map(v=>ground(...v)),base=Math.max(...heights),bottom=Math.min(...heights)-.1,eave=base+b.levels*height;const footprint=shape(p);footprint.holes=holes.map(h=>new THREE.Path(h.map(([x,z])=>new THREE.Vector2(x,-z))));const wallParts=b.modern?parts.modern:parts.facade;
+  if(b.classic){parts.schoolBrick??=[];parts.schoolRoof??=[];const school=buildSchoolFacade(p,base,bottom,eave,parts);records.push({...b,base,bottom,eave,...school});continue;}
+  const windows=[];
   const body=new THREE.ExtrudeGeometry(footprint,{depth:eave-bottom,bevelEnabled:false,steps:1});body.rotateX(-Math.PI/2).translate(0,bottom,0);const bodyGeo=plain(body),cols=[],col=new THREE.Color();for(let i=0;i<bodyGeo.attributes.position.count;i++){col.setHex(bodyGeo.attributes.position.getY(i)<base-.03?W.plinth:(b.facade??W.facade));cols.push(col.r,col.g,col.b);}bodyGeo.setAttribute('color',new THREE.Float32BufferAttribute(cols,3));wallParts.push(bodyGeo);
   // Dominant footprint edge supplies the long roof axis, preserving diagonal building alignment.
   let edge=0,long=0;for(let i=0;i<p.length;i++){const q=p[(i+1)%p.length],len=Math.hypot(q[0]-p[i][0],q[1]-p[i][1]);if(len>long){long=len;edge=i;}}
@@ -43,57 +46,24 @@ function buildBackdrop(W,key,ground,brick=null){
    const dx=c[0]-a[0],dz=c[1]-a[1],len=Math.hypot(dx,dz);
    const orientation=(hole?-1:1)*Math.sign(ring.reduce((sum,q,j)=>{const r=ring[(j+1)%ring.length];return sum+q[0]*r[1]-r[0]*q[1];},0));
    const nx=orientation*dz/len,nz=-orientation*dx/len; // A double-sided decal avoids assuming footprint winding from map data.
-   if(b.classic&&parts.modern){
-    const white=b.frameColor??0xf1eee6,rot=Math.atan2(dx,dz),cx=(a[0]+c[0])/2,cz=(a[1]+c[1])/2;
-    const cornice=plain(new THREE.BoxGeometry(0.18,0.36,len+0.1).rotateY(rot).translate(cx+nx*0.08,eave-0.18,cz+nz*0.08));cornice.userData.tint=white;parts.modern.push(cornice);
-    if(b.levels>1){const belt=plain(new THREE.BoxGeometry(0.12,0.22,len+0.05).rotateY(rot).translate(cx+nx*0.05,base+height,cz+nz*0.05));belt.userData.tint=white;parts.modern.push(belt);}
-    const plinthBand=plain(new THREE.BoxGeometry(0.10,0.14,len+0.05).rotateY(rot).translate(cx+nx*0.04,base+0.6,cz+nz*0.04));plinthBand.userData.tint=white;parts.modern.push(plinthBand);
-   }
    if(len<W.bay)continue;
    for(let k=1;k*W.bay+W.window[0]/2+W.frame<len;k++)for(let floor=0;floor<b.levels;floor++){
     const x=a[0]+dx/len*k*W.bay,z=a[1]+dz/len*k*W.bay,y=base+floor*height+W.sill;
     const frame=plain(new THREE.PlaneGeometry(W.window[0]+W.frame*2,W.window[1]+W.frame*2).rotateY(Math.atan2(nx,nz)).translate(x+nx*.015,y+W.window[1]/2,z+nz*.015));frame.userData.tint=b.frameColor??0xe3e0d6;(brick?parts.glass:parts.facade).push(frame);
-    const geo=new THREE.PlaneGeometry(...W.window);geo.rotateY(Math.atan2(nx,nz)).translate(x+nx*.02,y+W.window[1]/2,z+nz*.02);parts.glass.push(plain(geo));
-    if(b.classic&&parts.modern){
-     const white=b.frameColor??0xf1eee6,winRot=Math.atan2(nx,nz);
-     if(floor>0){
-      const ped=plain(new THREE.BoxGeometry(W.window[0]+0.34,0.14,0.12).rotateY(winRot).translate(x+nx*0.06,y+W.window[1]+0.07,z+nz*0.06));ped.userData.tint=white;parts.modern.push(ped);
-     }else{
-      const lintel=plain(new THREE.BoxGeometry(W.window[0]+0.24,0.18,0.08).rotateY(winRot).translate(x+nx*0.05,y+W.window[1]+0.08,z+nz*0.05));
-      const keystone=plain(new THREE.BoxGeometry(0.20,0.28,0.12).rotateY(winRot).translate(x+nx*0.06,y+W.window[1]+0.12,z+nz*0.06));
-      lintel.userData.tint=white;keystone.userData.tint=white;parts.modern.push(lintel,keystone);
-     }
-    }
+    const geo=new THREE.PlaneGeometry(...W.window);geo.rotateY(Math.atan2(nx,nz)).translate(x+nx*.02,y+W.window[1]/2,z+nz*.02);parts.glass.push(plain(geo));windows.push({x:x+nx*.02,y:y+W.window[1]/2,z:z+nz*.02,n:[nx,nz],width:W.window[0],height:W.window[1]});
    }
   }
-  if(b.classic&&parts.modern){
-   const white=b.frameColor??0xf1eee6,step=0.44;
-   for(let i=0;i<p.length;i++){
-    const prev=p[(i-1+p.length)%p.length],curr=p[i],next=p[(i+1)%p.length];
-    const v1x=curr[0]-prev[0],v1z=curr[1]-prev[1],v2x=next[0]-curr[0],v2z=next[1]-curr[1];
-    if(v1x*v2z-v1z*v2x<=0)continue;
-    const len1=Math.hypot(v1x,v1z),len2=Math.hypot(v2x,v2z);
-    const u1x=-v1x/len1,u1z=-v1z/len1,u2x=v2x/len2,u2z=v2z/len2;
-    const n1x=v1z/len1,n1z=-v1x/len1,n2x=v2z/len2,n2z=-v2x/len2;
-    const rot1=Math.atan2(v1x,v1z),rot2=Math.atan2(v2x,v2z);
-    let k=0;
-    for(let y=base+0.6;y+step<=eave-0.2;k++,y+=step){
-     const l1=k%2===0?0.55:0.32,l2=k%2===0?0.32:0.55;
-     const q1=plain(new THREE.BoxGeometry(0.08,step-0.05,l1).rotateY(rot1).translate(curr[0]+u1x*l1/2+n1x*0.035,y+step/2,curr[1]+u1z*l1/2+n1z*0.035));q1.userData.tint=white;
-     const q2=plain(new THREE.BoxGeometry(0.08,step-0.05,l2).rotateY(rot2).translate(curr[0]+u2x*l2/2+n2x*0.035,y+step/2,curr[1]+u2z*l2/2+n2z*0.035));q2.userData.tint=white;
-     parts.modern.push(q1,q2);
-    }
-   }
-  }
-  records.push({...b,base,bottom,eave,ridge:eave+rise});
+  records.push({...b,base,bottom,eave,ridge:eave+rise,windows});
  }
  for(const p of [...W.paths,...W.access]){
   if(p.path)parts.access.push(plain(pathStrip(p,w=>-w/2,w=>w/2,W.pathLift,ground)));
   else{const geo=new THREE.ShapeGeometry(shape(p.polygon));geo.rotateX(-Math.PI/2);const a=geo.attributes.position;for(let i=0;i<a.count;i++)a.setY(i,ground(a.getX(i),a.getZ(i))+W.pathLift);geo.computeVertexNormals();parts.access.push(plain(geo));}
  }
  const mats={facade:new THREE.MeshStandardMaterial({color:0xffffff,vertexColors:true,roughness:.95,side:THREE.DoubleSide}),roof:new THREE.MeshStandardMaterial({color:W.roof,roughness:.85,side:THREE.DoubleSide}),glass:new THREE.MeshStandardMaterial({color:brick?0xffffff:W.glass,vertexColors:!!brick,roughness:.3,metalness:.25,side:THREE.DoubleSide}),access:new THREE.MeshStandardMaterial({color:0xa7a397,roughness:1,side:THREE.DoubleSide})};
- if(brick){mats.facade.map=brick;mats.modern=new THREE.MeshStandardMaterial({color:0xffffff,vertexColors:true,roughness:.95,side:THREE.DoubleSide});}
+ if(brick)mats.facade.map=brick;
+ if(parts.modern){mats.modern=new THREE.MeshStandardMaterial({color:0xffffff,vertexColors:true,roughness:.95,side:THREE.DoubleSide});}
+ if(parts.schoolBrick){const maps=schoolTextures();mats.schoolBrick=new THREE.MeshStandardMaterial({map:maps.brick,roughness:.95,side:THREE.DoubleSide});mats.schoolRoof=new THREE.MeshStandardMaterial({map:maps.roof,roughness:.65,side:THREE.DoubleSide});registerSnow(mats.schoolRoof,SEASON.snow.roof);}
  registerSnow(mats.roof,SEASON.snow.roof);registerSnow(mats.access,SEASON.snow.paving);
- for(const [k,list]of Object.entries(parts)){if(['facade','modern','glass'].includes(k)&&brick||k==='facade')for(const g of list)if(!g.attributes.color){const c=new THREE.Color(g.userData.tint??(k==='glass'?W.glass:W.facade)),cols=Array.from({length:g.attributes.position.count},()=>[c.r,c.g,c.b]).flat();g.setAttribute('color',new THREE.Float32BufferAttribute(cols,3));}if(!list.length)continue;for(const g of list)if(k==='facade'&&brick){const uv=[],a=g.attributes.position,n=g.attributes.normal;for(let i=0;i<a.count;i++)uv.push((Math.abs(n.getX(i))>Math.abs(n.getZ(i))?a.getZ(i):a.getX(i))/2,a.getY(i)/2);g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));}const mesh=new THREE.Mesh(mergeGeometries(list),mats[k]);mesh.name=key+'-'+k;mesh.receiveShadow=true;mesh.castShadow=k!=='access';group.add(mesh);list.forEach(g=>g.dispose());}
+ for(const [k,list]of Object.entries(parts)){if(['facade','modern'].includes(k)||k==='glass'&&brick)for(const g of list)if(!g.attributes.color){const c=new THREE.Color(g.userData.tint??(k==='glass'?W.glass:W.facade)),cols=Array.from({length:g.attributes.position.count},()=>[c.r,c.g,c.b]).flat();g.setAttribute('color',new THREE.Float32BufferAttribute(cols,3));}if(!list.length)continue;for(const g of list)if(k==='schoolBrick'||k==='facade'&&brick){const uv=[],a=g.attributes.position,n=g.attributes.normal;for(let i=0;i<a.count;i++)uv.push((Math.abs(n.getX(i))>Math.abs(n.getZ(i))?a.getZ(i):a.getX(i))/2,a.getY(i)/2);g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));}const mesh=new THREE.Mesh(mergeGeometries(list),mats[k]);mesh.name=key+'-'+k;mesh.receiveShadow=true;mesh.castShadow=k!=='access';group.add(mesh);list.forEach(g=>g.dispose());}
  group.userData.buildings=records;return group;
 }
