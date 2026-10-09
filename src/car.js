@@ -132,6 +132,7 @@ export class Car {
     g.visible = false;
     g.rotation.order = 'YZX'; // yaw, then the pitch on a slope (#358: the drive, Karpvägen)
     g.userData.moving = true; // it drives while the visitor stands still: the detail culler judges it every update (#267)
+    g.userData.detailUnit = true; // and as one thing out of its stall: never a body without its wheels far off (#598)
     this.object = g;
     Object.assign(this, { state: 'gone', d: 0, speed: 0, blinkT: 0, hum: null, path: null, plateText: C.plate, leaveWhenShut: false, awake: 0, via: 'street' });
     this.ground = () => 0; // the road's height under (x, z) (main.js: the terrain, the garage's floor)
@@ -251,6 +252,7 @@ export class Car {
   }
 
   update(dt, night, player) {
+    this.object.userData.detailUnit = this.state !== 'garage'; // in its stall its small parts may go one by one (#598)
     this.blinkT = Math.max(0, this.blinkT - dt);
     this.blinkMat.emissiveIntensity = this.blinkT > 0 && Math.floor(this.blinkT * 3) % 2 === 0 ? 2.5 : 0;
     this.lightMat.emissiveIntensity = night ? 2.2 : 0.3;

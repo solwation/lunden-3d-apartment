@@ -14,6 +14,9 @@ import { PERF } from './config.js';
 // camera has moved (#267 — the car's wheels and rear windows stayed hidden from when it was far away).
 // The lit parts of the lamps (materials with `userData.lamp`, set by lights.js) are never culled for being small: a
 // glowing shade or bulb that vanished a few metres off made the lamp look off (#294); from outside, walls still hide them.
+// A root whose `userData.detailUnit` is true is judged as one thing (#598): all its meshes are shown or hidden together, by
+// the size of the whole (the car: its wheels went at ~40 m while the body, too big to cull, drove on floating). The flag
+// may change while running (the car sets it except in its garage stall): while false its meshes are judged one by one.
 
 const HIDDEN = 7; // the layer far-away details go to
 const D = PERF.detail;
@@ -33,10 +36,15 @@ export class DetailCuller {
     this.moving = []; // the items under a root with userData.moving
     this.movers = []; // those roots: their matrices are brought up to date before they are judged (no render has run yet)
     root.updateMatrixWorld(true);
-    const walk = (o, moving) => {
+    const walk = (o, moving, unit) => {
       if (o.userData.moving && !moving) this.movers.push(o);
       moving ||= !!o.userData.moving;
-      for (const c of o.children) walk(c, moving);
+      if ('detailUnit' in o.userData && !unit) {
+        unit = this.unit(o);
+        this.items.push(unit);
+        if (moving) this.moving.push(unit);
+      }
+      for (const c of o.children) walk(c, moving, unit);
       if (!o.isMesh || o.isInstancedMesh || !o.geometry) return;
       if (!o.geometry.boundingSphere) o.geometry.computeBoundingSphere();
       const s = o.geometry.boundingSphere;
@@ -48,18 +56,33 @@ export class DetailCuller {
       // but it belongs to the visible facade, not to contents behind a closed leaf (#519).
       const exteriorDoor = !!o.userData.door?.exterior;
       const it = { o, r, center: s.center.clone(), cut: baseCut, baseCut, far: false, lamp, exteriorDoor };
-      this.items.push(it);
-      if (moving) this.moving.push(it);
+      if (unit) unit.parts.push(it); // judged one by one only while its unit's flag is off
+      else { this.items.push(it); if (moving) this.moving.push(it); }
     };
-    walk(root, false);
+    walk(root, false, null);
     this.qualityScale = 1.0;
+  }
+
+  /** The item for the whole of `root` (userData.detailUnit, #598): its bounding sphere, every mesh under it. */
+  unit(root) {
+    const meshes = [], box = new THREE.Box3();
+    root.traverse((o) => {
+      if (!o.isMesh || o.isInstancedMesh || !o.geometry) return;
+      meshes.push(o);
+      if (!o.geometry.boundingBox) o.geometry.computeBoundingBox();
+      box.union(o.geometry.boundingBox.clone().applyMatrix4(o.matrixWorld));
+    });
+    const s = box.isEmpty() ? new THREE.Sphere() : box.getBoundingSphere(new THREE.Sphere());
+    const center = root.worldToLocal(s.center.clone()); // judged in the root's frame: it follows the root as it moves
+    const baseCut = s.radius < D.maxR ? Math.max(D.minDist, s.radius / D.k) : Infinity;
+    return { o: root, meshes, parts: [], r: s.radius, center, cut: baseCut, baseCut, far: false, lamp: false, exteriorDoor: false };
   }
 
   /** Set quality distance scaling factor (1.0 = high, 0.7 = medium/low) (#460). */
   setQuality(scale = 1.0) {
     if (Math.abs(this.qualityScale - scale) < 1e-3) return;
     this.qualityScale = scale;
-    for (const it of this.items) {
+    for (const it of this.items.flatMap((x) => [x, ...(x.parts ?? [])])) {
       if (it.baseCut !== Infinity) it.cut = Math.max(D.minDist * 0.8, it.baseCut * scale);
     }
     this.refresh();
@@ -73,16 +96,24 @@ export class DetailCuller {
     if (still && !this.moving.length) return;
     if (!still) this.last.copy(p);
     for (const o of this.movers) o.updateMatrixWorld();
-    const w = this.w ??= new THREE.Vector3();
+    this.w ??= new THREE.Vector3();
     const { W, D: Dz, roof } = this.box;
     const outside = p.x < 0 || p.x > W || p.z < 0 || p.z > Dz || p.y > roof;
     for (const it of still ? this.moving : this.items) {
-      w.copy(it.center).applyMatrix4(it.o.matrixWorld);
-      const far = w.distanceToSquared(p) > it.cut * it.cut || (outside && !it.exteriorDoor && this.hidden(p, w, it.r));
-      if (far === it.far) continue;
-      it.far = far;
-      if (far) it.o.layers.set(HIDDEN); else it.o.layers.set(0);
+      if (!it.parts) this.judge(it, p, outside);
+      else if (it.o.userData.detailUnit) { if (this.judge(it, p, outside)) for (const q of it.parts) q.far = null; } // the whole
+      else { it.far = null; for (const q of it.parts) this.judge(q, p, outside); } // its flag off: one by one
     }
+  }
+
+  /** Is item `it` too far / hidden from `p`? Moves its mesh(es) to the right layer; true when that changed. */
+  judge(it, p, outside) {
+    const w = this.w.copy(it.center).applyMatrix4(it.o.matrixWorld);
+    const far = w.distanceToSquared(p) > it.cut * it.cut || (outside && !it.exteriorDoor && this.hidden(p, w, it.r));
+    if (far === it.far) return false;
+    it.far = far;
+    for (const o of it.meshes ?? [it.o]) o.layers.set(far ? HIDDEN : 0);
+    return true;
   }
 
   /** Seen from `eye` (outside the flat), is a thing at `c` (radius r) inside it hidden by the walls? */
@@ -105,5 +136,8 @@ export class DetailCuller {
   refresh() { this.last.set(1e9, 0, 0); }
 
   /** Everything back on the normal layer (screenshots of detail, tests). */
-  reset() { for (const it of this.items) { it.far = false; it.o.layers.set(0); } this.last.set(1e9, 0, 0); }
+  reset() {
+    for (const it of this.items) { it.far = false; for (const o of it.meshes ?? [it.o]) o.layers.set(0); for (const q of it.parts ?? []) q.far = false; }
+    this.last.set(1e9, 0, 0);
+  }
 }
