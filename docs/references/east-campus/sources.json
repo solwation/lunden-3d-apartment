@@ -1,0 +1,46 @@
+{
+  "retrieved": "2026-10-09",
+  "purpose": "Fasadunderlag för de gamla sjukhusbyggnaderna öster om Lunden (#576–#581). Bilder kopplas till byggnadsnummer på Hemsös karta och OSM-fotavtryck i SITE.east, inte till verksamhetsnamn.",
+  "map": {
+    "hemso-karta-st-lars.png": {
+      "url": "https://st-larsparken.hemso.se/content/uploads/sites/8/2024/05/Karta-StLars.png",
+      "publisher": "Hemsö, S:t Larsparken",
+      "note": "Byggnadsnummer runt borggården: 04 och 09 kortsidor, 02-01-07 norra raden, 03-88-08 södra raden, 19 söder om huvudgatan."
+    }
+  },
+  "photos": {
+    "hemso-byggnad-4-historisk.png": {
+      "url": "https://www.hemso.se/content/uploads/sites/8/2024/04/By4.png",
+      "page": "https://st-larsparken.hemso.se/historia/byggnader-runt-borggarden/byggnad-4-och-9/",
+      "building": "4 (OSM 88457613)",
+      "date": "okänt, historiskt svartvitt foto",
+      "side": "okänd sida; hörn med tvåvåningsdel, lägre utskjutande del och lång envåningslänga",
+      "kind": "historiskt"
+    },
+    "commons-byggnad-4-2014.jpg": {
+      "url": "https://commons.wikimedia.org/wiki/File:Building_No._4_of_former_St._Lars_Hospital_in_Lund_Sweden.JPG",
+      "author": "Peter Sondhauss",
+      "license": "CC BY-SA 3.0",
+      "building": "4 (OSM 88457613); byggnad 2 och klocktornet på byggnad 1 i bakgrunden",
+      "date": "2014-03-28",
+      "side": "ändpaviljong och lång envåningslänga från borggårdssidan (sida tolkad, inte angiven av fotografen)",
+      "kind": "nutida"
+    },
+    "commons-byggnad-9-2014.jpg": {
+      "url": "https://commons.wikimedia.org/wiki/File:Building_No._9_of_former_St._Lars_Hospital_in_Lund_Sweden.JPG",
+      "author": "Peter Sondhauss",
+      "license": "CC BY-SA 3.0",
+      "building": "9 (OSM 88457547); byggnad 8 i bakgrunden till vänster",
+      "date": "2014-03-28",
+      "side": "södra ändkroppen snett från sydost med den långa längan bakåt (tolkat från byggnad 8:s läge i bilden)",
+      "kind": "nutida"
+    },
+    "peab-forskolan-framtiden-gard.jpg": {
+      "url": "https://peabbostad.se/siteassets/vitec-gallery-images/kv.lunden-st.lars-forskolan-framtiden_5a79uihu1h8uopvd_rwzwo8baw8.jpg",
+      "publisher": "Peab Bostad, Kv. Lunden",
+      "date": "okänt (publicerad för Kv. Lunden, efter 2020)",
+      "building": "osäker: filnamnet anger förskolan Framtiden (byggnad 8), men envåningsflygeln med bågfönster mellan vita pilastrar har byggnad 4/9:s arkitektur. Tolkas som byggnad 9:s södra del sedd från Framtidens gård, med byggnad 8:s gavel till vänster. Används bara som stöd för att 9 i dag är vitputsad.",
+      "kind": "nutida"
+    }
+  }
+}

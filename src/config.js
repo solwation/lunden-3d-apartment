@@ -778,7 +778,8 @@ export const SITE = {
   east: {
     buildings: [
       {"source":"88457546","polygon":[[39.82,-133.52],[50.71,-133.78],[50.79,-130.68],[64.45,-131.0],[64.9,-113.43],[50.44,-113.08],[50.33,-117.48],[45.1,-117.36],[45.18,-114.52],[26.82,-114.08],[26.39,-131.02],[39.88,-131.33],[39.82,-133.52]],"name":"Sankt Thomas skola","levels":2,"levelsSource":"visual assumption","storey":3.6,"roofRise":3,"frameColor":15657439},
-      {"source":"88457547","polygon":[[138.12,-129.52],[138.19,-137.81],[133.49,-137.87],[133.57,-147.48],[137.9,-147.43],[137.94,-151.12],[149.85,-150.99],[149.82,-147.73],[154.48,-147.67],[154.39,-138.06],[150.15,-138.11],[150.07,-129.28],[166.05,-129.1],[165.94,-116.99],[149.39,-117.17],[148.9,-63.59],[161.35,-63.45],[161.24,-52.48],[136.64,-52.75],[136.71,-59.94],[136.28,-59.94],[136.91,-129.54],[138.12,-129.52]],"name":"H\u00f6jebroskolan / byggnad 9","levels":2,"levelsSource":"visual assumption","storey":3.6,"roofRise":3,"frameColor":15657439},
+      {"source":"88457547","polygon":[[138.12,-129.52],[138.19,-137.81],[133.49,-137.87],[133.57,-147.48],[137.9,-147.43],[137.94,-151.12],[149.85,-150.99],[149.82,-147.73],[154.48,-147.67],[154.39,-138.06],[150.15,-138.11],[150.07,-129.28],[166.05,-129.1],[165.94,-116.99],[149.39,-117.17],[148.9,-63.59],[161.35,-63.45],[161.24,-52.48],[136.64,-52.75],[136.71,-59.94],[136.28,-59.94],[136.91,-129.54],[138.12,-129.52]],"name":"H\u00f6jebroskolan / byggnad 9","levels":1,"levelsSource":"Commons 2014 photo of the south block and long wing: one storey","storey":4.7,"frameColor":15657439,
+        "campus":{"style":"ward","chimneys":[[143,-75],[143,-95],[143,-115],[149,-57.5],[144,-142]]}},
       {"source":"88457552","polygon":[[105.08,-126.68],[116.15,-126.46],[116.21,-129.88],[126.08,-129.69],[126.0,-126.27],[127.31,-126.24],[127.14,-117.41],[125.83,-117.44],[125.71,-111.53],[115.85,-111.72],[115.97,-117.63],[104.89,-117.86],[104.79,-112.25],[91.54,-112.51],[91.65,-118.12],[80.5,-118.34],[80.35,-111.1],[70.85,-111.29],[71.23,-130.27],[80.74,-130.08],[80.68,-127.17],[91.83,-126.95],[91.87,-129.08],[105.11,-128.82],[105.08,-126.68]],"name":"F\u00f6rskolan Freinet","levels":2,"levelsSource":"visual assumption","storey":3.6,"roofRise":3,"frameColor":15657439},
       {"source":"88457558","polygon":[[273.63,-69.61],[292.05,-79.29],[296.27,-71.27],[277.85,-61.58],[273.63,-69.61]],"name":"Komplementbyggnad 88457558","levels":1,"levelsSource":"visual assumption","storey":3.6,"roofRise":2,"frameColor":15657439},
       {"source":"88457565","polygon":[[228.12,-65.56],[261.7,-65.44],[261.68,-53.62],[260.67,-53.63],[260.66,-49.35],[252.87,-49.38],[252.88,-54.29],[228.1,-54.38],[228.12,-65.56]],"name":"F\u00f6rskolan Kastanjen","levels":1,"levelsSource":"visual assumption","storey":3.6,"roofRise":2,"frameColor":15657439},
@@ -791,7 +792,8 @@ export const SITE = {
       {"source":"130678797","polygon":[[-41.57,-134.49],[-31.06,-134.87],[-30.95,-131.92],[-21.25,-132.27],[-21.36,-135.15],[-5.68,-135.72],[-5.58,-133.09],[4.47,-133.45],[4.35,-136.54],[15.03,-136.93],[15.85,-115.25],[4.21,-114.83],[3.94,-121.73],[-3.76,-121.45],[-3.63,-117.88],[-19.49,-117.3],[-19.68,-122.28],[-31.94,-121.83],[-31.75,-116.71],[-40.87,-116.38],[-41.57,-134.49]],"name":"\u00d6stra borgg\u00e5rden, byggnad 2","levels":2,"levelsSource":"visual assumption","storey":3.6,"roofRise":3,"frameColor":15657439},
       {"source":"130681301","polygon":[[72.93,40.79],[46.47,40.46],[46.68,19.41],[28.4,19.19],[28.0,58.28],[72.74,58.83],[72.93,40.79]],"name":"Consensum / l\u00e5nga tegelbyggnaden","levels":1,"levelsSource":"visual assumption","storey":3.8,"roofRise":2,"frameColor":13675862},
       {"source":"145221568","polygon":[[43.51,2.27],[43.59,-7.33],[50.43,-7.26],[50.34,2.34],[43.51,2.27]],"name":"Komplementbyggnad 145221568","levels":1,"levelsSource":"visual assumption","storey":3.6,"roofRise":2,"frameColor":15657439},
-      {"source":"88457613","polygon":[[-64.12,-68.25],[-63.81,-121.44],[-67.62,-121.47],[-67.63,-120.2],[-77.62,-120.28],[-77.54,-133.09],[-67.3,-133.01],[-67.32,-130.44],[-64.01,-130.41],[-64.01,-132.44],[-63.91,-149.78],[-59.73,-149.75],[-59.7,-153.85],[-51.38,-153.78],[-51.4,-150.45],[-46.25,-150.41],[-46.3,-141.13],[-50.67,-141.15],[-50.68,-139.83],[-57.96,-139.88],[-58.01,-132.56],[-50.03,-132.49],[-50.46,-56.41],[-74.94,-56.6],[-74.87,-68.33],[-64.12,-68.25]],"name":"Montessorigrundskolan","levels":2,"levelsSource":"visual assumption","storey":3.6,"roofRise":3,"frameColor":15657439},
+      {"source":"88457613","polygon":[[-64.12,-68.25],[-63.81,-121.44],[-67.62,-121.47],[-67.63,-120.2],[-77.62,-120.28],[-77.54,-133.09],[-67.3,-133.01],[-67.32,-130.44],[-64.01,-130.41],[-64.01,-132.44],[-63.91,-149.78],[-59.73,-149.75],[-59.7,-153.85],[-51.38,-153.78],[-51.4,-150.45],[-46.25,-150.41],[-46.3,-141.13],[-50.67,-141.15],[-50.68,-139.83],[-57.96,-139.88],[-58.01,-132.56],[-50.03,-132.49],[-50.46,-56.41],[-74.94,-56.6],[-74.87,-68.33],[-64.12,-68.25]],"name":"Montessorigrundskolan / byggnad 4","levels":1,"levelsSource":"Commons 2014 photo: one-storey wards; two-storey block from Hemsö By4 photo (position guess)","storey":4.7,"frameColor":15657439,
+        "campus":{"style":"ward","sections":[{"name":"two-storey block","box":[-64.3,-133.2,-49.8,-120.1],"levels":2}],"chimneys":[[-57.2,-72],[-57.2,-92],[-57.2,-112],[-57,-126.6],[-55.5,-146]]}},
       {"source":"relation/1309427","modern":true,"roof":"flat","facade":13813939,"polygon":[[24.22,-78.12],[61.31,-77.75],[61.01,-40.76],[23.92,-41.13],[24.22,-78.12]],"holes":[[[36.21,-66.93],[51.38,-66.63],[51.09,-49.91],[35.92,-50.2],[36.21,-66.93]]],"name":"Realgymnasiet / byggnad 88","levels":2,"levelsSource":"visual assumption","storey":3.6,"roofRise":3,"frameColor":15657439},
     ],
     paths: [
@@ -825,6 +827,20 @@ export const SITE = {
     treeRows: [{"name":"west-campus-avenue","from":[58,-151],"to":[60,-30],"step":13},{"name":"central-crossing","from":[74,-19],"to":[181,-19],"step":14},{"name":"eastern-park-avenue","from":[207,-151],"to":[209,-57],"step":14},{"name":"northern-courtyard","from":[73,-166],"to":[182,-166],"step":15}],
     treePatches: [{"name":"east-park","polygon":[[177,-148],[192,-144],[190,-75],[174,-69]],"n":10},{"name":"east-meadow-edge","polygon":[[206,-22],[219,-60],[242,-46],[227,-5]],"n":12},{"name":"far-park","polygon":[[269,-153],[302,-147],[299,-96],[274,-100]],"n":8}],
     // Mapped tree positions; dimensions/age/species are assumptions. Slight size variation, no random relocation.
+    // #576–#581 (src/campusfacades.js): photo-based facades of the old hospital buildings, from the Commons photos
+    // (Peter Sondhauss, March 2014) and Hemsö's historical photos in docs/references/east-campus/. Proportions are read
+    // from the photos against storey and window heights; every metre here is a *guess*, not a measurement.
+    // `storeys` = floor heights from the plinth, `windows` per floor (sill/head from the floor, `arch` = rise of a
+    // segmental head, `crown` key/cornice), `bay` = window spacing, `margin` = clear wall at each end of a stretch.
+    facadeStyles: {
+      // Byggnad 4 and 9 (#576): one-storey wards of the 1870s, today white render over the plinth (apron), white piers
+      // between the brick window bays and a white frieze under the eaves; dark metal hip roofs with brick chimneys.
+      ward: { storeys: [4.7, 4.0], bay: 2.9, margin: 1.7, wall: 0xffffff, trim: 0xeeeae1, joint: 0xc3bbb0, glass: 0x405660,
+        windows: [{ sill: 1.25, head: 3.55, width: 1.25, arch: .22, crown: 'key' }, { sill: .95, head: 3.0, width: 1.15, crown: 'cornice' }],
+        plinth: .85, plinthColor: 0xd9d4ca, apron: 1.2, piers: { width: .72, depth: .06, edge: .4 }, frieze: .85,
+        cornice: [[-.28, .26, .12], [-.12, .14, .26], [.0, .12, .36]], frame: .12, mullion: .045,
+        roof: { rise: 2.6, slope: .55, grid: 2 }, chimney: [.62, 1.5, .62] },
+    },
 
     storey: 3.6,
     roofRise: 3,
