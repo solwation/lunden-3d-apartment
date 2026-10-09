@@ -365,8 +365,8 @@ jetpack.onLeftAtDoor = () => badge('🚀 Jetpacken står kvar utanför', false);
 jetpack.onRoofed = () => badge('🚀 Inte inomhus', false); // Space under the garage's ceiling (#441)
 fall.onWake.push(() => jetpack.goHome());
 // the Spider-Man suit in Walter & Kian's MALM drawer (#597): E on / off like the jetpack; climbs façades, shoots webs
-const suit = new SpiderSuit({ scene, camera, player, drawer: scene.getObjectByName('spidersuit-drawer'), button: document.getElementById('web-btn') });
-suit.onWear = () => badge(touch.enabled ? '🕷 Dräkten på: gå in i en yttervägg och klättra, 🕸 skjuter nät' : '🕷 Dräkten på: gå in i en yttervägg och klättra (Mellanslag släpper), klicka för nät', false);
+const suit = new SpiderSuit({ scene, camera, player, drawer: scene.getObjectByName('spidersuit-drawer'), button: document.getElementById('web-btn'), jump: document.getElementById('jump-btn') });
+suit.onWear = () => badge(touch.enabled ? '🕷 Dräkten på: klättra på ytterväggar, 🕸 skjuter nät, hoppknappen hoppar' : '🕷 Dräkten på: klättra på ytterväggar, klicka för nät, Mellanslag hoppar och släpper', false);
 const rest = new Rest(camera); // sitting / lying down (#71/#72)
 const saber = new Saber(scene, camera); // the lightsaber in Sovrum 2 (#78)
 const toys = buildToys(scene, camera); // Nerf blasters, magic wands, the flashlight (#86, #87, #89)

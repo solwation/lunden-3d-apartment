@@ -6,7 +6,7 @@ const paths={
  stats:'<path d="M3 3v18h18M7 17v-5m5 5V6m5 11v-8"/>',
  power:'<path d="M12 2v9m-5-7a9 9 0 1 0 10 0"/>',
  rotate:'<path d="M20 8a8 8 0 1 0 0 8m0-13v5h-5"/>',
- up:'<path d="m5 10 7-7 7 7M12 3v18"/>',down:'<path d="m5 14 7 7 7-7M12 3v18"/>',
+ up:'<path d="m5 10 7-7 7 7M12 3v18"/>',jump:'<path d="M4 21h16M12 17V4m-5 5 5-5 5 5"/>',down:'<path d="m5 14 7 7 7-7M12 3v18"/>',
  left:'<path d="m15 5-7 7 7 7"/>',right:'<path d="m9 5 7 7-7 7"/>',
  pause:'<path d="M8 5v14m8-14v14"/>',play:'<path d="m8 4 12 8-12 8Z"/>',
  volume:'<path d="M11 4 5 9H2v6h3l6 5Zm4 4a6 6 0 0 1 0 8m3-11a10 10 0 0 1 0 14"/>',
@@ -40,7 +40,7 @@ export function setPressed(button,on) {
  if(button?.getAttribute('aria-pressed')!==String(!!on)){button.setAttribute('aria-pressed',!!on);button.classList.toggle('on',!!on)}
 }
 export function initHudIcons() {
- const ids={'furniture-btn':'sofa','measure-btn':'ruler','crouch-btn':'crouch','stats-btn':'stats','power-btn':'power','turn-btn':'rotate','jet-up':'up','jet-down':'down',pause:'pause',mute:'volume','terminal-btn':'terminal'};
+ const ids={'furniture-btn':'sofa','measure-btn':'ruler','crouch-btn':'crouch','stats-btn':'stats','power-btn':'power','turn-btn':'rotate','jet-up':'up','jet-down':'down','jump-btn':'jump',pause:'pause',mute:'volume','terminal-btn':'terminal'};
  for(const [id,icon] of Object.entries(ids))setIcon(document.getElementById(id),icon);
  const panels='#book-panel, #poster-panel, #cal-panel, #clock-panel, #blind-panel, #sonos-panel, #draw-panel, #terminal, #rearrange-help, #update, #board-view, #task-note';
  document.querySelectorAll(panels).forEach(el=>el.classList.add('hud-controls'));

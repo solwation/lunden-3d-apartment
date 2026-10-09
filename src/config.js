@@ -2474,6 +2474,12 @@ export const SPIDER = {
   probe: 0.3, // m past the body's radius where the wall / the roof behind it is looked for (*guess*)
   drop: 0.5, // m in front of the feet where "Ta av dig dräkten" lays it (*guess*)
   web: { range: 35, life: 8, max: 4, speed: 60, size: 1.2 }, // m, s, webs at once, m/s of the strand, m across a splat (*guess*)
+  jump: 7, // m/s up off the ground outdoors with Space / the touch jump button: about v² / 2g = 2.5 m high (#600, *guess*)
+  // swinging on a web that stuck (#600): `pull` m/s² towards the anchor, `reel` m/s the strand shortens, `speed` m/s at
+  // most, `gravity` the share of gravity felt on the strand (more zip than pendulum), `arrive` m from the anchor (the
+  // hands) = there, `max` s at most on one strand, `stall` s getting no closer = let go, `fling` 1/s the air's drag on the
+  // speed kept after letting go (*guess*)
+  swing: { pull: 18, reel: 4, speed: 16, gravity: 0.4, arrive: 1.0, max: 4, stall: 0.6, fling: 0.4 },
   colors: { red: 0xc8202a, blue: 0x1d3f9a, line: 0x140a0a }, // the suit (own drawing, no licensed artwork)
 };
 

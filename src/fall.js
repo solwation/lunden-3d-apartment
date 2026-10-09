@@ -3,7 +3,7 @@
 // the view jolts down, the screen goes red, then black; the visitor wakes outside our front door facing the house with
 // "Du slog dig …" while it fades back in. Only the place is reset (and whatever registers in `onWake`, e.g. the jetpack
 // of #359 going home) — not the home: doors, lamps, cups stay. A deduction (SCORE.penalties.fall) + stats `falls`.
-// Over FALL.soft m: a soft thud and a knee-bend. While `active` main.js lets nobody walk.
+// Over FALL.soft m: a soft thud and a knee-bend. With the Spider-Man suit on (#600) every drop is a soft one. While `active` main.js lets nobody walk.
 import * as THREE from 'three';
 import { FALL, PLAYER } from './config.js';
 import { sfx } from './audio.js';
@@ -20,7 +20,8 @@ export class Fall {
   /** Landed after a drop of `drop` m; `gap` = the deepest free drop under the feet on the way (stairs never reach FALL.free). */
   land(drop, gap) {
     if (gap < FALL.free || this.t >= 0) return null;
-    if (drop > FALL.hurt) { this.hurt(drop); return 'hurt'; }
+    const suit = !!this.player.suit?.worn; // the Spider-Man suit (#600): never hurt, a soft landing with a knee-bend
+    if (drop > FALL.hurt && !suit) { this.hurt(drop); return 'hurt'; }
     if (drop > FALL.soft) {
       sfx.landing(Math.min(1, (drop - FALL.soft) / (FALL.hurt - FALL.soft)) * 0.5);
       this.player.eyeY -= FALL.dip; // the eye eases back up by itself (player.update)

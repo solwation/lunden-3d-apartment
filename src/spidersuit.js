@@ -6,6 +6,9 @@
 // again. F sends it home to its drawer. With it on, outdoors only, player.js climbs façades (`player.suit` = this,
 // `climb`); the webs are here: a click with nothing in focus and empty hands (touch: the 🕸 button) shoots a strand to
 // what the crosshair hits within SPIDER.web.range m and leaves a web splat there for `life` s; at most `max` at once.
+// #600: with it on no fall hurts (fall.js); outdoors a strand that sticks pulls you to it (player.js `attach` / `swing`:
+// you swing under it, Space / the touch jump button lets go and the speed carries on, there or into a façade you hold
+// on); Space / the jump button (#jump-btn, by 🕸) jumps SPIDER.jump m/s high off the ground outdoors.
 // Draw calls: the folded suit (1–2), the strand while it flies (1), each splat (1).
 import * as THREE from 'three';
 import { SPIDER as S } from './config.js';
@@ -58,8 +61,8 @@ const Z = new THREE.Vector3(0, 0, 1);
 
 export class SpiderSuit {
   /** `drawer` = the MALM drawer's box (Object3D named 'spidersuit-drawer'); `button` = the touch 🕸 button. */
-  constructor({ scene, camera, player, drawer, button }) {
-    Object.assign(this, { scene, camera, player, drawerBox: drawer, button, state: 'drawer' });
+  constructor({ scene, camera, player, drawer, button, jump }) {
+    Object.assign(this, { scene, camera, player, drawerBox: drawer, button, jumpButton: jump, state: 'drawer' });
     this.drawer = drawer?.userData.door ?? null; // its Openable (open / shut)
     this.onWear = null; // (put on, main.js: a badge)
     // the folded suit: a red top with the drawing, blue under it (one box, two materials)
@@ -97,6 +100,8 @@ export class SpiderSuit {
     this.shot = null; // { from, to, t, len, hit }
     this.ray = new THREE.Raycaster();
     if (button) button.addEventListener('pointerdown', (e) => { e.preventDefault(); this.shoot(); });
+    // the touch jump button (#600): Space's press = a jump on the ground, letting go of a wall / a strand
+    if (jump) jump.addEventListener('pointerdown', (e) => { e.preventDefault(); if (this.worn) this.player.jumpPress = true; });
     this.goHome();
   }
 
@@ -125,6 +130,7 @@ export class SpiderSuit {
     this.player.suit = this;
     suitHands(true, S.colors.red, S.colors.blue);
     if (this.button) this.button.hidden = false; // (.touch-only: shown on touch only)
+    if (this.jumpButton) this.jumpButton.hidden = false;
     this.onWear?.();
   }
 
@@ -156,6 +162,7 @@ export class SpiderSuit {
     if (this.player.suit === this) { this.player.letGo(); this.player.suit = null; }
     suitHands(false);
     if (this.button) this.button.hidden = true;
+    if (this.jumpButton) this.jumpButton.hidden = true;
   }
 
   /** Shoot a web along the look direction: the strand flies out, a splat sticks where it hits (#597). */
@@ -220,8 +227,12 @@ export class SpiderSuit {
       const from = this.worn ? new THREE.Vector3(0.18, -0.22, -0.3).applyMatrix4(this.camera.matrixWorld) : sh.from;
       const end = from.clone().lerp(sh.to, k);
       pos.setXYZ(0, from.x, from.y, from.z); pos.setXYZ(1, end.x, end.y, end.z); pos.needsUpdate = true;
-      if (k >= 1 && !sh.stuck) { sh.stuck = true; sh.at = sh.t; if (sh.hit) this.stick(sh.to, sh.normal); }
-      if (sh.stuck) {
+      if (k >= 1 && !sh.stuck) { // a splat where it hit; outdoors the strand holds and pulls you there (#600)
+        sh.stuck = true; sh.at = sh.t;
+        if (sh.hit) { this.stick(sh.to, sh.normal); if (this.worn) this.player.attach(sh.to, sh.normal, sh); }
+      }
+      if (sh.stuck && this.player.swing?.shot === sh) sh.at = sh.t; // (held taut while you swing on it)
+      else if (sh.stuck) {
         const f = 1 - (sh.t - sh.at) / 0.5;
         this.strand.material.opacity = 0.9 * Math.max(0, f);
         if (f <= 0) { this.shot = null; this.strand.visible = false; }

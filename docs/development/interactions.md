@@ -47,6 +47,15 @@ src/spidersuit.js      the Spider-Man suit (#597, SPIDER, all values *guess*): o
                        nothing in focus and empty hands (`click` → 'web') or the touch 🕸 (#web-btn) raycasts the drawn scene up to
                        `web.range`; a strand (one Line) flies out at `web.speed`, a splat (one plane) sticks on the hit face for
                        `web.life` s, at most `web.max`; sfx.thwip. `&spidersuit` = on from the start (tools/spidersuittest.html)
+                       #600: with it on fall.js never hurts (a soft landing). Space / the touch jump button (#jump-btn, left of
+                       🕸, shown with the suit on) is a *press* (`player.spaceDown` / `jumpPress`): standing outdoors where it
+                       climbs it jumps at `jump` m/s; on a wall it lets go. A strand that sticks outdoors calls `player.attach`:
+                       `player.swing` pulls you at `swing.pull` towards the anchor under `swing.gravity` of gravity, the strand
+                       reeled in at `reel` (at its length the outward speed goes = the swing), at most `speed`; the walls hold
+                       you (up the anchor's own façade you slide on; another façade to climb = onto it). At `arrive` m from the
+                       hands: onto the anchor's façade when it is one to climb (`climb`), else let go; Space / the jump button,
+                       `max` s or `stall` s getting no closer let go, the speed carries on in the air (`player.fling`, `fling`
+                       drag) until the landing, and flung into a façade holds you on it. The strand stays taut while you swing.
 src/touch.js           on-screen joystick (left) + drag-to-look (right), multi-touch pointer events
 src/viewport.js        early CSS-surface observer: keeps canvas buffer/camera in sync through startup rotation (#567)
 src/main.js            renderer, lights, input modes, door raycast prompt/button, loop (step)
@@ -235,7 +244,10 @@ tools/jetpacktest.html headless test (#359): the jetpack on its hook in the port
 tools/spidersuittest.html headless test (#597): the suit in the MALM drawer (no target through the shut drawer), E on, indoors no
                        climbing, laid on the floor and on again, keep.js round trip, onto Hus C's façade (W up, D sideways, S down,
                        Space lets go unhurt), up and over onto its roof, the area's edge not climbable, webs stick (max, gone after
-                       `life`), F home, the `spiderman` cheat, touch: the stick climbs, 🕸 shoots, "Ta av dig dräkten"
+                       `life`), F home, the `spiderman` cheat, touch: the stick climbs, 🕸 shoots, "Ta av dig dräkten";
+                       #600: an 8 m drop is soft in the suit, Space jumps high (once per press), a web on the façade pulls you up
+                       to it onto the wall, one held back by the pergola lets go, Space mid-swing flies on and lands unhurt, a
+                       web on the street pulls you there; the jump button by 🕸 jumps; without the suit no jump and 8 m hurts
 tools/sabertest.html   headless test: take the lightsaber, swing it, hang it back
 tools/toystest.html    headless test: blaster (dart lands), wand (sparkles), flashlight (beam follows the view)
 tools/wandtest.html    headless test: a wand's magic on the wall (stars + butterflies), none in the sky, gone after a while
