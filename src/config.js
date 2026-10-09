@@ -1965,6 +1965,25 @@ export const RESET_KEEP = [
 // kept in `__app.hitch.log`. 50 ms = three missed frames at 60 Hz, the point where a turn visibly freezes (*guess*).
 // Warm-up (#432, #592, src/warmup.js): starts `frames` frames after the scene is built; the idle texture uploads take at
 // most `sliceMs` ms per idle slot (*guess*: half a 60 Hz frame).
+// Adaptive graphics level (#592, src/quality.js): 0 = lowest … levels − 1 = highest; the tables below give each knob's
+// value per level. Down a level when `down.hitches` frames of ≥ `down.hitchMs` fall within `down.window` s (repeated
+// hitches) or the frame rate stays under `down.fps` for `down.slowFor` s; up a level after `up.after` s in a row over
+// `up.fps`, never within `up.blocked` s of the last step down; at most one step per `cooldown` s. Frames longer than
+// `ignoreOver` s are pauses, not frames. Phones (lowMemory) start at `startLowMemory`; the level reached is remembered
+// per device (localStorage). pixelRatio is a factor of the device's (capped) ratio, never below `minPixelRatio`; the
+// shadow map size is also capped by LOW_MEMORY on phones; mirror 0 = no mirror images. All values *guess*, from
+// #460's tiers (0.65 / 0.85 / 1.0 resolution, 0.7 / 0.85 / 1.0 detail, shadows every 1.0 / 0.6 / 0.4 s).
+export const QUALITY = {
+  levels: 4, startLowMemory: 2, ignoreOver: 0.25, cooldown: 1.5, minPixelRatio: 0.5,
+  down: { hitchMs: 50, hitches: 3, window: 0.5, fps: 30, slowFor: 1.5 },
+  up: { fps: 52, after: 5, blocked: 20 },
+  pixelRatio: [0.6, 0.75, 0.9, 1],
+  shadowSize: [1024, 1024, 2048, 2048],
+  shadowInterval: [1.0, 0.75, 0.5, 0.4],
+  mirror: [0, 0, 256, 512],
+  detail: [0.6, 0.75, 0.9, 1],
+  particles: [0.35, 0.6, 0.85, 1],
+};
 export const WARM = { frames: 3, sliceMs: 8 };
 export const PERF = { detail: { maxR: 0.5, k: 0.009, minDist: 3.2, maxOcclude: 4, move: 0.3 }, hitch: { ms: 50, keep: 100 } };
 

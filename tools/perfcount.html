@@ -54,16 +54,24 @@ f.onload = async () => {
     lines.push(callsLow <= callsHigh ? 'PASS quality scale reduced draw calls' : 'FAIL quality scale');
   }
 
-  // Adaptive logic verification (#460)
-  if (app.adaptResolution && app.dynRes) {
-    app.dynRes.tier = 2;
-    app.dynRes.slow = 0;
-    // Simulate low frame rate (<30 fps) for 2 seconds
-    for (let i = 0; i < 60; i++) app.adaptResolution(1 / 25);
-    lines.push(app.dynRes.tier < 2 ? 'PASS adaptive logic drops tier on low fps' : 'FAIL adaptive tier drop');
-    // Simulate recovery (>52 fps) for 5 seconds
-    for (let i = 0; i < 150; i++) app.adaptResolution(1 / 60);
-    lines.push(app.dynRes.tier > 0 ? 'PASS adaptive logic recovers tier on high fps' : 'FAIL adaptive tier recover');
+  // Adaptive quality level (#460, #592: src/quality.js)
+  const q = app.quality;
+  if (q) {
+    const top = q.max, feed = (dt, n) => { for (let i = 0; i < n; i++) q.update(dt); };
+    q.set(top); feed(1 / 60, 120); feed(1 / 25, 60);
+    lines.push(q.level < top ? 'PASS adaptive level drops on a low frame rate' : 'FAIL adaptive level drop');
+    q.set(top); feed(1 / 60, 120); const t0 = q.clock;
+    for (let i = 0; i < 6 && q.level === top; i++) { feed(1 / 60, 3); q.update(0.07); } // a 70 ms hitch every ~120 ms
+    lines.push(q.level === top - 1 && q.clock - t0 < 0.6 ? `PASS repeated hitches drop a level within ${(q.clock - t0).toFixed(2)} s` : 'FAIL repeated hitches');
+    feed(1 / 60, 60 * 10);
+    lines.push(q.level === top - 1 ? 'PASS no step up right after a step down' : 'FAIL stepped up too soon');
+    feed(1 / 60, 60 * 30);
+    lines.push(q.level === top ? 'PASS adaptive level recovers on a high frame rate' : 'FAIL adaptive level recover');
+    q.set(0); const knobs = [...q.knobs.keys()];
+    lines.push(`level 0: ${q.describe().replace(/\n/g, ' · ')}`);
+    q.set(top);
+    lines.push(`level ${top}: ${q.describe().replace(/\n/g, ' · ')}`);
+    lines.push(['resolution', 'shadows', 'mirrors', 'detail', 'weather'].every((k) => knobs.includes(k)) ? 'PASS quality knobs registered' : 'FAIL knobs ' + knobs);
   }
 
   lines.push('ALL PASS');

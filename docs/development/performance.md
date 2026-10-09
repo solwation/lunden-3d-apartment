@@ -29,12 +29,11 @@ Related: [graphics](graphics.md), [verification](verification.md).
   320 × 200: the door's first frame 5680 → 28 ms. Skipped in headless Chrome (`HeadlessChrome` UA) unless `&warm`;
   `&perf` logs its times. Materials made later (cups, cat coats) still compile when first drawn.
 - Shadows: `shadowMap.autoUpdate = false`; redrawn when the sun moved > 0.2°, for 1.5 s after any E
-  action (doors swing), and at least twice a second (`updateShadows` in main.js).
-- Mirror images (#50): one Reflector (512²) per mirror, at most ONE active per frame (nearest in view
-  within 4 m, visitor's level) and none once dynamic resolution has stepped down. The Badrum mirror's
+  action (doors swing), and at least every `QUALITY.shadowInterval` s of the quality level (`updateShadows` in main.js).
+- Mirror images (#50): one Reflector per mirror, at most ONE active per frame (nearest in view
+  within 4 m, visitor's level), all drawing into one shared target (#592) whose size is the quality level's (512² / 256² / off). The Badrum mirror's
   LED strip is its own lamp (`mirrorLamps` in interior.js → `world.lamps`, switched like the floor lamp).
-- Dynamic resolution: pixel ratio drops in 0.85× steps (not below 0.6×) after 2 s under 30 fps, comes
-  back after 4 s over 50 fps; off with `&shot`.
+- Dynamic resolution: replaced by the adaptive quality level (#592, below); off with `&shot`.
 
 
 Focus regression (#558): #531 created then disposed a temporary brightness material on every target exit, releasing its last GPU program. A real WebGL createProgram counter reproduced 30 new programs for 30 target/clear switches (and 30 for greeted figures). InteractionOutline now caches variants in a WeakMap by source material/instance index, restoring originals on clear and releasing cached GPU resources on source disposal. Different figure indices use an integer uniform in one shared shader. focusperftest checks zero new programs after warm-up, shared-source reuse, first visits to other figure indices and disposal. interactionoutlinetest checks actual pixel restoration, current lamp hooks, geometry animation and index changes. This removes measured shader churn; desktop SwiftShader is not a claim of measured phone FPS.
@@ -126,4 +125,29 @@ no render targets or renderbuffers allocated while turning (living room lap 1 st
 time the mirror draws, then none). Longest turning frame (SwiftShader, loaded machine, unsynced) 12 204 → 662 ms on
 the desktop frame and 9 886 → 484 ms on the phone frame; median frame at the mirrors 204 → 101 ms.
 Not covered: materials made after the start (cups, cat coats, new life items) still compile when first drawn.
+
+**Adaptive quality level (step C).** `src/quality.js` (`Quality`, `__app.quality`, `QUALITY` in config) replaces #460's
+three pixel-ratio tiers (`dynRes`). One level 0 (lowest) … 3 (highest), steered by the real frame time: down one level
+when 3 frames of ≥ 50 ms fall within 0.5 s (repeated hitches) or after 1.5 s under 30 fps; up one level only after 5 s
+in a row over 52 fps and never within 20 s of a step down; at most one step per 1.5 s (all *guess*). It only adapts
+while playing (not on the start screen or paused), after the warm-up, and not with `&shot` (highest) or `&quality=n`
+(pinned; both not remembered). The level reached is remembered per device (`localStorage` `lunden.quality`); phones
+(`lowMemory`) start at 2, everything else at 3. perfcount checks the drop on a low frame rate, the drop within 0.6 s on
+repeated hitches, no step up right after a step down, the recovery, and that the knobs are registered.
+
+The registry: a feature that costs frame time calls `quality.register(name, { apply(level, quality), state(level), cost })`
+(main.js, after the thing exists). `apply` runs at once and on every change and sets the feature's cost for that level,
+reading its per-level value from a `QUALITY` table; `state` is the line in the `&perf` overlay (`quality.describe()`),
+`cost` a note of what it saves. Current knobs (level 0 → 3):
+
+| knob | 0 | 1 | 2 | 3 | notes |
+|---|---|---|---|---|---|
+| `resolution` | 0.6× | 0.75× | 0.9× | 1× | of the capped device ratio (1.5, phones 1.0), never below 0.5; a step reallocates the drawing buffer once |
+| `shadows` | 1024², every 1 s | 1024², 0.75 s | 2048², 0.5 s | 2048², 0.4 s | phones capped at 1024² (#585); a size change reallocates the map once |
+| `mirrors` | off | off | 256² | 512² | the shared target is resized once on a change |
+| `detail` | ×0.6 | ×0.75 | ×0.9 | ×1 | DetailCuller's cut distances (#460's `setQuality`) |
+| `weather` | ×0.35 | ×0.6 | ×0.85 | ×1 | share of rain streaks / snowflakes / hail drawn |
+
+Not knobs (yet): the campus facades' LOD (#589) is chosen once at build time (a runtime switch needs a second geometry
+per batch), and the Christmas tree's shimmer costs 0.016 ms (#571) — not worth one.
 

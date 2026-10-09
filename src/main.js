@@ -3,7 +3,7 @@ import { PlantWind, windShadow } from './plantwind.js';
 import { runCheat, cheatHelp } from './cheats.js';
 import { cleanHome } from './cheatclean.js';
 import { buildCheatNote } from './cheatnote.js';
-import { CHEAT_NOTE, LOW_MEMORY } from './config.js';
+import { CHEAT_NOTE, LOW_MEMORY, QUALITY } from './config.js';
 import { lowMemory } from './lowmemory.js';
 import { loadBeerShelf } from './beershelfdata.js';
 import { BeerShelf } from './beershelf.js';
@@ -43,6 +43,7 @@ import { WallClock, ClockPanel } from './wallclock.js';
 import { Patio, buildStringLights } from './patio.js';
 import { updateReflections, reflectors, mirrorTarget } from './reflections.js';
 import { WarmUp } from './warmup.js';
+import { Quality } from './quality.js';
 import { HitchLog } from './hitchlog.js';
 import { applySeason } from './seasons.js';
 import { ChristmasSeason } from './christmas.js';
@@ -187,7 +188,7 @@ function updateShadows(dt) {
   const dir = new THREE.Vector3().subVectors(sun.position, sun.target.position).normalize();
   shadowState.hold -= dt;
   shadowState.age += dt;
-  const maxAge = dynRes?.shadowInterval ?? 0.5;
+  const maxAge = QUALITY.shadowInterval[quality.level];
   if (shadowState.hold > 0 || shadowState.age > maxAge || dir.angleTo(shadowState.dir) > 0.0035) {
     if (hitch.enabled) hitch.frameInfo.shadowWhy = shadowState.hold > 0 ? 'hold' : shadowState.age > maxAge ? 'age' : 'sun';
     renderer.shadowMap.needsUpdate = true;
@@ -2200,74 +2201,41 @@ let perfFrames = 0, perfT = performance.now();
 // Hitch log (#592): with &perf every frame over PERF.hitch.ms is logged with what changed in it (src/hitchlog.js)
 const hitch = new HitchLog(renderer, { enabled: !!perfEl });
 for (const m of reflectors()) hitch.timeMethod(m.r, 'onBeforeRender', 'mirror');
-// Dynamic graphics adaptation (#48, #460): adjusts rendering resolution, shadow cadence,
-// reflections and small-detail culling distance dynamically based on measured frame time.
-// Tier 0 (low): 0.65× resolution, detailScale 0.7, shadows throttled, reflections off.
-// Tier 1 (medium): 0.85× resolution, detailScale 0.85, normal shadows, reflections off.
-// Tier 2 (high): full 1.0× resolution, detailScale 1.0, full shadows, reflections allowed.
-const isMobileDevice = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-const dynRes = {
-  ratio: isMobileDevice ? Math.min(MAX_PIXEL_RATIO, 1.0) : MAX_PIXEL_RATIO,
-  targetRatio: isMobileDevice ? Math.min(MAX_PIXEL_RATIO, 1.0) : MAX_PIXEL_RATIO,
-  tier: isMobileDevice ? 1 : 2,
-  slow: 0,
-  fast: 0,
-  shadowInterval: 0.5,
-  detailScale: 1.0,
-};
-if (isMobileDevice) {
-  renderer.setPixelRatio(dynRes.ratio);
-}
+// Adaptive graphics level (#592, src/quality.js, QUALITY in config; replaces #48 / #460's tiers): one level 0–3 from the
+// frame time, with hysteresis; every heavy feature registers a knob that sets its cost for a level. `&quality=n` pins a
+// level (no adapting, not remembered); `&shot` keeps the highest.
 const shotMode = new URLSearchParams(location.search).has('shot'); // screenshots: always full resolution
-function adaptResolution(dt) {
-  if (dt <= 0 || dt > 0.25) return; // ignore huge pause/tab switches
-  const fps = 1 / dt;
-  dynRes.slow = fps < 32 ? dynRes.slow + dt : Math.max(0, dynRes.slow - dt * 0.5);
-  dynRes.fast = fps > 52 ? dynRes.fast + dt : Math.max(0, dynRes.fast - dt * 0.5);
-
-  let targetTier = dynRes.tier;
-  if (dynRes.slow > 1.8) {
-    if (dynRes.tier > 0) targetTier = dynRes.tier - 1;
-    dynRes.slow = 0;
-  } else if (dynRes.fast > 4.0) {
-    if (dynRes.tier < 2) targetTier = dynRes.tier + 1;
-    dynRes.fast = 0;
-  }
-
-  if (targetTier !== dynRes.tier) {
-    dynRes.tier = targetTier;
-    if (dynRes.tier === 0) {
-      dynRes.targetRatio = Math.max(0.75, MAX_PIXEL_RATIO * 0.65);
-      dynRes.shadowInterval = 1.0;
-      dynRes.detailScale = 0.7;
-    } else if (dynRes.tier === 1) {
-      dynRes.targetRatio = Math.max(0.85, MAX_PIXEL_RATIO * 0.85);
-      dynRes.shadowInterval = 0.6;
-      dynRes.detailScale = 0.85;
-    } else {
-      dynRes.targetRatio = MAX_PIXEL_RATIO;
-      dynRes.shadowInterval = 0.4;
-      dynRes.detailScale = 1.0;
-    }
-    detail?.setQuality?.(dynRes.detailScale);
-  }
-
-  if (Math.abs(dynRes.targetRatio - dynRes.ratio) > 1e-3) {
-    dynRes.ratio = dynRes.targetRatio;
-    renderer.setPixelRatio(dynRes.ratio);
-  }
-}
+const pinned = params0.has('quality') ? +params0.get('quality') : (shotMode ? QUALITY.levels - 1 : null);
+const quality = new Quality({ start: pinned ?? (lowMemory ? QUALITY.startLowMemory : QUALITY.levels - 1), remember: pinned === null });
+quality.register('resolution', { // the canvas's pixel ratio (a step reallocates the drawing buffer once)
+  apply: (l) => { const r = Math.max(QUALITY.minPixelRatio, MAX_PIXEL_RATIO * QUALITY.pixelRatio[l]); if (Math.abs(renderer.getPixelRatio() - r) > 1e-3) renderer.setPixelRatio(r); },
+  state: () => `px ${renderer.getPixelRatio().toFixed(2)}`, cost: 'fill rate: every pixel of every pass' });
+quality.register('shadows', { // the sun's shadow map: size (reallocated on a change) and how often it is redrawn
+  apply: (l) => {
+    const size = Math.min(QUALITY.shadowSize[l], lowMemory ? LOW_MEMORY.shadowMapSize : Infinity);
+    if (sun.shadow.mapSize.x !== size) { sun.shadow.mapSize.setScalar(size); sun.shadow.map?.dispose(); sun.shadow.map = null; renderer.shadowMap.needsUpdate = true; }
+  },
+  state: (l) => `${sun.shadow.mapSize.x}² every ${QUALITY.shadowInterval[l]} s`, cost: 'a second pass over every shadow caster' });
+quality.register('mirrors', { // the one mirror image (#50): its resolution, off at the lowest levels
+  apply: (l) => { const n = QUALITY.mirror[l]; if (n && mirrorTarget().width !== n) mirrorTarget().setSize(n, n); },
+  state: (l) => (QUALITY.mirror[l] ? `${QUALITY.mirror[l]}²` : 'off'), cost: 'a third pass over the room in a mirror' });
+quality.register('weather', { // rain streaks / snowflakes / hail drawn (#248)
+  apply: (l) => { weather.particleScale = QUALITY.particles[l]; }, state: (l) => `particles ×${QUALITY.particles[l]}`, cost: 'particle updates + overdraw' });
+/** Feed a frame time to the level (tests drive it directly). */
+function adaptResolution(dt) { return quality.update(dt); }
 function showPerf() {
   perfFrames++;
   const now = performance.now();
   if (now - perfT < 500) return;
   const i = renderer.info;
-  perfEl.textContent = `${(perfFrames * 1000 / (now - perfT)).toFixed(0)} fps · px ${dynRes.ratio.toFixed(2)}\ncalls ${i.render.calls}\ntris  ${i.render.triangles}\ngeoms ${i.memory.geometries}\ntex   ${i.memory.textures}`;
+  perfEl.textContent = `${(perfFrames * 1000 / (now - perfT)).toFixed(0)} fps · quality ${quality.level}\n${quality.describe()}\ncalls ${i.render.calls}\ntris  ${i.render.triangles}\ngeoms ${i.memory.geometries}\ntex   ${i.memory.textures}`;
   perfFrames = 0; perfT = now;
 }
 const frontDoor = world.doors.find((d) => d.name === 'ytterdörren' && Math.abs(d.object.getWorldPosition(new THREE.Vector3()).z) < 0.5);
 detail = new DetailCuller(scene, { W: world.size.x, D: world.size.z, roof: world.openings.roof, floor1: LEVELS[1].floor, doorHeight: DOOR_HEIGHT }, world.openings, () => frontDoor.t > 0.02); // everything is built by now (the holdables too); the open front door shows the hall (#210)
 document.addEventListener('furniture-moved', () => detail?.last.set(1e9, 0, 0));
+quality.register('detail', { // DetailCuller's distances (#189, #460): small things vanish sooner at lower levels
+  apply: (l) => detail.setQuality(QUALITY.detail[l]), state: (l) => `distance ×${QUALITY.detail[l]}`, cost: 'draw calls of small far things' });
 // Warm-up (#432, #592, src/warmup.js): compile and upload everything behind the start screen, the mirrors' variants too.
 const warm = new WarmUp({ renderer, scene, camera, shadowCamera: sun.shadow.camera, mirrorTarget,
   skip: /HeadlessChrome/.test(navigator.userAgent) && !params.has('warm'), log: perfEl ? (t) => console.log(t) : null,
@@ -2276,18 +2244,19 @@ const warm = new WarmUp({ renderer, scene, camera, shadowCamera: sun.shadow.came
 function frame(raw) {
   const dt = Math.min(raw, 0.05);
   hitch.begin();
-  if (!overlay.hidden || document.hidden || shotMode) dynRes.slow = dynRes.fast = 0; // only while playing (not &shot)
-  else adaptResolution(raw);
+  // only while playing, after the warm-up, and not with a pinned level
+  if (!overlay.hidden || document.hidden || pinned !== null || !warm.done) quality.reset();
+  else quality.update(raw);
   if (!warm.done && warm.tick()) hitch.frameInfo.warm = true;
   hitch.phase('adapt');
   step(dt);
   hitch.phase('step');
   updateShadows(dt);
-  // one mirror image at a time, and none once the frame rate has made us lower the resolution
-  const mirror = updateReflections(camera, player.aloft ? -1 : Math.max(0, player.level), dynRes.ratio >= MAX_PIXEL_RATIO * 0.99);
+  // one mirror image at a time, none at the lower quality levels
+  const mirror = updateReflections(camera, player.aloft ? -1 : Math.max(0, player.level), QUALITY.mirror[quality.level] > 0);
   updateListener(camera);
   hitch.phase('update');
-  if (hitch.enabled) Object.assign(hitch.frameInfo, { shadow: renderer.shadowMap.needsUpdate, mirror: mirror ? (reflectors().find((m) => m.r.visible)?.name || 'yes') : '', tier: dynRes.tier,
+  if (hitch.enabled) Object.assign(hitch.frameInfo, { shadow: renderer.shadowMap.needsUpdate, mirror: mirror ? (reflectors().find((m) => m.r.visible)?.name || 'yes') : '', quality: quality.level,
     yaw: Math.round(camera.rotation.y * 180 / Math.PI), at: `${camera.position.x.toFixed(1)},${camera.position.z.toFixed(1)}` });
   renderer.render(scene, camera);
   hitch.phase('render');
@@ -2518,4 +2487,4 @@ document.documentElement.classList.remove('resuming'); // the page is ready: off
 hideLoading();
 
 // handle for tests/debugging (tools/touchtest.html, tools/perfcount.html)
-window.__app = { frame, hitch, warm, christmas, plantWind, cheats, cheatNote, showCheatNote, beerShelf, hallCare, bedCare, tableSetting, watering, laundry, compass, showOverlay, resumeFromMenu, interactionOutline, eggs, isPhoneDevice, get activeMode() { return activeMode; }, set activeMode(v) { activeMode = v; }, rearrange, showTerminal, dynRes, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, toaster, life, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS };
+window.__app = { frame, hitch, warm, christmas, plantWind, cheats, cheatNote, showCheatNote, beerShelf, hallCare, bedCare, tableSetting, watering, laundry, compass, showOverlay, resumeFromMenu, interactionOutline, eggs, isPhoneDevice, get activeMode() { return activeMode; }, set activeMode(v) { activeMode = v; }, rearrange, showTerminal, quality, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, toaster, life, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS };

@@ -91,7 +91,7 @@ export class Weather {
   /** `force`: 'rain' | 'storm' | 'snow' | 'hail' | 'clear' | null (the &weather parameter). */
   constructor(scene, camera, day, force = null) {
     Object.assign(this, { scene, camera, day, force, rain: 0, overcast: 0, storm: false, kind: null, id: null, flashT: 9, flash: 0, flashK: 0,
-      strikes: 0, sound: null, walked: {}, done: {} });
+      strikes: 0, particleScale: 1, sound: null, walked: {}, done: {} }); // particleScale: the quality level's share of the particles (#592)
     // the houses (greet.js) and our own unit, which greet.js leaves to the flat's walls: nothing falls inside them
     this.boxes = [...occluders(), { x0: 0, x1: 5.75, z0: 0.05, z1: 12.65, y0: 0, y1: UNIT_TOP }];
     // rain: streaks (one LineSegments)
@@ -178,7 +178,7 @@ export class Weather {
     Object.assign(this, { rain: s.rain, storm: s.storm, overcast: s.overcast, kind: s.kind, id: s.id });
     this.day.overcast = this.overcast * (this.kind === 'snow' ? 0.7 : 1); // snow clouds are lighter
     this.clock += dt;
-    const streaks = this.kind === 'rain', hail = this.kind === 'hail', active = Math.round((streaks ? W.drops : hail ? W.hail.stones : W.snow.flakes) * this.rain);
+    const streaks = this.kind === 'rain', hail = this.kind === 'hail', active = Math.round((streaks ? W.drops : hail ? W.hail.stones : W.snow.flakes) * this.rain * this.particleScale);
     this.lines.visible = streaks && active > 0;
     this.flakes.visible = (this.kind === 'snow' || hail) && active > 0;
     const c = this.camera.position, R2 = (W.radius * 1.3) ** 2;
