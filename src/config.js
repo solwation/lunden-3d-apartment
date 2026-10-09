@@ -3329,10 +3329,11 @@ export const NEST = {
 
 // The Christmas tree (#571, src/xmastree.js + src/christmas.js): stands in the living room from 1 December to 6 January
 // inclusive (the user; `season` = [month, day] first and last day, over the new year), hidden and inert the rest of the
-// year. Its default spot is the living room's right-hand corner as you come in through the doorway from the passage
-// (looking south towards the window: the SW corner by the window, where the palm and the ZZ plant stand — those are
-// hidden while the tree stands there). The spot is pulled out of the corner so the crown clears the wall-hung BESTÅ
-// (x ≤ 0.62, z ≤ 11.15) and the south wall (z 12.06). Height: RH 3.0 m in the living room (bofakta) → the star's tip
+// year. Its default spot (#591, the user: "hörnet till höger om vitrinskåpet") is the NW corner: seen from the doorway
+// the BESTÅ hangs on the right-hand (west) wall and this is the corner to its right, nearer the doorway — the armchair
+// corner, so the armchair, the stool, the floor lamp and the tray table are hidden while the tree stands there. The spot
+// (*guess*) keeps the crown (r 0.55) 5–8 cm off the west wall (x 0.20) and the passage wall (z 7.80), clear of the BESTÅ
+// (z ≥ 9.95) and ~0.8 m west of the doorway (x 2.15–3.25), the presents facing the room (SE). Height: RH 3.0 m in the living room (bofakta) → the star's tip
 // ~2.8 m up, ~0.2 m under the ceiling. Every size, colour and count below is a visual *guess* (no reference): a
 // Nordmann fir about 2.2 m with a crown ~1.1 m across, a red enamel stand on a white felt skirt, warm-white LED string
 // lights that shimmer softly, red / gold / silver baubles, a gold bead garland, a gold star and a few presents.
@@ -3447,8 +3448,8 @@ export const FURNITURE = [
     veinBump: .0012, walls: { x0: .2, z0: 11.17, z1: 11.72 } },
   { type: 'palm', level: 0, x: 0.47, z: 11.96, pot: { r: 0.2, h: 0.45 }, potColor: 0x3d3f42, size: 0.8, potSize: 0.95, potStyle: 'copper', canes: 15, cane: 0.72, frond: 0.85, leaflet: 0.27,
     walls: { x0: 0.2, z1: 12.23 } },
-  // the Christmas tree (#571, XMAS_TREE): only 1 Dec – 6 Jan; hides the palm and the ZZ plant while it stands here
-  { type: 'xmastree', level: 0, x: 1.08, z: 11.5, rot: 0 },
+  // the Christmas tree (#571, #591, XMAS_TREE): only 1 Dec – 6 Jan; hides the armchair corner while it stands here
+  { type: 'xmastree', level: 0, x: 0.82, z: 8.45, rot: -135 }, // crown r 0.55 off the walls x 0.20 / z 7.80
   // Soffbord ILVA Woodstock, top i oljebehandlad ekfaner (art. 1055729): 120 × 60 × 47 cm, legs in
   // oiled solid oak, a fixed shelf below (ilva.dk product page). Centred on the three seats
   // (x 2.68–4.60), 40 cm in front of the sofa (front at z 11.26). Its shape: COFFEE_TABLE (#410).

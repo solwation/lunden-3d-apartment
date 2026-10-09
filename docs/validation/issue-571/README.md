@@ -3,7 +3,7 @@
 Headless Chromium (SwiftShader), local `tools/devserve.py`. "Before" = main at c4fa765 (no tree), "after" = this change.
 Same camera, time and date in each pair (`?shot&at=…&time=…&freeze&month=12&day=10`).
 
-## Default spot: the right-hand corner
+## Default spot: the right-hand corner (moved by #591, see [issue-591](../issue-591/README.md))
 
 The issue gives no plan coordinate. The normal way into the living room is the doorway from the passage in the north
 wall; standing there and looking into the room (south, towards the window and the patio door), the right-hand corner is
