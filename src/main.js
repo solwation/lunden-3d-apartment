@@ -42,6 +42,7 @@ import { DayCycle } from './daycycle.js';
 import { WallClock, ClockPanel } from './wallclock.js';
 import { Patio, buildStringLights } from './patio.js';
 import { updateReflections, reflectors } from './reflections.js';
+import { HitchLog } from './hitchlog.js';
 import { applySeason } from './seasons.js';
 import { ChristmasSeason } from './christmas.js';
 import { saveResume, saveSession, takeResume } from './resume.js';
@@ -187,6 +188,7 @@ function updateShadows(dt) {
   shadowState.age += dt;
   const maxAge = dynRes?.shadowInterval ?? 0.5;
   if (shadowState.hold > 0 || shadowState.age > maxAge || dir.angleTo(shadowState.dir) > 0.0035) {
+    if (hitch.enabled) hitch.frameInfo.shadowWhy = shadowState.hold > 0 ? 'hold' : shadowState.age > maxAge ? 'age' : 'sun';
     renderer.shadowMap.needsUpdate = true;
     shadowState.dir.copy(dir);
     shadowState.age = 0;
@@ -2190,6 +2192,9 @@ if (perfEl) {
   document.body.append(perfEl);
 }
 let perfFrames = 0, perfT = performance.now();
+// Hitch log (#592): with &perf every frame over PERF.hitch.ms is logged with what changed in it (src/hitchlog.js)
+const hitch = new HitchLog(renderer, { enabled: !!perfEl });
+for (const m of reflectors()) hitch.timeMethod(m.r, 'onBeforeRender', 'mirror');
 // Dynamic graphics adaptation (#48, #460): adjusts rendering resolution, shadow cadence,
 // reflections and small-detail culling distance dynamically based on measured frame time.
 // Tier 0 (low): 0.65× resolution, detailScale 0.7, shadows throttled, reflections off.
@@ -2266,8 +2271,10 @@ document.addEventListener('furniture-moved', () => detail?.last.set(1e9, 0, 0));
 // drawn with every layer and no frustum culling, shadows included, which uploads the rest; the next frame draws
 // over it. Headless test browsers skip it (minutes of SwiftShader, nobody looks), `&warm` forces it.
 let warmIn = (/HeadlessChrome/.test(navigator.userAgent) && !params.has('warm')) ? -1 : 3, warmDraw = false;
+const warm = { state: warmIn < 0 ? 'skipped' : 'pending' }; // → 'compiling' → 'drawn' (tools/turntest.html waits for it)
 function warmUp() {
   const t = performance.now();
+  warm.state = 'compiling';
   renderer.compileAsync(scene, camera).catch(() => {}).then(() => { warmDraw = true; if (perfEl) console.log(`warm-up: programs ${Math.round(performance.now() - t)} ms`); });
   clock.getDelta(); // (a slow frame here is no reason to lower the resolution)
 }
@@ -2281,22 +2288,33 @@ function warmRender() {
   for (const o of culled) o.frustumCulled = true;
   renderer.shadowMap.needsUpdate = true; // the real view's shadows next
   clock.getDelta();
+  warm.state = 'drawn';
   if (perfEl) console.log(`warm-up: first draw of everything ${Math.round(performance.now() - t)} ms`);
 }
-renderer.setAnimationLoop(() => {
-  const raw = clock.getDelta(), dt = Math.min(raw, 0.05);
+/** One frame of the game loop; `raw` = seconds since the last one (tools/turntest.html calls it with the loop stopped). */
+function frame(raw) {
+  const dt = Math.min(raw, 0.05);
+  hitch.begin();
   if (!overlay.hidden || document.hidden || shotMode) dynRes.slow = dynRes.fast = 0; // only while playing (not &shot)
   else adaptResolution(raw);
   if (warmIn > 0 && --warmIn === 0) warmUp();
-  if (warmDraw) { warmDraw = false; warmRender(); }
+  if (warmDraw) { warmDraw = false; warmRender(); hitch.frameInfo.warm = true; }
+  hitch.phase('adapt');
   step(dt);
+  hitch.phase('step');
   updateShadows(dt);
   // one mirror image at a time, and none once the frame rate has made us lower the resolution
-  updateReflections(camera, player.aloft ? -1 : Math.max(0, player.level), dynRes.ratio >= MAX_PIXEL_RATIO * 0.99);
+  const mirror = updateReflections(camera, player.aloft ? -1 : Math.max(0, player.level), dynRes.ratio >= MAX_PIXEL_RATIO * 0.99);
   updateListener(camera);
+  hitch.phase('update');
+  if (hitch.enabled) Object.assign(hitch.frameInfo, { shadow: renderer.shadowMap.needsUpdate, mirror: mirror ? (reflectors().find((m) => m.r.visible)?.name || 'yes') : '', tier: dynRes.tier,
+    yaw: Math.round(camera.rotation.y * 180 / Math.PI), at: `${camera.position.x.toFixed(1)},${camera.position.z.toFixed(1)}` });
   renderer.render(scene, camera);
+  hitch.phase('render');
+  hitch.end();
   if (perfEl) showPerf();
-});
+}
+renderer.setAnimationLoop(() => frame(clock.getDelta()));
 
 // --- "new version published" notice ------------------------------------
 const updateEl = document.getElementById('update');
@@ -2520,4 +2538,4 @@ document.documentElement.classList.remove('resuming'); // the page is ready: off
 hideLoading();
 
 // handle for tests/debugging (tools/touchtest.html, tools/perfcount.html)
-window.__app = { christmas, plantWind, cheats, cheatNote, showCheatNote, beerShelf, hallCare, bedCare, tableSetting, watering, laundry, compass, showOverlay, resumeFromMenu, interactionOutline, eggs, isPhoneDevice, get activeMode() { return activeMode; }, set activeMode(v) { activeMode = v; }, rearrange, showTerminal, dynRes, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, toaster, life, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS };
+window.__app = { frame, hitch, warm, christmas, plantWind, cheats, cheatNote, showCheatNote, beerShelf, hallCare, bedCare, tableSetting, watering, laundry, compass, showOverlay, resumeFromMenu, interactionOutline, eggs, isPhoneDevice, get activeMode() { return activeMode; }, set activeMode(v) { activeMode = v; }, rearrange, showTerminal, dynRes, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, toaster, life, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS };

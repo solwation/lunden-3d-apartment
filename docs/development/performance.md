@@ -63,3 +63,50 @@ calls unchanged; desktop unchanged. `eastbackdroptest.html?lowmem` runs the phon
 not done (it would need a second geometry per batch). [Numbers and screenshots](../validation/issue-589/README.md).
 
 Christmas tree (#571): in season +8 draw calls and ~20 k triangles where it is in view (desktop and phone frame), no extra light (one pool anchor in the shared pool / wash), a 0.016 ms CPU shimmer per frame (instance + point colours) and a ~27 ms one-off overlap re-judgement on load / moves; out of season nothing is drawn and perfcount is unchanged. `tools/perfcount.html` now takes `?month=…&day=…` (game URL overrides) and `?w=…&h=…` (frame size). [Numbers](../validation/issue-571/README.md).
+
+## Turn-around hitches (#592)
+
+The visitor reported freezes when turning around, indoors and out, on a phone and a work PC.
+
+**Measuring (step A).** `src/hitchlog.js` (`HitchLog`, `__app.hitch`) counts the WebGL context's calls
+(`createProgram` = a shader compile, `createTexture` = a texture's first GPU upload, `tex(Sub)Image*` uploads and their
+pixels, `bufferData`, `createFramebuffer`, `renderbufferStorage*`) and times every frame by phase (`adapt`, `step`,
+`update`, `render`, and inside `render` the shadow-map pass `shadowMap` and the mirror pass `mirror`). With `&perf` a
+frame of at least `PERF.hitch.ms` (50 ms, *guess*) is logged to the console (`hitch {…}`) with those deltas, whether
+and why the shadow map was redrawn (`shadowWhy`: `hold` after an action, `age` = the twice-a-second refresh, `sun`),
+which mirror reflected, the camera's yaw and position. The game loop's body is `frame(raw)` (`__app.frame`).
+`tools/turntest.html` waits for the warm-up (`&warm`, `__app.warm.state`), stops the loop, runs 60 settling frames, then
+at nine spots (living room, kitchen, hall, upstairs, patio, the street in front, courtyard, Karpvägen, the roof) turns
+360° in 15° steps twice, one `__app.frame(1/60)` per step, and fails on any new program or new texture while turning.
+Lap 1 minus lap 2 = what was drawn for the first time.
+
+SwiftShader caveat: WebGL runs in the GPU process, so a frame's GPU work is paid by whichever later frame first waits
+on the GPU (three does when it first uses a program). The warm-up's draw-everything frame shows up 15–27 s later in a
+settling frame with no counts at all; `?sync` (one `readPixels` per frame) attributes work correctly but costs seconds
+per frame. Frame times below are therefore relative; the counts are what the gate trusts. Not GPU timings.
+
+**Before (headless Chromium, SwiftShader, 640×400 desktop and `?lowmem&w=390&h=844`, noon in July; night `&time=22&lights`
+and winter `&month=12&day=20&weather=snow` showed the same):**
+
+| spot | lap 1 | lap 2 |
+|---|---|---|
+| living room (SKOGSGRÄNSEN / LINDBYN) | 57 new programs (48 phone), 2 new textures, 4 framebuffers, 6 renderbuffers; one frame 12–51 s, then 150–1600 ms frames | 0 programs, still 2 textures / 4 framebuffers |
+| upstairs (four mirrors in reach) | 0 programs (4 on the phone), 3 new textures, 6 framebuffers, 9 renderbuffers | the same textures again |
+| kitchen, hall, patio, street, courtyard, Karpvägen, roof | 0 programs, 0 new textures | 0 |
+
+Causes, in order of size:
+1. **The mirror pass compiles a second set of programs.** A Reflector draws the room into a half-float render target,
+   where three uses no tone mapping and linear output: a different program for every material it sees. The warm-up
+   compiled and drew only the screen's variants, so the first mirror in view compiled 43–46 programs in one frame
+   (12–51 s under SwiftShader; on a GPU the synchronous compile + link of ~50 programs is a freeze of a second or
+   more) and a few more each time new things turned into its view.
+2. **Every change of active mirror allocates a new render target.** Since #585 the previous mirror's 512² 4×
+   multisampled target is disposed when another becomes active, so turning between two mirrors creates a texture,
+   two framebuffers and three renderbuffers (~15 MB) every time, on every lap.
+3. Not seen while turning: new programs from lamps or pool lights (the light count is constant, night = day),
+   textures of things coming into view (the warm-up's draw-everything frame had uploaded them), garbage collection.
+   Still to watch: the shadow map is redrawn twice a second (`age`, 5–95 ms of the frame under SwiftShader, the
+   largest regular spike at the indoor spots); the warm-up drew the shadow pass with the shadow camera's own layers,
+   so what the DetailCuller had on layer 7 was first drawn into the shadow map later; and the dynamic resolution's
+   pixel-ratio steps reallocate the canvas.
+

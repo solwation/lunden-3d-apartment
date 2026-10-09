@@ -15,6 +15,7 @@ src/detail.js          DetailCuller (#189): far-away small meshes and things ins
                        darts, the basketball) are judged every update, not only when the camera moves (#267)
 tools/lighttest.html   headless test: aim at every light switch / floor lamp, toggle it
 tools/perfcount.html   draw calls / triangles at a few spots (compare before/after optimising)
+tools/turntest.html    turn-around hitches (#592): after the warm-up, 360° turns at nine spots; 0 new programs / textures (Playwright)
 tools/oventest.html    headless test: oven + microwave open/close (lamp inside), Moccamaster brews and clicks off
 tools/thingtest.html   headless test: a wine bottle to the coffee table and back to the rack, a glass, F sends them home;
                        pour wine into a glass and drink it empty, whisky splashes into a tumbler, back in the BESTÅ = empty
