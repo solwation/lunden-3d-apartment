@@ -27,6 +27,7 @@ f.onload = async () => {
   lines.push(`${pass ? 'PASS' : 'FAIL'} ${taps.length} switches/lamps`);
   for (const t of taps) {
     if (t.name === 'läslampan') continue; // the bunks' reading lamps (#219): their own test below
+    if (t.name === 'julgranen' && !w.__app.christmas.active) continue; // the Christmas tree's lights (#571): only 1 Dec – 6 Jan (christmastest)
     (t.object ?? t.pickable).updateMatrixWorld(true);
     // stand 0.7 m from the pick target, on the side facing the room, and look at it
     // the SYMFONISK lamp (#186): aim at its glass (its origin is at its foot on the window board)

@@ -6,7 +6,7 @@ import { inPoly, crosses } from './player.js';
 
 // #465: preview locally; only confirmed, revision-checked moves enter the shared arrangement.
 const CACHE = 'lunden.furniture.layout', UNLOCK = 'lunden.furniture.unlocked';
-const NAMES = { besta: 'vitrinskåpet', winerack: 'vinstället', pineapple: 'ananaspegeln', byas: 'TV-bänken', sofa: 'soffan', armchair: 'fåtöljen', ottoman: 'pallen', rug: 'mattan', pictures: 'tavlan', painting: 'tavlan', kposters: 'affischerna', skansnasTable: 'matbordet', skansnasChair: 'stolen', coffeetable: 'soffbordet', slattable: 'uteplatsbordet', randerstable: 'sidobordet', aborgtable: 'bordet', aborgchair: 'stolen', floorlamp: 'golvlampan', tubelamp: 'lampan', worklamp: 'lampan', walllamp: 'vägglampan', bed: 'sängen', bunk: 'våningssängen', daybed: 'sängen', gamingdesk: 'skrivbordet', gamingchair: 'stolen', laptop: 'datorn', tv: 'TV:n', palm: 'växten', zzplant: 'garderobsblomman', planter: 'växten', parasol: 'parasollen', secretary: 'sekretären', sidetable: 'sängbordet', veronasofa: 'utesoffan', dynbox: 'dynboxen', huego: 'lampan', symfonisk: 'högtalaren', photoframe: 'fotoramen', nesthub: 'skärmen', nestmini: 'högtalaren' };
+const NAMES = { besta: 'vitrinskåpet', winerack: 'vinstället', pineapple: 'ananaspegeln', byas: 'TV-bänken', sofa: 'soffan', armchair: 'fåtöljen', ottoman: 'pallen', rug: 'mattan', pictures: 'tavlan', painting: 'tavlan', kposters: 'affischerna', skansnasTable: 'matbordet', skansnasChair: 'stolen', coffeetable: 'soffbordet', slattable: 'uteplatsbordet', randerstable: 'sidobordet', aborgtable: 'bordet', aborgchair: 'stolen', floorlamp: 'golvlampan', tubelamp: 'lampan', worklamp: 'lampan', walllamp: 'vägglampan', bed: 'sängen', bunk: 'våningssängen', daybed: 'sängen', gamingdesk: 'skrivbordet', gamingchair: 'stolen', laptop: 'datorn', tv: 'TV:n', palm: 'växten', zzplant: 'garderobsblomman', planter: 'växten', parasol: 'parasollen', secretary: 'sekretären', sidetable: 'sängbordet', veronasofa: 'utesoffan', dynbox: 'dynboxen', huego: 'lampan', symfonisk: 'högtalaren', photoframe: 'fotoramen', nesthub: 'skärmen', nestmini: 'högtalaren', xmastree: 'julgranen' };
 const crossesLevels = (piece) => ['pictures', 'painting', 'kposters'].includes(piece.item.type);
 // Floors have disjoint height intervals; the saved world transform identifies the storey.
 const levelAt = (y) => LEVELS.findIndex(l => y > l.floor && y < l.floor + l.ceiling);
@@ -269,6 +269,10 @@ export class Rearrange {
         if (moved) state.pieces[sofaPiece.id] = entry;
       }
     }
+    // #571: what the Christmas tree hides is shown again while poses change (a hidden piece moved elsewhere takes the
+    // things on it along); the layer re-judges the overlap afterwards
+    const fresh = (p) => Number.isInteger(state.pieces[p.id]?.revision) && state.pieces[p.id].revision > p.revision;
+    const revealed = !!this.overlay && this.pieces.some(fresh) && this.overlay.reveal();
     const changes = [];
     for (const p of this.pieces) {
       const next = state.pieces[p.id];
@@ -307,14 +311,16 @@ export class Rearrange {
     }
     this.state = state;
     try { localStorage.setItem(CACHE, JSON.stringify(state)); } catch {}
-    if (changes.length) { this.refresh(); this.changed?.(changes); }
+    if (this.overlay && (revealed || changes.length)) this.overlay.recompute(); // (+ refresh)
+    else if (changes.length) this.refresh();
+    if (changes.length) this.changed?.(changes);
   }
   refresh() {
     const f = this.world.furniture;
     for (const a of [...f.segments, ...f.footprints]) a.length = 0;
     f.object.updateMatrixWorld(true);
     for (const obj of f.object.children) {
-      const piece = this.pieces.find((p) => p.object === obj); if (!piece) continue;
+      const piece = this.pieces.find((p) => p.object === obj); if (!piece || obj.userData.seasonHidden) continue; // (#571: the tree out of season, what it hides)
       for (const r of obj.userData.footprint ?? []) {
         const pts = [[r.x0,r.z0],[r.x1,r.z0],[r.x1,r.z1],[r.x0,r.z1]].map(([x,z]) => { const v = obj.localToWorld(new V(x,0,z)); return [v.x,v.z]; });
         f.footprints[piece.level].push(pts);

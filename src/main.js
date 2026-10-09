@@ -42,6 +42,7 @@ import { WallClock, ClockPanel } from './wallclock.js';
 import { Patio, buildStringLights } from './patio.js';
 import { updateReflections, reflectors } from './reflections.js';
 import { applySeason } from './seasons.js';
+import { ChristmasSeason } from './christmas.js';
 import { saveResume, saveSession, takeResume } from './resume.js';
 import { saveWorld, loadWorld } from './keep.js';
 import { lifeDev, devScenario, Life } from './life.js';
@@ -1135,6 +1136,7 @@ pauseBtn.addEventListener('click', () => {
 /** Are all the object's parents visible? (Its own flag is ignored: invisible pick helpers on taps and
  * mirrors are meant to be hit; what F hides is a parent group.) */
 function shown(o) {
+  if (o.userData.seasonHidden) return false; // a loose thing on furniture the Christmas tree hides (#571)
   for (let p = o.parent; p; p = p.parent) if (!p.visible) return false;
   return true;
 }
@@ -1867,6 +1869,16 @@ const rearrange = new Rearrange({ scene, camera, world, player, life, marks,
   },
   status: (text) => { document.getElementById('rearrange-status').textContent = text; },
 });
+// the Christmas tree (#571): up 1 Dec – 6 Jan by the game's date; what it stands on is hidden for the time being
+const christmas = new ChristmasSeason({ rearrange, lights,
+  changed: (gone) => {
+    const seat = rest.active ? rest.target?.pickable : null;
+    if (seat && gone.some(({ object }) => { for (let o = seat; o; o = o.parent) if (o === object) return true; return false; })) standUp();
+    shadowState.hold = 1.5;
+    document.dispatchEvent(new Event('furniture-moved'));
+  },
+});
+christmas.update(day, 0);
 const terminal = document.getElementById('terminal'), terminalInput = document.getElementById('terminal-code');
 const editHelp = document.getElementById('rearrange-help'), editToggle = document.getElementById('rearrange-toggle');
 let editMenuPiece = null, resetFurnitureRequest = null, editHUDKey = '';
@@ -2082,6 +2094,7 @@ function step(dt) {
   calendar.update(); // redraws only when the page or the date changed
   patio.update(day, dt);
   applySeason(day.month); // tree colours, snow (only does work when the month changes)
+  christmas.update(day, dt); // the Christmas tree: up or not by the date, its lights shimmer (#571)
   for (const t of world.furnitureTargets) t.update?.(dt);
   nests.update(dt); // the smart speakers: talk, wake lights, the display (#325)
   for (const h of holdables) h.update(dt);
@@ -2510,4 +2523,4 @@ document.documentElement.classList.remove('resuming'); // the page is ready: off
 hideLoading();
 
 // handle for tests/debugging (tools/touchtest.html, tools/perfcount.html)
-window.__app = { plantWind, cheats, cheatNote, showCheatNote, beerShelf, hallCare, bedCare, tableSetting, watering, laundry, compass, showOverlay, resumeFromMenu, interactionOutline, eggs, isPhoneDevice, get activeMode() { return activeMode; }, set activeMode(v) { activeMode = v; }, rearrange, showTerminal, dynRes, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, toaster, life, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS };
+window.__app = { christmas, plantWind, cheats, cheatNote, showCheatNote, beerShelf, hallCare, bedCare, tableSetting, watering, laundry, compass, showOverlay, resumeFromMenu, interactionOutline, eggs, isPhoneDevice, get activeMode() { return activeMode; }, set activeMode(v) { activeMode = v; }, rearrange, showTerminal, dynRes, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, toaster, life, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS };

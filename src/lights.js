@@ -166,6 +166,10 @@ class Switch {
 /** A small lamp (floor/work/reading lamp, BESTÅ spots, bench light, mirror LED … from world.lamps): E on it toggles it;
  * unless its spec says `auto: false` it also switches itself with the dusk (#234, Lights.updateAuto). `room.on` is
  * where it is going, `k` how far on it is (a fade when it switches itself, at once by hand). */
+/** A small lamp gives light only while it is there: not hidden with the furniture (F; its own flag is ignored, pick
+ * helpers are invisible) nor by the Christmas tree's season layer (#571, `seasonHidden` on it or a parent). */
+const shown = (f) => { for (let p = f.spec.object; p; p = p.parent) if (p.userData.seasonHidden || (p !== f.spec.object && !p.visible)) return false; return true; };
+
 class FloorLamp {
   constructor(spec) {
     Object.assign(this, { kind: 'lamp', name: spec.name ?? 'golvlampan', on: false, spec, auto: spec.auto !== false, k: 0 });
@@ -498,7 +502,7 @@ export class Lights {
   /** Is anything lit in room `name` on `level`: its ceiling lamp or a small lamp standing in it (the blinds' glow, #273)? */
   roomLit(level, name) {
     if (this.rooms.get(`${level}:${name}`)?.on) return true;
-    return this.floorLamps.some((f) => f.room.on && f.room.lamps[0]?.level === level && this.lampRoom(f.room.lamps[0]) === name);
+    return this.floorLamps.some((f) => f.room.on && shown(f) && f.room.lamps[0]?.level === level && this.lampRoom(f.room.lamps[0]) === name);
   }
 
   /** The room a lamp is in (cached; lamps on a window board are just outside the room map: the room in front). */
@@ -521,7 +525,6 @@ export class Lights {
   update(level, pos, dt = 1 / 60, dir = null) {
     const on = new Set(), cands = [];
     // small lamps hidden with the furniture (F) give no light
-    const shown = (f) => { for (let p = f.spec.object.parent; p; p = p.parent) if (!p.visible) return false; return true; };
     for (const R of this.rooms.values()) if (R.on) for (const lamp of R.lamps) { on.add(lamp); if (lamp.level === level) cands.push([lamp, 1, R.name]); }
     for (const f of this.floorLamps) {
       if (f.k <= 0.001 || !shown(f)) continue;

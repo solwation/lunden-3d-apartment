@@ -3318,6 +3318,38 @@ export const NEST = {
   photoEvery: 40, photoFor: 10, night: 0.35, photo: 'textures/miele.jpg',
 };
 
+// The Christmas tree (#571, src/xmastree.js + src/christmas.js): stands in the living room from 1 December to 6 January
+// inclusive (the user; `season` = [month, day] first and last day, over the new year), hidden and inert the rest of the
+// year. Its default spot is the living room's right-hand corner as you come in through the doorway from the passage
+// (looking south towards the window: the SW corner by the window, where the palm and the ZZ plant stand — those are
+// hidden while the tree stands there). The spot is pulled out of the corner so the crown clears the wall-hung BESTÅ
+// (x ≤ 0.62, z ≤ 11.15) and the south wall (z 12.06). Height: RH 3.0 m in the living room (bofakta) → the star's tip
+// ~2.8 m up, ~0.2 m under the ceiling. Every size, colour and count below is a visual *guess* (no reference): a
+// Nordmann fir about 2.2 m with a crown ~1.1 m across, a red enamel stand on a white felt skirt, warm-white LED string
+// lights that shimmer softly, red / gold / silver baubles, a gold bead garland, a gold star and a few presents.
+export const XMAS_TREE = {
+  season: { from: [12, 1], to: [1, 6] },
+  stand: { r0: 0.2, r1: 0.15, h: 0.17, color: 0x8e1b1f }, // julgransfot (*guess*)
+  skirt: { r: 0.5, h: 0.012, color: 0xf2efe8, border: 0xa3222a }, // felt mat round the foot (*guess*)
+  trunk: { r: 0.04, h: 0.45, color: 0x5a3f2b },
+  // the crown: from `bottom` to `top` over the floor, `r` = its radius at the bottom whorl; `tiers` whorls of serrated
+  // skirts + `sprigs` branch tips on its surface (one merged mesh, vertex colours `greens`)
+  crown: { bottom: 0.3, top: 2.5, r: 0.55, tiers: 11, sprigs: 420, greens: [0x1d4529, 0x24532f, 0x2c6237, 0x1a3d26, 0x335f3a] },
+  star: { size: 0.115, inner: 0.47, depth: 0.025, color: 0xe8b83e, glow: 0xffd27a, halo: 0.42, haloOn: 0.55 },
+  // LED string: `n` bulbs on a spiral of `turns` turns; `twinkle` = how far each one dims (0–1) at `speed` rad/s (±50 %
+  // per bulb), `wave` = a slow brightening that runs up the tree; halos = additive point sprites `halo` m across
+  lights: { n: 160, turns: 8, bulb: 0.011, halo: 0.1, haloOn: 0.9, colors: [0xffd08a, 0xffc879, 0xffdca6], twinkle: 0.55, speed: 2.2, wave: 0.18 },
+  baubles: { n: 54, r: [0.028, 0.045], colors: [0xb0142a, 0xc9a13a, 0xd7dadf, 0x7e0f1c, 0xb0142a, 0xc9a13a] },
+  garland: { turns: 4.5, r: 0.007, color: 0xd9ad45, sag: 0.05 },
+  gifts: [ // presents under the tree on its room side: [x, z, w, d, h, paper, ribbon], local metres, +z = facing
+    [0.22, 0.42, 0.26, 0.2, 0.16, 0xb3242c, 0xe8c25a], [-0.18, 0.46, 0.22, 0.22, 0.2, 0x2a5b3e, 0xd94040],
+    [0.0, 0.62, 0.3, 0.16, 0.11, 0xe9e3d3, 0xb3242c], [-0.42, 0.18, 0.18, 0.18, 0.13, 0x274a7a, 0xe8c25a],
+  ],
+  footprint: 0.42, // collision half-width (m): the crown's lower branches can be brushed, not walked through
+  light: { intensity: 0.9, range: 4, color: 0xffc98a }, // its pool light (one anchor `ahead` m in front of the tree)
+  ahead: 0.55, anchorY: 1.2,
+};
+
 export const FURNITURE = [
   // Vardagsrum: sofa with its back to the window (south wall, clear of curtains #459), chaise in the SE corner
   { type: 'sofa', level: 0, x: 5.5 - 2.82 / 2, z: 12.06 - 0.89 / 2, rot: 0, chaise: 'right' }, // sitter's right = east
@@ -3406,6 +3438,8 @@ export const FURNITURE = [
     veinBump: .0012, walls: { x0: .2, z0: 11.17, z1: 11.72 } },
   { type: 'palm', level: 0, x: 0.47, z: 11.96, pot: { r: 0.2, h: 0.45 }, potColor: 0x3d3f42, size: 0.8, potSize: 0.95, potStyle: 'copper', canes: 15, cane: 0.72, frond: 0.85, leaflet: 0.27,
     walls: { x0: 0.2, z1: 12.23 } },
+  // the Christmas tree (#571, XMAS_TREE): only 1 Dec – 6 Jan; hides the palm and the ZZ plant while it stands here
+  { type: 'xmastree', level: 0, x: 1.08, z: 11.5, rot: 0 },
   // Soffbord ILVA Woodstock, top i oljebehandlad ekfaner (art. 1055729): 120 × 60 × 47 cm, legs in
   // oiled solid oak, a fixed shelf below (ilva.dk product page). Centred on the three seats
   // (x 2.68–4.60), 40 cm in front of the sofa (front at z 11.26). Its shape: COFFEE_TABLE (#410).

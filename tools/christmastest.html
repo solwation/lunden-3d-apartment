@@ -1,0 +1,100 @@
+<!doctype html><html><meta charset="utf-8"><title>Christmas tree season (#571)</title><pre id="out">running…</pre><script type="module">
+// The Christmas tree (#571): up 1 Dec – 6 Jan inclusive by the game's date (directly and after a reload), hidden, unpickable,
+// without collision or light the rest of the year; the furniture under its crown (and what stands on it) hidden for the
+// time being without touching its saved pose; the tree moves in Möblera om, a confirmed move survives reloads and the
+// season ending, a cancelled one changes nothing.
+//   chrome --headless=new --use-angle=swiftshader --enable-unsafe-swiftshader --virtual-time-budget=240000 --dump-dom http://localhost:8571/tools/christmastest.html
+const lines=[];let pass=true;const check=(ok,s)=>{lines.push(`${ok?'PASS':'FAIL'} ${s}`);pass&&=!!ok;};
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+try {
+ localStorage.removeItem('lunden.furniture.layout');localStorage.removeItem('lunden.furniture.unlocked');
+ const f=document.createElement('iframe');f.width=480;f.height=300;document.body.append(f);
+ async function load(q){f.src=`../index.html?life&shot&time=12&freeze&${q}&r=${Math.random()}`;await new Promise(r=>f.onload=r);while(!f.contentWindow.__app)await wait(100);const A=f.contentWindow.__app,d=f.contentDocument;d.documentElement.requestFullscreen=undefined;d.getElementById('start-touch').click();A.step(1/60);return A;}
+ let A=await load('month=11&day=30'),w=f.contentWindow,T=await w.eval("import('three')"),C=await w.eval("import(new URL('src/christmas.js', document.baseURI).href)");
+ // the date rule itself
+ const days=[[2026,11,30,false],[2026,12,1,true],[2026,12,24,true],[2026,12,31,true],[2027,1,1,true],[2027,1,6,true],[2027,1,7,false],[2027,6,15,false],[2028,2,29,false],[2026,11,31,false]];
+ check(days.every(([y,m,d,want])=>C.inChristmas(y,m,d)===want),'inChristmas: 30 Nov no, 1 Dec – 6 Jan yes (over the new year), 7 Jan no (a day past the month end clamps)');
+ let R=A.rearrange,X=A.christmas,tree=X.tree;
+ const find=type=>R.pieces.find(p=>p.item.type===type&&p.level===0),pos=o=>o.getWorldPosition(new T.Vector3());
+ // in a furniture footprint (collision, #302) at (x, z) on Entréplan
+ const inFoot=(x,z)=>A.world.levels[0].footprints.some(q=>{let c=false;for(let i=0,j=q.length-1;i<q.length;j=i++){const[xi,zi]=q[i],[xj,zj]=q[j];if((zi>z)!==(zj>z)&&x<(xj-xi)*(z-zi)/(zj-zi)+xi)c=!c;}return c;});
+ const at=(A)=>{const p=pos(A.christmas.tree.object);return[p.x,p.z];};
+ const setDate=(y,m,d)=>{Object.assign(A.day,{year:y,month:m,date:d});A.step(1/60);A.step(1/60);};
+ const litTree=()=>{A.player.spawn(2.6,9.6,Math.PI);A.step(1/60);return A.lights.scores.has(X.lamp.room.lamps[0]);};
+ check(tree&&X.lamp,'the tree is a movable piece with a small lamp of its own');
+ const [tx,tz]=at(A),palm=find('palm'),zz=find('zzplant');
+ // ── out of season (30 Nov)
+ check(!X.active&&!tree.object.visible&&tree.object.userData.seasonHidden,'30 Nov: no tree');
+ check(palm.object.visible&&zz.object.visible&&!X.hiddenPieces.length,'30 Nov: the palm and the ZZ plant in their corner');
+ check(!inFoot(tx,tz)&&inFoot(zz.object.position.x,zz.object.position.z),'30 Nov: no collision where the tree would stand; the ZZ plant\'s pot blocks');
+ check(!litTree()&&X.lamp.room.lamps.every(l=>!A.lights.slots.some(s=>s.lamp===l)),'30 Nov: the tree gives no light');
+ R.unlock('olof is the goat');
+ const look=(x,y,z)=>{const e=A.camera.position;A.camera.rotation.set(Math.atan2(y-e.y,Math.hypot(x-e.x,z-e.z)),Math.atan2(-(x-e.x),-(z-e.z)),0,'YXZ');A.camera.updateMatrixWorld();};
+ A.player.spawn(tx,tz-2,Math.PI);A.step(1/60);look(tx,1.2,tz);R.update();
+ check(R.target?.piece!==tree,'30 Nov: the hidden tree cannot be picked in Möblera om');
+ R.enable(false);A.step(1/60);look(tx,1.2,tz);A.step(1/60);
+ check(A.focus().focused!==X.lamp,'30 Nov: and E finds no tree lights');
+ // ── 1 Dec: up
+ setDate(2026,12,1);
+ check(X.active&&tree.object.visible&&!tree.object.userData.seasonHidden,'1 Dec: the tree is up');
+ check(!palm.object.visible&&!zz.object.visible&&X.hiddenPieces.length===2,'1 Dec: the palm and the ZZ plant (under its crown) hidden for now');
+ check(inFoot(tx,tz)&&!A.player.isFree(tx,tz,0)&&!inFoot(zz.object.position.x,zz.object.position.z),'1 Dec: the tree blocks, the hidden pot does not');
+ check(X.lamp.k===1&&litTree(),'1 Dec: its lights are on and light the room (the shared pool / wash)');
+ const lights=tree.object.children.find(o=>o.isInstancedMesh),c0=new T.Color(),c1=new T.Color();
+ lights.getColorAt(0,c0);for(let i=0;i<20;i++)A.step(1/30);lights.getColorAt(0,c1);
+ check(!c0.equals(c1),'1 Dec: the string lights shimmer (animated colours)');
+ A.player.spawn(tx,tz-1.6,Math.PI);A.step(1/60);look(tx,1.2,tz);A.step(1/60);
+ check(A.focus().focused===X.lamp,'1 Dec: E on the tree switches its lights');
+ const crown=new T.Box3().setFromObject(tree.object);
+ check(crown.max.y>2.55&&crown.max.y<2.95,`1 Dec: tall, star under the 3.0 m ceiling (top ${crown.max.y.toFixed(2)} m)`);
+ // ── over the new year and the 6/7 Jan line
+ setDate(2026,12,31);A.day.addDays(1);A.step(1/60);
+ check(A.day.year===2027&&A.day.month===1&&A.day.date===1&&X.active&&tree.object.visible,'31 Dec → 1 Jan: still up');
+ setDate(2027,1,6);check(X.active&&tree.object.visible&&!palm.object.visible,'6 Jan: still up');
+ A.day.addDays(1);A.step(1/60);
+ check(!X.active&&!tree.object.visible&&palm.object.visible&&zz.object.visible&&!inFoot(tx,tz),'7 Jan: gone; the palm and the ZZ plant back');
+ check(!litTree(),'7 Jan: no tree light');
+ // ── moved furniture: the overlap follows current poses; lamps under the tree go dark; a cancelled move changes nothing
+ setDate(2026,12,10);R.enable(true);
+ const lamp=A.lights.floorLamps.find(l=>l.name==='golvlampan'),floorlamp=find('floorlamp'),armchair=find('armchair'),ottoman=find('ottoman');
+ const before=new Map(R.pieces.map(p=>[p.id,p.object.matrixWorld.clone()]));
+ check(R.begin(tree)&&!tree.object.visible&&R.ghost.visible,'Möblera om: the tree can be selected (ghost preview)');
+ R.candidate=new T.Matrix4().makeTranslation(0.9-tx,0,8.75-tz).multiply(tree.object.matrixWorld);R.valid=true;R.cancel();A.step(1/60);
+ check(tree.object.visible&&pos(tree.object).distanceTo(new T.Vector3(tx,0,tz))<1e-6&&!palm.object.visible&&R.state.revision===0,'cancelled move: the tree where it was, the plants still hidden, nothing saved');
+ R.begin(tree);R.candidate=new T.Matrix4().makeTranslation(0.9-tx,0,8.75-tz).multiply(tree.object.matrixWorld);R.valid=true;
+ check(await R.confirm(),'confirmed move to the armchair corner');A.step(1/60);
+ check(palm.object.visible&&zz.object.visible,'the corner it left: the plants back');
+ check(!floorlamp.object.visible&&!armchair.object.visible&&!ottoman.object.visible,'the armchair, the stool and the floor lamp under it hidden');
+ lamp.set(true);A.player.spawn(2.6,9.4,Math.PI);A.step(1/60);
+ check(lamp.room.lamps.every(l=>!A.lights.scores.has(l)),'a hidden floor lamp switched on gives no light');
+ check(R.pieces.filter(p=>p!==tree).every(p=>p.object.matrixWorld.equals(before.get(p.id)))&&Object.keys(R.state.pieces).length===1&&R.state.pieces[tree.id],'only the tree\'s pose changed and was saved');
+ // the coffee table with the fruit bowl on it
+ const table=find('coffeetable'),bowl=A.fruit.group,tableAt=pos(table.object);
+ R.begin(tree);R.candidate=new T.Matrix4().makeTranslation(tableAt.x-0.9,0,tableAt.z-8.75).multiply(tree.object.matrixWorld);R.valid=true;await R.confirm();A.step(1/60);
+ check(armchair.object.visible&&floorlamp.object.visible&&ottoman.object.visible,'moved on: the armchair corner back');
+ check(!table.object.visible&&!bowl.visible&&bowl.userData.seasonHidden,'the coffee table and the fruit bowl on it hidden');
+ A.player.spawn(tableAt.x,tableAt.z-1.3,Math.PI);A.step(1/60);look(bowl.position.x+0.0,pos(bowl).y,pos(bowl).z);A.step(1/60);
+ const fb=A.focus().focused;check(!fb||!A.fruit.targets().some(t=>t.userData?.door===fb||t===fb?.pickable),'the hidden bowl cannot be picked up');
+ check(table.object.matrixWorld.equals(before.get(table.id))&&!R.state.pieces[table.id],'the table keeps its pose and saved state');
+ const saved=R.state.pieces[tree.id].pos.slice();
+ // ── reloads: the confirmed spot comes back in season; out of season the tree is gone and the table back
+ A=await load('month=12&day=10');R=A.rearrange;X=A.christmas;tree=X.tree;
+ const t2=R.pieces.find(p=>p.item.type==='coffeetable');
+ check(pos(tree.object).distanceTo(new T.Vector3(...saved))<1e-6&&tree.object.visible&&!t2.object.visible&&!A.fruit.group.visible,'reload in December: the tree where it was put, the table and bowl hidden');
+ check(R.pieces.find(p=>p.item.type==='palm').object.visible,'reload: the plants in the corner it left');
+ A=await load('month=10&day=9');R=A.rearrange;X=A.christmas;tree=X.tree;
+ const t3=R.pieces.find(p=>p.item.type==='coffeetable');
+ check(!tree.object.visible&&t3.object.visible&&A.fruit.group.visible&&!X.hiddenPieces.length&&R.state.pieces[tree.id]?.pos.every((v,i)=>v===saved[i]),'reload in October: no tree, the table and bowl back, the tree\'s spot still saved');
+ // ── fresh starts on the boundary dates (every visit starts at its own date)
+ for(const [m,d,want] of [[11,30,false],[12,1,true],[1,6,true],[1,7,false]]){
+  localStorage.removeItem('lunden.furniture.layout');A=await load(`month=${m}&day=${d}`);
+  check(A.christmas.active===want&&A.christmas.tree.object.visible===want,`reload on ${d}/${m}: tree ${want?'up':'not up'}`);
+ }
+ // the season ending under a tree being moved drops the move
+ A=await load('month=1&day=6');R=A.rearrange;X=A.christmas;R.unlock('olof is the goat');
+ R.begin(X.tree);A.day.addDays(1);A.step(1/60);
+ check(!R.selected&&!X.tree.object.visible&&!R.ghost.visible,'7 Jan while moving the tree: the move is dropped, the tree gone');
+} catch(e) { check(false,e.stack||e); }
+localStorage.removeItem('lunden.furniture.layout');localStorage.removeItem('lunden.furniture.unlocked');
+document.getElementById('out').textContent=`${pass?'PASS':'FAIL'} christmastest\n${lines.join('\n')}`;
+</script></html>

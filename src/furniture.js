@@ -24,6 +24,7 @@ import { randers } from './randers.js';
 import { aborgtable as aborgTableModel, aborgchair } from './aborg.js';
 import { klk } from './closet.js';
 import { cleaning } from './cleaning.js';
+import { xmastree } from './xmastree.js';
 import { registerRug, rugUnder } from './rugs.js';
 import { pingpingModel } from './pingping.js';
 import { buildWhiskyBottle, buildWineBottle } from './bottles.js';
@@ -3661,7 +3662,7 @@ function aborgtable(item, lights) {
   return aborgTableModel(item, lights, () => { const f = flower(); mergeStatic(f); return f; });
 }
 
-const BUILDERS = { pineapple: pineappleMirror, aborgtable, aborgchair, randerstable, tubelamp, dani, secretary, winerack, besta, painting, pictures, palm, zzplant, sofa, armchair, ottoman, floorlamp, sidetable, coffeetable, veronasofa, slattable, parasol, planter, dynbox, bed, skansnasTable, skansnasChair, bunk, daybed, kposters, smastad, rug, ragrund, coatrack, shoerack, byas, tv, nordkisa, worklamp, walllamp, symfonisk, gamingdesk, gamingchair, nordli, malm, alex, kidchair, vanity, vanitystool, laptop, photoframe, huego, nesthub, nestmini, hookrail, towelhooks, klk, cleaning };
+const BUILDERS = { pineapple: pineappleMirror, aborgtable, aborgchair, randerstable, tubelamp, dani, secretary, winerack, besta, painting, pictures, palm, zzplant, sofa, armchair, ottoman, floorlamp, sidetable, coffeetable, veronasofa, slattable, parasol, planter, dynbox, bed, skansnasTable, skansnasChair, bunk, daybed, kposters, smastad, rug, ragrund, coatrack, shoerack, byas, tv, nordkisa, worklamp, walllamp, symfonisk, gamingdesk, gamingchair, nordli, malm, alex, kidchair, vanity, vanitystool, laptop, photoframe, huego, nesthub, nestmini, hookrail, towelhooks, klk, cleaning, xmastree };
 
 /** An invisible thin box over a table top (raycast target for putting a cup down, #90). Local rect. */
 export function surfaceBox(r, list) {

@@ -63,6 +63,9 @@ src/rearrange.js       furniture cheat (#465): § / >_ inside the touch score ba
                        Physical bounds ignore Ambilight; the TV targets support surfaces and follows BYÅS in the same saved batch, repairing legacy sunk TV poses on load (#478, tools/rearrangetvtest.html). Browser tests: tools/rearrangetest.html, tools/rearrangefollowtest.html;
                        Wine racks use wall placement with their detached bottles; SYMFONISK lamps/speakers use support surfaces like the TV (#482).
                        tools/rearrangeplacementtest.html verifies wall rotation, bottle followers, sill/table placement and reload.
+                       The Christmas tree (#571) is an ordinary piece ('julgranen') while it stands; out of season it is hidden and
+                       not selectable. Pieces it hides (`userData.seasonHidden`, src/christmas.js) are not selectable either and
+                       keep their poses; `apply` reveals them while poses change, `refresh` skips them; tools/christmastest.html.
                        Worker tests: cloudflare/layout.test.mjs. Development: cloudflare/dev.mjs and ?cloud=http://localhost:8145.
 src/minimap.js         plan view with the visitor's arrow, current room highlighted (top right, under the HUD buttons); hidden, shown with the
                        stats (Tab / T / 📊, #85), K shows it alone

@@ -854,7 +854,8 @@ export function buildWorld(plan) {
     /** Collision of moving furniture parts (the secretary's open flap, #118) on `level`. */
     movingSegments(level) {
       if (!furniture.object.visible) return [];
-      return furniture.interactives.filter((t) => t.segments && t.level === level).flatMap((t) => t.segments());
+      const away = (o) => { for (; o; o = o.parent) if (o.userData.seasonHidden) return true; return false; }; // hidden by the Christmas tree (#571)
+      return furniture.interactives.filter((t) => t.segments && t.level === level && !away(t.pickable)).flatMap((t) => t.segments());
     },
     lamps: [...furniture.lights, ...mirrorLamps, ...hallWall.lamps], // floor lamps + mirror LED strips + the hall mirror's night light, #572 (lights.js makes them switchable)
     windowLights: { object: surroundings.userData.windows.object, update(h, n) { surroundings.userData.windows.update(h, n); courtyard.update(n); exterior.userData.update(n); } }, // neighbours' lit windows, the pergola's bulbs, the loftgång lanterns (daycycle)

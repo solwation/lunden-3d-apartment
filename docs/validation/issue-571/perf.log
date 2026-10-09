@@ -1,0 +1,114 @@
+== tools/perfcount.html (before-july)
+start: calls 198 tris 54019 geoms 784 tex 101
+kitchen: calls 339 tris 584534 geoms 904 tex 114
+living: calls 338 tris 701481 geoms 985 tex 118
+upstairs: calls 323 tris 633897 geoms 1085 tex 130
+patio: calls 102 tris 408813 geoms 1085 tex 130
+courtyard: calls 87 tris 368702 geoms 1085 tex 130
+karpvagen: calls 76 tris 321142 geoms 1085 tex 130
+garage: calls 338 tris 795013 geoms 1107 tex 136
+park: calls 431 tris 770951 geoms 1114 tex 136
+east: calls 50 tris 281392 geoms 1114 tex 136
+big hall: calls 343 tris 801613 geoms 1136 tex 139
+basement: calls 341 tris 796411 geoms 1138 tex 140
+mess cap: calls 305 → 307 with 400 added, drawn crumb 48/48 dust 32/32 spots 80
+quality scale: kitchen calls high 339 → low 312
+PASS quality scale reduced draw calls
+PASS adaptive logic drops tier on low fps
+PASS adaptive logic recovers tier on high fps
+ALL PASS
+== tools/perfcount.html (after-july)
+start: calls 198 tris 54019 geoms 784 tex 101
+kitchen: calls 339 tris 584534 geoms 904 tex 114
+living: calls 338 tris 701481 geoms 985 tex 118
+upstairs: calls 323 tris 633897 geoms 1085 tex 130
+patio: calls 102 tris 408813 geoms 1085 tex 130
+courtyard: calls 87 tris 368702 geoms 1085 tex 130
+karpvagen: calls 76 tris 321142 geoms 1085 tex 130
+garage: calls 338 tris 795013 geoms 1107 tex 136
+park: calls 431 tris 770951 geoms 1114 tex 136
+east: calls 50 tris 281392 geoms 1114 tex 136
+big hall: calls 343 tris 801613 geoms 1136 tex 139
+basement: calls 341 tris 796411 geoms 1138 tex 140
+mess cap: calls 305 → 307 with 400 added, drawn crumb 48/48 dust 32/32 spots 80
+quality scale: kitchen calls high 339 → low 312
+PASS quality scale reduced draw calls
+PASS adaptive logic drops tier on low fps
+PASS adaptive logic recovers tier on high fps
+ALL PASS
+== tools/perfcount.html (before-dec)
+start: calls 214 tris 69463 geoms 795 tex 97
+kitchen: calls 354 tris 602794 geoms 915 tex 110
+living: calls 355 tris 720545 geoms 998 tex 114
+upstairs: calls 338 tris 652157 geoms 1098 tex 125
+patio: calls 130 tris 427197 geoms 1103 tex 125
+courtyard: calls 101 tris 384562 geoms 1103 tex 125
+karpvagen: calls 90 tris 337002 geoms 1103 tex 125
+garage: calls 352 tris 812289 geoms 1125 tex 131
+park: calls 445 tris 788227 geoms 1132 tex 131
+east: calls 64 tris 297252 geoms 1132 tex 131
+big hall: calls 357 tris 818889 geoms 1154 tex 134
+basement: calls 356 tris 814207 geoms 1156 tex 135
+mess cap: calls 322 → 324 with 400 added, drawn crumb 48/48 dust 32/32 spots 80
+quality scale: kitchen calls high 354 → low 327
+PASS quality scale reduced draw calls
+PASS adaptive logic drops tier on low fps
+PASS adaptive logic recovers tier on high fps
+ALL PASS
+== tools/perfcount.html (after-dec)
+start: calls 216 tris 69465 geoms 800 tex 98
+kitchen: calls 355 tris 602794 geoms 920 tex 111
+living: calls 355 tris 675245 geoms 998 tex 113
+upstairs: calls 339 tris 652157 geoms 1098 tex 124
+patio: calls 131 tris 427197 geoms 1103 tex 124
+courtyard: calls 102 tris 384562 geoms 1103 tex 124
+karpvagen: calls 91 tris 337002 geoms 1103 tex 124
+garage: calls 355 tris 815491 geoms 1125 tex 130
+park: calls 450 tris 806643 geoms 1132 tex 130
+east: calls 65 tris 297252 geoms 1132 tex 130
+big hall: calls 360 tris 822091 geoms 1154 tex 133
+basement: calls 359 tris 817409 geoms 1156 tex 134
+mess cap: calls 319 → 321 with 400 added, drawn crumb 48/48 dust 32/32 spots 80
+quality scale: kitchen calls high 355 → low 328
+PASS quality scale reduced draw calls
+PASS adaptive logic drops tier on low fps
+PASS adaptive logic recovers tier on high fps
+ALL PASS
+== tools/perfcount.html (before-phone)
+start: calls 202 tris 67703 geoms 762 tex 89
+kitchen: calls 195 tris 453857 geoms 780 tex 93
+living: calls 249 tris 552231 geoms 812 tex 94
+upstairs: calls 236 tris 599517 geoms 887 tex 103
+patio: calls 100 tris 394389 geoms 887 tex 103
+courtyard: calls 96 tris 401536 geoms 891 tex 104
+karpvagen: calls 77 tris 327422 geoms 897 tex 105
+garage: calls 121 tris 547979 geoms 910 tex 110
+park: calls 156 tris 535427 geoms 911 tex 110
+east: calls 52 tris 287170 geoms 911 tex 110
+big hall: calls 283 tris 715443 geoms 935 tex 114
+basement: calls 318 tris 808785 geoms 938 tex 115
+mess cap: calls 227 → 229 with 400 added, drawn crumb 48/48 dust 32/32 spots 80
+quality scale: kitchen calls high 195 → low 193
+PASS quality scale reduced draw calls
+PASS adaptive logic drops tier on low fps
+PASS adaptive logic recovers tier on high fps
+ALL PASS
+== tools/perfcount.html (after-phone)
+start: calls 204 tris 67705 geoms 767 tex 90
+kitchen: calls 196 tris 453857 geoms 785 tex 94
+living: calls 253 tris 570257 geoms 817 tex 95
+upstairs: calls 237 tris 599517 geoms 892 tex 104
+patio: calls 101 tris 394389 geoms 892 tex 104
+courtyard: calls 97 tris 401536 geoms 896 tex 105
+karpvagen: calls 78 tris 327422 geoms 902 tex 106
+garage: calls 122 tris 547979 geoms 915 tex 111
+park: calls 157 tris 535427 geoms 916 tex 111
+east: calls 53 tris 287170 geoms 916 tex 111
+big hall: calls 286 tris 718645 geoms 940 tex 115
+basement: calls 321 tris 811987 geoms 943 tex 116
+mess cap: calls 232 → 234 with 400 added, drawn crumb 48/48 dust 32/32 spots 80
+quality scale: kitchen calls high 196 → low 194
+PASS quality scale reduced draw calls
+PASS adaptive logic drops tier on low fps
+PASS adaptive logic recovers tier on high fps
+ALL PASS

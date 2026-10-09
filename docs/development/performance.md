@@ -51,3 +51,5 @@ canvases are untouched, so redraws still work), the shadow map to 1024² and the
 used to step up to 1.5× there). Measured with an iPhone UA and a WebGL allocation counter in headless Chromium:
 textures 245 → 170 MB, shadow renderbuffers 16.8 → 4.2 MB, mirrors bounded at one target instead of +~15 MB each. Still
 large and not reduced: ~105 MB of vertex buffers (plus their CPU copies) and ~200 MB of canvas sources on the CPU.
+
+Christmas tree (#571): in season +8 draw calls and ~20 k triangles where it is in view (desktop and phone frame), no extra light (one pool anchor in the shared pool / wash), a 0.016 ms CPU shimmer per frame (instance + point colours) and a ~27 ms one-off overlap re-judgement on load / moves; out of season nothing is drawn and perfcount is unchanged. `tools/perfcount.html` now takes `?month=…&day=…` (game URL overrides) and `?w=…&h=…` (frame size). [Numbers](../validation/issue-571/README.md).

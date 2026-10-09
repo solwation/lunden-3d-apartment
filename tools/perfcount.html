@@ -10,7 +10,10 @@ const spots = [['start', 2.875, -12, 180, 8, 0], ['kitchen', 3.5, 3, 0, 0, 0], [
   ['courtyard', -30, 25, 180, 0, 0], ['karpvagen', -74, 0, 180, 0, 0], ['garage', -76, 44, -90, 0, 0], ['park', -20, 60, 0, 0, 0], ['east', 20, 30, 180, 0, 0],
   // under the courtyard (#357, #417): the big hall looking east, Hus L's basement
   ['big hall', -46, 21, -90, 0, -3], ['basement', -30, 10, -90, 0, -3]];
-const f = document.createElement('iframe'); f.width = 1280; f.height = 800; f.src = '../index.html?shot&time=12&month=7';
+// ?month=12&day=10 etc. override the game URL's parameters (the Christmas tree, #571); ?w=390&h=844 a phone-sized frame
+const own = new URLSearchParams(location.search), game = new URLSearchParams({ shot: '', time: '12', month: '7' });
+for (const [k, v] of own) if (k !== 'w' && k !== 'h') game.set(k, v);
+const f = document.createElement('iframe'); f.width = +(own.get('w') ?? 1280); f.height = +(own.get('h') ?? 800); f.src = '../index.html?' + game.toString().replace(/=(&|$)/g, '$1');
 document.body.append(f);
 f.onload = async () => {
   const w = f.contentWindow;
