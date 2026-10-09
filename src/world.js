@@ -728,7 +728,7 @@ function stairMap(P, L) {
   const matrix = new THREE.Matrix4().makeTranslation(S.x1 + sx * STAIR.bX1, L[0].floor - LEVELS[0].floor * ky, S.z0 - sz * STAIR.bZ[0])
     .multiply(new THREE.Matrix4().makeScale(-sx, ky, sz));
   return { sx, sz, ky, matrix, height: (x, z) => y(stairHeight(...toOurs(x, z))), underside: (x, z) => y(stairUnderside(...toOurs(x, z))),
-    x: (x7) => S.x1 - (x7 - STAIR.bX1) * sx };
+    x: (x7) => S.x1 - (x7 - STAIR.bX1) * sx, z: (z7) => S.z0 + (z7 - STAIR.bZ[0]) * sz, y };
 }
 function buildOwnStructure(group, lower, upper, l1, P, L, map) {
   const h = P.hole, W = lower.size.x;
@@ -762,6 +762,10 @@ function buildOwnStructure(group, lower, upper, l1, P, L, map) {
   const np = STAIR.newel / 2;
   for (const [x, z] of [[R.x, midZ], [cx, midZ], [R.x, R.z1 - np]]) group.add(box(x - np, x + np, z - np, z + np, y1 - 0.01, y1 + rail + 0.03, SM.rail));
   l1.segments.push(...runs);
+  // handrails (#619) as ours (#419): the wall side round the winders, one per flight on the inner side — ours mapped onto
+  // its outline, at its own wall faces (P.handrail), flight B's between its newels; no collision (inside the walls' clearance)
+  map.handrail = { X: map.x, Z: map.z, Y: map.y, H: P.handrail, midZ, innerB: { from: cx, to: R.x } };
+  for (const m of [...buildHandrails(SM.rail, map.handrail).children]) group.add(m);
 }
 
 /** A flat you can walk into (#574, #573, VISIT_UNITS): built like ours from its sheet, in Peab's standard finish and

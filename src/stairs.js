@@ -127,44 +127,52 @@ export function buildStairs(material) {
 
 const STEP = 0.01; // m between the samples along a run
 
-// the runs' plan polylines, wall side and nosings ({ x, z, y }: the front edge of a tread on the rail's path, its top)
-function runSpecs() {
-  const H = STAIR.handrail, o = H.gap + H.r, R = stairRiser(), base = LEVELS[0].floor;
-  const O = H.outer, zS = O.south - o, xE = O.east - o, zN = O.north + o;
-  const nose = (i) => base + (i + 1) * R; // top of tread i
+// the runs' plan polylines, wall side and nosings ({ x, z, y }: the front edge of a tread on the rail's path, its top).
+// `g` (#619, another flat's stair of our type: L1201's, world.js `stairMap`): `X` / `Z` / `Y` map our stair's plan x, z and
+// heights onto its own (linear; `X` may mirror), `H` = its own wall faces (the shape of STAIR.handrail's outer / innerA, in
+// its coordinates), `innerB` = { from, to } the newels' x at the bottom / top of its flight B's balusters, `midZ` their line.
+// Without `g`: ours, exactly as before.
+function runSpecs(g = null) {
+  const id = (v) => v, X = g?.X ?? id, Z = g?.Z ?? id, Y = g?.Y ?? id;
+  const H = { ...STAIR.handrail, ...(g?.H ?? {}) }, o = H.gap + H.r, R = stairRiser(), base = LEVELS[0].floor;
+  const d = X(1) > X(0) ? 1 : -1; // +1: flight A runs towards +x (ours), −1: mirrored
+  const far = (a, b) => (d > 0 ? Math.max(a, b) : Math.min(a, b)), near = (a, b) => (d > 0 ? Math.min(a, b) : Math.max(a, b));
+  const O = H.outer, zS = O.south - o, xE = O.east - d * o, zN = O.north + o;
+  const nose = (i) => Y(base + (i + 1) * R); // top of tread i
+  const cx = X(CX), cz = Z(CZ);
   // flight A's nosings (west edges) and flight B's (east edges) on a line z
-  const flightA = (z) => Array.from({ length: NA }, (_, i) => ({ x: STAIR.aX0 + ((CX - STAIR.aX0) * i) / NA, z, y: nose(i) }));
-  const flightB = (z) => Array.from({ length: NB }, (_, k) => ({ x: CX - ((CX - STAIR.bX1) * k) / NB, z, y: nose(NA + NW + k) }));
-  const top = LEVELS[1].floor; // the slab edge is the last nosing
+  const flightA = (z) => Array.from({ length: NA }, (_, i) => ({ x: X(STAIR.aX0 + ((CX - STAIR.aX0) * i) / NA), z, y: nose(i) }));
+  const flightB = (z) => Array.from({ length: NB }, (_, k) => ({ x: X(CX - ((CX - STAIR.bX1) * k) / NB), z, y: nose(NA + NW + k) }));
+  const top = Y(LEVELS[1].floor); // the slab edge is the last nosing
   // the winders' front edges: rays from the pivot to the outer rail's rectangle
   const winders = Array.from({ length: NW }, (_, k) => {
-    const t = (Math.PI * k) / NW, dx = Math.sin(t), dz = Math.cos(t);
-    let d = Infinity;
-    if (dx > 1e-6) d = Math.min(d, (xE - CX) / dx);
-    if (dz > 1e-6) d = Math.min(d, (zS - CZ) / dz);
-    if (dz < -1e-6) d = Math.min(d, (zN - CZ) / dz);
-    return { x: CX + dx * d, z: CZ + dz * d, y: nose(NA + k) };
+    const t = (Math.PI * k) / NW, dx = g ? X(CX + Math.sin(t)) - cx : Math.sin(t), dz = g ? Z(CZ + Math.cos(t)) - cz : Math.cos(t);
+    let dist = Infinity;
+    if (dx * d > 1e-6) dist = Math.min(dist, (xE - cx) / dx);
+    if (dz > 1e-6) dist = Math.min(dist, (zS - cz) / dz);
+    if (dz < -1e-6) dist = Math.min(dist, (zN - cz) / dz);
+    return { x: cx + dx * dist, z: cz + dz * dist, y: nose(NA + k) };
   });
-  const x0 = Math.max(STAIR.aX0 - H.ext, O.from + o), x1 = Math.max(STAIR.bX1 - H.ext, O.to + o);
+  const x0 = far(X(STAIR.aX0) - d * H.ext, O.from + d * o), x1 = far(X(STAIR.bX1) - d * H.ext, O.to + d * o);
   const outer = {
-    name: 'outer', side: 1,
+    name: 'outer', side: d,
     path: [[x0, O.south + 0.01], [x0, zS], [xE, zS], [xE, zN], [x1, zN], [x1, O.north - 0.01]],
-    nosings: [...flightA(zS), ...winders, ...flightB(zN), { x: STAIR.bX1, z: zN, y: top }],
+    nosings: [...flightA(zS), ...winders, ...flightB(zN), { x: X(STAIR.bX1), z: zN, y: top }],
   };
   const A = H.innerA, zA = A.face + o;
-  const a0 = Math.max(STAIR.aX0 - H.ext, A.from + H.r + 0.02), a1 = Math.min(CX + H.ext, A.to - H.r - 0.02);
+  const a0 = far(X(STAIR.aX0) - d * H.ext, A.from + d * H.r + d * 0.02), a1 = near(cx + d * H.ext, A.to - d * H.r - d * 0.02);
   const innerA = {
-    name: 'innerA', side: -1,
+    name: 'innerA', side: -d,
     path: [[a0, A.face - 0.01], [a0, zA], [a1, zA], [a1, A.face - 0.01]],
-    nosings: [...flightA(zA), { x: CX, z: zA, y: nose(NA) }],
+    nosings: [...flightA(zA), { x: cx, z: zA, y: nose(NA) }],
   };
   // flight B's inner side: the balusters (2 cm) on the middle line between the newels (world.js), ends into the newels
-  const midZ = (STAIR.aZ[0] + STAIR.bZ[1]) / 2, np = STAIR.newel / 2, zB = midZ - 0.01 - o;
-  const b0 = Math.min(CX, A.to - np), b1 = STAIR.hole.x0, zIn = midZ - np + 0.01;
+  const midZ = g?.midZ ?? (STAIR.aZ[0] + STAIR.bZ[1]) / 2, np = STAIR.newel / 2, zB = midZ - 0.01 - o;
+  const b0 = g?.innerB?.from ?? Math.min(CX, A.to - np), b1 = g?.innerB?.to ?? STAIR.hole.x0, zIn = midZ - np + 0.01;
   const innerB = {
-    name: 'innerB', side: -1,
+    name: 'innerB', side: -d,
     path: [[b0, zIn], [b0, zB], [b1, zB], [b1, zIn]],
-    nosings: [...flightB(zB), { x: STAIR.bX1, z: zB, y: top }],
+    nosings: [...flightB(zB), { x: X(STAIR.bX1), z: zB, y: top }],
   };
   return [outer, innerA, innerB];
 }
@@ -184,9 +192,9 @@ function smoothArr(a, half) {
 /** The handrail runs as dense samples: `points` [[x, y, z]] (the rail's axis) at arc lengths `s`, the main path
  * `main` = [s0, s1] (without the returns), `nosings` ({ x, z, y, s }), `pitch(s)` = the pitch line, the wall side
  * `side` (see `wallDir`). */
-export function handrailRuns() {
+export function handrailRuns(g = null) {
   const H = STAIR.handrail;
-  return runSpecs().map((spec) => {
+  return runSpecs(g).map((spec) => {
     const P = spec.path, segS = [];
     const xs = [], zs = [], ss = [];
     let s = 0;
@@ -234,7 +242,7 @@ export function wallDir(side, tx, tz) {
 
 /** The handrails as meshes (one per run: the tube + its brackets) in the railing's material, so mergeStatic bakes them
  * in with the railing / the other M.rail parts of their level (no draw call of their own). */
-export function buildHandrails(material) {
+export function buildHandrails(material, g = null) {
   const H = STAIR.handrail, B = H.bracket, o = H.gap + H.r;
   const group = new THREE.Group();
   const up = new THREE.Vector3(0, 1, 0), m = new THREE.Matrix4(), q = new THREE.Quaternion(), one = new THREE.Vector3(1, 1, 1);
@@ -242,7 +250,7 @@ export function buildHandrails(material) {
     q.setFromUnitVectors(up, axis.clone().normalize());
     return new THREE.CylinderGeometry(r, r, len, 10, 1).applyMatrix4(m.compose(at, q, one));
   };
-  for (const run of handrailRuns()) {
+  for (const run of handrailRuns(g)) {
     const P = run.points, last = P.length - 1;
     const pts = P.filter((_, i) => i % 3 === 0 || i === last).map(([x, y, z]) => new THREE.Vector3(x, y, z));
     const geos = [new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts, false, 'centripetal'), Math.round(pts.length * 1.5), H.r, 10, false)];

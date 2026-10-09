@@ -131,6 +131,24 @@ const load = (q = '') => new Promise((resolve) => {
     const t4 = walk([W1(2.806, 7.654), W1(1.349, 7.654), W1(0.621, 7.516), W1(0.576, 6.663), W1(1.349, 6.663), W1(2.533, 6.663), W1(3.0, 7.2)]);
     check(!t4.stuck && Math.abs(player.pos.y - C.storeyFloor(4)) < 0.02 && /^L1201 · Övre plan · Allrum/.test(label()), `up its stair: y ${player.pos.y.toFixed(2)} "${label()}"`);
     check(walk([W1(1.0, 8.4)], 5).stuck && Math.abs(player.pos.y - C.storeyFloor(4)) < 0.02, 'the railing by the stair and the open void holds');
+    // its handrails (#619): ours (#419) mapped onto its stair — h over the nosings, both ends back into the wall, inside the
+    // walls' clearance (no collision of their own), clear of the walking line just walked
+    const SR = await w.eval(`import('${new URL('../src/stairs.js', location.href).href}')`), HR = C.STAIR.handrail;
+    const runs1 = SR.handrailRuns(u1.stair.handrail), segs1 = [...u1.fixed[0], ...u1.fixed[1]];
+    const segDist = (x, z, [ax, az, bx, bz]) => { const dx = bx - ax, dz = bz - az, L2 = dx * dx + dz * dz || 1e-12, t = Math.max(0, Math.min(1, ((x - ax) * dx + (z - az) * dz) / L2)); return Math.hypot(ax + dx * t - x, az + dz * t - z); };
+    const nearWall1 = (x, z) => Math.min(...segs1.map((sg) => segDist(qx + x, qz + z, sg)));
+    const stairLine = [[2.806, 7.654], [1.349, 7.654], [0.621, 7.516], [0.576, 6.663], [1.349, 6.663], [1.75, 6.663]];
+    const walkPts = stairLine.slice(1).flatMap(([x, z], i) => { const [ax, az] = stairLine[i]; return Array.from({ length: 20 }, (_, k) => [ax + ((x - ax) * k) / 20, az + ((z - az) * k) / 20]); });
+    check(runs1.length === 3 && runs1.every((r) => r.points.length > 50), `its handrails: ${runs1.map((r) => r.name).join(', ')}`);
+    for (const run of runs1) {
+      const [s0, s1] = run.main, railAt = (q) => run.points[Math.max(0, Math.min(run.points.length - 1, Math.round(q / 0.01)))];
+      const over = run.nosings.filter((n) => n.s >= s0 - 1e-6 && n.s <= s1 + 1e-6).map((n) => railAt(n.s)[1] - n.y);
+      const ends = [run.points[0], run.points.at(-1)].map(([x, , z]) => nearWall1(x, z));
+      const clear = Math.max(...run.points.map(([x, , z]) => nearWall1(x, z))) + HR.r;
+      const dWalk = Math.min(...walkPts.map(([x, z]) => Math.min(...run.points.filter((_, i) => i % 3 === 0).map(([px, , pz]) => Math.hypot(px - x, pz - z)))));
+      check(over.length >= 3 && over.every((d) => Math.abs(d - HR.h) <= 0.05) && ends.every((d) => d < 0.035) && clear <= C.PLAYER.radius - 0.02 && dWalk > C.PLAYER.radius + HR.r,
+        `L1201 ${run.name}: ${over.length} nosings at ${Math.min(...over).toFixed(3)}–${Math.max(...over).toFixed(3)} m, ends ${ends.map((d) => d.toFixed(3)).join(' / ')} m from the wall, outer edge ≤ ${clear.toFixed(3)} m from a wall, ${dWalk.toFixed(3)} m from the walking line`);
+    }
     stand(...W1(3.0, 7.2), C.storeyFloor(4));
     check(walk([W1(3.55, 9.6)], 5).stuck, 'the shut terrace door holds');
     stand(...W1(3.55, 8.6), C.storeyFloor(4)); A.use(terr); settle();

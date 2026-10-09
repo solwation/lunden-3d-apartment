@@ -2861,6 +2861,11 @@ export const L1201 = {
   hole: { x0: 0.206, x1: 1.75, z0: 6.205, z1: 8.835 },
   stair: { x1: 1.75, x0: 0.266, z0: 6.205, z1: 8.091 },
   railing: { x: 1.75, z0: 7.15, z1: 8.835, h: 1.1 },
+  // its handrails (#619): ours (STAIR.handrail, every size a *guess*) mapped onto its stair, at its own wall faces read off
+  // l1201plan.js — `outer`: the wall between flight A and the void (south), the west gable round the winders (its upper
+  // face, 6 mm in from the lower one), the wall north of flight B; `from` / `to` where the bottom / top wall ends (the
+  // void wall's east end, the upper wall's east end); `innerA` on the Klk's south wall (its east / west end)
+  handrail: { outer: { south: 8.091, east: 0.206, north: 6.205, from: 2.28, to: 2.095 }, innerA: { face: 7.21, from: 2.28, to: 1.107 } },
   extDoorHead: 2.3,
   windows: [
     { level: 0, facade: 'north', x: 3.85, sill: 0.7, head: 2.3, transom: 0 },   // kitchen (HUS_L.street std: BH 0.7)

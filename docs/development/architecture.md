@@ -13,7 +13,8 @@ src/world.js           builds meshes + per-level collision segments from data/pl
 src/stairs.js          stair treads + walking height function (stairHeight) and the treads' underside (stairUnderside: head room,
                        collision, the Klk under it); the rise is LEVELS[1].floor − LEVELS[0].floor in equal risers (#352)
                        handrails (#419, `handrailRuns` / `buildHandrails`, STAIR.handrail): white Ø 4 cm rails on brackets, 0.9 m
-                       over the nosings (eased through the winders), returns into the wall; merged with the M.rail parts
+                       over the nosings (eased through the winders), returns into the wall; merged with the M.rail parts; an optional mapped
+                       geometry `g` builds them on another flat's stair of our type (L1201, #619)
 src/doors.js           SwingDoor / SlidingDoor (E to open/close, animated, dynamic collision); wardrobeDoors
                        shares rebated G/L carcasses with world.js (WARDROBE assumptions; wardrobetest, #537)
 src/exterior.js        Hus L (HUS_L): brick row with the core/portik, neighbours' patios, rendered upper
@@ -177,10 +178,13 @@ the opening (stair + the "Öppet upp" void), the galley kitchen, the wet rooms; 
 world.js `buildVisitFlat` builds it with `buildLevel` (now taking `how.levels / hole / windows / soffits / extDoorHead /
 kitchen`) in a group at its slot's `ox` and `oz` = HUS_L.loftgangDepth, and `buildOwnStructure`: the slab, the roof zone,
 our stair mapped onto its outline (`stairMap`: same type, mirrored in x and scaled, risers 3.0 / 16; geometry baked, the
-winding turned back; *guess*: no stair drawing; no handrails yet) and the H 1.1 railing. `VisitUnit` now takes per-level
+winding turned back; *guess*: no stair drawing) and the H 1.1 railing. Its handrails (#619) are ours (#419) built on its
+stair: `handrailRuns(g)` / `buildHandrails(material, g)` take `stairMap`'s x / z / y maps, its wall faces (`L1201.handrail`)
+and flight B's newels; without `g` ours, unchanged; no collision (inside the walls' clearance, as ours). `VisitUnit` now takes per-level
 footprints, an opening, stair functions and `ground` (false: its walls are its own, not level 0's); `world.unitAt(x, z, y)`
 tells its rooms from its roof and its terrace. exterior.js leaves its street / courtyard openings open (no fake glass, no
 entrance leaf, no mass) and cuts the roof walk walls at its street door and terrace door (`gappedLine`); player.js adds its
 door leaves to the loftgång / terrace collision (`doorSegmentsAt`). tools/visittest.html walks the loftgång → hall → galley
-→ living room → its stair → Allrum (the railing holds) → terrace → back → Sovrum 1.
+→ living room → its stair → Allrum (the railing holds; the handrails over the nosings, into the wall, clear of the walk) →
+terrace → back → Sovrum 1.
 
