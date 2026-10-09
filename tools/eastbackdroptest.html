@@ -5,13 +5,13 @@ const source=await fetch('../docs/references/surrounding-views/osm-2026-10-08.js
 check(W.buildings.length===16&&new Set(W.buildings.map(b=>b.source)).size===16,'sixteen unique campus footprints');
 for(const b of W.buildings){const f=source.features.find(f=>f.id===b.source);check(f&&b.polygon.length===f.points.length&&b.polygon.every((q,i)=>{const p=G.geoToPlan(...f.points[i]);return Math.hypot(p[0]-q[0],p[1]-q[1])<.02}),`${b.name}: actual source polygon`);}
 check(C.SITE.blocks.filter(b=>b.style==='hepcat'||b.style==='hepcatWhite').length===2&&!C.SITE.blocks.some(b=>['school','longhouse'].includes(b.style)||b.name==='S:t Lars (old hospital)'),'HepCat detailed bodies retained, replaced school placeholders removed');
-const group=A.scene.getObjectByName('east-backdrop');check(group?.children.length===7&&group.children.every(m=>m.isMesh),'seven merged exterior/access batches including school masonry and metal');
+const group=A.scene.getObjectByName('east-backdrop');check(group?.children.length===8&&group.children.every(m=>m.isMesh),'eight merged exterior/access batches including reflective school glazing');
 check(group.userData.buildings.every(b=>b.bottom<=Math.min(...b.polygon.map(p=>S.renderedTerrainY(...p)))&&b.eave>b.base+2),'plinths cover terrain');
-const glass=A.scene.getObjectByName('east-glass'),facade=A.scene.getObjectByName('east-facade'),modern=A.scene.getObjectByName('east-modern');A.scene.updateMatrixWorld(true);let visible=0,total=0;
+const glass=A.scene.getObjectByName('east-glass'),schoolGlass=A.scene.getObjectByName('east-schoolGlass'),facade=A.scene.getObjectByName('east-facade'),modern=A.scene.getObjectByName('east-modern');A.scene.updateMatrixWorld(true);let visible=0,total=0;
 // Geometric window centres are independent of arch tessellation and trim topology.
 for(const b of group.userData.buildings)for(const win of b.windows??[]){
  total++;const n=new T.Vector3(win.n[0],0,win.n[1]),centre=new T.Vector3(win.x+win.n[1]*win.width*.13,win.y+.09,win.z-win.n[0]*win.width*.13),ray=new T.Raycaster(centre.clone().addScaledVector(n,1),n.clone().negate(),0,2);
- if(ray.intersectObjects([glass,facade,modern,A.scene.getObjectByName('east-schoolBrick')])[0]?.object===glass)visible++;
+ if([glass,schoolGlass].includes(ray.intersectObjects([glass,schoolGlass,facade,modern,A.scene.getObjectByName('east-schoolBrick')])[0]?.object))visible++;
 }
 check(visible===total&&total>300,`actual outward windows ${visible}/${total}`);
 const school=group.userData.buildings.find(b=>b.classic);

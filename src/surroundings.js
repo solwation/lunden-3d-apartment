@@ -3,7 +3,8 @@ import {buildWestBackdrop,buildEastBackdrop,buildNorthBackdrop,westTreeSpots,eas
 import { buildRiverPark, parkDeckAt, parkTreeSpots, parkShrubSpots } from './riverpark.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { SITE as S, COLORS, SEASON, COURTYARD, GARAGE } from './config.js';
+import { SITE as S, COLORS, SEASON, COURTYARD, GARAGE, NEIGHBOR_OPENINGS as O } from './config.js';
+import { neighborGlass } from './neighborglass.js';
 import { registerTrees, registerSnow } from './seasons.js';
 import { buildStreet } from './street.js';
 import { onRoad, onWalk, pathStrip, filletGeometry } from './roads.js';
@@ -620,8 +621,8 @@ function facadeOpenings(b) {
   return out;
 }
 
-/** The listed openings as decals (#345) on the openingTexture() atlas, 15 mm proud of the brick (the lit-window quads 5 cm): the window (or glazed
- * door) and a soldier course over it (and under a window, as the sill). */
+/** Soldier courses above/below the listed openings (#345), 15 mm proud of the brick.
+ * The old atlas window is replaced by detailedSiteWindows (#569); night quads remain 5 cm proud. */
 function openingDecals(b) {
   const geos = [];
   const quad2 = (o, a0, a1, y0, y1, v0, v1) => {
@@ -633,11 +634,43 @@ function openingDecals(b) {
     geos.push(g);
   };
   for (const o of facadeOpenings(b)) {
-    quad2(o, o.a0, o.a1, o.y0, o.y1, WIN + 0.01, 1);
+    // #569: the pane/frame decal is replaced by physical glazing and layered trim.
     quad2(o, o.a0 - 0.06, o.a1 + 0.06, o.y1 + 0.01, o.y1 + 0.19, 0, SOLD);   // the lintel
     if (o.kind !== 'door') quad2(o, o.a0 - 0.06, o.a1 + 0.06, o.y0 - 0.19, o.y0 - 0.01, 0, SOLD); // the sill
   }
   return geos;
+}
+
+/** ABC's actual listed openings: shared white frames/sashes, dark seals, opaque reflective panes. */
+function detailedSiteWindows(buildings) {
+  const frames=[],seals=[],glass=[],list=[],P=O.site;
+  for(const b of buildings) for(const o of facadeOpenings(b)) {
+    const len=o.a1-o.a0,cx=(o.x0+o.x1)/2,cz=(o.z0+o.z1)/2;
+    const [nx,nz]=o.n,angle=Math.atan2(nx,nz),ux=(o.x1-o.x0)/len,uz=(o.z1-o.z0)/len;
+    const rect=(target,a0,a1,y0,y1,out,depth=0) => {
+      const g=depth?new THREE.BoxGeometry(a1-a0,y1-y0,depth):new THREE.PlaneGeometry(a1-a0,y1-y0);
+      g.rotateY(angle).translate(cx+ux*(a0+a1)/2+nx*out,(y0+y1)/2,cz+uz*(a0+a1)/2+nz*out);target.push(g);
+    };
+    const ring=(target,x0,x1,y0,y1,bar,out,depth=0) => {
+      rect(target,x0,x0+bar,y0,y1,out,depth);rect(target,x1-bar,x1,y0,y1,out,depth);
+      rect(target,x0+bar,x1-bar,y0,y0+bar,out,depth);rect(target,x0+bar,x1-bar,y1-bar,y1,out,depth);
+    };
+    ring(frames,-len/2,len/2,o.y0,o.y1,P.frame,P.frameOut,P.frameDepth);
+    const x0=-len/2+P.frame,x1=len/2-P.frame,y0=o.y0+P.frame,y1=o.y1-P.frame;
+    ring(seals,x0,x1,y0,y1,P.gasket,P.paneOut+.002);
+    ring(frames,x0+P.gasket,x1-P.gasket,y0+P.gasket,y1-P.gasket,P.sash,P.sashOut);
+    const inset=P.gasket+P.sash,l=x0+inset,r=x1-inset,low=y0+inset,high=y1-inset;
+    const post=l+(r-l)*P.division,transom=low+(high-low)*P.transom;
+    rect(frames,post-P.sash/2,post+P.sash/2,low,high,P.sashOut);
+    rect(frames,l,post,transom-P.sash/2,transom+P.sash/2,P.sashOut);
+    const panes=[];
+    for(const [a0,a1,bottom,top] of [[l,post-P.sash/2,low,transom-P.sash/2],[l,post-P.sash/2,transom+P.sash/2,high],[post+P.sash/2,r,low,high]]) {
+      rect(glass,a0,a1,bottom,top,P.paneOut);
+      panes.push({x:cx+ux*(a0+a1)/2+nx*P.paneOut,y:(bottom+top)/2,z:cz+uz*(a0+a1)/2+nz*P.paneOut,width:a1-a0,height:top-bottom});
+    }
+    list.push({...o,house:b.name,panes});
+  }
+  return {frames,seals,glass,list};
 }
 
 /** Split a non-indexed geometry's triangles by `pick(nx, nz, x, z)` → [picked, rest] (either may be null). */
@@ -1177,7 +1210,7 @@ export function cloudTexture() {
  * Lit windows in the neighbouring blocks: one additive quad per window (instanced), each with
  * its own evening routine, so windows light up and go dark one by one as the day passes.
  */
-export function buildWindowLights() {
+export function buildWindowLights(detailed=[]) {
   const spots = [];
   for (const b of S.blocks) {
     const faces = [
@@ -1207,6 +1240,12 @@ export function buildWindowLights() {
   // the loggias' windows and the lit stair halls behind the entrance doors (#266); the listed façade openings (#345)
   for (const b of S.blocks.filter((o) => o.corners)) {
     for (const o of facadeOpenings(b)) {
+      const detailedOpening=detailed.find(d=>d.house===b.name&&d.face===o.face&&d.st===o.st&&d.a0===o.a0);
+      if(detailedOpening){
+        const routine=`${b.name}:${o.face}:${o.st}:${o.a0}`;
+        for(const p of detailedOpening.panes)spots.push({x:p.x+o.n[0]*(.05-O.site.paneOut),y:p.y,z:p.z+o.n[1]*(.05-O.site.paneOut),n:o.n,s:[p.width/1.25,p.height/1.45,1],routine});
+        continue;
+      }
       const len = o.a1 - o.a0, h = o.y1 - o.y0 - 0.1;
       if (o.y0 + h / 2 < (o.n[1] ? groundY((o.a0 + o.a1) / 2, o.z0 + o.n[1] * 0.6) : groundY(o.x0 + o.n[0] * 0.6, (o.a0 + o.a1) / 2)) + 0.8) continue;
       spots.push({ x: (o.x0 + o.x1) / 2 + o.n[0] * 0.05, y: o.y0 + 0.05 + h / 2, z: (o.z0 + o.z1) / 2 + o.n[1] * 0.05, n: o.n, s: [(len - 0.1) / 1.25, h / 1.45, 1] });
@@ -1222,17 +1261,20 @@ export function buildWindowLights() {
   const mesh = new THREE.InstancedMesh(geo, mat, spots.length);
   const m = new THREE.Matrix4(), q = new THREE.Quaternion(), one = new THREE.Vector3(1, 1, 1), up = new THREE.Vector3(0, 1, 0);
   const rand = rng(17);
+  const routines=new Map();
   const habits = spots.map((p, i) => {
     q.setFromAxisAngle(up, Math.atan2(p.n[0], p.n[1]));
     mesh.setMatrixAt(i, m.compose(new THREE.Vector3(p.x, p.y, p.z), q, one.set(...p.s)));
     mesh.setColorAt(i, new THREE.Color(0, 0, 0));
+    if(p.routine&&routines.has(p.routine))return routines.get(p.routine);
     const home = rand() > 0.2; // some flats are empty tonight
-    return {
+    const habit={
       home, hall: p.hall, // a stair hall: lit all night (#266)
       on: 15.5 + rand() * 4, off: 21 + rand() * 3.5, // evening
       early: rand() < 0.4, wake: 5.5 + rand() * 1.5, leave: 7 + rand() * 1.5, // morning
       tint: rand(), // warm … cool (TV)
     };
+    if(p.routine)routines.set(p.routine,habit);return habit;
   });
   const col = new THREE.Color();
   let last = -1;
@@ -1275,7 +1317,7 @@ function groundStrip(x0, x1, z0, z1, lift) {
 
 export function buildSurroundings({ grass }) {
   const group = new THREE.Group();
-  const historicBrick=brickTexture();
+  const historicBrick=brickTexture(),glassMaterial=neighborGlass();
   const flat = (geos, color, snow) => {
     const mat = color.isMaterial ? color : new THREE.MeshStandardMaterial({ color, roughness: 1 });
     if (snow) registerSnow(mat, snow);
@@ -1316,7 +1358,7 @@ export function buildSurroundings({ grass }) {
   group.add(buildRiverBridges());
   group.add(buildRiverPark(renderedTerrainY,renderedTerrainY));
   group.add(buildWestBackdrop(renderedTerrainY));
-  group.add(buildEastBackdrop(renderedTerrainY,historicBrick));
+  group.add(buildEastBackdrop(renderedTerrainY,historicBrick,glassMaterial));
   group.add(buildNorthBackdrop(renderedTerrainY,historicBrick));
   group.add(buildSouthBackdrop(renderedTerrainY));
   // Kv. Lunden's own blocks and the old S:t Lars buildings: own façade texture and roof colour each,
@@ -1328,21 +1370,23 @@ export function buildSurroundings({ grass }) {
     if (snow) registerSnow(material, snow);
     const m = new THREE.Mesh(mergeGeometries(geos), material);
     m.receiveShadow = true;
-    group.add(m);
+    group.add(m);return m;
   };
   const lg = loggias(modern); // corner loggias and entrances (#145, #258, #266)
+  const details=detailedSiteWindows(modern);group.userData.siteNeighborOpenings=details.list;
   const bodies = modern.map(aHouseParts), grid = bodies.flatMap((p) => p.grid); // #345: listed faces plain, the rest the old grid
   if (grid.length) mesh(grid, new THREE.MeshStandardMaterial({ map: facadeTexture(), roughness: 0.95 }));
   mesh([...bodies.flatMap((p) => p.plain), ...lg.bricks.map((g) => g.index ? g.toNonIndexed() : g)], new THREE.MeshStandardMaterial({ map: facadeTexture(true), roughness: 0.95 })); // + piers, parapets (#266)
   mesh(modern.flatMap(openingDecals), new THREE.MeshStandardMaterial({ map: openingTexture(), roughness: 0.6, polygonOffset: true, polygonOffsetFactor: -0.5, polygonOffsetUnits: -1 })); // the listed windows (#345)
-  const white = new THREE.MeshStandardMaterial({ color: 0xf0efeb, roughness: 0.85, side: THREE.DoubleSide });
-  mesh([...lg.slabs.map((g) => g.toNonIndexed()), ...lg.walls.map((g) => g.toNonIndexed())].map((g) => { g.deleteAttribute('uv'); return g; }), white);
+  const white = new THREE.MeshStandardMaterial({ color: O.site.frameColor, roughness: 0.85, side: THREE.DoubleSide });
+  mesh([...lg.slabs.map((g) => g.toNonIndexed()), ...lg.walls.map((g) => g.toNonIndexed()), ...details.frames.map(g=>g.index?g.toNonIndexed():g)].map((g) => { g.deleteAttribute('uv'); return g; }), white);
   const railMesh = new THREE.Mesh(mergeGeometries(lg.rails.map((g) => g.toNonIndexed())), new THREE.MeshStandardMaterial({ map: railTexture(), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.6 }));
   group.add(railMesh);
   if (lg.plants.length) mesh(lg.plants.map((g) => { g = g.index ? g.toNonIndexed() : g; g.deleteAttribute('uv'); return g; }), new THREE.MeshStandardMaterial({ color: 0x4f7d3a, roughness: 0.9, flatShading: true }));
-  const bare = (gs) => gs.map((g) => { g = g.toNonIndexed(); g.deleteAttribute('uv'); return g; });
+  const bare = (gs) => gs.map((g) => { g = g.index?g.toNonIndexed():g; g.deleteAttribute('uv'); return g; });
   mesh(bare(lg.frames), new THREE.MeshStandardMaterial({ color: 0x4a5056, roughness: 0.5, metalness: 0.3 })); // anthracite frames (#266)
-  mesh(bare(lg.glass), new THREE.MeshStandardMaterial({ color: 0x4f6574, roughness: 0.12, metalness: 0.25 })); // glazing: loggia doors, windows, entrances
+  mesh(bare(details.seals),new THREE.MeshStandardMaterial({color:O.gasketColor,roughness:O.gasketRoughness})).name='siteNeighborSeals';
+  mesh(bare([...lg.glass,...details.glass]),glassMaterial).name='siteNeighborGlass'; // glazing: loggia doors, windows, entrances
   mesh(lg.signs, new THREE.MeshStandardMaterial({ map: letterTexture(lg.letters), roughness: 0.6 })); // the house letters
   // low hip roofs of roofing felt (#258; Peab's aerial render, Q&A) over the light metal edge, a few vent hoods along the ridge;
   // #348: each house its own (roofSpec), with the roof box the roof plans draw (in the sheet metal below)
@@ -1419,8 +1463,8 @@ export function buildSurroundings({ grass }) {
   const plinths = S.blocks.map(plinth).filter(Boolean);
   if (plinths.length) mesh(plinths, new THREE.MeshStandardMaterial({ color: 0x6e3326, roughness: 0.95 }));
   group.add(...trees(rng(3)));
-  const windows = buildWindowLights(), street = buildStreet(groundY); // street lamps, crossing, curbs … (#128)
+  const windows = buildWindowLights(details.list), street = buildStreet(groundY); // street lamps, crossing, curbs … (#128)
   group.add(windows.object, street.object);
-  group.userData.windows = { object: windows.object, update(hour, night) { windows.update(hour, night); street.update(night); } };
+  group.userData.windows = { object: windows.object, update(hour, night) { windows.update(hour, night); street.update(night);glassMaterial.envMapIntensity=THREE.MathUtils.lerp(O.reflectionDay,O.reflectionNight,night); } };
   return group;
 }

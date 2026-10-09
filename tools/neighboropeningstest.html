@@ -14,6 +14,22 @@ check(E.getObjectByName('neighborFrames').geometry.attributes.position.count>100
 const glass=glasses[0].material;E.userData.update(0);const day=glass.envMapIntensity;E.userData.update(1);check(glass.envMapIntensity<day&&glasses[1].material.emissiveIntensity>.5,'night dims reflected daylight and keeps existing warm occupied panes');E.userData.update(0);
 const entry=A.world.doors.find(d=>d.entryPane);const original=[];entry.object.traverse(m=>{if(m.isMesh&&m.material.transparent)original.push(m)});check(original.length>0&&original.every(m=>!glasses.includes(m)&&m.material.opacity<1),'L1007 real entrance glazing stays transparent and independent');entry.toggle();for(let i=0;i<30;i++)entry.update(.1);check(entry.isOpen&&entry.t===1,'L1007 original door still opens normally');entry.toggle();for(let i=0;i<30;i++)entry.update(.1);check(!entry.isOpen&&entry.t===0,'L1007 original door still closes normally');
 const windows=A.world.lids.filter(l=>l.name==='fönstret');const win=windows[0];win.toggle();for(let i=0;i<30;i++)win.update(.1);check(windows.length>=5&&win.isOpen&&win.t===1,'L1007 existing top-hung window interactions remain');win.toggle();
+// #569: mapped ABC windows retain their original openings, night overlays and real opaque glazing.
+let site;A.scene.traverse(o=>{if(o.userData.siteNeighborOpenings)site=o});
+const siteGlass=A.scene.getObjectByName('siteNeighborGlass'),siteRows=site.userData.siteNeighborOpenings;
+check(siteGlass.material.isMeshPhysicalMaterial&&siteGlass.material.envMap===glass.envMap&&!siteGlass.material.transparent,'ABC/loggia glazing reuses the single opaque reflection environment');
+const schoolGlass=A.scene.getObjectByName('east-schoolGlass');check(schoolGlass.material===siteGlass.material,'nearby school shares the ABC material while keeping historic trim');
+for(const house of ['Hus A','Hus B','Hus C'])check(siteRows.filter(o=>o.house===house).length>20,`${house}: actual listed windows detailed`);
+A.scene.updateMatrixWorld(true);const siteMeshes=[];site.traverse(m=>{if(m.isMesh&&m!==site.userData.windows.object)siteMeshes.push(m)});let sitePanes=0,exposedSite=true,boundsSite=true;
+for(const row of siteRows)for(const p of row.panes){sitePanes++;const n=new T.Vector3(row.n[0],0,row.n[1]);ray.set(new T.Vector3(p.x,p.y,p.z).addScaledVector(n,.1),n.negate());ray.far=.2;exposedSite&&=ray.intersectObjects(siteMeshes)[0]?.object===siteGlass;const along=row.n[1]?p.x:p.z;boundsSite&&=along>row.a0&&along<row.a1&&p.y>row.y0&&p.y<row.y1;}
+check(sitePanes>300&&exposedSite,'all ABC pane centres are visible opaque reflective glass');check(boundsSite,'ABC panes stay within original mapped openings');
+site.userData.windows.update(12,0);const siteDay=siteGlass.material.envMapIntensity;site.userData.windows.update(19,1);
+check(siteGlass.material.envMapIntensity<siteDay&&site.userData.windows.object.instanceColor.array.some(v=>v>.2),'ABC night dims reflections and retains occupied-window routines');site.userData.windows.update(12,0);
+const nightLights=site.userData.windows.object,lightMatrix=new T.Matrix4(),lightPosition=new T.Vector3(),lightScale=new T.Vector3(),lightRotation=new T.Quaternion(),litPanes=[];
+for(let i=0;i<nightLights.count;i++){nightLights.getMatrixAt(i,lightMatrix);lightMatrix.decompose(lightPosition,lightRotation,lightScale);litPanes.push({x:lightPosition.x,y:lightPosition.y,z:lightPosition.z,width:lightScale.x*1.25,height:lightScale.y*1.45});}
+let aligned=0;for(const row of siteRows)for(const p of row.panes)if(litPanes.some(l=>Math.abs(l.x-p.x-row.n[0]*.018)<.001&&Math.abs(l.y-p.y)<.001&&Math.abs(l.z-p.z-row.n[1]*.018)<.001&&Math.abs(l.width-p.width)<.001&&Math.abs(l.height-p.height)<.001))aligned++;
+check(aligned===sitePanes,'night light quads fit individual panes without covering frames or transoms');
+
 check(E.userData.neighborOpenings.every(o=>o.kind!=='entry'||!o.toggle),'no new neighbor opening interaction is added');
 }catch(e){check(false,e.stack||e.message)}
 document.getElementById('out').textContent=lines.join('\n')+'\n'+(pass?'ALL PASS':'SOME FAILED');

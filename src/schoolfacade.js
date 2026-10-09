@@ -46,7 +46,7 @@ export function buildSchoolFacade(p, base, bottom, eave, parts) {
       };
       decal(windowShape(width+2*P.frame,h+P.frame,arched?P.archRise:0),.07,P.white,parts.modern);
       // Opaque panes keep the unmodelled interior hidden.
-      decal(windowShape(width,h,arched?P.archRise:0),.075,P.glass,parts.glass);
+      decal(windowShape(width,h,arched?P.archRise:0),.075,P.glass,parts.schoolGlass??parts.glass);
       box(t,low-.025,width+.28,.12,.23,.115);
       if(arched) box(t,high+.10,.22,.32,.18,.10);
       else {

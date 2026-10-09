@@ -3506,6 +3506,9 @@ export const CHEAT_NOTE = { x: -16.318, z: 3.15, width: 1.9, height: 1.25, heigh
 // #516: neighboring opaque glazing/frame detailing. Frame/sash and patio-leaf rails follow L1007's
 // existing world.js/doors.js models; gasket/hardware/reflection choices are visual assumptions.
 export const NEIGHBOR_OPENINGS = {frame: .06, depth: .1, sash: .045, sashDepth: .04, sashOut: .03,
+  // #569: ABC trim divisions follow the existing facade atlas; depths are illustrative.
+  site: { frame: .05, sash: .025, gasket: .008, paneOut: .032, sashOut: .04,
+    frameOut: .025, frameDepth: .045, division: .62, transom: .78, frameColor: 0xf0efeb },
   gasket: .006, gasketColor: 0x202626, gasketRoughness: .85, patioRail: .07, patioBottom: .1, floorTolerance: .12,
   reflectionSize: 128, glassColor: 0x65818b, roughness: .07, metalness: .45, clearcoatRoughness: .04,
   sky:'#87b5d3',horizon:'#e1e8e5',ground:'#657567',groundDark:'#303e37',silhouette:'#637e83',

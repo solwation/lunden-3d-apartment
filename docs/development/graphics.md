@@ -10,6 +10,12 @@ src/neighborglass.js   opaque MeshPhysicalMaterial for unmodeled neighboring int
                        ordinary/occupied/entrance glass batches. One six-face 128 px procedural CubeTexture is reused;
                        clearcoat and view-dependent envMap reflections, no live mirror pass or additional lights.
                        Night lowers environment intensity and preserves existing warm occupied-window emission.
+                       #569 also shares this environment across ABC's listed openings/loggia/entrance glazing and
+                       the nearby mapped school's panes. surroundings.js batches ABC frames into the existing white
+                       trim mesh, adds one seal batch and replaces flat window decals with three opaque panes per
+                       actual opening. Existing lintel/sill soldier courses and night light quads stay; sitebackdrop.js
+                       keeps the school's arches/spröjs in their historical trim batch. neighboropeningstest covers
+                       actual ABC pane visibility/bounds and night routines; eastbackdroptest retains source geometry.
                        NEIGHBOR_OPENINGS centralizes visual assumptions; reflection is a generic outdoor impression,
                        not a surveyed or live reflection of surrounding buildings. L1007's clear materials are independent.
 src/architectureedges.js sharp architectural edges (#474), captured before loose furniture/decor is added;
