@@ -25,6 +25,8 @@ f.onload = async () => {
   await wait(50);
   const btn = d.getElementById('action');
   const V = camera.position.constructor;
+  // touch labels are short when the aimed-at target owns the action (#502: "Öppna", "Ställ ner", "Sätt på");
+  // the patterns accept both the short and the long form (#606)
   const lookAt = (p, stands, re) => {
     for (const [x, z] of stands) {
       player.spawn(x, z, 0);
@@ -39,7 +41,7 @@ f.onload = async () => {
   };
   const kitchen = [[4.4, 1.7], [4.3, 1.4], [4.5, 2.0], [4.2, 1.2]];
   const cab = cups.cabinet, cup = cups.cups[1], mocca = world.lids.find((l) => l.kind === 'coffee');
-  let pass = check(lookAt(cab.door.children[0].getWorldPosition(new V()), kitchen, /öppna skåpet/i), `cabinet: "${btn.textContent}"`);
+  let pass = check(lookAt(cab.door.children[0].getWorldPosition(new V()), kitchen, /^öppna( skåpet)?$/i), `cabinet: "${btn.textContent}"`);
   // the door keeps its hinge by the tall oven unit (z0) and opens left, but no part of it ever goes north
   // of z0, into the tall unit (#116): every vertex of the door, all through the swing
   let minZ = Infinity, maxAng = 0;
@@ -62,7 +64,7 @@ f.onload = async () => {
   btn.click(); step(1 / 60);
   pass &= check(heldItem() === cup && cup.fill === 0, 'the empty cup in the hand');
   const counter = cup.counter.clone();
-  pass &= check(lookAt(counter, kitchen, /ställa ner koppen/i), `the worktop: "${btn.textContent}"`);
+  pass &= check(lookAt(counter, kitchen, /^ställ(a)? ner( koppen)?/i), `the worktop: "${btn.textContent}"`);
   btn.click(); step(1 / 60);
   pass &= check(cup.state === 'placed' && Math.abs(cup.model.position.y - counter.y) < 0.02, `on the worktop (y ${cup.model.position.y.toFixed(3)})`);
   // the ritual before a pot (#334): no water and no coffee → it will not start
@@ -79,12 +81,12 @@ f.onload = async () => {
   // water: the jug to the kitchen tap, turned on, filled, turned off, into the tank
   pass &= check(lookAt(jugAt(), kitchen, /ta kannan/i), `the jug: "${btn.textContent}"`);
   btn.click(); step(1 / 60);
-  pass &= check(lookAt(tapAt(), sink, /sätta på köksblandaren/i), `the tap with the jug: "${btn.textContent}"`);
+  pass &= check(lookAt(tapAt(), sink, /^sätt(a)? på( köksblandaren)?$/i), `the tap with the jug: "${btn.textContent}"`);
   btn.click(); step(1 / 60);
   pass &= check(tap.isOpen && lookAt(tapAt(), sink, /fylla kannan med vatten/i), `the running tap: "${btn.textContent}"`);
   btn.click(); for (let i = 0; i < 90; i++) step(1 / 30);
   pass &= check(mocca.jugWater === 1 && mocca.jugWaterMesh.visible && mocca.jugWaterMesh.scale.y > 0.1, `the jug full of water (${mocca.jugWaterMesh.scale.y.toFixed(3)} m)`);
-  pass &= check(lookAt(tapAt(), sink, /stänga av köksblandaren/i), `the tap again: "${btn.textContent}"`);
+  pass &= check(lookAt(tapAt(), sink, /^stäng(a)? av( köksblandaren)?$/i), `the tap again: "${btn.textContent}"`);
   btn.click(); step(1 / 60);
   pass &= check(lookAt(tankAt(), kitchen, /hälla vattnet i vattentanken/i), `the tank: "${btn.textContent}"`);
   const tank0 = mocca.tankWater.visible ? mocca.tankWater.scale.y : 0;
@@ -136,12 +138,12 @@ f.onload = async () => {
   pass &= check(heldItem() === cup && cup.model.parent === camera, 'cup in the hand');
   // put it down on the dining table, then on the coffee table
   const table = { x: 3.5, y: 0.75, z: 1.6 }, coffee = { x: 3.64, y: 0.47, z: 10.56 };
-  pass &= check(lookAt(table, [[2.6, 2.2], [2.5, 1.6], [3.5, 2.6]], /ställa ner koppen/i), `dining table: "${btn.textContent}"`);
+  pass &= check(lookAt(table, [[2.6, 2.2], [2.5, 1.6], [3.5, 2.6]], /^ställ(a)? ner( koppen)?/i), `dining table: "${btn.textContent}"`);
   btn.click(); step(1 / 60);
   pass &= check(cup.state === 'placed' && Math.abs(cup.model.position.y - 0.754) < 0.02, `on the dining table (y ${cup.model.position.y.toFixed(3)})`);
   pass &= check(lookAt(cupAt(), [[2.6, 2.2], [2.5, 1.6], [3.5, 2.6]], /ta koppen/i), `pick it up again: "${btn.textContent}"`);
   btn.click(); step(1 / 60);
-  pass &= check(lookAt(coffee, [[3.6, 9.4], [3.0, 9.6], [4.4, 9.5]], /ställa ner koppen/i), `coffee table: "${btn.textContent}"`);
+  pass &= check(lookAt(coffee, [[3.6, 9.4], [3.0, 9.6], [4.4, 9.5]], /^ställ(a)? ner( koppen)?/i), `coffee table: "${btn.textContent}"`);
   btn.click(); step(1 / 60);
   pass &= check(cup.state === 'placed' && Math.abs(cup.model.position.y - 0.47) < 0.02, `on the coffee table (y ${cup.model.position.y.toFixed(3)})`);
   // another cup out and back into the cabinet with E on the open cabinet
