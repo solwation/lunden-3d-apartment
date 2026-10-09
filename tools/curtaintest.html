@@ -183,6 +183,8 @@ async function run() {
   const area = pixels.length / 4;
   check(green / area > .60 && green / area < .9 && white / area > .10,
     `living room: dense olive-green print on white (${(green / area * 100).toFixed(1)}% ink, ${(white / area * 100).toFixed(1)}% white)`);
+  // #584: a small, dense print: at most .5 m of cloth per repeat (the photo reads ~.45 m), so a panel shows several repeats
+  check(living.spec.tile <= .5 && living.panels.every((p) => p.fabric / living.spec.tile >= 4), `living room: small repeat (${living.spec.tile} m, ${living.panels.map((p) => (p.fabric / living.spec.tile).toFixed(1)).join(' / ')} repeats per panel)`);
   check(kitchen.spec.theme === 'linen_kitchen' && kitchen.spec.colors.ground === '#ede7dc', 'kitchen keeps its original light botanical fabric');
   const clothUVs = living.panels.map(p => Array.from(p.mesh.geometry.attributes.uv.array));
   check(living.panels.length === 3 && living.spec.west <= 0.21 && living.spec.east + 0.02 >= 5.55, 'living room: three panels on a wall-to-wall track');

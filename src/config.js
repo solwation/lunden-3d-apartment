@@ -209,9 +209,11 @@ export const CURTAINS = [
     colors: { ground: '#ede7dc', track: 0xf3f2ee, glow: 0xf8f4ec, warm: 0xffc27a }, glow: { day: 0.22, lamp: 0.08 } },
   // Vardagsrum (#566, #570): broad IKEA leaf print from docs/gardiner-vardagsrum-ikea-img-0571.jpg.
   // Ink shade matches the living-room rug's olive green (#5a6150) for harmony with the room.
-  // Repeat size .90 m and white ground retained; existing rail/panel dimensions retained.
+  // #584 (the user: the print looked too big and clumsy): `tile` .90 → .45 m, twice as many repeats each way. Read off
+  // the photo: ~8–9 lobes across one panel, taking it as IKEA's usual 145 cm width (*guess*), gives lobes of ~12–16 cm,
+  // i.e. a ~.45 m repeat (the canvas holds 2 × 2 lobe clusters). White ground and rail/panel dimensions retained.
   { level: 0, room: 'Vardagsrum', facade: 'south', theme: 'ikea_leaves', rail: [0.2018, 5.5512], west: 0.202, stop: 0.22, meet: 3.855, east: 5.531, z: 12.10, glass: [2.88, 4.81], stack: 0.22,
-    top: 2.96, drop: 0.02, fullness: 1.4, amp: 0.028, tile: 0.9, speed: 0.38,
+    top: 2.96, drop: 0.02, fullness: 1.4, amp: 0.028, tile: 0.45, speed: 0.38,
     panels: [{ id: 'west', from: 0.22, to: 2.15, park: 'left' }, { id: 'middle', from: 2.15, to: 3.855, park: 'left' }, { id: 'east', from: 3.855, to: 5.531, park: 'right' }],
     colors: { ground: '#fafaf6', ink: '#5a6150', track: 0xf3f2ee, glow: 0xf8f8f3, warm: 0xffc27a }, glow: { day: 0.20, lamp: 0.08 } },
 ];
