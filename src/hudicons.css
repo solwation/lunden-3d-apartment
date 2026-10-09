@@ -35,3 +35,21 @@ body.hud-no-blur .hud-button, body.hud-no-blur #choices button { backdrop-filter
 .compass-south { fill: rgba(255,255,255,.65); }
 .compass-letter { position: absolute; left: 50%; top: 50%; font: 600 10px/1 system-ui,sans-serif; text-shadow: 0 1px 2px #000; transform: translate(-50%,-50%) rotate(calc(var(--compass-angle) + var(--cardinal))) translateY(calc(var(--compass-size) * -.37)) rotate(calc(0deg - var(--compass-angle) - var(--cardinal))); }
 @media (max-width: 600px) { #compass { width: var(--compass-compact); height: var(--compass-compact); top: calc(var(--compass-narrow-top) + var(--st)); } .compass-letter { transform: translate(-50%,-50%) rotate(calc(var(--compass-angle) + var(--cardinal))) translateY(calc(var(--compass-compact) * -.37)) rotate(calc(0deg - var(--compass-angle) - var(--cardinal))); } }
+
+/* #582: the top-right touch shortcuts (furniture, stats, sound, pause) as one segmented glass badge. The group is
+   display: contents off touch, so the desktop mute button keeps its own bottom-right place. */
+#hud-top { display: contents; }
+body.touch #hud-top { display: flex; position: fixed; right: calc(16px + var(--sr)); top: calc(16px + var(--st)); overflow: hidden;
+  border-radius: 25px; background: var(--hud-glass); border: 1px solid var(--hud-edge); box-shadow: 0 2px 8px rgba(0,0,0,.2), inset 0 1px rgba(255,255,255,.06);
+  backdrop-filter: blur(var(--hud-blur)); -webkit-backdrop-filter: blur(var(--hud-blur)); }
+body.touch #hud #hud-top > .hud-button { display: flex; align-items: center; justify-content: center; position: static; width: 48px; height: 48px; margin: 0;
+  border: 0; border-radius: 0; background: transparent; box-shadow: none; opacity: 1; backdrop-filter: none; -webkit-backdrop-filter: none; touch-action: manipulation; }
+body.touch #hud #hud-top > .hud-button + .hud-button { border-left: 1px solid rgba(255,255,255,.22); }
+body.touch #hud #hud-top > .hud-button:is(.on,[aria-pressed=true]) { background: rgba(255,255,255,.26); box-shadow: inset 0 0 0 1px rgba(255,255,255,.35); }
+body.touch #hud #hud-top > .hud-button:active { background: rgba(255,255,255,.4); }
+body.touch #hud #hud-top > .hud-button:focus-visible { outline: 2px solid #fff; outline-offset: -4px; }
+body.hud-no-blur.touch #hud-top { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgba(24,30,36,.78); }
+body.hud-no-blur.touch #hud #hud-top > .hud-button { background: transparent !important; }
+body.hud-no-blur.touch #hud #hud-top > .hud-button:is(.on,[aria-pressed=true]) { background: rgba(255,255,255,.26) !important; }
+body.hud-no-blur.touch #hud #hud-top > .hud-button:active { background: rgba(255,255,255,.4) !important; }
+body.touch #hud #hud-top > .hud-button:disabled { opacity: .38; cursor: default; }

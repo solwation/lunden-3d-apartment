@@ -153,12 +153,10 @@
     body.touch .touch-only:active, body.touch #choices button:active, body.touch #mute:active { opacity: 0.9; }
     body.touch #choices button { opacity: 0.65; backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px); }
     body.touch #mute { opacity: 0.55; backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px); }
-    body.touch #level { bottom: auto; top: calc(16px + var(--st)); }
+    body.touch #level { bottom: auto; top: calc(16px + var(--st)); max-width: calc(100vw - 254px - var(--sl) - var(--sr)); box-sizing: border-box; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; } /* clear of the #hud-top badge (#582) */
     #action { position: fixed; right: calc(24px + var(--sr)); bottom: calc(32px + var(--sb)); touch-action: manipulation; padding: 16px 22px; border: 0; border-radius: 40px; background: var(--accent); color: #fff; font: 600 16px system-ui, sans-serif; box-shadow: 0 4px 14px rgba(0,0,0,.3); }
     #action[hidden] { display: none; }
     #mute { position: fixed; right: calc(16px + var(--sr)); bottom: calc(16px + var(--sb)); width: 44px; height: 44px; border: 0; border-radius: 50%; background: var(--panel); font-size: 18px; }
-    body.touch #mute { bottom: auto; top: calc(16px + var(--st)); right: calc(70px + var(--sr)); }
-    #pause { position: fixed; right: calc(16px + var(--sr)); top: calc(16px + var(--st)); width: 44px; height: 44px; border: 0; border-radius: 50%; background: var(--panel); color: var(--ink); font-size: 18px; }
     #update { position: fixed; top: calc(16px + var(--st)); left: 50%; transform: translateX(-50%); z-index: 10; width: max-content; display: flex; align-items: center; gap: 12px; max-width: calc(100vw - 32px); box-sizing: border-box; background: var(--ink); color: #fff; padding: 10px 10px 10px 16px; border-radius: 10px; box-shadow: 0 8px 30px rgba(0,0,0,.3); font-size: 15px; }
     #update[hidden] { display: none; }
     #reloaded, #countdown { position: fixed; top: calc(16px + var(--st)); left: 50%; transform: translateX(-50%); z-index: 10; pointer-events: none; background: var(--ink); color: #fff; padding: 10px 16px; border-radius: 10px; box-shadow: 0 8px 30px rgba(0,0,0,.3); font-size: 15px; opacity: 1; transition: opacity .6s; }
@@ -352,8 +350,6 @@
     #jet-up { bottom: calc(160px + var(--sb)); }
     #jet-down { bottom: calc(100px + var(--sb)); }
     #jet-up[hidden], #jet-down[hidden] { display: none; }
-    #furniture-btn { position: fixed; right: calc(178px + var(--sr)); top: calc(16px + var(--st)); width: 44px; height: 44px; border: 0; border-radius: 50%; background: var(--panel); font-size: 18px; }
-    #stats-btn { position: fixed; right: calc(124px + var(--sr)); top: calc(16px + var(--st)); width: 44px; height: 44px; border: 0; border-radius: 50%; background: var(--panel); font-size: 18px; }
     .resume { font-size: 14px; background: #e8f2f6; border-radius: 6px; padding: 8px 10px; }
     .resume[hidden] { display: none; }
     .resume .linkish { margin: 0 0 0 6px; }
@@ -834,10 +830,8 @@
     <div id="score" aria-live="off" title="Poäng"><span id="presence" aria-label="Besökare online"></span></div>
     <canvas id="minimap" aria-hidden="true"></canvas>
     <div id="measure" hidden></div>
- <button id="furniture-btn" class="touch-only" aria-label="Möbler och prylar av/på">🛋</button>
     <button id="measure-btn" class="touch-only" aria-label="Mät">📏</button>
     <button id="crouch-btn" class="touch-only" aria-label="Huka dig">🧎</button>
-    <button id="stats-btn" class="touch-only" aria-label="Statistik">📊</button>
     <div id="prompt" hidden></div>
     <div id="choices" hidden aria-live="polite"></div>
     <div id="speech" aria-live="polite"></div>
@@ -851,8 +845,13 @@
     <div id="jet-glow" aria-hidden="true"></div>
     <button id="jet-up" class="touch-only" hidden aria-label="Jetpack: upp">⬆</button>
     <button id="jet-down" class="touch-only" hidden aria-label="Jetpack: ner">⬇</button>
-    <button id="pause" class="touch-only" aria-label="Paus">❚❚</button>
-    <button id="mute" aria-label="Stäng av ljud">🔊</button>
+    <!-- #582: the top-right touch shortcuts share one segmented glass badge; on desktop it is display: contents (mute alone, bottom right) -->
+    <div id="hud-top" role="group" aria-label="Snabbknappar">
+      <button id="furniture-btn" class="touch-only" aria-label="Möbler och prylar av/på">🛋</button>
+      <button id="stats-btn" class="touch-only" aria-label="Statistik">📊</button>
+      <button id="mute" aria-label="Stäng av ljud">🔊</button>
+      <button id="pause" class="touch-only" aria-label="Paus">❚❚</button>
+    </div>
   </div>
   <script type="module" src="src/bootstrap.js"></script>
 </body>
