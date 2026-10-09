@@ -75,6 +75,23 @@
       "building": "88: Realgymnasiet, S:t Lars väg 88; byggnad 1:s klocktorn syns bakom till vänster",
       "side": "sydvästra hörnet: västfasaden åt vänster, sydfasaden åt höger (tolkat från tornets läge)",
       "kind": "nutida"
+    },
+    "hemso-byggnad-19-historisk.png": {
+      "url": "https://www.hemso.se/content/uploads/sites/8/2024/04/By19.png",
+      "page": "https://st-larsparken.hemso.se/historia/hospitalets-drift-och-ekonomibyggnader/byggnad-19/",
+      "building": "19 (OSM 88457581), husnummerskylt 19",
+      "date": "okänt, historiskt svartvitt foto (1980-tal enligt bilarna)",
+      "side": "långsidan med den lägre främre delen och gaveln till vänster",
+      "kind": "historiskt"
+    },
+    "commons-byggnad-19-2014.jpg": {
+      "url": "https://commons.wikimedia.org/wiki/File:Building_No._19_of_former_St._Lars_Hospital_in_Lund_Sweden.JPG",
+      "author": "Peter Sondhauss",
+      "license": "CC BY-SA 3.0",
+      "building": "19 (OSM 88457581), Kunskapsskolans skylt och husnummer 19",
+      "date": "2014-03-28",
+      "side": "västra långsidan (gaveln mot gatan i norr till vänster, Hemsö: 'ligger med gaveln mot gatan'): tvåvånings framdel med lågt tak framför trevåningskroppen, envåningsannex till höger (söder)",
+      "kind": "nutida"
     }
   }
 }

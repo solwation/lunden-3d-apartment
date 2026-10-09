@@ -813,9 +813,11 @@ export const SITE = {
       {"source":"88457552","polygon":[[105.08,-126.68],[116.15,-126.46],[116.21,-129.88],[126.08,-129.69],[126.0,-126.27],[127.31,-126.24],[127.14,-117.41],[125.83,-117.44],[125.71,-111.53],[115.85,-111.72],[115.97,-117.63],[104.89,-117.86],[104.79,-112.25],[91.54,-112.51],[91.65,-118.12],[80.5,-118.34],[80.35,-111.1],[70.85,-111.29],[71.23,-130.27],[80.74,-130.08],[80.68,-127.17],[91.83,-126.95],[91.87,-129.08],[105.11,-128.82],[105.08,-126.68]],"name":"F\u00f6rskolan Freinet","levels":2,"levelsSource":"visual assumption","storey":3.6,"roofRise":3,"frameColor":15657439},
       {"source":"88457558","polygon":[[273.63,-69.61],[292.05,-79.29],[296.27,-71.27],[277.85,-61.58],[273.63,-69.61]],"name":"Komplementbyggnad 88457558","levels":1,"levelsSource":"visual assumption","storey":3.6,"roofRise":2,"frameColor":15657439},
       {"source":"88457565","polygon":[[228.12,-65.56],[261.7,-65.44],[261.68,-53.62],[260.67,-53.63],[260.66,-49.35],[252.87,-49.38],[252.88,-54.29],[228.1,-54.38],[228.12,-65.56]],"name":"F\u00f6rskolan Kastanjen","levels":1,"levelsSource":"visual assumption","storey":3.6,"roofRise":2,"frameColor":15657439},
-      {"source":"88457581","polygon":[[89.73,17.57],[89.78,-8.74],[115.39,-8.64],[115.38,-1.76],[115.37,4.0],[115.34,19.86],[107.99,19.84],[107.98,25.63],[94.57,25.58],[94.58,17.58],[89.73,17.57]],"name":"Kunskapsskolan","levels":2,"levelsSource":"visual assumption","storey":3.6,"roofRise":3,"frameColor":15657439},
+      {"source":"88457581","polygon":[[89.73,17.57],[89.78,-8.74],[115.39,-8.64],[115.38,-1.76],[115.37,4.0],[115.34,19.86],[107.99,19.84],[107.98,25.63],[94.57,25.58],[94.58,17.58],[89.73,17.57]],"name":"Kunskapsskolan / byggnad 19","levels":1,"levelsSource":"Commons 2014 photo: three-storey block behind a two-storey front, one-storey annex","storey":3.9,"frameColor":15657439,
+        "campus":{"style":"laundry","sections":[{"name":"two-storey front","box":[89.5,-9,96.5,17.7],"levels":2,"roof":{"rise":.8,"slope":.25}},{"name":"three-storey block","box":[96.5,-9,115.6,19.9],"levels":3}],"chimneys":[[108.5,4.5]]}},
       {"source":"88457600","polygon":[[79.7,63.91],[79.48,54.45],[85.17,54.33],[84.82,39.49],[89.99,39.38],[90.56,63.68],[79.7,63.91]],"name":"Komplementbyggnad 88457600","levels":1,"levelsSource":"visual assumption","storey":3.6,"roofRise":2,"frameColor":15657439},
-      {"source":"88457601","polygon":[[147.34,-3.67],[125.29,-3.73],[124.91,-1.56],[115.38,-1.76],[115.37,4.0],[125.33,4.25],[126.01,24.18],[148.79,24.33],[147.34,-3.67]],"name":"\u00d6stra paviljongen vid Kunskapsskolan","levels":2,"levelsSource":"visual assumption","storey":3.6,"roofRise":3,"frameColor":15657439},
+      {"source":"88457601","polygon":[[147.34,-3.67],[125.29,-3.73],[124.91,-1.56],[115.38,-1.76],[115.37,4.0],[125.33,4.25],[126.01,24.18],[148.79,24.33],[147.34,-3.67]],"name":"\u00d6stra paviljongen vid Kunskapsskolan / byggnad 19","levels":2,"levelsSource":"guess: lower eastern part of byggnad 19 (Hemsö map), not photographed","storey":3.9,"frameColor":15657439,
+        "campus":{"style":"laundry","chimneys":[[137,10]]}},
       {"source":"88457606","polygon":[[105.93,-66.55],[116.99,-66.33],[117.06,-69.76],[126.92,-69.55],[126.86,-66.13],[128.15,-66.1],[127.98,-57.28],[126.68,-57.3],[126.56,-51.39],[116.7,-51.6],[116.82,-57.49],[105.74,-57.72],[105.64,-52.11],[92.39,-52.39],[92.49,-57.98],[81.35,-58.21],[81.21,-50.96],[71.71,-51.16],[72.07,-70.14],[81.58,-69.94],[81.53,-67.04],[92.67,-66.81],[92.72,-68.95],[105.96,-68.68],[105.93,-66.55]],"name":"F\u00f6rskolan Framtiden / byggnad 8","levels":2,"levelsSource":"Commons 2014 photo and Hemsö By8: two storeys","storey":4.3,"frameColor":15657439,
         "campus":{"style":"stenhammar","sections":[{"name":"west pavilion","box":[71,-70.6,81.4,-50.5],"raise":1.2},{"name":"centre","box":[92.55,-69.4,105.85,-51.7],"raise":1.2},{"name":"east pavilion","box":[116.9,-70.2,128.6,-50.9],"raise":1.2}],
           "centre":{"x":[92.72,105.96],"face":-68.82,"normal":-1,"depth":0,"pedDepth":1.6,"pediment":1.9,"roofBack":2.5},
@@ -891,6 +893,17 @@ export const SITE = {
         plinth: .4, plinthColor: 0xa9a59d, cornice: [], soffit: { depth: .6, color: 0xf1efe9 }, frame: .08, mullion: .05,
         piers: { width: .5, depth: .16, edge: .25, brick: true, color: 0xffffff },
         roof: { rise: 2.4, slope: .25, grid: 2, inward: true } },
+      // Byggnad 19 (#581, Axel Kumlien 1910-11, the laundry): plain red brick without the white render of the older
+      // wards: segmental windows under brick arches with white frames, a centre post and transom, a dark string course
+      // at each floor, a corbelled brick eave and dark standing-seam hips; the top floor has paired windows.
+      laundry: { storeys: [3.9, 3.7, 3.4], bay: 3.3, margin: 1.5, wall: 0xffffff, trim: 0x93503a, glass: 0x405660,
+        frameColor: 0xf1efe9, sillColor: 0xe6e2da,
+        windows: [{ sill: .9, head: 3.0, width: 1.3, arch: .24, header: .2, headerColor: 0x7e3c2b, bars: false, rails: [.7] },
+          { sill: .9, head: 2.8, width: 1.2, arch: .24, header: .2, headerColor: 0x7e3c2b, bars: false, rails: [.7] },
+          { sill: .75, head: 2.35, width: 1.0, arch: .22, header: .18, headerColor: 0x7e3c2b, bars: false, rails: [.68], pair: 1.45 }],
+        plinth: .55, plinthColor: 0x6f4537, bands: [{ dy: -.05, h: .1, depth: .1, color: 0x2e2a28 }],
+        cornice: [[-.3, .22, .1], [-.12, .16, .2]], frame: .07, mullion: .05,
+        roof: { rise: 3.2, slope: .55, grid: 2 }, chimney: [.9, 2.2, .9] },
     },
 
     storey: 3.6,

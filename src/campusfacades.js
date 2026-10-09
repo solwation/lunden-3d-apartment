@@ -52,7 +52,7 @@ export function buildCampusFacade(b, p, holes, base, bottom, parts) {
   const pieces = [{ poly: p, holes, levels, raise: 0, box: null }];
   for (const s of S.sections ?? []) {
     const poly = clipBox(p, s.box);
-    if (poly.length >= 3 && Math.abs(signedArea(poly)) > 4) pieces.push({ poly, holes: [], levels: s.levels ?? levels, raise: s.raise ?? 0, box: s.box, name: s.name });
+    if (poly.length >= 3 && Math.abs(signedArea(poly)) > 4) pieces.push({ poly, holes: [], levels: s.levels ?? levels, raise: s.raise ?? 0, box: s.box, name: s.name, roof: s.roof });
   }
   const eaveOf = piece => base + height(piece.levels) + piece.raise;
   // A point on a piece is covered when a taller piece's box holds it: no trim or windows of the lower piece there.
@@ -91,8 +91,21 @@ export function buildCampusFacade(b, p, holes, base, bottom, parts) {
           for (const [dy, h, depth] of S.cornice) box(mid, eave + dy, w + .12, h, depth, depth / 2 - .015);
           if (S.soffit) box(mid, eave - .06, w + 2 * S.soffit.depth, .12, S.soffit.depth * 2, 0, S.soffit.color);
           if (S.dentil && w > 1.2) for (let t = t0 + .3; t < t1 - .2; t += S.dentil.step) box(t, eave + S.cornice[0][0], S.dentil.width, S.dentil.height, S.dentil.depth, S.dentil.depth < .096 ? .19 : .08);
-          if (cut) continue;
-          box(mid, base + S.plinth / 2, w + .04, S.plinth, .13, .065, S.plinthColor ?? S.trim);
+          if (cut) {
+            // Upper floors that clear the neighbouring part's roof keep their windows on the cut wall.
+            const px = a[0] + ux * mid + nx * .3, pz = a[1] + uz * mid + nz * .3;
+            const next = pieces.filter(o => o !== piece && (o.box ? inBox(px, pz, o.box) : true) && eaveOf(o) < eave).sort((o, q) => eaveOf(q) - eaveOf(o))[0];
+            if (!next) continue;
+            const nTop = eaveOf(next) + (next.box ? 0 : Math.min(S.roof.rise, ringDist(px, pz, outline) * S.roof.slope));
+            const count = w - 2 * S.margin < 0 ? 0 : Math.floor((w - 2 * S.margin) / S.bay) + 1;
+            for (let k = 0; k < count; k++) for (let floor = 0; floor < piece.levels; floor++) {
+              const W = S.windows[Math.min(floor, S.windows.length - 1)];
+              if (base + height(floor) + W.sill < nTop + .1) continue;
+              for (const offset of W.pair ? [-W.pair / 2, W.pair / 2] : [0]) windows.push(windowAt(a, ux, uz, nx, nz, angle, mid + (k - (count - 1) / 2) * S.bay + offset, base + height(floor), W, S, parts, i, floor));
+            }
+            continue;
+          }
+          box(mid, (bottom + base + S.plinth) / 2, w + .04, base + S.plinth - bottom, .13, .065, S.plinthColor ?? S.trim);
           if (S.apron) box(mid, base + (S.plinth + S.apron) / 2, w + .02, S.apron - S.plinth, .05, .03, S.trim);
           for (const band of S.bands ?? []) for (let f = 1; f < piece.levels + (band.top ? 1 : 0); f++) {
             const y = base + height(f) + (band.dy ?? 0);
@@ -135,7 +148,7 @@ export function buildCampusFacade(b, p, holes, base, bottom, parts) {
       }
     }
     // A low hip that follows the piece's own outline; a sawtooth ring rises inward to glazed faces.
-    const rings = [piece.poly, ...piece.holes], R = S.roof, outer = [piece.poly];
+    const rings = [piece.poly, ...piece.holes], R = { ...S.roof, ...piece.roof }, outer = [piece.poly];
     const top = (x, z) => eave + Math.min(R.rise, (R.inward ? ringDist(x, z, outer) : ringDist(x, z, rings)) * R.slope);
     const higher = pieces.filter(o => o !== piece && o.box && eaveOf(o) > eave + .05).map(o => o.box);
     parts.schoolRoof.push(footprintRoof(piece.poly, piece.holes, top, R.grid ?? 1.5, S.seam ?? .6, higher));
