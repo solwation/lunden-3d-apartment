@@ -71,7 +71,7 @@ export function buildCampusFacade(b, p, holes, base, bottom, parts) {
         if (len < .3) continue;
         const ux = dx / len, uz = dz / len, nx = orientation * uz, nz = -orientation * ux, angle = Math.atan2(nx, nz);
         // An edge inside the outline is a cut between pieces: only what shows above the lower roof.
-        const cut = ringDist(a[0] + dx / 2 + nx * .3, a[1] + dz / 2 + nz * .3, outline) > .25 && inside(a[0] + dx / 2 + nx * .3, a[1] + dz / 2 + nz * .3, p);
+        const mx = a[0] + dx / 2 + nx * .3, mz = a[1] + dz / 2 + nz * .3, cut = ringDist(mx, mz, outline) > .25 && inside(mx, mz, p) && !holes.some(h => inside(mx, mz, h));
         // Uncovered stretches of the edge, sampled every 0.25 m just inside the wall.
         const spans = [];
         for (let t = 0, open = null; t <= len + 1e-6; t += Math.min(.25, len - t || .25)) {
@@ -177,10 +177,8 @@ function windowAt(a, ux, uz, nx, nz, angle, t, fy, W, S, parts, edge, floor) {
   // Glazing bars as thin planes: a centre post, two mullions and three rails.
   const bar = S.mullion, clear = h - rise;
   piece(0, low + h / 2, bar * 1.5, h, .04, .1, S.frameColor ?? S.trim);
-  if (W.bars !== false) {
-    for (const f of [.25, .75]) piece(width * (f - .5), low + clear / 2, bar * .65, clear, .04, .1, S.frameColor ?? S.trim);
-    for (const f of W.rails ?? [.25, .5, .75]) piece(0, low + h * f, width, bar * .65, .04, .1, S.frameColor ?? S.trim);
-  }
+  if (W.bars !== false) for (const f of [.25, .75]) piece(width * (f - .5), low + clear / 2, bar * .65, clear, .04, .1, S.frameColor ?? S.trim);
+  for (const f of W.rails ?? (W.bars !== false ? [.25, .5, .75] : [])) piece(0, low + h * f, width, bar * (W.bars !== false ? .65 : 1.5), .04, .1, S.frameColor ?? S.trim);
   return { x: x + nx * .075, y: low + h / 2, z: z + nz * .075, n: [nx, nz], width, height: h, edge, floor, arched: !!rise };
 }
 

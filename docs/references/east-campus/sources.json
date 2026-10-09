@@ -58,6 +58,23 @@
       "date": "2014-03-28",
       "side": "västra paviljongen: kortsidan mot norr (två fönster per våning) och långsidan mot väster (sex fönster), längan bakom",
       "kind": "nutida"
+    },
+    "hemso-byggnad-88-historisk.png": {
+      "url": "https://www.hemso.se/content/uploads/sites/8/2024/04/By88.png",
+      "page": "https://st-larsparken.hemso.se/historia/byggnader-runt-borggarden/byggnad-88/",
+      "building": "88 (OSM relation/1309427)",
+      "date": "okänt, historiskt svartvitt foto (efter 1960)",
+      "side": "hörn med två fasader; mörkt tegel, smala vertikala pelare, två rader breda fönster",
+      "kind": "historiskt"
+    },
+    "ednia-realgymnasiet-byggnad-88.jpg": {
+      "url": "https://cdn.ednia.se/image-uploads/prod/1i8l0l7sa-wVjqO0Qx-large-contained.jpeg",
+      "page": "https://ednia.se/gymnasium/realgymnasiet-lund",
+      "publisher": "Ednia (skolkatalog), bild från Realgymnasiet Lund",
+      "date": "okänt, nutida (Realgymnasiets skylt)",
+      "building": "88: Realgymnasiet, S:t Lars väg 88; byggnad 1:s klocktorn syns bakom till vänster",
+      "side": "sydvästra hörnet: västfasaden åt vänster, sydfasaden åt höger (tolkat från tornets läge)",
+      "kind": "nutida"
     }
   }
 }

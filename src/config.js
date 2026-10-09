@@ -827,7 +827,8 @@ export const SITE = {
       {"source":"145221568","polygon":[[43.51,2.27],[43.59,-7.33],[50.43,-7.26],[50.34,2.34],[43.51,2.27]],"name":"Komplementbyggnad 145221568","levels":1,"levelsSource":"visual assumption","storey":3.6,"roofRise":2,"frameColor":15657439},
       {"source":"88457613","polygon":[[-64.12,-68.25],[-63.81,-121.44],[-67.62,-121.47],[-67.63,-120.2],[-77.62,-120.28],[-77.54,-133.09],[-67.3,-133.01],[-67.32,-130.44],[-64.01,-130.41],[-64.01,-132.44],[-63.91,-149.78],[-59.73,-149.75],[-59.7,-153.85],[-51.38,-153.78],[-51.4,-150.45],[-46.25,-150.41],[-46.3,-141.13],[-50.67,-141.15],[-50.68,-139.83],[-57.96,-139.88],[-58.01,-132.56],[-50.03,-132.49],[-50.46,-56.41],[-74.94,-56.6],[-74.87,-68.33],[-64.12,-68.25]],"name":"Montessorigrundskolan / byggnad 4","levels":1,"levelsSource":"Commons 2014 photo: one-storey wards; two-storey block from Hemsö By4 photo (position guess)","storey":4.7,"frameColor":15657439,
         "campus":{"style":"ward","sections":[{"name":"two-storey block","box":[-64.3,-133.2,-49.8,-120.1],"levels":2}],"chimneys":[[-57.2,-72],[-57.2,-92],[-57.2,-112],[-57,-126.6],[-55.5,-146]]}},
-      {"source":"relation/1309427","modern":true,"roof":"flat","facade":13813939,"polygon":[[24.22,-78.12],[61.31,-77.75],[61.01,-40.76],[23.92,-41.13],[24.22,-78.12]],"holes":[[[36.21,-66.93],[51.38,-66.63],[51.09,-49.91],[35.92,-50.2],[36.21,-66.93]]],"name":"Realgymnasiet / byggnad 88","levels":2,"levelsSource":"visual assumption","storey":3.6,"roofRise":3,"frameColor":15657439},
+      {"source":"relation/1309427","polygon":[[24.22,-78.12],[61.31,-77.75],[61.01,-40.76],[23.92,-41.13],[24.22,-78.12]],"holes":[[[36.21,-66.93],[51.38,-66.63],[51.09,-49.91],[35.92,-50.2],[36.21,-66.93]]],"name":"Realgymnasiet / byggnad 88","levels":2,"levelsSource":"current photo (ednia.se) and Hemsö By88: two storeys","storey":3.5,"frameColor":15657439,
+        "campus":{"style":"anshelm"}},
     ],
     paths: [
       {"source":"61112064","path":[[248.57,20.99],[262.52,11.51],[269.96,5.6],[274.94,1.24],[280.52,-4.93],[285.42,-10.66],[290.56,-17.79],[296.05,-26.85],[306.75,-46.47],[314.76,-59.29],[322.42,-72.87],[325.33,-81.47],[325.52,-89.03],[322.12,-100.48],[319.97,-106.14],[318.65,-110.25],[317.22,-116.09],[315.66,-121.19],[315.06,-124.8],[313.34,-131.43]],"w":2},
@@ -882,6 +883,14 @@ export const SITE = {
         plinth: .8, bands: [{ h: .22 }], cornice: [[-.45, .32, .12], [-.23, .14, .23], [-.08, .16, .34]],
         dentil: { step: .55, width: .16, height: .22, depth: .09 }, quoin: .65, jointStep: .43, frame: .12, mullion: .045,
         roof: { rise: 1.1, slope: .26, grid: 2 }, chimney: [.65, 1.45, .65] },
+      // Byggnad 88 (#580, Klas Anshelm 1959-60): two storeys of red brick with projecting brick piers between broad
+      // white-framed windows (centre post, low transom), a deep white eave soffit, and four sawtooth roofs that rise from
+      // the outer eaves to glazed faces towards the inner court (`inward`), so that from outside it reads as a low hip.
+      anshelm: { storeys: [3.5, 3.4], bay: 3.15, margin: 1.0, wall: 0xffffff, trim: 0xf1efe9, glass: 0x405660,
+        windows: [{ sill: .8, head: 2.6, width: 2.1, bars: false, rails: [.22] }, { sill: .75, head: 2.55, width: 2.1, bars: false, rails: [.22] }],
+        plinth: .4, plinthColor: 0xa9a59d, cornice: [], soffit: { depth: .6, color: 0xf1efe9 }, frame: .08, mullion: .05,
+        piers: { width: .5, depth: .16, edge: .25, brick: true, color: 0xffffff },
+        roof: { rise: 2.4, slope: .25, grid: 2, inward: true } },
     },
 
     storey: 3.6,
