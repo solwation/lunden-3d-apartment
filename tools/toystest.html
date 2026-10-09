@@ -57,7 +57,8 @@ f.onload = async () => {
   pass &= check(heldItem() === b && !wd.held, 'still the blaster in the hand, the wand stays');
   // put the blaster down on the floor in front of you (look down)
   camera.rotation.y += Math.PI; camera.rotation.x = -1.35; step(1 / 60); // away from the wall, steeply down (clear of the MALM, #235)
-  pass &= check(/lägga ner blastern här/i.test(btn.textContent), `floor: "${btn.textContent}"`);
+  // touch shows the short "Lägg ner" for a generic placement (#502); both forms pass, anchored (#611)
+  pass &= check(/^lägg(a)? ner( blastern här)?$/i.test(btn.textContent), `floor: "${btn.textContent}"`);
   btn.click(); step(1 / 60);
   b.model.updateMatrixWorld(true);
   const bb = new w.__app.camera.position.constructor(); b.model.getWorldPosition(bb);
