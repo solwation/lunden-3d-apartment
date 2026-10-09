@@ -259,7 +259,7 @@ function onBatch(F, OB) {
 
 /** A hollow carcass behind the front plane (#103): outer sides/top/bottom in the front colour, white inside,
  * a shelf when it is tall enough (`outer`: another colour). `depth` = from the front plane to the wall. */
-function shell(F, a0, a1, y0, y1, depth, { shelf = true, inner = M.carcass, outer = M.front } = {}) {
+export function shell(F, a0, a1, y0, y1, depth, { shelf = true, inner = M.carcass, outer = M.front } = {}) {
   const t = 0.016, d0 = -depth, d1 = -FT;
   F.box(a0, a0 + t, d0, d1, y0, y1, outer);
   F.box(a1 - t, a1, d0, d1, y0, y1, outer);
@@ -279,7 +279,7 @@ function shell(F, a0, a1, y0, y1, depth, { shelf = true, inner = M.carcass, oute
  * name, max, build(P, a0, a1, y0, y1) = a front of its own instead of the shaker one }. The pivot sits on the front plane, so the door swings clear of its own carcass and the
  * neighbours; `max` stops it before it meets anything. `ctx` = { group, list }.
  */
-function openFront(ctx, F, a0, a1, y0, y1, material, handle, opts, how) {
+export function openFront(ctx, F, a0, a1, y0, y1, material, handle, opts, how) {
   const OB = new Batch(), P = onBatch(F, OB);
   if (how.build) how.build(P, a0, a1, y0, y1); else front(P, a0, a1, y0, y1, material, handle, opts);
   const normal = F.dir === 'w' ? [-1, 0, 0] : F.dir === 'e' ? [1, 0, 0] : [0, 0, -1];

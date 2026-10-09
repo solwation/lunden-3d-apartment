@@ -188,3 +188,11 @@ merged into one mesh per material, `VisitUnit.standIn`) and its exterior doors, 
 with both flats (desktop, calls with → without the visited flats): garage drive 363 → 343, park 455 → 435, L1004's street
 387 → 202; at L1201: the loftgång in front of it 263 → 117, its hall 249 → 116, its living room 248 → 109, its Allrum 136 →
 107. perfcount (desktop and `?lowmem`) within PERF.budget.
+
+Opening kitchen fronts in the visited flats (#621): every front an Openable of its own costs two calls (its mesh and its
+architecture edges; measured +42 at L1004's kitchen, its hall view 493 → 541, over PERF.budget). `standardinterior.js`
+`batchFronts` draws all of a flat's fronts as one vertex-coloured mesh + one LineSegments: each vertex carries its front's
+index (`fi`) and the vertex shader moves it by that front's pivot (a mat4 uniform array, MAX_FRONTS 40; its shadow through a
+patched `customDepthMaterial`), E aims at an undrawn box per front and the focused one is brightened in the shader (`aimAt`).
+Measured (desktop, worst of 12 yaws): L1004 kitchen 473 → 475, hall 493 → 495; L1201 kitchen 369 → 371. One new program.
+

@@ -83,10 +83,13 @@ src/rooms.js           room detection: walls + door gaps rasterised, BFS from th
 src/visitunit.js       other flats you can walk into (#574, VISIT_UNITS): `VisitUnit` = a visited flat's collision (world
                        coordinates), doors / windows / lids as E targets (`visit` flag: no score, no cat, not kept), rooms,
                        stair and slabs; `world.units` / `world.unitAt(x, z)`; player.js `unit` / `unitLevel`
-src/standardinterior.js Peab's standard fixed interior (STANDARD): white kitchen + appliances, laundry, wet rooms, static
+src/standardinterior.js Peab's standard fixed interior (STANDARD): white kitchen + appliances, laundry, wet rooms; the kitchen's
+                       cupboard doors and drawers open, empty (#621, interior.js `openFront` / `shell`), drawn batched
+                       (`batchFronts`: one mesh + one set of edges, moved per front in the vertex shader); the rest static
 src/l1201plan.js       L1201's own floor plan (#573), plan.json's format, read off its bofakta sheet's vector paths (comments: sources)
 tools/visittest.html   #574: L1004 at its slot, in through its front door, round Entréplan, onto its patio, up its stair,
-                       walls / doors hold, HUD, empty of our things, nothing saved, resume inside it, shadows follow
+                       walls / doors hold, HUD, empty of our things, nothing saved, resume inside it, shadows follow;
+                       its kitchen fronts open with E, batched, focusable (#621)
 data/plan.json         GENERATED — do not edit by hand
 tools/extract_plan.py  PDF → data/plan.json (stdlib only)
 tools/roomtest.html    headless test of room detection at known points (+ a picture of the fill)

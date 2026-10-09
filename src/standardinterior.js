@@ -1,10 +1,12 @@
 import * as THREE from 'three';
-import { STANDARD as S, KITCHEN as K, LAUNDRY_SINK } from './config.js';
-import { Batch, tileTexture, std, frame, slabWithHole, sinkBowl, mixer, glassPanel, showerSet, tileWalls, skirting, doorwayTiles } from './interior.js';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { STANDARD as S, KITCHEN as K, LAUNDRY_SINK, INTERACTION_OUTLINE } from './config.js';
+import { Batch, tileTexture, std, frame, slabWithHole, sinkBowl, mixer, glassPanel, showerSet, tileWalls, skirting, doorwayTiles, shell, openFront } from './interior.js';
 
 // Peab's standard finish for a visitable flat (#574, STANDARD in config): the fixed kitchen, laundry and wet rooms of the
-// floor plan — built where the plan's cabinet and fixture rectangles are, all static (nothing opens, nothing inside),
-// merged into one mesh per material. Smooth white fronts and white appliances (the brochure); the rest generic and neutral.
+// floor plan — built where the plan's cabinet and fixture rectangles are, merged into one mesh per material. The kitchen's
+// cupboard doors and drawers open (#621, interior.js `openFront`, as L1007's) and are empty; its appliances, the laundry
+// and the wet rooms stay static. Smooth white fronts and white appliances (the brochure); the rest generic and neutral.
 // L1007's own interior (interior.js) is our choices and stays untouched: this module only borrows its geometry helpers.
 
 const M = {
@@ -25,6 +27,93 @@ const M = {
   wetWall: std(0xffffff, { map: tileTexture({ tw: S.wetWall.w, th: S.wetWall.h, nx: 3, ny: 3, color: S.wetWall.color, vary: 0.02, grout: 0xcfd1d0, ppm: 300, seed: 25 }), roughness: 0.55 }),
 };
 for (const k of ['splash', 'wet', 'wetWall']) M[k].userData.skin = true;
+// An opening front is ONE mesh (#621: a draw call each, not one per material — the kitchens have ~30 of them): its parts'
+// colours as vertex colours on one material; the handles' metal is shaded down to look like M.handle's (no env map:
+// metalness 0.6 shows ~half the colour; `HANDLE_SHADE` *guess*, matched by eye in a screenshot).
+const ONE = std(0xffffff, { vertexColors: true, roughness: 0.45 }), HANDLE_SHADE = 0.5, HIDDEN = new THREE.MeshBasicMaterial({ visible: false });
+function oneMesh(o) {
+  const parts = o.object.children.filter((m) => m.isMesh), tint = new THREE.Color();
+  const geos = parts.map((m) => {
+    const g = m.geometry.index ? m.geometry.toNonIndexed() : m.geometry;
+    for (const n of Object.keys(g.attributes)) if (n !== 'position' && n !== 'normal') g.deleteAttribute(n);
+    tint.copy(m.material.color).multiplyScalar(m.material.metalness > 0.3 ? HANDLE_SHADE : 1);
+    const c = new Float32Array(g.attributes.position.count * 3);
+    for (let i = 0; i < c.length; i += 3) { c[i] = tint.r; c[i + 1] = tint.g; c[i + 2] = tint.b; }
+    g.setAttribute('color', new THREE.BufferAttribute(c, 3));
+    return g;
+  });
+  const mesh = new THREE.Mesh(mergeGeometries(geos), ONE);
+  mesh.castShadow = parts.some((m) => m.castShadow); mesh.receiveShadow = true; mesh.userData.door = o;
+  o.object.remove(...parts);
+  o.object.add(mesh);
+  o.batchFront = true; // (batchFronts, once the flat is built)
+  return o;
+}
+
+// All of a flat's opening fronts drawn as ONE mesh + ONE set of edges (#621; the draw-call budget, docs/development/
+// performance.md: ~2 calls per front otherwise, its edges included, ~50 in a kitchen). Each vertex knows its front (`fi`);
+// the vertex shader moves it by that front's pivot (`frontM`: the pivot now × its rest pose⁻¹, from the Openable's own
+// animation), shadows too. E still finds a front by an undrawn box in its pivot, and the focused one is brightened in the
+// shader as interactionoutline.js would (`aimAt`).
+const MAX_FRONTS = 40;
+const FRONT_HEAD = `attribute float fi;\nuniform mat4 frontM[${MAX_FRONTS}];\nuniform float frontFocus;\nvarying float vFrontFocus;\n`;
+function patchFronts(material, uniforms, { normals = false, focus = false } = {}) {
+  const before = material.onBeforeCompile;
+  material.onBeforeCompile = function (shader, renderer) {
+    before.call(this, shader, renderer);
+    Object.assign(shader.uniforms, uniforms);
+    let v = shader.vertexShader.replace('#include <common>', `#include <common>\n${FRONT_HEAD}`)
+      .replace('#include <begin_vertex>', '#include <begin_vertex>\ntransformed = (frontM[int(fi + 0.5)] * vec4(transformed, 1.0)).xyz;\nvFrontFocus = abs(fi - frontFocus) < 0.5 ? 1.0 : 0.0;');
+    if (normals) v = v.replace('#include <beginnormal_vertex>', '#include <beginnormal_vertex>\nobjectNormal = mat3(frontM[int(fi + 0.5)]) * objectNormal;');
+    shader.vertexShader = v;
+    if (focus) shader.fragmentShader = 'varying float vFrontFocus;\n' + shader.fragmentShader.replace('#include <opaque_fragment>',
+      `outgoingLight *= mix(1.0, ${INTERACTION_OUTLINE.brightness.toFixed(3)}, vFrontFocus);\n#include <opaque_fragment>`);
+  };
+  const key = material.customProgramCacheKey.bind(material);
+  material.customProgramCacheKey = () => `${key()}|fronts-${MAX_FRONTS}`;
+  return material;
+}
+
+/** Batch a built flat's opening fronts (`fronts`, Openables from `opening`, all shut) into `group` (#621). */
+export function batchFronts(group, fronts) {
+  if (!fronts.length) return [];
+  if (fronts.length > MAX_FRONTS) throw new Error(`batchFronts: ${fronts.length} fronts > ${MAX_FRONTS}`);
+  const mats = Array.from({ length: MAX_FRONTS }, () => new THREE.Matrix4());
+  const uniforms = { frontM: { value: mats }, frontFocus: { value: -1 } };
+  const rest = [], geos = [], lines = [];
+  let lineMat = null, aimed = 0;
+  const tag = (g, i) => g.setAttribute('fi', new THREE.BufferAttribute(new Float32Array(g.attributes.position.count).fill(i), 1));
+  fronts.forEach((o, i) => {
+    const pivot = o.object;
+    pivot.updateMatrix();
+    rest.push(pivot.matrix.clone().invert());
+    const mesh = pivot.children.find((m) => m.isMesh), edge = pivot.children.find((m) => m.isLineSegments);
+    geos.push(tag(mesh.geometry.clone().applyMatrix4(pivot.matrix), i));
+    if (edge) { lines.push(tag(edge.geometry.clone().applyMatrix4(pivot.matrix), i)); lineMat ??= edge.material; pivot.remove(edge); }
+    // what E aims at: the front's box, not drawn (raycasts ignore `visible` on the material)
+    mesh.geometry.computeBoundingBox();
+    const b = mesh.geometry.boundingBox, pick = new THREE.Mesh(new THREE.BoxGeometry(...b.getSize(new THREE.Vector3()).toArray()), HIDDEN);
+    pick.position.copy(b.getCenter(new THREE.Vector3())); pick.userData.door = o;
+    pivot.remove(mesh); pivot.add(pick);
+    o.aimAt = () => { uniforms.frontFocus.value = i; aimed = performance.now(); }; // (main.js calls it on the focused target)
+  });
+  const sync = () => {
+    if (performance.now() - aimed > 150) uniforms.frontFocus.value = -1;
+    fronts.forEach((o, i) => { o.object.updateMatrix(); mats[i].multiplyMatrices(o.object.matrix, rest[i]); });
+  };
+  const all = new THREE.Mesh(mergeGeometries(geos), patchFronts(ONE.clone(), uniforms, { normals: true, focus: true }));
+  all.customDepthMaterial = patchFronts(new THREE.MeshDepthMaterial({ depthPacking: THREE.RGBADepthPacking }), uniforms);
+  all.castShadow = all.receiveShadow = true; all.frustumCulled = false; all.onBeforeRender = sync; all.name = 'köksluckorna';
+  const out = [all];
+  if (lines.length) {
+    const lm = lineMat.clone(); lm.onBeforeCompile = lineMat.onBeforeCompile;
+    const edges = new THREE.LineSegments(mergeGeometries(lines), patchFronts(lm, uniforms));
+    edges.frustumCulled = false; edges.onBeforeRender = sync; edges.raycast = () => {}; edges.name = 'architecture-edges';
+    out.push(edges);
+  }
+  group.add(...out);
+  return out;
+}
 
 const inside = (r, a, tol = 0.02) => r.x0 >= a.x0 - tol && r.x1 <= a.x1 + tol && r.z0 >= a.z0 - tol && r.z1 <= a.z1 + tol;
 const centre = (r) => [(r.x0 + r.x1) / 2, (r.z0 + r.z1) / 2];
@@ -46,13 +135,38 @@ function front(F, a0, a1, y0, y1, handle, low = false) {
   }
 }
 
-/** Doors of about `size` across a0..a1, handles paired. */
-function doorRow(F, a0, a1, y0, y1, size, low = false) {
-  const n = Math.max(1, Math.round((a1 - a0) / size)), w = (a1 - a0) / n;
-  for (let i = 0; i < n; i++) front(F, a0 + i * w, a0 + (i + 1) * w, y0, y1, i % 2 ? 'v-lo' : 'v-hi', low);
+/** A kitchen front that opens (#621), empty: a door hinged opposite its handle with a hollow carcass behind it (`hollow`:
+ * the carcass's top, false = none: the caller builds it), or a drawer (`drawer`: its box's depth) sliding out of the solid
+ * carcass the caller builds. `ctx` = { group, list } (the level's E targets; nothing in them is kept, #574). */
+function opening(ctx, F, a0, a1, y0, y1, handle, { low = false, drawer = 0, hollow = y1, shelf = true } = {}) {
+  const build = (P, b0, b1, c0, c1) => front(P, b0, b1, c0, c1, handle, low);
+  if (drawer) return oneMesh(openFront(ctx, F, a0, a1, y0, y1, M.front, handle, {}, { mode: 'drawer', depth: drawer, name: 'lådan', build }));
+  if (hollow !== false) shell(F, a0, a1, y0, hollow, F.depth, { shelf, inner: M.carcass, outer: M.carcass });
+  return oneMesh(openFront(ctx, F, a0, a1, y0, y1, M.front, handle, {}, { mode: 'hinge', name: 'skåpet', build }));
 }
 
-function kitchen(B, floor, y0, yC, handled, area) {
+/** Opening doors of about `size` across a0..a1, handles paired, each with its hollow carcass. */
+function doorRow(ctx, F, a0, a1, y0, y1, size, low = false) {
+  const n = Math.max(1, Math.round((a1 - a0) / size)), w = (a1 - a0) / n;
+  for (let i = 0; i < n; i++) opening(ctx, F, a0 + i * w, a0 + (i + 1) * w, y0, y1, i % 2 ? 'v-lo' : 'v-hi', { low });
+}
+
+/** The pair of doors under the sink: a hollow carcass up to under the bowl (`yIn`), no shelf (L1007's sink unit). */
+function sinkDoors(ctx, F, u0, u1, yb, yt, yIn) {
+  shell(F, u0, u1, yb, yIn, F.depth, { shelf: false, inner: M.carcass, outer: M.carcass });
+  const m = (u0 + u1) / 2;
+  opening(ctx, F, u0, m, yb, yt, 'v-hi', { hollow: false });
+  opening(ctx, F, m, u1, yb, yt, 'v-lo', { hollow: false });
+}
+
+/** Three drawers (20 / 40 / 40 %) down from yt, out of a solid carcass. */
+function drawers(ctx, F, u0, u1, yb, yt) {
+  F.box(u0, u1, -F.depth, -FT, yb, yt, M.carcass);
+  let y = yt;
+  for (const dh of [0.2, 0.4, 0.4].map((k) => k * (yt - yb))) { opening(ctx, F, u0, u1, y - dh, y, 'top', { drawer: F.depth - 0.08 }); y -= dh; }
+}
+
+function kitchen(B, floor, y0, yC, handled, area, open) {
   const cabs = floor.cabinets.filter((c) => inside(c, area));
   if (!cabs.length) return [];
   const fixtures = floor.fixtures.filter((f) => inside(f, area));
@@ -75,32 +189,36 @@ function kitchen(B, floor, y0, yC, handled, area) {
     const F = frame(B, c, dirOf(c)), [u0, u1] = span.get(c);
     if (c === tall) { // the tall unit: a door, the white oven, the white microwave, a door on top (Electrolux, white)
       const yOven = y0 + 0.78, yMicro = yOven + 0.6, yTopDoor = yMicro + 0.46;
-      F.box(u0, u1, -F.depth, -FT, y0, yTop, M.carcass);
-      front(F, u0, u1, yb, yOven, 'v-hi');
+      F.box(u0, u1, -F.depth, -FT, y0, yb, M.carcass); F.box(u0, u1, -F.depth, -FT, yOven, yTopDoor, M.carcass);
+      opening(open, F, u0, u1, yb, yOven, 'v-hi');
       for (const [a, b, win] of [[yOven, yMicro, 0.3], [yMicro, yTopDoor, 0.2]]) {
         F.box(u0 + GAP, u1 - GAP, -FT, 0, a + GAP, b - GAP, M.appliance);
         F.box(u0 + 0.07, u1 - 0.07, 0, 0.003, b - 0.1 - win, b - 0.1, M.glass);
         F.box(u0 + 0.08, u1 - 0.08, 0.02, 0.032, b - 0.07, b - 0.06, M.handle);
       }
-      front(F, u0, u1, yTopDoor, yTop, 'v-hi', true);
+      opening(open, F, u0, u1, yTopDoor, yTop, 'v-hi', { low: true });
       F.box(u0, u1, -0.07, -0.05, y0, yb, M.front);
       continue;
     }
     if (fridges.includes(c)) { // white fridge / freezer with a cabinet over it
       const yF = y0 + K.fridgeHeight, hi = c.label === 'K' ? 'v-hi' : 'v-lo';
-      F.box(u0, u1, -F.depth, -FT, y0, yTop, M.carcass);
+      F.box(u0, u1, -F.depth, -FT, y0, yF, M.carcass);
       F.box(u0 + GAP, u1 - GAP, -FT, 0, y0 + 0.01, yF - GAP, M.appliance);
       const a = hi === 'v-hi' ? u1 - 0.05 : u0 + 0.05;
       F.box(a - 0.008, a + 0.008, 0.02, 0.036, y0 + 0.9, y0 + 1.5, M.handle);
-      front(F, u0, u1, yF, yTop, 'v-lo', true);
+      opening(open, F, u0, u1, yF, yTop, 'v-lo', { low: true, shelf: false });
       continue;
     }
     F.box(u0, u1, -0.07, -0.05, y0, yb, M.front); // recessed plinth
-    F.box(u0, u1, -F.depth, -FT, yb, yt, M.carcass);
-    if (c.label === 'DM') { front(F, u0, u1, yb, yt, 'top'); continue; } // integrated dishwasher behind a white front
-    if (sinkF && inside(sinkF, c)) { const m = (u0 + u1) / 2; front(F, u0, m, yb, yt, 'v-hi'); front(F, m, u1, yb, yt, 'v-lo'); continue; }
-    if (ret.includes(c)) { const vis = Math.min(u1, east[0] ? east[0].x0 : u1); front(F, u0, vis, yb, yt, 'v-hi'); if (vis < u1) F.box(vis, u1, -FT, 0, yb, yt, M.carcass); continue; }
-    let y = yt; for (const dh of [0.2, 0.4, 0.4].map((k) => k * (yt - yb))) { front(F, u0, u1, y - dh, y, 'top'); y -= dh; } // drawers
+    if (c.label === 'DM') { F.box(u0, u1, -F.depth, -FT, yb, yt, M.carcass); front(F, u0, u1, yb, yt, 'top'); continue; } // integrated dishwasher behind a white front
+    if (sinkF && inside(sinkF, c)) { sinkDoors(open, F, u0, u1, yb, yt, yt + K.worktop - K.sink.depth - 0.02); continue; }
+    if (ret.includes(c)) { // the corner unit: only the part beside the east run is a door, hinged away from the corner
+      const vis = Math.min(u1, east[0] ? east[0].x0 : u1);
+      opening(open, F, u0, vis, yb, yt, 'v-hi');
+      if (vis < u1) { F.box(vis, u1, -F.depth, -FT, yb, yt, M.carcass); F.box(vis, u1, -FT, 0, yb, yt, M.carcass); }
+      continue;
+    }
+    drawers(open, F, u0, u1, yb, yt);
   }
   // worktop along the long run and in front of the corner unit, the sink in it, the hob
   const runZ0 = tall ? tall.z1 : Math.min(...east.map((c) => c.z0));
@@ -118,7 +236,7 @@ function kitchen(B, floor, y0, yC, handled, area) {
   const W = S.wallCabinets, wd = W.depth, yW = y0 + W.bottom, yHood = y0 + W.hood, wallX = eastWall - wd, visEnd = southWall - wd;
   const EW = frame(B, { x0: wallX, x1: eastWall, z0: runZ0, z1: southWall }, 'w');
   const spans = hob ? [[runZ0, hob[0]], [hob[1], visEnd]] : [[runZ0, visEnd]];
-  for (const [a, b] of spans) if (b - a > 0.2) { EW.box(a, b, -wd, -FT, yW, yTop, M.carcass); doorRow(EW, a, b, yW, yTop, 0.5, true); }
+  for (const [a, b] of spans) if (b - a > 0.2) doorRow(open, EW, a, b, yW, yTop, 0.5, true);
   if (visEnd < southWall) EW.box(visEnd, southWall, -wd, -FT, yW, yTop, M.carcass);
   if (hob) {
     EW.box(hob[0] + 0.01, hob[1] - 0.01, -wd + 0.02, 0, yHood, yHood + 0.08, M.steel);           // the hood
@@ -126,7 +244,7 @@ function kitchen(B, floor, y0, yC, handled, area) {
     EW.box(hob[0], hob[1], -wd, 0, yTop, yC, M.carcass);                                           // boxing to the ceiling
   }
   const fridgeX1 = fridges.length ? Math.max(...fridges.map((c) => c.x1)) : retX0;
-  if (fridgeX1 < wallX) { const RW = frame(B, { x0: fridgeX1, x1: wallX, z0: southWall - wd, z1: southWall }, 'n'); RW.box(fridgeX1, wallX, -wd, -FT, yW, yTop, M.carcass); doorRow(RW, fridgeX1, wallX, yW, yTop, 0.5, true); }
+  if (fridgeX1 < wallX) { const RW = frame(B, { x0: fridgeX1, x1: wallX, z0: southWall - wd, z1: southWall }, 'n'); doorRow(open, RW, fridgeX1, wallX, yW, yTop, 0.5, true); }
   const o = [0, top, 0];
   B.box(eastWall - 0.006, eastWall, runZ0, southWall, top, yW, M.splash, o);
   if (hob) B.box(eastWall - 0.006, eastWall, hob[0], hob[1], yW, yHood, M.splash, o);
@@ -137,7 +255,7 @@ function kitchen(B, floor, y0, yC, handled, area) {
 /** A galley kitchen (#573, L1201): a column of tall units against one wall (K, F, a tall cupboard, U/M) facing the
  * base run across the floor (hob, sink, dishwasher) against the opposite wall — `tallDir` / `baseDir` = which way each
  * faces ('e' / 'w'). Same fronts and appliances as `kitchen`; wall cabinets over the base run, a hood over the hob. */
-function galley(B, floor, y0, yC, handled, area, { tallDir = 'e', baseDir = 'w' } = {}) {
+function galley(B, floor, y0, yC, handled, area, { tallDir = 'e', baseDir = 'w' } = {}, open) {
   const cabs = floor.cabinets.filter((c) => inside(c, area));
   if (!cabs.length) return [];
   const fixtures = floor.fixtures.filter((f) => inside(f, area));
@@ -148,32 +266,36 @@ function galley(B, floor, y0, yC, handled, area, { tallDir = 'e', baseDir = 'w' 
   const tall = cabs.filter(isTall).sort((a, b) => a.z0 - b.z0), base = cabs.filter((c) => !isTall(c)).sort((a, b) => a.z0 - b.z0);
   for (const c of tall) {
     const F = frame(B, c, tallDir), [u0, u1] = [c.z0, c.z1];
-    F.box(u0, u1, -F.depth, -FT, y0, yTop, M.carcass);
+    F.box(u0, u1, -F.depth, -FT, y0, yb, M.carcass);
     F.box(u0, u1, -0.07, -0.05, y0, yb, M.front);
     if (c.label === 'U/M') {
       const yOven = y0 + 0.78, yMicro = yOven + 0.6, yTopDoor = yMicro + 0.46;
-      front(F, u0, u1, yb, yOven, 'v-hi');
+      F.box(u0, u1, -F.depth, -FT, yOven, yTopDoor, M.carcass);
+      opening(open, F, u0, u1, yb, yOven, 'v-hi');
       for (const [a, b, win] of [[yOven, yMicro, 0.3], [yMicro, yTopDoor, 0.2]]) {
         F.box(u0 + GAP, u1 - GAP, -FT, 0, a + GAP, b - GAP, M.appliance);
         F.box(u0 + 0.07, u1 - 0.07, 0, 0.003, b - 0.1 - win, b - 0.1, M.glass);
         F.box(u0 + 0.08, u1 - 0.08, 0.02, 0.032, b - 0.07, b - 0.06, M.handle);
       }
-      front(F, u0, u1, yTopDoor, yTop, 'v-hi', true);
+      opening(open, F, u0, u1, yTopDoor, yTop, 'v-hi', { low: true });
     } else if (c.label === 'K' || c.label === 'F') {
       const yF = y0 + K.fridgeHeight;
+      F.box(u0, u1, -F.depth, -FT, yb, yF, M.carcass);
       F.box(u0 + GAP, u1 - GAP, -FT, 0, y0 + 0.01, yF - GAP, M.appliance);
       F.box(u1 - 0.058, u1 - 0.042, 0.02, 0.036, y0 + 0.9, y0 + 1.5, M.handle);
-      front(F, u0, u1, yF, yTop, 'v-lo', true);
-    } else { const m = (u0 + u1) / 2, yS = y0 + 1.6; for (const [a, b] of [[u0, m], [m, u1]]) { front(F, a, b, yb, yS, a === u0 ? 'v-hi' : 'v-lo'); front(F, a, b, yS, yTop, a === u0 ? 'v-hi' : 'v-lo', true); } } // a tall cupboard
+      opening(open, F, u0, u1, yF, yTop, 'v-lo', { low: true, shelf: false });
+    } else { // a tall cupboard: two doors over two
+      const m = (u0 + u1) / 2, yS = y0 + 1.6;
+      for (const [a, b] of [[u0, m], [m, u1]]) { const h = a === u0 ? 'v-hi' : 'v-lo'; opening(open, F, a, b, yb, yS, h); opening(open, F, a, b, yS, yTop, h, { low: true }); }
+    }
   }
   for (const c of base) {
     const F = frame(B, c, baseDir), [u0, u1] = [c.z0, c.z1];
     F.box(u0, u1, -0.07, -0.05, y0, yb, M.front);
-    F.box(u0, u1, -F.depth, -FT, yb, yt, M.carcass);
-    if (c.label === 'DM') { front(F, u0, u1, yb, yt, 'top'); continue; }
-    if (sinkF && inside(sinkF, c, 0.05)) { const m = (u0 + u1) / 2; front(F, u0, m, yb, yt, 'v-hi'); front(F, m, u1, yb, yt, 'v-lo'); continue; }
-    if (hobF && inside(hobF, c, 0.05)) { let y = yt; for (const dh of [0.2, 0.4, 0.4].map((k) => k * (yt - yb))) { front(F, u0, u1, y - dh, y, 'top'); y -= dh; } continue; }
-    doorRow(F, u0, u1, yb, yt, 0.5);
+    if (c.label === 'DM') { F.box(u0, u1, -F.depth, -FT, yb, yt, M.carcass); front(F, u0, u1, yb, yt, 'top'); continue; }
+    if (sinkF && inside(sinkF, c, 0.05)) { sinkDoors(open, F, u0, u1, yb, yt, top - K.sink.depth - 0.02); continue; }
+    if (hobF && inside(hobF, c, 0.05)) { drawers(open, F, u0, u1, yb, yt); continue; }
+    doorRow(open, F, u0, u1, yb, yt, 0.5);
   }
   if (!base.length) return tall;
   const z0 = base[0].z0, z1 = base.at(-1).z1, x0 = Math.min(...base.map((c) => c.x0)), x1 = Math.max(...base.map((c) => c.x1));
@@ -188,7 +310,7 @@ function galley(B, floor, y0, yC, handled, area, { tallDir = 'e', baseDir = 'w' 
   const Wc = S.wallCabinets, wd = Wc.depth, yW = y0 + Wc.bottom, yHood = y0 + Wc.hood;
   const EW = frame(B, baseDir === 'w' ? { x0: back - wd, x1: back, z0, z1 } : { x0: back, x1: back + wd, z0, z1 }, baseDir);
   const spans = hob ? [[z0, hob[0]], [hob[1], z1]] : [[z0, z1]];
-  for (const [a, b] of spans) if (b - a > 0.2) { EW.box(a, b, -wd, -FT, yW, yTop, M.carcass); doorRow(EW, a, b, yW, yTop, 0.5, true); }
+  for (const [a, b] of spans) if (b - a > 0.2) doorRow(open, EW, a, b, yW, yTop, 0.5, true);
   if (hob) {
     EW.box(hob[0] + 0.01, hob[1] - 0.01, -wd + 0.02, 0, yHood, yHood + 0.08, M.steel);
     EW.box(hob[0], hob[1], -wd, -FT, yHood + 0.08, yTop, M.carcass); front(EW, hob[0], hob[1], yHood + 0.08, yTop, null);
@@ -304,10 +426,11 @@ function bathroom(B, floor, room, y0, handled) {
 
 /** The fixed interior of one level of a standard flat, into `group` (plan coordinates). Returns collision rectangles.
  * `fit` (a flat with a plan of its own, #573): { level, area, layout: 'galley' + tallDir / baseDir, tiled } — the
- * kitchen's level and rectangle, its layout, the wet rooms; default the shared sheet's (L1004: the corner kitchen). */
-export function buildStandardInterior(group, floor, li, y0, yC, wallBoxes, handled, doorways = [], fit = null) {
-  const B = new Batch(), rects = [], f = fit ?? { level: K.level, area: K.area, tiled: S.tiled };
-  if (li === f.level) rects.push(...(f.layout === 'galley' ? galley(B, floor, y0, yC, handled, f.area, f) : kitchen(B, floor, y0, yC, handled, f.area)));
+ * kitchen's level and rectangle, its layout, the wet rooms; default the shared sheet's (L1004: the corner kitchen).
+ * `opens`: the level's E targets, where the kitchen's opening doors and drawers go (#621). */
+export function buildStandardInterior(group, floor, li, y0, yC, wallBoxes, handled, doorways = [], fit = null, opens = []) {
+  const B = new Batch(), rects = [], f = fit ?? { level: K.level, area: K.area, tiled: S.tiled }, open = { group, list: opens };
+  if (li === f.level) rects.push(...(f.layout === 'galley' ? galley(B, floor, y0, yC, handled, f.area, f, open) : kitchen(B, floor, y0, yC, handled, f.area, open)));
   const tiled = f.tiled.filter((r) => r.level === li).map((r) => ({ ...r, floor: 'wet', generic: !!fit }));
   for (const room of tiled) {
     B.box(room.x0, room.x1, room.z0, room.z1, y0 + 0.001, y0 + 0.004, M.wet);

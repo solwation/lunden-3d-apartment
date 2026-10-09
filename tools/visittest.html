@@ -99,6 +99,30 @@ const load = (q = '') => new Promise((resolve) => {
     // its doors are not ours: L1007's lists and saved world are untouched
     const n0 = { doors: world.doors.length, lids: world.lids.length };
     check(!world.doors.some((d) => d.visit) && !world.lids.some((d) => d.visit), `not in L1007's doors (${n0.doors}) / lids (${n0.lids})`);
+    // #621: its kitchen's cupboard doors and drawers open with E, empty, not L1007's
+    const fronts = (u) => u.lids.filter((l) => l.kind === 'cabinet' && (l.name === 'skåpet' || l.name === 'lådan'));
+    const kf = fronts(unit), drawer = kf.find((l) => l.mode === 'drawer');
+    check(kf.filter((l) => l.mode === 'hinge').length >= 10 && kf.filter((l) => l.mode === 'drawer').length >= 6 && kf.every((l) => !l.stock && l.visit === unit),
+      `its kitchen: ${kf.filter((l) => l.mode === 'hinge').length} cupboard doors and ${kf.filter((l) => l.mode === 'drawer').length} drawers that open, nothing stocked`);
+    const dp = drawer.object.getWorldPosition(new drawer.object.position.constructor());
+    player.spawn(dp.x + drawer.normal.x * 0.9, dp.z + drawer.normal.z * 0.9, 0); player.pos.y = unit.bottom; settle(5);
+    A.use(drawer); for (let i = 0; i < 40; i++) drawer.update(0.05);
+    const moved = drawer.object.getWorldPosition(new drawer.object.position.constructor()).sub(dp);
+    check(drawer.isOpen && moved.dot(drawer.normal) > 0.3, `E pulls a drawer out ${moved.dot(drawer.normal).toFixed(2)} m`);
+    A.use(drawer); for (let i = 0; i < 40; i++) drawer.update(0.05);
+    check(!drawer.isOpen, 'and pushes it back');
+    // one mesh + one set of edges for all of them (the draw-call budget); E still finds each by its own box, the focused
+    // one brightened in the shader
+    const batched = unit.object.children.filter((o) => o.name === 'köksluckorna');
+    check(batched.length === 1 && kf.every((l) => !l.object.children.some((m) => m.isMesh && m.material.visible)), 'its fronts are drawn as one batched mesh');
+    const V3 = drawer.object.position.constructor, mid = (l) => l.object.children[0].getWorldPosition(new V3());
+    const hinge = kf.find((l) => l.mode === 'hinge' && mid(l).y > unit.bottom + 1.2), hc = mid(hinge);
+    player.spawn(hc.x + hinge.normal.x * 0.8, hc.z + hinge.normal.z * 0.8, 0); player.pos.y = unit.bottom; settle(5);
+    const wasTouch = A.touch.enabled; A.touch.enabled = true; // (the focus is only looked for while the game is active)
+    step(0); camera.lookAt(hc); camera.updateMatrixWorld(true); step(0);
+    const focusedFront = A.focus().focused;
+    A.touch.enabled = wasTouch;
+    check(focusedFront === hinge, `aiming at a cupboard door focuses it (${focusedFront?.name})`);
     const keptBefore = JSON.stringify(A.keepWorld().open);
     for (const t of unit.targets) if (!t.isOpen && t.kind !== 'flush') { t.toggle(); for (let i = 0; i < 40; i++) t.update?.(0.1); }
     const keptAfter = JSON.stringify(A.keepWorld().open);
@@ -160,6 +184,9 @@ const load = (q = '') => new Promise((resolve) => {
     const s1d = doorNear(...W1(2.59, 4.65), u1.doors); A.use(s1d); settle();
     const t7 = walk([W1(2.6, 5.4), W1(2.6, 3.0)]);
     check(!t7.stuck && /Sovrum 1/.test(label()), `into Sovrum 1: "${label()}"`);
+    const kf1 = fronts(u1);
+    check(kf1.filter((l) => l.mode === 'hinge').length >= 10 && kf1.filter((l) => l.mode === 'drawer').length >= 3 && kf1.every((l) => !l.stock),
+      `L1201's galley: ${kf1.filter((l) => l.mode === 'hinge').length} cupboard doors and ${kf1.filter((l) => l.mode === 'drawer').length} drawers that open, nothing stocked`);
     const strays1 = [];
     const own1 = new Set(); u1.object.traverse((o) => own1.add(o));
     A.scene.traverse((o) => {

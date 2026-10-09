@@ -32,7 +32,7 @@ import { addDoorSigns, namePlate } from './signs.js';
 import { wardrobeFill, personFor } from './stuff.js';
 import { Blinds } from './blinds.js';
 import { Roofs, wallRect } from './roofs.js';
-import { buildStandardInterior } from './standardinterior.js';
+import { buildStandardInterior, batchFronts } from './standardinterior.js';
 import { VisitUnit } from './visitunit.js';
 import { L1201_PLAN } from './l1201plan.js';
 
@@ -582,7 +582,7 @@ function buildLevel(floor, li, group, how = OURS) {
   const handled = new Set();
   const taps = []; // tap/shower outlets for running water (main.js)
   const appliances = [...windows]; // things that open with E but aren't doors (the fridge, the windows)
-  const fitted = std ? buildStandardInterior(group, floor, li, y0, yC, wallBoxes, handled, doorways, how.kitchen) // Peab's standard (#574)
+  const fitted = std ? buildStandardInterior(group, floor, li, y0, yC, wallBoxes, handled, doorways, how.kitchen, appliances) // Peab's standard (#574; its kitchen fronts open, #621)
     : buildInterior(group, floor, li, y0, yC, wallBoxes, handled, taps, appliances, doorways);
   for (const r of fitted) segments.push(...rectSegments(r));
 
@@ -799,6 +799,7 @@ function buildVisitFlat(plan, U, ox) {
   const box3 = new THREE.Box3(), mid = new THREE.Vector3();
   mergeStatic(group, moving.concat(edges ? [edges] : []), (o) => { box3.setFromObject(o).getCenter(mid); return mid.y < L[1].floor - 0.05 ? 'l0' : 'l1'; });
   for (const d of doors) mergeStatic(d.object, d.keep ?? [], () => '', { tagged: true });
+  batchFronts(group, lids.filter((l) => l.batchFront)); // its kitchen's opening fronts: one mesh + one set of edges (#621)
   const rect = (f) => ({ x0: Math.min(0, ...f.walls.flatMap((w) => w.outer.map((q) => q[0]))), x1: f.size.x, z0: 0, z1: f.size.z });
   const levels = L.map((v, i) => ({ ...v, rect: rect(plan.floors[i]), hole: i === 1 ? (own ? P.hole : STAIR.hole) : null }));
   return new VisitUnit({ id: U.id, ox, oz, object: group, levels, built: [l0, l1], doors, lids, roomMaps, ground: !own,
