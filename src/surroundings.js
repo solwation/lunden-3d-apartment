@@ -1357,7 +1357,7 @@ export function buildSurroundings({ grass }) {
   flat([...S.paving.map((r) => groundStrip(r.x0, r.x1, r.z0, r.z1, 0.008)), ...walks], COLORS.paving, SEASON.snow.paving);
   group.add(buildRiverBridges());
   group.add(buildRiverPark(renderedTerrainY,renderedTerrainY));
-  group.add(buildWestBackdrop(renderedTerrainY));
+  group.add(buildWestBackdrop(renderedTerrainY,{glass:glassMaterial}));
   group.add(buildEastBackdrop(renderedTerrainY,historicBrick,glassMaterial));
   group.add(buildNorthBackdrop(renderedTerrainY,historicBrick));
   group.add(buildSouthBackdrop(renderedTerrainY));

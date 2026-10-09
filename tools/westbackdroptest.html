@@ -4,12 +4,19 @@ try{const f=document.createElement('iframe');f.width=720;f.height=480;f.src='../
 const source=await fetch('../docs/references/surrounding-views/osm-2026-10-08.json').then(r=>r.json());
 check(W.buildings.length===7&&new Set(W.buildings.map(b=>b.source)).size===7,'seven unique western footprints, no duplication of northern Hunnerupshemmet');
 for(const b of W.buildings){const f=source.features.find(f=>f.id===b.source);check(f&&b.polygon.length===f.points.length&&b.polygon.every((q,i)=>{const p=G.geoToPlan(...f.points[i]);return Math.hypot(p[0]-q[0],p[1]-q[1])<.02}),`${b.name} follows actual polygon and orientation`);}
-check(W.buildings.filter(b=>b.levelsSource==='OSM').every(b=>b.levels===4)&&W.buildings.filter(b=>b.levelsSource!=='OSM').length===5,'tagged four storeys distinguished from five illustrative counts');
-const group=A.scene.getObjectByName('west-backdrop');check(group?.children.length===4&&group.children.every(m=>m.isMesh),'four merged exterior/access material batches');
+check(W.buildings.filter(b=>b.levelsSource!=='visual assumption').every(b=>b.levels===4)&&W.buildings.filter(b=>b.levelsSource==='visual assumption').length===4,'sourced four storeys (OSM / Brf, #575) distinguished from four illustrative counts');
+const group=A.scene.getObjectByName('west-backdrop');check(group?.children.length===7&&group.children.every(m=>m.isMesh),'seven merged batches: four generic exterior/access + Karpvägen brick, roof and glass (#575)');
 check(group.userData.buildings.every(b=>b.bottom<=Math.min(...b.polygon.map(p=>S.renderedTerrainY(...p)))&&b.eave>b.base+2),'actual body bases cover sloping terrain without floating plinths');
-const windows=A.scene.getObjectByName('west-glass'),pos=windows.geometry.attributes.position,norm=windows.geometry.attributes.normal;A.scene.updateMatrixWorld(true);let visible=0,misses=[];
-for(let i=0;i<pos.count;i+=6){const centre=new T.Vector3();for(let j=0;j<3;j++)centre.addScaledVector(new T.Vector3().fromBufferAttribute(pos,i+j),[.2,.3,.5][j]);const n=new T.Vector3().fromBufferAttribute(norm,i),ray=new T.Raycaster(centre.clone().addScaledVector(n,1),n.clone().negate(),0,2),hit=ray.intersectObjects([windows,A.scene.getObjectByName('west-facade')])[0];if(hit?.object===windows)visible++;else misses.push({centre:centre.toArray(),normal:n.toArray(),hit:hit?.point.toArray()});}
-check(visible>150&&visible===pos.count/6,`all ${visible}/${pos.count/6} actual window decals face outward and precede opaque wall`);
+A.scene.updateMatrixWorld(true);const opaque=['west-facade','west-karpBrick'].map(n=>A.scene.getObjectByName(n));let misses=[];
+for(const [name,min] of [['west-glass',50],['west-karpGlass',250]]){const windows=A.scene.getObjectByName(name),pos=windows.geometry.attributes.position,norm=windows.geometry.attributes.normal;let visible=0;
+for(let i=0;i<pos.count;i+=6){const centre=new T.Vector3();for(let j=0;j<3;j++)centre.addScaledVector(new T.Vector3().fromBufferAttribute(pos,i+j),[.2,.3,.5][j]);const n=new T.Vector3().fromBufferAttribute(norm,i),ray=new T.Raycaster(centre.clone().addScaledVector(n,1),n.clone().negate(),0,2),hit=ray.intersectObjects([windows,...opaque])[0];if(hit?.object===windows)visible++;else misses.push({name,centre:centre.toArray(),normal:n.toArray(),hit:hit?.point.toArray()});}
+check(visible>min&&visible===pos.count/6,`${name}: all ${visible}/${pos.count/6} actual window decals face outward and precede opaque wall`);}
+// #575: Karpvägen 2–10 — recessed top storey over three brick storeys, park-side balconies, #569's shared glass
+const K=W.karp,karp=group.userData.buildings.filter(b=>b.karp);check(karp.length===3&&karp.map(b=>b.karp.hus).sort().join()==='1,2,3','Karpvägen 2–4 / 6–8 / 10 are Brf Hus 3 / 2 / 1 with their own façades');
+check(karp.every(b=>Math.abs(b.brickTop-b.base-K.brickLevels*C.SITE.west.storey)<1e-6&&b.eave>b.brickTop+K.parapet+2),'three brick storeys under a recessed fourth');
+const park=b=>b.windows.filter(w=>w.n[0]*K.park[0]+w.n[1]*K.park[1]>.7&&Math.abs(w.width-K.balcony.glass[0])<1e-6).length;check(karp.every(b=>park(b)>=K.brickLevels),`balcony glazing faces the park on every house: ${karp.map(park)}`);
+check(karp.every(b=>b.windows.some(w=>w.door&&w.n[0]*K.park[0]+w.n[1]*K.park[1]<-.7)),'stair entrances on the Karpvägen side');
+const abc=A.scene.getObjectByName('siteNeighborGlass');check(abc&&A.scene.getObjectByName('west-karpGlass').material===abc.material,'Karpvägen reuses the ABC glass material (#569), no new reflection setup');
 if(misses.length)lines.push(JSON.stringify(misses));
 const road=C.SITE.roads.find(r=>r.name==='Karpvägen'),far=road.path.slice(4),mapped=source.features.find(f=>f.id==='342815196').points.map(p=>G.geoToPlan(...p));check(far.slice(1).every(q=>mapped.some(p=>Math.hypot(p[0]-q[0],p[1]-q[1])<.02))&&far.at(-1)[1]<40,'far road follows mapped northwestern return rather than old east–west line');
 const trees=S.treeFeet.filter(t=>t.patch==='west-street');check(trees.length>=6&&trees.every(t=>!B.onWestAccess(t.x,t.z,.5)&&!B.onWestBuilding(t.x,t.z)),`aerial-interpreted street/park trees leave buildings and access clear: ${trees.length}`);
@@ -17,5 +24,5 @@ check(S.treeFeet.filter(t=>t.patch&&!['west-street','east-park','north-park'].in
 check(W.access.filter(p=>p.polygon).length===3&&W.access.filter(p=>p.path).every(p=>source.features.some(f=>f.id===p.source&&f.tags.highway==='service')),'mapped service access and three approximate aerial parking traces, no invented cars/stall counts');
 check(C.OUTDOOR.x0===-78.5&&C.OUTDOOR.z1===64&&W.buildings.every(b=>b.polygon.every(p=>p[0]<C.OUTDOOR.x0)),'all added houses remain beyond unchanged walking boundary');
 const gd=C.SITE.terrain.garageDoor;check(Math.abs(S.groundY(gd.drive,(gd.z0+gd.z1)/2)+3)<.001,'existing garage drive remains at basement/park level');
-let tris=0;group.traverse(m=>{if(m.isMesh)tris+=(m.geometry.index?.count??m.geometry.attributes.position.count)/3});check(tris<8000,`bounded west detail: ${tris} triangles`);
+let tris=0;group.traverse(m=>{if(m.isMesh)tris+=(m.geometry.index?.count??m.geometry.attributes.position.count)/3});check(tris<9000,`bounded west detail: ${tris} triangles`);
 }catch(e){check(false,e.stack)}document.querySelector('#out').textContent=lines.join('\n')+'\n'+(pass?'ALL PASS':'SOME FAILED');</script></html>

@@ -575,9 +575,9 @@ export const SITE = {
   west: {
     buildings: [
       {"source":"88457595","polygon":[[-158.68,-1.64],[-133.86,21.34],[-132.7,20.1],[-125.0,27.23],[-126.15,28.48],[-101.59,51.23],[-93.17,42.14],[-114.82,22.09],[-112.14,19.2],[-125.86,6.5],[-128.67,9.53],[-150.39,-10.6],[-158.68,-1.64]],"name":"\u00d6stra l\u00e4ngan vid Karpv\u00e4gen","levels":3,"levelsSource":"visual assumption"},
-      {"source":"342815181","polygon":[[-130.47,90.14],[-121.66,80.77],[-113.22,88.71],[-102.44,98.85],[-111.26,108.21],[-130.47,90.14]],"name":"Karpv\u00e4gen 10","levels":4,"levelsSource":"OSM"},
-      {"source":"342815182","polygon":[[-153.7,124.37],[-192.7,87.66],[-183.95,78.35],[-173.43,88.24],[-155.62,105.01],[-144.94,115.06],[-153.7,124.37]],"name":"Karpv\u00e4gen 6\u20138","levels":4,"levelsSource":"OSM"},
-      {"source":"342815183","polygon":[[-231.56,32.51],[-224.31,39.32],[-222.72,40.83],[-207.76,54.91],[-197.32,64.74],[-206.06,74.02],[-231.46,50.11],[-236.1,55.04],[-244.93,46.73],[-231.56,32.51]],"name":"Karpv\u00e4gen 2\u20134","levels":4,"levelsSource":"visual assumption"},
+      {"source":"342815181","polygon":[[-130.47,90.14],[-121.66,80.77],[-113.22,88.71],[-102.44,98.85],[-111.26,108.21],[-130.47,90.14]],"name":"Karpv\u00e4gen 10","levels":4,"levelsSource":"OSM","karp":{"hus":1,"stairs":[0.5]}},
+      {"source":"342815182","polygon":[[-153.7,124.37],[-192.7,87.66],[-183.95,78.35],[-173.43,88.24],[-155.62,105.01],[-144.94,115.06],[-153.7,124.37]],"name":"Karpv\u00e4gen 6\u20138","levels":4,"levelsSource":"OSM","karp":{"hus":2,"stairs":[0.3,0.7]}},
+      {"source":"342815183","polygon":[[-231.56,32.51],[-224.31,39.32],[-222.72,40.83],[-207.76,54.91],[-197.32,64.74],[-206.06,74.02],[-231.46,50.11],[-236.1,55.04],[-244.93,46.73],[-231.56,32.51]],"name":"Karpv\u00e4gen 2\u20134","levels":4,"levelsSource":"Brf facts","karp":{"hus":3,"stairs":[0.3,0.7]}},
       {"source":"476125237","polygon":[[-149.41,68.89],[-152.38,66.19],[-147.9,61.25],[-144.93,63.95],[-149.41,68.89]],"name":"Komplementbyggnad 476125237","levels":1,"levelsSource":"visual assumption"},
       {"source":"476125238","polygon":[[-133.68,88.04],[-138.18,83.93],[-128.48,73.32],[-123.98,77.43],[-133.68,88.04]],"name":"Komplementbyggnad 476125238","levels":1,"levelsSource":"visual assumption"},
       {"source":"476125239","polygon":[[-143.85,79.7],[-148.03,75.77],[-136.81,63.83],[-132.62,67.77],[-143.85,79.7]],"name":"Komplementbyggnad 476125239","levels":1,"levelsSource":"visual assumption"},
@@ -614,6 +614,36 @@ export const SITE = {
     plinth: 9999754,
     glass: 3230037,
     pathLift: 0.025,
+    // #575 Karpvägen 2–10 (Brf S:t Lars Park; docs/validation/issue-575/README.md). Sourced: four storeys, red brick, flat felt roofs
+    // (Brf "Mäklarinfo": tre fyravåningshus, tegel/puts, papptak); the Brf colour photo (date unknown): three brick storeys with a dark
+    // metal coping, a recessed light-rendered fourth storey with dark sheet-metal end volumes, white-framed windows, vertical strips of
+    // windows with pale infill panels; the planned project render (not the as-built) and the situationsplan: all balconies stacked on the
+    // park (south-west) side, Hus 1 = Karpvägen 10, Hus 2 = 6–8, Hus 3 = 2–4, parking/entrances on the Karpvägen (north-east) side.
+    // `stairs` = stair-strip positions along the entrance side (fraction of that façade's length). EVERY dimension and count below is a
+    // visual *guess* read from those images, not a measurement.
+    karp: {
+      park: [-0.69, 0.72],      // unit direction of the park side (SW, situationsplan); façades facing it within ~45° get the balconies
+      brickLevels: 3,           // brick storeys under the recessed top storey (photo)
+      plinth: 0.35,             // light concrete plinth above the highest ground (*guess*)
+      parapet: 0.45,            // brick parapet above the top-storey floor, capped with dark metal (*guess*)
+      coping: 0.22,             // dark coping band height (*guess*)
+      setback: 1.6,             // recess of the light top storey behind the brick face (*guess*)
+      topHeight: 2.9,           // top storey from the parapet to the roof edge (*guess*)
+      fascia: 0.32,             // dark roof-edge band of the top storey (*guess*)
+      endBox: { length: 4.6, width: 6, rise: 0.25, window: [2.4, 1.7] }, // dark metal end volumes at both ends of the long axis, flush with
+                                // the gable at its park-side corner (photo/render; size *guess*, corner read from both images)
+      bay: 3.6,                 // window rhythm on the brick façades (*guess*)
+      gableStrip: 15,           // gables shorter than this get one central strip of windows and pale panels (photo; *guess*)
+      topBay: 4.4,              // window rhythm in the top storey (*guess*)
+      window: [1.1, 1.5], sill: 0.85, frame: 0.07, mullion: 0.06, // white-framed windows (*guess*)
+      strip: { width: 1.35, window: 1.45, door: [1.5, 2.3] }, // stair / gable strips: glazing per storey, pale panels between (*guess*)
+      balcony: { spacing: 10.5, width: 4.4, depth: 1.6, slab: 0.2, rail: 1.05, glass: [2.6, 2.2], groundLift: 0.45 }, // stacked park-side
+                                // balconies (render; count per façade = length / spacing, all sizes *guess*)
+      roofBox: [2.4, 1.3, 1.2], // white roof housings (render; size *guess*)
+      brick: { mortar: '#c4beb5', base: [172, 96, 82], variation: 24 }, // the photo's salmon-red brick, light mortar (colours read from the photo)
+      colors: { render: 0xeeeeea, metal: 0x3b3f43, coping: 0x2f3236, frame: 0xf2f1ec, panel: 0xdfe9e3, plinth: 0xb4b1aa,
+        slab: 0xf3f2ee, rail: 0xd9e4e5, roofBox: 0xe6e6e2, roof: 0x34373a, canopy: 0x3b3f43 },
+    },
   },
   // #535: east-campus source polygons replace old illustrative school/longhouse blocks; HepCat is preserved.
   // Named campus polygons identify buildings; names are orientation only. All floor counts/heights/roof details remain assumptions.
