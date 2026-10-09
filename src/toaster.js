@@ -97,13 +97,14 @@ function toasterModel() {
   const label = new THREE.Mesh(new THREE.PlaneGeometry(LABEL.size, LABEL.size).rotateY(Math.PI).translate(0, LABEL.top - LABEL.size / 2, fz - 0.0006),
     new THREE.MeshStandardMaterial({ map: labelTexture(), roughness: 0.14, envMap: env, envMapIntensity: 0.08 }));
   for (const m of [body, ends]) m.castShadow = m.receiveShadow = true;
+  label.receiveShadow = true; // (#609: it lit up in the low sun through the house)
   // the slots' glow while it toasts (additive, over the dark slots)
   const glowMat = new THREE.MeshBasicMaterial({ color: 0xff6a1a, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false });
   const glow = new THREE.Mesh(mergeGeometries(slots.map((z) => new THREE.PlaneGeometry(T.slot.l - 0.006, T.slot.w - 0.008).rotateX(-Math.PI / 2).translate(0, h + 0.0015, z))), glowMat);
   glow.raycast = () => {};
   // the lever: black, on the right end (moves down / up)
   const lever = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.013, 0.034).translate(-0.015, 0, 0), matt);
-  lever.castShadow = true;
+  lever.castShadow = lever.receiveShadow = true;
   const carriage = new THREE.Group();
   carriage.name = 'carriage';
   g.add(body, ends, label, glow, lever, carriage);
@@ -181,6 +182,7 @@ export class Toaster extends Holdable {
     const ray = plugPick.raycast.bind(plugPick);
     plugPick.raycast = (r, hits) => { if (self.placed) ray(r, hits); };
     this.plug.add(plugPick);
+    this.cord.receiveShadow = this.plug.receiveShadow = true; // (#609)
     m.g.add(this.cord, this.plug);
     for (const o of [this.plug, plugPick]) o.userData.door = this.plugTarget;
     this.buildCord();

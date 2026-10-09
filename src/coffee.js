@@ -102,6 +102,7 @@ export class Moccamaster {
       const pts = cordToMouth(g.localToWorld(new THREE.Vector3(d - 0.004, 0.025, w * 0.3)), m, y0).map((p) => g.worldToLocal(p));
       const cord = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 32, 0.0032, 6), black);
       cord.raycast = () => {};
+      cord.receiveShadow = true; // (#609: its plug too, sockets.js)
       g.add(cord, plugAt(g, m, black));
     }
     g.traverse((m) => { m.userData.door = this; });

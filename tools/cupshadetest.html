@@ -93,6 +93,17 @@ f.onload = async () => {
   const card = meshOf((m) => m.userData.door?.name === 'uppdragslappen');
   pass &= check(!!card && builtRecv.get(card) === true, 'the task card inside the cup door receives shadows (as built)');
   pass &= check(signs.length >= 4 && signs.every((m) => m.receiveShadow), `${signs.length} name signs on Övre plan receive shadows`);
+  // more small things in drawers and the smart devices (#609): the coffee maker's cord and plug, the toaster in its drawer,
+  // the secretary's drawer contents, the smart display, both smart speakers, the speaker in the lamp
+  const openables = [...world.lids, ...world.furnitureTargets, ...world.doors];
+  const rootOf = (o) => o.door ?? o.object;
+  for (const name of ['kaffebryggaren', 'den smarta skärmen', 'den smarta högtalaren', 'högtalaren i lampan', 'lådan', 'den lilla lådan', 'den pyttelilla lådan', 'den hemliga lådan']) {
+    const os = openables.filter((o) => o.name === name && rootOf(o)?.traverse);
+    const bad = os.filter((o) => !receives(rootOf(o)));
+    pass &= check(os.length > 0 && bad.length === 0, `every ${name} (${os.length}): every opaque part receives shadows${bad.length ? ' — not at ' + bad.map((o) => rootOf(o).getWorldPosition(new V()).toArray().map((v) => v.toFixed(2)).join(',')).join('; ') : ''}`);
+  }
+  const toaster = meshOf((m) => m.userData.door?.store === 'toaster')?.parent; // (its invisible store pick box sits on the model)
+  pass &= check(receives(toaster), 'the toaster (label, lever, cord, plug): every opaque part receives shadows');
   lines.push(pass ? 'ALL PASS' : 'SOME FAIL');
   out.textContent = lines.join('\n');
 };

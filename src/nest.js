@@ -85,6 +85,7 @@ export function nestmini(item) {
   const cover = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.03, 0.012), shell);
   cover.position.set(0, -r - 0.125, 0.006);
   body.add(plate, lip, cord, cover);
+  body.traverse((m) => { if (m.isMesh) m.receiveShadow = true; }); // (#609: the low sun lit it through the house)
   g.add(body);
   // four white dots in a row on the front
   const dots = [-1.5, -0.5, 0.5, 1.5].map((k) => {
@@ -129,6 +130,7 @@ export function nesthub(item) {
   const screen = new THREE.Mesh(new THREE.PlaneGeometry(...H.screen), screenMat);
   screen.position.set(0, H.h / 2 + 0.003, 0.0008);
   tilt.add(panel, bezel, screen);
+  for (const m of [foot, panel, bezel]) m.receiveShadow = true; // (#609: the bezel glowed in the evening sun through the house)
   g.add(tilt);
   g.position.y = item.y ?? 0;
   const self = new Speaker('hub', g, { screen, canvas, texture, room: item.room });

@@ -16,7 +16,7 @@ function panModel() {
   g.add(body);
   const handle = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.015, P.handle, 12).rotateZ(Math.PI / 2), new THREE.MeshStandardMaterial({ color: P.handleColor, roughness: 0.6 }));
   handle.position.set(r + P.handle / 2 - 0.01, P.h * 0.8, 0); handle.rotation.z = 0.12; // along +x, tipped up a little
-  handle.castShadow = true;
+  handle.castShadow = handle.receiveShadow = true; // (#609)
   g.add(handle);
   return g;
 }

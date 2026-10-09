@@ -57,6 +57,7 @@ export function plugAt(parent, m, material) {
   plug.position.copy(parent.worldToLocal(new THREE.Vector3(m.x - 0.015, m.y, m.z)));
   plug.quaternion.copy(parent.getWorldQuaternion(new THREE.Quaternion()).invert()); // square to the walls
   plug.raycast = () => {};
+  plug.receiveShadow = true; // (#609: the sun through the house lit it otherwise)
   return plug;
 }
 

@@ -1862,7 +1862,7 @@ function symfonisk(item, lights) {
   const shell = new THREE.MeshStandardMaterial({ color: col, roughness: 0.5 });
   const dark = item.color === 'black';
   const btnMat = new THREE.MeshStandardMaterial({ color: dark ? 0x3a3b3e : 0xc9c9c4, roughness: 0.4 });
-  const add = (m, x, y, z) => { m.position.set(x, y, z); m.castShadow = true; g.add(m); return m; };
+  const add = (m, x, y, z) => { m.position.set(x, y, z); m.castShadow = true; m.receiveShadow = !m.material.transparent; g.add(m); return m; }; // (#609)
   if (item.kind === 'lamp') {
     const L = S.lamp;
     // Base: dark knitted fabric cylindrical speaker with slightly tapered top rim (#461, docs/symfonisk-lamphogtalare-ikea-2026-10-07.png)
@@ -3181,7 +3181,7 @@ function trinket(key, parent, M, things, drawer, back, build = TRINKETS[key].bui
   const tg = new THREE.Group();
   raw.position.sub(new THREE.Vector3(c.x, box.min.y, c.z)); tg.add(raw); // (its own turn stays in raw)
   mergeStatic(tg, []);
-  tg.traverse((m) => { if (m.isMesh) m.castShadow = true; });
+  tg.traverse((m) => { if (m.isMesh) m.castShadow = m.receiveShadow = true; }); // (#609: lit through the house when only casting)
   tg.position.set(c.x, box.min.y, c.z);
   parent.add(tg);
   things.push({ model: tg, kind: 'trinket', name, homeParent: parent, drawer, back });
@@ -3421,6 +3421,7 @@ function secretary(item) {
   g.add(palmY);
   things.push({ model: palmY, kind: 'plant', name: 'yuccapalmen', back: 'sekretären', held: { pos: [0.2, -0.62, -0.62], rot: [0.05, 0, 0] } });
   g.traverse((m) => { if (m.isMesh) m.castShadow = true; });
+  for (const o of moving) o.traverse((m) => { if (m.isMesh) m.receiveShadow = true; }); // knobs, key, contents (#609: lit through the house)
   g.userData.targets = targets;
   g.userData.keep = [...moving, ...things.map((t) => t.model)];
   g.userData.things = things;
