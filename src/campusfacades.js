@@ -56,7 +56,9 @@ export function buildCampusFacade(b, p, holes, base, bottom, parts) {
   }
   const eaveOf = piece => base + height(piece.levels) + piece.raise;
   // A point on a piece is covered when a taller piece's box holds it: no trim or windows of the lower piece there.
-  const coveredBy = (piece, x, z) => pieces.some(o => o !== piece && o.box && eaveOf(o) > eaveOf(piece) + .05 && inBox(x, z, o.box));
+  // A projecting centre (risalit) hides the walls and windows behind it.
+  const C = S.centre, risalit = C?.depth ? [C.x[0], Math.min(C.face, C.face - C.normal * C.depth), C.x[1], Math.max(C.face, C.face - C.normal * C.depth)] : null;
+  const coveredBy = (piece, x, z) => (risalit && inBox(x, z, risalit)) || pieces.some(o => o !== piece && o.box && eaveOf(o) > eaveOf(piece) + .05 && inBox(x, z, o.box));
   const outline = [p, ...holes];
   const windows = [];
   for (const piece of pieces) {
@@ -265,14 +267,21 @@ function buildCentre(p, base, pieces, eaveOf, S, parts, windows) {
   for (const [dx, dz] of [[0, 1], [0, -1], [1, 0], [-1, 0]]) {
     const ang = Math.atan2(dx, dz), face = (r, out, color, list) => list.push(tint(plain(new THREE.CircleGeometry(r, 16).rotateY(ang).translate(tx + dx * (T.width / 2 + out), y0 + T.stage * .55, tz + dz * (T.width / 2 + out))), color));
     face(T.clock + .12, .02, T.clockRim, parts.modern); face(T.clock, .03, T.clockFace, parts.modern);
+    // Hands at ten past ten, as on the photo's still dials.
+    for (const [len, turn] of [[T.clock * .55, -2.1], [T.clock * .8, .35]]) {
+      const hand = new THREE.PlaneGeometry(.07, len).translate(0, len / 2, 0).rotateZ(turn).rotateY(ang);
+      parts.modern.push(tint(plain(hand.translate(tx + dx * (T.width / 2 + .04), y0 + T.stage * .55, tz + dz * (T.width / 2 + .04))), T.clockRim));
+    }
   }
-  block(T.lantern, T.lanternHeight, y0 + T.stage + .55, S.trim);
+  // A dark low pyramid roof over the clock stage, under the lantern.
+  parts.schoolRoof.push(new THREE.ConeGeometry((T.width + .4) * Math.SQRT1_2, .7, 4, 1, true).rotateY(Math.PI / 4).toNonIndexed().translate(tx, y0 + T.stage + .55 + .35, tz));
+  block(T.lantern, T.lanternHeight, y0 + T.stage + .7, S.trim);
   for (const [dx, dz] of [[0, 1], [0, -1], [1, 0], [-1, 0]]) {
     const ang = Math.atan2(dx, dz), s = new THREE.Shape(), ow = T.lantern * .38, oh = T.lanternHeight * .62;
     s.moveTo(-ow / 2, 0); s.lineTo(ow / 2, 0); s.lineTo(ow / 2, oh - ow / 2); s.absarc(0, oh - ow / 2, ow / 2, 0, Math.PI, false); s.closePath();
-    parts.modern.push(tint(plain(new THREE.ShapeGeometry(s, 8).rotateY(ang).translate(tx + dx * (T.lantern / 2 + .02), y0 + T.stage + .85, tz + dz * (T.lantern / 2 + .02))), T.opening));
+    parts.modern.push(tint(plain(new THREE.ShapeGeometry(s, 8).rotateY(ang).translate(tx + dx * (T.lantern / 2 + .02), y0 + T.stage + 1.0, tz + dz * (T.lantern / 2 + .02))), T.opening));
   }
-  const domeY = y0 + T.stage + .55 + T.lanternHeight;
+  const domeY = y0 + T.stage + .7 + T.lanternHeight;
   block(T.lantern + .3, .2, domeY, S.trim);
   const dome = new THREE.LatheGeometry([[T.lantern * .62, 0], [T.lantern * .6, T.dome * .25], [T.lantern * .48, T.dome * .6], [T.lantern * .25, T.dome * .9], [.08, T.dome]].map(([r, y]) => new THREE.Vector2(r, y)), 8);
   parts.schoolRoof.push(dome.translate(tx, domeY + .2, tz).toNonIndexed());

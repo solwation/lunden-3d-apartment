@@ -807,7 +807,11 @@ export const SITE = {
 
   east: {
     buildings: [
-      {"source":"88457546","polygon":[[39.82,-133.52],[50.71,-133.78],[50.79,-130.68],[64.45,-131.0],[64.9,-113.43],[50.44,-113.08],[50.33,-117.48],[45.1,-117.36],[45.18,-114.52],[26.82,-114.08],[26.39,-131.02],[39.88,-131.33],[39.82,-133.52]],"name":"Sankt Thomas skola","levels":2,"levelsSource":"visual assumption","storey":3.6,"roofRise":3,"frameColor":15657439},
+      {"source":"88457546","polygon":[[39.82,-133.52],[50.71,-133.78],[50.79,-130.68],[64.45,-131.0],[64.9,-113.43],[50.44,-113.08],[50.33,-117.48],[45.1,-117.36],[45.18,-114.52],[26.82,-114.08],[26.39,-131.02],[39.88,-131.33],[39.82,-133.52]],"name":"Sankt Thomas skola / byggnad 1 (Klockhuset)","levels":2,"levelsSource":"Commons 2014 photo and Hemsö: two tall storeys","storey":4.6,"frameColor":15657439,
+        "campus":{"style":"klockhuset","chimneys":[[33,-122.5],[58,-122.5],[45.5,-129]],
+          "centre":{"x":[39.6,51.6],"face":-112.6,"normal":1,"depth":5,"render":4.75,"pilasters":true,"pediment":2.1,"roofBack":2.2,
+            "window":{"sill":4.9,"height":3.9,"width":2.6},
+            "tower":{"z":-116.6,"base":1.4,"width":3.6,"stage":4.0,"clock":.8,"clockFace":15328456,"clockRim":2829099,"lantern":2.3,"lanternHeight":2.7,"opening":2829099,"dome":1.7,"spire":2.4,"gilt":13280832}}}},
       {"source":"88457547","polygon":[[138.12,-129.52],[138.19,-137.81],[133.49,-137.87],[133.57,-147.48],[137.9,-147.43],[137.94,-151.12],[149.85,-150.99],[149.82,-147.73],[154.48,-147.67],[154.39,-138.06],[150.15,-138.11],[150.07,-129.28],[166.05,-129.1],[165.94,-116.99],[149.39,-117.17],[148.9,-63.59],[161.35,-63.45],[161.24,-52.48],[136.64,-52.75],[136.71,-59.94],[136.28,-59.94],[136.91,-129.54],[138.12,-129.52]],"name":"H\u00f6jebroskolan / byggnad 9","levels":1,"levelsSource":"Commons 2014 photo of the south block and long wing: one storey","storey":4.7,"frameColor":15657439,
         "campus":{"style":"ward","chimneys":[[143,-75],[143,-95],[143,-115],[149,-57.5],[144,-142]]}},
       {"source":"88457552","polygon":[[105.08,-126.68],[116.15,-126.46],[116.21,-129.88],[126.08,-129.69],[126.0,-126.27],[127.31,-126.24],[127.14,-117.41],[125.83,-117.44],[125.71,-111.53],[115.85,-111.72],[115.97,-117.63],[104.89,-117.86],[104.79,-112.25],[91.54,-112.51],[91.65,-118.12],[80.5,-118.34],[80.35,-111.1],[70.85,-111.29],[71.23,-130.27],[80.74,-130.08],[80.68,-127.17],[91.83,-126.95],[91.87,-129.08],[105.11,-128.82],[105.08,-126.68]],"name":"F\u00f6rskolan Freinet / byggnad 7","levels":2,"levelsSource":"Commons 2014 photo (Freinetskolan sign) and Hemsö By7: two storeys","storey":4.3,"frameColor":15657439,
@@ -908,6 +912,14 @@ export const SITE = {
         plinth: .55, plinthColor: 0x6f4537, bands: [{ dy: -.05, h: .1, depth: .1, color: 0x2e2a28 }],
         cornice: [[-.3, .22, .1], [-.12, .16, .2]], frame: .07, mullion: .05,
         roof: { rise: 3.2, slope: .55, grid: 2 }, chimney: [.9, 2.2, .9] },
+      // Byggnad 1 / Klockhuset (#579, Stenhammar 1877-79): a white-rendered ground floor, brick upper floor between white
+      // pilasters, dentil cornice and low hip; on the courtyard axis a projecting centre with pediment, a great round-arched
+      // window and a clock tower (four dials, open arched lantern, dark bell roof, gilded spire), after the 2014 photo.
+      klockhuset: { storeys: [4.6, 4.5], bay: 3.0, margin: 1.6, wall: 0xffffff, trim: 0xf0ede6, joint: 0xd2ccc2, glass: 0x405660,
+        windows: [{ sill: 1.2, head: 3.5, width: 1.25, arch: .18 }, { sill: 1.0, head: 3.3, width: 1.25, crown: 'cornice' }],
+        plinth: .7, apron: 4.75, piers: { width: .7, depth: .06, edge: .35 }, bands: [{ h: .26 }],
+        cornice: [[-.4, .3, .12], [-.2, .14, .24], [-.06, .16, .36]], dentil: { step: .5, width: .16, height: .22, depth: .09 },
+        quoin: .7, frame: .12, mullion: .045, roof: { rise: 2.2, slope: .3, grid: 2 }, chimney: [.65, 1.4, .65] },
     },
 
     storey: 3.6,

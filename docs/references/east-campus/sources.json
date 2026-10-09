@@ -118,6 +118,23 @@
       "date": "2014-03-29",
       "side": "västra paviljongen mot byggnad 1 från sydväst, längan och mittpartiet bakom",
       "kind": "nutida"
+    },
+    "hemso-byggnad-1-historisk.jpg": {
+      "url": "https://www.hemso.se/content/uploads/sites/8/2024/04/Forvaltningsbyggnaden.jpg",
+      "page": "https://st-larsparken.hemso.se/historia/byggnader-runt-borggarden/byggnad-1/",
+      "building": "1 / Klockhuset (OSM 88457546)",
+      "date": "okänt, historiskt svartvitt foto (1960–70-tal enligt bilen)",
+      "side": "södra huvudfasaden mot borggården, rakt på mittaxeln",
+      "kind": "historiskt"
+    },
+    "commons-byggnad-1-2014.jpg": {
+      "url": "https://commons.wikimedia.org/wiki/File:Building_No._1_of_former_St._Lars_Hospital_in_Lund_Sweden.JPG",
+      "author": "Peter Sondhauss",
+      "license": "CC BY-SA 3.0",
+      "building": "1 / Klockhuset (OSM 88457546); byggnad 2 till vänster",
+      "date": "2014-03-29",
+      "side": "södra huvudfasaden snett från sydost med östra gaveln",
+      "kind": "nutida"
     }
   }
 }
