@@ -79,7 +79,7 @@ f.onload = async () => {
   const mon = screen.parent, dir = new mon.position.constructor(0, 0, 1).transformDirection(mon.matrixWorld);
   const at = mon.getWorldPosition(new mon.position.constructor());
   const to = seat.pos.clone().sub(at); to.y = 0; to.normalize(); dir.y = 0; dir.normalize();
-  pass &= check(rest.active && rest.kind === 'sit' && /sätta dig i/i.test(label) && pc.watching && pc.isOpen && dir.dot(to) > 0.95,
+  pass &= check(rest.active && rest.kind === 'sit' && /^(sitt ner|sätta dig i .+)$/i.test(label) && pc.watching && pc.isOpen && dir.dot(to) > 0.95,
     `"${label}": sitting in the bunk swings the monitor round (yaw ${pc.monitorYaw.toFixed(2)}, facing ${dir.dot(to).toFixed(3)}) and plays the film`);
   standUp();
   for (let i = 0; i < 120; i++) step(1 / 30);

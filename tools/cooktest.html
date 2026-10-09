@@ -57,7 +57,7 @@ f.onload = async () => {
   const front = () => drawer.object.getWorldPosition(new V()).add(new V(0, 0.08, 0));
   pass &= check(!!pan && !!drawer && pan.model.parent === drawer.object, 'the pan lies in the drawer under the hob');
   label = aim(front(), from);
-  pass &= check(/öppna lådan/i.test(label), `the drawer: "${label}"`);
+  pass &= check(/^öppna( lådan)?$/i.test(label), `the drawer: "${label}"`);
   btn.click(); for (let i = 0; i < 60; i++) step(1 / 60);
   label = aim(pan.model.getWorldPosition(new V()), [hob.zone.x - 0.75, hob.zone.z]);
   pass &= check(/ta stekpannan/i.test(label), `in the open drawer: "${label}"`);
@@ -89,7 +89,7 @@ f.onload = async () => {
   const run = (sec) => { for (let i = 0; i < sec * 10; i++) step(0.1); };
   const fridgeFrom = [chicken.home.pos.x, chicken.home.pos.z - 1.0];
   label = aim(chicken.home.pos.clone().add(new V(0, 0.1, 0)), fridgeFrom);
-  pass &= check(/öppna kylskåpet/i.test(label), `the fridge: "${label}"`);
+  pass &= check(/^öppna( kylskåpet)?$/i.test(label), `the fridge: "${label}"`);
   btn.click(); run(2);
   pass &= check(!smokes(), 'no smoke in the open fridge');
   label = aim(chicken.home.pos.clone().add(new V(0, 0.08, 0)), fridgeFrom);

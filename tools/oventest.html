@@ -39,7 +39,8 @@ f.onload = async () => {
       step(1 / 60);
     };
     aim();
-    pass &= check(!btn.hidden && new RegExp(`öppna ${name}`, 'i').test(btn.textContent), `${name}: button "${btn.textContent}"`);
+    // touch shows the short "Öppna" on an appliance front (#502); both forms pass, anchored (#614)
+    pass &= check(!btn.hidden && new RegExp(`^öppna( ${name})?$`, 'i').test(btn.textContent), `${name}: button "${btn.textContent}"`);
     btn.click();
     for (let i = 0; i < 90; i++) step(1 / 60);
     const angle = a.hinge === 'bottom' ? a.door.rotation.z : -a.door.rotation.y;

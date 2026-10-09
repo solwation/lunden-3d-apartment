@@ -40,7 +40,7 @@ f.onload = async () => {
   const kitchen = speakers.find((t) => t.object.userData.symfonisk === 'speaker black'); // (#298)
   const p = kitchen.object.getWorldPosition(new V()).add(new V(0, 0.15, 0));
   let label = aim(p, [p.x, p.z + 0.9]); // from the room: it stands on the kitchen window board (#289)
-  pass &= check(/spela musik på högtalaren/i.test(label), `the black speaker (kitchen): "${label}"`);
+  pass &= check(/^spela musik( på högtalaren)?$/i.test(label), `the black speaker (kitchen): "${label}"`);
   pass &= check(!w.performance.getEntriesByType('resource').some((e) => /\/music\/.*\.(ogg|mp3)/.test(e.name)), 'no music downloaded before play');
   btn.click();
   for (let i = 0; i < 30; i++) step(1 / 30);
@@ -75,7 +75,7 @@ f.onload = async () => {
   d.getElementById('sonos-close').click();
   pass &= check(panel.hidden && sonos.playing, 'panel closed, still playing');
   label = aim(p, [p.x, p.z + 0.9]);
-  pass &= check(/styra musiken/i.test(label), `"${label}"`);
+  pass &= check(/^styr(a)? musiken( på .+)?$/i.test(label), `"${label}"`);
   btn.click();
   pass &= check(!panel.hidden && sonos.playing, 'E again opens the panel');
   panel.querySelector('[data-act=play]').click();

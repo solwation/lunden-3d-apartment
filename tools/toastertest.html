@@ -47,7 +47,7 @@ const load = () => new Promise((resolve) => {
   const from = [dpos().x - 0.85, dpos().z];
   pass &= check(toaster.takeTarget.blocked && toaster.takeTarget.blockedText === 'Öppna lådan först', 'shut: "Öppna lådan först"');
   let label = aim(dpos().add(new V(0, 0.15, 0)), from);
-  pass &= check(/öppna lådan/i.test(label), `the drawer: "${label}"`);
+  pass &= check(/^öppna( lådan)?$/i.test(label), `the drawer: "${label}"`);
   btn.click(); run(1);
   const home = toaster.where();
   pass &= check(drawer.isOpen && home.x < dpos().x + 0.3 && home.y < 0.35, `open: it slid out with the drawer (${home.toArray().map((v) => v.toFixed(2))})`);
@@ -59,7 +59,7 @@ const load = () => new Promise((resolve) => {
   // (3) down on the worktop near the corner (within the cord's reach)
   const spot = new V(5.24, top, 4.62);
   label = aim(spot, [4.4, 4.62]);
-  pass &= check(/ställa ner brödrosten här/i.test(label), `at the worktop by the corner: "${label}"`);
+  pass &= check(/^ställ(a)? ner( brödrosten här)?$/i.test(label), `at the worktop by the corner: "${label}"`);
   btn.click(); step(1 / 60);
   const up = new V(0, 1, 0).applyQuaternion(toaster.model.quaternion), front = new V(0, 0, -1).applyQuaternion(toaster.model.quaternion);
   pass &= check(toaster.placed && Math.abs(toaster.where().y - top) < 0.01 && up.y > 0.999 && front.x < -0.99, `standing on the worktop, upright, its front to the room (front ${front.toArray().map((v) => v.toFixed(2))})`);

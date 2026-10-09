@@ -195,7 +195,7 @@ f.onload = async () => {
     const cup = cups.cups.find((c) => c.state === 'cabinet') ?? cups.cups[0];
     cup.take(); step(1 / 60);
     const label = lookAt(mid), pt = focus().focused?.point?.clone();
-    pass &= check(/ställa ner koppen här/i.test(label) && Math.abs(pt.y - mid.y) < 0.005, `the shut lid: "${label}" at y ${pt?.y.toFixed(3)} (${mid.y.toFixed(3)})`);
+    pass &= check(/^ställ(a)? ner( koppen här)?$/i.test(label) && Math.abs(pt.y - mid.y) < 0.005, `the shut lid: "${label}" at y ${pt?.y.toFixed(3)} (${mid.y.toFixed(3)})`);
     btn.click(); step(1 / 60); scene.updateMatrixWorld(true);
     pass &= check(cup.state === 'placed' && Math.abs(cup.model.getWorldPosition(new V()).y - mid.y) < 0.01, 'the cup stands on the lid');
     if (new URLSearchParams(location.search).has('shot')) { lookAt(mid); out.textContent = 'SHOT'; return; }

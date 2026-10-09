@@ -51,14 +51,14 @@ f.onload = async () => {
   pass &= check(heldItem() === cup, 'cup in the hand');
   // on the RANDERS tray table by the armchair (#405): it stands on the tray's floor, beside the flower and the book
   const tray = { x: 1.40, y: 0.483, z: 8.22 };
-  pass &= check(lookAt(tray, /ställa ner koppen här/i, [[1.9, 9.0], [2.2, 8.6], [1.5, 9.1]]), `the tray table: "${btn.textContent}"`);
+  pass &= check(lookAt(tray, /^ställ(a)? ner( koppen här)?$/i, [[1.9, 9.0], [2.2, 8.6], [1.5, 9.1]]), `the tray table: "${btn.textContent}"`);
   btn.click(); step(1 / 60);
   pass &= check(!heldItem() && cup.state === 'placed' && Math.abs(cup.model.position.y - 0.483) < 0.01, `the cup on the tray table (y ${cup.model.position.y.toFixed(3)})`);
   pass &= check(lookAt(cupAt(), /ta koppen/i, [[1.9, 9.0], [2.2, 8.6], [1.5, 9.1]]), `and taken again: "${btn.textContent}"`);
   btn.click(); step(1 / 60);
   // on the ABORG café table outside the kitchen window (#406)
   const cafe = { x: 3.98, y: 0.71, z: -0.45 };
-  pass &= check(lookAt(cafe, /ställa ner koppen här/i, [[3.9, -1.6], [3.4, -1.5], [4.4, -1.5]]), `the café table outside: "${btn.textContent}"`);
+  pass &= check(lookAt(cafe, /^ställ(a)? ner( koppen här)?$/i, [[3.9, -1.6], [3.4, -1.5], [4.4, -1.5]]), `the café table outside: "${btn.textContent}"`);
   btn.click(); step(1 / 60);
   pass &= check(!heldItem() && cup.state === 'placed' && Math.abs(cup.model.position.y - 0.71) < 0.01, `the cup on the café table (y ${cup.model.position.y.toFixed(3)})`);
   pass &= check(lookAt(cupAt(), /ta koppen/i, [[3.9, -1.6], [3.4, -1.5], [4.4, -1.5]]), `and taken again: "${btn.textContent}"`);
@@ -66,14 +66,14 @@ f.onload = async () => {
   // on the courtyard's long table under the pergola and the grill's side table (#438)
   for (const [name, top, stands] of [['the pergola table', { x: -16.45, y: 0.76, z: 24.5 }, [[-17.6, 24.5], [-17.6, 24.0], [-17.6, 25.0]]],
     ['the grill\'s side table', { x: -21.47, y: 0.8, z: 20.27 }, [[-22.3, 20.27], [-22.2, 20.7], [-22.2, 19.8]]]]) {
-    pass &= check(lookAt(top, /ställa ner koppen här/i, stands), `${name}: "${btn.textContent}"`);
+    pass &= check(lookAt(top, /^ställ(a)? ner( koppen här)?$/i, stands), `${name}: "${btn.textContent}"`);
     btn.click(); step(1 / 60);
     pass &= check(!heldItem() && cup.state === 'placed' && Math.abs(cup.model.position.y - top.y) < 0.01, `the cup on ${name} (y ${cup.model.position.y.toFixed(3)})`);
     pass &= check(lookAt(cupAt(), /ta koppen/i, stands), `and taken again: "${btn.textContent}"`);
     btn.click(); step(1 / 60);
   }
   const coffee = { x: 3.64, y: 0.47, z: 10.56 };
-  pass &= check(lookAt(coffee, /ställa ner koppen här/i, [[3.6, 9.4], [3.0, 9.6], [4.4, 9.5]]), `coffee table: "${btn.textContent}"`);
+  pass &= check(lookAt(coffee, /^ställ(a)? ner( koppen här)?$/i, [[3.6, 9.4], [3.0, 9.6], [4.4, 9.5]]), `coffee table: "${btn.textContent}"`);
   btn.click(); step(1 / 60);
   pass &= check(!heldItem() && cup.state === 'placed' && Math.abs(cup.model.position.y - 0.47) < 0.02, `the cup on the coffee table (y ${cup.model.position.y.toFixed(3)})`);
   // the lightsaber
@@ -87,7 +87,7 @@ f.onload = async () => {
   pass &= check(heldItem() === saber && cup.state === 'placed', 'still the saber in the hand, the cup stays');
   // the saber goes down on the dining table, lying flat
   const table = { x: 3.5, y: 0.75, z: 1.6 };
-  pass &= check(lookAt(table, /lägga ner lightsabern här/i, [[2.6, 2.2], [2.5, 1.6], [3.5, 2.6]]), `dining table: "${btn.textContent}"`);
+  pass &= check(lookAt(table, /^lägg(a)? ner( lightsabern här)?$/i, [[2.6, 2.2], [2.5, 1.6], [3.5, 2.6]]), `dining table: "${btn.textContent}"`);
   btn.click(); step(1 / 60);
   saber.model.updateMatrixWorld(true);
   // the saber's lowest / highest vertex in the world
@@ -104,7 +104,7 @@ f.onload = async () => {
   pass &= check(heldItem() === cup, 'the cup in the hand');
   player.spawn(1.5, 8.6, Math.PI); for (let i = 0; i < 3; i++) step(1 / 60);
   camera.rotation.y = Math.PI; camera.rotation.x = -0.9; step(1 / 60);
-  pass &= check(/ställa ner koppen här/i.test(btn.textContent), `the floor: "${btn.textContent}"`);
+  pass &= check(/^ställ(a)? ner( koppen här)?$/i.test(btn.textContent), `the floor: "${btn.textContent}"`);
   btn.click(); step(1 / 60);
   pass &= check(!heldItem() && cup.state === 'placed' && Math.abs(cup.model.position.y) < 0.01 && Math.abs(cup.model.rotation.x) < 1e-6, `the cup stands on the floor (y ${cup.model.position.y.toFixed(3)})`);
   // F: everything put down goes home
@@ -160,7 +160,7 @@ f.onload = async () => {
   player.spawn(4.6, 10.0, 0); for (let i = 0; i < 3; i++) step(1 / 60);
   { const dx = 4.0 - camera.position.x, dz = 11.5 - camera.position.z; camera.rotation.y = Math.atan2(-dx, -dz); camera.rotation.x = Math.atan2(0.44 - camera.position.y, Math.hypot(dx, dz)); }
   step(1 / 60);
-  pass &= check(!/koppen här/i.test(btn.textContent), `a cup can't go on the sofa: "${btn.textContent}"`);
+  pass &= check(!/koppen här|^ställ(a)? ner$/i.test(btn.textContent), `a cup can't go on the sofa: "${btn.textContent}"`);
   cup2.putBack(); step(1 / 60);
   // back in the bed
   pass &= check(lookAt(at(pingping.model).add(new V(0, 0.2, 0)), /ta pingping/i, sofaStands), `take him from the sofa: "${btn.textContent}"`);
@@ -196,7 +196,7 @@ f.onload = async () => {
   photo.use(); for (let i = 0; i < 40; i++) step(1 / 60);
   pass &= check(!photo.looking && Math.abs(photo.model.position.z - far) < 0.01, 'and back down');
   const spot = new V(3.78, 3.955, 0.42);
-  pass &= check(lookAt(spot, /ställa ner fotot av miele här/i, [[3.78, 1.1], [3.6, 1.2], [3.9, 1.0]]), `elsewhere on the board: "${btn.textContent}"`);
+  pass &= check(lookAt(spot, /^ställ(a)? ner( fotot av miele här)?$/i, [[3.78, 1.1], [3.6, 1.2], [3.9, 1.0]]), `elsewhere on the board: "${btn.textContent}"`);
   btn.click(); step(1 / 60);
   pass &= check(photo.placed && Math.abs(photo.model.position.y - 3.95) < 0.01, `it stands on the board (y ${photo.model.position.y.toFixed(3)})`);
   w.__app.toggleFurniture(false);
@@ -231,7 +231,7 @@ f.onload = async () => {
   // a pear onto the dining table
   const pear = fruit.fruit.find((p) => p.kind === 'pear');
   pear.take(); step(1 / 60);
-  pass &= check(lookAt(table, /lägga ner päronet här/i, [[2.6, 2.2], [2.5, 1.6], [3.5, 2.6]]), `dining table: "${btn.textContent}"`);
+  pass &= check(lookAt(table, /^lägg(a)? ner( päronet här)?$/i, [[2.6, 2.2], [2.5, 1.6], [3.5, 2.6]]), `dining table: "${btn.textContent}"`);
   btn.click(); step(1 / 60);
   pass &= check(pear.state === 'placed' && Math.abs(pear.model.position.y - 0.75) < 0.01, `the pear on the dining table (y ${pear.model.position.y.toFixed(3)})`);
   // an orange back in the bowl
@@ -258,7 +258,7 @@ f.onload = async () => {
   const turnBtn = d.getElementById('turn-btn');
   const cup4 = cups.cups.find((c) => c.state === 'cabinet') ?? cups.cups[0];
   cup4.take(); step(1 / 60);
-  pass &= check(lookAt(table, /ställa ner koppen här/i, [[2.6, 2.2], [2.5, 1.6], [3.5, 2.6]]), `the cup at the dining table: "${btn.textContent}"`);
+  pass &= check(lookAt(table, /^ställ(a)? ner( koppen här)?$/i, [[2.6, 2.2], [2.5, 1.6], [3.5, 2.6]]), `the cup at the dining table: "${btn.textContent}"`);
   const t = placement.target(), g = placement.ghost;
   const onGrid = (v) => Math.abs(v / 0.05 - Math.round(v / 0.05)) < 1e-6;
   pass &= check(g.visible && !placement.ring.visible && g.children.length > 0 && g.position.distanceTo(t.point) < 1e-6, `the cup's ghost stands where it will land (${g.children.length} meshes)`);
@@ -273,13 +273,13 @@ f.onload = async () => {
   // cancel: look up — no ghost, still in the hand
   camera.rotation.x = 1.3; step(1 / 60);
   pass &= check(!g.visible && !placement.target() && heldItem() === cup4 && turnBtn.hidden, 'looking away: no ghost, the cup still in the hand');
-  pass &= check(lookAt(table, /ställa ner koppen här/i, [[2.6, 2.2], [2.5, 1.6], [3.5, 2.6]]), 'back at the table');
+  pass &= check(lookAt(table, /^ställ(a)? ner( koppen här)?$/i, [[2.6, 2.2], [2.5, 1.6], [3.5, 2.6]]), 'back at the table');
   const t3 = placement.target(), gp = g.position.clone(), gq = g.quaternion.clone();
   btn.click(); step(1 / 60);
   pass &= check(!heldItem() && cup4.model.position.distanceTo(gp) < 1e-6 && cup4.model.quaternion.angleTo(gq) < 1e-4 && !g.visible, `down exactly as the ghost showed (yaw ${(t3.yaw * 57.3).toFixed(0)}°)`);
   // a thing lying on its side (the saber): the ghost lies the same way
   saber.take(); step(1 / 60);
-  pass &= check(lookAt(table, /lägga ner lightsabern här/i, [[2.6, 2.2], [2.5, 1.6], [3.5, 2.6]]), 'the saber at the table');
+  pass &= check(lookAt(table, /^lägg(a)? ner( lightsabern här)?$/i, [[2.6, 2.2], [2.5, 1.6], [3.5, 2.6]]), 'the saber at the table');
   const sq = g.quaternion.clone(), sp2 = g.position.clone();
   btn.click(); step(1 / 60);
   pass &= check(saber.placed && saber.model.quaternion.angleTo(sq) < 1e-4 && saber.model.position.distanceTo(sp2) < 1e-6, 'the saber lies as its ghost did');

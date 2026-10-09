@@ -85,7 +85,7 @@ f.onload = async () => {
           // Rumpled beds now offer Make / Lie (#555); choose the real lie menu row.
           const focused=w.__app.focus().focused;
           lieChoice=focused?.bedCare?.restTarget===t ? [...d.querySelectorAll('#choices button')].find(b=>/lägga dig/i.test(b.textContent)) : null;
-          if ((named = (!btn.hidden && btn.textContent.includes(t.name)) || !!lieChoice)) break;
+          if ((named = (!btn.hidden && (focused === t || btn.textContent.includes(t.name))) || !!lieChoice)) break; // touch says only "Sitt ner" / "Ligg ner" (#502): the target itself counts
         }
         if (!named) continue;
         const chosenLabel=lieChoice?.textContent??btn.textContent;
@@ -135,7 +135,7 @@ f.onload = async () => {
       const sat = rest.spot === sp && rest.kind === 'sit';
       const on = tv.isOpen;
       (standBtn.hidden ? btn : standBtn).click(); for (let i = 0; i < 3; i++) step(1 / 60);
-      pass &= check(/sätta dig upp i sängen/i.test(label ?? '') && sat && on && inView && !tv.isOpen, `sitting up in bed (${sp.x > 0 ? 'one' : 'other'} side): "${label}", sat ${sat}, the TV on ${on} and in view ${inView}, off again ${!tv.isOpen}`);
+      pass &= check(/^(sitt upp|sätta dig upp i sängen)$/i.test(label ?? '') && sat && on && inView && !tv.isOpen, `sitting up in bed (${sp.x > 0 ? 'one' : 'other'} side): "${label}", sat ${sat}, the TV on ${on} and in view ${inView}, off again ${!tv.isOpen}`);
     }
   }
   // #308/#309: in every bed the eye is clear of the bedding — a ray from 25 cm above the eye straight down meets

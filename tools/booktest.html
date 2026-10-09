@@ -53,7 +53,7 @@ f.onload = async () => {
   // put it down on the coffee table, take it again
   const tableTop = new V(3.6, 0.48, 10.4);
   label = aim(tableTop, [3.6, 9.3]);
-  pass &= check(/lägga ner boken/i.test(label), `at the coffee table: "${label}"`);
+  pass &= check(/^lägg(a)? ner( boken här)?$/i.test(label), `at the coffee table: "${label}"`);
   btn.click(); step(1 / 60);
   pass &= check(!book.held && book.placed && Math.abs(book.model.position.y - 0.47) < 0.05, `lying on the coffee table (y ${book.model.position.y.toFixed(3)})`);
   label = aim(book.where(), [3.6, 9.3]);

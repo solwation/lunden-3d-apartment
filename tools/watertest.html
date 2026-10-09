@@ -70,7 +70,7 @@ async function run() {
     const on = t.isOpen && t.stream.visible;
     step(1 / 60);
     if (!t.spec.shower) { // a basin (#437): wash the hands, then turn it off, then dry them on the nearest towel
-      const wash = choiceBtn(/tvätta händerna/i), offRow = choiceBtn(/stänga av/i);
+      const wash = choiceBtn(/tvätta händerna/i), offRow = choiceBtn(new RegExp(`^stäng(a)? av( ${t.name})?$`, 'i'));
       wash?.click();
       for (let i = 0; i < 20; i++) step(0.05);
       const mid = handWash.busy && w.__app.hand.rubT > 0 && w.__app.hand.left.hand.visible;
@@ -80,7 +80,7 @@ async function run() {
       const offLabel = btn.textContent;
       btn.click();
       const off = !t.isOpen && !t.stream.visible;
-      const ok = /sätta på/i.test(label) && on && !!wash && !!offRow && mid && wet && /stänga av/i.test(offLabel) && off;
+      const ok = new RegExp(`^sätt(a)? på( ${t.name})?$`, 'i').test(label) && on && !!wash && !!offRow && mid && wet && new RegExp(`^stäng(a)? av( ${t.name})?$`, 'i').test(offLabel) && off;
       pass &&= ok;
       lines.push(`${ok ? 'PASS' : 'FAIL'} ${t.name} (${world.roomMaps[target.y > 3 ? 1 : 0].at(target.x, target.z)}) "${label}" on=${on}, menu wash=${!!wash} off=${!!offRow}, rubbing=${mid}, wet=${wet}, then "${offLabel}" off=${off}`);
       // the nearest towel on the same floor
@@ -102,7 +102,7 @@ async function run() {
     }
     btn.click();
     const off = !t.isOpen && !t.stream.visible;
-    const ok = /sätta på/i.test(label) && on && off;
+    const ok = new RegExp(`^sätt(a)? på( ${t.name})?$`, 'i').test(label) && on && off;
     pass &&= ok;
     lines.push(`${ok ? 'PASS' : 'FAIL'} ${t.name} @ (${target.x.toFixed(2)}, ${target.y.toFixed(2)}, ${target.z.toFixed(2)}) button "${label}" on=${on} off=${off}`);
   }

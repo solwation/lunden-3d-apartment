@@ -38,7 +38,7 @@ f.onload = async () => {
   const kitchen = [[4.3, 4.1], [4.1, 4.0], [4.4, 3.9], [4.0, 3.8]];
   let pass = check(!!fish && fish.left === 15, `a carton with ${fish?.left} fish fingers`);
   const fz = fish.freezer;
-  pass &= check(lookAt(fz.door.children[0].getWorldPosition(new V()).setY(1.0), kitchen, /öppna frysen/i), `freezer: "${btn.textContent}"`);
+  pass &= check(lookAt(fz.door.children[0].getWorldPosition(new V()).setY(1.0), kitchen, /^öppna( frysen)?$/i), `freezer: "${btn.textContent}"`);
   btn.click(); for (let i = 0; i < 90; i++) step(1 / 60);
   pass &= check(fz.isOpen, 'freezer open');
   const boxAt = () => fish.object.getWorldPosition(new V()).add(new V(0, 0.03, 0));
@@ -56,14 +56,14 @@ f.onload = async () => {
   const two = heldItem();
   pass &= check(two?.isFish && fish.left === 13, `the second one, ${fish.left} left`);
   const table = { x: 3.5, y: 0.75, z: 1.6 }, tableStands = [[2.6, 2.2], [2.5, 1.6], [3.5, 2.6]];
-  pass &= check(lookAt(table, tableStands, /lägga ner fiskpinnen/i), `dining table: "${btn.textContent}"`);
+  pass &= check(lookAt(table, tableStands, /^lägg(a)? ner( fiskpinnen här)?$/i), `dining table: "${btn.textContent}"`);
   btn.click(); step(1 / 60);
   pass &= check(two.state === 'placed' && !heldItem() && Math.abs(two.middle(new V()).y - 0.75) < 0.03, `on the dining table (y ${two.middle(new V()).y.toFixed(3)})`);
   pass &= check(lookAt(two.middle(new V()), tableStands, /^ta fiskpinnen/i), `pick it up: "${btn.textContent}"`);
   btn.click(); step(1 / 60);
   pass &= check(heldItem() === two, 'in the hand again');
   const floor = { x: 3.9, y: 0, z: 3.4 };
-  pass &= check(lookAt(floor, [[3.9, 2.6], [3.6, 2.4], [4.2, 2.5]], /lägga ner fiskpinnen/i), `the floor: "${btn.textContent}"`);
+  pass &= check(lookAt(floor, [[3.9, 2.6], [3.6, 2.4], [4.2, 2.5]], /^lägg(a)? ner( fiskpinnen här)?$/i), `the floor: "${btn.textContent}"`);
   btn.click(); step(1 / 60);
   pass &= check(two.state === 'placed' && Math.abs(two.middle(new V()).y) < 0.02, `on the floor (y ${two.middle(new V()).y.toFixed(3)})`);
   // a third one back into the carton

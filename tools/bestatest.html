@@ -37,7 +37,7 @@ f.onload = async () => {
     const open = door.isOpen && Math.abs(door.object.rotation.y) > 1.5;
     btn.click(); for (let i = 0; i < 60; i++) step(1 / 60);
     const shut = !door.isOpen && Math.abs(door.object.rotation.y) < 1e-3;
-    pass &= check(/öppna (vitrinskåpet|skåpdörren)/i.test(label) && open && shut, `${door.name} at y ${p.y.toFixed(2)} z ${p.z.toFixed(2)}: "${label}" open=${open} shut=${shut}`);
+    pass &= check(/^öppna( vitrinskåpet| skåpdörren)?$/i.test(label) && open && shut, `${door.name} at y ${p.y.toFixed(2)} z ${p.z.toFixed(2)}: "${label}" open=${open} shut=${shut}`);
   }
   // the spots are a small lamp of their own (#234): E on a spot, and they switch themselves with the dusk
   const spots = lights.floorLamps.find((x) => x.name === 'spotsen');
