@@ -3668,9 +3668,10 @@ export const FURNITURE = [
   // (x 2.68–4.60), 40 cm in front of the sofa (front at z 11.26). Its shape: COFFEE_TABLE (#410).
   // Hall, right as you come in, between the EL cabinet and the wardrobes (#49, "KL" on the plan; sizes
   // are our pick): a wall coat rack with a hat shelf and hooks (jackets, a cap) above a two-tier
-  // black shoe rack with a few pairs on it
-  { type: 'coatrack', level: 0, x: 0.2 + 0.14, z: 1.255, rot: -90, w: 0.74 },
-  { type: 'shoerack', level: 0, x: 0.2 + 0.16, z: 1.255, rot: -90, w: 0.74 },
+  // black shoe rack with a few pairs on it. Both centred on the free wall between the EL cabinet (z1 0.865,
+  // CABINET_FIXES) and the wardrobe's end (z 1.765), 2 cm clear of each; the jackets hang within the rack's width (#610)
+  { type: 'coatrack', level: 0, x: 0.2 + 0.14, z: 1.315, rot: -90, w: 0.86 },
+  { type: 'shoerack', level: 0, x: 0.2 + 0.16, z: 1.315, rot: -90, w: 0.86 },
   { type: 'coffeetable', level: 0, x: 3.64, z: 11.26 - 0.4 - 0.3, w: 1.2, d: 0.6, h: 0.47 },
   // IKEA BYÅS TV bench, high-gloss white, 160 × 42 × 45 cm (ikea.com, #67): against the wall opposite the
   // sofa (the stair is behind it), east of the living-room door's architrave, near the sofa's centre line

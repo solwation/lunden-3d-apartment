@@ -1,0 +1,64 @@
+<!doctype html><html lang="sv"><meta charset="utf-8"><title>Hanging clothes stay inside</title>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
+<pre id="out">running…</pre><script type="module">
+// #610: every hanging garment stays inside what it hangs in — the hall coat rack's jackets (decorative ones and the
+// saved life jacket on its hook) within the rack's width and clear of the EL/C cabinet and the wardrobe beside it; the
+// fitted wardrobes' contents (hall coats, bedroom clothes) within their carcass interiors; SMÅSTAD's within its sides.
+import * as THREE from 'three';
+import { buildWorld } from '../src/world.js';
+import { jacket } from '../src/furniture.js';
+import { WARDROBE as W, HALL_CARE } from '../src/config.js';
+const plan = await fetch('../data/plan.json').then(r=>r.json());
+const world = buildWorld(plan);
+world.object.updateMatrixWorld(true);
+const lines=[];let pass=true;const eps=0.002;
+const check=(ok,label)=>{pass&&=ok;lines.push(`${ok?'PASS':'FAIL'} ${label}`)};
+const f=(b)=>`x ${b.min.x.toFixed(3)}…${b.max.x.toFixed(3)} y ${b.min.y.toFixed(3)}…${b.max.y.toFixed(3)} z ${b.min.z.toFixed(3)}…${b.max.z.toFixed(3)}`;
+const rect=(c,y0=0,y1=3)=>new THREE.Box3(new THREE.Vector3(c.x0,y0,c.z0),new THREE.Vector3(c.x1,y1,c.z1));
+const strictlyApart=(a,b)=>a.max.x<=b.min.x+eps||b.max.x<=a.min.x+eps||a.max.z<=b.min.z+eps||b.max.z<=a.min.z+eps||a.max.y<=b.min.y+eps||b.max.y<=a.min.y+eps;
+
+// 1. the hall coat rack: its local box (jackets included, plus the life jacket hung on its hook) within ±w/2
+const cabs=plan.floors[0].cabinets, el=cabs.find(c=>c.label==='EL'), gs=cabs.filter(c=>c.label==='G'&&c.x0<1);
+const rack=world.furniture.movable.find(p=>p.item.type==='coatrack');
+check(!!rack,'the hall coat rack exists');
+if(rack){
+  const o=rack.object, w=rack.item.w, inv=new THREE.Matrix4().copy(o.matrixWorld).invert();
+  const local=new THREE.Box3();
+  o.traverse(m=>{if(m.isMesh){m.geometry.computeBoundingBox();local.union(m.geometry.boundingBox.clone().applyMatrix4(new THREE.Matrix4().multiplyMatrices(inv,m.matrixWorld)));}});
+  const life=jacket(HALL_CARE.jacket.len,HALL_CARE.jacket.color,HALL_CARE.jacket.kind);life.position.set(...o.userData.hallCare.jacket);life.updateMatrixWorld(true);
+  local.union(new THREE.Box3().setFromObject(life));
+  check(local.min.x>=-w/2-eps&&local.max.x<=w/2+eps,`coat rack: jackets within its ${w} m width (${f(local)})`);
+  // in the world: the rack and everything on it, with the life jacket on its hook, clear of the EL cabinet and wardrobe G
+  const world3=new THREE.Box3().setFromObject(o).union(new THREE.Box3().setFromObject(life).applyMatrix4(o.matrixWorld));
+  check(strictlyApart(world3,rect(el)),`coat rack clear of the EL/C cabinet (z ≤ ${el.z1}): ${f(world3)}`);
+  for(const g of gs)check(strictlyApart(world3,rect(g)),`coat rack clear of hall wardrobe G (z ${g.z0}…${g.z1})`);
+}
+
+// 2. fitted wardrobes: the contents within the carcass interior (inside the ends' jamb lips, the back, the plinth, the
+// top); in the hall also the life jacket on its reserved rod slot (hallcare.js pose: the anchor turned π/2, hung upright)
+const specs=[...world.hallWardrobes,...world.wardrobes];
+check(specs.length===3&&specs.every(s=>s.contentsBox),`contents of all three fitted wardrobes found (${specs.length})`);
+const {frameMatrix}=await import('../src/contents.js');
+for(const s of specs){
+  const b=s.contentsBox.clone();
+  if(s.hall){const j=jacket(HALL_CARE.jacket.len,HALL_CARE.jacket.color,HALL_CARE.jacket.kind),a=new THREE.Object3D();
+    a.applyMatrix4(frameMatrix(s.hall.dir,s.hall.origin));const anchor=new THREE.Object3D();anchor.position.set(...s.hall.slot);anchor.rotation.y=Math.PI/2;
+    a.add(anchor);anchor.add(j);a.updateMatrixWorld(true);b.union(new THREE.Box3().setFromObject(j));}
+  const a0=s.a0+W.railLip, a1=s.a1-W.railLip, q0=Math.min(s.back,s.front), q1=Math.max(s.back,s.front);
+  const [u0,u1,p0,p1]=s.along?[b.min.x,b.max.x,b.min.z,b.max.z]:[b.min.z,b.max.z,b.min.x,b.max.x];
+  const name=`${s.hall?'hall wardrobe (+ life jacket)':'wardrobe in '+(s.room?.name??s.room?.label??'a bedroom')} (${s.along?'x':'z'} ${a0.toFixed(3)}…${a1.toFixed(3)})`;
+  check(u0>=a0-eps&&u1<=a1+eps,`${name}: contents along the rod inside the ends (${u0.toFixed(3)}…${u1.toFixed(3)})`);
+  check(p0>=q0+W.carcass-eps&&p1<=q1+eps,`${name}: contents between the back and the front (${p0.toFixed(3)}…${p1.toFixed(3)})`);
+  check(b.min.y>=s.y0+W.plinth-eps&&b.max.y<=s.topY+eps,`${name}: contents between the plinth and the top (${b.min.y.toFixed(3)}…${b.max.y.toFixed(3)})`);
+}
+
+// 3. SMÅSTAD: its door-half packs (vertex-coloured) within its sides, in its own frame
+for(const p of world.furniture.movable.filter(p=>p.item.type==='smastad')){
+  const o=p.object, inv=new THREE.Matrix4().copy(o.matrixWorld).invert(), packs=[];
+  o.traverse(m=>{if(m.isMesh&&m.geometry.attributes.color)packs.push(m)});
+  const b=new THREE.Box3();for(const m of packs){m.geometry.computeBoundingBox();b.union(m.geometry.boundingBox.clone().applyMatrix4(new THREE.Matrix4().multiplyMatrices(inv,m.matrixWorld)));}
+  const {SMASTAD:S}=await import('../src/config.js');
+  check(packs.length>0&&b.min.x>=-S.W/2+S.t-eps&&b.max.x<=S.W/2-S.t+eps,`SMÅSTAD: clothes within its sides (${f(b)})`);
+}
+document.getElementById('out').textContent=lines.join('\n')+'\n'+(pass?'ALL PASS':'SOME FAILED');
+</script></html>

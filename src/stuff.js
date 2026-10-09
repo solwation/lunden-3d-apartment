@@ -174,7 +174,9 @@ export function wardrobeFill({ along, a0, a1, mid, depth, outward, y0, rodY, she
       // Keep a quarter-shelf space for real folded laundry, reachable behind one leaf (#552).
       const centre=-L/4;
       if(shelfReserve&&sx<centre+shelfReserve/2&&sx+.32>centre-shelfReserve/2){sx=centre+shelfReserve/2;continue;}
-      if (R() < 0.3) { p.box(0.32, Math.min(0.22, room - 0.02), depth * 0.7, sx + 0.16, shelfY, -0.02, pick(R, S.boxes)); sx += 0.38; continue; }
+      // a box (32 cm) or a stack (30 cm) only where it fits short of the end, never through the carcass (#610)
+      if (R() < 0.3 && sx + 0.32 <= half) { p.box(0.32, Math.min(0.22, room - 0.02), depth * 0.7, sx + 0.16, shelfY, -0.02, pick(R, S.boxes)); sx += 0.38; continue; }
+      if (sx + 0.3 > half) break;
       stack(p, Math.max(1, Math.min(4, Math.floor((room - 0.02) / 0.06))), 0.3, 0.055, depth * 0.55, sx + 0.15, shelfY, 0, who.folded, R);
       sx += 0.36;
     }

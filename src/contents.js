@@ -282,8 +282,11 @@ function shoe(P, m, colour, { len = 0.27, kid = false } = {}) {
  */
 export function hallWardrobe(P, { hl, depth, rodY, rodZ, shelfY, topY, reserveCoat=false }) {
   const W = CONTENTS.wardrobe, rand = rng(61);
-  const n = W.coats.length, pitch = (2 * hl - 0.12) / (n - 1);
-  W.coats.forEach((c,i)=>{const x=-hl+.06+i*pitch+(rand()-.5)*.01;if(!reserveCoat||i!==0)coat(P,x,rodY,rodZ,{...c,hanger:c.kid?0xf2f2ee:0x9a6b43});});
+  // the end coats hang their own reach in from the ends (body ±0.575 t at the hem, a hood to +0.75 t, ±5 mm jitter), so
+  // none pokes through the carcass (#610); the first stays at 6 cm, the slot HallCare reserves (world.js)
+  const n = W.coats.length, reach = (c, side) => (side > 0 && c.hood ? 0.75 : 0.575) * c.t + 0.006;
+  const c0 = -hl + Math.max(0.06, reach(W.coats[0], -1)), pitch = (hl - Math.max(0.06, reach(W.coats[n - 1], 1)) - c0) / (n - 1);
+  W.coats.forEach((c,i)=>{const x=c0+i*pitch+(rand()-.5)*.01;if(!reserveCoat||i!==0)coat(P,x,rodY,rodZ,{...c,hanger:c.kid?0xf2f2ee:0x9a6b43});});
   // the shelf: a basket of mittens, a stack of scarves, beanies, gloves and a cap
   const y = shelfY, zc = Math.min(depth - 0.08, 0.3);
   const bx = -hl + 0.16, bw = 0.28, bd = 0.3, bh = 0.15;

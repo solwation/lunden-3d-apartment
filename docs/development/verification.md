@@ -44,6 +44,8 @@ tools/blindtest.html   headless test: a blind in every window, folded at the sta
                        scores, the room's daylight cut (blackout > white), white glows, × / E close, the sash opens behind it,
                        the state survives a reload
 tools/clocktest.html   headless test of the wall clock (?time=7, spool, pause, sun height by month)
+tools/hangtest.html    hanging clothes inside what they hang in (#610): the hall coat rack's jackets within its width, clear of the EL/C
+                       cabinet and wardrobe G; all fitted wardrobes' contents (+ the hall life jacket) inside the carcass; SMÅSTAD's clothes
 tools/veronatest.html  the patio's Verona sofa: 6 seats, the frame's NE corner at x 5.66 (decorative cushions excluded — seasonal), the
                        cushions west of the east screen wall (x 5.68) whatever the season (#593), sitting, rearranging, layout migration
 ```

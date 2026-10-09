@@ -1530,7 +1530,7 @@ const blackMetal = new THREE.MeshStandardMaterial({ color: 0x1e1f21, roughness: 
 export function jacket(len, color, kind) {
   const g = new THREE.Group();
   const m = new THREE.MeshStandardMaterial({ color, roughness: 0.92 });
-  // the rack is 74 cm with jackets on every other hook (29 cm apart): seen from the front they hang
+  // the rack is 86 cm with jackets on every other hook (~26 cm apart): seen from the front they hang
   // edge to edge, side on (on the hook) they are narrow
   const sw = 0.26, hw = kind === 'coat' ? 0.27 : kind === 'puffer' ? 0.28 : 0.25; // shoulder / hem width
   const depth = kind === 'puffer' ? 0.12 : 0.07;
@@ -1565,17 +1565,21 @@ function coatrack(item) {
   g.add(rbox(w, 0.08, 0.02, 0, y - 0.08, back + 0.01, whiteWood, 0.004));      // hook rail
   for (const x of [-w / 2 + 0.06, w / 2 - 0.06]) g.add(rbox(0.02, 0.14, 0.2, x, y - 0.08, back + 0.11, whiteWood, 0.004));
   const coats = [[0x2f4a63, 0.78, 'shell'], [0x6b3a2e, 0.95, 'coat'], [0x2b2d30, 0.72, 'puffer']];
-  const hooks = 5;
+  // the outer hooks sit a jacket's half width (sleeves included) in from the rack's ends, so every jacket hangs within
+  // the rack's width and never reaches through a neighbouring cabinet's side (#610: the puffer poked into the EL/C cabinet)
+  const built = coats.map((c) => jacket(c[1], c[0], c[2]));
+  const reach = Math.max(...built.map((j) => { const b = new THREE.Box3().setFromObject(j); return Math.max(-b.min.x, b.max.x); }));
+  const hooks = 5, hx0 = -w / 2 + Math.max(0.08, reach + 0.005), step = -2 * hx0 / (hooks - 1);
   for (let i = 0; i < hooks; i++) {
-    const x = -w / 2 + 0.08 + (i * (w - 0.16)) / (hooks - 1);
+    const x = hx0 + i * step;
     g.add(rbox(0.015, 0.015, 0.06, x, y - 0.1, back + 0.05, blackMetal, 0.004));
-    const c = coats[[0, 2, 4].indexOf(i)];
-    if (!c || i===0) continue; // first existing jacket becomes a saved life item (#556)
-    const j = jacket(c[1], c[0], c[2]);
+    const k = [0, 2, 4].indexOf(i);
+    if (k < 0 || i===0) continue; // first existing jacket becomes a saved life item (#556)
+    const j = built[k];
     j.position.set(x, y - 0.11, back + 0.075 + i * 0.008); // staggered off the wall a little (no z-fighting)
     g.add(j);
   }
-  g.userData.hallCare={jacket:[-w/2+.08,y-.11,back+.075]};
+  g.userData.hallCare={jacket:[hx0,y-.11,back+.075]};
   // a knitted beanie (dome with a folded brim) and a small key bowl on the shelf
   const knit = new THREE.MeshStandardMaterial({ color: 0x9c3b2c, roughness: 1 });
   const dome = new THREE.Mesh(new THREE.SphereGeometry(0.085, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2), knit);

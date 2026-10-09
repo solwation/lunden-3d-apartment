@@ -256,10 +256,13 @@ function buildWardrobe(group, g, y0, h, wallBoxes, doors) {
 function hallWardrobeContents(group, w) {
   const dir = w.along ? (w.outward > 0 ? 's' : 'n') : (w.outward > 0 ? 'e' : 'w'), m = (w.a + w.b) / 2;
   const origin = w.along ? new THREE.Vector3(m, w.y0, w.back) : new THREE.Vector3(w.back, w.y0, m);
-  w.spec.hall={origin,dir,slot:[-(w.b-w.a)/2+w.t+.06,1.712,Math.abs(w.front-w.back)/2]};
+  // the rod's free half-length: inside the ends and their jamb lips (#537), so no coat reaches into them (#610)
+  const hl = (w.b - w.a) / 2 - w.t - WARDROBE.railLip;
+  w.spec.hall={origin,dir,slot:[-hl+.06,1.712,Math.abs(w.front-w.back)/2]};
   const P = new Pack();
-  hallWardrobe(P, { hl: (w.b - w.a) / 2 - w.t, depth: Math.abs(w.front - w.back), rodY: 1.712, rodZ: Math.abs(w.front - w.back) / 2, shelfY: 1.8, topY: w.y1 - w.y0 - w.t, reserveCoat:true });
-  for (const m of P.meshes(frameMatrix(dir, origin))) { m.userData.noArchitectureEdges = true; group.add(m); }
+  hallWardrobe(P, { hl, depth: Math.abs(w.front - w.back), rodY: 1.712, rodZ: Math.abs(w.front - w.back) / 2, shelfY: 1.8, topY: w.y1 - w.y0 - w.t, reserveCoat:true });
+  w.spec.contentsBox = new THREE.Box3(); // in plan coordinates: tools/hangtest.html keeps it inside the carcass (#610)
+  for (const m of P.meshes(frameMatrix(dir, origin))) { m.userData.noArchitectureEdges = true; m.geometry.computeBoundingBox(); w.spec.contentsBox.union(m.geometry.boundingBox); group.add(m); }
 }
 
 /**
@@ -803,7 +806,7 @@ export function buildWorld(plan) {
     const who = personFor(room);
     if(who){w.shelfReserve=LAUNDRY.wardrobe.reserve;w.room=room;w.level=lv;laundryWardrobes.push(w);}
     const m = who ? wardrobeFill(w, who, 11 + i * 7) : null;
-    if (m) { m.userData.room = room; w.group.add(m); }
+    if (m) { m.userData.room = room; m.geometry.computeBoundingBox(); w.contentsBox = m.geometry.boundingBox.clone(); w.group.add(m); }
   });
   wardrobeSpecs.length = 0;
 
