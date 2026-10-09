@@ -1988,7 +1988,11 @@ document.getElementById('rearrange-finish').addEventListener('click', exitRearra
 document.addEventListener('keydown', (e) => {
   if (!terminal.hidden) { if (e.code === 'Escape') { e.preventDefault(); exitRearranging(); showTerminal(false, 'Escape'); } e.stopImmediatePropagation(); return; }
   if (e.code === 'Escape' && rearrange.enabled && !reading) { e.preventDefault(); e.stopImmediatePropagation(); exitRearranging(); if (locked) document.exitPointerLock(); return; }
-  if ((e.code === 'Backquote'||e.key === '§') && active() && !reading && !drawing.active && !e.repeat && !e.ctrlKey && !e.metaKey && !e.altKey) { e.preventDefault(); e.stopImmediatePropagation(); showTerminal(true); return; }
+  // § opens the console everywhere in play (in rearrange mode: its menu); Enter too (#596), but only in plain play, never
+  // from a focused text field, select or (with a free cursor) a focused button or link, and never in rearrange mode
+  const enterKey = (e.code === 'Enter' || e.code === 'NumpadEnter' || e.key === 'Enter') && !e.isComposing && !rearrange.enabled
+    && !e.target?.closest?.('input, textarea, select, [contenteditable=""], [contenteditable="true"]') && (locked || !e.target?.closest?.('button, a[href], summary'));
+  if ((e.code === 'Backquote'||e.key === '§'||enterKey) && active() && !reading && !drawing.active && !e.repeat && !e.ctrlKey && !e.metaKey && !e.altKey) { e.preventDefault(); e.stopImmediatePropagation(); showTerminal(true); return; }
   if (rearrange.enabled && !reading && ['KeyR', 'KeyX', 'KeyF', 'Home'].includes(e.code)) {
     e.preventDefault(); e.stopImmediatePropagation();
     if (!e.repeat && e.code === 'KeyR') rearrange.rotate();

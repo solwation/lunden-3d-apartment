@@ -18,7 +18,7 @@ export async function buildCheatNote(garage, read) {
   write('FUSK (psst...)', 80, 0, 80);
   ctx.strokeStyle = '#202938';ctx.lineWidth = 5;ctx.lineCap = 'round';ctx.beginPath();ctx.moveTo(53, 130);ctx.lineTo(570, 143);ctx.lineTo(790, 136);ctx.stroke();
   const commands = publicCheats(); commands.forEach((c,i) => write(`${c.code}  →  ${c.text}`, 205+i*77, i+1, 43));
-  write('§ eller >_  →  skriv koden i konsolen', 950, 11, 43);
+  write('Enter, § eller >_  →  skriv koden i konsolen', 950, 11, 43);
   const texture = new THREE.CanvasTexture(canvas);texture.colorSpace = THREE.SRGBColorSpace;texture.anisotropy = 4;
   const object = new THREE.Mesh(new THREE.PlaneGeometry(P.width,P.height),new THREE.MeshBasicMaterial({map:texture,transparent:true,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-1}));
   object.position.set(P.x,GARAGE.floor+P.heightAt,P.z);object.rotation.y=Math.PI/2;object.name='fusklapp';
