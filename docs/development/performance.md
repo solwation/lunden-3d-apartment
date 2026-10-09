@@ -45,11 +45,21 @@ Phone memory (#585): iOS Safari killed the tab after a few steps ("Ett problem i
 reloads silently via the resume record). Each Reflector's render target is 512² 4× multisampled half-float (~15 MB on the
 GPU) and was allocated the first time that mirror reflected and never freed, so memory grew with every mirror walked
 past; `updateReflections` now disposes the previous mirror's target when another (or none) becomes active, so at most
-one exists. On phones/tablets (`lowMemory` in main.js: mobile UA, iPadOS's touch "Macintosh", or `&lowmem`)
+one exists. On phones/tablets (`lowMemory` in `src/lowmemory.js`: mobile UA, iPadOS's touch "Macintosh", or `&lowmem`)
 `LOW_MEMORY` in config caps `renderer.capabilities.maxTextureSize` to 1024 (three resizes on upload; the source
 canvases are untouched, so redraws still work), the shadow map to 1024² and the pixel ratio to 1.0 (dynamic resolution
 used to step up to 1.5× there). Measured with an iPhone UA and a WebGL allocation counter in headless Chromium:
 textures 245 → 170 MB, shadow renderbuffers 16.8 → 4.2 MB, mirrors bounded at one target instead of +~15 MB each. Still
 large and not reduced: ~105 MB of vertex buffers (plus their CPU copies) and ~200 MB of canvas sources on the CPU.
+
+Campus facades on phones (#589): #576–#581 took the east backdrop (`east-backdrop`, eight merged batches) from ~21 k to
+75 351 triangles, all drawn (and shadow-cast) wherever the campus is in the frustum. On `lowMemory` devices
+`buildCampusFacade` / `buildSchoolFacade` take `lite` (`CAMPUS_LOD` in config): no dentils, quoin joints or fine
+glazing bars (the centre post and one rail stay), each stepped cornice merged into one profile (`oneProfile`), sills
+and window crowns as flat planes, arches with 3 segments and roofs on a 2× coarser grid. Bodies, eaves, ridges, colours,
+brick/render, every window and the clock tower are the same; same batches, same draw calls. Phone (`?lowmem&w=390&h=844`):
+east backdrop 75 351 → 33 676 triangles (budget `maxTris` 36 000, *guess*), perfcount −41.7 k triangles at every spot,
+calls unchanged; desktop unchanged. `eastbackdroptest.html?lowmem` runs the phone build. Distance-based LOD on desktop was
+not done (it would need a second geometry per batch). [Numbers and screenshots](../validation/issue-589/README.md).
 
 Christmas tree (#571): in season +8 draw calls and ~20 k triangles where it is in view (desktop and phone frame), no extra light (one pool anchor in the shared pool / wash), a 0.016 ms CPU shimmer per frame (instance + point colours) and a ~27 ms one-off overlap re-judgement on load / moves; out of season nothing is drawn and perfcount is unchanged. `tools/perfcount.html` now takes `?month=…&day=…` (game URL overrides) and `?w=…&h=…` (frame size). [Numbers](../validation/issue-571/README.md).

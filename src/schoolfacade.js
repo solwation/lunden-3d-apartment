@@ -1,12 +1,15 @@
 import * as THREE from 'three';
-import { SITE } from './config.js';
+import { SITE, CAMPUS_LOD } from './config.js';
+import { lowMemory } from './lowmemory.js';
+import { oneProfile } from './campusfacades.js';
 
 const P = SITE.school.mapped;
 const plain = g => { g = g.index ? g.toNonIndexed() : g; g.deleteAttribute('uv'); return g; };
 const tint = (g, color) => { g.userData.tint = color; return g; };
 
-/** Photo-specific trim on the unchanged mapped school, merged into the campus batches. */
-export function buildSchoolFacade(p, base, bottom, eave, parts) {
+/** Photo-specific trim on the unchanged mapped school, merged into the campus batches.
+ *  `lite` (phones, #589, CAMPUS_LOD): one cornice profile, flat sills and crowns, no dentils, joints or fine bars. */
+export function buildSchoolFacade(p, base, bottom, eave, parts, lite = lowMemory) {
   const s = new THREE.Shape(p.map(([x,z]) => new THREE.Vector2(x,-z)));
   parts.schoolBrick.push(plain(new THREE.ExtrudeGeometry(s,{depth:eave-bottom,bevelEnabled:false}).rotateX(-Math.PI/2).translate(0,bottom,0)));
   const windows = [];
@@ -21,14 +24,14 @@ export function buildSchoolFacade(p, base, bottom, eave, parts) {
     // Continuous plinth, floor band and stepped cornice; no brick gaps in quoins.
     box(len/2,base+P.plinth/2,len+.04,P.plinth,.13);
     box(len/2,base+P.belt[0],len+.04,P.belt[1]);
-    for(const [dy,h,depth] of P.cornice) box(len/2,eave+dy,len+.12,h,depth,depth/2-.015);
-    if(P.fronts.includes(i)) for(let t=.3;t<len-.2;t+=P.dentil.step) box(t,eave+P.cornice[0][0],P.dentil.width,P.dentil.height,P.dentil.depth,.08);
+    for(const [dy,h,depth] of lite?oneProfile(P.cornice):P.cornice) box(len/2,eave+dy,len+.12,h,depth,depth/2-.015);
+    if(P.fronts.includes(i)&&!lite) for(let t=.3;t<len-.2;t+=P.dentil.step) box(t,eave+P.cornice[0][0],P.dentil.width,P.dentil.height,P.dentil.depth,.08);
     for (const end of [0,1]) {
       const curr=end?b:a, prev=end?a:p[(i-1+p.length)%p.length], next=end?p[(i+2)%p.length]:b;
       if(orientation*((curr[0]-prev[0])*(next[1]-curr[1])-(curr[1]-prev[1])*(next[0]-curr[0]))<=0) continue;
       const centre=end?len-P.quoin/2:P.quoin/2;
       box(centre,(base+.72+eave-.6)/2,P.quoin,eave-base-1.32,.09,.045);
-      for(let y=base+.72+P.jointStep;y<eave-.6;y+=P.jointStep) box(centre,y,P.quoin,.012,.095,.0475,P.joint);
+      if(!lite) for(let y=base+.72+P.jointStep;y<eave-.6;y+=P.jointStep) box(centre,y,P.quoin,.012,.095,.0475,P.joint);
     }
     const count=P.bays[i];
     for(let k=0;k<count;k++) for(let floor=0;floor<2;floor++) {
@@ -41,22 +44,28 @@ export function buildSchoolFacade(p, base, bottom, eave, parts) {
         shape.closePath();return shape;
       };
       const decal=(shape,out,color,destination) => {
-        const g=plain(new THREE.ShapeGeometry(shape,8).rotateY(angle).translate(x+nx*out,low,z+nz*out));
+        const g=plain(new THREE.ShapeGeometry(shape,lite?CAMPUS_LOD.curve:8).rotateY(angle).translate(x+nx*out,low,z+nz*out));
         destination.push(tint(g,color));
       };
       decal(windowShape(width+2*P.frame,h+P.frame,arched?P.archRise:0),.07,P.white,parts.modern);
       // Opaque panes keep the unmodelled interior hidden.
       decal(windowShape(width,h,arched?P.archRise:0),.075,P.glass,parts.schoolGlass??parts.glass);
-      box(t,low-.025,width+.28,.12,.23,.115);
-      if(arched) box(t,high+.10,.22,.32,.18,.10);
-      else {
-        box(t,high+.14,width+.32,.13,.19,.10);
-        box(t,high+.23,width+.44,.07,.24,.12);
+      // Phones (#589): sill and crowns as flat fronts, only the post and the middle rail.
+      if(lite){
+        box(t,low-.025,width+.28,.12,.04,.23);
+        box(t,arched?high+.10:high+.18,arched?.22:width+.44,arched?.32:.2,.04,arched?.19:.24);
+      } else {
+        box(t,low-.025,width+.28,.12,.23,.115);
+        if(arched) box(t,high+.10,.22,.32,.18,.10);
+        else {
+          box(t,high+.14,width+.32,.13,.19,.10);
+          box(t,high+.23,width+.44,.07,.24,.12);
+        }
       }
       // Principal post and fine glazing bars, kept in one trim batch.
       box(t,low+h/2,P.mullion*1.5,h,.055,.10);
-      for(const fraction of [.25,.75]) box(t+width*(fraction-.5),low+(h-(arched?P.archRise:0))/2,P.mullion*.65,h-(arched?P.archRise:0),.04,.10);
-      for(const fraction of [.25,.5,.75]) box(t,low+h*fraction,width,P.mullion*.65,.04,.10);
+      if(!lite) for(const fraction of [.25,.75]) box(t+width*(fraction-.5),low+(h-(arched?P.archRise:0))/2,P.mullion*.65,h-(arched?P.archRise:0),.04,.10);
+      for(const fraction of lite?[.5]:[.25,.5,.75]) box(t,low+h*fraction,width,P.mullion*.65,.04,.10);
       windows.push({x:x+nx*.075,y:low+h/2,z:z+nz*.075,n:[nx,nz],width,height:h,edge:i,floor,arched});
     }
   }
@@ -80,7 +89,7 @@ export function buildSchoolFacade(p, base, bottom, eave, parts) {
     }
     return out;
   };
-  const positions=[], uv=[], step=P.roofGrid;
+  const positions=[], uv=[], step=P.roofGrid*(lite?CAMPUS_LOD.roofGrid:1);
   // Clip source triangles to a small grid; all boundary vertices stay on the source edges.
   for(const tri of THREE.ShapeUtils.triangulateShape(p.map(q=>new THREE.Vector2(...q)),[])) {
     const poly=tri.map(i=>p[i]),xs=poly.map(q=>q[0]),zs=poly.map(q=>q[1]);

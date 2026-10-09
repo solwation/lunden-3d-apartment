@@ -4,6 +4,7 @@ import { runCheat, cheatHelp } from './cheats.js';
 import { cleanHome } from './cheatclean.js';
 import { buildCheatNote } from './cheatnote.js';
 import { CHEAT_NOTE, LOW_MEMORY } from './config.js';
+import { lowMemory } from './lowmemory.js';
 import { loadBeerShelf } from './beershelfdata.js';
 import { BeerShelf } from './beershelf.js';
 import { initHudIcons, setIcon, setPressed } from './hudicons.js';
@@ -127,11 +128,7 @@ const pauseBtn = document.getElementById('pause');
 setupInstall({ force: new URLSearchParams(location.search).has('install') });
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
-// Phones and tablets get a smaller memory footprint (LOW_MEMORY): iOS otherwise kills the tab after a few steps.
-// iPadOS Safari says "Macintosh", so a Mac with a touch screen counts too.
-const lowMemory = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
-  || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1)
-  || /[?&]lowmem\b/.test(location.search);
+// Phones and tablets get a smaller memory footprint (LOW_MEMORY, src/lowmemory.js): iOS otherwise kills the tab.
 if (lowMemory) renderer.capabilities.maxTextureSize = Math.min(renderer.capabilities.maxTextureSize, LOW_MEMORY.maxTextureSize);
 const MAX_PIXEL_RATIO = Math.min(window.devicePixelRatio, 1.5, lowMemory ? LOW_MEMORY.maxPixelRatio : Infinity);
 renderer.setPixelRatio(MAX_PIXEL_RATIO);

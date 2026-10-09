@@ -1962,6 +1962,13 @@ export const PERF = { detail: { maxR: 0.5, k: 0.009, minDist: 3.2, maxOcclude: 4
 // shadow map is `shadowMapSize`² and the dynamic resolution never goes above `maxPixelRatio`. `&lowmem` forces it on a desktop.
 export const LOW_MEMORY = { maxTextureSize: 1024, shadowMapSize: 1024, maxPixelRatio: 1.0 };
 
+// Campus facades on phones (#589, src/lowmemory.js): #576–#581 took the east backdrop from ~21k to ~75k triangles. On
+// LOW_MEMORY devices campusfacades.js and schoolfacade.js keep every body, roof, colour, window and the clock tower but
+// drop dentils, quoin joints and the finer glazing bars (centre post and one rail stay), merge each stepped cornice into
+// one profile, draw sills and window crowns as flat planes, round arches with `curve` segments and lay the roofs on a
+// `roofGrid`× coarser grid. `maxTris` = the east backdrop's triangle budget on phones (eastbackdroptest); all *guess*.
+export const CAMPUS_LOD = { curve: 3, roofGrid: 2, maxTris: 36000 };
+
 // Marks on surfaces (#96, src/marks.js): one ring buffer of at most `max` flat decals in all, one instanced
 // mesh per kind, canvas textures. Per kind: size (m, randomised ±25 %), life (s; the last `fade` s fade out).
 // burn = the lightsaber (with a short glow and a puff of smoke), star/butterfly = wands, splash = Nerf.

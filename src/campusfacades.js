@@ -1,5 +1,6 @@
 import * as THREE from 'three';
-import { SITE } from './config.js';
+import { SITE, CAMPUS_LOD } from './config.js';
+import { lowMemory } from './lowmemory.js';
 
 // Photo-specific facades for the old hospital buildings east of the site (#576–#581). The OSM footprint
 // stays the building's outline; `sections` raise boxes of it to more storeys, and every part gets plinth,
@@ -37,6 +38,12 @@ function tidy(poly) {
 }
 const clipBox = (p, [x0, z0, x1, z1]) => tidy(clip(clip(clip(clip(p, 0, x0, 1), 0, x1, -1), 1, z0, 1), 1, z1, -1));
 const inBox = (x, z, [x0, z0, x1, z1]) => x > x0 && x < x1 && z > z0 && z < z1;
+/** A stepped cornice [[dy, h, depth], …] as one profile over its whole height at its deepest step (phones, #589). */
+export const oneProfile = steps => {
+  if (steps.length < 2) return steps;
+  const lo = Math.min(...steps.map(([dy, h]) => dy - h / 2)), hi = Math.max(...steps.map(([dy, h]) => dy + h / 2));
+  return [[(lo + hi) / 2, hi - lo, Math.max(...steps.map(c => c[2]))]];
+};
 
 /** Resolved style for one building: the named style in SITE.east.facadeStyles plus the building's overrides. */
 export function facadeStyle(b) {
@@ -44,9 +51,11 @@ export function facadeStyle(b) {
   return { ...base, ...f, windows: f.windows ?? base.windows };
 }
 
-/** Build one mapped campus building with its photo-specific facade; returns windows and heights for tests. */
-export function buildCampusFacade(b, p, holes, base, bottom, parts) {
+/** Build one mapped campus building with its photo-specific facade; returns windows and heights for tests.
+ *  `lite` (phones, #589, CAMPUS_LOD): the same bodies, roofs and windows with fewer profiles and details. */
+export function buildCampusFacade(b, p, holes, base, bottom, parts, lite = lowMemory) {
   const S = facadeStyle(b), levels = b.levels, storeys = S.storeys;
+  S.lite = lite; S.profile = lite ? oneProfile(S.cornice) : S.cornice;
   const height = n => storeys.slice(0, n).reduce((s, h) => s + h, 0);
   // Pieces: the whole outline at the building's own storeys, then each raised section clipped to it.
   const pieces = [{ poly: p, holes, levels, raise: 0, box: null }];
@@ -90,9 +99,9 @@ export function buildCampusFacade(b, p, holes, base, bottom, parts) {
           const w = t1 - t0, mid = (t0 + t1) / 2;
           if (w < .3) continue;
           // Cornice steps and dentils run along every uncovered stretch, cut edges included.
-          for (const [dy, h, depth] of S.cornice) box(mid, eave + dy, w + .12, h, depth, depth / 2 - .015);
+          for (const [dy, h, depth] of S.profile) box(mid, eave + dy, w + .12, h, depth, depth / 2 - .015);
           if (S.soffit) box(mid, eave - .06, w + 2 * S.soffit.depth, .12, S.soffit.depth * 2, 0, S.soffit.color);
-          if (S.dentil && w > 1.2) for (let t = t0 + .3; t < t1 - .2; t += S.dentil.step) box(t, eave + S.cornice[0][0], S.dentil.width, S.dentil.height, S.dentil.depth, S.dentil.depth < .096 ? .19 : .08);
+          if (S.dentil && !lite && w > 1.2) for (let t = t0 + .3; t < t1 - .2; t += S.dentil.step) box(t, eave + S.cornice[0][0], S.dentil.width, S.dentil.height, S.dentil.depth, S.dentil.depth < .096 ? .19 : .08);
           if (cut) {
             // Upper floors that clear the neighbouring part's roof keep their windows on the cut wall.
             const px = a[0] + ux * mid + nx * .3, pz = a[1] + uz * mid + nz * .3;
@@ -145,7 +154,7 @@ export function buildCampusFacade(b, p, holes, base, bottom, parts) {
           const y0 = base + S.plinth, y1 = eave + S.cornice[0][0] - S.cornice[0][1] / 2;
           const at = (y, h, depth, color) => parts.modern.push(tint(plain((depth < .096 ? new THREE.PlaneGeometry(S.quoin, h) : new THREE.BoxGeometry(S.quoin, h, depth)).rotateY(angle).translate(curr[0] + ux * along + nx * (depth < .096 ? .096 : depth / 2), y, curr[1] + uz * along + nz * (depth < .096 ? .096 : depth / 2))), color));
           at((y0 + y1) / 2, y1 - y0, .09, S.trim);
-          if (S.jointStep) for (let y = y0 + S.jointStep; y < y1; y += S.jointStep) at(y, .014, .092, S.joint);
+          if (S.jointStep && !lite) for (let y = y0 + S.jointStep; y < y1; y += S.jointStep) at(y, .014, .092, S.joint);
         }
       }
     }
@@ -153,7 +162,7 @@ export function buildCampusFacade(b, p, holes, base, bottom, parts) {
     const rings = [piece.poly, ...piece.holes], R = { ...S.roof, ...piece.roof }, outer = [piece.poly];
     const top = (x, z) => eave + Math.min(R.rise, (R.inward ? ringDist(x, z, outer) : ringDist(x, z, rings)) * R.slope);
     const higher = pieces.filter(o => o !== piece && o.box && eaveOf(o) > eave + .05).map(o => o.box);
-    parts.schoolRoof.push(footprintRoof(piece.poly, piece.holes, top, R.grid ?? 1.5, S.seam ?? .6, higher));
+    parts.schoolRoof.push(footprintRoof(piece.poly, piece.holes, top, (R.grid ?? 1.5) * (lite ? CAMPUS_LOD.roofGrid : 1), S.seam ?? .6, higher));
     if (R.inward) for (const h of piece.holes) for (let i = 0; i < h.length; i++) {
       const a = h[i], c = h[(i + 1) % h.length], g = new THREE.BufferGeometry();
       g.setAttribute('position', new THREE.Float32BufferAttribute([a[0], eave, a[1], c[0], eave, c[1], c[0], top(...c), c[1], a[0], eave, a[1], c[0], top(...c), c[1], a[0], top(...a), a[1]], 3));
@@ -178,7 +187,7 @@ function windowAt(a, ux, uz, nx, nz, angle, t, fy, W, S, parts, edge, floor) {
     if (r) s.quadraticCurveTo(0, height + r, -w / 2, height - r); else s.lineTo(-w / 2, height);
     s.closePath(); return s;
   };
-  const decal = (shape, out, color, list) => list.push(tint(plain(new THREE.ShapeGeometry(shape, 6).rotateY(angle).translate(x + nx * out, low, z + nz * out)), color));
+  const decal = (shape, out, color, list) => list.push(tint(plain(new THREE.ShapeGeometry(shape, S.lite ? CAMPUS_LOD.curve : 6).rotateY(angle).translate(x + nx * out, low, z + nz * out)), color));
   const piece = (along, y, w, hh, depth, out, color = S.trim, list = parts.modern) => {
     const g = depth < .096 ? new THREE.PlaneGeometry(w, hh) : new THREE.BoxGeometry(w, hh, depth);
     list.push(tint(plain(g.rotateY(angle).translate(x + ux * along + nx * out, y, z + uz * along + nz * out)), color));
@@ -186,14 +195,17 @@ function windowAt(a, ux, uz, nx, nz, angle, t, fy, W, S, parts, edge, floor) {
   if (W.header) decal(outline(width + 2 * W.header, h + W.header, rise), .065, W.headerColor, parts.schoolBrick);
   decal(outline(width + 2 * S.frame, h + S.frame, rise), .07, S.frameColor ?? S.trim, parts.modern);
   decal(outline(width, h, rise), .075, S.glass, parts.schoolGlass ?? parts.glass);
-  piece(0, low - .025, width + .26, .1, .2, .1, S.sillColor ?? S.trim);
+  // Phones (#589): sill and crown as flat fronts, only the centre post and one rail of the glazing bars.
+  if (S.lite) piece(0, low - .025, width + .26, .1, .04, .2, S.sillColor ?? S.trim);
+  else piece(0, low - .025, width + .26, .1, .2, .1, S.sillColor ?? S.trim);
   if (W.crown === 'key') piece(0, high + .08, .22, .3, .08, .1);
-  if (W.crown === 'cornice') { piece(0, high + .13, width + .3, .12, .18, .09); piece(0, high + .22, width + .42, .07, .22, .11); }
+  if (W.crown === 'cornice' && S.lite) piece(0, high + .17, width + .42, .2, .04, .2);
+  else if (W.crown === 'cornice') { piece(0, high + .13, width + .3, .12, .18, .09); piece(0, high + .22, width + .42, .07, .22, .11); }
   // Glazing bars as thin planes: a centre post, two mullions and three rails.
-  const bar = S.mullion, clear = h - rise;
+  const bar = S.mullion, clear = h - rise, rails = W.rails ?? (W.bars !== false ? [.25, .5, .75] : []);
   piece(0, low + h / 2, bar * 1.5, h, .04, .1, S.frameColor ?? S.trim);
-  if (W.bars !== false) for (const f of [.25, .75]) piece(width * (f - .5), low + clear / 2, bar * .65, clear, .04, .1, S.frameColor ?? S.trim);
-  for (const f of W.rails ?? (W.bars !== false ? [.25, .5, .75] : [])) piece(0, low + h * f, width, bar * (W.bars !== false ? .65 : 1.5), .04, .1, S.frameColor ?? S.trim);
+  if (W.bars !== false && !S.lite) for (const f of [.25, .75]) piece(width * (f - .5), low + clear / 2, bar * .65, clear, .04, .1, S.frameColor ?? S.trim);
+  for (const f of S.lite ? rails.slice(rails.length >> 1, (rails.length >> 1) + 1) : rails) piece(0, low + h * f, width, bar * (W.bars !== false ? .65 : 1.5), .04, .1, S.frameColor ?? S.trim);
   return { x: x + nx * .075, y: low + h / 2, z: z + nz * .075, n: [nx, nz], width, height: h, edge, floor, arched: !!rise };
 }
 
@@ -236,8 +248,8 @@ function buildCentre(p, base, pieces, eaveOf, S, parts, windows) {
   const front = (x, y, ww, hh, d = .12, color = S.trim, list = parts.modern) => list.push(tint(plain((d < .096 ? new THREE.PlaneGeometry(ww, hh) : new THREE.BoxGeometry(ww, hh, d)).rotateY(n > 0 ? 0 : Math.PI).translate(x, y, z + n * d / 2)), color));
   if (C.render) front(cx, base + C.render / 2, w + .1, C.render, .08);
   if (C.pilasters) for (const x of [x0 + .45, x1 - .45, x0 + w * .3, x1 - w * .3]) front(x, (base + eave) / 2, .7, eave - base, .14);
-  if (depth) for (const [dy, h, d] of S.cornice) front(cx, eave + dy, w + .3, h, d + .02);
-  if (S.dentil && depth) for (let x = x0 + .3; x < x1 - .2; x += S.dentil.step) front(x, eave + S.cornice[0][0], S.dentil.width, S.dentil.height, S.dentil.depth + .05);
+  if (depth) for (const [dy, h, d] of S.profile) front(cx, eave + dy, w + .3, h, d + .02);
+  if (S.dentil && !S.lite && depth) for (let x = x0 + .3; x < x1 - .2; x += S.dentil.step) front(x, eave + S.cornice[0][0], S.dentil.width, S.dentil.height, S.dentil.depth + .05);
   // Pediment: a white triangle with a raking cornice on the risalit's front.
   const tri = new THREE.Shape([new THREE.Vector2(-w / 2 - .15, 0), new THREE.Vector2(w / 2 + .15, 0), new THREE.Vector2(0, C.pediment)]);
   const D = depth || C.pedDepth, ped = new THREE.ExtrudeGeometry(tri, { depth: D + .15, bevelEnabled: false }).translate(0, 0, -(D + .15)).rotateY(n > 0 ? 0 : Math.PI).translate(cx, eave + .1, z + n * .15);
@@ -251,7 +263,7 @@ function buildCentre(p, base, pieces, eaveOf, S, parts, windows) {
   // The great round-arched window over the upper floors.
   const W = C.window, arch = new THREE.Shape(); arch.moveTo(-W.width / 2, 0); arch.lineTo(W.width / 2, 0); arch.lineTo(W.width / 2, W.height - W.width / 2);
   arch.absarc(0, W.height - W.width / 2, W.width / 2, 0, Math.PI, false); arch.closePath();
-  const place = (shape, out, color, list, grow = 0) => { const g = new THREE.ShapeGeometry(shape, 10); if (grow) g.scale(1 + grow / W.width, 1 + grow / W.height, 1); list.push(tint(plain(g.rotateY(n > 0 ? 0 : Math.PI).translate(cx, base + W.sill, z + n * out)), color)); };
+  const place = (shape, out, color, list, grow = 0) => { const g = new THREE.ShapeGeometry(shape, S.lite ? 5 : 10); if (grow) g.scale(1 + grow / W.width, 1 + grow / W.height, 1); list.push(tint(plain(g.rotateY(n > 0 ? 0 : Math.PI).translate(cx, base + W.sill, z + n * out)), color)); };
   place(arch, .07, S.trim, parts.modern, .5);
   place(arch, .075, S.glass, parts.schoolGlass ?? parts.glass);
   for (const f of [-.25, 0, .25]) front(cx + W.width * f, base + W.sill + (W.height - W.width / 2) / 2, .06, W.height - W.width / 2, .04 + .06);
@@ -265,7 +277,7 @@ function buildCentre(p, base, pieces, eaveOf, S, parts, windows) {
   block(T.width + .35, .3, y0 + T.stage, S.trim);
   block(T.width + .2, .25, y0 + T.stage + .3, S.trim);
   for (const [dx, dz] of [[0, 1], [0, -1], [1, 0], [-1, 0]]) {
-    const ang = Math.atan2(dx, dz), face = (r, out, color, list) => list.push(tint(plain(new THREE.CircleGeometry(r, 16).rotateY(ang).translate(tx + dx * (T.width / 2 + out), y0 + T.stage * .55, tz + dz * (T.width / 2 + out))), color));
+    const ang = Math.atan2(dx, dz), face = (r, out, color, list) => list.push(tint(plain(new THREE.CircleGeometry(r, S.lite ? 12 : 16).rotateY(ang).translate(tx + dx * (T.width / 2 + out), y0 + T.stage * .55, tz + dz * (T.width / 2 + out))), color));
     face(T.clock + .12, .02, T.clockRim, parts.modern); face(T.clock, .03, T.clockFace, parts.modern);
     // Hands at ten past ten, as on the photo's still dials.
     for (const [len, turn] of [[T.clock * .55, -2.1], [T.clock * .8, .35]]) {
@@ -279,7 +291,7 @@ function buildCentre(p, base, pieces, eaveOf, S, parts, windows) {
   for (const [dx, dz] of [[0, 1], [0, -1], [1, 0], [-1, 0]]) {
     const ang = Math.atan2(dx, dz), s = new THREE.Shape(), ow = T.lantern * .38, oh = T.lanternHeight * .62;
     s.moveTo(-ow / 2, 0); s.lineTo(ow / 2, 0); s.lineTo(ow / 2, oh - ow / 2); s.absarc(0, oh - ow / 2, ow / 2, 0, Math.PI, false); s.closePath();
-    parts.modern.push(tint(plain(new THREE.ShapeGeometry(s, 8).rotateY(ang).translate(tx + dx * (T.lantern / 2 + .02), y0 + T.stage + 1.0, tz + dz * (T.lantern / 2 + .02))), T.opening));
+    parts.modern.push(tint(plain(new THREE.ShapeGeometry(s, S.lite ? 4 : 8).rotateY(ang).translate(tx + dx * (T.lantern / 2 + .02), y0 + T.stage + 1.0, tz + dz * (T.lantern / 2 + .02))), T.opening));
   }
   const domeY = y0 + T.stage + .7 + T.lanternHeight;
   block(T.lantern + .3, .2, domeY, S.trim);
