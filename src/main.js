@@ -917,7 +917,6 @@ if (at) {
 // &fall=h (#361): drop from h m above the ground here (a test of falling until the jetpack / roofs can give one)
 if (params0.has('fall')) player.pos.y += Number(params0.get('fall') || 5);
 if (params0.has('jetpack')) jetpack.putOn(); // &jetpack (#359): on your back from the start (outdoors only)
-if (params0.has('spidersuit')) suit.putOn(); // &spidersuit (#597): the suit on from the start
 // the resumed place (not with ?at=): back to the same spot and view (the clock is real, #143); the start screen then
 // says so and offers "Börja från start" instead
 const resumeEl = document.getElementById('resume');
@@ -1030,6 +1029,7 @@ window.addEventListener('pointerdown', (e) => {
   }
 }, { capture: true, passive: true });
 const touch = setupTouch({ onLook: (dx, dy) => look(dx * 0.005, dy * 0.005) });
+if (params0.has('spidersuit')) suit.putOn(); // &spidersuit (#597): the suit on from the start; after `touch`, which its badge reads (#601)
 const active = () => locked || touch.enabled;
 
 function look(dyaw, dpitch) {
