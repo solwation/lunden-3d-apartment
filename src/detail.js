@@ -44,7 +44,10 @@ export class DetailCuller {
       if (!(r > 0 && r < D.maxOcclude)) return;
       const lamp = [o.material].flat().some((m) => m?.userData.lamp); // a lamp's lit parts: never too small to draw (#294)
       const baseCut = r < D.maxR && !lamp ? Math.max(D.minDist, r / D.k) : Infinity;
-      const it = { o, r, center: s.center.clone(), cut: baseCut, baseCut, far: false, lamp };
+      // Exterior door hardware may have a merged centre on/inside the footprint,
+      // but it belongs to the visible facade, not to contents behind a closed leaf (#519).
+      const exteriorDoor = !!o.userData.door?.exterior;
+      const it = { o, r, center: s.center.clone(), cut: baseCut, baseCut, far: false, lamp, exteriorDoor };
       this.items.push(it);
       if (moving) this.moving.push(it);
     };
@@ -75,7 +78,7 @@ export class DetailCuller {
     const outside = p.x < 0 || p.x > W || p.z < 0 || p.z > Dz || p.y > roof;
     for (const it of still ? this.moving : this.items) {
       w.copy(it.center).applyMatrix4(it.o.matrixWorld);
-      const far = w.distanceToSquared(p) > it.cut * it.cut || (outside && this.hidden(p, w, it.r));
+      const far = w.distanceToSquared(p) > it.cut * it.cut || (outside && !it.exteriorDoor && this.hidden(p, w, it.r));
       if (far === it.far) continue;
       it.far = far;
       if (far) it.o.layers.set(HIDDEN); else it.o.layers.set(0);

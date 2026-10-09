@@ -1,7 +1,8 @@
 <!doctype html><html><meta charset="utf-8"><title>Small high entrance panes (#497)</title><pre id="out">running…</pre><script type="module">
 const lines=[];let pass=true;const check=(ok,s)=>{lines.push((ok?'PASS':'FAIL')+' '+s);pass&&=!!ok},wait=ms=>new Promise(r=>setTimeout(r,ms));
 try{
- const f=document.createElement('iframe');f.width=480;f.height=300;document.body.append(f);f.src='../index.html?shot&cloud=';await new Promise(r=>f.onload=r);while(!f.contentWindow.__app)await wait(100);const A=f.contentWindow.__app,T=await f.contentWindow.eval("import('three')"),{ENTRY_DOOR:E,DOOR_HEIGHT}=await f.contentWindow.eval("import('/src/config.js')"),{entryMaterials}=await f.contentWindow.eval("import('/src/entrancedoor.js')");
+ const f=document.createElement('iframe');f.width=480;f.height=300;document.body.append(f);f.src='../index.html?shot&cloud=&time=12&freeze';await new Promise(r=>f.onload=r);while(!f.contentWindow.__app)await wait(100);const A=f.contentWindow.__app,T=await f.contentWindow.eval("import('three')"),{ENTRY_DOOR:E,DOOR_HEIGHT}=await f.contentWindow.eval("import('/src/config.js')"),{entryMaterials}=await f.contentWindow.eval("import('/src/entrancedoor.js')");
+ A.renderer.setAnimationLoop(null);A.interactionOutline.clear();
  const door=A.world.doors.find(d=>d.entryPane),pane=door.entryPane,mats=entryMaterials(),ray=new T.Raycaster();ray.layers.enableAll();
  const at=new T.Vector3(0,(pane.y0+pane.y1)/2,(pane.x0+pane.x1)/2);
  function shoot(sign,point=at){door.object.updateWorldMatrix(true,true);const from=door.object.localToWorld(point.clone().add(new T.Vector3(sign*.3,0,0))),to=door.object.localToWorld(point.clone());ray.set(from,to.sub(from).normalize());return ray.intersectObject(door.object,true)[0]}
@@ -18,7 +19,31 @@ try{
  check(all.every(d=>Math.abs(d.pane.y1-d.pane.y0-.12)<.001&&Math.abs(d.pane.x1-d.pane.x0-.36)<.001),'every static entrance has same small high pane');
  ray.far=.3;check(all.every(d=>[-1,1].every(sign=>{ray.set(new T.Vector3(d.x1-.12,d.y0+1,d.z+sign*.2),new T.Vector3(0,0,-sign));return ray.intersectObject(exterior,true)[0]?.object.material===mats.handle})), 'handles exposed on both faces of every ground and loft entrance');ray.far=Infinity;
  for(const state of [0,.5,1]){door.t=state;door.apply();check([-1,1].every(sign=>shoot(sign,new T.Vector3(0,1,door.len-.12))?.object.material.metalness===.5),'interactive entrance handles exposed both sides at state '+state)}door.t=0;door.target=0;door.apply();
- const dc=A.detail();check(dc.shut.north.some(o=>Math.abs(o.y0-pane.y0)<.001&&Math.abs(o.y1-pane.y1)<.001),'closed-door culling preserves view through small pane');
+ const dc=A.detail();
+ // #519 regression: geometric rays with enableAll miss a handle hidden on layer 7.
+ // Use the real culler and camera layers, then compare actual rendered hardware pixels.
+ const hardware=door.object.children.find(o=>o.isMesh&&o.material.metalness===.5);
+ const rt=new T.WebGLRenderTarget(128,128),pixels=new Uint8Array(128*128*4);
+ const originalRatio=A.renderer.getPixelRatio();A.renderer.setPixelRatio(1);
+ const draw=()=>{A.renderer.setRenderTarget(rt);A.renderer.render(A.scene,A.camera);A.renderer.readRenderTargetPixels(rt,0,0,128,128,pixels);A.renderer.setRenderTarget(null);return pixels.slice()};
+ for(const state of [0,.5,1])for(const sign of [-1,1])for(const angle of [-.35,0,.15]){
+   door.t=state;door.target=state===0?0:1;door.apply();A.scene.updateMatrixWorld(true);
+   const aim=door.object.localToWorld(new T.Vector3(sign*.07,1,door.len-.12));
+   const from=door.object.localToWorld(new T.Vector3(sign*.6,1.08,door.len-.12+angle));
+   A.camera.position.copy(from);A.camera.lookAt(aim);A.camera.updateMatrixWorld(true);
+   dc.refresh();dc.update(A.camera);ray.layers.mask=A.camera.layers.mask;
+   check(hardware.layers.test(A.camera.layers)&&shoot(sign,new T.Vector3(0,1,door.len-.12))?.object===hardware,
+     `real camera sees handle: door ${state}, face ${sign}, angle ${angle}`);
+   const actual=draw();hardware.visible=false;const absent=draw();hardware.visible=true;
+   const changed=actual.reduce((n,v,i)=>n+(i%4!==3&&v!==absent[i]?1:0),0);
+   check(changed>10,`rendered handle contributes visible pixels: door ${state}, face ${sign}, angle ${angle} (${changed})`);
+ }
+ rt.dispose();A.renderer.setPixelRatio(originalRatio);door.t=door.target=0;door.apply();A.scene.updateMatrixWorld(true);
+ // Exterior hardware remains subject to distance culling; room contents stay occluded.
+ A.camera.position.set(1.7,1.62,-30);A.camera.updateMatrixWorld(true);dc.refresh();dc.update(A.camera);
+ check(!hardware.layers.test(A.camera.layers),'entrance hardware still distance-culls from far away');
+ check(dc.items.filter(it=>it.far&&!it.o.userData.door?.exterior).length>50,'closed entrance still occludes interior details');
+ check(dc.shut.north.some(o=>Math.abs(o.y0-pane.y0)<.001&&Math.abs(o.y1-pane.y1)<.001),'closed-door culling preserves view through small pane');
  const inner=A.world.doors.find(d=>d.kind==='swing'&&!d.entryPane&&d.name==='dörren');let unchanged=false;inner.object.traverse(m=>{if(m.isMesh&&m.material.color?.getHex()===0xf1f1ee)unchanged=true});check(unchanged,'interior door remains original white');
  document.getElementById('out').textContent=lines.join('\n')+'\n'+(pass?'ALL PASS':'SOME FAILED');
 }catch(e){document.getElementById('out').textContent=lines.join('\n')+'\nFAIL '+e.stack}

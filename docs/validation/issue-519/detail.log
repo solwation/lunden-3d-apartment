@@ -1,0 +1,9 @@
+ALL PASS
+PASS apartment door coverage includes entrance and wardrobes, excludes the distant portik door
+PASS on the doorstep outside, the front door open: the hall's doors drawn (5)
+PASS in the doorway, still outside the façade line: the hall's doors drawn (5)
+PASS in the hall, after walking in from START: every door on Entréplan drawn
+PASS in the hall, everything open: every door on Entréplan drawn
+PASS by the Tvätt door: every door on Entréplan drawn
+PASS in the hall, everything closed again: every door on Entréplan drawn
+PASS back at START: the culler still hides far-away details (1624)

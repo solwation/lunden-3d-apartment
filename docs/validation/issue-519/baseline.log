@@ -1,0 +1,56 @@
+PASS pane is thin 36 by 12 cm
+PASS pane is at top and over 97 percent of leaf remains solid
+PASS glass is exposed from both faces without opaque leaf behind
+PASS lower leaf stays solid green
+PASS pane follows animated leaf and stays exposed both sides
+PASS animated leaf retains moving collision
+PASS entrance closes normally
+PASS static ground and loft entrance leaves both registered
+PASS green leaf visible from outside every recessed static entrance
+PASS static glazing has an exposed reflective surface that hides unmodeled interiors (#516)
+PASS every static entrance has same small high pane
+PASS handles exposed on both faces of every ground and loft entrance
+PASS interactive entrance handles exposed both sides at state 0
+PASS interactive entrance handles exposed both sides at state 0.5
+PASS interactive entrance handles exposed both sides at state 1
+PASS real camera sees handle: door 0, face -1, angle -0.35
+PASS rendered handle contributes visible pixels: door 0, face -1, angle -0.35 (117)
+PASS real camera sees handle: door 0, face -1, angle 0
+PASS rendered handle contributes visible pixels: door 0, face -1, angle 0 (213)
+PASS real camera sees handle: door 0, face -1, angle 0.15
+PASS rendered handle contributes visible pixels: door 0, face -1, angle 0.15 (102)
+FAIL real camera sees handle: door 0, face 1, angle -0.35
+FAIL rendered handle contributes visible pixels: door 0, face 1, angle -0.35 (0)
+FAIL real camera sees handle: door 0, face 1, angle 0
+FAIL rendered handle contributes visible pixels: door 0, face 1, angle 0 (0)
+FAIL real camera sees handle: door 0, face 1, angle 0.15
+FAIL rendered handle contributes visible pixels: door 0, face 1, angle 0.15 (0)
+PASS real camera sees handle: door 0.5, face -1, angle -0.35
+PASS rendered handle contributes visible pixels: door 0.5, face -1, angle -0.35 (117)
+PASS real camera sees handle: door 0.5, face -1, angle 0
+PASS rendered handle contributes visible pixels: door 0.5, face -1, angle 0 (213)
+PASS real camera sees handle: door 0.5, face -1, angle 0.15
+PASS rendered handle contributes visible pixels: door 0.5, face -1, angle 0.15 (192)
+PASS real camera sees handle: door 0.5, face 1, angle -0.35
+PASS rendered handle contributes visible pixels: door 0.5, face 1, angle -0.35 (117)
+PASS real camera sees handle: door 0.5, face 1, angle 0
+PASS rendered handle contributes visible pixels: door 0.5, face 1, angle 0 (213)
+PASS real camera sees handle: door 0.5, face 1, angle 0.15
+PASS rendered handle contributes visible pixels: door 0.5, face 1, angle 0.15 (195)
+PASS real camera sees handle: door 1, face -1, angle -0.35
+PASS rendered handle contributes visible pixels: door 1, face -1, angle -0.35 (117)
+PASS real camera sees handle: door 1, face -1, angle 0
+PASS rendered handle contributes visible pixels: door 1, face -1, angle 0 (213)
+PASS real camera sees handle: door 1, face -1, angle 0.15
+PASS rendered handle contributes visible pixels: door 1, face -1, angle 0.15 (192)
+PASS real camera sees handle: door 1, face 1, angle -0.35
+PASS rendered handle contributes visible pixels: door 1, face 1, angle -0.35 (117)
+PASS real camera sees handle: door 1, face 1, angle 0
+PASS rendered handle contributes visible pixels: door 1, face 1, angle 0 (213)
+PASS real camera sees handle: door 1, face 1, angle 0.15
+PASS rendered handle contributes visible pixels: door 1, face 1, angle 0.15 (195)
+PASS entrance hardware still distance-culls from far away
+PASS closed entrance still occludes interior details
+PASS closed-door culling preserves view through small pane
+PASS interior door remains original white
+SOME FAILED
