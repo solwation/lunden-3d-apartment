@@ -135,8 +135,9 @@ async function run() {
   check(panel.hidden, 'E leaves the mode');
   // remembered over a reload
   c.set(0.6); blinds.curtains.slice(1).forEach((c,i)=>c.set(.15+i*.1)); const remembered=blinds.curtains.map(c=>c.t); blinds.save();
+  const reloaded = new Promise((r) => { f.onload = r; });
   f.src = URL0 + '&r=1';
-  await loaded();
+  await reloaded;
   w = f.contentWindow; d = f.contentDocument;
   while (!w.__app) await wait(100);
   app = w.__app;
