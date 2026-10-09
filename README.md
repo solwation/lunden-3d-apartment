@@ -85,7 +85,7 @@ I alla fönster sitter plisségardiner som dras upp nerifrån: gå fram och tryc
 
 Alla gardinskenor i taket går från vägg till vägg. I köket hänger även den korta, ljust botaniskt mönstrade kappan över hela bredden, med fönstret fritt under sig.
 
-Vardagsrummet har tre ljusa gardinlängder med samma botaniska mönster och bottenfärg som kökskappan, på en takskena från vägg till vägg, även över balkongdörren. Dra dem åt sidan med <kbd>A</kbd>/<kbd>D</kbd> eller ◀/▶ så att dörren och fönstret lämnas fria.
+Vardagsrummet har tre gardinlängder med stora, täta mörkgröna bladformer på vit botten, efter fotot av IKEA-tyget, på en takskena från vägg till vägg, även över balkongdörren. Dra dem åt sidan med <kbd>A</kbd>/<kbd>D</kbd> eller ◀/▶ så att dörren och fönstret lämnas fria.
 
 Högtalarna och bilradion har sex musikkanaler med två låtar var. Även datorn, laptopen och Kaffeturbo spelar
 inspelad musik. Under *Om musiken* i menyn finns musiker och källor; alla inspelningar har CC BY 4.0-licens och kan provspelas där.

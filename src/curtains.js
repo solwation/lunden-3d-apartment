@@ -16,7 +16,7 @@ function rng(seed) {
 }
 
 /** Pattern generator for themed curtain fabrics. */
-function printTexture(theme, ground) {
+function printTexture(theme, ground, ink) {
   const S = 1024, c = document.createElement('canvas');
   c.width = c.height = S;
   const g = c.getContext('2d');
@@ -393,6 +393,41 @@ function printTexture(theme, ground) {
       const x = r() * S, y = r() * S, a = r() * Math.PI * 2;
       wrap(x, y, 40, () => { g.rotate(a); wheat(38 + r() * 16); });
     }
+  } else if (theme === 'ikea_leaves') {
+    // #566: redraw the broad, crowded organic lobes in IMG_0571, without baking
+    // the photograph's warm light, window or folds into the cloth. Each cluster
+    // repeats identically across tile boundaries. Colours/physical scale live in CURTAINS.
+    g.fillStyle = ink;
+    const lobe = (angle, length, width, bend) => {
+      g.save(); g.rotate(angle);
+      g.beginPath(); g.moveTo(0, 0);
+      g.bezierCurveTo(-width * .9, -length * .12, -width, -length * .76, bend, -length);
+      g.bezierCurveTo(width * .85, -length * 1.08, width * 1.05, -length * .24, 0, 0);
+      g.fill(); g.restore();
+    };
+    const clusters = [[248, 240, -.24, 1], [772, 260, .55, -1],
+      [236, 774, .38, -1], [762, 752, -.10, 1]];
+    for (const [x, y, turn, flip] of clusters) {
+      wrap(x, y, 350, () => {
+        g.rotate(turn); g.scale(flip, 1);
+        lobe(-.20, 283, 158, -25);
+        lobe(1.40, 270, 166, 28);
+        lobe(3.10, 285, 150, -30);
+        lobe(4.66, 267, 159, 20);
+      });
+    }
+    // Separate leaves nest in the larger gaps, leaving the small angular white
+    // openings seen in the reference rather than a regular grid of flowers.
+    for (const [x, y, turn, length, width] of [[500, 510, -1.1, 180, 85],
+      [510, 8, .4, 175, 83], [8, 500, 2.1, 170, 80], [0, 0, -1, 175, 80]]) {
+      wrap(x, y, 260, () => lobe(turn, length, width, 15));
+    }
+    // Fine crossed threads keep both the white ground and solid ink textile-like.
+    g.lineWidth = 1;
+    g.strokeStyle = 'rgba(255,255,255,.045)';
+    for (let y = 0; y < S; y += 3) { g.beginPath(); g.moveTo(0, y); g.lineTo(S, y); g.stroke(); }
+    g.strokeStyle = 'rgba(25,45,31,.045)';
+    for (let x = 0; x < S; x += 3) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, S); g.stroke(); }
   } else if (theme === 'linen_living') {
     // Vardagsrum (L0 South): Scandinavian minimalist Jacquard weave with geometric arches and wavy contour lines
     const r = rng(55);
@@ -512,7 +547,7 @@ export class Curtain {
     this.speed = spec.speed;
     const fl = LEVELS[spec.level].floor;
     const y0 = fl + spec.drop, y1 = fl + spec.top;
-    this.tex = printTexture(spec.theme, spec.colors.ground);
+    this.tex = printTexture(spec.theme, spec.colors.ground, spec.colors.ink);
     this.mat = new THREE.MeshStandardMaterial({ map: this.tex, emissiveMap: this.tex, emissive: 0x000000, roughness: LIGHT.roughness, side: THREE.DoubleSide, opacity: LIGHT.opacity, transparent: true, depthWrite: true, forceSinglePass: true });
     // One depth-tested pass avoids double blending of two-sided cloth. Gathered folds keep their density.
     // Three's default shadow depth material stays solid, so see-through does not create sharp sun pinholes.
