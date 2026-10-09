@@ -103,7 +103,7 @@ import { Car } from './car.js';
 import { Garage } from './garage.js';
 import { Core } from './core.js';
 import { People } from './people.js';
-import { Olof } from './olof.js';
+import { Olof, OlofDriver } from './olof.js';
 import { Greetings } from './greet.js';
 import { Nests } from './nest.js';
 import { Weather } from './weather.js';
@@ -627,10 +627,15 @@ olof.visitorSeat = () => (rest.active ? rest.spot.pos : null);
 olof.enabled = () => world.furnitureOn !== false;
 olof.onSay = (line) => greet.say({ head: olof.fig.head, s: 1 }, line, { pitch: 0.85, rate: 1, voice: 3 });
 cat.seatTaken = (x, z) => olof.sitsNear(x, z);
+// … and at the wheel when the car is called (#599): greet him and he tells a dad joke and is gone
+const olofDriver = new OlofDriver(car);
+olofDriver.onSay = (line, secs) => greet.say({ head: olofDriver.fig.head, s: 1 }, line, { pitch: 0.85, rate: 1, voice: 3 }, secs);
+olof.busy = () => olofDriver.visible;
 car.garage = garage; // it lives in the garage, its door opens for it (#358)
 car.ground = (x, z) => (garage.inside(x, z) ? GARAGE.floor : groundY(x, z)); // the drive and Karpvägen slope, the garage's floor
 if (params0.has('car')) car.park(); // &car: parked out front (screenshots)
 else car.toGarage(); // in its stall (#358)
+if (params0.has('olofcar')) olofDriver.show(); // &olofcar: Olof at the wheel (#599 screenshots, with &car)
 garage.extra = () => car.segments('garage'); // in its stall it is in the way down there
 garage.extraPolys = () => (car.state === 'garage' ? [car.poly()] : []);
 weather.extraBoxes = () => car.box(); // no rain inside our parked car (#250)
@@ -1458,13 +1463,14 @@ function use(thing) {
   else if (thing.kind === 'jetpack' || thing.kind === 'spidersuit') thing.toggle(); // put the jetpack / the suit on, stand it down (#359, #597)
   else if (thing.kind === 'liftcall' || thing.kind === 'liftbtn') thing.press(); // the lift (#415)
   else if (thing.kind === 'garagebutton') { thing.press(); bump('garageDoor'); } // the garage door's buttons (#358)
-  else if (thing.kind === 'carkey') { thing.press(); car.call(); bump('car'); } // beep beep: the car comes, or leaves (#173)
+  else if (thing.kind === 'carkey') { thing.press(); car.call(); bump('car'); if (car.state === 'arriving') olofDriver.show(); } // beep beep: the car comes, or leaves (#173), Olof at the wheel (#599)
   else if (thing.kind === 'flush') { if (thing.toggle()) bump('flushes', 1, idOf(thing)); } // the toilet's flush button (#155)
   else if (thing.kind === 'lid') {
     thing.toggle();
     if (thing.isOpen) bump('lids', 1, idOf(thing));
     sfx.lid(thing.object.position, thing.isOpen);
   } else if (thing.kind === 'cat') { if (cat.isMiele && !heldItem()) miele.take(); else cat.pet(player.pos); } // Miele: into your arms (#328)
+  else if (thing.kind === 'olofcar') { if (olofDriver.greet()) { greet.sayMine(OLOF.car.hello[Math.floor(Math.random() * OLOF.car.hello.length)]); bump('olof', 1, 'car'); } } // a dad joke, then he is gone (#599)
   else if (thing.kind === 'olof') { if (olof.wave()) { greet.sayMine(OLOF.hello[Math.floor(Math.random() * OLOF.hello.length)]); bump('olof'); } } // wave to Olof: he goes (#586)
   else if (thing.kind === 'greet') { greet.greet(thing.fig); bump('greets', 1, `fig${people.figs.indexOf(thing.fig)}`); } // hello (#247)
   else if (thing.kind === 'towel') handWash.dry(thing, focusPoint); // dry the hands (#437)
@@ -1667,7 +1673,7 @@ function updateFocus() {
   raycaster.far = reach;
   // (the raycaster ignores visibility, so the cat is only a target while it is there)
   // the car key only while its cabinet is open
-  const extra = [...(cat.visible && !cat.held ? [cat.object] : []), ...(olof.waveable ? [olof.fig.pick] : []), ...(keyCabinet?.keyReachable ? [world.carKey.pickable] : []), ...car.targets(rest.target).map((t) => t.pickable), // our car's doors and front seats (#250)
+  const extra = [...(cat.visible && !cat.held ? [cat.object] : []), ...(olof.waveable ? [olof.fig.pick] : []), ...(olofDriver.greetable(rest.active && rest.target?.car === car) ? [olofDriver.fig.pick] : []), ...(keyCabinet?.keyReachable ? [world.carKey.pickable] : []), ...car.targets(rest.target).map((t) => t.pickable), // our car's doors and front seats (#250)
     ...jetpack.targets(), // the jetpack on its hook / where it was stood down (#359)
     ...suit.targets(), // the Spider-Man suit in its drawer / where it was laid (#597)
     ...world.courtyardTargets.map((t) => t.pickable), // the courtyard's benches (#438): F keeps them
@@ -2176,6 +2182,7 @@ function step(dt) {
   greet.update(dt); // greetings and answers (#247)
   cat.update(dt);
   olof.update(dt);
+  olofDriver.update(dt, rest.active && rest.target?.car === car);
   checkCatButt();
   checkMiele();
   fireworks.update(dt);
@@ -2526,4 +2533,4 @@ document.documentElement.classList.remove('resuming'); // the page is ready: off
 hideLoading();
 
 // handle for tests/debugging (tools/touchtest.html, tools/perfcount.html)
-window.__app = { olof, beerCans, frame, hitch, warm, christmas, plantWind, cheats, cheatNote, showCheatNote, beerShelf, hallCare, bedCare, tableSetting, watering, laundry, compass, showOverlay, resumeFromMenu, interactionOutline, eggs, isPhoneDevice, get activeMode() { return activeMode; }, set activeMode(v) { activeMode = v; }, rearrange, showTerminal, quality, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, suit, toaster, life, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS };
+window.__app = { olof, olofDriver, beerCans, frame, hitch, warm, christmas, plantWind, cheats, cheatNote, showCheatNote, beerShelf, hallCare, bedCare, tableSetting, watering, laundry, compass, showOverlay, resumeFromMenu, interactionOutline, eggs, isPhoneDevice, get activeMode() { return activeMode; }, set activeMode(v) { activeMode = v; }, rearrange, showTerminal, quality, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, suit, toaster, life, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS };

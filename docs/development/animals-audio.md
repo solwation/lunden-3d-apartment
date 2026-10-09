@@ -13,6 +13,8 @@ src/olof.js            Olof (#586, OLOF): a figure with a beer can in the sofa /
                        13-bone skeleton, vertex colours, one material), posed by two-bone IK each frame (`poseOlof`, `seatedPose`)
 tools/oloftest.html    headless test (#586): ?olof=0 seats him, seated pose, seat taken for visitor and cat, never turns up in
                        sight, "Vinka till Olof" scores, he answers, waves, gets up and is gone, the seat free again
+tools/olofcartest.html headless test (#599): the key brings the car with Olof at the wheel (seat, hands on the wheel), "Hälsa på
+                       Olof" → a dad joke, then gone; the driver's door and seat work after; back with the next call; gone when you sit in
 src/audio.js           synthesised positional sound effects (Web Audio): doors, slides, meow, steps
 src/pingping.js        Pingping (#269, PINGPING): the penguin cushion between the pillows in the Sovrum 1 bed, a Thing (kind 'pingping'):
                        held in both arms (hand.js `handPose: 'hug'`, `hugGrips`; the left arm = the right one mirrored); click /
@@ -84,6 +86,13 @@ tools/kittentest.html  headless test of kittens (#363): the seeded draw (~KITTEN
   hip height / forward, lean, head pitch, ankle targets and wrist targets with a pole each; `seatedPose` builds those for
   a seat height (`OLOF.forward` per seat: the armchair's cushions push him forward). Reuse it for other seats (#599).
 - `?olof[=i]` seats him at once (i: 0–2 the sofa, 3 the armchair), even in sight (tests, screenshots).
+- At the wheel (#599, `OlofDriver`): a second instance of the same figure, a child of the car's group, shown when the key
+  calls the car (car.js `call` → 'arriving'); `drivingPose` puts his hips on the driving seat's cushion, the feet at the
+  pedals and both hands on the wheel (`OLOF.car`, placed by eye; the can's vertices collapsed into the fist). Parked,
+  "Hälsa på Olof" (kind `olofcar`, a pick box out through the driver's window above the door handle so the door still
+  opens): your hello, a dad joke from `OLOF.car.jokes` in a wrapping bubble (`.say.long`), a wave, then he fades out
+  (stats `olof`, id `car`). He is also gone when the visitor sits down in the car and when it is back in the garage;
+  the next call brings him again. The sofa Olof does not turn up meanwhile (`olof.busy`). `&car&olofcar` for screenshots.
 
 ## Cat and sound
 

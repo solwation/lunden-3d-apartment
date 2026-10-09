@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Olof car test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+// Olof at the wheel (#599): the key calls the car out of the garage with Olof (the #586 figure) in the driving seat; parked,
+// looking at him gives "Hälsa på Olof": your hello, a dad joke in a bubble, then he is gone and the car works as before (the
+// driver's door opens, the seat can be sat in). Called away and back, he is there again; sitting down in the car he goes.
+//   chrome --headless=new --dump-dom http://localhost:8137/tools/olofcartest.html
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const f = document.createElement('iframe');
+f.width = 900; f.height = 600; f.src = '../index.html?time=12&month=6';
+document.body.append(f);
+f.onload = async () => {
+  const w = f.contentWindow, d = f.contentDocument;
+  while (!w.__app) await wait(100);
+  const { player, camera, step, car, olofDriver, world, use, stats, rest } = w.__app;
+  const lines = [];
+  const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; };
+  d.documentElement.requestFullscreen = undefined;
+  d.getElementById('start-touch').click();
+  await wait(50);
+  const btn = d.getElementById('action'), V = camera.position.constructor;
+  for (let i = 0; i < 3; i++) step(1 / 60);
+  const local = (x, y, z) => { car.object.updateMatrixWorld(true); return new V(x, y, z).applyMatrix4(car.object.matrixWorld); };
+  const look = (p) => { const dx = p.x - camera.position.x, dz = p.z - camera.position.z; camera.rotation.set(Math.atan2(p.y - camera.position.y, Math.hypot(dx, dz)), Math.atan2(-dx, -dz), 0, 'YXZ'); step(1 / 60); };
+  const until = (fn, max = 4000) => { for (let i = 0; i < max && !fn(); i++) step(1 / 30); return fn(); };
+  let pass = check(car.state === 'garage' && !olofDriver.visible, 'the car in its stall, no Olof');
+  use(world.carKey);
+  pass &= check(car.state === 'arriving' && olofDriver.visible && olofDriver.fig.object.parent === car.object, 'called: Olof at the wheel as it comes');
+  pass &= check(until(() => car.state === 'parked'), 'it arrives and parks');
+  const hips = olofDriver.fig.bones.hips.getWorldPosition(new V()), seat = local(-0.02, 0.6, -0.37);
+  pass &= check(olofDriver.visible && hips.distanceTo(seat) < 0.25, `still at the wheel, in the driving seat (${hips.distanceTo(seat).toFixed(2)} m from its cushion)`);
+  const hand = olofDriver.fig.bones.handR.getWorldPosition(new V()), wheel = local(0.42, 0.93, -0.37);
+  pass &= check(hand.distanceTo(wheel) < 0.3, `a hand on the wheel (${hand.distanceTo(wheel).toFixed(2)} m)`);
+  // greet him from beside the driver's door, through the window
+  const stand = local(0.1, 0, -1.6);
+  player.spawn(stand.x, stand.z, 0);
+  for (let i = 0; i < 3; i++) step(1 / 60);
+  look(olofDriver.fig.head.clone().add(new V(0, -0.15, 0)));
+  pass &= check(!btn.hidden && /hälsa på olof/i.test(btn.textContent), `the button on him: "${btn.textContent}"`);
+  const n0 = stats.olof ?? 0;
+  btn.click();
+  for (let i = 0; i < 60; i++) step(1 / 60);
+  const mine = d.querySelector('#speech .say.mine'), joke = [...d.querySelectorAll('#speech .say.theirs')].at(-1);
+  pass &= check(mine && !mine.hidden && /olof|chauffören/i.test(mine.textContent), `you say "${mine?.textContent}"`);
+  pass &= check(joke && joke.textContent.length > 20 && (stats.olof ?? 0) === n0 + 1, `a dad joke: "${joke?.textContent}" (counted)`);
+  pass &= check(olofDriver.fig.object.visible, 'he is still there while he tells it');
+  for (let i = 0; i < 60 * 8; i++) step(1 / 60);
+  pass &= check(!olofDriver.visible && !olofDriver.fig.object.visible, 'then he is gone');
+  // the car as before: the driver's door, the seat
+  const dr = car.doors.find((x) => x.front && x.side === -1), near = local(0.1, 0, -1.25);
+  player.spawn(near.x, near.z, 0);
+  for (let i = 0; i < 3; i++) step(1 / 60);
+  look(local(0.5, 0.75, -0.86));
+  pass &= check(w.__app.focus().focused === dr, `the driver's door is the target (${btn.textContent})`);
+  btn.click();
+  for (let i = 0; i < 60; i++) step(1 / 60);
+  look(local(-0.05, 0.6, -0.37));
+  const seatT = car.seats.find((x) => x.door === dr);
+  pass &= check(w.__app.focus().focused === seatT, `the driving seat can be sat in ("${btn.textContent}")`);
+  car.toggleDoor(dr);
+  for (let i = 0; i < 60; i++) step(1 / 60);
+  // away and back: he is there again; sitting down in the car he goes
+  player.spawn(stand.x, stand.z - 3, 0);
+  use(world.carKey);
+  pass &= check(until(() => car.state === 'garage'), 'sent back to the garage');
+  use(world.carKey);
+  pass &= check(olofDriver.visible, 'called again: Olof at the wheel again');
+  pass &= check(until(() => car.state === 'parked'), 'parked again');
+  player.spawn(stand.x, stand.z, 0);
+  for (let i = 0; i < 3; i++) step(1 / 60);
+  car.toggleDoor(car.doors.find((x) => x.front && x.side === 1));
+  for (let i = 0; i < 60; i++) step(1 / 60);
+  const pass2 = local(0.1, 0, 1.25);
+  player.spawn(pass2.x, pass2.z, 0);
+  for (let i = 0; i < 3; i++) step(1 / 60);
+  look(local(-0.05, 0.6, 0.37));
+  btn.click();
+  for (let i = 0; i < 90; i++) step(1 / 60);
+  pass &= check(rest.active && !olofDriver.visible, 'the visitor sits down in the car: he is gone (not in the way)');
+  out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
+};
+</script>
+</body>
+</html>

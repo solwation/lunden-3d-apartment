@@ -1389,6 +1389,19 @@ export const OLOF = {
     hair: 0x9c8b63, beard: 0x7f776d, eye: 0x2a2420, can: 0xc9cdd2, canBand: 0x1f5e3a, canTop: 0x9aa0a6 },
   hello: ['Hej Olof!', 'Tjena Olof!', 'Hallå där, Olof!', 'Skål, Olof!'],
   bye: ['Skål! Nu drar jag.', 'Hej hej, vi ses!', 'Oj, är klockan så mycket? Hej då!', 'Tack för ölen!', 'Ha det gött!'],
+  // at the wheel of our car (#599, src/olof.js OlofDriver): `at` [x, z] his hips in the car's frame (facing +x) (the driving seat's cushion, carmodel.js seats: x −0.04, z −0.37; seat top 0.54),
+  // `floor` the foot well (carmodel.js: 0.29 + half its 0.05), `seat` the cushion's top above it, `wheel` [x, y, z] where his
+  // hands hold it (carmodel.js: the wheel's centre 0.42, 0.93, −0.37, tilted 0.42 rad), `pedals` how far forward his feet are,
+  // `lean` into the backrest (`wheel`, `pedals` in his own frame: x his left, z forward, y up from the foot well);
+  // `box` the pick box [x0, y0, z0, x1, y1, z1] in his frame, out through the driver's window
+  // (above the door's handle, so the door still opens). Placement by eye (*guess*); `jokeTime` s his bubble, `fade` s.
+  car: { at: [0, -0.37], floor: 0.315, seat: 0.17, wheel: [0, 0.6, 0.4], pedals: 0.76, lean: 0.2,
+    box: [-0.27, 0.6, -0.3, 0.62, 1.17, 0.35], jokeTime: 5, fade: 0.8,
+    hello: ['Hej Olof!', 'Tjena Olof!', 'Hallå där, Olof!', 'Hej chauffören!'],
+    jokes: ['Varför är matteboken så ledsen? Den har så många problem.', 'Vad sa nollan till åttan? Snyggt bälte!',
+      'Vad sa den ena väggen till den andra? Vi ses i hörnet!', 'Jag skulle dra ett skämt om parkering, men alla bra platser var redan tagna.',
+      'Jag försökte skriva ett skämt om elbilar, men det blev aldrig riktigt laddat.', 'Vilken bil gillar skogen bäst? En Granault!',
+      'Varför tog trafikljuset inte semester? Det hade fullt upp med att byta om.', 'Vad gör en bil på gymmet? Den kör på!'] },
 };
 
 // The walkable area outdoors (#355): the whole block Kv. Lunden — the car park in front of Hus L (z0, as before), Karpvägen

@@ -35,7 +35,7 @@ const torsoR = (y) => { for (let i = 1; i < TORSO.length; i++) { const [r0, y0] 
 /** The parts in the bind pose: [geometry (bone-local, moved to the bone's bind position here), colour, bone]. */
 function parts() {
   const P = [];
-  const add = (g, color, bone, [x = 0, y = 0, z = 0] = []) => { const b = bindAt(bone); g.translate(b.x + x, b.y + y, b.z + z); P.push([g, color, bone]); };
+  const add = (g, color, bone, [x = 0, y = 0, z = 0] = [], tag = null) => { const b = bindAt(bone); g.translate(b.x + x, b.y + y, b.z + z); P.push([g, color, bone, tag]); };
   const sphere = (r, w = 12, h = 8, ...a) => new THREE.SphereGeometry(r, w, h, ...a);
   // hips: the jeans' seat; torso: the hoodie, its ribbed hem, the open zip with the grey T-shirt in the neck, the hood
   add(lathe([[0, -0.11], [0.11, -0.1], [0.14, -0.04], [0.142, 0.03], [0, 0.05]]).scale(1.15, 1, 0.75), C.jeans, 'hips');
@@ -69,9 +69,9 @@ function parts() {
     add(sphere(0.04, 10, 8).scale(0.72, 1.05, 0.95), C.skin, 'hand' + s);
   }
   const can = [0, 0.015, 0.04]; // in the right hand's frame (y: the can's axis, z: out of the fist)
-  add(new THREE.CylinderGeometry(0.033, 0.033, 0.122, 14), C.can, 'handR', can);
-  add(new THREE.CylinderGeometry(0.0335, 0.0335, 0.06, 14), C.canBand, 'handR', [can[0], can[1] + 0.005, can[2]]);
-  add(new THREE.CylinderGeometry(0.028, 0.031, 0.008, 14), C.canTop, 'handR', [can[0], can[1] + 0.064, can[2]]);
+  add(new THREE.CylinderGeometry(0.033, 0.033, 0.122, 14), C.can, 'handR', can, 'can');
+  add(new THREE.CylinderGeometry(0.0335, 0.0335, 0.06, 14), C.canBand, 'handR', [can[0], can[1] + 0.005, can[2]], 'can');
+  add(new THREE.CylinderGeometry(0.028, 0.031, 0.008, 14), C.canTop, 'handR', [can[0], can[1] + 0.064, can[2]], 'can');
   // legs: jeans, the shoes on the shins (as people.js)
   for (const s of ['L', 'R']) {
     add(lathe([[0, -0.48], [0.04, -0.47], [0.056, -0.44], [0.07, -0.3], [0.079, -0.04], [0.06, 0.03], [0, 0.04]], 10), C.jeans, 'thigh' + s);
@@ -83,7 +83,9 @@ function parts() {
 
 /** The skinned figure: { object (a Group: put it where he is), mesh, bones, pick, material }. */
 export function buildOlof() {
-  const geos = parts().map(([g0, color, bone]) => {
+  const canRanges = [];
+  let count = 0;
+  const geos = parts().map(([g0, color, bone, tag]) => {
     const g = g0.index ? g0.toNonIndexed() : g0; // (mergeGeometries needs them all alike; RoundedBox comes unindexed)
     const n = g.attributes.position.count, c = new THREE.Color(color), k = NAMES.indexOf(bone);
     const col = new Float32Array(n * 3), si = new Uint16Array(n * 4), sw = new Float32Array(n * 4);
@@ -92,6 +94,8 @@ export function buildOlof() {
     g.setAttribute('skinIndex', new THREE.Uint16BufferAttribute(si, 4));
     g.setAttribute('skinWeight', new THREE.BufferAttribute(sw, 4));
     for (const a of Object.keys(g.attributes)) if (!['position', 'normal', 'uv', 'color', 'skinIndex', 'skinWeight'].includes(a)) g.deleteAttribute(a);
+    if (tag === 'can') canRanges.push([count, count + n]);
+    count += n;
     return g;
   });
   const geometry = mergeGeometries(geos);
@@ -118,7 +122,7 @@ export function buildOlof() {
   object.add(pick);
   object.userData.moving = true;   // detail.js: judged every update (he moves while the visitor stands still)
   object.userData.detailUnit = true; // … as one thing
-  return { object, mesh, bones, pick, material, head: new THREE.Vector3() };
+  return { object, mesh, bones, pick, material, head: new THREE.Vector3(), canRanges };
 }
 
 // --- posing ------------------------------------------------------------------------------------------------------
@@ -224,6 +228,7 @@ export class Olof {
     this.visitorSeat = () => null;  // () => the spot the visitor sits in, or null
     this.enabled = () => true;      // () => the furniture is shown (F)
     this.onSay = null;              // (line) => {} his line in a speech bubble (main.js → greet.js)
+    this.busy = () => false;        // () => he is elsewhere now (main.js: at the wheel of our car, #599)
   }
 
   sipWait() { return O.sip[0] + this.rand() * (O.sip[1] - O.sip[0]); }
@@ -311,7 +316,7 @@ export class Olof {
     if (this.state === 'away') {
       if (!this.enabled()) return;
       this.wait -= dt;
-      if (this.wait <= 0) { this.wait = O.every; if (this.rand() < O.chance) this.appear(); }
+      if (this.wait <= 0) { this.wait = O.every; if (this.rand() < O.chance && !this.busy()) this.appear(); } // (not while he drives our car, #599)
       return;
     }
     if (!this.enabled()) { this.hide(O.every); return; }
@@ -336,6 +341,101 @@ export class Olof {
     } else if (this.state === 'go') {
       this.fig.material.opacity = Math.max(0, 1 - this.t / O.goTime);
       if (this.t >= O.goTime) { this.hide(); return; }
+    }
+    this.pose();
+  }
+}
+
+// --- Olof driving our car (#599) ----------------------------------------------------------------------------------
+// When the car is called (the key in the hall) he sits in the driving seat (the figure above, a second one, child of the
+// car's group so it drives with it): hands on the wheel, now and then a look sideways. Greet him while it is parked:
+// "Hälsa på Olof" → your hello, a dad joke from OLOF.car.jokes in a bubble while he waves, then he fades away and the
+// car is as before. He is gone too when the visitor sits down in the car, and when it is back in the garage / gone.
+
+/** The driving pose in the figure's frame (floor of the foot well at y 0): hips on the cushion, leaning into the backrest,
+ * the feet at the pedals, both hands on the wheel (`wave`: the left hand up, waving). */
+export function drivingPose({ seat, wheel, pedals, wave = 0, ph = 0, turn = 0 }) {
+  const hip = [seat + 0.075, 0], [wx, wy, wz] = wheel, r = 0.15;
+  const handR = { at: [wx - r, wy - 0.04, wz], pole: [-0.6, -0.8, -0.3] };
+  const restL = [wx + r, wy - 0.04, wz], waveL = [0.3 + 0.05 * Math.sin(ph), hip[0] + 0.66, 0.2]; // (under the roof, by the window)
+  const handL = { at: lerp3(restL, waveL, ease(wave)), pole: lerp3([0.6, -0.8, -0.3], [1, -0.7, -0.1], ease(wave)) };
+  return { hip, lean: O.car.lean, head: 0, turn, feet: [[0.12, 0.06, pedals], [-0.12, 0.06, pedals]], hands: [handL, handR], can: null };
+}
+
+export class OlofDriver {
+  /** `car`: Car (car.js; its group, built facing local +x, gets the figure). */
+  constructor(car) {
+    const D = O.car;
+    this.car = car;
+    this.fig = buildOlof();
+    const o = this.fig.object;
+    o.userData = {}; // (a part of the car: the car's own detail flags judge it)
+    o.position.set(D.at[0], D.floor, D.at[1]);
+    o.rotation.y = Math.PI / 2; // his +z along the car's +x
+    o.visible = false;
+    // the empty hand: no can while he drives
+    const B = D.box; // the pick box (his frame): his upper body and out through the driver's window, above the door's handle
+    this.fig.pick.geometry.dispose();
+    this.fig.pick.geometry = new THREE.BoxGeometry(B[3] - B[0], B[4] - B[1], B[5] - B[2]);
+    this.fig.pick.position.set((B[0] + B[3]) / 2, (B[1] + B[4]) / 2, (B[2] + B[5]) / 2);
+    car.object.add(o);
+    this.interact = { name: 'Olof', kind: 'olofcar', verb: 'hälsa på', pickable: this.fig.pick };
+    this.fig.pick.userData.door = this.interact;
+    this.state = 'away'; // away / drive / joke / fade
+    this.t = 0; this.look = 0; this.lookT = 4;
+    this.onSay = null; // (line, secs) => {} his joke in a bubble (main.js → greet.js)
+    this.hideCan();
+  }
+
+  /** The can is part of the figure's mesh: squash its vertices to nothing for the driver (he has both hands on the wheel). */
+  hideCan() {
+    const pos = this.fig.mesh.geometry.attributes.position, h = bindAt('handR');
+    for (const [a, b] of this.fig.canRanges) for (let i = a; i < b; i++) pos.setXYZ(i, h.x, h.y, h.z);
+    pos.needsUpdate = true;
+  }
+
+  get visible() { return this.state !== 'away'; }
+
+  /** The car was called: he is at the wheel. */
+  show() {
+    this.state = 'drive'; this.t = 0;
+    this.fig.material.opacity = 1;
+    this.fig.object.visible = true;
+    this.pose();
+  }
+
+  hide() { this.state = 'away'; this.fig.object.visible = false; }
+
+  /** Can he be greeted now (the car parked, he at the wheel, the visitor not in the car)? */
+  greetable(seatedInCar = false) { return this.state === 'drive' && this.car.parked && this.car.object.visible && !seatedInCar; }
+
+  /** The visitor says hello: a dad joke, a wave, then he is gone. True if it counted. */
+  greet() {
+    if (this.state !== 'drive') return false;
+    this.state = 'joke'; this.t = 0; this.said = false;
+    return true;
+  }
+
+  pose() {
+    const D = O.car, wave = this.state === 'joke' ? Math.min(1, this.t / 0.4) : this.state === 'fade' ? Math.max(0, 1 - this.t / 0.4) : 0;
+    poseOlof(this.fig, drivingPose({ seat: D.seat, wheel: D.wheel, pedals: D.pedals, wave, ph: this.t * 9, turn: this.look }));
+  }
+
+  /** `inCar`: the visitor sits in the car now. */
+  update(dt, inCar = false) {
+    if (this.state === 'away') return;
+    const c = this.car;
+    if (!c.object.visible || c.state === 'garage' || c.state === 'gone' || inCar) { this.hide(); return; } // back home, or you got in
+    this.t += dt;
+    // a glance to the side now and then (towards the house while parked)
+    if ((this.lookT -= dt) <= 0) { this.lookT = 3 + Math.random() * 5; this.lookTo = this.lookTo ? 0 : (this.state === 'drive' && c.parked ? 0.7 : 0.35); }
+    this.look += ((this.state === 'joke' ? 0.8 : this.lookTo ?? 0) - this.look) * Math.min(1, dt * 3);
+    if (this.state === 'joke') {
+      if (!this.said && this.t > 0.6) { this.said = true; this.onSay?.(O.car.jokes[Math.floor(Math.random() * O.car.jokes.length)], O.car.jokeTime); }
+      if (this.t >= 0.6 + O.car.jokeTime) { this.state = 'fade'; this.t = 0; }
+    } else if (this.state === 'fade') {
+      this.fig.material.opacity = Math.max(0, 1 - this.t / O.car.fade);
+      if (this.t >= O.car.fade) { this.hide(); return; }
     }
     this.pose();
   }

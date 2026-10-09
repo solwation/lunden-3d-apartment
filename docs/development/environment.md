@@ -56,7 +56,8 @@ src/carmodel.js        car bodies from a side profile (#250, MEGANE: `top` / `be
                        left, console, front seats, rear bench); without: a closed body as per-material geometries (`parts`);
                        `lite` (#251) = coarser (~5k triangles) for the parked cars (streetlife.js: paint / trim in vertex
                        colours / glass / tyres, instanced, a little variety in size)
-src/car.js             our white Renault Megane E-Tech (CAR, #173; the model from carmodel.js, #250). #358: it lives in its stall (7) in the
+src/car.js             our white Renault Megane E-Tech (CAR, #173; the model from carmodel.js, #250). Olof drives it when called (#599, src/olof.js
+                       `OlofDriver`, see animals-audio.md). #358: it lives in its stall (7) in the
                        garage (state 'garage', `toGarage`; doors / seats work there too, `parked`); the key sends it OUT — it backs
                        out (`CAR.garage.reverse`, a cusp: `route` pieces, `revEnd`), the garage door opens for it (it waits / stops
                        short), up the drive, Karpvägen north, Sankt Lars väg east and on as before to our door; sent away it goes

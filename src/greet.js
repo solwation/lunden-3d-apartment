@@ -114,12 +114,12 @@ export class Greetings {
   }
 
   /** Someone else's line in a bubble over `f.head` (a world point; `f.s` its size) in `voice` — Olof (#586, #599). */
-  say(f, line, voice) {
+  say(f, line, voice, secs = G.bubble) {
     const el = document.createElement('div');
-    el.className = 'say theirs';
+    el.className = line.length > 32 ? 'say theirs long' : 'say theirs'; // (a dad joke wraps)
     this.layer.append(el);
     this.show(el, line);
-    this.bubbles.push({ el, f, t: G.bubble });
+    this.bubbles.push({ el, f, t: secs });
     this.speak(line, voice);
   }
 
