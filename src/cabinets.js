@@ -41,7 +41,7 @@ export function wallCabinet(spec) {
     const door = new THREE.Group();
     door.position.set(front, y0, atZ0 ? a : a + w);
     const s = atZ0 ? 1 : -1; // panel runs from the hinge along s·z
-    const add = (sx, sy, sz, x, y, z, m) => { const o = new THREE.Mesh(new THREE.BoxGeometry(sx, sy, sz), m); o.position.set(x, y, z); o.castShadow = true; door.add(o); };
+    const add = (sx, sy, sz, x, y, z, m) => { const o = new THREE.Mesh(new THREE.BoxGeometry(sx, sy, sz), m); o.position.set(x, y, z); o.castShadow = o.receiveShadow = true; door.add(o); }; // receives too: no sun through the walls (#602)
     add(0.019, H - 0.003, w - 0.004, dir * 0.0095, H / 2, s * w / 2, material);
     add(0.02, 0.012, 0.012, dir * 0.03, 0.06, s * (w - 0.035), handle); // a knob near the free edge, low (it hangs high)
     const cab = new Openable({ name: 'skåpet', object: door, mode: 'hinge', sign: s * dir, max: OPEN_DEG, speed: 2.5 });

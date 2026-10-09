@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Cup cabinet shade test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+// The cup cabinet's door has the same shade as its neighbour in the wall-cabinet row (#602). The door is built on its
+// own (cups.js) beside the merged row (interior.js); without receiveShadow the low sun shone through the house onto
+// it alone, lighter and more orange. Renders the closed doors at noon and two evenings and compares the centre of
+// each door's panel pixel by pixel; then turns receiveShadow off again to prove the comparison would see the bug.
+// Also: the other doors built outside the merged rows (laundry wall cabinet, the hall's key cabinet) receive shadows.
+//   Playwright / CDP in real time: open http://localhost:8137/tools/cupshadetest.html, read #out
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const f = document.createElement('iframe');
+f.width = 900; f.height = 600; f.src = '../index.html?shot&weather=clear&freeze';
+document.body.append(f);
+f.onload = async () => {
+  const w = f.contentWindow;
+  while (!w.__app?.cups) await wait(100);
+  await wait(1500);
+  const { player, camera, step, cups, world, scene, renderer, day } = w.__app;
+  const lines = [];
+  const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; };
+  const V = camera.position.constructor;
+  const cab = cups.cabinet;
+  let pass = check(!cab.isOpen, 'the cup cabinet is closed');
+  const doorMeshes = []; cab.door.traverse((m) => m.isMesh && doorMeshes.push(m));
+  // the door's world box; its neighbour is the next front of the row, one door width further south
+  scene.updateMatrixWorld(true);
+  const lo = new V(Infinity, Infinity, Infinity), hi = new V(-Infinity, -Infinity, -Infinity);
+  for (const m of doorMeshes) { m.geometry.computeBoundingBox(); const b = m.geometry.boundingBox.clone().applyMatrix4(m.matrixWorld); lo.min(b.min); hi.max(b.max); }
+  const W = hi.z - lo.z, yc = (lo.y + hi.y) / 2 + 0.1, x = lo.x - 0.001;
+  const probes = { cup: new V(x, yc, (lo.z + hi.z) / 2), next: new V(x, yc, hi.z + W / 2) };
+  const gl = renderer.getContext();
+  /** The mean colour of a 9×9 patch round each probe, read straight after a render (shadow map redrawn). */
+  const sample = () => {
+    player.spawn(4.3, 1.5, 0);
+    for (let i = 0; i < 3; i++) step(1 / 60);
+    camera.rotation.set(-5 * Math.PI / 180, -Math.PI / 2, 0, 'YXZ');
+    step(1 / 60); scene.updateMatrixWorld(true);
+    renderer.shadowMap.needsUpdate = true;
+    renderer.render(scene, camera);
+    const H = gl.drawingBufferHeight, Wd = gl.drawingBufferWidth, px = {};
+    for (const [k, p] of Object.entries(probes)) {
+      const q = p.clone().project(camera), n = 9, buf = new Uint8Array(n * n * 4);
+      gl.readPixels(Math.round((q.x + 1) / 2 * Wd) - 4, Math.round((q.y + 1) / 2 * H) - 4, n, n, gl.RGBA, gl.UNSIGNED_BYTE, buf);
+      const avg = [0, 0, 0]; for (let i = 0; i < n * n; i++) for (let c = 0; c < 3; c++) avg[c] += buf[i * 4 + c] / (n * n);
+      px[k] = avg.map(Math.round);
+    }
+    return px;
+  };
+  const diff = (px) => Math.max(...px.cup.map((v, i) => Math.abs(v - px.next[i])));
+  const at = (month, date, hour) => { Object.assign(day, { month, date, hour, paused: true }); };
+  const times = [['dag', 10, 9, 12], ['kväll (okt)', 10, 9, 17.5], ['kväll (juni)', 6, 20, 19]];
+  for (const [name, month, date, hour] of times) {
+    at(month, date, hour);
+    const px = sample(), d = diff(px);
+    pass &= check(d <= 3 && px.cup.some((v) => v > 20), `${name}: cup door rgb(${px.cup}) vs neighbour rgb(${px.next}), max channel diff ${d} (≤ 3)`);
+  }
+  // the comparison sees the bug: the evening sun on a door that does not receive shadows
+  at(10, 9, 17.5);
+  doorMeshes.forEach((m) => { m.receiveShadow = false; });
+  const bad = sample();
+  doorMeshes.forEach((m) => { m.receiveShadow = true; });
+  pass &= check(diff(bad) > 6, `without receiveShadow the evening door differs (rgb(${bad.cup}) vs rgb(${bad.next}), diff ${diff(bad)})`);
+  // every door built outside the merged rows receives the sun's shadow too (#602)
+  // (hand-built = a door of at most three plain boxes, not merged geometry: cabinets.js's laundry wall cabinet, keycabinet.js)
+  const handBuilt = (l) => { const ms = []; (l.door ?? l.object)?.traverse?.((m) => m.isMesh && ms.push(m)); return ms.length && ms.length <= 3 && ms.every((m) => m.geometry.type === 'BoxGeometry') ? ms : null; };
+  const separate = [...world.lids, ...world.furnitureTargets].filter((l) => (l.kind === 'cabinet' || l.kind === 'keybox') && l.name !== 'brevinkastet' && handBuilt(l)); // (the letter flap is door hardware)
+  pass &= check(separate.length >= 3, `${separate.length} hand-built cabinet doors found (laundry wall cabinet + key cabinet)`);
+  for (const l of separate) {
+    const ms = handBuilt(l);
+    const p = (l.door ?? l.object).getWorldPosition(new V());
+    pass &= check(ms.length && ms.every((m) => m.receiveShadow), `${l.name} at ${p.x.toFixed(2)},${p.z.toFixed(2)}: every part receives shadows`);
+  }
+  pass &= check(doorMeshes.every((m) => m.receiveShadow), 'every part of the cup door receives shadows');
+  lines.push(pass ? 'ALL PASS' : 'SOME FAIL');
+  out.textContent = lines.join('\n');
+};
+</script>
+</body>
+</html>

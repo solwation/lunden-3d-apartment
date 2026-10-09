@@ -114,7 +114,7 @@ export class KeyCabinet {
     const faces = [white, white, white, white, new THREE.MeshStandardMaterial({ map: frontTexture(), roughness: 0.45, metalness: 0.2 }), white];
     const panel = new THREE.Mesh(new THREE.BoxGeometry(w, h, 0.006), faces);
     panel.position.set(w / 2, 0, 0.003);
-    panel.castShadow = true;
+    panel.castShadow = panel.receiveShadow = true; // like the carcass: no sun through the walls (#602)
     this.door.add(panel, mesh(new THREE.BoxGeometry(0.004, 0.02, 0.006), white, w - 0.006, 0, 0.008)); // catch
     this.door.traverse((m) => { m.userData.door = this; });
     g.add(this.door);

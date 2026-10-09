@@ -43,7 +43,9 @@ export function cupCabinet(c) {
   door.userData.moving = true; // the inner task card and handle follow its animated hinge (#509)
   door.position.set(c.front - P, c.y0, c.z0);
   // add(d0, d1, …): d = distance in front of the front plane (negative = behind it), like interior.js `frame`
-  const add = (d0, d1, y0, y1, z0, z1, m) => { const o = new THREE.Mesh(new THREE.BoxGeometry(d1 - d0, y1 - y0, z1 - z0), m); o.position.set(P - (d0 + d1) / 2, (y0 + y1) / 2, (z0 + z1) / 2); o.castShadow = true; door.add(o); };
+  // every part receives the sun's shadow like the merged fronts beside it (interior.js Batch.meshes): without it the
+  // low evening sun shone through the house onto this door alone, warmer and lighter than its neighbours (#602)
+  const add = (d0, d1, y0, y1, z0, z1, m) => { const o = new THREE.Mesh(new THREE.BoxGeometry(d1 - d0, y1 - y0, z1 - z0), m); o.position.set(P - (d0 + d1) / 2, (y0 + y1) / 2, (z0 + z1) / 2); o.castShadow = o.receiveShadow = true; door.add(o); };
   const a0 = gap, a1 = W - gap, f0 = gap, f1 = H - gap, rw = Math.min(0.06, (f1 - f0) / 4, (a1 - a0) / 4);
   add(-FT, -0.006, f0, f1, a0, a1, c.material);
   add(-0.006, 0, f1 - rw, f1, a0, a1, c.material); add(-0.006, 0, f0, f0 + rw, a0, a1, c.material);
