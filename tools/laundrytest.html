@@ -2,7 +2,8 @@
 const lines=[];let pass=true;const check=(ok,text)=>{lines.push((ok?'PASS':'FAIL')+' '+text);pass&&=!!ok},wait=ms=>new Promise(r=>setTimeout(r,ms));
 try {
  const f=document.createElement('iframe');f.width=480;f.height=300;document.body.append(f);
- async function load(url){await new Promise(r=>{f.onload=r;f.src=url});while(!f.contentWindow.__app)await wait(100);const A=f.contentWindow.__app;f.contentDocument.documentElement.requestFullscreen=undefined;f.contentDocument.getElementById('start-touch').click();A.renderer.setPixelRatio(.15);return A;}
+ let loadedAt=0; // when the page's app appeared: it runs in real time from then on (#613)
+ async function load(url){await new Promise(r=>{f.onload=r;f.src=url});while(!f.contentWindow.__app)await wait(100);loadedAt=performance.now();const A=f.contentWindow.__app;f.contentDocument.documentElement.requestFullscreen=undefined;f.contentDocument.getElementById('start-touch').click();A.renderer.setPixelRatio(.15);return A;}
  let A=await load('../index.html?life&shot&cloud='),w=f.contentWindow,T=await w.eval("import('three')"),L=A.life,I=L.items,N=A.laundry;
  const clothes=I.ofType('laundryClothes'),ids=clothes.map(i=>i.id),machine=N.machines.find(m=>m.kind==='washer');
  check(clothes.length===3&&clothes.every(i=>i.clean==='dirty'&&i.moisture==='dry'&&i.place.store==='laundryBasket'),'basket starts with three dirty dry garments, each with its own stable id');
@@ -53,7 +54,10 @@ try {
  check(W.state==='running'&&savedLeft===leftBefore-1,'fully closed door resumes the same programme and remaining time');
  check(L.flush(),'normal visit writes programme and load through the existing life save');
  A=await load('../index.html?shot&cloud=&time=12');I=A.life.items;L=A.life;N=A.laundry;W=N.washer;M=W.machine;
- check(W.busy&&W.left===savedLeft&&W.ids.length===3&&ids.every(id=>W.ids.includes(id)),'actual reload keeps exact game time and original start load without offline progress');
+ // The reloaded page's own loop runs in real time (not virtual time) from the moment the app is up, so a few frames of
+ // programme time may already be gone: allow exactly that, never the reload's wall time (no offline progress, #613).
+ const ran=(performance.now()-loadedAt)/1000+.1;
+ check(W.busy&&W.left<=savedLeft&&W.left>=savedLeft-ran&&W.ids.length===3&&ids.every(id=>W.ids.includes(id)),`actual reload keeps exact game time and original start load without offline progress (left ${W.left.toFixed(2)} of ${savedLeft} s, at most ${ran.toFixed(2)} s run since the app was up)`);
  W.update(100);
  check(W.state==='done'&&W.left===0&&[ids[0],ids[2]].every(id=>I.get(id).clean==='clean'&&I.get(id).moisture==='wet'&&!I.get(id).machine.folded),'completed programme makes remaining original clothes clean and wet, never dry or folded');
  check(I.get(ids[1]).clean===removedState.clean&&I.get(ids[1]).moisture===removedState.moisture,'original garment removed during pause stays unchanged');
