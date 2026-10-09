@@ -1339,7 +1339,7 @@ function renderChoices() {
     b.addEventListener('click', (e) => { e.stopPropagation(); runChoice(i); });
     choicesEl.append(b);
   });
-  if (!touch.enabled) { const h = document.createElement('div'); h.className = 'hint'; h.textContent = `${heldItem()?.clickIsUse ? 'E' : 'Klicka (E)'} eller 1–${choices.rows.length} väljer · hjulet flyttar`; choicesEl.append(h); }
+  if (!touch.enabled) { const h = document.createElement('div'); h.className = 'hint'; h.textContent = `${heldItem()?.clickIsUse ? 'E' : 'Klicka'} eller 1–${choices.rows.length} väljer · hjulet flyttar`; choicesEl.append(h); }
 }
 /** Do row `i` of the menu (a blocked one only clicks: its reason is on screen). */
 function runChoice(i) {
@@ -1496,7 +1496,7 @@ function click(button) {
 }
 /** What a left click may do E on: the focus, but not the jetpack's "stand it down" (E's fallback with nothing in focus). */
 const clickTarget = () => (focused === jetpack.dropTarget ? null : focused);
-/** Does a left click do E on what is in focus now (the prompt says "Klicka (E)")? */
+/** Does a left click do E on what is in focus now (the prompt says "Klicka")? */
 const clickIsE = () => !!clickTarget() && !focused.blocked && !heldItem()?.clickIsUse;
 document.addEventListener('mousedown', (e) => { if (locked && (e.button === 0 || e.button === 2)) click(e.button); });
 document.addEventListener('contextmenu', (e) => { if (locked) e.preventDefault(); });
@@ -1781,13 +1781,13 @@ function updateFocus() {
     actionBtn.textContent = shortButtonLabel(focused, `${verb}${named}`);
   } else if (focused) {
     const own = heldItem()?.useLabel && !heldItem().useAlt && !heldItem().clickIsUse ? ` · högerklick: ${heldItem().useLabel.toLowerCase()}` : ''; // (#443)
-    promptEl.textContent = clickIsE() ? `Klicka (E) för att ${verb}${named}${own}` : `Tryck E för att ${verb}${named}`;
+    promptEl.textContent = clickIsE() ? `Klicka för att ${verb}${named}${own}` : `Tryck E för att ${verb}${named}`;
   }
   const seated = rest.active && !reading; // sitting / lying: E with nothing in reach gets you up; Space / C always do
   const holding = !focused && heldItem()?.useLabel ? heldItem() : null; // touch: the button uses what you hold (fire, wave, light); a cup or the jug has no use of its own
   if (holding && touch.enabled) actionBtn.textContent = holding.useLabel;
   if (holding && !touch.enabled && !reading && !focused && !seated) {
-    promptEl.textContent = clickIsE() ? `Klicka (E) för att ${holding.useLabel.toLowerCase()}` : `Tryck E för att ${holding.useLabel.toLowerCase()}`;
+    promptEl.textContent = clickIsE() ? `Klicka för att ${holding.useLabel.toLowerCase()}` : `Tryck E för att ${holding.useLabel.toLowerCase()}`;
   }
   if (seated && !focused && !holding) actionBtn.textContent = 'Res dig';
   if (seated && !touch.enabled) promptEl.textContent = focused && !focused.blocked ? `${promptEl.textContent} · Mellanslag – res dig` : focused?.blocked ? promptEl.textContent : 'Tryck E för att resa dig';

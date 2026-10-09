@@ -41,6 +41,7 @@ const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); ret
   pass &= check(toggleInst && instructions && instructions.hidden, 'instructions collapsed by default');
   toggleInst.click();
   pass &= check(!instructions.hidden && /Dölj instruktioner/.test(toggleInst.textContent), 'clicking toggle expands instructions');
+  pass &= check(/E eller vänsterklick/.test(instructions.textContent), 'instructions mention E eller vänsterklick');
   toggleInst.click();
   pass &= check(instructions.hidden && /Visa instruktioner/.test(toggleInst.textContent), 'clicking toggle again collapses instructions');
 

@@ -8,7 +8,7 @@
 // click opens the freezer and takes a fish finger, a click on the dining table puts it down where the ghost shows, a
 // blocked target does nothing, a click with nothing in focus eats, a right click eats too; the rifle still shoots at
 // the freezer door (which stays as it is); seated, a click with nothing in focus does not stand you up; the remote's
-// right click is still its power button. The prompt says "Klicka (E)".
+// right click is still its power button. The prompt says "Klicka".
 //   google-chrome --headless=new --dump-dom http://localhost:8137/tools/clicktest.html
 const out = document.getElementById('out');
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -49,16 +49,16 @@ f.onload = async () => { const lines = []; let pass = true; try {
   // pretend the mouse is locked now (headless refuses pointer lock)
   Object.defineProperty(d, 'pointerLockElement', { get: () => app.renderer.domElement, configurable: true });
   d.dispatchEvent(new w.Event('pointerlockchange'));
-  check(lookAt(doorAt(), kitchen, /^Klicka \(E\) för att öppna frysen/), `the freezer: "${prompt.textContent}"`);
+  check(lookAt(doorAt(), kitchen, /^Klicka för att öppna frysen/), `the freezer: "${prompt.textContent}"`);
   check(click(0) === 'e', 'an empty-handed click is E'); run(90);
   check(fz.isOpen, 'the freezer is open');
   const boxAt = () => fish.object.getWorldPosition(new V()).add(new V(0, 0.03, 0));
-  check(lookAt(boxAt(), kitchen, /^Klicka \(E\) för att ta en fiskpinne ur paketet/), `the carton: "${prompt.textContent}"`);
+  check(lookAt(boxAt(), kitchen, /^Klicka för att ta en fiskpinne ur paketet/), `the carton: "${prompt.textContent}"`);
   click(0); run();
   const one = heldItem();
   check(one?.isFish, 'a click takes a fish finger');
   const table = { x: 3.5, y: 0.75, z: 1.6 }, tableStands = [[2.6, 2.2], [2.5, 1.6], [3.5, 2.6]];
-  check(lookAt(table, tableStands, /^Klicka \(E\) för att lägga ner fiskpinnen.* · högerklick: ät$/), `the table: "${prompt.textContent}"`);
+  check(lookAt(table, tableStands, /^Klicka för att lägga ner fiskpinnen.* · högerklick: ät$/), `the table: "${prompt.textContent}"`);
   const spot = app.placement.target()?.point.clone();
   check(click(0) === 'e', 'a click on the table is E'); run();
   const mid = one.middle(new V());

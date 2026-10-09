@@ -307,14 +307,15 @@ HUD controls (#525): src/hudicons.js supplies own 24 px/1.7-stroke SVGs and idem
   touch "Res dig" button (#stand-btn) get you up, keeping what is in the hand. Seats: the
   sofa (3 + the chaise), armchair, 4 dining chairs, the lounge sofa (3), RÅGRUND; beds: the double bed (2
   sides), both bunks (lower/upper), the daybed. F stands you up first.
-- Left click as E (#443, main.js `click`, the only place it is decided; touch keeps its buttons): reading the book, the
+- Left click as E (#443, #568, main.js `click`, the only place it is decided; touch keeps its buttons): reading the book, the
   next page; in another panel nothing. Holding a weapon or the ball (`clickIsUse` on the class: the rifle, blasters, the
   saber, wands, the basketball) a click always fires / throws. Otherwise, with something in focus a click is E on it (open,
   take, put down where the ghost shows, pour, sit, pet, greet, the menu's marked row) — a blocked target: nothing (spilling
   is E's only); with nothing in focus it uses what you hold (eat, drink, hug, read, light), empty-handed or seated nothing
   (E / Space / C get you up). The jetpack's "stand it down" fallback is E's only. Right click = the held thing's `useAlt`
-  (the remote's power, the ball's dribble) if it has one, else its use (eat, drink …). The prompt says "Klicka (E) för att
-  …" when a click does it (+ " · högerklick: ät" from `useLabel`), "Tryck E …" while a weapon is held. The mousedown that
+  (the remote's power, the ball's dribble) if it has one, else its use (eat, drink …). The prompt says "Klicka för att
+  …" when a click does it (+ " · högerklick: ät" from `useLabel`), "Tryck E …" while a weapon is held (#568: utan "(E)" i
+  musprompten, medan menyinstruktionerna anger "E eller vänsterklick"). The mousedown that
   takes the pointer lock (#arm, a click on the page) does nothing else: `locked` is still false then (tools/clicktest.html).
 - GNOME's "disable touchpad while typing" (on by default) blocks touchpad look while a WASD key
   is held — not a bug in the app. Arrow keys ← → turn as a keyboard-only fallback.
