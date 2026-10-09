@@ -1914,18 +1914,6 @@ const cheats = {
     if (!player.outdoors) return 'Gå ut först. Jetpacken kan inte användas inne i hemmet.';
     jetpack.putOn(); return player.below || player.inCore ? 'Jetpacken på. Ingen flygning under tak.' : 'Jetpacken på. Mellanslag eller pil upp ger lyft.';
   },
-  home: () => {
-    life.interrupt('home'); if(rest.active) standUp();
-    const old=player.pos.clone(), oldCamera=camera.position.clone(), oldRotation=camera.rotation.clone();
-    const motion={eyeY:player.eyeY,vy:player.vy,glide:player.glide,fall:player.fall,flying:player.flying,jv:{...player.jv}};
-    spawnAtStart();
-    const point = player.isFree(START.x,START.z,0) ? START : player.nearestFree(START.x,START.z,0);
-    if (!point) {player.pos.copy(old);Object.assign(player,motion);camera.position.copy(oldCamera);camera.rotation.copy(oldRotation);return 'Ingen fri startplats just nu.';}
-    if(jetpack.worn) jetpack.goHome();
-    player.crouch=player.crouched=false;player.keys.clear();touch.analog.x=touch.analog.y=0;
-    player.spawn(point.x,point.z,THREE.MathUtils.degToRad(START.yawDeg));camera.rotation.x=THREE.MathUtils.degToRad(START.pitchDeg);
-    return 'Hemma på en fri startplats.';
-  },
   day: () => {day.hour=CHEAT_NOTE.dayHour;day.update(0);wallClock.update(day.hour);return 'Dagsljus.';},
   night: () => {day.hour=CHEAT_NOTE.nightHour;day.update(0);wallClock.update(day.hour);return 'Natt.';},
   'lights on': () => {lights.setAll(true);return 'Hemmets lampor tända.';},

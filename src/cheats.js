@@ -2,7 +2,6 @@
 export const CHEATS = [
   { code: 'clean', text: 'Städa hemmet och uteplatsen' },
   { code: 'jetpack', text: 'Ta på jetpacken utomhus' },
-  { code: 'home', text: 'Kom hem till en fri startplats' },
   { code: 'day', text: 'Byt till dagsljus' },
   { code: 'night', text: 'Byt till natt' },
   { code: 'lights on', text: 'Tänd hemmets lampor' },
