@@ -161,7 +161,7 @@ same `buildLevel` / `buildStructure` (slab, roof zone, stair, railing) into a gr
 −24.825) with `how.standard`: the standard materials (STANDARD: 3-stav oak, limestone window boards) and
 `standardinterior.js` instead of interior.js; none of our tillval (no Allrum door or its wall/lintel, Allrum stays Allrum, no
 hall klinker), no hall-wardrobe contents, cleaning fittings, EL cabinet contents, blinds, curtains, plants, lamps or
-furniture; its front door gets our name-plate code with its own text (`plate`, "Lasse" — the user's wish). exterior.js
+furniture; its front door gets our name-plate code with its own text (`plate`, "Lasse & Erika"; L1201's "Linus m. Fam" — the user's wish, #623). exterior.js
 (`visits`) leaves its façade holes open and draws no mass or entrance pot there (its patio, hedge and screen walls stay);
 the core's west mass starts at its outer face. Its Entréplan walls join level 0's segments (from the street too), the row's
 façade lines are cut there; its Övre plan has segments of its own (player.js), its Entréplan doors come through

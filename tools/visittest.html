@@ -112,6 +112,8 @@ const load = (q = '') => new Promise((resolve) => {
     const stand = (x, z, y, yaw = Math.PI) => { player.spawn(x, z, yaw); player.pos.y = y; player.eyeY = y + 1.62; player.vy = 0; player.fall = null; settle(5); };
     const front1 = doorNear(...W1(1.3, 0.12), u1.doors), terr = doorNear(...W1(3.55, 9.0), u1.doors);
     check(front1 && terr, 'its street door and terrace door');
+    let plate1 = null; front1?.object.traverse((o) => { if (o.name === 'namnskylten') plate1 = o; });
+    check(!!plate1 && C.VISIT_UNITS.find((u) => u.id === 'L1201').plate === 'Linus m. Fam', 'L1201: its name plate "Linus m. Fam" on the street door (#623)');
     stand(qx + 1.3, 0.8, C.storeyFloor(3));
     check(player.aloft && /Loftgången/.test((step(dt), label())), `on the loftgång in front of it: "${label()}"`);
     check(walk([W1(1.3, 1.5)], 5).stuck, 'its shut street door holds from the loftgång');

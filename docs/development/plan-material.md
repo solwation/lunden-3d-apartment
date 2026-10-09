@@ -329,7 +329,7 @@ flat west of the stair core (`husLLayout` slot, x −24.825…−19.07). Standar
 smooth white Marbodal fronts, white Electrolux appliances, white walls and ceilings, limestone window boards (grey/brown),
 matt-lacquered 3-stav oak parquet with white skirting, windows white inside; hall klinker is a tillval (bofakta "KL"), so
 parquet there. Colours and everything unnamed (worktop, handles, tiles, sanitary ware, mixers, wall cabinets, hood) are
-*guess* in `STANDARD`. Its name plate reads "Lasse" (the user's wish, not Peab material).
+*guess* in `STANDARD`. Its name plate reads "Lasse & Erika", L1201's "Linus m. Fam" (the user's wish, #623, not Peab material).
 
 L1201 (#573, `L1201` in config, `src/l1201plan.js`): bofakta-l1201.pdf (2024-11-08; Peab's object page's PNG points at L1205's,
 so the sheet is the source): 99 m², 4 rok, våning 3–4 (54 + 45 m²), entrance from the loftgång, takterrass 12 m²; the base plan

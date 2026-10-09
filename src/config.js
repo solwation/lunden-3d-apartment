@@ -2840,11 +2840,11 @@ export const VANITY_BASIN = { depth: 0.1 };
 // no tillval (no Allrum door, no hall klinker), no furniture, rugs, curtains, blinds, plants, pets or personal things.
 // `plate` = the text on its front door's name plate (namePlate, as ours, #595). Doors / windows start shut on every visit; nothing is saved for it.
 export const VISIT_UNITS = [
-  { id: 'L1004', slot: 'L1004', plan: 'shared', plate: 'Lasse' }, // the plate: the user's wish (#574 comment); bofakta: 126 m², 5 rok, våning 1–2, uteplats 22 m²
+  { id: 'L1004', slot: 'L1004', plan: 'shared', plate: 'Lasse & Erika' }, // the plate: the user's wish (#574 comment, #623); bofakta: 126 m², 5 rok, våning 1–2, uteplats 22 m²
   // #573: L1201, the west end flat of våning 3–4 (bofakta 2024-11-08: 99 m², 4 rok, 54 + 45 m², takterrass 12 m²), entered
   // from the loftgång. Its own sheet (src/l1201plan.js, the base plan with Allrum), placed at its slot's `ox` and the
-  // upper flats' street face (`oz` = HUS_L.loftgangDepth). No name plate (`plate: null`).
-  { id: 'L1201', slot: 'L1201', plan: 'L1201', plate: null },
+  // upper flats' street face (`oz` = HUS_L.loftgangDepth). Its name plate: the user's wish (#623).
+  { id: 'L1201', slot: 'L1201', plan: 'L1201', plate: 'Linus m. Fam' },
 ];
 // L1201's storeys and what its sheet gives (#573). `rh` 2.5 = the sheet's legend "RH rumshöjd ca 2,5 m om inte annat
 // anges" (no other RH is written on its rooms but the Klk's 2.2); the floors = våning 3 / 4 (VERTICAL: floor-to-floor 3.0,
