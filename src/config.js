@@ -1368,6 +1368,7 @@ export const CABINET_FIXES = [
 export const CABINET_HEIGHT = {
   EL: 2.1, G: 2.1, L: 2.1, 'U/M': 2.1, K: 2.1, F: 2.1,
   TT: 0.85, TM: 0.85, DM: 0.9,
+  A: 2.1, LH: 1.9, // L1201 (#573): the ventilation unit's cupboard, linen shelving (heights *guess*)
 };
 // Sliding wardrobe joinery (#537): construction assumptions, not measured Peab details.
 export const WARDROBE = {
@@ -2831,7 +2832,41 @@ export const VANITY_BASIN = { depth: 0.1 };
 // `plate` = the text on its front door's name plate (namePlate, as ours, #595). Doors / windows start shut on every visit; nothing is saved for it.
 export const VISIT_UNITS = [
   { id: 'L1004', slot: 'L1004', plan: 'shared', plate: 'Lasse' }, // the plate: the user's wish (#574 comment); bofakta: 126 m², 5 rok, våning 1–2, uteplats 22 m²
+  // #573: L1201, the west end flat of våning 3–4 (bofakta 2024-11-08: 99 m², 4 rok, 54 + 45 m², takterrass 12 m²), entered
+  // from the loftgång. Its own sheet (src/l1201plan.js, the base plan with Allrum), placed at its slot's `ox` and the
+  // upper flats' street face (`oz` = HUS_L.loftgangDepth). No name plate (`plate: null`).
+  { id: 'L1201', slot: 'L1201', plan: 'L1201', plate: null },
 ];
+// L1201's storeys and what its sheet gives (#573). `rh` 2.5 = the sheet's legend "RH rumshöjd ca 2,5 m om inte annat
+// anges" (no other RH is written on its rooms but the Klk's 2.2); the floors = våning 3 / 4 (VERTICAL: floor-to-floor 3.0,
+// an assumption), so the slab zone 0.5 is too. `hole` = the upper floor's opening, plan coordinates (src/l1201plan.js):
+// the stair (x 0.21–1.75, z 6.21–8.08, READ) and the void beside it ("Öppet upp" on the entrance floor, x 0.2–1.75,
+// z 8.20–8.84, READ, open to the upper ceiling under the BH 1.2 window). `stair` maps our stair (stairs.js: the same type,
+// a straight flight, 180° winders, a straight flight, the lower one on the courtyard side) onto its outline, mirrored in x:
+// our x `bx1` (the top step = the opening's edge) → its `x1`, our `winderX1` → its `x0`, our flights' z `z0`…`z1` → its;
+// tread counts, risers (3.0 / 16 = 0.19 m) and the winders' geometry are ours scaled, *guess* (no stair drawing).
+// `railing`: H 1.1 (the sheet) along the opening's east edge. Window heads and the street door's head 2.3 *guess*
+// (HUS_L.street / court), sills from the sheet. The kitchen is a galley: the tall column faces east, the run west.
+export const L1201 = {
+  levels: [{ name: 'Entréplan', rh: 2.5 }, { name: 'Övre plan', rh: 2.5 }],
+  hole: { x0: 0.206, x1: 1.75, z0: 6.205, z1: 8.835 },
+  stair: { x1: 1.75, x0: 0.266, z0: 6.205, z1: 8.091 },
+  railing: { x: 1.75, z0: 7.15, z1: 8.835, h: 1.1 },
+  extDoorHead: 2.3,
+  windows: [
+    { level: 0, facade: 'north', x: 3.85, sill: 0.7, head: 2.3, transom: 0 },   // kitchen (HUS_L.street std: BH 0.7)
+    { level: 0, facade: 'south', x: 1.455, sill: 0.8, head: 2.3, transom: 0 },  // living room (HUS_L.court.lower)
+    { level: 0, facade: 'south', x: 3.845, sill: 0.6, head: 2.3, transom: 0 },
+    { level: 1, facade: 'north', x: 1.61, sill: 0.7, head: 2.3, transom: 0 },   // Sovrum 1
+    { level: 1, facade: 'north', x: 3.95, sill: 0.7, head: 2.3, transom: 0 },   // Sovrum 2
+    { level: 1, facade: 'south', x: 1.16, sill: 1.2, head: 2.3, transom: 0 },   // over the void (HUS_L.court.upper)
+  ],
+  soffits: [{ level: 1, x0: 0.206, x1: 1.851, z0: 3.76, z1: 6.005, height: 2.2, extent: 'rooms' }], // the Klk "RH: 2,2m"
+  kitchen: { level: 0, area: { x0: 2.8, x1: 5.4, z0: 2.9, z1: 6.15 }, layout: 'galley', tallDir: 'e', baseDir: 'w',
+    tiled: [{ level: 0, name: 'Badrum', x0: 0.2, x1: 2.675, z0: 3.41, z1: 6.005, wallTile: 2.5 },
+      { level: 1, name: 'WC/dusch', x0: 4.335, x1: 5.555, z0: 3.84, z1: 6.11, wallTile: 2.5 }] },
+  dividers: [{ level: 0, x0: 1.108, x1: 2.36, z0: 1.575, z1: 1.695 }, { level: 0, x0: 3.445, x1: 4.766, z0: 6.11, z1: 6.205 }],
+};
 // Peab's standard finish (grundutförande) of the visitable flats. SOURCED (info brochure 2024-09-11, S1): p. 20 "Släta
 // vita luckor från Marbodal och vita vitvaror från Electrolux"; p. 30 "Väggar vitmålade", "Innertak vitmålade",
 // "Fönsterbänk grå/brun i kalksten", "Golv mattlackad ekparkett, 3-stavig med vit golvsockellist", "Fönster … vit insida";

@@ -257,10 +257,10 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
   const northOf = (ox) => (Math.abs(ox - endUnitX) < 1e-6
     ? north.filter((o) => !H.endUnitNorthHidden.some(([a, b]) => (o.x0 + o.x1) / 2 > a && (o.x0 + o.x1) / 2 < b))
     : north);
-  // `visits` (#574): the flats you can walk into (their ox) are built inside like ours (world.js): open holes, no mass
-  const visited = (ox) => visits.some((v) => Math.abs(v - ox) < 1e-6);
-  for (const { ox, x0: ux0, x1: ux1 } of units) {
-    const ours = Math.abs(ox) < 1e-6, real = ours || visited(ox);
+  // `visits` (#574, #573): the ids of the flats you can walk into, built inside like ours (world.js): open holes, no mass
+  const visited = (id) => visits.includes(id);
+  for (const { ox, x0: ux0, x1: ux1, lower } of units) {
+    const ours = Math.abs(ox) < 1e-6, real = ours || visited(lower);
     facade(bricks, ux0, ux1, 0, roofTop, -eps, true, shift(northOf(ox), ox, 0), !real);
     facade(bricks, ux0, ux1, 0, roofTop, D + eps, false, shift(south, ox, 0), !real);
     if (ours) continue;
@@ -340,7 +340,7 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
     bricks.push(quadY(PR.wallWest,PR.west,PD.z0,PD.z1,PD.height,true));
     group.userData.portik=PP;
     // (a visited flat west of the core, #574: the mass starts at its outer face, not inside its party wall)
-    const westFace = Math.max(coreX0, ...visits.filter((v) => v + W > coreX0 - 0.5 && v < coreX0).map((v) => v + W));
+    const westFace = Math.max(coreX0, ...units.filter((u) => visited(u.lower) && u.ox + W > coreX0 - 0.5 && u.ox < coreX0).map((u) => u.ox + W));
     solids.push(boxGeo(westFace, CORE.x0 - g, 0, roofTop, 0, D),
       // solids in the stairwell north wall around the two windows (#457, #470)
       boxGeo(CORE.x0, CORE.x1, 0, win1.y0 - g, 0, nz),
@@ -376,14 +376,15 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
     const holes = core ? [...streetOpenings(id, coreW, coreX1 + H.wall), { x0: CORE.loftDoor.x[0], x1: CORE.loftDoor.x[1], y0: roofTop, y1: roofTop + 2.2, door: true, hole: true },
       { x0: CORE.loftDoor.side[0], x1: CORE.loftDoor.side[1], y0: roofTop, y1: roofTop + 2.2, door: true, hole: true }] // + the stairwell's door (#415, core.js draws it)
       : streetOpenings(id, ox);
+    const real = visited(id); // a flat you can walk into (#573): its openings stay open, its rooms are world.js's
     facade(renders, x0, x1, roofTop, upperTop, loftD - eps, true, holes, false);
     for (const o of holes) {
-      if (!o.door) { fakeWindow(o, loftD - eps, true); continue; }
+      if (!o.door) { if (!real) fakeWindow(o, loftD - eps, true); continue; }
       if (o.hole) continue;
       // the entrance (#111): set back, a green door with a small thin high pane, render reveals, a lantern beside it
       const zr = loftD + Lf.recess;
-      renders.push(boxGeo(o.x0, o.x0 + 0.01, o.y0, o.y1, loftD, zr), boxGeo(o.x1 - 0.01, o.x1, o.y0, o.y1, loftD, zr), boxGeo(o.x0, o.x1, o.y1 - 0.01, o.y1, loftD, zr));
-      staticEntry(o.x0+.01,o.x1-.01,o.y0,o.y1-o.y0-.01,zr+.025);
+      if (!real) renders.push(boxGeo(o.x0, o.x0 + 0.01, o.y0, o.y1, loftD, zr), boxGeo(o.x1 - 0.01, o.x1, o.y0, o.y1, loftD, zr), boxGeo(o.x0, o.x1, o.y1 - 0.01, o.y1, loftD, zr));
+      if (!real) staticEntry(o.x0+.01,o.x1-.01,o.y0,o.y1-o.y0-.01,zr+.025);
       const lx = o.x1 + Lf.lamp.dx, ly = o.y0 + Lf.lamp.y, { w: lw, h: lh } = Lf.lamp;
       lampBox.push(boxGeo(lx - lw / 2, lx + lw / 2, ly + lh / 2, ly + lh / 2 + 0.03, loftD - 0.12, loftD), boxGeo(lx - 0.03, lx + 0.03, ly - lh / 2, ly + lh / 2, loftD - 0.02, loftD));
       lampGlow.push(boxGeo(lx - lw / 2 + 0.01, lx + lw / 2 - 0.01, ly - lh / 2, ly + lh / 2, loftD - 0.11, loftD - 0.02));
@@ -391,15 +392,15 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
     // courtyard side, våning 3 (#337): brick flush with ours, up to the terrace parapet
     const low = core ? open(C.core.lower, x1 + H.wall - C.core.lowerW, roofTop) : open(C.lower, ox, roofTop);
     facade(bricks, x0, x1, roofTop, par, D + eps, false, low, false);
-    low.forEach((o) => courtWindow(o, D + eps));
-    if (core) solids.push(...entrySolid(x0 + 0.001, CORE.x0 - 0.03, roofTop, y3, loftD, D), ...entrySolid(CORE.x1 + 0.03, x1 - 0.001, roofTop, y3, loftD, D), boxGeo(CORE.x0, CORE.x1, roofTop + 2.68, y3, loftD, D)); // (the stairwell's top storey, #415)
+    if (!real) low.forEach((o) => courtWindow(o, D + eps));
+    if (real) { /* (#573) its rooms are world.js's */ } else if (core) solids.push(...entrySolid(x0 + 0.001, CORE.x0 - 0.03, roofTop, y3, loftD, D), ...entrySolid(CORE.x1 + 0.03, x1 - 0.001, roofTop, y3, loftD, D), boxGeo(CORE.x0, CORE.x1, roofTop + 2.68, y3, loftD, D)); // (the stairwell's top storey, #415)
     else solids.push(...entrySolid(x0 + 0.001, x1 - 0.001, roofTop, y3, loftD, D));
     // våning 4, set back behind the terrace: white render with the window and the terrace door
     // the terrace door's threshold sits on the finished deck (#350)
     const ta = core ? loftX1 : x0, up = (core ? open(C.core.upper, coreW, y3) : open(C.upper, ox, y3)).map((o) => ({ ...o, y0: Math.max(o.y0, deckY) }));
     facade(renders, ta, x1, y3, upperTop, zs + eps, false, up, false);
-    up.forEach((o) => courtWindow(o, zs + eps));
-    solids.push(boxGeo(x0 + 0.001, x1 - 0.001, y3, upperTop, loftD, zs));
+    if (!real) up.forEach((o) => courtWindow(o, zs + eps));
+    if (!real) solids.push(boxGeo(x0 + 0.001, x1 - 0.001, y3, upperTop, loftD, zs));
     if (!core) continue;
     // L1205's loft over the lift (#337, #349): its courtyard face `face` behind våning 3's (0: flush), in brick, rising
     // `rise` over the roof and reaching `back` north of the set-back line — breaks the terrace row
@@ -511,7 +512,19 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
   for (const [xa, xb] of H.solar.x) for (const [za, zb] of H.solar.z) surf('L-roof', 'Hus L:s tak', xa, xb, za, zb, roofY + 0.07); // step over them
   surf('L-loft', 'Loftet över hisstoppet', loftX0 - 0.03, loftX1 + 0.03, zt - 0.03, zf + 0.03, loftY);
   wallRect(walls, xw, xe, 0, D, low, roofTop); // våning 1–2 (a fall past the façades stays outside)
-  wallLine(walls, xw, loftD, CORE.loftDoor.x[0], loftD, roofTop, roofY); // the upper units' street face, over the loftgång (no way in) …
+  // a visited flat's street door and terrace door are ways in (#573): the walls stop there below the door's head (its own
+  // leaf collides, player.js); everywhere else as before
+  const visitDoors = (y) => uppers.filter(([, , ox, id]) => ox != null && visited(id)).map(([, , ox, id]) => (y === roofTop
+    ? streetOpenings(id, ox).find((o) => o.door) : open(C.upper, ox, y3).find((o) => o.y1 - o.y0 > 2)));
+  const gappedLine = (xa, xb, z, y0, y1, gaps) => {
+    let a = xa;
+    for (const g of gaps.filter(Boolean).sort((p, q) => p.x0 - q.x0)) {
+      if (g.x1 < xa || g.x0 > xb) continue;
+      wallLine(walls, a, z, g.x0, z, y0, y1); wallLine(walls, g.x0, z, g.x1, z, g.y1, y1); a = g.x1;
+    }
+    wallLine(walls, a, z, xb, z, y0, y1);
+  };
+  gappedLine(xw, CORE.loftDoor.x[0], loftD, roofTop, roofY, visitDoors(roofTop)); // the upper units' street face, over the loftgång (no way in) …
   wallLine(walls, CORE.loftDoor.x[1], loftD, xe, loftD, roofTop, roofY);
   wallLine(walls, CORE.loftDoor.x[0], loftD, CORE.loftDoor.x[1], loftD, roofTop + 2.2, roofY); // … but the stairwell's door (#415: its leaf is core.js's)
   for (const [ra, rb2] of [[deckX0, te.x - 1.2], [te.x + 1.2, xe]]) wallLine(walls, ra, rz, rb2, rz, roofTop - 0.3, roofTop + rh); // the loftgång railing
@@ -522,7 +535,7 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
     wallLine(walls, x, zs, x, D, roofTop, par);
     wallLine(walls, x + 0.1 * s, zs, x + 0.1 * s, D, deckY, deckY + C.rail); // the railing along the gable
   }
-  wallLine(walls, xw, zs, loftX0, zs, y3, roofY); // våning 4's set-back wall behind the terraces
+  gappedLine(xw, loftX0, zs, y3, roofY, visitDoors(y3)); // våning 4's set-back wall behind the terraces
   wallLine(walls, loftX1, zs, xe, zs, y3, roofY);
   for (const x of [loftX0, loftX1]) { wallLine(walls, x, zs, x, zf, y3, loftY); wallLine(walls, x, zt, x, zs, upperTop, loftY); } // the loft
   wallLine(walls, loftX0, zf, loftX1, zf, y3, loftY);
@@ -544,11 +557,11 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
   const plantingDoors = [
     ...units.map((u, index) => {
       const d = northOf(u.ox).find(o => o.y0 < .05 && (o.entryPane || o.y1 < 2.5));
-      return d && !visited(u.ox) && { unit: u.lower, index, x0: u.ox+d.x0, x1: u.ox+d.x1, y: 0, z: 0 }; // (a visited flat is empty: no pot, #574)
+      return d && !visited(u.lower) && { unit: u.lower, index, x0: u.ox+d.x0, x1: u.ox+d.x1, y: 0, z: 0 }; // (a visited flat is empty: no pot, #574)
     }).filter(Boolean),
     ...uppers.filter(u => u[2] != null).map(([x0,x1,ox,id], index) => {
       const d = streetOpenings(id,ox,x1).find(o => o.door);
-      return d && { unit: id, index, x0: d.x0, x1: d.x1, y: roofTop, z: loftD };
+      return d && !visited(id) && { unit: id, index, x0: d.x0, x1: d.x1, y: roofTop, z: loftD }; // (#573: empty)
     }).filter(Boolean),
   ];
   const planting = buildEntrancePlants(plantingDoors, groundY);

@@ -83,6 +83,7 @@ src/visitunit.js       other flats you can walk into (#574, VISIT_UNITS): `Visit
                        coordinates), doors / windows / lids as E targets (`visit` flag: no score, no cat, not kept), rooms,
                        stair and slabs; `world.units` / `world.unitAt(x, z)`; player.js `unit` / `unitLevel`
 src/standardinterior.js Peab's standard fixed interior (STANDARD): white kitchen + appliances, laundry, wet rooms, static
+src/l1201plan.js       L1201's own floor plan (#573), plan.json's format, read off its bofakta sheet's vector paths (comments: sources)
 tools/visittest.html   #574: L1004 at its slot, in through its front door, round Entréplan, onto its patio, up its stair,
                        walls / doors hold, HUD, empty of our things, nothing saved, resume inside it, shadows follow
 data/plan.json         GENERATED — do not edit by hand
@@ -167,4 +168,19 @@ façade lines are cut there; its Övre plan has segments of its own (player.js),
 `world.movingSegments(0)`. The sun's shadow box moves onto it within `STANDARD.near` m (main.js). Nothing is saved for it:
 doors and windows start shut on every visit, nothing can be put down in it (`floorSpot`). Its geometry beyond the shared sheet
 is as preliminary as L1007's (SLAB, soffits, stair: *guess* where marked).
+
+L1201 (#573): the west end flat of våning 3–4, entered from the loftgång, the second `VISIT_UNITS` entry (`plan: 'L1201'`).
+Its sheet is its own (`src/l1201plan.js`: walls, openings, door swings, cabinets and fixtures read off bofakta-l1201.pdf's
+vector paths at 1:100, ±1–2 cm drawing measures; the base plan with Allrum; the dashed bathtub is a tillval, the shower is
+the standard). `L1201` in config holds what the sheet gives besides: RH 2.5 (the legend), the Klk's RH 2.2 soffit, sills,
+the opening (stair + the "Öppet upp" void), the galley kitchen, the wet rooms; floors = våning 3 / 4 (VERTICAL, assumption).
+world.js `buildVisitFlat` builds it with `buildLevel` (now taking `how.levels / hole / windows / soffits / extDoorHead /
+kitchen`) in a group at its slot's `ox` and `oz` = HUS_L.loftgangDepth, and `buildOwnStructure`: the slab, the roof zone,
+our stair mapped onto its outline (`stairMap`: same type, mirrored in x and scaled, risers 3.0 / 16; geometry baked, the
+winding turned back; *guess*: no stair drawing; no handrails yet) and the H 1.1 railing. `VisitUnit` now takes per-level
+footprints, an opening, stair functions and `ground` (false: its walls are its own, not level 0's); `world.unitAt(x, z, y)`
+tells its rooms from its roof and its terrace. exterior.js leaves its street / courtyard openings open (no fake glass, no
+entrance leaf, no mass) and cuts the roof walk walls at its street door and terrace door (`gappedLine`); player.js adds its
+door leaves to the loftgång / terrace collision (`doorSegmentsAt`). tools/visittest.html walks the loftgång → hall → galley
+→ living room → its stair → Allrum (the railing holds) → terrace → back → Sovrum 1.
 

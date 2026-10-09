@@ -105,6 +105,50 @@ const load = (q = '') => new Promise((resolve) => {
     check(keptBefore === keptAfter, `opening everything in it changes nothing in the saved world's open doors / lids (${keptAfter.length} chars)`);
     const keys = Object.keys(w.localStorage).filter((k) => /L1004|visit/i.test(k) || /L1004/.test(w.localStorage.getItem(k) ?? ''));
     check(!keys.length, `no stored key mentions it (${keys.join(', ')})`);
+    // #573: L1201 up on våning 3–4, from the loftgång: its own sheet, its stair, its terrace
+    const u1 = world.units.find((u) => u.id === 'L1201'), qx = u1?.ox, qz = u1?.oz;
+    const W1 = (x, z) => [qx + x, qz + z]; // its plan coordinates → world
+    check(u1 && Math.abs(qx - husLLayout().units.find((u) => u.upper === 'L1201').ox) < 1e-6 && Math.abs(u1.bottom - C.storeyFloor(3)) < 1e-6, `L1201 at its slot on våning 3 (ox ${qx}, floor ${u1?.bottom})`);
+    const stand = (x, z, y, yaw = Math.PI) => { player.spawn(x, z, yaw); player.pos.y = y; player.eyeY = y + 1.62; player.vy = 0; player.fall = null; settle(5); };
+    const front1 = doorNear(...W1(1.3, 0.12), u1.doors), terr = doorNear(...W1(3.55, 9.0), u1.doors);
+    check(front1 && terr, 'its street door and terrace door');
+    stand(qx + 1.3, 0.8, C.storeyFloor(3));
+    check(player.aloft && /Loftgången/.test((step(dt), label())), `on the loftgång in front of it: "${label()}"`);
+    check(walk([W1(1.3, 1.5)], 5).stuck, 'its shut street door holds from the loftgång');
+    stand(qx + 1.3, 0.9, C.storeyFloor(3)); A.use(front1); settle();
+    const t1 = walk([W1(1.3, 0.6), W1(1.3, 1.0)]);
+    check(!t1.stuck && /^L1201 · Entréplan · Hall/.test(label()) && !player.outdoors, `in through it: "${label()}"`);
+    const t2 = walk([W1(1.6, 2.3), W1(3.9, 2.3), W1(3.9, 4.0)]);
+    check(!t2.stuck && /Kök \/ matplats/.test(label()), `along its galley kitchen: "${label()}"`);
+    const t3 = walk([W1(3.9, 8.5)]);
+    check(!t3.stuck && /Vardagsrum/.test(label()), `the living room: "${label()}"`);
+    stand(...W1(3.9, 2.0), C.storeyFloor(3));
+    check(walk([W1(1.4, 4.4)], 5).stuck, 'the wall to the bathroom holds');
+    // its stair: our stair's route mapped onto its outline
+    stand(...W1(3.2, 7.65), C.storeyFloor(3));
+    const t4 = walk([W1(2.806, 7.654), W1(1.349, 7.654), W1(0.621, 7.516), W1(0.576, 6.663), W1(1.349, 6.663), W1(2.533, 6.663), W1(3.0, 7.2)]);
+    check(!t4.stuck && Math.abs(player.pos.y - C.storeyFloor(4)) < 0.02 && /^L1201 · Övre plan · Allrum/.test(label()), `up its stair: y ${player.pos.y.toFixed(2)} "${label()}"`);
+    check(walk([W1(1.0, 8.4)], 5).stuck && Math.abs(player.pos.y - C.storeyFloor(4)) < 0.02, 'the railing by the stair and the open void holds');
+    stand(...W1(3.0, 7.2), C.storeyFloor(4));
+    check(walk([W1(3.55, 9.6)], 5).stuck, 'the shut terrace door holds');
+    stand(...W1(3.55, 8.6), C.storeyFloor(4)); A.use(terr); settle();
+    const t5 = walk([W1(3.55, 9.6), W1(3.55, 10.4)]);
+    check(!t5.stuck && player.aloft && /Takterrassen L1201/.test(label()), `out onto its roof terrace: "${label()}" y ${player.pos.y.toFixed(2)}`);
+    const t6 = walk([W1(3.55, 8.6)]);
+    check(!t6.stuck && /^L1201 · Övre plan/.test(label()), `back in from the terrace: "${label()}"`);
+    stand(...W1(3.2, 6.9), C.storeyFloor(4));
+    const s1d = doorNear(...W1(2.59, 4.65), u1.doors); A.use(s1d); settle();
+    const t7 = walk([W1(2.6, 5.4), W1(2.6, 3.0)]);
+    check(!t7.stuck && /Sovrum 1/.test(label()), `into Sovrum 1: "${label()}"`);
+    const strays1 = [];
+    const own1 = new Set(); u1.object.traverse((o) => own1.add(o));
+    A.scene.traverse((o) => {
+      if (!o.isMesh || own1.has(o) || !o.geometry?.attributes?.position) return;
+      for (let p = o; p; p = p.parent) if (!p.visible) return;
+      const b = B3(o);
+      if (b.min.x > qx + 0.21 && b.max.x < qx + 5.54 && b.min.z > qz + 0.37 && b.max.z < qz + 8.83 && b.min.y > C.storeyFloor(3) - 0.05 && b.max.y < C.storeyFloor(5) - 0.4) strays1.push(o.name || o.type);
+    });
+    check(!strays1.length, `L1201 empty of anything else: ${strays1.length} ${strays1.slice(0, 5).join(', ')}`);
     // back home: shadows centred on ours again, our labels as before
     player.spawn(C.START.x, C.START.z, Math.PI); settle(5);
     check(Math.abs(A.scene.children.find((o) => o.isDirectionalLight && o.castShadow).target.position.x - world.size.x / 2) < 1e-6, 'back at ours: the shadows on L1007 again');

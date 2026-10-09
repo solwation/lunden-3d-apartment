@@ -3,9 +3,9 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import {
   LAUNDRY, WARDROBE, LEVELS, UNIT_TOP, SOFFITS, DOOR_HEIGHT, DOOR_TRIM, EXT_DOOR_HEAD, WINDOWS, WINDOW_TOP_HUNG_MAX, BLINDS, CABINET_HEIGHT, BASE_CABINET, SHELF_HEIGHT, TOILET,
   STAIR, COLORS, FENCE_HEIGHT, SITE, OUTDOOR, CABINET_FIXES, KLK, SEASON, FINISH, OPTIONS, EXTRA_WALLS, SLIDE_FLIP, ROOM_RENAMES, EXTRA_ROOMS, ROOM_DIVIDERS, CORE, PORTIK,
-  STANDARD, VISIT_UNITS,
+  STANDARD, VISIT_UNITS, L1201, HUS_L, storeyFloor,
 } from './config.js';
-import { buildStairs, buildHandrails } from './stairs.js';
+import { buildStairs, buildHandrails, stairHeight, stairUnderside } from './stairs.js';
 import { klkFittings } from './closet.js';
 import { cleaningFittings } from './cleaning.js';
 import { Openable } from './openables.js';
@@ -34,6 +34,7 @@ import { Blinds } from './blinds.js';
 import { Roofs, wallRect } from './roofs.js';
 import { buildStandardInterior } from './standardinterior.js';
 import { VisitUnit } from './visitunit.js';
+import { L1201_PLAN } from './l1201plan.js';
 
 const mat = (color, extra = {}) => new THREE.MeshStandardMaterial({ color, roughness: 0.85, ...extra });
 
@@ -325,7 +326,7 @@ function toiletAgainstWall(tank, bowl, wallBoxes) {
  * sash opens outwards with E (#103, #272): hinged along its head, the bottom swings out; `out` = ±1 the way out along
  * z. `split` (the living room): an off-centre mullion, the sash takes that share of the width on side `opens`
  * ('a' = x0, 'b' = x1), the other side is a fixed pane. Returns the Openables. */
-function addWindowFrame(group, x0, x1, fz, y0, y1, transom, out = -1, opens = true, { split = 0, opens: side = 'a', max = WINDOW_TOP_HUNG_MAX, ox = 0 } = {}) {
+function addWindowFrame(group, x0, x1, fz, y0, y1, transom, out = -1, opens = true, { split = 0, opens: side = 'a', max = WINDOW_TOP_HUNG_MAX, ox = 0, oz = 0 } = {}) {
   const ft = 0.06, d = 0.05;
   const z0 = fz - d, z1 = fz + d;
   group.add(box(x0, x1, z0, z1, y0, y0 + ft, M.frame));
@@ -361,7 +362,7 @@ function addWindowFrame(group, x0, x1, fz, y0, y1, transom, out = -1, opens = tr
   // top-hung: turning +y about +x sends the bottom towards −z
   const o = new Openable({ name: 'fönstret', object: pivot, mode: 'flap', axis: [1, 0, 0], sign: -out, max, speed: 1.6 }); // (`max`: a per-window stop, #429)
   o.normal = new THREE.Vector3(0, 0, -out); // the room side (tests stand there)
-  const toggle = o.toggle.bind(o), at = new THREE.Vector3((a + b) / 2 + ox, (lo + hi) / 2, zo); // (`ox`: a visited flat's offset, #574)
+  const toggle = o.toggle.bind(o), at = new THREE.Vector3((a + b) / 2 + ox, (lo + hi) / 2, zo + oz); // (`ox`: a visited flat's offset, #574)
   o.toggle = () => { toggle(); o.wind?.stop(); o.wind = o.isOpen ? sfx.wind(at) : null; }; // the wind blows in while it is open
   return [o];
 }
@@ -392,14 +393,14 @@ function letterFlap(door, plate) {
   part(0.01, 0.008, 0.08, outX * 0.006, -h + 0.008, 0, brass, pivot);                // a little lip to lift it by
   door.object.add(pivot);
   door.keep = [pivot];
-  namePlate(door, outX, plate); // "Budil Wingren" above the letter box (#595); a visited flat's number (#574)
+  if (plate !== null) namePlate(door, outX, plate); // "Budil Wingren" above the letter box (#595); a visited flat's number (#574)
   // about the leaf's z axis: +angle swings the bottom edge towards +x
   return new Openable({ name: 'brevinkastet', object: pivot, mode: 'flap', axis: [0, 0, 1], sign: outX, max: 70, speed: 3 });
 }
 
 function buildLevel(floor, li, group, how = OURS) {
   const M = how.mats, std = how.standard; // (a visited flat: the standard finish, none of our choices, #574)
-  const L = LEVELS[li];
+  const L = (how.levels ?? LEVELS)[li], hole = how.hole ?? STAIR.hole; // (a visited flat's own storeys and opening, #573)
   const y0 = L.floor;
   const yC = y0 + L.ceiling;
   const W = floor.size.x, D = floor.size.z;
@@ -426,9 +427,9 @@ function buildLevel(floor, li, group, how = OURS) {
   for (const pr of floor.windows) {
     const facade = pr.z0 < D / 2 ? 'north' : 'south';
     const cx = (pr.x0 + pr.x1) / 2;
-    let spec = WINDOWS.filter((w) => w.level === li && w.facade === facade)
+    let spec = (how.windows ?? WINDOWS).filter((w) => w.level === li && w.facade === facade)
       .sort((a, b) => Math.abs(a.x - cx) - Math.abs(b.x - cx))[0];
-    if (std) { const { max, ...plain } = spec; spec = { ...plain, ox: how.ox }; } // (our sofa's sash stop is ours, #429)
+    if (std) { const { max, ...plain } = spec; spec = { ...plain, ox: how.ox, oz: how.oz ?? 0 }; } // (our sofa's sash stop is ours, #429)
     const sill = y0 + spec.sill, head = y0 + spec.head;
     // `width` narrows the PDF opening around its centre; the rest is solid wall
     let r = pr;
@@ -476,7 +477,7 @@ function buildLevel(floor, li, group, how = OURS) {
     const [a, b] = axis === 'x' ? [Math.min(hx, wx), Math.max(hx, wx)] : [Math.min(hz, wz), Math.max(hz, wz)];
     const gap = findGap(wallBoxes, axis, c, a + 0.02, b - 0.02);
     const exterior = tz < 0 || tz > D;
-    const head = y0 + (exterior ? EXT_DOOR_HEAD : DOOR_HEIGHT);
+    const head = y0 + (exterior ? how.extDoorHead ?? EXT_DOOR_HEAD : DOOR_HEIGHT);
     const tillval = d.optional && (std || !OPTIONS.allrumDoor); // Peab tillval (dashed door), see OPTIONS
     if (gap && !(tillval && std)) group.add(gapBox(gap, head, yC, M.wall)); // (the standard: no tillval wall, no lintel, #574)
     if (gap) barriers.push(gapRect(gap)); // (a room boundary even when open: Allrum | Hall)
@@ -581,7 +582,7 @@ function buildLevel(floor, li, group, how = OURS) {
   const handled = new Set();
   const taps = []; // tap/shower outlets for running water (main.js)
   const appliances = [...windows]; // things that open with E but aren't doors (the fridge, the windows)
-  const fitted = std ? buildStandardInterior(group, floor, li, y0, yC, wallBoxes, handled, doorways) // Peab's standard (#574)
+  const fitted = std ? buildStandardInterior(group, floor, li, y0, yC, wallBoxes, handled, doorways, how.kitchen) // Peab's standard (#574)
     : buildInterior(group, floor, li, y0, yC, wallBoxes, handled, taps, appliances, doorways);
   for (const r of fitted) segments.push(...rectSegments(r));
 
@@ -652,15 +653,15 @@ function buildLevel(floor, li, group, how = OURS) {
   }
 
   // Floor of this level (upper level has the stair opening)
-  group.add(...plateAround(0, W, 0, D, li === 1 ? STAIR.hole : null, y0 + 0.002, M.floor));
+  group.add(...plateAround(0, W, 0, D, li === 1 ? hole : null, y0 + 0.002, M.floor));
   // Ceiling: underside of the slab / roof
-  group.add(...plateAround(0, W, 0, D, li === 0 ? STAIR.hole : null, yC - 0.002, M.ceiling, true));
+  group.add(...plateAround(0, W, 0, D, li === 0 ? hole : null, yC - 0.002, M.ceiling, true));
 
   // contact shadows along walls and cabinets (floor) and in the ceiling corners
   group.add(buildAO({ x: W, z: D }, y0, yC, [...wallBoxes, ...floor.windows, ...floor.cabinets], wallBoxes,
-    { floorHole: li === 1 ? STAIR.hole : null, ceilHole: li === 0 ? STAIR.hole : null }));
+    { floorHole: li === 1 ? hole : null, ceilHole: li === 0 ? hole : null }));
 
-  for (const s of SOFFITS.filter((s) => s.level === li)) {
+  for (const s of (how.soffits ?? SOFFITS).filter((s) => s.level === li)) {
     group.add(box(s.x0, s.x1, s.z0, s.z1, y0 + s.height, yC - 0.004, M.ceiling, { shadow: false }));
   }
 
@@ -716,30 +717,89 @@ function buildStructure(scene, lower, l1, W, D, M) {
   for (const m of [...buildHandrails(M.rail).children]) scene.add(m);
 }
 
-/** A flat you can walk into (#574, VISIT_UNITS): built like ours from the same sheet, in Peab's standard finish and empty,
- * in a group at its own place in the row (`ox` along x), then handed to visitunit.js (collision, targets, rooms). */
+/** L1201's slab, roof zone, stair and railing (#573, L1201 in config): our stair type mapped onto its sheet's outline (the
+ * same flights and winders, mirrored in x and scaled; `stairMap`), the railing along its opening, the upstand between
+ * the flights. Plan coordinates, absolute y. */
+function stairMap(P, L) {
+  const S = P.stair, sx = (S.x1 - S.x0) / (STAIR.winderX1 - STAIR.bX1), sz = (S.z1 - S.z0) / (STAIR.aZ[1] - STAIR.bZ[0]);
+  const ky = (L[1].floor - L[0].floor) / (LEVELS[1].floor - LEVELS[0].floor);
+  const toOurs = (x, z) => [STAIR.bX1 + (S.x1 - x) / sx, STAIR.bZ[0] + (z - S.z0) / sz];
+  const y = (h) => (h === null ? null : L[0].floor + (h - LEVELS[0].floor) * ky);
+  const matrix = new THREE.Matrix4().makeTranslation(S.x1 + sx * STAIR.bX1, L[0].floor - LEVELS[0].floor * ky, S.z0 - sz * STAIR.bZ[0])
+    .multiply(new THREE.Matrix4().makeScale(-sx, ky, sz));
+  return { sx, sz, ky, matrix, height: (x, z) => y(stairHeight(...toOurs(x, z))), underside: (x, z) => y(stairUnderside(...toOurs(x, z))),
+    x: (x7) => S.x1 - (x7 - STAIR.bX1) * sx };
+}
+function buildOwnStructure(group, lower, upper, l1, P, L, map) {
+  const h = P.hole, W = lower.size.x;
+  for (const [x0, x1, z0, z1] of [[0, W, 0, h.z0], [0, W, h.z1, lower.size.z], [0, h.x0, h.z0, h.z1], [h.x1, W, h.z0, h.z1]]) {
+    group.add(box(x0, x1, z0, z1, L[0].floor + L[0].ceiling, L[1].floor, SM.wall));
+  }
+  group.add(box(0, upper.size.x, 0, upper.size.z, L[1].floor + L[1].ceiling, L[1].top, SM.wall)); // under the roof
+  // the stair: ours, mapped (a mirror: the triangles' winding is turned back)
+  const stair = buildStairs([SM.floor, SM.riser]);
+  stair.updateMatrixWorld(true);
+  stair.traverse((o) => {
+    if (!o.isMesh) return;
+    let g = o.geometry.clone().applyMatrix4(new THREE.Matrix4().multiplyMatrices(map.matrix, o.matrixWorld));
+    if (g.index) g = g.toNonIndexed();
+    for (const a of Object.values(g.attributes)) for (let i = 0; i < a.count; i += 3) for (let k = 0; k < a.itemSize; k++) {
+      const t = a.getComponent(i + 1, k); a.setComponent(i + 1, k, a.getComponent(i + 2, k)); a.setComponent(i + 2, k, t);
+    }
+    const m = new THREE.Mesh(g, o.material); m.castShadow = m.receiveShadow = true; group.add(m);
+  });
+  // the railing (H 1.1): along the opening's east edge to the set-back wall, the middle run on the upstand over the wall
+  // between the flights (the Klk's south wall carried up, as ours, #232)
+  const R = P.railing, y1 = L[1].floor, rail = R.h, midZ = R.z0, cx = map.x(STAIR.center[0]);
+  const mid = lower.walls.map((w) => bboxOf(w.outer)).find((b) => b.z0 <= midZ && b.z1 >= midZ && b.x1 >= R.x - 0.05 && b.x0 < R.x);
+  if (mid) group.add(box(mid.x0, Math.min(mid.x1, R.x), mid.z0, mid.z1, L[0].floor + L[0].ceiling - 0.01, y1, SM.wall));
+  const runs = [[R.x, midZ, R.x, R.z1], [R.x, midZ, cx, midZ]];
+  for (const [ax, az, bx, bz] of runs) {
+    group.add(box(Math.min(ax, bx) - 0.02, Math.max(ax, bx) + 0.02, Math.min(az, bz) - 0.02, Math.max(az, bz) + 0.02, y1 + rail - 0.05, y1 + rail, SM.rail));
+    const n = Math.max(2, Math.round(Math.hypot(bx - ax, bz - az) / 0.12));
+    for (let i = 1; i < n; i++) { const x = ax + ((bx - ax) * i) / n, z = az + ((bz - az) * i) / n; group.add(box(x - 0.01, x + 0.01, z - 0.01, z + 0.01, y1, y1 + rail, SM.rail)); }
+  }
+  const np = STAIR.newel / 2;
+  for (const [x, z] of [[R.x, midZ], [cx, midZ], [R.x, R.z1 - np]]) group.add(box(x - np, x + np, z - np, z + np, y1 - 0.01, y1 + rail + 0.03, SM.rail));
+  l1.segments.push(...runs);
+}
+
+/** A flat you can walk into (#574, #573, VISIT_UNITS): built like ours from its sheet, in Peab's standard finish and
+ * empty, in a group at its own place in the row (`ox` along x, `oz` along z), then handed to visitunit.js (collision,
+ * targets, rooms). 'shared': L1007's sheet (L1004: same storeys, same stair); else its own plan + config (L1201). */
 function buildVisitFlat(plan, U, ox) {
+  const own = U.plan === 'L1201', P = own ? L1201 : null;
+  if (own) plan = L1201_PLAN;
+  const oz = own ? HUS_L.loftgangDepth : 0;
   const group = new THREE.Group();
   group.name = `lägenhet ${U.id}`;
-  group.position.x = ox;
+  group.position.set(ox, 0, oz);
   group.updateMatrixWorld(true);
-  const how = { standard: true, mats: SM, plate: U.plate, ox };
   const [lower, upper] = plan.floors, W = lower.size.x, D = lower.size.z;
+  const L = own ? P.levels.map((v, i) => ({ name: v.name, floor: storeyFloor(3 + i), ceiling: v.rh, top: storeyFloor(4 + i) }))
+    : LEVELS.map((v) => ({ name: v.name, floor: v.floor, ceiling: v.ceiling, top: v.top }));
+  const how = { standard: true, mats: SM, plate: U.plate, ox, oz,
+    ...(own ? { levels: L, hole: P.hole, windows: P.windows, soffits: P.soffits, extDoorHead: P.extDoorHead, kitchen: P.kitchen } : {}) };
   const keep = wardrobeSpecs.length;
   const l0 = buildLevel(lower, 0, group, how), l1 = buildLevel(upper, 1, group, how);
   wardrobeSpecs.length = keep; // empty wardrobes: nobody lives here
-  buildStructure(group, lower, l1, W, D, SM);
+  const map = own ? stairMap(P, L) : null;
+  if (own) buildOwnStructure(group, lower, upper, l1, P, L, map); else buildStructure(group, lower, l1, W, D, SM);
   const doors = [...l0.doors, ...l1.doors], lids = [...l0.lids, ...l1.lids, ...l0.appliances, ...l1.appliances];
   const moving = [...doors, ...lids].map((d) => d.object);
-  const edges = architectureEdges(group, { moving, floor: LEVELS[1].floor });
+  const edges = architectureEdges(group, { moving, floor: L[1].floor });
   // the plan's own room names (no tillval: Allrum stays Allrum)
-  const rooms = plan.floors.map((f, li) => [...f.rooms, ...EXTRA_ROOMS.filter((r) => r.level === li)]);
-  const roomMaps = [l0, l1].map((l, li) => new RoomMap({ x: W, z: D }, [...l.barriers, ...ROOM_DIVIDERS.filter((d) => d.level === li)], rooms[li]));
+  const rooms = plan.floors.map((f, li) => [...f.rooms, ...(own ? [] : EXTRA_ROOMS.filter((r) => r.level === li))]);
+  const dividers = own ? P.dividers : ROOM_DIVIDERS;
+  const roomMaps = [l0, l1].map((l, li) => new RoomMap({ x: W, z: D }, [...l.barriers, ...dividers.filter((d) => d.level === li)], rooms[li]));
   const box3 = new THREE.Box3(), mid = new THREE.Vector3();
-  mergeStatic(group, moving.concat(edges ? [edges] : []), (o) => { box3.setFromObject(o).getCenter(mid); return mid.y < LEVELS[1].floor - 0.05 ? 'l0' : 'l1'; });
+  mergeStatic(group, moving.concat(edges ? [edges] : []), (o) => { box3.setFromObject(o).getCenter(mid); return mid.y < L[1].floor - 0.05 ? 'l0' : 'l1'; });
   for (const d of doors) mergeStatic(d.object, d.keep ?? [], () => '', { tagged: true });
-  return new VisitUnit({ id: U.id, ox, size: { x: W, z: D }, object: group, levels: [l0, l1], doors, lids, roomMaps,
-    shell: [SM.wall, SM.ceiling, SM.floor, SM.frame] }); // (what shows from afar, #574)
+  const rect = (f) => ({ x0: Math.min(0, ...f.walls.flatMap((w) => w.outer.map((q) => q[0]))), x1: f.size.x, z0: 0, z1: f.size.z });
+  const levels = L.map((v, i) => ({ ...v, rect: rect(plan.floors[i]), hole: i === 1 ? (own ? P.hole : STAIR.hole) : null }));
+  return new VisitUnit({ id: U.id, ox, oz, object: group, levels, built: [l0, l1], doors, lids, roomMaps, ground: !own,
+    stair: own ? map : { height: stairHeight, underside: stairUnderside },
+    shell: [SM.wall, SM.ceiling, SM.floor, SM.frame], glass: SM.glass }); // (what shows from afar: its rooms behind glass, #574)
 }
 
 export function buildWorld(plan) {
@@ -763,7 +823,7 @@ export function buildWorld(plan) {
   buildStructure(scene, lower, l1, W, D, M); // the slab, the roof zone, the stair and its railing
   // the other flats you can walk into (#574), each at its own slot in the row
   const slots = husLLayout(W).units;
-  const units = VISIT_UNITS.filter((U) => U.plan === 'shared').map((U) => buildVisitFlat(plan, U, slots.find((u) => u.lower === U.slot).ox));
+  const units = VISIT_UNITS.map((U) => buildVisitFlat(plan, U, slots.find((u) => u.lower === U.slot || u.upper === U.slot).ox));
 
   const PD=PORTIK.door;
   const portikDoor=new SwingDoor({hinge:[PD.x,PD.z1],tip:[PD.x-(PD.z1-PD.z0),PD.z1],wall:[PD.x,PD.z0]},0,mat(PD.color),false);
@@ -818,7 +878,7 @@ export function buildWorld(plan) {
   // Hus L: brick façades, the neighbouring units, the stacked units above and the loftgång
   const north = [...l0.openings.north, ...l1.openings.north];
   const south = [...l0.openings.south, ...l1.openings.south];
-  const exterior = buildExterior({ W, D, roofTop: UNIT_TOP, north, south, frame: M.frame, wall: M.wall, site, mats: M, visits: units.map((u) => u.ox) });
+  const exterior = buildExterior({ W, D, roofTop: UNIT_TOP, north, south, frame: M.frame, wall: M.wall, site, mats: M, visits: units.map((u) => u.id) });
   scene.add(exterior);
   const surroundings = buildSurroundings({ grass: M.grass });
   const courtyard = buildCourtyard(); // walks, pergola, grill, sandboxes, boule, benches, beds (#80)
@@ -841,13 +901,13 @@ export function buildWorld(plan) {
   const cut = (segs) => segs.flatMap(([ax, az, bx, bz]) => {
     if (az !== bz) return [[ax, az, bx, bz]];
     let parts = [[Math.min(ax, bx), Math.max(ax, bx)]];
-    for (const u of units) parts = parts.flatMap(([a, b]) => [[a, Math.min(b, u.ox)], [Math.max(a, u.ox + W), b]].filter(([c, d]) => d - c > 1e-6));
+    for (const u of units.filter((v) => v.ground)) parts = parts.flatMap(([a, b]) => [[a, Math.min(b, u.ox)], [Math.max(a, u.ox + W), b]].filter(([c, d]) => d - c > 1e-6));
     return parts.map(([a, b]) => [a, az, b, bz]);
   });
   outdoor.push(
     [o.x0, o.z0, o.x1, o.z0], [o.x1, o.z0, o.x1, o.z1], [o.x1, o.z1, o.x0, o.z1], [o.x0, o.z1, o.x0, o.z0],
     ...cut([[xw, 0, p0, 0], [p1, 0, 0, 0], [W, 0, xe, 0], [xe, 0, xe, D], [xw, D, p0, D], [p1, D, 0, D], [W, D, xe, D], [xw, D, xw, 0]]),
-    ...units.flatMap((u) => u.fixed[0]), // its Entréplan walls: in the way from the street and the patio too
+    ...units.filter((u) => u.ground).flatMap((u) => u.fixed[0]), // its Entréplan walls: in the way from the street and the patio too
     ...exterior.userData.portik.segments, // same calibrated room boundaries as actual geometry (#520)
     ...exterior.userData.segments,
     ...surroundings.userData.segments.filter((s) => Math.max(s[0], s[2]) > o.x0 - 1 && Math.min(s[0], s[2]) < o.x1 + 1
@@ -932,7 +992,7 @@ export function buildWorld(plan) {
     furnitureTargets: furniture.interactives, // E targets among the furniture (the TV), hidden with F
     /** Collision of moving furniture parts (the secretary's open flap, #118) on `level`. */
     movingSegments(level) {
-      const visit = level === 0 ? units.flatMap((u) => u.doorSegments(0)) : []; // a visited flat's Entréplan doors (#574)
+      const visit = level === 0 ? units.filter((u) => u.ground).flatMap((u) => u.doorSegments(0)) : []; // a visited flat's Entréplan doors (#574)
       if (!furniture.object.visible) return visit;
       const away = (o) => { for (; o; o = o.parent) if (o.userData.seasonHidden) return true; return false; }; // hidden by the Christmas tree (#571)
       const own = furniture.interactives.filter((t) => t.segments && t.level === level && !away(t.pickable)).flatMap((t) => t.segments());
@@ -946,7 +1006,7 @@ export function buildWorld(plan) {
     roofs, // the walkable roofs outdoors (#360)
     units, // the other flats you can walk into (#574, visitunit.js)
     /** The visited flat whose footprint (x, z) is in, or null (#574). */
-    unitAt: (x, z) => units.find((u) => u.contains(x, z)) ?? null,
+    unitAt: (x, z, y) => units.find((u) => u.contains(x, z, y)) ?? null,
     upperSegments: surroundings.userData.upper, // the box's edge over the garage door: in the way only up on the courtyard (#357)
     portik: {...exterior.userData.portik,doorTarget:portikDoor},
     doors: [...l0.doors, ...l1.doors,portikDoor],

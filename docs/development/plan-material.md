@@ -330,3 +330,11 @@ smooth white Marbodal fronts, white Electrolux appliances, white walls and ceili
 matt-lacquered 3-stav oak parquet with white skirting, windows white inside; hall klinker is a tillval (bofakta "KL"), so
 parquet there. Colours and everything unnamed (worktop, handles, tiles, sanitary ware, mixers, wall cabinets, hood) are
 *guess* in `STANDARD`. Its name plate reads "Lasse" (the user's wish, not Peab material).
+
+L1201 (#573, `L1201` in config, `src/l1201plan.js`): bofakta-l1201.pdf (2024-11-08; Peab's object page's PNG points at L1205's,
+so the sheet is the source): 99 m², 4 rok, våning 3–4 (54 + 45 m²), entrance from the loftgång, takterrass 12 m²; the base plan
+with Allrum (the third bedroom is the alternative plan). Read off the sheet: outside 6.01 × 11.10 m (entrance floor), the upper
+floor 9.20 m deep; the west gable 0.46 m; all façade openings agree with HUS_L.street / court (±2 cm). RH 2.5 is the sheet's
+legend default, the Klk upstairs RH 2.2; floor-to-floor 3.0 and window heads 2.3 are assumptions. Its stair is our stair type
+mapped onto the sheet's outline (*guess*); the bathtub is dashed on the sheet (a tillval): the standard shower is built.
+

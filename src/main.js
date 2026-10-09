@@ -1671,13 +1671,12 @@ function throughSlab(a, b) {
  * raycast (it only tests pickables), so check the line against the level's wall outlines. */
 function behindWall(p) {
   if (player.aloft && p.y < UNIT_TOP && p.x > 0 && p.x < world.size.x && p.z > 0 && p.z < world.size.z) return true; // up on the roof: the flat is under it (#360)
-  const pu = world.unitAt(p.x, p.z), u = player.unit; // a visited flat (#574): under the roof too, its slabs, its walls
-  if (player.aloft && pu && p.y < pu.top) return true;
+  const u = player.unit, pu = !u && player.aloft && p.y !== undefined ? world.unitAt(p.x, p.z, p.y) : null; // a visited flat (#574): its slabs, its walls (from its loftgång / terrace too, #573)
   if (u && p.y !== undefined && u.throughSlab(camera.position, p)) return true;
   // a floor / ceiling between (#446: the bed upstairs through the kitchen ceiling); a plan point without y (standFree's
   // floor spot on the visitor's own level) has no slab between: NaN would read as "through" (#454)
   if (p.y !== undefined && throughSlab(camera.position, p)) return true;
-  const segs = u ? u.walls[player.unitLevel] : world.levels[Math.max(0, player.level)]?.wallSegments ?? [];
+  const segs = u ? u.walls[player.unitLevel] : pu ? pu.walls[pu.levelAt(p.y)] : world.levels[Math.max(0, player.level)]?.wallSegments ?? [];
   const ax = camera.position.x, az = camera.position.z, bx = p.x, bz = p.z;
   return segs.some(([cx, cz, dx, dz]) => {
     const d = (bx - ax) * (dz - cz) - (bz - az) * (dx - cx);
@@ -2185,7 +2184,7 @@ function step(dt) {
   day.lit = garage.lit; // … but the tubes' light on the cars (#440)
   { // the sun's shadow box (±14 m round its target) follows the visitor to a visited flat (#574): centred on it within
     // STANDARD.near m of its footprint, else on ours — without it the sun would shine through its roof and walls
-    const p = player.pos, near = world.units.find((u) => p.x > u.ox - STANDARD.near && p.x < u.ox + u.size.x + STANDARD.near && p.z > -STANDARD.near && p.z < u.size.z + STANDARD.near);
+    const p = player.pos, n = STANDARD.near, near = world.units.find((u) => p.x > u.box.x0 - n && p.x < u.box.x1 + n && p.z > u.box.z0 - n && p.z < u.box.z1 + n && p.y > u.bottom - n);
     const fx = near ? near.centre.x : cx;
     if (sun.target.position.x !== fx) { sun.target.position.x = fx; sun.target.updateMatrixWorld(); shadowState.hold = Math.max(shadowState.hold, 0.1); }
   }

@@ -4,11 +4,11 @@ try{
  const f=document.createElement('iframe');f.src='../index.html?phone&shot&cloud=';document.body.append(f);await new Promise(r=>f.onload=r);while(!f.contentWindow.__app)await wait(100);const w=f.contentWindow,A=w.__app,T=await w.eval("import('three')"),config=await w.eval("import('/src/config.js')"),C=config.ENTRANCE_PLANTS;
  f.contentDocument.documentElement.requestFullscreen=undefined;f.contentDocument.getElementById('start-touch').click();A.renderer.setAnimationLoop(null);A.renderer.setPixelRatio(.15);A.renderer.setSize(180,120,false);
  const plants=A.scene.getObjectByName('entrance-plants'),records=plants.userData.records,ground=records.filter(r=>r.y<1),loft=records.filter(r=>r.y>1);
- const visits=config.VISIT_UNITS.length; // a flat you can walk into is empty: no pot at its door (#574, L1004 had one)
- check(ground.length===11-visits&&loft.length===11,`${11-visits} plants at ground entrances (none at the visited flat) and eleven on loftgång`);
- check(!ground.some(r=>config.VISIT_UNITS.some(U=>U.id===r.unit)),'no pot at a visited flat\'s door (#574)');
+ const ids=config.VISIT_UNITS.map(U=>U.id),low=ids.filter(i=>/^L10/.test(i)).length,up=ids.filter(i=>/^L12/.test(i)).length; // a flat you can walk into is empty: no pot at its door (#574 L1004, #573 L1201: one each)
+ check(ground.length===11-low&&loft.length===11-up,`${11-low} plants at ground entrances and ${11-up} on loftgång (none at the visited flats)`);
+ check(!records.some(r=>ids.includes(r.unit)),'no pot at a visited flat\'s door (#574, #573)');
  check(new Set(ground.map(r=>r.variant)).size===3&&new Set(loft.map(r=>r.variant)).size===3,'palms, broad-leaf and low rosette plants on both levels');
- check(new Set(ground.map(r=>r.unit)).size===8-visits&&new Set(loft.map(r=>r.unit)).size===8,'every other ground and all eight upper street entrances decorated; core untouched');
+ check(new Set(ground.map(r=>r.unit)).size===8-low&&new Set(loft.map(r=>r.unit)).size===8-up,'every other ground and upper street entrance decorated; core untouched');
  check(records.every(r=>Math.abs(new T.Box3().setFromObject(r.model).min.y-r.y)<1e-6),'round pot bases touch the current ground/deck, no floating or slab penetration');
  check(records.every(r=>{let clear=true;r.model.updateMatrixWorld(true);r.model.traverse(m=>{if(!m.isMesh)return;const p=m.geometry.attributes.position;for(let i=0;i<p.count;i++){const v=new T.Vector3().fromBufferAttribute(p,i).applyMatrix4(m.matrixWorld);clear&&=r.y>1?v.z<r.door.z-.02&&v.z>.7:v.z<-.02; if(v.y>r.y+.1&&v.y<r.y+2.3)clear&&=v.x<r.door.x0-.05||v.x>r.door.x1+.05}});return clear}),'actual leaf vertices stay clear of façade, doorway and outer loft walking lane');
  check(records.every(r=>r.model.children.length<=4),'each plant has at most four meshes, merged leaves');

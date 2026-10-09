@@ -182,3 +182,9 @@ drive 340 → 348, park 433 → 441, every other spot unchanged; budget PASS. Me
 391 calls, its hall 185 → 333, its living room 138 → 284, its upstairs hall 154 → 209 (within the 520 budget). The build
 adds ~45 geometries and ~8 textures (3-stav parquet, tiles) and one extra architecture-edges pass at start. No lights: it has
 no lamps (daylight only); the sun's one shadow map moves onto it when the visitor is within STANDARD.near m.
+
+L1201 (#573) and the far shell: from afar a visited flat now also shows a stand-in for its windows (glass and shut sashes
+merged into one mesh per material, `VisitUnit.standIn`) and its exterior doors, so its openings are not open holes. Measured
+with both flats (desktop, calls with → without the visited flats): garage drive 363 → 343, park 455 → 435, L1004's street
+387 → 202; at L1201: the loftgång in front of it 263 → 117, its hall 249 → 116, its living room 248 → 109, its Allrum 136 →
+107. perfcount (desktop and `?lowmem`) within PERF.budget.

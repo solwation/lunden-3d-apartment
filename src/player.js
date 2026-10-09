@@ -91,23 +91,23 @@ export class Player {
   get aloft() {
     const p = this.pos;
     if (this.inCore) return false; // (Hus L's stairwell: its own walls, on every storey, #456)
-    const u = this.world.unitAt?.(p.x, p.z); // over a visited flat (#574): above its top, as over ours
-    return this.inFootprint(p.x, p.z) ? p.y > UNIT_TOP - 0.3 : u ? p.y > u.top - 0.3 : p.y > groundY(p.x, p.z) + ROOFS.aloft;
+    if (this.world.unitAt?.(p.x, p.z, p.y)) return false; // in a visited flat's rooms (#574, #573); over it / its terrace: up
+    return this.inFootprint(p.x, p.z) ? p.y > UNIT_TOP - 0.3 : p.y > groundY(p.x, p.z) + ROOFS.aloft;
   }
 
   /** In a visited flat (#574, visitunit.js): that flat, else null. Its Entréplan counts as level 0 like the street (its
    * walls are among level 0's), its Övre plan has segments of its own. */
   get unit() {
-    const p = this.pos, u = this.world.unitAt?.(p.x, p.z);
-    return u && p.y <= u.top - 0.3 && p.y > u.bottom - 1 ? u : null;
+    const p = this.pos;
+    return this.world.unitAt?.(p.x, p.z, p.y) ?? null;
   }
 
   /** The visited flat's level the visitor is on (0 / 1), or -1 outside one (#574). */
   get unitLevel() { const u = this.unit; return u ? u.levelAt(this.pos.y) : -1; }
 
   /** The stair under (x, z): ours or a visited flat's (#574). */
-  stairAt(x, z) { const u = this.world.unitAt?.(x, z); return u ? u.stairHeight(x, z) : stairHeight(x, z); }
-  stairUnder(x, z) { const u = this.world.unitAt?.(x, z); return u ? u.stairUnderside(x, z) : stairUnderside(x, z); }
+  stairAt(x, z, y = this.pos.y) { const u = this.world.unitAt?.(x, z, y); return u ? u.stairHeight(x, z) : stairHeight(x, z); }
+  stairUnder(x, z, y = this.pos.y) { const u = this.world.unitAt?.(x, z, y); return u ? u.stairUnderside(x, z) : stairUnderside(x, z); }
 
   /** Down in the garage, the förråd corridor or the lift lobby under the courtyard (#357, garage.js): its walls collide. */
   get below() {
@@ -139,7 +139,7 @@ export class Player {
     const h = STAIR.hole;
     const inHole = x > h.x0 && x < h.x1 && z > h.z0 && z < h.z1;
     const core = this.world.core, inCore = !inside && !!core?.covers(x, z);
-    const unit = !inside && !inCore ? this.world.unitAt?.(x, z) : null; // a visited flat: its floors and stair (#574)
+    const unit = !inside && !inCore ? this.world.unitAt?.(x, z, feet) : null; // a visited flat: its floors and stair (#574)
     const cands = unit ? unit.floors(x, z) : [inside ? LEVELS[0].floor : inCore ? -Infinity : groundY(x, z)]; // outdoors: the terrain (the ramp by Hus L's east gable, #256)
     if (inCore) cands.push(...core.heights(x, z)); // the stairwell's floors and flights, the lift's car (#415)
     if (inside && !inHole) cands.push(LEVELS[1].floor);
@@ -163,19 +163,20 @@ export class Player {
   /** True when the stair at (x, z) is a wall for someone standing at `feet`: its tread is too high to step up on and
    * its underside (not its top, #352) is lower than the head. */
   blockedByStair(x, z, feet) {
-    const s = this.stairAt(x, z);
-    return s !== null && s > feet + PLAYER.stepUp && this.stairUnder(x, z) < feet + PLAYER.headroom;
+    const s = this.stairAt(x, z, feet);
+    return s !== null && s > feet + PLAYER.stepUp && this.stairUnder(x, z, feet) < feet + PLAYER.headroom;
   }
 
   segments() {
     if (this.aloft) { // up on the roofs (#360): the walls that stand in the way of the body, feet + step … head
       const y = this.pos.y;
-      return [this.world.roofs?.walls(y + PLAYER.stepUp, y + PLAYER.headroom) ?? [], this.world.core?.dynamic(y) ?? []]; // (+ the stairwell's door onto the loftgång, #415)
+      return [this.world.roofs?.walls(y + PLAYER.stepUp, y + PLAYER.headroom) ?? [], [...(this.world.core?.dynamic(y) ?? []), // (+ the stairwell's door onto the loftgång, #415)
+        ...(this.world.units ?? []).flatMap((u) => u.doorSegmentsAt(y))]]; // a visited flat's street / terrace door (#573)
     }
     if (this.inCore) return this.world.core.segments(this.pos.y); // the stairwell (#415)
     if (this.below) return [this.world.garage.segments, this.world.garage.dynamic()]; // (#357)
-    const u = this.unit; // upstairs in a visited flat (#574): its own walls and doors
-    if (u && u.levelAt(this.pos.y) > 0) return [u.fixed[1], u.doorSegments(1)];
+    const u = this.unit; // in a visited flat (#574): upstairs (or anywhere in one up off the street, #573) its own walls and doors
+    if (u && (!u.ground || u.levelAt(this.pos.y) > 0)) { const lv = u.levelAt(this.pos.y); return [u.fixed[lv], u.doorSegments(lv)]; }
     const lvl = this.world.levels[this.level];
     const up = this.level === 0 && this.pos.y > GARAGE.floor + 1.5 ? this.world.upperSegments ?? [] : []; // over the garage door (#357)
     const doorSegs = this.world.doors
@@ -202,8 +203,8 @@ export class Player {
       const g = this.world.garage;
       return g.inside(x, z) && ![...g.segments, ...g.dynamic()].some((sg) => segDist(x, z, sg) < PLAYER.radius + margin) && !g.obstacles().some((q) => inPoly(q, x, z));
     }
-    const u = this.unit; // upstairs in a visited flat (#574)
-    if (u && u.levelAt(this.pos.y) > 0) return u.contains(x, z) && !u.inHole(x, z) && ![...u.fixed[1], ...u.doorSegments(1)].some((sg) => segDist(x, z, sg) < PLAYER.radius + margin);
+    const u = this.unit; // in a visited flat, off the street (#574, #573)
+    if (u && (!u.ground || u.levelAt(this.pos.y) > 0)) { const lv = u.levelAt(this.pos.y); return u.contains(x, z, this.pos.y) && !(lv && u.inHole(x, z)) && ![...u.fixed[lv], ...u.doorSegments(lv)].some((sg) => segDist(x, z, sg) < PLAYER.radius + margin); }
     const lvl = this.world.levels[level];
     const doorSegs = this.world.doors.filter((d) => (d.object.position.y < LEVELS[0].floor + 1.6 ? 0 : 1) === level).map((d) => d.segment());
     const segs = [...lvl.segments, ...doorSegs, ...(this.world.movingSegments?.(level) ?? [])];
@@ -215,8 +216,8 @@ export class Player {
 
   /** The nearest free spot to (x, z) reached through no wall, window or door (a spiral search), or null (#314). */
   nearestFree(x, z, level = this.level) {
-    const u = this.unit, up = u && u.levelAt(this.pos.y) > 0; // (upstairs in a visited flat, #574)
-    const walls = this.inCore ? this.world.core.segments(this.pos.y)[0] : this.below ? this.world.garage.walls : up ? [...u.fixed[1], ...u.doorSegments(1)] : [...(this.world.levels[level]?.fixedSegments ?? this.world.levels[level].segments),
+    const u = this.unit, up = u && (!u.ground || u.levelAt(this.pos.y) > 0), ul = u ? u.levelAt(this.pos.y) : 0; // (a visited flat, #574)
+    const walls = this.inCore ? this.world.core.segments(this.pos.y)[0] : this.below ? this.world.garage.walls : up ? [...u.fixed[ul], ...u.doorSegments(ul)] : [...(this.world.levels[level]?.fixedSegments ?? this.world.levels[level].segments),
       ...this.world.doors.filter((d) => (d.object.position.y < LEVELS[0].floor + 1.6 ? 0 : 1) === level).map((d) => d.segment())];
     for (let r = 0.05; r < 3.01; r += 0.05) {
       const n = Math.max(8, Math.round(2 * Math.PI * r / 0.05));
