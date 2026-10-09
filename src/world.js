@@ -351,6 +351,7 @@ function letterFlap(door) {
   const part = (sx, sy, sz, px, py, pz, m, parent = door.object) => {
     const mesh = new THREE.Mesh(new THREE.BoxGeometry(sx, sy, sz), m);
     mesh.position.set(px, py, pz);
+    mesh.receiveShadow = true; // like the leaf: no evening sun through the house (#607)
     mesh.userData.door = door;
     parent.add(mesh);
     return mesh;

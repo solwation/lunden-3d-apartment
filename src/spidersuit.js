@@ -74,11 +74,12 @@ export class SpiderSuit {
     this.model.userData.moving = true; // (it moves while you may stand still, detail.js #267)
     const body = new THREE.Mesh(geo, [red, red, top, blue, red, blue]);
     body.raycast = () => {};
-    body.castShadow = true;
+    body.castShadow = body.receiveShadow = true; // the drawer's shade, not the sun through the house (#607)
     this.model.add(body);
     for (const y of [0.022, 0.046]) { // the folds: blue edges showing along the front
       const fold = new THREE.Mesh(new THREE.BoxGeometry(FOLD.w + 0.004, 0.006, FOLD.d + 0.004).translate(0, y, 0), blue);
       fold.raycast = () => {};
+      fold.receiveShadow = true;
       this.model.add(fold);
     }
     const pick = new THREE.Mesh(new THREE.BoxGeometry(FOLD.w + 0.04, 0.12, FOLD.d + 0.04), new THREE.MeshBasicMaterial());

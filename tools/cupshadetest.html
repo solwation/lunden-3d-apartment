@@ -26,6 +26,7 @@ f.onload = async () => {
   const cab = cups.cabinet;
   let pass = check(!cab.isOpen, 'the cup cabinet is closed');
   const doorMeshes = []; cab.door.traverse((m) => m.isMesh && doorMeshes.push(m));
+  const builtRecv = new Map(doorMeshes.map((m) => [m, m.receiveShadow])); // as built, before the toggling below (#607: the task card)
   // the door's world box; its neighbour is the next front of the row, one door width further south
   scene.updateMatrixWorld(true);
   const lo = new V(Infinity, Infinity, Infinity), hi = new V(-Infinity, -Infinity, -Infinity);
@@ -75,6 +76,23 @@ f.onload = async () => {
     pass &= check(ms.length && ms.every((m) => m.receiveShadow), `${l.name} at ${p.x.toFixed(2)},${p.z.toFixed(2)}: every part receives shadows`);
   }
   pass &= check(doorMeshes.every((m) => m.receiveShadow), 'every part of the cup door receives shadows');
+  // the flat things on doors and in drawers that were lit through the house too (#607)
+  const opaque = (roots) => { const ms = []; for (const r of roots) r?.traverse?.((m) => { if (m.isMesh && !m.material.transparent && !m.material.isMeshBasicMaterial) ms.push(m); }); return ms; };
+  const receives = (...roots) => { const ms = opaque(roots); return ms.length > 0 && ms.every((m) => m.receiveShadow); };
+  const meshOf = (pred) => { let r = null; scene.traverse((m) => { if (!r && m.isMesh && pred(m)) r = m; }); return r; };
+  const flap = world.lids.find((l) => l.name === 'brevinkastet');
+  const flapPlates = flap ? flap.object.parent.children.filter((m) => m.isMesh && [0xc9a650, 0x1b1c1d].includes(m.material.color?.getHex())) : [];
+  const hob = [...world.lids, ...world.furnitureTargets].find((l) => l.kind === 'hob');
+  const signs = []; scene.traverse((m) => { const p = m.geometry?.parameters; if (m.isMesh && m.geometry.type === 'PlaneGeometry' && Math.abs(p.width - 0.3) < 1e-6 && Math.abs(p.height - 0.13) < 1e-6) signs.push(m); });
+  const { suit } = w.__app;
+  pass &= check(flapPlates.length >= 2, `the letter box's fixed plates found (${flapPlates.length} merged meshes: brass, dark)`); // (merged with the leaf per material, merge.js)
+  for (const [name, roots] of [['the changelog note on the freezer', [meshOf((m) => m.userData.door?.name === 'lappen')?.parent]],
+    
+    ['the letter box (plates, slot, flap)', [flap?.object, ...flapPlates]], ['the hob', [hob?.object]], ['the Spider-Man suit in its drawer', [suit?.model]]])
+    pass &= check(receives(...roots), `${name}: every opaque part receives shadows`);
+  const card = meshOf((m) => m.userData.door?.name === 'uppdragslappen');
+  pass &= check(!!card && builtRecv.get(card) === true, 'the task card inside the cup door receives shadows (as built)');
+  pass &= check(signs.length >= 4 && signs.every((m) => m.receiveShadow), `${signs.length} name signs on Övre plan receive shadows`);
   lines.push(pass ? 'ALL PASS' : 'SOME FAIL');
   out.textContent = lines.join('\n');
 };

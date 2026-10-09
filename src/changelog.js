@@ -132,6 +132,7 @@ export function buildNote(entries) {
     new THREE.MeshStandardMaterial({ color: 0xd23a2a, roughness: 0.4 }));
   magnet.rotation.x = Math.PI / 2;
   magnet.position.set(0, N.w * 0.62, 0.006);
+  paper.receiveShadow = magnet.receiveShadow = true; // no evening sun through the house onto it (#607)
   object.add(paper, magnet);
   object.position.set(N.x, N.y, N.z);
   object.rotation.y = N.rotY;

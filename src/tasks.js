@@ -315,6 +315,7 @@ export class TasksManager {
     const geom = new THREE.PlaneGeometry(w, h);
     const mat = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.8 });
     const mesh = new THREE.Mesh(geom, mat);
+    mesh.receiveShadow = true; // like the door it hangs on: no evening sun through the house (#607)
 
     // On the actual inner door face; parent rotation carries the sheet with the hinge (#509).
     const face = cabinet.innerFace;

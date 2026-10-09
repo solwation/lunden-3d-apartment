@@ -59,6 +59,7 @@ export function addDoorSigns(doors, roomAt, levelOf) {
       new THREE.MeshStandardMaterial({ map: signTexture(s.text, s.color), roughness: 0.7 }));
     sign.rotation.y = face > 0 ? Math.PI / 2 : -Math.PI / 2;
     sign.position.set(face * 0.022, 1.52, door.len / 2);
+    sign.receiveShadow = true; // like the leaf: no evening sun through the house (#607)
     sign.userData.door = door; // looking at the sign still opens the door
     door.object.add(sign);
     signs.push(sign);
