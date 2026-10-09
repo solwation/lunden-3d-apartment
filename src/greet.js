@@ -106,6 +106,23 @@ export class Greetings {
     return f.voice;
   }
 
+  /** Your own line at the bottom (Olof, #586: "Hej Olof!"). */
+  sayMine(line) {
+    this.show(this.mine, line);
+    this.mineT = G.bubble;
+    this.speak(line, { pitch: 1, rate: 1.05, voice: 0 });
+  }
+
+  /** Someone else's line in a bubble over `f.head` (a world point; `f.s` its size) in `voice` — Olof (#586, #599). */
+  say(f, line, voice) {
+    const el = document.createElement('div');
+    el.className = 'say theirs';
+    this.layer.append(el);
+    this.show(el, line);
+    this.bubbles.push({ el, f, t: G.bubble });
+    this.speak(line, voice);
+  }
+
   speak(text, { pitch, rate, voice, volume = 1 }) {
     const S = window.speechSynthesis;
     if (!S || isMuted() || typeof SpeechSynthesisUtterance === 'undefined') return;

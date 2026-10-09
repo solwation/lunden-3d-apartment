@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Olof test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+// Olof in the sofa (#586): ?olof=0 seats him in the sofa's first seat; he is shown there seated (hips near the seat, the
+// feet on the floor), the seat is taken (rest.js) and the cat does not pick it; looking at him gives "Vinka till Olof",
+// pressing it scores, he answers in a bubble, waves, gets up and is gone after a few seconds, the seat free again. He
+// never turns up in a seat the visitor can see; the sofa's three seats and the armchair are his.
+//   chrome --headless=new --dump-dom http://localhost:8137/tools/oloftest.html
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const f = document.createElement('iframe');
+f.width = 900; f.height = 600; f.src = '../index.html?time=12&month=6&olof=0';
+document.body.append(f);
+f.onload = async () => {
+  const w = f.contentWindow, d = f.contentDocument;
+  while (!w.__app) await wait(100);
+  const { player, camera, step, olof, stats, totalScore, cat } = w.__app;
+  const lines = [];
+  const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; };
+  d.getElementById('start-touch').click();
+  await wait(50);
+  const V = camera.position.constructor;
+  for (let i = 0; i < 3; i++) step(1 / 60);
+  let pass = check(olof.seats().length === 4, `four seats for him (the sofa's three, the armchair): ${olof.seats().length}`);
+  pass &= check(olof.state === 'sit' && olof.object.visible, `he sits there (${olof.state})`);
+  const sp = olof.spot, B = olof.fig.bones, hips = B.hips.getWorldPosition(new V()), foot = new V();
+  olof.fig.mesh.getVertexPosition(olof.fig.mesh.geometry.attributes.position.count - 1, foot); // a vertex of a shoe, skinned
+  foot.applyMatrix4(olof.fig.mesh.matrixWorld);
+  const floor = olof.object.position.y;
+  pass &= check(Math.abs(hips.y - (floor + sp.y)) < 0.15, `seated: hips ${(hips.y - floor).toFixed(2)} m over the floor, the seat at ${sp.y}`);
+  pass &= check(foot.y - floor < 0.12, `the feet on the floor (${(foot.y - floor).toFixed(2)})`);
+  pass &= check(sp.taken() === true, 'his seat is taken for the visitor');
+  pass &= check(cat.seatTaken(sp.pos.x, sp.pos.z) === true, 'the cat does not pick it');
+  // he only turns up out of sight
+  olof.hide(1e9);
+  pass &= check(!sp.taken?.(), 'gone: the seat is free');
+  const see = olof.canSee;
+  olof.canSee = () => true;
+  pass &= check(olof.appear() === false && olof.state === 'away', 'never where the visitor would see him');
+  olof.canSee = see;
+  olof.appear(0, true);
+  // look at him: "Vinka till Olof"
+  const btn = d.getElementById('action');
+  player.spawn(sp.pos.x + 0.3, sp.pos.z - 2.2, 0);
+  for (let i = 0; i < 3; i++) step(1 / 60);
+  const lookAt = (p) => { const dx = p.x - camera.position.x, dz = p.z - camera.position.z; camera.rotation.set(Math.atan2(p.y - camera.position.y, Math.hypot(dx, dz)), Math.atan2(-dx, -dz), 0, 'YXZ'); };
+  lookAt(B.torso.getWorldPosition(new V()).add(new V(0, 0.3, 0)));
+  step(1 / 60);
+  pass &= check(!btn.hidden && /vinka till olof/i.test(btn.textContent), `the button on him: "${btn.textContent}"`);
+  const before = stats.olof ?? 0, score0 = totalScore();
+  btn.click();
+  step(1 / 60);
+  pass &= check((stats.olof ?? 0) === before + 1 && totalScore() > score0, `scored (${score0} → ${totalScore()})`);
+  const mine = d.querySelector('#speech .say.mine');
+  pass &= check(mine && !mine.hidden && /olof/i.test(mine.textContent), `you say "${mine?.textContent}"`);
+  for (let i = 0; i < 60; i++) step(1 / 60);
+  const theirs = [...d.querySelectorAll('#speech .say.theirs')].at(-1);
+  pass &= check(olof.state === 'wave' && theirs && theirs.textContent.length > 1, `he answers "${theirs?.textContent}" and waves`);
+  const hand = B.handL.getWorldPosition(new V()), shoulder = B.shoulderL.getWorldPosition(new V());
+  pass &= check(hand.y > shoulder.y + 0.15, `his hand is up (${hand.y.toFixed(2)} > ${shoulder.y.toFixed(2)})`);
+  step(1 / 60);
+  pass &= check(btn.hidden || !/olof/i.test(btn.textContent), 'no second wave while he goes');
+  for (let i = 0; i < 60 * 6; i++) step(1 / 60);
+  pass &= check(olof.state === 'away' && !olof.object.visible, 'after a few seconds he is gone');
+  pass &= check(!sp.taken?.(), 'the seat is free again');
+  out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
+};
+</script>
+</body>
+</html>

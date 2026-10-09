@@ -9,6 +9,10 @@ Related: [interactions](interactions.md), [graphics](graphics.md).
 src/cat.js             the cat: random coat, washing animation, appears/moves/vanishes behind doors
 src/miele.js           Miele (#328): `HeartFireworks` (heart shells that pop into small hearts) and `MieleHeld` (a Holdable with no
                        home: the cat object rides in it, hand.js 'hug'; click / "Krama" hugs; put down she walks off)
+src/olof.js            Olof (#586, OLOF): a figure with a beer can in the sofa / armchair now and then; one SkinnedMesh (rigid
+                       13-bone skeleton, vertex colours, one material), posed by two-bone IK each frame (`poseOlof`, `seatedPose`)
+tools/oloftest.html    headless test (#586): ?olof=0 seats him, seated pose, seat taken for visitor and cat, never turns up in
+                       sight, "Vinka till Olof" scores, he answers, waves, gets up and is gone, the seat free again
 src/audio.js           synthesised positional sound effects (Web Audio): doors, slides, meow, steps
 src/pingping.js        Pingping (#269, PINGPING): the penguin cushion between the pillows in the Sovrum 1 bed, a Thing (kind 'pingping'):
                        held in both arms (hand.js `handPose: 'hug'`, `hugGrips`; the left arm = the right one mirrored); click /
@@ -64,6 +68,22 @@ tools/kittentest.html  headless test of kittens (#363): the seeded draw (~KITTEN
                        with paws on the floor, plays on the spot, a pat (kittenPets, more points, the photo marked), a pounce then a
                        fast scamper, a cup on the floor batted over (no deduction), hurt: faster and a bigger deduction
 ```
+
+## Olof (#586)
+
+- `Olof` (src/olof.js): every `OLOF.every` s (first after `OLOF.first`) with odds `OLOF.chance` he turns up in a free seat
+  among the sofa's three (not the chaise) and the armchair — never one `canSee` reports (main.js: in the camera's view and
+  not behind a wall, or within 1.5 m), the visitor's own or the cat's. Away again for at least `OLOF.away` s after leaving;
+  F (furniture off) sends him away. All timings and odds are *guesses*.
+- While he sits there his spot's `taken` is true (rest.js: the visitor cannot sit on him) and `cat.seatTaken` keeps the cat
+  off it. He sips now and then (the can to the lips, the head back).
+- Looking at him gives "Vinka till Olof" (kind `olof`, an invisible pick box round the seated figure; only while he sits):
+  your line ("Hej Olof!") at the bottom, his goodbye in a bubble over his head (greet.js `sayMine` / `say`), stats `olof`
+  (SCORE first 25, again 5), he waves back with the free hand, gets up, turns and steps off fading out.
+- The figure: one SkinnedMesh, every vertex weighted to one bone, so one draw call (+ the shadow pass). `poseOlof` takes
+  hip height / forward, lean, head pitch, ankle targets and wrist targets with a pole each; `seatedPose` builds those for
+  a seat height (`OLOF.forward` per seat: the armchair's cushions push him forward). Reuse it for other seats (#599).
+- `?olof[=i]` seats him at once (i: 0–2 the sofa, 3 the armchair), even in sight (tests, screenshots).
 
 ## Cat and sound
 

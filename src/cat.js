@@ -704,6 +704,7 @@ export class CatSpawner {
       const ahead = (c.x - sx) * nx + (c.z - sz) * nz, dist = Math.hypot(c.x - sx, c.z - sz);
       if (ahead < 0.2 || dist > CAT_FURNITURE.reach || Math.abs(c.y - y0) > 1.3) continue;
       if (walls.some((sg) => segIntersect(sx, sz, c.x, c.z, sg))) continue;
+      if (this.seatTaken?.(c.x, c.z)) continue; // Olof sits there (#586)
       // what is really there: the first visible surface under the spot must be about where we expect it
       ray.set(o.set(c.x, c.y + 0.6, c.z), down); ray.far = 1.0;
       const hit = ray.intersectObjects(furniture, true).find((h) => h.object.isMesh && this.shownMesh(h.object));

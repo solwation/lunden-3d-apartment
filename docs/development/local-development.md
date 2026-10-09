@@ -18,6 +18,7 @@ URL parameters (debugging / screenshots):
   9.46 a terrace (`?at=3,11.5,180,0,9.46`), 12.75 Hus L's roof between the panel rows (`?at=3,5,0,0,12.75`).
 - `&shot` — hide the start overlay.
 - `&open` — open every door, cabinet door and drawer (screenshots of open doors / wardrobes / furniture).
+- `&olof[=i]` — Olof in seat i at once (0–2 the sofa, 3 the armchair; random without i) (#586).
 - `&cat=x,z[,yawDeg[,y]]` — show the cat there; `&miele` — Miele instead (with `&cat=`), else the next cat to turn up is her (#328); `&catv=i` coat variant, `&catt=s` animation time, `&catwalk` walking (#224), `&cattail` its tail up (#262);
   `&kitten` a kitten (#363; with `&cat=`, else the next cat to turn up is one).
 - `&time=HH[.h]` — start at that hour (default: the browser's time), `&month=1–12`, `&day=1–31` (default: today), `&freeze` pauses the clock,

@@ -9,7 +9,7 @@ import { loadBeerShelf } from './beershelfdata.js';
 import { BeerShelf } from './beershelf.js';
 import { initHudIcons, setIcon, setPressed } from './hudicons.js';
 import * as THREE from 'three';
-import { UNIT_TOP, SITE, COLORS, LEVELS, DAY, START, PLAYER, DRAWING, STAIR, HOLD, LIFE, REMOTE, REST, DOOR_HEIGHT, TURBO, WEATHER, BREAK, CAR, KITCHEN, LAPTOP, NEST, AUTO_RELOAD, MIELE, CUPS, GARAGE } from './config.js';
+import { UNIT_TOP, SITE, COLORS, LEVELS, DAY, START, PLAYER, DRAWING, STAIR, HOLD, LIFE, REMOTE, REST, DOOR_HEIGHT, TURBO, WEATHER, BREAK, CAR, KITCHEN, LAPTOP, NEST, AUTO_RELOAD, MIELE, CUPS, GARAGE, OLOF } from './config.js';
 import { MieleHeld, HeartFireworks } from './miele.js';
 const DRAWING_COLORS = DRAWING.colors;
 initHudIcons();
@@ -103,6 +103,7 @@ import { Car } from './car.js';
 import { Garage } from './garage.js';
 import { Core } from './core.js';
 import { People } from './people.js';
+import { Olof } from './olof.js';
 import { Greetings } from './greet.js';
 import { Nests } from './nest.js';
 import { Weather } from './weather.js';
@@ -612,6 +613,20 @@ scene.add(people.object);
 for (const t of world.courtyardTargets) for (const sp of t.spots) sp.taken = () => people.seatTaken(sp.pos.x, sp.pos.z);
 people.visitorSeat = () => (rest.active ? rest.spot.pos : null);
 const greet = new Greetings(people, camera, document.getElementById('speech'), (p) => behindWall(p)); // say hello to them (#247)
+// Olof now and then in the sofa or the armchair with a beer (#586): never turns up in sight, not in the visitor's seat
+// nor the cat's, and the cat does not pick his; wave to him and he goes
+const olof = new Olof(world);
+scene.add(olof.object);
+olof.canSee = (p) => {
+  if (camera.position.distanceTo(p) < 1.5) return true; // (right next to it: he would pop up beside you)
+  const n = p.clone().project(camera);
+  return n.z < 1 && Math.abs(n.x) < 1.15 && Math.abs(n.y) < 1.15 && !behindWall(p);
+};
+olof.catAt = () => (cat.visible ? cat.object.position : null);
+olof.visitorSeat = () => (rest.active ? rest.spot.pos : null);
+olof.enabled = () => world.furnitureOn !== false;
+olof.onSay = (line) => greet.say({ head: olof.fig.head, s: 1 }, line, { pitch: 0.85, rate: 1, voice: 3 });
+cat.seatTaken = (x, z) => olof.sitsNear(x, z);
 car.garage = garage; // it lives in the garage, its door opens for it (#358)
 car.ground = (x, z) => (garage.inside(x, z) ? GARAGE.floor : groundY(x, z)); // the drive and Karpvägen slope, the garage's floor
 if (params0.has('car')) car.park(); // &car: parked out front (screenshots)
@@ -956,6 +971,8 @@ if (params.has('open')) for (const d of [...world.doors, ...world.lids, ...world
 if (params.has('open')) { airFryer.setOpen(true); airFryer.update(1); } // the air fryer's basket out too (#296 screenshots)
 if (params.has('toaster') && toaster) { toaster.take(); toaster.placeAt(new THREE.Vector3(5.24, KITCHEN.baseTop + KITCHEN.worktop, 4.62)); toaster.model.rotation.set(0, Math.PI / 2, 0); toaster.setPlugged(true, true); toaster.press(); toaster.left = 600; toaster.update(2); } // &toaster: out on the worktop, plugged in, toasting (for a long while) (#401 screenshots)
 if (params.has('fries') && fries) { airFryer.setOpen(true); airFryer.update(1); fries.cooked(); } // &fries: golden, steaming fries in the open basket (#301 screenshots)
+// ?olof[=i]: Olof in seat i (OLOF.seats' order: the sofa's three, the armchair), or a random one, at once (#586 tests, screenshots)
+if (params.has('olof')) olof.appear(params.get('olof') === '' ? null : Number(params.get('olof')), true);
 // ?cat=x,z[,yaw[,feetY]] puts the cat somewhere (screenshots)
 if (params.has('cat')) {
   const [x, z, yaw = 0, y = 0] = params.get('cat').split(',').map(Number);
@@ -1448,6 +1465,7 @@ function use(thing) {
     if (thing.isOpen) bump('lids', 1, idOf(thing));
     sfx.lid(thing.object.position, thing.isOpen);
   } else if (thing.kind === 'cat') { if (cat.isMiele && !heldItem()) miele.take(); else cat.pet(player.pos); } // Miele: into your arms (#328)
+  else if (thing.kind === 'olof') { if (olof.wave()) { greet.sayMine(OLOF.hello[Math.floor(Math.random() * OLOF.hello.length)]); bump('olof'); } } // wave to Olof: he goes (#586)
   else if (thing.kind === 'greet') { greet.greet(thing.fig); bump('greets', 1, `fig${people.figs.indexOf(thing.fig)}`); } // hello (#247)
   else if (thing.kind === 'towel') handWash.dry(thing, focusPoint); // dry the hands (#437)
   else if (thing.kind === 'tap') {
@@ -1649,7 +1667,7 @@ function updateFocus() {
   raycaster.far = reach;
   // (the raycaster ignores visibility, so the cat is only a target while it is there)
   // the car key only while its cabinet is open
-  const extra = [...(cat.visible && !cat.held ? [cat.object] : []), ...(keyCabinet?.keyReachable ? [world.carKey.pickable] : []), ...car.targets(rest.target).map((t) => t.pickable), // our car's doors and front seats (#250)
+  const extra = [...(cat.visible && !cat.held ? [cat.object] : []), ...(olof.waveable ? [olof.fig.pick] : []), ...(keyCabinet?.keyReachable ? [world.carKey.pickable] : []), ...car.targets(rest.target).map((t) => t.pickable), // our car's doors and front seats (#250)
     ...jetpack.targets(), // the jetpack on its hook / where it was stood down (#359)
     ...suit.targets(), // the Spider-Man suit in its drawer / where it was laid (#597)
     ...world.courtyardTargets.map((t) => t.pickable), // the courtyard's benches (#438): F keeps them
@@ -2157,6 +2175,7 @@ function step(dt) {
   people.update(dt, weather.rain > WEATHER.people ? 0 : day.daylight, day.month, player); // they go in when it pours
   greet.update(dt); // greetings and answers (#247)
   cat.update(dt);
+  olof.update(dt);
   checkCatButt();
   checkMiele();
   fireworks.update(dt);
@@ -2507,4 +2526,4 @@ document.documentElement.classList.remove('resuming'); // the page is ready: off
 hideLoading();
 
 // handle for tests/debugging (tools/touchtest.html, tools/perfcount.html)
-window.__app = { beerCans, frame, hitch, warm, christmas, plantWind, cheats, cheatNote, showCheatNote, beerShelf, hallCare, bedCare, tableSetting, watering, laundry, compass, showOverlay, resumeFromMenu, interactionOutline, eggs, isPhoneDevice, get activeMode() { return activeMode; }, set activeMode(v) { activeMode = v; }, rearrange, showTerminal, quality, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, suit, toaster, life, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS };
+window.__app = { olof, beerCans, frame, hitch, warm, christmas, plantWind, cheats, cheatNote, showCheatNote, beerShelf, hallCare, bedCare, tableSetting, watering, laundry, compass, showOverlay, resumeFromMenu, interactionOutline, eggs, isPhoneDevice, get activeMode() { return activeMode; }, set activeMode(v) { activeMode = v; }, rearrange, showTerminal, quality, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, suit, toaster, life, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS };

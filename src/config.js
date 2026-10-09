@@ -1375,6 +1375,22 @@ export const GREET = {
   cyclists: ['Hej!', 'Hej hej!', 'Tjena!', 'Hej, akta dig!'],
 };
 
+// Olof (#586, src/olof.js): a figure that now and then sits in the sofa or the armchair with a beer; wave to him and he waves
+// back, gets up and fades away. Timings and odds are our *guess* (tuned by feel, not measured). Every `every` s (the first
+// check after `first` s) he turns up with odds `chance`, never where the visitor can see the seat; after leaving he stays
+// away at least `away` s. Sips every `sip` [min, max] s. Colours from the issue's description: ash-blond hair, grey full
+// beard, burgundy zip hoodie over a grey T-shirt, dark grey jeans.
+export const OLOF = {
+  first: 40, every: 50, chance: 0.35, away: 240, sip: [5, 11], sipTime: 2.4,
+  waveTime: 1.8, riseTime: 1.1, goTime: 1.6, // s: he waves back, gets up, steps away fading
+  seats: ['soffan', 'fåtöljen'], sofaSpots: 3, // the sofa's three seats, not the chaise's (his feet would be in its cushion)
+  forward: { 'fåtöljen': 0.12 }, // m his hips sit forward of the usual: the armchair's two cushions fill its back (*guess*, by eye)
+  colors: { hoodie: 0x5a2029, cuff: 0x4a1a22, tee: 0x606063, zip: 0xb9bcc0, jeans: 0x3a3c41, shoe: 0x2a2523, skin: 0xe2b59b,
+    hair: 0x9c8b63, beard: 0x7f776d, eye: 0x2a2420, can: 0xc9cdd2, canBand: 0x1f5e3a, canTop: 0x9aa0a6 },
+  hello: ['Hej Olof!', 'Tjena Olof!', 'Hallå där, Olof!', 'Skål, Olof!'],
+  bye: ['Skål! Nu drar jag.', 'Hej hej, vi ses!', 'Oj, är klockan så mycket? Hej då!', 'Tack för ölen!', 'Ha det gött!'],
+};
+
 // The walkable area outdoors (#355): the whole block Kv. Lunden — the car park in front of Hus L (z0, as before), Karpvägen
 // with the garage drive (x0: its far kerb, Karpvägen's `w` 5.8 about x −75.8), the park level south of the box (z1: short of
 // the park's woods, SITE.treeAreas) and Sankt Lars väg's east leg (x1: short of HepCat Store's west face, 27.9). Inside it
@@ -2304,6 +2320,7 @@ export const SCORE = {
     kittens: 300, // a kitten found (#363): the first one, then `again` per kitten (on top of its breed's points)
     miele: 1000, mieleHugs: 20, // Miele found (#328): the rarest find there is (4 × a sphynx), then `again` per find; a hug
     carMusic: 3, // per song played in the car (#268), like the speakers' songs
+    olof: 25, // waving to Olof in the sofa (#586): the first time, then `again` per wave
     airfried: 6, // a batch of fish fingers done in the air fryer (#287): the first time, then `again` per batch
     friesCooked: 8, // a basket of Aviko fries cooked golden (#301): the first time, then `again` per batch
     toaster: 5, // the toaster's lever pushed down, plugged in (#401): the first time, then `again` per toast
@@ -2327,6 +2344,7 @@ export const SCORE = {
     clock: 0.1, calendar: 0.1, greets: 0.1, catButts: 1, walkRain: 2, walkSnow: 3, walkHail: 4, walkStorm: 3,
     shattered: 0.3, carMusic: 0.2, pingpingHugs: 0.2, miele: 100, kittens: 120, mieleHugs: 0.5, blinds: 0.05, curtains: 0.05, airfried: 0.5, friesCooked: 0.5, toaster: 0.2,
     fruit: 0.3,
+    olof: 5,
     nest: 0.2,
     toiletPaper: 0.1,
     handwash: 0.05, handdry: 0.05,
