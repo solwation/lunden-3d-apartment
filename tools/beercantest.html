@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Beer can test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+// A beer from the fridge's beer shelf (#587): not reachable through the closed door; open the fridge, "Ta <name>", back
+// on its shelf spot, drink it empty straight from the can (E = "Drick"), it gets lighter and is "den tomma burken"; into
+// Förpackningar; the fridge shut and opened again: a full one at home. Put one down on the worktop half drunk, F sends
+// both home; a page-made reload keeps one on the worktop and one in the hand. ?shots keeps the reloaded page.
+//   chrome --headless=new --dump-dom http://localhost:8137/tools/beercantest.html
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const shots = new URLSearchParams(location.search).has('shots');
+async function load(q = 'life&shot&cloud=') {
+  const fr = document.createElement('iframe');
+  fr.width = 900; fr.height = 600; fr.src = `../index.html?${q}`;
+  document.body.append(fr);
+  await new Promise((r) => { fr.onload = r; });
+  while (!fr.contentWindow.__app) await wait(100);
+  fr.contentDocument.getElementById('start-touch').click();
+  await wait(50);
+  return fr;
+}
+(async () => {
+  const lines = [];
+  let pass = true;
+  const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); pass &&= !!ok; return ok; };
+  try {
+    const f = await load(), d = f.contentDocument;
+    const A = f.contentWindow.__app, { player, camera, step, beerCans, beerShelf, fridge, heldItem, scene, toggleFurniture, life } = A;
+    const btn = d.getElementById('action'), V = camera.position.constructor, I = life.items;
+    const secs = (s) => { for (let i = 0; i < Math.ceil(s * 60); i++) step(1 / 60); };
+    const settle = (o) => { for (let i = 0; i < 40; i++) o.update(0.1); beerShelf.update(); scene.updateMatrixWorld(true); };
+    const open = (o) => { if (o && !o.isOpen) { o.toggle(); settle(o); } };
+    const close = (o) => { if (o && o.isOpen) { o.toggle(); settle(o); } };
+    const lookAt = (p, re) => {
+      for (const [dx0, dz0] of [[0, -0.9], [0.2, -1.0], [-0.2, -0.8], [0, -1.2], [0.4, -0.9], [-0.4, -0.9]]) {
+        player.spawn(p.x + dx0, p.z + dz0, 0); for (let i = 0; i < 3; i++) step(1 / 60);
+        scene.updateMatrixWorld(true);
+        const dx = p.x - camera.position.x, dz = p.z - camera.position.z;
+        camera.rotation.y = Math.atan2(-dx, -dz); camera.rotation.x = Math.atan2(p.y - camera.position.y, Math.hypot(dx, dz));
+        step(1 / 60);
+        if (!btn.hidden && re.test(btn.textContent)) return true;
+      }
+      return false;
+    };
+    check(beerCans?.length === 4 && beerCans.every((c, i) => c.model === beerShelf.packages[i].object), `four beers on the shelf are holdables (${beerCans?.length})`);
+    const can = beerCans.find((c) => !c.bottle) ?? beerCans[0], name = can.beer.name;
+    const home = can.model.getWorldPosition(new V()), at = home.clone().setY(home.y + can.height / 2);
+    const esc = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    close(fridge);
+    check(!lookAt(at, new RegExp(esc, 'i')), `the fridge closed: "${btn.hidden ? '' : btn.textContent}"`);
+    open(fridge);
+    check(lookAt(at, new RegExp(`^ta ${esc}`, 'i')), `the fridge open: "${btn.textContent}"`);
+    btn.click(); step(1 / 60);
+    check(heldItem() === can, 'the beer in the hand');
+    check(lookAt(at, new RegExp(`ställa tillbaka ${esc} i kylskåpet`, 'i')), `its spot: "${btn.textContent}"`);
+    btn.click(); step(1 / 60);
+    check(!can.held && !can.placed && can.model.parent === beerShelf.group && can.model.getWorldPosition(new V()).distanceTo(home) < 1e-4, 'back on the shelf');
+    // drink it empty: E / the action button with it in the hand and nothing aimed at = "Drick"
+    can.take(); step(1 / 60);
+    camera.rotation.x = 1.4; step(1 / 60); // (at the ceiling: nothing in focus)
+    check(!btn.hidden && btn.textContent === 'Drick', `in the hand: "${btn.textContent}"`);
+    const b0 = A.stats.beer ?? 0, y0 = can.heldPose.pos.y;
+    let gulps = 0;
+    while (can.useLabel && gulps < 20) { step(1 / 60); btn.click(); gulps++; if (gulps === 1) { secs(0.3); check(can.sip > 0 && can.model.rotation.x > 0.5, `a gulp: up to the mouth, tipped (${can.model.rotation.x.toFixed(2)})`); } secs(0.8); }
+    check(gulps === 5 && can.ml === 0 && (A.stats.beer ?? 0) === b0 + 5, `empty after ${gulps} gulps (${can.ml} ml, stats.beer +${(A.stats.beer ?? 0) - b0})`);
+    check(can.model.position.y > y0 + 0.015, `lighter: it rides higher in the hand (${(can.model.position.y - y0).toFixed(3)} m)`);
+    check(can.name === 'den tomma burken' && can.wasteKind === 'package' && !can.useLabel, `"${can.name}", a package, nothing to drink`);
+    // into the bin (Förpackningar)
+    const bins = A.world.lids.find((l) => l.bin), bin = I.ofType('binPack')[0];
+    open(bins); open(bins.leftDoor);
+    const tr = life.options({ item: life.view(bin) }).find((o) => o.id === 'throwAway');
+    check(tr?.label === 'slänga den tomma burken i förpackningarna' && !tr.reason, `at the bin: "${tr?.label}" ${tr?.reason ?? ''}`);
+    const amount = bin.amount;
+    tr.run(); step(1 / 60);
+    check(!heldItem() && can.away && !can.model.visible && bin.amount === amount + 2, `thrown: the bin ${bin.amount}, the can gone`);
+    check(can.target.kind === 'none', 'no target while it is gone');
+    close(bins.leftDoor); close(bins);
+    step(1 / 60); // (still open: it stays away)
+    check(can.away, 'the fridge still open: not back yet');
+    close(fridge); step(1 / 60); open(fridge); step(1 / 60);
+    check(!can.away && can.model.visible && can.ml === can.full && can.model.parent === beerShelf.group, `the fridge opened again: a full one at home (${can.ml} ml)`);
+    // put one down on the worktop half drunk; saved and loaded; F sends it home
+    const other = beerCans.find((c) => c !== can);
+    other.take(); step(1 / 60); other.use(); secs(0.8); other.use(); secs(0.8);
+    const spot = new V(home.x + 0.5, 0.92, home.z - 0.9);
+    other.placeAt(spot, 0); step(1 / 60);
+    check(other.placed && !heldItem() && Math.abs(other.ml - other.full * 3 / 5) < 1e-6, `${other.beer.name} on the worktop (${other.ml.toFixed(0)} ml left)`);
+    toggleFurniture(false); step(1 / 60);
+    check(!other.placed && !heldItem() && other.model.parent === beerShelf.group && can.model.parent === beerShelf.group, 'F: both home on the shelf');
+    toggleFurniture(true); step(1 / 60);
+    // a page-made reload keeps one standing out half drunk and one in the hand
+    other.take(); other.placeAt(spot, 0); can.take(); can.use(); step(1 / 60);
+    const left = other.ml, idx = beerCans.indexOf(other), cidx = beerCans.indexOf(can), canMl = can.ml;
+    sessionStorage.setItem('lunden.resume', JSON.stringify({ x: home.x, z: home.z - 1, feetY: 0, yaw: 0, pitch: 0, mode: 'touch', build: null, world: A.keepWorld(), ts: Date.now() }));
+    f.remove();
+    const f2 = await load('cloud=&beers=./data/beer-shelf-default.json'); // (&life reads no resume record; the same prepared beers)
+    const B = f2.contentWindow.__app, o2 = B.beerCans[idx], c2 = B.beerCans[cidx];
+    check(o2.placed && o2.model.getWorldPosition(new V()).distanceTo(spot) < 0.05 && Math.abs(o2.ml - left) < 1, `after a reload: ${o2.beer.name} on the worktop, ${o2.ml} ml`);
+    check(B.heldItem() === c2 && Math.abs(c2.ml - canMl) < 1, `after a reload: ${c2.beer.name} in the hand, ${c2.ml} ml`);
+    sessionStorage.removeItem('lunden.resume'); sessionStorage.removeItem('lunden.session');
+    if (shots) { f2.contentWindow.__app.camera.rotation.x = -0.1; f2.contentWindow.__app.step(1 / 60); }
+    else f2.remove();
+  } catch (e) { check(false, e.stack); }
+  out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
+})();
+</script>
+</body>
+</html>

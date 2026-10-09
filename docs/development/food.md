@@ -73,10 +73,16 @@ src/fries.js           Aviko frozen fries (#301, FRIES): a stand-up bag (canvas 
                        put down / taken again); stats fries / friesCooked / friesBurnt; F: emptied, the bag full; `&fries` = a done
                        basket out (screenshots)
 src/beershelf.js       #511: four correctly typed packages (two global DIPA/two global TIPA) on the fridge's upper glass shelf.
-                       Real product photos/Untappd labels plus readable names/breweries; no pickup/drinking mechanic.
+                       Real product photos/Untappd labels plus readable names/breweries; each package is a BeerCan (#587).
                        BEER_SHELF centralises placement, can/bottle proportions and product-photo crop. Volume/type come from
                        source metadata; diameters/heights are explicit standard-package assumptions, not manufacturer dimensions.
                        Closed fridge hides the entire group; meshes do not intercept existing item/door raycasts.
+src/beercan.js         #587: each shelf package as a Holdable (BEER_CAN, game parameters *guess*): its home in the shelf group (hidden
+                       with the closed fridge, the back box only while held); "Ta <label name>", E / "Drick" with nothing aimed at =
+                       a gulp straight from the can/bottle (sips gulps empty any size; it rides a little higher as it gets lighter,
+                       stats.beer); empty = "den tomma burken/flaskan", a package for the bin (`discard`, back full the next time the
+                       fridge is opened, as the milk); put down / back on its spot / F home. keep.js keeps it under `keepName`
+                       (the shelf spot, since the daily beers change name) with its ml (`keepState`).
 src/beershelfdata.js   daily startup refresh and complete durable metadata+image cache; see storage.md.
 src/beershelfschema.js shared strict wire format and Europe/Stockholm day.
 cloudflare/beershelf.js GET-only public-source adapter; globalByStyle normalized ranking, merge Double/Triple IPA styles,
@@ -84,6 +90,7 @@ cloudflare/beershelf.js GET-only public-source adapter; globalByStyle normalized
                        Real packaging/volume required; missing/invalid metadata or any image fails the complete batch.
 data/beer-shelf-default.json prepared real four-beer snapshot with embedded original images; fetchedAt=0 never claims daily success.
 tools/beershelfcachetest.html real image decoding, atomic daily caching, offline/timeout/partial failure and actual reload.
+tools/beercantest.html closed fridge blocks, take/back, drink empty, the bin, back on reopening, F, a page-made reload.
 tools/beershelfmodeltest.html shelf clearance, real canvas labels, can/bottle sizes and stable package count.
 src/beer.js            the big beer (BEER, #117), a Holdable: served on the lounge table when you sit in the lounge sofa,
                        click / "Drick" drinks a gulp (the level drops), back on the table = full; cups drink too

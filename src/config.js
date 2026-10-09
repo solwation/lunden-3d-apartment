@@ -2260,6 +2260,9 @@ export const BEER_SHELF = {
   bottle: { diameter: 0.065, height330: 0.23, height500: 0.27, neck: 0.018, bodyFraction: .63, shoulderFraction: .15, neckFraction: .22, capHeight: .006 },
   productCrop: [.12, .24, .76, .57],
 };
+// #587: a beer taken from that shelf and drunk straight from the can / bottle (src/beercan.js). Game parameters (our picks,
+// *guess*): `sips` gulps empty any package whatever its ml, `lift` = how much higher the empty one rides in the hand.
+export const BEER_CAN = { held: { x: 0.2, y: -0.27, z: -0.44 }, sips: 5, lift: 0.02, cooldown: 0.6 };
 
 
 // The score (#198, the global leaderboard; #197 shows it in the HUD), balanced (the user): you can grind for ever, but
