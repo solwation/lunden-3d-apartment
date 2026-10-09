@@ -1963,6 +1963,9 @@ export const RESET_KEEP = [
 // not drawn from outside unless seen through a façade opening; re-checked after the camera moved `move` m.
 // `hitch` (#592, src/hitchlog.js, `&perf`): a frame of at least `ms` is logged with what changed in it; the last `keep` are
 // kept in `__app.hitch.log`. 50 ms = three missed frames at 60 Hz, the point where a turn visibly freezes (*guess*).
+// Warm-up (#432, #592, src/warmup.js): starts `frames` frames after the scene is built; the idle texture uploads take at
+// most `sliceMs` ms per idle slot (*guess*: half a 60 Hz frame).
+export const WARM = { frames: 3, sliceMs: 8 };
 export const PERF = { detail: { maxR: 0.5, k: 0.009, minDist: 3.2, maxOcclude: 4, move: 0.3 }, hitch: { ms: 50, keep: 100 } };
 
 // Phones and tablets (low memory, #585): iOS Safari kills the tab ("Ett problem inträffade flera gånger") once the page's

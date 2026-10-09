@@ -1,21 +1,47 @@
 import * as THREE from 'three';
 import { Reflector } from 'three/addons/objects/Reflector.js';
 
-// Mirror images (#50): every mirror gets a planar Reflector over its glass, but only ONE is ever
+// Mirror images (#50): every mirror gets a planar reflector over its glass, but only ONE is ever
 // active — the nearest mirror the visitor is looking at, within MAX_DIST, on the visitor's level —
-// and none while the frame rate is struggling (main.js passes `allowed`). An inactive Reflector is
+// and none while the frame rate is struggling (main.js passes `allowed`). An inactive reflector is
 // hidden, so it costs nothing; the mirror's own glints material shows instead.
+// All mirrors draw into ONE shared render target (#592): only one reflects at a time, and before that each mirror had
+// its own 4× multisampled half-float target (~15 MB), allocated when it first reflected and (since #585) freed again
+// when another took over — a new GPU texture + framebuffers every time the active mirror changed. The shared one is
+// allocated once (and warmed by main.js's warm-up, `mirrorTarget()`), so turning between mirrors uploads nothing.
 
 const MAX_DIST = 4;
 const RES = 512;
 const mirrors = [];
-let lastActive = null; // the mirror that reflected last (it holds the only allocated render target)
-/** Every mirror's { r: Reflector, level } (tests). */
+let shared = null;
+/** The one render target every mirror reflects into. */
+export function mirrorTarget() {
+  shared ??= new THREE.WebGLRenderTarget(RES, RES, { samples: 4, type: THREE.HalfFloatType });
+  return shared;
+}
+/** Every mirror's { r: reflector, level } (tests). */
 export const reflectors = () => mirrors;
+
+// three's Reflector (r170) with its render target swapped for the shared one: same camera maths and shader, the
+// private target it creates is never rendered to (three allocates a target's GPU memory on first use only).
+class SharedReflector extends Reflector {
+  constructor(geometry, options) {
+    super(geometry, { ...options, textureWidth: 1, textureHeight: 1 });
+    const own = this.getRenderTarget(), target = mirrorTarget(), render = this.onBeforeRender;
+    this.material.uniforms.tDiffuse.value = target.texture;
+    this.getRenderTarget = () => target;
+    this.onBeforeRender = function (renderer, ...rest) {
+      const set = renderer.setRenderTarget;
+      renderer.setRenderTarget = function (t, ...a) { return set.call(this, t === own ? target : t, ...a); };
+      try { return render.call(this, renderer, ...rest); } finally { renderer.setRenderTarget = set; }
+    };
+    this.dispose = () => this.material.dispose();
+  }
+}
 
 /** Put a reflector over a mirror. `geometry` lies in the parent's local frame facing +z. */
 export function addReflector(parent, geometry, { level = 0, offset = 0.0015, color = 0xc6ccd0, name = '', dim = 1 } = {}) {
-  const r = new Reflector(geometry, { textureWidth: RES, textureHeight: RES, color, clipBias: 0.003 });
+  const r = new SharedReflector(geometry, { color, clipBias: 0.003 });
   if (dim !== 1) { // a lit mirror's image (#339): scaled down after the overlay tint (the overlay cannot dim highlights)
     const m = r.material;
     m.uniforms.dim = { value: dim };
@@ -51,10 +77,5 @@ export function updateReflections(camera, level, allowed) {
     }
   }
   for (const m of mirrors) m.r.visible = m === best;
-  // Only the active mirror keeps its render target: each one is a 4× multisampled half-float buffer (~15 MB on the
-  // GPU), allocated the first time that mirror reflects. Kept for every mirror walked past, they added up until
-  // iOS killed the tab; three allocates a disposed target again on its next use.
-  if (lastActive && lastActive !== best) lastActive.r.getRenderTarget().dispose();
-  lastActive = best;
   return best !== null;
 }

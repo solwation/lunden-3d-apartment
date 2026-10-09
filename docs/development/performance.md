@@ -22,7 +22,7 @@ Related: [graphics](graphics.md), [verification](verification.md).
   1210 → ~410 calls, the other spots a little lower; screenshots differ by a few dozen pixels. Anything new that
   raycasts at small things far away must allow for layer 7. Anything new that moves by itself (while the visitor may
   stand still) and exists when the culler is built needs `userData.moving` on its root (#267).
-- Warm-up (#432, `warmUp` / `warmRender` in main.js): the first time the flat's inside was drawn (the front door opened
+- Warm-up (#432, now `src/warmup.js`, extended by #592 — see below): the first time the flat's inside was drawn (the front door opened
   after a fresh start) three compiled the shadow-depth programs and uploaded the geometry / textures in one frame — a
   freeze of seconds. Three frames in (after lampwash's patch) `renderer.compileAsync` compiles every material's program,
   then one frame is drawn with every layer and no frustum culling (shadows too), behind the start screen. SwiftShader
@@ -109,4 +109,21 @@ Causes, in order of size:
    largest regular spike at the indoor spots); the warm-up drew the shadow pass with the shadow camera's own layers,
    so what the DetailCuller had on layer 7 was first drawn into the shadow map later; and the dynamic resolution's
    pixel-ratio steps reallocate the canvas.
+
+**Fixes (step B).** `src/warmup.js` (`WarmUp`, `__app.warm`, `WARM` in config) replaces main.js's warm-up and runs in
+stages from the game loop: compile every material → draw everything once (every layer, now also the sun's shadow
+camera's, no frustum culling) → compile every material again with the mirror target bound → draw everything once into
+the mirror target → in idle slots (`requestIdleCallback`, ≤ `WARM.sliceMs` each, 500 ms timeout) `renderer.initTexture`
+every texture of every material, hidden objects included (`__app.warm.state` ends at `done`). `src/reflections.js`: all
+mirrors draw into ONE shared render target (`mirrorTarget()`, `SharedReflector` = three's Reflector with its target
+swapped), allocated once by the warm-up and never disposed — at most one existed since #585 anyway, so the GPU memory
+bound is the same. Programs after the warm-up 107 → 196 (the mirror variants); the mirror warm-up draw costs as much as
+the first one (5.8 / 6.3 s under SwiftShader, behind the start screen). Pool lights were already a constant set (#234),
+so no light work was needed.
+
+After (same runs as above): **0 new programs and 0 new textures while turning at all nine spots, desktop and phone**;
+no render targets or renderbuffers allocated while turning (living room lap 1 still makes 8 `bufferData` calls the first
+time the mirror draws, then none). Longest turning frame (SwiftShader, loaded machine, unsynced) 12 204 → 662 ms on
+the desktop frame and 9 886 → 484 ms on the phone frame; median frame at the mirrors 204 → 101 ms.
+Not covered: materials made after the start (cups, cat coats, new life items) still compile when first drawn.
 

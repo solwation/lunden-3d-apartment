@@ -28,7 +28,7 @@ f.onload = async () => {
   while (!w.__app?.warm) await wait(100);
   const app = w.__app, { player, camera, renderer } = app;
   const t0 = performance.now();
-  while (app.warm.state !== 'drawn' && app.warm.state !== 'skipped') await wait(200);
+  while (!['done', 'drawn', 'skipped'].includes(app.warm.state)) await wait(200);
   const warmMs = performance.now() - t0;
   await wait(500); // let a frame or two run after the warm-up draw
   renderer.setAnimationLoop(null);
@@ -48,7 +48,7 @@ f.onload = async () => {
     const r = frame();
     if (r.wall > 300) lines.push(`  settle frame ${i}: ${r.wall.toFixed(0)} ms ${JSON.stringify(r.phases)} ${JSON.stringify(r.delta)}`);
   }
-  let pass = app.warm.state === 'drawn', allProgs = 0, allTex = 0, worst = 0;
+  let pass = app.warm.state !== 'skipped', allProgs = 0, allTex = 0, worst = 0;
   for (const [name, x, z, yaw, feet] of spots) {
     player.spawn(x, z, yaw * Math.PI / 180);
     if (feet) { player.pos.y = feet; player.eyeY = feet + 1.62; camera.position.y = player.eyeY; }
