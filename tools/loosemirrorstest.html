@@ -17,10 +17,14 @@ try {
   const reflector=all.find(m=>m.name===name),piece=reflector&&R.pieces.find(p=>inside(reflector.r,p.object));
   check(piece?.picture,`${name}: independently registered wall mirror`);if(!piece)continue;
   const others=R.pieces.filter(p=>p!==piece).map(p=>[p,p.object.matrixWorld.clone()]),before=piece.object.matrixWorld.clone(),reflection=reflector.r.matrixWorld.clone();
+  const night=name==='nissedal'&&piece.level===0?A.world.lamps.find(s=>s.name==='spegelns nattlampa')?.lamp:null,nightAt=night?.room.lamps[0].pos.clone();
+  if(name==='nissedal'&&piece.level===0)check(night&&inside(night.pickable,piece.object),'nissedal: the night light (#572) hangs on the entrance mirror');
   R.begin(piece);check(R.selected?.group.length===1,`${name}: independent preview`);
   const delta=new T.Matrix4().makeTranslation(0,.08,0);R.candidate=delta.clone().multiply(before);R.valid=true;await R.confirm();A.scene.updateMatrixWorld(true);
   check(same(reflector.r.matrixWorld,delta.clone().multiply(reflection))&&others.every(([p,m])=>same(p.object.matrixWorld,m)),`${name}: reflection moves, other furniture stays`);
+  if(night){const i=A.lights.wash.entries.findIndex(e=>e.lamp===night.room.lamps[0]);check(night.room.lamps[0].pos.distanceTo(nightAt.clone().add(new T.Vector3(0,.08,0)))<.001&&i>=0,'nissedal: the night light\'s pool anchor follows the mirror');}
   check(await R.restoreOriginal(piece)&&same(piece.object.matrixWorld,before),`${name}: independent original-position reset`);
+  if(night)check(night.room.lamps[0].pos.distanceTo(nightAt)<.001,'nissedal: the night light\'s anchor back with the mirror');
  }
  check(fixed.every((m,i)=>same(m.r.matrixWorld,fixedAt[i])),'all fixed bathroom mirrors stayed in place');
  // Furniture below a wall mirror cannot drag it away.

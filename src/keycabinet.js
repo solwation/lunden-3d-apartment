@@ -3,6 +3,7 @@ import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.j
 import { HALL_WALL as H, SKOGSGRANSEN as SK } from './config.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { sfx } from './audio.js';
+import { glowMaterial } from './groundglow.js';
 import { mirrorMaterial } from './mirror.js';
 import { addReflector } from './reflections.js';
 
@@ -212,8 +213,10 @@ export function buildHallWall() {
     tall.position.set(T.x, T.y, T.z);
     tall.rotation.y = T.rotY;
     addReflector(glass, new THREE.PlaneGeometry(gw, gh), { level: T.level ?? 0, name: T.level ? 'nissedal-uppe' : 'nissedal' }); // its mirror image (#50)
+    if (T.nightLight) lamps.push(nightLight(tall, T));
     return tall;
   };
+  const lamps = [];
   // the key cabinet on its own wall (#123), local +z out of the wall
   const cabinet = new KeyCabinet();
   cabinet.object.position.set(H.cabinet.x, H.cabinet.y, H.cabinet.z);
@@ -226,5 +229,52 @@ export function buildHallWall() {
     { object: secretaryMirror, key: 'skogsgransen', level: 0, name: 'spegeln' },
   ];
   group.add(...mirrors.map(m => m.object), cabinet.object); // (+ SKOGSGRÄNSEN over the secretary, #265)
-  return { object: group, cabinet, key: cabinet.key, secretaryMirror, mirrors };
+  return { object: group, cabinet, key: cabinet.key, secretaryMirror, mirrors, lamps };
+}
+
+/** The halo's fall-off (#572): white over the frame, fading to black `halo` m out from its edge (a rounded rectangle,
+ * so the light runs evenly round the corners). Linear data, `w` × `h` m in all. */
+function haloTexture(w, h, halo) {
+  const c = document.createElement('canvas'), px = 200; // pixels per metre (the halo is soft: no need for more)
+  c.width = Math.ceil(w * px); c.height = Math.ceil(h * px);
+  const g = c.getContext('2d'), img = g.createImageData(c.width, c.height), hw = w / 2 - halo, hh = h / 2 - halo;
+  for (let j = 0; j < c.height; j++) {
+    for (let i = 0; i < c.width; i++) {
+      const dx = Math.max(Math.abs((i + 0.5) / px - w / 2) - hw, 0), dy = Math.max(Math.abs((j + 0.5) / px - h / 2) - hh, 0);
+      const v = Math.round(255 * Math.max(0, 1 - Math.hypot(dx, dy) / halo) ** 2), k = (j * c.width + i) * 4;
+      img.data[k] = img.data[k + 1] = img.data[k + 2] = v; img.data[k + 3] = 255;
+    }
+  }
+  g.putImageData(img, 0, 0);
+  return new THREE.CanvasTexture(c);
+}
+
+/** The entrance NISSEDAL's night light (#572, HALL_WALL.tall.nightLight): a warm LED strip round the frame's outer
+ * edge (one merged mesh), a soft additive halo on the wall behind it, and an invisible pick box over the mirror (E). A
+ * small lamp spec for lights.js (world.lamps): it comes on at dusk with the others; its pool anchor sits `out` m in
+ * front of the glass. Everything hangs in the mirror's group, so it follows the mirror in Möblera om (rearrange.js
+ * moves the anchor, main.js re-bakes its wash). Local frame: the wall at z = 0, +z out of it. */
+function nightLight(tall, T) {
+  const N = T.nightLight, s = N.strip, ow = T.w + 2 * s, oh = T.h + 2 * s, d = 0.006; // the strip: 6 mm deep, on the back edge
+  const led = new THREE.MeshStandardMaterial({ color: 0xf4efe6, emissive: N.color, emissiveIntensity: 0.04, roughness: 0.4 });
+  const parts = [[ow, s, 0, (T.h + s) / 2], [ow, s, 0, -(T.h + s) / 2], [s, T.h, (T.w + s) / 2, 0], [s, T.h, -(T.w + s) / 2, 0]]
+    .map(([w, h, x, y]) => new THREE.BoxGeometry(w, h, d).translate(x, y, 0.002 + d / 2));
+  const strip = new THREE.Mesh(mergeGeometries(parts), led);
+  strip.name = 'nattlampa-slinga';
+  const hw = T.w + 2 * N.halo, hh = T.h + 2 * N.halo;
+  const haloMat = glowMaterial(N.color);
+  haloMat.map = haloTexture(hw, hh, N.halo);
+  haloMat.userData.on = N.glow; // FloorLamp.show: opacity = k × this
+  const halo = new THREE.Mesh(new THREE.PlaneGeometry(hw, hh), haloMat);
+  halo.position.z = 0.001; // on the wall, behind the frame (the frame hides its middle)
+  halo.renderOrder = 1;
+  const pick = new THREE.Mesh(new THREE.BoxGeometry(T.w, T.h, 0.01), new THREE.MeshBasicMaterial());
+  pick.position.z = T.depth + 0.006;
+  pick.visible = false; // raycasts ignore visibility: the E target for the night light
+  tall.add(strip, halo, pick);
+  for (const m of [strip, halo]) m.castShadow = m.receiveShadow = false;
+  // the pool anchor: `out` m in front of the glass, at the mirror's middle (world offset at the default pose, before any
+  // saved move: rearrange.js carries it with the mirror from there)
+  return { object: pick, shade: led, glows: [haloMat], height: 0, level: T.level ?? 0, name: 'spegelns nattlampa',
+    offset: [Math.sin(T.rotY) * N.out, Math.cos(T.rotY) * N.out], light: N.light };
 }

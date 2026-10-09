@@ -2569,7 +2569,14 @@ export const HALL_WALL = {
   // where LINDBYN hung before #205, the hall wall on the left as you come in: IKEA NISSEDAL black 65 × 150 cm (#540, docs/spegel-nissedal-svart-65x150.jpg;
   // replacing Rusta "Staffan", #218), a flat black frame ~2.5 cm wide and ~3 cm deep (guess), hung upright and centred
   // on the wall, bottom ~0.4 m / top ~1.9 m up (guess: a full-length mirror)
-  tall: { x: 2.057, z: 1.115, rotY: -Math.PI / 2, y: 1.15, w: 0.65, h: 1.5, frame: 0.025, depth: 0.03 },
+  tall: { x: 2.057, z: 1.115, rotY: -Math.PI / 2, y: 1.15, w: 0.65, h: 1.5, frame: 0.025, depth: 0.03,
+    // #572: a night light, a warm-white LED strip round the frame's outer edge (on its back edge, so it lights the wall
+    // round the mirror as a soft halo): a small lamp (lights.js: on at dusk like the others, E on the mirror toggles it).
+    // `strip` = the strip's width (m), `halo` = how far the halo reaches out on the wall (m), `glow` = its peak opacity
+    // (additive), `color` = the strip's / halo's colour, `out` = the pool anchor's distance in front of the glass (m, at
+    // the mirror's middle height), `light` = its pool light (weak: an orientation light, not a room light). All *guesses*, by eye.
+    nightLight: { strip: 0.008, halo: 0.2, glow: 0.45, color: 0xffd9a8, out: 0.4,
+      light: { intensity: 0.7, range: 3.5, color: 0xffdcb0 } } },
   // a second NISSEDAL in the upstairs hall (#332, the user): on the west wall (face x 1.5418) right of the WC/dusch door seen
   // from the hall, centred on the free stretch from the north wall stub's face (z 5.1345) to the door's 70 mm
   // architrave (door 6.2444 → 6.1744): z 5.654; the same height over the Övre plan floor as downstairs; facing east
