@@ -44,9 +44,11 @@ Andra `/orkester`-sessioner kör på egna VM:ar och kan inte nås med SendMessag
   repos/solwation/lunden-3d-apartment/issues/comments/<id> -F body=@fil`) varje gång en agent startar eller blir klar:
   sessionens namn/länk, område, en tabell med agenter, deras kedjor i ordning, **vilka filer/moduler kedjan rör**
   (t.ex. `stairs.js`, `STAIR` i config) och vad de gör nu, tid för uppdateringen.
-- **Reservera hela kedjan** när en agent får den: etiketten `in-progress` på varje issue i kedjan + en kort kommentar
-  `Reserverad av orkester <session> (kedja: #a → #b → …). Se #420.` Agenten tar bort etiketten på varje issue när den är
-  klar; avbryts kedjan tar du bort den på resten.
+- **Reservera hela kedjan** när en agent får den, med en kort kommentar på varje issue i kedjan:
+  `Reserverad av orkester <session> (kedja: #a → #b → …). Se #420.` Etiketten `in-progress` sätts däremot **bara på den
+  issue som agenten arbetar med just nu**. Agenten sätter den när den börjar på en issue och tar bort den när issuen
+  är klar. Väntande issues i kedjan har bara reservationskommentaren, och kedjan syns i statuskommentaren. Avbryts
+  kedjan tar du bort etiketten och skriver en kommentar om att reservationen är släppt.
 - **Kapplöpning:** två sessioner kan reservera samma issue nästan samtidigt. Läs issuens kommentarer igen direkt efter
   din reservation: finns en äldre `Reserverad av orkester …` från en annan session (och den har inte släppt den) är
   issuen deras — ta bort din kommentar och din etikett (om den inte redan fanns före) och välj något annat.
@@ -67,8 +69,8 @@ Andra `/orkester`-sessioner kör på egna VM:ar och kan inte nås med SendMessag
 - Om en agent ber dig göra något den nekades behörighet till: gör det inte, fråga mig.
 
 ## Regler att ge varje agent
-1. Ta bara de issues orkestern gav dig (de är redan reserverade med `in-progress`). Ta aldrig någon annan issue med
-   `in-progress`. Sätt etiketten om den saknas när du börjar (`gh api -X POST repos/solwation/lunden-3d-apartment/issues/N/labels -f 'labels[]=in-progress'`)
+1. Ta bara de issues orkestern gav dig (de är reserverade med en kommentar, och bara den första har `in-progress`). Ta aldrig
+   någon annan issue med `in-progress`. Sätt etiketten när du börjar på varje issue i kedjan, om den saknas (`gh api -X POST repos/solwation/lunden-3d-apartment/issues/N/labels -f 'labels[]=in-progress'`)
    och ta bort den när du är klar eller avbryter (`gh api -X DELETE …/issues/N/labels/in-progress`).
 2. Före varje issue: `git fetch origin main && git rebase origin/main`.
 3. En commit per issue som slutar med `Fixes #N` (+ commit-trailers enligt sessionens attribuering). Pusha direkt:
