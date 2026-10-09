@@ -35,9 +35,15 @@ f.onload = async () => {
     const label = btn.textContent;
     btn.click(); for (let i = 0; i < 60; i++) step(1 / 60);
     const open = door.isOpen && Math.abs(door.object.rotation.y) > 1.5;
+    // the leaf has swung out of the old sight line (#616): look at where it is now before closing it
+    scene.updateMatrixWorld(true);
+    const q = leaf.getWorldPosition(new V());
+    camera.rotation.y = Math.atan2(-(q.x - camera.position.x), -(q.z - camera.position.z));
+    camera.rotation.x = Math.atan2(q.y - camera.position.y, Math.hypot(q.x - camera.position.x, q.z - camera.position.z)); step(1 / 60);
+    const reacquired = w.__app.focus().focused === door;
     btn.click(); for (let i = 0; i < 60; i++) step(1 / 60);
     const shut = !door.isOpen && Math.abs(door.object.rotation.y) < 1e-3;
-    pass &= check(/^öppna( vitrinskåpet| skåpdörren)?$/i.test(label) && open && shut, `${door.name} at y ${p.y.toFixed(2)} z ${p.z.toFixed(2)}: "${label}" open=${open} shut=${shut}`);
+    pass &= check(/^öppna( vitrinskåpet| skåpdörren)?$/i.test(label) && open && reacquired && shut, `${door.name} at y ${p.y.toFixed(2)} z ${p.z.toFixed(2)}: "${label}" open=${open} aimed at the open leaf=${reacquired} shut=${shut}`);
   }
   // the spots are a small lamp of their own (#234): E on a spot, and they switch themselves with the dusk
   const spots = lights.floorLamps.find((x) => x.name === 'spotsen');
