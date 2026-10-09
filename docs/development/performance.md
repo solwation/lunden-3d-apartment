@@ -21,16 +21,11 @@ Related: [graphics](graphics.md), [verification](verification.md).
   the whole doorway counts, #210 — `tools/detailtest.html`). Start view
   1210 → ~410 calls, the other spots a little lower; screenshots differ by a few dozen pixels. Anything new that
   raycasts at small things far away must allow for layer 7. Anything new that moves by itself (while the visitor may
-<<<<<<< Updated upstream
-  stand still) and exists when the culler is built needs `userData.moving` on its root (#267).
-- Warm-up (#432, now `src/warmup.js`, extended by #592 — see below): the first time the flat's inside was drawn (the front door opened
-=======
   stand still) and exists when the culler is built needs `userData.moving` on its root (#267). A root whose `userData.detailUnit` is true is judged
   as one thing by its whole bounding sphere (#598, the car: its wheels went at ~40 m while the body drove on floating; out of
   its garage stall the whole car now stays drawn, up to ~20 more calls while it is in view far off). While the flag is false
   (the car in its stall) its meshes are judged one by one as before.
-- Warm-up (#432, `warmUp` / `warmRender` in main.js): the first time the flat's inside was drawn (the front door opened
->>>>>>> Stashed changes
+- Warm-up (#432, now `src/warmup.js`, extended by #592 — see below): the first time the flat's inside was drawn (the front door opened
   after a fresh start) three compiled the shadow-depth programs and uploaded the geometry / textures in one frame — a
   freeze of seconds. Three frames in (after lampwash's patch) `renderer.compileAsync` compiles every material's program,
   then one frame is drawn with every layer and no frustum culling (shadows too), behind the start screen. SwiftShader
