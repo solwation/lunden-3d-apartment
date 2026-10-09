@@ -31,18 +31,25 @@ f.onload = async () => {
     pass &= check(sofa.spots.length === 6, `exactly 6 seats (got ${sofa.spots.length})`);
     pass &= check(faces.slice(0, 3).every(f => f === 'south') && faces.slice(3).every(f => f === 'west'), `3 south facing row seats, 3 west facing bench seats: ${faces.join(', ')}`);
 
-    // 2. Corner positioning
-    let maxX = -Infinity, minX = Infinity;
+    // 2. Corner positioning. The frame and its seat/back cushions are measured; the decorative cushions (#399, one
+    // merged mesh, `userData.cushion`) are out only in the parasol's months without rain clouds, so they would make the
+    // corner check depend on the date and weather (#593) — they get their own, season-independent screen-wall check.
+    let maxX = -Infinity, minX = Infinity, cushionMaxX = -Infinity;
     sofa.pickable.updateMatrixWorld(true);
     sofa.pickable.traverse((m) => {
-      const a = m.isMesh && m.visible && m.geometry.attributes.position;
-      if (a) for (let k = 0; k < a.count; k++) {
+      const a = m.isMesh && m.geometry.attributes.position;
+      if (!a) return;
+      const deco = !!m.userData.cushion;
+      if (!deco && !m.visible) return;
+      for (let k = 0; k < a.count; k++) {
         const q = m.localToWorld(new V().fromBufferAttribute(a, k));
-        if (q.z < 13.5) { maxX = Math.max(maxX, q.x); minX = Math.min(minX, q.x); }
+        if (deco) cushionMaxX = Math.max(cushionMaxX, q.x);
+        else if (q.z < 13.5) { maxX = Math.max(maxX, q.x); minX = Math.min(minX, q.x); }
       }
     });
     pass &= check(Math.abs(maxX - 5.66) < 0.02, `corner stays at east corner (maxX = ${maxX.toFixed(3)}, expected ~5.66)`);
     pass &= check(minX > 3.55, `door end shortened by one module (minX = ${minX.toFixed(3)}, expected ~3.60)`);
+    pass &= check(cushionMaxX > 5.3 && cushionMaxX <= 5.68, `decorative cushions stay off the east screen wall (inner face x 5.68; maxX = ${cushionMaxX.toFixed(3)})`);
 
     // 3. Sitting in every seat and standing up
     for (let i = 0; i < sofa.spots.length; i++) {
