@@ -40,13 +40,49 @@ function buildBackdrop(W,key,ground,brick=null){
   const clip=sign=>{const out=[];for(let i=0;i<p.length;i++){const a=p[i],b=p[(i+1)%p.length],va=(v(a)-mid)*sign,vb=(v(b)-mid)*sign;if(va>=0)out.push(a);if((va>=0)!==(vb>=0)){const t=va/(va-vb);out.push([a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t]);}}return out;};
   if(b.roof==='flat'){const g=new THREE.ShapeGeometry(footprint);g.rotateX(-Math.PI/2).translate(0,eave,0);parts.roof.push(plain(g));}else for(const sign of [-1,1]){const poly=clip(sign),ps=[],contour=poly.map(q=>new THREE.Vector2(q[0],q[1]));for(const tri of THREE.ShapeUtils.triangulateShape(contour,[]))for(const i of tri)ps.push(poly[i][0],top(poly[i]),poly[i][1]);const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(ps,3));g.computeVertexNormals();parts.roof.push(g);}
   for(const [ring,hole]of [[p,false],...holes.map(h=>[h,true])])for(let i=0;i<ring.length;i++){const a=ring[i],c=ring[(i+1)%ring.length];const gable=strip(a,c,eave,[top(a),top(c)]);gable.userData.tint=b.facade??W.facade;wallParts.push(gable);
-   const dx=c[0]-a[0],dz=c[1]-a[1],len=Math.hypot(dx,dz);if(len<W.bay)continue;
+   const dx=c[0]-a[0],dz=c[1]-a[1],len=Math.hypot(dx,dz);
    const orientation=(hole?-1:1)*Math.sign(ring.reduce((sum,q,j)=>{const r=ring[(j+1)%ring.length];return sum+q[0]*r[1]-r[0]*q[1];},0));
    const nx=orientation*dz/len,nz=-orientation*dx/len; // A double-sided decal avoids assuming footprint winding from map data.
+   if(b.classic&&parts.modern){
+    const white=b.frameColor??0xf1eee6,rot=Math.atan2(dx,dz),cx=(a[0]+c[0])/2,cz=(a[1]+c[1])/2;
+    const cornice=plain(new THREE.BoxGeometry(0.18,0.36,len+0.1).rotateY(rot).translate(cx+nx*0.08,eave-0.18,cz+nz*0.08));cornice.userData.tint=white;parts.modern.push(cornice);
+    if(b.levels>1){const belt=plain(new THREE.BoxGeometry(0.12,0.22,len+0.05).rotateY(rot).translate(cx+nx*0.05,base+height,cz+nz*0.05));belt.userData.tint=white;parts.modern.push(belt);}
+    const plinthBand=plain(new THREE.BoxGeometry(0.10,0.14,len+0.05).rotateY(rot).translate(cx+nx*0.04,base+0.6,cz+nz*0.04));plinthBand.userData.tint=white;parts.modern.push(plinthBand);
+   }
+   if(len<W.bay)continue;
    for(let k=1;k*W.bay+W.window[0]/2+W.frame<len;k++)for(let floor=0;floor<b.levels;floor++){
     const x=a[0]+dx/len*k*W.bay,z=a[1]+dz/len*k*W.bay,y=base+floor*height+W.sill;
     const frame=plain(new THREE.PlaneGeometry(W.window[0]+W.frame*2,W.window[1]+W.frame*2).rotateY(Math.atan2(nx,nz)).translate(x+nx*.015,y+W.window[1]/2,z+nz*.015));frame.userData.tint=b.frameColor??0xe3e0d6;(brick?parts.glass:parts.facade).push(frame);
     const geo=new THREE.PlaneGeometry(...W.window);geo.rotateY(Math.atan2(nx,nz)).translate(x+nx*.02,y+W.window[1]/2,z+nz*.02);parts.glass.push(plain(geo));
+    if(b.classic&&parts.modern){
+     const white=b.frameColor??0xf1eee6,winRot=Math.atan2(nx,nz);
+     if(floor>0){
+      const ped=plain(new THREE.BoxGeometry(W.window[0]+0.34,0.14,0.12).rotateY(winRot).translate(x+nx*0.06,y+W.window[1]+0.07,z+nz*0.06));ped.userData.tint=white;parts.modern.push(ped);
+     }else{
+      const lintel=plain(new THREE.BoxGeometry(W.window[0]+0.24,0.18,0.08).rotateY(winRot).translate(x+nx*0.05,y+W.window[1]+0.08,z+nz*0.05));
+      const keystone=plain(new THREE.BoxGeometry(0.20,0.28,0.12).rotateY(winRot).translate(x+nx*0.06,y+W.window[1]+0.12,z+nz*0.06));
+      lintel.userData.tint=white;keystone.userData.tint=white;parts.modern.push(lintel,keystone);
+     }
+    }
+   }
+  }
+  if(b.classic&&parts.modern){
+   const white=b.frameColor??0xf1eee6,step=0.44;
+   for(let i=0;i<p.length;i++){
+    const prev=p[(i-1+p.length)%p.length],curr=p[i],next=p[(i+1)%p.length];
+    const v1x=curr[0]-prev[0],v1z=curr[1]-prev[1],v2x=next[0]-curr[0],v2z=next[1]-curr[1];
+    if(v1x*v2z-v1z*v2x<=0)continue;
+    const len1=Math.hypot(v1x,v1z),len2=Math.hypot(v2x,v2z);
+    const u1x=-v1x/len1,u1z=-v1z/len1,u2x=v2x/len2,u2z=v2z/len2;
+    const n1x=v1z/len1,n1z=-v1x/len1,n2x=v2z/len2,n2z=-v2x/len2;
+    const rot1=Math.atan2(v1x,v1z),rot2=Math.atan2(v2x,v2z);
+    let k=0;
+    for(let y=base+0.6;y+step<=eave-0.2;k++,y+=step){
+     const l1=k%2===0?0.55:0.32,l2=k%2===0?0.32:0.55;
+     const q1=plain(new THREE.BoxGeometry(0.08,step-0.05,l1).rotateY(rot1).translate(curr[0]+u1x*l1/2+n1x*0.035,y+step/2,curr[1]+u1z*l1/2+n1z*0.035));q1.userData.tint=white;
+     const q2=plain(new THREE.BoxGeometry(0.08,step-0.05,l2).rotateY(rot2).translate(curr[0]+u2x*l2/2+n2x*0.035,y+step/2,curr[1]+u2z*l2/2+n2z*0.035));q2.userData.tint=white;
+     parts.modern.push(q1,q2);
+    }
    }
   }
   records.push({...b,base,bottom,eave,ridge:eave+rise});
