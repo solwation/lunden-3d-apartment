@@ -32,6 +32,10 @@ src/street.js          Sankt Lars väg's details (SITE.street, #128): curbs (alo
                        another road), asphalt patches, street lamps in rows along a road (emissive at night; #434: a warm pool on
                        the ground under each head, `lamps.pool`, one merged additive mesh from groundglow.js, fading with dusk), zebra crossing, the site's temporary traffic light + warning signs, cobbles, autumn leaves; the bus stop,
                        the red "Flyttad" sign, a no-parking sign and HepCat's A-board (#129)
+src/streetsigns.js     street name signs (SITE.streetSigns, #583): a pole per junction of two differently named streets and at the two
+                       bends by the block, a blue blade along each leg with the name and, where sourced, the house numbers that way
+                       with an arrow; one shared canvas atlas (a slot per text + arrow side), all faces one mesh, poles + blade
+                       edges another: two draw calls, no shadows, no collision
 src/streetlife.js      life on the street (SITE.life, #113): the car park as on the situation plan (#260): asphalt from the hedge (SITE.shrubs,
                        z −16.3; the drive through it in front of the portik) to a low green strip along Hus L's entrances (z −3.5…−2.9, open
                        at the portik, no collision), one row of stalls nose to the hedge west of the drive with parked cars (instanced, a colour
@@ -85,6 +89,8 @@ tools/terraintest.html headless test (#346): the courtyard = the reference level
                        ends / the stairs' feet / the garage drive meet their ground, no ground rises past a retaining wall,
                        every plinth reaches the ground, no unguarded step > 5 cm in OUTDOOR (5 cm grid; a stair's riser
                        is a step, the inside of an Å-hus is skipped, #355); no tree on asphalt or paving (#435)
+tools/streetsigntest.html headless test (#583): two meshes / one atlas, both faces of every blade, posts off asphalt and paths,
+                       every number range exactly the sourced one (OSM addr:housenumber, Karpvägen 2–10 from #575), ≤ 2 draw calls
 tools/greettest.html   headless test: "Hälsa på grannen" on the bench sitter, your line, the answer, the wave, counted, not through
                        Hus A, a walker stops and turns to you (#247)
 ```
@@ -117,3 +123,5 @@ Neighbor glazing (#569): ABC uses the listed `facadeOpenings` unchanged, layered
 Northern surroundings (#530): `SITE.north`/`sitebackdrop.js` add three missing exact footprints; seven western bodies from #534 and eastern campus bodies remain unique. Far Sankt Lars väg follows its mapped northwestern turn; sourced Källby/Alvägen paths, aerial pixel parking traces and seasonal avenue/grove trees complete the ground. Five exterior batches, shared textures, unchanged OUTDOOR. All untagged heights/roof/parking/tree details are assumptions; no old proposed buildings. `northbackdroptest` checks source polygons, actual outward window rays and no duplicates. [Registration controls, sources and before/after](../validation/issue-530/README.md).
 
 Car regressions (#563): `cartest` checks the short Öppna/Sitt ner labels together with the exact front-door/seat target on each side, and excludes the seat target while its door is shut. Actual opening, seating, music, getting out and all four asphalt/garage routes remain checked.
+
+Street name signs (#583): `streetsigns.js` + `SITE.streetSigns` put 11 posts / 23 blades at every junction of two differently named streets in the model (OSM junction nodes; by the block the Peab-based `SITE.roads`) and at Sankt Lars väg's NE bend and Karpvägen's bend into the park; campus service roads, paths and our drive get none. Names from the OSM snapshots; numbers only where sourced: Karpvägen 2–10 (#575), Sankt Lars väg 41–70 (every mapped address, all south of Höje å; the near stretch and the forks south of the river show the name only), Sävsländegatan/Nattsländegatan 2–20 and Hattsnäckegränden 2–12 (complete OSM sets). Look and sizes are *guess*. Two draw calls in every outdoor-facing view. [Sources, selection and before/after](../validation/issue-583/README.md).

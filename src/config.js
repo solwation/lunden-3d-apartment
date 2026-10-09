@@ -446,6 +446,41 @@ export const SITE = {
     // a no-parking sign at the car park, HepCat's A-board on its pavement. [x, z, facing yaw°]
     busStop: [2.5, -31.3, 0], moved: [6.5, -23.75, 0], noParking: [-13.6, -16.9, 0], aBoard: [28.4, -12.2, -60], // by HepCat's north corner (#261, photo)
   },
+  // Street name signs (#583, src/streetsigns.js; sources and selection: docs/validation/issue-583/README.md). One post at every
+  // junction of two differently named streets in the model plus the two clear bends by the block (Sankt Lars väg round the
+  // NE corner, Karpvägen into the park); campus service roads and our drive get none. Each `blades` entry lies along a leg
+  // of the junction: `dir` = that leg's unit direction [dx, dz] from the junction (roads.js / SITE.*.paths), `nums` = the
+  // house numbers that lie that way, drawn with an arrow. Names: OSM 2026-10-08 (docs/references/surrounding-views/).
+  // Numbers, never invented: Karpvägen 2–10 = Brf S:t Lars Park's Hus 1–3 (#575); Sankt Lars väg 41–70 = every
+  // addr:housenumber the OSM snapshot has on Sankt Lars väg, all south of Höje å (none is mapped by the block, so the near
+  // stretch shows the name only; which fork south of the river carries which number is not clear from OSM → names only
+  // there); Sävsländegatan 2–20, Nattsländegatan 2–20, Hattsnäckegränden 2–12 = their complete OSM address sets.
+  // Källby ängaväg / Alvägen have no mapped numbers. Post positions: at the corner nearest the walkable area (near) or
+  // between two legs ~4 m off the junction (far), clear of the asphalt. Look and sizes are visual *guesses* after the
+  // usual Swedish blue gatunamnsskylt (white text, white border); no collision (like street.js's signs).
+  streetSigns: {
+    post: { h: 3.0, r: 0.035, sink: 0.3, color: 0x8e9296 },  // galvanised pole, its foot sunk into the ground (*guess*)
+    blade: { w: 1.4, h: 0.28, d: 0.025, gap: 0.05, top: 2.95 }, // blades stacked down from `top` (m over the ground, *guess*)
+    colors: { bg: '#1d4f9c', fg: '#ffffff' },                   // blue sign, white text and border (*guess*)
+    font: 'bold %px "Arial Narrow", "Helvetica Neue", Arial, sans-serif', // stands in for Tratex; long names are squeezed (*guess*)
+    atlas: { w: 1024, h: 1024, cols: 2 },                     // one shared canvas for every blade face (≤ LOW_MEMORY's 1024)
+    signs: [
+      // near the block
+      { at: [-71.2, -21.2], blades: [{ name: 'Karpvägen', nums: '2–10', dir: [0, 1] }, { name: 'Sankt Lars väg', dir: [1, 0] }] }, // Sankt Lars väg × Karpvägen, off the walker's turn (PEOPLE)
+      { at: [17.9, -18.6], blades: [{ name: 'Sankt Lars väg', dir: [-1, 0] }, { name: 'Sankt Lars väg', nums: '41–70', dir: [0, 1] }] }, // the bend at the NE corner, on the inner pavement clear of the campus road's mouth
+      { at: [-82.2, 68.6], blades: [{ name: 'Karpvägen', nums: '2–10', dir: [-0.976, 0.217] }, { name: 'Karpvägen', dir: [0.293, -0.956] }] }, // Karpvägen's bend into the park
+      // the backdrop (OSM junction nodes)
+      { at: [-122.19, -35.02], blades: [{ name: 'Källby ängaväg', dir: [-0.82, 0.58] }, { name: 'Sankt Lars väg', dir: [0.83, 0.56] }] },
+      { at: [-137.55, -35.2], blades: [{ name: 'Alvägen', dir: [-0.56, -0.83] }, { name: 'Källby ängaväg', dir: [0.85, -0.52] }] },
+      { at: [-202.13, 28.2], blades: [{ name: 'Karpvägen', nums: '2–10', dir: [0.36, 0.93] }, { name: 'Källby ängaväg', dir: [0.9, -0.44] }] },
+      { at: [23.36, 212.12], blades: [{ name: 'Sankt Lars väg', dir: [-0.51, 0.86] }, { name: 'Sankt Lars väg', dir: [0.13, -0.99] }] }, // the fork south of the river
+      { at: [51.14, 218.42], blades: [{ name: 'Sankt Lars väg', dir: [0.25, 0.97] }, { name: 'Sankt Lars väg', dir: [0.9, -0.43] }] },
+      { at: [132.92, 219.85], blades: [{ name: 'Sävsländegatan', nums: '2–20', dir: [0.6, 0.8] }, { name: 'Hattsnäckegränden', nums: '2–12', dir: [0.81, -0.58] },
+        { name: 'Nattsländegatan', nums: '2–20', dir: [-0.4, -0.92] }] },
+      { at: [223.57, 211.17], blades: [{ name: 'Hattsnäckegränden', nums: '2–12', dir: [-0.28, -0.96] }, { name: 'Sävsländegatan', dir: [0.97, -0.25] }] },
+      { at: [247.98, 204.21], blades: [{ name: 'Sävsländegatan', nums: '2–20', dir: [0.16, 0.99] }, { name: 'Nattsländegatan', nums: '2–20', dir: [-0.61, -0.79] }] },
+    ],
+  },
   // Life on the street (#113, src/streetlife.js). #260, the situation plan (docs/peab/kalibrerad/situationsplan-300dpi.jpg):
   // "P-platser för S:t Lars området" between the hedge (z −16.3) and a low green strip along Hus L (z −3.5…−2.9, open at
   // the portik); one row of stalls nose to the hedge (the plan's ticks, z −16.3…−11.3), none from the drive (in front of

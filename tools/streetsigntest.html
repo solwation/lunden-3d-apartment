@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Street sign test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+// Street name signs (#583, src/streetsigns.js, SITE.streetSigns): two meshes / one atlas for all of them, a face on both
+// sides of every blade (numbered blades: the arrow's slot both ways), every post off the asphalt and the paths, the
+// numbers on a blade exactly the sourced range (OSM addr:housenumber in the snapshot, Karpvägen 2–10 from #575), and
+// at most two extra draw calls where the signs are seen.
+//   chromium --headless=new --virtual-time-budget=60000 --dump-dom http://localhost:8137/tools/streetsigntest.html
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const f = document.createElement('iframe');
+f.width = 640; f.height = 400; f.src = '../index.html?shot&time=12&month=7&freeze&weather=clear';
+document.body.append(f);
+f.onload = () => run().catch((e) => { out.textContent = `FAIL ${e}\n${e.stack}\nSOME FAILED`; });
+async function run() {
+  const w = f.contentWindow;
+  while (!w.__app) await wait(100);
+  const { scene, player, camera, step, renderer } = w.__app;
+  const { SITE } = await w.eval(`import('${new URL('../src/config.js', location)}')`);
+  const { onRoad } = await w.eval(`import('${new URL('../src/roads.js', location)}')`);
+  const lines = [];
+  let pass = true;
+  const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); pass &&= !!ok; return ok; };
+  const S = SITE.streetSigns, group = scene.getObjectByName('streetSigns');
+  check(group, 'the signs are in the scene');
+  const meshes = []; group.traverse((o) => o.isMesh && meshes.push(o));
+  check(meshes.length === 2, `two meshes for every sign (${meshes.length})`);
+  const blades = scene.getObjectByName('streetSignBlades'), nBlades = S.signs.reduce((n, s) => n + s.blades.length, 0);
+  check(blades.geometry.attributes.position.count === nBlades * 2 * 6, `a face on both sides of each of the ${nBlades} blades`);
+  check(blades.material.map && blades.material.map.image.width <= 1024 && blades.material.map.image.height <= 1024, 'one shared atlas, ≤ 1024 px');
+  const slots = group.userData.slots;
+  for (const b of S.signs.flatMap((s) => s.blades)) {
+    const ok = b.nums ? slots.includes(`${b.name}|${b.nums}|R`) && slots.includes(`${b.name}|${b.nums}|L`) : slots.includes(b.name);
+    if (!ok) check(false, `atlas slot(s) for ${b.name} ${b.nums || ''}`);
+  }
+  check(true, `${slots.length} atlas slots cover every blade`);
+  // posts: off the model's roads and every backdrop road / path
+  const lanes = ['north', 'south', 'west', 'east'].flatMap((k) => [...(SITE[k].paths || []), ...(SITE[k].access || [])]).filter((p) => p.path);
+  const segd = (x, z, a, b) => { const dx = b[0] - a[0], dz = b[1] - a[1], t = Math.max(0, Math.min(1, ((x - a[0]) * dx + (z - a[1]) * dz) / (dx * dx + dz * dz || 1))); return Math.hypot(x - a[0] - dx * t, z - a[1] - dz * t); };
+  for (const s of S.signs) {
+    const [x, z] = s.at;
+    const lane = lanes.find((p) => p.path.some((q, i) => i && segd(x, z, p.path[i - 1], q) < (p.w || 3) / 2 + 0.2));
+    check(!onRoad(x, z, 0.3) && !lane, `post at ${x}, ${z} off the asphalt and paths${lane ? ` (on ${lane.source})` : ''}`);
+  }
+  // numbers: exactly the sourced range
+  const osm = await (await fetch('../docs/references/surrounding-views/osm-south-2026-10-08.json')).json();
+  const mapped = {};
+  for (const e of osm.features) if (e.tags['addr:street'] && /^\d+$/.test(e.tags['addr:housenumber'] || '')) (mapped[e.tags['addr:street']] ||= []).push(+e.tags['addr:housenumber']);
+  mapped['Karpvägen'] = [2, 4, 6, 8, 10]; // Brf S:t Lars Park Hus 1–3 (#575, docs/validation/issue-575/README.md)
+  for (const b of S.signs.flatMap((s) => s.blades).filter((bb) => bb.nums)) {
+    const [a, z] = b.nums.split('–').map(Number), L = mapped[b.name] || [];
+    check(L.length && a === Math.min(...L) && z === Math.max(...L), `${b.name} ${b.nums} = the sourced numbers ${L.length ? `${Math.min(...L)}–${Math.max(...L)}` : '(none)'}`);
+  }
+  // draw calls where a sign is in view: at most the two meshes
+  const calls = () => { step(1 / 60); renderer.render(scene, camera); return renderer.info.render.calls; };
+  player.spawn(-72, -13, 10 * Math.PI / 180); camera.rotation.x = 0.1;
+  for (let i = 0; i < 5; i++) calls(); // let the detail culler settle on this view first
+  const on = calls(); group.visible = false; const off = calls(); group.visible = true;
+  check(on - off <= 2 && on > off, `the signs cost ${on - off} draw calls at Sankt Lars väg × Karpvägen (${off} → ${on})`);
+  lines.push(pass ? 'ALL PASS' : 'SOME FAILED');
+  out.textContent = lines.join('\n');
+}
+</script>
+</body>
+</html>

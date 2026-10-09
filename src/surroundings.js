@@ -7,6 +7,7 @@ import { SITE as S, COLORS, SEASON, COURTYARD, GARAGE, NEIGHBOR_OPENINGS as O } 
 import { neighborGlass } from './neighborglass.js';
 import { registerTrees, registerSnow } from './seasons.js';
 import { buildStreet } from './street.js';
+import { buildStreetSigns } from './streetsigns.js';
 import { onRoad, onWalk, pathStrip, filletGeometry } from './roads.js';
 import { wallRect } from './roofs.js';
 import {buildRiverBridges,deckAt,riverGround,riverDistance,roadBridgeSpan} from './riverbridge.js';
@@ -1464,7 +1465,7 @@ export function buildSurroundings({ grass }) {
   if (plinths.length) mesh(plinths, new THREE.MeshStandardMaterial({ color: 0x6e3326, roughness: 0.95 }));
   group.add(...trees(rng(3)));
   const windows = buildWindowLights(details.list), street = buildStreet(groundY); // street lamps, crossing, curbs … (#128)
-  group.add(windows.object, street.object);
+  group.add(windows.object, street.object, buildStreetSigns(groundY)); // + street name signs at the junctions (#583)
   group.userData.windows = { object: windows.object, update(hour, night) { windows.update(hour, night); street.update(night);glassMaterial.envMapIntensity=THREE.MathUtils.lerp(O.reflectionDay,O.reflectionNight,night); } };
   return group;
 }
