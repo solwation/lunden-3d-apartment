@@ -2218,7 +2218,7 @@ quality.register('shadows', { // the sun's shadow map: size (reallocated on a ch
   state: (l) => `${sun.shadow.mapSize.x}² every ${QUALITY.shadowInterval[l]} s`, cost: 'a second pass over every shadow caster' });
 quality.register('mirrors', { // the one mirror image (#50): its resolution, off at the lowest levels
   apply: (l) => { const n = QUALITY.mirror[l]; if (n && mirrorTarget().width !== n) mirrorTarget().setSize(n, n); },
-  state: (l) => (QUALITY.mirror[l] ? `${QUALITY.mirror[l]}²` : 'off'), cost: 'a third pass over the room in a mirror' });
+  state: (l) => (QUALITY.mirror[l] ? `${QUALITY.mirror[l]}² every ${QUALITY.mirrorEvery[l]} frame(s)` : 'off'), cost: 'a third pass over the room in a mirror' });
 quality.register('weather', { // rain streaks / snowflakes / hail drawn (#248)
   apply: (l) => { weather.particleScale = QUALITY.particles[l]; }, state: (l) => `particles ×${QUALITY.particles[l]}`, cost: 'particle updates + overdraw' });
 /** Feed a frame time to the level (tests drive it directly). */
@@ -2240,6 +2240,7 @@ quality.register('detail', { // DetailCuller's distances (#189, #460): small thi
 const warm = new WarmUp({ renderer, scene, camera, shadowCamera: sun.shadow.camera, mirrorTarget,
   skip: /HeadlessChrome/.test(navigator.userAgent) && !params.has('warm'), log: perfEl ? (t) => console.log(t) : null,
   onSlowFrame: () => clock.getDelta() }); // (a slow warm-up frame is no reason to lower the resolution)
+let mirrorFrame = 0;
 /** One frame of the game loop; `raw` = seconds since the last one (tools/turntest.html calls it with the loop stopped). */
 function frame(raw) {
   const dt = Math.min(raw, 0.05);
@@ -2252,11 +2253,13 @@ function frame(raw) {
   step(dt);
   hitch.phase('step');
   updateShadows(dt);
-  // one mirror image at a time, none at the lower quality levels
-  const mirror = updateReflections(camera, player.aloft ? -1 : Math.max(0, player.level), QUALITY.mirror[quality.level] > 0);
+  // one mirror image at a time, none at the lower quality levels. Heavy passes are spread over frames (#592): the
+  // mirror keeps last frame's image in a frame that redraws the shadow map, and at level 2 draws every other frame.
+  const mirrorSkip = renderer.shadowMap.needsUpdate || ++mirrorFrame % QUALITY.mirrorEvery[quality.level] !== 0;
+  const mirror = updateReflections(camera, player.aloft ? -1 : Math.max(0, player.level), QUALITY.mirror[quality.level] > 0, mirrorSkip);
   updateListener(camera);
   hitch.phase('update');
-  if (hitch.enabled) Object.assign(hitch.frameInfo, { shadow: renderer.shadowMap.needsUpdate, mirror: mirror ? (reflectors().find((m) => m.r.visible)?.name || 'yes') : '', quality: quality.level,
+  if (hitch.enabled) Object.assign(hitch.frameInfo, { shadow: renderer.shadowMap.needsUpdate, mirror: mirror ? (reflectors().find((m) => m.r.visible)?.name || 'yes') + (mirrorSkip ? ' (held)' : '') : '', quality: quality.level,
     yaw: Math.round(camera.rotation.y * 180 / Math.PI), at: `${camera.position.x.toFixed(1)},${camera.position.z.toFixed(1)}` });
   renderer.render(scene, camera);
   hitch.phase('render');

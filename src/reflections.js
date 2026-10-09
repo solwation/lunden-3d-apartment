@@ -31,6 +31,7 @@ class SharedReflector extends Reflector {
     this.material.uniforms.tDiffuse.value = target.texture;
     this.getRenderTarget = () => target;
     this.onBeforeRender = function (renderer, ...rest) {
+      if (this.hold) return; // this frame keeps the image of the last one (updateReflections' `skip`)
       const set = renderer.setRenderTarget;
       renderer.setRenderTarget = function (t, ...a) { return set.call(this, t === own ? target : t, ...a); };
       try { return render.call(this, renderer, ...rest); } finally { renderer.setRenderTarget = set; }
@@ -58,8 +59,11 @@ export function addReflector(parent, geometry, { level = 0, offset = 0.0015, col
 const shownParents = (o) => { for (let q = o; q; q = q.parent) if (!q.visible) return false; return true; };
 const p = new THREE.Vector3(), n = new THREE.Vector3(), toCam = new THREE.Vector3(), fwd = new THREE.Vector3();
 
-/** Pick the one mirror to reflect this frame (or none). */
-export function updateReflections(camera, level, allowed) {
+let lastActive = null;
+/** Pick the one mirror to reflect this frame (or none). `skip`: if it is the same mirror as last frame, show last
+ * frame's image instead of drawing the room again (#592: the quality level's cadence, and never in the same frame as a
+ * shadow-map redraw); a mirror that has just become active always draws. */
+export function updateReflections(camera, level, allowed, skip = false) {
   let best = null, bestScore = Infinity;
   if (allowed) {
     camera.getWorldDirection(fwd);
@@ -77,5 +81,7 @@ export function updateReflections(camera, level, allowed) {
     }
   }
   for (const m of mirrors) m.r.visible = m === best;
+  if (best) best.r.hold = skip && best === lastActive;
+  lastActive = best;
   return best !== null;
 }

@@ -147,10 +147,27 @@ reading its per-level value from a `QUALITY` table; `state` is the line in the `
 |---|---|---|---|---|---|
 | `resolution` | 0.6× | 0.75× | 0.9× | 1× | of the capped device ratio (1.5, phones 1.0), never below 0.5; a step reallocates the drawing buffer once |
 | `shadows` | 1024², every 1 s | 1024², 0.75 s | 2048², 0.5 s | 2048², 0.4 s | phones capped at 1024² (#585); a size change reallocates the map once |
-| `mirrors` | off | off | 256² | 512² | the shared target is resized once on a change |
+| `mirrors` | off | off | 256², every 2nd frame | 512², every frame | the shared target is resized once on a change; never drawn in a frame that redraws the shadow map |
 | `detail` | ×0.6 | ×0.75 | ×0.9 | ×1 | DetailCuller's cut distances (#460's `setQuality`) |
 | `weather` | ×0.35 | ×0.6 | ×0.85 | ×1 | share of rain streaks / snowflakes / hail drawn |
 
 Not knobs (yet): the campus facades' LOD (#589) is chosen once at build time (a runtime switch needs a second geometry
 per batch), and the Christmas tree's shimmer costs 0.016 ms (#571) — not worth one.
+
+**Keeping future graphics safe (step D).**
+- *Budgets:* `PERF.budget` in config — per view at the highest level: ≤ 520 draw calls and ≤ 1 000 000 triangles at
+  every perfcount spot, ≤ 320 MB estimated texture memory (every material's textures, w × h × 4 + mips, capped at the
+  device's texture size); phones (`?lowmem`): ≤ 370 calls, ≤ 950 000 triangles, ≤ 225 MB. Set ~20 % above the scene on
+  2026-10-09 (desktop: 433 calls at park, 836 725 triangles in the big hall, ~266 MB in 240 textures; phone 390×844:
+  305 calls / 784 426 triangles in the basement, ~188 MB) — *guess*. `tools/perfcount.html` (and `?lowmem&w=390&h=844`)
+  fails past them; raise one only on purpose, with the reason in the commit.
+- *A new heavy feature* (a new pass, a particle system, a big animated canvas, many lights or casters): add its per-level
+  values to `QUALITY` and `quality.register(...)` it in main.js (see the table above); make sure its materials exist when
+  the warm-up runs (or call `renderer.compileAsync(object, camera, scene)` when it is created) and that it does not
+  allocate render targets or textures on first view (share / allocate up front, like `mirrorTarget()`); run turntest
+  (0 new programs / textures) and perfcount (budgets).
+- *Spreading heavy work:* the mirror keeps last frame's image (`hold`) in any frame that redraws the shadow map, and at
+  level 2 draws every other frame (`QUALITY.mirrorEvery`); the warm-up's texture uploads run in idle slots of at most
+  `WARM.sliceMs`. The DetailCuller's re-judging was measured at < 1 ms median (2682 items, 2–3.5 ms worst) and the
+  whole `step` at ~1.4 ms, so the CPU side needed no spreading.
 

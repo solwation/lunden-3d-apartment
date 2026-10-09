@@ -21,6 +21,9 @@ f.onload = async () => {
   const { player, camera, step } = w.__app;
   const r = w.__app.renderer;
   const lines = [];
+  // budgets (#592, PERF.budget in config): per view, and the textures' estimated GPU memory
+  const { PERF } = await w.eval(`import('${new URL('../src/config.js', location.href).href}')`), lowmem = own.has('lowmem'), B = lowmem ? PERF.budget.lowMemory : PERF.budget;
+  let worstCalls = ['', 0], worstTris = ['', 0];
   for (const [name, x, z, yaw, pitch, feet] of spots) {
     player.spawn(x, z, yaw * Math.PI / 180);
     if (feet) { player.pos.y = feet; player.eyeY = feet + 1.62; camera.position.y = player.eyeY; }
@@ -29,7 +32,22 @@ f.onload = async () => {
     r.render(w.__app.scene, camera);
     const i = r.info;
     lines.push(`${name}: calls ${i.render.calls} tris ${i.render.triangles} geoms ${i.memory.geometries} tex ${i.memory.textures}`);
+    if (i.render.calls > worstCalls[1]) worstCalls = [name, i.render.calls];
+    if (i.render.triangles > worstTris[1]) worstTris = [name, i.render.triangles];
   }
+  const maxTex = r.capabilities.maxTextureSize, texs = new Set();
+  w.__app.scene.traverse((o) => { for (const m of [o.material].flat()) { if (!m) continue; for (const v of [...Object.values(m), ...Object.values(m.uniforms ?? {}).map((u) => u?.value)]) if (v?.isTexture && !v.isRenderTargetTexture) texs.add(v); } });
+  let texBytes = 0;
+  for (const t of texs) {
+    const img = t.image, iw = img?.width ?? img?.data?.width ?? 0, ih = img?.height ?? img?.data?.height ?? 0;
+    if (!iw || !ih) continue;
+    const k = Math.min(1, maxTex / Math.max(iw, ih)), mips = t.generateMipmaps !== false && t.minFilter !== 1006 && t.minFilter !== 1003 ? 4 / 3 : 1;
+    texBytes += Math.round(iw * k) * Math.round(ih * k) * 4 * mips * (t.isCubeTexture ? 6 : 1);
+  }
+  const texMB = texBytes / 1048576;
+  lines.push(`budget${lowmem ? ' (phone)' : ''}: most calls ${worstCalls[1]} at ${worstCalls[0]} (≤ ${B.calls}), most triangles ${worstTris[1]} at ${worstTris[0]} (≤ ${B.tris}), textures ~${texMB.toFixed(0)} MB in ${texs.size} (≤ ${B.texMB || '–'} MB)`);
+  const within = worstCalls[1] <= B.calls && worstTris[1] <= B.tris && (!B.texMB || texMB <= B.texMB);
+  lines.push(within ? 'PASS within the performance budget' : 'FAIL over the performance budget (PERF.budget in src/config.js)');
   // the mess's cap (#388): far more crumbs and dust than it draws — one call per kind with any, the instances at the cap
   const mess = w.__app.life.mess;
   if (mess) {
@@ -74,7 +92,7 @@ f.onload = async () => {
     lines.push(['resolution', 'shadows', 'mirrors', 'detail', 'weather'].every((k) => knobs.includes(k)) ? 'PASS quality knobs registered' : 'FAIL knobs ' + knobs);
   }
 
-  lines.push('ALL PASS');
+  lines.push(lines.some((l) => l.startsWith('FAIL')) ? 'SOME FAILED' : 'ALL PASS');
   out.textContent = lines.join('\n');
 };
 </script></body></html>

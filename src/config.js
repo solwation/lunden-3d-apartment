@@ -1980,12 +1980,18 @@ export const QUALITY = {
   pixelRatio: [0.6, 0.75, 0.9, 1],
   shadowSize: [1024, 1024, 2048, 2048],
   shadowInterval: [1.0, 0.75, 0.5, 0.4],
-  mirror: [0, 0, 256, 512],
+  mirror: [0, 0, 256, 512], mirrorEvery: [1, 1, 2, 1], // mirror image size (0 = none) and drawn every n-th frame
   detail: [0.6, 0.75, 0.9, 1],
   particles: [0.35, 0.6, 0.85, 1],
 };
 export const WARM = { frames: 3, sliceMs: 8 };
-export const PERF = { detail: { maxR: 0.5, k: 0.009, minDist: 3.2, maxOcclude: 4, move: 0.3 }, hitch: { ms: 50, keep: 100 } };
+// `budget` (#592, tools/perfcount.html fails past it): per view at the highest quality level, `calls` draw calls and
+// `tris` triangles at any perfcount spot, `texMB` the estimated GPU memory of every material's textures (w × h × 4 bytes
+// + mips, capped at the device's texture size); `lowMemory` the same on phones (`?lowmem`). About 20 % over what the
+// scene used when they were set (2026-10-09): new things fit, a doubling does not slip in unnoticed (*guess*). Raise one
+// only on purpose, with the reason in the commit.
+export const PERF = { detail: { maxR: 0.5, k: 0.009, minDist: 3.2, maxOcclude: 4, move: 0.3 }, hitch: { ms: 50, keep: 100 },
+  budget: { calls: 520, tris: 1000000, texMB: 320, lowMemory: { calls: 370, tris: 950000, texMB: 225 } } };
 
 // Phones and tablets (low memory, #585): iOS Safari kills the tab ("Ett problem inträffade flera gånger") once the page's
 // textures, geometry and canvases outgrow its memory budget. Measured with an iPhone UA in headless Chromium:
