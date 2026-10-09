@@ -9,6 +9,7 @@ import { Reflector } from 'three/addons/objects/Reflector.js';
 const MAX_DIST = 4;
 const RES = 512;
 const mirrors = [];
+let lastActive = null; // the mirror that reflected last (it holds the only allocated render target)
 /** Every mirror's { r: Reflector, level } (tests). */
 export const reflectors = () => mirrors;
 
@@ -50,5 +51,10 @@ export function updateReflections(camera, level, allowed) {
     }
   }
   for (const m of mirrors) m.r.visible = m === best;
+  // Only the active mirror keeps its render target: each one is a 4× multisampled half-float buffer (~15 MB on the
+  // GPU), allocated the first time that mirror reflects. Kept for every mirror walked past, they added up until
+  // iOS killed the tab; three allocates a disposed target again on its next use.
+  if (lastActive && lastActive !== best) lastActive.r.getRenderTarget().dispose();
+  lastActive = best;
   return best !== null;
 }

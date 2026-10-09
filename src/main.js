@@ -3,7 +3,7 @@ import { PlantWind, windShadow } from './plantwind.js';
 import { runCheat, cheatHelp } from './cheats.js';
 import { cleanHome } from './cheatclean.js';
 import { buildCheatNote } from './cheatnote.js';
-import { CHEAT_NOTE } from './config.js';
+import { CHEAT_NOTE, LOW_MEMORY } from './config.js';
 import { loadBeerShelf } from './beershelfdata.js';
 import { BeerShelf } from './beershelf.js';
 import { initHudIcons, setIcon, setPressed } from './hudicons.js';
@@ -126,7 +126,13 @@ const pauseBtn = document.getElementById('pause');
 setupInstall({ force: new URLSearchParams(location.search).has('install') });
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
-const MAX_PIXEL_RATIO = Math.min(window.devicePixelRatio, 1.5);
+// Phones and tablets get a smaller memory footprint (LOW_MEMORY): iOS otherwise kills the tab after a few steps.
+// iPadOS Safari says "Macintosh", so a Mac with a touch screen counts too.
+const lowMemory = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+  || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1)
+  || /[?&]lowmem\b/.test(location.search);
+if (lowMemory) renderer.capabilities.maxTextureSize = Math.min(renderer.capabilities.maxTextureSize, LOW_MEMORY.maxTextureSize);
+const MAX_PIXEL_RATIO = Math.min(window.devicePixelRatio, 1.5, lowMemory ? LOW_MEMORY.maxPixelRatio : Infinity);
 renderer.setPixelRatio(MAX_PIXEL_RATIO);
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -168,7 +174,7 @@ const cx = world.size.x / 2, cz = world.size.z / 2;
 sun.position.set(cx - 10, 16, cz + 18);
 sun.target.position.set(cx, 0, cz);
 sun.castShadow = true;
-sun.shadow.mapSize.set(2048, 2048);
+sun.shadow.mapSize.setScalar(lowMemory ? LOW_MEMORY.shadowMapSize : 2048);
 Object.assign(sun.shadow.camera, { left: -14, right: 14, top: 14, bottom: -14, near: 1, far: 60 });
 sun.shadow.bias = -0.0005;
 sun.shadow.normalBias = 0.02;

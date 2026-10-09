@@ -40,3 +40,14 @@ Related: [graphics](graphics.md), [verification](verification.md).
 Focus regression (#558): #531 created then disposed a temporary brightness material on every target exit, releasing its last GPU program. A real WebGL createProgram counter reproduced 30 new programs for 30 target/clear switches (and 30 for greeted figures). InteractionOutline now caches variants in a WeakMap by source material/instance index, restoring originals on clear and releasing cached GPU resources on source disposal. Different figure indices use an integer uniform in one shared shader. focusperftest checks zero new programs after warm-up, shared-source reuse, first visits to other figure indices and disposal. interactionoutlinetest checks actual pixel restoration, current lamp hooks, geometry animation and index changes. This removes measured shader churn; desktop SwiftShader is not a claim of measured phone FPS.
 
 Southern backdrop (#536): `SITE.south`/`southbackdrop.js` add 54 existing mapped footprints, a real courtyard hole, simple landmark windows and hip/gable roof silhouettes, sourced roads/open fields and 70 low-detail seasonal woodland trees. Four merged surfaces plus two instanced meshes, no new textures/lights/interiors or OUTDOOR expansion. Clear-weather fog ends at 650 m; camera far 1000 m, outer ground edges hidden. Rain retains its 80 m fog target. Untagged dimensions/height/roof details remain assumptions; proposed Hunnerup 30 buildings excluded. `southbackdroptest` checks sources, real courtyard aperture and seasonal buffers. [Sources, budgets and before/after](../validation/issue-536/README.md).
+
+Phone memory (#585): iOS Safari killed the tab after a few steps ("Ett problem inträffade flera gånger"; the first kill
+reloads silently via the resume record). Each Reflector's render target is 512² 4× multisampled half-float (~15 MB on the
+GPU) and was allocated the first time that mirror reflected and never freed, so memory grew with every mirror walked
+past; `updateReflections` now disposes the previous mirror's target when another (or none) becomes active, so at most
+one exists. On phones/tablets (`lowMemory` in main.js: mobile UA, iPadOS's touch "Macintosh", or `&lowmem`)
+`LOW_MEMORY` in config caps `renderer.capabilities.maxTextureSize` to 1024 (three resizes on upload; the source
+canvases are untouched, so redraws still work), the shadow map to 1024² and the pixel ratio to 1.0 (dynamic resolution
+used to step up to 1.5× there). Measured with an iPhone UA and a WebGL allocation counter in headless Chromium:
+textures 245 → 170 MB, shadow renderbuffers 16.8 → 4.2 MB, mirrors bounded at one target instead of +~15 MB each. Still
+large and not reduced: ~105 MB of vertex buffers (plus their CPU copies) and ~200 MB of canvas sources on the CPU.

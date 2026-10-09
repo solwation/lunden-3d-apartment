@@ -1889,6 +1889,13 @@ export const RESET_KEEP = [
 // not drawn from outside unless seen through a façade opening; re-checked after the camera moved `move` m.
 export const PERF = { detail: { maxR: 0.5, k: 0.009, minDist: 3.2, maxOcclude: 4, move: 0.3 } };
 
+// Phones and tablets (low memory, #585): iOS Safari kills the tab ("Ett problem inträffade flera gånger") once the page's
+// textures, geometry and canvases outgrow its memory budget. Measured with an iPhone UA in headless Chromium:
+// ~280 MB of textures, 15 of them larger than 1024 px. On such devices every texture is uploaded at most
+// `maxTextureSize` px on its longest side (three's own resize, the source canvas/image stays as it is), the sun's
+// shadow map is `shadowMapSize`² and the dynamic resolution never goes above `maxPixelRatio`. `&lowmem` forces it on a desktop.
+export const LOW_MEMORY = { maxTextureSize: 1024, shadowMapSize: 1024, maxPixelRatio: 1.0 };
+
 // Marks on surfaces (#96, src/marks.js): one ring buffer of at most `max` flat decals in all, one instanced
 // mesh per kind, canvas textures. Per kind: size (m, randomised ±25 %), life (s; the last `fade` s fade out).
 // burn = the lightsaber (with a short glow and a puff of smoke), star/butterfly = wands, splash = Nerf.
