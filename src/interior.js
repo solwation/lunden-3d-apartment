@@ -1156,10 +1156,14 @@ export function buildElCabinet(group, cab, dir, y0, h, list) {
   F.box(a0 + 0.17, a1, d, d + 0.06, y0 + 1.918, y0 + 2.0, white);                            // fibre box
   for (let k = 0; k < 4; k++) F.box(a0 + 0.02 + k * 0.025, a0 + 0.03 + k * 0.025, d + 0.18, d + 0.182, y0 + 1.935, y0 + 1.94, ledGreen);
   group.add(...B.meshes());
-  return openFront({ group, list }, F, F.u0, F.u1, y0, y1, white, null, {}, { mode: 'hinge', at: 'a0', name: 'elskåpet', build: (P, b0, b1, c0, c1) => {
+  const o = openFront({ group, list }, F, F.u0, F.u1, y0, y1, white, null, {}, { mode: 'hinge', at: 'a0', name: 'elskåpet', build: (P, b0, b1, c0, c1) => {
     P.box(b0 + 0.0015, b1 - 0.0015, -FT, 0, c0 + 0.0015, c1 - 0.0015, white);
     P.box(b1 - 0.04, b1 - 0.025, 0, 0.012, c0 + 1.05, c0 + 1.15, M.chrome);                 // a small handle
   } });
+  // the power cut (#604, power.js): where the fuse box is (its back and the breakers' front at u0 / u1 along the
+  // cabinet, y0 … y1, plan points via `at`) and the router's LEDs, which go dark with the power
+  o.fuse = { back: F.at(a0, d), front: F.at(a1, d + 0.14), y0: y0 + 1.15, y1: y0 + 1.75, normal: o.normal, leds: ledGreen };
+  return o;
 }
 
 /**

@@ -72,7 +72,7 @@ export class Grill {
     pick.userData.door = lidMesh.userData.door = knob.userData.door = this;
     this.pickable = this.object;
     // the warm light: a pool light while it burns (lights.js)
-    this.lamp = { pos: new THREE.Vector3(x, 1.4, z), intensity: G.light, range: 9, color: 0xff9a40, level: 0, k: 0 };
+    this.lamp = { pos: new THREE.Vector3(x, 1.4, z), intensity: G.light, range: 9, color: 0xff9a40, level: 0, k: 0, fire: true }; // (fire: a power cut leaves it lit, #604)
   }
 
   get isOpen() { return this.on; }

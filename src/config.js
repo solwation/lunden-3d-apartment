@@ -1673,7 +1673,9 @@ export const TOYS = {
     dart: { speed: 9, gravity: 6, max: 8 }, held: { x: 0.18, y: -0.15, z: -0.45 } },
   wands: { level: 1, x: 2.61, y: 1.45, z: [2.85, 3.2, 3.55], colors: [0xff7ad0, 0x9b7bff, 0x5fd7ff],
     held: { x: 0.2, y: -0.22, z: -0.42 }, headband: { z: 3.9 }, reach: 8 }, // reach: m to the surface the magic lands on (#97)
-  flashlight: { level: 0, x: 0.58, y: 1.83, z: 2.08, held: { x: 0.2, y: -0.2, z: -0.38 },
+  // #604: in the hall's EL/C cabinet, lying on top of the fuse box (x 0.21…0.32, z 0.51…0.82, top y 1.75), at hand in a
+  // power cut; `turn` = its yaw (0: along the cabinet, lens to the north). Spot on the box is our pick.
+  flashlight: { level: 0, x: 0.3, y: 1.776, z: 0.665, turn: 0.05, back: ['elskåpet', 'lägga tillbaka ficklampan i'], held: { x: 0.2, y: -0.2, z: -0.38 },
     spot: { intensity: 9, distance: 14, angle: 0.42, penumbra: 0.45, color: 0xfff0d6 } },
 };
 
@@ -3781,6 +3783,21 @@ export const FURNITURE = [
 // Optional everyday task card on the cup-cabinet door's inside (#392, #509).
 // #509: visual assumptions; size retained, mounting fractions of the actual door's height/width.
 export const TASK_NOTE = { w: 0.18, h: 0.22, tilt: 0.04, inset: 0.001, height: 0.55, across: 0.5 };
+
+// The power cut (#604, src/power.js): fiddling with the fuse box in the hall's EL/C cabinet buzzes and crackles while
+// the lamps flicker, then bangs, and Kv. Lunden (our flat, Hus L, Hus A–C, the courtyard, the stairwell, the garage)
+// goes dark until the action button is held on the fuse box for `repair` s. The surroundings (campus, Karpvägen, the
+// street lamps) keep their light. Every number here is a *guess* by eye and ear, nothing is sourced.
+export const POWER = {
+  buzz: 2.6,             // s of buzzing and crackling (lamps flickering) before the bang (*guess*)
+  flicker: 14,           // flicker steps per second while it buzzes (*guess*)
+  repair: 30,            // s the action button must be held on the fuse box; letting go pauses the progress (*guess*)
+  tinker: 1.3,           // s between the small clicks while it is being mended (*guess*)
+  bang: 1,               // the bang's loudness, 1 = as loud as a gunshot up close (*guess*)
+  spark: { size: 0.55, time: 0.45, color: 0xcfe2ff }, // the flash at the breakers: sprite size m, fade s, colour (*guess*)
+  emergency: 0.1,        // what is left of the stairwell's baked light: its battery emergency lights (*guess*)
+  pick: { out: 0.05 },   // the fuse box's pick box reaches this far in front of the breakers, m (*guess*)
+};
 
 // Furniture cheat (#465): interaction distance and support tolerance are gameplay choices, not surveyed dimensions.
 export const REARRANGE = { reach: 6, supportGap: 0.06, poll: 3000 };

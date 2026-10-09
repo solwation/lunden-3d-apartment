@@ -1213,6 +1213,7 @@ export function cloudTexture() {
  */
 export function buildWindowLights(detailed=[]) {
   const spots = [];
+  const lunden = (b) => /^Hus [A-C]$/.test(b.name); // Kv. Lunden's own houses go dark in a power cut (#604); the rest of the site does not
   for (const b of S.blocks) {
     const faces = [
       { along: 'x', c: b.z0 - 0.03, a0: b.x0, a1: b.x1, n: [0, -1], f: 'n' }, { along: 'x', c: b.z1 + 0.03, a0: b.x0, a1: b.x1, n: [0, 1], f: 's' },
@@ -1233,7 +1234,7 @@ export function buildWindowLights(detailed=[]) {
         for (const { y, s, st } of rows) {
           if (b.corners && inCut(b, f.f, a - 0.95, a + 0.95, st)) continue; // a loggia or an entrance recess there (#145, #258)
           if (y < groundY(f.along === 'x' ? a : f.c, f.along === 'x' ? f.c : a) + 0.8) continue; // below the ground
-          spots.push(f.along === 'x' ? { x: a, y, z: f.c, n: f.n, s } : { x: f.c, y, z: a, n: f.n, s });
+          spots.push(f.along === 'x' ? { x: a, y, z: f.c, n: f.n, s, lunden: lunden(b) } : { x: f.c, y, z: a, n: f.n, s, lunden: lunden(b) });
         }
       }
     }
@@ -1244,17 +1245,17 @@ export function buildWindowLights(detailed=[]) {
       const detailedOpening=detailed.find(d=>d.house===b.name&&d.face===o.face&&d.st===o.st&&d.a0===o.a0);
       if(detailedOpening){
         const routine=`${b.name}:${o.face}:${o.st}:${o.a0}`;
-        for(const p of detailedOpening.panes)spots.push({x:p.x+o.n[0]*(.05-O.site.paneOut),y:p.y,z:p.z+o.n[1]*(.05-O.site.paneOut),n:o.n,s:[p.width/1.25,p.height/1.45,1],routine});
+        for(const p of detailedOpening.panes)spots.push({x:p.x+o.n[0]*(.05-O.site.paneOut),y:p.y,z:p.z+o.n[1]*(.05-O.site.paneOut),n:o.n,s:[p.width/1.25,p.height/1.45,1],routine,lunden:lunden(b)});
         continue;
       }
       const len = o.a1 - o.a0, h = o.y1 - o.y0 - 0.1;
       if (o.y0 + h / 2 < (o.n[1] ? groundY((o.a0 + o.a1) / 2, o.z0 + o.n[1] * 0.6) : groundY(o.x0 + o.n[0] * 0.6, (o.a0 + o.a1) / 2)) + 0.8) continue;
-      spots.push({ x: (o.x0 + o.x1) / 2 + o.n[0] * 0.05, y: o.y0 + 0.05 + h / 2, z: (o.z0 + o.z1) / 2 + o.n[1] * 0.05, n: o.n, s: [(len - 0.1) / 1.25, h / 1.45, 1] });
+      spots.push({ x: (o.x0 + o.x1) / 2 + o.n[0] * 0.05, y: o.y0 + 0.05 + h / 2, z: (o.z0 + o.z1) / 2 + o.n[1] * 0.05, n: o.n, s: [(len - 0.1) / 1.25, h / 1.45, 1], lunden: lunden(b) });
     }
     const glazed = [...loggiaOpenings(b).filter((o) => o.kind === 'window'), ...(b.recesses ?? []).filter((r) => r.door != null).flatMap((r) => entranceOpenings(b, r))];
     for (const o of glazed) {
       const len = Math.hypot(o.x1 - o.x0, o.z1 - o.z0), h = o.y1 - o.y0 - 0.12;
-      spots.push({ x: (o.x0 + o.x1) / 2 + o.n[0] * 0.075, y: o.y0 + 0.06 + h / 2, z: (o.z0 + o.z1) / 2 + o.n[1] * 0.075, n: o.n, s: [(len - 0.12) / 1.25, h / 1.45, 1], hall: o.kind !== 'window' });
+      spots.push({ x: (o.x0 + o.x1) / 2 + o.n[0] * 0.075, y: o.y0 + 0.06 + h / 2, z: (o.z0 + o.z1) / 2 + o.n[1] * 0.075, n: o.n, s: [(len - 0.12) / 1.25, h / 1.45, 1], hall: o.kind !== 'window', lunden: lunden(b) });
     }
   }
   const geo = new THREE.PlaneGeometry(1.25, 1.45);
@@ -1270,7 +1271,7 @@ export function buildWindowLights(detailed=[]) {
     if(p.routine&&routines.has(p.routine))return routines.get(p.routine);
     const home = rand() > 0.2; // some flats are empty tonight
     const habit={
-      home, hall: p.hall, // a stair hall: lit all night (#266)
+      home, hall: p.hall, lunden: !!p.lunden, // a stair hall: lit all night (#266)
       on: 15.5 + rand() * 4, off: 21 + rand() * 3.5, // evening
       early: rand() < 0.4, wake: 5.5 + rand() * 1.5, leave: 7 + rand() * 1.5, // morning
       tint: rand(), // warm … cool (TV)
@@ -1278,16 +1279,16 @@ export function buildWindowLights(detailed=[]) {
     if(p.routine)routines.set(p.routine,habit);return habit;
   });
   const col = new THREE.Color();
-  let last = -1;
+  let last = -1, lastPower = true;
   return {
     object: mesh,
-    /** hour 0–24, night 0 (day) … 1 (night): switch windows as their routines say. */
-    update(hour, night) {
-      if (Math.abs(hour - last) < 0.05 && last >= 0) return;
-      last = hour;
+    /** hour 0–24, night 0 (day) … 1 (night): switch windows as their routines say; `power` false: Kv. Lunden's windows dark (#604). */
+    update(hour, night, power = true) {
+      if (Math.abs(hour - last) < 0.05 && last >= 0 && power === lastPower) return;
+      last = hour; lastPower = power;
       habits.forEach((h, i) => {
         const lit = h.home && ((hour > h.on && hour < h.off) || (h.off > 24 && hour < h.off - 24) || (h.early && hour > h.wake && hour < h.leave));
-        const k = h.hall ? 0.85 * night : lit ? 0.25 + 0.75 * night : 0;
+        const k = !power && h.lunden ? 0 : h.hall ? 0.85 * night : lit ? 0.25 + 0.75 * night : 0;
         col.setRGB(1.0 * k, (0.78 + 0.12 * h.tint) * k, (0.5 + 0.45 * h.tint) * k);
         mesh.setColorAt(i, col);
       });
@@ -1466,6 +1467,6 @@ export function buildSurroundings({ grass }) {
   group.add(...trees(rng(3)));
   const windows = buildWindowLights(details.list), street = buildStreet(groundY); // street lamps, crossing, curbs … (#128)
   group.add(windows.object, street.object, buildStreetSigns(groundY)); // + street name signs at the junctions (#583)
-  group.userData.windows = { object: windows.object, update(hour, night) { windows.update(hour, night); street.update(night);glassMaterial.envMapIntensity=THREE.MathUtils.lerp(O.reflectionDay,O.reflectionNight,night); } };
+  group.userData.windows = { object: windows.object, update(hour, night, power = true) { windows.update(hour, night, power); street.update(night);glassMaterial.envMapIntensity=THREE.MathUtils.lerp(O.reflectionDay,O.reflectionNight,night); } };
   return group;
 }

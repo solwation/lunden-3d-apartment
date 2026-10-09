@@ -15,7 +15,8 @@ tools/oloftest.html    headless test (#586): ?olof=0 seats him, seated pose, sea
                        sight, "Vinka till Olof" scores, he answers, waves, gets up and is gone, the seat free again
 tools/olofcartest.html headless test (#599): the key brings the car with Olof at the wheel (seat, hands on the wheel), "Hälsa på
                        Olof" → a dad joke, then gone; the driver's door and seat work after; back with the next call; gone when you sit in
-src/audio.js           synthesised positional sound effects (Web Audio): doors, slides, meow, steps
+src/audio.js           synthesised positional sound effects (Web Audio): doors, slides, meow, steps; #604: `mainsBuzz` (100 Hz buzz +
+                       thickening crackles), `fuseBang`, `breakerOn`
 src/pingping.js        Pingping (#269, PINGPING): the penguin cushion between the pillows in the Sovrum 1 bed, a Thing (kind 'pingping'):
                        held in both arms (hand.js `handPose: 'hug'`, `hugGrips`; the left arm = the right one mirrored); click /
                        "Krama" hugs (pulled in + squashed, sfx.squeak, rising hearts, stats pingpingHugs); `soft` = may go down on

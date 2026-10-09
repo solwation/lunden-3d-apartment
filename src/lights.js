@@ -41,6 +41,12 @@ export function roomEnv() {
   return envTex;
 }
 
+/** The mains (#604, power.js): 1 = power, 0 = a power cut; in between while the fuse box crackles (the lamps flicker).
+ * Switches and small lamps keep their own on / off through a cut (`room.on`), so they come back as they were; only
+ * what they show and light is scaled by it. */
+let supply = 1;
+const powered = () => supply > 0.5;
+
 /** Emissive bits that show a lamp is on: on = warm glow, off = plain white plastic/glass. */
 function setGlow(material, on) {
   const lit = material.userData.lit; // own colours when lit (e.g. the dark string shade, #174)
@@ -108,7 +114,7 @@ class Room {
 
   toggle() {
     this.on = !this.on;
-    for (const m of this.mats) setGlow(m, this.on);
+    for (const m of this.mats) setGlow(m, this.on && powered());
   }
 }
 
@@ -206,8 +212,11 @@ class FloorLamp {
     this.show();
   }
 
+  /** How brightly it shows now: its fade × the mains (#604; the Christmas tree's bulbs follow it). */
+  get glow() { return this.k * supply; }
+
   show() {
-    const k = this.k;
+    const k = this.glow;
     this.spec.shade.emissiveIntensity = 0.04 + 0.86 * k;
     for (const m of this.spec.glows ?? []) { m.opacity = k * (m.userData.on ?? m.userData.glow); m.visible = k > 0.001; } // additive washes (#221)
   }
@@ -477,6 +486,16 @@ export class Lights {
 
   get targets() { return [...this.switches, ...this.floorLamps]; }
 
+  /** The mains (#604): 0 … 1, see `supply`. Every lamp's glow, pool light and wash follow it; on / off are kept. */
+  setSupply(s) {
+    if (s === supply) return;
+    const was = powered();
+    supply = s;
+    if (powered() !== was) for (const R of this.rooms.values()) for (const m of R.mats) setGlow(m, R.on && powered());
+    for (const f of this.floorLamps) f.show();
+  }
+  get supply() { return supply; }
+
   /** All rooms (and small lamps) on or off. */
   setAll(on) {
     for (const R of this.rooms.values()) if (R.on !== on) R.toggle();
@@ -496,11 +515,12 @@ export class Lights {
     }
     for (const f of this.floorLamps) f.update(dt);
     // the copper pendants' reflections (#307): the painted room shows by day and when their room is lit
-    for (const c of this.copper ?? []) c.material.envMapIntensity = 0.1 + 0.8 * Math.min(1, Math.max(0, daylight)) + (c.room.on ? 0.45 : 0);
+    for (const c of this.copper ?? []) c.material.envMapIntensity = 0.1 + 0.8 * Math.min(1, Math.max(0, daylight)) + (c.room.on && powered() ? 0.45 : 0);
   }
 
   /** Is anything lit in room `name` on `level`: its ceiling lamp or a small lamp standing in it (the blinds' glow, #273)? */
   roomLit(level, name) {
+    if (!powered()) return false; // a power cut (#604)
     if (this.rooms.get(`${level}:${name}`)?.on) return true;
     return this.floorLamps.some((f) => f.room.on && shown(f) && f.room.lamps[0]?.level === level && this.lampRoom(f.room.lamps[0]) === name);
   }
@@ -568,7 +588,7 @@ export class Lights {
     }
     this.slots.forEach((s, i) => {
       const l = this.pool[i], lamp = s.lamp;
-      l.intensity = lamp ? lamp.intensity * (k.get(lamp) ?? 0) * s.f : 0;
+      l.intensity = lamp ? lamp.intensity * (k.get(lamp) ?? 0) * s.f * (lamp.fire ? 1 : supply) : 0; // (#604: a power cut; not the grill's fire)
       if (!lamp) return;
       l.position.copy(lamp.pos);
       l.color.setHex(lamp.color);
@@ -579,7 +599,7 @@ export class Lights {
       if (owner.recolored) this.wash.recolor(i);
       let f = 0;
       for (const s of this.slots) if (s.lamp === lamp) f += s.f;
-      this.wash.set(i, owner instanceof FloorLamp ? (shown(owner) ? owner.k : 0) : owner.on ? 1 : 0, Math.min(1, f));
+      this.wash.set(i, (owner instanceof FloorLamp ? (shown(owner) ? owner.k : 0) : owner.on ? 1 : 0) * supply, Math.min(1, f));
     });
     for (const f of this.floorLamps) f.recolored = false;
     this.wash.commit();

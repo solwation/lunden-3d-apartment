@@ -71,6 +71,8 @@ src/curtains.js        Sovrum 1's curtains (#342, CURTAINS): two floor-length te
                        #464: kitchen valance is one short panel (hem 2.45 m), initially spread along the existing rail, dim 0.03.
                        #468: every rail spans the room's side-wall faces (CURTAINS.rail, plan.json); kitchen cloth spans the full width too. #566 gives the living room its own dense dark-green IKEA leaf print on white (IMG_0571); kitchen fabric stays unchanged.
                        Its '-valance' state id avoids inheriting the removed long curtains' position; subsequent positions save normally.
+src/lights.js #604     the mains (`setSupply`, 0 … 1, from power.js): every glow, pool light (not a `fire` lamp: the grill) and wash
+                       × supply; `room.on` / small lamps' on are kept through a cut; `roomLit` false; `FloorLamp.glow` = k × supply (the tree)
 src/lampwash.js        every lamp's light wherever the visitor is (#276, #294, #295, LIGHTING.wash): each pool anchor (small lamps
                        and ceiling lamps) lights the flat inside the lit materials' own shaders (`patch(scene)`: onBeforeCompile on
                        every MeshStandard/Lambert/Phong material, re-scanned every 120 frames; no extra mesh or draw call) exactly

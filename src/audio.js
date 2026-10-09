@@ -755,6 +755,40 @@ export const sfx = {
     const n = 1 + Math.floor(Math.random() * 4);
     for (let i = 0; i < n; i++) noise(t + Math.random() * 0.12, 0.006 + Math.random() * 0.012, d, { type: 'highpass', freq: 1500 + Math.random() * 2500, gain: 0.25 + Math.random() * 0.35, attack: 0.001 });
   },
+  /** The fuse box giving up (#604): `dur` s of a mains buzz (100 Hz and its overtones, swelling) and a sputter of electric
+   * crackles that come thicker towards the end. Returns { stop }. */
+  mainsBuzz(pos, dur) {
+    if (!ready()) return null;
+    const t = ctx.currentTime, d = out(pos, 0.9);
+    const g = ctx.createGain(); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.05, t + 0.3); g.gain.linearRampToValueAtTime(0.13, t + dur);
+    const o = ctx.createOscillator(); o.type = 'sawtooth'; o.frequency.value = 100;
+    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 900;
+    const wob = ctx.createOscillator(), wg = ctx.createGain(); wob.frequency.value = 7; wg.gain.value = 0.03; // a rough, unsteady hum
+    wob.connect(wg).connect(g.gain);
+    o.connect(lp).connect(g).connect(d);
+    o.start(t); wob.start(t); o.stop(t + dur + 0.1); wob.stop(t + dur + 0.1);
+    for (let s = 0.15; s < dur; s += 0.03 + Math.random() * 0.22 * (1 - s / dur)) { // crackles, faster and faster
+      noise(t + s, 0.005 + Math.random() * 0.02, d, { type: 'highpass', freq: 2000 + Math.random() * 4000, gain: 0.2 + Math.random() * 0.4 * (0.4 + s / dur), attack: 0.001 });
+    }
+    return { stop() { const t1 = ctx.currentTime; g.gain.cancelScheduledValues(t1); g.gain.setValueAtTime(0, t1); o.stop(t1 + 0.02); wob.stop(t1 + 0.02); } };
+  },
+  /** The bang when it blows (#604): a sharp crack, a deep thump and a short fizzle after; `k` = loudness (POWER.bang). */
+  fuseBang(pos, k = 1) {
+    if (!ready()) return;
+    const t = ctx.currentTime, d = out(pos, k);
+    noise(t, 0.05, d, { type: 'highpass', freq: 1500, gain: 0.9, attack: 0.001 });
+    noise(t, 0.3, d, { type: 'lowpass', freq: 600, gain: 0.8, attack: 0.002 });
+    tone(t, 0.35, d, { type: 'sine', from: 120, to: 32, gain: 0.6 });
+    noise(t + 0.05, 0.9, d, { type: 'bandpass', freq: 3200, q: 0.8, gain: 0.12, attack: 0.02 }); // the fizzle
+    for (let i = 0; i < 6; i++) noise(t + 0.08 + Math.random() * 0.6, 0.008, d, { type: 'highpass', freq: 3000, gain: 0.3, attack: 0.001 });
+  },
+  /** The main switch thrown back on (#604): a heavy clack. */
+  breakerOn(pos) {
+    if (!ready()) return;
+    const t = ctx.currentTime, d = out(pos, 0.9);
+    thump(t, d, 0.5);
+    latch(t + 0.01, d, 0.8);
+  },
   /** The smoke alarm (#194): a loud, shrill beep-beep-beep until stopped. */
   alarm(pos) {
     if (!ready()) return null;

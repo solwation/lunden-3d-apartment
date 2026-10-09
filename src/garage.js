@@ -424,7 +424,7 @@ export class Garage {
       const rs = RECTS.filter((r) => r.area === a).sort((p, q) => (q.x1 - q.x0) * (q.z1 - q.z0) - (p.x1 - p.x0) * (p.z1 - p.z0)), r = rs[0];
       return { pos: new THREE.Vector3((r.x0 + r.x1) / 2, C - 0.4, (r.z0 + r.z1) / 2), intensity: LI.intensity, range: LI.range * 1.6, color: 0xeef3ff, level: 0, k: 0, area: a };
     });
-    Object.assign(this, { under: 0, lit: 0, present: false });
+    Object.assign(this, { under: 0, lit: 0, present: false, powerOff: false }); // powerOff: a power cut in Kv. Lunden (#604)
     this.door = new GarageDoor(this.areas.entrance.group); // #358
     this.targets.push(...this.door.targets);
     for (const a of Object.values(this.areas)) this.setLevel(a, 0);
@@ -600,11 +600,11 @@ export class Garage {
     this.present = below || atDoor;
     // each area's sensor: the visitor in it or within `sensor` m of one of its rooms (the entrance: also at the door)
     for (const a of Object.values(this.areas)) {
-      const sees = (below && RECTS.some((r) => r.area === a.name && inRect(r, p.x, p.z, LI.sensor))) || (a.name === 'entrance' && atDoor);
+      const sees = !this.powerOff && ((below && RECTS.some((r) => r.area === a.name && inRect(r, p.x, p.z, LI.sensor))) || (a.name === 'entrance' && atDoor)); // (no tubes in a power cut, #604)
       if (sees) {
         if (!a.on) { a.on = true; a.flickT = LI.flicker; sfx.click?.({ x: p.x, y: C, z: p.z }); }
         a.hold = LI.hold;
-      } else if (a.on && (a.hold -= dt) <= 0) a.on = false;
+      } else if (a.on && ((a.hold -= dt) <= 0 || this.powerOff)) a.on = false;
       let k = a.on ? 1 : Math.max(0, a.level - dt * 2);
       if (a.on && a.flickT > 0) { // a fluorescent starting up: a few blinks
         a.flickT -= dt;

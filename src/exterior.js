@@ -626,14 +626,14 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
   // the upper units' courtyard windows (#337): a share of them lit after dusk (one material, its emissive switched)
   const litMat = glassMaterial.clone();litMat.emissive.setHex(0xffc98a);
   add(litGlass, litMat, false).name="neighborLitGlass";
-  group.userData.update = (night) => {
+  group.userData.update = (night, power = true) => { // power false: a power cut in Kv. Lunden (#604): lanterns, windows, door lights out
     glassMaterial.envMapIntensity=litMat.envMapIntensity=THREE.MathUtils.lerp(O.reflectionDay,O.reflectionNight,night);
-    glowMat.color.copy(night > 0.35 ? lit : off);
-    litMat.emissiveIntensity = night > 0.35 ? 0.6 : 0;
+    glowMat.color.copy(night > 0.35 && power ? lit : off);
+    litMat.emissiveIntensity = night > 0.35 && power ? 0.6 : 0;
     // the front-door lights (#433): on after dusk with a short fade (hysteresis: no flicker)
     const now = performance.now(), dt = Math.min(1, (now - doorT) / 1000);
     doorT = now;
-    if (!doorLit && night > DL.on) doorLit = true; else if (doorLit && night < DL.off) doorLit = false;
+    if (!doorLit && night > DL.on && power) doorLit = true; else if (doorLit && (night < DL.off || !power)) doorLit = false;
     for (const m of glows) doorGlow = fadeGlow(m, doorGlow, doorLit, m === glows[0] ? dt : 0, DL.fade, m.userData.peak);
     portikMat.color.lerpColors(portikOff, portikLit, doorGlow);
   };

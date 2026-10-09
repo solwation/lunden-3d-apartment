@@ -409,8 +409,8 @@ export class Flashlight extends Holdable {
     const lens = new THREE.Mesh(new THREE.CircleGeometry(0.022, 16), lensMat); lens.position.z = -0.1251; lens.rotation.y = Math.PI; g.add(lens);
     g.add(box(0.012, 0.008, 0.02, 0, 0.018, 0.02, mat(0xff5a2a)));
     super(scene, camera, {
-      name: 'ficklampan', backName: 'hyllan', backVerb: 'lägga tillbaka ficklampan på', model: g,
-      home: { pos: new THREE.Vector3(F.x, y0, F.z), rot: new THREE.Euler(0, Math.PI / 2 + 0.3, 0) },
+      name: 'ficklampan', backName: F.back[0], backVerb: F.back[1], model: g, // in the EL/C cabinet (#604)
+      home: { pos: new THREE.Vector3(F.x, y0, F.z), rot: new THREE.Euler(0, F.turn, 0) },
       heldPose: { pos: new THREE.Vector3(F.held.x, F.held.y, F.held.z), rot: new THREE.Euler(0.03, 0.06, 0) },
       pick: { pos: new THREE.Vector3(F.x, y0 + 0.03, F.z), size: [0.3, 0.12, 0.3] },
       cooldown: 0.2, useLabel: 'Tänd / släck',

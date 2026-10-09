@@ -68,6 +68,7 @@ import { buildSillPots } from './plants.js';
 import { Chicken } from './chicken.js';
 import { SmokeAlarm } from './hood.js';
 import { Grill } from './grill.js';
+import { Power } from './power.js';
 import { Sonos } from './sonos.js';
 import { DetailCuller } from './detail.js';
 import { BlindPanel } from './blinds.js';
@@ -966,6 +967,18 @@ for (const l of laptops) l.onClip = (key) => bump('clips', 1, key);
 if (params.has('laptop')) for (const l of laptops) l.set(true);
 // the smart speakers (#325): E wakes one, it answers (the time, the weather, the coffee, jokes …)
 const nests = new Nests(world.furnitureTargets.filter((t) => t.kind === 'nest'), { day, weather, coffee: world.lids.find((l) => l.kind === 'coffee'), camera, layer: document.getElementById('speech') });
+// the power cut (#604, power.js): the fuse box in the hall's EL/C cabinet; Kv. Lunden dark until it is mended (never saved)
+const power = new Power(scene, world.lids.find((l) => l.fuse));
+const POWERED = new Set(['tv', 'pc', 'laptop', 'speaker', 'nest', 'hob', 'hood', 'coffee', 'liftcall', 'liftbtn', 'garagebutton']); // E targets that need the mains
+power.onCut = () => { // screens, music and the cooker go off and stay off (only the lamps come back as they were)
+  for (const t of world.furnitureTargets) { if ((t.kind === 'tv' || t.kind === 'pc') && t.isOpen) t.toggle(); t.mains?.(false); }
+  for (const l of laptops) l.set(false);
+  if (sonos.playing) sonos.pause();
+  world.hob?.set(false); world.hood?.set(false);
+  nests.powered = false; window.speechSynthesis?.cancel(); core.setPower(false); garage.powerOff = true;
+};
+power.onRestore = () => { for (const t of world.furnitureTargets) t.mains?.(true); nests.powered = true; core.setPower(true); garage.powerOff = false; };
+{ const findTv = remote.findTv; remote.findTv = () => (power.on ? findTv() : null); } // the remote does nothing in a power cut
 if (params.has('turbo')) turbo.start(); // Kaffeturbo at once (screenshots, #217)
 // ?open opens every door (screenshots of open doors/wardrobes)
 // &water turns every tap on (screenshots)
@@ -1400,6 +1413,7 @@ document.addEventListener('wheel', (e) => { if (locked && !reading && choices.ro
 /** E / the action button on what you look at: doors toggle, the note opens. */
 function use(thing) {
   if (thing.kind === 'rearrange') { rearrange.act(thing); return; }
+  if (thing.kind === 'fusebox') { thing.power.use(); return; } // the power cut (#604): trip it, or mend it while held
   shadowState.hold = 1.5; // whatever moves now casts a moving shadow
   if (!heldItem() && !['rest', 'place', 'note', 'taskNote', 'clock', 'calendar', 'board', 'poster', 'paper'].includes(thing.kind) && focusPoint && thing === focused) hand.reach(focusPoint); // the arm reaches out (#195)
   if (thing.options && thing.kind !== 'life' && choices.rows && choices.target === thing) { // a lamp with a choice (#428): the marked row
@@ -1480,7 +1494,7 @@ function use(thing) {
   }
   else useDoor(thing);
 }
-actionBtn.addEventListener('click', () => { if (reading) showNote(false); else if (focused) use(focused); else if (heldItem()?.useLabel) heldItem().use(); else if (rest.active) standUp(); });
+actionBtn.addEventListener('click', () => { if (reading) showNote(false); else if (focused?.kind === 'fusebox' && !power.on) return; /* held, not clicked (#604) */ else if (focused) use(focused); else if (heldItem()?.useLabel) heldItem().use(); else if (rest.active) standUp(); });
 const standBtn = document.getElementById('stand-btn'); // touch, sitting with something in reach or in the hand: get up (#184)
 standBtn.addEventListener('click', () => { if (rest.active) standUp(); });
 const muteBtn = document.getElementById('mute');
@@ -1540,10 +1554,10 @@ const clickTarget = () => (focused === jetpack.dropTarget || focused === suit.dr
 const clickIsE = () => !!clickTarget() && !focused.blocked && !heldItem()?.clickIsUse;
 document.addEventListener('mousedown', (e) => { if (locked && (e.button === 0 || e.button === 2)) click(e.button); });
 document.addEventListener('contextmenu', (e) => { if (locked) e.preventDefault(); });
-document.addEventListener('mouseup', (e) => { if (e.button === 0) heldItem()?.trigger?.(false); });
+document.addEventListener('mouseup', (e) => { if (e.button === 0) { heldItem()?.trigger?.(false); power.release(); } });
 // touch: holding the action button keeps the rifle firing (#196)
-actionBtn.addEventListener('pointerdown', () => { if (!focused && heldItem()?.trigger) heldItem().trigger(true); });
-for (const ev of ['pointerup', 'pointercancel', 'pointerleave']) actionBtn.addEventListener(ev, () => heldItem()?.trigger?.(false));
+actionBtn.addEventListener('pointerdown', () => { if (!focused && heldItem()?.trigger) heldItem().trigger(true); if (focused?.kind === 'fusebox' && !power.on) power.use(); }); // … and mending the fuse box (#604)
+for (const ev of ['pointerup', 'pointercancel', 'pointerleave']) actionBtn.addEventListener(ev, () => { heldItem()?.trigger?.(false); power.release(); });
 // touch: the remote's power button beside the action button while it is held
 const powerBtn = document.getElementById('power-btn');
 const turnBtn = document.getElementById('turn-btn');
@@ -1575,7 +1589,7 @@ document.addEventListener('keydown', (e) => {
   if (isCtrl(e.code)) player.crouch = true;
   else if (e.ctrlKey) e.preventDefault();
   if (choices.rows && /^Digit[1-9]$/.test(e.code) && runChoice(Number(e.code.slice(5)) - 1)) e.preventDefault(); // a menu row (#367)
-  if (e.code === 'KeyE' && focused) use(focused); // also while sitting: what is within reach (#184)
+  if (e.code === 'KeyE' && focused) { if (!(e.repeat && focused.kind === 'fusebox')) use(focused); } // also while sitting: what is within reach (#184); the fuse box: a fresh press (#604)
   else if (e.code === 'KeyE' && heldItem()?.useLabel) heldItem().use();
   else if (e.code === 'KeyE' && rest.active) standUp();
   else if ((e.code === 'Space' || e.code === 'KeyC') && rest.active) { e.preventDefault(); standUp(); } // seated, C gets you up
@@ -1596,8 +1610,9 @@ document.addEventListener('keyup', (e) => {
   if (clockPanel.open && clockPanel.key(e.code, false)) e.preventDefault(); // no button click on Space
   if (blindPanel.open) blindPanel.key(e.code, false);
   if (e.code === 'Tab') holdStats(false);
+  if (e.code === 'KeyE') power.release(); // mending the fuse box needs E held (#604)
 });
-window.addEventListener('blur', () => { if (!touch.enabled) player.crouch = false; heldItem()?.trigger?.(false); }); // no stuck crouch, no stuck trigger
+window.addEventListener('blur', () => { if (!touch.enabled) player.crouch = false; heldItem()?.trigger?.(false); power.release(); }); // no stuck crouch, no stuck trigger
 // touch: a crouch toggle beside the action button
 const crouchBtn = document.getElementById('crouch-btn');
 crouchBtn.addEventListener('click', () => {
@@ -1677,6 +1692,7 @@ function updateFocus() {
     ...jetpack.targets(), // the jetpack on its hook / where it was stood down (#359)
     ...suit.targets(), // the Spider-Man suit in its drawer / where it was laid (#597)
     ...world.courtyardTargets.map((t) => t.pickable), // the courtyard's benches (#438): F keeps them
+    ...(power.reachable ? [power.target.pickable] : []), // the fuse box while its cabinet is open (#604)
     ...(world.furnitureOn ? [...(target.object.visible ? [target.target] : []), ...patio.targets, ...world.furnitureTargets, ...holdables.map((h) => h.target), drawing.target, ...posters.targets].map((t) => t.pickable) : [])]; // parasol, TV, seats, beds, toys — unless F hid the furniture
   // the nearest hit on something actually shown (F hides the loose items, the raycaster doesn't care)
   const cupTargets = cups.cups.filter((c) => !c.held && c.state !== 'spare').map((c) => c.target.pickable);
@@ -1691,6 +1707,7 @@ function updateFocus() {
   focused = hit && !behindWall(hit.point) ? hit.object.userData.door : null;
   focusPoint = focused ? hit.point.clone() : null; // where the hand reaches on E (#195)
   focused?.aimAt?.(focusPoint); // the car's screen: which of its buttons (#268)
+  if (!power.on && focused && POWERED.has(focused.kind)) focused = { name: '', kind: 'unpowered', blocked: true, blockedText: 'Strömmen är borta' }; // a power cut (#604)
   if (!focused) { // a life-sim thing just out of reach (#367): say so instead of nothing
     raycaster.far = reach + LIFE.tooFar;
     const far = raycaster.intersectObjects(life.targets().map((t) => t.pickable), true).find((h) => shown(h.object));
@@ -1839,6 +1856,14 @@ function updateFocus() {
   const job = life.runner.job; // a timed life action going on (#372): what and how far
   if (job && !reading) { promptEl.textContent = `${job.label[0].toUpperCase()}${job.label.slice(1)} … ${Math.round(Math.min(1, job.t / Math.max(job.duration, 1e-6)) * 100)} %`; promptEl.hidden = false; }
   if (remoteAim && !touch.enabled && !reading) { promptEl.textContent = 'Klicka för att byta kanal · högerklick: av/på'; promptEl.hidden = false; }
+  const mending = focused === power.target && power.state === 'off' && !reading; // the fuse box in a power cut (#604): hold to mend, with progress
+  if (mending) {
+    const pct = Math.round(power.fraction * 100);
+    actionBtn.textContent = `Håll in: laga elcentralen ${pct} %`;
+    promptEl.textContent = touch.enabled ? `Lagar elcentralen … ${pct} %` : `Håll inne E eller musknappen för att laga elcentralen · ${pct} %`;
+    promptEl.hidden = touch.enabled && !power.holding;
+    promptEl.style.backgroundImage = `linear-gradient(90deg, rgba(70,170,100,.85) ${pct}%, transparent ${pct}%)`;
+  } else if (promptEl.style.backgroundImage) promptEl.style.backgroundImage = '';
   if (heldItem() === ball && !focused && !touch.enabled && !reading) { promptEl.textContent = 'Klicka för att skjuta · högerklick: studsa bollen'; promptEl.hidden = false; }
   actionBtn.hidden = !(focused || reading || holding || seated) || !touch.enabled || (!!choices.rows && !reading) || clockPanel.open || calPanel.open || blindPanel.open || sonos.open || !!viewing; // the strips have their own ×
   powerBtn.hidden = !touch.enabled || !heldItem()?.useAlt || reading;
@@ -2171,7 +2196,7 @@ function step(dt) {
   compass.update();
   if (clockPanel.open) clockPanel.render();
   sonos.update(player.aloft ? -1 : player.level, (p) => behindWall(p)); // (up on the roof: muffled as from outside, #360) // music: schedule ahead, walls muffle (#187)
-  world.windowLights.update(day.hour, 1 - day.daylight);
+  world.windowLights.update(day.hour, 1 - day.daylight, power.on);
   car.occupied = !!rest.target?.car; // sitting in it: the screens stay awake (#250)
   car.update(dt, day.daylight < 0.35, player);
   const moved = Math.hypot(player.pos.x - lastWeatherPos.x, player.pos.z - lastWeatherPos.z); // on foot (not a jump / spawn)
@@ -2200,6 +2225,9 @@ function step(dt) {
     footsteps();
     updateFocus();
   }
+  power.update(dt, focused === power.target); // the power cut (#604): flicker, bang, mending (after the focus: mending needs it)
+  lights.setSupply(power.supply);
+  patio.supply = power.supply;
   jetpack.update(dt); // flames, smoke, the roar, the heat bar; stood down at the door (#359)
   suit.update(dt); // the web strand and splats (#597)
   const outside = player.outdoors; // (the loftgång and the terraces over the flat too, #360)
@@ -2533,4 +2561,4 @@ document.documentElement.classList.remove('resuming'); // the page is ready: off
 hideLoading();
 
 // handle for tests/debugging (tools/touchtest.html, tools/perfcount.html)
-window.__app = { olof, olofDriver, beerCans, frame, hitch, warm, christmas, plantWind, cheats, cheatNote, showCheatNote, beerShelf, hallCare, bedCare, tableSetting, watering, laundry, compass, showOverlay, resumeFromMenu, interactionOutline, eggs, isPhoneDevice, get activeMode() { return activeMode; }, set activeMode(v) { activeMode = v; }, rearrange, showTerminal, quality, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, suit, toaster, life, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS };
+window.__app = { power, olof, olofDriver, beerCans, frame, hitch, warm, christmas, plantWind, cheats, cheatNote, showCheatNote, beerShelf, hallCare, bedCare, tableSetting, watering, laundry, compass, showOverlay, resumeFromMenu, interactionOutline, eggs, isPhoneDevice, get activeMode() { return activeMode; }, set activeMode(v) { activeMode = v; }, rearrange, showTerminal, quality, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, suit, toaster, life, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS };

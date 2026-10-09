@@ -1735,6 +1735,8 @@ function tv(item) {
     },
     /** The remote's channel button (#101): the next programme, through snow. */
     channel() { if (!on) return false; scr.tune(); return true; },
+    /** The mains (#604): in a power cut even the standby LED goes dark (main.js switches it off first). */
+    mains(v) { led.material.color.setHex(!v ? 0x1a0a0a : on ? 0xf4f4f4 : 0xff2a2a); },
     update(dt) {
       if (!on) return;
       acc += dt;

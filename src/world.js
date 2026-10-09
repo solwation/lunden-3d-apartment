@@ -860,7 +860,7 @@ export function buildWorld(plan) {
       return furniture.interactives.filter((t) => t.segments && t.level === level && !away(t.pickable)).flatMap((t) => t.segments());
     },
     lamps: [...furniture.lights, ...mirrorLamps, ...hallWall.lamps], // floor lamps + mirror LED strips + the hall mirror's night light, #572 (lights.js makes them switchable)
-    windowLights: { object: surroundings.userData.windows.object, update(h, n) { surroundings.userData.windows.update(h, n); courtyard.update(n); exterior.userData.update(n); } }, // neighbours' lit windows, the pergola's bulbs, the loftgång lanterns (daycycle)
+    windowLights: { object: surroundings.userData.windows.object, update(h, n, power = true) { surroundings.userData.windows.update(h, n, power); courtyard.update(n, power); exterior.userData.update(n, power); } }, // power: false in a power cut (#604) // neighbours' lit windows, the pergola's bulbs, the loftgång lanterns (daycycle)
     get furnitureOn() { return furniture.object.visible; },
     size: { x: W, z: D },
     levels,

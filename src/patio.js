@@ -584,6 +584,7 @@ export class Patio {
   }
 
   /** The string lights (main.js hands them over), switched with the daylight. */
+  supply = 1; // the mains (#604, power.js)
   setStringLights(sl, forceOn = false) { this.strings = sl; if (forceOn) { sl.on = true; sl.glow = 1; } }
 
   update(day, dt) {
@@ -594,7 +595,7 @@ export class Patio {
       if (sl.on && day.daylight > L.off && !sl.forced) sl.on = false;
       else if (!sl.on && day.daylight < L.on) sl.on = true;
       sl.glow = THREE.MathUtils.clamp(sl.glow + (sl.on ? 1 : -1) * dt / L.fade, 0, 1);
-      sl.mat.color.setHex(L.color).multiplyScalar(0.06 + 1.4 * sl.glow);
+      sl.mat.color.setHex(L.color).multiplyScalar(0.06 + 1.4 * sl.glow * this.supply); // (a power cut, #604: the pool light lights.js scales)
       for (const l of sl.lamps) l.k = sl.glow;
     }
     const sunUp = day.sunDir.y > 0.02;

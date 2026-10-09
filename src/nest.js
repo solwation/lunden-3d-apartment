@@ -334,6 +334,15 @@ export class Nests {
 
   update(dt) {
     this.idle += dt;
+    if (this.powered === false) { // a power cut (#604): no light, no talk, a black display
+      for (const s of this.speakers) {
+        s.chimeT = s.talkT = s.wake = 0;
+        s.dots?.forEach((d) => { d.material.opacity = 0; });
+        if (s.type === 'hub') { s.screen.material.color.setScalar(0); s.stamp = null; }
+      }
+      this.placeBubble(null);
+      return;
+    }
     let bubbleFor = null;
     for (const s of this.speakers) {
       s.t += dt;

@@ -1,7 +1,7 @@
 import { architectureEdges } from './architectureedges.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { CORE as K, PORTIK, GARAGE, HUS_L, PLAYER, storeyFloor } from './config.js';
+import { CORE as K, PORTIK, GARAGE, HUS_L, PLAYER, POWER, storeyFloor } from './config.js';
 import { sfx } from './audio.js';
 
 // Hus L's stair core by the portik (#415, CORE in config): a walkable stairwell from the garage's lobby (våning −1) up
@@ -393,6 +393,12 @@ export class Core {
       moving: [...this.doors.map(t => t.door.pivot), this.lift.car, ...this.lift.carDoors, ...this.lift.landing.flat()],
     });
     group.traverse(o => { delete o.userData.edgeSources; }); // construction-only source geometry can now be collected
+  }
+
+  /** A power cut in Kv. Lunden (#604): the baked light down to the battery emergency lights, the lamps themselves dark. */
+  setPower(on) {
+    this.mats.wall.color.setScalar(on ? 1 : POWER.emergency);
+    this.mats.light.color.setScalar(on ? 1 : 0.2);
   }
 
   placeDoor(d) {

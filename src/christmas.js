@@ -68,7 +68,7 @@ export class ChristmasSeason {
     if (on !== this.active) this.setActive(on);
     if (this.rearrange.world.furnitureOn !== this.furnitureOn) { this.furnitureOn = this.rearrange.world.furnitureOn; this.dirty = true; }
     if (this.dirty) this.recompute();
-    if (this.active && this.tree.object.visible) this.tree.object.userData.xmas.animate(this.time += dt, this.lamp?.k ?? 1);
+    if (this.active && this.tree.object.visible) this.tree.object.userData.xmas.animate(this.time += dt, this.lamp?.glow ?? 1);
   }
 
   get busy() { return !!(this.rearrange.selected || this.rearrange.saving); }

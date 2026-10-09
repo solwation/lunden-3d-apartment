@@ -17,7 +17,9 @@ src/courtyard.js       the courtyard on the garage box (COURTYARD): walks, pergo
                        #453: no bench within 1 m of a way in at the ground (surroundings.js `groundWaysIn`: the loggias' parapet
                        openings, the entrance recesses; resttest checks); Hus A's two north benches stand between loggia and entrance
 src/surroundings.js    the site (SITE): Hus A/B/C + buildings around, roads, paving, the 3 m drop to the park,
-                       Höje å, instanced trees, lit windows, cloudy sky
+                       Höje å, instanced trees, lit windows, cloudy sky; #604: windows of Hus A–C are `lunden` and go dark in a power
+                       cut (`update(hour, night, power)`), the rest of the site and the street lamps do not; world.windowLights passes
+                       `power` on to the courtyard's bulbs / bollards and exterior.js's lanterns, lit glass and front-door lights
 src/greet.js           greeting the people outside (GREET, #247): looking at one within `reach` (not through a house: boxes for
                        SITE.blocks + Hus L, the flat's walls via `behindWall`) the action is "Hälsa på grannen / barnet /
                        cyklisten"; a random line from you (bubble at the bottom), the answer a moment later in a bubble over
