@@ -1,0 +1,80 @@
+<!doctype html><html lang="sv"><head><meta charset="utf-8"><title>Turn-around hitches</title></head><body><pre id="out">running…</pre><script>
+// Turn-around hitches (#592): after the start's warm-up (&warm), stand at a few spots and turn 360° in 15° steps, twice,
+// one game frame per step (`__app.frame`, the animation loop stopped). Counts with the hitch log's WebGL counters
+// (src/hitchlog.js): new programs (shader compiles), new textures (first GPU upload), texture uploads, buffers,
+// render targets, and the frame time per phase. Lap 1 minus lap 2 = what was drawn for the first time.
+// The gate: 0 new programs and 0 new textures in every turning frame after the warm-up.
+// SwiftShader frame times are CPU-rendering times, not GPU times: compare them relatively, trust the counts.
+//   node run.cjs http://localhost:8137/tools/turntest.html   (Playwright, see docs/development/verification.md)
+// ?w=&h= frame size (default 640×400), ?spots=living,kitchen limits the spots, ?laps=, ?settle= frames before measuring,
+// ?sync (see below); anything else (?lowmem, ?time=22&lights, ?month=12&day=20&weather=snow …) goes to the game's URL.
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+// name, x, z, yaw°, feetY (0 = ground floor), from perfcount and docs/development/local-development.md
+const SPOTS = [['living', 2.8, 9, 180, 0], ['kitchen', 3.5, 3, 0, 0], ['hall', 2.9, 0.8, 0, 0], ['upstairs', 3.0, 6.2, 90, 3.25],
+  ['patio', 2.9, 16, 180, 0], ['start', 2.875, -12, 180, 0], ['courtyard', -30, 25, 180, 0], ['street', -74, 0, 180, 0],
+  ['roof', 3, 5, 0, 12.75]];
+const own = new URLSearchParams(location.search), game = new URLSearchParams({ shot: '', warm: '', time: '12', month: '7', day: '1', mess: '0' });
+for (const [k, v] of own) if (!['w', 'h', 'spots', 'laps', 'settle', 'sync'].includes(k)) game.set(k, v);
+const only = own.get('spots')?.split(',');
+const spots = only ? SPOTS.filter((s) => only.includes(s[0])) : SPOTS;
+const laps = +(own.get('laps') ?? 2), STEP = 15;
+const f = document.createElement('iframe'); f.width = +(own.get('w') ?? 640); f.height = +(own.get('h') ?? 400);
+f.src = '../index.html?' + game.toString().replace(/=(&|$)/g, '$1');
+document.body.append(f);
+const KEYS = ['programs', 'textures', 'texAllocs', 'texUploads', 'texPixels', 'bufferUploads', 'renderTargets', 'renderbuffers'];
+f.onload = async () => {
+  const w = f.contentWindow;
+  while (!w.__app?.warm) await wait(100);
+  const app = w.__app, { player, camera, renderer } = app;
+  const t0 = performance.now();
+  while (app.warm.state !== 'drawn' && app.warm.state !== 'skipped') await wait(200);
+  const warmMs = performance.now() - t0;
+  await wait(500); // let a frame or two run after the warm-up draw
+  renderer.setAnimationLoop(null);
+  app.hitch.quiet = true; app.hitch.enable();
+  // WebGL calls run in the GPU process: a frame's GPU work is paid by whichever later frame first waits on it (three
+  // waits when it first uses a program, e.g. the warm-up's draw-everything frame showed up seconds later as a 15–25 s
+  // "settle" frame). `?sync` reads one pixel after every frame so each pays for its own work — under SwiftShader that is
+  // seconds per frame, so it is off by default and the counts are the gate.
+  const gl = renderer.getContext(), px = new Uint8Array(4), doSync = own.has('sync');
+  const sync = () => { if (doSync) gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px); };
+  sync();
+  const frame = () => { const t = performance.now(); app.frame(1 / 60); sync(); const rec = { ...app.hitch.last, wall: performance.now() - t }; return rec; };
+  const sum = (recs, k) => recs.reduce((s, r) => s + (r.delta[k] ?? 0), 0);
+  const lines = [`warm-up ${app.warm.state} (${(warmMs / 1000).toFixed(1)} s waited), frame ${f.width}×${f.height}`], result = { spots: {} };
+  // the start's own transients first (the warm-up's GPU backlog; blinds and curtains settling keep the shadow map redrawing)
+  for (let i = 0; i < +(own.get('settle') ?? 60); i++) {
+    const r = frame();
+    if (r.wall > 300) lines.push(`  settle frame ${i}: ${r.wall.toFixed(0)} ms ${JSON.stringify(r.phases)} ${JSON.stringify(r.delta)}`);
+  }
+  let pass = app.warm.state === 'drawn', allProgs = 0, allTex = 0, worst = 0;
+  for (const [name, x, z, yaw, feet] of spots) {
+    player.spawn(x, z, yaw * Math.PI / 180);
+    if (feet) { player.pos.y = feet; player.eyeY = feet + 1.62; camera.position.y = player.eyeY; }
+    camera.rotation.x = 0;
+    const arrive = [frame(), frame()];
+    const lapRecs = [];
+    for (let l = 0; l < laps; l++) {
+      const recs = [];
+      for (let a = STEP; a <= 360; a += STEP) { camera.rotation.y = (yaw + a) * Math.PI / 180; recs.push({ ...frame(), turn: yaw + a }); }
+      lapRecs.push(recs);
+    }
+    const fmt = (recs) => `max ${Math.max(...recs.map((r) => r.wall)).toFixed(0)} ms med ${recs.map((r) => r.wall).sort((a, b) => a - b)[recs.length >> 1].toFixed(0)} ms · ` +
+      KEYS.map((k) => `${k} ${sum(recs, k)}`).join(' ') + ` · shadow redraws ${recs.filter((r) => r.shadow).length}/${recs.length} (${[...new Set(recs.map((r) => r.shadowWhy).filter(Boolean))]}) mirror ${recs.filter((r) => r.mirror).length}`;
+    lines.push(`${name}: arrive ${fmt(arrive)}`);
+    lapRecs.forEach((recs, l) => lines.push(`  lap ${l + 1}: ${fmt(recs)}`));
+    const turn = lapRecs.flat(), progs = sum(turn, 'programs'), tex = sum(turn, 'textures');
+    allProgs += progs; allTex += tex; worst = Math.max(worst, ...turn.map((r) => r.wall));
+    for (const r of lapRecs[0]) if (r.delta.programs || r.delta.textures || r.wall > 3 * Math.max(1, lapRecs[laps - 1].map((q) => q.wall).sort((a, b) => a - b)[11]))
+      lines.push(`    ${r.turn}°: ${r.wall.toFixed(0)} ms ${JSON.stringify(r.phases)} ${JSON.stringify(r.delta)}${r.mirror ? ' mirror ' + r.mirror : ''}${r.shadow ? ' shadow ' + (r.shadowWhy ?? '') : ''}`);
+    result.spots[name] = { arrive, laps: lapRecs };
+    lines.push(`${progs === 0 && tex === 0 ? 'PASS' : 'FAIL'} ${name}: ${progs} new programs, ${tex} new textures while turning`);
+    pass &&= progs === 0 && tex === 0;
+  }
+  lines.push(`turning in all: ${allProgs} new programs, ${allTex} new textures, longest frame ${worst.toFixed(0)} ms`);
+  w.parent.turnResult = result;
+  lines.push(pass ? 'ALL PASS' : 'SOME FAILED');
+  out.textContent = lines.join('\n');
+};
+</script></body></html>
