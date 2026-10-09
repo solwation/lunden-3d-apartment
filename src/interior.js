@@ -342,26 +342,57 @@ function cylinderY(B, x, z, r, y0, y1, material, segs = 16) {
   B.add(geo, material);
 }
 
-/** A slab (x0..x1, z0..z1, y0..y1) with a rectangular hole `h` cut out: four boxes around it. */
+/**
+ * A slab (x0..x1, z0..z1, y0..y1) with a rectangular hole `h` cut out (#608): one watertight shell on a 3×3 grid
+ * of the slab's and hole's x/z lines (centre cell = the hole). Every face is split at every grid line, so all
+ * neighbouring quads share exact corner coordinates — no T-junctions, hence no rasterisation cracks (the old four
+ * overlapping boxes left a faint dotted seam from the hole's corners to the slab's edge), and no inner faces.
+ */
 function slabWithHole(B, x0, x1, z0, z1, y0, y1, h, material) {
-  B.box(x0, x1, z0, h.z0, y0, y1, material);
-  B.box(x0, x1, h.z1, z1, y0, y1, material);
-  B.box(x0, h.x0, h.z0, h.z1, y0, y1, material);
-  B.box(h.x1, x1, h.z0, h.z1, y0, y1, material);
+  const xs = [x0, h.x0, h.x1, x1], zs = [z0, h.z0, h.z1, z1];
+  const solid = (i, j) => i >= 0 && i < 3 && j >= 0 && j < 3 && !(i === 1 && j === 1) &&
+    xs[i + 1] - xs[i] > 1e-6 && zs[j + 1] - zs[j] > 1e-6;
+  const pos = [], nor = [], idx = [];
+  const quad = (pts, n) => {
+    const [a, b, c] = pts;
+    const u = [b[0] - a[0], b[1] - a[1], b[2] - a[2]], v = [c[0] - a[0], c[1] - a[1], c[2] - a[2]];
+    const dot = (u[1] * v[2] - u[2] * v[1]) * n[0] + (u[2] * v[0] - u[0] * v[2]) * n[1] + (u[0] * v[1] - u[1] * v[0]) * n[2];
+    if (dot < 0) pts = [pts[0], pts[3], pts[2], pts[1]];
+    const k = pos.length / 3;
+    for (const p of pts) { pos.push(...p); nor.push(...n); }
+    idx.push(k, k + 1, k + 2, k, k + 2, k + 3);
+  };
+  for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) {
+    if (!solid(i, j)) continue;
+    const [a, b, c, d] = [xs[i], xs[i + 1], zs[j], zs[j + 1]];
+    quad([[a, y1, c], [b, y1, c], [b, y1, d], [a, y1, d]], [0, 1, 0]);
+    quad([[a, y0, c], [b, y0, c], [b, y0, d], [a, y0, d]], [0, -1, 0]);
+    if (!solid(i - 1, j)) quad([[a, y0, c], [a, y0, d], [a, y1, d], [a, y1, c]], [-1, 0, 0]);
+    if (!solid(i + 1, j)) quad([[b, y0, c], [b, y0, d], [b, y1, d], [b, y1, c]], [1, 0, 0]);
+    if (!solid(i, j - 1)) quad([[a, y0, c], [b, y0, c], [b, y1, c], [a, y1, c]], [0, 0, -1]);
+    if (!solid(i, j + 1)) quad([[a, y0, d], [b, y0, d], [b, y1, d], [a, y1, d]], [0, 0, 1]);
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  geo.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3));
+  geo.setAttribute('uv', new THREE.Float32BufferAttribute(new Float32Array(pos.length / 3 * 2), 2));
+  geo.setIndex(idx);
+  B.add(geo, material);
 }
 
 /**
  * A sink bowl hanging from `top` into the hole `h` (#122): four walls, a bottom `depth` below the top,
  * a drain (grate + plug) in the middle and an overflow hole on the wall at x = h[overflow]. Returns the
- * bottom's height (where a tap's stream lands).
+ * bottom's height (where a tap's stream lands). The walls stop at `under`, the slab's underside (#608): above it the
+ * slab's own hole walls show, and walls reaching `top` were coplanar with them and with the slab's top (z-fighting).
  */
-function sinkBowl(B, h, top, depth, material, overflow = 'x1') {
+function sinkBowl(B, h, top, depth, material, overflow = 'x1', under = top) {
   const t = 0.008, yb = top - depth;
   B.box(h.x0, h.x1, h.z0, h.z1, yb - t, yb, material);
-  B.box(h.x0, h.x1, h.z0 - t, h.z0, yb, top, material);
-  B.box(h.x0, h.x1, h.z1, h.z1 + t, yb, top, material);
-  B.box(h.x0 - t, h.x0, h.z0, h.z1, yb, top, material);
-  B.box(h.x1, h.x1 + t, h.z0, h.z1, yb, top, material);
+  B.box(h.x0, h.x1, h.z0 - t, h.z0, yb, under, material);
+  B.box(h.x0, h.x1, h.z1, h.z1 + t, yb, under, material);
+  B.box(h.x0 - t, h.x0, h.z0, h.z1, yb, under, material);
+  B.box(h.x1, h.x1 + t, h.z0, h.z1, yb, under, material);
   // soft inner corners: a slim fillet strip down each corner and along the bottom edges
   const f = 0.012;
   for (const [x, z] of [[h.x0, h.z0], [h.x0, h.z1], [h.x1, h.z0], [h.x1, h.z1]]) {
@@ -541,7 +572,7 @@ function buildKitchen(B, group, floor, y0, yC, handled, taps, appliances) {
   // Sink (undermounted, steel) + matt black gooseneck mixer behind it
   if (sinkF) {
     const sz = sinkC[1];
-    const bottom = sinkBowl(B, sinkHole, top, K.sink.depth, M.steel, 'x1');
+    const bottom = sinkBowl(B, sinkHole, top, K.sink.depth, M.steel, 'x1', yt);
     taps.push({ ...mixer(B, eastWall - 0.06, sz, top, [-1, 0], M.handle), basin: bottom, name: 'köksblandaren' });
   }
   // Induction hob, centred on its cabinet
@@ -757,7 +788,7 @@ function buildLaundry(B, group, floor, room, y0, handled, taps, appliances) {
     }
     const [, sz] = centre(sinkF), h = tvSink, rim = 0.02, yr = yt + 0.03;
     slabWithHole(B, h.x0 - rim, h.x1 + rim, h.z0 - rim, h.z1 + rim, yr, yr + 0.003, h, M.steelDark); // inset sink's rim
-    const bottom = sinkBowl(B, h, yr + 0.003, LAUNDRY_SINK.depth, M.steel, 'x0');
+    const bottom = sinkBowl(B, h, yr + 0.003, LAUNDRY_SINK.depth, M.steel, 'x0', yt);
     taps.push({ ...mixer(B, run.x0 + 0.06, sz, yt + 0.03, [1, 0], M.chrome, { h: 0.28, r: 0.08 }), basin: bottom, name: 'blandaren' });
   }
   // the wall cabinet over the worktop (#138): white doors that open, detergent and towels inside
@@ -813,7 +844,7 @@ function vanity(B, sinkF, wallX, y0, width, depth, open) {
   // the porcelain top with its basin (#122): a hole in the slab, a bowl VANITY_BASIN.depth deep
   const bowl = { x0: wallX + 0.13, x1: wallX + depth - 0.05, z0: cz - width / 2 + 0.07, z1: cz + width / 2 - 0.07 };
   slabWithHole(B, wallX, wallX + depth + 0.01, cz - width / 2, cz + width / 2, y0 + 0.84, y0 + 0.87, bowl, M.porcelain);
-  const bottom = sinkBowl(B, bowl, y0 + 0.87, VANITY_BASIN.depth, M.porcelain, 'x0');
+  const bottom = sinkBowl(B, bowl, y0 + 0.87, VANITY_BASIN.depth, M.porcelain, 'x0', y0 + 0.84);
   cylinderY(B, wallX + 0.08, cz, 0.018, y0 + 0.87, y0 + 1.0, M.chrome);
   B.box(wallX + 0.08, wallX + 0.2, cz - 0.012, cz + 0.012, y0 + 0.97, y0 + 0.99, M.chrome);
   r.tap = { pos: [wallX + 0.19, y0 + 0.966, cz], dir: [0, -1, 0], r: 0.008, basin: bottom, name: 'blandaren',
