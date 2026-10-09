@@ -21,12 +21,12 @@ const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); pas
 const f = document.createElement('iframe');
 f.width = 900; f.height = 600;
 const URL0 = '../index.html?time=12&month=6&day=21&freeze&weather=clear';
+const loaded = new Promise((r) => { f.onload = r; });
 f.src = URL0;
 document.body.append(f);
-const loaded = () => new Promise((r) => { f.onload = r; });
 
 async function run() {
-  await loaded();
+  await loaded;
   let w = f.contentWindow, d = f.contentDocument;
   while (!w.__app) await wait(100);
   const { CURTAINS, BLINDS, LEVELS } = await import('../src/config.js');
@@ -170,18 +170,19 @@ async function run() {
   kitchen.set(0.4); app.blinds.save();
   check(JSON.parse(w.localStorage.getItem('lunden.blinds'))[kitchen.id] === 0.4 && kitchen.id.endsWith('-valance'), 'valance position saves under its own key, independent of old long curtains');
   const living = app.blinds.curtains.find((c) => c.room === 'Vardagsrum');
-  // #566: inspect actual texture pixels; a sparse kitchen print or a brown/cream
+  // #566, #570: inspect actual texture pixels; a sparse kitchen print or a brown/cream
   // palette must not pass merely because the theme's config name changed.
+  // Ink color matches the olive-green living-room rug (#5a6150: r=90, g=97, b=80).
   const print = living.tex.image, pixels = print.getContext('2d').getImageData(0, 0, print.width, print.height).data;
   let green = 0, white = 0;
   for (let i = 0; i < pixels.length; i += 4) {
     const r = pixels[i], g = pixels[i + 1], b = pixels[i + 2];
-    if (g > r * 1.3 && g > b * 1.15 && g < 110) green++;
+    if (g >= r && g > b * 1.15 && g < 120 && r < 110) green++;
     if (r > 230 && g > 230 && b > 230) white++;
   }
   const area = pixels.length / 4;
   check(green / area > .60 && green / area < .9 && white / area > .10,
-    `living room: dense dark-green print on white (${(green / area * 100).toFixed(1)}% ink, ${(white / area * 100).toFixed(1)}% white)`);
+    `living room: dense olive-green print on white (${(green / area * 100).toFixed(1)}% ink, ${(white / area * 100).toFixed(1)}% white)`);
   check(kitchen.spec.theme === 'linen_kitchen' && kitchen.spec.colors.ground === '#ede7dc', 'kitchen keeps its original light botanical fabric');
   const clothUVs = living.panels.map(p => Array.from(p.mesh.geometry.attributes.uv.array));
   check(living.panels.length === 3 && living.spec.west <= 0.21 && living.spec.east + 0.02 >= 5.55, 'living room: three panels on a wall-to-wall track');
