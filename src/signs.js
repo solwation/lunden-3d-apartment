@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { DOOR_SIGNS } from './config.js';
+import { DOOR_SIGNS, NAME_PLATE } from './config.js';
 
 // Hand-lettered name signs on the hall side of the bedroom doors (DOOR_SIGNS in config).
 
@@ -64,4 +64,38 @@ export function addDoorSigns(doors, roomAt, levelOf) {
     signs.push(sign);
   }
   return signs; // hidden with the furniture (F)
+}
+
+/** The front door's name plate (#595): a canvas-textured thin box on the stairwell face of the leaf, centred over
+ * the letter box, a child of the leaf so it swings with it. `outX` = which local x side is the stairwell (±1). Only
+ * the front face shows the text; the other faces sample the plate's plain edge colour. One mesh, one draw call. */
+export function namePlate(door, outX) {
+  const P = NAME_PLATE, W = 512, H = Math.round(W * P.h / P.w);
+  const c = document.createElement('canvas'); c.width = W; c.height = H;
+  const g = c.getContext('2d');
+  const grad = g.createLinearGradient(0, 0, 0, H); // a faint brushed sheen
+  grad.addColorStop(0, P.color); grad.addColorStop(0.5, '#e2c57a'); grad.addColorStop(1, P.color);
+  g.fillStyle = P.edge; g.fillRect(0, 0, W, H);
+  g.fillStyle = grad; g.fillRect(6, 6, W - 12, H - 12);
+  g.strokeStyle = 'rgba(0,0,0,0.35)'; g.lineWidth = 2; g.strokeRect(14, 14, W - 28, H - 28);
+  g.fillStyle = P.ink; g.textAlign = 'center'; g.textBaseline = 'middle';
+  let size = parseInt(P.font.match(/(\d+)px/)[1], 10);
+  const font = () => P.font.replace(/\d+px/, `${size}px`);
+  g.font = font();
+  while (g.measureText(P.text).width > W - 70 && size > 20) g.font = font(size -= 2);
+  g.fillText(P.text, W / 2, H / 2 + 3);
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 8;
+  const geo = new THREE.BoxGeometry(P.t, P.h, P.w);
+  // faces: px, nx, py, ny, pz, nz (4 vertices each); all but the stairwell face sample the edge colour
+  const front = outX > 0 ? 0 : 1, uv = geo.attributes.uv;
+  for (let f = 0; f < 6; f++) if (f !== front) for (let i = f * 4; i < f * 4 + 4; i++) uv.setXY(i, 2 / W, 0.5);
+  const mesh = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ map: tex, roughness: P.roughness, metalness: P.metalness }));
+  mesh.position.set(outX * (door.thickness ?? 0.04) / 2 + outX * P.t / 2, P.y, door.len / 2);
+  mesh.name = 'namnskylten';
+  mesh.receiveShadow = true;
+  mesh.userData.door = door; // looking at it still opens the door; DetailCuller treats it as exterior door hardware (#519)
+  door.object.add(mesh);
+  return mesh;
 }

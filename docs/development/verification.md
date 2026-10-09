@@ -9,7 +9,7 @@ Related: [local-development](local-development.md), [performance](performance.md
 src/grill.js           the courtyard's kettle grill (GRILL, #204): E lights it — the lid swings open, flame sprites, glowing coals,
                        sparks, smoke, crackle + roar, a pool light (lights.extra); out by itself after burnSeconds; F keeps it
 src/wallclock.js       analog kitchen clock (WALL_CLOCK) + the control strip: spool A D / ← →, pause
-tools/entrancedoortest.html entrance panes/hardware, animation and actual rendered handle pixels with normal culling (#497/#519)
+tools/entrancedoortest.html entrance panes/hardware, the name plate (#595), animation and actual rendered handle pixels with normal culling (#497/#519)
 src/detail.js          DetailCuller (#189): far-away small meshes and things inside the flat hidden by its walls (seen from
                        outside) go to a layer the camera does not render; roots with `userData.moving` (our car, the cat,
                        darts, the basketball) are judged every update, not only when the camera moves (#267)

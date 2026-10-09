@@ -99,6 +99,13 @@ export const DOOR_SIGNS = [
   { level: 1, room: 'Sovrum 4', text: 'Tilly', color: '#e2d9f6' },
 ];
 
+// The name plate on the stairwell side of the front door, centred over the letter box (#595, src/signs.js
+// namePlate). Text from the issue; size, height, font and colours are visual assumptions (*guess*): a typical
+// small engraved brass-look plate, 14 x 3.5 cm, its centre `y` m above the floor (the letter box sits at 0.85 m).
+export const NAME_PLATE = { text: 'Budil Wingren', w: 0.14, h: 0.035, t: 0.003, y: 0.95,
+  font: "600 64px 'Helvetica Neue', Helvetica, Arial, sans-serif", color: '#c9a650', edge: '#8a6d2c', ink: '#1d1a14',
+  roughness: 0.45, metalness: 0.35 };
+
 // Interior doors: standard Swedish 21M leaf (2.1 m). Exterior doors have a glazed transom (överljus)
 // above the leaf, like the windows. Checked (#3) against Peab's render of L1004's living room, same
 // unit type (docs/peab/l1004-vardagsrum-render.jpg, scaled by RH 3.0 m): patio door head ≈ 2.65 m,

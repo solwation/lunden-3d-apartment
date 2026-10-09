@@ -27,7 +27,7 @@ import { Toilet } from './toilet.js';
 import { RoomMap } from './rooms.js';
 import { buildAO } from './ao.js';
 import { buildSurroundings, terrainNorth } from './surroundings.js';
-import { addDoorSigns } from './signs.js';
+import { addDoorSigns, namePlate } from './signs.js';
 import { wardrobeFill, personFor } from './stuff.js';
 import { Blinds } from './blinds.js';
 import { Roofs, wallRect } from './roofs.js';
@@ -364,6 +364,7 @@ function letterFlap(door) {
   part(0.01, 0.008, 0.08, outX * 0.006, -h + 0.008, 0, brass, pivot);                // a little lip to lift it by
   door.object.add(pivot);
   door.keep = [pivot];
+  namePlate(door, outX); // "Budil Wingren" above the letter box (#595)
   // about the leaf's z axis: +angle swings the bottom edge towards +x
   return new Openable({ name: 'brevinkastet', object: pivot, mode: 'flap', axis: [0, 0, 1], sign: outX, max: 70, speed: 3 });
 }
