@@ -1074,6 +1074,121 @@ export const ENTRANCE_PLANTS = {
   ],
 };
 
+// #605: furnished roof terraces on Hus L (src/terracedecor.js; decoration only, nothing to pick or sit on). EVERY item,
+// position, size, colour and style below is our own *guess* — no neighbour's terrace is documented. Per terrace (id from
+// exterior.js husLTerraces): `items`, each { k: kind, u: m east of the terrace's west edge (negative: from its east edge),
+// v: m south of the set-back wall (the deck is HUS_L.court.setback − 0.25 = 1.65 m deep to the parapet), r: yaw in
+// degrees }. L1201 is left EMPTY on purpose (#573 makes it a visitable empty flat). The terrace door (court.upper's sill-0
+// opening) keeps `door.margin` m either side and `door.depth` m out from the wall clear (tools/terracedecortest.html).
+// Railing boxes hang on the railing's inner side (`railBox`); string lights are drawn by additive-free bulbs that glow
+// after dusk (no lights). `far` m: beyond it, or seen from north of the set-back wall below Hus L's roof (the building
+// hides the terraces), the merged decor is not drawn. `hue` jitters each plant's green a little so no two match.
+export const TERRACE_DECOR = {
+  skip: ['L1201'], far: 160, hue: 0.025,
+  door: { margin: 0.12, depth: 0.9 },
+  railBox: { d: 0.2, h: 0.17, drop: 0.03, color: 0x3d3f3c },
+  bulbs: { day: 0xd9d5ca, night: 0xffcf8a, on: 0.35, r: 0.022 },
+  terraces: {
+    L1202: { style: 'medelhav', items: [ // terracotta, white and Greek blue
+      { k: 'rug', u: 1.35, v: 0.86, w: 2.3, d: 1.25, c: 0xf2efe6, s: 0x2f5d9e },
+      { k: 'table', type: 'bistro', u: 1.0, v: 0.85, c: 0xf4f2ec, f: 0x2a2c2e },
+      { k: 'chair', u: 0.42, v: 0.85, r: 90, c: 0x2f5d9e },
+      { k: 'chair', u: 1.58, v: 0.85, r: -90, c: 0x2f5d9e },
+      { k: 'parasol', u: 1.0, v: 0.85, R: 0.8, c: [0xf6f4ee, 0x2f5d9e] },
+      { k: 'olive', u: 2.45, v: 0.36, pot: [0.24, 0.42], pc: 0xb5643c },
+      { k: 'potflowers', u: 0.22, v: 0.2, pot: [0.14, 0.22], pc: 0xb5643c, c: [0xd8262f, 0xe8484f] },
+      { k: 'agave', u: 4.38, v: 0.42, pot: [0.22, 0.34], pc: 0xb5643c, s: 0.8 },
+      { k: 'olive', u: -0.38, v: 0.42, pot: [0.22, 0.4], pc: 0xf3f0e8, s: 0.85, fruit: 0xf2c522 },
+      { k: 'lantern', u: 4.55, v: 1.32 },
+      { k: 'railbox', u: 0.2, u1: 2.6, c: [0xd8262f, 0xe8484f, 0xf5f2ee] },
+      { k: 'railbox', u: 4.2, u1: -0.2, c: [0xd8262f, 0xf5f2ee] },
+    ] },
+    L1203: { style: 'djungel', items: [ // palms and bananas, a lounger in the green, fairy lights
+      { k: 'rug', u: 1.35, v: 0.9, w: 2.4, d: 1.2, c: 0x4f6b43 },
+      { k: 'palm', u: 0.36, v: 0.4, pot: [0.27, 0.52], pc: 0x2e3133, s: 1.0 },
+      { k: 'banana', u: 2.45, v: 0.42, pot: [0.24, 0.45], pc: 0x2e3133, s: 0.95 },
+      { k: 'lounger', u: 1.3, v: 1.16, c: 0x5d7f4f, f: 0x8a6a48 },
+      { k: 'side', u: 2.5, v: 1.28, c: 0x8a6a48, glass: true },
+      { k: 'palm', u: -0.42, v: 0.45, pot: [0.25, 0.5], pc: 0x2e3133, s: 0.9 },
+      { k: 'agave', u: 4.4, v: 1.32, pot: [0.2, 0.3], pc: 0x6b6f6a, s: 0.7 },
+      { k: 'banana', u: -0.4, v: 1.25, pot: [0.18, 0.34], pc: 0x6b6f6a, s: 0.7 },
+      { k: 'lights', a: [0.05, 0.04, 2.3], b: [2.8, 0.04, 2.3], sag: 0.16, n: 14 },
+      { k: 'lights', a: [0.05, 0.04, 2.3], b: [0.05, 1.6, 1.78], sag: 0.1, n: 8 },
+      { k: 'railbox', u: 0.25, u1: 2.6, c: [0xf5f2ee], trail: true },
+    ] },
+    L1204: { style: 'grill', items: [ // a long wooden table for friends and a kettle grill
+      { k: 'table', type: 'wood', u: 1.35, v: 0.85, w: 1.3, d: 0.72, c: 0xa77b4f, f: 0x2b2d2f },
+      { k: 'chair', u: 1.0, v: 0.28, r: 0, c: 0xa77b4f, cc: 0xc9472f },
+      { k: 'chair', u: 1.7, v: 0.28, r: 0, c: 0xa77b4f, cc: 0xc9472f },
+      { k: 'chair', u: 1.0, v: 1.42, r: 180, c: 0xa77b4f, cc: 0xe2b33c },
+      { k: 'chair', u: 1.7, v: 1.42, r: 180, c: 0xa77b4f, cc: 0xe2b33c },
+      { k: 'agave', u: 0.25, v: 0.3, pot: [0.2, 0.36], pc: 0x6b6f6a, s: 0.75 },
+      { k: 'bush', u: 2.55, v: 0.3, pot: [0.2, 0.36], pc: 0x6b6f6a, c: 0x3c6b35 },
+      { k: 'grill', u: 4.6, v: 0.5, c: 0x1d1e20 },
+      { k: 'banana', u: -0.38, v: 1.26, pot: [0.2, 0.38], pc: 0x6b6f6a, s: 0.8 },
+      { k: 'lights', a: [0.05, 0.04, 2.25], b: [2.75, 0.04, 2.25], sag: 0.18, n: 13 },
+      { k: 'railbox', u: 0.2, u1: 2.6, c: [0x7e5aa6], herbs: true },
+    ] },
+    L1205: { style: 'skandinavisk', items: [ // grey and white, a lounger, lavender
+      { k: 'rug', u: 1.25, v: 0.88, w: 2.1, d: 1.2, c: 0xb9b6ae, s: 0xe9e6de },
+      { k: 'lounger', u: 1.2, v: 1.14, c: 0xd6d3cb, f: 0x2f3235, t: 0x8fb3c9 },
+      { k: 'olive', u: 0.3, v: 0.36, pot: [0.22, 0.42], pc: 0xeceae4, s: 0.95 },
+      { k: 'side', u: 2.28, v: 1.25, c: 0x2f3235, lantern: true },
+      { k: 'table', type: 'bistro', u: 4.6, v: 1.05, c: 0x2f3235, f: 0x2f3235 },
+      { k: 'chair', u: 4.6, v: 0.5, r: 0, c: 0x2f3235, cc: 0xd6d3cb },
+      { k: 'bush', u: -0.3, v: 0.32, pot: [0.2, 0.34], pc: 0xeceae4, c: 0x355f34 },
+      { k: 'railbox', u: 0.2, u1: 2.35, c: [0x8a6cc0, 0x9d84cc], lavender: true },
+      { k: 'railbox', u: 3.9, u1: -0.2, c: [0x8a6cc0], lavender: true },
+    ] },
+    L1206: { style: 'blommor', items: [ // flowers everywhere, a green bistro set
+      { k: 'potflowers', u: 0.2, v: 0.18, pot: [0.13, 0.2], pc: 0xb5643c, c: [0xe34b8c, 0xf08fb8] },
+      { k: 'potflowers', u: 0.55, v: 0.16, pot: [0.11, 0.17], pc: 0xf3f0e8, c: [0xf5f2ee, 0xf2d33c] },
+      { k: 'potflowers', u: 0.88, v: 0.2, pot: [0.14, 0.22], pc: 0x2f5d9e, c: [0xd8262f] },
+      { k: 'potflowers', u: 2.3, v: 0.18, pot: [0.15, 0.24], pc: 0xb5643c, c: [0x8a6cc0, 0xf5f2ee] },
+      { k: 'potflowers', u: 2.62, v: 0.25, pot: [0.11, 0.18], pc: 0xb5643c, c: [0xf08a2c] },
+      { k: 'table', type: 'bistro', u: 1.45, v: 1.02, c: 0x3f6b4a, f: 0x3f6b4a },
+      { k: 'chair', u: 0.88, v: 1.02, r: 90, c: 0x3f6b4a, cc: 0xf08fb8 },
+      { k: 'chair', u: 2.02, v: 1.02, r: -90, c: 0x3f6b4a },
+      { k: 'bush', u: 4.62, v: 0.42, pot: [0.24, 0.4], pc: 0xf3f0e8, c: 0x3f6f3a, bloom: [0xe9a1c8, 0xc98fd6] },
+      { k: 'banana', u: -0.35, v: 1.25, pot: [0.2, 0.36], pc: 0xb5643c, s: 0.75 },
+      { k: 'railbox', u: 0.2, u1: 2.7, c: [0xe34b8c, 0xf5f2ee, 0x8a6cc0, 0xf08fb8], trail: true },
+      { k: 'railbox', u: 4.15, u1: -0.2, c: [0xe34b8c, 0xf2d33c] },
+    ] },
+    L1207: { style: 'solbad', items: [ // two sun loungers under a big parasol, a palm
+      { k: 'lounger', u: 1.2, v: 0.44, c: 0xf2efe6, f: 0xe8e6e0, t: 0xf2c522 },
+      { k: 'lounger', u: 1.2, v: 1.2, c: 0x3e8fb0, f: 0xe8e6e0, t: 0xe85f4a },
+      { k: 'parasol', u: 2.35, v: 0.84, R: 0.75, c: [0xf2c522, 0xf6f4ee] },
+      { k: 'side', u: 2.45, v: 1.35, c: 0xe8e6e0, glass: true },
+      { k: 'palm', u: 4.55, v: 0.42, pot: [0.27, 0.55], pc: 0xf3f0e8, s: 1.05 },
+      { k: 'agave', u: -0.32, v: 1.3, pot: [0.2, 0.32], pc: 0xf3f0e8, s: 0.75 },
+      { k: 'railbox', u: 4.2, u1: -0.2, c: [0xf2c522, 0xf08a2c] },
+    ] },
+    L1208: { style: 'odling', items: [ // raised beds with tomatoes and herbs, a red grill
+      { k: 'raised', u: 0.62, v: 0.3, len: 1.05, crop: 'tomato' },
+      { k: 'raised', u: 1.85, v: 0.3, len: 1.05, crop: 'herbs' },
+      { k: 'table', type: 'bistro', u: 1.25, v: 1.17, c: 0xc8b48a, f: 0x2b2d2f },
+      { k: 'chair', u: 0.68, v: 1.17, r: 90, c: 0x9a7650 },
+      { k: 'chair', u: 1.82, v: 1.17, r: -90, c: 0x9a7650 },
+      { k: 'grill', u: 4.55, v: 0.45, c: 0xa62a24 },
+      { k: 'olive', u: -0.36, v: 1.22, pot: [0.2, 0.36], pc: 0xb5643c, s: 0.8 },
+      { k: 'can', u: 2.35, v: 0.8, r: 30, c: 0x2f7a5a },
+      { k: 'railbox', u: 0.2, u1: 2.65, c: [0xd8262f], herbs: true },
+    ] },
+    L1209: { style: 'lounge', items: [ // a corner sofa, a low table, big palms and lights (the widest terrace, at the gable)
+      { k: 'rug', u: 1.4, v: 0.9, w: 2.3, d: 1.3, c: 0x7a5c48, s: 0xd9c7a8 },
+      { k: 'sofa', u: 1.3, v: 0.4, len: 2.2, c: 0x6e5a44, cc: 0xe6e1d6, pillows: [0x2f5d9e, 0xe2b33c, 0xc9472f] },
+      { k: 'sofa', u: 0.42, v: 1.12, len: 0.75, r: 90, end: true, c: 0x6e5a44, cc: 0xe6e1d6, pillows: [0x3e8fb0] },
+      { k: 'table', type: 'low', u: 1.55, v: 1.18, w: 0.85, d: 0.5, c: 0x6e5a44, f: 0x6e5a44, lantern: true },
+      { k: 'palm', u: 4.6, v: 0.45, pot: [0.28, 0.56], pc: 0x2e3133, s: 1.1 },
+      { k: 'palm', u: -0.45, v: 1.15, pot: [0.24, 0.48], pc: 0x2e3133, s: 0.85 },
+      { k: 'agave', u: 2.6, v: 0.3, pot: [0.18, 0.32], pc: 0x2e3133, s: 0.65 },
+      { k: 'lights', a: [0.05, 0.04, 2.35], b: [2.8, 0.04, 2.35], sag: 0.16, n: 14 },
+      { k: 'lights', a: [-0.15, 0.04, 2.35], b: [-0.15, 1.55, 1.15], sag: 0.12, n: 9 },
+      { k: 'railbox', u: 0.95, u1: 2.7, c: [0xf5f2ee, 0xe9e6de], trail: true },
+    ] },
+  },
+};
+
 // Våning 1–2: L1001–L1004 | stair core + portik (+ L1101 on våning 2) | L1005–L1008; we are
 // L1007, L1008 is the east end unit (gable windows, spiral escape stair north of it).
 // Våning 3–4: L1201–L1209, two-storey units entered from the loftgång on våning 3 (L1208 is the one

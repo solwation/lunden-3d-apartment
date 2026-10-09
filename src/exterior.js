@@ -10,6 +10,7 @@ import { glowMaterial, poolGeometry, washGeometry, fadeGlow } from './groundglow
 import { pavingTexture } from './patio.js';
 import { portikPlan } from './portik.js';
 import { buildEntrancePlants } from './entranceplants.js';
+import { buildTerraceDecor } from './terracedecor.js';
 
 // Brick: 250 × 65 mm + 10 mm joints → 0.26 m per brick, 0.075 m per course.
 const TILE_W = 1.04, TILE_H = 0.6; // one texture tile = 4 bricks × 8 courses
@@ -645,6 +646,7 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
   add(hedges, mats.hedge);
   add(fences, mats.fence);
   group.userData.segments = segments;
+  group.add(group.userData.terraceDecor = buildTerraceDecor(group, D)); // #605: the furnished roof terraces (src/terracedecor.js)
   return group;
 }
 

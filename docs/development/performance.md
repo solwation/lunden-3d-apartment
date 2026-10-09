@@ -66,6 +66,8 @@ not done (it would need a second geometry per batch). [Numbers and screenshots](
 
 Christmas tree (#571): in season +8 draw calls and ~20 k triangles where it is in view (desktop and phone frame), no extra light (one pool anchor in the shared pool / wash), a 0.016 ms CPU shimmer per frame (instance + point colours) and a ~27 ms one-off overlap re-judgement on load / moves; out of season nothing is drawn and perfcount is unchanged. `tools/perfcount.html` now takes `?month=…&day=…` (game URL overrides) and `?w=…&h=…` (frame size). [Numbers](../validation/issue-571/README.md).
 
+Roof terraces (#605): `src/terracedecor.js` adds 3 draw calls (one merged solid, soft and bulb mesh for all eight furnished terraces) and ~31 k triangles where Hus L's courtyard side is in view, nothing from the street side (the gate puts them on layer 7 north of the set-back wall below the roof, and beyond `TERRACE_DECOR.far`). perfcount: park 433 → 436 calls, big hall 836 725 → ~868 k triangles, still within PERF.budget; no lights, no textures, materials exist for the warm-up. `tools/terracedecortest.html` keeps a 50 k triangle budget.
+
 ## Turn-around hitches (#592)
 
 The visitor reported freezes when turning around, indoors and out, on a phone and a work PC.

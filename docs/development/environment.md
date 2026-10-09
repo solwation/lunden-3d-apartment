@@ -16,6 +16,15 @@ src/courtyard.js       the courtyard on the garage box (COURTYARD): walks, pergo
                        collision is `seats` (segments + footprints outside `fixedSegments`, so getting up works as for furniture)
                        #453: no bench within 1 m of a way in at the ground (surroundings.js `groundWaysIn`: the loggias' parapet
                        openings, the entrance recesses; resttest checks); Hus A's two north benches stand between loggia and entrance
+src/terracedecor.js    the furnished roof terraces (#605, TERRACE_DECOR, all *guess*): one style per terrace L1202–L1209 (palms /
+                       bananas / agaves from patio.js `planter`, olive and box trees, loungers, tables and chairs, parasols, grills,
+                       rugs, a sofa, raised beds, railing boxes, string lights); L1201 stays EMPTY (#573). Decoration only (no
+                       targets, no collision, `raycast` off). Three merged meshes for the whole row (solid / soft with plant wind /
+                       bulbs, warm after dusk via exterior's update); an `isLOD` gate puts them on layer 7 from north of the
+                       set-back wall below the roof and beyond `far`. Foliage is squeezed clear of screens / wall (`fitCrown`).
+                       Hooked in by one line at the end of exterior.js (`userData.terraceDecor`)
+tools/terracedecortest.html L1201 empty, every other terrace furnished in its own style, items on the deck and clear of the
+                       terrace door, no leaf through a screen / the wall, three meshes, triangle budget, the gate, the bulbs
 src/surroundings.js    the site (SITE): Hus A/B/C + buildings around, roads, paving, the 3 m drop to the park,
                        Höje å, instanced trees, lit windows, cloudy sky; #604: windows of Hus A–C are `lunden` and go dark in a power
                        cut (`update(hour, night, power)`), the rest of the site and the street lamps do not; world.windowLights passes
