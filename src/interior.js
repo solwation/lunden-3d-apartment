@@ -34,7 +34,7 @@ const rgb = (hex, k = 1) => `rgb(${[16, 8, 0].map((s) => Math.min(255, ((hex >> 
  * shifted half a tile), `vary` = per-tile shade variation, `mottle` = speckle strength
  * (granitkeramik), grout = joint colour (null: no joints, e.g. the worktop).
  */
-function tileTexture({ tw, th, nx = 1, ny = 1, bond = false, color, vary = 0, mottle = 0, grout, joint = 0.003, ppm = 400, seed = 1 }) {
+export function tileTexture({ tw, th, nx = 1, ny = 1, bond = false, color, vary = 0, mottle = 0, grout, joint = 0.003, ppm = 400, seed = 1 }) {
   const W = Math.round(tw * nx * ppm), H = Math.round(th * ny * ppm);
   const c = document.createElement('canvas');
   c.width = W; c.height = H;
@@ -73,7 +73,7 @@ function tileTexture({ tw, th, nx = 1, ny = 1, bond = false, color, vary = 0, mo
   return tex;
 }
 
-const std = (color, extra = {}) => new THREE.MeshStandardMaterial({ color, roughness: 0.6, ...extra });
+export const std = (color, extra = {}) => new THREE.MeshStandardMaterial({ color, roughness: 0.6, ...extra });
 const textured = (map, extra = {}) => new THREE.MeshStandardMaterial({ color: 0xffffff, map, roughness: 0.5, ...extra });
 
 const T = FINISH;
@@ -151,7 +151,7 @@ function worldUV(geo, [ox, oy, oz]) {
 const socketMats = { plate: new THREE.MeshStandardMaterial({ color: KITCHEN_SOCKETS.color, roughness: 0.35 }),
   cup: new THREE.MeshStandardMaterial({ color: KITCHEN_SOCKETS.cupColor ?? 0x27282b, roughness: 0.5 }) };
 
-class Batch {
+export class Batch {
   constructor() { this.parts = new Map(); }
 
   add(geo, material, origin = [0, 0, 0]) {
@@ -183,7 +183,7 @@ class Batch {
  * 'n' = −z). `u` runs along the front, `d` is the distance in front of the front plane
  * (negative = inside the carcass).
  */
-function frame(B, r, dir) {
+export function frame(B, r, dir) {
   const f = { w: r.x0, e: r.x1, n: r.z0 }[dir];
   const depth = dir === 'n' ? r.z1 - r.z0 : r.x1 - r.x0;
   const [u0, u1] = dir === 'n' ? [r.x0, r.x1] : [r.z0, r.z1];
@@ -336,7 +336,7 @@ function stock(ctx, F, o, kind, a0, a1, y0, y1, depth, { drawer = false, shelf =
 const inside = (r, a, tol = 0.02) => r.x0 >= a.x0 - tol && r.x1 <= a.x1 + tol && r.z0 >= a.z0 - tol && r.z1 <= a.z1 + tol;
 const centre = (r) => [(r.x0 + r.x1) / 2, (r.z0 + r.z1) / 2];
 
-function cylinderY(B, x, z, r, y0, y1, material, segs = 16) {
+export function cylinderY(B, x, z, r, y0, y1, material, segs = 16) {
   const geo = new THREE.CylinderGeometry(r, r, y1 - y0, segs);
   geo.translate(x, (y0 + y1) / 2, z);
   B.add(geo, material);
@@ -348,7 +348,7 @@ function cylinderY(B, x, z, r, y0, y1, material, segs = 16) {
  * neighbouring quads share exact corner coordinates — no T-junctions, hence no rasterisation cracks (the old four
  * overlapping boxes left a faint dotted seam from the hole's corners to the slab's edge), and no inner faces.
  */
-function slabWithHole(B, x0, x1, z0, z1, y0, y1, h, material) {
+export function slabWithHole(B, x0, x1, z0, z1, y0, y1, h, material) {
   const xs = [x0, h.x0, h.x1, x1], zs = [z0, h.z0, h.z1, z1];
   const solid = (i, j) => i >= 0 && i < 3 && j >= 0 && j < 3 && !(i === 1 && j === 1) &&
     xs[i + 1] - xs[i] > 1e-6 && zs[j + 1] - zs[j] > 1e-6;
@@ -386,7 +386,7 @@ function slabWithHole(B, x0, x1, z0, z1, y0, y1, h, material) {
  * bottom's height (where a tap's stream lands). The walls stop at `under`, the slab's underside (#608): above it the
  * slab's own hole walls show, and walls reaching `top` were coplanar with them and with the slab's top (z-fighting).
  */
-function sinkBowl(B, h, top, depth, material, overflow = 'x1', under = top) {
+export function sinkBowl(B, h, top, depth, material, overflow = 'x1', under = top) {
   const t = 0.008, yb = top - depth;
   B.box(h.x0, h.x1, h.z0, h.z1, yb - t, yb, material);
   B.box(h.x0, h.x1, h.z0 - t, h.z0, yb, under, material);
@@ -409,7 +409,7 @@ function sinkBowl(B, h, top, depth, material, overflow = 'x1', under = top) {
 }
 
 /** Gooseneck mixer: column, half-circle spout towards the front (direction dx, dz). */
-function mixer(B, x, z, y, [dx, dz], material, { h = 0.3, r = 0.09, tube = 0.011 } = {}) {
+export function mixer(B, x, z, y, [dx, dz], material, { h = 0.3, r = 0.09, tube = 0.011 } = {}) {
   cylinderY(B, x, z, 0.024, y, y + 0.06, material);
   cylinderY(B, x, z, tube, y, y + h, material, 10);
   const arc = new THREE.TorusGeometry(r, tube, 8, 20, Math.PI);
@@ -889,7 +889,7 @@ export let cupCabinet = null;
 export const cupSurfaces = [];
 
 /** Frosted glass panel between two plan points, floor to 1.95 m, aluminium edge profiles. */
-function glassPanel(B, [ax, az], [bx, bz], y0) {
+export function glassPanel(B, [ax, az], [bx, bz], y0) {
   const len = Math.hypot(bx - ax, bz - az), alongX = Math.abs(bx - ax) > Math.abs(bz - az);
   const t = 0.008;
   if (alongX) B.box(Math.min(ax, bx), Math.max(ax, bx), az - t / 2, az + t / 2, y0 + 0.02, y0 + 1.95, M.frosted);
@@ -921,7 +921,7 @@ function showerHead(B, [x, y, z], [nx, ny, nz], r, thick = 0.015) {
  *    25 cm head, and a hand shower in a holder on the riser
  *  - else: Duschset Rt 105 + blandare Evm 168 (WC/dusch): thermostat, slide bar, hand shower
  */
-function showerSet(B, wallX, z, y0, ceiling) {
+export function showerSet(B, wallX, z, y0, ceiling) {
   const outlets = [];
   // thermostat mixer: round body along the wall with two knobs
   const mix = new THREE.CylinderGeometry(0.03, 0.03, 0.3, 16).rotateX(Math.PI / 2).translate(wallX + 0.07, y0 + 1.0, z);
@@ -1074,7 +1074,7 @@ function buildBathroom(B, group, floor, room, y0, handled, taps, appliances) {
 // ---------- tiles ----------
 
 /** Tile skin on every wall face that faces into `room`, from the floor up to `h`. */
-function tileWalls(B, room, wallBoxes, y0, h, material) {
+export function tileWalls(B, room, wallBoxes, y0, h, material) {
   const t = 0.006, tol = 0.03, o = [0, y0, 0];
   const inX = (x) => x > room.x0 - tol && x < room.x1 + tol;
   const inZ = (z) => z > room.z0 - tol && z < room.z1 + tol;
@@ -1096,8 +1096,8 @@ function tileWalls(B, room, wallBoxes, y0, h, material) {
  * White skirting (golvsockel) on every wall face that faces into the house, except in the
  * tiled rooms. `boxes` = wall boxes + window infills (the wall below the sill).
  */
-function skirting(B, boxes, li, size, y0) {
-  const tiled = TILED_ROOMS.filter((r) => r.level === li);
+export function skirting(B, boxes, li, size, y0, rooms = TILED_ROOMS, material = M.skirting) {
+  const tiled = rooms.filter((r) => r.level === li);
   const inTiled = (x, z) => tiled.some((r) => x > r.x0 - 0.02 && x < r.x1 + 0.02 && z > r.z0 - 0.02 && z < r.z1 + 0.02);
   const solid = (x, z) => x <= 0.01 || z <= 0.01 || x >= size.x - 0.01 || z >= size.z - 0.01
     || boxes.some((w) => x > w.x0 && x < w.x1 && z > w.z0 && z < w.z1);
@@ -1112,8 +1112,8 @@ function skirting(B, boxes, li, size, y0) {
       let run = null;
       const flush = (end) => {
         if (run && end - run > 0.03) {
-          if (n === 'x') B.box(s > 0 ? c : c - t, s > 0 ? c + t : c, run, end, y0, y1, M.skirting);
-          else B.box(run, end, s > 0 ? c : c - t, s > 0 ? c + t : c, y0, y1, M.skirting);
+          if (n === 'x') B.box(s > 0 ? c : c - t, s > 0 ? c + t : c, run, end, y0, y1, material);
+          else B.box(run, end, s > 0 ? c : c - t, s > 0 ? c + t : c, y0, y1, material);
         }
         run = null;
       };
@@ -1172,7 +1172,7 @@ export function buildElCabinet(group, cab, dir, y0, h, list) {
  * plane (`c`, the threshold), an exterior door the whole depth of the opening, two different tiles meet under the leaf.
  * The patches lie over the parquet and overlap their own room's tiles seamlessly (world-space UVs).
  */
-function doorwayTiles(B, rooms, doorways, y0) {
+export function doorwayTiles(B, rooms, doorways, y0, mats = M) {
   for (const { gap, c, exterior } of doorways) {
     const x = gap.axis === 'x';
     const mid = (gap.lo + gap.hi) / 2;
@@ -1185,8 +1185,8 @@ function doorwayTiles(B, rooms, doorways, y0) {
     const strip = (room, p0, p1) => {
       if (p1 - p0 < 0.002) return;
       // 1 mm above the room floors: where two tiles meet under the leaf, the strip wins over the other room's rectangle
-      if (x) B.box(gap.lo, gap.hi, p0, p1, y0 + 0.001, y0 + 0.005, M[room.floor]);
-      else B.box(p0, p1, gap.lo, gap.hi, y0 + 0.001, y0 + 0.005, M[room.floor]);
+      if (x) B.box(gap.lo, gap.hi, p0, p1, y0 + 0.001, y0 + 0.005, mats[room.floor]);
+      else B.box(p0, p1, gap.lo, gap.hi, y0 + 0.001, y0 + 0.005, mats[room.floor]);
     };
     const from = lo && Math.min(gap.p0, lo[n1]), to = hi && Math.max(gap.p1, hi[n0]);
     if (lo && hi && lo.floor === hi.floor) strip(lo, from, to);

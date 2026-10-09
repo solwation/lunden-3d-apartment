@@ -91,8 +91,23 @@ export class Player {
   get aloft() {
     const p = this.pos;
     if (this.inCore) return false; // (Hus L's stairwell: its own walls, on every storey, #456)
-    return this.inFootprint(p.x, p.z) ? p.y > UNIT_TOP - 0.3 : p.y > groundY(p.x, p.z) + ROOFS.aloft;
+    const u = this.world.unitAt?.(p.x, p.z); // over a visited flat (#574): above its top, as over ours
+    return this.inFootprint(p.x, p.z) ? p.y > UNIT_TOP - 0.3 : u ? p.y > u.top - 0.3 : p.y > groundY(p.x, p.z) + ROOFS.aloft;
   }
+
+  /** In a visited flat (#574, visitunit.js): that flat, else null. Its Entréplan counts as level 0 like the street (its
+   * walls are among level 0's), its Övre plan has segments of its own. */
+  get unit() {
+    const p = this.pos, u = this.world.unitAt?.(p.x, p.z);
+    return u && p.y <= u.top - 0.3 && p.y > u.bottom - 1 ? u : null;
+  }
+
+  /** The visited flat's level the visitor is on (0 / 1), or -1 outside one (#574). */
+  get unitLevel() { const u = this.unit; return u ? u.levelAt(this.pos.y) : -1; }
+
+  /** The stair under (x, z): ours or a visited flat's (#574). */
+  stairAt(x, z) { const u = this.world.unitAt?.(x, z); return u ? u.stairHeight(x, z) : stairHeight(x, z); }
+  stairUnder(x, z) { const u = this.world.unitAt?.(x, z); return u ? u.stairUnderside(x, z) : stairUnderside(x, z); }
 
   /** Down in the garage, the förråd corridor or the lift lobby under the courtyard (#357, garage.js): its walls collide. */
   get below() {
@@ -108,7 +123,7 @@ export class Player {
 
   /** Outside the flat (street, lawn, patio, up on the roofs); used for terrain and ambience. */
   get outdoors() {
-    return !this.inFootprint() || this.aloft;
+    return (!this.inFootprint() && !this.unit) || this.aloft;
   }
 
   /** The flat's level the visitor is on (0 outdoors, up on the roofs too). */
@@ -124,10 +139,11 @@ export class Player {
     const h = STAIR.hole;
     const inHole = x > h.x0 && x < h.x1 && z > h.z0 && z < h.z1;
     const core = this.world.core, inCore = !inside && !!core?.covers(x, z);
-    const cands = [inside ? LEVELS[0].floor : inCore ? -Infinity : groundY(x, z)]; // outdoors: the terrain (the ramp by Hus L's east gable, #256)
+    const unit = !inside && !inCore ? this.world.unitAt?.(x, z) : null; // a visited flat: its floors and stair (#574)
+    const cands = unit ? unit.floors(x, z) : [inside ? LEVELS[0].floor : inCore ? -Infinity : groundY(x, z)]; // outdoors: the terrain (the ramp by Hus L's east gable, #256)
     if (inCore) cands.push(...core.heights(x, z)); // the stairwell's floors and flights, the lift's car (#415)
     if (inside && !inHole) cands.push(LEVELS[1].floor);
-    const s = stairHeight(x, z);
+    const s = unit ? null : stairHeight(x, z);
     if (s !== null) cands.push(s);
     if (this.world.garage?.inside(x, z)) cands.push(GARAGE.floor); // the garage under the courtyard (#357)
     const r = this.world.roofs?.under(x, z, feet, PLAYER.stepUp); // a roof, the loftgång, a terrace (#360)
@@ -140,15 +156,15 @@ export class Player {
   /** Can the visitor stand up here? (Not under the underside of the upper flight / winders.) */
   roomToStand() {
     const { x, z, y } = this.pos;
-    const u = stairUnderside(x, z);
+    const u = this.stairUnder(x, z);
     return !(u !== null && u > y + PLAYER.crouchEye && u < y + PLAYER.headroom);
   }
 
   /** True when the stair at (x, z) is a wall for someone standing at `feet`: its tread is too high to step up on and
    * its underside (not its top, #352) is lower than the head. */
   blockedByStair(x, z, feet) {
-    const s = stairHeight(x, z);
-    return s !== null && s > feet + PLAYER.stepUp && stairUnderside(x, z) < feet + PLAYER.headroom;
+    const s = this.stairAt(x, z);
+    return s !== null && s > feet + PLAYER.stepUp && this.stairUnder(x, z) < feet + PLAYER.headroom;
   }
 
   segments() {
@@ -158,6 +174,8 @@ export class Player {
     }
     if (this.inCore) return this.world.core.segments(this.pos.y); // the stairwell (#415)
     if (this.below) return [this.world.garage.segments, this.world.garage.dynamic()]; // (#357)
+    const u = this.unit; // upstairs in a visited flat (#574): its own walls and doors
+    if (u && u.levelAt(this.pos.y) > 0) return [u.fixed[1], u.doorSegments(1)];
     const lvl = this.world.levels[this.level];
     const up = this.level === 0 && this.pos.y > GARAGE.floor + 1.5 ? this.world.upperSegments ?? [] : []; // over the garage door (#357)
     const doorSegs = this.world.doors
@@ -184,6 +202,8 @@ export class Player {
       const g = this.world.garage;
       return g.inside(x, z) && ![...g.segments, ...g.dynamic()].some((sg) => segDist(x, z, sg) < PLAYER.radius + margin) && !g.obstacles().some((q) => inPoly(q, x, z));
     }
+    const u = this.unit; // upstairs in a visited flat (#574)
+    if (u && u.levelAt(this.pos.y) > 0) return u.contains(x, z) && !u.inHole(x, z) && ![...u.fixed[1], ...u.doorSegments(1)].some((sg) => segDist(x, z, sg) < PLAYER.radius + margin);
     const lvl = this.world.levels[level];
     const doorSegs = this.world.doors.filter((d) => (d.object.position.y < LEVELS[0].floor + 1.6 ? 0 : 1) === level).map((d) => d.segment());
     const segs = [...lvl.segments, ...doorSegs, ...(this.world.movingSegments?.(level) ?? [])];
@@ -195,7 +215,8 @@ export class Player {
 
   /** The nearest free spot to (x, z) reached through no wall, window or door (a spiral search), or null (#314). */
   nearestFree(x, z, level = this.level) {
-    const walls = this.inCore ? this.world.core.segments(this.pos.y)[0] : this.below ? this.world.garage.walls : [...(this.world.levels[level]?.fixedSegments ?? this.world.levels[level].segments),
+    const u = this.unit, up = u && u.levelAt(this.pos.y) > 0; // (upstairs in a visited flat, #574)
+    const walls = this.inCore ? this.world.core.segments(this.pos.y)[0] : this.below ? this.world.garage.walls : up ? [...u.fixed[1], ...u.doorSegments(1)] : [...(this.world.levels[level]?.fixedSegments ?? this.world.levels[level].segments),
       ...this.world.doors.filter((d) => (d.object.position.y < LEVELS[0].floor + 1.6 ? 0 : 1) === level).map((d) => d.segment())];
     for (let r = 0.05; r < 3.01; r += 0.05) {
       const n = Math.max(8, Math.round(2 * Math.PI * r / 0.05));

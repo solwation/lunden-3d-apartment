@@ -322,3 +322,11 @@ hard-coding numbers elsewhere.
 #523 basement audit: [p46 overlays and scope](../validation/issue-523/README.md). Distinguish the sourced 15 **extra rentals** from ordinary LGHFÖRRÅD under C/B/A. Boundaries/openings are graphical measurements (~0.15 m), not construction dimensions; 22 ordinary cages, finishes, swing directions, racks, parked cars and sensor lighting remain explicit assumptions in GARAGE.
 
 Bridge registration #532: same FOJAB/compass bearing (58°), OSM HepCat-centre anchor to its existing plan placement, approximate 3–5 m horizontal accuracy. The road and separate GC source ways are distinct; manufacturer confirms GC's 40 m, while all heights, other lengths/widths and support/rail details remain visual assumptions. [Evidence and source/assumption boundary](../validation/issue-532/README.md).
+
+L1004 (#574, `VISIT_UNITS` / `STANDARD`): bofakta "240822-bofakta-l1002-…-l1007" (checked 2026-10-09) is one sheet for
+L1002–L1007: 126 m², 5 rok, våning 1–2 (63 + 63 m²), uteplats 22 m², the same plan as ours, not mirrored. L1004 is the last
+flat west of the stair core (`husLLayout` slot, x −24.825…−19.07). Standard finish per the info brochure (S1 p. 20, p. 30):
+smooth white Marbodal fronts, white Electrolux appliances, white walls and ceilings, limestone window boards (grey/brown),
+matt-lacquered 3-stav oak parquet with white skirting, windows white inside; hall klinker is a tillval (bofakta "KL"), so
+parquet there. Colours and everything unnamed (worktop, handles, tiles, sanitary ware, mixers, wall cabinets, hood) are
+*guess* in `STANDARD`. Its name plate reads "Lasse" (the user's wish, not Peab material).

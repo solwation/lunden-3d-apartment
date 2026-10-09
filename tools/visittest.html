@@ -1,0 +1,125 @@
+<!doctype html><html lang="sv"><head><meta charset="utf-8"><title>Visited flat L1004 (#574)</title></head><body><pre id="out">running…</pre><script>
+// An empty flat you can walk into (#574, VISIT_UNITS, src/visitunit.js): L1004 at its own slot in Hus L, built from the
+// shared L1002–L1007 sheet in Peab's standard finish. Walks in from the street through its front door, round Entréplan,
+// out onto its patio, up its stair; its walls and doors hold; the HUD names it; nothing of ours is in it, nothing can be put
+// down there, nothing of it is saved; a resumed place inside it works; L1007's doors / lids / saved world are untouched.
+//   node tools/... (Playwright) or: chrome --headless=new --virtual-time-budget=120000 --dump-dom …/tools/visittest.html
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const lines = []; let pass = true;
+const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); pass &&= !!ok; out.textContent = `running…\n${lines.join('\n')}`; return ok; };
+const load = (q = '') => new Promise((resolve) => {
+  const f = document.createElement('iframe'); f.width = 900; f.height = 600; f.src = `../index.html?shot&time=12&month=7&weather=clear${q}`;
+  document.body.append(f);
+  f.onload = async () => { while (!f.contentWindow.__app) await wait(100); resolve(f); };
+});
+(async () => {
+  try {
+    let f = await load();
+    let w = f.contentWindow, A = w.__app, { world, player, camera, step } = A;
+    const { husLLayout } = await w.eval(`import('${new URL('../src/exterior.js', location.href).href}')`);
+    const C = await w.eval(`import('${new URL('../src/config.js', location.href).href}')`);
+    const unit = world.units.find((u) => u.id === 'L1004'), ox = unit?.ox;
+    check(unit && Math.abs(ox - husLLayout().units.find((u) => u.lower === 'L1004').ox) < 1e-6, `L1004 at its own slot in Hus L (ox ${ox})`);
+    check(unit.size.x === world.size.x && unit.size.z === world.size.z, 'the shared sheet: the same 5.75 × 12.70 m footprint as ours');
+    const label = () => f.contentDocument.getElementById('level').textContent;
+    const dt = 1 / 60;
+    const walk = (pts, limitS = 20) => {
+      for (const [x, z] of pts) {
+        let t = 0;
+        while (Math.hypot(player.pos.x - x, player.pos.z - z) > 0.12) {
+          camera.rotation.y = Math.atan2(-(x - player.pos.x), -(z - player.pos.z));
+          player.keys = new Set(['KeyW']); player.update(dt); t += dt; // (the game's loop walks only while it has the pointer)
+          if (t > limitS) { player.keys = new Set(); return { stuck: true, at: [player.pos.x.toFixed(2), player.pos.z.toFixed(2)] }; }
+        }
+      }
+      player.keys = new Set(); for (let i = 0; i < 20; i++) player.update(dt);
+      step(dt); // the HUD
+      return { stuck: false };
+    };
+    const settle = (n = 90) => { for (let i = 0; i < n; i++) { if (i % 6 === 0) step(dt * 6); player.update(dt); } };
+    const doorNear = (x, z, list = unit.doors) => list.find((d) => d.kind === 'swing' && Math.hypot(d.opening().center[0] - x, d.opening().center[1] - z) < 0.6);
+    const front = doorNear(ox + 1.26, 0.2), patio = doorNear(ox + 1.41, 12.6);
+    check(front && patio, 'its front door and patio door are swing doors of its own');
+    // from the street: the shut front door holds, E opens it, in through the hall
+    player.spawn(ox + 1.3, -2.5, Math.PI); settle(5);
+    check(walk([[ox + 1.3, 1.2]], 6).stuck, 'the shut front door holds from the street');
+    camera.rotation.set(0, Math.PI, 0, 'YXZ'); player.spawn(ox + 1.3, -0.8, Math.PI); settle(5);
+    A.use(front); settle();
+    check(front.isOpen, 'E opens its front door');
+    const s1 = walk([[ox + 1.3, 1.2], [ox + 1.3, 2.4]]);
+    check(!s1.stuck && /^L1004 · Entréplan · Hall/.test(label()), `in through it: "${label()}"`);
+    check(!player.outdoors && player.unit === unit && player.level === 0, 'indoors, in the visited flat, not in ours');
+    // the kitchen, the living room, the wall to the bathroom holds
+    const s2 = walk([[ox + 2.4, 2.4], [ox + 3.0, 2.6]]);
+    check(!s2.stuck && /Kök \/ matplats/.test(label()), `the kitchen: "${label()}"`);
+    const s3 = walk([[ox + 2.4, 4.6], [ox + 2.7, 7.13], [ox + 2.7, 9.5]]);
+    check(!s3.stuck && /Vardagsrum/.test(label()), `the living room: "${label()}"`);
+    player.spawn(ox + 1.3, 2.4, Math.PI); settle(5);
+    check(walk([[ox + 2.4, 6.0]], 5).stuck, 'the wall between the hall and the bathroom holds');
+    // out onto its own patio: the shut door holds, open it, out
+    player.spawn(ox + 1.4, 11.8, Math.PI); settle(5);
+    check(walk([[ox + 1.4, 13.5]], 5).stuck, 'the shut patio door holds');
+    player.spawn(ox + 1.4, 11.9, Math.PI); camera.rotation.set(0, Math.PI, 0, 'YXZ'); settle(5); A.use(patio); settle();
+    const s4 = walk([[ox + 1.4, 13.5]]);
+    check(!s4.stuck && player.outdoors && /^Utomhus/.test(label()), `out onto its patio: "${label()}"`);
+    // up its stair (our stair's route, shifted), its upstairs walls hold, Allrum is open to the hall (no tillval door)
+    player.spawn(ox + 2.4, 4.6, Math.PI); settle(5);
+    const s5 = walk([[ox + 2.7, 7.13], [ox + 4.3, 7.13], [ox + 5.1, 7.0], [ox + 5.15, 6.2], [ox + 4.3, 6.2], [ox + 3.0, 6.2]]);
+    check(!s5.stuck && Math.abs(player.pos.y - C.LEVELS[1].floor) < 0.02 && /^L1004 · Övre plan · Hall/.test(label()), `up its stair: y ${player.pos.y.toFixed(2)} "${label()}"`);
+    check(player.unitLevel === 1 && player.level === 0 && !player.aloft, 'upstairs: its level 1, our level untouched, not up on the roofs');
+    const s6 = walk([[ox + 2.2, 7.3], [ox + 2.0, 8.6]]);
+    check(!s6.stuck && /Allrum/.test(label()), `Allrum open to the hall (no tillval door): "${label()}"`);
+    player.spawn(ox + 3.0, 6.2, Math.PI); player.pos.y = C.LEVELS[1].floor; settle(5);
+    check(walk([[ox + 3.0, 6.2], [ox + 3.4, 3.0]], 5).stuck, 'the shut door to Sovrum 1 holds');
+    player.spawn(ox + 3.0, 6.2, Math.PI); player.pos.y = C.LEVELS[1].floor; settle(5);
+    check(walk([[ox + 0.8, 3.0]], 5).stuck, 'the wall to Sovrum 3 holds');
+    const s1door = doorNear(ox + 3.15, 5.0); camera.rotation.set(0, 0, 0, 'YXZ'); A.use(s1door); settle();
+    player.spawn(ox + 3.15, 5.6, 0); player.pos.y = C.LEVELS[1].floor; settle(5);
+    const s7 = walk([[ox + 3.15, 3.0]]);
+    check(!s7.stuck && /Sovrum 1/.test(label()), `opened, into Sovrum 1: "${label()}"`);
+    // the sun's shadow box follows the visitor into it, and back home
+    check(Math.abs(A.scene.children.find((o) => o.isDirectionalLight && o.castShadow).target.position.x - unit.centre.x) < 1e-6, 'the shadows are centred on the visited flat');
+    // nothing of ours in it: no mesh outside its own group lies inside its rooms
+    A.scene.updateMatrixWorld(true);
+    const strays = [];
+    const own = new Set(); unit.object.traverse((o) => own.add(o));
+    const B3 = (o) => { o.geometry.computeBoundingBox?.(); return o.geometry.boundingBox.clone().applyMatrix4(o.matrixWorld); };
+    A.scene.traverse((o) => {
+      if (!o.isMesh || own.has(o) || !o.geometry?.attributes?.position) return;
+      for (let p = o; p; p = p.parent) if (!p.visible) return;
+      const b = B3(o);
+      if (b.min.x > ox + 0.21 && b.max.x < ox + 5.54 && b.min.z > 0.47 && b.max.z < 12.23 && b.min.y > -0.05 && b.max.y < C.UNIT_TOP - 0.36) strays.push(o.name || o.type);
+    });
+    check(!strays.length, `empty of our things: ${strays.length} meshes of the rest of the world inside it ${strays.slice(0, 5).join(', ')}`);
+    let plate = null; front.object.traverse((o) => { if (o.name === 'namnskylten') plate = o; });
+    check(!!plate, 'its own name plate on the front door');
+    // nothing can be put down in it
+    check(A.placement.target() === null, 'no place to put things down shown in it');
+    // its doors are not ours: L1007's lists and saved world are untouched
+    const n0 = { doors: world.doors.length, lids: world.lids.length };
+    check(!world.doors.some((d) => d.visit) && !world.lids.some((d) => d.visit), `not in L1007's doors (${n0.doors}) / lids (${n0.lids})`);
+    const keptBefore = JSON.stringify(A.keepWorld().open);
+    for (const t of unit.targets) if (!t.isOpen && t.kind !== 'flush') { t.toggle(); for (let i = 0; i < 40; i++) t.update?.(0.1); }
+    const keptAfter = JSON.stringify(A.keepWorld().open);
+    check(keptBefore === keptAfter, `opening everything in it changes nothing in the saved world's open doors / lids (${keptAfter.length} chars)`);
+    const keys = Object.keys(w.localStorage).filter((k) => /L1004|visit/i.test(k) || /L1004/.test(w.localStorage.getItem(k) ?? ''));
+    check(!keys.length, `no stored key mentions it (${keys.join(', ')})`);
+    // back home: shadows centred on ours again, our labels as before
+    player.spawn(C.START.x, C.START.z, Math.PI); settle(5);
+    check(Math.abs(A.scene.children.find((o) => o.isDirectionalLight && o.castShadow).target.position.x - world.size.x / 2) < 1e-6, 'back at ours: the shadows on L1007 again');
+    player.spawn(1.3, 2.4, Math.PI); settle(10);
+    check(/^Entréplan · Hall/.test(label()) && player.unit === null, `our own hall still "${label()}"`);
+    f.remove();
+    // a resumed place upstairs in it (Ladda om / an update) comes back there, everything shut again
+    const rec = { x: ox + 3.0, z: 6.3, feetY: C.LEVELS[1].floor, yaw: Math.PI / 2, pitch: 0, ts: Date.now() };
+    sessionStorage.setItem('lunden.resume', JSON.stringify(rec));
+    f = await load(); w = f.contentWindow; A = w.__app;
+    check(Math.hypot(A.player.pos.x - rec.x, A.player.pos.z - rec.z) < 0.05 && Math.abs(A.player.pos.y - rec.feetY) < 0.02, `resumed upstairs in it (${A.player.pos.x.toFixed(2)}, ${A.player.pos.y.toFixed(2)}, ${A.player.pos.z.toFixed(2)})`);
+    const u2 = A.world.units[0];
+    check(u2.targets.every((t) => !t.isOpen), 'on a new visit every door and window in it is shut');
+    f.remove();
+  } catch (e) { check(false, e.stack); }
+  out.textContent = lines.join('\n') + '\n' + (pass ? 'ALL PASS' : 'SOME FAILED');
+})();
+</script></body></html>

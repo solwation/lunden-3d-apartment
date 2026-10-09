@@ -2822,6 +2822,49 @@ export const LAUNDRY_SINK = { w: 0.22, d: 0.36, depth: 0.15 };
 export const LAUNDRY_CABINET = { depth: 0.35, y0: 1.49, y1: 2.2, units: 2, share: 2 / 3 };
 export const VANITY_BASIN = { depth: 0.1 };
 
+// Other flats you can walk into (#574, src/visitunit.js): empty, in Peab's standard finish (STANDARD below), at their own
+// place in Hus L, entered through their own front door like ours. `slot` = the flat's id in exterior.js `husLLayout` (its
+// façade strip); `plan` = where its floor plan comes from: 'shared' = data/plan.json, L1007's sheet — bofakta
+// L1002–L1007 (2024-11-08, checked 2026-10-09) is ONE sheet for all six flats, drawn the same way round (not mirrored,
+// HUS_L), so L1007's walls, openings, stair, soffits and fixed fittings are reused as they are. Nothing of ours goes in:
+// no tillval (no Allrum door, no hall klinker), no furniture, rugs, curtains, blinds, plants, pets or personal things.
+// `plate` = the text on its front door's name plate (namePlate, as ours, #595). Doors / windows start shut on every visit; nothing is saved for it.
+export const VISIT_UNITS = [
+  { id: 'L1004', slot: 'L1004', plan: 'shared', plate: 'Lasse' }, // the plate: the user's wish (#574 comment); bofakta: 126 m², 5 rok, våning 1–2, uteplats 22 m²
+];
+// Peab's standard finish (grundutförande) of the visitable flats. SOURCED (info brochure 2024-09-11, S1): p. 20 "Släta
+// vita luckor från Marbodal och vita vitvaror från Electrolux"; p. 30 "Väggar vitmålade", "Innertak vitmålade",
+// "Fönsterbänk grå/brun i kalksten", "Golv mattlackad ekparkett, 3-stavig med vit golvsockellist", "Fönster … vit insida";
+// bofakta "KL = gräns för tillvalsklinker" (hall tiles are an option: parquet in the hall). Every colour value below is a
+// *guess* at those words; what the brochure does not name (worktop, handles, tiles, sanitary ware, mixers, wall cabinets,
+// hood) is a generic neutral choice, *guess*.
+export const STANDARD = {
+  parquet: { base: [204, 180, 146], width: 0.2, length: 2.2, staves: 3 }, // matt-lacquered oak, 3-stav (colour, board *guess*)
+  sill: 0x9d968a,       // window boards: grey/brown limestone (colour *guess*)
+  front: 0xf3f3f0,      // smooth white Marbodal fronts (white *guess*)
+  appliance: 0xf6f6f4,  // white Electrolux appliances
+  counter: 0xd9d8d3,    // worktop: light grey laminate (generic, *guess*)
+  handle: 0xb9bcbf,     // brushed steel bar handles (generic, *guess*)
+  splash: 0xf4f4f2,     // white splashback tiles 10 × 20 (generic, *guess*)
+  wetFloor: { w: 0.1, h: 0.1, color: 0x9c9fa1 }, // grey floor tiles in the wet rooms (generic, *guess*)
+  wetWall: { w: 0.2, h: 0.2, color: 0xf5f5f3 },  // white wall tiles (generic, *guess*)
+  vanity: 0xf2f2ef,     // white vanity (generic, *guess*)
+  // the shared plan's wet rooms (L1007's TILED_ROOMS rectangles, no hall klinker): floor tiles + wall tiles up to `wallTile`
+  tiled: [
+    { level: 0, name: 'Tvätt', x0: 0.2, x1: 2.06, z0: 3.1, z1: 4.88 },
+    { level: 0, name: 'Badrum', x0: 0.2, x1: 2.06, z0: 4.88, z1: 7.6, wallTile: 2.5 },
+    { level: 1, name: 'WC/dusch', x0: 0.2, x1: 1.48, z0: 5.13, z1: 7.6, wallTile: 2.5 },
+  ],
+  // kitchen: the plan's cabinet rectangles inside `area` (KITCHEN.area: the same sheet); wall cabinets over the long run
+  // and a hood over the hob (not drawn on bofakta, a usual Peab kitchen: *guess*), bottom/top as L1007's KITCHEN
+  wallCabinets: { depth: 0.35, bottom: 1.45, top: 2.25, hood: 1.6 },
+  // shadows follow the visitor into a visited flat (main.js): the sun's shadow box is centred on it within `near` m
+  near: 9,
+  // draw calls (#574, visitunit.js `cull`): farther than `detail` m from its footprint only its walls, floors, ceilings and
+  // window frames are drawn (no doors, fittings, glass); from inside our flat or under the ground none of it (our pick)
+  detail: 12,
+};
+
 // What lies in the cabinets and drawers (#231, src/contents.js): living room, hall wardrobe, bathrooms, laundry.
 // Sizes of the things from their real counterparts (a DVD case 135 × 190 × 14 mm, a blu-ray 128 × 148 × 12, a
 // game case 135 × 170 × 14, the console the size of a PS5 slim lying down); the rest is a look, not measured.

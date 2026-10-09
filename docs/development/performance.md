@@ -173,3 +173,12 @@ per batch), and the Christmas tree's shimmer costs 0.016 ms (#571) — not worth
   `WARM.sliceMs`. The DetailCuller's re-judging was measured at < 1 ms median (2682 items, 2–3.5 ms worst) and the
   whole `step` at ~1.4 ms, so the CPU side needed no spreading.
 
+
+Visited flat L1004 (#574): its own group, merged per material and level like ours (`buildVisitFlat`, ~83 top-level children,
+~156 draw items with door/window/lid anchors and their architecture edges). `VisitUnit.cull` (STANDARD.detail 12 m): from
+inside our flat or down in the garage nothing of it is drawn; farther than 12 m from its footprint only its shell (walls,
+floors, ceilings, window frames: 8 calls); near it everything. perfcount (desktop) before → after: start 198 → 198, garage
+drive 340 → 348, park 433 → 441, every other spot unchanged; budget PASS. Measured at L1004 itself: street in front 216 →
+391 calls, its hall 185 → 333, its living room 138 → 284, its upstairs hall 154 → 209 (within the 520 budget). The build
+adds ~45 geometries and ~8 textures (3-stav parquet, tiles) and one extra architecture-edges pass at start. No lights: it has
+no lamps (daylight only); the sun's one shadow map moves onto it when the visitor is within STANDARD.near m.

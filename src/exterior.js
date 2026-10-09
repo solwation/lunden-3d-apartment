@@ -170,7 +170,7 @@ function spiralStair(t, top, steel, slabs) {
  *    the core's brick loft rising through them; spiral stairs in brick drums at both ends
  *  - flat roof with solar panels and a light metal capping
  */
-export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, mats }) {
+export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, mats, visits = [] }) {
   const group = new THREE.Group();
   const bricks = [], renders = [], glassGeo = [], frames = [], solids = [], rails = [], roofs = [], pilasters = [], panels = [];
   const seals = [], openingHardware = [], neighborOpenings = [];
@@ -257,12 +257,14 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
   const northOf = (ox) => (Math.abs(ox - endUnitX) < 1e-6
     ? north.filter((o) => !H.endUnitNorthHidden.some(([a, b]) => (o.x0 + o.x1) / 2 > a && (o.x0 + o.x1) / 2 < b))
     : north);
+  // `visits` (#574): the flats you can walk into (their ox) are built inside like ours (world.js): open holes, no mass
+  const visited = (ox) => visits.some((v) => Math.abs(v - ox) < 1e-6);
   for (const { ox, x0: ux0, x1: ux1 } of units) {
-    const ours = Math.abs(ox) < 1e-6;
-    facade(bricks, ux0, ux1, 0, roofTop, -eps, true, shift(northOf(ox), ox, 0), !ours);
-    facade(bricks, ux0, ux1, 0, roofTop, D + eps, false, shift(south, ox, 0), !ours);
+    const ours = Math.abs(ox) < 1e-6, real = ours || visited(ox);
+    facade(bricks, ux0, ux1, 0, roofTop, -eps, true, shift(northOf(ox), ox, 0), !real);
+    facade(bricks, ux0, ux1, 0, roofTop, D + eps, false, shift(south, ox, 0), !real);
     if (ours) continue;
-    solids.push(...entrySolid(ux0 + 0.001, ux1 - 0.001, 0, roofTop, 0, D));
+    if (!real) solids.push(...entrySolid(ux0 + 0.001, ux1 - 0.001, 0, roofTop, 0, D));
     // the neighbours' patios: same slab, hedge and screen walls as ours (within their own strip: no overlap with ours)
     if (site.patio) { // slab paving like ours: UVs in metres (x, z)
       const pg = boxGeo(Math.max(ux0, ox + site.patio.x0), Math.min(ux1, ox + site.patio.x1), -0.01, 0.0, D, site.patio.z1);
@@ -337,7 +339,9 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
     solids.push(boxGeo(PR.wallWest,PR.west,PD.height,ph,PD.z0,PD.z1));
     bricks.push(quadY(PR.wallWest,PR.west,PD.z0,PD.z1,PD.height,true));
     group.userData.portik=PP;
-    solids.push(boxGeo(coreX0, CORE.x0 - g, 0, roofTop, 0, D),
+    // (a visited flat west of the core, #574: the mass starts at its outer face, not inside its party wall)
+    const westFace = Math.max(coreX0, ...visits.filter((v) => v + W > coreX0 - 0.5 && v < coreX0).map((v) => v + W));
+    solids.push(boxGeo(westFace, CORE.x0 - g, 0, roofTop, 0, D),
       // solids in the stairwell north wall around the two windows (#457, #470)
       boxGeo(CORE.x0, CORE.x1, 0, win1.y0 - g, 0, nz),
       boxGeo(CORE.x0, win1.x0 - g, win1.y0, win1.y1, 0, nz), boxGeo(win1.x1 + g, CORE.x1, win1.y0, win1.y1, 0, nz),
@@ -540,7 +544,7 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
   const plantingDoors = [
     ...units.map((u, index) => {
       const d = northOf(u.ox).find(o => o.y0 < .05 && (o.entryPane || o.y1 < 2.5));
-      return d && { unit: u.lower, index, x0: u.ox+d.x0, x1: u.ox+d.x1, y: 0, z: 0 };
+      return d && !visited(u.ox) && { unit: u.lower, index, x0: u.ox+d.x0, x1: u.ox+d.x1, y: 0, z: 0 }; // (a visited flat is empty: no pot, #574)
     }).filter(Boolean),
     ...uppers.filter(u => u[2] != null).map(([x0,x1,ox,id], index) => {
       const d = streetOpenings(id,ox,x1).find(o => o.door);

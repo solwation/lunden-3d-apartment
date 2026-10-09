@@ -70,7 +70,7 @@ export function addDoorSigns(doors, roomAt, levelOf) {
 /** The front door's name plate (#595): a canvas-textured thin box on the stairwell face of the leaf, centred over
  * the letter box, a child of the leaf so it swings with it. `outX` = which local x side is the stairwell (±1). Only
  * the front face shows the text; the other faces sample the plate's plain edge colour. One mesh, one draw call. */
-export function namePlate(door, outX) {
+export function namePlate(door, outX, text = NAME_PLATE.text) {
   const P = NAME_PLATE, W = 512, H = Math.round(W * P.h / P.w);
   const c = document.createElement('canvas'); c.width = W; c.height = H;
   const g = c.getContext('2d');
@@ -83,8 +83,8 @@ export function namePlate(door, outX) {
   let size = parseInt(P.font.match(/(\d+)px/)[1], 10);
   const font = () => P.font.replace(/\d+px/, `${size}px`);
   g.font = font();
-  while (g.measureText(P.text).width > W - 70 && size > 20) g.font = font(size -= 2);
-  g.fillText(P.text, W / 2, H / 2 + 3);
+  while (g.measureText(text).width > W - 70 && size > 20) g.font = font(size -= 2);
+  g.fillText(text, W / 2, H / 2 + 3);
   const tex = new THREE.CanvasTexture(c);
   tex.colorSpace = THREE.SRGBColorSpace;
   tex.anisotropy = 8;

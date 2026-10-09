@@ -79,6 +79,12 @@ src/core.js            Hus L's stair core by the portik (#415, CORE in config): 
                        leaves the band / passage out of the core's solid, world.js its ground plate; HUD "Hus L · Trapphus ·
                        våning N" / "Hiss"
 src/rooms.js           room detection: walls + door gaps rasterised, BFS from the room labels
+src/visitunit.js       other flats you can walk into (#574, VISIT_UNITS): `VisitUnit` = a visited flat's collision (world
+                       coordinates), doors / windows / lids as E targets (`visit` flag: no score, no cat, not kept), rooms,
+                       stair and slabs; `world.units` / `world.unitAt(x, z)`; player.js `unit` / `unitLevel`
+src/standardinterior.js Peab's standard fixed interior (STANDARD): white kitchen + appliances, laundry, wet rooms, static
+tools/visittest.html   #574: L1004 at its slot, in through its front door, round Entréplan, onto its patio, up its stair,
+                       walls / doors hold, HUD, empty of our things, nothing saved, resume inside it, shadows follow
 data/plan.json         GENERATED — do not edit by hand
 tools/extract_plan.py  PDF → data/plan.json (stdlib only)
 tools/roomtest.html    headless test of room detection at known points (+ a picture of the fill)
@@ -147,3 +153,18 @@ Background footprint geometry (#534): `sitebackdrop.js` extrudes registered poly
 Eastern campus (#535): `SITE.east` and `sitebackdrop.js` replace nine illustrative blocks with sixteen mapped footprints, including Montessori wings and Realgym’s actual courtyard hole. HepCat’s detailed geometry stays. Shared brick texture, five exterior batches, sourced access/paths and approximate aerial avenues/groves using existing seasonal tree instances; unchanged OUTDOOR. All heights/floor counts/roof details remain assumptions. `eastbackdroptest` checks source geometry, actual outward windows, open courtyard and tree/access clearance. [Inventory, sources and browser comparison](../validation/issue-535/README.md).
 
 Northern surroundings (#530): `SITE.north`/`sitebackdrop.js` add three missing exact footprints; seven western bodies from #534 and eastern campus bodies remain unique. Far Sankt Lars väg follows its mapped northwestern turn; sourced Källby/Alvägen paths, aerial pixel parking traces and seasonal avenue/grove trees complete the ground. Five exterior batches, shared textures, unchanged OUTDOOR. All untagged heights/roof/parking/tree details are assumptions; no old proposed buildings. `northbackdroptest` checks source polygons, actual outward window rays and no duplicates. [Registration controls, sources and before/after](../validation/issue-530/README.md).
+
+Visitable flats (#574): `VISIT_UNITS` lists flats you can walk into besides ours. L1004 uses the shared L1002–L1007 sheet
+(`plan: 'shared'` = data/plan.json; bofakta is one sheet for all six, not mirrored), so world.js `buildVisitFlat` runs the
+same `buildLevel` / `buildStructure` (slab, roof zone, stair, railing) into a group at the flat's `husLLayout` slot (`ox`
+−24.825) with `how.standard`: the standard materials (STANDARD: 3-stav oak, limestone window boards) and
+`standardinterior.js` instead of interior.js; none of our tillval (no Allrum door or its wall/lintel, Allrum stays Allrum, no
+hall klinker), no hall-wardrobe contents, cleaning fittings, EL cabinet contents, blinds, curtains, plants, lamps or
+furniture; its front door gets our name-plate code with its own text (`plate`, "Lasse" — the user's wish). exterior.js
+(`visits`) leaves its façade holes open and draws no mass or entrance pot there (its patio, hedge and screen walls stay);
+the core's west mass starts at its outer face. Its Entréplan walls join level 0's segments (from the street too), the row's
+façade lines are cut there; its Övre plan has segments of its own (player.js), its Entréplan doors come through
+`world.movingSegments(0)`. The sun's shadow box moves onto it within `STANDARD.near` m (main.js). Nothing is saved for it:
+doors and windows start shut on every visit, nothing can be put down in it (`floorSpot`). Its geometry beyond the shared sheet
+is as preliminary as L1007's (SLAB, soffits, stair: *guess* where marked).
+

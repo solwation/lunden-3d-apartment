@@ -3,6 +3,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import {
   LAUNDRY, WARDROBE, LEVELS, UNIT_TOP, SOFFITS, DOOR_HEIGHT, DOOR_TRIM, EXT_DOOR_HEAD, WINDOWS, WINDOW_TOP_HUNG_MAX, BLINDS, CABINET_HEIGHT, BASE_CABINET, SHELF_HEIGHT, TOILET,
   STAIR, COLORS, FENCE_HEIGHT, SITE, OUTDOOR, CABINET_FIXES, KLK, SEASON, FINISH, OPTIONS, EXTRA_WALLS, SLIDE_FLIP, ROOM_RENAMES, EXTRA_ROOMS, ROOM_DIVIDERS, CORE, PORTIK,
+  STANDARD, VISIT_UNITS,
 } from './config.js';
 import { buildStairs, buildHandrails } from './stairs.js';
 import { klkFittings } from './closet.js';
@@ -31,12 +32,15 @@ import { addDoorSigns, namePlate } from './signs.js';
 import { wardrobeFill, personFor } from './stuff.js';
 import { Blinds } from './blinds.js';
 import { Roofs, wallRect } from './roofs.js';
+import { buildStandardInterior } from './standardinterior.js';
+import { VisitUnit } from './visitunit.js';
 
 const mat = (color, extra = {}) => new THREE.MeshStandardMaterial({ color, roughness: 0.85, ...extra });
 
-/** Parquet (1-stav planks, FINISH.parquet): one texture repeat = `n` planks across. */
-function plankTexture() {
-  const { base: [r0, g0, b0], width, length } = FINISH.parquet;
+/** Parquet (1-stav planks, FINISH.parquet): one texture repeat = `n` planks across. `staves` > 1 (STANDARD, #574): each
+ * board is that many narrow rows of short staves (3-stav). */
+function plankTexture(P = FINISH.parquet) {
+  const { base: [r0, g0, b0], width, length, staves = 1 } = P;
   const ppm = 300, n = 6;
   const pw = Math.round(width * ppm), pl = Math.round(length * ppm);
   const c = document.createElement('canvas');
@@ -44,7 +48,22 @@ function plankTexture() {
   const g = c.getContext('2d');
   let seed = 7;
   const rand = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
-  for (let col = 0; col < n; col++) {
+  if (staves > 1) { // 3-stav: rows of short staves (a third of the board's length, staggered), the boards' long joints darker
+    const sw = pw / staves, sl = Math.round(pl / staves);
+    for (let col = 0; col < n * staves; col++) {
+      const offset = Math.round(((col * 0.53) % 1) * sl);
+      for (let y = -offset; y < c.height; y += sl) {
+        const k = 0.93 + rand() * 0.12;
+        g.fillStyle = `rgb(${r0 * k},${g0 * k},${b0 * k})`;
+        g.fillRect(col * sw, y, sw, sl);
+        for (let i = 0; i < 5; i++) { g.fillStyle = `rgba(120,90,60,${0.04 + rand() * 0.05})`; g.fillRect(col * sw + rand() * sw, y, 1 + rand(), sl); }
+        g.strokeStyle = 'rgba(90,70,50,0.22)';
+        g.strokeRect(col * sw + 0.5, y + 0.5, sw - 1, sl - 1);
+      }
+      if (col % staves === 0) { g.fillStyle = 'rgba(80,60,40,0.35)'; g.fillRect(col * sw, 0, 1, c.height); }
+    }
+  }
+  for (let col = 0; col < (staves > 1 ? 0 : n); col++) {
     const offset = Math.round(((col * 0.37) % 1) * pl); // staggered end joints
     for (let y = -offset; y < c.height; y += pl) {
       const k = 0.95 + rand() * 0.08;
@@ -89,6 +108,11 @@ const M = {
   hedge: mat(COLORS.hedge, { roughness: 1 }),
   fence: mat(COLORS.fence, { roughness: 0.9 }),
 };
+// Peab's standard finish for the visitable flats (#574, STANDARD): its own parquet and limestone window boards; walls,
+// ceilings, doors, frames, glass and the stair's white parts are the same white as ours
+const SM = { ...M, floor: mat(0xffffff, { map: plankTexture(STANDARD.parquet), roughness: 0.75 }), sill: mat(STANDARD.sill, { roughness: 0.55 }) };
+/** How a level is built: ours (L1007, every choice we made), or a visitable flat in the standard finish (#574). */
+const OURS = { standard: false, mats: M, plate: undefined, ox: 0 };
 
 /** Axis-aligned box from plan ranges (x, z) and height range y. */
 function box(x0, x1, z0, z1, y0, y1, material, { shadow = true } = {}) {
@@ -301,7 +325,7 @@ function toiletAgainstWall(tank, bowl, wallBoxes) {
  * sash opens outwards with E (#103, #272): hinged along its head, the bottom swings out; `out` = ±1 the way out along
  * z. `split` (the living room): an off-centre mullion, the sash takes that share of the width on side `opens`
  * ('a' = x0, 'b' = x1), the other side is a fixed pane. Returns the Openables. */
-function addWindowFrame(group, x0, x1, fz, y0, y1, transom, out = -1, opens = true, { split = 0, opens: side = 'a', max = WINDOW_TOP_HUNG_MAX } = {}) {
+function addWindowFrame(group, x0, x1, fz, y0, y1, transom, out = -1, opens = true, { split = 0, opens: side = 'a', max = WINDOW_TOP_HUNG_MAX, ox = 0 } = {}) {
   const ft = 0.06, d = 0.05;
   const z0 = fz - d, z1 = fz + d;
   group.add(box(x0, x1, z0, z1, y0, y0 + ft, M.frame));
@@ -337,7 +361,7 @@ function addWindowFrame(group, x0, x1, fz, y0, y1, transom, out = -1, opens = tr
   // top-hung: turning +y about +x sends the bottom towards −z
   const o = new Openable({ name: 'fönstret', object: pivot, mode: 'flap', axis: [1, 0, 0], sign: -out, max, speed: 1.6 }); // (`max`: a per-window stop, #429)
   o.normal = new THREE.Vector3(0, 0, -out); // the room side (tests stand there)
-  const toggle = o.toggle.bind(o), at = new THREE.Vector3((a + b) / 2, (lo + hi) / 2, zo);
+  const toggle = o.toggle.bind(o), at = new THREE.Vector3((a + b) / 2 + ox, (lo + hi) / 2, zo); // (`ox`: a visited flat's offset, #574)
   o.toggle = () => { toggle(); o.wind?.stop(); o.wind = o.isOpen ? sfx.wind(at) : null; }; // the wind blows in while it is open
   return [o];
 }
@@ -345,7 +369,7 @@ function addWindowFrame(group, x0, x1, fz, y0, y1, transom, out = -1, opens = tr
 /** The letter box in the front door (#103): a brass plate with a flap on the outside (hinged at its top, lifts
  * out with E), a dark slot and a brushed plate inside. Built in the door's local frame (x = thickness, z along the
  * leaf from the hinge); the flap is an Openable in a pivot kept out of the door's merge (`door.keep`). */
-function letterFlap(door) {
+function letterFlap(door, plate) {
   door.object.updateMatrix();
   const outX = new THREE.Vector3(1, 0, 0).applyQuaternion(door.object.quaternion).z < 0 ? 1 : -1; // the street side
   const brass = new THREE.MeshStandardMaterial({ color: 0xc9a650, roughness: 0.3, metalness: 0.8 });
@@ -368,12 +392,13 @@ function letterFlap(door) {
   part(0.01, 0.008, 0.08, outX * 0.006, -h + 0.008, 0, brass, pivot);                // a little lip to lift it by
   door.object.add(pivot);
   door.keep = [pivot];
-  namePlate(door, outX); // "Budil Wingren" above the letter box (#595)
+  namePlate(door, outX, plate); // "Budil Wingren" above the letter box (#595); a visited flat's number (#574)
   // about the leaf's z axis: +angle swings the bottom edge towards +x
   return new Openable({ name: 'brevinkastet', object: pivot, mode: 'flap', axis: [0, 0, 1], sign: outX, max: 70, speed: 3 });
 }
 
-function buildLevel(floor, li, group) {
+function buildLevel(floor, li, group, how = OURS) {
+  const M = how.mats, std = how.standard; // (a visited flat: the standard finish, none of our choices, #574)
   const L = LEVELS[li];
   const y0 = L.floor;
   const yC = y0 + L.ceiling;
@@ -382,7 +407,7 @@ function buildLevel(floor, li, group) {
 
   // Walls (polygons extruded floor → ceiling). Holes in the plan polygons are tiny
   // niches; walls are rendered solid.
-  const walls = [...floor.walls, ...EXTRA_WALLS.filter((w) => w.level === li && OPTIONS[w.option])
+  const walls = [...floor.walls, ...EXTRA_WALLS.filter((w) => w.level === li && !std && OPTIONS[w.option])
     .map((r) => ({ outer: [[r.x0, r.z0], [r.x1, r.z0], [r.x1, r.z1], [r.x0, r.z1]] }))];
   const wallBoxes = walls.map((w) => bboxOf(w.outer));
   const wallSegments = []; // walls only: line of sight for E (main.js)
@@ -401,8 +426,9 @@ function buildLevel(floor, li, group) {
   for (const pr of floor.windows) {
     const facade = pr.z0 < D / 2 ? 'north' : 'south';
     const cx = (pr.x0 + pr.x1) / 2;
-    const spec = WINDOWS.filter((w) => w.level === li && w.facade === facade)
+    let spec = WINDOWS.filter((w) => w.level === li && w.facade === facade)
       .sort((a, b) => Math.abs(a.x - cx) - Math.abs(b.x - cx))[0];
+    if (std) { const { max, ...plain } = spec; spec = { ...plain, ox: how.ox }; } // (our sofa's sash stop is ours, #429)
     const sill = y0 + spec.sill, head = y0 + spec.head;
     // `width` narrows the PDF opening around its centre; the rest is solid wall
     let r = pr;
@@ -427,7 +453,7 @@ function buildLevel(floor, li, group) {
     // inner window board (fönsterbänk)
     const iz0 = Math.min(fz, inner + (facade === 'north' ? 0.03 : -0.03));
     const iz1 = Math.max(fz, inner + (facade === 'north' ? 0.03 : -0.03));
-    group.add(box(r.x0 - 0.02, r.x1 + 0.02, iz0, iz1, sill - 0.03, sill, M.porcelain));
+    group.add(box(r.x0 - 0.02, r.x1 + 0.02, iz0, iz1, sill - 0.03, sill, M.sill ?? M.porcelain)); // (the standard: limestone)
     sills.push({ x0: r.x0, x1: r.x1, z0: Math.min(iz0, iz1), z1: Math.max(iz0, iz1), y: sill, blind: fz - (facade === 'north' ? -1 : 1) * BLINDS.gap, out: facade === 'north' ? -1 : 1 }); // `blind`: the folded pack's plane (#290)
     openings[facade].push({ x0: r.x0, x1: r.x1, y0: sill, y1: head, win: spec }); // `win`: the neighbours copy its parts
     segments.push(...rectSegments(pr));
@@ -451,9 +477,10 @@ function buildLevel(floor, li, group) {
     const gap = findGap(wallBoxes, axis, c, a + 0.02, b - 0.02);
     const exterior = tz < 0 || tz > D;
     const head = y0 + (exterior ? EXT_DOOR_HEAD : DOOR_HEIGHT);
-    if (gap) group.add(gapBox(gap, head, yC, M.wall));
-    if (gap) barriers.push(gapRect(gap));
-    if (d.optional && !OPTIONS.allrumDoor) continue; // Peab tillval (dashed door), see OPTIONS
+    const tillval = d.optional && (std || !OPTIONS.allrumDoor); // Peab tillval (dashed door), see OPTIONS
+    if (gap && !(tillval && std)) group.add(gapBox(gap, head, yC, M.wall)); // (the standard: no tillval wall, no lintel, #574)
+    if (gap) barriers.push(gapRect(gap)); // (a room boundary even when open: Allrum | Hall)
+    if (tillval) continue;
 
     // Stretch the leaf to the full gap (the plan's swing is the nominal leaf width).
     let leaf = d;
@@ -472,7 +499,7 @@ function buildLevel(floor, li, group) {
     if (gap) doorways.push({ gap, c, exterior });
     const door = new SwingDoor(leaf, y0, M.door, false, { entrance: exterior && tz < 0, glazed: exterior && tz > D, glass: M.glass, frame: M.frame });
     door.name = exterior ? 'ytterdörren' : 'dörren';door.exterior=exterior;
-    if (exterior && tz < 0) lids.push(letterFlap(door)); // the front door's letter box (#103)
+    if (exterior && tz < 0) lids.push(letterFlap(door, how.plate)); // the front door's letter box (#103)
     group.add(door.object);
     doors.push(door);
     if (exterior && gap) {
@@ -546,7 +573,7 @@ function buildLevel(floor, li, group) {
   }
   for (const g of groups) {
     const wf = buildWardrobe(group, g, y0, CABINET_HEIGHT[g.label] ?? CABINET_HEIGHT.G, wallBoxes, doors);
-    if (li === 0 && g.label === 'G') hallWardrobeContents(group, wf); // coats, hats and shoes in the hall (#231)
+    if (li === 0 && g.label === 'G' && !std) hallWardrobeContents(group, wf); // coats, hats and shoes in the hall (#231)
     segments.push(...rectSegments(g));
   }
 
@@ -554,7 +581,9 @@ function buildLevel(floor, li, group) {
   const handled = new Set();
   const taps = []; // tap/shower outlets for running water (main.js)
   const appliances = [...windows]; // things that open with E but aren't doors (the fridge, the windows)
-  for (const r of buildInterior(group, floor, li, y0, yC, wallBoxes, handled, taps, appliances, doorways)) segments.push(...rectSegments(r));
+  const fitted = std ? buildStandardInterior(group, floor, li, y0, yC, wallBoxes, handled, doorways) // Peab's standard (#574)
+    : buildInterior(group, floor, li, y0, yC, wallBoxes, handled, taps, appliances, doorways);
+  for (const r of fitted) segments.push(...rectSegments(r));
 
   // Other fixed cabinets
   for (const cab of floor.cabinets) {
@@ -567,7 +596,7 @@ function buildLevel(floor, li, group) {
     }
     const h = label ? CABINET_HEIGHT[label] ?? BASE_CABINET
       : (cab.x1 - cab.x0 < 0.3 || cab.z1 - cab.z0 < 0.3) ? SHELF_HEIGHT : BASE_CABINET;
-    if (label === 'EL' && li === 0) { // the hall's EL/C cabinet opens (#103)
+    if (label === 'EL' && li === 0 && !std) { // the hall's EL/C cabinet opens (#103)
       appliances.push(buildElCabinet(group, cab, 'e', y0, h, []));
       segments.push(...rectSegments(cab));
       continue;
@@ -582,7 +611,7 @@ function buildLevel(floor, li, group) {
     segments.push(...rectSegments(cab));
   }
 
-  if (li === 0) for (const r of cleaningFittings(group, y0)) segments.push(...rectSegments(r)); // the Klk under the stair (#338)
+  if (li === 0 && !std) for (const r of cleaningFittings(group, y0)) segments.push(...rectSegments(r)); // the Klk under the stair (#338)
 
   // Sanitary fixtures, sinks, hob, shower floor
   for (const f of floor.fixtures) {
@@ -638,24 +667,10 @@ function buildLevel(floor, li, group) {
   return { segments, wallSegments, doors, lids, taps, appliances, openings, sills, barriers, blindSpecs, ceiling: yC };
 }
 
-export function buildWorld(plan) {
-  mirrorLamps.length = 0; // filled by buildInterior
-  interiorLoose.length = 0;
-  cupSurfaces.length = 0;
-  const scene = new THREE.Group();
-  const [lower, upper] = plan.floors;
-  // plan corrections for fixed cabinets (CABINET_FIXES): the hall's EL cabinet is smaller than drawn
-  plan.floors.forEach((f, li) => {
-    for (const fix of CABINET_FIXES.filter((x) => x.level === li)) {
-      const c = f.cabinets.find((k) => k.label === fix.label);
-      if (c) Object.assign(c, { ...fix, level: undefined });
-    }
-  });
-  const W = lower.size.x, D = lower.size.z;
-
-  const l0 = buildLevel(lower, 0, scene);
-  const l1 = buildLevel(upper, 1, scene);
-
+/** The slab between the levels (façade band + stair opening), the roof zone, the stair, its railing and handrails into
+ * `scene` (plan coordinates); the railing's collision goes into Övre plan's segments. Shared by our flat and the visited
+ * ones (#574: the same sheet, so the same stair). */
+function buildStructure(scene, lower, l1, W, D, M) {
   // Slab between the levels (façade band + stair opening), and roof
   const slabY0 = LEVELS[0].floor + LEVELS[0].ceiling, slabY1 = LEVELS[1].floor;
   const h = STAIR.hole;
@@ -699,6 +714,56 @@ export function buildWorld(plan) {
   l1.segments.push(...railSegs);
   // handrails: the wall side along the flights and round the winders, one per flight on the inner side (#419)
   for (const m of [...buildHandrails(M.rail).children]) scene.add(m);
+}
+
+/** A flat you can walk into (#574, VISIT_UNITS): built like ours from the same sheet, in Peab's standard finish and empty,
+ * in a group at its own place in the row (`ox` along x), then handed to visitunit.js (collision, targets, rooms). */
+function buildVisitFlat(plan, U, ox) {
+  const group = new THREE.Group();
+  group.name = `lägenhet ${U.id}`;
+  group.position.x = ox;
+  group.updateMatrixWorld(true);
+  const how = { standard: true, mats: SM, plate: U.plate, ox };
+  const [lower, upper] = plan.floors, W = lower.size.x, D = lower.size.z;
+  const keep = wardrobeSpecs.length;
+  const l0 = buildLevel(lower, 0, group, how), l1 = buildLevel(upper, 1, group, how);
+  wardrobeSpecs.length = keep; // empty wardrobes: nobody lives here
+  buildStructure(group, lower, l1, W, D, SM);
+  const doors = [...l0.doors, ...l1.doors], lids = [...l0.lids, ...l1.lids, ...l0.appliances, ...l1.appliances];
+  const moving = [...doors, ...lids].map((d) => d.object);
+  const edges = architectureEdges(group, { moving, floor: LEVELS[1].floor });
+  // the plan's own room names (no tillval: Allrum stays Allrum)
+  const rooms = plan.floors.map((f, li) => [...f.rooms, ...EXTRA_ROOMS.filter((r) => r.level === li)]);
+  const roomMaps = [l0, l1].map((l, li) => new RoomMap({ x: W, z: D }, [...l.barriers, ...ROOM_DIVIDERS.filter((d) => d.level === li)], rooms[li]));
+  const box3 = new THREE.Box3(), mid = new THREE.Vector3();
+  mergeStatic(group, moving.concat(edges ? [edges] : []), (o) => { box3.setFromObject(o).getCenter(mid); return mid.y < LEVELS[1].floor - 0.05 ? 'l0' : 'l1'; });
+  for (const d of doors) mergeStatic(d.object, d.keep ?? [], () => '', { tagged: true });
+  return new VisitUnit({ id: U.id, ox, size: { x: W, z: D }, object: group, levels: [l0, l1], doors, lids, roomMaps,
+    shell: [SM.wall, SM.ceiling, SM.floor, SM.frame] }); // (what shows from afar, #574)
+}
+
+export function buildWorld(plan) {
+  mirrorLamps.length = 0; // filled by buildInterior
+  interiorLoose.length = 0;
+  cupSurfaces.length = 0;
+  const scene = new THREE.Group();
+  const [lower, upper] = plan.floors;
+  // plan corrections for fixed cabinets (CABINET_FIXES): the hall's EL cabinet is smaller than drawn
+  plan.floors.forEach((f, li) => {
+    for (const fix of CABINET_FIXES.filter((x) => x.level === li)) {
+      const c = f.cabinets.find((k) => k.label === fix.label);
+      if (c) Object.assign(c, { ...fix, level: undefined });
+    }
+  });
+  const W = lower.size.x, D = lower.size.z;
+
+  const l0 = buildLevel(lower, 0, scene);
+  const l1 = buildLevel(upper, 1, scene);
+
+  buildStructure(scene, lower, l1, W, D, M); // the slab, the roof zone, the stair and its railing
+  // the other flats you can walk into (#574), each at its own slot in the row
+  const slots = husLLayout(W).units;
+  const units = VISIT_UNITS.filter((U) => U.plan === 'shared').map((U) => buildVisitFlat(plan, U, slots.find((u) => u.lower === U.slot).ox));
 
   const PD=PORTIK.door;
   const portikDoor=new SwingDoor({hinge:[PD.x,PD.z1],tip:[PD.x-(PD.z1-PD.z0),PD.z1],wall:[PD.x,PD.z0]},0,mat(PD.color),false);
@@ -753,7 +818,7 @@ export function buildWorld(plan) {
   // Hus L: brick façades, the neighbouring units, the stacked units above and the loftgång
   const north = [...l0.openings.north, ...l1.openings.north];
   const south = [...l0.openings.south, ...l1.openings.south];
-  const exterior = buildExterior({ W, D, roofTop: UNIT_TOP, north, south, frame: M.frame, wall: M.wall, site, mats: M });
+  const exterior = buildExterior({ W, D, roofTop: UNIT_TOP, north, south, frame: M.frame, wall: M.wall, site, mats: M, visits: units.map((u) => u.ox) });
   scene.add(exterior);
   const surroundings = buildSurroundings({ grass: M.grass });
   const courtyard = buildCourtyard(); // walks, pergola, grill, sandboxes, boule, benches, beds (#80)
@@ -772,9 +837,17 @@ export function buildWorld(plan) {
   // façades (the flat's walls take over there) and the portik through the stair core; the neighbours' screen walls and
   // hedges block like ours, the Å-husen's outlines and the garage box's edge (except down its stairs) like walls
   const o = OUTDOOR, { xw, xe, portik: [p0, p1] } = husLLayout(W);
+  // a visited flat's façades are its own walls, like ours (#574): the row's lines are cut out there
+  const cut = (segs) => segs.flatMap(([ax, az, bx, bz]) => {
+    if (az !== bz) return [[ax, az, bx, bz]];
+    let parts = [[Math.min(ax, bx), Math.max(ax, bx)]];
+    for (const u of units) parts = parts.flatMap(([a, b]) => [[a, Math.min(b, u.ox)], [Math.max(a, u.ox + W), b]].filter(([c, d]) => d - c > 1e-6));
+    return parts.map(([a, b]) => [a, az, b, bz]);
+  });
   outdoor.push(
     [o.x0, o.z0, o.x1, o.z0], [o.x1, o.z0, o.x1, o.z1], [o.x1, o.z1, o.x0, o.z1], [o.x0, o.z1, o.x0, o.z0],
-    [xw, 0, p0, 0], [p1, 0, 0, 0], [W, 0, xe, 0], [xe, 0, xe, D], [xw, D, p0, D], [p1, D, 0, D], [W, D, xe, D], [xw, D, xw, 0],
+    ...cut([[xw, 0, p0, 0], [p1, 0, 0, 0], [W, 0, xe, 0], [xe, 0, xe, D], [xw, D, p0, D], [p1, D, 0, D], [W, D, xe, D], [xw, D, xw, 0]]),
+    ...units.flatMap((u) => u.fixed[0]), // its Entréplan walls: in the way from the street and the patio too
     ...exterior.userData.portik.segments, // same calibrated room boundaries as actual geometry (#520)
     ...exterior.userData.segments,
     ...surroundings.userData.segments.filter((s) => Math.max(s[0], s[2]) > o.x0 - 1 && Math.min(s[0], s[2]) < o.x1 + 1
@@ -821,6 +894,7 @@ export function buildWorld(plan) {
   });
   scene.userData.merged = merged;
   for (const d of [...l0.doors, ...l1.doors,portikDoor]) mergeStatic(d.object, d.keep ?? [], () => '', { tagged: true }); // leaf + handles (not the letter flap)
+  for (const u of units) scene.add(u.object); // (merged on their own, #574)
 
   // furniture can be switched off (F): keep its collision separate from the fixed segments
   const fixed = [l0.segments, l1.segments];
@@ -858,9 +932,11 @@ export function buildWorld(plan) {
     furnitureTargets: furniture.interactives, // E targets among the furniture (the TV), hidden with F
     /** Collision of moving furniture parts (the secretary's open flap, #118) on `level`. */
     movingSegments(level) {
-      if (!furniture.object.visible) return [];
+      const visit = level === 0 ? units.flatMap((u) => u.doorSegments(0)) : []; // a visited flat's Entréplan doors (#574)
+      if (!furniture.object.visible) return visit;
       const away = (o) => { for (; o; o = o.parent) if (o.userData.seasonHidden) return true; return false; }; // hidden by the Christmas tree (#571)
-      return furniture.interactives.filter((t) => t.segments && t.level === level && !away(t.pickable)).flatMap((t) => t.segments());
+      const own = furniture.interactives.filter((t) => t.segments && t.level === level && !away(t.pickable)).flatMap((t) => t.segments());
+      return visit.length ? [...visit, ...own] : own;
     },
     lamps: [...furniture.lights, ...mirrorLamps, ...hallWall.lamps], // floor lamps + mirror LED strips + the hall mirror's night light, #572 (lights.js makes them switchable)
     windowLights: { object: surroundings.userData.windows.object, update(h, n, power = true) { surroundings.userData.windows.update(h, n, power); courtyard.update(n, power); exterior.userData.update(n, power); } }, // power: false in a power cut (#604) // neighbours' lit windows, the pergola's bulbs, the loftgång lanterns (daycycle)
@@ -868,6 +944,9 @@ export function buildWorld(plan) {
     size: { x: W, z: D },
     levels,
     roofs, // the walkable roofs outdoors (#360)
+    units, // the other flats you can walk into (#574, visitunit.js)
+    /** The visited flat whose footprint (x, z) is in, or null (#574). */
+    unitAt: (x, z) => units.find((u) => u.contains(x, z)) ?? null,
     upperSegments: surroundings.userData.upper, // the box's edge over the garage door: in the way only up on the courtyard (#357)
     portik: {...exterior.userData.portik,doorTarget:portikDoor},
     doors: [...l0.doors, ...l1.doors,portikDoor],

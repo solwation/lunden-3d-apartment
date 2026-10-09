@@ -3,7 +3,7 @@ import { PlantWind, windShadow } from './plantwind.js';
 import { runCheat, cheatHelp } from './cheats.js';
 import { cleanHome } from './cheatclean.js';
 import { buildCheatNote } from './cheatnote.js';
-import { CHEAT_NOTE, LOW_MEMORY, QUALITY } from './config.js';
+import { CHEAT_NOTE, LOW_MEMORY, QUALITY, STANDARD } from './config.js';
 import { lowMemory } from './lowmemory.js';
 import { loadBeerShelf } from './beershelfdata.js';
 import { BeerShelf } from './beershelf.js';
@@ -514,6 +514,7 @@ scene.add(placeGhost);
 const floorPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), floorHit = new THREE.Vector3();
 /** Where the look ray meets the floor the visitor stands on, within reach — or null (stairs, the stair opening). */
 function floorSpot() {
+  if (player.unit) return null; // nothing of ours is left in a visited flat: it stays empty (#574)
   const lv = player.level, y = LEVELS[Math.max(0, lv)]?.floor ?? 0;
   if (lv < 0 || Math.abs(player.pos.y - y) > 0.05) return null;
   floorPlane.constant = -y;
@@ -869,6 +870,20 @@ function useDoor(door) {
   else cat.onClose(door);
 }
 
+/** E on a visited flat's door, window, letter box or toilet lid (#574): it opens and shuts like ours, but nothing counts
+ * (no score, no cat) and nothing is kept: the flat is empty and shut on every visit. */
+function visitUse(thing) {
+  shadowState.hold = 1.5;
+  if (focusPoint && thing === focused && !heldItem()) hand.reach(focusPoint);
+  const opening = !thing.isOpen;
+  thing.toggle();
+  if (thing.kind === 'swing' || thing.kind === 'sliding' || thing.kind === 'wardrobe') {
+    const [x, z] = thing.opening().center, pos = { x, y: player.pos.y + 1.1, z };
+    if (thing.kind === 'swing') { if (opening) sfx.doorOpen(pos); else sfx.doorClose(pos, 0.5); }
+    else sfx.slide(pos, { dur: 0.45, wardrobe: thing.kind === 'wardrobe' });
+  } else if (thing.kind === 'lid') sfx.lid(thing.object.getWorldPosition(new THREE.Vector3()), thing.isOpen);
+}
+
 // footsteps every stride while walking on the ground
 let stride = 0;
 const lastPos = new THREE.Vector3();
@@ -882,7 +897,7 @@ function footsteps() {
   stride = 0;
   bump('steps');
   const { x, z } = player.pos;
-  sfx.step(player.outdoors ? 'outside' : stairHeight(x, z) !== null ? 'stair' : 'wood'); // (the loftgång over the flat: outside, #360)
+  sfx.step(player.outdoors ? 'outside' : player.stairAt(x, z) !== null ? 'stair' : 'wood'); // (the loftgång over the flat: outside, #360; a visited flat's stair, #574)
 }
 function spawnAtStart() {
   player.spawn(START.x, START.z, THREE.MathUtils.degToRad(START.yawDeg));
@@ -1417,6 +1432,7 @@ document.addEventListener('wheel', (e) => { if (locked && !reading && choices.ro
 function use(thing) {
   if (thing.kind === 'rearrange') { rearrange.act(thing); return; }
   if (thing.kind === 'fusebox') { thing.power.use(); return; } // the power cut (#604): trip it, or mend it while held
+  if (thing.visit) { visitUse(thing); return; } // a visited flat's door, window or lid (#574)
   shadowState.hold = 1.5; // whatever moves now casts a moving shadow
   if (!heldItem() && !['rest', 'place', 'note', 'taskNote', 'clock', 'calendar', 'board', 'poster', 'paper'].includes(thing.kind) && focusPoint && thing === focused) hand.reach(focusPoint); // the arm reaches out (#195)
   if (thing.options && thing.kind !== 'life' && choices.rows && choices.target === thing) { // a lamp with a choice (#428): the marked row
@@ -1626,7 +1642,8 @@ crouchBtn.addEventListener('click', () => {
 // --- door interaction: look at a door within reach, press E ----------------
 const raycaster = new THREE.Raycaster();
 raycaster.far = 2.2;
-const pickables = [...garage.targets.map((t) => t.pickable), ...core.targets.map((t) => t.pickable), airFryer.basketTarget.pickable, airFryer.panelTarget.pickable, ...world.doors.map((d) => d.pickable), ...world.lids.map((l) => l.pickable), ...taps.map((t) => t.pickable), note.pickable, board.pickable, ...(coffeeJar ? [coffeeJar.target.pickable] : []), wallClock.pickable, calendar.pickable, ...lights.targets.map((t) => t.pickable), grill.pickable, blinds.object];
+const pickables = [...garage.targets.map((t) => t.pickable), ...core.targets.map((t) => t.pickable), airFryer.basketTarget.pickable, airFryer.panelTarget.pickable, ...world.doors.map((d) => d.pickable), ...world.lids.map((l) => l.pickable), ...taps.map((t) => t.pickable), note.pickable, board.pickable, ...(coffeeJar ? [coffeeJar.target.pickable] : []), wallClock.pickable, calendar.pickable, ...lights.targets.map((t) => t.pickable), grill.pickable, blinds.object,
+  ...world.units.flatMap((u) => u.targets.map((t) => t.pickable))]; // a visited flat's doors, windows, lids (#574)
 const center = new THREE.Vector2(0, 0);
 const keyCabinet = world.lids.find((l) => l.kind === 'keybox');
 let focused = null, focusPoint = null;
@@ -1654,10 +1671,13 @@ function throughSlab(a, b) {
  * raycast (it only tests pickables), so check the line against the level's wall outlines. */
 function behindWall(p) {
   if (player.aloft && p.y < UNIT_TOP && p.x > 0 && p.x < world.size.x && p.z > 0 && p.z < world.size.z) return true; // up on the roof: the flat is under it (#360)
+  const pu = world.unitAt(p.x, p.z), u = player.unit; // a visited flat (#574): under the roof too, its slabs, its walls
+  if (player.aloft && pu && p.y < pu.top) return true;
+  if (u && p.y !== undefined && u.throughSlab(camera.position, p)) return true;
   // a floor / ceiling between (#446: the bed upstairs through the kitchen ceiling); a plan point without y (standFree's
   // floor spot on the visitor's own level) has no slab between: NaN would read as "through" (#454)
   if (p.y !== undefined && throughSlab(camera.position, p)) return true;
-  const segs = world.levels[Math.max(0, player.level)]?.wallSegments ?? [];
+  const segs = u ? u.walls[player.unitLevel] : world.levels[Math.max(0, player.level)]?.wallSegments ?? [];
   const ax = camera.position.x, az = camera.position.z, bx = p.x, bz = p.z;
   return segs.some(([cx, cz, dx, dz]) => {
     const d = (bx - ax) * (dz - cz) - (bz - az) * (dx - cx);
@@ -2145,6 +2165,7 @@ function step(dt) {
   car.radio.setDuck(turbo.active ? 0.3 : 1);
   for (const d of world.doors) d.update(dt);
   for (const l of world.lids) l.update(dt);
+  for (const u of world.units) u.update(dt); // a visited flat's doors and windows (#574)
   beerShelf?.update();
   for (const t of taps) t.update(dt);
   // stepping into a running (cold!) shower: "iiiih!" once per visit
@@ -2162,6 +2183,12 @@ function step(dt) {
   garage.update(dt, player, camera, car); // its door (#358), the förråd doors, the tubes' motion sensor, drawn only near (#357)
   day.under = garage.under; // down there no daylight
   day.lit = garage.lit; // … but the tubes' light on the cars (#440)
+  { // the sun's shadow box (±14 m round its target) follows the visitor to a visited flat (#574): centred on it within
+    // STANDARD.near m of its footprint, else on ours — without it the sun would shine through its roof and walls
+    const p = player.pos, near = world.units.find((u) => p.x > u.ox - STANDARD.near && p.x < u.ox + u.size.x + STANDARD.near && p.z > -STANDARD.near && p.z < u.size.z + STANDARD.near);
+    const fx = near ? near.centre.x : cx;
+    if (sun.target.position.x !== fx) { sun.target.position.x = fx; sun.target.updateMatrixWorld(); shadowState.hold = Math.max(shadowState.hold, 0.1); }
+  }
   day.update(dt);
   wallClock.update(day.hour);
   calendar.update(); // redraws only when the page or the date changed
@@ -2241,7 +2268,8 @@ function step(dt) {
   if (roof) roofName = roof.name; else if (!player.aloft) roofName = null;
   const under = player.inCore ? `Hus L · ${core.roomAt(player.pos.x, player.pos.z, player.pos.y)}` // the stairwell, the lift (#415)
     : player.below ? `Under gården · ${garage.roomAt(player.pos.x, player.pos.z)}` : null; // the garage, the förråd, the lobby (#357)
-  const lvl = outside || under ? -1 : player.level; // basement/core take precedence over the apartment x/z footprint (#549)
+  const visit = outside || under ? null : player.unit; // in a visited flat (#574): its own name, level and room
+  const lvl = outside || under || visit ? -1 : player.level; // basement/core take precedence over the apartment x/z footprint (#549)
   const room = lvl < 0 ? null : world.roomAt(lvl, player.pos.x, player.pos.z);
   if (room && active()) visitRoom(`${lvl}:${room}`);
   if (under && active()) visitRoom(`g:${under.split(' · ')[1]}`);
@@ -2251,16 +2279,18 @@ function step(dt) {
     mapTimer = 0.1;
     minimap.draw(lvl, lastRoom, player.pos.x, player.pos.z, camera.rotation.y);
   }
-  if (active() && !outside) bump('seconds', dt);
+  if (active() && !outside && !visit) bump('seconds', dt); // (time at home: not in a visited flat, #574)
   if (lvl !== lastLevel && lvl >= 0 && lastLevel >= 0) bump('stairs');
   if (lvl < 0) lastRoom = null;
-  const label = `${lvl < 0 ? under ? under : `Utomhus${roofName ? ` · ${roofName}` : ''}` : `${LEVELS[lvl].name}${lastRoom ? ` · ${lastRoom}` : ''}`} · ${day.clock}${weather.icon}`;
+  const label = `${visit ? visit.label(player.unitLevel, player.pos.x, player.pos.z) : lvl < 0 ? under ? under : `Utomhus${roofName ? ` · ${roofName}` : ''}` : `${LEVELS[lvl].name}${lastRoom ? ` · ${lastRoom}` : ''}`} · ${day.clock}${weather.icon}`;
   if (lvl !== lastLevel || label !== levelEl.textContent) {
     levelEl.textContent = label;
     lastLevel = lvl;
   }
   const held = heldItem();
   if (held !== lastHeld) { lastHeld = held; detail?.refresh(); } // a thing taken from afar is drawn in the hand at once
+  const away = (player.inFootprint() && !player.aloft) || player.below; // (in our flat, in the garage: no visited flat in sight)
+  for (const u of world.units) u.cull(camera.position, away); // a visited flat: its shell from afar, nothing from there (#574)
   detail?.update(camera); // far-away small things are not drawn (#189)
 }
 // &perf: fps + what the renderer did last frame (draw calls, triangles, geometries, textures)
