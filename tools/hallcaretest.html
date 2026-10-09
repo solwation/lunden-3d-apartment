@@ -4,7 +4,8 @@ try{
  const f=document.createElement('iframe');f.width=480;f.height=300;document.body.append(f);
  async function load(q){await new Promise(r=>{f.onload=r;f.src='../index.html?'+q});while(!f.contentWindow.__app)await wait(100);f.contentDocument.documentElement.requestFullscreen=undefined;f.contentDocument.getElementById('start-touch').click();const a=f.contentWindow.__app;a.renderer.setPixelRatio(.15);return a;}
  let A=await load('life&shot&cloud='),L=A.life,I=L.items,H=A.hallCare;const T=await f.contentWindow.eval("import('three')"),{LIFE}=await f.contentWindow.eval("import('/src/config.js')");
- const run=(t,id)=>L.options(t).find(a=>a.id===id)?.run();let jacket=I.ofType('hallJacket')[0],shoes=I.ofType('hallShoes')[0];const jacketId=jacket.id,shoesId=shoes.id;
+ const run=(t,id)=>L.options(t).find(a=>a.id===id)?.run();
+ check(!I.ofType('hallJacket').length&&!I.ofType('hallShoes').length,'a fresh visit starts with a clean hall floor (#594)');A.tasks.read();let jacket=I.ofType('hallJacket')[0],shoes=I.ofType('hallShoes')[0];const jacketId=jacket.id,shoesId=shoes.id;
  const coat=H.stores.get('hallCoatRack'),rack=H.stores.get('hallShoeRack'),ward=H.wardrobes[0];
  check(I.ofType('hallJacket').length===1&&I.ofType('hallShoes').length===1&&jacket.place.store==='hallFloorjacket'&&shoes.place.store==='hallFloorshoes','one original-style jacket and shoe pair start on the hall floor, with no duplicate rack decoration');
  check([jacket,shoes].every(i=>{const p=L.view(i).model.getWorldPosition(new T.Vector3());return A.player.isFree(p.x,p.z,0)}),'both floor starts sit in the free hall aisle outside the closed wardrobe');
@@ -38,7 +39,8 @@ try{
  check(jacket?.place.store==='hallWardrobeHook'&&shoes?.place.store==='hallShoeRack'&&I.ofType('hallJacket').length===1&&I.ofType('hallShoes').length===1,'actual reload preserves original tidied identities and places with no floor copies');
  check(!H.wardrobes[0].root.visible&&I.audit().length===0,'new visit starts with closed wardrobe while inventory invariants hold');
  A.resetHome.go=()=>{};A.resetHome.confirm();A=await load('shot&cloud=&time=12');I=A.life.items;
- check(I.ofType('hallJacket').length===1&&I.ofType('hallJacket')[0].place.store==='hallFloorjacket'&&I.ofType('hallShoes').length===1&&I.ofType('hallShoes')[0].place.store==='hallFloorshoes','actual reset restores one jacket and pair on the floor and empty usable storage');
+ check(!I.ofType('hallJacket').length&&!I.ofType('hallShoes').length&&!A.tasks.isShown('tidyHall'),'actual reset starts a clean hall again, with the hall task off the list (#594)');
+ A.tasks.read();check(I.ofType('hallJacket').length===1&&I.ofType('hallJacket')[0].place.store==='hallFloorjacket'&&I.ofType('hallShoes').length===1&&I.ofType('hallShoes')[0].place.store==='hallFloorshoes','after reset, reading the list lays one jacket and pair on the floor');
  document.getElementById('out').textContent=lines.join('\n')+'\n'+(pass?'ALL PASS':'SOME FAILED');
 }catch(e){document.getElementById('out').textContent=lines.join('\n')+'\nFAIL '+e.stack}
 </script></html>

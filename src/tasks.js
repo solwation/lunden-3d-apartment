@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { badge } from './stats.js';
-import { TASK_NOTE } from './config.js';
+import { TASK_NOTE, HALL_CARE } from './config.js';
 import { sfx } from './audio.js';
 
 // Everyday tasks manager (LIFE-030, #392).
@@ -8,6 +8,8 @@ import { sfx } from './audio.js';
 // not by hardcoded click sequences.
 // Sub-goals can be completed in any order and never count twice per task cycle.
 // Hints can be turned on or off via setting / UI toggle (persisted in localStorage).
+// A `hidden` task is off the list until the list is first read (#594): reading it shows the task and emits
+// 'tasksShown' (the shown ids), which lets its things appear (hallcare.js lays the jacket and shoes in the hall).
 
 const HINTS_KEY = 'lunden.taskHints';
 
@@ -39,6 +41,16 @@ export const TASK_DEFINITIONS = [
     ],
     hint: 'Hämta skaftdammsugaren i klädkammaren under trappan och dammsug golvet.',
   },
+  {
+    id: 'tidyHall',
+    title: 'Städa i hallen',
+    hidden: true,
+    goals: [
+      { id: 'hallJacket', label: 'Häng upp jackan på kroken eller i hallgarderoben' },
+      { id: 'hallShoes', label: 'Ställ skorna på skohyllan' },
+    ],
+    hint: 'Jackan och skorna ligger på golvet i hallen innanför ytterdörren. Häng jackan på kroken eller i hallgarderoben och ställ skorna på skohyllan.',
+  },
 ];
 
 export class TasksManager {
@@ -50,6 +62,7 @@ export class TasksManager {
       ...def,
       completedGoals: new Set(),
       isDone: false,
+      shown: !def.hidden,
     }));
 
     this.onTaskCompleted = null;
@@ -101,6 +114,28 @@ export class TasksManager {
     // No task requires creating rubbish by throwing useful food or objects away.
     if (['washed', 'dishwasher', 'wipe'].includes(kind) && !this.hasRubbish()) this.completeGoal('resetKitchen', 'rubbish');
     if (kind === 'vacuumed' && data.amount > 0) this.completeGoal('snackClean', 'crumbs');
+    if (kind === 'hallTidied' && this.isShown('tidyHall')) this.completeGoal('tidyHall', data.item?.type);
+  }
+
+  isShown(taskId) { return !!this.tasks.find((t) => t.id === taskId)?.shown; }
+  shownIds() { return this.tasks.filter((t) => t.shown).map((t) => t.id); }
+
+  /** The list is read (the panel opens): hidden tasks join it, once. Things already tidied before the task existed
+   * (a save from before #594) count as done without a bonus. Returns the newly shown ids. */
+  read() {
+    const added = this.tasks.filter((t) => !t.shown);
+    if (!added.length) return [];
+    for (const t of added) {
+      t.shown = true;
+      if (t.id === 'tidyHall') {
+        for (const it of this.life.items.all()) if (HALL_CARE.tidy[it.place?.store] === it.type && t.goals.some((g) => g.id === it.type)) t.completedGoals.add(it.type);
+        t.isDone = t.goals.every((g) => t.completedGoals.has(g.id));
+      }
+    }
+    this.life.emit('tasksShown', { ids: this.shownIds(), added: added.map((t) => t.id) });
+    this.life.dirty = true;
+    this.renderUI();
+    return added.map((t) => t.id);
   }
 
   hasRubbish() {
@@ -109,7 +144,7 @@ export class TasksManager {
   }
 
   save() {
-    return { v: 1, goals: Object.fromEntries(this.tasks.map((t) => [t.id, [...t.completedGoals]])) };
+    return { v: 1, goals: Object.fromEntries(this.tasks.map((t) => [t.id, [...t.completedGoals]])), shown: this.shownIds() };
   }
 
   load(record) {
@@ -118,13 +153,15 @@ export class TasksManager {
       const saved = Array.isArray(record.goals[t.id]) ? record.goals[t.id] : [];
       t.completedGoals = new Set(saved.filter((id) => t.goals.some((g) => g.id === id)));
       t.isDone = t.goals.every((g) => t.completedGoals.has(g.id));
+      t.shown = !t.hidden || (Array.isArray(record.shown) && record.shown.includes(t.id));
     }
+    this.life.emit('tasksShown', { ids: this.shownIds(), added: [], restored: true });
     this.renderUI(); // restoring progress never awards points again
   }
 
   completeGoal(taskId, goalId) {
     const task = this.tasks.find((t) => t.id === taskId);
-    if (!task || !task.goals.some((g) => g.id === goalId)) return false;
+    if (!task?.shown || !task.goals.some((g) => g.id === goalId)) return false;
 
     // Check if goal is already completed in this task cycle
     if (task.completedGoals.has(goalId)) return false;
@@ -162,7 +199,7 @@ export class TasksManager {
   // Active / next hint for prompts or HUD
   currentHint() {
     if (!this.hints) return null;
-    const pending = this.tasks.find((t) => !t.isDone);
+    const pending = this.tasks.find((t) => t.shown && !t.isDone);
     if (!pending) return null;
     return pending.hint;
   }
@@ -189,6 +226,7 @@ export class TasksManager {
   }
 
   showUI(show = true) {
+    if (show) this.read();
     if (!this.modalEl) return;
     this.modalEl.hidden = !show;
     if (show) this.renderUI();
@@ -206,6 +244,7 @@ export class TasksManager {
 
     this.listEl.innerHTML = '';
     for (const task of this.tasks) {
+      if (!task.shown) continue;
       const card = document.createElement('div');
       card.className = `task-card${task.isDone ? ' done' : ''}`;
 
@@ -262,6 +301,7 @@ export class TasksManager {
       g.font = '16px system-ui, sans-serif';
       let y = 80;
       for (const t of this.tasks) {
+        if (!t.shown) continue;
         g.fillStyle = t.isDone ? '#2e7d32' : '#23324a';
         g.fillText(`${t.isDone ? '✓' : '•'} ${t.title}`, 20, y, canvas.width - 40);
         y += 36;

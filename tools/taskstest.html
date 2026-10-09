@@ -20,7 +20,7 @@ try {
   const cleanTasks = () => tasks.load({ v: 1, goals: {} });
   const task = (id) => tasks.tasks.find((t) => t.id === id);
   const counter = { x: 5.25, y: 0.93, z: 3 };
-  check(tasks.tasks.length === 3 && life.worktopAt(Object.values(counter)), 'three optional tasks; fixture is an actual worktop');
+  check(tasks.tasks.length === 4 && tasks.shownIds().length === 3 && life.worktopAt(Object.values(counter)), 'three optional tasks shown, the hall task waits for the list to be read; fixture is an actual worktop');
   const initialTasks = stats.tasks;
   life.emit('ate', { type: 'breadSlice', parts: [] }); life.emit('ate', { type: 'apple' });
   life.emit('crumbs', { source: 'cut' });

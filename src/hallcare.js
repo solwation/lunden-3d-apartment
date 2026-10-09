@@ -2,16 +2,27 @@ import * as THREE from 'three';
 import { HALL_CARE as P } from './config.js';
 import { frameMatrix } from './contents.js';
 
-// Ordinary Items places: one original jacket and shoe pair start on the floor,
-// with homes there; tidy them onto the existing hook/rack or the hall wardrobe.
+// Ordinary Items places: one original jacket and shoe pair with homes on the hall floor;
+// tidy them onto the existing hook/rack or the hall wardrobe. A new visit starts with a clean hall:
+// the floor stock is gated until the task list reveals the 'tidyHall' task (#594, tasks.js
+// 'tasksShown'), then the normal restock lays them there once; existing items never get copies.
 export class HallCare {
   constructor(life,world){
-    Object.assign(this,{life,world,stores:new Map(),wardrobes:[]});
+    Object.assign(this,{life,world,stores:new Map(),wardrobes:[],armed:false});
+    const floors=[];
     for(const [type,kind,pos,size] of [['hallJacket','jacket',P.jacket.floor,P.floorJacketPick],['hallShoes','shoes',P.shoes.floor,P.floorShoePick]]){
       const root=new THREE.Group();root.position.set(...pos);life.scene.add(root);world.looseItems.push(root);
       const store=this.add(`hallFloor${kind}`,type,'golvet i hallen',root,[0,0,0],size);
-      life.stock.push([type,store.id,0]);
+      life.stock.push([type,store.id,0,()=>this.armed]);floors.push(store.id);
     }
+    life.onEvent((kind,d)=>{
+      if(kind!=='tasksShown')return;
+      this.armed=d.ids.includes('tidyHall');
+      if(this.armed)for(const id of floors)life.restock(id);
+    });
+    life.items.on((kind,item)=>{ // tidied away: the hall task's goal (tasks.js)
+      if(kind==='move'&&item.place?.at==='slot'&&P.tidy[item.place.store]===item.type)life.emit('hallTidied',{item,store:item.place.store});
+    });
     for(const piece of world.furniture.movable.filter(p=>p.object.userData.hallCare)){
       const c=piece.object.userData.hallCare;
       if(c.jacket)this.add('hallCoatRack','hallJacket','kroken i hallen',piece.object,c.jacket,P.jacketPick);

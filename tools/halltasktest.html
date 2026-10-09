@@ -1,0 +1,60 @@
+<!doctype html><html lang="sv"><meta charset="utf-8"><title>Hall task test (#594)</title><pre id="out">running…</pre><script type="module">
+// A fresh visit starts with a clean hall; reading the task list in the cup cabinet adds the hall task and lays the jacket
+// and shoes on the hall floor once. Tidying them completes it; reloads, re-reads and pre-#594 saves never duplicate them.
+const lines=[];let pass=true;const check=(ok,text)=>{lines.push((ok?'PASS':'FAIL')+' '+text);pass&&=!!ok},wait=ms=>new Promise(r=>setTimeout(r,ms));
+try{
+ const f=document.createElement('iframe');f.width=640;f.height=400;document.body.append(f);
+ async function load(q){await new Promise(r=>{f.onload=r;f.src='../index.html?'+q});while(!f.contentWindow.__app)await wait(100);f.contentDocument.documentElement.requestFullscreen=undefined;f.contentDocument.getElementById('start-touch').click();const a=f.contentWindow.__app;a.renderer.setPixelRatio(.15);return a;}
+ const Q='shot&cloud=&time=12',blank=()=>new Promise(r=>{f.onload=r;f.src='about:blank'}); // (off the page first: its unload would save over a seeded record)
+ let A=await load(Q);const {LIFE}=await f.contentWindow.eval("import('/src/config.js')"),T=await f.contentWindow.eval("import('three')");
+ const ls=()=>f.contentWindow.localStorage;await blank();ls().clear();A=await load(Q); // a fresh home: nothing saved
+ let L=A.life,I=L.items,d=f.contentDocument;
+ const count=()=>[I.ofType('hallJacket').length,I.ofType('hallShoes').length].join('/'),hall=()=>I.ofType('hallJacket').concat(I.ofType('hallShoes')).map(i=>i.place.store).sort().join(',');
+ const listText=()=>d.getElementById('task-list').textContent,task=()=>A.tasks.tasks.find(t=>t.id==='tidyHall');
+ const run=(t,id)=>L.options(t).find(a=>a.id===id)?.run();
+ check(count()==='0/0'&&!A.tasks.isShown('tidyHall'),'fresh visit: no jacket or shoes anywhere and no hall task');
+ L.restock();check(count()==='0/0','a plain restock before the list is read lays nothing in the hall');
+ // Read the list for real: open the cup cabinet, aim at the card, press the touch action.
+ const cab=A.cups.cabinet,card=A.tasks.card.object;cab.toggle();for(let i=0;i<30;i++)cab.update(.1);
+ const p=card.getWorldPosition(new T.Vector3());let read=false;
+ for(const [x,z] of [[4.5,1.65],[4.5,2],[4.5,1.3],[4.4,1.5]]){A.player.spawn(x,z,0);A.step(.05);const c=A.camera.position,dx=p.x-c.x,dz=p.z-c.z;
+  A.camera.rotation.y=Math.atan2(-dx,-dz);A.camera.rotation.x=Math.atan2(p.y-c.y,Math.hypot(dx,dz));A.step(1/60);
+  if(A.focus().focused?.kind==='taskNote'){d.getElementById('action').click();read=true;break}}
+ check(read&&!d.getElementById('task-note').hidden,'the task card in the open cup cabinet is read through the actual touch action');
+ check(A.tasks.isShown('tidyHall')&&listText().includes('Städa i hallen')&&listText().includes('Häng upp jackan'),'reading adds the hall task to the open list');
+ check(count()==='1/1'&&hall()==='hallFloorjacket,hallFloorshoes','reading lays one jacket and one shoe pair on the hall floor');
+ const jacket=I.ofType('hallJacket')[0],shoes=I.ofType('hallShoes')[0];
+ check([jacket,shoes].every(i=>{const q=L.view(i).model.getWorldPosition(new T.Vector3());return q.y<.05&&q.x>.5&&q.x<2&&q.z>1&&q.z<3.2}),'both lie on the floor inside the front door');
+ d.getElementById('task-close').click();A.showTaskNote(true);A.showTaskNote(false);A.showTaskNote(true);A.showTaskNote(false);L.restock();
+ check(count()==='1/1'&&hall()==='hallFloorjacket,hallFloorshoes'&&A.tasks.tasks.filter(t=>t.id==='tidyHall').length===1,'reading again and restocking never add copies or a second task');
+ L.flush();A=await load(Q);L=A.life;I=L.items;d=f.contentDocument;
+ check(count()==='1/1'&&hall()==='hallFloorjacket,hallFloorshoes'&&A.tasks.isShown('tidyHall')&&!task().isDone,'real reload keeps the one pair on the floor and the task on the list');
+ // Tidy them as before: the same instances, onto the hook and the shoe shelf.
+ const H=A.hallCare,j=I.ofType('hallJacket')[0],s=I.ofType('hallShoes')[0],score0=A.totalScore(),done0=A.stats.tasks;
+ run(L.view(j).takeTarget,'take');check(I.held()===j,'the floor jacket can be picked up');run(H.stores.get('hallCoatRack').target,'putIn');
+ check(j.place.store==='hallCoatRack'&&task().completedGoals.has('hallJacket')&&!task().isDone,'hanging the jacket ticks its goal only');
+ run(L.view(s).takeTarget,'take');run(H.stores.get('hallShoeRack').target,'putIn');
+ check(s.place.store==='hallShoeRack'&&task().isDone&&A.stats.tasks===done0+1&&A.totalScore()>score0,'putting the shoes on the shelf completes the hall task once, with its bonus');
+ A.showTaskNote(true);A.showTaskNote(false);L.restock();
+ check(count()==='1/1'&&hall()==='hallCoatRack,hallShoeRack','reading the list after the task is done brings nothing back to the floor');
+ L.flush();A=await load(Q);L=A.life;I=L.items;
+ check(count()==='1/1'&&hall()==='hallCoatRack,hallShoeRack'&&A.tasks.tasks.find(t=>t.id==='tidyHall').isDone,'real reload: tidied pair stays put, task stays done, no floor copies');
+ // A save from before #594: the jacket and shoes exist (on the floor), the tasks record knows nothing of the hall task.
+ const old=JSON.parse(ls().getItem(LIFE.save.key));
+ for(const it of old.items??[])if(it.type==='hallJacket'||it.type==='hallShoes')it.place={...it.home};
+ delete old.x.tasks.shown;delete old.x.tasks.goals.tidyHall;await blank();ls().setItem(LIFE.save.key,JSON.stringify(old));
+ A=await load(Q);L=A.life;I=L.items;
+ check(count()==='1/1'&&hall()==='hallFloorjacket,hallFloorshoes'&&!A.tasks.isShown('tidyHall'),'pre-#594 save with the pair on the floor loads it once, task not yet listed');
+ A.showTaskNote(true);A.showTaskNote(false);L.restock();
+ check(count()==='1/1'&&hall()==='hallFloorjacket,hallFloorshoes'&&A.tasks.isShown('tidyHall')&&!A.tasks.tasks.find(t=>t.id==='tidyHall').isDone,'reading in that save lists the task without duplicating the pair');
+ // A save from before #594 where they were already tidied.
+ const tidy=JSON.parse(JSON.stringify(old)),score1=A.totalScore();
+ for(const it of tidy.items??[]){if(it.type==='hallJacket')it.place={at:'slot',store:'hallCoatRack',slot:0};if(it.type==='hallShoes')it.place={at:'slot',store:'hallShoeRack',slot:0};}
+ await blank();ls().setItem(LIFE.save.key,JSON.stringify(tidy));A=await load(Q);L=A.life;I=L.items;const s1=A.totalScore();
+ A.showTaskNote(true);A.showTaskNote(false);L.restock();
+ check(count()==='1/1'&&hall()==='hallCoatRack,hallShoeRack'&&A.tasks.tasks.find(t=>t.id==='tidyHall').isDone&&A.totalScore()===s1,'pre-#594 save already tidied: reading lists the task as done, no bonus, nothing on the floor');
+ check(I.audit().length===0,'inventory invariants hold');
+ ls().clear();
+ document.getElementById('out').textContent=lines.join('\n')+'\n'+(pass?'ALL PASS':'SOME FAILED');
+}catch(e){document.getElementById('out').textContent=lines.join('\n')+'\nFAIL '+e.stack}
+</script></html>

@@ -21,6 +21,7 @@ const cucumber=I.all().find(it=>it.type==='cucumber'&&it.home?.at==='slot');A.li
 // Seed representative real state: reusable dishes, intact food, used packages, tied bags, bins and outdoor mess.
 const world=(x,z)=>({at:'world',pos:[x,1,z],yaw:0});
 const cleanPlate=A.life.create('plate',world(3,1),{clean:'clean'}),dirtyPlate=A.life.create('plate',world(3.5,1),{clean:'dirty',machine:{crumbs:2}}),dirtyGlass=A.life.create('glass',world(4,1),{amount:75,clean:'dirty',machine:{drink:'milk'}}),fullGlass=A.life.create('glass',world(4.5,1),{amount:250,clean:'dirty',machine:{drink:'water'}}),emptyPack=A.life.create('breadBag',world(3,2),{amount:0,pkg:'empty'}),bag=A.life.create('rubbishBag',world(3.5,2),{amount:3,parts:[{kind:'rest',amount:3}],machine:{sort:'rest'}});
+A.tasks.read(); // the hall jacket and shoes appear once the task list is read (#594)
 const cleanPose=JSON.stringify(cleanPlate.place),fullPose=JSON.stringify(fullGlass.place),food=I.all().find(it=>it.type==='butter'&&it.amount>0),foodBefore=JSON.stringify(food),jacket=I.all().find(it=>it.type==='hallJacket'),jacketBefore=JSON.stringify(jacket),laundry=I.all().find(it=>it.type==='laundryClothes'),laundryBefore=JSON.stringify(laundry);
 for(const bin of I.all().filter(it=>I.has(it,'bin'))){I.setAmount(bin,4);I.set(bin,{parts:[{kind:'food',amount:4}],machine:{nobag:1}});}
 A.life.mess.add('crumb',3,0,4);A.life.mess.add('smear',3,0,14,{surf:'floor'});A.vacuum.dustAmount=2;A.cloth.wipes=5;A.pan.setDirty(true);

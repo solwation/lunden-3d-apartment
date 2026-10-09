@@ -1882,7 +1882,8 @@ export const BED_CARE = {seconds:1.4,height:.055,pull:.16,waveX:8,waveZ:12};
 export const TABLE_SETTING = {inset:.17,glassIn:.14,glassAhead:.13,lift:.001,pick:[.34,.15,.34],pickIn:.04,pickY:.065,pickZ:.02};
 // Hall chores reuse the existing shell jacket/sneaker models. Floor starts, picks and access clearance are game assumptions (#556).
 export const HALL_CARE = {jacket:{len:.78,color:0x2f4a63,kind:'shell',floor:[1.15,.002,1.65]},shoes:{color:0xe9e6df,boot:false,floor:[1.20,.002,2.72],gap:.05},
-  jacketPick:[.30,.84,.14],shoePick:[.22,.13,.28],floorJacketPick:[.30,.12,.84],floorShoePick:[.22,.13,.28],wardrobePick:[.12,.9,.045],access:.055,frontGap:.015};
+  jacketPick:[.30,.84,.14],shoePick:[.22,.13,.28],floorJacketPick:[.30,.12,.84],floorShoePick:[.22,.13,.28],wardrobePick:[.12,.9,.045],access:.055,frontGap:.015,
+  tidy:{hallCoatRack:'hallJacket',hallWardrobeHook:'hallJacket',hallShoeRack:'hallShoes'}}; // tidy store → item type: the hall task's goals (#594)
 // Toilet-paper holders (#426, src/toiletpaper.js): one beside each toilet, on the tank's wall in the toilet's own frame
 // (x along the wall from the toilet's middle, z out of it, y up): the plate `side` m along the wall (the side with free
 // wall in both bathrooms: towards the vanity downstairs, the shaft box upstairs), `y` up (*guess*, ~0.7 m in the issue),

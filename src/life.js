@@ -212,13 +212,14 @@ export class Life {
   /**
    * The kitchen's stock (#373, LIFE_FOOD.stock): every [type, store, slot] that has no thing of its own anywhere (nothing of
    * that type with that home: not in the hand, not lying out, not half used) gets a fresh one in its home slot (or the
-   * store's first free one). `store` = only that store's entries (the one just opened); null = all (a new visit). Never a
+   * store's first free one; an optional 4th element `when()` gates the entry). `store` = only that store's entries (the one just opened); null = all (a new visit). Never a
    * second one while the old one exists: a thing is "used up" only once it is gone (eaten, thrown away). Returns what it made.
    */
   restock(store = null) {
     const I = this.items, made = [];
-    for (const [type, st, slot] of this.stock) {
+    for (const [type, st, slot, when] of this.stock) {
       if (store && st !== store) continue;
+      if (when && !when()) continue; // (a stock entry that only exists once something brought it in, #594)
       if (!I.store(st) || !I.def(type)) continue;
       if (I.all().some((i) => i.type === type && i.home?.at === 'slot' && i.home.store === st && i.home.slot === slot)) continue;
       const home = { at: 'slot', store: st, slot };
