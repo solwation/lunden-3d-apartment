@@ -23,9 +23,11 @@ src/architectureedges.js sharp architectural edges (#474), captured before loose
                        one per moving door/fitting/lift anchor; 30° creases, no triangle diagonals, 1 mm depth bias with depth testing.
                        #505 filters coplanar construction seams against the solid union and open wall planes;
                        a temporary triangle tree accelerates baked solids. core.js retains edgeSources while baking
-                       so open wall panels and individual blocks stay distinguishable. Moving anchors remain separate.
+                       so open wall panels and individual blocks stay distinguishable. #603: every edge is also split where
+                       another crease of its anchor meets or crosses it (a 0.25 m crease grid), since a merged Batch's bounds
+                       hide its blocks (the worktop round the sink, vanity tops, thresholds). Moving anchors remain separate.
                        world.js and core.js build them once; furniture and loose things have no outlines. tools/architecturetest.html
-                       verifies batching, exclusions, moving doors/lift, no box diagonals and real WebGL occlusion.
+                       verifies batching, exclusions, moving doors/lift, no box diagonals, the merged worktop's seams (#603) and real WebGL occlusion.
 textures/              image textures the page loads (published by stamp.sh): stair-pictures.jpg = the 2 × 2 atlas
                        of the stair pictures (#220), cropped/straightened from docs/tavla-trappa-*.jpg; angsgras-sovrum1.jpg = the picture over the
                        Sovrum 1 bed (#284), straightened, reflections painted out; miele.jpg = the cat photo in the window-board

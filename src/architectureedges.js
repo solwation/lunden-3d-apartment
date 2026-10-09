@@ -22,7 +22,10 @@ function solidTree(geometry) {
 // Classify the boundary of the union, rather than every construction block.
 // Cross-sections distinguish a flat shared seam (half solid) from a genuine
 // convex/concave corner. Never combine separate animated anchors.
-function unionEdges(values, solids) {
+// `creases` holds all creases of the anchor: an edge is also split where another
+// block's crease meets or crosses it (#603), since a merged batch's bounds say
+// nothing about the blocks inside it (the worktop round the sink).
+function unionEdges(values, solids, creases) {
   const sample = new THREE.Vector3(), local = new THREE.Vector3();
   const ray = new THREE.Ray(), directionProbe = new THREE.Vector3(.371, .529, .763).normalize(), intersection = new THREE.Vector3();
   const trees = new WeakMap();
@@ -76,13 +79,25 @@ function unionEdges(values, solids) {
         const t = (bound - a[axis]) / delta; if (t > 1e-5 && t < 1 - 1e-5) cuts.push(t);
       }
     }
+    creases.cuts(a, b, cuts);
     cuts.sort((x, y) => x - y);
     u.set(Math.abs(direction.y) < .9 ? 0 : 1, Math.abs(direction.y) < .9 ? 1 : 0, 0).cross(direction).normalize();
     v.crossVectors(direction, u);
+    const planes = nearby.flatMap(s => s.triangles ?? []);
+    const onPlane = (p, triangle) => Math.abs(triangle.getPlane(new THREE.Plane()).distanceToPoint(p)) < 1e-5 && triangle.containsPoint(p);
     let start = null;
     for (let j = 0; j < cuts.length - 1; j++) {
       if (cuts[j + 1] - cuts[j] < 1e-5) continue;
       const midpoint = a.clone().lerp(b, (cuts[j] + cuts[j + 1]) / 2);
+      const sharp = sharpAt(midpoint);
+      if (sharp && start === null) start = cuts[j];
+      if (start !== null && (!sharp || j === cuts.length - 2)) {
+        const end = sharp ? cuts[j + 1] : cuts[j];
+        if ((end - start) * length >= .06) result.push(...a.clone().lerp(b, start).toArray(), ...a.clone().lerp(b, end).toArray());
+        start = null;
+      }
+    }
+    function sharpAt(midpoint) {
       const occupied = [];
       for (let k = 0; k < 16; k++) {
         const angle = (k + .37) * Math.PI / 8;
@@ -94,9 +109,7 @@ function unionEdges(values, solids) {
       // The stairwell's baked walls are open planes, not closed solids.
       // Keep a plane's boundary only when no coplanar continuation covers its
       // other side; perpendicular planes still retain their shared corner.
-      const planes = nearby.flatMap(s => s.triangles ?? []);
-      const onPlane = (p, triangle) => Math.abs(triangle.getPlane(new THREE.Plane()).distanceToPoint(p)) < 1e-5 && triangle.containsPoint(p);
-      const planarBoundary = planes.some(triangle => {
+      const planarBoundary = planes.length > 0 && planes.some(triangle => {
         if (!onPlane(midpoint, triangle)) return false;
         const normal = triangle.getNormal(new THREE.Vector3());
         if (Math.abs(normal.dot(direction)) > 1e-5) return false;
@@ -105,23 +118,67 @@ function unionEdges(values, solids) {
         const covered = p => planes.some(t => onPlane(p, t));
         return covered(left) !== covered(right);
       });
-      const sharp = planarBoundary || count > 0 && count < 16 && !(count === 8 && transitions === 2);
-      if (sharp && start === null) start = cuts[j];
-      if (start !== null && (!sharp || j === cuts.length - 2)) {
-        const end = sharp ? cuts[j + 1] : cuts[j];
-        if ((end - start) * length >= .06) result.push(...a.clone().lerp(b, start).toArray(), ...a.clone().lerp(b, end).toArray());
-        start = null;
-      }
+      return planarBoundary || count > 0 && count < 16 && !(count === 8 && transitions === 2);
     }
   }
   return result;
+}
+
+// Every crease of an anchor (short ones too) on a 0.25 m grid, so each edge finds
+// where another crease touches or crosses it cheaply: the block boundaries.
+function creaseIndex() {
+  const cells = new Map(), size = .25, seen = new Set(), long = [], bounds = new THREE.Box3();
+  let query = 0;
+  const d1 = new THREE.Vector3(), d2 = new THREE.Vector3(), r = new THREE.Vector3(), gap = new THREE.Vector3();
+  const cell = x => Math.floor(x / size), key = (x, y, z) => ((x + 2048) * 4096 + y + 2048) * 4096 + z + 2048;
+  const range = (a, b) => [0, 1, 2].map(i => [cell(Math.min(a.getComponent(i), b.getComponent(i)) - 1e-4), cell(Math.max(a.getComponent(i), b.getComponent(i)) + 1e-4)]);
+  const each = (a, b, f) => {
+    const [[x0, x1], [y0, y1], [z0, z1]] = range(a, b);
+    if ((x1 - x0 + 1) * (y1 - y0 + 1) * (z1 - z0 + 1) > 512) return false;
+    for (let x = x0; x <= x1; x++) for (let y = y0; y <= y1; y++) for (let z = z0; z <= z1; z++) f(key(x, y, z));
+    return true;
+  };
+  return {
+    add(a, b) {
+      const ka = [a.x, a.y, a.z].map(x => Math.round(x * 1e4)).join(), kb = [b.x, b.y, b.z].map(x => Math.round(x * 1e4)).join();
+      const k = ka < kb ? ka + '|' + kb : kb + '|' + ka;
+      if (seen.has(k)) return; seen.add(k);
+      const crease = [a.clone(), b.clone()];
+      crease.stamp = 0; crease.box = new THREE.Box3().setFromPoints(crease).expandByScalar(1e-4);
+      if (!each(a, b, c => { let list = cells.get(c); if (!list) cells.set(c, list = []); list.push(crease); })) long.push(crease);
+    },
+    // Cut parameters (0..1 along a→b) where another crease meets or crosses the edge.
+    cuts(a, b, cuts) {
+      const stamp = ++query, box = bounds.setFromPoints([a, b]), candidates = [];
+      const take = crease => { if (crease.stamp !== stamp && crease.box.intersectsBox(box)) { crease.stamp = stamp; candidates.push(crease); } };
+      long.forEach(take);
+      if (!each(a, b, c => cells.get(c)?.forEach(take))) return;
+      d1.subVectors(b, a);
+      const l1 = d1.lengthSq();
+      for (const [p, q] of candidates) {
+        d2.subVectors(q, p); r.subVectors(a, p);
+        const l2 = d2.lengthSq(), e = d1.dot(d2), f = d2.dot(r), c = d1.dot(r), det = l1 * l2 - e * e;
+        // closest points on the two segments (parallel creases only matter at their ends)
+        const points = det > 1e-12 * l1 * l2 ? [[(e * f - c * l2) / det, (l1 * f - e * c) / det]] : [];
+        for (const end of [p, q]) points.push([gap.subVectors(end, a).dot(d1) / l1, null]);
+        for (const [s, tt] of points) {
+          if (s <= 1e-5 || s >= 1 - 1e-5) continue;
+          let t = tt;
+          if (t === null) t = gap.copy(a).addScaledVector(d1, s).sub(p).dot(d2) / l2;
+          if (t < -1e-6 || t > 1 + 1e-6) continue;
+          gap.copy(a).addScaledVector(d1, s).sub(p).addScaledVector(d2, -Math.min(1, Math.max(0, t)));
+          if (gap.lengthSq() < 1e-8) cuts.push(s);
+        }
+      }
+    },
+  };
 }
 
 // #474: only call on a construction-only scene, before furniture/decoration is added.
 // Bake sharp edges once, in the nearest animated fitting's frame (or a floor batch).
 export function architectureEdges(root, { moving = [], exclude = [], floor = 3, opacity = 0.3 } = {}) {
   const anchors = new Set(moving.filter(Boolean)), skipped = new Set(exclude.filter(Boolean));
-  const batches = new Map(), solids = new Map(), cache = new WeakMap(), point = new THREE.Vector3();
+  const batches = new Map(), solids = new Map(), creases = new Map(), cache = new WeakMap(), point = new THREE.Vector3();
   const material = new THREE.LineBasicMaterial({ color: 0x394047, transparent: true, opacity, depthTest: true, depthWrite: false });
   // Move the depth by 1 mm toward the eye, not the geometry: stable on coplanar faces,
   // with ordinary depth testing still hiding edges behind walls and furniture.
@@ -141,6 +198,7 @@ export function architectureEdges(root, { moving = [], exclude = [], floor = 3, 
           if (!edges) { edges = new THREE.EdgesGeometry(geometry, 30); cache.set(geometry, edges); }
           const transform = anchor.matrixWorld.clone().invert().multiply(o.matrixWorld);
           let bodies = solids.get(anchor); if (!bodies) solids.set(anchor, bodies = []);
+          let index = creases.get(anchor); if (!index) creases.set(anchor, index = creaseIndex());
           const pos = edges.getAttribute('position');
           geometry.computeBoundingBox();
           bodies.push({ geometry, transform });
@@ -151,6 +209,7 @@ export function architectureEdges(root, { moving = [], exclude = [], floor = 3, 
           const a = new THREE.Vector3(), b = new THREE.Vector3();
           for (let i = 0; i < pos.count; i += 2) {
             a.fromBufferAttribute(pos, i).applyMatrix4(transform); b.fromBufferAttribute(pos, i + 1).applyMatrix4(transform);
+            index.add(a, b); // short ones too: they still mark block boundaries
             if (a.distanceToSquared(b) < 0.06 ** 2) continue; // no tiny handle/tessellation detail
             values.push(a.x, a.y, a.z, b.x, b.y, b.z);
           }
@@ -162,7 +221,7 @@ export function architectureEdges(root, { moving = [], exclude = [], floor = 3, 
   visit(root);
   const lines = [];
   for (const [anchor, cells] of batches) for (const raw of cells.values()) {
-    const values = unionEdges(raw, solids.get(anchor));
+    const values = unionEdges(raw, solids.get(anchor), creases.get(anchor));
     if (!values.length) continue;
     // Coincident box edges need only one segment (avoid darker seams/overdraw).
     const seen = new Set(), unique = [], key = (v, i) => v.slice(i, i + 3).map(x => Math.round(x * 10000)).join(',');

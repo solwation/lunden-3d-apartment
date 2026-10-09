@@ -41,6 +41,34 @@ try {
  check(!planarEdges.some(([a,b])=>Math.abs(a.x)<1e-5&&Math.abs(b.x)<1e-5&&Math.abs(a.y-b.y)>1)&&planarEdges.length>0,'baked open wall planes remove shared seam and preserve their outer boundary');
  const angled=new T.Group();block(angled,-1,0,0,3,-.1,.1);const rotated=block(angled,0,1,0,3,-.1,.1);rotated.rotation.y=.5;
  check(segments(angled).length>0,'rotated solids retain genuine sharp boundaries');
+ // #603: a merged batch (interior.js Batch) hides its blocks' boundaries from the bounds cuts. The worktop round the
+ // sink is four boxes in one geometry, with the bowl's walls in another: only the hole's rim and the outer edges remain.
+ const {mergeGeometries}=await w.eval("import('three/addons/utils/BufferGeometryUtils.js')");
+ const slabBox=(x0,x1,z0,z1,y0,y1)=>new T.BoxGeometry(x1-x0,y1-y0,z1-z0).translate((x0+x1)/2,(y0+y1)/2,(z0+z1)/2);
+ const H={x0:.14,x1:.5,z0:1,z1:1.46},top=.93,bench=new T.Group();
+ bench.add(new T.Mesh(mergeGeometries([slabBox(0,.62,0,H.z0,.9,top),slabBox(0,.62,H.z1,3,.9,top),slabBox(0,H.x0,H.z0,H.z1,.9,top),slabBox(H.x1,.62,H.z0,H.z1,.9,top)]),wallMat));
+ bench.add(new T.Mesh(mergeGeometries([slabBox(H.x0,H.x1,H.z0-.008,H.z0,.74,top),slabBox(H.x0,H.x1,H.z1,H.z1+.008,.74,top),slabBox(H.x0-.008,H.x0,H.z0,H.z1,.74,top),slabBox(H.x1,H.x1+.008,H.z0,H.z1,.74,top)]),wallMat));
+ const near=(x,v)=>Math.abs(x-v)<1e-4,within=(x,a,b)=>x>a-1e-4&&x<b+1e-4;
+ const onRim=p=>(near(p.z,H.z0)||near(p.z,H.z1))&&within(p.x,H.x0,H.x1)||(near(p.x,H.x0)||near(p.x,H.x1))&&within(p.z,H.z0,H.z1);
+ const benchTop=segments(bench).filter(([a,b])=>near(a.y,top)&&near(b.y,top));
+ const outer=([a,b])=>near(a.x,b.x)&&(near(a.x,0)||near(a.x,.62))||near(a.z,b.z)&&(near(a.z,0)||near(a.z,3));
+ check(benchTop.every(s=>outer(s)||s.every(onRim)),'merged worktop has no seam lines round the sink hole, only its rim and outer edges');
+ const length=list=>list.reduce((n,[a,b])=>n+a.distanceTo(b),0),rim=length(benchTop.filter(s=>s.every(onRim))),front=length(benchTop.filter(([a,b])=>near(a.x,0)&&near(b.x,0)));
+ check(rim>2*(H.x1-H.x0+H.z1-H.z0)-1e-3&&front>3-1e-3,`the sink hole rim and the worktop front edge remain (rim ${rim.toFixed(3)} m, front ${front.toFixed(3)} m)`);
+ // The real kitchen worktop: no line where flat stone continues on both sides (raycast straight down either side).
+ const {KITCHEN}=await w.eval("import('../src/config.js')"),wy=KITCHEN.baseTop+KITCHEN.worktop,area=KITCHEN.area;
+ const shown=o=>{for(;o;o=o.parent)if(!o.visible)return false;return true;};
+ const solidMeshes=[];A.scene.traverse(o=>{if(o.isMesh&&!o.isInstancedMesh&&shown(o)&&!o.material.transparent&&!o.userData.worktop)solidMeshes.push(o);});
+ const loose=new Set();for(const r of A.world.looseItems)r.traverse(o=>loose.add(o));
+ const caster=new T.Raycaster(),down=new T.Vector3(0,-1,0);
+ const stoneAt=p=>{caster.set(p.clone().setY(wy+.02),down);caster.far=.04;const h=caster.intersectObjects(solidMeshes,false).find(h=>!loose.has(h.object));return !!h&&Math.abs(h.point.y-wy)<1e-3;};
+ let worktopLines=0,flatSeams=[];
+ for(const l of A.world.edgeLines){l.updateWorldMatrix(true,false);const p=l.geometry.attributes.position;
+  for(let i=0;i<p.count;i+=2){const a=new T.Vector3().fromBufferAttribute(p,i).applyMatrix4(l.matrixWorld),b=new T.Vector3().fromBufferAttribute(p,i+1).applyMatrix4(l.matrixWorld);
+   if(Math.abs(a.y-wy)>1e-3||Math.abs(b.y-wy)>1e-3||!within(a.x,area.x0,area.x1)||!within(a.z,area.z0,area.z1))continue;worktopLines++;
+   const across=new T.Vector3().subVectors(b,a).cross(down).normalize().multiplyScalar(.015);
+   for(let f=.05;f<1;f+=.1){const m=a.clone().lerp(b,f);if(stoneAt(m.clone().add(across))&&stoneAt(m.clone().sub(across))){flatSeams.push(`${a.toArray().map(x=>x.toFixed(3))}→${b.toArray().map(x=>x.toFixed(3))}`);break;}}}}
+ check(worktopLines>0&&flatSeams.length===0,`kitchen worktop lines only where the stone ends (${worktopLines} lines${flatSeams.length?'; seams: '+flatSeams.join(' '):''})`);
  // Real WebGL depth test: an opaque foreground wall must hide every line of a rear box.
  const scene=new T.Scene();scene.background=new T.Color(0xffffff);scene.add(root);
  const blocker=new T.Mesh(new T.PlaneGeometry(3,3),new T.MeshBasicMaterial({color:0xffffff}));blocker.position.z=1;scene.add(blocker);
