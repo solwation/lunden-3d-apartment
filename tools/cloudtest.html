@@ -48,13 +48,13 @@ const sheet = (color) => { const c = document.createElement('canvas'); c.width =
   app.heldDrawing.take(sheet('#d8312e'));
   check(tapeInHall(), 'taped up in the hall');
   const ok1 = await until(async () => (await api('/drawings')).length === 1);
-  const id1 = app.posters.list[0]?.rec.id;
+  const id1 = app.posters.own[0]?.rec.id;
   check(ok1 && (await api('/drawings'))[0].id === id1, 'sent to the server (PUT)');
-  check(await until(() => app.posters.list[0]?.rec.synced), 'marked as synced');
+  check(await until(() => app.posters.own[0]?.rec.synced), 'marked as synced');
   const img = await fetch(`${W}/drawings/${id1}`);
   check(img.ok && img.headers.get('content-type') === 'image/jpeg', 'the server has its image');
   // 2. someone else's drawing shows up
-  const other = { ...app.posters.list[0].rec, id: 'other-drawing-1', pos: [app.posters.list[0].rec.pos[0] + 0.001, app.posters.list[0].rec.pos[1], app.posters.list[0].rec.pos[2]], time: Date.now(), updated: Date.now(), image: sheet('#2f6fd6') };
+  const other = { ...app.posters.own[0].rec, id: 'other-drawing-1', pos: [app.posters.own[0].rec.pos[0] + 0.001, app.posters.own[0].rec.pos[1], app.posters.own[0].rec.pos[2]], time: Date.now(), updated: Date.now(), image: sheet('#2f6fd6') };
   delete other.synced;
   await api(`/drawings/${other.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(other) });
   await app.cloud.sync();
@@ -71,7 +71,7 @@ const sheet = (color) => { const c = document.createElement('canvas'); c.width =
   app.heldDrawing.take(sheet('#43a047'));
   tapeInHall();
   await until(() => app.cloud.queue.length > 0, 3000);
-  const id2 = app.posters.list[0]?.rec.id;
+  const id2 = app.posters.own[0]?.rec.id;
   const q = JSON.parse(localStorage.getItem('lunden.cloud.queue') ?? '[]');
   check(q.some((x) => x.id === id2), `offline: queued (${q.length} waiting, kept in localStorage)`);
   app.cloud.url = W;

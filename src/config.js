@@ -2541,6 +2541,15 @@ export const DRAWING = { level: 1, x: 2.61 - 0.66 - 0.02, z: 0.465 + 0.31 + 0.08
   // after `ballSeconds` s. Our picks.
   throwSpeed: 4.5, ballSeconds: 180 };
 
+// Drawings that are part of the home (#618): taped up like the visitors' ones and looked at with E, but never thrown
+// away, taken down, saved or sent to the cloud (which deletes taped-up drawings after 24 h). "Till mamma" (drawn
+// 2 Oct 2026 18:50, lost from the cloud) is restored from a screenshot onto the kitchen wall (x 2.152, facing east), north of
+// the calendar below the wall clock (WALL_CLOCK, CALENDAR); the spot passed Posters.spot. `rot` in radians.
+export const FIXED_DRAWINGS = [
+  { id: 'fixed-till-mamma', image: 'textures/teckning-till-mamma.jpg', level: 0, pos: [2.152 + 0.003, 1.6, 3.40], normal: [1, 0, 0], rot: -0.035,
+    time: new Date(2026, 9, 2, 18, 50).getTime() },
+];
+
 // Sitting and lying down (#71/#72, src/rest.js): eye height above the seat / mattress, how far you can
 // turn your head (yaw ± from the way the seat faces) and the pitch range, and the move time.
 export const REST = {

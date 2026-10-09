@@ -135,7 +135,7 @@ export class Cloud {
     this.pulling = true;
     try {
       // drawings made before the cloud was switched on (or never sent): up they go
-      for (const p of this.posters.list) if (!p.rec.synced && !this.queue.some((q) => q.key === `d:${p.rec.id}`)) this.push({ type: 'drawing', key: `d:${p.rec.id}`, id: p.rec.id });
+      for (const p of this.posters.list) if (!p.fixed && !p.rec.synced && !this.queue.some((q) => q.key === `d:${p.rec.id}`)) this.push({ type: 'drawing', key: `d:${p.rec.id}`, id: p.rec.id });
       await this.flush();
       await this.pullDrawings();
       await this.pullPaper();
@@ -150,7 +150,7 @@ export class Cloud {
     const pending = new Set(this.queue.map((q) => q.key));
     for (const p of [...this.posters.list]) {
       const id = p.rec.id, rm = remote.get(id);
-      if (pending.has(`d:${id}`) || this.heldId() === id) continue;
+      if (p.fixed || pending.has(`d:${id}`) || this.heldId() === id) continue; // the home's own (#618)
       if (!rm) { if (p.rec.synced && (p.rec.synced === true || p.rec.synced < t0)) { log('gone on the server', id); await this.posters.drop(p); } }
       else if (rm.updated > p.rec.updated || (rm.updated === p.rec.updated && (rm.revision ?? 0) > (p.rec.revision ?? 0))) { log('newer on the server', id); await this.posters.drop(p); await this.posters.addRemote({ ...p.rec, ...rm, synced: true }); }
     }

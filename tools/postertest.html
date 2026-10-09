@@ -76,7 +76,7 @@ const deg = (d) => (d * Math.PI) / 180;
   const yaw = tapeAt(1.17, 1.6, 0, 0);
   check(yaw !== null, `hall: a wall to tape on (yaw ${yaw})`);
   btn.click(); await wait(300);
-  check(posters.list.length === 1 && posters.list[0].rec.surface === 'wall' && !heldDrawing.held, 'taped up on the hall wall');
+  check(posters.own.length === 1 && posters.own[0].rec.surface === 'wall' && !heldDrawing.held, 'taped up on the hall wall');
 
   // 3. the fridge door: a second drawing
   const fridge = world.lids.find((l) => l.kind === 'fridge' && !l.freezer);
@@ -94,7 +94,7 @@ const deg = (d) => (d * Math.PI) / 180;
   camera.rotation.x = Math.atan2(dp.y - camera.position.y, 1.2); step(1 / 60);
   check(/tejpa upp/i.test(btn.textContent) && !btn.hidden, `fridge door prompt: "${btn.textContent}"`);
   btn.click(); await wait(300);
-  const fp = posters.list.find((q) => q.rec.surface === 'fridge');
+  const fp = posters.own.find((q) => q.rec.surface === 'fridge');
   check(!!fp && fp.mesh.parent?.parent === fridge.door, 'taped on the fridge door (a child of the door)');
   const before = fp.mesh.getWorldPosition(dp.clone());
   fridge.toggle(); for (let i = 0; i < 60; i++) fridge.update(0.05);
@@ -119,10 +119,10 @@ const deg = (d) => (d * Math.PI) / 180;
 
   // 6. reload: both back up
   w = await load(); d = f.contentDocument; app = w.__app;
-  for (let i = 0; i < 80 && app.posters.list.length < 2; i++) await wait(100);
-  const kinds = app.posters.list.map((q) => q.rec.surface).sort().join(',');
+  for (let i = 0; i < 80 && app.posters.own.length < 2; i++) await wait(100);
+  const kinds = app.posters.own.map((q) => q.rec.surface).sort().join(',');
   const n = await new Promise((res) => { const q = indexedDB.open('lunden'); q.onsuccess = () => { try { const c = q.result.transaction('drawings').objectStore('drawings').count(); c.onsuccess = () => res(c.result); } catch (e) { res(String(e)); } }; q.onerror = () => res('err'); });
-  check(app.posters.list.length === 2 && kinds === 'fridge,wall', `after reload: ${kinds} (stored: ${n})`);
+  check(app.posters.own.length === 2 && kinds === 'fridge,wall', `after reload: ${kinds} (stored: ${n})`);
   // 7. look at a poster (#177): the panel, no walking, × closes without throwing
   d = f.contentDocument;
   const b2 = d.getElementById('action');
@@ -136,7 +136,7 @@ const deg = (d) => (d * Math.PI) / 180;
     app.camera.rotation.y = Math.atan2(n.x, n.z); app.camera.rotation.x = Math.atan2(c.y - app.camera.position.y, 1.0);
     app.step(1 / 60);
   };
-  const wallQ = app.posters.list.find((q) => q.rec.surface === 'wall');
+  const wallQ = app.posters.own.find((q) => q.rec.surface === 'wall');
   view(wallQ);
   check(/titta på teckningen/i.test(b2.textContent) && !b2.hidden, `poster prompt: "${b2.textContent}"`);
   b2.click(); app.step(1 / 60);
@@ -146,16 +146,16 @@ const deg = (d) => (d * Math.PI) / 180;
   app.player.keys = new Set(['KeyW']); for (let i = 0; i < 20; i++) app.step(1 / 60); app.player.keys = new Set();
   check(app.player.pos.distanceTo(pos0) < 0.001, 'no walking while it is open');
   panel.querySelector('[data-act=close]').click(); app.step(1 / 60);
-  check(panel.hidden && app.posters.list.length === 2, '× closes it, nothing thrown');
+  check(panel.hidden && app.posters.own.length === 2, '× closes it, nothing thrown');
   b2.click(); app.step(1 / 60);
   app.showNote(false); app.step(1 / 60); // what E / Esc do
-  check(panel.hidden && app.posters.list.length === 2, 'E / Esc close it, nothing thrown');
+  check(panel.hidden && app.posters.own.length === 2, 'E / Esc close it, nothing thrown');
   // Släng: gone from the wall and from storage, a ball flies, lands and vanishes after ballSeconds
   b2.click(); app.step(1 / 60);
   panel.querySelector('[data-act=throw]').click();
   await wait(300);
   const stored = await new Promise((res) => { const q = indexedDB.open('lunden'); q.onsuccess = () => { const c = q.result.transaction('drawings').objectStore('drawings').count(); c.onsuccess = () => res(c.result); }; });
-  check(panel.hidden && app.posters.list.length === 1 && stored === 1, `thrown: off the wall and out of storage (stored ${stored})`);
+  check(panel.hidden && app.posters.own.length === 1 && stored === 1, `thrown: off the wall and out of storage (stored ${stored})`);
   check(app.balls.balls.length === 1 && app.balls.balls[0].phase === 'crumple', 'it is crumpled into a ball');
   const shot = () => { if (!location.search.includes('shots')) return; app.renderer.render(app.scene, app.camera); const img = document.createElement('img'); img.className = 'shot'; img.src = app.renderer.domElement.toDataURL('image/png'); document.body.append(img); };
   for (let i = 0; i < 18; i++) app.step(1 / 60);
@@ -170,11 +170,11 @@ const deg = (d) => (d * Math.PI) / 180;
   for (let i = 0; i < 200; i++) app.balls.update(1);
   check(app.balls.balls.length === 0, 'the ball is gone after ballSeconds');
   // Ta ner: the fridge poster into the hand, taped up on the hall wall instead (same id)
-  const fq = app.posters.list[0], fid = fq.rec.id;
+  const fq = app.posters.own[0], fid = fq.rec.id;
   view(fq);
   b2.click(); app.step(1 / 60);
   panel.querySelector('[data-act=down]').click(); await wait(200);
-  check(app.heldItem() === app.heldDrawing && app.posters.list.length === 0, 'taken down into the hand');
+  check(app.heldItem() === app.heldDrawing && app.posters.own.length === 0, 'taken down into the hand');
   let ok = false;
   for (let yaw = 0; yaw < 360 && !ok; yaw += 15) {
     app.player.spawn(1.17, 1.6, yaw * Math.PI / 180); app.player.pos.y = 0; app.player.eyeY = 1.62;
@@ -183,7 +183,7 @@ const deg = (d) => (d * Math.PI) / 180;
     ok = /tejpa upp/i.test(b2.textContent) && !b2.hidden;
   }
   if (ok) { b2.click(); await wait(300); }
-  check(ok && app.posters.list.length === 1 && app.posters.list[0].rec.id === fid && app.posters.list[0].rec.surface === 'wall', 'taped up again on the wall, the same drawing');
+  check(ok && app.posters.own.length === 1 && app.posters.own[0].rec.id === fid && app.posters.own[0].rec.surface === 'wall', 'taped up again on the wall, the same drawing');
 
   // 8. under the top bunk (#199): lie in the lower bunk with a drawing, tape it up on the underside of the top one
   const bunks = app.world.furnitureTargets.filter((t) => t.kind === 'rest' && t.name === 'våningssängen');
@@ -195,11 +195,11 @@ const deg = (d) => (d * Math.PI) / 180;
     for (let i = 0; i < 60; i++) app.step(1 / 60);
     const okBtn = /tejpa upp/i.test(b2.textContent) && !b2.hidden;
     check(okBtn, `lying in the lower bunk: "${b2.textContent}"`);
-    const n0 = app.posters.list.length;
+    const n0 = app.posters.own.length;
     if (okBtn) { b2.click(); await wait(300); }
-    const q = app.posters.list[app.posters.list.length - 1];
+    const q = app.posters.own[app.posters.own.length - 1];
     const bunkBottom = sp.pos.y - 0.22 - 0.17 - 0.25 + 1.169; // mattress spot → floor → board underside
-    check(app.posters.list.length === n0 + 1 && q.rec.normal[1] === -1 && Math.abs(q.rec.pos[1] - bunkBottom) < 0.01 && Array.isArray(q.rec.up),
+    check(app.posters.own.length === n0 + 1 && q.rec.normal[1] === -1 && Math.abs(q.rec.pos[1] - bunkBottom) < 0.01 && Array.isArray(q.rec.up),
       `on the underside of the top bunk, facing down (y ${q?.rec.pos[1].toFixed(3)} vs ${bunkBottom.toFixed(3)})`);
     // looking at it from the bunk: the panel opens (and it can be taken down from there)
     app.step(1 / 60);
@@ -208,11 +208,11 @@ const deg = (d) => (d * Math.PI) / 180;
     app.standUp(); app.step(1 / 60);
   }
 
-  if (location.search.includes('panel')) { view(app.posters.list[0]); b2.click(); app.step(1 / 60); out.textContent = pass ? 'ALL PASS' : 'SOME FAILED'; return; }
+  if (location.search.includes('panel')) { view(app.posters.own[0]); b2.click(); app.step(1 / 60); out.textContent = pass ? 'ALL PASS' : 'SOME FAILED'; return; }
   // ?shots: pictures of both posters (data URLs in <img> tags, for a look by hand)
   if (location.search.includes('shots')) {
     await wait(1500);
-    for (const q of app.posters.list.filter((x) => x.rec.normal[1] === 0)) {
+    for (const q of app.posters.own.filter((x) => x.rec.normal[1] === 0)) {
       const m = q.mesh, c = m.getWorldPosition(m.position.clone()), n = m.getWorldDirection(m.position.clone());
       app.camera.position.copy(c).addScaledVector(n, 1.1); app.camera.position.y = c.y; app.camera.lookAt(c);
       app.renderer.render(app.scene, app.camera);

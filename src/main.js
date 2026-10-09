@@ -696,12 +696,14 @@ function showPoster(p) {
   if (!p) return;
   posterPanel.querySelector('img').src = p.rec.image;
   posterPanel.querySelector('.when').textContent = `Ritad ${drawnAt(p.rec.time)}`;
+  for (const act of ['throw', 'down']) posterPanel.querySelector(`[data-act=${act}]`).hidden = !!p.fixed; // the home's own stays up (#618)
+  posterPanel.querySelector('.keys').textContent = p.fixed ? 'E stänger' : 'S slänger · T tar ner · E stänger';
   sfx.paper(p.mesh.getWorldPosition(new THREE.Vector3()));
 }
 /** Släng: off the wall, out of storage, crumpled and thrown. */
 function throwPoster() {
   const p = viewing;
-  if (!p) return;
+  if (!p || p.fixed) return;
   showPoster(null);
   const tex = p.mesh.material.map;
   posters.remove(p, true);
@@ -711,7 +713,7 @@ function throwPoster() {
 /** Ta ner: off the wall and into the hand, to be taped up somewhere else. */
 function takeDownPoster() {
   const p = viewing;
-  if (!p) return;
+  if (!p || p.fixed) return;
   showPoster(null);
   posters.remove(p, false, true); // moving: keep the shared record until it is placed again
   heldDrawing.take(p.rec.image, { id: p.rec.id, time: p.rec.time, rec: p.rec });

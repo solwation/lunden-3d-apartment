@@ -53,14 +53,14 @@ const realHour = () => { const n = new Date(); return n.getHours() + n.getMinute
   // a synced drawing on the wall
   app.heldDrawing.take(sheet('#d8312e'));
   check(tapeInHall(), 'a drawing taped up in the hall');
-  check(await until(() => app.posters.list[0]?.rec.synced), 'synced to the server');
-  const id1 = app.posters.list[0].rec.id;
+  check(await until(() => app.posters.own[0]?.rec.synced), 'synced to the server');
+  const id1 = app.posters.own[0].rec.id;
   // one taped up offline: it waits in the queue
   app.cloud.url = OFF;
   app.heldDrawing.take(sheet('#43a047'));
   tapeInHall();
   await until(() => app.cloud.queue.length > 0, 3000);
-  const id2 = app.posters.list.find((p) => p.rec.id !== id1)?.rec.id;
+  const id2 = app.posters.own.find((p) => p.rec.id !== id1)?.rec.id;
   check(JSON.parse(localStorage.getItem('lunden.cloud.queue') ?? '[]').some((x) => x.id === id2), 'an offline drawing waits in the queue');
   // the desk drawing, the score, a name, a cat photo
   app.drawing.stroke({ x: 100, y: 100 }, { x: 300, y: 200 }); app.drawing.save();

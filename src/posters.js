@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { DRAWING as D, HOLD } from './config.js';
+import { DRAWING as D, HOLD, FIXED_DRAWINGS } from './config.js';
 import { withStore } from './idb.js';
 import { setHeld, heldItem } from './holdable.js';
 import { sfx } from './audio.js';
@@ -112,11 +112,20 @@ export class Posters {
 
   get full() { return this.list.length >= D.maxPosted; }
 
+  /** The visitors' drawings: every poster but the home's own fixed ones (#618). */
+  get own() { return this.list.filter((p) => !p.fixed); }
+
   /** Put every saved poster back up. */
   async load() {
     let recs = [];
     try { recs = (await withStore(STORE, 'readonly', (s) => s.getAll())) ?? []; } catch { recs = []; }
     for (const r of recs.sort((a, b) => a.time - b.time)) await this.build(r);
+    // the home's own drawings (#618): not in storage, never thrown, taken down or synced (`fixed`)
+    for (const f of FIXED_DRAWINGS) {
+      if (this.byId(f.id)) continue;
+      const p = await this.build({ ...f, surface: 'wall', updated: f.time });
+      if (p) p.fixed = true;
+    }
   }
 
   /** Make the mesh for a record and hang it up (no saving). */
@@ -293,7 +302,7 @@ export class Posters {
 
   /** Take a poster down (#177): gone from the wall and from storage. `keepTexture`: its map lives on (the ball). */
   async remove(p, keepTexture = false, quiet = false) {
-    if (!this.list.includes(p)) return;
+    if (!this.list.includes(p) || p.fixed) return; // a fixed drawing stays up (#618)
     p.mesh.removeFromParent();
     if (!keepTexture) p.mesh.material.map.dispose();
     p.mesh.material.dispose();

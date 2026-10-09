@@ -174,6 +174,9 @@ src/posters.js         drawings taped up (#176): HeldDrawing (the sheet in the h
                        'lunden'/'drawings'
                        E on a poster (kind 'poster') opens #poster-panel (#177, reading mode): Släng (S) / Ta ner (T) /
                        Stäng (E, Esc, ×); Ta ner keeps its id, put back without taping = back up where it was
+                       FIXED_DRAWINGS (#618, config): the home's own drawings ("Till mamma" under the kitchen clock,
+                       textures/teckning-till-mamma.jpg) are built by `load()` with `fixed`: no Släng / Ta ner, `remove`
+                       refuses them, never saved or synced (cloud.js skips them); `posters.own` = the visitors' ones (tests)
 src/paperball.js       a drawing thrown away (#177): crumpled in front of the camera, thrown, bounces on the floor (walls:
                        the level's collision segments), shrinks away after DRAWING.ballSeconds; not saved
 src/calendar.js        the cat calendar (CALENDAR): a cat per month, the days, the chosen date; #cal-panel picks it
