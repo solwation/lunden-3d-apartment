@@ -129,6 +129,19 @@ const load = (q = '') => new Promise((resolve) => {
     check(keptBefore === keptAfter, `opening everything in it changes nothing in the saved world's open doors / lids (${keptAfter.length} chars)`);
     const keys = Object.keys(w.localStorage).filter((k) => /L1004|visit/i.test(k) || /L1004/.test(w.localStorage.getItem(k) ?? ''));
     check(!keys.length, `no stored key mentions it (${keys.join(', ')})`);
+    // #627: L1004 shares our sheet and stair: the wall along flight A / the winders is the same sloping half wall, and holds
+    {
+      const HW = C.STAIR.halfWall, hw = unit.stair.halfWall, cap = C.LEVELS[0].floor + C.LEVELS[0].ceiling;
+      const nos = [];
+      for (let x = HW.x0; x < HW.x1; x += 0.002) { const a = unit.stair.height(x, HW.z0 - 0.1), b = unit.stair.height(x + 0.002, HW.z0 - 0.1); if (a !== null && b !== null && b > a + 1e-6) nos.push([x, b]); }
+      const under = nos.filter(([, y]) => y + HW.top < cap - 0.02), over = under.map(([x, y]) => hw.top(x) - y);
+      check(under.length >= 5 && over.every((d) => Math.abs(d - HW.top) < 0.03), `L1004's stair half wall: top ${Math.min(...over).toFixed(3)}–${Math.max(...over).toFixed(3)} m over ${under.length} nosings (HW.top ${HW.top})`);
+      check(hw.line[0][0] === HW.x0 && hw.line.at(-1)[1] <= cap + 1e-9, 'a vertical edge at its low end, never over the ceiling');
+      player.spawn(ox + 4.4, 7.2, Math.PI); settle(5);
+      check(walk([[ox + 4.4, 8.8]], 5).stuck, 'L1004: the half wall holds from the stair side');
+      player.spawn(ox + 4.4, 8.8, 0); settle(5);
+      check(walk([[ox + 4.4, 7.2]], 5).stuck, 'and from the living room side');
+    }
     // #573: L1201 up on våning 3–4, from the loftgång: its own sheet, its stair, its terrace
     const u1 = world.units.find((u) => u.id === 'L1201'), qx = u1?.ox, qz = u1?.oz;
     const W1 = (x, z) => [qx + x, qz + z]; // its plan coordinates → world

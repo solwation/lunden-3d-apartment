@@ -408,7 +408,8 @@ function buildLevel(floor, li, group, how = OURS) {
 
   // Walls (polygons extruded floor → ceiling). Holes in the plan polygons are tiny
   // niches; walls are rendered solid.
-  const walls = [...floor.walls, ...EXTRA_WALLS.filter((w) => w.level === li && !std && OPTIONS[w.option])
+  const SH = STAIR.halfWall, onSh = (w) => { const b = bboxOf(w.outer); return Math.abs(b.x0 - SH.x0) < 2e-3 && Math.abs(b.x1 - SH.x1) < 2e-3 && Math.abs(b.z0 - SH.z0) < 2e-3 && Math.abs(b.z1 - SH.z1) < 2e-3; };
+  const walls = [...floor.walls.map((w) => (li === 0 && !how.levels && onSh(w) ? { ...w, half: true } : w)), ...EXTRA_WALLS.filter((w) => w.level === li && !std && OPTIONS[w.option])
     .map((r) => ({ outer: [[r.x0, r.z0], [r.x1, r.z0], [r.x1, r.z1], [r.x0, r.z1]] }))];
   const wallBoxes = walls.map((w) => bboxOf(w.outer));
   const wallSegments = []; // walls only: line of sight for E (main.js)
@@ -712,8 +713,11 @@ function buildStructure(scene, lower, l1, W, D, M) {
     scene.add(box(x - np, x + np, z - np, z + np, y1 - 0.01, y1 + rail + 0.03, M.rail));
   }
   l1.segments.push(...railSegs);
+  // the wall along flight A and the winders is a sloping half wall, as L1201's (#627; plan.json's wall at STAIR.halfWall)
+  const halfWall = buildHalfWall(scene, STAIR.halfWall, { height: stairHeight }, LEVELS[0].floor, LEVELS[0].floor + LEVELS[0].ceiling);
   // handrails: the wall side along the flights and round the winders, one per flight on the inner side (#419)
   for (const m of [...buildHandrails(M.rail).children]) scene.add(m);
+  return halfWall;
 }
 
 /** L1201's slab, roof zone, stair and railing (#573, L1201 in config): our stair type mapped onto its sheet's outline (the
@@ -732,22 +736,30 @@ function stairMap(P, L) {
 /** The sloping half wall between the stair and the living room (#624): a solid white wall whose top follows the stair's
  * nosings at `top` m over them and ends in a vertical edge at its low end (x1), standing on the Entréplan floor. Returns
  * its top's profile (x descending, y) and a height function for the tests. */
-function buildHalfWall(group, H, map, floorY) {
+function buildHalfWall(group, H, map, floorY, cap = Infinity) {
   const hAt = (x) => map.height(x, H.z0 - 0.1);
-  // the nosings: where the tread surface steps up going west (x falls): (x of the step, the higher tread's height)
+  const dir = H.low === 'x0' ? 1 : -1; // which way the stair climbs along x: away from the wall's low end (L1201 mirrored: west; ours: east)
+  const [xLow, xHigh] = dir > 0 ? [H.x0, H.x1] : [H.x1, H.x0];
+  // the nosings: where the tread surface steps up going away from the low end: (x of the step, the higher tread's height)
   const pts = [];
   let prev = null;
-  for (let x = H.x1; x >= H.x0 - 1e-9; x -= 0.002) {
+  for (let x = xLow; (xHigh - x) * dir >= -1e-9; x += dir * 0.002) {
     const h = hAt(x);
-    if (h !== null && prev !== null && h > prev + 1e-6) pts.push([x + 0.002, h]);
+    if (h !== null && prev !== null && h > prev + 1e-6) pts.push([x - dir * 0.002, h]);
     if (h !== null) prev = h;
   }
   const slope = (a, b) => (b[1] - a[1]) / (b[0] - a[0]);
   const first = pts[0], last = pts.at(-1);
-  // the line extended to both ends of the wall at its own pitch
-  const line = [[H.x1, first[1] + slope(first, pts[1]) * (H.x1 - first[0])], ...pts,
-    [H.x0, last[1] + slope(pts.at(-2), last) * (H.x0 - last[0])]].map(([x, y]) => [x, y + H.top]);
-  const shape = new THREE.Shape([[H.x1, floorY], ...line, [H.x0, floorY]].map(([x, y]) => new THREE.Vector2(x, y)));
+  // the line extended to both ends of the wall at its own pitch, never above `cap` (the ceiling: a full wall where the stair is high)
+  const raw = [[xLow, first[1] + slope(first, pts[1]) * (xLow - first[0])], ...pts,
+    [xHigh, last[1] + slope(pts.at(-2), last) * (xHigh - last[0])]].map(([x, y]) => [x, y + H.top]);
+  const line = [];
+  raw.forEach((p, i) => {
+    const q = raw[i - 1];
+    if (q && (q[1] - cap) * (p[1] - cap) < 0) line.push([q[0] + (p[0] - q[0]) * (cap - q[1]) / (p[1] - q[1]), cap]);
+    line.push([p[0], Math.min(p[1], cap)]);
+  });
+  const shape = new THREE.Shape([[xLow, floorY], ...line, [xHigh, floorY]].map(([x, y]) => new THREE.Vector2(x, y)));
   const geo = new THREE.ExtrudeGeometry(shape, { depth: H.z1 - H.z0, bevelEnabled: false });
   geo.translate(0, 0, H.z0);
   const mesh = new THREE.Mesh(geo, SM.wall);
@@ -755,10 +767,11 @@ function buildHalfWall(group, H, map, floorY) {
   mesh.name = 'halvväggen vid trappan';
   group.add(mesh);
   const top = (x) => {
+    const asc = line.slice().sort((a, b) => a[0] - b[0]); // x ascending, whichever end is low
     let i = 1;
-    while (i < line.length - 1 && x < line[i][0]) i++;
-    const [a, b] = [line[i - 1], line[i]];
-    return a[1] + (b[1] - a[1]) * (x - a[0]) / (b[0] - a[0]);
+    while (i < asc.length - 1 && x > asc[i][0]) i++;
+    const [a, b] = [asc[i - 1], asc[i]];
+    return b[0] === a[0] ? b[1] : a[1] + (b[1] - a[1]) * (x - a[0]) / (b[0] - a[0]);
   };
   return { top, line };
 }
@@ -780,7 +793,7 @@ function buildOwnStructure(group, lower, upper, l1, P, L, map) {
     }
     const m = new THREE.Mesh(g, o.material); m.castShadow = m.receiveShadow = true; group.add(m);
   });
-  map.halfWall = buildHalfWall(group, P.halfWall, map, L[0].floor);
+  map.halfWall = buildHalfWall(group, P.halfWall, map, L[0].floor, L[0].floor + L[0].ceiling);
   // the railing (H 1.1): along the opening's east edge to the set-back wall, the middle run on the upstand over the wall
   // between the flights (the Klk's south wall carried up, as ours, #232)
   const R = P.railing, y1 = L[1].floor, rail = R.h, midZ = R.z0, cx = map.x(STAIR.center[0]);
@@ -821,7 +834,8 @@ function buildVisitFlat(plan, U, ox) {
   const l0 = buildLevel(lower, 0, group, how), l1 = buildLevel(upper, 1, group, how);
   wardrobeSpecs.length = keep; // empty wardrobes: nobody lives here
   const map = own ? stairMap(P, L) : null;
-  if (own) buildOwnStructure(group, lower, upper, l1, P, L, map); else buildStructure(group, lower, l1, W, D, SM);
+  let halfWall = null;
+  if (own) buildOwnStructure(group, lower, upper, l1, P, L, map); else halfWall = buildStructure(group, lower, l1, W, D, SM);
   const doors = [...l0.doors, ...l1.doors], lids = [...l0.lids, ...l1.lids, ...l0.appliances, ...l1.appliances];
   const moving = [...doors, ...lids].map((d) => d.object);
   const edges = architectureEdges(group, { moving, floor: L[1].floor });
@@ -836,7 +850,7 @@ function buildVisitFlat(plan, U, ox) {
   const rect = (f) => ({ x0: Math.min(0, ...f.walls.flatMap((w) => w.outer.map((q) => q[0]))), x1: f.size.x, z0: 0, z1: f.size.z });
   const levels = L.map((v, i) => ({ ...v, rect: rect(plan.floors[i]), hole: i === 1 ? (own ? P.hole : STAIR.hole) : null }));
   return new VisitUnit({ id: U.id, ox, oz, object: group, levels, built: [l0, l1], doors, lids, roomMaps, ground: !own,
-    stair: own ? map : { height: stairHeight, underside: stairUnderside },
+    stair: own ? map : { height: stairHeight, underside: stairUnderside, halfWall },
     shell: [SM.wall, SM.ceiling, SM.floor, SM.frame], glass: SM.glass }); // (what shows from afar: its rooms behind glass, #574)
 }
 
@@ -858,7 +872,7 @@ export function buildWorld(plan) {
   const l0 = buildLevel(lower, 0, scene);
   const l1 = buildLevel(upper, 1, scene);
 
-  buildStructure(scene, lower, l1, W, D, M); // the slab, the roof zone, the stair and its railing
+  const halfWall = buildStructure(scene, lower, l1, W, D, M); // the slab, the roof zone, the stair and its railing
   // the other flats you can walk into (#574), each at its own slot in the row
   const slots = husLLayout(W).units;
   const units = VISIT_UNITS.map((U) => buildVisitFlat(plan, U, slots.find((u) => u.lower === U.slot || u.upper === U.slot).ox));
@@ -1015,6 +1029,7 @@ export function buildWorld(plan) {
 
   return {
     object: scene,
+    halfWall, // the sloping half wall along our stair (#627): top(x), line
     edgeLines,
     hallWardrobes,
     wardrobes: laundryWardrobes, // reserved, usable shelf spaces (#552)
