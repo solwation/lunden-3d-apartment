@@ -7,8 +7,11 @@
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const game = process.argv[2] || 'http://localhost:8137', worker = process.argv[3] || 'http://localhost:8144', token = process.argv[4] || 'tok';
 let failed = 0;
-const check = (ok, msg, extra = '') => { console.log(`${ok ? 'PASS' : 'FAIL'} ${msg}${extra ? ` — ${extra}` : ''}`); if (!ok) failed++; };
+const T_START = Date.now();
+const check = (ok, msg, extra = '') => { console.log(`${ok ? 'PASS' : 'FAIL'} +${Math.round((Date.now() - T_START) / 1000)}s ${msg}${extra ? ` — ${extra}` : ''}`); if (!ok) { failed++; dumps.push(dump(msg)); } };
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const dumps = []; // what the Worker holds when a check fails (to tell a lost report from a late one)
+const dump = async (msg) => { try { console.log(`  [worker at FAIL "${msg.slice(0, 40)}"]`, JSON.stringify((await reports()).map((r) => [r.typ, r.kind, String(r.msg ?? '').slice(0, 30), r.context?.episode, r.sid]))); } catch (e) { console.log('  dump failed', e.message); } };
 const reports = async () => {
   const list = await (await fetch(`${worker}/crash?limit=100`, { headers: { Authorization: `Bearer ${token}` } })).json();
   return Promise.all(list.map(async (x) => (await fetch(`${worker}/crash/${x.id}`, { headers: { Authorization: `Bearer ${token}` } })).json()));
@@ -21,6 +24,13 @@ async function kill(ctx, page) {
   await sleep(1500);
   await Promise.race([page.close().catch(() => {}), sleep(3000)]);
 }
+/** Wait until `fn` (evaluated in the page) is truthy; null on timeout. Conditions, not fixed sleeps: SwiftShader frames take ~1 s. */
+const pageUntil = (page, fn, ms = 60000, arg) => until(() => page.evaluate(fn, arg).catch(() => false), ms);
+/** Phone profile reloads once per 60 s on a restored context (#628, glrestoretest): refresh that guard right before each loss, here it must not reload. */
+const loseContext = (page) => page.evaluate(() => {
+  sessionStorage.setItem('lunden.glReloadAt', String(Date.now()));
+  const e = window.__app.renderer.getContext().getExtension('WEBGL_lose_context'); e.loseContext(); setTimeout(() => e.restoreContext(), 300);
+});
 const beat = (page) => page.evaluate(() => { try { return JSON.parse(localStorage.getItem('lunden.crash.beat')); } catch { return null; } });
 
 (async () => {
@@ -56,7 +66,7 @@ const beat = (page) => page.evaluate(() => { try { return JSON.parse(localStorag
     check(b?.s === 'run' && typeof b.build === 'string' && /Mobi|Headless|Chrome/.test(b.ua) && b.scr?.length === 3, 'heartbeat: state run, build, user agent, screen', b?.ua);
     const size = b ? JSON.stringify(b).length : 0;
     check(size > 0 && size < 8000, 'heartbeat including bounded history is small', `${size} B`);
-    await sleep(5000);
+    await pageUntil(page, () => window.__crashlog.history.length >= 12, 90000); // twelve beats = 24 s of uptime
     const per = await page.evaluate(() => { const c = window.__crashlog, t = performance.now(); for (let i = 0; i < 200; i++) c.beat(); return (performance.now() - t) / 200; });
     check(per < 1, 'a beat (snapshot + localStorage write, every 2 s) costs under 1 ms', `${per.toFixed(3)} ms`);
     check(await page.evaluate(() => { const h = JSON.parse(localStorage.getItem('lunden.crash.beat')).history; return h.length === 12 && h.every(s => 'frame' in s && 'lagMs' in s); }),
@@ -66,7 +76,7 @@ const beat = (page) => page.evaluate(() => { try { return JSON.parse(localStorag
     await kill(ctx, page);
     await sleep(6500); // older than deadIfWithinMs
     page = await open(ctx, `cloud=${worker}&lowmem`);
-    const dead = await until(async () => (await reports()).find((r) => r.typ === 'död'));
+    const dead = await until(async () => (await reports()).find((r) => r.typ === 'död'), 60000);
     check(!!dead, 'a killed renderer gives a död report at the next start', dead && JSON.stringify({ room: dead.beat.at.room, q: dead.beat.q, gpu: dead.beat.gpuMB.total, gap: dead.gap }));
     check(dead?.beat?.s === 'run' && dead.beat.at && dead.beat.gl3 && dead.pid, 'the död report carries the last beat (place, renderer.info) and a random id');
     const afterDead = (await reports()).length;
@@ -75,9 +85,10 @@ const beat = (page) => page.evaluate(() => { try { return JSON.parse(localStorag
     // 3. caught errors, duplicates, flood
     await page.evaluate(() => { for (let i = 0; i < 3; i++) setTimeout(() => { throw new Error('boom same'); }); });
     await page.evaluate(() => { Promise.reject(new Error('rejected once')); });
-    await page.evaluate(() => sessionStorage.setItem('lunden.glReloadAt', String(Date.now()))); // phone profile reloads on a restored context (#628, glrestoretest): not here
-    await page.evaluate(() => { const e = window.__app.renderer.getContext().getExtension('WEBGL_lose_context'); e.loseContext(); setTimeout(() => e.restoreContext(), 300); });
-    await sleep(2500);
+    await loseContext(page);
+    // everything thrown above has been handled (the two repeats were dropped as duplicates) and the whole set has reached the Worker
+    await pageUntil(page, () => window.__crashlog.stats.dropped.filter((s) => s.includes('boom same')).length === 2 && window.__crashlog.stats.sent.includes('webglcontextrestored'));
+    await until(async () => { const f = (await reports()).filter((r) => r.typ === 'fel'); return ['boom same', 'rejected once'].every((m) => f.some((r) => String(r.msg).includes(m))) && ['webglcontextlost', 'webglcontextrestored'].every((k) => f.some((r) => r.kind === k)); });
     let rs = (await reports()).filter((r) => r.typ === 'fel');
     check(rs.filter((r) => String(r.msg).includes('boom same')).length === 1, 'the same thrown error three times = one report');
     const boom = rs.find((r) => String(r.msg).includes('boom same'));
@@ -92,8 +103,8 @@ const beat = (page) => page.evaluate(() => { try { return JSON.parse(localStorag
     check(firstLost?.snap?.history?.some(s => s.gl === 'ok' && s.frame > 0), 'loss carries pre-failure rendering history');
     await page.evaluate(() => { const c = document.createElement('canvas'); document.body.append(c); c.dispatchEvent(new Event('webglcontextlost')); c.remove(); });
     check(await page.evaluate(() => !window.__crashlog.glLost), 'unrelated canvas events do not alter game diagnostics');
-    await page.evaluate(() => { const e = window.__app.renderer.getContext().getExtension('WEBGL_lose_context'); e.loseContext(); setTimeout(() => e.restoreContext(), 300); });
-    await until(async () => (await reports()).filter(r => r.kind === 'webglcontextrestored').length === 2);
+    await loseContext(page);
+    await until(async () => (await reports()).filter(r => r.kind === 'webglcontextrestored').length === 2, 90000);
     rs = (await reports()).filter(r => r.typ === 'fel');
     check(rs.filter(r => r.kind === 'webglcontextlost').length === 2 && rs.filter(r => r.kind === 'webglcontextrestored').length === 2,
       'two genuine context loss/recovery cycles on the same day produce four reports');
@@ -101,15 +112,22 @@ const beat = (page) => page.evaluate(() => { try { return JSON.parse(localStorag
     check(publicRows.filter(r => r.context?.episode === 2).length === 2 && publicRows.some(r => r.context?.episode === 2 && r.state?.history?.length),
       'public endpoint preserves second episode and pre-failure history');
     // 3b. layout (#567): a normal rotation is no false alarm; a canvas that does not fill the surface is reported once
+    // The game applies a resize in an animation frame (src/viewport.js) and under SwiftShader one render frame takes 1–15 s (#650: after
+    // the forced recoveries a rotation was still unapplied 3 s later, so the 0.3 / 1 / 3 s layout checks rightly saw a stale aspect).
+    // What is tested here is the crashlog's judgement, not SwiftShader's speed: stop the game's own (heavy) render loop; viewport.js
+    // has its own requestAnimationFrame, which then runs at once.
+    await page.evaluate(() => window.__app.renderer.setAnimationLoop(null));
     const layouts = async () => (await reports()).filter((r) => r.typ === 'layout');
     await page.setViewportSize({ width: 844, height: 390 });
     await sleep(500);
     await page.setViewportSize({ width: 390, height: 844 });
     await page.evaluate(() => window.dispatchEvent(new Event('orientationchange')));
-    await sleep(4500);
+    await sleep(4500); // the layout checks run 0.3 / 1 / 3 s after the last resize event (timers, not frames)
     check((await layouts()).length === 0, 'normal rotation (resize + orientationchange): no layout report');
     await page.evaluate(() => { const c = document.getElementById('game-canvas'); c.style.width = '200px'; });
-    await until(async () => (await layouts()).length > 0, 60000);
+    await until(async () => (await layouts()).length > 0, 90000);
+    // the check chain (0.3 / 1 / 3 s) has ended once the repeat of the same fault was dropped as a duplicate
+    await pageUntil(page, () => window.__crashlog.stats.dropped.some((s) => s.startsWith('layout:')), 90000);
     const lay = await layouts();
     check(lay.length === 1, 'a canvas not filling the window is reported once', lay[0]?.msg);
     const L = lay[0]?.layout;
@@ -117,12 +135,16 @@ const beat = (page) => page.evaluate(() => { try { return JSON.parse(localStorag
       'the layout report carries canvas, rect, buffer, aspect, window, document, visualViewport, screen, orientation, dpr, standalone, safe-area', JSON.stringify(L));
     await page.evaluate(() => { document.getElementById('game-canvas').style.width = ''; });
     await sleep(500);
+    const dropped0 = await page.evaluate(() => window.__crashlog.stats.dropped.filter((s) => s.startsWith('layout:')).length);
     await page.evaluate(() => { document.getElementById('game-canvas').style.width = '200px'; });
-    await sleep(4500);
+    await pageUntil(page, (n) => window.__crashlog.stats.dropped.filter((s) => s.startsWith('layout:')).length > n, 90000, dropped0);
     check((await layouts()).length === 1, 'the same fault again: deduplicated');
     await page.evaluate(() => { document.getElementById('game-canvas').style.width = ''; });
+    const handled0 = await page.evaluate(() => window.__crashlog.stats.sent.length + window.__crashlog.stats.dropped.length);
     await page.evaluate(() => { for (let i = 0; i < 40; i++) setTimeout(() => { throw new Error(`flood ${i}`); }); });
-    await sleep(2500);
+    await pageUntil(page, (n) => window.__crashlog.stats.sent.length + window.__crashlog.stats.dropped.length >= n + 40, 90000, handled0); // all 40 throws handled (sent or dropped)
+    const sentN = await page.evaluate(() => window.__crashlog.stats.sent.length);
+    await until(async () => (await reports()).length >= before + 1 + sentN, 30000); // everything the page sent has reached the Worker
     const st = await page.evaluate(() => ({ sent: window.__crashlog.stats.sent.length, dropped: window.__crashlog.stats.dropped.length }));
     check(st.sent <= 12 && st.dropped >= 30, 'flood is capped per session', JSON.stringify(st));
     rs = await reports();

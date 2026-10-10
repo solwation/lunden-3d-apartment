@@ -48,7 +48,10 @@ tools/blindtest.html   headless test: a blind in every window, folded at the sta
 tools/glrestoretest.cjs  (#628, phone profile) forces `WEBGL_lose_context` loss + restore: one reload back at the same place, a freed canvas texture looks the same, no reload loop, and a control without the reload shows the blank texture; run after touching `freeCanvasAfterUpload` / `reloadOnContextRestore`. `PLAYWRIGHT_MODULE=… node tools/glrestoretest.cjs http://localhost:8137` (~6 min under SwiftShader)
 tools/crashtest.cjs    crash reports (#629): Playwright + `node cloudflare/dev.mjs 8144 tok`; run after touching src/crashlog.js, cloudflare/crash.js or the
                        reset keys; includes bounded pre-failure history and two real WebGL loss/recovery pairs through the public API
-                       (also `node --test cloudflare/crash.test.mjs`)
+                       (also `node --test cloudflare/crash.test.mjs`). Waits on conditions (page `stats`, Worker rows), never fixed sleeps, and
+                       refreshes the phone profile's 60 s reload guard (`lunden.glReloadAt`) before each forced context loss and stops the game's render
+                       loop for the layout part (SwiftShader frames take 1–15 s and the game applies a resize in a frame) (#650); a failing check
+                       dumps what the Worker holds. ~6–8 min under SwiftShader; clear old rows first (`DELETE /admin/crash`) or restart `dev.mjs`
 tools/clocktest.html   headless test of the wall clock (?time=7, spool, pause, sun height by month)
 tools/hangtest.html    hanging clothes inside what they hang in (#610): the hall coat rack's jackets within its width, clear of the EL/C
                        cabinet and wardrobe G; all fitted wardrobes' contents (+ the hall life jacket) inside the carcass; SMÅSTAD's clothes
