@@ -192,4 +192,8 @@ entrance leaf, no mass) and cuts the roof walk walls at its street door and terr
 door leaves to the loftgång / terrace collision (`doorSegmentsAt`). tools/visittest.html walks the loftgång → hall → galley
 → living room → its stair → Allrum (the railing holds; the handrails over the nosings, into the wall, clear of the walk) →
 terrace → back → Sovrum 1.
+The wall between flight A / the winders and the living room (plan wall `half: true`, z 8.091–8.195) is a sloping half wall
+(#624, world.js `buildHalfWall`, `L1201.halfWall`): its top 1.0 m over the treads' nosings (*guess*, no section in Peab's material;
+brochure photo docs/parklangan-halvvagg-trappa-broschyr.png), ending in a vertical edge at its low end; buildLevel skips its full-height prism and
+its line-of-sight segment but keeps its collision segment, so it still stops you. visittest.html checks its top height, edge and collision.
 

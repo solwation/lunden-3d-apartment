@@ -28,7 +28,7 @@ const lower = {
     R(0.2, 0.8, 5.605, 6.005),                                   // a shaft in the bathroom's SW corner
     R(2.16, 2.28, 6.205, 6.255), R(2.16, 2.28, 7.065, 7.115),    // the Klk under the stair: its door's jambs
     R(1.107, 2.28, 7.115, 7.21),                                 // the Klk's south wall (between the stair's flights)
-    R(0.2, 2.28, 8.091, 8.195),                                  // the wall between the lower flight and the open void
+    { ...R(0.2, 2.28, 8.091, 8.195), half: true },               // the wall between the lower flight and the living room / open void: a sloping half wall (#624, world.js)
   ],
   windows: [
     { x0: 3.045, x1: 4.655, z0: 0, z1: 0.365 },                  // kitchen, to the loftgång

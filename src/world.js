@@ -413,9 +413,8 @@ function buildLevel(floor, li, group, how = OURS) {
   const wallBoxes = walls.map((w) => bboxOf(w.outer));
   const wallSegments = []; // walls only: line of sight for E (main.js)
   for (const w of walls) {
-    group.add(prism(w.outer, y0, yC, M.wall));
+    if (!w.half) { group.add(prism(w.outer, y0, yC, M.wall)); wallSegments.push(...polySegments(w.outer)); } // (`half`: a sloping half wall, #624: built over the stair, you see and aim over it)
     segments.push(...polySegments(w.outer));
-    wallSegments.push(...polySegments(w.outer));
   }
 
   // Windows: sill/head infill, frame with optional transom, one top-hung sash, glass, inner sill board.
@@ -730,6 +729,39 @@ function stairMap(P, L) {
   return { sx, sz, ky, matrix, height: (x, z) => y(stairHeight(...toOurs(x, z))), underside: (x, z) => y(stairUnderside(...toOurs(x, z))),
     x: (x7) => S.x1 - (x7 - STAIR.bX1) * sx, z: (z7) => S.z0 + (z7 - STAIR.bZ[0]) * sz, y };
 }
+/** The sloping half wall between the stair and the living room (#624): a solid white wall whose top follows the stair's
+ * nosings at `top` m over them and ends in a vertical edge at its low end (x1), standing on the Entréplan floor. Returns
+ * its top's profile (x descending, y) and a height function for the tests. */
+function buildHalfWall(group, H, map, floorY) {
+  const hAt = (x) => map.height(x, H.z0 - 0.1);
+  // the nosings: where the tread surface steps up going west (x falls): (x of the step, the higher tread's height)
+  const pts = [];
+  let prev = null;
+  for (let x = H.x1; x >= H.x0 - 1e-9; x -= 0.002) {
+    const h = hAt(x);
+    if (h !== null && prev !== null && h > prev + 1e-6) pts.push([x + 0.002, h]);
+    if (h !== null) prev = h;
+  }
+  const slope = (a, b) => (b[1] - a[1]) / (b[0] - a[0]);
+  const first = pts[0], last = pts.at(-1);
+  // the line extended to both ends of the wall at its own pitch
+  const line = [[H.x1, first[1] + slope(first, pts[1]) * (H.x1 - first[0])], ...pts,
+    [H.x0, last[1] + slope(pts.at(-2), last) * (H.x0 - last[0])]].map(([x, y]) => [x, y + H.top]);
+  const shape = new THREE.Shape([[H.x1, floorY], ...line, [H.x0, floorY]].map(([x, y]) => new THREE.Vector2(x, y)));
+  const geo = new THREE.ExtrudeGeometry(shape, { depth: H.z1 - H.z0, bevelEnabled: false });
+  geo.translate(0, 0, H.z0);
+  const mesh = new THREE.Mesh(geo, SM.wall);
+  mesh.castShadow = mesh.receiveShadow = true;
+  mesh.name = 'halvväggen vid trappan';
+  group.add(mesh);
+  const top = (x) => {
+    let i = 1;
+    while (i < line.length - 1 && x < line[i][0]) i++;
+    const [a, b] = [line[i - 1], line[i]];
+    return a[1] + (b[1] - a[1]) * (x - a[0]) / (b[0] - a[0]);
+  };
+  return { top, line };
+}
 function buildOwnStructure(group, lower, upper, l1, P, L, map) {
   const h = P.hole, W = lower.size.x;
   for (const [x0, x1, z0, z1] of [[0, W, 0, h.z0], [0, W, h.z1, lower.size.z], [0, h.x0, h.z0, h.z1], [h.x1, W, h.z0, h.z1]]) {
@@ -748,6 +780,7 @@ function buildOwnStructure(group, lower, upper, l1, P, L, map) {
     }
     const m = new THREE.Mesh(g, o.material); m.castShadow = m.receiveShadow = true; group.add(m);
   });
+  map.halfWall = buildHalfWall(group, P.halfWall, map, L[0].floor);
   // the railing (H 1.1): along the opening's east edge to the set-back wall, the middle run on the upstand over the wall
   // between the flights (the Klk's south wall carried up, as ours, #232)
   const R = P.railing, y1 = L[1].floor, rail = R.h, midZ = R.z0, cx = map.x(STAIR.center[0]);

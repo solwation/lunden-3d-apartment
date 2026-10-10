@@ -173,6 +173,22 @@ const load = (q = '') => new Promise((resolve) => {
       check(over.length >= 3 && over.every((d) => Math.abs(d - HR.h) <= 0.05) && ends.every((d) => d < 0.035) && clear <= C.PLAYER.radius - 0.02 && dWalk > C.PLAYER.radius + HR.r,
         `L1201 ${run.name}: ${over.length} nosings at ${Math.min(...over).toFixed(3)}–${Math.max(...over).toFixed(3)} m, ends ${ends.map((d) => d.toFixed(3)).join(' / ')} m from the wall, outer edge ≤ ${clear.toFixed(3)} m from a wall, ${dWalk.toFixed(3)} m from the walking line`);
     }
+    // #624: the wall between flight A / the winders and the living room is a sloping half wall — its top HW.top over the
+    // treads' nosings, parallel to the stair, a vertical edge at its low end — and still holds
+    const hw = u1.stair.halfWall, HW = C.L1201.halfWall, Hh = (x) => u1.stair.height(x, HW.z0 - 0.1);
+    const nos = [];
+    for (let x = HW.x1; x > HW.x0; x -= 0.002) { const a = Hh(x), b = Hh(x - 0.002); if (a !== null && b !== null && b > a + 1e-6) nos.push([x, b]); }
+    const over = nos.map(([x, y]) => hw.top(x) - y);
+    check(nos.length >= 5 && over.every((d) => Math.abs(d - HW.top) < 0.03), `the half wall's top ${Math.min(...over).toFixed(3)}–${Math.max(...over).toFixed(3)} m over ${nos.length} nosings (HW.top ${HW.top})`);
+    const sl = (a, b) => (hw.top(b) - hw.top(a)) / (b - a);
+    check(Math.abs(sl(1.9, 1.2) - sl(1.2, 0.5)) < 0.45 && sl(1.9, 1.2) < -0.4, `its top slopes up with the stair (${sl(1.9, 1.2).toFixed(2)} m/m), not level`);
+    const fl3 = C.storeyFloor(3), lo = hw.line[0], hi = hw.line.at(-1);
+    check(lo[0] === HW.x1 && lo[1] - fl3 > 0.9 && lo[1] - fl3 < 1.4 && hi[0] === HW.x0 && hi[1] - fl3 < C.L1201.levels[0].rh - 0.05,
+      `a vertical edge at its low end (x ${lo[0]}, ${(lo[1] - fl3).toFixed(2)} m over the floor), ${(hi[1] - fl3).toFixed(2)} m at the high end, under the ceiling (RH ${C.L1201.levels[0].rh}): it follows the stair, a full wall only where the stair is high`);
+    stand(...W1(1.5, 7.8), C.storeyFloor(3));
+    check(walk([W1(1.5, 8.6)], 5).stuck, 'the half wall by the stair still holds from the stair side');
+    stand(...W1(1.5, 8.6), C.storeyFloor(3), 0);
+    check(walk([W1(1.5, 7.8)], 5).stuck, 'and from the living room side');
     stand(...W1(3.0, 7.2), C.storeyFloor(4));
     check(walk([W1(3.55, 9.6)], 5).stuck, 'the shut terrace door holds');
     stand(...W1(3.55, 8.6), C.storeyFloor(4)); A.use(terr); settle();

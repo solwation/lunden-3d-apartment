@@ -2866,6 +2866,11 @@ export const L1201 = {
   // face, 6 mm in from the lower one), the wall north of flight B; `from` / `to` where the bottom / top wall ends (the
   // void wall's east end, the upper wall's east end); `innerA` on the Klk's south wall (its east / west end)
   handrail: { outer: { south: 8.091, east: 0.206, north: 6.205, from: 2.28, to: 2.095 }, innerA: { face: 7.21, from: 2.28, to: 1.107 } },
+  // the sloping half wall along flight A and the winders (#624; plan wall `half: true` at z 8.091–8.195, x 0.2–2.28): Peab's
+  // brochure (docs/parklangan-halvvagg-trappa-broschyr.png) shows it white, its top parallel to the stair and ending in a
+  // vertical edge by the living room. `top` = its top over the treads' nosings (a railing height, *guess*: no section of it
+  // in Peab's material); the wall stays solid for collision
+  halfWall: { z0: 8.091, z1: 8.195, x0: 0.2, x1: 2.28, top: 1.0 },
   extDoorHead: 2.3,
   windows: [
     { level: 0, facade: 'north', x: 3.85, sill: 0.7, head: 2.3, transom: 0 },   // kitchen (HUS_L.street std: BH 0.7)
