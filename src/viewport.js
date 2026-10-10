@@ -18,6 +18,8 @@ export function bindGameViewport(renderer, camera) {
   function schedule() {
     if (!frame) frame = win.requestAnimationFrame(() => { frame = 0; sync(); });
   }
+  // iOS can report the pre-rotation layout for a while after orientationchange; re-measure a few times (#567).
+  const settle = () => { schedule(); for (const ms of [120, 350, 800]) win.setTimeout(schedule, ms); };
   function resize() {
     win.scrollTo(0, 0); // retain the existing iOS scroll correction
     schedule();
@@ -27,8 +29,8 @@ export function bindGameViewport(renderer, camera) {
   const observer = win.ResizeObserver ? new win.ResizeObserver(sync) : null;
   observer?.observe(canvas);
   const listeners = [
-    [win, 'resize', resize], [win, 'orientationchange', schedule],
-    [win, 'pageshow', schedule], [win.screen?.orientation, 'change', schedule],
+    [win, 'resize', resize], [win, 'orientationchange', settle],
+    [win, 'pageshow', schedule], [win.screen?.orientation, 'change', settle],
     [win.visualViewport, 'resize', schedule], [doc, 'fullscreenchange', schedule],
     [doc, 'visibilitychange', schedule],
   ];
