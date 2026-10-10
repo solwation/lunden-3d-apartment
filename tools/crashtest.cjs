@@ -55,10 +55,13 @@ const beat = (page) => page.evaluate(() => { try { return JSON.parse(localStorag
     check(!!b, 'heartbeat has place, quality, renderer.info and a GPU estimate', JSON.stringify({ at: b?.at, q: b?.q, fps: b?.fps, px: b?.px, gl3: b?.gl3, gpuMB: b?.gpuMB }));
     check(b?.s === 'run' && typeof b.build === 'string' && /Mobi|Headless|Chrome/.test(b.ua) && b.scr?.length === 3, 'heartbeat: state run, build, user agent, screen', b?.ua);
     const size = b ? JSON.stringify(b).length : 0;
-    check(size > 0 && size < 3000, 'heartbeat is small', `${size} B`);
+    check(size > 0 && size < 8000, 'heartbeat including bounded history is small', `${size} B`);
     await sleep(5000);
     const per = await page.evaluate(() => { const c = window.__crashlog, t = performance.now(); for (let i = 0; i < 200; i++) c.beat(); return (performance.now() - t) / 200; });
     check(per < 1, 'a beat (snapshot + localStorage write, every 2 s) costs under 1 ms', `${per.toFixed(3)} ms`);
+    check(await page.evaluate(() => { const h = JSON.parse(localStorage.getItem('lunden.crash.beat')).history; return h.length === 12 && h.every(s => 'frame' in s && 'lagMs' in s); }),
+      'heartbeat retains only twelve pre-failure samples with frame progress and timer lag');
+    check(b?.gpuMB?.basis === 'source-images' && b.gpuMB.complete === false, 'memory numbers explicitly marked incomplete source-image estimates');
     const before = (await reports()).length;
     await kill(ctx, page);
     await sleep(6500); // older than deadIfWithinMs
@@ -81,6 +84,21 @@ const beat = (page) => page.evaluate(() => { try { return JSON.parse(localStorag
     check(rs.some((r) => r.kind === 'rejection' && String(r.msg).includes('rejected once')), 'unhandled rejection reported');
     check(rs.some((r) => r.kind === 'webglcontextlost'), 'webglcontextlost reported');
     check(rs.some((r) => r.kind === 'webglcontextrestored'), 'webglcontextrestored reported');
+    const firstLost = rs.find(r => r.kind === 'webglcontextlost');
+    const firstRestored = rs.find(r => r.kind === 'webglcontextrestored');
+    check(firstLost?.context?.episode === 1 && firstRestored?.context?.episode === 1 && firstRestored.context.durationMs >= 0,
+      'loss and restore share an episode and retain recovery duration');
+    check(firstLost?.snap?.history?.some(s => s.gl === 'ok' && s.frame > 0), 'loss carries pre-failure rendering history');
+    await page.evaluate(() => { const c = document.createElement('canvas'); document.body.append(c); c.dispatchEvent(new Event('webglcontextlost')); c.remove(); });
+    check(await page.evaluate(() => !window.__crashlog.glLost), 'unrelated canvas events do not alter game diagnostics');
+    await page.evaluate(() => { const e = window.__app.renderer.getContext().getExtension('WEBGL_lose_context'); e.loseContext(); setTimeout(() => e.restoreContext(), 300); });
+    await until(async () => (await reports()).filter(r => r.kind === 'webglcontextrestored').length === 2);
+    rs = (await reports()).filter(r => r.typ === 'fel');
+    check(rs.filter(r => r.kind === 'webglcontextlost').length === 2 && rs.filter(r => r.kind === 'webglcontextrestored').length === 2,
+      'two genuine context loss/recovery cycles on the same day produce four reports');
+    const publicRows = await (await fetch(`${worker}/crash/public`)).json();
+    check(publicRows.filter(r => r.context?.episode === 2).length === 2 && publicRows.some(r => r.context?.episode === 2 && r.state?.history?.length),
+      'public endpoint preserves second episode and pre-failure history');
     // 3b. layout (#567): a normal rotation is no false alarm; a canvas that does not fill the surface is reported once
     const layouts = async () => (await reports()).filter((r) => r.typ === 'layout');
     await page.setViewportSize({ width: 844, height: 390 });
@@ -105,9 +123,9 @@ const beat = (page) => page.evaluate(() => { try { return JSON.parse(localStorag
     await page.evaluate(() => { for (let i = 0; i < 40; i++) setTimeout(() => { throw new Error(`flood ${i}`); }); });
     await sleep(2500);
     const st = await page.evaluate(() => ({ sent: window.__crashlog.stats.sent.length, dropped: window.__crashlog.stats.dropped.length }));
-    check(st.sent <= 6 && st.dropped > 30, 'flood is capped per session', JSON.stringify(st));
+    check(st.sent <= 12 && st.dropped >= 30, 'flood is capped per session', JSON.stringify(st));
     rs = await reports();
-    check(rs.length <= before + 1 + 6, 'the Worker got no more than the cap', String(rs.length));
+    check(rs.length <= before + 1 + 12, 'the Worker got no more than the cap', String(rs.length));
     check(rs.every((r) => JSON.stringify(r).length < 16384) && rs.every((r) => !('name' in r)), 'reports are small and carry no name');
 
     // 4. a backgrounded page that is then killed is not a crash; a clean close is not either

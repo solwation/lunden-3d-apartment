@@ -2426,7 +2426,8 @@ export const CRASHLOG = {
   beatMs: 2000,        // heartbeat to localStorage: one small JSON write, outside the render loop
   deadIfWithinMs: 6000, // a "running" beat this fresh at start = another tab of the same browser is alive, not a crash
   maxBytes: 12_000,    // a report is trimmed below this before sending (the Worker refuses > 16 kB)
-  perSession: 6, perDay: 20, // reports sent at most per page load / per browser and day; the same error only once a day
+  perSession: 12, perDay: 20, // bounded reports; ordinary errors once a day, distinct WebGL episodes separately (#642)
+  historySamples: 12, // ~24 seconds of cheap pre-failure counters at beatMs; diagnostic choice, not a device limit
   errorLines: 20, actions: 12, // ring buffers: last console.error lines, last key / tap events
   layoutTolerance: 2, layoutChecksMs: [300, 1000, 3000], layoutPerSession: 3, // #567: canvas vs surface: px off that counts, checks after a resize / rotation, layout reports per page
   textureEveryMs: 60_000, textureSliceMs: 1.5, // the texture-memory estimate walks the scene (~25 ms in all): this often, in slices of this many ms 40 ms apart

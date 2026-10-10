@@ -65,10 +65,19 @@ export function device(ua) {
 function stateView(b) {
   if (!b || typeof b !== 'object') return null;
   const o = { up: nm(b.up), fps: nm(b.fps), px: nm(b.px), low: b.low ? 1 : 0, gl: b.gl === 'lost' ? 'lost' : undefined, scr: nums(b.scr, 3), vp: nums(b.vp, 2), jsMB: nums(b.jsMB, 2) };
+  o.phase = txt(b.phase, 16); o.frame = nm(b.frame); o.buffer = nums(b.buffer, 2);
+  o.background = b.hidden ? 1 : 0; o.standalone = b.standalone ? 1 : 0; o.maxTextureSize = nm(b.maxTextureSize);
+  if (Array.isArray(b.history)) o.history = b.history.slice(-12).map((v) => {
+    const row = v && typeof v === 'object' ? v : {};
+    return { ...Object.fromEntries(['up', 'frame', 'q', 'px', 'fps', 'geo', 'tex', 'prog', 'calls', 'tris', 'sourceTexMB', 'jsMB', 'lagMs'].map(k => [k, nm(row[k])])),
+      phase: ['load', 'scene', 'pending', 'compiling', 'draw', 'mirror', 'mirror-draw', 'textures', 'uploading', 'done', 'drawn', 'skipped'].includes(row.phase) ? row.phase : null,
+      gl: row.gl === 'lost' ? 'lost' : row.gl === 'ok' ? 'ok' : null };
+  });
   if (b.at) o.at = { room: txt(b.at.room, 40), lvl: nm(b.at.lvl), x: nm(b.at.x), y: nm(b.at.y), z: nm(b.at.z) };
   if (b.q) o.q = { lvl: nm(b.q.lvl), max: nm(b.q.max) };
   if (b.gl3) o.gl3 = Object.fromEntries(['geo', 'tex', 'prog', 'calls', 'tris'].map((k) => [k, nm(b.gl3[k])]));
   if (b.gpuMB) o.gpuMB = Object.fromEntries(['canvas', 'shadow', 'mirror', 'tex', 'total'].map((k) => [k, nm(b.gpuMB[k])]));
+  if (b.gpuMB?.basis === 'source-images') Object.assign(o.gpuMB, { basis: 'source-images', complete: false, textureAgeSec: nm(b.gpuMB.textureAgeSec) });
   if (Array.isArray(b.acts)) o.acts = b.acts.slice(-12).map((a) => [nm(a?.[0]), txt(a?.[1], 24)]);
   if (Array.isArray(b.errs)) o.errs = b.errs.slice(-5).map((e) => txt(e, 100));
   return o;
@@ -84,6 +93,10 @@ export function publicView(r) {
   const state = r.beat ?? r.snap;
   const hour = Number.isFinite(r.received) ? new Date(Math.floor(r.received / 3600_000) * 3600_000).toISOString().slice(0, 13) + ':00Z' : null;
   return { hour, typ: txt(r.typ, 10), kind: txt(r.kind, 30), build: txt(r.build, 12), msg: txt(r.msg), why: txt(r.why, 12), gap: nm(r.gap), device: device(state?.ua),
+    context: r.context && typeof r.context === 'object' ? {
+      episode: nm(r.context.episode), lossUp: nm(r.context.lossUp), durationMs: nm(r.context.durationMs),
+      status: txt(r.context.status, 160), missingLoss: r.context.missingLoss === true,
+    } : null,
     state: stateView(state), layout: layoutView(r.layout), errs: Array.isArray(r.errs) ? r.errs.slice(-5).map((e) => txt(e, 100)) : undefined };
 }
 async function publicList(env) {
@@ -100,7 +113,10 @@ async function publicList(env) {
   for (const name of names.sort().reverse().slice(0, PUBLIC_MAX)) {
     const raw = await env.LUNDEN.get(name, 'json');
     if (!raw) continue;
-    const v = publicView(raw), key = JSON.stringify([v.typ, v.kind, v.msg, v.state?.at?.room, v.device, v.build]);
+    const v = publicView(raw);
+    // Keep separate failures with their own pre-failure histories. Transport retries are already
+    // deduplicated at ingest; no session/browser identifier is exposed by the public view.
+    const key = raw.v >= 2 && (v.context || v.typ === 'död') ? name : JSON.stringify([v.typ, v.kind, v.msg, v.state?.at?.room, v.device, v.build]);
     const g = groups.get(key);
     if (g) { g.count++; g.first = v.hour ?? g.first; } else groups.set(key, { ...v, count: 1, first: v.hour });
   }
