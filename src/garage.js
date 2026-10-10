@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { freeCanvasAfterUpload } from './lowmemory.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { GARAGE as G, SITE, CORE } from './config.js';
 import { carGeometry, bikeGeometry } from './streetlife.js';
@@ -154,7 +155,7 @@ function floorTexture(r, arrows = []) {
     g.moveTo(0.9 * PPM, 0); g.lineTo(0.1 * PPM, -0.45 * PPM); g.lineTo(0.1 * PPM, -0.18 * PPM); g.lineTo(-0.9 * PPM, -0.18 * PPM);
     g.lineTo(-0.9 * PPM, 0.18 * PPM); g.lineTo(0.1 * PPM, 0.18 * PPM); g.lineTo(0.1 * PPM, 0.45 * PPM); g.closePath(); g.fill(); g.restore();
   }
-  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8;
+  const t = freeCanvasAfterUpload(new THREE.CanvasTexture(c)); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; // drawn once (#628)
   return t;
 }
 
@@ -183,7 +184,7 @@ function signTexture() {
     g.strokeStyle = '#f4f4f0'; g.lineWidth = 3; g.strokeRect(x + 5, y + 5, 246, 54);
     g.fillStyle = '#f4f4f0'; g.font = `bold ${s.length > 12 ? 24 : 32}px sans-serif`; g.fillText(s, x + 128, y + 33);
   });
-  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4;
+  const t = freeCanvasAfterUpload(new THREE.CanvasTexture(c)); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4;
   return { tex: t, rows: c.height / 64 };
 }
 const SIGN_TEX = { v: null };

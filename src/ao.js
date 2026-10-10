@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { freeCanvasAfterUpload } from './lowmemory.js';
 import { AO } from './config.js';
 
 // Baked ambient occlusion: soft darkening of floors (and ceilings) along walls and fixed
@@ -55,7 +56,7 @@ function aoTexture(size, rects, strength, radius, hole) {
     img.data[i * 4 + 3] = 255;
   }
   g.putImageData(img, 0, 0);
-  const tex = new THREE.CanvasTexture(c);
+  const tex = freeCanvasAfterUpload(new THREE.CanvasTexture(c)); // drawn once (#628)
   tex.colorSpace = THREE.SRGBColorSpace; // round-trips, so the blend multiplies by the canvas value
   return tex;
 }

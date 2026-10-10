@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { freeCanvasAfterUpload } from './lowmemory.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { SITE } from './config.js';
 
@@ -80,7 +81,7 @@ export function buildStreetSigns(groundY) {
     const W = canvas.width, H = canvas.height, e = 0.5; // half a texel inside the slot: no bleeding from the neighbour
     slots.set(k, [(sx + e) / W, (sx + sw - e) / W, 1 - (sy + sh - e) / H, 1 - (sy + e) / H]);
   });
-  const tex = new THREE.CanvasTexture(canvas);
+  const tex = freeCanvasAfterUpload(new THREE.CanvasTexture(canvas)); // drawn once (#628)
   tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 4;
   // the faces: two quads per blade, a hair outside the edge box
   const pos = [], nor = [], uv = [];

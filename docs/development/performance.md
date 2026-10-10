@@ -239,3 +239,24 @@ their reflection). Desktop untouched. After: textures 207 → **105 MB**, GPU pe
 **Not done (measured, but not safe to change blind):** the 134 MB of CPU geometry copies (raycasts read them), the 186 MB of
 canvas sources (many canvases are redrawn, freeing needs a per-module opt-in), vertex-buffer quantisation, and warm-up changes.
 Frame times in SwiftShader (seconds per frame) say nothing about the phone. **Physical iPhone verification is still required.**
+
+**Step 2 (#628, phone only, not verified on a device):** (1) `freeCanvasAfterUpload(tex)` (`src/lowmemory.js`, `lowMemory` only) shrinks a
+canvas texture's source canvas to 1×1 in three's `onUpdate`, i.e. right after the upload. Opt-in, only for canvases drawn once and
+never cloned or redrawn: curtain prints, the garage escape plan / floor / sign plates, the rugs (archRug, rugTexture, zigzag,
+pile), K-pop poster atlas, AO overlays and street-sign atlas. NOT applied to anything that calls `needsUpdate` again (cat board,
+drawing sheets, calendar, cheat note, cups, signs that change) or may be cloned. A later re-upload (e.g. after a lost WebGL
+context) would show these blank. (2) `WarmUp` option `lazyHidden` (phone): stage 4 (upload of every texture of hidden objects)
+is skipped; they upload when first shown. Measured with `phonememtest --cpu 1 --dwell 600` (estimates, MB):
+
+| | before (a3541b8-ish) | after |
+|---|---|---|
+| textures after warm-up | 105 | 87 (94 at the end of the route; 195 → 211 textures) |
+| GPU peak | 235 | 224 |
+| CPU canvases after warm-up | 187 | 106 |
+| JS heap peak | ~343 | ~338 |
+| sum of the three peaks | 766 | 732 (guess budget 600) |
+
+Screenshots of start, living room, kitchen and the nine mirrors before/after are the same (the one pixel-diff outlier was a
+different camera yaw). perfcount `?lowmem&w=390&h=844` passes (textures ~74 MB). The canvases still held (~106 MB): cat board 9,
+cheat note 6, cups, 2828×1000 and 2160×1076 canvases of other makers, many small ones. Still not done: geometry CPU copies (135 MB:
+raycast, marks.js, basket bounces, DetailCuller and `edgeSources` read them), chunking the one-frame warm-up draw, vertex buffers.

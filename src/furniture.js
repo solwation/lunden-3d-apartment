@@ -2,6 +2,7 @@ import { windPlant, windMaterial } from './plantwind.js';
 import { MusicLoop } from './music.js';
 import { MUSIC } from './config.js';
 import * as THREE from 'three';
+import { freeCanvasAfterUpload } from './lowmemory.js';
 import { sfx } from './audio.js';
 import { mergeStatic } from './merge.js';
 import { zzplant } from './zzplant.js';
@@ -1379,7 +1380,7 @@ function kposterTexture() {
     }
     g.restore();
   });
-  const tex = new THREE.CanvasTexture(c);
+  const tex = freeCanvasAfterUpload(new THREE.CanvasTexture(c));
   tex.colorSpace = THREE.SRGBColorSpace;
   tex.anisotropy = 8;
   return tex;
@@ -2599,7 +2600,7 @@ function archRugTexture(item) {
     g.fillStyle = rand() < 0.5 ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.08)';
     g.fillRect(rand() * c.width, rand() * c.height, 2 + rand() * 2, 2);
   }
-  const tex = new THREE.CanvasTexture(c);
+  const tex = freeCanvasAfterUpload(new THREE.CanvasTexture(c));
   tex.colorSpace = THREE.SRGBColorSpace;
   tex.anisotropy = 8;
   return tex;
@@ -2649,7 +2650,7 @@ function zigzagRugTextures(item) {
     g.fillStyle = rand() < 0.5 ? 'rgba(255,255,255,0.08)' : 'rgba(20,18,16,0.13)';
     g.fillRect(rand() * W, rand() * H, 1 + rand() * 3, 1 + rand() * 3);
   }
-  const tex = new THREE.CanvasTexture(map), rtex = new THREE.CanvasTexture(rough);
+  const tex = freeCanvasAfterUpload(new THREE.CanvasTexture(map)), rtex = freeCanvasAfterUpload(new THREE.CanvasTexture(rough));
   tex.colorSpace = THREE.SRGBColorSpace;
   tex.anisotropy = rtex.anisotropy = 8;
   return { map: tex, roughnessMap: rtex };
@@ -2672,7 +2673,7 @@ function rugTexture(item) {
   g.strokeStyle = item.border;
   g.lineWidth = 7;
   g.strokeRect(b, b, c.width - 2 * b, c.height - 2 * b);
-  const tex = new THREE.CanvasTexture(c);
+  const tex = freeCanvasAfterUpload(new THREE.CanvasTexture(c));
   tex.colorSpace = THREE.SRGBColorSpace;
   tex.anisotropy = 8;
   return tex;
@@ -2702,7 +2703,7 @@ function pileTextures(item) {
     g.fillStyle = rand() < 0.5 ? 'rgba(255,240,236,0.10)' : 'rgba(90,45,45,0.09)';
     g.fillRect(rand() * n, rand() * n, 1 + rand() * 2, 1 + rand() * 2);
   }
-  const tex = new THREE.CanvasTexture(map), rtex = new THREE.CanvasTexture(rough);
+  const tex = freeCanvasAfterUpload(new THREE.CanvasTexture(map)), rtex = freeCanvasAfterUpload(new THREE.CanvasTexture(rough));
   tex.colorSpace = THREE.SRGBColorSpace;
   tex.anisotropy = rtex.anisotropy = 8;
   return { map: tex, roughnessMap: rtex };

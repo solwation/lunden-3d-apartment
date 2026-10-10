@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { freeCanvasAfterUpload } from './lowmemory.js';
 
 // The basement's ways out (#452, GARAGE.escape in config): a distance field to the nearest exit over the garage's
 // rectangles, the green "Nödutgång" sign pictograms (our own drawing of a running figure, a door and an arrow) and the
@@ -261,6 +262,6 @@ export function planTexture(plans, geo) {
     c.u0 = ox / W; c.u1 = (ox + w) / W; c.v0 = 1 - h / H; c.v1 = 1;
     ox += w;
   }
-  const tex = new THREE.CanvasTexture(canvas); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 8;
+  const tex = freeCanvasAfterUpload(new THREE.CanvasTexture(canvas)); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 8; // drawn once (#628)
   return { tex, cells, canvas };
 }

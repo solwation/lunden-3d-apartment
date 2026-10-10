@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { freeCanvasAfterUpload } from './lowmemory.js';
 import { LEVELS, SOFFITS, CURTAIN_LIGHT as LIGHT } from './config.js';
 import { sfx } from './audio.js';
 
@@ -547,7 +548,7 @@ export class Curtain {
     this.speed = spec.speed;
     const fl = LEVELS[spec.level].floor;
     const y0 = fl + spec.drop, y1 = fl + spec.top;
-    this.tex = printTexture(spec.theme, spec.colors.ground, spec.colors.ink);
+    this.tex = freeCanvasAfterUpload(printTexture(spec.theme, spec.colors.ground, spec.colors.ink)); // drawn once (#628)
     this.mat = new THREE.MeshStandardMaterial({ map: this.tex, emissiveMap: this.tex, emissive: 0x000000, roughness: LIGHT.roughness, side: THREE.DoubleSide, opacity: LIGHT.opacity, transparent: true, depthWrite: true, forceSinglePass: true });
     // One depth-tested pass avoids double blending of two-sided cloth. Gathered folds keep their density.
     // Three's default shadow depth material stays solid, so see-through does not create sharp sun pinholes.

@@ -14,11 +14,13 @@ import { WARM } from './config.js';
 //     drawn into it (every layer, no culling) — the shared mirror target is allocated once here;
 //  4. idle time: every texture of every material, hidden ones too (seasonal things, closed cupboards' contents), is
 //     uploaded (`renderer.initTexture`) a few at a time.
+//     On phones (`lazyHidden`, #628) this stage is skipped: what is hidden at the start (seasonal things, closed cupboards'
+//     contents) uploads when it first shows, a small hitch, instead of holding its textures in GPU memory all along.
 // Headless test browsers skip it (minutes of SwiftShader, nobody looks), `&warm` forces it.
 export class WarmUp {
   /** `mirrorTarget()` → the render target mirrors draw into (or null); `log(text)` for `&perf`. */
-  constructor({ renderer, scene, camera, shadowCamera, mirrorTarget = () => null, skip = false, log = null, onSlowFrame = () => {} }) {
-    Object.assign(this, { renderer, scene, camera, shadowCamera, mirrorTarget, log, onSlowFrame });
+  constructor({ renderer, scene, camera, shadowCamera, mirrorTarget = () => null, skip = false, lazyHidden = false, log = null, onSlowFrame = () => {} }) {
+    Object.assign(this, { renderer, scene, camera, shadowCamera, mirrorTarget, lazyHidden, log, onSlowFrame });
     this.state = skip ? 'skipped' : 'pending'; // → compiling → draw → mirror → compiling → mirror-draw → textures → uploading → done
     this.wait = WARM.frames;
     this.textures = null;
@@ -40,7 +42,9 @@ export class WarmUp {
         return false;
       }
       case 'mirror-draw': this.drawAll(this.mirrorTarget()); this.state = 'textures'; return true;
-      case 'textures': this.state = 'uploading'; this.uploadTextures(); return false;
+      case 'textures':
+        if (this.lazyHidden) { this.state = 'done'; this.log?.(`warm-up: hidden textures left for later, ${this.renderer.info.memory.textures} on the GPU`); return false; }
+        this.state = 'uploading'; this.uploadTextures(); return false;
       default: return false;
     }
   }
