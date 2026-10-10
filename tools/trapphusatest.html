@@ -135,12 +135,12 @@ async function run() {
   check(fd.isOpen && fd.door.angle > 1.4, `it opens (angle ${f2(fd.door.angle)})`);
   walkTo(-0.5, 38.0, 3); walkTo(B.x0 - 1.0, 37.95, 3);
   check(player.pos.x > B.x0 + 0.1 && player.inCore && onY(2), `open, the doorway stops you at the threshold (x ${f2(player.pos.x)})`);
-  // an open A1103 door lies along the lift's front wall and covers its doors: you stop short of it; shut again, you get closer
+  // #649: an open A1103 door (hinged south) lies across the hall at z 38.2, clear of the lift's front wall and its doors (z 37.3, x -0.25 … 0.65)
   at(0.2, 39.0, Y[2]); look(fe.pickable); btn.click(); for (let i = 0; i < 90; i++) step(1 / 60);
-  walkTo(0.2, 36.5, 3); const zOpen = player.pos.z;
+  const lp = fe.pickable.getWorldPosition(new camera.position.constructor());
+  check(fe.isOpen && fe.door.angle > 1.4 && lp.z > 37.95, `an open A1103 door lies across the hall, off the lift's doors (leaf centre z ${f2(lp.z)}, front wall z ${K.shaft.front + 0.3})`);
   at(0.2, 39.0, Y[2]); look(fe.pickable); btn.click(); for (let i = 0; i < 90; i++) step(1 / 60);
-  walkTo(0.2, 36.5, 3);
-  check(!fe.isOpen && player.pos.z < zOpen - 0.05, `an open A1103 door stops you at z ${f2(zOpen)}, shut you get to z ${f2(player.pos.z)}`);
+  check(!fe.isOpen, 'A1103 shut again');
   at(0.0, 38.9, Y[2]); look(fd.pickable); btn.click(); for (let i = 0; i < 90; i++) step(1 / 60);
   check(!fd.isOpen && fd.door.angle < 0.01, 'A1102 shut again');
   // the cross wall's door holds shut from the south and lets you through open

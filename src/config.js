@@ -1824,7 +1824,8 @@ export const CORE_A = {
   basement: { west: [41.4, 42.75], east: [37.3, 40.1], height: 2.1 },
   // #643: the flats' doors in the band's walls on våning 1–4, openable (makeDoor; the arcs of the calibrated sheets, hall-2 …).
   // Each is [z0, z1, hinge: 'n' | 's' (which jamb; the leaf swings into the hall), then the flat per storey (stops index 1–4;
-  // null = no door there: on våning 1 the east side north of the shaft is the lobby's opening)]. Positions z ±0.15 m read off
+  // null = no door there: on våning 1 the east side north of the shaft is the lobby's opening)]. #649: the east side's north door is hinged
+  // SOUTH (*guess*) so an open leaf lies across the hall at z 38.2, not along the lift's front wall (z 37.3) over its doors. Positions z ±0.15 m read off
   // the plans; 2.1 m high (*guess*). The flat numbers: Peab's planritningsbroschyr numbers Hus A's flats A1001–A1004 (våning 1),
   // A1101–A1104, A1201–…, A1301–… and its key plan puts them in this order (north-west, north-east, south-west, south-east
   // of the hall: A1102 A1103 / A1101 A1104; våning 1: A1004 A1001 / A1003 A1002) — which flat is behind which door is
@@ -1833,7 +1834,7 @@ export const CORE_A = {
   flatDoors: {
     height: 2.1, cell: { depth: 1.3, height: 2.5 }, scale: 0.5, // scale: the number atlas' cell size (× 512 × 384 px)
     west: [[37.35, 38.2, 'n', [null, 'A1004', 'A1102', 'A1202', 'A1302']], [40.28, 41.1, 's', [null, 'A1003', 'A1101', 'A1201', 'A1301']]],
-    east: [[37.35, 38.2, 'n', [null, null, 'A1103', 'A1203', 'A1303']], [40.28, 41.1, 's', [null, 'A1002', 'A1104', 'A1204', 'A1304']]],
+    east: [[37.35, 38.2, 's', [null, null, 'A1103', 'A1203', 'A1303']], [40.28, 41.1, 's', [null, 'A1002', 'A1104', 'A1204', 'A1304']]],
   },
   // #643: the single door in the cross wall at z ≈ 41.3 (the plans: a 0.85 m leaf hinged at its west end, swinging south
   // towards the stair; the wall east of it is solid). The wall is drawn as a plane at `z`, våning 1–4 (not −1, drawn differently).

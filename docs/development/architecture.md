@@ -93,7 +93,7 @@ src/corea.js           Hus A's stair core (#637, CORE_A in config; DRAWING from 
                        handrail that follows the wall round the corners; counts and widths *guess*), the lift shaft
                        north of it (`Lift` with a spec: car x −0.40 … 0.80, door south, 5 stops), våning 1's lobby from the courtyard
                        entrance's glazed door (hinged east, opening out into the recess; `world.core.parts[0].doors[0]`) with a fixed
-                       sidelight; #643: the flats' doors (15: `CORE_A.flatDoors`, våning 1 three, 2–4 four, both side walls, z 37.35…38.2 hinged north / 40.28…41.1 hinged south,
+                       sidelight; #643: the flats' doors (15: `CORE_A.flatDoors`, våning 1 three, 2–4 four, both side walls, z 37.35…38.2 hinged north (the east one south, #649: its open leaf must not cover the lift's doors) / 40.28…41.1 hinged south,
                        the arcs of the plans) and the cross wall's single door (`crossDoor`, z 41.45, våning 1–4) are real `makeDoor` doors, each leaf merged into ONE
                        mesh (`leafify`: vertex colours + a white texel of the shared number atlas + the brass plate); the architrave and number signs come
                        from core.js `buildFlatDoors(geo, { doors, Ys, bk, fixed: false, cols, sc, strip })` (Hus L's call unchanged), behind each door a dark
