@@ -287,16 +287,22 @@ export class Olof {
   /** Can he be waved to now (sitting there)? */
   get waveable() { return this.state === 'sit' && this.object.visible; }
 
-  /** The visitor waves (E on him): he waves back, says goodbye, gets up and goes. True if it counted. */
+  /** The visitor waves (E on him): he waves back, tells a dad joke (#659), gets up and goes. True if it counted. */
   wave() {
     if (!this.waveable) return false;
     this.state = 'wave'; this.t = 0; this.said = false;
     return true;
   }
 
+  /** A dad joke for the seat (OLOF.seat.jokes), never the one he told last. */
+  pickJoke() {
+    const all = O.seat.jokes, pool = all.filter((j) => j !== this.lastJoke);
+    return (this.lastJoke = pool[Math.floor(this.rand() * pool.length)]);
+  }
+
   pose() {
     const s = this.state, t = this.t;
-    const wave = s === 'wave' ? Math.min(1, t / 0.4) * (t > O.waveTime - 0.3 ? Math.max(0, (O.waveTime - t) / 0.3) : 1) : 0;
+    const hold = O.seat.waveHold, wave = s === 'wave' ? Math.min(1, t / 0.4) * (t > hold - 0.3 ? Math.max(0, (hold - t) / 0.3) : 1) : 0; // (the hand comes down while he tells it)
     const up = s === 'rise' ? t / O.riseTime : s === 'go' ? 1 : 0;
     const p = seatedPose(this.seat, { w: this.drink, wave, ph: t * 9, up, fwd: O.forward[this.target?.name] ?? 0 });
     if (s === 'go') { // a couple of steps sideways along the seat's front, turning; fading meanwhile
@@ -331,8 +337,8 @@ export class Olof {
     const want = this.sipT >= 0 && this.sipT < O.sipTime - 0.7 ? 1 : 0;
     this.drink += THREE.MathUtils.clamp(want - this.drink, -dt / 0.6, dt / 0.7);
     if (this.state === 'wave') {
-      if (!this.said && this.t > 0.5) { this.said = true; this.onSay?.(O.bye[Math.floor(this.rand() * O.bye.length)]); }
-      if (this.t >= O.waveTime) { this.state = 'rise'; this.t = 0; }
+      if (!this.said && this.t > 0.5) { this.said = true; this.onSay?.(this.pickJoke(), O.seat.jokeTime); } // the joke instead of the goodbye (#659)
+      if (this.t >= 0.5 + O.seat.jokeTime + 0.2) { this.state = 'rise'; this.t = 0; }
     } else if (this.state === 'rise' && this.t >= O.riseTime) {
       this.state = 'go'; this.t = 0;
       this.yaw0 = this.object.rotation.y;

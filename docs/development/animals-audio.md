@@ -12,7 +12,7 @@ src/miele.js           Miele (#328): `HeartFireworks` (heart shells that pop int
 src/olof.js            Olof (#586, OLOF): a figure with a beer can in the sofa / armchair now and then; one SkinnedMesh (rigid
                        13-bone skeleton, vertex colours, one material), posed by two-bone IK each frame (`poseOlof`, `seatedPose`)
 tools/oloftest.html    headless test (#586): ?olof=0 seats him, seated pose, seat taken for visitor and cat, never turns up in
-                       sight, "Vinka till Olof" scores, he answers, waves, gets up and is gone, the seat free again
+                       sight, "Vinka till Olof" scores, he tells a dad joke (10 different, none twice in a row), waves, gets up and is gone, the seat free again
 tools/olofcartest.html headless test (#599): the key brings the car with Olof at the wheel (seat, hands on the wheel), "Hälsa på
                        Olof" → a dad joke, he sits on (again: new joke, no points); the car drives off with him; the driver's door and seat work after; back with the next call; gone when you sit in
 src/audio.js           synthesised positional sound effects (Web Audio): doors, slides, meow, steps; #604: `mainsBuzz` (100 Hz buzz +
@@ -81,8 +81,11 @@ tools/kittentest.html  headless test of kittens (#363): the seeded draw (~KITTEN
 - While he sits there his spot's `taken` is true (rest.js: the visitor cannot sit on him) and `cat.seatTaken` keeps the cat
   off it. He sips now and then (the can to the lips, the head back).
 - Looking at him gives "Vinka till Olof" (kind `olof`, an invisible pick box round the seated figure; only while he sits):
-  your line ("Hej Olof!") at the bottom, his goodbye in a bubble over his head (greet.js `sayMine` / `say`), stats `olof`
-  (SCORE first 25, again 5), he waves back with the free hand, gets up, turns and steps off fading out.
+  your line ("Hej Olof!") at the bottom, then (#659) a dad joke from `OLOF.seat.jokes` (10, never the same twice in a row,
+  `pickJoke`) in a wide bubble (`.say.long`, `OLOF.seat.jokeTime` s) over his head (greet.js `sayMine` / `say`), stats `olof`
+  (SCORE first 25, again 5, none extra for the joke); he waves with the free hand for `waveHold` s, tells it, then gets up,
+  turns and steps off fading out. The old `bye` lines are gone. He has no timer of his own that sends him off (only F, a
+  moved seat and a greeting end a stay), so there is no joke-on-own-departure case.
 - The figure: one SkinnedMesh, every vertex weighted to one bone, so one draw call (+ the shadow pass). `poseOlof` takes
   hip height / forward, lean, head pitch, ankle targets and wrist targets with a pole each; `seatedPose` builds those for
   a seat height (`OLOF.forward` per seat: the armchair's cushions push him forward). Reuse it for other seats (#599).

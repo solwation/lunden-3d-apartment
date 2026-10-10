@@ -58,14 +58,22 @@ f.onload = async () => {
   pass &= check(mine && !mine.hidden && /olof/i.test(mine.textContent), `you say "${mine?.textContent}"`);
   for (let i = 0; i < 60; i++) step(1 / 60);
   const theirs = [...d.querySelectorAll('#speech .say.theirs')].at(-1);
-  pass &= check(olof.state === 'wave' && theirs && theirs.textContent.length > 1, `he answers "${theirs?.textContent}" and waves`);
+  const jokes = (await import('../src/config.js')).OLOF.seat.jokes;
+  pass &= check(olof.state === 'wave' && theirs && jokes.includes(theirs.textContent) && theirs.classList.contains('long'), `he tells a dad joke "${theirs?.textContent}" (long bubble) and waves`);
+  pass &= check(jokes.length >= 8 && new Set(jokes).size === jokes.length, `${jokes.length} different jokes`);
   const hand = B.handL.getWorldPosition(new V()), shoulder = B.shoulderL.getWorldPosition(new V());
   pass &= check(hand.y > shoulder.y + 0.15, `his hand is up (${hand.y.toFixed(2)} > ${shoulder.y.toFixed(2)})`);
   step(1 / 60);
   pass &= check(btn.hidden || !/olof/i.test(btn.textContent), 'no second wave while he goes');
+  for (let i = 0; i < 60 * 3; i++) step(1 / 60);
+  pass &= check(olof.state === 'wave' && theirs && !theirs.hidden && theirs.isConnected, 'he is still telling it after 4 s (not rushed off)');
   for (let i = 0; i < 60 * 6; i++) step(1 / 60);
   pass &= check(olof.state === 'away' && !olof.object.visible, 'after a few seconds he is gone');
   pass &= check(!sp.taken?.(), 'the seat is free again');
+  // never the same joke twice in a row
+  let same = false, prev = null;
+  for (let i = 0; i < 200; i++) { const j = olof.pickJoke(); if (j === prev) same = true; prev = j; }
+  pass &= check(!same, 'never the same joke twice in a row');
   out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
 };
 </script>

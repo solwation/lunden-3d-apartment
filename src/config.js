@@ -1498,13 +1498,20 @@ export const GREET = {
 // beard, burgundy zip hoodie over a grey T-shirt, dark grey jeans.
 export const OLOF = {
   first: 40, every: 50, chance: 0.35, away: 240, sip: [5, 11], sipTime: 2.4,
-  waveTime: 1.8, riseTime: 1.1, goTime: 1.6, // s: he waves back, gets up, steps away fading
+  riseTime: 1.1, goTime: 1.6, // s: he gets up, steps away fading (his wave and joke: `seat`)
   seats: ['soffan', 'fåtöljen'], sofaSpots: 3, // the sofa's three seats, not the chaise's (his feet would be in its cushion)
   forward: { 'fåtöljen': 0.12 }, // m his hips sit forward of the usual: the armchair's two cushions fill its back (*guess*, by eye)
   colors: { hoodie: 0x5a2029, cuff: 0x4a1a22, tee: 0x606063, zip: 0xb9bcc0, jeans: 0x3a3c41, shoe: 0x2a2523, skin: 0xe2b59b,
     hair: 0x9c8b63, beard: 0x7f776d, eye: 0x2a2420, can: 0xc9cdd2, canBand: 0x1f5e3a, canTop: 0x9aa0a6 },
   hello: ['Hej Olof!', 'Tjena Olof!', 'Hallå där, Olof!', 'Skål, Olof!'],
-  bye: ['Skål! Nu drar jag.', 'Hej hej, vi ses!', 'Oj, är klockan så mycket? Hej då!', 'Tack för ölen!', 'Ha det gött!'],
+  // the dad joke he tells in the sofa / armchair before he goes (#659): in a `.say.long` bubble for `jokeTime` s (his goodbye line
+  // `bye` was dropped), the hand up for `waveHold` s of it; never the same one twice in a row. Texts and times our *guess*.
+  seat: { jokeTime: 5, waveHold: 1.6,
+    jokes: ['Varför är soffan så lugn? Den har alltid någon som stöttar den.', 'Jag sa till soffan att jag skulle komma tillbaka. Den tog det ganska lugnt.',
+      'Vad sa ölburken till soffan? Du är riktigt bekväm att ligga på!', 'Jag har slutat titta på tv. Nu tittar jag bara på hur det går med soffan.',
+      'Varför gillar fåtöljen fotboll? Den har alltid en bra plats på läktaren.', 'Vad sa glaset till ölen? Du är riktigt skummande!',
+      'Jag ville bygga om vardagsrummet, men jag fastnade på första raden: soffan.', 'Min kudde sa att jag skulle vila mer. Jag lyssnade, jag har ju huvudet på rätt ställe.',
+      'Varför ska man aldrig lita på en tv-bänk? Den har alltid något på gång.', 'Vad sa Hus L till soffan? Vi ses vid nästa avsnitt!'] },
   // at the wheel of our car (#599, src/olof.js OlofDriver): `at` [x, z] his hips in the car's frame (facing +x) (the driving seat's cushion, carmodel.js seats: x −0.04, z −0.37; seat top 0.54),
   // `floor` the foot well (carmodel.js: 0.29 + half its 0.05), `seat` the cushion's top above it, `wheel` [x, y, z] where his
   // hands hold it (carmodel.js: the wheel's centre 0.42, 0.93, −0.37, tilted 0.42 rad), `pedals` how far forward his feet are,

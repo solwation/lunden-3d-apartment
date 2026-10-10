@@ -635,7 +635,7 @@ olof.canSee = (p) => {
 olof.catAt = () => (cat.visible ? cat.object.position : null);
 olof.visitorSeat = () => (rest.active ? rest.spot.pos : null);
 olof.enabled = () => world.furnitureOn !== false;
-olof.onSay = (line) => greet.say({ head: olof.fig.head, s: 1 }, line, { pitch: 0.85, rate: 1, voice: 3 });
+olof.onSay = (line, secs) => greet.say({ head: olof.fig.head, s: 1 }, line, { pitch: 0.85, rate: 1, voice: 3 }, secs);
 cat.seatTaken = (x, z) => olof.sitsNear(x, z);
 // … and at the wheel when the car is called (#599): greet him and he tells a dad joke and is gone
 const olofDriver = new OlofDriver(car);
