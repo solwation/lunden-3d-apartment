@@ -103,6 +103,23 @@ src/corea.js           Hus A's stair core (#637, CORE_A in config; DRAWING from 
                        surroundings.js (walkIn recess): the brick body is hollow (caps between the bands dropped, `entranceCuts` cuts the
                        door + sidelight out of the recess's back wall), the outdoor collision has the door's gap + a 0.3 m closed
                        vestibule (`DOORWAY_DEPTH`) and a floor there (`recessFloors`). NOT modelled: the flats behind the doors.
+src/corehouse.js       Hus B's stair core (#638; CORE_B in config, Hus C's follows in #639, DRAWING from kalibrerad/vaning-m1 … 3 and 1 … 5 read by scanning the
+                       sheets along lines; heights / winders / doors / car sizes = *guess*, listed in the comment above CORE_B): the same interface
+                       as core.js and corea.js (`Core.attach` in main.js: `world.core.parts` = A, B (C from #639) in that order, which is also the order of
+                       keep.js' `a` list of lifts; `houseAt` → "Hus B · Trapphus · våning N" / "Hiss"), but the walls are DATA: `walls` =
+                       thick wall runs ({ ax, t, a, s: [first, last stop], holes: [{ a, h, s?, leaf? | glass? }] }; a hole is an opening, a closed
+                       flat door (`leaf`) or a fixed pane), `floors` = the våning-1 lobby's rects (floor + ceiling slab), `lights` = its lamps,
+                       `numbers` = the floor plates, `cap` = the shaft's top. Hus B (−1, 1, 2, 3): hall band x −33.08 … −31.16, z 41.74 …
+                       50.0, the lift north of it (door south), the lobby west of the shaft from the entrance door (z 35.4). The stair (16 risers per storey in one run: 4 straight treads of `stair.tread` per flight + 7 winders round the stringer's end, `stairS` /
+                       `stairY` as #644), the lights, the floor plates and the lift are as in corea.js.
+                       Every stop's wall piece is one box (`sbox`, faces cut up about every 1.2 m so the baked lights vary) + a plain box for the
+                       edge lines; the openings' floors are `zones` (what `contains` / `heights` answer for them). A `core` garage rect marks the
+                       band on −1 (config GARAGE: `coreB` + thin rects `coreBWest` / `coreBSouth` over the hall wall's openings); the other passage rects keep to what the plans show. surroundings.js: `walkIn` is generalised (`walkIn(b, r)`, face 'n' or 'e', the spec's `entrance`:
+                       `door`, `height`, `cut`; `cutRects` takes the face; the vestibule's floor and collision per face). The hall's south end on
+                       −1 is closed (the stair). NOT modelled: the interior
+                       fire doors, the flats, openable flat doors (Hus A has them, #643); CoreA is not (yet) expressed as data like this one. Cost (SwiftShader, loaded VM): about 0.3–0.6 s
+                       to build one, 52–67 meshes / 7.5–12 k triangles, drawn only while the camera is within 12 m of the core (`near`).
+                       The floors' tops lie 6 mm over their levels (z-fighting with terrain at y 0).
 src/rooms.js           room detection: walls + door gaps rasterised, BFS from the room labels
 src/visitunit.js       other flats you can walk into (#574, VISIT_UNITS): `VisitUnit` = a visited flat's collision (world
                        coordinates), doors / windows / lids as E targets (`visit` flag: no score, no cat, not kept), rooms,
@@ -137,6 +154,10 @@ tools/trapphusatest.html headless test (#637): Hus A: the entrance door holds / 
                        doors held open), the basement hall east into the lobby and the garage through the steel door and west through the
                        passage, out through the entrance again, walls hold, a reload mid-ride, power cut, both lifts saved, rides counted; #643: the 15 flat doors + the cross wall's
                        open / shut (E), one mesh per leaf, the doorway stops you, an open door along the lift wall stops you short
+tools/trapphusbctest.html headless test (#638, #639): `?house=B` (`?house=C` from #639), the same route as trapphusatest through that house's lobby, hall, stair
+                       (every storey up and down, the guard, the closed-off space under it), flat door and walls, the lift (every stop, riding along, doors
+                       held open), the basement's openings into the garage passages and through the steel door, out through the entrance, a reload
+                       mid-ride, power cut, saved lifts (a: A, B, C) and the rides counted (`b…` / `c…`)
 tools/lifttest.html    headless test (#415): the portik's door holds shut / E opens, the stairwell on våning 1, the lift called, a ride
                        to −1 riding along (no way out while it moves), out into the basement, doors held open by someone in
                        the doorway, up to 3 and out onto the loftgång, the stairs 1 → 2 → 3 and 1 → −1 on foot without a fall,

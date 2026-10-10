@@ -92,6 +92,10 @@ const LIFT_L = { ...L, Y, dz: 1, landing: S1, btnX: L.door[1] + 0.22 };
 export class Lift {
   constructor(group, spec = LIFT_L) {
     const L = this.S = spec, { Y } = spec, dz = spec.dz, S1 = spec.landing;
+    // `rot` (Hus C's, #639): the shaft is built in its own frame (door towards +z) and the group turned by rot about y; the
+    // visitor's position and the collision segments are converted between the frames (`loc`, `wseg`)
+    this.rot = spec.rot ?? 0; this.cs = Math.cos(this.rot); this.sn = Math.sin(this.rot);
+    if (this.rot) { const frame = new THREE.Group(); frame.rotation.y = this.rot; group.add(frame); group = frame; }
     Object.assign(this, { y: Y[spec.start ?? 1], at: spec.start ?? 1, target: null, v: 0, doors: 0, waitT: 0, open: false, hum: null, rides: 0, onArrive: null, carrying: false, powered: true });
     const W = L.x1 - L.x0, D = L.z1 - L.z0, cx = (L.x0 + L.x1) / 2, cz = (L.z0 + L.z1) / 2, [d0, d1] = L.door, dw = (d1 - d0) / 2;
     this.car = new THREE.Group(); group.add(this.car);
@@ -127,10 +131,17 @@ export class Lift {
     this.target = k;
   }
 
+  /** A world point in the shaft's own frame (the identity unless the shaft is turned). */
+  loc(p) { return this.rot ? { x: p.x * this.cs - p.z * this.sn, y: p.y, z: p.x * this.sn + p.z * this.cs } : p; }
+  /** A segment [ax, az, bx, bz] of the shaft's frame in the world. */
+  wseg([ax, az, bx, bz]) { return this.rot ? [ax * this.cs + az * this.sn, -ax * this.sn + az * this.cs, bx * this.cs + bz * this.sn, -bx * this.sn + bz * this.cs] : [ax, az, bx, bz]; }
+  /** A point of the shaft's frame in the world. */
+  wpt(x, y, z) { return this.rot ? { x: x * this.cs + z * this.sn, y, z: -x * this.sn + z * this.cs } : { x, y, z }; }
+
   /** Is the point (feet) inside the car? */
-  carHas(p) { const L = this.S, za = Math.min(L.z0, L.z1 - L.dz * 0.05), zb = Math.max(L.z0, L.z1 - L.dz * 0.05); return p.x > L.x0 + 0.05 && p.x < L.x1 - 0.05 && p.z > za && p.z < zb && Math.abs(p.y - this.y) < 1.3; }
+  carHas(p) { p = this.loc(p); const L = this.S, za = Math.min(L.z0, L.z1 - L.dz * 0.05), zb = Math.max(L.z0, L.z1 - L.dz * 0.05); return p.x > L.x0 + 0.05 && p.x < L.x1 - 0.05 && p.z > za && p.z < zb && Math.abs(p.y - this.y) < 1.3; }
   /** Someone standing in the doorway (the landing's side or the car's)? */
-  inDoorway(p) { const L = this.S; return p.x > L.door[0] - 0.25 && p.x < L.door[1] + 0.25 && Math.abs(p.z - L.z0) < 0.45 && Math.abs(p.y - this.y) < 1.3; }
+  inDoorway(p) { p = this.loc(p); const L = this.S; return p.x > L.door[0] - 0.25 && p.x < L.door[1] + 0.25 && Math.abs(p.z - L.z0) < 0.45 && Math.abs(p.y - this.y) < 1.3; }
 
   /** The mains (#612). */
   mains(on) {
@@ -170,7 +181,7 @@ export class Lift {
       if (busy && this.at !== null) this.open = true;
       else this.open = false;
       if (this.doors <= 0 && (this.at === null || !busy)) { // (on its way the doors are shut: the doorway does not matter)
-        if (this.at !== null) { this.at = null; this.carrying = this.carHas(p); this.hum = sfx.liftHum({ x: (L.x0 + L.x1) / 2, y: this.y + 1, z: L.z1 }); }
+        if (this.at !== null) { this.at = null; this.carrying = this.carHas(p); this.hum = sfx.liftHum(this.wpt((L.x0 + L.x1) / 2, this.y + 1, L.z1)); }
         const goal = Y[this.target], dist = goal - this.y, dir = Math.sign(dist);
         const vmax = Math.min(L.speed, Math.sqrt(2 * L.accel * Math.abs(dist)) + 0.05);
         this.v = dir * Math.min(Math.abs(this.v) + L.accel * dt, vmax);
@@ -180,7 +191,7 @@ export class Lift {
           this.hum?.stop(); this.hum = null;
           if (this.carHas(p)) this.onArrive?.(this.at);
         }
-        this.hum?.move?.({ x: (L.x0 + L.x1) / 2, y: this.y + 1, z: L.z1 }, Math.abs(this.v) * 2);
+        this.hum?.move?.(this.wpt((L.x0 + L.x1) / 2, this.y + 1, L.z1), Math.abs(this.v) * 2);
       }
     }
     const want = this.open ? 1 : 0;
@@ -206,14 +217,14 @@ export class Lift {
       out.push([L.x0 + 0.05, L.z0, L.x0 + 0.05, L.z1 - dz * 0.05], [L.x1 - 0.05, L.z0, L.x1 - 0.05, L.z1 - dz * 0.05], [L.x0, L.z1 - dz * 0.05, L.x1, L.z1 - dz * 0.05], [L.x0, L.z0, d0, L.z0], [d1, L.z0, L.x1, L.z0]);
       if (this.doors < 0.85) out.push([d0, L.z0 + dz * 0.06, d1, L.z0 + dz * 0.06]);
     }
-    return out;
+    return this.rot ? out.map((sg) => this.wseg(sg)) : out;
   }
 
   saveState() { return { at: this.at, y: Math.round(this.y * 1000) / 1000, target: this.target, open: this.open ? 1 : 0 }; }
   loadState(s) {
     const L = this.S, Y = L.Y;
     if (!s || !Number.isFinite(s.y)) return;
-    this.y = Math.min(Y[3], Math.max(Y[0], s.y));
+    this.y = Math.min(Y[Y.length - 1], Math.max(Y[0], s.y));
     this.at = Number.isInteger(s.at) && Y[s.at] !== undefined ? s.at : null;
     this.target = Number.isInteger(s.target) && Y[s.target] !== undefined ? s.target : this.at === null ? Y.reduce((b, y, k) => (Math.abs(y - this.y) < Math.abs(Y[b] - this.y) ? k : b), 0) : null;
     this.open = !!s.open && this.at !== null; this.doors = this.open ? 1 : 0; this.waitT = L.wait;

@@ -10,7 +10,7 @@ import { loadBeerShelf } from './beershelfdata.js';
 import { BeerShelf } from './beershelf.js';
 import { initHudIcons, setIcon, setPressed } from './hudicons.js';
 import * as THREE from 'three';
-import { UNIT_TOP, SITE, COLORS, LEVELS, DAY, START, PLAYER, DRAWING, STAIR, HOLD, LIFE, REMOTE, REST, DOOR_HEIGHT, TURBO, WEATHER, BREAK, CAR, KITCHEN, LAPTOP, NEST, AUTO_RELOAD, MIELE, CUPS, GARAGE, OLOF } from './config.js';
+import { UNIT_TOP, SITE, COLORS, LEVELS, DAY, START, PLAYER, DRAWING, STAIR, HOLD, LIFE, REMOTE, REST, DOOR_HEIGHT, TURBO, WEATHER, BREAK, CAR, KITCHEN, LAPTOP, NEST, AUTO_RELOAD, MIELE, CUPS, GARAGE, OLOF, CORE_B } from './config.js';
 import { MieleHeld, HeartFireworks } from './miele.js';
 const DRAWING_COLORS = DRAWING.colors;
 initHudIcons();
@@ -106,6 +106,7 @@ import { Car } from './car.js';
 import { Garage } from './garage.js';
 import { Core } from './core.js';
 import { CoreA } from './corea.js';
+import { CoreHouse } from './corehouse.js';
 import { People } from './people.js';
 import { Olof, OlofDriver } from './olof.js';
 import { Greetings } from './greet.js';
@@ -175,6 +176,7 @@ const cheatNote = await buildCheatNote(garage, () => showCheatNote(true));
 scene.add(garage.object, garage.blackout, garage.door.object); // (+ its door, #358)
 const core = world.core = new Core(); // Hus L's stairwell and lift by the portik (#415)
 const coreA = core.attach(new CoreA()); // … and Hus A's, from its courtyard entrance down to the basement (#637)
+const coreB = core.attach(new CoreHouse(CORE_B)); // … and Hus B's (#638; the order of the attached cores is the saved lifts' order, keep.js)
 scene.add(core.object);
 
 // Sun from the south-west (north = the entrance side, −z). Shadows cover the house + patio.
@@ -734,6 +736,7 @@ target.onHit = (pts) => bump('target', pts);
 car.radio.onPlay = (ch) => bump('carMusic', 1, ch); // each song in the car once (#268)
 core.lift.onArrive = (k) => bump('liftFloors', 1, `v${k}`); // each storey reached by lift once (#415)
 coreA.lift.onArrive = (k) => bump('liftFloors', 1, `a${k}`); // Hus A's (#637)
+coreB.lift.onArrive = (k) => bump('liftFloors', 1, `b${k}`); // Hus B's (#638)
 sonos.onPlay = (ch) => bump('songs', 1, ch); // each song (channel) once // the saber burns, the wands do magic (#97), darts splash (#98)
 // the cat goes for a fish finger lying on the floor near it and eats it (#163)
 if (fish) {

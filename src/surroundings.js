@@ -3,7 +3,7 @@ import {buildWestBackdrop,buildEastBackdrop,buildNorthBackdrop,westTreeSpots,eas
 import { buildRiverPark, parkDeckAt, parkTreeSpots, parkShrubSpots } from './riverpark.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { SITE as S, COLORS, SEASON, COURTYARD, GARAGE, CORE_A, NEIGHBOR_OPENINGS as O } from './config.js';
+import { SITE as S, COLORS, SEASON, COURTYARD, GARAGE, CORE_A, CORE_B, NEIGHBOR_OPENINGS as O } from './config.js';
 import { neighborGlass } from './neighborglass.js';
 import { registerTrees, registerSnow } from './seasons.js';
 import { buildStreet } from './street.js';
@@ -36,17 +36,23 @@ const onRamp = (x, z) => x >= R.x0 && x <= R.x1 && z >= R.z0 && z <= R.z1;
 const rampY = (z) => -R.drop * THREE.MathUtils.clamp((R.z1 - z) / (R.z1 - R.z0), 0, 1);
 /** West of here the ground follows Karpvägen: the NW stair's top line south to its end, then Hus C's west façade line. */
 const westEdge = (z) => (z < Wst.stair.z1 ? Wst.stair.x1 : Wst.x);
-/** How deep the outdoor collision lets the visitor in through a walk-in recess's door before the stair core (corea.js) takes over (#637). */
+/** How deep the outdoor collision lets the visitor in through a walk-in recess's door before the stair core (corea.js, corehouse.js) takes over (#637). */
 const DOORWAY_DEPTH = 0.3;
+/** A block's walk-in entrance (#637, #638, #639): its recess `walkIn` (face 'n' or 'e') + the stair core's entrance spec (CORE_A / B / C in
+ *  config: `door` = the leaf's range along the face, `height`, `cut` = the opening through the recess's back wall, default the whole recess). */
+const CORES = { 'Hus A': CORE_A, 'Hus B': CORE_B };
+const walkIn = (b, r) => { const E = r.walkIn ? CORES[b.name]?.entrance : null; return E ? { E, door: E.door, height: E.height, cut: E.cut ?? [r.a0, r.a1] } : null; };
 /** The Å-husen's entrance recesses as walkable floors (#355): a rectangle inside the house at the recess's lowest
  * storey's floor (the courtyard's level for Hus A's / B's north entrances, the park level for their side doors). */
 export const recessFloors = S.blocks.flatMap((b) => (b.recesses ?? []).flatMap((r) => {
   const nz = r.face === 'n' || r.face === 's', line = { n: b.z0, s: b.z1, w: b.x0, e: b.x1 }[r.face], out = r.face === 's' || r.face === 'e' ? 1 : -1;
   const [c0, c1] = [Math.min(line, line - out * r.depth), Math.max(line, line - out * r.depth)], y = b.base + (r.from ?? 0) * S.storey;
   const floor = { block: b, r, y, ...(nz ? { x0: r.a0, x1: r.a1, z0: c0, z1: c1 } : { x0: c0, x1: c1, z0: r.a0, z1: r.a1 }) };
-  // a walk-in recess (Hus A's, #637): the door's opening through the back wall, floored as far as the closed-off vestibule behind it
-  const [d0, d1] = CORE_A.entrance.door;
-  return r.walkIn && r.face === 'n' ? [floor, { block: b, r, y, x0: d0, x1: d1, z0: c1, z1: c1 + DOORWAY_DEPTH }] : [floor];
+  // a walk-in recess (Hus A's, #637; B's, C's): the door's opening through the back wall, floored as far as the closed-off vestibule behind it
+  const W = walkIn(b, r);
+  if (!W) return [floor];
+  const [d0, d1] = W.door;
+  return [floor, nz ? { block: b, r, y, x0: d0, x1: d1, z0: c1, z1: c1 + DOORWAY_DEPTH } : { block: b, r, y, x0: c0 - DOORWAY_DEPTH, x1: c0, z0: d0, z1: d1 }];
 }));
 /** The stairs down from the courtyard (T.stairs, terraceStairs below): [x0, x1, z0, z1, y] per tread (#355: walkable). */
 const stairTreads = T.stairs.flatMap((St) => {
@@ -734,18 +740,22 @@ function aHouseParts(b) {
  * Garage owns their leaves, lintels and collision. Clip attributes together; upper-storey faces stay intact. */
 function basementDoorCuts(geo, b) {
   const doors = GARAGE.rects.filter(r => r.door && r.x0 > b.x0 && r.x1 < b.x1 && r.z0 <= b.z0 && r.z1 >= b.z0);
-  return cutRects(geo, b.z0, doors.map(r => ({ x0: r.x0, x1: r.x1, y0: GARAGE.floor, y1: GARAGE.floor + GARAGE.doorHead })));
+  return cutRects(geo, b.z0, doors.map(r => ({ a0: r.x0, a1: r.x1, y0: GARAGE.floor, y1: GARAGE.floor + GARAGE.doorHead })));
 }
 
-/** #637: subtract Hus A's walk-in entrance (the recess's back wall over the door + sidelight, CORE_A.entrance) from the brick body. */
+/** #637, #638, #639: subtract a walk-in entrance (the recess's back wall over its door / sidelight, the core's `entrance.cut`) from the brick body. */
 function entranceCuts(geo, b) {
-  const cuts = (b.recesses ?? []).filter(r => r.walkIn && r.face === 'n').map(r => ({ z: b.z0 + r.depth, x0: r.a0, x1: r.a1, y0: b.base + (r.from ?? 0) * S.storey, y1: b.base + (r.from ?? 0) * S.storey + CORE_A.entrance.height }));
-  for (const z of new Set(cuts.map(c => c.z))) geo = cutRects(geo, z, cuts.filter(c => c.z === z));
+  const cuts = (b.recesses ?? []).flatMap(r => {
+    const W = walkIn(b, r), y0 = b.base + (r.from ?? 0) * S.storey;
+    return W ? [{ face: r.face, plane: r.face === 'n' ? b.z0 + r.depth : b.x1 - r.depth, a0: W.cut[0], a1: W.cut[1], y0, y1: y0 + W.height }] : [];
+  });
+  for (const c of new Set(cuts.map(c => `${c.face}${c.plane}`))) { const same = cuts.filter(q => `${q.face}${q.plane}` === c); geo = cutRects(geo, same[0].plane, same, same[0].face); }
   return geo;
 }
 
-/** Clip rectangles { x0, x1, y0, y1 } out of the faces looking north (−z) that lie in the plane z = `zPlane`. Attributes are clipped together. */
-function cutRects(geo, zPlane, doors) {
+/** Clip rectangles { a0, a1, y0, y1 } (a = x for the faces looking north, z for those looking east) out of the faces that lie in the
+ *  plane z = `plane` (face 'n': looking −z) or x = `plane` (face 'e': looking +x). Attributes are clipped together. */
+function cutRects(geo, plane, doors, face = 'n') {
   if (!doors.length) return geo;
   geo = geo.index ? geo.toNonIndexed() : geo;
   const attrs = ['position', 'normal', 'uv'].map(k => geo.attributes[k]), polygons = [];
@@ -760,11 +770,11 @@ function cutRects(geo, zPlane, doors) {
   };
   for (let i = 0; i < attrs[0].count; i += 3) {
     let pieces = [Array.from({length:3}, (_, j) => attrs.flatMap(a => Array.from(a.array.slice((i+j)*a.itemSize,(i+j+1)*a.itemSize))))];
-    if (attrs[1].getZ(i) < -.9 && Math.abs(attrs[0].getZ(i) - zPlane) < .001) for (const r of doors) {
+    if (face === 'n' ? attrs[1].getZ(i) < -.9 && Math.abs(attrs[0].getZ(i) - plane) < .001 : attrs[1].getX(i) > .9 && Math.abs(attrs[0].getX(i) - plane) < .001) for (const r of doors) {
       const kept = [];
       for (const original of pieces) {
         let inside = original;
-        for (const [axis, edge, positive] of [[0,r.x0,true],[0,r.x1,false],[1,r.y0,true],[1,r.y1,false]]) {
+        for (const [axis, edge, positive] of [[face === 'n' ? 0 : 2,r.a0,true],[face === 'n' ? 0 : 2,r.a1,false],[1,r.y0,true],[1,r.y1,false]]) {
           const outside = clip(inside, axis, edge, !positive);
           if (outside.length >= 3) kept.push(outside);
           inside = clip(inside, axis, edge, positive);
@@ -981,9 +991,11 @@ function loggias(blocks) {
       const line = { n: b.z0, s: b.z1, w: b.x0, e: b.x1 }[r.face], back = line - out * r.depth;
       const at = (a, c) => (nz ? [a, c] : [c, a]), nrm = (k) => (nz ? [0, k] : [k, 0]), side = (k) => (nz ? [k, 0] : [0, k]);
       const s0 = r.from ?? 0, s1 = Math.min(r.to ?? Infinity, b.storeys - 1), y0 = b.base + s0 * S.storey, y1 = b.base + (s1 + 1) * S.storey;
-      // the back wall and the sides; a walk-in recess (#637) keeps only the wall over its glazed door + sidelight (corea.js)
-      walls.push(quad(...at(r.a0, back), ...at(r.a1, back), ...nrm(out), r.walkIn ? y0 + CORE_A.entrance.height : y0, y1),
-        quad(...at(r.a0, back), ...at(r.a0, line), ...side(1), y0, y1), quad(...at(r.a1, back), ...at(r.a1, line), ...side(-1), y0, y1));
+      // the back wall and the sides; a walk-in recess (#637, #638, #639) has only the wall over its opening (the door + sidelight, the
+      // core's `entrance.cut`: corea.js / corehouse.js draw those) from the door height up
+      const W = walkIn(b, r), back0 = (a0, a1, ya) => { if (a1 - a0 > 1e-3) walls.push(quad(...at(a0, back), ...at(a1, back), ...nrm(out), ya, y1)); };
+      if (W) { back0(r.a0, W.cut[0], y0); back0(W.cut[0], W.cut[1], y0 + W.height); back0(W.cut[1], r.a1, y0); } else back0(r.a0, r.a1, y0);
+      walls.push(quad(...at(r.a0, back), ...at(r.a0, line), ...side(1), y0, y1), quad(...at(r.a1, back), ...at(r.a1, line), ...side(-1), y0, y1));
       const [mx, mz] = at((r.a0 + r.a1) / 2, (line + back) / 2), [w, d] = nz ? [r.a1 - r.a0, r.depth] : [r.depth, r.a1 - r.a0];
       for (let st = s0; st <= s1 + 1; st++) {
         const y = b.base + st * S.storey;
@@ -1379,11 +1391,15 @@ export function buildSurroundings({ grass }) {
     const pts = groundOutline(b);
     return pts.map((p, i) => [...p, ...pts[(i + 1) % pts.length]]).flatMap((sg) => {
       // Hus A's walk-in entrance (#637): the door's opening in the recess's back wall (the door leaf and the sidelight are corea.js's)
-      const r = (b.recesses ?? []).find((q) => q.walkIn && q.face === 'n' && sg[1] === sg[3] && Math.abs(sg[1] - (b.z0 + q.depth)) < 1e-6 && Math.min(sg[0], sg[2]) <= q.a0 + 1e-6 && Math.max(sg[0], sg[2]) >= q.a1 - 1e-6);
-      if (!r) return [sg];
-      const [d0, d1] = CORE_A.entrance.door, z = sg[1];
-      // … with a closed vestibule behind it (the outdoor collision does not leak into the house; once through, corea.js's own walls apply)
-      return [[Math.min(sg[0], sg[2]), z, d0, z], [d1, z, Math.max(sg[0], sg[2]), z], [d0, z, d0, z + DOORWAY_DEPTH], [d1, z, d1, z + DOORWAY_DEPTH], [d0, z + DOORWAY_DEPTH, d1, z + DOORWAY_DEPTH]].filter((q) => Math.abs(q[2] - q[0]) + Math.abs(q[3] - q[1]) > 1e-3);
+      const hit = (b.recesses ?? []).map((q) => [q, walkIn(b, q)]).find(([q, W]) => W && (q.face === 'n'
+        ? sg[1] === sg[3] && Math.abs(sg[1] - (b.z0 + q.depth)) < 1e-6 && Math.min(sg[0], sg[2]) <= q.a0 + 1e-6 && Math.max(sg[0], sg[2]) >= q.a1 - 1e-6
+        : sg[0] === sg[2] && Math.abs(sg[0] - (b.x1 - q.depth)) < 1e-6 && Math.min(sg[1], sg[3]) <= q.a0 + 1e-6 && Math.max(sg[1], sg[3]) >= q.a1 - 1e-6));
+      if (!hit) return [sg];
+      // … with a closed vestibule behind it (the outdoor collision does not leak into the house; once through, the core's own walls apply)
+      const [q, W] = hit, [d0, d1] = W.door, D = DOORWAY_DEPTH, north = q.face === 'n';
+      const along = north ? [Math.min(sg[0], sg[2]), Math.max(sg[0], sg[2])] : [Math.min(sg[1], sg[3]), Math.max(sg[1], sg[3])], c = north ? sg[1] : sg[0], c2 = north ? c + D : c - D;
+      const mk = (a, k, b, l) => (north ? [a, k, b, l] : [k, a, l, b]); // (along, across) → [x, z]
+      return [mk(along[0], c, d0, c), mk(d1, c, along[1], c), mk(d0, c, d0, c2), mk(d1, c, d1, c2), mk(d0, c2, d1, c2)].filter((t) => Math.abs(t[2] - t[0]) + Math.abs(t[3] - t[1]) > 1e-3);
     });
   })];
   group.userData.upper = bw.upper; // the box's edge over the garage door: only for those up on the courtyard (#357)
