@@ -349,8 +349,10 @@ export class Olof {
 // --- Olof driving our car (#599) ----------------------------------------------------------------------------------
 // When the car is called (the key in the hall) he sits in the driving seat (the figure above, a second one, child of the
 // car's group so it drives with it): hands on the wheel, now and then a look sideways. Greet him while it is parked:
-// "Hälsa på Olof" → your hello, a dad joke from OLOF.car.jokes in a bubble while he waves, then he fades away and the
-// car is as before. He is gone too when the visitor sits down in the car, and when it is back in the garage / gone.
+// "Hälsa på Olof" → your hello, a dad joke from OLOF.car.jokes in a bubble while he waves, then he sits on at the wheel
+// (#658): greet him again for a new joke (points once per arrival), and the key sends the car off with him in it. He is
+// gone when the visitor sits down in the car (fading out, `fade`) and when the car is in the garage / gone; the next call
+// brings him again (not saved: a car restored parked or in the garage has nobody in it).
 
 /** The driving pose in the figure's frame (floor of the foot well at y 0): hips on the cushion, leaning into the backrest,
  * the feet at the pedals, both hands on the wheel (`wave`: the left hand up, waving). */
@@ -381,8 +383,8 @@ export class OlofDriver {
     car.object.add(o);
     this.interact = { name: 'Olof', kind: 'olofcar', verb: 'hälsa på', pickable: this.fig.pick };
     this.fig.pick.userData.door = this.interact;
-    this.state = 'away'; // away / drive / joke / fade
-    this.t = 0; this.look = 0; this.lookT = 4;
+    this.state = 'away'; // away / drive / joke / fade (fade: the visitor got in)
+    this.t = 0; this.scored = false; this.waveK = 0; this.look = 0; this.lookT = 4;
     this.onSay = null; // (line, secs) => {} his joke in a bubble (main.js → greet.js)
     this.hideCan();
   }
@@ -398,7 +400,7 @@ export class OlofDriver {
 
   /** The car was called: he is at the wheel. */
   show() {
-    this.state = 'drive'; this.t = 0;
+    this.state = 'drive'; this.t = 0; this.scored = false; this.waveK = 0;
     this.fig.material.opacity = 1;
     this.fig.object.visible = true;
     this.pose();
@@ -409,15 +411,19 @@ export class OlofDriver {
   /** Can he be greeted now (the car parked, he at the wheel, the visitor not in the car)? */
   greetable(seatedInCar = false) { return this.state === 'drive' && this.car.parked && this.car.object.visible && !seatedInCar; }
 
-  /** The visitor says hello: a dad joke, a wave, then he is gone. True if it counted. */
+  /** The visitor says hello: a dad joke and a wave, then he sits on. True if a joke started; `scored` (once per arrival)
+   * tells main.js whether the greeting counts for points (#658, *guess*: no farming). */
   greet() {
     if (this.state !== 'drive') return false;
     this.state = 'joke'; this.t = 0; this.said = false;
     return true;
   }
 
+  /** Is this greeting the first since he arrived (it scores)? Call once per greeting. */
+  claimScore() { const first = !this.scored; this.scored = true; return first; }
+
   pose() {
-    const D = O.car, wave = this.state === 'joke' ? Math.min(1, this.t / 0.4) : this.state === 'fade' ? Math.max(0, 1 - this.t / 0.4) : 0;
+    const D = O.car, wave = this.waveK;
     poseOlof(this.fig, drivingPose({ seat: D.seat, wheel: D.wheel, pedals: D.pedals, wave, ph: this.t * 9, turn: this.look }));
   }
 
@@ -425,14 +431,16 @@ export class OlofDriver {
   update(dt, inCar = false) {
     if (this.state === 'away') return;
     const c = this.car;
-    if (!c.object.visible || c.state === 'garage' || c.state === 'gone' || inCar) { this.hide(); return; } // back home, or you got in
+    if (!c.object.visible || c.state === 'garage' || c.state === 'gone') { this.hide(); return; } // back home / driven off: nobody in it
+    if (inCar && this.state !== 'fade') { this.state = 'fade'; this.t = 0; } // you got in: he is gone, fading (no overlap with you)
     this.t += dt;
+    this.waveK = this.state === 'joke' ? Math.min(1, this.t / 0.4) : Math.max(0, this.waveK - dt / 0.4); // (the hand comes down after the joke)
     // a glance to the side now and then (towards the house while parked)
     if ((this.lookT -= dt) <= 0) { this.lookT = 3 + Math.random() * 5; this.lookTo = this.lookTo ? 0 : (this.state === 'drive' && c.parked ? 0.7 : 0.35); }
     this.look += ((this.state === 'joke' ? 0.8 : this.lookTo ?? 0) - this.look) * Math.min(1, dt * 3);
     if (this.state === 'joke') {
       if (!this.said && this.t > 0.6) { this.said = true; this.onSay?.(O.car.jokes[Math.floor(Math.random() * O.car.jokes.length)], O.car.jokeTime); }
-      if (this.t >= 0.6 + O.car.jokeTime) { this.state = 'fade'; this.t = 0; }
+      if (this.t >= 0.6 + O.car.jokeTime) { this.state = 'drive'; this.t = 0; } // he sits on (#658)
     } else if (this.state === 'fade') {
       this.fig.material.opacity = Math.max(0, 1 - this.t / O.car.fade);
       if (this.t >= O.car.fade) { this.hide(); return; }

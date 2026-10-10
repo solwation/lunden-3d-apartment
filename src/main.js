@@ -1515,7 +1515,7 @@ function use(thing) {
     if (thing.isOpen) bump('lids', 1, idOf(thing));
     sfx.lid(thing.object.position, thing.isOpen);
   } else if (thing.kind === 'cat') { if (cat.isMiele && !heldItem()) miele.take(); else cat.pet(player.pos); } // Miele: into your arms (#328)
-  else if (thing.kind === 'olofcar') { if (olofDriver.greet()) { greet.sayMine(OLOF.car.hello[Math.floor(Math.random() * OLOF.car.hello.length)]); bump('olof', 1, 'car'); } } // a dad joke, then he is gone (#599)
+  else if (thing.kind === 'olofcar') { if (olofDriver.greet()) { greet.sayMine(OLOF.car.hello[Math.floor(Math.random() * OLOF.car.hello.length)]); if (olofDriver.claimScore()) bump('olof', 1, 'car'); } } // a dad joke, he sits on; points once per arrival (#599, #658)
   else if (thing.kind === 'olof') { if (olof.wave()) { greet.sayMine(OLOF.hello[Math.floor(Math.random() * OLOF.hello.length)]); bump('olof'); } } // wave to Olof: he goes (#586)
   else if (thing.kind === 'greet') { greet.greet(thing.fig); bump('greets', 1, `fig${people.figs.indexOf(thing.fig)}`); } // hello (#247)
   else if (thing.kind === 'towel') handWash.dry(thing, focusPoint); // dry the hands (#437)

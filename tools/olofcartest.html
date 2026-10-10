@@ -5,8 +5,9 @@
 <pre id="out">running…</pre>
 <script>
 // Olof at the wheel (#599): the key calls the car out of the garage with Olof (the #586 figure) in the driving seat; parked,
-// looking at him gives "Hälsa på Olof": your hello, a dad joke in a bubble, then he is gone and the car works as before (the
-// driver's door opens, the seat can be sat in). Called away and back, he is there again; sitting down in the car he goes.
+// looking at him gives "Hälsa på Olof": your hello, a dad joke in a bubble, then he sits on at the wheel (#658): a new joke
+// on the next greeting but no new points, the key sends the car off with him in it, in the garage nobody is in it, the next
+// call brings him back; the driver's door and seat work as before; sitting down in the car he goes.
 //   chrome --headless=new --dump-dom http://localhost:8137/tools/olofcartest.html
 const out = document.getElementById('out');
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -49,7 +50,14 @@ f.onload = async () => {
   pass &= check(joke && joke.textContent.length > 20 && (stats.olof ?? 0) === n0 + 1, `a dad joke: "${joke?.textContent}" (counted)`);
   pass &= check(olofDriver.fig.object.visible, 'he is still there while he tells it');
   for (let i = 0; i < 60 * 8; i++) step(1 / 60);
-  pass &= check(!olofDriver.visible && !olofDriver.fig.object.visible, 'then he is gone');
+  pass &= check(olofDriver.state === 'drive' && olofDriver.fig.object.visible && olofDriver.fig.material.opacity === 1, 'then he sits on at the wheel (#658)');
+  // a second greeting: a new joke, no extra points
+  look(olofDriver.fig.head.clone().add(new V(0, -0.15, 0)));
+  pass &= check(!btn.hidden && /hälsa på olof/i.test(btn.textContent), 'he can be greeted again');
+  const n1 = stats.olof ?? 0; let jokes1 = 0; const say0 = olofDriver.onSay; olofDriver.onSay = (...a) => { jokes1++; return say0(...a); };
+  btn.click();
+  for (let i = 0; i < 60 * 8; i++) step(1 / 60);
+  pass &= check(jokes1 === 1 && (stats.olof ?? 0) === n1 && olofDriver.state === 'drive', 'a new joke, no extra points, he sits on');
   // the car as before: the driver's door, the seat
   const dr = car.doors.find((x) => x.front && x.side === -1), near = local(0.1, 0, -1.25);
   player.spawn(near.x, near.z, 0);
@@ -58,17 +66,20 @@ f.onload = async () => {
   pass &= check(w.__app.focus().focused === dr, `the driver's door is the target (${btn.textContent})`);
   btn.click();
   for (let i = 0; i < 60; i++) step(1 / 60);
-  look(local(-0.05, 0.6, -0.37));
-  const seatT = car.seats.find((x) => x.door === dr);
-  pass &= check(w.__app.focus().focused === seatT, `the driving seat can be sat in ("${btn.textContent}")`);
+  look(local(-0.05, 0.6, -0.37)); // (he sits in it: looking at the driving seat finds him, the passenger seat is the way in below)
+  pass &= check(w.__app.focus().focused === olofDriver.interact, `at the open driver's door he is what you see ("${btn.textContent}")`);
   car.toggleDoor(dr);
   for (let i = 0; i < 60; i++) step(1 / 60);
-  // away and back: he is there again; sitting down in the car he goes
+  // the key: the car drives off with him in it; in the garage nobody is in it; called again he is back
   player.spawn(stand.x, stand.z - 3, 0);
   use(world.carKey);
+  for (let i = 0; i < 60; i++) step(1 / 30);
+  pass &= check(car.state === 'leaving' && olofDriver.visible && olofDriver.fig.object.visible, 'the key: the car drives off with Olof in it');
   pass &= check(until(() => car.state === 'garage'), 'sent back to the garage');
+  pass &= check(!olofDriver.visible && !olofDriver.fig.object.visible, 'in the garage nobody is in it');
   use(world.carKey);
-  pass &= check(olofDriver.visible, 'called again: Olof at the wheel again');
+  pass &= check(olofDriver.state === 'drive', 'called again: Olof at the wheel again');
+  pass &= check(olofDriver.claimScore() && !olofDriver.claimScore(), 'a new arrival scores again, once');
   pass &= check(until(() => car.state === 'parked'), 'parked again');
   player.spawn(stand.x, stand.z, 0);
   for (let i = 0; i < 3; i++) step(1 / 60);
