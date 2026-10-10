@@ -127,7 +127,8 @@ const load = (q = '') => new Promise((resolve) => {
     for (const t of unit.targets) if (!t.isOpen && t.kind !== 'flush') { t.toggle(); for (let i = 0; i < 40; i++) t.update?.(0.1); }
     const keptAfter = JSON.stringify(A.keepWorld().open);
     check(keptBefore === keptAfter, `opening everything in it changes nothing in the saved world's open doors / lids (${keptAfter.length} chars)`);
-    const keys = Object.keys(w.localStorage).filter((k) => /L1004|visit/i.test(k) || /L1004/.test(w.localStorage.getItem(k) ?? ''));
+    // (lunden.changelogCache, #655, holds the newest changelog entries, which may name L1004 in their text: not saved state)
+    const keys = Object.keys(w.localStorage).filter((k) => k !== 'lunden.changelogCache' && (/L1004|visit/i.test(k) || /L1004/.test(w.localStorage.getItem(k) ?? '')));
     check(!keys.length, `no stored key mentions it (${keys.join(', ')})`);
     // #631: L1004 shares our sheet and stair: its wall along flight A / the winders is whole (only L1201 has the half wall, #624)
     {
