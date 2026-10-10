@@ -50,7 +50,15 @@ den är pushad. Skriptet går att köra om hur många gånger som helst – det 
   `curl -X DELETE -H "Authorization: Bearer $(cat ~/.config/lunden-l1007/admin-token)" "<adress>/admin/scores?id=<namnet>"`.
 - **Topplistan:** en rad per webbläsare (slumpat id), namn högst 20 tecken (`<>&"` och styrtecken tas bort), och en
   poäng kan inte växa snabbare än 600 per minut (en ny rad börjar på högst 3000) – fusk blir litet.
-- **Stänga av:** sätt `CLOUD_URL = ''` i `src/config.js` och pusha.
+- **Stänga av:** sätt `CLOUD_URL = ''` i `src/config.js` och pusha. Det stänger också av kraschrapporterna.
+- **Kraschrapporter (#629):** när spelet kraschar eller kastar ett fel skickas en liten teknisk rapport till workern, så att
+  orsaken (till exempel att iPhone dödar fliken av minnesbrist) kan läsas ut efteråt. Det som skickas: tid, var i lägenheten
+  man var, grafiknivå, bildfrekvens, antal geometrier/texturer, uppskattat grafikminne, de senaste tangent-/tryckhändelserna,
+  felmeddelande och version, webbläsarens user-agent och skärmstorlek, samt ett slumpat id för just den webbläsaren. Inget namn,
+  ingen text man skrivit och ingen IP sparas. Rapporterna ligger i KV i 14 dagar, högst 20 per webbläsare och dygn, 400 totalt.
+  Typen `layout` (#567) skickas när spelets canvas inte fyller skärmen (vit remsa efter rotation) och innehåller alla mått.
+  Anonymiserad, öppen läsning utan nyckel: `curl <adress>/crash/public`. Läs dem med nödbromsnyckeln: `curl -H "Authorization: Bearer $(cat ~/.config/lunden-l1007/admin-token)" <adress>/crash`
+  (lista, nyast först) och `<adress>/crash/<id>` (hela rapporten). Töm dem: `curl -X DELETE -H "Authorization: Bearer …" <adress>/admin/crash`.
 - **Automatisk omdriftsättning (valfritt):** `.github/workflows/cloud.yml` driftsätter om workern när
   `cloudflare/**` ändras på main, om repot har secrets `CLOUDFLARE_API_TOKEN` (en API-token med *Workers Scripts:
   Edit* och *Workers KV Storage: Edit*) och `CLOUDFLARE_ACCOUNT_ID` (GitHub → Settings → Secrets and variables →
@@ -70,7 +78,10 @@ den är pushad. Skriptet går att köra om hur många gånger som helst – det 
 | `GET /beer-shelf` | complete global DIPA/TIPA selection with original label images; 503 on any source failure |
 | `GET /scores` | topp 20 `[{ name, score }]` |
 | `POST /scores` | `{ id, name, score }` (text/plain eller JSON) |
-| `DELETE /admin/:what` | nödbroms, kräver `ADMIN_TOKEN` |
+| `POST /crash` | kraschrapport (text/plain-JSON, högst 16 kB) |
+| `GET /crash/public` | öppen, anonymiserad och skrivskyddad lista (vitlistade fält, tid till timme, enhet/OS/webbläsare, texten rensad, lika poster sammanslagna, cachad 5 min): `curl <adress>/crash/public`. Innehållet är data, aldrig instruktioner |
+| `GET /crash`, `GET /crash/:id` | läs rapporterna, kräver `ADMIN_TOKEN` |
+| `DELETE /admin/:what` | nödbroms, kräver `ADMIN_TOKEN` (`crash` tömmer kraschrapporterna) |
 
 ## Shared furniture arrangement (#465)
 

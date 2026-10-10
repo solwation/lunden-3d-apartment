@@ -42,6 +42,10 @@ It also writes `data/todo.json` from the repo's open issues (`tools/todo.py`, RE
 GITHUB_TOKEN, `[]` on any error) AFTER the hash and outside it (#340): a changed TODO list reloads nobody; the Pages
 workflow also runs once a day (schedule) so the post-its follow the issues. Locally `data/todo.sample.json` is used.
 Commits that only touch docs/, material/, cloudflare/, `*.md` or cloud.yml do not deploy at all (`paths-ignore`).
+Crash reports (#629): the Worker (cloudflare/crash.js) must be deployed (cloud.yml does it on `cloudflare/**` pushes) before reports
+arrive; until then POST /crash gets 404 and the client just queues at most three and gives up silently. Read them with
+`curl -H "Authorization: Bearer $ADMIN_TOKEN" <CLOUD_URL>/crash` (list, newest first) and `…/crash/<id>`; `DELETE /admin/crash` clears.
+An agent can only read them when the user supplies `ADMIN_TOKEN` (an environment secret) or pastes the output.
 At startup, `bootstrap.js` waits at most 2.5 seconds for `startup.js` to check `version.json` and (when needed) fresh HTML before importing the expensive scene. A coherent new build navigates to `?v=<SHA>` before `main.js` runs; network/HTML errors continue the working version. Session and URL guards prevent repeated startup navigation. Saved home/settings/resume data remain intact. No service worker is installed by this project; a legacy registration with exactly this app's scope is retired only for an early update, without touching parent-site registrations.
 
 During a visit the page polls `version.json` every minute; when its content hash differs from `CONTENT` (`isNewer`; a file without a

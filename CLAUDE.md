@@ -81,7 +81,7 @@ When adding, changing or removing a cheat code, update the shared `src/cheats.js
 | [Life simulation and chores](docs/development/life.md) | domain events, inventory, containers, cleaning, dishes, rubbish or everyday tasks |
 | [Food, kitchen appliances and drinks](docs/development/food.md) | food preparation, appliances, coffee, cups, fridge storage or drinks |
 | [Animals, audio and smart devices](docs/development/animals-audio.md) | cats, sound, music, speakers or smart devices |
-| [Saving, shared layouts and cloud](docs/development/storage.md) | saved home, resume state, IndexedDB, shared layouts or Cloudflare persistence |
+| [Saving, shared layouts and cloud](docs/development/storage.md) | saved home, resume state, IndexedDB, shared layouts, Cloudflare persistence or crash reports (`src/crashlog.js`) |
 | [Deployment, startup and updates](docs/development/deployment.md) | publishing, startup loading, version checks, changelog or install flow |
 | [Local server and debug parameters](docs/development/local-development.md) | starting a local server or choosing camera/debug URL parameters |
 | [Browser verification and test selection](docs/development/verification.md) | selecting browser tests, screenshots and checks before pushing |

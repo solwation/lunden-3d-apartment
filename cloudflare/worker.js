@@ -1,5 +1,6 @@
 import { beerShelfFetch } from './beershelf.js';
 import { layoutFetch } from './layout.js';
+import { crashFetch } from './crash.js';
 // Kv. Lunden L1007 — the shared world (#178, #119): a small Cloudflare Worker with one KV namespace (binding
 // LUNDEN). It keeps the drawings taped up in the flat, and the sheet on the Sovrum 3 desk,
 // so visitors find things they didn't make themselves. Writing is open (there is no secret a public page could
@@ -15,7 +16,8 @@ import { layoutFetch } from './layout.js';
 //   GET    /scores                → [{ name, score }] the top SCORE_TOP (#198)
 //   POST   /scores                ← { id, name, score } — one row per browser (id); a score can't grow faster than
 //                                  SCORE_RATE per minute since that row's last post (SCORE_START for a new row)
-//   DELETE /admin/:what           (what = drawings | paper | scores | all; /admin/scores?id=<id or name>: one row) with "Authorization: Bearer <ADMIN_TOKEN>"
+//   POST   /crash                 ← a crash report from the game (#629, cloudflare/crash.js); GET /crash, /crash/:id read them (admin token)
+//   DELETE /admin/:what           (what = drawings | paper | scores | crash | all; /admin/scores?id=<id or name>: one row) with "Authorization: Bearer <ADMIN_TOKEN>"
 //                                  — the emergency brake; ADMIN_TOKEN is a Worker secret (cloudflare/setup.sh sets one)
 //
 // KV keys: 'drawings' (the metadata list), 'drawing:<id>' (image bytes, metadata { type }), 'paper' (JSON),
@@ -93,6 +95,7 @@ const worker = {
     const m = request.method;
     if (parts.length > 2 || (id !== undefined && !ID.test(id) && what !== 'admin')) return fail(404, 'not found', h);
     if (what === 'beer-shelf' && !id) return beerShelfFetch(request, env, h);
+    if (what === 'crash') return crashFetch(request, env, h, id); // #629
     // One authority for drawing metadata: KV read/modify/write loses concurrent moves.
     if (env.DRAWINGS && (what === 'furniture' || what === 'drawings' || (what === 'admin' && (id === 'all' || id === 'drawings')))) {
       return env.DRAWINGS.get(env.DRAWINGS.idFromName('shared')).fetch(request);
@@ -252,6 +255,14 @@ const worker = {
       const all = id === 'all';
       if (all || id === 'drawings') { for (const d of await getList(env, 'drawings')) await env.LUNDEN.delete(`drawing:${d.id}`); await env.LUNDEN.delete('drawings'); }
       if (all || id === 'paper') await env.LUNDEN.delete('paper');
+      if (id === 'crash') { // crash reports (#629): cleared on their own, not by 'all'
+        let cursor;
+        do {
+          const page = await env.LUNDEN.list({ prefix: 'crash', ...(cursor ? { cursor } : {}) });
+          for (const k of page.keys) await env.LUNDEN.delete(k.name);
+          cursor = page.list_complete ? '' : page.cursor;
+        } while (cursor);
+      }
       const one = url.searchParams.get('id');
       if (id === 'scores' && one) await env.LUNDEN.put('scores', JSON.stringify((await getList(env, 'scores')).filter((r) => r.id !== one && r.name !== one)));
       else if (all || id === 'scores') await env.LUNDEN.delete('scores');

@@ -2108,6 +2108,7 @@ export const RESET_KEEP = [
   'lunden.cloud.queue', 'lunden.cloud.seenCats', 'lunden.drawing', 'lunden.drawing.updated', // the shared world
   'lunden.stats', 'lunden.name', 'lunden.playerId', // the score and the leaderboard
   'lunden.scoreQueue', // completed players awaiting upload, including offline player changes
+  'lunden.crash.pid', 'lunden.crash.sent', 'lunden.crash.out', // crash reports (#629): the random id, the daily send counter (a reset is no way round the cap) and unsent reports; lunden.crash.beat is dropped: a reset's reload is no crash
   'lunden.changelogSeen', 'lunden.changelogSeenT', 'lunden.installSkipped', 'lunden.mapShown', // conveniences
 ];
 
@@ -2406,6 +2407,18 @@ export const MILK = { w: 0.07, h: 0.195, gable: 0.03, blue: '#2f6fc4', held: { x
 // drawings, the desk sheet, a feed of cat photos). Empty = off: everything stays in this browser only. Written by
 // cloudflare/setup.sh; keep it on one line. Locally (BUILD 'dev') it is off unless the page has &cloud=<url>.
 export const CLOUD_URL = 'https://lunden-l1007.olw.workers.dev';
+
+// Crash reports (#629, src/crashlog.js): only with the cloud on (CLOUD_URL / &cloud=). All numbers are our own picks (*guess*),
+// kept small so the report is cheap and the Worker's cap (cloudflare/crash.js) is never reached by honest use.
+export const CRASHLOG = {
+  beatMs: 2000,        // heartbeat to localStorage: one small JSON write, outside the render loop
+  deadIfWithinMs: 6000, // a "running" beat this fresh at start = another tab of the same browser is alive, not a crash
+  maxBytes: 12_000,    // a report is trimmed below this before sending (the Worker refuses > 16 kB)
+  perSession: 6, perDay: 20, // reports sent at most per page load / per browser and day; the same error only once a day
+  errorLines: 20, actions: 12, // ring buffers: last console.error lines, last key / tap events
+  layoutTolerance: 2, layoutChecksMs: [300, 1000, 3000], layoutPerSession: 3, // #567: canvas vs surface: px off that counts, checks after a resize / rotation, layout reports per page
+  textureEveryMs: 60_000, textureSliceMs: 1.5, // the texture-memory estimate walks the scene (~25 ms in all): this often, in slices of this many ms 40 ms apart
+};
 
 // #511: four packages on the front of the upper free fridge shelf. Dimensions are model assumptions
 // based on normal 330/440/473/500 ml packages, not product-specific measured drawings.

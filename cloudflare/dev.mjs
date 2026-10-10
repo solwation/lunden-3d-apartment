@@ -14,8 +14,8 @@ const LUNDEN = {
   async delete(k) { store.delete(k); },
   async list(opts = {}) {
     const prefix = opts.prefix ?? '';
-    const keys = [...store.keys()].filter((k) => k.startsWith(prefix)).map((name) => ({ name }));
-    return { keys, list_complete: true };
+    const keys = [...store.keys()].filter((k) => k.startsWith(prefix)).map((name) => ({ name, metadata: store.get(name).meta }));
+    return { keys: opts.limit ? keys.slice(0, opts.limit) : keys, list_complete: true };
   },
 };
 const layouts = new Map();

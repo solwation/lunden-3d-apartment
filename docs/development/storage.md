@@ -20,6 +20,17 @@ src/leaderboard.js     the global leaderboard (#198), only with the cloud on: op
                        never blocks starting; localStorage 'lunden.name', a random 'lunden.playerId'), the top list there
                        (#lb-start) and under the stats (setStatsExtra); the score (stats.js totalScore, SCORE in config) is
                        POSTed as text/plain when changed, every LEADERBOARD.every s, sendBeacon when hidden; names escaped
+src/crashlog.js        crash reports (#629), inert without the cloud (same switch as cloud.js): a heartbeat every CRASHLOG.beatMs (outside the
+                       render loop, ~0.08 ms) writes place, quality level, fps, renderer.info, a GPU-memory ESTIMATE (canvas, shadow map,
+                       mirror target, uploaded textures — walked in short slices), last keys/taps and console.error lines to localStorage
+                       'lunden.crash.beat' (state run / bg on hidden / clean on pagehide). At the next start a beat still 'run' (and not
+                       a live other tab) = the last run died → sent as typ 'död' (a hypothesis: memory); window error, unhandledrejection,
+                       webglcontextlost/restored → typ 'fel'. POST /crash as text/plain (fetch, sendBeacon when hidden; unsent ones wait
+                       in 'lunden.crash.out'); caps per page / per day / per signature (CRASHLOG in config). Keys: lunden.crash.pid
+                       (random id), .sent, .out kept by Återställ (RESET_KEEP), .beat dropped. main.js: the import (first) and one
+                       `crashlog.attach({...})` line. A later GPU-memory counter (#628) should replace `gpuMB()` rather than duplicate it
+cloudflare/crash.js    POST /crash, admin GET /crash and /crash/<id>, DELETE /admin/crash: size cap 16 kB, plain-data cleaning, per-IP hour
+                       limit, one report per browser+signature+day, 400 reports in all, KV TTL 14 days (test: cloudflare/crash.test.mjs)
 cloudflare/            the Worker (NOT published on Pages): worker.js (API, limits, CORS, admin emergency brake), wrangler.toml,
                        setup.sh (the user's one-command setup: login, KV, deploy, ADMIN_TOKEN, CLOUD_URL into config),
                        dev.mjs (the same Worker on Node with an in-memory KV, for tests), README.md (Swedish, for the user);
@@ -32,6 +43,9 @@ tools/reloadtest.html  headless test: resume after "Ladda om", F5 starts at STAR
 tools/resettest.html   headless test of "Återställ" (#303) against `node cloudflare/dev.mjs 8144`: Avbryt / Esc change nothing; the
                        home's keys and resume / F5 records go, the queue, drawings (wall, desk, server), score, name and cat
                        photo stay, START at the real time with the notice; the queued drawing still goes out; a later reload fresh
+tools/crashtest.cjs    Playwright test of the crash reports (#629) against dev.mjs with a token: off without the cloud, heartbeat content and
+                       cost, Page.crash → 'död' at the next start, clean / backgrounded → none, thrown error / rejection / context loss,
+                       duplicates and a flood capped (`node cloudflare/dev.mjs 8144 tok`, see its header)
 tools/cloudtest.html   headless test of the shared world against `node cloudflare/dev.mjs 8144` (start it first): PUT on
                        taping, someone else's drawing appears, DELETE on throwing, thrown elsewhere → gone here, offline
                        queue, desk sheet, cat photos neither sent nor fetched (#211), a fresh visitor gets them, the
