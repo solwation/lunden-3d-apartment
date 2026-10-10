@@ -42,7 +42,7 @@ src/roofs.js           the walkable roofs (#360, `world.roofs`): surfaces (rect 
 src/garage.js          the garage under the courtyard + Hus L's basement (#357, #417, GARAGE in config): the våning −1 plan's layout
                        (DRAWING, measured on docs/peab/kalibrerad/vaning-m1-300dpi.png with the #253 transform; heights, stalls,
                        cages, lights = ASSUMPTION): `GARAGE.rects` = walkable rooms (room name + sensor area; doorways are thin
-                       rects, some with a steel door), walls stand on every rect edge touching no other rect (`wallLines`). The
+                       rects, some with a steel door), walls stand on every rect edge touching no other rect (`wallLines`: the 5 cm samples only find the cell, each wall end is bisected to the exact neighbouring rect edge, #646 — a cell grid left up to 2 cm cracks at jambs and corners through which the terrain showed as green lines; a thin doorway rect gets a soffit at its head and a steel leaf fills it up to `doorHead`, full width). The
                        entrance hall behind `terrain.garageDoor`, the turn into the big hall under the courtyard (the plan's
                        column grid, painted stalls / numbers on canvas floors, parked `lite` cars instanced, the car pool's two,
                        bike racks), our stall straight under our patio (charger, "L1007"), Hus L's basement through a steel door

@@ -116,10 +116,14 @@ function wallLines() {
     const len = Math.hypot(bx - ax, bz - az), n = Math.max(1, Math.round(len / h));
     let start = null;
     const open = (t) => { const x = ax + (bx - ax) * t + ox * 0.03, z = az + (bz - az) * t + oz * 0.03; return !!rectAt(x, z); };
+    // #646/#647: the 5 cm samples only find *which* cell a wall starts / stops in; the end itself is bisected to the exact
+    // coordinate of the neighbouring rectangle's edge (up to 2 cm of the old cell grid left cracks at doorway jambs and corners
+    // where the terrain / the park below shows through as a green line)
+    const edge = (k) => { let a = (k - 0.5) / n, b = Math.min(1, (k + 0.5) / n); const openA = open(a); for (let i = 0; i < 20; i++) { const m = (a + b) / 2; if (open(m) === openA) a = m; else b = m; } return (a + b) / 2; };
     for (let k = 0; k <= n; k++) {
       const t = Math.min(1, (k + 0.5) / n), wall = k < n && !open(t);
-      if (wall && start === null) start = k / n;
-      if (!wall && start !== null) { const e = k / n; out.push([ax + (bx - ax) * start, az + (bz - az) * start, ax + (bx - ax) * e, az + (bz - az) * e, r]); start = null; }
+      if (wall && start === null) start = k === 0 ? 0 : edge(k);
+      if (!wall && start !== null) { const e = k === n ? 1 : edge(k); out.push([ax + (bx - ax) * start, az + (bz - az) * start, ax + (bx - ax) * e, az + (bz - az) * e, r]); start = null; }
     }
   }
   return out;
@@ -224,6 +228,9 @@ export class Garage {
     for (const r of RECTS.filter((q) => Math.min(q.x1 - q.x0, q.z1 - q.z0) < 0.7)) {
       const across = r.x1 - r.x0 < r.z1 - r.z0, head = r.id === 'doorway' ? F + GD.h : F + G.doorHead;
       for (const v of across ? [r.x0, r.x1] : [r.z0, r.z1]) this.areas[r.area].geos.shell.push(bake(across ? panel(v, r.z0, v, r.z1, head, C) : panel(r.x0, v, r.x1, v, head, C), WALL));
+      // #646: the soffit across the wall's thickness — without it the 5 cm gap over a steel leaf (2.05 under a 2.1 head) looks
+      // through the wall's depth, where the terrain's surface (the green "grass", y ≈ −0.8 over Hus A's basement) shows as a green strip
+      this.areas[r.area].geos.shell.push(bake(flat(r.x0, r.x1, r.z0, r.z1, head, 1.5), WALL));
     }
     // the partial walls and the columns: concrete boxes (a yellow foot band on the columns)
     for (const [x0, x1, z0, z1] of G.partials) { put('shell', bake(box(x1 - x0, C - F, z1 - z0, (x0 + x1) / 2, (F + C) / 2, (z0 + z1) / 2), WALL), (x0 + x1) / 2, (z0 + z1) / 2); rectSegs(segs, x0, x1, z0, z1); }
@@ -389,13 +396,13 @@ export class Garage {
           for (let i = 0; i < u.count; i++) u.setXY(i, 0.5, SOLID_V);
           parts.push(b);
         }
-      } else parts.push(new THREE.BoxGeometry(w - 0.02, h, 0.05).translate(w / 2, F + h / 2, 0).toNonIndexed(), new THREE.BoxGeometry(0.03, 0.03, 0.14).translate(w - 0.12, F + 1.05, 0).toNonIndexed());
+      } else parts.push(new THREE.BoxGeometry(w, h, 0.05).translate(w / 2, F + h / 2, 0).toNonIndexed(), new THREE.BoxGeometry(0.03, 0.03, 0.14).translate(w - 0.12, F + 1.05, 0).toNonIndexed());
       parts.forEach((g) => g.deleteAttribute('normal'));
       return mergeGeometries(parts);
     };
     const cages = this.cageDoors.filter((d) => !d.steel), steel = this.cageDoors.filter((d) => d.steel);
     this.leaves = new THREE.InstancedMesh(leafGeo(ST.door, 2.0, true), new THREE.MeshBasicMaterial({ map: meshTex, alphaTest: 0.5, side: THREE.DoubleSide }), cages.length);
-    this.steelLeaves = new THREE.InstancedMesh(leafGeo(ST.door, 2.05, false), new THREE.MeshBasicMaterial({ color: 0xffffff }), steel.length);
+    this.steelLeaves = new THREE.InstancedMesh(leafGeo(ST.door, G.doorHead, false), new THREE.MeshBasicMaterial({ color: 0xffffff }), steel.length);
     for (const m of [this.leaves, this.steelLeaves]) { m.raycast = () => {}; m.frustumCulled = false; group.add(m); }
     const pickMat = new THREE.MeshBasicMaterial();
     this.targets = this.cageDoors.map((d) => {
