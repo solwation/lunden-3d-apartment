@@ -250,7 +250,7 @@ tools/crouchtest.html  headless test: C crouches (Ctrl too, other Ctrl shortcuts
                        asks (beforeunload), not on the start screen nor on a new-version reload (#274)
 tools/papertest.html   headless test: each toilet's paper holder — pull sheets out (the roll turns, max 4), tear the strip into the hand
                        (pulling blocked), throw it in the toilet (the lid opens, it flushes, counted, swirls away), F refills (#426)
-tools/resttest.html    headless test: sit on every seat and lie in every bed (spot, no walking, up again looking the same way;
+tools/resttest.html    headless test (Olof is switched off in it, #645: he turns up at random in the sofa / armchair and takes the seat): sit on every seat and lie in every bed (spot, no walking, up again looking the same way;
                        head turned, old spot behind: up in front, #202; every spot ahead / turned, from behind: free floor, #302; in every bed the eye clear of the bedding, #308; no two bedding surfaces within 1.5 mm, #335)
 tools/stucktest.html   headless test (#314): a 5 cm scan of both floors (doors open; the free floor in one piece, pockets out of
                        reach listed), getting up from every seat / bed with the old spot inside it, F putting the sofa / bed back

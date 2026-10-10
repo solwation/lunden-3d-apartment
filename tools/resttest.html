@@ -45,6 +45,8 @@ f.onload = async () => {
     }
     pass &= check(ways.filter((o) => o.kind === 'loggia').length >= 2 && !bad.length, `#453: ${COURTYARD.benches.length} benches clear of ${ways.length} ways in${bad.length ? ': ' + bad.join('; ') : ''}`);
   }
+  // (#645) Olof turns up in the sofa / the armchair at random (src/olof.js, #586) and takes the seat: no Olof in this test
+  w.__app.olof.enabled = () => false; w.__app.olof.update(0);
   const { people } = w.__app, seatTaken = people.seatTaken;
   people.seatTaken = () => false; // (the bench sitters are out by day: every spot first, the sitters at the end)
   const segsOf = (lv) => world.levels[lv].segments;
