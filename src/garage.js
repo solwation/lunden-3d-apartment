@@ -69,7 +69,7 @@ export const COLUMNS = [
 ];
 
 /** Where the tubes hang: a grid over every room (plan x, z; `ax` = along x; `rect` = the room it lights). */
-const TUBES = RECTS.filter((r) => (r.x1 - r.x0) > 1.2 && (r.z1 - r.z0) > 1.2).flatMap((r) => {
+const TUBES = RECTS.filter((r) => !r.core && (r.x1 - r.x0) > 1.2 && (r.z1 - r.z0) > 1.2).flatMap((r) => {
   const w = r.x1 - r.x0, d = r.z1 - r.z0, nx = Math.max(1, Math.round(w / LI.spacing)), nz = Math.max(1, Math.round(d / LI.spacing)), out = [];
   for (let i = 0; i < nx; i++) for (let j = 0; j < nz; j++) out.push({ x: r.x0 + (i + 0.5) * w / nx, z: r.z0 + (j + 0.5) * d / nz, ax: w >= d, rect: r, area: r.area });
   return out;
@@ -112,7 +112,7 @@ function wallLines() {
   const out = [], h = 0.05;
   for (const r of RECTS) for (const [ax, az, bx, bz, ox, oz] of [[r.x0, r.z0, r.x1, r.z0, 0, -1], [r.x1, r.z0, r.x1, r.z1, 1, 0], [r.x0, r.z1, r.x1, r.z1, 0, 1], [r.x0, r.z0, r.x0, r.z1, -1, 0]]) {
     if (r.id === 'doorway' && ox < 0) continue; // the garage door's opening: GarageDoor
-    if (r.id === 'core') continue; // the stair core's walls: core.js (#415)
+    if (r.id === 'core' || r.core) continue; // the stair cores' walls: core.js (#415), corea.js (#637: `core` rects)
     const len = Math.hypot(bx - ax, bz - az), n = Math.max(1, Math.round(len / h));
     let start = null;
     const open = (t) => { const x = ax + (bx - ax) * t + ox * 0.03, z = az + (bz - az) * t + oz * 0.03; return !!rectAt(x, z); };
@@ -238,8 +238,8 @@ export class Garage {
     for (const r of RECTS) {
       const mx = (r.x0 + r.x1) / 2, mz = (r.z0 + r.z1) / 2;
       if (canvasRooms[r.id]) this.areas[r.area].floors.push({ geo: bake(flat(r.x0, r.x1, r.z0, r.z1, F + 0.003, 1.0), 0xffffff, true), tex: floorTexture(r, canvasRooms[r.id]) });
-      else put('shell', bake(flat(r.x0, r.x1, r.z0, r.z1, F + 0.003), FLOOR), mx, mz);
-      if (r.id !== 'core') put('shell', bake(flat(r.x0, r.x1, r.z0, r.z1, C), CEIL), mx, mz); // (the stairwell goes on up, #415)
+      else if (!r.core) put('shell', bake(flat(r.x0, r.x1, r.z0, r.z1, F + 0.003), FLOOR), mx, mz); // (a `core` rect's floor is the stair core's own, #637)
+      if (r.id !== 'core' && !r.core) put('shell', bake(flat(r.x0, r.x1, r.z0, r.z1, C), CEIL), mx, mz); // (the stairwell goes on up, #415, #637)
     }
     // wheel stops, our stall's and the car pool's charging posts, ducts and a sprinkler main under the big hall's ceiling
     for (const s of STALLS) {

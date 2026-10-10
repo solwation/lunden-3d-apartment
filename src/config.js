@@ -411,7 +411,7 @@ export const SITE = {
     { name: 'Hus A', x0: -9.76, x1: 9.42, z0: 28.8, z1: 52.86, base: -3, storeys: 5, roof: 'hip', // våning -1…4; north face on the box edge (#246)
       hip: { box: { x0: -1.64, x1: 1.28, z0: 33.49, z1: 37.39, h: 1.0 } }, // roof plan on the våning 5 sheet (#348)
       corners: { nw: [3.4, 2.0], ne: [3.4, 2.0], se: [5.9, 2.05], sw: [5.9, 2.05] },
-      recesses: [{ face: 'n', a0: 0.23, a1: 2.22, depth: 2.1, from: 1, to: 1, door: 1 },   // the main entrance from the courtyard (våning 1)
+      recesses: [{ face: 'n', a0: 0.23, a1: 2.22, depth: 2.1, from: 1, to: 1, door: 1, walkIn: true }, // the main entrance from the courtyard (våning 1); a real door into the stair core (#637, CORE_A)
         { face: 'w', a0: 41.4, a1: 43.4, depth: 1.0, from: 0, to: 0, door: 0 }] },     // towards the green, park level (våning -1)
     { name: 'Hus B', x0: -41.74, x1: -22.6, z0: 33.3, z1: 57.35, base: -3, storeys: 4, roof: 'hip', // våning -1…3
       hip: { box: { x0: -33.59, x1: -30.67, z0: 38.01, z1: 41.91, h: 1.0 } }, // roof plan on the våning 4 sheet (#348)
@@ -1574,7 +1574,12 @@ export const GARAGE = {
     {id:'roomCAnnexSDoor',x0:-62.8,x1:-62.3,z0:17.5,z1:18.5,room:'Källarrum C',area:'entrance',door:{kind:'steel',hinge:'x0',open:-1,name:'dörren till källarrummets sidocell C'}},
     {id:'stairB',x0:-33.1,x1:-31.2,z0:45.8,z1:49.9,room:'Trapphus B',area:'hallW'},
     {id:'stairBJoin',x0:-33.3,x1:-33.1,z0:46.0,z1:47.3,room:'Trapphus B',area:'hallW'},
-    {id:'passageAWest',x0:-9.05,x1:-.9,z0:41.4,z1:42.75,room:'Trapphus A',area:'hallE'},
+    {id:'passageAWest',x0:-9.05,x1:-1.37,z0:41.4,z1:42.75,room:'Trapphus A',area:'hallE'},
+    // #637: Hus A's stair core (CORE_A, src/corea.js) is the `core` rect: its band (hall + stair) is drawn / walled there; the
+    // thin rects are its openings on this storey (west towards the passage, east onto the lobby), as Hus L's coreW / coreE
+    {id:'coreA',x0:-1.05,x1:.8,z0:37.3,z1:45.5,room:'Trapphus A',area:'hallE',core:true},
+    {id:'coreAWest',x0:-1.37,x1:-1.05,z0:41.4,z1:42.75,room:'Trapphus A',area:'hallE'},
+    {id:'coreAEast',x0:.8,x1:1.13,z0:37.3,z1:40.1,room:'Trapphus A',area:'hallE'},
     // #523: room interior faces and openings read from p46 (graphic accuracy about 0.15 m); see validation.
     {id: 'bikeFarNW',x0: -41.45,x1: -35.9,z0: 0.47,z1: 7.5,room: 'Cykelförråd',area: 'basementW'},
     {id: 'bikeFarNWDoor',x0: -40.72,x1: -39.65,z0: 7.5,z1: 7.79,room: 'Cykelförråd',area: 'basementW',door: {kind: 'steel',hinge: 'x0',open: 1,name: 'dörren till västra cykelrummet'}},
@@ -1624,11 +1629,9 @@ export const GARAGE = {
     {id: 'storeBSWWing',x0: -41.08,x1: -37.85,z0: 47.55,z1: 50.3,room: 'Förråd B',area: 'hallW'},
     {id: 'storeBSWDoor',x0: -35.75,x1: -35.35,z0: 44.55,z1: 45.55,room: 'Förråd B',area: 'hallW',door: {kind: 'steel',hinge: 'x0',open: -1,name: 'dörren till förråd B söder'}},
     {id: 'entryA',x0: 1.3,x1: 2.35,z0: 28.76,z1: 29.3,room: 'Trapphus A',area: 'hallE',door: {kind: 'steel',hinge: 'x0',open: 1,name: 'dörren till trapphus A'}},
-    {id: 'passageAN',x0: 0.05,x1: 2.5,z0: 29.3,z1: 35.4,room: 'Trapphus A',area: 'hallE'},
-    {id: 'passageAMid',x0: 1.2,x1: 2.5,z0: 35.4,z1: 38.4,room: 'Trapphus A',area: 'hallE'},
-    {id: 'passageAS',x0: -0.9,x1: 2.5,z0: 38.4,z1: 41,room: 'Trapphus A',area: 'hallE'},
-    {id: 'passageAEnd',x0: 1.25,x1: 2.85,z0: 41,z1: 43.2,room: 'Trapphus A',area: 'hallE'},
-    {id: 'passageAStair',x0: -0.9,x1: 2.85,z0: 43.2,z1: 45.35,room: 'Trapphus A',area: 'hallE'},
+    {id: 'passageAN',x0: 0.02,x1: 2.5,z0: 29.3,z1: 34,room: 'Trapphus A',area: 'hallE'}, // #637: re-read on vaning-m1 — the corridor ends at the lift shaft's north wall (z 34)
+    {id: 'passageAMid',x0: 1.13,x1: 2.5,z0: 34,z1: 37.3,room: 'Trapphus A',area: 'hallE'}, // … beside the shaft (its east wall x 0.8 … 1.13)
+    {id: 'passageAS',x0: 1.13,x1: 2.5,z0: 37.3,z1: 41,room: 'Trapphus A',area: 'hallE'}, // … and in front of the lift's lobby / the förråd's door; the band's opening east is coreAEast
     {id: 'storeANW',x0: -9.05,x1: -0.25,z0: 29.3,z1: 33.15,room: 'Förråd A',area: 'hallE'},
     {id: 'storeANWWing',x0: -3.55,x1: -1.4,z0: 33.15,z1: 35.35,room: 'Förråd A',area: 'hallE'},
     {id: 'storeANWInner',x0: -1.4,x1: -0.25,z0: 33.15,z1: 34.2,room: 'Förråd A',area: 'hallE'},
@@ -1774,6 +1777,42 @@ export const LIFT_PANEL = {
   indW: 0.5, indCarY: 2.17, indLandingY: 2.2, digit: '#ff7a1a',                      // floor indicators (over the doors)
   mirrorInset: 0.2, mirrorBottom: 1.05, mirrorTop: 2.0,                              // back wall, above the handrail (y 0.95)
   pressMs: 220, darkPlate: 0.3,                                                      // pressed look; plates in a power cut
+};
+
+// Hus A's stair core (#637, src/corea.js): the stairwell and the lift from the basement (våning −1, y −3) up to våning 4
+// (y 9), five stops; the main entrance from the courtyard (SITE.blocks 'Hus A' recess, våning 1) and the garage's door
+// 'entryA' lead in. DRAWING: read off the calibrated overview plans docs/peab/kalibrerad/vaning-m1 … 4-300dpi.png (the
+// #253 transform x = (px − 1909.5) × 0.042356, z = (py − 1073) × 0.042356, ±0.15 m; all five sheets share one frame at
+// Hus A): the stair hall is a band x −1.05 … 0.80 (inner faces) running south from the lift's front wall (z 37.3) to the
+// stair's south wall (z 45.5), the same on every storey; the lift shaft lies north of it (the car x −0.40 … 0.80, z 34.5
+// … 37.0, its door in the south wall, a counterweight strip west of the car walled off); the stair is two flights side by
+// side (x −1.05 … −0.19 and −0.09 … 0.80, a stringer between) from the hall's south edge z 42.84, turning at winders
+// over the south end; on våning 1 and −1 the lobby from the entrance door (z 30.9 = the recess's back wall) runs south
+// east of the shaft and joins the band (the plan: x 0.22 … 2.5 north of the shaft, 1.13 … 2.5 beside it, z 37.3 … 38.9
+// in front of the lift). On −1 the band's west wall has the opening towards the west passage (GARAGE passageAWest, to
+// Hus A's park-level door) and its east wall the opening onto the lobby / the förråd corridor.
+// ASSUMPTION / *guess* (the sheets draw no sections or details): every height (SITE.storey 3.0 per storey, the slabs
+// 0.25, the doors 2.1 m, the guards 1.1 m), the winders (drawn as fans, modelled here as one level landing z 44.6 … 45.5
+// half way up: 8 equal risers of 0.1875 m per flight, so the flights run 0.25 m per tread), the lift car, speed and doors,
+// the entrance door's size (the plan's swing is 0.7 m; 0.85 m used: x 1.37 … 2.22, hinged east, opening out into the
+// recess) with its fixed sidelight west of it, the flats' doors (drawn closed, they do not open), the lights. NOT modelled
+// (follow-up issues): the interior fire doors across the hall (plan: z ≈ 38.2 and 41.1), the flats behind the doors.
+export const CORE_A = {
+  stops: [-3, 0, 3, 6, 9],                 // våning −1, 1, 2, 3, 4 = SITE.blocks 'Hus A' base + n × SITE.storey (*guess*: equal storeys)
+  labels: ['−1', '1', '2', '3', '4'],
+  slab: 0.25, ceilingTop: 2.7,             // *guess*: the slab thickness; the top storey's clear height
+  band: { x0: -1.05, x1: 0.80, z0: 37.3, z1: 45.5 },
+  stair: { top: 42.84, run: 44.6, well: [-0.19, -0.09], risers: 8, guard: 1.1 }, // flights z top … run, landing run … band.z1
+  // the lobby (våning 1; the basement's is the garage's rects): north part, the strip beside the shaft, the lift lobby
+  lobby: { x0: 0.22, x1: 2.50, z0: 30.9, shaftNorth: 34.0, shaftEast: 1.13, z1: 38.9 },
+  shaft: { x0: -0.40, x1: 0.80, front: 37.0, back: 34.5, door: [-0.25, 0.65], wall: 0.3 }, // front = the car's door face (the wall is 0.3 thick south of it)
+  // the entrance door in the recess's back wall (z = the recess back): the leaf x [door], the sidelight x [side]
+  entrance: { door: [1.37, 2.22], side: [0.28, 1.32], height: 2.2, hinge: 'east' },
+  // the basement's ways out of the band (garage rects 'coreAWest' / 'coreAEast'): z ranges, 2.1 m high (*guess*)
+  basement: { west: [41.4, 42.75], east: [37.3, 40.1], height: 2.1 },
+  // the flats' doors in the band's west wall on våning 1–4 (z range; the plans draw a door there): closed, 2.1 m (*guess*)
+  flatDoors: { west: [37.35, 38.2], height: 2.1 },
+  lift: { speed: 1.0, accel: 0.6, doorTime: 1.4, wait: 6, rescue: 0.25 },
 };
 
 // The lightsaber in Sovrum 2 (#78, src/saber.js): since #324 on two pegboard hooks on the Nerf board's top row (the

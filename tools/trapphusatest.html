@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Trapphus A test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+// Hus A's stairwell and lift (#637, CORE_A, src/corea.js): in from the courtyard through the entrance door (it holds while
+// shut, E opens it), the lobby, the hall; the stair on foot våning 1 → 2 → 3 → 4 and all the way down to −1, no fall, the
+// guard on våning 4, the closed-off space under the stair on −1; the lift to every stop (riding along, the doors never
+// close on someone in the doorway); out of the basement's hall east into the lobby and the garage through the steel door,
+// and west through the passage; back up to the entrance; the HUD says "Hus A · Trapphus · våning N" / "Hiss"; a reload
+// record carries a ride on; a power cut darkens it and stops the lift; the rides are counted.
+//   google-chrome --headless=new --dump-dom http://localhost:8137/tools/trapphusatest.html
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const f = document.createElement('iframe');
+f.width = 800; f.height = 500; f.src = '../index.html?time=12&month=6';
+document.body.append(f);
+f.onload = () => run().catch((e) => { out.textContent = `FAIL ${e}\n${e.stack}\nSOME FAILED`; });
+async function run() {
+  const w = f.contentWindow, d = f.contentDocument;
+  while (!w.__app) await wait(100);
+  const { player, camera, step, world, stats } = w.__app;
+  const { CORE_A: K } = await w.eval(`import('${new URL('../src/config.js', location)}')`);
+  const core = world.core, A = core.parts[0], lift = A.lift, Y = K.stops;
+  const lines = [];
+  let pass = true;
+  const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); pass &&= !!ok; return ok; };
+  d.documentElement.requestFullscreen = undefined;
+  d.getElementById('start-touch').click();
+  await wait(50);
+  const f2 = (v) => v.toFixed(2);
+  const at = (x, z, feet) => { player.spawn(x, z, 0); if (feet != null) { player.pos.y = feet; player.eyeY = feet + 1.62; camera.position.y = player.eyeY; } step(1 / 60); };
+  const walkTo = (x, z, secs = 8) => { for (let i = 0; i < secs * 60 && Math.hypot(player.pos.x - x, player.pos.z - z) > 0.12; i++) { camera.rotation.set(0, Math.atan2(-(x - player.pos.x), -(z - player.pos.z)), 0, 'YXZ'); player.keys.add('KeyW'); step(1 / 60); } player.keys.delete('KeyW'); for (let i = 0; i < 20; i++) step(1 / 60); };
+  const near = (x, z) => Math.hypot(player.pos.x - x, player.pos.z - z) < 0.3;
+  const look = (o) => { const p = o.getWorldPosition(new camera.position.constructor()); const dx = p.x - camera.position.x, dz = p.z - camera.position.z; camera.rotation.set(Math.atan2(p.y - camera.position.y, Math.hypot(dx, dz)), Math.atan2(-dx, -dz), 0, 'YXZ'); step(1 / 60); };
+  const btn = d.getElementById('action');
+  const hud = () => d.getElementById('level').textContent;
+  const falls0 = stats.falls ?? 0;
+  const ride = (k) => { lift.targets.find((t) => t.kind === 'liftbtn' && t.stop === k).press(); for (let i = 0; i < 60 * 60 && !(lift.at === k && lift.doors >= 1); i++) step(1 / 60); };
+  const [dr0, dr1] = K.entrance.door, drm = (dr0 + dr1) / 2, B = K.band, LX = (K.shaft.door[0] + K.shaft.door[1]) / 2;
+  const onY = (k) => Math.abs(player.pos.y - Y[k]) < 0.05;
+  // flight x: west half −0.6 (up from the hall's edge), east half 0.35 (back to the next floor)
+  const WX = -0.6, EX = 0.35, TOP = K.stair.top, RUN = K.stair.run, SOUTH = B.z1 - 0.4;
+  const up = (k) => { at(WX, TOP - 1.0, Y[k]); walkTo(WX, RUN - 0.3); walkTo(WX, SOUTH); walkTo(EX, SOUTH - 0.1); walkTo(EX, RUN - 0.3); walkTo(EX, TOP - 1.0); };
+
+  // ---- the entrance: the door holds while shut, E opens it, in through the lobby to the hall
+  const door = A.doors[0], dz0 = door.door.hz;
+  at(drm, dz0 - 3.0, 0);
+  walkTo(drm, dz0 + 3.0, 5);
+  check(player.pos.z < dz0 && !player.inCore, `the shut entrance door holds (z ${f2(player.pos.z)})`);
+  at(drm, dz0 - 1.2, 0); look(door.pickable);
+  check(btn.textContent === 'Öppna' && w.__app.focus().focused === door, `E: "${btn.textContent}"`);
+  btn.click(); for (let i = 0; i < 60; i++) step(1 / 60);
+  walkTo(drm, dz0 + 0.6, 4); walkTo(drm, dz0 + 3.5);
+  check(player.inCore && near(drm, dz0 + 3.5) && onY(1) && /Hus A · Trapphus · våning 1/.test(hud()), `in the lobby on våning 1 (HUD "${hud()}")`);
+  walkTo(1.8, 36.0); walkTo(1.7, 38.1); walkTo(0.2, 38.3); walkTo(0.0, 40.5);
+  check(player.inCore && near(0.0, 40.5) && onY(1), `along the lobby into the hall (${f2(player.pos.x)}, ${f2(player.pos.z)})`);
+  // the sidelight and the walls hold from outside: no way in beside the door
+  at(0.9, dz0 - 2.0, 0); walkTo(0.9, dz0 + 3.0, 4);
+  check(player.pos.z < dz0 && !player.inCore, `the sidelight holds (z ${f2(player.pos.z)})`);
+
+  // ---- the stair on foot, up to våning 4
+  for (let k = 1; k < 4; k++) {
+    up(k);
+    check(onY(k + 1) && player.inCore && player.pos.z < TOP, `up the stair to våning ${K.labels[k + 1]} (y ${f2(player.pos.y)})`);
+  }
+  check(/Hus A · Trapphus · våning 4/.test(hud()), `HUD "${hud()}"`);
+  at(WX, TOP - 1.0, Y[4]); walkTo(WX, TOP + 1.5, 3);
+  check(player.pos.z < TOP + 0.1 && onY(4), `the guard on våning 4 holds (z ${f2(player.pos.z)}, y ${f2(player.pos.y)})`);
+  // ---- and all the way down (east flight first), to −1
+  for (let k = 3; k >= 0; k--) {
+    at(EX, TOP - 1.0, Y[k + 1]); walkTo(EX, RUN - 0.3); walkTo(EX, SOUTH); walkTo(WX, SOUTH - 0.1); walkTo(WX, RUN - 0.3); walkTo(WX, TOP - 1.0);
+    check(onY(k) && player.inCore, `down the stair to våning ${K.labels[k]} (y ${f2(player.pos.y)})`);
+  }
+  check(/Hus A · Trapphus · våning −1/.test(hud()), `HUD "${hud()}"`);
+  check((stats.falls ?? 0) === falls0 && !player.fall, `no fall on the stairs (${stats.falls ?? 0})`);
+  at(EX, TOP - 1.0, Y[0]); walkTo(EX, TOP + 1.2, 3);
+  check(player.pos.z < TOP + 0.1 && onY(0), `the space under the stair is closed off on −1 (z ${f2(player.pos.z)}, y ${f2(player.pos.y)})`);
+
+  // ---- the lift: called on våning 1, in, to every stop (riding along), the doors never close on someone in the doorway
+  at(LX, B.z0 + 1.0, Y[1]);
+  look(lift.targets.find((t) => t.kind === 'liftcall' && t.stop === 1).pickable);
+  check(/kalla på hissen/i.test(btn.textContent), `E: "${btn.textContent}"`);
+  btn.click(); for (let i = 0; i < 120; i++) step(1 / 60);
+  check(lift.at === 1 && lift.doors >= 1, `the doors open (${f2(lift.doors)})`);
+  walkTo(LX, K.shaft.front - 0.1); walkTo(LX, K.shaft.front - 1.1);
+  check(lift.carHas(player.pos) && /Hiss/.test(hud()), `into the car (${f2(player.pos.x)}, ${f2(player.pos.z)}, HUD "${hud()}")`);
+  lift.targets.find((t) => t.kind === 'liftbtn' && t.stop === 0).press();
+  for (let i = 0; i < 60 * 3; i++) step(1 / 60);
+  const midY = player.pos.y;
+  player.keys.add('KeyW'); camera.rotation.set(0, 0, 0, 'YXZ'); for (let i = 0; i < 60; i++) step(1 / 60); player.keys.delete('KeyW'); // (north: against the back wall, the way out is south)
+  player.keys.add('KeyS'); for (let i = 0; i < 60; i++) step(1 / 60); player.keys.delete('KeyS');
+  check(lift.moving && Math.abs(player.pos.y - lift.y) < 0.02 && midY < Y[1] - 0.2 && lift.carHas(player.pos), `riding down (y ${f2(player.pos.y)} = the car's), no way out while it moves`);
+  for (let i = 0; i < 60 * 20 && !(lift.at === 0 && lift.doors >= 1); i++) step(1 / 60);
+  check(lift.at === 0 && onY(0) && lift.doors >= 1, `arrived on våning −1, the doors open (y ${f2(player.pos.y)})`);
+  walkTo(LX, K.shaft.front + 0.1); walkTo(LX, B.z0 + 1.1);
+  check(player.inCore && onY(0) && !lift.carHas(player.pos), `out into the basement hall (${f2(player.pos.x)}, ${f2(player.pos.z)})`);
+  lift.targets.find((t) => t.kind === 'liftcall' && t.stop === 0).press(); for (let i = 0; i < 60 * 3; i++) step(1 / 60);
+  at(LX, K.shaft.front + 0.1, Y[0]);
+  for (let i = 0; i < (K.lift.wait + 6) * 30; i++) step(1 / 30);
+  check(lift.doors >= 1, `someone in the doorway: the doors stay open (${f2(lift.doors)})`);
+  walkTo(LX, K.shaft.front - 1.1);
+  for (const k of [2, 3, 4, 1]) {
+    ride(k);
+    check(lift.at === k && onY(k) && lift.carHas(player.pos), `the lift up to våning ${K.labels[k]} (y ${f2(player.pos.y)})`);
+    walkTo(LX, K.shaft.front + 0.1); walkTo(LX, B.z0 + 1.1);
+    check(player.inCore && onY(k) && !lift.carHas(player.pos), `out of the car on våning ${K.labels[k]} (${f2(player.pos.x)}, ${f2(player.pos.z)})`);
+    walkTo(LX, K.shaft.front + 0.1); walkTo(LX, K.shaft.front - 1.1);
+  }
+  ride(0);
+  check(lift.at === 0 && onY(0), `and down to −1 again (y ${f2(player.pos.y)})`);
+
+  // ---- from the basement's hall: east into the lobby, up the corridor and out through the steel door into the garage; west
+  const east = world.garage.targets.find((t) => t.door.rect?.id === 'entryA');
+  if (!east.isOpen) east.toggle();
+  for (let i = 0; i < 60; i++) step(1 / 60);
+  at(0.0, 39.0, Y[0]);
+  walkTo(0.4, 38.6); walkTo(1.0, 38.6); walkTo(1.8, 38.0); walkTo(1.8, 33.0); walkTo(1.8, 30.5); walkTo(1.8, 28.0); walkTo(1.8, 26.0);
+  check(player.below && world.garage.roomAt(player.pos.x, player.pos.z) === 'Garage' && near(1.8, 26.0), `east through the lobby and the steel door into the garage hall (${world.garage.roomAt(player.pos.x, player.pos.z)}, z ${f2(player.pos.z)})`);
+  walkTo(1.8, 29.5); walkTo(1.8, 34.0); walkTo(1.8, 38.0); walkTo(0.9, 38.6); walkTo(0.0, 39.5);
+  check(player.inCore && onY(0), `and back to the hall (${f2(player.pos.x)}, ${f2(player.pos.z)})`);
+  walkTo(-0.4, 42.0); walkTo(-1.3, 42.1); walkTo(-4.0, 42.1);
+  check(player.below && world.garage.roomAt(player.pos.x, player.pos.z) === 'Trapphus A' && near(-4.0, 42.1), `west through the opening into the passage (${world.garage.roomAt(player.pos.x, player.pos.z)}, x ${f2(player.pos.x)})`);
+  walkTo(-1.3, 42.1); walkTo(0.0, 41.5);
+  check(player.inCore && onY(0), `and back in (${f2(player.pos.x)}, ${f2(player.pos.z)})`);
+  // up the stair to the entrance floor and out through the lobby and the door: the whole way basement → entrance
+  up(0);
+  check(onY(1), `up the stair from −1 to våning 1 (y ${f2(player.pos.y)})`);
+  walkTo(0.0, 40.5); walkTo(0.2, 38.3); walkTo(1.7, 38.1); walkTo(1.8, 36.0); walkTo(drm, dz0 + 1.5); walkTo(drm, dz0 - 1.5);
+  check(!player.inCore && player.pos.z < dz0 - 1.0 && Math.abs(player.pos.y) < 0.05, `out through the door into the courtyard (z ${f2(player.pos.z)}, y ${f2(player.pos.y)})`);
+  // the walls hold: the lift's shaft and the hall's side walls from the hall
+  at(0.2, 39.5, Y[1]); walkTo(2.0, 39.5, 3);
+  check(player.pos.x < B.x1 + 0.05, `the hall's east wall holds on våning 1 (x ${f2(player.pos.x)})`);
+  at(-0.5, 39.5, Y[2]); walkTo(-3.0, 39.5, 3);
+  check(player.pos.x > B.x0 - 0.05, `the hall's west wall holds on våning 2 (x ${f2(player.pos.x)})`);
+  // a reload record mid-ride: it carries on to its stop
+  lift.loadState({ at: null, y: 1.0, target: 3, open: 0 });
+  for (let i = 0; i < 60 * 20 && lift.at !== 3; i++) step(1 / 60);
+  check(lift.at === 3 && lift.y === Y[3], `a reload mid-ride: it goes on to våning 3 (${lift.at})`);
+  core.setPower(false);
+  check(!lift.powered && A.mats.wall.color.r < 1 && !core.lift.powered, `a power cut: Hus A's stairwell goes dark, both lifts lose the mains (${f2(A.mats.wall.color.r)})`);
+  core.setPower(true);
+  check(lift.powered && A.mats.wall.color.r === 1, 'and the mains are back');
+  const st = core.saveState();
+  check(Array.isArray(st.a) && st.a[0].at === 3, `keep.js saves both lifts (${JSON.stringify(st.a)})`);
+  check(Object.keys(stats.seen?.liftFloors ?? {}).filter((k) => k[0] === 'a').length >= 4, `Hus A's rides counted (${Object.keys(stats.seen?.liftFloors ?? {}).join(', ')})`);
+  out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
+}
+</script>
+</body>
+</html>

@@ -82,6 +82,20 @@ src/core.js            Hus L's stair core by the portik (#415, CORE in config): 
                        The flats' doors on the east wall (L1101 våning 2, L1205 våning 3; `CORE.flatDoors` / `flatDoorParts`, #626, sizes *guess*):
                        fixed, no opening; `buildFlatDoors` bakes leaf, architrave, lever handle, lock cylinder, letter box and peephole into the
                        stairwell's vertex-coloured mesh, plus ONE extra textured mesh for the plate and number sign (number only, names are the user's)
+src/corea.js           Hus A's stair core (#637, CORE_A in config; DRAWING from kalibrerad/vaning-m1 … 4, heights / winders / doors = *guess*,
+                       listed in CORE_A's comment): the same interface as core.js, which asks it too (`Core.attach` in main.js, so
+                       `world.core` stays the one object player.js / main.js / keep.js know; `houseAt` → HUD "Hus A · Trapphus · våning N" /
+                       "Hiss"; `saveState` = Hus L's lift + `a` = Hus A's). A stair hall band (x −1.05 … 0.80, z 37.3 … 45.5) from
+                       −1 to 4 (y −3, 0, 3, 6, 9: SITE.storey 3.0), two flights side by side from the hall's edge z 42.84 with a
+                       landing at the south end (the plan's winders, drawn as one level landing: 8 risers per flight), the lift shaft
+                       north of it (`Lift` with a spec: car x −0.40 … 0.80, door south, 5 stops), våning 1's lobby from the courtyard
+                       entrance's glazed door (hinged east, opening out into the recess; `world.core.parts[0].doors[0]`) with a fixed
+                       sidelight; closed flat doors in the band's west wall. On −1 only the band + lift are this module's (garage.js
+                       `core` rects: no walls / ceiling / floor / tubes there; thin rects `coreAWest` / `coreAEast` = the openings
+                       west to the passage and east onto the lobby / förråd corridor, the other `passageA*` rects re-read on the plan).
+                       surroundings.js (walkIn recess): the brick body is hollow (caps between the bands dropped, `entranceCuts` cuts the
+                       door + sidelight out of the recess's back wall), the outdoor collision has the door's gap + a 0.3 m closed
+                       vestibule (`DOORWAY_DEPTH`) and a floor there (`recessFloors`). NOT modelled: the interior fire doors, the flats.
 src/rooms.js           room detection: walls + door gaps rasterised, BFS from the room labels
 src/visitunit.js       other flats you can walk into (#574, VISIT_UNITS): `VisitUnit` = a visited flat's collision (world
                        coordinates), doors / windows / lids as E targets (`visit` flag: no score, no cat, not kept), rooms,
@@ -111,6 +125,10 @@ tools/garagetest.html  headless test (#357, #417): in from the drive (below, dra
                        the two plans with "Du är här" on the floor in front, the signs always lit
 tools/trapphusrailtest.html headless test (#625): våning 3's landing has a guard across the stair hole's south edge (the east
                        guard alone left it open since no flight goes on), walking north from the landing stops at it
+tools/trapphusatest.html headless test (#637): Hus A: the entrance door holds / E opens, the lobby, the hall, the stair on foot 1 → 4 and down to −1
+                       without a fall, the guard on 4, the closed-off space under the stair on −1, the lift to every stop (riding along,
+                       doors held open), the basement hall east into the lobby and the garage through the steel door and west through the
+                       passage, out through the entrance again, walls hold, a reload mid-ride, power cut, both lifts saved, rides counted
 tools/lifttest.html    headless test (#415): the portik's door holds shut / E opens, the stairwell on våning 1, the lift called, a ride
                        to −1 riding along (no way out while it moves), out into the basement, doors held open by someone in
                        the doorway, up to 3 and out onto the loftgång, the stairs 1 → 2 → 3 and 1 → −1 on foot without a fall,

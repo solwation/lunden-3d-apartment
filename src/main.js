@@ -105,6 +105,7 @@ import { Target } from './target.js';
 import { Car } from './car.js';
 import { Garage } from './garage.js';
 import { Core } from './core.js';
+import { CoreA } from './corea.js';
 import { People } from './people.js';
 import { Olof, OlofDriver } from './olof.js';
 import { Greetings } from './greet.js';
@@ -173,6 +174,7 @@ const garage = world.garage = new Garage(); // the garage and the förråd under
 const cheatNote = await buildCheatNote(garage, () => showCheatNote(true));
 scene.add(garage.object, garage.blackout, garage.door.object); // (+ its door, #358)
 const core = world.core = new Core(); // Hus L's stairwell and lift by the portik (#415)
+const coreA = core.attach(new CoreA()); // … and Hus A's, from its courtyard entrance down to the basement (#637)
 scene.add(core.object);
 
 // Sun from the south-west (north = the entrance side, −z). Shadows cover the house + patio.
@@ -731,6 +733,7 @@ for (const wd of toys.wands) wd.onMagic = () => bump('magic'); // statistics and
 target.onHit = (pts) => bump('target', pts);
 car.radio.onPlay = (ch) => bump('carMusic', 1, ch); // each song in the car once (#268)
 core.lift.onArrive = (k) => bump('liftFloors', 1, `v${k}`); // each storey reached by lift once (#415)
+coreA.lift.onArrive = (k) => bump('liftFloors', 1, `a${k}`); // Hus A's (#637)
 sonos.onPlay = (ch) => bump('songs', 1, ch); // each song (channel) once // the saber burns, the wands do magic (#97), darts splash (#98)
 // the cat goes for a fish finger lying on the floor near it and eats it (#163)
 if (fish) {
@@ -2274,7 +2277,7 @@ function step(dt) {
   if (roof && roof.id !== lastRoof && active()) bump('roofs', 1, roof.id);
   if (roof || !player.fall) lastRoof = roof?.id ?? null;
   if (roof) roofName = roof.name; else if (!player.aloft) roofName = null;
-  const under = player.inCore ? `Hus L · ${core.roomAt(player.pos.x, player.pos.z, player.pos.y)}` // the stairwell, the lift (#415)
+  const under = player.inCore ? `${core.houseAt(player.pos.x, player.pos.z, player.pos.y)} · ${core.roomAt(player.pos.x, player.pos.z, player.pos.y)}` // the stairwell, the lift (#415)
     : player.below ? `Under gården · ${garage.roomAt(player.pos.x, player.pos.z)}` : null; // the garage, the förråd, the lobby (#357)
   const visit = outside || under ? null : player.unit; // in a visited flat (#574): its own name, level and room
   const lvl = outside || under || visit ? -1 : player.level; // basement/core take precedence over the apartment x/z footprint (#549)

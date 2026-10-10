@@ -60,8 +60,8 @@ const PARTS = {
     load: ({ car }, s) => car.loadState(s),
   },
   lift: { // Hus L's lift (#415): where it is, its doors
-    save: ({ world }) => world.core?.lift.saveState() ?? null,
-    load: ({ world }, s) => world.core?.lift.loadState(s),
+    save: ({ world }) => world.core?.saveState() ?? null, // Hus L's lift + Hus A's under `a` (#637)
+    load: ({ world }, s) => world.core?.loadState(s),
   },
 
   open: {

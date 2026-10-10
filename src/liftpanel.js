@@ -83,18 +83,20 @@ function mirrorTexture() {
  *  o.landingZ            z of the wall face the call plates / indicators sit on (they face -z)
  *  o.callX               x of the call plate beside the landing door
  *  o.press(k, inCar)     called when a button is pressed (the lift decides what to do)
+ *  o.dz                  which way the car lies from its door wall: +1 (default) = towards +z, the landing on the −z side;
+ *                        −1 = the mirror image (Hus A's lift, #637: door in the south wall, the car north of it)
  *  o.doorTime, o.mirror  door duration (s) for the door sound; false = no mirror
  * Returns { targets, pressed(k, inCar), sync(lift), mains(on) }; the lift calls `pressed` from its button handler, `sync` after
  * each update (also in a power cut) and `mains` when the power changes.
  */
 export function buildLiftPanel(o) {
-  const { car, group, box: B, floors, landingZ } = o, n = floors.length, [d0, d1] = B.door, cx = (B.x0 + B.x1) / 2;
+  const { car, group, box: B, floors, landingZ } = o, dz = o.dz ?? 1, yaw = dz > 0 ? 0 : Math.PI, n = floors.length, [d0, d1] = B.door, cx = (B.x0 + B.x1) / 2;
   const self = { targets: [], plates: [], callPlates: [], shown: null };
   const add = (parent, m) => { m.raycast = () => {}; parent.add(m); return m; };
   const pickMat = new THREE.MeshBasicMaterial({ visible: false });
 
   // the car's button panel on the east wall, one big round button per stop, the lowest at the bottom
-  const pw = P.carPlateW, ph = n * P.pitch + 0.1, py = P.firstY - 0.05 + ph / 2, pzc = B.z0 + P.carZ;
+  const pw = P.carPlateW, ph = n * P.pitch + 0.1, py = P.firstY - 0.05 + ph / 2, pzc = B.z0 + dz * P.carZ;
   const cp = new Plate(pw, ph, floors.map((f, k) => ({ x: 0, y: (k - (n - 1) / 2) * P.pitch, label: f.label })));
   cp.mesh.rotation.y = -Math.PI / 2; cp.mesh.position.set(B.x1 - 0.072, py, pzc); add(car, cp.mesh);
   self.plates.push(cp);
@@ -112,11 +114,11 @@ export function buildLiftPanel(o) {
     if (k > 0) bs.push({ arrow: 'down' });
     bs.forEach((b, i) => { b.x = 0; b.y = (bs.length - 1) / 2 * P.callPitch - i * P.callPitch; });
     const p = new Plate(P.callPlateW, bs.length * P.callPitch + 0.04, bs);
-    p.mesh.rotation.y = Math.PI; p.mesh.position.set(o.callX, f.y + P.callY, landingZ - 0.012); add(group, p.mesh);
+    p.mesh.rotation.y = Math.PI - yaw; p.mesh.position.set(o.callX, f.y + P.callY, landingZ - dz * 0.012); add(group, p.mesh);
     self.callPlates[k] = p; self.plates.push(p);
     bs.forEach((b) => {
       const pick = new THREE.Mesh(new THREE.BoxGeometry(P.callPitch * 0.9, P.callPitch * 0.9, 0.04), pickMat);
-      pick.position.set(o.callX, f.y + P.callY + b.y, landingZ - 0.015); pick.userData.noArchitectureEdges = true; group.add(pick);
+      pick.position.set(o.callX, f.y + P.callY + b.y, landingZ - dz * 0.015); pick.userData.noArchitectureEdges = true; group.add(pick);
       const t = { kind: 'liftcall', name: 'hissen', verb: 'kalla på', pickable: pick, stop: k, press: () => o.press(k, false) };
       pick.userData.door = t; self.targets.push(t);
     });
@@ -126,19 +128,19 @@ export function buildLiftPanel(o) {
   const ic = document.createElement('canvas'); ic.width = 256; ic.height = 96;
   const itex = new THREE.CanvasTexture(ic); itex.colorSpace = THREE.SRGBColorSpace; itex.anisotropy = 4;
   const imat = new THREE.MeshBasicMaterial({ map: itex }), indGeo = new THREE.PlaneGeometry(P.indW, P.indW * 96 / 256);
-  const inside = new THREE.Mesh(indGeo, imat); inside.position.set((d0 + d1) / 2, P.indCarY, B.z0 + 0.105); add(car, inside);
+  const inside = new THREE.Mesh(indGeo, imat); inside.rotation.y = yaw; inside.position.set((d0 + d1) / 2, P.indCarY, B.z0 + dz * 0.105); add(car, inside);
   floors.forEach((f) => {
     const m = new THREE.Mesh(indGeo, imat);
-    m.rotation.y = Math.PI; m.position.set((d0 + d1) / 2, f.y + P.indLandingY, landingZ - 0.012); add(group, m);
+    m.rotation.y = Math.PI - yaw; m.position.set((d0 + d1) / 2, f.y + P.indLandingY, landingZ - dz * 0.012); add(group, m);
   });
 
   // the mirror on the car's back wall above the handrail: a frame and a baked picture, nothing rendered twice
   if (o.mirror !== false) {
-    const mw = (B.x1 - B.x0) - P.mirrorInset * 2, mh = P.mirrorTop - P.mirrorBottom, my = (P.mirrorTop + P.mirrorBottom) / 2, mz = B.z1 - 0.066;
+    const mw = (B.x1 - B.x0) - P.mirrorInset * 2, mh = P.mirrorTop - P.mirrorBottom, my = (P.mirrorTop + P.mirrorBottom) / 2, mz = B.z1 - dz * 0.066;
     const frame = new THREE.Mesh(new THREE.BoxGeometry(mw + 0.04, mh + 0.04, 0.008), new THREE.MeshBasicMaterial({ color: 0x9a9fa3 }));
-    frame.position.set(cx, my, mz + 0.002); add(car, frame);
+    frame.position.set(cx, my, mz + dz * 0.002); add(car, frame);
     const glass = new THREE.Mesh(new THREE.PlaneGeometry(mw, mh), new THREE.MeshBasicMaterial({ map: mirrorTexture() }));
-    glass.rotation.y = Math.PI; glass.position.set(cx, my, mz - 0.003); add(car, glass);
+    glass.rotation.y = Math.PI - yaw; glass.position.set(cx, my, mz - dz * 0.003); add(car, glass);
   }
 
   // ---- behaviour: lit buttons, the pressed look, the indicator, the sounds ----
