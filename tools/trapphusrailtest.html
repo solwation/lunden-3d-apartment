@@ -1,0 +1,23 @@
+<!doctype html><html><meta charset="utf-8"><title>Trapphus rail våning 3 #625</title>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
+<pre id="out">running…</pre><script type="module">
+// #625: våning 3 of Hus L's stairwell has no flight going on, so the hole over flight 2 is guarded on its south edge too:
+// walking north from våning 3's landing at the hole must stop at the rail, never drop down onto flight 2's foot.
+import * as THREE from 'three';
+import { buildWorld } from '../src/world.js';
+import { Core } from '../src/core.js';
+import { Player } from '../src/player.js';
+import { CORE as K, storeyFloor } from '../src/config.js';
+const lines=[];let pass=true;const check=(ok,t)=>{lines.push(`${ok?'PASS':'FAIL'} ${t}`);pass&&=!!ok};
+try {
+ const world=buildWorld(await fetch('../data/plan.json').then(r=>r.json()));world.core=new Core();
+ const camera=new THREE.PerspectiveCamera(),player=new Player(world,camera);
+ const y3=storeyFloor(3),x=(K.x0+K.split)/2,z0=K.foot+1.0;
+ player.spawn(x,z0,0);player.pos.y=y3;player.eyeY=y3+1.62;player.vy=0;player.fall=null;
+ camera.rotation.set(0,0,0,'YXZ');
+ for(let i=0;i<600;i++){player.keys.add("KeyW");player.update(1/60);}
+ player.keys.clear();
+ check(player.pos.z>K.foot&&player.pos.y>y3-0.1,`stopped at the rail (z ${player.pos.z.toFixed(2)} > foot ${K.foot}), y ${player.pos.y.toFixed(2)}`);
+} catch(e){check(false,'error '+e.message);}
+document.getElementById('out').textContent=lines.join('\n')+'\n'+(pass?'ALL PASS':'SOME FAILED');
+</script></html>

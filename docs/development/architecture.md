@@ -106,6 +106,8 @@ tools/garagetest.html  headless test (#357, #417): in from the drive (below, dra
                        itself, opens again if you step in, the inside button; our Renault in its stall (a box, its doors / seat)
                        #452: every exit sign's arrow leads closer to an exit, the ways in the entrance hall / basement / förråd,
                        the two plans with "Du är här" on the floor in front, the signs always lit
+tools/trapphusrailtest.html headless test (#625): våning 3's landing has a guard across the stair hole's south edge (the east
+                       guard alone left it open since no flight goes on), walking north from the landing stops at it
 tools/lifttest.html    headless test (#415): the portik's door holds shut / E opens, the stairwell on våning 1, the lift called, a ride
                        to −1 riding along (no way out while it moves), out into the basement, doors held open by someone in
                        the doorway, up to 3 and out onto the loftgång, the stairs 1 → 2 → 3 and 1 → −1 on foot without a fall,

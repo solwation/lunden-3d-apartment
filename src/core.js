@@ -372,6 +372,14 @@ export class Core {
       geo.rail.push(bake(box(XS, XS + 0.05, y + 1.07, y + 1.11, za, FOOT), RAIL), bake(box(XS, XS + 0.04, y - 0.2, y + 0.06, za, FOOT), RAIL));
       for (let z = za + 0.06; z < FOOT; z += 0.125) geo.rail.push(bake(box(XS + 0.01, XS + 0.03, y, y + 1.08, z - 0.01, z + 0.01), RAIL));
     }
+    // våning 3 has no flight going on (#625): the hole over flight 2 is also open at its south edge (the floor's edge over
+    // flight 2's foot), so the same guard runs across it, from the west wall to the open side's rail
+    {
+      const y = Y[3], zr = FOOT + 0.02;
+      geo.rail.push(bake(box(X0, XS + 0.05, y + 1.07, y + 1.11, zr - 0.025, zr + 0.025), RAIL), bake(box(X0, XS + 0.04, y - 0.2, y + 0.06, zr - 0.02, zr + 0.02), RAIL));
+      for (let x = X0 + 0.06; x < XS; x += 0.125) geo.rail.push(bake(box(x - 0.01, x + 0.01, y, y + 1.08, zr - 0.01, zr + 0.01), RAIL));
+      this.walls.push({ s: [X0, zr, XS, zr], y0: y - 0.5, y1: y + 1.2 });
+    }
     // collision on the flights' open side: from each flight's foot to its top (or the passage's start), up past its rail
     for (let k = 0; k < 3; k++) this.walls.push({ s: [XS, Math.max(ZT[k], k ? ZT[k - 1] : N[0]), XS, FOOT], y0: Y[k] - 0.5, y1: Y[k + 1] + 1.2 });
     this.walls.push({ s: [XS, N[0], XS, ZT[0]], y0: Y[0], y1: UNDER0 }); // (våning −1: none under the flight past the cross wall either)
