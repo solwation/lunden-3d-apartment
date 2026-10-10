@@ -1795,8 +1795,10 @@ export const LIFT_PANEL = {
 // 0.25, the doors 2.1 m, the guards 1.1 m), the winders (drawn as fans, modelled here as one level landing z 44.6 … 45.5
 // half way up: 8 equal risers of 0.1875 m per flight, so the flights run 0.25 m per tread), the lift car, speed and doors,
 // the entrance door's size (the plan's swing is 0.7 m; 0.85 m used: x 1.37 … 2.22, hinged east, opening out into the
-// recess) with its fixed sidelight west of it, the flats' doors (drawn closed, they do not open), the lights. NOT modelled
-// (follow-up issues): the interior fire doors across the hall (plan: z ≈ 38.2 and 41.1), the flats behind the doors.
+// recess) with its fixed sidelight west of it, the flats' doors' sizes and numbers (#643, `flatDoors`), the lights. #643: the plans'
+// door arcs across the hall at z 37.3 … 38.2 and 40.3 … 41.1 are NOT fire doors (the issue guessed so) but the flats' own doors
+// (each arc's radius = the 0.85 m leaf, its centre = the hinge on the wall, the leaf swinging into the hall), one pair per
+// storey; plus the single door in the cross wall at z ≈ 41.3. NOT modelled: the flats behind the doors.
 export const CORE_A = {
   stops: [-3, 0, 3, 6, 9],                 // våning −1, 1, 2, 3, 4 = SITE.blocks 'Hus A' base + n × SITE.storey (*guess*: equal storeys)
   labels: ['−1', '1', '2', '3', '4'],
@@ -1810,8 +1812,22 @@ export const CORE_A = {
   entrance: { door: [1.37, 2.22], side: [0.28, 1.32], height: 2.2, hinge: 'east' },
   // the basement's ways out of the band (garage rects 'coreAWest' / 'coreAEast'): z ranges, 2.1 m high (*guess*)
   basement: { west: [41.4, 42.75], east: [37.3, 40.1], height: 2.1 },
-  // the flats' doors in the band's west wall on våning 1–4 (z range; the plans draw a door there): closed, 2.1 m (*guess*)
-  flatDoors: { west: [37.35, 38.2], height: 2.1 },
+  // #643: the flats' doors in the band's walls on våning 1–4, openable (makeDoor; the arcs of the calibrated sheets, hall-2 …).
+  // Each is [z0, z1, hinge: 'n' | 's' (which jamb; the leaf swings into the hall), then the flat per storey (stops index 1–4;
+  // null = no door there: on våning 1 the east side north of the shaft is the lobby's opening)]. Positions z ±0.15 m read off
+  // the plans; 2.1 m high (*guess*). The flat numbers: Peab's planritningsbroschyr numbers Hus A's flats A1001–A1004 (våning 1),
+  // A1101–A1104, A1201–…, A1301–… and its key plan puts them in this order (north-west, north-east, south-west, south-east
+  // of the hall: A1102 A1103 / A1101 A1104; våning 1: A1004 A1001 / A1003 A1002) — which flat is behind which door is
+  // read off that key plan's text order, a *guess*. Behind each door a 1.3 m deep entrance cell is drawn (*guess*, 2.5 m
+  // high, dark) that you cannot enter: the flats are not modelled (the doorway stops you).
+  flatDoors: {
+    height: 2.1, cell: { depth: 1.3, height: 2.5 }, scale: 0.5, // scale: the number atlas' cell size (× 512 × 384 px)
+    west: [[37.35, 38.2, 'n', [null, 'A1004', 'A1102', 'A1202', 'A1302']], [40.28, 41.1, 's', [null, 'A1003', 'A1101', 'A1201', 'A1301']]],
+    east: [[37.35, 38.2, 'n', [null, null, 'A1103', 'A1203', 'A1303']], [40.28, 41.1, 's', [null, 'A1002', 'A1104', 'A1204', 'A1304']]],
+  },
+  // #643: the single door in the cross wall at z ≈ 41.3 (the plans: a 0.85 m leaf hinged at its west end, swinging south
+  // towards the stair; the wall east of it is solid). The wall is drawn as a plane at `z`, våning 1–4 (not −1, drawn differently).
+  crossDoor: { z: 41.45, door: [-0.90, -0.05] },
   lift: { speed: 1.0, accel: 0.6, doorTime: 1.4, wait: 6, rescue: 0.25 },
 };
 

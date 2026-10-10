@@ -44,6 +44,15 @@ async function run() {
   const WX = -0.6, EX = 0.35, TOP = K.stair.top, RUN = K.stair.run, SOUTH = B.z1 - 0.4;
   const up = (k) => { at(WX, TOP - 1.0, Y[k]); walkTo(WX, RUN - 0.3); walkTo(WX, SOUTH); walkTo(EX, SOUTH - 0.1); walkTo(EX, RUN - 0.3); walkTo(EX, TOP - 1.0); };
 
+  // #643: the cross wall at z ~41.45 (våning 1-4) with its single door: from the stair side, open it and walk through to the hall
+  const crossDoor = (k) => A.doors.find((t) => t.name === 'dörren mot trappan' && Math.abs(t.door.y - Y[k]) < 0.1);
+  const cross = (k) => {
+    const t = crossDoor(k), x = (K.crossDoor.door[0] + K.crossDoor.door[1]) / 2;
+    walkTo(x, K.crossDoor.z + 0.75, 4);
+    if (!t.isOpen) t.toggle();
+    for (let i = 0; i < 90; i++) step(1 / 60);
+    walkTo(x, K.crossDoor.z + 0.5, 3); walkTo(x, K.crossDoor.z - 1.2, 4);
+  };
   // ---- the entrance: the door holds while shut, E opens it, in through the lobby to the hall
   const door = A.doors[0], dz0 = door.door.hz;
   at(drm, dz0 - 3.0, 0);
@@ -111,6 +120,33 @@ async function run() {
   ride(0);
   check(lift.at === 0 && onY(0), `and down to −1 again (y ${f2(player.pos.y)})`);
 
+  // ---- #643: the flats' doors: 15 of them (våning 1: three, 2-4: four), openable; behind one you stop at the threshold
+  const flats = A.doors.filter((t) => /^dörren till A\d{4}$/.test(t.name));
+  check(flats.length === 15 && A.doors.length === 1 + 15 + 4, `15 flat doors + 4 cross-wall doors + the entrance (${flats.length} / ${A.doors.length})`);
+  const fd = A.doors.find((t) => t.name === 'dörren till A1102'), fe = A.doors.find((t) => t.name === 'dörren till A1103');
+  check(A.doors.slice(1).every((t) => t.door.pivot.children[0].children.filter((o) => o.isMesh && o.visible).length === 1), 'each flat / cross-wall door leaf is ONE drawn mesh');
+  at(0.0, 38.9, Y[2]); look(fd.pickable);
+  check(/öppna/i.test(btn.textContent) && w.__app.focus().focused === fd, `E on A1102's door: "${btn.textContent}"`);
+  walkTo(-0.5, 38.6, 3); walkTo(B.x0 - 1.0, 38.0, 3);
+  check(player.pos.x > B.x0 + 0.1 && player.inCore, `shut, A1102's door holds (x ${f2(player.pos.x)})`);
+  at(0.0, 38.9, Y[2]); look(fd.pickable); btn.click(); for (let i = 0; i < 90; i++) step(1 / 60);
+  check(fd.isOpen && fd.door.angle > 1.4, `it opens (angle ${f2(fd.door.angle)})`);
+  walkTo(-0.5, 38.0, 3); walkTo(B.x0 - 1.0, 37.95, 3);
+  check(player.pos.x > B.x0 + 0.1 && player.inCore && onY(2), `open, the doorway stops you at the threshold (x ${f2(player.pos.x)})`);
+  // an open A1103 door lies along the lift's front wall and covers its doors: you stop short of it; shut again, you get closer
+  at(0.2, 39.0, Y[2]); look(fe.pickable); btn.click(); for (let i = 0; i < 90; i++) step(1 / 60);
+  walkTo(0.2, 36.5, 3); const zOpen = player.pos.z;
+  at(0.2, 39.0, Y[2]); look(fe.pickable); btn.click(); for (let i = 0; i < 90; i++) step(1 / 60);
+  walkTo(0.2, 36.5, 3);
+  check(!fe.isOpen && player.pos.z < zOpen - 0.05, `an open A1103 door stops you at z ${f2(zOpen)}, shut you get to z ${f2(player.pos.z)}`);
+  at(0.0, 38.9, Y[2]); look(fd.pickable); btn.click(); for (let i = 0; i < 90; i++) step(1 / 60);
+  check(!fd.isOpen && fd.door.angle < 0.01, 'A1102 shut again');
+  // the cross wall's door holds shut from the south and lets you through open
+  at(-0.5, 42.2, Y[3]); walkTo(-0.5, 40.0, 3);
+  check(player.pos.z > K.crossDoor.z, `the cross wall's door holds shut (z ${f2(player.pos.z)})`);
+  cross(3);
+  check(player.pos.z < K.crossDoor.z - 0.5 && onY(3), `and open it lets you through (z ${f2(player.pos.z)})`);
+
   // ---- from the basement's hall: east into the lobby, up the corridor and out through the steel door into the garage; west
   const east = world.garage.targets.find((t) => t.door.rect?.id === 'entryA');
   if (!east.isOpen) east.toggle();
@@ -127,7 +163,7 @@ async function run() {
   // up the stair to the entrance floor and out through the lobby and the door: the whole way basement → entrance
   up(0);
   check(onY(1), `up the stair from −1 to våning 1 (y ${f2(player.pos.y)})`);
-  walkTo(0.0, 40.5); walkTo(0.2, 38.3); walkTo(1.7, 38.1); walkTo(1.8, 36.0); walkTo(drm, dz0 + 1.5); walkTo(drm, dz0 - 1.5);
+  cross(1); walkTo(0.0, 40.5); walkTo(0.2, 38.3); walkTo(1.7, 38.1); walkTo(1.8, 36.0); walkTo(drm, dz0 + 1.5); walkTo(drm, dz0 - 1.5);
   check(!player.inCore && player.pos.z < dz0 - 1.0 && Math.abs(player.pos.y) < 0.05, `out through the door into the courtyard (z ${f2(player.pos.z)}, y ${f2(player.pos.y)})`);
   // the walls hold: the lift's shaft and the hall's side walls from the hall
   at(0.2, 39.5, Y[1]); walkTo(2.0, 39.5, 3);

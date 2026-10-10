@@ -98,6 +98,8 @@ material/              screenshots of our choices in Peab's option portal (local
   long building stand on plinths down the slope. The box edge pieces are collision too
   (`surroundings.userData.segments`, those in `OUTDOOR`), so the visitor never walks off it — except down a stair (#355:
   `groundY` has the `terrain.stairs`' treads and the NW stair's, the edge is open at a stair's top, its sides collide).
+  #643: the door arcs across the stair hall in the plans (z 37.3…38.2, 40.3…41.1) are the FLATS' doors (leaf = 0.85 m, the hinge on the wall), not fire
+  doors as #637 guessed; plus a single door in the cross wall at z ≈ 41.3. Flat numbers from the brochure's key plan text order (*guess*).
   Hus A's stair core (#637, `CORE_A`): read off the five calibrated sheets (kalibrerad/vaning-m1 … 4-300dpi.png, transform #253, ±0.15 m;
   one frame at Hus A): the stair hall is ~1.85 m wide (x −1.05 … 0.80) from the lift's front wall (z 37.3) to the stair's south wall
   (z 45.5) on every storey; the lift's car ~1.1 × 2.15 m with its door south; the stair two flights side by side with winders at the

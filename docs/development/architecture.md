@@ -90,12 +90,16 @@ src/corea.js           Hus A's stair core (#637, CORE_A in config; DRAWING from 
                        landing at the south end (the plan's winders, drawn as one level landing: 8 risers per flight), the lift shaft
                        north of it (`Lift` with a spec: car x −0.40 … 0.80, door south, 5 stops), våning 1's lobby from the courtyard
                        entrance's glazed door (hinged east, opening out into the recess; `world.core.parts[0].doors[0]`) with a fixed
-                       sidelight; closed flat doors in the band's west wall. On −1 only the band + lift are this module's (garage.js
+                       sidelight; #643: the flats' doors (15: `CORE_A.flatDoors`, våning 1 three, 2–4 four, both side walls, z 37.35…38.2 hinged north / 40.28…41.1 hinged south,
+                       the arcs of the plans) and the cross wall's single door (`crossDoor`, z 41.45, våning 1–4) are real `makeDoor` doors, each leaf merged into ONE
+                       mesh (`leafify`: vertex colours + a white texel of the shared number atlas + the brass plate); the architrave and number signs come
+                       from core.js `buildFlatDoors(geo, { doors, Ys, bk, fixed: false, cols, sc, strip })` (Hus L's call unchanged), behind each door a dark
+                       1.3 m entrance cell you cannot enter (the doorway is a collision wall); flat numbers A1001–A1304 from the brochure's key plan (*guess* which door). On −1 only the band + lift are this module's (garage.js
                        `core` rects: no walls / ceiling / floor / tubes there; thin rects `coreAWest` / `coreAEast` = the openings
                        west to the passage and east onto the lobby / förråd corridor, the other `passageA*` rects re-read on the plan).
                        surroundings.js (walkIn recess): the brick body is hollow (caps between the bands dropped, `entranceCuts` cuts the
                        door + sidelight out of the recess's back wall), the outdoor collision has the door's gap + a 0.3 m closed
-                       vestibule (`DOORWAY_DEPTH`) and a floor there (`recessFloors`). NOT modelled: the interior fire doors, the flats.
+                       vestibule (`DOORWAY_DEPTH`) and a floor there (`recessFloors`). NOT modelled: the flats behind the doors.
 src/rooms.js           room detection: walls + door gaps rasterised, BFS from the room labels
 src/visitunit.js       other flats you can walk into (#574, VISIT_UNITS): `VisitUnit` = a visited flat's collision (world
                        coordinates), doors / windows / lids as E targets (`visit` flag: no score, no cat, not kept), rooms,
@@ -128,7 +132,8 @@ tools/trapphusrailtest.html headless test (#625): våning 3's landing has a guar
 tools/trapphusatest.html headless test (#637): Hus A: the entrance door holds / E opens, the lobby, the hall, the stair on foot 1 → 4 and down to −1
                        without a fall, the guard on 4, the closed-off space under the stair on −1, the lift to every stop (riding along,
                        doors held open), the basement hall east into the lobby and the garage through the steel door and west through the
-                       passage, out through the entrance again, walls hold, a reload mid-ride, power cut, both lifts saved, rides counted
+                       passage, out through the entrance again, walls hold, a reload mid-ride, power cut, both lifts saved, rides counted; #643: the 15 flat doors + the cross wall's
+                       open / shut (E), one mesh per leaf, the doorway stops you, an open door along the lift wall stops you short
 tools/lifttest.html    headless test (#415): the portik's door holds shut / E opens, the stairwell on våning 1, the lift called, a ride
                        to −1 riding along (no way out while it moves), out into the basement, doors held open by someone in
                        the doorway, up to 3 and out onto the loftgång, the stairs 1 → 2 → 3 and 1 → −1 on foot without a fall,

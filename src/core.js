@@ -248,58 +248,71 @@ export function makeDoor(group, { hx, hz, dir, out, w, y, name, glazed }) {
  *  call). The name plate over the letter box and the flat's number beside the door are quads on ONE shared canvas atlas
  *  (one extra draw call for both doors) that carries the number only (the name is the user's to give). Sizes follow
  *  NAME_PLATE / our own front door (world.js letterFlap); the handle, rose and cylinder sizes are *guess*. */
-function buildFlatDoors(geo) {
-  const D = K.flatDoorParts, tags = [], atlas = { w: 1024, h: 384 }, n = K.flatDoors.length;
+export function buildFlatDoors(geo, o = {}) {
+  // Hus A's stairwell (corea.js, #643) reuses it: `doors` = [[storey, z0, z1, label, x, side, signSouth]] (x = the wall's x, side = −1 for a
+  // wall the hall lies west of, +1 east of it), `Ys` the storeys' floors, `bk` its baking; `fixed: false` = the leaf, hardware and
+  // the plate belong to an openable door (only the architrave and the number sign are made here, `cells` says where on the atlas
+  // each plate / sign is); the atlas has `cols` columns of cells `sc` × the normal size, and a white `strip` px along the bottom.
+  const { doors = K.flatDoors, Ys = Y, x: wallX = X1, side: wallSide = -1, bk = bake, fixed = true, cols = doors.length, sc = 1, strip = 0 } = o;
+  const D = K.flatDoorParts, tags = [], rows = Math.ceil(doors.length / cols);
+  const cw = 512 * sc, ch = 384 * sc, ph = 128 * sc, sh = ch - ph, atlas = { w: cw * cols, h: ch * rows + strip };
   const cv = document.createElement('canvas'); cv.width = atlas.w; cv.height = atlas.h;
-  const g = cv.getContext('2d');
-  // bx: a box proud of the wall face by d0..d1 (the doors face west into the stairwell)
-  const bx = (d0, d1, y0, y1, z0, z1, hex) => geo.rail.push(bake(box(X1 - d1, X1 - d0, y0, y1, z0, z1), hex));
-  K.flatDoors.forEach(([j, z0, z1, label], i) => {
-    const y = Y[j], zc = (z0 + z1) / 2, zl = z1 - 0.1; // the handle side = the south jamb
+  const g = cv.getContext('2d'), cells = [];
+  if (strip) { g.fillStyle = '#ffffff'; g.fillRect(0, ch * rows, atlas.w, strip); }
+  doors.forEach(([j, z0, z1, label, dx = wallX, sd = wallSide, signSouth = false], i) => {
+    // bx: a box proud of the wall face by d0..d1 (the doors face the hall: west of a side −1 wall)
+    const bx = (d0, d1, y0, y1, za, zb, hex) => geo.rail.push(bk(box(sd < 0 ? dx - d1 : dx + d0, sd < 0 ? dx - d0 : dx + d1, y0, y1, za, zb), hex));
+    const y = Ys[j], zc = (z0 + z1) / 2, zl = z1 - 0.1; // the handle side = the south jamb
     const lz0 = z0 + 0.012, lz1 = z1 - 0.012, lh = D.height;
-    bx(0, D.leaf, y, y + lh, lz0, lz1, D.leafColor);                                            // the leaf
-    // a raised border panel on the leaf's face: four strips 9 cm in from the edge
-    const m = 0.09, w = 0.018;
-    bx(D.leaf, D.leaf + 0.004, y + m, y + m + w, lz0 + m, lz1 - m, D.panelColor);
-    bx(D.leaf, D.leaf + 0.004, y + lh - m - w, y + lh - m, lz0 + m, lz1 - m, D.panelColor);
-    bx(D.leaf, D.leaf + 0.004, y + m + w, y + lh - m - w, lz0 + m, lz0 + m + w, D.panelColor);
-    bx(D.leaf, D.leaf + 0.004, y + m + w, y + lh - m - w, lz1 - m - w, lz1 - m, D.panelColor);
+    if (fixed) {
+      bx(0, D.leaf, y, y + lh, lz0, lz1, D.leafColor);                                            // the leaf
+      // a raised border panel on the leaf's face: four strips 9 cm in from the edge
+      const m = 0.09, w = 0.018;
+      bx(D.leaf, D.leaf + 0.004, y + m, y + m + w, lz0 + m, lz1 - m, D.panelColor);
+      bx(D.leaf, D.leaf + 0.004, y + lh - m - w, y + lh - m, lz0 + m, lz1 - m, D.panelColor);
+      bx(D.leaf, D.leaf + 0.004, y + m + w, y + lh - m - w, lz0 + m, lz0 + m + w, D.panelColor);
+      bx(D.leaf, D.leaf + 0.004, y + m + w, y + lh - m - w, lz1 - m - w, lz1 - m, D.panelColor);
+    }
     // the architrave round the opening: two sides and a head, proud of the leaf
     const f = D.frame;
     bx(0, D.proud, y, y + lh + f, z0 - f, z0 + 0.012, D.frameColor);
     bx(0, D.proud, y, y + lh + f, z1 - 0.012, z1 + f, D.frameColor);
     bx(0, D.proud, y + lh, y + lh + f, z0 + 0.012, z1 - 0.012, D.frameColor);
-    // the lever handle on its rose, with the lock cylinder over it
-    bx(D.leaf, D.leaf + 0.012, y + 0.93, y + 1.25, zl - 0.025, zl + 0.025, D.steel);              // the escutcheon plate
-    bx(D.leaf + 0.012, D.leaf + 0.034, y + 1.04, y + 1.07, zl - 0.12, zl + 0.02, D.steel);        // the lever (points north)
-    bx(D.leaf + 0.012, D.leaf + 0.03, y + 1.035, y + 1.075, zl - 0.02, zl + 0.02, D.steel);        // its rose
-    bx(D.leaf + 0.012, D.leaf + 0.02, y + 1.15, y + 1.19, zl - 0.02, zl + 0.02, D.brass);          // the lock cylinder
-    bx(D.leaf + 0.012, D.leaf + 0.016, y + 0.97, y + 1.0, zl - 0.012, zl + 0.012, D.dark);          // its keyhole (a thumb-turn)
-    // the letter box: a brass plate, a dark slot, a peephole above it
-    bx(D.leaf, D.leaf + 0.004, y + 0.85 - 0.045, y + 0.85 + 0.045, zc - 0.165, zc + 0.165, D.brass);
-    bx(D.leaf + 0.004, D.leaf + 0.006, y + 0.85 - 0.02, y + 0.85 + 0.02, zc - 0.14, zc + 0.14, D.dark);
-    bx(D.leaf, D.leaf + 0.01, y + 1.52, y + 1.56, zc - 0.02, zc + 0.02, D.steel);                  // the peephole (titthål)
-    bx(D.leaf, D.leaf + 0.002, y + 1.53, y + 1.55, zc - 0.012, zc + 0.012, D.dark);
-    // the two label quads on the atlas: cell (i, 0) the door's plate, cell (i, 1) the flat's number beside the door
-    const cw = atlas.w / n, ph = 128, sh = atlas.h - ph;
-    g.fillStyle = '#c9a650'; g.fillRect(i * cw, 0, cw, ph);
-    g.strokeStyle = 'rgba(0,0,0,0.35)'; g.lineWidth = 2; g.strokeRect(i * cw + 8, 8, cw - 16, ph - 16);
-    g.fillStyle = '#1d1a14'; g.font = "600 64px 'Helvetica Neue', Helvetica, Arial, sans-serif"; g.textAlign = 'center'; g.textBaseline = 'middle';
-    g.fillText(label, i * cw + cw / 2, ph / 2 + 3);
-    g.fillStyle = '#eeeeea'; g.fillRect(i * cw, ph, cw, sh);
-    g.fillStyle = '#1d4f8c'; g.font = 'bold 120px sans-serif'; g.fillText(label, i * cw + cw / 2, ph + sh / 2 + 6);
-    const quad = (w, h, zq, yq, cell) => { // a plane on the wall side facing west (+x rotated), uv = the atlas cell
-      const q = new THREE.PlaneGeometry(w, h).rotateY(-Math.PI / 2).translate(X1 - 0.0, yq, zq), uv = q.attributes.uv;
+    if (fixed) {
+      // the lever handle on its rose, with the lock cylinder over it
+      bx(D.leaf, D.leaf + 0.012, y + 0.93, y + 1.25, zl - 0.025, zl + 0.025, D.steel);              // the escutcheon plate
+      bx(D.leaf + 0.012, D.leaf + 0.034, y + 1.04, y + 1.07, zl - 0.12, zl + 0.02, D.steel);        // the lever (points north)
+      bx(D.leaf + 0.012, D.leaf + 0.03, y + 1.035, y + 1.075, zl - 0.02, zl + 0.02, D.steel);        // its rose
+      bx(D.leaf + 0.012, D.leaf + 0.02, y + 1.15, y + 1.19, zl - 0.02, zl + 0.02, D.brass);          // the lock cylinder
+      bx(D.leaf + 0.012, D.leaf + 0.016, y + 0.97, y + 1.0, zl - 0.012, zl + 0.012, D.dark);          // its keyhole (a thumb-turn)
+      // the letter box: a brass plate, a dark slot, a peephole above it
+      bx(D.leaf, D.leaf + 0.004, y + 0.85 - 0.045, y + 0.85 + 0.045, zc - 0.165, zc + 0.165, D.brass);
+      bx(D.leaf + 0.004, D.leaf + 0.006, y + 0.85 - 0.02, y + 0.85 + 0.02, zc - 0.14, zc + 0.14, D.dark);
+      bx(D.leaf, D.leaf + 0.01, y + 1.52, y + 1.56, zc - 0.02, zc + 0.02, D.steel);                  // the peephole (titthål)
+      bx(D.leaf, D.leaf + 0.002, y + 1.53, y + 1.55, zc - 0.012, zc + 0.012, D.dark);
+    }
+    // the two label quads on the atlas: cell i's top part the door's plate, its lower part the flat's number beside the door
+    const c0 = (i % cols) * cw, r0 = Math.floor(i / cols) * ch;
+    g.fillStyle = '#c9a650'; g.fillRect(c0, r0, cw, ph);
+    g.strokeStyle = 'rgba(0,0,0,0.35)'; g.lineWidth = 2 * sc; g.strokeRect(c0 + 8 * sc, r0 + 8 * sc, cw - 16 * sc, ph - 16 * sc);
+    g.fillStyle = '#1d1a14'; g.font = `600 ${64 * sc}px 'Helvetica Neue', Helvetica, Arial, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.fillText(label, c0 + cw / 2, r0 + ph / 2 + 3 * sc);
+    g.fillStyle = '#eeeeea'; g.fillRect(c0, r0 + ph, cw, sh);
+    g.fillStyle = '#1d4f8c'; g.font = `bold ${120 * sc}px sans-serif`; g.fillText(label, c0 + cw / 2, r0 + ph + sh / 2 + 6 * sc);
+    const plate = [c0 / atlas.w, 1 - (r0 + ph) / atlas.h, (c0 + cw) / atlas.w, 1 - r0 / atlas.h];
+    const sign = [c0 / atlas.w, 1 - (r0 + ch) / atlas.h, (c0 + cw) / atlas.w, 1 - (r0 + ph) / atlas.h];
+    cells.push({ plate, sign, white: strip ? [0.5, 0.5 * strip / atlas.h] : null });
+    const quad = (w, h, zq, yq, cell) => { // a plane on the wall side facing the hall, uv = the atlas cell
+      const q = new THREE.PlaneGeometry(w, h).rotateY(sd * Math.PI / 2).translate(dx, yq, zq), uv = q.attributes.uv;
       const [u0, v0, u1, v1] = cell;
       for (let k = 0; k < uv.count; k++) uv.setXY(k, u0 + uv.getX(k) * (u1 - u0), v0 + uv.getY(k) * (v1 - v0));
       return q;
     };
-    const pw = D.plate[0], phh = D.plate[1];
-    tags.push(quad(pw, phh, zc, y + D.plate[2], [i / n, 1 - ph / atlas.h, (i + 1) / n, 1]).translate(-(D.leaf + 0.0045), 0, 0));
-    tags.push(quad(D.sign, D.sign, z0 - D.frame - 0.03 - D.sign / 2, y + 1.55, [i / n, 0, (i + 1) / n, 1 - ph / atlas.h]).translate(-0.004, 0, 0));
+    if (fixed) tags.push(quad(D.plate[0], D.plate[1], zc, y + D.plate[2], plate).translate(sd * (D.leaf + 0.0045), 0, 0));
+    tags.push(quad(D.sign, D.sign, signSouth ? z1 + D.frame + 0.03 + D.sign / 2 : z0 - D.frame - 0.03 - D.sign / 2, y + 1.55, sign).translate(sd * 0.004, 0, 0));
   });
   const tex = new THREE.CanvasTexture(cv); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 4;
-  return { geos: tags, tex };
+  return { geos: tags, tex, cells };
 }
 
 export class Core {

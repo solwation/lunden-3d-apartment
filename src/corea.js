@@ -1,14 +1,16 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { CORE_A as C, SITE, PLAYER, POWER } from './config.js';
-import { box, panelX, panelZ, complement, labelTexture, makeDoor, shade, Lift } from './core.js';
+import { CORE_A as C, CORE as CL, SITE, PLAYER, POWER } from './config.js';
+import { box, panelX, panelZ, complement, labelTexture, makeDoor, buildFlatDoors, shade, Lift } from './core.js';
 import { architectureEdges } from './architectureedges.js';
 
 // Hus A's stair core (#637, CORE_A in config; the sources and the assumptions are listed there): a walkable stair hall and
 // a lift from the basement (våning −1) to våning 4, the main entrance's glazed door in the courtyard recess (våning 1)
 // and the lobby behind it. Same interface as Hus L's Core (core.js, #415), which asks this one too (`Core.attach`):
 // `covers` (plan), `contains` (plan + height: then walls collide), `heights` (every floor / flight / the car at a point),
-// `segments` (the walls in the way), `dynamic` (the door leaf, the lift's doors), `snap` (riding), `roomAt`, `update`.
+// `segments` (the walls in the way), `dynamic` (the door leaves, the lift's doors), `snap` (riding), `roomAt`, `update`.
+// #643: the flats' doors in the hall's side walls (and the single door in the cross wall) are real, openable doors (makeDoor,
+// each leaf merged into one mesh); behind a flat's door is a small dark entrance cell you cannot enter (the flats are not modelled).
 // Drawing: MeshBasic with the lights baked into vertex colours, like core.js, drawn only near the camera.
 // The basement's lobby east of the band, the förråd corridor and the west passage are the garage's rects (GARAGE
 // `coreA*`); on våning −1 only the band (rect `coreA`) and the lift belong here.
@@ -29,6 +31,12 @@ const ramp2 = (k, z) => Y[k] + H / 2 + (ST.run - z) / RUN * (H / 2);
 const LOBBY = [[LB.x0, LB.x1, ENTRANCE_Z - 0.06, LB.shaftNorth], [LB.shaftEast, LB.x1, LB.shaftNorth, B.z0], [B.x1, LB.x1, B.z0, LB.z1]];
 const inRect = (r, x, z) => x > r[0] && x < r[1] && z > r[2] && z < r[3];
 const DOOR_W = EN.door[1] - EN.door[0];
+const FD = C.flatDoors, FH = FD.height, CR = C.crossDoor;
+/** The flats' doors: { j: storey (stops index), x: the wall, sd: +1 on the west wall (the hall lies east of it), -1 on the east one, z0, z1, hinge: 'n' | 's', label }. */
+const FLATS = [];
+for (const [wx, sd, rows] of [[B.x0, 1, FD.west], [B.x1, -1, FD.east]])
+  for (const [z0, z1, hinge, labels] of rows) for (let j = 1; j < NS; j++) if (labels[j]) FLATS.push({ j, x: wx, sd, z0, z1, hinge, label: labels[j] });
+const flatHoles = (x) => FLATS.filter((f) => f.x === x).map((f) => ({ a0: f.z0, a1: f.z1, y0: Y[f.j], y1: Y[f.j] + FH }));
 
 // the lights baked into the colours: over the hall on every storey, under each landing, over the top landing, in the lobby
 const LIGHTS = [...Y.map((y, j) => [XM, (j < NS - 1 ? Y[j + 1] - SLAB : CEILTOP) - 0.05, (B.z0 + ST.top) / 2]),
@@ -51,6 +59,35 @@ function bake(geo, hex) {
   g.deleteAttribute('normal');
   g.setAttribute('color', new THREE.BufferAttribute(col, 3));
   return g;
+}
+
+/** #643: merge a makeDoor leaf's parts into ONE mesh (vertex colours with the light baked in at the hinge, a white texel of the
+ *  shared number atlas for the plain parts, the flat's brass number plate on its hall side) and drop the originals: one draw call a leaf. */
+function leafify(t, mat, cell, hall) {
+  const d = t.door, leaf = d.pivot.children[0], L = light(d.hx, d.y + 1.1, d.hz);
+  const FRAME = 0x8d7456, LEAF = 0x7a6248, STEEL = 0xb8bcbf, parts = leaf.children.filter((o) => o.visible), colors = [FRAME, FRAME, FRAME, FRAME, LEAF, STEEL];
+  const paint = (g, hex) => {
+    const c = new THREE.Color(hex ?? 0xffffff), n = g.attributes.normal, col = new Float32Array(g.attributes.position.count * 3);
+    for (let i = 0; i < n.count; i++) { const l = L * (hex == null ? 1 : shade(n.getX(i), n.getY(i), n.getZ(i))); col.set([c.r * l, c.g * l, c.b * l], i * 3); }
+    g.setAttribute('color', new THREE.BufferAttribute(col, 3));
+  };
+  const geos = parts.map((o, i) => {
+    const g = o.geometry.clone().translate(o.position.x, o.position.y, o.position.z), uv = g.attributes.uv;
+    for (let k = 0; k < uv.count; k++) uv.setXY(k, cell.white[0], cell.white[1]);
+    paint(g, colors[i]);
+    return g;
+  });
+  const all = [...geos];
+  if (hall) { // the plate faces the hall: which of the leaf's two faces (local +-z) is that?
+    const sideZ = Math.sign(hall[0] * -d.dir[1] + hall[1] * d.dir[0]) || 1, P = CL.flatDoorParts.plate;
+    const q = new THREE.PlaneGeometry(P[0], P[1]).rotateY(sideZ > 0 ? 0 : Math.PI).translate(d.w / 2, d.y + P[2], sideZ * 0.0275), uv = q.attributes.uv, [u0, v0, u1, v1] = cell.plate;
+    for (let k = 0; k < uv.count; k++) uv.setXY(k, u0 + uv.getX(k) * (u1 - u0), v0 + uv.getY(k) * (v1 - v0));
+    paint(q, null); all.push(q);
+  }
+  for (const o of parts) { leaf.remove(o); o.geometry.dispose(); }
+  const m = new THREE.Mesh(mergeGeometries(all), mat);
+  m.userData.edgeSources = geos; m.userData.door = t;
+  leaf.add(m);
 }
 
 export class CoreA {
@@ -77,8 +114,8 @@ export class CoreA {
 
     // ---- the hall band: west and east walls, south wall, the lift's front wall with a door at every stop
     const wb = C.basement, WEST0 = [{ a0: wb.west[0], a1: wb.west[1], y0: Y[0], y1: Y[0] + wb.height }];
-    wallX(B.x0, B.z0, B.z1, Y[0], CEILTOP, WEST0);
-    wallX(B.x1, B.z0, B.z1, Y[0], CEILTOP, [{ a0: wb.east[0], a1: wb.east[1], y0: Y[0], y1: Y[0] + wb.height }, { a0: B.z0, a1: LB.z1, y0: Y[1], y1: Y[1] + 2.3 }]);
+    wallX(B.x0, B.z0, B.z1, Y[0], CEILTOP, [...WEST0, ...flatHoles(B.x0)]);
+    wallX(B.x1, B.z0, B.z1, Y[0], CEILTOP, [{ a0: wb.east[0], a1: wb.east[1], y0: Y[0], y1: Y[0] + wb.height }, { a0: B.z0, a1: LB.z1, y0: Y[1], y1: Y[1] + 2.3 }, ...flatHoles(B.x1)]);
     wallZ(B.z1, B.x0, B.x1, Y[0], CEILTOP);
     wallZ(B.z0, B.x0, B.x1, Y[0], CEILTOP, Y.map((y) => ({ a0: dh[0], a1: dh[1], y0: y, y1: y + 2.1 })));
     wallZ(B.z0, B.x1, LB.shaftEast, Y[1], Y[2] - SLAB); // (våning 1: the shaft's corner on the lobby's side)
@@ -106,13 +143,20 @@ export class CoreA {
     // the doorway's jambs (the opening through the wall) and a sill
     geo.rail.push(bake(box(dr0 - 0.02, dr1, y1a + EH, y1a + EH + 0.05, ENTRANCE_Z - 0.04, ENTRANCE_Z + 0.06), FRAME));
     geo.stair.push(bake(box(dr0, dr1, y1a - 0.05, y1a + 0.003, ENTRANCE_Z - 0.2, ENTRANCE_Z + 0.2), STAIR));
-    // ---- the flats' doors in the band's west wall (closed: a leaf, an architrave, a lever), every storey
-    const FD = C.flatDoors, [fz0, fz1] = FD.west;
-    for (const y of Y) {
-      geo.rail.push(bake(box(B.x0, B.x0 + 0.035, y, y + FD.height, fz0, fz1), 0x7a6248), bake(box(B.x0, B.x0 + 0.045, y, y + FD.height + 0.07, fz0 - 0.07, fz0), 0xf0eee8),
-        bake(box(B.x0, B.x0 + 0.045, y, y + FD.height + 0.07, fz1, fz1 + 0.07), 0xf0eee8), bake(box(B.x0, B.x0 + 0.045, y + FD.height, y + FD.height + 0.07, fz0, fz1), 0xf0eee8),
-        bake(box(B.x0 + 0.035, B.x0 + 0.075, y + 1.04, y + 1.07, fz1 - 0.2, fz1 - 0.06), 0xb8bcbf));
+    // ---- #643: the flats' doors (openable, below) in the side walls, every storey: the architrave and the number sign (core.js
+    // buildFlatDoors, #626), a dark entrance cell behind each (not enterable: the doorway stops you), and the cross wall's door
+    const signs = buildFlatDoors(geo, { doors: FLATS.map((f) => [f.j, f.z0, f.z1, f.label, f.x, f.sd, f.hinge === 'n']), Ys: Y, bk: bake, fixed: false, cols: 4, sc: FD.scale, strip: 8 });
+    const CELL = 0x8c8982, { depth: cd, height: chh } = FD.cell;
+    for (const f of FLATS) {
+      const y = Y[f.j], xa = f.sd > 0 ? f.x - cd : f.x, xb = f.sd > 0 ? f.x : f.x + cd, xf = f.sd > 0 ? xa : xb;
+      geo.stair.push(bake(box(xa, xb, y - 0.05, y, f.z0, f.z1), STAIR), bake(box(xa, xb, y + chh, y + chh + 0.02, f.z0, f.z1), CELL));
+      geo.wall.push(bake(panelZ(f.z0, xa, xb, y, y + chh), CELL), bake(panelZ(f.z1, xa, xb, y, y + chh), CELL), bake(panelX(xf, f.z0, f.z1, y, y + chh), CELL));
+      this.walls.push({ s: [f.x, f.z0, f.x, f.z1], y0: y, y1: y + FH + 0.1 }); // the doorway itself: you stop at the threshold
     }
+    // the cross wall at z ≈ 41.3 (våning 1–4): a plane with the single door's opening and an architrave round it
+    const cz = CR.z, [cx0, cx1] = CR.door;
+    wallZ(cz, B.x0, B.x1, Y[1] - SLAB, CEILTOP, Y.slice(1).map((y) => ({ a0: cx0, a1: cx1, y0: y, y1: y + FH })));
+    for (const y of Y.slice(1)) for (const [a, b, c, d] of [[cx0 - 0.07, cx0, y, y + FH + 0.07], [cx1, cx1 + 0.07, y, y + FH + 0.07], [cx0, cx1, y + FH, y + FH + 0.07]]) geo.rail.push(bake(box(a, b, c, d, cz - 0.03, cz + 0.03), 0xf0eee8));
     geo.stair.push(bake(box(B.x0, B.x1, Y[0] - 0.05, Y[0] + 0.003, B.z0, B.z1), STAIR)); // våning −1's floor (the garage leaves this rect's floor to us)
     // ---- the floors: the hall (z B.z0 … the stair's top edge), the lobby on våning 1; the stair hole is open above every flight
     for (let j = 1; j < NS; j++) slab(B.x0, B.x1, B.z0, ST.top, Y[j]);
@@ -164,9 +208,22 @@ export class CoreA {
     add([...geo.wall, ...geo.stair, ...geo.rail], this.mats.wall);
     add(geo.light, this.mats.light);
     add(numGeos, new THREE.MeshBasicMaterial({ map: nums.t }));
+    this.mats.sign = new THREE.MeshBasicMaterial({ map: signs.tex }); add(signs.geos, this.mats.sign);
     add(geo.glass, new THREE.MeshBasicMaterial({ color: 0xbfd3dc, transparent: true, opacity: 0.35, side: THREE.DoubleSide, depthWrite: false }));
     // the entrance door: glazed, hinged at its east jamb, opening out into the recess
     this.doors = [makeDoor(group, { hx: dr1, hz: ENTRANCE_Z, dir: [-1, 0], out: [0, -1], w: DOOR_W, y: Y[1], name: 'porten till trapphus A', glazed: true })];
+    // #643: the flats' doors (hinged at the jamb the plans draw, swinging into the hall) and the cross wall's: one merged mesh per leaf
+    const leafMat = this.mats.leaf = new THREE.MeshBasicMaterial({ map: signs.tex, vertexColors: true });
+    FLATS.forEach((f, i) => {
+      const t = makeDoor(group, { hx: f.x, hz: f.hinge === 'n' ? f.z0 : f.z1, dir: f.hinge === 'n' ? [0, 1] : [0, -1], out: [f.sd, 0], w: f.z1 - f.z0, y: Y[f.j], name: `dörren till ${f.label}`, glazed: false });
+      leafify(t, leafMat, signs.cells[i], [f.sd, 0]);
+      this.doors.push(t);
+    });
+    for (const y of Y.slice(1)) {
+      const t = makeDoor(group, { hx: cx0, hz: cz, dir: [1, 0], out: [0, 1], w: cx1 - cx0, y, name: 'dörren mot trappan', glazed: false });
+      leafify(t, leafMat, signs.cells[0], null);
+      this.doors.push(t);
+    }
     this.doors.forEach((t) => this.placeDoor(t.door));
     // the lift: the car at the north end of the band, its door south
     this.lift = new Lift(group, { ...C.lift, x0: SH.x0, x1: SH.x1, z0: SH.front, z1: SH.back, door: SH.door, Y, floors: LAB, dz: -1, landing: B.z0, btnX: SH.door[0] - 0.22, start: 1 });
@@ -183,6 +240,7 @@ export class CoreA {
   setPower(on) {
     this.mats.wall.color.setScalar(on ? 1 : POWER.emergency);
     this.mats.light.color.setScalar(on ? 1 : 0.2);
+    this.mats.leaf.color.setScalar(on ? 1 : POWER.emergency); this.mats.sign.color.setScalar(on ? 1 : POWER.emergency);
     this.lift.mains(on);
   }
 
