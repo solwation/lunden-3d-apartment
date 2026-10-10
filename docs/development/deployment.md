@@ -24,7 +24,8 @@ tools/updatetest.html  headless test of the update notice on a phone-sized touch
                        `isNewer`: a new SHA with the same content hash is no reload, a changed hash is (#304; on a stamped
                        site it also checks the page's own version.json);
                        the countdown 5 … 1, cancelled by a key / mouse move / the stick / a touch, held back by brewing (#277)
-tools/stamp.sh         build the published site with a version stamp (used by CI)
+tools/stamp.sh         build the published site with a version stamp (used by CI); exits 1 with `::error::` if the stamped
+                       data/changelog.json is not a non-empty list of entries with id/date/text/`t` (empty fridge note, #655)
 tools/changelog_stamp.py the published changelog.json (run by stamp.sh): `t` per entry from git history, newest first,
                        a warning on duplicate / out-of-order ids (#341)
 ```
