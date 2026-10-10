@@ -20,6 +20,7 @@ const paths={
  trash:'<path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7m4-7v7"/>',
  basketball:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3v18M5.6 5.6c6 1 6 11.8 0 12.8m12.8-12.8c-6 1-6 11.8 0 12.8"/>',
  rocket:'<path d="M8 16c0-8 4-12 8-13 1 4 0 10-5 14Zm0-7-4 2-1 6 5-2m7-1 1 4-5 3-1-4m-4 2-3 3"/><circle cx="12" cy="8" r="1.5"/>',
+ web:'<path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8m0-12.8L5.6 18.4"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="8.5"/>',
  vacuum:'<path d="M5 20h10v-5H5Zm5-5V7a4 4 0 0 1 8 0v7m0-4h3v10m-2 0h4"/>',
 };
 export function setIcon(button,name,label) {
@@ -40,7 +41,7 @@ export function setPressed(button,on) {
  if(button?.getAttribute('aria-pressed')!==String(!!on)){button.setAttribute('aria-pressed',!!on);button.classList.toggle('on',!!on)}
 }
 export function initHudIcons() {
- const ids={'furniture-btn':'sofa','measure-btn':'ruler','crouch-btn':'crouch','stats-btn':'stats','power-btn':'power','turn-btn':'rotate','jet-up':'up','jet-down':'down','jump-btn':'jump',pause:'pause',mute:'volume','terminal-btn':'terminal'};
+ const ids={'furniture-btn':'sofa','measure-btn':'ruler','crouch-btn':'crouch','stats-btn':'stats','power-btn':'power','turn-btn':'rotate','jet-up':'up','jet-down':'down','jump-btn':'jump','web-btn':'web',pause:'pause',mute:'volume','terminal-btn':'terminal'};
  for(const [id,icon] of Object.entries(ids))setIcon(document.getElementById(id),icon);
  const panels='#book-panel, #poster-panel, #cal-panel, #clock-panel, #blind-panel, #sonos-panel, #draw-panel, #terminal, #rearrange-help, #update, #board-view, #task-note';
  document.querySelectorAll(panels).forEach(el=>el.classList.add('hud-controls'));
