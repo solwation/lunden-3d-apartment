@@ -142,3 +142,34 @@ test('GET /crash/public shows a layout report\'s measures', async () => {
   const l = (await (await get(env, '/crash/public')).json())[0];
   assert.deepEqual(l.layout.css, [200, 844]); assert.equal(l.layout.vv.w, 390); assert.equal(l.layout.standalone, 1); assert.equal(l.layout.pid, undefined);
 });
+
+test('v2 context episodes survive retries and public grouping; bounded history is whitelisted', async () => {
+  const env = { LUNDEN: kv(), ADMIN_TOKEN: 'tok' };
+  const sample = { up: 4, frame: 10, q: 0, px: 0.6, fps: 20, geo: 2, tex: 3, prog: 4,
+    calls: 5, tris: 6, sourceTexMB: 7, jsMB: 8, lagMs: 250, phase: 'done', gl: 'ok',
+    secret: 'must-not-leak', pid: 'private', ua: 'private', nested: { private: true } };
+  const report = (episode, kind) => ({ v: 2, typ: 'fel', kind, pid: 'private-phone', sid: 'private-tab',
+    sig: `fel:${kind}:private-tab:${episode}`, ts: 1777777777123,
+    context: { episode, lossUp: 25, durationMs: kind.endsWith('restored') ? 300 : null, status: '<lost>', missingLoss: false, secret: 'private' },
+    snap: { up: 25, phase: 'done', frame: 120, buffer: [512, 256], maxTextureSize: 512, hidden: 0, standalone: 1,
+      history: Array.from({ length: 20 }, () => sample), gpuMB: { tex: 7, total: 8, basis: 'source-images', complete: true, textureAgeSec: 2 } } });
+  for (const episode of [1, 2]) for (const kind of ['webglcontextlost', 'webglcontextrestored']) {
+    const r = report(episode, kind);
+    assert.equal((await post(env, r, 'v2-test')).status, 200);
+    assert.equal((await (await post(env, r, 'v2-test')).json()).dup, true, 'retry is idempotent');
+  }
+  const rows = await (await get(env, '/crash/public')).json();
+  assert.equal(rows.length, 4, 'two loss/recovery pairs stay separate');
+  assert.ok(rows.every(r => r.count === 1 && r.state.history.length === 12));
+  const restored = rows.find(r => r.kind === 'webglcontextrestored');
+  assert.equal(restored.context.durationMs, 300);
+  assert.equal(restored.context.status, 'lost');
+  assert.equal(restored.state.history[0].lagMs, 250, 'history survives ingest depth cleaning');
+  assert.equal(restored.state.history[0].frame, 10);
+  assert.equal(restored.state.gpuMB.basis, 'source-images');
+  assert.equal(restored.state.gpuMB.complete, false, 'never accept a claim of complete GPU accounting');
+  assert.equal(restored.state.standalone, 1);
+  assert.deepEqual(restored.state.buffer, [512, 256]);
+  const text = JSON.stringify(rows);
+  assert.ok(!/private|secret|nested|1777777777123/.test(text), 'no raw identifiers/times/extra fields');
+});
