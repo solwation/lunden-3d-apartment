@@ -55,8 +55,8 @@ src/spidersuit.js      the Spider-Man suit (#597, SPIDER, all values *guess*): o
                        nothing in focus and empty hands (`click` → 'web') or the touch 🕸 (#web-btn) raycasts the drawn scene up to
                        `web.range`; a strand (one Line) flies out at `web.speed`, a splat (one plane) sticks on the hit face for
                        `web.life` s, at most `web.max`; sfx.thwip. `&spidersuit` = on from the start (tools/spidersuittest.html)
-                       #600: with it on fall.js never hurts (a soft landing). Space / the touch jump button (#jump-btn, left of
-                       🕸, on touch always, #636) is a *press* (`player.spaceDown` / `jumpPress`): standing it jumps at `jump` m/s (indoors
+                       #600: with it on fall.js never hurts (a soft landing). Space / the touch jump button (#jump-btn, directly left of 🧎, #657; the jetpack ⬆⬇ one step further left, 🕸 above it or above ⤒,
+                       on touch always, #636) is a *press* (`player.spaceDown` / `jumpPress`): standing it jumps at `jump` m/s (indoors
                        too, the ceiling stops it, `player.ceilingAt`); without the suit it is the low jump `PLAYER.jump`; on a wall it
                        lets go. A strand that sticks outdoors calls `player.attach`:
                        `player.swing` pulls you at `swing.pull` towards the anchor under `swing.gravity` of gravity, the strand
@@ -340,7 +340,7 @@ Top-right segmented badge (#582): index.html groups furniture, stats, mute and p
 - Sprint (#43, #546): Shift, or the touch stick pushed past `PLAYER.sprintStick`, runs at `PLAYER.run` —
   both indoors and outdoors, with continuous speed through doorways. The
   stick's knob turns green while sprinting; footsteps use a longer stride. Moves are sub-stepped (5 cm).
-- Jump (#600, #636): Space / the touch ⤒ button (#jump-btn; hud icon 'jump', 48 px, safe-area placed beside 🕸, not part of the
+- Jump (#600, #636): Space / the touch ⤒ button (#jump-btn; hud icon 'jump', 48 px, safe-area placed directly left of 🧎 (#657: right 178 px, bottom 100 px; ⬆⬇ at right 234, 🕸 at 178/160, or 234/220 with the jetpack on), not part of the
   suit any more: it shows on touch always). A press, not a hold. Outdoors and indoors, off the floor, a stair tread, a roof; never with
   the jetpack (its own ⬆), in the stairwell / lift, not while kneeling to pet the cat, not without room to stand. The head stops under the ceiling
   (`ceilingAt`), so an indoor jump is at most ~1.1 m on Entréplan (RH 3.0), 0.95 m on Övreplan (2.8), 0.65 m under the 2.5 m soffits.
