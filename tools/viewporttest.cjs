@@ -21,6 +21,16 @@ function check(ok, message) {
     const errors = [];
     page.on('pageerror', e => errors.push(e.message));
     page.on('dialog', d => d.accept());
+    // Emulates iOS reporting pre-rotation innerWidth/innerHeight for a while (window.__stale = [w, h]).
+    await page.addInitScript(() => {
+      for (const [name, i] of [['innerWidth', 0], ['innerHeight', 1]]) {
+        // innerWidth is a data property in Chromium; the layout size is the same without scrollbars.
+        Object.defineProperty(window, name, { configurable: true, get() {
+          const de = document.documentElement;
+          return window.__stale ? window.__stale[i] : (i ? de.clientHeight : de.clientWidth);
+        } });
+      }
+    });
     let releasePlan;
     const gate = new Promise(resolve => { releasePlan = resolve; });
     await page.route('**/data/plan.json', async route => { await gate; await route.continue(); });
@@ -34,10 +44,12 @@ function check(ok, message) {
         return c.width === Math.floor(c.clientWidth * ratio) && c.height === Math.floor(c.clientHeight * ratio)
           && (!loaded || Math.abs(a.camera.aspect - c.clientWidth / c.clientHeight) < 1e-10);
       }, loaded, { timeout: 20000 }); } catch (error) {
-        console.log('Viewport diagnostic', await page.evaluate(() => {
+        console.log('page errors', errors); console.log('Viewport diagnostic', await page.evaluate(() => {
           const c=document.getElementById('game-canvas'),a=window.__app;
           return {window:[innerWidth,innerHeight],css:[c.clientWidth,c.clientHeight],buffer:[c.width,c.height],ratio:a?.renderer.getPixelRatio(),aspect:a?.camera.aspect,errors:window.viewportResizeCalls};
         }));
+        await page.evaluate(() => window.dispatchEvent(new Event('resize'))); await page.waitForTimeout(500);
+        console.log('after manual resize', await page.evaluate(() => { const c = document.getElementById('game-canvas'); return { css: [c.clientWidth, c.clientHeight], buf: [c.width, c.height], gv: window.__gv }; }));
         throw error;
       }
     }
@@ -49,6 +61,15 @@ function check(ok, message) {
       const c = document.getElementById('game-canvas');
       return c.clientWidth === 844 && c.clientHeight === 390 && !window.__app;
     }), 'first portrait-to-landscape rotation fills the surface during startup');
+    // Stale window metrics (iOS) while the plan is still loading: rotate back and forth with innerWidth/innerHeight lying.
+    await page.evaluate(() => { window.__stale = [390, 844]; });
+    await page.setViewportSize({ width: 844, height: 360 });
+    await page.evaluate(() => window.dispatchEvent(new Event('orientationchange')));
+    await matchesSurface();
+    check(await page.evaluate(() => { const c = document.getElementById('game-canvas'); return innerWidth === 390 && c.clientWidth === 844 && c.clientHeight === 360 && !window.__app; }), 'stale innerWidth/innerHeight during startup do not affect the surface');
+    await page.setViewportSize({ width: 844, height: 390 });
+    await page.evaluate(() => { window.__stale = null; });
+    await matchesSurface();
     // Fire the early event, then change layout later without a second window event.
     await page.evaluate(() => window.dispatchEvent(new Event('orientationchange')));
     await page.waitForTimeout(100);
@@ -107,6 +128,19 @@ function check(ok, message) {
     check(await page.locator('#overlay').isVisible(), 'touch pause menu opens at its displayed location after rotation');
     await page.locator('#start-go').tap();
     check(await page.locator('#overlay').isHidden(), 'touch resume remains usable after rotation');
+    // Stale innerWidth/innerHeight after rotation (iOS): the joystick zone and the screen-space HUD follow the canvas, not the window.
+    await page.setViewportSize({ width: 844, height: 390 });
+    await matchesSurface(true);
+    await page.evaluate(() => { window.__stale = [390, 844]; window.dispatchEvent(new Event('orientationchange')); });
+    await page.waitForTimeout(300);
+    check(await page.evaluate(() => {
+      const fire = x => document.dispatchEvent(new PointerEvent('pointerdown', { pointerId: 7, pointerType: 'touch', clientX: x, clientY: 200, bubbles: true, cancelable: true }));
+      fire(300); // 0.36 of 844 (left zone) but 0.77 of the stale 390
+      const left = !document.getElementById('stick').hidden;
+      document.dispatchEvent(new PointerEvent('pointerup', { pointerId: 7, pointerType: 'touch', clientX: 300, clientY: 200, bubbles: true }));
+      return left;
+    }), 'joystick zone uses the real surface width while window.innerWidth is stale');
+    await page.evaluate(() => { window.__stale = null; });
     check(await page.evaluate(() => ['pause', 'terminal-btn', 'crouch-btn'].every(id => {
       const r = document.getElementById(id).getBoundingClientRect();
       return r.width > 0 && r.left >= 0 && r.top >= 0 && r.right <= innerWidth && r.bottom <= innerHeight;

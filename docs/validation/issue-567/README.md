@@ -33,3 +33,7 @@ The runner writes `/tmp/lunden-viewport.log` and `/tmp/lunden-viewport.png` (ove
 Keep #567 open until the required device checks are recorded. Prioritize **iPhone 14 Pro from the home screen**, recording iOS version. Also check mobile Safari as a normal tab and Chrome on a physical Android phone, recording model/OS/browser and installed-vs-tab mode.
 
 For each mode: rotate during loading, immediately after loading, then repeatedly portrait → landscape → portrait. Verify full image coverage, correct proportions, usable touch controls and menus. On browser tabs also expand/collapse browser bars; on the installed app background/resume it. No physical-device result is claimed here.
+
+## Follow-up 2026-10-10 (stale window metrics)
+
+Emulated in Chromium: `innerWidth/innerHeight` overridden with pre-rotation values during startup and after loading (`window.__stale` in `tools/viewporttest.cjs`). Canvas CSS size, buffer and camera were already unaffected (they follow the canvas box). Real defect found: the touch joystick zone (`clientX < innerWidth * 0.45`), speech bubbles and `measure.update` used the stale window size; they now read `gameView` from `src/viewport.js`. 18 checks PASS (2 new), touchtest PASS. Linux/Chromium only; no WebKit browser is installed in the sandbox, so the iPhone layout-viewport hypothesis (stale layout width, white WKWebView backdrop) is still unverified. One run series timed out at the first post-load rotation (main thread busy under concurrent load); a repeat run passed.

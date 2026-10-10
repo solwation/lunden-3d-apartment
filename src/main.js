@@ -1,5 +1,5 @@
 import { crashlog } from './crashlog.js'; // first: its heartbeat and error hooks start before the rest loads (#629; inert without the cloud)
-import { bindGameViewport } from './viewport.js';
+import { bindGameViewport, gameView } from './viewport.js';
 import { PlantWind, windShadow } from './plantwind.js';
 import { runCheat, cheatHelp } from './cheats.js';
 import { cleanHome } from './cheatclean.js';
@@ -2256,7 +2256,7 @@ function step(dt) {
   checkCatButt();
   checkMiele();
   fireworks.update(dt);
-  measure.update(dt, window.innerWidth, window.innerHeight);
+  measure.update(dt, gameView.w, gameView.h);
   if (active() && reading) updateFocus();
   else if (drawing.active) drawing.update(dt); // drawing: the camera over the paper, nothing else moves you
   else if (active() && rest.active) { rest.update(dt); updateFocus(); } // sitting / lying: look, no walking

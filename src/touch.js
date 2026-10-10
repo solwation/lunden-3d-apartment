@@ -1,6 +1,8 @@
 // Touch controls: a floating joystick on the left part of the screen (walk), drag anywhere
 // else to look. Multi-touch via pointer events, so both thumbs work at once.
 
+import { gameView } from './viewport.js';
+
 const RADIUS = 56; // px the knob can travel
 
 export function setupTouch({ onLook }) {
@@ -22,7 +24,7 @@ export function setupTouch({ onLook }) {
 
   document.addEventListener('pointerdown', (e) => {
     if (!enabled || !isTouch(e) || e.target.closest?.('button, #hud-top, #stats, #task-note, #terminal, #rearrange-help')) return; // buttons; the stats panel scrolls (#245)
-    if (stickId === null && e.clientX < window.innerWidth * 0.45) {
+    if (stickId === null && e.clientX < (gameView.w || window.innerWidth) * 0.45) {
       stickId = e.pointerId;
       origin = { x: e.clientX, y: e.clientY };
       stick.style.left = `${e.clientX}px`;

@@ -1,5 +1,9 @@
 // CSS owns the game surface; Three owns only its drawing buffer (#567).
 // Attach before scene loading awaits anything so an early rotation is not lost.
+// The size the game surface actually has (CSS px). HUD code that places things in screen space or splits the screen
+// reads this instead of window.innerWidth/innerHeight, which iOS leaves stale for a while after a rotation (#567).
+export const gameView = { w: typeof innerWidth === 'number' ? innerWidth : 0, h: typeof innerHeight === 'number' ? innerHeight : 0 };
+
 export function bindGameViewport(renderer, camera) {
   const canvas = renderer.domElement;
   const win = canvas.ownerDocument.defaultView, doc = canvas.ownerDocument;
@@ -9,6 +13,7 @@ export function bindGameViewport(renderer, camera) {
     // Hidden documents can briefly have no layout. Keep the last valid projection.
     if (w <= 0 || h <= 0 || (w === width && h === height)) return;
     width = w; height = h;
+    gameView.w = w; gameView.h = h;
     camera.aspect = w / h;
     camera.updateProjectionMatrix();
     // Do not set inline pixel dimensions: they would freeze the CSS viewport size.

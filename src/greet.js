@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { GREET as G, SITE, HUS_L, UNIT_TOP } from './config.js';
 import { isMuted } from './audio.js';
+import { gameView } from './viewport.js';
 import { husLLayout } from './exterior.js';
 
 // Greeting the people outside (#247): look at one within `G.reach` m (not through a house) and the action is
@@ -151,7 +152,7 @@ export class Greetings {
     this.queue = this.queue.filter((x) => x.in > 0);
     if (this.mineT !== undefined && (this.mineT -= dt) <= 0) { this.mine.hidden = true; this.mineT = undefined; }
     // their bubbles over their heads, on screen
-    const w = window.innerWidth, h = window.innerHeight;
+    const w = gameView.w, h = gameView.h;
     for (const b of this.bubbles) {
       b.t -= dt;
       tmp.copy(b.f.head).add(dir.set(0, 0.42 * b.f.s, 0)).project(this.camera);

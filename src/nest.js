@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { NEST as N } from './config.js';
 import { sfx, isMuted } from './audio.js';
+import { gameView } from './viewport.js';
 
 // Smart speakers (#325): a smart display with a screen on the kitchen window board and two round speakers in wall mounts
 // (the living room by the patio door, the upstairs hall). Our own plain look in chalk fabric: no logo, no wordmark.
@@ -372,7 +373,7 @@ export class Nests {
     tmp.copy(s.pos()).add({ x: 0, y: 0.1, z: 0 }).project(this.camera);
     const off = tmp.z > 1 || Math.abs(tmp.x) > 1.1 || Math.abs(tmp.y) > 1.1;
     b.style.visibility = off ? 'hidden' : 'visible';
-    b.style.transform = `translate(${((tmp.x + 1) / 2) * window.innerWidth}px, ${((1 - tmp.y) / 2) * window.innerHeight}px) translate(-50%, -100%)`;
+    b.style.transform = `translate(${((tmp.x + 1) / 2) * gameView.w}px, ${((1 - tmp.y) / 2) * gameView.h}px) translate(-50%, -100%)`;
   }
 
   /** Redraw the display when what it shows changed (the clock about once a minute of game time, the talk at ~10 fps). */

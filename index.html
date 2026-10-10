@@ -238,7 +238,7 @@
     #stats { position: fixed; inset: 0; z-index: 30; background: rgba(20, 35, 45, 0.94); color: #fff;
       padding: calc(16px + var(--st)) calc(24px + var(--sr)) calc(20px + var(--sb)) calc(24px + var(--sl));
       font-size: 14px; line-height: 1.5; pointer-events: auto; backdrop-filter: blur(4px);
-      display: flex; flex-direction: column; height: 100vh; height: 100dvh; max-height: 100vh; max-height: 100dvh;
+      display: flex; flex-direction: column; /* inset:0 follows the layout; no vh/dvh (stale on iOS after rotation, #567) */
       overflow: hidden; box-sizing: border-box; }
     #stats[hidden] { display: none; }
     #stats .stats-header { flex: none; display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,.2); }
