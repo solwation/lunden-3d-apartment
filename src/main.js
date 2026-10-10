@@ -8,7 +8,7 @@ import { CHEAT_NOTE, LOW_MEMORY, QUALITY, STANDARD } from './config.js';
 import { lowMemory, reloadOnContextRestore, freeSceneGeometryCopies } from './lowmemory.js';
 import { loadBeerShelf } from './beershelfdata.js';
 import { BeerShelf } from './beershelf.js';
-import { initHudIcons, setIcon, setPressed } from './hudicons.js';
+import { initHudIcons, setIcon, setPressed, setWeatherIcon } from './hudicons.js';
 import * as THREE from 'three';
 import { UNIT_TOP, SITE, COLORS, LEVELS, DAY, START, PLAYER, DRAWING, STAIR, HOLD, LIFE, REMOTE, REST, DOOR_HEIGHT, TURBO, WEATHER, BREAK, CAR, KITCHEN, LAPTOP, NEST, AUTO_RELOAD, MIELE, CUPS, GARAGE, OLOF, CORE_A, CORE_B, CORE_C } from './config.js';
 import { MieleHeld, HeartFireworks } from './miele.js';
@@ -130,7 +130,8 @@ function hideLoading() {
   setTimeout(() => { loadingEl.hidden = true; }, 400);
 }
 const hud = document.getElementById('hud');
-const levelEl = document.getElementById('level');
+const levelEl = document.createElement('div'); levelEl.id = 'level'; // room · clock, inside the #score badge (#660)
+const weatherEl = document.createElement('span'); weatherEl.id = 'weather'; // the weather symbol, leftmost in it
 const promptEl = document.getElementById('prompt');
 const actionBtn = document.getElementById('action');
 const pauseBtn = document.getElementById('pause');
@@ -2109,6 +2110,7 @@ document.addEventListener('keydown', (e) => {
 const statsEl = document.getElementById('stats'), statsBody = document.getElementById('stats-body');
 setBadgeElement(document.getElementById('badges'));
 setScoreElement(document.getElementById('score')); // points, top left (#197)
+document.getElementById('score').prepend(weatherEl, levelEl);
 document.getElementById('score').append(document.getElementById('terminal-btn')); // preserve its listener inside the touch score badge (#501)
 
 const menuPresenceEl = document.getElementById('menu-presence');
@@ -2296,11 +2298,14 @@ function step(dt) {
   if (active() && !outside && !visit) bump('seconds', dt); // (time at home: not in a visited flat, #574)
   if (lvl !== lastLevel && lvl >= 0 && lastLevel >= 0) bump('stairs');
   if (lvl < 0) lastRoom = null;
-  const label = `${visit ? visit.label(player.unitLevel, player.pos.x, player.pos.z) : lvl < 0 ? under ? under : `Utomhus${roofName ? ` · ${roofName}` : ''}` : `${LEVELS[lvl].name}${lastRoom ? ` · ${lastRoom}` : ''}`} · ${day.clock}${weather.icon}`;
+  const place = visit ? visit.label(player.unitLevel, player.pos.x, player.pos.z) : lvl < 0 ? under ? under : `Utomhus${roofName ? ` · ${roofName}` : ''}` : `${LEVELS[lvl].name}${lastRoom ? ` · ${lastRoom}` : ''}`;
+  const label = `${place} · ${day.clock}`;
   if (lvl !== lastLevel || label !== levelEl.textContent) {
-    levelEl.textContent = label;
+    levelEl.replaceChildren(Object.assign(document.createElement('span'), { className: 'room', textContent: place }), Object.assign(document.createElement('span'), { className: 'clock', textContent: ` · ${day.clock}` })); // (a long room name is trimmed, the clock stays, #660)
     lastLevel = lvl;
   }
+  const [wKind, wName] = nests.weatherNow(); // the symbol stays in every room, indoors too (#660)
+  setWeatherIcon(weatherEl, wKind, wName);
   const held = heldItem();
   if (held !== lastHeld) { lastHeld = held; detail?.refresh(); } // a thing taken from afar is drawn in the hand at once
   const away = (player.inFootprint() && !player.aloft) || player.below; // (in our flat, in the garage: no visited flat in sight)

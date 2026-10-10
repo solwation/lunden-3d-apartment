@@ -69,7 +69,7 @@ f.onload = async () => {
   pass &= check(day.flash > 0.3 && day.lights.hemi.intensity > 1, `a lightning flash (${day.flash.toFixed(2)}, hemi ${day.lights.hemi.intensity.toFixed(2)})`);
   for (let i = 0; i < 60; i++) step(1 / 30);
   pass &= check(day.flash === 0, 'and it is over');
-  pass &= check(/⛈/.test(d.getElementById('level').textContent), `HUD "${d.getElementById('level').textContent}"`);
+  pass &= check(d.getElementById('weather')?.dataset.kind === 'storm' && !/⛈/.test(d.getElementById('level').textContent), `HUD symbol "${d.getElementById('weather')?.dataset.kind}"`);
   // people go in when it pours
   pass &= check(!w.__app.people.object.visible, 'the people outside have gone in');
   // snow: flakes, none inside Hus L; walking 25 m out in it counts once (#249)
@@ -79,7 +79,7 @@ f.onload = async () => {
   const fp = weather.fpos;
   let flakesIn = 0;
   for (let i = 0; i < WEATHER.snow.flakes * weather.rain; i++) { const o = i * 3; if (fp[o] > -43 && fp[o] < 11.4 && fp[o + 2] > 0.1 && fp[o + 2] < 12.6 && fp[o + 1] < 6 && fp[o + 1] > -50) flakesIn++; }
-  pass &= check(weather.flakes.visible && !weather.lines.visible && flakesIn === 0 && /❄/.test(d.getElementById('level').textContent), `snow: flakes, none inside Hus L (${flakesIn}), ❄ in the HUD`);
+  pass &= check(weather.flakes.visible && !weather.lines.visible && flakesIn === 0 && d.getElementById('weather')?.dataset.kind === 'snow', `snow: flakes, none inside Hus L (${flakesIn}), snow symbol in the HUD`);
   const { stats } = w.__app;
   const walk = (m) => { for (let k = 0; k < m * 4; k++) { player.pos.x -= 0.25; step(1 / 60); } };
   const before = stats.walkSnow ?? 0;

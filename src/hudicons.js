@@ -22,7 +22,21 @@ const paths={
  rocket:'<path d="M8 16c0-8 4-12 8-13 1 4 0 10-5 14Zm0-7-4 2-1 6 5-2m7-1 1 4-5 3-1-4m-4 2-3 3"/><circle cx="12" cy="8" r="1.5"/>',
  web:'<path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8m0-12.8L5.6 18.4"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="8.5"/>',
  vacuum:'<path d="M5 20h10v-5H5Zm5-5V7a4 4 0 0 1 8 0v7m0-4h3v10m-2 0h4"/>',
+ // weather (#660): 'sun' | 'moon' | 'cloud' | 'rain' | 'snow' | 'hail' | 'storm', the same kinds as Nests.weatherNow()
+ sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.4 1.4m11.2 11.2L19 19M5 19l1.4-1.4M17.6 6.4 19 5"/>',
+ moon:'<path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5Z"/>',
+ cloud:'<path d="M7 18a4.5 4.5 0 0 1-.6-8.96A6 6 0 0 1 18 10.5 3.8 3.8 0 0 1 17.5 18Z"/>',
+ rain:'<path d="M7 14a4.5 4.5 0 0 1-.6-8.96A6 6 0 0 1 18 6.5 3.8 3.8 0 0 1 17.5 14ZM8 17l-1 3m5-3-1 3m5-3-1 3"/>',
+ snow:'<path d="M7 14a4.5 4.5 0 0 1-.6-8.96A6 6 0 0 1 18 6.5 3.8 3.8 0 0 1 17.5 14ZM8 18v.01M12 20v.01m4-2v.01"/>',
+ hail:'<path d="M7 14a4.5 4.5 0 0 1-.6-8.96A6 6 0 0 1 18 6.5 3.8 3.8 0 0 1 17.5 14Z"/><circle cx="8" cy="18" r="1"/><circle cx="12" cy="20" r="1"/><circle cx="16" cy="18" r="1"/>',
+ storm:'<path d="M7 14a4.5 4.5 0 0 1-.6-8.96A6 6 0 0 1 18 6.5 3.8 3.8 0 0 1 17.5 14ZM12.5 12l-3 4.5h4l-2 4.5"/>',
 };
+/** The weather symbol in the HUD badge (#660): an outline icon, no emoji. `el` keeps the kind in data-kind. */
+export function setWeatherIcon(el,kind,label) {
+ if(!el||el.dataset.kind===kind)return;
+ el.innerHTML=`<svg class="hud-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${paths[kind]}</svg>`;
+ el.dataset.kind=kind;el.title=label;el.setAttribute('aria-label',label);
+}
 export function setIcon(button,name,label) {
  if(!button)return;
  if(button.dataset.hudIcon!==name||!button.querySelector('.hud-icon')){
