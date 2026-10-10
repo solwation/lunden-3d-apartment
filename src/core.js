@@ -265,6 +265,67 @@ function makeDoor(group, { hx, hz, dir, out, w, y, name, glazed }) {
   return t;
 }
 
+
+/** The flats' doors on the east wall (K.flatDoors: L1101 on våning 2, L1205 on våning 3; #626). Nothing opens (the flats are
+ *  not inside), so the whole door is baked: a leaf with a raised border, architrave, lever handle on a rose, lock cylinder,
+ *  a letter box with a dark slot, all pushed into `geo.rail` (the stairwell's one vertex-coloured mesh, no extra draw
+ *  call). The name plate over the letter box and the flat's number beside the door are quads on ONE shared canvas atlas
+ *  (one extra draw call for both doors) that carries the number only (the name is the user's to give). Sizes follow
+ *  NAME_PLATE / our own front door (world.js letterFlap); the handle, rose and cylinder sizes are *guess*. */
+function buildFlatDoors(geo) {
+  const D = K.flatDoorParts, tags = [], atlas = { w: 1024, h: 384 }, n = K.flatDoors.length;
+  const cv = document.createElement('canvas'); cv.width = atlas.w; cv.height = atlas.h;
+  const g = cv.getContext('2d');
+  // bx: a box proud of the wall face by d0..d1 (the doors face west into the stairwell)
+  const bx = (d0, d1, y0, y1, z0, z1, hex) => geo.rail.push(bake(box(X1 - d1, X1 - d0, y0, y1, z0, z1), hex));
+  K.flatDoors.forEach(([j, z0, z1, label], i) => {
+    const y = Y[j], zc = (z0 + z1) / 2, zl = z1 - 0.1; // the handle side = the south jamb
+    const lz0 = z0 + 0.012, lz1 = z1 - 0.012, lh = D.height;
+    bx(0, D.leaf, y, y + lh, lz0, lz1, D.leafColor);                                            // the leaf
+    // a raised border panel on the leaf's face: four strips 9 cm in from the edge
+    const m = 0.09, w = 0.018;
+    bx(D.leaf, D.leaf + 0.004, y + m, y + m + w, lz0 + m, lz1 - m, D.panelColor);
+    bx(D.leaf, D.leaf + 0.004, y + lh - m - w, y + lh - m, lz0 + m, lz1 - m, D.panelColor);
+    bx(D.leaf, D.leaf + 0.004, y + m + w, y + lh - m - w, lz0 + m, lz0 + m + w, D.panelColor);
+    bx(D.leaf, D.leaf + 0.004, y + m + w, y + lh - m - w, lz1 - m - w, lz1 - m, D.panelColor);
+    // the architrave round the opening: two sides and a head, proud of the leaf
+    const f = D.frame;
+    bx(0, D.proud, y, y + lh + f, z0 - f, z0 + 0.012, D.frameColor);
+    bx(0, D.proud, y, y + lh + f, z1 - 0.012, z1 + f, D.frameColor);
+    bx(0, D.proud, y + lh, y + lh + f, z0 + 0.012, z1 - 0.012, D.frameColor);
+    // the lever handle on its rose, with the lock cylinder over it
+    bx(D.leaf, D.leaf + 0.012, y + 0.93, y + 1.25, zl - 0.025, zl + 0.025, D.steel);              // the escutcheon plate
+    bx(D.leaf + 0.012, D.leaf + 0.034, y + 1.04, y + 1.07, zl - 0.12, zl + 0.02, D.steel);        // the lever (points north)
+    bx(D.leaf + 0.012, D.leaf + 0.03, y + 1.035, y + 1.075, zl - 0.02, zl + 0.02, D.steel);        // its rose
+    bx(D.leaf + 0.012, D.leaf + 0.02, y + 1.15, y + 1.19, zl - 0.02, zl + 0.02, D.brass);          // the lock cylinder
+    bx(D.leaf + 0.012, D.leaf + 0.016, y + 0.97, y + 1.0, zl - 0.012, zl + 0.012, D.dark);          // its keyhole (a thumb-turn)
+    // the letter box: a brass plate, a dark slot, a peephole above it
+    bx(D.leaf, D.leaf + 0.004, y + 0.85 - 0.045, y + 0.85 + 0.045, zc - 0.165, zc + 0.165, D.brass);
+    bx(D.leaf + 0.004, D.leaf + 0.006, y + 0.85 - 0.02, y + 0.85 + 0.02, zc - 0.14, zc + 0.14, D.dark);
+    bx(D.leaf, D.leaf + 0.01, y + 1.52, y + 1.56, zc - 0.02, zc + 0.02, D.steel);                  // the peephole (titthål)
+    bx(D.leaf, D.leaf + 0.002, y + 1.53, y + 1.55, zc - 0.012, zc + 0.012, D.dark);
+    // the two label quads on the atlas: cell (i, 0) the door's plate, cell (i, 1) the flat's number beside the door
+    const cw = atlas.w / n, ph = 128, sh = atlas.h - ph;
+    g.fillStyle = '#c9a650'; g.fillRect(i * cw, 0, cw, ph);
+    g.strokeStyle = 'rgba(0,0,0,0.35)'; g.lineWidth = 2; g.strokeRect(i * cw + 8, 8, cw - 16, ph - 16);
+    g.fillStyle = '#1d1a14'; g.font = "600 64px 'Helvetica Neue', Helvetica, Arial, sans-serif"; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.fillText(label, i * cw + cw / 2, ph / 2 + 3);
+    g.fillStyle = '#eeeeea'; g.fillRect(i * cw, ph, cw, sh);
+    g.fillStyle = '#1d4f8c'; g.font = 'bold 120px sans-serif'; g.fillText(label, i * cw + cw / 2, ph + sh / 2 + 6);
+    const quad = (w, h, zq, yq, cell) => { // a plane on the wall side facing west (+x rotated), uv = the atlas cell
+      const q = new THREE.PlaneGeometry(w, h).rotateY(-Math.PI / 2).translate(X1 - 0.0, yq, zq), uv = q.attributes.uv;
+      const [u0, v0, u1, v1] = cell;
+      for (let k = 0; k < uv.count; k++) uv.setXY(k, u0 + uv.getX(k) * (u1 - u0), v0 + uv.getY(k) * (v1 - v0));
+      return q;
+    };
+    const pw = D.plate[0], phh = D.plate[1];
+    tags.push(quad(pw, phh, zc, y + D.plate[2], [i / n, 1 - ph / atlas.h, (i + 1) / n, 1]).translate(-(D.leaf + 0.0045), 0, 0));
+    tags.push(quad(D.sign, D.sign, z0 - D.frame - 0.03 - D.sign / 2, y + 1.55, [i / n, 0, (i + 1) / n, 1 - ph / atlas.h]).translate(-0.004, 0, 0));
+  });
+  const tex = new THREE.CanvasTexture(cv); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 4;
+  return { geos: tags, tex };
+}
+
 export class Core {
   constructor() {
     const group = new THREE.Group(); this.object = group;
@@ -337,6 +398,7 @@ export class Core {
     // a painted band low on the landing's and the passage's walls (#448: 2 cm off the wall, not over the openings)
     for (const [k, y] of Y.entries()) {
       const z0 = Math.max(N[k], ZTMIN), holes = k === 0 ? [{ a0: bw0, a1: bw1, y0: y, y1: y + 2.1 }] : k === 1 ? [{ a0: OP0, a1: OP1, y0: y, y1: y + 2.2 }] : [];
+      for (const [j, d0, d1] of K.flatDoors) if (j === k) holes.push({ a0: d0 - K.flatDoorParts.frame, a1: d1 + K.flatDoorParts.frame, y0: y, y1: y + 1.0 }); // (the flats' doors stand on the floor, #626)
       for (const [a, b, ya, yb] of complement(FOOT, S1, y, y + 1.0, k === 0 ? holes : [])) geo.low.push(bake(panelX(X0 + 0.02, a, b, ya, yb), LOW));
       for (const [a, b, ya, yb] of complement(z0, S1, y, y + 1.0, holes)) geo.low.push(bake(panelX(X1 - 0.02, a, b, ya, yb), LOW));
     }
@@ -408,19 +470,19 @@ export class Core {
     });
     const add = (geos, mat) => { if (!geos.length) return; const m = new THREE.Mesh(mergeGeometries(geos), mat); m.userData.edgeSources = geos; m.raycast = () => {}; group.add(m); return m; };
     this.mats = { wall: new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.DoubleSide }), light: new THREE.MeshBasicMaterial({ color: 0xffffff }) };
+    const flatTags = buildFlatDoors(geo); // the flats' doors (#626): baked into the merged wall mesh, + one label mesh
     add([...geo.wall, ...geo.low, ...geo.stair, ...geo.rail], this.mats.wall);
+    add(flatTags.geos, new THREE.MeshBasicMaterial({ map: flatTags.tex }));
     add(geo.light, this.mats.light);
     add(numGeos, new THREE.MeshBasicMaterial({ map: nums.t }));
     add(exitGeos, new THREE.MeshBasicMaterial({ map: exits.t }));
     add(geo.glass, new THREE.MeshBasicMaterial({ color: 0xbfd3dc, transparent: true, opacity: 0.35, side: THREE.DoubleSide, depthWrite: false }));
     // the doors: the portik's (glazed, hinged at its south jamb, opening out into the portik), the loftgång's (hinged at its
-    // east jamb, opening out); the flats' (L1101, L1205) are fakes on the east wall
+    // east jamb, opening out); the flats' (L1101, L1205, #626) are fixed: leaf, frame, handle, lock, letter box and number plates baked in with the walls
     this.doors = [
       makeDoor(group, { hx: P0, hz: DZ1, dir: [0, -1], out: [1, 0], w: DZ1 - DZ0, y: Y[1], name: 'porten till trapphuset', glazed: true }),
       makeDoor(group, { hx: LD1, hz: LOFT_Z, dir: [-1, 0], out: [0, -1], w: LD1 - LD0, y: Y[3], name: 'dörren till loftgången', glazed: false }),
     ];
-    const fake = new THREE.MeshBasicMaterial({ color: 0x6d5a45 });
-    for (const [j, z0, z1] of K.flatDoors) { const m = new THREE.Mesh(new THREE.BoxGeometry(0.05, 2.1, z1 - z0 - 0.06), fake); m.position.set(X1 - 0.03, Y[j] + 1.05, (z0 + z1) / 2); m.raycast = () => {}; group.add(m); }
     this.doors.forEach((t) => this.placeDoor(t.door));
     // the lift
     this.lift = new Lift(group);

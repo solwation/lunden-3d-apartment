@@ -79,6 +79,9 @@ src/core.js            Hus L's stair core by the portik (#415, CORE in config): 
                        pling, the floor display; keep.js part `lift`; stats `liftFloors` (SCORE.first per storey). exterior.js
                        leaves the band / passage out of the core's solid, world.js its ground plate; HUD "Hus L · Trapphus ·
                        våning N" / "Hiss"
+                       The flats' doors on the east wall (L1101 våning 2, L1205 våning 3; `CORE.flatDoors` / `flatDoorParts`, #626, sizes *guess*):
+                       fixed, no opening; `buildFlatDoors` bakes leaf, architrave, lever handle, lock cylinder, letter box and peephole into the
+                       stairwell's vertex-coloured mesh, plus ONE extra textured mesh for the plate and number sign (number only, names are the user's)
 src/rooms.js           room detection: walls + door gaps rasterised, BFS from the room labels
 src/visitunit.js       other flats you can walk into (#574, VISIT_UNITS): `VisitUnit` = a visited flat's collision (world
                        coordinates), doors / windows / lids as E targets (`visit` flag: no score, no cat, not kept), rooms,

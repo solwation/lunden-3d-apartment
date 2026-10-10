@@ -1751,7 +1751,12 @@ export const CORE = {
   // (x; its sidelight `side`); the flats' doors in the east wall [storey, z0, z1] (we cannot open them)
   portikDoor: { z: [8.45, 9.48], side: [7.66, 8.4], opening: [7.61, 9.53] },
   loftDoor: { x: [-18.11, -17.07], side: [-18.58, -18.16] },
-  flatDoors: [[2, 6.73, 7.74], [3, 6.29, 7.3]],
+  flatDoors: [[2, 6.73, 7.74, 'L1101'], [3, 6.29, 7.3, 'L1205']],
+  // the flats' door parts (#626, core.js buildFlatDoors; metres, depth `proud` = from the wall face, all *guess*: no
+  // door drawing from Peab): leaf 2.1 m, a 7 cm wide architrave 2.2 cm proud, a name plate as ours (NAME_PLATE size, 0.95 m up)
+  // and a 15 cm number sign beside the door; the plate and the sign carry the flat's number only
+  flatDoorParts: { height: 2.1, leaf: 0.012, proud: 0.022, frame: 0.07, plate: [0.14, 0.035, 0.95], sign: 0.15,
+    leafColor: 0x7a6248, panelColor: 0x8d7456, frameColor: 0xf0eee8, steel: 0xb8bcbf, brass: 0xc9a650, dark: 0x1b1c1d },
   // street-façade window on våning 1 and 2 (#457, DRAWING overview plans pp. 47–48): x ≈ −18.55 … −17.15;
   // sill and head heights are an ASSUMPTION
   window: { x: [-18.55, -17.15], sill: 0.8, head: 2.4 },
