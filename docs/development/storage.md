@@ -43,6 +43,13 @@ tools/reloadtest.html  headless test: resume after "Ladda om", F5 starts at STAR
 tools/resettest.html   headless test of "Återställ" (#303) against `node cloudflare/dev.mjs 8144`: Avbryt / Esc change nothing; the
                        home's keys and resume / F5 records go, the queue, drawings (wall, desk, server), score, name and cat
                        photo stay, START at the real time with the notice; the queued drawing still goes out; a later reload fresh
+                       Running the two Worker tests (cloudtest, resettest; #635): one test at a time against one Worker, each wipes it with the
+                       admin token `testtoken` (the dev.mjs default; a 403 there now fails the test at once, since leftovers from an earlier
+                       run fail checks later; the Worker also limits writes to 30 per minute per instance, one IP). Cloud session: Playwright Chromium as in verification.md; the page opens
+                       it from a fresh `--user-data-dir`; allow ~10 min per test under SwiftShader (every iframe load is a ~3 min warm-up).
+                       `cloud.sync()` is a no-op while a poll is under way (`pulling`): tests wait with `syncNow()`, and the offline step
+                       `await cloud.flush()` before the address is restored. `http://localhost:9` fails at once as ERR_UNSAFE_PORT in Chromium.
+                       Återställ from the menu closes the menu afterwards (#522): resettest checks the key, then the plain start screen
 tools/crashtest.cjs    Playwright test of the crash reports (#629) against dev.mjs with a token: off without the cloud, heartbeat content and
                        cost, Page.crash → 'död' at the next start, clean / backgrounded → none, thrown error / rejection / context loss,
                        duplicates and a flood capped (`node cloudflare/dev.mjs 8144 tok`, see its header)

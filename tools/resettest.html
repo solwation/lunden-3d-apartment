@@ -5,7 +5,7 @@
 <pre id="out">running…</pre>
 <script>
 // "Återställ" (#303) against the real Worker code run locally (cloudflare/dev.mjs, in-memory KV):
-//   node cloudflare/dev.mjs 8144 &        (then)
+//   node cloudflare/dev.mjs 8144 &       (then; the default admin token "testtoken" is what the wipe below sends)
 //   google-chrome --headless=new --virtual-time-budget=300000 --dump-dom http://localhost:8137/tools/resettest.html   (?worker=<url> for another one)
 // Change a lot (a door, blinds, the bare flat, the target's score, the clock, a resume record), tape up a drawing
 // (synced) and one offline (queued), score, a name, a cat photo. Avbryt changes nothing; Återställ clears the local
@@ -20,6 +20,8 @@ const lines = [];
 let pass = true;
 const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); pass &&= !!ok; out.textContent = `running…\n${lines.join('\n')}`; return ok; };
 const until = async (fn, ms = 6000) => { for (let t = 0; t < ms; t += 100) { if (await fn()) return true; await wait(100); } return false; };
+// a poll already under way makes cloud.sync() a no-op (`pulling`); wait for it, then pull again so the result is deterministic (#635)
+const syncNow = async (app) => { await until(() => !app.cloud.pulling, 30000); await app.cloud.sync(); };
 const api = (path, opts) => fetch(W + path, opts).then((r) => r.json());
 const f = document.createElement('iframe');
 f.width = 900; f.height = 600;
@@ -33,7 +35,8 @@ const realHour = () => { const n = new Date(); return n.getHours() + n.getMinute
 
 (async () => {
   try { await fetch(W + '/drawings'); } catch { out.textContent = `SOME FAILED\nFAIL no Worker at ${W} (node cloudflare/dev.mjs 8144)`; return; }
-  await fetch(W + '/admin/all', { method: 'DELETE', headers: { Authorization: 'Bearer testtoken' } });
+  // the wipe must work: leftovers from an earlier run (drawings, the 'cheater-123' score) make later checks fail (#635)
+  if (!(await fetch(W + '/admin/all', { method: 'DELETE', headers: { Authorization: 'Bearer testtoken' } })).ok) { out.textContent = `SOME FAILED\nFAIL the Worker did not accept the admin token 'testtoken' (node cloudflare/dev.mjs 8144 testtoken)`; return; }
   await new Promise((res) => { const r = indexedDB.deleteDatabase('lunden'); r.onsuccess = r.onerror = r.onblocked = res; });
   localStorage.clear(); sessionStorage.clear();
   localStorage.setItem('other.page', 'x'); // another page on the same origin: never ours to clear
@@ -60,6 +63,7 @@ const realHour = () => { const n = new Date(); return n.getHours() + n.getMinute
   app.heldDrawing.take(sheet('#43a047'));
   tapeInHall();
   await until(() => app.cloud.queue.length > 0, 3000);
+  await app.cloud.flush(); // the attempt to the dead address has to fail before the address changes back (#635)
   const id2 = app.posters.own.find((p) => p.rec.id !== id1)?.rec.id;
   check(JSON.parse(localStorage.getItem('lunden.cloud.queue') ?? '[]').some((x) => x.id === id2), 'an offline drawing waits in the queue');
   // the desk drawing, the score, a name, a cat photo
@@ -69,6 +73,7 @@ const realHour = () => { const n = new Date(); return n.getHours() + n.getMinute
   const score = app.totalScore();
   const nameIn = d.getElementById('player-name');
   nameIn.value = 'Återställ-Testaren'; nameIn.dispatchEvent(new w.Event('input'));
+  d.getElementById('player-ok').click(); // the name is only kept once confirmed (leaderboard.js confirmName)
   await app.board.add('Testkatten', sheet('#f2cf2b'));
   const photos = app.board.photos.length;
   // the home changed: a door open, the blinds up, the bare flat (F), the target's score, the clock, a resume record
@@ -113,6 +118,9 @@ const realHour = () => { const n = new Date(); return n.getHours() + n.getMinute
   check(localStorage.getItem('other.page') === 'x', "another page's key on the same origin stays");
   w.dispatchEvent(new w.Event('pagehide')); // leaving: no new F5 record
   check(!sessionStorage.getItem('lunden.session'), 'no F5 record written on the way out');
+  // Återställ from the menu closes the menu afterwards (#522): the mode to resume in is left for the next page
+  check(['touch', 'mouse'].includes(sessionStorage.getItem('lunden.resetHideMenu')), 'the next page is told to close the menu (#522)');
+  sessionStorage.removeItem('lunden.resetHideMenu'); // this run checks the plain start screen after a reset; the menu-closing path is checked at the end
   // the next page (as the reload would load it; cloud unreachable for now)
   w = await load(`&cloud=${encodeURIComponent(OFF)}`); d = f.contentDocument; app = w.__app;
   await app.cloud.ready;
@@ -132,14 +140,15 @@ const realHour = () => { const n = new Date(); return n.getHours() + n.getMinute
   check(d.getElementById('reset-done').hidden, 'the notice goes with the start screen');
   // the cloud back: the queue still goes out
   app.cloud.url = W;
-  await app.cloud.sync();
+  await syncNow(app);
   check((await api('/drawings')).some((x) => x.id === id2) && !app.cloud.queue.length, 'back online: the queued drawing is sent');
   // a real Återställ (no stub): the iframe reloads by itself
   app.toggleFurniture(false);
   const next = ready();
   d.getElementById('reset-home').click(); d.getElementById('reset-yes').click();
   w = await next; d = f.contentDocument; app = w.__app;
-  check(!d.getElementById('reset-done').hidden && app.world.furnitureOn && atStart(app), 'a real reset reloads by itself, fresh');
+  // #522: reset from the menu goes straight back to playing, no start screen, so the "Hemmet är återställt" note is hidden at once
+  check(d.getElementById('overlay').hidden && d.getElementById('reset-done').hidden && app.world.furnitureOn && atStart(app) && !sessionStorage.getItem('lunden.resetHideMenu'), 'a real reset reloads by itself, fresh, with the menu closed (#522)');
   // another reload: fresh, no note, no resume
   w = await load(''); d = f.contentDocument; app = w.__app;
   check(atStart(app) && d.getElementById('reset-done').hidden && d.getElementById('resume').hidden, 'a later reload starts fresh, without the note');

@@ -1,5 +1,6 @@
 // Run the Worker locally without Cloudflare (tests, tools/cloudtest.html): an in-memory KV, plain Node ≥ 18.
-//   node cloudflare/dev.mjs [port=8144] [admin token]
+//   node cloudflare/dev.mjs [port=8144] [admin token, default 'testtoken']
+// (the default is what tools/cloudtest.html and resettest.html send to wipe the Worker between runs, #635)
 // then open the site with &cloud=http://localhost:8144
 import http from 'node:http';
 import { readFileSync } from 'node:fs';
@@ -23,7 +24,7 @@ const layouts = new Map();
 if (process.env.LUNDEN_LAYOUT_FIXTURE) layouts.set('furniture-layout', JSON.parse(readFileSync(process.env.LUNDEN_LAYOUT_FIXTURE, 'utf8')));
 let layoutGate = Promise.resolve();
 const layoutStorage = { get: async (k) => structuredClone(layouts.get(k)), put: async (k,v) => layouts.set(k, structuredClone(v)) };
-const env = { LUNDEN, layoutStorage, ADMIN_TOKEN: process.argv[3] };
+const env = { LUNDEN, layoutStorage, ADMIN_TOKEN: process.argv[3] ?? 'testtoken' };
 
 http.createServer(async (req, res) => {
   const chunks = [];

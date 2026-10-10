@@ -5,7 +5,7 @@
 <pre id="out">running…</pre>
 <script>
 // The shared world (#178, #119) against the real Worker code run locally (cloudflare/dev.mjs, in-memory KV):
-//   node cloudflare/dev.mjs 8144 &        (then)
+//   node cloudflare/dev.mjs 8144 &       (then; the default admin token "testtoken" is what the wipe below sends)
 //   google-chrome --headless=new --dump-dom http://localhost:8137/tools/cloudtest.html   (?worker=<url> for another one)
 // A taped-up drawing is PUT, a drawing that appears on the server goes up on the wall, a thrown one is DELETEd, a
 // drawing thrown away elsewhere comes down here, changes made offline wait in the queue and go when it is back,
@@ -18,6 +18,8 @@ const lines = [];
 let pass = true;
 const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); pass &&= !!ok; return ok; };
 const until = async (fn, ms = 6000) => { for (let t = 0; t < ms; t += 100) { if (await fn()) return true; await wait(100); } return false; };
+// a poll already under way makes cloud.sync() a no-op (`pulling`); wait for it, then pull again so the result is deterministic (#635)
+const syncNow = async (app) => { await until(() => !app.cloud.pulling, 30000); await app.cloud.sync(); };
 const api = (path, opts) => fetch(W + path, opts).then((r) => r.json());
 const f = document.createElement('iframe');
 f.width = 900; f.height = 600;
@@ -27,7 +29,8 @@ const sheet = (color) => { const c = document.createElement('canvas'); c.width =
 
 (async () => {
   try { await fetch(W + '/drawings'); } catch { out.textContent = `SOME FAILED\nFAIL no Worker at ${W} (node cloudflare/dev.mjs 8144)`; return; }
-  await fetch(W + '/admin/all', { method: 'DELETE', headers: { Authorization: 'Bearer testtoken' } });
+  // the wipe must work: leftovers from an earlier run (drawings, the 'cheater-123' score) make later checks fail (#635)
+  if (!(await fetch(W + '/admin/all', { method: 'DELETE', headers: { Authorization: 'Bearer testtoken' } })).ok) { out.textContent = `SOME FAILED\nFAIL the Worker did not accept the admin token 'testtoken' (node cloudflare/dev.mjs 8144 testtoken)`; return; }
   await new Promise((res) => { const r = indexedDB.deleteDatabase('lunden'); r.onsuccess = r.onerror = r.onblocked = res; });
   localStorage.clear();
   let w = await load(`&cloud=${encodeURIComponent(W)}`), d = f.contentDocument, app = w.__app;
@@ -57,25 +60,26 @@ const sheet = (color) => { const c = document.createElement('canvas'); c.width =
   const other = { ...app.posters.own[0].rec, id: 'other-drawing-1', pos: [app.posters.own[0].rec.pos[0] + 0.001, app.posters.own[0].rec.pos[1], app.posters.own[0].rec.pos[2]], time: Date.now(), updated: Date.now(), image: sheet('#2f6fd6') };
   delete other.synced;
   await api(`/drawings/${other.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(other) });
-  await app.cloud.sync();
+  await syncNow(app);
   check(!!app.posters.byId('other-drawing-1'), 'a drawing from someone else goes up');
   // 3. throw the first away here → DELETE
   app.showPoster(app.posters.byId(id1)); app.throwPoster();
   check(await until(async () => !(await api('/drawings')).some((x) => x.id === id1)), 'thrown away here: gone from the server (DELETE)');
   // 4. thrown away elsewhere → comes down here
   await fetch(`${W}/drawings/other-drawing-1`, { method: 'DELETE' });
-  await app.cloud.sync();
+  await syncNow(app);
   check(!app.posters.byId('other-drawing-1'), 'thrown away elsewhere: comes down here too');
   // 5. offline: the change waits in the queue, goes when the server is back
   app.cloud.url = 'http://localhost:9';
   app.heldDrawing.take(sheet('#43a047'));
   tapeInHall();
   await until(() => app.cloud.queue.length > 0, 3000);
+  await app.cloud.flush(); // the attempt to the dead address has to fail before the address changes back (#635)
   const id2 = app.posters.own[0]?.rec.id;
   const q = JSON.parse(localStorage.getItem('lunden.cloud.queue') ?? '[]');
   check(q.some((x) => x.id === id2), `offline: queued (${q.length} waiting, kept in localStorage)`);
   app.cloud.url = W;
-  await app.cloud.sync();
+  await syncNow(app);
   check((await api('/drawings')).some((x) => x.id === id2) && !app.cloud.queue.length, 'back online: sent, the queue is empty');
   // 6. the desk sheet goes up; a cat photo stays personal (#211): nothing queued, nothing on the server
   app.drawing.stroke({ x: 100, y: 100 }, { x: 300, y: 200 });
@@ -84,7 +88,7 @@ const sheet = (color) => { const c = document.createElement('canvas'); c.width =
   const sent = [], ff = w.fetch;
   w.fetch = (u, o) => { sent.push(String(u)); return ff.call(w, u, o); };
   await app.board.add('Testkatten', sheet('#f2cf2b'));
-  await app.cloud.sync();
+  await syncNow(app);
   w.fetch = ff;
   check(!app.cloud.queue.some((q) => q.type === 'cat') && !sent.some((u) => u.includes('/catphotos')), 'a cat photo is not sent, and no cat photos are fetched');
   check((await fetch(W + '/catphotos')).status === 404, 'the worker has no /catphotos');

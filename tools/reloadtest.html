@@ -65,7 +65,7 @@ const KEY = 'lunden.resume', SESSION = 'lunden.session';
   pass &= check(d.getElementById('overlay').hidden && app.touch.enabled && d.getElementById('arm').hidden, 'touch: no start screen, the joystick is on');
   pass &= check(Math.hypot(app.player.pos.x - rec.x, app.player.pos.z - rec.z) < 0.05, 'touch: at the stored place');
   pass &= check(!note.hidden && !note.classList.contains('gone'), `"${note.textContent}" shown`);
-  pass &= check(d.getElementById('mute').textContent === '🔇', 'still muted');
+  pass &= check(d.getElementById('mute').getAttribute('aria-pressed') === 'true' && d.getElementById('mute').dataset.hudIcon === 'volume-off', 'still muted (the HUD icon button, not an emoji, #582)');
   await wait(4200);
   pass &= check(note.hidden, 'the note is gone after ~3 s');
   f.remove();
@@ -74,7 +74,7 @@ const KEY = 'lunden.resume', SESSION = 'lunden.session';
   d = f.contentDocument; app = f.contentWindow.__app;
   const arm = d.getElementById('arm');
   pass &= check(d.getElementById('overlay').hidden && !arm.hidden && /styra med musen/.test(arm.textContent) && !app.touch.enabled, `mouse: no start screen, the next click takes the mouse ("${arm.textContent}")`);
-  pass &= check(!d.getElementById('reloaded').hidden && d.getElementById('mute').textContent === '🔊', 'mouse: the note, sound on');
+  pass &= check(!d.getElementById('reloaded').hidden && d.getElementById('mute').getAttribute('aria-pressed') === 'false' && d.getElementById('mute').dataset.hudIcon === 'volume', 'mouse: the note, sound on');
   f.remove();
   // (6) F5 mid-visit (#203): the tab's running record puts the visitor back, no start screen, no note (same version)
   sessionStorage.removeItem(SESSION);
