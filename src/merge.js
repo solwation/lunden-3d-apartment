@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { freeGeometryAfterUpload } from './lowmemory.js';
 
 // Fewer draw calls (#48): every static, opaque, single-material mesh under `root` is baked into one
 // mesh per material and "cell" (e.g. Entréplan / Övre plan / outside, so frustum culling still has
@@ -56,6 +57,7 @@ export function mergeStatic(root, keep = [], cellOf = () => '', { tagged = false
     }
     const merged = mergeGeometries(geos);
     if (!merged) continue;
+    freeGeometryAfterUpload(merged); // phone: normals / uv / colours leave the CPU after the upload (#628)
     const mesh = new THREE.Mesh(merged, list[0].material);
     mesh.castShadow = list[0].castShadow;
     mesh.receiveShadow = list[0].receiveShadow;

@@ -163,9 +163,10 @@ async function snapshot(page, cdp, label, pid) {
     const canvasSizes = [...bySize].sort((a, b) => b[1].b - a[1].b).slice(0, 8).map(([k, v]) => `${k} ×${v.n} ${(v.b / 1048576).toFixed(1)}MB`);
     // CPU copies of geometry still held by the scene's attribute arrays (three keeps them unless onUpload frees them)
     let cpuGeom = 0, nGeom = 0; const seen = new Set();
-    const owners = new Map(); const ownerOf = (o) => { const chain = []; for (let q = o; q && q !== app.scene; q = q.parent) chain.unshift(q.name || q.type); return chain.slice(0, 4).join('/'); };
+    const byAttr = new Map(); const owners = new Map(); const ownerOf = (o) => { const chain = []; for (let q = o; q && q !== app.scene; q = q.parent) chain.unshift(q.name || q.type); return chain.slice(0, 4).join('/'); };
     if (app) app.scene.traverse((o) => { const g = o.geometry; if (!g || seen.has(g)) return; seen.add(g); nGeom++;
-      let gb = 0; for (const a of Object.values(g.attributes)) { const ar = a.array; if (ar?.buffer && !seen.has(ar.buffer)) { seen.add(ar.buffer); gb += ar.byteLength; } } if (g.index?.array) gb += g.index.array.byteLength; cpuGeom += gb; const k = ownerOf(o); owners.set(k, (owners.get(k) || 0) + gb); });
+      let gb = 0; for (const [an, a] of Object.entries(g.attributes)) { const ar = a.array; if (ar?.buffer && !seen.has(ar.buffer)) { seen.add(ar.buffer); gb += ar.byteLength; byAttr.set(an, (byAttr.get(an) || 0) + ar.byteLength); } } if (g.index?.array) { gb += g.index.array.byteLength; byAttr.set('index', (byAttr.get('index') || 0) + g.index.array.byteLength); } cpuGeom += gb; const k = ownerOf(o); owners.set(k, (owners.get(k) || 0) + gb); });
+    const geomByAttr = [...byAttr].sort((a, b) => b[1] - a[1]).map(([k, v]) => (v / 1048576).toFixed(1) + 'MB ' + k);
     const geomTop = [...owners].sort((a, b) => b[1] - a[1]).slice(0, 12).map(([k, v]) => (v / 1048576).toFixed(1) + 'MB ' + k);
     const pm = performance.memory ?? {};
     const fr = M.frames.slice(), long = M.long.slice(); M.frames.length = 0; M.long.length = 0;
@@ -174,7 +175,7 @@ async function snapshot(page, cdp, label, pid) {
     const q = app?.quality;
     const peak = M.peak; M.peak = M.totals.tex + M.totals.rb + M.totals.buf; // peak since the last snapshot
     return {
-      cpuGeom, nGeom, geomTop, canvasTop, canvasSizes, tex: M.totals.tex, rb: M.totals.rb, buf: M.totals.buf, vb, ib, drawBuf, cpuCanvas, nCanvas, peak, nTex, nBig, bucket, fb: M.fb, programsCreated: M.programs, draws: M.draws,
+      cpuGeom, nGeom, geomTop, geomByAttr, canvasTop, canvasSizes, tex: M.totals.tex, rb: M.totals.rb, buf: M.totals.buf, vb, ib, drawBuf, cpuCanvas, nCanvas, peak, nTex, nBig, bucket, fb: M.fb, programsCreated: M.programs, draws: M.draws,
       top, rbBig, rbCount: rbs.length,
       heapUsed: pm.usedJSHeapSize ?? 0, heapTotal: pm.totalJSHeapSize ?? 0,
       frames: fr.length, med: fr.length ? fr[fr.length >> 1] : 0, p95: fr.length ? fr[Math.min(fr.length - 1, Math.floor(fr.length * 0.95))] : 0, max: fr.length ? fr[fr.length - 1] : 0,
@@ -285,6 +286,7 @@ async function snapshot(page, cdp, label, pid) {
       log(`texture buckets at "${hi.label}": depth (shadow) ${mb(hi.bucket.depth).toFixed(1)} MB, > 1024 px ${mb(hi.bucket.big).toFixed(1)} MB (${hi.nBig}), 513–1024 px ${mb(hi.bucket.mid).toFixed(1)} MB, ≤ 512 px ${mb(hi.bucket.small).toFixed(1)} MB; ${hi.nTex} textures, ${hi.fb} framebuffers, ${hi.rbCount} renderbuffers`);
       log(`largest textures: ${hi.top.join(' · ')}`);
       log(`CPU copies of geometry held by the scene: ${mb(hi.cpuGeom).toFixed(0)} MB in ${hi.nGeom} geometries; ${hi.nCanvas} CPU canvases: ${hi.canvasSizes.join(' · ')}`);
+      log(`geometry by attribute: ${hi.geomByAttr.join(' | ')}`);
       log(`geometry owners: ${hi.geomTop.join(' | ')}`);
       log(`canvas makers: ${hi.canvasTop.join(' | ')}`);
       log(`largest renderbuffers: ${hi.rbBig.join(' · ')}`);

@@ -24,6 +24,7 @@ export class Drawing {
     this.tex.anisotropy = 8;
     const y = LEVELS[D.level].floor + 0.76 + 0.002;
     this.paper = new THREE.Mesh(new THREE.PlaneGeometry(D.w, D.h).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ map: this.tex, roughness: 0.95 }));
+    this.paper.geometry.userData.keepCpu = true; // the raycast's hit.uv picks the canvas pixel (#628)
     this.paper.position.set(D.x, y, D.z);
     this.paper.receiveShadow = true;
     scene.add(this.paper);

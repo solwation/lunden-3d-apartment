@@ -262,3 +262,36 @@ Screenshots of start, living room, kitchen and the nine mirrors before/after are
 different camera yaw). perfcount `?lowmem&w=390&h=844` passes (textures ~74 MB). The canvases still held (~106 MB): cat board 9,
 cheat note 6, cups, 2828×1000 and 2160×1076 canvases of other makers, many small ones. Still not done: geometry CPU copies (135 MB:
 raycast, marks.js, basket bounces, DetailCuller and `edgeSources` read them), chunking the one-frame warm-up draw, vertex buffers.
+
+**Step 4 (#628, phone only, not verified on a device): geometry copies and normals.** `src/lowmemory.js`: `freeGeometryAfterUpload(geo)`
+hooks three's `onUploadCallback` so that `normal`, `uv`, `uv1`, `color` and `plantWind` are replaced by empty typed arrays of the
+same kind once the GL buffer exists (`position` and `index` stay: raycasts, TriGrid, DetailCuller, architecture edges, marks and
+basket bounces read them). A raycast's interpolated uv/normal then reads NaN instead of throwing; `marks`/`basket` use the face
+normal from `position`. `mergeStatic` hooks its outputs, and `freeSceneGeometryCopies(scene, renderer)` (main.js, right after the
+`WarmUp` is built, before the first draw) hooks every other mesh geometry. `packNormals` also turns Float32 normals into
+normalized Int8 ×4 (12 → 4 bytes on the GPU; axis-aligned normals exact, smooth ones within 0.4 %) while nothing is uploaded yet.
+Opt-outs: skinned meshes, morph targets, geometries with any dynamic attribute or a `bedCare` attribute, and
+`geometry.userData.keepCpu` (set by watering, fruit and the drawing sheet, which rewrite their arrays or read `hit.uv`). A
+console canary warns (`freed vertex attribute …`) if a freed attribute is cloned or marked `needsUpdate`; none fired in the
+runs below. A new maker that rewrites or clones a mesh's vertex arrays after the first draw must set `geometry.userData.keepCpu`.
+`&keepgeo` (with `&lowmem`/phone) turns all of it off for an A/B run. Not touched: desktop.
+
+Measured with `phonememtest --cpu 1 --dwell 600` (the full route, SwiftShader estimates, MB), `&keepgeo` vs default:
+
+| | before | after |
+|---|---|---|
+| CPU copies of geometry | 138 | 66 (position 48, colour 5.5, normal 4.7, uv 4.1, index 1.9 left) |
+| vertex buffers (GPU) | 113 | 88 |
+| GPU peak | 229 | 204 |
+| JS heap after the warm-up (steady) | 369 | 301 |
+| JS heap at load, before the warm-up | 375 | 394 (the packed copies; freed at the first draw) |
+| steady heap + GPU + CPU canvases (after warm-up) | ~690 | ~600 |
+
+The old "sum of the three peaks" (769 vs 785) hides this: the heap peak is the moment before the warm-up, the GPU peak after it,
+so they do not coincide; the heap peak itself did not fall. Parity checks (before/after identical): 112 aim samples at seven
+spots (focus kind/name) and 56 `marks.hit` hits (points and normals); sitting on the sofa, armchair and stool and standing up;
+nine mirrors, start, hall, living room, kitchen, patio, stairwell and garage screenshots differ only by rain streaks.
+
+Not done: positions (48 MB CPU, 48 GPU; needed by raycast, could move to TriGrid's own world-space copy), vertex colours
+(Float32 → byte would band dark tones), uv, merged non-indexed geometry (indexing would cut vertices but costs frame time),
+the transient +19 MB at load (pack in place), the ~106 MB of CPU canvases and the heap's remaining ~300 MB.

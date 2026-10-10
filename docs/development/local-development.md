@@ -36,6 +36,7 @@ URL parameters (debugging / screenshots):
   on the dining table; life items on the dining table and in the drawer (`LIFE.dev.items` / `stored`) + the kitchen's stock, fresh (LIFE_FOOD, #373). The resume / F5 records are neither read nor written (`resume.js`), so the visitor's own place stays.
 - `&beers=http://localhost:8144/beer-shelf` — test the daily beer source through `node cloudflare/dev.mjs 8144`; separate from shared-layout `&cloud=`. `&life` normally uses the prepared beer snapshot and no persistent beer cache.
 - `&lowmem` — the phone memory limits (#585, `LOW_MEMORY`: textures ≤ 1024 px, 1024² shadows, pixel ratio ≤ 1) and the lighter campus facades (#589, `CAMPUS_LOD`) on a desktop.
+- `&keepgeo` — on a phone / with `&lowmem`, keep the geometry's CPU copies and float normals (A/B of #628 step 4, `freeSceneGeometryCopies`).
 - `&perf` — fps / draw-call overlay and the hitch log (#592): frames ≥ 50 ms go to the console with what changed in them.
 - `&quality=0–3` — pin the adaptive graphics level (#592: resolution, shadows, mirrors, detail distance, particles); not remembered.
 - `&warm` — run the start's shader / upload warm-up (#432) in headless Chrome too (it skips it otherwise).

@@ -136,6 +136,7 @@ export class Fruit {
       name: NAMES[spec.kind], placeVerb: 'lägga ner', held: false, state: 'bowl', bites: 0, bite: 0, peeled: false, scoops: [] });
     const f = fruitGeometry(spec, i);
     Object.assign(this, { mid: f.mid, radius: f.r, curve: f.curve });
+    f.geo.userData.keepCpu = true; // reshape() rewrites its arrays (#628: never freed on phones)
     f.geo.computeVertexNormals();
     this.base = { pos: f.geo.attributes.position.array.slice(), col: f.geo.attributes.color.array.slice() };
     this.model = new THREE.Mesh(f.geo, fruitMat);

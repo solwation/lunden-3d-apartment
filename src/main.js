@@ -5,7 +5,7 @@ import { runCheat, cheatHelp } from './cheats.js';
 import { cleanHome } from './cheatclean.js';
 import { buildCheatNote } from './cheatnote.js';
 import { CHEAT_NOTE, LOW_MEMORY, QUALITY, STANDARD } from './config.js';
-import { lowMemory, reloadOnContextRestore } from './lowmemory.js';
+import { lowMemory, reloadOnContextRestore, freeSceneGeometryCopies } from './lowmemory.js';
 import { loadBeerShelf } from './beershelfdata.js';
 import { BeerShelf } from './beershelf.js';
 import { initHudIcons, setIcon, setPressed } from './hudicons.js';
@@ -2358,6 +2358,7 @@ quality.register('detail', { // DetailCuller's distances (#189, #460): small thi
 const warm = new WarmUp({ renderer, scene, camera, shadowCamera: sun.shadow.camera, mirrorTarget,
   skip: /HeadlessChrome/.test(navigator.userAgent) && !params.has('warm'), lazyHidden: lowMemory, log: perfEl ? (t) => console.log(t) : null,
   onSlowFrame: () => clock.getDelta() }); // (a slow warm-up frame is no reason to lower the resolution)
+freeSceneGeometryCopies(scene, renderer); // phone: normals / uv / colours leave the CPU after the first upload (#628)
 let mirrorFrame = 0;
 /** One frame of the game loop; `raw` = seconds since the last one (tools/turntest.html calls it with the loop stopped). */
 function frame(raw) {

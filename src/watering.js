@@ -3,7 +3,7 @@ import { WATERING as P } from './config.js';
 import { sfx } from './audio.js';
 
 const shown=o=>{for(let p=o;p;p=p.parent)if(!p.visible)return false;return true;};
-const capture=geo=>({geo,pos:geo.attributes.position.array.slice(),color:geo.attributes.color?.array.slice()});
+const capture=geo=>(geo.userData.keepCpu=true,{geo,pos:geo.attributes.position.array.slice(),color:geo.attributes.color?.array.slice()});
 // Change existing pot geometry from original arrays, so repeated loads never accumulate deformation.
 function tintPot(entry,part,soilY,watered){
   const {geo,pos,color}=entry,vertices=geo.attributes.position;
