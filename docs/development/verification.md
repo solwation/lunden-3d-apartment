@@ -45,6 +45,7 @@ tools/blindtest.html   headless test: a blind in every window, folded at the sta
                        mode (no walking), ▲ up to the head and no further, S down to folded, W at BLINDS.speed, the first pull
                        scores, the room's daylight cut (blackout > white), white glows, × / E close, the sash opens behind it,
                        the state survives a reload
+tools/glrestoretest.cjs  (#628, phone profile) forces `WEBGL_lose_context` loss + restore: one reload back at the same place, a freed canvas texture looks the same, no reload loop, and a control without the reload shows the blank texture; run after touching `freeCanvasAfterUpload` / `reloadOnContextRestore`. `PLAYWRIGHT_MODULE=… node tools/glrestoretest.cjs http://localhost:8137` (~6 min under SwiftShader)
 tools/crashtest.cjs    crash reports (#629): Playwright + `node cloudflare/dev.mjs 8144 tok`; run after touching src/crashlog.js, cloudflare/crash.js or the
                        reset keys; includes bounded pre-failure history and two real WebGL loss/recovery pairs through the public API
                        (also `node --test cloudflare/crash.test.mjs`)

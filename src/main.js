@@ -5,7 +5,7 @@ import { runCheat, cheatHelp } from './cheats.js';
 import { cleanHome } from './cheatclean.js';
 import { buildCheatNote } from './cheatnote.js';
 import { CHEAT_NOTE, LOW_MEMORY, QUALITY, STANDARD } from './config.js';
-import { lowMemory } from './lowmemory.js';
+import { lowMemory, reloadOnContextRestore } from './lowmemory.js';
 import { loadBeerShelf } from './beershelfdata.js';
 import { BeerShelf } from './beershelf.js';
 import { initHudIcons, setIcon, setPressed } from './hudicons.js';
@@ -2597,6 +2597,13 @@ function continueAfterReload(r) {
 const keepApp = { life, jetpack, suit, car, world, lights, day, grill, sonos, patio, holdables, cups, beer, chicken, scene, rest, cat, BREEDS, VARIANTS,
   sitAt: (target, spot, stand) => sitAt(target, spot, stand, true) };
 function keepWorld() { try { return saveWorld(keepApp); } catch (e) { console.warn('keep', e); return null; } }
+// Phone: a restored WebGL context reloads the page, because textures freed after upload (#628) would re-upload blank. Same
+// build, so no "Ny version" note; the place and the world come back as after "Ladda om".
+reloadOnContextRestore(renderer.domElement, () => {
+  reloading = true;
+  saveResume({ ...placeNow(), world: keepWorld() });
+  location.reload();
+});
 if (resumeOk && resumed.mode && resumed.world) loadWorld(keepApp, resumed.world); // mid-visit only: the game's clock too (a new visit: real time, #143)
 if (resumeOk && resumed.mode) continueAfterReload(resumed);
 // &life (#365): the life simulator's developer scenario — a cleared worktop, a few test things, never saved (life.js)

@@ -37,6 +37,8 @@ cloudflare/            the Worker (NOT published on Pages): worker.js (API, limi
                        setup.sh (the user's one-command setup: login, KV, deploy, ADMIN_TOKEN, CLOUD_URL into config),
                        dev.mjs (the same Worker on Node with an in-memory KV, for tests), README.md (Swedish, for the user);
                        .github/workflows/cloud.yml redeploys on cloudflare/** changes when the repo has Cloudflare secrets
+tools/glrestoretest.cjs  phone WebGL context loss (#628): a restored context makes the page reload once through the ordinary resume
+                       (`reloadOnContextRestore`, src/lowmemory.js; same place and world, no "Ny version" note; max one per 60 s, sessionStorage `lunden.glReloadAt`)
 tools/reloadtest.html  headless test: resume after "Ladda om", F5 starts at START, "Börja från start", bad record;
                        the world kept (#277): the car still arriving then parks, a cup of coffee in the hand, the fridge open, lamps,
                        sitting, a bottle put down, the TV, the cat, the game's clock; a new tab fresh at the real time

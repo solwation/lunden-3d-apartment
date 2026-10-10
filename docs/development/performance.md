@@ -245,7 +245,9 @@ canvas texture's source canvas to 1×1 in three's `onUpdate`, i.e. right after t
 never cloned or redrawn: curtain prints, the garage escape plan / floor / sign plates, the rugs (archRug, rugTexture, zigzag,
 pile), K-pop poster atlas, AO overlays and street-sign atlas. NOT applied to anything that calls `needsUpdate` again (cat board,
 drawing sheets, calendar, cheat note, cups, signs that change) or may be cloned. A later re-upload (e.g. after a lost WebGL
-context) would show these blank. (2) `WarmUp` option `lazyHidden` (phone): stage 4 (upload of every texture of hidden objects)
+context) would show these blank, so on a phone `reloadOnContextRestore(canvas, reload)` (`src/lowmemory.js`, wired in `src/main.js`) reloads the
+page on `webglcontextrestored` after a loss, through the ordinary resume (place + world, as "Ladda om"), at most once per 60 s
+(sessionStorage `lunden.glReloadAt`; then it only logs). Crashlog still reports loss/restore. Tested by `tools/glrestoretest.cjs`. (2) `WarmUp` option `lazyHidden` (phone): stage 4 (upload of every texture of hidden objects)
 is skipped; they upload when first shown. Measured with `phonememtest --cpu 1 --dwell 600` (estimates, MB):
 
 | | before (a3541b8-ish) | after |

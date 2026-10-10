@@ -75,6 +75,7 @@ const beat = (page) => page.evaluate(() => { try { return JSON.parse(localStorag
     // 3. caught errors, duplicates, flood
     await page.evaluate(() => { for (let i = 0; i < 3; i++) setTimeout(() => { throw new Error('boom same'); }); });
     await page.evaluate(() => { Promise.reject(new Error('rejected once')); });
+    await page.evaluate(() => sessionStorage.setItem('lunden.glReloadAt', String(Date.now()))); // phone profile reloads on a restored context (#628, glrestoretest): not here
     await page.evaluate(() => { const e = window.__app.renderer.getContext().getExtension('WEBGL_lose_context'); e.loseContext(); setTimeout(() => e.restoreContext(), 300); });
     await sleep(2500);
     let rs = (await reports()).filter((r) => r.typ === 'fel');

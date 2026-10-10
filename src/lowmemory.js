@@ -20,3 +20,24 @@ export function freeCanvasAfterUpload(tex) {
   };
   return tex;
 }
+
+const GL_RELOAD_KEY = 'lunden.glReloadAt', GL_RELOAD_GAP = 60 * 1000;
+/**
+ * Phone only (#628): once a lost WebGL context is restored, three re-uploads every texture from its source, but the canvases
+ * freed by `freeCanvasAfterUpload` are 1×1, so curtains, rugs, signs and posters would turn blank. Reload the page instead
+ * (`reload()` saves the place and world like "Ladda om"; the page resumes where the visitor was). At most one automatic
+ * reload per 60 s (sessionStorage), so a flapping context can never loop; then it only logs. Desktop is untouched.
+ */
+export function reloadOnContextRestore(canvas, reload) {
+  if (!lowMemory) return;
+  let lost = false;
+  canvas.addEventListener('webglcontextlost', (e) => { lost = true; e.preventDefault(); }); // lets the browser restore it
+  canvas.addEventListener('webglcontextrestored', () => {
+    if (!lost) return;
+    let last = 0;
+    try { last = Number(sessionStorage.getItem(GL_RELOAD_KEY)) || 0; } catch { /* blocked */ }
+    if (Date.now() - last < GL_RELOAD_GAP) { console.warn('WebGL context restored again within 60 s: no second reload (#628)'); return; }
+    try { sessionStorage.setItem(GL_RELOAD_KEY, String(Date.now())); } catch { /* blocked: no guard, but a reload still beats blank textures */ }
+    reload();
+  });
+}
