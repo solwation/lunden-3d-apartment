@@ -1850,7 +1850,8 @@ export const CORE_A = {
 // door is read off the brochure's key plan (planritningsbroschyr p. 'Översiktsplaner': B våning 1: B1004 B1001 / B1003 B1002, våning 2 / 3: B1102
 // B1103 / B1101 B1104 resp. B1202 B1203 / B1201 B1204; C våning 1: C1003 C1004 / C1002 C1001 (+ C1005 in the middle), våning 2–5: C1102 C1103 /
 // C1101 C1105 (+ C1104), the same for 13xx, 14xx: north-west, north-east / south-west, south-east of the hall) — a *guess* which flat is which door.
-// C's fifth flat per storey (C1005 / C1104 …) and the plans' door positions on the upper storeys that differ from `leaf` are NOT modelled.
+// C's fifth flat per storey (C1005 / C1104 …) has its door in the hall's north end (#656, a `leaf` hole in a wall along x: `hinge` 'w' | 'e', `into` =
+// swings away from the hall); the north-east flat's door sits at z 22.05 … 22.9 on våning 2–5 (#656).
 const HOUSE_FLAT_DOORS = { cell: { depth: 1.3, height: 2.5 }, scale: 0.5 };
 
 // Hus B's and Hus C's stair cores (#638, #639, src/corehouse.js): the same kind of walkable stairwell + lift as Hus A's
@@ -1935,9 +1936,13 @@ export const CORE_C = {
     { ax: 'x', t: [-62.64, -62.34], a: [25.3, 30.88], s: [0, 5], holes: [{ a: [25.5, 26.4], h: 2.1, s: [1, 5], leaf: true, hinge: 's', flats: [null, 'C1002', 'C1101', 'C1201', 'C1301', 'C1401'] }] },  // west wall south of the lift
     { ax: 'x', t: [-60.44, -60.14], a: [19.82, 30.88], s: [0, 5], holes: [
       { a: [23.44, 24.6], h: 2.1, s: [0, 0] }, { a: [23.44, 24.92], h: 2.1, s: [1, 1] },                                     // −1: to the steel door, 1: into the lobby
-      { a: [20.2, 21.0], h: 2.1, s: [1, 5], leaf: true, hinge: 'n', flats: [null, 'C1004', 'C1103', 'C1203', 'C1303', 'C1403'] },
+      { a: [20.2, 21.0], h: 2.1, s: [1, 1], leaf: true, hinge: 'n', flats: [null, 'C1004'] },
+      // #656: on våning 2–5 the north-east flat's door is at z 22.05 … 22.9 (vaning-2 … 4-300dpi.png; våning 5: no calibrated sheet, the same as 4, *guess*), hinged at its south end
+      { a: [22.05, 22.9], h: 2.1, s: [2, 5], leaf: true, hinge: 's', flats: [null, null, 'C1103', 'C1203', 'C1303', 'C1403'] },
       { a: [25.5, 26.4], h: 2.1, s: [1, 5], leaf: true, hinge: 's', flats: [null, 'C1001', 'C1105', 'C1205', 'C1305', 'C1405'] }] },
-    { ax: 'z', t: [19.82, 20.12], a: [-62.64, -60.14], s: [0, 5], holes: [{ a: [-62.34, -60.44], h: 2.1, s: [0, 0] }] },       // north wall (−1: the corridor goes on)
+    { ax: 'z', t: [19.82, 20.12], a: [-62.64, -60.14], s: [0, 5], holes: [{ a: [-62.34, -60.44], h: 2.1, s: [0, 0] },       // north wall (−1: the corridor goes on)
+      // #656: the fifth flat's door (C1005 / C1104 …) in the hall's north end, x −61.62 … −60.77 on våning 1–4 (the plans: hinged at its west end, swinging north into the flat); våning 5 *guess*
+      { a: [-61.62, -60.77], h: 2.1, s: [1, 5], leaf: true, hinge: 'w', into: true, flats: [null, 'C1005', 'C1104', 'C1204', 'C1304', 'C1404'] }] },
     { ax: 'z', t: [30.54, 30.88], a: [-62.64, -60.14], s: [0, 5], holes: [{ a: [-62.34, -60.44], h: 2.4, s: [0, 0] }] },       // the stair's south wall (−1: the way through to the steel door, #654)
     // våning 1's lobby
     { ax: 'z', t: [23.0, 23.44], a: [-60.14, -57.54], s: [1, 1] },
@@ -1955,7 +1960,7 @@ export const CORE_C = {
   lane: { foot: 30.54, tread: 0.25 },
   pit: [-62.34, -60.44, 26.79, 30.54],        // the stair well's footprint (+ the −1 flight's hole in våning 1's floor): a hole in the terrain mesh (the courtyard-level grass inside Hus C's footprint, y 0, would cover the flights below våning 1)
   entrance: { face: 'e', line: -53.4, door: [23.15, 24.05], side: [22.3, 23.1], height: 2.2, hinge: 'hi', cut: [22.3, 24.05], name: 'porten till trapphus C' },
-  numbers: { x: -60.44, z: 22.0, dir: -1 },
+  numbers: { x: -60.44, z: 21.52, dir: -1 },     // #656: clear of the north-east door (z 22.05 … 22.9 on våning 2–5) and its sign (north of it)
   lights: [[-59.0, 24.2], [-55.5, 23.2]],
 };
 

@@ -270,9 +270,14 @@ export function buildFlatDoors(geo, o = {}) {
   const cv = document.createElement('canvas'); cv.width = atlas.w; cv.height = atlas.h;
   const g = cv.getContext('2d'), cells = [];
   if (strip) { g.fillStyle = '#ffffff'; g.fillRect(0, ch * rows, atlas.w, strip); }
-  doors.forEach(([j, z0, z1, label, dx = wallX, sd = wallSide, signSouth = false], i) => {
+  doors.forEach(([j, z0, z1, label, dx = wallX, sd = wallSide, signSouth = false, alongX = false], i) => {
+    // `alongX` (#656): a door in a wall along x (Hus C's north end): then z0 … z1 are its x range, `dx` the wall's z and `sd` the side the hall
+    // lies on (+1 = south); `signSouth` puts the number sign on the z1 (east) side.
     // bx: a box proud of the wall face by d0..d1 (the doors face the hall: west of a side −1 wall)
-    const bx = (d0, d1, y0, y1, za, zb, hex) => geo.rail.push(bk(box(sd < 0 ? dx - d1 : dx + d0, sd < 0 ? dx - d0 : dx + d1, y0, y1, za, zb), hex));
+    const bx = (d0, d1, y0, y1, za, zb, hex) => {
+      const n0 = sd < 0 ? dx - d1 : dx + d0, n1 = sd < 0 ? dx - d0 : dx + d1;
+      geo.rail.push(bk(alongX ? box(za, zb, y0, y1, n0, n1) : box(n0, n1, y0, y1, za, zb), hex));
+    };
     const y = Ys[j], zc = (z0 + z1) / 2, zl = z1 - 0.1; // the handle side = the south jamb
     const lz0 = z0 + 0.012, lz1 = z1 - 0.012, lh = D.height;
     if (fixed) {
@@ -314,13 +319,14 @@ export function buildFlatDoors(geo, o = {}) {
     const sign = [c0 / atlas.w, 1 - (r0 + ch) / atlas.h, (c0 + cw) / atlas.w, 1 - (r0 + ph) / atlas.h];
     cells.push({ plate, sign, white: strip ? [0.5, 0.5 * strip / atlas.h] : null });
     const quad = (w, h, zq, yq, cell) => { // a plane on the wall side facing the hall, uv = the atlas cell
-      const q = new THREE.PlaneGeometry(w, h).rotateY(sd * Math.PI / 2).translate(dx, yq, zq), uv = q.attributes.uv;
+      const q = (alongX ? new THREE.PlaneGeometry(w, h).rotateY(sd > 0 ? 0 : Math.PI).translate(zq, yq, dx) : new THREE.PlaneGeometry(w, h).rotateY(sd * Math.PI / 2).translate(dx, yq, zq)), uv = q.attributes.uv;
       const [u0, v0, u1, v1] = cell;
       for (let k = 0; k < uv.count; k++) uv.setXY(k, u0 + uv.getX(k) * (u1 - u0), v0 + uv.getY(k) * (v1 - v0));
       return q;
     };
-    if (fixed) tags.push(quad(D.plate[0], D.plate[1], zc, y + D.plate[2], plate).translate(sd * (D.leaf + 0.0045), 0, 0));
-    tags.push(quad(D.sign, D.sign, signSouth ? z1 + D.frame + 0.03 + D.sign / 2 : z0 - D.frame - 0.03 - D.sign / 2, y + 1.55, sign).translate(sd * 0.004, 0, 0));
+    const off = (v) => (alongX ? [0, 0, sd * v] : [sd * v, 0, 0]);
+    if (fixed) tags.push(quad(D.plate[0], D.plate[1], zc, y + D.plate[2], plate).translate(...off(D.leaf + 0.0045)));
+    tags.push(quad(D.sign, D.sign, signSouth ? z1 + D.frame + 0.03 + D.sign / 2 : z0 - D.frame - 0.03 - D.sign / 2, y + 1.55, sign).translate(...off(0.004)));
   });
   const tex = new THREE.CanvasTexture(cv); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 4;
   return { geos: tags, tex, cells };

@@ -93,6 +93,7 @@ export class CoreHouse {
     const geo = { solid: [], light: [], glass: [] }, src = []; // `src`: plain construction boxes for the edge lines (cheaper than the cut-up ones)
     this.walls = []; // { s: [ax, az, bx, bz], y0, y1 }
     const FLATS = []; // the flats' doors { j: stop, x: the wall's hall face, sd: +1 on a wall the hall lies east of, z0, z1, h, hinge: 'n' | 's', label }
+    // (#656: `az` = a door in a wall along x, the hall's north end: then x is that wall's z, sd +1 = the hall lies south, z0 … z1 its x range, hinge 'w' | 'e', `into` = swings away from the hall)
     this.zones = []; // the openings through the walls: { r: [x0, x1, z0, z1], j: stop }
     const WALL = 0xeeeeea, STAIR = 0xb9b6ae, RAIL = 0x7f868c, FRAME = 0x3b4247, CEILC = 0xdedcd6, CELL = 0x8c8982;
     /** A box that is only drawn (`plain` = false: its edges are taken from the baked, e.g. turned, geometry). */
@@ -119,11 +120,10 @@ export class CoreHouse {
       for (const h of hs) {
         const [d0, d1] = h.a, y = Y[h.j], [x0, x1, z0, z1] = rect(d0, d1);
         if (h.leaf) { // a flat's door (#653: openable, made below from FLATS): the doorway itself stops you
-          if (w.ax !== 'x') throw new Error('leaf doors only in walls along z');
-          const dir = (w.t[0] + w.t[1]) / 2 < XM ? 1 : -1, f = dir > 0 ? w.t[1] : w.t[0], label = h.flats?.[h.j];
-          if (!label) throw new Error(`${C.house}: no flat number for the door at z ${d0} on stop ${h.j}`);
-          FLATS.push({ j: h.j, x: f, sd: dir, z0: d0, z1: d1, h: h.h, hinge: h.hinge ?? 'n', label });
-          this.walls.push({ s: [f, d0, f, d1], y0: y, y1: y + h.h });
+          const az = w.ax === 'z', dir = (w.t[0] + w.t[1]) / 2 < (az ? (B.z0 + B.z1) / 2 : XM) ? 1 : -1, f = dir > 0 ? w.t[1] : w.t[0], label = h.flats?.[h.j];
+          if (!label) throw new Error(`${C.house}: no flat number for the door at ${w.ax === 'x' ? 'z' : 'x'} ${d0} on stop ${h.j}`);
+          FLATS.push({ j: h.j, x: f, sd: dir, z0: d0, z1: d1, h: h.h, hinge: h.hinge ?? 'n', label, az, into: !!h.into });
+          this.walls.push({ s: az ? [d0, f, d1, f] : [f, d0, f, d1], y0: y, y1: y + h.h });
         } else if (h.glass) { // a fixed pane in a frame, in the wall's middle plane
           const mid = (w.t[0] + w.t[1]) / 2, hh = h.h;
           const pane = w.ax === 'x' ? new THREE.PlaneGeometry(d1 - d0 - 0.08, hh - 0.1).rotateY(Math.PI / 2).translate(mid, y + hh / 2, (d0 + d1) / 2) : new THREE.PlaneGeometry(d1 - d0 - 0.08, hh - 0.1).translate((d0 + d1) / 2, y + hh / 2, mid);
@@ -139,9 +139,16 @@ export class CoreHouse {
     }
 
     // ---- the flats' doors (#653): the architrave and the number sign (core.js buildFlatDoors), a dark entrance cell behind each that you cannot enter
-    const FD = C.flatDoors, signs = FLATS.length ? buildFlatDoors({ rail: geo.solid }, { doors: FLATS.map((f) => [f.j, f.z0, f.z1, f.label, f.x, f.sd, f.hinge === 'n']), Ys: Y, bk: bake, fixed: false, cols: 4, sc: FD.scale, strip: 8 }) : null;
+    const FD = C.flatDoors, signs = FLATS.length ? buildFlatDoors({ rail: geo.solid }, { doors: FLATS.map((f) => [f.j, f.z0, f.z1, f.label, f.x, f.sd, f.hinge === 'n' || f.hinge === 'w', f.az]), Ys: Y, bk: bake, fixed: false, cols: 4, sc: FD.scale, strip: 8 }) : null;
     for (const f of FLATS) {
-      const y = Y[f.j], xa = f.sd > 0 ? f.x - FD.cell.depth : f.x, xb = f.sd > 0 ? f.x : f.x + FD.cell.depth, xf = f.sd > 0 ? xa : xb, ch = FD.cell.height, e = 0.012;
+      const y = Y[f.j];
+      if (f.az) { // (the north end's door: the cell lies north of the wall's hall face)
+        const za = f.sd > 0 ? f.x - FD.cell.depth : f.x, zb = f.sd > 0 ? f.x : f.x + FD.cell.depth, zf = f.sd > 0 ? za : zb, ch = FD.cell.height, e = 0.012;
+        geo.solid.push(bake(box(f.z0, f.z1, y - 0.05, y, za, zb), STAIR), bake(box(f.z0, f.z1, y + ch, y + ch + 0.02, za, zb), CELL));
+        geo.solid.push(bake(panelX(f.z0 + e, za, zb, y, y + ch), CELL), bake(panelX(f.z1 - e, za, zb, y, y + ch), CELL), bake(panelZ(zf, f.z0, f.z1, y, y + ch), CELL));
+        continue;
+      }
+      const xa = f.sd > 0 ? f.x - FD.cell.depth : f.x, xb = f.sd > 0 ? f.x : f.x + FD.cell.depth, xf = f.sd > 0 ? xa : xb, ch = FD.cell.height, e = 0.012;
       geo.solid.push(bake(box(xa, xb, y - 0.05, y, f.z0, f.z1), STAIR), bake(box(xa, xb, y + ch, y + ch + 0.02, f.z0, f.z1), CELL));
       geo.solid.push(bake(panelZ(f.z0 + e, xa, xb, y, y + ch), CELL), bake(panelZ(f.z1 - e, xa, xb, y, y + ch), CELL), bake(panelX(xf, f.z0, f.z1, y, y + ch), CELL));
     }
@@ -261,8 +268,11 @@ export class CoreHouse {
     if (signs) { // the flats' doors: hinged at the jamb the plans draw, swinging into the hall; one merged mesh per leaf
       const leafMat = this.mats.leaf = new THREE.MeshBasicMaterial({ map: signs.tex, vertexColors: true });
       FLATS.forEach((f, i) => {
-        const t = makeDoor(group, { hx: f.x, hz: f.hinge === 'n' ? f.z0 : f.z1, dir: f.hinge === 'n' ? [0, 1] : [0, -1], out: [f.sd, 0], w: f.z1 - f.z0, y: Y[f.j], name: `dörren till ${f.label}`, glazed: false });
-        leafify(t, leafMat, signs.cells[i], [f.sd, 0]);
+        const sg = f.into ? -1 : 1, lo = f.hinge === 'n' || f.hinge === 'w'; // the hinge at the low end (north / west)?
+        const t = f.az
+          ? makeDoor(group, { hx: lo ? f.z0 : f.z1, hz: f.x, dir: lo ? [1, 0] : [-1, 0], out: [0, f.sd * sg], w: f.z1 - f.z0, y: Y[f.j], name: `dörren till ${f.label}`, glazed: false })
+          : makeDoor(group, { hx: f.x, hz: lo ? f.z0 : f.z1, dir: lo ? [0, 1] : [0, -1], out: [f.sd * sg, 0], w: f.z1 - f.z0, y: Y[f.j], name: `dörren till ${f.label}`, glazed: false });
+        leafify(t, leafMat, signs.cells[i], f.az ? [0, f.sd] : [f.sd, 0]);
         this.doors.push(t);
       });
     }
