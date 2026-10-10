@@ -2015,7 +2015,10 @@ export const LIFE_TOOLS = {
 export const EGG = { count: 6, crack: .65, seconds: 8, burnAt: 24, shellRadius: .022, whiteRadius: .051, yolkRadius: .017, carton: { w: .155, d: .105, h: .067 } };
 // Laundry gameplay and interior proportions are assumptions (#395/#550), not product specifications.
 export const LAUNDRY = {
-  basket: { pos: [1.78, 0, 4.16], w: .42, d: .42, h: .36, slots: 3 },
+  // #632: taller and narrower than the first 42 x 42 x 36 cm; 32 x 32 x 52 cm is a *guess* (a common laundry basket), its east
+  // face stays where it was (x 1.99, against Tvätt's east wall). `lay` = per slot [x, y above the floor, z, tilt x, yaw, tilt z]: the clothes lie in a heap.
+  basket: { pos: [1.83, 0, 4.16], w: .32, d: .32, h: .52, slots: 3,
+    lay: [[-.03, .08, .02, .2, .5, -.15], [.04, .14, -.03, -.25, -1.1, .2], [-.01, .20, .04, .15, 2.3, .25]] },
   drum: { radius: .16, depth: .30, shell: .012, centerY: .42, slots: 3 },
   garment: { w: .18, d: .22, thick: .022, colors: [0x617b96,0xb77b73,0xa496b8] },
   wardrobe: { reserve: .34, slots: 2, stackStep: .041, shelfGap: .002, pickDepth: .025, pickHeight: .12, accessGap: .005 },

@@ -97,7 +97,7 @@ try {
  const v=L.view(batch[0]),clothMesh=v.model.children.find(o=>o.isMesh);clothMesh.geometry.computeBoundingBox();const looseSize=clothMesh.geometry.boundingBox.getSize(new T.Vector3());
  check(v.useLabel==='Vika plagget','held dry garment exposes folding through the existing use action');v.onUse();
  clothMesh.geometry.computeBoundingBox();const foldedSize=clothMesh.geometry.boundingBox.getSize(new T.Vector3());
- check(batch[0].machine.folded&&foldedSize.length()<looseSize.length()&&foldedSize.y>looseSize.y,'folding changes the same garment into a visibly smaller thicker stack');
+ check(batch[0].machine.folded&&foldedSize.x*foldedSize.z<looseSize.x*looseSize.z&&foldedSize.y<looseSize.y,'folding changes the same crumpled garment (#632) into a neat, smaller, flatter stack');
  const G=N.wardrobes[0];check(N.wardrobes.length===2&&N.wardrobes.every(g=>g.store.slots.length===2),'existing bedroom wardrobes each provide two reserved laundry shelf slots');
  check(!run(G.store.target,'putIn')&&I.held()===batch[0]&&L.options(G.store.target).find(a=>a.id==='putIn')?.reason?.includes('Öppna'),'closed sliding wardrobe retains the folded garment in the hand');
  function openShelf(g){const p=g.store.anchors[0].getWorldPosition(new T.Vector3()),a=g.spec.along?p.x:p.z;const d=g.spec.doors.slice().sort((u,v)=>Math.abs(u.closedPos-a)-Math.abs(v.closedPos-a))[0];if(!d.isOpen)d.toggle();for(const leaf of g.spec.doors)leaf.update(2);N.update(0);return d;}

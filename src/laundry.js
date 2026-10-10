@@ -10,7 +10,10 @@ export class Laundry {
     const basket=this.basket=new THREE.Group();basket.name='laundryBasket';basket.position.set(...P.basket.pos);
     this.basketModel=laundryBasket();basket.add(this.basketModel);life.scene.add(basket);world.looseItems.push(basket);
     const B=P.basket;
-    const anchors=Array.from({length:B.slots},(_,k)=>this.anchor(basket,[0,B.h-.09+k*.025,0]));
+    const anchors=Array.from({length:B.slots},(_,k)=>{
+      const [x,y,z,tx,yaw,tz]=B.lay[k]??[0,.08+k*.06,0,0,0,0],a=this.anchor(basket,[x,y,z]);
+      a.rotation.set(tx,yaw,tz,'YXZ');return a; // a loose heap: every garment lies at its own angle (#632)
+    });
     this.register('laundryBasket',{name:'tvättkorgen',fullText:'Tvättkorgen är full',slots:B.slots},basket,anchors,[0,B.h/2,0],[B.w-.025,B.h,B.d-.025],this.basketModel);
     for(let k=0;k<B.slots;k++)life.stock.push(['laundryClothes','laundryBasket',k]);
     // Floor footprint stays against the east wall; the laundry room's central path remains clear.
