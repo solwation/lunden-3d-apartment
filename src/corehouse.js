@@ -4,15 +4,15 @@ import { PLAYER, POWER, CORE as CL } from './config.js';
 import { box, panelX, panelZ, complement, labelTexture, makeDoor, buildFlatDoors, shade, Lift } from './core.js';
 import { architectureEdges } from './architectureedges.js';
 
-// Hus B's and Hus C's stair cores (#638, #639; CORE_B / CORE_C in config, which list the sources and the assumptions): a walkable
+// Hus A's, Hus B's and Hus C's stair cores (#637, #638, #639, #652; CORE_A / CORE_B / CORE_C in config, which list the sources and the assumptions): a walkable
 // stair hall and a lift from the basement (våning −1) to the top storey, the main entrance's glazed door in the courtyard recess
-// (våning 1) and the lobby behind it. Same interface as Hus L's Core (core.js, #415), which asks these too (`Core.attach`) and as
-// Hus A's CoreA (corea.js, #637): `covers` (plan), `contains` (plan + height: then walls collide), `heights` (every floor / flight /
+// (våning 1) and the lobby behind it. Same interface as Hus L's Core (core.js, #415), which asks these too (`Core.attach`):
+// `covers` (plan), `contains` (plan + height: then walls collide), `heights` (every floor / flight /
 // the car at a point), `segments` (the walls in the way), `dynamic` (the door leaf, the lift's doors), `snap` (riding), `roomAt`,
-// `update`. Unlike CoreA the walls are DATA: thick wall runs with openings (config `walls`), drawn as boxes with the lights baked
+// `update`. The walls are DATA (#652: Hus A's too, CORE_A; the former corea.js is gone): wall runs with openings (config `walls`), drawn as boxes (or, `thin`, planes) with the lights baked
 // into vertex colours (MeshBasic, like core.js) and drawn only near the camera. The stair is the same everywhere: two flights side by
-// side along z from the hall's south end, the winders round the stringer's end as in corea.js (#644), the stringer between the flights.
-// The lift is north of the hall with its door south (`lift.side` 's', Hus B) or west of it with its door east ('e', Hus C: the
+// side along z from the hall's south end, the winders round the stringer's end (#644), the stringer between the flights.
+// The lift is north of the hall with its door south (`lift.side` 's', Hus A and Hus B) or west of it with its door east ('e', Hus C: the
 // shaft is built in its own frame turned 90°, see Lift's `rot`).
 
 const between = (v, a, b) => v > a && v < b;
@@ -65,7 +65,7 @@ export class CoreHouse {
     this.carIn = [car.x0 + 0.05, car.x1 - 0.05, car.z0 + 0.05, car.z1 - 0.05];
 
     // the lights baked into the colours: along the hall on every storey, under each landing, over the top landing, in the lobby
-    const LIGHTS = [], nH = Math.max(1, Math.round((ST.top - B.z0) / 3.4));
+    const LIGHTS = [], nH = C.hallLights ?? Math.max(1, Math.round((ST.top - B.z0) / 3.4));
     for (let j = 0; j < NS; j++) for (let i = 0; i < nH; i++) LIGHTS.push([XM, yTop(j) - 0.05, B.z0 + (i + 0.5) * (ST.top - B.z0) / nH]);
     const GLOW = []; // baked only (no lamp drawn)
     for (let k = LN ? 1 : 0; k < NS - 1; k++) LIGHTS.push([XM, Y[k] + (SN + 1 + Math.floor(NW / 2) - 2) * RISE - 0.07, (ST.run + B.z1) / 2]); // (under the middle winder's underside)
@@ -114,12 +114,23 @@ export class CoreHouse {
       for (const h of w.holes ?? []) for (let j = h.s?.[0] ?? s0; j <= (h.s?.[1] ?? s1); j++) hs.push({ ...h, j });
       for (const [pa, pb, ya, yb] of complement(w.a[0], w.a[1], y0, y1, hs.map((h) => ({ a0: h.a[0], a1: h.a[1], y0: Y[h.j], y1: Y[h.j] + h.h })))) {
         const [x0, x1, z0, z1] = rect(pa, pb);
+        if (w.thin) { // #652 (Hus A's): a wall of no thickness, a plane seen from both sides, one collision line (the openings' floors are the `floors`' / garage's)
+          const m = w.t[0];
+          drawGeo(w.ax === 'x' ? panelX(m, pa, pb, ya, yb) : panelZ(m, pa, pb, ya, yb), WALL);
+          this.walls.push({ s: w.ax === 'x' ? [m, pa, m, pb] : [pa, m, pb, m], y0: ya, y1: yb });
+          continue;
+        }
         draw(x0, x1, ya, yb, z0, z1, WALL);
         block(x0, x1, z0, z1, ya, yb);
       }
       for (const h of hs) {
         const [d0, d1] = h.a, y = Y[h.j], [x0, x1, z0, z1] = rect(d0, d1);
-        if (h.leaf) { // a flat's door (#653: openable, made below from FLATS): the doorway itself stops you
+        if (h.leaf && h.plain) { // #652: a door without a number, sign or entrance cell (Hus A's cross wall): its leaf with an architrave, no doorway collision
+          const mid = (w.t[0] + w.t[1]) / 2, dir = mid < (B.z0 + B.z1) / 2 ? 1 : -1;
+          if (w.ax !== 'z') throw new Error('plain doors only in walls along x');
+          FLATS.push({ j: h.j, x: mid, sd: dir, z0: d0, z1: d1, h: h.h, hinge: h.hinge ?? 'w', label: null, az: true, into: !!h.into, plain: true });
+          for (const [a, b, c, e] of [[d0 - 0.07, d0, y, y + h.h + 0.07], [d1, d1 + 0.07, y, y + h.h + 0.07], [d0, d1, y + h.h, y + h.h + 0.07]]) draw(a, b, c, e, mid - 0.03, mid + 0.03, 0xf0eee8);
+        } else if (h.leaf) { // a flat's door (#653: openable, made below from FLATS): the doorway itself stops you
           const az = w.ax === 'z', dir = (w.t[0] + w.t[1]) / 2 < (az ? (B.z0 + B.z1) / 2 : XM) ? 1 : -1, f = dir > 0 ? w.t[1] : w.t[0], label = h.flats?.[h.j];
           if (!label) throw new Error(`${C.house}: no flat number for the door at ${w.ax === 'x' ? 'z' : 'x'} ${d0} on stop ${h.j}`);
           FLATS.push({ j: h.j, x: f, sd: dir, z0: d0, z1: d1, h: h.h, hinge: h.hinge ?? 'n', label, az, into: !!h.into });
@@ -139,8 +150,9 @@ export class CoreHouse {
     }
 
     // ---- the flats' doors (#653): the architrave and the number sign (core.js buildFlatDoors), a dark entrance cell behind each that you cannot enter
-    const FD = C.flatDoors, signs = FLATS.length ? buildFlatDoors({ rail: geo.solid }, { doors: FLATS.map((f) => [f.j, f.z0, f.z1, f.label, f.x, f.sd, f.hinge === 'n' || f.hinge === 'w', f.az]), Ys: Y, bk: bake, fixed: false, cols: 4, sc: FD.scale, strip: 8 }) : null;
-    for (const f of FLATS) {
+    const NUM = FLATS.filter((f) => !f.plain); NUM.forEach((f, i) => { f.ci = i; }); // (the plain doors have no sign: their leaf takes the atlas' white texel)
+    const FD = C.flatDoors, signs = NUM.length ? buildFlatDoors({ rail: geo.solid }, { doors: NUM.map((f) => [f.j, f.z0, f.z1, f.label, f.x, f.sd, f.hinge === 'n' || f.hinge === 'w', f.az]), Ys: Y, bk: bake, fixed: false, cols: 4, sc: FD.scale, strip: 8 }) : null;
+    for (const f of NUM) {
       const y = Y[f.j];
       if (f.az) { // (the north end's door: the cell lies north of the wall's hall face)
         const za = f.sd > 0 ? f.x - FD.cell.depth : f.x, zb = f.sd > 0 ? f.x : f.x + FD.cell.depth, zf = f.sd > 0 ? za : zb, ch = FD.cell.height, e = 0.012;
@@ -231,15 +243,15 @@ export class CoreHouse {
     this.mats = { wall: new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.DoubleSide }), light: new THREE.MeshBasicMaterial({ color: 0xffffff }) };
     add(geo.solid, this.mats.wall, src);
     add(geo.light, this.mats.light);
-    add(numGeos, new THREE.MeshBasicMaterial({ map: nums.t }));
-    if (signs) { this.mats.sign = new THREE.MeshBasicMaterial({ map: signs.tex }); add(signs.geos, this.mats.sign); }
-    add(geo.glass, new THREE.MeshBasicMaterial({ color: 0xbfd3dc, transparent: true, opacity: 0.35, side: THREE.DoubleSide, depthWrite: false }));
+    add(numGeos, new THREE.MeshBasicMaterial({ map: nums.t }), numGeos); // (the plates, signs and panes get outlines, as Hus A's did, #652)
+    if (signs) { this.mats.sign = new THREE.MeshBasicMaterial({ map: signs.tex }); add(signs.geos, this.mats.sign, signs.geos); }
+    add(geo.glass, new THREE.MeshBasicMaterial({ color: 0xbfd3dc, transparent: true, opacity: 0.35, side: THREE.DoubleSide, depthWrite: false }), geo.glass);
 
     // ---- the entrance door: glazed, hinged at its `hinge` end, opening out into the recess
     const E = C.entrance, nzf = E.face === 'n', hi = E.hinge === 'hi', hingeA = hi ? E.door[1] : E.door[0], sgn = hi ? -1 : 1;
     this.entrance = E;
     this.doors = [makeDoor(group, { hx: nzf ? hingeA : E.line, hz: nzf ? E.line : hingeA, dir: nzf ? [sgn, 0] : [0, sgn], out: nzf ? [0, -1] : [1, 0], w: E.door[1] - E.door[0], y: Y[1], name: E.name, glazed: true })];
-    /** #653 (as corea.js' leafify): merge a makeDoor leaf's parts into ONE mesh (vertex colours with the light baked in at the hinge, a white texel of the
+    /** #653 (from Hus A's #643): merge a makeDoor leaf's parts into ONE mesh (vertex colours with the light baked in at the hinge, a white texel of the
      *  shared number atlas for the plain parts, the flat's brass number plate on its hall side) and drop the originals: one draw call a leaf. */
     const leafify = (t, mat, cell, hall) => {
       const d = t.door, leaf = d.pivot.children[0], L = light(d.hx, d.y + 1.1, d.hz);
@@ -256,10 +268,12 @@ export class CoreHouse {
         return g;
       });
       const all = [...geos];
-      const sideZ = Math.sign(hall[0] * -d.dir[1] + hall[1] * d.dir[0]) || 1, P = CL.flatDoorParts.plate; // the plate faces the hall: which of the leaf's two faces (local ±z)?
-      const q = new THREE.PlaneGeometry(P[0], P[1]).rotateY(sideZ > 0 ? 0 : Math.PI).translate(d.w / 2, d.y + P[2], sideZ * 0.0275), uv = q.attributes.uv, [u0, v0, u1, v1] = cell.plate;
-      for (let k = 0; k < uv.count; k++) uv.setXY(k, u0 + uv.getX(k) * (u1 - u0), v0 + uv.getY(k) * (v1 - v0));
-      paint(q, null); all.push(q);
+      if (hall) { // (no plate on a plain door)
+        const sideZ = Math.sign(hall[0] * -d.dir[1] + hall[1] * d.dir[0]) || 1, P = CL.flatDoorParts.plate; // the plate faces the hall: which of the leaf's two faces (local ±z)?
+        const q = new THREE.PlaneGeometry(P[0], P[1]).rotateY(sideZ > 0 ? 0 : Math.PI).translate(d.w / 2, d.y + P[2], sideZ * 0.0275), uv = q.attributes.uv, [u0, v0, u1, v1] = cell.plate;
+        for (let k = 0; k < uv.count; k++) uv.setXY(k, u0 + uv.getX(k) * (u1 - u0), v0 + uv.getY(k) * (v1 - v0));
+        paint(q, null); all.push(q);
+      }
       for (const o of parts) { leaf.remove(o); o.geometry.dispose(); }
       const m = new THREE.Mesh(mergeGeometries(all), mat);
       m.userData.edgeSources = geos; m.userData.door = t;
@@ -267,12 +281,12 @@ export class CoreHouse {
     };
     if (signs) { // the flats' doors: hinged at the jamb the plans draw, swinging into the hall; one merged mesh per leaf
       const leafMat = this.mats.leaf = new THREE.MeshBasicMaterial({ map: signs.tex, vertexColors: true });
-      FLATS.forEach((f, i) => {
+      FLATS.forEach((f) => {
         const sg = f.into ? -1 : 1, lo = f.hinge === 'n' || f.hinge === 'w'; // the hinge at the low end (north / west)?
         const t = f.az
-          ? makeDoor(group, { hx: lo ? f.z0 : f.z1, hz: f.x, dir: lo ? [1, 0] : [-1, 0], out: [0, f.sd * sg], w: f.z1 - f.z0, y: Y[f.j], name: `dörren till ${f.label}`, glazed: false })
+          ? makeDoor(group, { hx: lo ? f.z0 : f.z1, hz: f.x, dir: lo ? [1, 0] : [-1, 0], out: [0, f.sd * sg], w: f.z1 - f.z0, y: Y[f.j], name: f.plain ? 'dörren mot trappan' : `dörren till ${f.label}`, glazed: false })
           : makeDoor(group, { hx: f.x, hz: lo ? f.z0 : f.z1, dir: lo ? [0, 1] : [0, -1], out: [f.sd * sg, 0], w: f.z1 - f.z0, y: Y[f.j], name: `dörren till ${f.label}`, glazed: false });
-        leafify(t, leafMat, signs.cells[i], f.az ? [0, f.sd] : [f.sd, 0]);
+        leafify(t, leafMat, signs.cells[f.plain ? 0 : f.ci], f.plain ? null : f.az ? [0, f.sd] : [f.sd, 0]);
         this.doors.push(t);
       });
     }

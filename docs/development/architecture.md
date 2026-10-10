@@ -82,30 +82,9 @@ src/core.js            Hus L's stair core by the portik (#415, CORE in config): 
                        The flats' doors on the east wall (L1101 våning 2, L1205 våning 3; `CORE.flatDoors` / `flatDoorParts`, #626, sizes *guess*):
                        fixed, no opening; `buildFlatDoors` bakes leaf, architrave, lever handle, lock cylinder, letter box and peephole into the
                        stairwell's vertex-coloured mesh, plus ONE extra textured mesh for the plate and number sign (number only, names are the user's)
-src/corea.js           Hus A's stair core (#637, CORE_A in config; DRAWING from kalibrerad/vaning-m1 … 4, heights / winders / doors = *guess*,
-                       listed in CORE_A's comment): the same interface as core.js, which asks it too (`Core.attach` in main.js, so
-                       `world.core` stays the one object player.js / main.js / keep.js know; `houseAt` → HUD "Hus A · Trapphus · våning N" /
-                       "Hiss"; `saveState` = Hus L's lift + `a` = Hus A's). A stair hall band (x −1.05 … 0.80, z 37.3 … 45.5) from
-                       −1 to 4 (y −3, 0, 3, 6, 9: SITE.storey 3.0), two flights side by side from the hall's edge z 42.84 with a
-                       winders over the south end (#644: 16 risers of 0.1875 m per storey in one run — 4 straight treads 0.25 m deep in each flight, 7 winders round the
-                       stringer's end P = (WM, `stair.run`): a rectangle each beside the stringer and 5 fan-shaped ones, equal shares of the walls' outline;
-                       `stairS` / `stairY` = the walking line half a riser above the nosings, `heights` uses it, `prism` / `bar` build the fan's treads and the
-                       handrail that follows the wall round the corners; counts and widths *guess*), the lift shaft
-                       north of it (`Lift` with a spec: car x −0.40 … 0.80, door south, 5 stops), våning 1's lobby from the courtyard
-                       entrance's glazed door (hinged east, opening out into the recess; `world.core.parts[0].doors[0]`) with a fixed
-                       sidelight; #643: the flats' doors (15: `CORE_A.flatDoors`, våning 1 three, 2–4 four, both side walls, z 37.35…38.2 hinged north (the east one south, #649: its open leaf must not cover the lift's doors) / 40.28…41.1 hinged south,
-                       the arcs of the plans) and the cross wall's single door (`crossDoor`, z 41.45, våning 1–4) are real `makeDoor` doors, each leaf merged into ONE
-                       mesh (`leafify`: vertex colours + a white texel of the shared number atlas + the brass plate); the architrave and number signs come
-                       from core.js `buildFlatDoors(geo, { doors, Ys, bk, fixed: false, cols, sc, strip })` (Hus L's call unchanged), behind each door a dark
-                       1.3 m entrance cell you cannot enter (the doorway is a collision wall); flat numbers A1001–A1304 from the brochure's key plan (*guess* which door). On −1 only the band + lift are this module's (garage.js
-                       `core` rects: no walls / ceiling / floor / tubes there; thin rects `coreAWest` / `coreAEast` = the openings
-                       west to the passage and east onto the lobby / förråd corridor, the other `passageA*` rects re-read on the plan).
-                       surroundings.js (walkIn recess): the brick body is hollow (caps between the bands dropped, `entranceCuts` cuts the
-                       door + sidelight out of the recess's back wall), the outdoor collision has the door's gap + a 0.3 m closed
-                       vestibule (`DOORWAY_DEPTH`) and a floor there (`recessFloors`). NOT modelled: the flats behind the doors.
-src/corehouse.js       Hus B's and Hus C's stair cores (#638, #639; CORE_B / CORE_C in config, DRAWING from kalibrerad/vaning-m1 … 3 and 1 … 5 read by scanning the
+src/corehouse.js       Hus A's, B's and C's stair cores (#637, #638, #639, #652; CORE_A / CORE_B / CORE_C in config, DRAWING from kalibrerad/vaning-m1 … 4 read by scanning the
                        sheets along lines; heights / winders / doors / car sizes = *guess*, listed in the comment above CORE_B): the same interface
-                       as core.js and corea.js (`Core.attach` in main.js: `world.core.parts` = A, B, C in that order, which is also the order of
+                       as core.js (`Core.attach` in main.js: `world.core.parts` = A, B, C in that order, which is also the order of
                        keep.js' `a` list of lifts; `houseAt` → "Hus B · Trapphus · våning N" / "Hiss"), but the walls are DATA: `walls` =
                        thick wall runs ({ ax, t, a, s: [first, last stop], holes: [{ a, h, s?, leaf? | glass? }] }; a hole is an opening, a closed
                        flat door (`leaf`) or a fixed pane), `floors` = the våning-1 lobby's rects (floor + ceiling slab), `lights` = its lamps,
@@ -114,7 +93,18 @@ src/corehouse.js       Hus B's and Hus C's stair cores (#638, #639; CORE_B / COR
                        a long hall band x −62.34 … −60.44, z 20.12 … 30.54 with the stair at its south end and the lift WEST of it (door east:
                        `lift.side: 'e'`, built in a frame turned 90° — core.js' `Lift` has `rot`, `loc`, `wseg`, `wpt`), the lobby from the east
                        entrance (x −53.4) west to the hall's east wall. The stair (16 risers per storey in one run: 4 straight treads of `stair.tread` per flight + 7 winders round the stringer's end, `stairS` /
-                       `stairY` as #644), the lights, the floor plates and the lift are as in corea.js.
+                       `stairY` as #644), the lights, the floor plates and the lift are the same in all three.
+                       Hus A (#637, #643, #644, #649, #652; −1, 1 … 4 = y −3 … 9): hall band x −1.05 … 0.80, z 37.3 … 45.5, the lift north of it (car x −0.40 …
+                       0.80, door south through the 0.3 thick front wall z 37.0 … 37.3: `lift.side: 's'`), two flights from the hall's edge z 42.84 (tread 0.25) with
+                       winders over the south end; våning 1's lobby from the courtyard entrance (the recess's back wall z = `SITE.blocks` 'Hus A' z0 + the recess depth, the
+                       glazed door hinged east, the fixed sidelight west of it: a `glass` hole; `world.core.parts[0].doors[0]`) runs south east of the shaft and joins the hall
+                       (`floors`: three rects). Its walls are mostly `thin: true` runs (planes of no thickness, one collision line, as the old CoreA drew them). The flats' doors
+                       (15: våning 1 three, 2–4 four, `leaf` holes in the side walls, z 37.35 … 38.2 / 40.28 … 41.1, the east north one hinged south, #649) and the cross
+                       wall's single door at z 41.45 (våning 1–4; a `plain` leaf hole: no number, sign or cell, no doorway collision, `into`: swings south) are real `makeDoor`
+                       doors. The −1 openings west to the passage and east onto the lobby / förråd corridor are holes in the thin side walls (garage.js: `core` rects, thin
+                       rects `coreAWest` / `coreAEast`). Differences from the old corea.js: the hall's ceiling on the top storey is now drawn over the whole hall (before only
+                       over the stair part: from there the sky showed), the number plates, signs and panes have outlines in B / C too, the entrance wall is a 0.12 m box
+                       and has no dark lintel above the door.
                        Every stop's wall piece is one box (`sbox`, faces cut up about every 1.2 m so the baked lights vary) + a plain box for the
                        edge lines; the openings' floors are `zones` (what `contains` / `heights` answer for them). A `core` garage rect marks the
                        band on −1 (config GARAGE: `coreB` + thin rects `coreBWest` / `coreBSouth` over the hall wall's openings; `passageCN` /
@@ -122,7 +112,7 @@ src/corehouse.js       Hus B's and Hus C's stair cores (#638, #639; CORE_B / COR
                        what the plans show. surroundings.js: `walkIn` is generalised (`walkIn(b, r)`, face 'n' or 'e', the spec's `entrance`:
                        `door`, `height`, `cut`; `cutRects` takes the face; the vestibule's floor and collision per face). The hall's south end on
                        −1 is open (#654): `CORE_C.lane` makes the −1 flight a single straight flight in the hall's east half (solid treads, rails, a guarded hole in våning 1's floor that `heights` / `stairS` know: `laneS`, `inHole`) so the west half is a free lane from the steel door `entryC` through the south wall's 2.4 m opening (thin garage rect `coreCSouth`) to the hall and the corridor north; the upper storeys keep the winder stair. Seen from above through the stairwell the opening shows the clear colour (the garage group is not drawn from y ≥ 0). NOT modelled: the interior
-                       fire doors, the flats behind the doors (#653: the flats' doors open like Hus A's: a `leaf` hole's `hinge` ('n' | 's') and `flats` (the number per stop) in CORE_B / CORE_C make a `makeDoor` leaf per storey, merged to one mesh (`leafify`, as corea.js'), `buildFlatDoors` for the architrave / number signs, a 1.3 m dark entrance cell behind each that the doorway collision keeps you out of; `HOUSE_FLAT_DOORS`: 25 leaves in Hus C, 12 in Hus B; #656: a `leaf` hole may sit in a wall along x too, Hus C's fifth flat in the hall's north end, `hinge` 'w' | 'e', `into` = swings away from the hall, `buildFlatDoors`' 8th tuple entry `alongX`); CoreA is not (yet) expressed as data like these two. Cost (SwiftShader, loaded VM): about 0.3–0.6 s
+                       fire doors, the flats behind the doors (#653: the flats' doors open like Hus A's: a `leaf` hole's `hinge` ('n' | 's') and `flats` (the number per stop) in CORE_B / CORE_C make a `makeDoor` leaf per storey, merged to one mesh (`leafify`), `buildFlatDoors` for the architrave / number signs, a 1.3 m dark entrance cell behind each that the doorway collision keeps you out of; `HOUSE_FLAT_DOORS`: 25 leaves in Hus C, 12 in Hus B; #656: a `leaf` hole may sit in a wall along x too, Hus C's fifth flat in the hall's north end, `hinge` 'w' | 'e', `into` = swings away from the hall, `buildFlatDoors`' 8th tuple entry `alongX`); Hus A's former class CoreA (src/corea.js) is gone (#652): CORE_A is data like the others. Cost (SwiftShader, loaded VM): about 0.3–0.6 s
                        to build one, 52–67 meshes / 7.5–12 k triangles, drawn only while the camera is within 6 m of the core or
                        up to 14 m out in front of the entrance door (`near`; the wider 12 m first used put perfcount's 'park' spot at 517 of 520 calls).
                        Hus C stands at y 0: its stair well has a hole in the terrain mesh (surroundings.js `TERRAIN_PITS` = `CORE_C.pit`; the grass

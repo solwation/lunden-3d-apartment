@@ -1578,7 +1578,7 @@ export const GARAGE = {
     {id:'coreBWest',x0:-33.6,x1:-33.08,z0:41.8,z1:43.4,room:'Trapphus B',area:'hallW'},
     {id:'coreBSouth',x0:-33.6,x1:-33.08,z0:44.9,z1:45.9,room:'Trapphus B',area:'hallW'},
     {id:'passageAWest',x0:-9.05,x1:-1.37,z0:41.4,z1:42.75,room:'Trapphus A',area:'hallE'},
-    // #637: Hus A's stair core (CORE_A, src/corea.js) is the `core` rect: its band (hall + stair) is drawn / walled there; the
+    // #637: Hus A's stair core (CORE_A, src/corehouse.js) is the `core` rect: its band (hall + stair) is drawn / walled there; the
     // thin rects are its openings on this storey (west towards the passage, east onto the lobby), as Hus L's coreW / coreE
     {id:'coreA',x0:-1.05,x1:.8,z0:37.3,z1:45.5,room:'Trapphus A',area:'hallE',core:true},
     {id:'coreAWest',x0:-1.37,x1:-1.05,z0:41.4,z1:42.75,room:'Trapphus A',area:'hallE'},
@@ -1787,7 +1787,10 @@ export const LIFT_PANEL = {
   pressMs: 220, darkPlate: 0.3,                                                      // pressed look; plates in a power cut
 };
 
-// Hus A's stair core (#637, src/corea.js): the stairwell and the lift from the basement (våning −1, y −3) up to våning 4
+// The flats' doors' entrance cell and the number atlas' scale (Hus A's, B's and C's cores; see CORE_A and the comment before CORE_B).
+const HOUSE_FLAT_DOORS = { cell: { depth: 1.3, height: 2.5 }, scale: 0.5 };
+
+// Hus A's stair core (#637; since #652 CORE_A is data for src/corehouse.js like CORE_B / CORE_C, the former src/corea.js is gone): the stairwell and the lift from the basement (våning −1, y −3) up to våning 4
 // (y 9), five stops; the main entrance from the courtyard (SITE.blocks 'Hus A' recess, våning 1) and the garage's door
 // 'entryA' lead in. DRAWING: read off the calibrated overview plans docs/peab/kalibrerad/vaning-m1 … 4-300dpi.png (the
 // #253 transform x = (px − 1909.5) × 0.042356, z = (py − 1073) × 0.042356, ±0.15 m; all five sheets share one frame at
@@ -1807,7 +1810,18 @@ export const LIFT_PANEL = {
 // door arcs across the hall at z 37.3 … 38.2 and 40.3 … 41.1 are NOT fire doors (the issue guessed so) but the flats' own doors
 // (each arc's radius = the 0.85 m leaf, its centre = the hinge on the wall, the leaf swinging into the hall), one pair per
 // storey; plus the single door in the cross wall at z ≈ 41.3. NOT modelled: the flats behind the doors.
+// #652: the cross wall, the lobby, the shaft and the hall's side walls are `walls` (thin: true = a plane of no thickness, as the old corea.js drew them;
+// the lift's front wall and the entrance wall are boxes); the flats' doors: `leaf` holes (#643) with `flats` = the flat per storey (stops index 1–4):
+// [z0, z1] ±0.15 m read off the plans, hinge 'n' | 's' (which jamb; the leaf swings into the hall), 2.1 m high (*guess*). #649: the east side's north
+// door is hinged SOUTH (*guess*) so an open leaf lies across the hall at z 38.2, not along the lift's front wall (z 37.3) over its doors. The flat
+// numbers: Peab's planritningsbroschyr numbers Hus A's flats A1001–A1004 (våning 1), A1101–A1104, A1201–…, A1301–… and its key plan puts them in this
+// order (north-west, north-east / south-west, south-east of the hall: A1102 A1103 / A1101 A1104; våning 1: A1004 A1001 / A1003 A1002) — which flat is
+// behind which door is read off that key plan's text order, a *guess*. Behind each door a 1.3 m deep entrance cell (HOUSE_FLAT_DOORS, *guess*, 2.5 m
+// high, dark) you cannot enter: the flats are not modelled. #643: the single door in the cross wall at z ≈ 41.45 (våning 1–4; the plans: a 0.85 m
+// leaf hinged at its west end, swinging south towards the stair; the wall east of it is solid): `plain` (no number, sign or cell, no doorway collision).
+const A_BLOCK = SITE.blocks.find((b) => b.name === 'Hus A'), A_Z = A_BLOCK.z0 + A_BLOCK.recesses.find((r) => r.face === 'n' && r.door != null).depth; // the recess's back wall (the entrance door's line)
 export const CORE_A = {
+  house: 'Hus A',
   stops: [-3, 0, 3, 6, 9],                 // våning −1, 1, 2, 3, 4 = SITE.blocks 'Hus A' base + n × SITE.storey (*guess*: equal storeys)
   labels: ['−1', '1', '2', '3', '4'],
   slab: 0.25, ceilingTop: 2.7,             // *guess*: the slab thickness; the top storey's clear height
@@ -1816,31 +1830,40 @@ export const CORE_A = {
   // (16 of 0.1875 m: the plans show the straight treads ≈ 0.25 m deep, `straight` of them in each flight, the rest winders round the
   // pivot: 7 = a rectangle each beside the stringer + 5 fan-shaped over the south end, the plan draws ~8 rays: the counts are a *guess*)
   stair: { top: 42.84, run: 44.6, well: [-0.19, -0.09], risers: 16, straight: 4, tread: 0.25, guard: 1.1 },
-  // the lobby (våning 1; the basement's is the garage's rects): north part, the strip beside the shaft, the lift lobby
-  lobby: { x0: 0.22, x1: 2.50, z0: 30.9, shaftNorth: 34.0, shaftEast: 1.13, z1: 38.9 },
-  shaft: { x0: -0.40, x1: 0.80, front: 37.0, back: 34.5, door: [-0.25, 0.65], wall: 0.3 }, // front = the car's door face (the wall is 0.3 thick south of it)
-  // the entrance door in the recess's back wall (z = the recess back): the leaf x [door], the sidelight x [side]
-  entrance: { door: [1.37, 2.22], side: [0.28, 1.32], height: 2.2, hinge: 'east' },
-  // the basement's ways out of the band (garage rects 'coreAWest' / 'coreAEast'): z ranges, 2.1 m high (*guess*)
-  basement: { west: [41.4, 42.75], east: [37.3, 40.1], height: 2.1 },
-  // #643: the flats' doors in the band's walls on våning 1–4, openable (makeDoor; the arcs of the calibrated sheets, hall-2 …).
-  // Each is [z0, z1, hinge: 'n' | 's' (which jamb; the leaf swings into the hall), then the flat per storey (stops index 1–4;
-  // null = no door there: on våning 1 the east side north of the shaft is the lobby's opening)]. #649: the east side's north door is hinged
-  // SOUTH (*guess*) so an open leaf lies across the hall at z 38.2, not along the lift's front wall (z 37.3) over its doors. Positions z ±0.15 m read off
-  // the plans; 2.1 m high (*guess*). The flat numbers: Peab's planritningsbroschyr numbers Hus A's flats A1001–A1004 (våning 1),
-  // A1101–A1104, A1201–…, A1301–… and its key plan puts them in this order (north-west, north-east, south-west, south-east
-  // of the hall: A1102 A1103 / A1101 A1104; våning 1: A1004 A1001 / A1003 A1002) — which flat is behind which door is
-  // read off that key plan's text order, a *guess*. Behind each door a 1.3 m deep entrance cell is drawn (*guess*, 2.5 m
-  // high, dark) that you cannot enter: the flats are not modelled (the doorway stops you).
-  flatDoors: {
-    height: 2.1, cell: { depth: 1.3, height: 2.5 }, scale: 0.5, // scale: the number atlas' cell size (× 512 × 384 px)
-    west: [[37.35, 38.2, 'n', [null, 'A1004', 'A1102', 'A1202', 'A1302']], [40.28, 41.1, 's', [null, 'A1003', 'A1101', 'A1201', 'A1301']]],
-    east: [[37.35, 38.2, 's', [null, null, 'A1103', 'A1203', 'A1303']], [40.28, 41.1, 's', [null, 'A1002', 'A1104', 'A1204', 'A1304']]],
-  },
-  // #643: the single door in the cross wall at z ≈ 41.3 (the plans: a 0.85 m leaf hinged at its west end, swinging south
-  // towards the stair; the wall east of it is solid). The wall is drawn as a plane at `z`, våning 1–4 (not −1, drawn differently).
-  crossDoor: { z: 41.45, door: [-0.90, -0.05] },
-  lift: { speed: 1.0, accel: 0.6, doorTime: 1.4, wait: 6, rescue: 0.25 },
+  car: { x0: -0.40, x1: 0.80, z0: 34.5, z1: 37.0 },   // the shaft north of the hall: the car; a counterweight strip west of it is walled off. `front` = the car's door face (the wall is 0.3 thick south of it)
+  lift: { side: 's', front: 37.0, wall: 37.3, door: [-0.25, 0.65], speed: 1.0, accel: 0.6, doorTime: 1.4, wait: 6, rescue: 0.25 },
+  flatDoors: HOUSE_FLAT_DOORS,
+  hallLights: 1,                            // one lamp per storey over the hall (B / C: one every ~3.4 m)
+  walls: [
+    // the hall's west wall: on −1 the opening towards the west passage (garage rect 'coreAWest', 2.1 m high *guess*), the flats' doors on 1–4
+    { ax: 'x', t: [-1.05, -1.05], a: [37.3, 45.5], s: [0, 4], thin: true, holes: [
+      { a: [41.4, 42.75], h: 2.1, s: [0, 0] },
+      { a: [37.35, 38.2], h: 2.1, s: [1, 4], leaf: true, hinge: 'n', flats: [null, 'A1004', 'A1102', 'A1202', 'A1302'] },
+      { a: [40.28, 41.1], h: 2.1, s: [1, 4], leaf: true, hinge: 's', flats: [null, 'A1003', 'A1101', 'A1201', 'A1301'] }] },
+    // … the east wall: on −1 the opening onto the lobby / the förråd corridor (garage rect 'coreAEast'), on 1 into the lobby in front of the lift (2.3 m), the flats' doors
+    { ax: 'x', t: [0.80, 0.80], a: [37.3, 45.5], s: [0, 4], thin: true, holes: [
+      { a: [37.3, 40.1], h: 2.1, s: [0, 0] }, { a: [37.3, 38.9], h: 2.3, s: [1, 1] },
+      { a: [37.35, 38.2], h: 2.1, s: [2, 4], leaf: true, hinge: 's', flats: [null, null, 'A1103', 'A1203', 'A1303'] },
+      { a: [40.28, 41.1], h: 2.1, s: [1, 4], leaf: true, hinge: 's', flats: [null, 'A1002', 'A1104', 'A1204', 'A1304'] }] },
+    { ax: 'z', t: [45.5, 45.5], a: [-1.05, 0.80], s: [0, 4], thin: true },                                              // the stair's south wall
+    { ax: 'z', t: [37.0, 37.3], a: [-1.05, 0.80], s: [0, 4], holes: [{ a: [-0.25, 0.65], h: 2.1 }] },                   // the lift's front wall (0.3 thick): a doorway at every stop
+    { ax: 'x', t: [-0.40, -0.40], a: [34.5, 37.0], s: [0, 4], thin: true }, { ax: 'x', t: [0.80, 0.80], a: [34.5, 37.0], s: [0, 4], thin: true },   // the shaft's walls
+    { ax: 'z', t: [34.5, 34.5], a: [-0.40, 0.80], s: [0, 4], thin: true },
+    { ax: 'z', t: [41.45, 41.45], a: [-1.05, 0.80], s: [1, 4], thin: true, holes: [{ a: [-0.90, -0.05], h: 2.1, leaf: true, plain: true, hinge: 'w', into: true }] }, // the cross wall
+    // våning 1's lobby (the basement's is the garage's rects): the west wall, the shaft's north and east faces, the east wall, the lift lobby's south wall and the shaft's corner
+    { ax: 'x', t: [0.22, 0.22], a: [A_Z, 34.0], s: [1, 1], thin: true }, { ax: 'z', t: [34.0, 34.0], a: [0.22, 1.13], s: [1, 1], thin: true },
+    { ax: 'x', t: [1.13, 1.13], a: [34.0, 37.3], s: [1, 1], thin: true }, { ax: 'x', t: [2.50, 2.50], a: [A_Z, 38.9], s: [1, 1], thin: true },
+    { ax: 'z', t: [38.9, 38.9], a: [0.80, 2.50], s: [1, 1], thin: true }, { ax: 'z', t: [37.3, 37.3], a: [0.80, 1.13], s: [1, 1], thin: true },
+    // the entrance wall: the door's opening (x 1.37 … 2.22) and the fixed sidelight west of it (x 0.28 … 1.32, its frame's post up to the door: 1.37), the solid rest
+    { ax: 'z', t: [A_Z - 0.06, A_Z + 0.06], a: [0.22, 2.50], s: [1, 1], holes: [{ a: [1.37, 2.22], h: 2.2 }, { a: [0.28, 1.37], h: 2.2, glass: true }] },
+  ],
+  // the lobby (våning 1): north part, the strip beside the shaft, the lift lobby
+  floors: [{ r: [0.22, 2.50, A_Z - 0.06, 34.0], s: 1 }, { r: [1.13, 2.50, 34.0, 37.3], s: 1 }, { r: [0.80, 2.50, 37.3, 38.9], s: 1 }],
+  cap: [-0.40, 0.80, 34.2, 37.3],           // the shaft's top
+  // the entrance door in the recess's back wall (the door's size: the plan's swing is 0.7 m; 0.85 m used: hinged east, opening out into the recess)
+  entrance: { face: 'n', line: A_Z, door: [1.37, 2.22], side: [0.28, 1.32], height: 2.2, hinge: 'hi', name: 'porten till trapphus A' },
+  numbers: { x: -1.05, z: 39.2, dir: 1 },   // the floor number plates on the hall's west wall by the lift (facing east)
+  lights: [[1.35, 32.4], [1.8, 35.6], [1.6, 38.2]], // the lobby's lamps [x, z]
 };
 
 // #653: Hus B's and Hus C's flats' doors in the halls open like Hus A's (CORE_A.flatDoors, #643): a leaf swinging into the hall (hinge at the
@@ -1852,7 +1875,6 @@ export const CORE_A = {
 // C1101 C1105 (+ C1104), the same for 13xx, 14xx: north-west, north-east / south-west, south-east of the hall) — a *guess* which flat is which door.
 // C's fifth flat per storey (C1005 / C1104 …) has its door in the hall's north end (#656, a `leaf` hole in a wall along x: `hinge` 'w' | 'e', `into` =
 // swings away from the hall); the north-east flat's door sits at z 22.05 … 22.9 on våning 2–5 (#656).
-const HOUSE_FLAT_DOORS = { cell: { depth: 1.3, height: 2.5 }, scale: 0.5 };
 
 // Hus B's and Hus C's stair cores (#638, #639, src/corehouse.js): the same kind of walkable stairwell + lift as Hus A's
 // (CORE_A), described as data. `walls` are thick wall runs: { ax: 'x' = a wall along z (x range `t`, z range `a`) | 'z' = along x

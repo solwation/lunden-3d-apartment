@@ -36,7 +36,7 @@ const onRamp = (x, z) => x >= R.x0 && x <= R.x1 && z >= R.z0 && z <= R.z1;
 const rampY = (z) => -R.drop * THREE.MathUtils.clamp((R.z1 - z) / (R.z1 - R.z0), 0, 1);
 /** West of here the ground follows Karpvägen: the NW stair's top line south to its end, then Hus C's west façade line. */
 const westEdge = (z) => (z < Wst.stair.z1 ? Wst.stair.x1 : Wst.x);
-/** How deep the outdoor collision lets the visitor in through a walk-in recess's door before the stair core (corea.js, corehouse.js) takes over (#637). */
+/** How deep the outdoor collision lets the visitor in through a walk-in recess's door before the stair core (corehouse.js) takes over (#637). */
 const DOORWAY_DEPTH = 0.3;
 /** A block's walk-in entrance (#637, #638, #639): its recess `walkIn` (face 'n' or 'e') + the stair core's entrance spec (CORE_A / B / C in
  *  config: `door` = the leaf's range along the face, `height`, `cut` = the opening through the recess's back wall, default the whole recess). */
@@ -941,7 +941,7 @@ function letterTexture(letters) {
 
 /** The entrance openings of the Å-husen's recesses (#266): the door and the sidelight on the back wall. */
 function entranceOpenings(b, r) {
-  if (r.walkIn) return []; // (Hus A's: a real door, its sidelight and the lobby behind are corea.js's, #637)
+  if (r.walkIn) return []; // (Hus A's: a real door, its sidelight and the lobby behind are corehouse.js's, #637)
   const E = S.loggia.entrance, nz = r.face === 'n' || r.face === 's', out = r.face === 's' || r.face === 'e' ? 1 : -1;
   const back = { n: b.z0, s: b.z1, w: b.x0, e: b.x1 }[r.face] - out * r.depth, y = b.base + r.door * S.storey;
   const wide = r.a1 - r.a0 > E.w + E.side + 0.25, d0 = (r.a0 + r.a1) / 2 - (wide ? (E.w + E.side) / 2 : E.w / 2);
@@ -997,7 +997,7 @@ function loggias(blocks) {
       const at = (a, c) => (nz ? [a, c] : [c, a]), nrm = (k) => (nz ? [0, k] : [k, 0]), side = (k) => (nz ? [k, 0] : [0, k]);
       const s0 = r.from ?? 0, s1 = Math.min(r.to ?? Infinity, b.storeys - 1), y0 = b.base + s0 * S.storey, y1 = b.base + (s1 + 1) * S.storey;
       // the back wall and the sides; a walk-in recess (#637, #638, #639) has only the wall over its opening (the door + sidelight, the
-      // core's `entrance.cut`: corea.js / corehouse.js draw those) from the door height up
+      // core's `entrance.cut`: corehouse.js draws those) from the door height up
       const W = walkIn(b, r), back0 = (a0, a1, ya) => { if (a1 - a0 > 1e-3) walls.push(quad(...at(a0, back), ...at(a1, back), ...nrm(out), ya, y1)); };
       if (W) { back0(r.a0, W.cut[0], y0); back0(W.cut[0], W.cut[1], y0 + W.height); back0(W.cut[1], r.a1, y0); } else back0(r.a0, r.a1, y0);
       walls.push(quad(...at(r.a0, back), ...at(r.a0, line), ...side(1), y0, y1), quad(...at(r.a1, back), ...at(r.a1, line), ...side(-1), y0, y1));
@@ -1395,7 +1395,7 @@ export function buildSurroundings({ grass }) {
   group.userData.segments = [...bw.segments, ...S.blocks.filter((b) => !b.style).flatMap((b) => {
     const pts = groundOutline(b);
     return pts.map((p, i) => [...p, ...pts[(i + 1) % pts.length]]).flatMap((sg) => {
-      // Hus A's walk-in entrance (#637): the door's opening in the recess's back wall (the door leaf and the sidelight are corea.js's)
+      // Hus A's walk-in entrance (#637): the door's opening in the recess's back wall (the door leaf and the sidelight are corehouse.js's)
       const hit = (b.recesses ?? []).map((q) => [q, walkIn(b, q)]).find(([q, W]) => W && (q.face === 'n'
         ? sg[1] === sg[3] && Math.abs(sg[1] - (b.z0 + q.depth)) < 1e-6 && Math.min(sg[0], sg[2]) <= q.a0 + 1e-6 && Math.max(sg[0], sg[2]) >= q.a1 - 1e-6
         : sg[0] === sg[2] && Math.abs(sg[0] - (b.x1 - q.depth)) < 1e-6 && Math.min(sg[1], sg[3]) <= q.a0 + 1e-6 && Math.max(sg[1], sg[3]) >= q.a1 - 1e-6));

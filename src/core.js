@@ -83,7 +83,7 @@ export function labelTexture(w, h, draw) {
 }
 
 /** Hus L's lift (K.lift): `z0` = the door side, `dz` = which way the car lies from it (+1 south), `landing` = the wall face on
- *  the landing side, `btnX` = the call plates' x; `Y` = the stops, `floors` their names. Hus A's (corea.js) has its own. */
+ *  the landing side, `btnX` = the call plates' x; `Y` = the stops, `floors` their names. Hus A's, B's and C's (corehouse.js) have their own. */
 const LIFT_L = { ...L, Y, dz: 1, landing: S1, btnX: L.door[1] + 0.22 };
 
 /** The lift: a car in the shaft at the band's courtyard end, four stops, sliding doors, buttons. A power cut (#612,
@@ -260,10 +260,10 @@ export function makeDoor(group, { hx, hz, dir, out, w, y, name, glazed }) {
  *  (one extra draw call for both doors) that carries the number only (the name is the user's to give). Sizes follow
  *  NAME_PLATE / our own front door (world.js letterFlap); the handle, rose and cylinder sizes are *guess*. */
 export function buildFlatDoors(geo, o = {}) {
-  // Hus A's stairwell (corea.js, #643) reuses it: `doors` = [[storey, z0, z1, label, x, side, signSouth]] (x = the wall's x, side = −1 for a
+  // Hus A's, B's and C's stairwells (corehouse.js, #643, #653) reuse it: `doors` = [[storey, z0, z1, label, x, side, signSouth]] (x = the wall's x, side = −1 for a
   // wall the hall lies west of, +1 east of it), `Ys` the storeys' floors, `bk` its baking; `fixed: false` = the leaf, hardware and
   // the plate belong to an openable door (only the architrave and the number sign are made here, `cells` says where on the atlas
-  // each plate / sign is); the atlas has `cols` columns of cells `sc` × the normal size, and a white `strip` px along the bottom.
+  // each plate / sign is; #656: an 8th entry `alongX` = a door in a wall along x: z0 … z1 are then its x range, `x` the wall's z, `side` +1 = the hall lies south); the atlas has `cols` columns of cells `sc` × the normal size, and a white `strip` px along the bottom.
   const { doors = K.flatDoors, Ys = Y, x: wallX = X1, side: wallSide = -1, bk = bake, fixed = true, cols = doors.length, sc = 1, strip = 0 } = o;
   const D = K.flatDoorParts, tags = [], rows = Math.ceil(doors.length / cols);
   const cw = 512 * sc, ch = 384 * sc, ph = 128 * sc, sh = ch - ph, atlas = { w: cw * cols, h: ch * rows + strip };
@@ -335,7 +335,7 @@ export function buildFlatDoors(geo, o = {}) {
 export class Core {
   constructor() {
     const group = this.own = new THREE.Group(); this.object = new THREE.Group(); this.object.add(group); // (+ the other houses' cores, `attach`)
-    this.parts = []; // Hus A's stairwell and lift (#637, corea.js): the same interface, asked after Hus L's
+    this.parts = []; // Hus A's, B's and C's stairwells and lifts (#637, corehouse.js): the same interface, asked after Hus L's
     const geo = { wall: [], low: [], stair: [], rail: [], light: [], glass: [] };
     this.walls = []; // { s: [ax, az, bx, bz], y0, y1 }
     const WALL = 0xeeeeea, LOW = 0xa9b2b8, STAIR = 0xb9b6ae, RAIL = 0x7f868c, FRAME = 0x3b4247;

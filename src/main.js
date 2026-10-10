@@ -10,7 +10,7 @@ import { loadBeerShelf } from './beershelfdata.js';
 import { BeerShelf } from './beershelf.js';
 import { initHudIcons, setIcon, setPressed } from './hudicons.js';
 import * as THREE from 'three';
-import { UNIT_TOP, SITE, COLORS, LEVELS, DAY, START, PLAYER, DRAWING, STAIR, HOLD, LIFE, REMOTE, REST, DOOR_HEIGHT, TURBO, WEATHER, BREAK, CAR, KITCHEN, LAPTOP, NEST, AUTO_RELOAD, MIELE, CUPS, GARAGE, OLOF, CORE_B, CORE_C } from './config.js';
+import { UNIT_TOP, SITE, COLORS, LEVELS, DAY, START, PLAYER, DRAWING, STAIR, HOLD, LIFE, REMOTE, REST, DOOR_HEIGHT, TURBO, WEATHER, BREAK, CAR, KITCHEN, LAPTOP, NEST, AUTO_RELOAD, MIELE, CUPS, GARAGE, OLOF, CORE_A, CORE_B, CORE_C } from './config.js';
 import { MieleHeld, HeartFireworks } from './miele.js';
 const DRAWING_COLORS = DRAWING.colors;
 initHudIcons();
@@ -105,7 +105,6 @@ import { Target } from './target.js';
 import { Car } from './car.js';
 import { Garage } from './garage.js';
 import { Core } from './core.js';
-import { CoreA } from './corea.js';
 import { CoreHouse } from './corehouse.js';
 import { People } from './people.js';
 import { Olof, OlofDriver } from './olof.js';
@@ -175,7 +174,7 @@ const garage = world.garage = new Garage(); // the garage and the förråd under
 const cheatNote = await buildCheatNote(garage, () => showCheatNote(true));
 scene.add(garage.object, garage.blackout, garage.door.object); // (+ its door, #358)
 const core = world.core = new Core(); // Hus L's stairwell and lift by the portik (#415)
-const coreA = core.attach(new CoreA()); // … and Hus A's, from its courtyard entrance down to the basement (#637)
+const coreA = core.attach(new CoreHouse(CORE_A)); // … and Hus A's, from its courtyard entrance down to the basement (#637)
 const coreB = core.attach(new CoreHouse(CORE_B)), coreC = core.attach(new CoreHouse(CORE_C)); // … and Hus B's, Hus C's (#638, #639; the order is the saved lifts' order, keep.js)
 scene.add(core.object);
 

@@ -112,7 +112,7 @@ function wallLines() {
   const out = [], h = 0.05;
   for (const r of RECTS) for (const [ax, az, bx, bz, ox, oz] of [[r.x0, r.z0, r.x1, r.z0, 0, -1], [r.x1, r.z0, r.x1, r.z1, 1, 0], [r.x0, r.z1, r.x1, r.z1, 0, 1], [r.x0, r.z0, r.x0, r.z1, -1, 0]]) {
     if (r.id === 'doorway' && ox < 0) continue; // the garage door's opening: GarageDoor
-    if (r.id === 'core' || r.core) continue; // the stair cores' walls: core.js (#415), corea.js (#637: `core` rects)
+    if (r.id === 'core' || r.core) continue; // the stair cores' walls: core.js (#415), corehouse.js (#637 …: `core` rects)
     const len = Math.hypot(bx - ax, bz - az), n = Math.max(1, Math.round(len / h));
     let start = null;
     const open = (t) => { const x = ax + (bx - ax) * t + ox * 0.03, z = az + (bz - az) * t + oz * 0.03; return !!rectAt(x, z); };
