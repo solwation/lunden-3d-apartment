@@ -121,7 +121,7 @@ src/corehouse.js       Hus B's and Hus C's stair cores (#638, #639; CORE_B / COR
                        `coreC` / `passageCS` split Hus C's corridor, `passageCE` begins at the band's east wall); the other passage rects keep to
                        what the plans show. surroundings.js: `walkIn` is generalised (`walkIn(b, r)`, face 'n' or 'e', the spec's `entrance`:
                        `door`, `height`, `cut`; `cutRects` takes the face; the vestibule's floor and collision per face). The hall's south end on
-                       −1 is closed (the stair), so Hus C's `passageCS` is a dead end behind the steel door `entryC`. NOT modelled: the interior
+                       −1 is open (#654): `CORE_C.lane` makes the −1 flight a single straight flight in the hall's east half (solid treads, rails, a guarded hole in våning 1's floor that `heights` / `stairS` know: `laneS`, `inHole`) so the west half is a free lane from the steel door `entryC` through the south wall's 2.4 m opening (thin garage rect `coreCSouth`) to the hall and the corridor north; the upper storeys keep the winder stair. Seen from above through the stairwell the opening shows the clear colour (the garage group is not drawn from y ≥ 0). NOT modelled: the interior
                        fire doors, the flats, openable flat doors (Hus A has them, #643); CoreA is not (yet) expressed as data like these two. Cost (SwiftShader, loaded VM): about 0.3–0.6 s
                        to build one, 52–67 meshes / 7.5–12 k triangles, drawn only while the camera is within 6 m of the core or
                        up to 14 m out in front of the entrance door (`near`; the wider 12 m first used put perfcount's 'park' spot at 517 of 520 calls).
@@ -163,7 +163,7 @@ tools/trapphusatest.html headless test (#637): Hus A: the entrance door holds / 
                        passage, out through the entrance again, walls hold, a reload mid-ride, power cut, both lifts saved, rides counted; #643: the 15 flat doors + the cross wall's
                        open / shut (E), one mesh per leaf, the doorway stops you, an open door along the lift wall stops you short
 tools/trapphusbctest.html headless test (#638, #639): `?house=B` / `?house=C`, the same route as trapphusatest through that house's lobby, hall, stair
-                       (every storey up and down, the guard, the closed-off space under it), flat door and walls, the lift (every stop, riding along, doors
+                       (every storey up and down, the guard, the closed-off space under it; Hus C's −1 lane and flight, #654: the route from the steel door `entryC` through the hall to the north corridor), flat door and walls, the lift (every stop, riding along, doors
                        held open), the basement's openings into the garage passages and through the steel door, out through the entrance, a reload
                        mid-ride, power cut, saved lifts (a: A, B, C) and the rides counted (`b…` / `c…`)
 tools/lifttest.html    headless test (#415): the portik's door holds shut / E opens, the stairwell on våning 1, the lift called, a ride

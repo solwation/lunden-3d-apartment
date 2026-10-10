@@ -46,7 +46,8 @@ async function run() {
   const lab = (k) => K.labels[k];
   const WX = (B.x0 + ST.well[0]) / 2, EX = (ST.well[1] + B.x1) / 2, TOP = ST.top, RUN = ST.run, SOUTH = B.z1 - 0.4;
   const climb = () => { walkTo(WX, RUN - 0.3); walkTo(WX, SOUTH); walkTo(EX, SOUTH - 0.1); walkTo(EX, RUN - 0.3); walkTo(EX, TOP - 1.0); };
-  const up = (k) => { at(WX, TOP - 1.0, Y[k]); climb(); };
+  const LN = K.lane, ZH = LN ? LN.foot - (ST.risers - 1) * LN.tread : 0; // #654: on −1 one straight flight in the east half, the west half a lane
+  const up = (k) => { if (LN && k === 0) { at(EX, LN.foot + 0.8, Y[0]); walkTo(EX, ZH - 0.8); return; } at(WX, TOP - 1.0, Y[k]); climb(); };
   const ride = (k) => { lift.targets.find((t) => t.kind === 'liftbtn' && t.stop === k).press(); for (let i = 0; i < 60 * 60 && !(lift.at === k && lift.doors >= 1); i++) step(1 / 60); };
   // the lift: LA = the door's middle along the front wall; `lp(across)` = the point `across` m from the front plane (+ = the hall side)
   const L = K.lift, LA = (L.door[0] + L.door[1]) / 2, lp = (c) => (L.side === 's' ? [LA, L.front + c] : [L.front + c, LA]);
@@ -88,13 +89,26 @@ async function run() {
   check(player.pos.z < TOP + 0.1 && onY(TOPK), `the guard on våning ${lab(TOPK)} holds (z ${f2(player.pos.z)}, y ${f2(player.pos.y)})`);
   // ---- and all the way down (east flight first), to −1
   for (let k = TOPK - 1; k >= 0; k--) {
+    if (LN && k === 0) { at(EX, ZH - 1.0, Y[1]); walkTo(EX, LN.foot + 0.8); const dy = player.pos.y; walkTo(WX, LN.foot - 1.0); check(onY(0) && player.inCore && Math.abs(dy - Y[0]) < 0.05, `down the −1 flight to våning −1 and round into the lane (y ${f2(dy)})`); continue; }
     at(EX, TOP - 1.0, Y[k + 1]); walkTo(EX, RUN - 0.3); walkTo(EX, SOUTH); walkTo(WX, SOUTH - 0.1); walkTo(WX, RUN - 0.3); walkTo(WX, TOP - 1.0);
     check(onY(k) && player.inCore, `down the stair to våning ${lab(k)} (y ${f2(player.pos.y)})`);
   }
   check(new RegExp(`Hus ${house} · Trapphus · våning −1`).test(hud()), `HUD "${hud()}"`);
   check((stats.falls ?? 0) === falls0 && !player.fall, `no fall on the stairs (${stats.falls ?? 0})`);
-  at(EX, TOP - 1.0, Y[0]); walkTo(EX, TOP + 1.2, 3);
-  check(player.pos.z < TOP + 0.1 && onY(0), `the space under the stair is closed off on −1 (z ${f2(player.pos.z)}, y ${f2(player.pos.y)})`);
+  if (!LN) { at(EX, TOP - 1.0, Y[0]); walkTo(EX, TOP + 1.2, 3); check(player.pos.z < TOP + 0.1 && onY(0), `the space under the stair is closed off on −1 (z ${f2(player.pos.z)}, y ${f2(player.pos.y)})`); }
+  else { // #654: the lane (west half) runs clear from the south wall's opening to the hall; the flight's side holds; the hole in våning 1's floor is guarded
+    at(WX, LN.foot + 2.0, Y[0]); walkTo(WX, B.z0 + 1.0, 10);
+    check(player.inCore && onY(0) && player.pos.z < B.z0 + 1.2 && Math.abs(player.pos.x - WX) < 0.3, `a free lane along the stair on −1: from the corridor past the stair into the hall (${f2(player.pos.x)}, ${f2(player.pos.z)}, y ${f2(player.pos.y)})`);
+    const entry = world.garage.targets.find((t) => t.door.rect?.id === 'entryC'); if (!entry.isOpen) entry.toggle(); for (let i = 0; i < 60; i++) step(1 / 60);
+    at(-61.6, 36.0, Y[0]); walk([[-61.6, 33.0], [WX, 31.5], [WX, 28.5], [WX, 25.0], [WX, 21.0], [WX, 17.6]], 10);
+    check(player.below && player.pos.z < 18 && /Trapphus C/.test(world.garage.roomAt(player.pos.x, player.pos.z)), `from the steel door 'entryC' through the corridor, the hall and on north (${world.garage.roomAt(player.pos.x, player.pos.z)}, ${f2(player.pos.x)}, ${f2(player.pos.z)})`);
+    at(WX, LN.foot - 1.2, Y[0]); walkTo(EX + 0.2, LN.foot - 1.2, 3);
+    check(player.pos.x < ST.well[1] + 0.1 && onY(0), `the flight's side holds (x ${f2(player.pos.x)})`);
+    at(WX + 0.1, ZH + 0.2, Y[1]); walkTo(EX, ZH + 0.2, 3);
+    check(player.pos.x < ST.well[1] + 0.1 && onY(1), `the hole in våning 1's floor is guarded from the west (x ${f2(player.pos.x)}, y ${f2(player.pos.y)})`);
+    at(EX, ZH - 1.0, Y[1]); walkTo(EX, LN.foot - 0.5, 8);
+    check(player.pos.y < Y[0] + 3 && player.pos.z > LN.foot - 1.0 && !player.fall, `the opening is a stair, not a drop (y ${f2(player.pos.y)})`);
+  }
 
   // ---- the walls and a flat's door hold (the hall's west / east walls where nothing opens, a leaf on våning 2)
   const zSolid = house === 'B' ? 46.0 : 22.2;

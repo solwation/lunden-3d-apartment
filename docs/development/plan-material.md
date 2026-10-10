@@ -116,7 +116,7 @@ material/              screenshots of our choices in Peab's option portal (local
   door x −34.45 … −33.55, hinged east); on −1 openings west (z 41.8 … 43.4 and 44.9 … 45.9) to the passages. Hus C: hall 1.9 m wide (x −62.34 …
   −60.44), z 20.12 … 30.54, the lift WEST of it (car x −64.98 … −62.90, z 23.45 … 24.8, door east, 0.56 m front wall), the stair at the south end
   (from z 27.75), flats' doors at z ≈ 20.2 … 21.0 and 25.5 … 26.4; on våning 1 the lobby from the east entrance (x −53.4, door z 23.15 … 24.05 with a
-  fixed pane z 22.3 … 23.1) west to the hall; on −1 the hall's north end is open to the corridor and its east wall to the steel door 'entryCE'. Heights
+  fixed pane z 22.3 … 23.1) west to the hall; on −1 the hall's north end is open to the corridor, its east wall to the steel door 'entryCE' and its south wall (#654, opening x −62.34 … −60.44) to the corridor behind the steel door 'entryC': there the stair is one straight flight in the east half (`CORE_C.lane`, 0.25 m treads, up through a hole in våning 1's floor from z 26.79) and the west half is a free lane (the plan draws a lower flight z 26.6 … 28, a cupboard z 28.4 … 29.6 and a dashed gate at z ≈ 30.5: too little to read a flight from, so all of it is *guess*). Heights
   (storeys 3.0, slabs 0.25; C's våning 1 = the courtyard's level y 0, the garage y −3), the winders, door / guard sizes, the cars' size, speed and the
   flats' doors are *guess*. The plans put the entrance wall of Hus C at x −53.9 … −53.6 and the recess config at −53.4: the config's is used.
   Courtyard (#80, `COURTYARD`, re-measured on the calibrated situation plan in #259 — the transform is in its

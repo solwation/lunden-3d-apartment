@@ -1593,6 +1593,7 @@ export const GARAGE = {
     // the hall, the `core` rect (the hall + stair + lift lobby, z 20.12 … 30.54) and the dead end south of the stair's wall
     {id: 'passageCN',x0: -62.34,x1: -60.44,z0: 15.5,z1: 20.12,room: 'Trapphus C',area: 'entrance'},
     {id: 'coreC',x0: -62.34,x1: -60.44,z0: 20.12,z1: 30.54,room: 'Trapphus C',area: 'entrance',core: true},
+    {id: 'coreCSouth',x0: -62.34,x1: -60.44,z0: 30.54,z1: 30.88,room: 'Trapphus C',area: 'entrance'}, // #654: the opening in the stair's south wall on −1 (CORE_C.lane)
     {id: 'passageCS',x0: -62.34,x1: -60.44,z0: 30.88,z1: 34.01,room: 'Trapphus C',area: 'entrance'},
     {id: 'entryC',x0: -62.1,x1: -61.1,z0: 34.01,z1: 34.52,room: 'Trapphus C',area: 'entrance',door: {kind: 'steel',hinge: 'x0',open: 1,name: 'dörren till trapphus C'}},
     {id: 'passageCE',x0: -60.44,x1: -53.9,z0: 23.44,z1: 24.6,room: 'Trapphus C',area: 'entrance'},
@@ -1901,8 +1902,8 @@ export const CORE_B = {
 // våning 1 the lobby from the entrance door (x −53.4, the recess's back wall: a door z 23.15 … 24.05 with a fixed pane z 22.3 … 23.1 beside
 // it) runs west (x −57.54 … −53.34, z 21.5 … 24.92, then the strip z 23.44 … 24.92 to the hall's east wall, whose opening is z 23.44 … 24.92).
 // On −1 the same opening (z 23.44 … 24.6) leads east to the steel door 'entryCE' (hisshallen C) and the hall's north end is open to the
-// corridor north (garage rect `passageCN`); the south end is closed (the stair), so the garage rect `passageCS` is a dead end behind
-// the steel door 'entryC'. The entrance (the courtyard's level, y 0) and the garage hall (y −3) differ by one storey: the stair and the lift.
+// corridor north (garage rect `passageCN`); the south end opens through the stair's south wall (garage rect `coreCSouth`) to `passageCS` and the
+// steel door 'entryC' (#654: the −1 flight sits in the east half, see `lane`, the west half is the lane). The entrance (the courtyard's level, y 0) and the garage hall (y −3) differ by one storey: the stair and the lift.
 export const CORE_C = {
   house: 'Hus C',
   stops: [-3, 0, 3, 6, 9, 12],            // våning −1, 1 … 5 = SITE.blocks 'Hus C' base 0 + n × SITE.storey; −1 = GARAGE.floor (*guess*: equal storeys)
@@ -1922,7 +1923,7 @@ export const CORE_C = {
       { a: [23.44, 24.6], h: 2.1, s: [0, 0] }, { a: [23.44, 24.92], h: 2.1, s: [1, 1] },                                     // −1: to the steel door, 1: into the lobby
       { a: [20.2, 21.0], h: 2.1, s: [1, 5], leaf: true }, { a: [25.5, 26.4], h: 2.1, s: [1, 5], leaf: true }] },
     { ax: 'z', t: [19.82, 20.12], a: [-62.64, -60.14], s: [0, 5], holes: [{ a: [-62.34, -60.44], h: 2.1, s: [0, 0] }] },       // north wall (−1: the corridor goes on)
-    { ax: 'z', t: [30.54, 30.88], a: [-62.64, -60.14], s: [0, 5] },                                                                  // the stair's south wall
+    { ax: 'z', t: [30.54, 30.88], a: [-62.64, -60.14], s: [0, 5], holes: [{ a: [-62.34, -60.44], h: 2.4, s: [0, 0] }] },       // the stair's south wall (−1: the way through to the steel door, #654)
     // våning 1's lobby
     { ax: 'z', t: [23.0, 23.44], a: [-60.14, -57.54], s: [1, 1] },
     { ax: 'x', t: [-57.84, -57.54], a: [21.2, 23.44], s: [1, 1] },
@@ -1932,7 +1933,12 @@ export const CORE_C = {
   ],
   floors: [{ r: [-60.44, -57.54, 23.44, 24.92], s: 1 }, { r: [-57.54, -53.34, 21.5, 24.92], s: 1 }],
   cap: [-65.32, -62.34, 22.9, 25.3],
-  pit: [-62.34, -60.44, 27.75, 30.54],        // the stair well's footprint: a hole in the terrain mesh (the courtyard-level grass inside Hus C's footprint, y 0, would cover the flights below våning 1)
+  // #654: on −1 the stair is ONE straight flight in the east half (x −61.34 … −60.44) from the hall's south end (`foot`, the south wall's inner face) north to
+  // the hole it climbs through in våning 1's floor (its north edge z = foot − (risers − 1) × tread = 26.79), so the west half stays a free lane
+  // from the steel door `entryC` through the south wall's opening up to the hall and the corridor north. *guess*: the plan (vaning-m1) draws a lower flight
+  // z 26.6 … 28 + a cupboard z 28.4 … 29.6 and a dashed gate at z ≈ 30.5, not enough to read a flight from; every number here is ours (a 0.25 m tread: steeper than the upper winders').
+  lane: { foot: 30.54, tread: 0.25 },
+  pit: [-62.34, -60.44, 26.79, 30.54],        // the stair well's footprint (+ the −1 flight's hole in våning 1's floor): a hole in the terrain mesh (the courtyard-level grass inside Hus C's footprint, y 0, would cover the flights below våning 1)
   entrance: { face: 'e', line: -53.4, door: [23.15, 24.05], side: [22.3, 23.1], height: 2.2, hinge: 'hi', cut: [22.3, 24.05], name: 'porten till trapphus C' },
   numbers: { x: -60.44, z: 22.0, dir: -1 },
   lights: [[-59.0, 24.2], [-55.5, 23.2]],

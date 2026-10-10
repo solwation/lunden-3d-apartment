@@ -41,6 +41,7 @@ export class CoreHouse {
     const RAYS = Array.from({ length: NR + 1 }, (_, i) => perimAt(PU[PU.length - 1] * i / NR)), PHI = RAYS.map(([x, z]) => phi(x, z));
     const fanPoly = (i) => [[WM, ZP], RAYS[i - 1], ...PERIM.slice(1, -1).filter((c, n) => PU[n + 1] > PU[PU.length - 1] * (i - 1) / NR + 1e-6 && PU[n + 1] < PU[PU.length - 1] * i / NR - 1e-6), RAYS[i]];
     /** How far up the stair the walking line is at (x, z), in treads (0 at the hall's edge in the west flight … ST.risers − 1 in the east one), or null off the stair. */
+    this.laneS = (x, z) => laneS(x, z); this.inHole = (x, z) => inHole(x, z); this.LN = C.lane ?? null;
     this.stairS = (x, z) => {
       if (z <= ST.top || z > B.z1 + 0.01 || x < B.x0 || x > B.x1) return null;
       if (z <= ZW) return x < WL0 ? (z - ST.top) / TD : x > WL1 ? SN + NW + (ZW - z) / TD : null;
@@ -55,6 +56,10 @@ export class CoreHouse {
       const d = new THREE.Vector3(b[0] - a[0], b[1] - a[1], b[2] - a[2]), len = d.length();
       return new THREE.CylinderGeometry(r, r, len, 6).applyQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), d.normalize())).translate((a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2);
     };
+    // #654 (Hus C): on −1 the stair is one straight flight in the east half (C.lane), through a hole in våning 1's floor, the west half a free lane
+    const LN = C.lane ?? null, LT = LN?.tread ?? 0, ZH = LN ? LN.foot - (ST.risers - 1) * LT : 0;
+    const laneS = (x, z) => (LN && x > WL1 && x < B.x1 && z > ZH && z <= LN.foot ? (LN.foot - z) / LT : null); // treads up the −1 flight
+    const inHole = (x, z) => !!LN && x > WL1 && z > ZH; // (z up to ST.top, the floor's edge)
     const car = C.car, L = C.lift;
     this.car = [car.x0 - 0.02, car.x1 + 0.02, car.z0 - 0.02, car.z1 + 0.02];
     this.carIn = [car.x0 + 0.05, car.x1 - 0.05, car.z0 + 0.05, car.z1 - 0.05];
@@ -62,12 +67,14 @@ export class CoreHouse {
     // the lights baked into the colours: along the hall on every storey, under each landing, over the top landing, in the lobby
     const LIGHTS = [], nH = Math.max(1, Math.round((ST.top - B.z0) / 3.4));
     for (let j = 0; j < NS; j++) for (let i = 0; i < nH; i++) LIGHTS.push([XM, yTop(j) - 0.05, B.z0 + (i + 0.5) * (ST.top - B.z0) / nH]);
-    for (let k = 0; k < NS - 1; k++) LIGHTS.push([XM, Y[k] + (SN + 1 + Math.floor(NW / 2) - 2) * RISE - 0.07, (ST.run + B.z1) / 2]); // (under the middle winder's underside)
+    const GLOW = []; // baked only (no lamp drawn)
+    for (let k = LN ? 1 : 0; k < NS - 1; k++) LIGHTS.push([XM, Y[k] + (SN + 1 + Math.floor(NW / 2) - 2) * RISE - 0.07, (ST.run + B.z1) / 2]); // (under the middle winder's underside)
+    if (LN) GLOW.push([(B.x0 + WL0) / 2, Y[0] + 2.4, (ST.top + LN.foot) / 2]); // the lane under the winders on −1: light from the corridor lamps
     LIGHTS.push([XM, CEILTOP - 0.05, (ST.top + B.z1) / 2]);
     for (const [x, z] of C.lights ?? []) LIGHTS.push([x, Y[2] - SLAB - 0.05, z]);
     const light = (x, y, z) => {
       let s = 0.3;
-      for (const [lx, ly, lz] of LIGHTS) s += 0.75 / (1 + ((x - lx) ** 2 + ((y - ly) * 1.2) ** 2 + (z - lz) ** 2) / 5);
+      for (const [lx, ly, lz] of [...LIGHTS, ...GLOW]) s += 0.75 / (1 + ((x - lx) ** 2 + ((y - ly) * 1.2) ** 2 + (z - lz) ** 2) / 5);
       return Math.min(1.15, s);
     };
     const bake = (geo, hex) => {
@@ -132,7 +139,10 @@ export class CoreHouse {
     }
 
     // ---- the floors: the hall (north end … the stair's top edge, a hole above every flight), the lobby's floor and its ceiling
-    for (let j = 1; j < NS; j++) slab(B.x0, B.x1, B.z0, ST.top, Y[j]);
+    for (let j = 1; j < NS; j++) {
+      if (LN && j === 1) { slab(B.x0, B.x1, B.z0, ZH, Y[1]); slab(B.x0, WL1, ZH, ST.top, Y[1]); } // (the −1 flight arrives through the hole x > WL1, z ZH … top)
+      else slab(B.x0, B.x1, B.z0, ST.top, Y[j]);
+    }
     draw(B.x0, B.x1, Y[0] - 0.05, Y[0] + 0.003, B.z0, B.z1, STAIR); // våning −1's floor (the garage leaves this rect's floor to us)
     this.floors = C.floors ?? [];
     for (const f of this.floors) { slab(...f.r, Y[f.s]); slab(...f.r, Y[f.s + 1]); }
@@ -144,6 +154,16 @@ export class CoreHouse {
     const ang = Math.atan2(SN * RISE, SN * TD), slen = Math.hypot(SN * TD, SN * RISE), thick = 0.26, down = 2 * RISE + 0.02;
     for (let k = 0; k < NS - 1; k++) {
       const yk = Y[k], tread = (n) => yk + n * RISE;
+      if (LN && k === 0) { // the −1 flight: solid treads in the east half from the foot north to the hole, a rail each side, the hole guarded on its west edge
+        for (let i = 1; i < ST.risers; i++) draw(WL1, B.x1, yk, tread(i), LN.foot - i * LT, LN.foot - (i - 1) * LT, STAIR);
+        const yl = (z) => yk + RISE * ((LN.foot - z) / LT + 0.5) + 0.9;
+        for (const xr of [B.x1 - 0.05, WL1 + 0.03]) for (let z = LN.foot - 0.05; z > ZH + 0.01; z -= 0.5) drawGeo(bar([xr, yl(z), z], [xr, yl(Math.max(ZH, z - 0.5)), Math.max(ZH, z - 0.5)], 0.02), RAIL);
+        const g = Y[1] + 0.001, xg = WL1 + 0.02;
+        draw(xg - 0.025, xg + 0.025, g + ST.guard - 0.04, g + ST.guard, ZH, ST.top + 0.02, RAIL); draw(xg - 0.02, xg + 0.02, g - 0.2, g + 0.06, ZH, ST.top + 0.02, RAIL);
+        for (let z = ZH + 0.06; z < ST.top; z += 0.125) draw(xg - 0.01, xg + 0.01, g, g + ST.guard - 0.02, z - 0.01, z + 0.01, RAIL);
+        this.walls.push({ s: [WL1, ZH, WL1, LN.foot - 0.5], y0: Y[0] - 0.5, y1: Y[1] + 1.2 }); // the flight's west side: the lane is clear of it, the guard above
+        continue;
+      }
       for (let i = 1; i <= SN; i++) {
         const za = ST.top + (i - 1) * TD, zb = za + TD, e = SN + NW + SN + 1 - i;
         draw(B.x0, WL0, tread(i) - down, tread(i), za, zb, STAIR);   // west flight: 1 … SN
@@ -177,9 +197,11 @@ export class CoreHouse {
       this.walls.push({ s: [B.x0, zr, WL1, zr], y0: y - 0.5, y1: y + 1.2 });
     }
     // våning −1: the space under the arriving flight is closed off (a wall at the hall's edge up to its soffit)
-    const soffit = Y[1] - 0.3;
-    draw(WL1, B.x1, Y[0], soffit, ST.top - 0.02, ST.top + 0.02, WALL);
-    this.walls.push({ s: [WL1, ST.top, B.x1, ST.top], y0: Y[0] - 0.5, y1: soffit });
+    if (!LN) {
+      const soffit = Y[1] - 0.3;
+      draw(WL1, B.x1, Y[0], soffit, ST.top - 0.02, ST.top + 0.02, WALL);
+      this.walls.push({ s: [WL1, ST.top, B.x1, ST.top], y0: Y[0] - 0.5, y1: soffit });
+    }
 
     // ---- the lights and the floor numbers (on the wall by the lift, clear of the flats' doors)
     for (const [x, y, z] of LIGHTS) geo.light.push(new THREE.CylinderGeometry(0.16, 0.16, 0.05, 16).translate(x, y + 0.02, z));
@@ -254,9 +276,11 @@ export class CoreHouse {
     for (const o of this.zones) if (inR(o.r, x, z)) out.push(Y[o.j]);
     for (const f of this.floors) if (inR(f.r, x, z)) out.push(Y[f.s]);
     if (!between(x, B.x0, B.x1) || z < B.z0 || z > B.z1) return out;
-    if (z <= ST.top) { for (let j = 0; j < NS; j++) out.push(Y[j]); return out; }
+    const ls = this.laneS(x, z);
+    if (ls !== null) out.push(Y[0] + this.RISE * (ls + 0.5)); // the −1 flight (#654)
+    if (z <= ST.top) { for (let j = 0; j < NS; j++) if (!(j === 1 && this.inHole(x, z))) out.push(Y[j]); return out; }
     const sv = this.stairS(x, z);
-    if (sv !== null) for (let k = 0; k < NS - 1; k++) out.push(Y[k] + this.RISE * (sv + 0.5));
+    if (sv !== null) for (let k = this.LN ? 1 : 0; k < NS - 1; k++) out.push(Y[k] + this.RISE * (sv + 0.5));
     return out;
   }
 
