@@ -10,8 +10,13 @@ import { HAND as H } from './config.js';
 // both arms round it, the hands on its sides at its `hugGrips` (right, left; the left arm is the right one mirrored); it follows the thing as it
 // swings, tips or is drunk from. Petting the cat with an empty hand, the palm strokes its head and back (#242). E on a door, a cabinet, a tap, a switch …: the arm reaches out towards it (~0.35 s)
 // with the fingers opening, and back.
+// #636: with the Spider-Man suit on (`suit`, fed by spidersuit.js) both arms show what it does: climbing a wall (both
+// hands flat on it, alternating along the way you move at the pace you move, gripping on the pull), shooting a web (the
+// right hand in the classic pose: palm up, index and little finger out, middle and ring finger folded in, kept up for
+// `HAND.suit.webHold` s after the shot) and swinging (that hand points at the anchor, the other open beside it). The left
+// arm is the mirrored frame of the hug (#269). No new meshes: one more morph target (`web`).
 // The hand is one mesh: a palm, a thumb and four fingers of three joints each (capsules, soft normals) and the bare
-// wrist, built in three poses that are its morph targets (relaxed | closed round a handle | spread for a reach).
+// wrist, built in four poses that are its morph targets (relaxed | closed round a handle | spread for a reach | the web pose).
 // The sleeve is a tapering tube from the shoulder with a cuff at the wrist. Three meshes, no shadows.
 
 const skin = new THREE.MeshStandardMaterial({ color: H.skin, roughness: 0.62, emissive: H.skinGlow, emissiveIntensity: 1 });
@@ -54,6 +59,9 @@ const POSES = {
   relaxed: { fingers: [0.22, 0.28, 0.16], spread: [-0.05, -0.01, 0.03, 0.07], thumb: { up: 0.62, in: 0.42, bend: [0.18, 0.15] } },
   grip: { fingers: [1.15, 1.45, 0.9], spread: [0, 0, 0, 0], thumb: { up: 0.28, in: 0.95, bend: [0.4, 0.55] } },
   spread: { fingers: [0.04, 0.05, 0.02], spread: [-0.17, -0.05, 0.07, 0.19], thumb: { up: 0.85, in: 0.12, bend: [0.02, 0.0] } },
+  // the web shooter's hand (#636): `fingers` per finger (index … little): index and little finger out, middle and ring finger
+  // folded into the palm, the thumb over them
+  web: { fingers: [[0.04, 0.05, 0.02], [1.2, 1.5, 0.95], [1.2, 1.5, 0.95], [0.05, 0.06, 0.02]], spread: [-0.22, 0, 0, 0.34], thumb: { up: 0.2, in: 1.0, bend: [0.5, 0.6] } },
 };
 
 const Y = new THREE.Vector3(0, 1, 0), X = new THREE.Vector3(1, 0, 0), Z = new THREE.Vector3(0, 0, 1);
@@ -86,7 +94,7 @@ function handGeometry(pose) {
   parts.push(new THREE.CylinderGeometry(0.026, 0.031, 0.1, 16, 1, true).rotateX(Math.PI / 2).scale(0.72, 1, 1).translate(0, -0.002, -0.045));
   FINGERS.forEach((f, i) => {
     const q = new THREE.Quaternion().setFromAxisAngle(X, pose.spread[i]);
-    chain(parts, new THREE.Vector3(0.002, f.y, f.z - 0.006), q, PHALANX.map((s) => s * f.l), [f.r, f.r * 0.93, f.r * 0.86], pose.fingers);
+    chain(parts, new THREE.Vector3(0.002, f.y, f.z - 0.006), q, PHALANX.map((s) => s * f.l), [f.r, f.r * 0.93, f.r * 0.86], Array.isArray(pose.fingers[0]) ? pose.fingers[i] : pose.fingers);
   });
   // the thumb: from the wrist end of the palm, turned up (+y) and in towards the palm (+x), its metacarpal included
   const t = pose.thumb;
@@ -97,9 +105,9 @@ function handGeometry(pose) {
 }
 
 function buildHand() {
-  const base = handGeometry(POSES.relaxed), grip = handGeometry(POSES.grip), spread = handGeometry(POSES.spread);
-  base.morphAttributes.position = [grip.getAttribute('position'), spread.getAttribute('position')];
-  base.morphAttributes.normal = [grip.getAttribute('normal'), spread.getAttribute('normal')];
+  const base = handGeometry(POSES.relaxed), targets = [POSES.grip, POSES.spread, POSES.web].map(handGeometry);
+  base.morphAttributes.position = targets.map((g) => g.getAttribute('position'));
+  base.morphAttributes.normal = targets.map((g) => g.getAttribute('normal'));
   base.computeBoundingSphere();
   return base;
 }
@@ -126,7 +134,7 @@ export class Hand {
     this.camera = camera;
     if (!camera.parent) scene.add(camera); // children of the camera only render in the scene
     this.hand = new THREE.Mesh(buildHand(), skin);
-    this.hand.morphTargetInfluences = [0, 0];
+    this.hand.morphTargetInfluences = [0, 0, 0];
     this.cuff = new THREE.Mesh(cuffGeometry(), sleeve);
     this.arm = new THREE.Mesh(sleeveGeometry(), sleeve); // length 1 along +z
     for (const m of [this.hand, this.arm, this.cuff]) { m.visible = false; m.castShadow = false; m.renderOrder = 1; m.raycast = () => {}; m.frustumCulled = false; camera.add(m); }
@@ -136,7 +144,7 @@ export class Hand {
     this.mirror.scale.x = -1;
     camera.add(this.mirror);
     this.left = { hand: new THREE.Mesh(this.hand.geometry, skin), arm: new THREE.Mesh(this.arm.geometry, sleeve), cuff: new THREE.Mesh(this.cuff.geometry, sleeve) };
-    this.left.hand.morphTargetInfluences = [0, 0];
+    this.left.hand.morphTargetInfluences = [0, 0, 0];
     for (const m of Object.values(this.left)) { m.visible = false; m.castShadow = false; m.renderOrder = 1; m.raycast = () => {}; m.frustumCulled = false; this.mirror.add(m); }
     this.shoulder = new THREE.Vector3(...H.shoulder);
     this.rest = new THREE.Vector3(...H.rest);
@@ -155,7 +163,13 @@ export class Hand {
       return d;
     });
     this.wet = 0;
+    // the suit's arms (#636): `suit` is fed every frame by spidersuit.js (`feedHand`), `webT` = s left of the web pose
+    this.suit = { on: false, climb: false, up: 0, side: 0, swing: null };
+    this.webT = 0; this.sMix = 0; this.cPhase = 0; this.cAmp = 0; this.cDir = new THREE.Vector2(0, 1);
   }
+
+  /** A web was shot (#636): the right hand takes the pose for HAND.suit.webHold s. */
+  webShot() { if (this.suit.on) this.webT = H.suit.webHold; }
 
   /** Rub the hands at world point `p` for `secs` s (#437): under a tap (`both` hands) or against a towel. */
   rub(p, secs, both = true) {
@@ -213,7 +227,11 @@ export class Hand {
     hand.quaternion.setFromRotationMatrix(tmpM);
     if (mode === 'palm') hand.quaternion.multiply(rollQ.setFromAxisAngle(Z, Math.PI / 2)); // the palm up, the thumb out
     else if (mode === 'pet') hand.quaternion.multiply(rollQ.setFromAxisAngle(Z, -Math.PI / 2)); // the palm down on the cat
-    const contact = (mode === 'palm' || mode === 'pet' || mode === 'hug' ? CONTACT.palm : mode === 'grip' ? CONTACT.grip : new THREE.Vector3(0.01, 0, 0.06)).clone().multiplyScalar(H.size);
+    else if (mode === 'wall') { // the palm flat on a wall (#636): the fingers up (tipped `wallTilt` rad back), the palm forward, the thumb in
+      const c = Math.cos(H.suit.wallTilt), s = Math.sin(H.suit.wallTilt);
+      hand.quaternion.setFromRotationMatrix(tmpM.makeBasis(new THREE.Vector3(0, -s, -c), new THREE.Vector3(-1, 0, 0), new THREE.Vector3(0, c, -s)));
+    }
+    const contact = (mode === 'palm' || mode === 'pet' || mode === 'hug' || mode === 'wall' ? CONTACT.palm : mode === 'grip' ? CONTACT.grip : new THREE.Vector3(0.01, 0, 0.06)).clone().multiplyScalar(H.size);
     hand.position.copy(at).sub(contact.applyQuaternion(hand.quaternion)); // the wrist
     const cuff = new THREE.Vector3(0, 0, -H.cuff * H.size).applyQuaternion(hand.quaternion).add(hand.position);
     cuffM.position.copy(cuff);
@@ -228,7 +246,7 @@ export class Hand {
   /** `item`: the held thing (or null); `pet`: a world point on the cat being petted with the empty hand (#242), or null. */
   update(dt, item, pet = null) {
     const held = item?.held && item.model?.parent === this.camera;
-    let show = false, grip = 0, spread = 0, hug = false;
+    let show = false, grip = 0, spread = 0, web = 0, hug = false, suitLeft = null;
     if (held && item.handPose === 'hug') { // both arms round it, a hand on each side (#269)
       item.model.updateMatrix();
       const [r, l] = item.hugGrips;
@@ -250,6 +268,10 @@ export class Hand {
       this.camera.updateMatrixWorld();
       this.pose(this.camera.worldToLocal(pet.clone()), 'pet');
       grip = H.petCurl;
+      show = true;
+      this.reachT = 1;
+    } else if ((suitLeft = this.suitArms(dt))) { // the Spider-Man suit (#636): climbing, shooting a web, swinging
+      ({ grip, spread, web } = suitLeft.r);
       show = true;
       this.reachT = 1;
     } else if (this.rubT > 0) { // washing / drying (#437): out from below, a quick circling rub at the point, back
@@ -285,9 +307,59 @@ export class Hand {
     const inf = this.hand.morphTargetInfluences, a = Math.min(1, dt * 14);
     inf[0] += ((show ? grip : 0) - inf[0]) * a;
     inf[1] = spread;
+    inf[2] += ((show ? web : 0) - inf[2]) * a;
     this.hand.visible = this.arm.visible = this.cuff.visible = show;
-    const lInf = this.left.hand.morphTargetInfluences;
-    lInf[0] = inf[0]; lInf[1] = inf[1];
-    for (const m of Object.values(this.left)) m.visible = hug;
+    const lInf = this.left.hand.morphTargetInfluences, L = suitLeft?.l;
+    if (L) { lInf[0] += (L.grip - lInf[0]) * a; lInf[1] = L.spread; lInf[2] += (L.web - lInf[2]) * a; }
+    else { lInf[0] = inf[0]; lInf[1] = inf[1]; lInf[2] = inf[2]; }
+    for (const m of Object.values(this.left)) m.visible = hug || !!L;
+    // on a wall / a strand the hands are drawn over it: the eyes are closer to the façade than the hands' reach (#636)
+    skin.depthTest = sleeve.depthTest = !suitLeft || suitLeft.depth;
+  }
+
+  /** The suit's arms this frame (#636): { r, l } = the right / left hand's morph influences (`l` null = no left hand), the
+   * arms posed; null when the suit does nothing now (the blend has run out). */
+  suitArms(dt) {
+    const S = H.suit, st = this.suit;
+    if (!st.on) { this.webT = 0; this.sMix = 0; return null; }
+    const webOn = this.webT > 0, swing = !!st.swing, climb = st.climb;
+    if (webOn) this.webT = Math.max(0, this.webT - dt);
+    const want = webOn || swing || climb;
+    this.sMix = Math.min(1, Math.max(0, this.sMix + (want ? 1 : -1) * dt / (!webOn && !swing ? S.climbFade : S.webEase)));
+    if (!want && this.sMix <= 0) return null;
+    const k = this.sMix * this.sMix * (3 - 2 * this.sMix); // eased, hands come up from below the view
+    // the climb's rhythm: one cycle per `climbStride` m, along the way you move (the hands alternate)
+    const speed = Math.hypot(st.up, st.side);
+    if (climb && speed > 0.05) {
+      this.cDir.set(st.side / speed, st.up / speed);
+      this.cPhase += speed / S.climbStride * Math.PI * 2 * dt;
+    }
+    this.cAmp += ((climb ? Math.min(1, speed / 0.8) : 0) - this.cAmp) * Math.min(1, dt * 10);
+    const hold = (ph, mirror) => { // (in the hand's own frame: the left one mirrored) a hand on the wall at phase `ph`: reaches along the way (loose), grips on the pull
+      const sn = Math.sin(ph), cs = Math.cos(ph), a = this.cAmp * S.climbReach;
+      const at = new THREE.Vector3(S.climbAt[0] + this.cDir.x * a * sn * (mirror ? -1 : 1), S.climbAt[1] + this.cDir.y * a * sn,
+        S.climbAt[2] + this.cAmp * 0.05 * Math.max(0, cs));
+      const grip = 1 - this.cAmp * (0.5 + 0.5 * cs);
+      return { at, grip, spread: (1 - grip) * 0.8, web: 0, mode: 'wall' };
+    };
+    let R, Lh = null;
+    if (webOn || swing) { // the web hand: at the palm spot after a shot, towards the anchor on a strand
+      let at;
+      if (swing) { // up at the anchor (kept in front of the view)
+        this.camera.updateMatrixWorld();
+        const d = this.camera.worldToLocal(st.swing.clone()).normalize();
+        at = d.multiplyScalar(S.swingReach);
+        at.x = Math.min(0.34, Math.max(-0.05, at.x)); at.y = Math.min(0.3, at.y); at.z = Math.min(-0.3, at.z);
+      } else {
+        const kick = Math.max(0, 1 - (S.webHold - this.webT) / 0.12); // a small recoil when it leaves the hand
+        at = new THREE.Vector3(...S.webAt); at.z += S.webKick * kick; at.y += S.webKick * 0.5 * kick;
+      }
+      R = { at, grip: 0, spread: 0, web: 1, mode: 'palm' };
+      if (swing) Lh = { at: at.clone().add(new THREE.Vector3(-S.swingSpread, -0.04, 0.03)), grip: 0, spread: 1, web: 0, mode: 'reach' }, Lh.at.x = -Lh.at.x; // (into the mirrored frame)
+      else if (climb) Lh = hold(this.cPhase + Math.PI, true);
+    } else { R = hold(this.cPhase, false); Lh = hold(this.cPhase + Math.PI, true); }
+    this.pose(this.low.clone().lerp(R.at, k), R.mode);
+    if (Lh) this.pose(this.low.clone().lerp(Lh.at, k), Lh.mode, this.left);
+    return { r: R, l: Lh, depth: !(climb || swing) };
   }
 }

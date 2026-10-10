@@ -369,7 +369,7 @@ jetpack.onLeftAtDoor = () => badge('🚀 Jetpacken står kvar utanför', false);
 jetpack.onRoofed = () => badge('🚀 Inte inomhus', false); // Space under the garage's ceiling (#441)
 fall.onWake.push(() => jetpack.goHome());
 // the Spider-Man suit in Walter & Kian's MALM drawer (#597): E on / off like the jetpack; climbs façades, shoots webs
-const suit = new SpiderSuit({ scene, camera, player, drawer: scene.getObjectByName('spidersuit-drawer'), button: document.getElementById('web-btn'), jump: document.getElementById('jump-btn') });
+const suit = new SpiderSuit({ scene, camera, player, drawer: scene.getObjectByName('spidersuit-drawer'), button: document.getElementById('web-btn') });
 suit.onWear = () => badge(touch.enabled ? '🕷 Dräkten på: klättra på ytterväggar, 🕸 skjuter nät, hoppknappen hoppar' : '🕷 Dräkten på: klättra på ytterväggar, klicka för nät, Mellanslag hoppar och släpper', false);
 const rest = new Rest(camera); // sitting / lying down (#71/#72)
 const saber = new Saber(scene, camera); // the lightsaber in Sovrum 2 (#78)
@@ -404,6 +404,7 @@ const sillPots = buildSillPots(scene, camera, world.sillPlants); // the pots on 
 const holdables = [saber, ...toys.items, remote, book, beer, ...things, ...sillPots]; // things you can take and hold, one at a time (holdable.js)
 const cups = buildCups(scene, camera, world, world.cupCabinet); // coffee cups in the wall cabinet (#90)
 const hand = new Hand(camera, scene); // the visitor's arm and hand: holding things, reaching for doors (#195)
+suit.hand = hand; // the Spider-Man suit's arms: climbing, shooting webs, swinging (#636)
 const petAt = new THREE.Vector3();
 holdables.push(cups.jug);
 const coffeeJar = buildCoffeeJar(scene, camera, world); // the coffee jar + scoop beside the Moccamaster: water and coffee before a pot (#334)
@@ -1587,6 +1588,8 @@ const powerBtn = document.getElementById('power-btn');
 const turnBtn = document.getElementById('turn-btn');
 turnBtn.addEventListener('click', () => turnPlacement());
 powerBtn.addEventListener('click', () => heldItem()?.useAlt?.());
+// touch: the jump button (#600, #636) = Space's press, suit or not (the suit's high jump, wall / strand let-go: player.js)
+document.getElementById('jump-btn').addEventListener('pointerdown', (e) => { e.preventDefault(); if (active()) player.jumpPress = true; });
 const stripKeys = new Set(); // keys pressed while a strip / the note is open
 const isCtrl = (code) => code === 'ControlLeft' || code === 'ControlRight';
 document.addEventListener('keydown', (e) => {
@@ -1607,7 +1610,7 @@ document.addEventListener('keydown', (e) => {
     return;
   }
   player.keys.add(e.code);
-  if (e.code === 'Space' && (jetpack.worn || suit.worn)) e.preventDefault(); // thrust (#359); let go of a wall (#597)
+  if (e.code === 'Space') e.preventDefault(); // jump (#636), thrust (#359), let go of a wall (#597): never scrolls or presses a focused button
   // crouch while held (#70): C, so crouching and walking is never Ctrl+W = close the tab (#274); Ctrl still works,
   // and while it is held the browser's other Ctrl shortcuts (save, print, bookmark …) are kept from opening
   if (isCtrl(e.code)) player.crouch = true;
@@ -1616,7 +1619,7 @@ document.addEventListener('keydown', (e) => {
   if (e.code === 'KeyE' && focused) { if (!(e.repeat && focused.kind === 'fusebox')) use(focused); } // also while sitting: what is within reach (#184); the fuse box: a fresh press (#604)
   else if (e.code === 'KeyE' && heldItem()?.useLabel) heldItem().use();
   else if (e.code === 'KeyE' && rest.active) standUp();
-  else if ((e.code === 'Space' || e.code === 'KeyC') && rest.active) { e.preventDefault(); standUp(); } // seated, C gets you up
+  else if ((e.code === 'Space' || e.code === 'KeyC') && rest.active) { e.preventDefault(); player.keys.delete(e.code); standUp(); } // seated, C gets you up (the Space that does it is no jump, #636)
   else if (e.code === 'KeyC' && !e.repeat) player.crouch = true; // (the repeats of the C that just stood you up do not crouch)
   if (e.code === 'KeyM') updateMute(toggleMuted());
   if (e.code === 'KeyT') toggleStats();
@@ -2398,7 +2401,7 @@ function onTap(el, fn) {
 }
 // reload to a fresh URL, so neither the browser's nor GitHub Pages' cache hands back the old page
 /** Where the visitor is, for a reload: place, view, mute, mode (none = still on the first start screen), the build. */
-const placeNow = () => ({ x: player.pos.x, z: player.pos.z, feetY: player.pos.y, yaw: camera.rotation.y, pitch: camera.rotation.x,
+const placeNow = () => ({ x: player.pos.x, z: player.pos.z, feetY: player.restY(), yaw: camera.rotation.y, pitch: camera.rotation.x,
   hour: day.hour, month: day.month, muted: isMuted(), fullscreen: !!document.fullscreenElement, build: BUILD,
   mode: isPhoneDevice() ? 'touch' : (activeMode ?? (touch.enabled ? 'touch' : locked ? 'mouse' : (!armEl.hidden || played) ? 'mouse' : undefined)) });
 // F5 carries on (#203): the place goes to this tab's sessionStorage every 2 s and when the page goes away

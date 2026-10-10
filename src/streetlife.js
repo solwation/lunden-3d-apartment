@@ -104,7 +104,10 @@ export function buildStreetLife({ entrances = [] } = {}) {
   group.add(new THREE.Mesh(merge(edge),new THREE.MeshStandardMaterial({color:0xbdb8ae,roughness:.85})),new THREE.Mesh(merge(grass),lawnMat));
   const frontHedge=boxwood({...S.hedge,parts:S.parts,z:(S.z0+S.z1)/2,
     gaps:entrances.map(o=>[o.x0-S.hedge.entranceMargin,o.x1+S.hedge.entranceMargin])});
-  frontHedge.position.y=S.h-.02;group.add(frontHedge);segments.push(...frontHedge.userData.segments);
+  frontHedge.position.y=S.h-.02;group.add(frontHedge);
+  // #636: its collision segments carry the hedge's top (y, 5th number): a jump over it (player.js `clears`) is not held
+  for(const sg of frontHedge.userData.segments)sg[4]=groundY((sg[0]+sg[2])/2,(sg[1]+sg[3])/2)+S.h-.02+S.hedge.height;
+  segments.push(...frontHedge.userData.segments);
   // #436: concrete edges between the car park's asphalt and the grass, and round the yard's lawns (one merged mesh)
   const E = L.edges, curbs = [], inR = (r, x, z) => x > r.x0 && x < r.x1 && z > r.z0 && z < r.z1;
   const Wst = SITE.terrain.west.stair;

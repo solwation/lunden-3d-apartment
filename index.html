@@ -355,9 +355,8 @@
     /* the Spider-Man suit's web button (#597), above the jetpack's ⬆ */
     #web-btn { position: fixed; right: calc(178px + var(--sr)); bottom: calc(220px + var(--sb)); width: 48px; height: 48px; border: 0; border-radius: 50%; background: var(--panel); font-size: 22px; touch-action: none; user-select: none; -webkit-user-select: none; }
     #web-btn[hidden] { display: none; }
-    /* its jump button (#600), left of 🕸 */
+    /* the jump button (#600, #636: always on touch, suit or not), left of 🕸 */
     #jump-btn { position: fixed; right: calc(234px + var(--sr)); bottom: calc(220px + var(--sb)); width: 48px; height: 48px; border: 0; border-radius: 50%; background: var(--panel); font-size: 22px; touch-action: none; user-select: none; -webkit-user-select: none; }
-    #jump-btn[hidden] { display: none; }
     .resume { font-size: 14px; background: #e8f2f6; border-radius: 6px; padding: 8px 10px; }
     .resume[hidden] { display: none; }
     .resume .linkish { margin: 0 0 0 6px; }
@@ -859,7 +858,7 @@
     <button id="jet-up" class="touch-only" hidden aria-label="Jetpack: upp">⬆</button>
     <button id="jet-down" class="touch-only" hidden aria-label="Jetpack: ner">⬇</button>
     <button id="web-btn" class="touch-only" hidden aria-label="Skjut nät">🕸</button>
-    <button id="jump-btn" class="touch-only" hidden aria-label="Hoppa">⤒</button>
+    <button id="jump-btn" class="touch-only" aria-label="Hoppa">⤒</button>
     <!-- #582: the top-right touch shortcuts share one segmented glass badge; on desktop it is display: contents (mute alone, bottom right) -->
     <div id="hud-top" role="group" aria-label="Snabbknappar">
       <button id="furniture-btn" class="touch-only" aria-label="Möbler och prylar av/på">🛋</button>

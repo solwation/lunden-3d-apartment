@@ -12,7 +12,12 @@
 // `life`; keep.js round trip; F home to the drawer; the `spiderman` cheat; touch: the stick climbs, 🕸 shoots.
 // #600: no fall hurts in the suit, Space jumps high (once per press), a web on the façade pulls you there onto the wall,
 // Space mid-swing lets go and the speed carries on, a web on the street pulls you there; the jump button by 🕸 jumps;
-// without the suit Space does nothing and 8 m hurts.
+// without the suit 8 m hurts.
+// #636: the arms: climbing shows both hands (they follow the direction and the tempo, grip when still), a shot web shows the
+// right hand in the web pose (the left one stays down), swinging both reach for the anchor; the suit's jump also works
+// indoors but the ceiling stops it (no one goes through the building); without the suit Space / the jump button (always on
+// touch) is a low jump (~1 m, well under the suit's) that clears the clipped entrance hedge (0.58 m) which holds a walker;
+// the jump leaves stairs, the stairwell and a reload record (`restY`) in order.
 //   node runtest.cjs http://localhost:8137/tools/spidersuittest.html
 const out = document.getElementById('out');
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -95,11 +100,20 @@ async function run() {
   check(player.climb && Math.abs(player.climb.nz - 1) < 0.1, `walked into Hus C's south façade: on the wall (normal ${player.climb && f2(player.climb.nx)}, ${player.climb && f2(player.climb.nz)})`);
   run(1, ['KeyW']);
   check(player.climb && player.pos.y > gy + SPIDER.climb * 0.8 && player.pos.z > C.z1 && !player.fall, `W 1 s: up ${f2(player.pos.y - gy)} m, still outside the façade (z ${f2(player.pos.z)})`);
+  const hand = A.hand, minf = (h) => Array.from(h.morphTargetInfluences);
+  check(hand.hand.visible && hand.left.hand.visible && hand.cPhase > 6 && hand.cDir.y > 0.9, `climbing up: both hands on the wall (phase ${f2(hand.cPhase)} rad, direction ${f2(hand.cDir.x)}, ${f2(hand.cDir.y)})`);
+  const ph0 = hand.cPhase; run(0.5, []);
+  check(player.climb && Math.abs(hand.cPhase - ph0) < 0.5 && hand.hand.visible && minf(hand.hand)[0] > 0.8 && minf(hand.left.hand)[0] > 0.8, `still on the wall: the hands rest, gripping (grip ${f2(minf(hand.hand)[0])}, ${f2(minf(hand.left.hand)[0])})`);
   const x1 = player.pos.x;
   run(1, ['KeyD']);
+  check(hand.cDir.x > 0.9 && Math.abs(hand.cPhase - ph0) > 3, `D: the hands move sideways (direction ${f2(hand.cDir.x)}, ${f2(hand.cDir.y)})`);
   check(player.climb && player.pos.x > x1 + SPIDER.side * 0.8, `D 1 s: sideways ${f2(player.pos.x - x1)} m`);
+  run(0.3, ['KeyS']);
+  check(hand.cDir.y < -0.9, `S: the hands move down (direction ${f2(hand.cDir.y)})`);
   run(2, ['KeyS']);
   check(!player.climb && Math.abs(player.pos.y - gy) < 0.05, `S: down to the ground and standing (y ${f2(player.pos.y)})`);
+  run(0.6, []);
+  check(!hand.hand.visible && !hand.left.hand.visible, 'standing again: the arms are down');
   for (let t = 0; t < 2 && !player.climb; t += dt) { player.keys = new Set(['KeyW']); step(dt); }
   run(0.6, ['KeyW']);
   const hy = player.pos.y;
@@ -120,6 +134,14 @@ async function run() {
   run(2, ['KeyW']);
   check(!player.climb, `the area's west edge: not climbable (x ${f2(player.pos.x)})`);
 
+  // (#636) a web shot into the sky (nothing to stick to): the right hand takes the web-shooter pose, the left stays down
+  place(cx, C.z1 + 30, undefined, 90, 55);
+  A.click(0);
+  for (let i = 0; i < 20; i++) step(dt);
+  const mi = minf(hand.hand);
+  check(!player.swing && hand.hand.visible && !hand.left.hand.visible && mi[2] > 0.8 && mi[0] < 0.2 && suit.shot, `a web shot at the sky: the right hand in the web pose (web ${f2(mi[2])}, grip ${f2(mi[0])}), the left down`);
+  run(HAND.suit.webHold + 0.5);
+  check(!hand.hand.visible, 'the pose goes down again after webHold');
   // (8) webs: a click shoots, a splat on Hus C's façade
   place(cx, C.z1 + 6, undefined, 0, 10);
   const r = A.click(0);
@@ -157,6 +179,14 @@ async function run() {
   check(swung && player.climb && Math.abs(player.climb.nz - 1) < 0.1 && player.pos.z - C.z1 < 0.6 && anchor && Math.abs(player.pos.y + PLAYER.eye - anchor.y) < 0.3 && !landings.length,
     `🕸 at the façade from 6 m: pulled there in ${f2(ts)} s, on the wall, the eyes ${f2(player.pos.y + PLAYER.eye - sy)} m up (z ${f2(player.pos.z - C.z1)} m off it; click '${cr}', the web at ${anchor && [anchor.x, anchor.y, anchor.z].map(f2)}, from ${[player.pos.x, player.pos.z].map(f2)})`);
   check(suit.strand.visible, 'the strand held while swinging');
+  player.letGo(); run(3);
+  place(cx, C.z1 + 8, undefined, 0, 25); landings.length = 0; A.click(0);
+  for (let i = 0; i < 20 && !player.swing; i++) step(dt);
+  for (let i = 0; i < 12; i++) step(dt);
+  check(player.swing && hand.hand.visible && hand.left.hand.visible && minf(hand.hand)[2] > 0.8, `swinging: both arms up at the anchor (right: web ${f2(minf(hand.hand)[2])})`);
+  player.letGo(); run(3);
+  place(cx, C.z1 + 6, undefined, 0, 25); landings.length = 0; A.click(0);
+  for (let ts2 = 0; ts2 < 5 && !player.climb; ts2 += dt) step(dt);
   run(0.05, ['Space']); run(4);
   check(!player.climb && Math.abs(player.pos.y - sy) < 0.05 && !landings.some((l) => l.r === 'hurt'), 'Space: off the wall, down unhurt');
   // a web on the pergola in the courtyard (held back under it): let go when getting no closer
@@ -222,20 +252,73 @@ async function run() {
   check(top - sy > 2, `the jump button: ${f2(top - sy)} m up`);
   camera.rotation.x = 0.4; for (let i = 0; i < 3; i++) step(dt);
   act.click(); step(dt);
-  check(suit.state === 'ground' && web2.hidden && jb.hidden, 'the action button laid it down; 🕸 and the jump button hidden');
-  // without the suit: Space does nothing, the drop hurts again
+  check(suit.state === 'ground' && web2.hidden && !jb.hidden && w.getComputedStyle(jb).display !== 'none' && w.getComputedStyle(web2).display === 'none', 'the action button laid it down; 🕸 hidden, the jump button stays (#636)');
+  // (#636) without the suit: the jump button / Space = the low jump (~PLAYER.jump), no web, no climbing, the drop hurts again
   place(cx, C.z1 + 8, undefined, 0, 0); landings.length = 0;
-  run(0.05, ['Space']); top = player.pos.y; for (let i = 0; i < 60; i++) { step(dt); top = Math.max(top, player.pos.y); }
-  check(top - sy < 0.01, 'no suit: Space, no jump');
-  jb.dispatchEvent(new w.PointerEvent('pointerdown', { bubbles: true, pointerType: 'touch' }));
-  for (let i = 0; i < 30; i++) step(dt);
-  check(Math.abs(player.pos.y - sy) < 0.01, 'no suit: the (hidden) jump button does nothing');
+  jb.dispatchEvent(new w.PointerEvent('pointerdown', { bubbles: true, pointerType: 'touch' })); top = player.pos.y;
+  for (let i = 0; i < 90; i++) { step(dt); top = Math.max(top, player.pos.y); }
+  const lowH = PLAYER.jump ** 2 / 19.6, highH = SPIDER.jump ** 2 / 19.6;
+  check(top - sy > lowH * 0.9 && top - sy < lowH * 1.1 && top - sy < highH / 2 && Math.abs(player.pos.y - sy) < 0.01 && !landings.some((l) => l.r), `no suit: the jump button jumps ${f2(top - sy)} m (the suit's ${f2(highH)} m), a plain landing (${JSON.stringify(landings.map((l) => l.r))})`);
+  place(cx, C.z1 + 8, undefined, 0, 0); landings.length = 0; top = player.pos.y;
+  run(0.05, ['Space']); for (let i = 0; i < 90; i++) { step(dt); top = Math.max(top, player.pos.y); }
+  check(top - sy > lowH * 0.9 && top - sy < lowH * 1.1, `no suit: Space jumps ${f2(top - sy)} m`);
+  run(0.3, ['Space']); run(1.5, ['Space']); const t3 = player.pos.y; run(0.5, ['Space']);
+  check(Math.abs(t3 - sy) < 0.01 && Math.abs(player.pos.y - sy) < 0.01, 'no suit: Space held, one jump');
+  check(A.click(0) !== 'web' && suit.webs.length === 0, 'no suit: a click shoots no web');
+  place(cx, C.z1 + 1.5, undefined, 0, 0); run(2, ['KeyW']);
+  check(!player.climb && player.pos.z > C.z1, `no suit: walking into the façade does not climb (y ${f2(player.pos.y)})`);
+  place(cx, C.z1 + 8, undefined, 0, 0); landings.length = 0;
   player.pos.y = sy + 8; player.eyeY = player.pos.y + PLAYER.eye;
   run(3);
   check(landings.some((l) => l.r === 'hurt'), 'no suit: 8 m hurts');
   for (let i = 0; i < 600 && fall.t >= 0; i++) step(dt);
   touch.enabled = false; d.body.classList.remove('touch');
+
+  // (#636) the jump over the clipped hedge and indoors, with and without the suit
+  const jumpTop = (secs = 1.5) => { const y0 = player.pos.y; let hi = y0; player.keys = new Set(['Space']); step(dt); player.keys = new Set(); for (let t = 0; t < secs; t += dt) { step(dt); hi = Math.max(hi, player.pos.y); } return hi - y0; };
+  const hedge = scene.getObjectByName('front-boxwood'), hrun = hedge.userData.runs.find((r) => r[1] - r[0] > 6), hx = (hrun[0] + hrun[1]) / 2;
+  const hz = hedge.userData.segments.flatMap((q) => [q[1], q[3]]), hz0 = Math.min(...hz), hz1 = Math.max(...hz), hTop = hedge.userData.segments[0][4];
+  check(Math.abs(hTop - 0.58) < 0.01, `the hedge's collision carries its top: ${f2(hTop)} m (SITE.life.strip.hedge ${SITE.life.strip.hedge.height} m + its bed)`);
+  check(lowH > hTop + 0.3 && lowH < highH / 2, `config: a jump of ${f2(lowH)} m clears the hedge, the suit's ${f2(highH)} m`);
   suit.goHome();
+  place(hx, hz0 - 1.0, undefined, 180, 0); run(3, ['KeyW']);
+  check(player.pos.z < hz0 && player.pos.z > hz0 - 0.3, `walking into the hedge: held at z ${f2(player.pos.z)} (the hedge starts at ${f2(hz0)})`);
+  for (const [label, worn] of [['no suit', false], ['the suit', true]]) {
+    if (worn) suit.putOn(); else suit.goHome();
+    place(hx, hz0 - 1.0, undefined, 180, 0); landings.length = 0;
+    player.keys = new Set(['KeyW']); for (let i = 0; i < 90 && player.pos.z < hz0 - 0.24; i++) step(dt); // walking at the hedge ...
+    player.keys = new Set(['KeyW', 'Space']); step(dt); player.keys = new Set(['KeyW']);                 // ... Space from touching it
+    let hiH = 0; for (let t = 0; t < 2.5; t += dt) { step(dt); hiH = Math.max(hiH, player.pos.y); }
+    check(player.pos.z > hz1 + 0.15 && !fall.active && !landings.some((l) => l.r === 'hurt'), `${label}: walking + Space from the hedge's edge: over it (z ${f2(player.pos.z)}, past ${f2(hz1)}), feet up to ${f2(hiH)} m`);
+    player.keys = new Set();
+  }
+  suit.goHome();
+  // indoors the ceiling stops the jump (the suit's high one too): the head stays under the ceiling; Entréplan and Övreplan
+  for (const [label, x, z, floor] of [['Entréplan', 4.6, 9.5, LEVELS[0].floor], ['Övreplan (Sovrum 2)', 5.05, 8.95, LEVELS[1].floor]]) {
+    for (const worn of [true, false]) {
+      if (worn) suit.putOn(); else suit.goHome();
+      place(x, z, floor, 0, 0); landings.length = 0;
+      const cap = player.ceilingAt(player.pos.x, player.pos.z, player.pos.y) - PLAYER.headroom - player.pos.y, up = jumpTop();
+      check(player.inFootprint() && up > 0.3 && up <= cap + 0.02 && up < (worn ? highH : 9) && Math.abs(player.pos.y - floor) < 0.02 && !landings.some((l) => l.r === 'hurt' || (!worn && l.r)) && !fall.active,
+        `${label}, ${worn ? 'the suit' : 'no suit'}: jump ${f2(up)} m (the ceiling allows ${f2(cap)} m), landed on the floor (${JSON.stringify(landings.map((l) => l.r))})`);
+    }
+  }
+  suit.goHome();
+  // under a lowered ceiling (Tvätt / Badrum RH 2.5): lower still
+  place(1.0, 4.0, LEVELS[0].floor, 0, 0);
+  const capL = player.ceilingAt(player.pos.x, player.pos.z, player.pos.y) - LEVELS[0].floor, upL = jumpTop();
+  check(capL < 2.55 && upL <= capL - PLAYER.headroom + 0.02, `under the soffit (ceiling ${f2(capL)} m): jump ${f2(upL)} m, the head stays under it`);
+  // on the stair: a jump lands on the tread again
+  place(4.2, 7.1, undefined, 0, 0); const sh = player.stairAt(4.2, 7.1);
+  const upS = jumpTop(); check(sh !== null && sh > 0.5 && upS > 0.3 && Math.abs(player.pos.y - player.stairAt(player.pos.x, player.pos.z)) < 0.02 && !fall.active, `on flight A: jump ${f2(upS)} m, back on the tread (${f2(player.pos.y)} m)`);
+  // a reload mid-jump keeps the ground, not the air (resume.js refuses a record in the air)
+  place(5.05, 8.95, LEVELS[1].floor, 0, 0);
+  player.keys = new Set(['Space']); step(dt); player.keys = new Set(); for (let i = 0; i < 8; i++) step(dt);
+  check(player.pos.y > LEVELS[1].floor + 0.2 && Math.abs(player.restY() - LEVELS[1].floor) < 0.02, `mid-jump (${f2(player.pos.y - LEVELS[1].floor)} m up): the record keeps the floor (${f2(player.restY())})`);
+  run(1);
+  // the stairwell / the lift: no jump
+  player.pos.set(-17.8, 0, 8.6); player.vy = 0; player.fall = null; for (let i = 0; i < 5; i++) step(dt);
+  check(player.inCore && jumpTop(0.5) < 0.01, 'in the stairwell: Space does not jump');
 
   out.textContent = lines.join('\n') + `\n${pass ? 'ALL PASS' : 'SOME FAILED'}`;
 }

@@ -51,6 +51,7 @@ Diskreta kantlinjer på väggar, dörrar och fast inredning gör hörn och rumsg
 | <kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> / piltangenter | gå |
 | Mus | titta |
 | <kbd>Shift</kbd> | spring |
+| <kbd>Mellanslag</kbd> | hoppa (lågt, klarar den klippta häcken framför L-huset; med Spindelmannendräkten mycket högre; på touch knappen ⤒) |
 | <kbd>C</kbd> | håll inne för att huka dig (sittande: res dig; <kbd>Ctrl</kbd> fungerar också) |
 | <kbd>←</kbd> <kbd>→</kbd> | vrid |
 | <kbd>E</kbd> | öppna/stäng dörren du tittar på, klappa katten, läsa lappen |

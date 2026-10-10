@@ -2371,7 +2371,16 @@ export const SECRET = {
 // isn't grey (cheap stand-in for light through skin); `cuff` = m from the wrist back to the sleeve's cuff; how far
 // the fingers close: 1 round a `grip`, `boxCurl` beside a thing without one, `palmCurl` under one carried on the palm.
 export const HAND = { skin: 0xe2b292, skinGlow: 0x2a0e06, sleeve: 0x4a5a6e, shoulder: [0.3, -0.5, 0.15], rest: [0.2, -0.26, -0.32],
-  reach: 0.4, reachTime: 0.4, size: 0.95, cuff: 0.085, boxCurl: 0.75, palmCurl: 0.2, petCurl: 0.15, hugCurl: 0.45 }; // petCurl: stroking the cat (#242); hugCurl: round Pingping (#269)
+  reach: 0.4, reachTime: 0.4, size: 0.95, cuff: 0.085, boxCurl: 0.75, palmCurl: 0.2, petCurl: 0.15, hugCurl: 0.45, // petCurl: stroking the cat (#242); hugCurl: round Pingping (#269)
+  // The Spider-Man suit's arms (#636, hand.js `suit`; all *guess*, camera space like `rest`): shooting a web = the classic
+  // pose (palm up, index and little finger out, middle and ring finger folded in, the thumb over them — the `web` pose)
+  // with the palm at `webAt` for `webHold` s after the shot, `webEase` s in and out; the strand leaves the palm (spidersuit.js).
+  // Swinging: the same hand points at the anchor, `swingReach` m from the eye, the other hand open beside it (`swingSpread`
+  // m). Climbing: both hands flat on the wall at `climbAt` (right hand; the left mirrored), reaching `climbReach` m along the
+  // way you move, one cycle per `climbStride` m climbed (hands alternate), the fingers tipped `wallTilt` rad off the vertical towards the wall.
+  suit: { webAt: [0.17, -0.1, -0.44], webHold: 0.9, webEase: 0.16, webKick: 0.04,
+    swingReach: 0.5, swingSpread: 0.22,
+    climbAt: [0.23, 0.03, -0.34], wallTilt: 0.35, climbReach: 0.16, climbStride: 1.1, climbFade: 0.25 } };
 
 // What is in the wardrobes and drawers (#228, src/stuff.js): shared colours, and per person (by room) the clothes:
 // `size` (1 adult, ~0.65 a child), garment colours, what hangs on the rod, folded colours, shoes, socks, underwear.
@@ -2597,6 +2606,12 @@ export const PLAYER = {
   mouseSens: 0.0013, // rad per pixel of mouse/touchpad movement under pointer lock (was 0.0022, too twitchy, #46)
   stepUp: 0.45,
   headroom: 1.85,
+  // The ordinary jump (#636, player.js; Space / the touch jump button, indoors and out, no suit needed): `jump` m/s up, so
+  // v² / 2g ≈ 1.08 m of feet height (*guess*, a game hop; the suit's SPIDER.jump goes 2.5 m). It must clear the clipped
+  // entrance hedge (SITE.life.strip.hedge: 0.58 m over the ground, 0.44 m deep, so a body of `radius` is held over 0.88 m
+  // of path): at the 1.6 m/s walk the feet are over the hedge for ~0.7 s ≈ 1.1 m. `hurdle` m: a low obstacle (a collision
+  // segment with a top, boxwood hedge) no longer holds once the feet are within this of its top (knees tucked, *guess*).
+  jump: 4.6, hurdle: 0.1,
 };
 // Falling (#361, src/fall.js; player.js tracks `fall`: the highest feet since leaving the ground and the deepest free
 // drop under them). A drop of more than `hurt` m hurts (the issue's 3 m): a thud + "aj", the view jolts down, red, then
@@ -2639,7 +2654,7 @@ export const SPIDER = {
   probe: 0.3, // m past the body's radius where the wall / the roof behind it is looked for (*guess*)
   drop: 0.5, // m in front of the feet where "Ta av dig dräkten" lays it (*guess*)
   web: { range: 35, life: 8, max: 4, speed: 60, size: 1.2 }, // m, s, webs at once, m/s of the strand, m across a splat (*guess*)
-  jump: 7, // m/s up off the ground outdoors with Space / the touch jump button: about v² / 2g = 2.5 m high (#600, *guess*)
+  jump: 7, // m/s up off the ground with Space / the touch jump button: about v² / 2g = 2.5 m high (#600, *guess*); indoors (#636) the ceiling stops it (player.js `ceilingAt`)
   // swinging on a web that stuck (#600): `pull` m/s² towards the anchor, `reel` m/s the strand shortens, `speed` m/s at
   // most, `gravity` the share of gravity felt on the strand (more zip than pendulum), `arrive` m from the anchor (the
   // hands) = there, `max` s at most on one strand, `stall` s getting no closer = let go, `fling` 1/s the air's drag on the

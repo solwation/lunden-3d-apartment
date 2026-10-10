@@ -12,6 +12,14 @@ src/hudicons.js        shared neutral SVG icons, pressed states and accessible l
 src/hudicons.css       neutral mobile/desktop button surfaces, focus states and no-blur fallback (#525)
 index.html             page shell, HUD, start overlay, import map (three from jsDelivr, pinned)
 src/player.js          WASD/arrow/joystick movement, circle-vs-segment collision, step-up, gravity; outdoors the terrain (`groundY`, #256);
+                       the jump (#636): Space / the touch #jump-btn (always on touch, suit or not) = a *press* (`spaceDown` / `jumpPress`) off
+                       anything you stand on, not with the jetpack, not in the stairwell / lift (`inCore`), only with room to stand; `PLAYER.jump`
+                       m/s (~1.1 m, *guess*) or with the suit `SPIDER.jump` (2.5 m); `ceilingAt(x, z, y)` stops the head under the room's
+                       ceiling (RH, `SOFFITS`, the stair's underside, a visited flat's levels, the garage's, outdoors roofs.js `above`) so
+                       nobody jumps through the building; a collision segment with a fifth number (its top y: the boxwood hedge,
+                       streetlife.js) stops holding once the feet are within `PLAYER.hurdle` of it (`clears`, `segments()` filters while in
+                       the air); the fall of a plain jump counts from where it left the ground (no thud, `fall.jump` / `low`) and
+                       `restY()` is what a reload record keeps mid-jump (resume.js refuses a record in the air);
                        `isFree` / `obstacles` / `nearestFree` / `unstick` (#314, see Input notes); up on the roofs (#360): `aloft`
                        (outdoors > ROOFS.aloft m over the ground, over our flat above UNIT_TOP − 0.3) = `outdoors`, level 0, the
                        roofs' walls instead of a level's segments, no obstacles; `groundAt` takes the highest roof ≤ feet + stepUp
@@ -48,8 +56,9 @@ src/spidersuit.js      the Spider-Man suit (#597, SPIDER, all values *guess*): o
                        `web.range`; a strand (one Line) flies out at `web.speed`, a splat (one plane) sticks on the hit face for
                        `web.life` s, at most `web.max`; sfx.thwip. `&spidersuit` = on from the start (tools/spidersuittest.html)
                        #600: with it on fall.js never hurts (a soft landing). Space / the touch jump button (#jump-btn, left of
-                       🕸, shown with the suit on) is a *press* (`player.spaceDown` / `jumpPress`): standing outdoors where it
-                       climbs it jumps at `jump` m/s; on a wall it lets go. A strand that sticks outdoors calls `player.attach`:
+                       🕸, on touch always, #636) is a *press* (`player.spaceDown` / `jumpPress`): standing it jumps at `jump` m/s (indoors
+                       too, the ceiling stops it, `player.ceilingAt`); without the suit it is the low jump `PLAYER.jump`; on a wall it
+                       lets go. A strand that sticks outdoors calls `player.attach`:
                        `player.swing` pulls you at `swing.pull` towards the anchor under `swing.gravity` of gravity, the strand
                        reeled in at `reel` (at its length the outward speed goes = the swing), at most `speed`; the walls hold
                        you (up the anchor's own façade you slide on; another façade to climb = onto it). At `arrive` m from the
@@ -114,7 +123,15 @@ src/hand.js            the visitor's arm + hand (HAND, #195, #238): three meshes
                        its box; `handCurl` overrides how far they close: the fish finger is pinched) and follow it, `handPose: 'palm'`
                        (the basketball) carries it on the palm turned up; petting the cat with a free hand (#242) the palm
                        strokes it (`cat.petHand()`, its own spare hand only while you hold something) and `player.kneel` crouches;
-                       E (main.js `use`) reaches towards the target and back with the fingers opening. The detail culler (#189) looks again whenever the held thing changes (`refresh()`)
+                       E (main.js `use`) reaches towards the target and back with the fingers opening. #636: with the Spider-Man suit on
+                       (`hand.suit`, set each frame by spidersuit.js `feedHand`; HAND.suit, all *guess*) both arms show it: climbing, both hands
+                       flat on the wall (mode 'wall': fingers up, palm forward, drawn without depth test: the eyes are closer to the façade
+                       than the hands' reach) alternate along the way you move (`cDir`, from how far you moved) at the pace you move
+                       (`climbStride` m per cycle, `cPhase`), reaching loose and gripping on the pull, resting gripped when still; a shot web
+                       (`webShot()`, `webHold` s) = the right hand in the classic web pose (4th morph target `web`: palm up, index and little
+                       finger out, middle and ring finger folded in; the strand leaves its palm, `webAt`), the left stays down; swinging
+                       that hand points at the anchor (`swingReach`) and the left one opens beside it. The left arm is the hug's mirrored
+                       frame; no new meshes or lights, one more morph target. The detail culler (#189) looks again whenever the held thing changes (`refresh()`)
 src/book.js            the book on the side table by the armchair (BOOK, #140), a Holdable: click / "Läs" opens
                        #book-panel (a spread; A D / ← → / click turn pages, E / Esc close; reading mode)
 src/things.js          bottles and glasses (#152): furniture builders list `userData.things` (wine rack, BESTÅ), each
@@ -252,7 +269,12 @@ tools/spidersuittest.html headless test (#597): the suit in the MALM drawer (no 
                        `life`), F home, the `spiderman` cheat, touch: the stick climbs, 🕸 shoots, "Ta av dig dräkten";
                        #600: an 8 m drop is soft in the suit, Space jumps high (once per press), a web on the façade pulls you up
                        to it onto the wall, one held back by the pergola lets go, Space mid-swing flies on and lands unhurt, a
-                       web on the street pulls you there; the jump button by 🕸 jumps; without the suit no jump and 8 m hurts
+                       web on the street pulls you there; the jump button by 🕸 jumps; without the suit 8 m hurts;
+                       #636: both hands climb (direction, tempo, resting grip), the web pose after a shot at the sky, both arms swinging;
+                       the jump button stays without the suit; the low jump (~1 m, plain landing) with Space and the button, no web / no
+                       climbing without the suit; the hedge holds a walker (z −3.64) and is cleared by walking + Space from its edge, with
+                       and without the suit; indoors on both levels the head stays under the ceiling (suit or not), lower under the soffit,
+                       back on the tread on flight A, `restY()` mid-jump, no jump in the stairwell
 tools/sabertest.html   headless test: take the lightsaber, swing it, hang it back
 tools/toystest.html    headless test: blaster (dart lands), wand (sparkles), flashlight (in the EL/C cabinet, beam follows the view)
 tools/powertest.html   headless test (#604): the fuse box only with its cabinet open, buzz + flicker, bang, what goes dark and what
@@ -318,6 +340,14 @@ Top-right segmented badge (#582): index.html groups furniture, stats, mute and p
 - Sprint (#43, #546): Shift, or the touch stick pushed past `PLAYER.sprintStick`, runs at `PLAYER.run` —
   both indoors and outdoors, with continuous speed through doorways. The
   stick's knob turns green while sprinting; footsteps use a longer stride. Moves are sub-stepped (5 cm).
+- Jump (#600, #636): Space / the touch ⤒ button (#jump-btn; hud icon 'jump', 48 px, safe-area placed beside 🕸, not part of the
+  suit any more: it shows on touch always). A press, not a hold. Outdoors and indoors, off the floor, a stair tread, a roof; never with
+  the jetpack (its own ⬆), in the stairwell / lift, not while kneeling to pet the cat, not without room to stand. The head stops under the ceiling
+  (`ceilingAt`), so an indoor jump is at most ~1.1 m on Entréplan (RH 3.0), 0.95 m on Övreplan (2.8), 0.65 m under the 2.5 m soffits.
+  The clipped entrance hedge is a low collision obstacle (0.58 m, `SITE.life.strip.hedge`) that the plain jump clears when walking:
+  `PLAYER.jump` 4.6 m/s is chosen so the feet stay above `top − hurdle` for ~0.7 s ≈ 1.1 m of walk against its 0.88 m of path (the
+  body's radius on both sides + its 0.44 m depth); at a sprint it is easier. Space is always `preventDefault`ed in play (it never scrolls
+  or presses a focused button) and the Space that stands you up from a seat is no jump.
 - Crouch (#70): hold Ctrl (or the 🧎 toggle on touch) → eye `PLAYER.crouchEye` 0.95 m at `crouchSpeed` (50 %),
   no sprint; you only stand up again where there is head room (`roomToStand`: not under the stair's
   upper flight). Released on blur / losing pointer lock so nobody gets stuck down.

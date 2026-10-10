@@ -8,10 +8,13 @@
 // what the crosshair hits within SPIDER.web.range m and leaves a web splat there for `life` s; at most `max` at once.
 // #600: with it on no fall hurts (fall.js); outdoors a strand that sticks pulls you to it (player.js `attach` / `swing`:
 // you swing under it, Space / the touch jump button lets go and the speed carries on, there or into a façade you hold
-// on); Space / the jump button (#jump-btn, by 🕸) jumps SPIDER.jump m/s high off the ground outdoors.
+// on); Space / the jump button (#jump-btn, by 🕸, on touch with or without the suit) jumps SPIDER.jump m/s high off the
+// ground with the suit on, indoors too where the ceiling stops it (#636, player.js; without it PLAYER.jump, ~1 m).
+// #636: the arms show what the suit does (hand.js `suit`, fed by `feedHand`): both hands climb with you, the right hand
+// takes the web-shooter pose when a web is shot and points at the anchor while you swing.
 // Draw calls: the folded suit (1–2), the strand while it flies (1), each splat (1).
 import * as THREE from 'three';
-import { SPIDER as S } from './config.js';
+import { SPIDER as S, HAND as H } from './config.js';
 import { sfx } from './audio.js';
 import { crosses } from './player.js';
 import { suitHands } from './hand.js';
@@ -61,8 +64,10 @@ const Z = new THREE.Vector3(0, 0, 1);
 
 export class SpiderSuit {
   /** `drawer` = the MALM drawer's box (Object3D named 'spidersuit-drawer'); `button` = the touch 🕸 button. */
-  constructor({ scene, camera, player, drawer, button, jump }) {
-    Object.assign(this, { scene, camera, player, drawerBox: drawer, button, jumpButton: jump, state: 'drawer' });
+  constructor({ scene, camera, player, drawer, button }) {
+    Object.assign(this, { scene, camera, player, drawerBox: drawer, button, state: 'drawer' });
+    this.hand = null; // the visitor's arms (hand.js, set by main.js): they climb, shoot and swing with you (#636)
+    this.lastPos = new THREE.Vector3(); this.climbV = { up: 0, side: 0 };
     this.drawer = drawer?.userData.door ?? null; // its Openable (open / shut)
     this.onWear = null; // (put on, main.js: a badge)
     // the folded suit: a red top with the drawing, blue under it (one box, two materials)
@@ -101,8 +106,6 @@ export class SpiderSuit {
     this.shot = null; // { from, to, t, len, hit }
     this.ray = new THREE.Raycaster();
     if (button) button.addEventListener('pointerdown', (e) => { e.preventDefault(); this.shoot(); });
-    // the touch jump button (#600): Space's press = a jump on the ground, letting go of a wall / a strand
-    if (jump) jump.addEventListener('pointerdown', (e) => { e.preventDefault(); if (this.worn) this.player.jumpPress = true; });
     this.goHome();
   }
 
@@ -131,7 +134,6 @@ export class SpiderSuit {
     this.player.suit = this;
     suitHands(true, S.colors.red, S.colors.blue);
     if (this.button) this.button.hidden = false; // (.touch-only: shown on touch only)
-    if (this.jumpButton) this.jumpButton.hidden = false;
     this.onWear?.();
   }
 
@@ -163,7 +165,6 @@ export class SpiderSuit {
     if (this.player.suit === this) { this.player.letGo(); this.player.suit = null; }
     suitHands(false);
     if (this.button) this.button.hidden = true;
-    if (this.jumpButton) this.jumpButton.hidden = true;
   }
 
   /** Shoot a web along the look direction: the strand flies out, a splat sticks where it hits (#597). */
@@ -175,7 +176,7 @@ export class SpiderSuit {
     this.ray.far = S.web.range;
     this.ray.layers.mask = cam.layers.mask;
     const hit = this.ray.intersectObjects(this.scene.children, true).find((h) => this.solid(h.object));
-    const from = new THREE.Vector3(0.18, -0.22, -0.3).applyMatrix4(cam.matrixWorld); // the right wrist
+    const from = this.palm().applyMatrix4(cam.matrixWorld); // the right palm (hand.js's web pose)
     const to = hit ? hit.point.clone() : this.ray.ray.at(S.web.range, new THREE.Vector3());
     let normal = null;
     if (hit?.face) normal = hit.face.normal.clone().transformDirection(hit.object.matrixWorld);
@@ -183,10 +184,14 @@ export class SpiderSuit {
     this.shot = { from, to, t: 0, len: from.distanceTo(to), hit: !!hit, normal: normal ?? this.ray.ray.direction.clone().negate() };
     this.strand.visible = true;
     this.strand.material.opacity = 0.9;
+    this.hand?.webShot();
     sfx.thwip?.();
     this.onShot?.();
     return hit ? to : null;
   }
+
+  /** The right palm in camera space, where the strand leaves (HAND.suit.webAt: the web pose's palm). */
+  palm() { return new THREE.Vector3(...H.suit.webAt); }
 
   /** Something a web sticks to: a drawn, solid mesh (not lines, points, sprites, see-through effects, our own webs). */
   solid(o) {
@@ -218,14 +223,32 @@ export class SpiderSuit {
     this.webs.push(w);
   }
 
+  /** What the arms do (hand.js `suit`): climbing (the speed up / sideways along the wall, from how far you moved), swinging
+   * (towards the anchor), or nothing; a web shot is `hand.webShot()`. */
+  feedHand(dt) {
+    const p = this.player, h = this.hand, c = p.climb;
+    if (!h) return;
+    const st = h.suit;
+    st.on = this.worn;
+    st.swing = this.worn && p.swing ? p.swing.a : null;
+    const v = this.climbV;
+    if (this.worn && c && dt > 0) {
+      const dx = p.pos.x - this.lastPos.x, dz = p.pos.z - this.lastPos.z;
+      v.up = (p.pos.y - this.lastPos.y) / dt; v.side = (dx * c.nz - dz * c.nx) / dt; // right of facing the wall = (nz, −nx)
+    } else v.up = v.side = 0;
+    this.lastPos.copy(p.pos);
+    st.climb = this.worn && !!c; st.up = v.up; st.side = v.side;
+  }
+
   update(dt) {
+    this.feedHand(dt);
     // the strand: out from the wrist at web.speed, then a splat where it hit, the strand fading
     const sh = this.shot;
     if (sh) {
       sh.t += dt;
       const k = Math.min(1, sh.t * S.web.speed / Math.max(sh.len, 0.01));
       const pos = this.strand.geometry.attributes.position;
-      const from = this.worn ? new THREE.Vector3(0.18, -0.22, -0.3).applyMatrix4(this.camera.matrixWorld) : sh.from;
+      const from = this.worn ? this.palm().applyMatrix4(this.camera.matrixWorld) : sh.from;
       const end = from.clone().lerp(sh.to, k);
       pos.setXYZ(0, from.x, from.y, from.z); pos.setXYZ(1, end.x, end.y, end.z); pos.needsUpdate = true;
       if (k >= 1 && !sh.stuck) { // a splat where it hit; outdoors the strand holds and pulls you there (#600)

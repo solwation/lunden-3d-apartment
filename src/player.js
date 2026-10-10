@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { LEVELS, PLAYER, STAIR, UNIT_TOP, ROOFS, GARAGE, JETPACK, SPIDER } from './config.js';
+import { LEVELS, PLAYER, STAIR, UNIT_TOP, ROOFS, GARAGE, JETPACK, SPIDER, SOFFITS } from './config.js';
 import { stairHeight, stairUnderside } from './stairs.js';
 import { groundY } from './surroundings.js';
 
@@ -65,7 +65,8 @@ export class Player {
     this.swing = null;     // on a web strand (#600): { a: anchor, nx, nz: its façade's normal (0, 0: none), len, v, t, shot }
     this.fling = null;     // after letting go of a strand (#600): { x, z } m/s kept in the air until the landing
     this.spaceDown = false; // Space held last frame (a press = a jump / letting go, #600)
-    this.jumpPress = false; // the touch jump button was pressed (#600, spidersuit.js)
+    this.jumpPress = false; // the touch jump button was pressed (#600, main.js)
+    this.onJump = null;     // (suit: boolean) the feet left the ground on a jump (#636)
   }
 
   spawn(x, z, yaw) {
@@ -179,10 +180,35 @@ export class Player {
     if (u && (!u.ground || u.levelAt(this.pos.y) > 0)) { const lv = u.levelAt(this.pos.y); return [u.fixed[lv], u.doorSegments(lv)]; }
     const lvl = this.world.levels[this.level];
     const up = this.level === 0 && this.pos.y > GARAGE.floor + 1.5 ? this.world.upperSegments ?? [] : []; // over the garage door (#357)
+    const low = this.fall ? lvl.segments.filter((s) => !this.clears(s)) : lvl.segments; // in the air over a low hedge (#636)
     const doorSegs = this.world.doors
       .filter((d) => (d.object.position.y < LEVELS[0].floor + 1.6 ? 0 : 1) === this.level)
       .map((d) => d.segment());
-    return [lvl.segments, [...doorSegs, ...up, ...(this.world.movingSegments?.(this.level) ?? [])]]; // + open furniture flaps (#118)
+    return [low, [...doorSegs, ...up, ...(this.world.movingSegments?.(this.level) ?? [])]]; // + open furniture flaps (#118)
+  }
+
+  /** The feet height to keep for a reload (resume.js): where they stand, mid-jump the ground under them (a record in the
+   * air would be refused by resumeAt and send the visitor to the start, #636). */
+  restY() { return this.fall?.jump ? this.groundAt(this.pos.x, this.pos.z, this.pos.y) : this.pos.y; }
+
+  /** Is the low obstacle `s` (a collision segment with its top y as a fifth number: the clipped entrance hedge, #636) under
+   * the feet, so it does not hold the body any more? */
+  clears(s) { return s.length > 4 && this.pos.y >= s[4] - PLAYER.hurdle; }
+
+  /** The lowest ceiling over (x, z) above the feet `y0` (#636): a roof / canopy outdoors (roofs.js), the room's ceiling
+   * (RH, a lowered soffit, the underside of the stair) in our flat, a visited flat or the garage. */
+  ceilingAt(x, z, y0) {
+    const R = this.world.roofs?.above(x, z, y0 + PLAYER.stepUp) ?? Infinity;
+    if (this.aloft) return R;
+    if (this.below) return Math.min(R, GARAGE.ceiling);
+    const u = this.unit;
+    if (u) { const L = u.levels[u.levelAt(y0)]; const s = u.stairUnderside(x, z); return Math.min(R, L.floor + L.ceiling, s !== null && s > y0 ? s : Infinity); }
+    if (!this.inFootprint(x, z)) return R;
+    const lv = y0 > LEVELS[0].floor + 1.6 ? 1 : 0, L = LEVELS[lv];
+    let c = L.floor + L.ceiling;
+    for (const f of SOFFITS) if (f.level === lv && x > f.x0 && x < f.x1 && z > f.z0 && z < f.z1) c = Math.min(c, L.floor + f.height);
+    const s = stairUnderside(x, z);
+    return Math.min(c, s !== null && s > y0 ? s : Infinity);
   }
 
   /**
@@ -509,10 +535,15 @@ export class Player {
     }
     if (wallN && this.fling) { const into = -(this.fling.x * wallN.nx + this.fling.z * wallN.nz); if (into > 0) { this.fling.x += wallN.nx * into; this.fling.z += wallN.nz * into; } }
 
-    // the high jump (#600): the suit on, outdoors where it climbs, standing on something, not with the jetpack
-    if (pressed && !jet && this.canClimb && !this.fall && this.pos.y <= this.groundAt(this.pos.x, this.pos.z, this.pos.y) + 0.02) {
-      this.vy = SPIDER.jump; this.crouched = false;
-      this.onJump?.();
+    // the jump (#600, #636): Space / the touch button, standing on something, without the jetpack, not in the stairwell / the
+    // lift and with room to stand. The suit: SPIDER.jump (2.5 m); without it PLAYER.jump (~1 m, clears the entrance hedge).
+    // The ceiling stops it (`ceilingAt`), so indoors the suit's jump is no higher than the room allows.
+    if (pressed && !jet && !this.fall && !this.inCore && !this.kneel && this.roomToStand()
+      && this.pos.y <= this.groundAt(this.pos.x, this.pos.z, this.pos.y) + 0.02) {
+      const suit = !!this.suit?.worn;
+      this.vy = suit ? SPIDER.jump : PLAYER.jump; this.crouched = false;
+      this.fall = { top: this.pos.y, gap: 0, jump: true, from: this.pos.y, low: !suit }; // (a jump is no drop: see the landing)
+      this.onJump?.(suit);
     }
 
     // gravity (and the jetpack's thrust, #359)
@@ -529,14 +560,14 @@ export class Player {
       }
       this.pos.y = Math.max(g, this.pos.y + this.vy * dt);
       if (jet || this.vy > 0) { // the ceiling, and a canopy / roof over the head on the way up (a jump too, #600)
-        const top = Math.min(jet ? JETPACK.ceiling : Infinity, (this.world.roofs?.above(this.pos.x, this.pos.z, y0 + PLAYER.stepUp) ?? Infinity) - PLAYER.headroom);
+        const top = Math.min(jet ? JETPACK.ceiling : Infinity, (jet ? this.world.roofs?.above(this.pos.x, this.pos.z, y0 + PLAYER.stepUp) ?? Infinity : this.ceilingAt(this.pos.x, this.pos.z, y0)) - PLAYER.headroom);
         if (this.pos.y > top) { this.pos.y = Math.max(Math.min(y0, top), g); this.vy = Math.min(0, this.vy); }
       }
       if (this.pos.y === g) { impact = -this.vy; this.vy = 0; }
     }
     if (this.fall && this.pos.y <= g) { // landed: with the jetpack on, as hard as the speed it came down at (a soft landing on thrust)
       const f = this.fall; this.fall = null; this.fling = null;
-      this.onLand?.(jet ? Math.max(0, impact) ** 2 / (2 * GRAVITY) : f.top - this.pos.y, f.gap);
+      this.onLand?.(jet ? Math.max(0, impact) ** 2 / (2 * GRAVITY) : f.low ? Math.max(0, f.from - this.pos.y) : f.top - this.pos.y, f.gap); // (an ordinary jump counts from where it left the ground, #636)
     }
     if (this.fling && this.pos.y <= g && this.vy <= 0) this.fling = null; // (let go standing: no sliding on)
 
