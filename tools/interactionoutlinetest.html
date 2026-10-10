@@ -28,7 +28,7 @@ try{
  const once=O.entries.every(e=>e.materials.every(m=>{
    const shader={vertexShader:T.ShaderLib.standard.vertexShader,fragmentShader:T.ShaderLib.standard.fragmentShader,uniforms:{}};
    m.onBeforeCompile(shader,A.renderer);
-   return (shader.fragmentShader.match(/uniform highp sampler2D uLampData/g)||[]).length===1;
+   return (shader.fragmentShader.match(/uniform highp sampler2D uLampData\b/g)||[]).length===1&&(shader.fragmentShader.match(/uniform highp sampler2D uLampDataV\b/g)||[]).length<=1; // (#620: ours and the visited flats' lamps are two sets, one of each at most)
  }));
  check(once,'closed entry door keeps exactly one lamp shader through repeated light scans');O.clear();
  // Real rendered pixels: subtle gain, exact restoration, ordinary occlusion and one instance.

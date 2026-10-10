@@ -31,24 +31,23 @@ function cast(segs, ox, oz, dx, dz, max) {
 }
 
 /** The GLSL added to a lit material: declarations (after <common>) and the light (after <lights_fragment_end>). */
-function chunks(n, box) {
+function chunks(n, boxes, sfx) {
   const head = /* glsl */ `
-    uniform highp sampler2D uLampData; // per lamp (x): row 0 x y z range, row 1 colour × intensity and how much shows, row 2 ray origin x z, level
-    uniform highp sampler2D uLampVis;  // per lamp (row): the distance along each of LW_RAYS rays to what stops it
-    #define LW_COUNT ${n}
-    #define LW_RAYS ${W.rays}.0
-    vec3 lampWash(vec3 viewPos, vec3 viewNormal) {
+    uniform highp sampler2D uLampData${sfx}; // per lamp (x): row 0 x y z range, row 1 colour × intensity and how much shows, row 2 ray origin x z, level, the y between its levels
+    uniform highp sampler2D uLampVis${sfx};  // per lamp (row): the distance along each of LW_RAYS rays to what stops it
+    #define LW_COUNT${sfx} ${n}
+    #define LW_RAYS${sfx} ${W.rays}.0
+    vec3 lampWash${sfx}(vec3 viewPos, vec3 viewNormal) {
       mat3 rt = transpose(mat3(viewMatrix));
       vec3 p = rt * (viewPos - viewMatrix[3].xyz), nw = rt * viewNormal;
       vec3 sum = vec3(0.0);
-      if (p.x < ${box.x0.toFixed(3)} || p.x > ${box.x1.toFixed(3)} || p.z < ${box.z0.toFixed(3)} || p.z > ${box.z1.toFixed(3)} || p.y < ${box.y0.toFixed(3)} || p.y > ${box.y1.toFixed(3)}) return sum;
-      float level = p.y > ${box.split.toFixed(3)} ? 1.0 : 0.0;
-      for (int i = 0; i < LW_COUNT; i++) {
-        vec4 b = texelFetch(uLampData, ivec2(i, 1), 0);
+      if (!(${boxes.map((box) => `(p.x > ${box.x0.toFixed(3)} && p.x < ${box.x1.toFixed(3)} && p.z > ${box.z0.toFixed(3)} && p.z < ${box.z1.toFixed(3)} && p.y > ${box.y0.toFixed(3)} && p.y < ${box.y1.toFixed(3)})`).join(' || ')})) return sum;
+      for (int i = 0; i < LW_COUNT${sfx}; i++) {
+        vec4 b = texelFetch(uLampData${sfx}, ivec2(i, 1), 0);
         if (b.w < 0.002) continue;
-        vec4 c = texelFetch(uLampData, ivec2(i, 2), 0);
-        if (abs(c.z - level) > 0.5) continue;
-        vec4 a = texelFetch(uLampData, ivec2(i, 0), 0);
+        vec4 c = texelFetch(uLampData${sfx}, ivec2(i, 2), 0);
+        if (abs(c.z - (p.y > c.w ? 1.0 : 0.0)) > 0.5) continue;
+        vec4 a = texelFetch(uLampData${sfx}, ivec2(i, 0), 0);
         vec3 d = a.xyz - p;
         float r2 = dot(d, d);
         if (r2 > a.w * a.w) continue;
@@ -56,10 +55,10 @@ function chunks(n, box) {
         if (cosT <= 0.0) continue;
         // inside the lamp's visibility polygon? (the distance along the ray towards this point, between two rays)
         vec2 o = p.xz - c.xy;
-        float t = fract(atan(o.y, o.x) / 6.2831853 + 1.0) * LW_RAYS;
-        float t0 = min(floor(t), LW_RAYS - 1.0);
-        int r0 = int(t0), r1 = int(mod(t0 + 1.0, LW_RAYS));
-        float reach = mix(texelFetch(uLampVis, ivec2(r0, i), 0).r, texelFetch(uLampVis, ivec2(r1, i), 0).r, t - t0);
+        float t = fract(atan(o.y, o.x) / 6.2831853 + 1.0) * LW_RAYS${sfx};
+        float t0 = min(floor(t), LW_RAYS${sfx} - 1.0);
+        int r0 = int(t0), r1 = int(mod(t0 + 1.0, LW_RAYS${sfx}));
+        float reach = mix(texelFetch(uLampVis${sfx}, ivec2(r0, i), 0).r, texelFetch(uLampVis${sfx}, ivec2(r1, i), 0).r, t - t0);
         if (length(o) > reach + 0.05) continue;
         float q = clamp(1.0 - pow(r / a.w, 4.0), 0.0, 1.0);
         sum += b.rgb * (b.w * cosT * q * q / max(r2, 0.01));
@@ -67,7 +66,7 @@ function chunks(n, box) {
       return sum;
     }`;
   const body = /* glsl */ `
-    reflectedLight.directDiffuse += lampWash(-vViewPosition, normal) * BRDF_Lambert(material.diffuseColor);`;
+    reflectedLight.directDiffuse += lampWash${sfx}(-vViewPosition, normal) * BRDF_Lambert(material.diffuseColor);`;
   return { head, body };
 }
 
@@ -76,21 +75,22 @@ function chunks(n, box) {
  * level }, k = how strong it is, 1 = like its pool light). Returns a LampWashes: entries[i]'s on-ness and pool share
  * are set with set(i, k, pool) and commit() (Lights.update), patch(scene) adds the light to the scene's materials.
  */
-export function buildLampWashes(scene, world, entries) {
+export function buildLampWashes(scene, world, entries, opts = {}) {
   const used = entries.filter((e) => e.k);
-  const n = Math.max(1, used.length), RAYS = W.rays;
-  const { x: SX, z: SZ } = world.size, [zN, zS] = W.facade;
+  const n = Math.max(1, used.length), RAYS = W.rays, sfx = opts.suffix ?? '';
+  const { x: SX, z: SZ } = world?.size ?? {}, [zN, zS] = W.facade;
   const levelOf = (d) => (d.object.position.y > LEVELS[0].floor + 1.6 ? 1 : 0);
   const vis = new Float32Array(n * RAYS), data = new Float32Array(n * 3 * 4);
+  const split = LEVELS[1].floor - 0.1; // (L1007's: where its two levels meet)
   const bake = (e, i) => {
     const { lamp, k } = e, level = lamp.level;
-    const segs = [...world.levels[level].wallSegments,
+    const segs = lamp.segs ?? [...world.levels[level].wallSegments, // (a lamp of a flat of its own brings its walls, in world coordinates, closed doors and its outer faces included, #620)
       // closed doors stop it; a wardrobe's sliding fronts do not (#297): they end short of the ceiling, so a lamp
       // lights the wall and ceiling above the wardrobe (a front stopping its rays left a dark, jagged box there)
       ...world.doors.filter((d) => d.kind !== 'wardrobe' && levelOf(d) === level).map((d) => d.segment()),
       [0, 0, SX, 0], [SX, 0, SX, SZ], [SX, SZ, 0, SZ], [0, SZ, 0, 0]];         // the outer faces: out through a window to its glass
     // a lamp on a window board stands in the window's niche: its rays start just inside the room
-    const ox = lamp.pos.x, oz = Math.min(Math.max(lamp.pos.z, zN + 0.05), zS - 0.05);
+    const ox = lamp.pos.x, oz = lamp.segs ? lamp.pos.z : Math.min(Math.max(lamp.pos.z, zN + 0.05), zS - 0.05);
     for (let r = 0; r < RAYS; r++) {
       const a = (r / RAYS) * Math.PI * 2;
       vis[i * RAYS + r] = cast(segs, ox, oz, Math.cos(a), Math.sin(a), lamp.range).t;
@@ -98,7 +98,7 @@ export function buildLampWashes(scene, world, entries) {
     const c = new THREE.Color(lamp.color).multiplyScalar(k * lamp.intensity); // what the pool light uploads (colour × intensity)
     data.set([lamp.pos.x, lamp.pos.y, lamp.pos.z, lamp.range], (0 * n + i) * 4);
     data.set([c.r, c.g, c.b, 0], (1 * n + i) * 4);
-    data.set([ox, oz, level, 0], (2 * n + i) * 4);
+    data.set([ox, oz, level, lamp.split ?? split], (2 * n + i) * 4);
   };
   used.forEach(bake);
   const tex = (arr, w, h, format) => {
@@ -108,21 +108,21 @@ export function buildLampWashes(scene, world, entries) {
     return t;
   };
   const top = LEVELS[1].floor + LEVELS[1].ceiling;
-  const box = { x0: -0.05, x1: SX + 0.05, z0: -0.05, z1: SZ + 0.05, y0: LEVELS[0].floor - 0.1, y1: top + 0.1, split: LEVELS[1].floor - 0.1 };
-  const wash = new LampWashes(used, n, data, tex(data, n, 3, THREE.RGBAFormat), tex(vis, RAYS, n, THREE.RedFormat), chunks(n, box));
+  const box = opts.boxes ?? [{ x0: -0.05, x1: SX + 0.05, z0: -0.05, z1: SZ + 0.05, y0: LEVELS[0].floor - 0.1, y1: top + 0.1 }];
+  const wash = new LampWashes(used, n, data, tex(data, n, 3, THREE.RGBAFormat), tex(vis, RAYS, n, THREE.RedFormat), chunks(n, box, sfx), sfx);
   wash.relocate = (lamps) => {
     used.forEach((e, i) => { if (lamps.has(e.lamp)) { bake(e, i); wash.set(i, wash.k[i], wash.pool[i]); } });
-    wash.uniforms.uLampData.value.needsUpdate = true;
-    wash.uniforms.uLampVis.value.needsUpdate = true;
+    wash.uniforms[`uLampData${sfx}`].value.needsUpdate = true;
+    wash.uniforms[`uLampVis${sfx}`].value.needsUpdate = true;
   };
   return wash;
 }
 
 /** The lamps' light: per entry k (how far on) and pool (how much its pool light shows), the textures the shaders read. */
 class LampWashes {
-  constructor(entries, n, data, dataTex, visTex, glsl) {
-    Object.assign(this, { entries, n, data, glsl, patched: new WeakSet(), dirty: false });
-    this.uniforms = { uLampData: { value: dataTex }, uLampVis: { value: visTex } };
+  constructor(entries, n, data, dataTex, visTex, glsl, sfx = '') {
+    Object.assign(this, { entries, n, data, glsl, sfx, patched: new WeakSet(), dirty: false });
+    this.uniforms = { [`uLampData${sfx}`]: { value: dataTex }, [`uLampVis${sfx}`]: { value: visTex } };
     this.k = entries.map(() => 0);
     this.pool = entries.map(() => 0);
   }
@@ -145,7 +145,7 @@ class LampWashes {
   commit() {
     if (!this.dirty) return;
     this.dirty = false;
-    this.uniforms.uLampData.value.needsUpdate = true;
+    this.uniforms[`uLampData${this.sfx}`].value.needsUpdate = true;
   }
 
   /** What lamp i shows through the shaders now (tests). */
@@ -153,7 +153,7 @@ class LampWashes {
 
   /** Give every lit material under `root` the lamps' light (once per material; a compiled one is recompiled). */
   patch(root) {
-    const { head, body } = this.glsl, uniforms = this.uniforms;
+    const { head, body } = this.glsl, uniforms = this.uniforms, sfx = this.sfx;
     root.traverse((o) => {
       if (!o.material) return;
       for (const visibleMaterial of [o.material].flat()) {
@@ -171,7 +171,7 @@ class LampWashes {
             .replace('#include <lights_fragment_end>', `#include <lights_fragment_end>\n${body}`);
         };
         const base = key === THREE.Material.prototype.customProgramCacheKey ? () => before.toString() : key; // (the default keys on onBeforeCompile's source: now ours)
-        m.customProgramCacheKey = function () { return `${base.call(this)}|lampwash`; };
+        m.customProgramCacheKey = function () { return `${base.call(this)}|lampwash${sfx}`; };
         m.needsUpdate = true;
       }
     });

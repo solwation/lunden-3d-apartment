@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Visited flats' lamps (#620)</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+// The empty flats you can walk into (L1004, L1201) have lamps (#620, src/visitlights.js): a ceiling lamp in every room and a
+// switch by the room's door. Every room of both flats has a switch with a wall right behind it; E on a switch (the game's own
+// `use`) lights the room's fitting (its emissive vertices) and its shader wash, E again puts it out; nothing is lit on a new
+// visit; the lamps add no light object (the pool, the one shadow-casting sun) and none of L1007's wash lists; a power cut
+// (#604) puts them out while the switch keeps its position, the mend brings them back; a lit lamp really lights its room
+// (the frame's mean brightness rises) at night and a switched-off one does not.
+//   google-chrome --headless=new --use-angle=swiftshader --enable-unsafe-swiftshader --virtual-time-budget=120000 --dump-dom http://localhost:8137/tools/visitlightstest.html
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const lines = []; let pass = true;
+const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); pass &&= !!ok; out.textContent = `running…\n${lines.join('\n')}`; return ok; };
+const load = (q = '') => new Promise((resolve) => {
+  const f = document.createElement('iframe'); f.width = 480; f.height = 300; f.src = `../index.html?shot&time=22&month=10&weather=clear&quality=0${q}`;
+  document.body.append(f);
+  f.onload = async () => { while (!f.contentWindow.__app) await wait(100); resolve(f); };
+});
+(async () => {
+  try {
+    const f = await load(), w = f.contentWindow, A = w.__app, { world, player, camera, step, visitLights: V, lights, power } = A;
+    const C = await w.eval(`import('${new URL('../src/config.js', location.href).href}')`);
+    const dt = 1 / 30, run = (s) => { for (let t = 0; t < s; t += dt) step(dt); };
+    const shownOf = (room) => V.wash.shown(V.rooms.indexOf(room));
+    const litVerts = (room) => { const a = room.mesh.geometry.attributes.lampOn.array; let s = 0; for (let v = room.first; v < room.first + room.count; v++) s += a[v]; return s; };
+    for (const unit of world.units) {
+      const rooms = V.rooms.filter((r) => r.unit === unit), sw = V.switches.filter((s) => s.room.unit === unit);
+      check(rooms.length >= 9, `${unit.id}: ${rooms.length} rooms with a ceiling lamp`);
+      const names = new Set(rooms.map((r) => `${r.level}:${r.name}`));
+      const lacking = [...names].filter((n) => !sw.some((s) => s.room.list.some((r) => `${r.level}:${r.name}` === n)));
+      check(!lacking.length, `${unit.id}: every room has a switch${lacking.length ? ` (missing: ${lacking.join(', ')})` : ''}`);
+      const near = (s) => { const p = s.at, segs = unit.walls[s.room.list[0].level]; let best = 1e9; for (const [ax, az, bx, bz] of segs) { const ex = bx - ax, ez = bz - az, t = Math.max(0, Math.min(1, ((p.x - ax) * ex + (p.z - az) * ez) / (ex * ex + ez * ez || 1))); best = Math.min(best, Math.hypot(p.x - ax - ex * t, p.z - az - ez * t)); } return best; };
+      check(sw.every((s) => near(s) < 0.03), `${unit.id}: every switch sits on a wall face (${sw.map(near).reduce((m, d) => Math.max(m, d), 0).toFixed(3)} m at most${sw.filter((s) => near(s) >= 0.03).map((s) => `; off: ${s.room.list[0].level}:${s.room.list[0].name} at ${(s.at.x - unit.ox).toFixed(2)}, ${(s.at.z - unit.oz).toFixed(2)}`).join('')})`);
+      check(sw.every((s) => s.object.parent === unit.object && unit.detail.includes(s.object)), `${unit.id}: the switches are in its group (hidden with it)`);
+      check(rooms.every((r) => r.lamp.pos.y < unit.levels[r.level].floor + unit.levels[r.level].ceiling && r.lamp.pos.y > unit.levels[r.level].floor + 1.9), `${unit.id}: every lamp hangs under its ceiling, above head height`);
+    }
+    check(V.rooms.every((r) => !r.on && shownOf(r) === 0 && litVerts(r) === 0), 'nothing is lit on a new visit');
+    check(lights.wash.entries.every((e) => !V.rooms.includes(e.owner)), "L1007's own wash holds none of the flats' lamps");
+    const lightObjects = []; w.__app.scene.traverse((o) => { if (o.isLight) lightObjects.push(o); });
+    check(lightObjects.filter((o) => o.isPointLight).length === C.LIGHTING.pool + lightObjects.filter((o) => o.isPointLight && !lights.pool.includes(o)).length && !world.units.some((u) => { let l = false; u.object.traverse((o) => { if (o.isLight) l = true; }); return l; }), 'no light object of its own in a flat');
+
+    // E on a switch (the game's use): the room's lamp lights, E again puts it out; nothing is scored
+    const unit = world.units[0], sw = V.switches.find((s) => s.room.unit === unit && s.room.list[0].name === 'Vardagsrum');
+    const room = sw.room.list[0], score0 = A.totalScore?.();
+    A.use(sw); run(0.2);
+    check(room.on && shownOf(room) > 0.5 && litVerts(room) > 0, `E on the Vardagsrum switch: lit (wash ${shownOf(room).toFixed(2)}, fitting ${litVerts(room).toFixed(0)})`);
+    check(V.rooms.filter((r) => r !== room && r.unit === unit && r.name !== 'Vardagsrum').every((r) => !r.on && shownOf(r) === 0), 'the other rooms stay dark');
+    check(A.totalScore?.() === score0, 'a visited flat\'s switch scores nothing');
+    // a lit lamp really lights the room in view at night
+    const [rx, rz] = [room.lamp.pos.x, room.lamp.pos.z];
+    const look = (on) => { room.on = on; player.spawn(rx, rz + 2.0, Math.PI); player.pos.y = 0; player.eyeY = 1.62; player.vy = 0; player.fall = null; for (let i = 0; i < 5; i++) player.update(dt); camera.rotation.set(0.1, 0, 0, 'YXZ'); run(0.3); };
+    const cv = document.createElement('canvas'), c2 = cv.getContext('2d', { willReadFrequently: true });
+    const probe = () => { // the mean brightness of the frame (the whole room in view)
+      const r = A.renderer, el = r.domElement; r.render(A.scene, camera); cv.width = 16; cv.height = 10; c2.drawImage(el, 0, 0, 16, 10);
+      const d = c2.getImageData(0, 0, 16, 10).data; let s = 0; for (let i = 0; i < d.length; i += 4) s += d[i] + d[i + 1] + d[i + 2];
+      return s / (d.length / 4);
+    };
+    look(false); const dark = probe(); look(true); const bright = probe();
+    check(bright > dark + 30, `lit, the room in view is brighter (mean ${dark.toFixed(0)} → ${bright.toFixed(0)} of 765)`);
+    A.use(sw); run(0.2);
+    check(!room.on && shownOf(room) === 0 && litVerts(room) === 0, 'E again: out');
+
+    // a power cut: out, the switch keeps its position; the mend brings the lamp back
+    A.use(sw); run(0.2);
+    power.trip(); run(C.POWER.buzz + 1);
+    check(power.state === 'off' && lights.supply === 0 && room.on && shownOf(room) === 0 && litVerts(room) === 0, 'power cut: the lamp is out, the switch still says on');
+    power.restore(); run(0.3);
+    check(power.state === 'on' && room.on && shownOf(room) > 0.5 && litVerts(room) > 0, 'power back: it is lit again as it was');
+
+    // L1201 too: its upstairs room lamp
+    const u2 = world.units[1], sw2 = V.switches.find((s) => s.room.unit === u2 && s.room.list[0].level === 1);
+    A.use(sw2); run(0.2);
+    check(sw2.room.list.every((r) => r.on && shownOf(r) > 0.5), `L1201 ${sw2.room.list[0].name} (upstairs): lit`);
+    f.remove();
+    // a new visit: all out again
+    const f2 = await load(), A2 = f2.contentWindow.__app;
+    check(A2.visitLights.rooms.every((r) => !r.on), 'a reload: every lamp is out again');
+    f2.remove();
+  } catch (e) { check(false, e.stack); }
+  out.textContent = lines.join('\n') + '\n' + (pass ? 'ALL PASS' : 'SOME FAILED');
+})();
+</script></body></html>

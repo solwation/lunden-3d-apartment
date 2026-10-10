@@ -12,7 +12,7 @@ import { STANDARD } from './config.js';
 //
 // `levels`: per level { name, floor (absolute y), ceiling (RH), top (the next floor), rect (its footprint, plan
 // coordinates), hole (the opening in its floor, plan coordinates) }; `stair` = { height(x, z), underside(x, z) } in plan
-// coordinates (absolute y); `ground`: its Entréplan is on the street (L1004: its walls are level 0's, from outside too).
+// coordinates (absolute y); `soffits`: its lowered ceilings (SOFFITS' shape, plan coordinates; the lamps hang below them, #620); `ground`: its Entréplan is on the street (L1004: its walls are level 0's, from outside too).
 
 const shift = (s, ox, oz) => [s[0] + ox, s[1] + oz, s[2] + ox, s[3] + oz];
 const inRect = (r, x, z) => x > r.x0 && x < r.x1 && z > r.z0 && z < r.z1;
@@ -21,8 +21,8 @@ export class VisitUnit {
   /** { id, ox, oz, object (the group, at ox / oz), levels (above), built: buildLevel's results (plan coordinates), doors,
    *  lids (doors and the rest that open: windows, the letter box, toilet lids), roomMaps (plan coordinates), stair, ground,
    *  shell: the materials of what it shows from afar (walls, ceilings, floors, window frames) } */
-  constructor({ id, ox, oz = 0, object, levels, built, doors, lids, roomMaps, stair, ground = false, shell = [], glass = null }) {
-    Object.assign(this, { id, ox, oz, object, levels, roomMaps, stair, ground });
+  constructor({ id, ox, oz = 0, object, levels, built, doors, lids, roomMaps, stair, ground = false, shell = [], glass = null, soffits = [] }) {
+    Object.assign(this, { id, ox, oz, object, levels, roomMaps, stair, ground, soffits });
     this.top = levels.at(-1).top;
     this.bottom = levels[0].floor;
     const r0 = levels[0].rect;

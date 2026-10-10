@@ -141,7 +141,40 @@ function wallFace(segs, x, z, nx, nz, ax, az, inRoom) {
   return best;
 }
 
-class Switch {
+/**
+ * Where the room switches go (#620 shares it with the visited flats, visitlights.js): by the latch side of every interior
+ * swing door, on the room's side — [{ level, name, x, z, normal }] in the coordinates of `segsOf[level]` (wall outlines)
+ * and the doors' `opening()`; `off` = what the doors' `hinge` lacks to be in those (a flat's origin), `manual` = rooms
+ * that get their switch by hand (LIGHTING.manual: none here). `maps[level]` answers at / exact in those coordinates.
+ */
+export function switchSpots(doors, levelOf, maps, segsOf, [offX, offZ], manual = []) {
+  const out = [];
+  for (const d of doors) {
+    if (d.kind !== 'swing' || d.name === 'ytterdörren') continue;
+    const level = levelOf(d), map = maps[level];
+    const { center: [cx, cz], normal: [nx, nz] } = d.opening();
+    for (const side of [1, -1]) {
+      const name = map.at(cx + nx * side * 0.35, cz + nz * side * 0.35);
+      if (!name || manual.some((m) => m.level === level && m.room === name)) continue;
+      // on the wall past the latch end of the closed leaf, just beyond the architrave (else beside
+      // the hinge): snap onto the real wall face found in the level's wall outlines — a wall segment
+      // running along the door line, facing this room, that covers the whole switch plate (#76: the
+      // raster room map put one in the air beside a short wall stub in WC/dusch)
+      const ax = Math.sin(d.closedAngle), az = Math.cos(d.closedAngle), tw = DOOR_TRIM.width;
+      const segs = segsOf[level];
+      for (const along of [0.06, 0.05, 0.08, 0.1].map((k) => d.len + tw + k).concat([-(tw + 0.06), -(tw + 0.1)])) {
+        const lx = d.hinge[0] + offX + ax * along, lz = d.hinge[1] + offZ + az * along;
+        const face = wallFace(segs, lx, lz, nx * side, nz * side, ax, az, (px, pz) => map.exact(px, pz) === name);
+        if (face === null) continue;
+        out.push({ level, name, x: lx + nx * side * face, z: lz + nz * side * face, normal: [nx * side, nz * side] });
+        break;
+      }
+    }
+  }
+  return out;
+}
+
+export class Switch {
   constructor(room, x, y, z, [nx, nz]) {
     Object.assign(this, { room, kind: 'switch', name: 'lampan' });
     const g = new THREE.Group();
@@ -366,27 +399,8 @@ export class Lights {
 
     // switches: by the latch side of every interior swing door (room side), plus the manual ones
     const levelOf = (d) => (d.object.position.y > LEVELS[0].floor + 1.6 ? 1 : 0);
-    for (const d of world.doors) {
-      if (d.kind !== 'swing' || d.name === 'ytterdörren') continue;
-      const level = levelOf(d), map = world.roomMaps[level];
-      const { center: [cx, cz], normal: [nx, nz] } = d.opening();
-      for (const side of [1, -1]) {
-        const name = map.at(cx + nx * side * 0.35, cz + nz * side * 0.35);
-        if (!name || L.manual.some((m) => m.level === level && m.room === name)) continue;
-        // on the wall past the latch end of the closed leaf, just beyond the architrave (else beside
-        // the hinge): snap onto the real wall face found in the level's wall outlines — a wall segment
-        // running along the door line, facing this room, that covers the whole switch plate (#76: the
-        // raster room map put one in the air beside a short wall stub in WC/dusch)
-        const ax = Math.sin(d.closedAngle), az = Math.cos(d.closedAngle), tw = DOOR_TRIM.width;
-        const segs = world.levels[level].wallSegments;
-        for (const along of [0.06, 0.05, 0.08, 0.1].map((k) => d.len + tw + k).concat([-(tw + 0.06), -(tw + 0.1)])) {
-          const lx = d.hinge[0] + ax * along, lz = d.hinge[1] + az * along;
-          const face = wallFace(segs, lx, lz, nx * side, nz * side, ax, az, (px, pz) => map.exact(px, pz) === name);
-          if (face === null) continue;
-          this.addSwitch(room(level, name), lx + nx * side * face, LEVELS[level].floor + L.switchHeight, lz + nz * side * face, [nx * side, nz * side], scene);
-          break;
-        }
-      }
+    for (const sp of switchSpots(world.doors, levelOf, world.roomMaps, world.levels.map((l) => l.wallSegments), [0, 0], L.manual)) {
+      this.addSwitch(room(sp.level, sp.name), sp.x, LEVELS[sp.level].floor + L.switchHeight, sp.z, sp.normal, scene);
     }
     for (const m of L.manual) {
       this.addSwitch(room(m.level, m.room), m.x, LEVELS[m.level].floor + L.switchHeight, m.z, m.normal, scene);

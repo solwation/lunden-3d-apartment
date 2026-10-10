@@ -2931,6 +2931,32 @@ export const STANDARD = {
   detail: 12,
 };
 
+// The visitable flats' lamps (#620, src/visitlights.js): Peab's standard finish has ceiling outlets, and the brochure does
+// not say more, so this is a *guess* at "a ceiling fitting in the kitchen and the wet rooms, a lamp outlet with a bare bulb
+// on a short cord in the other rooms" (the issue's own wording). A switch by every room's door, as ours (LIGHTING.switchHeight);
+// light only through the shader wash (lampwash.js: no pool light, no shadow), the room's lamp = LIGHTING.ceiling / .spots.
+export const VISIT_LIGHTS = {
+  fittings: ['Kök / matplats', 'Badrum', 'WC/dusch', 'Tvätt'],  // a flat opal ceiling fitting here; a lamp outlet with a bulb elsewhere
+  fitting: { r: 0.15, h: 0.04 },                                 // the fitting: radius, thickness (*guess*, like our dome: 30 cm wide)
+  outlet: { rose: 0.05, roseH: 0.02, cord: 0.14, bulb: 0.035 },  // the outlet: ceiling rose radius / thickness, cord length, bulb radius (*guess*)
+  below: 0.25,                                                   // the lamp's light sits this far under the ceiling (as lights.js: dome / spots)
+  glow: { color: 0xfff2dc, intensity: 1.2 },                     // what a lit fitting / bulb shows: the same as our ceiling lamps' setGlow
+  skip: ['Uteplats'],                                            // no ceiling there
+  // switches for rooms without a door of their own: L1004 (`manualShared`) takes L1007's LIGHTING.manual too (the same sheet; an own entry for the same room replaces it); both flats' own are placed on
+  // wall faces read off its plan (src/l1201plan.js), the spots a *guess* (level, room, plan x / z, `normal` = the way the wall faces)
+  manualShared: ['L1004'],
+  manual: {
+    L1004: [{ level: 1, room: 'Allrum', x: 0.2, z: 9.2, normal: [1, 0] },   // (L1007's Allrum has its tillval door's switch; here it is open to the hall)
+      { level: 0, room: 'Vardagsrum', x: 5.55, z: 8.0, normal: [-1, 0] }],   // (instead of L1007's, whose wall along the stair is now a half wall, #627)
+    L1201: [
+      { level: 0, room: 'Hall', x: 2.0, z: 0.365, normal: [0, 1] },         // by the front door, on the street wall
+      { level: 0, room: 'Vardagsrum', x: 5.55, z: 7.5, normal: [-1, 0] },   // on the party wall
+      { level: 0, room: 'Klk', x: 1.95, z: 6.205, normal: [0, 1] },         // inside, by its door
+      { level: 1, room: 'Klk', x: 0.206, z: 4.2, normal: [1, 0] },          // inside, on the gable
+    ],
+  },
+};
+
 // What lies in the cabinets and drawers (#231, src/contents.js): living room, hall wardrobe, bathrooms, laundry.
 // Sizes of the things from their real counterparts (a DVD case 135 × 190 × 14 mm, a blu-ray 128 × 148 × 12, a
 // game case 135 × 170 × 14, the console the size of a PS5 slim lying down); the rest is a look, not measured.

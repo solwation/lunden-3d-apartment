@@ -851,7 +851,7 @@ function buildVisitFlat(plan, U, ox) {
   const levels = L.map((v, i) => ({ ...v, rect: rect(plan.floors[i]), hole: i === 1 ? (own ? P.hole : STAIR.hole) : null }));
   return new VisitUnit({ id: U.id, ox, oz, object: group, levels, built: [l0, l1], doors, lids, roomMaps, ground: !own,
     stair: own ? map : { height: stairHeight, underside: stairUnderside, halfWall },
-    shell: [SM.wall, SM.ceiling, SM.floor, SM.frame], glass: SM.glass }); // (what shows from afar: its rooms behind glass, #574)
+    soffits: own ? P.soffits : SOFFITS, shell: [SM.wall, SM.ceiling, SM.floor, SM.frame], glass: SM.glass }); // (what shows from afar: its rooms behind glass, #574)
 }
 
 export function buildWorld(plan) {

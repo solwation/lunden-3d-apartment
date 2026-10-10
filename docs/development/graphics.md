@@ -18,6 +18,17 @@ src/neighborglass.js   opaque MeshPhysicalMaterial for unmodeled neighboring int
                        actual ABC pane visibility/bounds and night routines; eastbackdroptest retains source geometry.
                        NEIGHBOR_OPENINGS centralizes visual assumptions; reflection is a generic outdoor impression,
                        not a surveyed or live reflection of surrounding buildings. L1007's clear materials are independent.
+src/visitlights.js     lamps of the visitable empty flats (#620): a ceiling lamp per room (a flat fitting in Kök / matplats, Badrum,
+                       WC/dusch, Tvätt; a lamp outlet with a bare bulb on a cord elsewhere — VISIT_LIGHTS, *guess*, the brochure
+                       says nothing), a switch by each room's door (lights.js `switchSpots` + `Switch`, `VISIT_LIGHTS.manual` /
+                       `manualShared` for door-less rooms), all off at every visit, nothing saved, no score. The light is ONLY a
+                       second lamp wash (lampwash.js `buildLampWashes(…, { suffix: 'V', boxes })`: shader names, uniforms and
+                       the cache key carry the suffix, so one material can carry L1007's set and this one; each lamp brings
+                       its own walls `segs` in world coordinates and its own level split `lamp.split`, and the flats' boxes are
+                       tested first): no pool light, no new shadow light. The fittings of a flat are ONE merged mesh whose lit
+                       state is a per-vertex `lampOn` added to the emissive colour; the switches live in the flat's group and
+                       `unit.detail`. `lights.supply` scales it all (#604). tools/visitlightstest.html: switches on wall faces, E,
+                       wash and fitting on/off, a real brightness change, power cut and mend, no light objects, a reload starts dark.
 src/architectureedges.js sharp architectural edges (#474), captured before loose furniture/decor is added;
                        excludes transparent overlays, cabinet contents and explicit loose roots. One static batch per floor,
                        one per moving door/fitting/lift anchor; 30° creases, no triangle diagonals, 1 mm depth bias with depth testing.

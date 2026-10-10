@@ -68,6 +68,8 @@ Christmas tree (#571): in season +8 draw calls and ~20 k triangles where it is i
 
 Roof terraces (#605): `src/terracedecor.js` adds 3 draw calls (one merged solid, soft and bulb mesh for all eight furnished terraces) and ~31 k triangles where Hus L's courtyard side is in view, nothing from the street side (the gate puts them on layer 7 north of the set-back wall below the roof, and beyond `TERRACE_DECOR.far`). perfcount: park 433 → 436 calls, big hall 836 725 → ~868 k triangles, still within PERF.budget; no lights, no textures, materials exist for the warm-up. `tools/terracedecortest.html` keeps a 50 k triangle budget.
 
+Visitable flats' lamps (#620): one more lamp wash (`uLampDataV`, up to 24 lamps) in the lit materials' shaders, left at once outside the two flats' boxes (a box test first), no pool light or shadow light; +1 merged fitting mesh per flat and two small meshes per switch, ~+9 draw calls of ~300 in L1004's kitchen view (measured with the lamps hidden / shown), nothing from the street side beyond the flats' windows. interactionoutlinetest allows one set of each (`uLampData` + `uLampDataV`).
+
 ## Turn-around hitches (#592)
 
 The visitor reported freezes when turning around, indoors and out, on a phone and a work PC.

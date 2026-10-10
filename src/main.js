@@ -96,6 +96,7 @@ import { heldItem } from './holdable.js';
 import { Tap, animateWater } from './water.js';
 import { CatBoard, BoardPanel, snapshot } from './catboard.js';
 import { Lights } from './lights.js';
+import { VisitLights } from './visitlights.js';
 import { setupInstall } from './install.js';
 import { Marks } from './marks.js';
 import { Breaker } from './breaking.js';
@@ -276,6 +277,7 @@ const notePaper = noteEl.querySelector('.paper');
 document.addEventListener('wheel', (e) => { if (locked && !noteEl.hidden) notePaper.scrollTop += e.deltaY * (e.deltaMode === 1 ? 40 : 1); }, { passive: true });
 
 const lights = new Lights(scene, world);
+const visitLights = new VisitLights(scene, world.units); // the visitable flats' ceiling lamps and switches (#620)
 const lookDir = new THREE.Vector3(); // (the light pool prefers lamps in front, #276)
 // every visit starts at the browser's own time and date (#95), or ?time=HH (e.g. ?time=21.5) / ?month=1–12 /
 // ?day=1–31 (with ?month alone the date is the 15th)
@@ -336,7 +338,7 @@ if (params0.has('blinds')) for (const b of blinds.list) b.set(Number(params0.get
 if (params0.has('curtains')) for (const c of blinds.curtains) c.set(Number(params0.get('curtains')) || 0); // &curtains=0…1 drawn shut (#342; not saved)
 // the small lamps switch themselves with the dusk, the ceiling lamps are by hand only (#234); &lights: everything on
 lights.forced = params0.has('lights');
-if (lights.forced) lights.setAll(true);
+if (lights.forced) { lights.setAll(true); visitLights.setAll(true); }
 lights.updateAuto(day.daylight, 0);
 // LED string lights on the patio's screen walls (#81): switched by daylight, borrow pool lights
 {
@@ -1448,7 +1450,7 @@ function use(thing) {
   else if (thing.kind === 'blind' || thing.kind === 'curtain') showBlind(thing); // a pleated blind (#273), the curtains (#342)
   else if (thing.kind === 'board') showBoard(true);
   else if (thing.kind === 'poster') showPoster(thing); // a taped-up drawing (#177)
-  else if (thing.kind === 'switch' || thing.kind === 'lamp') { thing.toggle(); if (thing.isOpen) bump('lights', 1, idOf(thing)); }
+  else if (thing.kind === 'switch' || thing.kind === 'lamp') { thing.toggle(); if (thing.isOpen && !thing.unit) bump('lights', 1, idOf(thing)); }
   else if (thing.kind === 'fridge') { thing.toggle(); if (thing.isOpen) bump('fridge', 1, idOf(thing)); }
   else if (thing.kind === 'keybox') { thing.toggle(); if (thing.isOpen) bump('cabinets', 1, idOf(thing)); }
   else if (thing.kind === 'appliance') { thing.toggle(); if (thing.isOpen) bump('appliances', 1, idOf(thing)); } // oven, microwave (#82)
@@ -1645,7 +1647,7 @@ crouchBtn.addEventListener('click', () => {
 const raycaster = new THREE.Raycaster();
 raycaster.far = 2.2;
 const pickables = [...garage.targets.map((t) => t.pickable), ...core.targets.map((t) => t.pickable), airFryer.basketTarget.pickable, airFryer.panelTarget.pickable, ...world.doors.map((d) => d.pickable), ...world.lids.map((l) => l.pickable), ...taps.map((t) => t.pickable), note.pickable, board.pickable, ...(coffeeJar ? [coffeeJar.target.pickable] : []), wallClock.pickable, calendar.pickable, ...lights.targets.map((t) => t.pickable), grill.pickable, blinds.object,
-  ...world.units.flatMap((u) => u.targets.map((t) => t.pickable))]; // a visited flat's doors, windows, lids (#574)
+  ...world.units.flatMap((u) => u.targets.map((t) => t.pickable)), ...visitLights.targets.map((t) => t.pickable)]; // a visited flat's doors, windows, lids (#574) and light switches (#620)
 const center = new THREE.Vector2(0, 0);
 const keyCabinet = world.lids.find((l) => l.kind === 'keybox');
 let focused = null, focusPoint = null;
@@ -2176,6 +2178,7 @@ function step(dt) {
   animateWater(dt);
   lights.updateAuto(day.daylight * (1 - 0.6 * weather.overcast), dt); // under rain clouds the small lamps come on earlier (#248)
   lights.update(player.aloft ? -1 : Math.max(0, player.level), player.pos, dt, camera.getWorldDirection(lookDir)); // (looking towards a lamp keeps its pool light, #276)
+  visitLights.update(lights.supply); // the visited flats' lamps: shader light only, out in a power cut (#620)
   day.dim = blinds.update(dt, { level: Math.max(0, player.level), room: player.outdoors ? null : world.roomAt(Math.max(0, player.level), player.pos.x, player.pos.z),
     outdoors: player.outdoors, daylight: day.daylight, sunDir: day.sunDir, overcast: weather.overcast, lit: (lv, name) => lights.roomLit(lv, name) }); // blinds drawn up: less daylight in the room (#273)
   if (blindPanel.open) blindPanel.render();
@@ -2595,4 +2598,4 @@ document.documentElement.classList.remove('resuming'); // the page is ready: off
 hideLoading();
 
 // handle for tests/debugging (tools/touchtest.html, tools/perfcount.html)
-window.__app = { power, olof, olofDriver, beerCans, frame, hitch, warm, christmas, plantWind, cheats, cheatNote, showCheatNote, beerShelf, hallCare, bedCare, tableSetting, watering, laundry, compass, showOverlay, resumeFromMenu, interactionOutline, eggs, isPhoneDevice, get activeMode() { return activeMode; }, set activeMode(v) { activeMode = v; }, rearrange, showTerminal, quality, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, suit, toaster, life, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS };
+window.__app = { visitLights, power, olof, olofDriver, beerCans, frame, hitch, warm, christmas, plantWind, cheats, cheatNote, showCheatNote, beerShelf, hallCare, bedCare, tableSetting, watering, laundry, compass, showOverlay, resumeFromMenu, interactionOutline, eggs, isPhoneDevice, get activeMode() { return activeMode; }, set activeMode(v) { activeMode = v; }, rearrange, showTerminal, quality, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, suit, toaster, life, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, people, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS };
