@@ -31,7 +31,8 @@ async function run() {
   await wait(50);
   const f2 = (v) => v.toFixed(2);
   const at = (x, z, feet) => { player.spawn(x, z, 0); if (feet != null) { player.pos.y = feet; player.eyeY = feet + 1.62; camera.position.y = player.eyeY; } step(1 / 60); };
-  const walkTo = (x, z, secs = 8) => { for (let i = 0; i < secs * 60 && Math.hypot(player.pos.x - x, player.pos.z - z) > 0.12; i++) { camera.rotation.set(0, Math.atan2(-(x - player.pos.x), -(z - player.pos.z)), 0, 'YXZ'); player.keys.add('KeyW'); step(1 / 60); } player.keys.delete('KeyW'); for (let i = 0; i < 20; i++) step(1 / 60); };
+  let maxDy = 0; // the biggest height change in one 1/60 s step while walking (#644: the winders must not jerk)
+  const walkTo = (x, z, secs = 8) => { for (let i = 0; i < secs * 60 && Math.hypot(player.pos.x - x, player.pos.z - z) > 0.12; i++) { camera.rotation.set(0, Math.atan2(-(x - player.pos.x), -(z - player.pos.z)), 0, 'YXZ'); player.keys.add('KeyW'); const y0 = player.pos.y; step(1 / 60); maxDy = Math.max(maxDy, Math.abs(player.pos.y - y0)); } player.keys.delete('KeyW'); for (let i = 0; i < 20; i++) step(1 / 60); };
   const near = (x, z) => Math.hypot(player.pos.x - x, player.pos.z - z) < 0.3;
   const look = (o) => { const p = o.getWorldPosition(new camera.position.constructor()); const dx = p.x - camera.position.x, dz = p.z - camera.position.z; camera.rotation.set(Math.atan2(p.y - camera.position.y, Math.hypot(dx, dz)), Math.atan2(-dx, -dz), 0, 'YXZ'); step(1 / 60); };
   const btn = d.getElementById('action');
@@ -71,7 +72,8 @@ async function run() {
 
   // ---- the stair on foot, up to våning 4
   for (let k = 1; k < 4; k++) {
-    up(k);
+    maxDy = 0; up(k);
+    check(maxDy < 0.12, `#644: the straight flights and the winders climb without a jerk (half a riser at most; biggest step ${f2(maxDy)} m per frame)`);
     check(onY(k + 1) && player.inCore && player.pos.z < TOP, `up the stair to våning ${K.labels[k + 1]} (y ${f2(player.pos.y)})`);
   }
   check(/Hus A · Trapphus · våning 4/.test(hud()), `HUD "${hud()}"`);

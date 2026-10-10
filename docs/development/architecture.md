@@ -87,7 +87,10 @@ src/corea.js           Hus A's stair core (#637, CORE_A in config; DRAWING from 
                        `world.core` stays the one object player.js / main.js / keep.js know; `houseAt` → HUD "Hus A · Trapphus · våning N" /
                        "Hiss"; `saveState` = Hus L's lift + `a` = Hus A's). A stair hall band (x −1.05 … 0.80, z 37.3 … 45.5) from
                        −1 to 4 (y −3, 0, 3, 6, 9: SITE.storey 3.0), two flights side by side from the hall's edge z 42.84 with a
-                       landing at the south end (the plan's winders, drawn as one level landing: 8 risers per flight), the lift shaft
+                       winders over the south end (#644: 16 risers of 0.1875 m per storey in one run — 4 straight treads 0.25 m deep in each flight, 7 winders round the
+                       stringer's end P = (WM, `stair.run`): a rectangle each beside the stringer and 5 fan-shaped ones, equal shares of the walls' outline;
+                       `stairS` / `stairY` = the walking line half a riser above the nosings, `heights` uses it, `prism` / `bar` build the fan's treads and the
+                       handrail that follows the wall round the corners; counts and widths *guess*), the lift shaft
                        north of it (`Lift` with a spec: car x −0.40 … 0.80, door south, 5 stops), våning 1's lobby from the courtyard
                        entrance's glazed door (hinged east, opening out into the recess; `world.core.parts[0].doors[0]`) with a fixed
                        sidelight; #643: the flats' doors (15: `CORE_A.flatDoors`, våning 1 three, 2–4 four, both side walls, z 37.35…38.2 hinged north / 40.28…41.1 hinged south,

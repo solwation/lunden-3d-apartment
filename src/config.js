@@ -1792,8 +1792,8 @@ export const LIFT_PANEL = {
 // in front of the lift). On −1 the band's west wall has the opening towards the west passage (GARAGE passageAWest, to
 // Hus A's park-level door) and its east wall the opening onto the lobby / the förråd corridor.
 // ASSUMPTION / *guess* (the sheets draw no sections or details): every height (SITE.storey 3.0 per storey, the slabs
-// 0.25, the doors 2.1 m, the guards 1.1 m), the winders (drawn as fans, modelled here as one level landing z 44.6 … 45.5
-// half way up: 8 equal risers of 0.1875 m per flight, so the flights run 0.25 m per tread), the lift car, speed and doors,
+// 0.25, the doors 2.1 m, the guards 1.1 m), the winders' count (#644: drawn as fans over the stair's south end, modelled as 7 winders after 4 straight treads
+// in each flight: 16 equal risers of 0.1875 m, the straight treads 0.25 m deep; the fan's rays are equal shares of the walls' outline), the lift car, speed and doors,
 // the entrance door's size (the plan's swing is 0.7 m; 0.85 m used: x 1.37 … 2.22, hinged east, opening out into the
 // recess) with its fixed sidelight west of it, the flats' doors' sizes and numbers (#643, `flatDoors`), the lights. #643: the plans'
 // door arcs across the hall at z 37.3 … 38.2 and 40.3 … 41.1 are NOT fire doors (the issue guessed so) but the flats' own doors
@@ -1804,7 +1804,10 @@ export const CORE_A = {
   labels: ['−1', '1', '2', '3', '4'],
   slab: 0.25, ceilingTop: 2.7,             // *guess*: the slab thickness; the top storey's clear height
   band: { x0: -1.05, x1: 0.80, z0: 37.3, z1: 45.5 },
-  stair: { top: 42.84, run: 44.6, well: [-0.19, -0.09], risers: 8, guard: 1.1 }, // flights z top … run, landing run … band.z1
+  // #644: winders. `top` = the hall's edge, `run` = z of the stringer's south end (the winders' pivot), `risers` per storey in one run
+  // (16 of 0.1875 m: the plans show the straight treads ≈ 0.25 m deep, `straight` of them in each flight, the rest winders round the
+  // pivot: 7 = a rectangle each beside the stringer + 5 fan-shaped over the south end, the plan draws ~8 rays: the counts are a *guess*)
+  stair: { top: 42.84, run: 44.6, well: [-0.19, -0.09], risers: 16, straight: 4, tread: 0.25, guard: 1.1 },
   // the lobby (våning 1; the basement's is the garage's rects): north part, the strip beside the shaft, the lift lobby
   lobby: { x0: 0.22, x1: 2.50, z0: 30.9, shaftNorth: 34.0, shaftEast: 1.13, z1: 38.9 },
   shaft: { x0: -0.40, x1: 0.80, front: 37.0, back: 34.5, door: [-0.25, 0.65], wall: 0.3 }, // front = the car's door face (the wall is 0.3 thick south of it)

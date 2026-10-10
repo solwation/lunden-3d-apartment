@@ -105,9 +105,9 @@ material/              screenshots of our choices in Peab's option portal (local
   (z 45.5) on every storey; the lift's car ~1.1 × 2.15 m with its door south; the stair two flights side by side with winders at the
   south end (≈ 0.22 m treads) from z 42.84; the entrance door in the recess's back wall swings 0.7 m outwards, hinged east, a fixed
   glazed strip west of it; the lobby east of the shaft (x 0.22 / 1.13 … 2.5) on våning 1 and −1 (the garage's `passageA*` rects); the
-  basement hall's openings west (z 41.4 … 42.75) and east (z 37.3 … 40.1). Heights (storeys 3.0, slabs 0.25), the winders as a landing,
-  the door / guard sizes, the lift's car / speed and the flats' doors are *guess*; the interior fire doors (plan z ≈ 38.2 and 41.1)
-  and the flats are not modelled.
+  basement hall's openings west (z 41.4 … 42.75) and east (z 37.3 … 40.1). Heights (storeys 3.0, slabs 0.25), the winders' count (#644: 4 straight treads + 7 winders per run),
+  the door / guard sizes, the lift's car / speed and the flats' doors are *guess*;
+  the flats behind the doors are not modelled.
   Courtyard (#80, `COURTYARD`, re-measured on the calibrated situation plan in #259 — the transform is in its
   comment): the Borggården between Hus L, C and A with stone walks (along the patios; the south walk along Hus B
   to Hus A's west façade, a little square at the edge between B and A; along Hus A's north side to the east stair;

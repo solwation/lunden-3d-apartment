@@ -22,11 +22,38 @@ const [WL0, WL1] = ST.well, WM = (WL0 + WL1) / 2;
 const A = SITE.blocks.find((b) => b.name === 'Hus A'), REC = A.recesses.find((r) => r.face === 'n' && r.door != null);
 /** The recess's back wall (the entrance door's line). */
 export const ENTRANCE_Z = A.z0 + REC.depth;
-const XM = (B.x0 + B.x1) / 2, RUN = ST.run - ST.top, TREADS = ST.risers - 1, TD = RUN / TREADS, RISE = H / 2 / ST.risers;
+const XM = (B.x0 + B.x1) / 2, RISE = H / ST.risers;
+// #644: a storey's stair = ST.risers risers up in ONE run: SN straight treads in the west flight (z top … ZW, TD deep), the winders (NW treads
+// round the stringer's south end P = (WM, ZP): a rectangle each beside the stringer, NR fan-shaped ones south of P, each an equal share of the
+// walls' perimeter from the west to the east wall), then SN straight treads back in the east flight. Tread n's top is n × RISE above the floor.
+const SN = ST.straight, TD = ST.tread, ZW = ST.top + SN * TD, ZP = ST.run, NW = ST.risers - 1 - 2 * SN, NR = NW - 2;
+const PERIM = [[B.x0, ZP], [B.x0, B.z1], [B.x1, B.z1], [B.x1, ZP]], PU = [0]; // the walls' outline round the fan, with the arc length at each corner
+for (let i = 1; i < PERIM.length; i++) PU.push(PU[i - 1] + Math.hypot(PERIM[i][0] - PERIM[i - 1][0], PERIM[i][1] - PERIM[i - 1][1]));
+const perimAt = (u) => { let i = 1; while (i < PERIM.length - 1 && u > PU[i]) i++; const t = (u - PU[i - 1]) / (PU[i] - PU[i - 1]); return [PERIM[i - 1][0] + t * (PERIM[i][0] - PERIM[i - 1][0]), PERIM[i - 1][1] + t * (PERIM[i][1] - PERIM[i - 1][1])]; };
+/** The angle round P (0 = west, π/2 = south, π = east) and the fan's rays: the boundary points on the walls' outline and their angles. */
+const phi = (x, z) => Math.atan2(z - ZP, WM - x);
+const RAYS = Array.from({ length: NR + 1 }, (_, i) => perimAt(PU[PU.length - 1] * i / NR)), PHI = RAYS.map(([x, z]) => phi(x, z));
+/** The fan sector i (1 … NR) as a convex polygon [x, z]: P, the ray's end points and the outline's corners between them. */
+const fanPoly = (i) => [[WM, ZP], RAYS[i - 1], ...PERIM.slice(1, -1).filter((c, n) => PU[n + 1] > PU[PU.length - 1] * (i - 1) / NR + 1e-6 && PU[n + 1] < PU[PU.length - 1] * i / NR - 1e-6), RAYS[i]];
+/** How far up the stair the walking line is at (x, z), in treads (0 at the hall's edge in the west flight … ST.risers − 1 in the east one), or null off the stair. */
+function stairS(x, z) {
+  if (z <= ST.top || z > B.z1 + 0.01 || x < B.x0 || x > B.x1) return null;
+  if (z <= ZW) return x < WL0 ? (z - ST.top) / TD : x > WL1 ? SN + NW + (ZW - z) / TD : null;
+  if (z < ZP) return x < WL0 ? SN + (z - ZW) / (ZP - ZW) : x > WL1 ? SN + NW - 1 + (ZP - z) / (ZP - ZW) : null;
+  const a = phi(x, z);
+  for (let i = 1; i <= NR; i++) if (a <= PHI[i] || i === NR) return SN + i + Math.min(1, Math.max(0, (a - PHI[i - 1]) / (PHI[i] - PHI[i - 1])));
+  return null;
+}
+/** The walking surface of storey k's stair at (x, z): the line half a riser above the treads' nosings, so it never sinks into a tread by more than half a riser (±9 cm). */
+const stairY = (k, x, z) => { const s = stairS(x, z); return s === null ? null : Y[k] + RISE * (s + 0.5); };
+/** A solid prism over a convex plan polygon [[x, z]] between y0 and y1. */
+const prism = (poly, y0, y1) => new THREE.ExtrudeGeometry(new THREE.Shape(poly.map(([x, z]) => new THREE.Vector2(x, -z))), { depth: y1 - y0, bevelEnabled: false }).rotateX(-Math.PI / 2).translate(0, y0, 0);
+/** A thin round bar from a to b (a handrail's segment). */
+const bar = (a, b, r) => {
+  const d = new THREE.Vector3(b[0] - a[0], b[1] - a[1], b[2] - a[2]), len = d.length();
+  return new THREE.CylinderGeometry(r, r, len, 6).applyQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), d.normalize())).translate((a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2);
+};
 const between = (v, a, b) => v > a && v < b;
-/** Flight k's walking line at z: the west flight (up from the hall edge, 1) and the east one (back to the next floor, 2). */
-const ramp1 = (k, z) => Y[k] + (z - ST.top) / RUN * (H / 2);
-const ramp2 = (k, z) => Y[k] + H / 2 + (ST.run - z) / RUN * (H / 2);
 /** våning 1's lobby as plan rectangles [x0, x1, z0, z1]: north of the shaft (from the door), beside it, in front of the lift. */
 const LOBBY = [[LB.x0, LB.x1, ENTRANCE_Z - 0.06, LB.shaftNorth], [LB.shaftEast, LB.x1, LB.shaftNorth, B.z0], [B.x1, LB.x1, B.z0, LB.z1]];
 const inRect = (r, x, z) => x > r[0] && x < r[1] && z > r[2] && z < r[3];
@@ -40,7 +67,7 @@ const flatHoles = (x) => FLATS.filter((f) => f.x === x).map((f) => ({ a0: f.z0, 
 
 // the lights baked into the colours: over the hall on every storey, under each landing, over the top landing, in the lobby
 const LIGHTS = [...Y.map((y, j) => [XM, (j < NS - 1 ? Y[j + 1] - SLAB : CEILTOP) - 0.05, (B.z0 + ST.top) / 2]),
-  ...Y.slice(0, NS - 1).map((y) => [XM, y + H / 2 - SLAB - 0.05, (ST.run + B.z1) / 2]),
+  ...Y.slice(0, NS - 1).map((y) => [XM, y + (SN + 1 + Math.floor(NW / 2) - 2) * RISE - 0.07, (ST.run + B.z1) / 2]), // (under the middle winder's underside)
   [XM, CEILTOP - 0.05, (ST.top + B.z1) / 2],
   [1.35, Y[2] - SLAB - 0.05, 32.4], [1.8, Y[2] - SLAB - 0.05, 35.6], [1.6, Y[2] - SLAB - 0.05, 38.2]];
 function light(x, y, z) {
@@ -162,25 +189,33 @@ export class CoreA {
     for (let j = 1; j < NS; j++) slab(B.x0, B.x1, B.z0, ST.top, Y[j]);
     for (const [x0, x1, z0, z1] of LOBBY) { slab(x0, x1, z0, z1, Y[1]); slab(x0, x1, z0, z1, Y[2]); }
     geo.stair.push(bake(box(B.x0, B.x1, CEILTOP, CEILTOP + 0.05, ST.top, B.z1), CEILC)); // the top storey's ceiling over the stair
-    // ---- the flights: solid steps, a sloped soffit, a handrail on the wall, balusters and a rail on the stringer side
-    const spanXs = [[B.x0, WL0], [WL1, B.x1]];
+    // ---- the flights (#644): solid treads (the straight ones in both flights, the winders round the stringer's end), a sloped soffit under
+    // each straight flight, a handrail along the wall (it follows the winders round the corners) and on the stringer side with balusters
+    const ang = Math.atan2(SN * RISE, SN * TD), slen = Math.hypot(SN * TD, SN * RISE), thick = 0.26, down = 2 * RISE + 0.02;
     for (let k = 0; k < NS - 1; k++) {
-      slab(B.x0, B.x1, ST.run, B.z1, Y[k] + H / 2); // the landing
-      const ang = Math.atan2(H / 2, RUN), slen = Math.hypot(RUN, H / 2), t = 0.26;
-      for (const f of [1, 2]) {
-        const [xa, xb] = spanXs[f - 1];
-        for (let i = 1; i <= TREADS; i++) {
-          const top = (f === 1 ? Y[k] : Y[k] + H / 2) + i * RISE;
-          const za = f === 1 ? ST.top + (i - 1) * TD : ST.run - i * TD, zb = za + TD;
-          geo.stair.push(bake(box(xa, xb, top - 2 * RISE - 0.02, top, za, zb), STAIR));
-        }
-        const my = (f === 1 ? Y[k] + H / 4 : Y[k] + H * 0.75) - RISE - (t / 2) / Math.cos(ang), mz = (ST.top + ST.run) / 2;
-        geo.stair.push(bake(new THREE.BoxGeometry(xb - xa, t, slen).rotateX(f === 1 ? -ang : ang).translate((xa + xb) / 2, my, mz), STAIR));
-        const my2 = (f === 1 ? Y[k] + H / 4 : Y[k] + H * 0.75) + 0.9;
-        for (const [xr, rr] of f === 1 ? [[B.x0 + 0.05, 0.02], [WL0 - 0.02, 0.025]] : [[WL1 + 0.02, 0.025], [B.x1 - 0.05, 0.02]])
-          geo.rail.push(bake(new THREE.CylinderGeometry(rr, rr, slen, 6).rotateX(Math.PI / 2).rotateX(f === 1 ? -ang : ang).translate(xr, my2, mz), RAIL));
+      const yk = Y[k], tread = (n) => yk + n * RISE;
+      for (let i = 1; i <= SN; i++) {
+        const za = ST.top + (i - 1) * TD, zb = za + TD;
+        geo.stair.push(bake(box(B.x0, WL0, tread(i) - down, tread(i), za, zb), STAIR),                                  // west flight: 1 … SN
+          bake(box(WL1, B.x1, tread(SN + NW + SN + 1 - i) - down, tread(SN + NW + SN + 1 - i), za, zb), STAIR));       // east flight: back down to the hall's edge
+      }
+      geo.stair.push(bake(box(B.x0, WL0, tread(SN + 1) - down, tread(SN + 1), ZW, ZP), STAIR), bake(box(WL1, B.x1, tread(SN + NW) - down, tread(SN + NW), ZW, ZP), STAIR));
+      for (let i = 1; i <= NR; i++) geo.stair.push(bake(prism(fanPoly(i), tread(SN + 1 + i) - down, tread(SN + 1 + i)), STAIR));
+      const mz = (ST.top + ZW) / 2;
+      for (const [xa, xb, s0, sgn] of [[B.x0, WL0, SN / 2, -1], [WL1, B.x1, SN + NW + SN / 2, 1]]) // the soffits
+        geo.stair.push(bake(new THREE.BoxGeometry(xb - xa, thick, slen).rotateX(sgn * ang).translate((xa + xb) / 2, yk + RISE * (s0 + 0.5) - RISE - (thick / 2) / Math.cos(ang), mz), STAIR));
+      // the handrail along the wall: from the hall's edge down the west wall, along the south wall and up the east wall
+      const wall = [[B.x0 + 0.05, ST.top + 0.01], [B.x0 + 0.05, B.z1 - 0.05], [B.x1 - 0.05, B.z1 - 0.05], [B.x1 - 0.05, ST.top + 0.01]], pts = [];
+      for (let i = 1; i < wall.length; i++) {
+        const [ax, az] = wall[i - 1], [bx, bz] = wall[i], n = Math.max(1, Math.ceil(Math.hypot(bx - ax, bz - az) / 0.3));
+        for (let m = i === 1 ? 0 : 1; m <= n; m++) { const x = ax + (bx - ax) * m / n, z = az + (bz - az) * m / n; pts.push([x, stairY(k, x, z) + 0.9, z]); }
+      }
+      for (let i = 1; i < pts.length; i++) geo.rail.push(bake(bar(pts[i - 1], pts[i], 0.02), RAIL));
+      // the stringer's two sides: a rail from the hall's edge to the stringer's end, balusters under it
+      for (const [xr, f] of [[WL0 - 0.02, 1], [WL1 + 0.02, 2]]) {
+        geo.rail.push(bake(bar([xr, stairY(k, xr, ST.top + 0.01) + 0.9, ST.top + 0.01], [xr, stairY(k, xr, ZW) + 0.9, ZW], 0.025), RAIL), bake(bar([xr, stairY(k, xr, ZW) + 0.9, ZW], [xr, stairY(k, xr, ZP - 0.01) + 0.9, ZP - 0.01], 0.025), RAIL));
         const xs = f === 1 ? WL0 - 0.03 : WL1 + 0.01;
-        for (let z = ST.top + 0.06; z < ST.run - 0.02; z += 0.2) { const yy = f === 1 ? ramp1(k, z) : ramp2(k, z); geo.rail.push(bake(box(xs, xs + 0.02, yy - 0.05, yy + 0.9, z - 0.01, z + 0.01), RAIL)); }
+        for (let z = ST.top + 0.06; z < ZP - 0.02; z += 0.2) { const yy = stairY(k, xr, z); geo.rail.push(bake(box(xs, xs + 0.02, yy - 0.05, yy + 0.9, z - 0.01, z + 0.01), RAIL)); }
       }
       this.walls.push({ s: [WM, ST.top, WM, ST.run], y0: Y[k] - 0.5, y1: Y[k + 1] + 1.2 }); // the stringer between the flights
     }
@@ -265,11 +300,8 @@ export class CoreA {
     if (LOBBY.some((r) => inRect(r, x, z))) out.push(Y[1]);
     if (!between(x, B.x0, B.x1) || z < B.z0 || z > B.z1) return out;
     if (z <= ST.top) { for (let j = 0; j < NS; j++) out.push(Y[j]); return out; }
-    for (let k = 0; k < NS - 1; k++) {
-      if (z >= ST.run) out.push(Y[k] + H / 2);
-      else if (x < WL0) out.push(ramp1(k, z));
-      else if (x > WL1) out.push(ramp2(k, z));
-    }
+    const s = stairS(x, z);
+    if (s !== null) for (let k = 0; k < NS - 1; k++) out.push(Y[k] + RISE * (s + 0.5));
     return out;
   }
 
