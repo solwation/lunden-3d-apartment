@@ -110,6 +110,14 @@ function terrainGeometry() {
   for (let x = S.backgroundGround.x0; x <= S.backgroundGround.x1; x += 4) xs.add(x);
   for (let z = z0; z <= 260; z += 4) zs.add(z);
   for (const b of T.box) { for (const x of [b.x0, b.x1]) { xs.add(x - 0.01); xs.add(x + 0.01); } for (const z of [b.z0, b.z1]) { zs.add(z - 0.01); zs.add(z + 0.01); } }
+  // #647: no ground under Hus A / Hus B (base −3, the garage's basement floors lie at the park level): the grass plane at y −3.01
+  // 1.3 cm under the basement floors drew over them as green patches (in a store room, the lower wall) — so the cells inside a
+  // footprint are left out (the recesses keep theirs: that is their floor). The grid gets a line on each footprint / recess edge.
+  const pits = S.blocks.filter((b) => b.base < 0 && /^Hus [AB]$/.test(b.name)).map((b) => ({ x0: b.x0 + 0.02, x1: b.x1 - 0.02, z0: b.z0 + 0.02, z1: b.z1 - 0.02,
+    keep: (b.recesses ?? []).map((r) => { const n = r.face === 'n' || r.face === 's', line = { n: b.z0, s: b.z1, w: b.x0, e: b.x1 }[r.face], o = r.face === 's' || r.face === 'e' ? 1 : -1, c0 = Math.min(line, line - o * r.depth), c1 = Math.max(line, line - o * r.depth);
+      return n ? { x0: r.a0, x1: r.a1, z0: c0, z1: c1 } : { x0: c0, x1: c1, z0: r.a0, z1: r.a1 }; }) }));
+  for (const f of pits) { xs.add(f.x0); xs.add(f.x1); zs.add(f.z0); zs.add(f.z1); for (const k of f.keep) { xs.add(k.x0); xs.add(k.x1); zs.add(k.z0); zs.add(k.z1); } }
+  const inPit = (x, z) => pits.some((f) => x > f.x0 && x < f.x1 && z > f.z0 && z < f.z1 && !f.keep.some((k) => x > k.x0 && x < k.x1 && z > k.z0 && z < k.z1));
   const X = [...xs].sort((a, b) => a - b), Z = [...zs].filter((z) => z >= z0).sort((a, b) => a - b);
   const pos = [], idx = [], cells=new Map();
   for (const z of Z) for (const x of X) pos.push(x, terrainY(x, z) - 0.01, z);
@@ -118,6 +126,7 @@ function terrainGeometry() {
     const a = j * nx + i, b = a + 1, c = a + nx, d = c + 1;
     const mx = (X[i] + X[i + 1]) / 2, mz = (Z[j] + Z[j + 1]) / 2;
     if (mz < T.north && mx > westEdge(mz) && mx < E.gable) continue; // world.js's flat plate
+    if (inPit(mx, mz)) continue; // under Hus A / B (see above)
     if (Math.abs(mx - T.garageDoor.x) < 0.02 && mz > T.garageDoor.z0 && mz < T.garageDoor.z1) continue; // the box edge's face: the garage door's opening (#357)
     // Refine only the river corridor, including a flat buffer outside the widest bank.
     // Boundary samples interpolate any adjacent coarse edge, so mixed cells remain watertight.

@@ -412,7 +412,7 @@ export const SITE = {
       hip: { box: { x0: -1.64, x1: 1.28, z0: 33.49, z1: 37.39, h: 1.0 } }, // roof plan on the våning 5 sheet (#348)
       corners: { nw: [3.4, 2.0], ne: [3.4, 2.0], se: [5.9, 2.05], sw: [5.9, 2.05] },
       recesses: [{ face: 'n', a0: 0.23, a1: 2.22, depth: 2.1, from: 1, to: 1, door: 1, walkIn: true }, // the main entrance from the courtyard (våning 1); a real door into the stair core (#637, CORE_A)
-        { face: 'w', a0: 41.4, a1: 43.4, depth: 1.0, from: 0, to: 0, door: 0 }] },     // towards the green, park level (våning -1)
+        { face: 'w', a0: 41.4, a1: 43.4, depth: 0.75, from: 0, to: 0, door: 0 }] },    // towards the green, park level (våning -1); #647: the door stands 4 cm behind the end wall of the basement's west passage (GARAGE passageAWest x −9.05 = −9.76 + 0.71, p46; *guess* 0.04 so no edge line shows through the wall) — the depth was 1.0 (guess), which left the door 0.29 m inside the corridor in front of its end wall
     { name: 'Hus B', x0: -41.74, x1: -22.6, z0: 33.3, z1: 57.35, base: -3, storeys: 4, roof: 'hip', // våning -1…3
       hip: { box: { x0: -33.59, x1: -30.67, z0: 38.01, z1: 41.91, h: 1.0 } }, // roof plan on the våning 4 sheet (#348)
       corners: { nw: [3.4, 2.0], ne: [3.4, 2.0], se: [5.9, 2.05], sw: [5.9, 2.05] },
