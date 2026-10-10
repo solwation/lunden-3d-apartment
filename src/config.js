@@ -1843,18 +1843,28 @@ export const CORE_A = {
   lift: { speed: 1.0, accel: 0.6, doorTime: 1.4, wait: 6, rescue: 0.25 },
 };
 
+// #653: Hus B's and Hus C's flats' doors in the halls open like Hus A's (CORE_A.flatDoors, #643): a leaf swinging into the hall (hinge at the
+// jamb the plans draw: the north doors 'n', the south doors 's' — read off the arcs of docs/peab/kalibrerad/vaning-1 / -2, as A's), an
+// entrance cell behind each that you cannot enter (the doorway stops you), the flat's number on a plate and a sign. `leaf` holes of CORE_B / CORE_C
+// carry `hinge` and `flats` (the number per stop index, null = no door there). All sizes *guess* (as A's); which number is behind which
+// door is read off the brochure's key plan (planritningsbroschyr p. 'Översiktsplaner': B våning 1: B1004 B1001 / B1003 B1002, våning 2 / 3: B1102
+// B1103 / B1101 B1104 resp. B1202 B1203 / B1201 B1204; C våning 1: C1003 C1004 / C1002 C1001 (+ C1005 in the middle), våning 2–5: C1102 C1103 /
+// C1101 C1105 (+ C1104), the same for 13xx, 14xx: north-west, north-east / south-west, south-east of the hall) — a *guess* which flat is which door.
+// C's fifth flat per storey (C1005 / C1104 …) and the plans' door positions on the upper storeys that differ from `leaf` are NOT modelled.
+const HOUSE_FLAT_DOORS = { cell: { depth: 1.3, height: 2.5 }, scale: 0.5 };
+
 // Hus B's and Hus C's stair cores (#638, #639, src/corehouse.js): the same kind of walkable stairwell + lift as Hus A's
 // (CORE_A), described as data. `walls` are thick wall runs: { ax: 'x' = a wall along z (x range `t`, z range `a`) | 'z' = along x
-// (z range `t`, x range `a`), s: [first, last] stop index, holes: [{ a: [from, to], h, s?: stops, leaf?: a closed flat door,
+// (z range `t`, x range `a`), s: [first, last] stop index, holes: [{ a: [from, to], h, s?: stops, leaf?: a flat's door (openable, #653: `hinge` 'n' | 's', `flats` the number per stop),
 // glass?: a fixed pane }] (a hole without leaf / glass is an opening) }; `floors` are the våning-1 lobby's rects [x0, x1, z0, z1]
 // (a floor on stop `s`, its ceiling under stop s + 1). DRAWING: read off the calibrated overview plans
 // docs/peab/kalibrerad/vaning-m1 … 4-300dpi.png (the #253 transform x = (px − 1909.5) × 0.042356, z = (py − 1073) × 0.042356,
 // ±0.15 m; wall faces measured by scanning the sheets along lines). ASSUMPTION / *guess*, as for CORE_A: every height
 // (SITE.storey 3.0 per storey, slab 0.25, doors 2.1 m, the entrance door 2.2 m, the guards 1.1 m), the winders' count and widths (drawn as fans: 16 equal risers of 0.1875 m per storey in one run, 4 straight
 // treads of 0.28 m in each flight and 7 winders, as CORE_A's #644), the lift cars' size, speed and doors, the entrance
-// door's size and swing (opens out into the recess, hinged at its `hinge` end), the flats' doors (drawn closed: they do not
-// open), the lights, and the walls' thickness where the plans draw a double line. NOT modelled (follow-up issues): the interior
-// fire doors across the halls, the flats behind the doors, openable flat doors (Hus A has them, #643).
+// door's size and swing (opens out into the recess, hinged at its `hinge` end), the flats' doors (#653: they open like Hus A's, see
+// HOUSE_FLAT_DOORS), the lights, and the walls' thickness where the plans draw a double line. NOT modelled (follow-up issues): the interior
+// fire doors across the halls, the flats behind the doors.
 //
 // Hus B (våning −1, 1, 2, 3 = y −3, 0, 3, 6; the entrance recess in the north face, mirrored: west of the middle): the stair hall
 // band x −33.08 … −31.16 from the lift's south wall (z 41.74) to the stair's south wall (z 50.0), the lift north of it (car
@@ -1871,19 +1881,22 @@ export const CORE_B = {
   stair: { top: 47.0, run: 49.05, well: [-32.17, -32.07], risers: 16, straight: 4, tread: 0.28, guard: 1.1 }, // as CORE_A's (#644): `run` = the stringer's south end, the winders' pivot
   car: { x0: -33.0, x1: -31.24, z0: 39.02, z1: 41.44 },                              // the car (*guess*: the plan draws the shaft 1.9 × 2.4)
   lift: { side: 's', front: 41.44, wall: 41.74, door: [-32.35, -31.3], speed: 1.0, accel: 0.6, doorTime: 1.4, wait: 6, rescue: 0.25 },
+  flatDoors: HOUSE_FLAT_DOORS,
   walls: [
     // the west wall of the hall and the shaft (x −33.38 … −33.08), with the flats' doors, the openings on −1 and into the lobby on 1
     { ax: 'x', t: [-33.38, -33.08], a: [38.34, 50.4], s: [0, 3], holes: [
       { a: [41.8, 43.4], h: 2.1, s: [0, 0] }, { a: [44.9, 45.9], h: 2.1, s: [0, 0] },   // −1: to the passages
       { a: [41.74, 42.62], h: 2.1, s: [1, 1] },                                         // 1: into the lobby
-      { a: [42.15, 43.05], h: 2.1, s: [2, 3], leaf: true }, { a: [44.75, 45.65], h: 2.1, s: [1, 3], leaf: true }] },
+      { a: [42.15, 43.05], h: 2.1, s: [2, 3], leaf: true, hinge: 'n', flats: [null, null, 'B1102', 'B1202'] },
+      { a: [44.75, 45.65], h: 2.1, s: [1, 3], leaf: true, hinge: 's', flats: [null, 'B1003', 'B1101', 'B1201'] }] },
     { ax: 'x', t: [-31.16, -30.86], a: [38.34, 50.4], s: [0, 3], holes: [
-      { a: [42.15, 43.05], h: 2.1, s: [1, 3], leaf: true }, { a: [44.75, 45.65], h: 2.1, s: [1, 3], leaf: true }] },
+      { a: [42.15, 43.05], h: 2.1, s: [1, 3], leaf: true, hinge: 'n', flats: [null, 'B1001', 'B1103', 'B1203'] },
+      { a: [44.75, 45.65], h: 2.1, s: [1, 3], leaf: true, hinge: 's', flats: [null, 'B1002', 'B1104', 'B1204'] }] },
     { ax: 'z', t: [38.34, 39.02], a: [-33.08, -31.16], s: [0, 3] },                       // the shaft's north wall
     { ax: 'z', t: [41.44, 41.74], a: [-33.08, -31.16], s: [0, 3], holes: [{ a: [-32.35, -31.3], h: 2.1 }] }, // its front wall: a doorway at every stop
     { ax: 'z', t: [50.0, 50.4], a: [-33.38, -30.86], s: [0, 3] },                         // the stair's south wall
     // våning 1's lobby: west wall (a flat's door), the entrance wall (the door's opening), east wall north of the shaft, south wall
-    { ax: 'x', t: [-35.08, -34.78], a: [35.4, 43.9], s: [1, 1], holes: [{ a: [42.45, 43.35], h: 2.1, leaf: true }] },
+    { ax: 'x', t: [-35.08, -34.78], a: [35.4, 43.9], s: [1, 1], holes: [{ a: [42.45, 43.35], h: 2.1, leaf: true, hinge: 's', flats: [null, 'B1004'] }] },
     { ax: 'z', t: [35.34, 35.46], a: [-34.78, -33.38], s: [1, 1], holes: [{ a: [-34.45, -33.55], h: 2.2 }] },
     { ax: 'x', t: [-33.38, -33.08], a: [35.4, 38.34], s: [1, 1] },
     { ax: 'z', t: [43.56, 43.9], a: [-35.08, -33.38], s: [1, 1] },
@@ -1913,15 +1926,17 @@ export const CORE_C = {
   stair: { top: 27.75, run: 29.7, well: [-61.44, -61.34], risers: 16, straight: 4, tread: 0.28, guard: 1.1 },
   car: { x0: -64.98, x1: -62.90, z0: 23.45, z1: 24.8 },
   lift: { side: 'e', front: -62.9, wall: -62.34, door: [23.7, 24.75], speed: 1.0, accel: 0.6, doorTime: 1.4, wait: 6, rescue: 0.25 },
+  flatDoors: HOUSE_FLAT_DOORS,
   walls: [
-    { ax: 'x', t: [-62.64, -62.34], a: [19.82, 22.9], s: [0, 5], holes: [{ a: [20.2, 21.0], h: 2.1, s: [1, 5], leaf: true }] },  // the hall's west wall north of the lift
+    { ax: 'x', t: [-62.64, -62.34], a: [19.82, 22.9], s: [0, 5], holes: [{ a: [20.2, 21.0], h: 2.1, s: [1, 5], leaf: true, hinge: 'n', flats: [null, 'C1003', 'C1102', 'C1202', 'C1302', 'C1402'] }] },  // the hall's west wall north of the lift
     { ax: 'x', t: [-62.9, -62.34], a: [22.9, 25.3], s: [0, 5], holes: [{ a: [23.7, 24.75], h: 2.1 }] },                            // the lift's front wall: a doorway at every stop
     { ax: 'z', t: [22.9, 23.45], a: [-65.32, -62.9], s: [0, 5] }, { ax: 'z', t: [24.8, 25.3], a: [-65.32, -62.9], s: [0, 5] },   // the shaft's north and south walls
     { ax: 'x', t: [-65.32, -64.98], a: [22.9, 25.3], s: [0, 5] },                                                                    // … and west wall
-    { ax: 'x', t: [-62.64, -62.34], a: [25.3, 30.88], s: [0, 5], holes: [{ a: [25.5, 26.4], h: 2.1, s: [1, 5], leaf: true }] },  // west wall south of the lift
+    { ax: 'x', t: [-62.64, -62.34], a: [25.3, 30.88], s: [0, 5], holes: [{ a: [25.5, 26.4], h: 2.1, s: [1, 5], leaf: true, hinge: 's', flats: [null, 'C1002', 'C1101', 'C1201', 'C1301', 'C1401'] }] },  // west wall south of the lift
     { ax: 'x', t: [-60.44, -60.14], a: [19.82, 30.88], s: [0, 5], holes: [
       { a: [23.44, 24.6], h: 2.1, s: [0, 0] }, { a: [23.44, 24.92], h: 2.1, s: [1, 1] },                                     // −1: to the steel door, 1: into the lobby
-      { a: [20.2, 21.0], h: 2.1, s: [1, 5], leaf: true }, { a: [25.5, 26.4], h: 2.1, s: [1, 5], leaf: true }] },
+      { a: [20.2, 21.0], h: 2.1, s: [1, 5], leaf: true, hinge: 'n', flats: [null, 'C1004', 'C1103', 'C1203', 'C1303', 'C1403'] },
+      { a: [25.5, 26.4], h: 2.1, s: [1, 5], leaf: true, hinge: 's', flats: [null, 'C1001', 'C1105', 'C1205', 'C1305', 'C1405'] }] },
     { ax: 'z', t: [19.82, 20.12], a: [-62.64, -60.14], s: [0, 5], holes: [{ a: [-62.34, -60.44], h: 2.1, s: [0, 0] }] },       // north wall (−1: the corridor goes on)
     { ax: 'z', t: [30.54, 30.88], a: [-62.64, -60.14], s: [0, 5], holes: [{ a: [-62.34, -60.44], h: 2.4, s: [0, 0] }] },       // the stair's south wall (−1: the way through to the steel door, #654)
     // våning 1's lobby

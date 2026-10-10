@@ -118,6 +118,22 @@ async function run() {
   check(player.pos.x > B.x0 - 0.05, `the hall's west wall holds on våning 2 (x ${f2(player.pos.x)})`);
   const leaf = K.walls.flatMap((wl) => (wl.ax === 'x' ? (wl.holes ?? []).filter((h) => h.leaf && (h.s?.[0] ?? wl.s[0]) <= 2 && (h.s?.[1] ?? wl.s[1]) >= 2).map((h) => ({ wl, h })) : [])).find(({ wl }) => (wl.t[0] + wl.t[1]) / 2 < B.x0);
   if (leaf) { const zl = (leaf.h.a[0] + leaf.h.a[1]) / 2; at((B.x0 + B.x1) / 2, zl, Y[2]); walkTo(B.x0 - 3, zl, 3); check(player.pos.x > B.x0 - 0.05, `a flat's door (z ${f2(zl)}) is shut on våning 2 (x ${f2(player.pos.x)})`); }
+  // #653: the flats' doors open (E), swing into the hall, carry the flat's number; the doorway stops you (the entrance cell behind is not enterable)
+  const flatDoors = P.doors.filter((t) => /^dörren till [BC]1\d0\d$/.test(t.name)), want = K.walls.reduce((n, wl) => n + (wl.holes ?? []).filter((h) => h.leaf).reduce((m, h) => m + (h.s?.[1] ?? wl.s[1]) - (h.s?.[0] ?? wl.s[0]) + 1, 0), 0);
+  check(flatDoors.length === want && new Set(flatDoors.map((t) => t.name)).size === want, `${want} flat doors, each with its own number (${flatDoors.length}: ${flatDoors.slice(0, 3).map((t) => t.name.slice(-5)).join(', ')} …)`);
+  if (leaf) {
+    const zl = (leaf.h.a[0] + leaf.h.a[1]) / 2, fd = flatDoors.find((t) => t.door.y === Y[2] && Math.abs(t.door.hz - zl) < 1.0 && Math.abs(t.door.hx - (leaf.wl.t[1])) < 0.02);
+    check(!!fd, `the door on våning 2 at z ${f2(zl)} is an openable door (${fd?.name})`);
+    if (fd) {
+      at((B.x0 + B.x1) / 2, zl, Y[2]); look(fd.pickable);
+      check(btn.textContent === 'Öppna' && w.__app.focus().focused === fd, `E on a flat's door: "${btn.textContent}"`);
+      btn.click(); for (let i = 0; i < 90; i++) step(1 / 60);
+      check(fd.door.angle > 1.2, `the flat's door swings open (${f2(fd.door.angle)} rad)`);
+      at(B.x0 + 0.5, zl + (fd.door.hz < zl ? 0.25 : -0.25), Y[2]); walkTo(B.x0 - 3, zl + (fd.door.hz < zl ? 0.25 : -0.25), 4);
+      check(player.pos.x > B.x0 - 0.05, `the open doorway still stops you at the threshold (x ${f2(player.pos.x)})`);
+      btn.click(); look(fd.pickable); for (let i = 0; i < 90; i++) step(1 / 60);
+    }
+  }
 
   // ---- the lift: called on våning 1, in, to every stop (riding along), the doors never close on someone in the doorway
   at(...hallSide, Y[1]);
