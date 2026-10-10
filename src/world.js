@@ -408,8 +408,7 @@ function buildLevel(floor, li, group, how = OURS) {
 
   // Walls (polygons extruded floor → ceiling). Holes in the plan polygons are tiny
   // niches; walls are rendered solid.
-  const SH = STAIR.halfWall, onSh = (w) => { const b = bboxOf(w.outer); return Math.abs(b.x0 - SH.x0) < 2e-3 && Math.abs(b.x1 - SH.x1) < 2e-3 && Math.abs(b.z0 - SH.z0) < 2e-3 && Math.abs(b.z1 - SH.z1) < 2e-3; };
-  const walls = [...floor.walls.map((w) => (li === 0 && !how.levels && onSh(w) ? { ...w, half: true } : w)), ...EXTRA_WALLS.filter((w) => w.level === li && !std && OPTIONS[w.option])
+  const walls = [...floor.walls, ...EXTRA_WALLS.filter((w) => w.level === li && !std && OPTIONS[w.option])
     .map((r) => ({ outer: [[r.x0, r.z0], [r.x1, r.z0], [r.x1, r.z1], [r.x0, r.z1]] }))];
   const wallBoxes = walls.map((w) => bboxOf(w.outer));
   const wallSegments = []; // walls only: line of sight for E (main.js)
@@ -713,11 +712,8 @@ function buildStructure(scene, lower, l1, W, D, M) {
     scene.add(box(x - np, x + np, z - np, z + np, y1 - 0.01, y1 + rail + 0.03, M.rail));
   }
   l1.segments.push(...railSegs);
-  // the wall along flight A and the winders is a sloping half wall, as L1201's (#627; plan.json's wall at STAIR.halfWall)
-  const halfWall = buildHalfWall(scene, STAIR.halfWall, { height: stairHeight }, LEVELS[0].floor, LEVELS[0].floor + LEVELS[0].ceiling);
   // handrails: the wall side along the flights and round the winders, one per flight on the inner side (#419)
   for (const m of [...buildHandrails(M.rail).children]) scene.add(m);
-  return halfWall;
 }
 
 /** L1201's slab, roof zone, stair and railing (#573, L1201 in config): our stair type mapped onto its sheet's outline (the
@@ -834,8 +830,7 @@ function buildVisitFlat(plan, U, ox) {
   const l0 = buildLevel(lower, 0, group, how), l1 = buildLevel(upper, 1, group, how);
   wardrobeSpecs.length = keep; // empty wardrobes: nobody lives here
   const map = own ? stairMap(P, L) : null;
-  let halfWall = null;
-  if (own) buildOwnStructure(group, lower, upper, l1, P, L, map); else halfWall = buildStructure(group, lower, l1, W, D, SM);
+  if (own) buildOwnStructure(group, lower, upper, l1, P, L, map); else buildStructure(group, lower, l1, W, D, SM);
   const doors = [...l0.doors, ...l1.doors], lids = [...l0.lids, ...l1.lids, ...l0.appliances, ...l1.appliances];
   const moving = [...doors, ...lids].map((d) => d.object);
   const edges = architectureEdges(group, { moving, floor: L[1].floor });
@@ -850,7 +845,7 @@ function buildVisitFlat(plan, U, ox) {
   const rect = (f) => ({ x0: Math.min(0, ...f.walls.flatMap((w) => w.outer.map((q) => q[0]))), x1: f.size.x, z0: 0, z1: f.size.z });
   const levels = L.map((v, i) => ({ ...v, rect: rect(plan.floors[i]), hole: i === 1 ? (own ? P.hole : STAIR.hole) : null }));
   return new VisitUnit({ id: U.id, ox, oz, object: group, levels, built: [l0, l1], doors, lids, roomMaps, ground: !own,
-    stair: own ? map : { height: stairHeight, underside: stairUnderside, halfWall },
+    stair: own ? map : { height: stairHeight, underside: stairUnderside },
     soffits: own ? P.soffits : SOFFITS, shell: [SM.wall, SM.ceiling, SM.floor, SM.frame], glass: SM.glass }); // (what shows from afar: its rooms behind glass, #574)
 }
 
@@ -872,7 +867,7 @@ export function buildWorld(plan) {
   const l0 = buildLevel(lower, 0, scene);
   const l1 = buildLevel(upper, 1, scene);
 
-  const halfWall = buildStructure(scene, lower, l1, W, D, M); // the slab, the roof zone, the stair and its railing
+  buildStructure(scene, lower, l1, W, D, M); // the slab, the roof zone, the stair and its railing
   // the other flats you can walk into (#574), each at its own slot in the row
   const slots = husLLayout(W).units;
   const units = VISIT_UNITS.map((U) => buildVisitFlat(plan, U, slots.find((u) => u.lower === U.slot || u.upper === U.slot).ox));
@@ -1029,7 +1024,6 @@ export function buildWorld(plan) {
 
   return {
     object: scene,
-    halfWall, // the sloping half wall along our stair (#627): top(x), line
     edgeLines,
     hallWardrobes,
     wardrobes: laundryWardrobes, // reserved, usable shelf spaces (#552)

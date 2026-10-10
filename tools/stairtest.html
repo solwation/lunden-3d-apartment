@@ -196,21 +196,10 @@ f.onload = async () => {
   // the top of the stair: the railing's own handrail is not reachable as one (the issue's rule for the inner side)
   info(`the railing's top over flight B's nosings: ${f3(LEVELS[1].floor + STAIR.railHeight - S.stairHeight(STAIR.bX1 + 0.01, zB))}–${f3(LEVELS[1].floor + STAIR.railHeight - S.stairHeight(CX - 0.01, zB))} m (so flight B gets an inner rail too)`);
 
-  // (#627) the wall along flight A and the winders is a sloping half wall: its top STAIR.halfWall.top over the treads'
-  // nosings (where the ceiling allows), a vertical edge at its low end, the living-room switch on it below the top
+  // (#631) only L1201 has the sloping half wall (#624): ours keeps its full wall along flight A / the winders, floor to ceiling
   {
-    const HW = STAIR.halfWall, hw = w.__app.world.halfWall, cap = LEVELS[0].floor + LEVELS[0].ceiling;
-    const nos = [];
-    for (let x = HW.x0; x < HW.x1; x += 0.002) { const a = S.stairHeight(x, HW.z0 - 0.1), b = S.stairHeight(x + 0.002, HW.z0 - 0.1); if (a !== null && b !== null && b > a + 1e-6) nos.push([x, b]); }
-    const under = nos.filter(([x, y]) => y + HW.top < cap - 0.02), over = under.map(([x, y]) => hw.top(x) - y);
-    check(under.length >= 5 && over.every((d) => Math.abs(d - HW.top) < 0.03), `the half wall's top ${f3(Math.min(...over))}–${f3(Math.max(...over))} m over ${under.length} nosings (HW.top ${HW.top}; ${nos.length - under.length} more reach the ceiling)`);
-    const lo = hw.line[0], hi = hw.line.at(-1);
-    check(lo[0] === HW.x0 && lo[1] - LEVELS[0].floor > 0.9 && lo[1] - LEVELS[0].floor < 1.9 && hi[0] === HW.x1 && hi[1] <= cap + 1e-9, `a vertical edge at its low end (x ${lo[0]}, ${f3(lo[1] - LEVELS[0].floor)} m over the floor), ${f3(hi[1] - LEVELS[0].floor)} m at the high end, never over the ceiling (${LEVELS[0].ceiling})`);
-    const sl = (a, b) => (hw.top(b) - hw.top(a)) / (b - a);
-    check(sl(3.5, 4.2) > 0.3, `its top slopes up with the stair (${f3(sl(3.5, 4.2))} m/m), not level`);
     const swi = w.__app.lights.switches.filter((sw) => Math.abs(sw.object.position.x - 3.4) < 0.3 && Math.abs(sw.object.position.z - 7.8) < 0.1);
-    check(swi.length === 1 && swi[0].object.position.y < hw.top(swi[0].object.position.x) - 0.05, `the living-room switch (y ${swi[0] ? f3(swi[0].object.position.y) : '?'}) sits on the wall, its plate (±0.04) below its top (${swi[0] ? f3(hw.top(swi[0].object.position.x)) : '?'})`);
-    info('collision: the wall keeps its segment; walked into from both sides by visittest (L1004)');
+    check(w.__app.world.halfWall === undefined && swi.length === 1, `our wall along the stair is whole (no half wall; the living-room switch at y ${swi[0] ? f3(swi[0].object.position.y) : '?'} sits on it)`);
   }
 
   out.textContent = (pass ? 'ALL PASS\n' : 'SOME FAILED\n') + lines.join('\n');

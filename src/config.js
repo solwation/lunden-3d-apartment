@@ -2678,13 +2678,6 @@ export const STAIR = {
     outer: { south: 7.604, east: 5.551, north: 5.704, from: 3.252, to: 3.802 },
     innerA: { face: 6.704, from: 3.352, to: 4.671 },
   },
-  // The sloping half wall along flight A and the winders (#627, as L1201's #624; world.js `buildHalfWall`): plan.json's wall
-  // x 3.2515–5.5512, z 7.6042–7.8042 (the handrail's `outer.south` face, between the stair and the living room; no furniture
-  // or art stands on it). Peab's brochure photo of the Parklängen row type (docs/parklangan-halvvagg-trappa-broschyr.png)
-  // shows it white, its top parallel to the stair, ending in a vertical edge by the living room. `top` = its top over the
-  // treads' nosings (a railing height, *guess*: no section of it in Peab's material); `low` = the end where the stair is
-  // low (x0: flight A climbs east); the wall stays solid for collision and is full height where the stair is high.
-  halfWall: { z0: 7.6042, z1: 7.8042, x0: 3.2515, x1: 5.5512, top: 1.0, low: 'x0' },
 };
 
 export const COLORS = {
@@ -2947,7 +2940,7 @@ export const VISIT_LIGHTS = {
   manualShared: ['L1004'],
   manual: {
     L1004: [{ level: 1, room: 'Allrum', x: 0.2, z: 9.2, normal: [1, 0] },   // (L1007's Allrum has its tillval door's switch; here it is open to the hall)
-      { level: 0, room: 'Vardagsrum', x: 5.55, z: 8.0, normal: [-1, 0] }],   // (instead of L1007's, whose wall along the stair is now a half wall, #627)
+      { level: 0, room: 'Vardagsrum', x: 5.55, z: 8.0, normal: [-1, 0] }],   // (its own, on the east wall)
     L1201: [
       { level: 0, room: 'Hall', x: 2.0, z: 0.365, normal: [0, 1] },         // by the front door, on the street wall
       { level: 0, room: 'Vardagsrum', x: 5.55, z: 7.5, normal: [-1, 0] },   // on the party wall
