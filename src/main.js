@@ -31,7 +31,7 @@ import { CatSpawner, VARIANTS, BREEDS, kittenName } from './cat.js';
 import { initAudio, sfx, toggleMuted, isMuted, updateListener } from './audio.js';
 import { stairHeight, stairUnderside } from './stairs.js';
 import { rugLift } from './rugs.js';
-import { loadChangelog, renderChangelog, buildNote, scrollNote } from './changelog.js';
+import { loadChangelog, retryChangelog, renderChangelog, buildNote, scrollNote } from './changelog.js';
 import { loadTodo, buildTodoNotes } from './todo.js';
 import { setScoreElement, totalScore, setStatsExtra, stats, bump, badge, catFound, secretFound, renderStats, resetStats, visitRoom, setRoomTotal, setBadgeElement, penalize } from './stats.js';
 import { Minimap } from './minimap.js';
@@ -216,6 +216,7 @@ const freezer = world.lids.find((l) => l.kind === 'fridge' && l.freezer);
 if (freezer) { freezer.door.updateWorldMatrix(true, false); freezer.door.attach(note.object); }
 const noteEl = document.getElementById('note');
 renderChangelog(document.getElementById('note-list'), changelog);
+if (!changelog.fresh) retryChangelog((list) => { note.refresh(list); renderChangelog(document.getElementById('note-list'), list); }); // #655
 // the open issues as post-its on the fridge door (#340); only a teaser, nothing to read up close (#431)
 const todo = buildTodoNotes(await loadTodo(), world.lids.find((l) => l.kind === 'fridge' && !l.freezer));
 const boardEl = document.getElementById('board-view');

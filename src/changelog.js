@@ -30,14 +30,50 @@ export function markNew(entries, store) {
   return sorted.map((e) => ({ ...e, isNew: seenT > 0 && e.t > seenT }));
 }
 
+const KEY_CACHE = 'lunden.changelogCache'; // the last good answer (#655): the newest entries only, a few tens of kB
+const isList = (d) => Array.isArray(d) && d.length > 0 && d.every((e) => e && Number.isFinite(e.id) && typeof e.text === 'string');
+
+/** The raw list from the server, or null. A non-OK answer (an old build's cache-busted URL gone, a 404 page), a
+ *  non-list or a stalled request is a failure; it is tried twice, then once without the `?v` cache-buster (#655). */
+async function fetchEntries() {
+  const urls = ['data/changelog.json', 'data/changelog.json', ['data', 'changelog.json'].join('/')]; // the last is not stamped with ?v
+  for (const url of urls) {
+    try {
+      const r = await fetch(url, { signal: AbortSignal.timeout(5000) });
+      const d = r.ok ? await r.json() : null;
+      if (isList(d)) return d;
+    } catch { /* offline, aborted, bad JSON: next */ }
+  }
+  return null;
+}
+
+/** Entries in display order, with `isNew`. Falls back on the copy of the last good answer in localStorage; `[]` only
+ *  when there is neither (the caller then retries later: `retryChangelog`). `fresh` tells whether the server answered. */
 export async function loadChangelog() {
-  let entries = [];
-  try {
-    entries = await fetch('data/changelog.json').then((r) => r.json());
-  } catch { /* page still works without it */ }
   let store = null;
   try { store = localStorage; } catch { /* private mode etc. */ }
-  return markNew(entries, store || { getItem: () => null, setItem: () => {} }).slice(0, CHANGELOG_NOTE.limit);
+  const raw = await fetchEntries();
+  let entries = raw;
+  if (raw && store) {
+    try { store.setItem(KEY_CACHE, JSON.stringify(raw.slice(0, CHANGELOG_NOTE.limit * 2))); } catch { /* full / private */ }
+  } else if (!raw && store) {
+    try { const c = JSON.parse(store.getItem(KEY_CACHE)); if (isList(c)) entries = c; } catch { /* none */ }
+  }
+  const out = markNew(entries || [], store || { getItem: () => null, setItem: () => {} }).slice(0, CHANGELOG_NOTE.limit);
+  out.fresh = !!raw;
+  return out;
+}
+
+/** Keep trying in the background while the note is empty or only from the local copy (never blocks the start):
+ *  `onEntries(list)` gets the first fresh answer. */
+export function retryChangelog(onEntries, delays = [5000, 20000, 60000, 180000]) {
+  const step = async (i) => {
+    if (i >= delays.length) return;
+    await new Promise((res) => setTimeout(res, delays[i]));
+    const list = await loadChangelog();
+    if (list.fresh) onEntries(list); else step(i + 1);
+  };
+  step(0);
 }
 
 const fmtDate = (d) => new Date(`${d}T12:00:00`).toLocaleDateString('sv-SE', { day: 'numeric', month: 'short' });
@@ -123,10 +159,8 @@ function noteTexture(entries) {
 export function buildNote(entries) {
   const N = CHANGELOG_NOTE;
   const object = new THREE.Group();
-  const paper = new THREE.Mesh(
-    new THREE.PlaneGeometry(N.w, N.w * 1.4),
-    new THREE.MeshStandardMaterial({ map: noteTexture(entries), roughness: 0.9 }),
-  );
+  const material = new THREE.MeshStandardMaterial({ map: noteTexture(entries), roughness: 0.9 });
+  const paper = new THREE.Mesh(new THREE.PlaneGeometry(N.w, N.w * 1.4), material);
   paper.rotation.z = N.tilt;
   const magnet = new THREE.Mesh(new THREE.CylinderGeometry(0.016, 0.016, 0.012, 16),
     new THREE.MeshStandardMaterial({ color: 0xd23a2a, roughness: 0.4 }));
@@ -136,7 +170,9 @@ export function buildNote(entries) {
   object.add(paper, magnet);
   object.position.set(N.x, N.y, N.z);
   object.rotation.y = N.rotY;
-  const note = { name: 'lappen', kind: 'note', verb: 'läsa', object, pickable: object, isOpen: false };
+  const note = { name: 'lappen', kind: 'note', verb: 'läsa', object, pickable: object, isOpen: false,
+    /** Redraw the paper when the entries arrive late (#655). */
+    refresh(list) { material.map.dispose(); material.map = noteTexture(list); material.needsUpdate = true; } };
   paper.userData.door = magnet.userData.door = note;
   return note;
 }

@@ -1,4 +1,5 @@
 [
+  {"id": 627, "date": "2026-10-10", "text": "Lappen på frysen fylls nu på igen om listan inte kunde hämtas första gången, och sparar senaste listan till nästa besök."},
   {"id": 626, "date": "2026-10-10", "text": "Hus B och C: lägenhetsdörrarna i trapphuset går nu att öppna och har lägenhetsnummer."},
   {"id": 625, "date": "2026-10-10", "text": "Hus C: i källaren går det nu att gå genom trapphallen förbi trappan, från stålporten till hissen och korridoren norrut."},
   {"id": 624, "date": "2026-10-10", "text": "Hus A:s öppna lägenhetsdörr närmast hissen täcker inte längre hissdörren."},
