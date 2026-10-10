@@ -198,3 +198,44 @@ index (`fi`) and the vertex shader moves it by that front's pivot (a mat4 unifor
 patched `customDepthMaterial`), E aims at an undrawn box per front and the focused one is brightened in the shader (`aimAt`).
 Measured (desktop, worst of 12 yaws): L1004 kitchen 473 → 475, hall 493 → 495; L1201 kitchen 369 → 371. One new program.
 
+
+## Phone memory probe and texture cap (#628, refs #585 — not verified on a device)
+
+iPhone 14 Pro froze, reloaded and showed "Ett problem inträffade flera gånger" again. `tools/phonememtest.cjs` (Playwright
+Chromium on SwiftShader; run instructions in [verification](verification.md)) simulates the phone — **844×390 landscape (the
+game asks for landscape), DPR 3, iPhone UA, touch** — wraps the WebGL calls to total texture / renderbuffer / buffer bytes over
+time, reads JS heap and long tasks, throttles the CPU (`--cpu 4,6`), walks the flat (start, hall, living room, kitchen,
+upstairs, every mirror, patio, stairwell storeys, garage) and compares the total with an iOS budget that is a *guess*
+(`--budget-mb`, default 600: iOS kills the WebContent process somewhere between a few hundred MB and ~1 GB on a 6 GB iPhone; the
+real figure is unknown). All GPU numbers are estimates from the page's own allocations, not readings from a GPU.
+
+**Does #585's work apply in a phone profile?** Yes: with the iPhone UA `lowMemory`, `isPhoneDevice` (the `phone` class, from
+`(pointer: coarse) and (hover: none)`), `maxTextureSize` 1024, shadow map 1024², pixel ratio 0.9 (quality level 2 × the 1.0 cap)
+and the lite campus facades are all on. Note that the iPhone UA also makes the start warm-up *run* (it skips only
+`HeadlessChrome`), like on a real phone: `--nowarm` appends `HeadlessChrome` to compare.
+
+**Before (main at d654ad5, estimates, MB):**
+
+| point | textures | renderbuffers | buffers | canvas | GPU total |
+|---|---|---|---|---|---|
+| after load (before warm-up) | 36 | 4 | 89 | 9 | 138 |
+| after the warm-up (262 textures, 205 programs) | 207 | 7 | 104 | 9 | **327** (peak) |
+| after the route (every spot, 9 mirrors, stairwell) | 207 | 7 | 104 | 9 | 327 (no growth) |
+
+Besides the GPU: 186 MB of CPU canvases (the sources of canvas textures), 134 MB of CPU copies of the geometry
+(3 320 geometries, kept by three), ~335 MB JS heap → GPU + heap + canvases ≈ 854 MB vs the 600 MB guess.
+What grows: only the **start warm-up** (textures 36 → 207 MB in one burst behind the start screen, programs 50 → 205). It matches "loads, starts playing, then freezes". Walking everything *without* the warm-up (`--nowarm`) ends
+at 182 MB of textures, so the warm-up only moves the cost forward by ~25 MB. Mirrors are **not** the problem any more: one
+shared 256² 4× half-float target (~3 MB) at level 2, no growth over nine mirrors, no new render targets while walking; the
+shadow map is 1024² (4 MB). Largest items: textures 207 MB (145 MB in ~27 textures of 513–1024 px with mips), vertex buffers
+103 MB (merged world, 49 MB in one group), canvas sources 186 MB (curtain prints 24, escape plan 11, rugs 27, garage floor
+10, cat board 9), geometry copies 134 MB.
+
+**Change:** `LOW_MEMORY.maxTextureSize` 1024 → 512 (config). On a screen under 850 px wide a base level above 512 is
+rarely sampled (*guess*; compared by screenshots only: living room, mirror and kitchen views look the same, mirrors 1/3/7 draw
+their reflection). Desktop untouched. After: textures 207 → **105 MB**, GPU peak 327 → **226 MB**, total estimate 854 → 753 MB
+(still over the 600 MB guess); perfcount `?lowmem&w=390&h=844` texture estimate ~98 MB, budget passes.
+
+**Not done (measured, but not safe to change blind):** the 134 MB of CPU geometry copies (raycasts read them), the 186 MB of
+canvas sources (many canvases are redrawn, freeing needs a per-module opt-in), vertex-buffer quantisation, and warm-up changes.
+Frame times in SwiftShader (seconds per frame) say nothing about the phone. **Physical iPhone verification is still required.**

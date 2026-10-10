@@ -2151,7 +2151,10 @@ export const PERF = { detail: { maxR: 0.5, k: 0.009, minDist: 3.2, maxOcclude: 4
 // ~280 MB of textures, 15 of them larger than 1024 px. On such devices every texture is uploaded at most
 // `maxTextureSize` px on its longest side (three's own resize, the source canvas/image stays as it is), the sun's
 // shadow map is `shadowMapSize`² and the dynamic resolution never goes above `maxPixelRatio`. `&lowmem` forces it on a desktop.
-export const LOW_MEMORY = { maxTextureSize: 1024, shadowMapSize: 1024, maxPixelRatio: 1.0 };
+export const LOW_MEMORY = { maxTextureSize: 512, shadowMapSize: 1024, maxPixelRatio: 1.0 };
+// #628: maxTextureSize 1024 → 512. tools/phonememtest.cjs (iPhone 14 Pro landscape 844×390, DPR 3, ratio ≤ 1.0 → at most 844 px
+// across) showed 262 textures at 207 MB after the start warm-up, 145 MB of it in ~27 textures of 513–1024 px (+ mips);
+// a screen under 850 px wide gains nothing from a larger base level (*guess*: judged by screenshots, not by a device).
 
 // Campus facades on phones (#589, src/lowmemory.js): #576–#581 took the east backdrop from ~21k to ~75k triangles. On
 // LOW_MEMORY devices campusfacades.js and schoolfacade.js keep every body, roof, colour, window and the clock tower but
