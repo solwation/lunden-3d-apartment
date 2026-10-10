@@ -96,6 +96,9 @@ const realHour = () => { const n = new Date(); return n.getHours() + n.getMinute
   check(confirmEl.hidden, 'Esc closes the question');
   // Återställ (the reload is real; the iframe's next page is checked offline so the queue is not sent yet)
   const queue = localStorage.getItem('lunden.cloud.queue');
+  const crashKeep = { 'lunden.crash.pid': 'resettest-pid', 'lunden.crash.sent': '{"d":"2026-01-01","n":3}', 'lunden.crash.out': '[{"typ":"fel"}]' }; // crash reports (#629)
+  for (const [k, v] of Object.entries(crashKeep)) localStorage.setItem(k, v);
+  localStorage.setItem('lunden.crash.beat', '{"s":"run"}');
   d.getElementById('reset-home').click();
   let goUrl = null;
   app.resetHome.go = (u) => { goUrl = u; };
@@ -106,6 +109,7 @@ const realHour = () => { const n = new Date(); return n.getHours() + n.getMinute
     `the home's keys and the resume / F5 records are gone (left: ${left.join(', ')})`);
   check(queue && localStorage.getItem('lunden.cloud.queue') === queue && localStorage.getItem('lunden.drawing') === desk, 'the cloud queue and the desk drawing are untouched');
   check(localStorage.getItem('lunden.name') === 'Återställ-Testaren' && localStorage.getItem('lunden.playerId') && localStorage.getItem('lunden.stats'), 'the name, the player id and the statistics stay');
+  check(Object.entries(crashKeep).every(([k, v]) => localStorage.getItem(k) === v) && localStorage.getItem('lunden.crash.beat') === null, 'the crash id, the daily send counter and unsent reports stay; the heartbeat goes (#629)');
   check(localStorage.getItem('other.page') === 'x', "another page's key on the same origin stays");
   w.dispatchEvent(new w.Event('pagehide')); // leaving: no new F5 record
   check(!sessionStorage.getItem('lunden.session'), 'no F5 record written on the way out');
