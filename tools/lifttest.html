@@ -55,7 +55,10 @@ async function run() {
   walkTo(-18.39, 9.5); walkTo(-18.39, 11.0);
   check(lift.carHas(player.pos), `into the car (${f2(player.pos.x)}, ${f2(player.pos.z)})`);
   lift.targets.find((t) => t.kind === 'liftbtn' && t.stop === 0).press();
+  const cpl = lift.panel.plates[0];
+  check(cpl.st[0].lit && !cpl.st[1].lit && lift.targets.filter((t) => t.kind === 'liftbtn').length === Y.length, `the car's button for −1 lit, one button per floor (#640)`);
   for (let i = 0; i < 60 * 4; i++) step(1 / 60);
+  check(lift.panel.shown && lift.panel.shown.endsWith('-1') && cpl.st[0].lit, `the indicator shows the direction while moving ("${lift.panel.shown}")`);
   const midY = player.pos.y;
   player.keys.add('KeyS'); camera.rotation.set(0, Math.PI, 0, 'YXZ'); for (let i = 0; i < 60; i++) step(1 / 60); player.keys.delete('KeyS');
   check(lift.moving && Math.abs(player.pos.y - lift.y) < 0.02 && midY < Y[1] - 0.2 && lift.carHas(player.pos), `riding down (y ${f2(player.pos.y)} = the car's), no way out while it moves`);

@@ -1761,8 +1761,19 @@ export const CORE = {
   // sill and head heights are an ASSUMPTION
   window: { x: [-18.55, -17.15], sill: 0.8, head: 2.4 },
   // rescue: m/s the car creeps down to the stop below in a power cut (#612, battery rescue drive; *guess*)
-  lift: { x0: -18.95, x1: -17.44, z0: 9.78, z1: 12.28, door: [-18.84, -17.94], speed: 1.0, accel: 0.6, doorTime: 1.4, wait: 6, rescue: 0.25 },
+  lift: { x0: -18.95, x1: -17.44, z0: 9.78, z1: 12.28, door: [-18.84, -17.94], speed: 1.0, accel: 0.6, doorTime: 1.4, wait: 6, rescue: 0.25,
+    floors: ['−1', '1', '2', '3'] }, // the stops' names, bottom first (våning −1 = the garage's basement, 1–3 the storeys; #640)
   light: { hold: 60 },
+};
+
+// The lifts' panel, mirror, indicators (#640, src/liftpanel.js; shared by every house's lift). Peab's material gives no
+// button, plate, display or mirror sizes: ALL of these are *guess*es from ordinary residential lift fittings.
+export const LIFT_PANEL = {
+  pxPerM: 640, radius: 0.034, pitch: 0.15, firstY: 1.0, carPlateW: 0.17, carZ: 0.45, // the car's button column (east wall)
+  callPlateW: 0.11, callPitch: 0.12, callY: 1.1,                                     // beside each landing door
+  indW: 0.5, indCarY: 2.17, indLandingY: 2.2, digit: '#ff7a1a',                      // floor indicators (over the doors)
+  mirrorInset: 0.2, mirrorBottom: 1.05, mirrorTop: 2.0,                              // back wall, above the handrail (y 0.95)
+  pressMs: 220, darkPlate: 0.3,                                                      // pressed look; plates in a power cut
 };
 
 // The lightsaber in Sovrum 2 (#78, src/saber.js): since #324 on two pegboard hooks on the Nerf board's top row (the
@@ -2426,8 +2437,7 @@ export const CRASHLOG = {
   beatMs: 2000,        // heartbeat to localStorage: one small JSON write, outside the render loop
   deadIfWithinMs: 6000, // a "running" beat this fresh at start = another tab of the same browser is alive, not a crash
   maxBytes: 12_000,    // a report is trimmed below this before sending (the Worker refuses > 16 kB)
-  perSession: 12, perDay: 20, // bounded reports; ordinary errors once a day, distinct WebGL episodes separately (#642)
-  historySamples: 12, // ~24 seconds of cheap pre-failure counters at beatMs; diagnostic choice, not a device limit
+  perSession: 6, perDay: 20, // reports sent at most per page load / per browser and day; the same error only once a day
   errorLines: 20, actions: 12, // ring buffers: last console.error lines, last key / tap events
   layoutTolerance: 2, layoutChecksMs: [300, 1000, 3000], layoutPerSession: 3, // #567: canvas vs surface: px off that counts, checks after a resize / rotation, layout reports per page
   textureEveryMs: 60_000, textureSliceMs: 1.5, // the texture-memory estimate walks the scene (~25 ms in all): this often, in slices of this many ms 40 ms apart

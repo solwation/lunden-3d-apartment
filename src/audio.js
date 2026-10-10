@@ -973,6 +973,37 @@ export const sfx = {
     tone(t + 0.12, 0.11, d, { type: 'triangle', from: 950 * p, to: 1500 * p, gain: 0.09 });
     tone(t + 0.26, 0.16, d, { type: 'triangle', from: 1150 * p, to: 1900 * p, gain: 0.08 });
   },
+  /** A lift's chime (#640): arriving = a two-note ding (higher going up, lower going down), `soft` = the quiet tick of passing a floor. */
+  liftChime(pos, dir = 1, soft = false) {
+    if (!ready()) return;
+    const t = ctx.currentTime, d = out(pos, soft ? 0.35 : 0.9), up = dir >= 0, g = soft ? 0.03 : 0.1;
+    const [a, b] = up ? [880, 1175] : [1175, 880];
+    tone(t, 0.45, d, { from: a, gain: g }); if (!soft) tone(t + 0.22, 0.7, d, { from: b, gain: g });
+  },
+  /** A lift car's drive (#640): a low motor hum with a little cable whirr; move(pos, speed) each frame, stop(). */
+  liftHum(pos) {
+    if (!ready()) return null;
+    const t = ctx.currentTime, g = ctx.createGain(), p = ctx.createPanner();
+    Object.assign(p, { panningModel: 'equalpower', distanceModel: 'inverse', refDistance: 2, rolloffFactor: 1 });
+    p.positionX.value = pos.x; p.positionY.value = pos.y; p.positionZ.value = pos.z;
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(1, t + 0.6);
+    g.connect(p).connect(master);
+    const hum = ctx.createOscillator(), hg = ctx.createGain(), lp = ctx.createBiquadFilter();
+    hum.type = 'sawtooth'; hum.frequency.value = 58; lp.type = 'lowpass'; lp.frequency.value = 260; hg.gain.value = 0.05;
+    hum.connect(lp).connect(hg).connect(g);
+    const src = ctx.createBufferSource(), bp = ctx.createBiquadFilter(), ng = ctx.createGain();
+    src.buffer = noiseBuf; src.loop = true; bp.type = 'bandpass'; bp.frequency.value = 700; bp.Q.value = 0.8; ng.gain.value = 0.02;
+    src.connect(bp).connect(ng).connect(g);
+    hum.start(t); src.start(t, Math.random());
+    return {
+      move(q, speed) {
+        const now = ctx.currentTime;
+        p.positionX.setTargetAtTime(q.x, now, 0.05); p.positionY.setTargetAtTime(q.y, now, 0.05); p.positionZ.setTargetAtTime(q.z, now, 0.05);
+        hum.frequency.setTargetAtTime(50 + speed * 14, now, 0.3); ng.gain.setTargetAtTime(0.008 + speed * 0.006, now, 0.3);
+      },
+      stop() { const t1 = ctx.currentTime; g.gain.cancelScheduledValues(t1); g.gain.setValueAtTime(g.gain.value, t1); g.gain.linearRampToValueAtTime(0, t1 + 0.5); hum.stop(t1 + 0.6); src.stop(t1 + 0.6); },
+    };
+  },
   /** A magic pling: a few bright bell tones going up. */
   pling(pos, pitch = 1) {
     if (!ready()) return;

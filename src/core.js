@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { CORE as K, PORTIK, GARAGE, HUS_L, PLAYER, POWER, storeyFloor } from './config.js';
 import { sfx } from './audio.js';
+import { buildLiftPanel } from './liftpanel.js';
 
 // Hus L's stair core by the portik (#415, CORE in config): a walkable stairwell from the garage's lobby (våning −1) up
 // past våning 1 (a glazed door from the portik) and 2 to våning 3 (a door out onto the loftgång), and a lift with four
@@ -14,7 +15,7 @@ import { sfx } from './audio.js';
 // in the doorway (#314). Drawing: MeshBasic with the lights baked into vertex colours, drawn only near.
 
 const Y = [GARAGE.floor, storeyFloor(1), storeyFloor(2), storeyFloor(3)]; // våning −1, 1, 2, 3 (VERTICAL, #344)
-const LABELS = ['−1', '1', '2', '3'];
+const LABELS = K.lift.floors; // the stops' names (config)
 const X0 = K.x0, X1 = K.x1, XS = K.split, FOOT = K.foot, N = K.north, S1 = K.south[1], CEIL = Y[3] + 2.6;
 const ZT = K.treads.map((n) => FOOT - n * K.tread); // each flight's top end (the street-end floor it arrives on)
 const ZTMIN = Math.min(...ZT), LOFT = K.loftFace, SH = K.shaft, [LD0, LD1] = K.loftDoor.x;
@@ -98,7 +99,6 @@ export class Lift {
     this.lamp = inner.at(-1).material;
     for (const [x, sz] of [[L.x0 + 0.05, D - 0.1], [L.x1 - 0.05, D - 0.1]]) inner.push(new THREE.Mesh(new THREE.BoxGeometry(0.03, 2.25, sz).translate(x, 1.125, cz), basic(0xc9ccce)));
     inner.push(new THREE.Mesh(new THREE.BoxGeometry(W - 0.1, 2.25, 0.03).translate(cx, 1.125, L.z1 - 0.05), basic(0xc9ccce))); // back wall
-    inner.push(new THREE.Mesh(new THREE.BoxGeometry(W - 0.4, 1.2, 0.01).translate(cx, 1.4, L.z1 - 0.07), new THREE.MeshStandardMaterial({ color: 0xdfe6ea, roughness: 0.03, metalness: 0.95 }))); // the mirror
     inner.push(new THREE.Mesh(new THREE.BoxGeometry(W - 0.12, 0.04, 0.04).translate(cx, 0.95, L.z1 - 0.1), steel)); // handrail
     for (const [a, b] of [[L.x0 + 0.05, d0], [d1, L.x1 - 0.05]]) inner.push(new THREE.Mesh(new THREE.BoxGeometry(b - a, 2.25, 0.04).translate((a + b) / 2, 1.125, L.z0 + 0.08), basic(0xc9ccce))); // the front beside the door
     inner.push(new THREE.Mesh(new THREE.BoxGeometry(d1 - d0, 0.15, 0.04).translate((d0 + d1) / 2, 2.17, L.z0 + 0.08), basic(0xc9ccce)));
@@ -108,40 +108,17 @@ export class Lift {
     this.carDoors = [panel(), panel()];
     this.carDoors.forEach((m) => { m.position.set(0, 1.04, L.z0 + 0.12); m.raycast = () => {}; this.car.add(m); });
     this.landing = Y.map((y) => { const ps = [panel(), panel()]; ps.forEach((m) => { m.position.set(0, y + 1.04, L.z0 - 0.02); m.raycast = () => {}; group.add(m); }); return ps; });
-    // the panel inside (east wall) with a button per stop, the display over the door, call buttons beside each landing door
-    const btnMat = new THREE.MeshStandardMaterial({ color: 0xdfe2e4, roughness: 0.4, metalness: 0.5, emissive: 0x3a7bff, emissiveIntensity: 0 });
-    this.btnMat = btnMat;
-    this.display = labelTexture(128, 64, () => {});
-    const disp = new THREE.Mesh(new THREE.PlaneGeometry(0.24, 0.12), new THREE.MeshBasicMaterial({ map: this.display.t }));
-    this.dispMat = disp.material;
-    disp.position.set((d0 + d1) / 2, 2.32, L.z0 + 0.105); disp.raycast = () => {}; this.car.add(disp);
-    const plate = labelTexture(64, 256, (g) => { g.fillStyle = '#c9ccce'; g.fillRect(0, 0, 64, 256); g.fillStyle = '#222'; g.font = 'bold 30px sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; LABELS.forEach((l, i) => g.fillText(l, 20, 224 - i * 60)); });
-    const pm = new THREE.Mesh(new THREE.PlaneGeometry(0.16, 0.64), new THREE.MeshBasicMaterial({ map: plate.t }));
-    pm.rotation.y = -Math.PI / 2; pm.position.set(L.x1 - 0.075, 1.25, L.z0 + 0.45); pm.raycast = () => {}; this.car.add(pm);
-    const lift = this;
-    this.targets = [];
-    LABELS.forEach((lab, k) => {
-      const b = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.02, 16).rotateZ(Math.PI / 2), btnMat);
-      b.position.set(L.x1 - 0.085, 1.25 - 0.24 + k * 0.15, L.z0 + 0.45 + 0.04); this.car.add(b);
-      const t = { kind: 'liftbtn', name: `våning ${lab}`, verb: 'åka till', pickable: b, stop: k, press: () => lift.call(k, true) };
-      b.userData.door = t; this.targets.push(t);
-    });
-    Y.forEach((y, k) => {
-      const b = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.14, 0.03), btnMat);
-      b.position.set(d1 + 0.22, y + 1.1, S1 - 0.015); group.add(b);
-      const t = { kind: 'liftcall', name: 'hissen', verb: 'kalla på', pickable: b, stop: k, press: () => lift.call(k, false) };
-      b.userData.door = t; this.targets.push(t);
-    });
-    this.place(); this.drawDisplay();
+    // the buttons, call plates, floor indicators and mirror (src/liftpanel.js, #640): floors and sizes from the config
+    this.panel = buildLiftPanel({ car: this.car, group, box: L, floors: L.floors.map((label, k) => ({ label, y: Y[k] })), landingZ: S1, callX: d1 + 0.22, press: (k, inCar) => this.call(k, inCar), doorTime: L.doorTime });
+    this.targets = this.panel.targets;
+    this.place();
   }
 
   /** E on a button: inside (`inCar`) send it to stop k, outside call it to stop k. */
   call(k, inCar) {
-    sfx.click({ x: (L.x0 + L.x1) / 2, y: Y[k] + 1.1, z: L.z0 });
+    this.panel.pressed(k, inCar);
     if (this.target === null && this.at === k) { this.open = true; this.waitT = L.wait; return; }
     this.target = k;
-    this.btnMat.emissiveIntensity = 1.2;
-    void inCar;
   }
 
   /** Is the point (feet) inside the car? */
@@ -153,9 +130,8 @@ export class Lift {
   mains(on) {
     this.powered = on;
     this.lamp.color.setHex(on ? 0xfffcf0 : 0x2a2a28);
-    this.dispMat.color.setScalar(on ? 1 : 0);
-    if (!on) { this.target = null; this.btnMat.emissiveIntensity = 0; this.hum?.stop(); this.hum = null; }
-    this.shown = null; // (the display redraws when the power is back)
+    this.panel.mains(on);
+    if (!on) { this.target = null; this.hum?.stop(); this.hum = null; }
   }
 
   /** A power cut: on its way, down to the stop below at the rescue speed; at a stop, the doors open and stay open. */
@@ -170,6 +146,7 @@ export class Lift {
     const want = this.open ? 1 : 0;
     this.doors += Math.sign(want - this.doors) * Math.min(Math.abs(want - this.doors), dt / L.doorTime);
     this.place();
+    this.panel.sync(this);
   }
 
   update(dt, player) {
@@ -184,15 +161,14 @@ export class Lift {
       if (busy && this.at !== null) this.open = true;
       else this.open = false;
       if (this.doors <= 0 && (this.at === null || !busy)) { // (on its way the doors are shut: the doorway does not matter)
-        if (this.at !== null) { this.at = null; this.carrying = this.carHas(p); this.hum = sfx.evHum({ x: (L.x0 + L.x1) / 2, y: this.y + 1, z: L.z1 }); }
+        if (this.at !== null) { this.at = null; this.carrying = this.carHas(p); this.hum = sfx.liftHum({ x: (L.x0 + L.x1) / 2, y: this.y + 1, z: L.z1 }); }
         const goal = Y[this.target], dist = goal - this.y, dir = Math.sign(dist);
         const vmax = Math.min(L.speed, Math.sqrt(2 * L.accel * Math.abs(dist)) + 0.05);
         this.v = dir * Math.min(Math.abs(this.v) + L.accel * dt, vmax);
         this.y += this.v * dt;
         if ((goal - this.y) * dir <= 0) { // arrived
           this.y = goal; this.v = 0; this.at = this.target; this.target = null; this.open = true; this.waitT = L.wait;
-          this.hum?.stop(); this.hum = null; this.btnMat.emissiveIntensity = 0;
-          sfx.pling?.({ x: (L.x0 + L.x1) / 2, y: this.y + 2, z: L.z0 });
+          this.hum?.stop(); this.hum = null;
           if (this.carHas(p)) this.onArrive?.(this.at);
         }
         this.hum?.move?.({ x: (L.x0 + L.x1) / 2, y: this.y + 1, z: L.z1 }, Math.abs(this.v) * 2);
@@ -200,7 +176,7 @@ export class Lift {
     }
     const want = this.open ? 1 : 0;
     this.doors += Math.sign(want - this.doors) * Math.min(Math.abs(want - this.doors), dt / L.doorTime);
-    this.place(); this.drawDisplay();
+    this.place(); this.panel.sync(this);
   }
 
   get moving() { return this.at === null; }
@@ -210,17 +186,6 @@ export class Lift {
     this.car.position.y = this.y;
     this.carDoors[0].position.x = c - dw / 2 - o; this.carDoors[1].position.x = c + dw / 2 + o;
     this.landing.forEach((ps, k) => { const ok = this.at === k ? o : 0; ps[0].position.x = c - dw / 2 - ok; ps[1].position.x = c + dw / 2 + ok; });
-  }
-
-  /** The floor display: the nearest stop and an arrow while it moves. */
-  drawDisplay() {
-    const n = Y.reduce((b, y, k) => (Math.abs(y - this.y) < Math.abs(Y[b] - this.y) ? k : b), 0), key = `${n}${Math.sign(this.v)}`;
-    if (key === this.shown) return;
-    this.shown = key;
-    const g = this.display.c.getContext('2d');
-    g.fillStyle = '#111'; g.fillRect(0, 0, 128, 64); g.fillStyle = '#ff6a1a'; g.font = 'bold 40px monospace'; g.textAlign = 'center'; g.textBaseline = 'middle';
-    g.fillText(`${this.v > 0 ? '▲' : this.v < 0 ? '▼' : ''}${LABELS[n]}`, 64, 34);
-    this.display.t.needsUpdate = true;
   }
 
   /** Collision of the shaft at each stop (the landing doors while not open) and of the car round the visitor. */
@@ -241,7 +206,7 @@ export class Lift {
     this.at = Number.isInteger(s.at) && Y[s.at] !== undefined ? s.at : null;
     this.target = Number.isInteger(s.target) && Y[s.target] !== undefined ? s.target : this.at === null ? Y.reduce((b, y, k) => (Math.abs(y - this.y) < Math.abs(Y[b] - this.y) ? k : b), 0) : null;
     this.open = !!s.open && this.at !== null; this.doors = this.open ? 1 : 0; this.waitT = L.wait;
-    this.place(); this.drawDisplay();
+    this.place(); this.panel.sync(this);
   }
 }
 

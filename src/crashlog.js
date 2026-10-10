@@ -17,7 +17,7 @@ import { lowMemory } from './lowmemory.js';
 //    right now (fresher than C.deadIfWithinMs) is no crash.
 //  - caught problems are sent at once as typ 'fel': window 'error', 'unhandledrejection', webglcontextlost / restored.
 // Limits: C.perSession per page load, C.perDay per browser (counter in `lunden.crash.sent`), the same signature once a
-// day (WebGL episodes and abrupt endings have separate signatures), a report trimmed to C.maxBytes; the Worker caps again. Unsent reports wait in `lunden.crash.out` (max 3).
+// day, a report trimmed to C.maxBytes; the Worker caps again. Unsent reports wait in `lunden.crash.out` (max 3).
 // Off: CLOUD_URL = '' (or no &cloud=). `&sync=debug` logs what is sent. Tests: `import('/src/crashlog.js')` → `crashlog`.
 
 const BEAT = 'lunden.crash.beat', PID = 'lunden.crash.pid', SENT = 'lunden.crash.sent', OUT = 'lunden.crash.out';
@@ -41,10 +41,6 @@ class CrashLog {
     this.stats = { beats: 0, beatMs: 0, sent: [], dropped: [] }; // tests and &sync=debug
     this.tex = { mb: 0, n: 0, at: -Infinity, pending: false };
     this.glLost = false;
-    this.history = [];
-    this.contextEpisode = 0;
-    this.contextLoss = null;
-    this.lastBeatAt = performance.now();
     this.lastFrame = { n: 0, t: performance.now(), fps: 0 };
     if (this.on) { try { this.start(); } catch (e) { this.on = false; if (debug) console.log('[crash] off', e); } }
   }
@@ -67,7 +63,7 @@ class CrashLog {
     this.beat();
     this.timer = setInterval(() => { if (!document.hidden) this.beat(); }, C.beatMs);
     document.addEventListener('visibilitychange', () => {
-      if (document.hidden) this.mark('bg'); else { this.lastBeatAt = performance.now(); this.beat(); }
+      if (document.hidden) this.mark('bg'); else this.beat();
     });
     addEventListener('pagehide', (e) => this.mark(e.persisted ? 'bg' : 'clean'));
     addEventListener('pageshow', (e) => { if (e.persisted) this.beat(); });
@@ -89,9 +85,7 @@ class CrashLog {
     const now = Date.now(), s = {
       t: now, tab: this.tab, s: 'run', n: this.stats.beats, up: round((performance.now() - T0) / 1000, 0), build: BUILD,
       ua: clip(navigator.userAgent, 200), scr: [screen.width, screen.height, round(devicePixelRatio, 2)],
-      vp: [innerWidth, innerHeight], low: lowMemory ? 1 : 0, acts: this.acts.slice(), errs: this.errs.slice(-5),
-      history: this.history.slice(), hidden: document.hidden ? 1 : 0,
-      standalone: (navigator.standalone || matchMedia('(display-mode: standalone)').matches) ? 1 : 0,
+      vp: [innerWidth, innerHeight], low: lowMemory ? 1 : 0, acts: this.acts, errs: this.errs.slice(-5),
     };
     if (this.glLost) s.gl = 'lost';
     const pm = performance.memory; // Chromium only (not Safari)
@@ -110,13 +104,8 @@ class CrashLog {
         if (t - f.t > 500) { f.fps = round(((n - f.n) * 1000) / (t - f.t)); f.n = n; f.t = t; }
         s.fps = f.fps; s.px = round(renderer.getPixelRatio(), 2);
         s.gl3 = { geo: i.memory.geometries, tex: i.memory.textures, prog: i.programs?.length ?? 0, calls: i.render.calls, tris: i.render.triangles };
-        s.frame = n;
-        s.phase = window.__app?.warm?.state ?? 'scene';
-        const gl = renderer.getContext();
-        s.buffer = [gl.drawingBufferWidth, gl.drawingBufferHeight];
-        s.maxTextureSize = renderer.capabilities.maxTextureSize;
         s.gpuMB = this.gpuMB(renderer, sun, mirrorTarget);
-        if (!this.glLost) this.textures();
+        this.textures();
       }
     } catch (e) { s.err = clip(e?.message, 80); }
     return s;
@@ -134,11 +123,6 @@ class CrashLog {
     out.tex = this.tex.mb;
     out.total = out.canvas + out.shadow + out.mirror + out.tex;
     for (const k in out) out[k] = round(out[k]);
-    // Image dimensions are source sizes, potentially larger than the GPU upload cap. This sum omits
-    // geometry buffers and CPU memory; retain the legacy numbers but make their basis explicit.
-    out.basis = 'source-images';
-    out.complete = false;
-    out.textureAgeSec = Number.isFinite(this.tex.at) ? round((performance.now() - this.tex.at) / 1000) : null;
     return out;
   }
 
@@ -177,18 +161,7 @@ class CrashLog {
 
   beat() {
     const t0 = performance.now();
-    try {
-      const s = this.snapshot();
-      const lagMs = Math.max(0, round(t0 - this.lastBeatAt - C.beatMs, 0));
-      this.lastBeatAt = t0;
-      this.history.push({ up: s.up, phase: s.phase, frame: s.frame, q: s.q?.lvl, px: s.px,
-        fps: s.fps, geo: s.gl3?.geo, tex: s.gl3?.tex, prog: s.gl3?.prog, calls: s.gl3?.calls,
-        tris: s.gl3?.tris, sourceTexMB: s.gpuMB?.tex, jsMB: s.jsMB?.[0], lagMs,
-        gl: this.glLost ? 'lost' : 'ok' });
-      if (this.history.length > C.historySamples) this.history.shift();
-      s.history = this.history.slice();
-      writeJSON(BEAT, s);
-    } catch { /* never in the way */ }
+    try { writeJSON(BEAT, this.snapshot()); } catch { /* never in the way */ }
     this.stats.beats++; this.stats.beatMs += performance.now() - t0;
     if (this.ctx && this.stats.beats % 5 === 0) this.layoutCheck('beat', true); // a deviation that has been there for 10 s
   }
@@ -267,7 +240,6 @@ class CrashLog {
   }
 
   mark(state) {
-    this.lastBeatAt = performance.now(); // background time is not a foreground stall
     const b = readJSON(BEAT, null);
     if (b && b.tab === this.tab) { b.s = state; b.t = Date.now(); writeJSON(BEAT, b); }
   }
@@ -289,27 +261,8 @@ class CrashLog {
       this.report('fel', 'rejection', { msg: clip(r?.message ?? r, 300), stack: clip(r?.stack, 1500) });
     });
     // context loss does not bubble: catch it on window in the capture phase
-    addEventListener('webglcontextlost', (e) => this.contextEvent(e, true), true);
-    addEventListener('webglcontextrestored', (e) => this.contextEvent(e, false), true);
-  }
-
-  /** Pair each loss/restoration without consuming GL errors or changing the renderer's recovery policy. */
-  contextEvent(e, lost) {
-    const canvas = this.ctx?.renderer?.domElement ?? document.getElementById('game-canvas');
-    if (!canvas || e.target !== canvas) return;
-    const now = performance.now();
-    if (lost) {
-      if (this.glLost) return; // duplicate dispatch while still lost is the same episode
-      this.contextLoss = { episode: ++this.contextEpisode, at: now, up: round((now - T0) / 1000, 1) };
-    }
-    const loss = this.contextLoss;
-    this.glLost = lost;
-    this.report('fel', lost ? 'webglcontextlost' : 'webglcontextrestored', {
-      context: { episode: loss?.episode ?? 0, lossUp: loss?.up ?? null,
-        durationMs: lost || !loss ? null : round(now - loss.at, 0),
-        status: clip(e.statusMessage, 160), missingLoss: !loss },
-    });
-    if (!lost) this.contextLoss = null;
+    addEventListener('webglcontextlost', () => { this.glLost = true; this.report('fel', 'webglcontextlost', {}); }, true);
+    addEventListener('webglcontextrestored', () => { this.glLost = false; this.report('fel', 'webglcontextrestored', {}); }, true);
   }
 
   hookActions() {
@@ -324,16 +277,13 @@ class CrashLog {
   report(typ, kind, extra) {
     if (!this.on) return false;
     try {
-      // Repeated errors still coalesce; distinct context episodes / dead tabs must survive both
-      // client and Worker daily deduplication. Retries keep the exact same signature.
-      const event = extra.context ? `${this.tab}:${extra.context.episode}` : typ === 'död' ? extra.beat?.tab : '';
-      const sig = `${typ}:${kind}:${clip(extra.msg, 80)}:${extra.beat?.at?.room ?? ''}:${event ?? ''}`;
+      const sig = `${typ}:${kind}:${clip(extra.msg, 80)}:${extra.beat?.at?.room ?? ''}`;
       const day = new Date().toISOString().slice(0, 10), sent = readJSON(SENT, {});
       const rec = sent.d === day ? sent : { d: day, n: 0, sigs: [] };
       if (this.sessionSent >= C.perSession || rec.n >= C.perDay || rec.sigs.includes(sig)) { this.stats.dropped.push(sig); return false; }
       this.sessionSent++; rec.n++; rec.sigs.push(sig);
       writeJSON(SENT, rec);
-      const r = { v: 2, typ, kind, ts: Date.now(), sid: this.tab, pid: this.pid, build: extra.beat?.build ?? BUILD, sig, ...extra };
+      const r = { v: 1, typ, kind, ts: Date.now(), sid: this.tab, pid: this.pid, build: BUILD, sig, ...extra };
       if (typ !== 'död') r.snap = this.snapshot();
       r.errs = this.errs.slice(-C.errorLines);
       this.send(r);
@@ -344,19 +294,12 @@ class CrashLog {
   /** The report as JSON under C.maxBytes: shed the least useful parts first. */
   static fit(r) {
     let body = JSON.stringify(r);
-    const bytes = () => new TextEncoder().encode(body).length;
     for (const cut of [(x) => { delete x.errs; }, (x) => { for (const b of [x.beat, x.snap]) if (b) delete b.acts; }, (x) => { if (x.stack) x.stack = x.stack.slice(0, 300); },
       (x) => { for (const b of [x.beat, x.snap]) if (b) { delete b.errs; delete b.ua; } }]) {
-      if (bytes() <= C.maxBytes) break;
+      if (body.length <= C.maxBytes) break;
       cut(r); body = JSON.stringify(r);
     }
-    // Prefer the most recent pre-failure samples when a large error stack crowds the report.
-    while (bytes() > C.maxBytes) {
-      const b = r.beat ?? r.snap;
-      if (!b?.history?.length) return null;
-      b.history.shift(); body = JSON.stringify(r);
-    }
-    return body;
+    return body.length <= C.maxBytes ? body : null;
   }
 
   send(r) {

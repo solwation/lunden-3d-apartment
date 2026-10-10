@@ -21,14 +21,12 @@ src/leaderboard.js     the global leaderboard (#198), only with the cloud on: op
                        (#lb-start) and under the stats (setStatsExtra); the score (stats.js totalScore, SCORE in config) is
                        POSTed as text/plain when changed, every LEADERBOARD.every s, sendBeacon when hidden; names escaped
 src/crashlog.js        crash reports (#629), inert without the cloud (same switch as cloud.js): a heartbeat every CRASHLOG.beatMs (outside the
-                       render loop) writes place, quality level, fps, renderer.info, a GPU-memory ESTIMATE (canvas, shadow map,
-                       mirror target, source texture images — walked in short slices; incomplete, not measured GPU usage), last keys/taps and console.error lines to localStorage
+                       render loop, ~0.08 ms) writes place, quality level, fps, renderer.info, a GPU-memory ESTIMATE (canvas, shadow map,
+                       mirror target, uploaded textures — walked in short slices), last keys/taps and console.error lines to localStorage
                        'lunden.crash.beat' (state run / bg on hidden / clean on pagehide). At the next start a beat still 'run' (and not
                        a live other tab) = the last run died → sent as typ 'död' (a hypothesis: memory); window error, unhandledrejection,
                        webglcontextlost/restored → typ 'fel'. POST /crash as text/plain (fetch, sendBeacon when hidden; unsent ones wait
-                       in 'lunden.crash.out'); v2 keeps 12 heartbeat samples (~24 s) with frame progress, load phase and timer lag.
-                       WebGL loss/recovery pairs carry an episode number and recovery duration; each episode and abrupt ending has its
-                       own dedup signature. Caps: 12 per page, 20 per day; ordinary errors still once per signature/day (CRASHLOG in config). Keys: lunden.crash.pid
+                       in 'lunden.crash.out'); caps per page / per day / per signature (CRASHLOG in config). Keys: lunden.crash.pid
                        (random id), .sent, .out kept by Återställ (RESET_KEEP), .beat dropped. main.js: the import (first) and one
                        `crashlog.attach({...})` line. A later GPU-memory counter (#628) should replace `gpuMB()` rather than duplicate it
 cloudflare/crash.js    POST /crash, admin GET /crash and /crash/<id>, DELETE /admin/crash: size cap 16 kB, plain-data cleaning, per-IP hour
@@ -47,7 +45,7 @@ tools/resettest.html   headless test of "Återställ" (#303) against `node cloud
                        photo stay, START at the real time with the notice; the queued drawing still goes out; a later reload fresh
 tools/crashtest.cjs    Playwright test of the crash reports (#629) against dev.mjs with a token: off without the cloud, heartbeat content and
                        cost, Page.crash → 'död' at the next start, clean / backgrounded → none, thrown error / rejection / context loss,
-                       two real WebGL loss/recovery cycles preserved through the public API, duplicates and a flood capped (`node cloudflare/dev.mjs 8144 tok`, see its header)
+                       duplicates and a flood capped (`node cloudflare/dev.mjs 8144 tok`, see its header)
 tools/cloudtest.html   headless test of the shared world against `node cloudflare/dev.mjs 8144` (start it first): PUT on
                        taping, someone else's drawing appears, DELETE on throwing, thrown elsewhere → gone here, offline
                        queue, desk sheet, cat photos neither sent nor fetched (#211), a fresh visitor gets them, the
