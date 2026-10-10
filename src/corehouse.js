@@ -212,10 +212,12 @@ export class CoreHouse {
     this.edgeLines = architectureEdges(group, { moving: [...this.doors.map((t) => t.door.pivot), this.lift.car, ...this.lift.carDoors, ...this.lift.landing.flat()] });
     group.traverse((o) => { delete o.userData.edgeSources; });
 
-    // where the camera must be for it to be drawn: near the core, or looking in through the entrance
-    const rs = [[B.x0, B.x1, B.z0, B.z1], this.car, ...this.floors.map((f) => f.r), ...this.zones.map((z) => z.r)];
-    const margin = 12; // (Hus A's: 16)
-    this.near = [Math.min(...rs.map((r) => r[0])) - margin, Math.max(...rs.map((r) => r[1])) + margin, Math.min(...rs.map((r) => r[2])) - margin, Math.max(...rs.map((r) => r[3])) + margin];
+    // where the camera must be for it to be drawn: within 6 m of the core, or out in front of the entrance (the lobby shows through the glass
+    // door): 14 m out along the door's face, 5 m either side (a wider margin drew the lift's ~30 meshes from the whole courtyard, perfcount #592)
+    const rs = [[B.x0, B.x1, B.z0, B.z1], this.car, ...this.floors.map((f) => f.r), ...this.zones.map((z) => z.r)], m = 6;
+    this.near = rs.map((r) => [r[0] - m, r[1] + m, r[2] - m, r[3] + m]);
+    const [d0, d1] = E.door, out = 14, side = 5;
+    this.near.push(nzf ? [d0 - side, d1 + side, E.line - out, E.line + m] : [E.line - m, E.line + out, d0 - side, d1 + side]);
   }
 
   placeDoor(d) {
@@ -296,7 +298,7 @@ export class CoreHouse {
       this.placeDoor(d);
     }
     this.lift.update(dt, player);
-    const c = camera.position, n = this.near;
-    this.object.visible = c.x > n[0] && c.x < n[1] && c.z > n[2] && c.z < n[3] && c.y > this.Y[0] - 1 && c.y < this.CEILTOP + 3;
+    const c = camera.position;
+    this.object.visible = c.y > this.Y[0] - 1 && c.y < this.CEILTOP + 3 && this.near.some((n) => c.x > n[0] && c.x < n[1] && c.z > n[2] && c.z < n[3]);
   }
 }

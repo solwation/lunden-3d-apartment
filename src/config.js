@@ -420,7 +420,7 @@ export const SITE = {
         { face: 'e', a0: 46.1, a1: 48.1, depth: 1.0, from: 0, to: 0, door: 0 }] },
     { name: 'Hus C', x0: -70.6, x1: -51.4, z0: 12.6, z1: 36.68, base: 0, storeys: 5, roof: 'hip', hip: {}, // våning 1…5; no roof plan: the defaults (#348)
       corners: { nw: [5.5, 2.1], ne: [2.0, 4.15], se: [5.4, 2.0], sw: [6.1, 2.0] },
-      recesses: [{ face: 'e', a0: 21.5, a1: 24.8, depth: 2.0, door: 0 }] },                // the entrance, loggias above it
+      recesses: [{ face: 'e', a0: 21.5, a1: 24.8, depth: 2.0, door: 0, walkIn: true }] },  // the entrance, loggias above it; a real door into the stair core (#639, CORE_C)
     // outside the plot (#47): the old S:t Lars hospital buildings, as on Peab's drone photo and aerial
     // render (docs/peab/): red brick with white trim, steep dark hip roofs, high storeys and tall
     // white windows. Storey counts and heights are read off those pictures — guesses, not surveyed.
@@ -1589,9 +1589,13 @@ export const GARAGE = {
     {id: 'bandFarW',x0: -41.45,x1: -35.6,z0: 7.79,z1: 12.11,room: 'Källarpassage',area: 'basementW'},
     {id: 'bikeStorageGap',x0: -11.08,x1: -10.78,z0: 3.2,z1: 4.8,room: 'Hyrförråd',area: 'basementE'},
     {id: 'hallCNiche',x0: -53.4,x1: -51.4,z0: 21.3,z1: 25,room: 'Garage',area: 'hallW'},
-    {id: 'passageC',x0: -62.3,x1: -60.55,z0: 15.5,z1: 34.01,room: 'Trapphus C',area: 'entrance'},
+    // #639: Hus C's stair core (CORE_C, src/corehouse.js): the corridor (m1: inner faces x −62.32 … −60.42) is split into the part north of
+    // the hall, the `core` rect (the hall + stair + lift lobby, z 20.12 … 30.54) and the dead end south of the stair's wall
+    {id: 'passageCN',x0: -62.34,x1: -60.44,z0: 15.5,z1: 20.12,room: 'Trapphus C',area: 'entrance'},
+    {id: 'coreC',x0: -62.34,x1: -60.44,z0: 20.12,z1: 30.54,room: 'Trapphus C',area: 'entrance',core: true},
+    {id: 'passageCS',x0: -62.34,x1: -60.44,z0: 30.88,z1: 34.01,room: 'Trapphus C',area: 'entrance'},
     {id: 'entryC',x0: -62.1,x1: -61.1,z0: 34.01,z1: 34.52,room: 'Trapphus C',area: 'entrance',door: {kind: 'steel',hinge: 'x0',open: 1,name: 'dörren till trapphus C'}},
-    {id: 'passageCE',x0: -60.55,x1: -53.9,z0: 23.3,z1: 24.6,room: 'Trapphus C',area: 'entrance'},
+    {id: 'passageCE',x0: -60.44,x1: -53.9,z0: 23.44,z1: 24.6,room: 'Trapphus C',area: 'entrance'},
     {id: 'entryCE',x0: -53.9,x1: -53.4,z0: 23.4,z1: 24.4,room: 'Trapphus C',area: 'entrance',door: {kind: 'steel',hinge: 'x0',open: -1,name: 'dörren till hisshallen C'}},
     {id: 'storeCNW',x0: -69.9,x1: -64.8,z0: 17.25,z1: 24.3,room: 'Förråd C',area: 'entrance'},
     {id: 'storeCNWWing',x0: -64.8,x1: -62.8,z0: 19.05,z1: 22.95,room: 'Förråd C',area: 'entrance'},
@@ -1887,6 +1891,50 @@ export const CORE_B = {
   entrance: { face: 'n', line: 35.4, door: [-34.45, -33.55], side: null, height: 2.2, hinge: 'hi', cut: [-34.45, -33.55], name: 'porten till trapphus B' },
   numbers: { x: -31.16, z: 44.0, dir: -1 },     // the floor number plates on the east wall (facing west)
   lights: [[-34.1, 37.3], [-34.1, 40.3], [-34.0, 42.8]], // the lobby's lamps [x, z]
+};
+
+// Hus C (våning −1, 1 … 5 = y −3, 0, 3, 6, 9, 12; the entrance recess in the east face, våning 1 = the courtyard's level): the stair hall
+// band x −62.34 … −60.44 running north–south from z 20.12 (the hall's north wall; on −1 the garage corridor goes on north) to
+// the stair's south wall (z 30.54); the stair (two flights side by side from z 27.75, winders round the stringer's end z 29.7) at its south end, the
+// lift WEST of the hall (car x −64.98 … −62.90, z 23.45 … 24.8, door east through the 0.56 m front wall x −62.90 … −62.34). On
+// våning 1 the lobby from the entrance door (x −53.4, the recess's back wall: a door z 23.15 … 24.05 with a fixed pane z 22.3 … 23.1 beside
+// it) runs west (x −57.54 … −53.34, z 21.5 … 24.92, then the strip z 23.44 … 24.92 to the hall's east wall, whose opening is z 23.44 … 24.92).
+// On −1 the same opening (z 23.44 … 24.6) leads east to the steel door 'entryCE' (hisshallen C) and the hall's north end is open to the
+// corridor north (garage rect `passageCN`); the south end is closed (the stair), so the garage rect `passageCS` is a dead end behind
+// the steel door 'entryC'. The entrance (the courtyard's level, y 0) and the garage hall (y −3) differ by one storey: the stair and the lift.
+export const CORE_C = {
+  house: 'Hus C',
+  stops: [-3, 0, 3, 6, 9, 12],            // våning −1, 1 … 5 = SITE.blocks 'Hus C' base 0 + n × SITE.storey; −1 = GARAGE.floor (*guess*: equal storeys)
+  labels: ['−1', '1', '2', '3', '4', '5'],
+  slab: 0.25, ceilingTop: 2.7,
+  band: { x0: -62.34, x1: -60.44, z0: 20.12, z1: 30.54 },
+  stair: { top: 27.75, run: 29.7, well: [-61.44, -61.34], risers: 16, straight: 4, tread: 0.28, guard: 1.1 },
+  car: { x0: -64.98, x1: -62.90, z0: 23.45, z1: 24.8 },
+  lift: { side: 'e', front: -62.9, wall: -62.34, door: [23.7, 24.75], speed: 1.0, accel: 0.6, doorTime: 1.4, wait: 6, rescue: 0.25 },
+  walls: [
+    { ax: 'x', t: [-62.64, -62.34], a: [19.82, 22.9], s: [0, 5], holes: [{ a: [20.2, 21.0], h: 2.1, s: [1, 5], leaf: true }] },  // the hall's west wall north of the lift
+    { ax: 'x', t: [-62.9, -62.34], a: [22.9, 25.3], s: [0, 5], holes: [{ a: [23.7, 24.75], h: 2.1 }] },                            // the lift's front wall: a doorway at every stop
+    { ax: 'z', t: [22.9, 23.45], a: [-65.32, -62.9], s: [0, 5] }, { ax: 'z', t: [24.8, 25.3], a: [-65.32, -62.9], s: [0, 5] },   // the shaft's north and south walls
+    { ax: 'x', t: [-65.32, -64.98], a: [22.9, 25.3], s: [0, 5] },                                                                    // … and west wall
+    { ax: 'x', t: [-62.64, -62.34], a: [25.3, 30.88], s: [0, 5], holes: [{ a: [25.5, 26.4], h: 2.1, s: [1, 5], leaf: true }] },  // west wall south of the lift
+    { ax: 'x', t: [-60.44, -60.14], a: [19.82, 30.88], s: [0, 5], holes: [
+      { a: [23.44, 24.6], h: 2.1, s: [0, 0] }, { a: [23.44, 24.92], h: 2.1, s: [1, 1] },                                     // −1: to the steel door, 1: into the lobby
+      { a: [20.2, 21.0], h: 2.1, s: [1, 5], leaf: true }, { a: [25.5, 26.4], h: 2.1, s: [1, 5], leaf: true }] },
+    { ax: 'z', t: [19.82, 20.12], a: [-62.64, -60.14], s: [0, 5], holes: [{ a: [-62.34, -60.44], h: 2.1, s: [0, 0] }] },       // north wall (−1: the corridor goes on)
+    { ax: 'z', t: [30.54, 30.88], a: [-62.64, -60.14], s: [0, 5] },                                                                  // the stair's south wall
+    // våning 1's lobby
+    { ax: 'z', t: [23.0, 23.44], a: [-60.14, -57.54], s: [1, 1] },
+    { ax: 'x', t: [-57.84, -57.54], a: [21.2, 23.44], s: [1, 1] },
+    { ax: 'z', t: [21.2, 21.5], a: [-57.84, -53.34], s: [1, 1] },
+    { ax: 'z', t: [24.92, 25.26], a: [-60.14, -53.34], s: [1, 1] },
+    { ax: 'x', t: [-53.46, -53.34], a: [21.5, 24.92], s: [1, 1], holes: [{ a: [23.15, 24.05], h: 2.2 }, { a: [22.3, 23.15], h: 2.2, glass: true }] },
+  ],
+  floors: [{ r: [-60.44, -57.54, 23.44, 24.92], s: 1 }, { r: [-57.54, -53.34, 21.5, 24.92], s: 1 }],
+  cap: [-65.32, -62.34, 22.9, 25.3],
+  pit: [-62.34, -60.44, 27.75, 30.54],        // the stair well's footprint: a hole in the terrain mesh (the courtyard-level grass inside Hus C's footprint, y 0, would cover the flights below våning 1)
+  entrance: { face: 'e', line: -53.4, door: [23.15, 24.05], side: [22.3, 23.1], height: 2.2, hinge: 'hi', cut: [22.3, 24.05], name: 'porten till trapphus C' },
+  numbers: { x: -60.44, z: 22.0, dir: -1 },
+  lights: [[-59.0, 24.2], [-55.5, 23.2]],
 };
 
 // The lightsaber in Sovrum 2 (#78, src/saber.js): since #324 on two pegboard hooks on the Nerf board's top row (the

@@ -3,7 +3,7 @@ import {buildWestBackdrop,buildEastBackdrop,buildNorthBackdrop,westTreeSpots,eas
 import { buildRiverPark, parkDeckAt, parkTreeSpots, parkShrubSpots } from './riverpark.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { SITE as S, COLORS, SEASON, COURTYARD, GARAGE, CORE_A, CORE_B, NEIGHBOR_OPENINGS as O } from './config.js';
+import { SITE as S, COLORS, SEASON, COURTYARD, GARAGE, CORE_A, CORE_B, CORE_C, NEIGHBOR_OPENINGS as O } from './config.js';
 import { neighborGlass } from './neighborglass.js';
 import { registerTrees, registerSnow } from './seasons.js';
 import { buildStreet } from './street.js';
@@ -40,7 +40,7 @@ const westEdge = (z) => (z < Wst.stair.z1 ? Wst.stair.x1 : Wst.x);
 const DOORWAY_DEPTH = 0.3;
 /** A block's walk-in entrance (#637, #638, #639): its recess `walkIn` (face 'n' or 'e') + the stair core's entrance spec (CORE_A / B / C in
  *  config: `door` = the leaf's range along the face, `height`, `cut` = the opening through the recess's back wall, default the whole recess). */
-const CORES = { 'Hus A': CORE_A, 'Hus B': CORE_B };
+const CORES = { 'Hus A': CORE_A, 'Hus B': CORE_B, 'Hus C': CORE_C };
 const walkIn = (b, r) => { const E = r.walkIn ? CORES[b.name]?.entrance : null; return E ? { E, door: E.door, height: E.height, cut: E.cut ?? [r.a0, r.a1] } : null; };
 /** The Å-husen's entrance recesses as walkable floors (#355): a rectangle inside the house at the recess's lowest
  * storey's floor (the courtyard's level for Hus A's / B's north entrances, the park level for their side doors). */
@@ -108,6 +108,8 @@ export const terrainNorth = Math.min(E.profile[0][0], Wst.profile[0][0]);
 let terrainSurface = (x,z) => terrainY(x,z)-.01;
 /** Rendered triangle surface for background planting/paths; no change to the player's ground queries. */
 export const renderedTerrainY = (x,z) => terrainSurface(x,z);
+/** Holes in the terrain mesh [x0, x1, z0, z1]: Hus C stands at the courtyard's level (y 0), so its stair well (CORE_C.pit) would be covered by the grass (#639). */
+const TERRAIN_PITS = [CORE_C.pit];
 function terrainGeometry() {
   const St = Wst.stair, z0 = terrainNorth;
   const xs = new Set([S.backgroundGround.x0, -200, 200, S.backgroundGround.x1, E.x0 - 0.01, E.x0 + 0.01, E.x1, E.x1 + E.blend, E.gable, E.level, E.walk, R.x0 + 0.01, R.x1 - 0.01, R.x1 + 0.01,
@@ -124,6 +126,7 @@ function terrainGeometry() {
       return n ? { x0: r.a0, x1: r.a1, z0: c0, z1: c1 } : { x0: c0, x1: c1, z0: r.a0, z1: r.a1 }; }) }));
   for (const f of pits) { xs.add(f.x0); xs.add(f.x1); zs.add(f.z0); zs.add(f.z1); for (const k of f.keep) { xs.add(k.x0); xs.add(k.x1); zs.add(k.z0); zs.add(k.z1); } }
   const inPit = (x, z) => pits.some((f) => x > f.x0 && x < f.x1 && z > f.z0 && z < f.z1 && !f.keep.some((k) => x > k.x0 && x < k.x1 && z > k.z0 && z < k.z1));
+  for (const p of TERRAIN_PITS) { xs.add(p[0]); xs.add(p[1]); zs.add(p[2]); zs.add(p[3]); }
   const X = [...xs].sort((a, b) => a - b), Z = [...zs].filter((z) => z >= z0).sort((a, b) => a - b);
   const pos = [], idx = [], cells=new Map();
   for (const z of Z) for (const x of X) pos.push(x, terrainY(x, z) - 0.01, z);
@@ -133,6 +136,7 @@ function terrainGeometry() {
     const mx = (X[i] + X[i + 1]) / 2, mz = (Z[j] + Z[j + 1]) / 2;
     if (mz < T.north && mx > westEdge(mz) && mx < E.gable) continue; // world.js's flat plate
     if (inPit(mx, mz)) continue; // under Hus A / B (see above)
+    if (TERRAIN_PITS.some((p) => mx > p[0] && mx < p[1] && mz > p[2] && mz < p[3])) continue; // a stair well's footprint (#639)
     if (Math.abs(mx - T.garageDoor.x) < 0.02 && mz > T.garageDoor.z0 && mz < T.garageDoor.z1) continue; // the box edge's face: the garage door's opening (#357)
     // Refine only the river corridor, including a flat buffer outside the widest bank.
     // Boundary samples interpolate any adjacent coarse edge, so mixed cells remain watertight.
@@ -811,9 +815,10 @@ function aHouse(b) {
     geo.clearGroups();
     // #637: a house with a walk-in entrance is hollow inside (the stair core): the bands' caps between its storeys (the
     // recess's own floor and ceiling are `loggias` slabs) would be floors across the stair well, so they go
-    const walk = (b.recesses ?? []).some((r) => r.walkIn);
-    const inner = (y) => walk && y > b.base + 0.01 && y < b.base + b.storeys * S.storey - 0.01;
-    const body = walk ? splitTris(geo.index ? geo.toNonIndexed() : geo, (nx, nz, x, z, y, ny) => Math.abs(ny) > 0.9 && inner(y))[1] ?? geo : geo;
+    // (also the lowest cap, the underside at the base: Hus C stands at y 0 and its stair well is open down to the basement, #639)
+    const walk = (b.recesses ?? []).some((r) => r.walkIn), top = b.base + b.storeys * S.storey;
+    const inner = (y, ny) => walk && y < top - 0.01 && (ny < -0.9 || y > b.base + 0.01);
+    const body = walk ? splitTris(geo.index ? geo.toNonIndexed() : geo, (nx, nz, x, z, y, ny) => Math.abs(ny) > 0.9 && inner(y, ny))[1] ?? geo : geo;
     geos.push(entranceCuts(basementDoorCuts(body, b), b));
     st = end;
   }
