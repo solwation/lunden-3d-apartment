@@ -112,6 +112,7 @@ class CrashLog {
         s.gl3 = { geo: i.memory.geometries, tex: i.memory.textures, prog: i.programs?.length ?? 0, calls: i.render.calls, tris: i.render.triangles };
         s.frame = n;
         s.phase = window.__app?.warm?.state ?? 'scene';
+        if (window.__app?.warm && !window.__app.warm.done) s.warm = window.__app.warm.detail; // where the sliced warm-up is (#669)
         const gl = renderer.getContext();
         s.buffer = [gl.drawingBufferWidth, gl.drawingBufferHeight];
         s.maxTextureSize = renderer.capabilities.maxTextureSize;
@@ -181,7 +182,9 @@ class CrashLog {
       const s = this.snapshot();
       const lagMs = Math.max(0, round(t0 - this.lastBeatAt - C.beatMs, 0));
       this.lastBeatAt = t0;
-      this.history.push({ up: s.up, phase: s.phase, frame: s.frame, q: s.q?.lvl, px: s.px,
+      const fd = this.ctx?.frameDiag, worst = fd && fd.ms >= 50 ? [round(fd.ms, 0), fd.progs, fd.shadow, fd.warm] : undefined; // the slowest frame since the last beat: [CPU ms, new programs, shadow redraw, warm-up state] (#669)
+      if (fd) fd.ms = 0;
+      this.history.push({ up: s.up, phase: s.phase, warm: s.warm, worst, frame: s.frame, q: s.q?.lvl, px: s.px,
         fps: s.fps, geo: s.gl3?.geo, tex: s.gl3?.tex, prog: s.gl3?.prog, calls: s.gl3?.calls,
         tris: s.gl3?.tris, sourceTexMB: s.gpuMB?.tex, jsMB: s.jsMB?.[0], lagMs,
         gl: this.glLost ? 'lost' : 'ok' });

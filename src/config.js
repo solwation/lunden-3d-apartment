@@ -2356,7 +2356,14 @@ export const QUALITY = {
   detail: [0.6, 0.75, 0.9, 1],
   particles: [0.35, 0.6, 0.85, 1],
 };
-export const WARM = { frames: 3, sliceMs: 8 };
+// #669 (phone, `sliced`): iPhone crash reports show ONE frame of 4.4-4.7 s (the heartbeat's lagMs) in the warm-up's
+// `compiling` phase right before WebGL context loss; ~110 programs of the mirror variants compile in one frame (SwiftShader:
+// 109 programs = 1 s on a desktop CPU; ANGLE's shader translation is on the main thread; a phone is several times slower, *guess*)
+// and the draw-everything frame uploads ~1250 geometries and ~100 textures at once. So on phones the warm-up works in slices:
+// `programs` new programs / `compileMs` ms per frame, `batch` objects per renderer.compile call, `drawObjects` objects or
+// `drawVertices` vertices per draw slice, `ready` ms at most waiting for a slice's programs (KHR_parallel_shader_compile) and
+// `timeout` ms at most for any compile wait (a wait that never ends kept the warm-up in `compiling` for ever). Not measured on a device.
+export const WARM = { frames: 3, sliceMs: 8, programs: 4, compileMs: 20, batch: 8, drawObjects: 120, drawVertices: 200000, ready: 1500, timeout: 8000 };
 // `budget` (#592, tools/perfcount.html fails past it): per view at the highest quality level, `calls` draw calls and
 // `tris` triangles at any perfcount spot, `texMB` the estimated GPU memory of every material's textures (w × h × 4 bytes
 // + mips, capped at the device's texture size); `lowMemory` the same on phones (`?lowmem`). About 20 % over what the

@@ -339,3 +339,42 @@ room looks slightly crisper, nothing else changes).
 Ghosts (#666, `src/ghosts.js`): each other player costs two draw calls (one merged body mesh with vertex colours, one name tag
 sprite), no shadow pass, at most `GHOSTS.max` (30); hidden beyond `GHOSTS.far`, the tag beyond `GHOSTS.tagFar`. One shared body
 geometry; one small 256 × 64 tag texture per distinct name (shared, disposed with its last ghost). Nothing exists without other players.
+
+## iPhone loses the WebGL context after one very long frame (#669 — not verified on a device)
+
+Crash reports (`/crash/public`, 2026-10-10/11, three iPhone 14 Pro cases, all `low: 1`): fps ~53 → 5–15, **one frame of 4.4–4.7 s**
+(`lagMs`), `webglcontextlost` → `restored`, the warm-up `phase` still `compiling` at up 112 s, draw calls 150–220 → 878–906,
+`prog` 298 → 299, plus two `Script error.` (kind `error`, up 7 s, `phase: compiling`).
+
+**What was measured** (headless Chromium, iPhone 14 Pro profile 844×390 @3, `?lowmem&perf&warm`, SwiftShader — frame times are
+not iPhone times; counts are):
+
+| finding | evidence |
+|---|---|
+| **The draw-call jump is the shadow pass, not a new view.** | `info.render.calls` is per `render()` and includes the sun's shadow pass: 209 in the first frame, **845** in the frame that redraws the shadow map (the `hitch` log: `shadow:true`, `shadowMap` 11 s under SwiftShader). A shadow redraw every 1 s (levels 0–1; 0.5 s at level 2) lands in any heartbeat sample, so 150–220 → ~900 is normal, not a spike. perfcount phone views stay at 44–305 calls. |
+| **A material disposed while the warm-up compiles leaves it in `compiling` for ever.** | three's `compileAsync` polls `properties.get(material).currentProgram.isReady()` in a bare `setTimeout`; a disposed material has no program → `TypeError … reading 'isReady'` (a "Script error." on the device: three comes from another origin), the promise never settles. Reproduced: dispose 5 scene materials while the state is `compiling` → still `compiling` after 150 s (`warm.done` false: no adaptive quality, mirror variants and the draw-everything frame never done). Matches the reports (`phase: compiling` at up 112 s, `Script error.` at up 7 s = when the compile starts). The device's parallel shader compile (KHR_parallel_shader_compile) makes that window long enough to hit. |
+| **The heavy stages were each ONE frame.** | Stage 3 (mirror variants) compiles 109 programs in one frame (SwiftShader 1 s sync on a desktop CPU; `lagMs` 4.4–4.7 s on the phone fits ~110 programs × ~40 ms of main-thread shader translation — a *guess*), the draw-everything frames upload ~1250 geometries / ~100 textures at once (8 s and 15 s under SwiftShader). With the warm-up stuck in `compiling`, all of that happens at first sight *while playing*. |
+| Not reproduced: the context loss itself (SwiftShader has no iOS watchdog). | The long frame is the best explanation, not proven. |
+
+**Fixes (phones: `sliced`, `lowMemory`; the robustness part is for everyone):**
+- `src/warmup.js` `whenReady()` replaces `compileAsync`: every program read is guarded, it gives up after `WARM.timeout`
+  (8 s) and never leaves the state machine. After the same dispose test the warm-up runs on to `done` (desktop and phone).
+- `sliced` compile (`WARM.programs` 4 new programs or `WARM.compileMs` 20 ms per frame, `renderer.compile` per `WARM.batch` 8
+  objects through a stand-in scene; the next slice when the last one's programs are ready, at most `WARM.ready` 1.5 s):
+  the most new programs in one frame while warming is 5–15 (draw slices: shadow depth programs), not 109.
+- `sliced` draw: `WARM.drawObjects` 120 objects or `WARM.drawVertices` 200 000 vertices per frame (33 slices per pass; the rest
+  sit on layer 31 for that one render, the cameras skip it; layers, not `visible`, so children of hidden meshes still draw;
+  a single huge merged mesh still gets one slice of its own).
+- Diagnostics (`src/crashlog.js`, `frameDiag` in `main.js`): every heartbeat sample has `warm` (`compiling 12/113`, `drawing
+  3/33 mirror`, only until done) and `worst` = [CPU ms, new programs, shadow redraw, warm state] of the slowest frame ≥ 50 ms
+  since the last beat — the next report shows directly whether a long frame was a compile, a first draw or a shadow redraw.
+- #662's values (pixel ratio 1.25, shadow map 1536) are **unchanged**: nothing measured implicates them (the same loss happened
+  at px 0.6 before #662).
+
+SwiftShader run, complete warm-up in the phone profile, sliced: `done` after 554 s (every frame is seconds under SwiftShader;
+on a phone a slice is a normal frame plus a few ms), 262 programs (old: 242), 66 draw slices, `hidden textures left for later`.
+
+**Still open (not done, no measurement possible without a device):** the *first* real frame compiles ~70 programs and uploads
+~2700 buffers / ~100 textures before the warm-up starts (frame 0: 71 programs, 14 s under SwiftShader); materials made after the
+start (cups, cat coats, new life items) still compile on first sight; `worst`/`warm` in the next iPhone report will say which
+of them (if any) is still a multi-second frame. Verify on a real iPhone.

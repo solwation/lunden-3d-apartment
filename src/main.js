@@ -2366,13 +2366,15 @@ quality.register('detail', { // DetailCuller's distances (#189, #460): small thi
 // Warm-up (#432, #592, src/warmup.js): compile and upload everything behind the start screen, the mirrors' variants too.
 const warm = new WarmUp({ renderer, scene, camera, shadowCamera: sun.shadow.camera, mirrorTarget,
   prepare: () => { lights.wash?.patch(scene); visitLights.wash?.patch(scene); }, // (#668: both lamp washes' periodic patch, now)
-  skip: /HeadlessChrome/.test(navigator.userAgent) && !params.has('warm'), lazyHidden: lowMemory, log: perfEl ? (t) => console.log(t) : null,
+  skip: /HeadlessChrome/.test(navigator.userAgent) && !params.has('warm'), lazyHidden: lowMemory, sliced: lowMemory, log: perfEl ? (t) => console.log(t) : null,
   onSlowFrame: () => clock.getDelta() }); // (a slow warm-up frame is no reason to lower the resolution)
 freeSceneGeometryCopies(scene, renderer); // phone: normals / uv / colours leave the CPU after the first upload (#628)
 let mirrorFrame = 0;
+// The slowest frame since the crash heartbeat last looked (#669): its CPU time, the new programs it compiled, whether it redrew the shadow map and the warm-up state
+const frameDiag = { ms: 0, progs: 0, shadow: 0, warm: '' };
 /** One frame of the game loop; `raw` = seconds since the last one (tools/turntest.html calls it with the loop stopped). */
 function frame(raw) {
-  const dt = Math.min(raw, 0.05);
+  const dt = Math.min(raw, 0.05), f0 = performance.now(), p0 = renderer.info.programs?.length ?? 0;
   hitch.begin();
   // only while playing, after the warm-up, and not with a pinned level
   if (!overlay.hidden || document.hidden || pinned !== null || !warm.done) quality.reset();
@@ -2394,6 +2396,8 @@ function frame(raw) {
   renderer.render(scene, camera);
   hitch.phase('render');
   hitch.end();
+  const fMs = performance.now() - f0;
+  if (fMs > frameDiag.ms) Object.assign(frameDiag, { ms: fMs, progs: (renderer.info.programs?.length ?? 0) - p0, shadow: renderer.shadowMap.needsUpdate ? 1 : 0, warm: warm.detail });
   if (perfEl) showPerf();
 }
 renderer.setAnimationLoop(() => frame(clock.getDelta()));
@@ -2626,6 +2630,6 @@ if (lifeDev()) devScenario({ life, world, holdables, cups, things, milk, fish, f
 document.documentElement.classList.remove('resuming'); // the page is ready: off with the "Laddar…" cover (#222)
 hideLoading();
 
-crashlog.attach({ renderer, camera, quality, player, world, sun, scene, mirrorTarget }); // what the crash heartbeat shows (#629)
+crashlog.attach({ renderer, camera, quality, player, world, sun, scene, mirrorTarget, frameDiag }); // what the crash heartbeat shows (#629)
 // handle for tests/debugging (tools/touchtest.html, tools/perfcount.html)
 window.__app = { visitLights, power, olof, olofDriver, beerCans, frame, hitch, warm, christmas, plantWind, cheats, cheatNote, showCheatNote, beerShelf, hallCare, bedCare, tableSetting, watering, laundry, compass, showOverlay, resumeFromMenu, interactionOutline, eggs, isPhoneDevice, get activeMode() { return activeMode; }, set activeMode(v) { activeMode = v; }, rearrange, showTerminal, quality, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, suit, toaster, life, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, goToStart, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS };

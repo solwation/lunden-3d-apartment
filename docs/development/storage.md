@@ -27,6 +27,8 @@ src/crashlog.js        crash reports (#629), inert without the cloud (same switc
                        a live other tab) = the last run died → sent as typ 'död' (a hypothesis: memory); window error, unhandledrejection,
                        webglcontextlost/restored → typ 'fel'. POST /crash as text/plain (fetch, sendBeacon when hidden; unsent ones wait
                        in 'lunden.crash.out'); v2 keeps 12 heartbeat samples (~24 s) with frame progress, load phase and timer lag.
+                       Since #669 each sample also has `warm` (the sliced warm-up's position, e.g. `compiling 12/113`) and `worst` = the slowest
+                       frame since the last beat when it took 50 ms or more: [CPU ms, new shader programs, shadow-map redraw 0/1, warm-up state].
                        WebGL loss/recovery pairs carry an episode number and recovery duration; each episode and abrupt ending has its
                        own dedup signature. Caps: 12 per page, 20 per day; ordinary errors still once per signature/day (CRASHLOG in config). Keys: lunden.crash.pid
                        (random id), .sent, .out kept by Återställ (RESET_KEEP), .beat dropped. main.js: the import (first) and one
