@@ -96,7 +96,7 @@ src/car.js             our white Renault Megane E-Tech (CAR, #173; the model fro
                        `drawScreen`) shows now playing; it plays on after you get out, stops when the key sends the car away or on F;
                        the house speakers are ducked while you sit with it on; stats carMusic (per song)
 src/signs.js           hand-lettered name signs on the bedroom doors (DOOR_SIGNS)
-tools/patiotest.html   headless test of the patio seasons (parasol, beers, snowman) + sofa collision; a cup on the cushion box's shut lid keeps it shut (#447)
+tools/patiotest.html   headless test of the patio seasons (parasol, beers, snowman) + sofa collision; the Verona lounge is read as its three parts (#692, #706: 7 seats, 3 cushion meshes); a cup on the cushion box's shut lid keeps it shut (#447)
 tools/cartest.html     headless test: our parked car — open the driver's / passenger's door, the seat only then, sit inside looking
                        ahead, out by the door; the key shuts the doors first, then it drives off (#250); music (#268): seated, the
                        centre screen on / ⏭ / off, plays on outside (muffled with the doors shut), no target from outside, off as it leaves;

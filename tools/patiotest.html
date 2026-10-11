@@ -42,16 +42,16 @@ f.onload = async () => {
     const rain = at(7, 15, 2).cushions;
     weather.force = 'clear';
     at(7, 15, 2);
-    const sofa = world.furnitureTargets.find((t) => t.name === 'loungesoffan');
-    let cushion = null;
-    sofa.pickable.traverse((m) => { if (m.isMesh && m.userData.cushion) cushion = m; });
+    // since #692 the lounge is three movable parts (row + two divans), each with its own merged cushion mesh
+    const cushs = [];
+    for (const t of world.furnitureTargets.filter((t) => t.name === 'loungesoffan')) t.pickable.traverse((m) => { if (m.isMesh && m.userData.cushion) cushs.push(m); });
     const shown = (m) => { for (let o = m; o; o = o.parent) if (!o.visible) return false; return true; };
-    const before = shown(cushion);
+    const before = cushs.every(shown);
     world.setFurniture(false);
-    const hidden = !shown(cushion);
+    const hidden = cushs.every((m) => !shown(m));
     world.setFurniture(true);
     weather.force = null;
-    pass &= check(july.length === 1 && july[0] && !jan[0] && !rain[0] && before && hidden,
+    pass &= check(cushs.length === 3 && july.length === 3 && july.every(Boolean) && !jan.some(Boolean) && !rain.some(Boolean) && before && hidden,
       `cushions: July ${july}, January ${jan}, rain ${rain}, shown ${before}, hidden with F ${hidden}`);
   }
   // the cushion box (#400): west of the patio door by the west screen wall; E opens / shuts its lid; in January the
@@ -105,20 +105,21 @@ f.onload = async () => {
   pass &= check(p.z < 13.5, `west of the sofa you walk up to the window (z ${p.z.toFixed(2)})`);
   // the seats: the row's face south, the bench's west (towards the table); the patio door's swing and the way to the gap
   // in the hedge stay free
-  const sofa = world.furnitureTargets.find((t) => t.name === 'loungesoffan');
+  // #692: the lounge is three targets (row 'sofa', 'divan1', 'divan2'); the checks below cover them together
+  const sofaParts = world.furnitureTargets.filter((t) => t.name === 'loungesoffan');
+  const sofa = { spots: sofaParts.flatMap((t) => t.spots), parts: sofaParts };
   const facing = (yaw) => Math.abs(Math.cos(yaw)) > 0.99 ? (Math.cos(yaw) < 0 ? 'south' : 'north') : (Math.sin(yaw) > 0.99 ? 'west' : Math.sin(yaw) < -0.99 ? 'east' : yaw.toFixed(2));
   const faces = sofa.spots.map((sp) => facing(sp.yaw));
-  pass &= check(sofa.spots.length === 6 && faces.slice(0, 3).every((f) => f === 'south') && faces.slice(3).every((f) => f === 'west'), `6 seats (3 in the row facing south, 3 on the bench facing west: ${faces.join(', ')})`);
-  pass &= check(sofa.spots.every((sp) => sp.pos.z < 16.0 && sp.pos.x > 3.6 && sp.pos.x < 5.7) && sofa.spots.slice(3).every((sp) => sp.pos.x > 4.975 && sp.pos.z > 13.42), `every seat in the L (${sofa.spots.map((sp) => `${sp.pos.x.toFixed(2)},${sp.pos.z.toFixed(2)}`).join(' ')})`);
+  pass &= check(sofaParts.length === 3 && sofa.spots.length === 7 && faces.filter((f) => f === 'south').length === 3 && faces.filter((f) => f === 'west').length === 4, `7 seats (3 in the row facing south, 2 + 2 on the two divans facing west: ${faces.join(', ')})`);
+  pass &= check(sofa.spots.every((sp) => sp.pos.z < 16.0 && sp.pos.x > 3.6 && sp.pos.x < 5.7) && sofa.spots.filter((sp) => facing(sp.yaw) === 'west').every((sp) => sp.pos.x > 4.975 && sp.pos.z > 13.42), `every seat in the L (${sofa.spots.map((sp) => `${sp.pos.x.toFixed(2)},${sp.pos.z.toFixed(2)}`).join(' ')})`);
   // the door-end module was removed (#489): the living-room window's opening sash (x 2.79–3.53) has completely free clearance
   {
     const V = camera.position.constructor;
     let nearestSofaX = Infinity;
-    sofa.pickable.updateMatrixWorld(true);
-    sofa.pickable.traverse((m) => {
+    sofa.parts.forEach((t) => { t.pickable.updateMatrixWorld(true); t.pickable.traverse((m) => {
       const a = m.isMesh && m.visible && m.geometry.attributes.position;
       if (a) for (let k = 0; k < a.count; k++) { const q = m.localToWorld(new V().fromBufferAttribute(a, k)); if (q.z < 13.5) nearestSofaX = Math.min(nearestSofaX, q.x); }
-    });
+    }); });
     pass &= check(nearestSofaX > 3.55, `shortened sofa leaves window sash (up to 3.53) free (nearest sofa at x ${nearestSofaX.toFixed(3)})`);
   }
   const swing = [];
@@ -145,7 +146,7 @@ f.onload = async () => {
     const THREE = await w.eval("import('three')");
     const ray = new THREE.Raycaster();
     ray.layers.enableAll();
-    const sofa = world.furnitureTargets.find((t) => t.name === 'loungesoffan');
+    const sofa = { spots: world.furnitureTargets.filter((t) => t.name === 'loungesoffan').flatMap((t) => t.spots) };
     const shade = {};
     for (const h of [15, 16, 17, 18]) {
       at(7, h, 2);
