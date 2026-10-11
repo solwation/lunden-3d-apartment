@@ -27,6 +27,7 @@ f.onload = async () => {
   const btn = d.getElementById('action'), V = camera.position.constructor;
   const look = (p) => { const dx = p.x - camera.position.x, dz = p.z - camera.position.z; camera.rotation.set(Math.atan2(p.y - camera.position.y, Math.hypot(dx, dz)), Math.atan2(-dx, -dz), 0, 'YXZ'); step(1 / 60); };
   const local = (x, y, z) => { car.object.updateMatrixWorld(true); return new V(x, y, z).applyMatrix4(car.object.matrixWorld); };
+  car.driverTaken = () => false; w.__app.olofDriver.greetable = () => false; // (Olof is at the wheel since #663 and the driving seat is his: this test is about the seat mechanics; olofcartest covers him)
   let pass = check(car.state === 'parked', 'parked');
   for (const [side, standZ] of [[-1, -1.25], [1, 1.25]]) {
     const dr = car.doors.find((x) => x.front && x.side === side);

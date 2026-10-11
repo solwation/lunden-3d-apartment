@@ -7,7 +7,8 @@
 // Olof at the wheel (#599): the key calls the car out of the garage with Olof (the #586 figure) in the driving seat; parked,
 // looking at him gives "Hälsa på Olof": your hello, a dad joke in a bubble, then he sits on at the wheel (#658): a new joke
 // on the next greeting but no new points, the key sends the car off with him in it, in the garage nobody is in it, the next
-// call brings him back; the driver's door and seat work as before; sitting down in the car he goes.
+// call brings him back; the driver's door and seat work as before; #663: he stays in the car through every door opening, the driving seat is his (you sit beside him), a
+// restored car has him, only the stall in the garage is empty.
 //   chrome --headless=new --dump-dom http://localhost:8137/tools/olofcartest.html
 const out = document.getElementById('out');
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -83,7 +84,13 @@ f.onload = async () => {
   pass &= check(until(() => car.state === 'parked'), 'parked again');
   player.spawn(stand.x, stand.z, 0);
   for (let i = 0; i < 3; i++) step(1 / 60);
-  car.toggleDoor(car.doors.find((x) => x.front && x.side === 1));
+  const dd = car.doors.find((x) => x.front && x.side === -1), pd = car.doors.find((x) => x.front && x.side === 1);
+  for (const d of car.doors) { car.toggleDoor(d); for (let i = 0; i < 45; i++) step(1 / 60); pass &= check(olofDriver.visible && olofDriver.fig.object.visible && olofDriver.fig.material.opacity === 1, `door ${d.front ? 'front' : 'rear'} ${d.side} open: he is still there (#663)`); }
+  pass &= check(!car.targets().some((t) => t.kind === 'rest' && t.door.side === -1) && car.targets().some((t) => t.kind === 'rest' && t.door.side === 1), 'the driving seat is not offered (his), the passenger seat is');
+  for (const d of car.doors) car.toggleDoor(d);
+  for (let i = 0; i < 60; i++) step(1 / 60);
+  pass &= check(olofDriver.visible && olofDriver.fig.object.visible, 'all doors shut again: he is there');
+  car.toggleDoor(pd);
   for (let i = 0; i < 60; i++) step(1 / 60);
   const pass2 = local(0.1, 0, 1.25);
   player.spawn(pass2.x, pass2.z, 0);
@@ -91,7 +98,21 @@ f.onload = async () => {
   look(local(-0.05, 0.6, 0.37));
   btn.click();
   for (let i = 0; i < 90; i++) step(1 / 60);
-  pass &= check(rest.active && !olofDriver.visible, 'the visitor sits down in the car: he is gone (not in the way)');
+  pass &= check(rest.active && olofDriver.visible && olofDriver.fig.object.visible && olofDriver.fig.material.opacity === 1, 'the visitor sits down beside him: he is still at the wheel (#663)');
+  w.__app.standUp?.();
+  for (let i = 0; i < 60; i++) step(1 / 60);
+  pass &= check(!rest.active && olofDriver.visible && olofDriver.fig.object.visible, 'the visitor gets up: he is there');
+  // a car restored (reload) out on the road or parked has him at once; in its stall nobody
+  const saved = car.saveState();
+  olofDriver.hide(); car.loadState(saved);
+  for (let i = 0; i < 3; i++) step(1 / 60);
+  pass &= check(car.state === 'parked' && olofDriver.visible && olofDriver.fig.object.visible, 'a restored parked car has Olof at the wheel');
+  car.toGarage();
+  for (let i = 0; i < 3; i++) step(1 / 60);
+  pass &= check(!olofDriver.visible && !olofDriver.fig.object.visible, 'in its stall: nobody in it');
+  car.toggleDoor(dd);
+  for (let i = 0; i < 60; i++) step(1 / 60);
+  pass &= check(car.parked && car.targets().some((t) => t.kind === 'rest' && t.door.side === -1) && !olofDriver.visible, 'in the garage the driving seat is free (nobody in the car)');
   out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
 };
 </script>

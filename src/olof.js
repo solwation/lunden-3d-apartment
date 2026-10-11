@@ -319,6 +319,7 @@ export class Olof {
   }
 
   update(dt) {
+    const c = this.car;
     if (this.state === 'away') {
       if (!this.enabled()) return;
       this.wait -= dt;
@@ -357,8 +358,9 @@ export class Olof {
 // car's group so it drives with it): hands on the wheel, now and then a look sideways. Greet him while it is parked:
 // "Hälsa på Olof" → your hello, a dad joke from OLOF.car.jokes in a bubble while he waves, then he sits on at the wheel
 // (#658): greet him again for a new joke (points once per arrival), and the key sends the car off with him in it. He is
-// gone when the visitor sits down in the car (fading out, `fade`) and when the car is in the garage / gone; the next call
-// brings him again (not saved: a car restored parked or in the garage has nobody in it).
+// always in the car while it is out (#663): opening a door or the visitor sitting down in the passenger seat changes nothing
+// (the driver's seat is his, main.js `car.driverTaken`), a car restored arriving / parked / leaving has him too; his only
+// absence is the car in its stall in the garage (and gone): the next call brings him again (the sitting itself is not saved).
 
 /** The driving pose in the figure's frame (floor of the foot well at y 0): hips on the cushion, leaning into the backrest,
  * the feet at the pedals, both hands on the wheel (`wave`: the left hand up, waving). */
@@ -389,7 +391,7 @@ export class OlofDriver {
     car.object.add(o);
     this.interact = { name: 'Olof', kind: 'olofcar', verb: 'hälsa på', pickable: this.fig.pick };
     this.fig.pick.userData.door = this.interact;
-    this.state = 'away'; // away / drive / joke / fade (fade: the visitor got in)
+    this.state = 'away'; // away / drive / joke
     this.t = 0; this.scored = false; this.waveK = 0; this.look = 0; this.lookT = 4;
     this.onSay = null; // (line, secs) => {} his joke in a bubble (main.js → greet.js)
     this.hideCan();
@@ -433,12 +435,13 @@ export class OlofDriver {
     poseOlof(this.fig, drivingPose({ seat: D.seat, wheel: D.wheel, pedals: D.pedals, wave, ph: this.t * 9, turn: this.look }));
   }
 
-  /** `inCar`: the visitor sits in the car now. */
-  update(dt, inCar = false) {
-    if (this.state === 'away') return;
+  /** Is the car out (on its way, parked, leaving)? Then he is in it (#663); in its stall or gone, nobody is. */
+  get carOut() { const c = this.car; return c.object.visible && c.state !== 'garage' && c.state !== 'gone'; }
+
+  update(dt) {
     const c = this.car;
-    if (!c.object.visible || c.state === 'garage' || c.state === 'gone') { this.hide(); return; } // back home / driven off: nobody in it
-    if (inCar && this.state !== 'fade') { this.state = 'fade'; this.t = 0; } // you got in: he is gone, fading (no overlap with you)
+    if (this.state === 'away') { if (this.carOut) this.show(); return; } // (a car restored out on the road, #663)
+    if (!this.carOut) { this.hide(); return; } // back home / driven off: nobody in it
     this.t += dt;
     this.waveK = this.state === 'joke' ? Math.min(1, this.t / 0.4) : Math.max(0, this.waveK - dt / 0.4); // (the hand comes down after the joke)
     // a glance to the side now and then (towards the house while parked)
@@ -447,9 +450,6 @@ export class OlofDriver {
     if (this.state === 'joke') {
       if (!this.said && this.t > 0.6) { this.said = true; this.onSay?.(O.car.jokes[Math.floor(Math.random() * O.car.jokes.length)], O.car.jokeTime); }
       if (this.t >= 0.6 + O.car.jokeTime) { this.state = 'drive'; this.t = 0; } // he sits on (#658)
-    } else if (this.state === 'fade') {
-      this.fig.material.opacity = Math.max(0, 1 - this.t / O.car.fade);
-      if (this.t >= O.car.fade) { this.hide(); return; }
     }
     this.pose();
   }

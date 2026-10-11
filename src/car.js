@@ -136,6 +136,7 @@ export class Car {
     this.object = g;
     Object.assign(this, { state: 'gone', d: 0, speed: 0, blinkT: 0, hum: null, path: null, plateText: C.plate, leaveWhenShut: false, awake: 0, via: 'street' });
     this.ground = () => 0; // the road's height under (x, z) (main.js: the terrain, the garage's floor)
+    this.driverTaken = () => false; // main.js: Olof at the wheel (#663), the driving seat is not free
     this.garage = null;    // the garage (#358, main.js): its door opens for the car
   }
 
@@ -151,7 +152,8 @@ export class Car {
    * sitting in a front seat, the centre screen (music, #268). */
   targets(seated = null) {
     if (!this.parked) return [];
-    return [...this.doors, ...this.seats.filter((t) => t.door.isOpen || t === seated), ...(seated?.car === this ? [this.musicTarget] : [])];
+    const taken = (t) => t.door.side === -1 && t !== seated && this.driverTaken(); // Olof sits at the wheel (#663)
+    return [...this.doors, ...this.seats.filter((t) => (t.door.isOpen || t === seated) && !taken(t)), ...(seated?.car === this ? [this.musicTarget] : [])];
   }
 
   /** The centre screen: "now playing" while the music is on, else the map (only redrawn when something changed). */

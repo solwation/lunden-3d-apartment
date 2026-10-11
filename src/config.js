@@ -1517,9 +1517,9 @@ export const OLOF = {
   // hands hold it (carmodel.js: the wheel's centre 0.42, 0.93, −0.37, tilted 0.42 rad), `pedals` how far forward his feet are,
   // `lean` into the backrest (`wheel`, `pedals` in his own frame: x his left, z forward, y up from the foot well);
   // `box` the pick box [x0, y0, z0, x1, y1, z1] in his frame, out through the driver's window
-  // (above the door's handle, so the door still opens). Placement by eye (*guess*); `jokeTime` s his bubble, `fade` s.
+  // (above the door's handle, so the door still opens). Placement by eye (*guess*); `jokeTime` s his bubble.
   car: { at: [0, -0.37], floor: 0.315, seat: 0.17, wheel: [0, 0.6, 0.4], pedals: 0.76, lean: 0.2,
-    box: [-0.27, 0.6, -0.3, 0.62, 1.17, 0.35], jokeTime: 5, fade: 0.8,
+    box: [-0.27, 0.6, -0.3, 0.62, 1.17, 0.35], jokeTime: 5,
     hello: ['Hej Olof!', 'Tjena Olof!', 'Hallå där, Olof!', 'Hej chauffören!'],
     jokes: ['Varför är matteboken så ledsen? Den har så många problem.', 'Vad sa nollan till åttan? Snyggt bälte!',
       'Vad sa den ena väggen till den andra? Vi ses i hörnet!', 'Jag skulle dra ett skämt om parkering, men alla bra platser var redan tagna.',

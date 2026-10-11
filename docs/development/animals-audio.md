@@ -14,7 +14,7 @@ src/olof.js            Olof (#586, OLOF): a figure with a beer can in the sofa /
 tools/oloftest.html    headless test (#586): ?olof=0 seats him, seated pose, seat taken for visitor and cat, never turns up in
                        sight, "Vinka till Olof" scores, he tells a dad joke (10 different, none twice in a row), waves, gets up and is gone, the seat free again
 tools/olofcartest.html headless test (#599): the key brings the car with Olof at the wheel (seat, hands on the wheel), "Hälsa på
-                       Olof" → a dad joke, he sits on (again: new joke, no points); the car drives off with him; the driver's door and seat work after; back with the next call; gone when you sit in
+                       Olof" → a dad joke, he sits on (again: new joke, no points); the car drives off with him; the driver's door and seat work after; back with the next call; he stays when a door opens and when you sit beside him (#663), a restored parked car has him, the driving seat is free only in the garage
 src/audio.js           synthesised positional sound effects (Web Audio): doors, slides, meow, steps; #604: `mainsBuzz` (100 Hz buzz +
                        thickening crackles), `fuseBang`, `breakerOn`
 src/pingping.js        Pingping (#269, PINGPING): the penguin cushion between the pillows in the Sovrum 1 bed, a Thing (kind 'pingping'):
@@ -98,8 +98,10 @@ tools/kittentest.html  headless test of kittens (#363): the seeded draw (~KITTEN
   wheel (#658; state back to `drive`, the hand comes down). Greeting again gives a new joke, but `claimScore()` lets only the
   first greeting per arrival count (stats `olof`, id `car`; *guess*, so it cannot be farmed). The key then sends the car off
   with him in it; `update` hides him when the car is in the garage or gone, so the next call (`show()`) brings him back with
-  a fresh score. When the visitor sits down in the car he fades out (`fade`, state `fade`) and stays away until the next call.
-  His state is not saved: a car restored parked or in the garage has nobody in it. Power cuts, night and light do not touch
+  a fresh score. He is always in the car while it is out (#663): opening doors changes nothing, the visitor sitting down
+  does not remove him (the driving seat is his: `car.driverTaken` keeps it out of `car.targets`, you sit beside him in the
+  passenger seat; in the garage, where nobody is in the car, the driving seat is free), and a car restored arriving / parked /
+  leaving gets him back (`update`: state `away` + `carOut` → `show()`). Only in its stall / gone is he away. Power cuts, night and light do not touch
   him. The sofa Olof does not turn up meanwhile (`olof.busy`). `&car&olofcar` for screenshots.
 
 ## Cat and sound
