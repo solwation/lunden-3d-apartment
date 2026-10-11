@@ -7,6 +7,7 @@ import { buildCar, MEGANE } from './carmodel.js';
 import { groundY } from './surroundings.js';
 import { boxwood } from './boxwood.js';
 import { onRoad, onWalk } from './roads.js';
+import { freeCanvasAfterUpload } from './lowmemory.js';
 
 // Life on the street (#113, SITE.life): the car park (one row along the hedge, #208, #260) with parked cars (instanced: a body with a
 // colour per car, trim, glass, tyres — four draw calls; the bodies from carmodel.js, #251), its white stall lines, the low green strip
@@ -36,13 +37,52 @@ export function carGeometry() {
   return [bare(parts.paint), mergeGeometries(trim), bare(parts.glass), bare(parts.tyre)];
 }
 
-/** One bike along +x: [frame, tyres]. */
+let spokeMap;
+/** A small shared radial spoke pattern; drawn as a wheel-sized alpha card, not individual geometry. */
+export function bikeSpokeTexture() {
+  if (spokeMap) return spokeMap;
+  const c = document.createElement('canvas'); c.width = c.height = 128;
+  const x = c.getContext('2d'); x.clearRect(0, 0, 128, 128); x.strokeStyle = '#fff'; x.lineWidth = 1.1;
+  for (let i = 0; i < 18; i++) {
+    const a = i * Math.PI / 9, px = 64 + Math.cos(a) * 7, py = 64 + Math.sin(a) * 7;
+    x.beginPath(); x.moveTo(px, py); x.lineTo(64 + Math.cos(a + Math.PI) * 59, 64 + Math.sin(a + Math.PI) * 59); x.stroke();
+  }
+  spokeMap = freeCanvasAfterUpload(new THREE.CanvasTexture(c));
+  return spokeMap;
+}
+
+/** One bike along +x (#683): [frame (painted per instance), tyres (rubber), metal (rims, hubs, cranks, chain, pedals), spokes (alpha cards)].
+ * A Swedish city bike: ~4 cm tyres, mudguards, rear carrier, shaped saddle, swept handlebar, chainring and pedals (visual guesses). */
 export function bikeGeometry() {
-  const tube = (ax, ay, bx, by) => { const l = Math.hypot(bx - ax, by - ay); return new THREE.CylinderGeometry(0.015, 0.015, l, 5).rotateZ(Math.atan2(ax - bx, by - ay)).translate((ax + bx) / 2, (ay + by) / 2, 0); };
-  const frame = merge([tube(-0.5, 0.34, -0.05, 0.36), tube(-0.05, 0.36, 0.42, 0.34), tube(-0.05, 0.36, -0.12, 0.72), tube(-0.12, 0.72, 0.36, 0.78), tube(0.36, 0.78, 0.42, 0.34),
-    tube(-0.5, 0.34, -0.12, 0.72), tube(0.36, 0.78, 0.33, 0.98), box(0.04, 0.02, 0.48, 0.33, 0.98, 0), box(0.22, 0.04, 0.08, -0.14, 0.76, 0)]);
-  const tyres = merge([new THREE.TorusGeometry(0.33, 0.022, 6, 20).translate(-0.5, 0.34, 0), new THREE.TorusGeometry(0.33, 0.022, 6, 20).translate(0.42, 0.34, 0)]);
-  return [frame, tyres];
+  const tube = (ax, ay, bx, by, r = 0.015) => { const l = Math.hypot(bx - ax, by - ay); return new THREE.CylinderGeometry(r, r, l, 8).rotateZ(Math.atan2(ax - bx, by - ay)).translate((ax + bx) / 2, (ay + by) / 2, 0); };
+  const WX = [-0.5, 0.42], WY = 0.34, WR = 0.33;
+  const fender = (cx, a0, a1) => new THREE.CylinderGeometry(WR + 0.035, WR + 0.035, 0.065, 14, 1, true, a0, a1 - a0).rotateX(Math.PI / 2).rotateY(0).translate(cx, WY, 0);
+  const saddle = new THREE.SphereGeometry(0.1, 10, 6).scale(1.3, 0.35, 0.95).translate(-0.14, 0.8, 0);
+  const fork = [tube(0.42, 0.34, 0.33, 0.78).translate(0, 0, 0.05), tube(0.42, 0.34, 0.33, 0.78).translate(0, 0, -0.05)];
+  const stays = [0.045, -0.045].flatMap((z) => [tube(-0.5, 0.34, -0.05, 0.36).translate(0, 0, z), tube(-0.5, 0.34, -0.12, 0.62).translate(0, 0, z)]);
+  const frame = merge([tube(-0.05, 0.36, 0.42 - 0.09, 0.4, 0.016), tube(-0.05, 0.36, -0.12, 0.72), tube(-0.12, 0.72, 0.34, 0.76), tube(0.34, 0.76, 0.3, 0.4, 0.017),
+    tube(-0.12, 0.62, -0.14, 0.8, 0.012), saddle, ...fork, ...stays,
+    tube(0.33, 0.78, 0.33, 0.92, 0.012), new THREE.CylinderGeometry(0.011, 0.011, 0.56, 6).rotateX(Math.PI / 2).translate(0.31, 0.95, 0),
+    fender(WX[0], 0.1, Math.PI * 0.9), fender(WX[1], 0.1, Math.PI * 0.8),
+    box(0.3, 0.012, 0.11, -0.6, 0.66, 0), tube(-0.5, 0.36, -0.7 + 0.12, 0.66, 0.008),
+    box(0.06, 0.04, 0.03, 0.41, 0.43, 0.0)]);
+  const tyres = merge([...WX.map((x) => new THREE.TorusGeometry(WR, 0.02, 8, 24).translate(x, WY, 0)),
+    new THREE.CylinderGeometry(0.018, 0.018, 0.09, 6).rotateX(Math.PI / 2).translate(0.31, 0.95, 0.25),
+    new THREE.CylinderGeometry(0.018, 0.018, 0.09, 6).rotateX(Math.PI / 2).translate(0.31, 0.95, -0.25)]);
+  const metal = merge([...WX.flatMap((x) => [new THREE.TorusGeometry(WR - 0.02, 0.008, 5, 24).translate(x, WY, 0), new THREE.CylinderGeometry(0.02, 0.02, 0.1, 8).rotateX(Math.PI / 2).translate(x, WY, 0)]),
+    new THREE.CylinderGeometry(0.07, 0.07, 0.008, 12).rotateX(Math.PI / 2).translate(-0.05, 0.36, 0.06),
+    box(0.015, 0.17, 0.015, -0.05, 0.275, 0.09), box(0.015, 0.17, 0.015, -0.05, 0.445, 0.09),
+    box(0.1, 0.02, 0.05, -0.05, 0.19, 0.115), box(0.1, 0.02, 0.05, -0.05, 0.53, 0.115),
+    box(0.45, 0.008, 0.014, -0.275, 0.4, 0.065), box(0.45, 0.008, 0.014, -0.275, 0.32, 0.065)]);
+  const spokes = merge(WX.map((x) => new THREE.PlaneGeometry(WR * 2, WR * 2).translate(x, WY, 0)));
+  return [frame, tyres, metal, spokes];
+}
+
+/** One wheel stall for a bike built by bikeGeometry() (same frame: origin at the bike, front wheel at x 0.42): two steel arcs
+ * either side of the tyre, cradling the wheel (#683, a Velopa-style wheel holder; size is a guess). The caller adds the rail. */
+export function standGeometry() {
+  const arc = (z) => new THREE.TorusGeometry(0.32, 0.011, 6, 16, Math.PI * 0.64).rotateZ(-Math.PI * 0.82).translate(0.42, 0.34, z);
+  return merge([arc(0.045), arc(-0.045)]);
 }
 
 function instanced(geo, material, mats, colors) {
@@ -148,10 +188,10 @@ export function buildStreetLife({ entrances = [] } = {}) {
   const rack = [];
   for (const r of L.racks) {
     const len = (r.n - 1) * r.gap + 0.5, cz = r.z0 + (r.n - 1) * r.gap / 2;
-    rack.push(box(0.04, 0.04, len, r.x, 0.3, cz));
+    rack.push(new THREE.CylinderGeometry(0.014, 0.014, len, 8).rotateX(Math.PI / 2).translate(r.x, 0.03, cz));
     for (let k = 0; k < r.n; k++) {
       const z = r.z0 + k * r.gap;
-      rack.push(box(0.5, 0.6, 0.04, r.x - r.dir * 0.2, 0.3, z));
+      rack.push(standGeometry().rotateY(r.dir > 0 ? 0 : Math.PI).translate(r.x - r.dir * 0.42, 0, z));
       if (R() < 0.7) put(r.x - r.dir * 0.42, z, r.dir > 0 ? 0 : Math.PI, 0); // the front wheel (local +0.42) at the rack
     }
     // the rack and its bikes as one block to walk round
@@ -159,9 +199,10 @@ export function buildStreetLife({ entrances = [] } = {}) {
     const c = [[xa, za], [xb, za], [xb, zb], [xa, zb]];
     c.forEach((p, i) => segments.push([...p, ...c[(i + 1) % 4]]));
   }
-  group.add(new THREE.Mesh(merge(rack), new THREE.MeshStandardMaterial({ color: 0x6f7377, roughness: 0.5, metalness: 0.5 })));
-  const [frame, tyres] = bikeGeometry();
-  group.add(instanced(frame, new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.4, metalness: 0.3 }), bikes, bikeColors),
-    instanced(tyres, new THREE.MeshStandardMaterial({ color: 0x141414, roughness: 0.8 }), bikes));
+  group.add(new THREE.Mesh(merge(rack), new THREE.MeshStandardMaterial({ color: 0xb4b9bd, roughness: 0.4, metalness: 0.7 })));
+  const [frame, tyres, metal, spokes] = bikeGeometry();
+  group.add(instanced(metal, new THREE.MeshStandardMaterial({ color: 0xb4b9bd, roughness: 0.4, metalness: 0.7 }), bikes), instanced(frame, new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.4, metalness: 0.3 }), bikes, bikeColors),
+    instanced(tyres, new THREE.MeshStandardMaterial({ color: 0x141414, roughness: 0.8 }), bikes),
+    instanced(spokes, new THREE.MeshStandardMaterial({ color: 0xb4b9bd, alphaMap: bikeSpokeTexture(), alphaTest: 0.35, side: THREE.DoubleSide, metalness: 0.35, roughness: 0.5 }), bikes));
   return { object: group, segments };
 }

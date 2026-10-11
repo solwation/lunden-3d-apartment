@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { freeCanvasAfterUpload } from './lowmemory.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { GARAGE as G, SITE, CORE } from './config.js';
-import { carGeometry, bikeGeometry } from './streetlife.js';
+import { carGeometry, bikeGeometry, bikeSpokeTexture, standGeometry } from './streetlife.js';
 import { groundY } from './surroundings.js';
 import { sfx } from './audio.js';
 import { escapeField, exitTexture, EXIT_CELLS, planTexture } from './escape.js';
@@ -215,8 +215,9 @@ export class Garage {
       on: false, level: 0, hold: 0, flickT: 0 }]));
     for (const a of Object.values(this.areas)) group.add(a.group);
     const areaAt = (x, z) => this.areas[rectAt(x, z)?.area ?? 'entrance'] ?? this.areas.entrance;
-    const put = (kind, g, x, z) => areaAt(x, z).geos[kind].push(g);
     const segs = [];
+    const bikeSpokes = [];
+    const put = (kind, g, x, z) => kind === 'bikeSpokes' ? bikeSpokes.push(g) : areaAt(x, z).geos[kind].push(g);
     const WALL_LO = 0x7f8a90, WALL = 0xc6c4bd, CEIL = 0xb7b5b0, FLOOR = 0x8d8e8b;
     // the walls (a painted band below, light concrete above) on every free rectangle edge; collision on the same lines
     for (const [ax, az, bx, bz, r] of wallLines()) {
@@ -298,13 +299,16 @@ export class Garage {
       rectSegs(segs, x - 0.65, x + 0.65, z - 0.45, z + 0.45);
     });
     // bike racks with bikes (CYKELPARKERING, the bike rooms)
-    const [frame, tyres] = bikeGeometry(), Rb = rng(7), bikeCols = [0x1d3c6e, 0xb02a2a, 0x2a2a2a, 0xe2e2dc, 0x3c7a4a, 0x8a8f96, 0xd8a020];
+    const [frame, tyres, metal, spokes] = bikeGeometry(), stand = standGeometry(), Rb = rng(7), bikeCols = [0x1d3c6e, 0xb02a2a, 0x2a2a2a, 0xe2e2dc, 0x3c7a4a, 0x8a8f96, 0xd8a020];
     for (const [x0, x1, z, f] of G.bikes) {
-      put('shell', bake(box(x1 - x0, 0.04, 0.04, (x0 + x1) / 2, F + 0.3, z), 0x6f7377), (x0 + x1) / 2, z + f * 0.5);
+      put('shell', bake(new THREE.CylinderGeometry(0.014, 0.014, x1 - x0, 8).rotateZ(Math.PI / 2).translate((x0 + x1) / 2, F + 0.03, z), 0xb4b9bd), (x0 + x1) / 2, z + f * 0.5);
       for (let x = x0 + 0.3; x < x1 - 0.2; x += 0.62) {
-        put('shell', bake(box(0.04, 0.6, 0.5, x, F + 0.3, z + f * 0.2), 0x6f7377), x, z + f * 0.5);
-        if (Rb() < 0.65) for (const [geo, col] of [[frame, bikeCols[Math.floor(Rb() * bikeCols.length)]], [tyres, 0x141414]])
-          put('shell', bake(geo.clone().rotateY(f * Math.PI / 2).translate(x, F, z + f * 0.42), col), x, z + f * 0.5);
+        put('shell', bake(stand.clone().rotateY(f * Math.PI / 2).translate(x, F, z + f * 0.42), 0xb4b9bd), x, z + f * 0.5);
+        if (Rb() < 0.65) {
+          for (const [geo, col] of [[frame, bikeCols[Math.floor(Rb() * bikeCols.length)]], [tyres, 0x141414], [metal, 0xb4b9bd]])
+            put('shell', bake(geo.clone().rotateY(f * Math.PI / 2).translate(x, F, z + f * 0.42), col), x, z + f * 0.5);
+          bikeSpokes.push(bake(spokes.clone().rotateY(f * Math.PI / 2).translate(x, F, z + f * 0.42), 0xb4b9bd, true));
+        }
       }
       const za = Math.min(z, z + f * 1.3), zb = Math.max(z, z + f * 1.3);
       rectSegs(segs, x0, x1, za, zb);
@@ -383,6 +387,11 @@ export class Garage {
       for (const k of ['shell', 'mesh', 'signs', 'tubes', 'exits', 'plans']) add(a.geos[k], a.mats[k]);
       a.floors.forEach((f, i) => add([f.geo], a.mats.floors[i]));
       delete a.geos;
+    }
+    // All basement bike spokes share one small alpha-textured draw, independent of the room light batches.
+    if (bikeSpokes.length) {
+      const mesh = new THREE.Mesh(mergeGeometries(bikeSpokes), new THREE.MeshBasicMaterial({ vertexColors: true, alphaMap: bikeSpokeTexture(), alphaTest: 0.35, side: THREE.DoubleSide }));
+      mesh.raycast = () => {}; group.add(mesh);
     }
     // the doors: one instanced leaf for the cages (mesh in a steel frame), one for the steel doors; an invisible pick box each
     const leafGeo = (w, h, mesh) => {
@@ -514,7 +523,7 @@ export class Garage {
 
   /** Things in the förråd: boxes, bikes, skis, a sled, tyres (baked into the shell). */
   contents(put) {
-    const Rn = rng(ST.seed), [frame, tyres] = bikeGeometry();
+    const Rn = rng(ST.seed), [frame, tyres, metal, spokes] = bikeGeometry();
     const cardboard = [0xb08a5a, 0xa47e4f, 0xbf9a68], plastic = [0x3d6fb0, 0xd9d6cf, 0x4f8a4a, 0x2b2b2b, 0xc0392b];
     for (const c of CAGES) {
       const w = c.x1 - c.x0, d = c.z1 - c.z0, backZ = c.front === 'n' ? c.z1 : c.z0, sg = c.front === 'n' ? -1 : 1; // sg: from the back towards the door
@@ -536,7 +545,8 @@ export class Garage {
       const r = c.ours ? 0 : Rn(), [ax, az] = P(0.45, d - 0.6);
       if (r < 0.35) { // a bike along the front
         const bz = c.front === 'n' ? c.z0 + 0.45 : c.z1 - 0.45;
-        for (const [geo, col] of [[frame, [0x1d3c6e, 0xb02a2a, 0x2a2a2a, 0x3c7a4a][Math.floor(Rn() * 4)]], [tyres, 0x141414]]) add(geo.clone().translate(c.x0 + w / 2, F, bz), col);
+        for (const [geo, col] of [[frame, [0x1d3c6e, 0xb02a2a, 0x2a2a2a, 0x3c7a4a][Math.floor(Rn() * 4)]], [tyres, 0x141414], [metal, 0xb4b9bd]]) add(geo.clone().translate(c.x0 + w / 2, F, bz), col);
+        put('bikeSpokes', bake(spokes.clone().translate(c.x0 + w / 2, F, bz), 0xb4b9bd, true), c.x0 + w / 2, bz);
       } else if (r < 0.6) { // skis leaning in the corner
         for (const k of [0, 1]) add(box(0.08, 1.7, 0.02, 0, 0.85, 0).rotateZ(0.12).translate(ax + k * 0.1, F, az), [0xd23c3c, 0x2a63c4][k]);
       } else if (r < 0.8) { // a stack of winter tyres

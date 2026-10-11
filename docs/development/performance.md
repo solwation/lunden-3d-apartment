@@ -8,6 +8,11 @@ Related: [graphics](graphics.md), [verification](verification.md).
 - `&perf` shows fps, pixel ratio, draw calls, triangles, geometries, textures; `tools/perfcount.html`
   prints draw calls per spot. Baseline → after the first pass: start view 793 → 362 calls, kitchen
   162 → 109, living room 184 → 87, upstairs 148 → 88 (screenshots pixel-identical).
+- Bicycles (#683): the shared frame/tyre/metal batches add two instanced calls at the bike yard; one
+  merged alpha-spoke batch serves the courtyard rack and one serves all basement bikes. `perfcount`
+  now includes the bike yard, courtyard rack and west CYKEL room: desktop 333 / 316 / 142 calls;
+  phone (`?lowmem&w=390&h=844`) 322 / 220 / 119. Both profiles pass the overall budgets (desktop
+  peak 471 calls / 994,961 triangles; phone peak 322 calls / 903,094 triangles).
 - `src/merge.js` `mergeStatic`: world.js bakes every static, opaque, single-material mesh into one
   per material and cell (Entréplan / Övre plan / outside); doors (leaf + handles merged per door,
   `tagged`), lids, appliances, the key cabinet, furniture, exterior and surroundings are kept out.

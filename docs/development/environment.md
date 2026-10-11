@@ -9,7 +9,8 @@ Neighbor openings (#516): `src/exterior.js` keeps all existing opening extents, 
 
 ```text
 src/courtyard.js       the courtyard on the garage box (COURTYARD): walks, pergolas, the grill's side table (the kettle is grill.js's, #678), sandboxes, boule,
-                       benches, raised beds, instanced shrubs; collision for what you can walk into. #438: every bench is a seat
+                       benches, raised beds, instanced shrubs; collision for what you can walk into. #683 shares streetlife.js's city-bike geometry,
+                       shaped steel wheel holders and spoke alpha texture; rack collision is unchanged. #438: every bench is a seat
                        (`targets`: invisible pick boxes with rest.js spots, `world.courtyardTargets`, kept with F; since #670 no
                        neighbour sits on them, so only Olof's own seats indoors are ever `taken`), the pergola tables
                        and the grill's side table are put-down surfaces (`surfaces` → world.cupSurfaces); the benches' / tables'
@@ -55,7 +56,8 @@ src/streetlife.js      life on the street (SITE.life, #113): the car park as on 
                        z −16.3; the drive through it in front of the portik) to a low green strip along Hus L's entrances (z −3.5…−2.9, open
                        at the portik, no collision), one row of stalls nose to the hedge west of the drive with parked cars (instanced, a colour
                        each, collision); no bikes along Hus L's entrances (#529); the bike yard NW of Hus L / north of Hus C (lawns, a tree, two rows of
-                       racks; west of x −66 is left for #256's stair down to Karpvägen); #436: low concrete edges (`life.edges`, one
+                       racks; west of x −66 is left for #256's stair down to Karpvägen); #683 uses one shared city-bike model across the site,
+                       courtyard and basement, with an alpha spoke atlas; #436: low concrete edges (`life.edges`, one
                        merged mesh, 5 cm, no collision) where the car park's asphalt meets grass and round the yard's lawns
 src/patio.js           patio: Rusta Verona lounge + slatted table (#408), cushion box, parasol, planters with exotic plants
                        (furniture builders, FURNITURE + PATIO in config); seasons via Patio.update:
@@ -116,6 +118,8 @@ spot is free for the visitor (resttest #670 block). The greeting action went wit
 (SCORE.first/again) and its stats row. `tools/nonpctest.html` checks it.
 
 Entrance bicycles (#529): removed SITE.life.bikes and the separate façade-bike loop in streetlife.js. Outdoor bicycles are generated only at the existing SITE.life.racks inside the paved bike yard NW of Hus L/north of Hus C, as on docs/peab/situationsplan.png and kalibrerad/situationsplan-300dpi.jpg. Those seven loose facade bikes had no collision segments, so removing them leaves no invisible obstacles. Existing rack collision remains confined to the yard. Basement cycle-room racks continue to exist; their wider layout corrections belong to #523. No relocation to invented coordinates. walktest checks entry and block routes; real views check the clear frontage and occupied yard.
+
+Bicycles (#683): `streetlife.js` `bikeGeometry()` is shared by the site racks, courtyard rack, basement bike rooms and illustrative cage contents. Frames add city-bike details and wider tyres; rims, hubs, chain and pedals share material batches. Spokes use two small alpha cards per bike and one 128 px canvas texture, with a single merged spoke draw for the basement. Rack collision bounds stay unchanged. Dimensions and fittings remain visual guesses.
 
 The basement (#523) now includes the missing western CYKEL room and ordinary storage under C/B/A; no bikes among garage cars. Assumed stalls leave actual doorways clear, while our stall 18, car-pool spaces and routes stay in place. `surroundings.js` clips only the garage-facing A/B north skin at the same GARAGE door rectangles, leaving higher façades intact. See [plan comparison and limitations](../validation/issue-523/README.md). #647: `terrainGeometry()` leaves out the grass cells inside the Hus A / Hus B footprints (recesses keep theirs): the plane at y −3.01 lay 1.3 cm under the basement floors and drew over them as green patches (store rooms, the lower walls); the grid has lines on the footprint / recess edges. Hus A's west recess is 0.75 m deep (was 1.0, *guess*) so its door stands 4 cm behind the end wall of the basement's west passage (GARAGE `passageAWest` x −9.05, p46) instead of 0.29 m inside the corridor.
 
