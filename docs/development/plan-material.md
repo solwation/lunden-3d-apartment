@@ -212,8 +212,8 @@ material/              screenshots of our choices in Peab's option portal (local
   speaker (frosted glass, its own lamp: E toggles it) on the window board behind the sofa; a sill pot is skipped where each
   stands (`SILL_PLANTS.skip`).
   Smart speakers (#325, `NEST`, src/nest.js): a smart display in the middle pot's place on the kitchen window board (turned 15°
-  towards the dining table), a round one in a wall mount 1.68 m up on the living room's south wall between the patio door and
-  the west corner (over the palm), one 1.6 m up on the upstairs hall's west wall (x 1.54, z 6.01: left of the NISSEDAL mirror, by the WC door, #332).
+  towards the dining table), a round one in a wall mount 1.68 m up on the living room's west wall (z 11.6, above the ZZ plant; #689 moved
+  it off the south wall's pier by the patio door, which the parked curtain stack has covered since #463), one 1.6 m up on the upstairs hall's west wall (x 1.54, z 6.01: left of the NISSEDAL mirror, by the WC door, #332).
   The secretary "Bang" (#118): fully open, its flap is a put-down surface (#447: a surface rect with a `gate` group shown only
   then; furniture.js `standingOn` finds anything standing on such a surface, whatever kind of thing it is) and it does not close
   while something stands on it ("Ta bort det som står på skivan först").

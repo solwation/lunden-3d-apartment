@@ -33,7 +33,7 @@ src/laptop.js          Tilly's laptop on the vanity (#283, LAPTOP): an unbranded
                        screen (on, then the next clip) and the keyboard (on / off); a quiet beat per clip (sfx.beat), the Sonos
                        ducked within `near` m; each clip kind counts once (stats `clips`); F / toggleFurniture switches it off
 src/nest.js            smart speakers (#325, NEST): a smart display (screen + fabric base) on the kitchen window board and two round
-                       ones in wall mounts (living room by the patio door, the upstairs hall), our own plain look (no logo); builders
+                       ones in wall mounts (the living room's west wall by the patio door corner, #689; the upstairs hall), our own plain look (no logo); builders
                        `nesthub` / `nestmini`, E target kind 'nest'. `Nests` (main.js): E wakes one (four white dots / the screen),
                        sfx.nest chime, then a random answer never the same twice in a row (`choose`): the game's time (`timePhrase`),
                        date, weather, the coffee, jokes, Lund / Höje å / cat facts, pep, silliness, or a sound (fanfare, drum roll,

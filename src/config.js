@@ -4081,10 +4081,14 @@ export const FURNITURE = [
   // end, in the third pot's place (SILL_PLANTS.skip), facing the room, clear of the blind's folded pack (z 0.16)
   { type: 'symfonisk', kind: 'speaker', color: 'black', level: 0, x: 4.48, z: 0.33, y: 0.8, rot: 180 },
   // smart speakers (#325, NEST): the display in the middle pot's place on the kitchen window board (SILL_PLANTS.skip), clear of
-  // the blind's pack (z 0.16), turned 15° towards the dining table; a round one in a wall mount on the living room's south
-  // wall between the patio door and the west corner (over the palm), one on the upstairs hall's west wall
+  // the blind's pack (z 0.16), turned 15° towards the dining table; a round one in a wall mount on the living room's west
+  // wall, one on the upstairs hall's west wall.
+  // #689: the living-room one hung on the south wall's pier between the west corner and the patio door (x 0.56, z 12.2337)
+  // until #463 ran the curtain rail to the west wall: the west panel's parked stack (x 0.22–0.81, z 12.10) now hangs in
+  // front of that whole pier, so it could be neither seen nor reached. Moved round the corner onto the west wall (face
+  // x 0.2018), above the ZZ plant (z 11.17–11.72, 1.26 m) and between the BESTÅ (ends z 11.15) and the palm, same height.
   { type: 'nesthub', level: 0, x: 3.82, z: 0.35, y: 0.8, rot: 165 },
-  { type: 'nestmini', level: 0, x: 0.56, z: 12.2337, y: 1.68, rot: 0, room: 'vardagsrummet' },
+  { type: 'nestmini', level: 0, x: 0.2018, z: 11.6, y: 1.68, rot: -90, room: 'vardagsrummet' },
   // #332: the upstairs one moved south of the hall's NISSEDAL (HALL_WALL.tallUp, z 5.454–5.854), midway to the WC door's architrave (6.174)
   { type: 'nestmini', level: 1, x: 1.5418, z: 6.014, y: 1.6, rot: -90, room: 'hallen' },
   { type: 'symfonisk', kind: 'lamp', color: 'white', level: 0, x: 4.55, z: 12.3, y: 0.6, rot: 0 },
