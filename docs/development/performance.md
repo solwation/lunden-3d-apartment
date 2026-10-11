@@ -347,7 +347,8 @@ all), at most `GHOSTS.max` (30); hidden beyond `GHOSTS.far`, the tag beyond `GHO
 the earlier merged dummy was 1 652), before and after: one draw call each, no texture (so nothing on the low-memory mode's texture
 budget; a variant's base geometry ≈ 0.4 MB, built lazily, an avatar owns a 45 KB colour attribute, a 13-bone skeleton with an 8 × 8 float bone
 texture and a material). One name tag texture (256 × 64) per distinct name, shared, disposed with its last ghost. Nothing exists without
-other players. perfcount is unchanged (no players there).
+other players. Our own mirror image (#691): +1 draw call and ≈ 3.7 k triangles inside the mirror pass only (while a mirror reflects and
+the frame is not a held one), posed lazily from the pass; the main camera never draws it. perfcount is unchanged (no players there).
 
 ## iPhone loses the WebGL context after one very long frame (#669 — not verified on a device)
 

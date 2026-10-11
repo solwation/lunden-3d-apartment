@@ -3,6 +3,7 @@ import { GHOSTS as G, COMBAT, AVATAR } from './config.js';
 import { Avatar, armTarget } from './avatar.js';
 import { totalScore } from './stats.js';
 import { acquireBadge, releaseBadge, badgeScore } from './ghostbadge.js';
+import { setMirrorExtra } from './reflections.js';
 
 // Other players as ghosts (#666): a WebSocket to the Worker's players' room (cloudflare/players.js, one Durable Object for
 // everybody). Inert without the cloud (cloud.js `cloudUrl`), with GHOSTS.enabled false or ?mp=0. We send our feet and
@@ -54,19 +55,23 @@ const SWING = 0.35; // s the saber's cut lasts
 const tmpV = new THREE.Vector3();
 
 class Ghost {
-  constructor(parent, id, name) {
-    this.id = id; this.name = name || ANON; this.snaps = []; this.h = ''; this.solid = false; this.prop = null;
-    this.avatar = new Avatar(id, tint(name));
+  /** `self`: our own reflection in the mirrors (#691): no name tag, never shown to the main camera. */
+  constructor(parent, id, name, self = false) {
+    this.id = id; this.name = name || ANON; this.snaps = []; this.h = ''; this.solid = false; this.prop = null; this.self = self;
+    this.avatar = new Avatar(self ? `me:${name}` : id, tint(name));
+    this.avatar.setSolid(self); // (the mirror image is a solid figure)
     this.mesh = this.avatar.mesh;
     this.mesh.name = `ghost:${this.name}`;
     this.root = new THREE.Group();
     this.root.add(this.avatar.object);
-    this.badge = acquireBadge(this.name, 0);
-    this.score = 0;
-    this.tag = new THREE.Sprite(this.badge.material);
-    this.tag.scale.set(G.tagWidth, G.tagHeight, 1);
-    this.tag.position.y = G.tagY + (this.avatar.look.tall - 1) * 1.8; // (above the head of a taller / shorter avatar)
-    this.root.add(this.tag);
+    if (!self) {
+      this.badge = acquireBadge(this.name, 0);
+      this.score = 0;
+      this.tag = new THREE.Sprite(this.badge.material);
+      this.tag.scale.set(G.tagWidth, G.tagHeight, 1);
+      this.tag.position.y = G.tagY + (this.avatar.look.tall - 1) * 1.8; // (above the head of a taller / shorter avatar)
+      this.root.add(this.tag);
+    }
     this.root.visible = false; // until its first state
     this.body = 0; this.speed = 0; this.have = false;
     parent.add(this.root);
@@ -75,7 +80,7 @@ class Ghost {
   /** A state from the room at time t (ms). After a pause the last one is repeated just before it, so it walks off smoothly. */
   push({ p, r, h = '', score = 0 }, t) {
     score = badgeScore(score);
-    if (score !== this.score) {
+    if (this.badge && score !== this.score) {
       const previous = this.badge;
       this.badge = acquireBadge(this.name, score);
       this.tag.material = this.badge.material;
@@ -123,7 +128,7 @@ class Ghost {
     this.root.rotation.y = lerpAngle(a.r, b.r, k);
     const d = this.root.position.distanceTo(eye), sec = b === a ? 0 : (b.t - a.t) / 1000;
     this.root.visible = d < G.far;
-    this.tag.visible = d < G.tagFar;
+    if (this.tag) this.tag.visible = d < G.tagFar;
     if (this.root.visible) this.animate(t, d, sec ? (b.p.x - a.p.x) / sec : 0, sec ? (b.p.z - a.p.z) / sec : 0);
   }
 
@@ -163,14 +168,14 @@ class Ghost {
     }
   }
 
-  dispose() { this.root.removeFromParent(); this.avatar.dispose(); releaseBadge(this.badge); }
+  dispose() { this.root.removeFromParent(); this.avatar.dispose(); if (this.badge) releaseBadge(this.badge); }
 }
 
 export class Ghosts {
   /** scene; url: the Worker ('' = off); name(): our name; state(): { p: [x, y, z] feet, r: yaw }; active(): playing (not the
    * start screen); weapon(): the key (COMBAT.weapons) of what we hold or ''; score(): displayed points (defaults to stats.totalScore); onHit / onHurt: the room's word on a hit (#667). */
-  constructor({ scene, camera, url, name = () => '', state, active = () => true, weapon = () => '', score = totalScore, onHit = () => {}, onHurt = () => {} }) {
-    Object.assign(this, { camera, name, state, active, weapon, score, onHit, onHurt, rules: null, ws: null, me: null, others: new Map(), sent: null, prev: null,
+  constructor({ scene, camera, url, name = () => '', state, active = () => true, weapon = () => '', score = totalScore, onHit = () => {}, onHurt = () => {}, mirrored = () => true }) {
+    Object.assign(this, { camera, name, state, active, weapon, score, onHit, onHurt, mirrored, mine: null, myGhost: null, rules: null, ws: null, me: null, others: new Map(), sent: null, prev: null,
       lastSent: 0, lastBeat: 0, outbox: [], shots: 0, dropped: 0, lastMove: -Infinity, retryAt: 0, backoff: 0, openedAt: 0, connects: 0, messages: 0 });
     this.on = !!url && G.enabled && params.get('mp') !== '0';
     this.url = url ? `${url.replace(/^http/, 'ws')}/players` : '';
@@ -181,6 +186,9 @@ export class Ghosts {
     this.sample = new Avatar('warm');
     this.sample.object.visible = false;
     this.group.add(this.sample.object);
+    // our own image in the mirrors (#691): made now and hidden, so that the warm-up compiles its (solid) program too
+    setMirrorExtra({ before: () => this.beforeMirror(), after: () => this.afterMirror() });
+    this.selfGhost();
     if (!this.on) return;
     document.addEventListener('visibilitychange', () => { if (document.hidden) this.disconnect(); });
     setInterval(() => this.beat(), 1000); // the heartbeat runs on a timer: slow frames must not let the room think us gone
@@ -247,9 +255,10 @@ export class Ghosts {
 
   /** Each frame: connect / disconnect, send what changed (≤ hz), and place the ghosts. */
   update() {
-    if (!this.on) return;
     const t = performance.now(), s = this.state(), w = this.weapon();
     s.h = COMBAT.weapons.includes(w) ? w : '';
+    this.track(s, t);
+    if (!this.on) return;
     s.score = badgeScore(this.score());
     const prev = this.prev;
     if (!prev || Math.hypot(s.p[0] - prev.p[0], s.p[1] - prev.p[1], s.p[2] - prev.p[2]) > G.move || Math.abs(s.r - prev.r) > G.turn || s.h !== prev.h) { this.lastMove = t; this.prev = s; }
@@ -268,6 +277,43 @@ export class Ghosts {
     const eye = this.camera.position, armed = !!s.h;
     for (const g of this.others.values()) { g.draw(t, eye); g.setSolid(armed && !!g.h); }
   }
+
+  /** Our own state for the mirror image (#691): where we stand, which way we look, what we hold and how fast we walk (the
+   * ground speed from the last frames, smoothed). Cheap; the avatar is posed only when a mirror draws it. */
+  track(s, t) {
+    const m = this.mine ??= { p: new THREE.Vector3(...s.p), vx: 0, vz: 0, t, r: s.r, h: '' };
+    const dt = (t - m.t) / 1000;
+    if (dt > 0) {
+      const vx = (s.p[0] - m.p.x) / dt, vz = (s.p[2] - m.p.z) / dt, far = Math.hypot(vx, vz) > 12; // (a jump: a teleport, not a run)
+      const k = Math.min(1, dt * 8);
+      m.vx += ((far ? 0 : vx) - m.vx) * k; m.vz += ((far ? 0 : vz) - m.vz) * k;
+    }
+    m.p.set(...s.p); m.r = s.r; m.h = s.h; m.t = t;
+  }
+
+  /** Our avatar for the mirrors: one per name (the look comes from it); hidden but for the mirror's pass. */
+  selfGhost() {
+    const n = this.name() || '';
+    if (!this.myGhost || this.myGhost.key !== n) { this.myGhost?.dispose(); this.myGhost = new Ghost(this.group, 'me', n, true); this.myGhost.key = n; }
+    return this.myGhost;
+  }
+
+  /** The mirror's pass is about to draw (reflections.js): put our solid avatar where we stand. */
+  beforeMirror() {
+    const m = this.mine;
+    if (!m || !this.mirrored()) return;
+    const g = this.selfGhost();
+    g.setHeld(m.h);
+    g.root.position.copy(m.p);
+    g.root.rotation.y = m.r;
+    g.root.visible = true;
+    g.animate(performance.now(), 0, m.vx, m.vz);
+  }
+
+  afterMirror() { if (this.myGhost) this.myGhost.root.visible = false; }
+
+  /** Our own saber cut, for the mirror image. */
+  swingSelf() { this.myGhost?.swing(); }
 
   /** A shot (#667): { w, o: [x, y, z], d: [dx, dy, dz] unit, s?: speed, to?: the id it hit }, every one, misses too, so
    * the others can draw it. Shots share the GHOSTS.hz budget with the states and go first; at most GHOSTS.outbox wait

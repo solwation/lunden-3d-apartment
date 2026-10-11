@@ -106,6 +106,11 @@ src/lampwash.js        every lamp's light wherever the visitor is (#276, #294, #
                        Lights.update → `set(i, k, pool)`), so a lit room looks the same near, far, upstairs or from outside
 src/mirror.js          the one mirror material (gradient + glints; hall and bathroom mirrors); the lit mirrors (Badrum LED, Hollywood, Klk) use `litMirrorMaterial` + `litEmissive` + `litReflect` (LIGHTING.mirror, #339)
 src/reflections.js     mirror images: a Reflector per mirror, only the nearest one in view (< 4 m) renders; `dim` scales a lit mirror's image (#339)
+                       Our own avatar in the mirrors (#691): `setMirrorExtra({ before, after })` runs around each reflector pass (not on a held frame), ghosts.js
+                       puts our solid avatar (src/avatar.js, id `me:<name>`) where we stand, looking where we look, with the weapon in hand, walking
+                       by the ground speed of the last frames, poses it only then, and hides it again; the main camera never sees it. Same pass, same
+                       target: +1 draw call and ≈ 3.7 k triangles in the mirror pass, nothing otherwise. Not while seated / lying (`mirrored`
+                       callback), never in raycasts (hidden outside the pass, under the ghosts' group). Windows and glass use the env map, not a live image, so they show nothing.
 src/seasons.js         month → tree colours/leaf cover and snow on ground, roofs, hedges, paving (SEASON)
 src/huego.js           the Philips Hue Go on Sovrum 1's window board (#409, #428, HUE_GO): the classic frosted bowl, a lamp of its own; its
                        action menu (#367, an ActionSet; FloorLamp `options`) = Tänd/Släck + Byt färg (scenes), the colour kept by keep.js

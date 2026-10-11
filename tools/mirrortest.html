@@ -71,6 +71,29 @@ f.onload = async () => {
     pass &= check(!sk.r.visible, 'F: SKOGSGRÄNSEN hidden, no mirror image');
     world.setFurniture(true);
   }
+  // our own avatar in the mirrors (#691): drawn only inside the active mirror's pass (the hook runs before it, hides it after),
+  // never when no mirror reflects, posed to where we stand, and never part of the main camera's frame
+  {
+    const gh = w.__ghosts, m = reflectors()[0], p = m.r.getWorldPosition(new V()), n = new V(0, 0, 1).transformDirection(m.r.matrixWorld);
+    let inPass = 0, leftOn = 0;
+    const b = gh.beforeMirror.bind(gh), a = gh.afterMirror.bind(gh);
+    gh.beforeMirror = () => { b(); if (gh.myGhost?.root.visible) inPass++; };
+    gh.afterMirror = () => { a(); if (gh.myGhost?.root.visible) leftOn++; };
+    const eye = p.clone().addScaledVector(n, 1.2);
+    player.spawn(eye.x, eye.z, 0); player.pos.y = 0; player.eyeY = 1.62;
+    camera.position.set(eye.x, 1.62, eye.z); camera.lookAt(p); camera.updateMatrixWorld(true);
+    gh.update();
+    updateReflections(camera, 0, false); // no mirror allowed (low quality / slow frames): no avatar pass
+    w.__app.renderer.render(scene, camera);
+    pass &= check(inPass === 0, 'no active mirror: our avatar is not drawn');
+    updateReflections(camera, 0, true);
+    w.__app.renderer.render(scene, camera);
+    const mine = gh.myGhost;
+    pass &= check(inPass === 1 && leftOn === 0 && mine && !mine.root.visible, `the mirror's pass draws our avatar once and hides it again (${inPass} in the pass, ${leftOn} left on)`);
+    pass &= check(mine && Math.hypot(mine.root.position.x - eye.x, mine.root.position.z - eye.z) < 0.01 && mine.solid === false && mine.avatar.solid === true, 'it stands where we stand, solid');
+    pass &= check(!!mine?.mesh.isSkinnedMesh && mine.root.parent === gh.group, 'one skinned mesh under the ghosts\' group (outside raycasts)');
+    gh.beforeMirror = b; gh.afterMirror = a;
+  }
   out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
 };
 </script>

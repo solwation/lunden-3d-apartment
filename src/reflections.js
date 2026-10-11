@@ -19,6 +19,9 @@ export function mirrorTarget() {
   shared ??= new THREE.WebGLRenderTarget(RES, RES, { samples: 4, type: THREE.HalfFloatType });
   return shared;
 }
+// Something drawn only in the mirror (#691: our own avatar, ghosts.js): { before(), after() } around each reflector pass.
+let extra = null;
+export const setMirrorExtra = (e) => { extra = e; };
 /** Every mirror's { r: reflector, level } (tests). */
 export const reflectors = () => mirrors;
 
@@ -34,7 +37,7 @@ class SharedReflector extends Reflector {
       if (this.hold) return; // this frame keeps the image of the last one (updateReflections' `skip`)
       const set = renderer.setRenderTarget;
       renderer.setRenderTarget = function (t, ...a) { return set.call(this, t === own ? target : t, ...a); };
-      try { return render.call(this, renderer, ...rest); } finally { renderer.setRenderTarget = set; }
+      try { extra?.before(); return render.call(this, renderer, ...rest); } finally { renderer.setRenderTarget = set; extra?.after(); }
     };
     this.dispose = () => this.material.dispose();
   }

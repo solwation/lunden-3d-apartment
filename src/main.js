@@ -2190,7 +2190,7 @@ leaderboard.activePlayers = () => presence.names;
 const weaponIs = { saber: (h) => h === saber, nerf: (h) => toys.blasters.includes(h), wand: (h) => toys.wands.includes(h),
   rifle: (h) => !!h?.isRifle, ball: (h) => h === ball, bow: (h) => !!bow && h === bow, web: (h) => !h && suit.worn, jetpack: () => jetpack.worn };
 const weaponKey = () => { const h = heldItem(); return COMBAT.weapons.find((k) => weaponIs[k]?.(h)) ?? ''; };
-const ghosts = new Ghosts({ scene, camera, url: cloud.url, name: () => leaderboard.name, active: () => overlay.hidden && leaderboard.shares, weapon: weaponKey,
+const ghosts = new Ghosts({ scene, camera, url: cloud.url, name: () => leaderboard.name, active: () => overlay.hidden && leaderboard.shares, weapon: weaponKey, mirrored: () => !rest.active,
   state: () => ({ p: [player.pos.x, player.pos.y, player.pos.z], r: camera.rotation.y }) });
 const combat = new Combat({ ghosts, camera, scene, weapon: weaponKey, feet: () => player.pos, jetpack, sfx, darts: toys.darts, sparkles: toys.sparkles, arrows,
   onHit: () => bump('pvpHits'), onHurt: () => penalize('pvpHurt'),
@@ -2201,7 +2201,7 @@ const flight = (from, v) => ({ o: from.clone(), d: v.clone().normalize(), s: v.l
 const shotOf = { nerf: () => { const L = toys.darts.list, d = L[(toys.darts.next - 1) % L.length]; return flight(d.from, d.v); },
   ball: () => (ball.flying ? flight(ball.shotFrom, ball.v) : null) };
 for (const [key, items] of [['saber', [saber]], ['nerf', toys.blasters], ['wand', toys.wands], ['ball', [ball]]]) {
-  for (const it of items) { const use = it.onUse; it.onUse = function (...a) { const was = weaponKey(), r = use.apply(this, a); if (was === key) combat.fire(key, shotOf[key]?.() ?? null, true); return r; }; } // (the ball has left the hand by then)
+  for (const it of items) { const use = it.onUse; it.onUse = function (...a) { const was = weaponKey(), r = use.apply(this, a); if (was === key) { combat.fire(key, shotOf[key]?.() ?? null, true); if (key === 'saber') ghosts.swingSelf(); } return r; }; } // (the ball has left the hand by then)
 }
 if (bow) bow.onShot = (o, v) => combat.fire('bow', flight(o, v), true); // (#690: an arrow on its arc)
 if (rifle) { const shot = rifle.onShot; rifle.onShot = () => { shot?.(); combat.fire('rifle'); }; }
