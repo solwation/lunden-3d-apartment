@@ -1,111 +1,170 @@
-// WebGL context loss on a phone (#628): headless test. Start first: python3 tools/devserve.py 8137 .
-//   PLAYWRIGHT_MODULE=/path/to/playwright [CHROME_PATH=…] [SHOTS=/tmp/dir] node tools/glrestoretest.cjs http://localhost:8137
-// Phone profile (iPhone UA, touch, &lowmem): textures freed after upload (freeCanvasAfterUpload) are blank if three re-uploads
-// them after webglcontextrestored. Checks that (1) the fix reloads the page once, back at the same place, and a freed canvas
-// texture (curtain / rug / sign) looks the same as before; (2) a second loss within 60 s does not reload again (no loop);
-// (3) CONTROL: with the reload suppressed (guard flag set) the same texture really is blank, so the test catches the bug.
+// Real phone-profile context restore (#628, #713). Start: python3 tools/devserve.py 8137 .
+// PLAYWRIGHT_MODULE=/path/to/playwright CHROME_PATH=/path/to/chrome SHOTS=/tmp/dir node tools/glrestoretest.cjs http://localhost:8137
+// Full production app/reload/resume hook, with its animation loop stopped by the harness. Pixel evidence is a
+// production curtain texture in a 64×64 probe using app.renderer, not the full scene or a physical phone.
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
+const fs = require('fs');
+const path = require('path');
 const game = process.argv[2] || 'http://localhost:8137';
 const shots = process.env.SHOTS || '/tmp';
 const UA = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Mobile/15E148 Safari/604.1';
 let failed = 0;
-const check = (ok, msg, extra = '') => { console.log(`${ok ? 'PASS' : 'FAIL'} ${msg}${extra ? ` — ${extra}` : ''}`); if (!ok) failed++; };
+const check = (ok, msg, extra = '') => {
+  console.log(`${ok ? 'PASS' : 'FAIL'} ${msg}${extra ? ` — ${extra}` : ''}`);
+  if (!ok) failed++;
+};
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const poseOf = () => {
+  const a = window.__app;
+  return [a.player.pos.x, a.player.pos.z, a.camera.rotation.y, a.camera.rotation.x];
+};
+const diff = (p, q) => {
+  if (p.length !== q.length) throw new Error('pixel sample sizes differ');
+  let sum = 0;
+  for (let i = 0; i < p.length; i += 4) for (let k = 0; k < 3; k++) sum += Math.abs(p[i + k] - q[i + k]);
+  return sum / (p.length / 4 * 3);
+};
 
-/** Turn on the spot (the resume keeps yaw and pitch) to face the nearest opaque mesh whose canvas texture was freed (street signs, plates, rugs). */
-const aim = () => {
-  const a = window.__app, rc = new (a.focus().raycaster.constructor)();
-  a.scene.updateMatrixWorld(true);
-  const freed = (o) => { const m = o.material && (Array.isArray(o.material) ? o.material[0] : o.material), t = m && m.map; return !!t && t.isCanvasTexture && t.image.width === 1 && !m.transparent; };
-  let best = null;
-  for (let k = 0; k < 12; k++) {
-    a.camera.rotation.set(0, k * Math.PI / 6, 0, 'YXZ'); a.camera.updateMatrixWorld(true);
-    for (let i = -9; i <= 9; i++) for (let j = -9; j <= 9; j++) {
-      rc.setFromCamera({ x: i / 10, y: j / 10 }, a.camera);
-      const hit = rc.intersectObjects(a.scene.children, true).find((h) => h.object.visible && h.object.isMesh && !h.object.material?.transparent);
-      if (hit && hit.distance > 1.5 && hit.distance < 25 && freed(hit.object) && (!best || hit.distance < best.d)) best = { d: hit.distance, p: hit.point.clone(), name: hit.object.name || hit.object.parent?.name || 'mesh' };
-    }
-  }
-  if (!best) return null;
-  // close in to 3 m (a valid spot only: the resume rejects a place inside something) so that the texture fills a good part of the view
-  const p0 = a.player.pos.clone(), e0 = a.camera.position, l0 = Math.hypot(best.p.x - p0.x, best.p.z - p0.z);
-  if (l0 > 3.5) {
-    const k = (l0 - 3) / l0, nx = p0.x + (best.p.x - p0.x) * k, nz = p0.z + (best.p.z - p0.z) * k;
-    a.player.spawn(nx, nz, a.camera.rotation.y); a.player.pos.y = p0.y;
-    const before = a.player.pos.clone(); a.player.update(1 / 60);
-    if (a.player.pos.distanceTo(before) > 0.05 || Math.abs(a.player.groundAt(nx, nz, p0.y) - p0.y) > 0.3) { a.player.spawn(p0.x, p0.z, a.camera.rotation.y); a.player.pos.y = p0.y; }
-    else best.d = 3;
-  }
-  const e = a.camera.position, dx = best.p.x - e.x, dz = best.p.z - e.z;
-  a.camera.rotation.set(Math.atan2(best.p.y - e.y, Math.hypot(dx, dz)), Math.atan2(-dx, -dz), 0, 'YXZ');
-  return `${best.name} @${best.d.toFixed(1)} m`;
+// No generated fallback: select the real seeded curtain map by stable production id, then reuse that SAME
+// texture and renderer through context loss. Rendering uploads it through freeCanvasAfterUpload's real hook.
+const prepareProbe = async (id) => {
+  const THREE = await import('three');
+  const a = window.__app;
+  const curtain = id ? a.blinds.curtains.find((c) => c.id === id) : a.blinds.curtains[0];
+  if (!curtain?.tex?.isCanvasTexture) throw new Error('production curtain CanvasTexture missing');
+  const map = curtain.tex;
+  const scene = new THREE.Scene();
+  const geometry = new THREE.PlaneGeometry(2, 2);
+  const material = new THREE.MeshBasicMaterial({ map, toneMapped: false });
+  scene.add(new THREE.Mesh(geometry, material));
+  const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 10);
+  camera.position.z = 1;
+  const target = new THREE.WebGLRenderTarget(64, 64);
+  target.texture.colorSpace = THREE.SRGBColorSpace;
+  const canvas = document.createElement('canvas');
+  canvas.width = canvas.height = 64;
+  window.__glProbe = { map, scene, camera, target, canvas, events: [] };
+  a.renderer.domElement.addEventListener('webglcontextlost', () => window.__glProbe.events.push('lost'));
+  a.renderer.domElement.addEventListener('webglcontextrestored', () => window.__glProbe.events.push('restored'));
+  return { id: curtain.id, theme: curtain.spec.theme, width: map.image.width, height: map.image.height, uploadHook: typeof map.onUpdate === 'function' };
 };
-/** 12×12 grid of the colours in the middle of the game canvas (rendered now, read in the same task). */
-const grid = () => {
-  const a = window.__app; a.renderer.render(a.scene, a.camera);
-  const c = a.renderer.domElement, o = document.createElement('canvas'); o.width = 12; o.height = 12;
-  const x = o.getContext('2d'); const w = c.width * 0.3, h = c.height * 0.2; x.drawImage(c, (c.width - w) / 2, (c.height - h) / 2, w, h, 0, 0, 12, 12); // the middle of the view, where the texture is
-  return Array.from(x.getImageData(0, 0, 12, 12).data);
+const sample = () => {
+  const a = window.__app, p = window.__glProbe, renderer = a.renderer;
+  const old = renderer.getRenderTarget();
+  const pixels = new Uint8Array(64 * 64 * 4);
+  try {
+    renderer.setRenderTarget(p.target);
+    renderer.render(p.scene, p.camera);
+    renderer.readRenderTargetPixels(p.target, 0, 0, 64, 64, pixels);
+  } finally { renderer.setRenderTarget(old); }
+  const image = p.canvas.getContext('2d').createImageData(64, 64);
+  for (let y = 0; y < 64; y++) image.data.set(pixels.subarray(y * 256, (y + 1) * 256), (63 - y) * 256);
+  p.canvas.getContext('2d').putImageData(image, 0, 0);
+  return { pixels: Array.from(pixels), png: p.canvas.toDataURL('image/png'), width: p.map.image.width, height: p.map.image.height,
+    uploadHook: typeof p.map.onUpdate === 'function', glError: renderer.getContext().getError() };
 };
-const png = () => { const a = window.__app; a.renderer.render(a.scene, a.camera); return a.renderer.domElement.toDataURL('image/png'); };
-const diff = (p, q) => { let s = 0, n = 0; for (let i = 0; i < p.length; i += 4) { for (let k = 0; k < 3; k++) s += Math.abs(p[i + k] - q[i + k]); n += 3; } return s / n; };
-const lose = () => { const e = window.__app.renderer.getContext().getExtension('WEBGL_lose_context'); e.loseContext(); setTimeout(() => e.restoreContext(), 400); };
-const poseOf = () => { const a = window.__app; return [a.player.pos.x, a.player.pos.z, a.camera.rotation.y]; };
+const lose = () => {
+  const p = window.__glProbe;
+  p.events.length = 0;
+  const ext = window.__app.renderer.getContext().getExtension('WEBGL_lose_context');
+  if (!ext) throw new Error('WEBGL_lose_context unavailable');
+  ext.loseContext();
+  setTimeout(() => ext.restoreContext(), 400);
+};
 
 (async () => {
-  const browser = await chromium.launch({ executablePath: process.env.CHROME_PATH || undefined, args: ['--no-sandbox', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
+  fs.mkdirSync(shots, { recursive: true });
+  const main = fs.readFileSync(path.join(__dirname, '../src/main.js'), 'utf8');
+  const hook = 'renderer.setAnimationLoop(() => frame(clock.getDelta()));';
+  if (main.split(hook).length !== 2) throw new Error('animation-loop harness hook changed');
+  const browser = await chromium.launch({ executablePath: process.env.CHROME_PATH || undefined,
+    args: ['--no-sandbox', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
   const run = async (control) => {
     const tag = control ? 'control' : 'fix';
     const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true, userAgent: UA });
-    const page = await ctx.newPage();
-    const logs = [], navs = [];
+    await ctx.route('**/src/main.js*', (route) => route.fulfill({ contentType: 'application/javascript',
+      body: main.replace(hook, 'renderer.setAnimationLoop(null); // glrestoretest: probe renders only') }));
+    const page = await ctx.newPage(), logs = [], navs = [];
+    // Playwright evaluate has no timeout of its own; a stuck GPU readback must not hold the browser indefinitely.
+    const evaluate = async (fn, arg) => {
+      let timer;
+      try {
+        return await Promise.race([page.evaluate(fn, arg), new Promise((_, reject) => {
+          timer = setTimeout(() => reject(new Error(`${tag}: probe task exceeded 60 s`)), 60000);
+        })]);
+      } finally { clearTimeout(timer); }
+    };
     page.on('console', (m) => logs.push(m.text()));
+    page.on('pageerror', (e) => logs.push(`PAGE ERROR: ${e.message}`));
     page.on('framenavigated', (f) => { if (f === page.mainFrame()) navs.push(f.url()); });
     page.on('dialog', (d) => d.accept());
-    const ready = async () => { await page.waitForFunction(() => window.__app?.renderer && window.__app.player, null, { timeout: 240000 }); await sleep(8000); };
-    await page.goto(`${game}/?lowmem&shot&freeze&time=12&lights`, { waitUntil: 'commit' });
-    await ready();
-    const name = await page.evaluate(aim);
-    check(!!name, `${tag}: a freed canvas texture exists on a phone`, String(name));
-    await sleep(1500);
-    const pose = await page.evaluate(poseOf);
-    const before = await page.evaluate(grid);
-    require('fs').writeFileSync(`${shots}/${tag}-1-before.png`, Buffer.from((await page.evaluate(png)).split(',')[1], 'base64')); // (page.screenshot can stall under SwiftShader)
-    const n0 = navs.length;
-    if (control) await page.evaluate(() => sessionStorage.setItem('lunden.glReloadAt', String(Date.now()))); // as if it had just reloaded
-    await page.evaluate(lose);
-    if (!control) {
-      for (let i = 0; i < 100 && navs.length === n0; i++) await sleep(300); // the reload follows the restore
-      await sleep(3000);
-      check(navs.length === n0 + 1, 'fix: the page reloaded once', `${navs.length - n0} navigation(s)`);
+    const ready = () => page.waitForFunction(() => window.__app?.blinds?.curtains?.length && window.__app.player,
+      null, { timeout: 180000 }); // construction readiness, deliberately not a completed first full view
+    const save = (name, result) => fs.writeFileSync(`${shots}/${name}.png`, Buffer.from(result.png.split(',')[1], 'base64'));
+    try {
+      await page.goto(`${game}/?lowmem&shot&freeze&time=12&lights`, { waitUntil: 'commit' });
       await ready();
-      const pose2 = await page.evaluate(poseOf);
-      check(pose.every((v, i) => Math.abs(v - pose2[i]) < 0.02), 'fix: back at the same place and view', JSON.stringify([pose, pose2]));
-      await sleep(1500);
-    } else await sleep(6000);
-    const after = await page.evaluate(grid);
-    require('fs').writeFileSync(`${shots}/${tag}-2-after.png`, Buffer.from((await page.evaluate(png)).split(',')[1], 'base64')); // (page.screenshot can stall under SwiftShader)
-    const d = diff(before, after);
-    if (control) {
-      check(navs.length === n0, 'control: no reload (suppressed)');
-      check(d > 6, 'control: WITHOUT the reload the freed texture is blank/different (the test catches the bug)', `mean diff ${d.toFixed(2)}`);
-    } else {
-      check(d < 3, 'fix: the texture looks the same after the reload', `mean diff ${d.toFixed(2)}`);
-      // The warm-up under SwiftShader takes longer than the 60 s guard, so the second loss is made "within 60 s" by dating the flag
-      // (which the fix itself wrote before the reload) to now.
-      const flag = await page.evaluate(() => Number(sessionStorage.getItem('lunden.glReloadAt')));
-      check(flag > 0 && Date.now() - flag < 15 * 60 * 1000, 'fix: the reload wrote its loop-guard timestamp', String(flag));
-      await page.evaluate(() => sessionStorage.setItem('lunden.glReloadAt', String(Date.now())));
-      const n1 = navs.length;
-      await page.evaluate(lose);
-      await sleep(12000);
-      check(navs.length === n1, 'fix: a second loss within 60 s does not reload again (no loop)', `${navs.length - n1} navigation(s)`);
-      check(logs.some((l) => /no second reload/.test(l)), 'fix: the skipped reload is logged');
+      const asset = await evaluate(prepareProbe);
+      check(asset.width > 1 && asset.height > 1 && asset.uploadHook, `${tag}: real production canvas and freeing hook exist before upload`, JSON.stringify(asset));
+      if (asset.width <= 1 || !asset.uploadHook) throw new Error('cannot prove initial production canvas upload');
+      // Exercise restoration of a deliberately non-default view, not just the initial spawn defaults.
+      await evaluate(() => {
+        const camera = window.__app.camera;
+        camera.rotation.y += 0.37;
+        camera.rotation.x = 0.18;
+      });
+      const before = await evaluate(sample);
+      check(before.width === 1 && before.height === 1 && !before.uploadHook, `${tag}: production upload actually freed the source to 1×1`);
+      check(before.glError === 0, `${tag}: probe rendered without GL error`, String(before.glError));
+      const colors = new Set(before.pixels.filter((_, i) => i % 4 !== 3));
+      check(colors.size > 20, `${tag}: production print has measurable pixel detail`, `${colors.size} channel values`);
+      save(`${tag}-1-before`, before);
+      const pose = await evaluate(poseOf), n0 = navs.length;
+      if (control) await evaluate(() => sessionStorage.setItem('lunden.glReloadAt', String(Date.now())));
+      await evaluate(lose);
+      if (control) {
+        await page.waitForFunction(() => window.__glProbe?.events.includes('restored'), null, { timeout: 15000 });
+      } else {
+        for (let i = 0; i < 50 && navs.length === n0; i++) await sleep(200);
+        check(navs.length === n0 + 1, 'fix: the real app reloaded exactly once', `${navs.length - n0} navigation(s)`);
+        if (navs.length !== n0 + 1) throw new Error('reload did not occur');
+        await ready();
+        const pose2 = await evaluate(poseOf);
+        check(pose.every((v, i) => Math.abs(v - pose2[i]) < 0.02), 'fix: resumed at the same place and view', JSON.stringify([pose, pose2]));
+        const rebuilt = await evaluate(prepareProbe, asset.id);
+        check(rebuilt.id === asset.id && rebuilt.theme === asset.theme && rebuilt.width === asset.width && rebuilt.height === asset.height && rebuilt.uploadHook,
+          'fix: matched production asset was rebuilt on reload', JSON.stringify(rebuilt));
+      }
+      const after = await evaluate(sample), d = diff(before.pixels, after.pixels);
+      save(`${tag}-2-after`, after);
+      check(after.glError === 0, `${tag}: restored probe rendered without GL error`, String(after.glError));
+      check(after.width === 1 && after.height === 1 && !after.uploadHook, `${tag}: source remains freed after the probe`);
+      if (control) {
+        check(navs.length === n0, 'control: no reload (suppressed)');
+        check(d > 6, 'control: without reload the SAME freed production map loses its pixels', `mean RGB difference ${d.toFixed(2)}`);
+      } else {
+        check(d < 3, 'fix: matched production texture pixels survive the app reload', `mean RGB difference ${d.toFixed(2)}`);
+        const flag = await evaluate(() => Number(sessionStorage.getItem('lunden.glReloadAt')));
+        check(flag > 0 && Date.now() - flag < 15 * 60 * 1000, 'fix: production reload wrote its loop-guard timestamp', String(flag));
+        // Construction under SwiftShader may exceed 60 s: date the production-written guard to now for this second loss.
+        await evaluate(() => sessionStorage.setItem('lunden.glReloadAt', String(Date.now())));
+        const n1 = navs.length;
+        await evaluate(lose);
+        await page.waitForFunction(() => window.__glProbe?.events.includes('restored'), null, { timeout: 15000 });
+        await sleep(500);
+        check(navs.length === n1, 'fix: a second loss within 60 s does not reload again', `${navs.length - n1} navigation(s)`);
+        check(logs.some((l) => /no second reload/.test(l)), 'fix: skipped reload is logged');
+      }
+    } finally {
+      fs.writeFileSync(`${shots}/${tag}-console.txt`, logs.join('\n'));
+      await ctx.close();
     }
-    await ctx.close();
   };
-  try { await run(false); await run(true); } catch (e) { console.log('FAIL', e.message); failed++; }
+  try {
+    if (process.env.CASE !== 'control') await run(false);
+    if (process.env.CASE !== 'fix') await run(true);
+  } catch (e) { console.log('FAIL', e.stack); failed++; }
   await browser.close();
   console.log(failed ? `${failed} FAILED` : 'ALL PASS');
-  process.exit(failed ? 1 : 0);
+  process.exitCode = failed ? 1 : 0;
 })();

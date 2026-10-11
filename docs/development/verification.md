@@ -56,7 +56,14 @@ tools/blindtest.html   headless test: a blind in every window, folded at the sta
                        mode (no walking), ▲ up to the head and no further, S down to folded, W at BLINDS.speed, the first pull
                        scores, the room's daylight cut (blackout > white), white glows, × / E close, the sash opens behind it,
                        the state survives a reload
-tools/glrestoretest.cjs  (#628, phone profile) forces `WEBGL_lose_context` loss + restore: one reload back at the same place, a freed canvas texture looks the same, no reload loop, and a control without the reload shows the blank texture; run after touching `freeCanvasAfterUpload` / `reloadOnContextRestore`. `PLAYWRIGHT_MODULE=… node tools/glrestoretest.cjs http://localhost:8137` (~6 min under SwiftShader)
+tools/glrestoretest.cjs  (#628, #713, simulated phone profile) forces real app `WEBGL_lose_context` loss + restore: one reload back at the same
+                       place/view, matched seeded curtain pixels rebuilt, no reload loop, and suppressed-reload control loses the SAME freed map's pixels.
+                       It explicitly verifies the production `freeCanvasAfterUpload` hook shrinks the actual source to 1×1 after upload. Pixel images are a
+                       **production texture in a 64×64 probe** through `app.renderer`, not full-scene or physical-device evidence. The harness routes only the
+                       main animation-loop hook to stop rendering; `__app` readiness means construction completed, not first full view/warm-up completed.
+                       No synthetic texture fallback or production quality change. Run after touching `freeCanvasAfterUpload` / `reloadOnContextRestore`:
+                       `PLAYWRIGHT_MODULE=… CHROME_PATH=… SHOTS=/tmp/dir node tools/glrestoretest.cjs http://localhost:8137`; construction bounded to 180 s
+                       per page, probe tasks to 60 s, restore events to 15 s. Three real app constructions; console logs and four 64×64 pixel images saved in SHOTS.
 tools/crashtest.cjs    crash reports (#629): Playwright + `node cloudflare/dev.mjs 8144 tok`; run after touching src/crashlog.js, cloudflare/crash.js or the
                        reset keys; includes bounded pre-failure history and two real WebGL loss/recovery pairs through the public API
                        (also `node --test cloudflare/crash.test.mjs`). Waits on conditions (page `stats`, Worker rows), never fixed sleeps, and
