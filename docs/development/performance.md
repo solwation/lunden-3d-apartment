@@ -340,9 +340,14 @@ CPU canvases and geometry copies dominate), GPU peak is 216 MB, +13 MB (+6 %) ov
 `maxPixelRatio: 1.0`, `shadowMapSize: 1024` in `src/config.js`. Screenshots: `/tmp/shots-grafik` (not in the repo; the living
 room looks slightly crisper, nothing else changes).
 
-Ghosts (#666, `src/ghosts.js`): each other player costs two draw calls (one merged body mesh with vertex colours, one name tag
-sprite), no shadow pass, at most `GHOSTS.max` (30); hidden beyond `GHOSTS.far`, the tag beyond `GHOSTS.tagFar`. One shared body
-geometry; one small 256 × 64 tag texture per distinct name (shared, disposed with its last ghost). Nothing exists without other players.
+Ghosts (#666, `src/ghosts.js`), avatars (#705, `src/avatar.js`): each other player costs two draw calls (one SkinnedMesh with vertex colours, one
+name tag sprite), no shadow pass, no extra pass for the outline (a fresnel term in the same Lambert material's shader, one program for
+all), at most `GHOSTS.max` (30); hidden beyond `GHOSTS.far`, the tag beyond `GHOSTS.tagFar`, posed only within `AVATAR.poseFar` m (a
+13-bone IK pose + matrix update, ~0.05 ms). **Triangles per avatar: 3 582 – 3 794** (the 8 hairstyle × sleeve variants; `avatarTriangles(v)`;
+the earlier merged dummy was 1 652), before and after: one draw call each, no texture (so nothing on the low-memory mode's texture
+budget; a variant's base geometry ≈ 0.4 MB, built lazily, an avatar owns a 45 KB colour attribute, a 13-bone skeleton with an 8 × 8 float bone
+texture and a material). One name tag texture (256 × 64) per distinct name, shared, disposed with its last ghost. Nothing exists without
+other players. perfcount is unchanged (no players there).
 
 ## iPhone loses the WebGL context after one very long frame (#669 — not verified on a device)
 

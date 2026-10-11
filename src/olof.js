@@ -23,14 +23,15 @@ const BONES = { hips: [null, 0, HIP, 0], torso: ['hips', 0, 0, 0], head: ['torso
   shoulderR: ['torso', -SH[0], SH[1], 0], elbowR: ['shoulderR', 0, -UPPER, 0], handR: ['elbowR', 0, -FORE - HAND, 0],
   thighL: ['hips', 0.085, 0, 0], kneeL: ['thighL', 0, -THIGH, 0], thighR: ['hips', -0.085, 0, 0], kneeR: ['thighR', 0, -THIGH, 0] };
 const NAMES = Object.keys(BONES);
+export { NAMES, HIP, THIGH, SHIN, UPPER, FORE, HAND, SH, NECK }; // (the player avatars, src/avatar.js, share the skeleton and its IK)
 
 // bind-pose world position of a bone
-const bindAt = (name) => { let x = 0, y = 0, z = 0; for (let b = name; b; b = BONES[b][0]) { x += BONES[b][1]; y += BONES[b][2]; z += BONES[b][3]; } return new THREE.Vector3(x, y, z); };
+export const bindAt = (name) => { let x = 0, y = 0, z = 0; for (let b = name; b; b = BONES[b][0]) { x += BONES[b][1]; y += BONES[b][2]; z += BONES[b][3]; } return new THREE.Vector3(x, y, z); };
 
-const lathe = (pts, seg = 12) => new THREE.LatheGeometry(pts.map(([r, y]) => new THREE.Vector2(r, y)), seg); // bottom to top
+export const lathe = (pts, seg = 12) => new THREE.LatheGeometry(pts.map(([r, y]) => new THREE.Vector2(r, y)), seg); // bottom to top
 const TORSO = [[0, 0], [0.13, 0.0], [0.155, 0.04], [0.16, 0.12], [0.142, 0.26], [0.155, 0.4], [0.17, 0.5], [0.16, 0.57],
   [0.11, 0.62], [0.05, 0.64], [0.045, 0.7], [0, 0.71]]; // people.js's torso (hip at 0), scaled 1.15 × 1 × 0.7 below
-const torsoR = (y) => { for (let i = 1; i < TORSO.length; i++) { const [r0, y0] = TORSO[i - 1], [r1, y1] = TORSO[i]; if (y <= y1) return r0 + (r1 - r0) * (y - y0) / Math.max(1e-6, y1 - y0); } return 0; };
+export const torsoR = (y) => { for (let i = 1; i < TORSO.length; i++) { const [r0, y0] = TORSO[i - 1], [r1, y1] = TORSO[i]; if (y <= y1) return r0 + (r1 - r0) * (y - y0) / Math.max(1e-6, y1 - y0); } return 0; };
 
 /** The parts in the bind pose: [geometry (bone-local, moved to the bone's bind position here), colour, bone]. */
 function parts() {
@@ -93,6 +94,19 @@ function parts() {
   return P;
 }
 
+/** Give a SkinnedMesh the figure's skeleton (bones as children of the mesh, bound in the bind pose); returns { name: Bone }. */
+export function attachSkeleton(mesh) {
+  const bones = {};
+  for (const name of NAMES) {
+    const b = (bones[name] = new THREE.Bone()), [parent, x, y, z] = BONES[name];
+    b.name = name; b.position.set(x, y, z);
+    (parent ? bones[parent] : mesh).add(b);
+  }
+  mesh.updateMatrixWorld(true);
+  mesh.bind(new THREE.Skeleton(NAMES.map((n) => bones[n])));
+  return bones;
+}
+
 /** The skinned figure: { object (a Group: put it where he is), mesh, bones, pick, material }. */
 export function buildOlof() {
   const canRanges = [];
@@ -114,14 +128,7 @@ export function buildOlof() {
 
   const material = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.82, transparent: true }); // (fades out)
   const mesh = new THREE.SkinnedMesh(geometry, material);
-  const bones = {};
-  for (const name of NAMES) {
-    const b = (bones[name] = new THREE.Bone()), [parent, x, y, z] = BONES[name];
-    b.name = name; b.position.set(x, y, z);
-    (parent ? bones[parent] : mesh).add(b);
-  }
-  mesh.updateMatrixWorld(true);
-  mesh.bind(new THREE.Skeleton(NAMES.map((n) => bones[n])));
+  const bones = attachSkeleton(mesh);
   mesh.castShadow = true;
   mesh.frustumCulled = false; // (the bind pose's bounds would not follow the pose)
   const object = new THREE.Group();

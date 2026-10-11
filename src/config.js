@@ -2872,6 +2872,12 @@ export const GHOSTS = { enabled: true, hz: 5, move: 0.02, turn: 0.03, beatMs: 10
   tagWidth: 0.64, tagHeight: 0.16, tagY: 1.98, tagNamePx: 22, tagScorePx: 18, // #672: 20% smaller sprite; two compact lines (*guess*)
   scoreMax: 1e7, // matches the existing leaderboard validation in cloudflare/worker.js; display only, not authoritative
   outbox: 3 }; // outbox: shots waiting for the 5 Hz budget (#667)
+// The players' avatars (#705, src/avatar.js): a neutral human figure (Olof's skeleton, src/olof.js) in the ghosts' place and in our
+// own mirror image (#691). Without a weapon only an outline: alpha `fill` inside (very faint) rising to `rim` at the silhouette
+// (a fresnel term of power `rimPower`, in the shader, no extra pass), a little emissive so it reads in the dark; armed and solid it
+// is lit normally (`emissiveSolid`). `walkSpeed` m/s: above it the legs walk; `poseFar` m: beyond it the pose is not updated;
+// `bodyTurn` rad: how far the head may turn from the body before the body follows. All by eye (*guess*).
+export const AVATAR = { fill: 0.07, rim: 0.85, rimPower: 2.2, emissiveOutline: 0.28, emissiveSolid: 0.06, walkSpeed: 0.25, poseFar: 30, bodyTurn: 0.9 };
 // Combat between players (#667, src/combat.js; the room's check: cloudflare/players.js COMBAT). Only when both hold a weapon:
 // `weapons` = what counts, in the order they are looked for (the room's list must have each one: there its range and rate);
 // remove one here to leave it out. Both armed: drawn solid (`solid` opacity), else a ghost. A hit is judged by the shooter

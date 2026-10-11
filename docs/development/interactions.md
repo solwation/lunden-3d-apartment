@@ -170,8 +170,8 @@ src/bow.js             the bow (#690, BOW): our own recurve bow (one vertex-colo
                        tools/bowtest.cjs (one page; frames driven by hand), combattest's bow step
 src/combat.js          fights between players (#667, on the ghosts of #666): only two players who BOTH hold a weapon (COMBAT.weapons:
                        saber, nerf, wand, rifle, ball, web = the suit with empty hands, jetpack = worn; main.js `weaponKey`, in that
-                       order; remove a key to leave it out) are drawn solid for each other (ghosts.js `setSolid`, + a small prop for
-                       the weapon), the unarmed stay ghosts and cannot be hit. main.js wraps each weapon's use (onUse / rifle.onShot /
+                       order; remove a key to leave it out) are drawn solid for each other (ghosts.js `setSolid`, + a small prop in the
+                       avatar's hand), the unarmed stay outlines (#705) and cannot be hit. main.js wraps each weapon's use (onUse / rifle.onShot /
                        suit.onShot) → `combat.fire(key)`: the nearest armed player along the view within the room's range (the
                        saber: in front within reach, `saberCone`; a vertical capsule COMBAT.body, `hitRadius`), not behind a wall
                        (a raycast; ghosts, see-through and `userData.moving` things ignored); the jetpack hits whoever is under it
@@ -200,6 +200,31 @@ src/combatworld.js     combat solid-hit acceleration (#715/#714): fresh semantic
                        relevant cache jobs are prioritized, and a 2 s deadline conservatively sends a normal miss. Initial
                        legitimate cold hits can therefore miss. Queue 8, captured muzzle, cancel on reset/disconnect/unarmed;
                        one existing shot message, no additional protocol. Sync prediction remains for focused fixtures.
+src/combatworld.js     combat solid-hit broad phase (#715): fresh filtered traversal keeps visibility, layers, moving/ghost roots,
+                       custom raycast propagation and nearest-hit semantics. Native static Mesh geometry may use a private 32³-bit
+                       conservative triangle-AABB occupancy grid; it only rejects an entirely empty finite query segment AABB,
+                       then Three's native raycast remains authoritative. Instanced/skinned/morphed/custom meshes bypass the grid.
+                       Combat constructor queues large geometries first; private bounds scan and cell fill advance in short idle
+                       slices (timeout ensures progress), with native fallback until ready or after buffer/index version changes.
+                       No geometry.boundingBox changes. Disposal releases pending jobs/accounting; removal without disposal can
+                       consume the lifetime admission quota and safely fall back. COMBAT.collision caps bitsets plus reserved
+                       bookkeeping, not measured JavaScript heap. No transforms or world membership are cached.
+src/avatar.js          the players' avatars (#705): a neutral human figure on Olof's skeleton and IK (src/olof.js exports `attachSkeleton`, `poseOlof`, `bindAt`,
+                       `lathe`; his look is untouched): a face (eyes, brows, nose, mouth, ears), hands with fingers, a T-shirt / long-sleeved top with
+                       collar, hem and belt, trousers, shoes, one of four hair styles (short, long, bun, beanie). `look(seed)` (the player's id, ours
+                       `me:<name>`) picks skin, hair, top, trousers, shoes, sleeves, hair style, build and height, so players differ. ONE SkinnedMesh
+                       (one draw call) per avatar, no texture, ≈ 3.6–3.8 k triangles (`avatarTriangles(variant)`; 8 shared base geometries, built lazily;
+                       an avatar owns only a colour attribute, a 13-bone skeleton and a material). The material is a MeshLambertMaterial patched with a
+                       fresnel term, one program for all: `setSolid(false)` = an outline (alpha AVATAR.fill inside, up to AVATAR.rim at the silhouette,
+                       a light edge colour per player, depth-tested, nothing written to depth, no extra pass), `setSolid(true)` = lit and opaque.
+                       `update(dt, { speed, turn, hands, crouch })`: legs walk above AVATAR.walkSpeed (the phase follows the distance), arms swing,
+                       a little breathing, the head turns `turn` rad against the body. **The arm surface for animations (#673 wave):**
+                       `hands: { L, R }` = `{ at, pole }` targets in the figure's frame (`armTarget.rest / .forward / .up(side, phase)`), set per side,
+                       replacing the swing; ghosts.js passes `Ghost.hands` through. ghosts.js `Ghost.animate`: the speed from the interpolated snapshots,
+                       the body turns towards where it goes (not when that is behind / beside the look), the head to the look (`AVATAR.bodyTurn`),
+                       a weapon is held out in the right hand and its prop follows that hand (the jetpack sits on the back). Not sent / not done: head
+                       pitch (the room's state has only position and yaw), a shadow (the shadow map is redrawn rarely). Numbers: AVATAR in config.js
+                       (*guess*, by eye). Posed only within AVATAR.poseFar m.
 src/basket.js          Tilly's basketball (BASKET): a Holdable in a wall holder over her daybed; click shoots it on an arc
                        through the point you look at (near the rim: at the rim, coming down at `entry`), right click / the
                        🏀 button (#power-btn, its icon = the held thing's `altIcon`) dribbles; out of the hand it bounces off

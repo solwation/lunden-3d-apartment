@@ -46,16 +46,16 @@ const room = async () => (await fetch(`${worker}/admin/players`, { headers: { Au
     // (each poll turns both a little, back and forth, so neither counts as idle while the other catches up)
     let wiggle = 0.05;
     const nudge = async () => { wiggle = -wiggle; for (const p of [A.page, B.page]) await p.evaluate((w) => { window.__app.camera.rotation.y += w; }, wiggle); };
-    const seen = (p, name) => until(async () => { await nudge(); return p.evaluate((n) => { const l = window.__ghosts.list(); return l.length === 1 && l[0].name === n && l[0].visible ? l[0] : null; }, name); }, 240000);
+    const seen = (p, name) => until(async () => { await nudge(); return p.evaluate((n) => { const l = window.__ghosts.list(); return l.length === 1 && l[0].name === n && l[0].visible ? l[0] : null; }, name); }, 600000); // (the first frame with an avatar compiles the skinned program: minutes under SwiftShader when the machine is busy)
     const ga = await seen(A.page, 'Anonym'), gb = await seen(B.page, 'Olof');
     const diag = (p) => p.evaluate(() => { const g = window.__ghosts; return JSON.stringify({ on: g.on, url: g.url, ws: g.ws?.readyState, me: g.me, connects: g.connects, retryIn: Math.round(g.retryAt - performance.now()), others: g.list(), overlay: document.getElementById('overlay').hidden, lastMove: Math.round(performance.now() - g.lastMove), frame: window.__app.renderer.info.render.frame, rot: window.__app.camera.rotation.y, now: Math.round(performance.now()), vis: document.visibilityState }); }).catch((e) => e.message);
     if (!ga || !gb) console.log('  A:', await diag(A.page), '\n  B:', await diag(B.page));
     check(!!ga, 'A sees B as a ghost tagged "Anonym"', JSON.stringify(ga));
     check(!!gb, 'B sees A as a ghost tagged "Olof"', JSON.stringify(gb));
-    check(ga?.opacity === 0.25 && ga?.tag, 'the ghost is see-through (0.25) and its tag shows near');
-    const info = await A.page.evaluate(() => { const g = [...window.__ghosts.others.values()][0]; return { shadow: g.mesh.castShadow, calls: g.root.children.length, score:g.score,scale:g.tag.scale.toArray(),tagTex: g.tag.material.map.image.width + 'x' + g.tag.material.map.image.height }; });
+    check(ga?.outline === true && ga?.opacity < 0.2 && ga?.tag, 'the ghost is an outline with a very faint fill (AVATAR.fill) and its tag shows near');
+    const info = await A.page.evaluate(() => { const g = [...window.__ghosts.others.values()][0]; return { shadow: g.mesh.castShadow, calls: g.root.children.length, skinned: g.mesh.isSkinnedMesh, score:g.score,scale:g.tag.scale.toArray(),tagTex: g.tag.material.map.image.width + 'x' + g.tag.material.map.image.height }; });
     check(info.scale[0]<.8&&info.scale[1]<.2&&Number.isInteger(info.score),'smaller name/score badge (#672)',JSON.stringify(info));
-    check(info.shadow === false && info.tagTex === '256x64', 'no shadow, one body mesh + one 256×64 tag sprite', JSON.stringify(info));
+    check(info.shadow === false && info.skinned && info.tagTex === '256x64', 'no shadow, one skinned avatar mesh + one 256×64 tag sprite', JSON.stringify(info));
     const bPos = await B.page.evaluate(() => [window.__app.player.pos.x, window.__app.player.pos.y, window.__app.player.pos.z]);
     check(Math.hypot(ga.pos[0] - bPos[0], ga.pos[2] - bPos[2]) < 0.05 && Math.abs(ga.pos[1] - bPos[1]) < 0.05, 'the ghost stands where B is', `${ga.pos} vs ${bPos.map((v) => v.toFixed(2))}`);
     for (const [p, file] of [[A.page, 'ghost-A-sees-anonym'], [B.page, 'ghost-B-sees-olof']]) { // a bigger frame for the screenshot

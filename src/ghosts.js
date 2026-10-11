@@ -1,6 +1,6 @@
 import * as THREE from 'three';
-import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { GHOSTS as G, COMBAT } from './config.js';
+import { GHOSTS as G, COMBAT, AVATAR } from './config.js';
+import { Avatar, armTarget } from './avatar.js';
 import { totalScore } from './stats.js';
 import { acquireBadge, releaseBadge, badgeScore } from './ghostbadge.js';
 
@@ -10,8 +10,8 @@ import { acquireBadge, releaseBadge, badgeScore } from './ghostbadge.js';
 // the runtime, never billed), and disconnect when the tab is hidden, on the start screen, or after GHOSTS.idleMs standing
 // still. The room's cost cap (close 4001) keeps us off for the rest of the month (localStorage 'lunden.mp.capMonth').
 //
-// Each other player is one mesh (one draw call: a simple merged body with vertex colours, see-through at GHOSTS.opacity,
-// no shadow, depth-tested so walls and floors hide it) and one name tag sprite ("Anonym" without a name; the canvas
+// Each other player is one avatar (#705, src/avatar.js: a human figure, one skinned mesh = one draw call, shared geometry per
+// variant; an outline without a weapon, solid when both are armed; no shadow, depth-tested so walls and floors hide it) and one name tag sprite ("Anonym" without a name; the canvas
 // texture is shared by everyone with the same name and score, released when unused). States are drawn GHOSTS.delay ms late, interpolated between the
 // last two received, so the motion is smooth at 5 Hz.
 
@@ -19,29 +19,6 @@ const CAP_KEY = 'lunden.mp.capMonth';
 const monthNow = () => new Date().toISOString().slice(0, 7);
 const params = new URLSearchParams(location.search);
 export const ANON = 'Anonym';
-
-let bodyGeometry = null;
-/** The body, built once and shared: legs, torso, arms, head with two dark eyes at the front (−z, the way it looks). */
-function body() {
-  if (bodyGeometry) return bodyGeometry;
-  const parts = [];
-  const add = (g, [x, y, z], shade = 1) => {
-    g = g.toNonIndexed(); g.deleteAttribute('uv'); g.translate(x, y, z);
-    const c = new Float32Array(g.attributes.position.count * 3).fill(shade);
-    g.setAttribute('color', new THREE.BufferAttribute(c, 3));
-    parts.push(g);
-  };
-  for (const s of [-1, 1]) {
-    add(new THREE.CapsuleGeometry(0.075, 0.62, 3, 8), [s * 0.1, 0.42, 0]);
-    add(new THREE.CapsuleGeometry(0.055, 0.5, 3, 8).rotateZ(s * 0.12), [s * 0.27, 1.08, 0]);
-    add(new THREE.SphereGeometry(0.022, 8, 6), [s * 0.045, 1.63, -0.115], 0.15);
-  }
-  add(new THREE.CapsuleGeometry(0.19, 0.42, 4, 12).scale(1, 1, 0.7), [0, 1.12, 0]);
-  add(new THREE.SphereGeometry(0.13, 14, 10), [0, 1.6, 0]);
-  bodyGeometry = mergeGeometries(parts);
-  bodyGeometry.computeVertexNormals();
-  return bodyGeometry;
-}
 
 /** A soft colour of its own per name (Anonym: a pale blue-white). */
 function tint(name) {
@@ -66,29 +43,32 @@ function prop(key) {
   if (!PROPS[key]) return null;
   if (!props.has(key)) props.set(key, PROPS[key]());
   const [geo, mat] = props.get(key), m = new THREE.Mesh(geo, mat);
-  if (key === 'jetpack') m.position.set(0, 1.2, 0.2); else m.position.set(0.3, 0.98, -0.18);
+  if (key === 'jetpack') m.position.set(0, 1.2, 0.2); // (the others follow the hand, Ghost.animate)
   m.name = `ghost-prop:${key}`;
   return m;
 }
 
-const lerpAngle = (a, b, t) => a + (Math.atan2(Math.sin(b - a), Math.cos(b - a))) * t;
+const wrap = (a) => Math.atan2(Math.sin(a), Math.cos(a));
+const lerpAngle = (a, b, t) => a + wrap(b - a) * t;
+const SWING = 0.35; // s the saber's cut lasts
+const tmpV = new THREE.Vector3();
 
 class Ghost {
   constructor(parent, id, name) {
-    this.id = id; this.name = name || ANON; this.snaps = []; this.phase = Math.random() * 6; this.h = ''; this.solid = false; this.prop = null;
-    const color = tint(name);
-    this.material = new THREE.MeshLambertMaterial({ color, emissive: color.clone().multiplyScalar(0.35), vertexColors: true, transparent: true, opacity: G.opacity, depthWrite: false });
-    this.mesh = new THREE.Mesh(body(), this.material);
-    this.mesh.castShadow = this.mesh.receiveShadow = false;
+    this.id = id; this.name = name || ANON; this.snaps = []; this.h = ''; this.solid = false; this.prop = null;
+    this.avatar = new Avatar(id, tint(name));
+    this.mesh = this.avatar.mesh;
     this.mesh.name = `ghost:${this.name}`;
+    this.root = new THREE.Group();
+    this.root.add(this.avatar.object);
     this.badge = acquireBadge(this.name, 0);
     this.score = 0;
     this.tag = new THREE.Sprite(this.badge.material);
     this.tag.scale.set(G.tagWidth, G.tagHeight, 1);
-    this.tag.position.y = G.tagY;
-    this.root = new THREE.Group();
-    this.root.add(this.mesh, this.tag);
+    this.tag.position.y = G.tagY + (this.avatar.look.tall - 1) * 1.8; // (above the head of a taller / shorter avatar)
+    this.root.add(this.tag);
     this.root.visible = false; // until its first state
+    this.body = 0; this.speed = 0; this.have = false;
     parent.add(this.root);
   }
 
@@ -102,28 +82,30 @@ class Ghost {
       this.score = score;
       releaseBadge(previous);
     }
-    if (h !== this.h) { // a weapon in the hand (#667)
-      this.h = h;
-      this.prop?.removeFromParent();
-      this.prop = prop(h);
-      if (this.prop) this.mesh.add(this.prop);
-    }
+    this.setHeld(h);
     const last = this.snaps.at(-1);
     if (last && t - last.t > 1000 / G.hz * 1.5) this.snaps.push({ t: t - 1000 / G.hz, p: last.p, r: last.r });
     this.snaps.push({ t, p: new THREE.Vector3(...p), r });
     if (this.snaps.length > 8) this.snaps.splice(0, this.snaps.length - 8);
   }
 
-  /** A swing of what it holds (#667: the saber's cut, seen by the others). */
-  swing() { this.swingT = 0.35; }
+  /** A weapon in the hand (#667): the prop follows the avatar's right hand (the jetpack sits on the back). */
+  setHeld(h) {
+    if (h === this.h) return;
+    this.h = h;
+    this.prop?.removeFromParent();
+    this.prop = prop(h);
+    if (this.prop) this.root.add(this.prop);
+  }
 
-  /** Solid when both of us hold a weapon (#667), else a ghost. */
+  /** A swing of what it holds (#667: the saber's cut, seen by the others). */
+  swing() { this.swingT = SWING; }
+
+  /** Solid when both of us hold a weapon (#667), else an outline (#705). */
   setSolid(on) {
     if (on === this.solid) return;
     this.solid = on;
-    Object.assign(this.material, { transparent: !on, opacity: on ? COMBAT.solid : G.opacity, depthWrite: on, needsUpdate: true });
-    this.material.emissive.copy(this.material.color).multiplyScalar(on ? 0.1 : 0.35);
-    this.mesh.castShadow = false;
+    this.avatar.setSolid(on, COMBAT.solid);
   }
 
   /** Where its body is now (world): feet and the top of the hit capsule. */
@@ -139,20 +121,49 @@ class Ghost {
     const k = b === a ? 1 : THREE.MathUtils.clamp((at - a.t) / (b.t - a.t), 0, 1);
     this.root.position.lerpVectors(a.p, b.p, k);
     this.root.rotation.y = lerpAngle(a.r, b.r, k);
-    this.mesh.position.y = 0.05 + 0.03 * Math.sin(t / 600 + this.phase); // floats a little
-    if (this.prop) { // a swing: the prop sweeps across in front and back (#667)
-      const dt = this.lastDraw ? Math.min(0.1, (t - this.lastDraw) / 1000) : 0;
-      this.swingT = Math.max(0, (this.swingT ?? 0) - dt);
-      const k = this.swingT > 0 ? Math.sin((1 - this.swingT / 0.35) * Math.PI) : 0;
-      this.prop.rotation.set(-0.6 * k, 1.4 * k, 0);
-    }
-    this.lastDraw = t;
-    const d = this.root.position.distanceTo(eye);
+    const d = this.root.position.distanceTo(eye), sec = b === a ? 0 : (b.t - a.t) / 1000;
     this.root.visible = d < G.far;
     this.tag.visible = d < G.tagFar;
+    if (this.root.visible) this.animate(t, d, sec ? (b.p.x - a.p.x) / sec : 0, sec ? (b.p.z - a.p.z) / sec : 0);
   }
 
-  dispose() { this.root.removeFromParent(); this.material.dispose(); releaseBadge(this.badge); }
+  /** The avatar's pose: the gait follows the ground speed (vx, vz) m/s; the body turns towards where it goes, the head to
+   * where it looks; a weapon is held out in the right hand and the prop sits in it. `d`: distance to the eye (far away: not
+   * posed). `this.hands` (optional { L, R }, see armTarget in avatar.js) overrides an arm: the surface for a wave (#673). */
+  animate(t, d, vx, vz) {
+    const dt = this.lastDraw ? Math.min(0.1, (t - this.lastDraw) / 1000) : 0;
+    this.lastDraw = t;
+    if (d > AVATAR.poseFar) return;
+    const gaze = this.root.rotation.y, sp = Math.hypot(vx, vz);
+    this.speed += ((sp > 8 ? 0 : sp) - this.speed) * Math.min(1, dt * 10);
+    if (!this.have) { this.body = gaze; this.have = true; }
+    if (this.speed > AVATAR.walkSpeed) { // the body faces where it goes, unless that is backwards / sideways to the look
+      const going = Math.atan2(-vx, -vz);
+      this.body += wrap((Math.abs(wrap(going - gaze)) < 1.3 ? going : gaze) - this.body) * Math.min(1, dt * 8);
+    } else {
+      const off = wrap(gaze - this.body);
+      if (Math.abs(off) > AVATAR.bodyTurn) this.body += (off - Math.sign(off) * AVATAR.bodyTurn * 0.5) * Math.min(1, dt * 5);
+    }
+    const turn = THREE.MathUtils.clamp(wrap(gaze - this.body), -1.1, 1.1);
+    this.avatar.object.rotation.y = Math.PI + wrap(this.body - gaze);
+    const sw = this.swingT > 0 ? Math.sin((1 - this.swingT / SWING) * Math.PI) : 0;
+    if (this.swingT > 0) this.swingT = Math.max(0, this.swingT - dt);
+    const hands = {};
+    if (this.h && this.h !== 'jetpack') { // out in front; the saber's cut sweeps across
+      hands.R = armTarget.forward(-1, 0.04);
+      hands.R.at[0] += 0.45 * sw; hands.R.at[1] += 0.1 * sw;
+    }
+    Object.assign(hands, this.hands);
+    this.avatar.update(dt, { speed: this.speed, turn, hands });
+    if (this.prop && this.prop.name !== 'ghost-prop:jetpack') {
+      this.avatar.object.updateMatrixWorld(true);
+      this.root.worldToLocal(this.avatar.hand('R', tmpV));
+      this.prop.position.copy(tmpV);
+      this.prop.rotation.set(-0.6 * sw, 1.4 * sw, 0);
+    }
+  }
+
+  dispose() { this.root.removeFromParent(); this.avatar.dispose(); releaseBadge(this.badge); }
 }
 
 export class Ghosts {
@@ -166,6 +177,10 @@ export class Ghosts {
     this.group = new THREE.Group();
     this.group.name = 'ghosts';
     scene.add(this.group);
+    // a hidden outline avatar so that the warm-up compiles the others' program with the scene's (#705): nothing to compile when the first one turns up
+    this.sample = new Avatar('warm');
+    this.sample.object.visible = false;
+    this.group.add(this.sample.object);
     if (!this.on) return;
     document.addEventListener('visibilitychange', () => { if (document.hidden) this.disconnect(); });
     setInterval(() => this.beat(), 1000); // the heartbeat runs on a timer: slow frames must not let the room think us gone
@@ -305,6 +320,6 @@ export class Ghosts {
   /** For tests: what is shown. */
   list() {
     return [...this.others.values()].map((g) => ({ id: g.id, name: g.name, score: g.score, visible: g.root.visible, tag: g.tag.visible,
-      pos: g.root.position.toArray().map((v) => Math.round(v * 100) / 100), opacity: g.material.opacity, h: g.h, solid: g.solid }));
+      pos: g.root.position.toArray().map((v) => Math.round(v * 100) / 100), opacity: g.solid ? COMBAT.solid : AVATAR.fill, outline: !g.solid, speed: Math.round(g.speed * 100) / 100, h: g.h, solid: g.solid }));
   }
 }
