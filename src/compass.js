@@ -11,8 +11,10 @@ export class Compass {
     this.camera=camera;this.element=element;this.direction=new THREE.Vector3();this.bearing=DAY.planNorth;
     this.badges=document.getElementById('badges');
     this.blockers=['update','reloaded','countdown'].map(id=>document.getElementById(id)).filter(Boolean);
-    for(const [key,value] of Object.entries({size:P.size,compact:P.compactSize,top:P.top,'narrow-top':P.narrowTop}))
+    for(const [key,value] of Object.entries({size:P.size,compact:P.compactSize,top:P.top,'narrow-top':P.narrowTop})) {
       element.style.setProperty(`--compass-${key}`,`${value}px`);
+      document.documentElement.style.setProperty(`--compass-${key}`,`${value}px`); // shared HUD positioning (#716)
+    }
     this.update();
   }
   update() {

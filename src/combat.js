@@ -53,7 +53,7 @@ export class Combat {
     this.el = document.createElement('div');
     this.el.id = 'lives';
     this.el.hidden = true;
-    Object.assign(this.el.style, { position: 'fixed', top: '12px', left: '50%', transform: 'translateX(-50%)', zIndex: 20, pointerEvents: 'none',
+    Object.assign(this.el.style, { position: 'fixed', transform: 'translateX(-50%)', zIndex: 20, pointerEvents: 'none',
       font: '600 15px system-ui, -apple-system, "Segoe UI", sans-serif', color: '#fff', background: 'rgba(18, 22, 30, 0.6)', padding: '3px 10px', borderRadius: '12px' });
     this.flashEl = document.createElement('div');
     Object.assign(this.flashEl.style, { position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 19, opacity: 0,

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Real index DOM/CSS and icon initialization; game bootstrap is deliberately suppressed.
-// This checks layout, not rendering or gameplay handlers (hudiconstest covers those).
+// This checks layout and real Combat life updates, not 3D rendering or network gameplay.
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const fs = require('node:fs');
 const path = require('node:path');
@@ -20,7 +20,9 @@ const sizes = [[844,390],[667,375],[932,430],[568,320],[1280,720]];
       await page.evaluate(async ({touch,safe}) => {
         const {initHudIcons,setWeatherIcon} = await import('/src/hudicons.js');
         const {setScoreElement} = await import('/src/stats.js');
-        const {COMPASS} = await import('/src/config.js');
+        const THREE = await import('three');
+        const {Compass} = await import('/src/compass.js');
+        const {Combat} = await import('/src/combat.js');
         initHudIcons();
         document.body.classList.toggle('touch',touch);
         for (const [i,key] of ['sl','sr','st','sb'].entries()) document.documentElement.style.setProperty('--'+key,safe[i]+'px');
@@ -35,7 +37,11 @@ const sizes = [[844,390],[667,375],[932,430],[568,320],[1280,720]];
         score.querySelector('.score-val').textContent='123 456';
         document.getElementById('presence').innerHTML='<span class="presence-icon"><svg viewBox="0 0 24 24"><circle cx="8" cy="7" r="4"/><path d="M0 21v-3c0-8 16-8 16 0v3Z"/></svg></span><span class="presence-count">99</span>';
         const compass=document.getElementById('compass');
-        for(const [key,value] of Object.entries({size:COMPASS.size,compact:COMPASS.compactSize,top:COMPASS.top,'narrow-top':COMPASS.narrowTop})) compass.style.setProperty('--compass-'+key,value+'px');
+        const camera=new THREE.PerspectiveCamera();
+        window.testCompass=new Compass(camera,compass);
+        const ghosts={connected:true,others:new Map([['foe',{h:'nerf',root:{visible:true},snaps:[{}]}]])};
+        window.testCombat=new Combat({ghosts,camera,scene:new THREE.Scene(),weapon:()=> 'nerf',feet:()=>new THREE.Vector3()});
+        window.testCombat.update(0);
         document.getElementById('corner-qr').hidden=touch;
       },{touch:width<1000,safe});
       const result=await page.evaluate(({width,height,safe}) => {
@@ -44,10 +50,15 @@ const sizes = [[844,390],[667,375],[932,430],[568,320],[1280,720]];
         const bounds=selector=>document.querySelector(selector).getBoundingClientRect().toJSON();
         const css=selector=>getComputedStyle(document.querySelector(selector));
         const overlaps=(a,b)=>Math.min(a.right,b.right)-Math.max(a.left,b.left)>.5 && Math.min(a.bottom,b.bottom)-Math.max(a.top,b.top)>.5;
-        const left=bounds('#score'),right=bounds('#hud-top'),compass=bounds('#compass');
+        const left=bounds('#score'),right=bounds('#hud-top'),compass=bounds('#compass'),lives=bounds('#lives');
+        check(near(lives.top,compass.bottom+12),'lives lack 12px gap below actual compass');
+        check(near((lives.left+lives.right)/2,(compass.left+compass.right)/2),'lives not centered below compass');
+        check(!overlaps(lives,left)&&!overlaps(lives,right),'lives overlap badge');
+        window.testCombat.hurt({l:7});window.testCombat.update(0);
+        check(document.getElementById('lives').textContent.endsWith('7/'+window.testCombat.maxLives),'life count does not update');
         check(near(left.top,right.top)&&near(left.height,right.height),'badge tops/heights differ');
         for(const key of ['backgroundColor','borderRadius','boxShadow','borderTopWidth','backdropFilter'])check(css('#score')[key]===css('#hud-top')[key],'shell differs: '+key);
-        for(const [name,box] of Object.entries({left,right,compass}))check(box.left>=safe[0]-.1&&box.right<=width-safe[1]+.1&&box.top>=safe[2]-.1&&box.bottom<=height-safe[3]+.1,name+' outside safe viewport');
+        for(const [name,box] of Object.entries({left,right,compass,lives}))check(box.left>=safe[0]-.1&&box.right<=width-safe[1]+.1&&box.top>=safe[2]-.1&&box.bottom<=height-safe[3]+.1,name+' outside safe viewport');
         check(!overlaps(left,right),'badges overlap');check(!overlaps(compass,left)&&!overlaps(compass,right),'compass overlaps badge');
         const cell=parseFloat(css('#furniture-btn').width),unit=cell/2;
         const cells=['#weather','#temp','#level','.score-main','#presence',...(width<1000?['#terminal-btn']:[])];
@@ -81,15 +92,18 @@ const sizes = [[844,390],[667,375],[932,430],[568,320],[1280,720]];
         check(!overlaps(bounds('#minimap'),right)&&!overlaps(bounds('#minimap'),compass),'minimap overlaps header');minimap.hidden=true;
         if(width<1000){
           for(const id of ['jet-up','jet-down','web-btn'])document.getElementById(id).hidden=false;
-          const controls=['compass','jet-up','jet-down','web-btn','jump-btn','measure-btn','crouch-btn'];
+          const controls=['lives','compass','jet-up','jet-down','web-btn','jump-btn','measure-btn','crouch-btn'];
           for(let i=0;i<controls.length;i++)for(let j=i+1;j<controls.length;j++)check(!overlaps(bounds('#'+controls[i]),bounds('#'+controls[j])),'controls overlap '+controls[i]+'/'+controls[j]);
-          for(const id of controls.slice(1)){const b=bounds('#'+id);check(!overlaps(b,left)&&!overlaps(b,right),'control overlaps badge '+id);check(b.top>=safe[2]&&b.bottom<=height-safe[3]+.1,'control outside viewport '+id);}
+          for(const id of controls.slice(2)){const b=bounds('#'+id);check(!overlaps(b,left)&&!overlaps(b,right),'control overlaps badge '+id);check(b.top>=safe[2]&&b.bottom<=height-safe[3]+.1,'control outside viewport '+id);}
           for(const id of ['jet-up','jet-down','web-btn'])document.getElementById(id).hidden=true;
         }else check(!overlaps(bounds('#corner-qr'),left),'QR overlaps badge');
         document.body.classList.add('hud-no-blur');check(css('#score').backdropFilter==='none'&&css('#hud-top').backdropFilter==='none','blur fallback');document.body.classList.remove('hud-no-blur');
         const button=document.getElementById('furniture-btn');button.disabled=true;check(Number(getComputedStyle(button).opacity)<.5,'disabled state');button.disabled=false;
         const normal=getComputedStyle(button).backgroundColor;button.setAttribute('aria-pressed','true');check(getComputedStyle(button).backgroundColor!==normal,'pressed state');button.removeAttribute('aria-pressed');
-        return {width,height,safe,cell,left,right,compass,errors};
+        window.testCombat.ghosts.connected=false;window.testCombat.update(0);
+        check(document.getElementById('lives').hidden,'lives stay visible outside combat');
+        window.testCombat.ghosts.connected=true;window.testCombat.update(0);
+        return {width,height,safe,cell,left,right,compass,lives,errors};
       },{width,height,safe});
       results.push(result);
       if(out&&safe.every(v=>v===0)){fs.mkdirSync(out,{recursive:true});await page.screenshot({path:path.join(out,`hud-only-after-${width}.png`)});}
