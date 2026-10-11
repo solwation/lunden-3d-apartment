@@ -11,11 +11,11 @@
 // after PLAYERS.idleMs without a message or heartbeat. The admin emergency brake (DELETE /admin/players or /admin/all)
 // switches the room off (4003) until PUT /admin/players.
 //
-// Protocol (JSON text; client → room): { p: [x, y, z] feet in metres, r: yaw (rad), h: weapon key or '' } and a shot
+// Protocol (JSON text; client → room): { p: [x, y, z] feet in metres, r: yaw (rad), h: weapon key or '', score: integer 0…1e7 } and a shot
 // { t: 'a', w, o, d, s?, to? } (#667, `cleanShot`; forwarded to the armed others as { t: 'a', i, w, o, d, s? }) — anything
 // else is dropped.
-// Room → client: { t: 'w', i: your id, ps: [{ i, n, p, r, h }], c: { lives, weapons } } on joining; { t: 'j', i, n } someone
-// joined; { t: 's', i, p, r, h } a state; { t: 'x', i } someone left; 'hit' / 'hurt' (#667). n = the name ('' = "Anonym").
+// Room → client: { t: 'w', i: your id, ps: [{ i, n, p, r, h, score }], c: { lives, weapons } } on joining; { t: 'j', i, n } someone
+// joined; { t: 's', i, p, r, h, score } a state; { t: 'x', i } someone left; 'hit' / 'hurt' (#667). n = the name ('' = "Anonym").
 
 export const PLAYERS = {
   monthlyCap: 800_000, // billed requests per calendar month; Workers Paid includes 1 000 000 (price list, verify), so the room stays below it
@@ -62,7 +62,8 @@ export function cleanState(text) {
   let m;
   try { m = JSON.parse(text); } catch { return null; }
   if (!m || typeof m !== 'object' || !Array.isArray(m.p) || m.p.length !== 3 || !m.p.every((v) => fin(v, 5000)) || !fin(m.r, 100)) return null;
-  return { p: m.p.map(r2), r: r2(m.r), h: typeof m.h === 'string' && Object.hasOwn(COMBAT.weapons, m.h) ? m.h : '' };
+  const score = Number.isFinite(m.score) ? Math.min(1e7, Math.max(0, Math.floor(m.score))) : 0; // #672: existing leaderboard maximum; legacy clients show 0
+  return { p: m.p.map(r2), r: r2(m.r), score, h: typeof m.h === 'string' && Object.hasOwn(COMBAT.weapons, m.h) ? m.h : '' };
 }
 
 /** A shot from a client, or null: { t: 'a', w, o: [x, y, z] start, d: [dx, dy, dz] unit direction, s?: speed m/s, to?: id hit }

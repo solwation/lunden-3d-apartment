@@ -35,10 +35,10 @@ src/crashlog.js        crash reports (#629), inert without the cloud (same switc
                        (random id), .sent, .out kept by Återställ (RESET_KEEP), .beat dropped. main.js: the import (first) and one
                        `crashlog.attach({...})` line. A later GPU-memory counter (#628) should replace `gpuMB()` rather than duplicate it
 src/ghosts.js          other players as ghosts with a name tag (#666), inert without the cloud, GHOSTS.enabled false or ?mp=0: a WebSocket
-                       to `/players` while playing (overlay hidden, tab visible, moved within GHOSTS.idleMs); sends { p: feet, r: yaw }
+                       to `/players` while playing (overlay hidden, tab visible, moved within GHOSTS.idleMs); sends { p: feet, r: yaw, score }
                        at most GHOSTS.hz and only on a change, heartbeat 'p' (runtime auto-response 'q', never billed); draws each
                        other player GHOSTS.delay ms late, interpolated; one merged body mesh (vertex colours, opacity 0.25, no shadow,
-                       depth-tested) + one name tag sprite (256 × 64 canvas shared per name, "Anonym"). Close 4001 (month cap) →
+                       depth-tested) + one name/score sprite (256 × 64 canvas shared per live name/score combination, "Anonym"). Close 4001 (month cap) →
                        localStorage 'lunden.mp.capMonth' = this month: no retry; 4003 (brake) / 4029 (full) wait; others back off.
                        No KV, nothing written per position (presence.js's KV counter #424 is untouched). `window.__ghosts` for tests
                        #667: the state's `h` (weapon key or '') and one shot message per shot { t: 'a', w, o, d, s?, to? } go the
@@ -100,3 +100,5 @@ Visited flats (#574, src/visitunit.js): a flat you walk into (L1004) has no save
 its doors / windows / lids are not in `world.doors` / `world.lids` (so keep.js `open` never sees them), they start shut on
 every visit, using them bumps no stat, and nothing can be put down there. Only the ordinary resume / session record (a place,
 `feetY`) can point inside it; tools/visittest.html checks a resume upstairs in it and that the saved world is unchanged.
+
+Ghost score badges (#672): `src/ghostbadge.js` draws name and score in the existing sprite, with 20% smaller world scale and text sizes set by `GHOSTS.tagWidth/tagHeight/tagNamePx/tagScorePx` (*guess*). The background fits both rows, including a short name with 10 000 000 points. Immutable materials are shared per live name/score; reference counts immediately dispose unused maps/materials when scores change or ghosts leave, so history cannot grow texture memory. Missing legacy scores display 0. Ghosts defaults to stats.totalScore and sends score-only changes within the existing shared 5 Hz state/shot budget; they do not extend movement idle time. PlayerRoom carries the score in state/welcome attachments, clamps it to the existing leaderboard's 0…1e7 range, and adds no requests, timers or message types. Scores are client-reported display data, not authoritative combat or leaderboard results. `ghostbadgetest.cjs` uses real Ghosts and the local PlayerRoom in a small controlled scene (no apartment bootstrap) to check anonymous/max scores, updates/rate/idle, shared materials, 50 updates without GPU texture growth, draws and departure; screenshots at desktop and iPhone landscape size. Physical phone rendering is not certified.

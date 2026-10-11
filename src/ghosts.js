@@ -1,6 +1,8 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { GHOSTS as G, COMBAT } from './config.js';
+import { totalScore } from './stats.js';
+import { acquireBadge, releaseBadge, badgeScore } from './ghostbadge.js';
 
 // Other players as ghosts (#666): a WebSocket to the Worker's players' room (cloudflare/players.js, one Durable Object for
 // everybody). Inert without the cloud (cloud.js `cloudUrl`), with GHOSTS.enabled false or ?mp=0. We send our feet and
@@ -10,7 +12,7 @@ import { GHOSTS as G, COMBAT } from './config.js';
 //
 // Each other player is one mesh (one draw call: a simple merged body with vertex colours, see-through at GHOSTS.opacity,
 // no shadow, depth-tested so walls and floors hide it) and one name tag sprite ("Anonym" without a name; the canvas
-// texture is shared by everyone with the same name). States are drawn GHOSTS.delay ms late, interpolated between the
+// texture is shared by everyone with the same name and score, released when unused). States are drawn GHOSTS.delay ms late, interpolated between the
 // last two received, so the motion is smooth at 5 Hz.
 
 const CAP_KEY = 'lunden.mp.capMonth';
@@ -39,32 +41,6 @@ function body() {
   bodyGeometry = mergeGeometries(parts);
   bodyGeometry.computeVertexNormals();
   return bodyGeometry;
-}
-
-const tags = new Map(); // text → { material, users }
-/** A name tag's sprite material (shared by everybody with the same name; 256 × 64 canvas). */
-function tagMaterial(text) {
-  let t = tags.get(text);
-  if (!t) {
-    const c = document.createElement('canvas'); c.width = 256; c.height = 64;
-    const g = c.getContext('2d');
-    g.font = '600 30px system-ui, -apple-system, "Segoe UI", sans-serif';
-    const w = Math.min(248, g.measureText(text).width + 28), x = (256 - w) / 2;
-    g.fillStyle = 'rgba(18, 22, 30, 0.72)';
-    g.beginPath(); if (g.roundRect) g.roundRect(x, 8, w, 48, 24); else g.rect(x, 8, w, 48); g.fill();
-    g.fillStyle = '#fff'; g.textAlign = 'center'; g.textBaseline = 'middle';
-    g.fillText(text, 128, 33, 230);
-    const map = new THREE.CanvasTexture(c);
-    map.colorSpace = THREE.SRGBColorSpace;
-    t = { material: new THREE.SpriteMaterial({ map, transparent: true, depthWrite: false }), users: 0 };
-    tags.set(text, t);
-  }
-  t.users++;
-  return t.material;
-}
-function releaseTag(text) {
-  const t = tags.get(text);
-  if (t && --t.users <= 0) { t.material.map.dispose(); t.material.dispose(); tags.delete(text); }
 }
 
 /** A soft colour of its own per name (Anonym: a pale blue-white). */
@@ -105,9 +81,11 @@ class Ghost {
     this.mesh = new THREE.Mesh(body(), this.material);
     this.mesh.castShadow = this.mesh.receiveShadow = false;
     this.mesh.name = `ghost:${this.name}`;
-    this.tag = new THREE.Sprite(tagMaterial(this.name));
-    this.tag.scale.set(0.8, 0.2, 1);
-    this.tag.position.y = 1.98;
+    this.badge = acquireBadge(this.name, 0);
+    this.score = 0;
+    this.tag = new THREE.Sprite(this.badge.material);
+    this.tag.scale.set(G.tagWidth, G.tagHeight, 1);
+    this.tag.position.y = G.tagY;
     this.root = new THREE.Group();
     this.root.add(this.mesh, this.tag);
     this.root.visible = false; // until its first state
@@ -115,7 +93,15 @@ class Ghost {
   }
 
   /** A state from the room at time t (ms). After a pause the last one is repeated just before it, so it walks off smoothly. */
-  push({ p, r, h = '' }, t) {
+  push({ p, r, h = '', score = 0 }, t) {
+    score = badgeScore(score);
+    if (score !== this.score) {
+      const previous = this.badge;
+      this.badge = acquireBadge(this.name, score);
+      this.tag.material = this.badge.material;
+      this.score = score;
+      releaseBadge(previous);
+    }
     if (h !== this.h) { // a weapon in the hand (#667)
       this.h = h;
       this.prop?.removeFromParent();
@@ -166,14 +152,14 @@ class Ghost {
     this.tag.visible = d < G.tagFar;
   }
 
-  dispose() { this.root.removeFromParent(); this.material.dispose(); releaseTag(this.name); }
+  dispose() { this.root.removeFromParent(); this.material.dispose(); releaseBadge(this.badge); }
 }
 
 export class Ghosts {
   /** scene; url: the Worker ('' = off); name(): our name; state(): { p: [x, y, z] feet, r: yaw }; active(): playing (not the
-   * start screen); weapon(): the key (COMBAT.weapons) of what we hold or ''; onHit / onHurt: the room's word on a hit (#667). */
-  constructor({ scene, camera, url, name = () => '', state, active = () => true, weapon = () => '', onHit = () => {}, onHurt = () => {} }) {
-    Object.assign(this, { camera, name, state, active, weapon, onHit, onHurt, rules: null, ws: null, me: null, others: new Map(), sent: null, prev: null,
+   * start screen); weapon(): the key (COMBAT.weapons) of what we hold or ''; score(): displayed points (defaults to stats.totalScore); onHit / onHurt: the room's word on a hit (#667). */
+  constructor({ scene, camera, url, name = () => '', state, active = () => true, weapon = () => '', score = totalScore, onHit = () => {}, onHurt = () => {} }) {
+    Object.assign(this, { camera, name, state, active, weapon, score, onHit, onHurt, rules: null, ws: null, me: null, others: new Map(), sent: null, prev: null,
       lastSent: 0, lastBeat: 0, outbox: [], shots: 0, dropped: 0, lastMove: -Infinity, retryAt: 0, backoff: 0, openedAt: 0, connects: 0, messages: 0 });
     this.on = !!url && G.enabled && params.get('mp') !== '0';
     this.url = url ? `${url.replace(/^http/, 'ws')}/players` : '';
@@ -248,8 +234,10 @@ export class Ghosts {
     if (!this.on) return;
     const t = performance.now(), s = this.state(), w = this.weapon();
     s.h = COMBAT.weapons.includes(w) ? w : '';
+    s.score = badgeScore(this.score());
     const prev = this.prev;
     if (!prev || Math.hypot(s.p[0] - prev.p[0], s.p[1] - prev.p[1], s.p[2] - prev.p[2]) > G.move || Math.abs(s.r - prev.r) > G.turn || s.h !== prev.h) { this.lastMove = t; this.prev = s; }
+    if (this.prev?.score !== s.score) this.prev = s; // score changes use the same 5 Hz slot; do not reset movement idle time
     const playing = this.active() && !document.hidden && t - this.lastMove < G.idleMs;
     if (!playing) { if (this.ws) this.disconnect(); }
     else if (!this.ws && !this.capped && t >= this.retryAt) this.connect();
@@ -257,7 +245,7 @@ export class Ghosts {
       const sent = this.sent;
       if (t - this.lastSent >= 1000 / G.hz && (!sent || sent !== this.prev)) {
         const p = this.prev ?? s;
-        this.ws.send(JSON.stringify({ p: p.p.map((v) => Math.round(v * 100) / 100), r: Math.round(p.r * 100) / 100, ...(p.h ? { h: p.h } : {}) }));
+        this.ws.send(JSON.stringify({ p: p.p.map((v) => Math.round(v * 100) / 100), r: Math.round(p.r * 100) / 100, score: p.score, ...(p.h ? { h: p.h } : {}) }));
         this.sent = p; this.lastSent = this.lastBeat = t; this.messages++;
       }
     }
@@ -296,7 +284,7 @@ export class Ghosts {
 
   /** For tests: what is shown. */
   list() {
-    return [...this.others.values()].map((g) => ({ id: g.id, name: g.name, visible: g.root.visible, tag: g.tag.visible,
+    return [...this.others.values()].map((g) => ({ id: g.id, name: g.name, score: g.score, visible: g.root.visible, tag: g.tag.visible,
       pos: g.root.position.toArray().map((v) => Math.round(v * 100) / 100), opacity: g.material.opacity, h: g.h, solid: g.solid }));
   }
 }

@@ -70,6 +70,9 @@ tools/ghosttest.cjs    other players as ghosts (#666): two Playwright pages agai
                        cloudflare/devws.mjs): ?mp=0 / no cloud off, see each other with tags Olof / "Anonym", position, standing still sends
                        nothing, a move arrives interpolated, the room's count, a closed / hidden tab disconnects; screenshots into SHOTS.
                        Also `node --test cloudflare/players.test.mjs` (cap, limits, brake). ~5 min under SwiftShader
+tools/ghostbadgetest.cjs (#672) bounded real Ghosts + local PlayerRoom badge fixture without apartment bootstrap; name/score,
+                       anonymous/max score, score-only rate/idle, sharing, texture-history disposal, draw counts and leave;
+                       desktop/iPhone-size rendered screenshots. Same environment/arguments as ghosttest (no admin token needed)
 tools/clocktest.html   headless test of the wall clock (?time=7, spool, pause, sun height by month)
 tools/hangtest.html    hanging clothes inside what they hang in (#610): the hall coat rack's jackets within its width, clear of the EL/C
                        cabinet and wardrobe G; all fitted wardrobes' contents (+ the hall life jacket) inside the carcass; SMÅSTAD's clothes

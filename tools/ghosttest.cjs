@@ -53,7 +53,8 @@ const room = async () => (await fetch(`${worker}/admin/players`, { headers: { Au
     check(!!ga, 'A sees B as a ghost tagged "Anonym"', JSON.stringify(ga));
     check(!!gb, 'B sees A as a ghost tagged "Olof"', JSON.stringify(gb));
     check(ga?.opacity === 0.25 && ga?.tag, 'the ghost is see-through (0.25) and its tag shows near');
-    const info = await A.page.evaluate(() => { const g = [...window.__ghosts.others.values()][0]; return { shadow: g.mesh.castShadow, calls: g.root.children.length, tagTex: g.tag.material.map.image.width + 'x' + g.tag.material.map.image.height }; });
+    const info = await A.page.evaluate(() => { const g = [...window.__ghosts.others.values()][0]; return { shadow: g.mesh.castShadow, calls: g.root.children.length, score:g.score,scale:g.tag.scale.toArray(),tagTex: g.tag.material.map.image.width + 'x' + g.tag.material.map.image.height }; });
+    check(info.scale[0]<.8&&info.scale[1]<.2&&Number.isInteger(info.score),'smaller name/score badge (#672)',JSON.stringify(info));
     check(info.shadow === false && info.tagTex === '256x64', 'no shadow, one body mesh + one 256×64 tag sprite', JSON.stringify(info));
     const bPos = await B.page.evaluate(() => [window.__app.player.pos.x, window.__app.player.pos.y, window.__app.player.pos.z]);
     check(Math.hypot(ga.pos[0] - bPos[0], ga.pos[2] - bPos[2]) < 0.05 && Math.abs(ga.pos[1] - bPos[1]) < 0.05, 'the ghost stands where B is', `${ga.pos} vs ${bPos.map((v) => v.toFixed(2))}`);

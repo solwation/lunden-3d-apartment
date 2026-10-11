@@ -42,13 +42,13 @@ test('two players see each other: welcome, join, forwarded and cleaned states, l
   a.send({ p: [1.234, 0.5, 9.876], r: 0.5, junk: 'x'.repeat(50) });
   await settle(env);
   const b = await connect(env); // no name: shown as "Anonym" by the clients
-  assert.deepEqual(b.got[0].ps, [{ i: a.got[0].i, n: 'Olofb', p: [1.23, 0.5, 9.88], r: 0.5, h: '' }]);
+  assert.deepEqual(b.got[0].ps, [{ i: a.got[0].i, n: 'Olofb', p: [1.23, 0.5, 9.88], r: 0.5, score: 0, h: '' }]);
   assert.equal(b.got[0].c.lives, COMBAT.lives);
   assert.deepEqual(a.got.at(-1), { t: 'j', i: b.got[0].i, n: '' });
   b.send({ p: [2, 0, 3], r: -1 });
   b.send('not json'); b.send({ p: [1, 2], r: 0 }); b.send({ p: [1e9, 0, 0], r: 0 });
   await settle(env);
-  assert.deepEqual(a.states(), [{ t: 's', i: b.got[0].i, p: [2, 0, 3], r: -1, h: '' }]);
+  assert.deepEqual(a.states(), [{ t: 's', i: b.got[0].i, p: [2, 0, 3], r: -1, score: 0, h: '' }]);
   assert.equal(b.states().length, 0, 'never echoed to the sender');
   b.ws.close(1000);
   await settle(env);
@@ -231,3 +231,17 @@ test('shots (#667): every shot goes to the armed others only, from near the shoo
 });
 
 test.after(() => { Date.now = realNow; });
+
+// Score rides the same bounded state: no new message type or billing path.
+test('ghost score is forwarded, included on welcome and bounded like leaderboard', async () => {
+  const env = setup(), a = await connect(env, 'Olof'), b = await connect(env);
+  a.send({ p: [1, 0, 2], r: 0, score: 1234.8 }); await settle(env);
+  assert.equal(b.states().at(-1).score, 1234);
+  const c = await connect(env, 'Third');
+  assert.equal(c.got[0].ps.find(p => p.n === 'Olof').score, 1234);
+  for (const [score, expected] of [[-1, 0], [1e9, 1e7], ['5', 0], [null, 0]]) {
+    now += 1000;
+    a.send({ p: [1, 0, 2], r: 0, score }); await settle(env);
+    assert.equal(b.states().at(-1).score, expected);
+  }
+});
