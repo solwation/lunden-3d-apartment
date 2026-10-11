@@ -309,8 +309,10 @@ function setParasol(p, f) {
  * at −z against the wall, the front +z), `H` high; the lid is hinged at the back (an Openable flap, E), two handles on
  * the ends. Inside (drawn only while the lid is open, #228): a folded blanket, and the patio cushions while they are put
  * away (Patio.update). Not a seat: E on it is the lid (#400).
+ * `item.inside: 'bow'` (#690, the box at the foot of the NW stair): empty inside — bow.js lays the bow and the quiver in
+ * it (`userData.box`: the lid and the inner size); `item.y`: its floor's height (outdoors on the terrain).
  */
-export function dynbox() {
+export function dynbox(item = {}) {
   const g = new THREE.Group();
   const { L, D, H, lid: lt, wall: t, color, slat } = P.dynbox;
   const mat = new THREE.MeshStandardMaterial({ color, roughness: 0.8 });
@@ -342,23 +344,26 @@ export function dynbox() {
   const lid = new Openable({ name: 'dynboxens lock', object: pivot, mode: 'flap', axis: [1, 0, 0], sign: -1, max: P.dynbox.max, speed: 1.6 });
   // inside: a folded blanket at one end, the patio cushions in two piles while they are put away
   const contents = new THREE.Group();
-  addFoldedThrow(contents, { w: 0.4, d: 0.42, layer: 0.025, layers: 4, x: L / 2 - t - 0.24, z: 0, y: 0.05, yaw: 0.05, color: 'grey' });
+  if (item.inside !== 'bow') addFoldedThrow(contents, { w: 0.4, d: 0.42, layer: 0.025, layers: 4, x: L / 2 - t - 0.24, z: 0, y: 0.05, yaw: 0.05, color: 'grey' });
   const tmp = new THREE.Group();
-  const piles = addCushions(tmp, P.cushions.map((c) => ({ ...c, yaw: 0.1 * Math.sin(c.x * 7), lean: Math.PI / 2 })), { backZ: 0, seatY: 0 });
+  const piles = item.inside === 'bow' ? [] : addCushions(tmp, P.cushions.map((c) => ({ ...c, yaw: 0.1 * Math.sin(c.x * 7), lean: Math.PI / 2 })), { backZ: 0, seatY: 0 });
   piles.forEach((m, i) => {
     const s = m.geometry.boundingBox ?? (m.geometry.computeBoundingBox(), m.geometry.boundingBox);
     const th = (s.max.z - s.min.z) * 0.8, pile = i % 2, k = Math.floor(i / 2);
     m.position.set(-L / 2 + t + 0.26 + pile * 0.47, 0.05 + th * (k + 0.5), 0.02 * (k % 2 ? 1 : -1));
     m.updateMatrix();
   });
-  const stack = new THREE.Mesh(mergeGeometries(piles.map((m) => m.geometry.applyMatrix4(m.matrix))), piles[0].material);
-  stack.visible = false;
-  contents.add(stack);
+  if (piles.length) {
+    const stack = new THREE.Mesh(mergeGeometries(piles.map((m) => m.geometry.applyMatrix4(m.matrix))), piles[0].material);
+    stack.visible = false;
+    contents.add(stack);
+    seasonal.boxes.push(stack);
+  }
   contents.visible = false;
   g.add(contents);
   lid.contents = contents;
   lid.top = true; // a lid on top: what is inside stays below it (opentest)
-  seasonal.boxes.push(stack);
+  g.userData.box = { lid, L, D, H, hb, t, item };
   g.userData.targets = [lid];
   // #445: you can sit on the shut lid (two places, facing out); not while it is open, and it does not open under you.
   // Looking at the lid opens it; looking at the box's front / ends (the body) sits you down
@@ -377,6 +382,7 @@ export function dynbox() {
   g.userData.keep = [pivot, contents];
   g.traverse((m) => { if (m.isMesh) m.castShadow = m.receiveShadow = true; });
   g.userData.footprint = [{ x0: -L / 2, x1: L / 2, z0: -D / 2, z1: D / 2 }];
+  if (item.y) g.position.y = item.y;
   return g;
 }
 

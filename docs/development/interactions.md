@@ -159,6 +159,15 @@ src/target.js          the Nerf target on the lawn behind the hedge (TARGET, #99
                        a score board beside it (localStorage 'lunden.target'), E clears it; it rises out of the grass
                        only while a holdable with `hitsTarget` (blasters, lightsaber, wands) is in the hand and sinks
                        under it otherwise (#144, #179); saber cuts and wand magic on it score too
+src/bow.js             the bow (#690, BOW): our own recurve bow (one vertex-coloured mesh, a Line string, a nocked arrow while
+                       drawing) + a quiver in the cushion box at the NW stair (patio.js `dynbox` inside 'bow'); seen / takeable only
+                       while the lid is open, E on the box puts it back. `trigger(true/false)` (mouse button / touch action button,
+                       main.js as the rifle) draws to full in BOW.drawTime and looses; under BOW.minDraw nothing; a click / tap
+                       without a hold (`use`) looses at BOW.tap. Arrows (one pool `Arrows`, BOW.arrows) fly under gravity, point
+                       along their path and stick in the first solid mesh (not moving things, skinned figures: the cats and Olof
+                       are never hit) for BOW.stick s. In a fight it is weapon 'bow': each arrow is one shot message with its
+                       speed; combat.js `aimArc` judges a hit along the arc, the others see the arrow in the same pool.
+                       tools/bowtest.cjs (one page; frames driven by hand), combattest's bow step
 src/combat.js          fights between players (#667, on the ghosts of #666): only two players who BOTH hold a weapon (COMBAT.weapons:
                        saber, nerf, wand, rifle, ball, web = the suit with empty hands, jetpack = worn; main.js `weaponKey`, in that
                        order; remove a key to leave it out) are drawn solid for each other (ghosts.js `setSolid`, + a small prop for

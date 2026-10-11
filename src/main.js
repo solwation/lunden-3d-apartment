@@ -118,6 +118,7 @@ import { Leaderboard } from './leaderboard.js';
 import { Presence } from './presence.js';
 import { Ghosts } from './ghosts.js';
 import { Combat } from './combat.js';
+import { Bow, Arrows } from './bow.js';
 import { COMBAT } from './config.js';
 import { Basketball, Hoop } from './basket.js';
 import { Mess } from './mess.js';
@@ -690,6 +691,12 @@ const ball = new Basketball(scene, camera, { marks, hoop, world });
 ball.onBasket = (three) => { bump('baskets'); if (three) bump('threes'); };
 ball.onDribble = () => bump('dribbles');
 holdables.push(ball);
+// the bow in the cushion box at the foot of the NW stair (#690, src/bow.js): its arrows (also the other players', #667)
+let bowBox = null;
+scene.traverse((o) => { if (o.userData.box?.item?.inside === 'bow') bowBox = o; });
+const arrows = new Arrows(scene, { camera });
+const bow = bowBox ? new Bow(scene, camera, bowBox, arrows) : null;
+if (bow) holdables.push(bow);
 { const moving = world.movingSegments; world.movingSegments = (lvl) => [...moving(lvl), ...(lvl === 0 ? hoop.segments() : [])]; } // its base is in the way
 // the parked car and the hoop's base as closed boxes: one that appears round the visitor pushes them out (#314)
 world.movingPolys = (lvl) => lvl === 0 ? [car.segments(), hoop.segments()].filter((sg) => sg.length).map((sg) => sg.map(([x, z]) => [x, z])).concat([dropoff.poly]) : []; // + the rubbish containers (#387)
@@ -2160,11 +2167,11 @@ leaderboard.activePlayers = () => presence.names;
 // other players as ghosts with a name tag (#666, src/ghosts.js): a WebSocket to the Worker's players' room, only while playing
 // fights between two armed players (#667, src/combat.js): which weapon we hold (COMBAT.weapons, in that order)
 const weaponIs = { saber: (h) => h === saber, nerf: (h) => toys.blasters.includes(h), wand: (h) => toys.wands.includes(h),
-  rifle: (h) => !!h?.isRifle, ball: (h) => h === ball, web: (h) => !h && suit.worn, jetpack: () => jetpack.worn };
+  rifle: (h) => !!h?.isRifle, ball: (h) => h === ball, bow: (h) => !!bow && h === bow, web: (h) => !h && suit.worn, jetpack: () => jetpack.worn };
 const weaponKey = () => { const h = heldItem(); return COMBAT.weapons.find((k) => weaponIs[k]?.(h)) ?? ''; };
 const ghosts = new Ghosts({ scene, camera, url: cloud.url, name: () => leaderboard.name, active: () => overlay.hidden, weapon: weaponKey,
   state: () => ({ p: [player.pos.x, player.pos.y, player.pos.z], r: camera.rotation.y }) });
-const combat = new Combat({ ghosts, camera, scene, weapon: weaponKey, feet: () => player.pos, jetpack, sfx, darts: toys.darts, sparkles: toys.sparkles,
+const combat = new Combat({ ghosts, camera, scene, weapon: weaponKey, feet: () => player.pos, jetpack, sfx, darts: toys.darts, sparkles: toys.sparkles, arrows,
   onHit: () => bump('pvpHits'), onHurt: () => penalize('pvpHurt'),
   onDie: () => { goToStart(); badge('💀 Slut på liv – tillbaka vid start', false); } }); // only the place changes (#665)
 // each weapon's use is one shot message (hit or miss) for the others in the fight; the room decides a hit. Things that fly
@@ -2175,9 +2182,10 @@ const shotOf = { nerf: () => { const L = toys.darts.list, d = L[(toys.darts.next
 for (const [key, items] of [['saber', [saber]], ['nerf', toys.blasters], ['wand', toys.wands], ['ball', [ball]]]) {
   for (const it of items) { const use = it.onUse; it.onUse = function (...a) { const was = weaponKey(), r = use.apply(this, a); if (was === key) combat.fire(key, shotOf[key]?.() ?? null, true); return r; }; } // (the ball has left the hand by then)
 }
+if (bow) bow.onShot = (o, v) => combat.fire('bow', flight(o, v), true); // (#690: an arrow on its arc)
 if (rifle) { const shot = rifle.onShot; rifle.onShot = () => { shot?.(); combat.fire('rifle'); }; }
 { const web = suit.onShot; suit.onShot = () => { web?.(); combat.fire('web'); }; }
-window.__ghosts = ghosts; window.__combat = combat;
+window.__ghosts = ghosts; window.__combat = combat; window.__bow = bow; window.__arrows = arrows;
 let statsPinned = false;
 // the minimap is part of the same "extra HUD" (#85): shown with the stats; K shows the map on its own
 let mapPinned = false;
@@ -2277,6 +2285,7 @@ function step(dt) {
   dishProg?.update(dt); // (#385)
   dropoff.update(dt); // a lid (#387)
   toys.update(dt);
+  arrows.update(dt);
   marks.update(dt);
   breaker.update(dt);
   balls.update(dt);

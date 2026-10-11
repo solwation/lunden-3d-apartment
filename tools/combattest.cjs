@@ -27,13 +27,13 @@ async function until(fn, ms = 60000) { const t = Date.now(); for (;;) { const v 
     const page = await ctx.newPage();
     page.on('dialog', (d) => d.accept());
     page.on('pageerror', (e) => console.log(`  [${name || 'anon'} pageerror] ${e.message}`));
-    await page.goto(`${game}/?shot&cloud=${worker}&at=${at}`, { waitUntil: 'commit' });
+    await page.goto(`${game}/?shot&quality=0&cloud=${worker}&at=${at}`, { waitUntil: 'commit' });
     await page.waitForFunction(() => window.__combat && window.__app?.renderer, null, { timeout: 1500000 });
     return { ctx, page };
   };
   try {
-    step('loading three pages');
-    const [A, B, C] = await Promise.all([open('Olof', '1.0,11.8,-40,0'), open('', '2.6,9.9,140,0'), open('Tuva', '4.9,10.2,97,-5')]);
+    step('loading three pages, one after another');
+    const A = await open('Olof', '1.0,11.8,-40,0'), B = await open('', '2.6,9.9,140,0'), C = await open('Tuva', '4.9,10.2,97,-5'); // one at a time: three loading at once starve each other under SwiftShader
     const pages = [A.page, B.page, C.page];
     let wiggle = 0.05;
     let nudgeErr = 0;
@@ -95,7 +95,18 @@ async function until(fn, ms = 60000) { const t = Date.now(); for (;;) { const v 
     await B.page.evaluate(() => window.__app.renderer.setAnimationLoop(() => window.__app.frame(0.016)));
     await B.page.setViewportSize({ width: 320, height: 200 });
     check(ballOnB.length === 1 && ballOnB[0].ndc.every((x) => Math.abs(x) < 1), 'the ball is in view on B\'s screen (screenshot)', JSON.stringify(ballOnB));
-    await A.page.evaluate(() => window.__app.toys.blasters[0].take()); // (the ball left the hand: the blaster again)
+    // #690: the bow — A draws fully and looses at B: B sees the arrow and loses a life
+    step('A shoots the bow');
+    await A.page.evaluate(() => window.__bow.take());
+    await sees(B.page, (l) => l.find((g) => g.n === 'Olof')?.h === 'bow');
+    const bowShot = await A.page.evaluate(() => { const b = window.__bow; b.trigger(true); b.draw = 1; b.trigger(false); const c = window.__combat;
+      return { ...c.lastShot, state: { held: b.held, conn: window.__ghosts.connected, weapon: c.weapon(), foes: c.foes().length, shots: b.shots } }; });
+    const seenArrow = await shotSeen(3);
+    await until(async () => { await A.page.evaluate(() => { window.__ghosts.update(); window.__ghosts.sendShot(); }); return B.page.evaluate(() => window.__combat.hurts === 1); }, 180000);
+    const bowB = await B.page.evaluate(() => ({ lives: window.__combat.lives, arrow: window.__arrows.list.some((a) => a.remote && a.m.visible) }));
+    check(bowShot?.w === 'bow' && bowShot.to && seenArrow?.w === 'bow' && Math.abs(seenArrow.s - 42) < 0.1 && bowB.arrow && bowB.lives === 9,
+      'the bow: A\'s arrow hits B, B sees it fly (same speed) and has a life less', JSON.stringify({ bowShot, seenArrow, bowB }));
+    await A.page.evaluate(() => { window.__bow.putBack(); window.__app.toys.blasters[0].take(); }); // (the blaster again)
     step('C\'s screenshot');
     // screenshot: C's view of two solid armed players
     await sees(C.page, (l) => l.length === 2 && l.every((g) => g.solid));
@@ -105,26 +116,26 @@ async function until(fn, ms = 60000) { const t = Date.now(); for (;;) { const v 
     await C.page.screenshot({ path: `${shots}/combat-two-armed-players.png`, timeout: 240000 });
     await C.page.setViewportSize({ width: 320, height: 200 });
     await sees(A.page, (l) => l.length === 2 && l.every((g) => g.solid)); // (back from any idle while the screenshot rendered)
-    // ten hits: points for A, deductions and lives off for B, then B back at the start with all lives
+    // ten hits (one arrow, nine darts): points for A, deductions and lives off for B, then B back at the start with all lives
     const before = { a: await A.page.evaluate(() => window.__app.stats.pvpHits ?? 0), bScore: await B.page.evaluate(() => window.__app.totalScore()) };
     await B.page.evaluate(() => { window.__app.stats.target = (window.__app.stats.target ?? 0) + 200; }); // something to deduct from
     const lives = [];
     step('ten hits');
-    for (let i = 0; i < 10; i++) {
-      step(`hit ${i + 1}`);
+    for (let i = 0; i < 9; i++) { // (the bow took the first life)
+      step(`hit ${i + 2}`);
       const n = await B.page.evaluate(() => window.__combat.hurts);
       await fire();
       const got = await until(async () => { wiggle = -wiggle; await A.page.evaluate((w) => { window.__app.camera.rotation.y += w; window.__ghosts.update(); window.__ghosts.sendShot(); }, wiggle); await B.page.evaluate((w) => { window.__app.camera.rotation.y += w; window.__ghosts.update(); }, wiggle); return (await B.page.evaluate(() => window.__combat.hurts)) > n; }, 180000);
       if (!got) {
-        check(false, `hit ${i + 1} arrives`, await A.page.evaluate(() => { const g = window.__ghosts; return JSON.stringify({ conn: g.connected, shots: g.shots, pending: g.pendingShot, aim: window.__combat.aim('nerf')?.name ?? null, held: window.__app.heldItem()?.name, list: g.list() }); }));
+        check(false, `hit ${i + 2} arrives`, await A.page.evaluate(() => { const g = window.__ghosts; return JSON.stringify({ conn: g.connected, shots: g.shots, outbox: g.outbox, aim: window.__combat.aim('nerf')?.name ?? null, held: window.__app.heldItem()?.name, list: g.list() }); }));
         break;
       }
       lives.push(await B.page.evaluate(() => window.__combat.lives));
       await sleep(500);
     }
-    check(JSON.stringify(lives) === JSON.stringify([9, 8, 7, 6, 5, 4, 3, 2, 1, 10]), 'each hit takes a life; the tenth sends B back with all lives', JSON.stringify(lives));
+    check(JSON.stringify(lives) === JSON.stringify([8, 7, 6, 5, 4, 3, 2, 1, 10]), 'each hit takes a life; the tenth sends B back with all lives', JSON.stringify(lives));
     const a = await A.page.evaluate(() => ({ hits: window.__combat.hits, pvp: window.__app.stats.pvpHits }));
-    check(a.hits === 10 && a.pvp - before.a === 10, 'A scores each hit (stats pvpHits, SCORE.each)', JSON.stringify(a));
+    check(a.hits === 10 && a.pvp - before.a === 9, 'A scores each hit (stats pvpHits, SCORE.each; the bow\'s hit came before `before`)', JSON.stringify(a));
     const b = await B.page.evaluate(() => ({ pen: window.__app.stats.penalties['pvpHurt'], deaths: window.__combat.deaths, pos: [window.__app.player.pos.x, window.__app.player.pos.z], held: window.__app.heldItem() === window.__app.saber, target: window.__app.stats.target }));
     check(b.pen === 10, 'B gets a deduction per hit', JSON.stringify(b));
     check(b.deaths === 1 && Math.hypot(b.pos[0] - 2.875, b.pos[1] + 12) < 0.6, 'out of lives: B is at the start', JSON.stringify(b.pos));

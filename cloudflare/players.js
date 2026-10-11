@@ -45,6 +45,7 @@ export const COMBAT = {
     wand: { range: 12, every: 0.6 },     // a magic wand's spell
     rifle: { range: 40, every: 0.25 },   // the AK-47 (hits are sent at most this often whatever its rate of fire)
     ball: { range: 10, every: 1 },       // the basketball, thrown
+    bow: { range: 60, every: 0.6 },      // the bow (#690): an arrow on its arc
     web: { range: 30, every: 0.6 },      // the Spider-Man suit's web (empty hands)
     jetpack: { range: 4, every: 1 },     // the jetpack's flames on whoever is under you
   },

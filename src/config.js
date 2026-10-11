@@ -2432,6 +2432,16 @@ export const CAMPUS_LOD = { curve: 3, roofGrid: 2, maxTris: 36000 };
 // The AK-47 in the NORDLI chest (#196, src/rifle.js): a folding-stock AKMS, folded ~68 cm (fits the wide bottom drawer).
 // `mag` rounds, `rpm` automatic, `spread` (rad) per shot, `range` m; empty → `reloadDelay` s → a `reloadSeconds` reload;
 // dropped magazines lie `magLife` s (at most `maxDrops`). `held` = where it sits in the view. Our picks.
+// The bow (#690, src/bow.js): our own recurve bow (laminated wood limbs, a dark riser with a grip, a string) with a quiver
+// of arrows, in the cushion box at the foot of the NW stair (FURNITURE `inside: 'bow'`). Hold to draw (mouse button / the
+// touch action button), let go to shoot: full draw after `drawTime` s, at least `minDraw` of it to loose an arrow (less:
+// the string just goes back), the arrow leaves at speed[0] … speed[1] m/s with the draw (a real recurve ~50–60 m/s; ours
+// slower so the arc shows, *guess*); a click / tap without holding looses one at `tap` of a full draw. Arrows (`len` m)
+// fly under `gravity`, turn with their path, stick in what they hit for `stick` s; at most `arrows` at once (the oldest
+// goes); unlimited. `held`: the bow's place in the view (camera space), shown at `heldScale` (a full-size bow would fill the
+// view). All our picks (*guess*).
+export const BOW = { held: { x: 0.09, y: -0.06, z: -0.7 }, heldScale: 0.6, drawTime: 0.9, minDraw: 0.15, speed: [14, 42], tap: 0.5, gravity: 9.81,
+  len: 0.72, stick: 20, flight: 6, arrows: 12, pull: 0.32 };
 export const RIFLE = { mag: 30, rpm: 600, spread: 0.012, range: 60, reloadDelay: 0.25, reloadSeconds: 1.6, magLife: 120, maxDrops: 6,
   held: { x: 0.17, y: -0.24, z: -0.56 } };
 export const MARKS = {
@@ -2845,7 +2855,7 @@ export const GHOSTS = { enabled: true, hz: 5, move: 0.02, turn: 0.03, beatMs: 10
 // lightsaber is a swing (anything within its range and `saberCone`, the cosine of the half-angle, in front); the jetpack's
 // flames hit someone `jetBelow` [min, max] m under you and within `jetAcross` m sideways while it thrusts. `lives` until the
 // room's welcome says otherwise. The HUD's hearts only while a fight is on. All our picks (*guess*).
-export const COMBAT = { weapons: ['saber', 'nerf', 'wand', 'rifle', 'ball', 'web', 'jetpack'], lives: 10, solid: 1,
+export const COMBAT = { weapons: ['saber', 'nerf', 'wand', 'rifle', 'ball', 'bow', 'web', 'jetpack'], lives: 10, solid: 1,
   body: [0.25, 1.75], hitRadius: 0.4, saberCone: 0.5, jetBelow: [0.3, 4], jetAcross: 1.2, flash: 0.35,
   // the others' shots drawn here: at most `lines` streaks (rifle, wand, web, flames) and `balls` balls at once, each gone
   // after `shotLife` s; their darts reuse the blasters' pool (in `dartColor`)
@@ -4227,6 +4237,10 @@ export const FURNITURE = [
   // x 0.065, 4 cm of air: the lid stops at 88°, its outer face still short of it), south of the palm (z ≥ 13.55), clear of the door's
   // swing (x ≥ 0.95) and well north of the gap in the hedge (z 16.8); the lid opens towards the patio
   { type: 'dynbox', level: 0, x: 0.105 + 0.29, z: 13.7 + 0.625, rot: -90 },
+  // #690: a second cushion box with the bow and its quiver, at the foot of the NW stair by Hus C's NW corner (SITE.terrain.west.stair,
+  // x −70.5 … −68.69, down to Karpvägen), its back against the retaining wall from the stair's end (z 10.6) to Hus C, facing
+  // west; `y` = the terrain there (west.profile at z ≈ 11.6, groundY checked in tools/bowtest.html)
+  { type: 'dynbox', inside: 'bow', level: 0, x: -70.5 - 0.29 - 0.03, z: 11.55, y: -1.024, rot: 90 },
   { type: 'planter', level: 0, x: 0.45, z: 13.25, plant: 'palm', detailedPalm: true, walls: { x0: 0.065, z0: 12.7 } }, // fronds clear of the façade + screen wall (#137)
   { type: 'planter', level: 0, x: 5.3, z: 16.45, plant: 'agave' }, // SE corner by the hedge (#397: the sofa's corner took its old spot; #429: south of the bench's end)
   // Upstairs bedrooms (the user's plan). Beds: rot = direction from the head to the foot end.

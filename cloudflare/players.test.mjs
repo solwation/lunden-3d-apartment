@@ -228,6 +228,11 @@ test('shots (#667): every shot goes to the armed others only, from near the shoo
   assert.equal(shots(b).length, 2);
   assert.equal(b.got.filter((m) => m.t === 'hurt').length, 1, 'a shot with `to` is checked as a hit');
   assert.equal(b.got.find((m) => m.t === 'a' && m.to), undefined, 'the target id is not passed on');
+  // #690: the bow is a weapon; its arrow carries the draw's speed
+  a.send({ p: [0, 0, 0], r: 0, h: 'bow' }); await settle(env);
+  now += 1000;
+  a.send({ t: 'a', w: 'bow', o: [0, 1.5, 0], d: [0, 0.1, 0.995], s: 42 }); await settle(env);
+  assert.deepEqual(shots(b).at(-1), { t: 'a', i: a.got[0].i, w: 'bow', o: [0, 1.5, 0], d: [0, 0.1, 0.995], s: 42 });
 });
 
 test.after(() => { Date.now = realNow; });

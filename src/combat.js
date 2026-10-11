@@ -27,8 +27,8 @@ export function rayToSegment(o, d, len, a, b) {
 
 export class Combat {
   /** ghosts (Ghosts), camera, scene, weapon(): key or '', feet(): our feet (Vector3), jetpack, onDie(): back to the start; score / hurt / sfx hooks. */
-  constructor({ ghosts, camera, scene, weapon, feet, jetpack = null, darts = null, sparkles = null, onDie = () => {}, onHit = () => {}, onHurt = () => {}, sfx = null }) {
-    Object.assign(this, { ghosts, camera, scene, weapon, feet, jetpack, darts, sparkles, onDie, onHitCb: onHit, onHurtCb: onHurt, sfx, lives: C.lives, jetT: 0, flashT: 0,
+  constructor({ ghosts, camera, scene, weapon, feet, jetpack = null, darts = null, sparkles = null, arrows = null, onDie = () => {}, onHit = () => {}, onHurt = () => {}, sfx = null }) {
+    Object.assign(this, { ghosts, camera, scene, weapon, feet, jetpack, darts, sparkles, arrows, onDie, onHitCb: onHit, onHurtCb: onHurt, sfx, lives: C.lives, jetT: 0, flashT: 0,
       hits: 0, hurts: 0, deaths: 0, fired: 0, seen: 0, lastShot: null, lastSeen: null });
     ghosts.onShot = (m, g) => this.remote(m, g);
     // the others' shots (#667): one LineSegments for every streak (rifle, wand, web, jetpack flames; vertex colours, one
@@ -88,10 +88,32 @@ export class Combat {
     return true;
   }
 
-  /** Whom `key` hits now: the nearest armed player along the view (the saber: in front within reach), or null. */
-  aim(key) {
+  /** Whom an arrow from `o` with velocity `v` hits on its arc (#690): the first armed player whose body the path passes
+   * within `hitRadius` of, before it meets the world; or null. */
+  aimArc(o, v, range) {
+    const p = o.clone(), vel = v.clone(), step = 0.02, g = 9.81, foes = this.foes();
+    let travelled = 0;
+    for (let i = 0; i < 400 && travelled < range; i++) {
+      const q = p.clone().addScaledVector(vel, step);
+      vel.y -= g * step;
+      for (const f of foes) {
+        const a = f.feet.clone().setY(f.feet.y + C.body[0]), b = f.feet.clone().setY(f.feet.y + C.body[1]);
+        const dq = q.clone().sub(p), len = dq.length();
+        if (len > 0 && rayToSegment(p, dq.normalize(), len, a, b)[0] <= C.hitRadius) return f;
+      }
+      if (!this.clear(p, q.clone().addScaledVector(v.clone().normalize(), 0.3))) return null; // (clear stops 0.3 m short)
+      travelled += p.distanceTo(q);
+      p.copy(q);
+    }
+    return null;
+  }
+
+  /** Whom `key` hits now: the nearest armed player along the view (the saber: in front within reach; the bow: on the
+   * arrow's arc, `shot`), or null. */
+  aim(key, shot = null) {
     const W = this.rules.weapons?.[key];
     if (!W) return null;
+    if (key === 'bow' && shot?.s) return this.aimArc(shot.o, shot.d.clone().multiplyScalar(shot.s), W.range);
     this.camera.getWorldPosition(eye);
     this.camera.getWorldDirection(dir);
     const d = dir.clone();
@@ -119,7 +141,7 @@ export class Combat {
    * eye and the view. A hit adds `to` (the room checks it). Returns the ghost aimed at, or null. */
   fire(key, shot = null, held = false) { // held: the caller checked we held `key` when it was used
     if (!this.ghosts.connected || (!held && this.weapon() !== key) || !C.weapons.includes(key) || !this.foes().length) return null;
-    const g = this.aim(key);
+    const g = this.aim(key, shot);
     this.camera.getWorldPosition(eye);
     this.camera.getWorldDirection(dir);
     const o = shot?.o ?? eye, d = shot?.d ?? dir;
@@ -155,7 +177,8 @@ export class Combat {
     this.lastSeen = { w: m.w, o: m.o, d: m.d, s: m.s ?? 0, from: g.id };
     const hand = g.root.localToWorld(new THREE.Vector3(0.3, 1.0, -0.3));
     const blocked = (a, b) => { v.subVectors(b, a); const len = v.length(); return len > 0 && this.reach(a, v.normalize(), len) < len; };
-    if (m.w === 'nerf' && this.darts) this.darts.fire(o, d, C.dartColor, { speed: m.s || undefined, blocked, life: C.shotLife });
+    if (m.w === 'bow' && this.arrows) this.arrows.fire(o, d.clone().multiplyScalar(m.s || 30), true); // (#690) the same arrows
+    else if (m.w === 'nerf' && this.darts) this.darts.fire(o, d, C.dartColor, { speed: m.s || undefined, blocked, life: C.shotLife });
     else if (m.w === 'ball') {
       const b = this.balls[this.nextBall++ % this.balls.length];
       b.m.position.copy(o); b.v.copy(d).multiplyScalar(m.s || 8); b.life = C.shotLife; b.flying = true; b.m.visible = true;

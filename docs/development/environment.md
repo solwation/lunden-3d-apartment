@@ -68,7 +68,12 @@ src/streetlife.js      life on the street (SITE.life, #113): the car park as on 
                        merged mesh, 5 cm, no collision) where the car park's asphalt meets grass and round the yard's lawns
 src/patiohedge.js      all patio hedges (#680): rounded corners, tapered foot and a gently uneven top, one shared leaf atlas
                        from boxwood.js; exterior.js merges ours and the neighbours into one mesh; original collision/snow kept
-src/patio.js           patio: Rusta Verona lounge + slatted table (#408), cushion box, parasol, planters with exotic plants
+src/patio.js           patio: Rusta Verona lounge + slatted table (#408), cushion box, parasol, planters with exotic plants;
+                       #690: `dynbox(item)` with `inside: 'bow'` builds the same box empty (no blanket / cushions) and exposes
+                       `userData.box` (lid, size); FURNITURE's second dynbox stands at the foot of the NW stair by Hus C's NW
+                       corner (SITE.terrain.west.stair, down to Karpvägen), its back against the retaining wall south of the
+                       stair (x −70.82, z 11.55, `y` = the terrain there), holding the bow (src/bow.js). Which building the user
+                       calls the church is not modelled by name (see #690); the box is placed by the stair itself
                        (furniture builders, FURNITURE + PATIO in config); seasons via Patio.update:
                        parasol folds at night/in winter, beers in summer, snowman in winter
 src/carmodel.js        car bodies from a side profile (#250, MEGANE: `top` / `belt` / `bot` lines, wheel arches, plan rounding, a
