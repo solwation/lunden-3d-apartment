@@ -85,6 +85,7 @@ const M = {
   steelDark: std(0x8f9497, { roughness: 0.35, metalness: 0.35 }),
   black: std(T.black, { roughness: 0.18 }),
   glassDark: std(0x050606, { roughness: 0.08 }),
+  glassTint: new THREE.MeshStandardMaterial({ color: 0x9fb3bd, transparent: true, opacity: 0.32, roughness: 0.05, depthWrite: false, side: THREE.DoubleSide }), // washer / dryer porthole (#687)
   led: new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xfff2dc, emissiveIntensity: 1.2 }),
   white: std(0xf1f1ee, { roughness: 0.85 }),
   carcass: std(0xf4f4f1, { roughness: 0.6 }), // cabinet insides (#103)
@@ -754,10 +755,41 @@ function buildLaundry(B, group, floor, room, y0, handled, taps, appliances) {
     ring.rotateY(Math.PI / 2);
     ring.translate(dx, y0 + 0.42, dz);
     DB.add(ring, M.chrome);
-    const glass = new THREE.CylinderGeometry(0.15, 0.15, 0.02, 32);
-    glass.rotateZ(Math.PI / 2);
-    glass.translate(dx, y0 + 0.42, dz);
-    DB.add(glass, M.glassDark);
+    // bowl-shaped tinted glass (#687): a shallow sphere cap bulging out of the ring, so the drum shows through
+    const gR = 0.25, gA = Math.asin(0.15 / gR);
+    const glass = new THREE.SphereGeometry(gR, 28, 6, 0, Math.PI * 2, 0, gA);
+    glass.rotateZ(-Math.PI / 2);
+    glass.translate(dx - gR * Math.cos(gA) + 0.004, y0 + 0.42, dz);
+    DB.add(glass, M.glassTint);
+    { // door handle on the ring's free edge (opposite the hinge)
+      const [kx, kz] = F.at(mid + 0.2, 0.026);
+      DB.add(new THREE.BoxGeometry(0.02, 0.09, 0.016).translate(kx, y0 + 0.42, kz), M.chrome);
+    }
+    { // two chrome hinges on the body at the hinge side
+      for (const dy of [-0.09, 0.09]) { const [hxx, hzz] = F.at(mid - 0.205, 0.006); B.add(new THREE.BoxGeometry(0.012, 0.05, 0.026).translate(hxx, y0 + 0.42 + dy, hzz), M.chrome); }
+    }
+    { // inside the drum: three stainless paddles and a ring of perforation holes on the back (a few tiny discs, merged)
+      for (let k = 0; k < 3; k++) {
+        const a = k * Math.PI * 2 / 3 + 0.5, rr = D.radius - 0.02;
+        B.add(new THREE.BoxGeometry(D.depth * 0.9, 0.03, 0.012).rotateX(Math.PI / 2 - a).translate(F.f - D.depth / 2, y0 + D.centerY + Math.sin(a) * rr, mid + Math.cos(a) * rr), M.steel);
+      }
+      for (const [n, rr] of [[8, 0.05], [14, 0.1], [20, 0.145]]) for (let k = 0; k < n; k++) {
+        const a = k * Math.PI * 2 / n;
+        B.add(new THREE.CircleGeometry(0.006, 6).rotateY(Math.PI / 2).translate(F.f - D.depth + 0.001, y0 + D.centerY + Math.sin(a) * rr, mid + Math.cos(a) * rr), M.black);
+      }
+    }
+    { // control panel (#687): detergent drawer (three compartment lines) / condensate tank on one side, a programme knob with a pointer on the other
+      const pl = F.f + 0.002, py = y0 + 0.78;
+      F.box(a0 + 0.03, a0 + 0.13, 0, 0.007, py - 0.025, py + 0.025, M.black);
+      F.box(a0 + 0.034, a0 + 0.126, 0.007, 0.009, py - 0.021, py + 0.021, M.appliance);
+      for (const v of [-0.007, 0.007]) F.box(a0 + 0.034, a0 + 0.126, 0.009, 0.011, py + v - 0.001, py + v + 0.001, M.black);
+      F.box(a0 + 0.07, a0 + 0.09, 0.009, 0.019, py - 0.006, py + 0.006, M.steel);
+      const nz = F.at(a1 - 0.07, 0)[1];
+      B.add(new THREE.CylinderGeometry(0.03, 0.03, 0.016, 24).rotateZ(Math.PI / 2).translate(pl + 0.008, py, nz), M.chrome);
+      B.add(new THREE.CylinderGeometry(0.024, 0.024, 0.004, 24).rotateZ(Math.PI / 2).translate(pl + 0.018, py, nz), M.black);
+      const pz2 = F.at(a1 - 0.07 + 0.012, 0)[1];
+      B.add(new THREE.BoxGeometry(0.003, 0.003, 0.016).translate(pl + 0.021, py, pz2), M.appliance);
+    }
     const [hx, hz] = F.at((a0 + a1) / 2 - 0.195, 0.01), at = new THREE.Vector3(hx, y0 + 0.42, hz);
     const free = new THREE.Vector3(dx - hx, 0, dz - hz).applyAxisAngle(new THREE.Vector3(0, 1, 0), 0.1);
     const o = new Openable({ name: c.label === 'TM' ? 'tvättmaskinen' : 'torktumlaren', object: pivotAround(DB.meshes(), at), mode: 'hinge', sign: free.x > 0 ? 1 : -1, max: 100 });
