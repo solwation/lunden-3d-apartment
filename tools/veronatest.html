@@ -22,21 +22,21 @@ f.onload = async () => {
     const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); out.textContent = lines.join('\n'); return ok; };
     let pass = true;
 
-    const sofa = world.furnitureTargets.find((t) => t.name === 'loungesoffan');
-    pass &= check(!!sofa, 'verona lounge sofa target found');
+    const sofaTargets = world.furnitureTargets.filter((t) => t.name === 'loungesoffan');
+    const sofa = sofaTargets.find(t => t.pickable.userData.part !== 'divan1' && t.pickable.userData.part !== 'divan2');
+    pass &= check(sofaTargets.length === 3 && !!sofa, 'three independent Verona seat targets found');
 
     // 1. Seat count and facing
     const facing = (yaw) => Math.abs(Math.cos(yaw)) > 0.99 ? (Math.cos(yaw) < 0 ? 'south' : 'north') : (Math.sin(yaw) > 0.99 ? 'west' : Math.sin(yaw) < -0.99 ? 'east' : yaw.toFixed(2));
-    const faces = sofa.spots.map((sp) => facing(sp.yaw));
-    pass &= check(sofa.spots.length === 6, `exactly 6 seats (got ${sofa.spots.length})`);
-    pass &= check(faces.slice(0, 3).every(f => f === 'south') && faces.slice(3).every(f => f === 'west'), `3 south facing row seats, 3 west facing bench seats: ${faces.join(', ')}`);
+    const faces = sofaTargets.flatMap(t => t.spots.map(sp => facing(sp.yaw)));
+    pass &= check(sofaTargets.reduce((n, t) => n + t.spots.length, 0) === 7, `seven seats remain usable across the three parts (got ${faces.length})`);
+    pass &= check(sofa.spots.length === 3 && sofaTargets.filter(t => t !== sofa).every(t => t.spots.length === 2), `three sofa seats and two seats on each divan: ${faces.join(', ')}`);
 
     // 2. Corner positioning. The frame and its seat/back cushions are measured; the decorative cushions (#399, one
     // merged mesh, `userData.cushion`) are out only in the parasol's months without rain clouds, so they would make the
     // corner check depend on the date and weather (#593) — they get their own, season-independent screen-wall check.
     let maxX = -Infinity, minX = Infinity, cushionMaxX = -Infinity;
-    sofa.pickable.updateMatrixWorld(true);
-    sofa.pickable.traverse((m) => {
+    sofaTargets.forEach(t => { t.pickable.updateMatrixWorld(true); t.pickable.traverse((m) => {
       const a = m.isMesh && m.geometry.attributes.position;
       if (!a) return;
       const deco = !!m.userData.cushion;
@@ -46,29 +46,28 @@ f.onload = async () => {
         if (deco) cushionMaxX = Math.max(cushionMaxX, q.x);
         else if (q.z < 13.5) { maxX = Math.max(maxX, q.x); minX = Math.min(minX, q.x); }
       }
-    });
+    }); });
     pass &= check(Math.abs(maxX - 5.66) < 0.02, `corner stays at east corner (maxX = ${maxX.toFixed(3)}, expected ~5.66)`);
     pass &= check(minX > 3.55, `door end shortened by one module (minX = ${minX.toFixed(3)}, expected ~3.60)`);
     pass &= check(cushionMaxX > 5.3 && cushionMaxX <= 5.68, `decorative cushions stay off the east screen wall (inner face x 5.68; maxX = ${cushionMaxX.toFixed(3)})`);
 
     // 3. Sitting in every seat and standing up
-    for (let i = 0; i < sofa.spots.length; i++) {
-      const sp = sofa.spots[i];
-      rest.begin(sofa, sp, { pos: player.pos.clone(), yaw: 0 }); step(1 / 60);
-      pass &= check(rest.active, `sat down in seat ${i}`);
+    for (const target of sofaTargets) for (const sp of target.spots) {
+      rest.begin(target, sp, { pos: player.pos.clone(), yaw: 0 }); step(1 / 60);
+      pass &= check(rest.active, `sat on ${target.pickable.userData.part ?? 'sofa'} seat`);
       standUp(); step(1 / 60);
-      pass &= check(!rest.active, `stood up from seat ${i}`);
+      pass &= check(!rest.active, 'stood up from seat');
     }
 
     // 4. Rearrange: move, rotate, cushions follow, restore original
     R.unlock('olof is the goat');
-    const piece = R.pieces.find(p => p.item.type === 'veronasofa');
+    const piece = R.pieces.find(p => p.item.type === 'veronasofa' && p.item.part === 'sofa');
     pass &= check(!!piece, 'veronasofa piece found in rearrange');
 
     const homeMatrix = piece.home.clone();
     R.begin(piece);
     pass &= check(R.selected?.piece === piece, 'veronasofa selected for rearrange');
-    pass &= check(R.ghost.children.length > 0, 'ghost preview created with sofa mesh and cushions');
+    pass &= check(R.ghost.children.length > 0, 'ghost preview created with sofa row and cushions');
 
     // Move sofa 1m south
     const curPose = piece.object.getWorldPosition(new V());
@@ -78,13 +77,26 @@ f.onload = async () => {
 
     const movedPos = piece.object.getWorldPosition(new V());
     pass &= check(Math.abs(movedPos.z - (curPose.z + 1)) < 0.02, 'sofa moved south');
-    pass &= check(Math.abs(sofa.spots[0].pos.z - (13.13 + 1)) < 0.05, 'seat spots followed move');
+    pass &= check(Math.abs(sofa.spots[0].pos.z - (13.13 + 1)) < 0.05, 'sofa seat spots followed move');
 
     // Restore original
     await R.restoreOriginal(piece);
     const restoredPos = piece.object.getWorldPosition(new V());
     pass &= check(Math.abs(restoredPos.z - curPose.z) < 0.01 && Math.abs(restoredPos.x - curPose.x) < 0.01, 'sofa restored to original corner position');
     pass &= check(Math.abs(sofa.spots[0].pos.x - 3.95) < 0.05, 'seat spots restored to original coordinates');
+
+    const divan = R.pieces.find(p => p.item.part === 'divan1'), otherDivan = R.pieces.find(p => p.item.part === 'divan2');
+    const divanHome = divan.object.getWorldPosition(new V()), otherHome = otherDivan.object.getWorldPosition(new V());
+    const deco = []; divan.object.traverse(m => { if (m.userData.cushion) deco.push(m); });
+    const cushionBefore = deco[0].getWorldPosition(new V());
+    R.begin(divan); R.candidate = new THREE.Matrix4().makeRotationY(Math.PI / 2).multiply(divan.object.matrixWorld);
+    R.valid = true; await R.confirm();
+    pass &= check(Math.abs(divan.object.rotation.y - (Math.PI / 2)) < 0.02, 'first divan rotates independently');
+    pass &= check(otherDivan.object.getWorldPosition(new V()).distanceTo(otherHome) < 0.001, 'second divan stays in place');
+    pass &= check(!deco[0].getWorldPosition(new V()).equals(cushionBefore), 'divan decorative cushions rotate with their module');
+    await R.restoreOriginal(divan);
+    pass &= check(divan.object.getWorldPosition(new V()).distanceTo(divanHome) < 0.001 && Math.abs(divan.object.rotation.y) < 0.02, 'divan restores to its original home');
+    pass &= check(!!R.state.pieces[divan.id] && !R.state.pieces[otherDivan.id], 'confirmed rotation is saved under only that divan id');
 
     // 5. Layout migration:
     // a) Older layout where sofa was default (unmoved)
@@ -115,7 +127,7 @@ f.onload = async () => {
     };
     R.apply(oldMovedState);
     const afterUserMoveMig = piece.object.getWorldPosition(new V());
-    pass &= check(Math.abs(afterUserMoveMig.x - 3.5) < 0.02 && Math.abs(afterUserMoveMig.z - 15.0) < 0.02, 'user-moved layout from old piece id successfully migrated to new piece');
+    pass &= check(Math.abs(afterUserMoveMig.x - 3.5) < 0.02 && Math.abs(afterUserMoveMig.z - 15.3425) < 0.02, 'user-moved layout from old piece id migrates rigidly to the shortened sofa row');
 
     // Restore all clean
     await R.restoreOriginal(piece);

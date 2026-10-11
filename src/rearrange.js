@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { LEVELS, LIFE, REARRANGE } from './config.js';
 import { cloudUrl } from './cloud.js';
-import { migratePosterLayout } from './layoutmigrations.js';
+import { migratePosterLayout, migrateVeronaLayout } from './layoutmigrations.js';
 import { inPoly, crosses } from './player.js';
 
 // #465: preview locally; only confirmed, revision-checked moves enter the shared arrangement.
@@ -252,7 +252,7 @@ export class Rearrange {
     }
   }
   apply(state) {
-    state = migratePosterLayout(state);
+    state = migrateVeronaLayout(migratePosterLayout(state));
     if (!state || !Number.isInteger(state.revision) || !state.pieces || typeof state.pieces !== 'object') return;
     if (state.revision < this.state.revision) return;
     if (this.selected || this.saving) { this.pending = state; return; }
@@ -270,7 +270,6 @@ export class Rearrange {
       const moved = Math.hypot(entry.pos?.[0] - oldDefX, entry.pos?.[2] - oldDefZ) > 0.05;
       if (moved) state.pieces[piece.id] = entry;
     };
-    carryOld('veronasofa', 5.66 - 2 * 0.685, 12.76 + 0.66 / 2); // #489
     carryOld('xmastree', 1.08, 11.5); // #591: from the palm corner (#571) to the armchair corner
     // #571: what the Christmas tree hides is shown again while poses change (a hidden piece moved elsewhere takes the
     // things on it along); the layer re-judges the overlap afterwards

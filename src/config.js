@@ -4120,7 +4120,9 @@ export const FURNITURE = [
   // with their backs to the façade under the living-room window (6 cm of air), the east end in the NE corner by the east
   // screen wall (inner face x 5.68), seats facing south (the patio faces WSW), an arm at each end; every module has its back.
   // Both divans end to end along the east screen wall from the row's east module (z 13.42–16.02): one long bench, cushions against the wall.
-  { type: 'veronasofa', level: 0, x: 5.66 - 1.5 * 0.685, z: 12.76 + 0.66 / 2, rot: 180 },
+  { type: 'veronasofa', part: 'sofa', level: 0, x: 5.66 - 1.5 * 0.685, z: 12.76 + 0.66 / 2, rot: 180 },
+  { type: 'veronasofa', part: 'divan1', level: 0, x: 5.66 - 0.5 * 0.685, z: 12.76 + 0.66 + 1.3 / 2, rot: 180 },
+  { type: 'veronasofa', part: 'divan2', level: 0, x: 5.66 - 0.5 * 0.685, z: 12.76 + 0.66 + 1.5 * 1.3, rot: 180 },
   // the small slatted table in the L's corner: 0.6 m in front of the row's seats, 0.475 m from the bench's seat front (x 4.975):
   // room to get up from every seat and step out past it (#302)
   { type: 'slattable', level: 0, x: 4.2, z: 12.76 + 0.66 + 0.605 + 0.45 / 2, rot: 180, beers: true },

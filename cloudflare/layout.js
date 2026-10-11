@@ -1,4 +1,4 @@
-import { LEGACY_POSTER_GROUP, migratePosterLayout } from '../src/layoutmigrations.js';
+import { LEGACY_POSTER_GROUP, migratePosterLayout, migrateVeronaLayout } from '../src/layoutmigrations.js';
 
 // Shared furniture arrangement (#465). One atomic, revision-checked batch per confirmed move.
 // The public cheat is a game mechanic, not authentication; bound all input and retain server authority.
@@ -8,7 +8,7 @@ const vec = (v, n, lo, hi) => Array.isArray(v) && v.length === n && v.every((x) 
 export async function layoutFetch(request, storage, headers = {}) {
   const reply = (body, status = 200) => new Response(JSON.stringify(body), { status, headers: { ...headers, 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } });
   let state = await storage.get('furniture-layout') ?? { revision: 0, pieces: {} };
-  const migrated = migratePosterLayout(state);
+  const migrated = migrateVeronaLayout(migratePosterLayout(state));
   if (migrated !== state) { await storage.put('furniture-layout', migrated); state = migrated; }
   if (request.method === 'GET') return reply(state);
   if (request.method !== 'PUT') return reply({ error: 'method' }, 405);
@@ -21,6 +21,7 @@ export async function layoutFetch(request, storage, headers = {}) {
   if (b.resetAll && b.expectedRevision !== state.revision) return reply({ error: 'conflict', state }, 409);
   if (!Array.isArray(b.moves) || !b.moves.length || b.moves.length > (b.resetAll ? 500 : 100) || new Set(b.moves.map((m) => m?.id)).size !== b.moves.length) return reply({ error: 'moves' }, 400);
   if (b.moves.some(m => m?.id === LEGACY_POSTER_GROUP)) return reply({ error: 'poster group retired', state }, 410);
+  if (b.moves.some(m => m?.id?.startsWith('f-veronasofa-0-4.29-13.09-'))) return reply({ error: 'Verona sofa modules retired', state }, 410);
   for (const m of b.moves) {
     if (!m || !idOK(m.id) || !Number.isInteger(m.base) || m.base < 0 || !vec(m.pos, 3, -100, 100) || !vec(m.quat, 4, -1, 1)
       || Math.abs(m.quat.reduce((s, x) => s + x*x, 0) - 1) > 0.001) return reply({ error: 'pose' }, 400);

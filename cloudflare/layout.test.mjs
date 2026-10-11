@@ -76,3 +76,30 @@ test('legacy Tilly group migrates once, preserves other layouts and newer indivi
  assert.equal(second.revision,9);assert.equal(second.pieces[child].pos[0],1);
  assert.equal(second.pieces[old],undefined);
 });
+
+test('legacy Verona pose migrates rigidly to three independent part ids once', async()=>{
+ const {ctx,instance:r}=room();
+ const old='f-veronasofa-0-4.29-13.09-0-0';
+ const previous={revision:12,pieces:{[old]:{revision:8,pos:[3.5,0,15],quat:[0,Math.SQRT1_2,0,Math.SQRT1_2]}}};
+ await ctx.storage.put('furniture-layout',previous);
+ const first=await(await r.fetch(new Request('https://test/furniture'))).json();
+ const ids=['f-veronasofa-0-4.6325-13.09-0-0','f-veronasofa-0-5.3175-14.07-0-0','f-veronasofa-0-5.3175-15.370000000000001-0-0'];
+ assert.equal(first.revision,13);assert.equal(first.migrations.veronaModules,1);assert.equal(first.pieces[old],undefined);
+ assert.deepEqual(ids.map(id=>first.pieces[id]?.revision),[13,13,13]);
+ assert.ok(Math.abs(first.pieces[ids[0]].pos[0]-3.5)<1e-6);
+ assert.ok(Math.abs(first.pieces[ids[0]].pos[2]-15.3425)<1e-6);
+ assert.ok(Math.abs(first.pieces[ids[1]].pos[0]-2.52)<1e-6);
+ assert.ok(Math.abs(first.pieces[ids[1]].pos[2]-16.0275)<1e-6);
+ assert.ok(Math.abs(first.pieces[ids[2]].pos[0]-1.22)<1e-6);
+ assert.ok(Math.abs(first.pieces[ids[2]].pos[2]-16.0275)<1e-6);
+ assert.deepEqual(await(await r.fetch(new Request('https://test/furniture'))).json(),first);
+ assert.equal((await r.fetch(request([move(old,8)]))).status,410);
+});
+
+test('legacy default Verona pose is retired without moving the new default parts', async()=>{
+ const {ctx,instance:r}=room();const old='f-veronasofa-0-4.29-13.09-0-0';
+ await ctx.storage.put('furniture-layout',{revision:2,pieces:{[old]:{revision:1,pos:[4.29,0,13.09],quat:[0,1,0,0]}}});
+ const first=await(await r.fetch(new Request('https://test/furniture'))).json();
+ assert.equal(first.migrations.veronaModules,1);assert.equal(first.pieces[old],undefined);
+ assert.deepEqual(Object.keys(first.pieces),[]);
+});

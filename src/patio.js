@@ -71,19 +71,31 @@ function veronaModule(g, x0, x1, z0, z1, { back = false, arms = [] } = {}) {
  * the bench's (P.verona.bench) facing −x, towards the table. The decorative cushions (#399) — along the backs, and
  * standing against the screen wall on the bench (`wall: true`) — are one merged mesh, shown by the season.
  */
-export function veronasofa() {
+export function veronasofa(item = {}) {
   const g = new THREE.Group();
   const V = P.verona, W = V.W, D = V.D, X = 1.5 * W, z0 = -D / 2, z1 = D / 2, z3 = z1 + 2 * V.divanL;
-  for (let i = 0; i < 3; i++) {
-    const a = -X + i * W;
-    veronaModule(g, a, a + W, z0, z1, { back: true, arms: i === 0 ? ['x0'] : i === 2 ? ['x1'] : [] });
+  const part = item.part ?? 'all', seatY = V.base + V.seatT;
+  g.userData.part = item.part ?? 'all';
+  if (part === 'all' || part === 'sofa') {
+    for (let i = 0; i < 3; i++) {
+      const a = -X + i * W;
+      veronaModule(g, a, a + W, z0, z1, { back: true, arms: i === 0 ? ['x0'] : i === 2 ? ['x1'] : [] });
+    }
+    if (part === 'all') for (let k = 0; k < 2; k++) veronaModule(g, X - W, X, z1 + k * V.divanL, z1 + (k + 1) * V.divanL);
+  } else {
+    const k = part === 'divan1' ? 0 : 1, centerZ = z1 + (k + 0.5) * V.divanL;
+    veronaModule(g, -W / 2, W / 2, -V.divanL / 2, V.divanL / 2);
+    g.userData.divanCenterZ = centerZ;
   }
-  for (let k = 0; k < 2; k++) veronaModule(g, X - W, X, z1 + k * V.divanL, z1 + (k + 1) * V.divanL); // the bench
-  const seatY = V.base + V.seatT, benchX = X - W / 2 - 0.06; // (the wall cushions take the back of the bench's seat)
-  const spots = [0, 1, 2].map((i) => ({ x: -X + W * (i + 0.5), y: seatY, z: 0.04 }))
-    .concat(V.bench.map((u) => ({ x: benchX, y: seatY, z: z1 + u * (z3 - z1), dir: [-1, 0] })));
+  const spots = part === 'all'
+    ? [0, 1, 2].map((i) => ({ x: -X + W * (i + 0.5), y: seatY, z: 0.04 }))
+      .concat(V.bench.map((u) => ({ x: X - W / 2 - 0.06, y: seatY, z: z1 + u * (z3 - z1), dir: [-1, 0] })))
+    : part === 'sofa' ? [0, 1, 2].map((i) => ({ x: -X + W * (i + 0.5), y: seatY, z: 0.04 }))
+    : [-0.28, 0.28].map((z) => ({ x: -0.06, y: seatY, z, dir: [-1, 0] }));
   g.userData.rest = { kind: 'sit', name: 'loungesoffan', verb: 'sätta dig i', spots };
-  g.userData.footprint = [{ x0: -X, x1: X, z0, z1 }, { x0: X - W, x1: X, z0: z1, z1: z3 }];
+  g.userData.footprint = part === 'all' ? [{ x0: -X, x1: X, z0, z1 }, { x0: X - W, x1: X, z0: z1, z1: z3 }]
+    : part === 'sofa' ? [{ x0: -X, x1: X, z0, z1 }]
+    : [{ x0: -W / 2, x1: W / 2, z0: -V.divanL / 2, z1: V.divanL / 2 }];
   // cosy cushions (#399): leaning against the backs, and against the screen wall along the bench (in a frame turned to
   // face −x: its x runs along the bench from its north end, its z out from the bench's outer edge); merged into one mesh
   // (the shared cushion atlas), kept out of the sofa's merge, shown by the season and the weather (Patio.update)
@@ -91,20 +103,29 @@ export function veronasofa() {
   wall.position.set(X, 0, z1);
   wall.rotation.y = -Math.PI / 2;
   wall.updateMatrix();
-  const rowC = addCushions(tmp, P.cushions.filter((c) => !c.wall), { backZ: 0, seatY });
-  const benchC = addCushions(tmp, P.cushions.filter((c) => c.wall), { backZ: 0, seatY });
+  const rowC = part === 'all' || part === 'sofa' ? addCushions(tmp, P.cushions.filter((c) => !c.wall), { backZ: 0, seatY }) : [];
+  const benchData = P.cushions.filter((c) => c.wall);
+  const benchC = part === 'all' ? addCushions(tmp, benchData, { backZ: 0, seatY })
+    : part === 'divan1' ? addCushions(tmp, benchData.filter((c) => c.x < 1.3), { backZ: 0, seatY })
+    : part === 'divan2' ? addCushions(tmp, benchData.filter((c) => c.x >= 1.3), { backZ: 0, seatY }) : [];
   const meshes = rowC.concat(benchC);
   const geos = meshes.map((c) => {
     c.updateMatrix();
     const geo = c.geometry.applyMatrix4(c.matrix);
-    return benchC.includes(c) ? geo.applyMatrix4(wall.matrix) : geo;
+    if (benchC.includes(c)) {
+      geo.applyMatrix4(wall.matrix);
+      if (part === 'divan1' || part === 'divan2') geo.translate(-(X - W / 2), 0, -g.userData.divanCenterZ);
+    }
+    return geo;
   });
-  const cushions = new THREE.Mesh(mergeGeometries(geos), meshes[0].material);
-  cushions.castShadow = cushions.receiveShadow = true;
-  cushions.userData.cushion = true;
-  g.add(cushions);
-  g.userData.keep = [cushions];
-  seasonal.cushions.push(cushions);
+  if (geos.length) {
+    const cushions = new THREE.Mesh(mergeGeometries(geos), meshes[0].material);
+    cushions.castShadow = cushions.receiveShadow = true;
+    cushions.userData.cushion = true;
+    g.add(cushions);
+    g.userData.keep = [cushions];
+    seasonal.cushions.push(cushions);
+  }
   return g;
 }
 
