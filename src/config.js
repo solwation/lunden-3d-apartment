@@ -3735,6 +3735,9 @@ export const CUSHIONS = {
 // is up and folded otherwise; beers on the table in summer between `beerHours`; a snowman on
 // the lawn beyond the hedge in winter.
 export const PATIO = {
+  // #680: clipped privet/hornbeam appearance, visual guesses; original height/plan footprint retained.
+  hedge: { height: 1.1, rounding: .065, footScale: .86, topNoise: .03, waveLength: .8,
+    color: 0x78a64b, texturePeriod: .48, bump: .012, roughness: .95, segments: 2 },
   frame: 0x3b3e41, // the parasol's pole and base
   // Rusta "Loungemodul Verona" (#408, docs/utesoffa-rusta-verona.jpg, the family's own: docs/utesoffa-verona-utan-dynor.jpg):
   // one module 68.5 × 66 × 67 cm (W × D × H, rusta.se); the rest *guess* from the photos: a square steel tube `tube`, the

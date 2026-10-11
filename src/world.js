@@ -23,6 +23,7 @@ import { registerSnow } from './seasons.js';
 import { buildCourtyard } from './courtyard.js';
 import { buildStreetLife } from './streetlife.js';
 import { pavingTexture } from './patio.js';
+import { patioHedgeMaterial } from './patiohedge.js';
 import { mirrorLamps, looseItems as interiorLoose, buildInterior, buildElCabinet, cupSurfaces, cupCabinet } from './interior.js';
 import { Toilet } from './toilet.js';
 import { RoomMap } from './rooms.js';
@@ -106,7 +107,7 @@ const M = {
   dark: mat(0x1d2023, { roughness: 0.3 }),
   grass: mat(COLORS.grass, { roughness: 1 }),
   patio: mat(0xffffff, { map: pavingTexture(), roughness: 0.95 }), // slab paving (PATIO.paving)
-  hedge: mat(COLORS.hedge, { roughness: 1 }),
+  hedge: patioHedgeMaterial(),
   fence: mat(COLORS.fence, { roughness: 0.9 }),
 };
 // Peab's standard finish for the visitable flats (#574, STANDARD): its own parquet and limestone window boards; walls,
@@ -914,7 +915,7 @@ export function buildWorld(plan) {
   if (site.patio) scene.add(plate(site.patio.x0, site.patio.x1, D, site.patio.z1, 0.0, M.patio)); // UVs in metres
   const outdoor = [];
   if (site.hedge) {
-    scene.add(box(site.hedge.x0, site.hedge.x1, site.hedge.z0, site.hedge.z1, 0, 1.1, M.hedge));
+    // Visible foliage is batched with the neighbours by buildExterior; preserve the original collision below.
     outdoor.push(...rectSegments(site.hedge));
   }
   for (const f of site.fences ?? []) {

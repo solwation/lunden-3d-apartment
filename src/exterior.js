@@ -8,6 +8,7 @@ import { wallLine, wallRect } from './roofs.js';
 import { groundY } from './surroundings.js';
 import { glowMaterial, poolGeometry, washGeometry, fadeGlow } from './groundglow.js';
 import { pavingTexture } from './patio.js';
+import { patioHedgeGeometry } from './patiohedge.js';
 import { portikPlan } from './portik.js';
 import { buildEntrancePlants } from './entranceplants.js';
 import { buildTerraceDecor } from './terracedecor.js';
@@ -174,7 +175,7 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
   const group = new THREE.Group();
   const bricks = [], renders = [], glassGeo = [], frames = [], solids = [], rails = [], roofs = [], pilasters = [], panels = [];
   const seals = [], openingHardware = [], neighborOpenings = [];
-  const patios = [], hedges = [], fences = [], copings = [];
+  const patios = [], hedges = site.hedge ? [patioHedgeGeometry(site.hedge)] : [], fences = [], copings = [];
   const segments = []; // collision for the neighbours' screen walls and hedges (lawn side)
   const loftD = H.loftgangDepth;
   const upperTop = roofTop + H.upperStoreys * H.storeyHeight;
@@ -274,7 +275,7 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
     }
     if (site.hedge) {
       const h = site.hedge;
-      hedges.push(boxGeo(ox + h.x0, ox + h.x1, 0, 1.1, h.z0, h.z1));
+      hedges.push(patioHedgeGeometry(h, ox));
       segments.push([ox + h.x0, h.z0, ox + h.x1, h.z0], [ox + h.x1, h.z0, ox + h.x1, h.z1],
         [ox + h.x1, h.z1, ox + h.x0, h.z1], [ox + h.x0, h.z1, ox + h.x0, h.z0]);
     }

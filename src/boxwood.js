@@ -10,7 +10,9 @@ export function hedgeRuns(spec) {
   for (const [a,b] of spec.gaps) runs = runs.flatMap(([lo,hi]) => b <= lo || a >= hi ? [[lo,hi]] : [[lo,Math.max(lo,a)],[Math.min(hi,b),hi]].filter(([x0,x1])=>x1>x0));
   return runs;
 }
-function leafTexture(spec) {
+const leafMaps = new Map();
+export function leafTexture(spec) {
+  if (leafMaps.has(spec.textureLeaves)) return leafMaps.get(spec.textureLeaves);
   const canvas=document.createElement('canvas');canvas.width=canvas.height=256;
   const ctx=canvas.getContext('2d');ctx.fillStyle='#515151';ctx.fillRect(0,0,256,256);
   let seed=496;const random=()=>((seed=seed*16807%2147483647)/2147483647);
@@ -22,7 +24,7 @@ function leafTexture(spec) {
       ctx.fillStyle=`rgb(${v},${v},${v})`;ctx.beginPath();ctx.ellipse(x+dx,y+dy,r*.65,r,angle,0,Math.PI*2);ctx.fill();
     }
   }
-  const map=new THREE.CanvasTexture(canvas);map.wrapS=map.wrapT=THREE.RepeatWrapping;map.colorSpace=THREE.SRGBColorSpace;return map;
+  const map=new THREE.CanvasTexture(canvas);map.wrapS=map.wrapT=THREE.RepeatWrapping;map.colorSpace=THREE.SRGBColorSpace;leafMaps.set(spec.textureLeaves,map);return map;
 }
 export function boxwood(spec) {
   const group=new THREE.Group();group.name='front-boxwood';group.userData.runs=hedgeRuns(spec);group.userData.segments=[];

@@ -14,7 +14,8 @@ tools/plantwindtest.html real opening/weather transitions, all plant families, a
                        focus brightness compatibility, movement/return and no per-frame vertex uploads.
 src/plantpots.js       shared rounded brushed-copper pot geometry/material (#491, #517)
 src/entranceplants.js  shared plant templates and door-relative entrance placement on ground and loftgång (#498)
-src/boxwood.js         merged evergreen entrance hedge and winter snow caps (#496)
+src/boxwood.js         merged evergreen entrance hedge and winter snow caps (#496); shared cached 256 px leaf atlas
+src/patiohedge.js      rounded, tapered patio hedge geometry/material (#680), shared by world.js/exterior.js
 src/sillplants.js      flower pots on every inner window board (SILL_PLANTS, #136): five merged meshes, a loose item;
                        `userData.pots` / `rebuild(away)` / `potModel` let one pot be lifted out of the merge (#185).
                        #290: big lush plants (`leafShape` leaves; pelargon, orchid, violet, cactus, ivy, basil, monstera,
@@ -50,3 +51,7 @@ River park (#533): 90 assumed mature deciduous trees constrained to six aerial-d
 ZZ plant regression (#561): `tools/zzplanttest.html` measures bounds and material draws across visible physical meshes, excluding hidden/ghost interaction targets introduced by watering. It retains the actual copper pot dimensions, every visible leaf/stem, cabinet clearance, movement, saved rotation/reload and original restoration.
 
 Roof terraces (#605): `src/terracedecor.js` bakes patio.js `planter` palms / bananas / agaves (the shared cheap templates, cached per pot size and scale) plus its own olive, box/hydrangea, pot-flower, raised-bed and railing-box plants into one merged soft batch for all of Hus L's terraces; their plant-wind attributes survive the merge (`windGeometry` for the new ones, cloth gets zero sway). Foliage is squeezed towards the stem to stay clear of the screens and the set-back wall. See [environment](environment.md).
+
+Patio hedges (#680): `patiohedge.js` reuses boxwood’s cached 256 px grayscale leaf atlas with a lighter green tint, broader leaf repeats and bump. `PATIO.hedge` marks the original 1.1 m height and new rounding, narrower foot and ±3 cm top waves as visual guesses. All L1007/neighbour runs join exterior’s existing hedge batch: one material/mesh, no added lights or draws. Plan extents and original rectangular collision segments remain unchanged; `registerSnow` still turns the material white, hides the colour map in winter and restores it in summer.
+
+Measured with desktop `tools/perfcount.html` before/after #680 on the same scene: patio 109 → 108 calls, 512,661 → 514,965 triangles; overall peak 479 → 478 calls and 922,959 → 925,263 triangles. Texture estimate stays ~301 MB in 303 textures; both runs pass the budgets. These are render counts, not device frame-time measurements.
