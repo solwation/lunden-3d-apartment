@@ -295,3 +295,27 @@ nine mirrors, start, hall, living room, kitchen, patio, stairwell and garage scr
 Not done: positions (48 MB CPU, 48 GPU; needed by raycast, could move to TriGrid's own world-space copy), vertex colours
 (Float32 → byte would band dark tones), uv, merged non-indexed geometry (indexing would cut vertices but costs frame time),
 the transient +19 MB at load (pack in place), the ~106 MB of CPU canvases and the heap's remaining ~300 MB.
+
+## Phone graphics a little finer (#662 — not verified on a device)
+
+The iPhone crash (#585/#628) can no longer be reproduced, so `LOW_MEMORY` was raised carefully, one knob at a time, measured
+with `tools/phonememtest.cjs --route living,mirrors,stairwell` (iPhone 14 Pro profile, 844×390 @3, SwiftShader; GPU
+numbers are the page's own allocations; budget 600 MB is still a *guess*). Peak GPU estimate, MB (JS heap/canvas copies
+vary ±30 MB between runs, so the GPU column is the comparable one):
+
+| step | textures | renderbuffers | canvas | GPU peak | GPU + heap + CPU canvases |
+|---|---|---|---|---|---|
+| baseline (512 / 1024² / 1.0) | 97 | 7 | 9 | **203** | 768 |
+| `maxPixelRatio` 1.0 → 1.25 | 95 | 7 | 14 | 206 (+3) | 778 |
+| + `maxTextureSize` 512 → 768 (tried) | 137 | 7 | 14 | 248 (+42) | 820 |
+| `maxPixelRatio` 1.25 + `shadowMapSize` 1024 → 1536 (**taken**, 512 textures kept) | 100 | 12 | 14 | **216 (+13)** | 721 |
+
+Taken: `maxPixelRatio` 1.25 (start level 2 now draws at 0.9 → 1.125×, the top level at 1.25×; the drawing buffer is 14 MB instead
+of 9) and `shadowMapSize` 1536 (the map is 9 MB instead of 4; levels 0–1 still use 1024 through `QUALITY.shadowSize`, levels 2–3
+wanted 2048 and are capped at 1536). Not taken: `maxTextureSize` 768 costs +42 MB for a base level a 844 px wide screen
+rarely samples; `startLowMemory` stays 2 (the adaptive levels, `quality.js`, still step down on a slow frame rate and back up,
+and the lost-context reload is unchanged). Everything is still above the 600 MB *guess* in total (as before #662: the
+CPU canvases and geometry copies dominate), GPU peak is 216 MB, +13 MB (+6 %) over the baseline. Desktop is untouched
+(`lowMemory` only). perfcount `?lowmem&w=390&h=844`, `glrestoretest.cjs` and `turntest.html?lowmem` pass. To go back: `LOW_MEMORY`
+`maxPixelRatio: 1.0`, `shadowMapSize: 1024` in `src/config.js`. Screenshots: `/tmp/shots-grafik` (not in the repo; the living
+room looks slightly crisper, nothing else changes).
