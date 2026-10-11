@@ -2,6 +2,7 @@ import {buildSouthBackdrop} from './southbackdrop.js';
 import {buildWestBackdrop,buildEastBackdrop,buildNorthBackdrop,westTreeSpots,eastTreeSpots,northTreeSpots} from './sitebackdrop.js';
 import { buildRiverPark, parkDeckAt, parkTreeSpots, parkShrubSpots } from './riverpark.js';
 import * as THREE from 'three';
+import { grassUV } from './grass.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { SITE as S, COLORS, SEASON, COURTYARD, GARAGE, CORE_A, CORE_B, CORE_C, NEIGHBOR_OPENINGS as O } from './config.js';
 import { neighborGlass } from './neighborglass.js';
@@ -1380,7 +1381,7 @@ export function buildSurroundings({ grass }) {
   };
   // the ground south of Hus L: the raised courtyard on the garage box and the park level around it (the
   // street side north of Hus L is world.js's ground); retaining walls, railings and the garage door
-  flat([terrainGeometry()], grass, SEASON.snow.ground).name='site-terrain';
+  flat([grassUV(terrainGeometry())], grass, SEASON.snow.ground).name='site-terrain';
   const bw = boxWalls();
   const concrete = new THREE.MeshStandardMaterial({ color: 0xb9b4ab, roughness: 0.95, side: THREE.DoubleSide });
   flat(bw.walls, new THREE.MeshStandardMaterial({ map: historicBrick, roughness: 0.95, side: THREE.DoubleSide })); // brick retaining walls (#148)

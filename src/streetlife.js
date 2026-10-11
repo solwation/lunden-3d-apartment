@@ -3,6 +3,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { SITE, SEASON } from './config.js';
 import { pavingTexture } from './patio.js';
 import { registerSnow } from './seasons.js';
+import { grassMaterial, grassUV } from './grass.js';
 import { buildCar, MEGANE } from './carmodel.js';
 import { groundY } from './surroundings.js';
 import { boxwood } from './boxwood.js';
@@ -133,16 +134,16 @@ export function buildStreetLife({ entrances = [] } = {}) {
   const pave = new THREE.Mesh(paved(L.yard, 0.012), paveMat), place = new THREE.Mesh(paved(L.bikePlace, 0.016), placeMat);
   pave.receiveShadow = place.receiveShadow = true;
   registerSnow(paveMat, SEASON.snow.paving); registerSnow(placeMat, SEASON.snow.paving);
-  const lawnMat = new THREE.MeshStandardMaterial({ color: 0x5f8a3e, roughness: 1 });
+  const lawnMat = grassMaterial(0x5f8a3e);
   registerSnow(lawnMat, SEASON.snow.ground);
-  const lawn = new THREE.Mesh(merge(L.lawns.map(([x0, x1, z0, z1]) => flat(x0, x1, z0, z1, 0.02))), lawnMat); lawn.receiveShadow = true;
+  const lawn = new THREE.Mesh(merge(L.lawns.map(([x0, x1, z0, z1]) => grassUV(flat(x0, x1, z0, z1, 0.02)))), lawnMat); lawn.receiveShadow = true;
   group.add(pave, place, lawn);
   // the low green strip along Hus L's entrances (#260): a concrete edge, grass, clipped boxwood
   const S = L.strip, edge = [], grass = [];
   for (const [x0, x1] of S.parts) {
     const cx = (x0 + x1) / 2, w = x1 - x0;
     edge.push(box(w, S.h, 0.08, cx, S.h / 2, S.z0 + 0.04), box(w, S.h, 0.08, cx, S.h / 2, S.z1 - 0.04));
-    grass.push(flat(x0, x1, S.z0 + 0.08, S.z1 - 0.08, S.h - 0.02));
+    grass.push(grassUV(flat(x0, x1, S.z0 + 0.08, S.z1 - 0.08, S.h - 0.02)));
     // Retain the original random sequence for the unrelated bike/yard models built later.
     for(let x=x0+.3;x<x1-.2;x+=.45+R()*.25){R();R()}
   }

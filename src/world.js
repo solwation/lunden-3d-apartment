@@ -21,6 +21,7 @@ import { Pack, frameMatrix, hallWardrobe } from './contents.js';
 import { buildSillPlants } from './sillplants.js';
 import { registerSnow } from './seasons.js';
 import { buildCourtyard } from './courtyard.js';
+import { grassMaterial } from './grass.js';
 import { buildStreetLife } from './streetlife.js';
 import { pavingTexture } from './patio.js';
 import { patioHedgeMaterial } from './patiohedge.js';
@@ -105,7 +106,7 @@ const M = {
   rail: mat(COLORS.rail, { roughness: 0.4, metalness: 0.3 }),
   riser: mat(COLORS.riser, { roughness: 0.6 }), // stair risers and stringers (white)
   dark: mat(0x1d2023, { roughness: 0.3 }),
-  grass: mat(COLORS.grass, { roughness: 1 }),
+  grass: grassMaterial(),
   patio: mat(0xffffff, { map: pavingTexture(), roughness: 0.95 }), // slab paving (PATIO.paving)
   hedge: patioHedgeMaterial(),
   fence: mat(COLORS.fence, { roughness: 0.9 }),

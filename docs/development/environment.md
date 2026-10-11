@@ -153,3 +153,10 @@ Northern surroundings (#530): `SITE.north`/`sitebackdrop.js` add three missing e
 Car regressions (#563): `cartest` checks the short Öppna/Sitt ner labels together with the exact front-door/seat target on each side, and excludes the seat target while its door is shut. Actual opening, seating, music, getting out and all four asphalt/garage routes remain checked.
 
 Street name signs (#583): `streetsigns.js` + `SITE.streetSigns` put 11 posts / 23 blades at every junction of two differently named streets in the model (OSM junction nodes; by the block the Peab-based `SITE.roads`) and at Sankt Lars väg's NE bend and Karpvägen's bend into the park; campus service roads, paths and our drive get none. Names from the OSM snapshots; numbers only where sourced: Karpvägen 2–10 (#575), Sankt Lars väg 41–70 (every mapped address, all south of Höje å; the near stretch and the forks south of the river show the name only), Sävsländegatan/Nattsländegatan 2–20 and Hattsnäckegränden 2–12 (complete OSM sets). Look and sizes are *guess*. Two draw calls in every outdoor-facing view. [Sources, selection and before/after](../validation/issue-583/README.md).
+
+Lawn surfaces (#688): `src/grass.js` shares one 256 px seamless detail map across the terrain/courtyard grass,
+world.js's flat ground and streetlife.js's entrance/bike-yard lawns. Terrain and lawn UVs are world x/z metres,
+so different-sized surfaces retain the same scale. Two broad shader waves add gentle irregular tone variation,
+without geometry, lights or extra draws. `GRASS` holds artistic *guesses*. Autumn warms the existing lawn tints;
+`registerSnow` removes/restores the map and the seasonal hook disables/restores broad patches, leaving winter
+snow uniform. Courtyard paths, lawn boundaries, terrain heights and collision remain unchanged.

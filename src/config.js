@@ -1007,6 +1007,14 @@ export const SITE = {
 export const GRILL = { flames: 16, height: 1.0, sparks: 40, light: 3.2, burnSeconds: 300,
   kettle: { r: 0.285, rim: 0.72, depth: 0.26, lidH: 0.22, grate: 0.07, coal: 0.16, leg: 0.0125, wheel: 0.16, ash: 0.35, ashY: 0.24 } };
 
+// #688: grass appearance, all *guess* by eye from the realism screenshots; no botanical survey.
+export const GRASS = {
+  textureSize: 256, tile: 1.6, seed: 688, blades: 2300, bladeLength: [2, 7],
+  summer: 0x718b50, autumn: 0x94845b, autumnMix: 0.55,
+  detailRange: [190, 244], detailNoise: 24, strawTint: 0.94, bladeTint: 0.91, strokeWidth: 0.7,
+  patchScale: 0.45, patchStrength: 0.10, patchWarmth: 0.035, patchFrequencies: [0.73, 0.87, 0.31],
+};
+
 export const COURTYARD = {
   // #259: re-measured on the calibrated situation plan (docs/peab/kalibrerad/situationsplan-300dpi.jpg; x = (px − 1805) ×
   // 0.06489 + 11.58, z = (py − 1117) × 0.06489, from Hus L's outline) — walks by their light paving, lawns vs gravel by colour
