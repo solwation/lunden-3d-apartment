@@ -1,0 +1,105 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><title>Nerf trajectory and confirmed audio</title>
+<style>body{margin:0;background:#20303c;color:white;font:14px monospace}canvas{display:block}#out{white-space:pre-wrap}</style>
+<pre id="out">running…</pre>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
+<script type="module">
+import * as T from 'three';
+import { TOYS, LEVELS, COMBAT } from '../src/config.js';
+import { buildToys as toys } from '../src/toys.js';
+import { Combat, nerfContact } from '../src/combat.js';
+import { Ghosts } from '../src/ghosts.js';
+import { stepNerf } from '../src/nerf.js';
+import { combatWorldPath, combatWorldHits } from '../src/combatworld.js';
+import { initAudio, sfx, audioParts, toggleMuted } from '../src/audio.js';
+const lines = [];let failures=0,checks=0;
+const check=(ok,name)=>{checks++;if(!ok)failures++;lines.push(`${ok?'PASS':'FAIL'} ${name}`)};
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+const until=async fn=>{const end=performance.now()+6000;while(!fn()&&performance.now()<end)await wait(20);if(!fn())throw Error('bounded wait timed out')};
+try {
+ const scene=new T.Scene(), sceneB=new T.Scene(), camera=new T.PerspectiveCamera(55,1.6,.1,100), cameraB=camera.clone();
+ camera.position.set(0,1.5,0); cameraB.position.set(0,1.5,-22);
+ const parts=toys(scene,camera), darts=parts.darts;
+ const positionB=new T.Vector3(0,0,-22), stateB=()=>({p:positionB.toArray(),r:0});
+ const ga=new Ghosts({scene,camera,url:'http://localhost:8718',name:()=> 'Shooter',weapon:()=> 'nerf',score:()=>0,state:()=>({p:[0,0,0],r:0})});
+ const gb=new Ghosts({scene:sceneB,camera:cameraB,url:'http://localhost:8718',name:()=> 'Target 22 m',weapon:()=> 'nerf',score:()=>0,state:stateB});
+ initAudio();await audioParts().ctx.resume();
+ let cues=0,oscillators=0,panners=0;
+ const ctx=audioParts().ctx, originalOsc=ctx.createOscillator.bind(ctx),originalPanner=ctx.createPanner.bind(ctx);
+ ctx.createOscillator=()=>{oscillators++;return originalOsc()};ctx.createPanner=()=>{panners++;return originalPanner()};
+ const effects={playerHit(){cues++;sfx.playerHit()}};
+ const combat=new Combat({scene,camera,ghosts:ga,weapon:()=> 'nerf',feet:()=>new T.Vector3(),darts,sfx:effects});
+ const cb=new Combat({scene:sceneB,camera:cameraB,ghosts:gb,weapon:()=> 'nerf',feet:()=>positionB.clone()});
+ const timer=setInterval(()=>{ga.update();gb.update()},25);
+ await until(()=>ga.connected&&gb.connected&&combat.foes().length);await wait(300);
+ scene.updateMatrixWorld(true);
+ check(combat.rules.weapons.nerf.range===TOYS.nerf.dart.range,'actual Worker welcome shares range');
+ const shot={o:new T.Vector3(0,1.5,0),d:new T.Vector3(0,.03,-1).normalize(),s:TOYS.nerf.dart.speed};
+ const target=combat.foes()[0];
+ check(combat.aim('nerf',shot)===target,'actual muzzle arc predicts armed target at22m');
+ darts.fire(shot.o,shot.d);let dart=darts.list[(darts.next-1)%darts.list.length],passed=false;
+ for(let i=0;i<50&&dart.flying;i++){darts.update(.02);if(Math.abs(dart.g.position.z+22)<.6&&dart.g.position.y>.25&&dart.g.position.y<1.75)passed=true;}
+ check(passed,'actual visible dart crosses target body beyond15m');
+ check(!dart.flying&&!dart.g.visible,'local dart disappears at range cap');
+ darts.fire(new T.Vector3(0,1.5,0),new T.Vector3(0,.6,-1).normalize());dart=darts.list[(darts.next-1)%darts.list.length];
+ for(let i=0;i<100&&dart.flying;i++)darts.update(.05);
+ check(!dart.flying&&!dart.g.visible&&Math.abs(dart.travelled-TOYS.nerf.dart.range)<1e-6,'raised dart range cap terminates without floor masking');
+ for(const dt of [.01,.02,.05]){
+  darts.fire(new T.Vector3(0,.1,0),new T.Vector3(1,0,0));dart=darts.list[(darts.next-1)%darts.list.length];
+  for(let i=0;i<100&&dart.flying;i++)darts.update(dt);
+  check(!dart.flying,`floor terminates dt${dt}`);
+  const time=Math.sqrt(2*(.1-dart.floor-.008)/TOYS.nerf.dart.gravity);
+  check(Math.abs(dart.g.position.x-time*TOYS.nerf.dart.speed)<1e-7,`analytic floor contact matches visible dart dt${dt}`);
+ }
+ const wall=new T.Mesh(new T.BoxGeometry(3,3,.1),new T.MeshBasicMaterial());wall.position.set(0,1,-10);scene.add(wall);scene.updateMatrixWorld(true);
+ check(combat.aim('nerf',shot)===null,'first wall blocks target');scene.remove(wall);
+ check(combat.aim('nerf',{...shot,d:new T.Vector3(1,0,0)})===null,'miss has no target');
+ check(Math.abs(nerfContact(new T.Vector3(0,1,0),new T.Vector3(0,0,-1),2,new T.Vector3(0,0,-1.5))-1.1)<1e-6,'capsule front precedes wall behind front');
+ const beforeOsc=oscillators,beforePan=panners;
+ combat.fire('nerf',shot);await until(()=>combat.hits===1);
+ check(cues===1&&oscillators-beforeOsc===2,'one confirmed hit schedules one distinct two-tone cue');
+ check(panners===beforePan,'hit cue is nonpositional');
+ const count=combat.hits;
+ await wait(500);combat.fire('nerf',{...shot,d:new T.Vector3(1,0,0)});await wait(350);
+ check(combat.hits===count&&cues===1,'miss gives no confirmation cue');
+ positionB.z=-35;await wait(350);
+ ga.fire({w:'nerf',o:shot.o.toArray(),d:shot.d.toArray(),s:shot.s,to:target.id});await wait(350);
+ check(combat.hits===count&&cues===1,'actual Worker denied out-of-range shot gives no cue');
+ positionB.z=-22;await wait(400);toggleMuted();const mutedOsc=oscillators;
+ combat.fire('nerf',shot);await until(()=>combat.hits===count+1);
+ check(cues===2&&oscillators===mutedOsc,'confirmed muted hit schedules no audio');toggleMuted();
+ // Actual Combat.fire + production async raycasts; transport spy isolates queue/cancellation from room rate limits.
+ let held='nerf';const messages=[],lifeGhosts={connected:true,others:ga.others,group:ga.group,rules:ga.rules,fire:m=>messages.push(m)};
+ const lifeScene=new T.Scene(),life=new Combat({scene:lifeScene,camera,ghosts:lifeGhosts,weapon:()=>held,feet:()=>new T.Vector3()});
+ const savedDeadline=COMBAT.collision.predictionMs;
+ try{
+  let started=performance.now();life.fire('nerf',shot,true);check(messages.length===0,'candidate shot defers transport while async world query runs');
+  await until(()=>messages.length===1);check(messages[0].to===target.id&&performance.now()>=started,'clear async candidate sends one normal shot with target');
+  await wait(60);check(messages.length===1,'completed async shot cannot send twice');
+  messages.length=0;const mutable={o:shot.o.clone(),d:shot.d.clone(),s:shot.s};life.fire('nerf',mutable,true);mutable.o.x=100;mutable.d.set(1,0,0);
+  await until(()=>messages.length===1);check(messages[0].o[0]===0&&messages[0].d[2]<-.9,'deferred transport preserves launch muzzle and direction');
+  messages.length=0;life.fire('nerf',shot,true);life.reset();await wait(80);check(messages.length===0&&life.nerfPending.length===0,'armed reset cancels without a late miss or hit message');
+  life.fire('nerf',shot,true);lifeGhosts.connected=false;await wait(80);check(messages.length===0,'disconnect cancels pending transport');lifeGhosts.connected=true;
+  life.fire('nerf',shot,true);held='';life.update(0);await wait(80);check(messages.length===0,'unarmed player cancels pending transport');held='nerf';
+  COMBAT.collision.predictionMs=0;life.fire('nerf',shot,true);await until(()=>messages.length===1);
+  check(!messages[0].to&&life.nerfPending.length===0,'deadline resolves one conservative normal miss without synchronous fallback');COMBAT.collision.predictionMs=savedDeadline;
+  messages.length=0;for(let i=0;i<TOYS.nerf.dart.max+1;i++)life.fire('nerf',{...shot,o:shot.o.clone().setX(i*.01)},true);
+  check(life.nerfPending.length===TOYS.nerf.dart.max&&messages.length===1&&!messages[0].to,'full queue resolves oldest as one miss and remains bounded by dart pool');
+  await until(()=>messages.length===TOYS.nerf.dart.max+1);await wait(80);
+  check(new Set(messages.map(m=>m.o[0])).size===messages.length&&life.nerfPending.length===0,'overflow and completion send each captured launch exactly once');
+ }finally{COMBAT.collision.predictionMs=savedDeadline;life.reset();life.el.remove();life.flashEl.remove();}
+ // Source-path checks exercise real raycasts and custom propagation without synthetic hit results.
+ const pathScene=new T.Scene(),root=new T.Group(), child=new T.Mesh(new T.BoxGeometry(1,1,1),new T.MeshBasicMaterial());
+ root.add(child);pathScene.add(root);pathScene.updateMatrixWorld(true);
+ const ray=new T.Raycaster(new T.Vector3(0,0,3),new T.Vector3(0,0,-1),0,6),points=[ray.ray.origin.clone(),new T.Vector3(0,2,1),new T.Vector3(0,0,-3)];
+ const compare=()=>{const path=combatWorldPath(pathScene,null,null,points,ray.layers);return JSON.stringify(path(ray).map(h=>h.distance))===JSON.stringify(combatWorldHits(pathScene,null,null,ray).map(h=>h.distance))};
+ check(compare(),'path native intersections match fresh helper');root.raycast=()=>false;check(compare(),'path custom false keeps children suppressed');root.layers.set(1);check(compare(),'path mismatching custom parent layer allows child');
+ // Render only this small real-module fixture, with target and enlarged real dart for inspection.
+ darts.hide();darts.fire(shot.o,shot.d);for(let i=0;i<36;i++)darts.update(.02);
+ dart=darts.list[(darts.next-1)%darts.list.length];dart.g.scale.setScalar(8);
+ const ground=new T.Mesh(new T.PlaneGeometry(32,32),new T.MeshLambertMaterial({color:0x789970}));ground.rotation.x=-Math.PI/2;ground.position.z=-12;scene.add(ground);
+ scene.add(new T.HemisphereLight(0xffffff,0x345533,2));const view=new T.PerspectiveCamera(50,1.6,.1,100);view.position.set(8,5,-8);view.lookAt(0,1,-19);
+ const renderer=new T.WebGLRenderer({antialias:true});renderer.setSize(640,400);document.body.prepend(renderer.domElement);renderer.render(scene,view);
+ window.fixture={scene,renderer,view,ga,gb,combat,darts};clearInterval(timer);ga.disconnect();gb.disconnect();
+} catch(e){failures++;lines.push('ERROR '+e.stack)}
+window.result={pass:!failures,checks,lines};document.querySelector('#out').textContent=`${failures?'FAIL':'ALL PASS'} ${checks} checks\n`+lines.join('\n');
+</script></html>

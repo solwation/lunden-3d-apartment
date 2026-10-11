@@ -4,7 +4,7 @@
 <script type="module">
 import * as T from 'three';
 import { COMBAT } from '../src/config.js';
-import { combatWorldHits, prepareCombatWorld, combatWorldMetrics, combatWorldState } from '../src/combatworld.js';
+import { combatWorldHits, combatWorldPath, combatWorldPathBlocked, prepareCombatWorld, combatWorldMetrics, combatWorldState } from '../src/combatworld.js';
 // Actual Three raycasts, no renderer/WebGL. The baseline is Combat's pre-#715 accepted-hit loop.
 const lines = []; let checks = 0, failures = 0;
 const check = (ok, name) => { checks++; failures += !ok; lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); };
@@ -27,6 +27,23 @@ const same = (name) => {
   return after;
 };
 const clear = () => { scene.clear(); scene.add(ghosts, camera); ghosts.clear(); camera.clear(); ray.layers.set(0); };
+// Each prepared query is used synchronously for exactly the supplied polyline, as aimNerf does.
+const equalVector = (a, b) => a == null || b == null ? a == null && b == null : a.distanceTo(b) < 1e-8;
+const pathSame = (points, label) => {
+  scene.updateMatrixWorld(true);
+  const prepared = combatWorldPath(scene, ghosts, camera, points, ray.layers);
+  const results = [];
+  for (let i = 1; i < points.length; i++) {
+    const delta = points[i].clone().sub(points[i - 1]), length = delta.length();
+    ray.set(points[i - 1], length ? delta.divideScalar(length) : new T.Vector3(0, 0, -1));
+    ray.near = 0; ray.far = length;
+    const expected = combatWorldHits(scene, ghosts, camera, ray), actual = prepared(ray);
+    check(expected.length === actual.length && expected.every((h, j) => h.object === actual[j].object && h.instanceId === actual[j].instanceId && h.faceIndex === actual[j].faceIndex && h.face?.materialIndex === actual[j].face?.materialIndex && h.face?.a === actual[j].face?.a && h.face?.b === actual[j].face?.b && h.face?.c === actual[j].face?.c && equalVector(h.uv, actual[j].uv) && equalVector(h.normal, actual[j].normal) && Math.abs(h.distance - actual[j].distance) < 1e-8), `${label}, segment ${i}`);
+    results.push(actual);
+  }
+  return results;
+};
+const curve = () => [[0,1,5], [0,.75,2], [0,0,0], [0,0,0], [0,-1,-3]].map(p => new T.Vector3(...p));
 const boxValues = b => [...b.min.toArray(), ...b.max.toArray()].join(',');
 try {
   let m = mesh(); scene.add(m); check(same('ordinary solid hits match legacy').length > 0, 'ordinary solid blocks ray');
@@ -46,7 +63,27 @@ try {
   const beforeFallback = combatWorldMetrics().fallbackQueries;
   check(combatWorldState(gridGeo).pending && !combatWorldState(gridGeo).ready, 'queued incomplete grid exposes pending state');
   check(same('partial-build fallback matches legacy').length > 0 && combatWorldMetrics().fallbackQueries > beforeFallback, 'partial build uses native raycast');
+  const pendingPath = pathSame(curve(), 'pending-grid curved path matches independent queries');
+  check(pendingPath.some(h => h.length), 'pending curved path retains actual crossing hits');
   await waitReady(gridGeo);
+  const readyPath = pathSame(curve(), 'ready-grid curved path matches independent queries');
+  check(readyPath.some(h => h.length) && readyPath[2].some(h => h.distance === 0), 'ready curve keeps crossing surface and zero-length boundary hits');
+  for (const [label, x, shouldHit] of [['inside vertex boundary', -1 + 1e-10, true], ['outside vertex boundary', -1 - 1e-10, false]]) {
+    const result = pathSame([new T.Vector3(x,-1,1), new T.Vector3(x,-1,-1)], label + ' matches native')[0];
+    check(!!result.length === shouldHit, label + ' retains native hit/miss');
+  }
+  // Whole-path bounds retain this geometry, but its first off-axis segment is empty.
+  scene.updateMatrixWorld(true);
+  const mixed = [[5,5,1], [5,5,-1], [0,0,1], [0,0,-1]].map(p => new T.Vector3(...p));
+  const preparedMixed = combatWorldPath(scene, ghosts, camera, mixed, ray.layers);
+  const tracked = gridGeo.attributes.position, originalGetX = tracked.getX;
+  let vertexReads = 0;
+  tracked.getX = function(i) { vertexReads++; return originalGetX.call(this, i); };
+  ray.set(mixed[0], new T.Vector3(0,0,-1)); ray.near = 0; ray.far = 2;
+  check(preparedMixed(ray).length === 0 && vertexReads === 0, 'ready per-segment grid skips native triangles in empty part of retained path');
+  ray.set(mixed[2], new T.Vector3(0,0,-1));
+  check(preparedMixed(ray).length > 0 && vertexReads > 0, 'ready per-segment grid retains native crossing-surface raycast');
+  tracked.getX = originalGetX;
   check(gridGeo.boundingBox === null, 'ready private grid does not create geometry boundingBox');
   check(same('exact interior cell-plane hit matches legacy').length > 0, 'cell-boundary triangle is never pruned');
   for (const [label, origin, direction, near, far] of [
@@ -155,6 +192,307 @@ try {
   check(same('custom nonmesh redirects to accepted mesh').length === 1, 'redirected accepted mesh retained');
   target.material.transparent = true; check(same('redirected transparent hit filtered').length === 0, 'filter uses redirected hit object material');
   target.material.transparent = false; target.visible = false; check(same('redirected invisible hit filtered').length === 0, 'filter uses redirected hit object ancestors');
+
+  // #714 path-specific walker cases: conditionals must be evaluated independently for each segment.
+  clear(); const pathStopper = new T.Group(); pathStopper.add(mesh()); scene.add(pathStopper);
+  pathStopper.raycast = rc => rc.ray.origin.z > 1 ? false : undefined;
+  const conditional = pathSame(curve(), 'custom false-return curved path matches independent queries');
+  check(conditional[0].length === 0 && conditional.some(h => h.length), 'custom false suppresses children only on affected segments');
+  pathStopper.layers.set(1);
+  check(pathSame(curve(), 'mismatched parent layer curved path matches independent queries').some(h => h.length), 'parent layer mismatch preserves path child hits');
+  clear(); const pathRedirect = new T.Group(), redirectTarget = mesh(); redirectTarget.position.x = 3;
+  pathRedirect.raycast = (rc, hits) => hits.push({ distance: rc.far / 2, object: redirectTarget, point: rc.ray.at(rc.far / 2, new T.Vector3()) });
+  scene.add(pathRedirect, redirectTarget);
+  check(pathSame(curve(), 'redirected hit curved path matches independent queries').every(h => h.some(x => x.object === redirectTarget)), 'custom redirect retained across all path segments');
+  redirectTarget.material.transparent = true;
+  check(pathSame(curve(), 'redirected transparent path hits match independent queries').every(h => h.length === 0), 'path filters actual redirected object');
+  clear(); const pathDoor = mesh(); scene.add(pathDoor);
+  const pathBox = new T.Box3(new T.Vector3(-3,-3,-3), new T.Vector3(3,3,3)), pathBoxValues = boxValues(pathBox);
+  pathDoor.geometry.boundingBox = pathBox;
+  check(pathSame(curve(), 'authored-bound initial shot matches independent queries').some(h => h.length), 'initial prepared shot hits door');
+  check(pathDoor.geometry.boundingBox === pathBox && boxValues(pathBox) === pathBoxValues, 'path preparation preserves authored bounds identity/extents');
+  pathDoor.position.x = 4;
+  check(pathSame(curve(), 'moved door next shot matches independent queries').every(h => h.length === 0), 'next-shot preparation uses current transform');
+  const addedPathObject = mesh(); scene.add(addedPathObject);
+  check(pathSame(curve(), 'added object next shot matches independent queries').some(h => h.some(x => x.object === addedPathObject)), 'next shot includes newly added object');
+  scene.remove(addedPathObject);
+  check(pathSame(curve(), 'removed object next shot matches independent queries').every(h => h.length === 0), 'next shot excludes removed object');
+
+
+  // #714 private clustered geometry views preserve native metadata and source geometry ownership.
+  for (const indexed of [true, false]) {
+    clear();
+    const sourceBox = new T.BoxGeometry(2, 2, 2, 5, 5, 5);
+    const geometry = indexed ? sourceBox : sourceBox.toNonIndexed();
+    const originalBounds = new T.Box3(new T.Vector3(-2,-2,-2), new T.Vector3(2,2,2));
+    geometry.boundingBox = originalBounds;
+    const boundValues = boxValues(originalBounds), range = geometry.drawRange, groupValues = JSON.stringify(geometry.groups);
+    const clustered = new T.Mesh(geometry, Array.from({ length: 6 }, material)); scene.add(clustered);
+    prepareCombatWorld(scene, ghosts, camera); await waitReady(geometry);
+    const kind = indexed ? 'indexed' : 'nonindexed';
+    const clusteredHits = pathSame(curve(), `${kind} ready clusters preserve faceIndex/materialIndex/UV/normal`).flat();
+    check(clusteredHits.length > 0 && clusteredHits.every(h => h.object === clustered && h.uv && h.faceIndex !== undefined), `${kind} cluster hits retain source mesh and native metadata`);
+    check(geometry.boundingBox === originalBounds && boxValues(originalBounds) === boundValues && geometry.drawRange === range && range.start === 0 && range.count === Infinity && JSON.stringify(geometry.groups) === groupValues, `${kind} clusters leave authored bounds/range/groups unchanged`);
+    // Native raycast still tests a full triangle when count ends inside that triangle.
+    const firstFace = clusteredHits.find(h => h.distance > 0).faceIndex;
+    geometry.setDrawRange(firstFace * 3, 1);
+    pathSame(curve(), `${kind} partial-triangle drawRange matches native`);
+    check(geometry.drawRange === range && range.start === firstFace * 3 && range.count === 1, `${kind} partial source drawRange remains unchanged`);
+    geometry.setDrawRange(1, 899); pathSame(curve(), `${kind} misaligned drawRange uses native fallback`);
+    geometry.setDrawRange(0, Infinity);
+    const originalGroups = geometry.groups.map(g => ({ ...g }));
+    geometry.groups[0].start = 1; pathSame(curve(), `${kind} misaligned material group uses native fallback`);
+    geometry.groups = originalGroups;
+    geometry.groups[1] = { ...geometry.groups[1], start: 0 };
+    pathSame(curve(), `${kind} overlapping material groups use native fallback`);
+    geometry.groups = JSON.parse(groupValues);
+    scene.updateMatrixWorld(true);
+    const unbounded = combatWorldPath(scene, ghosts, camera, curve(), ray.layers);
+    ray.set(new T.Vector3(0,0,5), new T.Vector3(0,0,-1)); ray.near = 0; ray.far = Infinity;
+    const nativeInfinite = combatWorldHits(scene, ghosts, camera, ray), pathInfinite = unbounded(ray);
+    check(nativeInfinite.length === pathInfinite.length && nativeInfinite.every((h,i) => h.object === pathInfinite[i].object && h.faceIndex === pathInfinite[i].faceIndex && Math.abs(h.distance - pathInfinite[i].distance) < 1e-8), `${kind} nonfinite far uses native fallback`);
+    clustered.scale.x = 0;
+    pathSame(curve(), `${kind} singular transform uses native fallback`);
+    clustered.scale.x = 1;
+    // Unsafe CPU vertex deformation must never use the proxy's unmodified getVertexPosition.
+    const nativeVertex = T.Mesh.prototype.getVertexPosition;
+    clustered.getVertexPosition = function(i, target) { nativeVertex.call(this, i, target); target.x += .1; return target; };
+    pathSame(curve(), `${kind} custom getVertexPosition uses native fallback`);
+    geometry.dispose();
+  }
+
+  // Spatial reordered indices are eligible only for full-range scalar materials without groups.
+  for (const indexed of [true, false]) {
+    clear();
+    const box = new T.BoxGeometry(2,2,2,5,5,5), geometry = indexed ? box : box.toNonIndexed();
+    geometry.clearGroups();
+    const indexBefore = geometry.index, attributesBefore = geometry.attributes, indexValues = geometry.index?.array.slice();
+    const drawRangeBefore = geometry.drawRange, groupsBefore = geometry.groups;
+    const authoredSpatialBox = new T.Box3(new T.Vector3(-2,-2,-2), new T.Vector3(2,2,2));
+    geometry.boundingBox = authoredSpatialBox; const authoredValues = boxValues(authoredSpatialBox);
+    const spatialMesh = new T.Mesh(geometry, material()); scene.add(spatialMesh);
+    prepareCombatWorld(scene, ghosts, camera); await waitReady(geometry);
+    check(combatWorldState(geometry).spatialReady, `${indexed ? 'indexed' : 'nonindexed'} spatial reordered cache actually ready`);
+    const label = indexed ? 'indexed spatial' : 'nonindexed spatial';
+    check(pathSame(curve(), label + ' metadata/order matches native').some(h => h.length), label + ' actual hits retained');
+    const diagonal = [new T.Vector3(0,0,5), new T.Vector3(0,0,-5)];
+    const edgeHits = pathSame(diagonal, label + ' shared-diagonal equal-distance ordering matches native')[0];
+    check(edgeHits.length >= 4 && edgeHits.every(h => h.object === spatialMesh && h.uv && h.normal), label + ' coplanar edge hits keep source object/UV/normal');
+    check(geometry.index === indexBefore && geometry.attributes === attributesBefore && (!indexValues || indexValues.every((v,i) => geometry.index.array[i] === v)) && geometry.groups === groupsBefore && geometry.drawRange === drawRangeBefore && drawRangeBefore.start === 0 && drawRangeBefore.count === Infinity && geometry.boundingBox === authoredSpatialBox && boxValues(authoredSpatialBox) === authoredValues, label + ' leaves source index/attributes/groups/drawRange/authored bounds unchanged');
+    geometry.setDrawRange(600, 149);
+    pathSame(curve(), label + ' partial-range metadata matches native fallback');
+    geometry.setDrawRange(0, Infinity);
+    const spatialMetrics = combatWorldMetrics();
+    check(spatialMetrics.spatialBytes <= COMBAT.collision.spatialBudgetBytes, label + ' typed spatial cache respects cap');
+    geometry.dispose();
+  }
+
+  // Two coplanar overlapping triangle sets deliberately have reversed spatial-centroid order.
+  for (const indexed of [true, false]) {
+    clear();
+    const positions = [...Array.from({ length: 105 }, () => [-1,-1,0, 4,-1,0, 0,4,0]).flat(),
+      ...Array.from({ length: 105 }, () => [-4,-4,0, 1,-1,0, 0,1,0]).flat()];
+    const geometry = new T.BufferGeometry(); geometry.setAttribute('position', new T.Float32BufferAttribute(positions,3));
+    if (indexed) geometry.setIndex(Array.from({ length: positions.length / 3 }, (_,i) => i));
+    geometry.computeVertexNormals(); scene.add(new T.Mesh(geometry, material()));
+    prepareCombatWorld(scene, ghosts, camera); await waitReady(geometry);
+    pathSame([new T.Vector3(0,0,1), new T.Vector3(0,0,-1)], `${indexed ? 'indexed' : 'nonindexed'} overlapping spatial buckets retain equal-distance original face order`);
+    geometry.dispose();
+  }
+
+  // #714 spatial-only admission: no bitmap can be read as an all-empty grid.
+  const limits = { budgetBytes: COMBAT.collision.budgetBytes, spatialBudgetBytes: COMBAT.collision.spatialBudgetBytes, maxSpatialEntries: COMBAT.collision.maxSpatialEntries };
+  const waitSpatial = async geometry => {
+    const until = performance.now() + 15000;
+    while ((!combatWorldState(geometry).spatialReady || combatWorldState(geometry).pending) && performance.now() < until) await new Promise(r => setTimeout(r,10));
+    const state = combatWorldState(geometry);
+    check(state.spatialReady && !state.ready && !state.pending, 'spatial-only cache completes without bitmap readiness');
+  };
+  const onlyGeometry = () => { const g = new T.BoxGeometry(2,2,2,5,5,5); g.clearGroups(); return g; };
+  try {
+    COMBAT.collision.budgetBytes = 0;
+    clear(); let only = onlyGeometry(); scene.add(new T.Mesh(only, material()));
+    const initial = combatWorldMetrics(); prepareCombatWorld(scene, ghosts, camera);
+    pathSame(curve(), 'spatial-only pending native fallback matches'); await waitSpatial(only);
+    check(combatWorldMetrics().bitBytes === initial.bitBytes, 'spatial-only admission allocates no bitmap');
+    check(pathSame(curve(), 'spatial-only ready actual hits match').some(h => h.length), 'absent bitmap never creates false-empty rejection');
+    let position = only.attributes.position; position.setX(0, position.getX(0) + .1); position.needsUpdate = true;
+    check(!combatWorldState(only).spatialReady, 'spatial-only position version invalidates');
+    pathSame(curve(), 'spatial-only position rebuild fallback matches'); await waitSpatial(only);
+    const index = only.index.clone(); only.setIndex(index);
+    check(!combatWorldState(only).spatialReady, 'spatial-only index replacement invalidates');
+    pathSame(curve(), 'spatial-only index replacement fallback matches'); await waitSpatial(only);
+    index.needsUpdate = true; pathSame(curve(), 'spatial-only index version rebuild matches'); await waitSpatial(only);
+    only.dispose();
+    check(combatWorldMetrics().spatialBytes === initial.spatialBytes && combatWorldMetrics().spatialEntries === initial.spatialEntries, 'spatial-only replacement/disposal reclaims exact typed reservation');
+    clear(); only = onlyGeometry(); scene.add(new T.Mesh(only,material()));
+    COMBAT.collision.spatialBudgetBytes = combatWorldMetrics().spatialBytes;
+    prepareCombatWorld(scene, ghosts, camera);
+    check(!combatWorldState(only).pending && !combatWorldState(only).spatialReady, 'exhausted typed quota does not admit spatial-only cache');
+    check(pathSame(curve(), 'spatial-only exhausted-quota native fallback matches').some(h => h.length), 'quota fallback retains actual native hits');
+    COMBAT.collision.spatialBudgetBytes = limits.spatialBudgetBytes;
+    COMBAT.collision.maxSpatialEntries = combatWorldMetrics().spatialEntries;
+    prepareCombatWorld(scene, ghosts, camera);
+    check(!combatWorldState(only).pending, 'spatial entry quota also prevents admission');
+    COMBAT.collision.maxSpatialEntries = limits.maxSpatialEntries;
+    prepareCombatWorld(scene, ghosts, camera); await waitSpatial(only); only.dispose();
+
+    // Compact-width limits: exercise index 65535/65536 and face 65535/65536 without allocating renderers.
+    for (const [vertexCount, faceCount] of [[65536,210],[65537,210],[6,65536],[6,65537]]) {
+      clear();
+      const geometry = new T.BufferGeometry(), data = new Float32Array(vertexCount * 3);
+      data.set([5,5,0, 6,5,0, 5,6,0]); const last = vertexCount - 3;
+      data.set([-1,-1,0, 1,-1,0, 0,1,0], last * 3);
+      geometry.setAttribute('position',new T.Float32BufferAttribute(data,3));
+      const ids = new Uint32Array(faceCount * 3);
+      for (let face = 0; face < faceCount; face++) ids.set(face === faceCount - 1 ? [last,last+1,last+2] : [0,1,2],face*3);
+      geometry.setIndex(new T.Uint32BufferAttribute(ids,1)); scene.add(new T.Mesh(geometry,material()));
+      const before = combatWorldMetrics(); prepareCombatWorld(scene,ghosts,camera); await waitSpatial(geometry);
+      const indexBytes = vertexCount <= 65536 ? 2 : 4, faceBytes = faceCount <= 65536 ? 2 : 4;
+      const expected = faceCount * (3 * indexBytes + faceBytes) + (64+65+64)*4 + 64*6*8;
+      check(combatWorldMetrics().spatialBytes - before.spatialBytes === expected, `vertex${vertexCount}/face${faceCount} exact compact typed charge`);
+      const hits = pathSame([new T.Vector3(0,0,1),new T.Vector3(0,0,-1)], `vertex${vertexCount}/face${faceCount} compact metadata matches`)[0];
+      check(hits.length === 1 && hits[0].faceIndex === faceCount - 1 && hits[0].face.c === vertexCount - 1, `vertex${vertexCount}/face${faceCount} large ids are never truncated`);
+      geometry.dispose();
+      check(combatWorldMetrics().spatialBytes === before.spatialBytes, 'threshold cache disposal returns exact reservation');
+    }
+  } finally { Object.assign(COMBAT.collision,limits); }
+
+  // Instanced path selection retains Three's two sphere tests and ascending instance traversal.
+  clear();
+  const instanceGeometry = new T.BoxGeometry(1,1,1), instanceMaterial = material();
+  instanceGeometry.computeBoundingSphere();
+  const batch = new T.InstancedMesh(instanceGeometry, instanceMaterial, 3);
+  batch.setMatrixAt(0,new T.Matrix4()); batch.setMatrixAt(1,new T.Matrix4()); batch.setMatrixAt(2,new T.Matrix4().makeTranslation(8,0,0));
+  batch.computeBoundingSphere(); scene.add(batch);
+  const instanceBefore = combatWorldMetrics();
+  const overlapping = pathSame(curve(), 'instanced curved overlapping metadata/tie order matches').flat();
+  check(overlapping.some(h => h.instanceId === 0) && overlapping.some(h => h.instanceId === 1) && overlapping.every(h => h.object === batch), 'overlapping instances retain original object and instance ids');
+  const instanceAfter = combatWorldMetrics();
+  check(instanceAfter.pathSelectedInstances > instanceBefore.pathSelectedInstances && instanceAfter.pathSelectedInstances - instanceBefore.pathSelectedInstances < instanceAfter.pathInstances - instanceBefore.pathInstances, 'whole-path selection actually filters off-path instances');
+  batch.position.z = -.2; batch.scale.set(2,.5,-1);
+  check(pathSame(curve(), 'instanced translated nonuniform negative scale matches').some(h => h.length), 'transformed instanced path remains hittable');
+  batch.position.set(0,0,0); batch.scale.set(1,1,1);
+  batch.setMatrixAt(0,new T.Matrix4().makeTranslation(8,0,0)); batch.setMatrixAt(1,new T.Matrix4().makeTranslation(-8,0,0)); batch.instanceMatrix.needsUpdate = true; batch.computeBoundingSphere();
+  check(pathSame(curve(), 'instanced moved matrices next shot matches').every(h => h.length === 0), 'next shot drops old instance positions');
+  batch.setMatrixAt(2,new T.Matrix4()); batch.instanceMatrix.needsUpdate = true; batch.computeBoundingSphere();
+  check(pathSame(curve(), 'instanced changed matrix next shot matches').some(h => h.some(x => x.instanceId === 2)), 'next shot includes newly moved instance');
+  batch.count = 1; batch.computeBoundingSphere();
+  check(pathSame(curve(), 'instanced reduced count next shot matches').every(h => h.length === 0), 'reduced count excludes previously selected instance');
+  batch.count = 3; batch.computeBoundingSphere();
+  batch.boundingSphere = null; pathSame(curve(), 'missing object sphere native fallback matches');
+  instanceGeometry.boundingSphere = null; batch.boundingSphere = null; pathSame(curve(), 'missing geometry sphere native fallback matches');
+  const objectSphere = new T.Sphere(new T.Vector3(100,0,0),.1); batch.boundingSphere = objectSphere;
+  check(pathSame(curve(), 'authored object sphere exclusion matches').every(h => h.length === 0), 'original object sphere can reject otherwise hittable instance');
+  check(batch.boundingSphere === objectSphere, 'instance path retains authored object sphere identity');
+  const child = mesh(); child.position.z = 1; batch.add(child);
+  check(pathSame(curve(), 'rejected instanced object still visits children').some(h => h.some(x => x.object === child)), 'sphere rejection does not suppress child raycasts'); batch.remove(child);
+  batch.boundingSphere = new T.Sphere(new T.Vector3(),100);
+  const geometrySphere = new T.Sphere(new T.Vector3(100,0,0),.1); instanceGeometry.boundingSphere = geometrySphere;
+  check(pathSame(curve(), 'authored geometry sphere exclusion matches').every(h => h.length === 0), 'instance geometry sphere retains native exclusion');
+  check(instanceGeometry.boundingSphere === geometrySphere, 'instance path retains authored geometry sphere identity');
+  instanceGeometry.boundingSphere = new T.Sphere(new T.Vector3(),-1);
+  pathSame(curve(), 'negative authored geometry sphere preserves native fallback');
+  instanceGeometry.computeBoundingSphere();
+  const beforeGeometryMorph = combatWorldMetrics().pathInstances;
+  instanceGeometry.morphAttributes.position = [instanceGeometry.attributes.position.clone()];
+  pathSame(curve(), 'morph geometry instanced native fallback matches');
+  check(combatWorldMetrics().pathInstances === beforeGeometryMorph, 'morph geometry bypasses instance selection');
+  delete instanceGeometry.morphAttributes.position;
+  batch.material = Array.from({ length: 6 }, material);
+  check(pathSame(curve(), 'instanced array material metadata matches').some(h => h.length), 'array-material native semantics retained for selected instances');
+  batch.layers.set(1); check(pathSame(curve(), 'instanced mismatched layer matches').every(h => h.length === 0), 'nonmatching instanced layer excludes instance hits');
+  batch.add(child); check(pathSame(curve(), 'layer-mismatched instanced parent still visits child').some(h => h.some(x => x.object === child)), 'matching child survives parent layer mismatch'); batch.remove(child); batch.layers.set(0);
+  const originalMatrixAt = batch.getMatrixAt;
+  batch.getMatrixAt = function(i, target) { return originalMatrixAt.call(this,i,target); };
+  const beforeCustom = combatWorldMetrics().pathInstances; pathSame(curve(), 'custom getMatrixAt native fallback matches');
+  check(combatWorldMetrics().pathInstances === beforeCustom, 'custom getMatrixAt bypasses instance selection'); batch.getMatrixAt = originalMatrixAt;
+  batch.raycast = function(rc,hits) { return T.InstancedMesh.prototype.raycast.call(this,rc,hits); };
+  const beforeRaycast = combatWorldMetrics().pathInstances; pathSame(curve(), 'custom instanced raycast native fallback matches');
+  check(combatWorldMetrics().pathInstances === beforeRaycast, 'custom instanced raycast bypasses instance selection'); batch.raycast = T.InstancedMesh.prototype.raycast;
+  batch.morphTexture = {}; const beforeMorph = combatWorldMetrics().pathInstances; pathSame(curve(), 'morph instanced native fallback matches');
+  check(combatWorldMetrics().pathInstances === beforeMorph, 'morphTexture bypasses instance selection'); batch.morphTexture = null;
+  batch.material = undefined; check(pathSame(curve(), 'undefined instanced material native fallback matches').every(h => h.length === 0), 'undefined material never creates default proxy material hits');
+  instanceGeometry.dispose();
+
+  // Async validation retains solid semantics while priority cache construction and traversal yield.
+  const sameAsync = async (points,label) => {
+    const expected = pathSame(points,label + ' sync comparison').some(h => h.length);
+    const blocked = await combatWorldPathBlocked(scene,ghosts,camera,points,ray.layers,{ deadline: performance.now()+2000 });
+    check(blocked === expected,label + ' async blocked result matches'); return blocked;
+  };
+  clear(); const asyncGeometry = new T.BoxGeometry(2,2,2,5,5,5); asyncGeometry.clearGroups();
+  scene.add(new T.Mesh(asyncGeometry,material()));
+  await sameAsync(curve(),'pending async geometry');
+  check(combatWorldState(asyncGeometry).spatialReady, 'async validation waits for overlapping pending spatial cache');
+  await sameAsync(curve(),'ready async geometry');
+  await sameAsync([new T.Vector3(5,5,1),new T.Vector3(5,5,-1)],'clear async path');
+  const zero = [new T.Vector3(0,0,1),new T.Vector3(0,0,1)];
+  await sameAsync(zero,'zero-length boundary async path');
+  check(await combatWorldPathBlocked(scene,ghosts,camera,curve(),ray.layers,{cancelled:()=>true}) === null,'explicit initial cancellation returnsnull');
+  check(await combatWorldPathBlocked(scene,ghosts,camera,curve(),ray.layers,{deadline:performance.now()-1}) === null,'already expired deadline returnsnull');
+  asyncGeometry.dispose();
+
+  clear(); const parentAsync = new T.Group(); parentAsync.raycast = () => false; parentAsync.add(mesh()); scene.add(parentAsync);
+  await sameAsync(curve(),'async custom false propagation'); parentAsync.layers.set(1);
+  await sameAsync(curve(),'async parent layer mismatch');
+  clear(); const redirectedAsync = new T.Group(), destination = mesh(); destination.position.x = 3;
+  redirectedAsync.raycast = (rc,hits) => hits.push({distance:rc.far/2,object:destination,point:rc.ray.at(rc.far/2,new T.Vector3())});
+  scene.add(redirectedAsync,destination); await sameAsync(curve(),'async redirected accepted hit');
+  destination.material.transparent = true; await sameAsync(curve(),'async redirected transparent hit');
+
+  clear();
+  const irrelevant = new T.BufferGeometry(); irrelevant.setAttribute('position',new T.Float32BufferAttribute([100,0,0,101,0,0,100,1,0],3));
+  irrelevant.setIndex(new T.Uint16BufferAttribute(Array.from({length:600000},(_,i)=>i%3),1)); irrelevant.computeBoundingSphere();
+  const priority = new T.BoxGeometry(2,2,2,5,5,5); priority.clearGroups();
+  scene.add(new T.Mesh(irrelevant,material()),new T.Mesh(priority,material()));
+  prepareCombatWorld(scene,ghosts,camera);
+  check(await combatWorldPathBlocked(scene,ghosts,camera,curve(),ray.layers,{deadline:performance.now()+2000}) === true,'async overlapping priority geometry still blocks');
+  check(combatWorldState(priority).spatialReady && !combatWorldState(irrelevant).spatialReady,'overlapping small pending cache completes before large off-path cache');
+  irrelevant.dispose(); priority.dispose();
+
+  clear();
+  const crowded = new T.Group(); for(let i=0;i<6000;i++) crowded.add(new T.Group()); scene.add(crowded);
+  const slicesBefore = combatWorldMetrics().asyncSlices;
+  let heartbeat = false; setTimeout(()=>{heartbeat=true;},0);
+  check(await combatWorldPathBlocked(scene,ghosts,camera,[new T.Vector3(0,0,1),new T.Vector3(0,0,-1)],ray.layers,{deadline:performance.now()+2000}) === false,'cooperative empty-world traversal completes clear');
+  check(heartbeat && combatWorldMetrics().asyncSlices>slicesBefore,'long traversal yields to event-loop heartbeat');
+  let cancelAsync = false; setTimeout(()=>{cancelAsync=true;},0);
+  check(await combatWorldPathBlocked(scene,ghosts,camera,curve(),ray.layers,{cancelled:()=>cancelAsync,deadline:performance.now()+2000}) === null,'cancellation during traversal yield returnsnull');
+  // A blocker inserted while preparation yields must be considered by subsequent fresh traversal.
+  const inserted = mesh(); setTimeout(()=>{scene.add(inserted);scene.updateMatrixWorld(true);},0);
+  check(await combatWorldPathBlocked(scene,ghosts,camera,curve(),ray.layers,{deadline:performance.now()+2000}) === true,'new world object during await is checked instead of stale clear');
+
+  clear();
+  const slowCustom = new T.Group(), reported = mesh(); reported.position.x=3; scene.add(slowCustom,reported);
+  let invoke = 0;
+  slowCustom.raycast = (_rc,hits) => { invoke++; const until=performance.now()+15; while(performance.now()<until){}; hits.push({distance:0,object:reported,point:new T.Vector3()}); };
+  check(await combatWorldPathBlocked(scene,ghosts,camera,[new T.Vector3(0,0,1),new T.Vector3(0,0,-1)],ray.layers,{deadline:performance.now()+10}) === null && invoke>0,'deadline overrun inside custom raycast conservatively returnsnull');
+
+  // Shared urgency is a caller-owned priority, and invalidation cannot transfer an ownerless lease.
+  const waitingGeometry = () => {
+    const g = new T.BufferGeometry(); g.setAttribute('position',new T.Float32BufferAttribute([-1,-1,0,1,-1,0,0,1,0],3));
+    g.setIndex(new T.Uint16BufferAttribute(Array.from({length:300000},(_,i)=>i%3),1)); return g;
+  };
+  const waitPath = [new T.Vector3(0,0,1),new T.Vector3(0,0,-1)];
+  clear(); let waiting = waitingGeometry(); scene.add(new T.Mesh(waiting,material())); scene.updateMatrixWorld(true);
+  let cancelFirst = false, cancelSecond = false;
+  const firstWaiter = combatWorldPathBlocked(scene,ghosts,camera,waitPath,ray.layers,{cancelled:()=>cancelFirst,deadline:performance.now()+2000});
+  const secondWaiter = combatWorldPathBlocked(scene,ghosts,camera,waitPath,ray.layers,{cancelled:()=>cancelSecond,deadline:performance.now()+2000});
+  check(combatWorldState(waiting).urgentUsers === 2 && combatWorldState(waiting).urgent,'two pending callers own one shared urgent cache');
+  cancelFirst = true; check(await firstWaiter === null,'first urgent caller cancellation returnsnull');
+  check(combatWorldState(waiting).urgentUsers === 1 && combatWorldState(waiting).urgent,'remaining caller retains shared urgency');
+  cancelSecond = true; check(await secondWaiter === null,'last urgent caller cancellation returnsnull');
+  check(combatWorldState(waiting).urgentUsers === 0 && !combatWorldState(waiting).urgent,'last cancellation releases urgent priority'); waiting.dispose();
+  clear(); waiting = waitingGeometry(); scene.add(new T.Mesh(waiting,material())); scene.updateMatrixWorld(true);
+  check(await combatWorldPathBlocked(scene,ghosts,camera,waitPath,ray.layers,{deadline:performance.now()+1}) === null,'pending urgent build deadline resolvesnull');
+  check(combatWorldState(waiting).urgentUsers === 0 && !combatWorldState(waiting).urgent,'deadline also releases urgent priority'); waiting.dispose();
+  clear(); waiting = waitingGeometry(); scene.add(new T.Mesh(waiting,material())); scene.updateMatrixWorld(true);
+  const invalidatingWaiter = combatWorldPathBlocked(scene,ghosts,camera,waitPath,ray.layers,{deadline:performance.now()+2000});
+  check(combatWorldState(waiting).urgentUsers === 1,'pending invalidation probe acquires urgency');
+  waiting.attributes.position.setX(0,-2); waiting.attributes.position.needsUpdate = true;
+  check(await invalidatingWaiter === null,'invalidated pending entry conservatively cancels query');
+  check(combatWorldState(waiting).urgentUsers === 0 && !combatWorldState(waiting).urgent,'invalidated replacement never inherits ownerless urgent priority'); waiting.dispose();
 } catch (error) { check(false, error.stack || String(error)); }
 lines.push(`${failures ? 'FAIL' : 'ALL PASS'} ${checks} checks; actual Three, no WebGL`);
 document.getElementById('out').textContent = lines.join('\n');

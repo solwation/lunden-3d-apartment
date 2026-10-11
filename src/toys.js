@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { TOYS as T, LEVELS } from './config.js';
+import { stepNerf, nerfFloor } from './nerf.js';
 import { sfx } from './audio.js';
 import { Holdable } from './holdable.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
@@ -41,8 +42,8 @@ class Darts {
    * it stops where `blocked` finds a wall and goes `life` s after it was fired. */
   fire(from, dir, color = 0x1f6fff, remote = null) {
     const d = this.list[this.next++ % this.list.length];
-    Object.assign(d, { color, spent: false, from: from.clone(), remote, born: performance.now() });
-    d.floor = from.y > LEVELS[1].floor + 0.3 ? LEVELS[1].floor : LEVELS[0].floor; // the shooter's floor
+    Object.assign(d, { color, spent: false, from: from.clone(), remote, born: performance.now(), travelled: 0 });
+    d.floor = nerfFloor(from); // the shooter's floor
     d.g.position.copy(from);
     d.v.copy(dir).multiplyScalar(remote?.speed ?? T.nerf.dart.speed);
     d.g.lookAt(from.clone().add(dir));
@@ -55,12 +56,12 @@ class Darts {
     for (const d of this.list) {
       if (d.remote && d.g.visible && performance.now() - d.born > d.remote.life * 1000) { d.g.visible = false; d.flying = false; }
       if (!d.flying) continue;
-      d.v.y -= T.nerf.dart.gravity * dt;
       const from = d.g.position.clone();
-      d.g.position.addScaledVector(d.v, dt);
+      d.travelled += stepNerf(d.g.position, d.v, dt, T.nerf.dart.range - d.travelled, d.floor + 0.008);
       if (d.remote) { if (d.remote.blocked?.(from, d.g.position)) { d.flying = false; continue; } } else if (!d.spent && this.marks) this.impact(d, from);
       d.g.lookAt(d.g.position.clone().add(d.v));
       if (d.g.position.y <= d.floor + 0.008) { d.g.position.y = d.floor + 0.008; d.flying = false; d.g.rotation.x = 0; }
+      else if (d.flying && d.travelled >= T.nerf.dart.range - 1e-7) { d.g.visible = false; d.flying = false; }
     }
   }
 

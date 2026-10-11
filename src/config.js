@@ -2054,7 +2054,8 @@ export const TOYS = {
   // (the long one sits further from the bandolier). Shapes after Nerf Elite 2.0 / N-Strike, sizes ours.
   nerf: { level: 1, x: 2.752, face: 1, y: 1.35, z: 9.38, board: [1.3, 0.95], spread: 0.32, colors: [0xff7a1a, 0x1f8bff, 0xffd21a],
     models: ['pistol', 'drum', 'long'], accents: [0xf2f2f2, 0xf2f2f2, 0x2f3338], shift: [0, 0, -0.08],
-    dart: { speed: 9, gravity: 6, max: 8 }, held: { x: 0.18, y: -0.15, z: -0.45 } },
+    // #714 play tuning guess: useful 25 m arc, 30 m/s launch and gentler foam-dart drop; server shares range.
+    dart: { range: 25, speed: 30, gravity: 4, max: 8 }, held: { x: 0.18, y: -0.15, z: -0.45 } },
   wands: { level: 1, x: 2.61, y: 1.45, z: [2.85, 3.2, 3.55], colors: [0xff7ad0, 0x9b7bff, 0x5fd7ff],
     held: { x: 0.2, y: -0.22, z: -0.42 }, headband: { z: 3.9 }, reach: 8 }, // reach: m to the surface the magic lands on (#97)
   // #604: in the hall's EL/C cabinet, lying on top of the fuse box (x 0.21…0.32, z 0.51…0.82, top y 1.75), at hand in a
@@ -2880,7 +2881,7 @@ export const GHOSTS = { enabled: true, hz: 5, move: 0.02, turn: 0.03, beatMs: 10
 // room's welcome says otherwise. The HUD's hearts only while a fight is on. All our picks (*guess*).
 export const COMBAT = { weapons: ['saber', 'nerf', 'wand', 'rifle', 'ball', 'bow', 'web', 'jetpack'], lives: 10, solid: 1,
   // Technical collision limits: fixed bitsets plus reserved bookkeeping, built during short idle slices (#715).
-  collision: { cells: 32, budgetBytes: 1024 * 1024, recordReserve: 4096, buildMs: 2, minTriangles: 200, queryCells: 512 },
+  collision: { cells: 32, clusters: 32, spatialBudgetBytes: 16 * 1024 * 1024, maxSpatialEntries: 1024, predictionMs: 2000, budgetBytes: 1024 * 1024, recordReserve: 4096, buildMs: 2, minTriangles: 200, queryCells: 512 },
   body: [0.25, 1.75], hitRadius: 0.4, saberCone: 0.5, jetBelow: [0.3, 4], jetAcross: 1.2, flash: 0.35,
   // the others' shots drawn here: at most `lines` streaks (rifle, wand, web, flames) and `balls` balls at once, each gone
   // after `shotLife` s; their darts reuse the blasters' pool (in `dartColor`)

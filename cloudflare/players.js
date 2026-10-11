@@ -1,3 +1,5 @@
+import { TOYS } from '../src/config.js';
+
 // Other players as ghosts (#666): one Durable Object room for everybody (`idFromName('world')`), WebSockets with the
 // Hibernation API. A client sends its position / heading at most 5 times a second and only when it changed (a heartbeat
 // 'p' every 10 s is answered by the runtime's auto-response 'q', which never wakes the object); the room passes each
@@ -41,7 +43,7 @@ export const COMBAT = {
   lives: 10, slack: 2.5, perMinute: 60, points: 5, from: 4, // from: a shot starts at most this far (m) from the shooter's last known feet
   weapons: {
     saber: { range: 2.5, every: 0.5 },   // the lightsaber: a swing at arm's length
-    nerf: { range: 15, every: 0.4 },     // a Nerf blaster's dart
+    nerf: { range: TOYS.nerf.dart.range, every: 0.4 },     // a Nerf blaster's dart
     wand: { range: 12, every: 0.6 },     // a magic wand's spell
     rifle: { range: 40, every: 0.25 },   // the AK-47 (hits are sent at most this often whatever its rate of fire)
     ball: { range: 10, every: 1 },       // the basketball, thrown

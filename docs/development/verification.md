@@ -78,12 +78,16 @@ tools/combattest.cjs   fights (#667): three pages (A, B, C) against dev.mjs: una
                        pool, drawn only), A's thrown ball on B (screenshot), ten hits (points / deductions / lives), out of lives → start,
                        full lives, weapon and stats kept; C's screenshot.
                        Pages drive ghosts / combat updates themselves (SwiftShader frames take seconds); ~10 min. Also players.test.mjs
-tools/combatworldtest.html combat collision broad phase (#715), actual Three modules without WebGL: legacy hit equivalence,
-                       authored bounding-box identity/content, private-grid readiness and empty-space rejection, pending fallback,
-                       exact edge/corner/zero-length/finite near-far queries, nonuniform transforms, position/interleaved/index
-                       mutation, disposal/accounting caps, layers/moving/visibility/material arrays, custom false/redirected hits,
-                       instances and deforming geometry bypass. Open the page via devserve; #out reports ALL PASS/FAIL.
-                       This focused fixture is not a full apartment frame benchmark or a physical-phone PvP validation.
+tools/combatworldtest.html combat collision (#715/#714), actual Three modules without WebGL: 459 focused checks cover native
+                       hit/face/UV/normal equivalence, private grid/spatial-index quotas and ownership, authored bounds,
+                       mutations/disposal, layers/custom propagation, instanced paths, curved finite segments, cooperative
+                       yielding/deadlines/cancellation and shared urgent-build ownership. #out reports ALL PASS/FAIL.
+                       This fixture does not measure apartment FPS or physical-phone PvP.
+tools/nerfcombattest.html Nerf (#714), small rendered actual-module scene and two players against local dev.mjs on 8718:
+                       25 m server rule, actual muzzle/visible dart at 22 m, floor/range stops, wall/miss/capsule ordering,
+                       confirmed nonpositional WebAudio, mute and denial. Separate transport-spy lifecycle checks cover
+                       deferred snapshot, one normal shot message, reset/disconnect/unarmed, deadline and queue overflow.
+                       Start `node cloudflare/dev.mjs 8718 testtoken`; #out reports 32 checks. Keep nerftest's paint regression.
 tools/ghosttest.cjs    other players as ghosts (#666): two Playwright pages against `node cloudflare/dev.mjs 8146 testtoken` (real ws:// via
                        cloudflare/devws.mjs): ?mp=0 / no cloud off, see each other with tags Olof / "Anonym", position, standing still sends
                        nothing, a move arrives interpolated, the room's count, a closed / hidden tab disconnects; screenshots into SHOTS.

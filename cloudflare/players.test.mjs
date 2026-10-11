@@ -250,3 +250,25 @@ test('ghost score is forwarded, included on welcome and bounded like leaderboard
     assert.equal(b.states().at(-1).score, expected);
   }
 });
+
+test('Nerf (#714): shared longer range accepts 22 m, rejects range/rate/unarmed and relays misses without hits', async () => {
+  const { TOYS } = await import('../src/config.js');
+  assert.equal(COMBAT.weapons.nerf.range, TOYS.nerf.dart.range);
+  const env = setup(), a = await connect(env, 'A'), b = await connect(env, 'B'), id = b.got[0].i;
+  const hits = () => a.got.filter((m) => m.t === 'hit');
+  a.send({ p: [0, 0, 0], r: 0, h: 'nerf' }); b.send({ p: [0, 0, -22], r: 0, h: 'nerf' }); await settle(env);
+  now += 1000;
+  const shot = { t: 'a', w: 'nerf', o: [0, 1.5, 0], d: [0, 0, -1], s: TOYS.nerf.dart.speed, to: id };
+  a.send(shot); await settle(env);
+  assert.equal(hits().length, 1, 'server confirms beyond former 15 m limit');
+  a.send(shot); await settle(env);
+  assert.equal(hits().length, 1, 'same rate rule rejects immediate repeat');
+  now += 1000; a.send({ ...shot, to: undefined }); await settle(env);
+  assert.equal(hits().length, 1, 'miss does not produce hit confirmation');
+  b.send({ p: [0, 0, -(TOYS.nerf.dart.range + COMBAT.slack + 1)], r: 0, h: 'nerf' }); await settle(env);
+  now += 1000; a.send(shot); await settle(env);
+  assert.equal(hits().length, 1, 'beyond shared range plus existing slack is denied');
+  b.send({ p: [0, 0, -22], r: 0 }); await settle(env);
+  now += 1000; a.send(shot); await settle(env);
+  assert.equal(hits().length, 1, 'unarmed target is denied');
+});

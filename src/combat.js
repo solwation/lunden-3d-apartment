@@ -1,6 +1,7 @@
 import * as THREE from 'three';
-import { COMBAT as C } from './config.js';
-import { combatWorldHits, prepareCombatWorld } from './combatworld.js';
+import { COMBAT as C, TOYS } from './config.js';
+import { stepNerf, nerfFloor } from './nerf.js';
+import { combatWorldHits, combatWorldPath, combatWorldPathBlocked, prepareCombatWorld } from './combatworld.js';
 
 // Combat between players (#667) on top of the ghosts (#666, src/ghosts.js; the room's check: cloudflare/players.js).
 // Only between two players who both hold a weapon (COMBAT.weapons; main.js `weaponKey`): they are drawn solid for each
@@ -26,6 +27,23 @@ export function rayToSegment(o, d, len, a, b) {
   return [p1.distanceTo(p2), s];
 }
 
+/** First entry into a player's vertical capsule on a finite Nerf segment; nearest contact wins. */
+export function nerfContact(origin, direction, length, feet) {
+  const a = feet.clone().setY(feet.y + C.body[0]), b = feet.clone().setY(feet.y + C.body[1]);
+  const [distance, closest] = rayToSegment(origin, direction, length, a, b);
+  if (distance > C.hitRadius) return null;
+  const inside = (along) => {
+    const x = origin.x + direction.x * along - feet.x, z = origin.z + direction.z * along - feet.z;
+    const y = origin.y + direction.y * along;
+    const dy = y - THREE.MathUtils.clamp(y, a.y, b.y);
+    return x * x + dy * dy + z * z <= C.hitRadius ** 2;
+  };
+  if (inside(0)) return 0;
+  let low = 0, high = closest;
+  for (let i = 0; i < 24; i++) { const middle = (low + high) / 2; if (inside(middle)) high = middle; else low = middle; }
+  return high;
+}
+
 export class Combat {
   /** ghosts (Ghosts), camera, scene, weapon(): key or '', feet(): our feet (Vector3), jetpack, onDie(): back to the start; score / hurt / sfx hooks. */
   constructor({ ghosts, camera, scene, weapon, feet, jetpack = null, darts = null, sparkles = null, arrows = null, onDie = () => {}, onHit = () => {}, onHurt = () => {}, sfx = null }) {
@@ -45,6 +63,7 @@ export class Combat {
     this.lineMesh.userData.moving = true;
     this.lines = [...Array(n)].map(() => ({ life: 0, a: new THREE.Vector3(), b: new THREE.Vector3(), col: new THREE.Color() }));
     this.nextLine = 0;
+    this.nerfPending = [];
     const ballGeo = new THREE.SphereGeometry(0.115, 12, 8), ballMat = new THREE.MeshLambertMaterial({ color: 0xd8641e });
     this.balls = [...Array(C.balls)].map(() => { const m = new THREE.Mesh(ballGeo, ballMat); m.visible = false; m.userData.moving = true; m.raycast = () => {}; scene.add(m); return { m, v: new THREE.Vector3(), life: 0, flying: false }; });
     this.nextBall = 0;
@@ -103,11 +122,54 @@ export class Combat {
     return null;
   }
 
+  /** A Nerf hit along the actual muzzle arc, before the first wall/floor or its travel limit. */
+  nerfCandidate(shot, range) {
+    const p = shot.o.clone(), velocity = shot.d.clone().multiplyScalar(shot.s || TOYS.nerf.dart.speed);
+    const floor = nerfFloor(p) + 0.008, foes = this.foes(), limit = Math.min(range, TOYS.nerf.dart.range);
+    const points = [p.clone()];
+    let travelled = 0, target = null;
+    while (travelled < limit - 1e-7) {
+      const next = p.clone();
+      travelled += stepNerf(next, velocity, 0.02, limit - travelled, floor);
+      const direction = next.clone().sub(p), length = direction.length();
+      if (!length) break;
+      direction.divideScalar(length);
+      let best = null;
+      for (const foe of foes) {
+        const along = nerfContact(p, direction, length, foe.feet);
+        if (along !== null && (!best || along < best.along)) best = { foe, along };
+      }
+      if (best) { target = best.foe; points.push(p.clone().addScaledVector(direction, best.along)); break; }
+      points.push(next.clone());
+      if (next.y <= floor) break;
+      p.copy(next);
+    }
+    if (!target) return null; // A miss needs no whole-scene obstacle queries.
+    return { target, points };
+  }
+
+  aimNerf(shot, range) {
+    const candidate = this.nerfCandidate(shot, range);
+    if (!candidate) return null;
+    const { target, points } = candidate;
+    const layers = this.camera.layers;
+    const hits = combatWorldPath(this.scene, this.ghosts.group, this.camera, points, layers);
+    ray.layers.mask = layers.mask; ray.camera = this.camera;
+    for (let i = 1; i < points.length; i++) {
+      const direction = points[i].clone().sub(points[i - 1]), length = direction.length();
+      if (!length) continue;
+      ray.set(points[i - 1], direction.divideScalar(length)); ray.far = length;
+      if (hits(ray).length) return null;
+    }
+    return target;
+  }
+
   /** Whom `key` hits now: the nearest armed player along the view (the saber: in front within reach; the bow: on the
    * arrow's arc, `shot`), or null. */
   aim(key, shot = null) {
     const W = this.rules.weapons?.[key];
     if (!W) return null;
+    if (key === 'nerf' && shot) return this.aimNerf(shot, W.range);
     if (key === 'bow' && shot?.s) return this.aimArc(shot.o, shot.d.clone().multiplyScalar(shot.s), W.range);
     this.camera.getWorldPosition(eye);
     this.camera.getWorldDirection(dir);
@@ -136,6 +198,30 @@ export class Combat {
    * eye and the view. A hit adds `to` (the room checks it). Returns the ghost aimed at, or null. */
   fire(key, shot = null, held = false) { // held: the caller checked we held `key` when it was used
     if (!this.ghosts.connected || (!held && this.weapon() !== key) || !C.weapons.includes(key) || !this.foes().length) return null;
+    if (key === 'nerf' && shot) {
+      const launch = { o: shot.o.clone(), d: shot.d.clone(), s: shot.s }, candidate = this.nerfCandidate(launch, this.rules.weapons.nerf.range);
+      const layers = new THREE.Layers(); layers.mask = this.camera.layers.mask;
+      const job = { done: false, cancel: false, finish: null };
+      const valid = () => this.ghosts.connected && this.weapon() === key;
+      job.finish = target => {
+        if (job.done) return;
+        job.done = true;
+        const at = this.nerfPending.indexOf(job); if (at >= 0) this.nerfPending.splice(at, 1);
+        if (job.cancel || !valid()) return;
+        this.lastShot = { w: key, o: launch.o.toArray(), d: launch.d.toArray(), s: launch.s ?? 0, to: target?.id ?? null };
+        this.ghosts.fire({ w: key, o: launch.o.toArray(), d: launch.d.toArray(), s: launch.s, to: target?.id });
+        this.fired++;
+      };
+      if (!candidate) { job.finish(null); return null; }
+      while (this.nerfPending.length >= TOYS.nerf.dart.max) this.nerfPending[0].finish(null);
+      this.nerfPending.push(job);
+      const deadline = performance.now() + C.collision.predictionMs;
+      combatWorldPathBlocked(this.scene, this.ghosts.group, this.camera, candidate.points, layers,
+        { deadline, cancelled: () => job.done || job.cancel || !valid() }).then(blocked => {
+          job.finish(blocked === false ? candidate.target : null);
+        }, () => job.finish(null));
+      return null;
+    }
     const g = this.aim(key, shot);
     this.camera.getWorldPosition(eye);
     this.camera.getWorldDirection(dir);
@@ -218,6 +304,7 @@ export class Combat {
         }
       }
     }
+    for (const job of [...this.nerfPending]) if (!this.ghosts.connected || this.weapon() !== 'nerf') { job.cancel = true; job.finish(null); }
     this.moveShots(dt);
     const on = this.active;
     this.el.hidden = !on;
@@ -229,6 +316,7 @@ export class Combat {
   hit(m, g) {
     this.hits++;
     this.onHitCb(m, g);
+    if (m.w === 'nerf') this.sfx?.playerHit?.();
     if (g) this.sfx?.splat?.(g.feet.clone().setY(g.feet.y + 1.2));
   }
 
@@ -244,5 +332,8 @@ export class Combat {
   }
 
   /** A new connection starts with full lives (the room's count does too). */
-  reset() { this.lives = this.maxLives; }
+  reset() {
+    this.lives = this.maxLives;
+    for (const job of [...this.nerfPending]) { job.cancel = true; job.finish(null); }
+  }
 }

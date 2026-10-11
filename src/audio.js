@@ -944,6 +944,13 @@ export const sfx = {
     noise(t, 0.35, d, { type: 'bandpass', freq: 2600, q: 0.7, gain: 0.3, attack: 0.04 });
     noise(t + 0.05, 0.25, d, { type: 'highpass', freq: 4000, gain: 0.12, attack: 0.03 });
   },
+  /** Server-confirmed Nerf player hit: a short rising cue at the listener, separate from the shot. */
+  playerHit() {
+    if (!ready()) return;
+    const t = ctx.currentTime, d = out();
+    tone(t, 0.06, d, { type: 'sine', from: 880, to: 1320, gain: 0.16 });
+    tone(t + 0.055, 0.07, d, { type: 'sine', from: 1320, to: 1760, gain: 0.12 });
+  },
   nerf(pos) {
     if (!ready()) return;
     const t = ctx.currentTime, d = out(pos, 0.8);

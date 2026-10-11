@@ -521,3 +521,5 @@ before as well, #704); phone kitchen 437 230 → 426 064, park 579 166 → 571 2
 by the warm-up like every scene material. No distance LOD: an InstancedMesh draws every lobe; fewer cards on phones only.
 
 Combat collision (#715) uses a capped conservative private occupancy grid, prepared incrementally with native-raycast fallback. [Actual-scene CPU update measurements and cold-build limitations](../validation/issue-715/README.md) document the confirmed desktop gain; these are not rendered-frame/FPS measurements or physical-phone validation.
+
+Nerf (#714) adds bounded private spatial indices and per-shot instanced selection, with cooperative obstacle validation and a conservative 2 s deadline. [CPU-only apartment validation, preparation and cold-miss limitations](../validation/issue-714/README.md) separate the actual scene from small-module/Worker tests; no measured FPS or physical-phone claim.
