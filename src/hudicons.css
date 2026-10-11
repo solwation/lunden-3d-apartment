@@ -36,20 +36,70 @@ body.hud-no-blur .hud-button, body.hud-no-blur #choices button { backdrop-filter
 .compass-letter { position: absolute; left: 50%; top: 50%; font: 600 10px/1 system-ui,sans-serif; text-shadow: 0 1px 2px #000; transform: translate(-50%,-50%) rotate(calc(var(--compass-angle) + var(--cardinal))) translateY(calc(var(--compass-size) * -.37)) rotate(calc(0deg - var(--compass-angle) - var(--cardinal))); }
 @media (max-width: 600px) { #compass { width: var(--compass-compact); height: var(--compass-compact); top: calc(var(--compass-narrow-top) + var(--st)); } .compass-letter { transform: translate(-50%,-50%) rotate(calc(var(--compass-angle) + var(--cardinal))) translateY(calc(var(--compass-compact) * -.37)) rotate(calc(0deg - var(--compass-angle) - var(--cardinal))); } }
 
-/* #582: the top-right touch shortcuts (furniture, stats, sound, pause) as one segmented glass badge. The group is
-   display: contents off touch, so the desktop mute button keeps its own bottom-right place. */
-#hud-top { display: contents; }
-body.touch #hud-top { display: flex; position: fixed; right: calc(16px + var(--sr)); top: calc(16px + var(--st)); overflow: hidden;
-  border-radius: var(--badge-radius, 8px); background: var(--badge-bg, var(--hud-glass)); border: var(--badge-edge, 1px solid var(--hud-edge)); box-shadow: var(--badge-shadow, 0 2px 8px rgba(0,0,0,.2));
-  backdrop-filter: blur(var(--hud-blur)); -webkit-backdrop-filter: blur(var(--hud-blur)); }
-body.touch #hud #hud-top > .hud-button { display: flex; align-items: center; justify-content: center; position: static; width: 48px; height: 48px; margin: 0;
-  border: 0; border-radius: 0; background: transparent; box-shadow: none; opacity: 1; backdrop-filter: none; -webkit-backdrop-filter: none; touch-action: manipulation; }
-body.touch #hud #hud-top > .hud-button + .hud-button { border-left: 1px solid rgba(255,255,255,.22); }
-body.touch #hud #hud-top > .hud-button:is(.on,[aria-pressed=true]) { background: rgba(255,255,255,.26); box-shadow: inset 0 0 0 1px rgba(255,255,255,.35); }
-body.touch #hud #hud-top > .hud-button:active { background: rgba(255,255,255,.4); }
-body.touch #hud #hud-top > .hud-button:focus-visible { outline: 2px solid #fff; outline-offset: -4px; }
-body.hud-no-blur.touch #hud-top { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgba(24,30,36,.78); }
-body.hud-no-blur.touch #hud #hud-top > .hud-button { background: transparent !important; }
-body.hud-no-blur.touch #hud #hud-top > .hud-button:is(.on,[aria-pressed=true]) { background: rgba(255,255,255,.26) !important; }
-body.hud-no-blur.touch #hud #hud-top > .hud-button:active { background: rgba(255,255,255,.4) !important; }
-body.touch #hud #hud-top > .hud-button:disabled { opacity: .38; cursor: default; }
+/* #707: shared badge shell and half-cell width module. Weather + temperature form an undivided pair;
+   clock and visitors use one cell, points two, and every shortcut one. No DOM replacement/listener changes. */
+:root {
+  --badge-bg: rgba(20,35,45,.55); --badge-radius: 8px; --badge-edge: 1px solid rgba(255,255,255,.18);
+  --badge-shadow: 0 2px 6px rgba(0,0,0,.18); --badge-divider: 1px solid rgba(255,255,255,.22);
+  --badge-cell: 48px; --badge-unit: calc(var(--badge-cell) / 2); --badge-inset: 16px;
+  --badge-top: calc(16px + var(--st)); --hud-badge-bottom: calc(var(--badge-top) + var(--badge-cell) + 10px);
+}
+#hud #score, #hud #hud-top {
+  position: fixed; top: var(--badge-top); height: calc(var(--badge-cell) + 2px); padding: 0; margin: 0;
+  color: #fff; background: var(--badge-bg); border: var(--badge-edge); border-radius: var(--badge-radius);
+  box-shadow: var(--badge-shadow); box-sizing: border-box; overflow: hidden;
+  backdrop-filter: blur(var(--hud-blur)); -webkit-backdrop-filter: blur(var(--hud-blur));
+}
+#hud #score {
+  left: calc(var(--badge-inset) + var(--sl)); display: grid;
+  grid-template-columns: var(--badge-unit) var(--badge-cell) var(--badge-cell) calc(var(--badge-cell) * 2) var(--badge-cell);
+  grid-template-rows: var(--badge-cell); gap: 0; pointer-events: none; font: 13px/1.1 system-ui,sans-serif;
+}
+body.touch #hud #score { grid-template-columns: var(--badge-unit) var(--badge-cell) var(--badge-cell) calc(var(--badge-cell) * 2) var(--badge-cell) var(--badge-cell); }
+#hud #score > :is(#weather,#temp,#level,.score-main,#presence) {
+  height: var(--badge-cell); min-width: 0; margin: 0; padding: 0; box-sizing: border-box;
+  display: flex; align-items: center; justify-content: center; white-space: nowrap; font-variant-numeric: tabular-nums;
+}
+#hud #score #weather { grid-column: 1; grid-row: 1; }
+#hud #score #temp { grid-column: 2; grid-row: 1; font-size: 16px; font-weight: 600; }
+#hud #score #level { grid-column: 3; grid-row: 1; font-size: 13px; font-weight: 600; border-left: var(--badge-divider); }
+#hud #score .score-main { grid-column: 4; grid-row: 1; position: relative; flex-direction: column; gap: 2px; border-left: var(--badge-divider); }
+#hud #score .label { font-size: 10px; font-weight: 500; opacity: .75; }
+#hud #score .score-val { font-size: calc(var(--badge-cell) * .38); font-weight: 750; }
+#hud #score .plus { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 4px; box-sizing: border-box; white-space: normal; text-align: center; font-size: calc(var(--badge-cell) * .38); font-weight: 700; color: #ffd76a; }
+#hud #score .plus.minus { font-size: 10px; line-height: 1.15; color: #ff6b5e; }
+#hud #score .score-main:has(.plus:not(:empty)) > :is(.label,.score-val) { visibility: hidden; }
+#hud #score #presence { grid-column: 5; grid-row: 1; gap: 4px; border-left: var(--badge-divider); font-size: 11px; opacity: .85; }
+#hud #presence .presence-count { font-size: 12px; font-weight: 600; }
+#hud #score #terminal-btn { display: none; }
+#hud #hud-top { right: calc(var(--badge-inset) + var(--sr)); display: flex; }
+body #hud #hud-top > .hud-button, body.touch #hud #score #terminal-btn {
+  display: flex; align-items: center; justify-content: center; position: static; flex: none;
+  width: var(--badge-cell); height: var(--badge-cell); min-width: var(--badge-cell); min-height: var(--badge-cell);
+  padding: 0; margin: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; opacity: 1;
+  backdrop-filter: none; -webkit-backdrop-filter: none; touch-action: manipulation;
+}
+body.touch #hud #score #terminal-btn { grid-column: 6; grid-row: 1; border-left: var(--badge-divider); pointer-events: auto; }
+body #hud #hud-top > .hud-button + .hud-button { border-left: var(--badge-divider); }
+#hud :is(#score,#hud-top) .hud-icon { width: 22px; height: 22px; }
+body #hud #hud-top > .hud-button:is(.on,[aria-pressed=true]) { background: rgba(255,255,255,.26); box-shadow: inset 0 0 0 1px rgba(255,255,255,.35); }
+body #hud #hud-top > .hud-button:active, body.touch #hud #score #terminal-btn:active { background: rgba(255,255,255,.4); }
+body #hud #hud-top > .hud-button:focus-visible, body.touch #hud #score #terminal-btn:focus-visible { outline: 2px solid #fff; outline-offset: -4px; }
+body #hud #hud-top > .hud-button:disabled { opacity: .38; cursor: default; }
+body.hud-no-blur #hud :is(#score,#hud-top) { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgba(24,30,36,.78); }
+body.hud-no-blur #hud #hud-top > .hud-button, body.hud-no-blur.touch #hud #score #terminal-btn { background: transparent !important; }
+body.hud-no-blur #hud #hud-top > .hud-button:is(.on,[aria-pressed=true]) { background: rgba(255,255,255,.26) !important; }
+body.hud-no-blur #hud #hud-top > .hud-button:active { background: rgba(255,255,255,.4) !important; }
+@media (max-width: 740px) {
+  #compass { top: var(--hud-badge-bottom); width: var(--compass-compact); height: var(--compass-compact); }
+  .compass-letter { transform: translate(-50%,-50%) rotate(calc(var(--compass-angle) + var(--cardinal))) translateY(calc(var(--compass-compact) * -.37)) rotate(calc(0deg - var(--compass-angle) - var(--cardinal))); }
+  body.touch #jet-up { top: calc(var(--hud-badge-bottom) + 64px); bottom: auto; }
+  body.touch #jet-down { top: calc(var(--hud-badge-bottom) + 124px); bottom: auto; }
+  body.touch #web-btn, body.touch #jet-up:not([hidden]) ~ #web-btn { right: calc(170px + var(--sr)); top: calc(var(--hud-badge-bottom) + 8px); bottom: auto; }
+}
+@media (max-width: 600px) { :root { --badge-cell: 44px; --badge-inset: 6px; } }
+/* A short landscape screen leaves one clean row for the compass, with suit controls alongside it. */
+@media (max-height: 360px) and (max-width: 740px) {
+  #compass { width: 44px; height: 44px; top: calc(var(--hud-badge-bottom) - 6px); }
+  .compass-letter { transform: translate(-50%,-50%) rotate(calc(var(--compass-angle) + var(--cardinal))) translateY(-16px) rotate(calc(0deg - var(--compass-angle) - var(--cardinal))); }
+}

@@ -26,7 +26,7 @@ try {
  for(const width of [480,600,720,844,1280]) {
   f.width=width;await wait(50);C.update();const r=el.getBoundingClientRect();
   const controls=['level','score','furniture-btn','stats-btn','mute','pause','terminal-btn'].map(id=>d.getElementById(id)).filter(e=>w.getComputedStyle(e).display!=='none');
-  check(r.width===(width<=600?COMPASS.compactSize:COMPASS.size)&&controls.every(e=>!overlap(r,e.getBoundingClientRect())),`${width}px touch view: compact readable compass leaves all HUD controls clear`);
+  check(r.width===(width<=740?COMPASS.compactSize:COMPASS.size)&&controls.every(e=>!overlap(r,e.getBoundingClientRect())),`${width}px touch view: compact readable compass leaves all HUD controls clear`);
  }
  f.width=844;d.documentElement.style.setProperty('--st','18px');d.documentElement.style.setProperty('--sl','34px');d.documentElement.style.setProperty('--sr','24px');await wait(50);
  let r=el.getBoundingClientRect();check(r.top===COMPASS.top+18&&Math.abs((r.left+r.right)/2-(844+34-24)/2)<2,'safe areas shift the compass into the usable screen center');
