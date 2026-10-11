@@ -125,7 +125,7 @@ async function run() {
   const platsOf = (it) => plats.filter((p) => Math.abs(it.x - (p.x0 + p.x1) / 2) < 1.6 && Math.abs(it.z - (p.z0 + p.z1) / 2) < 1.6 && p.top - (LEVELS[it.level].floor + STAND_ON[it.type]) > -0.001 && p.top - (LEVELS[it.level].floor + STAND_ON[it.type]) < 0.08)
     .sort((a, b) => (b.x1 - b.x0) * (b.z1 - b.z0) - (a.x1 - a.x0) * (a.z1 - a.z0)); // the biggest first
   const platOf = (it) => platsOf(it)[0];
-  const KINDS = ['sofa', 'armchair', 'ottoman', 'byas', 'bed', 'daybed', 'veronasofa', 'slattable']; // (#701: the patio's lounge + table)
+  const KINDS = ['sofa', 'armchair', 'ottoman', 'byas', 'bed', 'daybed', 'veronasofa', 'slattable', 'coffeetable']; // (#701, #702: the patio's lounge + table, the coffee table)
   const pieces = FURNITURE.filter((i) => STAND_ON[i.type] !== undefined && KINDS.includes(i.type));
   const keyOf = (it) => it.type + (it.part ? '-' + it.part : '');
   for (const it of pieces) {
@@ -158,7 +158,7 @@ async function run() {
   lines.push(`info furniture: ${JSON.stringify(reach)}`);
   const keys = [...new Set(pieces.map(keyOf))];
   for (const type of keys) check(/landed .*stable, jumps on, walks off/.test(reach[type] ?? ''), `${type}: a jump lands on it, stands stably, jumps on, walks off (${reach[type]})`);
-  check(keys.length >= 8 && keys.some((k) => k.startsWith('veronasofa')) && keys.includes('slattable') , `the patio's lounge and its table are among the pieces (${keys.join(', ')})`);
+  check(keys.length >= 9 && keys.some((k) => k.startsWith('veronasofa')) && keys.includes('slattable') && keys.includes('coffeetable'), `the patio's lounge, its table and the coffee table are among the pieces (${keys.join(', ')})`);
   check(!keys.some((t) => reach[t + '_walk']), 'furniture: walking into it does not climb it');
 
   // (2b) the sofa's backrest / arms, the bed's headboard and the daybed's back are no seats (#699): walls up to their own height

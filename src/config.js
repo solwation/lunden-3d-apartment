@@ -3868,8 +3868,8 @@ export const STAND_ON = {
   bed: IDANAS.frameH - 0.1 + IDANAS.mattressH + 0.03,       // 0.64 m (*guess*: the frame / mattress heights are guesses)
   daybed: HEMNES_DAYBED.mattress[1] + 0.03,                  // 0.59 m
   byas: 0.45,                                               // the TV bench's top (item.h)
-  // #701: the patio's lounge (the Verona seat cushions' top, PATIO.verona base + seatT; the backs and arms are `solid`)
-  // and its slatted table (PATIO.slatTable.h). Left out on
+  // #701, #702: the patio's lounge (the Verona seat cushions' top, PATIO.verona base + seatT; the backs and arms are `solid`)
+  // and its slatted table (PATIO.slatTable.h), the living room's coffee table (its item.h 0.47, FURNITURE). Left out on
   // purpose (#701, #702): kerbs (≤ 15 cm, 10 cm proud: under PLAYER.stepUp, walked up on as they are), the bollards (Ø 14 cm
   // caps, 0.8 m), the street has no other low fixed object, the neighbours' hedges (1.1 m) and the fence stay walls, the
   // dining table (0.72–0.76 m) and the patio's planters / cushion box (a lid that moves) too; indoors the kitchen worktops
@@ -3877,6 +3877,7 @@ export const STAND_ON = {
   // surface to stand on), the bedside tables (a 40 cm top with a lamp on it) and the chairs (backs).
   veronasofa: PATIO.verona.base + PATIO.verona.seatT,       // 0.42 m
   slattable: PATIO.slatTable.h,                             // 0.40 m (a 0.6 × 0.45 m top)
+  coffeetable: 0.47,                                        // ILVA Woodstock (#410): item.h of the one coffee table
 };
 
 // Tilly's wardrobe (#305, #311, docs/smastad-platsa-garderob.jpg): IKEA SMÅSTAD / PLATSA, the two-door 80 × 57 × 181 cm

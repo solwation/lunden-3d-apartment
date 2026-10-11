@@ -379,7 +379,7 @@ Top-right segmented badge (#582): index.html groups furniture, stats, mute and p
   path, so a walk just fails, a sprint (3.2 m/s) clears it; the suit's jump walks over it. The path is the
   body's radius on both sides + its 0.44 m depth). Space is always `preventDefault`ed in play (it never scrolls
   or presses a focused button) and the Space that stands you up from a seat is no jump.
-  #693, #699: landing on low things (`STAND_ON` in config.js: sofa, armchair, ottoman and the BYÅS TV bench at 0.45 m, the IDANÄS bed 0.64 m (+ a rug's few cm), Tilly's daybed 0.59 m; the courtyard's benches 0.46 m; #701 the patio lounge's seat cushions 0.42 m and its slatted table 0.40 m, the courtyard's four raised beds 0.5 m): the plain
+  #693, #699: landing on low things (`STAND_ON` in config.js: sofa, armchair, ottoman and the BYÅS TV bench at 0.45 m, the IDANÄS bed 0.64 m (+ a rug's few cm), Tilly's daybed 0.59 m; the courtyard's benches 0.46 m; #701 the patio lounge's seat cushions 0.42 m and its slatted table 0.40 m, the courtyard's four raised beds 0.5 m; #702 the living room's coffee table 0.47 m): the plain
   jump reaches them, the suit's jump goes far above; tables (0.75 m), shelves, walls and fences are no platforms (a wall keeps its
   plain collision). Only a footprint rectangle without `solid: true` is standable (#699): the builders mark the sofa's / armchair's
   backrest strip and arms (`seatRects`), the bed's headboard and the daybed's back and ends `solid` (walls as before; the daybed is
@@ -388,8 +388,8 @@ Top-right segmented badge (#582): index.html groups furniture, stats, mute and p
   heights follow the models' mattress tops (*guess*, 0.45 m step + 0.7 m apex + 0.22 hurdle reach ≈ 0.9 m at most). Left out on
   purpose: the MYDAL bunks (the lower mattress top 0.32 m is under the top bunk's 1.1 m base: no head room). The 1.8 m fence
   behind the bench (bench 0.46 + jump 0.7 does not clear it) is the user's call (#699), untouched.
-  #701 (outdoors): the patio's Verona lounge (patio.js `veronasofa`: its backs and arm strips are
-  `solid`, the seats and the backless divans are standable), the slatted table and the courtyard's raised beds
+  #701, #702 (outdoors and the rest of indoors): the patio's Verona lounge (patio.js `veronasofa`: its backs and arm strips are
+  `solid`, the seats and the backless divans are standable), the slatted table, the coffee table and the courtyard's raised beds
   (courtyard.js `BED_Y`, `solid(…, BED_Y)`: they had no collision at all, you walked through the timber box) are platforms. No
   new per-frame cost: the platform list is built once in `setFurniture` and `groundAt` tests the bounding box first. Deliberately
   not platforms, with the reason: **kerbs** (granite 10 cm proud, the car park's concrete edges 5 cm) are under `PLAYER.stepUp`
