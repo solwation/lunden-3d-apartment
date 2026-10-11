@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>No neighbours test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+// No people outside but Olof (#670): src/people.js is gone (no walkers, cyclist, bench sitter, loft neighbour or dog),
+// nothing to greet where the bench sitter used to be, the speech bubbles still work (your line at the bottom, a line
+// over a head that goes away again), and an old save with `greets` (#247) loads without errors and keeps its points.
+// The benches are tested in resttest (#670 block), Olof in oloftest / olofcartest, the smart speakers in nesttest.
+//   chrome --headless=new --dump-dom http://localhost:8137/tools/nonpctest.html
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const lines = [];
+const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; };
+// an old save: greetings counted before #670
+try { localStorage.setItem('lunden.stats', JSON.stringify({ greets: 3, seen: { greets: { fig0: 1, fig3: 1 } } })); } catch { /* */ }
+const errors = [];
+const f = document.createElement('iframe');
+f.width = 900; f.height = 600; f.src = '../index.html?time=12&month=6';
+document.body.append(f);
+f.onload = async () => {
+  const w = f.contentWindow, d = f.contentDocument;
+  w.addEventListener('error', (e) => errors.push(e.message));
+  while (!w.__app) await wait(100);
+  const { player, camera, step, greet, stats, totalScore, olof, focus } = w.__app;
+  try {
+    d.getElementById('start-touch').click();
+    await wait(50);
+    for (let i = 0; i < 3; i++) step(1 / 60);
+    let pass = check(w.__app.people === undefined, 'no People in the app');
+    const gone = await fetch('../src/people.js').then((r) => r.status).catch(() => 404);
+    pass &= check(gone === 404, `src/people.js is gone (${gone})`);
+    const { PEOPLE, GREET, WEATHER } = await w.eval("import('/src/config.js')");
+    pass &= check(PEOPLE === undefined && GREET.say === undefined && GREET.reach === undefined && WEATHER.people === undefined, 'no PEOPLE config, no greeting lines');
+    // nothing to greet in front of Hus A, where the bench sitter used to be (#438, #453)
+    const V = camera.position.constructor;
+    player.spawn(-3.4, 24.5, 0);
+    for (let i = 0; i < 3; i++) step(1 / 60);
+    const p = new V(-3.4, 1.1, 28.1), dx = p.x - camera.position.x, dz = p.z - camera.position.z;
+    camera.rotation.set(Math.atan2(p.y - camera.position.y, Math.hypot(dx, dz)), Math.atan2(-dx, -dz), 0, 'YXZ');
+    step(1 / 60);
+    const fo = focus().focused, btn = d.getElementById('action');
+    pass &= check(fo?.kind !== 'greet' && !/hälsa på/i.test(btn.hidden ? '' : btn.textContent), `nothing to greet at the bench (${fo?.kind ?? 'nothing'}: "${btn.hidden ? '' : btn.textContent}")`);
+    // the bubbles (Olof's and your own)
+    greet.sayMine('Hej Olof!');
+    olof.onSay('Ett test', 2);
+    step(1 / 60);
+    const mine = d.querySelector('#speech .say.mine'), theirs = d.querySelector('#speech .say.theirs');
+    pass &= check(mine && !mine.hidden && mine.textContent === 'Hej Olof!', `your line at the bottom "${mine?.textContent}"`);
+    pass &= check(theirs && theirs.textContent === 'Ett test', `a line over Olof's head "${theirs?.textContent}"`);
+    for (let i = 0; i < 240; i++) step(1 / 60);
+    pass &= check(!greet.talking && !d.querySelector('#speech .say.theirs'), 'the bubbles are gone after a while');
+    // the old save
+    pass &= check(stats.greets === 3 && Number.isFinite(totalScore()) && totalScore() > 0, `old greets kept (${stats.greets}), score ${totalScore()}`);
+    const { statRows } = await w.eval("import('/src/stats.js')");
+    const rows = statRows();
+    pass &= check(rows.some((r) => r[0] === '👋 Hälsat' && r[1] === '3'), 'the stats panel still shows the old greetings');
+    pass &= check(!errors.length, `no page errors${errors.length ? ': ' + errors.join('; ') : ''}`);
+    out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
+  } catch (e) {
+    out.textContent = `SOME FAILED\n${lines.join('\n')}\nFAIL ${e.stack}`;
+  }
+  try { localStorage.removeItem('lunden.stats'); } catch { /* */ }
+};
+</script>
+</body>
+</html>

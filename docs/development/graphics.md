@@ -55,7 +55,7 @@ src/weather.js         weather (WEATHER, #248): a seeded draw per date (`showers
                        LineSegments of streaks around the eye ending on the ground or a roof (`roofAt`: the house boxes of
                        greet.js `occluders` + our unit; a walkable roof's real top where there is one, #360), DayCycle `overcast` (grey sky, fog, weaker sun) and `flash`
                        (lightning), sfx.rain (muffled indoors) / sfx.thunder after distance / 343; sitting in our car (#664) `cabinMix(car.openness)` (CAR.cabin, *guess*) knocks the rain down and dulls it with all doors shut (-18 dB, 800 Hz low-pass) and lets it through with a door open, fading with the door's angle, thunder likewise (the car's roof box already keeps streaks out of the cabin; `tools/carsoundtest.html` measures the levels with an AnalyserNode and counts streaks in the cabin); the small lamps come on
-                       earlier, the people go in, the parasol folds; 🌧 / ⛈ in the HUD; `&weather=rain|storm|snow|hail|clear`.
+                       earlier, the parasol folds; 🌧 / ⛈ in the HUD; `&weather=rain|storm|snow|hail|clear`.
                        #249: each shower has a `kind`: snow (mostly Dec–Feb; slow swaying Points, a lighter sky, silent),
                        hail (spring, and at the start of some storms; white pellets that bounce once and lie a moment, a
                        louder rattle); ❄️ / 🧊 in the HUD. Walking WEATHER.experience.metres outdoors while it falls calls
@@ -100,7 +100,7 @@ src/screens.js         TV programmes drawn on a canvas (PROGRAMS: space, underwa
                        snow, the Ambilight colour per programme; `Screen` is shared by the TVs in furniture.js
 tools/mirrortest.html  headless test: in front of every mirror its Reflector is the active one, on the glass (#139)
 tools/weathertest.html headless test: showers per season, thunderstorms only in late summer, a shower ramps in; with &weather=storm:
-                       drops (none inside Hus L), grey sky, a flash and back, ⛈ in the HUD, people in; snow only in winter, hail in
+                       drops (none inside Hus L), grey sky, a flash and back, ⛈ in the HUD; snow only in winter, hail in
                        spring / storms, snowflakes not in Hus L, walking 20 m out in it counts once, not indoors; clear = no rain
 ```
 

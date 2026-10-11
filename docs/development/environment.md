@@ -10,8 +10,8 @@ Neighbor openings (#516): `src/exterior.js` keeps all existing opening extents, 
 ```text
 src/courtyard.js       the courtyard on the garage box (COURTYARD): walks, pergolas, grill, sandboxes, boule,
                        benches, raised beds, instanced shrubs; collision for what you can walk into. #438: every bench is a seat
-                       (`targets`: invisible pick boxes with rest.js spots, `world.courtyardTargets`, kept with F; a spot a
-                       people.js bench sitter is on is `taken`, and a sitter is away while you sit on its spot), the pergola tables
+                       (`targets`: invisible pick boxes with rest.js spots, `world.courtyardTargets`, kept with F; since #670 no
+                       neighbour sits on them, so only Olof's own seats indoors are ever `taken`), the pergola tables
                        and the grill's side table are put-down surfaces (`surfaces` → world.cupSurfaces); the benches' / tables'
                        collision is `seats` (segments + footprints outside `fixedSegments`, so getting up works as for furniture)
                        #453: no bench within 1 m of a way in at the ground (surroundings.js `groundWaysIn`: the loggias' parapet
@@ -30,11 +30,9 @@ src/surroundings.js    the site (SITE): Hus A/B/C + buildings around, roads, pav
                        Höje å, instanced trees, lit windows, cloudy sky; #604: windows of Hus A–C are `lunden` and go dark in a power
                        cut (`update(hour, night, power)`), the rest of the site and the street lamps do not; world.windowLights passes
                        `power` on to the courtyard's bulbs / bollards and exterior.js's lanterns, lit glass and front-door lights
-src/greet.js           greeting the people outside (GREET, #247): looking at one within `reach` (not through a house: boxes for
-                       SITE.blocks + Hus L, the flat's walls via `behindWall`) the action is "Hälsa på grannen / barnet /
-                       cyklisten"; a random line from you (bubble at the bottom), the answer a moment later in a bubble over
-                       the head; speech = Web Speech API sv-SE (pitch/rate per person, children higher; silent when muted);
-                       the person waves (people.js `answer`, `greetT`), a walker stops and turns to you; stats `greets`
+src/greet.js           speech bubbles (GREET, #247): `sayMine` (your line at the bottom), `say` (a line over a head — Olof, #586/#599),
+                       speech = Web Speech API sv-SE (silent when muted); `occluders` (the houses as boxes) for weather.js.
+                       Greeting neighbours was removed with them in #670; an old save's stats `greets` still scores
 src/roads.js           the roads' shapes (SITE.roads, #257): rectangles, centre lines (`path` [x, z, r]: corners rounded to arcs,
                        `w` per point, pavements `walks`) and junction `fillets`; `samples`, `onRoad(x, z, margin)` (trees keep
                        off), `along` (lamp rows), `pathStrip` / `filletGeometry` (meshes on the ground, built by surroundings.js).
@@ -54,11 +52,6 @@ src/streetlife.js      life on the street (SITE.life, #113): the car park as on 
                        each, collision); no bikes along Hus L's entrances (#529); the bike yard NW of Hus L / north of Hus C (lawns, a tree, two rows of
                        racks; west of x −66 is left for #256's stair down to Karpvägen); #436: low concrete edges (`life.edges`, one
                        merged mesh, 5 cm, no collision) where the car park's asphalt meets grass and round the yard's lawns
-src/people.js          people in the area (PEOPLE, #114): low-poly figures (one InstancedMesh per body part, a colour each; #239:
-                       lathe-turned torso/arms/legs, knees (#243: thigh + shin, `kneeL/R`), hands and shoes ride the arm / shin; a rounded dog;
-                       posed every frame): walkers to and fro on the paths (a dog with one), cyclists on Sankt Lars väg
-                       (sfx.bell when they pass close); #521 reduces 19 figures to six adults: three walkers, one cyclist,
-                       one bench sitter and one loft neighbour. No children, orphan ball or blanket; sandboxes remain. Daytime only
 src/patio.js           patio: Rusta Verona lounge + slatted table (#408), cushion box, parasol, planters with exotic plants
                        (furniture builders, FURNITURE + PATIO in config); seasons via Patio.update:
                        parasol folds at night/in winter, beers in summer, snowman in winter
@@ -104,14 +97,18 @@ tools/terraintest.html headless test (#346): the courtyard = the reference level
                        is a step, the inside of an Å-hus is skipped, #355); no tree on asphalt or paving (#435)
 tools/streetsigntest.html headless test (#583): two meshes / one atlas, both faces of every blade, posts off asphalt and paths,
                        every number range exactly the sourced one (OSM addr:housenumber, Karpvägen 2–10 from #575), ≤ 2 draw calls
-tools/greettest.html   headless test: "Hälsa på grannen" on the bench sitter, your line, the answer, the wave, counted, not through
-                       Hus A, a walker stops and turns to you (#247)
+tools/nonpctest.html   headless test (#670): no People / PEOPLE, nothing to greet at the old bench sitter's place, the bubbles
+                       (yours and one over Olof's head) show and go, an old save with `greets` loads and keeps its points
 ```
 
 
-## Sparse adults (#521)
+## No neighbours outside (#670)
 
-`PEOPLE` contains three adult paths (street with dog, entrance walk and patio walk), one cyclist, one bench sitter near Hus A and one eastern loft neighbour. Sandbox children, ball players, the child walker and selected extra adults are absent from the instance buffers. Empty ball/blanket settings do not create their props. Playground meshes, seating and walkways remain unchanged. `tools/peopletest.html` checks population, buffers, animations, props and day/winter visibility; `greettest` verifies greetings still work for remaining neighbours.
+There are no figures outside except Olof (#586/#599) and the cats: the walkers with the dog, the cyclist on Sankt Lars väg (and its
+bell), the bench sitter by Hus A and the loft neighbour (src/people.js, `PEOPLE`, #114/#239/#521) were removed because the
+low-poly figures broke the realism (the user, 2026-10-11). Playgrounds, sandboxes, benches and walks stay; every courtyard bench
+spot is free for the visitor (resttest #670 block). The greeting action went with them; an old save's `greets` keeps its points
+(SCORE.first/again) and its stats row. `tools/nonpctest.html` checks it.
 
 Entrance bicycles (#529): removed SITE.life.bikes and the separate façade-bike loop in streetlife.js. Outdoor bicycles are generated only at the existing SITE.life.racks inside the paved bike yard NW of Hus L/north of Hus C, as on docs/peab/situationsplan.png and kalibrerad/situationsplan-300dpi.jpg. Those seven loose facade bikes had no collision segments, so removing them leaves no invisible obstacles. Existing rack collision remains confined to the yard. Basement cycle-room racks continue to exist; their wider layout corrections belong to #523. No relocation to invented coordinates. walktest checks entry and block routes; real views check the clear frontage and occupied yard.
 

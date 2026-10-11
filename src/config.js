@@ -32,7 +32,7 @@ export const VERTICAL = {
 // counted once): Entréplan 0, Övre plan 0 + 3.0 + 0.25 = 3.25, våning 3 (the top of our unit, the loftgång deck)
 // 3.25 + 2.8 + 0.35 = 6.4, våning 4 at 9.4, the roof over it at 12.4 (+ 0.3 build-up + 0.05 capping). What hangs on the
 // assumed values: the stair's total rise (stairs.js: LEVELS[1].floor - LEVELS[0].floor, #09), the façade band between
-// the window rows, the loftgång / upper units / roof heights (exterior.js, greet.js, weather.js, people.js) and so the
+// the window rows, the loftgång / upper units / roof heights (exterior.js, greet.js, weather.js) and so the
 // sight lines from outside.
 export const SLAB = VERTICAL.levels[0].slab; // slab zone between Entréplan and Övre plan (assumption)
 // `floor` = FFL (absolute y), `ceiling` = RH (relative to its floor, as always), `top` = the next level's FFL
@@ -475,7 +475,7 @@ export const SITE = {
     atlas: { w: 1024, h: 1024, cols: 2 },                     // one shared canvas for every blade face (≤ LOW_MEMORY's 1024)
     signs: [
       // near the block
-      { at: [-71.2, -21.2], blades: [{ name: 'Karpvägen', nums: '2–10', dir: [0, 1] }, { name: 'Sankt Lars väg', dir: [1, 0] }] }, // Sankt Lars väg × Karpvägen, off the walker's turn (PEOPLE)
+      { at: [-71.2, -21.2], blades: [{ name: 'Karpvägen', nums: '2–10', dir: [0, 1] }, { name: 'Sankt Lars väg', dir: [1, 0] }] }, // Sankt Lars väg × Karpvägen, off the old walker's turn (#114)
       { at: [17.9, -18.6], blades: [{ name: 'Sankt Lars väg', dir: [-1, 0] }, { name: 'Sankt Lars väg', nums: '41–70', dir: [0, 1] }] }, // the bend at the NE corner, on the inner pavement clear of the campus road's mouth
       { at: [-82.2, 68.6], blades: [{ name: 'Karpvägen', nums: '2–10', dir: [-0.976, 0.217] }, { name: 'Karpvägen', dir: [0.293, -0.956] }] }, // Karpvägen's bend into the park
       // the backdrop (OSM junction nodes)
@@ -1428,33 +1428,6 @@ export const CLEANING = {
 export const START = { x: 2.875, z: -12, yawDeg: 180, pitchDeg: 8 };
 // Walkable area outside: in front of the north façade (x range, back to z0), our patio and, through
 // the gap in the hedge (SW corner), the lawn behind the row of patios up to z1 (#52).
-// People in the area (#114, src/people.js; Peab's renders docs/peab-innergard-ost.png, peab-radhusrad-innergard.png):
-// walkers going to and fro on the paths (x0, z0 → x1, z1 at speed m/s), one cyclist on Sankt Lars väg,
-// occasional adults on one bench and the loftgång. Daytime only (daylight above
-// `day`). Positions and colours are ours.
-export const PEOPLE = {
-  day: 0.3,
-  // #521: sparse adults only. Remove sandbox/ball children, child walker, extra walkers,
-  // second cyclist, western bench sitter, blanket figure and western loft neighbour (19 → 6 figures).
-  walkers: [
-    { a: [-70, -22.7], b: [12, -22.7], speed: 1.3, dog: true },
-    { a: [-44.4, -2.2], b: [14.48, -2.2], speed: 1.2 },
-    { a: [-42.47, 18.8], b: [9.65, 18.8], speed: 1.1 },
-  ],
-  cyclists: [{ a: [-90, -26.4], b: [10, -26.4], speed: 4.5 }],
-  ball: [], sandbox: [], // playground geometry remains, no child instances or orphan football
-  benches: [{ x: -3.4, z: 28.1, yaw: 180 }],
-  seatTaken: 0.4, // m: a courtyard bench spot this near a sitter is not offered to the visitor (#438)
-  seat: 0.52, // the sitters' hip height: the bench seat (0.46) + the thigh (#243)
-  blanket: null,                       // no unattended animated figure/blanket left behind (#521)
-  loftgang: [[-8.88, 1.1]],          // neighbours standing on the loftgång (våning 3)
-  bellNear: 12,                                    // m: a cyclist rings the bell passing this close
-  shirts: [0x2f5d8a, 0xc0392b, 0xe7d9b8, 0x3e7b4f, 0xf2f2f0, 0x7d4a8c, 0xe08a2a, 0x1f2a36, 0x9bb7d4, 0xd4577a],
-  pants: [0x23324a, 0x2b2b2b, 0x6b5844, 0x8a8f96, 0x384b6b, 0xc8bfa8],
-  skin: [0xf1c9a5, 0xe0ac86, 0xc68a62, 0x8d5a3b, 0xf6d8bf],
-  hair: [0x2a1d14, 0x5a3a22, 0xc89b52, 0x1a1a1a, 0x8a5a32, 0xd8c7a0],
-  shoes: [0x1a1a1a, 0xf2f2f2, 0x5a3a22, 0x2e3a4f, 0x8c8c8c], // #239, our picks
-};
 
 // Weather (#248, src/weather.js): per date a seeded draw. `rain` = the chance per day of showers by month (Jan…Dec):
 // spring and autumn, a little in summer, none in the snow months (Lund's wettest months are Jul–Nov, the user wants
@@ -1468,7 +1441,7 @@ export const WEATHER = {
   showers: { len: [1, 4.5], ramp: 0.35, strength: [0.45, 1] },
   thunder: { from: [7, 20], to: [8, 31], chance: 0.4, hours: [14, 20], len: [1, 2.5] },
   drops: 1800, radius: 13, height: 9, speed: 9.5, len: 0.5, wind: 0.12,
-  sunCut: 0.85, fogFar: 80, people: 0.4, // people go in above this much rain
+  sunCut: 0.85, fogFar: 80,
   flash: { every: [6, 22], dist: [400, 4000], light: 2.2 },
   sound: 0.22, // the rain's gain outdoors (indoors a quarter, muffled)
   // #249: snow — the chance per day by month (Jan…Dec; mostly the snow months), `flakes` Points drifting down at `speed`
@@ -1480,16 +1453,9 @@ export const WEATHER = {
   experience: { min: 0.3, metres: 20 },
 };
 
-// Greeting the people outside (#247, src/greet.js): within `reach` m; the bubbles show for `bubble` s. The lines are
-// ours; one is picked at random (the visitor's from `say`, children answer from `kids`, cyclists from `cyclists`).
-export const GREET = {
-  reach: 14, bubble: 2.8,
-  say: ['Hej hej!', 'Hallå där!', 'Hejsan!', 'Tjena!', 'God dag!', 'Hej, vi har precis flyttat in här!', 'Tja!', 'Hej! Fint här, va?'],
-  answer: ['Hej hej!', 'Hejsan!', 'Hej, välkommen till Lunden!', 'Tjenare!', 'Hallå!', 'Hej, trevligt att träffas!', 'Hej! Bor du i L1007?',
-    'Goddag, goddag!', 'Hej! Har du sett en katt springa förbi?', 'Hej! Ses vid grillen!'],
-  kids: ['Hej!', 'Hejsan!', 'Vill du leka?', 'Hej! Kolla vad jag kan!', 'Tjena!', 'Hej hej hej!', 'Hej! Har du en fiskpinne?'],
-  cyclists: ['Hej!', 'Hej hej!', 'Tjena!', 'Hej, akta dig!'],
-};
+// Speech bubbles (#247, src/greet.js): Olof's lines and your own show for `bubble` s. The neighbours to greet were
+// removed in #670 (with their lines and `reach`).
+export const GREET = { bubble: 2.8 };
 
 // Olof (#586, src/olof.js): a figure that now and then sits in the sofa or the armchair with a beer; wave to him and he waves
 // back, gets up and fades away. Timings and odds are our *guess* (tuned by feel, not measured). Every `every` s (the first
@@ -2715,7 +2681,7 @@ export const SCORE = {
     blinds: 2, // per window's blind, the first time it is drawn up or down (#273)
     curtains: 2, // Sovrum 1's curtains drawn (#342), like a blind
     cleanRoom: 15, // the first clean room: "Rent i köket!" (#390)
-    coats: 10, greets: 2, // greets: per person (#247)
+    coats: 10, greets: 2, // greets: per person greeted (#247); nothing counts them since #670 — kept so old scores stay
     catButts: 15, // a cat's bum seen from behind with its tail up (#262): per cat, then `again` per tail-up
     walkRain: 15, walkSnow: 25, walkHail: 40, walkStorm: 30, // out in the weather (#249): the first time, then `again` per shower
     shattered: 5, // per kind of thing shot to pieces (#263)
