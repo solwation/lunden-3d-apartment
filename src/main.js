@@ -2257,7 +2257,7 @@ function step(dt) {
   car.update(dt, day.daylight < 0.35, player);
   const moved = Math.hypot(player.pos.x - lastWeatherPos.x, player.pos.z - lastWeatherPos.z); // on foot (not a jump / spawn)
   lastWeatherPos.copy(player.pos);
-  weather.update(dt, !player.outdoors || player.below || player.inCore, moved < 1 ? moved : 0); // (the garage: dry and muffled, #357) // after the day: it sets the overcast / flash the next day.update applies (#248)
+  weather.update(dt, !player.outdoors || player.below || player.inCore, moved < 1 ? moved : 0, car.occupied ? car.openness : null); // (the garage: dry and muffled, #357) // after the day: it sets the overcast / flash the next day.update applies (#248)
   plantWind.update(dt);
   people.update(dt, weather.rain > WEATHER.people ? 0 : day.daylight, day.month, player); // they go in when it pours
   greet.update(dt); // greetings and answers (#247)

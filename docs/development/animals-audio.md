@@ -15,6 +15,7 @@ tools/oloftest.html    headless test (#586): ?olof=0 seats him, seated pose, sea
                        sight, "Vinka till Olof" scores, he tells a dad joke (10 different, none twice in a row), waves, gets up and is gone, the seat free again
 tools/olofcartest.html headless test (#599): the key brings the car with Olof at the wheel (seat, hands on the wheel), "Hälsa på
                        Olof" → a dad joke, he sits on (again: new joke, no points); the car drives off with him; the driver's door and seat work after; back with the next call; he stays when a door opens and when you sit beside him (#663), a restored parked car has him, the driving seat is free only in the garage
+tools/carsoundtest.html headless test (#664): rain level (AnalyserNode RMS) outdoors / in the car with a door open / all doors shut, gradual change, mute, no streaks in the cabin (needs `--autoplay-policy=no-user-gesture-required`)
 src/audio.js           synthesised positional sound effects (Web Audio): doors, slides, meow, steps; #604: `mainsBuzz` (100 Hz buzz +
                        thickening crackles), `fuseBang`, `breakerOn`
 src/pingping.js        Pingping (#269, PINGPING): the penguin cushion between the pillows in the Sovrum 1 bed, a Thing (kind 'pingping'):

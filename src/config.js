@@ -2098,6 +2098,11 @@ export const CAR = {
   // `songLength` (s): the channels never end, so the screen's progress bar runs over a nominal song length.
   music: { gain: 0.45, ref: 0.8, rolloff: 1.3, dash: [0.62, 1.0, 0], songLength: 180, duckHouse: 0.3, redraw: 0.5,
     inside: { gain: 1, cutoff: 18000 }, open: { gain: 0.75, cutoff: 6000 }, shut: { gain: 0.3, cutoff: 500 } },
+  // The weather heard from inside the car (#664, weather.js `cabinMix`): with every door shut the rain is knocked down by
+  // `shut.db` dB and dulled to `shut.cutoff` Hz (a little leaks through, never silent); a door that is open lets it
+  // through almost as outdoors (`open`); in between follows the widest door's angle (the doors swing eased, so it fades
+  // in and out). `thunderDb`: the same for thunder (a rumble that still carries). All values our choice (*guess*).
+  cabin: { shut: { db: -18, cutoff: 800 }, open: { db: -3, cutoff: 5500 }, thunderDb: -12 },
 };
 
 // Where Tilly's daybed stands along Sovrum 4's west wall (#312, #459): its centre's z, clear of the south window's

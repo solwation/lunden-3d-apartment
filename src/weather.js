@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { WEATHER as W, UNIT_TOP } from './config.js';
+import { WEATHER as W, UNIT_TOP, CAR } from './config.js';
 import { groundY } from './surroundings.js';
 import { occluders } from './greet.js';
 import { sfx, audioParts } from './audio.js';
@@ -87,6 +87,13 @@ function flakeTexture() {
 
 const KINDS = { rain: '🌧', snow: '❄️', hail: '🧊' };
 
+/** What gets into the cabin of our car (#664): `open` 0 (all doors shut) … 1 (a door wide open) → the gain and low-pass
+ * cutoff for the rain, and the gain for thunder (CAR.cabin; dB and Hz interpolated, so a swinging door fades it). */
+export function cabinMix(open) {
+  const k = Math.min(1, Math.max(0, open)), { shut, open: o, thunderDb } = CAR.cabin, db = (x) => 10 ** (x / 20);
+  return { gain: db(shut.db + (o.db - shut.db) * k), cutoff: shut.cutoff + (o.cutoff - shut.cutoff) * k, thunder: db(thunderDb * (1 - k)) };
+}
+
 export class Weather {
   /** `force`: 'rain' | 'storm' | 'snow' | 'hail' | 'clear' | null (the &weather parameter). */
   constructor(scene, camera, day, force = null) {
@@ -171,8 +178,9 @@ export class Weather {
     return { ...now, overcast: Math.min(1, sky.rain * 1.3) };
   }
 
-  /** `inside`: the visitor is in the flat (muffled); `moved`: metres walked this frame (#249: out in it, it counts). */
-  update(dt, inside = false, moved = 0) {
+  /** `inside`: the visitor is in the flat (muffled); `moved`: metres walked this frame (#249: out in it, it counts);
+   * `cabin`: sitting in our car (#664), how far its doors stand open 0…1 (`cabinMix`), else null. */
+  update(dt, inside = false, moved = 0, cabin = null) {
     const s = this.state();
     if (s.kind !== this.kind) this.seeded = null; // another kind: start the particles afresh
     Object.assign(this, { rain: s.rain, storm: s.storm, overcast: s.overcast, kind: s.kind, id: s.id });
@@ -224,7 +232,9 @@ export class Weather {
     // the sound, once there is audio: rain hisses, hail rattles louder and brighter, snow is silent
     if (!this.sound && audioParts()) this.sound = sfx.rain();
     const loud = this.kind === 'snow' ? 0 : this.kind === 'hail' ? 1.6 : 1;
-    this.sound?.set(this.rain * W.sound * loud * (inside ? 0.3 : 1), inside ? 900 : this.kind === 'hail' ? 9000 : 6500);
+    const mix = cabin == null ? null : cabinMix(cabin); // in the car: the shut doors keep most of it out (#664)
+    this.mix = mix;
+    this.sound?.set(this.rain * W.sound * loud * (inside ? 0.3 : 1) * (mix?.gain ?? 1), Math.min(inside ? 900 : this.kind === 'hail' ? 9000 : 6500, mix?.cutoff ?? Infinity));
     // out in it (#249): walking about outdoors while it falls counts once per shower
     if (!inside && moved > 0 && this.id && this.rain > W.experience.min && !this.done[this.id]) {
       this.walked[this.id] = (this.walked[this.id] ?? 0) + moved;
@@ -237,7 +247,7 @@ export class Weather {
     this.flashT += dt;
     if (this.storm && this.rain > 0.5) {
       this.next -= dt;
-      if (this.next <= 0) this.strike(inside);
+      if (this.next <= 0) this.strike(inside, mix);
     }
     const ft = this.flashT;
     this.flash = ft < 0.07 ? this.flashK : ft < 0.14 ? 0.25 * this.flashK : ft < 0.22 ? 0.8 * this.flashK : this.flashK * Math.exp(-(ft - 0.22) * 9) * 0.8;
@@ -246,14 +256,14 @@ export class Weather {
   }
 
   /** A lightning strike: the flash now, the thunder after the light (distance / 343 m/s). */
-  strike(inside) {
+  strike(inside, mix = null) {
     const dist = between(Math.random, W.flash.dist);
     const near = 1 - (dist - W.flash.dist[0]) / (W.flash.dist[1] - W.flash.dist[0]);
     this.flashT = 0;
     this.flashK = 0.35 + 0.65 * near;
     this.strikes++;
     this.next = between(Math.random, W.flash.every);
-    sfx.thunder(dist / 343, near, inside);
+    sfx.thunder(dist / 343, near, inside || (mix && mix.thunder < 1), mix?.thunder ?? 1);
   }
 
   /** For the HUD: 🌧 / ❄️ / 🧊 while it falls, ⛈ in a thunderstorm. */

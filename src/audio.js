@@ -383,9 +383,9 @@ export const sfx = {
     };
   },
   /** Thunder (#248) `delay` s from now: a crack if it is near (`near` 0…1), then a long rolling rumble; `inside` muffles. */
-  thunder(delay, near, inside = false) {
+  thunder(delay, near, inside = false, level = 1) {
     if (!ready()) return;
-    const t = ctx.currentTime + delay, d = out(null, inside ? 0.45 : 1);
+    const t = ctx.currentTime + delay, d = out(null, (inside ? 0.45 : 1) * level); // (`level`: the car's shut doors, #664)
     if (near > 0.6) noise(t, 0.35, d, { type: 'highpass', freq: 900, gain: 0.5 * near, attack: 0.002 });
     const dur = 3.5 + 3 * (1 - near) + Math.random() * 2;
     noise(t, dur, d, { type: 'lowpass', freq: inside ? 160 : 260 + 300 * near, q: 0.7, gain: 0.55 + 0.35 * near, attack: 0.08 + 0.4 * (1 - near) });

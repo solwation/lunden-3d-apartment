@@ -175,6 +175,9 @@ export class Car {
     sfx.carDoor(door.pivot.getWorldPosition(new THREE.Vector3()), open);
   }
 
+  /** How far the doors stand open, 0 (all shut) … 1 (one wide open): what lets the weather into the cabin (#664). */
+  get openness() { return Math.min(1, Math.max(0, ...this.doors.map((d) => d.angle)) / C.doorOpen); }
+
   get doorsShut() { return this.doors.every((d) => d.target === 0 && d.angle < 0.01); }
 
   /** The key was pressed. */

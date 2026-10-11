@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Car sound test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+// The weather heard from inside our Megane (#664): in the rain (&weather=rain) the level (a real AnalyserNode on the master
+// gain, RMS) outdoors, sitting in the car with a door open, and with every door shut (much lower, dulled by the low-pass,
+// not silent); the change is gradual while a door swings; mute silences it; no rain streaks fall into the cabin. Needs an
+// AudioContext that runs headless (Chrome: --autoplay-policy=no-user-gesture-required).
+//   google-chrome --headless=new --autoplay-policy=no-user-gesture-required --dump-dom http://localhost:8137/tools/carsoundtest.html
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const f = document.createElement('iframe');
+f.width = 900; f.height = 600; f.src = '../index.html?car&weather=rain&time=14&month=10&day=5';
+document.body.append(f);
+f.onload = async () => {
+  const w = f.contentWindow, d = f.contentDocument;
+  while (!w.__app) await wait(100);
+  const { player, camera, step, car, rest, standUp, weather } = w.__app;
+  const lines = [];
+  const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; };
+  d.documentElement.requestFullscreen = undefined;
+  d.getElementById('start-touch').click();
+  await wait(300);
+  const btn = d.getElementById('action'), V = camera.position.constructor;
+  const local = (x, y, z) => { car.object.updateMatrixWorld(true); return new V(x, y, z).applyMatrix4(car.object.matrixWorld); };
+  const look = (p) => { const dx = p.x - camera.position.x, dz = p.z - camera.position.z; camera.rotation.set(Math.atan2(p.y - camera.position.y, Math.hypot(dx, dz)), Math.atan2(-dx, -dz), 0, 'YXZ'); step(1 / 60); };
+  const audio = await w.eval("import('/src/audio.js')");
+  const parts = audio.audioParts();
+  let pass = check(!!parts, 'audio is up');
+  if (parts.ctx.state !== 'running') await parts.ctx.resume().catch(() => {});
+  pass &= check(parts.ctx.state === 'running', `the AudioContext runs (${parts.ctx.state})`);
+  const an = parts.ctx.createAnalyser(); an.fftSize = 2048; parts.master.connect(an);
+  const buf = new Float32Array(an.fftSize);
+  /** Let the level settle (the rain's gain / filter follow with a 0.3 s time constant), then the mean RMS over ~1 s. */
+  const level = async () => {
+    for (let i = 0; i < 25; i++) { step(1 / 60); await wait(100); }
+    let sum = 0, n = 0;
+    for (let i = 0; i < 12; i++) { step(1 / 60); await wait(80); an.getFloatTimeDomainData(buf); sum += Math.sqrt(buf.reduce((a, x) => a + x * x, 0) / buf.length); n++; }
+    return sum / n;
+  };
+  for (let i = 0; i < 30; i++) step(1 / 60);
+  pass &= check(weather.rain > 0.5 && weather.kind === 'rain' && !!weather.sound, `it rains (${weather.rain}, ${weather.kind})`);
+  // outdoors, beside the car
+  const stand = local(0.1, 0, 1.9);
+  player.spawn(stand.x, stand.z, 0);
+  for (let i = 0; i < 5; i++) step(1 / 60);
+  pass &= check(weather.mix === null, 'outdoors: no cabin mix');
+  const rOut = await level();
+  pass &= check(rOut > 0.005, `rain outdoors is audible (rms ${rOut.toFixed(4)})`);
+  // open the passenger door, sit down beside Olof
+  const pd = car.doors.find((x) => x.front && x.side === 1);
+  car.toggleDoor(pd);
+  for (let i = 0; i < 90; i++) step(1 / 60);
+  const near = local(0.1, 0, 1.25);
+  player.spawn(near.x, near.z, 0);
+  for (let i = 0; i < 3; i++) step(1 / 60);
+  look(local(-0.05, 0.6, 0.37));
+  btn.click();
+  for (let i = 0; i < 90; i++) step(1 / 60);
+  pass &= check(rest.active && rest.target?.car === car, 'sitting in the car');
+  pass &= check(weather.mix && car.openness > 0.9, `door open: openness ${car.openness.toFixed(2)}`);
+  const rOpen = await level();
+  pass &= check(rOpen > 0.5 * rOut, `door open: nearly as loud as outdoors (rms ${rOpen.toFixed(4)} vs ${rOut.toFixed(4)})`);
+  // shut it: the sound falls gradually, then well below
+  car.toggleDoor(pd);
+  for (let i = 0; i < 3; i++) step(1 / 60);
+  const mid = weather.mix.gain;
+  for (let i = 0; i < 90; i++) step(1 / 60);
+  pass &= check(car.openness < 0.01 && weather.mix.gain < mid, `door shut: openness ${car.openness.toFixed(3)}, mix gain ${mid.toFixed(3)} → ${weather.mix.gain.toFixed(3)} (gradual)`);
+  const rShut = await level();
+  pass &= check(rShut < 0.25 * rOpen && rShut > 0.001 * rOpen, `all doors shut: much quieter, not silent (rms ${rShut.toFixed(4)}, ${(20 * Math.log10(rShut / rOut)).toFixed(1)} dB vs outdoors)`);
+  // no streaks fall into the cabin
+  const { x, z } = car.object.position, p = weather.pos, active = Math.round(weather.rain * weather.particleScale * 1800);
+  const box = car.box()[0], y0 = car.object.position.y + 0.25, y1 = y0 + 1.0;
+  let inside = 0;
+  for (let k = 0; k < 120; k++) {
+    step(1 / 30);
+    for (let i = 0; i < active; i++) { const o = i * 6; for (const q of [o, o + 3]) if (p[q] > box.x0 && p[q] < box.x1 && p[q + 2] > box.z0 && p[q + 2] < box.z1 && p[q + 1] > y0 && p[q + 1] < y1) inside++; }
+  }
+  pass &= check(inside === 0, `no rain streak inside the cabin's box in 120 frames (${inside})`);
+  // mute follows the setting
+  audio.toggleMuted();
+  const rMute = await level();
+  audio.toggleMuted();
+  pass &= check(rMute < 0.0005, `muted: silent (rms ${rMute.toFixed(5)})`);
+  // out again: the full sound
+  car.toggleDoor(pd);
+  for (let i = 0; i < 60; i++) step(1 / 60);
+  standUp();
+  player.spawn(stand.x, stand.z, 0);
+  for (let i = 0; i < 5; i++) step(1 / 60);
+  pass &= check(weather.mix === null, 'out of the car: no cabin mix');
+  out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
+};
+</script>
+</body>
+</html>
