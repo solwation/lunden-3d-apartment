@@ -1684,6 +1684,9 @@ export const GARAGE = {
   // #523: racks only in the dedicated CYKEL rooms shown on p46; no inferred racks in car-parking areas.
   // Rack depth/spacing/bike occupancy are visual assumptions; the existing room-side rows follow the drawing
   // along their walls (the plan draws racks there): [x0, x1, z, facing ±1 (towards +z / −z)]
+  // #704: a rack's bikes and stalls are drawn in full (bikeGeometry(1), ~1 400 triangles a bike) within `bikeLodNear` m of the camera,
+  // beyond it as the coarse set (bikeGeometry(0), ~480): the racks' ~110 k triangles in the big hall's view were over budget. *guess*
+  bikeLodNear: 10,
   bikes: [[-41.15,-36.2,.95,1], [-29.75,-25.1,11.6,-1], [-10.6, -5.8, 11.6, -1],
     [-5.0, -0.2, 11.6, -1], [0.55, 5.3, 11.6, -1], [6.1, 10.8, 11.6, -1],  [-29.8, -25.1, 0.95, 1],[-29.8,-27.9,7,-1],[-26.6,-25.1,7,-1], [-24.2, -19.6, 7.0, -1],
     [-16.0, -11.4, 0.95, 1]],

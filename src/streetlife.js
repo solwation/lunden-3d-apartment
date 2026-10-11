@@ -52,25 +52,29 @@ export function bikeSpokeTexture() {
 }
 
 /** One bike along +x (#683): [frame (painted per instance), tyres (rubber), metal (rims, hubs, cranks, chain, pedals), spokes (alpha cards)].
- * A Swedish city bike: ~4 cm tyres, mudguards, rear carrier, shaped saddle, swept handlebar, chainring and pedals (visual guesses). */
-export function bikeGeometry() {
-  const tube = (ax, ay, bx, by, r = 0.015) => { const l = Math.hypot(bx - ax, by - ay); return new THREE.CylinderGeometry(r, r, l, 8).rotateZ(Math.atan2(ax - bx, by - ay)).translate((ax + bx) / 2, (ay + by) / 2, 0); };
+ * A Swedish city bike: ~4 cm tyres, mudguards, rear carrier, shaped saddle, swept handlebar, chainring and pedals (visual guesses).
+ * `lod` 1 (near, ~1 400 triangles) or 0 (far, ~480; #704): the same parts and proportions with fewer sides on the tubes and wheels
+ * (a bike a few metres away looks the same; the basement's racks swap between the two by distance, `BIKE_LOD` in config). */
+export function bikeGeometry(lod = 1) {
+  const near = lod > 0, T = near ? 6 : 4, TW = near ? 20 : 16; // sides of a tube / segments round a wheel
+  const cyl = (r, l, seg = T) => new THREE.CylinderGeometry(r, r, l, seg, 1, !near);
+  const tube = (ax, ay, bx, by, r = 0.015) => { const l = Math.hypot(bx - ax, by - ay); return cyl(r, l).rotateZ(Math.atan2(ax - bx, by - ay)).translate((ax + bx) / 2, (ay + by) / 2, 0); };
   const WX = [-0.5, 0.42], WY = 0.34, WR = 0.33;
-  const fender = (cx, a0, a1) => new THREE.CylinderGeometry(WR + 0.035, WR + 0.035, 0.065, 14, 1, true, a0, a1 - a0).rotateX(Math.PI / 2).rotateY(0).translate(cx, WY, 0);
-  const saddle = new THREE.SphereGeometry(0.1, 10, 6).scale(1.3, 0.35, 0.95).translate(-0.14, 0.8, 0);
+  const fender = (cx, a0, a1) => new THREE.CylinderGeometry(WR + 0.035, WR + 0.035, 0.065, near ? 14 : 8, 1, true, a0, a1 - a0).rotateX(Math.PI / 2).rotateY(0).translate(cx, WY, 0);
+  const saddle = near ? new THREE.SphereGeometry(0.1, 10, 6).scale(1.3, 0.35, 0.95).translate(-0.14, 0.8, 0) : box(0.26, 0.035, 0.19, -0.14, 0.8, 0);
   const fork = [tube(0.42, 0.34, 0.33, 0.78).translate(0, 0, 0.05), tube(0.42, 0.34, 0.33, 0.78).translate(0, 0, -0.05)];
   const stays = [0.045, -0.045].flatMap((z) => [tube(-0.5, 0.34, -0.05, 0.36).translate(0, 0, z), tube(-0.5, 0.34, -0.12, 0.62).translate(0, 0, z)]);
   const frame = merge([tube(-0.05, 0.36, 0.42 - 0.09, 0.4, 0.016), tube(-0.05, 0.36, -0.12, 0.72), tube(-0.12, 0.72, 0.34, 0.76), tube(0.34, 0.76, 0.3, 0.4, 0.017),
     tube(-0.12, 0.62, -0.14, 0.8, 0.012), saddle, ...fork, ...stays,
-    tube(0.33, 0.78, 0.33, 0.92, 0.012), new THREE.CylinderGeometry(0.011, 0.011, 0.56, 6).rotateX(Math.PI / 2).translate(0.31, 0.95, 0),
+    tube(0.33, 0.78, 0.33, 0.92, 0.012), cyl(0.011, 0.56).rotateX(Math.PI / 2).translate(0.31, 0.95, 0),
     fender(WX[0], 0.1, Math.PI * 0.9), fender(WX[1], 0.1, Math.PI * 0.8),
     box(0.3, 0.012, 0.11, -0.6, 0.66, 0), tube(-0.5, 0.36, -0.7 + 0.12, 0.66, 0.008),
     box(0.06, 0.04, 0.03, 0.41, 0.43, 0.0)]);
-  const tyres = merge([...WX.map((x) => new THREE.TorusGeometry(WR, 0.02, 8, 24).translate(x, WY, 0)),
-    new THREE.CylinderGeometry(0.018, 0.018, 0.09, 6).rotateX(Math.PI / 2).translate(0.31, 0.95, 0.25),
-    new THREE.CylinderGeometry(0.018, 0.018, 0.09, 6).rotateX(Math.PI / 2).translate(0.31, 0.95, -0.25)]);
-  const metal = merge([...WX.flatMap((x) => [new THREE.TorusGeometry(WR - 0.02, 0.008, 5, 24).translate(x, WY, 0), new THREE.CylinderGeometry(0.02, 0.02, 0.1, 8).rotateX(Math.PI / 2).translate(x, WY, 0)]),
-    new THREE.CylinderGeometry(0.07, 0.07, 0.008, 12).rotateX(Math.PI / 2).translate(-0.05, 0.36, 0.06),
+  const tyres = merge([...WX.map((x) => new THREE.TorusGeometry(WR, 0.02, near ? 6 : 4, TW).translate(x, WY, 0)),
+    cyl(0.018, 0.09).rotateX(Math.PI / 2).translate(0.31, 0.95, 0.25),
+    cyl(0.018, 0.09).rotateX(Math.PI / 2).translate(0.31, 0.95, -0.25)]);
+  const metal = merge([...WX.flatMap((x) => [new THREE.TorusGeometry(WR - 0.02, 0.008, near ? 4 : 3, TW).translate(x, WY, 0), cyl(0.02, 0.1, near ? 8 : 5).rotateX(Math.PI / 2).translate(x, WY, 0)]),
+    cyl(0.07, 0.008, near ? 12 : 8).rotateX(Math.PI / 2).translate(-0.05, 0.36, 0.06),
     box(0.015, 0.17, 0.015, -0.05, 0.275, 0.09), box(0.015, 0.17, 0.015, -0.05, 0.445, 0.09),
     box(0.1, 0.02, 0.05, -0.05, 0.19, 0.115), box(0.1, 0.02, 0.05, -0.05, 0.53, 0.115),
     box(0.45, 0.008, 0.014, -0.275, 0.4, 0.065), box(0.45, 0.008, 0.014, -0.275, 0.32, 0.065)]);
@@ -79,9 +83,10 @@ export function bikeGeometry() {
 }
 
 /** One wheel stall for a bike built by bikeGeometry() (same frame: origin at the bike, front wheel at x 0.42): two steel arcs
- * either side of the tyre, cradling the wheel (#683, a Velopa-style wheel holder; size is a guess). The caller adds the rail. */
-export function standGeometry() {
-  const arc = (z) => new THREE.TorusGeometry(0.32, 0.011, 6, 16, Math.PI * 0.64).rotateZ(-Math.PI * 0.82).translate(0.42, 0.34, z);
+ * either side of the tyre, cradling the wheel (#683, a Velopa-style wheel holder; size is a guess). The caller adds the rail.
+ * `lod` 0: coarser arcs (#704). */
+export function standGeometry(lod = 1) {
+  const arc = (z) => new THREE.TorusGeometry(0.32, 0.011, lod > 0 ? 5 : 3, lod > 0 ? 12 : 8, Math.PI * 0.64).rotateZ(-Math.PI * 0.82).translate(0.42, 0.34, z);
   return merge([arc(0.045), arc(-0.045)]);
 }
 

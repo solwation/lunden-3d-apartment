@@ -299,20 +299,25 @@ export class Garage {
       rectSegs(segs, x - 0.65, x + 0.65, z - 0.45, z + 0.45);
     });
     // bike racks with bikes (CYKELPARKERING, the bike rooms)
-    const [frame, tyres, metal, spokes] = bikeGeometry(), stand = standGeometry(), Rb = rng(7), bikeCols = [0x1d3c6e, 0xb02a2a, 0x2a2a2a, 0xe2e2dc, 0x3c7a4a, 0x8a8f96, 0xd8a020];
-    for (const [x0, x1, z, f] of G.bikes) {
+    const [frame, tyres, metal, spokes] = bikeGeometry(), [frameLo, tyresLo, metalLo] = bikeGeometry(0), stand = standGeometry(), standLo = standGeometry(0);
+    const Rb = rng(7), bikeCols = [0x1d3c6e, 0xb02a2a, 0x2a2a2a, 0xe2e2dc, 0x3c7a4a, 0x8a8f96, 0xd8a020];
+    const bikeRows = new Map(); // (row, area) → the bikes and stalls of one rack row, as a near and a far mesh (#704)
+    const rackOf = (row, x, z) => { const a = areaAt(x, z), k = row + '|' + a.name; if (!bikeRows.has(k)) bikeRows.set(k, { area: a, hi: [], lo: [] }); return bikeRows.get(k); };
+    G.bikes.forEach(([x0, x1, z, f], row) => {
       put('shell', bake(new THREE.CylinderGeometry(0.014, 0.014, x1 - x0, 8).rotateZ(Math.PI / 2).translate((x0 + x1) / 2, F + 0.03, z), 0xb4b9bd), (x0 + x1) / 2, z + f * 0.5);
       for (let x = x0 + 0.3; x < x1 - 0.2; x += 0.62) {
-        put('shell', bake(stand.clone().rotateY(f * Math.PI / 2).translate(x, F, z + f * 0.42), 0xb4b9bd), x, z + f * 0.5);
+        const rack = rackOf(row, x, z + f * 0.5), at = (g) => g.clone().rotateY(f * Math.PI / 2).translate(x, F, z + f * 0.42);
+        rack.hi.push(bake(at(stand), 0xb4b9bd)); rack.lo.push(bake(at(standLo), 0xb4b9bd));
         if (Rb() < 0.65) {
-          for (const [geo, col] of [[frame, bikeCols[Math.floor(Rb() * bikeCols.length)]], [tyres, 0x141414], [metal, 0xb4b9bd]])
-            put('shell', bake(geo.clone().rotateY(f * Math.PI / 2).translate(x, F, z + f * 0.42), col), x, z + f * 0.5);
+          const col = bikeCols[Math.floor(Rb() * bikeCols.length)];
+          rack.hi.push(bake(at(frame), col), bake(at(tyres), 0x141414), bake(at(metal), 0xb4b9bd));
+          rack.lo.push(bake(at(frameLo), col), bake(at(tyresLo), 0x141414), bake(at(metalLo), 0xb4b9bd));
           bikeSpokes.push(bake(spokes.clone().rotateY(f * Math.PI / 2).translate(x, F, z + f * 0.42), 0xb4b9bd, true));
         }
       }
       const za = Math.min(z, z + f * 1.3), zb = Math.max(z, z + f * 1.3);
       rectSegs(segs, x0, x1, za, zb);
-    }
+    });
     // the förråd: wire-mesh walls and fronts with a door each; things inside
     this.cageDoors = [];
     const meshWall = (ax, az, bx, bz) => {
@@ -388,6 +393,11 @@ export class Garage {
       a.floors.forEach((f, i) => add([f.geo], a.mats.floors[i]));
       delete a.geos;
     }
+    // the rack rows' bikes (#704): per row and area a near and a far mesh in the area's shell material, swapped by distance in update()
+    this.bikeRows = [...bikeRows.values()].map((r) => {
+      const [hi, lo] = [r.hi, r.lo].map((list) => { const m = new THREE.Mesh(mergeGeometries(list), r.area.mats.shell); m.raycast = () => {}; r.area.group.add(m); m.geometry.computeBoundingSphere(); return m; });
+      return { hi, lo, c: hi.geometry.boundingSphere.center, r: hi.geometry.boundingSphere.radius };
+    });
     // All basement bike spokes share one small alpha-textured draw, independent of the room light batches.
     if (bikeSpokes.length) {
       const mesh = new THREE.Mesh(mergeGeometries(bikeSpokes), new THREE.MeshBasicMaterial({ vertexColors: true, alphaMap: bikeSpokeTexture(), alphaTest: 0.35, side: THREE.DoubleSide }));
@@ -639,6 +649,10 @@ export class Garage {
     this.object.visible = !!vis;
     for (const a of Object.values(this.areas)) a.group.visible = vis === true || a.name === 'entrance';
     this.blackout.visible = !vis;
+    if (vis) for (const b of this.bikeRows) { // a rack row's bikes: in full near the camera, the coarse set beyond (#704)
+      const near = Math.hypot(camera.position.x - b.c.x, camera.position.z - b.c.z) < G.bikeLodNear + b.r;
+      b.hi.visible = near; b.lo.visible = !near;
+    }
     // the daylight down here: none deep inside, some by the open door
     const want = below ? LI.dim * THREE.MathUtils.clamp((p.x - GD.x) / 7, 0, 1) : 0;
     this.under += (want - this.under) * Math.min(1, dt * 4);
