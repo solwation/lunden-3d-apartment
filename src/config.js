@@ -1466,6 +1466,25 @@ export const WEATHER = {
   hail: { months: [3, 4, 5], chance: 0.12, len: [0.25, 0.6], storm: 0.3, speed: 11, stones: 2200, size: 0.05, lie: 2.5 }, // lie: s a pellet lies on the ground at most
   // out in it (#249): `metres` walked outdoors while at least `min` of it falls counts once per shower
   experience: { min: 0.3, metres: 20 },
+  // #674: the temperature in the HUD badge. Simulated days (no real data): `climate` = Lund's mean temperature by month (Jan…Dec,
+  // °C) and the half-swing between the day's low (~03:00) and high (~15:00) — our *guess* from memory of Skåne's 1991–2020
+  // normals (SMHI), not looked up; `anomaly` = the standard-ish spread (°C) of a day's offset from the month's mean (seeded per
+  // date, blended into the neighbouring days so midnight has no jump); `sun` = °C a clear afternoon adds in that month, `wet` =
+  // °C a shower takes off, `snowMax` = snow never falls above this, `fade` = s a switch between simulated and real weather
+  // (and a forced one) takes to blend (rain, cloud and temperature).
+  climate: { mean: [0.5, 0.4, 2.8, 7.5, 12, 15.5, 17.8, 17.4, 13.6, 8.8, 4.7, 1.8], swing: [2, 3, 4, 5, 5.5, 5.5, 5.5, 5.5, 4.5, 3, 2, 1.5],
+    anomaly: 3.2, sun: [0.3, 0.5, 1, 1.5, 2, 2.5, 2.5, 2.5, 1.5, 1, 0.4, 0.2], wet: 1.5, snowMax: 0.5, fade: 3, forcedSnow: -2 },
+  // #674: real weather (src/realweather.js, Open-Meteo, CC BY 4.0, free for non-commercial use without a key, CORS open). A month at a
+  // time: a month that ended more than `finalDays` days ago comes from the archive (ERA5, final, cached for good, at most `keepMonths`
+  // kept), a newer one from the forecast API (its past days + the next `ahead` days; cached `ttl` s, a stale copy is used while
+  // it is fetched anew); further ahead: simulated. Only the site's coordinates (rounded to `digits` decimals) and dates are sent.
+  // `timeout` s per request, `retry` s before a failed month is tried again, `startAfter` ms after the first frame before the first
+  // request (a test's &weatherapi=/path/fixture.json starts at once and replaces both URLs by that same-origin file).
+  real: { archive: 'https://archive-api.open-meteo.com/v1/archive', forecast: 'https://api.open-meteo.com/v1/forecast',
+    hourly: 'temperature_2m,precipitation,rain,snowfall,weather_code', zone: 'Europe/Stockholm', digits: 3,
+    finalDays: 7, ahead: 6, ttl: 3 * 3600, timeout: 20, retry: 300, startAfter: 1500, keepMonths: 12, keyPrefix: 'lunden.weather.',
+    rainMm: 2.5, snowCm: 1, // mm / cm per hour that count as a full strength shower (lighter falls weaker); *guess*
+    cloud: { 1: 0.05, 2: 0.2, 3: 0.55, 45: 0.6, 48: 0.6 } }, // overcast by WMO weather code when nothing falls
 };
 
 // Speech bubbles (#247, src/greet.js): Olof's lines and your own show for `bubble` s. The neighbours to greet were

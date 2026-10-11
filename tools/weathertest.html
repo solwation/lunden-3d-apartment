@@ -18,6 +18,9 @@
 //   google-chrome --headless=new --dump-dom http://localhost:8137/tools/weathertest.html
 import { rainAt, showersOn } from '../src/weather.js';
 import { WEATHER } from '../src/config.js';
+import { simTemp } from '../src/weather.js';
+import { RealWeather, parseMonth, createRealWeather } from '../src/realweather.js';
+import { formatTemp } from '../src/hudicons.js';
 const out = document.getElementById('out');
 const lines = [];
 const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; };
@@ -45,8 +48,65 @@ for (let m = 9; m <= 11 && !wet; m++) for (let d = 1; d <= 30 && !wet; d++) { co
 const mid = rainAt(2026, wet.m, wet.d, (wet.s.start + wet.s.end) / 2).rain, before = rainAt(2026, wet.m, wet.d, wet.s.start - 1).rain;
 pass &= check(mid > 0.3 && before < mid, `a shower on 2026-${wet.m}-${wet.d}: ${mid.toFixed(2)} in it, ${before.toFixed(2)} an hour before`);
 
-// in the page, forced thunderstorm
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+// #674: the simulated temperature follows the season, the hour and what falls; deterministic per date
+const jan = simTemp(2026, 1, 15, 15), jul = simTemp(2026, 7, 15, 15);
+pass &= check(jul > jan + 10 && jan > -10 && jul < 32, `simulated 15:00: ${jan}° in January, ${jul}° in July`);
+pass &= check(simTemp(2026, 7, 15, 15, { daylight: 1 }) > simTemp(2026, 7, 15, 3, { daylight: 0 }) + 3, 'warmer by day than by night');
+pass &= check(simTemp(2026, 7, 15, 15, { kind: 'rain', rain: 1, overcast: 1, daylight: 1 }) < simTemp(2026, 7, 15, 15, { daylight: 1 }), 'cooler in the rain');
+pass &= check(simTemp(2026, 3, 20, 12, { kind: 'snow', rain: 1 }) <= WEATHER.climate.snowMax && simTemp(2026, 5, 2, 12) === simTemp(2026, 5, 2, 12), 'snow never above the cap; the same date gives the same temperature');
+let jump = 0;
+for (let d = 1; d < 28; d++) jump = Math.max(jump, Math.abs(simTemp(2026, 4, d + 1, 0) - simTemp(2026, 4, d, 23.9)));
+pass &= check(jump < 3, `no jump over midnight (${jump.toFixed(1)}°)`);
+pass &= check(formatTemp(12.4) === '12°' && formatTemp(-3.2) === '−3°' && formatTemp(-0.2) === '0°' && formatTemp(null) === '', 'the HUD text "12°", "−3°", "0°"');
+// real weather against a mock service: the request, the parse, the mapping, the cache, the fallbacks
+const fx = await (await fetch('./fixtures/openmeteo-2024-01.json')).json();
+const mem = () => { const m = new Map(); return { getItem: (k) => m.get(k) ?? null, setItem: (k, v) => m.set(k, String(v)), removeItem: (k) => m.delete(k), key: (i) => [...m.keys()][i], get length() { return m.size; } }; };
+const NOW = new Date(2026, 9, 11, 12).getTime();
+const mock = (log, body = fx, status = 200) => async (url, opt) => { log.push({ url, opt }); return { ok: status === 200, status, json: async () => body }; };
+let log = [];
+const store = mem();
+const rw = new RealWeather({ fetchFn: mock(log), storage: store, now: () => NOW, startAfter: 0 });
+rw.tick(2024, 1, 10);
+await wait(50);
+const u = new URL(log[0]?.url ?? 'http://x/');
+pass &= check(log.length === 1 && u.hostname === 'archive-api.open-meteo.com' && u.searchParams.get('start_date') === '2024-01-01' && u.searchParams.get('end_date') === '2024-01-31'
+  && u.searchParams.get('latitude') === '55.685' && u.searchParams.get('longitude') === '13.181' && /temperature_2m/.test(u.searchParams.get('hourly')) && /snowfall/.test(u.searchParams.get('hourly')), `a past month: one archive request (${u.search.slice(0, 90)}…)`);
+pass &= check(!/[?&](id|user|visitor|name)=/.test(log[0].url) && log[0].opt.credentials === 'omit' && log[0].opt.referrerPolicy === 'no-referrer', 'only the site and the dates are sent: no credentials, no referrer');
+const snow = rw.at(2024, 1, 10, 12), rain = rw.at(2024, 1, 15, 12), clear = rw.at(2024, 1, 3, 12), cloud = rw.at(2024, 1, 20, 12), hail = rw.at(2024, 1, 25, 15.5);
+pass &= check(snow?.kind === 'snow' && snow.rain > 0.5 && Math.abs(snow.temp + 1.5) < 0.01, `2024-01-10 12:00 snow, ${snow?.temp}°`);
+pass &= check(rain?.kind === 'rain' && rain.rain > 0.5 && rain.temp > 5, `2024-01-15 12:00 rain, ${rain?.temp}°`);
+pass &= check(clear?.kind === null && clear.rain === 0 && clear.temp < 0 && cloud?.overcast > 0.4 && cloud.kind === null, 'a clear cold day; an overcast day without rain');
+pass &= check(hail?.kind === 'hail' && hail.storm, 'weather code 96: hail in a thunderstorm');
+const hmid = rw.at(2024, 1, 10, 7.5), early = rw.at(2024, 1, 10, 7), late = rw.at(2024, 1, 10, 8);
+pass &= check(hmid.rain > early.rain && hmid.rain < late.rain && hmid.temp < early.temp && hmid.temp > late.temp, `interpolated between the hours (${early.rain.toFixed(2)} → ${hmid.rain.toFixed(2)} → ${late.rain.toFixed(2)})`);
+pass &= check(rw.at(2024, 1, 10, 9).id === rw.at(2024, 1, 10, 15).id && rw.at(2024, 1, 10, 12).id !== rw.at(2024, 1, 15, 12).id, 'one id per shower');
+pass &= check(rw.at(2024, 2, 1, 12) === null, 'a month it has no data for: null (the draw takes over)');
+const rw2 = new RealWeather({ fetchFn: mock(log = [], null, 500), storage: store, now: () => NOW, startAfter: 0 });
+rw2.tick(2024, 1, 10);
+await wait(50);
+pass &= check(log.length === 0 && rw2.at(2024, 1, 10, 12)?.kind === 'snow', 'a second load: from the cache, no request');
+const rw3 = new RealWeather({ fetchFn: mock(log = [], null, 500), storage: mem(), now: () => NOW, startAfter: 0 });
+rw3.tick(2024, 1, 10);
+await wait(50);
+rw3.tick(2024, 1, 10);
+await wait(50);
+pass &= check(log.length === 1 && rw3.at(2024, 1, 10, 12) === null && rw3.loaded === 0, 'a failing service (HTTP 500): quiet, no data, not asked again at once');
+const rw4 = new RealWeather({ fetchFn: async () => { throw new TypeError('offline'); }, storage: mem(), now: () => NOW, startAfter: 0 });
+rw4.tick(2024, 1, 10);
+await wait(50);
+pass &= check(rw4.at(2024, 1, 10, 12) === null, 'offline (fetch throws): no data, no error');
+pass &= check(parseMonth({ hourly: { time: ['2024-03-01T00:00'], temperature_2m: [1] } }, 2024, 1) === null && parseMonth(fx, 2024, 2) === null && parseMonth('x', 2024, 1) === null, 'a truncated or wrong-month response is rejected');
+const rw5 = new RealWeather({ fetchFn: mock(log = []), storage: mem(), now: () => NOW, startAfter: 0 });
+pass &= check(rw5.url(2027, 3) === null && rw5.url(2026, 12) === null, 'the far future: no request (simulated)');
+const cur = new URL(rw5.url(2026, 10));
+pass &= check(cur.hostname === 'api.open-meteo.com' && cur.searchParams.get('start_date') === '2026-10-01' && cur.searchParams.get('end_date') === '2026-10-17', `this month: the forecast API up to a week ahead (${cur.searchParams.get('end_date')})`);
+const late2 = new RealWeather({ fetchFn: mock(log = []), storage: mem(), now: () => NOW, startAfter: 5000 });
+late2.tick(2024, 1, 10);
+pass &= check(log.length === 0, 'nothing is asked for before the first frames have been drawn');
+pass &= check(createRealWeather(new URLSearchParams('realweather=0')) === null && createRealWeather(new URLSearchParams('weatherapi=/tools/fixtures/a.json')).api === '/tools/fixtures/a.json' && (createRealWeather(new URLSearchParams('weatherapi=https://evil.example/x'))?.api ?? null) === null, '&realweather=0 off; &weatherapi= only a path on our own origin');
+
+// in the page, forced thunderstorm
 const f = document.createElement('iframe');
 f.width = 900; f.height = 600; f.src = '../index.html?weather=storm&time=14&month=8&day=25';
 document.body.append(f);
@@ -97,6 +157,56 @@ f.onload = async () => {
   weather.force = 'clear';
   for (let i = 0; i < 10; i++) step(1 / 30);
   pass &= check(weather.rain === 0 && !weather.lines.visible && day.lights.sun.intensity > sunRain * 3, `clear: no rain, the sun back (${sunRain.toFixed(2)} → ${day.lights.sun.intensity.toFixed(2)})`);
+  f.remove();
+  // #674: in the page, with the fixture as the service
+  const load = async (query) => {
+    const fr = document.createElement('iframe'); fr.width = 900; fr.height = 600; fr.src = `../index.html?freeze&${query}`; document.body.append(fr);
+    await new Promise((r) => { fr.onload = r; });
+    while (!fr.contentWindow.__app) await wait(100);
+    const app = fr.contentWindow.__app;
+    fr.contentDocument.getElementById('start-touch').click();
+    await wait(50);
+    return { fr, app, doc: fr.contentDocument, steps(n) { for (let i = 0; i < n; i++) app.step(1 / 30); } };
+  };
+  const prefix = WEATHER.real.keyPrefix;
+  for (const k of Object.keys(localStorage)) if (k.startsWith(prefix)) localStorage.removeItem(k);
+  const API = 'weatherapi=/tools/fixtures/openmeteo-2024-01.json';
+  // a service that answers 404: the draw, quietly
+  const bad = await load('weatherapi=/tools/fixtures/none.json&year=2024&month=1&day=10&time=12');
+  bad.steps(5); await wait(1500); bad.steps(5);
+  pass &= check(bad.app.weather.real.calls >= 1 && bad.app.weather.real.loaded === 0 && bad.app.weather.src === 'sim' && Number.isFinite(bad.app.weather.temp) && /°$/.test(bad.doc.getElementById('temp').textContent), `service error: the draw and a temperature "${bad.doc.getElementById('temp').textContent}" (${bad.app.weather.real.calls} request)`);
+  bad.fr.remove();
+  // the fixture: real snow at -1.5° at 12:00 on 2024-01-10, blended in softly
+  const re = await load(`${API}&year=2024&month=1&day=10&time=12`);
+  re.steps(3);
+  const w2 = re.app.weather, tBefore = w2.temp;
+  const t0 = Date.now();
+  while (w2.real.loaded === 0 && Date.now() - t0 < 40000) { await wait(100); re.steps(1); }
+  re.steps(10);
+  const mid2 = w2.rain;
+  re.steps(120);
+  pass &= check(w2.real.loaded === 1 && w2.src === 'real' && w2.kind === 'snow' && w2.rain > 0.5 && Math.abs(w2.temp + 1.5) < 0.2, `real data: snow ${w2.rain.toFixed(2)}, ${w2.temp.toFixed(1)}° (before it came ${tBefore}°)`);
+  pass &= check(mid2 < w2.rain, `blended in softly (${mid2.toFixed(2)} → ${w2.rain.toFixed(2)})`);
+  const tt = re.doc.getElementById('temp').textContent;
+  pass &= check(tt === '−2°' || tt === '−1°', `HUD temperature "${tt}" beside the symbol "${re.doc.getElementById('weather').dataset.kind}"`);
+  pass &= check(re.doc.getElementById('level').textContent === re.app.day.clock && !/Entréplan|Utomhus/.test(re.doc.getElementById('score').textContent) && !!re.doc.getElementById('level').dataset.place, `no room name in the badge ("${re.doc.getElementById('score').textContent.replace(/\s+/g, ' ').trim()}")`);
+  pass &= check(!!localStorage.getItem(prefix + '2024-01'), 'the month is cached in localStorage');
+  re.fr.remove();
+  // second load: the service is gone (404), the cache serves the weather
+  const c2 = await load('weatherapi=/tools/fixtures/none.json&year=2024&month=1&day=15&time=12');
+  c2.steps(5); await wait(300); c2.steps(120);
+  pass &= check(c2.app.weather.real.calls === 0 && c2.app.weather.src === 'real' && c2.app.weather.kind === 'rain' && c2.app.weather.temp > 5, `cache: no request, rain ${c2.app.weather.temp.toFixed(1)}° on 2024-01-15`);
+  c2.fr.remove();
+  // the future: no request, the simulation
+  const fu = await load(`${API}&year=${new Date().getFullYear() + 5}&month=3&day=1&time=12`);
+  fu.steps(5); await wait(300); fu.steps(5);
+  pass &= check(fu.app.weather.real.calls === 0 && fu.app.weather.src === 'sim' && Number.isFinite(fu.app.weather.temp), `a far-away date: simulated, ${fu.app.weather.temp}°`);
+  fu.fr.remove();
+  // &temp= and &weather= force it
+  const fo = await load(`${API}&year=2024&month=1&day=10&time=12&weather=rain&temp=27`);
+  fo.steps(5);
+  pass &= check(fo.app.weather.kind === 'rain' && fo.doc.getElementById('temp').textContent === '27°', `&weather=rain&temp=27: "${fo.doc.getElementById('temp').textContent}"`);
+  fo.fr.remove();
   out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
 };
 </script>

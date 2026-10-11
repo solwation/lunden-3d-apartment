@@ -55,7 +55,20 @@ src/weather.js         weather (WEATHER, #248): a seeded draw per date (`showers
                        LineSegments of streaks around the eye ending on the ground or a roof (`roofAt`: the house boxes of
                        greet.js `occluders` + our unit; a walkable roof's real top where there is one, #360), DayCycle `overcast` (grey sky, fog, weaker sun) and `flash`
                        (lightning), sfx.rain (muffled indoors) / sfx.thunder after distance / 343; sitting in our car (#664) `cabinMix(car.openness)` (CAR.cabin, *guess*) knocks the rain down and dulls it with all doors shut (-18 dB, 800 Hz low-pass) and lets it through with a door open, fading with the door's angle, thunder likewise (the car's roof box already keeps streaks out of the cabin; `tools/carsoundtest.html` measures the levels with an AnalyserNode and counts streaks in the cabin); the small lamps come on
-                       earlier, the parasol folds; 🌧 / ⛈ in the HUD; `&weather=rain|storm|snow|hail|clear`.
+                       earlier, the parasol folds; the HUD shows the weather symbol (#660); `&weather=rain|storm|snow|hail|clear`, `&temp=°C`, `&year=` (with `&month=&day=`).
+                       Temperature and real weather (#674): `weather.temp` (°C, outdoors even inside the flat; the badge shows it beside the symbol). `simTemp`: the
+                       month's mean (`WEATHER.climate`, *guess* from memory of Skåne's normals, mid-month points eased into the neighbours) + a seeded per-date offset
+                       blended across midnight + the day's swing (low 03:00, high 15:00) + sun on a clear afternoon − showers; snow capped at 0.5 °C (forced `&weather=snow` ≤ −2 °C). Recomputed 4×/s.
+                       `state()` takes real data first when `weather.real` (src/realweather.js) has the hour, else the seeded draw; a switch between the two eases rain, cloud and temperature
+                       over `climate.fade` s (`ease`; `&weather=` forced weather is never eased). Real: Open-Meteo hourly `temperature_2m`, `precipitation`, `rain`, `snowfall`,
+                       `weather_code` for the anchor (lat 55.685, lon 13.181, 3 decimals) a month at a time, mapped by `hourState` (snow if snowfall > 0.05 cm or WMO 71–77/85/86; hail 96/99;
+                       storm ≥ 95; rain by precipitation 0.35…1 at `rainMm`; cloud by WMO code 1/2/3/45/48) and blended between hours; the id of a shower is its first hour (counts once).
+                       Months over for more than 7 days: archive-api.open-meteo.com (ERA5; cached for good); newer months: api.open-meteo.com up to 6 days ahead (cached 3 h); further ahead:
+                       simulated. Fetched asynchronously 1.5 s after the first update, never before; failures (offline, HTTP error, wrong body) are silent and retried after 5 min.
+                       Source and terms: Open-Meteo.com, weather data CC BY 4.0, free for non-commercial use without a key (attribution: credited in this file; not yet shown in the game). The cloud
+                       session that wrote it had no access to the live service: **the real request/response were not verified against open-meteo.com** (built from its documentation, tested with
+                       `tools/fixtures/openmeteo-2024-01.json`, a hand-made fixture) — try it once on a real machine (`?year=2024&month=1&day=10` should give real January weather). Automated
+                       browsers (`navigator.webdriver`) and `&shot` never call the service unless `&weatherapi=/path/file.json` (same-origin fixture, replaces both URLs) is given; `&realweather=0` turns it off.
                        #249: each shower has a `kind`: snow (mostly Dec–Feb; slow swaying Points, a lighter sky, silent),
                        hail (spring, and at the start of some storms; white pellets that bounce once and lie a moment, a
                        louder rattle); ❄️ / 🧊 in the HUD. Walking WEATHER.experience.metres outdoors while it falls calls
@@ -99,7 +112,7 @@ src/huego.js           the Philips Hue Go on Sovrum 1's window board (#409, #428
 src/screens.js         TV programmes drawn on a canvas (PROGRAMS: space, underwater, superheroes, unicorn …), channel
                        snow, the Ambilight colour per programme; `Screen` is shared by the TVs in furniture.js
 tools/mirrortest.html  headless test: in front of every mirror its Reflector is the active one, on the glass (#139)
-tools/weathertest.html headless test: showers per season, thunderstorms only in late summer, a shower ramps in; with &weather=storm:
+tools/weathertest.html headless test (#674 too: simTemp, RealWeather against a mock service, the fixture in the page, 404 → the draw, cache on a second load, future → simulated, `&temp=`): showers per season, thunderstorms only in late summer, a shower ramps in; with &weather=storm:
                        drops (none inside Hus L), grey sky, a flash and back, ⛈ in the HUD; snow only in winter, hail in
                        spring / storms, snowflakes not in Hus L, walking 20 m out in it counts once, not indoors; clear = no rain
 ```

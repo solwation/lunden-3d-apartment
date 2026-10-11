@@ -57,7 +57,7 @@ async function run() {
   at(GD.drive + 1.5, 44);
   walk(-90, 6);
   check(player.below && Math.abs(player.pos.y - G.floor) < 0.01 && player.pos.x > GD.x + 2, `walked in through the door: below, y ${f2(player.pos.y)}, x ${f2(player.pos.x)}`);
-  check(garage.object.visible && garage.roomAt(player.pos.x, player.pos.z) === 'Garage' && /Garage/.test(d.getElementById('level').textContent), `drawn, the room is "Garage" (HUD "${d.getElementById('level').textContent}")`);
+  check(garage.object.visible && garage.roomAt(player.pos.x, player.pos.z) === 'Garage' && /Garage/.test(d.getElementById('level').dataset.place), `drawn, the room is "Garage" (HUD "${d.getElementById('level').dataset.place}")`);
   // the motion sensor, the daylight cut, no rain down here
   for (let i = 0; i < 120; i++) step(1 / 60);
   check(garage.on && garage.level > 0.99 && garage.under > G.lights.dim * 0.5, `the tubes are on (${f2(garage.level)}), the daylight cut (under ${f2(garage.under)})`);

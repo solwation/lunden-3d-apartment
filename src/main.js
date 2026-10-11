@@ -8,7 +8,7 @@ import { CHEAT_NOTE, LOW_MEMORY, QUALITY, STANDARD } from './config.js';
 import { lowMemory, reloadOnContextRestore, freeSceneGeometryCopies } from './lowmemory.js';
 import { loadBeerShelf } from './beershelfdata.js';
 import { BeerShelf } from './beershelf.js';
-import { initHudIcons, setIcon, setPressed, setWeatherIcon } from './hudicons.js';
+import { initHudIcons, setIcon, setPressed, setWeatherIcon, formatTemp } from './hudicons.js';
 import * as THREE from 'three';
 import { UNIT_TOP, SITE, COLORS, LEVELS, DAY, START, PLAYER, DRAWING, STAIR, HOLD, LIFE, REMOTE, REST, DOOR_HEIGHT, TURBO, WEATHER, BREAK, CAR, KITCHEN, LAPTOP, NEST, AUTO_RELOAD, MIELE, CUPS, GARAGE, OLOF, CORE_A, CORE_B, CORE_C } from './config.js';
 import { MieleHeld, HeartFireworks } from './miele.js';
@@ -110,6 +110,7 @@ import { Olof, OlofDriver } from './olof.js';
 import { Greetings } from './greet.js';
 import { Nests } from './nest.js';
 import { Weather } from './weather.js';
+import { createRealWeather } from './realweather.js';
 import { Posters, HeldDrawing, paperOnly } from './posters.js';
 import { PaperBalls } from './paperball.js';
 import { Cloud } from './cloud.js';
@@ -130,8 +131,9 @@ function hideLoading() {
   setTimeout(() => { loadingEl.hidden = true; }, 400);
 }
 const hud = document.getElementById('hud');
-const levelEl = document.createElement('div'); levelEl.id = 'level'; // room · clock, inside the #score badge (#660)
+const levelEl = document.createElement('div'); levelEl.id = 'level'; // the clock (the room name is gone, #674; it stays in data-place for tests), inside the #score badge (#660)
 const weatherEl = document.createElement('span'); weatherEl.id = 'weather'; // the weather symbol, leftmost in it
+const tempEl = document.createElement('span'); tempEl.id = 'temp'; // the outdoor temperature beside it (#674)
 const promptEl = document.getElementById('prompt');
 const actionBtn = document.getElementById('action');
 const pauseBtn = document.getElementById('pause');
@@ -291,8 +293,10 @@ const now = new Date();
 const startHour = params0.has('time') ? Number(params0.get('time')) : now.getHours() + now.getMinutes() / 60;
 const month = params0.has('month') ? Number(params0.get('month')) : now.getMonth() + 1;
 const date = params0.has('day') ? Number(params0.get('day')) : params0.has('month') ? 15 : now.getDate();
-const day = new DayCycle({ scene, camera, lights: { sun, hemi, ambient, fill }, clouds: cloudTexture(), startHour, month, date, year: now.getFullYear() });
+const day = new DayCycle({ scene, camera, lights: { sun, hemi, ambient, fill }, clouds: cloudTexture(), startHour, month, date, year: params0.has('year') ? Number(params0.get('year')) : now.getFullYear() }); // (&year= with &month= &day=: a date in another year, #674)
 const weather = new Weather(scene, camera, day, params0.get('weather')); // rain in spring and autumn, thunder in late summer (#248)
+weather.real = createRealWeather(params0); // real weather for the date, fetched after the first frames; the draw stays the fallback (#674)
+if (params0.has('temp')) weather.forceTemp = Number(params0.get('temp')); // &temp=°C forces the temperature (#674)
 weather.surfaceAt = (x, z) => world.roofs.topAt(x, z); // the rain falls on the roofs you can stand on, and on you up there (#360)
 const lastWeatherPos = new THREE.Vector3();
 // out in it (#249): walking about outdoors in rain / snow / hail / a thunderstorm counts once per shower
@@ -2111,7 +2115,7 @@ document.addEventListener('keydown', (e) => {
 const statsEl = document.getElementById('stats'), statsBody = document.getElementById('stats-body');
 setBadgeElement(document.getElementById('badges'));
 setScoreElement(document.getElementById('score')); // points, top left (#197)
-document.getElementById('score').prepend(weatherEl, levelEl);
+document.getElementById('score').prepend(weatherEl, tempEl, levelEl);
 document.getElementById('score').append(document.getElementById('terminal-btn')); // preserve its listener inside the touch score badge (#501)
 
 const menuPresenceEl = document.getElementById('menu-presence');
@@ -2303,13 +2307,12 @@ function step(dt) {
   if (lvl !== lastLevel && lvl >= 0 && lastLevel >= 0) bump('stairs');
   if (lvl < 0) lastRoom = null;
   const place = visit ? visit.label(player.unitLevel, player.pos.x, player.pos.z) : lvl < 0 ? under ? under : `Utomhus${roofName ? ` · ${roofName}` : ''}` : `${LEVELS[lvl].name}${lastRoom ? ` · ${lastRoom}` : ''}`;
-  const label = `${place} · ${day.clock}`;
-  if (lvl !== lastLevel || label !== levelEl.textContent) {
-    levelEl.replaceChildren(Object.assign(document.createElement('span'), { className: 'room', textContent: place }), Object.assign(document.createElement('span'), { className: 'clock', textContent: ` · ${day.clock}` })); // (a long room name is trimmed, the clock stays, #660)
-    lastLevel = lvl;
-  }
+  if (lvl !== lastLevel || place !== levelEl.dataset.place) { levelEl.dataset.place = place; lastLevel = lvl; } // (not shown, #674: tests read where you are from here)
+  if (day.clock !== levelEl.textContent) levelEl.textContent = day.clock;
   const [wKind, wName] = nests.weatherNow(); // the symbol stays in every room, indoors too (#660)
   setWeatherIcon(weatherEl, wKind, wName);
+  const tempText = formatTemp(weather.temp); // the outdoor temperature, indoors too (#674)
+  if (tempText !== tempEl.textContent) { tempEl.textContent = tempText; tempEl.title = tempText ? `Utetemperatur ${tempText}C` : ''; tempEl.setAttribute('aria-label', tempEl.title); }
   const held = heldItem();
   if (held !== lastHeld) { lastHeld = held; detail?.refresh(); } // a thing taken from afar is drawn in the hand at once
   const away = (player.inFootprint() && !player.aloft) || player.below; // (in our flat, in the garage: no visited flat in sight)

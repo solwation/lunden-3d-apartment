@@ -10,7 +10,9 @@ import { sfx, audioParts } from './audio.js';
 // picking another date changes it. While it rains: streaks fall around the visitor (one LineSegments; drops end on
 // the ground or on a house's roof, so none fall inside the houses), the sky turns grey and the fog closes in
 // (DayCycle.overcast), a rain hiss plays (muffled indoors). A storm adds lightning (DayCycle.flash) and thunder after
-// the light, later the farther away. `&weather=rain|storm|clear` forces it.
+// the light, later the farther away. `&weather=rain|storm|clear` forces it, `&temp=` the temperature.
+// #674: a date the real-weather source (realweather.js) has data for gets that weather and temperature instead of the draw; the
+// temperature (`temp`, °C, outdoors even inside the flat) of a simulated day follows the month, the hour and what falls (simTemp).
 
 /** A small seeded random (mulberry32: neighbouring seeds — neighbouring dates — give unrelated sequences). */
 function rng(seed) {
@@ -73,6 +75,23 @@ export function rainAt(year, month, date, hour, early = 0) {
   return { rain, storm, kind, id };
 }
 
+/** The seeded day-to-day offset (°C) of a date from its month's mean. */
+const anomaly = (y, m, d) => { const r = rng(y * 8191 + m * 577 + d * 31 + 5); return (r() + r() + r() - 1.5) * W.climate.anomaly * 0.8; };
+
+/** The simulated outdoor temperature (°C) at `hour` of a date, for what falls now (`kind`, `rain` 0…1), the cloud cover and the
+ * daylight (0…1): the month's mean + a seeded offset blended between the days + the day's swing (low ~03:00, high ~15:00) + sun
+ * on a clear afternoon − a shower; snow never above WEATHER.climate.snowMax. Our *guess* (WEATHER.climate). */
+export function simTemp(year, month, date, hour, { kind = null, rain = 0, overcast = 0, daylight = 0.5 } = {}) {
+  const C = W.climate, mi = month - 1;
+  const f = (date - 15) / 30, nb = C.mean[f >= 0 ? month % 12 : (mi + 11) % 12], base = C.mean[mi] + (nb - C.mean[mi]) * Math.abs(f); // (the mean is that of mid-month, eased towards the neighbouring month's)
+  const a0 = anomaly(year, month, date), t = hour / 24;
+  const prev = new Date(year, month - 1, date - 1), next = new Date(year, month - 1, date + 1);
+  const off = t < 0.5 ? a0 + (anomaly(prev.getFullYear(), prev.getMonth() + 1, prev.getDate()) - a0) * (0.5 - t) : a0 + (anomaly(next.getFullYear(), next.getMonth() + 1, next.getDate()) - a0) * (t - 0.5);
+  let v = base + off + C.swing[mi] * Math.cos(((hour - 15) / 24) * Math.PI * 2) + C.sun[mi] * daylight * (1 - overcast) - C.wet * rain;
+  if (kind === 'snow') v = Math.min(v, C.snowMax);
+  return Math.round(v * 10) / 10;
+}
+
 let flakeTex = null;
 /** A soft round snowflake for the Points. */
 function flakeTexture() {
@@ -98,7 +117,7 @@ export class Weather {
   /** `force`: 'rain' | 'storm' | 'snow' | 'hail' | 'clear' | null (the &weather parameter). */
   constructor(scene, camera, day, force = null) {
     Object.assign(this, { scene, camera, day, force, rain: 0, overcast: 0, storm: false, kind: null, id: null, flashT: 9, flash: 0, flashK: 0,
-      strikes: 0, particleScale: 1, sound: null, walked: {}, done: {} }); // particleScale: the quality level's share of the particles (#592)
+      strikes: 0, temp: null, real: null, forceTemp: null, particleScale: 1, sound: null, walked: {}, done: {} }); // particleScale: the quality level's share of the particles (#592)
     // the houses (greet.js) and our own unit, which greet.js leaves to the flat's walls: nothing falls inside them
     this.boxes = [...occluders(), { x0: 0, x1: 5.75, z0: 0.05, z1: 12.65, y0: 0, y1: UNIT_TOP }];
     // rain: streaks (one LineSegments)
@@ -168,22 +187,56 @@ export class Weather {
     p[o] = x; p[o + 1] = y; p[o + 2] = z;
   }
 
-  /** The weather now (forced or from the date and hour). */
+  /** The weather now (forced, real, or from the date and hour): rain, storm, overcast, kind, id and the temperature `temp` (°C, &temp= forces it). */
   state() {
-    const f = this.force;
-    if (f === 'clear') return { rain: 0, storm: false, overcast: 0, kind: null, id: null };
-    if (f === 'rain' || f === 'snow' || f === 'hail') return { rain: 0.8, storm: false, overcast: 1, kind: f, id: `forced-${f}` };
-    if (f === 'storm') return { rain: 1, storm: true, overcast: 1, kind: 'rain', id: 'forced-storm' };
-    const d = this.day, now = rainAt(d.year, d.month, d.date, d.hour), sky = rainAt(d.year, d.month, d.date, d.hour, 0.5);
-    return { ...now, overcast: Math.min(1, sky.rain * 1.3) };
+    const f = this.force, d = this.day;
+    let s, source = 'sim';
+    if (f === 'clear') s = { rain: 0, storm: false, overcast: 0, kind: null, id: null };
+    else if (f === 'rain' || f === 'snow' || f === 'hail') s = { rain: 0.8, storm: false, overcast: 1, kind: f, id: `forced-${f}` };
+    else if (f === 'storm') s = { rain: 1, storm: true, overcast: 1, kind: 'rain', id: 'forced-storm' };
+    else {
+      const real = this.real?.at(d.year, d.month, d.date, d.hour); // real data for this hour (realweather.js), else the draw
+      if (real) { s = real; source = 'real'; } else {
+        const now = rainAt(d.year, d.month, d.date, d.hour), sky = rainAt(d.year, d.month, d.date, d.hour, 0.5);
+        s = { ...now, overcast: Math.min(1, sky.rain * 1.3) };
+      }
+    }
+    if (s.temp == null) { // (a forced kind has no temperature of its own: the month's for it, snow below freezing); recomputed 4×/s, it moves slowly
+      if (this.tempAge === undefined || this.clock - this.tempAge >= 0.25 || this.tempKind !== s.kind) {
+        let v = simTemp(d.year, d.month, d.date, d.hour, { kind: s.kind, rain: s.rain, overcast: s.overcast, daylight: d.daylight });
+        if (f === 'snow') v = Math.min(v, W.climate.forcedSnow);
+        Object.assign(this, { tempAge: this.clock, tempVal: v, tempKind: s.kind });
+      }
+      s = { ...s, temp: this.tempVal };
+    }
+    if (this.forceTemp != null) s.temp = this.forceTemp;
+    s.source = f ? 'forced' : source;
+    return s;
+  }
+
+  /** Blend a change of source (the draw → real data arriving, or back) over WEATHER.climate.fade s: `s` is the new state, the result
+   * eases rain, cloud and temperature from what was shown. The kind of the old rain stays while it fades out. */
+  ease(s, dt) {
+    if (s.source === 'forced' || this.src === undefined) { this.src = s.source; this.from = null; return s; } // (forced weather, tests and the first frame: at once)
+    if (s.source !== this.src) {
+      if (this.src !== 'forced') this.from = { rain: this.rain, overcast: this.overcast, temp: this.temp ?? s.temp, kind: this.kind, storm: this.storm };
+      this.src = s.source; this.fade = 0;
+    }
+    if (!this.from) return s;
+    this.fade += dt / W.climate.fade;
+    if (this.fade >= 1) { this.from = null; return s; }
+    const k = this.fade, a = this.from, mix = (x, y) => x + (y - x) * k;
+    const rain = mix(a.rain, s.rain), keep = !s.kind && a.kind && rain > 0.01;
+    return { ...s, rain, overcast: mix(a.overcast, s.overcast), temp: mix(a.temp, s.temp), kind: keep ? a.kind : s.kind, storm: keep ? a.storm && rain > 0.5 : s.storm, id: keep ? this.id : s.id };
   }
 
   /** `inside`: the visitor is in the flat (muffled); `moved`: metres walked this frame (#249: out in it, it counts);
    * `cabin`: sitting in our car (#664), how far its doors stand open 0…1 (`cabinMix`), else null. */
   update(dt, inside = false, moved = 0, cabin = null) {
-    const s = this.state();
+    this.real?.tick(this.day.year, this.day.month, this.day.date); // (the first request waits for the first frames, #674)
+    const s = this.ease(this.state(), dt);
     if (s.kind !== this.kind) this.seeded = null; // another kind: start the particles afresh
-    Object.assign(this, { rain: s.rain, storm: s.storm, overcast: s.overcast, kind: s.kind, id: s.id });
+    Object.assign(this, { rain: s.rain, storm: s.storm, overcast: s.overcast, kind: s.kind, id: s.id, temp: s.temp });
     this.day.overcast = this.overcast * (this.kind === 'snow' ? 0.7 : 1); // snow clouds are lighter
     this.clock += dt;
     const streaks = this.kind === 'rain', hail = this.kind === 'hail', active = Math.round((streaks ? W.drops : hail ? W.hail.stones : W.snow.flakes) * this.rain * this.particleScale);

@@ -5,7 +5,7 @@ try{
  const w=f.contentWindow,d=f.contentDocument,A=w.__app,P=A.player;
  d.documentElement.requestFullscreen=undefined;d.getElementById('start-touch').click();A.renderer.setAnimationLoop(null);
  const rooms=()=>Object.keys(A.stats.visited);
- function at(x,z,y){P.spawn(x,z,0);P.pos.y=y;P.eyeY=y+1.62;A.camera.position.set(x,P.eyeY,z);for(let i=0;i<3;i++)A.step(1/60);return d.getElementById('level').textContent;}
+ function at(x,z,y){P.spawn(x,z,0);P.pos.y=y;P.eyeY=y+1.62;A.camera.position.set(x,P.eyeY,z);for(let i=0;i<3;i++)A.step(1/60);return d.getElementById('level').dataset.place;}
  const before=rooms();
  let text=at(5,4,-3);
  check(P.below&&/Under gården · Hyrförråd/.test(text),`storage under apartment: ${text}`);

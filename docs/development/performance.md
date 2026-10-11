@@ -171,6 +171,8 @@ reading its per-level value from a `QUALITY` table; `state` is the line in the `
 | `detail` | ×0.6 | ×0.75 | ×0.9 | ×1 | DetailCuller's cut distances (#460's `setQuality`) |
 | `weather` | ×0.35 | ×0.6 | ×0.85 | ×1 | share of rain streaks / snowflakes / hail drawn |
 
+Real weather (#674) costs nothing per frame beyond a few typed-array reads (`RealWeather.at`) and a 4×/s simulated temperature; one month (24 × days hours × 4 arrays, ~15 KB) is held, at most three months in memory, the fetch happens once after the first frames.
+
 Not knobs (yet): the campus facades' LOD (#589) is chosen once at build time (a runtime switch needs a second geometry
 per batch), and the Christmas tree's shimmer costs 0.016 ms (#571) — not worth one.
 

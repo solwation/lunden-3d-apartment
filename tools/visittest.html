@@ -22,7 +22,7 @@ const load = (q = '') => new Promise((resolve) => {
     const unit = world.units.find((u) => u.id === 'L1004'), ox = unit?.ox;
     check(unit && Math.abs(ox - husLLayout().units.find((u) => u.lower === 'L1004').ox) < 1e-6, `L1004 at its own slot in Hus L (ox ${ox})`);
     check(unit.size.x === world.size.x && unit.size.z === world.size.z, 'the shared sheet: the same 5.75 × 12.70 m footprint as ours');
-    const label = () => f.contentDocument.getElementById('level').textContent;
+    const label = () => f.contentDocument.getElementById('level').dataset.place;
     const dt = 1 / 60;
     const walk = (pts, limitS = 20) => {
       for (const [x, z] of pts) {

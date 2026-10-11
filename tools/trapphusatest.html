@@ -37,7 +37,7 @@ async function run() {
   const near = (x, z) => Math.hypot(player.pos.x - x, player.pos.z - z) < 0.3;
   const look = (o) => { const p = o.getWorldPosition(new camera.position.constructor()); const dx = p.x - camera.position.x, dz = p.z - camera.position.z; camera.rotation.set(Math.atan2(p.y - camera.position.y, Math.hypot(dx, dz)), Math.atan2(-dx, -dz), 0, 'YXZ'); step(1 / 60); };
   const btn = d.getElementById('action');
-  const hud = () => d.getElementById('level').textContent;
+  const hud = () => d.getElementById('level').dataset.place;
   const falls0 = stats.falls ?? 0;
   const ride = (k) => { lift.targets.find((t) => t.kind === 'liftbtn' && t.stop === k).press(); for (let i = 0; i < 60 * 60 && !(lift.at === k && lift.doors >= 1); i++) step(1 / 60); };
   const [dr0, dr1] = K.entrance.door, drm = (dr0 + dr1) / 2, B = K.band, LX = (K.lift.door[0] + K.lift.door[1]) / 2;

@@ -37,6 +37,12 @@ export function setWeatherIcon(el,kind,label) {
  el.innerHTML=`<svg class="hud-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${paths[kind]}</svg>`;
  el.dataset.kind=kind;el.title=label;el.setAttribute('aria-label',label);
 }
+/** The outdoor temperature for the HUD badge (#674): "12°", "−3°" (a real minus sign), "" while there is none. */
+export function formatTemp(t) {
+ if(t==null||!Number.isFinite(t))return '';
+ const v=Math.round(t);
+ return `${v<0?'\u2212':''}${Math.abs(v)}\u00b0`;
+}
 export function setIcon(button,name,label) {
  if(!button)return;
  if(button.dataset.hudIcon!==name||!button.querySelector('.hud-icon')){

@@ -74,7 +74,7 @@ async function run() {
   place(3, 0.8, roofTop, -90);
   check(Math.abs(player.pos.y - roofTop) < 0.01 && player.aloft && player.outdoors && player.level === 0 && !landings.length,
     `on the loftgång at ${f2(player.pos.y)} m (aloft ${player.aloft}, outdoors ${player.outdoors}, level ${player.level})`);
-  check(world.roofs.standingOn(player.pos.x, player.pos.z, player.pos.y)?.id === 'L-loftgang' && /Utomhus · Loftgången/.test(d.getElementById('level').textContent),
+  check(world.roofs.standingOn(player.pos.x, player.pos.z, player.pos.y)?.id === 'L-loftgang' && /Utomhus · Loftgången/.test(d.getElementById('level').dataset.place),
     'the surface is the loftgång (the HUD says so)');
   check(Object.keys(stats.seen.roofs ?? {}).length === roofs0 + 1 || stats.seen.roofs?.['L-loftgang'], 'the first visit counted');
   // along it east: level all the way
