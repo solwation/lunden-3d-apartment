@@ -27,18 +27,22 @@ import { WARM } from './config.js';
 //     threw there ("Script error." in the reports: cross-origin), the promise never settled and the warm-up stayed in
 //     `compiling` for ever (reproduced by disposing a scene material while compiling). `whenReady` guards every read and
 //     gives up after a timeout. Not measured on a device.
+// #697: phones start immediately and keep the loading cover until all slices finish; main.js then draws the real view.
 // Headless test browsers skip it (minutes of SwiftShader, nobody looks), `&warm` forces it.
 export class WarmUp {
   /** `mirrorTarget()` → the render target mirrors draw into (or null); `log(text)` for `&perf`; `sliced` = phones (#669). */
   constructor({ renderer, scene, camera, shadowCamera, mirrorTarget = () => null, prepare = () => {}, skip = false, lazyHidden = false, sliced = false, log = null, onSlowFrame = () => {} }) {
     Object.assign(this, { renderer, scene, camera, shadowCamera, mirrorTarget, prepare, lazyHidden, sliced, log, onSlowFrame });
     this.state = skip ? 'skipped' : 'pending'; // → compiling → draw (→ drawing) → mirror → compiling → mirror-draw (→ drawing) → textures → uploading → done
-    this.wait = WARM.frames;
+    this.wait = sliced ? 1 : WARM.frames; // phones compile before their first normal render (#697)
     this.textures = null;
     this.job = null;
   }
 
   get done() { return this.state === 'done' || this.state === 'skipped'; }
+
+  // Sliced draws only contain part of the scene: keep them behind the loading/resume cover.
+  get blocksView() { return this.sliced && !this.done; }
 
   /** What the crash report shows besides `state`: where the sliced stages are (`compiling 12/113`, `drawing 3/20 mirror`). */
   get detail() {

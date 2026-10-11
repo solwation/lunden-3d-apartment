@@ -127,8 +127,10 @@ const overlay = document.getElementById('overlay');
 const beerParams = new URLSearchParams(location.search);
 const beerShelfData = loadBeerShelf({ endpoint: beerParams.get('beers') || undefined, refresh: !beerParams.has('life') || beerParams.has('beers'), persist: !beerParams.has('life') });
 const loadingEl = document.getElementById('loading');
+const skipWarmUp = /HeadlessChrome/.test(navigator.userAgent) && !new URLSearchParams(location.search).has('warm');
+let startupSceneReady = !lowMemory || skipWarmUp; // phones release their cover after a complete visible render (#697)
 function hideLoading() {
-  if (!loadingEl || loadingEl.hidden) return;
+  if (!startupSceneReady || !loadingEl || loadingEl.hidden) return;
   loadingEl.classList.add('done');
   setTimeout(() => { loadingEl.hidden = true; }, 400);
 }
@@ -999,7 +1001,7 @@ if (toggleInst && instEl) {
   });
 }
 const params = new URLSearchParams(location.search);
-if (params.has('shot')) { overlay.hidden = true; if (loadingEl) loadingEl.hidden = true; }
+if (params.has('shot')) { overlay.hidden = true; if (loadingEl && startupSceneReady) loadingEl.hidden = true; }
 if (params.has('tv')) for (const t of world.furnitureTargets) if (t.kind === 'tv') t.toggle();
 // Tilly's laptop (#283): every clip kind seen counts once (stats `clips`); &laptop switches it on (screenshots)
 const laptops = [...new Set(world.furnitureTargets.filter((t) => t.kind === 'laptop').map((t) => t.laptop))];
@@ -1096,7 +1098,7 @@ function look(dyaw, dpitch) {
 
 let played = false; // left the start screen at least once this visit (an F5 then carries on, #203)
 function showOverlay(show) {
-  if (!show) { played = true; document.getElementById('reset-done').hidden = true; if (loadingEl) loadingEl.hidden = true; } // "Hemmet är återställt" only until the visit starts (#303)
+  if (!show) { played = true; document.getElementById('reset-done').hidden = true; if (loadingEl && startupSceneReady) loadingEl.hidden = true; } // "Hemmet är återställt" only until the visit starts (#303)
   overlay.hidden = !show;
   hud.hidden = show;
   const cornerQr = document.getElementById('corner-qr');
@@ -2388,7 +2390,7 @@ quality.register('detail', { // DetailCuller's distances (#189, #460): small thi
 // Warm-up (#432, #592, src/warmup.js): compile and upload everything behind the start screen, the mirrors' variants too.
 const warm = new WarmUp({ renderer, scene, camera, shadowCamera: sun.shadow.camera, mirrorTarget,
   prepare: () => { lights.wash?.patch(scene); visitLights.wash?.patch(scene); }, // (#668: both lamp washes' periodic patch, now)
-  skip: /HeadlessChrome/.test(navigator.userAgent) && !params.has('warm'), lazyHidden: lowMemory, sliced: lowMemory, log: perfEl ? (t) => console.log(t) : null,
+  skip: skipWarmUp, lazyHidden: lowMemory, sliced: lowMemory, log: perfEl ? (t) => console.log(t) : null,
   onSlowFrame: () => clock.getDelta() }); // (a slow warm-up frame is no reason to lower the resolution)
 freeSceneGeometryCopies(scene, renderer); // phone: normals / uv / colours leave the CPU after the first upload (#628)
 let mirrorFrame = 0;
@@ -2411,12 +2413,19 @@ function frame(raw) {
   // one mirror image at a time, none at the lower quality levels. Heavy passes are spread over frames (#592): the
   // mirror keeps last frame's image in a frame that redraws the shadow map, and at level 2 draws every other frame.
   const mirrorSkip = renderer.shadowMap.needsUpdate || ++mirrorFrame % QUALITY.mirrorEvery[quality.level] !== 0;
-  const mirror = updateReflections(camera, player.aloft ? -1 : Math.max(0, player.level), QUALITY.mirror[quality.level] > 0, mirrorSkip);
+  const mirror = updateReflections(camera, player.aloft ? -1 : Math.max(0, player.level), QUALITY.mirror[quality.level] > 0 && !warm.blocksView, mirrorSkip);
   updateListener(camera);
   hitch.phase('update');
   if (hitch.enabled) Object.assign(hitch.frameInfo, { shadow: renderer.shadowMap.needsUpdate, mirror: mirror ? (reflectors().find((m) => m.r.visible)?.name || 'yes') + (mirrorSkip ? ' (held)' : '') : '', quality: quality.level,
     yaw: Math.round(camera.rotation.y * 180 / Math.PI), at: `${camera.position.x.toFixed(1)},${camera.position.z.toFixed(1)}` });
-  renderer.render(scene, camera);
+  if (!warm.blocksView) {
+    renderer.render(scene, camera);
+    if (!startupSceneReady) {
+      startupSceneReady = true;
+      document.documentElement.classList.remove('resuming');
+      hideLoading(); // the full scene is now on the canvas; sliced uploads never show through the cover
+    }
+  }
   hitch.phase('render');
   hitch.end();
   const fMs = performance.now() - f0;
@@ -2650,7 +2659,7 @@ if (resumeOk && resumed.mode && resumed.world) loadWorld(keepApp, resumed.world)
 if (resumeOk && resumed.mode) continueAfterReload(resumed);
 // &life (#365): the life simulator's developer scenario — a cleared worktop, a few test things, never saved (life.js)
 if (lifeDev()) devScenario({ life, world, holdables, cups, things, milk, fish, fries, fruit, airFryer, beer, cat, day, player, camera, at: !!at, timeGiven: params0.has('time'), keepOpen: params0.has('open') });
-document.documentElement.classList.remove('resuming'); // the page is ready: off with the "Laddar…" cover (#222)
+if (startupSceneReady) document.documentElement.classList.remove('resuming'); // the page is ready: off with the "Laddar…" cover (#222)
 hideLoading();
 
 crashlog.attach({ renderer, camera, quality, player, world, sun, scene, mirrorTarget, frameDiag }); // what the crash heartbeat shows (#629)

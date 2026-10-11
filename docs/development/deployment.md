@@ -7,6 +7,8 @@ Related: [storage](storage.md), [verification](verification.md).
 
 ```text
 src/viewport.js        renderer/camera sizing is attached before scene loading, including rotations during awaits (#567)
+src/warmup.js          phone shader/geometry warm-up runs in slices before the first complete scene (#697);
+                       main.js keeps the loading/resume cover until that scene has rendered
 src/bootstrap.js       lightweight startup gate: bounded version check before importing main.js (#512)
 src/startup.js         fresh HTML/build check + cache-busted early update; loop guards; no scene on outgoing page
 src/version.js         BUILD/CONTENT stamps + polling for publications later during a visit
@@ -18,6 +20,8 @@ manifest.webmanifest   web app manifest; icons/ = icon.svg rendered to PNG (192,
                        + qr-site.svg, the start screen's QR code to the site (#193; made with OpenCV's
                        cv2.QRCodeEncoder, level M, and checked with cv2.QRCodeDetector on a screenshot; hidden on phones)
 data/changelog.json    what changed, for visitors (see Workflow rules)
+tools/firstframetest.cjs phone frame-zero / first full-view shader, texture and buffer counts; loading/resume cover order,
+                       partial warm-up renders hidden, public dismissal guards and five warmed start-view turns (#697)
 tools/notetest.html    headless test of the changelog note ("Nytt", read/close, no walking, swings with the freezer door;
                        scrolling keys, a W held from before ignored, #275)
 tools/updatetest.html  headless test of the update notice on a phone-sized touch screen (on top, 44 px, touch works);
@@ -94,3 +98,5 @@ Startkontroll (#512): `tools/startuptest.html` har 20 kontroller av aktuell/ny v
 Changelog robustness (#655): `loadChangelog` accepts only an OK answer that is a non-empty list; it tries `data/changelog.json?v=…` twice (5 s timeout each), then once without `?v` (built as `['data','changelog.json'].join('/')` so stamp.sh does not rewrite it), and falls back on the last good answer kept in localStorage (`lunden.changelogCache`, 200 entries). `changelog.fresh` is false when the server did not answer; main.js then runs `retryChangelog` in the background (5/20/60/180 s) and redraws the list and the paper (`note.refresh`) on the first fresh answer. Start is never blocked longer than the two timeouts.
 
 Freezer history limit (#543): loadChangelog marks/sorts the complete history before selecting CHANGELOG_NOTE.limit (100) entries for both the note texture and readable list. data/changelog.json retains the complete history and seen metadata still tracks the full input. notetest covers publication order with a late low-id entry, New markers and histories below/at/above the cap.
+
+Phone first view (#697): low-memory devices start sliced warm-up immediately. Ordinary scene/mirror renders wait for `WarmUp.done`; slice renders stay behind the loading screen or the existing `html.resuming` cover. `hideLoading`, screenshot mode and `showOverlay(false)` cannot dismiss the cover early. The first complete ordinary scene render removes the resume cover and starts the loading fade. Desktop warm-up timing and explicit headless skips keep their previous behaviour. This can extend the visible loading period; no claim is made about iPhone watchdog recovery.

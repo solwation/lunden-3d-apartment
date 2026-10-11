@@ -382,10 +382,9 @@ each stage (not only before the first compile). Programs after a full sliced run
 such late recompiles (the "298 → 299 late program" in the reports is the same kind). Materials made after `done` still compile
 (and get patched) on first sight.
 
-**Still open (not done, no measurement possible without a device):** the *first* real frame compiles ~70 programs and uploads
-~2700 buffers / ~100 textures before the warm-up starts (frame 0: 71 programs, 14 s under SwiftShader); materials made after the
-start (cups, cat coats, new life items) still compile on first sight; `worst`/`warm` in the next iPhone report will say which
-of them (if any) is still a multi-second frame. Verify on a real iPhone.
+The first-frame burst above is addressed by #697 below. Still open: materials made after startup (cups, cat coats, new
+life items) compile on first sight; `worst`/`warm` in the next iPhone report will show whether those cause a long frame.
+Context-loss prevention still needs verification on a real iPhone; #669 remains open.
 
 ## Triangle budget over by the basement's bike racks (#704)
 
@@ -403,3 +402,34 @@ Fix: `bikeGeometry(lod)` / `standGeometry(lod)` in `src/streetlife.js` take a le
 | park | 909 031 | 897 991 | 591 864 | 588 384 |
 
 Desktop peak is now 922 959 at the big hall (budget 1 000 000), phone peak 820 262 at the basement (budget 950 000). The courtyard rack and the bike yard's instanced bikes only got the lighter near geometry (no distance swap); they are the next lever if the budget is hit again. To find what a view's triangles are made of, hook `onBeforeRender` on every mesh, render once and sum `index.count / 3` (× `count` when instanced) per mesh, with the material colour and bounding box to recognise merged batches.
+
+## Phone warm-up before the first complete view (#697)
+
+`WarmUp.blocksView` gates ordinary scene and mirror renders on low-memory devices until sliced warm-up reaches `done`.
+Compilation starts on the first controlled frame rather than after three ordinary frames. All upload/mirror slices stay
+behind the loading screen or the existing resume cover; only the first complete ordinary render releases it. Desktop
+warm-up timing and headless skips keep their previous behaviour. Pixel-ratio, shadow and quality configuration are unchanged.
+
+Measured with `tools/firstframetest.cjs`, Chromium/SwiftShader, iPhone UA, 844 × 390 @3, `?lowmem&perf&warm&shot` at the start
+view, noon in July. Screenshot mode pins quality 3 (the existing phone limits still apply); the harness pauses the initial
+animation loop and drives real `frame(1/60)` calls. Baseline: 339e769; after: 77cb75e plus #697 (also includes #688’s grass
+shader/atlas, so this is not a same-geometry frame-time comparison).
+
+| Count | Baseline frame 0 | After frame 0 | After first complete view |
+|---|---:|---:|---:|
+| New shader programs | 74 | 0 | 0 |
+| Buffer uploads (`bufferData`) | 2,692 | 0 | 0 |
+| New textures | 111 | 0 | 0 |
+| Image upload calls (`texImage`/`texSubImage`, etc.) | 116 | 0 | 0 |
+
+Warm-up finished in 226 controlled frames (35 normal and 35 mirror upload slices). The largest preparatory frame created
+7 programs, uploaded 449 buffers and made 17 image upload calls. The first canvas upload slice created 2 programs and
+uploaded 341 buffers / 8 images; the initial offscreen environment-map pass during compilation created 1 program.
+The regression gate allows at most `WARM.programs + WARM.batch` (12) new programs per preparatory frame, allowing the
+compiler to finish its object batch, and exactly zero in the first complete view. All 249 cached programs linked; no
+shader or page errors, and five start-view turns needed zero new programs. Public `hideLoading`, `showOverlay(false)`
+and screenshot mode kept the loading/resume cover until a real view existed. Desktop/skipped state gates were checked.
+
+These are GL call counts, not iPhone frame times or proof that the iOS watchdog will keep the context. A physical iPhone
+check is still required for #669. The loader can remain visible longer while preparation completes; hidden seasonal
+textures still upload lazily later, as before.
