@@ -65,7 +65,7 @@ src/weather.js         weather (WEATHER, #248): a seeded draw per date (`showers
                        storm ≥ 95; rain by precipitation 0.35…1 at `rainMm`; cloud by WMO code 1/2/3/45/48) and blended between hours; the id of a shower is its first hour (counts once).
                        Months over for more than 7 days: archive-api.open-meteo.com (ERA5; cached for good); newer months: api.open-meteo.com up to 6 days ahead (cached 3 h); further ahead:
                        simulated. Fetched asynchronously 1.5 s after the first update, never before; failures (offline, HTTP error, wrong body) are silent and retried after 5 min.
-                       Source and terms: Open-Meteo.com, weather data CC BY 4.0, free for non-commercial use without a key (attribution: credited in this file; not yet shown in the game). The cloud
+                       Source and terms: Open-Meteo.com, weather data CC BY 4.0, free for non-commercial use without a key (attribution: credited in this file and shown on the start screen under *Om musiken* as `#weather-credit`, always visible, link rel=noopener to open-meteo.com, #700; README too). The cloud
                        session that wrote it had no access to the live service: **the real request/response were not verified against open-meteo.com** (built from its documentation, tested with
                        `tools/fixtures/openmeteo-2024-01.json`, a hand-made fixture) — try it once on a real machine (`?year=2024&month=1&day=10` should give real January weather). Automated
                        browsers (`navigator.webdriver`) and `&shot` never call the service unless `&weatherapi=/path/file.json` (same-origin fixture, replaces both URLs) is given; `&realweather=0` turns it off.
