@@ -51,7 +51,7 @@ src/stuff.js           what is inside wardrobes and drawers (#228, STUFF): `Pack
                        mesh, no raycast; `rbox` = rounded, #240: folded stacks, garments, shoes; socks are capsules), `garment`, `stack`, `rolls`, `shoes`; `wardrobeFill` (world.js: clothes on the rod,
                        hat shelf, shoes — by the room's person, `personFor`), `drawerFill` (addDrawer `fill`: tees, socks,
                        underwear, pyjamas, jeans, toys, crafts, nightstand). Sovrum 1: NORDLI, NORDKISA, IDANAS drawers;
-                       Sovrum 2: wardrobe L; Sovrum 3: wardrobe G + ALEX drawers (#230)
+                       Sovrum 2: wardrobe L, the `pictures` posters "EAT SLEEP GAME REPEAT" (#430, east wall) and "THE GULAG" (#694, west wall over the gaming desk; *guess* 42 × 59 cm); Sovrum 3: wardrobe G + ALEX drawers (#230)
 src/shelves.js         kitchen wall shelves (WALL_SHELVES, #291; raised to 1.85 / 2.25 m in #333 for the framed print "THIS KITCHEN IS FOR
                        DANCING" 40 × 50 under them, a FURNITURE `pictures` item drawn on a canvas: `paint` / `print`): cookbooks, glass jars, lathe-turned stoneware (speckle map),
                        brass candlesticks, a mortar, a cutting board, framed prints (one canvas atlas); merged per material;

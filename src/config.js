@@ -4275,6 +4275,13 @@ export const FURNITURE = [
   // photo's print cropped inside the frame and straightened (720 × 920 px = 36 × 46 cm).
   { type: 'pictures', level: 1, x: 5.551, z: (8.504 + 9.62) / 2, y: 1.55, rot: 90, w: 0.4, h: 0.5, gap: 0, frame: 0.02, depth: 0.025,
     rough: 0.5, cols: 1, rows: 1, atlas: 'textures/eat-sleep-game-repeat-sovrum2.jpg', grid: [1, 1], order: [0] },
+  // Walter & Kian's poster "THE GULAG" (#694, docs/tavla-sovrum2-the-gulag.jpg): ~42 × 59 cm (*guess*, A2-ish; the real size is
+  // unknown, the aspect 0.71 is the photo's), a printed board with a dark edge, no frame or mount (*guess* from the photo).
+  // On the west wall (inner face x 2.7517) centred over the gaming desk (z 11.45); the monitor's top is at 1.21 (desk 0.75 +
+  // arm 0.12 + 0.34), so the bottom sits at 1.40 → centre 1.695 (*guess*), top 1.99 under the soffit. textures/the-gulag-sovrum2.jpg
+  // = the photo's poster straightened and cropped (720 × 1010 px).
+  { type: 'pictures', level: 1, x: 2.752, z: 12.23 - 0.7 - 0.08, y: 1.695, rot: -90, w: 0.42, h: 0.59, gap: 0, frame: 0, depth: 0.02,
+    rough: 0.45, cols: 1, rows: 1, atlas: 'textures/the-gulag-sovrum2.jpg', grid: [1, 1], order: [0] },
   // Walter & Kian's gaming corner (#77, #84, #459): a black desk 140 × 70 along the west wall (opposite the bunk),
   // moved 8 cm north of the south window wall to clear the curtains, facing east; curved 34" ultrawide on a monitor arm, RGB
   // tower at the window end (out of the bunk's line of sight), keyboard, mouse, headset, speakers (sizes
