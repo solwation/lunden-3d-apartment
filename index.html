@@ -280,6 +280,10 @@
     #player-badge button:hover { background: #f0f7fa; }
     #player-badge button[hidden] { display: none; }
     #lb-name { margin: 10px 0 4px; }
+    .share-row { display: flex; gap: 8px; align-items: center; font-size: 13px; margin: 8px 0 0; cursor: pointer; }
+    .share-row[hidden], #lb-name label.share-row[hidden] { display: none; }
+    #lb-name label.share-row { display: flex; font-weight: 400; margin-top: 12px; }
+    .share-row input { width: 18px; height: 18px; flex: none; }
     #lb-name[hidden], #lb-start { display: none !important; }
     #lb-name label { display: grid; gap: 4px; font-size: 13px; font-weight: 600; }
     #lb-name input { font: 15px system-ui, sans-serif; padding: 10px 12px; border: 1px solid #c8ced3; border-radius: 6px; width: 100%; box-sizing: border-box; }
@@ -529,6 +533,7 @@
         <button id="player-new" type="button" hidden title="Byt spelare eller starta ny session">Byt spelare</button>
       </div>
       <ol id="lb-start" class="lb" hidden></ol>
+      <label class="share-row start-share" hidden><input type="checkbox" class="share-off"> Visa mig inte för andra</label>
       <div class="start">
         <button id="start-mouse" class="go">Mus &amp; tangentbord</button>
         <button id="start-touch" class="go alt">Touch</button>
@@ -678,7 +683,7 @@
     <div class="card">
       <div class="kicker">TOPPLISTAN</div>
       <h1 id="player-dialog-title">Välj spelarnamn</h1>
-      <p id="player-dialog-desc">Skriv in ett namn om du vill synas på topplistan. Du kan även hoppa över och spela anonymt.</p>
+      <p id="player-dialog-desc">Skriv in ett namn om du vill synas på topplistan. Hoppar du över syns du som "Anonym", med din poäng, för andra spelare.</p>
       <div id="lb-name" hidden>
         <label for="player-name">Ditt namn på topplistan</label>
         <input id="player-name" type="text" placeholder="valfritt namn" autocomplete="nickname" spellcheck="false">
@@ -686,6 +691,7 @@
           <button id="player-ok" class="go" type="button">OK</button>
           <button id="player-skip" class="go alt" type="button">Hoppa över</button>
         </div>
+        <label class="share-row" hidden><input type="checkbox" class="share-off"> Visa mig inte för andra</label>
       </div>
     </div>
   </div>

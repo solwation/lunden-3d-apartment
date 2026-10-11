@@ -2180,15 +2180,17 @@ function renderMenuPresence(p) {
 const presence = new Presence(cloud.url, document.getElementById('presence'), {
   getName: () => leaderboard.name,
   getScore: () => totalScore(),
+  shares: () => leaderboard.shares,
   onUpdate: (p) => renderMenuPresence(p)
 });
+leaderboard.onShareChange = () => presence.beat(); // (the ghosts follow `active` below)
 leaderboard.activePlayers = () => presence.names;
 // other players as ghosts with a name tag (#666, src/ghosts.js): a WebSocket to the Worker's players' room, only while playing
 // fights between two armed players (#667, src/combat.js): which weapon we hold (COMBAT.weapons, in that order)
 const weaponIs = { saber: (h) => h === saber, nerf: (h) => toys.blasters.includes(h), wand: (h) => toys.wands.includes(h),
   rifle: (h) => !!h?.isRifle, ball: (h) => h === ball, bow: (h) => !!bow && h === bow, web: (h) => !h && suit.worn, jetpack: () => jetpack.worn };
 const weaponKey = () => { const h = heldItem(); return COMBAT.weapons.find((k) => weaponIs[k]?.(h)) ?? ''; };
-const ghosts = new Ghosts({ scene, camera, url: cloud.url, name: () => leaderboard.name, active: () => overlay.hidden, weapon: weaponKey,
+const ghosts = new Ghosts({ scene, camera, url: cloud.url, name: () => leaderboard.name, active: () => overlay.hidden && leaderboard.shares, weapon: weaponKey,
   state: () => ({ p: [player.pos.x, player.pos.y, player.pos.z], r: camera.rotation.y }) });
 const combat = new Combat({ ghosts, camera, scene, weapon: weaponKey, feet: () => player.pos, jetpack, sfx, darts: toys.darts, sparkles: toys.sparkles, arrows,
   onHit: () => bump('pvpHits'), onHurt: () => penalize('pvpHurt'),
@@ -2204,7 +2206,7 @@ for (const [key, items] of [['saber', [saber]], ['nerf', toys.blasters], ['wand'
 if (bow) bow.onShot = (o, v) => combat.fire('bow', flight(o, v), true); // (#690: an arrow on its arc)
 if (rifle) { const shot = rifle.onShot; rifle.onShot = () => { shot?.(); combat.fire('rifle'); }; }
 { const web = suit.onShot; suit.onShot = () => { web?.(); combat.fire('web'); }; }
-window.__ghosts = ghosts; window.__combat = combat; window.__bow = bow; window.__arrows = arrows;
+window.__ghosts = ghosts; window.__combat = combat; window.__bow = bow; window.__arrows = arrows; window.__presence = presence;
 chat = new Chat({ ghosts, log: document.getElementById('chat-log'), toggle: document.getElementById('chat-toggle'), name: () => leaderboard.name }); // #675
 window.__chat = chat;
 let statsPinned = false;

@@ -1,11 +1,12 @@
 import { LEADERBOARD as L } from './config.js';
 
 // The global leaderboard (#198): with the shared world on (cloud.js's address) the start screen asks for a name
-// (optional — skipping it never holds up the start, you are just not on the list) and shows the top list, which
-// is also at the bottom of the statistics panel (Tab). The score (stats.js totalScore) is sent when it has
-// changed, at most every L.every s, and with sendBeacon when the tab is hidden or closed. One row per browser: a
-// random player id in localStorage. Names are only ever shown as text (escaped). Off (no address): nothing shows,
-// nothing is sent.
+// (optional — skipping it never holds up the start) and shows the top list, which is also at the bottom of the
+// statistics panel (Tab). The score (stats.js totalScore) is sent when it has changed, at most every L.every s, and
+// with sendBeacon when the tab is hidden or closed. One row per browser: a random player id in localStorage. Without a
+// name you are "Anonym" (#677: an own row with the name '', shown as "Anonym"; a name later renames the same row).
+// The box "Visa mig inte för andra" (localStorage 'lunden.share' = '0') sends nothing at all. Names are only ever shown
+// as text (escaped). Off (no address): nothing shows, nothing is sent.
 
 const NAME = 'lunden.name', PID = 'lunden.playerId', QUEUE = 'lunden.scoreQueue';
 const get = (k) => { try { return localStorage.getItem(k); } catch { return null; } };
@@ -16,7 +17,8 @@ const uid = () => crypto.randomUUID?.() ?? `${Date.now().toString(36)}-${Math.ra
 const pending = () => { try { const q = JSON.parse(get(QUEUE) ?? '[]'); return Array.isArray(q) ? q : []; } catch { return []; } };
 const esc = (t) => String(t).replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 
-const SKIP = 'lunden.nameSkipped';
+const SKIP = 'lunden.nameSkipped', SHARE = 'lunden.share';
+export const ANON_NAME = 'Anonym';
 const getSession = (k) => { try { return sessionStorage.getItem(k); } catch { return null; } };
 const setSession = (k, v) => { try { sessionStorage.setItem(k, v); } catch { /* blocked */ } };
 
@@ -24,11 +26,17 @@ export class Leaderboard {
   /** url: the Worker ('' = off); score(): the current score; elements: dialog, badge, input, list, etc. */
   constructor(url, score, { dialog, badge, display, nameRow, input, list, ok, skip, newPlayer, lbDialog, dialogList, onNewPlayer = () => {} }) {
     Object.assign(this, { url, score, dialog, badge, display, nameRow, input, list, ok, skip, newPlayer, lbDialog, dialogList, onNewPlayer,
-      top: [], sent: null, switching: false, dialogMode: 'initial', activePlayers: null });
+      top: [], sent: null, switching: false, dialogMode: 'initial', activePlayers: null, onShareChange: () => {} });
     if (!this.on) return;
     this.confirmedName = cleanName(get(NAME));
-    this.id = get(PID) || (this.confirmedName ? uid() : null);
-    if (this.id) set(PID, this.id);
+    this.id = get(PID) || uid(); // anonymous players have a row too (#677)
+    set(PID, this.id);
+    this.shareBoxes = [...(document.querySelectorAll?.('.share-off') ?? [])];
+    for (const b of this.shareBoxes) {
+      b.checked = !this.shares;
+      const row = b.closest('.share-row'); if (row) row.hidden = false;
+      b.addEventListener('change', () => this.setShare(!b.checked));
+    }
     if (nameRow) nameRow.hidden = false;
     input.maxLength = L.nameMax;
     input.value = this.confirmedName;
@@ -55,13 +63,22 @@ export class Leaderboard {
 
   get on() { return !!this.url; }
   get name() { return this.confirmedName ?? ''; }
+  /** Whether we show up for others (online, ghosts, leaderboard): the box "Visa mig inte för andra" is off. */
+  get shares() { return get(SHARE) !== '0'; }
+
+  setShare(on) {
+    if (on) remove(SHARE); else set(SHARE, '0');
+    for (const b of this.shareBoxes ?? []) b.checked = !on;
+    this.onShareChange(on);
+    if (on) this.send();
+  }
 
   renderIdentity() {
     this.input.disabled = !!this.name;
     if (this.ok) this.ok.hidden = !!this.name;
     if (this.newPlayer) this.newPlayer.hidden = !this.name;
     if (this.badge) this.badge.hidden = !this.name;
-    if (this.display) this.display.textContent = this.name || 'Anonym';
+    if (this.display) this.display.textContent = this.name || ANON_NAME;
   }
 
   openDialog(mode = 'initial') {
@@ -78,7 +95,7 @@ export class Leaderboard {
       if (this.ok) this.ok.hidden = false;
     } else {
       if (title) title.textContent = 'Välj spelarnamn';
-      if (desc) desc.textContent = 'Skriv in ett namn om du vill synas på topplistan. Du kan även hoppa över och spela anonymt.';
+      if (desc) desc.textContent = 'Skriv in ett namn om du vill synas på topplistan. Hoppar du över syns du som "Anonym", med din poäng, för andra spelare.';
       if (this.skip) this.skip.textContent = 'Hoppa över';
       this.input.disabled = !!this.name;
       this.input.value = this.name;
@@ -121,7 +138,7 @@ export class Leaderboard {
   confirmName() {
     if (this.switching) return;
     const name = cleanName(this.input.value);
-    if (!name) { this.input.focus(); return; }
+    if (!name) { if (this.dialogMode === 'new') this.input.focus(); else this.handleSkip(); return; } // empty: "Anonym" (#677)
     if (this.dialogMode === 'new') {
       // Switching to a new player
       this.closeDialog();
@@ -130,8 +147,8 @@ export class Leaderboard {
     }
     if (this.name) { this.closeDialog(); return; }
     this.confirmedName = name;
-    this.id = uid();
-    set(NAME, name); set(PID, this.id);
+    this.sent = null; // (the new name must be sent even at the same score)
+    set(NAME, name); // the same id: the anonymous row (if any) is renamed, not duplicated (#677)
     this.input.value = name;
     this.renderIdentity();
     this.input.blur();
@@ -166,7 +183,7 @@ export class Leaderboard {
   }
 
   async drain() {
-    while (!this.switching) {
+    while (!this.switching && this.shares) {
       const payload = pending()[0];
       if (!payload) return;
       try {
@@ -195,15 +212,17 @@ export class Leaderboard {
   /** Send the score if it changed (and there is a name); the answer is the new top list. */
   async send() {
     if (!this.on || this.switching) return;
-    if (!this.name) return this.flush();
+    if (!this.shares) return;
     const s = this.score();
+    if (!this.name && !s) return this.flush(); // nothing to show for an anonymous player yet
+
     if (s !== this.sent) this.enqueue();
     await this.flush();
     if (s === this.sent) this.refresh();
   }
 
   beacon() {
-    if (!this.on || !this.name || this.switching || this.score() === this.sent) return;
+    if (!this.on || !this.shares || (!this.name && !this.score()) || this.switching || this.score() === this.sent) return;
     this.enqueue();
     navigator.sendBeacon?.(`${this.url}/scores`, new Blob([this.body()], { type: 'text/plain' }));
   }
@@ -219,7 +238,7 @@ export class Leaderboard {
     const me = this.name;
     return this.top.map((r, i) => {
       const date = Number.isFinite(r.updated) ? new Date(r.updated).toLocaleDateString('sv-SE') : '';
-      return `<li${r.name === me ? ' class="me"' : ''}><span>${i + 1}. ${esc(r.name)}${date ? ` <small>${date}</small>` : ''}</span><b>${Number(r.score) | 0}</b></li>`;
+      return `<li${me && r.name === me ? ' class="me"' : ''}><span>${i + 1}. ${esc(r.name || ANON_NAME)}${date ? ` <small>${date}</small>` : ''}</span><b>${Number(r.score) | 0}</b></li>`;
     }).join('');
   }
 

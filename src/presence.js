@@ -10,8 +10,8 @@ const visitorId = () => {
 };
 
 export class Presence {
-  constructor(url, el, { getName = () => '', getScore = () => 0, onUpdate = () => {} } = {}) {
-    Object.assign(this, { url, el, getName, getScore, onUpdate, id: visitorId(), timer: null, count: 0, names: [], players: [] });
+  constructor(url, el, { getName = () => '', getScore = () => 0, shares = () => true, onUpdate = () => {} } = {}) {
+    Object.assign(this, { url, el, getName, getScore, shares, onUpdate, id: visitorId(), timer: null, count: 0, names: [], players: [] });
     if (!this.on) return;
     this.beat();
     this.timer = setInterval(() => this.beat(), EVERY);
@@ -24,9 +24,10 @@ export class Presence {
     try {
       const name = this.getName?.() ?? '';
       const score = Number(this.getScore?.() ?? 0) | 0;
-      const body = name ? JSON.stringify({ name, score }) : undefined;
-      const headers = body ? { 'Content-Type': 'application/json' } : undefined;
-      const r = await fetch(`${this.url}/presence/${this.id}`, { method: 'PUT', headers, body, cache: 'no-store' });
+      // #677: anonymous players are online too (name ''); with "Visa mig inte för andra" we only read the list
+      const r = this.shares()
+        ? await fetch(`${this.url}/presence/${this.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, score }), cache: 'no-store' })
+        : await fetch(`${this.url}/presence`, { cache: 'no-store' });
       if (r.ok) {
         const data = await r.json();
         if (Number.isInteger(data.count)) {
@@ -36,10 +37,10 @@ export class Presence {
           }
         }
         if (Array.isArray(data.names)) {
-          this.names = data.names;
+          this.names = [...data.names, ...Array(Math.max(0, Math.min(99, data.anon | 0))).fill('Anonym')];
         }
         if (Array.isArray(data.players)) {
-          this.players = data.players;
+          this.players = data.players.map((p) => ({ ...p, name: p.name || 'Anonym' }));
         } else if (Array.isArray(data.names)) {
           this.players = data.names.map((n) => ({ name: n, score: 0 }));
         }

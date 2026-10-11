@@ -17,7 +17,9 @@ export { PlayerRoom };
 //   PUT    /paper                 ← { image: data URL, updated }
 //   GET    /scores                → [{ name, score }] the top SCORE_TOP (#198)
 //   POST   /scores                ← { id, name, score } — one row per browser (id); a score can't grow faster than
-//                                  SCORE_RATE per minute since that row's last post (SCORE_START for a new row)
+//                                  SCORE_RATE per minute since that row's last post (SCORE_START for a new row). name '' = "Anonym" (#677;
+//                                  an anonymous post never strips the name of an existing row; equal points: named first)
+//   PUT    /presence/:id          ← { name, score } (name '' = anonymous) → { count, names, players, anon }; GET /presence the same without joining
 //   POST   /crash                 ← a crash report from the game (#629, cloudflare/crash.js); GET /crash, /crash/:id read them (admin token)
 //   GET    /players               WebSocket upgrade → the PlayerRoom Durable Object (#666, cloudflare/players.js): other players as ghosts
 //   DELETE /admin/:what           (what = drawings | paper | scores | crash | players | all; /admin/scores?id=<id or name>: one row) with "Authorization: Bearer <ADMIN_TOKEN>"
@@ -145,74 +147,41 @@ const worker = {
     }
 
     if (what === 'presence') {
-      if (m === 'GET' && !id) {
-        let count = 0, cursor;
-        const names = [];
-        const players = [];
+      // Visitors online (#424). Named players are listed once per name (best score), anonymous ones (#677: name '') one by
+      // one as { name: '', score }; `names` holds the named ones only and `anon` counts the anonymous.
+      const list = async () => {
+        let count = 0, anon = 0, cursor;
+        const names = [], players = [];
         do {
           const page = await env.LUNDEN.list({ prefix: 'presence:', ...(cursor ? { cursor } : {}) });
           count += page.keys.length;
           for (const k of page.keys) {
             const raw = await env.LUNDEN.get(k.name);
-            if (raw) {
-              try {
-                const parsed = JSON.parse(raw);
-                if (parsed?.name) {
-                  if (!names.includes(parsed.name)) names.push(parsed.name);
-                  const pEntry = players.find((p) => p.name === parsed.name);
-                  const s = Number.isFinite(parsed.score) ? Number(parsed.score) : 0;
-                  if (!pEntry) players.push({ name: parsed.name, score: s });
-                  else if (s > pEntry.score) pEntry.score = s;
-                }
-              } catch {
-                if (typeof raw === 'string' && raw.trim() && !names.includes(raw.trim())) {
-                  names.push(raw.trim());
-                  players.push({ name: raw.trim(), score: 0 });
-                }
-              }
-            }
+            if (!raw) continue;
+            let parsed = null;
+            try { parsed = JSON.parse(raw); } catch { if (typeof raw === 'string' && raw.trim()) parsed = { name: raw.trim() }; }
+            if (!parsed || typeof parsed !== 'object') continue;
+            const s = Number.isFinite(parsed.score) ? Number(parsed.score) : 0;
+            if (!parsed.name) { anon++; players.push({ name: '', score: s }); continue; }
+            if (!names.includes(parsed.name)) names.push(parsed.name);
+            const pEntry = players.find((p) => p.name === parsed.name);
+            if (!pEntry) players.push({ name: parsed.name, score: s });
+            else if (s > pEntry.score) pEntry.score = s;
           }
           cursor = page.list_complete ? '' : page.cursor;
         } while (cursor);
-        return json({ count, names, players }, 200, h);
-      }
+        return json({ count, names, players, anon }, 200, h);
+      };
+      if (m === 'GET' && !id) return list();
       if (m === 'PUT' && id) {
         let name = '', score = 0;
         try {
           const b = await request.json();
-          if (b?.name && typeof b.name === 'string') name = b.name.trim().slice(0, 30);
+          if (b?.name && typeof b.name === 'string') name = b.name.replace(/[\u0000-\u001f<>&"]/g, '').trim().slice(0, 30);
           if (Number.isFinite(b?.score)) score = Math.max(0, Math.min(3000, Number(b.score) | 0));
         } catch { /* empty body or non-json */ }
         await env.LUNDEN.put(`presence:${id}`, JSON.stringify({ name, score, t: Date.now() }), { expirationTtl: 120 });
-        let count = 0, cursor;
-        const names = [];
-        const players = [];
-        do {
-          const page = await env.LUNDEN.list({ prefix: 'presence:', ...(cursor ? { cursor } : {}) });
-          count += page.keys.length;
-          for (const k of page.keys) {
-            const raw = await env.LUNDEN.get(k.name);
-            if (raw) {
-              try {
-                const parsed = JSON.parse(raw);
-                if (parsed?.name) {
-                  if (!names.includes(parsed.name)) names.push(parsed.name);
-                  const pEntry = players.find((p) => p.name === parsed.name);
-                  const s = Number.isFinite(parsed.score) ? Number(parsed.score) : 0;
-                  if (!pEntry) players.push({ name: parsed.name, score: s });
-                  else if (s > pEntry.score) pEntry.score = s;
-                }
-              } catch {
-                if (typeof raw === 'string' && raw.trim() && !names.includes(raw.trim())) {
-                  names.push(raw.trim());
-                  players.push({ name: raw.trim(), score: 0 });
-                }
-              }
-            }
-          }
-          cursor = page.list_complete ? '' : page.cursor;
-        } while (cursor);
-        return json({ count, names, players }, 200, h);
+        return list();
       }
     }
 
@@ -262,17 +231,18 @@ const worker = {
     }
 
     if (what === 'scores' && !id) {
-      const top = (l) => l.sort((a, b) => b.score - a.score).slice(0, SCORE_TOP).map(({ name, score, updated }) => ({ name, score, updated }));
+      const byScore = (a, b) => b.score - a.score || (b.name ? 1 : 0) - (a.name ? 1 : 0); // equal points: the named first (#677)
+      const top = (l) => l.sort(byScore).slice(0, SCORE_TOP).map(({ name, score, updated }) => ({ name, score, updated }));
       if (m === 'GET') return json(top(await getList(env, 'scores')), 200, h);
       if (m === 'POST') {
         const name = typeof body.name === 'string' ? body.name.replace(/[\u0000-\u001f<>&"]/g, '').trim().slice(0, 20) : '';
-        if (!ID.test(body.id ?? '') || !name || !Number.isInteger(body.score) || body.score < 0 || body.score > 1e7) return fail(400, 'bad score', h);
+        if (!ID.test(body.id ?? '') || !Number.isInteger(body.score) || body.score < 0 || body.score > 1e7) return fail(400, 'bad score', h);
         let list = await getList(env, 'scores');
         const now = Date.now(), old = list.find((r) => r.id === body.id);
         const cap = old ? old.score + SCORE_RATE * ((now - old.updated) / 60000 + 1) : SCORE_START;
         const score = Math.max(Math.min(body.score, Math.floor(cap)), old?.score ?? 0); // not faster than anyone can play
-        list = [...list.filter((r) => r.id !== body.id), { id: body.id, name, score, updated: now }];
-        list.sort((a, b) => b.score - a.score);
+        list = [...list.filter((r) => r.id !== body.id), { id: body.id, name: name || old?.name || '', score, updated: now }]; // #677: an anonymous post never strips a name
+        list.sort(byScore);
         await env.LUNDEN.put('scores', JSON.stringify(list.slice(0, MAX_SCORES)));
         return json(top(list), 200, h);
       }

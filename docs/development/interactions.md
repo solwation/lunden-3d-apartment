@@ -276,7 +276,7 @@ src/stats.js           visitor statistics (localStorage), "+1" badges per event,
                        beeps), food burnt, the smoke alarm, a spill (E on a full glass/cup with a pourer: it runs over, a splash),
                        a cat shot / cut / hit (by weapon); a red "−N reason" by the score, `stats.penalties` counts, the "Avdrag"
                        row; a deduction takes at most what the score has (`penaltyPoints`): never below 0, no debt. The
-                       leaderboard gets the net score (the Worker keeps each row's best)
+                       leaderboard gets the net score (the Worker keeps each row's best; anonymous players have a row too and "Visa mig inte för andra" turns sharing off, #677: see storage.md)
 tools/walktest.html    headless movement test (+ #355: round the block, the stairs, the recess, the portik, sprint, nearestFree; #417: garage door → the
                        turn → the big hall → our stall → the basement door → the Hisshall; #415: the portik → down the stairwell → the garage lobby → up to
                        våning 3 → the loftgång)
