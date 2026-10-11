@@ -242,10 +242,11 @@ async function run() {
   camera.rotation.x = 0.4; for (let i = 0; i < 3; i++) step(dt);
   const act = d.getElementById('action');
   check(/Ta av dig dräkten/i.test(act.textContent) && !act.hidden, `the action button says "${act.textContent}"`);
-  // the jump button (#600): by 🕸, jumps
-  const jb = d.getElementById('jump-btn');
-  const jr = jb.getBoundingClientRect(), wr = web2.getBoundingClientRect();
-  check(!jb.hidden && w.getComputedStyle(jb).display !== 'none' && Math.abs(jr.top - wr.top) < 2 && jr.right <= wr.left && wr.left - jr.right < 20, `touch: the jump button left of 🕸 (${f2(wr.left - jr.right)} px apart)`);
+  // the jump button (#600, moved by #657): directly left of 🧎, 🕸 straight above it
+  const jb = d.getElementById('jump-btn'), cb = d.getElementById('crouch-btn');
+  const jr = jb.getBoundingClientRect(), wr = web2.getBoundingClientRect(), cbr = cb.getBoundingClientRect();
+  check(!jb.hidden && w.getComputedStyle(jb).display !== 'none' && Math.abs(jr.top - cbr.top) < 2 && jr.right <= cbr.left && cbr.left - jr.right < 20, `touch: the jump button directly left of 🧎 (${f2(cbr.left - jr.right)} px apart)`);
+  check(Math.abs(wr.left - jr.left) < 2 && wr.bottom <= jr.top && jr.top - wr.bottom < 20, `touch: 🕸 straight above the jump button (${f2(jr.top - wr.bottom)} px apart)`);
   place(cx, C.z1 + 8, undefined, 0, 0); top = player.pos.y;
   jb.dispatchEvent(new w.PointerEvent('pointerdown', { bubbles: true, pointerType: 'touch' }));
   for (let i = 0; i < 180; i++) { step(dt); top = Math.max(top, player.pos.y); }
