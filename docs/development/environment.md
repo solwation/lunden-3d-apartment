@@ -14,6 +14,11 @@ src/courtyard.js       the courtyard on the garage box (COURTYARD): walks, pergo
                        neighbour sits on them, so only Olof's own seats indoors are ever `taken`), the pergola tables
                        and the grill's side table are put-down surfaces (`surfaces` → world.cupSurfaces); the benches' / tables'
                        collision is `seats` (segments + footprints outside `fixedSegments`, so getting up works as for furniture)
+                       #682: `bench()` is a park bench (COURTYARD.bench, sizes *guess*): five eased seat slats, three back slats
+                       leaning 15°, two black steel end frames (`bar`: flat profiles along a polyline) with armrests; the pergola
+                       table is six planks and its benches three slats each on steel trestles every ~1.6 m. All timber shares a
+                       256 × 64 grain texture (`woodGrain`) with box-projected UVs along each board and a tone per board
+                       (`grain`, vertex colours) — still one wood and one metal batch; seats, spots and collision unchanged
                        #453: no bench within 1 m of a way in at the ground (surroundings.js `groundWaysIn`: the loggias' parapet
                        openings, the entrance recesses; resttest checks); Hus A's two north benches stand between loggia and entrance
                        #637, #638, #639: Hus A's, B's and C's main entrance recesses are `walkIn` (SITE.blocks; A / B face 'n', C face 'e'): a real door into the stair core (corehouse.js, architecture.md)

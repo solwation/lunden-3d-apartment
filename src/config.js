@@ -1042,6 +1042,10 @@ export const COURTYARD = {
   // middle; it is 1.6 long); `pitch`: m between the spots along a pergola bench (the table is 0.7 of the pergola long);
   // `grillTable`: the grill's side table west of the kettle (dx from its middle, size, top height: guess)
   sit: { bench: [-0.5, 0, 0.5], pitch: 0.7 },
+  // #682: a park bench after the common wooden-slat / black steel kind (every size *guess*, from product photos): `slats`
+  // seat slats `slatW` × `slatT` m with `gap` between them, `back` back slats `backW` wide leaning `tilt`° back from
+  // upright; the two steel end frames (`frame` m from the middle, a `bar` × `barT` m profile) carry armrests `arm` m up
+  bench: { slats: 5, slatW: 0.07, slatT: 0.035, gap: 0.01, back: 3, backW: 0.085, tilt: 15, frame: 0.72, bar: 0.05, barT: 0.014, arm: 0.65 },
   grillTable: { dx: -0.62, w: 0.5, d: 0.45, h: 0.8 },
   beds: [{ x0: -68.9, x1: -67.1, z0: 41.4, z1: 42.6 }, { x0: -68.9, x1: -67.1, z0: 43.5, z1: 44.8 }, { x0: -68.9, x1: -67.1, z0: 45.7, z1: 46.9 },
     { x0: -68.9, x1: -67.1, z0: 47.9, z1: 49.1 }], // odlingslådor

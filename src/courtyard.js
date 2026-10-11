@@ -49,14 +49,73 @@ function seat(x, z, yaw, size, along, pickY = SEAT_Y) {
   return o;
 }
 
-/** A bench (1.6 m) at (x, z), the seat facing `rot` degrees (0 = north). */
+/** A flat steel bar along a polyline in the y-z plane at x ([z, y] points), `w` wide in that plane, `t` thick in x. */
+function bar(x, pts, w, t) {
+  const out = [];
+  for (let i = 1; i < pts.length; i++) {
+    const [z0, y0] = pts[i - 1], [z1, y1] = pts[i], len = Math.hypot(z1 - z0, y1 - y0) + w * 0.6; // (overlapping at the joints)
+    out.push(new THREE.BoxGeometry(t, w, len).rotateX(-Math.atan2(y1 - y0, z1 - z0)).translate(x, (y0 + y1) / 2, (z0 + z1) / 2));
+  }
+  return out;
+}
+/** A slat with eased edges, `len` along x, `w` wide (z before `rot`), `t` thick, turned `rot` rad about x, centred at (0, y, z). */
+const slat = (len, w, t, y, z, rot = 0) => new RoundedBoxGeometry(len, t, w, 1, Math.min(0.006, t / 2.2)).rotateX(rot).translate(0, y, z);
+
+/** A park bench (#682, COURTYARD.bench: wooden slats on two curved black steel end frames with armrests) at (x, z), the
+ * seat facing `rot` degrees (0 = north). Local frame: 1.6 m along x, sitting towards +z, the back at −z. */
 function bench(b) {
-  const g = [], m = [];
-  const L = 1.6, D = 0.42;
-  g.push(box(-L / 2, L / 2, 0.42, SEAT_Y, -D / 2, D / 2), box(-L / 2, L / 2, 0.55, 0.85, -D / 2 - 0.02, -D / 2 + 0.02));
-  for (const x of [-L / 2 + 0.1, L / 2 - 0.1]) m.push(box(x - 0.03, x + 0.03, 0, 0.44, -D / 2, D / 2), box(x - 0.03, x + 0.03, 0.44, 0.85, -D / 2 - 0.03, -D / 2 + 0.01));
+  const B = C.bench, g = [], m = [];
+  const L = 1.6, D = B.slats * B.slatW + (B.slats - 1) * B.gap, zf = D / 2, zb = -D / 2, tilt = THREE.MathUtils.degToRad(B.tilt);
+  for (let k = 0; k < B.slats; k++) g.push(slat(L, B.slatW, B.slatT, SEAT_Y - B.slatT / 2, zf - B.slatW / 2 - k * (B.slatW + B.gap))); // the seat
+  // the back leans back by `tilt` from its foot (bz, by): d along it, `off` behind it
+  const by = SEAT_Y + 0.05, bz = zb - 0.01, back = (d, off = 0) => [bz - d * Math.sin(tilt) - off * Math.cos(tilt), by + d * Math.cos(tilt) - off * Math.sin(tilt)];
+  for (let k = 0; k < B.back; k++) { const [z, y] = back(0.05 + B.backW / 2 + k * (B.backW + 0.025)); g.push(slat(L, B.backW, 0.025, y, z, -(Math.PI / 2 + tilt))); }
+  const top = 0.06 + B.back * B.backW + (B.back - 1) * 0.025, off = 0.0125 + B.bar / 2;
+  const armD = (B.arm - by + off * Math.sin(tilt)) / Math.cos(tilt);
+  for (const s of [-1, 1]) {
+    const x = s * B.frame;
+    // the rear leg rising into the back support, the front leg curling up into the armrest, the seat rail, the armrest
+    m.push(...bar(x, [[zb - 0.06, 0], [zb - 0.04, 0.2], [zb - 0.03, SEAT_Y - 0.05], back(0, off), back(top, off)], B.bar, B.barT),
+      ...bar(x, [[zf + 0.05, 0], [zf + 0.03, 0.22], [zf + 0.02, SEAT_Y - 0.04], [zf + 0.03, B.arm - 0.08], [zf + 0.05, B.arm - 0.03], [zf + 0.02, B.arm]], B.bar, B.barT),
+      ...bar(x, [[zf + 0.01, SEAT_Y - B.slatT - 0.02], [zb - 0.03, SEAT_Y - B.slatT - 0.02]], 0.04, B.barT + 0.01),
+      ...bar(x, [[zf + 0.03, B.arm], [0, B.arm + 0.005], back(armD, off)], 0.03, 0.05));
+    for (const z of [zb - 0.06, zf + 0.05]) m.push(new THREE.BoxGeometry(0.05, 0.012, 0.07).translate(x, 0.006, z)); // feet
+  }
   const t = new THREE.Matrix4().makeRotationY(THREE.MathUtils.degToRad(b.rot + 180)).setPosition(b.x, 0, b.z);
   return { wood: g.map((q) => q.applyMatrix4(t)), metal: m.map((q) => q.applyMatrix4(t)) };
+}
+
+/** Wood grain (#682): pale streaks along u on a light ground, 1 m along the grain × 0.2 m across per tile (the wood
+ * material's colour and each board's tone tint it). 256 × 64 px, shared by all the courtyard's timber. */
+function woodGrain() {
+  const c = document.createElement('canvas'); c.width = 256; c.height = 64;
+  const g = c.getContext('2d');
+  g.fillStyle = '#efefef'; g.fillRect(0, 0, 256, 64);
+  let s = 11; const r = () => ((s = (s * 16807) % 2147483647) / 2147483647);
+  for (let i = 0; i < 22; i++) {
+    const y0 = r() * 64, a = 1 + r() * 2.5, f = 1 + Math.floor(r() * 3), ph = r() * 6, v = 150 + r() * 90;
+    g.strokeStyle = `rgba(${v * 0.8 | 0},${v * 0.72 | 0},${v * 0.6 | 0},${0.25 + r() * 0.35})`; g.lineWidth = 0.6 + r() * 1.6;
+    for (const dy of [-64, 0, 64]) { g.beginPath(); for (let x = 0; x <= 256; x += 8) { const y = y0 + dy + a * Math.sin((x / 256) * Math.PI * 2 * f + ph); x ? g.lineTo(x, y) : g.moveTo(x, y); } g.stroke(); }
+  }
+  const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+}
+/** Wood UVs (#682): box-projected in metres with the grain (u) along the board's longest side, and a tone per board. */
+function grain(g, i) {
+  g = g.index ? g.toNonIndexed() : g;
+  g.computeBoundingBox();
+  const bb = g.boundingBox, ext = [bb.max.x - bb.min.x, bb.max.y - bb.min.y, bb.max.z - bb.min.z], long = ext.indexOf(Math.max(...ext));
+  const p = g.attributes.position, n = g.attributes.normal, uv = g.attributes.uv, count = p.count;
+  const col = new Float32Array(count * 3), h = Math.sin(i * 12.9898) * 43758.5453, k = 0.82 + 0.3 * (h - Math.floor(h)), off = (h * 7) % 1;
+  for (let j = 0; j < count; j++) {
+    const a = [p.getX(j), p.getY(j), p.getZ(j)], nn = [Math.abs(n.getX(j)), Math.abs(n.getY(j)), Math.abs(n.getZ(j))];
+    const face = nn.indexOf(Math.max(...nn)), plane = [0, 1, 2].filter((q) => q !== face);
+    const ua = plane.includes(long) ? long : plane[0], va = plane.find((q) => q !== ua);
+    uv.setXY(j, a[ua] + off * 3, a[va] / 0.2 + off);
+    col.set([k, k * (0.97 + 0.03 * off), k * (0.93 + 0.07 * off)], j * 3);
+  }
+  g.setAttribute('color', new THREE.BufferAttribute(col, 3));
+  return g;
 }
 
 /** Red brick pavers in a herringbone pattern, 1 × 1 m per tile (#149). */
@@ -109,11 +168,20 @@ export function buildCourtyard() {
       for (let k = 0; k <= n; k++) { const u = (k / n) * 3 % 1; bulbs.push([x, 2.8 - 0.3 * 4 * u * (1 - u), p.z0 + (k / n) * (p.z1 - p.z0)]); }
     }
     const cx = (p.x0 + p.x1) / 2, tl = (p.z1 - p.z0) * 0.7, z0 = (p.z0 + p.z1) / 2 - tl / 2;
-    geos.wood.push(box(cx - 0.45, cx + 0.45, 0.72, 0.76, z0, z0 + tl)); // a long table
-    for (const s of [-1, 1]) geos.wood.push(box(cx + s * 0.75 - 0.18, cx + s * 0.75 + 0.18, 0.42, SEAT_Y, z0, z0 + tl)); // benches
-    for (const z of [z0 + 0.2, z0 + tl - 0.2]) {
-      geos.metal.push(box(cx - 0.4, cx + 0.4, 0, 0.72, z - 0.03, z + 0.03));
-      for (const s of [-1, 1]) geos.metal.push(box(cx + s * 0.75 - 0.15, cx + s * 0.75 + 0.15, 0, 0.42, z - 0.03, z + 0.03));
+    // #682: a long table of six planks and two benches of three slats each, on black steel trestles about every 1.6 m
+    const plank = (x, w, t, y) => new RoundedBoxGeometry(w, t, tl, 1, 0.006).translate(x, y, z0 + tl / 2);
+    for (let k = 0; k < 6; k++) geos.wood.push(plank(cx - 0.45 + 0.07 + k * 0.152, 0.14, 0.04, 0.74)); // a long table
+    for (const s of [-1, 1]) for (let k = -1; k <= 1; k++) geos.wood.push(plank(cx + s * 0.75 + k * 0.125, 0.11, 0.035, SEAT_Y - 0.0175)); // benches
+    const nt = Math.max(2, Math.ceil(tl / 1.6) + 1);
+    for (let k = 0; k < nt; k++) {
+      const z = z0 + 0.25 + k * (tl - 0.5) / (nt - 1);
+      for (const s of [-1, 1]) geos.metal.push(box(cx + s * 0.38 - 0.025, cx + s * 0.38 + 0.025, 0, 0.72, z - 0.025, z + 0.025)); // table legs
+      geos.metal.push(box(cx - 0.42, cx + 0.42, 0.68, 0.72, z - 0.02, z + 0.02), box(cx - 0.38, cx + 0.38, 0.12, 0.15, z - 0.015, z + 0.015)); // rail, stretcher
+      for (const s of [-1, 1]) {
+        const bx = cx + s * 0.75;
+        for (const d of [-0.14, 0.14]) geos.metal.push(box(bx + d - 0.02, bx + d + 0.02, 0, 0.42, z - 0.02, z + 0.02)); // bench legs
+        geos.metal.push(box(bx - 0.17, bx + 0.17, 0.39, 0.425, z - 0.02, z + 0.02), box(bx - 0.14, bx + 0.14, 0.1, 0.13, z - 0.012, z + 0.012));
+      }
     }
     solid(cx - 0.95, cx + 0.95, z0, z0 + tl);
     // #438: sit along both benches facing the table, put things on it
@@ -202,7 +270,7 @@ export function buildCourtyard() {
     paving: new THREE.MeshStandardMaterial({ map: paveTex, roughness: 0.95 }),
     gravel: new THREE.MeshStandardMaterial({ color: 0xcfc6b2, roughness: 1 }),
     sand: new THREE.MeshStandardMaterial({ color: 0xe0cfa0, roughness: 1 }),
-    wood: new THREE.MeshStandardMaterial({ color: 0x8a6544, roughness: 0.8 }),
+    wood: new THREE.MeshStandardMaterial({ color: 0x8a6544, map: woodGrain(), vertexColors: true, roughness: 0.8 }), // grain + a tone per board (#682)
     metal: new THREE.MeshStandardMaterial({ color: 0x23262a, roughness: 0.5, metalness: 0.5 }),
     soil: new THREE.MeshStandardMaterial({ color: 0x3e2f24, roughness: 1 }),
     pergola: new THREE.MeshStandardMaterial({ color: 0xd8d0bf, roughness: 0.85 }),
@@ -214,7 +282,7 @@ export function buildCourtyard() {
   registerSnow(mats.sand, SEASON.snow.ground);
   for (const [k, list] of Object.entries(geos)) {
     if (!list.length) continue;
-    const mesh = new THREE.Mesh(mergeGeometries(list.map((g) => (g.index ? g.toNonIndexed() : g))), mats[k]);
+    const mesh = new THREE.Mesh(mergeGeometries(list.map((g, i) => (k === 'wood' ? grain(g, i) : g.index ? g.toNonIndexed() : g))), mats[k]);
     mesh.castShadow = k === 'wood' || k === 'metal';
     mesh.receiveShadow = true;
     group.add(mesh);
