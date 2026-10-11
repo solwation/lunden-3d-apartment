@@ -67,8 +67,16 @@ export class Chicken extends Holdable {
   get smoking() { return this.smokeT > 0; }
 
   initLife(life, grill) {
-    Object.assign(this, { life, grill, id: 'chicken', type: 'chicken' });
+    Object.assign(this, { life, grill, id: 'chicken', type: 'chicken', generation: 0 });
+    life.onEvent((kind, data) => { if (['chickenTaskReady', 'chickenTaskReset'].includes(kind) && data.task === 'grillChicken') this.renewForTask(); });
     life.keepPart('chicken', { save: () => this.saveState(), load: (s) => this.loadState(s) });
+  }
+
+  /** Only the completed task's expired cooldown may replenish the chicken (#710); F never calls this. */
+  renewForTask() {
+    const generation = this.generation + 1;
+    this.loadState({ v: 1, generation, cooked: 0, bodyLeft: C.bodyBites, gone: [], place: null });
+    this.life.dirty = true;
   }
 
   get cookState() { return this.burnt ? 'burnt' : this.done ? 'golden' : 'raw'; }
@@ -130,7 +138,7 @@ export class Chicken extends Holdable {
   }
 
   saveState() {
-    return { v: 1, cooked: this.cooked, brown: this.brownK ?? 0, done: this.done, burnt: this.burnt,
+    return { v: 1, generation: this.generation, cooked: this.cooked, brown: this.brownK ?? 0, done: this.done, burnt: this.burnt,
       rewarded: this.rewarded, burntCounted: this.burntCounted, gone: this.parts.map(p => !!p.gone), bodyLeft: this.bodyLeft,
       place: this.held ? this.lastRest ?? null : this.placementState() };
   }
@@ -139,6 +147,8 @@ export class Chicken extends Holdable {
     if (s?.v !== 1) return;
     if (heldItem()?.isChickenPiece) heldItem().putBack();
     if (heldItem() === this) setHeld(null); this.held = false; this.goHome({ silent: true });
+    this.generation = Number.isSafeInteger(s.generation) ? Math.max(0, s.generation) : 0;
+    this.id = this.generation ? `chicken:${this.generation}` : 'chicken';
     this.cooked = Number.isFinite(s.cooked) ? Math.max(0, Math.min(C.burnSeconds, s.cooked)) : 0;
     this.burnt = !!s.burnt || this.cooked >= C.burnSeconds; this.done = this.burnt || !!s.done || this.cooked >= C.cookSeconds;
     this.rewarded = !!s.rewarded || this.done; this.burntCounted = !!s.burntCounted || this.burnt;

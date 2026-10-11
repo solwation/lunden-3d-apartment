@@ -2726,6 +2726,7 @@ export const BEER_CAN = { held: { x: 0.2, y: -0.27, z: -0.44 }, sips: 5, lift: 0
 export const SCORE = {
   // #709: points per task, first completion / later completions after cooldown (*guess*).
   tasks: {
+    grillChicken: { first: 45, again: 8 }, // #710: hard discovery task (*guess*, suggested 40–50); one cycle per cooldown
     makeSandwich: { first: 15, again: 3 }, resetKitchen: { first: 30, again: 5 },
     snackClean: { first: 10, again: 2 }, tidyHall: { first: 20, again: 4 },
     washDish: { first: 10, again: 2 }, makeBed: { first: 15, again: 3 },

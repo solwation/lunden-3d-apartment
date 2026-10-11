@@ -8,8 +8,8 @@ import { sfx } from './audio.js';
 // not by hardcoded click sequences.
 // Sub-goals can be completed in any order and never count twice per task cycle.
 // Hints can be turned on or off via setting / UI toggle (persisted in localStorage).
-// A `hidden` task is off the list until the list is first read (#594): reading it shows the task and emits
-// 'tasksShown' (the shown ids), which lets its things appear (hallcare.js lays the jacket and shoes in the hall).
+// Hidden hall work is discovered by reading (#594); chicken work by a pan attempt or actual grill placement (#710).
+// Discovery emits tasksShown, which lets hallcare.js lay out the jacket and shoes.
 
 const HINTS_KEY = 'lunden.taskHints';
 
@@ -52,6 +52,15 @@ export const TASK_DEFINITIONS = [
     hint: 'Jackan och skorna ligger på golvet i hallen innanför ytterdörren. Häng jackan på kroken eller i hallgarderoben och ställ skorna på skohyllan.',
   },
   {
+    id: 'grillChicken', title: 'Gör något gott av kycklingen', hidden: true, discovery: 'chickenPanRefused',
+    goals: [
+      { id: 'fire', label: 'Tänd grillen på gården' },
+      { id: 'place', label: 'Lägg kycklingen på grillen' },
+      { id: 'golden', label: 'Ta den gyllene kycklingen från grillen' },
+    ],
+    hint: 'Kycklingen behöver gårdsgrillen. Tänd den, lägg på den råa kycklingen och ta den när den är gyllene, innan den bränns.',
+  },
+  {
     id: 'washDish', title: 'Diska efter dig',
     goals: [{ id: 'wash', label: 'Diska en använd sak' }],
     hint: 'Använd en tallrik, ett glas eller ett redskap och diska det vid kökskranen.',
@@ -76,6 +85,7 @@ export class TasksManager {
       active: false,
       completions: 0,
       readyAt: 0,
+      placedBird: null, grilledBird: null, replenished: false, failed: false,
     }));
 
     this.elapsed = 0;
@@ -114,6 +124,28 @@ export class TasksManager {
 
   handleEvent(kind, data = {}) {
     const item = data.item;
+    if (kind === 'chickenPlaced' && item?.type === 'chicken' && data.surface === 'grill') {
+      this.discover('grillChicken');
+      if (data.state !== 'raw') this.failChickenCycle();
+    }
+    if (kind === 'chickenPanRefused') {
+      this.discover('grillChicken');
+      if (data.state && data.state !== 'raw') this.failChickenCycle();
+    }
+    const chickenTask = this.tasks.find(t => t.id === 'grillChicken');
+    if (chickenTask?.active) {
+      if (kind === 'grillLit' && data.surface === 'grill') this.completeGoal('grillChicken', 'fire');
+      if (item?.type === 'chicken' && typeof item.id === 'string' && data.surface === 'grill') {
+        if (kind === 'chickenPlaced' && data.state === 'raw' && !item.machine?.cooked && !item.machine?.burnt) {
+          chickenTask.placedBird = item.id; this.completeGoal('grillChicken', 'fire'); this.completeGoal('grillChicken', 'place');
+        }
+        if (kind === 'grilled' && item.id === chickenTask.placedBird && data.state === 'golden' && item.machine?.cooked && !item.machine?.burnt) {
+          chickenTask.grilledBird = item.id; this.life.dirty = true;
+        }
+        if (kind === 'chickenBurnt' && item.id === chickenTask.placedBird) this.failChickenCycle();
+        if (kind === 'chickenTaken' && item.id === chickenTask.placedBird && item.id === chickenTask.grilledBird && data.state === 'golden' && item.machine?.cooked && !item.machine?.burnt) this.completeGoal('grillChicken', 'golden');
+      }
+    }
     const sandwich = (data.type ?? item?.type) === 'breadSlice' && (data.parts ?? item?.parts)?.length > 0;
     if (sandwich && ['prepared', 'bite', 'ate'].includes(kind)) {
       this.completeGoal('makeSandwich', 'prep');
@@ -135,6 +167,15 @@ export class TasksManager {
     if (kind === 'hallTidied' && this.isShown('tidyHall')) this.completeGoal('tidyHall', data.item?.type);
   }
 
+  failChickenCycle() {
+    const task = this.tasks.find(t => t.id === 'grillChicken');
+    if (!task?.active || task.isDone) return;
+    task.failed = task.isDone = true; task.active = false; task.replenished = false;
+    task.readyAt = this.elapsed + TASK_POOL.cooldown;
+    this.life.say('Kycklingen blev inte gyllene den här gången. En ny chans väntar efter ett speldygn.');
+    this.refill(); this.life.dirty = true; this.renderUI(); // no task reward on failure
+  }
+
   isShown(taskId) { return !!this.tasks.find((t) => t.id === taskId)?.shown; }
   activeTasks() { return this.tasks.filter((t) => t.active); }
   shownIds() { return this.tasks.filter((t) => t.shown).map((t) => t.id); }
@@ -142,7 +183,16 @@ export class TasksManager {
   /** The list is read (the panel opens): hidden tasks join it, once. Things already tidied before the task existed
    * (a save from before #594) count as done without a bonus. Returns the newly shown ids. */
   read() {
-    const added = this.tasks.filter((t) => !t.shown);
+    const added = this.tasks.filter((t) => !t.shown && !t.discovery);
+    return this.showTasks(added);
+  }
+
+  discover(id) {
+    const task = this.tasks.find(t => t.id === id);
+    return task && !task.shown ? this.showTasks([task]) : [];
+  }
+
+  showTasks(added) {
     if (!added.length) return [];
     for (const t of added) {
       t.shown = true;
@@ -155,7 +205,10 @@ export class TasksManager {
     for (const t of added) {
       if (t.isDone) { t.readyAt = this.elapsed + TASK_POOL.cooldown; continue; }
       const active = this.activeTasks();
-      if (active.length >= TASK_POOL.active) active.at(-1).active = false;
+      if (active.length >= TASK_POOL.active) {
+        // Once the bird is in play, reading the hall task cannot queue its cooking events (#710).
+        ([...active].reverse().find(other => other.id !== 'grillChicken') ?? active.at(-1)).active = false;
+      }
       t.active = true;
     }
     this.refill();
@@ -171,12 +224,18 @@ export class TasksManager {
   }
 
   /** Stable definition order, discovered tasks only; never recycle the just-completed task. */
-  refill() {
+  refill({ restored = false } = {}) {
+    // Renew only when the cooled-down chicken task receives an active slot. A full pool cannot
+    // expose a fresh rewardable bird while its task is still queued. Restoration stays silent.
     let slots = TASK_POOL.active - this.activeTasks().length;
     for (const t of this.tasks) {
       if (!slots) break;
       if (!t.shown || t.active || t.readyAt > this.elapsed) continue;
-      if (t.isDone) { t.completedGoals.clear(); t.isDone = false; }
+      if (t.id === 'grillChicken' && t.isDone && !t.replenished) {
+        if (restored) continue;
+        t.replenished = true; this.life.emit('chickenTaskReady', { task: t.id }); this.life.dirty = true;
+      }
+      if (t.isDone) { t.completedGoals.clear(); t.isDone = t.failed = false; t.placedBird = t.grilledBird = null; }
       t.active = true;
       slots--;
     }
@@ -194,7 +253,7 @@ export class TasksManager {
 
   save() {
     return { v: 2, elapsed: this.elapsed, active: this.activeTasks().map((t) => t.id), shown: this.shownIds(),
-      tasks: Object.fromEntries(this.tasks.map((t) => [t.id, { goals: [...t.completedGoals], completions: t.completions, readyAt: t.readyAt, done: t.isDone }])) };
+      tasks: Object.fromEntries(this.tasks.map((t) => [t.id, { goals: [...t.completedGoals], completions: t.completions, readyAt: t.readyAt, done: t.isDone, placedBird: t.placedBird, grilledBird: t.grilledBird, replenished: t.replenished, failed: t.failed }])) };
   }
 
   load(record) {
@@ -205,24 +264,30 @@ export class TasksManager {
       t.completedGoals = new Set((Array.isArray(saved) ? saved : []).filter((id) => t.goals.some((g) => g.id === id)));
       t.isDone = t.goals.every((g) => t.completedGoals.has(g.id));
       const state = record.v === 2 ? record.tasks?.[t.id] : null;
+      t.failed = !!state?.failed; t.isDone ||= t.failed;
       t.completions = Number.isSafeInteger(state?.completions) ? Math.max(0, state.completions) : Number(t.isDone);
       t.readyAt = Number.isFinite(state?.readyAt) ? Math.max(0, state.readyAt) : t.isDone ? this.elapsed + TASK_POOL.cooldown : 0;
+      t.placedBird = typeof state?.placedBird === 'string' ? state.placedBird : null;
+      t.grilledBird = state?.grilledBird === t.placedBird ? t.placedBird : null;
+      t.replenished = !!state?.replenished;
       t.shown = !t.hidden || (Array.isArray(record.shown) && record.shown.includes(t.id));
       t.active = record.v === 2 && (Array.isArray(record.active) && record.active.includes(t.id)) && t.shown && !t.isDone;
     }
     // Tolerate stale/newer definitions and corrupt records without ever exceeding the cap.
     this.activeTasks().slice(TASK_POOL.active).forEach((t) => { t.active = false; });
-    this.refill();
+    this.refill({ restored: true });
     this.life.emit('tasksShown', { ids: this.shownIds(), added: [], restored: true });
     this.renderUI(); // restoring progress never awards points again
   }
 
-  reset() {
+  reset({ newChicken = false } = {}) {
     this.elapsed = 0;
     for (const t of this.tasks) {
       t.completedGoals.clear(); t.isDone = t.active = false;
       t.completions = t.readyAt = 0; t.shown = !t.hidden;
+      t.placedBird = t.grilledBird = null; t.replenished = t.failed = false;
     }
+    if (newChicken) this.life.emit('chickenTaskReset', { task: 'grillChicken' });
     this.refill();
     this.life.dirty = true;
     this.renderUI();
@@ -242,7 +307,7 @@ export class TasksManager {
     if (allDone && !task.isDone) {
       task.isDone = true;
       task.active = false;
-      task.completions++;
+      task.completions++; task.replenished = false;
       task.readyAt = this.elapsed + TASK_POOL.cooldown;
       this.triggerTaskComplete(task);
       this.refill();

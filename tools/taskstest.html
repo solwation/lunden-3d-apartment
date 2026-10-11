@@ -163,6 +163,9 @@ try {
   }
   check(found && !d.getElementById('task-note').hidden, 'world task card can be aimed at and opened using the touch action');
   tasks.setHints(true);
+  stage('grill discovery task (#710), isolated actual-class checks');
+  const { runGrillTaskChecks } = await w.eval("import('/tools/grilltaskchecks.js')");
+  runGrillTaskChecks(check);
   stage('finished');
   document.getElementById('out').textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
 } catch (e) { document.getElementById('out').textContent = `FAIL ${e.stack}\n${lines.join('\n')}`; }

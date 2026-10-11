@@ -808,7 +808,7 @@ const leaderboard = new Leaderboard(cloud.url, totalScore, {
     resetHome.going = true;
     reloading = true;
     resetStats();
-    tasks.reset();
+    tasks.reset({ newChicken: true });
     clearLocalHome();
     try { sessionStorage.removeItem('lunden.resetDone'); } catch { /* unavailable */ }
     resetHome.go(location.href);
@@ -2199,7 +2199,7 @@ const holdStats = (down) => showStats(down || statsPinned);
 document.getElementById('stats-btn').addEventListener('click', () => toggleStats());
 document.getElementById('stats-close').addEventListener('click', () => { statsPinned = false; showStats(false); });
 document.getElementById('stats-reset').addEventListener('click', () => {
-  if (confirm('Nollställa statistiken?')) { resetStats(); tasks.reset(); renderStats(statsBody); }
+  if (confirm('Nollställa statistiken?')) { resetStats(); tasks.reset({ newChicken: true }); renderStats(statsBody); }
 });
 renderStats(statsBody);
 setInterval(() => { if (!statsEl.hidden) renderStats(statsBody); }, 250);

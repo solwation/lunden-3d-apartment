@@ -276,3 +276,25 @@ than three appear until a slot can refill. Reading discovers the hall task and g
 without losing its goals; discovery remains remembered separately from active selection. Hints describe only active tasks.
 There is no manual repeat button that bypasses cooldown. Statistics reset clears tasks too; ordinary reload never awards.
 The existing one-mesh paper uses a 512×640 canvas with wrapped goals and no extra draw call.
+
+
+Chicken discovery task (#710): `grillChicken`, titled “Gör något gott av kycklingen”, stays hidden when the note is read.
+It appears after an actual refused pan attempt or when the player independently places the bird on the courtyard grill.
+This permits discovery by experimentation without requiring a wrong attempt; the detailed route appears only with hints on.
+The three goals light the grill, place the raw bird and take the golden bird **from the grill** (no indoor-delivery claim).
+Actual `chickenPlaced`, `grilled` and `chickenTaken` events must match the same saved bird generation, grill surface and
+cooked/not-burnt state. Raw placement on an already-lit grill also establishes the lighting goal. Pan/other-bird/burnt events
+cannot complete it. `SCORE.tasks.grillChicken` gives 45 first / 8 repeat points (*guesses*, issue suggests 40–50 first).
+Completion refills the task pool immediately; a fresh raw bird is created only after the played-time cooldown AND when
+this task receives an active slot. A full pool therefore cannot expose a fresh bird while its task is still queued.
+Burning the bird, or discovering an already-cooked bird from an older save, ends a failed cycle with no task reward and
+the same retry cooldown. Failed progress/cooldown and placed/grilled identity markers persist; loading never emits rewards,
+progress or renewal, including expired pending cooldowns. F preserves the current bird; true statistics reset clears points
+and task state together and explicitly renews the chicken, preventing a permanently cooked challenge.
+`tools/grilltaskchecks.js` is shared by `taskstest.html` and the small `grilltasktest.html` fixture. On base `6ff4236`,
+34 targeted assertions passed using actual TasksManager, Chicken, Grill, Life and stats; console/page errors were empty.
+They cover discovery, hints, pre-lit placement, goal identity/surface/state, exact rewards, immediate refill, partial/completed/
+failed/expired saved records, full-pool cooldown, generation persistence, failed-cycle recovery, true stats reset and pan-first/hall-reading preservation. Reading the hall task displaces a routine task rather than queuing an active grill cycle.
+The captured shared note CanvasTexture shows three tasks, +45 and checked partial goals. No full apartment startup or
+repeat of the existing broad taskstest wrapper was run; its new block invokes these same tested checks.
+Final rebase base `3ee6fd7` adds the unrelated bow; the tested task/chicken/grill/stats classes remain unchanged upstream. Main statistics-reset hooks passed syntax review after merging.
