@@ -54,6 +54,23 @@ Andra `/orkester`-sessioner kör på egna VM:ar och kan inte nås med SendMessag
   issuen deras — ta bort din kommentar och din etikett (om den inte redan fanns före) och välj något annat.
 - En statuskommentar som inte uppdaterats på 3 timmar räknas som övergiven; dess issues får tas över efter en kommentar.
 - Rör ditt nästa val samma filer/område som en annan sessions pågående kedja? Välj något annat eller vänta.
+- **Dela kapaciteten — ta hellre över och släpp hellre än att stå still.** Målet är att alla orkestrar håller sina
+  agentplatser fyllda (3 per VM) och att inget arbete ligger reserverat utan att någon kör det. Kolla på varje
+  agent-klar och varje gång du har färre än 3 agenter igång:
+  - **Du har ledig plats** och inget eget att starta → ta över arbete som en annan session reserverat men **inte
+    påbörjat** (issue med bara reservationskommentar eller bara i dess "Kö", utan `in-progress`), helst från
+    **slutet** av en lång kedja och särskilt när den sessionen redan kör alla sina platser. Skriv en kommentar i #420
+    (vad du tar, vad de behåller, vilka filer ni båda rör) och `Övertagen av orkester <session> (tidigare reserverad av
+    <andra>) …` på varje issue. Rör aldrig en issue som har `in-progress` eller som en agent är mitt i.
+  - **Du har mer reserverat än du hinner köra** (issues långt bak i en kedja som inte startar inom ca 30 minuter) och
+    en annan orkester har ledig kapacitet (läs dess statuskommentar: färre än 3 agenter eller "inga agenter igång")
+    → **släpp** dem: ta bort reservationen med `Reservationen släppt av orkester <session> – ledig för andra` på
+    issuen och i #420, så att de kan tas. Reservera i övrigt bara kedjor som en agent startar på nu, plus högst det
+    som rimligen hinns med härnäst.
+  - Blir din issue övertagen: lämna den utan diskussion. Vill du behålla något, skriv det som kommentar i #420 så
+    släpper den som tog över. Vid kapplöpning gäller den äldsta reservationen/övertagandet.
+  - Delar ni filer efter en överlåtelse (t.ex. samma modul eller protokoll): dela upp efter ansvar i #420, lägg nya
+    delar i egna block/moduler, rebasa före varje push och behåll båda sidor vid konflikt.
 - Förbättringar av själva synken diskuteras som kommentarer i #420; den som ändrar `/orkester` säger det där.
 
 ## Orkestrering
