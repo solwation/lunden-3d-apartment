@@ -123,13 +123,14 @@ import { Chat } from './chat.js';
 import { COMBAT, CHAT, GHOSTS } from './config.js';
 import { Basketball, Hoop } from './basket.js';
 import { Mess } from './mess.js';
+import { readTestMode, makeTestController } from './testmode.js';
 
 const overlay = document.getElementById('overlay');
 // Start the daily read alongside scene construction; dev scenarios use the prepared snapshot only.
 const beerParams = new URLSearchParams(location.search);
 const beerShelfData = loadBeerShelf({ endpoint: beerParams.get('beers') || undefined, refresh: !beerParams.has('life') || beerParams.has('beers'), persist: !beerParams.has('life') });
 const loadingEl = document.getElementById('loading');
-const skipWarmUp = /HeadlessChrome/.test(navigator.userAgent) && !new URLSearchParams(location.search).has('warm');
+const skipWarmUp = (/HeadlessChrome/.test(navigator.userAgent) || readTestMode() !== null) && !new URLSearchParams(location.search).has('warm'); // `&test` (#703) skips it too
 let startupSceneReady = !lowMemory || skipWarmUp; // phones release their cover after a complete visible render (#697)
 function hideLoading() {
   if (!startupSceneReady || !loadingEl || loadingEl.hidden) return;
@@ -146,12 +147,13 @@ const pauseBtn = document.getElementById('pause');
 // iPhone: "add to home screen" first (&install shows the sheet anywhere, for screenshots)
 setupInstall({ force: new URLSearchParams(location.search).has('install') });
 
-const renderer = new THREE.WebGLRenderer({ antialias: true });
+const TEST = readTestMode(); // `&test` (#703, src/testmode.js): cheap drawing for headless tests, the game itself unchanged
+const renderer = new THREE.WebGLRenderer({ antialias: !TEST });
 // Phones and tablets get a smaller memory footprint (LOW_MEMORY, src/lowmemory.js): iOS otherwise kills the tab.
 if (lowMemory) renderer.capabilities.maxTextureSize = Math.min(renderer.capabilities.maxTextureSize, LOW_MEMORY.maxTextureSize);
 const MAX_PIXEL_RATIO = Math.min(window.devicePixelRatio, 1.5, lowMemory ? LOW_MEMORY.maxPixelRatio : Infinity);
 renderer.setPixelRatio(MAX_PIXEL_RATIO);
-renderer.shadowMap.enabled = true;
+renderer.shadowMap.enabled = !TEST;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.toneMapping = THREE.NeutralToneMapping;
 renderer.toneMappingExposure = 1.0;
@@ -2418,7 +2420,7 @@ for (const m of reflectors()) hitch.timeMethod(m.r, 'onBeforeRender', 'mirror');
 // frame time, with hysteresis; every heavy feature registers a knob that sets its cost for a level. `&quality=n` pins a
 // level (no adapting, not remembered); `&shot` keeps the highest.
 const shotMode = new URLSearchParams(location.search).has('shot'); // screenshots: always full resolution
-const pinned = params0.has('quality') ? +params0.get('quality') : (shotMode ? QUALITY.levels - 1 : null);
+const pinned = params0.has('quality') ? +params0.get('quality') : (TEST ? 0 : shotMode ? QUALITY.levels - 1 : null);
 const quality = new Quality({ start: pinned ?? (lowMemory ? QUALITY.startLowMemory : QUALITY.levels - 1), remember: pinned === null });
 quality.register('resolution', { // the canvas's pixel ratio (a step reallocates the drawing buffer once)
   apply: (l) => { const r = Math.max(QUALITY.minPixelRatio, MAX_PIXEL_RATIO * QUALITY.pixelRatio[l]); if (Math.abs(renderer.getPixelRatio() - r) > 1e-3) renderer.setPixelRatio(r); },
@@ -2482,7 +2484,7 @@ function frame(raw) {
   if (hitch.enabled) Object.assign(hitch.frameInfo, { shadow: renderer.shadowMap.needsUpdate, mirror: mirror ? (reflectors().find((m) => m.r.visible)?.name || 'yes') + (mirrorSkip ? ' (held)' : '') : '', quality: quality.level,
     yaw: Math.round(camera.rotation.y * 180 / Math.PI), at: `${camera.position.x.toFixed(1)},${camera.position.z.toFixed(1)}` });
   if (!warm.blocksView) {
-    renderer.render(scene, camera);
+    if (testMode?.wantsFrame() ?? true) renderer.render(scene, camera); else scene.updateMatrixWorld(); // (#703: `&test=lazy` draws only on request)
     if (!startupSceneReady) {
       startupSceneReady = true;
       document.documentElement.classList.remove('resuming');
@@ -2495,6 +2497,7 @@ function frame(raw) {
   if (fMs > frameDiag.ms) Object.assign(frameDiag, { ms: fMs, progs: (renderer.info.programs?.length ?? 0) - p0, shadow: renderer.shadowMap.needsUpdate ? 1 : 0, warm: warm.detail });
   if (perfEl) showPerf();
 }
+const testMode = makeTestController(TEST, { renderer, quality, levels: QUALITY.levels, render: () => renderer.render(scene, camera) }); // null outside `&test`
 renderer.setAnimationLoop(() => frame(clock.getDelta()));
 
 // --- "new version published" notice ------------------------------------
@@ -2727,4 +2730,4 @@ hideLoading();
 
 crashlog.attach({ renderer, camera, quality, player, world, sun, scene, mirrorTarget, frameDiag }); // what the crash heartbeat shows (#629)
 // handle for tests/debugging (tools/touchtest.html, tools/perfcount.html)
-window.__app = { visitLights, power, olof, olofDriver, beerCans, frame, hitch, warm, christmas, plantWind, cheats, cheatNote, showCheatNote, beerShelf, hallCare, bedCare, tableSetting, watering, laundry, compass, showOverlay, resumeFromMenu, interactionOutline, eggs, isPhoneDevice, get activeMode() { return activeMode; }, set activeMode(v) { activeMode = v; }, rearrange, showTerminal, quality, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, suit, toaster, life, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, goToStart, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS };
+window.__app = { testMode, visitLights, power, olof, olofDriver, beerCans, frame, hitch, warm, christmas, plantWind, cheats, cheatNote, showCheatNote, beerShelf, hallCare, bedCare, tableSetting, watering, laundry, compass, showOverlay, resumeFromMenu, interactionOutline, eggs, isPhoneDevice, get activeMode() { return activeMode; }, set activeMode(v) { activeMode = v; }, rearrange, showTerminal, quality, adaptResolution, loadingEl, hideLoading, dropoff, dishProg, handWash, click, clickIsE, toiletPaper, lifeStores, placement: { ghost: itemGhost, ring: placeGhost, turn: turnPlacement, target: () => (focused?.kind === 'place' ? focused : null) }, jetpack, suit, toaster, life, choices, runChoice, moveChoice, focus: () => ({ focused, focusPoint, raycaster }), fall, todo, tasks, showTaskNote, coffeeJar, miele, fireworks, nests, fruit, resetHome, bump, fries, keepWorld, countEl, airFryer, blinds, blindPanel, showBlind, pingping, breaker, weather, greet, ball, hoop, hand, totalScore, leaderboard, turbo, grill, autoReload, smokeAlarm, cloud, detail: () => detail, secret, sillPots, takeDownPoster, throwPoster, showPoster, balls, car, sonos, showSonos, milk, fridge, fish, posters, heldDrawing, takeDrawing, chicken, pan, reloadedEl, things, realNow, goToStart, beer, book, showBook, reflectors, updateReflections, target, marks, remote, toggleFurniture, calendar, calPanel, showCalendar, drawing, beginDraw, endDraw, cups, toys, heldItem, stairHeight, stairUnderside, stats, saber, rest, standUp, renderer, scene, player, world, camera, touch, step, showUpdate, cat, useDoor, use, note, showNote, measure, taps, board, lights, day, wallClock, clockPanel, showClock, patio, vacuum, cloth, BREEDS, VARIANTS };
