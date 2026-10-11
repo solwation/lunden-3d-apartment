@@ -1000,7 +1000,12 @@ export const SITE = {
 // Items the plan does not show are marked guess.
 // The courtyard's kettle grill lit (#204, src/grill.js): `flames` flame sprites up to `height` m, `sparks` sparks, a pool
 // light of `light` while it burns; it goes out by itself after `burnSeconds`. Our numbers.
-export const GRILL = { flames: 16, height: 1.0, sparks: 40, light: 3.2, burnSeconds: 300 };
+// #678 `kettle`: modelled on a Weber Original Kettle 57 cm — every size read off product photos (*guess*): bowl radius `r`
+// at its rim `rim` m over the ground, `depth` deep; the lid `lidH` over the rim (≈ 0.99 m to the handle's top); the
+// cooking grate `grate` and the charcoal grate `coal` m under the rim; leg radius `leg`, wheel diameter `wheel`, the ash
+// catcher's diameter `ash` at `ashY` m
+export const GRILL = { flames: 16, height: 1.0, sparks: 40, light: 3.2, burnSeconds: 300,
+  kettle: { r: 0.285, rim: 0.72, depth: 0.26, lidH: 0.22, grate: 0.07, coal: 0.16, leg: 0.0125, wheel: 0.16, ash: 0.35, ashY: 0.24 } };
 
 export const COURTYARD = {
   // #259: re-measured on the calibrated situation plan (docs/peab/kalibrerad/situationsplan-300dpi.jpg; x = (px − 1805) ×

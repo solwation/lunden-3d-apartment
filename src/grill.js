@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { COURTYARD, GRILL as G } from './config.js';
 import { sfx } from './audio.js';
 
@@ -26,26 +27,124 @@ function softTexture(inner, outer) {
   return new THREE.CanvasTexture(c);
 }
 
+// #678: the kettle's parts, one vertex-coloured geometry each for the fixed body and the lid (two draw calls in all)
+const ENAMEL = 0x141517, HANDLE = 0x0b0b0c, CHROME = 0xb9bdc1, ALU = 0x9ea2a6, RUBBER = 0x1b1b1c;
+const lathe = (pts, n = 24) => new THREE.LatheGeometry(pts.map(([r, y]) => new THREE.Vector2(r, y)), n);
+function paint(g, hex) {
+  g = g.index ? g.toNonIndexed() : g;
+  const c = new THREE.Color(hex), n = g.attributes.position.count, a = new Float32Array(n * 3);
+  for (let i = 0; i < n; i++) a.set([c.r, c.g, c.b], i * 3);
+  g.setAttribute('color', new THREE.BufferAttribute(a, 3));
+  return g;
+}
+/** A round rod (cylinder) from a to b ([x, y, z]). */
+function rod(a, b, r, seg = 8) {
+  const A = new THREE.Vector3(...a), d = new THREE.Vector3(...b).sub(A), len = d.length();
+  return new THREE.CylinderGeometry(r, r, len, seg).applyQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), d.normalize()))
+    .translate(A.x + (b[0] - a[0]) / 2, A.y + (b[1] - a[1]) / 2, A.z + (b[2] - a[2]) / 2);
+}
+/** A grate: a ring of radius `R` at height y with parallel bars (along x) `gap` apart. */
+function grate(R, y, gap, r) {
+  const parts = [new THREE.TorusGeometry(R, r * 1.3, 5, 32).rotateX(Math.PI / 2).translate(0, y, 0)];
+  for (let z = -R + gap / 2; z < R; z += gap) { const w = Math.sqrt(R * R - z * z); parts.push(rod([-w, y, z], [w, y, z], r, 5)); }
+  return parts;
+}
+/** The fixed part, centred on (0, 0): enamelled bowl with a rolled rim, side handles, lid hook, the One-Touch lever,
+ * three aluminium legs (two on an axle with wheels, one with a foot), the ash catcher on its wire triangle, both grates. */
+export function kettleBody() {
+  const K = G.kettle, R = K.r, Y = K.rim, D = K.depth, out = [];
+  const bowl = (r0, d0) => [...Array(9)].map((_, i) => { const p = (i / 8) * Math.PI / 2; return [r0 * Math.sin(p), Y - d0 * Math.pow(Math.cos(p), 0.8)]; });
+  const outer = bowl(R, D), inner = bowl(R - 0.006, D - 0.006).reverse();
+  out.push(paint(lathe([[0, outer[0][1]], ...outer.slice(1), [R + 0.008, Y + 0.004], [R + 0.004, Y + 0.012], [R - 0.004, Y + 0.008], ...inner, [0, inner[inner.length - 1][1]]]), ENAMEL));
+  // the side handles (black nylon bars on chrome brackets) on ±x, the lid hook at the back (−z)
+  for (const s of [-1, 1]) {
+    for (const dz of [-0.05, 0.05]) out.push(paint(rod([s * (R - 0.01), Y - 0.035, dz], [s * (R + 0.05), Y - 0.035, dz], 0.005, 6), CHROME));
+    out.push(paint(rod([s * (R + 0.05), Y - 0.035, -0.07], [s * (R + 0.05), Y - 0.035, 0.07], 0.013, 10), HANDLE));
+  }
+  { const a = -Math.PI / 2 + 0.35, c = Math.cos(a), sn = Math.sin(a); // the lid hook at the back, beside the hinge
+    out.push(paint(rod([c * (R - 0.01), Y - 0.07, sn * (R - 0.01)], [c * (R + 0.03), Y - 0.07, sn * (R + 0.03)], 0.005, 6), CHROME),
+      paint(rod([c * (R + 0.03), Y - 0.07, sn * (R + 0.03)], [c * (R + 0.03), Y - 0.02, sn * (R + 0.03)], 0.005, 6), CHROME)); }
+  // legs: sockets under the bowl at radius 0.17, splayed to 0.29 at the ground; wheels on the two at +z
+  const bottom = (r) => Y - D * Math.pow(Math.cos(Math.asin(Math.min(1, r / R))), 0.8);
+  const legs = [Math.PI / 6, Math.PI * 5 / 6, -Math.PI / 2].map((a, i) => {
+    const top = [0.17 * Math.cos(a), bottom(0.17) + 0.01, 0.17 * Math.sin(a)], foot = [0.29 * Math.cos(a), i < 2 ? K.wheel / 2 : 0.025, 0.29 * Math.sin(a)];
+    out.push(paint(rod(top, foot, K.leg, 10), ALU), paint(new THREE.CylinderGeometry(K.leg + 0.006, K.leg + 0.004, 0.05, 10).translate(top[0], top[1] - 0.02, top[2]), HANDLE)); // the leg in its socket
+    if (i === 2) out.push(paint(new THREE.CylinderGeometry(0.02, 0.024, 0.03, 10).translate(foot[0], 0.015, foot[2]), HANDLE)); // the plastic foot
+    return { top, foot };
+  });
+  const [l0, l1] = legs, wy = K.wheel / 2;
+  out.push(paint(rod([l0.foot[0] + 0.04, wy, l0.foot[2]], [l1.foot[0] - 0.04, wy, l1.foot[2]], 0.006, 6), CHROME)); // the axle
+  for (const l of [l0, l1]) {
+    const x = l.foot[0] + Math.sign(l.foot[0]) * 0.03;
+    out.push(paint(new THREE.CylinderGeometry(wy, wy, 0.035, 18).rotateZ(Math.PI / 2).translate(x, wy, l.foot[2]), RUBBER),
+      paint(new THREE.CylinderGeometry(wy * 0.55, wy * 0.55, 0.04, 14).rotateZ(Math.PI / 2).translate(x, wy, l.foot[2]), ALU)); // tyre, hub
+  }
+  // the ash catcher: a shallow aluminium pan on a wire triangle between the legs
+  const at = (l, y) => { const u = (l.top[1] - y) / (l.top[1] - l.foot[1]); return [l.top[0] + (l.foot[0] - l.top[0]) * u, y, l.top[2] + (l.foot[2] - l.top[2]) * u]; };
+  for (let i = 0; i < 3; i++) out.push(paint(rod(at(legs[i], K.ashY), at(legs[(i + 1) % 3], K.ashY), 0.004, 5), CHROME));
+  const ar = K.ash / 2, ay = K.ashY;
+  out.push(paint(lathe([[0, ay - 0.005], [ar * 0.8, ay - 0.003], [ar, ay + 0.03], [ar - 0.006, ay + 0.03], [ar * 0.8 - 0.006, ay + 0.003], [0, ay + 0.001]], 20), ALU));
+  // the One-Touch lever under the bowl, sticking out to the front (+z) with a black grip
+  const lv = [0.06, bottom(0.24) - 0.012, 0.235];
+  out.push(paint(rod([0, Y - D - 0.01, 0], lv, 0.004, 6), CHROME), paint(rod(lv, [lv[0] + 0.03, lv[1] + 0.005, lv[2] + 0.03], 0.009, 8), HANDLE));
+  out.push(paint(new THREE.CylinderGeometry(0.05, 0.05, 0.008, 16).translate(0, Y - D - 0.004, 0), CHROME)); // the bottom vent's damper
+  // the cooking grate and the charcoal grate (with a few lumps of charcoal on it)
+  for (const g of grate(R - 0.022, Y - K.grate, 0.045, 0.0035)) out.push(paint(g, CHROME));
+  const cr = 0.21; // (the bowl is ≈ 0.24 wide there)
+  for (const g of grate(cr, Y - K.coal, 0.05, 0.004)) out.push(paint(g, ALU));
+  let s = 7; const rnd = () => ((s = (s * 16807) % 2147483647) / 2147483647);
+  for (let i = 0; i < 22; i++) {
+    const a = rnd() * Math.PI * 2, r = Math.sqrt(rnd()) * (cr - 0.03);
+    out.push(paint(new THREE.IcosahedronGeometry(0.022 + rnd() * 0.01, 0).scale(1, 0.6, 1).translate(r * Math.cos(a), Y - K.coal + 0.015, r * Math.sin(a)), 0x1e1d1c));
+  }
+  return mergeGeometries(out);
+}
+/** The lid in the lid group's frame: its hinge at the origin, the kettle's middle at (0, 0, −hinge): a dome with a skirt
+ * over the bowl's rim (no gap), the top damper with its three holes, the handle on chrome brackets over a heat shield. */
+export function kettleLid(hinge) {
+  const K = G.kettle, R = K.r, H = K.lidH, out = [];
+  const Rd = R + 0.012, dome = [...Array(9)].map((_, i) => { const p = (1 - i / 8) * Math.PI / 2; return [Rd * Math.sin(p), 0.02 + (H - 0.02) * Math.pow(Math.cos(p), 0.9)]; });
+  const domeIn = dome.map(([r, y]) => [Math.max(0, r - 0.005), y - 0.005]).reverse();
+  out.push(paint(lathe([[0, H - 0.005], ...domeIn.slice(1, -1), [R + 0.009, 0.005], [R + 0.009, -0.014], [R + 0.013, -0.014], [R + 0.013, 0.006], ...dome.slice(0, -1), [0, H]], 24), ENAMEL));
+  const yAt = (r) => 0.02 + (H - 0.02) * Math.pow(Math.cos(Math.asin(Math.min(1, r / Rd))), 0.9);
+  out.push(paint(new THREE.CylinderGeometry(0.045, 0.047, 0.008, 18).translate(0, H + 0.002, 0), CHROME)); // the damper
+  for (let k = 0; k < 3; k++) { const a = k * Math.PI * 2 / 3; out.push(paint(new THREE.CylinderGeometry(0.009, 0.009, 0.002, 8).translate(Math.cos(a) * 0.024, H + 0.0065, Math.sin(a) * 0.024), 0x050505)); }
+  out.push(paint(new THREE.BoxGeometry(0.012, 0.012, 0.02).translate(0.05, H + 0.004, 0), CHROME)); // its tab
+  // the handle, front of the top (−z, away from the hinge)
+  const hz = -0.13, hy = yAt(Math.abs(hz));
+  out.push(paint(new THREE.BoxGeometry(0.2, 0.004, 0.06).rotateX(-Math.atan2(0.08, 0.2)).translate(0, hy + 0.012, hz), CHROME)); // heat shield
+  for (const x of [-0.07, 0.07]) out.push(paint(rod([x, hy, hz], [x, hy + 0.05, hz - 0.01], 0.006, 6), CHROME));
+  out.push(paint(rod([-0.1, hy + 0.055, hz - 0.01], [0.1, hy + 0.055, hz - 0.01], 0.015, 12), HANDLE));
+  return mergeGeometries(out).translate(0, 0, -hinge);
+}
+
 export class Grill {
   constructor() {
     const { x, z } = COURTYARD.grill;
     Object.assign(this, { name: 'grillen', kind: 'grill', on: false, t: 0, burn: 0, k: 0, lidK: 0, crackleT: 0, roar: null });
     this.object = new THREE.Group();
-    this.top = new THREE.Vector3(x, 0.86, z);
-    // the lid (taken out of the courtyard's merged metal so it can open): hinged at the kettle's back rim (+z)
+    const K = G.kettle;
+    this.top = new THREE.Vector3(x, K.rim + 0.02, z);
+    // #678: one matt porcelain-enamel material with vertex colours for the bowl, legs, wheels and grates (body) and the lid
+    const mat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.38, metalness: 0.15 });
+    const body = new THREE.Mesh(kettleBody(), mat);
+    body.position.set(x, 0, z);
+    body.castShadow = body.receiveShadow = true;
+    // the lid swings open on a hinge at the kettle's back rim (−z, towards the patio walk; built hinged at +z and turned
+    // round, so rotation.x > 0 still opens it), its handle to the front
+    const hinge = K.r + 0.013;
     this.lid = new THREE.Group();
-    this.lid.position.set(x, 0.86, z + 0.3);
-    const lidMesh = new THREE.Mesh(new THREE.SphereGeometry(0.3, 18, 8, 0, Math.PI * 2, 0, Math.PI / 2.4).translate(0, 0, -0.3),
-      new THREE.MeshStandardMaterial({ color: 0x1d1e20, roughness: 0.5, metalness: 0.4 }));
-    lidMesh.castShadow = true;
-    const knob = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.04, 10), lidMesh.material);
-    knob.position.set(0, 0.24, -0.3);
-    this.lid.add(lidMesh, knob);
+    this.lid.position.set(x, K.rim, z - hinge);
+    this.lid.rotation.set(0, Math.PI, 0, 'YXZ');
+    const lidMesh = new THREE.Mesh(kettleLid(hinge), mat);
+    lidMesh.castShadow = lidMesh.receiveShadow = true;
+    this.lid.add(lidMesh);
     // glowing coals in the kettle
     this.coalMat = new THREE.MeshBasicMaterial({ map: softTexture('rgba(255,200,90,1)', 'rgba(140,20,0,0.0)'), color: 0x000000, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false });
-    const coals = new THREE.Mesh(new THREE.CircleGeometry(0.26, 24).rotateX(-Math.PI / 2), this.coalMat);
-    coals.position.set(x, 0.8, z);
+    const coals = new THREE.Mesh(new THREE.CircleGeometry(0.22, 24).rotateX(-Math.PI / 2), this.coalMat);
+    coals.position.set(x, K.rim - K.coal + 0.03, z);
     coals.raycast = () => {};
+    this.coals = coals.position.y;
     // flames, smoke and sparks
     const fmat = new THREE.SpriteMaterial({ map: flameTexture(), blending: THREE.AdditiveBlending, transparent: true, depthWrite: false, opacity: 0 });
     this.flames = [...Array(G.flames)].map((_, i) => {
@@ -68,8 +167,8 @@ export class Grill {
     const pick = new THREE.Mesh(new THREE.BoxGeometry(0.7, 1.1, 0.7), new THREE.MeshBasicMaterial());
     pick.position.set(x, 0.55, z);
     pick.visible = false;
-    this.object.add(this.lid, coals, ...this.flames, ...this.smoke, this.sparks, pick);
-    pick.userData.door = lidMesh.userData.door = knob.userData.door = this;
+    this.object.add(body, this.lid, coals, ...this.flames, ...this.smoke, this.sparks, pick);
+    pick.userData.door = lidMesh.userData.door = body.userData.door = this;
     this.pickable = this.object;
     // the warm light: a pool light while it burns (lights.js)
     this.lamp = { pos: new THREE.Vector3(x, 1.4, z), intensity: G.light, range: 9, color: 0xff9a40, level: 0, k: 0, fire: true }; // (fire: a power cut leaves it lit, #604)
@@ -100,7 +199,7 @@ export class Grill {
     this.coalMat.color.setRGB(k * (0.8 + 0.2 * Math.sin(this.t * 3)), k * 0.55, k * 0.3);
     for (const s of this.flames) {
       const u = s.userData, h = (0.35 + 0.35 * (0.5 + 0.5 * Math.sin(this.t * u.f + u.ph))) * G.height * k;
-      s.position.set(this.top.x + Math.cos(u.a + this.t * 0.6) * u.r, 0.8 + h / 2, this.top.z + Math.sin(u.a + this.t * 0.6) * u.r);
+      s.position.set(this.top.x + Math.cos(u.a + this.t * 0.6) * u.r, this.coals + h / 2, this.top.z + Math.sin(u.a + this.t * 0.6) * u.r);
       s.scale.set(0.22 + 0.08 * Math.sin(this.t * 9 + u.ph), Math.max(0.001, h), 1);
       s.material.opacity = k * (0.65 + 0.35 * Math.sin(this.t * 13 + u.ph));
       s.visible = k > 0.01;
@@ -115,7 +214,7 @@ export class Grill {
     const pos = this.sparks.geometry.attributes.position;
     this.sparkSeeds.forEach((sd, i) => {
       const p = ((this.t / sd.life) + sd.ph) % 1;
-      pos.setXYZ(i, this.top.x + sd.dx * p + Math.sin(this.t * 3 + i) * 0.03, 0.9 + p * 1.6, this.top.z + sd.dz * p);
+      pos.setXYZ(i, this.top.x + sd.dx * p + Math.sin(this.t * 3 + i) * 0.03, this.top.y + p * 1.6, this.top.z + sd.dz * p);
     });
     pos.needsUpdate = true;
     this.sparkMat.opacity = k;

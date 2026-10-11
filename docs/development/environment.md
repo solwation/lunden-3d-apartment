@@ -8,7 +8,7 @@ Neighbor openings (#516): `src/exterior.js` keeps all existing opening extents, 
 ## Module and test map
 
 ```text
-src/courtyard.js       the courtyard on the garage box (COURTYARD): walks, pergolas, grill, sandboxes, boule,
+src/courtyard.js       the courtyard on the garage box (COURTYARD): walks, pergolas, the grill's side table (the kettle is grill.js's, #678), sandboxes, boule,
                        benches, raised beds, instanced shrubs; collision for what you can walk into. #438: every bench is a seat
                        (`targets`: invisible pick boxes with rest.js spots, `world.courtyardTargets`, kept with F; since #670 no
                        neighbour sits on them, so only Olof's own seats indoors are ever `taken`), the pergola tables

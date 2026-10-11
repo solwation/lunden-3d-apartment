@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { COURTYARD as C, COLORS, SITE } from './config.js';
 import { pavingTexture } from './patio.js';
 import { registerSnow, registerTrees } from './seasons.js';
@@ -124,16 +125,13 @@ export function buildCourtyard() {
     }
     group.add(surfaceBox({ x0: cx - 0.41, x1: cx + 0.41, z0: z0 + 0.04, z1: z0 + tl - 0.04, y: 0.76 }, surfaces));
   }
-  // the grill: a black kettle on three legs and a side table
+  // the grill: the kettle is grill.js's own (#678: body and lid, the lid opens when it is lit, #204); here its side table
   {
     const { x, z } = C.grill;
-    const kettle = new THREE.SphereGeometry(0.3, 18, 10, 0, Math.PI * 2, 0, Math.PI / 2).rotateX(Math.PI).translate(x, 0.85, z);
-    geos.metal.push(kettle); // the lid is grill.js's own (it opens when the grill is lit, #204)
-    for (let k = 0; k < 3; k++) { const a = (k / 3) * Math.PI * 2; geos.metal.push(box(x + Math.cos(a) * 0.2 - 0.02, x + Math.cos(a) * 0.2 + 0.02, 0, 0.6, z + Math.sin(a) * 0.2 - 0.02, z + Math.sin(a) * 0.2 + 0.02)); }
     segments.push(...rectSegs(x - 0.35, x + 0.35, z - 0.35, z + 0.35));
     // its side table (#438): slats on a black frame, a place to put things down
     const T = C.grillTable, tx = x + T.dx, hw = T.w / 2, hd = T.d / 2;
-    for (let k = 0; k < 5; k++) { const sz = z - hd + (k + 0.5) * T.d / 5; geos.wood.push(box(tx - hw, tx + hw, T.h - 0.03, T.h, sz - T.d / 12, sz + T.d / 12)); }
+    for (let k = 0; k < 5; k++) { const sz = z - hd + (k + 0.5) * T.d / 5; geos.wood.push(new RoundedBoxGeometry(T.w, 0.03, T.d / 6, 2, 0.008).translate(tx, T.h - 0.015, sz)); } // #678: eased edges
     for (const [lx, lz] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) geos.metal.push(box(tx + lx * (hw - 0.04) - 0.015, tx + lx * (hw - 0.04) + 0.015, 0, T.h - 0.03, z + lz * (hd - 0.04) - 0.015, z + lz * (hd - 0.04) + 0.015));
     geos.metal.push(box(tx - hw + 0.03, tx + hw - 0.03, 0.25, 0.27, z - hd + 0.03, z + hd - 0.03)); // a low shelf
     segments.push(...rectSegs(tx - hw, tx + hw, z - hd, z + hd));
