@@ -14,7 +14,7 @@ index.html             page shell, HUD, start overlay, import map (three from js
 src/player.js          WASD/arrow/joystick movement, circle-vs-segment collision, step-up, gravity; outdoors the terrain (`groundY`, #256);
                        the jump (#636): Space / the touch #jump-btn (always on touch, suit or not) = a *press* (`spaceDown` / `jumpPress`) off
                        anything you stand on, not with the jetpack, not in the stairwell / lift (`inCore`), only with room to stand; `PLAYER.jump`
-                       m/s (~1.1 m, *guess*) or with the suit `SPIDER.jump` (2.5 m); `ceilingAt(x, z, y)` stops the head under the room's
+                       m/s (#696: ~0.7 m, *guess*: just over a seat's ~0.45 m, not onto anything taller) or with the suit `SPIDER.jump` (2.5 m); `ceilingAt(x, z, y)` stops the head under the room's
                        ceiling (RH, `SOFFITS`, the stair's underside, a visited flat's levels, the garage's, outdoors roofs.js `above`) so
                        nobody jumps through the building; a collision segment with a fifth number (its top y: the boxwood hedge,
                        streetlife.js) stops holding once the feet are within `PLAYER.hurdle` of it (`clears`, `segments()` filters while in
@@ -276,9 +276,9 @@ tools/spidersuittest.html headless test (#597): the suit in the MALM drawer (no 
                        to it onto the wall, one held back by the pergola lets go, Space mid-swing flies on and lands unhurt, a
                        web on the street pulls you there; the jump button by 🕸 jumps; without the suit 8 m hurts;
                        #636: both hands climb (direction, tempo, resting grip), the web pose after a shot at the sky, both arms swinging;
-                       the jump button stays without the suit; the low jump (~1 m, plain landing) with Space and the button, no web / no
-                       climbing without the suit; the hedge holds a walker (z −3.64) and is cleared by walking + Space from its edge, with
-                       and without the suit; indoors on both levels the head stays under the ceiling (suit or not), lower under the soffit,
+                       the jump button stays without the suit; the low jump (#696: ~0.7 m, plain landing) with Space and the button, no web / no
+                       climbing without the suit; the hedge holds a walker (z −3.64) and is cleared by Space from its edge with the suit
+                       (walking) and without it at a sprint (Shift); indoors on both levels the head stays under the ceiling (suit or not), lower under the soffit,
                        back on the tread on flight A, `restY()` mid-jump, no jump in the stairwell
 tools/sabertest.html   headless test: take the lightsaber, swing it, hang it back
 tools/toystest.html    headless test: blaster (dart lands), wand (sparkles), flashlight (in the EL/C cabinet, beam follows the view)
@@ -348,10 +348,11 @@ Top-right segmented badge (#582): index.html groups furniture, stats, mute and p
 - Jump (#600, #636): Space / the touch ⤒ button (#jump-btn; hud icon 'jump', 48 px, safe-area placed directly left of 🧎 (#657: right 178 px, bottom 100 px; ⬆⬇ at right 234, 🕸 at 178/160, or 234/220 with the jetpack on), not part of the
   suit any more: it shows on touch always). A press, not a hold. Outdoors and indoors, off the floor, a stair tread, a roof; never with
   the jetpack (its own ⬆), in the stairwell / lift, not while kneeling to pet the cat, not without room to stand. The head stops under the ceiling
-  (`ceilingAt`), so an indoor jump is at most ~1.1 m on Entréplan (RH 3.0), 0.95 m on Övreplan (2.8), 0.65 m under the 2.5 m soffits.
-  The clipped entrance hedge is a low collision obstacle (0.58 m, `SITE.life.strip.hedge`) that the plain jump clears when walking:
-  `PLAYER.jump` 4.6 m/s is chosen so the feet stay above `top − hurdle` for ~0.7 s ≈ 1.1 m of walk against its 0.88 m of path (the
-  body's radius on both sides + its 0.44 m depth); at a sprint it is easier. Space is always `preventDefault`ed in play (it never scrolls
+  (`ceilingAt`), so an indoor jump with the suit is at most ~1.1 m on Entréplan (RH 3.0), 0.95 m on Övreplan (2.8), 0.65 m under the 2.5 m soffits; the plain jump (#696, `PLAYER.jump` 3.7 m/s ≈ 0.70 m, *guess*) is under every ceiling, so it is never stopped by one (tools/spidersuittest.html measures both apexes).
+  The clipped entrance hedge is a low collision obstacle (0.58 m, `SITE.life.strip.hedge`) that the plain jump clears at a sprint
+  (#696 lowered it: at 3.7 m/s the feet stay above `top − hurdle` (hurdle 0.22) for ~0.5 s, ≈ 0.84 m of walk against the hedge's 0.88 m of
+  path, so a walk just fails, a sprint (3.2 m/s) clears it; the suit's jump walks over it. The path is the
+  body's radius on both sides + its 0.44 m depth). Space is always `preventDefault`ed in play (it never scrolls
   or presses a focused button) and the Space that stands you up from a seat is no jump.
 - Crouch (#70): hold Ctrl (or the 🧎 toggle on touch) → eye `PLAYER.crouchEye` 0.95 m at `crouchSpeed` (50 %),
   no sprint; you only stand up again where there is head room (`roomToStand`: not under the stair's

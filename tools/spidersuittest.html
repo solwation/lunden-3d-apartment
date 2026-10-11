@@ -16,7 +16,7 @@
 // #636: the arms: climbing shows both hands (they follow the direction and the tempo, grip when still), a shot web shows the
 // right hand in the web pose (the left one stays down), swinging both reach for the anchor; the suit's jump also works
 // indoors but the ceiling stops it (no one goes through the building); without the suit Space / the jump button (always on
-// touch) is a low jump (~1 m, well under the suit's) that clears the clipped entrance hedge (0.58 m) which holds a walker;
+// touch) is a low jump (#696: ~0.7 m, just over a chair's seat, far under the suit's) that clears the clipped entrance hedge (0.58 m) at a sprint, which holds a walker;
 // the jump leaves stairs, the stairwell and a reload record (`restY`) in order.
 //   node runtest.cjs http://localhost:8137/tools/spidersuittest.html
 const out = document.getElementById('out');
@@ -279,17 +279,18 @@ async function run() {
   const hedge = scene.getObjectByName('front-boxwood'), hrun = hedge.userData.runs.find((r) => r[1] - r[0] > 6), hx = (hrun[0] + hrun[1]) / 2;
   const hz = hedge.userData.segments.flatMap((q) => [q[1], q[3]]), hz0 = Math.min(...hz), hz1 = Math.max(...hz), hTop = hedge.userData.segments[0][4];
   check(Math.abs(hTop - 0.58) < 0.01, `the hedge's collision carries its top: ${f2(hTop)} m (SITE.life.strip.hedge ${SITE.life.strip.hedge.height} m + its bed)`);
-  check(lowH > hTop + 0.3 && lowH < highH / 2, `config: a jump of ${f2(lowH)} m clears the hedge, the suit's ${f2(highH)} m`);
+  check(lowH > 0.5 && lowH < 0.85 && lowH < highH / 3, `config (#696): the plain jump ${f2(lowH)} m is just over a seat (~0.45 m), the suit's ${f2(highH)} m`);
   suit.goHome();
   place(hx, hz0 - 1.0, undefined, 180, 0); run(3, ['KeyW']);
   check(player.pos.z < hz0 && player.pos.z > hz0 - 0.3, `walking into the hedge: held at z ${f2(player.pos.z)} (the hedge starts at ${f2(hz0)})`);
   for (const [label, worn] of [['no suit', false], ['the suit', true]]) {
     if (worn) suit.putOn(); else suit.goHome();
     place(hx, hz0 - 1.0, undefined, 180, 0); landings.length = 0;
-    player.keys = new Set(['KeyW']); for (let i = 0; i < 90 && player.pos.z < hz0 - 0.24; i++) step(dt); // walking at the hedge ...
-    player.keys = new Set(['KeyW', 'Space']); step(dt); player.keys = new Set(['KeyW']);                 // ... Space from touching it
+    const sp = worn ? [] : ['ShiftLeft']; // (the plain jump clears the hedge at a sprint, #696)
+    player.keys = new Set(['KeyW', ...sp]); for (let i = 0; i < 90 && player.pos.z < hz0 - 0.24; i++) step(dt); // running at the hedge ...
+    player.keys = new Set(['KeyW', 'Space', ...sp]); step(dt); player.keys = new Set(['KeyW', ...sp]);         // ... Space from touching it
     let hiH = 0; for (let t = 0; t < 2.5; t += dt) { step(dt); hiH = Math.max(hiH, player.pos.y); }
-    check(player.pos.z > hz1 + 0.15 && !fall.active && !landings.some((l) => l.r === 'hurt'), `${label}: walking + Space from the hedge's edge: over it (z ${f2(player.pos.z)}, past ${f2(hz1)}), feet up to ${f2(hiH)} m`);
+    check(player.pos.z > hz1 + 0.15 && !fall.active && !landings.some((l) => l.r === 'hurt'), `${label}: ${worn ? 'walking' : 'sprinting'} + Space from the hedge's edge: over it (z ${f2(player.pos.z)}, past ${f2(hz1)}), feet up to ${f2(hiH)} m`);
     player.keys = new Set();
   }
   suit.goHome();

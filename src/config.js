@@ -2843,12 +2843,13 @@ export const PLAYER = {
   mouseSens: 0.0013, // rad per pixel of mouse/touchpad movement under pointer lock (was 0.0022, too twitchy, #46)
   stepUp: 0.45,
   headroom: 1.85,
-  // The ordinary jump (#636, player.js; Space / the touch jump button, indoors and out, no suit needed): `jump` m/s up, so
-  // v² / 2g ≈ 1.08 m of feet height (*guess*, a game hop; the suit's SPIDER.jump goes 2.5 m). It must clear the clipped
-  // entrance hedge (SITE.life.strip.hedge: 0.58 m over the ground, 0.44 m deep, so a body of `radius` is held over 0.88 m
-  // of path): at the 1.6 m/s walk the feet are over the hedge for ~0.7 s ≈ 1.1 m. `hurdle` m: a low obstacle (a collision
-  // segment with a top, boxwood hedge) no longer holds once the feet are within this of its top (knees tucked, *guess*).
-  jump: 4.6, hurdle: 0.1,
+  // The ordinary jump (#636, #696; player.js; Space / the touch jump button, indoors and out, no suit needed): `jump` m/s up,
+  // so v² / 2g ≈ 0.70 m of feet height (*guess*): just over a chair's / sofa's seat (~0.45 m) but not onto anything taller;
+  // the suit's SPIDER.jump goes 2.5 m. The clipped entrance hedge (SITE.life.strip.hedge: 0.58 m over the ground, 0.44 m
+  // deep, so a body of `radius` is held over 0.88 m of path) is cleared at a sprint (a walk of 1.6 m/s only just fails).
+  // `hurdle` m: a low obstacle (a collision segment with a top: the boxwood hedge, a bench / sofa you can land on, #693)
+  // no longer holds once the feet are within this of its top (knees tucked, *guess*).
+  jump: 3.7, hurdle: 0.22,
 };
 // Falling (#361, src/fall.js; player.js tracks `fall`: the highest feet since leaving the ground and the deepest free
 // drop under them). A drop of more than `hurt` m hurts (the issue's 3 m): a thud + "aj", the view jolts down, red, then
