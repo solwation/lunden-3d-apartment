@@ -52,6 +52,10 @@ tools/crashtest.cjs    crash reports (#629): Playwright + `node cloudflare/dev.m
                        refreshes the phone profile's 60 s reload guard (`lunden.glReloadAt`) before each forced context loss and stops the game's render
                        loop for the layout part (SwiftShader frames take 1–15 s and the game applies a resize in a frame) (#650); a failing check
                        dumps what the Worker holds. ~6–8 min under SwiftShader; clear old rows first (`DELETE /admin/crash`) or restart `dev.mjs`
+tools/ghosttest.cjs    other players as ghosts (#666): two Playwright pages against `node cloudflare/dev.mjs 8146 testtoken` (real ws:// via
+                       cloudflare/devws.mjs): ?mp=0 / no cloud off, see each other with tags Olof / "Anonym", position, standing still sends
+                       nothing, a move arrives interpolated, the room's count, a closed / hidden tab disconnects; screenshots into SHOTS.
+                       Also `node --test cloudflare/players.test.mjs` (cap, limits, brake). ~5 min under SwiftShader
 tools/clocktest.html   headless test of the wall clock (?time=7, spool, pause, sun height by month)
 tools/hangtest.html    hanging clothes inside what they hang in (#610): the hall coat rack's jackets within its width, clear of the EL/C
                        cabinet and wardrobe G; all fitted wardrobes' contents (+ the hall life jacket) inside the carcass; SMÅSTAD's clothes

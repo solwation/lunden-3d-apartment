@@ -31,6 +31,18 @@ src/crashlog.js        crash reports (#629), inert without the cloud (same switc
                        own dedup signature. Caps: 12 per page, 20 per day; ordinary errors still once per signature/day (CRASHLOG in config). Keys: lunden.crash.pid
                        (random id), .sent, .out kept by Återställ (RESET_KEEP), .beat dropped. main.js: the import (first) and one
                        `crashlog.attach({...})` line. A later GPU-memory counter (#628) should replace `gpuMB()` rather than duplicate it
+src/ghosts.js          other players as ghosts with a name tag (#666), inert without the cloud, GHOSTS.enabled false or ?mp=0: a WebSocket
+                       to `/players` while playing (overlay hidden, tab visible, moved within GHOSTS.idleMs); sends { p: feet, r: yaw }
+                       at most GHOSTS.hz and only on a change, heartbeat 'p' (runtime auto-response 'q', never billed); draws each
+                       other player GHOSTS.delay ms late, interpolated; one merged body mesh (vertex colours, opacity 0.25, no shadow,
+                       depth-tested) + one name tag sprite (256 × 64 canvas shared per name, "Anonym"). Close 4001 (month cap) →
+                       localStorage 'lunden.mp.capMonth' = this month: no retry; 4003 (brake) / 4029 (full) wait; others back off.
+                       No KV, nothing written per position (presence.js's KV counter #424 is untouched). `window.__ghosts` for tests
+cloudflare/players.js  the PlayerRoom Durable Object (#666; binding PLAYERS, migration `player-room-v1`): one room 'world', hibernatable
+                       sockets with attachments ({ i, n, s, rate window }), monthly billed-request counter 'bill:YYYY-MM' (requests +
+                       messages/20, flushed every 100 messages) with the hard cap PLAYERS.monthlyCap, per-socket rate / size / idle limits,
+                       max players, admin brake 'off' (DELETE/PUT/GET /admin/players, DELETE /admin/all). Tests: cloudflare/players.test.mjs
+                       (runtime stand-ins cloudflare/devws.mjs, also used by dev.mjs for real ws://), tools/ghosttest.cjs (two pages)
 cloudflare/crash.js    POST /crash, admin GET /crash and /crash/<id>, DELETE /admin/crash: size cap 16 kB, plain-data cleaning, per-IP hour
                        limit, one report per browser+signature+day, 400 reports in all, KV TTL 14 days (test: cloudflare/crash.test.mjs)
 cloudflare/            the Worker (NOT published on Pages): worker.js (API, limits, CORS, admin emergency brake), wrangler.toml,

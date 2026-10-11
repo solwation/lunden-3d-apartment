@@ -11,9 +11,18 @@ compatibility_flags = ["global_fetch_strictly_public"]
 name = "DRAWINGS"
 class_name = "DrawingRoom"
 
+[[durable_objects.bindings]]
+name = "PLAYERS"
+class_name = "PlayerRoom"
+
 [[migrations]]
 tag = "drawing-room-v1"
 new_sqlite_classes = ["DrawingRoom"]
+
+# #666: the players' room (ghosts), one instance; cost guard in cloudflare/players.js
+[[migrations]]
+tag = "player-room-v1"
+new_sqlite_classes = ["PlayerRoom"]
 
 [[kv_namespaces]]
 binding = "LUNDEN"

@@ -4,7 +4,10 @@
 // then open the site with &cloud=http://localhost:8144
 import http from 'node:http';
 import { readFileSync } from 'node:fs';
-import worker from './worker.js';
+import worker, { PlayerRoom } from './worker.js';
+import { installRuntime, fakeNamespace, bridge } from './devws.mjs';
+
+installRuntime(); // WebSocketPair, 101 responses (#666)
 
 const port = Number(process.argv[2] ?? 8144);
 const store = new Map();
@@ -25,6 +28,7 @@ if (process.env.LUNDEN_LAYOUT_FIXTURE) layouts.set('furniture-layout', JSON.pars
 let layoutGate = Promise.resolve();
 const layoutStorage = { get: async (k) => structuredClone(layouts.get(k)), put: async (k,v) => layouts.set(k, structuredClone(v)) };
 const env = { LUNDEN, layoutStorage, ADMIN_TOKEN: process.argv[3] ?? 'testtoken' };
+env.PLAYERS = fakeNamespace(PlayerRoom, env); // the players' room (#666): ws://localhost:<port>/players
 
 http.createServer(async (req, res) => {
   const chunks = [];
@@ -38,4 +42,9 @@ http.createServer(async (req, res) => {
   } else r = await worker.fetch(request, env);
   res.writeHead(r.status, Object.fromEntries(r.headers));
   res.end(Buffer.from(await r.arrayBuffer()));
+}).on('upgrade', async (req, socket) => {
+  const request = new Request(`http://localhost:${port}${req.url}`, { headers: req.headers });
+  const r = await worker.fetch(request, env);
+  if (r.status === 101 && r.webSocket) bridge(req, socket, r.webSocket);
+  else { socket.end(`HTTP/1.1 ${r.status} Refused\r\nConnection: close\r\n\r\n`); }
 }).listen(port, () => console.log(`lunden worker on http://localhost:${port}`));

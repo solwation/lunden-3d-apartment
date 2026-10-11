@@ -319,3 +319,7 @@ CPU canvases and geometry copies dominate), GPU peak is 216 MB, +13 MB (+6 %) ov
 (`lowMemory` only). perfcount `?lowmem&w=390&h=844`, `glrestoretest.cjs` and `turntest.html?lowmem` pass. To go back: `LOW_MEMORY`
 `maxPixelRatio: 1.0`, `shadowMapSize: 1024` in `src/config.js`. Screenshots: `/tmp/shots-grafik` (not in the repo; the living
 room looks slightly crisper, nothing else changes).
+
+Ghosts (#666, `src/ghosts.js`): each other player costs two draw calls (one merged body mesh with vertex colours, one name tag
+sprite), no shadow pass, at most `GHOSTS.max` (30); hidden beyond `GHOSTS.far`, the tag beyond `GHOSTS.tagFar`. One shared body
+geometry; one small 256 × 64 tag texture per distinct name (shared, disposed with its last ghost). Nothing exists without other players.

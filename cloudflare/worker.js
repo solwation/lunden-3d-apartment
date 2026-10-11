@@ -1,6 +1,8 @@
 import { beerShelfFetch } from './beershelf.js';
 import { layoutFetch } from './layout.js';
 import { crashFetch } from './crash.js';
+import { PlayerRoom, refuse, CLOSE } from './players.js';
+export { PlayerRoom };
 // Kv. Lunden L1007 — the shared world (#178, #119): a small Cloudflare Worker with one KV namespace (binding
 // LUNDEN). It keeps the drawings taped up in the flat, and the sheet on the Sovrum 3 desk,
 // so visitors find things they didn't make themselves. Writing is open (there is no secret a public page could
@@ -17,7 +19,9 @@ import { crashFetch } from './crash.js';
 //   POST   /scores                ← { id, name, score } — one row per browser (id); a score can't grow faster than
 //                                  SCORE_RATE per minute since that row's last post (SCORE_START for a new row)
 //   POST   /crash                 ← a crash report from the game (#629, cloudflare/crash.js); GET /crash, /crash/:id read them (admin token)
-//   DELETE /admin/:what           (what = drawings | paper | scores | crash | all; /admin/scores?id=<id or name>: one row) with "Authorization: Bearer <ADMIN_TOKEN>"
+//   GET    /players               WebSocket upgrade → the PlayerRoom Durable Object (#666, cloudflare/players.js): other players as ghosts
+//   DELETE /admin/:what           (what = drawings | paper | scores | crash | players | all; /admin/scores?id=<id or name>: one row) with "Authorization: Bearer <ADMIN_TOKEN>"
+//   PUT    /admin/players         switch the players' room on again after the brake; GET /admin/players: its month's count
 //                                  — the emergency brake; ADMIN_TOKEN is a Worker secret (cloudflare/setup.sh sets one)
 //
 // KV keys: 'drawings' (the metadata list), 'drawing:<id>' (image bytes, metadata { type }), 'paper' (JSON),
@@ -34,6 +38,12 @@ const SCORE_TOP = 10, MAX_SCORES = 500, SCORE_RATE = 600, SCORE_START = 3000; //
 const ID = /^[A-Za-z0-9-]{6,64}$/;
 
 const recent = new Map(); // ip → [timestamps] (this isolate only)
+// #666: a refusal the players' room gave (month cap / switched off), remembered by this isolate so retries cost no
+// Durable Object request: { code, until }.
+let playersBlock = null;
+const nextMonth = () => { const d = new Date(Date.now()); return Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 1); };
+const playerRoom = (env) => env.PLAYERS.get(env.PLAYERS.idFromName('world'));
+const isAdmin = (request, env) => !!env.ADMIN_TOKEN && request.headers.get('Authorization') === `Bearer ${env.ADMIN_TOKEN}`;
 
 function cors(origin) {
   const ok = origin && ORIGINS.some((r) => r.test(origin));
@@ -96,6 +106,24 @@ const worker = {
     if (parts.length > 2 || (id !== undefined && !ID.test(id) && what !== 'admin')) return fail(404, 'not found', h);
     if (what === 'beer-shelf' && !id) return beerShelfFetch(request, env, h);
     if (what === 'crash') return crashFetch(request, env, h, id); // #629
+    if (what === 'players' && !id) { // #666: only a WebSocket from the site (a request without Origin is not a browser page)
+      const origin = request.headers.get('Origin');
+      if (!env.PLAYERS) return fail(404, 'not found', h);
+      if (origin && !ORIGINS.some((r) => r.test(origin))) return fail(403, 'origin', h);
+      if (request.headers.get('Upgrade') !== 'websocket') return fail(426, 'websocket only', h);
+      if (playersBlock && Date.now() < playersBlock.until) return refuse(playersBlock.code, 'blocked');
+      const r = await playerRoom(env).fetch(request);
+      const code = Number(r.headers.get('X-Refused'));
+      if (code === CLOSE.cap) playersBlock = { code, until: nextMonth() };
+      else if (code === CLOSE.off) playersBlock = { code, until: Date.now() + 5 * 60_000 };
+      return r;
+    }
+    if (what === 'admin' && env.PLAYERS && (id === 'players' || (id === 'all' && m === 'DELETE'))) { // the brake covers the room too (#666)
+      if (!isAdmin(request, env)) return fail(403, 'no', h);
+      const r = await playerRoom(env).fetch(new Request('https://players/admin', { method: m === 'PUT' || m === 'DELETE' ? m : 'GET' }));
+      playersBlock = m === 'DELETE' ? { code: CLOSE.off, until: Date.now() + 5 * 60_000 } : m === 'PUT' ? null : playersBlock;
+      if (id === 'players') return json(await r.json(), 200, h);
+    }
     // One authority for drawing metadata: KV read/modify/write loses concurrent moves.
     if (env.DRAWINGS && (what === 'furniture' || what === 'drawings' || (what === 'admin' && (id === 'all' || id === 'drawings')))) {
       return env.DRAWINGS.get(env.DRAWINGS.idFromName('shared')).fetch(request);
@@ -313,7 +341,7 @@ export class DrawingRoom {
     return this.ctx.blockConcurrencyWhile(async () => {
       const storage = this.ctx.storage, kv = this.env.LUNDEN;
       if (new URL(request.url).pathname === '/furniture') {
-        return worker.fetch(request, { ...this.env, DRAWINGS: undefined, layoutStorage: storage });
+        return worker.fetch(request, { ...this.env, DRAWINGS: undefined, PLAYERS: undefined, layoutStorage: storage });
       }
       if (await storage.get('drawings') === undefined) {
         await storage.put('drawings', await kv.get('drawings', 'json') ?? []);
@@ -325,7 +353,7 @@ export class DrawingRoom {
         delete: async (key) => key === 'drawings' ? storage.put(key, []) : kv.delete(key),
         getWithMetadata: (...args) => kv.getWithMetadata(...args),
       };
-      const response = await worker.fetch(request, { ...this.env, DRAWINGS: undefined, LUNDEN,
+      const response = await worker.fetch(request, { ...this.env, DRAWINGS: undefined, PLAYERS: undefined, LUNDEN,
         expiredDrawing: (id) => storage.get(`expired:${id}`) });
       await this.scheduleExpiry();
       return response;

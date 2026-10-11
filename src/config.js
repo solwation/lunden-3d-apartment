@@ -2795,6 +2795,16 @@ export const MIELE = { weight: 0.56, see: 7, fireworks: 7, sparks: 12, life: 3,
   colors: { base: '#857461', light: '#a8977f', stripe: '#2a231e', white: 0xf3f1ec, ear: 0x6b5a48, tip: 0x241e1a, eye: 0xe0a62a } };
 // The leaderboard: how many rows are shown, how often a changed score is sent (s).
 export const LEADERBOARD = { show: 10, every: 30, nameMax: 20 };
+// Other players as ghosts with a name tag (#666, src/ghosts.js; the room and its cost cap: cloudflare/players.js). Only with
+// the cloud on (CLOUD_URL / &cloud=); `enabled: false` or ?mp=0 switches it off. The client sends at most `hz` states a
+// second and only when it moved (more than `move` m or `turn` rad), a heartbeat every `beatMs` (auto-answered, not billed),
+// and disconnects when the tab is hidden or after `idleMs` without moving (reconnects on the next step). Reconnect delays
+// `retry` (ms, growing), a full room `fullRetry`, a room switched off by the admin brake `offRetry`; the month's cap (close
+// 4001) keeps it off for the rest of the calendar month. Look: `opacity`, drawn `delay` ms behind (interpolation), hidden
+// beyond `far` m, the name tag beyond `tagFar` m, at most `max` ghosts. All our picks (*guess*).
+export const GHOSTS = { enabled: true, hz: 5, move: 0.02, turn: 0.03, beatMs: 10_000, idleMs: 120_000,
+  retry: [2000, 5000, 15_000, 30_000, 60_000, 300_000], fullRetry: 60_000, offRetry: 600_000,
+  opacity: 0.25, delay: 200, far: 60, tagFar: 15, max: 30 };
 
 // Drawing with crayons (#93, src/drawing.js): an A3 sheet in the middle of the ALEX desk in Sovrum 3. E on it:
 // the view goes down over the paper, the mouse is freed and you draw with crayons (palette at the bottom,

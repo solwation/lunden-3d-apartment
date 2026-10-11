@@ -116,6 +116,7 @@ import { PaperBalls } from './paperball.js';
 import { Cloud } from './cloud.js';
 import { Leaderboard } from './leaderboard.js';
 import { Presence } from './presence.js';
+import { Ghosts } from './ghosts.js';
 import { Basketball, Hoop } from './basket.js';
 import { Mess } from './mess.js';
 
@@ -2146,6 +2147,10 @@ const presence = new Presence(cloud.url, document.getElementById('presence'), {
   onUpdate: (p) => renderMenuPresence(p)
 });
 leaderboard.activePlayers = () => presence.names;
+// other players as ghosts with a name tag (#666, src/ghosts.js): a WebSocket to the Worker's players' room, only while playing
+const ghosts = new Ghosts({ scene, camera, url: cloud.url, name: () => leaderboard.name, active: () => overlay.hidden,
+  state: () => ({ p: [player.pos.x, player.pos.y, player.pos.z], r: camera.rotation.y }) });
+window.__ghosts = ghosts;
 let statsPinned = false;
 // the minimap is part of the same "extra HUD" (#85): shown with the stats; K shows the map on its own
 let mapPinned = false;
@@ -2385,6 +2390,7 @@ function frame(raw) {
   if (!warm.done && warm.tick()) hitch.frameInfo.warm = true;
   hitch.phase('adapt');
   step(dt);
+  ghosts.update();
   hitch.phase('step');
   updateShadows(dt);
   // one mirror image at a time, none at the lower quality levels. Heavy passes are spread over frames (#592): the
