@@ -796,6 +796,7 @@ const leaderboard = new Leaderboard(cloud.url, totalScore, {
     resetHome.going = true;
     reloading = true;
     resetStats();
+    tasks.reset();
     clearLocalHome();
     try { sessionStorage.removeItem('lunden.resetDone'); } catch { /* unavailable */ }
     resetHome.go(location.href);
@@ -2179,7 +2180,7 @@ const holdStats = (down) => showStats(down || statsPinned);
 document.getElementById('stats-btn').addEventListener('click', () => toggleStats());
 document.getElementById('stats-close').addEventListener('click', () => { statsPinned = false; showStats(false); });
 document.getElementById('stats-reset').addEventListener('click', () => {
-  if (confirm('Nollställa statistiken?')) { resetStats(); renderStats(statsBody); }
+  if (confirm('Nollställa statistiken?')) { resetStats(); tasks.reset(); renderStats(statsBody); }
 });
 renderStats(statsBody);
 setInterval(() => { if (!statsEl.hidden) renderStats(statsBody); }, 250);
@@ -2259,6 +2260,7 @@ function step(dt) {
   fries?.update(dt);
   fruit.update(dt);
   life.update(dt);
+  tasks.update(active() ? dt : 0); // played-time task cooldowns (#709)
   mess.update(dt); // dust now and then (#388)
   laundry.update(dt);
   dishProg?.update(dt); // (#385)

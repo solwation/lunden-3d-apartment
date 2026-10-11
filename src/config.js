@@ -2712,6 +2712,12 @@ export const BEER_CAN = { held: { x: 0.2, y: -0.27, z: -0.44 }, sips: 5, lift: 0
 //          korthår 7, maine coon 6, norsk skogkatt 5, perser 3, sphynx 1 of 100); `first.coats` once per new coat.
 //  secrets: the secret drawer — `kinds` once per surprise kind found, `rare` once more per rare kind (+ each.secrets).
 export const SCORE = {
+  // #709: points per task, first completion / later completions after cooldown (*guess*).
+  tasks: {
+    makeSandwich: { first: 15, again: 3 }, resetKitchen: { first: 30, again: 5 },
+    snackClean: { first: 10, again: 2 }, tidyHall: { first: 20, again: 4 },
+    washDish: { first: 10, again: 2 }, makeBed: { first: 15, again: 3 },
+  },
   each: {
     petted: 8, catPhotos: 2, catFish: 25,                 // a pat (a cat to find first), its photo; feeding one takes a plan
     kittenPets: 12,                                       // a kitten's pat on top of `petted` (#363)
@@ -2756,12 +2762,12 @@ export const SCORE = {
     toiletPaper: 3, // paper torn off a roll and flushed away (#426): the first time, then `again`
     handwash: 4, handdry: 2, // hands washed at a basin / dried on a towel afterwards (#437): the first time, then `again`
     sandwiches: 40, // a sandwich made and eaten (#380): the first of each combination ("ost- och gurkmackan" …), then `again`
-    tasks: 30, // completed everyday task (LIFE-030, #392): first time bonus, then `again`
+    tasks: 30, // legacy generic rewards (#392), retained only for #709 score migration
     handBrew: 10, // the first pot brewed by hand: water and coffee filled first (#334); no `again` (each brew has `each.brews`)
   },
   again: {
     sandwiches: 4, // every sandwich after the first of its kind (#380)
-    tasks: 5, // each repeated completed task (#392)
+    tasks: 5, // legacy generic repeat reward, retained for #709 score migration
     doors: 0.1, lids: 0.1, flushes: 0.2, taps: 0.1, fridge: 0.1, appliances: 0.1, cabinets: 0.05, lights: 0.05,
     sat: 0.1, lay: 0.1, songs: 0.2, read: 0.5, car: 1, grill: 1, hood: 0.2, tv: 0.2, pc: 0.3, parasol: 0.2,
     clock: 0.1, calendar: 0.1, greets: 0.1, catButts: 1, walkRain: 2, walkSnow: 3, walkHail: 4, walkStorm: 3,
@@ -4386,6 +4392,9 @@ export const FURNITURE = [
 
 // Optional everyday task card on the cup-cabinet door's inside (#392, #509).
 // #509: visual assumptions; size retained, mounting fractions of the actual door's height/width.
+// #709: game-design guesses; one default (60-minute) game day between repeats.
+export const TASK_POOL = { active: 3, cooldown: 3600 };
+
 export const TASK_NOTE = { w: 0.18, h: 0.22, tilt: 0.04, inset: 0.001, height: 0.55, across: 0.5 };
 
 // The power cut (#604, src/power.js): fiddling with the fuse box in the hall's EL/C cabinet buzzes and crackles while

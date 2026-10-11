@@ -42,7 +42,7 @@ try{
  // A save from before #594: the jacket and shoes exist (on the floor), the tasks record knows nothing of the hall task.
  const old=JSON.parse(ls().getItem(LIFE.save.key));
  for(const it of old.items??[])if(it.type==='hallJacket'||it.type==='hallShoes')it.place={...it.home};
- delete old.x.tasks.shown;delete old.x.tasks.goals.tidyHall;await blank();ls().setItem(LIFE.save.key,JSON.stringify(old));
+ old.x.tasks={v:1,goals:{}};await blank();ls().setItem(LIFE.save.key,JSON.stringify(old));
  A=await load(Q);L=A.life;I=L.items;
  check(count()==='1/1'&&hall()==='hallFloorjacket,hallFloorshoes'&&!A.tasks.isShown('tidyHall'),'pre-#594 save with the pair on the floor loads it once, task not yet listed');
  A.showTaskNote(true);A.showTaskNote(false);L.restock();

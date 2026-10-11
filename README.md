@@ -163,3 +163,5 @@ HUD-badgarna har samma skal och modulära cellbredder, tydligare poäng och plat
 Andra spelare har mindre namnskyltar med sina poäng, uppdaterade i samma spökskylt.
 
 Ölhyllans lokala etiketter får avkodas klart även när tung uppstart passerar nätverkets tidsgräns.
+
+Uppdragslappen visar tre aktiva vardagsuppdrag med sina poäng och delmål; klara uppdrag ersätts direkt och får en väntetid innan de kan återkomma.

@@ -1,6 +1,6 @@
 import * as THREE from 'three';
-import { badge } from './stats.js';
-import { TASK_NOTE, HALL_CARE } from './config.js';
+import { awardTask, taskReward } from './stats.js';
+import { TASK_NOTE, TASK_POOL, HALL_CARE } from './config.js';
 import { sfx } from './audio.js';
 
 // Everyday tasks manager (LIFE-030, #392).
@@ -51,6 +51,16 @@ export const TASK_DEFINITIONS = [
     ],
     hint: 'Jackan och skorna ligger på golvet i hallen innanför ytterdörren. Häng jackan på kroken eller i hallgarderoben och ställ skorna på skohyllan.',
   },
+  {
+    id: 'washDish', title: 'Diska efter dig',
+    goals: [{ id: 'wash', label: 'Diska en använd sak' }],
+    hint: 'Använd en tallrik, ett glas eller ett redskap och diska det vid kökskranen.',
+  },
+  {
+    id: 'makeBed', title: 'Bädda efter vilan',
+    goals: [{ id: 'rest', label: 'Vila i en säng' }, { id: 'bed', label: 'Bädda en säng efteråt' }],
+    hint: 'Lägg dig en stund, res dig och bädda täcket med E.',
+  },
 ];
 
 export class TasksManager {
@@ -63,8 +73,13 @@ export class TasksManager {
       completedGoals: new Set(),
       isDone: false,
       shown: !def.hidden,
+      active: false,
+      completions: 0,
+      readyAt: 0,
     }));
 
+    this.elapsed = 0;
+    this.refill();
     this.onTaskCompleted = null;
     this.initEvents();
     life.keepPart('tasks', { save: () => this.save(), load: (v) => this.load(v) });
@@ -114,10 +129,14 @@ export class TasksManager {
     // No task requires creating rubbish by throwing useful food or objects away.
     if (['washed', 'dishwasher', 'wipe'].includes(kind) && !this.hasRubbish()) this.completeGoal('resetKitchen', 'rubbish');
     if (kind === 'vacuumed' && data.amount > 0) this.completeGoal('snackClean', 'crumbs');
+    if (kind === 'washed' && (item || data.what)) this.completeGoal('washDish', 'wash');
+    if (kind === 'bedRumpled') this.completeGoal('makeBed', 'rest');
+    if (kind === 'bedMade') this.completeGoal('makeBed', 'bed');
     if (kind === 'hallTidied' && this.isShown('tidyHall')) this.completeGoal('tidyHall', data.item?.type);
   }
 
   isShown(taskId) { return !!this.tasks.find((t) => t.id === taskId)?.shown; }
+  activeTasks() { return this.tasks.filter((t) => t.active); }
   shownIds() { return this.tasks.filter((t) => t.shown).map((t) => t.id); }
 
   /** The list is read (the panel opens): hidden tasks join it, once. Things already tidied before the task existed
@@ -132,6 +151,14 @@ export class TasksManager {
         t.isDone = t.goals.every((g) => t.completedGoals.has(g.id));
       }
     }
+    // Newly discovered tasks get a slot now, keeping at most three; displaced progress remains queued.
+    for (const t of added) {
+      if (t.isDone) { t.readyAt = this.elapsed + TASK_POOL.cooldown; continue; }
+      const active = this.activeTasks();
+      if (active.length >= TASK_POOL.active) active.at(-1).active = false;
+      t.active = true;
+    }
+    this.refill();
     this.life.emit('tasksShown', { ids: this.shownIds(), added: added.map((t) => t.id) });
     this.life.dirty = true;
     this.renderUI();
@@ -143,25 +170,67 @@ export class TasksManager {
     return I.all().some((it) => (I.has(it, 'bin') || it.type === 'rubbishBag') && it.amount > 0);
   }
 
+  /** Stable definition order, discovered tasks only; never recycle the just-completed task. */
+  refill() {
+    let slots = TASK_POOL.active - this.activeTasks().length;
+    for (const t of this.tasks) {
+      if (!slots) break;
+      if (!t.shown || t.active || t.readyAt > this.elapsed) continue;
+      if (t.isDone) { t.completedGoals.clear(); t.isDone = false; }
+      t.active = true;
+      slots--;
+    }
+  }
+
+  update(dt) {
+    this.elapsed += Math.max(0, dt);
+    const before = this.activeTasks().map((t) => t.id).join();
+    this.refill();
+    if (before !== this.activeTasks().map((t) => t.id).join()) {
+      this.life.dirty = true;
+      this.renderUI();
+    }
+  }
+
   save() {
-    return { v: 1, goals: Object.fromEntries(this.tasks.map((t) => [t.id, [...t.completedGoals]])), shown: this.shownIds() };
+    return { v: 2, elapsed: this.elapsed, active: this.activeTasks().map((t) => t.id), shown: this.shownIds(),
+      tasks: Object.fromEntries(this.tasks.map((t) => [t.id, { goals: [...t.completedGoals], completions: t.completions, readyAt: t.readyAt, done: t.isDone }])) };
   }
 
   load(record) {
-    if (record?.v !== 1 || !record.goals || typeof record.goals !== 'object') return;
+    if (![1, 2].includes(record?.v)) return;
+    this.elapsed = Number.isFinite(record.elapsed) ? Math.max(0, record.elapsed) : 0;
     for (const t of this.tasks) {
-      const saved = Array.isArray(record.goals[t.id]) ? record.goals[t.id] : [];
-      t.completedGoals = new Set(saved.filter((id) => t.goals.some((g) => g.id === id)));
+      const saved = record.v === 1 ? record.goals?.[t.id] : record.tasks?.[t.id]?.goals;
+      t.completedGoals = new Set((Array.isArray(saved) ? saved : []).filter((id) => t.goals.some((g) => g.id === id)));
       t.isDone = t.goals.every((g) => t.completedGoals.has(g.id));
+      const state = record.v === 2 ? record.tasks?.[t.id] : null;
+      t.completions = Number.isSafeInteger(state?.completions) ? Math.max(0, state.completions) : Number(t.isDone);
+      t.readyAt = Number.isFinite(state?.readyAt) ? Math.max(0, state.readyAt) : t.isDone ? this.elapsed + TASK_POOL.cooldown : 0;
       t.shown = !t.hidden || (Array.isArray(record.shown) && record.shown.includes(t.id));
+      t.active = record.v === 2 && (Array.isArray(record.active) && record.active.includes(t.id)) && t.shown && !t.isDone;
     }
+    // Tolerate stale/newer definitions and corrupt records without ever exceeding the cap.
+    this.activeTasks().slice(TASK_POOL.active).forEach((t) => { t.active = false; });
+    this.refill();
     this.life.emit('tasksShown', { ids: this.shownIds(), added: [], restored: true });
     this.renderUI(); // restoring progress never awards points again
   }
 
+  reset() {
+    this.elapsed = 0;
+    for (const t of this.tasks) {
+      t.completedGoals.clear(); t.isDone = t.active = false;
+      t.completions = t.readyAt = 0; t.shown = !t.hidden;
+    }
+    this.refill();
+    this.life.dirty = true;
+    this.renderUI();
+  }
+
   completeGoal(taskId, goalId) {
     const task = this.tasks.find((t) => t.id === taskId);
-    if (!task?.shown || !task.goals.some((g) => g.id === goalId)) return false;
+    if (!task?.active || task.isDone || !task.goals.some((g) => g.id === goalId)) return false;
 
     // Check if goal is already completed in this task cycle
     if (task.completedGoals.has(goalId)) return false;
@@ -172,7 +241,11 @@ export class TasksManager {
     const allDone = task.goals.every((g) => task.completedGoals.has(g.id));
     if (allDone && !task.isDone) {
       task.isDone = true;
+      task.active = false;
+      task.completions++;
+      task.readyAt = this.elapsed + TASK_POOL.cooldown;
       this.triggerTaskComplete(task);
+      this.refill();
     }
 
     this.life.dirty = true;
@@ -182,24 +255,14 @@ export class TasksManager {
 
   triggerTaskComplete(task) {
     sfx.pling?.(null, 1.2);
-    badge(`📋 Uppdrag klart: ${task.title}!`, false);
-    this.life.bump('tasks', 1, task.id);
+    awardTask(task.id, task.title);
     if (this.onTaskCompleted) this.onTaskCompleted(task);
-  }
-
-  resetTask(taskId) {
-    const task = this.tasks.find((t) => t.id === taskId);
-    if (!task?.isDone) return;
-    task.completedGoals.clear();
-    task.isDone = false;
-    this.life.dirty = true;
-    this.renderUI();
   }
 
   // Active / next hint for prompts or HUD
   currentHint() {
     if (!this.hints) return null;
-    const pending = this.tasks.find((t) => t.shown && !t.isDone);
+    const pending = this.tasks.find((t) => t.active);
     if (!pending) return null;
     return pending.hint;
   }
@@ -244,13 +307,13 @@ export class TasksManager {
 
     this.listEl.innerHTML = '';
     for (const task of this.tasks) {
-      if (!task.shown) continue;
+      if (!task.active) continue;
       const card = document.createElement('div');
       card.className = `task-card${task.isDone ? ' done' : ''}`;
 
       const titleRow = document.createElement('div');
       titleRow.className = 'task-title';
-      titleRow.innerHTML = `<span>${task.title}</span>${task.isDone ? '<span class="task-badge">✓ Utfört</span>' : ''}`;
+      titleRow.innerHTML = `<span>${task.title} · +${taskReward(task.id)}</span>${task.isDone ? '<span class="task-badge">✓ Utfört</span>' : ''}`;
       card.append(titleRow);
 
       const goalsList = document.createElement('ul');
@@ -271,13 +334,6 @@ export class TasksManager {
         card.append(hintDiv);
       }
 
-      if (task.isDone) {
-        const again = document.createElement('button');
-        again.type = 'button'; again.textContent = 'Gör igen'; again.className = 'task-again hud-button';
-        again.dataset.task = task.id;
-        again.addEventListener('click', () => this.resetTask(task.id));
-        card.append(again);
-      }
       this.listEl.append(card);
     }
   }
@@ -285,7 +341,7 @@ export class TasksManager {
   build3DCard(cabinet) {
     const { w, h, tilt, inset, height, across } = TASK_NOTE;
     const canvas = document.createElement('canvas');
-    canvas.width = 256; canvas.height = 320;
+    canvas.width = 512; canvas.height = 640;
     const g = canvas.getContext('2d');
     this.drawCard = () => {
       g.fillStyle = '#fffdf0';
@@ -295,16 +351,26 @@ export class TasksManager {
       g.strokeRect(4, 4, canvas.width - 8, canvas.height - 8);
 
       g.fillStyle = '#23324a';
-      g.font = 'bold 24px system-ui, sans-serif';
-      g.fillText('📋 UPPDRAG', 20, 40);
+      g.font = 'bold 36px system-ui, sans-serif';
+      g.fillText('📋 UPPDRAG', 24, 55);
 
-      g.font = '16px system-ui, sans-serif';
-      let y = 80;
-      for (const t of this.tasks) {
-        if (!t.shown) continue;
-        g.fillStyle = t.isDone ? '#2e7d32' : '#23324a';
-        g.fillText(`${t.isDone ? '✓' : '•'} ${t.title}`, 20, y, canvas.width - 40);
-        y += 36;
+      let y = 105;
+      for (const t of this.activeTasks()) {
+        g.fillStyle = '#23324a';
+        g.font = 'bold 27px system-ui, sans-serif';
+        g.fillText(`${t.title} · +${taskReward(t.id)}`, 24, y, canvas.width - 48);
+        g.font = '22px system-ui, sans-serif';
+        y += 34;
+        for (const goal of t.goals) {
+          let line = t.completedGoals.has(goal.id) ? '☑' : '☐';
+          for (const word of goal.label.split(' ')) {
+            if (g.measureText(`${line} ${word}`).width > canvas.width - 48) {
+              g.fillText(line, 24, y); y += 29; line = '   ' + word;
+            } else line += ' ' + word;
+          }
+          g.fillText(line, 24, y); y += 29;
+        }
+        y += 25;
       }
 
       if (this.cardTexture) this.cardTexture.needsUpdate = true;
