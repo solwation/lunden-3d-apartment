@@ -96,7 +96,7 @@ cloudflare/beershelf.js GET-only public-source adapter; globalByStyle normalized
                        Real packaging/volume required; missing/invalid metadata or any image fails the complete batch.
 data/beer-shelf-default.json prepared real four-beer snapshot with embedded original images; fetchedAt=0 never claims daily success.
 tools/beershelfcachetest.html real image decoding, atomic daily caching, offline/timeout/partial failure and actual reload;
-                       #711 slow local decode + CPU startup stall/late promise handoff, actual prepared body and bounded failed fetch.
+                       #711 slow local decode + CPU startup stall/late promise handoff; #718 local fetch/body/schema/decode failures return an uncached empty runtime shelf, actual BeerShelf label textures, successful live recovery and reload.
 tools/beercantest.html closed fridge blocks, take/back, drink empty, the bin, back on reopening, F, a page-made reload.
 tools/beershelfmodeltest.html shelf clearance, real canvas labels, can/bottle sizes and stable package count.
 src/beer.js            the big beer (BEER, #117), a Holdable: served on the lounge table when you sit in the lounge sofa,

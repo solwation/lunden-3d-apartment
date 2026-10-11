@@ -1,5 +1,7 @@
 <!doctype html><html lang="sv"><meta charset="utf-8"><title>Beer shelf cache</title><pre id="out">running…</pre>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js"}}</script>
 <script type="module">
+import * as THREE from 'three';import { BeerShelf } from '../src/beershelf.js';
 import { loadBeerShelf } from '../src/beershelfdata.js';import { BEER_SHELF as P } from '../src/config.js';import { beerDay } from '../src/beershelfschema.js';
 const out=document.getElementById('out'),lines=[];let pass=true;
 const check=(ok,name)=>{lines.push(`${ok?'PASS':'FAIL'} ${name}`);pass&&=!!ok;out.textContent=lines.join('\n');};
@@ -47,11 +49,38 @@ let aborted=false;const stalled=loadBeerShelf({persist:false,refresh:false,timeo
   options.signal.addEventListener('abort',()=>{aborted=true;});return new Promise(()=>{});
 }});
 await new Promise(r=>setTimeout(r,80));
-let rejected=false;try{await stalled;}catch{rejected=true;}
-check(rejected&&aborted&&unhandled.length===0,'stalled prepared network request stays bounded and aborts without an early unhandled rejection');
+const absent=await stalled;
+const fridge=()=>({inside:{cx:0,iw:1,y0:0},door:{position:{z:0}},object:new THREE.Group(),t:1});
+const empty=new BeerShelf(fridge(),absent);
+check(absent.record.beers.length===0&&absent.images.length===0&&empty.packages.length===0&&aborted&&unhandled.length===0,
+  'stalled local request aborts and late startup handoff constructs a safe empty actual BeerShelf');
+const missing=async(name,fetcher)=>{
+  await caches.delete(cacheName);
+  const value=await loadBeerShelf({cacheName,endpoint,refresh:false,timeout:40,fetcher});
+  const stored=await(await caches.open(cacheName)).match(key);
+  check(value.record.beers.length===0&&value.images.length===0&&!stored&&!value.record.fetchedAt&&!value.record.day,name);
+};
+await missing('local network rejection returns empty without persisting a successful snapshot',async()=>{throw Error('offline');});
+await missing('local HTTP failure returns empty without persisting a successful snapshot',async()=>new Response('',{status:503}));
+await missing('local JSON rejection returns empty without persisting a successful snapshot',async()=>new Response('bad json'));
+await missing('local stalled response body remains bounded and returns uncached empty shelf',async()=>({ok:true,json:()=>new Promise(()=>{})}));
+await missing('local invalid metadata returns uncached empty shelf',async()=>Response.json({...prepared,beers:prepared.beers.slice(0,3)}));
+const badPrepared=structuredClone(prepared);badPrepared.beers[0].image='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAAB';
+await missing('local image decode failure returns uncached empty shelf rather than partial labels',async()=>Response.json(badPrepared));
+await caches.delete(cacheName);
+const live=structuredClone(prepared);live.fetchedAt=now;live.day=beerDay(now);
+const successfulLive=await loadBeerShelf({cacheName,endpoint,timeout:1000,fetcher:async url=>{if(url===P.defaultURL)throw Error('local unavailable');return Response.json(live);}});
+check(successfulLive.images.length===4&&successfulLive.record.fetchedAt===now,'successful live batch survives concurrent local snapshot rejection');
+await caches.delete(cacheName);
+const unavailable=await loadBeerShelf({cacheName,endpoint,timeout:40,fetcher:async()=>{throw Error('all unavailable');}});
+check(unavailable.record.beers.length===0&&!(await(await caches.open(cacheName)).match(key)),'combined refresh and prepared failure cannot abort startup or populate cache');
+await new Promise(r=>setTimeout(r,20));check(unhandled.length===0,'all failed or unused source promises remain handled');
 removeEventListener('unhandledrejection',onUnhandled);
 const failure=async url=>{if(url===P.defaultURL)return Response.json(prepared);calls++;throw Error('offline')};
 const first=await loadBeerShelf({cacheName,endpoint,fetcher:failure,timeout:1000});check(first.record.fetchedAt===0&&first.images.length===4,'first offline load uses prepared DIPA/TIPA with four decodable labels');
+const actual=new BeerShelf(fridge(),first);
+check(actual.packages.length===4&&actual.group.children.length===4&&actual.packages.every(p=>p.object.children[0].material[0].map.image.width===512),'actual BeerShelf builds all four real decoded label textures without WebGL');
+const label=document.createElement('img');label.id='label-evidence';label.alt='Actual first beer package label texture';label.src=actual.packages[0].object.children[0].material[0].map.image.toDataURL();sessionStorage.setItem('beer-label-evidence',label.src);document.body.append(label);
 const again=await loadBeerShelf({cacheName,endpoint,fetcher:failure,timeout:1000});check(calls===2&&again.record.fetchedAt===0,'failed first updates retry on later loads and never count as successful days');
 const next=structuredClone(prepared);next.fetchedAt=now;next.day=beerDay(now);
 const fresh=await loadBeerShelf({cacheName,endpoint,fetcher:async()=>{calls++;return Response.json(next)}});check(fresh.record.fetchedAt===now&&fresh.images.length===4,'complete live metadata and labels replace the prepared snapshot');
@@ -73,5 +102,5 @@ const broken=structuredClone(next);broken.beers[3].image='data:image/png;base64,
 await compare('one image failing actual browser decoding keeps all four old labels',async()=>Response.json(broken));
 let retry=0;await loadBeerShelf({cacheName,endpoint,fetcher:async()=>{retry++;return Response.json(next)}});check(retry===1,'a new day retries automatically after failures and commits only a successful complete batch');
 if(pass){sessionStorage.setItem('beer-cache-lines',JSON.stringify(lines));sessionStorage.setItem('beer-cache-reload','1');location.reload();} }
-}catch(e){check(false,e.stack);}if(!sessionStorage.getItem('beer-cache-reload'))out.textContent=lines.join('\n')+'\n'+(pass?'ALL PASS':'SOME FAILED');
+}catch(e){check(false,e.stack);}if(sessionStorage.getItem('beer-label-evidence')&&!document.getElementById('label-evidence')){const image=document.createElement('img');image.src=sessionStorage.getItem('beer-label-evidence');document.body.append(image);sessionStorage.removeItem('beer-label-evidence');}if(!sessionStorage.getItem('beer-cache-reload'))out.textContent=lines.join('\n')+'\n'+(pass?'ALL PASS':'SOME FAILED');
 </script></html>
