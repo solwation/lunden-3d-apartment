@@ -386,3 +386,20 @@ such late recompiles (the "298 → 299 late program" in the reports is the same 
 ~2700 buffers / ~100 textures before the warm-up starts (frame 0: 71 programs, 14 s under SwiftShader); materials made after the
 start (cups, cat coats, new life items) still compile on first sight; `worst`/`warm` in the next iPhone report will say which
 of them (if any) is still a multi-second frame. Verify on a real iPhone.
+
+## Triangle budget over by the basement's bike racks (#704)
+
+`tools/perfcount.html` failed on desktop (big hall 1 020 495 > 1 000 000) after #683's realistic bikes. Cause, found by hooking `onBeforeRender` on every drawn mesh at the view and diffing against c5a1a9e: the garage bakes every rack's bikes (2 104 triangles each: frame 620, tyres 816, metal 664) and stalls (384 each) into the *area shell* mesh. That mesh is one per area, so its whole bounding sphere is always in the frustum and every bike in the area is drawn from anywhere in the basement: the L-house shell 22.6 k → 77.3 k, the next 14.9 k → 55.3 k, three smaller shells +25 k (about +105 k together), the rest of the increase being doors and the courtyard rack. Not the courtyard's Hus A–C or the other models listed in the issue.
+
+Fix: `bikeGeometry(lod)` / `standGeometry(lod)` in `src/streetlife.js` take a level. Level 1 (near) has 6-sided tubes, a 6×20 tyre torus and 4×20 rim torus (2 104 → 1 552 triangles per bike, no visible change at the distances the old set was judged at); level 0 (far) has 4-sided open tubes, a boxy saddle, a 4×16 tyre and 3×16 rim (756 per bike; stall 240 → 96). `Garage` builds each rack row (per area) as two meshes in the area's own shell material, so the tube light level still applies, and `Garage.update` shows the near one within `GARAGE.bikeLodNear` (10 m, *guess*, plus the row's bounding radius) of the camera and the far one beyond. The row meshes are also frustum-culled on their own. Spokes stay one alpha batch (4 triangles a wheel pair). Cost: +9 draw calls at the big hall (352 → 361 desktop, 281 → 284 phone), well inside the call budgets.
+
+| view (triangles) | desktop before | desktop after | phone before | phone after |
+|---|---|---|---|---|
+| big hall | 1 020 495 | 922 959 | 873 618 | 757 874 |
+| basement | 973 417 | 879 189 | 921 702 | 820 262 |
+| bike room | 800 375 | 743 755 | 730 216 | 671 572 |
+| bike yard | 750 755 | 739 715 | 703 146 | 692 106 |
+| upstairs | 736 479 | 725 439 | 637 118 | 626 078 |
+| park | 909 031 | 897 991 | 591 864 | 588 384 |
+
+Desktop peak is now 922 959 at the big hall (budget 1 000 000), phone peak 820 262 at the basement (budget 950 000). The courtyard rack and the bike yard's instanced bikes only got the lighter near geometry (no distance swap); they are the next lever if the budget is hit again. To find what a view's triangles are made of, hook `onBeforeRender` on every mesh, render once and sum `index.count / 3` (× `count` when instanced) per mesh, with the material colour and bounding box to recognise merged batches.
