@@ -167,3 +167,5 @@ Andra spelare har mindre namnskyltar med sina poäng, uppdaterade i samma spöks
 Uppdragslappen visar tre aktiva vardagsuppdrag med sina poäng och delmål; klara uppdrag ersätts direkt och får en väntetid innan de kan återkomma.
 
 Nollställning av statistiken rensar även dynamiska räknare, så inga gamla poäng ligger kvar.
+
+Stridens skottkontroller kan hoppa över tomma delar av stora modeller efter en begränsad bakgrundsförberedelse; fysisk telefonverifiering återstår. [Mätning och begränsningar](docs/validation/issue-715/README.md).

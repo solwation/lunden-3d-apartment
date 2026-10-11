@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { COMBAT as C } from './config.js';
+import { combatWorldHits, prepareCombatWorld } from './combatworld.js';
 
 // Combat between players (#667) on top of the ghosts (#666, src/ghosts.js; the room's check: cloudflare/players.js).
 // Only between two players who both hold a weapon (COMBAT.weapons; main.js `weaponKey`): they are drawn solid for each
@@ -31,6 +32,7 @@ export class Combat {
     Object.assign(this, { ghosts, camera, scene, weapon, feet, jetpack, darts, sparkles, arrows, onDie, onHitCb: onHit, onHurtCb: onHurt, sfx, lives: C.lives, jetT: 0, flashT: 0,
       hits: 0, hurts: 0, deaths: 0, fired: 0, seen: 0, lastShot: null, lastSeen: null });
     ghosts.onShot = (m, g) => this.remote(m, g);
+    prepareCombatWorld(scene, ghosts.group, camera);
     // the others' shots (#667): one LineSegments for every streak (rifle, wand, web, jetpack flames; vertex colours, one
     // draw call) and a few balls; their darts are the blasters' own pool (toys.js Darts, `remote`: drawn only)
     const n = C.lines;
@@ -78,14 +80,7 @@ export class Combat {
     ray.far = Math.max(0, len - 0.3);
     ray.layers.mask = this.camera.layers.mask;
     ray.camera = this.camera; // (sprites need it)
-    for (const h of ray.intersectObjects(this.scene.children, true)) {
-      const o = h.object;
-      if (!o.isMesh || o.material?.transparent || o.material?.visible === false) continue;
-      let skip = false;
-      for (let p = o; p; p = p.parent) if (!p.visible || p === this.ghosts.group || p === this.camera || p.userData.moving) { skip = true; break; } // (darts, the ball, the cat in flight)
-      if (!skip) return false;
-    }
-    return true;
+    return combatWorldHits(this.scene, this.ghosts.group, this.camera, ray).length === 0;
   }
 
   /** Whom an arrow from `o` with velocity `v` hits on its arc (#690): the first armed player whose body the path passes
@@ -154,14 +149,7 @@ export class Combat {
   /** The first thing in the world along o → d within `range` m (walls, furniture; not ghosts), as a distance. */
   reach(o, d, range) {
     ray.set(o, d); ray.far = range; ray.layers.mask = this.camera.layers.mask; ray.camera = this.camera;
-    for (const h of ray.intersectObjects(this.scene.children, true)) {
-      const ob = h.object;
-      if (!ob.isMesh || ob.material?.transparent || ob.material?.visible === false) continue;
-      let skip = false;
-      for (let p = ob; p; p = p.parent) if (!p.visible || p === this.ghosts.group || p === this.camera || p.userData.moving) { skip = true; break; }
-      if (!skip) return h.distance;
-    }
-    return range;
+    return combatWorldHits(this.scene, this.ghosts.group, this.camera, ray)[0]?.distance ?? range;
   }
 
   streak(a, b, color, life) {

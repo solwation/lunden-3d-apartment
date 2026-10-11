@@ -1,0 +1,162 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><title>Combat world raycast regression</title>
+<pre id="out">running…</pre>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js"}}</script>
+<script type="module">
+import * as T from 'three';
+import { COMBAT } from '../src/config.js';
+import { combatWorldHits, prepareCombatWorld, combatWorldMetrics, combatWorldState } from '../src/combatworld.js';
+// Actual Three raycasts, no renderer/WebGL. The baseline is Combat's pre-#715 accepted-hit loop.
+const lines = []; let checks = 0, failures = 0;
+const check = (ok, name) => { checks++; failures += !ok; lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); };
+const scene = new T.Scene(), ghosts = new T.Group(), camera = new T.PerspectiveCamera();
+scene.add(ghosts, camera);
+const ray = new T.Raycaster(new T.Vector3(0, 0, 5), new T.Vector3(0, 0, -1), 0, 20);
+ray.camera = camera;
+const material = () => new T.MeshBasicMaterial({ side: T.DoubleSide });
+const mesh = () => new T.Mesh(new T.BoxGeometry(1, 1, 1), material());
+const old = () => ray.intersectObjects(scene.children, true).filter(({ object: o }) => {
+  if (!o.isMesh || o.material?.transparent || o.material?.visible === false) return false;
+  for (let p = o; p; p = p.parent) if (!p.visible || p === ghosts || p === camera || p.userData.moving) return false;
+  return true;
+});
+const query = () => { scene.updateMatrixWorld(true); return combatWorldHits(scene, ghosts, camera, ray); };
+const same = (name) => {
+  scene.updateMatrixWorld(true);
+  const before = old(), after = query();
+  check(before.length === after.length && before.every((h, i) => h.object === after[i].object && h.instanceId === after[i].instanceId && Math.abs(h.distance - after[i].distance) < 1e-8), name);
+  return after;
+};
+const clear = () => { scene.clear(); scene.add(ghosts, camera); ghosts.clear(); camera.clear(); ray.layers.set(0); };
+const boxValues = b => [...b.min.toArray(), ...b.max.toArray()].join(',');
+try {
+  let m = mesh(); scene.add(m); check(same('ordinary solid hits match legacy').length > 0, 'ordinary solid blocks ray');
+  check(m.geometry.boundingBox === null, 'small native fallback does not create geometry box');
+  const waitReady = async geometry => {
+    const deadline = performance.now() + 10000;
+    while (!combatWorldState(geometry).ready && performance.now() < deadline) await new Promise(r => setTimeout(r, 10));
+    check(combatWorldState(geometry).ready, 'incremental grid finishes within bounded fixture timeout');
+  };
+  // Independent triangle copies at an exact interior grid plane, plus far corners defining all three axes.
+  const triangle = [-1, -1, 0, 1, -1, 0, 0, 1, 0];
+  const vertices = [...Array.from({ length: 210 }, () => triangle).flat(),
+    -16,-16,-16, -15,-16,-16, -16,-15,-16, 16,16,16, 15,16,16, 16,15,16];
+  const gridGeo = new T.BufferGeometry(); gridGeo.setAttribute('position', new T.Float32BufferAttribute(vertices, 3));
+  clear(); m = new T.Mesh(gridGeo, material()); scene.add(m);
+  prepareCombatWorld(scene, ghosts, camera);
+  const beforeFallback = combatWorldMetrics().fallbackQueries;
+  check(combatWorldState(gridGeo).pending && !combatWorldState(gridGeo).ready, 'queued incomplete grid exposes pending state');
+  check(same('partial-build fallback matches legacy').length > 0 && combatWorldMetrics().fallbackQueries > beforeFallback, 'partial build uses native raycast');
+  await waitReady(gridGeo);
+  check(gridGeo.boundingBox === null, 'ready private grid does not create geometry boundingBox');
+  check(same('exact interior cell-plane hit matches legacy').length > 0, 'cell-boundary triangle is never pruned');
+  for (const [label, origin, direction, near, far] of [
+    ['triangle edge on cell boundary', [0,-1,5], [0,0,-1], 0,20],
+    ['triangle corner', [-1,-1,5], [0,0,-1], 0,20],
+    ['zero-length interval exactly on triangle', [0,0,5], [0,0,-1], 5,5],
+    ['reverse ray across cell boundary', [0,0,-5], [0,0,1], 0,20]
+  ]) {
+    ray.set(new T.Vector3(...origin), new T.Vector3(...direction)); ray.near = near; ray.far = far;
+    check(same(label + ' matches legacy').length > 0, label + ' remains hittable');
+  }
+  ray.near = 0; ray.far = 20;
+  const pruned = combatWorldMetrics().prunedQueries;
+  ray.set(new T.Vector3(5, 5, 1), new T.Vector3(0, 0, -1)); ray.near = 0; ray.far = 2;
+  check(same('empty occupied-geometry region matches legacy').length === 0 && combatWorldMetrics().prunedQueries > pruned, 'ready grid actually prunes empty finite query');
+  ray.set(new T.Vector3(0, 0, 5), new T.Vector3(0, 0, -1)); ray.far = 4;
+  check(same('finite segment before triangle matches legacy').length === 0, 'ray far excludes triangle beyond segment');
+  ray.far = 20; ray.near = 6;
+  check(same('finite segment after triangle matches legacy').length === 0, 'ray near excludes triangle before segment');
+  ray.near = 0; ray.far = Infinity; same('unbounded ray native fallback matches legacy'); ray.far = 20;
+  m.scale.set(2, .5, 3); m.position.z = -2;
+  check(same('nonuniform transformed finite ray matches legacy').length > 0, 'scaled transformed mesh retains actual hit');
+  m.scale.set(1, 1, 1); m.position.z = 0;
+  let pos = gridGeo.attributes.position;
+  for (let i = 0; i < 630; i++) pos.setX(i, pos.getX(i) + 5);
+  pos.needsUpdate = true;
+  check(!combatWorldState(gridGeo).ready, 'position version invalidates completed private grid');
+  check(same('position mutation during rebuild matches legacy').length === 0, 'invalidated grid immediately uses current triangles');
+  await waitReady(gridGeo);
+  const replacement = pos.clone(); for (let i = 0; i < 630; i++) replacement.setX(i, replacement.getX(i) - 5);
+  gridGeo.setAttribute('position', replacement);
+  check(!combatWorldState(gridGeo).ready, 'position attribute replacement invalidates private grid');
+  check(same('replacement position native fallback matches legacy').length > 0, 'newly restored hit not pruned by stale grid');
+  await waitReady(gridGeo);
+  replacement.array = replacement.array.slice(); for (let i = 0; i < 630; i++) replacement.array[i * 3] += 5;
+  check(!combatWorldState(gridGeo).ready, 'position array replacement invalidates private grid');
+  same('position array replacement fallback matches legacy'); await waitReady(gridGeo);
+  const interleaved = new T.InterleavedBuffer(replacement.array.slice(), 3);
+  gridGeo.setAttribute('position', new T.InterleavedBufferAttribute(interleaved, 3, 0));
+  same('interleaved position replacement fallback matches legacy'); await waitReady(gridGeo);
+  for (let i = 0; i < 630; i++) interleaved.array[i * 3] -= 5;
+  interleaved.needsUpdate = true;
+  check(!combatWorldState(gridGeo).ready, 'interleaved buffer version invalidates private grid');
+  check(same('interleaved version rebuild matches legacy').length > 0, 'interleaved mutation restores actual hit'); await waitReady(gridGeo);
+  const index = new T.Uint16BufferAttribute(Array.from({ length: 636 }, (_, i) => i), 1);
+  // First 210 triangles now point at the off-axis corner, leaving no central triangle.
+  for (let i = 0; i < 630; i++) index.setX(i, 630 + i % 3);
+  gridGeo.setIndex(index); same('index attribute replacement fallback matches legacy'); await waitReady(gridGeo);
+  for (let i = 0; i < 630; i++) index.setX(i, i);
+  index.needsUpdate = true;
+  check(!combatWorldState(gridGeo).ready, 'index version invalidates private grid');
+  check(same('index version rebuild matches legacy').length > 0, 'newly indexed center triangle escapes stale empty grid'); await waitReady(gridGeo);
+  const external = new T.Box3(new T.Vector3(-19, -18, -17), new T.Vector3(19, 18, 17));
+  gridGeo.boundingBox = external; const externalValues = boxValues(external); query();
+  check(gridGeo.boundingBox === external && boxValues(external) === externalValues, 'externally supplied box preserved after private-grid build');
+  const measured = combatWorldMetrics();
+  check(measured.accountedBytes <= COMBAT.collision.budgetBytes && measured.bitBytes <= measured.accountedBytes, 'grid accounting respects configured scene cap');
+  const charge = measured.accountedBytes; gridGeo.dispose();
+  check(combatWorldMetrics().accountedBytes < charge && !combatWorldState(gridGeo).ready, 'geometry dispose releases grid accounting and cache');
+
+  clear(); m = mesh(); const authored = new T.Box3(new T.Vector3(-4, -3, -2), new T.Vector3(4, 3, 2));
+  m.geometry.boundingBox = authored; scene.add(m); const authoredValues = boxValues(authored); same('authored box query matches legacy');
+  pos = m.geometry.attributes.position; pos.setX(0, -1); pos.needsUpdate = true; query(); query();
+  check(m.geometry.boundingBox === authored && boxValues(authored) === authoredValues, 'authored Box3 identity/extents survive queries and vertex mutation');
+
+  clear(); const parent = new T.Group(); parent.layers.set(1); m = mesh(); parent.add(m); scene.add(parent);
+  check(same('parent layer mismatch still visits child').length > 0, 'matching child of nonmatching parent blocks');
+  for (const [name, apply, undo] of [
+    ['invisible ancestor', () => parent.visible = false, () => parent.visible = true],
+    ['moving ancestor', () => parent.userData.moving = true, () => delete parent.userData.moving],
+    ['ghost ancestor', () => ghosts.add(parent), () => scene.add(parent)],
+    ['camera ancestor', () => camera.add(parent), () => scene.add(parent)]
+  ]) { apply(); check(same(name + ' matches legacy').length === 0, name + ' excludes child'); undo(); }
+  parent.layers.set(0); m.layers.set(1); check(same('mesh layer mismatch matches legacy').length === 0, 'nonmatching mesh excluded'); m.layers.set(0);
+  m.material.transparent = true; check(same('transparent mesh matches legacy').length === 0, 'transparent mesh excluded'); m.material.transparent = false;
+  m.material.visible = false; check(same('hidden material matches legacy').length === 0, 'hidden material excluded');
+  const transparent = material(); transparent.transparent = true;
+  const hidden = material(); hidden.visible = false;
+  m.material = [transparent, hidden, material(), material(), material(), material()];
+  check(same('material array preserves legacy mesh-level filtering').length > 0, 'array members do not introduce new transparency filtering');
+
+  clear(); m = mesh(); scene.add(m); same('door at initial transform matches legacy'); m.position.x = 3;
+  check(same('moved door matches legacy').length === 0, 'door movement removes old blocker');
+  const added = mesh(); scene.add(added); check(same('new object matches legacy').some(h => h.object === added), 'new object immediately blocks');
+  scene.remove(added); check(same('removed object matches legacy').length === 0, 'removed object immediately ceases blocking');
+
+  clear(); const instances = new T.InstancedMesh(new T.BoxGeometry(1, 1, 1), material(), 2);
+  instances.setMatrixAt(0, new T.Matrix4().makeTranslation(3, 0, 0)); instances.setMatrixAt(1, new T.Matrix4().makeTranslation(0, 0, 0)); scene.add(instances);
+  check(same('instanced intersections match legacy').some(h => h.instanceId === 1), 'instanced hit retains instanceId');
+
+  clear(); const morphGeo = new T.BoxGeometry(1, 1, 1); morphGeo.morphAttributes.position = [morphGeo.attributes.position.clone()];
+  const morph = new T.Mesh(morphGeo, material()); morph.morphTargetInfluences[0] = .5; scene.add(morph); same('morph intersections match legacy');
+  check(morphGeo.boundingBox === null, 'morph geometry receives no added box');
+  clear(); const skinGeo = new T.BoxGeometry(1, 1, 1), n = skinGeo.attributes.position.count;
+  skinGeo.setAttribute('skinIndex', new T.Uint16BufferAttribute(new Uint16Array(n * 4), 4));
+  const weights = new Float32Array(n * 4); for (let i = 0; i < n; i++) weights[i * 4] = 1;
+  skinGeo.setAttribute('skinWeight', new T.Float32BufferAttribute(weights, 4));
+  const skinned = new T.SkinnedMesh(skinGeo, material()), bone = new T.Bone(); skinned.add(bone); skinned.bind(new T.Skeleton([bone])); scene.add(skinned);
+  same('skinned intersections match legacy'); check(skinGeo.boundingBox === null, 'skinned geometry receives no added box');
+
+  clear(); const stopper = new T.Group(); stopper.raycast = () => false; stopper.add(mesh()); scene.add(stopper);
+  check(same('custom parent false suppresses recursive child').length === 0, 'false-return raycast excludes child');
+  stopper.layers.set(1); check(same('nonmatching false-return parent still recurses').length > 0, 'false-return only suppresses when parent layer matches');
+  clear(); const redirect = new T.Group(), target = mesh(); scene.add(redirect, target); target.position.x = 3;
+  redirect.raycast = (_r, hits) => { hits.push({ distance: 1, object: target, point: new T.Vector3() }); };
+  check(same('custom nonmesh redirects to accepted mesh').length === 1, 'redirected accepted mesh retained');
+  target.material.transparent = true; check(same('redirected transparent hit filtered').length === 0, 'filter uses redirected hit object material');
+  target.material.transparent = false; target.visible = false; check(same('redirected invisible hit filtered').length === 0, 'filter uses redirected hit object ancestors');
+} catch (error) { check(false, error.stack || String(error)); }
+lines.push(`${failures ? 'FAIL' : 'ALL PASS'} ${checks} checks; actual Three, no WebGL`);
+document.getElementById('out').textContent = lines.join('\n');
+window.result = { pass: failures === 0, checks, failures, lines };
+</script>

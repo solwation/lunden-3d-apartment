@@ -78,6 +78,12 @@ tools/combattest.cjs   fights (#667): three pages (A, B, C) against dev.mjs: una
                        pool, drawn only), A's thrown ball on B (screenshot), ten hits (points / deductions / lives), out of lives → start,
                        full lives, weapon and stats kept; C's screenshot.
                        Pages drive ghosts / combat updates themselves (SwiftShader frames take seconds); ~10 min. Also players.test.mjs
+tools/combatworldtest.html combat collision broad phase (#715), actual Three modules without WebGL: legacy hit equivalence,
+                       authored bounding-box identity/content, private-grid readiness and empty-space rejection, pending fallback,
+                       exact edge/corner/zero-length/finite near-far queries, nonuniform transforms, position/interleaved/index
+                       mutation, disposal/accounting caps, layers/moving/visibility/material arrays, custom false/redirected hits,
+                       instances and deforming geometry bypass. Open the page via devserve; #out reports ALL PASS/FAIL.
+                       This focused fixture is not a full apartment frame benchmark or a physical-phone PvP validation.
 tools/ghosttest.cjs    other players as ghosts (#666): two Playwright pages against `node cloudflare/dev.mjs 8146 testtoken` (real ws:// via
                        cloudflare/devws.mjs): ?mp=0 / no cloud off, see each other with tags Olof / "Anonym", position, standing still sends
                        nothing, a move arrives interpolated, the room's count, a closed / hidden tab disconnects; screenshots into SHOTS.

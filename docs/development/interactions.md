@@ -188,6 +188,15 @@ src/combat.js          fights between players (#667, on the ghosts of #666): onl
                        room's `points`), a splat, the badge; hurt → penalize('pvpHurt'), a red edge flash, sfx.ouch, a life off;
                        out of lives → main.js goToStart (#665: only the place) with all lives again, badge. #lives (made by
                        combat.js, top centre) shows ❤ n/10 only while a fight is on. tools/combattest.cjs (three pages)
+src/combatworld.js     combat solid-hit broad phase (#715): fresh filtered traversal keeps visibility, layers, moving/ghost roots,
+                       custom raycast propagation and nearest-hit semantics. Native static Mesh geometry may use a private 32³-bit
+                       conservative triangle-AABB occupancy grid; it only rejects an entirely empty finite query segment AABB,
+                       then Three's native raycast remains authoritative. Instanced/skinned/morphed/custom meshes bypass the grid.
+                       Combat constructor queues large geometries first; private bounds scan and cell fill advance in short idle
+                       slices (timeout ensures progress), with native fallback until ready or after buffer/index version changes.
+                       No geometry.boundingBox changes. Disposal releases pending jobs/accounting; removal without disposal can
+                       consume the lifetime admission quota and safely fall back. COMBAT.collision caps bitsets plus reserved
+                       bookkeeping, not measured JavaScript heap. No transforms or world membership are cached.
 src/basket.js          Tilly's basketball (BASKET): a Holdable in a wall holder over her daybed; click shoots it on an arc
                        through the point you look at (near the rim: at the rim, coming down at `entry`), right click / the
                        🏀 button (#power-btn, its icon = the held thing's `altIcon`) dribbles; out of the hand it bounces off

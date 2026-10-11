@@ -2879,6 +2879,8 @@ export const GHOSTS = { enabled: true, hz: 5, move: 0.02, turn: 0.03, beatMs: 10
 // flames hit someone `jetBelow` [min, max] m under you and within `jetAcross` m sideways while it thrusts. `lives` until the
 // room's welcome says otherwise. The HUD's hearts only while a fight is on. All our picks (*guess*).
 export const COMBAT = { weapons: ['saber', 'nerf', 'wand', 'rifle', 'ball', 'bow', 'web', 'jetpack'], lives: 10, solid: 1,
+  // Technical collision limits: fixed bitsets plus reserved bookkeeping, built during short idle slices (#715).
+  collision: { cells: 32, budgetBytes: 1024 * 1024, recordReserve: 4096, buildMs: 2, minTriangles: 200, queryCells: 512 },
   body: [0.25, 1.75], hitRadius: 0.4, saberCone: 0.5, jetBelow: [0.3, 4], jetAcross: 1.2, flash: 0.35,
   // the others' shots drawn here: at most `lines` streaks (rifle, wand, web, flames) and `balls` balls at once, each gone
   // after `shotLife` s; their darts reuse the blasters' pool (in `dartColor`)

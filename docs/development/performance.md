@@ -519,3 +519,5 @@ both): desktop kitchen 628 034 → 621 648, park 895 157 → 893 663, big hall 1
 before as well, #704); phone kitchen 437 230 → 426 064, park 579 166 → 571 220, basement 915 934 → 908 628; textures
 ~297 → ~298 MB desktop, ~81 → ~82 MB phone. One new program pair (leaf material + its alpha-tested depth variant), compiled
 by the warm-up like every scene material. No distance LOD: an InstancedMesh draws every lobe; fewer cards on phones only.
+
+Combat collision (#715) uses a capped conservative private occupancy grid, prepared incrementally with native-raycast fallback. [Actual-scene CPU update measurements and cold-build limitations](../validation/issue-715/README.md) document the confirmed desktop gain; these are not rendered-frame/FPS measurements or physical-phone validation.
