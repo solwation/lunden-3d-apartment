@@ -17,8 +17,13 @@ src/player.js          WASD/arrow/joystick movement, circle-vs-segment collision
                        m/s (#696: ~0.7 m, *guess*: just over a seat's ~0.45 m, not onto anything taller) or with the suit `SPIDER.jump` (2.5 m); `ceilingAt(x, z, y)` stops the head under the room's
                        ceiling (RH, `SOFFITS`, the stair's underside, a visited flat's levels, the garage's, outdoors roofs.js `above`) so
                        nobody jumps through the building; a collision segment with a fifth number (its top y: the boxwood hedge,
-                       streetlife.js) stops holding once the feet are within `PLAYER.hurdle` of it (`clears`, `segments()` filters while in
-                       the air); the fall of a plain jump counts from where it left the ground (no thud, `fall.jump` / `low`) and
+                       streetlife.js; since #693 also a sofa / armchair / ottoman footprint and the courtyard benches' seats) stops holding
+                       once the feet are within `PLAYER.hurdle` of it (`pushOut` skips it by the live feet height, so you can walk about on
+                       top too; `unstick` does not count standing on one as being stuck); a footprint polygon with a `top` (furniture.js /
+                       rearrange.js `refresh` from `STAND_ON[type]`, courtyard.js `solid(…, SEAT_Y)`) is a platform in `world.platforms`
+                       (world.js `setFurniture`, AABB + polygon) that `groundAt` offers as floor for feet already within `hurdle` of its top
+                       (the jump snaps up onto it, standing is stable, walking off falls with ordinary gravity, a high drop onto it hurts via
+                       fall.js; you cannot climb it by walking: the step stays held below `top − hurdle`; tools/jumpontest.html); the fall of a plain jump counts from where it left the ground (no thud, `fall.jump` / `low`) and
                        `restY()` is what a reload record keeps mid-jump (resume.js refuses a record in the air);
                        `isFree` / `obstacles` / `nearestFree` / `unstick` (#314, see Input notes); up on the roofs (#360): `aloft`
                        (outdoors > ROOFS.aloft m over the ground, over our flat above UNIT_TOP − 0.3) = `outdoors`, level 0, the
@@ -354,6 +359,10 @@ Top-right segmented badge (#582): index.html groups furniture, stats, mute and p
   path, so a walk just fails, a sprint (3.2 m/s) clears it; the suit's jump walks over it. The path is the
   body's radius on both sides + its 0.44 m depth). Space is always `preventDefault`ed in play (it never scrolls
   or presses a focused button) and the Space that stands you up from a seat is no jump.
+  #693: landing on low things (`STAND_ON` in config.js: sofa, armchair, ottoman at 0.45 m; the courtyard's benches 0.46 m): the plain
+  jump reaches them, the suit's jump goes far above; tables (0.75 m), shelves, walls and fences are no platforms (a wall keeps its
+  plain collision). The whole footprint counts as standable at the seat height (a sofa's back too: *guess*). Not done: beds, the
+  TV bench, other courtyard / street seats, a standing surface for tables or kerbs (own issue).
 - Crouch (#70): hold Ctrl (or the 🧎 toggle on touch) → eye `PLAYER.crouchEye` 0.95 m at `crouchSpeed` (50 %),
   no sprint; you only stand up again where there is head room (`roomToStand`: not under the stair's
   upper flight). Released on blur / losing pointer lock so nobody gets stuck down.

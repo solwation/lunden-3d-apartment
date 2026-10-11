@@ -1012,12 +1012,17 @@ export function buildWorld(plan) {
   // machine (main.js adds the cat board and hides the cat). Kept: Peab's kitchen, wet rooms, built-in
   // wardrobes, doors, stair, ceiling lamps, switches, the wall clock and the note on the freezer.
   const looseItems = [furniture.object, sillPlants, shelves, hallWall.object, ...signs, ...interiorLoose];
+  const platforms = []; // low seats you can jump up on and stand on (#693, player.js `groundAt`): the footprints that carry a `top`
   const setFurniture = (on) => {
     for (const o of looseItems) o.visible = on;
+    platforms.length = 0;
     levels.forEach((l, i) => {
       const court = i === 0 ? courtyard.seats : { segments: [], footprints: [] }; // the courtyard's benches + tables (#438): F keeps them
       l.segments = [...fixed[i], ...court.segments, ...(on ? furniture.segments[i] : [])];
       l.footprints = [...court.footprints, ...(on ? furniture.footprints[i] : [])]; // the furniture's floor rectangles: no getting up inside one (#302)
+      for (const q of l.footprints) if (q.top !== undefined) { // (an axis-aligned box round it for a cheap look-up)
+        platforms.push({ pts: q, top: q.top, x0: Math.min(...q.map((c) => c[0])), x1: Math.max(...q.map((c) => c[0])), z0: Math.min(...q.map((c) => c[1])), z1: Math.max(...q.map((c) => c[1])) });
+      }
     });
   };
   setFurniture(true);
@@ -1029,6 +1034,7 @@ export function buildWorld(plan) {
     wardrobes: laundryWardrobes, // reserved, usable shelf spaces (#552)
     setFurniture,
     furniture, // movable scene roots and collision data (#465)
+    platforms,
     refreshFurniture: () => setFurniture(furniture.object.visible),
     looseItems, // hidden by F (main.js may add more)
     cupSurfaces: [...furniture.surfaces, ...kitchenSurfaces, ...sillSurfaces, ...courtyard.surfaces], // table tops a cup can be put on (#90), the window boards (#185)

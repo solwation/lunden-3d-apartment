@@ -1,6 +1,6 @@
 import { windPlant, windMaterial } from './plantwind.js';
 import { MusicLoop } from './music.js';
-import { MUSIC } from './config.js';
+import { MUSIC, STAND_ON } from './config.js';
 import * as THREE from 'three';
 import { woodMaterial } from './woodgrain.js';
 import { freeCanvasAfterUpload } from './lowmemory.js';
@@ -3836,9 +3836,12 @@ export function buildFurniture() {
     }
     things.push(...(obj.userData.things ?? [])); // small things you can take (bottles, glasses, #152)
     // footprint rectangles → world-space collision segments
+    const stand = STAND_ON[item.type]; // low enough to jump up on (#693): its top y rides on the segments (5th number) and the footprint
+    obj.userData.standTop = stand;
     for (const r of obj.userData.footprint ?? []) {
       const pts = [toWorld(r.x0, r.z0), toWorld(r.x1, r.z0), toWorld(r.x1, r.z1), toWorld(r.x0, r.z1)];
-      for (let i = 0; i < 4; i++) segments[item.level].push([...pts[i], ...pts[(i + 1) % 4]]);
+      if (stand !== undefined) pts.top = floor + stand;
+      for (let i = 0; i < 4; i++) segments[item.level].push(stand !== undefined ? [...pts[i], ...pts[(i + 1) % 4], pts.top] : [...pts[i], ...pts[(i + 1) % 4]]);
       footprints[item.level].push(pts);
     }
   }

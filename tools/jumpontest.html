@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Jump-on test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+// #693 (with #696): the plain jump (PLAYER.jump, ~0.7 m) lands on top of low seats — the courtyard's benches, the sofa, the
+// armchair, the ottoman (STAND_ON, world.platforms) — and stands there stably; Space from there jumps on; walking off the
+// edge falls with ordinary gravity (no hurt); a 4 m drop onto the seat is hurt by the existing fall damage. Walking alone
+// does not climb onto them, higher furniture (a table) and a wall cannot be jumped onto / through. #696: the apex of the plain
+// jump and the suit's.
+//   node runtest.cjs http://localhost:8137/tools/jumpontest.html
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const f = document.createElement('iframe');
+f.width = 900; f.height = 600;
+f.src = '../index.html?shot&time=12&month=6&freeze';
+document.body.append(f);
+f.onload = () => run().catch((e) => { out.textContent = `FAIL ${e}\n${e.stack}\nSOME FAILED`; });
+async function run() {
+  const w = f.contentWindow, d = f.contentDocument;
+  while (!w.__app) await wait(100);
+  const A = w.__app, { player, fall, world, step, camera, renderer, suit } = A;
+  const mod = (p) => w.eval(`import('${new URL(p, location.href).href}')`);
+  const { PLAYER, SPIDER, STAND_ON, COURTYARD, FURNITURE, SITE } = await mod('../src/config.js');
+  const { inPoly } = await mod('../src/player.js');
+  const lines = [];
+  let pass = true;
+  const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); pass &&= !!ok; return ok; };
+  const f2 = (v) => v.toFixed(2);
+  d.getElementById('install').hidden = true;
+  Object.defineProperty(d, 'pointerLockElement', { get: () => renderer.domElement, configurable: true });
+  d.dispatchEvent(new w.Event('pointerlockchange'));
+  const landings = [];
+  const land0 = player.onLand;
+  player.onLand = (drop, gap) => { const r = land0(drop, gap); landings.push({ drop, gap, r }); return r; };
+  const dt = 1 / 60;
+  const place = (x, z, yawDeg, feet) => {
+    player.spawn(x, z, yawDeg * Math.PI / 180);
+    if (feet !== undefined) { player.pos.y = feet; player.eyeY = feet + PLAYER.eye; }
+    camera.rotation.x = 0;
+    landings.length = 0;
+    for (let i = 0; i < 10; i++) step(dt);
+    for (let i = 0; i < 300 && player.glide; i++) step(dt);
+  };
+  const run2 = (secs, keys = []) => { player.keys = new Set(keys); for (let t = 0; t < secs; t += dt) { step(dt); if (fall.active) break; } player.keys = new Set(); };
+  const yawTo = (dx, dz) => Math.atan2(-dx, -dz) * 180 / Math.PI; // forward = (−sin yaw, −cos yaw)
+
+  // the apexes (#696)
+  const apex = (secs = 1.5) => { const y0 = player.pos.y; let hi = y0; player.keys = new Set(['Space']); step(dt); player.keys = new Set(); for (let t = 0; t < secs; t += dt) { step(dt); hi = Math.max(hi, player.pos.y); } return hi - y0; };
+  suit.goHome();
+  place(-30, 38, 0); // (open street ground, as the other jump tests)
+  const C = SITE.blocks.find((b) => b.name === 'Hus C'), cx = (C.x0 + C.x1) / 2;
+  place(cx, C.z1 + 8, 0);
+  const plain = apex();
+  suit.putOn(); place(cx, C.z1 + 8, 0);
+  const high = apex();
+  suit.goHome();
+  check(plain > 0.5 && plain < 0.85 && high > 2 && high > 3 * plain, `apex: plain jump ${f2(plain)} m (just over a seat), the suit's ${f2(high)} m`);
+
+  // jump from touching a platform, towards its middle, until standing on it (the keys let go over it)
+  const jumpOn = (q, dirDeg) => {
+    const cxp = (q.x0 + q.x1) / 2, czp = (q.z0 + q.z1) / 2, a = dirDeg * Math.PI / 180;
+    // start 1.2 m + half the platform's size away, on the line through its middle, free to stand
+    for (let r = 0.8; r < 3; r += 0.2) {
+      const x = cxp + Math.sin(a) * r, z = czp + Math.cos(a) * r;
+      if (!player.isFree(x, z)) continue;
+      const base = player.groundAt(x, z, 0);
+      place(x, z, yawTo(cxp - x, czp - z), base);
+      run2(2, ['KeyW']); // walking alone: held at the edge
+      const walkedOn = player.pos.y > base + 0.1;
+      const edge = { x: player.pos.x, z: player.pos.z };
+      player.keys = new Set(['KeyW', 'Space']); step(dt);
+      let landed = false, t = 0;
+      for (; t < 1.5 && !landed; t += dt) {
+        const over = inPoly(q.pts, player.pos.x, player.pos.z);
+        player.keys = new Set(over ? [] : ['KeyW']);
+        step(dt);
+        landed = over && !player.fall && player.pos.y > base + 0.2;
+      }
+      player.keys = new Set();
+      return { ok: landed, walkedOn, dist: Math.hypot(edge.x - x, edge.z - z), base };
+    }
+    return null;
+  };
+
+  // (1) every platform: which of them can be reached from some side
+  const plats = world.platforms;
+  check(plats.length >= 3, `${plats.length} platforms (STAND_ON ${JSON.stringify(STAND_ON)} + the courtyard's benches)`);
+  const bench = COURTYARD.benches[0];
+  const onBench = plats.filter((q) => Math.abs((q.x0 + q.x1) / 2 - bench.x) < 0.05 && Math.abs((q.z0 + q.z1) / 2 - bench.z) < 0.05)[0];
+  check(!!onBench && Math.abs(onBench.top - 0.46) < 0.01, `the first bench is a platform, its seat at ${onBench && f2(onBench.top)} m`);
+  let res = null;
+  for (const dir of [90, 270, 0, 180]) { res = jumpOn(onBench, dir); if (res?.ok) break; }
+  check(res && !res.walkedOn, `bench: walking into it does not climb it`);
+  check(res?.ok && Math.abs(player.pos.y - onBench.top) < 0.01, `bench: a jump lands on it (feet ${f2(player.pos.y)} m, seat ${f2(onBench.top)} m)`);
+  const sx = player.pos.x, sz = player.pos.z;
+  run2(1.5);
+  check(Math.abs(player.pos.y - onBench.top) < 0.01 && Math.hypot(player.pos.x - sx, player.pos.z - sz) < 0.01 && !fall.active && !player.glide, `bench: stands stably on it (not unstuck, y ${f2(player.pos.y)})`);
+  const up2 = apex();
+  check(up2 > plain * 0.9 && up2 < plain * 1.1 && Math.abs(player.pos.y - onBench.top) < 0.01, `bench: jumps on from there, ${f2(up2)} m higher, back on the seat`);
+  landings.length = 0;
+  // walk off the edge: ordinary gravity down to the ground, no hurt
+  const ex = [Math.sign(player.pos.x - (onBench.x0 + onBench.x1) / 2) || 1, Math.sign(player.pos.z - (onBench.z0 + onBench.z1) / 2) || 1];
+  const longX = onBench.x1 - onBench.x0 > onBench.z1 - onBench.z0;
+  player.yaw = undefined;
+  const ctr = { x: (onBench.x0 + onBench.x1) / 2, z: (onBench.z0 + onBench.z1) / 2 };
+  const off = longX ? [0, ex[1]] : [ex[0], 0];
+  place(ctr.x, ctr.z, yawTo(off[0], off[1]), onBench.top); // (placed on the seat, feet at its top)
+  check(Math.abs(player.pos.y - onBench.top) < 0.02, `bench: placed on the seat stays up (${f2(player.pos.y)} m)`);
+  run2(3, ['KeyW']);
+  for (let i = 0; i < 90; i++) step(dt);
+  const gnd = player.groundAt(player.pos.x, player.pos.z, 0);
+  check(Math.abs(player.pos.y - gnd) < 0.02 && !landings.some((l) => l.r === 'hurt') && !fall.active, `bench: walking off the edge falls to the ground (${f2(player.pos.y)} m, ${JSON.stringify(landings.map((l) => l.r))})`);
+  // a high drop onto the seat hurts (the existing fall damage)
+  place(ctr.x, ctr.z, 0, onBench.top);
+  player.pos.y = onBench.top + 4; player.eyeY = player.pos.y + PLAYER.eye;
+  run2(3);
+  check(landings.some((l) => l.r === 'hurt'), `a 4 m drop onto the seat hurts (${JSON.stringify(landings.map((l) => `${f2(l.drop)} ${l.r}`))})`);
+  for (let i = 0; i < 600 && fall.t >= 0; i++) step(dt);
+
+  // (2) the furniture: the sofa, the armchair, the ottoman (level 0)
+  const reach = {};
+  for (const it of FURNITURE.filter((i) => STAND_ON[i.type] !== undefined && i.level === 0)) {
+    const q = plats.filter((p) => it.x !== undefined && inPoly(p.pts, it.x, it.z) || Math.hypot((p.x0 + p.x1) / 2 - it.x, (p.z0 + p.z1) / 2 - it.z) < 1.2).sort((a, b) => b.top - a.top)[0];
+    if (!q) { reach[it.type] = 'no platform'; continue; }
+    let r = null;
+    for (const dir of [0, 90, 180, 270, 45, 135, 225, 315]) { r = jumpOn(q, dir); if (r?.ok) break; }
+    reach[it.type] = r?.ok ? `landed ${f2(player.pos.y)} m` : r ? 'not reached' : 'no free start';
+    if (r?.ok) { run2(1); reach[it.type] += Math.abs(player.pos.y - q.top) < 0.01 && !player.glide ? ', stable' : ', UNSTABLE'; }
+    reach[it.type + '_walk'] = r?.walkedOn;
+  }
+  lines.push(`info furniture: ${JSON.stringify(reach)}`);
+  for (const type of ['sofa', 'armchair', 'ottoman']) check(/landed .*stable/.test(reach[type] ?? ''), `${type}: a jump lands on it and stands stably (${reach[type]})`);
+  check(!['sofa', 'armchair', 'ottoman'].some((t) => reach[t + '_walk']), 'furniture: walking into it does not climb it');
+
+  // (3) too high / walls: a table (0.75 m) is no platform and holds the jumper; the south façade of Hus C is no way up
+  const table = FURNITURE.find((i) => i.type === 'aborgtable');
+  check(!plats.some((p) => Math.hypot((p.x0 + p.x1) / 2 - table.x, (p.z0 + p.z1) / 2 - table.z) < 0.4), `the table at (${table.x}, ${table.z}) is no platform`);
+  const tf = world.levels[0].footprints.find((q) => !q.top && Math.hypot(q.reduce((s, c) => s + c[0], 0) / q.length - table.x, q.reduce((s, c) => s + c[1], 0) / q.length - table.z) < 0.5);
+  const tx = tf.reduce((s, c) => s + c[0], 0) / tf.length, tz = tf.reduce((s, c) => s + c[1], 0) / tf.length;
+  let heldOk = false, hi = 0;
+  for (const dir of [0, 90, 180, 270]) {
+    const a = dir * Math.PI / 180;
+    for (let r = 1.0; r < 2.6; r += 0.2) {
+      const x = tx + Math.sin(a) * r, z = tz + Math.cos(a) * r;
+      if (!player.isFree(x, z)) continue;
+      place(x, z, yawTo(tx - x, tz - z), player.groundAt(x, z, 0));
+      const base = player.pos.y;
+      run2(1.5, ['KeyW']);
+      player.keys = new Set(['KeyW', 'Space']); step(dt); player.keys = new Set(['KeyW']);
+      for (let t = 0; t < 1.5; t += dt) { step(dt); hi = Math.max(hi, player.pos.y - base); if (inPoly(tf, player.pos.x, player.pos.z)) break; }
+      heldOk = !inPoly(tf, player.pos.x, player.pos.z) && Math.abs(player.pos.y - base) < 0.3;
+      break;
+    }
+    if (heldOk) break;
+  }
+  player.keys = new Set();
+  check(heldOk, `table: running + jumping at it, the jumper stays out of its footprint (feet up to ${f2(hi)} m)`);
+  place(cx, C.z1 + 2, 0);
+  run2(1.5, ['KeyW']);
+  player.keys = new Set(['KeyW', 'Space']); step(dt); player.keys = new Set(['KeyW']);
+  for (let t = 0; t < 1.5; t += dt) step(dt);
+  player.keys = new Set();
+  check(player.pos.z > C.z1 && player.pos.y < 0.3, `Hus C's wall: running + jumping into it gets nowhere (z ${f2(player.pos.z)} > ${f2(C.z1)}, feet ${f2(player.pos.y)} m)`);
+
+  out.textContent = lines.join('\n') + `\n${pass ? 'ALL PASS' : 'SOME FAILED'}`;
+}
+</script>
+</body>
+</html>

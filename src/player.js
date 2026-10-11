@@ -27,8 +27,9 @@ export function crosses(ax, az, bx, bz, [cx, cz, dx, dz]) {
   return t > 0 && t < 1 && u >= 0 && u <= 1;
 }
 
-function pushOut(pos, r, [ax, az, bx, bz]) {
-  const dx = bx - ax, dz = bz - az;
+function pushOut(pos, r, s) {
+  if (s.length > 4 && pos.y >= s[4] - PLAYER.hurdle) return false; // a low obstacle (the hedge, a sofa / bench) under the feet holds no more (#636, #693)
+  const ax = s[0], az = s[1], bx = s[2], bz = s[3], dx = bx - ax, dz = bz - az;
   const len2 = dx * dx + dz * dz || 1e-9;
   const t = THREE.MathUtils.clamp(((pos.x - ax) * dx + (pos.z - az) * dz) / len2, 0, 1);
   const cx = ax + dx * t, cz = az + dz * t;
@@ -149,6 +150,8 @@ export class Player {
     if (this.world.garage?.inside(x, z)) cands.push(GARAGE.floor); // the garage under the courtyard (#357)
     const r = this.world.roofs?.under(x, z, feet, PLAYER.stepUp); // a roof, the loftgång, a terrace (#360)
     if (r) cands.push(r.y);
+    const P = this.world.platforms; // a low seat (sofa, bench) the feet are already up at: its top is the floor (#693)
+    if (P) for (let i = 0; i < P.length; i++) { const q = P[i]; if (feet >= q.top - PLAYER.hurdle && x > q.x0 && x < q.x1 && z > q.z0 && z < q.z1 && inPoly(q.pts, x, z)) cands.push(q.top); }
     let best = -Infinity;
     for (const c of cands) if (c <= feet + PLAYER.stepUp && c > best) best = c;
     return best;
@@ -180,20 +183,15 @@ export class Player {
     if (u && (!u.ground || u.levelAt(this.pos.y) > 0)) { const lv = u.levelAt(this.pos.y); return [u.fixed[lv], u.doorSegments(lv)]; }
     const lvl = this.world.levels[this.level];
     const up = this.level === 0 && this.pos.y > GARAGE.floor + 1.5 ? this.world.upperSegments ?? [] : []; // over the garage door (#357)
-    const low = this.fall ? lvl.segments.filter((s) => !this.clears(s)) : lvl.segments; // in the air over a low hedge (#636)
     const doorSegs = this.world.doors
       .filter((d) => (d.object.position.y < LEVELS[0].floor + 1.6 ? 0 : 1) === this.level)
       .map((d) => d.segment());
-    return [low, [...doorSegs, ...up, ...(this.world.movingSegments?.(this.level) ?? [])]]; // + open furniture flaps (#118)
+    return [lvl.segments, [...doorSegs, ...up, ...(this.world.movingSegments?.(this.level) ?? [])]]; // + open furniture flaps (#118)
   }
 
   /** The feet height to keep for a reload (resume.js): where they stand, mid-jump the ground under them (a record in the
    * air would be refused by resumeAt and send the visitor to the start, #636). */
   restY() { return this.fall?.jump ? this.groundAt(this.pos.x, this.pos.z, this.pos.y) : this.pos.y; }
-
-  /** Is the low obstacle `s` (a collision segment with its top y as a fifth number: the clipped entrance hedge, #636) under
-   * the feet, so it does not hold the body any more? */
-  clears(s) { return s.length > 4 && this.pos.y >= s[4] - PLAYER.hurdle; }
 
   /** The lowest ceiling over (x, z) above the feet `y0` (#636): a roof / canopy outdoors (roofs.js), the room's ceiling
    * (RH, a lowered soffit, the underside of the stair) in our flat, a visited flat or the garage. */
@@ -259,7 +257,7 @@ export class Player {
   unstick(dt, instant = false) {
     const p = this.pos;
     if (!this.glide) {
-      if (!this.obstacles().some((q) => inPoly(q, p.x, p.z))) return false;
+      if (!this.obstacles().some((q) => inPoly(q, p.x, p.z) && !(q.top !== undefined && p.y >= q.top - PLAYER.hurdle))) return false; // (standing on a low seat is no being stuck in it, #693)
       const to = this.nearestFree(p.x, p.z);
       if (!to) return false;
       if (this.debug) console.log(`unstick (#314): (${p.x.toFixed(2)}, ${p.z.toFixed(2)}) → (${to.x.toFixed(2)}, ${to.z.toFixed(2)})`);

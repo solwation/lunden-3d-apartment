@@ -166,7 +166,11 @@ export function buildCourtyard() {
   const vines = [], bulbs = []; // climbing plants and string-light bulbs on the pergolas (#149)
   const segments = [];
   const seats = { segments: [], footprints: [] }, targets = [], surfaces = []; // #438: kept apart from the fixed segments (getting up off a bench)
-  const solid = (x0, x1, z0, z1) => { seats.segments.push(...rectSegs(x0, x1, z0, z1)); seats.footprints.push(rectQuad(x0, x1, z0, z1)); };
+  const solid = (x0, x1, z0, z1, top) => { // `top`: the seat's top y, where a jump can land on it (#693)
+    const segs = rectSegs(x0, x1, z0, z1), quad = rectQuad(x0, x1, z0, z1);
+    if (top !== undefined) { for (const sg of segs) sg[4] = top; quad.top = top; }
+    seats.segments.push(...segs); seats.footprints.push(quad);
+  };
   for (const p of C.paths) geos.paving.push(plate(p, 0.006, p.x0 < R.x1 && p.x1 > R.x0 && p.z0 < R.z1 && p.z1 > R.z0));
   for (const g of C.gravel) geos.gravel.push(plate(g, 0.003));
   // pergolas: posts, beams, cross slats; a dining table and two benches under them
@@ -274,7 +278,7 @@ export function buildCourtyard() {
   for (const b of C.benches) {
     const r = bench(b); geos.wood.push(...r.wood); geos.metal.push(...r.metal);
     const [hx, hz] = Math.abs(b.rot % 180) === 90 ? [0.3, 0.8] : [0.8, 0.3];
-    solid(b.x - hx, b.x + hx, b.z - hz, b.z + hz);
+    solid(b.x - hx, b.x + hx, b.z - hz, b.z + hz, SEAT_Y); // (a jump lands on the seat, #693)
     const yaw = THREE.MathUtils.degToRad(b.rot + 180), c = Math.cos(yaw), s = Math.sin(yaw); // (as bench(): local +z = the way it faces)
     const o = seat(b.x, b.z, yaw, [1.6, 0.42], C.sit.bench.map((u) => [b.x + c * u + s * 0.02, b.z - s * u + c * 0.02]), 0.85); // (the pick box up to the back's top)
     group.add(o); targets.push(o.userData.door);

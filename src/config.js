@@ -2851,6 +2851,11 @@ export const PLAYER = {
   // no longer holds once the feet are within this of its top (knees tucked, *guess*).
   jump: 3.7, hurdle: 0.22,
 };
+// Low furniture you can jump up on and stand on (#693): piece type → its seat's top over the piece's floor (m), the same
+// numbers as the models' seats (LANDSKRONA.seatHeight 0.44 + cushion, OTTOMAN.h; the courtyard benches' seat top is
+// courtyard.js SEAT_Y). Only what the plain jump (PLAYER.jump, ~0.7 m) reaches; everything taller keeps its plain wall.
+// A piece's whole footprint counts as standable at that height (the sofa's back too: a simplification, *guess*).
+export const STAND_ON = { sofa: 0.45, armchair: 0.45, ottoman: 0.45 };
 // Falling (#361, src/fall.js; player.js tracks `fall`: the highest feet since leaving the ground and the deepest free
 // drop under them). A drop of more than `hurt` m hurts (the issue's 3 m): a thud + "aj", the view jolts down, red, then
 // black, and the visitor wakes outside our front door (`wake`: 4 m north of the door at x ≈ 1.3 m, the walk test's way
