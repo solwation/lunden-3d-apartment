@@ -31,6 +31,7 @@ function plate(r, y, follow = false) {
 const R = SITE.terrain.ramp;
 const rectSegs = (x0, x1, z0, z1) => [[x0, z0, x1, z0], [x1, z0, x1, z1], [x1, z1, x0, z1], [x0, z1, x0, z0]];
 const rectQuad = (x0, x1, z0, z1) => [[x0, z0], [x1, z0], [x1, z1], [x0, z1]];
+const BED_Y = 0.5; // the raised beds' timber box height (the box below; #701: its rim is a jump-up platform)
 const SEAT_Y = 0.46; // the benches' seat top (the boxes below)
 
 /**
@@ -283,7 +284,7 @@ export function buildCourtyard() {
     const o = seat(b.x, b.z, yaw, [1.6, 0.42], C.sit.bench.map((u) => [b.x + c * u + s * 0.02, b.z - s * u + c * 0.02]), 0.85); // (the pick box up to the back's top)
     group.add(o); targets.push(o.userData.door);
   }
-  for (const r of C.beds) { geos.wood.push(box(r.x0, r.x1, 0, 0.5, r.z0, r.z1)); geos.soil.push(plate({ x0: r.x0 + 0.05, x1: r.x1 - 0.05, z0: r.z0 + 0.05, z1: r.z1 - 0.05 }, 0.48)); }
+  for (const r of C.beds) { geos.wood.push(box(r.x0, r.x1, 0, BED_Y, r.z0, r.z1)); solid(r.x0, r.x1, r.z0, r.z1, BED_Y); geos.soil.push(plate({ x0: r.x0 + 0.05, x1: r.x1 - 0.05, z0: r.z0 + 0.05, z1: r.z1 - 0.05 }, 0.48)); }
 
   // #112: bollards along the walks (a glowing band under the cap), the playhouse, the bike rack
   const glow = [], paint = [], bikes = [], bikeSpokes = [];

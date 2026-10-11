@@ -93,8 +93,13 @@ export function veronasofa(item = {}) {
     : part === 'sofa' ? [0, 1, 2].map((i) => ({ x: -X + W * (i + 0.5), y: seatY, z: 0.04 }))
     : [-0.28, 0.28].map((z) => ({ x: -0.06, y: seatY, z, dir: [-1, 0] }));
   g.userData.rest = { kind: 'sit', name: 'loungesoffan', verb: 'sätta dig i', spots };
-  g.userData.footprint = part === 'all' ? [{ x0: -X, x1: X, z0, z1 }, { x0: X - W, x1: X, z0: z1, z1: z3 }]
-    : part === 'sofa' ? [{ x0: -X, x1: X, z0, z1 }]
+  // #701: the seat cushions can be stood on (STAND_ON.veronasofa); the row's backs and arms are `solid` (walls, as the sofa's)
+  const row = (xa, xb) => [{ x0: xa, x1: xb, z0, z1: z0 + V.tube + V.backT, solid: true },                    // the backs
+    { x0: xa, x1: xa + V.tube + 0.02, z0: z0 + V.tube + V.backT, z1, solid: true },                       // the west arm
+    { x0: xb - V.tube - 0.02, x1: xb, z0: z0 + V.tube + V.backT, z1, solid: true },                       // the east arm
+    { x0: xa + V.tube + 0.02, x1: xb - V.tube - 0.02, z0: z0 + V.tube + V.backT, z1 }];                    // the seats
+  g.userData.footprint = part === 'all' ? [...row(-X, X), { x0: X - W, x1: X, z0: z1, z1: z3 }]
+    : part === 'sofa' ? row(-X, X)
     : [{ x0: -W / 2, x1: W / 2, z0: -V.divanL / 2, z1: V.divanL / 2 }];
   // cosy cushions (#399): leaning against the backs, and against the screen wall along the bench (in a frame turned to
   // face −x: its x runs along the bench from its north end, its z out from the bench's outer edge); merged into one mesh

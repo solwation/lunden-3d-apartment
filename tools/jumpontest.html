@@ -125,21 +125,23 @@ async function run() {
   const platsOf = (it) => plats.filter((p) => Math.abs(it.x - (p.x0 + p.x1) / 2) < 1.6 && Math.abs(it.z - (p.z0 + p.z1) / 2) < 1.6 && p.top - (LEVELS[it.level].floor + STAND_ON[it.type]) > -0.001 && p.top - (LEVELS[it.level].floor + STAND_ON[it.type]) < 0.08)
     .sort((a, b) => (b.x1 - b.x0) * (b.z1 - b.z0) - (a.x1 - a.x0) * (a.z1 - a.z0)); // the biggest first
   const platOf = (it) => platsOf(it)[0];
-  const pieces = FURNITURE.filter((i) => STAND_ON[i.type] !== undefined && ['sofa', 'armchair', 'ottoman', 'byas', 'bed', 'daybed'].includes(i.type));
+  const KINDS = ['sofa', 'armchair', 'ottoman', 'byas', 'bed', 'daybed', 'veronasofa', 'slattable']; // (#701: the patio's lounge + table)
+  const pieces = FURNITURE.filter((i) => STAND_ON[i.type] !== undefined && KINDS.includes(i.type));
+  const keyOf = (it) => it.type + (it.part ? '-' + it.part : '');
   for (const it of pieces) {
     const cands = platsOf(it), floorY = LEVELS[it.level].floor;
-    if (!cands.length) { reach[it.type] = 'no platform'; continue; }
+    if (!cands.length) { reach[keyOf(it)] = 'no platform'; continue; }
     let r = null, q = null;
     for (const c of cands) { // any of its standable rectangles (the sofa's arms and back wall off the sides)
       for (const dir of [0, 90, 180, 270, 45, 135, 225, 315]) { r = jumpOn(c, dir, floorY); if (r?.ok) break; }
       if (r?.ok) { q = c; break; }
     }
-    reach[it.type] = r?.ok ? `landed ${f2(player.pos.y - floorY)} m` : r ? 'not reached' : 'no free start';
+    reach[keyOf(it)] = r?.ok ? `landed ${f2(player.pos.y - floorY)} m` : r ? 'not reached' : 'no free start';
     if (r?.ok) {
-      run2(1); reach[it.type] += Math.abs(player.pos.y - q.top) < 0.01 && !player.glide ? ', stable' : ', UNSTABLE';
+      run2(1); reach[keyOf(it)] += Math.abs(player.pos.y - q.top) < 0.01 && !player.glide ? ', stable' : ', UNSTABLE';
       // stands on, jumps on from there (under a sloping ceiling as far as the head room allows), walks off some side unhurt
       const cap = player.ceilingAt(player.pos.x, player.pos.z, player.pos.y) - PLAYER.headroom - player.pos.y;
-      const up = apex(); reach[it.type] += Math.abs(player.pos.y - q.top) < 0.01 && up > Math.min(plain * 0.9, cap - 0.03) ? ', jumps on' : `, NO JUMP (${f2(up)} m, ceiling allows ${f2(cap)})`;
+      const up = apex(); reach[keyOf(it)] += Math.abs(player.pos.y - q.top) < 0.01 && up > Math.min(plain * 0.9, cap - 0.03) ? ', jumps on' : `, NO JUMP (${f2(up)} m, ceiling allows ${f2(cap)})`;
       let off = false;
       for (const k of [['KeyW'], ['KeyS'], ['KeyA'], ['KeyD']]) { // (the pieces stand among walls: some side is open)
         place(q.x0 + (q.x1 - q.x0) / 2, q.z0 + (q.z1 - q.z0) / 2, 0, q.top);
@@ -148,14 +150,16 @@ async function run() {
         for (let i = 0; i < 90; i++) step(dt);
         if (Math.abs(player.pos.y - player.groundAt(player.pos.x, player.pos.z, floorY)) < 0.02 && player.pos.y < q.top - 0.2 && !landings.some((l) => l.r === 'hurt')) { off = true; break; }
       }
-      reach[it.type] += off ? ', walks off' : ', STUCK/HURT';
+      reach[keyOf(it)] += off ? ', walks off' : ', STUCK/HURT';
     }
-    reach[it.type + '_walk'] = r?.walkedOn;
-    reach[it.type + '_top'] = f2((q ?? cands[0]).top - floorY);
+    reach[keyOf(it) + '_walk'] = r?.walkedOn;
+    reach[keyOf(it) + '_top'] = f2((q ?? cands[0]).top - floorY);
   }
   lines.push(`info furniture: ${JSON.stringify(reach)}`);
-  for (const type of ['sofa', 'armchair', 'ottoman', 'byas', 'bed', 'daybed']) check(/landed .*stable, jumps on, walks off/.test(reach[type] ?? ''), `${type}: a jump lands on it, stands stably, jumps on, walks off (${reach[type]})`);
-  check(!['sofa', 'armchair', 'ottoman', 'byas', 'bed', 'daybed'].some((t) => reach[t + '_walk']), 'furniture: walking into it does not climb it');
+  const keys = [...new Set(pieces.map(keyOf))];
+  for (const type of keys) check(/landed .*stable, jumps on, walks off/.test(reach[type] ?? ''), `${type}: a jump lands on it, stands stably, jumps on, walks off (${reach[type]})`);
+  check(keys.length >= 8 && keys.some((k) => k.startsWith('veronasofa')) && keys.includes('slattable') , `the patio's lounge and its table are among the pieces (${keys.join(', ')})`);
+  check(!keys.some((t) => reach[t + '_walk']), 'furniture: walking into it does not climb it');
 
   // (2b) the sofa's backrest / arms, the bed's headboard and the daybed's back are no seats (#699): walls up to their own height
   const solidAt = (it, lx, lz) => { // a local point of the piece (+ rotation) is inside a footprint without a top
@@ -180,6 +184,19 @@ async function run() {
   const bx0 = player.pos.x; player.keys = new Set(['KeyD']); for (let i = 0; i < 100; i++) step(dt); player.keys = new Set();
   const moved = Math.abs(player.pos.x - bx0) + Math.abs(player.pos.z - (bq.z0 + bq.z1) / 2);
   check(Math.abs(player.pos.y - bq.top) < 0.02 && moved > 0.4, `the bench top: walking along it past the TV (${f2(moved)} m), still on it (${f2(player.pos.y)} m, top ${f2(bq.top)} m)`);
+
+  // (2c) the patio lounge's backs and arms are walls, its seats standable (#701); the raised beds are platforms (0.5 m); a kerb is walked up on
+  const lounge = FURNITURE.find((i) => i.type === 'veronasofa' && i.part === 'sofa');
+  const loungeBack = solidAt(lounge, 0, -0.66 / 2 + 0.05), loungeArm = solidAt(lounge, -1.5 * 0.685 + 0.02, 0.1), loungeSeat = solidAt(lounge, 0, 0.1);
+  check(loungeBack.solid && loungeArm.solid && loungeSeat.stand, `lounge: the backs and the arm are walls, the seat can be stood on (${JSON.stringify([loungeBack, loungeArm, loungeSeat])})`);
+  const bedBox = COURTYARD.beds[1], bedPlat = plats.find((q) => Math.abs((q.x0 + q.x1) / 2 - (bedBox.x0 + bedBox.x1) / 2) < 0.05 && Math.abs((q.z0 + q.z1) / 2 - (bedBox.z0 + bedBox.z1) / 2) < 0.05);
+  check(!!bedPlat && Math.abs(bedPlat.top - 0.5) < 0.01, `a raised bed is a platform, its rim at ${bedPlat && f2(bedPlat.top)} m`);
+  let bres = null;
+  if (bedPlat) for (const dir of [0, 90, 180, 270]) { bres = jumpOn(bedPlat, dir); if (bres?.ok) break; }
+  check(bres?.ok && !bres.walkedOn && Math.abs(player.pos.y - bedPlat.top) < 0.01, `raised bed: walking does not climb it, a jump lands on it (feet ${f2(player.pos.y)} m, rim ${bedPlat && f2(bedPlat.top)} m)`);
+  { // the street's granite kerbs (15 cm, 10 cm proud) and the car park's concrete edges (5 cm) are under PLAYER.stepUp: no collision, walked over
+    check(0.1 < PLAYER.stepUp && !plats.some((q) => q.top < 0.2), `kerbs (10 cm proud) and edges (5 cm) are under the step-up (${PLAYER.stepUp} m): no platform needed`);
+  }
 
   // (3) too high / walls: a table (0.75 m) is no platform and holds the jumper; the south façade of Hus C is no way up
   const table = FURNITURE.find((i) => i.type === 'aborgtable');
