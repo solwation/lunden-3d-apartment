@@ -9,8 +9,11 @@ Related: [interactions](interactions.md), [graphics](graphics.md).
 src/cat.js             the cat: random coat, washing animation, appears/moves/vanishes behind doors
 src/miele.js           Miele (#328): `HeartFireworks` (heart shells that pop into small hearts) and `MieleHeld` (a Holdable with no
                        home: the cat object rides in it, hand.js 'hug'; click / "Krama" hugs; put down she walks off)
-src/olof.js            Olof (#586, OLOF): a figure with a beer can in the sofa / armchair now and then; one SkinnedMesh (rigid
-                       13-bone skeleton, vertex colours, one material), posed by two-bone IK each frame (`poseOlof`, `seatedPose`)
+src/olof.js            Olof (#586/#671, OLOF): a figure with a beer can in the sofa / armchair now and then; one SkinnedMesh (rigid
+                       13-bone skeleton, vertex colours, one material), posed by two-bone IK each frame (`poseOlof`, `seatedPose`);
+                       #671 adds a more readable face, ears, fingers/thumbs, hoodie cords and pocket without another material or draw call;
+                       5,650 triangles / 16,950 vertices, 1.10 MiB of vertex attributes (+0.23 MiB from 4,454 triangles / 13,362 vertices),
+                       no added bones, textures or draw calls; the geometry increase is small against the scene's phone triangle budget
 tools/oloftest.html    headless test (#586): ?olof=0 seats him, seated pose, seat taken for visitor and cat, never turns up in
                        sight, "Vinka till Olof" scores, he tells a dad joke (10 different, none twice in a row), waves, gets up and is gone, the seat free again
 tools/olofcartest.html headless test (#599): the key brings the car with Olof at the wheel (seat, hands on the wheel), "Hälsa på

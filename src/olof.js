@@ -45,21 +45,27 @@ function parts() {
   add(new THREE.ConeGeometry(0.055, 0.13, 3).rotateZ(Math.PI).rotateY(Math.PI / 6).scale(1, 1, 0.25), C.tee, 'torso', [0, 0.55, torsoR(0.55) * 0.7 - 0.006]); // the T-shirt in the open zip: a V
   add(new THREE.TorusGeometry(0.1, 0.035, 6, 14, Math.PI).rotateX(-Math.PI / 2).scale(1.3, 1, 1.1), C.hoodie, 'torso', [0, 0.6, -0.005]);
   add(sphere(0.09, 10, 6).scale(1.35, 0.85, 0.45), C.hoodie, 'torso', [0, 0.5, -0.115]); // the hood lying on the back
+  add(new RoundedBoxGeometry(0.19, 0.105, 0.014, 2, 0.018), C.cuff, 'torso', [0, 0.22, torsoR(0.22) * 0.7 + 0.004]); // kangaroo pocket
+  for (const s of [-1, 1]) {
+    add(new THREE.CapsuleGeometry(0.0035, 0.13, 1, 4).rotateZ(s * 0.12), C.zip, 'torso', [s * 0.055, 0.52, torsoR(0.52) * 0.7 + 0.009]); // hood cords
+    add(sphere(0.006, 6, 5), C.zip, 'torso', [s * 0.071, 0.45, torsoR(0.45) * 0.7 + 0.009]);
+  }
   // head (the bone at the neck): neck, head, ears, eyes, nose; ash-blond hair swept back with a side part, short at the
   // sides (a cap tipped back: a high forehead), a grey full beard and moustache
   const H = 0.1; // the head's centre above the neck bone (the neighbours': hip + 0.74)
   add(new THREE.CylinderGeometry(0.05, 0.055, 0.12, 10), C.skin, 'head', [0, 0.02, 0]);
-  add(sphere(0.11, 16, 12).scale(0.92, 1.08, 1), C.skin, 'head', [0, H, 0.01]);
+  add(sphere(0.11, 16, 12).scale(0.96, 1.1, 0.98), C.skin, 'head', [0, H, 0.01]);
   for (const s of [-1, 1]) {
-    add(sphere(0.026, 8, 6).scale(0.45, 1, 0.75), C.skin, 'head', [s * 0.1, H - 0.005, 0]);
-    add(sphere(0.012, 8, 6), C.eye, 'head', [s * 0.036, H + 0.018, 0.1]);
+    add(sphere(0.029, 12, 8).scale(0.55, 1, 0.72), C.skin, 'head', [s * 0.1, H - 0.005, 0]); // ears
+    add(sphere(0.014, 8, 6).scale(0.55, 1, 0.55), C.ear, 'head', [s * 0.105, H - 0.005, 0.015]);
+    add(sphere(0.014, 8, 6), C.eye, 'head', [s * 0.036, H + 0.018, 0.104]);
     add(new THREE.BoxGeometry(0.03, 0.007, 0.01).rotateZ(s * -0.12), C.hair, 'head', [s * 0.037, H + 0.042, 0.103]); // brows
   }
-  add(sphere(0.019, 8, 6).scale(0.8, 1, 1.15), C.skin, 'head', [0, H - 0.008, 0.113]);
+  add(sphere(0.021, 10, 7).scale(0.8, 1, 1.1), C.skin, 'head', [0, H - 0.008, 0.113]);
   add(sphere(0.12, 16, 8, 0, Math.PI * 2, 0, Math.PI * 0.5).rotateX(-0.62).scale(0.96, 1.02, 1.04), C.hair, 'head', [0, H + 0.012, -0.004]);
   add(sphere(0.075, 12, 6).scale(1.0, 0.42, 1.35).rotateY(0.18), C.hair, 'head', [0.018, H + 0.112, -0.005]); // the swept-back top
   add(sphere(0.114, 14, 8, Math.PI / 2 - 1.5, 3.0, Math.PI * 0.53, Math.PI * 0.37).scale(0.95, 1.1, 1.03), C.beard, 'head', [0, H, 0.012]);
-  add(new THREE.CapsuleGeometry(0.011, 0.045, 3, 6).rotateZ(Math.PI / 2), C.beard, 'head', [0, H - 0.04, 0.108]);
+  for (const s of [-1, 1]) add(new THREE.CapsuleGeometry(0.0045, 0.023, 1, 5).rotateZ(Math.PI / 2 + s * 0.2), C.beardLight, 'head', [s * 0.012, H - 0.018, 0.128]); // shaped moustache over the beard
   // arms: hoodie sleeves with darker cuffs, the hands; the right hand holds the can (on the hand bone, so it can tilt)
   for (const s of ['L', 'R']) {
     add(lathe([[0, -UPPER - 0.01], [0.044, -UPPER], [0.048, -0.15], [0.052, -0.02], [0.035, 0.03], [0, 0.04]], 10), C.hoodie, 'shoulder' + s);
@@ -67,6 +73,12 @@ function parts() {
     add(lathe([[0, -0.215], [0.036, -0.21], [0.04, -0.15], [0.043, 0], [0, 0.01]], 10), C.hoodie, 'elbow' + s);
     add(lathe([[0.039, -0.235], [0.042, -0.17]], 10), C.cuff, 'elbow' + s);
     add(sphere(0.04, 10, 8).scale(0.72, 1.05, 0.95), C.skin, 'hand' + s);
+    // Fingers and thumbs share the hand bone, so they follow every IK pose without extra draw calls.
+    for (let f = 0; f < 4; f++) {
+      const x = (f - 1.5) * 0.014, len = 0.031 - Math.abs(f - 1.5) * 0.003;
+      add(new THREE.CapsuleGeometry(0.006, len, 1, 4).rotateX(Math.PI / 2), C.skin, 'hand' + s, [x, -0.016, 0.031]);
+    }
+    add(new THREE.CapsuleGeometry(0.007, 0.026, 1, 4).rotateZ(Math.PI / 2).rotateY(0.4), C.skin, 'hand' + s, [0.032, -0.005, 0.015]);
   }
   const can = [0, 0.015, 0.04]; // in the right hand's frame (y: the can's axis, z: out of the fist)
   add(new THREE.CylinderGeometry(0.033, 0.033, 0.122, 14), C.can, 'handR', can, 'can');

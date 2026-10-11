@@ -1477,7 +1477,8 @@ export const OLOF = {
   seats: ['soffan', 'fåtöljen'], sofaSpots: 3, // the sofa's three seats, not the chaise's (his feet would be in its cushion)
   forward: { 'fåtöljen': 0.12 }, // m his hips sit forward of the usual: the armchair's two cushions fill its back (*guess*, by eye)
   colors: { hoodie: 0x5a2029, cuff: 0x4a1a22, tee: 0x606063, zip: 0xb9bcc0, jeans: 0x3a3c41, shoe: 0x2a2523, skin: 0xe2b59b,
-    hair: 0x9c8b63, beard: 0x7f776d, eye: 0x2a2420, can: 0xc9cdd2, canBand: 0x1f5e3a, canTop: 0x9aa0a6 },
+    hair: 0x9c8b63, beard: 0x7f776d, beardLight: 0x999087, ear: 0xc78f77,
+    eye: 0x2a2420, can: 0xc9cdd2, canBand: 0x1f5e3a, canTop: 0x9aa0a6 },
   hello: ['Hej Olof!', 'Tjena Olof!', 'Hallå där, Olof!', 'Skål, Olof!'],
   // the dad joke he tells in the sofa / armchair before he goes (#659): in a `.say.long` bubble for `jokeTime` s (his goodbye line
   // `bye` was dropped), the hand up for `waveHold` s of it; never the same one twice in a row. Texts and times our *guess*.

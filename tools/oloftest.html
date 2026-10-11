@@ -26,6 +26,12 @@ f.onload = async () => {
   for (let i = 0; i < 3; i++) step(1 / 60);
   let pass = check(olof.seats().length === 4, `four seats for him (the sofa's three, the armchair): ${olof.seats().length}`);
   pass &= check(olof.state === 'sit' && olof.object.visible, `he sits there (${olof.state})`);
+  const tris = olof.fig.mesh.geometry.attributes.position.count / 3;
+  const figureMeshes = olof.object.children.filter((x) => x.isSkinnedMesh).length;
+  const meshBytes = Object.values(olof.fig.mesh.geometry.attributes).reduce((sum, a) => sum + a.array.byteLength, 0);
+  lines.push(`figure geometry: ${tris} triangles, ${olof.fig.mesh.geometry.attributes.position.count} vertices, ${(meshBytes / 1048576).toFixed(2)} MiB of CPU/GPU vertex buffers`);
+  pass &= check(figureMeshes === 1, `one skinned figure mesh / colour draw call (${figureMeshes})`);
+  pass &= check(tris <= 8000, `figure stays within the 8,000 triangle budget (${tris})`);
   const sp = olof.spot, B = olof.fig.bones, hips = B.hips.getWorldPosition(new V()), foot = new V();
   olof.fig.mesh.getVertexPosition(olof.fig.mesh.geometry.attributes.position.count - 1, foot); // a vertex of a shoe, skinned
   foot.applyMatrix4(olof.fig.mesh.matrixWorld);
