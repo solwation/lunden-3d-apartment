@@ -37,25 +37,28 @@ class Darts {
     this.marks = null; // set by main.js (#98)
   }
 
-  fire(from, dir, color = 0x1f6fff) {
+  /** `remote` (#667): another player's dart, only drawn — no paint, no score, not counted; { speed, blocked(a, b), life }:
+   * it stops where `blocked` finds a wall and goes `life` s after it was fired. */
+  fire(from, dir, color = 0x1f6fff, remote = null) {
     const d = this.list[this.next++ % this.list.length];
-    Object.assign(d, { color, spent: false, from: from.clone() });
+    Object.assign(d, { color, spent: false, from: from.clone(), remote, born: performance.now() });
     d.floor = from.y > LEVELS[1].floor + 0.3 ? LEVELS[1].floor : LEVELS[0].floor; // the shooter's floor
     d.g.position.copy(from);
-    d.v.copy(dir).multiplyScalar(T.nerf.dart.speed);
+    d.v.copy(dir).multiplyScalar(remote?.speed ?? T.nerf.dart.speed);
     d.g.lookAt(from.clone().add(dir));
     d.g.visible = true;
     d.flying = true;
-    this.fired++;
+    if (!remote) this.fired++;
   }
 
   update(dt) {
     for (const d of this.list) {
+      if (d.remote && d.g.visible && performance.now() - d.born > d.remote.life * 1000) { d.g.visible = false; d.flying = false; }
       if (!d.flying) continue;
       d.v.y -= T.nerf.dart.gravity * dt;
       const from = d.g.position.clone();
       d.g.position.addScaledVector(d.v, dt);
-      if (!d.spent && this.marks) this.impact(d, from);
+      if (d.remote) { if (d.remote.blocked?.(from, d.g.position)) { d.flying = false; continue; } } else if (!d.spent && this.marks) this.impact(d, from);
       d.g.lookAt(d.g.position.clone().add(d.v));
       if (d.g.position.y <= d.floor + 0.008) { d.g.position.y = d.floor + 0.008; d.flying = false; d.g.rotation.x = 0; }
     }

@@ -5,7 +5,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { installRuntime, fakeNamespace } from './devws.mjs';
 import worker, { PlayerRoom } from './worker.js';
-import { PLAYERS, CLOSE } from './players.js';
+import { PLAYERS, CLOSE, COMBAT } from './players.js';
 
 installRuntime();
 const realNow = Date.now;
@@ -42,12 +42,13 @@ test('two players see each other: welcome, join, forwarded and cleaned states, l
   a.send({ p: [1.234, 0.5, 9.876], r: 0.5, junk: 'x'.repeat(50) });
   await settle(env);
   const b = await connect(env); // no name: shown as "Anonym" by the clients
-  assert.deepEqual(b.got[0].ps, [{ i: a.got[0].i, n: 'Olofb', p: [1.23, 0.5, 9.88], r: 0.5 }]);
+  assert.deepEqual(b.got[0].ps, [{ i: a.got[0].i, n: 'Olofb', p: [1.23, 0.5, 9.88], r: 0.5, h: '' }]);
+  assert.equal(b.got[0].c.lives, COMBAT.lives);
   assert.deepEqual(a.got.at(-1), { t: 'j', i: b.got[0].i, n: '' });
   b.send({ p: [2, 0, 3], r: -1 });
   b.send('not json'); b.send({ p: [1, 2], r: 0 }); b.send({ p: [1e9, 0, 0], r: 0 });
   await settle(env);
-  assert.deepEqual(a.states(), [{ t: 's', i: b.got[0].i, p: [2, 0, 3], r: -1 }]);
+  assert.deepEqual(a.states(), [{ t: 's', i: b.got[0].i, p: [2, 0, 3], r: -1, h: '' }]);
   assert.equal(b.states().length, 0, 'never echoed to the sender');
   b.ws.close(1000);
   await settle(env);
@@ -162,6 +163,71 @@ test('admin brake: DELETE /admin/players and /admin/all close and switch off, PU
   assert.equal(b.closed, CLOSE.off, '/admin/all stops the players too');
   assert.equal(kv.has('paper'), false, '/admin/all still clears the rest');
   await admin(env, 'PUT');
+});
+
+test('combat (#667): only armed vs armed, range, rate, points per minute; lives count down, death refills', async () => {
+  const env = setup();
+  const a = await connect(env, 'A'), b = await connect(env, 'B');
+  const ia = a.got[0].i, ib = b.got[0].i;
+  const hits = () => a.got.filter((m) => m.t === 'hit'), hurts = () => b.got.filter((m) => m.t === 'hurt');
+  const fire = async (w = 'nerf') => { now += 1000; b.send('p'); a.send({ t: 'f', w, to: ib }); await settle(env); };
+  a.send({ p: [0, 0, 0], r: 0, h: 'nerf' }); b.send({ p: [0, 0, 6], r: 0, h: '' }); await settle(env);
+  await fire();
+  assert.equal(hits().length, 0, 'an unarmed target cannot be hit');
+  b.send({ p: [0, 0, 6], r: 0, h: 'bazooka' }); await settle(env);
+  assert.equal(a.states().at(-1).h, '', 'an unknown weapon is no weapon');
+  await fire();
+  assert.equal(hits().length, 0);
+  b.send({ p: [0, 0, 6], r: 0, h: 'saber' }); await settle(env);
+  await fire('rifle');
+  assert.equal(hits().length, 0, 'the shooter must hold the weapon it claims');
+  await fire();
+  assert.deepEqual(hits().at(-1), { t: 'hit', to: ib, w: 'nerf', l: COMBAT.lives - 1, dead: false });
+  assert.deepEqual(hurts().at(-1), { t: 'hurt', by: ia, n: 'A', w: 'nerf', l: COMBAT.lives - 1, dead: false });
+  a.send({ t: 'f', w: 'nerf', to: ib }); await settle(env);
+  assert.equal(hits().length, 1, 'not sooner than `every`');
+  b.send({ p: [0, 0, 30], r: 0, h: 'saber' }); await settle(env);
+  await fire();
+  assert.equal(hits().length, 1, 'out of range (+ slack)');
+  b.send({ p: [0, 0, 6], r: 0, h: 'saber' }); await settle(env);
+  for (let i = 0; i < 20; i++) await fire();
+  const perMinute = COMBAT.perMinute / COMBAT.points;
+  assert.equal(hits().length, perMinute, 'at most perMinute points a minute');
+  const ls = hurts().map((h) => h.l), died = hurts().findIndex((h) => h.dead);
+  assert.deepEqual(ls.slice(0, COMBAT.lives), Array.from({ length: COMBAT.lives }, (_, k) => COMBAT.lives - 1 - k), 'one life per hit');
+  assert.equal(died, COMBAT.lives - 1, 'out of lives on the last one');
+  assert.equal(ls[died + 1], COMBAT.lives - 1, 'full lives again after dying');
+  now += 60_000;
+  const n = hits().length;
+  await fire();
+  assert.equal(hits().length, n + 1, 'a new minute, new points');
+  b.send({ t: 'f', w: 'saber', to: ia }); await settle(env);
+  assert.equal(b.got.filter((m) => m.t === 'hit').length, 0, 'a saber at 6 m (range + slack 5 m) does not reach');
+});
+
+test('shots (#667): every shot goes to the armed others only, from near the shooter, checked; `to` scores as a hit', async () => {
+  const env = setup();
+  const a = await connect(env, 'A'), b = await connect(env, 'B'), c = await connect(env, 'C');
+  const ib = b.got[0].i;
+  const shots = (x) => x.got.filter((m) => m.t === 'a');
+  a.send({ p: [0, 0, 0], r: 0, h: 'ball' }); b.send({ p: [0, 0, 3], r: 0, h: 'nerf' }); c.send({ p: [1, 0, 3], r: 0 }); await settle(env);
+  now += 1000;
+  a.send({ t: 'a', w: 'ball', o: [0.123, 1.456, -0.2], d: [0, 0.6, -0.8], s: 6.789 }); await settle(env);
+  assert.deepEqual(shots(b), [{ t: 'a', i: a.got[0].i, w: 'ball', o: [0.12, 1.46, -0.2], d: [0, 0.6, -0.8], s: 6.79 }], 'a miss is drawn by the armed other');
+  assert.equal(shots(c).length, 0, 'not sent to someone unarmed');
+  assert.equal(b.got.filter((m) => m.t === 'hurt').length, 0, 'no `to`: no hit');
+  now += 1000;
+  a.send({ t: 'a', w: 'nerf', o: [0, 1.5, 0], d: [0, 0, 1] }); // not the weapon it holds
+  a.send({ t: 'a', w: 'ball', o: [20, 1.5, 0], d: [0, 0, 1] }); // far from where it stands
+  a.send({ t: 'a', w: 'ball', o: [0, 1.5, 0], d: [0, 0, 3] }); // not a unit direction
+  a.send({ t: 'a', w: 'ball', o: [0, 1.5, 0], d: [0, 0, 1], s: 500 }); // impossible speed
+  await settle(env);
+  assert.equal(shots(b).length, 1, 'bad shots are dropped');
+  now += 1000;
+  a.send({ t: 'a', w: 'ball', o: [0, 1.5, 0], d: [0, 0, 1], s: 5, to: ib }); await settle(env);
+  assert.equal(shots(b).length, 2);
+  assert.equal(b.got.filter((m) => m.t === 'hurt').length, 1, 'a shot with `to` is checked as a hit');
+  assert.equal(b.got.find((m) => m.t === 'a' && m.to), undefined, 'the target id is not passed on');
 });
 
 test.after(() => { Date.now = realNow; });

@@ -159,6 +159,26 @@ src/target.js          the Nerf target on the lawn behind the hedge (TARGET, #99
                        a score board beside it (localStorage 'lunden.target'), E clears it; it rises out of the grass
                        only while a holdable with `hitsTarget` (blasters, lightsaber, wands) is in the hand and sinks
                        under it otherwise (#144, #179); saber cuts and wand magic on it score too
+src/combat.js          fights between players (#667, on the ghosts of #666): only two players who BOTH hold a weapon (COMBAT.weapons:
+                       saber, nerf, wand, rifle, ball, web = the suit with empty hands, jetpack = worn; main.js `weaponKey`, in that
+                       order; remove a key to leave it out) are drawn solid for each other (ghosts.js `setSolid`, + a small prop for
+                       the weapon), the unarmed stay ghosts and cannot be hit. main.js wraps each weapon's use (onUse / rifle.onShot /
+                       suit.onShot) → `combat.fire(key)`: the nearest armed player along the view within the room's range (the
+                       saber: in front within reach, `saberCone`; a vertical capsule COMBAT.body, `hitRadius`), not behind a wall
+                       (a raycast; ghosts, see-through and `userData.moving` things ignored); the jetpack hits whoever is under it
+                       while thrusting (`jetBelow`, `jetAcross`). ONE small message per shot, misses too ({ t: 'a', w, o, d, s?, to? }:
+                       start, unit direction, speed for things on an arc — a dart from the blasters' pool, the ball; eye + view
+                       otherwise; `to` = the id hit), sharing the 5 Hz budget with the states and sent first (ghosts.js `fire`, an
+                       outbox of GHOSTS.outbox, a miss dropped before a hit); the room passes it on to the armed others, who draw it
+                       (combat.js `remote`, only while both armed): a dart in the blasters' own pool (toys.js Darts `remote`: drawn
+                       only, no paint / score / count, stops at a wall, gone after `shotLife`), a ball on its arc (COMBAT.balls),
+                       streaks in one LineSegments (COMBAT.lines: rifle tracer, wand + toys.sparkles burst, the web from the
+                       avatar's hand, the jetpack's flames down), the saber as a swing of the avatar's prop (ghosts.js `swing`).
+                       The room checks a hit (cloudflare/players.js COMBAT: armed both, distance ≤ range +
+                       slack, `every`, ≤ perMinute points a minute) and tells both: hit → bump('pvpHits') (SCORE.each.pvpHits = the
+                       room's `points`), a splat, the badge; hurt → penalize('pvpHurt'), a red edge flash, sfx.ouch, a life off;
+                       out of lives → main.js goToStart (#665: only the place) with all lives again, badge. #lives (made by
+                       combat.js, top centre) shows ❤ n/10 only while a fight is on. tools/combattest.cjs (three pages)
 src/basket.js          Tilly's basketball (BASKET): a Holdable in a wall holder over her daybed; click shoots it on an arc
                        through the point you look at (near the rim: at the rim, coming down at `entry`), right click / the
                        🏀 button (#power-btn, its icon = the held thing's `altIcon`) dribbles; out of the hand it bounces off

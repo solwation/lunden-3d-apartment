@@ -41,10 +41,15 @@ src/ghosts.js          other players as ghosts with a name tag (#666), inert wit
                        depth-tested) + one name tag sprite (256 × 64 canvas shared per name, "Anonym"). Close 4001 (month cap) →
                        localStorage 'lunden.mp.capMonth' = this month: no retry; 4003 (brake) / 4029 (full) wait; others back off.
                        No KV, nothing written per position (presence.js's KV counter #424 is untouched). `window.__ghosts` for tests
+                       #667: the state's `h` (weapon key or '') and one shot message per shot { t: 'a', w, o, d, s?, to? } go the
+                       same way (outbox of GHOSTS.outbox, within the same 5 Hz); lives are
+                       counted per connection in the room (a socket's attachment), nothing is stored about fights
 cloudflare/players.js  the PlayerRoom Durable Object (#666; binding PLAYERS, migration `player-room-v1`): one room 'world', hibernatable
                        sockets with attachments ({ i, n, s, rate window }), monthly billed-request counter 'bill:YYYY-MM' (requests +
                        messages/20, flushed every 100 messages) with the hard cap PLAYERS.monthlyCap, per-socket rate / size / idle limits,
-                       max players, admin brake 'off' (DELETE/PUT/GET /admin/players, DELETE /admin/all). Tests: cloudflare/players.test.mjs
+                       max players, admin brake 'off' (DELETE/PUT/GET /admin/players, DELETE /admin/all); COMBAT (#667): the check of
+                       a hit (both armed, range + slack, rate, points per minute), lives per socket; shots `cleanShot` (unit direction, speed ≤ 60,
+                       start ≤ COMBAT.from m from the shooter) forwarded only from someone holding that weapon to the armed others. Tests: cloudflare/players.test.mjs
                        (runtime stand-ins cloudflare/devws.mjs, also used by dev.mjs for real ws://), tools/ghosttest.cjs (two pages)
 cloudflare/crash.js    POST /crash, admin GET /crash and /crash/<id>, DELETE /admin/crash: size cap 16 kB, plain-data cleaning, per-IP hour
                        limit, one report per browser+signature+day, 400 reports in all, KV TTL 14 days (test: cloudflare/crash.test.mjs)

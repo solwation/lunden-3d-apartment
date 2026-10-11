@@ -11,9 +11,11 @@
 // after PLAYERS.idleMs without a message or heartbeat. The admin emergency brake (DELETE /admin/players or /admin/all)
 // switches the room off (4003) until PUT /admin/players.
 //
-// Protocol (JSON text; client → room): { p: [x, y, z] feet in metres, r: yaw (rad) } — anything else is dropped.
-// Room → client: { t: 'w', i: your id, ps: [{ i, n, p, r }] } on joining; { t: 'j', i, n } someone joined;
-// { t: 's', i, p, r } a state; { t: 'x', i } someone left. n = the name ('' = shown as "Anonym").
+// Protocol (JSON text; client → room): { p: [x, y, z] feet in metres, r: yaw (rad), h: weapon key or '' } and a shot
+// { t: 'a', w, o, d, s?, to? } (#667, `cleanShot`; forwarded to the armed others as { t: 'a', i, w, o, d, s? }) — anything
+// else is dropped.
+// Room → client: { t: 'w', i: your id, ps: [{ i, n, p, r, h }], c: { lives, weapons } } on joining; { t: 'j', i, n } someone
+// joined; { t: 's', i, p, r, h } a state; { t: 'x', i } someone left; 'hit' / 'hurt' (#667). n = the name ('' = "Anonym").
 
 export const PLAYERS = {
   monthlyCap: 800_000, // billed requests per calendar month; Workers Paid includes 1 000 000 (price list, verify), so the room stays below it
@@ -25,6 +27,27 @@ export const PLAYERS = {
   idleMs: 60_000,      // no message / heartbeat for this long: closed
   flushEvery: 100,     // messages between writes of the month's counter (at most this many go uncounted if the object is evicted)
   nameMax: 20,         // as the leaderboard
+};
+
+// Combat (#667): only between two players who both hold a weapon (the state's `h`, one of COMBAT.weapons' keys). Every shot
+// is one message { t: 'a', w, o, d, s?, to? } that the room passes on to the other armed players (so they see it fly, misses
+// too). The shooter's client decides a hit against the last known position and adds `to`; the room checks it — the shooter holds
+// `w`, the target is armed, the last known positions are within the weapon's `range` + `slack` m, no sooner than
+// `every` s (× 0.8 for jitter) after the shooter's last hit, and at most `perMinute` points a minute — then takes one of
+// the target's `lives` and tells both: { t: 'hit', to, w, l, dead } / { t: 'hurt', by, n, w, l, dead }. Out of lives the
+// target "dies" (its client goes to the start) and has all of them again. `points` = what a hit is worth (the client's
+// SCORE.each.pvpHits, kept equal by hand). Ranges and rates are our picks (*guess*), sent to the client in the welcome.
+export const COMBAT = {
+  lives: 10, slack: 2.5, perMinute: 60, points: 5, from: 4, // from: a shot starts at most this far (m) from the shooter's last known feet
+  weapons: {
+    saber: { range: 2.5, every: 0.5 },   // the lightsaber: a swing at arm's length
+    nerf: { range: 15, every: 0.4 },     // a Nerf blaster's dart
+    wand: { range: 12, every: 0.6 },     // a magic wand's spell
+    rifle: { range: 40, every: 0.25 },   // the AK-47 (hits are sent at most this often whatever its rate of fire)
+    ball: { range: 10, every: 1 },       // the basketball, thrown
+    web: { range: 30, every: 0.6 },      // the Spider-Man suit's web (empty hands)
+    jetpack: { range: 4, every: 1 },     // the jetpack's flames on whoever is under you
+  },
 };
 
 export const CLOSE = { idle: 4000, cap: 4001, off: 4003, rate: 4008, full: 4029, big: 1009 };
@@ -39,7 +62,22 @@ export function cleanState(text) {
   let m;
   try { m = JSON.parse(text); } catch { return null; }
   if (!m || typeof m !== 'object' || !Array.isArray(m.p) || m.p.length !== 3 || !m.p.every((v) => fin(v, 5000)) || !fin(m.r, 100)) return null;
-  return { p: m.p.map(r2), r: r2(m.r) };
+  return { p: m.p.map(r2), r: r2(m.r), h: typeof m.h === 'string' && Object.hasOwn(COMBAT.weapons, m.h) ? m.h : '' };
+}
+
+/** A shot from a client, or null: { t: 'a', w, o: [x, y, z] start, d: [dx, dy, dz] unit direction, s?: speed m/s, to?: id hit }
+ * (every shot, misses too, so the others can draw it; `s` for things thrown or shot on an arc: the ball, a bow's draw)
+ * or the older hit-only { t: 'f', w, to }. Numbers are rounded; anything else is dropped. */
+export function cleanShot(text) {
+  let m;
+  try { m = JSON.parse(text); } catch { return null; }
+  if (!m || (m.t !== 'a' && m.t !== 'f') || typeof m.w !== 'string' || !Object.hasOwn(COMBAT.weapons, m.w)) return null;
+  if (m.to !== undefined && (typeof m.to !== 'string' || m.to.length > 16)) return null;
+  if (m.t === 'f') return m.to ? { t: 'f', w: m.w, to: m.to } : null;
+  if (!Array.isArray(m.o) || m.o.length !== 3 || !m.o.every((v) => fin(v, 5000)) || !Array.isArray(m.d) || m.d.length !== 3 || !m.d.every((v) => fin(v, 1.01))) return null;
+  const len = Math.hypot(...m.d);
+  if (len < 0.9 || len > 1.1 || (m.s !== undefined && !(fin(m.s, 60) && m.s >= 0))) return null;
+  return { t: 'a', w: m.w, o: m.o.map(r2), d: m.d.map((v) => Math.round(v * 1000) / 1000), ...(m.s ? { s: r2(m.s) } : {}), ...(m.to ? { to: m.to } : {}) };
 }
 
 /** A WebSocket that is accepted and at once closed with `code`: how a refusal reaches the browser with its reason. */
@@ -103,7 +141,7 @@ export class PlayerRoom {
     this.ctx.acceptWebSocket(server);
     const i = crypto.randomUUID().slice(0, 8), n = cleanName(url.searchParams.get('n'));
     server.serializeAttachment({ i, n, s: null, t: now, w: now, c: 0, k: 0, over: false });
-    send(server, JSON.stringify({ t: 'w', i, ps: others.map(att).map((a) => ({ i: a.i, n: a.n, ...(a.s ?? {}) })) }));
+    send(server, JSON.stringify({ t: 'w', i, ps: others.map(att).map((a) => ({ i: a.i, n: a.n, ...(a.s ?? {}) })), c: { lives: COMBAT.lives, weapons: COMBAT.weapons } }));
     this.broadcast({ t: 'j', i, n }, server);
     return new Response(null, { status: 101, webSocket: client });
   }
@@ -125,10 +163,40 @@ export class PlayerRoom {
       if (a.k >= PLAYERS.strikes) this.drop(ws, CLOSE.rate, 'rate');
       return;
     }
-    const s = cleanState(message);
-    if (s) { a.s = s; this.broadcast({ t: 's', i: a.i, ...s }, ws); }
+    const shot = cleanShot(message);
+    if (shot) {
+      // a shot is drawn by the others only from someone armed with that weapon, starting near where the room has them,
+      // and only for those armed too (a fight is between two armed players)
+      if (shot.t === 'a' && a.s?.h === shot.w && a.s.p && Math.hypot(shot.o[0] - a.s.p[0], shot.o[1] - a.s.p[1], shot.o[2] - a.s.p[2]) <= COMBAT.from) {
+        const out = JSON.stringify({ t: 'a', i: a.i, w: shot.w, o: shot.o, d: shot.d, ...(shot.s ? { s: shot.s } : {}) });
+        for (const x of this.open()) if (x !== ws && att(x).s?.h) send(x, out);
+      }
+      if (shot.to) this.shot(ws, a, shot, now);
+    }
+    else {
+      const s = cleanState(message);
+      if (s) { a.s = s; this.broadcast({ t: 's', i: a.i, ...s }, ws); }
+    }
     ws.serializeAttachment(a);
     this.sweep(now);
+  }
+
+  /** A shot (#667): checked against what the room knows, then a life off the target and word to both. */
+  shot(ws, a, { w, to }, now) {
+    const W = COMBAT.weapons[w];
+    const target = this.open().find((x) => x !== ws && att(x).i === to);
+    const b = target && att(target);
+    if (!b || a.s?.h !== w || !b.s?.h || !a.s.p || !b.s.p) return;
+    const d = Math.hypot(a.s.p[0] - b.s.p[0], a.s.p[1] - b.s.p[1], a.s.p[2] - b.s.p[2]);
+    if (d > W.range + COMBAT.slack || now - (a.f ?? 0) < W.every * 800) return;
+    if (now - (a.pw ?? 0) >= 60_000) { a.pw = now; a.pp = 0; }
+    if ((a.pp ?? 0) + COMBAT.points > COMBAT.perMinute) return; // the points cap, like the leaderboard's
+    a.f = now; a.pp += COMBAT.points;
+    const left = (b.l ?? COMBAT.lives) - 1, dead = left <= 0;
+    b.l = dead ? COMBAT.lives : left;
+    target.serializeAttachment(b);
+    send(ws, JSON.stringify({ t: 'hit', to, w, l: left, dead }));
+    send(target, JSON.stringify({ t: 'hurt', by: a.i, n: a.n, w, l: left, dead }));
   }
 
   async webSocketClose(ws, code) {

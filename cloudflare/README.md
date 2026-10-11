@@ -101,6 +101,15 @@ meddelande, högst 30 spelare samtidigt, stängs efter 60 s utan meddelande elle
 localhost) får ansluta från en webbsida. Rummet tar bara emot position och riktning, kontrollerar och avrundar dem och skickar
 aldrig vidare annan text än det rensade namnet (högst 20 tecken, som topplistan).
 
+**Strid (#667):** håller två spelare var sitt vapen syns de fullt för varandra och kan träffa varandra. Skytten skickar ett
+litet meddelande per skott, även missar (vapen, startpunkt, riktning, ev. fart och vem som träffades), så att den andra ser
+pilen, bollen, nätet eller hugget. Skotten delar positionernas budget på högst 5 meddelanden per sekund (de skickas först,
+positionen väntar), så **det högsta antalet inkommande meddelanden per spelare ändras inte** och kostnadsräkningen ovan
+gäller fortfarande (i praktiken lite fler meddelanden medan man skjuter och står still). Rummet skickar skottet vidare bara
+från någon som håller det vapnet och bara till andra som håller vapen (utgående kostar inget), kontrollerar en träff mot
+vapnets räckvidd, hur ofta och högst 60 poäng per minut (`COMBAT` i `cloudflare/players.js`) och svarar båda. Liv räknas per
+anslutning i rummet; inget om striderna sparas. Ryms helt inom samma månadstak.
+
 **Stänga av:**
 - Klienten: `GHOSTS.enabled = false` i `src/config.js` (och pusha), eller `?mp=0` i adressen för en enskild besökare.
   Utan `CLOUD_URL` är den helt av.

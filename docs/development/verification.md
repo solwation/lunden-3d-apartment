@@ -57,6 +57,11 @@ tools/crashtest.cjs    crash reports (#629): Playwright + `node cloudflare/dev.m
                        refreshes the phone profile's 60 s reload guard (`lunden.glReloadAt`) before each forced context loss and stops the game's render
                        loop for the layout part (SwiftShader frames take 1–15 s and the game applies a resize in a frame) (#650); a failing check
                        dumps what the Worker holds. ~6–8 min under SwiftShader; clear old rows first (`DELETE /admin/crash`) or restart `dev.mjs`
+tools/combattest.cjs   fights (#667): three pages (A, B, C) against dev.mjs: unarmed B a ghost and not hittable, armed all solid, hearts only in a
+                       fight, B shown no shots while unarmed; A's missed dart drawn on B from the same start / direction / speed (the blasters'
+                       pool, drawn only), A's thrown ball on B (screenshot), ten hits (points / deductions / lives), out of lives → start,
+                       full lives, weapon and stats kept; C's screenshot.
+                       Pages drive ghosts / combat updates themselves (SwiftShader frames take seconds); ~10 min. Also players.test.mjs
 tools/ghosttest.cjs    other players as ghosts (#666): two Playwright pages against `node cloudflare/dev.mjs 8146 testtoken` (real ws:// via
                        cloudflare/devws.mjs): ?mp=0 / no cloud off, see each other with tags Olof / "Anonym", position, standing still sends
                        nothing, a move arrives interpolated, the room's count, a closed / hidden tab disconnects; screenshots into SHOTS.

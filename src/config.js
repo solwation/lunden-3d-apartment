@@ -2716,6 +2716,7 @@ export const SCORE = {
     posted: 3, thrown: 0.5, drawn: 2,
     secrets: 1, stairs: 0.3, steps: 0.01,
     shatterRange: 1,                                      // something shot to pieces from afar: per range point (#263)
+    pvpHits: 5,                                           // another player hit (#667); the room allows COMBAT.perMinute points a minute
   },
   first: {
     doors: 2, lids: 1, flushes: 2, taps: 1, fridge: 2, appliances: 2, cabinets: 1, lights: 1, sat: 2, lay: 2,
@@ -2769,7 +2770,8 @@ export const SCORE = {
   // (a pat 8, a cat 10–250), big enough to notice. Never below 0: a deduction takes at most what the score has (no debt).
   // `fall`: hurt by falling more than FALL.hurt (#361)
   penalties: { fridgeOpen: 5, fridgeLonger: 2, fridgeMax: 3, burnt: 3, smokeAlarm: 5, spill: 2, fall: 10,
-    catShot: { rifle: 20, saber: 10, dart: 5, wand: 3 }, kittenShot: { rifle: 30, saber: 15, dart: 8, wand: 5 } }, // a kitten: extra bad (#363)
+    catShot: { rifle: 20, saber: 10, dart: 5, wand: 3 }, kittenShot: { rifle: 30, saber: 15, dart: 8, wand: 5 }, // a kitten: extra bad (#363)
+    pvpHurt: 2 }, // hit by another player in a fight (#667, *guess*)
 };
 // The fridge and freezer door alarm (#288, fridge.js): open for `after` s (game time) it beeps every `every` s and a red
 // LED blinks on the door until it is shut (a real one waits ~1–2 min; ours 60 s). The freezer's timer stands still while
@@ -2812,7 +2814,19 @@ export const LEADERBOARD = { show: 10, every: 30, nameMax: 20 };
 // beyond `far` m, the name tag beyond `tagFar` m, at most `max` ghosts. All our picks (*guess*).
 export const GHOSTS = { enabled: true, hz: 5, move: 0.02, turn: 0.03, beatMs: 10_000, idleMs: 120_000,
   retry: [2000, 5000, 15_000, 30_000, 60_000, 300_000], fullRetry: 60_000, offRetry: 600_000,
-  opacity: 0.25, delay: 200, far: 60, tagFar: 15, max: 30 };
+  opacity: 0.25, delay: 200, far: 60, tagFar: 15, max: 30, outbox: 3 }; // outbox: shots waiting for the 5 Hz budget (#667)
+// Combat between players (#667, src/combat.js; the room's check: cloudflare/players.js COMBAT). Only when both hold a weapon:
+// `weapons` = what counts, in the order they are looked for (the room's list must have each one: there its range and rate);
+// remove one here to leave it out. Both armed: drawn solid (`solid` opacity), else a ghost. A hit is judged by the shooter
+// against the other's body (a vertical capsule `body` [from, to] m above the feet, `hitRadius` m), not through a wall; the
+// lightsaber is a swing (anything within its range and `saberCone`, the cosine of the half-angle, in front); the jetpack's
+// flames hit someone `jetBelow` [min, max] m under you and within `jetAcross` m sideways while it thrusts. `lives` until the
+// room's welcome says otherwise. The HUD's hearts only while a fight is on. All our picks (*guess*).
+export const COMBAT = { weapons: ['saber', 'nerf', 'wand', 'rifle', 'ball', 'web', 'jetpack'], lives: 10, solid: 1,
+  body: [0.25, 1.75], hitRadius: 0.4, saberCone: 0.5, jetBelow: [0.3, 4], jetAcross: 1.2, flash: 0.35,
+  // the others' shots drawn here: at most `lines` streaks (rifle, wand, web, flames) and `balls` balls at once, each gone
+  // after `shotLife` s; their darts reuse the blasters' pool (in `dartColor`)
+  lines: 16, balls: 3, shotLife: 4, dartColor: 0x1f6fff };
 
 // Drawing with crayons (#93, src/drawing.js): an A3 sheet in the middle of the ALEX desk in Sovrum 3. E on it:
 // the view goes down over the paper, the mouse is freed and you draw with crayons (palette at the bottom,
