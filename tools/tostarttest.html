@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>To-start test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script>
+// "Gå till startplatsen" (#665): the menu button only moves the visitor to START (outside the front door) — the clock,
+// the date, what you hold, the jetpack / suit carry on. From the sofa, the car's seat, a lift on its way, the basement,
+// a visited flat (L1004, L1201), Hus A's stairwell, a jetpack flight, a suit jump / swing / climb, a web still on its way,
+// crouching: standing on the ground at START afterwards, the eyes at the right height, and still there a second later.
+//   Playwright Chromium (verification.md): open http://localhost:8137/tools/tostarttest.html, poll #out
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const f = document.createElement('iframe');
+f.width = 900; f.height = 600; f.src = '../index.html?car&time=12&month=6';
+document.body.append(f);
+f.onload = () => run().catch((e) => { out.textContent = `FAIL ${e}\n${e.stack}\nSOME FAILED`; });
+async function run() {
+  const w = f.contentWindow, d = f.contentDocument;
+  while (!w.__app) await wait(100);
+  const A = w.__app, { player, camera, step, world, rest, day, jetpack, suit, car, use, heldItem, cups, scene, showOverlay } = A;
+  const mod = (p) => w.eval(`import('${new URL(p, location.href).href}')`);
+  const C = await mod('../src/config.js'), { START, PLAYER, SITE, CORE } = C;
+  const lines = [];
+  let pass = true;
+  const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); pass &&= !!ok; return ok; };
+  const f2 = (v) => v.toFixed(2);
+  d.documentElement.requestFullscreen = undefined;
+  d.getElementById('install').hidden = true;
+  d.getElementById('start-touch').click();
+  await wait(50);
+  const dt = 1 / 60, V = camera.position.constructor;
+  const steps = (n) => { for (let i = 0; i < n; i++) step(dt); };
+  const place = (x, z, feet, yawDeg = 180) => {
+    player.spawn(x, z, yawDeg * Math.PI / 180);
+    if (feet !== undefined) { player.pos.y = feet; player.eyeY = feet + PLAYER.eye; camera.position.y = player.eyeY; }
+    steps(5);
+  };
+  const look = (p) => { const dx = p.x - camera.position.x, dz = p.z - camera.position.z; camera.rotation.set(Math.atan2(p.y - camera.position.y, Math.hypot(dx, dz)), Math.atan2(-dx, -dz), 0, 'YXZ'); step(dt); };
+  const toStart = () => { showOverlay(true); d.getElementById('to-start').click(); };
+  // at START on the ground, nothing in the air / on a wall / seated, and still there after a second
+  const atStart = (what, crouched = false) => {
+    const p = player.pos, g = player.groundAt(p.x, p.z, p.y), off = Math.hypot(p.x - START.x, p.z - START.z);
+    const ok0 = off < 0.6 && Math.abs(p.y - g) < 0.02 && !rest.active && !player.flying && !player.fall && !player.climb && !player.swing && !player.fling && player.vy === 0;
+    steps(60);
+    const off1 = Math.hypot(p.x - START.x, p.z - START.z), eye = camera.position.y - p.y;
+    const eyeOk = crouched ? eye < PLAYER.eye - 0.3 : Math.abs(eye - PLAYER.eye) < 0.05;
+    check(ok0 && off1 < 0.6 && Math.abs(p.y - player.groundAt(p.x, p.z, p.y)) < 0.02 && !player.climb && !player.swing && !player.flying && !rest.active && eyeOk && player.outdoors && player.level === 0 && !player.unit && !player.inCore && !player.below,
+      `${what} → START (${f2(p.x)}, ${f2(p.y)}, ${f2(p.z)}; ${f2(off1)} m off; the eyes ${f2(eye)} m up${crouched ? ', crouched' : ''})`);
+  };
+
+  // (1) the clock and the date stay as they were (spooled to a night in February), the menu closes
+  Object.assign(day, { hour: 3.25, month: 2, date: 14, year: 2031 });
+  place(START.x + 30, START.z - 20);
+  toStart(); step(dt);
+  check(Math.abs(day.hour - 3.25) < 0.01 && day.month === 2 && day.date === 14 && day.year === 2031, `the clock is not reset (${f2(day.hour)} h, ${day.year}-${day.month}-${day.date})`);
+  check(d.getElementById('overlay').hidden && !d.getElementById('to-start-done').hidden, 'the menu closes, "Platsen har återställts…" shown');
+  check(Math.abs(camera.rotation.y - START.yawDeg * Math.PI / 180) < 0.01 && Math.abs(camera.rotation.x - START.pitchDeg * Math.PI / 180) < 0.01, 'facing the house');
+  atStart('from the street');
+  check(/utanför dörren/.test(d.getElementById('to-start').textContent) && !/klockan/.test(d.getElementById('to-start').textContent), 'the button says it moves you, nothing about the clock');
+
+  // (2) the sofa
+  const sofa = world.furnitureTargets.find((t) => t.name === 'loungesoffan'), sp = sofa.pickable.getWorldPosition(new V());
+  place(sp.x - 0.35, sp.z + 2.3, undefined, 0); look(new V(sp.x, sp.y + 0.35, sp.z)); use(sofa); steps(60);
+  check(rest.active, 'sitting on the lounge sofa');
+  toStart(); step(dt); atStart('from the sofa');
+
+  // (3) the car's driver's seat (#250)
+  const dr = car.doors.find((x) => x.front && x.side === -1), seat = car.seats.find((x) => x.door === dr);
+  const local = (x, y, z) => { car.object.updateMatrixWorld(true); return new V(x, y, z).applyMatrix4(car.object.matrixWorld); };
+  const st = local(0.1, 0, -1.25);
+  place(st.x, st.z, undefined, 0); look(local(0.5, 0.75, -0.86)); use(dr); steps(60);
+  look(local(-0.05, 0.6, -0.37)); use(seat); steps(60);
+  check(rest.active && rest.target === seat, 'in the car\'s driver\'s seat');
+  toStart(); step(dt); atStart('from the car');
+  check(car.state === 'parked', 'the car stays parked');
+
+  // (4) Hus L's lift on its way up, then from its stop on våning −1 (the basement)
+  const lift = world.core.lift, L = lift.S;
+  lift.loadState({ at: null, y: 1.0, target: 3, open: 0 });
+  place((L.x0 + L.x1) / 2, (L.z0 + L.z1) / 2, lift.y); steps(30);
+  check(lift.carHas(player.pos) && lift.moving && Math.abs(player.pos.y - lift.y) < 0.02, `riding the lift (y ${f2(player.pos.y)})`);
+  toStart(); step(dt); atStart('from a moving lift');
+  for (let i = 0; i < 60 * 30 && lift.at !== 3; i++) step(dt);
+  check(lift.at === 3, 'the lift goes on to its stop without you');
+  lift.loadState({ at: 0, y: L.Y[0], target: null, open: 1 });
+  place((L.x0 + L.x1) / 2, (L.z0 + L.z1) / 2, L.Y[0]);
+  check(player.inCore && player.pos.y < 0, `in the lift on våning −1 (y ${f2(player.pos.y)})`);
+  toStart(); step(dt); atStart('from the basement');
+
+  // (5) the visited flats: L1004 (Entréplan), L1201 (våning 3)
+  const u4 = world.units.find((u) => u.id === 'L1004'), u12 = world.units.find((u) => u.id === 'L1201');
+  place(u4.ox + 3.9, u4.oz + 4, u4.bottom);
+  check(player.unit === u4, 'in L1004');
+  toStart(); step(dt); atStart('from L1004');
+  place(u12.ox + 3.9, u12.oz + 2, C.storeyFloor(3));
+  check(player.unit === u12, 'in L1201 on våning 3');
+  toStart(); step(dt); atStart('from L1201');
+
+  // (6) Hus A's stairwell, on a storey
+  const cA = world.core.parts[0];
+  if (cA?.lift) {
+    const LA = cA.lift.S;
+    cA.lift.loadState({ at: 2, y: LA.Y[2], target: null, open: 1 });
+    place((LA.x0 + LA.x1) / 2, (LA.z0 + LA.z1) / 2, LA.Y[2]);
+    check(player.inCore, `in another house's lift on a storey (y ${f2(player.pos.y)})`);
+    toStart(); step(dt); atStart('from another house\'s lift');
+  } else check(false, 'another house\'s core found');
+
+  // (7) a jetpack flight, holding a cup: the jetpack and the cup stay with you
+  const cup = cups.cups[0];
+  jetpack.putOn();
+  place(START.x + 20, START.z - 25);
+  cup.take();
+  check(heldItem() === cup, 'holding a cup');
+  player.keys = new Set(['Space']); steps(90); player.keys = new Set();
+  check(player.flying && player.pos.y - player.groundAt(player.pos.x, player.pos.z, player.pos.y) > 2, `flying (${f2(player.pos.y)} m)`);
+  toStart(); step(dt);
+  check(jetpack.worn && heldItem() === cup && cup.model.parent === camera, 'the jetpack still on your back, the cup still in the hand');
+  atStart('from a jetpack flight');
+  jetpack.takeOff(); jetpack.goHome(); cup.goHome();
+
+  // (8) the Spider-Man suit: mid-jump, on a strand, on a wall, a web still on its way; crouching
+  suit.putOn();
+  check(suit.worn, 'the suit on');
+  place(START.x + 20, START.z - 25);
+  player.keys = new Set(['Space']); step(dt); player.keys = new Set(); steps(12);
+  check(player.pos.y - player.groundAt(player.pos.x, player.pos.z, player.pos.y) > 0.5, `mid-jump (${f2(player.pos.y)} m)`);
+  toStart(); step(dt); atStart('from a suit jump');
+  check(suit.worn, 'the suit still on');
+  const Cb = SITE.blocks.find((b) => b.name === 'Hus C'), cx = (Cb.x0 + Cb.x1) / 2;
+  place(cx, Cb.z1 + 8, undefined, 0); camera.rotation.x = 25 * Math.PI / 180;
+  A.click(0);
+  for (let i = 0; i < 40 && !player.swing; i++) step(dt);
+  steps(6);
+  check(!!player.swing, 'swinging on a web');
+  toStart(); step(dt); atStart('from a swing');
+  place(cx, Cb.z1 + 6, undefined, 0); camera.rotation.x = 25 * Math.PI / 180;
+  A.click(0);
+  for (let t = 0; t < 5 && !player.climb; t += dt) step(dt);
+  check(!!player.climb, 'on Hus C\'s façade');
+  toStart(); step(dt); atStart('from a wall');
+  place(cx, Cb.z1 + 8, undefined, 0); camera.rotation.x = 25 * Math.PI / 180;
+  A.click(0); step(dt);
+  check(suit.shot && !suit.shot.stuck, 'a web on its way');
+  toStart(); step(dt); atStart('with a web on its way (it pulls nobody afterwards)');
+  suit.takeOff(); suit.goHome();
+  player.crouch = true; place(START.x + 20, START.z - 25); steps(30);
+  toStart(); step(dt); atStart('crouching', true);
+  player.crouch = false; steps(30);
+
+  // a screenshot after the move
+  toStart(); steps(30);
+  out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
+}
+</script>
+</body>
+</html>

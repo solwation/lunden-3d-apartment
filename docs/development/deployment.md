@@ -74,7 +74,7 @@ F5 (#203): while visiting, the place (+ view, mode, mute, `BUILD`) is written to
 An inline script in index.html's <head> sees a valid record with a mode before anything is drawn and sets
 `html.resuming` (start screen hidden, a dark "Laddar…" cover) until main.js has resumed — or drops it on a bad record (#222).
 A record made on the start screen (no mode) shows it with "Du fortsätter där du var" + "Börja från start". The start screen
-always offers "Gå till startplatsen" (both also set the clock and calendar back to now, `realNow`)
+always offers "Gå till startplatsen" (only the place, #665: the clock carries on; "Börja från start" also sets the clock and calendar back to now, `realNow`)
 and "Återställ" (#303, `src/reset.js`, `resetHome` in main.js): after a question (#reset-confirm, Avbryt / Esc changes nothing)
 every 'lunden.*' key in local/sessionStorage goes except the whitelist `RESET_KEEP` in config (the cloud's queue and
 seen list, the desk drawing, the stats/score, the leaderboard name + id, conveniences) — a new key is reset unless it is

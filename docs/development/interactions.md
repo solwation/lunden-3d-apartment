@@ -245,6 +245,11 @@ tools/keytest.html     headless test of the hall key cabinet: open, car key reac
 tools/clicktest.html   headless test of left click as E (#443): nothing under #arm, the freezer and a fish finger by click, put down on
                        the table where the ghost showed, a blocked target nothing, eaten by click / right click with nothing in focus,
                        the rifle still shoots at the freezer, seated a click does not stand you up, the remote's right click = power
+tools/tostarttest.html headless test of the menu's "Gå till startplatsen" (#665, `goToStart` in main.js): only the place changes —
+                       up from a seat / bed / the car (`standUp`), off a wall / strand, a web on its way sticks to nothing, out of
+                       a lift (it rides on alone), the basement, a visited flat, the air (jetpack / suit) — to START on the ground;
+                       the clock, the date, what you hold, the jetpack / suit and crouching carry on. The start screen's
+                       "Börja från start" (#restart) still sets the clock to now (`realNow`)
 tools/esctest.html     headless test of Esc on the start screen (click-to-start cover, ignored over the note)
 tools/crouchtest.html  headless test: C crouches (Ctrl too, other Ctrl shortcuts prevented), seated C stands up, leaving mid-visit
                        asks (beforeunload), not on the start screen nor on a new-version reload (#274)
