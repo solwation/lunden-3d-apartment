@@ -39,6 +39,7 @@ URL parameters (debugging / screenshots):
 - `&keepgeo` — on a phone / with `&lowmem`, keep the geometry's CPU copies and float normals (A/B of #628 step 4, `freeSceneGeometryCopies`).
 - `&perf` — fps / draw-call overlay and the hitch log (#592): frames ≥ 50 ms go to the console with what changed in them.
 - `&quality=0–3` — pin the adaptive graphics level (#592: resolution, shadows, mirrors, detail distance, particles); not remembered.
+- `&test[=lazy]` — test mode for headless runs (#703, `src/testmode.js`): only the drawing gets cheaper (no antialiasing, no shadows, quality pinned to 0 unless `&quality=` is given, no start warm-up); game logic, collision, network and timing are unchanged. `=lazy` also skips the loop's own `render()` (logic frames still run). `__app.testMode.setFull(true/false)` = quality 3 + shadows for a real screenshot, `.draw()` renders one frame. Never with `perfcount`, `turntest`, `phonememtest`, `glrestoretest` or pixel comparisons ([verification](verification.md)).
 - `&warm` — run the start's shader / upload warm-up (#432) in headless Chrome too (it skips it otherwise).
 - `&fall=h` — drop from h m (default 5) above the ground where you start (#361; with `&at=`): over 3 m it hurts.
 - `&hoop` — the basketball hoop up out front. `&car` — our car parked in front of the house. `&water` — turn on every tap and shower. `&tv` — switch the TV on. `&laptop` — Tilly's laptop on. `&secret=i` — the secret drawer shows surprise i (SECRET.items, with `&open`).
