@@ -17,21 +17,39 @@ export async function decodeBeerShelf(record) {
   return { record, images };
 }
 
+// Bound a stalled prepared-snapshot request/body, then stop its network clock before local image decoding.
+async function preparedRecord(fetcher, timeout) {
+  const controller = new AbortController(), timer = setTimeout(() => controller.abort(), timeout);
+  try {
+    return await deadline((async () => {
+      const response = await fetcher(P.defaultURL, { signal: controller.signal });
+      if (!response.ok) throw Error('default beer shelf');
+      return response.json();
+    })(), timeout);
+  } finally { clearTimeout(timer); controller.abort(); }
+}
+
 /** One complete metadata+label response per persistent CacheStorage entry, after actual image decoding.
  * Failure never replaces the old response or advances its successful day. */
-export async function loadBeerShelf({ endpoint = P.endpoint, cacheName = P.cache, now = Date.now(), refresh = true, persist = true,
+export function loadBeerShelf(options = {}) {
+  const pending = readBeerShelf(options);
+  // main starts this before expensive scene construction and awaits it later. Handle early failures
+  // immediately, but preserve the same rejection for its eventual caller (no empty/partial labels).
+  pending.catch(() => {});
+  return pending;
+}
+
+async function readBeerShelf({ endpoint = P.endpoint, cacheName = P.cache, now = Date.now(), refresh = true, persist = true,
   fetcher = fetch, timeout = P.timeout } = {}) {
   let cache = null, previous = null;
   if (persist) try {
     cache = await deadline(caches.open(cacheName), timeout);
     const response = await deadline(cache.match(CACHE_URL), timeout);
-    if (response) previous = await deadline(decodeBeerShelf(await response.json()), timeout);
+    if (response) previous = await decodeBeerShelf(await response.json());
   } catch { /* unusable cache is not a successful update */ }
   if (previous?.record.fetchedAt && previous.record.day === beerDay(now)) return previous;
   // Start the prepared snapshot while the bounded daily refresh runs, so a first offline load has labels ready.
-  const fallback = previous ? Promise.resolve(previous) : fetcher(P.defaultURL)
-    .then(response => { if (!response.ok) throw Error('default beer shelf'); return response.json(); })
-    .then(decodeBeerShelf);
+  const fallback = previous ? Promise.resolve(previous) : preparedRecord(fetcher, timeout).then(decodeBeerShelf);
   // Install a rejection handler immediately: a live success may leave the local fallback unused.
   fallback.catch(() => {});
   if (refresh) {
@@ -52,7 +70,9 @@ export async function loadBeerShelf({ endpoint = P.endpoint, cacheName = P.cache
     } catch { /* preserve the identical last complete labels and timestamp */ }
     finally { clearTimeout(timer); controller.abort(); }
   }
-  const chosen = await deadline(fallback, timeout);
+  // A complete local batch is not a live-refresh request. Busy startup may delay Image.onload
+  // beyond the network deadline; keep its exact labels instead of rejecting the whole app.
+  const chosen = await fallback;
   if (!previous && cache) try { await cache.put(CACHE_URL, new Response(JSON.stringify(chosen.record))); } catch { /* static snapshot still displays */ }
   return chosen;
 }
