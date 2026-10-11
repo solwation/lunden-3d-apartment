@@ -247,6 +247,10 @@ src/stats.js           visitor statistics (localStorage), "+1" badges per event,
                        time (`bump(key, n, id)`, main.js `idOf(thing)` = name + position; doors, lamps, seats, taps, fronts,
                        songs, rooms, new cat coats) and `again` (fractions) every time after, `breeds` = per cat by how rare
                        its breed is, `secrets` = per surprise kind (+ rare kinds); `rawScore()` unrounded. Repeats show no badge
+                       Reset (#712) deletes old own keys before restoring fresh defaults in the same exported stats object,
+                       so dynamic/obsolete counters cannot retain points. It renders zero and saves immediately.
+                       tools/statsresettest.html checks actual stats/score modules, object identity, dynamic counters,
+                       repeated reset, persisted snapshot and actual reload without the apartment bootstrap.
                        Deductions (#288, SCORE.penalties, `penalize(key, sub)`): the fridge/freezer door alarm (and more while it
                        beeps), food burnt, the smoke alarm, a spill (E on a full glass/cup with a pourer: it runs over, a splash),
                        a cat shot / cut / hit (by weapon); a red "−N reason" by the score, `stats.penalties` counts, the "Avdrag"

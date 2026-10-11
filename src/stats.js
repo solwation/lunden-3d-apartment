@@ -211,6 +211,9 @@ export function visitRoom(key) {
 }
 
 export function resetStats() {
+  // Counters are also created dynamically (sandwiches, washed, cleanRoom…). Keep the exported
+  // object identity, but remove every old key before restoring the current fresh schema (#712).
+  for (const key of Object.keys(stats)) delete stats[key];
   Object.assign(stats, fresh());
   dirty = true;
   lastScore = null;

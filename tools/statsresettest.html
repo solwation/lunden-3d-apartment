@@ -1,0 +1,48 @@
+<!doctype html><html lang="sv"><meta charset="utf-8"><title>Stats reset (#712)</title>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js"}}</script>
+<pre id="out">running…</pre><div id="score"></div><button id="stats-reset">Nollställ</button>
+<script type="module">
+// Real stats/score/persistence modules, no apartment or gameplay bootstrap.
+import { stats, bump, totalScore, setScoreElement, resetStats, awardTask, taskReward } from '../src/stats.js';
+import { SCORE } from '../src/config.js';
+const taskId=Object.keys(SCORE.tasks)[0],reward=SCORE.tasks[taskId];
+const out=document.getElementById('out'),lines=[];let pass=true;
+const check=(ok,label)=>{lines.push(`${ok?'PASS':'FAIL'} ${label}`);pass&&=!!ok;out.textContent=lines.join('\n');};
+const key='lunden.stats',dynamic=['sandwiches','washed','cleanRoom','obsoleteCounter'];
+try {
+  setScoreElement(document.getElementById('score'));
+  if(sessionStorage.getItem('stats-reset-reload')) {
+    lines.push(...JSON.parse(sessionStorage.getItem('stats-reset-lines')));
+    sessionStorage.removeItem('stats-reset-reload');sessionStorage.removeItem('stats-reset-lines');
+    check(totalScore()===0&&dynamic.every(key=>!Object.hasOwn(stats,key)), 'actual reload has zero score and no obsolete/dynamic counters');
+    check(Object.keys(stats.seen).length===0&&Object.keys(stats.visited).length===0, 'actual reload retains empty seen/visited maps');
+    check(stats.tasks===0&&Object.keys(stats.taskCounts).length===0&&stats.legacyTaskPoints===0&&taskReward(taskId)===reward.first, 'actual reload resets new task counts/legacy points and restores first reward');
+    check(localStorage.getItem('lunden.name')==='Reset fixture', 'statistics reset keeps unrelated player name');
+    bump('sandwiches');check(totalScore()>0&&stats.sandwiches===1, 'new dynamic counter still scores normally after reload');
+    resetStats();
+    const first=awardTask(taskId,'Reset fixture'),again=awardTask(taskId,'Reset fixture');
+    check(first===reward.first&&again===reward.again&&stats.taskCounts[taskId]===2&&totalScore()===reward.first+reward.again, 'task awards retain first/repeat behavior after reset and reload');
+    resetStats();check(totalScore()===0&&taskReward(taskId)===reward.first, 'second post-reload reset again restores zero and first task reward');
+  } else {
+    localStorage.setItem('lunden.name','Reset fixture');
+    const identity=stats;
+    bump('sandwiches');bump('washed');bump('cleanRoom');stats.obsoleteCounter=42;
+    stats.visited['1:Kök']=true;stats.penaltyPoints=1;
+    awardTask(taskId,'Reset fixture');stats.legacyTaskPoints=17;
+    check(stats.taskCounts[taskId]===1&&taskReward(taskId)===reward.again, 'seed actual task award/count and legacy task points');
+    check(totalScore()>0&&dynamic.every(key=>Object.hasOwn(stats,key)), 'seed real dynamically scored counters and an obsolete field');
+    const button=document.getElementById('stats-reset');button.addEventListener('click',()=>resetStats());button.click();
+    check(stats===identity, 'reset preserves the exported stats object identity');
+    check(dynamic.every(key=>!Object.hasOwn(stats,key)), 'reset removes dynamic and obsolete keys instead of retaining their values');
+    check(totalScore()===0&&document.querySelector('.score-val').textContent==='0', 'reset produces zero total and rendered score');
+    check(Object.keys(stats.seen).length===0&&Object.keys(stats.visited).length===0&&stats.penaltyPoints===0, 'reset clears nested score history and penalties');
+    check(stats.tasks===0&&Object.keys(stats.taskCounts).length===0&&stats.legacyTaskPoints===0&&taskReward(taskId)===reward.first, 'reset clears new task counts/legacy points and restores first reward');
+    const saved=JSON.parse(localStorage.getItem(key));
+    check(dynamic.every(key=>!Object.hasOwn(saved,key))&&saved.tasks===0&&Object.keys(saved.taskCounts).length===0&&saved.legacyTaskPoints===0, 'reset immediately persists a clean snapshot');
+    bump('washed',100);check(totalScore()>0&&stats.washed===100, 'dynamic counters are re-created and score after reset');
+    resetStats();check(totalScore()===0&&!Object.hasOwn(stats,'washed'), 'repeated reset removes newly re-created dynamic counters');
+    if(pass){sessionStorage.setItem('stats-reset-lines',JSON.stringify(lines));sessionStorage.setItem('stats-reset-reload','1');location.reload();}
+  }
+} catch(error){check(false,error.stack);}
+if(!sessionStorage.getItem('stats-reset-reload'))out.textContent=lines.join('\n')+'\n'+(pass?'ALL PASS':'SOME FAILED');
+</script></html>

@@ -82,6 +82,8 @@ tools/veronatest.html  the patio's Verona lounge as three movable parts: seven s
 
 ## Testing
 
+`tools/statsresettest.html` (#712) is a light DOM/real stats-module test: dynamically scored counters, reset object identity, rendered zero, immediate persistence, repeated reset and actual reload, including taskCounts/legacyTaskPoints and restored first/repeat task awards (#709). It runs without the apartment/game bootstrap or WebGL; it does not replace gameplay button tests.
+
 Headless Chrome with SwiftShader works on this machine:
 
 ```

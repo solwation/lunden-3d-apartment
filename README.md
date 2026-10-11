@@ -165,3 +165,5 @@ Andra spelare har mindre namnskyltar med sina poäng, uppdaterade i samma spöks
 Ölhyllans lokala etiketter får avkodas klart även när tung uppstart passerar nätverkets tidsgräns.
 
 Uppdragslappen visar tre aktiva vardagsuppdrag med sina poäng och delmål; klara uppdrag ersätts direkt och får en väntetid innan de kan återkomma.
+
+Nollställning av statistiken rensar även dynamiska räknare, så inga gamla poäng ligger kvar.
