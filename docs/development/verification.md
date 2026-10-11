@@ -18,7 +18,7 @@ src/quality.js         adaptive graphics level + knob registry (#592); src/warmu
 src/detail.js          DetailCuller (#189): far-away small meshes and things inside the flat hidden by its walls (seen from
                        outside) go to a layer the camera does not render; roots with `userData.moving` (our car, the cat,
                        darts, the basketball) are judged every update, not only when the camera moves (#267)
-tools/jumpontest.html  the plain jump's apex vs the suit's (#696) and landing on benches / sofa / armchair / ottoman (#693): stable, jump on, walk off, hurt by a 4 m drop, no climbing by walking, table and wall hold
+tools/jumpontest.html  the plain jump's apex vs the suit's (#696) and landing on benches / sofa / armchair / ottoman (#693) and the TV bench, bed and daybed (#699; backrest / headboard / ends are walls, the TV does not block the bench): stable, jump on, walk off, hurt by a 4 m drop, no climbing by walking, table and wall hold
 tools/lighttest.html   headless test: aim at every light switch / floor lamp, toggle it
 tools/powertest.html   the power cut (#604): fuse box, flicker, Kv. Lunden dark / surroundings lit, hold-to-mend on touch, reload has power;
                        #612: fridge/freezer/oven/microwave lamps dark, brew/dishwasher/washer/dryer paused and resumed, the lift's rescue drive

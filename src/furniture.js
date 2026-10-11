@@ -138,6 +138,19 @@ function seatModule(g, { x0, x1, depth, cushions, arms, armDepth = depth }) {
   for (const lx of [x0 + 0.06, x1 - 0.06]) for (const lz of [z0 + 0.06, zF - 0.06]) g.add(leg(lx, lz));
 }
 
+/** Footprint rectangles of one seatModule (#699): the seat itself stays standable (STAND_ON), the backrest and the arms are
+ * `solid` (plain walls: a sofa's back is no seat). A short arm (the chaise's) leaves the seat's full width beyond its end. */
+function seatRects({ x0, x1, depth, arms, armDepth = depth }) {
+  const D = L.depth, z0 = -D / 2, aw = L.armWidth, back = z0 + D - L.seatDepth; // the seat starts where the back cushion ends
+  const left = arms.includes('left'), right = arms.includes('right');
+  const rects = [{ x0, x1, z0, z1: back, solid: true }];
+  if (right) rects.push({ x0, x1: x0 + aw, z0: back, z1: z0 + armDepth, solid: true });
+  if (left) rects.push({ x0: x1 - aw, x1, z0: back, z1: z0 + armDepth, solid: true });
+  rects.push({ x0: x0 + (right ? aw : 0), x1: x1 - (left ? aw : 0), z0: back, z1: z0 + armDepth });
+  if (armDepth < depth) rects.push({ x0, x1, z0: z0 + armDepth, z1: z0 + depth });
+  return rects;
+}
+
 function sofa(item) {
   const g = new THREE.Group();
   const W = L.sofaWidth, D = L.depth;
@@ -164,8 +177,8 @@ function sofa(item) {
     { x0: chX0 + 0.06, x1: chX1 - 0.06, z0: -0.25, z1: -D / 2 + L.chaiseDepth - 0.06, y: L.seatHeight, soft: true }];
   // footprint (local) for collision
   g.userData.footprint = [
-    { x0: mainX0, x1: mainX1, z0: -D / 2, z1: D / 2 },
-    { x0: chX0, x1: chX1, z0: -D / 2, z1: -D / 2 + L.chaiseDepth },
+    ...seatRects({ x0: mainX0, x1: mainX1, depth: D, arms: [right ? 'left' : 'right'] }),
+    ...seatRects({ x0: chX0, x1: chX1, depth: L.chaiseDepth, arms: [right ? 'right' : 'left'], armDepth: L.chaiseArmDepth }),
   ];
   return g;
 }
@@ -181,7 +194,7 @@ function armchair() {
     [ai + 0.004, top + 0.006], [ai + 0.014, top - 0.09], [ai + 0.03, seatTop + 0.03], [ai + 0.1, seatTop + 0.02],
     [ai + T.spill, seatTop + 0.035]], T.z0, T.z1, 3, T.color);
   g.userData.rest = { kind: 'sit', name: 'fåtöljen', verb: 'sätta dig i', spots: [{ x: 0, y: L.seatHeight, z: -0.08 }] };
-  g.userData.footprint = [{ x0: -W / 2, x1: W / 2, z0: -L.depth / 2, z1: L.depth / 2 }];
+  g.userData.footprint = seatRects({ x0: -W / 2, x1: W / 2, depth: L.depth, arms: ['left', 'right'] });
   return g;
 }
 
@@ -822,7 +835,8 @@ function bed(item) {
   // a plush toy can be put down on the duvet (#269; `soft`: not cups and glasses)
   g.userData.surfaces = [{ x0: -w / 2 + 0.08, x1: w / 2 - 0.08, z0: z0 + (item.hotel ? 0.74 : 0.45), z1: -z0 - 0.15, y: top + 0.05, soft: true }];
   const hw = item.model === 'idanas' ? IDANAS.W / 2 : w / 2 + 0.03, back = item.model === 'idanas' ? IDANAS.head : 0.08;
-  g.userData.footprint = [{ x0: -hw, x1: hw, z0: z0 - back, z1: -z0 + 0.03 }];
+  // the headboard end is a plain wall; the mattress area can be stood on (#699, STAND_ON.bed)
+  g.userData.footprint = [{ x0: -hw, x1: hw, z0: z0 - back, z1: z0, solid: true }, { x0: -hw, x1: hw, z0, z1: -z0 + 0.03 }];
   return g;
 }
 
@@ -1248,7 +1262,11 @@ function daybed() {
   g.traverse((m) => { m.castShadow = m.receiveShadow = true; });
   // Tilly's daybed (#72): lie along it, head at the −x end (feet towards +x)
   g.userData.rest = { kind: 'lie', name: 'dagbädden', verb: 'lägga dig i', spots: [{ x: -W / 2 + 0.35, y: m1, z: 0, dir: [1, 0] }] };
-  g.userData.footprint = [{ x0: -W / 2, x1: W / 2, z0, z1 }];
+  // the back (7 cm) and the two ends (9 cm, 0.83 m high) are plain walls, the mattress between them can be stood on from the
+  // open front (#699, STAND_ON.daybed)
+  const eb = 0.07, ee = 0.09;
+  g.userData.footprint = [{ x0: -W / 2, x1: W / 2, z0, z1: z0 + eb, solid: true }, { x0: -W / 2, x1: -W / 2 + ee, z0: z0 + eb, z1, solid: true },
+    { x0: W / 2 - ee, x1: W / 2, z0: z0 + eb, z1, solid: true }, { x0: -W / 2 + ee, x1: W / 2 - ee, z0: z0 + eb, z1 }];
   return g;
 }
 
@@ -3840,8 +3858,9 @@ export function buildFurniture() {
     obj.userData.standTop = stand;
     for (const r of obj.userData.footprint ?? []) {
       const pts = [toWorld(r.x0, r.z0), toWorld(r.x1, r.z0), toWorld(r.x1, r.z1), toWorld(r.x0, r.z1)];
-      if (stand !== undefined) pts.top = floor + stand;
-      for (let i = 0; i < 4; i++) segments[item.level].push(stand !== undefined ? [...pts[i], ...pts[(i + 1) % 4], pts.top] : [...pts[i], ...pts[(i + 1) % 4]]);
+      const top = stand !== undefined && !r.solid ? stand : undefined; // (a `solid` rectangle: a backrest, an arm, a headboard stays a wall, #699)
+      if (top !== undefined) pts.top = floor + top;
+      for (let i = 0; i < 4; i++) segments[item.level].push(top !== undefined ? [...pts[i], ...pts[(i + 1) % 4], pts.top] : [...pts[i], ...pts[(i + 1) % 4]]);
       footprints[item.level].push(pts);
     }
   }

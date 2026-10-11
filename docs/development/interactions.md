@@ -359,10 +359,16 @@ Top-right segmented badge (#582): index.html groups furniture, stats, mute and p
   path, so a walk just fails, a sprint (3.2 m/s) clears it; the suit's jump walks over it. The path is the
   body's radius on both sides + its 0.44 m depth). Space is always `preventDefault`ed in play (it never scrolls
   or presses a focused button) and the Space that stands you up from a seat is no jump.
-  #693: landing on low things (`STAND_ON` in config.js: sofa, armchair, ottoman at 0.45 m; the courtyard's benches 0.46 m): the plain
+  #693, #699: landing on low things (`STAND_ON` in config.js: sofa, armchair, ottoman and the BYÅS TV bench at 0.45 m, the IDANÄS bed 0.64 m (+ a rug's few cm), Tilly's daybed 0.59 m; the courtyard's benches 0.46 m): the plain
   jump reaches them, the suit's jump goes far above; tables (0.75 m), shelves, walls and fences are no platforms (a wall keeps its
-  plain collision). The whole footprint counts as standable at the seat height (a sofa's back too: *guess*). Not done: beds, the
-  TV bench, other courtyard / street seats, a standing surface for tables or kerbs (own issue).
+  plain collision). Only a footprint rectangle without `solid: true` is standable (#699): the builders mark the sofa's / armchair's
+  backrest strip and arms (`seatRects`), the bed's headboard and the daybed's back and ends `solid` (walls as before; the daybed is
+  entered from its open front, the bed from the sides / foot; rearrange.js `refresh` honours the flag too). The TV on the TV
+  bench has no footprint of its own, so it never blocks the bench top (you walk through its picture, *guess*). The bed and daybed
+  heights follow the models' mattress tops (*guess*, 0.45 m step + 0.7 m apex + 0.22 hurdle reach ≈ 0.9 m at most). Left out on
+  purpose: the MYDAL bunks (the lower mattress top 0.32 m is under the top bunk's 1.1 m base: no head room). Not done: other
+  courtyard / street seats, kerbs, low walls, the kitchen plinth, the 1.8 m fence behind the bench (bench 0.46 + jump 0.7 does
+  not clear it: the user's call, #699), see the follow-up issues.
 - Crouch (#70): hold Ctrl (or the 🧎 toggle on touch) → eye `PLAYER.crouchEye` 0.95 m at `crouchSpeed` (50 %),
   no sprint; you only stand up again where there is head room (`roomToStand`: not under the stair's
   upper flight). Released on blur / losing pointer lock so nobody gets stuck down.

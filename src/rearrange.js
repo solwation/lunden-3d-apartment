@@ -325,7 +325,7 @@ export class Rearrange {
       const piece = this.pieces.find((p) => p.object === obj); if (!piece || obj.userData.seasonHidden) continue; // (#571: the tree out of season, what it hides)
       for (const r of obj.userData.footprint ?? []) {
         const pts = [[r.x0,r.z0],[r.x1,r.z0],[r.x1,r.z1],[r.x0,r.z1]].map(([x,z]) => { const v = obj.localToWorld(new V(x,0,z)); return [v.x,v.z]; });
-        const top = obj.userData.standTop; // a low seat you can jump up on (#693): its world top y
+        const top = r.solid ? undefined : obj.userData.standTop; // a low seat you can jump up on (#693): its world top y
         if (top !== undefined) pts.top = obj.localToWorld(new V(0, top, 0)).y;
         f.footprints[piece.level].push(pts);
         for (let i=0;i<4;i++) f.segments[piece.level].push(top !== undefined ? [...pts[i],...pts[(i+1)%4],pts.top] : [...pts[i],...pts[(i+1)%4]]);
