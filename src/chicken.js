@@ -4,16 +4,9 @@ import { sfx } from './audio.js';
 import { chicken } from './fridge.js';
 import { CHICKEN as C } from './config.js';
 
-// The roast chicken in the fridge (#160), a Holdable: E (fridge open) takes it on its plate, E on its shelf
-// spot puts it back; it goes down on tables / worktops / the floor like other things. E on the pan standing
-// on the hob lays it in the pan (the plate stays out of sight: it rides with the chicken, hidden). In the pan
-// on a lit zone it fries: after `cookSeconds` it sizzles, browns and starts to smoke. The smoke follows it
-// (carried, too) and stops after `smokeSeconds`, or at once when it is back in the fridge and the door shuts.
-// The chicken in the pan is a child of the pan: carry the pan and it comes along.
-// #194: raw it is pale (CHICKEN.raw) and turns golden as it fries; with the cooker hood running over it the smoke is
-// drawn up into the hood (`hood`, main.js sets it). Cooked, E on a leg or wing breaks it off into the hand (a
-// ChickenPiece: a click eats it in CHICKEN.bites bites); with the legs and wings gone the body comes off in pieces
-// until only the plate is left. F (reset) puts it back raw and whole.
+// The fridge's whole chicken (#160, #708): courtyard grill only; raw → golden → burnt.
+// Existing model, pieces and smoke are reused. Life's saved extra keeps cooking/placement/parts/reward flags;
+// F returns it home without refilling or undoing cooking. Grill placement keeps E as whole-bird pickup.
 
 function smokeTexture() {
   const c = document.createElement('canvas');
@@ -41,7 +34,7 @@ export class Chicken extends Holdable {
       heldPose: { pos: new THREE.Vector3(C.held.x, C.held.y, C.held.z), rot: new THREE.Euler(0.3, 0.4, 0) },
       pick: { pos: home.clone().setY(home.y + 0.07), size: [0.3, 0.16, 0.3] },
     });
-    Object.assign(this, { fridge, pan, hob, plate, inPan: false, cooked: 0, smokeT: 0, sizzleT: 0, smokeClock: 0 });
+    Object.assign(this, { fridge, pan, hob, plate, inPan: false, inGrill: false, burnt: false, rewarded: false, burntCounted: false, cooked: 0, smokeT: 0, sizzleT: 0, smokeClock: 0 });
     this.rest = { q: new THREE.Quaternion(), lift: 0 }; // its origin is the plate's bottom: put down standing
     this.skins = [];
     model.traverse((m) => { if (m.isMesh && m !== plate && m.material.color.r > 2 * m.material.color.b) this.skins.push({ m: m.material, c0: m.material.color.clone() }); });
@@ -73,41 +66,94 @@ export class Chicken extends Holdable {
 
   get smoking() { return this.smokeT > 0; }
 
-  /** Lay it in the pan on the hob (main.js: E on the pan with the chicken in the hand). */
+  initLife(life, grill) {
+    Object.assign(this, { life, grill, id: 'chicken', type: 'chicken' });
+    life.keepPart('chicken', { save: () => this.saveState(), load: (s) => this.loadState(s) });
+  }
+
+  get cookState() { return this.burnt ? 'burnt' : this.done ? 'golden' : 'raw'; }
+  event(kind, extra = {}) {
+    this.life?.emit(kind, { item: { id: this.id, type: 'chicken', machine: { cook: this.cooked, cooked: this.done, burnt: this.burnt } },
+      state: this.cookState, ...extra });
+  }
+
+  /** A pan attempt is refused without releasing the hand or changing the chicken. */
   intoPan() {
-    if (!this.held || !this.pan || this.pan.egg) return;
-    this.held = false;
-    setHeld(null); // the hand is free (this one is no longer held, so nothing is put back)
-    this.pan.model.add(this.model);
-    this.model.position.set(0, C.inPanY, 0);
-    this.model.rotation.set(0, Math.PI / 2, 0);
-    this.model.scale.setScalar(C.inPanScale); // the bird shrinks a little in the pan (and fits in it)
-    this.plate.visible = false;
-    this.inPan = true;
-    this.placed = true; // F sends it home from there
-    sfx.click(this.where());
+    if (!this.held) return false;
+    this.life?.say('Den här är för stor för pannan – den vill ha riktig grill.');
+    this.event('chickenPanRefused', { surface: 'pan' });
+    return false;
   }
 
-  take() { super.take(); this.inPan = false; this.plate.visible = true; this.model.scale.setScalar(1); }
+  intoGrill() {
+    if (!this.held || !this.grill?.on) { this.life?.say('Tänd grillen först.'); return false; }
+    this.held = false; setHeld(null);
+    this.grill.object.add(this.model);
+    this.model.position.copy(this.grill.grateTop);
+    this.model.rotation.set(0, Math.PI / 2, 0); this.model.scale.setScalar(1);
+    this.plate.visible = false; this.inGrill = this.placed = true;
+    this.retarget(); this.life && (this.life.dirty = true);
+    this.event('chickenPlaced', { surface: 'grill' });
+    return true;
+  }
 
-  goHome() {
-    this.inPan = false;
+  placementState() {
+    return this.inGrill ? { grill: true } : this.placed ? { pos: this.where().toArray(), quat: this.model.getWorldQuaternion(new THREE.Quaternion()).toArray() } : null;
+  }
+
+  take() {
+    const fromGrill = this.inGrill;
+    if (heldItem() && heldItem() !== this) return;
+    this.lastRest = this.placementState();
+    super.take(); this.inPan = this.inGrill = false; this.plate.visible = true; this.model.scale.setScalar(1);
+    this.retarget(); this.life && (this.life.dirty = true);
+    this.event('chickenTaken', { surface: fromGrill ? 'grill' : 'other' });
+  }
+
+  goHome({ silent = false } = {}) {
+    this.inPan = this.inGrill = false;
     if (this.plate) this.plate.visible = true;
-    this.model.scale.setScalar(1);
-    super.goHome();
+    this.model.scale.setScalar(1); super.goHome();
+    if (this.body) this.retarget();
+    if (this.life && !silent && !this.silentHome) { this.life.dirty = true; this.event('chickenReturnedHome', { surface: 'fridge' }); }
   }
 
-  /** F: home without smoke, raw and whole again. */
+  /** F: home and quiet; cooking, missing/eaten parts and reward flags survive (#708). */
   reset() {
-    if (this.held) this.putBack(); else this.goHome();
     if (heldItem()?.isChickenPiece) heldItem().putBack();
-    this.smokeT = 0; this.cooked = 0; this.brownK = 0; this.done = false;
+    this.silentHome = true;
+    if (this.held) this.putBack(); else this.goHome();
+    this.silentHome = false;
+    this.smokeT = 0;
     for (const s of this.smoke) s.visible = false;
-    for (const p of this.parts) { p.gone = false; for (const m of p.meshes) m.visible = true; }
-    this.bodyLeft = C.bodyBites;
-    for (const m of this.body) { m.visible = true; m.scale.copy(m.userData.s0 ?? m.scale); }
-    this.paint(0);
-    this.retarget();
+    this.life && (this.life.dirty = true);
+  }
+
+  saveState() {
+    return { v: 1, cooked: this.cooked, brown: this.brownK ?? 0, done: this.done, burnt: this.burnt,
+      rewarded: this.rewarded, burntCounted: this.burntCounted, gone: this.parts.map(p => !!p.gone), bodyLeft: this.bodyLeft,
+      place: this.held ? this.lastRest ?? null : this.placementState() };
+  }
+
+  loadState(s) {
+    if (s?.v !== 1) return;
+    if (heldItem()?.isChickenPiece) heldItem().putBack();
+    if (heldItem() === this) setHeld(null); this.held = false; this.goHome({ silent: true });
+    this.cooked = Number.isFinite(s.cooked) ? Math.max(0, Math.min(C.burnSeconds, s.cooked)) : 0;
+    this.burnt = !!s.burnt || this.cooked >= C.burnSeconds; this.done = this.burnt || !!s.done || this.cooked >= C.cookSeconds;
+    this.rewarded = !!s.rewarded || this.done; this.burntCounted = !!s.burntCounted || this.burnt;
+    this.brownK = this.burnt ? 1 : Number.isFinite(s.brown) ? Math.max(0, Math.min(1, s.brown)) : 0;
+    this.parts.forEach((p, i) => { p.gone = !!s.gone?.[i]; for (const m of p.meshes) m.visible = !p.gone; });
+    this.bodyLeft = Number.isInteger(s.bodyLeft) ? Math.max(0, Math.min(C.bodyBites, s.bodyLeft)) : C.bodyBites;
+    for (const m of this.body) { m.userData.s0 ??= m.scale.clone(); m.scale.copy(m.userData.s0).multiplyScalar(0.45 + 0.55 * this.bodyLeft / C.bodyBites); m.visible = this.bodyLeft > 0; }
+    if (s.place?.grill && this.grill) {
+      this.grill.object.add(this.model); this.model.position.copy(this.grill.grateTop); this.model.rotation.set(0, Math.PI / 2, 0);
+      this.inGrill = this.placed = true; this.plate.visible = false; this.grill.lidK = 1; this.grill.update(0);
+    } else if (Array.isArray(s.place?.pos) && s.place.pos.length === 3 && s.place.pos.every(Number.isFinite) && Array.isArray(s.place.quat) && s.place.quat.length === 4 && s.place.quat.every(Number.isFinite)) {
+      this.scene.add(this.model); this.model.position.set(...s.place.pos); this.model.quaternion.set(...s.place.quat); this.placed = true;
+    }
+    this.smokeT = 0; this.paint(this.done ? 1 : Math.min(1, this.cooked / C.cookSeconds), this.brownK);
+    this.retarget(); // no completion/reward events on restoration
   }
 
   /** Colour by how far it is cooked: 0 raw … 1 golden; `dark` 0…1 = darker still from frying on. */
@@ -116,8 +162,8 @@ export class Chicken extends Holdable {
 
   /** Which E target each mesh is: cooked, its legs, wings and body break off; raw (or eaten), the whole thing is taken. */
   retarget() {
-    for (const m of this.body) m.userData.door = this.done && this.bodyLeft > 0 && this.parts.every((p) => p.gone) ? this.bodyTarget : this.takeTarget;
-    for (const p of this.parts) for (const m of p.meshes) m.userData.door = this.done && !p.gone ? p.target : this.takeTarget;
+    for (const m of this.body) m.userData.door = !this.inGrill && this.done && this.bodyLeft > 0 && this.parts.every((p) => p.gone) ? this.bodyTarget : this.takeTarget;
+    for (const p of this.parts) for (const m of p.meshes) m.userData.door = !this.inGrill && this.done && !p.gone ? p.target : this.takeTarget;
   }
 
   /** Break a leg / wing (p) or a piece of the body (null) off into the hand. */
@@ -131,6 +177,7 @@ export class Chicken extends Holdable {
       for (const m of this.body) { m.userData.s0 ??= m.scale.clone(); m.scale.copy(m.userData.s0).multiplyScalar(0.45 + 0.55 * this.bodyLeft / C.bodyBites); m.visible = this.bodyLeft > 0; }
     }
     this.retarget();
+    this.life && (this.life.dirty = true);
     this.piece = piece;
     piece.take();
     sfx.rustle?.(this.where());
@@ -143,28 +190,34 @@ export class Chicken extends Holdable {
       for (const m of this.body) { m.scale.copy(m.userData.s0).multiplyScalar(0.45 + 0.55 * this.bodyLeft / C.bodyBites); m.visible = true; }
     }
     this.retarget();
+    this.life && (this.life.dirty = true);
   }
 
   update(dt) {
     super.update(dt);
     this.piece?.update(dt); // a piece in the hand being eaten
-    if (this.inPan && this.pan && this.model.parent !== this.pan.model) this.inPan = false;
-    if (this.inPan && this.pan.model.parent === this.pan.drawer?.object) this.goHome(); // the pan went back into its drawer
-    const frying = this.inPan && this.pan.onHob && this.hob?.on;
-    if (frying) {
-      this.cooked += dt;
-      if (!this.done) this.paint(Math.min(1, this.cooked / C.cookSeconds)); // raw → golden while it fries
-      if (this.cooked >= C.cookSeconds) {
-        if (!this.done) { this.done = true; this.retarget(); this.onCooked?.(); }
-        this.brownK = Math.min(1, (this.brownK ?? 0) + dt / (2 * C.cookSeconds)); // a little darker the longer it fries
-        this.brown(this.brownK);
-        this.smokeT = C.smokeSeconds; // keeps smoking while it fries, then smokeSeconds more
+    if (this.inGrill && this.model.parent !== this.grill?.object) this.inGrill = false;
+    const grilling = this.inGrill && this.grill?.on;
+    if (grilling) {
+      this.cooked = Math.min(C.burnSeconds, this.cooked + dt);
+      if (!this.done && this.cooked >= C.cookSeconds) {
+        this.done = true; this.retarget();
+        if (!this.rewarded) { this.rewarded = true; this.onCooked?.(); }
+        this.event('grilled', { surface: 'grill' });
+      }
+      this.brownK = Math.max(0, Math.min(1, (this.cooked - C.cookSeconds) / (C.burnSeconds - C.cookSeconds)));
+      this.paint(Math.min(1, this.cooked / C.cookSeconds), this.brownK);
+      if (!this.burnt && this.cooked >= C.burnSeconds) {
+        this.burnt = true;
+        if (!this.burntCounted) { this.burntCounted = true; this.onBurnt?.(); }
+        this.event('chickenBurnt', { surface: 'grill' });
+      }
+      if (this.done) {
+        this.smokeT = C.smokeSeconds;
         if ((this.sizzleT -= dt) <= 0) { sfx.sizzle(this.where()); this.sizzleT = 0.6 + Math.random() * 0.3; }
       }
-    } else {
-      this.cooked = 0;
-      if (this.smokeT > 0) this.smokeT = Math.max(0, this.smokeT - dt);
-    }
+      this.life && (this.life.dirty = true);
+    } else if (this.smokeT > 0) this.smokeT = Math.max(0, this.smokeT - dt);
     // back in the fridge and the door shut: the smoke stops at once
     if (this.smoking && !this.held && !this.placed && !this.fridge.isOpen) this.smokeT = 0;
     this.smokeClock += dt;
@@ -185,7 +238,7 @@ export class Chicken extends Holdable {
 
   /** Smoke the hood does not take care of (the smoke alarm listens to this, #194). */
   get freeSmoke() {
-    if (!this.smoking || !this.model.parent || !this.visibleUp()) return false;
+    if (this.inGrill || !this.smoking || !this.model.parent || !this.visibleUp()) return false;
     return !this.hood?.draws(this.where(new THREE.Vector3()).add(new THREE.Vector3(0, 0.12, 0)));
   }
 
@@ -251,6 +304,7 @@ export class ChickenPiece {
         setHeld(null);
         this.model.removeFromParent();
         this.bird.onEaten?.();
+        this.bird.life && (this.bird.life.dirty = true);
         return;
       }
     }

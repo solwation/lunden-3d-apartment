@@ -108,3 +108,5 @@ per-task goal ids, completion count and cooldown deadline. Reload restores selec
 v1 goals/shown migrate, with completed tasks initially cooling down. `lunden.stats` stores per-id task counts plus
 `legacyTaskPoints`, preserving previously earned generic task points on upgrade. Repeats use `SCORE.tasks[id].again`;
 statistics reset clears both counters and task state, while home reset clears the existing Life/statistics records.
+
+#708: `Life.x.chicken` keeps raw/golden/burnt progress, off-grill pose or courtyard grate placement, missing/eaten parts and completion/penalty flags. The generic holdable snapshot still excludes chicken to avoid a second restore. `keep.js` restores grill heat before Life; saved grill relighting and chicken loading emit no task progress. F returns the existing bird rather than creating a fresh rewardable one.

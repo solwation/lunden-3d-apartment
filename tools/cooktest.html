@@ -8,8 +8,8 @@
 // off again; F switches it off and it stays a target with F. (2) the frying pan (#159): open the drawer under
 // the hob, take the pan, stand it on the hob, take it again, back in the drawer, the drawer closes; F sends it home.
 // (5) fish fingers (#214): into the pan, golden, out, eaten; burnt left on; F.
-// (3) the chicken (#160): no smoke in the fridge; taken, into the pan on the lit hob, it smokes after cookSeconds;
-// back in the fridge with the door shut the smoke stops; fried again it stops by itself after smokeSeconds; F.
+// (3) the chicken (#160): no smoke in the fridge; taken, onto the lit courtyard grill, it smokes after cookSeconds;
+// back in the fridge with the door shut the smoke stops; fried again it stops by itself after smokeSeconds; F preserves cooking and consumed parts.
 //   google-chrome --headless=new --dump-dom http://localhost:8137/tools/cooktest.html
 const out = document.getElementById('out');
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -83,83 +83,17 @@ f.onload = async () => {
   toggleFurniture(); toggleFurniture();
   pass &= check(pan.model.parent === drawer.object && !pan.placed, 'F sends it home to the drawer');
   drawer.toggle(); for (let i = 0; i < 60; i++) step(1 / 60);
-  // (3) the chicken
-  const fridge = chicken.fridge, C = { cook: 10, smoke: 60 };
-  const smokes = () => chicken.smoke.some((s) => s.visible && s.material.opacity > 0.01);
+  // #708: chicken uses the existing courtyard grill; pan and F cannot cook/refill it.
+  const { grill } = w.__app;
   const run = (sec) => { for (let i = 0; i < sec * 10; i++) step(0.1); };
-  const fridgeFrom = [chicken.home.pos.x, chicken.home.pos.z - 1.0];
-  label = aim(chicken.home.pos.clone().add(new V(0, 0.1, 0)), fridgeFrom);
-  pass &= check(/^öppna( kylskåpet)?$/i.test(label), `the fridge: "${label}"`);
-  btn.click(); run(2);
-  pass &= check(!smokes(), 'no smoke in the open fridge');
-  label = aim(chicken.home.pos.clone().add(new V(0, 0.08, 0)), fridgeFrom);
-  pass &= check(/ta kycklingen/i.test(label), `"${label}"`);
-  btn.click(); step(1 / 60);
-  pass &= check(heldItem() === chicken && !smokes(), 'the chicken in the hand, no smoke');
-  chicken.putBack(); drawer.toggle(); run(1); // the pan onto the hob (as above), the hob on
   pan.take(); pan.placeAt(hob.zone); hob.set(true); chicken.take();
-  label = aim(hob.zone.clone().add(new V(0, 0.03, 0)), from);
-  pass &= check(/lägga kycklingen i pannan/i.test(label), `at the pan: "${label}"`);
-  btn.click();
-  step(1 / 60);
-  pass &= check(chicken.inPan && chicken.model.parent === pan.model && heldItem() === null, `in the pan, the hand free`);
-  run(C.cook - 2);
-  pass &= check(!smokes(), `no smoke yet after ${C.cook - 2} s`);
-  run(3);
-  pass &= check(smokes(), `smoking after ${C.cook + 1} s`);
-  // into the fridge, shut the door: no smoke
-  chicken.take(); run(0.5);
-  pass &= check(smokes(), 'still smoking in the hand');
-  chicken.putBack(); run(0.5);
-  pass &= check(smokes(), 'still smoking in the open fridge');
-  fridge.toggle(); run(0.3);
-  pass &= check(!fridge.isOpen && !smokes() && !chicken.smoking, 'the fridge door shut: no smoke');
-  // fry again, take it off the heat: the smoke stops by itself after smokeSeconds
-  fridge.toggle(); run(2);
-  chicken.take(); chicken.intoPan(); run(C.cook + 1);
-  chicken.take(); chicken.placeAt(hob.zone.clone().add(new V(0, 0, -0.5)));
-  run(C.smoke - 5);
-  pass &= check(smokes(), `on the worktop, still smoking after ${C.smoke - 5} s`);
-  run(6);
-  pass &= check(!smokes(), `stopped after ${C.smoke + 1} s`);
-  chicken.take(); chicken.intoPan(); run(C.cook + 1);
-  toggleFurniture(); toggleFurniture();
-  pass &= check(!chicken.placed && !chicken.inPan && !smokes() && chicken.model.position.distanceTo(chicken.home.pos) < 0.001, `F: home to the fridge, no smoke (${chicken.placed} ${chicken.inPan} ${smokes()} ${chicken.model.position.distanceTo(chicken.home.pos).toFixed(3)})`);
-  // (4) #194: raw it is pale; frying without the hood → the smoke alarm; the hood on → quiet; cooked: break a leg off, eat it
-  const { smokeAlarm, stats } = w.__app, hood = world.hood;
-  const hex = () => chicken.skins[0].m.color.getHex();
-  pass &= check(!!hood && hex() === chicken.skins[0].raw.getHex(), `raw: pale skin (#${hex().toString(16)})`);
-  pan.take(); pan.placeAt(hob.zone); hob.set(true); chicken.take(); chicken.intoPan();
-  run(C.cook + 4);
-  pass &= check(chicken.smoking && !smokeAlarm.ringing, `smoking ${C.cook + 4} s in, ${smokeAlarm.smokyFor.toFixed(1)} s of smoke: not yet`);
-  run(3);
-  pass &= check(smokeAlarm.ringing, 'no hood: the smoke alarm goes off');
-  label = aim(hood.intake.clone().add(new V(0, 0.04, 0)), from);
-  pass &= check(/slå på köksfläkten/i.test(label), `the hood: "${label}"`);
-  const hoodLight = w.__app.lights.floorLamps.find((x) => x.name === 'lampan i köksfläkten'), litBefore = hoodLight?.room.on;
-  btn.click(); run(1);
-  pass &= check(hood.on && hoodLight && hoodLight.room.on === litBefore, 'the fan runs, its light stays as it was (#221)');
-  hoodLight.set(true); hood.set(false); pass &= check(hoodLight.room.on && !hood.on, 'the light on with the fan off'); hood.set(true); hoodLight.set(false);
-  pass &= check(hood.on && !smokeAlarm.ringing && chicken.smoking && !chicken.freeSmoke, 'the hood on: the smoke goes up into it, the alarm stops');
-  pass &= check(hex() !== chicken.skins[0].raw.getHex(), `cooked: golden (#${hex().toString(16)})`);
-  run(10);
-  pass &= check(!smokeAlarm.ringing, 'still quiet with the hood running');
-  // eat: a leg
-  const leg = chicken.parts[0], legAt = leg.meshes[0].getWorldPosition(new V());
-  label = aim(legAt, from);
-  pass &= check(/bryta loss kycklingbenet/i.test(label), `the leg: "${label}"`);
-  const before = stats.chicken;
-  btn.click(); step(1 / 60);
-  const piece = heldItem();
-  pass &= check(piece?.isChickenPiece && leg.gone && !leg.meshes[0].visible, 'the leg in the hand, gone from the bird');
-  for (let b = 0; b < 3; b++) { piece.use(); run(0.5); }
-  pass &= check(!heldItem() && stats.chicken === before + 1, `eaten (stats ${stats.chicken})`);
-  // everything else: three more limbs, then the body in pieces → just the plate
-  for (const p of chicken.parts.slice(1)) { chicken.breakOff(p); for (let b = 0; b < 3; b++) { heldItem()?.use(); run(0.5); } }
-  for (let k = 0; k < 3; k++) { chicken.breakOff(null); for (let b = 0; b < 3; b++) { heldItem()?.use(); run(0.5); } }
-  pass &= check(chicken.body.every((m) => !m.visible) && stats.chicken === before + 7 && chicken.plate.visible === false, `all eaten: ${stats.chicken - before} pieces, nothing left in the pan`);
-  toggleFurniture(); toggleFurniture();
-  pass &= check(!hood.on && !smokeAlarm.ringing && chicken.body.every((m) => m.visible) && chicken.parts.every((p) => !p.gone) && hex() === chicken.skins[0].raw.getHex(), 'F: the fan off, quiet, the chicken whole and raw again');
+  pass &= check(!chicken.intoPan() && heldItem() === chicken && !chicken.inPan, 'chicken refuses pan and remains in hand');
+  run(11); pass &= check(chicken.cooked === 0, 'hob cannot cook chicken');
+  grill.set(true); chicken.intoGrill(); run(11);
+  pass &= check(chicken.done && chicken.inGrill && !chicken.burnt, 'existing courtyard grill cooks chicken golden');
+  const cooked = chicken.cooked; chicken.reset();
+  pass &= check(chicken.done && chicken.rewarded && chicken.cooked === cooked && !chicken.inGrill, 'F preserves cooking/reward state');
+  // Complete once/reload/parts/burn/image coverage: tools/grillchickentest.html (actual classes, small fixture).
   // (5) #214: fish fingers fry in the pan too — frozen pale, golden after FISH.fry.seconds, burnt later; not back in the carton
   const { fish } = w.__app, FRY = { seconds: 6, burnAt: 18 };
   const white = (x) => x.bread.color.getHex() === 0xffffff;

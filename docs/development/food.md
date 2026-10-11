@@ -31,11 +31,15 @@ src/toaster.js         the toaster (#401, TOASTER): an OBH Nordica Piano Black (
                        #442), the cord along the worktop and up the splashback to it; E on the lever / front toasts (glowing slots, tick + hum, pops with a pling after
                        TOASTER.seconds; again = STOP; unplugged: "Brödrosten är inte inkopplad"); taking it unplugs it; F: home, unplugged;
                        keep.js keeps it plugged in (`keepState` / `loadKeep`, a hook any Holdable can use); empty toasting for now (#394)
-src/chicken.js         the roast chicken in the fridge (#160), a Holdable: E on the pan on the hob lays it in (a child of the
-                       pan); fried on a lit zone for CHICKEN.cookSeconds it sizzles, browns and smokes (the smoke follows it)
-                       until smokeSeconds after the heat, or at once back in the fridge with the door shut
-                       (#194: raw it is pale `CHICKEN.raw`, golden once fried; cooked, E breaks off legs, wings, then body
-                       pieces into the hand — `ChickenPiece`, a click eats it; F makes it whole and raw again)
+src/chicken.js         #708: whole fridge chicken cooks only on the existing courtyard grill; pan attempts keep it
+                       in hand with a clear hint. E lifts the whole bird from the grate; off-grill cooked parts can be eaten.
+                       CHICKEN.cookSeconds/burnSeconds and SCORE.each.grilledChicken=35 are guessed game parameters.
+                       Golden completion rewards once per bird, then existing smoke/darkening leads to burnt + deduction.
+                       Life extra x.chicken saves progress, placement, consumed parts and reward/penalty flags; loading is silent.
+                       F returns it home quietly without replenishing parts or clearing cooking/reward flags.
+                       Events chickenPlaced/chickenTaken/grilled/chickenBurnt/chickenEaten/chickenReturnedHome carry
+                       stable item.id/type, machine.cook/cooked/burnt, state and (where relevant) surface; pan refusal is explicit.
+                       tools/grillchickentest.html: bounded actual Chicken/Grill/Pan/Life fixture + raw/golden/burnt images.
 src/hood.js            the cooker hood (#194, `world.hood`, in world.lids): E runs the fan (whoosh, green LED; its light is a
                        separate button = its own lamp, #221 — the fan does not light it, like a real hood) and
                        draws the chicken's smoke up into it; the smoke alarm in the kitchen ceiling (SMOKE_ALARM) beeps
@@ -144,3 +148,5 @@ tools/toastertest.html headless test (#401): the toaster in its shut drawer is b
                        refuses, back in the drawer rides with it, F, a page-made reload keeps it plugged in
 ```
 
+
+#708 validation (2026-10-11): `tools/grillchickentest.html` passed 28 bounded assertions using the actual Chicken, Grill, Pan, Life and stats modules on base `4963cc0`; console/page errors were empty. It covers explicit pan refusal/hob non-cooking, grill-only progress and pause, exact +35 once with badge, golden/burnt domain events, raw/golden/burnt round-trips, late extra registration, off-grill pose, eating, F preservation, and silent restoration. Raw/golden/burnt WebGL captures show the actual occupied grill briefly extinguished for visibility. Final base `2587774` preserves #712 counter reset and #695 fridge/culling changes; the exported chicken model and tested cooking classes were unchanged upstream. Main focus/restore hooks were reviewed and syntax checked; no full apartment startup or broad cooking suite was run.

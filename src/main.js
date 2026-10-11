@@ -504,20 +504,25 @@ fruit.onEaten = (f) => bump('fruit', 1, f.kind);
 airFryer.onDone = () => { if (fish?.inFryer.length || fries?.count) bump('airfried', 1, 'airfryer'); }; // a batch done (#287)
 const fridge = world.lids.find((l) => l.kind === 'fridge' && !l.freezer);
 const beerShelf = fridge ? new BeerShelf(fridge, await beerShelfData) : null;
-const chicken = fridge ? new Chicken(scene, camera, fridge, pan, world.hob) : null; // the roast chicken: take it, fry it in the pan (#160)
+const chicken = fridge ? new Chicken(scene, camera, fridge, pan, world.hob) : null; // the whole chicken: cook it on the courtyard grill (#708)
 if (pan) pan.occupied = () => !!chicken?.inPan || !!fish?.inPan.length;
 if (chicken) holdables.push(chicken);
 // the cooker hood draws the chicken's smoke; without it the smoke alarm in the kitchen ceiling goes off (#194)
 const smokeAlarm = new SmokeAlarm();
 const grill = new Grill(); // the courtyard's kettle grill: E lights it (#204)
 scene.add(grill.object);
+grill.onLit = () => life.emit('grillLit', { surface: 'grill' });
 lights.extra.push(grill.lamp);
 lights.extra.push(...garage.lamps); // the garage's tubes light the cars down there (#357)
 scene.add(smokeAlarm.object);
 smokeAlarm.onRing = () => penalize('smokeAlarm'); // a deduction (#288)
 // the fridge and freezer beep when left open too long: a deduction when it starts, a little more while it goes on (#288)
 for (const l of world.lids) if (l.kind === 'fridge') l.onAlarm = (longer) => penalize(`${l.freezer ? 'freezer' : 'fridge'}${longer ? 'Longer' : 'Open'}`);
-if (chicken) { chicken.hood = world.hood; chicken.onEaten = () => bump('chicken'); chicken.onCooked = () => bump('cooked'); }
+if (chicken) {
+  chicken.initLife(life, grill); grill.occupied = () => chicken.inGrill;
+  chicken.hood = world.hood; chicken.onEaten = () => { bump('chicken'); chicken.event('chickenEaten'); };
+  chicken.onCooked = () => bump('grilledChicken'); chicken.onBurnt = () => penalize('burnt');
+}
 const turbo = new Turbo({ el: document.getElementById('turbo'), edge: document.getElementById('turbo-edge') }); // three cups of coffee: Kaffeturbo! (#217)
 turbo.onStart = () => bump('turbo');
 for (const c of cups.cups) c.onSip = (drink, coffee) => { bump(drink ?? 'coffee'); turbo.drink(coffee); }; // drink from a cup (#117); the coffee counts towards Kaffeturbo (#217) // the Moccamaster's jug: take it, pour, put it back (#141)
@@ -1499,7 +1504,8 @@ function use(thing) {
   else if (thing.kind === 'wipe') thing.cloth.wipe(thing.point);
   else if (thing.kind === 'saber' || thing.kind === 'holdable' || thing.kind === 'cup') thing.toggle();
   else if (thing.kind === 'place') thing.item.placeAt(thing.point, thing.yaw); // (as the ghost showed it, #368)
-  else if (thing.kind === 'fry') thing.item.intoPan(); // the chicken into the pan on the hob (#160)
+  else if (thing.kind === 'fry') thing.item.intoPan(); // #708: clear refusal, keep the bird in hand
+  else if (thing.kind === 'grillChicken') thing.item.intoGrill();
   else if (thing.kind === 'fryfish') thing.item.fryHeld(); // a fish finger into the pan (#214)
   else if (thing.kind === 'paper') { if (heldItem() === heldDrawing) heldDrawing.putBack(); else beginDraw(); } // holding the drawing: back on the desk (#176)
   else if (thing.kind === 'tape') { posters.tape(heldDrawing.image, thing.spot, heldDrawing.meta ?? {}); heldDrawing.release(); drawing.save(); bump('posted'); } // tape the drawing up (#176)
@@ -1821,7 +1827,12 @@ function updateFocus() {
     placeGhost.position.copy(world.hob.zone).y += 0.003;
     placeGhost.visible = true;
   }
-  // the chicken in the hand, aimed at the pan on the hob (or the hob): into the pan (#160)
+  // #708: the existing grill is the only cooking surface; an unlit grill gives a clear hint.
+  if (item === chicken && (focused?.kind === 'grill' || (focused?.kind === 'place' && focused.point.distanceTo(grill.grateTop) < 0.4))) {
+    focused = { name: 'kycklingen på grillen', kind: 'grillChicken', verb: 'lägga', item: chicken };
+    placeGhost.visible = false;
+  }
+  // The pan still offers an explicit attempt so its refusal explains where the chicken belongs.
   if (item === chicken && pan?.onHob && !chicken.inPan && !fish?.inPan.length && !pan.egg && (focused === pan.takeTarget || focused?.kind === 'hob'
     || (focused?.kind === 'place' && focused.point.distanceTo(world.hob.zone) < 0.35))) {
     focused = { name: 'kycklingen i pannan', kind: 'fry', verb: 'lägga', item: chicken };

@@ -1,0 +1,69 @@
+<!doctype html><html lang="sv"><meta charset="utf-8"><title>Grill chicken #708</title><link rel="icon" href="data:,">
+<style>body{margin:16px;background:#edf0e8;font:16px system-ui}canvas{display:block}pre{white-space:pre-wrap}</style>
+<h1>Kycklingen på gårdsgrillen</h1><div id="badges"></div><pre id="out">running…</pre>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import {Chicken} from '../src/chicken.js';
+import {Grill} from '../src/grill.js';
+import {Pan} from '../src/pan.js';
+import {Life} from '../src/life.js';
+import {heldItem} from '../src/holdable.js';
+import {bump,totalScore,resetStats,stats,setBadgeElement,penalize} from '../src/stats.js';
+import {CHICKEN as C,SCORE} from '../src/config.js';
+const lines=[];let pass=true;
+const check=(ok,name)=>{lines.push(`${ok?'PASS':'FAIL'} ${name}`);pass&&=!!ok;};
+try {
+const scene=new THREE.Scene();scene.background=new THREE.Color(0xd4e2ed);
+const camera=new THREE.PerspectiveCamera(38,800/520,.01,200);
+const grill=new Grill();scene.add(grill.object);
+const drawer={object:new THREE.Group(),normal:new THREE.Vector3(0,0,1)};scene.add(drawer.object);
+const hob={zone:new THREE.Vector3(0,.9,0),on:true};
+const pan=new Pan(scene,camera,drawer,hob);pan.take();pan.placeAt(hob.zone);
+const fridge={object:new THREE.Group(),shelfSpot:new THREE.Vector3(0,1,0),isOpen:true};scene.add(fridge.object);
+const hints=[],events=[];
+const life=new Life({scene,camera,say:t=>hints.push(t)});life.events.push((kind,data)=>events.push({kind,...data}));grill.onLit=()=>life.emit('grillLit',{surface:'grill'});
+const bird=new Chicken(scene,camera,fridge,pan,hob);bird.initLife(life,grill);grill.occupied=()=>bird.inGrill;
+bird.onCooked=()=>bump('grilledChicken');bird.onBurnt=()=>penalize('burnt');bird.onEaten=()=>bump('chicken');
+setBadgeElement(document.querySelector('#badges'));resetStats();
+const run=sec=>{for(let t=0;t<sec-1e-6;t+=.1){bird.update(Math.min(.1,sec-t));grill.update(Math.min(.1,sec-t));}};
+bird.take();const hand=bird.model.parent;
+check(bird.intoPan()===false&&heldItem()===bird&&bird.model.parent===hand&&!bird.inPan,'pan refuses and keeps chicken in hand');
+check(hints.some(t=>/grill/i.test(t))&&events.at(-1).kind==='chickenPanRefused','pan hint and domain event');
+run(C.cookSeconds+1);check(bird.cooked===0&&stats.grilledChicken===undefined,'lit hob never cooks chicken');
+check(bird.intoGrill()===false&&heldItem()===bird,'unlit grill refuses without dropping');
+grill.set(true);check(events.filter(e=>e.kind==='grillLit').length===1,'actual grill setter emits lit event once');check(bird.intoGrill()&&!heldItem()&&bird.inGrill&&bird.model.parent===grill.object,'lit existing grill accepts whole bird');
+check(bird.model.position.distanceTo(grill.grateTop)<1e-6&&!bird.plate.visible,'bird sits on actual grate without plate');
+check(events.at(-1).item.id==='chicken'&&events.at(-1).state==='raw'&&events.at(-1).surface==='grill','placement event identifies raw bird and grill');
+const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setSize(800,520);document.body.append(renderer.domElement);
+scene.add(new THREE.HemisphereLight(0xffffff,0x5a6045,2.4));const sun=new THREE.DirectionalLight(0xffffff,2.6);sun.position.set(3,6,2);scene.add(sun);
+const floor=new THREE.Mesh(new THREE.PlaneGeometry(15,15),new THREE.MeshStandardMaterial({color:0x85936b,roughness:1}));floor.rotation.x=-Math.PI/2;floor.position.set(grill.top.x,0,grill.top.z);scene.add(floor);
+camera.position.copy(grill.top).add(new THREE.Vector3(1,1.2,1.7));camera.lookAt(grill.top.clone().add(new THREE.Vector3(0,.08,0)));
+const captures={};// Inspect the actual occupied grate after extinguishing: the lid stays open and existing flames fade.
+const capture=key=>{const lit=grill.on;grill.set(false,{silent:true});grill.update(4);scene.updateMatrixWorld(true);renderer.render(scene,camera);captures[key]=renderer.domElement.toDataURL();if(lit)grill.set(true,{silent:true});};capture('raw');
+run(3);const raw=JSON.parse(JSON.stringify(life.serialize())),n=events.length;
+life.load(raw);check(bird.inGrill&&Math.abs(bird.cooked-3)<.001&&!bird.done,'raw progress/placement round-trip');check(events.length===n,'raw reload emits no domain events');
+grill.set(false);run(2);check(Math.abs(bird.cooked-3)<.001,'unlit grate pauses progress');grill.set(true);
+const before=totalScore();run(C.cookSeconds-3+.1);
+check(bird.done&&!bird.burnt&&bird.rewarded,'grilling turns golden');
+check(totalScore()-before===SCORE.each.grilledChicken&&SCORE.each.grilledChicken===35,'golden bird awards actual 35 points');
+check(document.querySelector('#badges').textContent.includes('Kycklingen är grillad'),'completion badge visible');
+check(events.filter(e=>e.kind==='grilled').length===1&&events.find(e=>e.kind==='grilled').item.machine.cooked&&!events.find(e=>e.kind==='grilled').item.machine.burnt,'one golden grill event with cooked state');
+check(bird.smoking&&bird.smoke.some(s=>s.visible)&&!bird.freeSmoke,'existing smoke visible; courtyard grill does not trigger indoor alarm');capture('golden');
+const golden=JSON.parse(JSON.stringify(life.serialize())),earned=stats.grilledChicken,ne=events.length;life.load(golden);
+check(bird.done&&bird.inGrill&&bird.rewarded&&stats.grilledChicken===earned&&events.length===ne,'golden reload preserves placement/reward without replay');
+bird.take();check(heldItem()===bird&&!bird.inGrill&&bird.plate.visible,'golden whole bird can be lifted off grill');const cook=bird.cooked;run(1);check(bird.cooked===cook,'hand is not a cooking surface');
+bird.putBack();bird.breakOff(bird.parts[0]);const piece=heldItem();for(let i=0;i<C.bites;i++){piece.use();piece.update(.5);}check(bird.parts[0].gone&&!heldItem()&&stats.chicken===1,'cooked leg can be eaten');
+const resetEvents=events.length;bird.reset();check(bird.parts[0].gone&&bird.done&&bird.rewarded&&bird.cooked===cook&&events.length===resetEvents,'F neither refills eaten parts nor resets cooking/reward or emits home progress');
+bird.take();bird.intoGrill();run(C.burnSeconds-cook+.1);
+check(bird.burnt&&bird.cookState==='burnt'&&bird.brownK===1,'continued grilling burns/darkens the bird');
+check(stats.grilledChicken===earned&&events.filter(e=>e.kind==='grilled').length===1,'regrill after F never re-awards 35');
+check(events.filter(e=>e.kind==='chickenBurnt').length===1&&stats.penalties.burnt===1,'burn event and existing deduction once');capture('burnt');
+const burnt=JSON.parse(JSON.stringify(life.serialize())),nb=events.length;life.load(burnt);run(.2);
+check(bird.burnt&&bird.parts[0].gone&&events.length===nb&&stats.penalties.burnt===1,'burnt reload keeps eaten parts and no repeated penalty/events');
+bird.take();bird.placeAt(new THREE.Vector3(2,.5,2),.4);const pose=JSON.parse(JSON.stringify(life.serialize()));life.load(pose);check(bird.placed&&!bird.inGrill&&bird.where().distanceTo(new THREE.Vector3(...pose.x.chicken.place.pos))<.001,'off-grill world pose restores');
+const silentLit=events.length;grill.set(false);grill.set(true,{silent:true});check(events.length===silentLit,'saved grill relight is silent');
+const late=new Chicken(scene,camera,fridge,pan,hob),laterLife=new Life({scene,camera});laterLife.load(golden);late.initLife(laterLife,grill);check(late.done&&late.rewarded&&late.inGrill,'late keepPart registration restores pending saved golden bird');late.model.removeFromParent();
+window.grillTest={captures,lines,bird,grill,renderer,scene,camera};document.querySelector('#out').textContent=(pass?'ALL PASS':'FAIL')+'\n'+lines.join('\n');
+} catch(e){document.querySelector('#out').textContent='FAIL '+e.stack;console.error(e);}
+</script></html>

@@ -125,6 +125,7 @@ export class Grill {
     this.object = new THREE.Group();
     const K = G.kettle;
     this.top = new THREE.Vector3(x, K.rim + 0.02, z);
+    this.grateTop = new THREE.Vector3(x, K.rim - K.grate, z); // actual cooking grate (#708)
     // #678: one matt porcelain-enamel material with vertex colours for the bowl, legs, wheels and grates (body) and the lid
     const mat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.38, metalness: 0.15 });
     const body = new THREE.Mesh(kettleBody(), mat);
@@ -179,11 +180,11 @@ export class Grill {
 
   toggle() { this.set(!this.on); }
 
-  set(on) {
+  set(on, { silent = false } = {}) {
     if (on === this.on) return;
     this.on = on;
     this.burn = on ? G.burnSeconds : 0;
-    if (on) sfx.ignite(this.top);
+    if (on) { sfx.ignite(this.top); if (!silent) this.onLit?.(); }
     else sfx.lid(this.top, false);
     this.roar?.stop(); this.roar = on ? sfx.fire(this.top) : null;
   }
@@ -192,7 +193,8 @@ export class Grill {
     this.t += dt;
     if (this.on && (this.burn -= dt) <= 0) this.set(false); // burnt out
     this.k += Math.sign((this.on ? 1 : 0) - this.k) * Math.min(Math.abs((this.on ? 1 : 0) - this.k), dt * (this.on ? 0.8 : 0.5));
-    this.lidK += Math.sign((this.on ? 1 : 0) - this.lidK) * Math.min(Math.abs((this.on ? 1 : 0) - this.lidK), dt * 1.5);
+    const lidOpen = this.on || this.occupied?.(); // never close the lid through food (#708)
+    this.lidK += Math.sign((lidOpen ? 1 : 0) - this.lidK) * Math.min(Math.abs((lidOpen ? 1 : 0) - this.lidK), dt * 1.5);
     this.lid.rotation.x = this.lidK * this.lidK * (3 - 2 * this.lidK) * 1.9; // swings up and back
     const k = this.k, flick = 0.85 + 0.15 * Math.sin(this.t * 23) * Math.sin(this.t * 7.3);
     this.lamp.k = k * flick;
