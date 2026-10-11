@@ -2,6 +2,7 @@ import { windPlant, windMaterial } from './plantwind.js';
 import { MusicLoop } from './music.js';
 import { MUSIC } from './config.js';
 import * as THREE from 'three';
+import { woodMaterial } from './woodgrain.js';
 import { freeCanvasAfterUpload } from './lowmemory.js';
 import { sfx } from './audio.js';
 import { mergeStatic } from './merge.js';
@@ -517,7 +518,7 @@ function sidetable(item) {
   return g;
 }
 
-const oiledOak = new THREE.MeshStandardMaterial({ color: 0xc69c6d, roughness: 0.5 }); // oljebehandlad ek
+const oiledOak = woodMaterial(0xc69c6d, 0.5); // oljebehandlad ek
 
 /** ILVA Woodstock coffee table (#410, docs/soffbord-ilva-woodstock.jpg, COFFEE_TABLE): a soft rounded oak top (big corner
  * radii, long sides bulging a little, edges rounded so it looks thin), a thin apron set back under it, four round tapered
@@ -825,7 +826,7 @@ function bed(item) {
   return g;
 }
 
-const beech = new THREE.MeshStandardMaterial({ color: SKANSNAS.color, roughness: 0.55 }); // brown beech, table + chairs
+const beech = woodMaterial(SKANSNAS.color, 0.55); // brown beech, table + chairs
 
 /** Woven paper-cord seat texture (canvas): a basket weave in the light cord colour. */
 function cordTexture() {
@@ -3328,7 +3329,7 @@ function yucca(Y = YUCCA) {
 function secretary(item) {
   const g = new THREE.Group();
   const S = item, W = S.w, D = S.d, y0 = S.legH, yF = y0 + S.drawerH, yT = S.h - 0.035, slope = THREE.MathUtils.degToRad(S.slope);
-  const teak = new THREE.MeshStandardMaterial({ color: S.teak, roughness: 0.5 });
+  const teak = woodMaterial(S.teak, 0.5);
   const teakIn = new THREE.MeshStandardMaterial({ color: S.teakInside, roughness: 0.6 });
   const black = new THREE.MeshStandardMaterial({ color: 0x141415, roughness: 0.4, metalness: 0.5 });
   const M = { steel: new THREE.MeshStandardMaterial({ color: 0xc9ccd0, roughness: 0.3, metalness: 0.8 }), brass: new THREE.MeshStandardMaterial({ color: 0xb08a3e, roughness: 0.35, metalness: 0.8 }),

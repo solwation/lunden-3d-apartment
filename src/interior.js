@@ -14,6 +14,7 @@ import { Moccamaster } from './coffee.js';
 import { socketGeometry } from './sockets.js';
 import { mirrorMaterial, litMirrorMaterial, litEmissive, litReflect } from './mirror.js';
 import { addReflector } from './reflections.js';
+import { SPONGE, spongeMaterials } from './sponge.js';
 
 // Fixed interior from our material choices: fitted kitchen, laundry, bathroom fittings,
 // tiled floors and walls. Everything is merged into one mesh per material (few draw calls),
@@ -575,6 +576,14 @@ function buildKitchen(B, group, floor, y0, yC, handled, taps, appliances) {
     const sz = sinkC[1];
     const bottom = sinkBowl(B, sinkHole, top, K.sink.depth, M.steel, 'x1', yt);
     taps.push({ ...mixer(B, eastWall - 0.06, sz, top, [-1, 0], M.handle), basin: bottom, name: 'köksblandaren' });
+    // A small two-layer sponge beside the basin. Both pieces join the existing material batches.
+    const sx = sinkHole.x0 - SPONGE.width / 2 - 0.025;
+    const szp = sz + K.sink.w / 2 - SPONGE.depth / 2;
+    if (sx - SPONGE.width / 2 > eFront + 0.01) {
+      const spongeBox = (w, h, d, x, y, z) => new THREE.BoxGeometry(w, h, d).translate(x, y + h / 2, z);
+      B.add(spongeBox(SPONGE.width, SPONGE.scour, SPONGE.depth, sx, top, szp), spongeMaterials.scour);
+      B.add(spongeBox(SPONGE.width, SPONGE.foam, SPONGE.depth, sx, top + SPONGE.scour, szp), spongeMaterials.foam);
+    }
   }
   // Induction hob, centred on its cabinet
   if (hobCab) {

@@ -7,6 +7,7 @@ import { hallJacket, hallShoes } from './hallmodels.js';
 import { laundryClothes } from './laundrymodels.js';
 import { eggCarton, rawEgg, friedEgg } from './eggmodels.js';
 import { Contents, GlassLiquid } from './drinks.js';
+import { woodMaterial } from './woodgrain.js';
 
 // Models for the life simulator's things (#366): plain shapes of our own, no brands. Each builder returns
 // { object, show(item, items), anchors?, grip? }: `object` has its origin at the bottom centre and lies the way it rests
@@ -17,7 +18,7 @@ import { Contents, GlassLiquid } from './drinks.js';
 const std = (color, roughness = 0.6, extra = {}) => new THREE.MeshStandardMaterial({ color, roughness, ...extra });
 const M = {
   porcelain: std(0xf7f6f2, 0.2), rim: std(0xd9dde0, 0.25),
-  wood: std(0xc49a62, 0.7), woodEnd: std(0xa77c48, 0.75),
+  wood: woodMaterial(0xc49a62, 0.7), woodEnd: std(0xa77c48, 0.75),
   cucumber: std(0x2f5d2a, 0.45), cucumberIn: std(0xcfe3a6, 0.6), cucumberRim: std(0x3d6b31, 0.5),
   cheese: std(0xf0cf62, 0.55), rind: std(0xd9a73a, 0.6),
   foil: std(0xe9c75b, 0.35, { metalness: 0.35 }), butter: std(0xf7e39a, 0.5), lid: std(0xf4f1e6, 0.5),

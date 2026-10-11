@@ -14,7 +14,19 @@ import { FRIDGE_ALARM as AL, SCORE, COLD_DRAWERS as C } from './config.js';
 // (at most SCORE.penalties.fridgeMax of those); `paused` (main.js: the note on the freezer door is open) stops the timer.
 // A power cut (#612, `mains(false)`): the inner lamp and the liner's glow go dark, the door alarm is silent.
 
-const steel = new THREE.MeshStandardMaterial({ color: 0xc3c7ca, roughness: 0.32, metalness: 0.35 });
+function brushedSteel() {
+  const canvas = document.createElement('canvas'); canvas.width = 64; canvas.height = 128;
+  const ctx = canvas.getContext('2d');
+  for (let y = 0; y < canvas.height; y++) {
+    const v = 183 + Math.round(8 * Math.sin(y * Math.PI * 8 / 128) + 4 * Math.sin(y * Math.PI * 2 / 128));
+    ctx.fillStyle = `rgb(${v},${v},${v})`; ctx.fillRect(0, y, canvas.width, 1);
+  }
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping; tex.colorSpace = THREE.SRGBColorSpace;
+  tex.repeat.set(1, 3); tex.anisotropy = 4;
+  return new THREE.MeshStandardMaterial({ color: 0xc3c7ca, map: tex, roughness: 0.3, metalness: 0.45 });
+}
+const steel = brushedSteel();
 const steelDark = new THREE.MeshStandardMaterial({ color: 0x8f9497, roughness: 0.35, metalness: 0.35 });
 const fridgeLiner = new THREE.MeshStandardMaterial({ color: 0xf6f8f8, roughness: 0.4, emissive: 0xffffff, emissiveIntensity: 0.18 });
 const fridgeLamp = new THREE.MeshBasicMaterial({ color: 0xffffff });
@@ -150,8 +162,19 @@ export class Fridge {
     const dt = 0.055;
     this.size = { w, h, dt }; // the door (the TODO post-its, todo.js, #340)
     this.door.add(box(w, h - 0.01, dt, s * w / 2, h / 2, -dt / 2, steel));
-    this.door.add(box(w - 0.06, h - 0.1, 0.004, s * w / 2, h / 2, -0.002 + 0.002, liner)); // inner face
-    this.door.add(box(0.02, 0.95, 0.03, s * (w - 0.05), 1.22, -dt - 0.015, steelDark));     // handle
+    this.door.add(box(w - 0.025, h - 0.035, 0.008, s * w / 2, h / 2, 0.002, steelDark, 0.01)); // soft rubber seal
+    this.door.add(box(w - 0.055, h - 0.07, 0.004, s * w / 2, h / 2, 0.008, liner, 0.008)); // inner face
+    // Rounded vertical bar handle with two short mounting posts.
+    const handleX = s * (w - 0.05), handleY = Math.min(1.22, h * 0.56);
+    const handleParts = [new THREE.CapsuleGeometry(0.012, 0.91, 4, 8)];
+    handleParts[0].translate(handleX, handleY, -dt - 0.017);
+    for (const y of [handleY - 0.4, handleY + 0.4]) {
+      const mount = new THREE.CylinderGeometry(0.014, 0.014, 0.022, 10);
+      mount.applyMatrix4(new THREE.Matrix4().makeRotationX(Math.PI / 2).setPosition(handleX, y, -dt - 0.006));
+      handleParts.push(mount);
+    }
+    const handle = new THREE.Mesh(mergeGeometries(handleParts), steelDark);
+    handleParts.forEach((part) => part.dispose()); handle.castShadow = true; this.door.add(handle);
     if (freezer) this.door.add(box(w - 0.08, h - 0.16, 0.012, s * w / 2, h / 2, 0.008, liner)); // the flat inner door inside its gasket
     else {
       for (const y of [0.4, 0.85, 1.3]) this.door.add(box(w - 0.1, 0.08, 0.07, s * w / 2, y, 0.035, glass)); // door bins
