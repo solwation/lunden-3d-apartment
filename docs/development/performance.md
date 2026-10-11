@@ -374,6 +374,12 @@ not iPhone times; counts are):
 SwiftShader run, complete warm-up in the phone profile, sliced: `done` after 554 s (every frame is seconds under SwiftShader;
 on a phone a slice is a normal frame plus a few ms), 262 programs (old: 242), 66 draw slices, `hidden textures left for later`.
 
+**Interplay with #668 (`prepare()`):** the lamp washes' periodic patch (every 120 frames) recompiles every material made since
+the build under a new key; a sliced warm-up lasts hundreds of frames, so `startCompile` and `startDraw` call `prepare()` before
+each stage (not only before the first compile). Programs after a full sliced run 262 vs 242 unsliced, the difference probably being
+such late recompiles (the "298 → 299 late program" in the reports is the same kind). Materials made after `done` still compile
+(and get patched) on first sight.
+
 **Still open (not done, no measurement possible without a device):** the *first* real frame compiles ~70 programs and uploads
 ~2700 buffers / ~100 textures before the warm-up starts (frame 0: 71 programs, 14 s under SwiftShader); materials made after the
 start (cups, cat coats, new life items) still compile on first sight; `worst`/`warm` in the next iPhone report will say which
