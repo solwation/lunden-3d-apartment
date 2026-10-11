@@ -59,6 +59,17 @@ function bar(x, pts, w, t) {
   }
   return out;
 }
+/** As bar(), in the x-y plane at z ([x, y] points), `w` wide in that plane, `t` thick in z. */
+function barX(z, pts, w, t) {
+  const out = [];
+  for (let i = 1; i < pts.length; i++) {
+    const [x0, y0] = pts[i - 1], [x1, y1] = pts[i], len = Math.hypot(x1 - x0, y1 - y0) + w * 0.6;
+    out.push(new THREE.BoxGeometry(len, w, t).rotateZ(Math.atan2(y1 - y0, x1 - x0)).translate((x0 + x1) / 2, (y0 + y1) / 2, z));
+  }
+  return out;
+}
+/** A geometry painted one colour (a `color` attribute) for the vertex-coloured batch (bikes, toys). */
+const tint = (g, hex) => { const c = new THREE.Color(hex), n = g.attributes.position.count; g.setAttribute('color', new THREE.Float32BufferAttribute(new Float32Array(n * 3).map((_, i) => [c.r, c.g, c.b][i % 3]), 3)); return g; };
 /** A slat with eased edges, `len` along x, `w` wide (z before `rot`), `t` thick, turned `rot` rad about x, centred at (0, y, z). */
 const slat = (len, w, t, y, z, rot = 0) => new RoundedBoxGeometry(len, t, w, 1, Math.min(0.006, t / 2.2)).rotateX(rot).translate(0, y, z);
 
@@ -114,6 +125,19 @@ function grain(g, i) {
     const ua = plane.includes(long) ? long : plane[0], va = plane.find((q) => q !== ua);
     uv.setXY(j, a[ua] + off * 3, a[va] / 0.2 + off);
     col.set([k, k * (0.97 + 0.03 * off), k * (0.93 + 0.07 * off)], j * 3);
+  }
+  g.setAttribute('color', new THREE.BufferAttribute(col, 3));
+  return g;
+}
+
+/** Sand (#681): a mottled tone per vertex from its position, no texture. */
+function mottle(g) {
+  g = g.index ? g.toNonIndexed() : g;
+  const p = g.attributes.position, col = new Float32Array(p.count * 3);
+  for (let j = 0; j < p.count; j++) {
+    const x = p.getX(j), z = p.getZ(j);
+    const k = 0.9 + 0.06 * Math.sin(x * 13 + z * 7) * Math.sin(z * 11 - x * 5) + 0.04 * Math.sin(x * 41 + 1) * Math.sin(z * 37);
+    col.set([k, k, k * 0.97], j * 3);
   }
   g.setAttribute('color', new THREE.BufferAttribute(col, 3));
   return g;
@@ -206,12 +230,40 @@ export function buildCourtyard() {
     segments.push(...rectSegs(tx - hw, tx + hw, z - hd, z + hd));
     group.add(surfaceBox({ x0: tx - hw + 0.03, x1: tx + hw - 0.03, z0: z - hd + 0.03, z1: z + hd - 0.03, y: T.h }, surfaces));
   }
-  // sandboxes with a wooden frame, a few toys of colour
-  for (const s of C.sandboxes) {
-    geos.sand.push(plate(s, 0.12));
+  // sandboxes (#681): a board frame with a broad top board to sit on and a seat across each corner, gently heaped sand
+  // (a hill, a dug pit, piled against the boards; vertex colours in the merge), a sand pie, a bucket, a spade and a mould
+  const toys = [];
+  C.sandboxes.forEach((s, si) => {
+    const W = s.x1 - s.x0, Dz = s.z1 - s.z0, hill = [s.x0 + W * (si ? 0.65 : 0.3), s.z0 + Dz * 0.35], pit = [s.x0 + W * (si ? 0.3 : 0.68), s.z0 + Dz * 0.66];
+    const bump = (x, z, c, r) => Math.exp(-((x - c[0]) ** 2 + (z - c[1]) ** 2) / (r * r));
+    const sandY = (x, z) => {
+      const e = Math.max(0, Math.min(x - s.x0 - 0.1, s.x1 - 0.1 - x, z - s.z0 - 0.1, s.z1 - 0.1 - z)); // from the boards
+      return 0.13 + 0.01 * Math.sin(x * 9.1 + z * 3.3) * Math.sin(z * 7.7 - x * 2.1) + 0.07 * bump(x, z, hill, 0.35) - 0.04 * bump(x, z, pit, 0.25) + 0.025 * Math.max(0, 1 - e / 0.15);
+    };
+    const sand = new THREE.PlaneGeometry(W - 0.2, Dz - 0.2, Math.ceil(W / 0.1), Math.ceil(Dz / 0.1)).rotateX(-Math.PI / 2).translate((s.x0 + s.x1) / 2, 0, (s.z0 + s.z1) / 2);
+    const p = sand.attributes.position, uv = sand.attributes.uv;
+    for (let i = 0; i < p.count; i++) { p.setY(i, sandY(p.getX(i), p.getZ(i))); uv.setXY(i, p.getX(i), p.getZ(i)); }
+    sand.computeVertexNormals();
+    geos.sand.push(sand);
     geos.wood.push(box(s.x0, s.x1, 0, 0.2, s.z0, s.z0 + 0.1), box(s.x0, s.x1, 0, 0.2, s.z1 - 0.1, s.z1),
       box(s.x0, s.x0 + 0.1, 0, 0.2, s.z0, s.z1), box(s.x1 - 0.1, s.x1, 0, 0.2, s.z0, s.z1));
-  }
+    const top = (x0, x1, z0, z1) => new RoundedBoxGeometry(x1 - x0, 0.03, z1 - z0, 1, 0.008).translate((x0 + x1) / 2, 0.215, (z0 + z1) / 2);
+    geos.wood.push(top(s.x0 - 0.01, s.x1 + 0.01, s.z0 - 0.01, s.z0 + 0.16), top(s.x0 - 0.01, s.x1 + 0.01, s.z1 - 0.16, s.z1 + 0.01),
+      top(s.x0 - 0.01, s.x0 + 0.16, s.z0 + 0.16, s.z1 - 0.16), top(s.x1 - 0.16, s.x1 + 0.01, s.z0 + 0.16, s.z1 - 0.16));
+    for (const [X, Z, dx, dz] of [[s.x0, s.z0, 1, 1], [s.x1, s.z0, -1, 1], [s.x1, s.z1, -1, -1], [s.x0, s.z1, 1, -1]]) { // corner seats
+      const t = new THREE.Shape([new THREE.Vector2(0, 0), new THREE.Vector2(dx * 0.42, 0), new THREE.Vector2(0, dz * 0.42)]);
+      geos.wood.push(new THREE.ExtrudeGeometry(t, { depth: 0.03, bevelEnabled: false }).rotateX(Math.PI / 2).translate(X, 0.26, Z));
+    }
+    // a sand pie by the hill, a bucket with its handle, a spade lying on the sand, a mould
+    const at = (u, v) => [s.x0 + W * u, s.z0 + Dz * v], [px, pz] = at(0.45, 0.25), [bx, bz] = at(si ? 0.25 : 0.62, 0.3), [kx, kz] = at(0.5, 0.55), [mx, mz] = at(si ? 0.7 : 0.25, 0.7);
+    const toy = si ? [0x2f7fd1, 0xf2c230] : [0xe03a2c, 0x2f7fd1];
+    geos.sand.push(new THREE.CylinderGeometry(0.07, 0.085, 0.1, 14).translate(px, sandY(px, pz) + 0.045, pz));
+    toys.push(tint(new THREE.LatheGeometry([[0.001, 0], [0.075, 0], [0.095, 0.15], [0.088, 0.15], [0.07, 0.006], [0.001, 0.006]].map(([r, y]) => new THREE.Vector2(r, y)), 16).translate(bx, sandY(bx, bz) - 0.01, bz), toy[0]),
+      tint(new THREE.TorusGeometry(0.092, 0.004, 4, 12, Math.PI).translate(bx, sandY(bx, bz) + 0.14, bz), 0x222222),
+      tint(new THREE.BoxGeometry(0.26, 0.018, 0.022).rotateY(0.6).translate(kx, sandY(kx, kz) + 0.012, kz), toy[1]), // spade: shaft …
+      tint(new THREE.BoxGeometry(0.1, 0.01, 0.12).rotateY(0.6).translate(kx + Math.cos(0.6) * 0.17, sandY(kx, kz) + 0.01, kz - Math.sin(0.6) * 0.17), toy[1]), // … and blade
+      tint(new THREE.CylinderGeometry(0.045, 0.06, 0.06, 10).translate(mx, sandY(mx, mz) + 0.025, mz), 0x48a35a));
+  });
   // the boule court: fine gravel with a low timber edge
   {
     const b = C.boule;
@@ -239,20 +291,84 @@ export function buildCourtyard() {
   }
   {
     const P = C.playhouse, cx = (P.x0 + P.x1) / 2, cz = (P.z0 + P.z1) / 2, w = P.x1 - P.x0, d = P.z1 - P.z0;
-    paint.push(box(P.x0, P.x1, 0, P.h, P.z0, P.z1)); // walls (falu red), a door and a window in white trim, a gable roof
-    geos.pergola.push(box(cx - 0.3, cx + 0.3, 0.05, 1.0, P.z0 - 0.02, P.z0), box(P.x0 + 0.25, P.x0 + 0.65, 0.6, 1.0, P.z0 - 0.02, P.z0));
-    const run = w / 2 + 0.15, rise = P.ridge - P.h, a = Math.atan2(rise, run);
-    for (const s of [-1, 1]) { // two roof slabs, each rising from its eave to the ridge
-      geos.metal.push(new THREE.BoxGeometry(Math.hypot(run, rise), 0.05, d + 0.3).rotateZ(-s * a).translate(cx + s * run / 2, (P.h + P.ridge) / 2, cz));
+    // #681: falu-red lap boards on a timber sill, white corner boards, a framed door with a handle, two windows with
+    // sash bars and depth, a black felt roof with battens, a 15 cm eave, white barge boards and a ridge cap, a step
+    paint.push(box(P.x0, P.x1, 0.1, P.h, P.z0, P.z1));
+    geos.wood.push(box(P.x0 - 0.02, P.x1 + 0.02, 0, 0.1, P.z0 - 0.02, P.z1 + 0.02), box(cx - 0.36, cx + 0.36, 0, 0.09, P.z0 - 0.34, P.z0 - 0.03));
+    const lap = 0.14, pitch = 0.12;
+    for (let y = 0.1; y < P.h - 0.01; y += pitch) { // each 13.5 cm board leans out at its foot: a shadow line under every one
+      const yc = y + 0.07;
+      paint.push(new THREE.BoxGeometry(w + 0.03, 0.135, 0.016).rotateX(lap).translate(cx, yc, P.z0 - 0.008), new THREE.BoxGeometry(w + 0.03, 0.135, 0.016).rotateX(-lap).translate(cx, yc, P.z1 + 0.008),
+        new THREE.BoxGeometry(0.016, 0.135, d + 0.03).rotateZ(-lap).translate(P.x0 - 0.008, yc, cz), new THREE.BoxGeometry(0.016, 0.135, d + 0.03).rotateZ(lap).translate(P.x1 + 0.008, yc, cz));
     }
-    const gable = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(P.x0, P.h, 0), new THREE.Vector3(P.x1, P.h, 0), new THREE.Vector3(cx, P.ridge, 0)]);
-    gable.setIndex([0, 1, 2, 2, 1, 0]); gable.computeVertexNormals();
-    gable.setAttribute('uv', new THREE.Float32BufferAttribute(new Float32Array(6), 2)); // (merges with the boxes)
-    for (const z of [P.z0 + 0.001, P.z1 - 0.001]) paint.push(gable.clone().translate(0, 0, z));
+    const tri = new THREE.Shape([new THREE.Vector2(P.x0 - 0.02, P.h), new THREE.Vector2(P.x1 + 0.02, P.h), new THREE.Vector2(cx, P.ridge + 0.02)]);
+    for (const z of [P.z0 - 0.016, P.z1]) paint.push(new THREE.ExtrudeGeometry(tri, { depth: 0.016, bevelEnabled: false }).translate(0, 0, z)); // the gables
+    for (let y = P.h; y < P.ridge - 0.2; y += pitch) { // and boards up them
+      const yc = y + 0.07, hw = (w / 2) * (P.ridge - yc - 0.07) / (P.ridge - P.h); // (inside the triangle)
+      paint.push(new THREE.BoxGeometry(2 * hw, 0.135, 0.016).rotateX(lap).translate(cx, yc, P.z0 - 0.016), new THREE.BoxGeometry(2 * hw, 0.135, 0.016).rotateX(-lap).translate(cx, yc, P.z1 + 0.016));
+    }
+    for (let y = 0.1 + pitch; y < P.ridge - 0.15; y += pitch) { // the boards' joints: thin dark lines
+      const hw = y < P.h ? w / 2 + 0.01 : (w / 2) * (P.ridge - y) / (P.ridge - P.h) - 0.02, gz = y < P.h ? 0 : 0.008; // (gable boards sit further out)
+      geos.metal.push(box(cx - hw, cx + hw, y - 0.0025, y + 0.0025, P.z0 - 0.03 - gz, P.z0 - 0.02 - gz), box(cx - hw, cx + hw, y - 0.0025, y + 0.0025, P.z1 + 0.02 + gz, P.z1 + 0.03 + gz));
+      if (y < P.h) for (const [x0, x1] of [[P.x0 - 0.03, P.x0 - 0.02], [P.x1 + 0.02, P.x1 + 0.03]]) geos.metal.push(box(x0, x1, y - 0.0025, y + 0.0025, P.z0 - 0.01, P.z1 + 0.01));
+    }
+    const ub = (a, b, y0, y1, c, e) => box(Math.min(a, b), Math.max(a, b), y0, y1, Math.min(c, e), Math.max(c, e)); // (unordered)
+    for (const [X, Z, sx, sz] of [[P.x0, P.z0, -1, -1], [P.x1, P.z0, 1, -1], [P.x1, P.z1, 1, 1], [P.x0, P.z1, -1, 1]]) // corner boards
+      geos.pergola.push(ub(X + sx * 0.052, X - sx * 0.07, 0.1, P.h + 0.02, Z + sz * 0.026, Z + sz * 0.05), ub(X + sx * 0.026, X + sx * 0.05, 0.1, P.h + 0.02, Z + sz * 0.052, Z - sz * 0.07));
+    // a box on a wall (u along it, y, o out from it) → world: the north wall (door, window) and the east wall (window)
+    const onN = (u0, u1, y0, y1, o0, o1) => box(u0, u1, y0, y1, P.z0 - o1, P.z0 - o0), onE = (u0, u1, y0, y1, o0, o1) => box(P.x1 + o0, P.x1 + o1, y0, y1, u0, u1);
+    const win = (f, u0, u1, y0, y1) => {
+      const um = (u0 + u1) / 2, ym = (y0 + y1) / 2;
+      geos.metal.push(f(u0 + 0.03, u1 - 0.03, y0 + 0.03, y1 - 0.03, 0.03, 0.037)); // the pane, set back in the frame
+      geos.pergola.push(f(u0, u1, y0, y0 + 0.05, 0.025, 0.072), f(u0, u1, y1 - 0.05, y1, 0.025, 0.072), f(u0, u0 + 0.05, y0, y1, 0.025, 0.072), f(u1 - 0.05, u1, y0, y1, 0.025, 0.072),
+        f(um - 0.012, um + 0.012, y0, y1, 0.037, 0.056), f(u0, u1, ym - 0.012, ym + 0.012, 0.037, 0.056), f(u0 - 0.03, u1 + 0.03, y0 - 0.035, y0, 0.025, 0.105)); // frame, sash bars, sill
+    };
+    win(onN, P.x0 + 0.22, P.x0 + 0.68, 0.58, 1.02);
+    win(onE, cz - 0.24, cz + 0.24, 0.58, 1.02);
+    geos.pergola.push(onN(cx - 0.37, cx - 0.31, 0.1, 1.1, 0.025, 0.068), onN(cx + 0.31, cx + 0.37, 0.1, 1.1, 0.025, 0.068), onN(cx - 0.37, cx + 0.37, 1.04, 1.1, 0.025, 0.068)); // door trim
+    paint.push(onN(cx - 0.31, cx + 0.31, 0.1, 1.04, 0.025, 0.05)); // the door: boards with dark joints, a handle
+    geos.metal.push(...[-0.155, 0, 0.155].map((u) => onN(cx + u - 0.003, cx + u + 0.003, 0.12, 1.02, 0.049, 0.052)), onN(cx + 0.2, cx + 0.24, 0.56, 0.68, 0.05, 0.06), onN(cx + 0.17, cx + 0.25, 0.62, 0.64, 0.06, 0.095));
+    const run = w / 2 + 0.15, rise = P.ridge - P.h, a = Math.atan2(rise, run), hyp = Math.hypot(run, rise);
+    for (const s of [-1, 1]) { // two roof slabs, each rising from its eave to the ridge; battens down the felt; barge boards
+      const on = (g, z) => g.rotateZ(-s * a).translate(cx + s * run / 2, (P.h + P.ridge) / 2, z);
+      geos.metal.push(on(new THREE.BoxGeometry(hyp, 0.05, d + 0.3), cz));
+      for (let k = 0; k <= 4; k++) geos.metal.push(on(new THREE.BoxGeometry(hyp, 0.025, 0.035).translate(0, 0.037, 0), P.z0 - 0.12 + k * (d + 0.24) / 4));
+      for (const z of [P.z0 - 0.165, P.z1 + 0.165]) geos.pergola.push(on(new THREE.BoxGeometry(hyp + 0.02, 0.13, 0.025).translate(0, -0.03, 0), z));
+    }
+    geos.metal.push(new THREE.BoxGeometry(0.12, 0.04, d + 0.32).translate(cx, P.ridge + 0.04, cz)); // the ridge cap
     segments.push(...rectSegs(P.x0, P.x1, P.z0, P.z1));
   }
+  // #681: a wooden A-frame swing with two rubber seats on chains, and a little slide (deck, rails, ladder, a red chute)
   {
-    const B = C.bikeRack, tint = (g, hex) => { const c = new THREE.Color(hex), n = g.attributes.position.count; g.setAttribute('color', new THREE.Float32BufferAttribute(new Float32Array(n * 3).map((_, i) => [c.r, c.g, c.b][i % 3]), 3)); return g; };
+    const S = C.swing, y = S.h;
+    geos.wood.push(new RoundedBoxGeometry(S.len + 0.2, 0.12, 0.1, 1, 0.01).translate(S.x, y + 0.03, S.z)); // the top beam
+    for (const x of [S.x - S.len / 2 + 0.05, S.x + S.len / 2 - 0.05]) {
+      for (const s of [-1, 1]) geos.wood.push(...bar(x, [[S.z + s * S.spread, 0], [S.z + s * 0.04, y]], 0.09, 0.09)); // the A's legs
+      geos.wood.push(...bar(x, [[S.z - S.spread * 0.6, 0.85], [S.z + S.spread * 0.6, 0.85]], 0.07, 0.05)); // its brace
+      segments.push(...rectSegs(x - 0.1, x + 0.1, S.z - S.spread - 0.06, S.z + S.spread + 0.06));
+    }
+    for (const sx of [S.x - 0.55, S.x + 0.55]) {
+      toys.push(tint(new RoundedBoxGeometry(0.44, 0.03, 0.17, 1, 0.012).translate(sx, 0.43, S.z), 0x1e1e1e));
+      for (const dx of [-0.2, 0.2]) geos.metal.push(box(sx + dx - 0.005, sx + dx + 0.005, 0.43, y - 0.03, S.z - 0.005, S.z + 0.005), box(sx + dx - 0.02, sx + dx + 0.02, y - 0.05, y - 0.02, S.z - 0.06, S.z + 0.06));
+    }
+    segments.push(...rectSegs(S.x - 0.85, S.x + 0.85, S.z - 0.2, S.z + 0.2)); // (the seats)
+  }
+  {
+    const L = C.slide, h = L.h, x = L.x, z = L.z, drop = h - 0.32, run = Math.sqrt(L.len * L.len - drop * drop), xe = x + 0.28 + run;
+    geos.wood.push(new RoundedBoxGeometry(0.62, 0.045, 0.62, 1, 0.008).translate(x, h - 0.022, z)); // the deck
+    for (const [dx, dz] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) geos.wood.push(box(x + dx * 0.27 - 0.035, x + dx * 0.27 + 0.035, 0, h + 0.62, z + dz * 0.27 - 0.035, z + dz * 0.27 + 0.035)); // posts
+    for (const s of [-1, 1]) geos.wood.push(box(x - 0.3, x + 0.3, h + 0.52, h + 0.58, z + s * 0.27 - 0.025, z + s * 0.27 + 0.025), box(x - 0.3, x + 0.3, h + 0.22, h + 0.27, z + s * 0.27 - 0.02, z + s * 0.27 + 0.02)); // rails
+    for (const s of [-1, 1]) geos.wood.push(...barX(z + s * 0.2, [[x - 0.75, 0], [x - 0.3, h + 0.05]], 0.07, 0.04)); // the ladder
+    for (let k = 1; k <= 4; k++) { const u = k / 5; geos.wood.push(box(x - 0.75 + 0.45 * u - 0.03, x - 0.75 + 0.45 * u + 0.03, u * (h + 0.05) - 0.015, u * (h + 0.05) + 0.015, z - 0.2, z + 0.2)); }
+    const path = [[x + 0.28, h], [xe, 0.32], [xe + 0.38, 0.28]];
+    toys.push(...barX(z, path, 0.02, 0.46).map((g) => tint(g, L.color)));
+    for (const s of [-1, 1]) toys.push(...barX(z + s * 0.235, path.map(([px, py]) => [px, py + 0.06]), 0.14, 0.022).map((g) => tint(g, L.color)));
+    const xm = x + 0.28 + run / 2, ym = (h + 0.32) / 2 - 0.02; // legs under the chute's middle and its run-out
+    for (const s of [-1, 1]) geos.wood.push(box(xe + 0.26, xe + 0.32, 0, 0.27, z + s * 0.17 - 0.03, z + s * 0.17 + 0.03), box(xm - 0.03, xm + 0.03, 0, ym, z + s * 0.17 - 0.03, z + s * 0.17 + 0.03));
+    segments.push(...rectSegs(x - 0.8, xe + 0.4, z - 0.32, z + 0.32));
+  }
+  {
+    const B = C.bikeRack; // (tint: module level since #681)
     const [bikeFrame, bikeTyres, bikeMetal, spokeGeo] = bikeGeometry(), stall = standGeometry();
     const len = (B.n - 1) * B.gap;
     geos.metal.push(new THREE.CylinderGeometry(0.014, 0.014, len + 0.4, 8).rotateX(Math.PI / 2).translate(B.x, 0.03, B.z0 + len / 2)); // galvanized rail
@@ -270,7 +386,7 @@ export function buildCourtyard() {
   const mats = {
     paving: new THREE.MeshStandardMaterial({ map: paveTex, roughness: 0.95 }),
     gravel: new THREE.MeshStandardMaterial({ color: 0xcfc6b2, roughness: 1 }),
-    sand: new THREE.MeshStandardMaterial({ color: 0xe0cfa0, roughness: 1 }),
+    sand: new THREE.MeshStandardMaterial({ color: 0xe0cfa0, vertexColors: true, roughness: 1 }), // mottled (#681)
     wood: new THREE.MeshStandardMaterial({ color: 0x8a6544, map: woodGrain(), vertexColors: true, roughness: 0.8 }), // grain + a tone per board (#682)
     metal: new THREE.MeshStandardMaterial({ color: 0x23262a, roughness: 0.5, metalness: 0.5 }),
     soil: new THREE.MeshStandardMaterial({ color: 0x3e2f24, roughness: 1 }),
@@ -283,14 +399,14 @@ export function buildCourtyard() {
   registerSnow(mats.sand, SEASON.snow.ground);
   for (const [k, list] of Object.entries(geos)) {
     if (!list.length) continue;
-    const mesh = new THREE.Mesh(mergeGeometries(list.map((g, i) => (k === 'wood' ? grain(g, i) : g.index ? g.toNonIndexed() : g))), mats[k]);
+    const mesh = new THREE.Mesh(mergeGeometries(list.map((g, i) => (k === 'wood' ? grain(g, i) : k === 'sand' ? mottle(g) : g.index ? g.toNonIndexed() : g))), mats[k]);
     mesh.castShadow = k === 'wood' || k === 'metal';
     mesh.receiveShadow = true;
     group.add(mesh);
   }
   const add = (list, mat, shadow = true) => { const mesh = new THREE.Mesh(mergeGeometries(list.map((g) => (g.index ? g.toNonIndexed() : g))), mat); mesh.castShadow = shadow; mesh.receiveShadow = true; group.add(mesh); };
   add(paint, new THREE.MeshStandardMaterial({ color: C.playhouse.color, roughness: 0.85, side: THREE.DoubleSide }));
-  add(bikes, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.4, metalness: 0.3 }));
+  add([...bikes, ...toys], new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.4, metalness: 0.3 })); // + the playground's plastic (#681)
   if (bikeSpokes.length) {
     const spokes = new THREE.Mesh(mergeGeometries(bikeSpokes.map((g) => (g.index ? g.toNonIndexed() : g))), new THREE.MeshStandardMaterial({ vertexColors: true, alphaMap: bikeSpokeTexture(), alphaTest: 0.35, side: THREE.DoubleSide, metalness: 0.35, roughness: 0.5 }));
     spokes.castShadow = false; spokes.receiveShadow = false; group.add(spokes);

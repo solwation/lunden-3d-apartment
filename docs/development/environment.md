@@ -20,6 +20,13 @@ src/courtyard.js       the courtyard on the garage box (COURTYARD): walks, pergo
                        table is six planks and its benches three slats each on steel trestles every ~1.6 m. All timber shares a
                        256 × 64 grain texture (`woodGrain`) with box-projected UVs along each board and a tone per board
                        (`grain`, vertex colours) — still one wood and one metal batch; seats, spots and collision unchanged
+                       #681: the playground — the playhouse has falu-red lap boards (paint boxes tilted out at the foot, also up the
+                       gables), a timber sill and door step, white corner boards, a framed board door with a handle, two windows with
+                       sash bars, sill and a set-back pane, a felt roof with battens, ridge cap, white barge boards and a 15 cm eave;
+                       the sandboxes have broad top boards, a triangular seat in each corner and heaped sand (hill, pit, piled at the
+                       boards; the sand batch is mottled by vertex colour, `mottle`, no texture) with a sand pie, bucket, spade and
+                       mould (vertex-coloured plastic in the bikes' batch, `tint`); a wooden A-frame swing (COURTYARD.swing) and a
+                       little slide (COURTYARD.slide) — equipment, places and sizes *guess*. Swing legs / seats and the slide collide
                        #453: no bench within 1 m of a way in at the ground (surroundings.js `groundWaysIn`: the loggias' parapet
                        openings, the entrance recesses; resttest checks); Hus A's two north benches stand between loggia and entrance
                        #637, #638, #639: Hus A's, B's and C's main entrance recesses are `walkIn` (SITE.blocks; A / B face 'n', C face 'e'): a real door into the stair core (corehouse.js, architecture.md)

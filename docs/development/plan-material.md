@@ -124,7 +124,7 @@ material/              screenshots of our choices in Peab's option portal (local
   to Hus A's west façade, a little square at the edge between B and A; along Hus A's north side to the east stair;
   the walk between Hus C and the courtyard with a branch to C's entrance), lawns round the tree squares and gravel
   only round the playground and the boule strip, the pergola with a dining table, a grill, a sandbox, a boule
-  court (not on the plan: guess), benches and tree squares; south of Hus C a second pergola, a sandbox and
+  court (not on the plan: guess), benches and tree squares, a swing and a slide on the playground's gravel (#681: models, places and sizes guess); south of Hus C a second pergola, a sandbox and
   four odlingslådor; the trees between A and B on the lower green. #355: the whole block is walkable (`OUTDOOR`
   x −78.5…27.5, z −14…64: the car park, Karpvägen and the garage drive, the park level round Hus B / A, Sankt Lars väg's
   east leg, through the portik); Hus L's row (`husLLayout`, open at the portik), the Å-husen's outlines with their
