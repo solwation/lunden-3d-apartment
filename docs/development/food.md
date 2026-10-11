@@ -40,6 +40,8 @@ src/chicken.js         #708: whole fridge chicken cooks only on the existing cou
                        Events chickenPlaced/chickenTaken/grilled/chickenBurnt/chickenEaten/chickenReturnedHome carry
                        stable item.id/type, machine.cook/cooked/burnt, state and (where relevant) surface; pan refusal is explicit.
                        tools/grillchickentest.html: bounded actual Chicken/Grill/Pan/Life fixture + raw/golden/burnt images.
+                       #717: the grill E helper stops at the cooking grate so real food meshes own pickup ray hits.
+                       tools/grillinteractiontest.html checks actual main raycast/HUD, desktop E, touch and +1 per eaten piece.
 src/hood.js            the cooker hood (#194, `world.hood`, in world.lids): E runs the fan (whoosh, green LED; its light is a
                        separate button = its own lamp, #221 — the fan does not light it, like a real hood) and
                        draws the chicken's smoke up into it; the smoke alarm in the kitchen ceiling (SMOKE_ALARM) beeps
@@ -150,3 +152,17 @@ tools/toastertest.html headless test (#401): the toaster in its shut drawer is b
 
 
 #708 validation (2026-10-11): `tools/grillchickentest.html` passed 28 bounded assertions using the actual Chicken, Grill, Pan, Life and stats modules on base `4963cc0`; console/page errors were empty. It covers explicit pan refusal/hob non-cooking, grill-only progress and pause, exact +35 once with badge, golden/burnt domain events, raw/golden/burnt round-trips, late extra registration, off-grill pose, eating, F preservation, and silent restoration. Raw/golden/burnt WebGL captures show the actual occupied grill briefly extinguished for visibility. Final base `2587774` preserves #712 counter reset and #695 fridge/culling changes; the exported chicken model and tested cooking classes were unchanged upstream. Main focus/restore hooks were reviewed and syntax checked; no full apartment startup or broad cooking suite was run.
+
+#717 verification (2026-10-11, runtime base `580ecf7`): 24 actual-main browser assertions passed. The test temporarily
+recreates the old 1.1 m E box in the same loaded scene: its nearest production raycast hit is the grill; the corrected
+helper ending at the 0.65 m grate selects the golden chicken. Actual mouse pointer lock/keyboard E and touch action
+handlers cover empty-grill lighting, raw placement, golden pickup, floor placement, exposed-leg breakoff and two bites.
+The main onCooked path awards +35 once; completing an eaten piece awards the existing +1 with actual score and badge
+feedback, while the first bite, saved-state restoration and F do not duplicate it. Eating points/config are unchanged.
+The test aims at the exposed distal bone rather than an occluded thigh center. Desktop/touch pickup and eating HUD
+screenshots were reviewed; the grill was extinguished for readable food, and the touch capture waits for fullscreen resize.
+No page/shader errors were recorded. The animation loop is stopped for bounded manual steps; real frames are rendered
+at pixel ratio 1 (initial backbuffer 640×420), with the headless default warm-up skip. No broad suite/performance claim.
+`tools/grillinteractiontest.cjs` drives the HTML wrapper (Playwright module/Chrome path via env, dev server URL argument).
+Final base `a555dfb` preserves unrelated context-restore probe, combat-HUD and outdoor foliage updates; relevant cooking/focus classes
+were unchanged upstream and final source syntax/diff checks pass.

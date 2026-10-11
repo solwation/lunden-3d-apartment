@@ -1,0 +1,57 @@
+<!doctype html><html lang="sv"><meta charset="utf-8"><title>Actual grill interaction #717</title><link rel="icon" href="data:,">
+<pre id="out">running…</pre><iframe id="game" width="900" height="600" src="../index.html?life&shot"></iframe>
+<script type="module">
+const frame=document.querySelector('#game'),out=document.querySelector('#out');const wait=ms=>new Promise(r=>setTimeout(r,ms));
+const stage=s=>{window.grillStage=s;console.log('GRILL_STAGE '+s);};
+await new Promise(r=>frame.addEventListener('load',r,{once:true}));const w=frame.contentWindow,d=frame.contentDocument;
+stage('iframe loaded');while(!w.__app)await wait(100);stage('app ready');
+const A=w.__app,{Vector3,BoxGeometry}=await w.eval("import('three')");
+window.run717=async()=>{
+const lines=[];let pass=true;const check=(ok,name)=>{lines.push(`${ok?'PASS':'FAIL'} ${name}`);pass&&=!!ok;console.log(lines.at(-1));};
+try{
+const bird=A.chicken,grill=A.grill,button=d.querySelector('#action'),prompt=d.querySelector('#prompt');
+const bodyPoint=()=>bird.body[1].getWorldPosition(new Vector3());
+const origin=grill.top.clone().add(new Vector3(0,0,1.35));
+const aim=(p,from=origin)=>{A.player.spawn(from.x,from.z,0);A.step(0);A.scene.updateMatrixWorld(true);A.camera.lookAt(p);A.camera.updateMatrixWorld(true);A.step(0);return A.focus().focused;};
+const key=()=>{d.dispatchEvent(new w.KeyboardEvent('keydown',{code:'KeyE',bubbles:true}));d.dispatchEvent(new w.KeyboardEvent('keyup',{code:'KeyE',bubbles:true}));};
+const heat=seconds=>{for(let t=0;t<seconds-1e-6;t+=.1){bird.update(Math.min(.1,seconds-t));grill.update(Math.min(.1,seconds-t));}};
+check(d.pointerLockElement===A.renderer.domElement&&!A.touch.enabled,'real desktop mouse start acquired pointer lock');
+let focused=aim(grill.top.clone().setY(.4));check(focused===grill&&/tänd/i.test(prompt.textContent),'actual empty grill raycast/HUD offers lighting');key();check(grill.on,'desktop E lights existing grill');
+bird.take();focused=aim(grill.top.clone().setY(.4));check(focused?.kind==='grillChicken','actual held raw bird focus offers grill placement');key();check(bird.inGrill&&!A.heldItem(),'desktop E places raw bird through production use/focus');
+const cookScore=A.totalScore();heat(10.1);check(bird.done&&bird.rewarded&&(A.stats.grilledChicken??0)===1&&A.totalScore()-cookScore===35,'actual main onCooked awards 35 once');
+const golden=JSON.parse(JSON.stringify(bird.saveState()));
+const helper=grill.object.children.find(o=>o.isMesh&&!o.visible&&o.userData.door===grill),fixed=helper.geometry,position=helper.position.clone();
+// Historical helper geometry only: replay before/after through the unchanged production nearest-hit selection.
+helper.geometry=new BoxGeometry(.7,1.1,.7);helper.position.y=.55;
+focused=aim(bodyPoint());check(focused===grill,'before geometry: actual main raycast selects enclosing grill helper instead of golden chicken');
+helper.geometry.dispose();helper.geometry=fixed;helper.position.copy(position);
+focused=aim(bodyPoint());check(focused===bird.takeTarget&&/ta kycklingen/i.test(prompt.textContent),'after geometry: actual desktop raycast/HUD selects whole golden chicken');
+window.desktopPrompt=prompt.textContent;window.desktopPoint=bodyPoint().toArray();
+// Screenshot comes from the actual loaded scene/prompt; stop heat but keep the occupied lid open for readability.
+grill.set(false,{silent:true});grill.update(4);bird.update(.01);A.frame(0);stage('desktop capture');await window.capture717?.('desktop');
+key();check(A.heldItem()===bird&&!bird.inGrill,'desktop E takes whole golden bird via production keyboard handler');
+const pickupScore=A.totalScore();bird.loadState(golden);check(bird.inGrill&&bird.done&&bird.rewarded&&A.totalScore()===pickupScore,'saved golden placement restores with no grill reward replay');
+d.exitPointerLock();await wait(20);d.querySelector('#start-touch').click();await wait(250);A.showOverlay(false);
+focused=aim(bodyPoint());check(A.touch.enabled&&focused===bird.takeTarget&&!button.hidden&&/ta kycklingen/i.test(button.textContent),'actual touch focus/action button offers golden pickup');
+A.frame(0);stage('touch capture');await window.capture717?.('touch');button.click();check(A.heldItem()===bird&&!bird.inGrill&&A.totalScore()===pickupScore,'touch action takes bird without duplicating completed task/grill rewards');
+// Put the held bird on the nearby floor through production placement/action, then break and eat a leg.
+const floor=grill.top.clone().add(new Vector3(.6,0,.6)).setY(0);
+focused=aim(floor);check(focused?.kind==='place'&&focused.item===bird,'actual held bird can be placed nearby');button.click();check(bird.placed&&!bird.held,'touch places cooked bird before taking a piece');
+A.scene.updateMatrixWorld(true);const leg=bird.parts[0];focused=aim(leg.meshes[2].getWorldPosition(new Vector3()),floor.clone().add(new Vector3(0,0,1)));
+check(focused===leg.target&&/bryta loss/i.test(button.textContent),'actual raycast/touch offers cooked leg breakoff');button.click();const piece=A.heldItem();check(piece?.isChickenPiece&&leg.gone,'touch breaks off leg into hand');
+if(piece?.isChickenPiece){
+  aim(A.camera.position.clone().add(new Vector3(0,5,0)),floor.clone().add(new Vector3(0,0,1)));
+  check(!A.focus().focused&&button.textContent==='Ät'&&!button.hidden,'touch action exposes existing Ät for held piece');
+  const beforeEat=A.totalScore(),eaten=A.stats.chicken;
+  button.click();bird.update(.5);check(A.stats.chicken===eaten&&A.totalScore()===beforeEat,'first bite does not award unfinished piece');
+  button.click();bird.update(.5);check(!A.heldItem()&&A.stats.chicken===eaten+1&&A.totalScore()===beforeEat+1,'completed eating awards actual +1 exactly once');
+  check(d.querySelector('#score').textContent.includes('+1')&&d.querySelector('#badges').textContent.includes('Kycklingbit uppäten'),'actual HUD shows +1 and eaten-piece badge');
+  A.frame(0);stage('eating capture');await window.capture717?.('eating');
+  const saved=JSON.parse(JSON.stringify(bird.saveState())),afterEat=A.totalScore();bird.loadState(saved);bird.reset();bird.update(1);
+  check(bird.parts[0].gone&&A.totalScore()===afterEat&&A.stats.chicken===eaten+1,'save/load and F preserve eaten part and do not re-award');
+}
+focused=aim(grill.top.clone().setY(.4));check(focused===grill&&/tänd/i.test(button.textContent),'after pickup actual empty grill still offers touch lighting');button.click();check(grill.on,'touch lights empty grill');focused=aim(grill.top.clone().setY(.4));button.click();check(!grill.on,'touch puts empty grill out');
+stage('finished');out.textContent=(pass?'ALL PASS':'FAIL')+'\n'+lines.join('\n');window.grillResults=lines;
+}catch(e){out.textContent='FAIL '+e.stack+'\n'+lines.join('\n');console.error(e);stage('failed');}
+};
+</script></html>

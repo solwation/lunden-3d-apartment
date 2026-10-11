@@ -164,9 +164,11 @@ export class Grill {
     this.sparks.frustumCulled = false;
     this.sparks.raycast = () => {};
     this.sparkSeeds = [...Array(n)].map(() => ({ ph: Math.random(), dx: (Math.random() - 0.5) * 0.4, dz: (Math.random() - 0.5) * 0.4, life: 1.2 + Math.random() * 1.5 }));
-    // E box round the kettle
-    const pick = new THREE.Mesh(new THREE.BoxGeometry(0.7, 1.1, 0.7), new THREE.MeshBasicMaterial());
-    pick.position.set(x, 0.55, z);
+    // #717: the E helper stops at the grate. A box enclosing the food intercepted the nearest
+    // ray hit and offered “släcka grillen” when aiming at the chicken. Bowl/lid remain real targets.
+    const pickHeight = K.rim - K.grate;
+    const pick = new THREE.Mesh(new THREE.BoxGeometry(0.7, pickHeight, 0.7), new THREE.MeshBasicMaterial());
+    pick.position.set(x, pickHeight / 2, z);
     pick.visible = false;
     this.object.add(body, this.lid, coals, ...this.flames, ...this.smoke, this.sparks, pick);
     pick.userData.door = lidMesh.userData.door = body.userData.door = this;
