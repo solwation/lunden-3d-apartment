@@ -1530,31 +1530,61 @@ const blackMetal = new THREE.MeshStandardMaterial({ color: 0x1e1f21, roughness: 
  * sides. Hung from (0, 0, 0), front towards +z. `len` = hem below the hook, `kind` changes the cut. */
 export function jacket(len, color, kind) {
   const g = new THREE.Group();
-  const m = new THREE.MeshStandardMaterial({ color, roughness: 0.92 });
+  const materials = jacketMaterials(color, kind), m = materials.cloth;
   // the rack is 86 cm with jackets on every other hook (~26 cm apart): seen from the front they hang
   // edge to edge, side on (on the hook) they are narrow
   const sw = 0.26, hw = kind === 'coat' ? 0.27 : kind === 'puffer' ? 0.28 : 0.25; // shoulder / hem width
-  const depth = kind === 'puffer' ? 0.12 : 0.07;
+  const depth = kind === 'puffer' ? 0.14 : 0.085;
   // body: a tapered extrusion of a trapezoid (shoulders → hem), rounded
   const shape = new THREE.Shape();
   shape.moveTo(-0.06, 0); shape.lineTo(-sw / 2, -0.06); shape.lineTo(-hw / 2, -len); shape.lineTo(hw / 2, -len);
   shape.lineTo(sw / 2, -0.06); shape.lineTo(0.06, 0); shape.closePath();
-  const body = new THREE.ExtrudeGeometry(shape, { depth, bevelEnabled: true, bevelThickness: 0.015, bevelSize: 0.015, bevelSegments: 2 });
+  const body = new THREE.ExtrudeGeometry(shape, { depth, bevelEnabled: true, bevelThickness: 0.022, bevelSize: 0.022, bevelSegments: 3 });
   body.translate(0, 0, -depth / 2);
   g.add(new THREE.Mesh(body, m));
   // collar / hood, sleeves along the sides, a zip line, quilting bands for the puffer
-  g.add(rbox(0.16, 0.05, depth + 0.04, 0, -0.01, 0, m, 0.02));
-  for (const sx of [-1, 1]) {
-    const sl = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.042, len * 0.72, 10), m);
-    sl.position.set(sx * (sw / 2 - 0.02), -0.08 - len * 0.36, 0.01);
-    sl.rotation.z = sx * 0.06;
-    g.add(sl);
+  // A raised collar and a hollow-looking hood make the shoulder line read as a garment from the side too.
+  g.add(rbox(0.16, 0.055, depth + 0.035, 0, -0.012, 0, m, 0.022));
+  if (kind === 'shell') {
+    const hood = new THREE.Mesh(new THREE.TorusGeometry(0.075, 0.018, 8, 18, Math.PI), m);
+    hood.position.set(0, -0.015, -depth * 0.12); hood.rotation.z = Math.PI;
+    g.add(hood);
   }
-  const dark = new THREE.MeshStandardMaterial({ color: new THREE.Color(color).multiplyScalar(0.55), roughness: 0.9 });
-  g.add(rbox(0.008, len - 0.08, 0.005, 0, -len / 2 - 0.02, depth / 2 + 0.016, dark, 0.002));
-  if (kind === 'puffer') for (let y = -0.18; y > -len + 0.05; y -= 0.13) g.add(rbox(hw * 0.95, 0.006, 0.004, 0, y, depth / 2 + 0.017, dark, 0.002));
+  for (const sx of [-1, 1]) {
+    const shoulder = new THREE.Mesh(new THREE.CapsuleGeometry(0.046, 0.11, 3, 8), m);
+    shoulder.position.set(sx * 0.105, -0.105, depth * 0.14);
+    shoulder.rotation.z = -sx * 0.82;
+    const sleeve = new THREE.Mesh(new THREE.CylinderGeometry(0.023, 0.038, len * 0.68, 10), m);
+    sleeve.position.set(sx * 0.135, -0.22 - len * 0.31, depth * 0.20);
+    sleeve.rotation.z = sx * 0.06;
+    const cuff = new THREE.Mesh(new THREE.TorusGeometry(0.024, 0.006, 6, 10), materials.trim);
+    cuff.position.set(sx * 0.135, -0.22 - len * 0.65, depth * 0.20); cuff.rotation.x = Math.PI / 2;
+    g.add(shoulder, sleeve, cuff);
+  }
+  const front = depth / 2 + 0.027;
+  g.add(rbox(0.012, len - 0.09, 0.006, 0, -len / 2 - 0.02, front, materials.trim, 0.003));
+  // Puffer channels are raised cloth bands, not a dark grid printed on a flat face.
+  if (kind === 'puffer') for (let y = -0.16; y > -len + 0.07; y -= 0.13) for (const side of [-1, 1]) {
+    const band = rbox(hw * 0.88, 0.012, 0.018, 0, y, side * (depth / 2 + 0.016), m, 0.008);
+    g.add(band);
+  }
+  // Small front fasteners, kept inside the body silhouette.
+  for (let y = -0.14; y > -len + 0.05; y -= 0.14) {
+    const button = new THREE.Mesh(new THREE.SphereGeometry(0.008, 8, 6), materials.trim);
+    button.position.set(0.018, y, front); g.add(button);
+  }
   g.traverse((o) => { if (o.isMesh) o.castShadow = true; });
   return g;
+}
+
+const JACKET_MATERIALS = new Map();
+function jacketMaterials(color, kind) {
+  const key = `${color}|${kind}`;
+  if (!JACKET_MATERIALS.has(key)) JACKET_MATERIALS.set(key, {
+    cloth: new THREE.MeshStandardMaterial({ color, roughness: 0.92, side: THREE.DoubleSide }),
+    trim: new THREE.MeshStandardMaterial({ color: new THREE.Color(color).multiplyScalar(kind === 'puffer' ? 0.72 : 0.55), roughness: 0.86 }),
+  });
+  return JACKET_MATERIALS.get(key);
 }
 
 /** Wall coat rack: a hat shelf at 1.75 m on brackets, five hooks with jackets (one per hook, spaced, a
@@ -1583,9 +1613,14 @@ function coatrack(item) {
   g.userData.hallCare={jacket:[hx0,y-.11,back+.075]};
   // a knitted beanie (dome with a folded brim) and a small key bowl on the shelf
   const knit = new THREE.MeshStandardMaterial({ color: 0x9c3b2c, roughness: 1 });
-  const dome = new THREE.Mesh(new THREE.SphereGeometry(0.085, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2), knit);
-  dome.position.set(-w * 0.22, y + 0.035, back + 0.14);
-  g.add(dome, rbox(0.18, 0.035, 0.18, -w * 0.22, y + 0.03, back + 0.14, knit, 0.015));
+  const hatProfile = [[0.055, 0], [0.074, 0.006], [0.082, 0.018], [0.082, 0.04], [0.074, 0.052],
+    [0.076, 0.065], [0.068, 0.082], [0.053, 0.099], [0.034, 0.113], [0.012, 0.121], [0.001, 0.122]]
+    .map(([r, h]) => new THREE.Vector2(r, h));
+  const beanie = new THREE.Mesh(new THREE.LatheGeometry(hatProfile, 24), knit);
+  beanie.position.set(-w * 0.22, y + 0.02, back + 0.14); beanie.castShadow = true;
+  const brim = new THREE.Mesh(new THREE.LatheGeometry([[0.055, 0], [0.075, 0], [0.085, 0.006], [0.086, 0.032], [0.082, 0.042], [0.074, 0.041], [0.073, 0.02], [0.055, 0]].map(([r, h]) => new THREE.Vector2(r, h)), 24), knit);
+  brim.position.copy(beanie.position);
+  g.add(beanie, brim);
   const bowl = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.05, 0.04, 20), new THREE.MeshStandardMaterial({ color: 0x2f6f77, roughness: 0.4 }));
   bowl.position.set(w * 0.22, y + 0.033, back + 0.14);
   bowl.castShadow = true;
@@ -1597,16 +1632,41 @@ function coatrack(item) {
 /** One shoe: a sole, a rounded upper narrowing to the toe, a heel counter; boots get a shaft. */
 export function shoe(col, boot) {
   const g = new THREE.Group();
-  const up = new THREE.MeshStandardMaterial({ color: col, roughness: 0.65 });
-  const sole = new THREE.MeshStandardMaterial({ color: boot ? 0x2a2522 : 0xf0eee8, roughness: 0.85 });
-  g.add(rbox(0.09, 0.022, 0.27, 0, 0.011, 0, sole, 0.01));
-  const toe = new THREE.Mesh(new THREE.SphereGeometry(1, 14, 8, 0, Math.PI * 2, 0, Math.PI / 2), up);
-  toe.scale.set(0.044, 0.06, 0.1);
-  toe.position.set(0, 0.022, 0.06);
-  g.add(toe, rbox(0.088, 0.075, 0.14, 0, 0.06, -0.06, up, 0.03));
-  if (boot) g.add(rbox(0.085, 0.16, 0.1, 0, 0.17, -0.08, up, 0.03));
+  const materials = shoeMaterials(col, boot), up = materials.upper;
+  g.add(rbox(0.094, 0.014, 0.275, 0, 0.007, 0, materials.sole, 0.008)); // tread
+  if (!boot) g.add(rbox(0.092, 0.012, 0.268, 0, 0.019, 0, materials.midsole, 0.008));
+  const toe = new THREE.Mesh(new THREE.SphereGeometry(1, 16, 10, 0, Math.PI * 2, 0, Math.PI / 2), up);
+  toe.scale.set(0.045, 0.055, 0.104); toe.position.set(0, 0.03, 0.062);
+  const vamp = new THREE.Mesh(new THREE.SphereGeometry(1, 14, 10), up);
+  vamp.scale.set(0.043, 0.049, 0.091); vamp.position.set(0, 0.049, -0.04);
+  g.add(toe, vamp);
+  if (!boot) {
+    // A low padded tongue and crossed laces give the pale sneakers readable close-up detail.
+    g.add(rbox(0.032, 0.043, 0.066, 0, 0.079, -0.005, materials.tongue, 0.012));
+    for (let i = 0; i < 4; i++) {
+      const z = -0.035 + i * 0.019;
+      const lace = rbox(0.038, 0.004, 0.006, 0, 0.084, z, materials.lace, 0.002);
+      lace.rotation.y = i % 2 ? -0.3 : 0.3; g.add(lace);
+    }
+  } else {
+    g.add(rbox(0.084, 0.16, 0.10, 0, 0.15, -0.08, up, 0.027));
+    g.add(rbox(0.089, 0.012, 0.105, 0, 0.227, -0.08, materials.sole, 0.006));
+  }
   g.traverse((o) => { if (o.isMesh) o.castShadow = true; });
   return g;
+}
+
+const SHOE_MATERIALS = new Map();
+function shoeMaterials(color, boot) {
+  const key = `${color}|${boot}`;
+  if (!SHOE_MATERIALS.has(key)) SHOE_MATERIALS.set(key, {
+    upper: new THREE.MeshStandardMaterial({ color, roughness: boot ? 0.48 : 0.65 }),
+    sole: new THREE.MeshStandardMaterial({ color: boot ? 0x2a2522 : 0xd5d5d0, roughness: 0.85 }),
+    midsole: new THREE.MeshStandardMaterial({ color: 0xf0eee8, roughness: 0.8 }),
+    tongue: new THREE.MeshStandardMaterial({ color: new THREE.Color(color).lerp(new THREE.Color(0xffffff), 0.12), roughness: 0.8 }),
+    lace: new THREE.MeshStandardMaterial({ color: 0xf6f4ed, roughness: 0.9 }),
+  });
+  return SHOE_MATERIALS.get(key);
 }
 
 /** Two-tier black wire shoe rack (local −z = the wall) with pairs of sneakers and boots, no overlaps. */
