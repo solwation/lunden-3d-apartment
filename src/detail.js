@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { PERF } from './config.js';
+import { lowMemory } from './lowmemory.js';
 
 // Small-detail culling (#189): from the street the whole flat is in the view frustum (the walls don't stop three's
 // culling), so every handle, knob, bottle and trinket inside was a draw call of its own. A mesh smaller than
@@ -17,6 +18,16 @@ import { PERF } from './config.js';
 // A root whose `userData.detailUnit` is true is judged as one thing (#598): all its meshes are shown or hidden together, by
 // the size of the whole (the car: its wheels went at ~40 m while the body, too big to cull, drove on floating). The flag
 // may change while running (the car sets it except in its garage stall): while false its meshes are judged one by one.
+// #695: the outline lines of doors, lids and appliances (architectureedges.js, one LineSegments per moving anchor) are judged
+// like meshes, and from outside a thing is also hidden when its box, seen from the eye, falls on the façade outside every
+// opening (the box's eight corners projected onto the façade plane), or when every line from the eye through those openings
+// to it runs into one of the flat's full-height walls on its storey (`openings.walls`, plan rectangles; doorways are gaps):
+// the sphere with its margin let ~490 things inside the flat through the windows at the start view (774 draw calls on a
+// phone) — the kitchen window looks straight at the Klk wall —, or when it is on Övre plan and every such line climbs
+// through the floor between the storeys away from the stair's hole (`openings.slab`). Things beyond the flat (the patio,
+// our car in the garage) are judged the same way. All the tests are conservative: any one of them suffices.
+// On phones (`lowMemory`) the small things inside the flat seen from outside, through its windows, go at
+// `PERF.detail.lowMemoryOutside` × their usual distance (#695: the kitchen's cups and bottles from the street).
 
 const HIDDEN = 7; // the layer far-away details go to
 const D = PERF.detail;
@@ -30,7 +41,7 @@ export class DetailCuller {
     const solid = (o) => o.y0 < 0.05 || Math.abs(o.y0 - box.floor1) < 0.05;
     this.shut = { north: openings.north.flatMap(o => solid(o) ? [{ ...o, y0: o.y0 + box.doorHeight }, ...(o.entryPane ? [o.entryPane] : [])] : [o]), south: openings.south };
     this.full = { north: openings.north, south: openings.south };
-    Object.assign(this, { box, doorOpen, open: false, openings: this.shut });
+    Object.assign(this, { box, doorOpen, open: false, openings: this.shut, walls: openings.walls ?? [], slab: openings.slab ?? null });
     this.items = [];
     this.last = new THREE.Vector3(1e9, 0, 0);
     this.moving = []; // the items under a root with userData.moving
@@ -45,8 +56,9 @@ export class DetailCuller {
         if (moving) this.moving.push(unit);
       }
       for (const c of o.children) walk(c, moving, unit);
-      if (!o.isMesh || o.isInstancedMesh || !o.geometry) return;
+      if (!(o.isMesh || (o.isLineSegments && o.userData.architectureEdges)) || o.isInstancedMesh || !o.geometry) return;
       if (!o.geometry.boundingSphere) o.geometry.computeBoundingSphere();
+      if (!o.geometry.boundingBox) o.geometry.computeBoundingBox();
       const s = o.geometry.boundingSphere;
       const r = s.radius * o.matrixWorld.getMaxScaleOnAxis();
       if (!(r > 0 && r < D.maxOcclude)) return;
@@ -55,12 +67,13 @@ export class DetailCuller {
       // Exterior door hardware may have a merged centre on/inside the footprint,
       // but it belongs to the visible facade, not to contents behind a closed leaf (#519).
       const exteriorDoor = !!o.userData.door?.exterior;
-      const it = { o, r, center: s.center.clone(), cut: baseCut, baseCut, far: false, lamp, exteriorDoor };
+      const it = { o, r, center: s.center.clone(), box: o.geometry.boundingBox, cut: baseCut, baseCut, far: false, lamp, exteriorDoor };
       if (unit) unit.parts.push(it); // judged one by one only while its unit's flag is off
       else { this.items.push(it); if (moving) this.moving.push(it); }
     };
     walk(root, false, null);
     this.qualityScale = 1.0;
+    this.outsideScale = lowMemory ? D.lowMemoryOutside ?? 1 : 1;
   }
 
   /** The item for the whole of `root` (userData.detailUnit, #598): its bounding sphere, every mesh under it. */
@@ -108,8 +121,9 @@ export class DetailCuller {
 
   /** Is item `it` too far / hidden from `p`? Moves its mesh(es) to the right layer; true when that changed. */
   judge(it, p, outside) {
-    const w = this.w.copy(it.center).applyMatrix4(it.o.matrixWorld);
-    const far = w.distanceToSquared(p) > it.cut * it.cut || (outside && !it.exteriorDoor && this.hidden(p, w, it.r));
+    const w = this.w.copy(it.center).applyMatrix4(it.o.matrixWorld), { W, D: Dz, roof } = this.box;
+    const cut = outside && w.x > 0 && w.x < W && w.z > 0 && w.z < Dz && w.y < roof ? it.cut * this.outsideScale : it.cut; // (phones, #695)
+    const far = w.distanceToSquared(p) > cut * cut || (outside && !it.exteriorDoor && (this.hidden(p, w, it.r) || (it.box && this.boxHidden(p, it.box, it.o.matrixWorld))));
     if (far === it.far) return false;
     it.far = far;
     for (const o of it.meshes ?? [it.o]) o.layers.set(far ? HIDDEN : 0);
@@ -130,6 +144,55 @@ export class DetailCuller {
     if (face === null || face === 'side') return true; // the party walls and the roof have no openings
     const x = c.x + dx * t, y = c.y + dy * t, m = r * (1 - t) + 0.04; // its outline shrinks towards the eye
     return !this.openings[face].some((o) => x > o.x0 - m && x < o.x1 + m && y > o.y0 - m && y < o.y1 + m);
+  }
+
+  /** Seen from `eye` north or south of the flat, does the thing's box (local `box`, placed by `matrix`) fall on that façade
+   * outside every opening? Its corners projected from the eye onto the façade plane bound what can show (#695). Also for
+   * things beyond the flat (our car in the garage under the patio, the patio's furniture seen from the street): a line to
+   * them that meets the façade within the flat's width and below its roof goes through the flat (or, below its floor,
+   * through the foundation and the ground in front of it — *guess*: nothing under our façade opens). */
+  boxHidden(eye, box, matrix) {
+    const { W, D: Dz, roof } = this.box;
+    const face = eye.z < 0 ? 'north' : eye.z > Dz ? 'south' : null;
+    if (!face || eye.y < 0) return false; // beside or above the flat, or down in the garage: the sphere test decides
+    const zf = face === 'north' ? 0 : Dz, v = this.v ??= new THREE.Vector3();
+    let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+    const lo = (this.lo ??= new THREE.Vector3()).set(Infinity, Infinity, Infinity), hi = (this.hi ??= new THREE.Vector3()).set(-Infinity, -Infinity, -Infinity);
+    for (let i = 0; i < 8; i++) {
+      v.set(i & 1 ? box.max.x : box.min.x, i & 2 ? box.max.y : box.min.y, i & 4 ? box.max.z : box.min.z).applyMatrix4(matrix);
+      lo.min(v); hi.max(v);
+      if (face === 'north' ? v.z <= zf : v.z >= zf) return false; // reaches the façade (sills, hardware): the sphere test decides
+      const t = (zf - v.z) / (eye.z - v.z), x = v.x + (eye.x - v.x) * t, y = v.y + (eye.y - v.y) * t;
+      if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y;
+    }
+    if (x0 < 0 || x1 > W || y1 > roof) return false; // (past the flat's own façade: the neighbours, the flats above)
+    const m = 0.04, seen = this.openings[face].filter((o) => x1 > o.x0 - m && x0 < o.x1 + m && y1 > o.y0 - m && y0 < o.y1 + m);
+    if (!seen.length) return true;
+    // the floor between the storeys: from openings below its underside a line up to a thing on Övre plan (inside the flat)
+    // climbs through it, where only the stair's hole lets it by (the plan rectangle spanned by those openings and the thing)
+    const S = this.slab, e = 0.02;
+    if (S && lo.y > S.y - e && lo.x >= 0 && hi.x <= W && lo.z >= 0 && hi.z <= Dz && seen.every((o) => o.y1 < S.y + e)) {
+      const h = S.hole, ax = Math.min(lo.x, ...seen.map((o) => o.x0)), bx = Math.max(hi.x, ...seen.map((o) => o.x1));
+      const az = Math.min(zf, lo.z), bz = Math.max(zf, hi.z);
+      if (bx < h.x0 || ax > h.x1 || bz < h.z0 || az > h.z1) return true;
+    }
+    // the walls: on one storey (the thing and every opening it shows through between its floor and ceiling), a line from the
+    // eye is named by where it meets the façade (u); a wall between the façade and the thing stops the u whose line reaches
+    // its near or far face within its width. Hidden when no u of the openings' parts in front of the thing is left.
+    const by0 = lo.y, by1 = hi.y;
+    const lvl = this.walls.length && this.walls.find((w) => by0 > w.y0 - e && by1 < w.y1 + e);
+    if (!lvl || seen.some((o) => o.y0 < lvl.y0 - e || o.y1 > lvl.y1 + e)) return false;
+    let free = seen.map((o) => [Math.max(o.x0 - m, x0), Math.min(o.x1 + m, x1)]);
+    const near = face === 'north' ? lo.z : hi.z, ez = eye.z, ex = eye.x;
+    for (const w of this.walls) {
+      if (w.y0 !== lvl.y0 || (face === 'north' ? w.z1 > near || w.z0 < zf : w.z0 < near || w.z1 > zf)) continue; // (between façade and thing)
+      for (const wz of [w.z0, w.z1]) {
+        const k = (zf - ez) / (wz - ez), a = ex + (w.x0 - ex) * k, b = ex + (w.x1 - ex) * k; // the u that meet this face's width
+        free = free.flatMap(([u0, u1]) => (b <= u0 || a >= u1 ? [[u0, u1]] : [...(a > u0 ? [[u0, a]] : []), ...(b < u1 ? [[b, u1]] : [])]));
+      }
+      if (!free.length) return true;
+    }
+    return free.every(([u0, u1]) => u1 - u0 < 1e-3);
   }
 
   /** Look again at the next update even if the camera has not moved (something was taken into the hand or put down). */

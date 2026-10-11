@@ -50,7 +50,8 @@ const load = (q) => new Promise((res) => { f.onload = async () => { while (!f.co
   const yaw = (deg) => { app.camera.rotation.y = deg * Math.PI / 180; app.step(1 / 60); };
   const front = app.world.doors.find((dd) => Math.abs((dd.hingeZ ?? dd.z ?? 0)) < 0.3) ?? app.world.doors[0];
   // the doors you see from the doorstep through the open front door (#210): hall → Tvätt, Tvätt → Badrum, the hall wardrobe
-  const near = () => app.world.doors.filter((dd) => { const p = (dd.object).getWorldPosition(new (app.camera.position.constructor)()); return p.y < 2 && p.x < 2.2 && p.z > 1.5 && p.z < 5.5; });
+  // (not the door in the hall's east wall at x 2.15 behind the Tvätt cross wall: the walls hide it from there since #695)
+  const near = () => app.world.doors.filter((dd) => { const p = (dd.object).getWorldPosition(new (app.camera.position.constructor)()); return p.y < 2 && p.x < 2.0 && p.z > 1.5 && p.z < 5.5; });
   const hallDoors = (where) => {
     const bad = near().filter((dd) => unseen(dd.object).length).map((dd) => dd.name);
     check(near().length >= 3 && !bad.length, `${where}: the hall's doors drawn (${near().length})${bad.length ? ' — hidden: ' + bad.join(', ') : ''}`);

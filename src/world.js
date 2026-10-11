@@ -166,6 +166,28 @@ const bboxOf = (pts) => {
   return { x0: Math.min(...xs), x1: Math.max(...xs), z0: Math.min(...zs), z1: Math.max(...zs) };
 };
 
+/** A rectangle inside a wall's plan polygon, as long as the wall (#695, the DetailCuller's occluders): the bounding box
+ * when the polygon is one (the plan's walls often carry an extra point on an edge), else the widest strip across its
+ * thickness that the polygon covers along its whole length (sampled every cm; notches and recesses make it thinner). */
+export function wallStrip(pts) {
+  const b = bboxOf(pts), area = Math.abs(pts.reduce((a, [x, z], i) => { const [x2, z2] = pts[(i + 1) % pts.length]; return a + x * z2 - x2 * z; }, 0)) / 2;
+  if (Math.abs(area - (b.x1 - b.x0) * (b.z1 - b.z0)) < 1e-6) return b;
+  const inside = (x, z) => { let c = false; for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) { const [xi, zi] = pts[i], [xj, zj] = pts[j]; if ((zi > z) !== (zj > z) && x < (xj - xi) * (z - zi) / (zj - zi) + xi) c = !c; } return c; };
+  const alongX = b.x1 - b.x0 >= b.z1 - b.z0, [l0, l1, t0, t1] = alongX ? [b.x0, b.x1, b.z0, b.z1] : [b.z0, b.z1, b.x0, b.x1];
+  const ts = []; for (let t = t0 + 0.0025; t < t1; t += 0.005) ts.push(t);
+  let ok = ts.map(() => true);
+  for (let l = l0 + 0.005; l < l1; l += 0.01) ok = ok.map((k, i) => k && (alongX ? inside(l, ts[i]) : inside(ts[i], l)));
+  let best = null; // the longest run of thickness samples inside everywhere
+  for (let i = 0, s = -1; i <= ts.length; i++) {
+    if (i < ts.length && ok[i]) { if (s < 0) s = i; continue; }
+    if (s >= 0 && (!best || i - s > best[1] - best[0])) best = [s, i];
+    s = -1;
+  }
+  if (!best || best[1] - best[0] < 2) return null;
+  const a = ts[best[0]], c = ts[best[1] - 1]; // (sample centres: the strip is at least this thick)
+  return alongX ? { x0: l0, x1: l1, z0: a, z1: c } : { x0: a, x1: c, z0: l0, z1: l1 };
+}
+
 /**
  * Find the wall gap an opening sits in. `axis` is the direction along the wall ('x' or 'z'),
  * `c` the perpendicular coordinate of a line through the gap, [a, b] a span known to lie
@@ -414,8 +436,11 @@ function buildLevel(floor, li, group, how = OURS) {
     .map((r) => ({ outer: [[r.x0, r.z0], [r.x1, r.z0], [r.x1, r.z1], [r.x0, r.z1]] }))];
   const wallBoxes = walls.map((w) => bboxOf(w.outer));
   const wallSegments = []; // walls only: line of sight for E (main.js)
+  const wallRects = []; // the full-height rectangular walls: what hides the inside from the street (DetailCuller, #695)
   for (const w of walls) {
     if (!w.half) { group.add(prism(w.outer, y0, yC, M.wall)); wallSegments.push(...polySegments(w.outer)); } // (`half`: a sloping half wall, #624: built over the stair, you see and aim over it)
+    const r = w.half ? null : wallStrip(w.outer);
+    if (r) wallRects.push({ ...r, y0, y1: yC });
     segments.push(...polySegments(w.outer));
   }
 
@@ -666,7 +691,7 @@ function buildLevel(floor, li, group, how = OURS) {
     group.add(box(s.x0, s.x1, s.z0, s.z1, y0 + s.height, yC - 0.004, M.ceiling, { shadow: false }));
   }
 
-  return { segments, wallSegments, doors, lids, taps, appliances, openings, sills, barriers, blindSpecs, ceiling: yC };
+  return { segments, wallSegments, wallRects, doors, lids, taps, appliances, openings, sills, barriers, blindSpecs, ceiling: yC };
 }
 
 /** The slab between the levels (façade band + stair opening), the roof zone, the stair, its railing and handrails into
@@ -1071,7 +1096,7 @@ export function buildWorld(plan) {
     hood: [...l0.appliances, ...l1.appliances].find((a) => a.kind === 'hood') ?? null, // the cooker hood's fan (#194)
     panDrawer: [...l0.appliances, ...l1.appliances].find((a) => a.panHome) ?? null, // the drawer under the hob (#159)
     toasterDrawer: [...l0.appliances, ...l1.appliances].find((a) => a.toasterHome) ?? null, // the toaster's drawer (#401)
-    openings: { north, south, roof: UNIT_TOP }, // the façade openings (plan x, absolute y) and the roof height: what the flat can be seen through from outside (#189)
+    openings: { north, south, roof: UNIT_TOP, walls: [...l0.wallRects, ...l1.wallRects], slab: { y: l0.ceiling, hole: STAIR.hole } }, // the façade openings (plan x, absolute y) and the roof height: what the flat can be seen through from outside (#189); its walls hide the rest (#695)
     blinds, // the pleated blinds (#273, src/blinds.js)
     carKey: hallWall.key, // only a target while the key cabinet is open (main.js)
     taps: [...l0.taps, ...l1.taps],

@@ -2399,7 +2399,9 @@ export const WARM = { frames: 3, sliceMs: 8, programs: 4, compileMs: 20, batch: 
 // + mips, capped at the device's texture size); `lowMemory` the same on phones (`?lowmem`). About 20 % over what the
 // scene used when they were set (2026-10-09): new things fit, a doubling does not slip in unnoticed (*guess*). Raise one
 // only on purpose, with the reason in the commit.
-export const PERF = { detail: { maxR: 0.5, k: 0.009, minDist: 3.2, maxOcclude: 4, move: 0.3 }, hitch: { ms: 50, keep: 100 },
+// `detail.lowMemoryOutside` (#695): on phones, small things inside the flat seen from outside it (through its windows) are cut at
+// this share of their usual distance — the start view from the street drew the kitchen's cups and jars at 15 m (*guess*).
+export const PERF = { detail: { maxR: 0.5, k: 0.009, minDist: 3.2, maxOcclude: 4, move: 0.3, lowMemoryOutside: 0.7 }, hitch: { ms: 50, keep: 100 },
   budget: { calls: 520, tris: 1000000, texMB: 320, lowMemory: { calls: 370, tris: 950000, texMB: 225 } } };
 
 // Phones and tablets (low memory, #585): iOS Safari kills the tab ("Ett problem inträffade flera gånger") once the page's

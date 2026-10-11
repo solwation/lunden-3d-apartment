@@ -122,6 +122,8 @@ src/fishfingers.js     fish fingers (FISH, #162): a carton on the freezer's lowe
 src/fridge.js          the fridge: hollow, lit, opens with E (in world.lids); `shelfSpot` = the chicken's place; the freezer is
                        the same class (`freezer: true`, #161): drawers + shelves, the changelog note rides on its door;
                        #504 adds a hollow grönsakslåda and four hollow freezer drawers: Openable pivots in world.lids with two m-sized slots each.
+                       #695: shell, liner and shelves merged per material; the inside (`inner`: liner, lamp, shelves, the drawers and
+                       what is stored in them) is drawn only while the door is open (`update`), like the beer shelf.
                        COLD_DRAWERS measurements/travel are assumptions based on the original model, not manufacturer measurements.
                        Door fully open before pulling/loading; drawers fully in before closing a door. F closes drawers before doors.
                        Transparent walls let actual stored food be selected; held food targets loading boxes while the grip can still close.

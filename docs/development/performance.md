@@ -6,7 +6,8 @@ Related: [graphics](graphics.md), [verification](verification.md).
 ## Performance (#48)
 
 - `&perf` shows fps, pixel ratio, draw calls, triangles, geometries, textures; `tools/perfcount.html`
-  prints draw calls per spot. Baseline → after the first pass: start view 793 → 362 calls, kitchen
+  prints draw calls per spot (since #695 the draws to the screen, counted per draw: see the #695 section — older numbers in
+  this file, the start view's above all, came from `renderer.info` and can be too low). Baseline → after the first pass: start view 793 → 362 calls, kitchen
   162 → 109, living room 184 → 87, upstairs 148 → 88 (screenshots pixel-identical).
 - Bicycles (#683): the shared frame/tyre/metal batches add two instanced calls at the bike yard; one
   merged alpha-spoke batch serves the courtyard rack and one serves all basement bikes. `perfcount`
@@ -181,7 +182,8 @@ per batch), and the Christmas tree's shimmer costs 0.016 ms (#571) — not worth
   every perfcount spot, ≤ 320 MB estimated texture memory (every material's textures, w × h × 4 + mips, capped at the
   device's texture size); phones (`?lowmem`): ≤ 370 calls, ≤ 950 000 triangles, ≤ 225 MB. Set ~20 % above the scene on
   2026-10-09 (desktop: 433 calls at park, 836 725 triangles in the big hall, ~266 MB in 240 textures; phone 390×844:
-  305 calls / 784 426 triangles in the basement, ~188 MB) — *guess*. `tools/perfcount.html` (and `?lowmem&w=390&h=844`)
+  305 calls / 784 426 triangles in the basement, ~188 MB) — *guess*. (The start view was under-counted then: it drew ~770
+  calls on the phone, not ~190 — #695; every other spot was counted right and fits.) `tools/perfcount.html` (and `?lowmem&w=390&h=844`)
   fails past them; raise one only on purpose, with the reason in the commit.
 - *A new heavy feature* (a new pass, a particle system, a big animated canvas, many lights or casters): add its per-level
   values to `QUALITY` and `quality.register(...)` it in main.js (see the table above); make sure its materials exist when
@@ -433,3 +435,78 @@ and screenshot mode kept the loading/resume cover until a real view existed. Des
 These are GL call counts, not iPhone frame times or proof that the iOS watchdog will keep the context. A physical iPhone
 check is still required for #669. The loader can remain visible longer while preparation completes; hidden seasonal
 textures still upload lazily later, as before.
+
+## Phone draw calls at the start view (#695)
+
+`tools/perfcount.html?lowmem&w=390&h=844` reported 766 draw calls at `start` (budget 370) on one machine and 188 on another.
+**Cause: the measurement, not a recent model.** perfcount read `renderer.info.render.calls` after `render()`, but a nested
+render inside the frame (three's PMREM regenerating the sky's environment, a mirror's Reflector) resets `info` half-way, so
+the count held only the draws after it. Whether a run printed ~190 or ~770 depended on whether such a render fell in that
+frame. Counted per draw, the phone start view was 769 / 772 / 772 at b155cf4 (2026-10-09, when `PERF.budget` was set),
+6765803 and 73f185e, and 783 on 74bb6c4 — no commit of the last day broke it (the courtyard's grill, benches and playground
+merge into their batches; bikes, bins, Olof, the ghosts add a few calls each where they are in view). The phone budget of 370
+was set from the under-counted numbers, but every other spot fits it (peak 332), so it stays; the desktop's 520 too.
+
+**perfcount** now counts every `renderBufferDirect` that draws to the screen (no render target, outside the shadow pass) and
+sums `info`'s triangles around each one (with `info.autoReset` off for that render); shadow / mirror / environment draws are
+printed apart (`+36 shadow/mirror/env` at start: the PMREM). Every spot reads ~4 more than before (draws before the nested
+render that used to be dropped).
+
+**Where the start view's 783 phone draws went** (each mesh by its group and position; a temporary hook on
+`renderBufferDirect`): ~490 meshes inside the flat that the DetailCuller's sphere test let through the windows (its margin
+grows with the radius: a sofa or a fridge "passes" a window it is metres from); 72 outline line sets of doors, lids and
+appliances (architecture edges, never culled: the culler took meshes only); 37 our car in its garage stall (under the patio,
+underground); 33 the patio's furniture behind the flat; ~40 the fridge and the freezer (every shell, liner, shelf and bin a
+mesh of its own, the inside drawn behind the shut door); the rest the façades, backdrops, entrance plants and the street.
+
+**Changes:**
+- `src/detail.js`: from outside, a thing is also hidden when (a) its box, projected from the eye onto the façade plane,
+  misses every opening; (b) every line from the eye through those openings runs into a full-height wall of its storey
+  (`world.openings.walls`: the plan's wall polygons as rectangles, `wallStrip` in world.js; doorways are gaps, half walls are
+  left out); (c) it is on Övre plan and every such line climbs through the floor between the storeys away from the stair's
+  hole (`openings.slab`). Things beyond the flat (the patio, the garage under it) are judged the same way: a line that meets
+  our façade within its width and below its roof goes through the flat, or below its floor through the foundation and the
+  ground (*guess*: nothing under our façade opens; not used with the eye below ground). All three are conservative (box ⊇
+  mesh, walls only where the plan has them); the sphere test stays. The outline lines (`userData.architectureEdges`) are
+  judged like meshes.
+- Phones only: `PERF.detail.lowMemoryOutside` 0.7 (*guess*) — small things inside the flat (r < `maxR`) seen from outside go at
+  0.7 × their usual distance (the kitchen's jars and cups from the street, ~15 m).
+- `src/fridge.js`: shell, liner, glass shelves and door bins merged per material; the inside (liner, lamp, shelves, drawers
+  with their stored food) is drawn only while the door is open, like the beer shelf. At the start view the fridge and freezer drew 40 calls, now 15.
+
+**Measured** (perfcount, headless Chromium + SwiftShader, July noon; before = 5ac634a with the new counter, after = this change):
+
+| spot | phone before | phone after | desktop before | desktop after |
+|---|---|---|---|---|
+| start | 782 | 359 | 849 | 445 |
+| kitchen | 187 | 187 | 347 | 347 |
+| living | 237 | 237 | 349 | 349 |
+| upstairs | 223 | 223 | 325 | 325 |
+| patio | 92 | 92 | 112 | 112 |
+| courtyard | 163 | 163 | 173 | 173 |
+| courtyard bikes | 228 | 223 | 326 | 256 |
+| karpvagen | 74 | 74 | 85 | 85 |
+| garage | 118 | 118 | 386 | 316 |
+| bike yard | 331 | 256 | 342 | 267 |
+| park | 177 | 174 | 482 | 414 |
+| east | 49 | 49 | 61 | 61 |
+| big hall | 287 | 249 | 364 | 295 |
+| basement | 322 | 249 | 362 | 289 |
+| bike room | 125 | 125 | 149 | 149 |
+
+Phone: PASS (peak 359 calls at start ≤ 370; 822 566 triangles in the basement). Desktop: PASS (peak 445 calls at start ≤ 520;
+925 263 triangles in the big hall). Start-view triangles: phone 892 934 → 659 728, desktop 962 303 → 732 493.
+
+**Checked by pixels (desktop 1280 × 800, `&weather=clear`):** at 11 views (the start, the street near / far / oblique / east, the
+patio three ways, the doorstep, Karpvägen, the courtyard) everything hidden only by the new tests (58–834 things per view) was
+drawn and hidden again in the same frame: 0–16 pixels of 1 024 000 differ (single pixels along window frames). With the front
+door open, at the doorstep 0 pixels at 900 × 600 (a few at 640 × 400). Not covered: a mirror inside the flat seen from outside
+reflects from its own viewpoint while the culler judges from the eye (as before). Phone screenshots (390 × 844, clear weather): Karpvägen,
+the courtyard, the patio and the kitchen are pixel-identical before and after; the start differs in 228 of 329 160 pixels, all
+inside the kitchen window (a small thing on the worktop gone at ~15 m: the phone factor) plus a 1-px line on the brick that had
+shown through (`/tmp/claude-0/shots695`, not in the repo).
+
+**Not done:** the kitchen's fronts and drawers are an Openable each (2–3 calls apiece, ~30 at start): batching them like the
+visited flats' `batchFronts` (#621) is a larger change; the entrance plants (~13 calls at start, one pot, soil and foliage
+mesh per plant); the street's start view still draws ~170 things through the kitchen window that are really in view.
+

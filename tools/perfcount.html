@@ -25,17 +25,30 @@ f.onload = async () => {
   // budgets (#592, PERF.budget in config): per view, and the textures' estimated GPU memory
   const { PERF } = await w.eval(`import('${new URL('../src/config.js', location.href).href}')`), lowmem = own.has('lowmem'), B = lowmem ? PERF.budget.lowMemory : PERF.budget;
   let worstCalls = ['', 0], worstTris = ['', 0];
+  // Count the view's own draws (#695): a nested render inside the frame (a mirror's Reflector, three's PMREM for the sky's
+  // environment) resets renderer.info half-way, so info.render.calls showed only the draws after it (start 188 instead of
+  // ~770). Every draw goes through renderBufferDirect; count those to the screen (no render target, not the shadow map),
+  // with info's own triangle count around each one (autoReset off, so nothing in between resets it).
+  const main = { calls: 0, tris: 0, other: 0 }, rbd = r.renderBufferDirect, smr = r.shadowMap.render;
+  let inShadow = false;
+  r.shadowMap.render = function () { inShadow = true; try { return smr.apply(this, arguments); } finally { inShadow = false; } };
+  r.renderBufferDirect = function () {
+    const t0 = r.info.render.triangles, res = rbd.apply(this, arguments);
+    if (inShadow || r.getRenderTarget()) main.other++; else { main.calls++; main.tris += r.info.render.triangles - t0; }
+    return res;
+  };
+  const measure = () => { const auto = r.info.autoReset; r.info.autoReset = false; Object.assign(main, { calls: 0, tris: 0, other: 0 }); try { r.render(w.__app.scene, camera); } finally { r.info.autoReset = auto; } return { ...main }; };
   for (const [name, x, z, yaw, pitch, feet] of spots) {
     player.spawn(x, z, yaw * Math.PI / 180);
     if (feet) { player.pos.y = feet; player.eyeY = feet + 1.62; camera.position.y = player.eyeY; }
     camera.rotation.x = pitch * Math.PI / 180;
     step(1 / 60);
-    r.render(w.__app.scene, camera);
-    const i = r.info;
-    lines.push(`${name}: calls ${i.render.calls} tris ${i.render.triangles} geoms ${i.memory.geometries} tex ${i.memory.textures}`);
-    if (i.render.calls > worstCalls[1]) worstCalls = [name, i.render.calls];
-    if (i.render.triangles > worstTris[1]) worstTris = [name, i.render.triangles];
+    const m = measure(), i = r.info;
+    lines.push(`${name}: calls ${m.calls} tris ${m.tris} geoms ${i.memory.geometries} tex ${i.memory.textures}${m.other ? ` (+${m.other} shadow/mirror/env)` : ''}`);
+    if (m.calls > worstCalls[1]) worstCalls = [name, m.calls];
+    if (m.tris > worstTris[1]) worstTris = [name, m.tris];
   }
+  r.renderBufferDirect = rbd; r.shadowMap.render = smr;
   const maxTex = r.capabilities.maxTextureSize, texs = new Set();
   w.__app.scene.traverse((o) => { for (const m of [o.material].flat()) { if (!m) continue; for (const v of [...Object.values(m), ...Object.values(m.uniforms ?? {}).map((u) => u?.value)]) if (v?.isTexture && !v.isRenderTargetTexture) texs.add(v); } });
   let texBytes = 0;

@@ -47,6 +47,15 @@ function box(sx, sy, sz, x, y, z, m, r = 0) {
   return mesh;
 }
 
+/** The boxes of one material as one mesh (#695: the shell, liner and shelves were ~20 draw calls per appliance). */
+function merged(meshes) {
+  for (const m of meshes) m.updateMatrix();
+  const mesh = new THREE.Mesh(mergeGeometries(meshes.map((m) => m.geometry.applyMatrix4(m.matrix))), meshes[0].material);
+  for (const m of meshes) m.geometry.dispose();
+  mesh.castShadow = mesh.receiveShadow = true;
+  return mesh;
+}
+
 function blob(m, sx, sy, sz, x, y, z) {
   const mesh = new THREE.Mesh(new THREE.SphereGeometry(1, 20, 14), m);
   mesh.scale.set(sx, sy, sz);
@@ -92,18 +101,17 @@ export class Fridge {
     const w = x1 - x0, d = zBack - zFront, cx = (x0 + x1) / 2, cz = (zFront + zBack) / 2;
     const wall = 0.04;
     const liner = freezer ? frost : fridgeLiner, lamp = freezer ? coldLamp : fridgeLamp;
-    // stainless shell (sides, top, bottom, back) and the white liner inside
-    g.add(box(wall, h, d, x0 + wall / 2, y0 + h / 2, cz, steel));
-    g.add(box(wall, h, d, x1 - wall / 2, y0 + h / 2, cz, steel));
-    g.add(box(w, wall, d, cx, y0 + h - wall / 2, cz, steel));
-    g.add(box(w, 0.08, d, cx, y0 + 0.04, cz, steel));
-    g.add(box(w, h, wall, cx, y0 + h / 2, zBack - wall / 2, steel));
+    // what is behind the shut door (liner, lamp, shelves, drawers) is drawn only while it is open (#695, as the beer shelf)
+    const inner = this.inner = new THREE.Group(); // (visible while built: the architecture edges see it; update() hides it)
+    g.add(inner);
+    // stainless shell (sides, top, bottom, back) and the white liner inside, each one mesh (#695)
+    g.add(merged([box(wall, h, d, x0 + wall / 2, y0 + h / 2, cz, steel), box(wall, h, d, x1 - wall / 2, y0 + h / 2, cz, steel),
+      box(w, wall, d, cx, y0 + h - wall / 2, cz, steel), box(w, 0.08, d, cx, y0 + 0.04, cz, steel), box(w, h, wall, cx, y0 + h / 2, zBack - wall / 2, steel)]));
     const iw = w - 2 * wall, ih = h - wall - 0.08, iy = y0 + 0.08 + ih / 2;
-    for (const s of [-1, 1]) g.add(box(0.004, ih, d - wall, cx + s * (iw / 2 - 0.002), iy, cz - wall / 2 + 0.002, liner));
-    g.add(box(iw, ih, 0.004, cx, iy, zBack - wall - 0.002, liner));
-    g.add(box(iw, 0.004, d - wall, cx, y0 + 0.082, cz - wall / 2, liner));
-    g.add(box(iw, 0.004, d - wall, cx, y0 + h - wall - 0.002, cz - wall / 2, liner));
-    g.add(box(iw * 0.5, 0.01, 0.05, cx, y0 + h - wall - 0.01, zBack - 0.15, lamp)); // light
+    const linerParts = [...[-1, 1].map((s) => box(0.004, ih, d - wall, cx + s * (iw / 2 - 0.002), iy, cz - wall / 2 + 0.002, liner)),
+      box(iw, ih, 0.004, cx, iy, zBack - wall - 0.002, liner), box(iw, 0.004, d - wall, cx, y0 + 0.082, cz - wall / 2, liner),
+      box(iw, 0.004, d - wall, cx, y0 + h - wall - 0.002, cz - wall / 2, liner)];
+    inner.add(box(iw * 0.5, 0.01, 0.05, cx, y0 + h - wall - 0.01, zBack - 0.15, lamp)); // light
     this.inside = { cx, cz, iw, depth: d - wall, y0 };
     this.drawers = [];
     const bz0 = zFront + C.endClearance, bz1 = zBack - wall - C.endClearance;
@@ -136,23 +144,25 @@ export class Fridge {
         blocked: { get: () => !this.isOpen || this.t < 1 },
         blockedText: { get: () => `Öppna ${this.freezer ? 'frysen' : 'kylen'} helt först` },
       });
-      g.add(drawer.object); this.drawers.push(drawer);
+      inner.add(drawer.object); this.drawers.push(drawer);
     };
     if (freezer) {
       // frost along the back, two open shelves at the top (the fish fingers go there, #162) and see-through
       // empty storage drawers below, each with a grip on its front edge (#504)
-      g.add(box(iw - 0.01, 0.02, 0.02, cx, y0 + h - wall - 0.05, zBack - wall - 0.012, liner));
+      linerParts.push(box(iw - 0.01, 0.02, 0.02, cx, y0 + h - wall - 0.05, zBack - wall - 0.012, liner));
       this.shelves = [1.32, 1.6].map((y) => y0 + y + 0.004); // the shelves' top faces (world y)
-      for (const y of [1.32, 1.6]) g.add(box(iw - 0.01, 0.008, d - wall - 0.03, cx, y0 + y, cz - 0.015, glass));
+      inner.add(merged([1.32, 1.6].map((y) => box(iw - 0.01, 0.008, d - wall - 0.03, cx, y0 + y, cz - 0.015, glass))));
       C.freezer.forEach(makeDrawer);
     } else {
       // glass shelves + a crisper drawer at the bottom
-      for (const y of [0.45, 0.82, 1.2, 1.52]) g.add(box(iw - 0.01, 0.006, d - wall - 0.04, cx, y0 + y, cz - 0.01, glass));
+      inner.add(merged([0.45, 0.82, 1.2, 1.52].map((y) => box(iw - 0.01, 0.006, d - wall - 0.04, cx, y0 + y, cz - 0.01, glass))));
       C.fridge.forEach(makeDrawer);
       // the chicken's place on the middle shelf (chicken.js) and the named milk carton above (#168)
       this.shelfSpot = new THREE.Vector3(cx, y0 + 0.823, cz - 0.03);
       this.milkAt = new THREE.Vector3(cx - 0.12, y0 + 1.203, cz); // the milk carton stands here (a Holdable, milk.js, #168)
     }
+
+    inner.add(merged(linerParts));
 
     // door: pivot on the hinge edge, panel in front of the cabinet (s = which way it runs from the hinge)
     const s = hinge === 'x0' ? 1 : -1;
@@ -177,7 +187,7 @@ export class Fridge {
     handleParts.forEach((part) => part.dispose()); handle.castShadow = true; this.door.add(handle);
     if (freezer) this.door.add(box(w - 0.08, h - 0.16, 0.012, s * w / 2, h / 2, 0.008, liner)); // the flat inner door inside its gasket
     else {
-      for (const y of [0.4, 0.85, 1.3]) this.door.add(box(w - 0.1, 0.08, 0.07, s * w / 2, y, 0.035, glass)); // door bins
+      this.door.add(merged([0.4, 0.85, 1.3].map((y) => box(w - 0.1, 0.08, 0.07, s * w / 2, y, 0.035, glass)))); // door bins
     }
     // the door alarm's LED (#288): a small red dot on the door's front, near the top on the handle side
     this.ledMat = new THREE.MeshBasicMaterial({ color: 0x3a0c0c });
@@ -217,6 +227,7 @@ export class Fridge {
     this.t += Math.sign(target - this.t) * Math.min(Math.abs(target - this.t), dt * 1.6);
     const e = this.t * this.t * (3 - 2 * this.t);
     this.door.rotation.y = this.sign * e * THREE.MathUtils.degToRad(this.max);
+    this.inner.visible = this.isOpen || this.t > 0;
     // the door alarm (#288)
     if (!this.isOpen || !this.powered) this.openFor = 0; // (no mains, no alarm: #612)
     else if (!this.paused) this.openFor += dt;
