@@ -38,7 +38,7 @@ const beat = (page) => page.evaluate(() => { try { return JSON.parse(localStorag
   const open = async (ctx, query) => {
     const page = await ctx.newPage();
     page.on('dialog', (d) => d.accept());
-    await page.goto(`${game}/?${query}`, { waitUntil: 'commit' });
+    await page.goto(`${game}/?${query}${query ? '&' : ''}test`, { waitUntil: 'commit' }); // &test (#703): cheap drawing, the crash log itself unchanged
     await page.waitForFunction(() => window.__app?.renderer, null, { timeout: 120000 });
     return page;
   };

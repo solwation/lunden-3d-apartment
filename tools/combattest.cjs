@@ -6,7 +6,8 @@
 // deduction and a life less; out of lives B is back at the start with all lives, still holding its weapon and keeping its
 // score. Screenshot (C's view) of two solid armed players into SHOTS. SwiftShader frames take seconds: the pages drive
 // ghosts / combat updates themselves where timing matters.
-const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
+const kit = require('./testkit.cjs'); // (#703) `&test` mode, small viewport; full quality only around the screenshots
+const { chromium } = kit;
 const game = process.argv[2] || 'http://localhost:8137', worker = process.argv[3] || 'http://localhost:8146';
 const shots = process.env.SHOTS || '/tmp';
 let failed = 0;
@@ -27,7 +28,7 @@ async function until(fn, ms = 60000) { const t = Date.now(); for (;;) { const v 
     const page = await ctx.newPage();
     page.on('dialog', (d) => d.accept());
     page.on('pageerror', (e) => console.log(`  [${name || 'anon'} pageerror] ${e.message}`));
-    await page.goto(`${game}/?shot&quality=0&cloud=${worker}&at=${at}`, { waitUntil: 'commit' });
+    await page.goto(`${game}/?shot&test&quality=0&cloud=${worker}&at=${at}`, { waitUntil: 'commit' });
     await page.waitForFunction(() => window.__combat && window.__app?.renderer, null, { timeout: 1500000 });
     return { ctx, page };
   };
@@ -81,6 +82,7 @@ async function until(fn, ms = 60000) { const t = Date.now(); for (;;) { const v 
     await A.page.evaluate(() => { const app = window.__app; app.heldItem().putBack(); app.ball.take(); });
     await sees(B.page, (l) => l.find((g) => g.n === 'Olof')?.h === 'ball');
     // B's frames are driven by hand from here to the screenshot (a SwiftShader frame takes seconds, the ball ~0.3 s to fly by)
+    await B.page.evaluate(() => window.__app.testMode.setFull(true)); // full quality only for the picture (#703)
     await B.page.setViewportSize({ width: 960, height: 600 });
     const fb = await B.page.evaluate(() => window.__app.renderer.info.render.frame);
     await until(() => B.page.evaluate((f) => window.__app.renderer.info.render.frame >= f + 2, fb), 180000);
@@ -93,6 +95,7 @@ async function until(fn, ms = 60000) { const t = Date.now(); for (;;) { const v 
       return { pos: b.m.position.toArray().map((x) => +x.toFixed(2)), ndc: [+c.x.toFixed(2), +c.y.toFixed(2), +c.z.toFixed(3)], layer: b.m.layers.mask, flying: b.flying, life: +b.life.toFixed(2) }; }));
     await B.page.screenshot({ path: `${shots}/combat-B-sees-A-ball.png`, timeout: 240000 });
     await B.page.evaluate(() => window.__app.renderer.setAnimationLoop(() => window.__app.frame(0.016)));
+    await B.page.evaluate(() => window.__app.testMode.setFull(false));
     await B.page.setViewportSize({ width: 320, height: 200 });
     check(ballOnB.length === 1 && ballOnB[0].ndc.every((x) => Math.abs(x) < 1), 'the ball is in view on B\'s screen (screenshot)', JSON.stringify(ballOnB));
     // #690: the bow — A draws fully and looses at B: B sees the arrow and loses a life
@@ -110,10 +113,12 @@ async function until(fn, ms = 60000) { const t = Date.now(); for (;;) { const v 
     step('C\'s screenshot');
     // screenshot: C's view of two solid armed players
     await sees(C.page, (l) => l.length === 2 && l.every((g) => g.solid));
+    await C.page.evaluate(() => window.__app.testMode.setFull(true));
     await C.page.setViewportSize({ width: 960, height: 600 });
     const f0 = await C.page.evaluate(() => window.__app.renderer.info.render.frame);
     await until(() => C.page.evaluate((f) => window.__app.renderer.info.render.frame >= f + 2, f0), 180000);
     await C.page.screenshot({ path: `${shots}/combat-two-armed-players.png`, timeout: 240000 });
+    await C.page.evaluate(() => window.__app.testMode.setFull(false));
     await C.page.setViewportSize({ width: 320, height: 200 });
     await sees(A.page, (l) => l.length === 2 && l.every((g) => g.solid)); // (back from any idle while the screenshot rendered)
     // ten hits (one arrow, nine darts): points for A, deductions and lives off for B, then B back at the start with all lives
