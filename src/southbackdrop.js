@@ -3,6 +3,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { SITE, SEASON, COLORS } from './config.js';
 import { pathStrip } from './roads.js';
 import { registerTrees, registerSnow, registerSeasonal } from './seasons.js';
+import { lobeGeometry, leafMaterial } from './foliage.js';
 const S=SITE.south;
 const inside=(x,z,p)=>{let yes=false;for(let i=0,j=p.length-1;i<p.length;j=i++)if((p[i][1]>z)!==(p[j][1]>z)&&x<(p[j][0]-p[i][0])*(z-p[i][1])/(p[j][1]-p[i][1])+p[i][0])yes=!yes;return yes;};
 const shape=b=>{const s=new THREE.Shape(b.polygon.slice(0,-1).map(([x,z])=>new THREE.Vector2(x,-z)));s.holes=(b.holes??[]).map(p=>new THREE.Path(p.slice(0,-1).map(([x,z])=>new THREE.Vector2(x,-z))));return s;};
@@ -40,6 +41,6 @@ export function buildSouthBackdrop(ground){
  for(const[k,list]of Object.entries(parts)){if(!list.length)continue;const m=new THREE.Mesh(mergeGeometries(list),mats[k]);m.name='south-'+k;group.add(m);list.forEach(g=>g.dispose());}
  let seed=536;const rand=()=>((seed=seed*16807%2147483647)/2147483647),trees=[];
  for(const f of S.forests){const xs=f.polygon.map(q=>q[0]),zs=f.polygon.map(q=>q[1]),x0=Math.min(...xs),x1=Math.max(...xs),z0=Math.min(...zs),z1=Math.max(...zs);let n=0;for(let i=0;i<f.n*30&&n<f.n;i++){const x=x0+rand()*(x1-x0),z=z0+rand()*(z1-z0);if(!inside(x,z,f.polygon)||onAccess(x,z)||S.buildings.some(b=>inside(x,z,b.polygon))||S.fields.some(b=>inside(x,z,b.polygon)))continue;trees.push({x,z,y:farGround(x,z),source:f.source,h:S.treeHeight[0]+rand()*(S.treeHeight[1]-S.treeHeight[0]),r:S.treeRadius[0]+rand()*(S.treeRadius[1]-S.treeRadius[0])});n++;}}
- const trunks=new THREE.InstancedMesh(new THREE.CylinderGeometry(.2,.35,1,4).translate(0,.5,0),new THREE.MeshStandardMaterial({color:0x5a4636,roughness:1}),trees.length),crowns=new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1,0),new THREE.MeshStandardMaterial({color:0xffffff,roughness:1,flatShading:true}),trees.length),seeds=[],m=new THREE.Matrix4(),q=new THREE.Quaternion();
+ const trunks=new THREE.InstancedMesh(new THREE.CylinderGeometry(.2,.35,1,4).translate(0,.5,0),new THREE.MeshStandardMaterial({color:0x5a4636,roughness:1}),trees.length),crowns=new THREE.InstancedMesh(lobeGeometry('far'),leafMaterial(),trees.length),seeds=[],m=new THREE.Matrix4(),q=new THREE.Quaternion();
  trees.forEach((t,i)=>{trunks.setMatrixAt(i,m.compose(new THREE.Vector3(t.x,t.y,t.z),q,new THREE.Vector3(1,t.h*.65,1)));const sd={pos:new THREE.Vector3(t.x,t.y+t.h*.7,t.z),rot:q.clone(),scale:new THREE.Vector3(t.r,t.h*.4,t.r),r1:rand(),r2:rand(),r3:rand(),r4:1};crowns.setMatrixAt(i,m.compose(sd.pos,sd.rot,sd.scale));crowns.setColorAt(i,new THREE.Color(0x718a49));seeds.push(sd)});registerTrees(crowns,seeds);trunks.name='south-trunks';crowns.name='south-crowns';group.add(trunks,crowns);group.userData={buildings:records,trees};return group;
 }

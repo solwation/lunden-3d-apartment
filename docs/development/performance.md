@@ -510,3 +510,12 @@ shown through (`/tmp/claude-0/shots695`, not in the repo).
 visited flats' `batchFronts` (#621) is a larger change; the entrance plants (~13 calls at start, one pot, soil and foliage
 mesh per plant); the street's start view still draws ~170 things through the kitchen window that are really in view.
 
+Leaf-card trees (#679, `src/foliage.js`): the crowns stay one InstancedMesh per batch (site trees + shrubs, courtyard plantings,
+vines, southern woodland) on ONE shared material and atlas, so draw calls do not change. Per lobe 60 triangles (phone 56)
+instead of 80, trunks 46 instead of 28 (a leader and three branches); the cards are single quads drawn two-sided. Textures:
+one 512² leaf atlas (256² on phones, a `DataTexture`, ~1.3 / 0.3 MB with mips) and two 64 × 128 bark textures. perfcount on
+84c3207 without → with (calls unchanged at every spot; the `start` spike to 768–837 calls is #695 and comes and goes in
+both): desktop kitchen 628 034 → 621 648, park 895 157 → 893 663, big hall 1 007 801 → 1 006 343 triangles (over budget
+before as well, #704); phone kitchen 437 230 → 426 064, park 579 166 → 571 220, basement 915 934 → 908 628; textures
+~297 → ~298 MB desktop, ~81 → ~82 MB phone. One new program pair (leaf material + its alpha-tested depth variant), compiled
+by the warm-up like every scene material. No distance LOD: an InstancedMesh draws every lobe; fewer cards on phones only.

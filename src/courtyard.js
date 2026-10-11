@@ -8,6 +8,7 @@ import { SEASON } from './config.js';
 import { groundY } from './surroundings.js';
 import { restTarget } from './rest.js';
 import { surfaceBox } from './furniture.js';
+import { lobeGeometry, leafMaterial } from './foliage.js';
 import { bikeGeometry, bikeSpokeTexture, standGeometry } from './streetlife.js';
 
 // The courtyard on the garage box (#80): stone walks, gravel round the playground (lawn elsewhere, #259), the Borggården's pergola
@@ -422,7 +423,7 @@ export function buildCourtyard() {
   let seed = 9;
   const rand = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
   const spots = C.plantings.flatMap((p) => [...Array(p.n)].map(() => [p.x0 + rand() * (p.x1 - p.x0), p.z0 + rand() * (p.z1 - p.z0)]));
-  const shrubs = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1, 1), new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 1, flatShading: true }), spots.length);
+  const shrubs = new THREE.InstancedMesh(lobeGeometry('shrub'), leafMaterial(), spots.length); shrubs.name = 'courtyard-shrubs'; // leaf cards (#679), evergreen
   const m = new THREE.Matrix4(), q = new THREE.Quaternion(), col = new THREE.Color();
   spots.forEach(([x, z], i) => {
     const s = 0.35 + rand() * 0.4;
@@ -435,7 +436,7 @@ export function buildCourtyard() {
   shrubs.castShadow = true;
   group.add(shrubs);
   // the pergola's vines (coloured and thinned by the season like the trees) and its string lights
-  const vine = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1, 0), new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 1, flatShading: true }), vines.length);
+  const vine = new THREE.InstancedMesh(lobeGeometry('shrub'), leafMaterial(), vines.length); // leaf cards (#679)
   const seeds = vines.map(([x, y, z, r]) => ({ pos: new THREE.Vector3(x, y, z), rot: new THREE.Quaternion().setFromEuler(new THREE.Euler(rand() * 3, rand() * 6, 0)),
     scale: new THREE.Vector3(r, r * 0.7, r), r1: 0.3 + rand() * 0.2, r2: 0.5 + rand() * 0.4, r3: 0.2 + rand() * 0.3, r4: 1 }));
   seeds.forEach((sd, i) => { vine.setMatrixAt(i, m.compose(sd.pos, sd.rot, sd.scale)); vine.setColorAt(i, col.setHSL(0.28, 0.45, 0.28)); });

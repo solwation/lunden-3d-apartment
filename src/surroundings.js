@@ -7,6 +7,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { SITE as S, COLORS, SEASON, COURTYARD, GARAGE, CORE_A, CORE_B, CORE_C, NEIGHBOR_OPENINGS as O } from './config.js';
 import { neighborGlass } from './neighborglass.js';
 import { registerTrees, registerSnow } from './seasons.js';
+import { lobeGeometry, leafMaterial, trunkGeometry, barkMaterial } from './foliage.js';
 import { buildStreet } from './street.js';
 import { buildStreetSigns } from './streetsigns.js';
 import { onRoad, onWalk, pathStrip, filletGeometry } from './roads.js';
@@ -1184,16 +1185,16 @@ function trees(rand) {
     lobes.push({ pos: new THREE.Vector3(x + (rand() - 0.5) * 0.2, 0.42 * s / 0.55, sh.z + (rand() - 0.5) * 0.15), rot: new THREE.Quaternion().setFromEuler(new THREE.Euler(0, rand() * 6, 0)),
       scale: new THREE.Vector3(s * 1.2, s, s * 1.1), r1: 0.2 + rand() * 0.15, r2: 0.9, r3: 0.15 + rand() * 0.2, r4: 1 }); // one red-brown hedge; r2 high: some leaves stay; r4: no blossom
   }
-  const trunkGeo = new THREE.CylinderGeometry(0.14, 0.2, 1, 7).translate(0, 0.5, 0);
-  const crownGeo = new THREE.IcosahedronGeometry(1, 1);
-  const trunk = new THREE.InstancedMesh(trunkGeo, new THREE.MeshStandardMaterial({ color: 0x5a4636, roughness: 1 }), trunkM.length);
-  const crown = new THREE.InstancedMesh(crownGeo, new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 1, flatShading: true }), lobes.length);
+  // #679: tapered trunks with branches into the crown, crowns of leaf cards round an opaque core (src/foliage.js)
+  const trunkGeo = trunkGeometry();
+  const trunk = new THREE.InstancedMesh(trunkGeo, barkMaterial('bark'), trunkM.length);
+  const crown = new THREE.InstancedMesh(lobeGeometry('tree'), leafMaterial(), lobes.length);
   trunkM.forEach((mm, i) => trunk.setMatrixAt(i, mm));
   const col = new THREE.Color();
   lobes.forEach((l, i) => { crown.setMatrixAt(i, m.compose(l.pos, l.rot, l.scale)); crown.setColorAt(i, col.setHSL(0.27, 0.45, 0.3)); });
   // colours and leaf cover come from the season (seasons.js); keep each tree's own variation
   registerTrees(crown, lobes);
-  const birches = new THREE.InstancedMesh(trunkGeo, new THREE.MeshStandardMaterial({ color: 0xe6e3da, roughness: 0.9 }), Math.max(1, birchM.length));
+  const birches = new THREE.InstancedMesh(trunkGeo, barkMaterial('birch'), Math.max(1, birchM.length));
   birchM.forEach((mm, i) => birches.setMatrixAt(i, mm));
   birches.count = birchM.length;
   trunk.castShadow = crown.castShadow = birches.castShadow = true;

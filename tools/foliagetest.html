@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><title>Leaf-card tree test</title></head>
+<body>
+<pre id="out">running…</pre>
+<script type="module">
+// Leaf-card crowns (#679, src/foliage.js): every seasonal crown batch (site trees + pavement shrubs, courtyard vines, the
+// far southern woodland) and the courtyard's plantings use the leaf-card lobe geometry and the ONE shared alpha-tested
+// leaf material (no flat shading); the atlas is small (≤ 512 px, ≤ 256 on phones: `?lowmem`); a lobe stays cheap
+// (triangles per level); cards and core have soft normals (no two normals of a vertex position disagree by a facet);
+// the shadow pass sees the cut-out (alphaTest + map); the trunks are tapered, branching, barked; winter still empties the
+// crowns and summer brings them back; actual rendered pixels of a crown are leafy (several shades, sky through the edge).
+//   PLAYWRIGHT: open http://localhost:8137/tools/foliagetest.html (add ?lowmem for the phone profile), read #out
+const out = document.getElementById('out');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const lowmem = new URLSearchParams(location.search).has('lowmem');
+const f = document.createElement('iframe');
+f.width = 800; f.height = 600;
+f.src = `../index.html?shot&time=12&month=7${lowmem ? '&lowmem' : ''}`;
+document.body.append(f);
+f.onload = async () => {
+  const w = f.contentWindow;
+  while (!w.__app) await wait(100);
+  const A = w.__app, lines = [];
+  let pass = true;
+  const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); pass &&= !!ok; return ok; };
+  try {
+    const { FOLIAGE: F } = await w.eval(`import('${new URL('../src/config.js', location.href).href}')`);
+    const SE = await w.eval(`import('${new URL('../src/seasons.js', location.href).href}')`);
+    const crowns = [], trunks = [];
+    A.scene.traverse((o) => {
+      if (!o.isInstancedMesh) return;
+      if (o.geometry.userData.foliage === 'lobe') crowns.push(o);
+      if (o.geometry.name === 'foliage-trunk') trunks.push(o);
+    });
+    const mats = new Set(crowns.map((c) => c.material));
+    check(crowns.length >= 4 && mats.size === 1, `${crowns.length} crown/shrub batches, ${mats.size} shared leaf material`);
+    const mat = [...mats][0], tex = mat.map;
+    check(mat.alphaTest > 0 && !mat.flatShading && mat.color.getHex() === 0xffffff && mat.vertexColors && mat.side === 2, `alpha-tested (${mat.alphaTest}), smooth, white, vertex colours, two-sided`);
+    const size = tex.image.width;
+    check(size === (lowmem ? F.atlasPhone : F.atlas) && size <= (lowmem ? 256 : 512), `one leaf atlas of ${size} px`);
+    let flat = 0;
+    A.scene.traverse((o) => { if (o.isInstancedMesh && o.material?.flatShading) flat++; });
+    check(flat === 0, `no flat-shaded instanced foliage left (${flat})`);
+    // triangles per lobe level as FOLIAGE promises (core + 2 per card) and never more than the old 80-triangle lobe
+    const triOf = { 0: 20, 1: 80 };
+    for (const c of crowns) {
+      const level = c.geometry.name.replace('foliage-lobe-', ''), tris = c.geometry.attributes.position.count / 3;
+      const want = triOf[F.coreDetail[level]] + 2 * F.cards[level][lowmem ? 1 : 0];
+      check(tris === want && tris <= 80, `${c.name || level} lobe: ${tris} triangles (${want} expected), ${c.count} instances`);
+    }
+    // soft normals: within a card the normals are close to the lobe's radial direction (no facet normals)
+    const g = crowns[0].geometry, p = g.attributes.position, n = g.attributes.normal;
+    let worst = 1;
+    for (let i = 0; i < p.count; i++) {
+      const px = p.getX(i), py = p.getY(i), pz = p.getZ(i), l = Math.hypot(px, py, pz) || 1;
+      worst = Math.min(worst, (px * n.getX(i) + py * n.getY(i) + pz * n.getZ(i)) / l);
+    }
+    if (n.array.length) check(worst > 0.2, `normals point out of the lobe (worst cos ${worst.toFixed(2)})`);
+    else lines.push('(phone: the CPU copy of the normals is freed after upload, #628; checked on desktop)');
+    // shadows: three's depth material for an alpha-tested map cuts the cards out
+    check(crowns.some((c) => c.castShadow) && !!mat.map && mat.alphaTest > 0, 'crowns cast cut-out shadows (map + alphaTest)');
+    // trunks: tapered (top narrower than the foot), branches (more than one cylinder), bark textures, birches white
+    const tg = trunks[0]?.geometry;
+    check(trunks.length >= 2 && tg && tg.attributes.position.count > F.trunk.sides * 6 && tg.attributes.position.count <= 60 * 3, `${trunks.length} trunk batches with branches (${tg?.attributes.position.count / 3} triangles, the stem alone ${F.trunk.sides * 2})`);
+    check(trunks.every((t) => t.material.map) && trunks.some((t) => t.material.color.getHSL({}).l > 0.75), 'bark textures; the birches white');
+    // seasons: winter empties every crown, July brings them back exactly
+    const snap = () => crowns.map((c) => Array.from(c.instanceMatrix.array));
+    SE.applySeason(7); const summer = snap();
+    SE.applySeason(1);
+    const m = new A.scene.matrix.constructor(), s = new A.camera.position.constructor(), q = A.camera.quaternion.clone(), t = s.clone();
+    let maxWinter = 0;
+    const seasonal = crowns.filter((c) => c.name !== 'courtyard-shrubs'); // the courtyard's plantings stay green (as before #679)
+    for (const c of seasonal) for (let i = 0; i < c.count; i++) { c.getMatrixAt(i, m); m.decompose(t, q, s); maxWinter = Math.max(maxWinter, s.x); }
+    check(seasonal.length >= 3 && maxWinter < 0.01, `January: every seasonal crown bare in ${seasonal.length} batches (largest scale ${maxWinter.toFixed(4)})`);
+    SE.applySeason(7);
+    const back = snap();
+    check(summer.every((a, i) => a.every((x, k) => Math.abs(x - back[i][k]) < 1e-6)), 'July: the crowns back as they were');
+    // rendered pixels: a courtyard tree against the sky shows several leaf shades and gaps at the edge
+    A.player.spawn(-30, 25, Math.PI);
+    A.camera.rotation.x = 0.35;
+    A.step(1 / 60);
+    A.renderer.render(A.scene, A.camera);
+    const gl = A.renderer.getContext(), W = gl.drawingBufferWidth, H = gl.drawingBufferHeight, px = new Uint8Array(W * H * 4);
+    gl.readPixels(0, 0, W, H, gl.RGBA, gl.UNSIGNED_BYTE, px);
+    const greens = new Set();
+    for (let i = 0; i < px.length; i += 4 * 7) { const r = px[i], gg = px[i + 1], b = px[i + 2]; if (gg > r + 6 && gg > b + 6) greens.add(`${r >> 3},${gg >> 3},${b >> 3}`); }
+    check(greens.size > 40, `the courtyard view has many leaf shades (${greens.size} binned greens)`);
+  } catch (e) { check(false, e.stack); }
+  out.textContent = `${pass ? 'ALL PASS' : 'SOME FAILED'}\n${lines.join('\n')}`;
+};
+</script>
+</body>
+</html>

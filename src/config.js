@@ -1370,6 +1370,28 @@ export const SEASON = {
   snow: { ground: 0xeef3f7, roof: 0xf4f7fa, hedge: 0xdfe8ec, paving: 0xe6ebee },
 };
 
+// Leaf-card crowns and branching trunks (#679, src/foliage.js) for the site's trees, shrubs, the courtyard's plantings and
+// vines and the far southern woodland. All visual choices (*guess*), tuned by eye against screenshots, no measurements:
+// `atlas` / `atlasPhone` px of the shared leaf atlas (2 × 2 cells); `cards` per lobe [desktop, phone] per level and the
+// core's icosphere `coreDetail` (triangles: detail 0 = 20, 1 = 80; a card = 2, drawn two-sided; the old flat-shaded lobe
+// was 80), `coreHoles` leaf-shaped holes punched into the core's atlas cell; a lobe
+// is radius 1 (instance-scaled): the opaque `core` radius, `lump` its unevenness, `coreJitter` its normals' scatter (no smooth
+// ball), `coreShade` its extra darkening (the shaded inside), the cards' centres between `shell` radii,
+// `size` their edge, `tilt` rad off the tangent plane, `jitter` of their normals; `ao` the vertex-colour darkening at the
+// bottom centre, `bright` an overall lift (the texture and `ao` darken; seasons' colours were set for flat faces);
+// `leafLight` the leaves' grey range in the atlas, `coreGround` the core's; `alphaTest` the card cut-off.
+// Trunk (height 1, instance-scaled): `base` / `top` radii, `sides`, a leader up the middle, `branches` (the first `forks`
+// of them forking once) from `from` up, reaching `reach` out and `rise` up (into the crown); ~46 triangles, the old
+// plain cylinder 28 (the crowns save more than the branches cost); `bark` px of the bark textures, `color` / `birchColor` their tints.
+export const FOLIAGE = {
+  atlas: 512, atlasPhone: 256,
+  cards: { tree: [20, 18], shrub: [14, 10], far: [8, 5] }, coreDetail: { tree: 0, shrub: 0, far: 0 }, coreHoles: 220,
+  core: 0.42, lump: 0.18, coreJitter: 0.45, coreShade: 0.95, shell: [0.45, 0.85], size: 0.72, tilt: 0.6, jitter: 0.35,
+  ao: 0.45, bright: 1.22, leafLight: [0.62, 1.0], coreGround: 0.45, alphaTest: 0.4,
+  trunk: { base: 0.2, top: 0.1, sides: 5, branches: 3, forks: 2, from: 0.5, reach: 0.95, rise: 0.3, color: 0x8a735f, birchColor: 0xf2efe8 },
+  bark: 64,
+};
+
 export const FENCE_HEIGHT = 1.8; // bofakta: Skärmvägg H = 1,8 m
 
 export const BUILDING = { // unused (HUS_L replaced it); kept in step with VERTICAL
