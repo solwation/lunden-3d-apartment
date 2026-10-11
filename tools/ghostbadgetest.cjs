@@ -26,7 +26,8 @@ const out = process.env.SHOTS || '/tmp/lunden-ghost-badges';
     await page.waitForFunction(()=>{fixture.tick();return fixture.peers.every(g=>g.connected)&&fixture.peers[0].list().length===3;},null,{timeout:15000,polling:100});
     await page.waitForFunction(()=>{fixture.tick();return fixture.peers[0].list().every(g=>g.score>0&&g.tag);},null,{timeout:5000,polling:100});
     const before=await page.evaluate(()=>{const f=fixture;f.render();return {list:f.peers[0].list(),calls:f.renderer.info.render.calls,textures:f.renderer.info.memory.textures};});
-    if(before.calls!==7||before.textures!==3)throw new Error('Expected ground + three mesh/sprite pairs and three live tags: '+JSON.stringify(before));
+    // #705: each rendered avatar is a SkinnedMesh with a small bone texture of its own (3 tags + 3 bone textures)
+    if(before.calls!==7||before.textures!==6)throw new Error('Expected ground + three mesh/sprite pairs, three live tags and three bone textures: '+JSON.stringify(before));
     const diagnostics=await page.evaluate(async()=>{
       const f=fixture,g=f.peers[0],anonymous=[...g.others.values()].find(x=>x.name==='Anonym'),third=[...g.others.values()].find(x=>x.name==='O');
       if(anonymous.score!==123||third.score!==1e7)throw new Error('Anonymous / max score missing');
@@ -43,7 +44,7 @@ const out = process.env.SHOTS || '/tmp/lunden-ghost-badges';
       // Controlled small uploads: scores are immutable shared materials; old history is released.
       f.size(160,90);let peak=0;
       for(let i=0;i<50;i++){anonymous.push({p:[-.7,0,-2],r:Math.PI,score:500+i},performance.now());f.render();peak=Math.max(peak,f.renderer.info.memory.textures);}
-      if(peak!==3)throw new Error('Score history grows texture memory: '+peak);
+      if(peak!==6)throw new Error('Score history grows texture memory: '+peak);
       const noTags=(()=>{for(const ghost of g.others.values())ghost.tag.visible=false;f.renderer.render(f.scene,f.camera);return f.renderer.info.render.calls;})();
       const noShadow=[...g.others.values()].every(x=>!x.mesh.castShadow);
       f.render();return {scoreOnlyMessages:1,idleUnchanged:true,peakTextures:peak,noTagsCalls:noTags,tagCalls:f.renderer.info.render.calls-noTags,noShadow,tagPixels:256*64*4*4/3,scale:[f.G.tagWidth,f.G.tagHeight]};
@@ -60,7 +61,7 @@ const out = process.env.SHOTS || '/tmp/lunden-ghost-badges';
       f.peers.forEach(g=>g.disconnect());f.renderer.render(f.scene,f.camera);
       return {removed,remainingTextures,finalTextures:f.renderer.info.memory.textures,finalGhosts:f.peers[0].list().length,glError:f.renderer.getContext().getError()};
     });
-    if(!leave.removed||leave.remainingTextures!==2||leave.finalTextures!==0||leave.finalGhosts!==0||leave.glError!==0||errors.length)throw new Error(JSON.stringify({leave,errors}));
+    if(!leave.removed||leave.remainingTextures!==4||leave.finalTextures!==0||leave.finalGhosts!==0||leave.glError!==0||errors.length)throw new Error(JSON.stringify({leave,errors}));
     fs.writeFileSync(`${out}/badge-results.json`,JSON.stringify({before,diagnostics,leave,errors},null,2));
     console.log('PASS: real room score/welcome, anonymous/max score, smaller shared tags, score-only rate/idle, 50 updates without texture growth, 1 tag draw per ghost, departure/disposal; desktop + iPhone-size rendered images.');
   } finally { await browser.close(); }

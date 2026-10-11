@@ -116,7 +116,7 @@ src/huego.js           the Philips Hue Go on Sovrum 1's window board (#409, #428
                        action menu (#367, an ActionSet; FloorLamp `options`) = Tänd/Släck + Byt färg (scenes), the colour kept by keep.js
 src/screens.js         TV programmes drawn on a canvas (PROGRAMS: space, underwater, superheroes, unicorn …), channel
                        snow, the Ambilight colour per programme; `Screen` is shared by the TVs in furniture.js
-tools/mirrortest.html  headless test: in front of every mirror its Reflector is the active one, on the glass (#139)
+tools/mirrortest.html  headless test: in front of every mirror its Reflector is the active one, on the glass (#139); our own avatar is drawn once inside the active mirror's pass, hidden again after it and not at all when no mirror reflects (#691)
 tools/weathertest.html headless test (#674 too: simTemp, RealWeather against a mock service, the fixture in the page, 404 → the draw, cache on a second load, future → simulated, `&temp=`): showers per season, thunderstorms only in late summer, a shower ramps in; with &weather=storm:
                        drops (none inside Hus L), grey sky, a flash and back, ⛈ in the HUD; snow only in winter, hail in
                        spring / storms, snowflakes not in Hus L, walking 20 m out in it counts once, not indoors; clear = no rain

@@ -96,7 +96,7 @@ tools/nerfcombattest.html Nerf (#714), small rendered actual-module scene and tw
                        confirmed nonpositional WebAudio, mute and denial. Separate transport-spy lifecycle checks cover
                        deferred snapshot, one normal shot message, reset/disconnect/unarmed, deadline and queue overflow.
                        Start `node cloudflare/dev.mjs 8718 testtoken`; #out reports 32 checks. Keep nerftest's paint regression.
-tools/ghosttest.cjs    other players as ghosts (#666): two Playwright pages against `node cloudflare/dev.mjs 8146 testtoken` (real ws:// via
+tools/ghosttest.cjs    other players as ghosts (#666; avatars since #705: outline, skinned mesh, ~20 min under a busy SwiftShader, the first avatar frame compiles the skinned program): two Playwright pages against `node cloudflare/dev.mjs 8146 testtoken` (real ws:// via
                        cloudflare/devws.mjs): ?mp=0 / no cloud off, see each other with tags Olof / "Anonym", position, standing still sends
                        nothing, a move arrives interpolated, the room's count, a closed / hidden tab disconnects; screenshots into SHOTS.
                        Also `node --test cloudflare/players.test.mjs` (cap, limits, brake). ~5 min under SwiftShader
