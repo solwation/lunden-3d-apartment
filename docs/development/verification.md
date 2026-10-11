@@ -78,11 +78,15 @@ tools/combattest.cjs   fights (#667): three pages (A, B, C) against dev.mjs: una
                        pool, drawn only), A's thrown ball on B (screenshot), ten hits (points / deductions / lives), out of lives → start,
                        full lives, weapon and stats kept; C's screenshot.
                        Pages drive ghosts / combat updates themselves (SwiftShader frames take seconds); ~10 min. Also players.test.mjs
-tools/combatworldtest.html combat collision (#715/#714), actual Three modules without WebGL: 459 focused checks cover native
+tools/combatworldtest.html combat collision (#715/#714), actual Three modules without WebGL: 462 focused checks cover native
                        hit/face/UV/normal equivalence, private grid/spatial-index quotas and ownership, authored bounds,
                        mutations/disposal, layers/custom propagation, instanced paths, curved finite segments, cooperative
                        yielding/deadlines/cancellation and shared urgent-build ownership. #out reports ALL PASS/FAIL.
                        This fixture does not measure apartment FPS or physical-phone PvP.
+tools/combatremotetest.cjs remote-dart spatial integration (#715), actual Combat.remote/reach and Darts.update without
+                       WebGL: controlled sparse mesh, same two shots/60 steps, bitmap admission disabled, independent native
+                       633c18c helper reference versus current spatial-ready views; reports active-count/endpoint equality and CPU.
+                       Companion HTML requires the runner-supplied historical source. No apartment/FPS/phone claim.
 tools/nerfcombattest.html Nerf (#714), small rendered actual-module scene and two players against local dev.mjs on 8718:
                        25 m server rule, actual muzzle/visible dart at 22 m, floor/range stops, wall/miss/capsule ordering,
                        confirmed nonpositional WebAudio, mute and denial. Separate transport-spy lifecycle checks cover

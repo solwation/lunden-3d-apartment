@@ -1,4 +1,5 @@
 [
+  {"id": 681, "date": "2026-10-11", "text": "Skott från andra spelare använder också den snabbare kontrollen mot hinder."},
   {"id": 680, "date": "2026-10-11", "text": "Nerfpilar når längre och en bekräftad träff på en annan spelare hörs med en egen tydlig ton."},
   {"id": 679, "date": "2026-10-11", "text": "Lägenheten startar även om ölhyllans lokala data saknas eller tar för lång tid att hämta."},
   {"id": 678, "date": "2026-10-11", "text": "Skottkontrollerna kan hoppa över tomma delar av stora modeller efter en begränsad bakgrundsförberedelse."},

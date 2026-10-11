@@ -1,0 +1,69 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><title>Remote dart spatial integration</title>
+<pre id="out">running…</pre>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
+<script type="module">
+import * as T from 'three';
+import { COMBAT } from '../src/config.js';
+import { Combat } from '../src/combat.js';
+import { buildToys } from '../src/toys.js';
+import { combatWorldState, combatWorldMetrics } from '../src/combatworld.js';
+import * as baseline from '../src/combatworld.js?baseline=633c18c';
+// Controlled sparse geometry, actual Combat.remote/reach and Darts.update. No renderer or Worker.
+const lines = []; let failures = 0;
+const check = (ok, label) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${label}`); failures += !ok; };
+const oldBudget = COMBAT.collision.budgetBytes, oldShotLife = COMBAT.shotLife;
+let geometry, combat;
+try {
+  if (baseline.TEST_BASELINE_SHA !== '633c18c') throw new Error('Run tools/combatremotetest.cjs to supply the unmodified historical helper.');
+  COMBAT.collision.budgetBytes = 0;
+  COMBAT.shotLife = 600; // Both CPU runs keep identical TTL eligibility, independent of wall-clock cost.
+  const scene = new T.Scene(), camera = new T.PerspectiveCamera(), group = new T.Group(); scene.add(camera, group);
+  const toys = buildToys(scene, camera);
+  for (const item of toys.items) { item.model.visible = false; item.holder.visible = false; }
+  for (const decoration of toys.deco) decoration.visible = false;
+  const vertices = [];
+  for (let i = 0; i < 32000; i++) {
+    const column = i % 64, tile = Math.floor(i / 64), x = (column - 32) * 10 + (tile % 20) * .05, y = .2 + Math.floor(tile / 20) * .08;
+    // Off-path triangles widen conservative bounds without blocking the dart.
+    const z = column === 32 && tile === 4 ? 1 : column === 32 && tile === 5 ? 50 : 17;
+    vertices.push(x,y,z, x+.05,y,z, x,y+.08,z);
+  }
+  geometry = new T.BufferGeometry(); geometry.setAttribute('position', new T.Float32BufferAttribute(vertices,3));
+  const wall = new T.Mesh(geometry,new T.MeshBasicMaterial({side:T.DoubleSide})); scene.add(wall);
+  const ghosts = {group,others:new Map(),connected:true,rules:{weapons:{nerf:{range:25}}}};
+  combat = new Combat({scene,camera,ghosts,weapon:()=> 'nerf',feet:()=>new T.Vector3(),darts:toys.darts});
+  scene.updateMatrixWorld(true);
+  baseline.prepareCombatWorld(scene, group, camera);
+  const deadline = performance.now()+15000;
+  while ((!combatWorldState(geometry).spatialReady || !baseline.combatWorldState(geometry).spatialReady) && performance.now()<deadline) await new Promise(r=>setTimeout(r,10));
+  const state = combatWorldState(geometry);
+  check(state.spatialReady && !state.ready && baseline.combatWorldState(geometry).spatialReady && !baseline.combatWorldState(geometry).ready && combatWorldMetrics().bitBytes === 0 && baseline.combatWorldMetrics().bitBytes === 0,'both historical and fixed spatial caches ready with bitmap allocation disabled');
+  const productionReach = combat.reach, nativeRay = new T.Raycaster(); nativeRay.camera = camera;
+  const historicalReach = function(o,d,range) {
+    nativeRay.set(o,d); nativeRay.far=range; nativeRay.layers.mask=camera.layers.mask;
+    return baseline.combatWorldHits(scene,group,camera,nativeRay)[0]?.distance ?? range;
+  };
+  const run = reach => {
+    combat.reach=reach; toys.darts.next=0;
+    for(const dart of toys.darts.list){dart.g.visible=false;dart.flying=false;}
+    for(const x of [.025,.075]) combat.remote({w:'nerf',o:[x,1.5,0],d:[0,.03,1],s:30},{id:'fixture-shooter',h:'nerf',root:new T.Group()});
+    const samples=[], active=[];
+    for(let step=0;step<60;step++){active.push(toys.darts.list.filter(d=>d.flying && d.g.visible).length);const start=performance.now();toys.darts.update(1/60);samples.push(performance.now()-start);}
+    return {samples,active,end:toys.darts.list.slice(0,2).map(d=>({p:d.g.position.toArray(),flying:d.flying,visible:d.g.visible}))};
+  };
+  const native=[],fixed=[]; let equal=true;
+  for(let repeat=0;repeat<5;repeat++) {
+    const before=run(historicalReach),after=run(productionReach); native.push(...before.samples); fixed.push(...after.samples);
+    equal &&= before.active.every((count,i)=>count===after.active[i]) && before.end.every((d,i)=>d.flying===after.end[i].flying && d.visible===after.end[i].visible && d.p.every((v,j)=>Math.abs(v-after.end[i].p[j])<1e-8));
+  }
+  check(equal,'same two remote shot inputs and 60 steps preserve active counts and final positions/flight/visibility');
+  const summary = samples => {const sorted=[...samples].sort((a,b)=>a-b);return {medianMs:sorted[Math.floor(sorted.length*.5)],p95Ms:sorted[Math.floor(sorted.length*.95)],totalMs:samples.reduce((a,b)=>a+b,0)};};
+  const timings={historical633:summary(native),fixed:summary(fixed)};
+  check(timings.fixed.totalMs<timings.historical633.totalMs,'spatial-only integration reduces measured actual remote dart update CPU in controlled scene');
+  window.timings=timings;
+  lines.push(JSON.stringify({scope:'actual unmodified 633c18c helper versus current helper, controlled 32000-triangle sparse mesh including offpath z-extents, actual Combat.remote/Darts.update, bitmap 0/spatial ready; five repetitions two shots/60 steps; CPU only/no apartment/FPS/phone/Worker claim',timings,state}));
+} catch(error) {check(false,error.stack||String(error));}
+finally {COMBAT.collision.budgetBytes=oldBudget;COMBAT.shotLife=oldShotLife;geometry?.dispose();combat?.el.remove();combat?.flashEl.remove();}
+lines.push(`${failures ? 'FAIL' : 'ALL PASS'} ${lines.filter(l=>l.startsWith('PASS')||l.startsWith('FAIL')).length} checks`);
+document.querySelector('#out').textContent=lines.join('\n');window.result={pass:!failures,lines,timings:window.timings};
+</script>

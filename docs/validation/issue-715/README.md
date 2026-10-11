@@ -27,3 +27,13 @@ An actual local PlayerRoom and production Ghosts sample measured two shooters at
 **#715 remains open.** Physical-phone idle/one-shooter/two-shooter frame timing, visible effect cost and user experience still need verification; this change only demonstrates and reduces one reproducible desktop CPU bottleneck.
 
 Detailed local artifacts: `/tmp/lunden-715-shots` (JSON samples/source harnesses); fixture output `/tmp/lunden-715-fixture-result.txt`.
+
+## Spatial-ready remote-dart integration follow-up
+
+After #714, remote darts' `Combat.reach` queries also route overlapping segments through the guarded private spatial triangle views. This avoids waiting for the later bitmap-fill phase; unsafe/instanced/custom cases keep their native fallback.
+
+The Three/no-WebGL fixture passes **462 checks**: previous 459 plus 3 forced-bitmap-zero integration checks proving independent native object/face/UV/normal/distance equality and fewer actual vertex reads on an overlapping spatial-ready hit. Vertex-counter evidence is separate from the uninstrumented CPU run.
+
+`tools/combatremotetest.cjs` supplies the actual historical 633c18c helper source from `git show` to the companion HTML fixture; only an export identifying the baseline is appended. Both historical and fixed helpers have spatial-ready caches with bitmap admission zero, so the historical reference retains its actual semantic filtering and private-bounds/spatial pruning. The controlled small 32,000-triangle sparse mesh includes off-path z-extents; it is not apartment geometry. Actual `Combat.remote/reach` and `Darts.update` run five repetitions of the same two shots and 60 steps. Remote TTL is temporarily 600 s, restored in `finally`; active counts per step and final positions/flight/visibility agree. All 3 checks pass. Historical update CPU totals 2285.2 ms versus 126.3 ms; median 7.7 ms versus 0.3 ms and p95 15.5 ms versus 0.9 ms. No renderer/Worker/FPS/physical-phone claim; #715 stays open.
+
+Logs: `/tmp/lunden-715-integration-result.txt`, `/tmp/lunden-715-remote-exact-result.txt`.

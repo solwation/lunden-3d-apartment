@@ -493,6 +493,32 @@ try {
   waiting.attributes.position.setX(0,-2); waiting.attributes.position.needsUpdate = true;
   check(await invalidatingWaiter === null,'invalidated pending entry conservatively cancels query');
   check(combatWorldState(waiting).urgentUsers === 0 && !combatWorldState(waiting).urgent,'invalidated replacement never inherits ownerless urgent priority'); waiting.dispose();
+  // Remote Darts use combatWorldHits, not the prepared arc-path API. Prove that
+  // its overlapping segment consumes spatial-ready views before any bitmap exists.
+  const remoteBudget = COMBAT.collision.budgetBytes;
+  try {
+    COMBAT.collision.budgetBytes = 0;
+    clear();
+    const remoteGeometry = new T.BoxGeometry(2, 2, 2, 12, 12, 12); remoteGeometry.clearGroups();
+    const remoteMesh = new T.Mesh(remoteGeometry, material()); scene.add(remoteMesh); scene.updateMatrixWorld(true);
+    prepareCombatWorld(scene, ghosts, camera);
+    const remoteDeadline = performance.now() + 10000;
+    while (!combatWorldState(remoteGeometry).spatialReady && performance.now() < remoteDeadline) await new Promise(r => setTimeout(r, 10));
+    const remoteState = combatWorldState(remoteGeometry);
+    check(remoteState.spatialReady && !remoteState.ready && COMBAT.collision.budgetBytes === 0, 'remote solid-hit probe is spatial-ready with no bitmap');
+    ray.set(new T.Vector3(0.05, 0.07, 2), new T.Vector3(0, 0, -1)); ray.near = 0; ray.far = 3;
+    const position = remoteGeometry.attributes.position, getX = position.getX;
+    let reads = 0; position.getX = function(i) { reads++; return getX.call(this, i); };
+    try {
+      const expected = ray.intersectObject(remoteMesh, false), nativeReads = reads; reads = 0;
+      const actual = combatWorldHits(scene, ghosts, camera, ray), acceleratedReads = reads;
+      check(expected.length > 0 && expected.length === actual.length && expected.every((h,i) => h.object === actual[i].object &&
+        h.faceIndex === actual[i].faceIndex && h.face.a === actual[i].face.a && h.face.b === actual[i].face.b && h.face.c === actual[i].face.c &&
+        equalVector(h.uv,actual[i].uv) && equalVector(h.normal,actual[i].normal) && Math.abs(h.distance-actual[i].distance)<1e-8),
+        'remote solid-hit spatial-only metadata matches independent native raycast');
+      check(acceleratedReads > 0 && acceleratedReads < nativeReads, 'overlapping remote query genuinely uses spatial triangle selection');
+    } finally { position.getX = getX; remoteGeometry.dispose(); }
+  } finally { COMBAT.collision.budgetBytes = remoteBudget; }
 } catch (error) { check(false, error.stack || String(error)); }
 lines.push(`${failures ? 'FAIL' : 'ALL PASS'} ${checks} checks; actual Three, no WebGL`);
 document.getElementById('out').textContent = lines.join('\n');

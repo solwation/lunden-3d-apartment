@@ -408,7 +408,7 @@ export function combatWorldHits(scene, ghosts, camera, ray) {
       const nativeMesh = nativeMeshes.has(object.raycast);
       if (nativeMesh && accepts(object, ghosts, camera)) {
         if (empty(object, ray)) metrics.prunedQueries++;
-        else { metrics.fallbackQueries++; propagate = object.raycast(ray, hits) !== false; }
+        else { metrics.fallbackQueries++; propagate = rangedHits(object, ray, hits, null) !== false; }
       } else if (!nativeMesh && !nativeNonMeshes.has(object.raycast)) {
         propagate = object.raycast(ray, hits) !== false;
       }
