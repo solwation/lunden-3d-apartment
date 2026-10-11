@@ -6,7 +6,9 @@ import { WARM } from './config.js';
 // in it in one frame — a freeze of a couple of seconds; the first mirror in view compiled ~50 programs (#592).
 // Stages, one per frame or idle slot, driven by `tick()` from the game loop:
 //  1. `WARM.frames` frames in (after lampwash has patched the materials: the programs compiled are the final ones)
-//     every material's program is compiled (compileAsync: in parallel where the GPU can);
+//     every material's program is compiled (compileAsync; `prepare()` first, #668: the lamp washes' own patching of materials
+//     made since the scene was built runs every 120 frames, and a patch recompiles a material under a new key — it
+//     happened to fall in the first turning frames after the warm-up, 7–20 new programs in a frame); compileAsync runs in parallel where the GPU can);
 //  2. ONE frame is drawn with every layer — the camera's and the sun's shadow camera's (DetailCuller's layer 7 too) —
 //     and no frustum culling, shadows included, which uploads the rest; the next frame draws over it;
 //  3. the mirror variants (#592): a mirror draws into a half-float render target, where three uses no tone mapping and
@@ -19,8 +21,8 @@ import { WARM } from './config.js';
 // Headless test browsers skip it (minutes of SwiftShader, nobody looks), `&warm` forces it.
 export class WarmUp {
   /** `mirrorTarget()` → the render target mirrors draw into (or null); `log(text)` for `&perf`. */
-  constructor({ renderer, scene, camera, shadowCamera, mirrorTarget = () => null, skip = false, lazyHidden = false, log = null, onSlowFrame = () => {} }) {
-    Object.assign(this, { renderer, scene, camera, shadowCamera, mirrorTarget, lazyHidden, log, onSlowFrame });
+  constructor({ renderer, scene, camera, shadowCamera, mirrorTarget = () => null, prepare = () => {}, skip = false, lazyHidden = false, log = null, onSlowFrame = () => {} }) {
+    Object.assign(this, { renderer, scene, camera, shadowCamera, mirrorTarget, prepare, lazyHidden, log, onSlowFrame });
     this.state = skip ? 'skipped' : 'pending'; // → compiling → draw → mirror → compiling → mirror-draw → textures → uploading → done
     this.wait = WARM.frames;
     this.textures = null;
@@ -32,7 +34,7 @@ export class WarmUp {
   tick() {
     switch (this.state) {
       case 'pending':
-        if (--this.wait <= 0) this.compile(null, 'draw');
+        if (--this.wait <= 0) { this.prepare(); this.compile(null, 'draw'); }
         return false;
       case 'draw': this.drawAll(null); this.state = 'mirror'; return true;
       case 'mirror': {

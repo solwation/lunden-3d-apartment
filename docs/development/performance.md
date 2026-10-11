@@ -133,6 +133,17 @@ time the mirror draws, then none). Longest turning frame (SwiftShader, loaded ma
 the desktop frame and 9 886 → 484 ms on the phone frame; median frame at the mirrors 204 → 101 ms.
 Not covered: materials made after the start (cups, cat coats, new life items) still compile when first drawn.
 
+**Lamp-wash patch after the warm-up (#668).** `turntest ?lowmem&spots=living,kitchen` failed with 10–20 new programs in the
+first kitchen lap (and `living` now and then). Not SwiftShader timing: listing `renderer.info.programs` that appeared per frame
+(turntest now prints each new program's cacheKey tail and the objects using it) showed the same materials under a new key,
+`…|lampwash` → `…|lampwash|lampwashV`. `LampWashes.patch()` runs every 120 frames for both washes (ours, `Lights`; the visitable
+flats', `VisitLights`) and gives materials made since the last patch the lamp shader, which sets `needsUpdate` and so recompiles
+them. The first periodic patch fell ~120 frames after the start, i.e. in the first frames after the warm-up (3 frames in), and
+hit whatever was drawn then (mess meshes, drop-off, instanced things); in turntest that is the kitchen's first lap. Fix:
+`WarmUp` takes `prepare()` and calls it right before the first compile; main.js passes both washes' `patch(scene)`. After it:
+0 new programs at living and kitchen in 3 of 3 runs (2 `?lowmem` + 1 desktop; the other spots pass too, before: kitchen 20 / 20 / 10 new in three runs, living 11 in one).
+Materials created later (cups, cat coats) are still patched by the 120-frame loop and compile when first drawn.
+
 **Adaptive quality level (step C).** `src/quality.js` (`Quality`, `__app.quality`, `QUALITY` in config) replaces #460's
 three pixel-ratio tiers (`dynRes`). One level 0 (lowest) … 3 (highest), steered by the real frame time: down one level
 when 3 frames of ≥ 50 ms fall within 0.5 s (repeated hitches) or after 1.5 s under 30 fps; up one level only after 5 s

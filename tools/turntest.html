@@ -40,7 +40,19 @@ f.onload = async () => {
   const gl = renderer.getContext(), px = new Uint8Array(4), doSync = own.has('sync');
   const sync = () => { if (doSync) gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px); };
   sync();
-  const frame = () => { const t = performance.now(); app.frame(1 / 60); sync(); const rec = { ...app.hitch.last, wall: performance.now() - t }; return rec; };
+  // names of programs that appeared during a frame (renderer.info.programs: three's cacheKey tells the variant)
+  let known = new Set(renderer.info.programs.map((q) => q.id));
+  const snap = new Map(); app.scene.traverse((o) => { for (const m of [o.material].flat()) if (m) snap.set(m, renderer.properties.get(m).currentProgram?.cacheKey); });
+  const diff = (a, b) => { if (!a) return 'was none'; const x = a.split(','), y = b.split(','); return x.map((v, i) => v !== y[i] ? `#${i - x.length}: ${v.slice(0, 40)} -> ${(y[i] ?? '').slice(0, 40)}` : null).filter(Boolean).join(' | '); };
+  const frame = () => {
+    const t = performance.now(); app.frame(1 / 60); sync();
+    const fresh = renderer.info.programs.filter((q) => !known.has(q.id));
+    for (const q of fresh) known.add(q.id);
+    // which objects use them (three keeps the material's current program in renderer.properties)
+    const ids = new Set(fresh.map((q) => q.id)), users = [];
+    if (ids.size) app.scene.traverse((o) => { for (const m of [o.material].flat()) if (m && ids.has(renderer.properties.get(m).currentProgram?.id)) { let n = o.name || o.type, p = o.parent; for (let i = 0; i < 4 && p; i++, p = p.parent) n = (p.name || p.type) + '/' + n; users.push(`${n} {${diff(snap.get(m), renderer.properties.get(m).currentProgram.cacheKey)}} [${m.type}${m.name ? ' ' + m.name : ''}] vis=${o.visible} layers=${o.layers.mask}`); } });
+    return { ...app.hitch.last, wall: performance.now() - t, fresh: fresh.map((q) => q.cacheKey.split(',').slice(-24).join(',')), users };
+  };
   const sum = (recs, k) => recs.reduce((s, r) => s + (r.delta[k] ?? 0), 0);
   const lines = [`warm-up ${app.warm.state} (${(warmMs / 1000).toFixed(1)} s waited), frame ${f.width}×${f.height}`], result = { spots: {} };
   // the start's own transients first (the warm-up's GPU backlog; blinds and curtains settling keep the shadow map redrawing)
@@ -67,7 +79,7 @@ f.onload = async () => {
     const turn = lapRecs.flat(), progs = sum(turn, 'programs'), tex = sum(turn, 'textures');
     allProgs += progs; allTex += tex; worst = Math.max(worst, ...turn.map((r) => r.wall));
     for (const r of lapRecs[0]) if (r.delta.programs || r.delta.textures || r.wall > 3 * Math.max(1, lapRecs[laps - 1].map((q) => q.wall).sort((a, b) => a - b)[11]))
-      lines.push(`    ${r.turn}°: ${r.wall.toFixed(0)} ms ${JSON.stringify(r.phases)} ${JSON.stringify(r.delta)}${r.mirror ? ' mirror ' + r.mirror : ''}${r.shadow ? ' shadow ' + (r.shadowWhy ?? '') : ''}`);
+      lines.push(`    ${r.turn}°: ${r.wall.toFixed(0)} ms ${JSON.stringify(r.phases)} ${JSON.stringify(r.delta)}${r.mirror ? ' mirror ' + r.mirror : ''}${r.shadow ? ' shadow ' + (r.shadowWhy ?? '') : ''}${r.delta.programs ? '\n      new: ' + r.fresh.join('\n      new: ') + '\n      by: ' + [...new Set(r.users)].slice(0, 8).join('\n      by: ') : ''}`);
     result.spots[name] = { arrive, laps: lapRecs };
     lines.push(`${progs === 0 && tex === 0 ? 'PASS' : 'FAIL'} ${name}: ${progs} new programs, ${tex} new textures while turning`);
     pass &&= progs === 0 && tex === 0;

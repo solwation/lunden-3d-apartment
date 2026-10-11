@@ -2376,6 +2376,7 @@ quality.register('detail', { // DetailCuller's distances (#189, #460): small thi
   apply: (l) => detail.setQuality(QUALITY.detail[l]), state: (l) => `distance ×${QUALITY.detail[l]}`, cost: 'draw calls of small far things' });
 // Warm-up (#432, #592, src/warmup.js): compile and upload everything behind the start screen, the mirrors' variants too.
 const warm = new WarmUp({ renderer, scene, camera, shadowCamera: sun.shadow.camera, mirrorTarget,
+  prepare: () => { lights.wash?.patch(scene); visitLights.wash?.patch(scene); }, // (#668: both lamp washes' periodic patch, now)
   skip: /HeadlessChrome/.test(navigator.userAgent) && !params.has('warm'), lazyHidden: lowMemory, log: perfEl ? (t) => console.log(t) : null,
   onSlowFrame: () => clock.getDelta() }); // (a slow warm-up frame is no reason to lower the resolution)
 freeSceneGeometryCopies(scene, renderer); // phone: normals / uv / colours leave the CPU after the first upload (#628)
