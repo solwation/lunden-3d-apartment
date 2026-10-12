@@ -442,7 +442,7 @@ remain open; their dynamic real-time values and full default section coverage st
 | `jetpacktest.html` | Accepted in #822 | Complete original full/test logs byte-identical, 37 ordered PASS with exact numeric flight/heat/roof/native keep/touch rows; native 900×600/null controller versus 480×300/real test APIs. Original input simulation and every state predicate retained. |
 | `jumpontest.html` | Accepted in #822 | Complete original full/test logs byte-identical, 35 ordered PASS plus exact full info furniture diagnostic; native original 900×600/null controller versus 480×300/real test APIs. Authored pointerLock getter/synthetic event retained. |
 | `keytest.html` | Migrated (#821) | 21 identical ordered PASS rows, 0 FAIL; original authored 900×600/full enters native 1280×800 fullscreen → 480×300/test. Native cabinet/key, garage/asphalt/collision and DetailCuller layer/cut diagnostics preserved; evidence below. |
-| `kittentest.html` | Candidate | Kitten behavior/actions and actual scene/state. |
+| `kittentest.html` | Original full retained (#822) | Both complete modes have 16 PASS, but exact raw rows 2/12 differ in native cat name/breed/score/badge and photo name. Comparison exit 1; no normalization, migration or proven product bug/cause. Current original including #848 writer restored byte-for-byte, pre-pair guard removed. |
 | `laptoptest.html` | Logical parity (#823); full capture failed | All 13 ordered PASS rows and ALL PASS byte-identical, including texture v2→v8 and seeded clip order. Full ready 900×600 → native fullscreen 1280×800/controller null; test 480×300/real API/no fullscreen. Actual exit 0; `/tmp/runtests-496140/`. Full screenshot timed out; test-only image, exclude speedup aggregation. |
 | `laundrytest.html` | Conditional candidate | Programme/actions/reloads with real-time values in rows; exact comparison may differ, no normalization. |
 | `life2test.html` | Candidate | Actual life/item action integration and persistence. |
@@ -1971,8 +1971,8 @@ verdict or scene. This pair is excluded from speedup aggregation because capture
 coverage is asymmetrical. Complete row/diagnostic proof
 comes from raw logs, not image coverage; no platform-scene or pixel equivalence
 is claimed. Frozen source/helper hashes, native snapshots and genuine monitor
-PID/SID/exit: `/tmp/lunden-flight822/jumpontest/`. Kitten remains pending
-under #822; jetpack acceptance is recorded below. #739/#736 remain open. Kitten's legitimate error-writer
+PID/SID/exit: `/tmp/lunden-flight822/jumpontest/`. Jetpack and kitten final
+dispositions are recorded below. #739/#736 remain open. Kitten's legitimate error-writer
 protocol fix #848 is preserved separately from the approved pre-pair testMode-only
 fullscreen guard and unchanged authored random/seed behavior.
 
@@ -2034,8 +2034,8 @@ clipped at the right/bottom, with no final verdict or scene. Raw logs prove ever
 complete diagnostic; no intermediate flight/flame or rendered-pixel equivalence
 is claimed. This pair is excluded from speedup aggregation because capture
 coverage differs. Frozen source/helper hashes, native snapshots and genuine
-monitor PID/SID/exit: `/tmp/lunden-flight822/jetpacktest/`. Kitten remains pending
-under #822; #739/#736 remain open.
+monitor PID/SID/exit: `/tmp/lunden-flight822/jetpacktest/`. Kitten final
+disposition is recorded below; #739/#736 remain open.
 
 ## Hall care and keys: key acceptance (#821)
 
@@ -2078,3 +2078,35 @@ complete: hall-care 24, hall-task 17 and key 21 exact ordered PASS rows per mode
 including the authored reload/reset/blank/storage flows and complete diagnostic
 rows. Capture
 limitations remain separate from native logical acceptance. #739/#736 stay open.
+
+## Kitten complete raw-difference disposition (#822, final)
+
+`kittentest` retains its whole current original 900×600/plain-index full setup,
+including the legitimate #848 exception-writer correction. The approved pre-pair
+testMode-only fullscreen guard has been removed; fixture bytes are exactly HEAD.
+On frozen `618bf33` plus the guard, `/tmp/runtests-500047/` completed both modes:
+16 ordered PASS and ALL PASS in each, zero FAIL/pageerrors. Exact raw comparison
+is DIFFERENT and the independent monitor exited 1: only row 2 differs in native
+cat name/breed/score/badge (full Lilla Ebba/siames/+342.0/ordinary-cat badge versus
+test Smulis/perser/+412.0/rare-cat badge), and row 12 differs in its photo name.
+The other fourteen PASS rows are exact, including authored seed2024 draw, play
+loops, geometry, petting, cup and hurt diagnostics; no predicate or seed changed.
+Original temporary cat.rand-pounce behavior remains untouched. This pair proves
+no fixed cause or product failure; no retry, normalization or migration was made.
+
+Two native ready and two final records verify one actual app document per mode:
+full starts at authored 900×600/null controller, then original touch requests
+native fullscreen with final 1280×800; test remains 480×300/real test APIs without
+fullscreen. URLs/timeOrigins match within each pass. Wall 136.067s/95.962s
+includes both saved/inspected captures and is excluded from speedup aggregation
+because raw results differ and capture coverage is asymmetrical. Full image is
+the native fullscreen night living-room/table/rug/HUD without parent results or
+cat; test shows all sixteen vertical rows/ALL PASS with long text cropped right
+and only a thin canvas edge. No cat/action-scene or rendered-pixel equivalence
+is claimed. Current/frozen fixture and helper hashes, complete raw differences,
+actual native phases and genuine monitor PID/SID/exit:
+`/tmp/lunden-flight822/kittentest/`.
+
+All three bounded #822 dispositions are complete: jump-on 35 and jetpack 37
+identical PASS rows accepted; kitten retains original full after two distinct
+but individually passing complete results. #739/#736 remain open.
