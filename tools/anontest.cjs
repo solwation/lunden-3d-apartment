@@ -57,7 +57,7 @@ const wipe = () => fetch(`${worker}/admin/all`, { method: 'DELETE', headers: { A
     const pc = C.page;
     check(await pc.evaluate(() => !document.querySelector('.share-off, .share-row') && localStorage.getItem('lunden.share') === null), 'no opt-out box, and the old lunden.share value is removed');
     const note = await pc.evaluate(() => { const n = document.getElementById('share-note'); const r = n.getBoundingClientRect(); return { vis: !n.hidden && r.width > 0, text: n.textContent }; });
-    check(note.vis && /syns för andra spelare/.test(note.text), 'the start screen says you are visible to others', note.text);
+    check(note.vis && /är online/.test(note.text) && /avatar/.test(note.text), 'the start screen says others see you online and your avatar', note.text);
     await pc.evaluate(() => { window.__app.bump('pvpHits'); return window.__app.leaderboard.send(); });
     await pc.evaluate(() => window.__presence.beat());
     check(!!(await until(async () => (await api('/scores')).some((r) => r.name === '' && r.score > 0))), 'an old opt-out value does not stop the score');
@@ -71,6 +71,7 @@ const wipe = () => fetch(`${worker}/admin/all`, { method: 'DELETE', headers: { A
       const m = await pc.evaluate(() => { const d = document.getElementById('privacy-dialog'), c = d.querySelector('.card').getBoundingClientRect(), b = document.getElementById('privacy-dialog-close').getBoundingClientRect();
         return { open: !d.hidden, c: [c.left, c.top, c.right, c.bottom], b: [b.top, b.bottom], text: d.textContent.includes('Cookies och spårning') }; });
       check(m.open && m.text && m.c[0] >= 0 && m.c[1] >= 0 && m.c[2] <= w && m.c[3] <= h && m.b[1] <= h, `the privacy page fits at ${w}x${h}`, JSON.stringify(m));
+      check(await pc.evaluate(() => { const h = document.querySelector('#privacy-dialog h2'); return !!h && /Vad andra spelare ser/.test(h.textContent) && /avatar/.test(h.parentElement.textContent) && /online/.test(h.parentElement.textContent); }), `the privacy page starts with "Vad andra spelare ser" at ${w}x${h}`);
       await pc.screenshot({ path: `${shots}/anon-privacy-${w}x${h}.png`, timeout: 240000 });
       await pc.evaluate(() => document.getElementById('privacy-dialog-close').click());
       check(await pc.evaluate(() => document.getElementById('privacy-dialog').hidden), `the privacy page closes at ${w}x${h}`);
