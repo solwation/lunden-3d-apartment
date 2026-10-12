@@ -18,12 +18,37 @@ document.body.append(f);
 f.onload = async () => {
   if (document.readyState !== 'complete') await new Promise((r) => window.addEventListener('load', r, { once: true })); // media loads after the outer test document
   const w = f.contentWindow, d = f.contentDocument;
-  while (!w.__app) await wait(100);
+  // Companion driver: node tools/sonosstart.cjs sonostest.html --jobs 1
+  // Keep startup rendering alive until the real loading cover releases, then require one trusted game-button click.
+  const start = w.__sonosStart = { ready: false, click: null, beforeFirstMedia: null };
+  try {
+    const deadline = performance.now() + 180000;
+    while (!w.__app || !d.getElementById('loading')?.hidden) {
+      if (performance.now() > deadline) throw new Error('Sonos setup: app/loading cover not ready within 180 s');
+      await wait(100);
+    }
+    w.__app.renderer.setAnimationLoop(null); // Original manual-step/media ordering, after startup cover has released.
+    await new Promise((resolve, reject) => {
+      const button = d.getElementById('start-touch');
+      const done = () => { clearTimeout(timer); button.removeEventListener('click', clicked, true); start.ready = false; };
+      const clicked = (e) => {
+        if (!e.isTrusted) return;
+        start.click = { trusted: e.isTrusted, time: w.performance.now(), active: w.navigator.userActivation.isActive,
+          hasBeenActive: w.navigator.userActivation.hasBeenActive, loadingHidden: d.getElementById('loading').hidden };
+        done();
+        if (!start.click.active || !start.click.hasBeenActive || !start.click.loadingHidden) {
+          reject(new Error('Sonos setup: trusted start lacks activation or released loading cover')); return;
+        }
+        resolve();
+      };
+      const timer = setTimeout(() => { done(); reject(new Error('Sonos setup: trusted start-touch click missing within 30 s; use sonosstart.cjs')); }, 30000);
+      button.addEventListener('click', clicked, true);
+      start.ready = true;
+    });
+  } catch (e) { out.textContent = `FAIL ${e.message}\nSOME FAILED`; return; }
   const { player, camera, step, world, scene, sonos, toggleFurniture } = w.__app;
-  w.__app.renderer.setAnimationLoop(null); // drive steps below; give the media decoder time without software rendering
   const lines = [];
   const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; };
-  d.getElementById('start-touch').click();
   await wait(50);
   const btn = d.getElementById('action'), panel = d.getElementById('sonos-panel');
   const V = camera.position.constructor;
@@ -43,6 +68,7 @@ f.onload = async () => {
   let label = aim(p, [p.x, p.z + 0.9]); // from the room: it stands on the kitchen window board (#289)
   pass &= check(/^spela musik( på högtalaren)?$/i.test(label), `the black speaker (kitchen): "${label}"`);
   pass &= check(!w.performance.getEntriesByType('resource').some((e) => /\/music\/.*\.(ogg|mp3)/.test(e.name)), 'no music downloaded before play');
+  start.beforeFirstMedia = { time: w.performance.now(), hasBeenActive: w.navigator.userActivation.hasBeenActive };
   btn.click();
   for (let i = 0; i < 30; i++) step(1 / 30);
   await wait(300);

@@ -578,6 +578,70 @@ Phone memory probe (#628): `python3 tools/devserve.py 8628 . &` then `PLAYWRIGHT
 
 Park basement entries (#729): run `PLAYWRIGHT_MODULE=/path/to/playwright CHROME_PATH=/path/to/chrome node tools/basemententrytest.cjs http://localhost:8729` after starting the development server. `SHOTS` overrides `/tmp/lunden-basement-entry/result.json`'s directory. The driver waits bounded initialization, clicks the real mouse-start button, obtains PointerLock and runs `tools/basemententrytest.html`: actual E focus from outside before below, closed/open/jamb traversal to both −1 landings and back, the touch action handler in controlled touch mode, far animated leaves, courtyard pick/collision exclusion, continuous park paving, tree/shrub-instance clearance and floor coverage. It uses `&test=lazy`, with no automatic rendering; this is not a physical-phone touch/FPS test. [Measured scope and manual full-quality images](../validation/issue-729/README.md).
 
+## Sonos trusted fixture activation (#839)
+
+`sonostest.html` retains its original 900×600/no-query app and every real
+channel/currentTime/gain/context/decoder/fetch, authored WAV and missing-file
+assertion. Setup now waits up to 180 seconds for actual `__app` and the hidden
+loading cover while startup rendering continues. It then exposes its own
+readiness gate and waits up to 30 seconds for one trusted click on the actual
+game `#start-touch`. After actual cover release, animation is stopped before
+the gate, restoring the original manual-step/media setup order. Read-only
+`window.__sonosStart` records click trust/user activation/cover state and the
+first-media ordering; those observations do not alter raw result rows.
+
+Use the explicit companion with the published runner:
+
+```sh
+PLAYWRIGHT_MODULE=/path/to/playwright CHROME_PATH=/path/to/chrome \
+  node tools/sonosstart.cjs sonostest.html --jobs 1 --port 8737
+```
+
+The same companion also supports `--compare sonostest.html`; it waits for the
+fixture-owned gate and performs exactly one native locator click per mode.
+It adds no routes, test-source rewrite, autoplay policy, force click, audio or
+clock stub. The explicit wrapper runs the unchanged public runner as a child and combines
+its exit with structured IPC activation evidence, preserving every original
+nonzero code and forwarding termination for owned cleanup. Missing/failed
+activation makes the wrapper exit nonzero even if the child reports success. A plain runner invocation without the companion
+now fails with an explicit bounded setup message; manually opening the fixture
+and clicking the visible game start button also satisfies its gate.
+The unchanged authored fallback/SKIP branches remain intact. First native
+acceptance on `7d17c79` (`/tmp/runtests-363854/`) exited 1: native start locator
+timed out and the fixture emitted its bounded setup FAIL before any media
+assertion. Actual frame was 900×600/controller false. That first proposal had
+moved the original animation stop after the click. The corrected ordering
+stops only after loading-hidden but before the gate. The companion now records
+read-only ready-time frame/DOM/overlay/phone/button rect and hit-test evidence;
+no timeout, target or styles changed. This ordering follows the original setup;
+software-render starvation is not claimed as the observed first-run cause.
+Corrected **written-full** native acceptance on `d662121` plus this reviewed
+setup (`/tmp/runtests-368613/sonostest.log`) completed **37 PASS / 0 FAIL**,
+runner/wrapper exit 0, 97274 ms and no runtime/crash errors. Read-only readiness
+records show authored 900×600, `body.phone=false`, loading hidden, real
+`#start-touch` visibly hit-testable. One trusted click recorded active and
+hasBeenActive true at 91925.3 ms; first media action was later at 92145 ms with
+hasBeenActive true. Native fullscreen subsequently expanded to actual
+**1280×800**, no test parameter and controller false. This was a written run,
+so `modeVerified=null` correctly makes no full/test comparison claim.
+
+All six real channel clocks advanced (raw **0.03 / 0.07 / 0.07 / 0.07 / 0.07 /
+0.07 s**); the real AudioContext was running. Gain **0.177 → 0.232 → 0.126**,
+channel rotations, panners, floor muffling, missing-file failure status, complete
+fetch list and authored WAV decoder branch (readyState 4, playing, no error)
+remain in the untouched raw rows. No autoplay policy override, media/clock stub,
+seed, normalization or functional assertion change was used. The actual setup
+fix is accepted; #836's later independent full/test pair still must retain
+these dynamic raw values without masking differences.
+
+Frozen source and readiness/activation metadata are retained in
+`/tmp/lunden-sonos839/{corrected-run-provenance,actual-evidence}.json`. The final
+`sonos-full.png` was inspected: it shows the native fullscreen app UI and a
+blank sky canvas after the authored animation stop/manual steps; it does not
+prove rendered scene or audio playback visually. No fresh rendering or second
+app run was added for the image. The initial failed attempt remains preserved;
+no claim is made that rendering starvation caused it.
+
 ## Test-mode comparison: terrace decoration (#795)
 
 The unchanged original `terracedecortest` executable fixture (`9645849^`)
