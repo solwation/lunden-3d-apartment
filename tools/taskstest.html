@@ -11,7 +11,7 @@ const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 try {
   stage('loading iframe');
   const f = document.createElement('iframe');
-  f.width = 900; f.height = 600; f.src = '../index.html?life&shot'; document.body.append(f);
+  f.width = 480; f.height = 300; f.src = '../index.html?test&life&shot'; document.body.append(f);
   await new Promise((r) => { f.onload = r; });
   stage('iframe loaded, waiting __app');
   while (!f.contentWindow.__app) await wait(100);
