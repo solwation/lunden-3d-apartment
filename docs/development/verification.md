@@ -1344,3 +1344,32 @@ under `/tmp/lunden-care809/`; wall times include reviewed final captures.
 | bedcaretest | Migrated by adding `test` to the shared load URL only; existing 480×300, unconditional fullscreen suppression, pixelRatio(.15), all 22 predicates and three real loads remain unchanged. | Frozen `f0c07cc`, `/tmp/runtests-414727`: 22 ordered PASS and ALL PASS in each mode, entire logs byte-identical, no pageerrors; actual monitor exit 0. Wall 248.734s → 207.695s. Passive native evidence: six documents, six app-ready + four beforeunload + four pagehide + two final records; all 480×300/no fullscreen, full controller false/null versus real test APIs for every load. Runner's four earlier controller=null records remain explicit, completed by `bedcare-loads.jsonl`/`bedcare-evidence.json`. Both captures show raw results and the final courtyard/HUD, not a bed visual inspection or rendered-scene equivalence. |
 | clothtest | Pending actual comparison; original 900×600 and every rinse/interruption predicate retained. | Source preparation only. Approved pre-pair testMode-only fullscreen suppression before original start-touch; actual removed iframe requires app-ready/pagehide evidence and truthful final text capture. |
 | colddrawertest | Pending actual comparison; original 900×600, two native visits, all drawer/access/store/amount predicates retained. | Source preparation only; no runtime/parity claim. Existing unconditional fullscreen suppression retained; repeated drawer and reload rows must remain complete and ordered. |
+
+## Placement and stored photos: art-level acceptance (#808, partial)
+
+At frozen runtime `784e67b`, `artleveltest` restored only its original
+480×300/full query from `9645849^` for a published jobs1 comparison. All three
+authored main loads and both concurrently retained live clients were preserved,
+as were the existing unconditional fullscreen suppression, random cache-busting
+values, transforms, selection, cancellation, restoration and reload assertions.
+The default empty cloud parameter leaves the optional cloud-sync assertion
+unexecuted; source emits no SKIP row, and no optional-cloud coverage is claimed.
+
+Both complete raw logs are byte-identical (961 bytes, 20 PASS, 0 FAIL, ALL PASS),
+including repeated wall-preview/rotation rows. All six distinct app-ready
+documents, four leave snapshots and four retained final snapshots stayed
+480×300 without fullscreen. Full controllers were false; every test controller
+had native draw/setFull/wantsFrame functions with lazy/full false. URL/timeOrigin
+identities matched, with no observer errors or transport warnings. The public
+runner verified both modes; the independent monitor exited 0.
+
+Elapsed full/test times were 283.713/244.012 seconds including capture overhead.
+The full screenshot timed out after 10 seconds; the saved test viewport image
+contains cropped textual results, with the final sibling row and ALL PASS below
+the image. It provides no artwork/scene equivalence evidence. This asymmetrically
+captured pair is excluded from speedup aggregation. Complete raw logs/summary:
+`/tmp/runtests-418929/`; frozen source/helper hashes, native snapshots, actual
+exit, image and capture error: `/tmp/lunden-placement808/artlevel/`. All frozen
+runtime blobs matched after the pair. The written fixture returns to its
+existing test query without assertion changes. Board remains pending under
+#808; #738 and #736 remain open.
