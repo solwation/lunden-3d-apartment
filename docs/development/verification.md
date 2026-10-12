@@ -1057,8 +1057,27 @@ fullscreen suppression is preserved. Final committed change only reduces the exi
 Both end PNGs were inspected: all result rows plus the generic night courtyard, not graffiti/font-pixel or action-scene
 equivalence. Times include successful captures. Raw logs/summary: `/tmp/runtests-429394/`; runtime/fixture/helper
 hashes, phase records, genuine independent PID/SID/exit, source proof and images: `/tmp/lunden-codes810/cheat-*`
-and `cheattest-*`. All 247 frozen runtime hashes match; no page or observer errors occurred. Crouch still needs its
-own complete comparison; #810 remains open.
+and `cheattest-*`. All 247 frozen runtime hashes match; no page or observer errors occurred.
+
+
+#810 `crouchtest` is accepted: the complete original 900×600/`?shot` full/test comparison at frozen `c91b38b`
+has byte-identical raw logs, all 13 ordered PASS rows and ALL PASS, independently monitored actual exit 0.
+App-ready and final native records prove ONE actual main document per mode, full 900×600/null controller versus
+480×300/real controller API, both without fullscreen. The authored pointer-lock getter, synthetic keyboard and
+beforeunload events, and `autoReload.go` stub remain unchanged. Observed beforeunload `eventTrusted:false`
+is a synthetic event, not actual navigation; the version-reload assertion tests the original stub, not a second
+app load. This is no proof of an OS Ctrl+W/F5 action or a native pointer-lock grant. Final migration changes only
+iframe dimensions and adds the test query; all assertions and authored simulations are preserved.
+Full 121.986s and test 87.425s include capture attempts: the full screenshot FAILED after 60,000ms and its error
+is retained; only the successful test PNG was inspected (all 13 result rows and plain dark canvas).
+There is no full-image review, posture/avatar visual claim or pixel-equivalence claim. The asymmetrical capture
+cost excludes this pair from aggregate speedup calculations; no extra app load was run to replace the image.
+All 247 runtime hashes and exact frozen fixture/helper hashes match. Raw logs/summary: `/tmp/runtests-435043/`;
+source/provenance, independent PID/SID/exit, actual phases with child identity, test PNG and full capture error:
+`/tmp/lunden-codes810/crouch-*` and `crouchtest-*`.
+The bounded #810 comparison scope is complete: cheat 50 PASS and crouch 13 PASS are accepted; book retains
+its original full fixture after 12 PASS versus 10 PASS + two FAIL, with #846 still open and cause unknown.
+This is not an all-green batch or closure of the broader #738/#736 migration work.
 
 
 #807 beer-object comparison: `beercantest` retains its original full-mode loader and dedicated `?shots` path.
