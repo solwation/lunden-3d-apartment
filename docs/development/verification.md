@@ -332,7 +332,7 @@ A `setPixelRatio` call or one final `render` call alone does not justify a rende
 | `detailtest.html` | Full rendering | Detail culler: nearby doors drawn and distant details hidden. |
 | `dishrackpicktest.html` | Migrated (#785) | 30 identical ordered PASS rows, zero FAIL; actual 900×600 full/controller false → 480×300 test/controller true. 109.395 s → 77.926 s, single pair (`/tmp/runtests-277486`). Rack/cup rays, mouse/touch and inventory preserved. |
 | `drawtest.html` | Conditional candidate | Samples own 2D paper canvas via projected pointer coordinates, not WebGL pixels; retain pointer coverage. |
-| `eastbackdroptest.html` | Candidate | Campus source geometry/rays and full/lowmem model-detail parity (retain lowmem subcase). |
+| `eastbackdroptest.html` | Default migrated (#818); optional lowmem app stays full/unmeasured | 46 identical ordered PASS rows, 0 FAIL; native 720×480/full → 480×300/test, explicit FULL/LITE facade-builder checks preserved. Actual evidence and capture limits below. |
 | `eggtest.html` | Migrated (#785) | 27 identical ordered PASS rows, zero FAIL; actual 640×400 full/controller false → 480×300 test/controller true. 81.321 s → 71.104 s, single pair (`/tmp/runtests-279045`). Cooking/actions, colour/opacity and save/load preserved. |
 | `entrancedoortest.html` | Full rendering | 128×128 render-target pixel readback of handles/glazing. |
 | `entranceplantstest.html` | Candidate | Actual plant bounds, pots/floors and collision paths; DPR alone is not exclusion. |
@@ -1661,3 +1661,37 @@ app was started. Source/fixture/runner/helper hashes, all native phases, capture
 errors and genuine setsid/Popen/wait PID/SID/PGID/exit are retained under
 `/tmp/lunden-christmas813/`. The query-only migration preserves the original
 fixture's output and checks; #847 owns the independent output-protocol correction.
+
+## Entry and east geometry: east backdrop acceptance (#818, partial)
+
+One complete published jobs1 comparison at frozen runtime `e172e47` used the
+whole original 720×480/shot/month6/cloud-empty fixture without pre-pair edits.
+All current native source-polygon/window/roof/courtyard/tree/triangle assertions
+and explicit FULL/LITE campus-facade builder checks remained intact. The default
+pair did not execute the top fixture's optional `?lowmem` apartment branch.
+
+Both entire raw logs are byte-identical (2737 bytes, 46 PASS, 0 FAIL, ALL PASS),
+including every actual source polygon, window rays, 62 park trees, 75351 campus
+triangles and the explicit phone-detail builder's 23854 of 59085 triangles with
+unchanged windows/eaves/ridges/tower. The independently monitored runner exited 0
+and verified both modes, without raw pageerrors. Full app-ready/retained final
+were 720×480/controller false; test app-ready/final were 480×300 with genuine
+draw/setFull/wantsFrame APIs, lazy/full false. Neither mode entered fullscreen.
+Both unique URL/timeOrigin identities matched, with no observer errors/warnings.
+
+Elapsed full/test times were 111.579/86.476 seconds including capture overhead.
+Full capture timed out after 10 seconds; the saved test viewport contains cropped
+top textual results, with later geometry rows and ALL PASS below the image.
+No campus artwork/rendered-scene equivalence is claimed. Asymmetric capture
+excludes the pair from speedup aggregation. Complete logs/summary:
+`/tmp/runtests-461385/`; frozen runtime/reference/helper hashes, native phases,
+actual exit, image and capture error: `/tmp/lunden-entry818/eastbackdroptest/`.
+All frozen source blobs matched after the pair.
+
+The written default now uses 480×300/test. Optional top `?lowmem` keeps its
+original 720×480/full app query and low-memory triangle budget; no actual
+lowmem-app parity is claimed. The existing explicit FULL/LITE builder comparison
+is still executed by the default fixture. Reversing only conditional setup and
+its descriptive comment reproduces the exact frozen original; no assertions,
+matrices, quality overrides, seeds or normalization were added. Entrance plants
+and gables remain pending under #818; #739/#736 stay open.
