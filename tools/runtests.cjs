@@ -6,12 +6,12 @@
 //
 //   node tools/runtests.cjs resttest tostarttest cooktest        names (no extension), or tools/x.html / x.cjs
 //   node tools/runtests.cjs --group a-c [--jobs 2]               first letter of the file name in a range: a-c d-l m-p r-t u-z
-//   node tools/runtests.cjs --compare resttest tostarttest       each HTML test twice: as written, then with `&test` + a 480x300 iframe
+//   node tools/runtests.cjs --compare resttest tostarttest       each HTML test twice: without `&test`, then with it + a 480x300 iframe
 //   node tools/runtests.cjs --list [names…]                      what would run
 //   node tools/runtests.cjs --update-baseline name…              rewrite those tests' entries in tools/baseline.json from this run
 // Options: --jobs N (default 1, max 2: the VM is shared), --timeout MIN (default 20), --port N (devserve, default 8133;
 // Workers use port+1…), --keep-going is the default (all selected tests run), --verbose (print each test's output).
-// Exit code 1 when a test fails with a line that is not in the baseline (or crashes / times out).
+// Exit code 1 for untracked failures, crashes/timeouts, or different ordered comparison rows.
 const fs = require('fs'), os = require('os'), path = require('path'), http = require('http');
 const { spawn } = require('child_process');
 
@@ -64,6 +64,20 @@ const fmt = (ms) => { const s = Math.round(ms / 1000); return s >= 60 ? `${Math.
 const readBaseline = () => { try { return JSON.parse(fs.readFileSync(BASELINE, 'utf8')); } catch { return {}; } };
 const resultLines = (text) => text.split('\n').map((l) => l.trim()).filter((l) => /^(PASS|FAIL)\b/.test(l));
 const failLines = (text) => resultLines(text).filter((l) => l.startsWith('FAIL'));
+function compareLines(a, b) {
+  const left = resultLines(a), right = resultLines(b);
+  const differences = [];
+  for (let i = 0; i < Math.max(left.length, right.length); i++) {
+    if (left[i] !== right[i]) differences.push({ row: i + 1, full: left[i] ?? null, test: right[i] ?? null });
+  }
+  return { same: differences.length === 0, left, right, differences };
+}
+function gameModeUrl(href, mode) {
+  const u = new URL(href);
+  if (mode === 'full' && u.searchParams.has('test')) u.searchParams.delete('test');
+  else if (mode === 'test' && !u.searchParams.has('test')) u.searchParams.set('test', '');
+  return u.href;
+}
 const VERDICT = /^(ALL PASS|SOME FAILED)\s*$/m;
 
 function playwrightModule() {
@@ -99,15 +113,22 @@ async function runHtml(test, { asTest }, game) {
     args: ['--no-sandbox', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
   const killer = setTimeout(() => browser.close().catch(() => {}), opt.timeout * 60000 + 30000);
   let text = '', status = 'TIMEOUT', redirects = 0;
+  const mode = opt.compare ? (asTest ? 'test' : 'full') : 'written', gameLoads = [];
+  const origin = new URL(game).origin;
+  const isGame = u => u.origin === origin && (u.pathname === '/index.html' || u.pathname === '/');
   try {
     const ctx = await browser.newContext({ viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 });
-    if (asTest) {
-      // The test's own iframe URL gets `test` through a redirect (so location.search inside the game has it) and the iframe is
-      // forced to 480x300 by a stylesheet in the test page: no test file needs changing for the comparison.
-      await ctx.route((u) => u.pathname === '/index.html' && !u.searchParams.has('test'), (route) => {
-        const u = new URL(route.request().url()); u.searchParams.set('test', '');
-        redirects++; route.fulfill({ status: 302, headers: { location: u.href } });
+    if (opt.compare) {
+      // A migrated fixture may already contain ?test. Force the first pass out of test mode too.
+      await ctx.route(isGame, async route => {
+        if (route.request().resourceType() !== 'document') return route.continue();
+        const href = route.request().url(), normalized = gameModeUrl(href, mode);
+        if (normalized === href) return route.continue();
+        redirects++;
+        await route.fulfill({ status: 302, headers: { location: normalized } });
       });
+    }
+    if (asTest) {
       await ctx.addInitScript(() => {
         if (window !== window.top) return;
         // Init scripts can run before the document root exists (#760).
@@ -120,6 +141,14 @@ async function runHtml(test, { asTest }, game) {
       });
     }
     const page = await ctx.newPage();
+    const frames = new Map();
+    page.on('framenavigated', frame => {
+      const u = new URL(frame.url());
+      if (!isGame(u)) return;
+      const load = { url: u.href, test: u.searchParams.has('test'), variant: u.searchParams.get('test'), viewport: null, controller: null };
+      gameLoads.push(load); frames.set(frame, load);
+      frame.evaluate(() => [innerWidth, innerHeight]).then(viewport => { load.viewport = viewport; }).catch(() => {});
+    });
     page.on('pageerror', (e) => log.push(`[pageerror] ${e.message}`));
     page.on('crash', () => log.push('[page crashed]'));
     await page.goto(`${game}/tools/${test.file}`, { waitUntil: 'commit', timeout: opt.timeout * 60000 });
@@ -129,10 +158,18 @@ async function runHtml(test, { asTest }, game) {
       if (log.includes('[page crashed]')) { status = 'CRASH'; break; }
       await sleep(2000);
     }
+    // Retained game frames expose the actual controller; detached reloads retain their loaded URL evidence.
+    await Promise.all([...frames].filter(([frame]) => !frame.isDetached()).map(async ([frame, load]) => {
+      const evidence = await frame.evaluate(() => ({ viewport: [innerWidth, innerHeight], controller: window.__app ? !!window.__app.testMode : null })).catch(() => null);
+      if (evidence) Object.assign(load, evidence);
+    }));
   } catch (e) { log.push(`[runner] ${e.message}`); status = 'ERROR'; }
   clearTimeout(killer); await browser.close().catch(() => {});
-  if (asTest && !redirects) log.push('[runner] no game iframe was redirected to ?test (the test does not open ../index.html?)');
-  return { status, text, log, ms: Date.now() - t0, redirects };
+  const modeVerified = !opt.compare || !gameLoads.length ? null : gameLoads.every(load =>
+    load.test === asTest && (load.controller === null || load.controller === asTest));
+  if (modeVerified === false) { status = 'ERROR'; log.push(`[runner] loaded game mode does not match ${mode}`); }
+  if (opt.compare && !gameLoads.length) log.push('[runner] no game document loaded; mode comparison does not apply');
+  return { status, text, log, ms: Date.now() - t0, redirects, mode, gameLoads, modeVerified };
 }
 
 // ---------- .cjs tests ----------
@@ -186,7 +223,7 @@ async function main() {
   const jobs = [];
   for (const t of tests) {
     if (opt.compare && t.kind === 'html') jobs.push({ t, asTest: false, label: 'full' }, { t, asTest: true, label: '&test' });
-    else jobs.push({ t, asTest: false, label: opt.compare ? 'full (no compare: .cjs)' : '' });
+    else jobs.push({ t, asTest: false, label: opt.compare ? 'scripted (no compare: .cjs)' : '' });
   }
   const results = []; let next = 0;
   async function worker(slot) {
@@ -196,8 +233,9 @@ async function main() {
       let r;
       try { r = j.t.kind === 'html' ? await runHtml(j.t, j, game) : await runCjs(j.t, game, slot); }
       catch (e) { r = { status: 'ERROR', text: '', log: [`[runner] ${e.stack}`], ms: 0 }; }
-      classify(r, j.t.name, base); Object.assign(r, { name: j.t.name, label: j.label, asTest: j.asTest, kind: j.t.kind });
-      fs.writeFileSync(path.join(LOGDIR, `${j.t.name}${j.asTest ? '.test' : ''}.log`), `${r.text}\n${r.log.join('\n')}\n`);
+      classify(r, j.t.name, base); Object.assign(r, { name: j.t.name, file: j.t.file, label: j.label, asTest: j.asTest, kind: j.t.kind });
+      const logName = tests.filter(t => t.name === j.t.name).length > 1 ? j.t.file : j.t.name;
+      fs.writeFileSync(path.join(LOGDIR, `${logName}${j.asTest ? '.test' : ''}.log`), `${r.text}\n${r.log.join('\n')}\n`);
       console.log(`  ${r.verdict.padEnd(7)} ${j.t.name}${j.label ? ` [${j.label}]` : ''}  ${fmt(r.ms)}  FAIL lines: ${r.fails.length}${r.newFails.length ? ` (${r.newFails.length} not in baseline)` : ''}`);
       if (opt.verbose) console.log(r.text.split('\n').map((l) => `      ${l}`).join('\n'));
       results.push(r);
@@ -207,26 +245,29 @@ async function main() {
 
   // ---------- summary ----------
   console.log('\nSummary');
-  const order = (r) => tests.findIndex((t) => t.name === r.name) * 2 + (r.asTest ? 1 : 0);
+  const order = (r) => tests.findIndex((t) => t.file === r.file) * 2 + (r.asTest ? 1 : 0);
   results.sort((a, b) => order(a) - order(b));
   for (const r of results) {
-    console.log(`  ${r.verdict.padEnd(7)} ${(r.name + (r.label ? ` [${r.label}]` : '')).padEnd(34)} ${fmt(r.ms).padStart(7)}  fail ${r.fails.length}`);
+    console.log(`  ${r.verdict.padEnd(7)} ${(r.name + (r.label ? ` [${r.label}]` : '')).padEnd(34)} ${fmt(r.ms).padStart(7)}  fail ${r.fails.length}  mode ${r.kind === 'cjs' ? 'script-defined' : r.gameLoads?.length ? [...new Set(r.gameLoads.map(load => load.test ? '&test' : 'no &test'))].join(' + ') : r.status === 'DONE' ? 'no game document' : 'unavailable'}`);
     for (const l of r.newFails.slice(0, 8)) console.log(`            NEW ${l.slice(0, 200)}`);
     if (r.verdict === 'FAIL' || r.verdict === 'ERROR' || r.verdict === 'CRASH') for (const l of r.log.slice(0, 3)) console.log(`            ${l.slice(0, 200)}`);
   }
+  let comparisonFailed = false;
   if (opt.compare) {
-    console.log('\nCompare (as written vs &test + 480x300 iframe)');
+    console.log('\nCompare (without &test at fixture viewport vs &test + 480x300 iframe)');
     for (const t of tests.filter((t) => t.kind === 'html')) {
-      const a = results.find((r) => r.name === t.name && !r.asTest), b = results.find((r) => r.name === t.name && r.asTest);
+      const a = results.find((r) => r.file === t.file && !r.asTest), b = results.find((r) => r.file === t.file && r.asTest);
       if (!a || !b) continue;
       if (a.status !== 'DONE' || b.status !== 'DONE') { console.log(`  ${t.name}: n/a (${a.status} / ${b.status}), ${fmt(a.ms)} -> ${fmt(b.ms)}`); continue; }
-      if (!b.redirects) { console.log(`  ${t.name}: n/a (no game iframe to switch to &test)`); continue; }
-      const la = resultLines(a.text), lb = resultLines(b.text), sb = new Set(lb), sa = new Set(la);
-      const onlyA = la.filter((l) => !sb.has(l)), onlyB = lb.filter((l) => !sa.has(l));
-      const same = !onlyA.length && !onlyB.length && la.length === lb.length;
-      console.log(`  ${t.name}: ${same ? 'IDENTICAL' : 'DIFFERENT'} (${la.length} vs ${lb.length} result lines, ${b.redirects} game load(s) switched), ${fmt(a.ms)} -> ${fmt(b.ms)}${b.ms ? `, ${(a.ms / b.ms).toFixed(2)}x` : ''}`);
-      for (const l of onlyA.slice(0, 10)) console.log(`      only full : ${l.slice(0, 200)}`);
-      for (const l of onlyB.slice(0, 10)) console.log(`      only &test: ${l.slice(0, 200)}`);
+      if (!a.gameLoads.length || !b.gameLoads.length) { console.log(`  ${t.name}: n/a (no game document to compare)`); continue; }
+      const c = compareLines(a.text, b.text);
+      a.comparison = b.comparison = { identical: c.same, modeVerified: a.modeVerified && b.modeVerified };
+      if (!c.same) comparisonFailed = true;
+      console.log(`  ${t.name}: ${c.same ? 'IDENTICAL' : 'DIFFERENT'} (${c.left.length} vs ${c.right.length} ordered result lines; verdict ${a.verdict} / ${b.verdict}; modes verified), ${fmt(a.ms)} -> ${fmt(b.ms)}${b.ms ? `, ${(a.ms / b.ms).toFixed(2)}x` : ''}`);
+      for (const d of c.differences.slice(0, 10)) {
+        console.log(`      row ${d.row} full : ${d.full ?? '(missing)'}`);
+        console.log(`      row ${d.row} &test: ${d.test ?? '(missing)'}`);
+      }
     }
   }
   if (opt.update) { // only the plain runs; no times are stored
@@ -235,8 +276,8 @@ async function main() {
     const sorted = Object.fromEntries(Object.keys(nb).sort().map((k) => [k, nb[k]]));
     fs.writeFileSync(BASELINE, JSON.stringify(sorted, null, 2) + '\n'); console.log(`baseline updated: ${BASELINE}`);
   }
-  fs.writeFileSync(path.join(LOGDIR, 'summary.json'), JSON.stringify(results.map(({ name, label, verdict, ms, fails }) => ({ name, label, verdict, ms, fails })), null, 2));
-  const bad = results.some((r) => !['PASS', 'KNOWN'].includes(r.verdict));
+  fs.writeFileSync(path.join(LOGDIR, 'summary.json'), JSON.stringify(results.map(({ name, file, kind, label, verdict, ms, fails, mode, gameLoads, modeVerified, comparison }) => ({ name, file, kind, label, verdict, ms, fails, mode, gameLoads, modeVerified, comparison })), null, 2));
+  const bad = comparisonFailed || results.some((r) => !['PASS', 'KNOWN'].includes(r.verdict));
   children.forEach(killGroup);
   process.exit(bad ? 1 : 0);
 }

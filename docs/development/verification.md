@@ -170,13 +170,26 @@ with lines listed in `tools/baseline.json` (`{ "test": ["FAIL line", …] }`: th
 #302 lines); any FAIL line not in the baseline is printed as `NEW` and makes the exit code 1. `--update-baseline name…` rewrites those
 tests' entries from the run (do it only for failures someone has filed as a `Bugg:` issue).
 
-`--compare` runs every HTML test twice (as written, then with `&test`) and prints whether the PASS/FAIL result lines are identical and the
-time ratio; with `--jobs 2` the two runs go side by side on the same load. The `&test` run needs no change to the test file: a context
-route answers the iframe's `../index.html` request with a 302 to the same URL plus `?test`, and a stylesheet injected into the test page
-forces every iframe to 480×300 (!important beats `f.width = 900`). The compare line says how many game loads were switched; a test
-that never opens `../index.html` prints `n/a`, as does a run that timed out. A test that does not open the game itself gains nothing.
-Result lines are compared as written (numbers in them included): a line that shows a measured value will differ between runs, so look at
-the `only full` / `only &test` lines before calling a migration safe.
+Ordinary runs preserve the fixture's URL and viewport as written. `--compare` runs each HTML test twice: first removing only
+`test` from local game document URLs, then adding it when absent (retaining an explicit variant such as `test=lazy`). Other
+query options, including quality flags, stay intact. The first pass keeps the fixture viewport; the second injects a top-page
+stylesheet forcing iframes to 480×300. This is not a guarantee of full quality when the fixture itself requests lower quality.
+Use `--jobs 1` for sequential comparisons; with `--jobs 2` the passes share load.
+
+The comparison checks every ordered PASS/FAIL row, including duplicates and measured values. `DIFFERENT` makes the CLI exit 1
+even when both fixtures report PASS. `IDENTICAL` describes equivalence, not a green verdict: identical known-red results remain
+KNOWN and untracked failures remain FAIL. Row-numbered differences show missing or changed lines without normalization.
+Timeouts and tests that never load the game print `n/a`; CJS tests run once with their script-defined mode.
+
+`summary.json` records loaded game URLs, test variants, actual child viewport, and controller mode when the frame is retained.
+Detached reloads retain URL evidence; their controller may be unavailable. A loaded URL/controller mode mismatch is ERROR.
+The summary prints observed mode rather than assuming an unchanged URL means no game was loaded. When HTML and CJS selections
+share a basename, raw log filenames include the extension to avoid overwriting one another.
+
+The #771 runner changes have 22 light DOM/CLI checks: actual Chrome document routing, the production query parser, child viewport,
+ordered/duplicate rows, CLI exit status, and same-named HTML/CJS logs. Probe artifacts are `/tmp/lunden-737-mode-probe.{txt,json}`,
+`/tmp/lunden-737-cli-probe.{txt,json}` and `/tmp/lunden-737-cli-duplicate-probe.{txt,json}`. These probes load no apartment or WebGL;
+they do not replace #737's required game-test acceptance runs or claim a game timing improvement.
 
 The resize stylesheet waits for the top document root (#760). Chrome DOM probes cover normal, inline-sized and dynamically
 inserted iframes: their actual frame and child viewport become 480×300 without init-script errors; child documents stay unmodified.
