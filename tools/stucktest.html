@@ -15,7 +15,7 @@ const lines = [];
 const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; };
 const load = (q = '') => new Promise((resolve) => {
   const f = document.createElement('iframe');
-  f.width = 900; f.height = 600; f.src = `../index.html${q}`;
+  f.width = 480; f.height = 300; f.src = `../index.html${q}${q ? '&' : '?'}test`;
   document.body.append(f);
   f.onload = async () => { while (!f.contentWindow.__app) await wait(100); resolve(f); };
 });
