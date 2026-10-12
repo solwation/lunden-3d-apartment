@@ -58,6 +58,13 @@ cloudflare/players.js  the PlayerRoom Durable Object (#666; binding PLAYERS, mig
                        (runtime stand-ins cloudflare/devws.mjs, also used by dev.mjs for real ws://), tools/ghosttest.cjs (two pages)
 cloudflare/crash.js    POST /crash, admin GET /crash and /crash/<id>, DELETE /admin/crash: size cap 16 kB, plain-data cleaning, per-IP hour
                        limit, one report per browser+signature+day, 400 reports in all, KV TTL 14 days (test: cloudflare/crash.test.mjs)
+                       #720 preserves snap/beat warm and history warm/worst through ingest and publicView, with a field-specific
+                       exception for the four worst slots; generic depth4/30-array/40-key caps remain. Warm text accepts only
+                       WarmUp.detail phases or compiling/drawing counters (six digits, optional mirror); final batches may
+                       overshoot the item total. Worst is [finite CPU ms 0..600000, integer program delta −10000..10000,
+                       shadow 0/1 (booleans normalized), technical warm detail]. Arbitrary text and malformed tuples are omitted.
+                       Previously discarded worst cannot be recovered from old KV records; preservation applies to newly
+                       submitted reports after Worker deployment. Already stored valid warm becomes visible in the public view.
 cloudflare/            the Worker (NOT published on Pages): worker.js (API, limits, CORS, admin emergency brake), wrangler.toml,
                        setup.sh (the user's one-command setup: login, KV, deploy, ADMIN_TOKEN, CLOUD_URL into config),
                        dev.mjs (the same Worker on Node with an in-memory KV, for tests), README.md (Swedish, for the user);

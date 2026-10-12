@@ -61,6 +61,11 @@ den är pushad. Skriptet går att köra om hur många gånger som helst – det 
   och tid till återställning. Dessa händelser slås inte ihop i den öppna listan; återförsök räknas fortfarande bara en gång.
   Högst 12 rapporter skickas per sidladdning. Minnestalen är uttryckligen ofullständiga uppskattningar från bland annat
   texturernas källbilder, inte uppmätt GPU-minne. Historiken finns kvar även när en död flik rapporteras vid nästa start.
+  `warm` visar uppvärmningens tekniska fas/räknare; `worst` är [CPU-millisekunder, ändring i antal shaderprogram,
+  skuggomritning 0/1, uppvärmningsdetalj] för en lång bildruta. #720 bevarar dessa begränsade fält både i lagring och
+  anonymiserad läsning, utan fri text eller ändrad generell djupgräns. Gamla `worst` som redan tappats vid mottagning
+  kan inte återskapas; fixen gäller rapporter som skickas in efter Worker-driftsättningen. Giltigt `warm` som redan
+  lagrats kan däremot bli synligt. Saknad äldre diagnostik betyder inte att en lång bildruta aldrig inträffade.
   Typen `layout` (#567) skickas när spelets canvas inte fyller skärmen (vit remsa efter rotation) och innehåller alla mått.
   Anonymiserad, öppen läsning utan nyckel: `curl <adress>/crash/public`. Läs dem med nödbromsnyckeln: `curl -H "Authorization: Bearer $(cat ~/.config/lunden-l1007/admin-token)" <adress>/crash`
   (lista, nyast först) och `<adress>/crash/<id>` (hela rapporten). Töm dem: `curl -X DELETE -H "Authorization: Bearer …" <adress>/admin/crash`.

@@ -45,6 +45,45 @@ export function clean(v, depth = 0) {
   return undefined;
 }
 
+// Only WarmUp.detail's technical grammar, never arbitrary text or player identities (#720).
+const WARM_PHASES = new Set(['pending', 'compiling', 'draw', 'drawing', 'mirror', 'mirror-draw', 'textures', 'uploading', 'done', 'skipped']);
+function warmView(value) {
+  if (typeof value !== 'string') return undefined;
+  if (WARM_PHASES.has(value)) return value;
+  const detail = /^(compiling|drawing) (\d{1,6})\/(\d{1,6})( mirror)?$/.exec(value);
+  // Compile batches may advance i beyond n while waiting for the final programs.
+  return detail ? value : undefined;
+}
+function worstView(value) {
+  if (!Array.isArray(value) || value.length !== 4) return undefined;
+  const [ms, programs, shadow, warm] = value, phase = warmView(warm);
+  if (!Number.isFinite(ms) || ms < 0 || ms > 600000 || !Number.isInteger(programs) || Math.abs(programs) > 10000 ||
+      ![0, 1, false, true].includes(shadow) || phase === undefined) return undefined;
+  return [Math.round(ms * 100) / 100, programs, Number(shadow), phase];
+}
+function historyDiagnostics(row) {
+  return { warm: warmView(row?.warm), worst: worstView(row?.worst) };
+}
+function keepDiagnostics(report, source) {
+  // A deliberate exception for history[].worst's four primitive slots at depth four.
+  // General clean() depth/array/key limits are unchanged, including unrelated nested data.
+  for (const key of ['beat', 'snap']) {
+    const raw = source[key], state = report[key];
+    if (!raw || !state || typeof state !== 'object' || Array.isArray(state)) continue;
+    const keptWarm = Object.hasOwn(state, 'warm');
+    delete state.warm;
+    const warm = warmView(raw.warm);
+    if (keptWarm && warm !== undefined) state.warm = warm;
+    if (!Array.isArray(raw.history) || !Array.isArray(state.history)) continue;
+    state.history.forEach((row, i) => {
+      if (!row || typeof row !== 'object' || Array.isArray(row)) return;
+      delete row.warm; delete row.worst;
+      const keys = Object.keys(raw.history[i]).slice(0, 40);
+      for (const [name, value] of Object.entries(historyDiagnostics(raw.history[i]))) if (keys.includes(name) && value !== undefined) row[name] = value;
+    });
+  }
+}
+
 async function hash(s) {
   const d = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
   return [...new Uint8Array(d)].slice(0, 12).map((b) => b.toString(16).padStart(2, '0')).join('');
@@ -67,11 +106,13 @@ function stateView(b) {
   const o = { up: nm(b.up), fps: nm(b.fps), px: nm(b.px), low: b.low ? 1 : 0, gl: b.gl === 'lost' ? 'lost' : undefined, scr: nums(b.scr, 3), vp: nums(b.vp, 2), jsMB: nums(b.jsMB, 2) };
   o.phase = txt(b.phase, 16); o.frame = nm(b.frame); o.buffer = nums(b.buffer, 2);
   o.background = b.hidden ? 1 : 0; o.standalone = b.standalone ? 1 : 0; o.maxTextureSize = nm(b.maxTextureSize);
+  const warm = warmView(b.warm);
+  if (warm !== undefined) o.warm = warm;
   if (Array.isArray(b.history)) o.history = b.history.slice(-12).map((v) => {
     const row = v && typeof v === 'object' ? v : {};
     return { ...Object.fromEntries(['up', 'frame', 'q', 'px', 'fps', 'geo', 'tex', 'prog', 'calls', 'tris', 'sourceTexMB', 'jsMB', 'lagMs'].map(k => [k, nm(row[k])])),
       phase: ['load', 'scene', 'pending', 'compiling', 'draw', 'mirror', 'mirror-draw', 'textures', 'uploading', 'done', 'drawn', 'skipped'].includes(row.phase) ? row.phase : null,
-      gl: row.gl === 'lost' ? 'lost' : row.gl === 'ok' ? 'ok' : null };
+      gl: row.gl === 'lost' ? 'lost' : row.gl === 'ok' ? 'ok' : null, ...historyDiagnostics(row) };
   });
   if (b.at) o.at = { room: txt(b.at.room, 40), lvl: nm(b.at.lvl), x: nm(b.at.x), y: nm(b.at.y), z: nm(b.at.z) };
   if (b.q) o.q = { lvl: nm(b.q.lvl), max: nm(b.q.max) };
@@ -164,6 +205,7 @@ export async function crashFetch(request, env, h, id) {
   try { body = JSON.parse(text); } catch { return fail(400, 'bad json', h); }
   if (!body || typeof body !== 'object' || Array.isArray(body) || !TYPES.includes(body.typ)) return fail(400, 'bad report', h);
   const r = clean(body);
+  keepDiagnostics(r, body);
   r.received = now;
 
   const dup = `crashdup:${await hash(`${new Date(now).toISOString().slice(0, 10)}|${r.pid}|${r.sig ?? r.kind}`)}`;

@@ -66,6 +66,10 @@ tools/glrestoretest.cjs  (#628, #713, simulated phone profile) forces real app `
                        per page, probe tasks to 60 s, restore events to 15 s. Three real app constructions; console logs and four 64×64 pixel images saved in SHOTS.
 tools/crashtest.cjs    crash reports (#629): Playwright + `node cloudflare/dev.mjs 8144 tok`; run after touching src/crashlog.js, cloudflare/crash.js or the
                        reset keys; includes bounded pre-failure history and two real WebGL loss/recovery pairs through the public API
+                       Server-only diagnostic changes (#720) can use the focused 14-case crash.test.mjs suite plus a light
+                       Chrome endpoint roundtrip against dev.mjs: POST snap/beat → authenticated GET → public GET, with
+                       cache:no-store for public reads. Verify warm/counter overshoot, worst tuple, invalid-field omission
+                       and identity filtering; this does not require WebGL or claim a physical-phone crash reproduction.
                        (also `node --test cloudflare/crash.test.mjs`). Waits on conditions (page `stats`, Worker rows), never fixed sleeps, and
                        refreshes the phone profile's 60 s reload guard (`lunden.glReloadAt`) before each forced context loss and stops the game's render
                        loop for the layout part (SwiftShader frames take 1–15 s and the game applies a resize in a frame) (#650); a failing check

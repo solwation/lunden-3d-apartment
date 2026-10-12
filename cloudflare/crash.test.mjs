@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import worker from './worker.js';
+import { publicView } from './crash.js';
 
 // Crash reports (#629): POST /crash, admin-only reads, limits.
 function kv() {
@@ -172,4 +173,79 @@ test('v2 context episodes survive retries and public grouping; bounded history i
   assert.deepEqual(restored.state.buffer, [512, 256]);
   const text = JSON.stringify(rows);
   assert.ok(!/private|secret|nested|1777777777123/.test(text), 'no raw identifiers/times/extra fields');
+});
+
+test('#720: bounded warm/worst survive real POST → KV → public for snap and beat', async () => {
+  for (const key of ['snap', 'beat']) {
+    const env = { LUNDEN: kv(), ADMIN_TOKEN: 'tok' };
+    const state = { warm: 'compiling 12/113', history: [
+      { warm: 'drawing 3/20 mirror', worst: [401.125, 2, true, 'drawing 3/20 mirror'], lagMs: 7 },
+      { warm: 'done', worst: [50, -1, 0, 'done'], nested: { secret: 'private' } },
+      { warm: 'skipped', worst: [600000, 10000, false, 'skipped'] },
+      { warm: 'pending', worst: [50, 0, 1, 'pending'] },
+      { warm: 'compiling 128/113', worst: [50, 5, 1, 'compiling 128/113'] },
+    ], secret: { a: { b: { c: 'private' } } } };
+    const response = await post(env, { typ: 'fel', kind: 'error', pid: 'private', sid: 'private', sig: key, [key]: state }, `diagnostic-${key}`);
+    assert.equal(response.status, 200);
+    const { id } = await response.json();
+    const stored = JSON.parse(env.LUNDEN.store.get(`crash:${id}`).v)[key];
+    assert.deepEqual((await (await get(env, `/crash/${id}`, 'tok')).json())[key], stored, 'authenticated read returns preserved diagnostics');
+    assert.equal(stored.warm, state.warm);
+    assert.deepEqual(stored.history[0].worst, [401.13, 2, 1, 'drawing 3/20 mirror']);
+    assert.deepEqual(stored.history[1].worst, [50, -1, 0, 'done'], 'program count difference may be negative after disposal');
+    assert.deepEqual(stored.history[2].worst, [600000, 10000, 0, 'skipped']);
+    assert.equal(stored.history[4].warm, 'compiling 128/113', 'actual final compile batch may overshoot item count');
+    assert.deepEqual(stored.history[4].worst, [50, 5, 1, 'compiling 128/113']);
+    assert.equal(stored.secret.a.b, undefined, 'generic nested depth remains restricted');
+    const publicState = (await (await get(env, '/crash/public')).json())[0].state;
+    assert.equal(publicState.warm, state.warm);
+    assert.deepEqual(publicState.history.map(r => [r.warm, r.worst]), stored.history.map(r => [r.warm, r.worst]));
+    assert.ok(!/private|secret|nested|sid|pid/.test(JSON.stringify(publicState)), 'technical diagnostics do not add identifiers');
+  }
+});
+
+test('#720: malformed diagnostics are omitted; generic depth/key/array caps and public identity filtering stay intact', async () => {
+  const invalidWorst = [[-1, 0, 0, 'done'], [600001, 0, 0, 'done'], [NaN, 0, 0, 'done'], [Infinity, 0, 0, 'done'],
+    [50, .5, 0, 'done'], [50, 10001, 0, 'done'], [50, 0, 2, 'done'], [50, 0, '1', 'done'], [50, 0, {}, 'done'],
+    [50, 0, 1, 'done private-player'], [50, 0, 1], [50, 0, 1, 'done', 'private'], 'private', { private: true }];
+  const invalidWarm = ['private-player', '<script>done</script>', 'drawing 21 of 20', 'compiling 1/1000000', 'done private', 1, { private: true }];
+  const env = { LUNDEN: kv(), ADMIN_TOKEN: 'tok' };
+  const crowded = Object.fromEntries(Array.from({ length: 40 }, (_, i) => [`k${i}`, i]));
+  const response = await post(env, { typ: 'fel', kind: 'error', pid: 'private', sig: 'invalid', snap: {
+    warm: 'private-player', history: [...invalidWorst.map(worst => ({ warm: 'private-player', worst })),
+      ...invalidWarm.map(warm => ({ warm })), { ...crowded, warm: 'done', worst: [50, 0, 0, 'done'] }],
+    arbitrary: { a: { b: { c: { d: ['private'] } } } },
+  } }, 'diagnostic-invalid');
+  assert.equal(response.status, 200);
+  const { id } = await response.json(), stored = JSON.parse(env.LUNDEN.store.get(`crash:${id}`).v).snap;
+  assert.equal(stored.warm, undefined);
+  assert.ok(stored.history.every(row => !Object.hasOwn(row, 'warm') && !Object.hasOwn(row, 'worst')));
+  assert.equal(Object.keys(stored.history.at(-1)).length, 40, 'exception does not bypass row key cap');
+  assert.equal(stored.arbitrary.a.b, undefined, 'unrelated deep arrays remain discarded');
+  const publicState = (await (await get(env, '/crash/public')).json())[0].state;
+  assert.equal(publicState.warm, undefined);
+  assert.ok(publicState.history.every(row => !Object.hasOwn(row, 'warm') && !Object.hasOwn(row, 'worst')));
+  assert.equal(publicState.history.length, 12);
+  assert.ok(!/private|arbitrary|k39/.test(JSON.stringify(publicState)));
+  const malformedOld = publicView({ received: 1, snap: { warm: 'private-player', history: invalidWorst.map(worst => ({ warm: 'private-player', worst })) } });
+  assert.equal(malformedOld.state.warm, undefined);
+  assert.ok(malformedOld.state.history.every(row => row.warm === undefined && row.worst === undefined), 'public view independently rejects malformed historical diagnostics');
+  // Older records may retain warm but cannot recover worst that was lost at ingest.
+  await env.LUNDEN.put('crash:older', JSON.stringify({ received: 1, snap: { warm: 'drawing 3/20 mirror', history: [{ warm: 'done' }] } }));
+  const freshEnv = { ...env, LUNDEN: { ...env.LUNDEN } }; // a new public-cache identity
+  const older = (await (await get(freshEnv, '/crash/public')).json()).find(row => row.hour === '1970-01-01T00:00Z');
+  assert.equal(older.state.warm, 'drawing 3/20 mirror');
+  assert.equal(older.state.history[0].warm, 'done'); assert.equal(older.state.history[0].worst, undefined);
+});
+
+test('#720: diagnostic exception keeps first 30 ingest rows and last 12 public rows', async () => {
+  const env = { LUNDEN: kv(), ADMIN_TOKEN: 'tok' };
+  const history = Array.from({ length: 40 }, (_, up) => ({ up, warm: 'done', worst: [50 + up, 0, 0, 'done'] }));
+  const response = await post(env, { typ: 'fel', kind: 'error', sig: 'bounded-diagnostics', beat: { history } }, 'diagnostic-bounds');
+  const { id } = await response.json();
+  const stored = (await (await get(env, `/crash/${id}`, 'tok')).json()).beat.history;
+  assert.equal(stored.length, 30); assert.deepEqual(stored.at(-1).worst, [79, 0, 0, 'done']);
+  const visible = (await (await get(env, '/crash/public')).json())[0].state.history;
+  assert.equal(visible.length, 12); assert.deepEqual(visible.map(row => row.up), Array.from({ length: 12 }, (_, i) => i + 18));
+  assert.deepEqual(visible.map(row => row.worst), stored.slice(-12).map(row => row.worst));
 });
