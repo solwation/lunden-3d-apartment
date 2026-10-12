@@ -9,7 +9,7 @@ const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 const lines = []; let pass = true;
 const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); pass &&= !!ok; out.textContent = `running…\n${lines.join('\n')}`; return ok; };
 const load = (q = '') => new Promise((resolve) => {
-  const f = document.createElement('iframe'); f.width = 900; f.height = 600; f.src = `../index.html?shot&time=12&month=7&weather=clear${q}`;
+  const f = document.createElement('iframe'); f.width = 480; f.height = 300; f.src = `../index.html?shot&test&time=12&month=7&weather=clear${q}`;
   document.body.append(f);
   f.onload = async () => { while (!f.contentWindow.__app) await wait(100); resolve(f); };
 });
