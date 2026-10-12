@@ -1,9 +1,9 @@
 <!doctype html><html lang="sv"><meta charset="utf-8"><title>Bed care test</title><pre id="out">running…</pre><script type="module">
-// Test-mode candidate (#778): cloth geometry, state and action checks; setPixelRatio(.15) is setup, not an assertion.
+// Test-mode parity measured in #809: unchanged cloth/state/action rows; pixel-ratio setup is not an assertion.
 const lines=[];let pass=true;const check=(ok,text)=>{lines.push((ok?'PASS':'FAIL')+' '+text);pass&&=!!ok},wait=ms=>new Promise(r=>setTimeout(r,ms));
 try{
  const f=document.createElement('iframe');f.width=480;f.height=300;document.body.append(f);
- async function load(q){await new Promise(r=>{f.onload=r;f.src='../index.html?'+q});while(!f.contentWindow.__app)await wait(100);f.contentDocument.documentElement.requestFullscreen=undefined;f.contentDocument.getElementById('start-touch').click();const a=f.contentWindow.__app;a.renderer.setPixelRatio(.15);return a;}
+ async function load(q){await new Promise(r=>{f.onload=r;f.src='../index.html?test&'+q});while(!f.contentWindow.__app)await wait(100);f.contentDocument.documentElement.requestFullscreen=undefined;f.contentDocument.getElementById('start-touch').click();const a=f.contentWindow.__app;a.renderer.setPixelRatio(.15);return a;}
  let A=await load('life&shot&cloud='),L=A.life,B=A.bedCare;const T=await f.contentWindow.eval("import('three')"),{LIFE,BED_CARE:P,REST}=await f.contentWindow.eval("import('/src/config.js')");
  const row=u=>L.options(u.target).find(a=>a.id==='makeBed'),run=u=>row(u)?.run(),finish=()=>L.runner.update(P.seconds);
  check(B.units.length===6&&B.units.every(u=>u.made&&u.sections.length&&u.sections.every(s=>s.indices.length)),'double bed, daybed and both bunk berths have six independently marked care units');

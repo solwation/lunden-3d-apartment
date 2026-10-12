@@ -1330,3 +1330,17 @@ are retained in `/tmp/lunden-placement808/besta/`. All frozen runtime blobs
 matched after the pair. The written loader returns to its existing test query;
 no executable assertion or placement behavior changed. Art-level and board
 comparisons remain pending under #808; #738 and #736 remain open.
+
+## Test-mode comparison: bed and cleaning care (#809)
+
+Current assertions and authored actions are retained. Original setups already match
+`9645849^`; none of these three fixtures had been test-flagged there. Each fixture
+requires its own complete ordered native full/test pair; source counts are not
+runtime acceptance. Evidence and passive observer/capture snapshots are retained
+under `/tmp/lunden-care809/`; wall times include reviewed final captures.
+
+| Fixture | Disposition | Actual evidence |
+| --- | --- | --- |
+| bedcaretest | Migrated by adding `test` to the shared load URL only; existing 480×300, unconditional fullscreen suppression, pixelRatio(.15), all 22 predicates and three real loads remain unchanged. | Frozen `f0c07cc`, `/tmp/runtests-414727`: 22 ordered PASS and ALL PASS in each mode, entire logs byte-identical, no pageerrors; actual monitor exit 0. Wall 248.734s → 207.695s. Passive native evidence: six documents, six app-ready + four beforeunload + four pagehide + two final records; all 480×300/no fullscreen, full controller false/null versus real test APIs for every load. Runner's four earlier controller=null records remain explicit, completed by `bedcare-loads.jsonl`/`bedcare-evidence.json`. Both captures show raw results and the final courtyard/HUD, not a bed visual inspection or rendered-scene equivalence. |
+| clothtest | Pending actual comparison; original 900×600 and every rinse/interruption predicate retained. | Source preparation only. Approved pre-pair testMode-only fullscreen suppression before original start-touch; actual removed iframe requires app-ready/pagehide evidence and truthful final text capture. |
+| colddrawertest | Pending actual comparison; original 900×600, two native visits, all drawer/access/store/amount predicates retained. | Source preparation only; no runtime/parity claim. Existing unconditional fullscreen suppression retained; repeated drawer and reload rows must remain complete and ordered. |
