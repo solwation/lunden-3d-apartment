@@ -1128,3 +1128,18 @@ identity is not claimed. This fixture never opens/writes chat, and actual C prob
 the new predicate requires both. Separate source/URL/controller/image evidence: `/tmp/lunden-stair801/`.
 Parent #751 is complete after #799/#800/#801: all eight fixture dispositions are recorded above.
 The broader parents #741/#736 remain open for their other groups.
+
+
+## Test-mode comparison: basement and scene state (#806)
+
+Each pair restores only original query/dimensions from `9645849^` for the full baseline,
+retaining every current action/assertion/reload/storage branch. The earlier after-only
+flagging is not parity evidence. First pair frozen runtime `a709ebb`; source/setup snapshots:
+`/tmp/lunden-basement806/`. Wall times include external final fixture screenshots.
+
+| Fixture | Actual ordered result / disposition | Full → test evidence |
+| --- | --- | --- |
+| basementhudtest | Accepted existing test-mode fixture: complete logs byte-identical, all 8 ordered PASS rows and ALL PASS; no pageerrors. Every source byte restored to current committed fixture after the temporary baseline. | `/tmp/runtests-375801/`: runner wall 59.028s at actual 720×480/controller false → 71.476s at 480×300/controller true, both fullPage images saved/inspected. Original fullscreen suppression retained; no speedup inferred. This proves native logical HUD/room state, not rendered-scene equivalence (full sky canvas after authored animation stop, test courtyard image). |
+| basementvisittest | Pending actual comparison; current assertions and four-load reload/reset flow preserved. | Source preparation only; no runtime/parity claim yet. |
+| boxwoodtest | Pending actual comparison; original full size already 480×300, seasonal/native state preserved. | Source preparation only; no runtime/parity claim yet. |
+| bridgetest | Pending actual comparison; mapped geometry/joins/raycast/triangle assertions preserved. | Source preparation only; no runtime/parity claim yet. |
