@@ -4,7 +4,7 @@
 <body>
 <pre id="out">running…</pre>
 <script>
-// Test-mode candidate (#787): large native ground/collision continuity scan; preserve all measured geometry rows.
+// &test: actual original-full/test pair has identical complete geometry/5 cm scan rows (#794); assertions retained.
 // The ground's levels and joins (#346): the courtyard is the model's reference level (y 0 = L1007's Entréplan floor,
 // no real plushöjd), the documented local differences (S2: ~3 m to the park, the ramp ~0.9 m, the stairs ~1.4 m east
 // and ~1 m NW) are kept as local conditions, the ramp's ends, the stairs' feet and the garage drive meet their ground
@@ -14,7 +14,7 @@
 const out = document.getElementById('out');
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 const f = document.createElement('iframe');
-f.width = 400; f.height = 300; f.src = '../index.html?time=12&month=6';
+f.width = 480; f.height = 300; f.src = '../index.html?time=12&month=6&test';
 document.body.append(f);
 f.onload = () => run().catch((e) => { out.textContent = `FAIL ${e}\n${e.stack}\nSOME FAILED`; });
 async function run() {

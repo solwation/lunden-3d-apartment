@@ -558,6 +558,36 @@ Phone memory probe (#628): `python3 tools/devserve.py 8628 . &` then `PLAYWRIGHT
 
 Park basement entries (#729): run `PLAYWRIGHT_MODULE=/path/to/playwright CHROME_PATH=/path/to/chrome node tools/basemententrytest.cjs http://localhost:8729` after starting the development server. `SHOTS` overrides `/tmp/lunden-basement-entry/result.json`'s directory. The driver waits bounded initialization, clicks the real mouse-start button, obtains PointerLock and runs `tools/basemententrytest.html`: actual E focus from outside before below, closed/open/jamb traversal to both −1 landings and back, the touch action handler in controlled touch mode, far animated leaves, courtyard pick/collision exclusion, continuous park paving, tree/shrub-instance clearance and floor coverage. It uses `&test=lazy`, with no automatic rendering; this is not a physical-phone touch/FPS test. [Measured scope and manual full-quality images](../validation/issue-729/README.md).
 
+## Test-mode comparison: complete terrain scan (#794)
+
+`terraintest` was compared on clean `fb4c8a9`, retaining the original
+`9645849^` executable fixture: 400×300, `?time=12&month=6`, the complete 5 cm
+OUTDOOR grid, every existing house/stair exclusion and native collision-segment
+guard. `/tmp/runtests-342584/terraintest{,.test}.log` contains **25 PASS / 0 FAIL
+in each mode**, with byte-identical complete ordered result rows. The actual
+continuity scan checked **4973872** neighboring pairs and found **0** unguarded
+steps; **274** trees had no asphalt/paving placement. All ramp/stair/garage,
+box-edge, per-building plinth and ground values were preserved, including each
+printed discrepancy, count and coordinate. No scan reduction, seed, output
+normalization or baseline masking was used.
+
+Summary metadata verifies full mode at actual **400×300**, no test parameter,
+controller false; test at actual **480×300**, test parameter, controller true.
+The public runner exited 0. Its reported times were **106765 ms → 78224 ms**;
+the full time includes a failed 10-second final screenshot attempt, so this
+pair does not establish a performance improvement. A read-only external close
+hook attempted screenshots only after assertions and mode metadata; it did not
+change fixture/app state. The successful test screenshot
+`/tmp/lunden-terrain794/terrain-test.png` was inspected: it captures cropped
+result text, not a terrain visual validation. The full capture timeout is
+recorded in `screenshots.txt`; no second app run was made solely for an image.
+
+The final migration changes only the iframe width to 480 and adds `&test`,
+with a disposition comment. All executable statements/assertions beyond that
+width/query edit remain byte-identical. Source hashes were frozen across the
+pair (`/tmp/lunden-terrain794/run-provenance.json`). This closes only #794;
+#750, #741 and #736 retain their other independent fixture work.
+
 ## Physical ray/detail-layer regression (#805)
 
 Actual pass-through diagnostics on `967e58e` retained the #804 Nerf fix and
@@ -796,7 +826,7 @@ fixtures; no new run, timing or equivalence is claimed. The preserved green
 | --- | --- | --- |
 | terracedecortest | Conditional native-state candidate: finite merged geometry/triangle budget, terrace bounds and explicit `TerraceGate.update(camera)` layer tests. Bulb colors are assigned by `exterior.userData.update(night, power)`; a final render does not assert framebuffer output. No measured frame-time threshold. | 400×300, frozen June noon/shot; preserve gate and day/night/power-cut color rows, check actual state parity before any migration. |
 | terracetest | Candidate: terrace polygons/areas/joins and actual railing geometry bounding-box height. No viewport or pixel assertion. | 400×300, June noon; complete ordered geometry rows. |
-| terraintest | Large candidate: ground/road/ramp/stair/plinth values, dense 5 cm OUTDOOR continuity pairs, collision guards and tree-foot placement. The pair count and sampled discrepancies are actual printed values. | 400×300, June noon; own single-fixture comparison, preserve the complete scan and all raw values. |
+| terraintest | Migrated #794: ground/road/ramp/stair/plinth values, complete dense 5 cm OUTDOOR continuity pairs, native collision guards and tree-foot placement. All 25 ordered raw rows are identical. | Original 400×300 June noon → verified test 480×300; see [complete terrain scan evidence](#test-mode-comparison-complete-terrain-scan-794), including actual counts and screenshot overhead. |
 | thingtest | Candidate: actual bottle/glass transforms, held/place/home actions, fill/color material data, pouring/drinking and reset state. A material color field is not a sampled rendered pixel. | 900×600; all native interaction/state rows. |
 | toastertest | Conditional native-state candidate: slot glow opacity and lever positions are assigned in `Toaster.update(dt)` independently of quality knobs. Actual drawer/cord/socket actions and a second main load validate persisted placement/plug state. | 900×600 on both loads; preserve glow assertions and real reload, verify both actual mode/viewports. |
 | toasttest | Candidate: actual life-item bread slots, carriage, cooking/crumb events, names, butter/cheese actions and eating. Counted crumbs are domain events, not a particle/render measurement. | 900×600; preserve all cooking/actions and repeated eat rows, including duplicates. |
