@@ -4,7 +4,7 @@
 <body>
 <pre id="out">running…</pre>
 <script>
-// Test-mode candidate (#787): sample-data order, DOM visibility and native interaction/door state; preserve exact rows.
+// Verified full/test parity (#793): all 16 sample-order, DOM and native interaction/door result rows identical.
 // The TODO post-its on the fridge door (#340): the sample list loads (locally there is no data/todo.json), sorted by
 // priority (#431), the notes ride on the fridge door, they are no E target and open no panel (#431), a drawing is
 // not taped over them, F keeps them, and the title-cleaning fallback makes long issue titles short.
@@ -21,8 +21,8 @@ const cases = [
   ['Köket: mörkare kaffe, mer rostat', /^Mörkare kaffe$/],
 ];
 const f = document.createElement('iframe');
-f.width = 900; f.height = 600;
-f.src = '../index.html';
+f.width = 480; f.height = 300;
+f.src = '../index.html?test';
 document.body.append(f);
 f.onload = () => run().catch((e) => { out.textContent = `SOME FAILED\nFAIL ${e?.stack ?? e}\n${lines.join('\n')}`; });
 async function run() {
@@ -46,6 +46,7 @@ async function run() {
     .sort(byPriority).map((t) => t.n).join(',');
   pass &= check(sorted === '3,9,7,2,5', `byPriority, a missing prio = low (${sorted})`);
   pass &= check(!d.getElementById('todo-list'), 'no "Att göra" list in the page');
+  if (w.__app.testMode) d.documentElement.requestFullscreen = undefined; // keep test-mode fixture at its intended size
   d.getElementById('start-touch').click();
   await wait(50);
   w.__app.scene.updateMatrixWorld(true);
