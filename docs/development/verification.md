@@ -1040,8 +1040,25 @@ Both app-ready and final native phases proved actual full 900×600/null controll
 inspected: raw outcomes/living room capture, not a read-spread or pixel-equivalence claim; times include captures.
 All 247 runtime hashes and the exact guarded fixture matched the frozen pair. Raw logs/summary:
 `/tmp/runtests-422743/`; source/provenance, native load/final data, PID/SID/exit, helpers and images:
-`/tmp/lunden-codes810/book-*` and `booktest-*`. Other #810 fixtures still need their own complete comparisons;
-#810 and #846 remain open.
+`/tmp/lunden-codes810/book-*` and `booktest-*`; #846 remains open.
+
+#810 `cheattest` is accepted after comparing the original 844×600 queries against test mode at 480×300:
+whole raw logs are byte-identical, all 50 ordered PASS rows and ALL PASS preserved, including repeated rejection
+cases, private-code/public-list exclusion, native font readiness, console actions, clock/lamp controller state,
+world-note ray/read interaction, life cleanup/idempotence and the real normal-home persisted reload.
+Frozen source `5bd6bb8`: 220.509s full → 152.906s test, independently monitored actual exit 0. Each mode performed
+TWO actual main document loads in the same iframe; four unique child URL/timeOrigin identities at app-ready,
+first-document beforeunload/pagehide and second-document final records prove both full loads 844×600/null controller
+and both test loads 480×300/real controller API, all without fullscreen. The public runner applied the prescribed
+query/dimension comparison; no added data/clock/seed override, route-injected fixture instrumentation,
+normalization or assertion change was used. The original unconditional
+fullscreen suppression is preserved. Final committed change only reduces the existing test-flagged iframe to
+480×300; both existing test queries and all private/near-secret predicates remain unchanged.
+Both end PNGs were inspected: all result rows plus the generic night courtyard, not graffiti/font-pixel or action-scene
+equivalence. Times include successful captures. Raw logs/summary: `/tmp/runtests-429394/`; runtime/fixture/helper
+hashes, phase records, genuine independent PID/SID/exit, source proof and images: `/tmp/lunden-codes810/cheat-*`
+and `cheattest-*`. All 247 frozen runtime hashes match; no page or observer errors occurred. Crouch still needs its
+own complete comparison; #810 remains open.
 
 
 #807 beer-object comparison: `beercantest` retains its original full-mode loader and dedicated `?shots` path.

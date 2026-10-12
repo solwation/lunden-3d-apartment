@@ -2,7 +2,7 @@
 <script type="module">
 const lines=[];let pass=true;const check=(ok,text)=>{lines.push((ok?'PASS':'FAIL')+' '+text);pass&&=!!ok},wait=ms=>new Promise(r=>setTimeout(r,ms));
 try {
-const f=document.createElement('iframe');f.width=844;f.height=600;f.src='../index.html?test&life&shot&cloud=';document.body.append(f);await new Promise(r=>f.onload=r);while(!f.contentWindow.__app)await wait(100);
+const f=document.createElement('iframe');f.width=480;f.height=300;f.src='../index.html?test&life&shot&cloud=';document.body.append(f);await new Promise(r=>f.onload=r);while(!f.contentWindow.__app)await wait(100);
 let w=f.contentWindow,d=f.contentDocument,A=w.__app;const V=A.player.pos.constructor,I=A.life.items;
 d.documentElement.requestFullscreen=undefined;d.getElementById('start-touch').click();
 const consoleTexts=[d.getElementById('terminal').textContent];
