@@ -1,11 +1,11 @@
 <!doctype html><html lang="sv"><meta charset="utf-8"><title>Hall task test (#594)</title><pre id="out">running…</pre><script type="module">
-// #779 audit: compare candidate; checks task/actions, inventory and reloads, not rendered pixels.
+// #821: complete native task/action/storage/reload rows verified against original full setup.
 // A fresh visit starts with a clean hall; reading the task list in the cup cabinet adds the hall task and lays the jacket
 // and shoes on the hall floor once. Tidying them completes it; reloads, re-reads and pre-#594 saves never duplicate them.
 const lines=[];let pass=true;const check=(ok,text)=>{lines.push((ok?'PASS':'FAIL')+' '+text);pass&&=!!ok},wait=ms=>new Promise(r=>setTimeout(r,ms));
 try{
- const f=document.createElement('iframe');f.width=640;f.height=400;document.body.append(f);
- async function load(q){await new Promise(r=>{f.onload=r;f.src='../index.html?'+q});while(!f.contentWindow.__app)await wait(100);f.contentDocument.documentElement.requestFullscreen=undefined;f.contentDocument.getElementById('start-touch').click();const a=f.contentWindow.__app;a.renderer.setPixelRatio(.15);return a;}
+ const f=document.createElement('iframe');f.width=480;f.height=300;document.body.append(f);
+ async function load(q){await new Promise(r=>{f.onload=r;f.src='../index.html?test&'+q});while(!f.contentWindow.__app)await wait(100);f.contentDocument.documentElement.requestFullscreen=undefined;f.contentDocument.getElementById('start-touch').click();const a=f.contentWindow.__app;a.renderer.setPixelRatio(.15);return a;}
  const Q='shot&cloud=&time=12',blank=()=>new Promise(r=>{f.onload=r;f.src='about:blank'}); // (off the page first: its unload would save over a seeded record)
  let A=await load(Q);const {LIFE}=await f.contentWindow.eval("import('/src/config.js')"),T=await f.contentWindow.eval("import('three')");
  const ls=()=>f.contentWindow.localStorage;await blank();ls().clear();A=await load(Q); // a fresh home: nothing saved

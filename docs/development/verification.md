@@ -415,7 +415,7 @@ item 64 identical PASS rows; this closes only the bounded #820 scope, not broade
 | `grilltasktest.html` | Own fixture | Task modules and paper-canvas image, no main iframe. |
 | `grilltest.html` | Migrated (partial #820) | All 6 ordered PASS rows and ALL PASS byte-identical; real focus/action/flame/lamp/lid/F/burnout checks preserved, including 16 flames / light 0.79 / lid 1.90 rad. Actual full ready 900×600 → native fullscreen 1280×800, controller null; test 480×300/real API/no fullscreen. 102.908s → 82.333s, actual exit 0; `/tmp/runtests-465595/`. |
 | `hallcaretest.html` | Migrated (#821) | 24 identical ordered PASS rows, 0 FAIL across three real loads per mode; original/test actual 480×300, genuine native controller/API evidence. Care, geometry, reload/reset and fallback actions preserved; evidence below. |
-| `halltasktest.html` | Candidate | Task cards/actions, inventory/restocking and multiple real reloads. |
+| `halltasktest.html` | Migrated (#821) | 17 identical ordered PASS rows, 0 FAIL across six real main loads and three blank transitions per mode; native original 640×400/full → 480×300/test. Actual focus, task/bonus, storage/reload/pre-#594 saves and inventory audit preserved; evidence below. |
 | `hangtest.html` | Own fixture | buildWorld and garment bounding boxes, no main iframe/renderer. |
 | `holdtest.html` | Migrated (partial #820) | All 80 ordered PASS rows and ALL PASS byte-identical; all hold/grip/hug/fruit/placement predicates and duplicate table/retake rows preserved. Full ready 900×600 → native fullscreen 1280×800/controller null; test 480×300/real API/no fullscreen. 166.267s → 90.448s, actual exit 0; `/tmp/runtests-470986/`. |
 | `hudiconstest.html` | Full rendering | 844×390 HUD bounds, 44px controls, blur fallback and scene draw-call equality. |
@@ -1958,3 +1958,42 @@ PID/SID/exit: `/tmp/lunden-flight822/jumpontest/`. Jetpack and kitten remain
 pending under #822; #739/#736 remain open. Kitten's legitimate error-writer
 protocol fix #848 is preserved separately from the approved pre-pair testMode-only
 fullscreen guard and unchanged authored random/seed behavior.
+
+## Hall care and keys: hall-task acceptance (#821, partial)
+
+One complete published jobs1 pair at frozen runtime `fa20d4b` preserved the whole
+original 640×400/shared shot/cloud-empty/noon loader, all six actual main loads
+and three authored about:blank transitions per mode. Native storage writes after
+blank, focus/touch/task-card actions, completion bonus, refills, pre-#594 records
+and inventory audit all remained intact. Original fullscreen suppression and
+DPR .15 were unchanged, with no new seed, normalization, quality/matrix override
+or added wait.
+
+Both entire raw logs are byte-identical (1127 bytes, 17 PASS, 0 FAIL, ALL PASS).
+All twelve app-ready documents have distinct native timeOrigins and matched
+URLs; twenty beforeunload/pagehide snapshots and two retained final snapshots
+match those document identities. Full phases were 640×400/controller false;
+test phases were 480×300 with genuine
+draw/setFull/wantsFrame APIs, lazy/full false. Neither mode entered fullscreen;
+all cloud URLs were empty. Same-URL reloads were not mistaken for earlier
+documents. Six blank transitions were separately observed after main documents,
+without app/controller/timeOrigin claims for blank pages. Earlier runner null
+controller records remain explicit, completed by passive native evidence. There
+were no observer errors/warnings or raw pageerrors; runner modes were verified
+and the independent monitor exited 0.
+
+Elapsed full/test times were 452.636/386.015 seconds including successful final
+captures, a single uncontrolled sample. Capture timeout was 60 seconds in both
+modes before freezing. Both images were saved/reviewed: full has all 17 rows,
+ALL PASS and final kitchen/HUD; test has all rows/verdict vertically, long text
+clipped on the right and only a tiny frame edge below. Neither establishes the
+intermediate task-card/hall-item visuals or rendered-scene equivalence. This
+differently cropped pair is excluded from qualified timing aggregation. Complete
+logs/summary: `/tmp/runtests-488125/`; frozen runtime/helper hashes, all native
+phases/blank transitions, actual exit and images:
+`/tmp/lunden-hall821/halltasktest/`. All frozen source blobs matched after the pair.
+
+Written hall-task now uses 480×300/test in the existing shared loader. Reversing
+only dimensions/query/descriptive comment recreates the exact frozen original;
+all actions, predicates and authored storage records remain unchanged. Key
+remains pending under #821; #739/#736 stay open.
