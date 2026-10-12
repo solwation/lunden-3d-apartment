@@ -18,6 +18,7 @@ f.onload = async () => {
   const { player, camera, step, world, lights, scene } = w.__app;
   const lines = [];
   const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; };
+  if (w.__app.testMode) d.documentElement.requestFullscreen = undefined;
   d.getElementById('start-touch').click();
   await wait(50);
   const btn = d.getElementById('action');

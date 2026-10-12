@@ -1025,6 +1025,23 @@ per issue). Each needs its own actual full/test runs and unchanged assertions:
 | Interaction | cheattest, booktest, crouchtest |
 | Cooking and cloud state | cooktest, cuptest, cloudtest |
 
+#812 `bestatest` is accepted after a complete original 900×600/`?time=12&freeze` comparison at frozen `7325270`:
+whole raw logs are byte-identical, all 11 ordered PASS rows and ALL PASS, independently monitored actual exit 0.
+All six doors retain their original action-label, open, reacquire-the-open-leaf and shut predicates and raw
+height/z diagnostics. Spots retain automatic/off-at-noon, emissive 0.9, visible glow opacity 0.35 and off-again
+0.04/glow-false checks. App-ready and final native phases prove ONE actual document per mode, full
+900×600/null controller versus 480×300/real controller API, both without fullscreen and with distinct child identities.
+The approved pre-pair testMode-only fullscreen guard precedes the original touch start; the full branch is inert.
+Final source retains the existing test query and 480×300 dimensions; the only net fixture change adds that guard.
+No current assertion, matrix/aim sequence, lamp control, seed, quality or result value was changed. Lighting properties are
+logical state checks here; quality's shadow/resolution differences do not imply pixel equivalence.
+Full 154.887s → test 84.142s, including successful end captures: both PNGs were inspected (all result rows and
+cabinet in its closed final state), not door-motion or intermediate glow/shadow pixel equivalence. This is one
+shared-machine sample, not a controlled benchmark. All 247 frozen runtime hashes and fixture/helper hashes match.
+Raw logs/summary: `/tmp/runtests-442389/`; source/provenance, app-ready/final native phases, independent PID/SID/exit
+and both PNGs: `/tmp/lunden-lighting812/besta-*` and `bestatest-*`. `blindtest` still needs its own complete pair;
+#812 and broader #738/#736 remain open.
+
 #810 `booktest` retains its original full-mode 900×600/noquery fixture, byte-identical to current HEAD after
 removing the approved compare-only testMode fullscreen guard. One complete original full/test pair at frozen
 `570f8b8` is DIFFERENT: full 12 PASS / ALL PASS versus test 10 PASS + `FAIL taken again ("(hidden)")` and
