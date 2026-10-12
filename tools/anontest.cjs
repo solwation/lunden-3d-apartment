@@ -2,8 +2,8 @@
 //   python3 tools/devserve.py 8122 .          node cloudflare/dev.mjs 8145 tok
 //   PLAYWRIGHT_MODULE=… [CHROME_PATH=…] [SHOTS=/dir] node tools/anontest.cjs http://localhost:8122 http://localhost:8145 tok
 // Checks: a player without a name is online as "Anonym" (presence list + count), gets a leaderboard row (name '') shown as
-// "Anonym" and later renamed in the same row, a second anonymous browser gets its own row, and "Visa mig inte för andra" sends
-// nothing (no presence PUT, no score, no ghost socket). Screenshots of the start screen / dialog into SHOTS.
+// "Anonym" and later renamed in the same row, a second anonymous browser gets its own row, and (#723) an old
+// lunden.share='0' is ignored (the removed opt-out box), the start screen notes you are visible, the privacy page works. Screenshots of the start screen / dialog into SHOTS.
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const game = process.argv[2] || 'http://localhost:8122', worker = process.argv[3] || 'http://localhost:8145', token = process.argv[4] || 'tok';
 const shots = process.env.SHOTS || '/tmp';
@@ -50,22 +50,31 @@ const wipe = () => fetch(`${worker}/admin/all`, { method: 'DELETE', headers: { A
     await pa.evaluate(() => { window.__app.leaderboard.openDialog('new'); });
     await pa.screenshot({ path: `${shots}/anon-dialog.png`, timeout: 240000 });
     await A.ctx.close();
-    // C: opted out, nothing is sent
+    // C (#723): the opt-out box is gone; an old saved lunden.share='0' is ignored and removed, the player is visible as before
     await wipe();
     const base = (await api('/presence')).count;
     const C = await open(() => { sessionStorage.setItem('lunden.nameSkipped', '1'); localStorage.setItem('lunden.share', '0'); });
     const pc = C.page;
-    check(await pc.evaluate(() => [...document.querySelectorAll('.share-off')].every((b) => b.checked) && !window.__app.leaderboard.shares), 'the box is ticked from localStorage');
-    await pc.evaluate(() => { window.__app.bump('pvpHits'); return window.__app.leaderboard.send().then(() => window.__app.leaderboard.beacon()); });
+    check(await pc.evaluate(() => !document.querySelector('.share-off, .share-row') && localStorage.getItem('lunden.share') === null), 'no opt-out box, and the old lunden.share value is removed');
+    const note = await pc.evaluate(() => { const n = document.getElementById('share-note'); const r = n.getBoundingClientRect(); return { vis: !n.hidden && r.width > 0, text: n.textContent }; });
+    check(note.vis && /syns för andra spelare/.test(note.text), 'the start screen says you are visible to others', note.text);
+    await pc.evaluate(() => { window.__app.bump('pvpHits'); return window.__app.leaderboard.send(); });
     await pc.evaluate(() => window.__presence.beat());
-    await sleep(2500);
-    const d = await api('/presence');
-    check((await api('/scores')).length === 0 && d.count === base, 'opted out: no score, not counted online', JSON.stringify(d));
-    check(await pc.evaluate(() => !window.__ghosts.ws), 'opted out: no ghost socket');
-    await pc.evaluate(() => document.querySelector('.share-off').click());
-    check(!!(await until(async () => (await api('/scores')).some((r) => r.name === '' && r.score > 0))), 'unticking the box sends the score again');
-    check(!!(await until(async () => (await api('/presence')).count === base + 1)), 'and is online again');
+    check(!!(await until(async () => (await api('/scores')).some((r) => r.name === '' && r.score > 0))), 'an old opt-out value does not stop the score');
+    check(!!(await until(async () => (await api('/presence')).count === base + 1)), 'and the player is online');
     await pc.screenshot({ path: `${shots}/anon-start.png`, timeout: 240000 });
+    // the privacy page: opens from the menu button, one scrollable card inside the viewport, closes again
+    for (const [w, h] of [[640, 420], [390, 844], [844, 390], [1280, 720]]) {
+      await pc.setViewportSize({ width: w, height: h });
+      await pc.evaluate(() => document.getElementById('menu-privacy').click());
+      await sleep(300);
+      const m = await pc.evaluate(() => { const d = document.getElementById('privacy-dialog'), c = d.querySelector('.card').getBoundingClientRect(), b = document.getElementById('privacy-dialog-close').getBoundingClientRect();
+        return { open: !d.hidden, c: [c.left, c.top, c.right, c.bottom], b: [b.top, b.bottom], text: d.textContent.includes('Cookies och spårning') }; });
+      check(m.open && m.text && m.c[0] >= 0 && m.c[1] >= 0 && m.c[2] <= w && m.c[3] <= h && m.b[1] <= h, `the privacy page fits at ${w}x${h}`, JSON.stringify(m));
+      await pc.screenshot({ path: `${shots}/anon-privacy-${w}x${h}.png`, timeout: 240000 });
+      await pc.evaluate(() => document.getElementById('privacy-dialog-close').click());
+      check(await pc.evaluate(() => document.getElementById('privacy-dialog').hidden), `the privacy page closes at ${w}x${h}`);
+    }
     await C.ctx.close();
   } catch (e) { check(false, 'test crashed', e.stack); }
   await browser.close();

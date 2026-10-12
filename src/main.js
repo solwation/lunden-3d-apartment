@@ -819,6 +819,9 @@ const leaderboard = new Leaderboard(cloud.url, totalScore, {
 });
 document.getElementById('menu-leaderboard')?.addEventListener('click', () => leaderboard.openLeaderboardDialog());
 document.getElementById('leaderboard-dialog-close')?.addEventListener('click', () => leaderboard.closeLeaderboardDialog());
+const privacyDialog = document.getElementById('privacy-dialog'); // #723: what is stored and sent
+document.getElementById('menu-privacy')?.addEventListener('click', () => { privacyDialog.hidden = false; });
+document.getElementById('privacy-dialog-close')?.addEventListener('click', () => { privacyDialog.hidden = true; });
 setStatsExtra(() => leaderboard.html());
 cloud.ready = cloud.on ? Promise.all([postersLoaded, boardLoaded]).then(() => cloud.sync()) : Promise.resolve(); // (tests wait on it)
 cat.onPet = () => { bump('petted'); if (cat.kitten) bump('kittenPets'); }; // a kitten's pat is worth more (#363)
@@ -1178,7 +1181,7 @@ function resumeFromMenu() {
   }
 }
 let unlockedAt = -1e9;
-const otherOverlay = () => ['loading', 'install', 'reset-confirm', 'player-dialog', 'leaderboard-dialog', 'note', 'task-note', 'terminal', 'cheat-note', 'board-view', 'poster-panel'].some((id) => {
+const otherOverlay = () => ['loading', 'install', 'reset-confirm', 'player-dialog', 'leaderboard-dialog', 'privacy-dialog', 'note', 'task-note', 'terminal', 'cheat-note', 'board-view', 'poster-panel'].some((id) => {
   const el = document.getElementById(id);
   return el && !el.hidden && !el.classList.contains('done');
 })
@@ -2187,17 +2190,15 @@ function renderMenuPresence(p) {
 const presence = new Presence(cloud.url, document.getElementById('presence'), {
   getName: () => leaderboard.name,
   getScore: () => totalScore(),
-  shares: () => leaderboard.shares,
   onUpdate: (p) => renderMenuPresence(p)
 });
-leaderboard.onShareChange = () => presence.beat(); // (the ghosts follow `active` below)
 leaderboard.activePlayers = () => presence.names;
 // other players as ghosts with a name tag (#666, src/ghosts.js): a WebSocket to the Worker's players' room, only while playing
 // fights between two armed players (#667, src/combat.js): which weapon we hold (COMBAT.weapons, in that order)
 const weaponIs = { saber: (h) => h === saber, nerf: (h) => toys.blasters.includes(h), wand: (h) => toys.wands.includes(h),
   rifle: (h) => !!h?.isRifle, ball: (h) => h === ball, bow: (h) => !!bow && h === bow, web: (h) => !h && suit.worn, jetpack: () => jetpack.worn };
 const weaponKey = () => { const h = heldItem(); return COMBAT.weapons.find((k) => weaponIs[k]?.(h)) ?? ''; };
-const ghosts = new Ghosts({ scene, camera, url: cloud.url, name: () => leaderboard.name, active: () => overlay.hidden && leaderboard.shares, weapon: weaponKey, mirrored: () => !rest.active,
+const ghosts = new Ghosts({ scene, camera, url: cloud.url, name: () => leaderboard.name, active: () => overlay.hidden, weapon: weaponKey, mirrored: () => !rest.active,
   state: () => ({ p: [player.pos.x, player.pos.y, player.pos.z], r: camera.rotation.y }) });
 const combat = new Combat({ ghosts, camera, scene, weapon: weaponKey, feet: () => player.pos, jetpack, sfx, darts: toys.darts, sparkles: toys.sparkles, arrows,
   onHit: () => bump('pvpHits'), onHurt: () => penalize('pvpHurt'),
@@ -2584,6 +2585,7 @@ onTap(document.getElementById('reset-no'), () => resetHome.cancel());
 onTap(document.getElementById('reset-yes'), () => resetHome.confirm());
 document.addEventListener('keydown', (e) => {
   if (e.code === 'Escape' && !resetEl.hidden) { e.preventDefault(); resetHome.cancel(); }
+  else if (e.code === 'Escape' && privacyDialog && !privacyDialog.hidden) { e.preventDefault(); privacyDialog.hidden = true; }
   else if (e.code === 'Escape' && leaderboard?.lbDialog && !leaderboard.lbDialog.hidden) { e.preventDefault(); leaderboard.closeLeaderboardDialog(); }
   else if (e.code === 'Escape' && leaderboard?.dialog && !leaderboard.dialog.hidden) { e.preventDefault(); leaderboard.handleSkip(); }
   else if (e.code === 'Escape' && !statsEl.hidden) { e.preventDefault(); showStats(false); statsPinned = false; }

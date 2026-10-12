@@ -267,9 +267,16 @@
     body.touch #badges { top: calc(70px + var(--st)); }
     #stats-body div.stat-row { display: flex; flex-wrap: wrap; gap: 0 10px; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,.08); padding: 3px 0; }
     #stats b { font-variant-numeric: tabular-nums; }
-    #player-dialog, #leaderboard-dialog { position: fixed; inset: 0; z-index: 45; display: grid; place-items: center; background: rgba(20, 35, 45, 0.7); }
-    #player-dialog[hidden], #leaderboard-dialog[hidden] { display: none; }
+    #player-dialog, #leaderboard-dialog, #privacy-dialog { position: fixed; inset: 0; z-index: 45; display: grid; place-items: center; background: rgba(20, 35, 45, 0.7); }
+    #player-dialog[hidden], #leaderboard-dialog[hidden], #privacy-dialog[hidden] { display: none; }
     #player-dialog .card, #leaderboard-dialog .card { width: min(440px, calc(100vw - 32px)); }
+    #privacy-dialog .card { width: min(560px, calc(100vw - 32px)); box-sizing: border-box; padding: 24px; }
+    #privacy-dialog h2 { font-size: 15px; margin: 14px 0 4px; }
+    #privacy-dialog .priv-scroll { max-height: min(52vh, 420px); overflow-y: auto; font-size: 13.5px; line-height: 1.45; margin: 8px 0; padding-right: 6px; }
+    #privacy-dialog .priv-scroll p { margin: 4px 0; }
+    #privacy-dialog .priv-scroll ul { margin: 4px 0; padding-left: 20px; }
+    .share-note { font-size: 12px; opacity: .75; margin: 6px 0 10px; line-height: 1.4; }
+    .share-note[hidden] { display: none; }
     #leaderboard-dialog .lb-scroll { max-height: min(340px, calc(60vh)); overflow-y: auto; margin: 10px 0; }
     #corner-qr { position: fixed; left: calc(var(--badge-inset) + var(--sl)); top: calc(var(--hud-badge-bottom) + 40px); z-index: 20; background: rgba(20, 35, 45, 0.75); color: #fff; padding: 10px; border-radius: 10px; backdrop-filter: blur(3px); display: flex; flex-direction: column; align-items: center; gap: 6px; pointer-events: auto; }
     #corner-qr[hidden] { display: none; }
@@ -287,10 +294,6 @@
     #player-badge button:hover { background: #f0f7fa; }
     #player-badge button[hidden] { display: none; }
     #lb-name { margin: 10px 0 4px; }
-    .share-row { display: flex; gap: 8px; align-items: center; font-size: 13px; margin: 8px 0 0; cursor: pointer; }
-    .share-row[hidden], #lb-name label.share-row[hidden] { display: none; }
-    #lb-name label.share-row { display: flex; font-weight: 400; margin-top: 12px; }
-    .share-row input { width: 18px; height: 18px; flex: none; }
     #lb-name[hidden], #lb-start { display: none !important; }
     #lb-name label { display: grid; gap: 4px; font-size: 13px; font-weight: 600; }
     #lb-name input { font: 15px system-ui, sans-serif; padding: 10px 12px; border: 1px solid #c8ced3; border-radius: 6px; width: 100%; box-sizing: border-box; }
@@ -540,7 +543,7 @@
         <button id="player-new" type="button" hidden title="Byt spelare eller starta ny session">Byt spelare</button>
       </div>
       <ol id="lb-start" class="lb" hidden></ol>
-      <label class="share-row start-share" hidden><input type="checkbox" class="share-off"> Visa mig inte för andra</label>
+      <p id="share-note" class="share-note" hidden>Du syns för andra spelare med ditt namn (eller som ”Anonym”), och din poäng visas på topplistan.</p>
       <div class="start">
         <button id="start-mouse" class="go">Mus &amp; tangentbord</button>
         <button id="start-touch" class="go alt">Touch</button>
@@ -573,6 +576,13 @@
             <span class="btn-desc">Se de bästa resultaten och topplistan</span>
           </span>
           <span class="btn-icon" aria-hidden="true">🏆</span>
+        </button>
+        <button id="menu-privacy" class="menu-btn" type="button">
+          <span class="btn-text">
+            <b>Integritet och cookies</b>
+            <span class="btn-desc">Vad spelet sparar och skickar</span>
+          </span>
+          <span class="btn-icon" aria-hidden="true">🔒</span>
         </button>
         <button id="toggle-instructions" class="menu-btn" type="button" aria-expanded="false" aria-controls="instructions">
           <span class="btn-text">
@@ -667,6 +677,45 @@
       </div>
     </div>
   </div>
+  <div id="privacy-dialog" hidden role="dialog" aria-label="Integritet och cookies">
+    <div class="card">
+      <div class="kicker">INTEGRITET</div>
+      <h1>Integritet och cookies</h1>
+      <div class="priv-scroll">
+        <p>Så här ser det ut i spelet just nu. Det är en beskrivning, inte juridisk rådgivning.</p>
+        <h2>Cookies och spårning</h2>
+        <p>Spelet sätter inga cookies och använder ingen reklam- eller besöksspårning.</p>
+        <h2>Sparas i din webbläsare</h2>
+        <ul>
+          <li>Inställningar och spelläge (localStorage): ditt sparade hem och möblering, var du står, uppgifter, poäng och statistik, grafikkvalitet, persienner, vilka nyheter du sett, ditt namn och ett slumpmässigt spelar-id.</li>
+          <li>Större saker (IndexedDB): kattfoton på köksanslaget och teckningar du tejpat upp.</li>
+          <li>Cache (CacheStorage och localStorage): öltoppen i hyllan samt hämtat väder och nyhetslistan, så att de laddas snabbare nästa gång.</li>
+          <li>Kraschhjärtslag: spelet noterar lokalt om det kraschar (plats, grafikläge, felrader).</li>
+        </ul>
+        <h2>Skickas till spelets server (Cloudflare)</h2>
+        <ul>
+          <li>Namn (eller tomt, då visas ”Anonym”) och poäng till topplistan, med ett slumpmässigt spelar-id. Alla spelare syns för andra.</li>
+          <li>Närvaro: att du är online, med namn och poäng, var 30:e sekund.</li>
+          <li>Flerspelarläget: var du står, åt vilket håll du tittar, vilket vapen du håller och det du skriver i chatten, så länge du spelar. Chatten sparas inte.</li>
+          <li>Delade teckningar och möblering som du tejpar upp eller flyttar.</li>
+          <li>Anonymiserade kraschrapporter: enhet, webbläsare, grafikläge och felmeddelanden, utan namn.</li>
+          <li>Din IP-adress hanteras av Cloudflare när du ansluter, men spelet sparar den inte.</li>
+        </ul>
+        <h2>Externa tjänster</h2>
+        <p>Väder hämtas från Open-Meteo (open-meteo.com, CC BY 4.0, api.open-meteo.com och archive-api.open-meteo.com). Bara platsens koordinater (avrundade) och datum skickas, inget om dig. Spelets filer hämtas från GitHub Pages och nyhetslistan därifrån.</p>
+        <h2>Ta bort dina data</h2>
+        <ul>
+          <li>”Återställ” i menyn nollställer hemmet lokalt, men behåller namn, poäng och delade teckningar.</li>
+          <li>Rensa webbplatsdata för sidan i webbläsaren för att ta bort allt som sparats lokalt, inklusive namn, spelar-id, foton och teckningar.</li>
+          <li>Det som redan skickats till topplistan ligger kvar på servern; hör av dig till den som driver spelet om du vill ha en rad borttagen.</li>
+          <li>Vill du inte skicka något alls: spela en lokal kopia utan serveradress. Med <code>?mp=0</code> i adressen stängs bara flerspelarläget (position och chatt) av; namn, poäng och närvaro skickas ändå.</li>
+        </ul>
+      </div>
+      <div class="start">
+        <button id="privacy-dialog-close" class="go" type="button">Stäng</button>
+      </div>
+    </div>
+  </div>
   <div id="install" hidden role="dialog" aria-label="Installera appen">
     <div class="card">
       <img src="icons/apple-touch-icon.png" alt="">
@@ -698,7 +747,6 @@
           <button id="player-ok" class="go" type="button">OK</button>
           <button id="player-skip" class="go alt" type="button">Hoppa över</button>
         </div>
-        <label class="share-row" hidden><input type="checkbox" class="share-off"> Visa mig inte för andra</label>
       </div>
     </div>
   </div>

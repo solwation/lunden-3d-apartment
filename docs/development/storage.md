@@ -24,9 +24,9 @@ src/leaderboard.js     the global leaderboard (#198), only with the cloud on: op
                        #677: without a name you are "Anonym": the row has name '' (one per 'lunden.playerId', created for everybody;
                        a name later renames the same row; the Worker never lets an anonymous post strip a name; equal points list
                        named first), anonymous players are online too (presence.js sends name '' + score; the Worker lists them
-                       one by one and counts `anon`) and ghosts. The box "Visa mig inte för andra" (`.share-off`, in the name dialog
-                       and on the start screen; localStorage 'lunden.share' = '0') sends nothing: no score, no presence PUT (only
-                       a read), no ghost socket (`Ghosts.active`). `node --test cloudflare/scores.test.mjs`, `tools/anontest.cjs`
+                       one by one and counts `anon`) and ghosts. Everybody is visible (#723 removed the opt-out box "Visa mig inte för andra"; an old
+                       localStorage 'lunden.share' is deleted at start, no other effect); the start screen says so (`#share-note`).
+                       `node --test cloudflare/scores.test.mjs`, `tools/anontest.cjs`
 src/crashlog.js        crash reports (#629), inert without the cloud (same switch as cloud.js): a heartbeat every CRASHLOG.beatMs (outside the
                        render loop) writes place, quality level, fps, renderer.info, a GPU-memory ESTIMATE (canvas, shadow map,
                        mirror target, source texture images — walked in short slices; incomplete, not measured GPU usage), last keys/taps and console.error lines to localStorage
