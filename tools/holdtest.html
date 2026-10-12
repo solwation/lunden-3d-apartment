@@ -12,7 +12,7 @@
 const out = document.getElementById('out');
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 const f = document.createElement('iframe');
-f.width = 900; f.height = 600; f.src = '../index.html?time=12&freeze';
+f.width = 480; f.height = 300; f.src = '../index.html?time=12&freeze&test';
 document.body.append(f);
 f.onload = async () => {
   const w = f.contentWindow, d = f.contentDocument;
@@ -20,6 +20,7 @@ f.onload = async () => {
   const { player, camera, step, cups, saber, world, heldItem, scene } = w.__app;
   const lines = [];
   const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; };
+  if (w.__app.testMode) d.documentElement.requestFullscreen = undefined;
   d.getElementById('start-touch').click();
   await wait(50);
   const btn = d.getElementById('action');

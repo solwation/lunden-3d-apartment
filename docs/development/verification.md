@@ -338,7 +338,25 @@ test shows all six raw result rows plus the closed-grill/night scene. Neither pr
 pixel equivalence. Timings include both captures and are one shared-machine sample, not a controlled benchmark.
 All 247 frozen source paths and frozen fixture/helper hashes match. Raw logs: `/tmp/runtests-465595/`; provenance,
 actual ready/final phases, independent monitor PID/SID/exit and both PNGs: `/tmp/lunden-objects820/grill-*` and
-`grilltest-*`. Hold, inventory and item still need their own complete pairs; #820/#739/#736 remain open.
+`grilltest-*`. The later hold acceptance is recorded below; inventory and item still need their own complete pairs.
+#820/#739/#736 remain open.
+
+
+#820 hold acceptance at frozen `4f865cf`: complete 3348-byte raw logs are byte-identical, all 80 ordered PASS
+rows and ALL PASS, genuine independent exit 0. Original repeated table/retake rows, held-model/one-hand rules,
+saber geometry, grip/reach, Pingping hands/hug/hearts, photo, fruit bite/refill and placement ghost/grid/turn checks
+are unchanged. Diagnostics retain grip 0.072m, both hands 0.061m, hug 0.80/9cm and bitten skin 3.9→2.3cm.
+Original random hearts and existing seeded fruit geometry are preserved, without new seeds, waits, matrix/quality
+changes or output normalization. Native ready/final records prove one real document per mode: full 900×600 at
+ready → native fullscreen 1280×800 at final, controller null; test 480×300 with real controller API/no fullscreen.
+The approved pre-pair testMode-only guard immediately precedes the original touch start and is inert in full mode;
+final migration adds the test query and 480×300 dimensions while retaining that guard and every current assertion.
+Full 166.267s → test 90.448s include successful end captures. Both PNGs were inspected: fullscreen kitchen/table
+covers the upper fixture text in full (later result rows remain visible); test shows all 80 rows plus final kitchen/table.
+Neither establishes intermediate hand/hug/fruit/placement pixel equivalence. Single shared-machine sample, not a
+controlled benchmark. All 247 frozen source paths and exact fixture/helper hashes match. Raw logs:
+`/tmp/runtests-470986/`; provenance, actual ready/final phases, independent PID/SID/exit and both images:
+`/tmp/lunden-objects820/hold-*` and `holdtest-*`. Inventory/item and #820/#739/#736 remain open.
 
 | Fixture (`tools/`) | Audit disposition | Concrete source requirement |
 |---|---|---|
@@ -365,7 +383,7 @@ actual ready/final phases, independent monitor PID/SID/exit and both PNGs: `/tmp
 | `hallcaretest.html` | Candidate | Care actions, item geometry, points and reload state. |
 | `halltasktest.html` | Candidate | Task cards/actions, inventory/restocking and multiple real reloads. |
 | `hangtest.html` | Own fixture | buildWorld and garment bounding boxes, no main iframe/renderer. |
-| `holdtest.html` | Candidate | Held object actions, parenting/visibility and stored state. |
+| `holdtest.html` | Migrated (partial #820) | All 80 ordered PASS rows and ALL PASS byte-identical; all hold/grip/hug/fruit/placement predicates and duplicate table/retake rows preserved. Full ready 900×600 → native fullscreen 1280×800/controller null; test 480×300/real API/no fullscreen. 166.267s → 90.448s, actual exit 0; `/tmp/runtests-470986/`. |
 | `hudiconstest.html` | Full rendering | 844×390 HUD bounds, 44px controls, blur fallback and scene draw-call equality. |
 | `interactionoutlinetest.html` | Full rendering | 160×160 render-target brightness pixels, shader patches and draw-pass equality. |
 | `inventorytest.html` | Candidate | Actual inventory/action invariants. |
