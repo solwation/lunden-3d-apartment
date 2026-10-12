@@ -13,8 +13,8 @@
 const out = document.getElementById('out');
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 const f = document.createElement('iframe');
-f.width = 900; f.height = 600;
-f.src = '../index.html?shot&time=12&month=6&freeze';
+f.width = 480; f.height = 300;
+f.src = '../index.html?test&shot&time=12&month=6&freeze';
 document.body.append(f);
 f.onload = () => run().catch((e) => { out.textContent = `FAIL ${e}\n${e.stack}\nSOME FAILED`; });
 async function run() {

@@ -405,7 +405,7 @@ images: `/tmp/lunden-objects820/inventory-*` and `inventorytest-*`. Item and #82
 | `inventorytest.html` | Migrated (partial #820) | All 18 ordered PASS rows and ALL PASS byte-identical; original storage/scenario/integration/dynamic-key predicates preserved. Both actual full documents 700×450/controller null → both test 480×300/real API, no fullscreen. 186.611s → 143.456s, actual exit 0; `/tmp/runtests-477108/`. |
 | `itemtest.html` | Candidate | Item/module checks plus real-app item integration; keep both. |
 | `jetpacktest.html` | Candidate | Actual flight/collision/heat, flame visibility, controls and saved state. |
-| `jumpontest.html` | Candidate | Jump/landing/collision cases and actual controls. |
+| `jumpontest.html` | Accepted in #822 | Complete original full/test logs byte-identical, 35 ordered PASS plus exact full info furniture diagnostic; native original 900×600/null controller versus 480×300/real test APIs. Authored pointerLock getter/synthetic event retained. |
 | `keytest.html` | Candidate | Key/action access and saved state. |
 | `kittentest.html` | Candidate | Kitten behavior/actions and actual scene/state. |
 | `laptoptest.html` | Candidate | Actual laptop actions and DOM panel/state. |
@@ -1915,3 +1915,28 @@ Written hall-care now adds test only in the shared load query; all original
 queries/480×300/branches/assertions remain intact. Reversing only that prefix
 and descriptive comment recreates the exact frozen original. Hall-task and key
 remain pending under #821; #739/#736 stay open.
+
+## Jump-on complete native platform acceptance (#822, partial)
+
+`jumpontest` is migrated by changing only iframe query/dimensions after its
+original 900×600/shot/time=12/month=6/freeze pair at frozen `664ff82`.
+`/tmp/runtests-484199/` retains entire byte-identical raw logs: all 35 ordered
+PASS, the complete unnormalized `info furniture` object, numeric/duplicate/
+conditional platform and furniture diagnostics, and ALL PASS; no FAIL/pageerrors,
+independently monitored actual exit 0. All original action/geometry/landing/
+apex/table/wall checks and authored pointerLockElement getter/synthetic
+pointerlockchange remain untouched; no native input grant is claimed.
+Passive ready/final evidence verifies one actual main document per mode, full
+900×600/null controller versus 480×300/real draw/setFull/wantsFrame APIs,
+URL/timeOrigin identity and no fullscreen. Wall 147.180s → 103.016s includes
+both saved/inspected viewport captures: full shows result text and a partial
+final canvas, with long rows cropped at the right; test shows only the top
+roughly eighteen result rows, clipped at the right and bottom, without the final
+verdict or scene. This pair is excluded from speedup aggregation because capture
+coverage is asymmetrical. Complete row/diagnostic proof
+comes from raw logs, not image coverage; no platform-scene or pixel equivalence
+is claimed. Frozen source/helper hashes, native snapshots and genuine monitor
+PID/SID/exit: `/tmp/lunden-flight822/jumpontest/`. Jetpack and kitten remain
+pending under #822; #739/#736 remain open. Kitten's legitimate error-writer
+protocol fix #848 is preserved separately from the approved pre-pair testMode-only
+fullscreen guard and unchanged authored random/seed behavior.
