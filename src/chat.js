@@ -1,6 +1,8 @@
-import { CHAT } from './config.js';
+import * as THREE from 'three';
+import { CHAT, GHOSTS } from './config.js';
 import { setIcon } from './hudicons.js';
 import { ANON } from './ghosts.js';
+import { gameView } from './viewport.js';
 
 // The chat (#675): while the players' room (#666, src/ghosts.js) is on, the console (>_ / § / Enter) sends what you write
 // to the others; a code or a line starting with '/' stays a cheat (src/cheats.js `isCommand`, run in main.js, never sent).
@@ -8,6 +10,15 @@ import { ANON } from './ghosts.js';
 // CHAT.show, each fading out after CHAT.ttl s. The button beside it (#chat-toggle) hides / shows the column (remembered in
 // localStorage CHAT.hiddenKey); hidden, it counts what came in meanwhile. Text is plain text everywhere (textContent).
 // Without the room (no cloud, ?mp=0, the month's cap reached) none of this shows and the console is the old one.
+//
+// Bubbles (#676): while someone writes, "skriver…" (three dots) floats over their ghost; their sent line replaces it, for
+// CHAT.ttl s or until their next line. Only the flag goes to the room ({ t: 'k', on }), never the letters: on at the first
+// key, again every CHAT.typingAgain ms while still typing, off when sent, closed, or after CHAT.typingMs without a key;
+// someone else's goes off by itself after CHAT.typingStale ms without word (a lost connection), and with their ghost.
+// Each bubble is one DOM element in the speech layer (greet.js's `.say` style, no draw calls), placed over the ghost's
+// tag, smaller further away, hidden with the tag (far away, behind a wall, off screen). There is no own body in first
+// person: your own "Du skriver…" and lines are in the column. Shown also while the column is hidden (#675's button).
+const tmp = new THREE.Vector3();
 
 /** Plain text as the room cleans it (cloudflare/players.js `cleanText`): control, zero-width and bidi characters out,
  * whitespace folded, at most CHAT.max characters. */
@@ -20,9 +31,11 @@ export function cleanText(s) {
 const cleanName = (s) => (typeof s === 'string' ? s.replace(/[\u0000-\u001f<>&"]/g, '').trim().slice(0, 20) : '') || ANON;
 
 export class Chat {
-  /** ghosts: the Ghosts; log: the column element; toggle: its hide / show button; name(): our name. */
-  constructor({ ghosts, log, toggle, name = () => '' }) {
-    Object.assign(this, { ghosts, log, toggle, name, lines: [], unseen: 0, tokens: CHAT.burst, refilled: 0, open: false, sent: 0 });
+  /** ghosts: the Ghosts; log: the column element; toggle: its hide / show button; name(): our name; camera + layer (the
+   * speech bubbles' element) + hidden(p) (a wall between the eye and p) for the bubbles over the ghosts (#676). */
+  constructor({ ghosts, log, toggle, name = () => '', camera = null, layer = null, hidden = () => false, typingLine = null }) {
+    Object.assign(this, { ghosts, log, toggle, name, camera, layer, behind: hidden, typingLine, lines: [], unseen: 0, tokens: CHAT.burst, refilled: 0, open: false, sent: 0,
+      bubbles: new Map(), typing: false, lastKey: 0, lastOn: 0 });
     try { this.hidden = localStorage.getItem(CHAT.hiddenKey) === '1'; } catch { this.hidden = false; }
     ghosts.onTalk = (m, g) => this.heard(m, g);
     toggle?.addEventListener('click', (e) => { e.preventDefault(); this.hide(!this.hidden); });
@@ -44,15 +57,74 @@ export class Chat {
     while (JSON.stringify({ t: 'm', m }).length > 250) m = Array.from(m).slice(0, -1).join('');
     if (!this.ghosts.talk({ t: 'm', m })) return 'Chatten är inte ansluten just nu. Försök igen om en stund.';
     this.tokens--; this.sent++;
+    this.typing = false; // (the room puts our "skriver…" off with the line)
     this.add(cleanName(this.name()), m, true);
     return '';
   }
 
-  /** From the room: a line from someone ({ t: 'm', i, n, m }) or our own refused ({ t: 'mx' }). */
-  heard(m) {
+  /** A key in the chat field (#676): "skriver…" on for the others (only the flag, never the letters). */
+  keyed() {
+    if (!this.open || !this.ghosts.connected) return;
+    const t = performance.now();
+    this.lastKey = t;
+    if (!this.typing || t - this.lastOn >= CHAT.typingAgain) { // on, or again while still typing (theirs goes stale otherwise)
+      if (!this.ghosts.talk({ t: 'k', on: true })) return;
+      this.lastOn = t;
+      if (!this.typing) { this.typing = true; this.renderTyping(); }
+    }
+  }
+
+  stopTyping() {
+    if (!this.typing) return;
+    this.typing = false;
+    this.ghosts.talk({ t: 'k', on: false });
+    this.renderTyping();
+  }
+
+  /** From the room: a line from someone ({ t: 'm', i, n, m }), our own refused ({ t: 'mx' }), someone's "skriver…" ({ t: 'k', i, on }). */
+  heard(m, g) {
     if (m.t === 'mx') { this.add('', 'För många meddelanden – vänta lite.', true, true); return; }
+    if (m.t === 'k') { if (g) { if (m.on) this.bubble(g, null); else if (this.bubbles.get(g.id)?.typing) this.unbubble(g.id); } return; }
     const text = cleanText(m.m);
-    if (text) this.add(cleanName(m.n), text);
+    if (!text) return;
+    this.add(cleanName(m.n), text);
+    if (g) this.bubble(g, text);
+  }
+
+  /** Someone's bubble (#676): `text`, or "skriver…" with null. A new one replaces the old (one element per player). */
+  bubble(g, text) {
+    if (!this.layer) return;
+    let b = this.bubbles.get(g.id);
+    if (!b) {
+      const el = document.createElement('div');
+      this.layer.append(el);
+      b = { el, ghost: g };
+      this.bubbles.set(g.id, b);
+    }
+    b.ghost = g; b.typing = text === null; b.t = (b.typing ? CHAT.typingStale / 1000 : CHAT.ttl);
+    b.el.className = `say theirs chat-bubble${b.typing ? ' typing' : text.length > 32 ? ' long' : ''}`;
+    if (b.typing) {
+      const dots = document.createElement('span');
+      dots.className = 'dots';
+      dots.append(document.createElement('i'), document.createElement('i'), document.createElement('i'));
+      b.el.replaceChildren(document.createTextNode('skriver'), dots);
+    } else b.el.textContent = text;
+    this.renderTyping();
+  }
+
+  unbubble(id) {
+    this.bubbles.get(id)?.el.remove();
+    this.bubbles.delete(id);
+    this.renderTyping();
+  }
+
+  /** The column's last row: who is writing now ("Du", and the others by name). */
+  renderTyping() {
+    if (!this.typingLine) return;
+    const who = [...(this.typing ? ['Du'] : []), ...[...this.bubbles.values()].filter((b) => b.typing).map((b) => b.ghost.name)];
+    const text = who.length ? `${who.join(', ')} skriver…` : '';
+    if (this.typingLine.textContent !== text) this.typingLine.textContent = text;
+    this.typingLine.hidden = !text;
   }
 
   add(name, text, mine = false, note = false) {
@@ -60,7 +132,7 @@ export class Chat {
     el.className = `chat-line${mine ? ' mine' : ''}${note ? ' note' : ''}`;
     if (name) { const b = document.createElement('b'); b.textContent = name; el.append(b, ' '); }
     el.append(document.createTextNode(text));
-    this.log.append(el);
+    this.log.insertBefore(el, this.typingLine?.parentNode === this.log ? this.typingLine : null); // (the "skriver…" row stays last)
     this.lines.push({ el, t: CHAT.ttl });
     while (this.lines.length > CHAT.show) this.lines.shift().el.remove();
     if (this.hidden && !mine) this.unseen++;
@@ -75,7 +147,7 @@ export class Chat {
   }
 
   /** The console is open in chat mode (the toggle shows then too). */
-  opened(on) { this.open = on; this.render(); }
+  opened(on) { this.open = on; if (!on) this.stopTyping(); this.render(); }
 
   render() {
     const avail = this.available;
@@ -87,8 +159,34 @@ export class Chat {
     this.toggle.dataset.unseen = this.hidden && this.unseen ? String(Math.min(this.unseen, 99)) : '';
   }
 
-  /** Each frame: lines fade out and go after CHAT.ttl s. */
+  /** Each frame: lines fade out and go after CHAT.ttl s; our "skriver…" off after a pause; the bubbles follow the ghosts. */
   update(dt) {
+    if (this.typing && (performance.now() - this.lastKey > CHAT.typingMs || !this.ghosts.connected)) this.stopTyping();
+    if (this.bubbles.size) this.place(dt);
+    this.fade(dt);
+  }
+
+  /** Bubbles over the ghosts' tags, on screen; gone with the ghost (left, disconnected) or after their time. */
+  place(dt) {
+    const w = gameView.w, h = gameView.h, eye = this.camera.position;
+    for (const [id, b] of this.bubbles) {
+      const g = this.ghosts.others.get(id);
+      b.t -= dt;
+      if (!g || g !== b.ghost || b.t <= 0) { this.unbubble(id); continue; }
+      tmp.copy(g.root.position);
+      tmp.y += GHOSTS.tagY + GHOSTS.tagHeight / 2 + CHAT.bubbleGap;
+      const d = tmp.distanceTo(eye);
+      tmp.project(this.camera);
+      const off = !g.root.visible || !g.tag.visible || tmp.z > 1 || Math.abs(tmp.x) > 1.1 || Math.abs(tmp.y) > 1.1 || this.behind(g.root.position.clone().setY(g.root.position.y + GHOSTS.tagY));
+      b.el.style.visibility = off ? 'hidden' : 'visible';
+      if (off) continue;
+      const s = THREE.MathUtils.clamp(CHAT.bubbleNear / Math.max(d, 0.1), CHAT.bubbleMin, 1);
+      b.el.style.transform = `translate(${Math.round(((tmp.x + 1) / 2) * w)}px, ${Math.round(((1 - tmp.y) / 2) * h)}px) translate(-50%, -100%) scale(${s.toFixed(2)})`;
+      b.el.style.opacity = b.typing ? '' : String(Math.min(1, b.t / 0.6));
+    }
+  }
+
+  fade(dt) {
     if (!this.lines.length) return;
     let gone = false;
     for (const l of this.lines) {
@@ -101,4 +199,9 @@ export class Chat {
 
   /** For tests: what the column shows. */
   list() { return this.lines.map((l) => ({ text: l.el.textContent, mine: l.el.classList.contains('mine'), opacity: l.el.style.opacity })); }
+
+  /** For tests: the bubbles over the ghosts (#676). */
+  bubbleList() {
+    return [...this.bubbles.entries()].map(([id, b]) => ({ id, name: b.ghost.name, text: b.el.textContent, typing: b.typing, shown: b.el.style.visibility === 'visible', t: Math.round(b.t * 10) / 10 }));
+  }
 }

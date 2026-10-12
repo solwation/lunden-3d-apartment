@@ -2207,7 +2207,9 @@ if (bow) bow.onShot = (o, v) => combat.fire('bow', flight(o, v), true); // (#690
 if (rifle) { const shot = rifle.onShot; rifle.onShot = () => { shot?.(); combat.fire('rifle'); }; }
 { const web = suit.onShot; suit.onShot = () => { web?.(); combat.fire('web'); }; }
 window.__ghosts = ghosts; window.__combat = combat; window.__bow = bow; window.__arrows = arrows; window.__presence = presence;
-chat = new Chat({ ghosts, log: document.getElementById('chat-log'), toggle: document.getElementById('chat-toggle'), name: () => leaderboard.name }); // #675
+chat = new Chat({ ghosts, log: document.getElementById('chat-log'), toggle: document.getElementById('chat-toggle'), name: () => leaderboard.name, // #675
+  camera, layer: document.getElementById('speech'), hidden: (p) => behindWall(p), typingLine: document.getElementById('chat-typing') }); // bubbles over the ghosts (#676)
+terminalInput.addEventListener('input', () => chat.keyed()); // "skriver…" (#676): only in chat mode, only the flag
 window.__chat = chat;
 let statsPinned = false;
 // the minimap is part of the same "extra HUD" (#85): shown with the stats; K shows the map on its own

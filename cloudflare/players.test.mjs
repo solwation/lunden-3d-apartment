@@ -317,3 +317,30 @@ test('chat (#675): forwarded to the others with the name, cleaned, limited, refu
   assert.notEqual(chats(b).at(-1).m, 'over the cap', 'nothing passes over the cap');
   assert.deepEqual([...env.PLAYERS.ctx('world').data.keys()].filter((k) => !k.startsWith('bill:')), [], 'nothing stored but the month counter');
 });
+
+// "skriver…" (#676): only the flag, to the others, rate-limited; off with the line, the close and a refresh
+test('typing (#676): on / off forwarded, repeats limited, off by a line, never echoed, no text', async () => {
+  const env = setup();
+  const a = await connect(env, 'A'), b = await connect(env, 'B');
+  const ia = a.got[0].i, ty = () => b.got.filter((m) => m.t === 'k');
+  a.send({ t: 'k', on: true, m: 'secret letters' }); await settle(env);
+  assert.deepEqual(ty(), [{ t: 'k', i: ia, on: true }], 'only the flag, no text');
+  assert.equal(a.got.filter((m) => m.t === 'k').length, 0, 'never echoed');
+  a.send({ t: 'k', on: true }); await settle(env);
+  assert.equal(ty().length, 1, 'an "on" again soon is dropped');
+  now += CHAT.typingRepeatMs; a.send({ t: 'k', on: true }); await settle(env);
+  assert.equal(ty().length, 2, 'a refresh after typingRepeatMs passes');
+  a.send({ t: 'k', on: false }); a.send({ t: 'k', on: false }); await settle(env);
+  assert.deepEqual(ty().at(-1), { t: 'k', i: ia, on: false });
+  assert.equal(ty().length, 3, 'off once: a repeated off is dropped');
+  a.send({ t: 'k', on: true }); await settle(env);
+  assert.equal(ty().length, 3, 'on again no sooner than typingEveryMs');
+  now += CHAT.typingEveryMs; a.send({ t: 'k', on: true }); await settle(env);
+  assert.equal(ty().length, 4);
+  now += 1000; a.send({ t: 'm', m: 'klart' }); a.send({ t: 'k', on: false }); await settle(env);
+  assert.equal(ty().length, 4, 'a line puts it off in the room: no separate off is passed on');
+  assert.equal(b.got.filter((m) => m.t === 'm').at(-1).m, 'klart');
+  for (let i = 0; i < 10; i++) { now += 100; a.send({ t: 'k', on: i % 2 === 0 }); }
+  await settle(env);
+  assert.ok(ty().length <= 4 + 4, `toggling fast stays limited (${ty().length - 4} passed)`);
+});

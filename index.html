@@ -114,6 +114,13 @@
     #speech .say.nest { white-space: normal; width: max-content; max-width: 300px; background: #eef3f7; } /* a smart speaker's answer (#325) */
     #speech .say.nest::after { border-top-color: #eef3f7; }
     #speech .say.long { white-space: normal; width: max-content; max-width: 280px; } /* Olof's dad jokes (#599) */
+    /* chat bubbles over the other players (#676, src/chat.js): the same bubble, a little smaller, scaled from its tail */
+    #speech .say.chat-bubble { transform-origin: 50% 100%; padding: 5px 10px; font-size: 14px; overflow-wrap: anywhere; }
+    #speech .say.chat-bubble.long { max-width: 240px; }
+    #speech .say.chat-bubble.typing { font-weight: 500; font-style: italic; color: #4a5560; }
+    #speech .say .dots i { display: inline-block; width: 4px; height: 4px; margin-left: 2px; border-radius: 50%; background: currentColor; vertical-align: middle; animation: chatdot 1.2s infinite ease-in-out; }
+    #speech .say .dots i:nth-child(2) { animation-delay: .2s; } #speech .say .dots i:nth-child(3) { animation-delay: .4s; }
+    @keyframes chatdot { 0%, 80%, 100% { opacity: .25; transform: translateY(0); } 40% { opacity: 1; transform: translateY(-3px); } }
     .card { max-height: calc(100vh - 32px); overflow: auto; margin: 16px; }
     .touch-help { display: none; }
     @media (any-pointer: coarse) { .touch-help { display: grid; } }
@@ -483,7 +490,7 @@
       max-height: calc(100dvh - var(--hud-badge-bottom) - 34px - 24px - var(--sb)); display: flex; align-items: flex-start; gap: 6px; pointer-events: none; }
     body.touch #chat-box { max-height: calc(100dvh - var(--hud-badge-bottom) - 34px - 150px - var(--sb)); }
     #chat-log { display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-start; gap: 3px; flex: 1 1 auto; min-width: 0; max-height: inherit; overflow: hidden; } /* too many: the oldest are cut off at the top */
-    #chat-log[hidden] { display: none; }
+    #chat-log[hidden], #chat-log [hidden] { display: none; }
     #chat-log .chat-line { max-width: 100%; box-sizing: border-box; padding: 3px 8px; border-radius: 8px; background: rgba(20,35,45,.38); color: #fff; font: 500 13px/1.3 system-ui, sans-serif;
       text-shadow: 0 1px 2px rgba(0,0,0,.7); overflow-wrap: anywhere; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; overflow: hidden; flex: none; }
     #chat-log .chat-line b { color: #ffd76a; font-weight: 700; }
@@ -863,7 +870,7 @@
     <div id="prompt" hidden></div>
     <div id="choices" hidden aria-live="polite"></div>
     <div id="speech" aria-live="polite"></div>
-    <div id="chat-box"><button id="chat-toggle" type="button" hidden aria-label="Dölj chatten"></button><div id="chat-log" role="log" aria-live="polite" aria-label="Chatt" hidden></div></div>
+    <div id="chat-box"><button id="chat-toggle" type="button" hidden aria-label="Dölj chatten"></button><div id="chat-log" role="log" aria-live="polite" aria-label="Chatt" hidden><div id="chat-typing" class="chat-line note" hidden></div></div></div>
     <div id="stick" hidden><div class="knob"></div></div>
     <button id="action" class="touch-only" hidden></button>
     <button id="power-btn" class="touch-only" hidden aria-label="Stäng av / slå på TV:n">⏻</button>

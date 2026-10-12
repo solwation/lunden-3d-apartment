@@ -2890,7 +2890,12 @@ export const COMBAT = { weapons: ['saber', 'nerf', 'wand', 'rifle', 'ball', 'bow
 // column on the left for `ttl` s (fading out over the last `fade` s), at most `show` at once, newest at the bottom; `max`
 // characters (the room's CHAT.max in cloudflare/players.js, kept equal by hand); sent no faster than the room allows: a
 // burst of `burst`, then one per `everyMs`. The hide/show choice in localStorage `hiddenKey`. All our picks (*guess*).
-export const CHAT = { ttl: 30, fade: 3, show: 6, max: 140, burst: 3, everyMs: 1000, hiddenKey: 'lunden.chat.hidden' };
+// "skriver…" and the lines as bubbles over the ghosts (#676): our flag goes off `typingMs` after the last key and is
+// repeated every `typingAgain` ms while typing (the room passes a repeat after 5 s); someone else's goes off by itself
+// after `typingStale` ms without word. The bubble sits `bubbleGap` m over the name tag, full size within `bubbleNear` m,
+// then smaller with distance down to `bubbleMin`. All our picks (*guess*).
+export const CHAT = { ttl: 30, fade: 3, show: 6, max: 140, burst: 3, everyMs: 1000, hiddenKey: 'lunden.chat.hidden',
+  typingMs: 4500, typingAgain: 6000, typingStale: 15_000, bubbleGap: 0.12, bubbleNear: 4, bubbleMin: 0.55 };
 
 // Drawing with crayons (#93, src/drawing.js): an A3 sheet in the middle of the ALEX desk in Sovrum 3. E on it:
 // the view goes down over the paper, the mouse is freed and you draw with crayons (palette at the bottom,

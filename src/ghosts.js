@@ -220,7 +220,7 @@ export class Ghosts {
     else if (m.t === 'hit') this.onHit(m, this.others.get(m.to));
     else if (m.t === 'hurt') this.onHurt(m, this.others.get(m.by));
     else if (m.t === 'a') { const g = this.others.get(m.i); if (g) this.onShot?.(m, g); }
-    else if (m.t === 'm' || m.t === 'mx') this.onTalk?.(m, this.others.get(m.i)); // chat (#675, src/chat.js)
+    else if (m.t === 'm' || m.t === 'mx' || m.t === 'k') this.onTalk?.(m, this.others.get(m.i)); // chat (#675) and "skriver…" (#676), src/chat.js
   }
 
   add(id, name) {

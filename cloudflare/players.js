@@ -19,7 +19,7 @@ import { TOYS } from '../src/config.js';
 // Room → client: { t: 'w', i: your id, ps: [{ i, n, p, r, h, score }], c: { lives, weapons } } on joining; { t: 'j', i, n } someone
 // joined; { t: 's', i, p, r, h, score } a state; { t: 'x', i } someone left; 'hit' / 'hurt' (#667). n = the name ('' = "Anonym").
 // Chat (#675, `cleanTalk` / `talk`): { t: 'm', m: text } → the others get { t: 'm', i, n, m } (a sender over the limits gets
-// { t: 'mx' }). Nothing of it is stored.
+// { t: 'mx' }); "skriver…" (#676): { t: 'k', on } → the others get { t: 'k', i, on }. Nothing of it is stored.
 
 export const PLAYERS = {
   monthlyCap: 800_000, // billed requests per calendar month; Workers Paid includes 1 000 000 (price list, verify), so the room stays below it
@@ -58,8 +58,9 @@ export const COMBAT = {
 // Chat (#675): plain text only, at most `max` characters after cleaning (the client's CHAT.max, kept equal by hand); per
 // connection a burst of `burst`, then one per `everyMs`, at most `perMinute`; the whole room at most `roomPerMinute`.
 // Dropped: { t: 'mx' } back to the sender (outgoing, not billed). Every message counts in the monthly cap like any other
-// (1/20 request) and within perSecond. Our picks (*guess*).
-export const CHAT = { max: 140, burst: 3, everyMs: 1000, perMinute: 12, roomPerMinute: 120 };
+// (1/20 request) and within perSecond. "skriver…" (#676): a change on → off always passes, on again no sooner than
+// `typingEveryMs`, a refresh of one still on no sooner than `typingRepeatMs`. Our picks (*guess*).
+export const CHAT = { max: 140, burst: 3, everyMs: 1000, perMinute: 12, roomPerMinute: 120, typingEveryMs: 500, typingRepeatMs: 5000 };
 
 export const CLOSE = { idle: 4000, cap: 4001, off: 4003, rate: 4008, full: 4029, big: 1009 };
 
@@ -76,11 +77,12 @@ export function cleanText(s) {
   return Array.from(t).slice(0, CHAT.max).join('').trim();
 }
 
-/** A chat line { t: 'm', m } from a client, or null. */
+/** A chat line { t: 'm', m } or a typing flag { t: 'k', on } from a client, or null. */
 export function cleanTalk(text) {
   if (typeof text !== 'string' || !text.startsWith('{"t":"')) return null; // (states are not parsed twice)
   let m;
   try { m = JSON.parse(text); } catch { return null; }
+  if (m?.t === 'k') return { t: 'k', on: m.on === true }; // "skriver…" (#676): the flag only, never the letters
   if (m?.t !== 'm') return null;
   const t = cleanText(m.m);
   return t ? { t: 'm', m: t } : null;
@@ -212,14 +214,20 @@ export class PlayerRoom {
     this.sweep(now);
   }
 
-  /** Chat (#675) to the others, within CHAT's limits; the sender's client shows its own line. */
+  /** Chat (#675) and "skriver…" (#676) to the others, within CHAT's limits; the sender's client shows its own line. */
   talk(ws, a, m, now) {
+    if (m.t === 'k') { // only a change passes (off always, on no sooner than typingEveryMs), and a refresh of "on" every typingRepeatMs
+      if (!m.on) { if (!a.ty) return; a.ty = false; }
+      else { if (now - (a.kt ?? 0) < (a.ty ? CHAT.typingRepeatMs : CHAT.typingEveryMs)) return; a.ty = true; a.kt = now; }
+      this.broadcast({ t: 'k', i: a.i, on: m.on }, ws);
+      return;
+    }
     const tokens = Math.min(CHAT.burst, (a.cb ?? CHAT.burst) + (now - (a.cr ?? now)) / CHAT.everyMs);
     if (now - (a.cw ?? 0) >= 60_000) { a.cw = now; a.cn = 0; }
     if (now - (this.rw ?? 0) >= 60_000) { this.rw = now; this.rn = 0; } // the room's minute (in memory: lost on hibernation, harmless)
     a.cr = now; a.cb = tokens;
     if (tokens < 1 || a.cn >= CHAT.perMinute || this.rn >= CHAT.roomPerMinute) { send(ws, '{"t":"mx"}'); return; }
-    a.cb = tokens - 1; a.cn++; this.rn++;
+    a.cb = tokens - 1; a.cn++; this.rn++; a.ty = false; // (the line ends "skriver…" at the others too)
     this.broadcast({ t: 'm', i: a.i, n: a.n, m: m.m }, ws);
   }
 

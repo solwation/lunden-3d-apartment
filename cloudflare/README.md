@@ -126,6 +126,12 @@ Fuskkoder (`/day`, `help`, de hemliga) körs i webbläsaren och skickas aldrig. 
 dygnet runt vore ≈ 270 000 debiterade anrop i månaden (taket på 800 000 gäller ändå), men i praktiken gör de få som chattar det
 försumbart jämfört med positionerna.
 
+**"skriver…" (#676):** medan någon skriver i chatten skickar klienten bara en flagga `{ t: 'k', on: true|false }` (aldrig
+bokstäverna): på vid första tangenten, igen var 6:e sekund medan man skriver, av när man skickar, stänger eller gör en paus.
+Rummet skickar `{ t: 'k', i, on }` till de andra, men bara vid en ändring: av alltid, på tidigast 0,5 s efter förra gången,
+en påminnelse om att man fortfarande skriver tidigast efter 5 s (`CHAT.typingEveryMs` / `typingRepeatMs`); ett skickat
+meddelande slår av den. Högst ett par meddelanden per skrivpaus – samma budget och samma månadstak som allt annat, inget sparas.
+
 **Stänga av:**
 - Klienten: `GHOSTS.enabled = false` i `src/config.js` (och pusha), eller `?mp=0` i adressen för en enskild besökare.
   Utan `CLOUD_URL` är den helt av.
