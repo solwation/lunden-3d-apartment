@@ -1445,3 +1445,35 @@ behavior are unchanged. BESTÅ and art-level retain their previously written
 480×300/test setup with actual acceptance documented above. All three #808
 dispositions are complete; art-level's optional default-empty cloud branch
 remains explicitly unexecuted. #738 and #736 stay open for their other batches.
+
+## Cooking and cloud state: cook disposition (#811, partial)
+
+`cooktest` retains its exact original full-mode executable and 900×600/no-query
+setup. At frozen runtime `5bd6bb8`, one actual published jobs1 full/test pair
+preserved all current #774 fixture bindings/catch, native actions and assertions.
+Only a temporary actual-testMode fullscreen guard preceded the original touch;
+it was removed after the non-identical comparison, leaving the full source
+byte-for-byte unchanged. No retry, seed, normalization or baseline change was made.
+
+Both modes completed all 82 ordered PASS rows, 0 FAIL, ALL PASS. The sole exact
+raw difference was row 65: `PASS they lie in the basket (y 0.047 over its bottom)`
+in full versus `PASS they lie in the basket (y 0.046 over its bottom)` in test.
+The native predicate passes in both; equality is not established, and this pair
+does not diagnose the difference's cause. Hob/pan/chicken/fish/airfryer/fries,
+physical aiming, material colors, smoke/alarm and F-restoration coverage remained
+complete, including repeated and dynamic rows. The independent monitor exited 1
+for the comparison; both runner modes were verified, without raw pageerrors.
+
+The full document was app-ready at authored 900×600/controller false, then its
+retained final phase was actual native-fullscreen 1280×800. The test document
+and retained final stayed 480×300/no fullscreen/controller true, with native
+draw/setFull/wantsFrame functions, lazy/full false. Unique URL/timeOrigin
+identities matched without observer errors or transport warnings.
+
+Elapsed full/test times were 120.320/83.254 seconds including passive capture
+overhead. Both final screenshots timed out after 10 seconds; no PNG or visual
+equivalence is claimed. The non-identical pair is excluded from speedup
+aggregation. Complete logs/summary: `/tmp/runtests-433051/`; frozen source/helper
+hashes, native phases, capture errors and actual monitor exit:
+`/tmp/lunden-cooking811/cooktest/`. All frozen runtime blobs matched after the
+pair. Cup and cloud comparisons remain pending under #811; #738/#736 stay open.
