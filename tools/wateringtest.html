@@ -2,7 +2,7 @@
 const lines=[];let pass=true;const check=(ok,text)=>{lines.push((ok?'PASS':'FAIL')+' '+text);pass&&=!!ok},wait=ms=>new Promise(r=>setTimeout(r,ms));
 try{
  const f=document.createElement('iframe');f.width=480;f.height=300;document.body.append(f);
- async function load(q){await new Promise(r=>{f.onload=r;f.src='../index.html?'+q});while(!f.contentWindow.__app)await wait(100);f.contentDocument.documentElement.requestFullscreen=undefined;f.contentDocument.getElementById('start-touch').click();const a=f.contentWindow.__app;a.renderer.setPixelRatio(.15);return a;}
+ async function load(q){await new Promise(r=>{f.onload=r;f.src='../index.html?test&'+q});while(!f.contentWindow.__app)await wait(100);f.contentDocument.documentElement.requestFullscreen=undefined;f.contentDocument.getElementById('start-touch').click();const a=f.contentWindow.__app;a.renderer.setPixelRatio(.15);return a;}
  let A=await load('life&shot&cloud='),L=A.life,I=L.items,W=A.watering;
  const {WATERING:P,LIFE}=await f.contentWindow.eval("import('/src/config.js')"),T=await f.contentWindow.eval("import('three')");
  const row=(t,id)=>L.options(t).find(a=>a.id===id),run=(t,id)=>row(t,id)?.run(),finish=()=>L.runner.update(10);
