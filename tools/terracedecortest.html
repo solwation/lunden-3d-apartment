@@ -4,7 +4,7 @@
 <body>
 <pre id="out">running…</pre>
 <script>
-// Conditional test-mode candidate (#787): native geometry/layer gate and assigned bulb colors; final render is not pixel verification.
+// &test: actual original-full/test pair has identical complete native geometry/gate/color rows (#795); no pixel claim.
 // The furnished roof terraces (#605, src/terracedecor.js, TERRACE_DECOR in config): L1201's terrace is EMPTY (#573), every
 // other terrace has its own style with plants, somewhere to sit and railing boxes; every item stays on its own deck and
 // clear of its terrace door; everything is three merged meshes (finite, a triangle budget); the gate hides them from the
@@ -13,7 +13,7 @@
 const out = document.getElementById('out');
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 const f = document.createElement('iframe');
-f.width = 400; f.height = 300; f.src = '../index.html?time=12&month=6&shot&freeze';
+f.width = 480; f.height = 300; f.src = '../index.html?time=12&month=6&shot&freeze&test';
 document.body.append(f);
 f.onload = () => run().catch((e) => { out.textContent = `FAIL ${e}\n${e.stack}\nSOME FAILED`; });
 const MAX_TRIS = 50000; // budget for all the terraces together (measured ~37 k, #605)

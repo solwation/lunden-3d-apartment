@@ -578,6 +578,37 @@ Phone memory probe (#628): `python3 tools/devserve.py 8628 . &` then `PLAYWRIGHT
 
 Park basement entries (#729): run `PLAYWRIGHT_MODULE=/path/to/playwright CHROME_PATH=/path/to/chrome node tools/basemententrytest.cjs http://localhost:8729` after starting the development server. `SHOTS` overrides `/tmp/lunden-basement-entry/result.json`'s directory. The driver waits bounded initialization, clicks the real mouse-start button, obtains PointerLock and runs `tools/basemententrytest.html`: actual E focus from outside before below, closed/open/jamb traversal to both −1 landings and back, the touch action handler in controlled touch mode, far animated leaves, courtyard pick/collision exclusion, continuous park paving, tree/shrub-instance clearance and floor coverage. It uses `&test=lazy`, with no automatic rendering; this is not a physical-phone touch/FPS test. [Measured scope and manual full-quality images](../validation/issue-729/README.md).
 
+## Test-mode comparison: terrace decoration (#795)
+
+The unchanged original `terracedecortest` executable fixture (`9645849^`)
+was compared on clean `3909abb`: 400×300,
+`?time=12&month=6&shot&freeze`, with every native merged-geometry, item/deck/door
+bound, TerraceGate camera/layer, dusk/day/power color assertion and final
+`renderer.render` call retained. `/tmp/runtests-353413/terracedecortest{,.test}.log`
+contains **62 PASS / 0 FAIL per mode**, with identical complete ordered raw
+rows. Both report 3 merged meshes, **31204** triangles, 8 distinct styles and
+all original item counts/door bounds. The six native visibility cases match;
+power-cut bulbs use the actual day color, with night **ffcf8a** and day
+**d9d5ca**. These are native state/color-field checks, not sampled pixels or
+rendered lighting equivalence.
+
+The actual full frame was **400×300**, no test parameter, controller false;
+the test frame was **480×300**, test parameter, controller true. Both modes
+verified; public runner exit 0 and no runtime/crash errors. Reported times
+**105441 ms → 77743 ms** include a failed 10-second full-mode screenshot
+attempt after all assertions/metadata. Capture overhead differs, so this pair
+is excluded from speedup aggregation. The read-only final-close capture hook
+changed no fixture/app state. The available test image
+`/tmp/lunden-terracedecor795/terrace-test.png` was inspected and shows cropped
+result text; it establishes no terrace visual/pixel claim. Full capture timeout
+is retained in `screenshots.txt`; no extra app run was made solely for images.
+
+The final migration changes only iframe width 400→480 and appends `&test`, plus
+a disposition comment. All other executable bytes, assertions and raw values
+remain unchanged. Source hashes stayed frozen between modes
+(`/tmp/lunden-terracedecor795/run-provenance.json`). This closes only #795;
+#750, #741 and #736 remain open for their independent fixture work.
+
 ## Test-mode comparison: complete terrain scan (#794)
 
 `terraintest` was compared on clean `fb4c8a9`, retaining the original
@@ -844,7 +875,7 @@ fixtures; no new run, timing or equivalence is claimed. The preserved green
 
 | Fixture | Source disposition | Original iframe / evidence required |
 | --- | --- | --- |
-| terracedecortest | Conditional native-state candidate: finite merged geometry/triangle budget, terrace bounds and explicit `TerraceGate.update(camera)` layer tests. Bulb colors are assigned by `exterior.userData.update(night, power)`; a final render does not assert framebuffer output. No measured frame-time threshold. | 400×300, frozen June noon/shot; preserve gate and day/night/power-cut color rows, check actual state parity before any migration. |
+| terracedecortest | Migrated #795: native finite merged geometry/triangle budget, terrace bounds, explicit camera/gate layers and assigned dusk/day/power-cut bulb colors. All 62 ordered raw rows match; final render is retained without pixel claims. | Original frozen June noon/shot 400×300 → verified test 480×300; see [terrace decoration evidence](#test-mode-comparison-terrace-decoration-795), including capture overhead. |
 | terracetest | Migrated (#793): original terrace polygons/areas/joins and built railing-height assertions retained. | Entire raw logs byte-identical: 33 ordered PASS rows and ALL PASS; no pageerrors. `/tmp/runtests-343861/`, frozen source `fb4c8a9`: runner wall 103.498s at actual 400×300/controller false → 78.528s at 480×300/controller true, including both saved fullPage fixture images. Only query/size changed. |
 | terraintest | Migrated #794: ground/road/ramp/stair/plinth values, complete dense 5 cm OUTDOOR continuity pairs, native collision guards and tree-foot placement. All 25 ordered raw rows are identical. | Original 400×300 June noon → verified test 480×300; see [complete terrain scan evidence](#test-mode-comparison-complete-terrain-scan-794), including actual counts and screenshot overhead. |
 | thingtest | Migrated (#793): original bottle/glass transforms, hold/place/home, pouring/drinking, fill/color and reset assertions preserved. | Entire raw logs byte-identical: all 23 ordered PASS rows and ALL PASS, including measured heights/fill/tilt/material colors; no pageerrors. `/tmp/runtests-345423/`, frozen runtime `fb4c8a9` plus testMode-only fullscreen guard: runner wall 142.020s at actual native-fullscreen 1280×800/controller false → 80.808s at 480×300/controller true, including both saved fullPage fixture images. Original full path retained; only test mode suppresses fullscreen. |
