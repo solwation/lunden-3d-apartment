@@ -1020,7 +1020,7 @@ per issue). Each needs its own actual full/test runs and unchanged assertions:
 | Basement and scene state | basementhudtest, basementvisittest, boxwoodtest, bridgetest |
 | Objects and motion | baskettest, cartest, breaktest |
 | Beer objects | beercantest, beershelfmodeltest, beertest, bottletest |
-| Placement and stored photos | bestaplacementtest, artleveltest, boardtest |
+| Placement and stored photos (#808 accepted) | bestaplacementtest, artleveltest, boardtest; actual evidence below, default optional art cloud coverage remains unexecuted |
 | Care and persistence | bedcaretest, clothtest, colddrawertest |
 | Interaction | cheattest, booktest, crouchtest |
 | Cooking and cloud state | cooktest, cuptest, cloudtest |
@@ -1392,3 +1392,39 @@ exit, image and capture error: `/tmp/lunden-placement808/artlevel/`. All frozen
 runtime blobs matched after the pair. The written fixture returns to its
 existing test query without assertion changes. Board remains pending under
 #808; #738 and #736 remain open.
+
+## Placement and stored photos: board acceptance (#808)
+
+`boardtest` was compared at frozen runtime `8262288` with original 900×600,
+noon/freeze query and every current assertion unchanged. The only pre-pair
+addition suppressed fullscreen immediately before the original touch solely
+when the actual test controller exists; the original full branch stayed intact.
+The fixture creates fixed 8×6 canvas JPEG inputs and exercises native CatBoard
+photos, panel/key actions and IndexedDB. Its fresh Board constructor reload is
+not a second apartment load, and it never calls the renderer snapshot helper.
+
+Both complete raw logs are byte-identical (529 bytes, 13 PASS, 0 FAIL, ALL PASS),
+including exact retained names `Katt0 Katt4 Katt5 Katt6 Katt7 Katt8 Katt9 Katt10
+Katt11 Katt12` and eight kept of nine after reload. Each mode has one distinct
+app-ready document and matching retained final snapshot: full 900×600/controller
+false, test 480×300/controller true with native draw/setFull/wantsFrame functions,
+lazy/full false. Neither phase was fullscreen. URL/timeOrigin identities match,
+with no observer errors, transport warnings or raw pageerrors. Runner modes
+were verified; the independently monitored process exited 0.
+
+Full/test elapsed times were 265.790/112.978 seconds including capture overhead.
+Full capture timed out after 10 seconds; the saved test viewport shows all result
+rows vertically (long text clipped horizontally) and a partial courtyard/HUD,
+not the photo-board artwork or rendered-scene equivalence. This asymmetric
+capture excludes the pair from speedup aggregation. Complete logs/summary:
+`/tmp/runtests-426465/`; frozen source/helper hashes, passive snapshots, actual
+exit, image and capture error: `/tmp/lunden-placement808/board/`. All frozen
+runtime blobs matched after the pair.
+
+The written board now uses 480×300/test and retains the mode-only fullscreen
+guard, which preserves its small iframe under a normal written-run context.
+All executable assertions, native JPEG/IndexedDB actions and full-branch
+behavior are unchanged. BESTÅ and art-level retain their previously written
+480×300/test setup with actual acceptance documented above. All three #808
+dispositions are complete; art-level's optional default-empty cloud branch
+remains explicitly unexecuted. #738 and #736 stay open for their other batches.
