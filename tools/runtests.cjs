@@ -110,8 +110,13 @@ async function runHtml(test, { asTest }, game) {
       });
       await ctx.addInitScript(() => {
         if (window !== window.top) return;
-        const s = document.createElement('style'); s.textContent = 'iframe{width:480px!important;height:300px!important}';
-        document.documentElement.appendChild(s);
+        // Init scripts can run before the document root exists (#760).
+        const install = () => {
+          const s = document.createElement('style'); s.textContent = 'iframe{width:480px!important;height:300px!important}';
+          document.documentElement.appendChild(s);
+        };
+        if (document.documentElement) install();
+        else document.addEventListener('DOMContentLoaded', install, { once: true });
       });
     }
     const page = await ctx.newPage();

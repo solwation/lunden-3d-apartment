@@ -171,6 +171,9 @@ that never opens `../index.html` prints `n/a`, as does a run that timed out. A t
 Result lines are compared as written (numbers in them included): a line that shows a measured value will differ between runs, so look at
 the `only full` / `only &test` lines before calling a migration safe.
 
+The resize stylesheet waits for the top document root (#760). Chrome DOM probes cover normal, inline-sized and dynamically
+inserted iframes: their actual frame and child viewport become 480×300 without init-script errors; child documents stay unmodified.
+
 ### Remaining-test audit (#742 / #754)
 
 These classifications follow source inspection; no timing or before/after browser equivalence is claimed for this audit. Other groups own their migration evidence.
