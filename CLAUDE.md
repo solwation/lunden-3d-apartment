@@ -60,7 +60,7 @@ Static ES-module Three.js site, with no framework or development build step. Sce
 
 ## Cheat-code maintenance
 
-When adding, changing or removing a cheat code, update the shared `src/cheats.js` catalogue so both public console help and the bike-room graffiti stay current. The secret `sarah is the goat` and `olof is the goat` commands must always be excluded from all public lists.
+When adding, changing or removing a cheat code, update the shared `src/cheats.js` catalogue so the bike-room graffiti (the only place listing the public codes; console help lists none) stays current. The secret `sarah is the goat` and `olof is the goat` commands must always be excluded from all public lists.
 
 ## Shared conventions
 

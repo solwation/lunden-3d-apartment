@@ -5,6 +5,12 @@ import { ANON } from './ghosts.js';
 import { gameView } from './viewport.js';
 import { censor } from './chatfilter.js';
 
+/** Ordinary chat commands (#724), listed by `help`; kept apart from the codes in src/cheats.js. */
+export const COMMANDS = [
+  { usage: '/tysta namn', text: 'dölj en spelares chatt (tills du laddar om)' },
+  { usage: '/prata namn', text: 'visa den igen' },
+];
+
 // The chat (#675): while the players' room (#666, src/ghosts.js) is on, the console (>_ / § / Enter) sends what you write
 // to the others; a code or a line starting with '/' stays a cheat (src/cheats.js `isCommand`, run in main.js, never sent).
 // Lines show see-through in a column on the left (#chat-log, a DOM overlay: no draw calls), newest at the bottom, at most
@@ -101,8 +107,8 @@ export class Chat {
     return `Du ser inte längre vad ${name} skriver (tills sidan laddas om). /prata ${name} ångrar.`;
   }
 
-  /** The chat's own commands, for help. */
-  get help() { return '/tysta namn — dölj en spelares chatt (tills du laddar om)\n/prata namn — visa den igen'; }
+  /** The chat's own commands, for help (#724: ordinary commands only, apart from the codes in src/cheats.js). */
+  get help() { return COMMANDS.map(c => `${c.usage} — ${c.text}`).join('\n'); }
 
   /** From the room: a line from someone ({ t: 'm', i, n, m }), our own refused ({ t: 'mx' }), someone's "skriver…" ({ t: 'k', i, on }). */
   heard(m, g) {

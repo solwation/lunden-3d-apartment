@@ -1,0 +1,25 @@
+// #724: no player-facing text hints that cheat codes exist, and README lists none of them.
+// Plain node, no browser: node tools/nocheathints.cjs
+const fs = require('fs'), path = require('path');
+const root = path.join(__dirname, '..');
+let failed = 0;
+const check = (ok, text, extra = '') => { console.log(`${ok ? 'PASS' : 'FAIL'} ${text}${ok ? '' : ' ' + extra}`); if (!ok) failed++; };
+// Strip comments so only strings/markup that can be shown are searched.
+const stripJs = (s) => s.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:'"`\\])\/\/.*$/gm, '$1');
+const hits = [];
+const scan = (file, text) => text.split('\n').forEach((l, i) => { if (/fusk|cheat/i.test(l)) hits.push(`${file}: ${l.trim().slice(0, 90)}`); });
+for (const f of fs.readdirSync(path.join(root, 'src')).filter((n) => n.endsWith('.js'))) {
+  const code = stripJs(fs.readFileSync(path.join(root, 'src', f), 'utf8'));
+  const strings = code.match(/'(?:[^'\\\n]|\\.)*'|"(?:[^"\\\n]|\\.)*"|`(?:[^`\\]|\\.)*`/g) || [];
+  // Import paths and element ids are not shown text.
+  scan('src/' + f, strings.filter((x) => !/^['"`][\w./-]+\.js['"`]$/.test(x) && !/^['"`]cheat-note\w*-?\w*['"`]$/.test(x) && !/^['"`]cheat-?note['"`]$/.test(x)).join('\n'));
+}
+let html = fs.readFileSync(path.join(root, 'index.html'), 'utf8').replace(/<!--[\s\S]*?-->/g, '').replace(/<style[\s\S]*?<\/style>/gi, '').replace(/<script[\s\S]*?<\/script>/gi, '');
+html = html.replace(/(id|aria-labelledby)="cheat-note[\w-]*"/g, '');
+scan('index.html', html);
+check(hits.length === 0, 'no shown string in src/*.js or index.html mentions fusk/cheat', '\n' + hits.join('\n'));
+const readme = fs.readFileSync(path.join(root, 'README.md'), 'utf8');
+check(!/fusk|goat|jetpack|handsfree|lights o(n|ff)|`help`/i.test(readme), 'README.md lists no cheat codes and does not mention fusk');
+const cheats = fs.readFileSync(path.join(root, 'src/cheats.js'), 'utf8');
+check(!/code: 'help'/.test(cheats), "'help' is not in the cheat catalogue");
+process.exit(failed ? 1 : 0);

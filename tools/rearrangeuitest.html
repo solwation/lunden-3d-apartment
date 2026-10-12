@@ -10,7 +10,7 @@ try{
  const term=d.getElementById('terminal'),code=d.getElementById('terminal-code'),keyOn=(el,c,k)=>{const ev=new w.KeyboardEvent('keydown',{code:c,key:k,bubbles:true,cancelable:true});el.dispatchEvent(ev);return ev;};
  d.activeElement?.blur();key('Enter','Enter');check(!term.hidden&&d.activeElement===code,'Enter opens the console in plain play and focuses its code input (#596)');
  const sub=keyOn(code,'Enter','Enter');check(!term.hidden&&!sub.defaultPrevented,'Enter inside the console is left to submit the code, nothing new opens');
- code.value='help';code.form.requestSubmit();check(!term.hidden&&d.getElementById('terminal-message').textContent.includes('help'),'submitting from the console runs the code and keeps it open');click('terminal-close');
+ code.value='day';code.form.requestSubmit();check(!term.hidden&&d.getElementById('terminal-message').textContent.includes('Dagsljus'),'submitting from the console runs the code and keeps it open');click('terminal-close');
  key('NumpadEnter','Enter');check(!term.hidden,'numpad Enter opens the console too');click('terminal-close');
  const field=d.body.appendChild(d.createElement('input'));field.focus();keyOn(field,'Enter','Enter');field.remove();check(term.hidden,'Enter in another text input does not open the console');
  const btn=d.getElementById('stats-btn'),btnEv=keyOn(btn,'Enter','Enter');check(term.hidden&&!btnEv.defaultPrevented,'Enter on a focused button/menu control keeps its normal activation');

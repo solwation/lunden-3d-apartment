@@ -1,7 +1,7 @@
 import { crashlog } from './crashlog.js'; // first: its heartbeat and error hooks start before the rest loads (#629; inert without the cloud)
 import { bindGameViewport, gameView } from './viewport.js';
 import { PlantWind, windShadow } from './plantwind.js';
-import { runCheat, cheatHelp, isCommand } from './cheats.js';
+import { runCheat, cheatList, isCommand } from './cheats.js';
 import { cleanHome } from './cheatclean.js';
 import { buildCheatNote } from './cheatnote.js';
 import { CHEAT_NOTE, LOW_MEMORY, QUALITY, STANDARD } from './config.js';
@@ -2058,12 +2058,12 @@ function showTerminal(show, byKey = 'button') {
 }
 /** #675: while the players' room is on (and not rearranging) the console is a slim chat bar at the top over the game. */
 function chatMode(show) {
-  const on = show && !!chat?.available && !rearrange.enabled, said = document.getElementById('terminal-message');
+  const on = show && !!chat?.available && !rearrange.enabled;
   terminal.classList.toggle('chat', on); chat?.opened(on);
   document.getElementById('terminal-run').textContent = on ? 'Skicka' : 'Kör';
-  document.querySelector('label[for="terminal-code"]').textContent = on ? 'Meddelande eller /fuskkod' : 'Fuskkod';
-  terminalInput.placeholder = on ? 'Skriv till de andra… (/help: fusk)' : '';
-  if (on) { terminalInput.maxLength = CHAT.max; if (said.textContent === 'Skriv help för fuskkoder.') said.textContent = ''; }
+  document.querySelector('label[for="terminal-code"]').textContent = on ? 'Meddelande eller /kommando' : 'Kommando';
+  terminalInput.placeholder = on ? 'Skriv till de andra…' : '';
+  if (on) terminalInput.maxLength = CHAT.max;
   else terminalInput.removeAttribute('maxlength');
 }
 terminal.addEventListener('click', (e) => { if (e.target === terminal && terminal.classList.contains('chat')) showTerminal(false); }); // a tap beside the bar closes it
@@ -2102,7 +2102,7 @@ document.getElementById('terminal-form').addEventListener('submit', e => {
   e.preventDefault();
   const chatting = terminal.classList.contains('chat'), own = chatting ? chat.command(terminalInput.value) : null; // /tysta, /prata (#719)
   if (own !== null) { document.getElementById('terminal-message').textContent = own; terminalInput.value = ''; return; }
-  if (chatting && /^\s*\/?help\s*$/i.test(terminalInput.value)) { document.getElementById('terminal-message').textContent = `${runCheat('help', cheats)}\n${chat.help}`; terminalInput.value = ''; return; }
+  if (chatting && /^\s*\/?help\s*$/i.test(terminalInput.value)) { document.getElementById('terminal-message').textContent = chat.help; terminalInput.value = ''; return; }
   if (chatting && !isCommand(terminalInput.value)) { // a chat line (#675); a code stays local, never sent
     const said = chat.send(terminalInput.value); // '' = sent (or nothing written): close; else why not, the text stays
     document.getElementById('terminal-message').textContent = said; if (!said) { terminalInput.value = ''; showTerminal(false); } return;
@@ -2113,7 +2113,7 @@ document.getElementById('terminal-form').addEventListener('submit', e => {
 function showCheatNote(show, byKey='button') {
   const panel=document.getElementById('cheat-note');panel.hidden=!show;reading=show;
   player.keys.clear();touch.analog.x=touch.analog.y=0;
-  if(show){document.getElementById('cheat-note-text').textContent=cheatHelp();if(locked){boardFreed=true;document.exitPointerLock();}document.getElementById('cheat-note-close').focus();}
+  if(show){document.getElementById('cheat-note-text').textContent=cheatList();if(locked){boardFreed=true;document.exitPointerLock();}document.getElementById('cheat-note-close').focus();}
   else if(boardFreed){boardFreed=false;if(byKey==='Escape'){overlay.hidden=true;armEl.hidden=false;}else canvas.requestPointerLock()?.catch(()=>{armEl.hidden=false;});}
 }
 document.getElementById('cheat-note-close').addEventListener('click',()=>showCheatNote(false));
