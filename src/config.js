@@ -1933,8 +1933,9 @@ export const CORE_A = {
 // Hus B (våning −1, 1, 2, 3 = y −3, 0, 3, 6; the entrance recess in the north face, mirrored: west of the middle): the stair hall
 // band x −33.08 … −31.16 from the lift's south wall (z 41.74) to the stair's south wall (z 50.0), the lift north of it (car
 // 1.76 × 2.42, door south, off-centre towards the east wall), two flights side by side from z 47.0 with winders round the stringer's end (z 49.05).
-// On våning 1 the lobby from the entrance door (z 35.4 = the recess's back wall) runs south along the shaft's west side (x −34.78 …
-// −33.38) and opens into the hall at z 41.74 … 42.62. On −1 the hall's west wall has two openings towards the passages (garage rects
+// On våning 1 the lobby from the entrance (z 35.4 = the recess's back wall) is 2.28 m wide (x −34.78 … −32.50, Hus A's lobby mirrored: x' = −32.28 − x;
+// the plan's free width is 2.12 m + a 0.38 m recess in the east wall, #727) down to the shaft's north face (z 38.34), then runs south along the shaft's
+// west side (x −34.78 … −33.38) and opens into the hall at z 41.74 … 42.62. On −1 the hall's west wall has two openings towards the passages (garage rects
 // `coreBWest` / `coreBSouth`, GARAGE).
 export const CORE_B = {
   house: 'Hus B',
@@ -1961,15 +1962,16 @@ export const CORE_B = {
     { ax: 'z', t: [50.0, 50.4], a: [-33.38, -30.86], s: [0, 3] },                         // the stair's south wall
     // våning 1's lobby: west wall (a flat's door), the entrance wall (the door's opening), east wall north of the shaft, south wall
     { ax: 'x', t: [-35.08, -34.78], a: [35.4, 43.9], s: [1, 1], holes: [{ a: [42.45, 43.35], h: 2.1, leaf: true, hinge: 's', flats: [null, 'B1004'] }] },
-    { ax: 'z', t: [35.34, 35.46], a: [-34.78, -33.38], s: [1, 1], holes: [{ a: [-34.45, -33.55], h: 2.2 }] },
-    { ax: 'x', t: [-33.38, -33.08], a: [35.4, 38.34], s: [1, 1] },
+    // #727: like Hus A's (mirrored): the door (x −34.50 … −33.60, hinged at its west end) + the fixed sidelight east of it (−33.60 … −32.56), solid piers each side
+    { ax: 'z', t: [35.34, 35.46], a: [-34.78, -32.50], s: [1, 1], holes: [{ a: [-34.50, -33.60], h: 2.2 }, { a: [-33.60, -32.56], h: 2.2, glass: true }] },
+    { ax: 'x', t: [-32.50, -32.50], a: [35.4, 38.34], s: [1, 1], thin: true },     // #727: the lobby's east wall north of the shaft (A's x 2.50, mirrored)
     { ax: 'z', t: [43.56, 43.9], a: [-35.08, -33.38], s: [1, 1] },
   ],
-  floors: [{ r: [-34.78, -33.08, 35.4, 43.56], s: 1 }],
+  floors: [{ r: [-34.78, -33.08, 35.4, 43.56], s: 1 }, { r: [-33.08, -32.50, 35.4, 38.34], s: 1 }],
   cap: [-33.38, -30.86, 38.34, 41.74],          // the shaft's top (over the walls round the car)
-  entrance: { face: 'n', line: 35.4, door: [-34.45, -33.55], side: null, height: 2.2, hinge: 'hi', cut: [-34.45, -33.55], name: 'porten till trapphus B' },
+  entrance: { face: 'n', line: 35.4, door: [-34.50, -33.60], side: [-33.60, -32.56], height: 2.2, hinge: 'lo', name: 'porten till trapphus B' }, // #727: the plan: ONE door (swing 0.93 m, hinged west) + a fixed glazed sidelight, as Hus A's mirrored (x' = −32.28 − x); `cut` = the whole recess
   numbers: { x: -31.16, z: 44.0, dir: -1 },     // the floor number plates on the east wall (facing west)
-  lights: [[-34.1, 37.3], [-34.1, 40.3], [-34.0, 42.8]], // the lobby's lamps [x, z]
+  lights: [[-33.6, 36.9], [-34.1, 40.3], [-34.0, 42.8]], // the lobby's lamps [x, z] (the first over the wider part, #727)
 };
 
 // Hus C (våning −1, 1 … 5 = y −3, 0, 3, 6, 9, 12; the entrance recess in the east face, våning 1 = the courtyard's level): the stair hall

@@ -89,7 +89,7 @@ src/corehouse.js       Hus A's, B's and C's stair cores (#637, #638, #639, #652;
                        thick wall runs ({ ax, t, a, s: [first, last stop], holes: [{ a, h, s?, leaf? | glass? }] }; a hole is an opening, a closed
                        flat door (`leaf`) or a fixed pane), `floors` = the våning-1 lobby's rects (floor + ceiling slab), `lights` = its lamps,
                        `numbers` = the floor plates, `cap` = the shaft's top. Hus B (−1, 1, 2, 3): hall band x −33.08 … −31.16, z 41.74 …
-                       50.0, the lift north of it (door south), the lobby west of the shaft from the entrance door (z 35.4); Hus C (−1, 1 … 5):
+                       50.0, the lift north of it (door south), the lobby from the entrance (z 35.4: one door + a fixed glazed sidelight, Hus A's mirrored, #727) 2.28 m wide north of the shaft, then the strip west of it; Hus C (−1, 1 … 5):
                        a long hall band x −62.34 … −60.44, z 20.12 … 30.54 with the stair at its south end and the lift WEST of it (door east:
                        `lift.side: 'e'`, built in a frame turned 90° — core.js' `Lift` has `rot`, `loc`, `wseg`, `wpt`), the lobby from the east
                        entrance (x −53.4) west to the hall's east wall. The stair (16 risers per storey in one run: 4 straight treads of `stair.tread` per flight + 7 winders round the stringer's end, `stairS` /
