@@ -15,12 +15,13 @@ const lines = [];
 let pass = true;
 const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); pass &&= !!ok; return ok; };
 const f = document.createElement('iframe');
-f.width = 900; f.height = 600;
+f.width = 480; f.height = 300;
 document.body.append(f);
-f.src = `../index.html?v=${Math.random()}&shot&at=4.6,2.6,90,0,3.25`;
+f.src = `../index.html?v=${Math.random()}&test&shot&at=4.6,2.6,90,0,3.25`;
 f.onload = async () => { try {
   while (!f.contentWindow.__app) await wait(100);
   const w = f.contentWindow, d = f.contentDocument, app = w.__app, { things, step, heldItem, marks, target, toggleFurniture, player, camera, scene } = app;
+  if (app.testMode) d.documentElement.requestFullscreen = undefined; // keep test mode at its 480×300 fixture size
   d.getElementById('start-touch').click(); await wait(50);
   const run = (s) => { for (let t = 0; t < s; t += 1 / 30) step(1 / 30); };
   const V = camera.position.constructor;
