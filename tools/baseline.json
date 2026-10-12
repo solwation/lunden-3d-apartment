@@ -20,10 +20,6 @@
     "FAIL #302 dynboxen #1: could not sit",
     "FAIL #302: 530 / 546 get-ups (every seat and bed, ahead and turned, from behind) on free floor, able to walk away"
   ],
-  "streetlighttest": [
-    "FAIL a door light by each of the eight front doors (14 washes)",
-    "FAIL the door pools stay in front of the façade (2880 vertices behind it)"
-  ],
   "stucktest": [
     "FAIL dynboxen #0 (turn 0): up at (-71.39, 11.25, y -1.00), free true, main floor true",
     "FAIL dynboxen #0 (turn 1): up at (-71.43, 11.86, y -1.04), free true, main floor true",
@@ -34,8 +30,5 @@
     "FAIL dynboxen #1 (turn -1): up at (-71.43, 11.24, y -1.00), free true, main floor true",
     "FAIL dynboxen #1 (turn 2): up at (-71.03, 12.52, y -1.09), free true, main floor true",
     "FAIL 140 / 148 get-ups with the old spot inside the seat / bed: on free floor, walking away"
-  ],
-  "taskstest": [
-    "FAIL three active tasks from a larger pool; hidden hall task waits for reading; real worktop"
   ]
 }

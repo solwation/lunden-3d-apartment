@@ -168,7 +168,7 @@ frame of `shot()` compiles the shadow programs (~3 min under that load); later s
 
 `node tools/runtests.cjs resttest tostarttest cooktest` (or `--group a-c|d-l|m-p|r-t|u-z`, the file name's first letter) runs the named
 `tools/*test*.html` / `*.cjs` tests. It starts its own `tools/devserve.py` (`--port`, default 8133) and kills only the PIDs it started
-(process groups, so a test's Chromium goes too). HTML tests run in headless Playwright Chromium (SwiftShader flags, 1280×800, DPR 1);
+(process groups, so a test's Chromium goes too). HTML tests run in headless Playwright Chromium (SwiftShader flags, DPR 1; 1280×800 context normally, 480×300 in the compare test pass);
 the runner polls `#out` every 2 s until `ALL PASS` / `SOME FAILED`, or reports TIMEOUT (`--timeout MIN`, default 20) / CRASH.
 Needs Playwright (`PLAYWRIGHT_MODULE=…` or a global install; `CHROME_PATH` optional). Logs: `/tmp/runtests-<pid>/<test>.log` and
 `summary.json`, never the repo. `--jobs N` runs N tests at once (default 1, **max 2**: the VM is shared), `--list` shows the selection,
@@ -181,7 +181,7 @@ tests' entries from completed runs only (do it only for failures someone has fil
 Known FAIL occurrences are consumed in order: fewer known failures are allowed, while extra duplicates or reordered failures
 are NEW. TIMEOUT/CRASH/ERROR never become KNOWN and are excluded from baseline updates, including signal-terminated CJS scripts.
 
-The tracked baseline preserves resttest's existing ordered rows and duplicate occurrences (#302). Added known-red rows:
+The tracked baseline preserves resttest's existing 19 ordered rows and duplicate occurrences (#302). Historical additions:
 
 | Test | Tracked bug | Exact FAIL rows | Source/query audit and raw evidence |
 |---|---|---:|---|
@@ -191,7 +191,10 @@ The tracked baseline preserves resttest's existing ordered rows and duplicate oc
 
 Each full/test log pair has identical complete ordered rows (11, 17 and 93 respectively), including measured values;
 only viewport/query changed in the subsequent fixture migration. At the 2026-10-12 audit, production source was unchanged since these runs.
-Their red assertions remain present and their bugs remain open. Baseline JSON contains only exact FAIL strings, no timings.
+The migrations retained those red assertions. Baseline JSON contains only exact FAIL strings, no timings.
+After the separate fixture fixes, `streetlighttest` is 29 PASS / 0 FAIL in 70.582 s on `7f3aa05`
+(`/tmp/runtests-252850`), and `taskstest` is 96 PASS / 0 FAIL in 73.245 s on `7488651`
+(`/tmp/runtests-244812`). Their source-matched green runs remove both resolved entries; `stucktest` remains tracked by #763.
 21 classification/provenance/actual CLI checks pass, including extra duplicate/reorder exit 1 and excluded timeout/signal-crash
 updates (`/tmp/lunden-773-baseline-probe.{txt,json}`); the lifecycle probes load no browser or apartment.
 
@@ -282,6 +285,28 @@ Migrating a test (#736): use a valid full/test comparison with identical complet
 iframe to 480×300 with `?test…` (`.cjs`: `testkit.open`). Drawing, mirror, lighting, pixels and viewport checks retain full size
 and a `// no &test: <reason>` marker. Where a single step needs a real picture, use `shot()` / `__app.testMode.setFull(true)`.
 Shared-machine timings are noisy; repeat before claiming a gain.
+
+### #737 final acceptance (2026-10-12)
+
+| Test/run | Actual mode and viewport | Ordered results | Elapsed | Raw evidence |
+|---|---|---|---:|---|
+| `resttest` full | no `test`, controller false, 1280×800 | 133 PASS / 19 old FAIL, KNOWN | 745.511 s | `/tmp/runtests-230917/resttest.log` |
+| `resttest` corrected test | `?test`, controller true, 480×300 | identical complete 152 rows, KNOWN | 569.040 s | `/tmp/lunden-776-rest-testpass.{log,json}` |
+| `tostarttest` full | no `test`, controller false, 480×300 | 36 PASS / 0 FAIL | 95.506 s | `/tmp/runtests-230917/tostarttest.log` |
+| `tostarttest` test | `?test`, controller true, 480×300 | identical complete 36 PASS rows | 80.749 s | `/tmp/runtests-230917/tostarttest.test.log` |
+| `cooktest` | fixture's no-test full mode, controller false, 900×600 | 82 PASS / 0 FAIL | 132.925 s | `/tmp/runtests-229228/{cooktest.log,summary.json}` |
+| `anontest.cjs` | script-defined, its own Worker | 23 PASS / 0 FAIL | 324.104 s | `/tmp/runtests-226631/{anontest.log,summary.json}` |
+
+The actual CLI compare run on `bcbf1ae` exited 0 and recorded distinct URL/controller modes. Its original rest pair had
+1280×800 in both passes (query-only, 745.511→605.217 s); #776 replaces that test-side evidence with the verified 480×300
+run on `cd77387`, as described above. Tostart's two runs already used 480×300. Both complete ordered comparisons are
+identical, including duplicates and measured values. These are single shared-machine timing samples, not controlled speed benchmarks.
+Cook evidence is the exact unchanged assertion fixture fixed separately in #774 (`3bf6918`); its old missing bindings were
+not added to a baseline or silently bypassed. Anonymous CJS acceptance ran on `de5c9fb`; its fixture is unchanged.
+All game runs completed without browser log errors, crashes or timeouts. Six anonymous screenshots were reviewed and copied
+to `/tmp/lunden-runner-resume/`. The light routing, dependency, native-fullscreen and HTML Worker lifecycle probes remain
+separate evidence; they do not stand in for game acceptance. Sixteen final source/log/mode/baseline checks pass
+(`/tmp/lunden-773-final-audit.{txt,json}`), with no additional browser startup. #736's remaining test-migration work is still separate.
 
 ## Testing
 
