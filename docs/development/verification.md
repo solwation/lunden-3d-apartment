@@ -675,3 +675,30 @@ an extra endpoint-free/main-floor restriction was added to the general walking h
 was removed before the final run; the original walking condition is preserved. Those failures are not evidence of a
 production walking defect. Old migration evidence remains unchanged; no production, migration, baseline, changelog
 or surveyed/Peab height claim is part of this correction.
+
+
+## Navigation, toys and stairwell source audit (#788 / #751)
+
+This is a source disposition, with no new browser run or new timing measurement.
+All fixture URLs, sizes, actions and assertions remain unchanged. Generic render calls,
+DPR setup and checks of gameplay/material state do not by themselves justify a rendering exemption.
+
+| Fixture | Disposition | Evidence / remaining work |
+|---|---|---|
+| `tostarttest` | Already migrated (#703); reuse preserved acceptance. | All 36 ordered PASS rows identical, no pageerrors; `/tmp/runtests-230917/tostarttest{,.test}.log` and `summary.json`: 95.506s → 80.749s, actual 480×300 both, controller false → true. Historical runtime, not a new run. |
+| `touchtest` | Viewport exemption. | First load uses fixed 900×600 touch coordinates (joystick 120,450 and look 700,300); shrinking to 480×300 changes the input regions and places points outside the view. Keep original first load and subsequent action-menu checks. |
+| `toystest` | Comparison candidate; not migrated. | Sparkle live-count is toy lifetime state; flashlight intensity/on/off and direction are direct quality-independent control state, without pixel/shadow measurements. Preserve all blaster/wand/flashlight actions and exact output in a future full/test pair. |
+| `trapphusatest` | Comparison candidate; not migrated. | Stairs/lifts/doors/collision/save/HUD assertions are functional. The visible-door child count is built geometry, and power-cut material colour is direct state; neither measures rendered calls/pixels. Large fixture needs its own unchanged-assertion pair. |
+| `trapphusbctest` | Comparison candidate; not migrated. | Same functional distinction as A; retain independent B and C variants (`?house=C` on the fixture), every route/save/power assertion and complete exact ordered output. Both variants need full/test pairs. |
+| `trapphusrailtest` | Standalone; no game-mode migration applies. | Actual buildWorld/Core/Player modules and manual movement into the rail; no game iframe/bootstrap or WebGL renderer. Source inspection only, no runtime result claimed. |
+| `turbotest` | Comparison candidate; not migrated. | Deterministic injected coffee clock, speed/FOV, walking/wall-stop and expiry state; no framebuffer/pixel/performance assertion. Preserve dynamic distance/time/FOV labels and all original checks in a future pair. |
+| `turntest` | Rendering/performance exemption. | Actual warm-up and rendered frames gate WebGL program/texture counts and record uploads, shadows, mirrors and phase times; optional readPixels synchronization. Test mode changes the measured rendering workload. |
+
+Tostart provenance was checked against acceptance base `bcbf1ae`: the fixture and relevant
+player/rest/jetpack/spidersuit/car/core/world blobs match exactly; the toStart handler is unchanged.
+Later main/config differences are unrelated chat/compass UI changes; the whole source tree is not claimed
+identical. The source and exact-row audit is retained at `/tmp/lunden-audit788/tostart-provenance.json`.
+
+Suggested future comparison children: toys + turbo (split further if runtime warrants it), stairwell A alone,
+and stairwell B/C alone with both variants. These are proposals, not completed migrations or reservations.
+The parent #751 remains open until its remaining comparisons and dispositions are handled.

@@ -1,4 +1,5 @@
 <!doctype html><html lang="sv"><head><meta charset="utf-8"><title>Turn-around hitches</title></head><body><pre id="out">running…</pre><script>
+// no &test: warm-up, real WebGL uploads/programs, shadows/mirrors and frame timings require full rendering.
 // Turn-around hitches (#592): after the start's warm-up (&warm), stand at a few spots and turn 360° in 15° steps, twice,
 // one game frame per step (`__app.frame`, the animation loop stopped). Counts with the hitch log's WebGL counters
 // (src/hitchlog.js): new programs (shader compiles), new textures (first GPU upload), texture uploads, buffers,
