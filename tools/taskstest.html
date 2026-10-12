@@ -26,7 +26,12 @@ try {
   const cleanTasks = () => tasks.reset();
   const task = (id) => tasks.tasks.find((t) => t.id === id);
   const counter = { x: 5.25, y: 0.93, z: 3 };
-  check(tasks.tasks.length === 6 && tasks.activeTasks().length === 3 && !tasks.isShown('tidyHall') && life.worktopAt(Object.values(counter)), 'three active tasks from a larger pool; hidden hall task waits for reading; real worktop');
+  const expectedTasks = ['makeSandwich', 'resetKitchen', 'snackClean', 'tidyHall', 'grillChicken', 'washDish', 'makeBed'];
+  const poolIds = tasks.tasks.map((t) => t.id);
+  check(poolIds.length === expectedTasks.length && expectedTasks.every((id) => poolIds.includes(id)), 'task pool contains all seven chores including grillChicken');
+  check(tasks.activeTasks().length === 3, 'exactly three tasks are active initially');
+  check(!tasks.isShown('tidyHall'), 'hidden hall task waits for reading');
+  check(life.worktopAt(Object.values(counter)), 'counter fixture uses a real kitchen worktop');
   const { TASK_POOL, SCORE } = await w.eval("import('/src/config.js')");
   const { taskReward } = await w.eval("import('/src/stats.js')");
   const initialTasks = stats.tasks;
