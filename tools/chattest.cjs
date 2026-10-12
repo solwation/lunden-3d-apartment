@@ -52,7 +52,7 @@ const W = 480, H = 300;
     const nudge = async () => { wiggle = -wiggle; for (const p of [A.page, B.page]) await p.evaluate((w) => { window.__app.camera.rotation.y += w; }, wiggle); };
     // Counts alone can precede the first state: require real placed/visible ghosts and tags before typing.
     // SwiftShader frames take seconds: the pages drive ghosts.update() themselves
-    const drive = (p) => p.evaluate(() => { window.__ghosts.update(); const peers = window.__ghosts.list(); return { on: window.__ghosts.on, ws: window.__ghosts.ws?.readyState ?? null, me: window.__ghosts.me, others: peers.length, ready: peers.length === 1 && peers.every(g => g.visible && g.tag), avail: window.__chat.available, frame: window.__app.renderer.info.render.frame }; });
+    const drive = (p) => p.evaluate(() => { window.__ghosts.update(); const peers = window.__ghosts.list(); return { on: window.__ghosts.on, ws: window.__ghosts.ws?.readyState ?? null, me: window.__ghosts.me, others: peers.length, peerIds: peers.map(g => g.id), ready: peers.length === 1 && peers.every(g => g.visible && g.tag), avail: window.__chat.available, frame: window.__app.renderer.info.render.frame }; });
     let diag = null;
     let polls = 0;
     const both = await until(async () => { await nudge(); const a = await drive(A.page), b = await drive(B.page); diag = { a, b }; if (polls++ % 10 === 0) log(JSON.stringify(diag)); return a.me && b.me && a.others === 1 && b.others === 1 && a.ready && b.ready && a.avail; }, 600000);
@@ -180,12 +180,17 @@ const W = 480, H = 300;
     await B.page.evaluate(() => { window.__app.showOverlay(true); });
     await B.page.click('#menu-chat-setting');
     await B.page.evaluate(() => window.__app.showOverlay(false));
-    await sleep(1200);
-    await A.page.evaluate(() => window.__chat.send('syns inte'));
+    let menuRoomDiag = null;
+    const menuRoomReady = await until(async () => {
+      await nudge(); const a = await drive(A.page), b = await drive(B.page); menuRoomDiag = { a, b };
+      return a.ws === 1 && b.ws === 1 && a.me && b.me && a.peerIds.includes(b.me) && b.peerIds.includes(a.me);
+    }, 90000); // menu/reset can disconnect B: await actual mutual room membership, not a fixed sleep
+    const hiddenSend = await A.page.evaluate(() => window.__chat.send('syns inte')); // exactly one original send
+    log(`hidden-message first send ${JSON.stringify({ ready: !!menuRoomReady, result: hiddenSend, room: menuRoomDiag })}`);
     const hidden = await until(() => B.page.evaluate(() => window.__chat.list().at(-1)?.text === 'Olof syns inte' ? {
       log: document.getElementById('chat-log').hidden, key: localStorage.getItem('lunden.chat.hidden'),
       bubbles: window.__chat.bubbleList().every(b => !b.shown), label: document.querySelector('#menu-chat-setting b').textContent } : null), 90000);
-    check(hidden?.log && hidden.key === '1' && hidden.bubbles && hidden.label === 'Visa chat: AV', 'AV hides log and bubbles and is remembered', JSON.stringify(hidden));
+    check(!!menuRoomReady && hidden?.log && hidden.key === '1' && hidden.bubbles && hidden.label === 'Visa chat: AV', 'AV hides log and bubbles and is remembered', JSON.stringify(hidden));
     await shot(B.page, 'chat-B-hidden');
     await B.page.evaluate(() => window.__app.showOverlay(true));
     await B.page.click('#menu-chat-setting');

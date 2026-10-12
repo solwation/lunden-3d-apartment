@@ -132,15 +132,35 @@ tools/chattest.cjs     the chat (#675): two pages, a browser each (480×300, `&q
                        still awaiting transport. Camera matrix refresh changed projected x slightly (0.04↔0.09), without hiding the bubble.
                        This did not reproduce a current product visibility failure or the obsolete chat-toggle error (already replaced by #765).
                        Evidence: /tmp/lunden-chat744/{preflight.json,current-bubble-diagnostic.json,current-bubble-diagnostic.png,diagnostic-log.txt}.
-                       Complete current written run: 40 PASS / 2 FAIL, terminal SOME FAILED (2), no page errors; final leave assertion +960 s.
+                       Earlier complete written run before #838: 40 PASS / 2 FAIL, terminal SOME FAILED (2), no page errors; final leave assertion +960 s.
                        All 43 check call sites remain (42 normal assertions plus crash catch). Typing/sent/wall/TTL, commands, mute, layout,
                        phone reply and leave pass. The new AV (+588 s) / PÅ (+666 s) missing-message failures are tracked separately in child #838;
-                       #744 stays open. The menu flow was unchanged in this partial readiness step; its reconnect/send timing is not yet diagnosed.
+                       #744 stayed open at that stage. The menu flow was unchanged in the partial step; reconnect/send timing was not yet diagnosed.
                        Both contexts initially use 480×300; the existing screenshot helper enlarges the capture page for six 960×600 desktop
                        images (five B, one A), and two 667×375 phone images, then restores 480×300. All eight PNG dimensions were checked
                        and images visually reviewed; this is not an entire-run-at-480 claim. A's last image includes its own “Olof syns inte” line,
-                       while B's expected received list lacks it: #838 must measure B's native rejoin/peer membership at the first send.
+                       while B's expected received list lacked it; this prompted #838's native rejoin/peer-membership diagnosis below.
                        Full raw log, summary, eight PNGs and runtime/fixture SHA256 provenance: /tmp/lunden-chat744/full/.
+                       #838 fixture precondition: after AV menu resume, wait up to 90 s for both native sockets/me ids and reciprocal current
+                       peer ids through the existing drive, then send the original message exactly once and log its raw return. All original
+                       AV predicates remain with an added readiness condition; PÅ local retention, TTL and eight captures stay unchanged.
+                       Corrected passive-CDP/native menu diagnostic at ed7ff32 was healthy (4 PASS): AV reset B's identity/peers, then it
+                       rejoined with a new id before the original 1200 ms first send; observed welcome→send gap was 476 ms. Both message
+                       receipt and PÅ local retention passed, the latter even with B temporarily disconnected. The earlier loss was not reproduced;
+                       mutual membership is a fixture precondition, not evidence of a product defect. An initial observer-only optional-queue
+                       error before the menu is retained separately and provides no menu diagnosis. Queue absence is now observed as null.
+                       A separate real local Worker protocol case (no browser/WebGL) passes 4 checks: B leaves, a witness confirms an absent-time
+                       broadcast completed, B rejoins with a new id without chat replay, and one fresh message is delivered. This intentionally
+                       absent-receiver case verifies protocol behavior; it does not reproduce the earlier app menu loss.
+                       Native/CDP trace, observer-failure evidence and protocol-case raw events: /tmp/lunden-chat838/.
+                       Final complete written #838/#744 acceptance at base 284b046: 42 PASS / 0 FAIL, ALL PASS, exit 0, no pageerrors;
+                       final leave assertion +868 s. Original AV and PÅ predicates pass, including receipt while hidden and local retention.
+                       Mutual native room readiness was true; the exactly-once first send returned an empty success string. All 43 check
+                       call sites (42 normal assertions plus crash catch), TTL, real Worker/input and eight capture paths remain unchanged.
+                       Initial contexts were 480×300; six desktop captures are 960×600 and two phone captures 667×375, with the existing
+                       helper restoring the prior viewport. All eight images were visually reviewed. The frozen 247 runtime hashes and
+                       exact fixture SHA256 matched after completion. Raw log, summary, eight PNGs and provenance: /tmp/lunden-chat838/final/.
+                       This validates the fixture readiness changes; the earlier menu loss was not reproduced as a production defect.
 tools/chatsettingtest.cjs (#765) actual Chat module plus production index DOM/CSS, bootstrap suppressed, no apartment or WebGL:
                        menu PÅ/AV persistence across reload, log/speech/typing visibility with outgoing flags preserved (#735),
                        60-second TTL, wrapped row capacity after resize/rotation and while AV, safe areas at phone/desktop sizes.
