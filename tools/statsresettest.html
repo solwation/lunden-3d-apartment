@@ -2,6 +2,7 @@
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js"}}</script>
 <pre id="out">running…</pre><div id="score"></div><button id="stats-reset">Nollställ</button>
 <script type="module">
+// no &test: standalone DOM/module fixture; no game iframe, apartment bootstrap or WebGL
 // Real stats/score/persistence modules, no apartment or gameplay bootstrap.
 import { stats, bump, totalScore, setScoreElement, resetStats, awardTask, taskReward } from '../src/stats.js';
 import { SCORE } from '../src/config.js';
