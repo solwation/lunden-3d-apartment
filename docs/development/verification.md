@@ -234,6 +234,9 @@ children left behind by an exited script. Raw output is collected through proces
 The #772 light probes exercise actual CLI/Worker/Chrome DOM lifecycle (15 checks), HTML-browser SIGTERM cleanup (2 checks),
 and a resolved-index Playwright override. Evidence: `/tmp/lunden-772-{lifecycle,html-signal}-probe.{txt,json}` and
 `/tmp/lunden-772-resolved-index-probe.txt`; these are not game/anontest acceptance.
+Actual unchanged `anontest.cjs` acceptance then passed through the runner with its own Worker: 23 PASS, zero FAIL,
+324.104 s and exit 0 (`/tmp/runtests-226631/{anontest.log,summary.json}`; six screenshots under `shots/`).
+The dialog/start and privacy screenshots were reviewed; no fixture or production changes were needed.
 
 Migrating a test (#736): use a valid full/test comparison with identical complete ordered rows, then change the logic fixture's
 iframe to 480×300 with `?test…` (`.cjs`: `testkit.open`). Drawing, mirror, lighting, pixels and viewport checks retain full size
