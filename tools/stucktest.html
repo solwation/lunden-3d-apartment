@@ -28,16 +28,23 @@ const load = (q = '') => new Promise((resolve) => {
   await wait(50);
   world.object.updateMatrixWorld(true);
   const { LEVELS } = await w.eval("import('../src/config.js')");
+  const { groundY } = await w.eval("import('../src/surroundings.js')");
   const { inPoly } = await w.eval("import('../src/player.js')");
-  const put = (x, z, lv) => { player.pos.set(x, LEVELS[lv].floor, z); player.eyeY = LEVELS[lv].floor + 1.62; camera.position.set(x, player.eyeY, z); player.glide = null; };
+  // Outdoors on level 0, the coded terrain is the floor; never replace it with nominal y=0.
+  const floorAt = (x, z, lv) => lv === 0 && !player.inFootprint(x, z) ? groundY(x, z) : LEVELS[lv].floor;
+  const grounded = (lv) => Math.abs(player.pos.y - floorAt(player.pos.x, player.pos.z, lv)) < 0.02 && Math.abs(player.vy) < 1e-6 && !player.fall;
+  const put = (x, z, lv) => { const y = floorAt(x, z, lv); player.pos.set(x, y, z); player.eyeY = y + 1.62; camera.position.set(x, player.eyeY, z); player.glide = null; player.vy = 0; player.fall = null; };
   const steps = (n) => { for (let i = 0; i < n; i++) step(1 / 60); };
   const inside = (lv) => player.obstacles(lv).some((q) => inPoly(q, player.pos.x, player.pos.z));
+  let lastWalk = [];
   const walksAway = (lv) => { // 0.5 m in some direction
-    const { x, z } = player.pos;
+    const { x, z } = player.pos; lastWalk = [];
     for (let k = 0; k < 8; k++) {
       put(x, z, lv); camera.rotation.set(0, k * Math.PI / 4, 0, 'YXZ');
       player.keys = new Set(['KeyW']); steps(25); player.keys = new Set();
-      if (Math.hypot(player.pos.x - x, player.pos.z - z) > 0.5 && !inside(lv)) return true;
+      const p = player.pos, distance = Math.hypot(p.x - x, p.z - z), free = player.isFree(p.x, p.z, lv, 0), mainFloor = main[lv](p.x, p.z), onGround = grounded(lv);
+      lastWalk.push({ direction: k, distance: +distance.toFixed(3), free, mainFloor, grounded: onGround, x: +p.x.toFixed(3), z: +p.z.toFixed(3), y: +p.y.toFixed(3) });
+      if (distance > 0.5 && !inside(lv)) return true;
     }
     return false;
   };
@@ -74,18 +81,25 @@ const load = (q = '') => new Promise((resolve) => {
 
   // (2) getting up with the old spot inside the piece itself (the worst record): free, on the main floor, can walk away
   const targets = world.furnitureTargets.filter((t) => t.kind === 'rest');
-  let bad = 0, n = 0;
+  let bad = 0, n = 0, walkChecks = 0, terrainChecks = 0;
   for (const t of targets) for (const [si, sp] of t.spots.entries()) for (const turn of [0, 1, -1, 2]) {
     const lv = t.level;
     put(sp.pos.x, sp.pos.z, lv);
-    rest.begin(t, sp, { x: sp.pos.x, z: sp.pos.z, y: LEVELS[lv].floor });
+    rest.begin(t, sp, { x: sp.pos.x, z: sp.pos.z, y: floorAt(sp.pos.x, sp.pos.z, lv) });
     rest.t = 1; camera.position.copy(sp.pos); camera.rotation.set(0, sp.yaw + turn * 0.8, 0, 'YXZ');
     standUp(); steps(60);
-    const { x, z, y } = player.pos, ok = Math.abs(y - LEVELS[lv].floor) < 0.02 && player.isFree(x, z, lv, 0) && main[lv](x, z) && walksAway(lv);
+    const { x, z, y } = player.pos, expectedY = floorAt(x, z, lv);
+    const onGround = grounded(lv), free = player.isFree(x, z, lv, 0), mainFloor = main[lv](x, z);
+    // Run movement even when a previous condition failed: diagnostics must not short-circuit it.
+    const walking = walksAway(lv); walkChecks++;
+    const ok = onGround && free && mainFloor && walking;
     n++;
-    if (!ok) { bad++; lines.push(`FAIL ${t.name} #${si} (turn ${turn}): up at (${x.toFixed(2)}, ${z.toFixed(2)}, y ${y.toFixed(2)}), free ${player.isFree(x, z, lv, 0)}, main floor ${main[lv](x, z)}`); }
+    const terrain = lv === 0 && !player.inFootprint(sp.pos.x, sp.pos.z);
+    const detail = `${t.name} #${si} (turn ${turn}): up at (${x.toFixed(2)}, ${z.toFixed(2)}, y ${y.toFixed(2)}, floor ${expectedY.toFixed(2)}), grounded ${onGround}, free ${free}, main floor ${mainFloor}, walking away ${walking}`;
+    if (terrain) { terrainChecks++; lines.push(`${ok ? 'PASS' : 'FAIL'} terrain ${detail}${walking ? '' : `; attempts ${JSON.stringify(lastWalk)}`}`); }
+    if (!ok) { bad++; if (!terrain) lines.push(`FAIL ${detail}; attempts ${JSON.stringify(lastWalk)}`); }
   }
-  pass &= check(bad === 0, `${n - bad} / ${n} get-ups with the old spot inside the seat / bed: on free floor, walking away`);
+  pass &= check(bad === 0, `${n - bad} / ${n} get-ups with the old spot inside the seat / bed: grounded on free main floor, ${walkChecks} walking checks (${terrainChecks} terrain positions)`);
 
   // (3) F puts the sofa / the bed back round you: pushed out to free floor
   for (const name of ['soffan', 'sängen']) {
@@ -126,8 +140,9 @@ const load = (q = '') => new Promise((resolve) => {
       put(cx, cz, 0); steps(3);
       useDoor(door); steps(120);
       n++;
-      if (player.isFree(player.pos.x, player.pos.z, 0, -0.005) && walksAway(0)) ok++;
-      else lines.push(`FAIL door at (${cx.toFixed(2)}, ${cz.toFixed(2)}): left at (${player.pos.x.toFixed(2)}, ${player.pos.z.toFixed(2)})`);
+      const left = player.pos.clone(), free = player.isFree(left.x, left.z, 0, -0.005), walking = walksAway(0);
+      if (free && walking) ok++;
+      else lines.push(`FAIL door at (${cx.toFixed(2)}, ${cz.toFixed(2)}): left at (${left.x.toFixed(2)}, ${left.z.toFixed(2)}), free ${free}, walking ${walking}; attempts ${JSON.stringify(lastWalk)}`);
     }
     pass &= check(n > 0 && ok === n, `${ok} / ${n} swing doors shut on you: free to walk away`);
   }

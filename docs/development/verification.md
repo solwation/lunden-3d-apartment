@@ -416,3 +416,18 @@ in front of the façade and follow `groundY`; original day/night/fade/street-slo
 **29 PASS, 0 FAIL**, 71 s, no pageerrors, existing `&test` and 480×300 iframe unchanged. Evidence:
 `/tmp/runtests-252850/streetlighttest.log` and `summary.json`. The older migration pair above remains historical evidence;
 no production, migration, baseline or changelog changed, and no new surveyed/Peab measurement is claimed.
+
+
+Stuck fixture correction (#763): `tools/stucktest.html` seeds level-0 outdoor records/teleports at the actual coded
+`groundY`, retains nominal indoor storey floors, and snapshots grounded/free/main-floor after getting up. Every
+get-up then runs the original walking criterion (>0.5 m, not inside an obstacle) without short-circuiting earlier
+checks. Individual terrain outcomes and failed direction/position attempts are retained. Final actual-app run:
+**61 PASS, 0 FAIL**, 183.456 s, all 148 get-ups and 148 walking checks (52 outdoor positions), including all eight
+negative-height dynbox cases and all six swing doors; no pageerrors. Both loads remain 480×300 in the existing test
+mode. Evidence: `/tmp/runtests-259368/stucktest.log` and `summary.json`.
+
+The first repair run (`/tmp/runtests-255661/stucktest.log`) passed all get-ups but reported two door FAIL rows after
+an extra endpoint-free/main-floor restriction was added to the general walking helper. That out-of-scope restriction
+was removed before the final run; the original walking condition is preserved. Those failures are not evidence of a
+production walking defect. Old migration evidence remains unchanged; no production, migration, baseline, changelog
+or surveyed/Peab height claim is part of this correction.
