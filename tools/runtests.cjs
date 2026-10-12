@@ -12,7 +12,7 @@
 // Options: --jobs N (default 1, max 2: the VM is shared), --timeout MIN (default 20), --port N (devserve, default 8133;
 // Workers use port+1…), --keep-going is the default (all selected tests run), --verbose (print each test's output).
 // Exit code 1 for untracked failures, crashes/timeouts, or different ordered comparison rows.
-const fs = require('fs'), os = require('os'), path = require('path'), http = require('http');
+const fs = require('fs'), os = require('os'), path = require('path'), http = require('http'), net = require('net');
 const { spawn } = require('child_process');
 
 const ROOT = path.resolve(__dirname, '..'), TOOLS = __dirname;
@@ -80,28 +80,68 @@ function gameModeUrl(href, mode) {
 }
 const VERDICT = /^(ALL PASS|SOME FAILED)\s*$/m;
 
-function playwrightModule() {
+function playwrightPath() {
   const tries = [process.env.PLAYWRIGHT_MODULE, 'playwright'];
   try { tries.push(path.join(require('child_process').execFileSync('npm', ['root', '-g'], { encoding: 'utf8' }).trim(), 'playwright')); } catch {}
-  for (const t of tries.filter(Boolean)) { try { return require(t); } catch {} }
+  for (const t of tries.filter(Boolean)) { try { return require.resolve(t); } catch {} }
   console.error('Playwright not found: set PLAYWRIGHT_MODULE=/path/to/playwright'); process.exit(2);
 }
 
-const children = new Set();
+const playwrightModule = () => require(playwrightPath());
+const children = new Set(), browsers = new Set(), launches = new Set();
+let shuttingDown = false;
 function spawnGroup(cmd, args, o = {}) { // own process group, so a kill by PID takes the test's Chromium children along
+  if (shuttingDown) throw new Error('runner is stopping');
   const c = spawn(cmd, args, { detached: true, stdio: ['ignore', 'pipe', 'pipe'], cwd: ROOT, ...o });
-  children.add(c); c.on('exit', () => children.delete(c)); return c;
+  children.add(c); c.on('error', e => { c.spawnError = e; });
+  c.on('exit', () => killGroup(c));
+  c.on('close', () => children.delete(c)); return c;
 }
-const killGroup = (c) => { try { process.kill(-c.pid, 'SIGKILL'); } catch { try { c.kill('SIGKILL'); } catch {} } };
+const killGroup = (c) => { if (!c.pid) return; try { process.kill(-c.pid, 'SIGKILL'); } catch { try { c.kill('SIGKILL'); } catch {} } };
 process.on('exit', () => children.forEach(killGroup));
-for (const s of ['SIGINT', 'SIGTERM']) process.on(s, () => { children.forEach(killGroup); process.exit(130); });
+for (const s of ['SIGINT', 'SIGTERM']) process.on(s, async () => {
+  shuttingDown = true;
+  children.forEach(killGroup);
+  await Promise.allSettled([...launches]);
+  await Promise.all([...browsers].map(b => b.close().catch(() => {})));
+  process.exit(s === 'SIGINT' ? 130 : 143);
+});
 
-async function waitHttp(port, ms = 30000) {
+async function assertPortFree(port) {
+  await new Promise((resolve, reject) => {
+    const probe = net.createServer();
+    probe.once('error', e => reject(new Error(`port :${port} unavailable: ${e.message}`)));
+    probe.listen(port, () => probe.close(resolve));
+  });
+}
+async function waitHttp(port, child, ms = 30000) {
   const t = Date.now();
   for (;;) {
-    const ok = await new Promise((r) => http.get({ port, host: '127.0.0.1', path: '/' }, (res) => { res.resume(); r(true); }).on('error', () => r(false)));
-    if (ok) return; if (Date.now() - t > ms) throw new Error(`nothing listens on :${port}`); await sleep(300);
+    if (child.spawnError || child.exitCode !== null || child.signalCode !== null) {
+      throw new Error(`own server on :${port} stopped: ${child.spawnError?.message ?? child.exitCode ?? child.signalCode}`);
+    }
+    const ok = await new Promise(resolve => {
+      const req = http.get({ port, host: '127.0.0.1', path: '/' }, res => { res.resume(); resolve(true); });
+      req.on('error', () => resolve(false)); req.setTimeout(1000, () => req.destroy());
+    });
+    if (ok) {
+      // Give immediate bind/startup errors a chance to arrive, rather than accepting another server's response.
+      await sleep(100);
+      if (child.spawnError || child.exitCode !== null || child.signalCode !== null) continue;
+      return;
+    }
+    if (Date.now() - t > ms) throw new Error(`own server never became ready on :${port}`);
+    await sleep(100);
   }
+}
+async function startServer(cmd, args, port) {
+  await assertPortFree(port);
+  const child = spawnGroup(cmd, args); let output = '';
+  child.stdout.on('data', d => { output = (output + d).slice(-4000); });
+  child.stderr.on('data', d => { output = (output + d).slice(-4000); });
+  try { await waitHttp(port, child); }
+  catch (e) { killGroup(child); throw new Error(`${e.message}\n${output}`); }
+  return child;
 }
 
 // ---------- HTML tests ----------
@@ -109,8 +149,13 @@ let browserType;
 async function runHtml(test, { asTest }, game) {
   const pw = browserType ||= playwrightModule();
   const log = []; const t0 = Date.now();
-  const browser = await pw.chromium.launch({ executablePath: process.env.CHROME_PATH || undefined,
+  if (shuttingDown) throw new Error('runner is stopping');
+  const launch = pw.chromium.launch({ timeout: opt.timeout * 60000, executablePath: process.env.CHROME_PATH || undefined,
     args: ['--no-sandbox', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
+  launches.add(launch);
+  let browser;
+  try { browser = await launch; browsers.add(browser); }
+  finally { launches.delete(launch); }
   const killer = setTimeout(() => browser.close().catch(() => {}), opt.timeout * 60000 + 30000);
   let text = '', status = 'TIMEOUT', redirects = 0;
   const mode = opt.compare ? (asTest ? 'test' : 'full') : 'written', gameLoads = [];
@@ -164,7 +209,7 @@ async function runHtml(test, { asTest }, game) {
       if (evidence) Object.assign(load, evidence);
     }));
   } catch (e) { log.push(`[runner] ${e.message}`); status = 'ERROR'; }
-  clearTimeout(killer); await browser.close().catch(() => {});
+  clearTimeout(killer); await browser.close().catch(() => {}); browsers.delete(browser);
   const modeVerified = !opt.compare || !gameLoads.length ? null : gameLoads.every(load =>
     load.test === asTest && (load.controller === null || load.controller === asTest));
   if (modeVerified === false) { status = 'ERROR'; log.push(`[runner] loaded game mode does not match ${mode}`); }
@@ -176,27 +221,32 @@ async function runHtml(test, { asTest }, game) {
 const workers = new Map(); // slot -> { child, port }
 async function workerFor(slot) {
   if (!workers.has(slot)) {
-    const port = opt.port + 1 + slot, child = spawnGroup('node', ['cloudflare/dev.mjs', String(port), 'testtoken']);
-    child.stdout.resume(); child.stderr.resume(); await waitHttp(port); workers.set(slot, { child, port });
+    const port = opt.port + 1 + slot;
+    const child = await startServer(process.execPath, ['cloudflare/dev.mjs', String(port), 'testtoken'], port);
+    workers.set(slot, { child, port });
   }
   return workers.get(slot);
 }
 async function runCjs(test, game, slot) {
   const src = fs.readFileSync(path.join(TOOLS, test.file), 'utf8');
   const args = [path.join('tools', test.file), game];
-  if (/cloudflare\/dev\.mjs/.test(src)) {
+  if (/cloudflare\/dev\.mjs|\bworker\s*=\s*process\.argv\[3\]/.test(src)) {
     const w = await workerFor(slot);
     // These tests wipe the Worker's state: a Worker per job slot, cleared by the test itself. Token as in the file's header.
     args.push(`http://localhost:${w.port}`, 'testtoken');
   }
   const t0 = Date.now(); let out = '';
-  const child = spawnGroup('node', args, { env: { ...process.env, SHOTS: path.join(LOGDIR, 'shots') } });
+  const pw = playwrightPath(), pwRoot = path.dirname(require.resolve(`${pw}/../package.json`));
+  const chrome = process.env.CHROME_PATH || process.env.CHROME;
+  const child = spawnGroup(process.execPath, args, { env: { ...process.env,
+    PLAYWRIGHT_MODULE: pw, NODE_PATH: [path.dirname(pwRoot), process.env.NODE_PATH].filter(Boolean).join(path.delimiter),
+    BASE: game, CHROME_PATH: chrome, CHROME: chrome, SHOTS: path.join(LOGDIR, 'shots') } });
   child.stdout.on('data', (d) => (out += d)); child.stderr.on('data', (d) => (out += d));
   let timedOut = false;
   const killer = setTimeout(() => { timedOut = true; killGroup(child); }, opt.timeout * 60000);
-  const code = await new Promise((r) => child.on('exit', (c) => r(c)));
+  const code = await new Promise((r) => child.on('close', (c) => r(c)));
   clearTimeout(killer);
-  return { status: timedOut ? 'TIMEOUT' : 'DONE', code, text: out, log: [], ms: Date.now() - t0 };
+  return { status: timedOut ? 'TIMEOUT' : child.spawnError ? 'ERROR' : 'DONE', code, text: out, log: child.spawnError ? [child.spawnError.message] : [], ms: Date.now() - t0 };
 }
 
 // ---------- classification ----------
@@ -213,9 +263,7 @@ async function main() {
   const tests = select();
   if (opt.list) { for (const t of tests) console.log(t.file); return; }
   fs.mkdirSync(path.join(LOGDIR, 'shots'), { recursive: true });
-  const gameChild = spawnGroup('python3', ['tools/devserve.py', String(opt.port), ROOT]);
-  gameChild.stdout.resume(); gameChild.stderr.resume();
-  await waitHttp(opt.port);
+  await startServer('python3', ['tools/devserve.py', String(opt.port), ROOT], opt.port);
   const game = `http://localhost:${opt.port}`, base = readBaseline();
   console.log(`runtests: ${tests.length} test(s), jobs ${opt.jobs}, timeout ${opt.timeout} min, server :${opt.port}, logs ${LOGDIR}`);
 
@@ -228,11 +276,13 @@ async function main() {
   const results = []; let next = 0;
   async function worker(slot) {
     for (;;) {
+      if (shuttingDown) return;
       const j = jobs[next++]; if (!j) return;
       process.stdout.write(`  start ${j.t.name}${j.label ? ` [${j.label}]` : ''}\n`);
       let r;
       try { r = j.t.kind === 'html' ? await runHtml(j.t, j, game) : await runCjs(j.t, game, slot); }
       catch (e) { r = { status: 'ERROR', text: '', log: [`[runner] ${e.stack}`], ms: 0 }; }
+      if (shuttingDown) return;
       classify(r, j.t.name, base); Object.assign(r, { name: j.t.name, file: j.t.file, label: j.label, asTest: j.asTest, kind: j.t.kind });
       const logName = tests.filter(t => t.name === j.t.name).length > 1 ? j.t.file : j.t.name;
       fs.writeFileSync(path.join(LOGDIR, `${logName}${j.asTest ? '.test' : ''}.log`), `${r.text}\n${r.log.join('\n')}\n`);
@@ -242,6 +292,7 @@ async function main() {
     }
   }
   await Promise.all(Array.from({ length: opt.jobs }, (_, i) => worker(i)));
+  if (shuttingDown) return;
 
   // ---------- summary ----------
   console.log('\nSummary');
@@ -281,4 +332,4 @@ async function main() {
   children.forEach(killGroup);
   process.exit(bad ? 1 : 0);
 }
-main().catch((e) => { console.error(e); children.forEach(killGroup); process.exit(2); });
+main().catch((e) => { if (shuttingDown) return; console.error(e); children.forEach(killGroup); process.exit(2); });
