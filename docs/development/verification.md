@@ -261,16 +261,17 @@ Excluded/no-benefit rows follow source inspection and claim no new browser run o
 
 ### d–l source inventory (#779; parent #739 / #736)
 
-Source audit only: 40 HTML fixtures comprise 36 actual-main iframes and four independent fixtures.
-None of those 36 game URLs currently selects test mode. The CJS grill wrapper is counted separately.
+Initial #779 source audit: 40 HTML fixtures comprise 36 actual-main iframes and four independent fixtures.
+At that audit none of those 36 game URLs selected test mode. The CJS grill wrapper is counted separately.
 The table is alphabetical; **Candidate** means a full ordered before/after comparison is still required,
-including every reload, actual-main assertion and original viewport. No fixture was migrated or run here.
+including every reload, actual-main assertion and original viewport. #779 ran or migrated no fixture;
+subsequent verified migrations are recorded in their own rows below.
 A `setPixelRatio` call or one final `render` call alone does not justify a rendering exclusion.
 
 | Fixture (`tools/`) | Audit disposition | Concrete source requirement |
 |---|---|---|
 | `detailtest.html` | Full rendering | Detail culler: nearby doors drawn and distant details hidden. |
-| `dishrackpicktest.html` | Candidate | Rack/cup raycasts and touch actions; inventory audit. |
+| `dishrackpicktest.html` | Migrated (#785) | 30 identical ordered PASS rows, zero FAIL; actual 900×600 full/controller false → 480×300 test/controller true. 109.395 s → 77.926 s, single pair (`/tmp/runtests-277486`). Rack/cup rays, mouse/touch and inventory preserved. |
 | `drawtest.html` | Conditional candidate | Samples own 2D paper canvas via projected pointer coordinates, not WebGL pixels; retain pointer coverage. |
 | `eastbackdroptest.html` | Candidate | Campus source geometry/rays and full/lowmem model-detail parity (retain lowmem subcase). |
 | `eggtest.html` | Candidate | Cooking/item actions, colour/opacity properties and save/load. |
@@ -311,7 +312,7 @@ A `setPixelRatio` call or one final `render` call alone does not justify a rende
 | `loadingtest.html` | Full startup | Early loading/resume covers versus __app readiness; test mode changes warmup lifecycle. |
 | `loosemirrorstest.html` | Explicit reflection exclusion (#736) | Parent explicitly retains this mirror test; current assertions cover reflector registration/transforms and lamp pool anchors, without reflection-pixel sampling. |
 
-No valid paired d–l migration logs were found in retained `/tmp/runtests-*/summary.json` records
+At the #779 audit, no valid paired d–l migration logs were found in retained `/tmp/runtests-*/summary.json` records
 (exact fixture-name matching). This is a local evidence search, not a claim that no external run exists.
 Antigravity's 9645849 report contains 18 **after-only** migrated tests, all a–c; its d–l comments do not
 establish verification. The two invalid d–l importmaps and the matching a–c map are tracked separately
