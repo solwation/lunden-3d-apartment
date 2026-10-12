@@ -3,6 +3,7 @@ import { CHAT, GHOSTS } from './config.js';
 import { setIcon } from './hudicons.js';
 import { ANON } from './ghosts.js';
 import { gameView } from './viewport.js';
+import { censor } from './chatfilter.js';
 
 // The chat (#675): while the players' room (#666, src/ghosts.js) is on, the console (>_ / § / Enter) sends what you write
 // to the others; a code or a line starting with '/' stays a cheat (src/cheats.js `isCommand`, run in main.js, never sent).
@@ -35,7 +36,7 @@ export class Chat {
    * speech bubbles' element) + hidden(p) (a wall between the eye and p) for the bubbles over the ghosts (#676). */
   constructor({ ghosts, log, toggle, name = () => '', camera = null, layer = null, hidden = () => false, typingLine = null }) {
     Object.assign(this, { ghosts, log, toggle, name, camera, layer, behind: hidden, typingLine, lines: [], unseen: 0, tokens: CHAT.burst, refilled: 0, open: false, sent: 0,
-      bubbles: new Map(), typing: false, lastKey: 0, lastOn: 0 });
+      bubbles: new Map(), typing: false, lastKey: 0, lastOn: 0, muted: new Set() });
     try { this.hidden = localStorage.getItem(CHAT.hiddenKey) === '1'; } catch { this.hidden = false; }
     ghosts.onTalk = (m, g) => this.heard(m, g);
     toggle?.addEventListener('click', (e) => { e.preventDefault(); this.hide(!this.hidden); });
@@ -53,7 +54,7 @@ export class Chat {
     const t = performance.now();
     this.tokens = Math.min(CHAT.burst, this.tokens + (t - this.refilled) / CHAT.everyMs); this.refilled = t;
     if (this.tokens < 1) return 'Lugn i stormen – vänta en sekund.';
-    let m = text; // the room takes at most 256 characters of JSON (quotes and backslashes count twice)
+    let m = censor(text); // (#719: shown as the others will see it) the room takes at most 256 characters of JSON (quotes and backslashes count twice)
     while (JSON.stringify({ t: 'm', m }).length > 250) m = Array.from(m).slice(0, -1).join('');
     if (!this.ghosts.talk({ t: 'm', m })) return 'Chatten är inte ansluten just nu. Försök igen om en stund.';
     this.tokens--; this.sent++;
@@ -81,11 +82,35 @@ export class Chat {
     this.renderTyping();
   }
 
+  isMuted(name) { return this.muted.size > 0 && this.muted.has(String(name).toLowerCase()); }
+
+  /** Chat commands (#719), or null for anything else: `/tysta namn` hides that player's lines and bubbles here until the
+   * page is reloaded (by name: the ids change with every connection; "Anonym" mutes every nameless one), `/tysta` lists,
+   * `/prata namn` / `/prata` undoes one / all. Nothing is sent or stored. */
+  command(line) {
+    const m = /^\s*\/(tysta|prata)(?:\s+(.*))?$/i.exec(line);
+    if (!m) return null;
+    const name = cleanName(m[2] ?? '').trim(), key = name.toLowerCase(), named = !!m[2]?.trim();
+    if (m[1].toLowerCase() === 'prata') {
+      if (!named) { this.muted.clear(); return 'Ingen är tystad längre.'; }
+      return this.muted.delete(key) ? `Du ser vad ${name} skriver igen.` : `${name} var inte tystad.`;
+    }
+    if (!named) return this.muted.size ? `Tystade: ${[...this.muted].join(', ')}. /prata namn ångrar.` : 'Ingen är tystad. Skriv /tysta och ett namn.';
+    if (key === cleanName(this.name()).toLowerCase() && key !== ANON.toLowerCase()) return 'Du kan inte tysta dig själv.';
+    this.muted.add(key);
+    for (const [id, b] of this.bubbles) if (b.ghost.name.toLowerCase() === key) this.unbubble(id);
+    return `Du ser inte längre vad ${name} skriver (tills sidan laddas om). /prata ${name} ångrar.`;
+  }
+
+  /** The chat's own commands, for help. */
+  get help() { return '/tysta namn — dölj en spelares chatt (tills du laddar om)\n/prata namn — visa den igen'; }
+
   /** From the room: a line from someone ({ t: 'm', i, n, m }), our own refused ({ t: 'mx' }), someone's "skriver…" ({ t: 'k', i, on }). */
   heard(m, g) {
     if (m.t === 'mx') { this.add('', 'För många meddelanden – vänta lite.', true, true); return; }
+    if (this.isMuted(g?.name ?? cleanName(m.n))) return; // (#719: muted here, lines and bubbles alike)
     if (m.t === 'k') { if (g) { if (m.on) this.bubble(g, null); else if (this.bubbles.get(g.id)?.typing) this.unbubble(g.id); } return; }
-    const text = cleanText(m.m);
+    const text = censor(cleanText(m.m));
     if (!text) return;
     this.add(cleanName(m.n), text);
     if (g) this.bubble(g, text);
@@ -174,10 +199,11 @@ export class Chat {
       b.t -= dt;
       if (!g || g !== b.ghost || b.t <= 0) { this.unbubble(id); continue; }
       tmp.copy(g.root.position);
-      tmp.y += GHOSTS.tagY + GHOSTS.tagHeight / 2 + CHAT.bubbleGap;
+      const tagY = g.tag?.position.y ?? GHOSTS.tagY; // (#705: the tag sits over a taller / shorter avatar's head)
+      tmp.y += tagY + GHOSTS.tagHeight / 2 + CHAT.bubbleGap;
       const d = tmp.distanceTo(eye);
       tmp.project(this.camera);
-      const off = !g.root.visible || !g.tag.visible || tmp.z > 1 || Math.abs(tmp.x) > 1.1 || Math.abs(tmp.y) > 1.1 || this.behind(g.root.position.clone().setY(g.root.position.y + GHOSTS.tagY));
+      const off = !g.root.visible || (g.tag && !g.tag.visible) || tmp.z > 1 || Math.abs(tmp.x) > 1.1 || Math.abs(tmp.y) > 1.1 || this.behind(g.root.position.clone().setY(g.root.position.y + tagY));
       b.el.style.visibility = off ? 'hidden' : 'visible';
       if (off) continue;
       const s = THREE.MathUtils.clamp(CHAT.bubbleNear / Math.max(d, 0.1), CHAT.bubbleMin, 1);

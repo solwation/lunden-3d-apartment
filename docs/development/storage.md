@@ -63,7 +63,8 @@ cloudflare/players.js  the PlayerRoom Durable Object (#666; binding PLAYERS, mig
                        CHAT (#675): `cleanTalk` / `cleanText` (plain text ≤ 140 characters) forwarded to the others with the
                        cleaned name, per socket a burst of 3 then 1/s and ≤ 12/min, the room ≤ 120/min, over that { t: 'mx' };
                        nothing stored, counted in the monthly cap like any message; #676 the typing flag { t: 'k', on } (a change
-                       only: off always, on ≥ 0.5 s apart, a refresh ≥ 5 s; a line ends it). Tests: cloudflare/players.test.mjs
+                       only: off always, on ≥ 0.5 s apart, a refresh ≥ 5 s; a line ends it); #719 `censor`: ROUGH words → ***
+                       in every line (cloudflare/chat.test.mjs). Tests: cloudflare/players.test.mjs
                        (runtime stand-ins cloudflare/devws.mjs, also used by dev.mjs for real ws://), tools/ghosttest.cjs (two pages)
 cloudflare/crash.js    POST /crash, admin GET /crash and /crash/<id>, DELETE /admin/crash: size cap 16 kB, plain-data cleaning, per-IP hour
                        limit, one report per browser+signature+day, 400 reports in all, KV TTL 14 days (test: cloudflare/crash.test.mjs)

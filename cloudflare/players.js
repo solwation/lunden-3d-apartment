@@ -80,6 +80,13 @@ export function cleanText(s) {
   return Array.from(t).slice(0, CHAT.max).join('').trim();
 }
 
+// Coarse words (#719): a short list on purpose (extend it here and in src/chat.js ROUGH, kept equal by hand), matched as
+// whole words in any case and replaced with *** in every chat line by the room, so it holds for all clients.
+export const ROUGH = ['fitta', 'fittan', 'fittor', 'kuk', 'kuken', 'kukar', 'hora', 'horan', 'horor', 'horunge', 'slyna', 'neger', 'negern', 'negrer',
+  'fuck', 'fucking', 'fucker', 'motherfucker', 'cunt', 'bitch', 'nigger', 'nigga'];
+const roughWords = new RegExp(`(?<![\\p{L}\\p{N}])(?:${ROUGH.join('|')})(?![\\p{L}\\p{N}])`, 'giu');
+export const censor = (s) => s.replace(roughWords, '***');
+
 /** A chat line { t: 'm', m } or a typing flag { t: 'k', on } from a client, or null. */
 export function cleanTalk(text) {
   if (typeof text !== 'string' || !text.startsWith('{"t":"')) return null; // (states are not parsed twice)
@@ -87,7 +94,7 @@ export function cleanTalk(text) {
   try { m = JSON.parse(text); } catch { return null; }
   if (m?.t === 'k') return { t: 'k', on: m.on === true }; // "skriver…" (#676): the flag only, never the letters
   if (m?.t !== 'm') return null;
-  const t = cleanText(m.m);
+  const t = censor(cleanText(m.m)); // (#719: coarse words out)
   return t ? { t: 'm', m: t } : null;
 }
 

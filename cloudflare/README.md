@@ -137,6 +137,11 @@ meddelande slår av den. Högst ett par meddelanden per skrivpaus – samma budg
 någon som finns i rummet, och skickar den vidare till alla andra (de ser den som hälsar vinka). Hälsningen går inom samma
 5-Hz-budget som positionerna, så kostnadsräkningen ovan ändras inte.
 
+**Ordfilter och tysta (#719):** rummet byter en kort lista grova ord (`ROUGH` i `cloudflare/players.js`, samma lista i
+`src/chatfilter.js`) mot `***` i varje chattrad innan den skickas vidare – hela ord, oavsett versaler – så det gäller alla
+klienter. Att tysta en spelare (`/tysta namn` i chatten) sker bara i den egna webbläsaren tills sidan laddas om; inget skickas
+eller sparas. Test: `node --test cloudflare/chat.test.mjs`.
+
 **Stänga av:**
 - Klienten: `GHOSTS.enabled = false` i `src/config.js` (och pusha), eller `?mp=0` i adressen för en enskild besökare.
   Utan `CLOUD_URL` är den helt av.

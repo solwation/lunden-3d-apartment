@@ -106,7 +106,8 @@ tools/chattest.cjs     the chat (#675): two pages, a browser each (480×300, `&q
                        as plain text with A's name, cheat codes (/day, bare codes, a secret, /unknown, /help) stay local and are never
                        sent, the client's burst limit, ≤ CHAT.show lines, TTL fade, hide (remembered, unseen count) / show, B as a touch
                        phone: the column clear of the buttons and the stick's corner, "Anonym"; #676 "skriver…" / line bubbles over the ghost
-                       (flag only, pause, close, replace, TTL, wall, leave, no 3D objects); screenshots into SHOTS. ~10 min
+                       (flag only, pause, close, replace, TTL, wall, leave, no 3D objects); #719 the word filter, /tysta + /prata;
+                       screenshots into SHOTS. ~10 min. Also `node --test cloudflare/chat.test.mjs` (word filter)
 tools/ghostbadgetest.cjs (#672) bounded real Ghosts + local PlayerRoom badge fixture without apartment bootstrap; name/score,
                        anonymous/max score, score-only rate/idle, sharing, texture-history disposal, draw counts and leave;
                        desktop/iPhone-size rendered screenshots. Same environment/arguments as ghosttest (no admin token needed)

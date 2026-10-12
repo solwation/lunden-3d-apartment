@@ -2095,7 +2095,10 @@ const cheats = {
 };
 document.getElementById('terminal-form').addEventListener('submit', e => {
   e.preventDefault();
-  if (terminal.classList.contains('chat') && !isCommand(terminalInput.value)) { // a chat line (#675); a code stays local, never sent
+  const chatting = terminal.classList.contains('chat'), own = chatting ? chat.command(terminalInput.value) : null; // /tysta, /prata (#719)
+  if (own !== null) { document.getElementById('terminal-message').textContent = own; terminalInput.value = ''; return; }
+  if (chatting && /^\s*\/?help\s*$/i.test(terminalInput.value)) { document.getElementById('terminal-message').textContent = `${runCheat('help', cheats)}\n${chat.help}`; terminalInput.value = ''; return; }
+  if (chatting && !isCommand(terminalInput.value)) { // a chat line (#675); a code stays local, never sent
     const said = chat.send(terminalInput.value); // '' = sent (or nothing written): close; else why not, the text stays
     document.getElementById('terminal-message').textContent = said; if (!said) { terminalInput.value = ''; showTerminal(false); } return;
   }

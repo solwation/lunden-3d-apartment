@@ -104,6 +104,7 @@ const W = 480, H = 300;
     const bubbles = (p) => p.evaluate(() => { window.__chat.update(0); return window.__chat.bubbleList(); });
     const typingRow = (p) => p.evaluate(() => { const el = document.getElementById('chat-typing'); return el.hidden ? '' : el.textContent; });
     const sentBefore = await A.page.evaluate(() => window.__ghosts.messages);
+    const draws0 = await B.page.evaluate(() => window.__app.scene.getObjectByName('ghosts').children.map((r) => r.children.length));
     await A.page.evaluate(() => window.__app.showTerminal(true));
     await A.page.type('#terminal-code', 'Hej på dig', { delay: 30 });
     const flags = await A.page.evaluate((n) => window.__ghosts.messages - n, sentBefore);
@@ -137,7 +138,31 @@ const W = 480, H = 300;
       const was = c.behind; c.behind = () => true; c.update(0); const hidden = !c.bubbleList()[0].shown; c.behind = was; c.update(0); return { hidden, back: c.bubbleList()[0].shown }; });
     check(behind.hidden && behind.back, 'hidden behind a wall like the tag', JSON.stringify(behind));
     const draws = await B.page.evaluate(() => window.__app.scene.getObjectByName('ghosts').children.map((r) => r.children.length));
-    check(draws.every((n) => n === 2), 'no extra 3D objects per ghost (the bubble is DOM)', JSON.stringify(draws));
+    check(JSON.stringify(draws) === JSON.stringify(draws0) && await B.page.evaluate(() => document.querySelectorAll('#speech .chat-bubble').length === 1), 'no extra 3D objects per ghost (the bubble is one DOM element)', JSON.stringify({ draws0, draws }));
+
+    // #719: coarse words become *** for everybody; B mutes A here (/tysta), and lets A back (/prata)
+    await A.page.evaluate(() => { const c = window.__chat; c.tokens = 3; c.send('Fuck dig, KUK! kukeliku'); });
+    check((await lines(A.page)).at(-1) === 'Olof *** dig, ***! kukeliku', 'A sees its own line filtered', JSON.stringify((await lines(A.page)).at(-1)));
+    const rough = await until(async () => { const l = await lines(B.page); return l.at(-1)?.startsWith('Olof ***') ? l.at(-1) : null; }, 90000);
+    check(rough === 'Olof *** dig, ***! kukeliku' && (await bubbles(B.page))[0]?.text === '*** dig, ***! kukeliku', 'B gets it filtered, in the column and the bubble', JSON.stringify(rough));
+    const bRun = async (text) => { await B.page.evaluate(() => window.__app.showTerminal(true)); await B.page.fill('#terminal-code', text); await B.page.keyboard.press('Enter');
+      return B.page.evaluate(() => document.getElementById('terminal-message').textContent); };
+    const bHelp = await bRun('/help');
+    check(bHelp.includes('/tysta namn') && bHelp.includes('/day'), 'help in the chat lists /tysta too', JSON.stringify(bHelp.slice(-90)));
+    const muted = await bRun('/tysta olof');
+    check(/ser inte längre vad olof/i.test(muted) && (await bubbles(B.page)).length === 0, '/tysta Olof: said, and A\'s bubble gone at once', muted);
+    check(!(await lines(B.page)).some((t) => /tysta|help/.test(t)), 'the commands are not chat lines');
+    await A.page.evaluate(() => window.__app.showTerminal(true));
+    await A.page.type('#terminal-code', 'hörs inte');
+    await A.page.keyboard.press('Enter');
+    await sleep(6000); await drive(B.page);
+    const quiet = { lines: (await lines(B.page)).filter((t) => /hörs inte/.test(t)), bubbles: await bubbles(B.page), row: await typingRow(B.page) };
+    check(!quiet.lines.length && !quiet.bubbles.length && quiet.row === '', 'muted: no line, no "skriver…", no bubble from A on B', JSON.stringify(quiet));
+    check(/olof/i.test(await bRun('/tysta')), '/tysta lists who is muted');
+    await bRun('/prata Olof');
+    await B.page.evaluate(() => window.__app.showTerminal(false));
+    await A.page.evaluate(() => { const c = window.__chat; c.tokens = 3; c.send('hörs igen'); });
+    check(!!(await until(async () => (await lines(B.page)).at(-1) === 'Olof hörs igen', 90000)), '/prata Olof: A is heard again');
 
     // hide on B: remembered, nothing shown, a count of what came
     await B.page.evaluate(() => { window.__app.showTerminal(true); }); // (the toggle shows while the bar is open too)
