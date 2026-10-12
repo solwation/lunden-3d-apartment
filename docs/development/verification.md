@@ -1047,7 +1047,21 @@ independently monitored runner exit 0; wall times include the successful final c
 unconditional fullscreen suppression and all assertions remain. Both saved fullPage PNGs were inspected: result text and kitchen
 view support capture/log evidence, not beer-label pixel equivalence. Raw logs/summary: `/tmp/runtests-390315/`;
 source/runtime/capture hashes, final native metadata, actual-exit and images: `/tmp/lunden-beer807/shelf-*` and
-`beershelfmodeltest-{full,test}.*`. Beer and bottle fixtures still need their own complete comparisons; #807 remains open.
+`beershelfmodeltest-{full,test}.*`.
+
+#807 `beertest` retains byte-identical whole raw logs: 24 ordered PASS rows and ALL PASS, including five gulps,
+coffee fill 0.80, lounge position 4.44/0.40/14.09, exact 0.400 table surfaces and both persisted-layout/re-serve
+assertions. Original reconstructed full and test pair at frozen `8116db8`: 192.099s → 145.222s, independently
+monitored runner exit 0. Both actual full main loads were 900×600/controller false; both actual test main loads
+480×300/real controller API, all without fullscreen. Second-load evidence was captured passively before its original
+removal, first-load evidence at final retention; fixture and child time origins are labelled separately.
+The approved testMode-only first-start fullscreen guard was frozen before the pair; original assertions, coordinates,
+saving, reload and second-start behavior are unchanged. Final source retains the existing test URLs and makes the
+second iframe 480×300 too, plus that narrow guard. Both final PNGs were inspected: generic patio/result layout,
+not beer-pixel equivalence; wall times include those successful captures. Raw logs/summary: `/tmp/runtests-405778/`;
+source/runtime/capture hashes, native phase records, monitor PID/SID/exit and images: `/tmp/lunden-beer807/beer-*`
+and `beertest-*`. No errors were observed in capture or page execution. Bottle still needs its complete comparison;
+#807 remains open and #841's separate incomplete beer-can result is unchanged.
 
 
 `bedcaretest`'s pixel-ratio setup is not a rendering assertion; its comment now

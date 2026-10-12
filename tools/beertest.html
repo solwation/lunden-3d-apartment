@@ -20,6 +20,7 @@ f.onload = async () => {
   const THREE = await f.contentWindow.eval("import('three')");
   const lines = [];
   const check = (ok, name) => { lines.push(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; };
+  if (w.__app.testMode) d.documentElement.requestFullscreen = undefined; // full mode keeps native fullscreen
   d.getElementById('start-touch').click();
   await wait(50);
   let pass = check(!beer.model.visible && !beer.out, 'no beer before sitting down');
@@ -110,7 +111,7 @@ f.onload = async () => {
   // Persistence across reload with saved layout
   localStorage.setItem('lunden.furniture.layout', JSON.stringify(R.state));
   const f2 = document.createElement('iframe');
-  f2.width = 900; f2.height = 600; f2.src = '../index.html?test';
+  f2.width = 480; f2.height = 300; f2.src = '../index.html?test';
   document.body.append(f2);
   await new Promise(r => { f2.onload = r; });
   while (!f2.contentWindow.__app) await wait(100);
