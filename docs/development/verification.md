@@ -172,7 +172,23 @@ Needs Playwright (`PLAYWRIGHT_MODULE=…` or a global install; `CHROME_PATH` opt
 Output: PASS / KNOWN / FAIL / TIMEOUT per test with the time and the number of FAIL lines, then a summary. **KNOWN** = it fails only
 with lines listed in `tools/baseline.json` (`{ "test": ["FAIL line", …] }`: the exact known-red lines, **no times**, e.g. resttest's
 #302 lines); any FAIL line not in the baseline is printed as `NEW` and makes the exit code 1. `--update-baseline name…` rewrites those
-tests' entries from the run (do it only for failures someone has filed as a `Bugg:` issue).
+tests' entries from completed runs only (do it only for failures someone has filed as a `Bugg:` issue).
+Known FAIL occurrences are consumed in order: fewer known failures are allowed, while extra duplicates or reordered failures
+are NEW. TIMEOUT/CRASH/ERROR never become KNOWN and are excluded from baseline updates, including signal-terminated CJS scripts.
+
+The tracked baseline preserves resttest's existing ordered rows and duplicate occurrences (#302). Added known-red rows:
+
+| Test | Tracked bug | Exact FAIL rows | Source/query audit and raw evidence |
+|---|---|---:|---|
+| `streetlighttest` | [#762](https://github.com/solwation/lunden-3d-apartment/issues/762) | 2 | `0d8ebd4^` had `?shot&time=12&month=10&freeze`, no `test`; `/tmp/runtests-184368/` |
+| `stucktest` | [#763](https://github.com/solwation/lunden-3d-apartment/issues/763) | 9 | `e863d73^` used `load('?shot')`, no `test`; `/tmp/runtests-184368/` |
+| `taskstest` | [#770](https://github.com/solwation/lunden-3d-apartment/issues/770) | 1 | `97bd2b3^` had `?life&shot`, no `test`; `/tmp/runtests-192659/` |
+
+Each full/test log pair has identical complete ordered rows (11, 17 and 93 respectively), including measured values;
+only viewport/query changed in the subsequent fixture migration. At the 2026-10-12 audit, production source was unchanged since these runs.
+Their red assertions remain present and their bugs remain open. Baseline JSON contains only exact FAIL strings, no timings.
+21 classification/provenance/actual CLI checks pass, including extra duplicate/reorder exit 1 and excluded timeout/signal-crash
+updates (`/tmp/lunden-773-baseline-probe.{txt,json}`); the lifecycle probes load no browser or apartment.
 
 Ordinary runs preserve the fixture's URL and viewport as written. `--compare` runs each HTML test twice: first removing only
 `test` from local game document URLs, then adding it when absent (retaining an explicit variant such as `test=lazy`). Other

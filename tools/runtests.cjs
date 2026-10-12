@@ -251,9 +251,16 @@ async function runCjs(test, game, slot) {
 
 // ---------- classification ----------
 function classify(r, name, base) {
-  const fails = failLines(r.text), known = new Set(base[name] || []);
-  r.fails = fails; r.newFails = fails.filter((l) => !known.has(l));
+  const fails = failLines(r.text), known = base[name] || [];
+  // Consume expected occurrences in order. Fewer old failures are allowed; extra or reordered ones are NEW.
+  let cursor = 0;
+  r.fails = fails; r.newFails = fails.filter(line => {
+    const index = known.indexOf(line, cursor);
+    if (index < 0) return true;
+    cursor = index + 1; return false;
+  });
   if (r.status === 'TIMEOUT' || r.status === 'CRASH' || r.status === 'ERROR') r.verdict = r.status;
+  else if (r.code === null) r.verdict = 'CRASH';
   else if (r.code !== undefined) r.verdict = r.code === 0 && !fails.length ? 'PASS' : (r.code !== 0 && !fails.length) || r.newFails.length ? 'FAIL' : 'KNOWN';
   else r.verdict = /^ALL PASS/m.test(r.text) && !fails.length ? 'PASS' : r.newFails.length || !fails.length ? 'FAIL' : 'KNOWN';
   return r;
@@ -323,7 +330,7 @@ async function main() {
   }
   if (opt.update) { // only the plain runs; no times are stored
     const nb = readBaseline();
-    for (const r of results.filter((r) => !r.asTest && ['DONE'].includes(r.status))) { if (r.fails.length) nb[r.name] = r.fails; else delete nb[r.name]; }
+    for (const r of results.filter(r => !r.asTest && r.status === 'DONE' && ['PASS', 'KNOWN', 'FAIL'].includes(r.verdict))) { if (r.fails.length) nb[r.name] = r.fails; else delete nb[r.name]; }
     const sorted = Object.fromEntries(Object.keys(nb).sort().map((k) => [k, nb[k]]));
     fs.writeFileSync(BASELINE, JSON.stringify(sorted, null, 2) + '\n'); console.log(`baseline updated: ${BASELINE}`);
   }
