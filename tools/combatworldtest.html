@@ -2,6 +2,7 @@
 <pre id="out">running…</pre>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js"}}</script>
 <script type="module">
+// no &test: standalone raycast, spatial-cache and timing checks; no apartment renderer or bootstrap.
 import * as T from 'three';
 import { COMBAT } from '../src/config.js';
 import { combatWorldHits, combatWorldPath, combatWorldPathBlocked, prepareCombatWorld, combatWorldMetrics, combatWorldState } from '../src/combatworld.js';

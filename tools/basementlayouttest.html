@@ -1,5 +1,6 @@
 <!doctype html><html><meta charset="utf-8"><title>Basement layout #523</title>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script><pre id="out">running…</pre><script type="module">
+// no &test: standalone world geometry, collision and room-layout checks; no apartment renderer or bootstrap.
 import * as THREE from 'three';
 import {buildWorld} from '../src/world.js';import {Garage,CAGES,STALLS} from '../src/garage.js';import {Core} from '../src/core.js';import {Player} from '../src/player.js';import {GARAGE as G,PLAYER} from '../src/config.js';
 const lines=[];let pass=true;const check=(ok,s)=>{lines.push(`${ok?'PASS':'FAIL'} ${s}`);pass&&=!!ok};

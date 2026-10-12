@@ -1,5 +1,5 @@
 <!doctype html><html lang="sv"><meta charset="utf-8"><title>Bed care test</title><pre id="out">running…</pre><script type="module">
-// no &test: measures drawing (setPixelRatio)
+// Test-mode candidate (#778): cloth geometry, state and action checks; setPixelRatio(.15) is setup, not an assertion.
 const lines=[];let pass=true;const check=(ok,text)=>{lines.push((ok?'PASS':'FAIL')+' '+text);pass&&=!!ok},wait=ms=>new Promise(r=>setTimeout(r,ms));
 try{
  const f=document.createElement('iframe');f.width=480;f.height=300;document.body.append(f);

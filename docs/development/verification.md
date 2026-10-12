@@ -438,6 +438,57 @@ Phone memory probe (#628): `python3 tools/devserve.py 8628 . &` then `PLAYWRIGHT
 
 Park basement entries (#729): run `PLAYWRIGHT_MODULE=/path/to/playwright CHROME_PATH=/path/to/chrome node tools/basemententrytest.cjs http://localhost:8729` after starting the development server. `SHOTS` overrides `/tmp/lunden-basement-entry/result.json`'s directory. The driver waits bounded initialization, clicks the real mouse-start button, obtains PointerLock and runs `tools/basemententrytest.html`: actual E focus from outside before below, closed/open/jamb traversal to both −1 landings and back, the touch action handler in controlled touch mode, far animated leaves, courtyard pick/collision exclusion, continuous park paving, tree/shrub-instance clearance and floor coverage. It uses `&test=lazy`, with no automatic rendering; this is not a physical-phone touch/FPS test. [Measured scope and manual full-quality images](../validation/issue-729/README.md).
 
+## Test-mode source inventory: a–c (#778)
+
+This is a source audit of all 43 a–c HTML fixtures, not migration acceptance.
+Commit `9645849` added test-mode flags to 18 fixtures, but its #738 report
+explicitly describes post-change runs only. Those flags do not prove equivalent
+results. No complete valid full/test pair for this group was located in the
+local runner summaries examined for this audit. Future comparisons must keep
+current assertions and compare complete ordered rows, including duplicates.
+For fixtures changed by `9645849`, reconstruct the original URL and dimensions
+from its parent in a temporary baseline; do not restore obsolete assertions.
+
+| Disposition | Fixtures | Source evidence / next step |
+| --- | --- | --- |
+| Standalone (6) | basementfloortest, basementlayouttest, beershelfcachetest, cattest, combatremotetest, combatworldtest | No apartment bootstrap or WebGL renderer. Floor/layout/cat test native world geometry; combat tests preserve CPU/raycast/cache timing assertions. Remote combat needs its CJS driver's historical helper. Beer-shelf cache tests browser cache, image decoding and texture-label data; its invalid import map is tracked in #780. Five executable-module comments now identify the standalone reasons. |
+| Companion driver (1) | basemententrytest | Existing `test=lazy`, 900×600, real pointer-lock/touch/walking checks. The CJS companion invokes `runBasementEntries`; the HTML runner alone does not execute its checks. Needs driver-specific comparison. |
+| Full rendering/audio/viewport exceptions (5) | architecturetest, carsoundtest, compasstest, cupshadetest, curtaintest | Architecture and cup shade read rendered pixels; car sound measures real analyser/RMS audio and rain workload; compass asserts changing viewport/safe-area bounds; curtain asserts daylight/shadow/texture behaviour. Preserve their full-quality behaviour. |
+| Lighting-state review (3) | bestatest, blindtest, christmastest | Emissive/daylight state, hemisphere intensity or active light slots affect assertions. Existing test flags in the first two do not establish safe equivalence; decide coupling before migration. |
+| Raw clock-row blockers (2) | calendartest, clocktest | Current time/date or advancing clock/angle values appear in result rows. A deterministic source change needs separate review before exact comparisons; do not normalize measured output. |
+| Exact-pair candidates (26) | Listed in the batches below | Source inspection found no framebuffer/audio/viewport assertion requiring full mode. This is a candidate classification, not a passing comparison. |
+
+Create separate comparison issues for these eight bounded batches (3–4 fixtures
+per issue). Each needs its own actual full/test runs and unchanged assertions:
+
+| Batch | Fixtures |
+| --- | --- |
+| Actions | actionlabeltest, actiontest, clicktest |
+| Basement and scene state | basementhudtest, basementvisittest, boxwoodtest, bridgetest |
+| Objects and motion | baskettest, cartest, breaktest |
+| Beer objects | beercantest, beershelfmodeltest, beertest, bottletest |
+| Placement and stored photos | bestaplacementtest, artleveltest, boardtest |
+| Care and persistence | bedcaretest, clothtest, colddrawertest |
+| Interaction | cheattest, booktest, crouchtest |
+| Cooking and cloud state | cooktest, cuptest, cloudtest |
+
+`bedcaretest`'s pixel-ratio setup is not a rendering assertion; its comment now
+identifies the candidate status. `boardtest` and `cloudtest` use `toDataURL` to
+create synthetic uploaded pictures, not sample rendered apartment pixels, so
+their existing heuristic comments need separate correction during comparison.
+Action labels (844×390), cheats (844×600), and beer-shelf models (900×600) still
+have large iframes despite existing test flags. Preserve actual dimensions in
+the evidence rather than assuming every flagged fixture uses 480×300.
+
+The actual full-mode cook run after #774 has 82 PASS / 0 FAIL
+(`/tmp/runtests-229228`, 132925 ms); the full-mode compass run after #767 has
+45 PASS / 0 FAIL (`/tmp/runtests-242392`, 158664 ms). These are full-mode
+acceptance evidence only. The lightweight native Chrome import-map probe
+(`/tmp/lunden-audit778/importmap-probe.json`) reproduced beer-shelf cache's
+invalid JSON and unresolved bare `three` import without starting the apartment.
+#780 owns the parser fix (also focusperftest and grillchickentest); #738 and #736
+remain open for actual migration work.
+
 ## Test-mode migration: r–t (#741)
 
 Exemptions below are source-audited, with no new browser run.
