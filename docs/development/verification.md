@@ -163,6 +163,14 @@ with lines listed in `tools/baseline.json` (`{ "test": ["FAIL line", …] }`: th
 #302 lines); any FAIL line not in the baseline is printed as `NEW` and makes the exit code 1. `--update-baseline name…` rewrites those
 tests' entries from the run (do it only for failures someone has filed as a `Bugg:` issue).
 
+`--compare` runs every HTML test twice (as written, then with `&test`) and prints whether the PASS/FAIL result lines are identical and the
+time ratio; with `--jobs 2` the two runs go side by side on the same load. The `&test` run needs no change to the test file: a context
+route answers the iframe's `../index.html` request with a 302 to the same URL plus `?test`, and a stylesheet injected into the test page
+forces every iframe to 480×300 (!important beats `f.width = 900`). The compare line says how many game loads were switched; a test
+that never opens `../index.html` prints `n/a`, as does a run that timed out. A test that does not open the game itself gains nothing.
+Result lines are compared as written (numbers in them included): a line that shows a measured value will differ between runs, so look at
+the `only full` / `only &test` lines before calling a migration safe.
+
 ## Testing
 
 `tools/statsresettest.html` (#712) is a light DOM/real stats-module test: dynamically scored counters, reset object identity, rendered zero, immediate persistence, repeated reset and actual reload, including taskCounts/legacyTaskPoints and restored first/repeat task awards (#709). It runs without the apartment/game bootstrap or WebGL; it does not replace gameplay button tests.

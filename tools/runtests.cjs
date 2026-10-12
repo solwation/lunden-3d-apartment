@@ -98,7 +98,7 @@ async function runHtml(test, { asTest }, game) {
   const browser = await pw.chromium.launch({ executablePath: process.env.CHROME_PATH || undefined,
     args: ['--no-sandbox', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
   const killer = setTimeout(() => browser.close().catch(() => {}), opt.timeout * 60000 + 30000);
-  let text = '', status = 'TIMEOUT';
+  let text = '', status = 'TIMEOUT', redirects = 0;
   try {
     const ctx = await browser.newContext({ viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 });
     if (asTest) {
@@ -106,7 +106,7 @@ async function runHtml(test, { asTest }, game) {
       // forced to 480x300 by a stylesheet in the test page: no test file needs changing for the comparison.
       await ctx.route((u) => u.pathname === '/index.html' && !u.searchParams.has('test'), (route) => {
         const u = new URL(route.request().url()); u.searchParams.set('test', '');
-        route.fulfill({ status: 302, headers: { location: u.href } });
+        redirects++; route.fulfill({ status: 302, headers: { location: u.href } });
       });
       await ctx.addInitScript(() => {
         if (window !== window.top) return;
@@ -126,7 +126,8 @@ async function runHtml(test, { asTest }, game) {
     }
   } catch (e) { log.push(`[runner] ${e.message}`); status = 'ERROR'; }
   clearTimeout(killer); await browser.close().catch(() => {});
-  return { status, text, log, ms: Date.now() - t0 };
+  if (asTest && !redirects) log.push('[runner] no game iframe was redirected to ?test (the test does not open ../index.html?)');
+  return { status, text, log, ms: Date.now() - t0, redirects };
 }
 
 // ---------- .cjs tests ----------
@@ -213,10 +214,12 @@ async function main() {
     for (const t of tests.filter((t) => t.kind === 'html')) {
       const a = results.find((r) => r.name === t.name && !r.asTest), b = results.find((r) => r.name === t.name && r.asTest);
       if (!a || !b) continue;
+      if (a.status !== 'DONE' || b.status !== 'DONE') { console.log(`  ${t.name}: n/a (${a.status} / ${b.status}), ${fmt(a.ms)} -> ${fmt(b.ms)}`); continue; }
+      if (!b.redirects) { console.log(`  ${t.name}: n/a (no game iframe to switch to &test)`); continue; }
       const la = resultLines(a.text), lb = resultLines(b.text), sb = new Set(lb), sa = new Set(la);
       const onlyA = la.filter((l) => !sb.has(l)), onlyB = lb.filter((l) => !sa.has(l));
       const same = !onlyA.length && !onlyB.length && la.length === lb.length;
-      console.log(`  ${t.name}: ${same ? 'IDENTICAL' : 'DIFFERENT'} (${la.length} vs ${lb.length} result lines), ${fmt(a.ms)} -> ${fmt(b.ms)}${b.ms ? `, ${(a.ms / b.ms).toFixed(2)}x` : ''}`);
+      console.log(`  ${t.name}: ${same ? 'IDENTICAL' : 'DIFFERENT'} (${la.length} vs ${lb.length} result lines, ${b.redirects} game load(s) switched), ${fmt(a.ms)} -> ${fmt(b.ms)}${b.ms ? `, ${(a.ms / b.ms).toFixed(2)}x` : ''}`);
       for (const l of onlyA.slice(0, 10)) console.log(`      only full : ${l.slice(0, 200)}`);
       for (const l of onlyB.slice(0, 10)) console.log(`      only &test: ${l.slice(0, 200)}`);
     }
