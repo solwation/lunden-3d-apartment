@@ -40,10 +40,10 @@ const rampY = (z) => -R.drop * THREE.MathUtils.clamp((R.z1 - z) / (R.z1 - R.z0),
 const westEdge = (z) => (z < Wst.stair.z1 ? Wst.stair.x1 : Wst.x);
 /** How deep the outdoor collision lets the visitor in through a walk-in recess's door before the stair core (corehouse.js) takes over (#637). */
 const DOORWAY_DEPTH = 0.3;
-/** A block's walk-in entrance (#637, #638, #639): its recess `walkIn` (face 'n' or 'e') + the stair core's entrance spec (CORE_A / B / C in
+/** A block's walk-in entrance (#637, #638, #639): its recess `walkIn` + a basement-specific opening or the stair core's entrance spec (CORE_A / B / C in
  *  config: `door` = the leaf's range along the face, `height`, `cut` = the opening through the recess's back wall, default the whole recess). */
 const CORES = { 'Hus A': CORE_A, 'Hus B': CORE_B, 'Hus C': CORE_C };
-const walkIn = (b, r) => { const E = r.walkIn ? CORES[b.name]?.entrance : null; return E ? { E, door: E.door, height: E.height, cut: E.cut ?? [r.a0, r.a1] } : null; };
+const walkIn = (b, r) => { const E = r.walkIn ? (r.basement ?? CORES[b.name]?.entrance) : null; return E ? { E, door: E.door, height: E.height, cut: E.cut ?? (r.basement ? E.door : [r.a0, r.a1]) } : null; };
 /** The Å-husen's entrance recesses as walkable floors (#355): a rectangle inside the house at the recess's lowest
  * storey's floor (the courtyard's level for Hus A's / B's north entrances, the park level for their side doors). */
 export const recessFloors = S.blocks.flatMap((b) => (b.recesses ?? []).flatMap((r) => {
@@ -54,6 +54,7 @@ export const recessFloors = S.blocks.flatMap((b) => (b.recesses ?? []).flatMap((
   const W = walkIn(b, r);
   if (!W) return [floor];
   const [d0, d1] = W.door;
+  if (r.basement) return [floor]; // GARAGE owns the continuous doorway floor behind it (#729).
   return [floor, nz ? { block: b, r, y, x0: d0, x1: d1, z0: c1, z1: c1 + DOORWAY_DEPTH } : { block: b, r, y, x0: c0 - DOORWAY_DEPTH, x1: c0, z0: d0, z1: d1 }];
 }));
 /** The stairs down from the courtyard (T.stairs, terraceStairs below): [x0, x1, z0, z1, y] per tread (#355: walkable). */
@@ -124,7 +125,7 @@ function terrainGeometry() {
   // 1.3 cm under the basement floors drew over them as green patches (in a store room, the lower wall) — so the cells inside a
   // footprint are left out (the recesses keep theirs: that is their floor). The grid gets a line on each footprint / recess edge.
   const pits = S.blocks.filter((b) => b.base < 0 && /^Hus [AB]$/.test(b.name)).map((b) => ({ x0: b.x0 + 0.02, x1: b.x1 - 0.02, z0: b.z0 + 0.02, z1: b.z1 - 0.02,
-    keep: (b.recesses ?? []).map((r) => { const n = r.face === 'n' || r.face === 's', line = { n: b.z0, s: b.z1, w: b.x0, e: b.x1 }[r.face], o = r.face === 's' || r.face === 'e' ? 1 : -1, c0 = Math.min(line, line - o * r.depth), c1 = Math.max(line, line - o * r.depth);
+    keep: (b.recesses ?? []).filter(r=>!r.basement).map((r) => { const n = r.face === 'n' || r.face === 's', line = { n: b.z0, s: b.z1, w: b.x0, e: b.x1 }[r.face], o = r.face === 's' || r.face === 'e' ? 1 : -1, c0 = Math.min(line, line - o * r.depth), c1 = Math.max(line, line - o * r.depth);
       return n ? { x0: r.a0, x1: r.a1, z0: c0, z1: c1 } : { x0: c0, x1: c1, z0: r.a0, z1: r.a1 }; }) }));
   for (const f of pits) { xs.add(f.x0); xs.add(f.x1); zs.add(f.z0); zs.add(f.z1); for (const k of f.keep) { xs.add(k.x0); xs.add(k.x1); zs.add(k.z0); zs.add(k.z1); } }
   const inPit = (x, z) => pits.some((f) => x > f.x0 && x < f.x1 && z > f.z0 && z < f.z1 && !f.keep.some((k) => x > k.x0 && x < k.x1 && z > k.z0 && z < k.z1));
@@ -753,14 +754,14 @@ function basementDoorCuts(geo, b) {
 function entranceCuts(geo, b) {
   const cuts = (b.recesses ?? []).flatMap(r => {
     const W = walkIn(b, r), y0 = b.base + (r.from ?? 0) * S.storey;
-    return W ? [{ face: r.face, plane: r.face === 'n' ? b.z0 + r.depth : b.x1 - r.depth, a0: W.cut[0], a1: W.cut[1], y0, y1: y0 + W.height }] : [];
+    return W ? [{ face: r.face, plane: r.face === 'n' ? b.z0 + r.depth : r.face === 'w' ? b.x0 + r.depth : b.x1 - r.depth, a0: W.cut[0], a1: W.cut[1], y0, y1: y0 + W.height }] : [];
   });
   for (const c of new Set(cuts.map(c => `${c.face}${c.plane}`))) { const same = cuts.filter(q => `${q.face}${q.plane}` === c); geo = cutRects(geo, same[0].plane, same, same[0].face); }
   return geo;
 }
 
 /** Clip rectangles { a0, a1, y0, y1 } (a = x for the faces looking north, z for those looking east) out of the faces that lie in the
- *  plane z = `plane` (face 'n': looking −z) or x = `plane` (face 'e': looking +x). Attributes are clipped together. */
+ *  plane z = `plane` (face 'n': looking −z) or x = `plane` (face 'e' / 'w': looking +x / −x). Attributes are clipped together. */
 function cutRects(geo, plane, doors, face = 'n') {
   if (!doors.length) return geo;
   geo = geo.index ? geo.toNonIndexed() : geo;
@@ -776,7 +777,7 @@ function cutRects(geo, plane, doors, face = 'n') {
   };
   for (let i = 0; i < attrs[0].count; i += 3) {
     let pieces = [Array.from({length:3}, (_, j) => attrs.flatMap(a => Array.from(a.array.slice((i+j)*a.itemSize,(i+j+1)*a.itemSize))))];
-    if (face === 'n' ? attrs[1].getZ(i) < -.9 && Math.abs(attrs[0].getZ(i) - plane) < .001 : attrs[1].getX(i) > .9 && Math.abs(attrs[0].getX(i) - plane) < .001) for (const r of doors) {
+    if (face === 'n' ? attrs[1].getZ(i) < -.9 && Math.abs(attrs[0].getZ(i) - plane) < .001 : attrs[1].getX(i) * (face === 'w' ? -1 : 1) > .9 && Math.abs(attrs[0].getX(i) - plane) < .001) for (const r of doors) {
       const kept = [];
       for (const original of pieces) {
         let inside = original;
@@ -1007,7 +1008,10 @@ function loggias(blocks) {
       for (let st = s0; st <= s1 + 1; st++) {
         const y = b.base + st * S.storey;
         if (st > s0) slabs.push(new THREE.BoxGeometry(w, 0.22, d).translate(mx, y - 0.11, mz)); // a ceiling, a loggia floor
-        else slabs.push(new THREE.BoxGeometry(w, 0.04, d).translate(mx, y + 0.02, mz)); // the floor (over a storey below, or the plinth, #266)
+        else if (r.basement) { // #729: one threshold floor, butt-joined to the inner passage (no duplicate Garage doorway floor).
+          const fb=r.basement.floorEdge, [fx,fz]=at((r.a0+r.a1)/2,(line+fb)/2), depth=Math.abs(line-fb);
+          slabs.push(new THREE.BoxGeometry(nz?w:depth,2*GARAGE.floorLift,nz?depth:d).translate(fx,y,fz));
+        } else slabs.push(new THREE.BoxGeometry(w,0.04,d).translate(mx,y+0.02,mz)); // the floor (over a storey below, or the plinth, #266)
         if (st > s1 || st === r.door || y < groundY(mx, mz) + 1.2) continue;
         const f = line - out * 0.06;
         rails.push(railPanel(...at(r.a0, f), ...at(r.a1, f), y));
@@ -1400,10 +1404,13 @@ export function buildSurroundings({ grass }) {
       // Hus A's walk-in entrance (#637): the door's opening in the recess's back wall (the door leaf and the sidelight are corehouse.js's)
       const hit = (b.recesses ?? []).map((q) => [q, walkIn(b, q)]).find(([q, W]) => W && (q.face === 'n'
         ? sg[1] === sg[3] && Math.abs(sg[1] - (b.z0 + q.depth)) < 1e-6 && Math.min(sg[0], sg[2]) <= q.a0 + 1e-6 && Math.max(sg[0], sg[2]) >= q.a1 - 1e-6
-        : sg[0] === sg[2] && Math.abs(sg[0] - (b.x1 - q.depth)) < 1e-6 && Math.min(sg[1], sg[3]) <= q.a0 + 1e-6 && Math.max(sg[1], sg[3]) >= q.a1 - 1e-6));
+        : sg[0] === sg[2] && Math.abs(sg[0] - (q.face === 'w' ? b.x0 + q.depth : b.x1 - q.depth)) < 1e-6 && Math.min(sg[1], sg[3]) <= q.a0 + 1e-6 && Math.max(sg[1], sg[3]) >= q.a1 - 1e-6));
       if (!hit) return [sg];
       // … with a closed vestibule behind it (the outdoor collision does not leak into the house; once through, the core's own walls apply)
       const [q, W] = hit, [d0, d1] = W.door, D = DOORWAY_DEPTH, north = q.face === 'n';
+      // No closed vestibule behind a basement door: Garage's actual room/collision takes over (#729).
+      if (q.basement) { const c=sg[0], lo=Math.min(sg[1],sg[3]), hi=Math.max(sg[1],sg[3]);
+        return [[c,lo,c,d0],[c,d1,c,hi]].filter(t=>Math.hypot(t[2]-t[0],t[3]-t[1])>1e-3); }
       const along = north ? [Math.min(sg[0], sg[2]), Math.max(sg[0], sg[2])] : [Math.min(sg[1], sg[3]), Math.max(sg[1], sg[3])], c = north ? sg[1] : sg[0], c2 = north ? c + D : c - D;
       const mk = (a, k, b, l) => (north ? [a, k, b, l] : [k, a, l, b]); // (along, across) → [x, z]
       return [mk(along[0], c, d0, c), mk(d1, c, along[1], c), mk(d0, c, d0, c2), mk(d1, c, d1, c2), mk(d0, c2, d1, c2)].filter((t) => Math.abs(t[2] - t[0]) + Math.abs(t[3] - t[1]) > 1e-3);
@@ -1419,7 +1426,7 @@ export function buildSurroundings({ grass }) {
   const pavementClip=(road)=>road.name==='Sankt Lars väg'?c=>roadBridgeSpan(c.reduce((s,p)=>s+p[0],0)/4,c.reduce((s,p)=>s+p[1],0)/4)||c.every(([x,z])=>onRoad(x,z,-.05,road)):true;
   const walks = S.roads.flatMap((r) => (r.walks || []).map((k) => k.side > 0
     ? pathStrip(r, (w) => w / 2, (w) => w / 2 + k.w, 0.008, groundY, pavementClip(r)) : pathStrip(r, (w) => -w / 2 - k.w, (w) => -w / 2, 0.008, groundY, pavementClip(r))));
-  flat([...S.paving.map((r) => groundStrip(r.x0, r.x1, r.z0, r.z1, 0.008)), ...walks], COLORS.paving, SEASON.snow.paving);
+  flat([...[...S.paving, ...S.basementPaving].map((r) => groundStrip(r.x0, r.x1, r.z0, r.z1, 0.008)), ...walks], COLORS.paving, SEASON.snow.paving);
   group.add(buildRiverBridges());
   group.add(buildRiverPark(renderedTerrainY,renderedTerrainY));
   group.add(buildWestBackdrop(renderedTerrainY,{glass:glassMaterial}));

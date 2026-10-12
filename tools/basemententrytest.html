@@ -1,0 +1,78 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><title>Park basement entrances #729</title>
+<pre id="out">Loading actual apartment…</pre><iframe id="game" width="900" height="600"></iframe>
+<script type="module">
+const f=document.getElementById('game'),out=document.getElementById('out'),lines=[];
+let failures=0;const check=(ok,name)=>{failures+=!ok;lines.push(`${ok?'PASS':'FAIL'} ${name}`);out.textContent=lines.join('\n');};
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+f.src='../?shot&test=lazy&cloud=';await new Promise(r=>f.onload=r);
+const w=f.contentWindow,d=f.contentDocument,deadline=performance.now()+180000;
+while(!w.__app&&performance.now()<deadline)await wait(100);
+if(!w.__app)throw Error('bounded actual apartment initialization failed');
+const A=w.__app,T=await w.eval("import('three')"),{GARAGE:G,SITE,PLAYER}=await w.eval("import('/src/config.js')"),{treeFeet,groundY}=await w.eval("import('/src/surroundings.js')");
+A.renderer.setAnimationLoop(null);A.hideLoading();A.showOverlay(true);d.getElementById('arm').hidden=true;
+window.entryReady=true;
+// Runner clicks the real mouse-start button first. No focus/door target is injected by this fixture.
+window.runBasementEntries=async()=>{
+try{
+check(d.pointerLockElement===A.renderer.domElement,'real mouse-start acquires pointer lock for actual E handler');
+const g=A.world.garage,p=A.player,c=A.camera;
+const place=(x,z,y=G.floor)=>{p.keys.clear();p.analog.x=p.analog.y=0;p.spawn(x,z,0);p.pos.y=y;p.eyeY=y+PLAYER.eye;p.vy=0;p.fall=null;c.position.set(x,p.eyeY,z);};
+const step=()=>{A.step(0);A.scene.updateMatrixWorld(true);};
+const look=(x,z)=>{c.lookAt(x,G.floor+1.05,z);step();};
+const go=(x,z)=>{let grounded=true,stuck=0;for(let i=0;i<1800;i++){const dx=x-p.pos.x,dz=z-p.pos.z;if(Math.hypot(dx,dz)<.07){p.keys.clear();p.analog.y=0;return grounded;}
+ c.rotation.set(0,Math.atan2(-dx,-dz),0,'YXZ');p.keys.add('KeyW');const bx=p.pos.x,bz=p.pos.z;p.update(1/60);if(Math.hypot(p.pos.x-bx,p.pos.z-bz)<1e-6){if(++stuck>8){p.keys.clear();return false;}}else stuck=0;grounded&&=Math.abs(p.pos.y-G.floor)<.001;
+ }p.keys.clear();return false;};
+const animate=()=>{for(let i=0;i<20;i++)g.update(.1,p,c);step();};
+const e=()=>{d.dispatchEvent(new w.KeyboardEvent('keydown',{code:'KeyE',key:'e',bubbles:true}));d.dispatchEvent(new w.KeyboardEvent('keyup',{code:'KeyE',key:'e',bubbles:true}));};
+window.entryPlace=place;window.entryLook=look;
+for(const spec of [{id:'parkADoor',house:'A',outside:-10.81,inside:-7.5,z:42.775,jamb:41.85,core:[-.35,42.0],route:[[-2,42.0]]},
+ {id:'parkBDoor',house:'B',outside:-21.8,inside:-25.5,z:47.325,jamb:46.3,core:[-31.65,46.55],route:[[-30.4,47.325],[-30.4,46.55]]}]){
+ const door=g.cageDoors.find(q=>q.rect?.id===spec.id),target=g.targets.find(t=>t.door===door);
+ place(spec.outside,spec.z);if(target.isOpen)target.toggle();animate();look(door.hx,spec.z);
+ const far=spec.house==='A'?[-13,53]:[-20,60];place(...far);look(door.hx,spec.z);
+ check(!door.pivot.visible,`${spec.house}: far door pick is disabled while its actual leaf remains visible`);
+ check(!g.object.visible&&g.parkObject.parent===A.scene&&g.parkObject.visible&&door.inst===g.parkLeaves,`${spec.house}: far closed leaf survives hidden garage without activating indoor areas`);
+ const closedMatrix=new T.Matrix4();door.inst.getMatrixAt(door.index,closedMatrix);
+ place(spec.outside,spec.z);look(door.hx,spec.z);
+ check(!g.carArea.visible,`${spec.house}: park view keeps the whole-garage car batch hidden`);
+ check(!p.below&&g.object.visible&&A.focus().focused===target,`${spec.house}: closed door is actually visible/raycast-focusable from the park before below activates`);
+ check(!go(spec.inside,spec.z)&&p.pos.y===G.floor,`${spec.house}: closed actual leaf blocks outdoor → basement movement`);
+ look(door.hx,spec.z);e();check(door.target>0,`${spec.house}: actual E opens the focused park door`);animate();
+ const openedMatrix=new T.Matrix4();door.inst.getMatrixAt(door.index,openedMatrix);place(...far);look(door.hx,spec.z);
+ check(!g.object.visible&&g.parkObject.visible&&closedMatrix.elements.some((v,i)=>Math.abs(v-openedMatrix.elements[i])>.1),`${spec.house}: far open leaf uses the actual animated matrix, without a closed placeholder`);
+ place(door.hx+(spec.house==='A'?-.25:.25),spec.z);
+ check(go(spec.inside,spec.z)&&p.below,`${spec.house}: opened door admits physical Player steps at constant −3 m`);
+ for(const point of spec.route)check(go(...point),`${spec.house}: internal corridor route ${point} stays at −3 m`);
+ check(go(...spec.core)&&p.inCore,`${spec.house}: source corridor reaches the flat basement stair landing`);
+ for(const point of [...spec.route].reverse())check(go(...point),`${spec.house}: return corridor route ${point} stays at −3 m`);
+ check(go(spec.inside,spec.z)&&go(spec.outside,spec.z)&&!p.below,`${spec.house}: physical route returns outdoors without floor jump`);
+ place(spec.outside,spec.jamb);check(!go(spec.inside,spec.jamb),`${spec.house}: open door still has solid jamb collision beside its actual opening`);
+ place(door.hx+(spec.house==='A'?.55:-.55),spec.z);const openCenter=target.pickable.getWorldPosition(new T.Vector3());c.lookAt(openCenter);step();
+ const same=A.focus().focused===target;check(same,`${spec.house}: open leaf remains selectable from inside`);
+ if(same){A.touch.enabled=true;A.activeMode='touch';d.getElementById('action').click();check(door.target===0,`${spec.house}: actual touch action closes the focused door`);A.touch.enabled=false;A.activeMode='mouse';animate();}
+ check(g.parkDoorSegments(0).length===0&&g.parkDoorSegments(G.floor).length===2,`${spec.house}: basement leaf collision is absent on the courtyard floor`);
+ place(spec.outside,spec.z,0);look(door.hx,spec.z);check(!door.pivot.visible&&A.focus().focused!==target,`${spec.house}: courtyard ray cannot select the basement door`);
+ check(!g.parkEntrance({x:spec.outside,z:spec.z,y:0})&&!g.parkEntrance({x:spec.outside,z:spec.z,y:PLAYER.eye},true),`${spec.house}: courtyard feet/camera do not activate park visibility`);
+ check(!!g.parkEntrance({x:spec.outside,z:spec.z,y:G.floor+PLAYER.crouchEye},true),`${spec.house}: crouched park camera keeps the entrance visible`);
+}
+place(-15.95,42.775);step();check(g.parkEntrance(p.pos)?.id==='parkARecess','shared park sensor overlap chooses the nearest actual entrance, not array order');
+const treeConflicts=treeFeet.filter(t=>SITE.basementPaving.some(r=>t.x>=r.x0&&t.x<=r.x1&&t.z>=r.z0&&t.z<=r.z1));
+check(treeConflicts.length===0,`new paving leaves all ${treeFeet.length} authored/procedural tree feet clear: ${JSON.stringify(treeConflicts)}`);
+place(-46.65,58.7);
+for(const point of [[-46.65,59.75],[-15.95,59.75],[-15.95,47.325],[-21.8,47.325],[-15.95,47.325],[-15.95,44.05],[-10.58,44.05],[-10.58,42.775]])
+ check(go(...point),`connected paving physical walk ${point} stays on park floor without obstruction`);
+const normals=g.parkLeaves.geometry.attributes.normal;check(!!normals&&Array.from(normals.array).every(Number.isFinite)&&g.parkLeaves.geometry!==g.steelLeaves.geometry,'outdoor leaves have finite actual normals without modifying the shared indoor Basic geometry');
+const shrubs=A.scene.getObjectByName('courtyard-shrubs'),baseBox=new T.Box3().setFromBufferAttribute(shrubs.geometry.attributes.position),shrubMatrix=new T.Matrix4(),shrubBox=new T.Box3();let shrubConflicts=0;
+for(let i=0;i<shrubs.count;i++){shrubs.getMatrixAt(i,shrubMatrix);shrubBox.copy(baseBox).applyMatrix4(shrubMatrix);shrubConflicts+=SITE.basementPaving.some(r=>shrubBox.max.x>=r.x0-PLAYER.radius&&shrubBox.min.x<=r.x1+PLAYER.radius&&shrubBox.max.z>=r.z0-PLAYER.radius&&shrubBox.min.z<=r.z1+PLAYER.radius);}
+check(shrubs.count>0&&shrubConflicts===0,`actual shrub-instance footprints keep park paving clear (${shrubs.count} retained, ${shrubConflicts} conflicts)`);
+const newRects=G.rects.filter(r=>/^park[AB]|passage[AB](East|WestEnd|WestWing)$/.test(r.id));
+const overlapping=[];for(const r of newRects)for(const s of G.rects)if(r!==s&&Math.min(r.x1,s.x1)-Math.max(r.x0,s.x0)>1e-6&&Math.min(r.z1,s.z1)-Math.max(r.z0,s.z0)>1e-6)overlapping.push([r.id,s.id]);
+check(overlapping.length===0,`new threshold/corridor rectangles have no coplanar floor/ceiling overlap: ${JSON.stringify(overlapping)}`);
+let missing=0;for(const r of G.rects)for(let x=r.x0+.05;x<r.x1;x+=.6)for(let z=r.z0+.05;z<r.z1;z+=.6)missing+=p.groundAt(x,z,G.floor)<G.floor;
+check(missing===0,`all actual garage floor rectangles retain support (${missing} missing)`);
+check(G.rects.filter(r=>r.outside).length===2,'no invented C/under-deck exterior doorway');
+window.entryTestResults={checks:lines.length,failures,lines};
+}catch(error){check(false,error.stack);window.entryTestResults={checks:lines.length,failures,lines};}
+out.textContent=lines.join('\n')+'\n'+(failures?'SOME FAILED':'ALL PASS');return window.entryTestResults;
+};
+</script></html>

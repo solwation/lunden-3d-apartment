@@ -351,7 +351,7 @@ export const SITE = {
   // from page 26 of the plan brochure, same calibration) where the plans draw a window or door in the outer wall:
   // [a0, a1 (plan x on n/s, z on e/w), from, to (storeys counted from the block's `base`), kind ('door'; else a window)].
   // The loggias' and entrance recesses' own openings are not here (#258, #266); the park-level doors under the
-  // courtyard deck (into the garage) are left out. Only the horizontal placement and the count are sourced: the plans give
+  // courtyard deck are not inferred as outdoor doors; #729 verifies the A/B park entries separately. Only the horizontal placement and the count are sourced: the plans give
   // no heights or frame division, so `openingSize` (sill / head over the storey floor) and the window's mullion and
   // transom are the old grid tile's guess. A face missing here falls back to the old 3 × 3 m window grid
   // (`bay`, `storey`); fallback faces of Hus A/B/C now: none.
@@ -412,12 +412,12 @@ export const SITE = {
       hip: { box: { x0: -1.64, x1: 1.28, z0: 33.49, z1: 37.39, h: 1.0 } }, // roof plan on the våning 5 sheet (#348)
       corners: { nw: [3.4, 2.0], ne: [3.4, 2.0], se: [5.9, 2.05], sw: [5.9, 2.05] },
       recesses: [{ face: 'n', a0: 0.23, a1: 2.22, depth: 2.1, from: 1, to: 1, door: 1, walkIn: true }, // the main entrance from the courtyard (våning 1); a real door into the stair core (#637, CORE_A)
-        { face: 'w', a0: 41.4, a1: 43.4, depth: 0.75, from: 0, to: 0, door: 0 }] },    // towards the green, park level (våning -1); #647: the door stands 4 cm behind the end wall of the basement's west passage (GARAGE passageAWest x −9.05 = −9.76 + 0.71, p46; *guess* 0.04 so no edge line shows through the wall) — the depth was 1.0 (guess), which left the door 0.29 m inside the corridor in front of its end wall
+        { face: 'w', a0: 41.4, a1: 43.4, depth: 0.75, from: 0, to: 0, door: 0, walkIn: true, basement: { door: [42.25, 43.30], height: 2.1, floorEdge: -9.05 } }] },    // #729: p46 exterior leaf range; setback 0.75 and steel finish/height remain *guess* (formerly decorative, #647)
     { name: 'Hus B', x0: -41.74, x1: -22.6, z0: 33.3, z1: 57.35, base: -3, storeys: 4, roof: 'hip', // våning -1…3
       hip: { box: { x0: -33.59, x1: -30.67, z0: 38.01, z1: 41.91, h: 1.0 } }, // roof plan on the våning 4 sheet (#348)
       corners: { nw: [3.4, 2.0], ne: [3.4, 2.0], se: [5.9, 2.05], sw: [5.9, 2.05] },
       recesses: [{ face: 'n', a0: -34.58, a1: -32.5, depth: 2.1, from: 1, to: 1, door: 1, walkIn: true }, // mirrored: west of the middle; a real door into the stair core (#638, CORE_B)
-        { face: 'e', a0: 46.1, a1: 48.1, depth: 1.0, from: 0, to: 0, door: 0 }] },
+        { face: 'e', a0: 46.1, a1: 48.1, depth: 1.0, from: 0, to: 0, door: 0, walkIn: true, basement: { door: [46.8, 47.85], height: 2.1, floorEdge: -23.6 } }] },
     { name: 'Hus C', x0: -70.6, x1: -51.4, z0: 12.6, z1: 36.68, base: 0, storeys: 5, roof: 'hip', hip: {}, // våning 1…5; no roof plan: the defaults (#348)
       corners: { nw: [5.5, 2.1], ne: [2.0, 4.15], se: [5.4, 2.0], sw: [6.1, 2.0] },
       recesses: [{ face: 'e', a0: 21.5, a1: 24.8, depth: 2.0, door: 0, walkIn: true }] },  // the entrance, loggias above it; a real door into the stair core (#639, CORE_C)
@@ -539,6 +539,16 @@ export const SITE = {
     // covers it: guess, like the gap itself, #260)
     { name: 'Infarten', path: [[-10.25, -24.5], [-10.25, -16.1]], w: 5.5 },
     { name: 'Infarten, hörnen', fillets: [{ x: -13, z: -24, sx: -1, sz: 1, r: 2 }, { x: -7.5, z: -24, sx: 1, sz: 1, r: 2 }] },
+  ],
+  // #729: simple connected park paving, traced approximately from the light strips in the situation plan.
+  // Straight strips typically 1.5 m wide; terminal rectangles/route/widths are *guess*, all on existing park ground (-3); no surveyed levels.
+  basementPaving: [
+    { x0: -47.4, x1: -45.9, z0: 58.6, z1: 59.0 }, // the existing C/B stair's foot
+    { x0: -47.4, x1: -16.7, z0: 59.0, z1: 60.5 }, // around B south, clear of its façade/patios
+    { x0: -16.7, x1: -15.2, z0: 42.0, z1: 60.5 }, // the green between A/B
+    { x0: -22.6, x1: -16.7, z0: 46.45, z1: 47.95 }, // branch to B east
+    { x0: -15.2, x1: -11.4, z0: 43.3, z1: 44.8 }, // A dogleg south of the sourced tree at (-14.8,42.2)
+    { x0: -11.4, x1: -9.76, z0: 42.0, z1: 44.8 }, // short final approach to A west
   ],
   paving: [
     { x0: -46.33, x1: 13.5, z0: -3.5, z1: 0 },  // path along Hus L's entrances (under the green strip too, #260)
@@ -1574,6 +1584,8 @@ export const OUTDOOR = { x0: -78.5, x1: 27.5, z0: -14, z1: 64 };
 // rectangle (garage.js), so a doorway is a small rectangle through the wall.
 export const GARAGE = {
   floor: -3,          // = SITE.terrain.park: the drive is level with the door (#346)
+  parkDoorMaterial: { color: 0x7d858b, roughness: .7 }, // *guess*: existing steel colour, daylight-lit park leaves (#729)
+  floorLift: .003, // existing visible floor offset, *guess*: shared by the park thresholds (#729)
   doorClearance: .25, // #523: assumed extra side clearance at actual basement doorways
   doorHead: 2.1, // ASSUMPTION: existing basement lintel height; shared with the A/B brick openings.
   ceiling: -0.35,     // ASSUMPTION: the deck + the courtyard's soil over it; 2.65 m clear (the door is 2.6)
@@ -1612,9 +1624,21 @@ export const GARAGE = {
     {id:'roomCAnnexSDoor',x0:-62.8,x1:-62.3,z0:17.5,z1:18.5,room:'Källarrum C',area:'entrance',door:{kind:'steel',hinge:'x0',open:-1,name:'dörren till källarrummets sidocell C'}},
     // #638: Hus B's stair core (CORE_B, src/corehouse.js) is the `core` rect: its band (hall + stair + lift) is drawn / walled there; the
     // thin rects are the openings in the hall's west wall (x −33.38 … −33.08) towards the passages (as Hus A's coreA*; re-read on vaning-m1)
+    // #729 DRAWING: B's east corridor on p46, towards its exterior park door (±0.15 m).
+    // The core-wall bridge is restricted to the flat landing north of stair.top; its 0.9 m clear width is *guess*.
+    {id:'coreBPark',x0:-31.16,x1:-30.86,z0:46.1,z1:47.0,room:'Trapphus B',area:'hallW'},
+    {id:'passageBEast',x0:-30.86,x1:-23.6,z0:46.1,z1:47.9,room:'Trapphus B',area:'hallW'},
+    {id:'parkBRecess',x0:-23.52,x1:-22.6,z0:46.1,z1:48.1,room:'Trapphus B',area:'hallW',outside:'e'},
+    {id:'parkBDoor',x0:-23.6,x1:-23.52,z0:46.8,z1:47.85,room:'Trapphus B',area:'hallW',door:{kind:'steel',hinge:'x0',open:1,line:-23.6,park:true,name:'källardörren till hus B'}},
     {id:'coreB',x0:-33.08,x1:-31.16,z0:41.74,z1:50,room:'Trapphus B',area:'hallW',core:true},
     {id:'coreBWest',x0:-33.6,x1:-33.08,z0:41.8,z1:43.4,room:'Trapphus B',area:'hallW'},
     {id:'coreBSouth',x0:-33.6,x1:-33.08,z0:44.9,z1:45.9,room:'Trapphus B',area:'hallW'},
+    // #729 DRAWING: west corridor's wider end around the actual p46 leaf z42.25..43.30.
+    // Existing recess setback, steel finish/head and outward swing are *guess*, not construction details.
+    {id:'passageAWestEnd',x0:-9.05,x1:-6.8,z0:42.75,z1:44.1,room:'Trapphus A',area:'hallE'},
+    {id:'passageAWestWing',x0:-6.8,x1:-1.37,z0:42.75,z1:43.4,room:'Trapphus A',area:'hallE'},
+    {id:'parkARecess',x0:-9.76,x1:-9.12,z0:41.4,z1:43.4,room:'Trapphus A',area:'hallE',outside:'w'},
+    {id:'parkADoor',x0:-9.12,x1:-9.05,z0:42.25,z1:43.30,room:'Trapphus A',area:'hallE',door:{kind:'steel',hinge:'x0',open:-1,line:-9.01,park:true,name:'källardörren till hus A'}},
     {id:'passageAWest',x0:-9.05,x1:-1.37,z0:41.4,z1:42.75,room:'Trapphus A',area:'hallE'},
     // #637: Hus A's stair core (CORE_A, src/corehouse.js) is the `core` rect: its band (hall + stair) is drawn / walled there; the
     // thin rects are its openings on this storey (west towards the passage, east onto the lobby), as Hus L's coreW / coreE
@@ -1955,6 +1979,7 @@ export const CORE_B = {
       { a: [42.15, 43.05], h: 2.1, s: [2, 3], leaf: true, hinge: 'n', flats: [null, null, 'B1102', 'B1202'] },
       { a: [44.75, 45.65], h: 2.1, s: [1, 3], leaf: true, hinge: 's', flats: [null, 'B1003', 'B1101', 'B1201'] }] },
     { ax: 'x', t: [-31.16, -30.86], a: [38.34, 50.4], s: [0, 3], holes: [
+      { a: [46.1, 47.0], h: 2.1, s: [0, 0] }, // #729: park corridor, flat basement landing; width *guess* within p46 hall
       { a: [42.15, 43.05], h: 2.1, s: [1, 3], leaf: true, hinge: 'n', flats: [null, 'B1001', 'B1103', 'B1203'] },
       { a: [44.75, 45.65], h: 2.1, s: [1, 3], leaf: true, hinge: 's', flats: [null, 'B1002', 'B1104', 'B1204'] }] },
     { ax: 'z', t: [38.34, 39.02], a: [-33.08, -31.16], s: [0, 3] },                       // the shaft's north wall

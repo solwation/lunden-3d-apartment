@@ -361,3 +361,5 @@ floor 9.20 m deep; the west gable 0.46 m; all façade openings agree with HUS_L.
 legend default, the Klk upstairs RH 2.2; floor-to-floor 3.0 and window heads 2.3 are assumptions. Its stair is our stair type
 mapped onto the sheet's outline (*guess*); the bathtub is dashed on the sheet (a tillval): the standard shower is built.
 
+
+#729 park-entry inventory: calibrated p46 visibly shows the common A west and B east doors opening towards the green, and the already-modeled west INFART GARAGE. C's south/east basement doors face the interior garage halls; the coloured A0901–3/B0901–3 patio openings belong to dwellings. No extra common outside door is inferred from the old omitted-doors comment. A's outer corridor wing and B's missing east corridor are read graphically (about ±0.15 m). Relative park/garage −3 m is an existing assumption tied to the documented ca3 m courtyard drop; absolute elevations, setbacks, door finish/head, clearance and exact paving routes remain guesses. [Detailed inventory](../validation/issue-729/README.md).

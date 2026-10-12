@@ -183,7 +183,7 @@ const world = buildWorld(plan);
 scene.add(world.object);
 const garage = world.garage = new Garage(); // the garage and the förråd under the courtyard (#357)
 const cheatNote = await buildCheatNote(garage, () => showCheatNote(true));
-scene.add(garage.object, garage.blackout, garage.door.object); // (+ its door, #358)
+scene.add(garage.object, garage.blackout, garage.door.object, garage.parkObject); // (+ its door, #358)
 const core = world.core = new Core(); // Hus L's stairwell and lift by the portik (#415)
 const coreA = core.attach(new CoreHouse(CORE_A)); // … and Hus A's, from its courtyard entrance down to the basement (#637)
 const coreB = core.attach(new CoreHouse(CORE_B)), coreC = core.attach(new CoreHouse(CORE_C)); // … and Hus B's, Hus C's (#638, #639; the order is the saved lifts' order, keep.js)
@@ -664,7 +664,7 @@ if (params0.has('olofcar')) olofDriver.show(); // &olofcar: Olof at the wheel (#
 garage.extra = () => car.segments('garage'); // in its stall it is in the way down there
 garage.extraPolys = () => (car.state === 'garage' ? [car.poly()] : []);
 weather.extraBoxes = () => car.box(); // no rain inside our parked car (#250)
-{ const moving = world.movingSegments; world.movingSegments = (lvl) => [...moving(lvl), ...(lvl === 0 ? [...car.segments(), ...garage.door.segments(), ...core.dynamic(0)] : [])]; } // parked: in the way; the garage door while shut (#358)
+{ const moving = world.movingSegments; world.movingSegments = (lvl) => [...moving(lvl), ...(lvl === 0 ? [...car.segments(), ...garage.door.segments(), ...garage.parkDoorSegments(player.pos.y), ...core.dynamic(0)] : [])]; } // parked: in the way; the garage door while shut (#358)
 scene.add(target.object); // up only while something that can hit it is in the hand (#144, #179, step)
 const marks = new Marks(scene, camera, [world.object, patio.object, target.object], cat); // burn marks, stars, splashes on surfaces (#96)
 // glasses, bottles, cups, the jug and the beer can be shot to pieces (#263): more points from further away

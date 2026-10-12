@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { freeCanvasAfterUpload } from './lowmemory.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { GARAGE as G, SITE, CORE } from './config.js';
+import { GARAGE as G, SITE, CORE, PLAYER } from './config.js';
 import { carGeometry, bikeGeometry, bikeSpokeTexture, standGeometry } from './streetlife.js';
 import { groundY } from './surroundings.js';
 import { sfx } from './audio.js';
@@ -111,7 +111,7 @@ function rng(seed) { let s = seed; return () => ((s = (s * 16807) % 2147483647) 
 function wallLines() {
   const out = [], h = 0.05;
   for (const r of RECTS) for (const [ax, az, bx, bz, ox, oz] of [[r.x0, r.z0, r.x1, r.z0, 0, -1], [r.x1, r.z0, r.x1, r.z1, 1, 0], [r.x0, r.z1, r.x1, r.z1, 0, 1], [r.x0, r.z0, r.x0, r.z1, -1, 0]]) {
-    if (r.id === 'doorway' && ox < 0) continue; // the garage door's opening: GarageDoor
+    if ((r.outside === 'w' && ox < 0) || (r.outside === 'e' && ox > 0) || (r.id === 'doorway' && ox < 0)) continue; // the garage door's opening: GarageDoor
     if (r.id === 'core' || r.core) continue; // the stair cores' walls: core.js (#415), corehouse.js (#637 …: `core` rects)
     const len = Math.hypot(bx - ax, bz - az), n = Math.max(1, Math.round(len / h));
     let start = null;
@@ -245,8 +245,8 @@ export class Garage {
     const canvasRooms = { entrance: [[-62, 42.6, -1, 0], [-50, 45.2, 1, 0], [-46.6, 37, 0, -1]], hallW: [[-30, 20.2, -1, 0], [-20, 22.6, 1, 0], [-46.6, 28, 0, 1]], hallE: [[-3, 20.2, -1, 0], [4, 22.6, 1, 0]] };
     for (const r of RECTS) {
       const mx = (r.x0 + r.x1) / 2, mz = (r.z0 + r.z1) / 2;
-      if (canvasRooms[r.id]) this.areas[r.area].floors.push({ geo: bake(flat(r.x0, r.x1, r.z0, r.z1, F + 0.003, 1.0), 0xffffff, true), tex: floorTexture(r, canvasRooms[r.id]) });
-      else if (!r.core) put('shell', bake(flat(r.x0, r.x1, r.z0, r.z1, F + 0.003), FLOOR), mx, mz); // (a `core` rect's floor is the stair core's own, #637)
+      if (canvasRooms[r.id]) this.areas[r.area].floors.push({ geo: bake(flat(r.x0, r.x1, r.z0, r.z1, F + G.floorLift, 1.0), 0xffffff, true), tex: floorTexture(r, canvasRooms[r.id]) });
+      else if (!r.core && !r.outside && !r.door?.park) put('shell', bake(flat(r.x0, r.x1, r.z0, r.z1, F + G.floorLift), FLOOR), mx, mz); // (a `core` rect's floor is the stair core's own, #637)
       if (r.id !== 'core' && !r.core) put('shell', bake(flat(r.x0, r.x1, r.z0, r.z1, C), CEIL), mx, mz); // (the stairwell goes on up, #415, #637)
     }
     // wheel stops, our stall's and the car pool's charging posts, ducts and a sprinkler main under the big hall's ceiling
@@ -346,7 +346,7 @@ export class Garage {
     // the steel doors (the miljörum, the elrum, the basement ↔ garage): a leaf in each such doorway, E opens it
     for (const r of RECTS.filter((q) => q.door)) {
       const along = r.x1 - r.x0 > r.z1 - r.z0, D = r.door; // (a door across a wall along x)
-      const line = along ? (r.z0 + r.z1) / 2 : (r.x0 + r.x1) / 2;
+      const line = D.line ?? (along ? (r.z0 + r.z1) / 2 : (r.x0 + r.x1) / 2);
       const hx = along ? r[D.hinge] : line, hz = along ? line : r[D.hinge === 'x0' ? 'z0' : 'z1'];
       this.cageDoors.push({ rect: r, name: D.name, hx, hz, dir: along ? [D.hinge === 'x0' ? 1 : -1, 0] : [0, 1], out: along ? [0, D.open] : [D.open, 0], w: along ? r.x1 - r.x0 : r.z1 - r.z0,
         angle: 0, target: 0, steel: true, max: 1.55 });
@@ -419,18 +419,22 @@ export class Garage {
       parts.forEach((g) => g.deleteAttribute('normal'));
       return mergeGeometries(parts);
     };
-    const cages = this.cageDoors.filter((d) => !d.steel), steel = this.cageDoors.filter((d) => d.steel);
+    const cages = this.cageDoors.filter((d) => !d.steel), park = this.cageDoors.filter(d=>d.rect?.door?.park), steel = this.cageDoors.filter(d=>d.steel && !d.rect?.door?.park);
+    this.parkObject=new THREE.Group();this.parkObject.name='park-basement-doors';
     this.leaves = new THREE.InstancedMesh(leafGeo(ST.door, 2.0, true), new THREE.MeshBasicMaterial({ map: meshTex, alphaTest: 0.5, side: THREE.DoubleSide }), cages.length);
     this.steelLeaves = new THREE.InstancedMesh(leafGeo(ST.door, G.doorHead, false), new THREE.MeshBasicMaterial({ color: 0xffffff }), steel.length);
+    const parkGeo=this.steelLeaves.geometry.clone();parkGeo.computeVertexNormals(); // Basic steel geometry has no normals; outdoor lighting needs its own clone
+    this.parkLeaves=new THREE.InstancedMesh(parkGeo, new THREE.MeshStandardMaterial(G.parkDoorMaterial),park.length);
+    this.parkLeaves.raycast=()=>{};this.parkLeaves.frustumCulled=false;this.parkLeaves.castShadow=this.parkLeaves.receiveShadow=true;this.parkObject.add(this.parkLeaves);
     for (const m of [this.leaves, this.steelLeaves]) { m.raycast = () => {}; m.frustumCulled = false; group.add(m); }
     const pickMat = new THREE.MeshBasicMaterial();
     this.targets = this.cageDoors.map((d) => {
-      const inst = d.steel ? this.steelLeaves : this.leaves, list = d.steel ? steel : cages;
+      const exterior=!!d.rect?.door?.park, inst=exterior?this.parkLeaves:d.steel?this.steelLeaves:this.leaves, list=exterior?park:d.steel?steel:cages;
       d.inst = inst; d.index = list.indexOf(d);
-      inst.setColorAt(d.index, new THREE.Color(d.steel ? 0x7d858b : 0x9aa0a4).multiplyScalar(light(d.hx + d.out[0] * 0.6, F + 1, d.hz + d.out[1] * 0.6)));
+      if(!exterior)inst.setColorAt(d.index,new THREE.Color(d.steel?0x7d858b:0x9aa0a4).multiplyScalar(light(d.hx+d.out[0]*.6,F+1,d.hz+d.out[1]*.6)));
       const pivot = new THREE.Object3D(); pivot.position.set(d.hx, 0, d.hz);
       const pick = new THREE.Mesh(new THREE.BoxGeometry(d.w, 2.0, 0.12), pickMat); pick.position.set(d.w / 2, F + 1.05, 0); pick.visible = false;
-      pivot.add(pick); group.add(pivot);
+      pivot.add(pick);(exterior?this.parkObject:group).add(pivot);
       const garage = this;
       const t = { kind: 'cabinet', name: d.steel ? d.name : d.cage.ours ? 'vårt hyrförråd' : d.cage.rental ? `hyrförråd ${d.cage.n}` : `förråd ${d.cage.n}`, pickable: pick, door: d,
         get isOpen() { return d.target > 0; },
@@ -588,6 +592,21 @@ export class Garage {
     })];
   }
 
+  /** Park-door leaves for outdoor collisions, only at their basement height (#729). */
+  parkDoorSegments(feet) {
+    if (feet >= F + G.doorHead || feet + PLAYER.headroom <= F) return [];
+    return this.cageDoors.filter(d=>d.rect?.door?.park).map(d=>{const a=d.angle;
+      return [d.hx,d.hz,d.hx+(d.dir[0]*Math.cos(a)+d.out[0]*Math.sin(a))*d.w,d.hz+(d.dir[1]*Math.cos(a)+d.out[1]*Math.sin(a))*d.w];});
+  }
+
+  /** Which park entrance can be seen/reached from outside; no courtyard-level activation. */
+  parkEntrance(p, camera = false) {
+    const feet = p.y - (camera ? PLAYER.eye : 0);
+    if (feet >= F + G.doorHead || feet + PLAYER.headroom <= F) return null;
+    const distance=r=>Math.hypot(Math.max(r.x0-p.x,0,p.x-r.x1),Math.max(r.z0-p.z,0,p.z-r.z1));
+    return RECTS.filter(r=>r.outside && inRect(r,p.x,p.z,LI.sensor)).reduce((best,r)=>!best||distance(r)<distance(best)?r:best,null);
+  }
+
   /** Closed boxes down here (#314): the parked cars (+ ours, `extraPolys`). */
   obstacles() { return [...this.carPolys, ...(this.extraPolys?.() ?? [])]; }
 
@@ -604,6 +623,7 @@ export class Garage {
   near(cam) {
     const p = cam.position;
     if (p.y < C && this.inside(p.x, p.z)) return true;
+    if (this.parkEntrance(p, true)) return 'park';
     if (p.y < C + 1 && p.x > CORE.x0 - 0.1 && p.x < CORE.x1 + 0.1 && p.z > CORE.north[1] && p.z < CORE.lift.z1) return true; // the stairwell's foot, the lift at its basement stop (#450)
     return p.x < GD.x + 0.5 && p.x > GD.x - 60 && Math.abs(p.z - (GD.z0 + GD.z1) / 2) < 25 && p.y < F + 6 ? 'outside' : false;
   }
@@ -625,10 +645,12 @@ export class Garage {
     }
     const p = player.pos, below = !!player.below || (!!player.inCore && p.y < F + 1.5); // (the stairwell's foot is the basement too, #448)
     const atDoor = p.y < F + 1.5 && Math.hypot(p.x - GD.x, p.z - (GD.z0 + GD.z1) / 2) < LI.sensor;
-    this.present = below || atDoor;
+    const park = this.parkEntrance(p);
+    for (const d of this.cageDoors) if (d.rect?.door?.park) d.pivot.visible = park?.area === d.rect.area; // exterior leaves remain drawn; courtyard/far picks stay disabled
+    this.present = below || atDoor || !!park;
     // each area's sensor: the visitor in it or within `sensor` m of one of its rooms (the entrance: also at the door)
     for (const a of Object.values(this.areas)) {
-      const sees = !this.powerOff && ((below && RECTS.some((r) => r.area === a.name && inRect(r, p.x, p.z, LI.sensor))) || (a.name === 'entrance' && atDoor)); // (no tubes in a power cut, #604)
+      const sees = !this.powerOff && ((below && RECTS.some((r) => r.area === a.name && inRect(r, p.x, p.z, LI.sensor))) || (a.name === 'entrance' && atDoor) || a.name === park?.area); // (no tubes in a power cut, #604)
       if (sees) {
         if (!a.on) { a.on = true; a.flickT = LI.flicker; sfx.click?.({ x: p.x, y: C, z: p.z }); }
         a.hold = LI.hold;
@@ -647,7 +669,8 @@ export class Garage {
     // drawn: everything while the camera is down here; only the entrance hall (+ the cars) from outside the door
     const vis = this.near(camera);
     this.object.visible = !!vis;
-    for (const a of Object.values(this.areas)) a.group.visible = vis === true || a.name === 'entrance';
+    this.carArea.visible = vis !== 'park'; // no whole-garage car batch through a small park entrance
+    for (const a of Object.values(this.areas)) a.group.visible = vis === true || (vis === 'park' ? a.name === this.parkEntrance(camera.position, true)?.area : a.name === 'entrance');
     this.blackout.visible = !vis;
     if (vis) for (const b of this.bikeRows) { // a rack row's bikes: in full near the camera, the coarse set beyond (#704)
       const near = Math.hypot(camera.position.x - b.c.x, camera.position.z - b.c.z) < G.bikeLodNear + b.r;

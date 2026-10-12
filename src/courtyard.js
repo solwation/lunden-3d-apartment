@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
-import { COURTYARD as C, COLORS, SITE } from './config.js';
+import { COURTYARD as C, COLORS, SITE, PLAYER } from './config.js';
 import { pavingTexture } from './patio.js';
 import { registerSnow, registerTrees } from './seasons.js';
 import { SEASON } from './config.js';
@@ -425,14 +425,20 @@ export function buildCourtyard() {
   const spots = C.plantings.flatMap((p) => [...Array(p.n)].map(() => [p.x0 + rand() * (p.x1 - p.x0), p.z0 + rand() * (p.z1 - p.z0)]));
   const shrubs = new THREE.InstancedMesh(lobeGeometry('shrub'), leafMaterial(), spots.length); shrubs.name = 'courtyard-shrubs'; // leaf cards (#679), evergreen
   const m = new THREE.Matrix4(), q = new THREE.Quaternion(), col = new THREE.Color();
-  spots.forEach(([x, z], i) => {
+  const shrubBounds=new THREE.Box3().setFromBufferAttribute(shrubs.geometry.attributes.position), worldBounds=new THREE.Box3();
+  let kept=0;
+  spots.forEach(([x, z]) => {
     const s = 0.35 + rand() * 0.4;
     m.compose(new THREE.Vector3(x, groundY(x, z) + s * 0.7, z), q.setFromEuler(new THREE.Euler(0, rand() * 6, 0)), new THREE.Vector3(s, s * 0.8, s));
-    shrubs.setMatrixAt(i, m);
     const flower = rand() < 0.3;
     col.setHSL(flower ? [0.9, 0.12, 0.75][Math.floor(rand() * 3)] : 0.27 + rand() * 0.06, flower ? 0.55 : 0.45, flower ? 0.6 : 0.26 + rand() * 0.08);
-    shrubs.setColorAt(i, col);
+    // #729: only these guessed planting spots yield to the new park paths. Consume every random draw first,
+    // so retained shrubs and all later vine/flower choices keep their exact previous pose/colour.
+    worldBounds.copy(shrubBounds).applyMatrix4(m);
+    if(SITE.basementPaving.some(r=>worldBounds.max.x>=r.x0-PLAYER.radius&&worldBounds.min.x<=r.x1+PLAYER.radius&&worldBounds.max.z>=r.z0-PLAYER.radius&&worldBounds.min.z<=r.z1+PLAYER.radius))return;
+    shrubs.setMatrixAt(kept,m);shrubs.setColorAt(kept,col);kept++;
   });
+  shrubs.count=kept;
   shrubs.castShadow = true;
   group.add(shrubs);
   // the pergola's vines (coloured and thinned by the season like the trees) and its string lights
