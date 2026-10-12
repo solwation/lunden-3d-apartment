@@ -8,6 +8,7 @@
 //   node tools/runtests.cjs --group a-c [--jobs 2]               first letter of the file name in a range: a-c d-l m-p r-t u-z
 //   node tools/runtests.cjs --compare resttest tostarttest       each HTML test twice: without `&test`, then with it + a 480x300 iframe
 //   node tools/runtests.cjs --list [names…]                      what would run
+// Explicit .html/.cjs filenames select one file; a bare name selects all matching formats.
 //   node tools/runtests.cjs --update-baseline name…              rewrite those tests' entries in tools/baseline.json from this run
 // Options: --jobs N (default 1, max 2: the VM is shared), --timeout MIN (default 20), --port N (devserve, default 8133;
 // Workers use port+1…), --keep-going is the default (all selected tests run), --verbose (print each test's output).
@@ -49,7 +50,8 @@ function select() {
   }
   for (const n of opt.names) {
     const base = path.basename(n);
-    const hit = all.filter((t) => t.file === base || t.name === base.replace(/\.(html|cjs)$/, ''));
+    const explicitFile = /\.(html|cjs)$/.test(base);
+    const hit = all.filter((t) => explicitFile ? t.file === base : t.name === base);
     if (!hit.length) { console.error(`no test named ${n}`); process.exit(2); }
     for (const t of hit) if (!sel.includes(t)) sel.push(t);
   }
