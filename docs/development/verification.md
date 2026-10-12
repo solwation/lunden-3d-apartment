@@ -1025,6 +1025,25 @@ per issue). Each needs its own actual full/test runs and unchanged assertions:
 | Interaction | cheattest, booktest, crouchtest |
 | Cooking and cloud state | cooktest, cuptest, cloudtest |
 
+#810 `booktest` retains its original full-mode 900×600/noquery fixture, byte-identical to current HEAD after
+removing the approved compare-only testMode fullscreen guard. One complete original full/test pair at frozen
+`570f8b8` is DIFFERENT: full 12 PASS / ALL PASS versus test 10 PASS + `FAIL taken again ("(hidden)")` and
+`FAIL back on the side table` / SOME FAILED. All 12 checks executed; the first ten raw rows match, including
+placement y0.485. The full helper offered “Ta boken” at re-take, while the test action was hidden. Separate open
+bug #846 preserves this observation; cause is unknown because test flag and 480×300 changed together.
+The original aim's `scene.updateMatrixWorld(true)` and `book.where()` world-position read remain unchanged;
+source inspection does not establish a missing-matrix cause. No query/dimension migration, override, normalization,
+assertion weakening, baseline masking or retry was made. This is a functional comparison blocker, not an invented
+rendering exclusion or a successful speedup sample. Full 130.742s, test 81.510s, actual independent monitor exit 1.
+Both app-ready and final native phases proved actual full 900×600/null controller/no fullscreen and test
+480×300/real controller API/no fullscreen, with their own genuine child URL/timeOrigin. Both fullPage PNGs were
+inspected: raw outcomes/living room capture, not a read-spread or pixel-equivalence claim; times include captures.
+All 247 runtime hashes and the exact guarded fixture matched the frozen pair. Raw logs/summary:
+`/tmp/runtests-422743/`; source/provenance, native load/final data, PID/SID/exit, helpers and images:
+`/tmp/lunden-codes810/book-*` and `booktest-*`. Other #810 fixtures still need their own complete comparisons;
+#810 and #846 remain open.
+
+
 #807 beer-object comparison: `beercantest` retains its original full-mode loader and dedicated `?shots` path.
 The first guarded full/test pair at frozen runtime `e8e3fc2` has byte-identical raw logs: 18 PASS plus one TypeError
 FAIL (19 ordered rows), SOME FAILED in both modes, actual runner exit 1. The exception occurs at the post-reload
