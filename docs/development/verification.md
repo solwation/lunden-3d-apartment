@@ -924,6 +924,20 @@ per issue). Each needs its own actual full/test runs and unchanged assertions:
 | Interaction | cheattest, booktest, crouchtest |
 | Cooking and cloud state | cooktest, cuptest, cloudtest |
 
+#807 beer-object comparison: `beercantest` retains its original full-mode loader and dedicated `?shots` path.
+The first guarded full/test pair at frozen runtime `e8e3fc2` has byte-identical raw logs: 18 PASS plus one TypeError
+FAIL (19 ordered rows), SOME FAILED in both modes, actual runner exit 1. The exception occurs at the post-reload
+`o2.placed` access because `B.beerCans[idx]` is undefined; the two persistence assertions do not complete.
+This is tracked separately in #841; partial red equality does not establish complete migration acceptance, and
+no beer-can query/dimension migration or baseline masking was made. The pre-pair guard was removed again to leave
+that original fixture unchanged. Full 243.892s: first native load 900×600/controller false, second native-fullscreen
+1280×800/controller false. Test 143.573s: both native loads 480×300/controller true. Prepared data/query strings and
+all existing assertions were retained. Native observations cover removed and retained frames; both saved final
+images were inspected, without a can-visual-equivalence claim. Complete raw logs/summary: `/tmp/runtests-377641/`;
+fixture/runtime hashes, passive capture, exit record, native metadata, images and acceptance: `/tmp/lunden-beer807/`.
+All 247 frozen runtime hashes matched after this pair. Other #807 fixtures still need their own complete comparisons.
+
+
 `bedcaretest`'s pixel-ratio setup is not a rendering assertion; its comment now
 identifies the candidate status. `boardtest` and `cloudtest` use `toDataURL` to
 create synthetic uploaded pictures, not sample rendered apartment pixels, so
