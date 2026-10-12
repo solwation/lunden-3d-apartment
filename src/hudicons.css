@@ -42,7 +42,7 @@ body.hud-no-blur .hud-button, body.hud-no-blur #choices button { backdrop-filter
 :root {
   --badge-bg: rgba(20,35,45,.55); --badge-radius: 8px; --badge-edge: 1px solid rgba(255,255,255,.18);
   --badge-shadow: 0 2px 6px rgba(0,0,0,.18); --badge-divider: 1px solid rgba(255,255,255,.22);
-  --badge-cell: 48px; --badge-unit: calc(var(--badge-cell) / 2); --badge-inset: 16px;
+  --badge-cell: 48px; --badge-unit: calc(var(--badge-cell) / 2); --badge-inset: 4px;
   --badge-top: calc(16px + var(--st)); --hud-badge-bottom: calc(var(--badge-top) + var(--badge-cell) + 10px);
 }
 #hud #score, #hud #hud-top {
@@ -98,7 +98,7 @@ body.hud-no-blur #hud #hud-top > .hud-button:active { background: rgba(255,255,2
   body.touch #jet-down { top: calc(var(--hud-badge-bottom) + 124px); bottom: auto; }
   body.touch #web-btn, body.touch #jet-up:not([hidden]) ~ #web-btn { right: calc(170px + var(--sr)); top: calc(var(--hud-badge-bottom) + 8px); bottom: auto; }
 }
-@media (max-width: 600px) { :root { --badge-cell: 44px; --badge-inset: 6px; } }
+@media (max-width: 600px) { :root { --badge-cell: 44px; } }
 /* A short landscape screen leaves one clean row for the compass, with suit controls alongside it. */
 @media (max-height: 360px) and (max-width: 740px) {
   :root { --compass-layout-size: 44px; --compass-layout-top: calc(var(--hud-badge-bottom) - 6px); }

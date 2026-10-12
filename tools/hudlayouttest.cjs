@@ -52,6 +52,7 @@ const sizes = [[844,390],[667,375],[932,430],[568,320],[1280,720]];
         const css=selector=>getComputedStyle(document.querySelector(selector));
         const overlaps=(a,b)=>Math.min(a.right,b.right)-Math.max(a.left,b.left)>.5 && Math.min(a.bottom,b.bottom)-Math.max(a.top,b.top)>.5;
         const left=bounds('#score'),right=bounds('#hud-top'),compass=bounds('#compass'),lives=bounds('#lives');
+        check(near(left.left,safe[0]+4)&&near(right.right,width-safe[1]-4),'badges lack 4px safe-area edge margin');
         check(near(lives.top,compass.bottom+12),'lives lack 12px gap below actual compass');
         check(near((lives.left+lives.right)/2,(compass.left+compass.right)/2),'lives not centered below compass');
         check(!overlaps(lives,left)&&!overlaps(lives,right),'lives overlap badge');
@@ -107,7 +108,7 @@ const sizes = [[844,390],[667,375],[932,430],[568,320],[1280,720]];
         return {width,height,safe,cell,left,right,compass,lives,errors};
       },{width,height,safe});
       results.push(result);
-      if(out&&safe.every(v=>v===0)){fs.mkdirSync(out,{recursive:true});await page.screenshot({path:path.join(out,`hud-only-after-${width}.png`)});}
+      if(out){fs.mkdirSync(out,{recursive:true});await page.screenshot({path:path.join(out,`hud-only-after-${width}-safe-${safe.join('-')}.png`)});}
     }
     // Exercise the real stats feedback timers once, without any game bootstrap.
     await page.evaluate(async()=>{const {bump}=await import('/src/stats.js');bump('tv',1,'hud-layout-feedback');});
