@@ -578,6 +578,61 @@ Phone memory probe (#628): `python3 tools/devserve.py 8628 . &` then `PLAYWRIGHT
 
 Park basement entries (#729): run `PLAYWRIGHT_MODULE=/path/to/playwright CHROME_PATH=/path/to/chrome node tools/basemententrytest.cjs http://localhost:8729` after starting the development server. `SHOTS` overrides `/tmp/lunden-basement-entry/result.json`'s directory. The driver waits bounded initialization, clicks the real mouse-start button, obtains PointerLock and runs `tools/basemententrytest.html`: actual E focus from outside before below, closed/open/jamb traversal to both −1 landings and back, the touch action handler in controlled touch mode, far animated leaves, courtyard pick/collision exclusion, continuous park paving, tree/shrub-instance clearance and floor coverage. It uses `&test=lazy`, with no automatic rendering; this is not a physical-phone touch/FPS test. [Measured scope and manual full-quality images](../validation/issue-729/README.md).
 
+## Reload actual clock/world disposition (#842)
+
+Exactly one unchanged original `reloadtest` full/test pair ran on clean
+`081078d`: 900×600, all **16 authored main loads per mode**, real F5/resume,
+early-screen/new-tab flows, cache/Date.now paths and every current world/hand/
+life/car/storage/clock assertion. Public `runtests --compare --jobs 1 --port 8737
+--timeout 40` used a genuine independent monitor session **392086**, runner
+**392089**. `/tmp/runtests-392089/reloadtest{,.test}.log` has **43 PASS / 1 FAIL**
+per mode, **44 complete ordered rows**, SOME FAILED both. All remaining
+restoration assertions executed after the budget failure, with no shortcircuit.
+Exact duplicate-sensitive raw differences are:
+
+| Row | Original full | Test |
+|---|---|---|
+| 3 | `PASS the real clock and date, not the record's (20:47, 12/10) (#143)` | `PASS the real clock and date, not the record's (21:08, 12/10) (#143)` |
+| 6 | `PASS restart → the real time and date (20:48, 12/10)` | `PASS restart → the real time and date (21:08, 12/10)` |
+| 25 | `FAIL the world record: v 1, 7093 bytes` | `FAIL the world record: v 1, 7077 bytes` |
+| 43 | `PASS a new tab: at the start, the real time (21:07), the car in the garage (#358), empty hands, the fridge shut` | `PASS a new tab: at the start, the real time (21:25), the car in the garage (#358), empty hands, the fridge shut` |
+
+The budget check's original `JSON.stringify(world0).length` measures **UTF-16
+code units**; "bytes" is its preserved raw label, not independently measured
+UTF-8/network size. Independent bug **#845** tracks the native 7093/7077 versus
+6000 threshold, outside migration scope; its cause and intended budget remain
+open. Neither the failure nor its 16-unit difference was normalized or masked.
+Every other complete row matches, including car **3.1 m**, garage **t 0.22**,
+cup **0.80**, world clock **21:45 / 10 January / paused**, **37** life views,
+plate/half-slice hand restoration and broken-record fallback.
+
+All **32** actual app-ready documents have native URL/timeOrigin identity and
+live controller evidence: full false/null API, test real `draw`/`setFull`/
+`wantsFrame` functions, `lazy=false/full=false`. All full app-ready sizes were
+**900×600**; load **6** later leaves at **1280×800/native fullscreen**, with the
+other 15 native pagehide phases 900×600/no fullscreen. Every test app-ready and
+native leave phase remains **480×300**, including fullscreen on load 6. Each
+mode has 16 native pagehide snapshots plus one beforeunload. All frames were
+authoredly removed; no final retained main frame exists. No observation errors
+or transport warnings occurred, and no controller/cache/fixture state was
+changed by passive observation. No fixture fullscreen guard was added.
+
+Actual monitor exit **1** preserves the mismatches and both unbaselined reds;
+exact reported wall times **1246028 ms → 1097220 ms** include passive/capture
+overhead and establish no speedup/parity claim. Both screenshots were inspected:
+`/tmp/lunden-reload842/reload-full.png` contains all 44 textual rows/red;
+`reload-test.png` is cropped to the top rows/SOME FAILED, with row 25 outside
+the image. Neither contains a retained scene or proves rendered pixel parity.
+Source hashes, all 32 native app-ready documents and their 34 leave snapshots,
+whole raw progress, actual exit and exact
+differences are retained in `/tmp/lunden-reload842/{run-provenance,verified-disposition,full-loads,test-loads,monitor}.json`;
+the recoverable full-half checkpoint is issue comment **6130854164**.
+The **entire full-original fixture remains byte-identical**: documentation only,
+no seed/time freeze/clock normalization/retry/assertion/baseline/production change.
+This completes #741's reviewed 51 named dispositions (49 HTML + 2 CJS),
+with #746–#752 closed and #840's actual reset disposition retained. Global
+#736 remains open; independent #845 is not implemented by this comparison.
+
 ## Reset actual clock/Worker disposition (#840)
 
 Exactly one complete original `resettest` full/test pair ran on clean `fcf3a7c`
@@ -1122,7 +1177,7 @@ Complete ordered PASS/FAIL lines are checked manually; timings are wall clock, n
 | `rearrangetest` | Migrated: all 28 ordered PASS lines and ALL PASS identical at baseline `f553436`; no pageerrors (logs `/tmp/runtests-175654`). | 94.415s → 70.563s |
 | `rearrangetvtest` | Migrated: all 9 ordered PASS lines and ALL PASS identical (logs `/tmp/runtests-160072`). | 159.183s → 136.002s |
 | `rearrangeuitest` | Exempt: landscape-phone viewport and touch target layout need 844×390. | Not run: deliberate viewport exemption. |
-| `reloadtest` | Unmigrated: real wall-clock values in PASS labels across scene loads prevent reliable exact output comparison. Source-audited blocker, not a rendering exemption. | Not measured; no output normalization. |
+| `reloadtest` | Retained full after actual #842 pair: all 16 loads per mode completed, 43 PASS / 1 FAIL each; four raw clock/record-size rows differ. Independent native budget bug #845 tracked, no normalization or migration. | [Actual reload disposition](#reload-actual-clockworld-disposition-842): 1246028 ms→1097220 ms including observation/capture overhead, no speedup claim. |
 | `resettest` | Retained full after actual #840 pair: 31 PASS each, with only raw real-clock row 19 differing 20:15→20:21. All eight native load/controller/lifecycle identities and local Worker wipe-success records verified; no normalization or migration. | [Actual reset disposition](#reset-actual-clockworker-disposition-840): 475740 ms→296508 ms including observation/capture overhead; no speedup claim. |
 | `resttest` | Already migrated (#703). Reused source-matched full/test acceptance: all 152 ordered rows identical, including duplicate known failures (133 PASS / 19 FAIL); SOME FAILED both. Fixture blob `9e9d34a`, rest/player unchanged from full base `bcbf1ae`; test evidence `/tmp/lunden-776-rest-testpass.{log,json,txt}`, preserved full `/tmp/runtests-230917/resttest.log`. | 745.511s at actual 1280×800 → 569.040s at actual 480×300; controller false → true (#747/#776). |
 | `returnmarkerstest` | Migrated: all 15 ordered PASS rows and ALL PASS identical; no pageerrors. Actual return/placement actions, contour material/transform checks and interaction-ray exclusion unchanged; `/tmp/runtests-254016/`. | 83.109s at 640×400 → 70.054s at 480×300; controller false → true; wall-clock times include end-of-run screenshots (#747). |
