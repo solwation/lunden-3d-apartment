@@ -1,4 +1,5 @@
 <!doctype html><html><meta charset="utf-8"><title>Independent secretary mirror (#476)</title><pre id="out">running…</pre><script type="module">
+// no &test: reflection/render correctness requires the original rendering settings
 const lines=[];let pass=true;const check=(ok,s)=>{lines.push(`${ok?'PASS':'FAIL'} ${s}`);pass&&=!!ok;};
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
 try {
